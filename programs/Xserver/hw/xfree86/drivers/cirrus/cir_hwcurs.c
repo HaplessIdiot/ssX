@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_hwcurs.c,v 1.3 1998/08/29 14:34:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_hwcurs.c,v 1.4 1998/09/05 06:36:45 dawes Exp $ */
 
 /* (c) Itai Nahshon */
 
@@ -17,17 +17,31 @@
 #define CURSORWIDTH	32
 #define CURSORHEIGHT	32
 #define CURSORSIZE      (CURSORWIDTH*CURSORHEIGHT/8)
-    
+
 static void
 CIRSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg) {
     CIRPtr pCir = CIRPTR(pScrn);
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
 #ifdef CIR_DEBUG
     ErrorF("CIRSetCursorColors\n");
 #endif
+#if 1
+    hwp->writeSeq(hwp, 0x12, pCir->ModeReg.ExtVga[SR12]|0x02);
+    hwp->writeDacWriteAddr(hwp, 0x00);
+    hwp->writeDacData(hwp, 0x3f & (bg >> 18));
+    hwp->writeDacData(hwp, 0x3f & (bg >> 10));
+    hwp->writeDacData(hwp, 0x3f & (bg >>  2));
+    hwp->writeDacWriteAddr(hwp, 0x0F);
+    hwp->writeDacData(hwp, 0x3F & (fg >> 18));
+    hwp->writeDacData(hwp, 0x3F & (fg >> 10));
+    hwp->writeDacData(hwp, 0x3F & (fg >>  2));
+    hwp->writeSeq(hwp, 0x12, pCir->ModeReg.ExtVga[SR12]);
+#else
     outw(0x3C4, ((pCir->ModeReg.ExtVga[SR12] | 0x02) << 8) | 0x12);
     outb(0x3c8, 0x00); outb(0x3c9, 0x3f & (bg >> 18)); outb(0x3c9, 0x3f & (bg >> 10)); outb(0x3c9, 0x3f & (bg >> 2));
     outb(0x3c8, 0x0f); outb(0x3c9, 0x3f & (fg >> 18)); outb(0x3c9, 0x3f & (fg >> 10)); outb(0x3c9, 0x3f & (fg >> 2));
     outw(0x3C4, (pCir->ModeReg.ExtVga[SR12] << 8) | 0x12);
+#endif
 }
 
 static void
@@ -93,6 +107,7 @@ CIRLoadSkewedCursor(unsigned char *memx, unsigned char *CursorBits,
 static void
 CIRSetCursorPosition(ScrnInfoPtr pScrn, int x, int y) {
     CIRPtr pCir = CIRPTR(pScrn);
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
 
 #if 0
 #ifdef CIR_DEBUG
@@ -102,7 +117,11 @@ CIRSetCursorPosition(ScrnInfoPtr pScrn, int x, int y) {
 
     if(x < 0 || y < 0) {
         if(x+CURSORWIDTH <= 0 || y+CURSORHEIGHT <= 0) {
+#if 1
+	    hwp->writeSeq(hwp, 0x12, pCir->ModeReg.ExtVga[SR12] & ~0x01);
+#else
             outw(0x3C4, ((pCir->ModeReg.ExtVga[SR12] & ~0x01) << 8) | 0x12);
+#endif
             return;
         }
         CIRLoadSkewedCursor(pCir->HWCursorBits, pCir->CursorBits, x, y);
@@ -114,14 +133,21 @@ CIRSetCursorPosition(ScrnInfoPtr pScrn, int x, int y) {
 	memcpy(pCir->HWCursorBits, pCir->CursorBits, 2*CURSORSIZE);
         pCir->CursorIsSkewed = FALSE;
     }
+#if 1
+    hwp->writeSeq(hwp, 0x12, pCir->ModeReg.ExtVga[SR12]);
+    hwp->writeSeq(hwp, ((x << 5)|0x10)&0xff, x >> 3);
+    hwp->writeSeq(hwp, ((y << 5)|0x11)&0xff, y >> 3);
+#else
     outw(0x3C4, (pCir->ModeReg.ExtVga[SR12] << 8) | 0x12);
     outw(0x3C4, (x << 5) | 0x10);
     outw(0x3C4, (y << 5) | 0x11);
+#endif
 }
 
 static void
 CIRLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *bits) {
     CIRPtr pCir = CIRPTR(pScrn);
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
 
 #ifdef CIR_DEBUG
     ErrorF("CIRLoadCursorImage\n");
@@ -130,29 +156,43 @@ CIRLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *bits) {
     pCir->CursorBits = bits;
     memcpy(pCir->HWCursorBits, bits, 2*CURSORSIZE);
     pCir->ModeReg.ExtVga[SR13] = 0x3f;
+#if 1
+    hwp->writeSeq(hwp, 0x13, 0x3f);
+#else
     outw(0x3C4, 0x3f13);
+#endif
 }
 
 static void
 CIRHideCursor(ScrnInfoPtr pScrn) {
     CIRPtr pCir = CIRPTR(pScrn);
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
 
 #ifdef CIR_DEBUG
     ErrorF("CIRHideCursor\n");
 #endif
     pCir->ModeReg.ExtVga[SR12] &= ~0x01;
+#if 1
+    hwp->writeSeq(hwp, 0x12, pCir->ModeReg.ExtVga[SR12]);
+#else
     outw(0x3C4, (pCir->ModeReg.ExtVga[SR12] << 8) | 0x12);
+#endif
 }
 
 static void
 CIRShowCursor(ScrnInfoPtr pScrn) {
     CIRPtr pCir = CIRPTR(pScrn);
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
 
 #ifdef CIR_DEBUG
     ErrorF("CIRShowCursor\n");
 #endif
     pCir->ModeReg.ExtVga[SR12] |= 0x01;
+#if 1
+    hwp->writeSeq(hwp, 0x12, pCir->ModeReg.ExtVga[SR12]);
+#else
     outw(0x3C4, (pCir->ModeReg.ExtVga[SR12] << 8) | 0x12);
+#endif
 }
 
 static Bool

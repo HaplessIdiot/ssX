@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tridenthelper.c,v 1.2 1998/09/13 05:23:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tridenthelper.c,v 1.3 1998/09/13 13:12:24 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -50,16 +50,6 @@ TGUISetClock(ScrnInfoPtr pScrn, int clock, unsigned char *a, unsigned char *b)
 	}
 
  	freq = clock;
-#if 0
-	freq = vga256InfoRec.clock[no];
-
-	if ((vgaBitsPerPixel == 16) && (TVGAchipset <= CYBER9320))
-		freq *= 2; 
-	if ((TVGAchipset < TGUI96xx) && (vgaBitsPerPixel == 24))
-		freq *= 3;
-	if (vgaBitsPerPixel == 32)
-		freq *= 2;
-#endif
 
 	for (k=0;k<=endk;k++)
 	  for (n=startn;n<=endn;n++)
@@ -128,28 +118,71 @@ CalculateMCLK(ScrnInfoPtr pScrn)
 {
     int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-	int a,b;
-	int m,n,k;
-	float freq;
-	int powerup[4] = { 1,2,4,8 };
-	unsigned char temp;
+    int a,b;
+    int m,n,k;
+    float freq;
+    int powerup[4] = { 1,2,4,8 };
+    unsigned char temp;
 
-	a = inb(0x43C6);
-	b = inb(0x43C7);
+    if (pTrident->HasSGRAM) {
+	outb(vgaIOBase + 4, 0x28);
+	switch(inb(vgaIOBase + 5) & 0x07) {
+	    case 0:
+		freq = 60;
+		break;
+	    case 1:
+		freq = 78;
+		break;
+	    case 2:
+		freq = 90;
+		break;
+	    case 3:
+		freq = 120;
+		break;
+	    case 4:
+		freq = 66;
+		break;
+	    case 5:
+		freq = 83;
+		break;
+	    case 6:
+		freq = 100;
+		break;
+	    case 7:
+		freq = 132;
+		break;
+	}
+    } else {
+	outb(0x3C4, 0x0E);
+	temp = inb(0x3C5);
+
+	outb(0x3C5, 0xC2);
+        if (!Is3Dchip) {
+	    a = inb(0x43C6);
+	    b = inb(0x43C7);
+    	} else {
+	    outb(0x3C4, 0x16);
+	    a = inb(0x3C5);
+	    outb(0x3C4, 0x17);
+	    b = inb(0x3C5);
+    	}
+
+	outb(0x3C4, 0x0E);
+	outb(0x3C5, temp);
 
         IsClearTV(pScrn);
 
 	if (pTrident->NewClockCode) {
-		m = b & 0x3F;
-		k = (b & 0xC0) >> 6;
-		n = a;
+	    m = b & 0x3F;
+	    n = a;
+	    k = (b & 0xC0) >> 6;
 	} else {
-		m = (a & 0x0F);
-		k = (b & 0xF0) >> 4;
-		n = a;
+	    m = (a & 0x07);
+	    k = (b & 0x02) >> 1;
+	    n = ((a & 0xF8)>>3)|((b&0x01)<<5);
 	}
 
-	freq = ((n+8)*pTrident->frequency)/((m+2)*powerup[k]);
-
-	return (freq);
+	freq = ((n+8)*pTrident->frequency)/((m-2)*powerup[k]);
+    }
+    return (freq);
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.44 1998/10/06 04:39:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.45 1998/10/06 06:08:27 dawes Exp $ */
 
 /*
  *
@@ -39,6 +39,7 @@
 #include "xf86Xinput.h"
 #include "xf86xv.h"
 #include "xf86_8plus24.h"
+#include "xf86cmap.h"
 #include "opaque.h"
 #include "dgaproc.h"
 #include "loader.h"
@@ -313,6 +314,9 @@ LOOKUP xfree86LookupTab[] = {
    /* xf86_8plus24.c */
    SYMFUNC(xf86Overlay8Plus24Init)
    SYMFUNC(diOverlayFBfuncs)
+
+   /* xf86cmap.c */
+   SYMFUNC(xf86HandleColormaps)
 
    /* xf86xv.c */
    SYMFUNC(xf86XVScreenInit)

@@ -1,3 +1,56 @@
+XFree86 3.9Nm (15 November 1998)
+1968. Add support for building clients on NetBSD/vax 1.3H (#2231,
+      Chris Sekiya).
+1967. Add an alternate init function for the framebuffer manager.  The new
+      one takes a region rather than a box which allows disconnected regions
+      to be managed (#2230, Mark Vojkovich).
+1966. XAA pixmap cache fix (#2229, Mark Vojkovich).
+1965. Add support to XAA for filled rects via ImageWrites (#2227,
+      Mark Vojkovich).
+1964. Preliminary "XAnti" extension for antialiasing (#2224, Mark Vojkovich).
+1963. Fix glint driver coordinates when offscreen (negative) when using
+      colour expansion and the NEGATIVE_X stuff (#2221, Alan Hourihane).
+1962. Add PCI IDs for S3 Trio3D and Savage chips to scanpci and xf86PciInfo.h
+      (#2220, Harald Koenig).
+1961. Add support to XAA for the caching of planar colour expansion data,
+      including an example of how to use it in the mga driver (#2215,
+      Mark Vojkovich).
+1960. Xaw and xedit updates (#2205, Paulo Cesar Pereira de Andrade).
+1959. Provide code to initialise cirrus memory config registers on non-primary
+      cards using config file options (#2202, Itai Nahshon).
+1958. Initial code for Cirrus Laguna I2C/DDC support (#2202, Itai Nahshon).
+1957. Fix some cirrus initialisation errors and MCLK calculation (#2202,
+      Itai Nahshon).
+1956. Synch the cir.h and lg.h files (#2202, Itai Nahshon).
+1955. For newer Cirrus Alpine chips, replace most I/O operations to calls
+      to the vgahw I/O routines, and configure them for MMIO when available
+      (#2202, Itai Nahshon).
+1954. Fix mga G100/200 planemask problem (#2198, Mark Vojkovich).
+1953. Update the mga driver to use the new colourmap layer (#2198,
+      Mark Vojkovich).
+1952. A new colourmap layer (#2197, Mark Vojkovich).
+1951. Redo the lbx colourmap fix in a multihead friendly way (#2196,
+      Mark Vojkovich).
+1950. Make the resource access updates to the glint driver to get it working
+      again (#2177, Alan Hourihane).
+1949. Fix Cirrus 546x big screen modes, 32bpp modes (#2175, Corin Anderson).
+1948. Support for the Cirrus 5464 (5462 remains untested) (#2175,
+      Corin Anderson).
+1947. Fix xf86ValidateModes() to make the maxHeight parameter optional
+      as documented (#2174, Corin Anderson).
+1946. Acceleration for the trident 3DImage/Cyber9388/Cyber9397 chipsets,
+      and accel updates for other trident chips (#2161, Alan Hourihane).
+1945. Implement I2C layer for the trident driver (#2161, Alan Hourihane).
+1944. Add TGUI96xx hardware cursor support (#2161, Alan Hourihane).
+1943. Add some xkb entries for 105 key international PC keyboards (#2157,
+      Matthieu Herrb).
+1942. Enable mode switching for the ViRGE driver (#2156, Kevin Brosius,
+      2200, Joe Moss).
+1941. Add depths 15,16,24 to the preliminary ViRGE driver (#2156,
+      Kevin Brosius).
+1940. Replace __syscall() with syscall() in Linux/Alpha PCI code (#2211,
+      Matti Aarnio).
+
 XFree86 3.9Nl (1 November 1998)
 1939. xterm patch #88 (#2152, Thomas Dickey).
 1938. Fix some build problems that show up on SunOS 4.1.4.
@@ -6695,4 +6748,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.640 1998/11/01 12:35:41 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.641 1998/11/01 12:57:05 dawes Exp $

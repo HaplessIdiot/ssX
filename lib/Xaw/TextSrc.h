@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextSrc.h,v 1.4 1998/10/03 08:42:28 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrc.h,v 1.5 1998/10/25 07:11:16 dawes Exp $ */
 
 #ifndef _XawTextSrc_h
 #define _XawTextSrc_h
@@ -92,6 +92,12 @@ typedef enum {
 
 #define XawTextReadError -1
 #define XawTextScanError -1
+
+#define XtNenableUndo		"enableUndo"
+#define XtCUndo			"Undo"
+
+#define XtNsourceChanged	"sourceChanged"
+#define XtCChanged		"Changed"
 
 /*
  * Public Functions

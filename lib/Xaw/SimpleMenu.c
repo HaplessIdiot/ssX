@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
 
-/* $XFree86: xc/lib/Xaw/SimpleMenu.c,v 3.7 1998/08/16 10:24:28 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SimpleMenu.c,v 3.8 1998/10/03 08:42:19 dawes Exp $ */
 
 /*
  * SimpleMenu.c - Source code file for SimpleMenu widget.
@@ -665,7 +665,8 @@ XawSimpleMenuGeometryManager(Widget w, XtWidgetGeometry *request,
  *
  * Chris D. Peterson - Sept. 1989.
  */
-  if (reply->width == request->width && reply->height == request->height)
+  if ((!(mode & CWWidth) || reply->width == request->width)
+      && (!(mode & CWHeight) || reply->height == request->height))
     {
       if (mode & XtCWQueryOnly)	/* Actually perform the layout */
 	{
@@ -1026,163 +1027,173 @@ Layout(Widget w, Dimension *width_ret, Dimension *height_ret)
     SmeObject current_entry;
     SimpleMenuWidget smw;
     Dimension width, height;
-  Boolean do_layout = (height_ret == NULL || width_ret == NULL);
     Boolean allow_change_size;
+    Widget kid;
+    Cardinal i, count, n;
+    int width_kid, height_kid, tmp_w, tmp_h;
+    short vadd, hadd, x_ins, y_ins;
+    Dimension *widths;
+
     height = 0;
 
-  if (XtIsSubclass(w, simpleMenuWidgetClass))
+    if (XtIsSubclass(w, simpleMenuWidgetClass))
     {
-      smw = (SimpleMenuWidget)w;
+	smw = (SimpleMenuWidget)w;
 	current_entry = NULL;
     }
-  else
+    else
     {
-      smw = (SimpleMenuWidget)XtParent(w);
-      current_entry = (SmeObject)w;
+	smw = (SimpleMenuWidget)XtParent(w);
+	current_entry = (SmeObject)w;
     }
 
-  allow_change_size = (!XtIsRealized((Widget)smw)
-		       || smw->shell.allow_shell_resize);
+    allow_change_size = (!XtIsRealized((Widget)smw)
+			 || smw->shell.allow_shell_resize);
 
-    if (do_layout)
-      {
-	Widget kid;
-      Cardinal i, count, n;
-      int width_kid, height_kid, tmp_w, tmp_h;
-	short vadd, hadd, x_ins, y_ins;
-	Dimension *widths;
+    for (i = smw->simple_menu.label ? 1 : 0;
+	 i < smw->composite.num_children;
+	 i++)
+    {
+	XtWidgetGeometry preferred;
 
-	for (i = smw->simple_menu.label ? 1 : 0;
-	     i < smw->composite.num_children;
-	     i++)
-	  {
-	    XtWidgetGeometry preferred;
+	kid = smw->composite.children[i];
+	if (!XtIsManaged(kid))
+	    continue;
+	if (smw->simple_menu.row_height != 0)
+	    XtHeight(kid) = smw->simple_menu.row_height;
+	XtQueryGeometry(kid, NULL, &preferred);
+	if (preferred.request_mode & CWWidth)
+	    XtWidth(kid) = preferred.width;
+    }
 
-	    kid = smw->composite.children[i];
-	    if (!XtIsManaged(kid))
-	      continue;
-	    if (smw->simple_menu.row_height != 0)
-	      XtHeight(kid) = smw->simple_menu.row_height;
-	    XtQueryGeometry(kid, NULL, &preferred);
-	    if (preferred.request_mode & CWWidth)
-	      XtWidth(kid) = preferred.width;
-	  }
+    if (smw->simple_menu.label
+	&& XtIsManaged((Widget)smw->simple_menu.label)) {
+	XtWidgetGeometry preferred;
 
-	/* reset */
-	if (!smw->simple_menu.menu_width)
-	  XtWidth(smw) = 0;
-	if (!smw->simple_menu.menu_height)
-	  XtHeight(smw) = 0;
-	if (!XtWidth(smw) || !XtHeight(smw))
+	kid = (Widget)smw->simple_menu.label;
+	XtQueryGeometry(kid, NULL, &preferred);
+	if (preferred.request_mode & CWWidth)
+	    XtWidth(kid) = preferred.width;
+	if (preferred.request_mode & CWHeight)
+	    XtHeight(kid) = preferred.height;
+    }
+
+    /* reset */
+    if (!smw->simple_menu.menu_width)
+	XtWidth(smw) = 0;
+    if (!smw->simple_menu.menu_height)
+	XtHeight(smw) = 0;
+    if (!XtWidth(smw) || !XtHeight(smw))
 	MakeResizeRequest((Widget)smw);
 
-	widths = (Dimension *)XtMalloc(sizeof(Dimension));
-	hadd = smw->simple_menu.left_margin;
-	vadd = smw->simple_menu.top_margin;
-	if (smw->simple_menu.label)
-	  vadd += XtHeight(smw->simple_menu.label);
+    widths = (Dimension *)XtMalloc(sizeof(Dimension));
+    hadd = smw->simple_menu.left_margin;
+    vadd = smw->simple_menu.top_margin;
+    if (smw->simple_menu.label)
+	vadd += XtHeight(smw->simple_menu.label);
 
-	count = 1;
-	width = tmp_w = tmp_h = n = 0;
-	height = vadd;
+    count = 1;
+    width = tmp_w = tmp_h = n = 0;
+    height = vadd;
 
-	for (i = smw->simple_menu.label ? 1 : 0;
-	     i < smw->composite.num_children;
-	     i++)
-	  {
-	    kid = smw->composite.children[i];
-	    if (!XtIsManaged(kid))
-	      continue;
-	    width_kid = XtWidth(kid);
-	    height_kid = XtHeight(kid);
+    for (i = smw->simple_menu.label ? 1 : 0;
+	 i < smw->composite.num_children;
+	 i++)
+    {
+	kid = smw->composite.children[i];
+	if (!XtIsManaged(kid))
+	    continue;
+	width_kid = XtWidth(kid);
+	height_kid = XtHeight(kid);
 
-	    if (n && (height + height_kid + smw->simple_menu.bottom_margin
-		      > XtHeight(smw)))
-	      {
-		++count;
-		widths = (Dimension *)XtRealloc((char *)widths,
-						sizeof(Dimension) * count);
-		widths[count - 1] = width_kid;
-		width += tmp_w;
-		tmp_w = width_kid;
-		height = height_kid + vadd;
-	      }
-	    else
-		height += height_kid;
-	    if (height > tmp_h)
-	      tmp_h = height;
-	    if (width_kid > tmp_w)
-	      widths[count - 1] = tmp_w = width_kid;
-	    ++n;
-	  }
+	if (n && (height + height_kid + smw->simple_menu.bottom_margin
+		  > XtHeight(smw)))
+	{
+	    ++count;
+	    widths = (Dimension *)XtRealloc((char *)widths,
+					    sizeof(Dimension) * count);
+	    widths[count - 1] = width_kid;
+	    width += tmp_w;
+	    tmp_w = width_kid;
+	    height = height_kid + vadd;
+	}
+	else
+	    height += height_kid;
+	if (height > tmp_h)
+	    tmp_h = height;
+	if (width_kid > tmp_w)
+	    widths[count - 1] = tmp_w = width_kid;
+	++n;
+    }
 
-	height = tmp_h + smw->simple_menu.bottom_margin;
-	width += tmp_w;
+    height = tmp_h + smw->simple_menu.bottom_margin;
+    width += tmp_w;
 
-	if (smw->simple_menu.label && width < XtWidth(smw->simple_menu.label))
-	  {
-	    float inc;
+    if (smw->simple_menu.label && width < XtWidth(smw->simple_menu.label))
+    {
+	float inc;
 
-	    inc = (XtWidth(smw->simple_menu.label) - width) / (float)count;
-	    width = XtWidth(smw->simple_menu.label);
-	    for (n = 0; n < count; n++)
-	      widths[n] += inc;
-	  }
+	inc = (XtWidth(smw->simple_menu.label) - width) / (float)count;
+	width = XtWidth(smw->simple_menu.label);
+	for (n = 0; n < count; n++)
+	    widths[n] += inc;
+    }
 
-	width += hadd + smw->simple_menu.right_margin;
+    width += hadd + smw->simple_menu.right_margin;
 
-	x_ins = n = count = 0;
-	tmp_w = widths[0];
-	tmp_h = vadd;
+    x_ins = n = count = 0;
+    tmp_w = widths[0];
+    tmp_h = vadd;
 
-	for (i = smw->simple_menu.label ? 1 : 0;
-	     i < smw->composite.num_children;
-	     i++)
-	  {
-	    kid = smw->composite.children[i];
-	    if (!XtIsManaged(kid))
-	      continue;
+    for (i = smw->simple_menu.label ? 1 : 0;
+	 i < smw->composite.num_children;
+	 i++)
+    {
+	kid = smw->composite.children[i];
+	if (!XtIsManaged(kid))
+	    continue;
 
-	    height_kid = XtHeight(kid);
+	height_kid = XtHeight(kid);
 
-	    if (n && (tmp_h + height_kid + smw->simple_menu.bottom_margin
-		      > XtHeight(smw)))
-	      {
-		x_ins = tmp_w;
-		y_ins = vadd;
-		++count;
-		tmp_w += widths[count];
-		tmp_h = height_kid + vadd;
-	      }
-	    else
-	      {
-		y_ins = tmp_h;
-		tmp_h += height_kid;
-	      }
-	    ++n;
+	if (n && (tmp_h + height_kid + smw->simple_menu.bottom_margin
+		  > XtHeight(smw)))
+	{
+	    x_ins = tmp_w;
+	    y_ins = vadd;
+	    ++count;
+	    tmp_w += widths[count];
+	    tmp_h = height_kid + vadd;
+	}
+	else
+	{
+	    y_ins = tmp_h;
+	    tmp_h += height_kid;
+	}
+	++n;
 
-	    XtX(kid) = x_ins + hadd;
-	    XtY(kid) = y_ins;
-	    XtWidth(kid) = widths[count];
-	  }
+	XtX(kid) = x_ins + hadd;
+	XtY(kid) = y_ins;
+	XtWidth(kid) = widths[count];
+    }
 
-	XtFree((char *)widths);
+    XtFree((char *)widths);
 
-	if (allow_change_size)
-	  MakeSetValuesRequest((Widget) smw, width, height);
+    if (allow_change_size)
+	MakeSetValuesRequest((Widget) smw, width, height);
 
-	if (smw->simple_menu.label)
-	  {
-	    XtX(smw->simple_menu.label) = 0;
-	    XtY(smw->simple_menu.label) = smw->simple_menu.top_margin;
-	    XtWidth(smw->simple_menu.label) = XtWidth(smw);
-	  }
-      }
-    else
-      {
-	*width_ret = XtWidth(current_entry);
-	*height_ret = XtHeight(current_entry);
-      }
+    if (smw->simple_menu.label)
+    {
+	XtX(smw->simple_menu.label) = 0;
+	XtY(smw->simple_menu.label) = smw->simple_menu.top_margin;
+	XtWidth(smw->simple_menu.label) = XtWidth(smw) -
+	    (smw->simple_menu.left_margin + smw->simple_menu.right_margin);
+    }
+    if (current_entry) {
+	if (width_ret)
+	    *width_ret = XtWidth(current_entry);
+	if (height_ret)
+	    *height_ret = XtHeight(current_entry);
+    }
 }
     
 /*

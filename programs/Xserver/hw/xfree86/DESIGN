@@ -2,7 +2,7 @@
 
                                   DRAFT
 
-Last modified: 30 October 1998.
+Last modified: 15 November 1998.
 
 
 
@@ -1701,6 +1701,19 @@ xf86InitFBManager() must be called before XAA is initialized since
 XAA uses the manager for it's pixmap cache.  The driver may optionally
 provide it's own memory manager in place of the generic one, however,
 it should provide the exact same interface.
+
+An alternative function is provided to allow the driver to initialize
+the framebuffer manager with a Region rather than a box.
+
+   Bool xf86InitFBManagerRegion(ScreenPtr pScreen,  RegionPtr FullRegion);
+
+xf86InitFBManagerRegion, unlike xf86InitFBManager, does not remove the
+area used for the visible screen so that area should not be included
+in the region passed to the function.  xf86InitFBManagerRegion is
+useful when non-contiguous areas are available to be managed, and is
+required when multiple framebuffers are stored in video memory
+(as in the case where an overlay of a different depth is stored as
+a second framebuffer in offscreen memory).
 
 
 Section 11: DPMS Extension
@@ -4138,4 +4151,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.15 1998/10/05 13:22:53 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.16 1998/11/01 12:35:43 dawes Exp $

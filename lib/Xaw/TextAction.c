@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.12 1998/10/11 10:20:22 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.13 1998/10/25 07:11:15 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,6 +38,7 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xmu/SysUtil.h>
 #include <X11/Xaw/MultiSrcP.h>
 #include <X11/Xaw/TextP.h>
+#include <X11/Xaw/TextSrcP.h>
 #include <X11/Xaw/XawImP.h>
 #include "Private.h"
 #include "XawI18n.h"
@@ -51,6 +52,9 @@ in this Software without prior written authorization from The Open Group.
 #define MULT(w)			(w->text.mult == 0 ? 4 : w->text.mult)
 #endif
 
+#define KILL_RING_APPEND	2
+#define KILL_RING_BEGIN		3
+
 #define XawTextActionMaxHexChars	100
 
 /*
@@ -59,6 +63,7 @@ in this Software without prior written authorization from The Open Group.
 static void _DeleteOrKill(TextWidget, XawTextPosition, XawTextPosition, Bool);
 static void _SelectionReceived(Widget, XtPointer, Atom*, Atom*, XtPointer,
 			       unsigned long*, int*);
+static void _LoseSelection(Widget, Atom*, char**, int*);
 static void AutoFill(TextWidget);
 static Boolean ConvertSelection(Widget, Atom*, Atom*, Atom*, XtPointer*,
 				unsigned long*, int*);
@@ -183,8 +188,8 @@ void _XawTextSetSelection(TextWidget, XawTextPosition, XawTextPosition,
 				 String*, Cardinal);
 void _XawTextVScroll(TextWidget, int);
 void XawTextScroll(TextWidget, int, int);
-Bool _XawTextUndo(TextWidget);
-Bool XawTextToggleUndo(TextWidget);
+Bool _XawTextSrcUndo(TextSrcObject, XawTextPosition*);
+Bool _XawTextSrcToggleUndo(TextSrcObject);
 
 /*
  * Implementation
@@ -207,7 +212,12 @@ ParameterError(Widget w, String param)
 static void
 StartAction(TextWidget ctx, XEvent *event)
 {
-  _XawTextPrepareToUpdate(ctx);
+    Cardinal i;
+    TextSrcObject src = (TextSrcObject)ctx->text.source;
+
+    for (i = 0; i < src->textSrc.num_text; i++)
+	_XawTextPrepareToUpdate((TextWidget)src->textSrc.text[i]);
+
   if (event != NULL)
     {
       switch (event->type)
@@ -263,11 +273,18 @@ NotePosition(TextWidget ctx, XEvent *event)
 static void
 EndAction(TextWidget ctx)
 {
-  _XawTextExecuteUpdate(ctx);
-  ctx->text.mult = 1;
+    Cardinal i;
+    TextSrcObject src = (TextSrcObject)ctx->text.source;
+
+    for (i = 0; i < src->textSrc.num_text; i++)
+	_XawTextExecuteUpdate((TextWidget)src->textSrc.text[i]);
+
+    ctx->text.mult = 1;
 #ifndef NO_NUMERIC_HACK
-  ctx->text.doing_numeric_hack = False;
+    ctx->text.doing_numeric_hack = False;
 #endif
+    if (ctx->text.kill_ring)
+	--ctx->text.kill_ring;
 }
 
 struct _SelectionList {
@@ -400,6 +417,7 @@ _SelectionReceived(Widget w, XtPointer client_data, Atom *selection,
   if (_XawTextReplace(ctx, ctx->text.insertPos, ctx->text.insertPos, &text))
     {
       XBell(XtDisplay(ctx), 0);
+      EndAction(ctx);
       return;
     }
 
@@ -491,8 +509,13 @@ Move(TextWidget ctx, XEvent *event, XawTextScanDirection dir,
   if (ctx->text.s.left != ctx->text.s.right)
     XawTextUnsetSelection((Widget)ctx);
   else if (insertPos == ctx->text.insertPos
-	   && IsPositionVisible(ctx, insertPos))
-    return;
+	   && IsPositionVisible(ctx, insertPos)) {
+      ctx->text.mult = 1;
+#ifndef NO_NUMERIC_HACK
+      ctx->text.doing_numeric_hack = False;
+#endif
+      return;
+  }
 
   StartAction(ctx, event);
   ctx->text.showposition = True;
@@ -670,6 +693,12 @@ Scroll(TextWidget ctx, XEvent *event, XawTextScanDirection dir)
       _XawTextVScroll(ctx, -MULT(ctx));
 
     EndAction(ctx);
+  }
+  else {
+      ctx->text.mult = 1;
+#ifndef NO_NUMERIC_HACK
+      ctx->text.doing_numeric_hack = False;
+#endif
   }
 }
 
@@ -964,6 +993,12 @@ ConvertSelection(Widget w, Atom *selection, Atom *target, Atom *type,
 static void
 LoseSelection(Widget w, Atom *selection)
 {
+    _LoseSelection(w, selection, NULL, NULL);
+}
+
+static void
+_LoseSelection(Widget w, Atom *selection, char **contents, int *length)
+{
   TextWidget ctx = (TextWidget)w;
   Atom *atomP;
   int i;
@@ -1001,7 +1036,12 @@ LoseSelection(Widget w, Atom *selection)
 
 	  /* WARNING: the next line frees memory not allocated in Xaw. */
 	  /* Could be a serious bug.  Someone look into it. */
-	  XtFree(salt->contents);
+	  if (contents == NULL)
+	      XtFree(salt->contents);
+	  else {
+	      *contents = salt->contents;
+	      *length = salt->length;
+	  }
 	  if (prevSalt)
 	    prevSalt->next = nextSalt;
 	  else
@@ -1017,66 +1057,86 @@ static void
 _DeleteOrKill(TextWidget ctx, XawTextPosition from, XawTextPosition to,
 	      Bool kill)
 {
-  XawTextBlock text;
+    XawTextBlock text;
 
-  if (kill && from < to)
-    {
-      XawTextSelectionSalt *salt;
-      Atom selection = XInternAtom(XtDisplay(ctx), "SECONDARY", False);
+    if (kill && from < to) {
+	Bool append = False;
+	char *ring = NULL, *string;
+	int size = 0, length;
+	XawTextSelectionSalt *salt;
+	Atom selection = XInternAtom(XtDisplay(ctx), "SECONDARY", False);
 
-      LoseSelection ((Widget) ctx, &selection);
-      salt = (XawTextSelectionSalt *)XtMalloc(sizeof(XawTextSelectionSalt));
-      if (!salt)
-	return;
-      salt->s.selections = (Atom *)XtMalloc(sizeof(Atom));
-      if (!salt->s.selections)
-	{
-	  XtFree((char *)salt);
-	  return;
-	}
-      salt->s.left = from;
-      salt->s.right = to;
-      salt->contents = (char *)_XawTextGetSTRING(ctx, from, to);
-      if (_XawTextFormat(ctx) == XawFmtWide)
-	{
-	  XTextProperty textprop;
+	if (ctx->text.kill_ring == KILL_RING_APPEND)
+	    append = True;
 
-	  if (XwcTextListToTextProperty(XtDisplay((Widget)ctx),
-					(wchar_t**)(&(salt->contents)),
-					1, XCompoundTextStyle,
-					&textprop) <  Success)
-	    {
-	      XtFree(salt->contents);
-	      salt->length = 0;
-	      return;
+	if (append)
+	    _LoseSelection((Widget)ctx, &selection, &ring, &size);
+	else
+	    LoseSelection((Widget)ctx, &selection);
+
+	salt = (XawTextSelectionSalt*)XtMalloc(sizeof(XawTextSelectionSalt));
+	salt->s.selections = (Atom *)XtMalloc(sizeof(Atom));
+	salt->s.left = from;
+	salt->s.right = to;
+
+	string = (char *)_XawTextGetSTRING(ctx, from, to);
+
+	if (_XawTextFormat(ctx) == XawFmtWide) {
+	    XTextProperty textprop;
+
+	    if (XwcTextListToTextProperty(XtDisplay((Widget)ctx),
+					  (wchar_t**)(&string),
+					  1, XCompoundTextStyle,
+					  &textprop) <  Success) {
+		XtFree(string);
+		XtFree((char*)salt->s.selections);
+		XtFree((char*)salt);
+		return;
 	    }
-	  XtFree(salt->contents);
-	  salt->contents = (char *)textprop.value;
-	  salt->length = textprop.nitems;
+	    XtFree(string);
+	    string = (char *)textprop.value;
+	    length = textprop.nitems;
 	}
-      else
-	salt->length = strlen (salt->contents);
-      salt->next = ctx->text.salt2;
-      ctx->text.salt2 = salt;
-      salt->s.selections[0] = selection;
-      XtOwnSelection((Widget)ctx, selection, ctx->text.time,
-		     ConvertSelection, LoseSelection, NULL);
-      salt->s.atom_count = 1;
-    }
-  text.length = 0;
-  text.firstPos = 0;
+	else
+	    length = strlen(string);
 
-  text.format = _XawTextFormat(ctx);
-  text.ptr = "";
+	salt->length = length + size;
 
-  if (_XawTextReplace(ctx, from, to, &text))
-    {
-      XBell(XtDisplay(ctx), 50);
-      return;
+	if (!append)
+	    salt->contents = string;
+	else {
+	    salt->contents = XtMalloc(length + size);
+	    strcpy(salt->contents, ring);
+	    XtFree(ring);
+	    strcat(salt->contents, string);
+	    XtFree(string);
+	}
+
+	salt->next = ctx->text.salt2;
+	ctx->text.salt2 = salt;
+
+	if (append)
+	    ctx->text.kill_ring = KILL_RING_BEGIN;
+
+	salt->s.selections[0] = selection;
+
+	XtOwnSelection((Widget)ctx, selection, ctx->text.time,
+		       ConvertSelection, LoseSelection, NULL);
+	salt->s.atom_count = 1;
     }
-  ctx->text.from_left = -1;
-  ctx->text.insertPos = from;
-  ctx->text.showposition = TRUE;
+    text.length = 0;
+    text.firstPos = 0;
+
+    text.format = _XawTextFormat(ctx);
+    text.ptr = "";
+
+    if (_XawTextReplace(ctx, from, to, &text)) {
+	XBell(XtDisplay(ctx), 50);
+	return;
+    }
+    ctx->text.from_left = -1;
+    ctx->text.insertPos = from;
+    ctx->text.showposition = TRUE;
 }
 
 static void
@@ -1172,13 +1232,17 @@ KillToEndOfLine(Widget w, XEvent *event, String *p, Cardinal *n)
 {
   TextWidget ctx = (TextWidget)w;
   XawTextPosition end_of_line;
+  unsigned mult = MULT(ctx);
 
   StartAction(ctx, event);
   end_of_line = SrcScan(ctx->text.source, ctx->text.insertPos, XawstEOL,
-			XawsdRight, MULT(ctx), False);
+			XawsdRight, mult, False);
   if (end_of_line == ctx->text.insertPos)
     end_of_line = SrcScan(ctx->text.source, ctx->text.insertPos, XawstEOL,
-			  XawsdRight, MULT(ctx), True);
+			  XawsdRight, mult, True);
+
+  if (mult == 1 && ctx->text.kill_ring != KILL_RING_APPEND)
+      ctx->text.kill_ring = KILL_RING_BEGIN;
 
   _DeleteOrKill(ctx, ctx->text.insertPos, end_of_line, True);
   _XawTextSetScrollBars(ctx);
@@ -1419,43 +1483,69 @@ ModifySelection(TextWidget ctx, XEvent *event,
 static void
 SelectStart(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
-  ModifySelection((TextWidget)w, event,
-		  XawsmTextSelect, XawactionStart, params, num_params);
+    TextWidget ctx = (TextWidget)w;
+
+    if (!ctx->text.selection_state) {
+	ctx->text.selection_state = True;
+	ModifySelection(ctx, event,
+			XawsmTextSelect, XawactionStart, params, num_params);
+    }
 }
 
 static void
 SelectAdjust(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
-  ModifySelection((TextWidget)w, event, 
-		  XawsmTextSelect, XawactionAdjust, params, num_params);
+    TextWidget ctx = (TextWidget)w;
+
+    if (ctx->text.selection_state)
+	ModifySelection(ctx, event, 
+			XawsmTextSelect, XawactionAdjust, params, num_params);
 }
 
 static void
 SelectEnd(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
-  ModifySelection((TextWidget)w, event,
-		  XawsmTextSelect, XawactionEnd, params, num_params);
+    TextWidget ctx = (TextWidget)w;
+
+    if (ctx->text.selection_state) {
+	ctx->text.selection_state = False;
+	ModifySelection(ctx, event,
+			XawsmTextSelect, XawactionEnd, params, num_params);
+    }
 }
 
 static void
 ExtendStart(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
-  ModifySelection((TextWidget)w, event,
-		  XawsmTextExtend, XawactionStart, params, num_params);
+    TextWidget ctx = (TextWidget)w;
+
+    if (!ctx->text.selection_state) {
+	ctx->text.selection_state = True;
+	ModifySelection(ctx, event,
+			XawsmTextExtend, XawactionStart, params, num_params);
+    }
 }
 
 static void
 ExtendAdjust(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
-  ModifySelection((TextWidget)w, event,
-		  XawsmTextExtend, XawactionAdjust, params, num_params);
+    TextWidget ctx = (TextWidget)w;
+
+    if (ctx->text.selection_state)
+	ModifySelection(ctx, event,
+			XawsmTextExtend, XawactionAdjust, params, num_params);
 }
 
 static void
 ExtendEnd(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
-  ModifySelection((TextWidget)w, event,
-		  XawsmTextExtend, XawactionEnd, params, num_params);
+    TextWidget ctx = (TextWidget)w;
+
+    if (ctx->text.selection_state) {
+	ctx->text.selection_state = False;
+	ModifySelection(ctx, event,
+			XawsmTextExtend, XawactionEnd, params, num_params);
+    }
 }
 
 static void
@@ -1599,15 +1689,15 @@ AutoFill(TextWidget ctx)
 			  &width, &height);
 
   if (ret_pos <= ctx->text.lt.info[line_num].position
-      || ret_pos >= ctx->text.insertPos)
+      || ret_pos >= ctx->text.insertPos || ret_pos < 1)
     return;
 
-  XawTextSourceRead(ctx->text.source, ret_pos, &text, 1);
+  XawTextSourceRead(ctx->text.source, ret_pos - 1, &text, 1);
 
   if (_XawTextFormat(ctx) == XawFmtWide)
     {
       wc_buf[0] = *(wchar_t *)text.ptr;
-      if (wc_buf[0] != _Xaw_atowc(XawSP) || wc_buf[0] != _Xaw_atowc(XawTAB))
+      if (wc_buf[0] != _Xaw_atowc(XawSP) && wc_buf[0] != _Xaw_atowc(XawTAB))
 	/* Only eats white spaces */
 	return;
 
@@ -1618,7 +1708,7 @@ AutoFill(TextWidget ctx)
     }
   else
     {
-      if (text.ptr[0] == XawSP || text.ptr[0] == XawTAB)
+      if (text.ptr[0] != XawSP && text.ptr[0] != XawTAB)
 	/* Only eats white spaces */
 	return;
 
@@ -1976,7 +2066,7 @@ KeyboardReset(Widget w, XEvent *event, String *params, Cardinal *num_params)
 #endif
     ctx->text.mult = 1;
 
-    (void)XawTextToggleUndo(ctx);
+    (void)_XawTextSrcToggleUndo((TextSrcObject)ctx->text.source);
 
     XBell(XtDisplay(w), 0);
 }
@@ -2247,6 +2337,7 @@ static void
 FormParagraph(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
   TextWidget ctx = (TextWidget)w;
+  TextSrcObject src = (TextSrcObject)ctx->text.source;
   XawTextPosition from, to, endPos = 0;
   char *lbuf = NULL, *rbuf;
 
@@ -2256,20 +2347,20 @@ FormParagraph(Widget w, XEvent *event, String *params, Cardinal *num_params)
 		 XawstParagraph, XawsdLeft, 1, False);
   to = SrcScan(ctx->text.source, from,
 	       XawstParagraph, XawsdRight, 1, False);
-  if (ctx->text.enable_undo) {
-      ctx->text.undo_state = True;
+  if (src->textSrc.enable_undo) {
+      src->textSrc.undo_state = True;
       lbuf = _XawTextGetText(ctx, from, to);
       endPos = ctx->text.lastPos;
   }
 
   if (FormRegion(ctx, from, to) == XawReplaceError) {
       XBell(XtDisplay(w), 0);
-      if (ctx->text.enable_undo) {
-	  ctx->text.undo_state = False;
+      if (src->textSrc.enable_undo) {
+	  src->textSrc.undo_state = False;
 	  XtFree(lbuf);
       }
   }
-  else if (ctx->text.enable_undo) {
+  else if (src->textSrc.enable_undo) {
       /* makes the form-paragraph only one undo/redo step */
       unsigned llen, rlen;
       XawTextBlock block;
@@ -2286,7 +2377,7 @@ FormParagraph(Widget w, XEvent *event, String *params, Cardinal *num_params)
       block.length = llen;
       _XawTextReplace(ctx, from, from + rlen, &block);
 
-      ctx->text.undo_state = False;
+      src->textSrc.undo_state = False;
       block.ptr = rbuf;
       block.length = rlen;
       _XawTextReplace(ctx, from, from + llen, &block);
@@ -2384,7 +2475,7 @@ Undo(Widget w, XEvent *event, String *params, Cardinal *num_params)
 
     StartAction(ctx, event);
     for (; mul; --mul)
-	if (!_XawTextUndo(ctx))
+	if (!_XawTextSrcUndo((TextSrcObject)ctx->text.source, &ctx->text.insertPos))
 	    break;
     EndAction(ctx);
 }

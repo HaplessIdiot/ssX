@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.1 1998/11/01 12:36:00 dawes Exp $ */
 
 /*
  *
@@ -49,6 +49,7 @@ static Bool S3VCloseScreen(int scrnIndex, ScreenPtr pScreen);
 static Bool S3VSaveScreen(ScreenPtr pScreen, Bool unblank);
 static void S3VInitSTREAMS(ScrnInfoPtr pScrn, unsigned int *streams, DisplayModePtr mode);
 static void S3VAdjustFrame(int scrnIndex, int x, int y, int flags);
+static Bool S3VSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
 
 
 /*
@@ -66,12 +67,14 @@ extern void commonCalcClock(long freq, int min_m, int min_n1, int max_n1, int mi
 #define VERSION 4000
 #define S3VIRGE_NAME "S3VIRGE"
 #define S3VIRGE_DRIVER_NAME "s3virge"
-#define S3VIRGE_DRIVER_VERSION 0x00010001
+				/* Version 1.0 */
+				/* upper word is Major, lower is minor */
+#define S3VIRGE_DRIVER_VERSION 0x00010000
 
 /* 
  * This contains the functions needed by the server after loading the
  * driver module.  It must be supplied, and gets added the driver list by
- * the Module Setup funtion in the dynamic case.  In the static case a
+ * the Module Setup function in the dynamic case.  In the static case a
  * reference to this is compiled in, and this requires that the name of
  * this DriverRec be an upper-case version of the driver name.
  */
@@ -98,13 +101,15 @@ static SymTabRec S3VChipsets[] = {
   /* { PCI_ViRGE_MX+,	"ViRGE MX (86C280)" },  not yet, check 3.3.3 for PCI id */
   {-1,			NULL }
 };
+
 static PciChipsets S3VPciChipsets[] = {
   { PCI_ViRGE,      PCI_ViRGE,      RES_SHARED_VGA },
   { PCI_ViRGE_VX,   PCI_ViRGE_VX,   RES_SHARED_VGA },
   { PCI_ViRGE_DXGX, PCI_ViRGE_DXGX, RES_SHARED_VGA },
   { PCI_ViRGE_GX2,  PCI_ViRGE_GX2,  RES_SHARED_VGA },
   { PCI_ViRGE_MX,   PCI_ViRGE_MX,   RES_SHARED_VGA },
-  { -1,                       -1,                     RES_UNDEFINED }
+  /* add MX+ */
+  { -1,                       -1,   RES_UNDEFINED }
 };
 
 typedef enum {		    
@@ -350,12 +355,12 @@ S3VProbe(DriverPtr drv, int flags)
 	    pScrn->Probe	 = S3VProbe;
 	    pScrn->PreInit	 = /*NULL;*/ S3VPreInit;
 	    pScrn->ScreenInit	 = /*NULL;*/ S3VScreenInit;
-	    pScrn->SwitchMode	 = NULL; /*S3VSwitchMode;*/
+	    pScrn->SwitchMode	 = /*NULL;*/ S3VSwitchMode;
 	    pScrn->AdjustFrame	 = /*NULL;*/ S3VAdjustFrame;
 	    pScrn->EnterVT	 = /*NULL;*/ S3VEnterVT;
 	    pScrn->LeaveVT	 = /*NULL;*/ S3VLeaveVT;
 	    pScrn->FreeScreen	 = NULL; /*S3VFreeScreen;*/
-	    pScrn->ValidMode	 = NULL; /*S3VValidMode;*/
+	    pScrn->ValidMode	 = /*NULL;*/ S3VValidMode;
 	    pScrn->device	 = usedDevs[i];
 	    foundScreen = TRUE;
 	}
@@ -375,7 +380,6 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     S3VPtr ps3v;
     MessageType from;
     int i;
-    int bytesPerPixel;
     ClockRangePtr clockRanges;
     char *mod = NULL;
 
@@ -427,6 +431,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 	/* Check that the returned depth is one we support */
 	switch (pScrn->depth) {
 	case 8:
+	case 15:
 	case 16:
 	case 24:
 	    /* OK */
@@ -483,8 +488,6 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     }
    #endif
 
-    bytesPerPixel = pScrn->bitsPerPixel / 8;
-
     /* We use a programamble clock */
     pScrn->progClock = TRUE;
 
@@ -497,9 +500,12 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     /* Collect all of the relevant option flags (fill in pScrn->options) */
     xf86CollectOptions(pScrn, NULL);
 	       
-  				/* Experimental - for 8bpp only, cep*/
-    pScrn->rgbBits = 6;
-    
+    /* Set the bits per RGB for 8bpp mode */
+    if (pScrn->depth == 8) {
+    				/* ViRGE supports 6 RGB bits in depth 8 */
+				/* modes (with 256 entry LUT) */
+      pScrn->rgbBits = 6;
+    }
     
 #if 0  /* editme - ignore options for now */    
 
@@ -806,12 +812,6 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
       if (pScrn->clock[3] <= 0) pScrn->clock[3] =  57000;
    }
    
-    xf86ErrorFVerb(VERBLEV, 
-	"	S3VPreInit depth=%x, pixmapBPP=%x, bitsPerPixel=%x\n",
-		pScrn->depth,
-		pScrn->pixmapBPP,
-		pScrn->bitsPerPixel );
-   
    if (ps3v->dacSpeedBpp <= 0)
       if (pScrn->bitsPerPixel > 24 && pScrn->clock[3] > 0)
 	 ps3v->dacSpeedBpp = pScrn->clock[3];
@@ -966,6 +966,20 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
   pScrn->maxHValue = 2048;
   pScrn->maxVValue = 2048;
 
+    				/* Lower depths default to config file */
+  pScrn->virtualX = pScrn->display->virtualX;
+				/* Adjust the virtualX to meet ViRGE hardware */
+				/* limits for depth 24, bpp 24 & 32.  This is */
+				/* mostly for 32 bpp as 1024x768 is one pixel */
+				/* larger than supported. */
+  if (pScrn->depth == 24)
+      if ( ((pScrn->bitsPerPixel/8) * pScrn->display->virtualX) > 4095 ) {
+        pScrn->virtualX = 4095 / (pScrn->bitsPerPixel / 8);
+        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+	   "Virtual width adjusted, max for this depth & bpp is %d.\n",
+	   pScrn->virtualX );
+      }
+  
     /*
      * Setup the ClockRanges, which describe what clock ranges are available,
      * and what sort of modes they can be used for.
@@ -1003,8 +1017,6 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 					/* bits of granularity for line	*/
 					/* pitch (width) above, reguired*/
 					/* (int pitchInc)		*/
-		/*pMga->Rounding * pScrn->bitsPerPixel, */
-		/* cep check... */
 		pScrn->bitsPerPixel,
 					/* min virt height, 0 no limit	*/
 					/* (int minHeight)		*/
@@ -1014,14 +1026,15 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 		2048,
 					/* force virtX, 0 for auto 	*/
 					/* (int VirtualX) 		*/
-		pScrn->display->virtualX,
+					/* value is adjusted above for  */
+					/* hardware limits */
+		pScrn->virtualX,
 					/* force virtY, 0 for auto	*/
 					/* (int VirtualY)		*/
 		pScrn->display->virtualY,
 					/* size (bytes) of aper used to	*/
 					/* access video memory		*/
 					/* (unsigned long apertureSize)	*/
-		/*pMga->FbMapSize,*/
 		ps3v->videoRambytes,
 					/* how to pick mode */
 					/* (LookupModeFlags strategy)	*/
@@ -1051,7 +1064,19 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Set display resolution */
     xf86SetDpi(pScrn, 0, 0);
-    
+    					/* When running the STREAMS processor */
+					/* the max. stride is limited to 4096-1 */
+					/* so this is the virtualX limit. */
+					/* STREAMS is needed for 24 & 32 bpp, */
+					/* (all depth 24 modes) */
+					/* This should never happen... we */
+					/* checked it before ValidateModes */
+    if ( (pScrn->depth == 24) && 
+         ((pScrn->bitsPerPixel/8) * pScrn->virtualX > 4095) ) {
+      xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Virtual width to large for ViRGE\n");
+      S3VFreeRec(pScrn);
+      return FALSE;
+    }
 
     /* Load bpp-specific modules */
     switch (pScrn->bitsPerPixel) {
@@ -1920,8 +1945,26 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
   /* Handle color map setup */
   /* Init Accel ? */
     
-  vgaHandleColormaps(pScreen, pScrn);
-    
+					/* Both xf4bpp & cfb */
+					/* ViRGE only uses cfb so far */
+  if (pScrn->pixmapBPP == 8) {
+	vgaHandleColormaps(pScreen, pScrn);
+  } else {
+    	VisualPtr visual;
+					/* Fixup RGB ordering */
+	visual = pScreen->visuals + pScreen->numVisuals;
+	while (--visual >= pScreen->visuals) {
+	    if ((visual->class | DynamicClass) == DirectColor) {
+		visual->offsetRed = pScrn->offset.red;
+		visual->offsetGreen = pScrn->offset.green;
+		visual->offsetBlue = pScrn->offset.blue;
+		visual->redMask = pScrn->mask.red;
+		visual->greenMask = pScrn->mask.green;
+		visual->blueMask = pScrn->mask.blue;
+	    }
+	}
+  }
+  
   miInitializeBackingStore(pScreen);
 
     					/* Initialise cursor functions */
@@ -1951,58 +1994,11 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 /* Checks if a mode is suitable for the selected chipset. */
 
-static ModeStatus S3VValidMode(int index, DisplayModePtr mode, Bool verbose, int flags)
+static ModeStatus
+S3VValidMode(int index, DisplayModePtr mode, Bool verbose, int flags)
 {
 
-
-		/* This is from PreInit, ... */
-#if 0
-   pEnd = pMode = vga256InfoRec.modes;
-   do {
-      /* Setup the Mode.Private if required */
-      if (!pMode->PrivSize || !pMode->Private) {
-	 pMode->PrivSize = S3_MODEPRIV_SIZE;
-	 pMode->Private = (INT32 *)xcalloc(sizeof(INT32), S3_MODEPRIV_SIZE);
-	 pMode->Private[0] = 0;
-      }
-      
-      /* Set default for invert_vclk */
-      if (!(pMode->Private[0] & (1 << S3_INVERT_VCLK))) {
-	 pMode->Private[S3_INVERT_VCLK] = 0;
-	 pMode->Private[0] |= 1 << S3_INVERT_VCLK;
-      }
-      
-      /* Set default for blank_delay */
-      if (!(pMode->Private[0] & (1 << S3_BLANK_DELAY))) {
-	 pMode->Private[0] |= (1 << S3_BLANK_DELAY);
-	 if(s3vPriv.chip == S3_ViRGE_VX)
-	    /* these values need to be changed once CR67_1 is set
-	       for gamma correction (see S3V server) ! */
-	    if (vgaBitsPerPixel == 8)
-	       pMode->Private[S3_BLANK_DELAY] = 0x00;
-	    else if (vgaBitsPerPixel == 16)
-	       pMode->Private[S3_BLANK_DELAY] = 0x00;
-	    else
-	       pMode->Private[S3_BLANK_DELAY] = 0x51;
-	 else
-	    if (vgaBitsPerPixel == 8)
-	       pMode->Private[S3_BLANK_DELAY] = 0x00;
-	    else if (vgaBitsPerPixel == 16)
-	       pMode->Private[S3_BLANK_DELAY] = 0x02;
-	    else
-	       pMode->Private[S3_BLANK_DELAY] = 0x04;
-      }
-      
-      /* Set default for early_sc */
-      if (!(pMode->Private[0] & (1 << S3_EARLY_SC))) {
-	 pMode->Private[0] |= 1 << S3_EARLY_SC;
-	 pMode->Private[S3_EARLY_SC] = 0;
-      }
-      pMode = pMode->next;
-   } while (pMode != pEnd);
-#endif
-
-  return FALSE;
+  return MODE_OK;
 }
 
 
@@ -2143,23 +2139,27 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
        }
   #endif
 
+   					/* most modes don't need STREAMS */
+					/* processor, preset FALSE */
+   ps3v->NeedSTREAMS = FALSE;
+   
    if(ps3v->Chipset == S3_ViRGE_VX){
        if (pScrn->bitsPerPixel == 8) {
           if (dclk <= 110000) new->CR67 = 0x00; /* 8bpp, 135MHz */
           else new->CR67 = 0x10;                /* 8bpp, 220MHz */
           }
-       #if 0
-       else if ((vgaBitsPerPixel == 16) && (vga256InfoRec.weight.green == 5)) {
+       else if ((pScrn->bitsPerPixel == 16) && (pScrn->weight.green == 5)) {
           if (dclk <= 110000) new->CR67 = 0x20; /* 15bpp, 135MHz */
           else new->CR67 = 0x30;                /* 15bpp, 220MHz */
           } 
-       #endif
        else if (pScrn->bitsPerPixel == 16) {
           if (dclk <= 110000) new->CR67 = 0x40; /* 16bpp, 135MHz */
           else new->CR67 = 0x50;                /* 16bpp, 220MHz */
           }
        else if ((pScrn->bitsPerPixel == 24) || (pScrn->bitsPerPixel == 32)) {
           new->CR67 = 0xd0 | 0x0c;              /* 24bpp, 135MHz, STREAMS */
+	  					/* Flag STREAMS proc. required */
+          ps3v->NeedSTREAMS = TRUE;
           S3VInitSTREAMS(pScrn, new->STREAMS, mode);
           new->MMPR0 = 0xc098;            /* Adjust FIFO slots */
           }
@@ -2175,21 +2175,23 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
             new->SR18 = 0x80;                   /* Enable pixmux */
             }
          }
-      #if 0
-      else if ((vgaBitsPerPixel == 16) && (vga256InfoRec.weight.green == 5)) {
+      else if ((pScrn->bitsPerPixel == 16) && (pScrn->weight.green == 5)) {
          new->CR67 = 0x30;                       /* 15bpp */
          }
-      #endif
       else if (pScrn->bitsPerPixel == 16) {
          new->CR67 = 0x50;
          }
       else if (pScrn->bitsPerPixel == 24) { 
          new->CR67 = 0xd0 | 0x0c;
+	  					/* Flag STREAMS proc. required */
+         ps3v->NeedSTREAMS = TRUE;
          S3VInitSTREAMS(pScrn, new->STREAMS, mode);
          new->MMPR0 = 0xc000;            /* Adjust FIFO slots */
          }
       else if (pScrn->bitsPerPixel == 32) { 
          new->CR67 = 0xd0 | 0x0c;
+	  					/* Flag STREAMS proc. required */
+         ps3v->NeedSTREAMS = TRUE;
          S3VInitSTREAMS(pScrn, new->STREAMS, mode);
          new->MMPR0 = 0x10000;            /* Still more FIFO slots */
          }
@@ -2520,6 +2522,17 @@ S3VAdjustFrame(int scrnIndex, int x, int y, int flags)
 
    return;
 }
+
+
+
+
+/* Usually mandatory */
+static Bool
+S3VSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
+{
+    return S3VModeInit(xf86Screens[scrnIndex], mode);
+}
+
 
 
 

@@ -2,7 +2,7 @@
    Inspired by cir.h
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg.h,v 1.1 1998/11/01 12:35:54 dawes Exp $ */
 
 #ifndef LG_H
 #define LG_H
@@ -67,12 +67,19 @@ typedef struct {
     int			MaxClock;
     Bool		NoAccel;
     Bool		HWCursor;
-    
-    LgRegRec		SavedReg;
-    LgRegRec		ModeReg;
+    Bool		UseMMIO;
     XAAInfoRecPtr       AccelInfoRec;
     xf86CursorInfoPtr   CursorInfoRec;
     DGAInfoPtr          DGAInfo;
+    I2CBusPtr		I2CPtr1;
+    I2CBusPtr		I2CPtr2;
+    CloseScreenProcPtr  CloseScreen;
+
+/* Difference from Cirrus start here */
+    int                 lineDataIndex;
+
+    LgRegRec		SavedReg;
+    LgRegRec		ModeReg;
 #if 0
     CARD32		BltScanDirection;
     CARD32		FilledRectCMD;
@@ -80,7 +87,6 @@ typedef struct {
     CARD32		PatternRectCMD;
     CARD32		AccelFlags;
 #endif
-    CloseScreenProcPtr  CloseScreen;
 } LgRec, *LgPtr;
 
 typedef struct {
@@ -96,6 +102,6 @@ Bool	CIRMapMem(ScrnInfoPtr pScrn);
 Bool	CIRUnmapMem(ScrnInfoPtr pScrn);
 
 /* CirrusClk.c */
-extern Bool CirrusSetClock(ScrnInfoPtr pScrn, int freq);
+extern CARD16 CirrusSetClock(ScrnInfoPtr pScrn, int freq);
 
 #endif /* LG_H */

@@ -21,7 +21,6 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86$ */
 
 #include <sys/types.h>
 #define NEED_REPLIES
@@ -71,7 +70,6 @@ static int LbxUnstallClient();
 void LbxReleaseCmap();
 
 static RESTYPE StalledResType;
-static ColormapPtr DefColormap;
 
 /*
  * Initialize the fields in the colormap private allocated for LBX.
@@ -101,10 +99,14 @@ LbxColormapPrivInit (pmap)
 
 
 static int
-LbxGetDefCmap (pmap)
+LbxDefCmapPrivInit (pmap)
     ColormapPtr pmap;
 {
-    DefColormap = pmap;
+#if 0
+    /* BUG: You can't do that. lbxColormapPrivIndex hasn't 
+	been initialized yet.  */
+    pmap->devPrivates[lbxColormapPrivIndex].ptr = NULL;
+#endif
     return 1;
 }
 
@@ -150,6 +152,7 @@ LbxCmapInit ()
 
 {
     LbxScreenPriv *pScreenPriv;
+    ColormapPtr defMap;
     ScreenPtr pScreen;
     int i;
 
@@ -159,15 +162,19 @@ LbxCmapInit ()
     if (lbxScreenPrivIndex < 0)
 	return 0;
 
-    lbxColormapPrivIndex = AllocateColormapPrivateIndex (LbxGetDefCmap);
+    lbxColormapPrivIndex = AllocateColormapPrivateIndex (LbxDefCmapPrivInit);
     if (lbxColormapPrivIndex < 0)
 	return 0;
-
-    DefColormap->devPrivates[lbxColormapPrivIndex].ptr = NULL;
 
     for (i = 0; i < screenInfo.numScreens; i++)
     {
 	pScreen = screenInfo.screens[i];
+
+        defMap = (ColormapPtr) LookupIDByType(
+			pScreen->defColormap, RT_COLORMAP);
+
+	/* now lbxColormapPrivIndex exists */
+        defMap->devPrivates[lbxColormapPrivIndex].ptr = NULL;
 
 	pScreenPriv = (LbxScreenPriv *) xalloc (sizeof (LbxScreenPriv));
 	if (!pScreenPriv)

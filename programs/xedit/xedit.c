@@ -24,19 +24,26 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: contrib/programs/xedit/xedit.c,v 1.4 1998/10/11 11:20:00 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/xedit.c,v 1.1 1998/10/25 07:12:17 dawes Exp $ */
 
 #include "xedit.h"
 #include <time.h>
 #define randomize()	srand((unsigned)time((time_t*)NULL))
 
 static XtActionsRec actions[] = {
-{"quit", DoQuit},
-{"save-file", DoSave},
+{"quit", QuitAction},
+{"save-file", SaveFile},
 {"load-file", LoadFile},
 {"find-file", FindFile},
 {"cancel-find-file", CancelFindFile},
 {"file-completion", FileCompletion},
+{"popup-menu", PopupMenu},
+{"kill-file", KillFile},
+{"split-window", SplitWindow},
+{"delete-window", DeleteWindow},
+{"xedit-focus", XeditFocus},
+{"other-window", OtherWindow},
+{"switch-source", SwitchSource},
 };
 
 #define DEF_HINT_INTERVAL	300	/* in seconds, 5 minutes */
@@ -45,16 +52,19 @@ static Atom wm_delete_window;
 static Widget hintswindow;
 
 Widget topwindow, textwindow, messwidget, labelwindow, filenamewindow;
+Widget scratch, hpane, vpanes[2], labels[3], texts[3];
+Boolean international;
 
-void ResetSourceChanged();
+extern void ResetSourceChanged(xedit_flist_item*);
 
-static void makeButtonsAndBoxes();
+static void makeButtonsAndBoxes(Widget);
 static void HintsTimer(XtPointer, XtIntervalId*);
 static void StartHints(void);
 
 Display *CurDpy;
 
 struct _app_resources app_resources;
+struct _xedit_flist flist;
 
 #define Offset(field) XtOffsetOf(struct _app_resources, field)
 
@@ -69,6 +79,8 @@ static XtResource resources[] = {
 	 Offset(hints.resource), XtRImmediate, NULL},
    {"hintsInterval", XtCInterval, XtRInt, sizeof(long),
 	 Offset(hints.interval), XtRImmediate, (XtPointer)DEF_HINT_INTERVAL},
+   {"changedBitmap", "Changed", XtRString, sizeof(char*),
+	 Offset(changed_pixmap_name), XtRString, "dot"},
 };
 
 #undef Offset
@@ -79,7 +91,7 @@ int argc;
 char **argv;
 {
   XtAppContext appcon;
-  String filename = NULL;
+  unsigned num_loaded = 0;
 
   XtSetLanguageProc(NULL, NULL, NULL);
   topwindow = XtAppInitialize(&appcon, "Xedit", NULL, 0, &argc, argv, NULL, NULL, 0);
@@ -92,33 +104,12 @@ char **argv;
 			    XtNumber(resources), NULL, 0);
 
   CurDpy = XtDisplay(topwindow);
+  XawSimpleMenuAddGlobalActions(appcon);
+  XtRegisterGrabAction(PopupMenu, True, 
+		       ButtonPressMask | ButtonReleaseMask,
+		       GrabModeAsync, GrabModeAsync);
 
-  if (argc > 1) {
-    Boolean exists;
-    filename = argv[1];
-
-    switch ( CheckFilePermissions(filename, &exists)) {
-    case NO_READ:
-	if (exists)
-	    fprintf(stderr, 
-		    "File %s exists, and could not opened for reading.\n", 
-		    filename);
-	else
-	    fprintf(stderr, "File %s %s %s",  filename, "does not exist,",
-		    "and the directory could not be opened for writing.\n");
-	exit(1);
-    case READ_OK:
-    case WRITE_OK:
-	makeButtonsAndBoxes(topwindow, filename);
-	break;
-    default:
-	fprintf(stderr, "%s %s", "Internal function MaybeCreateFile()",
-		"returned unexpected value.\n");
-	exit(1);
-    }
-  }  
-  else
-      makeButtonsAndBoxes(topwindow, NULL);
+  makeButtonsAndBoxes(topwindow);
 
   StartHints();
   XtRealizeWidget(topwindow);
@@ -128,22 +119,89 @@ char **argv;
   (void) XSetWMProtocols (XtDisplay(topwindow), XtWindow(topwindow),
 			  &wm_delete_window, 1);
 
-  if (!filename)
-    XtSetKeyboardFocus(topwindow, filenamewindow);
+  if (argc > 1) {
+      Boolean exists;
+      xedit_flist_item *item;
+      FileAccess file_access;
+      char *filename;
+      Widget source;
+      Arg args[2];
+      unsigned i, num_args;
+      char buf[BUFSIZ];
+
+      for (i = 1; i < argc; i++) {
+	  num_args = 0;
+	  filename = ResolveName(argv[i]);
+	  if (filename == NULL || FindTextSource(NULL, filename) != NULL)
+	      continue;
+	  switch (file_access = CheckFilePermissions(filename, &exists)) {
+	  case NO_READ:
+	      if (exists)
+		  XmuSnprintf(buf, sizeof(buf), "File %s, %s %s", argv[i],
+			      "exists, and could not be opened for",
+			      "reading.\n");
+	      else
+		  XmuSnprintf(buf, sizeof(buf), "File %s %s %s %s", argv[i],
+			      "does not exist, and",
+			      "the directory could not be opened for",
+			      "writing.\n");
+	      break;
+	  case READ_OK:
+	      XtSetArg(args[num_args], XtNeditType, XawtextRead); num_args++;
+	      XmuSnprintf(buf, sizeof(buf), "File %s opened READ ONLY.\n",
+			  argv[i]);
+	      break;
+	  case WRITE_OK:
+	      XtSetArg(args[num_args], XtNeditType, XawtextEdit); num_args++;
+	      XmuSnprintf(buf, sizeof(buf), "File %s opened read - write.\n",
+			  argv[i]);
+	      break;
+	  }
+	  if (file_access != NO_READ) {
+	      int flags;
+
+	      if (exists) {
+		  flags = EXISTS_BIT;
+		  XtSetArg(args[num_args], XtNstring, filename);num_args++;
+	      }
+	      else {
+		  flags = 0;
+		  XtSetArg(args[num_args], XtNstring, NULL);	num_args++;
+	      }
+	      source = XtVaCreateWidget("textSource", international ?
+					multiSrcObjectClass
+					: asciiSrcObjectClass, topwindow,
+					XtNtype, XawAsciiFile,
+					XtNeditType, XawtextEdit,
+					NULL, NULL);
+	      XtSetValues(source, args, num_args);
+	      item = AddTextSource(source, argv[i], filename,
+				   flags, file_access);
+	      if (!num_loaded)
+		  SwitchTextSource(item);
+	      ++num_loaded;
+	      ResetSourceChanged(item);
+	  }
+	  XeditPrintf(buf);
+      }
+  }
+
+  if (num_loaded == 0)
+      XtSetKeyboardFocus(topwindow, filenamewindow);
   else
-    XtSetKeyboardFocus(topwindow, textwindow);
+      XtSetKeyboardFocus(topwindow, textwindow);
 
   XtAppMainLoop(appcon);
 }
 
 static void
-makeButtonsAndBoxes(parent, filename)
-Widget parent;
-char * filename;
+makeButtonsAndBoxes(Widget parent)
 {
   Widget outer, b_row;
   Arg arglist[10];
   Cardinal num_args;
+  xedit_flist_item *item;
+  static char *labelWindow = "labelWindow", *editWindow = "editWindow";
 
   outer = XtCreateManagedWidget( "paned", panedWidgetClass, parent,
 				NULL, ZERO);
@@ -153,7 +211,7 @@ char * filename;
     MakeCommandButton(b_row, "quit", DoQuit);
     MakeCommandButton(b_row, "save", DoSave);
     MakeCommandButton(b_row, "load", DoLoad);
-    filenamewindow = MakeStringBox(b_row, "filename", filename); 
+    filenamewindow = MakeStringBox(b_row, "filename", NULL);
   }
   hintswindow = XtCreateManagedWidget("bc_label", labelWidgetClass,
 				      outer, NULL, ZERO);
@@ -164,22 +222,65 @@ char * filename;
 				      outer, arglist, num_args);
 
   num_args = 0;
-  if (filename != NULL) 
-    XtSetArg(arglist[num_args], XtNlabel, filename); num_args++;
+  XtSetArg(arglist[num_args], XtNorientation, XtorientHorizontal); num_args++;
+  hpane = XtCreateManagedWidget("hpane", panedWidgetClass, outer,
+				arglist, num_args);
 
-  labelwindow = XtCreateManagedWidget("labelWindow",labelWidgetClass, 
-				      outer, arglist, num_args);
+  num_args = 0;
+  XtSetArg(arglist[num_args], XtNorientation, XtorientVertical); num_args++;
+  vpanes[0] = XtCreateManagedWidget("vpane", panedWidgetClass, hpane,
+				    arglist, num_args);
+  XtSetArg(arglist[num_args], XtNheight, 1);	++num_args;
+  XtSetArg(arglist[num_args], XtNwidth, 1);	++num_args;
+  vpanes[1] = XtCreateWidget("vpane", panedWidgetClass, hpane,
+			     arglist, num_args);
+  
+  labelwindow = XtCreateManagedWidget(labelWindow,labelWidgetClass, 
+				      vpanes[0], NULL, 0);
+  labels[0] = labelwindow;
+  labels[2] = XtCreateWidget(labelWindow,labelWidgetClass, 
+			     vpanes[1], NULL, 0);
 
   num_args = 0;
   XtSetArg(arglist[num_args], XtNtype, XawAsciiFile); num_args++;
   XtSetArg(arglist[num_args], XtNeditType, XawtextEdit); num_args++;
-  textwindow =  XtCreateManagedWidget("editWindow", asciiTextWidgetClass, 
-				      outer, arglist, num_args);
+  textwindow =  XtCreateManagedWidget(editWindow, asciiTextWidgetClass, 
+				      vpanes[0], arglist, num_args);
+  num_args = 0;
+  XtSetArg(arglist[num_args], XtNinternational, &international); ++num_args;
+  XtGetValues(textwindow, arglist, num_args);
 
-  if (filename != NULL)
-      DoLoad();
-  else
-      ResetSourceChanged(textwindow);
+  num_args = 0;
+  XtSetArg(arglist[num_args], XtNtype, XawAsciiFile); num_args++;
+  XtSetArg(arglist[num_args], XtNeditType, XawtextEdit); num_args++;
+  scratch = XtVaCreateWidget("textSource", international ?
+			     multiSrcObjectClass
+			     : asciiSrcObjectClass, topwindow,
+			     XtNtype, XawAsciiFile,
+			     XtNeditType, XawtextEdit,
+			     NULL, NULL);
+  XtSetValues(scratch, arglist, num_args);
+
+  num_args = 0;
+  XtSetArg(arglist[num_args], XtNtextSource, scratch); ++num_args;
+  XtSetValues(textwindow, arglist, num_args);
+
+  texts[0] = textwindow;
+  num_args = 0;
+  XtSetArg(arglist[num_args], XtNtextSource, scratch); ++num_args;
+  XtSetArg(arglist[num_args], XtNdisplayCaret, False); ++num_args;
+  texts[2] = XtCreateWidget(editWindow, asciiTextWidgetClass,
+			    vpanes[1], arglist, num_args);
+
+  labels[1] = XtCreateWidget(labelWindow,labelWidgetClass, 
+			     vpanes[0], NULL, 0);
+
+  texts[1] = XtCreateWidget(editWindow, asciiTextWidgetClass,
+			    vpanes[0], arglist, num_args);
+
+  item = AddTextSource(scratch, "*scratch*", "*scratch*",
+		       0, WRITE_OK);
+  ResetSourceChanged(item);
 }
 
 /*	Function Name: Feep
@@ -189,7 +290,7 @@ char * filename;
  */
 
 void
-Feep()
+Feep(void)
 {
   XBell(CurDpy, 0);
 }
@@ -201,7 +302,7 @@ void HintsTimer(XtPointer closure, XtIntervalId *id)
     Arg args[1];
     xedit_hints *hints = (xedit_hints*)closure;
 
-    hints->cur_hint = random() % hints->num_hints;
+    hints->cur_hint = rand() % hints->num_hints;
 
     XtSetArg(args[0], XtNlabel, hints->hints[hints->cur_hint]);
     XtSetValues(hintswindow, args, 1);

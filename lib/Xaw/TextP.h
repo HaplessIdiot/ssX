@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextP.h,v 3.6 1998/10/10 15:25:09 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextP.h,v 3.7 1998/10/25 07:11:15 dawes Exp $ */
 
 #ifndef _XawTextP_h
 #define _XawTextP_h
@@ -115,10 +115,9 @@ typedef struct _XawTextMargin {
 } XawTextMargin;
 
 typedef struct _XmuScanline XmuTextUpdate;
-typedef struct _XawTextUndo XawTextUndo;
 
 #define VMargins(ctx)  ((ctx)->text.margin.top + (ctx)->text.margin.bottom)
-#define HMargins(ctx)  ((ctx)->text.margin.left + (ctx)->text.margin.right)
+#define HMargins(ctx)  ((ctx)->text.left_margin + (ctx)->text.margin.right)
 #define RVMargins(ctx) ((ctx)->text.r_margin.top + (ctx)->text.r_margin.bottom)
 #define RHMargins(ctx) ((ctx)->text.r_margin.left + (ctx)->text.r_margin.right)
 
@@ -198,12 +197,10 @@ typedef struct _TextPart {
   Widget file_insert;		     /* The file insert popup widget */
 #ifndef notdef
   XmuTextUpdate *update;	     /* Position intervals to update */
-    XawTextUndo *undo;
-
-    Boolean undo_state;		     /* last action was undo/redo ? */
-    Boolean enable_undo;	     /* settable resource */
-    Boolean pad1, pad2;	  /* XXX 32 bit pad to undo_state and enable_undo */
-
+    XtPointer text3;
+    short text4;
+    unsigned char kill_ring;
+    Boolean selection_state;
   int text5;
 #else
   XmuTextUpdate *update;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.31 1998/10/11 10:20:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.32 1998/10/25 07:12:08 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -60,7 +60,8 @@
  */
 #define OPTION_MASK 0x20001000	/* pci_retry | interleave */
 
-static void MGA3026StoreColors(ScrnInfoPtr, xColorItem*, int);
+static void MGA3026LoadPalette(ScrnInfoPtr, int, int*, LOCO*, short);
+static void MGA3026LoadPalette16(ScrnInfoPtr, int, int*, LOCO*, short);
 static void MGA3026SavePalette(ScrnInfoPtr, unsigned char*);
 static void MGA3026RestorePalette(ScrnInfoPtr, unsigned char*);
 static void MGA3026RamdacInit(ScrnInfoPtr);
@@ -903,7 +904,9 @@ MGA3026RamdacInit(ScrnInfoPtr pScrn)
 				HARDWARE_CURSOR_TRUECOLOR_AT_8BPP |
 				HARDWARE_CURSOR_SOURCE_MASK_NOT_INTERLEAVED;
 
-    MGAdac->StoreColors 	= MGA3026StoreColors;
+    MGAdac->LoadPalette 	= (pScrn->depth == 16) ?
+				   MGA3026LoadPalette16 :
+				   MGA3026LoadPalette;
 
     MGAdac->ClockFrom = X_PROBED;
     if ( pMga->Chipset == PCI_CHIP_MGA2064 && pMga->Bios2.PinID == 0 )
@@ -1008,6 +1011,7 @@ MGA3026RamdacInit(ScrnInfoPtr pScrn)
     pMga->HasFBitBlt = !(pMga->Bios.FeatFlag & 0x00000001);
 }
 
+#if 0
 static void
 MGA3026StoreColors(ScrnInfoPtr pScrn, xColorItem* pdef, int ndef)
 {
@@ -1025,6 +1029,58 @@ MGA3026StoreColors(ScrnInfoPtr pScrn, xColorItem* pdef, int ndef)
         outTi3026dreg(TVP3026_COL_PAL, pal[0]);
         outTi3026dreg(TVP3026_COL_PAL, pal[1]);
         outTi3026dreg(TVP3026_COL_PAL, pal[2]);
+    }
+}
+#endif
+
+void MGA3026LoadPalette(
+    ScrnInfoPtr pScrn, 
+    int numColors, 
+    int *indicies,
+    LOCO *colors,
+    short visualClass
+){
+    MGAPtr pMga = MGAPTR(pScrn);
+    int i, index, shift;
+
+    shift = (pScrn->depth == 15) ? 3 : 0;
+
+    for(i = 0; i < numColors; i++) {
+	index = indicies[i];
+        outTi3026dreg(MGA1064_WADR_PAL, index << shift);
+        outTi3026dreg(MGA1064_COL_PAL, colors[index].red);
+        outTi3026dreg(MGA1064_COL_PAL, colors[index].green);
+        outTi3026dreg(MGA1064_COL_PAL, colors[index].blue);
+    }
+}
+
+/* special one for 565 mode */
+void MGA3026LoadPalette16(
+    ScrnInfoPtr pScrn, 
+    int numColors, 
+    int *indicies,
+    LOCO *colors,
+    short visualClass
+){
+    MGAPtr pMga = MGAPTR(pScrn);
+    int i, index;
+
+    for(i = 0; i < numColors; i++) {
+	index = indicies[i];
+        outTi3026dreg(MGA1064_WADR_PAL, index << 2);
+        outTi3026dreg(MGA1064_COL_PAL, colors[index >> 1].red);
+        outTi3026dreg(MGA1064_COL_PAL, colors[index].green);
+        outTi3026dreg(MGA1064_COL_PAL, colors[index >> 1].blue);
+
+	/* we have to write 2 indicies since the pixel X on the
+	   TVP3026 has green colors at different locations from
+	   the red and blue colors */
+	if(index <= 31) {
+	    outTi3026dreg(MGA1064_WADR_PAL, index << 3);
+            outTi3026dreg(MGA1064_COL_PAL, colors[index].red);
+            outTi3026dreg(MGA1064_COL_PAL, colors[(index << 1) + 1].green);
+            outTi3026dreg(MGA1064_COL_PAL, colors[index].blue);
+	}
     }
 }
 

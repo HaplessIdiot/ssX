@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Converters.c,v 3.9 1998/08/16 10:24:12 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Converters.c,v 3.10 1998/09/05 06:36:06 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -35,8 +35,6 @@
 #include <X11/Xaw/Simple.h>
 #include <X11/Xaw/XawInit.h>
 #include "Private.h"
-
-typedef struct _XawDL XawDisplayList;
 
 /*
  * Definitions

@@ -18,7 +18,12 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
-/* $XFree86: xc/lib/Xaw/XawInit.h,v 1.4 1998/08/20 13:59:20 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/XawInit.h,v 1.5 1998/10/03 08:42:33 dawes Exp $ */
+
+#ifndef _XawInit_h
+#define _XawInit_h
+
+typedef struct XawDL XawDisplayList;
 
 _XFUNCPROTOBEGIN
 
@@ -26,3 +31,5 @@ void XawInitializeWidgetSet(void);
 void XawInitializeDefaultConverters(void);
 
 _XFUNCPROTOEND
+
+#endif /* _XawInit_h */

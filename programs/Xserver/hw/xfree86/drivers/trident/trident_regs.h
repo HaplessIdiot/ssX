@@ -21,22 +21,23 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.1 1998/09/06 13:48:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.2 1998/09/13 05:23:42 dawes Exp $ */
 
 /* General Registers */
 #define SPR	0x1F		/* Software Programming Register (videoram) */
 
 /* 3C4 */
+#define RevisionID 0x09
 #define ConfPort 0x0C
 #define NewMode2 0x0D
 #define OldMode2 0x0D
 #define OldMode1 0x0E
 #define NewMode1 0x0E
+#define ClockLow 0x18
+#define ClockHigh 0x19
 
 /* 3x4 */
-#define RevisionID 0x09
-#define VCLK_A 0x18
-#define VCLK_B 0x19
+#define Offset 0x13
 #define CRTCModuleTest 0x1E
 #define FIFOControl 0x20
 #define LinearAddReg 0x21
@@ -46,10 +47,29 @@
 #define InterfaceSel 0x2A
 #define Performance 0x2F
 #define GraphEngReg 0x36
+#define I2C 0x37
 #define PixelBusReg 0x38
 #define PCIReg 0x39
 #define DRAMControl 0x3A
-#define PCIRetry 0x62
+#define CursorXLow 0x40
+#define CursorXHigh 0x41
+#define CursorYLow 0x42
+#define CursorYHigh 0x43
+#define CursorLocLow 0x44
+#define CursorLocHigh 0x45
+#define CursorXOffset 0x46
+#define CursorYOffset 0x47
+#define CursorFG1 0x48
+#define CursorFG2 0x49
+#define CursorFG3 0x4A
+#define CursorFG4 0x4B
+#define CursorBG1 0x4C
+#define CursorBG2 0x4D
+#define CursorBG3 0x4E
+#define CursorBG4 0x4F
+#define CursorControl 0x50
+#define PCIRetry 0x55
+#define Enhancement0 0x62
 #define TVinterface 0xC0
 #define TVMode 0xC1
 #define ClockControl 0xCF
@@ -85,6 +105,7 @@
 #define GER_STATUS	0x20		
 #define		GE_BUSY	0x80
 #define GER_OPERMODE	0x22		/* Byte for 9440, Word for 96xx */
+#define		DST_ENABLE	0x200	/* Destination Transparency */
 #define GER_COMMAND	0x24		
 #define		GE_NOP		0x00	/* No Operation */
 #define		GE_BLT		0x01	/* BitBLT ROP3 only */
@@ -121,6 +142,9 @@
 #define GER_DIM_XY	0x40
 #define GER_DIM_X	0x40		/* Word */
 #define GER_DIM_Y	0x42		/* Word */
+#define GER_CKEY	0x68		/* Long */
+#define GER_FPATCOL	0x78
+#define GER_BPATCOL	0x7C
 #define GER_PATTERN	0x80		/* from 0x2180 to 0x21FF */
 
 /* Additional - Graphics Engine for 96xx */
@@ -130,6 +154,10 @@
 #define GER_DSTCLIP_XY	0x4C
 #define GER_DSTCLIP_X	0x4C		/* Word */
 #define GER_DSTCLIP_Y	0x4E		/* Word */
+
+/* Defines for IMAGE Graphics Engine */
+#define IMAGE_GE_STATUS 	0x64
+#define IMAGE_GE_DRAWENV	0x20
 
 /* ROPS */
 #define TGUIROP_0		0x00		/* 0 */
@@ -163,7 +191,6 @@
 #define TGUIROP_XNOR_PAT	0xA5		/* PDxn */
 
 #define REPLICATE(x)  				\
-	x = x & ((1 << pScrn->bitsPerPixel) - 1);	\
 	if (pScrn->bitsPerPixel < 32) {		\
 		x |= x << 16;			\
 		if (pScrn->bitsPerPixel < 16)	\
@@ -180,7 +207,7 @@
 
 /* Merge XY */
 #define XY_MERGE(x,y) \
-		(((unsigned long)(y) << 16) | ((unsigned long)(x) & 0xffff))
+		((((CARD32)(y)&0xFFFF) << 16) | ((CARD32)(x) & 0xffff))
 
 /* MMIO */
 #ifndef PC98_TGUI
@@ -196,70 +223,83 @@
 	*(unsigned int *)((char*)pTrident->IOBase+r)
 
 #ifdef TRIDENT_MMIO
+#define IMAGEBUSY(b) \
+		b = (*(CARD32 *)(pTrident->IOBase+IMAGE_GE_STATUS)) & 0xF8800000;
 #define BLTBUSY(b) \
-		b = (*(unsigned char *)(tguiMMIOBase + GER_STATUS)) & GE_BUSY;
+		b = (*(unsigned char *)(pTrident->IOBase+GER_STATUS)) & GE_BUSY;
 #define OLDBLTBUSY(b) \
-		b = (*(unsigned char *)(tguiMMIOBase + OLDGER_STATUS))&GE_BUSY;
+		b = (*(unsigned char *)(pTrident->IOBase+OLDGER_STATUS))&GE_BUSY;
+#define IMAGE_STATUS(c) \
+		*(CARD32 *)(pTrident->IOBase + IMAGE_GE_STATUS) = c;
 #define TGUI_STATUS(c) \
-		*(unsigned char *)(tguiMMIOBase + GER_STATUS) = c;
+		*(unsigned char *)(pTrident->IOBase + GER_STATUS) = c;
 #define OLDTGUI_STATUS(c) \
-		*(unsigned char *)(tguiMMIOBase + OLDGER_STATUS) = c;
+		*(unsigned char *)(pTrident->IOBase + OLDGER_STATUS) = c;
 #define TGUI_OPERMODE(c) \
-		*(unsigned short *)(tguiMMIOBase + GER_OPERMODE) = c;
+		*(unsigned short *)(pTrident->IOBase + GER_OPERMODE) = c;
 #define OLDTGUI_OPERMODE(c) \
 		{ \
-			*(unsigned short *)(tguiMMIOBase + OLDGER_MWIDTH) = \
+			*(unsigned short *)(pTrident->IOBase + OLDGER_MWIDTH) = \
 				            vga256InfoRec.displayWidth - 1; \
-			*(unsigned char *)(tguiMMIOBase + OLDGER_MFORMAT) = c; \
+			*(unsigned char *)(pTrident->IOBase + OLDGER_MFORMAT) = c; \
 		}
 #define TGUI_FCOLOUR(c) \
-		*(unsigned long *)(tguiMMIOBase + GER_FCOLOUR) = c;
+		*(CARD32 *)(pTrident->IOBase + GER_FCOLOUR) = c;
+#define TGUI_FPATCOL(c) \
+		*(CARD32 *)(pTrident->IOBase + GER_FPATCOL) = c;
 #define OLDTGUI_FCOLOUR(c) \
-		*(unsigned long *)(tguiMMIOBase + OLDGER_FCOLOUR) = c;
+		*(CARD32 *)(pTrident->IOBase + OLDGER_FCOLOUR) = c;
 #define TGUI_BCOLOUR(c) \
-		*(unsigned long *)(tguiMMIOBase + GER_BCOLOUR) = c;
+		*(CARD32 *)(pTrident->IOBase + GER_BCOLOUR) = c;
+#define TGUI_BPATCOL(c) \
+		*(CARD32 *)(pTrident->IOBase + GER_BPATCOL) = c;
 #define OLDTGUI_BCOLOUR(c) \
-		*(unsigned long *)(tguiMMIOBase + OLDGER_BCOLOUR) = c;
+		*(CARD32 *)(pTrident->IOBase + OLDGER_BCOLOUR) = c;
+#define IMAGE_DRAWENV(c) \
+		*(CARD32 *)(pTrident->IOBase + IMAGE_GE_DRAWENV) = c;
 #define TGUI_DRAWFLAG(c) \
-		*(unsigned long *)(tguiMMIOBase + GER_DRAWFLAG) = c;
+		*(CARD32 *)(pTrident->IOBase + GER_DRAWFLAG) = c;
 #define OLDTGUI_STYLE(c) \
-		*(unsigned short *)(tguiMMIOBase + OLDGER_STYLE) = c;
+		*(unsigned short *)(pTrident->IOBase + OLDGER_STYLE) = c;
 #define TGUI_FMIX(c) \
-		*(unsigned char *)(tguiMMIOBase + GER_FMIX) = c;
+		*(unsigned char *)(pTrident->IOBase + GER_FMIX) = c;
 #define OLDTGUI_FMIX(c) \
-		*(unsigned char *)(tguiMMIOBase + OLDGER_FMIX) = c;
+		*(unsigned char *)(pTrident->IOBase + OLDGER_FMIX) = c;
 #define OLDTGUI_BMIX(c) \
-		*(unsigned char *)(tguiMMIOBase + OLDGER_BMIX) = c;
+		*(unsigned char *)(pTrident->IOBase + OLDGER_BMIX) = c;
 #define TGUI_DIM_XY(w,h) \
-		*(unsigned long *)(tguiMMIOBase + GER_DIM_XY) = XY_MERGE(w-1,h-1);
+		*(CARD32 *)(pTrident->IOBase + GER_DIM_XY) = XY_MERGE(w-1,h-1);
 #define OLDTGUI_DIMXY(w,h) \
-		*(unsigned long *)(tguiMMIOBase + OLDGER_DIMXY) = XY_MERGE(w-1,h-1);
+		*(CARD32 *)(pTrident->IOBase + OLDGER_DIMXY) = XY_MERGE(w-1,h-1);
 #define TGUI_SRC_XY(x,y) \
-		*(unsigned long *)(tguiMMIOBase + GER_SRC_XY) = XY_MERGE(x,y);
+		*(CARD32 *)(pTrident->IOBase + GER_SRC_XY) = XY_MERGE(x,y);
 #define TGUI_DEST_XY(x,y) \
-		*(unsigned long *)(tguiMMIOBase + GER_DEST_XY) = XY_MERGE(x,y);
+		*(CARD32 *)(pTrident->IOBase + GER_DEST_XY) = XY_MERGE(x,y);
 #define OLDTGUI_DESTXY(x,y) \
-		*(unsigned long *)(tguiMMIOBase + OLDGER_DESTXY) = XY_MERGE(x,y);
+		*(CARD32 *)(pTrident->IOBase + OLDGER_DESTXY) = XY_MERGE(x,y);
 #define OLDTGUI_DESTLINEAR(c) \
-		*(unsigned long *)(tguiMMIOBase + OLDGER_DESTLINEAR) = c;
+		*(CARD32 *)(pTrident->IOBase + OLDGER_DESTLINEAR) = c;
 #define TGUI_SRCCLIP_XY(x,y) \
-		*(unsigned long *)(tguiMMIOBase + GER_SRCCLIP_XY) = XY_MERGE(x,y);
+		*(CARD32 *)(pTrident->IOBase + GER_SRCCLIP_XY) = XY_MERGE(x,y);
 #define TGUI_DSTCLIP_XY(x,y) \
-		*(unsigned long *)(tguiMMIOBase + GER_DSTCLIP_XY) = XY_MERGE(x,y);
+		*(CARD32 *)(pTrident->IOBase + GER_DSTCLIP_XY) = XY_MERGE(x,y);
 #define TGUI_PATLOC(addr) \
-		*(unsigned short *)(tguiMMIOBase +GER_PATLOC) = addr;
+		*(unsigned short *)(pTrident->IOBase +GER_PATLOC) = addr;
+#define TGUI_CKEY(c) \
+		*(CARD32 *)(pTrident->IOBase + GER_CKEY) = c;
+#define IMAGE_OUT(addr, c) \
+		*(CARD32 *)(pTrident->IOBase + addr) = c;
 #define TGUI_OUTB(addr, c) \
-		*(unsigned char *)(tguiMMIOBase + addr) = c;
+		*(unsigned char *)(pTrident->IOBase + addr) = c;
 #define TGUI_COMMAND(c) \
 		{ \
-		TGUISync(); \
-		*(unsigned char *)(tguiMMIOBase + GER_COMMAND) = c; \
+		*(unsigned char *)(pTrident->IOBase + GER_COMMAND) = c; \
 		}
 #define OLDTGUI_COMMAND(c) \
 		{ \
 		OLDTGUI_OPERMODE(GE_OP); \
 		OLDTGUISync(); \
-		*(unsigned long *)(tguiMMIOBase + OLDGER_COMMAND) = c; \
+		*(CARD32 *)(pTrident->IOBase + OLDGER_COMMAND) = c; \
 		}
 #else
 #define BLTBUSY(b) \
@@ -287,6 +327,8 @@
 		}
 #define TGUI_FCOLOUR(c) \
 		outl(GER_BASE+GER_FCOLOUR, c);
+#define TGUI_FPATCOL(c) \
+		outl(GER_BASE+GER_FPATCOL, c);
 #define OLDTGUI_FCOLOUR(c) \
 		{	\
 			outb(GER_INDEX, OLDGER_FCOLOUR); \
@@ -294,6 +336,8 @@
 		}
 #define TGUI_BCOLOUR(c) \
 		outl(GER_BASE+GER_BCOLOUR, c);
+#define TGUI_BPATCOL(c) \
+		outl(GER_BASE+GER_BPATCOL, c);
 #define OLDTGUI_BCOLOUR(c) \
 		{	\
 			outb(GER_INDEX, OLDGER_BCOLOUR); \
@@ -345,6 +389,8 @@
 		outl(GER_BASE+GER_DSTCLIP_XY, XY_MERGE(x,y));
 #define TGUI_PATLOC(addr) \
 		outw(GER_BASE+GER_PATLOC, addr);
+#define TGUI_CKEY(c) \
+		outl(GER_BASE+GER_CKEY, c);
 #define TGUI_OUTB(addr, c) \
 		outb(GER_BASE+addr, c);
 #define TGUI_OUTW(addr, c) \

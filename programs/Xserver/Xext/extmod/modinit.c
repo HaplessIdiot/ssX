@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.c,v 1.2 1998/08/13 14:45:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.c,v 1.3 1998/10/06 06:08:26 dawes Exp $ */
 
 /*
  *
@@ -109,6 +109,11 @@ extern void XFree86DGAExtensionInit(INITARGS);
 #ifdef DPMSExtension
 extern void DPMSExtensionInit(INITARGS);
 #include "dpmsstr.h"
+#endif
+
+#ifdef XANTI
+extern void XAntiExtensionInit(INITARGS);
+#include "XAntiproto.h"
 #endif
 
 #ifdef TOGCUP
@@ -249,6 +254,14 @@ ExtensionModule extensionModules[] = {
 	XvName,
 	NULL,
 	XvRegister
+    },
+#endif
+#ifdef XANTI
+    {
+	XAntiExtensionInit,
+	XAntiName,
+	NULL,
+	NULL
     },
 #endif
     {				/* DON'T delete this entry ! */

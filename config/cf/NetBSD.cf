@@ -2,7 +2,7 @@ XCOMM platform:  $XConsortium: NetBSD.cf /main/16 1996/10/31 14:47:14 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.65 1998/08/16 10:24:02 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.66 1998/09/06 04:46:49 dawes Exp $
 
 
 #ifndef OSName
@@ -125,11 +125,13 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  *
  * XXX May not be correct on NetBSD/pmax (ELF, but might not have
  * working shared libs).
+ *
+ * Disabled for NetBSD/vax until I figure out the scheme. --CS 
  */
 #if ((OSMajorVersion > 0) && \
      !defined(AlphaArchitecture) && !defined(MipsArchitecture)) || \
     UseElfFormat
-#ifndef Arm32Architecture
+#if !defined(Arm32Architecture) && !defined(VaxArchitecture)
 #  ifndef DoLoadableServer
 #  define DoLoadableServer	YES
 #  endif
@@ -393,4 +395,11 @@ sed 's/\.[0-9]*$$//'`
  */
 #ifdef AlphaArchitecture
 #define	BuildServer	NO
+#endif
+
+/*
+ * Definition for compiling on VAX machines
+ */
+#ifdef VaxArchitecture
+#define BuildServer	NO
 #endif

@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.55 1998/10/11 10:20:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.56 1998/10/25 07:12:09 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -98,6 +98,7 @@
 
 #include "xaa.h"
 #include "xf86_8plus24.h"
+#include "xf86cmap.h"
 
 
 /*
@@ -849,7 +850,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
-#if SAMPLE
+
     /*
      * If the driver can do gamma correction, it should call xf86SetGamma()
      * here.
@@ -862,7 +863,6 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	    return FALSE;
 	}
     }
-#endif
 
     bytesPerPixel = pScrn->bitsPerPixel / 8;
 
@@ -1674,6 +1674,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     ScrnInfoPtr pScrn;
     vgaHWPtr hwp;
     MGAPtr pMga;
+    MGARamdacPtr MGAdac;
     int ret;
     VisualPtr visual;
 
@@ -1683,8 +1684,8 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pScrn = xf86Screens[pScreen->myNum];
 
     hwp = VGAHWPTR(pScrn);
-
     pMga = MGAPTR(pScrn);
+    MGAdac = &pMga->Dac;
 
     /* Map the MGA memory and MMIO areas */
     if (!MGAMapMem(pScrn))
@@ -1792,9 +1793,6 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!ret)
 	return FALSE;
 
-    xf86SetBlackWhitePixels(pScreen);
-
-    MGAHandleColormaps(pScreen, pScrn);
 
     if (pScrn->bitsPerPixel > 8) {
         /* Fixup RGB ordering */
@@ -1811,27 +1809,40 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	}
     }
 
+    xf86SetBlackWhitePixels(pScreen);
+
     if (!pMga->NoAccel)
 	MGAStormAccelInit(pScreen);
 
     miInitializeBackingStore(pScreen);
 
-    if(pMga->Overlay8Plus24)
-	xf86Overlay8Plus24Init(pScreen, TRANSPARENCY_KEY, KEY_COLOR, FALSE, 
-		 pMga->NoAccel ? NULL : &XAAOverlayFBfuncs); 
+    if(pMga->Overlay8Plus24) {
+	if(!xf86Overlay8Plus24Init(pScreen, TRANSPARENCY_KEY, KEY_COLOR, FALSE, 
+		 pMga->NoAccel ? NULL : &XAAOverlayFBfuncs))
+	    return FALSE;
+    }
 
-    /* Initialise cursor functions */
+    /* Initialize software cursor.  
+	Must precede creation of the default colormap */
     miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
-    if (pMga->HWCursor) { /* Initialize HW cursor layer */
+    /* Initialize HW cursor layer. 
+	Must follow software cursor initialization*/
+    if (pMga->HWCursor) { 
 	if(!MGAHWCursorInit(pScreen))
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
 		"Hardware cursor initialization failed\n");
     }
 
-
     /* Initialise default colourmap */
     if (!miCreateDefColormap(pScreen))
+	return FALSE;
+
+    /* Initialize colormap layer.  
+	Must follow initialization of the default colormap */
+    if(!xf86HandleColormaps(pScreen, 256, 8, MGAdac->LoadPalette, 
+	(pMga->Overlay8Plus24 ? 0 : CMAP_PALETTED_TRUECOLOR) |
+			CMAP_RELOAD_ON_MODE_SWITCH))	
 	return FALSE;
 
 #ifdef DPMSExtension

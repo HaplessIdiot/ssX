@@ -2,12 +2,14 @@
  * MGA-1064, MGA-G100, MGA-G200 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.10 1998/10/21 06:12:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.11 1998/10/25 07:12:08 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
  * new server design (DHD).
  */                     
+
+#include "colormapst.h"
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -74,6 +76,7 @@ static void MGAGRamdacInit(ScrnInfoPtr);
 static void MGAGSave(ScrnInfoPtr, vgaRegPtr, MGARegPtr, Bool);
 static void MGAGRestore(ScrnInfoPtr, vgaRegPtr, MGARegPtr, Bool);
 static Bool MGAGInit(ScrnInfoPtr, DisplayModePtr);
+static void MGAGLoadPalette(ScrnInfoPtr, int, int*, LOCO*, short);
 
 /*
  * MGAGCalcClock - Calculate the PLL settings (m, n, p, s).
@@ -452,6 +455,8 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	/*
 	 * init palette for palettized depths
 	 */
+#if 0
+   /* Not necessary with the new colormap layer */
 	for(i = 0; i < 256; i++) {
 		switch(pScrn->bitsPerPixel) 
 		{
@@ -468,6 +473,7 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 			break;
 		}
 	}
+#endif
 
 	return(TRUE);
 }
@@ -475,6 +481,9 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 /*
  * MGAGStoreColors
  */
+
+#if 0
+  /* not needed any more */
 static void
 MGAGStoreColors(ScrnInfoPtr pScrn, xColorItem* pdef, int ndef)
 {
@@ -492,6 +501,26 @@ MGAGStoreColors(ScrnInfoPtr pScrn, xColorItem* pdef, int ndef)
         outMGAdreg(MGA1064_COL_PAL, pal[0]);
         outMGAdreg(MGA1064_COL_PAL, pal[1]);
         outMGAdreg(MGA1064_COL_PAL, pal[2]);
+    }
+}
+#endif
+
+void MGAGLoadPalette(
+    ScrnInfoPtr pScrn, 
+    int numColors, 
+    int *indicies,
+    LOCO *colors,
+    short visualClass
+){
+    MGAPtr pMga = MGAPTR(pScrn);
+    int i, index;
+
+    for(i = 0; i < numColors; i++) {
+	index = indicies[i];
+        outMGAdreg(MGA1064_WADR_PAL, index);
+        outMGAdreg(MGA1064_COL_PAL, colors[index].red);
+        outMGAdreg(MGA1064_COL_PAL, colors[index].green);
+        outMGAdreg(MGA1064_COL_PAL, colors[index].blue);
     }
 }
 
@@ -756,7 +785,7 @@ MGAGRamdacInit(ScrnInfoPtr pScrn)
     				HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_64 |
     				HARDWARE_CURSOR_TRUECOLOR_AT_8BPP;
 
-    MGAdac->StoreColors 	   = MGAGStoreColors;
+    MGAdac->LoadPalette 	   = MGAGLoadPalette;
 
     if ( pMga->Bios2.PinID && pMga->Bios2.PclkMax != 0xFF )
     {

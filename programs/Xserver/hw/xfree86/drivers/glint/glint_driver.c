@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.11 1998/09/26 08:34:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.12 1998/10/11 10:20:29 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -128,11 +128,11 @@ static SymTabRec GLINTChipsets[] = {
 };
 
 static PciChipsets GLINTPciChipsets[] = {
-    { PCI_VENDOR_TI_CHIP_PERMEDIA2,	 PCI_VENDOR_TI_CHIP_PERMEDIA2,	    RES_NONE },
-    { PCI_VENDOR_TI_CHIP_PERMEDIA,	 PCI_VENDOR_TI_CHIP_PERMEDIA,	    RES_NONE },
-    { PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V, PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V, RES_NONE },
-    { PCI_VENDOR_3DLABS_CHIP_PERMEDIA2,	 PCI_VENDOR_3DLABS_CHIP_PERMEDIA2,  RES_NONE },
-    { PCI_VENDOR_3DLABS_CHIP_PERMEDIA,	 PCI_VENDOR_3DLABS_CHIP_PERMEDIA,   RES_NONE },
+    { PCI_VENDOR_TI_CHIP_PERMEDIA2,	 PCI_VENDOR_TI_CHIP_PERMEDIA2,	    RES_SHARED_VGA },
+    { PCI_VENDOR_TI_CHIP_PERMEDIA,	 PCI_VENDOR_TI_CHIP_PERMEDIA,	    RES_SHARED_VGA },
+    { PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V, PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V, RES_SHARED_VGA },
+    { PCI_VENDOR_3DLABS_CHIP_PERMEDIA2,	 PCI_VENDOR_3DLABS_CHIP_PERMEDIA2,  RES_SHARED_VGA },
+    { PCI_VENDOR_3DLABS_CHIP_PERMEDIA,	 PCI_VENDOR_3DLABS_CHIP_PERMEDIA,   RES_SHARED_VGA },
     { PCI_VENDOR_3DLABS_CHIP_500TX,	 PCI_VENDOR_3DLABS_CHIP_500TX,	    RES_NONE },
     { PCI_VENDOR_3DLABS_CHIP_MX,	 PCI_VENDOR_3DLABS_CHIP_MX,	    RES_NONE },
     { -1,				 -1,				    -1 }
@@ -689,6 +689,8 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     ClockRangePtr clockRanges;
     char *mod = NULL;
 
+    xf86AddControlledResource(pScrn, MEM_IO);
+
     /*
      * Note: This function is only called once at server startup, and
      * not at the start of each server generation.  This means that
@@ -701,6 +703,8 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
      * Per-generation data should be allocated with
      * AllocateScreenPrivateIndex() from the ScreenInit() function.
      */
+
+    xf86EnableAccess(&pScrn->Access);
 
     /* The vgahw module should be loaded here when needed */
     if (!xf86LoadSubModule(pScrn, "vgahw"))
@@ -801,16 +805,20 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, GLINTOptions);
 
     /* Set the bits per RGB for 8bpp mode */
+#if 0
     if (pScrn->depth == 8) {
 	/* XXX This is here just to test options. */
 	/* Default to 8 */
+#endif
 	pScrn->rgbBits = 8;
 	if (xf86GetOptValInteger(GLINTOptions, OPTION_RGB_BITS,
 				 &pScrn->rgbBits)) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Bits per RGB set to %d\n",
 		       pScrn->rgbBits);
 	}
+#if 0
     }
+#endif
     from = X_DEFAULT;
     if (xf86IsOptionSet(GLINTOptions, OPTION_MEM_CLK)) {
 	from = X_CONFIG;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.34 1998/10/04 09:39:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.35 1998/10/06 06:08:27 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -165,6 +165,9 @@ extern void XcupExtensionInit(INITARGS);
 #ifdef DPMSExtension
 extern void DPMSExtensionInit(INITARGS);
 #endif
+#ifdef XANTI
+extern void XAntiExtensionInit(INITARGS);
+#endif
 
 #ifndef XFree86LOADER
 
@@ -257,8 +260,11 @@ InitExtensions(argc, argv)
 #ifdef TOGCUP
     XcupExtensionInit();
 #endif
-#if defined(DPMSExtension) && !defined(PRINT_ONLY_SERVER)
+#if defined(DPMSExtension)
     DPMSExtensionInit();
+#endif
+#ifdef XANTI
+    XAntiExtensionInit();
 #endif
 #if defined(XF86VIDMODE) && !defined(PRINT_ONLY_SERVER)
     XFree86VidModeExtensionInit();
@@ -268,9 +274,6 @@ InitExtensions(argc, argv)
 #endif
 #if defined(XFreeXDGA) && !defined(PRINT_ONLY_SERVER)
     XFree86DGAExtensionInit();
-#endif
-#if defined(DPMSExtension)
-    DPMSExtensionInit();
 #endif
 #ifdef GLXEXT
 #ifndef XPRINT	/* we don't want Glx in the Xprint server */
@@ -326,6 +329,7 @@ ExtensionModule extension[] =
 #else
     { NULL, "NOXINERAMA", NULL, NULL },
 #endif
+    { NULL, "XAnti", NULL, NULL };
     { NULL, NULL, NULL, NULL }
 };
 
@@ -396,6 +400,7 @@ InitExtensions(argc, argv)
 #ifdef PANORAMIX
     extension[31].initFunc = PanoramiXExtensionInit;
 #endif
+    /* 31 - XAnti */
 
 #endif
     for (i = 0; extension[i].name != NULL; i++) 

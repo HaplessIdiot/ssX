@@ -17,7 +17,7 @@ XCOMM $TOG: Imake.cf /main/30 1998/04/28 13:55:25 barstow $
  *
  *     4.  Create a .cf file with the name given by MacroFile.
  */
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.43 1998/10/02 06:14:58 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.44 1998/10/05 13:21:46 dawes Exp $
 
 #if defined(clipper) || defined(__clipper__)
 # undef clipper
@@ -145,6 +145,10 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.43 1998/10/02 06:14:58 dawes Exp $
 # ifdef __arm32__
 #   define Arm32Architecture
 #   undef __arm32__
+# endif
+# ifdef __vax__
+#   define VaxArchitecture
+#   undef __vax__
 # endif
 #endif /* NetBSD */
 

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.28 1998/09/06 04:46:50 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.29 1998/10/02 06:15:02 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -244,6 +244,13 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.28 1998/09/06 04:46:50 dawes Exp $
 #ifndef BuildXvLibrary
 #define BuildXvLibrary		BuildXvExt
 #endif
+#ifndef BuildXantiExt
+#define BuildXantiExt		NO
+#endif
+#ifndef BuildXantiLibrary
+#define BuildXantiLibrary	BuildXantiExt
+#endif
+
 
 #ifndef BuildFreeType
 #define BuildFreeType		NO
@@ -573,6 +580,14 @@ $(FONTDIR)/100dpi/,$(FONTDIR)/75dpi/
 #endif
 #endif
 
+#ifndef XantiExtensionDefines
+#if BuildXantiExt
+#define XantiExtensionDefines -DXANTI
+#else
+#define XantiExtensionDefines /**/
+#endif
+#endif
+
 #ifndef RECORDDefines
 #if BuildRECORD
 #define RECORDDefines -DXRECORD
@@ -640,8 +655,8 @@ $(FONTDIR)/100dpi/,$(FONTDIR)/75dpi/
 	XCMiscDefines RECORDDefines \
 	PexDefines ShmDefines XieDefines BigReqDefines VidTuneExtensionDefines \
 	XF86MiscExtensionDefines DBEDefines DPMSDefines EVIDefines \
-	ScreenSaverExtensionDefines XvExtensionDefines GlxDefines \
-	SiteExtensionDefines
+	ScreenSaverExtensionDefines XvExtensionDefines XantiExtensionDefines \
+	GlxDefines SiteExtensionDefines
 #endif
 #define ExtensionDefines BaseExtensionDefines ExtensionOSDefines
 #endif /* ExtensionDefines */
@@ -1137,6 +1152,20 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #endif
 #endif
 
+#if BuildXantiLibrary
+#ifndef SharedLibXanti
+#define SharedLibXanti		NO
+#endif
+#ifndef NormalLibXanti
+#define NormalLibXanti		YES
+#endif
+#ifndef DebugLibXanti
+#define DebugLibXanti		NO
+#endif
+#ifndef ProfileLibXanti
+#define ProfileLibXanti		NO
+#endif
+#endif
 
 #ifndef SharedLibXext
 #define SharedLibXext HasSharedLibraries
@@ -1224,6 +1253,19 @@ SharedLibReferences(XV,Xv,$(XVLIBSRC),SOXVREV,SharedXvRev)
 ProjectUnsharedLibReferences(XV,Xv,$(XVLIBSRC),XBuildLibDir)
 #endif
 #endif
+
+#if BuildXantiLibrary
+    XANTILIBSRC = $(LIBSRC)/Xanti
+#if SharedLibXanti
+#ifndef SharedXantiRev
+#define SharedXantiRev 1.0
+#endif
+SharedLibReferences(XANTI,Xanti,$(XANTILIBSRC),SOXANTIREV,SharedXantiRev)
+#else
+ProjectUnsharedLibReferences(XANTI,Xanti,$(XANTILIBSRC),XBuildLibDir)
+#endif
+#endif
+
 
 
 #ifndef SharedLibXau

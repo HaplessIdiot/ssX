@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/AsciiSink.c,v 1.11 1998/10/03 08:41:59 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSink.c,v 1.12 1998/10/25 07:11:12 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -277,10 +277,10 @@ PaintText(Widget w, GC gc, int x, int y, char *buf, int len, Bool clear_bg)
 {
   AsciiSinkObject sink = (AsciiSinkObject)w;
   TextWidget ctx = (TextWidget)XtParent(w);
-  unsigned int width = XTextWidth(sink->ascii_sink.font, buf, len);
+  int width = XTextWidth(sink->ascii_sink.font, buf, len);
 
-  if ((int)width <= -x)		/* Don't draw if we can't see it */
-    return (width);
+  if ((x > XtWidth(ctx)) || width <= -x) /* Don't draw if we can't see it */
+      return (width);
 
   if (clear_bg) {
       XawTextSinkClearToBackground(w, x, y - sink->ascii_sink.font->ascent,
@@ -342,21 +342,22 @@ DisplayText(Widget w, int x, int y,
 
 	  else if (buf[j] == '\t')
 	    {
-	      unsigned int width;
+	      int width;
 
 	      if (j != 0
 		  && (x += PaintText(w, gc, x, y, (char*)buf, j, clear_bg))
 		  >= max_x)
 		  return;
 
-	      width = CharWidth(sink, font, x, '\t');
-	      if (clear_bg)
-		XawTextSinkClearToBackground(w, x, y - font->ascent, width,
-					     font->ascent + font->descent);
-	      else
-		XFillRectangle(XtDisplayOfObject(w), XtWindowOfObject(w),
-			       tabgc, x, y - font->ascent, width,
-			       font->ascent + font->descent);
+	      if ((width = CharWidth(sink, font, x, '\t')) > -x) {
+		  if (clear_bg)
+		      XawTextSinkClearToBackground(w, x, y-font->ascent, width,
+						   font->ascent+font->descent);
+		  else
+		      XFillRectangle(XtDisplayOfObject(w), XtWindowOfObject(w),
+				     tabgc, x, y - font->ascent, width,
+				     font->ascent + font->descent);
+	      }
 
 	      if ((x += width) >= max_x)
 		  return;
