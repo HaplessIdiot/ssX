@@ -23,7 +23,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\" 
-.\" $XFree86: xc/programs/xdm/xdm.man,v 3.21 2001/12/14 20:01:25 dawes Exp $
+.\" $XFree86: xc/programs/xdm/xdm.man,v 3.22tsi Exp $
 .\" 
 .TH XDM 1 __xorgversion__
 .SH NAME
@@ -92,6 +92,13 @@ by
 .I chooser
 or X terminals themselves.
 .PP
+.I Xdm
+can be configured to ignore BroadcastQuery messages from selected hosts.
+This is useful when you don't want the host to appear in menus produced
+by
+.I chooser
+or X terminals themselves.
+.PP
 Because
 .I xdm
 provides the first interface that users will see, it is designed to be
@@ -144,7 +151,7 @@ When the \fIXsession\fP script exits, the session is over.
 At the end of the session, the \fIXreset\fP script is run to clean up,
 the X server is reset, and the cycle starts over.
 .PP
-The file \fI__projectroot__/lib/X11/xdm/xdm-errors\fP will contain error 
+The file \fI __projectroot__/lib/X11/xdm/xdm-errors\fP will contain error 
 messages from
 .I xdm
 and anything output to stderr by \fIXsetup, Xstartup, Xsession\fP
@@ -349,6 +356,13 @@ to pass on to the \fIXsetup\fP,
 A file to checksum to generate the seed of authorization keys.
 This should be a file that changes frequently.
 The default is \fI/dev/mem\fP.
+#ifdef DEV_RANDOM
+.IP \fBDisplayManager.randomDevice\fP
+A file to read 8 bytes from to generate the seed of authorization keys.
+The default is \fI DEV_RANDOM \fP. If this file cannot be read, or if a 
+read blocks for more than 5 seconds, xdm falls back to using a checksum 
+of \fBDisplayManager.randomFile\fP to generate the seed.
+#endif
 .IP \fBDisplayManager.greeterLib\fP
 On systems that support a dynamically-loadable greeter library, the
 name of the library.  The default is
@@ -632,6 +646,11 @@ it can be followed by the optional ``NOBROADCAST'' keyword.
 This can be used to prevent an xdm server from appearing on
 menus based on Broadcast queries.
 .PP
+To only respond to Direct queries for a host or pattern,
+it can be followed by the optional ``NOBROADCAST'' keyword.
+This can be used to prevent an xdm server from appearing on
+menus based on Broadcast queries.
+.PP
 An Indirect entry also contains a host name or pattern,
 but follows it with a list of
 host names or macros to which indirect queries should be sent.
@@ -686,6 +705,23 @@ extract.lcs.mit.edu	xenon.lcs.mit.edu	#force extract to contact xenon
 !xtra.lcs.mit.edu	dummy	#disallow indirect access
 *.lcs.mit.edu	%HOSTS	#all others get to choose
 .fi
+.PP
+If compiled with IPv6 support, multicast address groups may also be included 
+in the list of addresses indirect queries are set to.  Multicast addresses 
+may be followed by an optional / character and hop count. If no hop count is 
+specified, the multicast hop count defaults to 1, keeping the packet on the 
+local network. For IPv4 multicasting, the hop count is used as the TTL.
+.PP
+Examples: 
+.LP
+.ta 2.1i 4.5i
+.nf
+rincewind.sample.net	ff02::1	#IPv6 Multicast to ff02::1
+		#with a hop count of 1
+ponder.sample.net	CHOOSER 239.192.1.1/16  #Offer a menu of hosts
+		#who respond to IPv4 Multicast 
+		# to 239.192.1.1 with a TTL of 16
+.fi
 .SH CHOOSER
 .PP
 For X terminals that do not offer a host menu for use with Broadcast
@@ -725,6 +761,37 @@ and sends another \fBIndirect\fP XDMCP request.
 \fBDisplayManager.choiceTimeout\fP seconds) and forwards the request
 to the chosen host, which starts a session on that display.
 .\"
+.SH LISTEN
+The following configuration directive is also defined for the Xaccess
+configuration file:
+.IP "\fBLISTEN\fP \fIinterface\fP \fI[list of multicast group addresses]\fP"
+\fIinterface\fP may be a hostname or IP addresss representing a
+network interface on this machine, or the wildcard * to represent all
+available network interfaces.
+.PP
+If one or more LISTEN lines are specified, xdm only listens for XDMCP
+connections on the specified interfaces. If multicast group addresses
+are listed on a listen line, xdm joins the multicast groups on the
+given interface.
+.PP
+If no LISTEN lines are given, the original behavior of listening on
+all interfaces is preserved for backwards compatibility.
+Additionally, if no LISTEN is specified, xdm joins the default XDMCP
+IPv6 multicast group, when compiled with IPv6 support.
+.PP
+To disable listening for XDMCP connections altogther, a line of LISTEN
+with no addresses may be specified, or the previously supported method
+of setting DisplayManager.requestPort to 0 may be used.
+.PP
+Examples: 
+.ta 2i 4i
+.nf
+LISTEN * ff02::1	# Listen on all interfaces and to the 
+	# ff02::1 IPv6 multicast group.
+LISTEN 10.11.12.13	# Listen only on this interface, as long 
+	# as no other listen directives appear in 
+	# file. 
+.fi
 .SH "LOCAL SERVER SPECIFICATION"
 .PP
 The resource \fBDisplayManager.servers\fP gives a server specification
@@ -830,6 +897,15 @@ the following environment variables are passed:
 	SHELL	the value of \fBDisplayManager.\fP\fIDISPLAY\fP\fB.systemShell\fP
 	XAUTHORITY	may be set to an authority file
 .fi
+.IP "\fBxlogin.Login.allowRootLogin\fP"
+If set to ``false'', don't allow root (and any other user with uid = 0) to
+log in directly.
+The default is ``true''.
+.IP "\fBxlogin.Login.allowNullPasswd\fP"
+If set to ``true'', allow an otherwise failing password match to succeed
+if the account does not require a password at all.
+The default is ``false'', so only users that have passwords assigned can
+log in.
 .PP
 Note that since \fIxdm\fP grabs the keyboard, any other windows will not be
 able to receive keyboard input.  They will be able to interact with

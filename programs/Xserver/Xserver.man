@@ -22,7 +22,7 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
-.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.24 2003/05/29 21:48:06 herrb Exp $
+.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.25tsi Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH XSERVER 1 __xorgversion__
@@ -294,6 +294,15 @@ enables XDMCP and sends Query packets to the specified
 .B \-broadcast
 enable XDMCP and broadcasts BroadcastQuery packets to the network.  The
 first responding display manager will be chosen for the session.
+.B \-multicast [\fIaddress\fP [\fIhop count\fP]]
+Enable XDMCP and multicast BroadcastQuery packets to the  network.   
+The first responding display manager is chosen for the session.  If an 
+address is specified, the multicast is sent to that address.  If no 
+address is specified, the multicast is sent to the default XDMCP IPv6 
+multicast group.  If a hop count is specified, it is used as the maximum 
+hop count for the multicast.  If no hop count is specified, the multicast 
+is set to a maximum of 1 hop, to prevent the multicast from being routed 
+beyond the local network.
 .TP 8
 .B \-indirect \fIhostname\fP
 enables XDMCP and send IndirectQuery packets to the specified

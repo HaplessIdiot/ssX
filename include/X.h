@@ -53,7 +53,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/include/X.h,v 1.4 2001/01/17 17:53:09 dawes Exp $ */
+/* $XFree86: xc/include/X.h,v 1.5tsi Exp $ */
 
 #define X_PROTOCOL	11		/* current protocol version */
 #define X_PROTOCOL_REVISION 0		/* current minor version */
@@ -299,9 +299,10 @@ are reserved in the protocol for errors and replies. */
 
 /* protocol families */
 
-#define FamilyInternet		0
+#define FamilyInternet		0	/* IPv4 */
 #define FamilyDECnet		1
 #define FamilyChaos		2
+#define FamilyInternetV6	6	/* IPv6 */
 
 /* Property notification */
 

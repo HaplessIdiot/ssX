@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ConnDis.c,v 3.24 2001/12/14 19:53:58 dawes Exp $ */
+/* $XFree86: xc/lib/X11/ConnDis.c,v 3.25tsi Exp $ */
 
 /* 
  * This file contains operating system dependencies.
@@ -701,7 +701,11 @@ auth_ezencode(servername, window, cred_out, len)
         AUTH           *a;
         XDR             xdr;
 
+#if defined(SVR4) && defined(sun)
+        a = authdes_seccreate(servername, window, NULL, NULL);
+#else
         a = (AUTH *)authdes_create(servername, window, NULL, NULL);
+#endif
         if (a == (AUTH *)NULL) {
                 perror("auth_create");
                 return 0;

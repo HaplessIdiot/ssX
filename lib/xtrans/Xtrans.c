@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.28 2002/11/20 23:00:36 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.29tsi Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -78,6 +78,7 @@ from The Open Group.
 #define TRANS_LOCAL_NAMED_INDEX		11
 #define TRANS_LOCAL_ISC_INDEX		12
 #define TRANS_LOCAL_SCO_INDEX		13
+#define TRANS_SOCKET_INET6_INDEX	14
 
 
 static
@@ -90,6 +91,9 @@ Xtransport_table Xtransports[] = {
 #if defined(TCPCONN)
     { &TRANS(SocketTCPFuncs),	TRANS_SOCKET_TCP_INDEX },
     { &TRANS(SocketINETFuncs),	TRANS_SOCKET_INET_INDEX },
+#if defined(IPv6) && defined(AF_INET6)
+    { &TRANS(SocketINET6Funcs),	TRANS_SOCKET_INET6_INDEX },
+#endif /* IPv6 */
 #endif /* TCPCONN */
 #if defined(DNETCONN)
     { &TRANS(DNETFuncs),	TRANS_DNET_INDEX },
@@ -137,7 +141,7 @@ void
 TRANS(FreeConnInfo) (XtransConnInfo ciptr)
 
 {
-    PRMSG (3,"FreeConnInfo(%x)\n", ciptr, 0, 0);
+    PRMSG (3,"FreeConnInfo(%p)\n", ciptr, 0, 0);
 
     if (ciptr->addr)
 	xfree (ciptr->addr);
@@ -169,6 +173,7 @@ TRANS(SelectTransport) (char *protocol)
      */
 
     strncpy (protobuf, protocol, PROTOBUFSIZE - 1);
+    protobuf[PROTOBUFSIZE-1] = '\0';
 
     for (i = 0; i < PROTOBUFSIZE && protobuf[i] != '\0'; i++)
 	if (isupper (protobuf[i]))
@@ -201,7 +206,7 @@ TRANS(ParseAddress) (char *address, char **protocol, char **host, char **port)
      * Other than fontlib, the address is a string formatted
      * as "protocol/host:port".
      *
-     * If the protocol part is missing, then assume INET.
+     * If the protocol part is missing, then assume TCP.
      * If the protocol part and host part are missing, then assume local.
      * If a "::" is found then assume DNET.
      */
@@ -223,9 +228,11 @@ TRANS(ParseAddress) (char *address, char **protocol, char **host, char **port)
 
     _protocol = mybuf;
 
-    if ((mybuf = strpbrk (mybuf,"/:")) == NULL)
-    {
-	/* adress is in a bad format */
+
+   if ( ((mybuf = strchr (mybuf,'/')) == NULL) &&
+      ((mybuf = strrchr (tmpptr,':')) == NULL) )
+   {
+	/* address is in a bad format */
 	*protocol = NULL;
 	*host = NULL;
 	*port = NULL;
@@ -236,7 +243,7 @@ TRANS(ParseAddress) (char *address, char **protocol, char **host, char **port)
     if (*mybuf == ':')
     {
 	/*
-	 * If there is a hostname, then assume inet, otherwise
+	 * If there is a hostname, then assume tcp, otherwise
 	 * it must be local.
 	 */
 	if (mybuf == tmpptr)
@@ -246,8 +253,8 @@ TRANS(ParseAddress) (char *address, char **protocol, char **host, char **port)
 	}
 	else
 	{
-	    /* Ther is a hostname specified */
-	    _protocol = "inet";
+	    /* There is a hostname specified */
+	    _protocol = "tcp";
 	    mybuf = tmpptr;	/* reset to the begining of the host ptr */
 	}
     }
@@ -260,11 +267,11 @@ TRANS(ParseAddress) (char *address, char **protocol, char **host, char **port)
 	if (strlen(_protocol) == 0)
 	{
 	    /*
-	     * If there is a hostname, then assume inet, otherwise
+	     * If there is a hostname, then assume tcp, otherwise
 	     * it must be local.
 	     */
 	    if (*mybuf != ':')
-		_protocol = "inet";
+		_protocol = "tcp";
 	    else
 		_protocol = "local";
 	}
@@ -274,7 +281,7 @@ TRANS(ParseAddress) (char *address, char **protocol, char **host, char **port)
 
     _host = mybuf;
 
-    if ((mybuf = strchr (mybuf,':')) == NULL)
+    if ((mybuf = strrchr (mybuf,':')) == NULL)
     {
 	*protocol = NULL;
 	*host = NULL;
@@ -283,20 +290,26 @@ TRANS(ParseAddress) (char *address, char **protocol, char **host, char **port)
 	return 0;
     }
 
+    /* Check for DECnet */
+
+    if ((mybuf != _host) && (*(mybuf - 1) == ':')
+#if defined(IPv6) && defined(AF_INET6)
+      /* An IPv6 address can end in :: so three : in a row is assumed to be
+	 an IPv6 host and not a DECnet node with a : in it's name */
+      && !( (mybuf > (_host + 2)) && (*(mybuf - 2) == ':') )
+#endif
+	)
+    {
+	_protocol = "dnet";
+	*(mybuf - 1) = '\0';
+    }
+
     *mybuf ++= '\0';
 
     if (strlen(_host) == 0)
     {
 	TRANS(GetHostname) (hostnamebuf, sizeof (hostnamebuf));
 	_host = hostnamebuf;
-    }
-
-    /* Check for DECnet */
-
-    if (*mybuf == ':')
-    {
-	_protocol = "dnet";
-	mybuf++;
     }
 
     /* Get the port */
@@ -1000,7 +1013,7 @@ TRANS(MakeAllCOTSServerListeners) (char *port, int *partial, int *count_ret,
     XtransConnInfo	ciptr, temp_ciptrs[NUMTRANS];
     int			status, i, j;
 
-    PRMSG (2,"MakeAllCOTSServerListeners(%s,%x)\n",
+    PRMSG (2,"MakeAllCOTSServerListeners(%s,%p)\n",
 	   port ? port : "NULL", ciptrs_ret, 0);
 
     *count_ret = 0;
@@ -1102,7 +1115,7 @@ TRANS(MakeAllCLTSServerListeners) (char *port, int *partial, int *count_ret,
     XtransConnInfo	ciptr, temp_ciptrs[NUMTRANS];
     int			status, i, j;
 
-    PRMSG (2,"MakeAllCLTSServerListeners(%s,%x)\n",
+    PRMSG (2,"MakeAllCLTSServerListeners(%s,%p)\n",
 	port ? port : "NULL", ciptrs_ret, 0);
 
     *count_ret = 0;

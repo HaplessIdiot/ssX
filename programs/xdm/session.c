@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/session.c,v 3.32 2001/11/16 16:47:57 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.33tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -54,6 +54,7 @@ from The Open Group.
 #ifdef SECURE_RPC
 # include <rpc/rpc.h>
 # include <rpc/key_prot.h>
+extern int key_setnet(struct key_netstarg *arg); 
 #endif
 #ifdef K5AUTH
 # include <krb5/krb5.h>
@@ -68,7 +69,7 @@ from The Open Group.
 
 static	int	runAndWait (char **args, char **environ);
 
-#if defined(CSRG_BASED) || defined(__osf__) || defined(__DARWIN__) || defined(__QNXNTO__)
+#if defined(CSRG_BASED) || defined(__osf__) || defined(__DARWIN__) || defined(__QNXNTO__) || defined(sun)
 #include <sys/types.h>
 #include <grp.h>
 #else
@@ -79,8 +80,12 @@ extern	void	endgrent(void);
 #endif
 
 #ifdef USESHADOW
+#if defined(SVR4)
+#include <shadow.h>
+#else
 extern	struct spwd	*getspnam(GETSPNAM_ARGS);
 extern	void	endspent(void);
+#endif
 #endif
 #if defined(CSRG_BASED)
 #include <pwd.h>
@@ -652,6 +657,7 @@ StartClient (
 	    char    netname[MAXNETNAMELEN+1], secretkey[HEXKEYBYTES+1];
 	    int	    nameret, keyret;
 	    int	    len;
+	    struct  key_netstarg netst;
 	    int     key_set_ok = 0;
 
 	    nameret = getnetname (netname);
@@ -662,6 +668,13 @@ StartClient (
 	    keyret = getsecretkey(netname,secretkey,passwd);
 	    Debug ("getsecretkey returns %d, key length %d\n",
 		    keyret, strlen (secretkey));
+	    memcpy(&(netst.st_priv_key), secretkey, HEXKEYBYTES);
+	    netst.st_netname = strdup(netname);
+	    memset(netst.st_pub_key, 0, HEXKEYBYTES);
+            if (key_setnet(&netst) < 0) {
+		Debug("Could not set secret key.\n");
+            }
+	    free(netst.st_netname);	    
 	    /* is there a key, and do we have the right password? */
 	    if (keyret == 1)
 	    {

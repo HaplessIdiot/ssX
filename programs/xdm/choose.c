@@ -26,7 +26,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xdm/choose.c,v 3.15tsi Exp $ */
+/* $XFree86: xc/programs/xdm/choose.c,v 3.16tsi Exp $ */
 
 /*
  * choose.c
@@ -43,6 +43,7 @@ in this Software without prior written authorization from The Open Group.
 #include <sys/types.h>
 
 #include "dm_socket.h"
+#include <arpa/inet.h>
 
 #ifndef X_NO_SYS_UN
 #ifndef Lynx
@@ -197,19 +198,29 @@ FormatChooserArgument (char *buf, int len)
     netfamily = NetaddrFamily((XdmcpNetaddr)addr_buf);
     switch (netfamily) {
     case AF_INET:
+#if defined(IPv6) && defined(AF_INET6)
+    case AF_INET6:
+#endif
 	{
 	    char *port;
 	    int portlen;
-	    ARRAY8Ptr localAddress;
+	    ARRAY8Ptr localAddress = getLocalAddress ();
+
+#if defined(IPv6) && defined(AF_INET6)
+	    if (localAddress->length == 16)
+		netfamily = AF_INET6;
+	    else
+		netfamily = AF_INET;
+#endif
 
 	    port = NetaddrPort((XdmcpNetaddr)addr_buf, &portlen);
 	    result_buf[0] = netfamily >> 8;
 	    result_buf[1] = netfamily & 0xFF;
 	    result_buf[2] = port[0];
 	    result_buf[3] = port[1];
-	    localAddress = getLocalAddress ();
-	    memmove( (char *)result_buf+4, (char *)localAddress->data, 4);
-	    result_len = 8;
+	    memmove( (char *)result_buf+4, (char *)localAddress->data, 
+	      localAddress->length);
+	    result_len = 4 + localAddress->length;
 	}
 	break;
 #ifdef AF_DECnet
@@ -376,6 +387,13 @@ AddChooserHost (
     {
 	*argp = parseArgs (*argp, "BROADCAST");
     }
+#if defined(IPv6) && defined(AF_INET6)
+    else if ( (addr->length == 16) && 
+      (inet_ntop(AF_INET6, addr->data, hostbuf, sizeof(hostbuf))))
+    {
+	*argp = parseArgs (*argp, hostbuf);
+    }
+#endif
     else if (ARRAY8ToDottedDecimal (addr, hostbuf, sizeof (hostbuf)))
     {
 	*argp = parseArgs (*argp, hostbuf);

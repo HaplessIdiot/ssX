@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/dpylist.c,v 1.4 2001/01/17 23:45:21 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/dpylist.c,v 1.5tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -258,6 +258,7 @@ NewDisplay (char *name, char *class)
     d->clientAddr.data = NULL;
     d->clientAddr.length = 0;
     d->connectionType = 0;
+    d->xdmcpFd = -1;
 #endif
     d->version = 1;		/* registered with The Open Group */
     displays = d;

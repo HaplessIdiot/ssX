@@ -1,4 +1,5 @@
-.\" $XConsortium: X11.encoding,v 1.19 94/04/12 22:10:41 rws Exp $
+.\" $Xorg: X11.encoding,v 1.3 2000/08/17 19:42:23 cpqbld Exp $
+.\" $XFree86$
 \&
 .sp 1
 .ps 11
@@ -614,6 +615,8 @@ HOST
 		0	Internet
 		1	DECnet
 		2	Chaos
+		5	ServerInterpreted
+		6	InternetV6
 	1			unused
 	2	n		length of address
 	n	LISTofBYTE		address
@@ -1229,7 +1232,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			backing-store
 		0	NotUseful
@@ -1419,7 +1422,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1	CARD8		depth
 	2	CARD16		sequence number
@@ -1447,7 +1450,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			unused
 	2	CARD16		sequence number
@@ -1477,7 +1480,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			unused
 	2	CARD16		sequence number
@@ -1501,7 +1504,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1				unused
 	2	CARD16		sequence number
@@ -1569,7 +1572,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1	CARD8		format
 	2	CARD16		sequence number
@@ -1604,7 +1607,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			unused
 	2	CARD16		sequence number
@@ -1643,7 +1646,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			unused
 	2	CARD16		sequence number
@@ -1713,7 +1716,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			status
 		0	Success
@@ -1819,7 +1822,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			status
 		0	Success
@@ -1934,7 +1937,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1	BOOL		same-screen
 	2	CARD16		sequence number
@@ -1968,7 +1971,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			unused
 	2	CARD16		sequence number
@@ -2005,7 +2008,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1	BOOL		same-screen
 	2	CARD16		sequence number
@@ -2068,7 +2071,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			revert-to
 		0	None
@@ -2095,7 +2098,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			unused
 	2	CARD16		sequence number
@@ -2143,7 +2146,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			unused
 	2	CARD16		sequence number
@@ -2206,7 +2209,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			draw-direction
 		0	LeftToRight
@@ -2240,7 +2243,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			unused
 	2	CARD16		sequence number
@@ -2268,7 +2271,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- => (except for last in series)
+ \(-> (except for last in series)
 	1	1		Reply
 	1	n		length of name in bytes
 	2	CARD16		sequence number
@@ -2308,7 +2311,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- => (last in series)
+ \(-> (last in series)
 	1	1		Reply
 	1	0		last-reply indicator
 	2	CARD16		sequence number
@@ -2343,7 +2346,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			unused
 	2	CARD16		sequence number
@@ -2780,7 +2783,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1	CARD8		depth
 	2	CARD16		sequence number
@@ -2960,7 +2963,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			unused
 	2	CARD16		sequence number
@@ -2988,7 +2991,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			unused
 	2	CARD16		sequence number
@@ -3019,7 +3022,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			unused
 	2	CARD16		sequence number
@@ -3050,7 +3053,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			unused
 	2	CARD16		sequence number
@@ -3080,7 +3083,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			unused
 	2	CARD16		sequence number
@@ -3170,7 +3173,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			unused
 	2	CARD16		sequence number
@@ -3208,7 +3211,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			unused
 	2	CARD16		sequence number
@@ -3313,7 +3316,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			unused
 	2	CARD16		sequence number
@@ -3340,7 +3343,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			unused
 	2	CARD16		sequence number
@@ -3365,7 +3368,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1	CARD8		number of STRs in names
 	2	CARD16		sequence number
@@ -3405,7 +3408,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1	n		keysyms-per-keycode
 	2	CARD16		sequence number
@@ -3466,7 +3469,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			global-auto-repeat
 		0	Off
@@ -3520,7 +3523,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			unused
 	2	CARD16		sequence number
@@ -3565,7 +3568,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			unused
 	2	CARD16		sequence number
@@ -3614,7 +3617,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			mode
 		0	Disabled
@@ -3704,7 +3707,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			status
 		0	Success
@@ -3727,7 +3730,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1	n		length of map
 	2	CARD16		sequence number
@@ -3751,7 +3754,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1			status
 		0	Success
@@ -3775,7 +3778,7 @@ Requests
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
- =>
+ \(->
 	1	1		Reply
 	1	n		keycodes-per-modifier
 	2	CARD16		sequence number

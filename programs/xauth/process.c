@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xauth/process.c,v 3.18 2003/02/13 02:50:22 dawes Exp $ */
+/* $XFree86: xc/programs/xauth/process.c,v 3.19tsi Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -42,8 +42,6 @@ from The Open Group.
 
 #include <X11/Xlib.h>
 #include <X11/extensions/security.h>
-
-extern Bool nameserver_timedout;
 
 #ifndef DEFAULT_PROTOCOL_ABBREV		/* to make add command easier */
 #define DEFAULT_PROTOCOL_ABBREV "."
@@ -462,16 +460,17 @@ read_auth_entries(FILE *fp, Bool numeric, AuthList **headp, AuthList **tailp)
 }
 
 static Bool 
-get_displayname_auth(char *displayname, Xauth *auth)
+get_displayname_auth(char *displayname, AuthList **authl)
 {
     int family;
     char *host = NULL, *rest = NULL;
     int dpynum, scrnum;
     char *cp;
-    int len;
-    Xauth proto;
     int prelen = 0;
+    struct addrlist *addrlist_head, *addrlist_cur;
+    AuthList *authl_cur = NULL;
 
+    *authl = NULL;
     /*
      * check to see if the display name is of the form "host/unix:"
      * which is how the list routine prints out local connections
@@ -485,36 +484,53 @@ get_displayname_auth(char *displayname, Xauth *auth)
 	return False;
     }
 
-    proto.family = family;
-    proto.address = get_address_info (family, displayname, prelen, host, &len);
-    if (proto.address) {
+    addrlist_head = get_address_info(family, displayname, prelen, host);
+    if (addrlist_head) {
 	char buf[40];			/* want to hold largest display num */
+	unsigned short dpylen;
 
-	proto.address_length = len;
 	buf[0] = '\0';
 	sprintf (buf, "%d", dpynum);
-	proto.number_length = strlen (buf);
-	if (proto.number_length <= 0) {
-	    free (proto.address);
-	    proto.address = NULL;
-	} else {
-	    proto.number = copystring (buf, proto.number_length);
+	dpylen = strlen (buf);
+	if (dpylen > 0) {
+	    for (addrlist_cur = addrlist_head; addrlist_cur != NULL;
+		 addrlist_cur = addrlist_cur->next) {
+		AuthList *newal = malloc(sizeof(AuthList));
+		Xauth *auth = malloc(sizeof(Xauth));
+
+		if ((newal == NULL) || (auth == NULL)) {
+		    if (newal != NULL) free(newal);
+		    if (auth != NULL) free(auth);
+		    break;
+		}
+
+		if (authl_cur == NULL) {
+		    *authl = authl_cur = newal;
+		} else {
+		    authl_cur->next = newal;
+		    authl_cur = newal;
+		}
+
+		newal->next = NULL;
+		newal->auth = auth;
+
+		auth->family = addrlist_cur->family;
+		auth->address = addrlist_cur->address;
+		auth->address_length = addrlist_cur->len;
+		auth->number = copystring(buf, dpylen);
+		auth->number_length = dpylen;
+		auth->name = NULL;
+		auth->name_length = 0;
+		auth->data = NULL;
+		auth->data_length = 0;
+	    }
 	}
     }
 
     if (host) free (host);
     if (rest) free (rest);
 
-    if (proto.address) {
-	auth->family = proto.family;
-	auth->address = proto.address;
-	auth->address_length = proto.address_length;
-	auth->number = proto.number;
-	auth->number_length = proto.number_length;
-	auth->name = NULL;
-	auth->name_length = 0;
-	auth->data = NULL;
-	auth->data_length = 0;
+    if (*authl != NULL) {
 	return True;
     } else {
 	return False;
@@ -606,7 +622,7 @@ static Bool xauth_modified = False;	/* if added, removed, or merged */
 static Bool xauth_allowed = True;	/* if allowed to write auth file */
 static Bool xauth_locked = False;     /* if has been locked */
 static char *xauth_filename = NULL;
-static Bool dieing = False;
+static volatile Bool dieing = False;
 
 #ifdef SIGNALRETURNSINT
 #define _signal_t int
@@ -824,7 +840,8 @@ write_auth_file(char *tmp_nam)
 	}
     }
 
-    return fclose (fp) == 0 ? 0 : -1;
+    (void) fclose (fp);
+    return 0;
 }
 
 int 
@@ -940,7 +957,7 @@ fprintfhex(register FILE *fp, int len, char *cp)
     free(hex);
 }
 
-int
+static int
 dump_numeric(register FILE *fp, register Xauth *auth)
 {
     fprintf (fp, "%04x", auth->family);  /* unsigned short */
@@ -974,6 +991,9 @@ dump_entry(char *inputfilename, int lineno, Xauth *auth, char *data)
 	    fprintf (fp, "/unix");
 	    break;
 	  case FamilyInternet:
+#if defined(IPv6) && defined(AF_INET6)
+	  case FamilyInternetV6:
+#endif
 	  case FamilyDECnet:
 	    dpyname = get_hostname (auth);
 	    if (dpyname) {
@@ -1123,7 +1143,7 @@ iterdpy (char *inputfilename, int lineno, int start,
     int i;
     int status;
     int errors = 0;
-    Xauth proto;
+    AuthList *proto_head, *proto;
     AuthList *l, *next;
 
     /*
@@ -1131,8 +1151,7 @@ iterdpy (char *inputfilename, int lineno, int start,
      */
     for (i = start; i < argc; i++) {
 	char *displayname = argv[i];
-	proto.address = proto.number = NULL;
-	if (!get_displayname_auth (displayname, &proto)) {
+	if (!get_displayname_auth (displayname, &proto_head)) {
 	    prefix (inputfilename, lineno);
 	    baddisplayname (displayname, argv[0]);
 	    errors++;
@@ -1140,23 +1159,34 @@ iterdpy (char *inputfilename, int lineno, int start,
 	}
 	status = 0;
 	for (l = xauth_head; l; l = next) {
+	    Bool matched = False;
+
 	    next = l->next;
-	    if (match_auth_dpy (&proto, l->auth)) {
-		if (yfunc) {
-		    status = (*yfunc) (inputfilename, lineno,
-				       l->auth, data);
-		    if (status < 0) break;
+	    for (proto = proto_head; proto; proto = proto->next) {
+		if (match_auth_dpy (proto->auth, l->auth)) {
+		    matched = True;
+		    if (yfunc) {
+			status = (*yfunc) (inputfilename, lineno,
+					   l->auth, data);
+			if (status < 0) break;
+		    }
 		}
-	    } else {
+	    }
+	    if (matched == False) {
 		if (nfunc) {
 		    status = (*nfunc) (inputfilename, lineno,
 				       l->auth, data);
-		    if (status < 0) break;
 		}
 	    }
+	    if (status < 0) break;
 	}
-	if (proto.address) free (proto.address);
-	if (proto.number) free (proto.number);
+	for (proto = proto_head; proto ; proto = next) {
+	    next = proto->next;
+	    if (proto->auth->address) free (proto->auth->address);
+	    if (proto->auth->number) free (proto->auth->number);
+	    free (proto->auth);
+	    free (proto);
+	}
 	if (status < 0) {
 	    errors -= status;		/* since status is negative */
 	    break;
@@ -1426,8 +1456,7 @@ do_add(char *inputfilename, int lineno, int argc, char **argv)
     char *protoname;
     char *hexkey;
     char *key;
-    Xauth *auth;
-    AuthList *list;
+    AuthList *list, *list_cur, *list_next;
 
     if (argc != 4 || !argv[1] || !argv[2] || !argv[3]) {
 	prefix (inputfilename, lineno);
@@ -1458,19 +1487,9 @@ do_add(char *inputfilename, int lineno, int argc, char **argv)
 	}
     }
 
-    auth = (Xauth *) malloc (sizeof (Xauth));
-    if (!auth) {
-	prefix (inputfilename, lineno);
-	fprintf (stderr, "unable to allocate %ld bytes for Xauth structure\n",
-		 (unsigned long)sizeof (Xauth));
-	free (key);
-	return 1;
-    }
-
-    if (!get_displayname_auth (dpyname, auth)) {
+    if (!get_displayname_auth (dpyname, &list)) {
 	prefix (inputfilename, lineno);
 	baddisplayname (dpyname, argv[0]);
-	free (auth);
 	free (key);
 	return 1;
     }
@@ -1482,32 +1501,26 @@ do_add(char *inputfilename, int lineno, int argc, char **argv)
 	protoname = DEFAULT_PROTOCOL;
     }
 
-    auth->name_length = strlen (protoname);
-    auth->name = copystring (protoname, auth->name_length);
-    if (!auth->name) {
-	prefix (inputfilename, lineno);
-	fprintf (stderr, "unable to allocate %d character protocol name\n",
-		 auth->name_length);
-	free (auth);
-	free (key);
-	return 1;
-    }
-    auth->data_length = len;
-    auth->data = key;
+    for (list_cur = list;  list_cur != NULL; list_cur = list_cur->next) {
+	Xauth *auth = list_cur->auth;
 
-    list = (AuthList *) malloc (sizeof (AuthList));
-    if (!list) {
-	prefix (inputfilename, lineno);
-	fprintf (stderr, "unable to allocate %ld bytes for auth list\n",
-		 (unsigned long)sizeof (AuthList));
-	free (auth);
-	free (key);
-	free (auth->name);
-	return 1;
+	auth->name_length = strlen (protoname);
+	auth->name = copystring (protoname, auth->name_length);
+	if (!auth->name) {
+	    prefix (inputfilename, lineno);
+	    fprintf (stderr, "unable to allocate %d character protocol name\n",
+		     auth->name_length);
+	    for (list_cur = list; list_cur != NULL; list_cur = list_next) {
+		list_next = list_cur->next;
+		XauDisposeAuth(list_cur->auth);
+		free(list_cur);
+	    }
+	    free (key);
+	    return 1;
+	}
+	auth->data_length = len;
+	auth->data = key;
     }
-
-    list->next = NULL;
-    list->auth = auth;
 
     /*
      * merge it in; note that merge will deal with allocation

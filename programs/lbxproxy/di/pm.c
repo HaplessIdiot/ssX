@@ -1,5 +1,4 @@
 /* $Xorg: pm.c,v 1.5 2001/02/09 02:05:31 xorgcvs Exp $ */
-
 /*
 Copyright 1996, 1998  The Open Group
 
@@ -25,7 +24,7 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86: xc/programs/lbxproxy/di/pm.c,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/pm.c,v 1.11tsi Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -376,22 +375,54 @@ PMprocessMessages (iceConn, clientData, opcode, length,
 	 * If gethostbyname fails, try to connect anyhow because
 	 * the display name could be something like :0, local:0
 	 * or unix:0.
+	 *
+	 * Search for last colon to allow IPv6 numeric addresses.
 	 */
-	colon = strchr (serverAddress, ':');
+	colon = strrchr (serverAddress, ':');
 	if (colon)
 	{
+#if defined(IPv6) && defined(AF_INET6)
+	    struct addrinfo *ai, hints;
+#else
 	    struct hostent *hostent;
+#endif
+	    char *canonhost = NULL;
+	    char *hoststart = strchr(serverAddress, '/');
+
+	    if (hoststart == NULL)
+		hoststart = serverAddress;
+
+	    /* DECnet :: addresses */
+	    if (*(colon - 1) == ':') {
+		colon--;
+	    }
 
 	    *colon = '\0';
-	    hostent = gethostbyname (serverAddress);
+#if defined(IPv6) && defined(AF_INET6)
+	    (void)memset(&hints, 0, sizeof(hints));
+	    hints.ai_flags = AI_CANONNAME;
+	    if (getaddrinfo(hoststart, NULL, &hints, &ai) == 0)
+		canonhost = ai->ai_canonname;
+	    else 
+		ai = NULL;
+#else
+	    hostent = gethostbyname (hoststart);
+	    if (hostent && hostent->h_name)
+		canonhost = hostent->h_name;
+#endif
 	    *colon = ':';
 
-	    if (hostent && hostent->h_name) {
-		tmpAddress = (char *) malloc (strlen (hostent->h_name) + 
+
+	    if (canonhost) {
+		tmpAddress = (char *) malloc (strlen (canonhost) + 
 					      strlen (colon) + 1);
-		(void) sprintf (tmpAddress, "%s%s", hostent->h_name, colon);
+		(void) sprintf (tmpAddress, "%s%s", canonhost, colon);
 	        serverAddress = tmpAddress;
 	    }
+#if defined(IPv6) && defined(AF_INET6)
+	    if (ai != NULL)
+		freeaddrinfo(ai);
+#endif
 	}
 	display_name = serverAddress;
 

@@ -1,109 +1,132 @@
 		     X Window System, Version 11
-			      Release 6
+			     Release 6.6
 
 			Portions Copyright by:
 
-			     X Consortium
+			    The Open Group
 
 				 and
 				   
-			      2001 S.A.
+			      Mark Adler
 		      Adobe Systems Incorporated
 			   AGE Logic, Inc.
 			 Gerrit Jan Akkerman
+			    Corin Anderson
+			      Doug Anson
 			 Apollo Computer Inc.
-			 Apple Computer, Inc
-			   Ardent Computer
+			 Ares Software Corp.
 				 ATI
 			      AT&T, Inc.
-			     Robert Baron
-			     Don Bennett
+			   Robert V. Baron
+			    David Bateman
 			   Bigelow & Holmes
 			   Bitstream, Inc.
-	    Center for Information Technology Integration
+			      Jon Block
+			     Adam de Boor
+			    Manfred Brands
+			   Richard Burdick
 			   Cognition Corp.
 			   Simon P. Cooper
+			    Régis Cridlig
 			    Robin Cutshaw
+			   Daniver Limited
 		     Daewoo Electronics Co.,Ltd.
 		       Data General Corporation
 			     David Dawes
-			     Adam de Boor
+			    Jorge Delgado
 		    Digital Equipment Corporation
 	       Evans & Sutherland Computer Corporation
 			   Rickard E. Faith
-		       Franz Inc, Berkeley, Ca.
+			     Erik Fortune
 		    Free Software Foundation, Inc.
 			   Joseph Friedman
 			 Fuji Xerox Co., Ltd.
+			   Fujitsu Limited
 		 Fujitsu Open Systems Solutions, Inc.
-			    Fujitsu, Ltd.
-			    Stephen Gildea
+			   Jean-loup Gailly
 			      Tiago Gons
-		      GUI Consortium, CAIR/KAIST
-			    H. Hanemaayer
+			    Pascal Haible
+			   Harm Hanemaayer
+			     Randy Hendry
+			    Matthieu Herrb
 		       Hewlett-Packard Company
+			    Hitachi, Ltd.
+                            Dirk Hohndel
+			    David Holland
+			    Philip Homburg
 			    Alan Hourihane
 			   IBM Corporation
 	      The Institute of Software, Academia Sinica
-		International Business Machines, Corp.
+		   INTERACTIVE Systems Corporation
 			  Kaleb S. Keithley
-			  William Kucharski
+			      Jeff Kirk
+                            Harald Koenig
+			Marc Aurele La France
 			     Glenn G. Lai
 			     Scott Laird
 			    Thomas G. Lane
+			     Steven Lang
+			  Harry Langenbacher
+			   Patrick Lecoanet
+			     Sam Leffler
+			   Frederic Lepied
 		     Lexmark International, Inc.
+			  Sebastien Marineau
+			  Michael P. Marking
 			   Kevin E. Martin
 			     Davor Matic
-			Matra Datavision Inc.
 			   David McCullough
-			     Larry Medwin
-			 Megatek Corporation
+			    David J. McKay
 		     MIPS Computer Systems, Inc.
-			     Rich Murphe
-		National Computer Graphics Association
-			   NCR Corporation
+			    Joseph V. Moss
+			    Thomas Mueller
+			     Rich Murphey
+			NCR Corporation, Inc.
+		       Netscape Communications
 		   Network Computing Devices, Inc.
-	      Nippon Telegraph and Telephone Corporation
+			     Novell, Inc.
 		       NTT Software Corporation
 		      Number Nine Computer Corp.
+			     NVIDIA Corp.
+			     Erik Nygren
 			       Hans Oey
+		       Kazuyuki (ikko-) Okamoto
 		  Oki Technosystems Laboratory, Inc.
-		      Olivetti Research Limited
 			  OMRON Corporation
-		    Open Software Foundation, Inc.
-		    O'Reilly and Associates, Inc.
-			   Orest Zborowski
+		       Open Software Foundation
 			     Panacea Inc.
-			    Pascal Haible
 			    Prentice Hall
 		      Quarterdeck Office Systems
+	       Regents of the University of California
 			    Bill Reynolds
 			     Thomas Roell
+		    The Santa Cruz Operation, Inc.
 			   Dale Schumacher
-		    Sequent Computer Systems, Inc.
+			    Paolo Severini
 			  ShoGraphics, Inc.
-		  Silicon Graphics Computer Systems
-		 Snitily Graphics Consulting Services
-		       Solbourne Computer, Inc.
-			    Marvin Solomon
+	       Silicon Graphics Computer Systems, Inc.
 			   Sony Corporation
 				 SRI
-			 Stanford University
+			    Craig Struble
 			Sun Microsystems, Inc.
-			    SUNSOFT, INC.
-			    Tektronix,Inc.
-		    Texas Instruments Incorporated
+			    SunSoft, Inc.
+			   Tektronix, Inc.
+			   Finn Thoegersen
+                             Gerry Toll
 			      Jon Tombs
-			 TOSHIBA Corporation
+			    Linus Torvalds
+			    TOSHIBA Corp.
+			    Peter Trattler
 			    James Tsillas
 			UniSoft Group Limited
-	     The Regents of the University of California
-			University of Toronto
-			  UNIX International
 		    UNIX System Laboratories, Inc.
+			     Holger Veit
 			  Vrije Universiteit
 			      Larry Wall
-			   David Wexelblat
-		       University of Wisconsin
+			  David E. Wexelblat
+			    Thomas Wolfram
+			    Henry A. Worth
 			Wyse Technology, Inc.
-			X/Open Company Limited
+		      The XFree86 Project, Inc.
+                               Ming Yu
+			   Orest Zborowski
