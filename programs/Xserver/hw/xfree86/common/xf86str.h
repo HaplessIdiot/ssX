@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.51 1999/10/13 16:49:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.52 1999/10/13 22:33:01 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -45,6 +45,11 @@ typedef enum {
     INTERLACE_HALVE_V	= 0x0001	/* Halve V values for interlacing */
 } CrtcAdjustFlags;
 
+/* Flags passed to ChipValidMode() */
+typedef enum {
+    MODECHECK_INITIAL = 0,
+    MODECHECK_FINAL   = 1
+} ModeCheckFlags;
 
 /* These are possible return values for xf86CheckMode() and ValidMode() */
 typedef enum {
@@ -78,6 +83,7 @@ typedef enum {
     MODE_VBLANK_NARROW,	/* vertical blanking too narrow */
     MODE_VBLANK_WIDE,	/* vertical blanking too wide */
     MODE_PANEL,         /* exceeds panel dimensions */
+    MODE_INTERLACE_WIDTH, /* width too large for interlaced mode */
     MODE_BAD = -2,	/* unspecified reason */
     MODE_ERROR	= -1	/* error condition */
 } ModeStatus;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticrtc.c,v 1.9 1999/09/27 06:29:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticrtc.c,v 1.10 1999/10/13 04:21:09 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -266,8 +266,6 @@ ATICRTCPreInit
     /* Initialize CRTC data for LCD panels */
     if (pATI->LCDPanelID >= 0)
     {
-        int HDisplay, VDisplay;
-
         if (pATI->Chip == ATI_CHIP_264LT)
         {
             pATIHW->horz_stretching = inl(pATI->CPIO_HORZ_STRETCHING);
@@ -323,109 +321,6 @@ ATICRTCPreInit
              * Use primary CRTC to drive the panel.  Turn off CRT interface.
              */
             pATIHW->lcd_gen_ctrl |= LCD_ON;
-
-            /*
-             * XXX
-             *
-             * Determine porch data.  This is ugly and will be removed when the
-             * common layer's mode validation is changed to better deal with
-             * panels.  The intent here is to produce stretched modes that
-             * approximate the horizontal sync and vertical refresh rates of
-             * the mode on server entry (which, BTW, hasn't been saved yet).
-             * The following is inaccurate (but still good enough) when BIOS
-             * initialization has set things up so that the registers read here
-             * are not the ones actually in use by the panel.
-             */
-            if (inl(pATI->CPIO_CRTC_GEN_CNTL) & CRTC_EXT_DISP_EN)
-            {
-                pATIHW->crtc_h_total_disp = inl(pATI->CPIO_CRTC_H_TOTAL_DISP);
-                pATIHW->crtc_h_sync_strt_wid =
-                    inl(pATI->CPIO_CRTC_H_SYNC_STRT_WID);
-                pATIHW->crtc_v_total_disp = inl(pATI->CPIO_CRTC_V_TOTAL_DISP);
-                pATIHW->crtc_v_sync_strt_wid =
-                    inl(pATI->CPIO_CRTC_V_SYNC_STRT_WID);
-
-                HDisplay = GetBits(pATIHW->crtc_h_total_disp, CRTC_H_DISP);
-                VDisplay = GetBits(pATIHW->crtc_v_total_disp, CRTC_V_DISP);
-
-                pATI->LCDHSyncStart =
-                    (GetBits(pATIHW->crtc_h_sync_strt_wid,
-                             CRTC_H_SYNC_STRT_HI) *
-                     (MaxBits(CRTC_H_SYNC_STRT) + 1)) +
-                    GetBits(pATIHW->crtc_h_sync_strt_wid, CRTC_H_SYNC_STRT) -
-                    HDisplay;
-                pATI->LCDHSyncWidth =
-                    GetBits(pATIHW->crtc_h_sync_strt_wid, CRTC_H_SYNC_WID);
-                pATI->LCDHBlankWidth =
-                    GetBits(pATIHW->crtc_h_total_disp, CRTC_H_TOTAL) -
-                    HDisplay;
-                pATI->LCDVSyncStart =
-                    GetBits(pATIHW->crtc_v_sync_strt_wid, CRTC_V_SYNC_STRT) -
-                    VDisplay;
-                pATI->LCDVSyncWidth =
-                    GetBits(pATIHW->crtc_v_sync_strt_wid, CRTC_V_SYNC_WID);
-                pATI->LCDVBlankWidth =
-                    GetBits(pATIHW->crtc_v_total_disp, CRTC_V_TOTAL) -
-                    VDisplay;
-            }
-            else
-            {
-                pATIHW->crt[0] = GetReg(CRTX(pATI->CPIO_VGABase), 0x00U);
-                pATIHW->crt[1] = GetReg(CRTX(pATI->CPIO_VGABase), 0x01U);
-                pATIHW->crt[4] = GetReg(CRTX(pATI->CPIO_VGABase), 0x04U);
-                pATIHW->crt[5] = GetReg(CRTX(pATI->CPIO_VGABase), 0x05U);
-                pATIHW->crt[6] = GetReg(CRTX(pATI->CPIO_VGABase), 0x06U);
-                pATIHW->crt[7] = GetReg(CRTX(pATI->CPIO_VGABase), 0x07U);
-                pATIHW->crt[16] = GetReg(CRTX(pATI->CPIO_VGABase), 0x10U);
-                pATIHW->crt[17] = GetReg(CRTX(pATI->CPIO_VGABase), 0x11U);
-                pATIHW->crt[18] = GetReg(CRTX(pATI->CPIO_VGABase), 0x12U);
-
-                HDisplay = pATIHW->crt[1] + 1;
-                VDisplay = (((pATIHW->crt[7] << 3) & 0x0200U) |
-                            ((pATIHW->crt[7] << 7) & 0x0100U) |
-                            pATIHW->crt[18]) + 1;
-
-                pATI->LCDHSyncStart = pATIHW->crt[4] - HDisplay;
-                pATI->LCDHSyncWidth =
-                    (pATIHW->crt[5] - pATIHW->crt[4]) & 0x1FU;
-                pATI->LCDHBlankWidth = pATIHW->crt[0] + 5 - HDisplay;
-                pATI->LCDVSyncStart = (((pATIHW->crt[7] << 2) & 0x0200U) |
-                                       ((pATIHW->crt[7] << 6) & 0x0100U) |
-                                       pATIHW->crt[16]) - VDisplay;
-                pATI->LCDVSyncWidth =
-                    (pATIHW->crt[17] - pATIHW->crt[16]) & 0x0FU;
-                pATI->LCDVBlankWidth = (((pATIHW->crt[7] << 4) & 0x0200U) |
-                                        ((pATIHW->crt[7] << 8) & 0x0100U) |
-                                        pATIHW->crt[6]) + 2 - VDisplay;
-            }
-
-            HDisplay <<= 3;
-            pATI->LCDHSyncStart <<= 3;
-            pATI->LCDHSyncWidth <<= 3;
-            pATI->LCDHBlankWidth <<= 3;
-
-            /* If the mode on entry wasn't stretched, adjust timings */
-            if (!(pATIHW->horz_stretching & HORZ_STRETCH_EN) &&
-                ((HDisplay = pATI->LCDHorizontal - HDisplay) > 0))
-            {
-                if ((pATI->LCDHSyncStart -= HDisplay) < 0)
-                    pATI->LCDHSyncStart = 0;
-                pATI->LCDHBlankWidth -= HDisplay;
-                HDisplay = pATI->LCDHSyncStart + pATI->LCDHSyncWidth;
-                if (pATI->LCDHBlankWidth < HDisplay)
-                    pATI->LCDHBlankWidth = HDisplay;
-            }
-
-            if (!(pATIHW->vert_stretching & VERT_STRETCH_EN) &&
-                ((VDisplay = pATI->LCDVertical - VDisplay) > 0))
-            {
-                if ((pATI->LCDVSyncStart -= VDisplay) < 0)
-                    pATI->LCDVSyncStart = 0;
-                pATI->LCDVBlankWidth -= VDisplay;
-                VDisplay = pATI->LCDVSyncStart + pATI->LCDVSyncWidth;
-                if (pATI->LCDVBlankWidth < VDisplay)
-                    pATI->LCDVBlankWidth = VDisplay;
-            }
         }
     }
 
@@ -537,10 +432,10 @@ ATICRTCSave
                     GetReg(CRTX(pATI->CPIO_VGABase), Index);
 
             /* Save shadow Mach64 CRTC registers */
-            pATIHW->shadow_h_total_disp = inl (pATI->CPIO_CRTC_H_TOTAL_DISP);
+            pATIHW->shadow_h_total_disp = inl(pATI->CPIO_CRTC_H_TOTAL_DISP);
             pATIHW->shadow_h_sync_strt_wid =
                 inl(pATI->CPIO_CRTC_H_SYNC_STRT_WID);
-            pATIHW->shadow_v_total_disp = inl (pATI->CPIO_CRTC_V_TOTAL_DISP);
+            pATIHW->shadow_v_total_disp = inl(pATI->CPIO_CRTC_V_TOTAL_DISP);
             pATIHW->shadow_v_sync_strt_wid =
                 inl(pATI->CPIO_CRTC_V_SYNC_STRT_WID);
         }
@@ -612,10 +507,6 @@ ATICRTCCalculate
 
         pMode->Flags &= ~(V_DBLSCAN | V_INTERLACE | V_CLKDIV2);
 
-        pMode->HSyncStart = pMode->HDisplay + pATI->LCDHSyncStart;
-        pMode->HSyncEnd = pMode->HSyncStart + pATI->LCDHSyncWidth;
-        pMode->HTotal = pMode->HDisplay + pATI->LCDHBlankWidth;
-
         /*
          * Use doublescanning or multiscanning to get around vertical blending
          * limitations.
@@ -640,12 +531,6 @@ ATICRTCCalculate
             default:
                 break;
         }
-        pMode->VSyncStart = pMode->VDisplay +
-            ATIDivide(pATI->LCDVSyncStart, VScan, 0, 0);
-        pMode->VSyncEnd = pMode->VSyncStart +
-            ATIDivide(pATI->LCDVSyncWidth, VScan, 0, 1);
-        pMode->VTotal = pMode->VDisplay +
-            ATIDivide(pATI->LCDVBlankWidth, VScan, 0, 0);
     }
 
     switch (pATIHW->crtc)
@@ -660,32 +545,33 @@ ATICRTCCalculate
 
             if (pATI->Chip >= ATI_CHIP_88800GXC)
             {
-                /*
-                 * Selected bits of accelerator & VGA CRTC registers are
-                 * actually copies of each other.
-                 */
-                pATIHW->crtc_h_total_disp =
-                    SetBits(pMode->CrtcHTotal, CRTC_H_TOTAL) |
-                        SetBits(pMode->CrtcHDisplay, CRTC_H_DISP);
-                pATIHW->crtc_h_sync_strt_wid =
-                    SetBits(pMode->CrtcHSyncStart, CRTC_H_SYNC_STRT) |
-                        SetBits(pMode->CrtcHSkew, CRTC_H_SYNC_DLY) | /* ? */
-                        SetBits(GetBits(pMode->CrtcHSyncStart, 0x0100U),
-                            CRTC_H_SYNC_STRT_HI) |
-                        SetBits(pMode->CrtcHSyncEnd - pMode->CrtcHSyncStart,
-                            CRTC_H_SYNC_WID);
-                if (pMode->Flags & V_NHSYNC)
-                    pATIHW->crtc_h_sync_strt_wid |= CRTC_H_SYNC_POL;
+                if (pATI->Chip >= ATI_CHIP_264CT)
+                {
+                    /*
+                     * Selected bits of accelerator & VGA CRTC registers are
+                     * actually copies of each other.
+                     */
+                    pATIHW->crtc_h_total_disp =
+                        SetBits(pMode->CrtcHTotal, CRTC_H_TOTAL) |
+                            SetBits(pMode->CrtcHDisplay, CRTC_H_DISP);
+                    pATIHW->crtc_h_sync_strt_wid =
+                        SetBits(pMode->CrtcHSyncStart, CRTC_H_SYNC_STRT) |
+                            SetBits(pMode->CrtcHSkew, CRTC_H_SYNC_DLY) | /* ? */
+                            SetBits(GetBits(pMode->CrtcHSyncStart, 0x0100U),
+                                CRTC_H_SYNC_STRT_HI) |
+                            SetBits(pMode->CrtcHSyncEnd, CRTC_H_SYNC_WID);
+                    if (pMode->Flags & V_NHSYNC)
+                        pATIHW->crtc_h_sync_strt_wid |= CRTC_H_SYNC_POL;
 
-                pATIHW->crtc_v_total_disp =
-                    SetBits(pMode->CrtcVTotal, CRTC_V_TOTAL) |
-                        SetBits(pMode->CrtcVDisplay, CRTC_V_DISP);
-                pATIHW->crtc_v_sync_strt_wid =
-                    SetBits(pMode->CrtcVSyncStart, CRTC_V_SYNC_STRT) |
-                        SetBits(pMode->CrtcVSyncEnd - pMode->CrtcVSyncStart,
-                            CRTC_V_SYNC_WID);
-                if (pMode->Flags & V_NVSYNC)
-                    pATIHW->crtc_v_sync_strt_wid |= CRTC_V_SYNC_POL;
+                    pATIHW->crtc_v_total_disp =
+                        SetBits(pMode->CrtcVTotal, CRTC_V_TOTAL) |
+                            SetBits(pMode->CrtcVDisplay, CRTC_V_DISP);
+                    pATIHW->crtc_v_sync_strt_wid =
+                        SetBits(pMode->CrtcVSyncStart, CRTC_V_SYNC_STRT) |
+                            SetBits(pMode->CrtcVSyncEnd, CRTC_V_SYNC_WID);
+                    if (pMode->Flags & V_NVSYNC)
+                        pATIHW->crtc_v_sync_strt_wid |= CRTC_V_SYNC_POL;
+                }
 
                 pATIHW->crtc_gen_cntl = inl(pATI->CPIO_CRTC_GEN_CNTL) &
                     ~(CRTC_DBL_SCAN_EN | CRTC_INTERLACE_EN |

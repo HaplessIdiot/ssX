@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativersion.h,v 1.8 1999/08/21 13:48:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativersion.h,v 1.9 1999/09/25 14:37:23 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -27,11 +27,11 @@
 #define ATI_NAME            "ATI"
 #define ATI_DRIVER_NAME     "ati"
 
-#define ATI_VERSION_NAME    "5.2.0"
+#define ATI_VERSION_NAME    "5.2.1"
 
 #define ATI_VERSION_MAJOR   5
 #define ATI_VERSION_MINOR   2
-#define ATI_VERSION_PATCH   0
+#define ATI_VERSION_PATCH   1
 
 #define ATI_VERSION_CURRENT ((ATI_VERSION_MAJOR << 16) | ATI_VERSION_MINOR)
 

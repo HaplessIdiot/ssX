@@ -27,10 +27,10 @@
 
 <title>XFree86 X server ``New Design'' (DRAFT)
 <author>The XFree86 Project, Inc
-<date>Last modified 20 October 1999
+<date>Last modified 25 October 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.11 1999/09/27 06:29:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.12tsi Exp $
 </ident>
 
 
@@ -1213,6 +1213,22 @@ mode.  These have been stored in the mode's &s.code;Crtc*&e.code; and
 &s.code;SynthClock&e.code; elements, and have already been adjusted for
 interlacing, doublescanning, multiscanning and clock multipliers and dividers.
 The function should not modify any other mode field.
+
+<p>
+The function is called once for every mode in the XF86Config Monitor section
+assigned to the screen, with &s.code;flags&e.code; set to
+&s.code;MODECHECK_INITIAL&e.code;.  It is subsequently called for every mode
+in the XF86Config Display subsection assigned to the screen, with
+&s.code;flags&e.code; set to &s.code;MODECHECK_FINAL&e.code;.  In the second
+case, each mode will have successfully passed all other tests.  In addition,
+the ScrnInfoRec's &s.code;virtualX&e.code;, &s.code;virtualY&e.code; and
+&s.code;displayWidthi&e.code; fields will have been set as if the mode to be
+validated were to be the last mode accepted.
+
+<p>
+In effect, calls with MODECHECK_INITIAL are intended for checks that do not
+depend on any mode other than the one being validated, while calls with
+MODECHECK_FINAL are intended for checks that may involve more than one mode.
 
 <sect1>Free screen data
 <p>
@@ -4980,14 +4996,20 @@ be catered for the by the helpers.
       the virtual width and height limits (if greater than zero).  For
       each mode removed an informational message is printed at verbosity
       level &s.code;2&e.code;.  If the mode pool ends up being empty,
-      an error message is printed, and the return value is
-      &s.code;-1&e.code;.
+      a warning message is printed, and the return value is
+      &s.code;0&e.code;.
 
-      The final stage is to lookup each mode, and fill in the remaining
+      The final stage is to lookup each mode name, and fill in the remaining
       parameters.  If an error condition is encountered, a message is
       printed, and the return value is &s.code;-1&e.code;.  Otherwise,
       the return value is the number of valid modes found
       (&s.code;0&e.code; if none are found).
+
+      Even if the supplied mode names include duplicates, no two names will
+      ever match the same mode.  Furthermore, if the supplied mode names do not
+      yield a valid mode (including the case where no names are passed at all),
+      the function will continue looking through the mode pool until it finds
+      a mode that survives all checks, or until the mode pool is exhausted.
 
       A message is only printed by this function when a fundamental
       problem is found.  It is intended that this function may be called
@@ -5030,8 +5052,8 @@ be catered for the by the helpers.
 	</quote>
         &s.code;doubleScanAllowed&e.code;
 	<quote><p>
-		&s.code;TRUE&e.code; if doublescan is allowed for this
-		range
+		&s.code;TRUE&e.code; if doublescan or multiscan is allowed
+		for this range
 
 	</quote>
         &s.code;ClockMulFactor&nl;
@@ -5109,10 +5131,6 @@ be catered for the by the helpers.
 
       This function is normally called after calling
       &s.code;xf86PruneDriverModes()&e.code;.
-
-      NOTE: The &s.code;Crtc*&e.code; fields are not initialised anywhere
-      else, so the driver must either call this function or initialise
-      them itself.
 
     </quote>
 

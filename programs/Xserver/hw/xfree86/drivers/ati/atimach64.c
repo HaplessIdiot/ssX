@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.6 1999/09/25 14:37:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.7 1999/10/13 04:21:09 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -175,22 +175,14 @@ ATIMach64Calculate
     pMode->CrtcVSyncEnd = pMode->VSyncEnd;
     pMode->CrtcVTotal = pMode->VTotal;
 
-    if ((pMode->Flags & V_DBLSCAN) && (pATI->Chip >= ATI_CHIP_264CT))
+    if ((pATI->Chip >= ATI_CHIP_264CT) &&
+        ((pMode->Flags & V_DBLSCAN) || (pMode->VScan > 1)))
     {
         pMode->CrtcVDisplay <<= 1;
         pMode->CrtcVSyncStart <<= 1;
         pMode->CrtcVSyncEnd <<= 1;
         pMode->CrtcVTotal <<= 1;
     }
-    pMode->CrtcVDisplay--;
-    pMode->CrtcVSyncStart--;
-    pMode->CrtcVSyncEnd--;
-    pMode->CrtcVTotal--;
-    /* Make sure sync pulse is not too wide */
-    if ((pMode->CrtcVSyncEnd - pMode->CrtcVSyncStart) >
-         (int)MaxBits(CRTC_V_SYNC_WID))
-        pMode->CrtcVSyncEnd = pMode->CrtcVSyncStart + MaxBits(CRTC_V_SYNC_WID);
-    pMode->CrtcVAdjusted = TRUE;                /* Redundant */
 
     /*
      * Might as well default to the same as VGA with respect to sync
@@ -215,6 +207,16 @@ ATIMach64Calculate
         else
             pMode->Flags |= V_PHSYNC | V_PVSYNC;
     }
+
+    pMode->CrtcVDisplay--;
+    pMode->CrtcVSyncStart--;
+    pMode->CrtcVSyncEnd--;
+    pMode->CrtcVTotal--;
+    /* Make sure sync pulse is not too wide */
+    if ((pMode->CrtcVSyncEnd - pMode->CrtcVSyncStart) >
+         (int)MaxBits(CRTC_V_SYNC_WID))
+        pMode->CrtcVSyncEnd = pMode->CrtcVSyncStart + MaxBits(CRTC_V_SYNC_WID);
+    pMode->CrtcVAdjusted = TRUE;                /* Redundant */
 
     /* Build register contents */
     pATIHW->crtc_h_total_disp =
@@ -280,7 +282,7 @@ ATIMach64Calculate
         default:
             break;
     }
-    if (pMode->Flags & V_DBLSCAN)
+    if ((pMode->Flags & V_DBLSCAN) || (pMode->VScan > 1))
         pATIHW->crtc_gen_cntl |= CRTC_DBL_SCAN_EN;
     if (pMode->Flags & V_INTERLACE)
         pATIHW->crtc_gen_cntl |= CRTC_INTERLACE_EN;

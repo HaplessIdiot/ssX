@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.5 1999/09/27 06:29:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.6 1999/10/13 04:21:11 dawes Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -204,8 +204,6 @@ typedef struct _ATIRec
      * LCD panel data.
      */
     int LCDPanelID, LCDClock, LCDHorizontal, LCDVertical;
-    int LCDHSyncStart, LCDHSyncWidth, LCDHBlankWidth;
-    int LCDVSyncStart, LCDVSyncWidth, LCDVBlankWidth;
     int LCDVBlendFIFOSize;
 
     /*
@@ -235,6 +233,8 @@ typedef struct _ATIRec
 
     /* Mode data */
     ATIHWRec OldHW, NewHW;
+    int MaximumInterlacedPitch;
+    Bool InterlacedSeen;
 
     /*
      * Resource Access Control entity index.

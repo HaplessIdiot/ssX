@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.20 1999/08/01 07:57:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.21 1999/10/13 04:21:05 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -123,12 +123,15 @@ xf86ModeStatusToString(ModeStatus status)
 	return "vertical blanking too wide";
     case MODE_PANEL:
 	return "exceeds panel dimensions";
+    case MODE_INTERLACE_WIDTH:
+	return "width too large for interlaced mode";
     case MODE_BAD:
 	return "unknown reason";
     case MODE_ERROR:
 	return "internal error";
+    default:
+	return "unknown";
     }
-    return "unknown";
 }
 
 /*
@@ -205,11 +208,20 @@ xf86HandleBuiltinMode(ScrnInfoPtr scrp,
     int DivFactor = 1;
     int clockIndex;
     
+    /* Reject previously rejected modes */
+    if (p->status != MODE_OK)
+	return p->status;
+
+    /* Reject previously considered modes */
+    if (p->prev)
+        return MODE_NOMODE;
+
     if ((p->type & M_T_CLOCK_C) == M_T_CLOCK_C) {
 	/* Check clock is in range */
 	cp = xf86FindClockRangeForMode(clockRanges, p);
 	if (cp == NULL){
 	    modep->type = p->type;
+	    p->status = MODE_CLOCK_RANGE;
 	    return MODE_CLOCK_RANGE;
 	}
 	DivFactor = cp->ClockDivFactor;
@@ -245,29 +257,35 @@ xf86HandleBuiltinMode(ScrnInfoPtr scrp,
 	}
 	modep->PrivFlags = p->PrivFlags;
     }
-    modep->type = p->type;
-    modep->HDisplay  = p->HDisplay;
-    modep->HSyncStart = p->HSyncStart;
-    modep->HSyncEnd = p->HSyncEnd;
-    modep->HTotal = p->HTotal;
-    modep->HSkew = p->HSkew;
-    modep->VDisplay	= p->VDisplay;
-    modep->VSyncStart = p->VSyncStart;
-    modep->VSyncEnd	= p->VSyncEnd;
-    modep->VTotal = p->VTotal;
-    modep->VScan = p->VScan;
-    modep->Flags = p->Flags | extraFlags;
-    modep->CrtcHDisplay = p->CrtcHDisplay;
-    modep->CrtcHSyncStart = p->CrtcHSyncStart;
-    modep->CrtcHSyncEnd = p->CrtcHSyncEnd;
-    modep->CrtcHTotal = p->CrtcHTotal;
-    modep->CrtcHSkew = p->CrtcHSkew;
-    modep->CrtcVDisplay = p->CrtcVDisplay;
-    modep->CrtcVSyncStart = p->CrtcVSyncStart;
-    modep->CrtcVSyncEnd = p->CrtcVSyncEnd;
-    modep->CrtcVTotal = p->CrtcVTotal;
-    modep->CrtcHAdjusted = p->CrtcHAdjusted;
-    modep->CrtcVAdjusted = p->CrtcVAdjusted;
+    modep->type            = p->type;
+    modep->HDisplay        = p->HDisplay;
+    modep->HSyncStart      = p->HSyncStart;
+    modep->HSyncEnd        = p->HSyncEnd;
+    modep->HTotal          = p->HTotal;
+    modep->HSkew           = p->HSkew;
+    modep->VDisplay        = p->VDisplay;
+    modep->VSyncStart      = p->VSyncStart;
+    modep->VSyncEnd        = p->VSyncEnd;
+    modep->VTotal          = p->VTotal;
+    modep->VScan           = p->VScan;
+    modep->Flags           = p->Flags | extraFlags;
+    modep->CrtcHDisplay    = p->CrtcHDisplay;
+    modep->CrtcHBlankStart = p->CrtcHBlankStart;
+    modep->CrtcHSyncStart  = p->CrtcHSyncStart;
+    modep->CrtcHSyncEnd    = p->CrtcHSyncEnd;
+    modep->CrtcHBlankEnd   = p->CrtcHBlankEnd;
+    modep->CrtcHTotal      = p->CrtcHTotal;
+    modep->CrtcHSkew       = p->CrtcHSkew;
+    modep->CrtcVDisplay    = p->CrtcVDisplay;
+    modep->CrtcVBlankStart = p->CrtcVBlankStart;
+    modep->CrtcVSyncStart  = p->CrtcVSyncStart;
+    modep->CrtcVSyncEnd    = p->CrtcVSyncEnd;
+    modep->CrtcVBlankEnd   = p->CrtcVBlankEnd;
+    modep->CrtcVTotal      = p->CrtcVTotal;
+    modep->CrtcHAdjusted   = p->CrtcHAdjusted;
+    modep->CrtcVAdjusted   = p->CrtcVAdjusted;
+
+    p->prev = modep;
     
     return MODE_OK;
 }
@@ -278,8 +296,7 @@ xf86HandleBuiltinMode(ScrnInfoPtr scrp,
  * This function returns a mode from the given list which matches the
  * given name.  When multiple modes with the same name are available,
  * the method of picking the matching mode is determined by the
- * strategy selected.  There is an implicit assumption in this that modes
- * with the same name are of the same size.
+ * strategy selected.
  *
  * This function takes the following parameters:
  *    scrp         ScrnInfoPtr
@@ -351,7 +368,18 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
 	    if (p->type & M_T_BUILTIN) 
 		return xf86HandleBuiltinMode(scrp, p,modep, clockRanges,
 					     allowDiv2);
+
+	    /* Skip over previously rejected modes */
+	    if (p->status != MODE_OK) {
+		if (!found)
+		    status = p->status;
+		continue;
+	    }
 		
+	    /* Skip over previously considered modes */
+	    if (p->prev)
+		continue;
+
 	    /* Check clock is in range */
 	    cp = xf86FindClockRangeForMode(clockRanges, p);
 	    if (cp == NULL) {
@@ -359,6 +387,7 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
 		 * XXX Could do more here to provide a more detailed
 		 * reason for not finding a mode.
 		 */
+		p->status = MODE_CLOCK_RANGE;
 		if (!found)
 		    status = MODE_CLOCK_RANGE;
 		continue;
@@ -416,6 +445,7 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
 		gap = abs(p->Clock -
 		    ((scrp->clock[i] * cp->ClockDivFactor) / cp->ClockMulFactor));
 	    if (gap > minimumGap) {
+		p->status = MODE_NOCLOCK;
 		if (!found)
 		    status = MODE_NOCLOCK;
 		continue;
@@ -503,16 +533,22 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
     modep->VScan		= bestMode->VScan;
     modep->Flags		= bestMode->Flags | extraFlags;
     modep->CrtcHDisplay		= bestMode->CrtcHDisplay;
+    modep->CrtcHBlankStart	= bestMode->CrtcHBlankStart;
     modep->CrtcHSyncStart	= bestMode->CrtcHSyncStart;
     modep->CrtcHSyncEnd		= bestMode->CrtcHSyncEnd;
+    modep->CrtcHBlankEnd	= bestMode->CrtcHBlankEnd;
     modep->CrtcHTotal		= bestMode->CrtcHTotal;
     modep->CrtcHSkew		= bestMode->CrtcHSkew;
     modep->CrtcVDisplay		= bestMode->CrtcVDisplay;
+    modep->CrtcVBlankStart	= bestMode->CrtcVBlankStart;
     modep->CrtcVSyncStart	= bestMode->CrtcVSyncStart;
     modep->CrtcVSyncEnd		= bestMode->CrtcVSyncEnd;
+    modep->CrtcVBlankEnd	= bestMode->CrtcVBlankEnd;
     modep->CrtcVTotal		= bestMode->CrtcVTotal;
     modep->CrtcHAdjusted	= bestMode->CrtcHAdjusted;
     modep->CrtcVAdjusted	= bestMode->CrtcVAdjusted;
+
+    bestMode->prev = modep;
 
     return MODE_OK;
 }
@@ -760,7 +796,8 @@ xf86InitialCheckModeForDriver(ScrnInfoPtr scrp, DisplayModePtr mode,
     }
 
     if (scrp->ValidMode) {
-	status = (*scrp->ValidMode)(scrp->scrnIndex, mode, FALSE, 0);
+	status = (*scrp->ValidMode)(scrp->scrnIndex, mode, FALSE,
+				    MODECHECK_INITIAL);
 	if (status != MODE_OK)
 	    return status;
     }
@@ -841,7 +878,7 @@ xf86CheckModeForDriver(ScrnInfoPtr scrp, DisplayModePtr mode, int flags)
  * This function takes the following parameters:
  *    scrp         ScrnInfoPtr
  *    availModes   the list of modes available for the monitor
- *    modeNames    list of mode names that the screen is requesting
+ *    modeNames    (optional) list of mode names that the screen is requesting
  *    clockRanges  a list of clock ranges
  *    linePitches  (optional) a list of line pitches
  *    minPitch     (optional) minimum line pitch (in pixels)
@@ -887,11 +924,8 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 		  int minHeight, int maxHeight, int virtualX, int virtualY,
 		  int apertureSize, LookupModeFlags strategy)
 {
-    /* XXX Implement checking against minHeight and maxHeight */
-
-    DisplayModePtr p, q, new;
+    DisplayModePtr p, q, new, last, *endp;
     int i, numModes = 0;
-    Bool firstMode = TRUE;
     ModeStatus status;
     int linePitch = -1, virtX = 0, virtY = 0;
     int newLinePitch, newVirtX, newVirtY;
@@ -903,10 +937,6 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
     if (scrp == NULL || scrp->name == NULL ||
 	(!scrp->progClock && scrp->numClocks == 0)) {
 	ErrorF("xf86ValidateModes: called with invalid scrnInfoRec\n");
-	return -1;
-    }
-    if (modeNames == NULL || modeNames[0] == NULL) {
-	ErrorF("xf86ValidateModes: called with invalid modeNames\n");
 	return -1;
     }
     if (linePitches != NULL && linePitches[0] <= 0) {
@@ -973,6 +1003,13 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	    return -1;
 	}
 
+	if (minHeight > 0 && virtualY < minHeight) {
+	    xf86DrvMsg(scrp->scrnIndex, X_ERROR,
+		       "Virtual height (%d) is too small for the hardware "
+		       "(min %d)\n", virtualY, minHeight);
+	    return -1;
+	}
+
 	virtualX = _VIRTUALX(virtualX);
 	if (linePitches != NULL) {
 	    for (i = 0; linePitches[i] != 0; i++) {
@@ -1011,9 +1048,10 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
     xf86ShowClockRanges(scrp, clockRanges);
 
     /*
-     * If scrp->modePool hasn't been setup yet, set it up now.  This allows
-     * the modes that the driver definitely can't use to be weeded out
-     * early.
+     * If scrp->modePool hasn't been setup yet, set it up now.  This allows the
+     * modes that the driver definitely can't use to be weeded out early.  Note
+     * that a modePool mode's prev field is used to hold a pointer to the
+     * member of the scrp->modes list for which a match was considered.
      */
     if (scrp->modePool == NULL) {
 	q = NULL;
@@ -1030,9 +1068,10 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 		} else {
 		    q->next = new;
 		}
-		new->prev = q;
+		new->prev = NULL;
 		q = new;
 		q->name = xnfstrdup(p->name);
+	        q->status = MODE_OK;
 	    } else {
 		if (p->type & M_T_BUILTIN)
 		    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
@@ -1044,51 +1083,86 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 			       xf86ModeStatusToString(status));
 	    }
 	}
-    }
 
-    if (scrp->modePool == NULL) {
-	xf86DrvMsg(scrp->scrnIndex, X_WARNING, "Mode pool is empty\n");
-	return 0;
-    }
-
-    /*
-     * Allocate one entry in scrp->modes for each named mode, if not already
-     * done.
-     */
-    if (scrp->modes == NULL) {
-	scrp->modes = xnfalloc(sizeof(DisplayModeRec));
-	scrp->modes->next = NULL;
-	scrp->modes->prev = NULL;
-    }
-    q = scrp->modes;
-    for (i = 0; modeNames[i] != NULL; i++) {
-	if (firstMode) {
-	    firstMode = FALSE;
-	} else {
-	    if (q->next == NULL) {
-		q->next = xnfalloc(sizeof(DisplayModeRec));
-		q->next->next = NULL;
-		q->next->name = NULL;
-	    } else {
-		if (q->next->name)
-		    xfree(q->next->name);
-	    }
-	    q->next->prev = q;
-	    q = q->next;
+	if (scrp->modePool == NULL) {
+	    xf86DrvMsg(scrp->scrnIndex, X_WARNING, "Mode pool is empty\n");
+	    return 0;
 	}
-	q->name = xnfalloc(strlen(modeNames[i]) + 1);
-	strcpy(q->name, modeNames[i]);
-	q->type = 0;
+    } else {
+	for (p = scrp->modePool; p != NULL; p = p->next) {
+	    p->prev = NULL;
+	    p->status = MODE_OK;
+	}
     }
-    q->next = NULL;
+
     /*
-     * XXX Check if there are any remaining previously allocated entries
-     * which should be freed?  (but there shouldn't normally be any such
-     * entries)
+     * Allocate one entry in scrp->modes for each named mode.
      */
+    while (scrp->modes)
+	xf86DeleteMode(&scrp->modes, scrp->modes);
+    endp = &scrp->modes;
+    last = NULL;
+    if (modeNames != NULL) {
+	for (i = 0; modeNames[i] != NULL; i++) {
+	    new = xnfalloc(sizeof(DisplayModeRec));
+	    new->type = 0;
+	    new->status = MODE_OK;
+	    new->prev = last;
+	    new->next = NULL;
+	    new->name = xnfalloc(strlen(modeNames[i]) + 1);
+	    strcpy(new->name, modeNames[i]);
+	    if (new->prev)
+		new->prev->next = new;
+	    *endp = last = new;
+	    endp = &new->next;
+	}
+    }
 
     /* Lookup each mode */
-    for (p = scrp->modes; p != NULL; p = p->next) {
+    for (p = scrp->modes; ; p = p->next) {
+	/*
+	 * If the supplied mode names don't produce a valid mode, scan through
+	 * unconsidered modePool members until one survives validation.
+	 */
+	if (p == NULL) {
+	    if (numModes > 0)
+		break;
+
+	    for (q = scrp->modePool;  q != NULL;  q = q->next) {
+		if ((q->prev == NULL) && (q->status == MODE_OK)) {
+		    /*
+		     * Deal with the case where this mode wasn't considered
+		     * because of a builtin mode of the same name.
+		     */
+		    for (p = scrp->modes; p != NULL; p = p->next) {
+			if ((p->status != MODE_OK) &&
+			    !strcmp(p->name, q->name))
+			    break;
+		    }
+
+		    if (p == NULL)
+			break;
+
+		    q->prev = p;
+		}
+	    }
+
+	    if (q == NULL)
+		break;
+
+	    p = xnfalloc(sizeof(DisplayModeRec));
+	    p->type = 0;
+	    p->status = MODE_OK;
+	    p->prev = last;
+	    p->next = NULL;
+	    p->name = xnfalloc(strlen(q->name) + 1);
+	    strcpy(p->name, q->name);
+	    if (p->prev)
+		p->prev->next = p;
+	    *endp = last = p;
+	    endp = &p->next;
+	}
+    lookupNext:
 	status = xf86LookupMode(scrp, p, clockRanges, strategy);
 	if (status == MODE_ERROR) {
 	    ErrorF("xf86ValidateModes: "
@@ -1096,7 +1170,8 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	    return -1;
 	}
 	if (status != MODE_OK) {
-	    p->status = status;
+	    if (p->status == MODE_OK)
+		p->status = status;
 	    continue;
 	}
 
@@ -1110,8 +1185,13 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	 */
 	if (virtualX <= 0 && p->HDisplay > newVirtX)
 	    newVirtX = _VIRTUALX(p->HDisplay);
-	if (virtualY <= 0 && p->VDisplay > newVirtY)
+	if (virtualY <= 0 && p->VDisplay > newVirtY) {
+	    if (maxHeight > 0 && p->VDisplay > maxHeight) {
+		p->status = MODE_VIRTUAL_Y;	/* ? */
+		goto lookupNext;
+	    }
 	    newVirtY = p->VDisplay;
+	}
 
 	/*
 	 * If virtual resolution is to be increased, revalidate it.
@@ -1138,7 +1218,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	    }
 	    if ((newLinePitch < minPitch) || (newLinePitch > maxPitch)) {
 		p->status = MODE_BAD_WIDTH;
-		continue;
+		goto lookupNext;
 	    }
 
 	    /*
@@ -1147,15 +1227,28 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	     */
 	    if (_VIDEOSIZE(newLinePitch, newVirtX, newVirtY) > pixelArea) {
 		p->status = MODE_MEM_VIRT;
-		continue;
+		goto lookupNext;
 	    }
+	}
 
-	    virtX = newVirtX;
-	    virtY = newVirtY;
-	    linePitch = newLinePitch;
+	if (scrp->ValidMode) {
+	    /*
+	     * Give the driver a final say, passing it the proposed virtual
+	     * geometry.
+	     */
+	    scrp->virtualX = newVirtX;
+	    scrp->virtualY = newVirtY;
+	    scrp->displayWidth = newLinePitch;
+	    p->status = (scrp->ValidMode)(scrp->scrnIndex, p, FALSE,
+					  MODECHECK_FINAL);
+	    if (p->status != MODE_OK)
+		goto lookupNext;
 	}
 
 	/* Mode has passed all the tests */
+	virtX = newVirtX;
+	virtY = newVirtY;
+	linePitch = newLinePitch;
 	p->status = MODE_OK;
 	numModes++;
     }
@@ -1179,6 +1272,13 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	scrp->modes->prev = p;
     }
 
+    if (minHeight > 0 && virtY < minHeight) {
+	xf86DrvMsg(scrp->scrnIndex, X_ERROR,
+		   "Virtual height (%d) is too small for the hardware "
+		   "(min %d)\n", virtY, minHeight);
+	return -1;
+    }
+
     return numModes;
 }
 
@@ -1187,8 +1287,9 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
  *
  * This function removes a mode from a list of modes.
  *
- * There are two types of mode lists:
+ * There are different types of mode lists:
  *
+ *  - singly linked linear lists, ending in NULL
  *  - doubly linked linear lists, starting and ending in NULL
  *  - doubly linked circular lists
  *
@@ -1206,12 +1307,12 @@ xf86DeleteMode(DisplayModePtr *modeList, DisplayModePtr mode)
 	*modeList = mode->next;
 
     /* If mode is the only one on the list, set the list to NULL */
-    if ((mode == mode->prev) && (mode->prev == mode->next)) {
+    if ((mode == mode->prev) && (mode == mode->next)) {
 	*modeList = NULL;
     } else {
-	if (mode->prev != NULL)
+	if ((mode->prev != NULL) && (mode->prev->next == mode))
 	    mode->prev->next = mode->next;
-	if (mode->next != NULL)
+	if ((mode->next != NULL) && (mode->next->prev == mode))
 	    mode->next->prev = mode->prev;
     }
 
@@ -1252,6 +1353,10 @@ xf86PruneDriverModes(ScrnInfoPtr scrp)
 	}
 	p = n;
     } while (p != NULL && p != first);
+
+    /* modePool is no longer needed, turf it */
+    while (scrp->modePool)
+	xf86DeleteMode(&scrp->modePool, scrp->modePool);
 }
 
 

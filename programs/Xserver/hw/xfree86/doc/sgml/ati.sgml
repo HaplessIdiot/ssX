@@ -8,10 +8,10 @@
 
 <title>ATI Adapters README file
 <author>Marc Aurele La France
-<date>1999 September 8
+<date>1999 October 25
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.26 1999/09/25 14:37:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.27tsi Exp $
 </ident>
 
 <abstract>
@@ -409,10 +409,9 @@ accelerator CRTC in 88800GX, 88800CX, 264CT and 264ET adapters.
 CRTC.
 <item>Interlaced modes are not supported on 18800-x and 28800-x adapters when
 using a virtual resolution that is 2048 pixels or wider.
+When using a 18800-x with 256kB of video memory in 256-colour modes, this limit
+is reduced to 1024.
 This is yet another hardware limitation that cannot be circumvented.
-For now, the driver prevents the occurrence of this problem by restricting
-virtual resolutions to be less than 2048 pixels wide, even when no interlaced
-modes are specified.
 <item>Video memory banking does not work in monochrome and 16-colour modes on
 18800-x adapters.
 This appears to be another hardware limit, but this conclusion cannot be
