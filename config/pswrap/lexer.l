@@ -36,7 +36,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/config/pswrap/lexer.l,v 1.7 2000/04/05 18:13:12 dawes Exp $ */
+/* $XFree86: xc/config/pswrap/lexer.l,v 1.8 2000/05/18 23:46:08 dawes Exp $ */
 
 #include <ctype.h>
 #include <stdlib.h>
@@ -70,6 +70,39 @@ int lexdebug = 1;		/* debug flag */
 
 #undef YYLMAX
 #define YYLMAX 16384
+
+/* ErrIntro prints a standard intro for error messages;
+ * change it if your system uses something else.  We have many options:
+ *
+ * to match Macintosh:  #define FMT "File \"%s\"; Line %d # "
+ * to match BSD cc:	#define FMT "\"%s\", line %d: "
+ * to match gcc:	#define FMT "%s:%d: "
+ * to match Mips cc:	#define FMT "pswrap: Error: %s, line %d: "
+ */
+#define INTRO	"# In function %s -\n"
+
+#ifdef macintosh
+#define FMT "File \"%s\"; Line %d # "
+#else /* macintosh */
+#define FMT "\"%s\", line %d: "
+#endif /* macintosh */
+
+void ErrIntro(int line)
+{
+    if (! reportedPSWName && currentPSWName) {
+		reportedPSWName = 1;
+		fprintf(stderr,INTRO,currentPSWName);
+    }
+    fprintf(stderr,FMT,ifile,line);
+    errorCount++;
+}
+
+
+void yyerror(char *errmsg)
+{
+    ErrIntro(yylineno);
+    fprintf(stderr,"%s near text \"%s\"\n",errmsg,yytext);
+}
 %}
 
 %o 3500
@@ -478,8 +511,11 @@ endps { 		/* BOGUS end of a wrap */
 		return PSSTRING;
 	}
 	curleng += 4;
-	sprintf(sbody,"\\%03.3s",(yytext + 1));
-	sbody += 4;
+	sprintf(sbody,"\\%3.3s",(yytext + 1));
+	while (*sbody) {
+	    if (*sbody == ' ') *sbody = '0';
+	    sbody++;
+	}
 }
 
 
