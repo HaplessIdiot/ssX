@@ -2,10 +2,10 @@
  *	$Xorg: input.c,v 1.3 2000/08/17 19:55:08 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/input.c,v 3.66 2003/10/21 23:16:19 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/input.c,v 3.67 2003/12/03 00:22:57 dawes Exp $ */
 
 /*
- * Copyright 1999-2001,2002 by Thomas E. Dickey
+ * Copyright 1999-2002,2003 by Thomas E. Dickey
  *
  *                         All Rights Reserved
  *
@@ -693,11 +693,27 @@ Input(TKeyboard * keyboard,
 	    }
 #endif
 	    if (eightbit && screen->input_eight_bits) {
-		if (CharOf(*string) < 128) {
-		    TRACE(("...input shift from %d to %d\n",
-			   CharOf(*string),
-			   CharOf(*string) | 0x80));
+		IChar ch = CharOf(*string);
+		if (ch < 128) {
 		    *string |= 0x80;
+		    TRACE(("...input shift from %d to %d (%#x to %#x)\n",
+			   ch, CharOf(*string),
+			   ch, CharOf(*string)));
+#if OPT_WIDE_CHARS
+		    if (screen->utf8_mode) {
+			/*
+			 * We could interpret the incoming code as "in the
+			 * current locale", but it's simpler to treat it as
+			 * a Unicode value to translate to UTF-8.
+			 */
+			ch = CharOf(*string);
+			nbytes = 2;
+			string[0] = 0xc0 | ((ch >> 6) & 0x3);
+			string[1] = 0x80 | (ch & 0x3f);
+			TRACE(("...encoded %#x in UTF-8 as %#x,%#x\n",
+			       ch, string[0], string[1]));
+		    }
+#endif
 		}
 		eightbit = False;
 	    }
