@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.1 2000/06/14 00:16:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.2 2000/06/14 02:17:00 dawes Exp $ */
 
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
@@ -59,6 +59,11 @@
 #include "imstt.h"
 #include "imstt_reg.h"
 
+
+/* To get it to build on non-PPC */
+#ifndef __powerpc__
+#define eieio()
+#endif
 
 /*
  * prototypes
@@ -302,8 +307,8 @@ static Bool IMSTTProbe(DriverPtr drv, int flags)
 		pScrn->FreeScreen = NULL;
 /*		pScrn->ValidMode = IMSTTValidMode; */
 		foundScreen = TRUE;
-		xf86ConfigActivePciEntry(pScrn, usedChips[i], IMSTTPciChipsets,
-					 NULL, NULL, NULL, NULL, NULL);
+		xf86ConfigActivePciEntity(pScrn, usedChips[i], IMSTTPciChipsets,
+					  NULL, NULL, NULL, NULL, NULL);
 	}
 
 	xfree(usedChips);
