@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: NetBSD.cf,v 1.1 94/03/29 15:34:45 gildea Exp $
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.7 1994/07/15 06:52:20 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.8 1994/08/01 12:00:18 dawes Exp $
 
 #define OSName		NetBSD 1.0_BETA
 #define	OSVendor	/**/
@@ -39,8 +39,9 @@ XCOMM operating system:  OSName
 #undef HasGcc
 #define HasGcc			YES
 #define HasGcc2			YES
-#define HasCplusplus		YES
+#ifndef HasGcc2ForCplusplus
 #define HasGcc2ForCplusplus	YES
+#endif
 #define GccUsesGas		YES
 #define UseGas			YES
 #define GnuCpp			YES
