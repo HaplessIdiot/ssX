@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.36 2002/10/09 22:24:12 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.37 2002/10/14 18:22:45 mvojkovi Exp $ */
 
 #ifndef __NV_STRUCT_H__
 #define __NV_STRUCT_H__
@@ -10,11 +10,14 @@
 #include "xf86Cursor.h"
 #include "xf86int10.h"
 
+
+#define BITMASK(t,b) (((unsigned)(1U << (((t)-(b)+1)))-1)  << (b))
+#define MASKEXPAND(mask) BITMASK(1?mask,0?mask)
+#define SetBF(mask,value) ((value) << (0?mask))
+#define GetBF(var,mask) (((unsigned)((var) & MASKEXPAND(mask))) >> (0?mask) )
 #define SetBitField(value,from,to) SetBF(to, GetBF(value,from))
 #define SetBit(n) (1<<(n))
 #define Set8Bits(value) ((value)&0xff)
-
-#define MAX_CURS            32
 
 typedef RIVA_HW_STATE* NVRegPtr;
 
@@ -97,7 +100,7 @@ typedef struct {
     NVFBLayout		CurrentLayout;
     /* Cursor */
     CARD32              curFg, curBg;
-    CARD32              curImage[MAX_CURS*2];
+    CARD32              curImage[256];
     /* Misc flags */
     unsigned int        opaqueMonochrome;
     int                 currentRop;
@@ -116,6 +119,7 @@ typedef struct {
     int			forceCRTC;
     OptionInfoPtr	Options;
     Bool                alphaCursor;
+    unsigned char       DDCBase;
 } NVRec, *NVPtr;
 
 #define NVPTR(p) ((NVPtr)((p)->driverPrivate))
@@ -157,9 +161,13 @@ int RivaGetConfig(NVPtr);
 #define NV_CHIP_QUADRO4_200         ((PCI_VENDOR_NVIDIA << 16) | PCI_CHIP_QUADRO4_200)
 #define NV_CHIP_QUADRO4_550XGL      ((PCI_VENDOR_NVIDIA << 16) | PCI_CHIP_QUADRO4_550XGL)
 #define NV_CHIP_QUADRO4_500_GOGL    ((PCI_VENDOR_NVIDIA << 16) | PCI_CHIP_QUADRO4_500_GOGL)
-#define NV_CHIP_0x0180              ((PCI_VENDOR_NVIDIA << 16) | 0x0180)
+#define NV_CHIP_0x0177              ((PCI_VENDOR_NVIDIA << 16) | 0x0177)
+#define NV_CHIP_0x017D              ((PCI_VENDOR_NVIDIA << 16) | 0x017D)
 #define NV_CHIP_0x0181              ((PCI_VENDOR_NVIDIA << 16) | 0x0181)
 #define NV_CHIP_0x0182              ((PCI_VENDOR_NVIDIA << 16) | 0x0182)
+#define NV_CHIP_0x0183              ((PCI_VENDOR_NVIDIA << 16) | 0x0183)
+#define NV_CHIP_0x0186              ((PCI_VENDOR_NVIDIA << 16) | 0x0186)
+#define NV_CHIP_0x0187              ((PCI_VENDOR_NVIDIA << 16) | 0x0187)
 #define NV_CHIP_0x0188              ((PCI_VENDOR_NVIDIA << 16) | 0x0188)
 #define NV_CHIP_0x018A              ((PCI_VENDOR_NVIDIA << 16) | 0x018A)
 #define NV_CHIP_0x018B              ((PCI_VENDOR_NVIDIA << 16) | 0x018B)
@@ -175,10 +183,19 @@ int RivaGetConfig(NVPtr);
 #define NV_CHIP_QUADRO4_900XGL      ((PCI_VENDOR_NVIDIA << 16) | PCI_CHIP_QUADRO4_900XGL)
 #define NV_CHIP_QUADRO4_750XGL      ((PCI_VENDOR_NVIDIA << 16) | PCI_CHIP_QUADRO4_750XGL)
 #define NV_CHIP_QUADRO4_700XGL      ((PCI_VENDOR_NVIDIA << 16) | PCI_CHIP_QUADRO4_700XGL)
+#define NV_CHIP_0x025A              ((PCI_VENDOR_NVIDIA << 16) | 0x025A)
 #define NV_CHIP_0x0280              ((PCI_VENDOR_NVIDIA << 16) | 0x0280)
 #define NV_CHIP_0x0281              ((PCI_VENDOR_NVIDIA << 16) | 0x0281)
+#define NV_CHIP_0x0282              ((PCI_VENDOR_NVIDIA << 16) | 0x0282)
+#define NV_CHIP_0x0286              ((PCI_VENDOR_NVIDIA << 16) | 0x0286)
 #define NV_CHIP_0x0288              ((PCI_VENDOR_NVIDIA << 16) | 0x0288)
 #define NV_CHIP_0x0289              ((PCI_VENDOR_NVIDIA << 16) | 0x0289)
+#define NV_CHIP_0x028C              ((PCI_VENDOR_NVIDIA << 16) | 0x028C)
+#define NV_CHIP_0x0300              ((PCI_VENDOR_NVIDIA << 16) | 0x0300)
+#define NV_CHIP_0x0301              ((PCI_VENDOR_NVIDIA << 16) | 0x0301)
+#define NV_CHIP_0x0302              ((PCI_VENDOR_NVIDIA << 16) | 0x0302)
+#define NV_CHIP_0x0308              ((PCI_VENDOR_NVIDIA << 16) | 0x0308)
+#define NV_CHIP_0x0309              ((PCI_VENDOR_NVIDIA << 16) | 0x0309)
 
 
 #endif /* __NV_STRUCT_H__ */

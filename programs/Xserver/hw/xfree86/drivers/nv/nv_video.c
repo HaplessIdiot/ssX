@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.9 2002/05/12 22:09:34 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.10 2002/06/26 22:09:07 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -18,9 +18,6 @@
 #include "fourcc.h"
 
 #include "nv_include.h"
-#include "nvreg.h"
-#include "nvvga.h"
-
 
 
 #define OFF_DELAY 	450  /* milliseconds */
@@ -59,8 +56,6 @@ typedef struct _NVPortPrivRec {
 
 
 static XF86VideoAdaptorPtr NVSetupImageVideo(ScreenPtr);
-
-static void NVResetVideo(ScrnInfoPtr);
 
 static void NVStopOverlay (ScrnInfoPtr);
 static void NVPutOverlayImage(ScrnInfoPtr pScrnInfo,
@@ -158,7 +153,7 @@ NVSetPortDefaults (ScrnInfoPtr pScrnInfo, NVPortPrivPtr pPriv)
 }
 
 
-static void 
+void 
 NVResetVideo (ScrnInfoPtr pScrnInfo)
 {
     NVPtr          pNv     = NVPTR(pScrnInfo);

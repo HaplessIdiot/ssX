@@ -24,12 +24,10 @@
 /* Rewritten with reference from mga driver and 3.3.4 NVIDIA driver by
    Jarno Paananen <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_cursor.c,v 1.9 2002/10/14 18:22:45 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_cursor.c,v 1.10 2002/11/08 22:00:14 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
-#include "nvreg.h"
-#include "nvvga.h"
 #include "cursorstr.h"
 
 /****************************************************************************\
@@ -57,10 +55,10 @@ ConvertCursor1555(NVPtr pNv, CARD32 *src, CARD16 *dst)
     CARD32 b, m;
     int i, j;
     
-    for ( i = 0; i < MAX_CURS; i++ ) {
+    for ( i = 0; i < 32; i++ ) {
         b = *src++;
         m = *src++;
-        for ( j = 0; j < MAX_CURS; j++ ) {
+        for ( j = 0; j < 32; j++ ) {
 #if X_BYTE_ORDER == X_BIG_ENDIAN
             if ( m & 0x80000000)
                 *dst = ( b & 0x80000000) ? pNv->curFg : pNv->curBg;
@@ -88,10 +86,10 @@ ConvertCursor8888(NVPtr pNv, CARD32 *src, CARD32 *dst)
     CARD32 b, m;
     int i, j;
    
-    for ( i = 0; i < MAX_CURS; i++ ) {
+    for ( i = 0; i < 128; i++ ) {
         b = *src++;
         m = *src++;
-        for ( j = 0; j < MAX_CURS; j++ ) {
+        for ( j = 0; j < 32; j++ ) {
 #if X_BYTE_ORDER == X_BIG_ENDIAN
             if ( m & 0x80000000)
                 *dst = ( b & 0x80000000) ? pNv->curFg : pNv->curBg;
@@ -121,11 +119,11 @@ TransformCursor (NVPtr pNv)
 
     /* convert to color cursor */
     if(pNv->alphaCursor) {
-       dwords = MAX_CURS * MAX_CURS;
+       dwords = 64 * 64;
        if(!(tmp = ALLOCATE_LOCAL(dwords * 4))) return;
        ConvertCursor8888(pNv, pNv->curImage, tmp);
     } else {
-       dwords = (MAX_CURS * MAX_CURS) >> 1;
+       dwords = (32 * 32) >> 1;
        if(!(tmp = ALLOCATE_LOCAL(dwords * 4))) return;
        ConvertCursor1555(pNv, pNv->curImage, (CARD16*)tmp);
     }
@@ -142,7 +140,7 @@ NVLoadCursorImage( ScrnInfoPtr pScrn, unsigned char *src )
     NVPtr pNv = NVPTR(pScrn);
 
     /* save copy of image for color changes */
-    memcpy(pNv->curImage, src, MAX_CURS*2*4);
+    memcpy(pNv->curImage, src, (pNv->alphaCursor) ? 1024 : 256);
 
     TransformCursor(pNv);
 }
@@ -216,7 +214,7 @@ NVUseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
 static Bool 
 NVUseHWCursorARGB(ScreenPtr pScreen, CursorPtr pCurs)
 {
-    if((pCurs->bits->width <= 32) && (pCurs->bits->height <= 32))
+    if((pCurs->bits->width <= 64) && (pCurs->bits->height <= 64))
         return TRUE;
 
     return FALSE;
@@ -242,7 +240,7 @@ NVLoadCursorARGB(ScrnInfoPtr pScrn, CursorPtr pCurs)
               tmp = *image++;
               *dst++ = BYTE_SWAP_32(tmp);
           }
-          for(; x < 32; x++)
+          for(; x < 64; x++)
               *dst++ = 0;
        }
     } else 
@@ -251,13 +249,13 @@ NVLoadCursorARGB(ScrnInfoPtr pScrn, CursorPtr pCurs)
        for(y = 0; y < h; y++) {
           for(x = 0; x < w; x++) 
               *dst++ = *image++;
-          for(; x < 32; x++)
+          for(; x < 64; x++)
               *dst++ = 0;
        }
     }
 
-    if(y < 32)
-      memset(dst, 0, 32 * (32 - y) * 4);
+    if(y < 64)
+      memset(dst, 0, 64 * (64 - y) * 4);
 }
 #endif
 
@@ -275,8 +273,11 @@ NVCursorInit(ScreenPtr pScreen)
     
     pNv->CursorInfoRec = infoPtr;
 
-    infoPtr->MaxWidth = MAX_CURS;
-    infoPtr->MaxHeight = MAX_CURS;
+    if(pNv->alphaCursor)
+       infoPtr->MaxWidth = infoPtr->MaxHeight = 64;
+    else
+       infoPtr->MaxWidth = infoPtr->MaxHeight = 32;
+
     infoPtr->Flags = HARDWARE_CURSOR_TRUECOLOR_AT_8BPP |
                      HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_32; 
     infoPtr->SetCursorColors = NVSetCursorColors;
