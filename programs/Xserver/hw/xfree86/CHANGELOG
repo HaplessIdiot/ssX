@@ -170,7 +170,7 @@ XFree86 4.3.99.14 (10 October 2003)
  495. i830/i810 driver:
       * Added Christian Ziez's code to tweak BIOS image to convince chipset of
         resized video RAM.
-      * Fixed viewport/video overlay window alingment issues.
+      * Fixed viewport/video overlay window alignment issues.
       * Fixed calculation of video overlay memory size.
       * Fixed video overlay on TV out (Bugzilla #213). (Egbert Eich).
  494. Fixed mode setting in trident driver: use mode passed in function 
@@ -181,7 +181,7 @@ XFree86 4.3.99.14 (10 October 2003)
       beyond framebuffer boundaries (Bugzilla #624, Egbert Eich).
  490. Force sane pallette when entering DGA mode in Matrox driver 
       (Egbert Eich).
- 489. ATi Rage128: Wait with modifying FP video mode according to BIOS values
+ 489. ATI Rage128: Wait with modifying FP video mode according to BIOS values
       until final call of ValidMode() to prevent modes from being rejected
       (Bugzilla #661, Egbert Eich).
  488. Some Savage BIOSes turn on clock doubling on non-doubled modes. 
@@ -236,7 +236,7 @@ XFree86 4.3.99.14 (10 October 2003)
  480. Added runtime detection of SHM support by checking the return value of 
       shmget to the SHM and xf86BIGFONT extension to support SHM on Cygwin 
       (Bugzilla #764, Harold L Hunt II).
- 479. Adding O_BINRAY flag when opening an xkm file if this flag is defined
+ 479. Adding O_BINARY flag when opening an xkm file if this flag is defined
       (Bugzilla #768, Alexander Gottwald).
  478. Radeon driver fixes (Hui Yu@ATI)
       - 9200 DVI fix and TMDS_PLL initialization for all chips
@@ -261,7 +261,7 @@ XFree86 4.3.99.14 (10 October 2003)
  475. APM driver:
       . improved clock parameter calculation.
       . Fixed order of initialization of cursor.
-      . Fixed restauration of grapical text mode.
+      . Fixed restauration of graphical text mode.
       . Added YUY2 video format.
       . Corrected accel framebuffer pitches and max screen height 
       (Bugzilla #528, Egbert Eich).
@@ -282,10 +282,10 @@ XFree86 4.3.99.14 (10 October 2003)
       Hugues Fournier).
  468. Fixed xedit coredumps: update counter of free objects when getting an
       object from the list (Bugzilla #722, Egbert Eich).
- 467. Fixed definititon of UseInstalledOnCrossCompile so that it never is
+ 467. Fixed definition of UseInstalledOnCrossCompile so that it never is
       undefined (Harlod L. Hunt II).
  466. Add the 'b' flag to fopen() when opening binary xkm files. This is
-      irrelevant for *nix OSes, but reqired for Cygwin. (Bugzilla #689, 
+      irrelevant for *nix OSes, but required for Cygwin. (Bugzilla #689, 
       Harold L Hunt II).
  465. Cygwin:
       * MultiWindow Mode: Automatically validate the size of windows that are
@@ -314,7 +314,7 @@ XFree86 4.3.99.14 (10 October 2003)
       * removed BuildDPS flag.
       * Changed Alloca flag as Cygwin 1.5.x supports alloca, now.
       * Use external expat package by default.
-      * Changed XawI18nDefines to utilize improved wide char suoort in 
+      * Changed XawI18nDefines to utilize improved wide char support in 
       Cygwin 1.5.x. (Bugzilla #699, Harold L. Hunt II). 
  463. Fixed C&T panel register setting (Akira Taniguchi, Egbert Eich).
  462. Fixing crash on ia64 because of wrong setjmp buffer alignment (Bugzilla
@@ -343,7 +343,7 @@ XFree86 4.3.99.13 (25 September 2003)
  453. Add gcc format checking for the X server's message and logging
       functions, and fix lots of associated warnings (David Dawes).
  452. Replace the perl version of ucs2any with a C version ( Ben Collver and 
-      other NetBSD developpers, Matthieu Herrb).
+      other NetBSD developers, Matthieu Herrb).
  451. For drivers that support 'Option "dri"' have the driver request
       loading the dri module when this option is true.  This brings
       it in to line with how other things are handled.  Other drivers
@@ -378,7 +378,7 @@ XFree86 4.3.99.13 (25 September 2003)
        Alan Cox).
       Removed remaining globals (Egbert Eich).
  441. Fixed memory leaks in the loader (Bugzilla #682 and #683, Juergen Keil).
- 440. Fixed erronous freeing of DisplayModeRec in xf86DeleteMode() when
+ 440. Fixed erroneous freeing of DisplayModeRec in xf86DeleteMode() when
       deleting the modePool in xf86PruneDriverModes() the 'prev' member has
       a different meaning for modePool modes than for ScrnInfoPtr->modes modes
       where it creates a doubly linked list (Bugzilla #678, Juergen Keil).
@@ -395,7 +395,7 @@ XFree86 4.3.99.12 (10 September 2003)
  434. Let luit copy the termios settings from the calling terminal (Bugzilla
       #641, Juliusz Chroboczek).
  433. Add _ADOBE_POSTSCRIPT_FONTNAME to the list of font properties xlsfonts
-      that are atoms and should be convertet to strings when run with the
+      that are atoms and should be converted to strings when run with the
       -ll flag. Also fixed the lenght problems that may arise (Bugzilla # 659,
       Alan Coopersmith).
  432. Backing out 321.: sysMem gets initialized once during server lifetime
@@ -422,7 +422,7 @@ XFree86 4.3.99.12 (10 September 2003)
       it in xf86site.def for those with no legal impediment to doing so
       (David Dawes).
  424. Improvement of Xlib's keysym compose module:
-      - Allow to figure out a mulibyte string if it is ommited in Compose file.
+      - Allow to figure out a mulibyte string if it is omitted in Compose file.
       - Add 'include' instruction with some substitutions.
       - Add a searching of Compose file as a value of XCOMPOSEFILE environment
         variable and as a $HOME/.XCompose file. (Ivan Pascal).
@@ -18096,7 +18096,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2929 2003/11/02 20:25:46 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2930 2003/11/02 20:48:03 dawes Exp $
 
 
 
