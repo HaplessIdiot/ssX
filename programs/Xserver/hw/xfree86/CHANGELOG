@@ -1,4 +1,8 @@
 XFree86 4.2.99.903 (xx February 2003)
+ 919. Fixing vidtune to pop up a info window if mode on chipset is
+      not tuneable (Egbert Eich).
+ 918. Fixing a NULL pointer in a var_arg list in xfd which causes problems
+      on 64 bit systems (Egbert Eich).
  917. Fix a typo in the nsc Imakefile when installing the linkkit 
       (#A.1624, Stanislav Brabec).
  916. Miscellaneous 64-bit and warning fixes to mfb, xf1bpp and xf4bpp
@@ -16426,4 +16430,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2565 2003/02/18 21:29:53 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2566 2003/02/19 10:10:46 alanh Exp $
