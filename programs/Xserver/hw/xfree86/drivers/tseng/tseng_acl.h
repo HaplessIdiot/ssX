@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.h,v 1.9 1997/11/22 00:00:16 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.h,v 1.10 1997/12/28 21:28:33 hohndel Exp $ */
 
 #ifndef _TSENG_ACL_H
 #define _TSENG_ACL_H
@@ -18,6 +18,8 @@
 typedef volatile unsigned char *ByteP; 
 typedef volatile unsigned short *WordP;
 typedef volatile unsigned *LongP;
+
+void tseng_recover_timeout();
 
 /*
  * Shortcuts to Tseng memory-mapped accelerator-control registers
@@ -182,48 +184,35 @@ extern int tseng_old_dir;
  * Some shortcuts. 
  */
 
-#define WAIT_QUEUE \
-{while (*(volatile unsigned char *)ACL_ACCELERATOR_STATUS & 0x1);}
+#define MAX_WAIT_CNT 500000  /* how long we wait before we time out */
+#undef WAIT_VERBOSE          /* if defined: print out how long we waited */
+
+static __inline__ void tseng_wait(reg,name,mask)
+     ByteP reg;
+     char* name;
+     unsigned char mask;
+{
+    int cnt = MAX_WAIT_CNT;
+    while (*reg & mask)
+      if (--cnt < 0)
+      {
+        ErrorF("WAIT_%s: timeout.\n",name);
+        tseng_recover_timeout();
+        break;
+      }
+#ifdef WAIT_VERBOSE
+      ErrorF("%s%d ",name,MAX_WAIT_CNT-cnt);
+#endif
+}
+
+#define WAIT_QUEUE tseng_wait(ACL_ACCELERATOR_STATUS, "QUEUE", 0x1)
 
 /* This is only for W32p rev b...d*/
-#define WAIT_INTERFACE \
-{while (*(volatile unsigned char *)ACL_WRITE_INTERFACE_VALID & 0xf);}
+#define WAIT_INTERFACE tseng_wait(ACL_WRITE_INTERFACE_VALID, "INTERFACE", 0xf)
 
-#define WAIT_QUEUE_VERBOSE \
-{ int cnt=0; while (*(volatile unsigned char *)ACL_ACCELERATOR_STATUS & 0x1) cnt++; ErrorF("Q%d ",cnt);}
-
-#define MAX_WAIT_CNT 500000
-
-#define WAIT_ACL_VERBOSE DO_WAIT_ACL(ErrorF("W%d ",MAX_WAIT_CNT - cnt))
-
-#define WAIT_ACL DO_WAIT_ACL( {} )
+#define WAIT_ACL tseng_wait(ACL_ACCELERATOR_STATUS, "ACL", 0x2)
   
-#define DO_WAIT_ACL(command) \
-  { int cnt = MAX_WAIT_CNT; \
-    while (*(volatile unsigned char *)ACL_ACCELERATOR_STATUS & 0x2) \
-      if (--cnt < 0) \
-      { \
-        if (et4000_type < TYPE_ET6000) \
-        { \
-          *tsengCPU2ACLBase = 0L; /* try unlocking the bus when CPU-to-accel gets stuck */ \
-          FLUSH_ACL \
-        } \
-        ErrorF("WAIT_ACL: timeout.\n"); \
-        break; \
-      } \
-    command; \
-  }
-  
-#define WAIT_XY \
-  {while (*(volatile unsigned char *)ACL_ACCELERATOR_STATUS & 0x4);}
-
-#define FLUSH_ACL \
-  if (et4000_type > TYPE_ET4000W32I) \
-  { \
-    *ACL_SUSPEND_TERMINATE = 0x00; \
-    *ACL_SUSPEND_TERMINATE = 0x02; \
-    *ACL_SUSPEND_TERMINATE = 0x00; \
-  }
+#define WAIT_XY tseng_wait(ACL_ACCELERATOR_STATUS, "XY", 0x4)
 
 
 #define SET_FUNCTION_BLT \

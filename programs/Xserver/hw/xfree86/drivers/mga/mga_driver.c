@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.23 1997/12/05 22:01:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.24 1997/12/14 10:03:59 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -476,7 +476,7 @@ MGACountRam(int blocks)
 			oldMem = base[basePtr];		/* remember previous contents */
 			base[basePtr] = 0;		/* clear it */
 			base[basePtr] = seed;
-			if ( MGAchipset == PCI_CHIP_MGA1064 )
+			if ( MGAchipset != PCI_CHIP_MGA2064 )
 				OUTREG8(MGAREG_CACHEFLUSH, 0);	/* flush the cache on the mystique */
 			else
 				base[0x5000] = 0x11; /* flush the cache */
@@ -801,8 +801,7 @@ MGAProbe()
 
 	if (!vga256InfoRec.videoRam)
 	   if ( MGAchipset == PCI_CHIP_MGA2164 || MGAchipset == PCI_CHIP_MGA2164_AGP )
-		/* Only look for 8 Meg.  Maybe this is causing a crash (MArk)*/
-		vga256InfoRec.videoRam = MGACountRam(4); /* count to 16 mb */
+		vga256InfoRec.videoRam = MGACountRam(8); /* count to 16 mb */
 	   else
 		vga256InfoRec.videoRam = MGACountRam(4); /* count to 8 mb */
 	

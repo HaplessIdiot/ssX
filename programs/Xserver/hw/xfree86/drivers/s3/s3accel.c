@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3accel.c,v 1.15 1997/11/08 17:07:29 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3accel.c,v 1.16 1997/12/05 22:01:47 hohndel Exp $ */
 
 /*
  *
@@ -80,16 +80,17 @@ void S3AccelInit()
 				DELAYED_SYNC;
  
     xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_NOT_LINEAR;
+
+    if(s3Bpp != 3) 
+	xf86AccelInfoRec.PatternFlags |= HARDWARE_PATTERN_TRANSPARENCY;	
 	
     xf86AccelInfoRec.Sync = S3Sync;
 
     /* copy area */
     if((s3Bpp == 3) || S3_911_SERIES(s3ChipId))
        xf86GCInfoRec.CopyAreaFlags = NO_TRANSPARENCY;
-    else   /* Transparency works but it's slower in some cases
-		and faster in others.  I'll have to think about
-		this somemore */
-       xf86GCInfoRec.CopyAreaFlags = /* TRANSPARENCY_GXCOPY */ NO_TRANSPARENCY;
+    else   
+       xf86GCInfoRec.CopyAreaFlags = TRANSPARENCY_GXCOPY;
 
     xf86AccelInfoRec.SetupForScreenToScreenCopy =
         			S3SetupForScreenToScreenCopy;
@@ -125,6 +126,9 @@ void S3AccelInit()
 
 
     /* 8x8 pattern fills */
+    /*  Warning! By all accounts (all 2 of them) 8x8 pattern fills are 
+	broken in plain old Trio64 in 32bpp.  This should be disabled
+	in 32bpp when I figure out which ChipID's those are. */
     if(!S3_911_SERIES(s3ChipId)) {
        xf86AccelInfoRec.SetupForFill8x8Pattern = S3SetupForFill8x8Pattern;
        xf86AccelInfoRec.SubsequentFill8x8Pattern = S3SubsequentFill8x8Pattern;
@@ -364,15 +368,10 @@ void S3SubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
     	SET_MAJ_AXIS_PCNT((short)length);
    	SET_CMD(cmd);
     } else { /* vertical line */
-   	if(octant & YDECREASING)   
-   	    cmd = CMD_LINE | DRAW | LINETYPE | WRTDATA | VECDIR_090;
-        else 
-	    cmd = CMD_LINE | DRAW | LINETYPE | WRTDATA | VECDIR_270;
-   
      	WaitQueue(4);
     	SET_CURPT((short)x1, (short)y1);
     	SET_MAJ_AXIS_PCNT((short)length - 1);
-    	SET_CMD(cmd);
+    	SET_CMD(CMD_LINE | DRAW | LINETYPE | WRTDATA | VECDIR_270);
     }
 }
 
@@ -382,10 +381,10 @@ void S3SubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
 	| 	8x8 Fill Patterns	|
 	\*******************************/
 
-
 void S3SetupForFill8x8Pattern(patternx, patterny, rop, planemask, trans_col)
     int patternx, patterny, rop, planemask, trans_col;
 {
+    TransColor = trans_col;
     WaitQueue16_32(3,4);
     SET_PIX_CNTL(0);
     SET_FRGD_MIX(FSS_BITBLT | s3alu[rop]);
@@ -395,13 +394,25 @@ void S3SetupForFill8x8Pattern(patternx, patterny, rop, planemask, trans_col)
 void S3SubsequentFill8x8Pattern(patternx, patterny, x, y, w, h)
     int patternx, patterny, x, y, w, h;
 {
-    WaitQueue(7);
-    SET_CURPT((short)patternx, (short)patterny); 
-    SET_DESTSTP((short)x, (short)y);
-    SET_AXIS_PCNT(w - 1, h - 1);
-    SET_CMD(CMD_PFILL | DRAW | INC_Y | INC_X | WRTDATA);
-}
+    if(TransColor == -1) {
+    	WaitQueue(7);
+    	SET_CURPT((short)patternx, (short)patterny); 
+    	SET_DESTSTP((short)x, (short)y);
+    	SET_AXIS_PCNT(w - 1, h - 1);
+    	SET_CMD(CMD_PFILL | DRAW | INC_Y | INC_X | WRTDATA);
+    } else {
+    	WaitQueue16_32(2,3);
+    	SET_MULT_MISC(CMD_REG_WIDTH | 0x0100); /* enable compare */
+    	SET_COLOR_CMP(TransColor);
 
+    	WaitQueue(8);
+    	SET_CURPT((short)patternx, (short)patterny); 
+    	SET_DESTSTP((short)x, (short)y);
+    	SET_AXIS_PCNT(w - 1, h - 1);
+    	SET_CMD(CMD_PFILL | DRAW | INC_Y | INC_X | WRTDATA);
+    	SET_MULT_MISC(CMD_REG_WIDTH);	/* disable compare */
+   }
+}
 
 	/***************************************\
 	|    CPU to Screen Color Expansion 	|
