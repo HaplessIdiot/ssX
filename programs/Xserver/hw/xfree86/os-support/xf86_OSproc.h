@@ -64,7 +64,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.39 2000/02/08 13:13:27 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.40 2000/06/17 00:03:26 martin Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -165,23 +165,6 @@ extern int xf86GetSerialModemState(int fd);
 extern int xf86SerialModemSetBits(int fd, int bits);
 extern int xf86SerialModemClearBits(int fd, int bits);
 extern int xf86LoadKernelModule(const char *pathname);
-
-#if defined(__alpha__)
-/* entry points for Mmio memory access routines */
-extern int (*xf86ReadMmio8)(pointer, unsigned long);
-extern int (*xf86ReadMmio16)(pointer, unsigned long);
-extern int (*xf86ReadMmio32)(pointer, unsigned long);
-extern void (*xf86WriteMmio8)(int, pointer, unsigned long);
-extern void (*xf86WriteMmio16)(int, pointer, unsigned long);
-extern void (*xf86WriteMmio32)(int, pointer, unsigned long);
-extern void (*xf86WriteMmioNB8)(int, pointer, unsigned long);
-extern void (*xf86WriteMmioNB16)(int, pointer, unsigned long);
-extern void (*xf86WriteMmioNB32)(int, pointer, unsigned long);
-extern void xf86JensenMemToBus(char *, long, long, int);
-extern void xf86JensenBusToMem(char *, char *, unsigned long, int);
-extern void xf86SlowBCopyFromBus(unsigned char *, unsigned char *, int);
-extern void xf86SlowBCopyToBus(unsigned char *, unsigned char *, int);
-#endif /* __alpha__ */
 
 /* These routines are in shared/sigio.c and are not loaded as part of the
    module.  These routines are small, and the code if very POSIX-signal (or
