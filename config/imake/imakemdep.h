@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.55 2001/11/16 16:47:51 dawes Exp $ */
+/* $XFree86: imakemdep.h,v 3.56 2001/12/14 19:53:19 dawes Exp $ */
 
 
 /* 
@@ -822,10 +822,13 @@ char *cpp_argv[ARGUMENTS] = {
 # define DEFAULT_OS_TEENY_REV   "r %*d.%*d%[A-Z]" 
 # define DEFAULT_OS_TEENY_REV_FROB(buf, size)				\
     do {								\
-	if (*(buf) >= 'A' && *(buf) <= 'Z') /* sanity check */		\
-		snprintf((buf), (size), "%d", *(buf) - 'A' + 1);	\
-	else								\
-	    *(buf) = '\0';						\
+	int	teeny = 0;						\
+	char	*ptr = (buf);						\
+									\
+	while (*ptr >= 'A' && *ptr <= 'Z') /* sanity check */		\
+	    teeny = teeny * 26 + (int)(*ptr++ - 'A');			\
+									\
+	snprintf((buf), (size), "%d", teeny + 1);			\
     } while (0)
 # define DEFAULT_OS_NAME        "smr %[^\n]"
 # define DEFAULT_OS_NAME_FROB(buf, size)				\
