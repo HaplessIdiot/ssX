@@ -1,4 +1,5 @@
 /* $XConsortium: CvtCache.c,v 1.8 94/04/17 20:15:56 rws Exp $ */
+/* $XFree86$ */
 
 /*
  
@@ -36,7 +37,11 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xos.h>
 #include <X11/Xmu/CvtCache.h>
 
+#ifdef X_NOT_STDC_ENV
 extern char *malloc();
+#else
+#include <stdlib.h>
+#endif
 
 static XmuDisplayQueue *dq = NULL;
 static int _CloseDisplay(), _FreeCCDQ();

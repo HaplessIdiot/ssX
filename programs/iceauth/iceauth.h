@@ -1,5 +1,6 @@
 /*
  * $XConsortium: iceauth.h,v 1.3 94/04/17 20:39:55 mor Exp $
+ * $XFree86$
  *
  * 
 Copyright (c) 1989  X Consortium
@@ -42,7 +43,12 @@ typedef int Bool;
 
 extern char *ProgramName;
 
+#ifdef X_NOT_STDC_ENV
 extern char *malloc(), *realloc();
+#else
+#include <stdlib.h>
+#endif
+
 int process_command(), auth_initialize(), auth_finalize();
 extern int print_help();
 extern int verbose;

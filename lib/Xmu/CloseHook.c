@@ -1,4 +1,5 @@
 /* $XConsortium: CloseHook.c,v 1.9 94/04/17 20:15:51 rws Exp $ */
+/* $XFree86$ */
 
 /* 
 Copyright (c) 1989  X Consortium
@@ -59,7 +60,11 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xlib.h>
 #include <X11/Xmu/CloseHook.h>
 
+#ifdef X_NOT_STDC_ENV
 extern char *malloc();					/* should be void * */
+#else
+#include <stdlib.h>
+#endif
 
 /*
  *				 Private data
