@@ -23,7 +23,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/programs/Xserver/cfb/cfbglblt8.c,v 3.6 2001/12/14 19:59:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbglblt8.c,v 3.7 2003/07/16 01:38:37 dawes Exp $ */
 
 /*
  * Poly glyph blt.  Accepts an arbitrary font <= 32 bits wide, in Copy mode
@@ -291,7 +291,7 @@ cfbPolyGlyphBlt8Clipped(
 #endif
     register glyphPointer   glyphBits;
     register int	xoff;
-#if defined(USE_LEFT_BITS) || (!defined(STIPPLE) && !defined(USE_STIPPLE_CODE))
+#if defined(USE_LEFTBITS) || (!defined(STIPPLE) && !defined(USE_STIPPLE_CODE))
     register CfbBits	*dst;
 #endif
 
@@ -299,7 +299,7 @@ cfbPolyGlyphBlt8Clipped(
     FontPtr		pfont = pGC->font;
     CfbBits		*dstLine;
     CfbBits		*pdstBase;
-#ifdef USE_LEFT_BITS
+#ifdef USE_LEFTBITS
     CARD32		*cTmp;
 #endif
     CARD32		*clips;
@@ -406,7 +406,7 @@ cfbPolyGlyphBlt8Clipped(
 		    }
 	    	} while (--hTmp);
 	    	break;
-#else /* !USE_LEFT_BITS */
+#else /* !USE_LEFTBITS */
 	    	{
 		    int h;
     
@@ -419,7 +419,7 @@ cfbPolyGlyphBlt8Clipped(
 	    	}
 	    	glyphBits = clips;
 	    	/* fall through */
-#endif /* USE_LEFT_BITS */
+#endif /* USE_LEFTBITS */
 	    case rgnIN:
 #ifdef STIPPLE
 	    	STIPPLE(dstLine,glyphBits,pixel,bwidthDst,hTmp,xoff);

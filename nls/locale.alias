@@ -684,6 +684,7 @@ zh_CN.GBK:					zh_CN.gbk
 zh_CN.big5:					zh_TW.big5
 zh_CN.euc:					zh_CN.eucCN
 zh_CN.gb2312:					zh_CN.eucCN
+zh_CN.utf8:					zh_CN.UTF-8
 zh_HK:						zh_HK.big5hkscs
 zh_HK.Big5hkscs:				zh_HK.big5hkscs
 zh_HK.Big5-hkscs:				zh_HK.big5hkscs

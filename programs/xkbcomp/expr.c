@@ -569,9 +569,16 @@ ExprDef		*left,*right;
 	    if (expr->type==TypeString) {
 		register char *str;
 		str= XkbAtomGetString(NULL,expr->value.str);
-		if ((str!=None)&&(strlen(str)==1)) {
-		    val_rtrn->uval= str[0];
-		    return True;
+		if (str!=None)
+		    switch (strlen(str)) {
+			case 0:
+			    val_rtrn->uval= 0;
+			    return True;
+			case 1:
+			    val_rtrn->uval= str[0];
+			    return True;
+			default:
+			    break;
 		}
 	    }
 	    if ((expr->type!=TypeInt)&&(expr->type!=TypeFloat)) {

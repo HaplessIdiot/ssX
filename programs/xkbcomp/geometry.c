@@ -280,11 +280,11 @@ PropertyInfo *	next;
 	info->nProps= 0;
     }
     for (tmp=pi;tmp!=NULL;tmp=next) {
-	if (pi->name)
-	    uFree(pi->name);
-	if (pi->value)
-	    uFree(pi->value);
-	pi->name= pi->value=NULL;
+	if (tmp->name)
+	    uFree(tmp->name);
+	if (tmp->value)
+	    uFree(tmp->value);
+	tmp->name= tmp->value=NULL;
 	next= (PropertyInfo *)tmp->defs.next;
 	uFree(tmp);
     }

@@ -175,11 +175,19 @@ XGetErrorDatabaseText(dpy, name, type, defaultp, buffer, nbytes)
     if (db)
     {
 	tlen = strlen (name) + strlen (type) + 2;
-	if (tlen <= BUFSIZE) tptr = temp;
-	else tptr = Xmalloc (tlen);
-	sprintf(tptr, "%s.%s", name, type);
-	XrmGetResource(db, tptr, "ErrorType.ErrorNumber", &type_str, &result);
-	if (tptr != temp) Xfree (tptr);
+	if (tlen <= BUFSIZE)
+	    tptr = temp;
+	else
+	    tptr = Xmalloc (tlen);
+	if (tptr) {
+	    sprintf(tptr, "%s.%s", name, type);
+	    XrmGetResource(db, tptr, "ErrorType.ErrorNumber", 
+	      &type_str, &result);
+	    if (tptr != temp)
+		Xfree (tptr);
+	} else {
+	    result.addr = (XPointer) NULL;
+	}
     }
     else
 	result.addr = (XPointer)NULL;

@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.4 2001/03/14 18:42:02 pookie Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.286 2003/07/01 03:49:09 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.287 2003/07/17 08:19:26 eich Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -502,7 +502,9 @@ CFB32DIR = cfb32
 SHADOWDIR = miext/shadow
 LAYERDIR = miext/layer
 #ifdef OS2Architecture
-DEFFILE = XFree86.def
+SERVERDEFFILE = XFree86.def
+XNESTDEFFILE = Xnest.def
+XVFBDEFFILE = Xvfb.def
 #endif
 #if XF86AFB
 AFBDIR = afb
@@ -612,7 +614,7 @@ MakeMutex($(XF86SERVERSUBDIRS) $(XF86SERVERLIBS) $(XF86SERVERSYSLIBS))
 $(XF86SERVERLIBS) $(XF86SERVERSYSLIBS):: $(XF86SERVERSUBDIRS)
 	@if [ -f $@ ]; then touch $@ >/dev/null 2>&1 || exit 0; fi
 #endif
-SetUIDServerTarget(XFree86,$(XF86SERVERSUBDIRS),$(XF86SERVEROBJS) $(DEFFILE), \
+SetUIDServerTarget(XFree86,$(XF86SERVERSUBDIRS),$(XF86SERVEROBJS) $(SERVERDEFFILE), \
 	$(XF86SERVERLIBS),$(XF86SERVERSYSLIBS))
 #if DoLoadableServer
 ServerDriverSDKTarget(XFree86)
@@ -1089,7 +1091,7 @@ MakeMutex($(XNESTDIRS) $(XNESTOBJS) $(XNESTLIBS) $(XNESTSYSLIBS))
 $(XNESTOBJS) $(XNESTLIBS) $(XNESTSYSLIBS):: $(XNESTDIRS)
 	@if [ -f $@ ]; then touch $@ >/dev/null 2>&1 || exit 0; fi
 #endif
-ServerTarget(Xnest,$(XNESTDIRS),$(XNESTOBJS), \
+ServerTarget(Xnest,$(XNESTDIRS),$(XNESTOBJS) $(XNESTDEFFILE), \
 	$(XNESTLIBS) $(LOADABLEEXTS) $(LIBCWRAPPER),$(XNESTSYSLIBS))
 #endif /* XnestServer */
 
@@ -1139,7 +1141,7 @@ MakeMutex($(XVFBDIRS) $(XVFBOBJS) $(XVFB) $(XVFBLIBS) $(XVFBSYSLIBS))
 $(XVFBOBJS) $(XVFB) $(XVFBLIBS) $(XVFBSYSLIBS):: $(XVFBDIRS)
 	@if [ -f $@ ]; then touch $@ >/dev/null 2>&1 || exit 0; fi
 #endif
-ServerTarget(Xvfb,$(XVFBDIRS),$(XVFBOBJS), \
+ServerTarget(Xvfb,$(XVFBDIRS),$(XVFBOBJS) $(XVFBDEFFILE), \
 	$(XVFBLIBS) $(LOADABLEEXTS) $(LIBCWRAPPER),$(XVFBSYSLIBS))
 #endif /* XVirtualFramebufferServer */
 
