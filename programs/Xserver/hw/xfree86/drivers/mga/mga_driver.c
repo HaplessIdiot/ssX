@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.205 2001/06/11 08:20:38 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.206 2001/06/13 23:34:16 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -3083,8 +3083,6 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	ret = fbScreenInit(pScreen, FBStart, width, height,
 			   pScrn->xDpi, pScrn->yDpi,
 			   displayWidth, pScrn->bitsPerPixel);
-	if (ret)
-	    fbPictureInit (pScreen, 0, 0);
     }
 
     if (!ret)
@@ -3106,6 +3104,10 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	}
     }
 
+    /* must be after RGB ordering fixed */
+    if (!pMga->Overlay8Plus24)
+	fbPictureInit (pScreen, 0, 0);
+    
     xf86SetBlackWhitePixels(pScreen);
 
     pMga->BlockHandler = pScreen->BlockHandler;

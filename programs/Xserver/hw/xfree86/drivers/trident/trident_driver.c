@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.136 2001/05/15 10:19:41 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.137 2001/06/15 21:23:03 dawes Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -2526,8 +2526,6 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	ret = fbScreenInit(pScreen, FBStart, width,
 			height, pScrn->xDpi, pScrn->yDpi, 
 			displayWidth, pScrn->bitsPerPixel);
-	if (ret)
-    	    fbPictureInit (pScreen, 0, 0);
     
 	break;
     default:
@@ -2559,6 +2557,10 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    TRIDENTFix1bpp(pScrn);
 	}
     }
+
+    /* must be after RGB ordering fixed */
+    if (pScrn->bitsPerPixel > 4)
+	fbPictureInit (pScreen, 0, 0);
 
     xf86SetBlackWhitePixels(pScreen);
 

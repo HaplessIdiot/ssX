@@ -11,7 +11,7 @@
  *    Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.21 2001/06/13 23:34:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.22 2001/06/15 21:22:48 dawes Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -1460,6 +1460,7 @@ AlpScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	CirPtr pCir;
 	AlpPtr pAlp;
 	int i, ret;
+	int init_picture = 0;
 	VisualPtr visual;
 	int displayWidth,width,height;
 	unsigned char * FbBase = NULL;
@@ -1578,6 +1579,7 @@ AlpScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 				width,height,
 				pScrn->xDpi, pScrn->yDpi,
 				displayWidth,pScrn->bitsPerPixel);
+	    init_picture = 1;
 	    break;
 	default:
 	    xf86DrvMsg(scrnIndex, X_ERROR,
@@ -1588,7 +1590,6 @@ AlpScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	}
 	if (!ret)
 		return FALSE;
-	fbPictureInit (pScreen, 0, 0);
 
 #ifdef ALP_DEBUG
 	ErrorF("AlpScreenInit after depth dependent init\n");
@@ -1609,6 +1610,10 @@ AlpScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		}
 	}
 
+	/* must be after RGB ordering fixed */
+	if (init_picture)
+		fbPictureInit (pScreen, 0, 0);
+    
 	miInitializeBackingStore(pScreen);
 
 	/*

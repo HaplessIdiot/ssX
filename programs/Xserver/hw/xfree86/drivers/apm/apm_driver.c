@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.51 2001/06/13 23:34:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.52 2001/06/15 21:22:45 dawes Exp $ */
 
 #define COMPILER_H_EXTRAS
 #include "apm.h"
@@ -1862,8 +1862,6 @@ ApmScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	ret = fbScreenInit(pScreen, FbBase, pScrn->virtualX,
 	    pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
 	    pScrn->displayWidth, pScrn->bitsPerPixel);
-	if (ret)
-		fbPictureInit(pScreen, 0, 0);
 	break;
     default:
 	xf86DrvMsg(scrnIndex, X_ERROR,
@@ -1892,6 +1890,10 @@ ApmScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	}
     }
 
+    /* must be after visual RGB order fixed */
+    if (pScrn->bitsPerPixel > 4)
+	fbPictureInit(pScreen, 0, 0);
+    
     xf86SetBlackWhitePixels(pScreen);
 
     if (!pApm->ShadowFB) {       /* hardware cursor needs to wrap this layer */

@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.13 2001/05/25 18:19:14 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.14 2001/06/15 21:22:58 dawes Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -2038,6 +2038,10 @@ SMI_ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		}
 	}
 
+#ifdef USE_FB
+	/* must be after RGB ordering fixed */
+	fbPictureInit(pScreen, 0, 0);
+#endif
 	/* Initialize acceleration layer */
 	if (!pSmi->NoAccel)
 	{
@@ -2221,10 +2225,6 @@ SMI_InternalScreenInit(int scrnIndex, ScreenPtr pScreen)
 	  return(FALSE);
 	}
 	
-#ifdef USE_FB
-	if (ret)
-	    fbPictureInit(pScreen, 0, 0);
-#endif
 	LEAVE_PROC("SMI_InternalScreenInit");
 	return(ret);
 }

@@ -45,7 +45,7 @@
    * Support static loading.  
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.25 2001/06/08 10:53:39 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.26 2001/06/13 23:34:10 dawes Exp $ */
 
 #include "xaa.h"
 #include "xf86Cursor.h"
@@ -706,8 +706,6 @@ GLIDEScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
   if (!ret)
     return FALSE;
 
-  fbPictureInit (pScreen, 0, 0);
-
   /* Fixup RGB ordering */
   visual = pScreen->visuals + pScreen->numVisuals;
   while (--visual >= pScreen->visuals) {
@@ -720,6 +718,9 @@ GLIDEScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
         visual->blueMask = pScrn->mask.blue;
     }
   }
+
+  /* must be after RGB ordering fixed */
+  fbPictureInit (pScreen, 0, 0);
 
   miInitializeBackingStore(pScreen);
   xf86SetBlackWhitePixels(pScreen);

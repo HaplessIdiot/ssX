@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.69 2001/07/09 23:52:00 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.70 2001/07/25 00:39:11 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -1796,8 +1796,6 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
             ret = fbScreenInit(pScreen, FBStart, pScrn->virtualX,
                                pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
                                displayWidth, pScrn->bitsPerPixel);
-            if (ret)
-                fbPictureInit (pScreen, 0, 0);
             break;
 #endif           
         default:
@@ -1827,6 +1825,10 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	}
     }
 
+#ifdef NV_USE_FB
+    fbPictureInit (pScreen, 0, 0);
+#endif
+    
     xf86SetBlackWhitePixels(pScreen);
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- B & W\n"));

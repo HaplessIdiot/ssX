@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.31 2001/06/13 23:34:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.32 2001/06/30 21:54:02 tsi Exp $ */
 
 /*
  * Authors:
@@ -1526,9 +1526,6 @@ I740ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 	       pScrn->bitsPerPixel);
     return FALSE;
   }
-#ifdef USE_FB
-  fbPictureInit(pScreen,0,0);
-#endif
 
   xf86SetBlackWhitePixels(pScreen);
 
@@ -1546,6 +1543,10 @@ I740ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
     }
   }
 
+#ifdef USE_FB
+  /* must be after RGB ordering set */
+  fbPictureInit(pScreen,0,0);
+#endif
   miInitializeBackingStore(pScreen);
   xf86SetBackingStore(pScreen);
   xf86SetSilkenMouse(pScreen);

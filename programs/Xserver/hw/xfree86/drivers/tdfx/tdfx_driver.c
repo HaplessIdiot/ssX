@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.82 2001/06/15 21:23:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.83 2001/06/26 08:41:58 alanh Exp $ */
 
 /*
  * Authors:
@@ -1982,7 +1982,6 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 		       pScrn->xDpi, pScrn->yDpi,
 		       pScrn->displayWidth, pScrn->bitsPerPixel))
       return FALSE;
-    fbPictureInit (pScreen, 0, 0);
     break;
   default:
     xf86DrvMsg(scrnIndex, X_ERROR,
@@ -2004,6 +2003,9 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
       }
     }
   }
+
+  /* must be after RGB ordering fixed */
+  fbPictureInit (pScreen, 0, 0);
 
   xf86SetBlackWhitePixels(pScreen);
 

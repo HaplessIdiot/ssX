@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.54 2001/06/14 02:23:49 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.55 2001/06/15 21:22:53 dawes Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -1371,8 +1371,6 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!ret)
 	return FALSE;
 
-    fbPictureInit(pScreen, 0, 0);
-
     if (pScrn->depth > 8) {
         /* Fixup RGB ordering */
         visual = pScreen->visuals + pScreen->numVisuals;
@@ -1388,6 +1386,9 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	}
     }
     
+    /* must be after RGB ordering fixed */
+    fbPictureInit(pScreen, 0, 0);
+
     xf86SetBlackWhitePixels(pScreen);
 
     if (!nPtr->shadowFB)

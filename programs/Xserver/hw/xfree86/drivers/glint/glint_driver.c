@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.132 2001/06/15 21:22:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.133 2001/07/05 01:51:45 paulo Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -2709,6 +2709,7 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     GLINTPtr pGlint = GLINTPTR(pScrn);
     int ret, displayWidth;
+    int init_picture = 0;
     unsigned char *FBStart;
     VisualPtr visual;
     
@@ -2830,8 +2831,7 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			displayWidth, pScrn->bitsPerPixel);
-	if (ret)
-	    fbPictureInit(pScreen, 0, 0);
+	init_picture = 1;
 	break;
     case 32:
 	if(pScrn->overlayFlags & OVERLAY_8_32_PLANAR)
@@ -2844,8 +2844,7 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			displayWidth, pScrn->bitsPerPixel);
-	    if (ret)
-	    	fbPictureInit(pScreen, 0, 0);
+	    init_picture = 1;
 	}
 	break;
     default:
@@ -2883,6 +2882,9 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	}
     }
 
+    /* must be after RGB ordering fixed */
+    if (init_picture)
+	fbPictureInit(pScreen, 0, 0);
     if (!pGlint->NoAccel) {
         switch (pGlint->Chipset)
         {

@@ -27,7 +27,7 @@
  *
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.21 2001/06/15 21:54:46 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.22 2001/06/27 21:30:39 paulo Exp $
  */
 
 #include "vesa.h"
@@ -898,6 +898,7 @@ VESAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     VisualPtr visual;
     VbeModeInfoBlock *mode;
     int flags;
+    int init_picture = 0;
 
     if (pVesa->mapPhys == 0) {
 	mode = ((ModeInfoData*)(pScrn->currentMode->Private))->data;
@@ -980,7 +981,7 @@ VESAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 				      pScrn->xDpi, pScrn->yDpi,
 				      pScrn->displayWidth, pScrn->bitsPerPixel))
 		    return (FALSE);
-		    fbPictureInit(pScreen, 0, 0);
+		    init_picture = 1;
 		}
 	    } else {
 		switch (pScrn->bitsPerPixel) {
@@ -1029,7 +1030,7 @@ VESAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 				       pScrn->xDpi, pScrn->yDpi,
 				       pScrn->displayWidth, pScrn->bitsPerPixel))
 			return (FALSE);
-		    fbPictureInit(pScreen, 0, 0);
+		    init_picture = 1;
 		    break;
 		default:
 		    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -1054,6 +1055,10 @@ VESAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    }
 	}
     }
+
+    /* must be after RGB ordering fixed */
+    if (init_picture)
+	fbPictureInit(pScreen, 0, 0);
 
     if (pVesa->shadowFB) {
 	ShadowUpdateProc update;

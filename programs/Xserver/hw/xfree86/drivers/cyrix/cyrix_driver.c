@@ -26,7 +26,7 @@
  *          Dirk H. Hohndel (hohndel@suse.de),
  *          Portions: the GGI project & confidential CYRIX databooks.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.19 2001/05/04 19:05:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.20 2001/06/13 23:34:10 dawes Exp $ */
 
 #include "fb.h"
 #include "mibank.h"
@@ -1011,8 +1011,6 @@ CYRIXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!ret)
 	return FALSE;
 
-    fbPictureInit (pScreen, 0, 0);
-    
     xf86SetBlackWhitePixels(pScreen);
 
     if (pScrn->bitsPerPixel > 8) {
@@ -1032,6 +1030,9 @@ CYRIXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	Cyrix1bppColorMap(pScrn);
     }
 
+    /* must be after RGB ordering fixed */
+    fbPictureInit (pScreen, 0, 0);
+    
     if (pScrn->depth < 8) {
 	miBankInfoPtr pBankInfo;
 

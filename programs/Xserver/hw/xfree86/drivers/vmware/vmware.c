@@ -7,7 +7,7 @@ char rcsId_vmware[] =
 
     "Id: vmware.c,v 1.11 2001/02/23 02:10:39 yoel Exp $";
 #endif
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.4 2001/05/16 06:48:12 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.5 2001/06/15 21:23:08 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -911,8 +911,6 @@ VMWAREScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	if (!ret)
 		return FALSE;
 
-	fbPictureInit (pScreen, 0, 0);
-
         /* Override the default mask/offset settings */
         if (pScrn->bitsPerPixel > 8) {
 	int i;
@@ -930,6 +928,9 @@ VMWAREScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			}
 		}
 	}
+
+	/* must be after RGB ordering fixed */
+	fbPictureInit (pScreen, 0, 0);
 
 	/*
 	 * Wrap the CloseScreen vector and set SaveScreen.

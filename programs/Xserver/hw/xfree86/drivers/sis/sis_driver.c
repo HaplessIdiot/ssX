@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.65 2001/05/19 18:29:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.66 2001/06/15 21:23:00 dawes Exp $ */
 
 #include "fb.h"
 #include "xf1bpp.h"
@@ -1278,6 +1278,7 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     vgaHWPtr hwp;
     SISPtr pSiS;
     int ret;
+    int init_picture = 0;
     VisualPtr visual;
     unsigned long OnScreenSize;
     int height, width, displayWidth;
@@ -1412,7 +1413,7 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
                         height, pScrn->xDpi, pScrn->yDpi,
                         displayWidth, pScrn->bitsPerPixel);
 
-        fbPictureInit(pScreen, 0, 0);
+	init_picture = 1;
         break;
     default:
         xf86DrvMsg(scrnIndex, X_ERROR,
@@ -1445,6 +1446,9 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
         SIS1bppColorMap(pScrn);
     }
 
+    /* must be after RGB ordering fixed */
+    if (init_picture)
+        fbPictureInit(pScreen, 0, 0);
     if (!pSiS->ShadowFB) /* hardware cursor needs to wrap this layer */
         SISDGAInit(pScreen);
     xf86SetBlackWhitePixels(pScreen);

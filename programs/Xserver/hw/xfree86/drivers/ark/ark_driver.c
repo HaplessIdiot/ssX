@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.15 2001/06/13 23:34:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.16 2001/06/15 21:22:45 dawes Exp $ */
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
  *
@@ -544,8 +544,6 @@ static Bool ARKScreenInit(int scrnIndex, ScreenPtr pScreen, int argc,
 			  pScrn->displayWidth, pScrn->bitsPerPixel))
 		return FALSE;
 
-	fbPictureInit (pScreen, 0, 0);
-
 	xf86SetBlackWhitePixels(pScreen);
 
 	if (pScrn->bitsPerPixel > 8) {
@@ -564,6 +562,9 @@ static Bool ARKScreenInit(int scrnIndex, ScreenPtr pScreen, int argc,
 		}
 	}
 
+	/* must be after RGB order fixed */
+
+	fbPictureInit (pScreen, 0, 0);
 
 	miInitializeBackingStore(pScreen);
 	xf86SetBackingStore(pScreen);
