@@ -1,4 +1,7 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 732. Check for a NULL argument in XSetICFocus() before dereferencing it.
+      This fixes crashes with some XIM software (see
+      http://bugzilla.mozilla.gr.jp/show_bug.cgi?id=2961#c19).
  731. Improve the i810 bitblt bug workaround, and re-enable the pixmap cache
       at depth 24 (David Dawes).
  730. Workaround for lockup at mode switch with an i810 (David Dawes).
@@ -18477,7 +18480,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3077 2004/01/02 22:16:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3078 2004/01/03 02:11:50 dawes Exp $
 
 
 
