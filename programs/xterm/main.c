@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.222 94/04/17 20:23:28 gildea Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.0 1994/04/28 12:46:31 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.1 1994/05/08 05:27:02 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -92,9 +92,11 @@ SOFTWARE.
 #include <amoeba.h>
 #include <cmdreg.h>
 #include <stderr.h>
+#include <thread.h>
 #define  _POSIX_SOURCE
 #include <limits.h>
-#include <caplist.h>
+#include <module/proc.h>
+#include <module/name.h>
 
 #define USE_TERMIOS
 #define USE_POSIX_WAIT
@@ -2907,7 +2909,7 @@ spawn ()
 /* acceptable defaults */
 #define	DEF_HOME		"/home"
 #define	DEF_SHELL		"/bin/sh"
-#define	DEF_PATH		"/bin:/usr/bin:/public/util"
+#define	DEF_PATH		"/bin:/usr/bin:/profile/util"
 
 extern capability ttycap;
 extern char **environ;

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/xterm/ttysvr.c,v 3.0 1994/04/28 12:46:44 dawes Exp $ */
 /*
  *
  * ttysvr.c
@@ -26,11 +26,14 @@ extern char *ProgramName;
 #include <stdcom.h>
 #include <stderr.h>
 #include <limits.h>
-#include <proc.h>
+#include <module/proc.h>
 #include <file.h>
 #include <fault.h>
+#include <posix/termios.h>
 #include <class/tios.h>
 #include <server/tty/tty.h>
+#include <module/name.h>
+#include <module/rnd.h>
 
 
 /*
@@ -245,7 +248,7 @@ ttythread()
 	    break;
 	case STD_INFO:
 	    hdr.h_status = STD_OK;
-	    strcpy(buf, "Xterm tty server");
+	    strcpy(buf, "+ Xterm tty server");
 	    n = strlen(buf);
 	    break;
 	case PS_CHECKPOINT:
