@@ -1,4 +1,4 @@
-/* $XConsortium: i128Cursor.c /main/1 1995/12/09 15:31:28 kaleb $ */
+/* $XConsortium: i128Cursor.c /main/3 1996/04/18 16:44:35 kaleb $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128Cursor.c,v 3.2 1996/02/20 14:33:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128Cursor.c,v 3.3 1996/04/15 11:29:47 dawes Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"

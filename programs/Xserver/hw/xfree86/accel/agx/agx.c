@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.50 1996/10/16 14:39:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.51 1996/11/24 09:53:07 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -31,7 +31,7 @@
  * Rewritten for the AGX by Henry A. Worth (haw30@eng.amdahl.com)
  *
  */
-/* $XConsortium: agx.c /main/15 1995/12/29 15:19:42 kaleb $ */
+/* $XConsortium: agx.c /main/20 1996/10/27 11:04:14 kaleb $ */
 
 
 #include "X.h"

@@ -212,7 +212,7 @@
 
 
 
-  $XConsortium: W32.sgml /main/9 1996/01/07 18:54:35 kaleb $
+  $XConsortium: README.W32 /main/16 1996/10/19 18:02:13 kaleb $
 
 
 
@@ -230,37 +230,4 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.W32,v 3.20 1996/08/13 11:42:18 dawes Exp $

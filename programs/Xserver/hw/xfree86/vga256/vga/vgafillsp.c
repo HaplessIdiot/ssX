@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgafillsp.c,v 3.2 1996/02/04 09:15:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgafillsp.c,v 3.3 1996/12/09 11:54:48 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -75,7 +75,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: vgafillsp.c /main/3 1995/11/13 09:26:31 kaleb $ */
+/* $XConsortium: vgafillsp.c /main/4 1996/02/21 18:10:53 kaleb $ */
 
 #include "vga256.h"
 #include "mergerop.h"

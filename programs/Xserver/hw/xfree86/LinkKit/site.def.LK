@@ -1,5 +1,10 @@
-XCOMM $XConsortium: site.def.LK /main/7 1995/12/17 08:46:10 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.23 1996/10/19 15:14:22 dawes Exp $
+XCOMM $XConsortium: site.def.LK /main/12 1996/10/28 04:23:14 kaleb $
+
+
+
+
+
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.24 1996/11/20 14:01:16 dawes Exp $
 
 /* Configuration file for Server Link Kit */
 

@@ -1,11 +1,11 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.17 1996/10/06 13:16:31 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.18 1996/12/12 09:16:01 dawes Exp $ */ 
 /*
  * Progaming of the S3 gendac programable clocks, from the S3 Gendac
  * programing documentation by S3 Inc. 
  * Jon Tombs <jon@esix2.us.es>
  * Also used for GenDAC and GenDAC-like chips on non-S3 chipsets.
  */
-/* $XConsortium: S3gendac.c /main/9 1995/12/28 17:16:09 kaleb $ */
+/* $XConsortium: S3gendac.c /main/16 1996/10/25 14:11:48 kaleb $ */
  
 #include "Xfuncproto.h"
 #include "S3gendac.h" 

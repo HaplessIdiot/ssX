@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.16 1996/09/24 13:56:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.17 1996/09/29 13:41:33 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -23,7 +23,7 @@
  * Author:  Thomas Roell, roell@informatik.tu-muenchen.de
  *
  */
-/* $XConsortium: vga.h /main/7 1995/12/02 09:07:16 kaleb $ */
+/* $XConsortium: vga.h /main/12 1996/10/25 10:34:19 kaleb $ */
 
 #ifndef _XF86_VGA_H_
 #define _XF86_VGA_H_

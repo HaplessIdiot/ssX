@@ -990,13 +990,13 @@ url="RELNOTES.html"> to find which files you need to take from the
 archive.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.64 1996/10/26 09:38:53 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.65 1996/11/18 13:11:42 dawes Exp $
 
 
 
 
 
-$XConsortium: README.sgml /main/15 1996/01/30 15:13:03 kaleb $
+$XConsortium: README.sgml /main/31 1996/10/28 05:43:24 kaleb $
 </verb>
 
 </article>

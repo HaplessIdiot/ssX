@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.13 1996/10/03 08:32:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.14 1996/11/24 09:52:59 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -26,7 +26,7 @@
  *
  */
 
-/* $XConsortium: S3.c /main/6 1995/11/13 11:13:16 kaleb $ */
+/* $XConsortium: S3.c /main/12 1996/10/25 11:33:27 kaleb $ */
 
 #include "Probe.h"
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.43 1996/12/09 11:51:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.44 1996/12/17 20:59:55 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -26,7 +26,7 @@
  * Modified by Amancio Hasty and Jon Tombs
  *
 */
-/* $XConsortium: s3.h /main/17 1996/01/31 10:04:41 kaleb $ */
+/* $XConsortium: s3.h /main/23 1996/10/23 18:42:39 kaleb $ */
 
 
 #ifndef _S3_H_

@@ -1,5 +1,5 @@
-/* $XConsortium: utils.c /main/122 1996/01/14 16:45:32 kaleb $ */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.21 1996/10/23 13:12:56 dawes Exp $ */
+/* $XConsortium: utils.c /main/127 1996/12/02 10:23:20 lehors $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.22 1996/11/24 09:58:50 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -53,6 +53,9 @@ OR PERFORMANCE OF THIS SOFTWARE.
 
 */
 
+#ifdef WIN32
+#include <X11/Xwinsock.h>
+#endif
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -72,7 +75,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
 #undef _POSIX_SOURCE
 #endif
 #endif
-#if !defined(SYSV) && !defined(AMOEBA) && !defined(_MINIX)
+#if !defined(SYSV) && !defined(AMOEBA) && !defined(_MINIX) && !defined(WIN32)
 #include <sys/resource.h>
 #endif
 #include <time.h>
@@ -513,14 +516,14 @@ void UseMsg()
     ErrorF("-alloc int             chance alloc should fail\n");
 #endif
     ErrorF("-audit int             set audit trail level\n");	
-    ErrorF("-auth string           select authorization file\n");	
+    ErrorF("-auth file             select authorization file\n");	
     ErrorF("bc                     enable bug compatibility\n");
     ErrorF("-bs                    disable any backing store support\n");
     ErrorF("-c                     turns off key-click\n");
     ErrorF("c #                    key-click volume (0-100)\n");
     ErrorF("-cc int                default color visual class\n");
-    ErrorF("-co string             color database file\n");
-    ErrorF("-config string         read options from file\n");
+    ErrorF("-co file               color database file\n");
+    ErrorF("-config file           read options from file\n");
     ErrorF("-core                  generate core dump on fatal error\n");
     ErrorF("-dpi int               screen resolution in dots per inch\n");
     ErrorF("-deferglyphs [none|all|16] defer loading of [no|all|16-bit] glyphs\n");
@@ -553,6 +556,9 @@ void UseMsg()
     ErrorF("-r                     turns off auto-repeat\n");
     ErrorF("r                      turns on auto-repeat \n");
     ErrorF("-s #                   screen-saver timeout (minutes)\n");
+#ifdef XCSECURITY
+    ErrorF("-sp file               security policy file\n");
+#endif
     ErrorF("-su                    disable any save under support\n");
     ErrorF("-t #                   mouse threshold (pixels)\n");
     ErrorF("-terminate             terminate at server reset\n");
@@ -891,6 +897,18 @@ char	*argv[];
 	    i = skip - 1;
 	}
 #endif
+#ifdef XPRINT
+	else if ((skip = XprintOptions(argc, argv, i)) != i)
+	{
+	    i = skip - 1;
+	}
+#endif
+#ifdef XCSECURITY
+	else if ((skip = XSecurityOptions(argc, argv, i)) != i)
+	{
+	    i = skip - 1;
+	}
+#endif
 #ifdef AIXV3
         else if ( strcmp( argv[i], "-timeout") == 0)
         {
@@ -1030,7 +1048,9 @@ pointer client;
 {
 #define AUTHORIZATION_NAME "hp-hostname-1"
 #if defined(TCPCONN) || defined(STREAMSCONN)
+#ifndef WIN32
 #include <netdb.h>
+#endif
     static char result[1024];
     static char *p = NULL;
 
@@ -1232,18 +1252,9 @@ OsInitAllocator ()
 #endif
 }
 
-#endif /* old version */
-
-/*VARARGS1*/
 void
-AuditF(
-#if NeedVarargsPrototypes
-    char * f, ...)
-#else
- f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
+AuditPrefix(f)
     char *f;
-    char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
-#endif
 {
 #ifdef X_NOT_STDC_ENV
     long tm;
@@ -1251,10 +1262,6 @@ AuditF(
     time_t tm;
 #endif
     char *autime, *s;
-#if NeedVarargsPrototypes
-    va_list args;
-#endif
-
     if (*f != ' ')
     {
 	time(&tm);
@@ -1267,6 +1274,25 @@ AuditF(
 	    s = argvGlobal[0];
 	ErrorF("AUDIT: %s: %d %s: ", autime, getpid(), s);
     }
+}
+
+/*VARARGS1*/
+void
+AuditF(
+#if NeedVarargsPrototypes
+    char * f, ...)
+#else
+    f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
+    char *f;
+    char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
+#endif
+{
+#if NeedVarargsPrototypes
+    va_list args;
+#endif
+
+    AuditPrefix(f);
+
 #if NeedVarargsPrototypes
     va_start(args, f);
     VErrorF(f, args);

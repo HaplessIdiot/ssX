@@ -441,7 +441,7 @@
 
 
 
-  $XConsortium: SVR4.sgml /main/4 1995/11/12 20:00:10 kaleb $
+  $XConsortium: README.SVR4 /main/12 1996/10/27 11:48:12 kaleb $
 
 
 
@@ -461,4 +461,4 @@
 
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.SVR4,v 3.17 1996/10/17 15:18:51 dawes Exp $

@@ -1,5 +1,4 @@
-/* $XConsortium: stub_driver.c /main/5 1995/09/04 19:45:46 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.15 1996/06/29 09:06:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.16 1996/09/14 13:06:29 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
@@ -21,6 +20,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+/* $XConsortium: stub_driver.c /main/8 1996/10/23 18:39:21 kaleb $ */
 
 /*************************************************************************/
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_bltC.c,v 3.10 1996/08/10 13:08:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_bltC.c,v 3.11 1996/09/14 13:11:41 dawes Exp $ */
 /*
  
 
@@ -38,7 +38,7 @@ Author: Keith Packard
  *	Added CirrusCopyPlane1to8.
  *
  */
-/* $XConsortium: cir_bltC.c /main/6 1995/11/13 08:20:48 kaleb $ */
+/* $XConsortium: cir_bltC.c /main/9 1996/10/23 18:47:46 kaleb $ */
 
 /*
  * This is the high-level BitBlt function. Calls CirrusBitBlt.

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.26 1996/09/14 13:08:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.27 1996/11/24 09:53:33 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -26,7 +26,7 @@
  * Modified by Tiago Gons (tiago@comosjn.hobby.nl)
  *
  */
-/* $XConsortium: ibm8514.c /main/14 1995/12/17 08:13:57 kaleb $ */
+/* $XConsortium: ibm8514.c /main/17 1996/10/23 18:41:41 kaleb $ */
 
 
 #include "X.h"

@@ -236,7 +236,7 @@
 
 
 
-  $XConsortium: WstDig.sgml /main/4 1995/11/12 20:00:25 kaleb $
+  $XConsortium: README.WstDig /main/8 1996/02/21 17:43:59 kaleb $
 
 
 
@@ -263,4 +263,4 @@
 
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.WstDig,v 3.12 1996/02/05 11:22:40 dawes Exp $

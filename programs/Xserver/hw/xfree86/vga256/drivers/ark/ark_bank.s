@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_bank.s,v 3.0 1995/03/11 14:16:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_bank.s,v 3.1 1996/02/04 09:12:35 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -22,7 +22,7 @@
  * 
  * Written by Harm Hanemaayer (hhanemaa@cs.ruu.nl).
  */
-/* $XConsortium: ark_bank.s /main/3 1995/11/13 07:23:33 kaleb $ */
+/* $XConsortium: ark_bank.s /main/4 1996/02/21 18:01:55 kaleb $ */
 
 #include "assyntax.h"
 

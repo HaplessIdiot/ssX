@@ -1,4 +1,4 @@
-/* $XConsortium: tgui_curs.c /main/4 1996/01/12 12:18:52 kaleb $ */
+/* $XConsortium: tgui_curs.c /main/10 1996/10/25 15:39:18 kaleb $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -26,7 +26,7 @@
  * accel/s3/s3Cursor.c, and ark/ark_cursor.c
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_curs.c,v 3.11 1996/10/08 12:38:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_curs.c,v 3.12 1996/11/18 13:18:27 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gtimg.c,v 3.8 1996/02/04 09:05:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gtimg.c,v 3.9 1996/06/29 09:07:10 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -21,7 +21,7 @@
  * OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: s3gtimg.c /main/4 1995/11/12 19:06:41 kaleb $ */
+/* $XConsortium: s3gtimg.c /main/6 1996/10/19 17:56:22 kaleb $ */
 
 #include "X.h"
 #include "windowstr.h"

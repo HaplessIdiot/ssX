@@ -1,10 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86fcache.h,v 3.5 1995/01/28 16:57:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86fcache.h,v 3.6 1996/02/04 08:58:46 dawes Exp $ */
 
 /*
  * Data structures and function prototypes for the font cache.
  */
 
-/* $XConsortium: xf86fcache.h /main/6 1995/11/13 10:11:07 kaleb $ */
+/* $XConsortium: xf86fcache.h /main/7 1996/02/21 17:19:23 kaleb $ */
 
 #ifndef _XF86_FCACHE_H
 #define _XF86_FCACHE_H

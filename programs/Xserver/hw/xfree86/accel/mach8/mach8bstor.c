@@ -1,5 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8bstor.c,v 1.1.1.2 1996/01/03 07:13:35 dawes Exp $ */
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8bstor.c,v 3.0 1996/11/18 13:09:38 dawes Exp $ */
 /*-
  * mach8bstore.c --
  *	Functions required by the backing-store implementation in MI.
@@ -28,7 +27,7 @@
  * Modified for the Mach-8 by Rickard E. Faith (faith@cs.unc.edu)
  * Further modifications by Tiago Gons (tiago@comosjn.hobby.nl)
  */
-/* $XConsortium: mach8bstor.c /main/2 1995/11/12 18:00:02 kaleb $ */
+/* $XConsortium: mach8bstor.c /main/3 1996/02/21 17:29:49 kaleb $ */
 
 #include    "cfb.h"
 #include    "X.h"

@@ -904,7 +904,7 @@
 
 
 
-  $XConsortium: S3.sgml /main/13 1996/01/16 15:36:43 kaleb $
+  $XConsortium: README.S3 /main/16 1996/02/21 17:43:30 kaleb $
 
 
 
@@ -923,4 +923,4 @@
 
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.S3,v 3.45 1996/02/05 11:22:33 dawes Exp $

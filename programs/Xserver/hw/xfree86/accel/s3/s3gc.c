@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gc.c,v 3.6 1996/02/04 09:05:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gc.c,v 3.7 1996/09/01 04:15:33 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -55,7 +55,7 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
  * Modified by Amancio Hasty and Jon Tombs
  * 
  */
-/* $XConsortium: s3gc.c /main/6 1995/11/12 19:06:29 kaleb $ */
+/* $XConsortium: s3gc.c /main/8 1996/10/23 11:44:47 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

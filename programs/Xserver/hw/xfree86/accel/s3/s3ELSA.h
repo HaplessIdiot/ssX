@@ -1,11 +1,11 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.h,v 3.8 1996/04/15 11:30:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.h,v 3.9 1996/12/09 11:51:35 dawes Exp $ */
 
 
 
 
 
 
-/* $XConsortium: s3ELSA.h /main/6 1995/12/02 08:23:34 kaleb $ */
+/* $XConsortium: s3ELSA.h /main/8 1996/04/18 16:45:18 kaleb $ */
 #ifndef _S3ELSA_H_
 #define _S3ELSA_H_
 

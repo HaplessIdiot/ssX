@@ -1,5 +1,5 @@
-/* $XConsortium: xkb.c /main/20 1996/03/01 14:30:56 kaleb $ */
-/* $XFree86: xc/programs/Xserver/xkb/xkb.c,v 3.9 1996/08/13 11:32:23 dawes Exp $ */
+/* $XConsortium: xkb.c /main/21 1996/08/31 12:44:16 kaleb $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkb.c,v 3.10 1996/10/13 11:32:24 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 

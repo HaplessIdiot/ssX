@@ -1,5 +1,5 @@
-/* $XConsortium: access.c /main/62 1995/12/07 17:53:09 kaleb $ */
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.15 1996/10/03 08:49:15 dawes Exp $ */
+/* $XConsortium: access.c /main/68 1996/12/15 22:57:09 rws $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.16 1996/12/09 11:57:05 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -48,6 +48,10 @@ SOFTWARE.
 
 ******************************************************************/
 
+#ifdef WIN32
+#include <X11/Xwinsock.h>
+#endif
+
 #include <stdio.h>
 #include <X11/Xtrans.h>
 #include <X11/Xauth.h>
@@ -56,6 +60,7 @@ SOFTWARE.
 #include "misc.h"
 #include "site.h"
 #include <errno.h>
+#ifndef WIN32
 #if !defined(AMOEBA) && !defined(MINIX)
 #ifdef ESIX
 #include <lan/socket.h>
@@ -150,8 +155,15 @@ SOFTWARE.
 #endif
 #endif
 
+#endif /* WIN32 */
+
 #include "dixstruct.h"
 #include "osdep.h"
+
+#ifdef XCSECURITY
+#define _SECURITY_SERVER
+#include "extensions/security.h"
+#endif
 
 Bool defeatAccessControl = FALSE;
 
@@ -201,6 +213,7 @@ static HOST *validhosts = NULL;
 static int AccessEnabled = DEFAULT_ACCESS_CONTROL;
 static int LocalHostEnabled = FALSE;
 static int UsingXdmcp = FALSE;
+
 
 /*
  * called when authorization is not enabled to add the
@@ -927,8 +940,8 @@ ResetHosts (display)
     }
 }
 
-static Bool
-AuthorizedClient(client)
+/* Is client on the local host */
+Bool LocalClient(client)
     ClientPtr client;
 {
     int    		alen, family, notused;
@@ -936,8 +949,19 @@ AuthorizedClient(client)
     pointer		addr;
     register HOST	*host;
 
-    if (!client || defeatAccessControl)
-	return TRUE;
+#ifdef XCSECURITY
+    /* untrusted clients can't change host access */
+    if (client->trustLevel != XSecurityClientTrusted)
+    {
+	SecurityAudit("client %d attempted to change host access\n",
+		      client->index);
+	return FALSE;
+    }
+#endif
+#ifdef LBX
+    if (!((OsCommPtr)client->osPrivate)->trans_conn)
+	return FALSE;
+#endif
     if (!_XSERVTransGetPeerAddr (((OsCommPtr)client->osPrivate)->trans_conn,
 	&notused, &alen, &from))
     {
@@ -961,6 +985,15 @@ AuthorizedClient(client)
 	xfree ((char *) from);
     }
     return FALSE;
+}
+
+static Bool
+AuthorizedClient(client)
+    ClientPtr client;
+{
+    if (!client || defeatAccessControl)
+	return TRUE;
+    return LocalClient(client);
 }
 
 /* Add a host to the access control list.  This is the external interface
@@ -1322,3 +1355,11 @@ ChangeAccessControl(client, fEnabled)
     AccessEnabled = fEnabled;
     return Success;
 }
+
+/* returns FALSE if xhost + in effect, else TRUE */
+int
+GetAccessControl()
+{
+    return AccessEnabled;
+}
+

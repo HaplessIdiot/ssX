@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.41 1996/12/19 10:02:30 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.42 1996/12/20 06:45:43 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -23,7 +23,7 @@
  *
  * Author:  Thomas Roell, roell@informatik.tu-muenchen.de
  */
-/* $XConsortium: vgaHW.c /main/10 1996/01/11 12:25:13 kaleb $ */
+/* $XConsortium: vgaHW.c /main/19 1996/10/28 04:55:33 kaleb $ */
 
 #ifdef ISC202
 #include <sys/types.h>

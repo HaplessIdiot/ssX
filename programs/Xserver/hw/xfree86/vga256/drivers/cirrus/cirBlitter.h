@@ -1,10 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirBlitter.h,v 3.10 1996/09/29 13:39:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirBlitter.h,v 3.11 1996/12/18 03:12:49 dawes Exp $ */
 
 
 /* Definitions for BitBLT engine communication. */
 
 
-/* $XConsortium: cirBlitter.h /main/3 1995/11/13 08:20:25 kaleb $ */
+/* $XConsortium: cirBlitter.h /main/5 1996/10/25 10:30:37 kaleb $ */
 
 /* BitBLT modes. */
 

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32curs.c,v 3.10 1996/03/05 05:42:10 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32curs.c,v 3.11 1996/12/19 10:01:23 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -27,7 +27,7 @@
  * Modified for VTs and oversized cursors by Mark_Weaver@brown.edu
  *
  */
-/* $XConsortium: mach32curs.c /main/6 1995/11/12 17:24:38 kaleb $ */
+/* $XConsortium: mach32curs.c /main/10 1996/10/22 10:33:32 kaleb $ */
 
 #include <signal.h>
 

@@ -1,5 +1,5 @@
-/* $XConsortium: InitOutput.c /main/15 1996/01/20 18:43:04 kaleb $ */
-/* $XFree86$ */
+/* $XConsortium: InitOutput.c /main/17 1996/12/02 10:20:41 lehors $ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.3 1996/11/24 10:24:37 dawes Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium
@@ -30,6 +30,9 @@ from the X Consortium.
 
 */
 
+#ifdef WIN32
+#include <X11/Xwinsock.h>
+#endif
 #include <stdio.h>
 #include "X11/X.h"
 #define NEED_EVENTS
@@ -53,7 +56,9 @@ from the X Consortium.
 #endif /* HAS_MMAP */
 #include <sys/stat.h>
 #include <errno.h>
+#ifndef WIN32
 #include <sys/param.h>
+#endif
 #include <X11/XWDFile.h>
 #ifdef HAS_SHM
 #include <sys/ipc.h>
@@ -222,6 +227,8 @@ ddxUseMsg()
     ErrorF("-screen scrn WxHxD     set screen's width, height, depth\n");
     ErrorF("-pixdepths list-of-int support given pixmap depths\n");
     ErrorF("-linebias n            adjust thin line pixelization\n");
+    ErrorF("-blackpixel n          pixel value for black\n");
+    ErrorF("-whitepixel n          pixel value for white\n");
 
 #ifdef HAS_MMAP
     ErrorF("-fbdir directory       put framebuffers in mmap'ed files in directory\n");

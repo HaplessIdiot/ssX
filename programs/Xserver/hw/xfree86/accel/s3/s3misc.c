@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.59 1996/11/18 13:10:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.60 1996/12/09 11:51:38 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -30,7 +30,7 @@
  * Modified by Amancio Hasty and Jon Tombs
  * 
  */
-/* $XConsortium: s3misc.c /main/19 1996/01/26 14:26:42 kaleb $ */
+/* $XConsortium: s3misc.c /main/35 1996/10/27 11:04:48 kaleb $ */
 
 
 #include "cfb.h"

@@ -34,7 +34,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/realtek/rt_driver.c,v 3.6 1996/09/14 13:13:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/realtek/rt_driver.c,v 3.7 1996/10/16 14:43:27 dawes Exp $ */
 
 /*************************************************************************/
 
@@ -49,7 +49,7 @@
  * compile-time, use '#ifdef MONOVGA', etc.  For the VGA16 server, use
  * '#ifdef XF86VGA16'
  */
-/* $XConsortium: rt_driver.c /main/3 1996/01/12 12:18:42 kaleb $ */
+/* $XConsortium: rt_driver.c /main/9 1996/10/27 11:08:33 kaleb $ */
 
 /*************************************************************************/
 

@@ -170,7 +170,7 @@
 
 
 
-  $XConsortium: Oak.sgml /main/4 1995/12/29 15:59:12 kaleb $
+  $XConsortium: README.Oak /main/8 1996/05/12 20:57:40 kaleb $
 
 
 
@@ -197,4 +197,4 @@
 
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.Oak,v 3.12 1996/05/12 13:01:10 dawes Exp $

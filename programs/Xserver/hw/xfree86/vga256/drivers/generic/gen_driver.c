@@ -1,5 +1,4 @@
-/* $XConsortium: gen_driver.c /main/6 1996/01/12 12:17:12 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/generic/gen_driver.c,v 3.12 1996/09/14 13:12:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/generic/gen_driver.c,v 3.13 1996/10/16 14:42:51 dawes Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -21,6 +20,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+/* $XConsortium: gen_driver.c /main/11 1996/10/27 11:07:43 kaleb $ */
 
 /*
  * Generic VGA 320x200x256 driver developed from stub driver.

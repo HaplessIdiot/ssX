@@ -103,13 +103,13 @@
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DocIndex.sgml,v 3.17 1996/10/20 13:33:10 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DocIndex.sgml,v 3.18 1996/10/23 13:09:53 dawes Exp $ 
 
 
 
 
 
-$XConsortium: DocIndex.sgml /main/6 1996/01/16 15:35:15 kaleb $
+$XConsortium: DocIndex.sgml /main/15 1996/10/28 05:12:53 kaleb $
 </verb>
 
 </article>

@@ -1,5 +1,4 @@
-/* $XConsortium: regati.h /main/4 1995/09/04 19:41:42 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/regati.h,v 3.9 1996/02/22 05:12:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/regati.h,v 3.10 1996/03/17 11:42:05 dawes Exp $ */
 /*
  * Copyright 1994 through 1996 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -32,6 +31,7 @@
  * ATI VGA Wonder, 8514/A, ATI Mach8, ATI Mach32 and ATI Mach64 video adapters,
  * not just the ones in use by the VGA Wonder driver.
  */
+/* $XConsortium: regati.h /main/7 1996/03/17 22:17:50 kaleb $ */
 
 #ifndef _REGATI_H_
 #define _REGATI_H_

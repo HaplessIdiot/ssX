@@ -1,5 +1,4 @@
-/* $XConsortium: ct_bank.s /main/3 1995/09/04 19:44:07 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_bank.s,v 3.5 1996/08/11 13:02:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_bank.s,v 3.6 1996/12/09 11:53:55 dawes Exp $ */
 /*
  * Copyright 1994 by Régis Cridlig <cridlig@dmi.ens.fr>
  *
@@ -21,6 +20,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+/* $XConsortium: ct_bank.s /main/5 1996/10/19 18:10:18 kaleb $ */
 
 
 #include "assyntax.h"

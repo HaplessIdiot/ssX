@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.25 1996/08/10 13:06:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.26 1996/08/13 11:30:05 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: xf86Io.c /main/18 1996/02/02 15:34:12 kaleb $ */
+/* $XConsortium: xf86Io.c /main/27 1996/10/19 17:58:55 kaleb $ */
 
 #define NEED_EVENTS
 #include "X.h"

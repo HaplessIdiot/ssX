@@ -1,10 +1,9 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3pwskb/Imakefile,v 3.7 1996/10/08 12:41:49 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/6 1996/10/25 15:41:17 kaleb $
 
 
 
 
-
-XCOMM $XConsortium: Imakefile /main/2 1995/12/29 11:23:11 kaleb $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3pwskb/Imakefile,v 3.8 1996/11/20 14:03:01 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -29,7 +28,7 @@ OBJS = 	s3.o s3misc.o s3cmap.o s3gc.o s3gc16.o s3gc24.o s3gc32.o s3fs.o s3ss.o \
 	IBMRGBCurs.o s3pc98.o
 
 INCLUDES = -I$(XF98SRC) -I. -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
-	   -I$(SERVERSRC)/include -I$(SERVERSRC)/cfb -I$(INCLUDESRC) \
+	   -I$(SERVERSRC)/include -I$(SERVERSRC)/cfb -I$(XINCLUDESRC) \
 	   -I$(FONTSRC)/include -I$(XF86SRC)/vga256/vga -I$(XF98COMSRC) \
 	   -I$(XF86HWSRC) -I$(FONTINCSRC) -I$(XF86OSSRC) \
 	   -I$(XF86SRC)/accel/cache

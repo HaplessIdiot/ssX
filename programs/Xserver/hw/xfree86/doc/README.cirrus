@@ -842,7 +842,7 @@
 
 
 
-  $XConsortium: cirrus.sgml /main/6 1995/11/12 20:00:36 kaleb $
+  $XConsortium: README.cirrus /main/17 1996/10/28 05:43:00 kaleb $
 
 
 
@@ -857,4 +857,4 @@
 
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.cirrus,v 3.27 1996/10/26 10:34:58 dawes Exp $

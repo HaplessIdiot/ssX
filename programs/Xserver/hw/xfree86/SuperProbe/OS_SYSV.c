@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.12 1996/08/11 12:37:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.13 1996/10/03 08:32:32 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -25,7 +25,8 @@
  * in this Software without prior written authorization from David Wexelblat.
  *
  */
-/* $XConsortium: OS_SYSV.c /main/9 1995/11/13 11:12:55 kaleb $ */
+
+/* $XConsortium: OS_SYSV.c /main/13 1996/10/25 11:33:20 kaleb $ */
 
 #if defined(sun)
 /* Fix for Solaris */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/ld-wrapper.c,v 3.1 1996/02/04 09:08:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/ld-wrapper.c,v 3.2 1996/02/05 11:23:16 dawes Exp $ */
 /*
  * Copyright 1993 by Thomas Mueller
  *
@@ -22,7 +22,7 @@
  *
  */
 
-/* $XConsortium: $ */
+/* $XConsortium: ld-wrapper.c /main/4 1996/02/21 17:47:57 kaleb $ */
 
 /* LynxOS V2.2.x /bin/ld wrapper to emulate -L option */
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64scrin.c,v 3.6 1995/12/23 09:38:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64scrin.c,v 3.7 1996/02/04 09:03:23 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -41,7 +41,7 @@ Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
 Modified for the Mach64 by Kevin E. Martin (martin@cs.unc.edu)
 
 ********************************************************/
-/* $XConsortium: mach64scrin.c /main/6 1995/12/29 10:09:26 kaleb $ */
+/* $XConsortium: mach64scrin.c /main/7 1996/02/21 17:29:09 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

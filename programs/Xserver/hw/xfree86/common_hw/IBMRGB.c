@@ -1,11 +1,11 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/IBMRGB.c,v 3.3 1996/02/04 09:06:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/IBMRGB.c,v 3.4 1996/05/06 05:57:54 dawes Exp $ */
 /*
  * Copyright 1995 The XFree86 Project, Inc
  *
  * programming the on-chip clock on the IBM RGB52x
  * Harald Koenig <koenig@tat.physik.uni-tuebingen.de>
  */
-/* $XConsortium: IBMRGB.c /main/3 1995/11/12 19:30:00 kaleb $ */
+/* $XConsortium: IBMRGB.c /main/5 1996/05/07 17:13:25 kaleb $ */
 
 #include "Xfuncproto.h"
 #include "compiler.h"

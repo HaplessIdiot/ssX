@@ -1,5 +1,10 @@
-XCOMM $XConsortium: Imakefile /main/3 1996/01/26 14:30:30 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/Imakefile,v 3.9 1996/10/03 08:46:28 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/13 1996/10/27 11:49:09 kaleb $
+
+
+
+
+
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/Imakefile,v 3.10 1996/10/17 15:20:39 dawes Exp $
 
 XCOMM Some possible options to include in the defines below
 XCOMM
@@ -38,7 +43,7 @@ INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
            -I$(SERVERSRC)/cfb -I$(SERVERSRC)/mfb \
            -I$(SERVERSRC)/mi -I../../vga -I$(SERVERSRC)/include \
-	   -I$(INCLUDESRC) -I$(FONTINCSRC)
+	   -I$(XINCLUDESRC) -I$(FONTINCSRC)
 #endif
 
 #if MakeHasPosixVariableSubstitutions

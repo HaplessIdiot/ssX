@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/cfb32.h,v 3.1 1996/02/04 09:06:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/cfb32.h,v 3.2 1996/11/24 09:54:47 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -26,7 +26,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XConsortium: cfb32.h /main/3 1995/11/12 19:21:05 kaleb $ */
+/* $XConsortium: cfb32.h /main/4 1996/02/21 17:37:38 kaleb $ */
 
 /* cfb8bit.c */
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfbpntwin.c,v 3.2 1995/01/28 15:50:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfbpntwin.c,v 3.3 1996/02/04 08:59:38 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbpntwin.c /main/3 1995/11/12 16:17:43 kaleb $ */
+/* $XConsortium: cfbpntwin.c /main/4 1996/02/21 17:20:40 kaleb $ */
 
 #include "X.h"
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.57 1996/10/20 13:32:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.58 1996/11/24 09:53:50 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -30,7 +30,7 @@
  * Support for the Mach64 CT added by David Dawes (dawes@XFree86.org)
  *
  */
-/* $XConsortium: mach64.c /main/17 1996/01/28 07:58:52 kaleb $ */
+/* $XConsortium: mach64.c /main/34 1996/10/28 04:46:47 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

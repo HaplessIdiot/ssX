@@ -505,7 +505,7 @@
 
 
 
-  $XConsortium: P9000.sgml /main/6 1995/11/12 19:59:55 kaleb $
+  $XConsortium: README.P9000 /main/12 1996/05/12 20:57:45 kaleb $
 
 
 
@@ -527,4 +527,4 @@
 
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.P9000,v 3.27 1996/05/12 13:01:11 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3BtCursor.c,v 3.11 1996/03/31 11:48:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3BtCursor.c,v 3.12 1996/11/18 13:10:19 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: s3BtCursor.c /main/6 1995/12/17 08:23:42 kaleb $ */
+/* $XConsortium: s3BtCursor.c /main/8 1996/04/01 18:06:23 kaleb $ */
 
 #define NEED_EVENTS
 #include <X.h>

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/ramdac.c,v 3.11 1996/08/13 11:29:27 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/ramdac.c,v 3.12 1996/09/22 05:02:06 dawes Exp $ */ 
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: ramdac.c /main/8 1995/12/09 15:52:52 kaleb $ */
+/* $XConsortium: ramdac.c /main/12 1996/10/24 07:10:32 kaleb $ */
 
 #include "X.h"
 #include "Xproto.h"

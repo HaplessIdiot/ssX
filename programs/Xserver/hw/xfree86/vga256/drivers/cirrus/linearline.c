@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/linearline.c,v 3.4 1995/06/02 11:19:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/linearline.c,v 3.5 1996/02/04 09:13:20 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -22,7 +22,7 @@
  * 
  * Written by Harm Hanemaayer (hhanemaa@cs.ruu.nl).
  */
-/* $XConsortium: linearline.c /main/4 1995/11/13 08:21:35 kaleb $ */
+/* $XConsortium: linearline.c /main/5 1996/02/21 18:04:26 kaleb $ */
 
 #include "cfb.h"
 #include "cfbmskbits.h"

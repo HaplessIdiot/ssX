@@ -76,14 +76,13 @@
   default, hence the flag has been removed.  Hopefully the past text-
   restoration problems are alleviated in XFree86 2.0.
 
-
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.7 1996/10/16 14:41:16 dawes Exp $
 
 
 
 
 
-  $XConsortium: tseng.sgml /main/3 1995/11/12 20:00:47 kaleb $
+  $XConsortium: README.tseng /main/11 1996/10/27 11:48:19 kaleb $
 
 
 
@@ -120,15 +119,4 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.tseng,v 3.14 1996/10/17 15:18:52 dawes Exp $

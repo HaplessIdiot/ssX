@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti302X.h,v 3.7 1996/04/15 11:30:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti302X.h,v 3.8 1996/06/29 09:07:43 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: Ti302X.h /main/4 1995/12/02 08:59:27 kaleb $ */
+/* $XConsortium: Ti302X.h /main/8 1996/10/19 18:00:32 kaleb $ */
 
 #include "compiler.h"
 #include <X11/Xfuncproto.h>

@@ -1,4 +1,4 @@
-/* $XConsortium: xf86Wacom.c /main/6 1996/01/26 13:37:08 kaleb $ */
+/* $XConsortium: xf86Wacom.c /main/20 1996/10/27 11:05:20 kaleb $ */
 /*
  * Copyright 1995,1996 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>
  *                                                                            
@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.23 1996/10/16 14:40:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.24 1996/12/18 03:12:28 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV protocol.

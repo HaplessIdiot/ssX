@@ -1,6 +1,6 @@
 /*
- *	$XConsortium: util.c,v 1.31 91/06/20 18:34:47 gildea Exp $
- *	$XFree86: xc/programs/xterm/util.c,v 3.9 1996/08/13 11:37:11 dawes Exp $
+ *	$XConsortium: util.c /main/33 1996/12/01 23:47:10 swick $
+ *	$XFree86: xc/programs/xterm/util.c,v 3.10 1996/08/21 08:43:35 dawes Exp $
  */
 
 /*
@@ -931,7 +931,7 @@ copy_area(screen, src_x, src_y, width, height, dest_x, dest_y)
 
     XCopyArea(screen->display, 
 	      TextWindow(screen), TextWindow(screen),
-	      screen->normalGC,
+	      NormalGC(screen),
 	      src_x, src_y, width, height, dest_x, dest_y);
 }
 
@@ -964,7 +964,7 @@ vertical_copy_area(screen, firstline, nlines, amount)
     int amount;			/* number of lines to move up (neg=down) */
 {
     if(nlines > 0) {
-	int src_x = screen->border + screen->scrollbar;
+	int src_x = screen->border + Scrollbar(screen);
 	int src_y = firstline * FontHeight(screen) + screen->border;
 
 	copy_area(screen, src_x, src_y,
@@ -999,6 +999,13 @@ HandleExposure (screen, event)
     register XEvent *event;
 {
     register XExposeEvent *reply = (XExposeEvent *)event;
+
+#ifndef NO_ACTIVE_ICON
+    if (reply->window == screen->iconVwin.window)
+	screen->whichVwin = &screen->iconVwin;
+    else
+	screen->whichVwin = &screen->fullVwin;
+#endif /* NO_ACTIVE_ICON */
 
     /* if not doing CopyArea or if this is a GraphicsExpose, don't translate */
     if(!screen->incopy  ||  event->type != Expose)
@@ -1050,14 +1057,14 @@ handle_translated_exposure (screen, rect_x, rect_y, rect_width, rect_height)
 	toprow = (rect_y - screen->border) / FontHeight(screen);
 	if(toprow < 0)
 		toprow = 0;
-	leftcol = (rect_x - screen->border - screen->scrollbar)
+	leftcol = (rect_x - screen->border - Scrollbar(screen))
 	    / FontWidth(screen);
 	if(leftcol < 0)
 		leftcol = 0;
 	nrows = (rect_y + rect_height - 1 - screen->border) / 
 		FontHeight(screen) - toprow + 1;
 	ncols =
-	 (rect_x + rect_width - 1 - screen->border - screen->scrollbar) /
+	 (rect_x + rect_width - 1 - screen->border - Scrollbar(screen)) /
 			FontWidth(screen) - leftcol + 1;
 	toprow -= screen->scrolls;
 	if (toprow < 0) {
@@ -1211,6 +1218,16 @@ ReverseVideo (termw)
 	EXCHANGE( screen->mousecolor,    screen->mousecolorback, tmp )
 	EXCHANGE( screen->normalGC,      screen->reverseGC,      tmpGC )
 	EXCHANGE( screen->normalboldGC,  screen->reverseboldGC,  tmpGC )
+
+#ifndef NO_ACTIVE_ICON
+	tmpGC = screen->iconVwin.normalGC;
+	screen->iconVwin.normalGC = screen->iconVwin.reverseGC;
+	screen->iconVwin.reverseGC = tmpGC;
+
+	tmpGC = screen->iconVwin.normalboldGC;
+	screen->iconVwin.normalboldGC = screen->iconVwin.reverseboldGC;
+	screen->iconVwin.reverseboldGC = tmpGC;
+#endif /* NO_ACTIVE_ICON */
 
 	recolor_cursor (screen->pointer_cursor, 
 			screen->mousecolor, screen->mousecolorback);

@@ -142,14 +142,14 @@ in the <tt>XF86Config</tt> file, these lockups are overcome. But it may
 be worth checking wait states etc. on the card and in the BIOS setup.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.13 1996/08/26 14:08:49 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.14 1996/10/19 15:15:46 dawes Exp $
 
 
 
 
 
 
-$XConsortium: trident.sgml /main/7 1996/01/16 15:36:48 kaleb $
+$XConsortium: trident.sgml /main/11 1996/10/28 04:24:08 kaleb $
 </verb>
 
 </article>

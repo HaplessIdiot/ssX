@@ -313,13 +313,13 @@ BSD/OS 2.0.
 </verb>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.16 1996/08/13 11:30:50 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.17 1996/10/16 14:41:10 dawes Exp $ 
 
 
 
 
 
-$XConsortium: Bsdi.sgml /main/5 1995/11/12 19:59:15 kaleb $
+$XConsortium: Bsdi.sgml /main/8 1996/10/27 11:05:51 kaleb $
 </verb>
 
 </article>

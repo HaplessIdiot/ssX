@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Bt485.h,v 1.1.1.2 1996/01/03 07:14:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Bt485.h,v 3.0 1996/11/18 13:10:18 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: s3Bt485.h /main/2 1995/11/12 19:05:42 kaleb $ */
+/* $XConsortium: s3Bt485.h /main/3 1996/02/21 17:34:23 kaleb $ */
 
 #include "compiler.h"
 #include <X11/Xfuncproto.h>

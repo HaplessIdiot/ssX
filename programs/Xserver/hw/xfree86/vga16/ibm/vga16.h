@@ -1,10 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vga16.h,v 3.6 1996/02/04 09:11:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vga16.h,v 3.7 1996/02/18 03:43:22 dawes Exp $ */
 
 
 
 
 
-/* $XConsortium: vga16.h /main/4 1995/11/13 07:05:58 kaleb $ */
+/* $XConsortium: vga16.h /main/5 1996/02/21 17:58:47 kaleb $ */
 /*
  * some header files need to be included here to make
  * the prototypes happy.

@@ -1,5 +1,10 @@
-XCOMM $XConsortium: Imakefile /main/3 1996/01/30 15:17:11 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/Imakefile,v 3.4 1996/03/10 12:06:51 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/7 1996/09/28 17:24:18 rws $
+
+
+
+
+
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/Imakefile,v 3.5 1996/05/10 06:59:15 dawes Exp $
 #include <Server.tmpl>
 
 BIOS_MOD = os2_bios
@@ -11,7 +16,7 @@ OBJS = os2_init.o os2_video.o os2_io.o $(BIOS_MOD).o mapVT_noop.o \
        os2_ioperm.o os2_VTsw.o os2_mouse.o os2_kbdEv.o os2_stubs.o os2_select.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
-           -I$(INCLUDESRC)
+           -I$(XINCLUDESRC)
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()

@@ -1,10 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/kbd_mode.c,v 3.3 1996/02/04 09:08:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/kbd_mode.c,v 3.4 1996/03/10 11:26:33 dawes Exp $ */
 
 
 /* Keyboard mode control program for 386BSD */
 
 
-/* $XConsortium: kbd_mode.c /main/5 1995/11/12 20:17:07 kaleb $ */
+/* $XConsortium: kbd_mode.c /main/7 1996/03/11 10:46:12 kaleb $ */
 
 #include <sys/types.h>
 #include <fcntl.h>

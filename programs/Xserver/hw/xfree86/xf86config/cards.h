@@ -1,10 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.h,v 3.1 1995/01/28 16:15:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.h,v 3.2 1996/02/04 09:15:39 dawes Exp $ */
 
 
 
 
 
-/* $XConsortium: cards.h /main/2 1995/11/13 09:50:02 kaleb $ */
+/* $XConsortium: cards.h /main/3 1996/02/21 18:12:53 kaleb $ */
 
 #ifndef CARD_DATABASE_FILE
 #define CARD_DATABASE_FILE "Cards"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.51 1996/12/12 09:17:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.52 1996/12/20 06:45:36 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -51,7 +51,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XConsortium: t89_driver.c /main/19 1996/01/26 14:29:55 kaleb $ */
+/* $XConsortium: t89_driver.c /main/33 1996/10/28 05:31:03 kaleb $ */
 
 #include "X.h"
 #include "input.h"
@@ -887,6 +887,23 @@ TVGA8900Probe()
 	vga256InfoRec.directMode = XF86DGADirectPresent;
 #endif
 #endif /* MONOVGA */
+
+#ifdef MONOVGA
+	if ( (TVGAchipset == TVGA8900C) ||
+	     (TVGAchipset == TVGA8900B) ||
+	     (TVGAchipset == TVGA8800CS) ||
+	     (TVGAchipset == TVGA9000) ||
+	     (TVGAchipset == TVGA9000i) )
+	{
+		if (vga256InfoRec.displayWidth > 1152)
+		{
+			TVGA8900EnterLeave(LEAVE);
+			FatalError("%s %s: Chipset supports a max. width"
+				   " of 1152, Adjust Virtual in XF86Config.\n",
+				   XCONFIG_PROBED, vga256InfoRec.name);
+		}
+	}
+#endif
 
 	if (TVGAchipset >= TGUI9440AGi)
 	{

@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# $XConsortium: confmono.sh,v 1.2 95/06/19 18:07:56 kaleb Exp $
-# $XFree86: xc/programs/Xserver/hw/xfree86/mono/confmono.sh,v 3.0 1994/05/04 15:00:39 dawes Exp $
+# $XConsortium: confmono.sh /main/3 1996/02/21 17:49:06 kaleb $
+# $XFree86: xc/programs/Xserver/hw/xfree86/mono/confmono.sh,v 3.1 1996/02/04 09:09:19 dawes Exp $
 #
 # This script generates monoConf.c
 #

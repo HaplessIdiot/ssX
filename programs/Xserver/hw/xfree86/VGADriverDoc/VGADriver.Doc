@@ -1039,6 +1039,7 @@
 
 
 
+  $XConsortium: VGADriver.Doc /main/8 1996/10/28 05:12:05 kaleb $
 
   $XConsortium: VGADriv.sgml /main/6 1996/01/10 11:12:02 kaleb $
 
@@ -1055,4 +1056,4 @@
 
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/VGADriver.Doc,v 3.21 1996/10/23 13:37:45 dawes Exp $

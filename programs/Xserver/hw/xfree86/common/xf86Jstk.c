@@ -1,4 +1,4 @@
-/* $XConsortium: xf86Jstk.c /main/6 1996/01/26 13:36:53 kaleb $ */
+/* $XConsortium: xf86Jstk.c /main/14 1996/10/25 14:11:36 kaleb $ */
 /*
  * Copyright 1995 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>       
  *                                                                            
@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.16 1996/10/06 13:16:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.17 1996/12/18 03:12:26 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"

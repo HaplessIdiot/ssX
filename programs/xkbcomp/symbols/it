@@ -1,5 +1,5 @@
-// $XConsortium: it /main/2 1995/12/07 21:42:59 kaleb $
-// $XFree86: xc/programs/xkbcomp/symbols/it,v 3.1 1996/09/14 13:15:18 dawes Exp $
+// $XConsortium: it /main/3 1996/08/31 12:19:59 kaleb $
+// $XFree86: xc/programs/xkbcomp/symbols/it,v 3.2 1996/10/13 11:35:35 dawes Exp $
 partial default alphanumeric_keys 
 xkb_symbols "basic" {
 

@@ -1,10 +1,10 @@
-XCOMM $XConsortium: Imakefile /main/7 1996/01/26 10:50:04 kaleb $
+XCOMM $XConsortium: Imakefile /main/19 1996/10/25 21:24:28 kaleb $
 
 
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.25 1996/10/13 11:29:41 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.26 1996/11/24 09:57:52 dawes Exp $
 
 
 
@@ -165,7 +165,7 @@ OFILES = \
 
    INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86SRC) -I$(XF86OSSRC) \
 	      -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
-	      -I$(SERVERSRC)/os -I$(INCLUDESRC) -I$(EXTINCSRC)
+	      -I$(SERVERSRC)/os -I$(XINCLUDESRC) -I$(EXTINCSRC)
 
      OSNAME = OSName
    OSVENDOR = OSVendor

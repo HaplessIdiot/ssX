@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgapush8.c,v 3.2 1996/02/04 09:15:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgapush8.c,v 3.3 1996/12/09 11:54:56 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -24,7 +24,7 @@ Except as contained in this notice, the name of the X Consortium shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 */
-/* $XConsortium: vgapush8.c /main/2 1995/11/13 09:26:59 kaleb $ */
+/* $XConsortium: vgapush8.c /main/3 1996/02/21 18:11:39 kaleb $ */
 
 /*
  * Push Pixels for 8 bit displays.

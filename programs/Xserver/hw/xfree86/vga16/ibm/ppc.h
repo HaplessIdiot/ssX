@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppc.h,v 1.1.1.2 1996/01/03 07:21:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppc.h,v 3.0 1996/11/18 13:13:26 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -21,7 +21,7 @@
  * SOFTWARE.
  *
 */
-/* $XConsortium: ppc.h /main/2 1995/11/13 07:04:38 kaleb $ */
+/* $XConsortium: ppc.h /main/3 1996/02/21 17:56:59 kaleb $ */
 
 #include "gcstruct.h"
 

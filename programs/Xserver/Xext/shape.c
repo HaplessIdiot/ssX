@@ -25,8 +25,8 @@ in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 5.22 94/09/22 20:58:37 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: shape.c /main/36 1996/08/01 19:23:05 dpw $ */
+/* $XFree86: xc/programs/Xserver/Xext/shape.c,v 3.0 1996/05/06 05:55:32 dawes Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -377,7 +377,7 @@ ProcShapeMask (client)
 
     REQUEST_SIZE_MATCH (xShapeMaskReq);
     UpdateCurrentTime();
-    pWin = LookupWindow (stuff->dest, client);
+    pWin = SecurityLookupWindow (stuff->dest, client, SecurityWriteAccess);
     if (!pWin)
 	return BadWindow;
     switch (stuff->destKind) {
@@ -397,7 +397,8 @@ ProcShapeMask (client)
     if (stuff->src == None)
 	srcRgn = 0;
     else {
-        pPixmap = (PixmapPtr) LookupIDByType(stuff->src, RT_PIXMAP);
+        pPixmap = (PixmapPtr) SecurityLookupIDByType(client, stuff->src,
+						RT_PIXMAP, SecurityReadAccess);
         if (!pPixmap)
 	    return BadPixmap;
 	if (pPixmap->drawable.pScreen != pScreen ||
@@ -659,10 +660,11 @@ ProcShapeSelectInput (client)
     XID			clientResource;
 
     REQUEST_SIZE_MATCH (xShapeSelectInputReq);
-    pWin = LookupWindow (stuff->window, client);
+    pWin = SecurityLookupWindow (stuff->window, client, SecurityWriteAccess);
     if (!pWin)
 	return BadWindow;
-    pHead = (ShapeEventPtr *) LookupIDByType(pWin->drawable.id, EventType);
+    pHead = (ShapeEventPtr *)SecurityLookupIDByType(client,
+			pWin->drawable.id, EventType, SecurityWriteAccess);
     switch (stuff->enable) {
     case xTrue:
 	if (pHead) {
@@ -816,7 +818,8 @@ ProcShapeInputSelected (client)
     pWin = LookupWindow (stuff->window, client);
     if (!pWin)
 	return BadWindow;
-    pHead = (ShapeEventPtr *) LookupIDByType(pWin->drawable.id, EventType);
+    pHead = (ShapeEventPtr *) SecurityLookupIDByType(client,
+			pWin->drawable.id, EventType, SecurityReadAccess);
     enabled = xFalse;
     if (pHead) {
     	for (pShapeEvent = *pHead;

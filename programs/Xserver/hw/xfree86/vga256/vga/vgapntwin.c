@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgapntwin.c,v 3.2 1996/02/04 09:15:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgapntwin.c,v 3.3 1996/12/09 11:54:54 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: vgapntwin.c /main/2 1995/11/13 09:26:54 kaleb $ */
+/* $XConsortium: vgapntwin.c /main/3 1996/02/21 18:11:32 kaleb $ */
 
 #include "vga256.h"
 

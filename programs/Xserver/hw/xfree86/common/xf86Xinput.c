@@ -1,4 +1,4 @@
-/* $XConsortium: xf86Xinput.c /main/3 1996/01/14 19:01:42 kaleb $ */
+/* $XConsortium: xf86Xinput.c /main/14 1996/10/27 11:05:25 kaleb $ */
 /*
  * Copyright 1995,1996 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>
  *                                                                            
@@ -22,13 +22,13 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.19 1996/12/18 03:12:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.20 1996/12/20 06:44:57 dawes Exp $ */
 
 #include "Xmd.h"
 #include "XI.h"
 #include "XIproto.h"
 #include "xf86.h"
-#include "osdep.h"
+#include "Xpoll.h"
 #include "xf86Priv.h"
 #include "xf86_Config.h"
 #include "xf86Xinput.h"
@@ -145,21 +145,22 @@ ReadInput(pointer	block_data,
 {
   int			i;
   LocalDevicePtr	local_dev;
-  long			devices_with_input[mskcnt];
-  extern long		EnabledDevices[];
+  fd_set*		LastSelectMask = (fd_set*) read_mask;
+  fd_set		devices_with_input;
+  extern fd_set		EnabledDevices;
 
   if (select_status < 1)
     return;
 
-  MASKANDSETBITS(devices_with_input, ((long *) read_mask), EnabledDevices);
-  if (!ANYSET(devices_with_input))
+  XFD_ANDSET(&devices_with_input, LastSelectMask, &EnabledDevices);
+  if (!XFD_ANYSET(&devices_with_input))
     return;
 
   for (i = 0; i < num_devices; i++) {
     local_dev = localDevices[i];
     if (local_dev->read_input &&
 	(local_dev->fd >= 0) &&
-        (GETBIT(((long *) read_mask), local_dev->fd) != 0)) {
+        (FD_ISSET(((fd_set *) read_mask), local_dev->fd) != 0)) {
       (*local_dev->read_input)(local_dev);
       break;
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_mmap.c,v 1.1.1.2 1996/01/03 07:21:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_mmap.c,v 3.0 1996/11/18 13:13:07 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: solx86_mmap.c /main/2 1995/11/13 06:18:36 kaleb $ */
+/* $XConsortium: solx86_mmap.c /main/3 1996/02/21 17:54:17 kaleb $ */
 
 #include "X.h"
 #include "input.h"

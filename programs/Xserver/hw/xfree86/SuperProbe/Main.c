@@ -1,4 +1,4 @@
-/* $XConsortium: Main.c /main/7 1996/01/26 13:30:11 kaleb $ */
+/* $XConsortium: Main.c /main/11 1996/10/25 11:33:16 kaleb $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.15 1996/12/09 11:51:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.16 1996/12/09 12:03:12 dawes Exp $ */
 
 #include "Probe.h"
 #include "PatchLevel.h"

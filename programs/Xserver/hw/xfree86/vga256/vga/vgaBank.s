@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaBank.s,v 3.5 1996/01/13 12:22:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaBank.s,v 3.6 1996/02/04 09:14:55 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -23,7 +23,7 @@
  * Author:  Thomas Roell, roell@informatik.tu-muenchen.de
  *
  */
-/* $XConsortium: vgaBank.s /main/6 1996/01/13 13:15:07 kaleb $ */
+/* $XConsortium: vgaBank.s /main/7 1996/02/21 18:10:07 kaleb $ */
 
 #include "assyntax.h"
 

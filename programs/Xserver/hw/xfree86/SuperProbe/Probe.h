@@ -1,4 +1,4 @@
-/* $XConsortium: Probe.h /main/13 1996/01/26 13:30:31 kaleb $ */ 
+/* $XConsortium: Probe.h /main/27 1996/10/25 21:19:15 kaleb $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.42 1996/11/24 09:52:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.43 1996/12/09 11:51:20 dawes Exp $ */
 
 /*
  * Includes

@@ -192,13 +192,13 @@ downwards. ISA card owners should not use these options.
     GOOD LUCK!!!!
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Oak.sgml,v 3.8 1996/05/10 06:58:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Oak.sgml,v 3.9 1996/05/12 12:36:33 dawes Exp $
 
 
 
 
 
-$XConsortium: Oak.sgml /main/4 1995/12/29 15:59:12 kaleb $
+$XConsortium: Oak.sgml /main/8 1996/05/12 20:58:00 kaleb $
 </verb>
 
 </article>

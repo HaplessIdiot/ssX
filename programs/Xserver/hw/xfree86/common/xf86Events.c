@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.39 1996/12/09 11:52:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.40 1996/12/12 09:15:51 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: xf86Events.c /main/30 1996/01/30 15:14:46 kaleb $ */
+/* $XConsortium: xf86Events.c /main/46 1996/10/25 11:36:30 kaleb $ */
 
 /* [JCH-96/01/21] Extended std reverse map to four buttons. */
 
@@ -39,7 +39,7 @@
 #include "xf86_Config.h"
 #include "atKeynames.h"
 
-#include "osdep.h"
+#include "Xpoll.h"
 
 #ifdef XFreeXDGA
 #include "XIproto.h"
@@ -146,7 +146,7 @@ static Bool VTSysreqToggle = FALSE;
 #endif /* !USE_VT_SYSREQ */
 static Bool VTSwitchEnabled = TRUE;   /* Allows run-time disabling for *BSD */
 
-extern long EnabledDevices[];
+extern fd_set EnabledDevices;
 
 #if defined(CODRV_SUPPORT)
 extern unsigned char xf86CodrvMap[];
@@ -1293,12 +1293,14 @@ xf86Wakeup(blockData, err, pReadmask)
 
 #ifndef __EMX__
 #ifdef	__OSF__
-  long kbdDevices[mskcnt];
-  long mseDevices[mskcnt];
+  fd_set kbdDevices;
+  fd_set mseDevices;
 #endif	/* __OSF__ */
-  long devicesWithInput[mskcnt];
+  fd_set* LastSelectMask = (fd_set*)pReadmask;
+  fd_set devicesWithInput;
 
   if ((int)err >= 0) {
+    XFD_ANDSET(&devicesWithInput, LastSelectMask, &EnabledDevices);
 #ifdef	__OSF__
    /*
      * Until the two devices are made nonblock on read, we have to do this.
@@ -1320,8 +1322,7 @@ xf86Wakeup(blockData, err, pReadmask)
         (xf86Info.mouseDev->mseEvents)(1);
 
 #else
-    MASKANDSETBITS(devicesWithInput, ((FdMask *)pReadmask), EnabledDevices);
-    if (ANYSET(devicesWithInput))
+    if (XFD_ANYSET(&devicesWithInput))
       {
 	(xf86Info.kbdEvents)();
 	(xf86Info.mouseDev->mseEvents)(xf86Info.mouseDev);

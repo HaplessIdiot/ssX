@@ -1,11 +1,11 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8cache.h,v 3.4 1995/01/28 17:00:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8cache.h,v 3.5 1996/02/04 09:03:38 dawes Exp $ */
 
 
 
 
 
 
-/* $XConsortium: mach8cache.h /main/3 1995/11/12 18:00:05 kaleb $ */
+/* $XConsortium: mach8cache.h /main/4 1996/02/21 17:29:53 kaleb $ */
 
 void mach8GlyphWrite(
 #if NeedFunctionPrototypes

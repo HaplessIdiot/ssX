@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.c,v 3.9 1996/09/22 05:07:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.c,v 3.10 1996/09/29 13:41:34 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -7,7 +7,7 @@
  * A lot of this comes from Robin Cutshaw's scanpci
  *
  */
-/* $XConsortium: vgaPCI.c /main/2 1996/01/13 13:15:11 kaleb $ */
+/* $XConsortium: vgaPCI.c /main/10 1996/10/25 10:34:22 kaleb $ */
 
 #include "xf86.h"
 #include "xf86Priv.h"

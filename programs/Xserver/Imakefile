@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile /main/r61_main/5 1996/02/02 18:44:52 gildea $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.72 1996/12/12 09:14:38 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/232 1996/12/18 16:29:36 lehors $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.73 1996/12/17 20:59:05 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -16,10 +16,10 @@ XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.72 1996/12/12 09:14:38 dawes E
 INSTPGMFLAGS = 
 #endif
 
-#define PreFbLibs $(DIX) $(OS) $(FONT)
-#define BarePostFbLibs $(MFB) $(MI)
+#define PreFbLibs $(DIX) $(OS) $(FONT) $(XPDDX)
+#define BarePostFbLibs $(MFB) $(XPFBLIBS) $(MI)
 #define PostFbLibs BarePostFbLibs $(EXTENSIONS)
-#define NoMfbBarePostFbLibs $(MI)
+#define NoMfbBarePostFbLibs $(XPFBLIBS) $(MI)
 #define NoMfbPostFbLibs NoMfbBarePostFbLibs $(EXTENSIONS)
 
 #define MFBBareLibs PreFbLibs BarePostFbLibs
@@ -52,8 +52,6 @@ INSTPGMFLAGS =
 #endif
 #if BuildXIE
       XIEEXT = XIE/dixie/LibraryTargetName(dixie) XIE/mixie/LibraryTargetName(mixie)
-#endif
-#if BuildXIE || BuildXIElib
       XIEDIR = XIE
 #endif
 #if BuildXKB
@@ -61,19 +59,16 @@ INSTPGMFLAGS =
       XKBDIR = xkb
 #endif
 #if BuildLBX
-         LBXEXT = lbx/LibraryTargetName(lbx) $(TOP)/lib/lbxutil/LibraryTargetName(lbxutil)
+         LBXEXT = lbx/LibraryTargetName(lbx) \
+                  $(TOP)/lib/lbxutil/LibraryTargetName(lbxutil)
         LBXDIRS = lbx
 #endif
 #if BuildDBE
          DBEEXT = dbe/LibraryTargetName(dbe)
-#endif
-#if BuildDBE || BuildDBElib
          DBEDIR = dbe
 #endif
 #if BuildRECORD
          RECORDEXT = record/LibraryTargetName(record)
-#endif
-#if BuildRECORD || BuildRECORDlib
          RECORDDIR = record
 #endif
 #ifdef SiteExtensionLibs
@@ -83,13 +78,57 @@ INSTPGMFLAGS =
      SITEEXTDIRS = SiteExtensionDirs
 #endif
 
+#if BuildXprint
+
+#ifndef XpRasterDDX
+#define XpRasterDDX NO
+#endif
+#ifndef XpColorPclDDX
+#define XpColorPclDDX YES
+#endif
+#ifndef XpMonoPclDDX
+#define XpMonoPclDDX NO
+#endif
+#ifndef XpPostScriptDDX
+#define XpPostScriptDDX YES
+#endif
+
+#if XpRasterDDX
+XPRASTLIB = Xprint/raster/LibraryTargetName(raster)
+#endif
+#if XpColorPclDDX
+XPPCLLIB = Xprint/pcl/LibraryTargetName(pcl)
+#endif
+#if XpMonoPclDDX
+XPMPCLLIB = Xprint/pcl-mono/LibraryTargetName(pcl)
+#endif
+#if XpPostScriptDDX
+XPPSLIB = Xprint/ps/LibraryTargetName(ps)
+#endif
+
+XPDDXLIBS = Xprint/LibraryTargetName(printer) $(XPRASTLIB) $(XPPCLLIB) $(XPMPCLLIB) $(XPPSLIB)
+XPDDXFBLIBS = $(MFB) $(CFB32)
+#if !PrintOnlyServer
+      XPFBLIBS = $(XPDDXFBLIBS)
+      XPDDX = $(XPDDXLIBS)
+#endif
+      XPDDXDIR = Xprint
+#endif
+#if !BuildXprint || PrintOnlyServer
+XPFBLIBS = dix/LibraryTargetName(xpstubs)
+#endif
+
       OTHEREXTS = Xext/LibraryTargetName(ext) $(XKBEXT) $(XINPUTEXT) \
-                  $(XIEEXT) $(LBXEXT) $(DBEEXT) $(RECORDEXT) $(SITEEXTS)
+                  $(XIEEXT) $(LBXEXT) $(DBEEXT) $(RECORDEXT) $(SITEEXTS) \
+                  $(ZLIB)
         EXTDIRS = Xext $(XKBDIR) $(XIDIR) $(XIEDIR) $(PEXDIR) \
                   $(LBXDIRS) $(DBEDIR) $(RECORDDIR) $(SITEEXTDIRS)
-     EXTENSIONS = $(PEXLIBS) $(OTHEREXTS)
+     EXTENSIONS = $(OTHEREXTS) $(PEXLIBS)
          XAULIB = $(XAUTHSRC)/LibraryTargetName(Xau)
        XDMCPLIB = $(XDMCPLIBSRC)/LibraryTargetName(Xdmcp)
+#if BuildLBX || GzipFontCompression
+           ZLIB = $(TOP)/exports/lib/LibraryTargetName(z)
+#endif
              OS = os/LibraryTargetName(os) $(XAULIB) $(XDMCPLIB)
         BSDEMUL = $(DEPXBSDLIB)
             MFB = mfb/LibraryTargetName(mfb)
@@ -111,7 +150,7 @@ INSTPGMFLAGS =
         SYSLIBS = MathLibrary Krb5Libraries DBMLibrary $(EXTRASYSLIBS)
 #endif
            CBRT = mi/LibraryTargetName(cbrt)
-        STDDIRS = include dix os mi $(EXTDIRS)
+        STDDIRS = include dix os mi $(XPDDXDIR) $(EXTDIRS)
 
 XCOMM
 XCOMM This turns off the default rule for compiling .c files because
@@ -155,7 +194,7 @@ CFB8DIR = cfb
 DDXDIR1 = hw/dec/ws
 DECDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
 DECOBJS = hw/dec/ws/init.o hw/dec/ws/sdepthinit.o
-DECLIBS = hw/dec/ws/libdec.a CFB8Libs
+DECLIBS = hw/dec/ws/LibraryTargetName(dec) CFB8Libs
 ServerTarget(Xdec,$(DECDIRS),$(DECOBJS),$(DECLIBS),$(SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall Xdec
@@ -175,7 +214,7 @@ CFB32DIR = cfb32
 DDXDIR1  = hw/dec/ws
 DECDIRS1 = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
 DECOBJS1 = hw/dec/ws/init.o hw/dec/ws/mdepthinit.o
-DECLIBS1 = hw/dec/ws/libdec.a CFBLibs
+DECLIBS1 = hw/dec/ws/LibraryTargetName(dec) CFBLibs
 ServerTarget(Xdec_md,$(DECDIRS1),$(DECOBJS1),$(DECLIBS1),$(SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall Xdec_md
@@ -190,14 +229,15 @@ XCOMM
 MFBDIR = mfb
 CFB8DIR = cfb
 DDXDIR1 = hw/sun
-SUNDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
 #ifndef AmoebaArchitecture
 SUNOBJS = hw/sun/sunInit.o
 #else
 SUNOBJS = hw/sun/sunInitColor.o
 #endif
-SUNLIBS = hw/sun/libsun.a CFB8Libs
-SetUIDServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SYSLIBS))
+SUNDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
+SUNLIBS = hw/sun/LibraryTargetName(sun) CFB8Libs
+SUNSYSLIBS = $(WIDECHARSYSLIB) $(SYSLIBS)
+SetUIDServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall Xsun
 #endif
@@ -215,7 +255,7 @@ CFB32DIR = cfb32
 DDXDIR1 = hw/sun
 SUN24DIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
 SUN24OBJS = hw/sun/sunInitMulti.o
-SUN24LIBS = hw/sun/libsun.a CFBLibs
+SUN24LIBS = hw/sun/LibraryTargetName(sun) CFBLibs
 SetUIDServerTarget(Xsun24,$(SUN24DIRS),$(SUN24OBJS),$(SUN24LIBS),$(SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall Xsun24
@@ -231,7 +271,7 @@ MFBDIR = mfb
 DDXDIR1 = hw/sun
 SUNMDIRS = $(STDDIRS) $(MFBDIR) $(DDXDIR1) $(DEPDIRS)
 SUNMOBJS = hw/sun/sunInitMono.o hw/sun/sunInExMono.o
-SUNMLIBS = hw/sun/libsun.a MFBBareLibs $(OTHEREXTS)
+SUNMLIBS = hw/sun/LibraryTargetName(sun) MFBBareLibs $(OTHEREXTS)
 SetUIDServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS),$(SUNMLIBS),$(SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall XsunMono
@@ -248,7 +288,7 @@ CFB8DIR = cfb
 DDXDIR1 = hw/sunAmoeba
 SUNDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
 SUNOBJS = hw/sunAmoeba/sunInitColor.o
-SUNLIBS = hw/sunAmoeba/libsun.a CFB8Libs
+SUNLIBS = hw/sunAmoeba/LibraryTargetName(sun) CFB8Libs
 ServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall Xsun
@@ -264,7 +304,7 @@ MFBDIR = mfb
 DDXDIR1 = hw/sunAmoeba
 SUNMDIRS = $(STDDIRS) $(MFBDIR) $(DDXDIR1) $(DEPDIRS)
 SUNMOBJS = hw/sunAmoeba/sunInitMono.o hw/sunAmoeba/sunInExMono.o
-SUNMLIBS = hw/sunAmoeba/libsun.a MFBBareLibs $(OTHEREXTS)
+SUNMLIBS = hw/sunAmoeba/LibraryTargetName(sun) MFBBareLibs $(OTHEREXTS)
 ServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS),$(SUNMLIBS),$(SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall XsunMono
@@ -310,7 +350,7 @@ XCOMM
 XCOMM IBM server
 XCOMM
 #if SpecialMalloc
-IBMALLOCLIB = hw/ibm/common/libibmalloc.a
+IBMALLOCLIB = hw/ibm/common/LibraryTargetName(ibmalloc)
 #else
 IBMALLOCLIB = 
 #endif
@@ -319,39 +359,12 @@ CFB8DIR = cfb
 DDXDIR1 = hw/ibm
 IBMDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
 IBMOBJS = hw/ibm/common/ibmcomm.o hw/ibm/common/ibmDate.o
-IBMLIBS = hw/ibm/AIX/hft.o hw/ibm/libibm.a $(IBMALLOCLIB) CFB8Libs
+IBMLIBS = hw/ibm/AIX/hft.o hw/ibm/LibraryTargetName(ibm) $(IBMALLOCLIB) CFB8Libs
 ServerTarget(Xibm,$(IBMDIRS),$(IBMOBJS),$(IBMLIBS),$(SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall Xibm
 #endif
 #endif /* XibmServer */
-
-
-#if XirisServer
-XCOMM
-XCOMM SGI Iris Server
-XCOMM
-DDXDIR1 = hw/sgi/IRIX hw/sgi/common hw/sgi/gr1 hw/sgi/nfb hw/sgi/rrm \
-	hw/sgi/sgi
-MFBDIR  = mfb
-CFB8DIR = cfb
-IRISDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
-IRISOBJS =
-IRISLIBS = 	$(DIX) $(OS) \
-		hw/sgi/common/libcomm.a \
-		hw/sgi/sgi/libsgi.a \
-	   	hw/sgi/gr1/re2/libre2.a \
-	   	hw/sgi/gr1/libgr1.a \
-	   	hw/sgi/rrm/librrm.a \
-		hw/sgi/nfb/libnfb.a \
-		$(CFB8) $(MFB) $(MI) $(FONT) $(EXTENSIONS) \
-		hw/sgi/IRIX/libirix.a
-IRISSYSLIBS = $(SYSLIBS)
-ServerTarget(Xiris,$(IRISDIRS),$(IRISOBJS),$(IRISLIBS),$(IRISSYSLIBS))
-#ifndef ServerToInstall
-#define ServerToInstall Xiris
-#endif
-#endif /* XirisServer */
 
 
 #if XhpServer
@@ -362,8 +375,8 @@ MFBDIR  = mfb
 CFB8DIR = cfb
 CFB32DIR = cfb32
 DDXDIR1 = hw/hp
-HPSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
 HPOBJS = hw/hp/hp.o
+HPSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
 HPLIBS = CFB32Libs
 HPSYSLIBS = $(CBRT) $(SYSLIBS)
 ServerTarget(Xhp,$(HPSUBDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSLIBS))
@@ -1116,7 +1129,7 @@ XCOMM
 DDXDIR2 = hw/xfree98
 XF98EGCSUBDIRS = $(STDDIRS) $(DDXDIR2) $(DEPDIRS)
 XF98EGCOBJS = $(XF98COMSRC)/XF86_VGA16.o $(XF98SRC)/vga16/vga16Conf.o \
-                $(XF98SRC)/vga16/misc/vga16misc.o
+                $(XF98SRC)/vga16/misc/vga16misc.o $(XF98MINIT)
 XF98EGCLIBS = $(XF98VGA16DRIVERSRC)/LibraryTargetName(driver16) \
 		$(XF98SRC)/vga16/LibraryTargetName(vga16) $(XF98MLIBS) \
 		NoMFBBareLibs $(OTHEREXTS)
@@ -1372,20 +1385,49 @@ SetUIDServerTarget(XF68_FBDev,$(XF68FBDevSUBDIRS),$(XF68FBDevOBJS),$(XF68FBDevLI
 #endif /* XF68FBDevServer */
 
 
+#if XprtServer
+XCOMM
+XCOMM Print Server
+XCOMM
+MFBDIR  = mfb
+CFB8DIR = cfb
+CFB32DIR = cfb32
+XPSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB32DIR) $(DEPDIRS)
+#if PrintOnlyServer
+XPOBJS = Xprint/ddxInit.o Xprint/miinitext.o
+XPLIBS = PreFbLibs $(XPDDXLIBS) $(XPDDXFBLIBS) PostFbLibs
+#else
+XPOBJS = Xprint/ddxInit.o
+XPLIBS = PreFbLibs PostFbLibs
+#endif
+#if defined(SparcArchitecture) && defined(SVR4Architecture)
+XPSYSLIBS = $(CBRT) $(SYSLIBS) -lw
+#else
+XPSYSLIBS = $(CBRT) $(SYSLIBS)
+#endif
+ServerTarget(Xprt,$(XPSUBDIRS),$(XPOBJS),$(XPLIBS),$(XPSYSLIBS))
+InstallProgram(Xprt,$(BINDIR))
+#endif	/* XprtServer */
+
 #if XnestServer
 XCOMM
 XCOMM Server with Xlib-based ddx
 XCOMM
+#ifndef Win32Architecture
 XNESTDDXDIR = hw/xnest
+#else
+XNESTDDXDIR = hw
+#endif
 XNESTDIRS = $(STDDIRS) $(XNESTDDXDIR) $(DEPDIRS)
-#ifndef LynxOSArchitecture
+#if !defined(LynsOSArchitecture) && !defined(Win32Architecture)
 XNESTOBJS = 
 #else
 XNESTOBJS = dix/main.o
 #endif
 XNEST = hw/xnest/LibraryTargetName(xnest)
+XNESTLIBS = PreFbLibs $(XNEST) NoMfbPostFbLibs $(XNEST)
 XNESTLIBS = $(DIX) $(OS) $(FONT) $(XNEST) $(MI) $(EXTENSIONS) $(XNEST)
-XNESTSYSLIBS = $(LDPRELIB) $(XLIB) $(SYSLIBS)
+XNESTSYSLIBS = $(LDPRELIBS) $(XLIB) $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XNESTDIRS) $(XNESTOBJS) $(XNESTLIBS) $(XNESTSYSLIBS))
 #endif
@@ -1419,17 +1461,19 @@ MFBDIR   = mfb
 CFB8DIR  = cfb
 CFB16DIR = cfb16
 CFB32DIR = cfb32
-XVFBDDXDIR  = hw/vfb
+#ifndef Win32Architecture
+XVFBDDXDIR = hw/vfb
+#else
+XVFBDDXDIR = hw
+#endif
 XVFBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(XVFBDDXDIR) $(DEPDIRS)
-#ifndef LynxOSArchitecture
+#if !defined(LynxOSArchitecture) && !defined(Win32Architecture)
 XVFBOBJS = hw/vfb/stubs.o
 #else
 XVFBOBJS = hw/vfb/stubs.o dix/main.o
 #endif
 XVFB = hw/vfb/LibraryTargetName(vfb)
-XVFBLIBS = $(DIX) $(OS) $(FONT) $(XVFB) $(MFB) cfb/LibraryTargetName(cfb)  \
-	   cfb16/LibraryTargetName(cfb) cfb32/LibraryTargetName(cfb) $(MI) \
-	   $(EXTENSIONS)
+XVFBLIBS = PreFbLibs $(XVFB) $(CFB) PostFbLibs
 XVFBSYSLIBS = $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XVFBDIRS) $(XVFBOBJS) $(XVFB) $(XVFBLIBS) $(XVFBSYSLIBS))

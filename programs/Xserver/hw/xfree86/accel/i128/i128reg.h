@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128reg.h,v 3.2 1996/02/04 09:01:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128reg.h,v 3.3 1996/05/12 11:57:50 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: i128reg.h /main/2 1995/12/17 08:13:20 kaleb $ */
+/* $XConsortium: i128reg.h /main/4 1996/05/12 20:56:19 kaleb $ */
 
 
 struct i128pci {

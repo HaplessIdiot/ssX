@@ -1,10 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oti87_bltC.c,v 3.0 1995/11/12 09:53:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oti87_bltC.c,v 3.1 1996/02/04 09:13:52 dawes Exp $ */
 
 
 
 
 
-/* $XConsortium: oti87_bltC.c /main/1 1995/11/13 08:31:33 kaleb $ */
+/* $XConsortium: oti87_bltC.c /main/2 1996/02/21 18:06:15 kaleb $ */
 
 #include  "X.h"
 #include  "Xmd.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Herc.c,v 3.2 1995/01/28 15:47:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Herc.c,v 3.3 1996/02/04 08:56:44 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -26,7 +26,7 @@
  *
  */
 
-/* $XConsortium: Herc.c /main/4 1995/11/13 11:12:15 kaleb $ */
+/* $XConsortium: Herc.c /main/5 1996/02/21 17:10:16 kaleb $ */
 
 #include "Probe.h"
 

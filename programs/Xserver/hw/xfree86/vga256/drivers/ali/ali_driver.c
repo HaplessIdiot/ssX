@@ -1,10 +1,10 @@
 /*
- * $XConsortium: ali_driver.c /main/7 1996/01/12 12:16:21 kaleb $ 
+ * $XConsortium: ali_driver.c /main/15 1996/10/28 05:43:43 kaleb $ 
  *
  *
  *
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.13 1996/10/16 14:42:17 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.14 1996/10/26 09:41:47 dawes Exp $
  */
 
 #include "X.h"

@@ -1,10 +1,10 @@
-XCOMM $XConsortium: Imakefile /main/4 1996/01/26 10:57:03 kaleb $
+XCOMM $XConsortium: Imakefile /main/8 1996/10/25 15:43:42 kaleb $
 
 
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/wabs/Imakefile,v 3.9 1996/10/08 12:45:22 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/wabs/Imakefile,v 3.10 1996/12/19 02:58:52 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = cir_driver.c cir_fill.c cir_blt.c cir_bltC.c cir_im.c cir_bank.s \
@@ -33,7 +33,7 @@ INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
            -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
            -I$(SERVERSRC)/cfb -I$(XF86SRC)/vga256/vga -I$(XF86SRC)/xaa \
-           -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(INCLUDESRC) \
+           -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
 	   -I../../wabs
 #endif
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.63 1996/11/24 09:56:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.64 1996/12/09 11:54:38 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -23,7 +23,7 @@
  * Author:  Thomas Roell, roell@informatik.tu-muenchen.de
  *
  */
-/* $XConsortium: vga.c /main/18 1996/01/12 13:10:23 kaleb $ */
+/* $XConsortium: vga.c /main/29 1996/10/25 10:34:12 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

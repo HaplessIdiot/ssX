@@ -148,8 +148,13 @@
 </enum>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.10 1996/10/13 11:19:44 dawes Exp $
-$XConsortium: LinkKit.sgml /main/4 1995/11/12 19:59:36 kaleb $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.11 1996/10/16 14:41:12 dawes Exp $
+
+
+
+
+
+$XConsortium: LinkKit.sgml /main/8 1996/10/27 11:05:58 kaleb $
 </verb>
 
 </article>

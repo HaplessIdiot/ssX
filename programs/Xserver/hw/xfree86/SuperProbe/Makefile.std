@@ -1,10 +1,10 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Makefile.std,v 3.9 1996/02/12 11:12:09 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Makefile.std,v 3.10 1996/10/16 14:39:13 dawes Exp $
 
 
 
 
 
-# $XConsortium: Makefile.std /main/6 1995/11/13 11:12:31 kaleb $
+# $XConsortium: Makefile.std /main/8 1996/10/27 11:04:00 kaleb $
 #
 # Installation parameters
 #

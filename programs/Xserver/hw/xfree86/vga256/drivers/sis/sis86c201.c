@@ -1,4 +1,4 @@
-/* $XConsortium: sis86c201.c /main/3 1996/01/13 13:14:59 kaleb $ */
+/* $XConsortium: sis86c201.c /main/11 1996/10/27 13:24:11 kaleb $ */
 /*
  * Copyright 1995 by Alan Hourihane, Wigan, England.
  *
@@ -27,7 +27,7 @@
  *
  * Currently only works for VGA16 with Non-Interlaced modes.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.12 1996/09/29 14:02:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.13 1996/10/16 14:43:31 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"

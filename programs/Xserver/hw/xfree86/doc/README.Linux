@@ -268,7 +268,7 @@
 
 
 
-  $XConsortium: Linux.sgml /main/3 1995/11/12 19:59:39 kaleb $
+  $XConsortium: README.Linux /main/12 1996/10/28 04:47:04 kaleb $
 
 
 
@@ -300,33 +300,4 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.Linux,v 3.16 1996/10/20 13:39:14 dawes Exp $

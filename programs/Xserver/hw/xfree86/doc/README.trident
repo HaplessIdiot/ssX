@@ -169,7 +169,7 @@
 
 
 
-  $XConsortium: trident.sgml /main/7 1996/01/16 15:36:48 kaleb $
+  $XConsortium: README.trident /main/14 1996/10/28 04:23:50 kaleb $
 
 
 
@@ -197,4 +197,10 @@
 
 
 
-$XFree86$
+
+
+
+
+
+
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.trident,v 3.22 1996/10/19 15:22:17 dawes Exp $

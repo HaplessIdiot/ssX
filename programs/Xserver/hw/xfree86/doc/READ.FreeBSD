@@ -607,9 +607,7 @@
 
 
 
-
-  $XConsortium: FreeBSD.sgml /main/5 1995/11/12 19:59:27 kaleb $
-
+  $XConsortium: READ.FreeBSD /main/15 1996/10/28 05:42:39 kaleb $
 
 
 
@@ -625,38 +623,4 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/READ.FreeBSD,v 3.24 1996/10/26 10:34:51 dawes Exp $

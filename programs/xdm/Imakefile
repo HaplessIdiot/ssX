@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile /main/80 1996/01/14 18:35:47 kaleb $
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.15 1996/10/06 13:18:55 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/81 1996/10/22 18:32:26 kaleb $
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.16 1996/10/16 14:45:03 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -38,10 +38,7 @@ KRB5SRCS = krb5auth.c
 #if SharedLibXdmGreet
 GREET_DIR = greeter
 #if SystemV4
-    DLLIB = -ldl
-#endif
-#if defined(LinuxArchitecture) && (defined(AlphaArchitecture) || UseElfFormat)
-    DLLIB = -rdynamic -ldl
+    DLLIBRARY = DlLibrary
 #endif
 #else
 GREET_DEFINES = -DGREET_USER_STATIC
@@ -105,7 +102,7 @@ XKB_CLIENT_DEFINES = XkbClientDefines
 
 INCLUDES = $(KRB5_INCLUDE)
 DEPLIBS = $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB) $(DEPXAUTHLIB) $(DEPXDMCPLIB)
-LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) $(XDMCPLIB) $(RPCLIB) $(DLLIB)
+LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) $(XDMCPLIB) $(RPCLIB) $(DLLIBRARY)
 
           SRCS1 = auth.c daemon.c server.c dpylist.c dm.c error.c file.c \
 		  netaddr.c reset.c resource.c protodpy.c policy.c \

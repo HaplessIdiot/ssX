@@ -1,5 +1,4 @@
-/* $XConsortium: w32line.s /main/3 1995/09/04 19:35:42 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/asm/w32line.s,v 3.1 1995/03/11 14:13:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/asm/w32line.s,v 3.2 1996/02/04 08:59:21 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -27,6 +26,7 @@ Austin, Tx 78765
 glenn@cs.utexas.edu
 10/17/94
 *******************************************************************************/
+/* $XConsortium: w32line.s /main/4 1996/02/21 17:19:46 kaleb $ */
  
 #include "assyntax.h"
 

@@ -1,4 +1,4 @@
-/* $XConsortium: i128misc.c /main/1 1995/12/09 15:31:47 kaleb $ */
+/* $XConsortium: i128misc.c /main/2 1996/02/21 17:23:21 kaleb $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -27,7 +27,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128misc.c,v 3.0 1995/12/07 07:24:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128misc.c,v 3.1 1996/02/04 09:01:11 dawes Exp $ */
 
 #include "servermd.h"
 

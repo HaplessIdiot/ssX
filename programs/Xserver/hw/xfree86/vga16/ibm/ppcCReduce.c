@@ -1,5 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcCReduce.c,v 1.1.1.2 1996/01/03 07:22:01 dawes Exp $ */
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcCReduce.c,v 3.0 1996/11/18 13:13:29 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -23,7 +22,7 @@
  *
 */
 
-/* $XConsortium: ppcCReduce.c /main/2 1995/11/13 07:04:51 kaleb $ */
+/* $XConsortium: ppcCReduce.c /main/3 1996/02/21 17:57:17 kaleb $ */
 
 #include "X.h"
 #include "misc.h"

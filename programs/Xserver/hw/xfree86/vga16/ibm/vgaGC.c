@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaGC.c,v 3.3 1995/05/07 11:53:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaGC.c,v 3.4 1996/02/04 09:11:35 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -89,7 +89,7 @@ SOFTWARE.
 
 */
 
-/* $XConsortium: vgaGC.c /main/5 1995/11/13 07:06:04 kaleb $ */
+/* $XConsortium: vgaGC.c /main/6 1996/02/21 17:58:54 kaleb $ */
 
 #include "X.h"
 #include "Xproto.h"

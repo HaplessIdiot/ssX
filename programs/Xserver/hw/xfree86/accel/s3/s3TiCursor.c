@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3TiCursor.c,v 3.9 1996/02/04 09:04:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3TiCursor.c,v 3.10 1996/11/18 13:10:21 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: s3TiCursor.c /main/6 1995/11/12 19:06:00 kaleb $ */
+/* $XConsortium: s3TiCursor.c /main/7 1996/02/21 17:34:44 kaleb $ */
 
 #define NEED_EVENTS
 #include <X.h>

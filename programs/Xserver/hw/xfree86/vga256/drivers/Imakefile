@@ -1,10 +1,10 @@
-XCOMM $XConsortium: Imakefile /main/10 1996/01/30 15:18:35 kaleb $
+XCOMM $XConsortium: Imakefile /main/16 1996/10/27 11:49:05 kaleb $
 
 
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/Imakefile,v 3.15 1996/09/26 13:56:19 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/Imakefile,v 3.16 1996/10/17 15:20:30 dawes Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 

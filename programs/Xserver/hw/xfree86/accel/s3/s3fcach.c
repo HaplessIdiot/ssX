@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.24 1996/10/08 12:20:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.25 1996/10/10 14:03:09 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -26,7 +26,7 @@
  * Modified by Amancio Hasty and Jon Tombs
  * 
  */
-/* $XConsortium: s3fcach.c /main/8 1995/12/29 10:11:14 kaleb $ */
+/* $XConsortium: s3fcach.c /main/15 1996/10/25 16:22:52 kaleb $ */
 
 
 #include	"X.h"

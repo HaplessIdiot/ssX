@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000viper.c,v 3.9 1996/02/04 09:04:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000viper.c,v 3.10 1996/03/10 12:03:35 dawes Exp $ */
 /*
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
  *
@@ -19,7 +19,7 @@
  * SOFTWARE.
  * 
  */
-/* $XConsortium: p9000viper.c /main/4 1995/11/12 18:19:42 kaleb $ */
+/* $XConsortium: p9000viper.c /main/6 1996/03/11 10:44:06 kaleb $ */
 
 #include "X.h"
 #include "input.h"

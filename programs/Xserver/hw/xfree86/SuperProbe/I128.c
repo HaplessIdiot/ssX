@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/I128.c,v 3.3 1996/02/04 08:56:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/I128.c,v 3.4 1996/08/23 11:02:09 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by Robin Cutshaw <robin@xfree86.org>
  *
@@ -26,7 +26,7 @@
  *
  */
 
-/* $XConsortium: I128.c /main/4 1995/11/13 11:12:17 kaleb $ */
+/* $XConsortium: I128.c /main/6 1996/10/19 17:46:43 kaleb $ */
 
 #include "Probe.h"
 

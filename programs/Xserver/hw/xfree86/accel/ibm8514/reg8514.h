@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/reg8514.h,v 1.1.1.2 1996/01/03 07:12:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/reg8514.h,v 3.0 1996/11/18 13:09:16 dawes Exp $ */
 /* REG8514.H
  *
  * Written by Jake Richter
@@ -19,7 +19,8 @@
  *
  * Modified by Tiago Gons (tiago@comosjn.hobby.nl)
  */
-/* $XConsortium: reg8514.h /main/2 1995/11/12 16:54:54 kaleb $ */
+/* $XConsortium: reg8514.h /main/3 1996/02/21 17:25:15 kaleb $ */
+
 
 #ifndef _IBM8514_H_
 #define _IBM8514_H_

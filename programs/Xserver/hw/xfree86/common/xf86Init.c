@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.61 1996/12/20 06:44:56 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.62 1996/12/20 10:32:22 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XConsortium: xf86Init.c /main/19 1996/01/30 15:14:54 kaleb $ */
+/* $XConsortium: xf86Init.c /main/37 1996/10/23 18:43:39 kaleb $ */
 
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
@@ -425,6 +425,8 @@ InitInput(argc, argv)
  *      is called by dix before establishing the well known sockets.
  */
  
+extern Bool OsDelayInitColors;
+
 void
 OsVendorInit()
 {

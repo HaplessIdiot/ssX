@@ -61,8 +61,10 @@
           *X312fnt1.tgz
              75dpi and misc fonts.
 
-          X312fnt2.tgz
-             100dpi and Speedo fonts.
+
+
+     X312fnt2.tgz
+        100dpi and Speedo fonts.
 
      *X312inc.tgz
         The X11 include files.
@@ -117,6 +119,10 @@
         in the later section ``Before Running XFree86'', in this
         document, to see if there are any system requirements you have
         to make for the server to operate correctly.
+
+
+
+
 
   2.  Source Distribution
 
@@ -476,7 +482,6 @@
           /usr/X11R6/lib/X11/doc with the binary distribution).
           These files explains how to fix up your video modes.
 
-
      Problem:
 
         1. Can only run a limited number of xterms.
@@ -655,74 +660,11 @@
 
 
 
-  $XConsortium: SCO.sgml /main/7 1995/11/12 20:00:04 kaleb $
+  $XConsortium: README.SCO /main/16 1996/10/23 11:51:33 kaleb $
 
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.SCO,v 3.21 1996/12/09 12:03:28 dawes Exp $

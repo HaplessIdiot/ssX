@@ -1,10 +1,10 @@
-/* $XConsortium: cards.c /main/7 1996/01/26 14:04:07 kaleb $ */
+/* $XConsortium: cards.c /main/9 1996/10/19 18:15:32 kaleb $ */
 
 
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.c,v 3.9 1996/02/18 03:43:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.c,v 3.10 1996/08/25 14:12:19 dawes Exp $ */
 
 /*
  *  Functions to manipulate card database.

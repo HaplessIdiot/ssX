@@ -1,4 +1,4 @@
-// $XConsortium: ru /main/2 1995/12/07 21:43:20 kaleb $
+// $XConsortium: ru /main/3 1996/08/31 12:20:12 kaleb $
 partial alphanumeric_keys 
 xkb_symbols "shift_toggle" {
     include "ru(basic)"

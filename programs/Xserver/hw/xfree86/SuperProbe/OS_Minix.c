@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Minix.c,v 3.2 1995/01/28 15:47:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Minix.c,v 3.3 1996/02/04 08:56:57 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by Philip Homburg <philip@cs.vu.nl>
  *
@@ -25,7 +25,7 @@
  * in this Software without prior written authorization from Philip Homburg.
  *
  */
-/* $XConsortium: OS_Minix.c /main/4 1995/11/13 11:12:50 kaleb $ */
+/* $XConsortium: OS_Minix.c /main/5 1996/02/21 17:11:16 kaleb $ */
 
 #include "Probe.h"
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/VTsw_noop.c,v 1.1.1.2 1996/01/03 07:20:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/VTsw_noop.c,v 3.0 1996/11/18 13:12:55 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: VTsw_noop.c /main/2 1995/11/13 06:14:57 kaleb $ */
+/* $XConsortium: VTsw_noop.c /main/3 1996/02/21 17:53:25 kaleb $ */
 
 #include "X.h"
 #include "input.h"

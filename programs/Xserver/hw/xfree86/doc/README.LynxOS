@@ -782,7 +782,7 @@
 
 
 
-  $XConsortium: LynxOS.sgml /main/4 1995/12/29 15:58:36 kaleb $
+  $XConsortium: README.LynxOS /main/10 1996/10/28 05:12:41 kaleb $
 
 
 
@@ -791,4 +791,4 @@
 
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.LynxOS,v 3.11 1996/10/23 13:37:19 dawes Exp $

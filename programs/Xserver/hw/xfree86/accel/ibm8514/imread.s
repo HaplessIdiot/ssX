@@ -1,10 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/imread.s,v 1.1.1.3 1996/01/03 07:12:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/imread.s,v 3.0 1996/11/18 13:09:10 dawes Exp $ */
 
 
 
 
 
-/* $XConsortium: imread.s /main/2 1995/11/12 16:54:38 kaleb $ */
+/* $XConsortium: imread.s /main/3 1996/02/21 17:24:53 kaleb $ */
 /******************************************************************************
 
 This is a assembly language version of the ibm8514ImageRead routine.

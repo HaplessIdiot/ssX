@@ -1,9 +1,9 @@
-/ $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_iout.s,v 1.1.1.2 1996/01/03 07:21:04 dawes Exp $
+/ $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_iout.s,v 3.0 1996/11/18 13:13:06 dawes Exp $
 /
 /
 /
 /
-/ $XConsortium: solx86_iout.s /main/3 1995/11/13 06:18:34 kaleb $
+/ $XConsortium: solx86_iout.s /main/4 1996/02/21 17:54:14 kaleb $
 /
 / File: solx86_iout.s
 /

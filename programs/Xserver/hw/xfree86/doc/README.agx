@@ -566,7 +566,7 @@
 
 
 
-  $XConsortium: agx.sgml /main/7 1995/12/29 15:59:45 kaleb $
+  $XConsortium: README.agx /main/13 1996/10/19 18:02:19 kaleb $
 
 
 
@@ -593,4 +593,6 @@
 
 
 
-$XFree86$
+
+
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.agx,v 3.31 1996/08/10 13:38:27 dawes Exp $

@@ -1,11 +1,10 @@
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Imakefile,v 3.20 1996/11/24 09:55:38 dawes Exp $
+
+
+
 XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Imakefile,v 3.19 1996/10/18 15:02:56 dawes Exp $
 
 
-
-
-
-
-XCOMM $XConsortium: Imakefile /main/8 1995/11/12 19:30:15 kaleb $
 
 #include <Server.tmpl>
 
@@ -32,7 +31,7 @@ OBJS = I2061Acal.o I2061Aset.o I2061Aalt.o xf86_ClkPr.o \
        STG1703clk.o ICS1562.o $(XOBJS)
 
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
-	   -I$(SERVERSRC)/include -I$(INCLUDESRC) -I../accel/s3
+	   -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I../accel/s3
 
 NormalLibraryObjectRule()
 NormalAsmObjectRule()

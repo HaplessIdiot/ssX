@@ -1,4 +1,4 @@
-/* $XConsortium: scanpci.c /main/8 1996/01/30 15:20:27 kaleb $ */
+/* $XConsortium: scanpci.c /main/25 1996/10/27 11:48:40 kaleb $ */
 /*
  *  name:             scanpci.c
  *
@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.31 1996/11/24 09:55:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.32 1996/12/09 11:52:53 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>

@@ -1,11 +1,11 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8imfl.s,v 1.1.1.2 1996/01/03 07:13:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8imfl.s,v 3.0 1996/11/18 13:09:45 dawes Exp $ */
 
 
 
 
 
 
-/* $XConsortium: mach8imfl.s /main/3 1995/11/12 18:00:42 kaleb $ */
+/* $XConsortium: mach8imfl.s /main/4 1996/02/21 17:30:47 kaleb $ */
 /******************************************************************************
 
 This is a assembly language version of the mach8ImageFill routine.

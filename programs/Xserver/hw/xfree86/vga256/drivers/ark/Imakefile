@@ -1,9 +1,9 @@
-XCOMM $XConsortium: Imakefile /main/4 1996/01/26 13:58:43 kaleb $
+XCOMM $XConsortium: Imakefile /main/8 1996/10/25 06:20:27 kaleb $
 
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/Imakefile,v 3.8 1996/11/20 14:01:53 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/Imakefile,v 3.9 1996/12/12 09:16:43 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = ark_driver.c ark_bank.s ark_cursor.c ark_bitblt.c ark_blt16.c \
@@ -20,7 +20,7 @@ INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
            -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
            -I$(SERVERSRC)/cfb -I../../vga -I../../../xaa \
-           -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(INCLUDESRC)
+           -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC)
 #endif
 
 #if MakeHasPosixVariableSubstitutions

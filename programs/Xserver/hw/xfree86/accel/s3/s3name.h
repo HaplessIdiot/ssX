@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3name.h,v 3.11 1996/06/29 09:07:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3name.h,v 3.12 1996/08/20 12:27:10 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -22,7 +22,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: s3name.h /main/5 1995/12/02 08:23:54 kaleb $ */
+/* $XConsortium: s3name.h /main/7 1996/10/19 17:57:11 kaleb $ */
 
 #ifndef S3_NAME_H
 #define S3_NAME_H

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pcach.c,v 3.10 1996/02/04 09:03:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pcach.c,v 3.11 1996/02/05 11:20:52 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -26,7 +26,7 @@
  * Modified for the Mach64 by Kevin E. Martin (martin@cs.unc.edu)
  *
  */
-/* $XConsortium: mach64pcach.c /main/7 1995/12/17 08:18:46 kaleb $ */
+/* $XConsortium: mach64pcach.c /main/10 1996/10/22 10:33:40 kaleb $ */
 
 
 /*       Offscreen memory organization for one 256-line cache set:

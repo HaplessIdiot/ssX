@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.20 1996/09/29 13:39:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.21 1996/12/18 03:12:58 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -31,7 +31,7 @@ in this Software without prior written authorization from the X Consortium.
  * We accelerate straightforward text writing for fonts with widths up to 32
  * pixels.
  */
-/* $XConsortium: cir_teblt8.c /main/9 1995/11/13 08:21:30 kaleb $ */
+/* $XConsortium: cir_teblt8.c /main/14 1996/10/26 11:17:14 kaleb $ */
 /*
  * TEGblt - ImageText expanded glyph fonts only.  For
  * 8 bit displays, in Copy mode with no clipping.

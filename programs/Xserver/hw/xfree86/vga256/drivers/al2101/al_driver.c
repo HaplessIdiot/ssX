@@ -1,5 +1,4 @@
-/* $XConsortium: al_driver.c /main/6 1996/01/12 12:16:15 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/al2101/al_driver.c,v 3.13 1996/09/29 14:01:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/al2101/al_driver.c,v 3.14 1996/10/16 14:42:13 dawes Exp $ */
 /*
  * Copyright 1994 by Paolo Severini, Italy.
  *
@@ -24,6 +23,7 @@
  * Author:  Paolo Severini, lendl@dist.dist.unige.it
  *
  */
+/* $XConsortium: al_driver.c /main/12 1996/10/27 11:06:44 kaleb $ */
 
 
 #include "X.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dseg.c,v 3.11 1996/08/20 12:26:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dseg.c,v 3.12 1996/09/01 04:15:30 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -52,7 +52,7 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 */
 
 /* s3dline.c from s3line.c with help from cfbresd.c and cfbline.c - Jon */
-/* $XConsortium: s3dseg.c /main/6 1996/01/11 12:26:32 kaleb $ */
+/* $XConsortium: s3dseg.c /main/9 1996/10/23 11:44:35 kaleb $ */
 
 #include "X.h"
 

@@ -1,4 +1,4 @@
-/* $XConsortium: xf86Xinput.h /main/3 1996/01/14 19:01:46 kaleb $ */
+/* $XConsortium: xf86Xinput.h /main/11 1996/10/27 11:05:29 kaleb $ */
 /*
  * Copyright 1995,1996 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>
  *                                                                            
@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.12 1996/12/18 03:12:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.13 1996/12/20 06:44:58 dawes Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h

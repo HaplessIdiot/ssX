@@ -1,4 +1,4 @@
-/* $XConsortium: xf86Elo.c /main/4 1996/01/26 13:36:41 kaleb $ */
+/* $XConsortium: xf86Elo.c /main/13 1996/10/25 14:11:31 kaleb $ */
 /*
  * Copyright 1995 by Patrick Lecoanet, France. <lecoanet@cenaath.cena.dgac.fr>       
  *                                                                            
@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.17 1996/12/18 03:12:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.18 1996/12/19 10:02:05 dawes Exp $ */
 
 /*
  *******************************************************************************

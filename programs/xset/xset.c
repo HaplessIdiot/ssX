@@ -1,6 +1,6 @@
 /* 
- * $XConsortium: xset.c,v 1.70 95/05/12 17:22:03 mor Exp $ 
- * $XFree86: xc/programs/xset/xset.c,v 3.2 1996/06/10 09:18:41 dawes Exp $ 
+ * $XConsortium: xset.c /main/71 1996/11/24 17:24:48 rws $ 
+ * $XFree86: xc/programs/xset/xset.c,v 3.3 1996/08/25 14:15:35 dawes Exp $ 
  */
 
 /*
@@ -896,7 +896,7 @@ int numpixels;
       def.pixel = pixels[i];
       if (def.pixel >= max_cells)
 	fprintf(stderr, 
-		"%s:  pixel value %d out of colormap range 0 through %d\n",
+		"%s:  pixel value %ld out of colormap range 0 through %ld\n",
 		progName, def.pixel, max_cells - 1);
       else {
         if (XParseColor (dpy, cmap, colors[i], &def))

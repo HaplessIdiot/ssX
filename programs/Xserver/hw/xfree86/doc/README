@@ -1098,6 +1098,54 @@
 
 
 
+  $XConsortium: README /main/33 1996/10/28 05:42:43 kaleb $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   $XConsortium: README.sgml /main/15 1996/01/30 15:13:03 kaleb $
 
@@ -1121,4 +1169,4 @@
 
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README,v 3.65 1996/11/20 14:01:27 dawes Exp $

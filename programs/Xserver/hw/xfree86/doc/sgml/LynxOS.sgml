@@ -581,12 +581,12 @@ few little adjustments to your system:
   <tt>lynx.cf</tt> but it has never been tested.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.9 1996/10/13 11:19:45 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.10 1996/10/23 13:09:58 dawes Exp $
 
 
 
 
 
-$XConsortium: LynxOS.sgml /main/4 1995/12/29 15:58:36 kaleb $
+$XConsortium: LynxOS.sgml /main/10 1996/10/28 05:13:07 kaleb $
 </verb>
 </article>

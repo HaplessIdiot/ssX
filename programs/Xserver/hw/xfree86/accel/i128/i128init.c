@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128init.c,v 3.3 1996/04/15 11:29:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128init.c,v 3.4 1996/08/13 11:29:41 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: i128init.c /main/2 1995/12/17 08:13:10 kaleb $ */
+/* $XConsortium: i128init.c /main/5 1996/10/19 17:52:17 kaleb $ */
 
 
 #include "i128.h"

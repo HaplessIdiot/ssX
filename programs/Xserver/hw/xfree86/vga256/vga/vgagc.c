@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgagc.c,v 3.5 1996/11/18 13:21:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgagc.c,v 3.6 1996/12/09 11:54:49 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: vgagc.c /main/5 1995/11/13 09:26:37 kaleb $ */
+/* $XConsortium: vgagc.c /main/6 1996/02/21 18:11:05 kaleb $ */
 
 #include "vga256.h"
 #include "migc.h"

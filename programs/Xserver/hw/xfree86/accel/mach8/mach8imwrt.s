@@ -1,11 +1,11 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8imwrt.s,v 1.1.1.2 1996/01/03 07:13:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8imwrt.s,v 3.0 1996/11/18 13:09:49 dawes Exp $ */
 
 
 
 
 
 
-/* $XConsortium: mach8imwrt.s /main/3 1995/11/12 18:00:50 kaleb $ */
+/* $XConsortium: mach8imwrt.s /main/4 1996/02/21 17:30:57 kaleb $ */
 /******************************************************************************
 
 This is a assembly language version of the mach8ImageWrite routine.

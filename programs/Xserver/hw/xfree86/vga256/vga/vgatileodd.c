@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgatileodd.c,v 3.2 1996/02/04 09:15:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgatileodd.c,v 3.3 1996/12/09 11:55:03 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -29,7 +29,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XConsortium: vgatileodd.c /main/2 1995/11/13 09:27:22 kaleb $ */
+/* $XConsortium: vgatileodd.c /main/3 1996/02/21 18:12:13 kaleb $ */
 
 /*
  * Fill odd tiled rectangles and spans.

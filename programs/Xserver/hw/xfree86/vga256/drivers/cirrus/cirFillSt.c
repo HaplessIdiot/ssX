@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirFillSt.c,v 3.12 1996/09/14 13:11:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirFillSt.c,v 3.13 1996/09/29 13:39:38 dawes Exp $ */
 /*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
@@ -24,7 +24,7 @@
  * Author:  H. Hanemaayer, <hhanemaa@cs.ruu.nl>
  *
  */
-/* $XConsortium: cirFillSt.c /main/2 1995/11/13 08:20:30 kaleb $ */
+/* $XConsortium: cirFillSt.c /main/6 1996/10/25 10:30:52 kaleb $ */
 
 /*
  * These are the functions for stipples and tiles, which call low-level

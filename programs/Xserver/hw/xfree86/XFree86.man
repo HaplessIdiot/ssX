@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.33 1996/10/23 13:09:15 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.34 1996/10/24 12:29:39 dawes Exp $ 
 .TH XFree86 1 "Version 3.2"  "XFree86"
 .SH NAME
 XFree86 - X11R6 for UNIX on x86 platforms
@@ -535,4 +535,4 @@ this enhancement.
 \fIXFree86\fP source is available from the FTP server
 \fIftp.XFree86.org\fP, among others.  Send email to
 \fIXFree86@XFree86.org\fP for details.
-.\" $XConsortium: XFree86.man /main/16 1996/01/31 10:56:20 kaleb $
+.\" $XConsortium: XFree86.man /main/25 1996/12/09 17:33:22 kaleb $

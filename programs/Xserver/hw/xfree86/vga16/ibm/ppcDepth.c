@@ -1,5 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcDepth.c,v 1.1.1.2 1996/01/03 07:22:06 dawes Exp $ */
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcDepth.c,v 3.0 1996/11/18 13:13:33 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -23,7 +22,7 @@
  *
 */
 
-/* $XConsortium: ppcDepth.c /main/2 1995/11/13 07:05:03 kaleb $ */
+/* $XConsortium: ppcDepth.c /main/3 1996/02/21 17:57:31 kaleb $ */
 
 /* Check to see if the alleged depth is acceptable for the Screen  
  *

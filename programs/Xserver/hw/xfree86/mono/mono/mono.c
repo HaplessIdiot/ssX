@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.25 1996/08/11 13:01:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.26 1996/09/14 13:10:48 dawes Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -14,7 +14,7 @@
  *
  * see mono/COPYRIGHT for copyright and disclaimers.
  */
-/* $XConsortium: mono.c /main/13 1995/12/29 10:19:47 kaleb $ */
+/* $XConsortium: mono.c /main/16 1996/10/23 18:46:08 kaleb $ */
 
 
 #include "X.h"

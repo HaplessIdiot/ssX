@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgabltC.c,v 3.0 1994/07/24 11:58:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgabltC.c,v 3.1 1996/02/04 09:15:03 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -27,7 +27,7 @@ in this Software without prior written authorization from the X Consortium.
 Author: Keith Packard
 
 */
-/* $XConsortium: vgabltC.c /main/3 1995/11/13 09:26:19 kaleb $ */
+/* $XConsortium: vgabltC.c /main/4 1996/02/21 18:10:34 kaleb $ */
 
 #include	"vga256.h"
 

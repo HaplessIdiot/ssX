@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/Ti3026Curs.c,v 3.4 1996/09/22 05:03:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/Ti3026Curs.c,v 3.5 1996/11/18 13:10:12 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -24,7 +24,7 @@
  * Modified for TVP3026 by Harald Koenig <koenig@tat.physik.uni-tuebingen.de>
  *
  */
-/* $XConsortium: Ti3026Curs.c /main/3 1995/12/02 08:23:10 kaleb $ */
+/* $XConsortium: Ti3026Curs.c /main/5 1996/10/24 07:10:49 kaleb $ */
 
 
 #define NEED_EVENTS

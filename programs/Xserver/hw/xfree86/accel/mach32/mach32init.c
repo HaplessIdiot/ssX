@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32init.c,v 3.12 1996/08/11 12:45:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32init.c,v 3.13 1996/12/19 10:01:24 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -22,7 +22,7 @@
  * Rewritten for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
  *
  */
-/* $XConsortium: mach32init.c /main/7 1996/01/13 13:13:18 kaleb $ */
+/* $XConsortium: mach32init.c /main/9 1996/10/19 17:52:57 kaleb $ */
 
 
 #include "X.h"

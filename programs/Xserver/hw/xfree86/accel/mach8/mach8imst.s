@@ -1,10 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8imst.s,v 1.1.1.2 1996/01/03 07:13:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8imst.s,v 3.0 1996/11/18 13:09:48 dawes Exp $ */
 
 
 
 
 
-/* $XConsortium: mach8imst.s /main/3 1995/11/12 18:00:47 kaleb $ */
+/* $XConsortium: mach8imst.s /main/4 1996/02/21 17:30:54 kaleb $ */
 /******************************************************************************
 
 This is a assembly language version of the mach8ImageStipple routine.

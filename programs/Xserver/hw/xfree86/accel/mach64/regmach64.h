@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/regmach64.h,v 3.12 1996/10/16 14:40:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/regmach64.h,v 3.13 1996/10/18 15:00:26 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -25,7 +25,7 @@
  * Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
  * Modified for the Mach64 by Kevin E. Martin (martin@cs.unc.edu)
  */
-/* $XConsortium: regmach64.h /main/8 1996/01/28 07:59:15 kaleb $ */
+/* $XConsortium: regmach64.h /main/13 1996/10/27 18:06:41 kaleb $ */
 
 #ifndef REGMACH64_H
 #define REGMACH64_H

@@ -1,10 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaAsm.h,v 3.2 1995/01/28 17:09:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaAsm.h,v 3.3 1996/02/04 09:14:53 dawes Exp $ */
 
 
 
 
 
-/* $XConsortium: vgaAsm.h /main/5 1995/11/13 11:43:05 kaleb $ */
+/* $XConsortium: vgaAsm.h /main/6 1996/02/21 18:10:00 kaleb $ */
 
 /* Definitions for VGA bank assembler routines */
 

@@ -1,4 +1,4 @@
-/* $XConsortium: i128.c /main/5 1996/01/21 14:31:43 kaleb $ */
+/* $XConsortium: i128.c /main/13 1996/10/27 11:04:19 kaleb $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.17 1996/10/16 14:39:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.18 1996/11/24 09:53:24 dawes Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"

@@ -1,9 +1,9 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3nec/s3pc98.c,v 3.6 1996/08/14 14:35:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3nec/s3pc98.c,v 3.7 1996/09/03 15:24:28 dawes Exp $ */
 
 
 
 
-/* $XConsortium: s3pc98.c /main/2 1995/12/29 11:48:55 kaleb $ */
+/* $XConsortium: s3pc98.c /main/7 1996/10/23 13:22:34 kaleb $ */
 
 #include "misc.h"
 #include "cfb.h"

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.106 1996/11/24 09:54:54 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.107 1996/12/09 11:52:04 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XConsortium: xf86Config.c /main/34 1996/01/31 10:06:24 kaleb $ */
+/* $XConsortium: xf86Config.c /main/57 1996/10/27 11:05:13 kaleb $ */
 
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>

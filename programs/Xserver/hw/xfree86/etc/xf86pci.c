@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/xf86pci.c,v 3.8 1996/10/03 08:37:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/xf86pci.c,v 3.9 1996/10/16 14:41:31 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: xf86pci.c /main/3 1995/11/12 20:17:58 kaleb $ */
+/* $XConsortium: xf86pci.c /main/8 1996/10/27 11:06:28 kaleb $ */
 
 #include <stdio.h>
 #include <sys/types.h>

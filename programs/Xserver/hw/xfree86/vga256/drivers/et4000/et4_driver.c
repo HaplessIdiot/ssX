@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.35 1996/10/20 13:33:51 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.36 1996/12/17 21:00:43 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -24,7 +24,7 @@
  * Author:  Thomas Roell, roell@informatik.tu-muenchen.de
  *          ET6000 support by Koen Gadeyne
  */
-/* $XConsortium: et4_driver.c /main/16 1996/01/12 12:17:07 kaleb $ */
+/* $XConsortium: et4_driver.c /main/27 1996/10/28 04:48:15 kaleb $ */
 
 #include "X.h"
 #include "input.h"

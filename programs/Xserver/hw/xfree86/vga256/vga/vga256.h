@@ -1,10 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga256.h,v 3.3 1996/11/24 09:56:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga256.h,v 3.4 1996/12/09 11:54:39 dawes Exp $ */
 
 
 
 
 
-/* $XConsortium: vga256.h /main/4 1995/11/13 09:25:54 kaleb $ */
+/* $XConsortium: vga256.h /main/5 1996/02/21 18:09:52 kaleb $ */
 
 #ifndef _VGA256_H
 #define VGA256_H

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.59 1996/11/24 09:53:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.60 1996/12/19 10:01:21 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -30,7 +30,7 @@
  * Modified for more 16 bpp and Ramdac parsing by Bryan K. Feir
  *
  */
-/* $XConsortium: mach32.c /main/13 1996/01/13 13:13:11 kaleb $ */
+/* $XConsortium: mach32.c /main/23 1996/10/27 11:46:34 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

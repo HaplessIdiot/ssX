@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vgaCmap.c,v 3.5 1996/02/04 09:00:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vgaCmap.c,v 3.6 1996/11/18 13:08:46 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: vgaCmap.c /main/3 1995/11/12 16:37:36 kaleb $ */
+/* $XConsortium: vgaCmap.c /main/4 1996/02/21 17:22:09 kaleb $ */
 
 #include "X.h"
 #include "Xproto.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_cursor.c,v 3.6 1996/09/25 14:18:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_cursor.c,v 3.7 1996/09/29 13:38:55 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -22,7 +22,7 @@
  * 
  * Written by Harm Hanemaayer (hhanemaa@cs.ruu.nl).
  */
-/* $XConsortium: ark_cursor.c /main/3 1995/11/13 07:23:35 kaleb $ */
+/* $XConsortium: ark_cursor.c /main/9 1996/10/25 10:28:07 kaleb $ */
 
 /*
  * Hardware cursor handling. Adapted from cirrus/cir_cursor.c and

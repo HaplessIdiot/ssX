@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.41 1996/10/16 14:40:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.42 1996/11/24 09:54:00 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -33,7 +33,7 @@
  * Bank switching code for P9000 by David Moews (dmoews@xraysgi.ims.uconn.edu)
  *
  */
-/* $XConsortium: p9000.c /main/12 1995/12/17 08:20:39 kaleb $ */
+/* $XConsortium: p9000.c /main/18 1996/10/27 11:04:43 kaleb $ */
 
 #define NEED_EVENTS
 #include "X.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxCursor.c,v 3.5 1996/02/20 14:33:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxCursor.c,v 3.6 1996/03/05 05:41:56 dawes Exp $ */
 /*
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
@@ -29,7 +29,7 @@
  * Modified for the AGX by Henry A. Worth (haw30@eng.amdahl.com)
  *
  */
-/* $XConsortium: agxCursor.c /main/7 1996/01/31 10:59:36 kaleb $ */
+/* $XConsortium: agxCursor.c /main/9 1996/03/09 11:16:57 kaleb $ */
 
 #include <signal.h>
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.25 1996/10/16 14:37:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.26 1996/12/09 11:50:48 dawes Exp $ */
 
 /*
 
@@ -29,7 +29,7 @@ or other dealings in this Software without prior written authorization
 from Kaleb S. KEITHLEY
 
 */
-/* $XConsortium: xf86vmode.c /main/10 1996/01/31 15:00:08 kaleb $ */
+/* $XConsortium: xf86vmode.c /main/24 1996/10/26 21:56:29 kaleb $ */
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
 #define NEED_REPLIES

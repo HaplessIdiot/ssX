@@ -1,10 +1,10 @@
-XCOMM $XConsortium: Imakefile /main/17 1996/02/06 10:03:48 kaleb $
+XCOMM $XConsortium: Imakefile /main/33 1996/10/28 05:12:24 kaleb $
 
 
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.39 1996/10/20 13:32:59 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.40 1996/10/23 13:09:39 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -110,3 +110,4 @@ MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
 #endif
 
+all::

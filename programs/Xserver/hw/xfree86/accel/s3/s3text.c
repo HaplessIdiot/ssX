@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3text.c,v 3.16 1996/10/08 12:20:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3text.c,v 3.17 1996/11/18 13:10:32 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -26,7 +26,7 @@
  * Modified by Amancio Hasty and Jon Tombs
  * 
  */
-/* $XConsortium: s3text.c /main/4 1995/12/28 17:12:10 kaleb $ */
+/* $XConsortium: s3text.c /main/9 1996/10/25 15:36:58 kaleb $ */
 
 
 #include	"X.h"

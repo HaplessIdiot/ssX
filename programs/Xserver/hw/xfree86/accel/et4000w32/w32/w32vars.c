@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32vars.c,v 3.8 1996/09/14 13:08:38 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32vars.c,v 3.9 1996/09/29 13:18:52 dawes Exp $ */ 
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -26,7 +26,7 @@ Austin, Tx 78765
 glenn@cs.utexas.edu)
 4/6/94
 *******************************************************************************/
-/* $XConsortium: w32vars.c /main/5 1995/11/12 16:37:57 kaleb $ */
+/* $XConsortium: w32vars.c /main/9 1996/10/25 10:22:00 kaleb $ */
 
 #include "w32.h"
 

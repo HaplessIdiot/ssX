@@ -300,13 +300,13 @@ enhancements to the X server.  Thanks!
 <p>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.11 1996/03/31 11:48:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.12 1996/10/24 12:30:19 dawes Exp $
 
 
 
 
 
-$XConsortium: Mach64.sgml /main/5 1995/12/29 15:59:01 kaleb $
+$XConsortium: Mach64.sgml /main/8 1996/10/28 05:23:52 kaleb $
 </verb>
 
 </article>

@@ -1,9 +1,9 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb.banked/mfblinebank.h,v 3.7 1996/02/04 09:12:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb.banked/mfblinebank.h,v 3.8 1996/12/09 11:53:32 dawes Exp $ */
 /* mfblinebank.h */
 /* included from mfb.h if MFB_LINE_BANK is defined */
 
 
-/* $XConsortium: mfblinebank.h /main/6 1995/11/13 07:15:08 kaleb $ */
+/* $XConsortium: mfblinebank.h /main/7 1996/02/21 18:01:05 kaleb $ */
 
 /* This should be       */
 /* #include "vga.h"     */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_LynxOS.c,v 3.1 1995/12/09 11:06:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_LynxOS.c,v 3.2 1996/02/04 08:56:55 dawes Exp $ */
 /*
  * Copyright 1993 by Thomas Mueller
  *
@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: OS_LynxOS.c /main/4 1995/12/09 16:05:12 kaleb $ */
+/* $XConsortium: OS_LynxOS.c /main/5 1996/02/21 17:11:07 kaleb $ */
 
 #include "Probe.h"
 

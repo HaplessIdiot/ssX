@@ -1,12 +1,12 @@
 #!/bin/sh
 
-# $XFree86: xc/programs/Xserver/hw/xfree98/vga256/cnec480.sh,v 3.0 1995/12/17 10:06:25 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree98/vga256/cnec480.sh,v 3.1 1996/02/04 09:16:57 dawes Exp $
 #
 # This script generates cnec480Conf.c
 #
 # usage: cnec480.sh driver1 driver2 ...
 #
-# $XConsortium: cnec480.sh /main/2 1995/12/29 11:50:52 kaleb $
+# $XConsortium: cnec480.sh /main/3 1996/02/21 18:16:32 kaleb $
 
 VGACONF=./nec480Conf.c
 
