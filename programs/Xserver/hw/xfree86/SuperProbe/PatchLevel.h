@@ -26,10 +26,10 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PatchLevel.h,v 3.14 1996/08/16 12:28:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PatchLevel.h,v 3.15 1996/08/27 03:13:12 dawes Exp $ */
 
 #define VERSION 	2
-#define PATCHLEV 	10
-#define RELDATE		"Aug 27 1996"
+#define PATCHLEV 	11
+#define RELDATE		"Sep 28 1996"
 #define PRINT_VERSION	printf("\n%s Version %d.%d (%s)\n", \
 				MyName,VERSION,PATCHLEV,RELDATE)

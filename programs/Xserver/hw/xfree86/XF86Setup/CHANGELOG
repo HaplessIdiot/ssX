@@ -416,9 +416,37 @@
 			Improved code that creates symlink to X server
 
 1.02	2 Sep 1996	Check for existence of chosen server
-			Remove some remaining probe code
+(3.1.2G)		Remove some remaining probe code
 			Fix bug with writing device name to config
 			  file when using Xqueue or OsMouse drivers
 			Add support for Alliance ProMotion driver
 			Add some partial support for the new
 			  DefaultColorDepth option
+
+1.03	27 Sep 1996	Update mouse device patterns (Thomas Mueller)
+			Added chipset "newmmio" and clockchip "cirrus"
+			  to carddata.tcl
+			Link w/ -ldl on appropriate OSes (James Hawtin,
+			  Harald Koenig)
+			    - needed when Tcl 7.5 or later is
+			    configured to support dynamic loading
+			Restructured lists in carddata.tcl in prepa-
+			  ration for restricting listboxes and the
+			  README display to only the values appropriate
+			  for the specified chipset
+			Added support for configuring "unsupported"
+			  cards
+			Fixed messages about the chosen server not
+			  being installed (they had an extra newline
+			  embedded within them)
+			Added README.Mach32 to list
+			Added support for ViRGE and DECtga servers and
+			  the Matrox SVGA driver
+			Add copyright and disclaimer to generated
+			  config file
+			Make help and README displays readonly
+			When the mouse screen is first selected, the
+			  help text pops up automagically
+			Changes to the mouse protocol cause an autoapply
+
+

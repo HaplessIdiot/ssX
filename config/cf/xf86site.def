@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.85 1996/09/24 13:48:48 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.86 1996/09/26 13:43:16 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -186,6 +186,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.85 1996/09/24 13:48:48 dawes Exp $
 #define XF98WABSServer		YES
 #define XF98WABEPServer		YES
 #define XF98WSNAServer		YES
+#define XF98TGUIServer		YES
 #define XF98NECS3Server		YES
 #define XF98PWSKBServer		YES
 #define XF98PWLBServer		YES

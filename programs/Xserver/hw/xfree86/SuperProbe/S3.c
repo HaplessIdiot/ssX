@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.10 1996/08/11 12:37:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.11 1996/09/22 05:01:45 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -126,6 +126,10 @@ int *Chipset;
 			case PCI_CHIP_ViRGE:
 			        PCIProbed = TRUE;
 				*Chipset = CHIP_S3_ViRGE;
+				break;
+			case PCI_CHIP_ViRGE_VX:
+			        PCIProbed = TRUE;
+				*Chipset = CHIP_S3_ViRGE_VX;
 				break;
 #if 0  /* use port probing then... */
 			default:

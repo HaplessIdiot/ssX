@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/keyboard.tcl,v 3.6 1996/08/24 12:50:46 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/keyboard.tcl,v 3.7 1996/08/26 10:47:40 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -295,6 +295,7 @@ proc Keyboard_popup_help { win } {
 		Next select the layout and any variant or options desired.\n\n\
 		Pressing the 'Apply' button will cause the selected\
 		settings to take effect."
+	.keyboardhelp.text configure -state disabled
         button .keyboardhelp.ok -text "Dismiss" \
 		-command "destroy .keyboardhelp"
         focus .keyboardhelp.ok

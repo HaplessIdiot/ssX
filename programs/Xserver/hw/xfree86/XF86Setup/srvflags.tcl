@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/srvflags.tcl,v 3.1 1996/08/24 12:50:57 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/srvflags.tcl,v 3.2 1996/08/26 10:47:48 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -94,6 +94,7 @@ proc Other_popup_help { win } {
 		If you would like more information regarding what each\
 		of these do,\n\
 		read the XF86Config man page."
+        .otherhelp.text configure -state disabled
         button .otherhelp.ok -text "Dismiss" -command "destroy .otherhelp"
         focus  .otherhelp.ok
         pack   .otherhelp.text .otherhelp.ok

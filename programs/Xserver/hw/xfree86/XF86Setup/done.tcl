@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/done.tcl,v 3.4 1996/08/26 10:47:39 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/done.tcl,v 3.5 1996/09/03 06:48:25 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -57,6 +57,7 @@ proc Done_popup_help { win } {
 		and then press\n\
 		'Done' again, when you've finished all of the\
 		configuration screens."
+	.donehelp.text configure -state disabled
 	button .donehelp.ok -text "Dismiss" -command "destroy .donehelp"
 	focus .donehelp.ok
 	pack .donehelp.text .donehelp.ok

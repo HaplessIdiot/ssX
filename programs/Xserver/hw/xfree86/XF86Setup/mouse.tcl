@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.15 1996/09/03 07:28:25 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.16 1996/09/14 13:06:35 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -88,6 +88,7 @@ proc Mouse_proto_select { win } {
 			[Mouse_defaultdevice $mseType]
 		Mouse_setlistbox $w $w.mouse.device.list.lb
 	}
+	Mouse_setsettings $win
 }
 
 proc Mouse_create_widgets { win } {
@@ -227,6 +228,8 @@ proc Mouse_create_widgets { win } {
 }
 
 proc Mouse_activate { win } {
+	global mseHelpShown
+
 	set w [winpathprefix $win]
 	pack $w.mouse -side top -fill both -expand yes
 
@@ -255,6 +258,10 @@ proc Mouse_activate { win } {
 	bind $win r [format $ifcmd $w $w.mouse.flags.rts invoke ]
 	bind $win s [format $ifcmd $w Mouse_incrsamplerate $win ]
 	bind $win t [format $ifcmd $w Mouse_increm3timeout $win ]
+	if ![info exists mseHelpShown] {
+		Mouse_popup_help $win
+		set mseHelpShown yes
+	}
 }
 
 proc Mouse_deactivate { win } {

@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.36 1996/09/22 05:01:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.37 1996/09/24 13:52:45 dawes Exp $ */
 
 /*
  * Includes
@@ -533,6 +533,7 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_S3_ViRGE   SVGA_TYPE(V_S3,22)	/* S3 ViRGE		*/
 #define CHIP_S3_968_3DLABS_300SX SVGA_TYPE(V_S3,23)	/* S3 968 & 3Dlabs 300SX	*/
 #define CHIP_S3_968_3DLABS_UNK   SVGA_TYPE(V_S3,24)	/* S3 968 & 3Dlabs 300SX	*/
+#define CHIP_S3_ViRGE_VX SVGA_TYPE(V_S3,23)	/* S3 ViRGE/VX		*/
 #define CHIP_TVGA_UNK	SVGA_TYPE(V_TRIDENT,0)	/* Trident unknown	*/
 #define CHIP_TVGA8200	SVGA_TYPE(V_TRIDENT,1)	/* Trident LX8200	*/
 #define CHIP_TVGA8800BR	SVGA_TYPE(V_TRIDENT,2)	/* Trident 8800BR	*/

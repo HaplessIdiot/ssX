@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase2.tcl,v 3.5 1996/08/24 12:50:52 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase2.tcl,v 3.6 1996/08/26 10:47:44 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -159,6 +159,7 @@ proc Intro_popup_help { win } {
 		Also, you can press Alt and one of the underlined letters\
 		to activate the\n\
 		corresponding button."
+	.introhelp.text configure -state disabled
 	button .introhelp.ok -text "Dismiss" -command "destroy .introhelp"
 	focus  .introhelp.ok
 	pack   .introhelp.text .introhelp.ok

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.7 1996/08/16 12:25:00 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.8 1996/09/14 13:05:03 dawes Exp $
 
 #ifdef i386Architecture
 # define OSName			LynxOS AT
@@ -13,6 +13,10 @@ XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.7 1996/08/16 12:25:00 dawes 
 #define OSMajorVersion		2
 #define OSMinorVersion		4
 #define OSTeenyVersion		0
+
+#ifdef SparcArchitecture
+# define SparcConsoleDefines	-DPATCHED_CONSOLE
+#endif
 
 #define HasGcc			YES
 #if OSMajorVersion == 2 && OSMinorVersion > 2
@@ -143,10 +147,12 @@ XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.7 1996/08/16 12:25:00 dawes 
 #else
 # if defined(SparcArchitecture)
 #  define ServerOSDefines 	-DDDXOSINIT
+#  define ServerExtraDefines	-DGCCUSESGAS SparcConsoleDefines
+#  define XkbServerDefines	-DXKB_ALWAYS_USES_SOFT_REPEAT
 # else
 #  define ServerOSDefines 	/**/
+#  define ServerExtraDefines	-DGCCUSESGAS
 # endif
-# define ServerExtraDefines	-DGCCUSESGAS
 #endif
 #define ServerExtraSysLibs	$(CBRT) MathLibrary
 #define ConnectionFlags		-DUNIXCONN -DTCPCONN
@@ -262,7 +268,6 @@ install.man:: list                                                      @@\
 	done
 #endif
 
-#ifdef not_yet
 /*
  * Definitions for the SUN server on LynxOS SPARC
  */
@@ -272,6 +277,11 @@ install.man:: list                                                      @@\
 # ifndef BuildScreenSaverLibrary
 #  define BuildScreenSaverLibrary	YES
 # endif
+# if BuildXInputExt
+#  undef BuildXInputExt
+#  define BuildXInputExt		NO
+# endif
+# define BuildXF86MiscExt		NO
 /*
  * XFree86 uses its own (more portable) database routines to speed up 
  * the RGB database lookups
@@ -281,7 +291,6 @@ install.man:: list                                                      @@\
 # ifndef UseRgbTxt
 #  define UseRgbTxt	YES
 # endif
-#endif
 #endif
 
 #ifndef i386Architecture

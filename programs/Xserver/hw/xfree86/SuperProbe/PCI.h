@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.11 1996/09/14 13:06:26 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.12 1996/09/22 05:01:41 dawes Exp $ */ 
 /*
  * PCI Probe
  *
@@ -255,6 +255,7 @@ void xf86writepci(
 #define PCI_CHIP_GD5436		0x00AC
 #define PCI_CHIP_GD5446		0x00B8
 #define PCI_CHIP_GD5462		0x00D0
+#define PCI_CHIP_GD5464		0x00D4
 #define PCI_CHIP_GD7542		0x1200
 #define PCI_CHIP_GD7543		0x1202
 #define PCI_CHIP_GD7541		0x1204
@@ -289,6 +290,7 @@ void xf86writepci(
 #define PCI_CHIP_964_1		0x88D1
 #define PCI_CHIP_968		0x88F0
 #define PCI_CHIP_ViRGE		0x5631
+#define PCI_CHIP_ViRGE_VX	0x883D
 
 /* ARK Logic */
 #define PCI_CHIP_1000PV		0xA091

@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/monitor.tcl,v 3.6 1996/08/24 12:50:49 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/monitor.tcl,v 3.7 1996/08/26 10:47:41 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -217,6 +217,7 @@ proc Monitor_popup_help { win } {
 		capabilities of your monitor may damage it.\n\
 		The server will automatically exclude any video modes\n\
 		that require sync rates beyond those you enter."
+        .monitorhelp.text configure -state disabled
         button .monitorhelp.ok -text "Dismiss" -command "destroy .monitorhelp"
         pack .monitorhelp.text .monitorhelp.ok
 }

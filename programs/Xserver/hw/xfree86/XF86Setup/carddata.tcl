@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/carddata.tcl,v 3.5 1996/08/24 12:50:44 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/carddata.tcl,v 3.6 1996/09/03 07:28:24 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -11,90 +11,88 @@
 #
 
 
-set ServerList {	Mono  VGA16  SVGA   8514  AGX I128
-			Mach8 Mach32 Mach64 P9000 S3  W32 }
-set AccelServerList {	8514 AGX I128 Mach8 Mach32 Mach64 P9000 S3 W32 }
+set ServerList		[list Mono VGA16 SVGA 8514 AGX I128 \
+			      Mach8 Mach32 Mach64 P9000 S3 S3V TGA W32 ]
+set AccelServerList	[list 8514 AGX I128 Mach8 Mach32 Mach64 P9000 \
+			      S3 S3V TGA W32 ]
 
 ###
 
-# For each server, what chipsets can be chosen?
-set CardChipSets(Mono)	   { \
-			     ati \
-			     cl6410 cl6412 cl6420 cl6440 \
-			     clgd5420 clgd5422 clgd5424 clgd5426 \
-				clgd5428 clgd5429 clgd5430 clgd5434 \
-				clgd5436 clgd5446 clgd6215 clgd6225 \
-				clgd6235 clgd7541 clgd7542 clgd7543 \
-			     et3000 \
-			     et4000 et4000w32 et4000w32i et4000w32p \
-				et6000 \
-			     gvga \
-			     ncr77c22 ncr77c22e \
-			     oti067 oti077 oti087 oti037c \
-			     pvga1 wd90c00 wd90c10 wd90c30 wd90c24 \
-				wd90c31 wd90c31 wd90c33 wd90c20 \
-			     sis86c201 sis86c202 sis86c205 \
-			     tvga8200lx tvga8800cs tvga8900b tvga8900c \
-				tvga8900cl tvga8900d tvga9000 tvga9000i \
-				tvga9100b tvga9200cxr \
-				tgui9320lcd tgui9400cxi tgui9420 \
-				tgui9420dgi tgui9430dgi tgui9440agi \
-				tgui9660xgi tgui9680 \
-			   }
-set CardChipSets(Mono)	   [concat generic [lsort $CardChipSets(Mono)]]
-set CardChipSets(VGA16)	   { \
-			     ati \
-			     cl6410 cl6412 cl6420 cl6440 \
-			     et3000 \
-			     et4000 et4000w32 et4000w32i et4000w32p \
-				et6000 \
-			     ncr77c22 ncr77c22e \
-			     oti067 oti077 oti087 oti037c \
-			     sis86c201 sis86c202 sis86c205 \
-			     tvga8200lx tvga8800cs tvga8900b tvga8900c \
-				tvga8900cl tvga8900d tvga9000 tvga9000i \
-				tvga9100b tvga9200cxr \
-				tgui9320lcd tgui9400cxi tgui9420 \
-				tgui9420dgi tgui9430dgi tgui9440agi \
-				tgui9660xgi tgui9680 \
-			   }
-set CardChipSets(VGA16)	   [concat generic [lsort $CardChipSets(VGA16)]]
-set CardChipSets(SVGA)	   { \
-			     al2101 \
-			     ali2228 ali2301 ali2302 ali2308 ali2401 \
-			     ap6422 \
-			     ark1000vl ark1000pv ark2000pv \
-			     ati \
-			     cl6410 cl6412 cl6420 cl6440 \
-			     clgd5420 clgd5422 clgd5424 clgd5426 \
-				clgd5428 clgd5429 clgd5430 clgd5434 \
-				clgd5436 clgd5446 clgd6215 clgd6225 \
-				clgd6235 clgd7541 clgd7542 clgd7543 \
-			     cpq_avga \
-			     ct65520 ct65530 ct65540 ct65545 \
-				ct65546 ct65548 ct65550 ct65554 \
-				ct451 ct452 ct453 ct455 ct456 ct457 \
-			     et3000 \
-			     et4000 et4000w32 et4000w32i et4000w32p \
-				et6000 \
-			     gvga \
-			     mx \
-			     ncr77c22 ncr77c22e \
-			     oti067 oti077 oti087 oti037c \
-			     pvga1 wd90c00 wd90c10 wd90c30 wd90c24 \
-				wd90c31 wd90c31 wd90c33 wd90c20 \
-			     realtek \
-			     s3 \
-			     sis86c201 sis86c202 sis86c205 \
-			     tvga8200lx tvga8800cs tvga8900b tvga8900c \
-				tvga8900cl tvga8900d tvga9000 tvga9000i \
-				tvga9100b tvga9200cxr \
-				tgui9320lcd tgui9400cxi tgui9420 \
-				tgui9420dgi tgui9430dgi tgui9440agi \
-				tgui9660xgi tgui9680 \
-			     video7 \
-			   }
-set CardChipSets(SVGA)	   [concat generic [lsort $CardChipSets(SVGA)]]
+# For each server, what chipsets can be chosen (for the Mono, VGA16,
+# and SVGA servers, the list is broken out by driver)?
+set CardChipSets(SVGA-al2101)	al2101
+set CardChipSets(SVGA-ali)	{ ali2228 ali2301 ali2302 ali2308 ali2401 }
+set CardChipSets(SVGA-apm)	ap6422
+set CardChipSets(SVGA-ark)	{ ark1000vl ark1000pv ark2000pv }
+set CardChipSets(SVGA-ati)	ati
+set CardChipSets(SVGA-cl64xx)	{ cl6410 cl6412 cl6420 cl6440 }
+set CardChipSets(SVGA-cirrus)	{ clgd5420 clgd5422 clgd5424 clgd5426 \
+				  clgd5428 clgd5429 clgd5430 clgd5434 \
+				  clgd5436 clgd5446 clgd6215 clgd6225 \
+				  clgd6235 clgd7541 clgd7542 clgd7543 }
+set CardChipSets(SVGA-compaq)	cpq_avga
+set CardChipSets(SVGA-chips)	{ ct65520 ct65530 ct65540 ct65545 \
+				  ct65546 ct65548 ct65550 ct65554 \
+				  ct451 ct452 ct453 ct455 ct456 ct457 }
+set CardChipSets(SVGA-et3000)	et3000
+set CardChipSets(SVGA-et4000)	{ et4000 et4000w32 et4000w32i et4000w32p \
+				  et6000 }
+set CardChipSets(SVGA-gvga)	gvga
+set CardChipSets(SVGA-mga)	mga2064w
+set CardChipSets(SVGA-mx)	mx
+set CardChipSets(SVGA-ncr77c22)	{ ncr77c22 ncr77c22e }
+set CardChipSets(SVGA-oak)	{ oti067 oti077 oti087 oti037c }
+set CardChipSets(SVGA-pvga1)	{ pvga1 \
+				  wd90c00 wd90c10 wd90c30 wd90c24 \
+				  wd90c31 wd90c31 wd90c33 wd90c20 }
+set CardChipSets(SVGA-realtek)	realtek
+set CardChipSets(SVGA-s3_svga)	s3
+set CardChipSets(SVGA-sis)	{ sis86c201 sis86c202 sis86c205 }
+set CardChipSets(SVGA-tvga8900)	{ tvga8200lx tvga8800cs tvga8900b tvga8900c \
+				  tvga8900cl tvga8900d tvga9000 tvga9000i \
+				  tvga9100b tvga9200cxr \
+				  tgui9320lcd tgui9400cxi tgui9420 \
+				  tgui9420dgi tgui9430dgi tgui9440agi \
+				  tgui9660xgi tgui9680 }
+set CardChipSets(SVGA-video7)	video7
+set chiplist ""
+foreach idx [array names CardChipSets SVGA-*] {
+	eval lappend chiplist $CardChipSets($idx)
+}
+set CardChipSets(SVGA)	   [concat generic [lrmdups $chiplist]]
+
+set CardChipSets(VGA16-ati)	 $CardChipSets(SVGA-ati)
+set CardChipSets(VGA16-cl64xx)	 $CardChipSets(SVGA-cl64xx)
+set CardChipSets(VGA16-et3000)	 $CardChipSets(SVGA-et3000)
+set CardChipSets(VGA16-et4000)	 $CardChipSets(SVGA-et4000)
+set CardChipSets(VGA16-ncr77c22) $CardChipSets(SVGA-ncr77c22)
+set CardChipSets(VGA16-oak)	 $CardChipSets(SVGA-oak)
+set CardChipSets(VGA16-sis)	 $CardChipSets(SVGA-sis)
+set CardChipSets(VGA16-tvga8900) $CardChipSets(SVGA-tvga8900)
+set chiplist ""
+foreach idx [array names CardChipSets VGA16-*] {
+	eval lappend chiplist $CardChipSets($idx)
+}
+set CardChipSets(VGA16)	   [concat generic [lrmdups $chiplist]]
+
+set CardChipSets(Mono-ati)	$CardChipSets(SVGA-ati)
+set CardChipSets(Mono-cl64xx)	$CardChipSets(SVGA-cl64xx)
+set CardChipSets(Mono-cirrus)	$CardChipSets(SVGA-cirrus)
+set CardChipSets(Mono-et3000)	$CardChipSets(SVGA-et3000)
+set CardChipSets(Mono-et4000)	$CardChipSets(SVGA-et4000)
+set CardChipSets(Mono-gvga)	$CardChipSets(SVGA-gvga)
+set CardChipSets(Mono-ncr77c22)	$CardChipSets(SVGA-ncr77c22)
+set CardChipSets(Mono-oak)	$CardChipSets(SVGA-oak)
+set CardChipSets(Mono-pvga1)	$CardChipSets(SVGA-pvga1)
+set CardChipSets(Mono-sis)	$CardChipSets(SVGA-sis)
+set CardChipSets(Mono-tvga8900)	$CardChipSets(SVGA-tvga8900)
+set chiplist ""
+foreach idx [array names CardChipSets Mono-*] {
+	eval lappend chiplist $CardChipSets($idx)
+}
+set CardChipSets(Mono)	   [concat generic [lrmdups $chiplist]]
+unset chiplist idx
+
 set CardChipSets(8514)	   { ibm8514 }
 set CardChipSets(AGX)	   { agx-010 agx-014 agx-015 agx-016 xga-1 xga-2 }
 set CardChipSets(I128)	   { i128 }
@@ -102,7 +100,9 @@ set CardChipSets(Mach8)	   { mach8 }
 set CardChipSets(Mach32)   { mach32 }
 set CardChipSets(Mach64)   { mach64 }
 set CardChipSets(P9000)	   { orchid_p9000 viperpci vipervlb }
-set CardChipSets(S3)	   { mmio_928 s3_generic }
+set CardChipSets(S3)	   { mmio_928 newmmio s3_generic }
+set CardChipSets(S3V)	   { virge }
+set CardChipSets(TGA)	   { tga }
 set CardChipSets(W32)	   { et4000w32 et4000w32i et4000w32i_rev_b \
 			     et4000w32i_rev_c et4000w32p_rev_a \
 			     et4000w32p_rev_b et4000w32p_rev_c \
@@ -158,10 +158,13 @@ set CardRamDacs(S3)	   { normal \
 			     stg1700 stg1703 \
 			     ti3020 ti3025 ti3026 ti3030 \
 			   }
+set CardRamDacs(S3V)	   { normal s3_trio64 }
+set CardRamDacs(TGA)	   { bt485 }
 set CardRamDacs(W32)	   { normal \
 			     att20c47xa att20c490 att20c491 \
 				att20c492 att20c493 att20c497 \
 			     ics5341 sc1502x stg1703 et6000 }
+
 set CardRamDacs(SVGA-ark)	   { ark1491a att20c490 att20c498 \
 					ics5342 stg1700 \
 					w30c491 w30c498 w30c516 \
@@ -171,15 +174,21 @@ set CardRamDacs(SVGA-ati)	   [lrmdups [concat \
 					$CardRamDacs(Mach32) \
 					$CardRamDacs(Mach64)] ]
 set CardRamDacs(SVGA-et4000)	   $CardRamDacs(W32)
-set svgadacs ""
-foreach driv [array names CardRamDacs SVGA-*] {
-	eval lappend svgadacs $CardRamDacs($driv)
+set CardRamDacs(SVGA-mga)	   ti3026
+set daclist ""
+foreach idx [array names CardRamDacs SVGA-*] {
+	eval lappend daclist $CardRamDacs($idx)
 }
-set CardRamDacs(SVGA)	   [lrmdups $svgadacs]
-unset svgadacs
-set CardRamDacs(VGA16)	   [lrmdups [concat $CardRamDacs(SVGA-ati) \
-				$CardRamDacs(SVGA-et4000)] ]
-set CardRamDacs(Mono)	   $CardRamDacs(VGA16)
+set CardRamDacs(SVGA)		[lrmdups $daclist]
+
+set CardRamDacs(VGA16-ati)	$CardRamDacs(SVGA-ati)
+set CardRamDacs(VGA16-et4000)	$CardRamDacs(SVGA-et4000)
+set CardRamDacs(VGA16)		[lrmdups [concat $CardRamDacs(SVGA-ati) \
+				  $CardRamDacs(SVGA-et4000)] ]
+set CardRamDacs(Mono-ati)	$CardRamDacs(SVGA-ati)
+set CardRamDacs(Mono-et4000)	$CardRamDacs(SVGA-et4000)
+set CardRamDacs(Mono)		$CardRamDacs(VGA16)
+unset daclist idx
 
 ###
 
@@ -202,20 +211,33 @@ set CardClockChips(S3)	   { ati18818 att20c409 att20c499 att20c408 \
 				s3_trio64 s3gendac \
 			     sc11412 stg1703 ti3025 ti3026 ti3030 \
 			   }
-
+set CardClockChips(S3V)	   {}
+set CardClockChips(TGA)	   {}
 set CardClockChips(W32)	   { dcs2824 et6000 icd2061a ics5341 stg1703 }
-set CardClockChips(SVGA-ark)		{ ics5341 }
+
+set CardClockChips(SVGA-ark)		ics5341
+set CardClockChips(SVGA-cirrus)		cirrus
 set CardClockChips(SVGA-et4000)		$CardClockChips(W32)
-set CardClockChips(SVGA-tvga8900)	{ tgui }
-set svgaclks ""
-foreach driv [array names CardClockChips SVGA-*] {
-	eval lappend svgaclks $CardClockChips($driv)
+set CardClockChips(SVGA-mga)		ti3026
+set CardClockChips(SVGA-tvga8900)	tgui
+set clklist ""
+foreach idx [array names CardClockChips SVGA-*] {
+	eval lappend clklist $CardClockChips($idx)
 }
-set CardClockChips(SVGA)   [lrmdups $svgaclks]
-unset svgaclks
+set CardClockChips(SVGA)   [lrmdups $clklist]
+
+set CardClockChips(VGA16-et4000)	$CardClockChips(SVGA-et4000)
+set CardClockChips(VGA16-tvga8900)	$CardClockChips(SVGA-tvga8900)
 set CardClockChips(VGA16)  [lrmdups [concat $CardClockChips(SVGA-et4000) \
 				$CardClockChips(SVGA-tvga8900)] ]
-set CardClockChips(Mono)   $CardClockChips(VGA16)
+
+set CardClockChips(Mono-cirrus)		$CardClockChips(SVGA-cirrus)
+set CardClockChips(Mono-et4000)		$CardClockChips(SVGA-et4000)
+set CardClockChips(Mono-tvga8900)	$CardClockChips(SVGA-tvga8900)
+set CardClockChips(Mono)  [lrmdups [concat $CardClockChips(Mono-cirrus) \
+				$CardClockChips(Mono-et4000) \
+				$CardClockChips(Mono-tvga8900)] ]
+unset clklist idx
 
 # For each server, what options can be chosen?
 set CardOptions(Mono)	   { 16clocks 8clocks all_wait clgd6225_lcd \
@@ -312,23 +334,68 @@ set CardOptions(S3)	   { bt485_curs clkdiv2 dac_6_bit dac_8_bit \
 			     ti3026_curs trio32_fc_bug trio64v+_bug1 \
 			     trio64v+_bug2 trio64v+_bug3 \
 			   }
+set CardOptions(S3V)	   {}
+set CardOptions(TGA)	   {}
 set CardOptions(W32)	   { clkdiv2 fast_dram hibit_high hibit_low \
 			     legend pci_burst_off pci_burst_on power_saver \
 			     w32_interleave_off w32_interleave_on }
 
 # For each server, what readme files are applicable?
-set CardReadmes(SVGA)	   {README.Oak README.Video7 README.WstDig \
-			    README.ark README.ati README.chips \
-			    README.cirrus README.trident README.tseng}
-set CardReadmes(Mono)	   $CardReadmes(SVGA)
-set CardReadmes(VGA16)	   $CardReadmes(SVGA)
+set CardReadmes(SVGA-ark)	README.ark
+set CardReadmes(SVGA-ati)	README.ati
+set CardReadmes(SVGA-cl64xx)	README.cirrus
+set CardReadmes(SVGA-cirrus)	README.cirrus
+set CardReadmes(SVGA-chips)	README.chips
+set CardReadmes(SVGA-et3000)	README.tseng
+set CardReadmes(SVGA-et4000)	README.tseng
+set CardReadmes(SVGA-oak)	README.Oak
+set CardReadmes(SVGA-pvga1)	README.WstDig
+set CardReadmes(SVGA-tvga8900)	README.trident
+set CardReadmes(SVGA-video7)	README.Video7
+set rdmelist ""
+foreach idx [array names CardReadmes SVGA-*] {
+	eval lappend rdmelist $CardReadmes($idx)
+}
+set CardReadmes(SVGA)	   [concat generic [lrmdups $rdmelist]]
+
+set CardReadmes(VGA16-ati)	$CardReadmes(SVGA-ati)
+set CardReadmes(VGA16-cl64xx)	$CardReadmes(SVGA-cl64xx)
+set CardReadmes(VGA16-et3000)	$CardReadmes(SVGA-et3000)
+set CardReadmes(VGA16-et4000)	$CardReadmes(SVGA-et4000)
+set CardReadmes(VGA16-oak)	$CardReadmes(SVGA-oak)
+set CardReadmes(VGA16-tvga8900)	$CardReadmes(SVGA-tvga8900)
+set rdmelist ""
+foreach idx [array names CardReadmes VGA16-*] {
+	eval lappend rdmelist $CardReadmes($idx)
+}
+set CardReadmes(VGA16)	   [concat generic [lrmdups $rdmelist]]
+
+
+set CardReadmes(Mono-ati)	$CardReadmes(SVGA-ati)
+set CardReadmes(Mono-cl64xx)	$CardReadmes(SVGA-cl64xx)
+set CardReadmes(Mono-cirrus)	$CardReadmes(SVGA-cirrus)
+set CardReadmes(Mono-et3000)	$CardReadmes(SVGA-et3000)
+set CardReadmes(Mono-et4000)	$CardReadmes(SVGA-et4000)
+set CardReadmes(Mono-oak)	$CardReadmes(SVGA-oak)
+set CardReadmes(Mono-pvga1)	$CardReadmes(SVGA-pvga1)
+set CardReadmes(Mono-tvga8900)	$CardReadmes(SVGA-tvga8900)
+set CardReadmes(Mono)		$CardReadmes(SVGA)
+set rdmelist ""
+foreach idx [array names CardReadmes Mono-*] {
+	eval lappend rdmelist $CardReadmes($idx)
+}
+set CardReadmes(Mono)	   [concat generic [lrmdups $rdmelist]]
+
+
 set CardReadmes(8514)	   {}
 set CardReadmes(AGX)	   README.agx
 set CardReadmes(I128)	   {}
 set CardReadmes(Mach8)	   {}
-set CardReadmes(Mach32)	   {}
+set CardReadmes(Mach32)	   README.Mach32
 set CardReadmes(Mach64)	   README.Mach64
 set CardReadmes(P9000)	   README.P9000
 set CardReadmes(S3)	   README.S3
+set CardReadmes(S3V)	   {}
+set CardReadmes(TGA)	   README.DECtga
 set CardReadmes(W32)	   README.W32
 

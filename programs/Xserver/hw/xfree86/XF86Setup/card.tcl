@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/card.tcl,v 3.8 1996/08/26 10:47:38 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/card.tcl,v 3.9 1996/09/03 07:28:23 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -306,26 +306,38 @@ proc Card_selected { win lbox } {
 
 	set w [winpathprefix $win]
 	if { ![string length [$lbox curselection]] } return
-	set cardentry [$lbox get [$lbox curselection]]
-	set carddata [xf86cards_getentry $cardentry]
-	set cardServer [lindex $carddata 2]
+	set cardentry	[$lbox get [$lbox curselection]]
+	set carddata	[xf86cards_getentry $cardentry]
 	$w.card.title configure -text "Card selected: $cardentry"
-	#Card_cbox_setentry $w.card.chipset.cbox [lindex $carddata 1]
-	Card_cbox_setentry $w.card.ramdac.cbox [lindex $carddata 3]
-	Card_cbox_setentry $w.card.clockchip.cbox [lindex $carddata 4]
 	$w.card.options.text.text delete 0.0 end
-	$w.card.options.text.text insert 0.0 [lindex $carddata 6]
-	if { $cardReadmeWasSeen($cardDevNum) } {
-	    $w.card.bot.message configure -text \
-		"That's all there is to configuring your card\n\
-		unless you would like to make changes to the\
-		standard settings (by pressing Detailed Setup)"
+	if { [lsearch [lindex $carddata 7] UNSUPPORTED] == -1 } {
+	    #Card_cbox_setentry $w.card.chipset.cbox  [lindex $carddata 1]
+	    set cardServer			      [lindex $carddata 2]
+	    Card_cbox_setentry $w.card.ramdac.cbox    [lindex $carddata 3]
+	    Card_cbox_setentry $w.card.clockchip.cbox [lindex $carddata 4]
+	    $w.card.options.text.text insert 0.0      [lindex $carddata 6]
+	    if { $cardReadmeWasSeen($cardDevNum) } {
+	        $w.card.bot.message configure -text \
+		    "That's all there is to configuring your card\n\
+		    unless you would like to make changes to the\
+		    standard settings (by pressing Detailed Setup)"
+	    } else {
+	        $w.card.bot.message configure -text \
+		    "That's probably all there is to configuring\
+		    your card, but you should probably check the\n\
+		    README to make sure. If any changes are needed,\
+		    press the Detailed Setup button"
+	    }
 	} else {
+	    set cardServer			      VGA16
+	    Card_cbox_setentry $w.card.chipset.cbox   generic
+	    Card_cbox_setentry $w.card.ramdac.cbox    ""
+	    Card_cbox_setentry $w.card.clockchip.cbox ""
 	    $w.card.bot.message configure -text \
-		"That's probably all there is to configuring\
-		your card, but you should probably check the\n\
-		README to make sure. If any changes are needed,\
-		press the Detailed Setup button"
+		"You have selected a card which is not fully\
+		supported by XFree86, however all of the proper\n\
+		configuration options have been set such that it\
+		should work in standard VGA mode"
 	}
 	Card_set_cboxlists $win cardselected
 }
@@ -341,14 +353,14 @@ proc Card_set_cboxlists { win args } {
 		    "*** The server required by your card is not\
 		    installed!  Please abort, install the\
 		    $cardServer server as\n\
-		    $Xwinhome/bin/XF86_$cardServer and
+		    $Xwinhome/bin/XF86_$cardServer and\
 		    run this program again ***"
 	    } else {
 		$w.card.bot.message configure -text \
 		    "*** The selected server is not\
 		    installed!  Please abort, install the\
 		    $cardServer server as\n\
-		    $Xwinhome/bin/XF86_$cardServer and
+		    $Xwinhome/bin/XF86_$cardServer and\
 		    run this program again ***"
 	    }
 	    bell
@@ -441,6 +453,7 @@ proc Card_display_readme { win } {
 		.cardreadme.file.text insert end [read $fd]
 		close $fd
 	}
+        .cardreadme.file.text configure -state disabled
 	frame .cardreadme.horz
 	scrollbar .cardreadme.horz.hsb -orient horizontal \
 		-command ".cardreadme.file.text xview" \
@@ -602,6 +615,7 @@ proc Card_popup_help { win } {
 		your card, though\n\
 		the server will usually be able to detect this."
 	}
+	.cardhelp.text configure -state disabled
         button .cardhelp.ok -text "Dismiss" -command "destroy .cardhelp"
 	focus .cardhelp.ok
         pack .cardhelp.text .cardhelp.ok
