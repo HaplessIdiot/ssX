@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_OSlib.h,v 1.1 94/03/28 21:27:06 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.7 1994/11/26 12:46:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.8 1994/12/05 03:46:56 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@physics.su.oz.au>
@@ -208,22 +208,10 @@ extern int errno;
 # include <errno.h>
 extern int errno;
 
-/*
- * XXXX Note, for 386BSD, FreeBSD and NetBSD, things may not yet work right if
- * all of these are not defined
- */
-# ifndef __bsdi__
-#  define PCCONS_SUPPORT
-#  define CODRV_SUPPORT
-#  define SYSCONS_SUPPORT
-#  define PCVT_SUPPORT
-# endif
-
 /* PCVT support requires SYSCONS support */
 # if defined(PCVT_SUPPORT) && !defined(SYSCONS_SUPPORT)
 #  define SYSCONS_SUPPORT
 # endif
-
 
 # if !defined(LINKKIT)
   /* Don't need this stuff for the Link Kit */

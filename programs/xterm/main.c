@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.222 94/04/17 20:23:28 gildea Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.6 1994/11/26 12:50:15 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.7 1994/11/30 20:47:19 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -144,7 +144,7 @@ SOFTWARE.
 #define HAS_UTMP_UT_HOST
 #endif
 
-#if defined(SYSV) && defined(i386)
+#if defined(SYSV) && defined(i386) && !defined(SVR4)
 #define USE_SYSV_UTMP
 #define ATT
 #define USE_HANDSHAKE
@@ -1411,7 +1411,7 @@ char *name;
 get_pty (pty)
     int *pty;
 {
-#if defined(SYSV) && defined(i386)
+#if defined(SYSV) && defined(i386) && !defined(SVR4)
         /*
 	  The order of this code is *important*.  On SYSV/386 we want to open
 	  a /dev/ttyp? first if at all possible.  If none are available, then
@@ -1437,14 +1437,14 @@ get_pty (pty)
 	  */
         if (pty_search(pty) == 0)
 	    return 0;
-#endif /* SYSV && i386 */
+#endif /* SYSV && i386 && !SVR4 */
 #ifdef ATT
 	if ((*pty = open ("/dev/ptmx", O_RDWR)) < 0) {
 	    return 1;
 	}
 #if defined(SVR4) || (defined(i386) && defined(SYSV))
 	strcpy(ttydev, ptsname(*pty));
-#if defined (SYSV) && defined(i386)
+#if defined (SYSV) && defined(i386) && !defined(SVR4)
 	IsPts = True;
 #endif
 #endif
@@ -2039,9 +2039,9 @@ spawn ()
 #endif
 
 #ifdef USE_USG_PTYS
-#if defined(SYSV) && defined(i386)
+#if defined(SYSV) && defined(i386) && !defined(SVR4)
                 if (IsPts) {	/* SYSV386 supports both, which did we open? */
-#endif /* SYSV && i386 */
+#endif /* SYSV && i386 && !SVR4 */
 		int ptyfd;
 
 		setpgrp();
@@ -2082,9 +2082,9 @@ spawn ()
                         ws.ws_ypixel = FullHeight(screen);
                 }
 #endif
-#if defined(SYSV) && defined(i386)
+#if defined(SYSV) && defined(i386) && !defined(SVR4)
                 } else {	/* else pty, not pts */
-#endif /* SYSV && i386 */
+#endif /* SYSV && i386 && !SVR4  */
 #endif /* USE_USG_PTYS */
 
 #ifdef USE_HANDSHAKE		/* warning, goes for a long ways */
@@ -2190,9 +2190,9 @@ spawn ()
 			ttydev = realloc (ttydev, (unsigned) (strlen(ptr) + 1));
 			(void) strcpy(ttydev, ptr);
 		}
-#if defined(SYSV) && defined(i386)
+#if defined(SYSV) && defined(i386) && !defined(SVR4)
                 } /* end of IsPts else clause */
-#endif /* SYSV && i386 */
+#endif /* SYSV && i386 && !SVR4 */
 
 #endif /* USE_HANDSHAKE -- from near fork */
 

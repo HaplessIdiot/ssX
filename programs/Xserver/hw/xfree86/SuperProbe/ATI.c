@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATI.c,v 3.1 Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATI.c,v 3.2tsi Exp $ */
 
 #include "Probe.h"
 
@@ -64,7 +64,7 @@ int *Chipset;
 	 * First, look for a Mach32 or a Mach64.
 	 */
 	if (ATIMach_Descriptor.f(&chip) &&
-	   ((chip == CHIP_MACH32) | (chip == CHIP_MACH64)))
+	   ((chip == CHIP_MACH32) || (chip == CHIP_MACH64)))
 	{
 		EnableIOPorts(NUMPORTS, Ports);
 

@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_386BSD.c,v 3.0 1994/05/14 06:51:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_386BSD.c,v 3.1 1994/08/31 04:19:45 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -39,13 +39,23 @@
 # define CONSOLE_X_MODE_ON PCCONIOCRAW
 # define CONSOLE_X_MODE_OFF PCCONIOCCOOK
 #else
-  /* This header is part of codrv */
 # if defined(__FreeBSD__) || defined(__NetBSD__)
-#  include <machine/ioctl_pc.h>
-/* both, Free and NetBSD have syscons */
-#  include <machine/console.h>
+#  ifdef CODRV_SUPPORT
+    /* This header is part of codrv */
+#   include <machine/ioctl_pc.h>
+#  endif
+#  if defined(PCVT_SUPPORT) && !defined(SYSCONS_SUPPORT)
+#   define SYSCONS_SUPPORT
+#  endif
+#  ifdef SYSCONS_SUPPORT
+    /* both, Free and NetBSD have syscons */
+#   include <machine/console.h>
+#  endif
 # else
-#  include <sys/ioctl_pc.h>
+#  ifdef CODRV_SUPPORT
+    /* This header is part of codrv */
+#   include <sys/ioctl_pc.h>
+#  endif
 # endif
 # undef CONSOLE_X_MODE_ON
 # define CONSOLE_X_MODE_ON _IO('t',121)
@@ -127,6 +137,7 @@ int OpenVideo()
 	else
 	{
 #ifndef __bsdi__
+#ifdef CODRV_SUPPORT
 		struct oldconsinfo tmp;
 
 		if (ioctl(CONS_fd, OLDCONSGINFO, &tmp) < 0)
@@ -135,12 +146,14 @@ int OpenVideo()
 				MyName);
 			return(-1);
 		}
-#endif
 		HasCodrv = TRUE;
+#endif
+#endif
 	}
 #ifndef __bsdi__
 	if (HasCodrv)
 	{
+#ifdef CODRV_SUPPORT
 		int onoff = X_MODE_ON;
 
 		if (ioctl(CONS_fd, CONSOLE_X_MODE, &onoff) < 0)
@@ -150,9 +163,11 @@ int OpenVideo()
 			return(-1);
 		}
 		ioctl(CONS_fd, VGATAKECTRL, 0);
+#endif
 	}
 	else
 	{
+#ifdef SYSCONS_SUPPORT
 		/*
 		 * not codrv and not BSDI; first look if we have a console
 		 * driver that understands USL-style VT commands
@@ -172,7 +187,8 @@ int OpenVideo()
 		}
 		else
 #endif
-			if (ioctl(CONS_fd, CONSOLE_X_MODE_ON, 0) < 0)
+#endif
+		if (ioctl(CONS_fd, CONSOLE_X_MODE_ON, 0) < 0)
 		{
 			fprintf(stderr, "%s: CONSOLE_X_MODE_ON failed\n",
 				MyName);
@@ -197,15 +213,21 @@ void CloseVideo()
 	if (CONS_fd != -1)
 	{
 #ifndef __bsdi__
+#ifdef CODRV_SUPPORT
 		int onoff = X_MODE_OFF;
+#endif
 
 		if (HasCodrv)
 		{
+#ifdef CODRV_SUPPORT
 			ioctl(CONS_fd, VGAGIVECTRL, 0);
 			ioctl(CONS_fd, CONSOLE_X_MODE, &onoff);
+#endif
 		}
+#ifdef SYSCONS_SUPPORT
 		else if(HasUslVt)
 			ioctl(CONS_fd, KDDISABIO, 0);
+#endif
 		else
 #endif
 			ioctl(CONS_fd, CONSOLE_X_MODE_OFF, 0);

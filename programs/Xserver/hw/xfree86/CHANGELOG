@@ -1,3 +1,12 @@
+XFree86 3.1.0Aa (x December 1994)
+118. Fix '-DSTATIC_COLOR' problems (Hans Nasten).
+117. Fix typos which prevented Mach64 detection in SuperProbe from working
+     (Marc Aurele La France).
+116. Allow XF86Config settings to override ELSA probe (Harald Koenig).
+115. Fix Membase handling for S3 server and 805/928.
+114. Make BSD console driver support selectable from imake.
+113. Fix some SVR4 config problems.
+
 XFree86 3.1.0A (5 December 1994)
 112. Mach64 pixmap cache fixes (Kevin Martin).
 111. Improve cirrus programmable clock handling (Harm Hanemaayer).

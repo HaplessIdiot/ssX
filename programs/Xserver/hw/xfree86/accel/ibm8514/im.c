@@ -1,5 +1,5 @@
 /* $XConsortium: ibm8514im.c,v 1.1 94/03/28 21:04:41 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514im.c,v 3.1 1994/09/07 16:19:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514im.c,v 3.2 1994/11/26 12:40:55 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -352,11 +352,11 @@ ibm8514ImageStipple(
     int			w,
     int			h,
     char		*psrc,
+    int			pwidth,
     int			pw, 
     int			ph, 
     int			pox, 
     int			poy,
-    int			pwidth,
     Pixel		fgPixel,
     Pixel		bgPixel,
     short		alu,
@@ -370,8 +370,8 @@ ibm8514ImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
     int			w;
     int			h;
     char		*psrc;
-    int			pw, ph, pox, poy;
     int			pwidth;
+    int			pw, ph, pox, poy;
     Pixel		fgPixel;
     Pixel		bgPixel;
     short		alu;

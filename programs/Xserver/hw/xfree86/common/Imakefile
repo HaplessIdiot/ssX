@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:21:20 dpw Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.10 1994/09/17 13:46:25 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.11 1994/11/26 12:45:24 dawes Exp $
 #include <Server.tmpl>
 
 #ifdef i386MachArchitecture
@@ -59,8 +59,9 @@ OBJS = \
      OSNAME = OSName
    OSVENDOR = OSVendor
   OSNAMEDEF = -DOSNAME='"$(OSNAME)"' -DOSVENDOR='"$(OSVENDOR)"'
+CONSDEFINES = XFree86ConsoleDefines
 
-    DEFINES = $(XCONFIGDEFINES)
+    DEFINES = $(XCONFIGDEFINES) $(CONSDEFINES)
 
 #if XF86MonoServer
 VGA2BUILD = -DBUILD_VGA2

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.50 1994/11/26 12:44:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.51 1994/12/05 04:06:22 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -475,9 +475,10 @@ s3Probe()
 	 default: continue; /* unknown card_id, don't set ICD2061A flags */
 	 }
 
-	 /* a known ELSA card_id was returned, set ICD 2061A clock support */
+	 /* a known ELSA card_id was returned, set ICD 2061A clock support 
+	    if there is no ClockChip specified in XF86Config */
 
-	 if (!OFLG_ISSET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions)) {
+	 if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions)) {
 	    OFLG_SET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions);
 	    OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
 	    s3ClockSelectFunc = icd2061ClockSelect;

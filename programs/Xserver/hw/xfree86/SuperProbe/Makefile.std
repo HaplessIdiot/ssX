@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Makefile.std,v 3.1 1994/05/21 23:54:39 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Makefile.std,v 3.2 1994/12/03 10:08:17 dawes Exp $
 #
 # Installation parameters
 #
@@ -27,19 +27,22 @@ OS_OBJ = OS_SYSV.o
 #OS_SRC = OS_Linux.c
 #OS_OBJ = OS_Linux.o
 # 386BSD
-#OS_DEF = -D__BSD__ -D__386BSD__ -DGCCUSESGAS
+#OS_DEF = -DCSRG_BASED -D__386BSD__ -DGCCUSESGAS $(CONS_DEF)
 #OS_SRC = OS_386BSD.c
 #OS_OBJ = OS_386BSD.o
+#CONS_DEF = -DPCCONS_SUPPORT
 # NetBSD
-#OS_DEF = -D__BSD__ -D__NetBSD__ -DGCCUSESGAS
+#OS_DEF = -DCSRG_BASED -D__NetBSD__ -DGCCUSESGAS $(CONS_DEF)
 #OS_SRC = OS_386BSD.c
 #OS_OBJ = OS_386BSD.o
+#CONS_DEF = -DPCCONS_SUPPORT -DSYSCONS_SUPPORT -DPCVT_SUPPORT
 # FreeBSD
-#OS_DEF = -D__BSD__ -D__FreeBSD__ -DGCCUSESGAS
+#OS_DEF = -DCSRG_BASED -D__FreeBSD__ -DGCCUSESGAS $(CONS_DEF)
 #OS_SRC = OS_386BSD.c
 #OS_OBJ = OS_386BSD.o
+#CONS_DEF = -DPCCONS_SUPPORT -DSYSCONS_SUPPORT -DPCVT_SUPPORT
 # BSD/386
-#OS_DEF = -D__BSD__ -D__bsdi__ -DGCCUSESGAS
+#OS_DEF = -DCSRG_BASED -D__bsdi__ -DGCCUSESGAS
 #OS_SRC = OS_386BSD.c
 #OS_OBJ = OS_386BSD.o
 # Minix

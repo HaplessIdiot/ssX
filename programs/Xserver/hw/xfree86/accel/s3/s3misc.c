@@ -1,6 +1,6 @@
 
 /* $XConsortium: s3misc.c,v 1.1 94/03/28 21:16:11 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.16 1994/11/06 09:51:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.17 1994/11/30 20:40:35 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -239,20 +239,20 @@ s3Initialize(scr_index, pScreen, argc, argv)
 		  
 	    /*
 	     * If a MemBase value was given in the XF86Config, skip the LAW
-	     * probe and use the high 10 bits for the hw part of LAW.
+	     * probe and use the high 8 bits for the hw part of LAW.
 	     * Normally only 6 bits are set in hw, but the Diamond Stealth
 	     * Pro is different.
 	     */
 	    if (s3InfoRec.MemBase != 0) {
 	       unsigned long addr;
 
-	       addr = (s3InfoRec.MemBase & 0xffc00000);
+	       addr = (s3InfoRec.MemBase & 0xff000000);
 	       s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
 					  (pointer)addr, s3BankSize);
 	       outb(vgaCRIndex, 0x5a);
-	       outb(vgaCRReg, (addr >> 16) & 0xff);
+	       outb(vgaCRReg, 0xc0);
 	       s3LinearAperture = TRUE;
-	       ErrorF("%s %s: Local bus LAW is 0x%04lXxxxx\n", 
+	       ErrorF("%s %s: Local bus LAW31-24 is %X\n", 
 		      XCONFIG_GIVEN, s3InfoRec.name, (addr >> 16) & 0xffff);
 	    } else {
 	       if (S3_x64_SERIES(s3ChipId)) {

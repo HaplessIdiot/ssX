@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.29 94/03/31 14:07:54 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.30 94/05/14 16:36:45 rws Exp $
 
 #if UseRgbTxt
    RGB_DEFINES = -DUSE_RGB_TXT
@@ -35,7 +35,7 @@ XCOMM $XConsortium: Imakefile,v 1.29 94/03/31 14:07:54 gildea Exp $
     CCOPTIONS = /**/
     EXTRA_LOAD_FLAGS = /**/
 #endif
-#if defined(i386SVR4Architecture)
+#if defined(SVR4Architecture) && defined(i386Architecture)
        DBMLIB = -ldbm -lucb
 #endif
 #endif /*!UseRgbTxt */
@@ -49,7 +49,7 @@ SpecialCObjectRule(rgb,$(ICONFIGFILES),$(_NOOP_))
 SingleProgramTarget(showrgb,$(OBJS2),NullParameter,$(DBMLIB))
 SpecialCObjectRule(showrgb,$(ICONFIGFILES),$(_NOOP_))
 InstallMultiple($(DATAFILES) rgb.txt,$(LIBDIR))
-InstallProgramWithFlags(showrgb,$(BINDIR),)
+InstallProgramWithFlags(showrgb,$(BINDIR),NullParameter)
 InstallManPage(showrgb,$(MANDIR))
 
 #if !UseRgbTxt

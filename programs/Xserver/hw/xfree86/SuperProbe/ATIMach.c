@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATIMach.c,v 3.1 Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATIMach.c,v 3.2tsi Exp $ */
 
 #include "Probe.h"
 
@@ -83,7 +83,7 @@ int *Chipset;
 	}
 	outpl(SCRATCH_REG0, tmp);
 
-	if (chip = -1)
+	if (chip == -1)
 	{
 		/*
 		 * Check for 8514/A registers.  Don't read BIOS, or an attached

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_KbdBSD.c,v 1.1 94/03/28 21:23:59 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_KbdBSD.c,v 3.0 Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_KbdBSD.c,v 3.1 1994/11/30 20:41:20 dawes Exp $ */
 /*
  * Derived from xf86Kbd.c by S_ren Schmidt (sos@login.dkuug.dk)
  * which is Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -233,9 +233,12 @@ xf86KbdGetMapping (pKeySyms, pModMap)
 
   switch (xf86Info.consType) {
 
+#ifdef PCCONS_SUPPORT
   case PCCONS:
     break;
+#endif
 
+#ifdef SYSCONS_SUPPORT
   case SYSCONS:
     if (ioctl(xf86Info.consoleFd, GIO_KEYMAP, &keymap) != -1) {
       for (i = 0; i < keymap.n_keys && i < NUM_KEYCODES; i++)
@@ -253,7 +256,9 @@ xf86KbdGetMapping (pKeySyms, pModMap)
         }
     }
     break;
+#endif
     
+#ifdef CODRV_SUPPORT
   case CODRV011:
   case CODRV01X:
     for (i=1; i<= 128; i++) {
@@ -292,6 +297,7 @@ xf86KbdGetMapping (pKeySyms, pModMap)
       }
     }
     break;
+#endif
   } 
 #endif
 
@@ -407,7 +413,7 @@ xf86KbdGetMapping (pKeySyms, pModMap)
   pKeySyms->maxKeyCode = MAX_KEYCODE;
 }
 
-#ifndef __bsdi__
+#ifdef CODRV_SUPPORT
 /* Converts a CoDriver ASCII+Special combination into a KeySym
  */
 static 
