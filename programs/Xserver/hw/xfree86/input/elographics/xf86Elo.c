@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/xf86Elo.c,v 1.14 2001/08/17 13:27:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/xf86Elo.c,v 1.15 2004/03/30 20:06:32 herrb Exp $ */
 
 /*
  *******************************************************************************
@@ -1165,13 +1165,12 @@ xf86EloPrintIdent(unsigned char	*packet,
  *
  ***************************************************************************
  */
-#if 0
 static void
 xf86EloPtrControl(DeviceIntPtr	dev,
 		  PtrCtrl	*ctrl)
 {
+	xf86Msg(X_CONFIG, "Elographics Tablet Control Proc\n");
 }
-#endif
 
 
 /*
@@ -1282,6 +1281,10 @@ xf86EloControl(DeviceIntPtr	dev,
       if (InitFocusClassDeviceStruct(dev) == FALSE) {
 	ErrorF("Unable to allocate Elographics touchscreen FocusClassDeviceStruct\n");
 	return !Success;
+      }
+      if (InitPtrFeedbackClassDeviceStruct(dev, xf86EloPtrControl) == FALSE) {
+	      ErrorF("unable to init ptr feedback\n");
+	      return !Success;
       }
       
       /*
