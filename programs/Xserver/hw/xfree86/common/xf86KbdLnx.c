@@ -1,5 +1,5 @@
 /* $XConsortium: xf86KbdLnx.c,v 1.1 95/01/26 15:26:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdLnx.c,v 3.5 1995/01/28 15:57:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdLnx.c,v 3.6 1995/04/09 13:47:07 dawes Exp $ */
 /*
  * Linux version of keymapping setup. The kernel (since 0.99.14) has support
  * for fully remapping the keyboard, but there are some differences between
@@ -116,7 +116,7 @@ xf86KbdGetMapping (KeySymsPtr pKeySyms, CARD8 *pModMap)
           break;
         case KM_MODELOCK:
           k[0] = XK_Mode_switch;
-          k[1] = XK_Mode_Lock;
+          k[1] = XF86XK_ModeLock;
           break;
         case KM_SCROLLLOCK:
           k[0] = XK_Scroll_Lock;
@@ -502,29 +502,24 @@ readKernelMapping(KeySymsPtr pKeySyms, CARD8 *pModMap)
 
       /*
        * KT_DEAD keys are for accelerated diacritical creation.
-       * We should generate "XK_Compose XK_xxx" but can only map to one
-       * keysym.
-       * There is support for these in DECkeysym.h. At the same place support 
-       * for dead cedilla and dead degree sign can be found, too (these are 
-       * not yet supported by the Linux kernel)
        */
       case KT_DEAD:
 	switch (kbe.kb_value)
 	  {
 	  case K_DGRAVE:
-	    *k = DXK_grave_accent;
+	    *k = XK_dead_grave;
 	    break;
 	  case K_DACUTE:
-	    *k = DXK_acute_accent;
+	    *k = XK_dead_acute;
 	    break;
 	  case K_DCIRCM:
-	    *k = DXK_circumflex_accent;
+	    *k = XK_dead_circumflex;
 	    break;
 	  case K_DTILDE:
-	    *k = DXK_tilde;
+	    *k = XK_dead_tilde;
 	    break;
 	  case K_DDIERE:
-	    *k = DXK_diaeresis;
+	    *k = XK_dead_diaeresis;
 	    break;
 	  }
 	break;

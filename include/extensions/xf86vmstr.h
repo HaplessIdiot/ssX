@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.1 1995/03/19 10:08:14 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -30,15 +30,15 @@ from the Kaleb S. KEITHLEY
 */
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
-#ifndef _XVGASTR_H_
-#define _XVGASTR_H_
+#ifndef _XF86VIDMODESTR_H_
+#define _XF86VIDMODESTR_H_
 
-#include "VGAHelp.h"
+#include "xf86vmode.h"
 
-#define VGAHELPNAME "VGAHELP"
+#define XF86VIDMODENAME "XFree86-VidModeExtension"
 
-#define VGAHELP_MAJOR_VERSION	0	/* current version numbers */
-#define VGAHELP_MINOR_VERSION	1
+#define XF86VIDMODE_MAJOR_VERSION	0	/* current version numbers */
+#define XF86VIDMODE_MINOR_VERSION	1
 
 typedef struct _VGAHelpQueryVersion {
     CARD8	reqType;		/* always VgaHelpReqCode */
@@ -134,4 +134,4 @@ typedef struct {
 } xVGAHelpGetMonitorReply;
 #define sz_xVGAHelpGetMonitorReply	32
 
-#endif /* _XVGASTR_H_ */
+#endif /* _XF86VIDMODESTR_H_ */

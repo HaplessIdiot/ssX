@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.45 1995/05/27 03:10:37 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.46 1995/06/02 10:10:59 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2169,7 +2169,7 @@ configScreenSection()
             monitor_list[i].Modes = xf86PruneModes(&monitor_list[i],
                                                    monitor_list[i].Modes,
                                                    screen);
-	    screen->monitor = xalloc(sizeof(MonRec));
+	    screen->monitor = (MonPtr)xalloc(sizeof(MonRec));
 	    memcpy(screen->monitor, &monitor_list[i], sizeof(MonRec));
           }
           break;

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Events.c,v 1.11 95/01/16 13:16:59 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.13 1995/03/18 10:59:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.14 1995/05/27 03:10:41 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -733,7 +733,7 @@ xf86PostKbdEvent(key)
 	      lockkeys |= SCROLLFLAG;
           break;
     }
-    if (keysym[1] == XK_Mode_Lock)
+    if (keysym[1] == XF86XK_ModeLock)
     {
       if (lockkeys & MODEFLAG)
           return;
@@ -756,7 +756,7 @@ xf86PostKbdEvent(key)
             lockkeys &= ~SCROLLFLAG;
             break;
     }
-    if (keysym[1] == XK_Mode_Lock)
+    if (keysym[1] == XF86XK_ModeLock)
       lockkeys &= ~MODEFLAG;
   }
 
@@ -767,7 +767,7 @@ xf86PostKbdEvent(key)
    */
   if (keyc->modifierMap[keycode] & LockMask ||
       keysym[0] == XK_Scroll_Lock ||
-      keysym[1] == XK_Mode_Lock ||
+      keysym[1] == XF86XK_ModeLock ||
       keysym[0] == XK_Num_Lock)
     {
       Bool flag;
@@ -783,7 +783,7 @@ xf86PostKbdEvent(key)
       if (keyc->modifierMap[keycode] & LockMask)   xf86Info.capsLock   = flag;
       if (keysym[0] == XK_Num_Lock)    xf86Info.numLock    = flag;
       if (keysym[0] == XK_Scroll_Lock) xf86Info.scrollLock = flag;
-      if (keysym[1] == XK_Mode_Lock)   xf86Info.modeSwitchLock = flag;
+      if (keysym[1] == XF86XK_ModeLock)   xf86Info.modeSwitchLock = flag;
       updateLeds = TRUE;
     }
 	

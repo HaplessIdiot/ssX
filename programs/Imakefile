@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.69 94/07/06 16:26:01 mor Exp $
-XCOMM $XFree86: xc/programs/Imakefile,v 3.6 1995/02/12 02:33:40 dawes Exp $
+XCOMM $XFree86: xc/programs/Imakefile,v 3.7 1995/03/11 14:10:36 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -23,8 +23,8 @@ XKBCOMP = xkbcomp
 SCRNSAVDIR = beforelight
 #endif
 
-#if BuildVGAHelp
-VGAHELPDIR = vgahelp
+#if BuildXF86VidModeExt
+XVIDTUNE = xvidtune
 #endif
 
 #if BuildServersOnly
@@ -35,10 +35,11 @@ SUBDIRS = \
 	appres bdftopcf $(SCRNSAVDIR) \
 	bitmap editres fsinfo fslsfonts fstobdf iceauth \
 	mkfontdir oclock $(RGBDIR) rstart smproxy \
-	twm $(VGAHELPDIR) x11perf xauth xclipboard xclock \
+	twm x11perf xauth xclipboard xclock \
 	xcmsdb xconsole xdm xdpyinfo xfd $(XFSDIR) xhost xieperf \
 	$(XINIDIR) $(XKBCOMP) xkill xlogo xlsatoms xlsclients xlsfonts \
 	xmag xmh xmodmap xprop xrdb xrefresh xset xsetroot xstdcmap xterm \
+	$(XVIDTUNE) \
 	xwd xwininfo xwud $(XSDIR) scripts
 
 #else /* AmoebaArchitecture */

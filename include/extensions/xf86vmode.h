@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/VGAHelp.h,v 3.2 1995/03/19 12:16:22 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.3 1995/06/04 14:39:27 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -30,8 +30,8 @@ from the Kaleb S. KEITHLEY
 */
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
-#ifndef _XVGAHELP_H_
-#define _XVGAHELP_H_
+#ifndef _XF86VIDMODE_H_
+#define _XF86VIDMODE_H_
 
 #include <X11/Xfuncproto.h>
 
@@ -41,15 +41,15 @@ from the Kaleb S. KEITHLEY
 #define X_VGAHelpSwitchMode		3
 #define X_VGAHelpGetMonitor		4
 
-#define VGAHelpNumberEvents		0
+#define XF86VidModeNumberEvents		0
 
-#define VGAHelpBadClock			0
-#define VGAHelpBadHTimings		1
-#define VGAHelpBadVTimings		2
-#define VGAHelpModeUnsuitable		3
-#define VGAHelpNumberErrors		(VGAHelpModeUnsuitable + 1)
+#define XF86VidModeBadClock		0
+#define XF86VidModeBadHTimings		1
+#define XF86VidModeBadVTimings		2
+#define XF86VidModeModeUnsuitable	3
+#define XF86VidModeNumberErrors		(XF86VidModeModeUnsuitable + 1)
 
-#ifndef _XVGAHELP_SERVER_
+#ifndef _XF86VIDMODE_SERVER_
 
 typedef struct {
     unsigned short	hdisplay;
@@ -61,29 +61,31 @@ typedef struct {
     unsigned short	vsyncend;
     unsigned short	vtotal;
     unsigned int	flags;
-} XVGAHelpModeLine;
+} XF86VidModeModeLine;
 
 typedef struct {
     float		hi;
     float		lo;
-} XVGAHelpSyncRange;
+} XF86VidModeSyncRange;
 
 typedef struct {
-    char*		vendor;
-    char*		model;
-    float		bandwidth;
-    unsigned char	nhsync;
-    XVGAHelpSyncRange*	hsync;
-    unsigned char	nvsync;
-    XVGAHelpSyncRange*	vsync;
-} XVGAHelpMonitor;
+    char*			vendor;
+    char*			model;
+    float			bandwidth;
+    unsigned char		nhsync;
+    XF86VidModeSyncRange*	hsync;
+    unsigned char		nvsync;
+    XF86VidModeSyncRange*	vsync;
+} XF86VidModeMonitor;
     
-#define XVGAHelpSelectNextMode(disp, scr) XVGAHelpSwitchMode(disp, scr, 1)
-#define XVGAHelpSelectPrevMode(disp, scr) XVGAHelpSwitchMode(disp, scr, -1)
+#define XF86VidModeSelectNextMode(disp, scr) \
+	XF86VidModeSwitchMode(disp, scr, 1)
+#define XF86VidModeSelectPrevMode(disp, scr) \
+	XF86VidModeSwitchMode(disp, scr, -1)
 
 _XFUNCPROTOBEGIN
 
-Bool XVGAHelpQueryVersion(
+Bool XF86VidModeQueryVersion(
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
     int*		/* majorVersion */,
@@ -91,7 +93,7 @@ Bool XVGAHelpQueryVersion(
 #endif
 );
 
-Bool XVGAHelpQueryExtension(
+Bool XF86VidModeQueryExtension(
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
     int*		/* event_base */,
@@ -99,24 +101,24 @@ Bool XVGAHelpQueryExtension(
 #endif
 );
 
-Status XVGAHelpGetModeLine(
+Status XF86VidModeGetModeLine(
 #if NeedFunctionPrototypes
-    Display*		/* dpy */,
-    int			/* screen */,
-    int*		/* dotclock */,
-    XVGAHelpModeLine*	/* modeline */
+    Display*			/* dpy */,
+    int				/* screen */,
+    int*			/* dotclock */,
+    XF86VidModeModeLine*	/* modeline */
 #endif
 );
 
-Status XVGAHelpModModeLine(
+Status XF86VidModeModModeLine(
 #if NeedFunctionPrototypes
-    Display*		/* dpy */,
-    int			/* screen */,
-    XVGAHelpModeLine*	/* modeline */
+    Display*			/* dpy */,
+    int				/* screen */,
+    XF86VidModeModeLine*	/* modeline */
 #endif
 );
 
-Status XVGAHelpSwitchMode(
+Status XF86VidModeSwitchMode(
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
     int			/* screen */,
@@ -124,11 +126,11 @@ Status XVGAHelpSwitchMode(
 #endif
 );
 
-Status XVGAHelpGetMonitor(
+Status XF86VidModeGetMonitor(
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
     int			/* screen */,
-    XVGAHelpMonitor*	/* monitor */
+    XF86VidModeMonitor*	/* monitor */
 #endif
 );
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/XExExt/Imakefile,v 3.0 1994/06/28 12:22:27 dawes Exp $
+XCOMM $XFree86: xc/lib/XExExt/Imakefile,v 3.1 1995/02/12 02:32:50 dawes Exp $
 #define DoNormalLib NormalLibXExExt
 #define DoSharedLib SharedLibXExExt
 #define DoDebugLib DebugLibXExExt
@@ -17,13 +17,13 @@ SCRNSAVSRC = XScrnSaver.c
 SCRNSAVOBJ = XScrnSaver.o
 
 #ifdef XFree86Version
-VGAHELPSRCS = VGAHelp.c
-VGAHELPOBJS = VGAHelp.o
+VIDMODESRCS = XF86VMode.c
+VIDMODEOBJS = XF86VMode.o
 #endif
 
      INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC)
-         SRCS = $(SCRNSAVSRC) $(VGAHELPSRCS)
-         OBJS = $(SCRNSAVOBJ) $(VGAHELPOBJS)
+         SRCS = $(SCRNSAVSRC) $(VIDMODESRCS)
+         OBJS = $(SCRNSAVOBJ) $(VIDMODEOBJS)
      LINTLIBS = $(LINTXLIB)
 
 #include <Library.tmpl>

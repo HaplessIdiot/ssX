@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Init.c,v 1.8 95/01/16 13:17:00 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.16 1995/01/28 17:03:26 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.17 1995/04/09 13:47:04 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -174,7 +174,7 @@ InitOutput(pScreenInfo, argc, argv)
       }
     if (!any_screens)
       if (xf86ProbeFailed)
-        ErrorF("\n *** None of the configured devices was detected.***\n\n");
+        ErrorF("\n *** None of the configured devices were detected.***\n\n");
       else
         ErrorF(
          "\n *** A configured device found, but display modes could not be resolved.***\n\n");

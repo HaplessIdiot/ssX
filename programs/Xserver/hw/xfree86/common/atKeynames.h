@@ -1,5 +1,5 @@
 /* $XConsortium: atKeynames.h,v 1.6 95/01/13 19:19:20 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/atKeynames.h,v 3.1 1994/12/11 10:54:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/atKeynames.h,v 3.3 1995/01/28 17:03:14 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -45,7 +45,7 @@
 #define KeyPressed(k) (keyc->down[k >> 3] & (1 << (k & 7)))
 #define ModifierDown(k) ((keyc->state & (k)) == (k))
 
-#define XK_Mode_Lock	0x1007FF01                 /* Mode Switch Lock */
+#define XF86XK_ModeLock	0x1008FF01                 /* Mode Switch Lock */
 
 /*
  * NOTE: The AT/MF keyboards can generate (via the 8042) two (MF: three)

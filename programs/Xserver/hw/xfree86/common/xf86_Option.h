@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.6 95/01/23 15:34:06 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.23 1995/03/06 14:47:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.24 1995/04/09 13:47:09 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -110,6 +110,7 @@ typedef struct {
 #define OPTION_POWER_SAVER	93 /* Power-down screen saver */
 #define OPTION_OVERRIDE_BIOS	94 /* Override BIOS for Mach64 */
 #define OPTION_NO_BLOCK_WRITE	95 /* No block write mode for Mach64 */
+#define OPTION_BLOCK_WRITE	96 /* Block write mode for Mach64 */
 
 /* Debugging options */
 #define OPTION_SHOWCACHE	100 /* Allow cache to be seen (S3) */
@@ -213,6 +214,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "power_saver",	OPTION_POWER_SAVER },
   { "override_bios",	OPTION_OVERRIDE_BIOS },
   { "no_block_write",	OPTION_NO_BLOCK_WRITE },
+  { "block_write",	OPTION_BLOCK_WRITE },
 
   { "showcache",	OPTION_SHOWCACHE },
   { "fb_debug",		OPTION_FB_DEBUG },

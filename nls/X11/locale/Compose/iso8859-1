@@ -1,5 +1,5 @@
 # $XConsortium: iso8859-1,v 1.4 94/07/06 15:17:11 kaleb Exp $
-# $XFree86$
+# $XFree86: xc/nls/X11/locale/Compose/iso8859-1,v 3.0 1995/03/04 06:40:39 dawes Exp $
 #
 # ISO 8859-1 (Latin1) Compose Sequence
 #
@@ -347,83 +347,80 @@
 <Multi_key> <y> <quotedbl>		: "\377"	ydiaeresis
 <Multi_key> <quotedbl> <y>		: "\377"	ydiaeresis
 #
-# <D....> is the "dead key" accent keysyms
+# dead key accent keysyms
 # Special Character
-<Dcircumflex_accent>  <slash>		: "|"	bar
-<Dgrave_accent> <space>			: "`"	grave
-<Dacute_accent> <space>			: "'"	apostrophe
-<Ddiaeresis> <space>			: "\250"	diaeresis
-<Dcircumflex_accent> <space>		: "^"	asciicircum
-<Dtilde> <space>			: "~"	tilde
-<Dgrave_accent> <space>			: "`"	grave
-<Dacute_accent> <space>			: "'"	apostrophe
-<Ddiaeresis> <space>			: "\250"	diaeresis
-<Dcircumflex_accent> <space>		: "^"	asciicircum
-<Dtilde> <space>			: "~"	tilde
-<Dcircumflex_accent> <0>		: "\260"	degree
-<Dcircumflex_accent> <1>		: "\271"	onesuperior
-<Dcircumflex_accent> <2>		: "\262"	twosuperior
-<Dcircumflex_accent> <3>		: "\263"	threesuperior
-<Dcircumflex_accent> <period>		: "\267"	periodcentered
-<Dcircumflex_accent> <exclam>		: "\246"	brokenbar
-<Dcedilla_accent> <minus>		: "\254"	notsign
-<Dcircumflex_accent> <minus>		: "\257"	macron
-<Dcircumflex_accent> <underscore>	: "\257"	macron
-<Dacute_accent> <apostrophe>		: "\264"	acute
-<Dcedilla_accent> <comma>		: "\270"	cedilla
-<Ddiaeresis> <quotedbl>			: "\250"	diaeresis
+<dead_circumflex>  <slash>		: "|"	bar
+<dead_grave> <space>			: "`"	grave
+<dead_acute> <space>			: "'"	apostrophe
+<dead_diaeresis> <space>		: "\250"	diaeresis
+<dead_circumflex> <space>		: "^"	asciicircum
+<dead_tilde> <space>			: "~"	tilde
+<dead_grave> <space>			: "`"	grave
+<dead_acute> <space>			: "'"	apostrophe
+<dead_circumflex> <0>			: "\260"	degree
+<dead_circumflex> <1>			: "\271"	onesuperior
+<dead_circumflex> <2>			: "\262"	twosuperior
+<dead_circumflex> <3>			: "\263"	threesuperior
+<dead_circumflex> <period>		: "\267"	periodcentered
+<dead_circumflex> <exclam>		: "\246"	brokenbar
+<dead_cedilla> <minus>			: "\254"	notsign
+<dead_circumflex> <minus>		: "\257"	macron
+<dead_circumflex> <underscore>		: "\257"	macron
+<dead_acute> <apostrophe>		: "\264"	acute
+<dead_cedilla> <comma>			: "\270"	cedilla
+<dead_diaeresis> <quotedbl>		: "\250"	diaeresis
 # Accented Alphabet
-<Dgrave_accent> <A>			: "\300"	Agrave
-<Dacute_accent> <A>			: "\301"	Aacute
-<Dcircumflex_accent> <A>		: "\302"	Acircumflex
-<Dtilde> <A>				: "\303"	Atilde
-<Ddiaeresis> <A>			: "\304"	Adiaeresis
-<Dgrave_accent> <a>			: "\340"	agrave
-<Dacute_accent> <a>			: "\341"	aacute
-<Dcircumflex_accent> <a>		: "\342"	acircumflex
-<Dtilde> <a>				: "\343"	atilde
-<Ddiaeresis> <a>			: "\344"	adiaeresis
-<Dcedilla_accent> <C>			: "\307"	Ccedilla
-<Dcedilla_accent> <c>			: "\347"	ccedilla
-<Dgrave_accent> <E>			: "\310"	Egrave
-<Dacute_accent> <E>			: "\311"	Eacute
-<Dcircumflex_accent> <E>		: "\312"	Ecircumflex
-<Ddiaeresis> <E>			: "\313"	Ediaeresis
-<Dgrave_accent> <e>			: "\350"	egrave
-<Dacute_accent> <e>			: "\351"	eacute
-<Dcircumflex_accent> <e>		: "\352"	ecircumflex
-<Ddiaeresis> <e>			: "\353"	ediaeresis
-<Dgrave_accent> <I>			: "\314"	Igrave
-<Dacute_accent> <I>			: "\315"	Iacute
-<Dcircumflex_accent> <I>		: "\316"	Icircumflex
-<Ddiaeresis> <I>			: "\317"	Idiaeresis
-<Dgrave_accent> <i>			: "\354"	igrave
-<Dacute_accent> <i>			: "\355"	iacute
-<Dcircumflex_accent> <i>		: "\356"	icircumflex
-<Ddiaeresis> <i>			: "\357"	idiaeresis
-<Dtilde> <N>				: "\321"	Ntilde
-<Dtilde> <n>				: "\361"	ntilde
-<Dgrave_accent> <O>			: "\322"	Ograve
-<Dacute_accent> <O>			: "\323"	Oacute
-<Dcircumflex_accent> <O>		: "\324"	Ocircumflex
-<Dtilde> <O>				: "\325"	Otilde
-<Ddiaeresis> <O>			: "\326"	Odiaeresis
-<Dgrave_accent> <o>			: "\362"	ograve
-<Dacute_accent> <o>			: "\363"	oacute
-<Dcircumflex_accent> <o>		: "\364"	ocircumflex
-<Dtilde> <o>				: "\365"	otilde
-<Ddiaeresis> <o>			: "\366"	odiaeresis
-<Dgrave_accent> <U>			: "\331"	Ugrave
-<Dacute_accent> <U>			: "\332"	Uacute
-<Dcircumflex_accent> <U>		: "\333"	Ucircumflex
-<Ddiaeresis> <U>			: "\334"	Udiaeresis
-<Dgrave_accent> <u>			: "\371"	ugrave
-<Dacute_accent> <u>			: "\372"	uacute
-<Dcircumflex_accent> <u>		: "\373"	ucircumflex
-<Ddiaeresis> <u>			: "\374"	udiaeresis
-<Dacute_accent> <Y>			: "\335"	Yacute
-<Dacute_accent> <y>			: "\375"	yacute
-<Ddiaeresis> <y>			: "\377"	ydiaeresis
+<dead_grave> <A>			: "\300"	Agrave
+<dead_acute> <A>			: "\301"	Aacute
+<dead_circumflex> <A>			: "\302"	Acircumflex
+<dead_tilde> <A>			: "\303"	Atilde
+<dead_diaeresis> <A>			: "\304"	Adiaeresis
+<dead_grave> <a>			: "\340"	agrave
+<dead_acute> <a>			: "\341"	aacute
+<dead_circumflex> <a>			: "\342"	acircumflex
+<dead_tilde> <a>			: "\343"	atilde
+<dead_diaeresis> <a>			: "\344"	adiaeresis
+<dead_cedilla> <C>			: "\307"	Ccedilla
+<dead_cedilla> <c>			: "\347"	ccedilla
+<dead_grave> <E>			: "\310"	Egrave
+<dead_acute> <E>			: "\311"	Eacute
+<dead_circumflex> <E>			: "\312"	Ecircumflex
+<dead_diaeresis> <E>			: "\313"	Ediaeresis
+<dead_grave> <e>			: "\350"	egrave
+<dead_acute> <e>			: "\351"	eacute
+<dead_circumflex> <e>			: "\352"	ecircumflex
+<dead_diaeresis> <e>			: "\353"	ediaeresis
+<dead_grave> <I>			: "\314"	Igrave
+<dead_acute> <I>			: "\315"	Iacute
+<dead_circumflex> <I>			: "\316"	Icircumflex
+<dead_diaeresis> <I>			: "\317"	Idiaeresis
+<dead_grave> <i>			: "\354"	igrave
+<dead_acute> <i>			: "\355"	iacute
+<dead_circumflex> <i>			: "\356"	icircumflex
+<dead_diaeresis> <i>			: "\357"	idiaeresis
+<dead_tilde> <N>			: "\321"	Ntilde
+<dead_tilde> <n>			: "\361"	ntilde
+<dead_grave> <O>			: "\322"	Ograve
+<dead_acute> <O>			: "\323"	Oacute
+<dead_circumflex> <O>			: "\324"	Ocircumflex
+<dead_tilde> <O>			: "\325"	Otilde
+<dead_diaeresis> <O>			: "\326"	Odiaeresis
+<dead_grave> <o>			: "\362"	ograve
+<dead_acute> <o>			: "\363"	oacute
+<dead_circumflex> <o>			: "\364"	ocircumflex
+<dead_tilde> <o>			: "\365"	otilde
+<dead_diaeresis> <o>			: "\366"	odiaeresis
+<dead_grave> <U>			: "\331"	Ugrave
+<dead_acute> <U>			: "\332"	Uacute
+<dead_circumflex> <U>			: "\333"	Ucircumflex
+<dead_diaeresis> <U>			: "\334"	Udiaeresis
+<dead_grave> <u>			: "\371"	ugrave
+<dead_acute> <u>			: "\372"	uacute
+<dead_circumflex> <u>			: "\373"	ucircumflex
+<dead_diaeresis> <u>			: "\374"	udiaeresis
+<dead_acute> <Y>			: "\335"	Yacute
+<dead_acute> <y>			: "\375"	yacute
+<dead_diaeresis> <y>			: "\377"	ydiaeresis
 #
 # Ctrl<T> Means <Compose>
 # Special Character

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86KbdBSD.c,v 1.1 95/01/26 15:26:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdBSD.c,v 3.4 1995/01/10 10:23:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdBSD.c,v 3.5 1995/01/28 15:57:40 dawes Exp $ */
 /*
  * Derived from xf86Kbd.c by S_ren Schmidt (sos@login.dkuug.dk)
  * which is Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -346,7 +346,7 @@ xf86KbdGetMapping (pKeySyms, pModMap)
           break;
         case KM_MODELOCK:
           k[0] = XK_Mode_switch;
-          k[1] = XK_Mode_Lock;
+          k[1] = XF86XK_ModeLock;
           break;
         case KM_SCROLLLOCK:
           k[0] = XK_Scroll_Lock;

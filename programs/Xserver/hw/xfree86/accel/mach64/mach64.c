@@ -1,5 +1,5 @@
 /* $XConsortium: mach64.c,v 1.4 95/01/23 15:33:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.11 1995/03/19 10:14:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.12 1995/04/24 05:19:15 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -164,6 +164,7 @@ int mach64VirtX, mach64VirtY;
 
 Bool mach64Use4MbAperture = FALSE;
 Bool mach64DAC8Bit = FALSE;
+Bool mach64PowerSaver = FALSE;
 
 static unsigned Mach64_IOPorts[] = {
 	/* VGA Registers */
@@ -543,6 +544,8 @@ mach64Probe()
     }
     OFLG_SET(OPTION_OVERRIDE_BIOS, &validOptions);
     OFLG_SET(OPTION_NO_BLOCK_WRITE, &validOptions);
+    OFLG_SET(OPTION_BLOCK_WRITE, &validOptions);
+    OFLG_SET(OPTION_POWER_SAVER, &validOptions);
     xf86VerifyOptions(&validOptions, &mach64InfoRec);
 
     mach64InfoRec.chipset = "mach64";
@@ -609,7 +612,7 @@ mach64Probe()
     }
 
     if (xf86Verbose) {
-	ErrorF("%s %s: Clock type: %s\n", XCONFIG_GIVEN, mach64InfoRec.name,
+	ErrorF("%s %s: Clock type: %s\n", XCONFIG_PROBED, mach64InfoRec.name,
 	       mach64ClockTypeTable[mach64ClockType]);
 	ErrorF("%s ",OFLG_ISSET(XCONFIG_CLOCKS,&mach64InfoRec.xconfigFlag) ?
 			XCONFIG_GIVEN : XCONFIG_PROBED);
@@ -855,6 +858,9 @@ mach64Probe()
 		   xf86weight.green, xf86weight.blue);
 	}
     }
+
+    if (OFLG_ISSET(OPTION_POWER_SAVER, &mach64InfoRec.options))
+	mach64PowerSaver = TRUE;
 
     return(TRUE);
 }
@@ -1183,30 +1189,42 @@ mach64SaveScreen (pScreen, on)
 	SetTimeSinceLastInputEvent();
 
     if (xf86VTSema) {
-	if (on) {
-	    if (mach64HWCursorSave != -1) {
-		mach64SetRamdac(mach64CRTCRegs.color_depth, TRUE,
-				mach64CRTCRegs.dot_clock);
-		regwb(GEN_TEST_CNTL, mach64HWCursorSave);
-		mach64HWCursorSave = -1;
+	if (mach64PowerSaver) {
+	    int crtcGenCntl = regr(CRTC_GEN_CNTL);
+	    if (on) {
+		crtcGenCntl &= ~CRTC_HSYNC_DIS;
+		crtcGenCntl &= ~CRTC_VSYNC_DIS;
+	    } else {
+		crtcGenCntl |= CRTC_HSYNC_DIS;
+		crtcGenCntl |= CRTC_VSYNC_DIS;
 	    }
-	    mach64RestoreColor0(pScreen);
-	    if (mach64RamdacSubType != DAC_ATI68875)
-		outb(ioDAC_REGS+2, 0xff);
+	    regw(CRTC_GEN_CNTL, crtcGenCntl);
 	} else {
-	    outb(ioDAC_REGS, 0);
-	    outb(ioDAC_REGS+1, 0);
-	    outb(ioDAC_REGS+1, 0);
-	    outb(ioDAC_REGS+1, 0);
-	    outb(ioDAC_REGS+2, 0x00);
-
-	    mach64SetRamdac(CRTC_PIX_WIDTH_8BPP, TRUE,
-			    mach64CRTCRegs.dot_clock);
-	    mach64HWCursorSave = regrb(GEN_TEST_CNTL);
-	    regwb(GEN_TEST_CNTL, mach64HWCursorSave & ~HWCURSOR_ENABLE);
-
-	    if (mach64RamdacSubType != DAC_ATI68875)
+	    if (on) {
+		if (mach64HWCursorSave != -1) {
+		    mach64SetRamdac(mach64CRTCRegs.color_depth, TRUE,
+				    mach64CRTCRegs.dot_clock);
+		    regwb(GEN_TEST_CNTL, mach64HWCursorSave);
+		    mach64HWCursorSave = -1;
+		}
+		mach64RestoreColor0(pScreen);
+		if (mach64RamdacSubType != DAC_ATI68875)
+		    outb(ioDAC_REGS+2, 0xff);
+	    } else {
+		outb(ioDAC_REGS, 0);
+		outb(ioDAC_REGS+1, 0);
+		outb(ioDAC_REGS+1, 0);
+		outb(ioDAC_REGS+1, 0);
 		outb(ioDAC_REGS+2, 0x00);
+
+		mach64SetRamdac(CRTC_PIX_WIDTH_8BPP, TRUE,
+				mach64CRTCRegs.dot_clock);
+		mach64HWCursorSave = regrb(GEN_TEST_CNTL);
+		regwb(GEN_TEST_CNTL, mach64HWCursorSave & ~HWCURSOR_ENABLE);
+
+		if (mach64RamdacSubType != DAC_ATI68875)
+		    outb(ioDAC_REGS+2, 0x00);
+	    }
 	}
     }
 

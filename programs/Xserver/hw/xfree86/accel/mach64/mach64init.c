@@ -1,5 +1,5 @@
 /* $XConsortium: mach64init.c,v 1.3 95/01/16 13:16:33 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.3 1995/01/28 15:53:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.4 1995/03/06 14:47:13 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -765,12 +765,15 @@ void mach64ResetEngine()
     case DRAMx4:
     case DRAMx16:
     case GraphicsDRAMx16:
-	regw(GEN_TEST_CNTL, GUI_ENGINE_ENABLE);
+    case EnhancedVRAMx16ssr:
+	if (OFLG_ISSET(OPTION_BLOCK_WRITE, &mach64InfoRec.options))
+	    regw(GEN_TEST_CNTL, GUI_ENGINE_ENABLE | BLOCK_WRITE_ENABLE);
+	else
+	    regw(GEN_TEST_CNTL, GUI_ENGINE_ENABLE);
 	break;
     case VRAMx16:
     case VRAMx16ssr:
     case EnhancedVRAMx16:
-    case EnhancedVRAMx16ssr:
 	if (OFLG_ISSET(OPTION_NO_BLOCK_WRITE, &mach64InfoRec.options))
 	    regw(GEN_TEST_CNTL, GUI_ENGINE_ENABLE);
 	else

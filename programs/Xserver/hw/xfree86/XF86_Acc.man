@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_Acc.man,v 1.8 95/01/23 15:33:27 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.26 1995/03/06 14:39:31 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.27 1995/05/27 03:00:53 dawes Exp $
 .TH XF86_Accel 1 "Version 3.1.1"  "XFree86"
 .SH NAME
 XF86_Accel - accelerated X Window System servers for
@@ -45,8 +45,11 @@ graphic accelerator boards.  Note, 16-bit operation is not supported on
 all Mach32 accelerator boards.
 .PP
 .I XF86_Mach64
-is an 8-bit PseudoColor, 16-bit TrueColor, and 24-bit TrueColor  server
-for ATI Mach64 graphic accelerator boards.
+is an 8-bit PseudoColor, 16-bit TrueColor, and 24-bit TrueColor server
+for ATI Mach64 graphic accelerator boards.  Note, 16-bit and 24-bit
+operation is not supported for all RAMDACs.  Refer to
+\fIREADME.Mach64\fP for details of which RAMDACs are supported at
+which depths.
 .PP
 .I XF86_P9000
 is an 8-bit PseudoColor, 16-bit TrueColor, and 24-bit TrueColor
@@ -108,6 +111,9 @@ possible using 2Mb or more of display memory (virtual resolution is
 dependent solely on the amount of memory installed, with the maximum
 virtual width being 2048, and max virtual height is 4096).
 .PP
+Similar resolutions are supported on the Mach64.  Refer to
+\fIREADME.Mach64\fP for configuration details.
+.PP
 Similar resolutions are supported on the Mach32.
 For the Mach32, the maximum virtual width is 1536, and the maximum virtual
 height is 1280.
@@ -134,8 +140,8 @@ as described in the
 .I XFree86(1) 
 manpage.
 .sp
-The Mach32, S3, P9000 and AGX servers now support more than 8 bit color.
-The Mach32 supports 16 bit TrueColor and the S3, P9000, and AGX servers support
+The Mach64, Mach32, S3, P9000 and AGX servers now support more than 8 bit color.
+The Mach32 supports 16 bit TrueColor and the Mach64, S3, P9000, and AGX servers support
 16 and 32 bit TrueColor.  The 32 bit TrueColor mode only uses
 24 bits per pixel for color information (giving you 16 million
 colors).  These modes may be used by specifying the \fB\-bpp\fP
@@ -149,7 +155,7 @@ See the
 .I XF86Config(4/5)
 manpage for general details. Here only the
 parts specific to the
-.I XF86_S3, XF86_Mach8, XF86_Mach32, XF86_P9000, XF86_AGX,
+.I XF86_S3, XF86_Mach8, XF86_Mach32, XF86_Mach64, XF86_P9000, XF86_AGX,
 .I XF86_W32
 and 
 .I XF86_8514
@@ -271,7 +277,8 @@ here (see \fIXF86Config(4/5)\fP).  The P9000 server now no longer requires
 a \fBClocks\fP line.  It will now work the same way as other servers with
 a programmable clock chip (i.e., use the clocks as specified in the
 Modes).  Note, clocks over 110\ Mhz are not recommended or supported
-by the P9000 server.
+by the P9000 server.  The Mach64 server also does not require a
+\fBClocks\fP line.  It is read directly from the video card's BIOS.
 .TP 8
 .B ClockChip \fI"clockchip-type"\fP
 For boards with programmable clock chips (except with the 
@@ -363,7 +370,7 @@ For details of how to use it, refer to \fIREADME.agx\fP and
 .TP 8
 .B MemBase \fImemaddress\fP
 specifies the hard-wired part of the linear framebuffer base address.  This
-option is only used by the P9000, S3, and Mach32 servers (and only when using a
+option is only used by the P9000, S3, Mach64, and Mach32 servers (and only when using a
 linear framebuffer).  For the S3 server, the hard-wired part is the high
 10 bits of the 32-bit address (ie \fImemaddress\fP is masked with
 \fI0xFFC00000\fP).  Note: this should not be required for the 864 and 964
@@ -388,6 +395,14 @@ Note: The S3 server will normally probe for this address automatically.
 Setting this option overrides that probe.  This is not normally recommended
 because the failure of the server's probe usually indicates problems in
 using the linear framebuffer.
+.sp
+Note: The Mach64 server requires the memory aperture.  For ISA bus
+video cards, this means that the aperture must be enabled and the
+aperture address must be set to a value less than 16Mb (which means
+that, on ISA systems only, to use the Mach64 server you must have 12Mb
+of main memory or less).  Normally the Mach64 server will use
+pre-defined values for this address, but setting this option will
+override the pre-defined address.
 .sp
 The Mach32 server should not require the use of this option under normal
 circumstances.
@@ -434,14 +449,16 @@ Currently only
 supported with the Ti3020/5, Bt485, AT&T 20C505, AT&T 20C490/1,
 Sierra SC15025/6, AT&T 20C498 and STG1700 (S3 server),
 Bt481 and Bt482 (AGX server),
-ATI68875/TLC34075/Bt885 (Mach32 server) RAMDACs.
+ATI68875/TLC34075/Bt885 (Mach32 server),
+ATI68875, TLC34075, ATI68860, ATI68880, STG1702, and STG1703 (Mach64
+server) RAMDACs.
 .sp
 \fBsync_on_green\fP - (S3, P9000) Enables generation of sync on the green
 signal on cards with Bt485, AT&T 20C505 or Ti3020/5 RAMDACs.  \fBNote:\fP
 Although these RAMDACs support sync on green, it won't work on many cards
 because of the way they are designed.
 .sp
-\fBpower_saver\fP - (S3) This option enables the server
+\fBpower_saver\fP - (S3 and Mach64) This option enables the server
 to use the power saving feature of "green" monitors instead of blanking
 when the screen saver is activated.  This option is experimental.
 .sp
@@ -478,6 +495,15 @@ This option is not usually required because the board can be auto-detected.
 .sp
 \fBelsa_w2000pro\fP - (S3) Enables support for the ELSA Winner 2000 PRO.
 This option is not usually required because the board can be auto-detected.
+.sp
+\fBno_block_write\fP - (Mach64) Disables the block write mode on
+certain types of VRAM Mach64 cards.  If noise or shadows appear on the
+screen, this option should remove them.
+.sp
+\fBblock_write\fP - (Mach64) Enables the block write mode on certain
+types of VRAM Mach64 cards.  Normally the Mach64 server will
+automatically determine if the card can handle block write mode, but
+this option will override the probe result.
 .sp
 There are also numerous tuning options for the AGX server.  Refer to
 \fIREADME.agx\fP for details.

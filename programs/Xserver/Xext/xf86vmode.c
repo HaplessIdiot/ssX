@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/vgahelp.c,v 3.1 1995/02/12 09:52:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.3 1995/03/19 12:17:22 dawes Exp $ */
 
 /*
 
@@ -40,8 +40,8 @@ from the Kaleb S. KEITHLEY
 #include "extnsionst.h"
 #include "scrnintstr.h"
 #include "servermd.h"
-#define _XVGAHELP_SERVER_
-#include "VGAHelpstr.h"
+#define _XF86VIDMODE_SERVER_
+#include "xf86vmstr.h"
 #include "Xfuncproto.h"
 #include "../hw/xfree86/common/xf86.h"
 
@@ -55,13 +55,13 @@ static void VGAHelpResetProc();
 static unsigned char VGAHelpReqCode;
 
 void
-VGAHelpExtensionInit()
+XFree86VidModExtensionInit()
 {
     ExtensionEntry* extEntry;
 
-    if (extEntry = AddExtension(VGAHELPNAME,
-				VGAHelpNumberEvents,
-				VGAHelpNumberErrors,
+    if (extEntry = AddExtension(XF86VIDMODENAME,
+				XF86VidModeNumberEvents,
+				XF86VidModeNumberErrors,
 				ProcVGAHelpDispatch,
 				SProcVGAHelpDispatch,
 				VGAHelpResetProc,
@@ -90,8 +90,8 @@ ProcVGAHelpQueryVersion(client)
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
-    rep.majorVersion = VGAHELP_MAJOR_VERSION;
-    rep.minorVersion = VGAHELP_MINOR_VERSION;
+    rep.majorVersion = XF86VIDMODE_MAJOR_VERSION;
+    rep.minorVersion = XF86VIDMODE_MINOR_VERSION;
     if (client->swapped) {
     	swaps(&rep.sequenceNumber, n);
     	swapl(&rep.length, n);
@@ -188,14 +188,14 @@ ProcVGAHelpModModeLine(client)
     /* Check that the mode is consistent with the monitor specs */
     switch (xf86CheckMode(vptr, &modetmp, vptr->monitor, FALSE)) {
 	case MODE_HSYNC:
-	    return VGAHelpErrorBase + VGAHelpBadHTimings;
+	    return VGAHelpErrorBase + XF86VidModeBadHTimings;
 	case MODE_VSYNC:
-	    return VGAHelpErrorBase + VGAHelpBadVTimings;
+	    return VGAHelpErrorBase + XF86VidModeBadVTimings;
     }
 
     /* Check that the driver is happy with the mode */
     if (!vptr->ValidMode(&modetmp)) {
-	return VGAHelpErrorBase + VGAHelpModeUnsuitable;
+	return VGAHelpErrorBase + XF86VidModeModeUnsuitable;
     }
 
     mptr->HDisplay   = stuff->hdisplay;

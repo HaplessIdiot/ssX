@@ -1,3 +1,19 @@
+XFree86 3.1.1Ad (8 June 1995)
+124. Rename the vgahelp client to xvidtune.
+123. Rename "VGAHelp" extension to our registered name
+     "XFree86-VidModeExtension", and update API to use the XF86VidMode
+     prefix instead of the "XVGAHelp"/"VGAHelp" prefix.
+122. Undef i386 in Imake.cf for i386Architecture systems.
+121. Fix(?) WTMP problem with xterm on SYSV and Linux.
+120. Mach64 documentation updates (Kevin Martin).
+119. Power_saver support for the Mach64 server (Kevin Martin).
+118. Autodetect when block write mode should be disabled for the Mach64
+     server.  A "block_write" option has been added to override this
+     (Kevin Martin).
+117. Use "dead_*" keysyms instead of the DEC "D*" keysyms for the dead keys
+     in the Linux keyboard code and Compose file.
+116. Use our registered name for the ModeLock keysym.
+
 XFree86 3.1.1Ac (6 June 1995)
 115. Vgahelp client enhancements (Jon Tombs).
 114. Fix core dump in fslsfonts when no fontserver is specified

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000gc32.c,v 3.0 1995/05/24 12:21:53 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -240,7 +240,7 @@ static GCOps	p9000NonTEOps = {
 };
 
 
-#ifdef 0
+#if 0
 /*
  * p9000InitGC --
  *    Performs initialization of private structures.

@@ -5,7 +5,7 @@
 
 <title>Notes for Mach64 X Server
 <author>Kevin E. Martin (martin@cs.unc.edu)
-<date>5 March 1995
+<date>6 June 1995
 
 <!-- Table of contents -->
 <toc>
@@ -128,6 +128,17 @@ server.  The Mach64 X server reads the Clocks from the BIOS, so the
 		no effect on DRAM based cards.  If you see noise
 		on the screen that captured via xmag, then it is
 		probably a problem with block write mode.
+<tag>Option &dquot;block_write&dquot;</tag>
+		This option allows you to turn on block
+		write mode.  Block write mode only works on
+		certain types of VRAM cards, and this option has
+		no effect on DRAM based cards.  If you want to
+		override the probed default, you can use this option.
+<tag>Option &dquot;power_saver&dquot;</tag>
+		This option allows the server to use the power
+		saving features of certain "green" monitors
+		instead of blanking when the screen saver is
+		activated.  This option is still experimental.
 <tag>MemBase baseaddress</tag>
 		This entry specifies the video memory aperture
 		address.  Normally the aperture address is
@@ -141,7 +152,7 @@ server.  The Mach64 X server reads the Clocks from the BIOS, so the
 <p>
 
 <verb>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.0 1995/03/06 13:54:32 dawes Exp $
 </verb>
 
 </article>
