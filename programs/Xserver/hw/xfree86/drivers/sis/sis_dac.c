@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.28 2003/01/29 15:42:16 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.29 2003/02/04 02:44:28 dawes Exp $ */
 /*
  * Copyright 1998,1999 by Alan Hourihane, Wigan, England.
  * Parts Copyright 2001, 2002 by Thomas Winischhofer, Vienna, Austria.
@@ -1636,7 +1636,7 @@ SiSEstimateCRT2Clock(ScrnInfoPtr pScrn)
 	       else if(pSiS->VBLCDFlags & (VB_LCD_1152x768 | VB_LCD_1280x1024 | VB_LCD_1280x960))
 		   return 108000;
 	       else if(pSiS->VBLCDFlags & VB_LCD_1400x1050)
-		   return 108000;
+		   return 122000;
 	       else if(pSiS->VBLCDFlags & VB_LCD_1600x1200)
 		   return 162000;
 	       else
