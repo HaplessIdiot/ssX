@@ -1,5 +1,5 @@
 XCOMM site:  $XConsortium: site.sample,v 1.9 94/04/08 17:02:06 rws Exp $
-XCOMM site:  $XFree86$
+XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.2 1994/05/05 07:50:34 dawes Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -35,6 +35,11 @@ XCOMM site:  $XFree86$
 #ifdef BeforeVendorCF
 
 /*
+ * Include this for easy XFree86 customisations
+ */
+#include <xf86site.def>
+
+/*
 #include <host.def>
 */
 
@@ -43,21 +48,6 @@ XCOMM site:  $XFree86$
 #define HasGcc2 YES
 #endif
 */
-
-#define XF86SVGAServer          YES
-#define XF86VGA16Server         YES
-#define XF86VGA16DualServer	YES
-#define XF86MonoServer          YES
-#define XF86MonoDualServer	YES
-#define XF86HgaServer           YES
-#define XF86BdmServer           YES
-#define XF86S3Server            YES
-#define XF86I8514Server         YES
-#define XF86Mach8Server         YES
-#define XF86Mach32Server        YES
-
-#define InstallXdmConfig	YES
-#define InstallXinitConfig	YES
 
 #endif /* BeforeVendorCF */
 

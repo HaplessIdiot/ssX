@@ -1,0 +1,88 @@
+XCOMM platform:  $XFree86$
+
+/*****************************************************************************
+ *	            Defaults for SCO-specfic parameters                          *
+ *****************************************************************************/
+
+#ifndef ScoOsMouse
+# define ScoOsMouse		YES
+#endif
+
+/* You must manually compute BootstrapCFlags for initial build */
+
+#ifdef i386Sco324Architecture
+# define BootstrapCFlags	-DSYSV -DSYSV386 -DSCO -DSCO324
+#else
+# define BootstrapCFlags	-DSYSV -DSYSV386 -DSCO
+#endif
+
+#define	OSMinorVersion	2
+
+#ifdef i386Sco324Architecture
+/*
+ * if your gcc is compiled with STDC_VALUE=0 then change the 1 to 0
+ */
+# define GCC_STDC_VALUE		1
+# if !GCC_STDC_VALUE
+#  define OSDefines		-DSCO -DSCO324 -DBROKEN_FTOL -D_NO_PROTOTYPE -D_SVID \
+		-D__STDC__=1
+#  undef StandardCppDefines
+#  define StandardCppDefines	-DUNIXCPP=1 StandardDefines
+# else
+#  define OSDefines		-DSCO -DSCO324 -DBROKEN_FTOL -D_NO_PROTOTYPE -D_SVID
+# endif
+# define OSVendor		(SCO Version 3.2.4)
+# ifndef HasSymLinks
+#   define HasSymLinks YES
+# endif
+# define	OSTeenyVersion	4
+# define CompressManCmd $(COMPRESS) -v
+#else /* ! i386Sco324Architecture */
+# define OSDefines		-DSCO -DBROKEN_FTOL -DNO_PROTOTYPE -D_SVID
+# define OSVendor		(SCO Version 3.2.2)
+# ifndef HasSymLinks
+#   define HasSymLinks NO
+# endif
+# define	OSTeenyVersion	2
+# define CompressManCmd pack
+#endif /* ! i386Sco324Architecture */
+
+/*
+ *	XBSDLIB is included with the Socket libraries, because SCO
+ *	needs Xbsd as its bcopy routine doesn't handle overlapping
+ *	regions. If HasSockets is false the XINETLIB does it for
+ *	us anyway.
+ */
+#define SocketLibraries	$(XBSDLIB) -lsocket 
+
+#define PosixLibraries		/**/
+#define ManSourcePath		$(MANPATH)/cat.
+
+#if ScoOsMouse
+# define	ServerExtraDefines	-DUSE_OSMOUSE
+# define	LocalLibraries		-lmalloc -lpt -levent
+#else
+# define	LocalLibraries		-lmalloc -lpt
+#endif /* ScoOsMouse */
+
+#define Malloc0ReturnsNull		YES
+#define RemoveDSDENroffMacros   NO
+#define CompressManPages        YES
+#define ServerExtraSysLibs		$(CBRT)
+
+/*
+ * due to the extra '.' chars in the SCO man pages file name we have
+ * to provide our own version of this macro.
+ */
+
+#define InstallManPageAliases(file,destdir,aliases)                     @@\
+install.man::                                                           @@\
+        @(SUFFIX=`echo $(DESTDIR)destdir/file.* | cut -f3,4 -d.`; \     @@\
+        for i in aliases; do (set -x; \                                 @@\
+        $(RM) $(DESTDIR)destdir/$$i.*; \                                @@\
+        $(LN) $(DESTDIR)destdir/file.$${SUFFIX} \                       @@\
+        $(DESTDIR)destdir/$$i.$${SUFFIX}); \                            @@\
+        done)
+
+#include <svr3.cf>
+

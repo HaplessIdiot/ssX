@@ -1,0 +1,76 @@
+XCOMM $XFree86$
+/******************************************************************************/
+/*
+ * This file is provide a quick method for most people to change the
+ * behaviour of their XFree86 installation without having to fully
+ * understand the workings of site.def and all the various '.cf' files.
+ *
+ * These are the most common settings you would choose for compiling and
+ * installing XFree86 on the systems supported by it.
+ */
+/******************************************************************************/
+/*
+ * Which servers do you wish to build, you can save a lot of disk space
+ * by only compiling the server you will be using.  It will also save you
+ * considerable compile time.
+ */
+
+#define XF86SVGAServer          YES
+#define XF86VGA16Server         YES
+#define XF86VGA16DualServer	YES
+#define XF86MonoServer          YES
+#define XF86MonoDualServer	YES
+#define XF86S3Server            YES
+#define XF86I8514Server         YES
+#define XF86Mach8Server         YES
+#define XF86Mach32Server        YES
+
+#define XnestServer             YES
+
+/*
+ * Do you want to install the default system config files, this will overwrite
+ * and files that you may be currently using.  This would only be required
+ * on a first time build.
+ */
+#define InstallXdmConfig	YES
+#define InstallXinitConfig	YES
+
+/*
+ * You will not require this if you use 'xdm' to provide your
+ * logins.  If however you use 'startx' or 'xinit' to start your
+ * X server, then you will need this on.
+ */
+/*
+ * You do NOT need SetUID if you only run the server under xdm
+ * You MAY need SetUID if users run the server by hand, under xinit or
+ * Consult your system administrator before making the X server setuid
+ */
+#define InstallXserverSetUID	YES
+
+/*
+ * Do you want to include support for the FontServer
+ */
+#define BuildFontServer		YES
+#define InstallFSConfig		YES	/* install sample fs config */
+
+/*
+ * Do you want to Build Fonts (Usually you only want to build and install
+ * fonts once, if this is a first time install you will want to build the
+ * fonts)
+ *
+#define BuildFonts		NO
+ */
+
+/*
+ * If you have trouble with make bombing out in Xlib, try uncommenting this.
+ * You will not get dependencies as a result, but better than nothing.
+ *
+#define MakeHashTableBug        YES
+ */
+
+/*
+ * If you do not want your man pages compress under SVR3 systems that
+ * support it, uncomment this.
+ *
+#define CompressManPages        NO
+ */
