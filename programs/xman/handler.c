@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/handler.c,v 1.4 2000/03/06 22:59:34 dawes Exp $ */
+/* $XFree86: xc/programs/xman/handler.c,v 1.5 2000/06/13 23:15:53 dawes Exp $ */
 
 /*
  * xman - X window system manual page display program.
@@ -463,11 +463,14 @@ void
 PopupSearch(Widget w, XEvent * event, String * params, Cardinal * num_params)
 {
   ManpageGlobals * man_globals = GetGlobals(w);
-  if (!XtIsRealized(man_globals->search_widget)) {
-    XtRealizeWidget(man_globals->search_widget);
-    AddCursor(man_globals->search_widget, resources.cursors.search_entry);
+
+  if (man_globals->search_widget) {
+    if (!XtIsRealized(man_globals->search_widget)) {
+      XtRealizeWidget(man_globals->search_widget);
+      AddCursor(man_globals->search_widget, resources.cursors.search_entry);
+    }
+    Popup(man_globals->search_widget, XtGrabNone);
   }
-  Popup(man_globals->search_widget, XtGrabNone);
 }
 
 /*      Function Name: CreateNewManpage
