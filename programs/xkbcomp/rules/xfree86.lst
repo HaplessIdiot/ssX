@@ -20,18 +20,69 @@
   jp106		Japanese 106-key
   pc98		PC-98xx Series
   abnt2		Brazilian ABNT2
-  hp		HP Internet
-  itouch	Logitech iTouch
-  logicordless	Logitech Cordless Desktop Pro
-  logiinternet	Logitech Internet Keyboard
-  logiinetnav	Logitech Internet Navigator Keyboard
-  compaq	Compaq Internet
-  microsoftpro	Microsoft Natural Pro
-  geniuscomfy	Genius Comfy KB-16M
+  airkey	Acer AirKey V
+  acpi		ACPI Standard
+  scorpius	Advance Scorpius KI
+  btc5113rf	BTC 5113RF Multimedia
+  btc5126t	BTC 5126T
+  btc9000	BTC 9000
+  btc9000a	BTC 9000A
+  cherryblue	Cherry Blue Line CyBo@rd
+  cherrybluea	Cherry Blue Line CyBo@rd (alternate option)
+  chicony	Chicony Internet Keyboard
+  chicony9885	Chicony KB-9885
+  compaqeak8	Compaq Easy Access Keyboard
+  compaqik7	Compaq Internet Keyboard (7 keys)
+  compaqik13	Compaq Internet Keyboard (13 keys)
+  compaqik18	Compaq Internet Keyboard (18 keys)
+  armada	Laptop/notebook Compaq (eg. Armada) Laptop Keyboard
+  presario	Laptop/notebook Compaq (eg. Presario) Internet Keyboard
+  ipaq		Compaq iPaq Keyboard
+  dell		Dell
+  inspiron	Laptop/notebook Dell Inspiron 8xxx
+  dexxa		Dexxa Wireless Desktop Keyboard
+  diamond	Diamond 9801 / 9802 series
+  genius	Genius Comfy KB-16M / Genius MM Keyboard KWD-910
+  hpi6		Hewlett-Packard Internet Keyboard
+  hp2501	Hewlett-Packard SK-2501 Multimedia Keyboard
+  hp2505	Hewlett-Packard SK-2505 Internet Keyboard
   rapidaccess	IBM Rapid Access
   rapidaccess2	IBM Rapid Access II
-  chicony	Chicony Internet Keyboard
-  dell		Dell Internet Keyboard
+  rapidaccess2a	IBM Rapid Access II (alternate option)
+  ltcd		Logitech Cordless Desktop
+  logicdit	Logitech Cordless Desktop iTouch
+  logicdp	Logitech Cordless Desktop Pro
+  logicdpa	Logitech Cordless Desktop Pro (alternate option)
+  logicdpa2	Logitech Cordless Desktop Pro (alternate option2)
+  logicdo	Logitech Cordless Desktop Optical
+  logicfn	Logitech Cordless Freedom/Desktop Navigator
+  logidak	Logitech Deluxe Access Keyboard
+  logiik	Logitech Internet Keyboard
+  itouch	Logitech iTouch
+  logiitc	Logitech iTouch Cordless Keyboard (model Y-RB6)
+  logiik	Logitech Internet Keyboard
+  logiink	Logitech Internet Navigator Keyboard
+  itouchin	Logitech iTouch keyboard Internet Navigator
+  mx1998	Memorex MX1998
+  mx2500	Memorex MX2500 EZ-Access Keyboard
+  mx2750	Memorex MX2750
+  microsoftinet	Microsoft Internet Keyboard
+  microsoftpro	Microsoft Natural Keyboard Pro / Microsoft Internet Keyboard Pro
+  microsoftprose Microsoft Internet Keyboard Pro, Swedish
+  microsoftoffice Microsoft Office Keyboard
+  oretec	Oretec MCK-800 MM/Internet keyboard
+  propeller	Propeller Voyager (KTEZ-1000)
+  qtronix	QTronix Scorpius 98N+
+  samsung4500	Samsung SDM 4500P
+  samsung4510	Samsung SDM 4510P
+  sk1300	SK-1300
+  sk2500	SK-2500
+  sk6200	SK-6200
+  sk7100	SK-7100
+  sven		SVEN Ergonomic 2500
+  symplon	Symplon PaceBook (tablet PC)
+  trust		Trust Wireless Keyboard Classic
+  yahoo		Yahoo! Internet Keyboard
 
 
 // The entries here should be ordered as follows:
@@ -73,6 +124,7 @@
   gur		Gurmukhi
   dev		Hindi
   hu		Hungarian
+  hu_qwerty	Hungarian (qwerty)
   is		Icelandic
   iu		Inuktitut
   ir		Iranian

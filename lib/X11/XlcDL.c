@@ -41,7 +41,7 @@ interest in or to any trademark, service mark, logo or trade name of
 Sun Microsystems, Inc. or its licensors is granted.
 
 */
-/* $XFree86: xc/lib/X11/XlcDL.c,v 1.6 2002/06/03 21:50:32 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlcDL.c,v 1.8 2002/09/16 18:05:22 eich Exp $ */
 
 #include <stdio.h>
 #if defined(hpux)
@@ -348,6 +348,9 @@ fetch_symbol (object, symbol)
     int getsyms_cnt, i;
     struct shl_symbol *symbols;
 #endif
+
+    if (symbol == NULL)
+    	return NULL;
 
 #if defined(hpux)
     getsyms_cnt = shl_getsymbols(object->dl_module, TYPE_PROCEDURE,

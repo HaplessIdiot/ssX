@@ -1929,6 +1929,9 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 #endif
 
 #ifdef i386Architecture
+# ifndef HasX86Support
+#  define HasX86Support YES
+# endif
 # ifndef HasMMXSupport
 #  define HasMMXSupport YES
 # endif
@@ -1939,6 +1942,9 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 #  define Has3DNowSupport NO
 # endif
 #elif defined (x86_64Architecture)
+# ifndef HasX86Support
+#  define HasX86Support NO
+# endif
 # ifndef HasMMXSupport
 #  define HasMMXSupport NO
 # endif
@@ -1946,9 +1952,12 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 #  define HasSSESupport NO
 # endif
 # ifndef Has3DNowSupport
-#  define Has3DNowSupport YES
+#  define Has3DNowSupport NO
 # endif
 #else 
+# ifndef HasX86Support
+#  define HasX86Support NO
+# endif
 # ifndef HasMMXSupport
 #  define HasMMXSupport NO
 # endif

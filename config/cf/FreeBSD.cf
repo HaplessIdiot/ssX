@@ -238,10 +238,12 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  */
 #ifdef i386Architecture &&  \
 	(OSMajorVersion >= 5) || (OSMajorVersion == 4 && OSMinorVersion >= 2))
+# define HasX86Support          YES
 # define HasMMXSupport		YES
 # define Has3DNowSupport	YES
 # define HasSSESupport		YES
 #else
+# define HasX86Support	        NO
 # define HasMMXSupport		NO
 # define Has3DNowSupport	NO
 # define HasSSESupport		NO

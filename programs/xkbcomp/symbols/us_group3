@@ -281,3 +281,7 @@ xkb_symbols "pc105compose" {
     include "us_group3(pc104compose)"
     key <LSGT> {	[], [], [      less,    greater		]	};
 };
+// Override broken Numlock key on some IBM keyboards 
+xkb_symbols "ibm_space_saver" { 
+    key <NMLK> {        [  Num_Lock, Num_Lock   ]       }; 
+}; 

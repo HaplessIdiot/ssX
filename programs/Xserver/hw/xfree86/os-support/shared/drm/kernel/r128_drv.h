@@ -420,7 +420,7 @@ do {									\
 		return DRM_ERR(EBUSY);				\
 	}								\
  __ring_space_done:							\
-	;								\
+	break;								\
 } while (0)
 
 #define VB_AGE_TEST_WITH_RETURN( dev_priv )				\

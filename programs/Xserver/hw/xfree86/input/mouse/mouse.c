@@ -2105,6 +2105,15 @@ SetupMouse(InputInfoPtr pInfo)
 **               [CHRIS-211092]
 */
 
+#define do_ps2Reset(x)  { \
+    int i = 10;\
+    while (i-- > 0) { \
+       xf86FlushInput(x->fd); \
+       if (ps2Reset(x)) break; \
+    } \
+  }
+
+		       
 static Bool
 initMouseHW(InputInfoPtr pInfo)
 {
@@ -2115,237 +2124,238 @@ initMouseHW(InputInfoPtr pInfo)
     pointer options;
     unsigned char *param = NULL;
     int paramlen = 0;
-    
+
     switch (pMse->protocolID) {
-    case PROT_LOGI:		/* Logitech Mice */
-        /* 
-	 * The baud rate selection command must be sent at the current
-	 * baud rate; try all likely settings.
-	 */
-	speed = pMse->baudRate;
-	switch (speed) {
-	case 9600:
-	    s = "*q";
+	case PROT_LOGI:		/* Logitech Mice */
+	    /* 
+	     * The baud rate selection command must be sent at the current
+	     * baud rate; try all likely settings.
+	     */
+	    speed = pMse->baudRate;
+	    switch (speed) {
+		case 9600:
+		    s = "*q";
+		    break;
+		case 4800:
+		    s = "*p";
+		    break;
+		case 2400:
+		    s = "*o";
+		    break;
+		case 1200:
+		    s = "*n";
+		    break;
+		default:
+		    /* Fallback value */
+		    speed = 1200;
+		    s = "*n";
+	    }
+	    xf86SetSerialSpeed(pInfo->fd, 9600);
+	    xf86WriteSerial(pInfo->fd, s, 2);
+	    usleep(100000);
+	    xf86SetSerialSpeed(pInfo->fd, 4800);
+	    xf86WriteSerial(pInfo->fd, s, 2);
+	    usleep(100000);
+	    xf86SetSerialSpeed(pInfo->fd, 2400);
+	    xf86WriteSerial(pInfo->fd, s, 2);
+	    usleep(100000);
+	    xf86SetSerialSpeed(pInfo->fd, 1200);
+	    xf86WriteSerial(pInfo->fd, s, 2);
+	    usleep(100000);
+	    xf86SetSerialSpeed(pInfo->fd, speed);
+
+	    /* Select MM series data format. */
+	    xf86WriteSerial(pInfo->fd, "S", 1);
+	    usleep(100000);
+	    /* Set the parameters up for the MM series protocol. */
+	    options = pInfo->options;
+	    xf86CollectInputOptions(pInfo, mmDefaults, NULL);
+	    xf86SetSerial(pInfo->fd, pInfo->options);
+	    pInfo->options = options;
+
+	    /* Select report rate/frequency. */
+	    if      (pMse->sampleRate <=   0)  c = 'O';  /* 100 */
+	    else if (pMse->sampleRate <=  15)  c = 'J';  /*  10 */
+	    else if (pMse->sampleRate <=  27)  c = 'K';  /*  20 */
+	    else if (pMse->sampleRate <=  42)  c = 'L';  /*  35 */
+	    else if (pMse->sampleRate <=  60)  c = 'R';  /*  50 */
+	    else if (pMse->sampleRate <=  85)  c = 'M';  /*  67 */
+	    else if (pMse->sampleRate <= 125)  c = 'Q';  /* 100 */
+	    else                               c = 'N';  /* 150 */
+	    xf86WriteSerial(pInfo->fd, &c, 1);
 	    break;
-	case 4800:
-	    s = "*p";
+
+	case PROT_LOGIMAN:
+	    speed = pMse->baudRate;
+	    switch (speed) {
+		case 9600:
+		    s = "*q";
+		    break;
+		case 1200:
+		    s = "*n";
+		    break;
+		default:
+		    /* Fallback value */
+		    speed = 1200;
+		    s = "*n";
+	    }
+	    xf86SetSerialSpeed(pInfo->fd, 1200);
+	    xf86WriteSerial(pInfo->fd, "*n", 2);
+	    xf86WriteSerial(pInfo->fd, "*X", 2);
+	    xf86WriteSerial(pInfo->fd, s, 2);
+	    usleep(100000);
+	    xf86SetSerialSpeed(pInfo->fd, speed);
 	    break;
-	case 2400:
-	    s = "*o";
+
+	case PROT_MMHIT:		/* MM_HitTablet */
+	    /*
+	     * Initialize Hitachi PUMA Plus - Model 1212E to desired settings.
+	     * The tablet must be configured to be in MM mode, NO parity,
+	     * Binary Format.  pMse->sampleRate controls the sensitivity
+	     * of the tablet.  We only use this tablet for it's 4-button puck
+	     * so we don't run in "Absolute Mode".
+	     */
+	    xf86WriteSerial(pInfo->fd, "z8", 2);	/* Set Parity = "NONE" */
+	    usleep(50000);
+	    xf86WriteSerial(pInfo->fd, "zb", 2);	/* Set Format = "Binary" */
+	    usleep(50000);
+	    xf86WriteSerial(pInfo->fd, "@", 1);	/* Set Report Mode = "Stream" */
+	    usleep(50000);
+	    xf86WriteSerial(pInfo->fd, "R", 1);	/* Set Output Rate = "45 rps" */
+	    usleep(50000);
+	    xf86WriteSerial(pInfo->fd, "I\x20", 2);	/* Set Incrememtal Mode "20" */
+	    usleep(50000);
+	    xf86WriteSerial(pInfo->fd, "E", 1);	/* Set Data Type = "Relative */
+	    usleep(50000);
+	    /*
+	     * These sample rates translate to 'lines per inch' on the Hitachi
+	     * tablet.
+	     */
+	    if      (pMse->sampleRate <=   40) c = 'g';
+	    else if (pMse->sampleRate <=  100) c = 'd';
+	    else if (pMse->sampleRate <=  200) c = 'e';
+	    else if (pMse->sampleRate <=  500) c = 'h';
+	    else if (pMse->sampleRate <= 1000) c = 'j';
+	    else                               c = 'd';
+	    xf86WriteSerial(pInfo->fd, &c, 1);
+	    usleep(50000);
+	    xf86WriteSerial(pInfo->fd, "\021", 1);	/* Resume DATA output */
 	    break;
-	case 1200:
-	    s = "*n";
+
+	case PROT_THINKING:		/* ThinkingMouse */
+	    /* This mouse may send a PnP ID string, ignore it. */
+	    usleep(200000);
+	    xf86FlushInput(pInfo->fd);
+	    /* Send the command to initialize the beast. */
+	    for (s = "E5E5"; *s; ++s) {
+		xf86WriteSerial(pInfo->fd, s, 1);
+		if ((xf86WaitForInput(pInfo->fd, 1000000) <= 0))
+		    break;
+		xf86ReadSerial(pInfo->fd, &c, 1);
+		if (c != *s)
+		    break;
+	    }
 	    break;
+
+	case PROT_MSC:		/* MouseSystems Corp */
+	    usleep(100000);
+	    xf86FlushInput(pInfo->fd);
+	    break;
+
+	case PROT_ACECAD:
+	    /* initialize */
+	    /* A nul character resets. */
+	    xf86WriteSerial(pInfo->fd, "", 1);
+	    usleep(50000);
+	    /* Stream out relative mode high resolution increments of 1. */
+	    xf86WriteSerial(pInfo->fd, "@EeI!", 5);
+	    break;
+
+	case PROT_BM:		/* bus/InPort mouse */
+	    if (osInfo->SetBMRes)
+		osInfo->SetBMRes(pInfo, pMse->protocol, pMse->sampleRate,
+				 pMse->resolution);
+	    break;
+
+	case PROT_GENPS2:
+	    break;
+
+	case PROT_PS2:
+	case PROT_GLIDEPS2:
+	    do_ps2Reset(pInfo);
+	    break;
+	
+	case PROT_IMPS2:		/* IntelliMouse */
+	{
+	    static unsigned char seq[] = { 243, 200, 243, 100, 243, 80, 242 };
+	    do_ps2Reset(pInfo);
+	    param = seq;
+	    paramlen = sizeof(seq);
+	}
+	break;
+
+	case PROT_EXPPS2:		/* IntelliMouse Explorer */
+	{
+	    static unsigned char seq[] = { 243, 200, 243, 100, 243, 80,
+					   243, 200, 243, 200, 243, 80, 242 };
+	
+	    do_ps2Reset(pInfo);
+	    param = seq;
+	    paramlen = sizeof(seq);
+	}
+	break;
+    
+	case PROT_NETPS2:		/* NetMouse, NetMouse Pro, Mie Mouse */
+	case PROT_NETSCPS2:		/* NetScroll */
+	{
+	    static unsigned char seq[] = { 232, 3, 230, 230, 230, };
+	
+	    do_ps2Reset(pInfo);
+	    param = seq;
+	    paramlen = sizeof(seq);
+	}
+	break;
+    
+	case PROT_MMPS2:		/* MouseMan+, FirstMouse+ */
+	{
+	    static unsigned char seq[] = { 230, 232, 0, 232, 3, 232, 2, 232, 1,
+					   230, 232, 3, 232, 1, 232, 2, 232, 3, };
+	    do_ps2Reset(pInfo);
+	    param = seq;
+	    paramlen = sizeof(seq);
+	}
+	break;
+    
+	case PROT_THINKPS2:		/* ThinkingMouse */
+	{
+	    static unsigned char seq[] = { 243, 10, 232,  0, 243, 20, 243, 60,
+					   243, 40, 243, 20, 243, 20, 243, 60,
+					   243, 40, 243, 20, 243, 20, };
+	    do_ps2Reset(pInfo);
+	    param = seq;
+	    paramlen = sizeof(seq);
+	}
+	break;
+	case PROT_SYSMOUSE:
+	    if (osInfo->SetMiscRes)
+		osInfo->SetMiscRes(pInfo, pMse->protocol, pMse->sampleRate,
+				   pMse->resolution);
+	    break;
+
 	default:
-	    /* Fallback value */
-	    speed = 1200;
-	    s = "*n";
-	}
-	xf86SetSerialSpeed(pInfo->fd, 9600);
-	xf86WriteSerial(pInfo->fd, s, 2);
-	usleep(100000);
-	xf86SetSerialSpeed(pInfo->fd, 4800);
-	xf86WriteSerial(pInfo->fd, s, 2);
-	usleep(100000);
-	xf86SetSerialSpeed(pInfo->fd, 2400);
-	xf86WriteSerial(pInfo->fd, s, 2);
-	usleep(100000);
-	xf86SetSerialSpeed(pInfo->fd, 1200);
-	xf86WriteSerial(pInfo->fd, s, 2);
-	usleep(100000);
-	xf86SetSerialSpeed(pInfo->fd, speed);
-
-        /* Select MM series data format. */
-	xf86WriteSerial(pInfo->fd, "S", 1);
-	usleep(100000);
-	/* Set the parameters up for the MM series protocol. */
-	options = pInfo->options;
-	xf86CollectInputOptions(pInfo, mmDefaults, NULL);
-	xf86SetSerial(pInfo->fd, pInfo->options);
-	pInfo->options = options;
-
-        /* Select report rate/frequency. */
-	if      (pMse->sampleRate <=   0)  c = 'O';  /* 100 */
-	else if (pMse->sampleRate <=  15)  c = 'J';  /*  10 */
-	else if (pMse->sampleRate <=  27)  c = 'K';  /*  20 */
-	else if (pMse->sampleRate <=  42)  c = 'L';  /*  35 */
-	else if (pMse->sampleRate <=  60)  c = 'R';  /*  50 */
-	else if (pMse->sampleRate <=  85)  c = 'M';  /*  67 */
-	else if (pMse->sampleRate <= 125)  c = 'Q';  /* 100 */
-	else                               c = 'N';  /* 150 */
-	xf86WriteSerial(pInfo->fd, &c, 1);
-	break;
-
-    case PROT_LOGIMAN:
-	speed = pMse->baudRate;
-	switch (speed) {
-	case 9600:
-	    s = "*q";
+	    /* Nothing to do. */
 	    break;
-	case 1200:
-	    s = "*n";
-	    break;
-	default:
-	    /* Fallback value */
-	    speed = 1200;
-	    s = "*n";
-	}
-	xf86SetSerialSpeed(pInfo->fd, 1200);
-	xf86WriteSerial(pInfo->fd, "*n", 2);
-        xf86WriteSerial(pInfo->fd, "*X", 2);
-	xf86WriteSerial(pInfo->fd, s, 2);
-	usleep(100000);
-	xf86SetSerialSpeed(pInfo->fd, speed);
-        break;
-
-    case PROT_MMHIT:		/* MM_HitTablet */
-	/*
-	 * Initialize Hitachi PUMA Plus - Model 1212E to desired settings.
-	 * The tablet must be configured to be in MM mode, NO parity,
-	 * Binary Format.  pMse->sampleRate controls the sensitivity
-	 * of the tablet.  We only use this tablet for it's 4-button puck
-	 * so we don't run in "Absolute Mode".
-	 */
-	xf86WriteSerial(pInfo->fd, "z8", 2);	/* Set Parity = "NONE" */
-	usleep(50000);
-	xf86WriteSerial(pInfo->fd, "zb", 2);	/* Set Format = "Binary" */
-	usleep(50000);
-	xf86WriteSerial(pInfo->fd, "@", 1);	/* Set Report Mode = "Stream" */
-	usleep(50000);
-	xf86WriteSerial(pInfo->fd, "R", 1);	/* Set Output Rate = "45 rps" */
-	usleep(50000);
-	xf86WriteSerial(pInfo->fd, "I\x20", 2);	/* Set Incrememtal Mode "20" */
-	usleep(50000);
-	xf86WriteSerial(pInfo->fd, "E", 1);	/* Set Data Type = "Relative */
-	usleep(50000);
-	/*
-	 * These sample rates translate to 'lines per inch' on the Hitachi
-	 * tablet.
-	 */
-	if      (pMse->sampleRate <=   40) c = 'g';
-	else if (pMse->sampleRate <=  100) c = 'd';
-	else if (pMse->sampleRate <=  200) c = 'e';
-	else if (pMse->sampleRate <=  500) c = 'h';
-	else if (pMse->sampleRate <= 1000) c = 'j';
-	else                               c = 'd';
-	xf86WriteSerial(pInfo->fd, &c, 1);
-	usleep(50000);
-	xf86WriteSerial(pInfo->fd, "\021", 1);	/* Resume DATA output */
-        break;
-
-    case PROT_THINKING:		/* ThinkingMouse */
-	/* This mouse may send a PnP ID string, ignore it. */
-	usleep(200000);
-	xf86FlushInput(pInfo->fd);
-	/* Send the command to initialize the beast. */
-	for (s = "E5E5"; *s; ++s) {
-	    xf86WriteSerial(pInfo->fd, s, 1);
-	    if ((xf86WaitForInput(pInfo->fd, 1000000) <= 0))
-		break;
-	    xf86ReadSerial(pInfo->fd, &c, 1);
-	    if (c != *s)
-		break;
-	}
-	break;
-
-    case PROT_MSC:		/* MouseSystems Corp */
-	usleep(100000);
-	xf86FlushInput(pInfo->fd);
-        break;
-
-    case PROT_ACECAD:
-	/* initialize */
-	/* A nul character resets. */
-	xf86WriteSerial(pInfo->fd, "", 1);
-	usleep(50000);
-	/* Stream out relative mode high resolution increments of 1. */
-	xf86WriteSerial(pInfo->fd, "@EeI!", 5);
-	break;
-
-    case PROT_BM:		/* bus/InPort mouse */
-	if (osInfo->SetBMRes)
-	    osInfo->SetBMRes(pInfo, pMse->protocol, pMse->sampleRate,
-			     pMse->resolution);
-	break;
-
-    case PROT_PS2:
-    case PROT_GENPS2:
-	ps2Reset(pInfo);
-
-    case PROT_GLIDEPS2:
-	break;
-	
-    case PROT_IMPS2:		/* IntelliMouse */
-    {
-	static unsigned char seq[] = { 243, 200, 243, 100, 243, 80, 242 };
-	
-	ps2Reset(pInfo);
-	param = seq;
-	paramlen = sizeof(seq);
     }
-    break;
-
-    case PROT_EXPPS2:		/* IntelliMouse Explorer */
-    {
-	static unsigned char seq[] = { 243, 200, 243, 100, 243, 80,
-				       243, 200, 243, 200, 243, 80, 242 };
-	
-	ps2Reset(pInfo);
-	param = seq;
-	paramlen = sizeof(seq);
-    }
-    break;
     
-    case PROT_NETPS2:		/* NetMouse, NetMouse Pro, Mie Mouse */
-    case PROT_NETSCPS2:		/* NetScroll */
-    {
-	static unsigned char seq[] = { 232, 3, 230, 230, 230, };
-	
-	ps2Reset(pInfo);
-	param = seq;
-	paramlen = sizeof(seq);
-    }
-    break;
-    
-    case PROT_MMPS2:		/* MouseMan+, FirstMouse+ */
-    {
-	static unsigned char seq[] = { 230, 232, 0, 232, 3, 232, 2, 232, 1,
-				       230, 232, 3, 232, 1, 232, 2, 232, 3, };
-	ps2Reset(pInfo);
-	param = seq;
-	paramlen = sizeof(seq);
-    }
-    break;
-    
-    case PROT_THINKPS2:		/* ThinkingMouse */
-    {
-	static unsigned char seq[] = { 243, 10, 232,  0, 243, 20, 243, 60,
-				       243, 40, 243, 20, 243, 20, 243, 60,
-				       243, 40, 243, 20, 243, 20, };
-	ps2Reset(pInfo);
-	param = seq;
-	paramlen = sizeof(seq);
-    }
-    break;
-    case PROT_SYSMOUSE:
-	if (osInfo->SetMiscRes)
-	    osInfo->SetMiscRes(pInfo, pMse->protocol, pMse->sampleRate,
-			       pMse->resolution);
-	break;
-
-    default:
-	/* Nothing to do. */
-	break;
-    }
-
     if (paramlen > 0) {
 	int count = 10;
+	
 	while (count--) {
 	    if (ps2SendPacket(pInfo,param,paramlen))
 		break;
 	    usleep(30000);
 	}
-	if (!count) 
+	if (!count)
 	    xf86Msg(X_ERROR, "%s: Mouse initialization failed\n", pInfo->name);
  	usleep(30000);
  	xf86FlushInput(pInfo->fd);

@@ -278,13 +278,22 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
 	LEFT_EDGE_CLIPPING | LEFT_EDGE_CLIPPING_NEGATIVE_X |
 	ROP_NEEDS_SOURCE;
 #ifdef UNDOCUMENTED_FEATURE
-    infoPtr->ScreenToScreenColorExpandFillFlags = BIT_ORDER_IN_BYTE_MSBFIRST |
-	LEFT_EDGE_CLIPPING;
+    infoPtr->ScreenToScreenColorExpandFillFlags = BIT_ORDER_IN_BYTE_MSBFIRST
+	| LEFT_EDGE_CLIPPING;
 #endif        
     if (cAcl->BitsPerPixel == 24) {
 	infoPtr->CPUToScreenColorExpandFillFlags |= NO_PLANEMASK;
 #ifdef UNDOCUMENTED_FEATURE
 	infoPtr->ScreenToScreenColorExpandFillFlags |= NO_PLANEMASK;
+#endif
+    }
+    /* The ct65550 has problems with transparency which leads to video
+     * corruption unless disabled.
+     */
+    if (!(cPtr->Flags & ChipsColorTransparency)) {
+	infoPtr->CPUToScreenColorExpandFillFlags |= NO_TRANSPARENCY;
+#ifdef UNDOCUMENTED_FEATURE
+	infoPtr->ScreenToScreenColorExpandFillFlags |= NO_TRANSPARENCY;
 #endif
     }
 #else

@@ -1,4 +1,41 @@
+
 XFree86 4.2.99.3 (xx November 2002)
+ 536. Attempt to fix bitblt problems when doing offscreen pixmaps in
+      i810 (Egbert Eich).
+ 535. Change Build rule so that x86 assembler code for MESA can be completely
+      disabled on i386 (Egbert Eich).
+ 534. Added IEEE Optimization for x86-64 (Egbert Eich).
+ 533. Initialized fullscreen in DRIscreenPrivate to a vaild value 
+      (Egbert Eich).
+ 532. Fixed module loader to map memory in the low 32bit address space on
+      x86-64 (Egbert Eich).
+ 531. Shifted Keypad delete: added KP_Separator for de_DE and de_CH keyboard.
+ 530. Added sanity checks to various scripts (Egbert Eich).
+ 529. Fixed Trident RGB16 video playback mode (Alastair Robinsion).
+ 528. i810 only set OVRACT register when TVout isn't enabled 
+      (Sebastien BASTARD, Matthew J. Sottek, Egbert Eich).
+ 527. Record changes of BusMaster state so that pciDisable/Enable/Mem/Io
+      don't override these (Egbert Eich).
+ 526. Fixed RAC code: when no resources are shared chips may still need
+      RAC for bus access if both require non overlapping parts of the
+      VGA resources (Egbert Eich).
+ 525. Fix for resource registration of C&T and Tdfx driver (Egbert Eich).
+ 524. Prevent   core dumps in Xutf8Reset/Lookup code of Xlib (Masaru Yokoi).
+ 523. Added support for BE systems for C&T driver (Michael Stephen Hanni). 
+ 522. Added support for special keys found on many ACPI control, Easy Access
+      Keyboards, Internet keyboards, laptops, notebooks and PDA (via
+      xkb/symbols/inet). Added new key symbols for these keyboards 
+      (Stanislav Brabec).
+ 521. Fixed some problems with ininite loops which where introduced 
+      with the host bridge specific code (Egbert Eich).
+ 520. AXP domain support (Jeff Wiedemeier).
+ 519. Added -m32 flag to c++ when build on ia32 (Egbert Eich).
+ 518. Support for R_ALPHA_GPRELHIGH und R_ALPHA_GPRELL on Alpha used by 
+      gcc 3.2 (Stefan Reinauer).
+ 517. Added rule to be able to use Numlock key on broken IBM keyboards
+      (Stefan Dirsch).
+ 516. Fixed Xlib build rules so it builds a truly static library again 
+      (Egbert Eich).
  515. When compiled with GCC, force imake to generate Makefile's using GCC's
       preprocessor rather than a system-provided one (Marc La France).
  514. Replace hard-coded "lib" directory names with LibDirName in X11.tmpl

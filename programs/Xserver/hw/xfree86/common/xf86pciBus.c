@@ -1527,10 +1527,10 @@ getValidBIOSBase(PCITAG tag, int num)
     if (biosSize > 24)
 	biosSize = 24;
 
-      switch ((romBaseSource)num) {
-      case ROM_BASE_PRESET:
+    switch ((romBaseSource)num) {
+    case ROM_BASE_PRESET:
 	return 0; /* This should not happen */
-      case ROM_BASE_BIOS:
+    case ROM_BASE_BIOS:
 	/* In some cases the BIOS base register contains the size mask */
 	if ((memType)(-1 << biosSize) == PCIGETROM(pvp->biosBase))
 	    return 0;
@@ -1545,85 +1545,87 @@ getValidBIOSBase(PCITAG tag, int num)
 	P_M_RANGE(range, TAG(pvp),pvp->biosBase,biosSize,ResExcMemBlock);
 	ret = pvp->biosBase;
 	break;
-      case ROM_BASE_MEM0:
-      case ROM_BASE_MEM1:
-      case ROM_BASE_MEM2:
-      case ROM_BASE_MEM3:
-      case ROM_BASE_MEM4:
-      case ROM_BASE_MEM5:
+    case ROM_BASE_MEM0:
+    case ROM_BASE_MEM1:
+    case ROM_BASE_MEM2:
+    case ROM_BASE_MEM3:
+    case ROM_BASE_MEM4:
+    case ROM_BASE_MEM5:
 	if (!pvp->memBase[num] || (pvp->size[num] < biosSize))
 	    return 0;
 	P_M_RANGE(range, TAG(pvp),pvp->memBase[num],biosSize,
 		  ResExcMemBlock);
 	ret = pvp->memBase[num];
 	break;
-      case ROM_BASE_FIND:
+    case ROM_BASE_FIND:
 	ret = 0;
 	break;
-      default:
+    default:
 	return 0; /* This should not happen */
-      }
+    }
 
-      /* Now find the ranges for validation */
-      avoid = xf86DupResList(pciAvoidRes);
-      pbp = xf86PciBus;
-      while (pbp) {
-	  if (pbp->secondary == pvp->bus) {
-	      if (pbp->preferred_pmem)
-		  tmp = xf86DupResList(pbp->preferred_pmem);
-	      else
-		  tmp = xf86DupResList(pbp->pmem);
-	      m = xf86JoinResLists(m,tmp);
-	      if (pbp->preferred_mem)
-	          tmp = xf86DupResList(pbp->preferred_mem);
-	      else
-	          tmp = xf86DupResList(pbp->mem);
-	      m = xf86JoinResLists(m,tmp);
-	      tmp = m;
-	      while (tmp) {
-		  tmp->block_end = MIN(tmp->block_end,PCI_MEM32_LENGTH_MAX);
-		  tmp = tmp->next;
-	      }
-	  } else if (pbp->primary == pvp->bus) {
-	      tmp = xf86DupResList(pbp->preferred_pmem);
-	      avoid = xf86JoinResLists(avoid, tmp);
-	      tmp = xf86DupResList(pbp->pmem);
-	      avoid = xf86JoinResLists(avoid, tmp);
-	      tmp = xf86DupResList(pbp->preferred_mem);
-	      avoid = xf86JoinResLists(avoid, tmp);
-	      tmp = xf86DupResList(pbp->mem);
-	      avoid = xf86JoinResLists(avoid, tmp);
-	  }	
-	  pbp = pbp->next;
-      }	
-      pciConvertListToHost(pvp->bus,pvp->device,pvp->func, avoid);
-      if (mem)
-	  pciConvertListToHost(pvp->bus,pvp->device,pvp->func, mem);
+    /* Now find the ranges for validation */
+    avoid = xf86DupResList(pciAvoidRes);
+    pbp = xf86PciBus;
+    while (pbp) {
+	if ( pbp->secondary != pbp->primary ) {
+	    if (pbp->secondary == pvp->bus) {
+		if (pbp->preferred_pmem)
+		    tmp = xf86DupResList(pbp->preferred_pmem);
+		else
+		    tmp = xf86DupResList(pbp->pmem);
+		m = xf86JoinResLists(m,tmp);
+		if (pbp->preferred_mem)
+		    tmp = xf86DupResList(pbp->preferred_mem);
+		else
+		    tmp = xf86DupResList(pbp->mem);
+		m = xf86JoinResLists(m,tmp);
+		tmp = m;
+		while (tmp) {
+		    tmp->block_end = MIN(tmp->block_end,PCI_MEM32_LENGTH_MAX);
+		    tmp = tmp->next;
+		}
+	    } else if (pbp->primary == pvp->bus) {
+		tmp = xf86DupResList(pbp->preferred_pmem);
+		avoid = xf86JoinResLists(avoid, tmp);
+		tmp = xf86DupResList(pbp->pmem);
+		avoid = xf86JoinResLists(avoid, tmp);
+		tmp = xf86DupResList(pbp->preferred_mem);
+		avoid = xf86JoinResLists(avoid, tmp);
+		tmp = xf86DupResList(pbp->mem);
+		avoid = xf86JoinResLists(avoid, tmp);
+	    }
+	}
+	pbp = pbp->next;
+    }	
+    pciConvertListToHost(pvp->bus,pvp->device,pvp->func, avoid);
+    if (mem)
+	pciConvertListToHost(pvp->bus,pvp->device,pvp->func, mem);
 
-      if (!ret) {
-	 /* Return a possible window */
-	 while (m) {
-	     range = xf86GetBlock(RANGE_TYPE(ResExcMemBlock, xf86GetPciDomain(tag)),
-				  PCI_SIZE(ResMem, TAG(pvp), 1 << biosSize),
-				  m->block_begin, m->block_end,
-				  PCI_SIZE(ResMem, TAG(pvp), alignment), 
-				  avoid);
-	     if (range.type != ResEnd) {
-		 ret =  M2B(TAG(pvp), range.rBase);
-		 break;
-	     }
-	     m = m->next;
-	 }
-      } else {
-	  if (!xf86IsSubsetOf(range, m) || 
-	      ChkConflict(&range, avoid, SETUP) 
-	      || (mem && ChkConflict(&range, mem, SETUP))) 
-	      ret = 0;
-      }
+    if (!ret) {
+	/* Return a possible window */
+	while (m) {
+	    range = xf86GetBlock(RANGE_TYPE(ResExcMemBlock, xf86GetPciDomain(tag)),
+				 PCI_SIZE(ResMem, TAG(pvp), 1 << biosSize),
+				 m->block_begin, m->block_end,
+				 PCI_SIZE(ResMem, TAG(pvp), alignment), 
+				 avoid);
+	    if (range.type != ResEnd) {
+		ret =  M2B(TAG(pvp), range.rBase);
+		break;
+	    }
+	    m = m->next;
+	}
+    } else {
+	if (!xf86IsSubsetOf(range, m) || 
+	    ChkConflict(&range, avoid, SETUP) 
+	    || (mem && ChkConflict(&range, mem, SETUP))) 
+	    ret = 0;
+    }
 
-      xf86FreeResList(avoid);
-      xf86FreeResList(m);
-      return ret;
+    xf86FreeResList(avoid);
+    xf86FreeResList(m);
+    return ret;
 }
 
 /*
@@ -2162,6 +2164,7 @@ xf86GetPciBridgeInfo(void)
 		PciBus->primary = -1;
 		PciBus->secondary = i;
 		PciBus->subclass = PCI_SUBCLASS_BRIDGE_HOST;
+		PciBus->brcontrol = PCI_PCI_BRIDGE_VGA_EN;
 		PciBus->preferred_io =
 		    xf86ExtractTypeFromList(pciBusAccWindows,
 					    RANGE_TYPE(ResIo, domain));
@@ -2219,7 +2222,8 @@ alignBridgeRanges(PciBusPtr PciBusBase, PciBusPtr primary)
     PciBusPtr PciBus;
 
     for (PciBus = PciBusBase; PciBus; PciBus = PciBus->next) {
-	if ((PciBus != primary) && (PciBus->primary == primary->secondary)) {
+	if ((PciBus != primary) && (PciBus->primary != -1)
+	    && (PciBus->primary == primary->secondary)) {
 	    resPtr tmp;
 	    tmp = xf86FindIntersectOfLists(primary->preferred_io,
 					   PciBus->preferred_io);
@@ -2402,38 +2406,46 @@ ValidatePci(void)
 #endif
 	pbp = xf86PciBus;
 	while (pbp) {
-	    if (pbp->secondary == pvp->bus) {
-		if (pbp->preferred_pmem) {
-		    /* keep prefetchable separate */
-		    res_mp = xf86FindIntersectOfLists(pbp->preferred_pmem,
-						      ResRange);
+	    if (pbp->primary != pbp->secondary) {
+		if (pbp->secondary == pvp->bus) {
+		    if (pbp->preferred_pmem) {
+			/* keep prefetchable separate */
+			res_mp = xf86FindIntersectOfLists(pbp->preferred_pmem,
+							  ResRange);
+		    }
+		    if (pbp->pmem) {
+			res_mp = xf86FindIntersectOfLists(pbp->pmem,
+							  ResRange);
+		    }
+		    if (pbp->preferred_mem) {
+			res_m_io = xf86FindIntersectOfLists(
+			    pbp->preferred_mem,	ResRange);
 		}
-		if (pbp->pmem) {
-		    res_mp = xf86FindIntersectOfLists(pbp->pmem, ResRange);
+		    if (pbp->mem) {
+			res_m_io = xf86FindIntersectOfLists(pbp->mem,
+							    ResRange);
 		}
-		if (pbp->preferred_mem) {
-		    res_m_io = xf86FindIntersectOfLists(pbp->preferred_mem,
-							ResRange);
+		    if (pbp->preferred_io) {
+			res_m_io = xf86JoinResLists(res_m_io,
+						    xf86FindIntersectOfLists(
+							pbp->preferred_io,
+							ResRange));
+		    }
+		    if (pbp->io) {
+			res_m_io = xf86JoinResLists(res_m_io,
+						    xf86FindIntersectOfLists(
+							pbp->preferred_io,
+							ResRange));
+		    }
+		} else if (pbp->primary == pvp->bus) {
+		    tmp = xf86DupResList(pbp->preferred_pmem);
+		    avoid = xf86JoinResLists(avoid, tmp);
+		    tmp = xf86DupResList(pbp->preferred_mem);
+		    avoid = xf86JoinResLists(avoid, tmp);
+		    tmp = xf86DupResList(pbp->preferred_io);
+		    avoid = xf86JoinResLists(avoid, tmp);
 		}
-		if (pbp->mem) {
-		    res_m_io = xf86FindIntersectOfLists(pbp->mem, ResRange);
-		}
-		if (pbp->preferred_io) {
-		    res_m_io = xf86JoinResLists(res_m_io,
-			xf86FindIntersectOfLists(pbp->preferred_io,ResRange));
-		}
-		if (pbp->io) {
-		    res_m_io = xf86JoinResLists(res_m_io,
-			xf86FindIntersectOfLists(pbp->preferred_io,ResRange));
-		}
-	    } else if (pbp->primary == pvp->bus) {
-		tmp = xf86DupResList(pbp->preferred_pmem);
-		avoid = xf86JoinResLists(avoid, tmp);
-		tmp = xf86DupResList(pbp->preferred_mem);
-		avoid = xf86JoinResLists(avoid, tmp);
-		tmp = xf86DupResList(pbp->preferred_io);
-		avoid = xf86JoinResLists(avoid, tmp);
-	    }	
+	    }
 	    pbp = pbp->next;
 	}
 	if (res_m_io == NULL)
@@ -3435,6 +3447,19 @@ pciConvertListToHost(int bus, int dev, int func, resPtr list)
     }
 }
 
+static void
+updateAccessInfoStatusControlInfo(PCITAG tag, CARD32 ctrl)
+{
+    int i;
+
+    if (!xf86PciAccInfo)
+	return;
+    
+    for (i = 0; xf86PciAccInfo[i] != NULL; i++) {
+	if (xf86PciAccInfo[i]->arg.tag == tag)
+	    xf86PciAccInfo[i]->arg.ctrl = ctrl;
+    }
+}
 
 void
 pciConvertRange2Host(int entityIndex, resRange *pRange)
@@ -3460,9 +3485,12 @@ xf86EnablePciBusMaster(pciVideoPtr pPci, Bool enable)
 
     tag = pciTag(pPci->bus, pPci->device, pPci->func);
     temp = pciReadLong(tag, PCI_CMD_STAT_REG);
-    if (enable)
+    if (enable) {
+	updateAccessInfoStatusControlInfo(tag, temp | PCI_CMD_MASTER_ENABLE);
 	pciWriteLong(tag, PCI_CMD_STAT_REG, temp | PCI_CMD_MASTER_ENABLE);
-    else
+    } else {
+	updateAccessInfoStatusControlInfo(tag, temp & ~PCI_CMD_MASTER_ENABLE);
 	pciWriteLong(tag, PCI_CMD_STAT_REG, temp & ~PCI_CMD_MASTER_ENABLE);
+    }
 }
 #endif /* INCLUDE_DEPRECATED */

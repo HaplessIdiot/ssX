@@ -758,15 +758,16 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
 #endif
 #endif
 
-#if 0  
+#if 1
     /* 
      * I'm sure we don't need to set these. All resources 
      * for these operations are exclusive.
      */
-  if (pTDFX->usePIO)
-    pScrn->racIoFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
-  else
-    pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
+  if (pTDFX->usePIO) {
+      pScrn->racMemFlags = RAC_FB;
+      pScrn->racIoFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
+  } else
+      pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
 #endif
 
   /* Set pScrn->monitor */

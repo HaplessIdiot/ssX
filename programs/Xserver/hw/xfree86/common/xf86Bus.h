@@ -67,6 +67,8 @@ typedef struct _AsyncQRec {
 #define ACCEL_IS_SHARABLE 0x0100
 #define IS_SHARED_ACCEL 0x0200
 #define SA_PRIM_INIT_DONE 0x0400
+#define NEED_VGA_MEM 0x1000
+#define NEED_VGA_IO  0x2000
 
 #define NEED_SHARED (NEED_MEM_SHARED | NEED_IO_SHARED)
 

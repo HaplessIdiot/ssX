@@ -433,68 +433,63 @@ _XlcLocaleDirName(dir_name, lc_name)
      char *dir_name;
      char *lc_name;
 {
-  char dir[PATH_MAX], buf[PATH_MAX], *name = NULL;
-  int i, n;
-  char *args[NUM_LOCALEDIR];
-  static char locale_alias[] = LOCALE_ALIAS;
-  char *target_name = (char*)0;
-  char *target_dir = (char*)0;
+    char dir[PATH_MAX], buf[PATH_MAX], *name = NULL;
+    int i, n;
+    char *args[NUM_LOCALEDIR];
+    static char locale_alias[] = LOCALE_ALIAS;
+    char *target_name = (char*)0;
+    char *target_dir = (char*)0;
 
-  xlocaledir (dir, PATH_MAX);
-  n = _XlcParsePath(dir, args, 256);
-  for (i = 0; i < n; ++i){
-    if (name != NULL && name != lc_name) {
-       Xfree(name);
-       name = NULL;
+    xlocaledir (dir, PATH_MAX);
+    n = _XlcParsePath(dir, args, 256);
+    for (i = 0; i < n; ++i) {
+  
+	if ((2 + (args[i] ? strlen(args[i]) : 0) + 
+ 	     strlen(locale_alias)) < PATH_MAX) {
+ 	    sprintf (buf, "%s/%s", args[i], locale_alias);
+ 	    name = resolve_name(lc_name, buf, LtoR);
+ 	}
+  
+ 	/* If name is not an alias, use lc_name for locale.dir search */
+ 	if (name == NULL)
+ 	    name = lc_name;
+ 
+ 	/* look at locale.dir */
+ 
+ 	target_dir = args[i];
+ 	if (!target_dir) {
+ 	    /* something wrong */
+ 	    if (name != lc_name)
+ 		Xfree(name);
+ 	    continue;
+ 	}
+ 	if ((1 + (target_dir ? strlen (target_dir) : 0) +
+ 	     strlen("locale.dir")) < PATH_MAX) {
+ 	    sprintf(buf, "%s/locale.dir", target_dir);
+ 	    target_name = resolve_name(name, buf, RtoL);
+ 	}
+ 	if (name != lc_name)
+ 	    Xfree(name);
+ 	if (target_name != NULL) {
+ 	    char *p = 0;
+ 	    if ((p = strstr(target_name, "/XLC_LOCALE"))) {
+ 		*p = '\0';
+ 		break;
+ 	    }
+ 	    Xfree(target_name);
+ 	    target_name = NULL;
+ 	}
+ 	name = NULL;
     }
-    if ((2 + (args[i] ? strlen(args[i]) : 0) + 
-	 strlen(locale_alias)) < PATH_MAX) {
-      sprintf (buf, "%s/%s", args[i], locale_alias);
-      name = resolve_name(lc_name, buf, LtoR);
+    if (target_name == NULL) {
+ 	/* vendor locale name == Xlocale name, no expansion of alias */
+ 	target_dir = args[0];
+ 	target_name = lc_name;
     }
-
-    /* If name is not an alias, use lc_name for locale.dir search */
-    if (name == NULL)
-      name = lc_name;
-
-    /* look at locale.dir */
-
-    target_dir = args[i];
-    if (!target_dir) {
-      /* something wrong */
-      continue;
-    }
-    if ((1 + (target_dir ? strlen (target_dir) : 0) +
-	 strlen("locale.dir")) < PATH_MAX) {
-      sprintf(buf, "%s/locale.dir", target_dir);
-      target_name = resolve_name(name, buf, RtoL);
-    }
-    if (target_name != NULL) {
-      char *p = 0;
-      if ((p = strstr(target_name, "/XLC_LOCALE"))) {
-	*p = '\0';
-	break;
-      }
-      Xfree(target_name);
-      target_name = NULL;
-    }
-  }
-
-  if (name != NULL && name != lc_name) {
-      Xfree(name);
-  }
-
-  if (target_name == NULL) {
-    /* vendor locale name == Xlocale name, no expansion of alias */
-    target_dir = args[0];
-    target_name = lc_name;
-  }
-
-  strcpy(dir_name, target_dir);
-  strcat(dir_name, "/");
-  strcat(dir_name, target_name);
-  if (target_name != lc_name) {
-      Xfree(target_name);
-  }
-  return dir_name;
+    strcpy(dir_name, target_dir);
+    strcat(dir_name, "/");
+    strcat(dir_name, target_name);
+    if (target_name != lc_name)
+ 	Xfree(target_name);
+    return dir_name;
 }

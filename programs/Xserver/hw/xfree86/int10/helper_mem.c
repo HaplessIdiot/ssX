@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_mem.c,v 1.23 2002/05/22 21:42:49 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_mem.c,v 1.25 2002/09/16 18:06:08 eich Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -266,6 +266,14 @@ initPrimary(void* options)
     return initPrimary;
 }
 
+/*
+ * xf86int10ParseBiosLocation(): allows to set the location of the
+ * BIOS. One may select a BIOS of another card for posting or the
+ * legacy V_BIOS range located at 0xc0000 or an alternative address
+ * (BUS_ISA).
+ * This is only useful under very special circumstances and should
+ * be used with extreme care.
+ */
 void
 xf86int10ParseBiosLocation(void* options, 
 			   xf86int10BiosLocationPtr bios)

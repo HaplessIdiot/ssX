@@ -400,16 +400,27 @@ static struct
 
 extern int gRADEONEntityIndex;
 
-#if !defined(__alpha__)
-# define RADEONPreInt10Save(s, r1, r2)
-# define RADEONPostInt10Check(s, r1, r2)
+#if 0/*  !defined(__alpha__) */
+# define RADEONPreInt10Save(s, p)
+# define RADEONPostInt10Check(s, p)
 #else /* __alpha__ */
+struct RADEONInt10Save {
+	CARD32 MEM_CNTL;
+	CARD32 MEMSIZE;
+	CARD32 MPP_TB_CONFIG;
+};
+
+static Bool RADEONMapMMIO(ScrnInfoPtr pScrn);
+static Bool RADEONUnmapMMIO(ScrnInfoPtr pScrn);
+
 static void
-RADEONSaveRegsZapMemCntl(ScrnInfoPtr pScrn, CARD32 *MEM_CNTL, CARD32 *MEMSIZE)
+RADEONPreInt10Save(ScrnInfoPtr pScrn, void **pPtr)
 {
     RADEONInfoPtr  info   = RADEONPTR(pScrn);
     unsigned char *RADEONMMIO;
     int            mapped = 0;
+    CARD32 CardTmp;
+    static struct RADEONInt10Save SaveStruct = { 0 };
 
     /*
      * First make sure we have the pci and mmio info and that mmio is mapped
@@ -428,9 +439,19 @@ RADEONSaveRegsZapMemCntl(ScrnInfoPtr pScrn, CARD32 *MEM_CNTL, CARD32 *MEMSIZE)
     RADEONMMIO = info->MMIO;
 
     /* Save the values and zap MEM_CNTL */
-    *MEM_CNTL = INREG(RADEON_MEM_CNTL);
-    *MEMSIZE = INREG(RADEON_CONFIG_MEMSIZE);
+    SaveStruct.MEM_CNTL = INREG(RADEON_MEM_CNTL);
+    SaveStruct.MEMSIZE = INREG(RADEON_CONFIG_MEMSIZE);
+    SaveStruct.MPP_TB_CONFIG = INREG(RADEON_MPP_TB_CONFIG);
+
+    /* 
+     * Zap MEM_CNTL and set MPP_TB_CONFIG<31:24> to 4
+     */
     OUTREG(RADEON_MEM_CNTL, 0);
+    CardTmp = SaveStruct.MPP_TB_CONFIG & 0x00ffffffu;
+    CardTmp |= 0x04 << 24;
+    OUTREG(RADEON_MPP_TB_CONFIG, CardTmp);
+
+    *pPtr = (void *)&SaveStruct;
 
     /* Unmap mmio space if we mapped it */
     if (mapped)
@@ -438,15 +459,16 @@ RADEONSaveRegsZapMemCntl(ScrnInfoPtr pScrn, CARD32 *MEM_CNTL, CARD32 *MEMSIZE)
 }
 
 static void
-RADEONCheckRegs(ScrnInfoPtr pScrn, CARD32 Saved_MEM_CNTL, CARD32 Saved_MEMSIZE)
+RADEONPostInt10Check(ScrnInfoPtr pScrn, void *ptr)
 {
     RADEONInfoPtr  info   = RADEONPTR(pScrn);
     unsigned char *RADEONMMIO;
-    CARD32         MEM_CNTL;
+    struct RADEONInt10Save *pSave = ptr;
+    CARD32 CardTmp;
     int            mapped = 0;
 
     /* If we don't have a valid (non-zero) saved MEM_CNTL, get out now */
-    if (!Saved_MEM_CNTL)
+    if (!pSave || !pSave->MEM_CNTL)
 	return;
 
     /* First make sure that mmio is mapped */
@@ -461,31 +483,36 @@ RADEONCheckRegs(ScrnInfoPtr pScrn, CARD32 Saved_MEM_CNTL, CARD32 Saved_MEMSIZE)
      * two channels with the two channels configured differently), restore
      * the saved registers.
      */
-    MEM_CNTL = INREG(RADEON_MEM_CNTL);
-    if (!MEM_CNTL ||
-	((MEM_CNTL & 1) &&
-	 (((MEM_CNTL >> 8) & 0xff) != ((MEM_CNTL >> 24) & 0xff)))) {
+    CardTmp = INREG(RADEON_MEM_CNTL);
+    if (!CardTmp || 
+	((CardTmp & 1) && 
+	 (((CardTmp >> 8) & 0xff) != ((CardTmp >> 24) & 0xff)))) {
 	/* Restore the saved registers */
 	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 		   "Restoring MEM_CNTL (%08x), setting to %08x\n",
-		   MEM_CNTL, Saved_MEM_CNTL);
-	OUTREG(RADEON_MEM_CNTL, Saved_MEM_CNTL);
+		   CardTmp, pSave->MEM_CNTL);
+	OUTREG(RADEON_MEM_CNTL, pSave->MEM_CNTL);
 
 	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 		   "Restoring CONFIG_MEMSIZE (%08x), setting to %08x\n",
-		   INREG(RADEON_CONFIG_MEMSIZE), Saved_MEMSIZE);
-	OUTREG(RADEON_CONFIG_MEMSIZE, Saved_MEMSIZE);
+		   INREG(RADEON_CONFIG_MEMSIZE), pSave->MEMSIZE);
+	OUTREG(RADEON_CONFIG_MEMSIZE, pSave->MEMSIZE);
+    }
+
+    CardTmp = INREG(RADEON_MPP_TB_CONFIG);
+    if ((CardTmp & 0xff000000u) != (pSave->MPP_TB_CONFIG & 0xff000000u)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	           "Restoring MPP_TB_CONFIG<31:24> (%02x), setting to %02x\n",
+	 	   CardTmp >> 24, pSave->MPP_TB_CONFIG >> 24);
+	CardTmp &= 0x00ffffffu;
+	CardTmp |= (pSave->MPP_TB_CONFIG & 0xff000000u);
+	OUTREG(RADEON_MPP_TB_CONFIG, CardTmp);
     }
 
     /* Unmap mmio space if we mapped it */
     if (mapped)
 	RADEONUnmapMMIO(pScrn);
 }
-
-# define RADEONPreInt10Save(s, r1, r2)					\
-	RADEONSaveRegsZapMemCntl((s), (r1), (r2))
-# define RADEONPostInt10Check(s, r1, r2)				\
-	RADEONCheckRegs((s), (r1), (r2))
 #endif /* __alpha__ */
 
 /* Allocate our private RADEONInfoRec */
@@ -3043,10 +3070,10 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
 {
     RADEONInfoPtr     info;
     xf86Int10InfoPtr  pInt10 = NULL;
-#ifdef __alpha__
-    CARD32            save1, save2;
+#if 1 /* def __alpha__ */
+    void *int10_save = NULL;
 #endif
-
+    
     RADEONTRACE(("RADEONPreInit\n"));
     if (pScrn->numEntities != 1) return FALSE;
 
@@ -3062,7 +3089,7 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
     info->pEnt         = xf86GetEntityInfo(pScrn->entityList[0]);
     if (info->pEnt->location.type != BUS_PCI) goto fail;
 
-    RADEONPreInt10Save(pScrn, &save1, &save2);
+    RADEONPreInt10Save(pScrn, &int10_save);
 
     if (xf86IsEntityShared(pScrn->entityList[0])) {
 	if (xf86IsPrimInitDone(pScrn->entityList[0])) {
@@ -3100,7 +3127,7 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
 
     if (flags & PROBE_DETECT) {
 	RADEONProbeDDC(pScrn, info->pEnt->index);
-	RADEONPostInt10Check(pScrn, save1, save2);
+	RADEONPostInt10Check(pScrn, int10_save);
 	return TRUE;
     }
 
@@ -3181,7 +3208,7 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
 	if (!RADEONPreInitInt10(pScrn, &pInt10))
 	    goto fail;
 
-    RADEONPostInt10Check(pScrn, save1, save2);
+    RADEONPostInt10Check(pScrn, int10_save);
 
     if (!RADEONPreInitConfig(pScrn))
 	goto fail;

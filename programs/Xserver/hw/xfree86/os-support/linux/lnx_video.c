@@ -265,15 +265,13 @@ mtrr_add_wc_region(int screenNum, unsigned long base, unsigned long size,
 	 */
 
 	{
-	    unsigned long last, lbase, d_size;
+	    unsigned long lbase, d_size = 1;
 	    unsigned long n_size = size;
 	    unsigned long n_base = base;
-	    int i;
 
-	    last = n_base + n_size - 1;
-	    for (lbase = n_base, i = 0; !(lbase & 1); lbase = lbase >> 1, i++);
-	    d_size = 1 << i;
-	    while ((n_base + d_size - 1) > last)
+	    for (lbase = n_base, d_size = 1; !(lbase & 1);
+		 lbase = lbase >> 1, d_size <<= 1);
+	    while (d_size > n_size)
 		d_size = d_size >> 1;
 #ifdef DEBUG
 	    ErrorF("WC_BASE: 0x%lx WC_END: 0x%lx\n",base,base+d_size-1);

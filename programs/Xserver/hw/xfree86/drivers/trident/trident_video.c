@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.27 2002/05/15 20:53:35 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.29 2002/09/16 18:06:04 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -181,11 +181,16 @@ static XF86AttributeRec Attributes[NUM_ATTRIBUTES] =
     {XvSettable | XvGettable, 0, 7,           "XV_CONTRAST"}
 };
 
-#define NUM_IMAGES 4
+#if 0
+# define NUM_IMAGES 4
+#else
+# define NUM_IMAGES 4
+#endif
 
 static XF86ImageRec Images[NUM_IMAGES] =
 {
-   {
+#if 0
+    {
 	0x35315652,
         XvRGB,
 	LSBFirst,
@@ -202,6 +207,7 @@ static XF86ImageRec Images[NUM_IMAGES] =
 	  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 	XvTopToBottom
    },
+#endif
    {
 	0x36315652,
         XvRGB,
@@ -211,7 +217,7 @@ static XF86ImageRec Images[NUM_IMAGES] =
 	16,
 	XvPacked,
 	1,
-	16, 0x001F, 0x07E0, 0xF800,
+	16, 0xF800, 0x07E0, 0x001F,
 	0, 0, 0,
 	0, 0, 0,
 	0, 0, 0,
@@ -723,6 +729,7 @@ TRIDENTDisplayVideo(
     case 0x36315652:		/* RGB16 */
 	if (pTrident->Chipset >= CYBER9388) {
     	    OUTW(vgaIOBase + 4, 0x22BF);
+	    OUTW(vgaIOBase + 4, 0x248F);
 	} else {
     	    OUTW(vgaIOBase + 4, 0x118F);
 	}
@@ -732,6 +739,7 @@ TRIDENTDisplayVideo(
     default:
 	if (pTrident->Chipset >= CYBER9388) {
     	    OUTW(vgaIOBase + 4, 0x00BF);
+	    OUTW(vgaIOBase + 4, 0x208F);
 	} else {
     	    OUTW(vgaIOBase + 4, 0x108F);
 	}
@@ -851,7 +859,6 @@ TRIDENTDisplayVideo(
     	OUTW(vgaIOBase + 4, 0xFFBD);
     	OUTW(vgaIOBase + 4, 0x04BE); 
     	OUTW(vgaIOBase + 4, 0x948E);
-    	OUTW(vgaIOBase + 4, 0x208F);
     } else {
 	
     	OUTW(vgaIOBase + 4, ((((id == FOURCC_YV12) || (id == FOURCC_YUY2)) 

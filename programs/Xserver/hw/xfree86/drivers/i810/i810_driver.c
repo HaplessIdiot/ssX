@@ -146,6 +146,7 @@ typedef enum {
    OPTION_DAC_6BIT,
    OPTION_DRI,
    OPTION_NO_DDC,
+   OPTION_SHOW_CACHE,
    OPTION_XVMC_SURFACES
 } I810Opts;
  
@@ -157,6 +158,7 @@ static const OptionInfoRec I810Options[] = {
    {OPTION_DAC_6BIT,		"Dac6Bit",	OPTV_BOOLEAN,	{0}, FALSE},
    {OPTION_DRI,			"DRI",		OPTV_BOOLEAN,	{0}, FALSE},
    {OPTION_NO_DDC,		"NoDDC",	OPTV_BOOLEAN,	{0}, FALSE},
+   {OPTION_SHOW_CACHE,		"ShowCache",	OPTV_BOOLEAN,	{0}, FALSE},
    {OPTION_XVMC_SURFACES,	"XvMCSurfaces",	OPTV_INTEGER,	{0}, FALSE},
    {-1,				NULL,		OPTV_NONE,	{0}, FALSE}
 };
@@ -694,6 +696,11 @@ I810PreInit(ScrnInfoPtr pScrn, int flags)
    pScrn->rgbBits = 8;
    if (xf86ReturnOptValBool(pI810->Options, OPTION_DAC_6BIT, FALSE))
       pScrn->rgbBits = 6;
+
+   if (xf86ReturnOptValBool(pI810->Options, OPTION_SHOW_CACHE, FALSE))
+     pI810->showCache = TRUE;
+   else
+     pI810->showCache = FALSE;
 
    /* 6-BIT dac isn't reasonable for modes with > 8bpp */
    if (xf86ReturnOptValBool(pI810->Options, OPTION_DAC_6BIT, FALSE) &&
@@ -1322,9 +1329,17 @@ DoRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, I810RegPtr i810Reg,
    pI810->writeControl(pI810, GRX, ADDRESS_MAPPING, temp);
 
    /* Setting the OVRACT Register for video overlay */
-   OUTREG(0x6001C,
-	  (i810Reg->OverlayActiveEnd << 16) | i810Reg->OverlayActiveStart);
-
+   {
+       CARD32 LCD_TV_Control = INREG(LCD_TV_C);
+       
+       if(!(LCD_TV_Control & LCD_TV_ENABLE)
+	  || (LCD_TV_Control & LCD_TV_VGAMOD)) {
+	   OUTREG(LCD_TV_OVRACT,
+		  (i810Reg->OverlayActiveEnd << 16)
+		  | i810Reg->OverlayActiveStart);
+       }
+   }
+   
    /* Turn on DRAM Refresh */
    temp = INREG8(DRAM_ROW_CNTL_HI);
    temp &= ~DRAM_REFRESH_RATE;
@@ -1589,8 +1604,8 @@ I810SetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
    }
 
    /* OVRACT Register */
-   i810Reg->OverlayActiveStart = mode->CrtcHTotal - 32;
-   i810Reg->OverlayActiveEnd = mode->CrtcHDisplay - 32;
+   i810Reg->OverlayActiveStart = mode->CrtcHTotal - 32; 
+   i810Reg->OverlayActiveEnd = mode->CrtcHDisplay - 32;   
 
    /* Turn on interlaced mode if necessary */
    if (mode->Flags & V_INTERLACE)
@@ -2125,7 +2140,18 @@ I810AdjustFrame(int scrnIndex, int x, int y, int flags)
    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
    I810Ptr pI810 = I810PTR(pScrn);
    vgaHWPtr hwp = VGAHWPTR(pScrn);
-   int Base = (y * pScrn->displayWidth + x) >> 2;
+   int Base;
+#if 1
+   if (pI810->showCache) {
+     int lastline = pI810->FbMapSize / 
+       ((pScrn->displayWidth * pScrn->bitsPerPixel) / 8);
+     lastline -= pScrn->currentMode->VDisplay;
+     if (y > 0)
+       y += pScrn->currentMode->VDisplay;
+     if (y > lastline) y = lastline;
+   }
+#endif
+   Base = (y * pScrn->displayWidth + x) >> 2;
 
    if (I810_DEBUG & DEBUG_VERBOSE_CURSOR)
       ErrorF("I810AdjustFrame %d,%d %x\n", x, y, flags);
@@ -2178,6 +2204,7 @@ I810EnterVT(int scrnIndex, int flags)
    if (pI810->directRenderingEnabled) {
       if (I810_DEBUG & DEBUG_VERBOSE_DRI)
 	 ErrorF("calling dri unlock\n");
+      xf86EnablePciBusMaster(pI810->PciInfo, TRUE);
       DRIUnlock(screenInfo.screens[scrnIndex]);
       pI810->LockHeld = 0;
    }

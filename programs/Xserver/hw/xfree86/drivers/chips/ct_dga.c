@@ -131,7 +131,7 @@ SECOND_PASS:
 	currentMode->viewportHeight = pMode->VDisplay;
 	currentMode->xViewportStep = 1;
 	currentMode->yViewportStep = 1;
-	currentMode->viewportFlags = DGA_FLIP_RETRACE;
+ 	currentMode->viewportFlags = DGA_FLIP_RETRACE | DGA_FLIP_IMMEDIATE;
 	currentMode->offset = 0;
 	currentMode->address = cPtr->FbBase;
 
@@ -232,11 +232,17 @@ CHIPS_SetViewport(
    ScrnInfoPtr pScrn, 
    int x, int y, 
    int flags
-){
-   CHIPSPtr cPtr = CHIPSPTR(pScrn);
+   ){
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+  
+    if (flags & DGA_FLIP_RETRACE) {
+ 	while ((hwp->readST01(hwp)) & 0x08){};
+ 	while (!(hwp->readST01(hwp)) & 0x08){};
+    }
 
-   CHIPSAdjustFrame(pScrn->pScreen->myNum, x, y, flags);
-   cPtr->DGAViewportStatus = 0;  /* CHIPSAdjustFrame loops until finished */
+    CHIPSAdjustFrame(pScrn->pScreen->myNum, x, y, flags);
+    cPtr->DGAViewportStatus = 0;  /* CHIPSAdjustFrame loops until finished */
 }
 
 static void 

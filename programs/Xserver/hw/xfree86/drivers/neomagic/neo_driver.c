@@ -1640,7 +1640,6 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	xf86DrvMsg(scrnIndex, X_PROBED,
 		   "%d bytes off-screen memory available\n", freespace);
 
-	nAcl->CursorAddress = 0;
 	if (nPtr->swCursor || !nPtr->NeoMMIOBase) {
 	    xf86DrvMsg(scrnIndex, X_CONFIG,
 		       "Using Software Cursor.\n");

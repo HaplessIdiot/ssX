@@ -168,6 +168,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #   endif /* i386Architecture || AlphaArchitecture */
 /* extended instruction set support */
 #   ifdef i386Architecture
+#   define HasX86Support		YES
 #    define HasMMXSupport		YES
 #    define Has3DNowSupport		YES
 /* 2.4 is not yet the official (or predominant) kernel in unstable */
@@ -546,12 +547,17 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #  endif /* MipsArchitecure */
 #  if defined (i386Architecture) && ((GccMajorVersion >3) \
    || ((GccMajorVersion == 3) &&  (GccMinorVersion >= 1)))
-#   define CcCmd		gcc -m32
+#   ifndef CcCmd
+#    define CcCmd		gcc -m32
+#   endif
+#   ifndef CplusplusCmd
+#    define CplusplusCmd		c++ -m32
+#   endif
 #  endif
 #  ifndef CcCmd
 #   define CcCmd		gcc
+#   define CplusplusCmd		c++
 #  endif
-#  define CplusplusCmd		c++
 #  ifndef AsCmd
 #   define AsCmd		CcCmd -c -x assembler
 #  endif
@@ -714,7 +720,9 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #define StandardCppDefines	StandardDefines
 
 #define HasVarRun		YES
-#define VarDbDirectory		$(VARDIR)/lib
+#ifndef VarDbDirectory
+# define VarDbDirectory		$(VARDIR)/lib
+#endif
 
 #ifndef XF86OSCardDrivers
 # define XF86OSCardDrivers	v4l

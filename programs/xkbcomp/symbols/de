@@ -71,7 +71,9 @@ xkb_symbols "basic" {
 			[ dead_grave			]	};
     key <RALT> {	[ Mode_switch,	Multi_key	]	};
 
-    // End alphanumeric section
+    // End alphanumeric section, begin "Keypad"
+    key <KPDL> {	[  KP_Delete,	KP_Separator	]	};
+    // End "Keypad" section
 
     // begin modifier mappings
     modifier_map Shift  { Shift_L };

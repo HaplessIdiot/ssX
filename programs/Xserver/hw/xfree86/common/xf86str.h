@@ -576,7 +576,11 @@ typedef struct _CurrAccRec {
 #define ResBus		0x010000
 #define ResOverlap	0x020000
 
-#define ResDomain	0xff000000ul
+#if defined(__alpha__) && defined(linux)
+# define ResDomain	0x1ff000000ul
+#else
+# define ResDomain	0xff000000ul
+#endif
 #define ResTypeMask	(ResPhysMask | ResDomain)	/* For conflict check */
 
 #define ResEnd		ResNone
@@ -617,7 +621,8 @@ typedef struct {
     memType b;
 } resRange, *resList;
 
-#define RANGE_TYPE(type, domain) (((domain) << 24) | ((type) & ~ResBus))
+#define RANGE_TYPE(type, domain) \
+               (((unsigned long)(domain) << 24) | ((type) & ~ResBus))
 #define RANGE(r,u,v,t) {\
                        (r).a = (u);\
                        (r).b = (v);\

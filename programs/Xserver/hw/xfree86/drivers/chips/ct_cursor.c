@@ -57,6 +57,20 @@
 	} \
     }
 
+/* Swing your cursor bytes round and round... yeehaw! */
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+#define P_SWAP32( a , b )                \
+       ((char *)a)[0] = ((char *)b)[3];  \
+       ((char *)a)[1] = ((char *)b)[2];  \
+       ((char *)a)[2] = ((char *)b)[1];  \
+       ((char *)a)[3] = ((char *)b)[0]
+
+#define P_SWAP16( a , b )                \
+       ((char *)a)[0] = ((char *)b)[1];  \
+       ((char *)a)[1] = ((char *)b)[0];  \
+       ((char *)a)[2] = ((char *)b)[3];  \
+       ((char *)a)[3] = ((char *)b)[2]
+#endif
 
 static void
 CHIPSShowCursor(ScrnInfoPtr pScrn)
@@ -293,6 +307,11 @@ CHIPSLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 {
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    CARD32 *s = (pointer)src;
+    CARD32 *d = (pointer)(cPtr->FbBase + cAcl->CursorAddress);
+    int y;
+#endif
 
     CURSOR_SYNC(pScrn); 
 
@@ -312,9 +331,49 @@ CHIPSLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 	}
     } else {
 	if (cPtr->Flags & ChipsLinearSupport) {
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+	    /* On big endian machines we must flip our cursor image around. */
+    	    switch(cAcl->BytesPerPixel) {
+    	        case 4:
+    	        case 3:
+        	    for (y = 0; y < 64; y++) {
+            	        P_SWAP32(d,s);
+            	        d++; s++;
+            	        P_SWAP32(d,s);
+            	        d++; s++;
+            	        P_SWAP32(d,s);
+            	        d++; s++;
+            	        P_SWAP32(d,s);
+            	        d++; s++;
+        	    }
+        	    break;
+    	        case 2:
+           	    for (y = 0; y < 64; y++) {
+            	        P_SWAP16(d,s);
+            	        d++; s++;
+                        P_SWAP16(d,s);
+                        d++; s++;
+                        P_SWAP16(d,s);
+                        d++; s++;
+                        P_SWAP16(d,s);
+                        d++; s++;
+                        P_SWAP16(d,s);
+                        d++; s++;
+                    }
+                    break;
+                default:
+                    for (y = 0; y < 64; y++) {
+                        *d++ = *s++;
+                        *d++ = *s++;
+                        *d++ = *s++;
+                        *d++ = *s++;
+                    }
+            }
+#else
 	    memcpy((unsigned char *)cPtr->FbBase + cAcl->CursorAddress,
 			src, cPtr->CursorInfoRec->MaxWidth * 
 			cPtr->CursorInfoRec->MaxHeight / 4);
+#endif
 	} else {
 	    /*
 	     * The cursor can only be in the last 16K of video memory,
@@ -388,7 +447,10 @@ CHIPSCursorInit(ScreenPtr pScreen)
 
     cPtr->CursorInfoRec = infoPtr;
 
-    infoPtr->Flags = HARDWARE_CURSOR_BIT_ORDER_MSBFIRST |
+    infoPtr->Flags =
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
+	HARDWARE_CURSOR_BIT_ORDER_MSBFIRST |
+#endif
 	HARDWARE_CURSOR_INVERT_MASK |
 	HARDWARE_CURSOR_SWAP_SOURCE_AND_MASK |
 	HARDWARE_CURSOR_TRUECOLOR_AT_8BPP;

@@ -30,7 +30,7 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.30tsi Exp $
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 
-#ifdef i386Architecture
+#if defined(i386Architecture) && MesaUseX86Asm
 #define MesaX86BuildDir /**/
 #include "X86/Imakefile.inc"
 ASM_SUBDIRS = X86

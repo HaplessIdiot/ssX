@@ -683,6 +683,7 @@ static Bool RADEONDRIAgpInit(RADEONInfoPtr info, ScreenPtr pScreen)
     unsigned char *RADEONMMIO = info->MMIO;
     unsigned long  mode;
     unsigned int   vendor, device;
+    unsigned long agpBase;
     int            ret;
     int            s, l;
 
@@ -862,8 +863,9 @@ static Bool RADEONDRIAgpInit(RADEONInfoPtr info, ScreenPtr pScreen)
 	       (unsigned long)info->agpTex);
 
 				/* Initialize Radeon's AGP registers */
-    /* Ring buffer is at AGP offset 0 */
-    OUTREG(RADEON_AGP_BASE, info->ringHandle);
+
+    agpBase = drmAgpBase(info->drmFD);
+    OUTREG(RADEON_AGP_BASE, agpBase);
 
     return TRUE;
 }
@@ -1022,7 +1024,7 @@ static int RADEONDRIKernelInit(RADEONInfoPtr info, ScreenPtr pScreen)
     drmInfo.depth_offset        = info->depthOffset;
     drmInfo.depth_pitch         = info->depthPitch * cpp;
 
-    drmInfo.fb_offset           = info->LinearAddr;
+    drmInfo.fb_offset           = info->fbHandle;
     drmInfo.mmio_offset         = info->registerHandle;
     drmInfo.ring_offset         = info->ringHandle;
     drmInfo.ring_rptr_offset    = info->ringReadPtrHandle;
@@ -1433,6 +1435,18 @@ Bool RADEONDRIScreenInit(ScreenPtr pScreen)
     if (!RADEONDRIMapInit(info, pScreen)) {
 	RADEONDRICloseScreen(pScreen);
 	return FALSE;
+    }
+
+				/* DRIScreenInit adds the frame buffer
+				   map, but we need it as well */
+    {
+	void *scratch_ptr;
+        int scratch_int;
+	
+	DRIGetDeviceInfo(pScreen, &info->fbHandle,
+                         &scratch_int, &scratch_int, 
+                         &scratch_int, &scratch_int,
+                         &scratch_ptr);
     }
 
 				/* FIXME: When are these mappings unmapped? */

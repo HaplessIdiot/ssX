@@ -102,13 +102,22 @@ run_bios_int(int num, xf86Int10InfoPtr pInt)
 #ifndef _PC
     /* check if bios vector is initialized */
     if (MEM_RW(pInt, (num << 2) + 2) == (SYS_BIOS >> 4)) { /* SYS_BIOS_SEG ?*/
-	xf86DrvMsgVerb(pInt->scrnIndex, X_NOT_IMPLEMENTED, 2,
-	    "Ignoring int 0x%02x call\n", num);
-	if (xf86GetVerbosity() > 3) {
-	    dump_registers(pInt);
-	    stack_trace(pInt);
+
+	if (num == 21 && X86_AH == 0x4e) {
+ 	    xf86Msg("Failing Find-Matching-File on non-PC "
+		    "(int 21, func 4e)\n");
+ 	    X86_AX = 2;
+ 	    SET_FLAG(F_CF);
+ 	    return 1;
+ 	} else {
+	    xf86DrvMsgVerb(pInt->scrnIndex, X_NOT_IMPLEMENTED, 2,
+			   "Ignoring int 0x%02x call\n", num);
+	    if (xf86GetVerbosity() > 3) {
+		dump_registers(pInt);
+		stack_trace(pInt);
+	    }
+	    return 1;
 	}
-	return 1;
     }
 #endif
 #ifdef PRINT_INT

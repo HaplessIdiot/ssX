@@ -56,7 +56,10 @@ xkb_symbols "basic" {
     key <AB09> {	[    period,	colon		]	};
     key <AB10> {	[     minus,	underscore	]	};
 
-    // End alphanumeric section
+    // End alphanumeric section, begin "Keypad"
+    key <KPDL> {	[  KP_Delete,	KP_Decimal	]	};
+    // End "Keypad" section
+
 
     // begin modifier mappings
     modifier_map Shift  { Shift_L };

@@ -87,7 +87,8 @@ extern int ffs(unsigned long);
 
 # if defined(NO_INLINE) || defined(DO_PROTOTYPES)
 
-#  if !defined(__sparc__) && !defined(__arm32__)
+#  if !defined(__sparc__) && !defined(__arm32__) \
+      && !(defined(__alpha__) && defined(linux))
 
 extern void outb(unsigned short, unsigned char);
 extern void outw(unsigned short, unsigned short);
@@ -96,7 +97,7 @@ extern unsigned int inb(unsigned short);
 extern unsigned int inw(unsigned short);
 extern unsigned int inl(unsigned short);
 
-#  else /* __sparc__ */
+#  else /* __sparc__,  __arm32__, __alpha__*/
 
 extern void outb(unsigned long, unsigned char);
 extern void outw(unsigned long, unsigned short);
@@ -105,7 +106,7 @@ extern unsigned int inb(unsigned long);
 extern unsigned int inw(unsigned long);
 extern unsigned int inl(unsigned long);
 
-#  endif /* __sparc__ */
+#  endif /* __sparc__,  __arm32__, __alpha__ */
 
 extern unsigned long ldq_u(unsigned long *);
 extern unsigned long ldl_u(unsigned int *);
@@ -131,46 +132,46 @@ extern unsigned short ldw_brx(volatile unsigned char *, int);
 /* note that the appropriate setup via "ioperm" needs to be done */
 /*  *before* any inx/outx is done. */
 
-extern void _outb(char val, unsigned short port);
+extern void _alpha_outb(char val, unsigned long port);
 static __inline__ void
-outb(unsigned short port, unsigned char val)
+outb(unsigned long port, unsigned char val)
 {
-    _outb(val, port);
+    _alpha_outb(val, port);
 }
 
-extern void _outw(short val, unsigned short port);
+extern void _alpha_outw(short val, unsigned long port);
 static __inline__ void
-outw(unsigned short port, unsigned short val)
+outw(unsigned long port, unsigned short val)
 {
-    _outw(val, port);
+    _alpha_outw(val, port);
 }
 
-extern void _outl(int val, unsigned short port);
+extern void _alpha_outl(int val, unsigned long port);
 static __inline__ void
-outl(unsigned short port, unsigned int val)
+outl(unsigned long port, unsigned int val)
 {
-    _outl(val, port);
+    _alpha_outl(val, port);
 }
 
-extern unsigned int _inb(unsigned short port);
+extern unsigned int _alpha_inb(unsigned long port);
 static __inline__ unsigned int
-inb(unsigned short port)
+inb(unsigned long port)
 {
   return _inb(port);
 }
 
-extern unsigned int _inw(unsigned short port);
+extern unsigned int _alpha_inw(unsigned long port);
 static __inline__ unsigned int
-inw(unsigned short port)
+inw(unsigned long port)
 {
-  return _inw(port);
+  return _alpha_inw(port);
 }
 
-extern unsigned int _inl(unsigned short port);
+extern unsigned int _alpha_inl(unsigned long port);
 static __inline__ unsigned int
-inl(unsigned short port)
+inl(unsigned long port)
 {
-  return _inl(port);
+  return _alpha_inl(port);
 }
 
 #    endif /* linux */

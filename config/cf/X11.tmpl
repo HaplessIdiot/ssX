@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.184 2002/11/22 22:55:56 tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.185 2002/11/25 12:58:54 tsi Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1210,6 +1210,14 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #else
 #define PexCCOptions DefaultCCOptions
 #endif
+#endif
+
+#ifndef MesaUseX86Asm
+# if HasX86Support
+#  define MesaUseX86Asm YES
+# else
+#  define MesaUseX86Asm NO
+# endif
 #endif
 
 #ifndef MesaUseMMX

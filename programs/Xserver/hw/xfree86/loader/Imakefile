@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.28 2001/08/13 21:46:51 dawes Exp $ */
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.31 2002/09/16 18:06:10 eich Exp $ */
 
 
 
@@ -31,7 +31,7 @@ DLOBJ=dlloader.o
 #endif
 
 #if defined (x86_64Architecture)
-ARCHDEFINES = -DUseMMAP -DMmapPageAlign
+ARCHDEFINES = -DDoMMAPedMerge -DMmapPageAlign
 #endif
 
 DEFINES = $(DBMALLOCDEFINE) $(DLOPENDEFINES) $(OS_DEFINES) $(COMPAT_DEFINES) \

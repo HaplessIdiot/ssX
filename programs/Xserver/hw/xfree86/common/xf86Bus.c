@@ -1935,7 +1935,7 @@ setAccess(EntityPtr pEnt, xf86State state)
      */
     if (!pEnt->access->pAccess
 	&& (pEnt->entityProp & (state == SETUP ? NEED_VGA_ROUTED_SETUP :
-				NEED_VGA_ROUTED))) 
+				NEED_VGA_ROUTED)))
 	((BusAccPtr)pEnt->busAcc)->set_f(pEnt->busAcc);
 }
 
@@ -1967,6 +1967,7 @@ xf86EnterServerState(xf86State state)
     EntityPtr pEnt;
     ScrnInfoPtr pScrn;
     int i,j;
+    int needVGA = 0;
     resType rt;
     /* 
      * This is a good place to block SIGIO during SETUP state.
@@ -1993,9 +1994,11 @@ xf86EnterServerState(xf86State state)
  	for (j = 0; j<xf86Screens[i]->numEntities; j++) {
  	    pEnt = xf86Entities[xf86Screens[i]->entityList[j]];
  	    if (pEnt->entityProp & (state == SETUP ? NEED_VGA_ROUTED_SETUP
- 				    : NEED_VGA_ROUTED))
+ 				    : NEED_VGA_ROUTED)) 
 		xf86Screens[i]->busAccess = pEnt->busAcc;
  	}
+	if (xf86Screens[i]->busAccess)
+	    needVGA ++;
     }
     
     /*
@@ -2032,7 +2035,8 @@ xf86EnterServerState(xf86State state)
 	xf86Screens[i]->resourceType = rt;
 	if (rt == NONE) {
 	    xf86Screens[i]->access = NULL;
-	    xf86Screens[i]->busAccess = NULL;
+	    if (needVGA < 2)
+		xf86Screens[i]->busAccess = NULL;
 	}
 	
 #ifdef DEBUG
@@ -2248,10 +2252,31 @@ checkRoutingForScreens(xf86State state)
 				    "different buses - deleting\n",i);
 			    xf86DeleteScreen(i--,0);
 			}
+#ifdef DEBUG
+			{
+			    resPtr rlist = xf86AddResToList(NULL,&pAcc->val,
+							    pAcc->entityIndex);
+			    xf86MsgVerb(X_INFO,3,"====== %s\n",
+					state == OPERATING ? "OPERATING"
+					: "SETUP");
+			    xf86MsgVerb(X_INFO,3,"%s Resource:\n",
+					(pAcc->val.type) & ResMem ? "Mem" :"Io");
+			    xf86PrintResList(3,rlist);
+			    xf86FreeResList(rlist);
+			    xf86MsgVerb(X_INFO,3,"Conflicts with:\n");
+			    xf86PrintResList(3,pResVGAHost);
+			    xf86MsgVerb(X_INFO,3,"=====\n");
+			}
+#endif
 			vga = pEnt->busAcc;
 			pEnt->entityProp |= (state == SETUP
 			    ? NEED_VGA_ROUTED_SETUP : NEED_VGA_ROUTED);
-			break;
+			if (state == OPERATING) {
+			    if (pAcc->val.type & ResMem)
+				pEnt->entityProp |= NEED_VGA_MEM;
+			    else
+				pEnt->entityProp |= NEED_VGA_IO;
+			}
 		    }
 		pAcc = pAcc->next;
 	    }
@@ -2502,6 +2527,18 @@ xf86PostScreenInit(void)
     }
     
     if (xf86Screens && needRAC) {
+	int needRACforVga = 0;
+
+	for (i = 0; i < xf86NumScreens; i++) {
+	    for (j = 0; j < xf86Screens[i]->numEntities; j++) {
+		if (xf86Entities[xf86Screens[i]->entityList[j]]->entityProp
+		    & NEED_VGA_ROUTED) {
+		    needRACforVga ++;
+		    break; /* only count each screen once */
+		}
+	    }
+	}
+	
 	for (i = 0; i < xf86NumScreens; i++) {
 	    Bool needRACforMem = FALSE, needRACforIo = FALSE;
 	    
@@ -2512,8 +2549,21 @@ xf86PostScreenInit(void)
 		if (xf86Entities[xf86Screens[i]->entityList[j]]->entityProp
 		    & NEED_IO_SHARED)
 		    needRACforIo = TRUE;
+		/*
+		 * We may need RAC although we don't share any resources
+		 * as we need to route VGA to the correct bus. This can
+		 * only be done simultaniously for MEM and IO.
+		 */
+		if (needRACforVga > 1) {
+		    if (xf86Entities[xf86Screens[i]->entityList[j]]->entityProp
+			& NEED_VGA_MEM)
+			needRACforMem = TRUE;
+		    if (xf86Entities[xf86Screens[i]->entityList[j]]->entityProp
+			& NEED_VGA_IO)
+			needRACforIo = TRUE;		
+		}
 	    }
-	    
+		
 	    pScreen = xf86Screens[i]->pScreen;
 	    flags = 0;
 	    if (needRACforMem) {
