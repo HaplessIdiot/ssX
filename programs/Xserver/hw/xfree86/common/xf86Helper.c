@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.14 1998/12/06 06:08:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.15 1999/01/03 03:58:28 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1845,7 +1845,7 @@ xf86SetBackingStore(ScreenPtr pScreen)
 {
     Bool useBS = FALSE;
     MessageType from = X_DEFAULT;
-    ScrnInfoPtr pScrn = XF86SCRNINFO(pScreen);
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
 
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, BSOptions);
 
