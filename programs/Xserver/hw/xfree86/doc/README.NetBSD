@@ -1,11 +1,11 @@
-  README for XFree86 3.1.2E on NetBSD and OpenBSD
+  README for XFree86 3.1.2F on NetBSD and OpenBSD
   Rich  Murphey, David Dawes, Marc  Wandschneider, Mark  Weaver,
   Matthieu Herrb
-  Last modified on: 11 May 1996
+  Last modified on: 21 August 1996
 
   Important Notice
 
-  Since the XFree86 3.1.2E beta is only distributed in binary form, all
+  Since the XFree86 3.1.2F beta is only distributed in binary form, all
   comments about rebuilding the distribution from source in this
   document are worthless. They are left there  for reference purpose
   only.
@@ -29,7 +29,8 @@
 
   ftp.XFree86.org:/pub/XFree86/current
 
-  Binaries for NetBSD 1.1 and NetBSD-current are available from:
+  Binaries for NetBSD 1.1, NetBSD 1.2 and NetBSD-current are available
+  from:
 
   ftp.XFree86.org:/pub/XFree86/current/binaries/NetBSD
 
@@ -37,20 +38,18 @@
 
   Other NetBSD versions:
 
-  These Binaries are built with NetBSD 1.1 and thus are not compatible
-  with earlier NetBSD versions.
-
-  If you're still running NetBSD 0.9 or 1.0, you should think about
+  These binaries are not compatible with earlier NetBSD versions. If
+  you're still running NetBSD 0.9 or 1.0, you should think about
   upgrading to a newer version of NetBSD first.
 
   If you don't upgrade, you'll have to build XFree86 from the sources.
-  XFree86 3.1.2E compiles cleanly under NetBSD 1.0; it has not been
-  tested with NetBSD 0.9. Binaries built on 1.0 will work on 1.1.
+  XFree86 3.1.2F should compile cleanly under earlier versions of
+  NetBSD, althrough this has not been tested.
 
-  XFree86 3.1.2E also builds on NetBSD/sparc. See section ``Building on
+  XFree86 3.1.2F also builds on NetBSD/sparc. See section ``Building on
   NetBSD/sparc'' for details.
 
-  XFree86 3.1.2E supports NetBSD on PC98 machines. Servers for these
+  XFree86 3.1.2F supports NetBSD on PC98 machines. Servers for these
   machines are available in the NetBSD-PC98 directory on the above FTP
   servers.
 
@@ -61,6 +60,7 @@
   Send email to matthieu@laas.fr (Matthieu Herrb) or XFree86@XFree86.org
   if you have comments or suggestions about this file and we'll revise
   it.
+
 
 
 
@@ -75,131 +75,128 @@
   that you install these tools first.  All packages can be installed
   using pkg_add.
 
-  Note that many clients were moved from the X11R6 distribution to the
-  ``contrib'' area. However, they are still distributed with the XFree86
-  binary distribution.
-
   The contents of the packages are:
 
 
      REQUIRED:
 
-        X312Edoc
+        X312Fdoc
            READMEs.
 
-        X312Ebin
+        X312Fbin
            all of the executable X client applications and shared libs
 
-        X312Efnt
+        X312Ffnt
            the misc and 75dpi fonts
 
-        X312Elib
+        X312Flib
            data files needed at runtime
 
-        X312Ecfg
+        X312Fcfg
            customizable xinit and xdm runtime configuration files.
 
         Choose at least one of the following server to match your
         hardware:
 
 
-        X312ESVGA
+        X312FSVGA
            the 8-bit pseudo-color X server for Super VGA cards
 
-        X312EVG16
+        X312FVG16
            the 4-bit pseudo-color X server for VGA & SVGA cards.
 
-        X312EMono
+        X312FMono
            the Monochrome X Server
 
-        X312E8514
+        X312F8514
            the X server for IBM 8514/A and compatible boards
 
-        X312EAGX
+        X312FAGX
            the X server for AGX boards
 
-        X312EMa8
+        X312FMa8
            the X server for ATI Mach8 graphics boards
 
-        X312EMa32
+        X312FMa32
            the X server for ATI Mach32 graphics boards
 
-        X312EMa64
+        X312FMa64
            the X server for ATI Mach64 graphics boards
 
-        X312EP9K
+        X312FP9K
            the X server for P9000 based boards
 
-        X312ES3
+        X312FS3
            the X server for S3 based boards
 
-        X312EW32
+
+        X312FW32
            the X server for et4000w32 and et6000 based boards
 
         The following servers are available for PC98 hardware from the
-        directory XFree98-3.1.2E
+        directory XFree98-3.1.2F
 
 
-        X312E9EGC
+        X312F9EGC
            EGC
 
-        X312E9GAN
+        X312F9GAN
            GANB-WAP(cirrus)
 
-        X312E9480
+        X312F9480
            PEGC-480
 
-        X312E9NS3
+        X312F9NS3
            NEC(S3)
 
-        X312E9NKV
+        X312F9NKV
            NEC(cirrus)
 
-        X312E9LPW
+        X312F9LPW
            PowerWindowLB(S3)
 
-        X312E9SPW
+        X312F9SPW
            SKB-PowerWindow(S3)
 
-        X312E9WEP
+        X312F9WEP
            WABEP(cirrus)
 
-        X312E9WBS
+        X312F9WBS
            WABS(cirrus)
 
-        X312E9WSN
+        X312F9WSN
            WSN-A2F(cirrus)
 
      OPTIONAL:
 
-        X312Efsrv
+        X312Ffsrv
            the font server with man pages.
 
-        X312Eprog
+        X312Fprog
            the X11 header files and static libraries needed only for
            compiling other X applications
 
-        X312Eman
+        X312Fman
            man pages
 
-        X312Ef100
+        X312Ff100
            100dpi fonts
 
-        X312Efcyr
+        X312Ffcyr
            Cyrillic fonts
 
-        X312Efscl
+        X312Ffscl
            Scalable fonts
 
-        X312Efnon
+        X312Ffnon
            other fonts (Japanese, Chinese, etc)
 
-
-
-        X312Enest
+        X312Fnest
            Nested X server
 
-        X312Evfb
+
+
+        X312Fvfb
            Virtual framebuffer X server
 
   If this is your first time, then you can safely install all of the
@@ -252,7 +249,7 @@
         needs special permissions that are only granted to the root
         user.
 
-        Assuming that the destination directory for XFree86 3.1.2E is
+        Assuming that the destination directory for XFree86 3.1.2F is
         /usr/X11R6, run the following from wherever all the archive
         files are (replace /usr/X11R6 with wherever you wish them to go
         if that isn't the place):
@@ -262,17 +259,20 @@
 
 
 
+
+
+
       cd /usr/X11R6
 
-      tar xzf X312Edoc.tgz
-      tar xzf X312Ebin.tgz
-      tar xzf X312Elib.tgz
-      tar xzf X312Efont.tgz
-      tar xzf X312Eman.tgz
+      tar xzf X312Fdoc.tgz
+      tar xzf X312Fbin.tgz
+      tar xzf X312Flib.tgz
+      tar xzf X312Ffont.tgz
+      tar xzf X312Fman.tgz
 
-      tar xzf X312Eprog.tgz
-      tar xzf X312Efsrv.tgz
-      tar xzf X312Ecfg.tgz
+      tar xzf X312Fprog.tgz
+      tar xzf X312Ffsrv.tgz
+      tar xzf X312Fcfg.tgz
 
 
 
@@ -280,7 +280,7 @@
      And unpack the server(s) you need:
 
 
-           tar xzf X312E<server>.tgz
+           tar xzf X312F<server>.tgz
 
 
 
@@ -342,6 +342,9 @@
 
 
 
+     On OpenBSD, this step is not necessary, since /usr/X11R6/lib is
+     included by default in the search patch of the dynamic linker.
+
      4. Reboot your machine to take all previous modifications into
         account.
 
@@ -390,7 +393,9 @@
 
 
 
-        ttyv0  "/usr/libexec/getty Pc" pc      off secure
+
+   ttyv0  "/usr/libexec/getty Pc" pc      off secure
+
 
 
 
@@ -400,6 +405,29 @@
   card and mouse you have.  You must create it to tell the server what
   specific hardware you have.
 
+  XFree86 3.1.2F introduces a new, user-friendly configuration utility
+  called XF86Setup. It has to be run as root. Refer to its documentation
+  for details about its use.
+
+  Important notice
+
+  On NetBSD and OpenBSD, XF86Setup needs a larger stack than the system
+  default limit of 512 kbytes. Be sure to raise your stack size limit by
+  using the command:
+
+  limit stacksize 2048k
+
+
+  if you're running a C-shell variant or the
+
+  ulimit -s 2048
+
+
+  command with the Bourne shell variants.
+
+  If you don't do this, the X server will crash and probably  won't
+  restore the text mode properly.
+
   You'll need info on your hardware:
 
      o  Your mouse type, baud rate and its /dev entry.
@@ -408,12 +436,11 @@
 
      o  Your monitor's sync frequencies.
 
-  XFree86 3.1 and later releases uses a new configuration file format.
-
   The recommended way to generate an XF86Config file is to use the
-  xf86config utility.  Also, there is a sample file installed as
+  XF86Setup utility.  Also, there is a sample file installed as
   /usr/X11R6/lib/X11/XF86Config.eg, which can be used as a starting
-  point.
+  point. The  xf86config text utility is still there for the (few) cases
+  where XF86Setup can't be used.
 
   For details about the XF86Config file format, refer to the
   XF86Config(5) manual page.
@@ -433,15 +460,14 @@
      # reconfig <Xconfig >XF86Config
 
 
-  and complete the rest according to the XF86Config man page and the
-  XF86Config.sample file as a template.
+  and complete the rest with the help of XF86Setup.
 
-  If your mouse does not work try using kermit or tip to connect to the
-  mouse serial port and verify that it does indeed generate characters.
+  If your serial mouse does not work try using kermit or tip to connect
+  to the mouse serial port and verify that it does indeed generate
+  characters.
 
-  XFree86 3.1.2E now support the dynamic loading of drivers for external
-  input devices using the XInput extension. Currently supported devices
-  are:
+  XFree86 now support the dynamic loading of drivers for external input
+  devices using the XInput extension. Currently supported devices are:
 
      o  Joystick
 
@@ -450,7 +476,8 @@
      o  Elographics touchscreen
 
   For joystick support, you'll need to install the joystick device
-  driver in the kernel. It is in NetBSD-current. See joy(4) for details.
+  driver in the kernel. It is included in NetBSD 1.2 and OpenBSD. See
+  joy(4) for details.
 
   Refer to the XF86Config(5) man page for detailed configuration
   instructions.
@@ -459,7 +486,6 @@
 
   8mb of memory is a recommended minimum for running X.  The server,
   window manager and an xterm take about 4 Mb of memory themselves.  On
-
   a 4Mb system that would leave nothing left over for other applications
   like gcc that expect a few meg free.  X will work with 4Mb of memory,
   but in practice compilation while running X can take 5 or 10 times as
@@ -500,16 +526,15 @@
 
   to
 
-
        device         vt0     at isa? port "IO_KBD" irq 1
 
 
   in your kernel config file, and rebuild and install your kernel.
 
-  Syscons and codrv are not bundled with NetBSD 1.1. They are available
-  by anonymous FTP from a number of sites. They are not supported by the
-  XFree86 binary distribution anymore. You can compile support for them
-  by adding -DSYSCONS_SUPPORT or -DCODRV_SUPPORT to
+  Syscons and codrv are not bundled with NetBSD nor OpenBSD. They are
+  available by anonymous FTP from a number of sites. They are not
+  supported by the XFree86 binary distribution anymore. You can compile
+  support for them by adding -DSYSCONS_SUPPORT or -DCODRV_SUPPORT to
   XFree86ConsoleDefines in xf86site.def. See the section ``Console
   drivers'' for details.
 
@@ -521,7 +546,6 @@
        > Was expecting pccons driver with X support
        > Check your kernel's console driver configuration and /dev entries
        >
-
 
 
 
@@ -567,6 +591,7 @@
         recompile it.
 
 
+
         b. Reboot your system. XFree86 will auto-detect the aperture
            driver if available.
 
@@ -590,7 +615,6 @@
   NetBSD 1.0 and later supports System V shared memory. If XFree86
   detects this support in your kernel, it will support the MIT-SHM
   extension.
-
 
   To add support for system V shared memory to your kernel add the
   lines:
@@ -633,6 +657,7 @@
 
   The server link kit allow you to rebuild just the X server with a
   minimum amount of disk space.  Just unpack it, make the appropriate
+
   changes to the xf86site.def, type ``./mkmf'' and ``make'' to link the
   server.  See /usr/X11R6/lib/Server/README for more info.
 
@@ -645,15 +670,13 @@
 
   8.1.  Console drivers
 
-  XFree86 3.1.2E has a configuration option to select the console
+  XFree86 3.1.2F has a configuration option to select the console
   drivers to use in xf86site.def:
 
      o  if you're using pccons put:
 
 
            #define XFree86ConsoleDefines -DPCCONS_SUPPORT
-
-
 
 
 
@@ -703,7 +726,7 @@
 
   8.3.  Support for shared libs under NetBSD 1.0 and later
 
-  By default XFree86 3.1.2E builds for NetBSD with shared libraries
+  By default XFree86 3.1.2F builds for NetBSD with shared libraries
   support. If you're building on 0.9 or don't want shared libraries add
   the following line to xf86site.def:
 
@@ -714,7 +737,7 @@
 
   8.4.  Building on NetBSD/sparc
 
-  XFree86 3.1.2E also compiles on NetBSD/sparc. The Sun server patches
+  XFree86 3.1.2F also compiles on NetBSD/sparc. The Sun server patches
   from Dennis Ferguson and Matthew Green have been integrated in
   xc/programs/Xserver/hw/sun.  Small modifications to xf86site.def are
   needed:
@@ -763,8 +786,9 @@
   used to protect the inclusion of <sys/param.h>.
 
   For code that really is specific to a particular i386 BSD port, use
-  __FreeBSD__ for FreeBSD, __NetBSD__ for NetBSD, __386BSD__ for 386BSD,
-  and __bsdi__ for BSD/386.
+  __FreeBSD__ for FreeBSD, __NetBSD__ for NetBSD, __OpenBSD__ for
+  OpenBSD, __386BSD__ for 386BSD, and __bsdi__ for BSD/386.
+
 
   Another note: If you get the message:
 
@@ -789,7 +813,6 @@
      o  Amancio Hasty for fixing cursor restoration, mouse bugs and many
         others.
 
-
      o  Christoph Robitschko for fixing com.c and thus select().
 
      o  Nate Williams for the patchkit support for X.
@@ -798,36 +821,13 @@
         machines in preparing the FreeBSD binary release.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.28 1996/08/13 11:30:55 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.29 1996/08/23 11:04:15 dawes Exp $
 
 
 
 
 
   $XConsortium: NetBSD.sgml /main/9 1996/01/28 08:05:37 kaleb $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
