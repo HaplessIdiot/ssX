@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.39 1999/02/19 21:26:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.40 1999/03/28 15:32:24 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -110,8 +110,7 @@ extern int testinx(unsigned short, unsigned char);
 
 #ifdef __GNUC__
 
-#if defined(linux)
-#if defined(__alpha__)
+#if defined(linux) && defined(__alpha__)
 /* for Linux on Alpha, we use the LIBC _inx/_outx routines */
 /* note that the appropriate setup via "ioperm" needs to be done */
 /*  *before* any inx/outx is done. */
@@ -321,7 +320,7 @@ static __inline__ void stw_u(unsigned long r5, unsigned short * r11)
 #define write_mem_barrier()  mem_barrier()
 #endif
 
-#elif defined(__sparc__)
+#elif defined(linux) && defined(__sparc__)
 #ifndef ASI_PL
 #define ASI_PL 0x88
 #endif
@@ -405,8 +404,6 @@ static __inline__ void stw_u(unsigned long val, unsigned short *p)
 
 #define mem_barrier()         /* XXX: nop for now */
 #define write_mem_barrier()   /* XXX: nop for now */
-
-#endif
 
 #elif defined(__mips__) || defined(__arm32__)
 
