@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.26 2003/02/09 02:44:42 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.27 2003/02/13 03:01:45 dawes Exp $ */
 
 #include "fontmisc.h"
 
@@ -959,11 +959,11 @@ FreeTypeAddProperties(FTFontPtr font, FontScalablePtr vals, FontInfoPtr info,
         int underlinePosition, underlineThickness;
 
         if(post) {
-            underlinePosition = TRANSFORM_FUNITS_Y(post->underlinePosition);
+            underlinePosition = TRANSFORM_FUNITS_Y(-post->underlinePosition);
             underlineThickness = TRANSFORM_FUNITS_Y(post->underlineThickness);
         } else {
             underlinePosition = 
-                TRANSFORM_FUNITS_Y(t1info->underline_position);
+                TRANSFORM_FUNITS_Y(-t1info->underline_position);
             underlineThickness = 
                 TRANSFORM_FUNITS_Y(t1info->underline_thickness);
         }
