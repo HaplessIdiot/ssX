@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.59 2003/10/02 13:30:04 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.60 2003/10/26 12:17:17 herrb Exp $ */
 /*
  * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
  *
@@ -45,11 +45,23 @@
 #define XF86_LIBC_H 1
 
 #include "Xfuncs.h"
+#include "Xmd.h"
 
 /*
  * The first set of definitions are required both for modules and
  * libc_wrapper.c.
  */
+
+#ifndef LONG64
+#ifdef __GNUC__
+__extension__
+#endif
+typedef long long INT64;
+#ifdef __GNUC__
+__extension__
+#endif
+typedef unsigned long long CARD64;
+#endif
 
 #if defined(XFree86LOADER) || defined(NEED_XF86_TYPES)
 

@@ -31,14 +31,13 @@
  * Converted to common header format:
  *   Jens Owen <jens@tungstengraphics.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_common.h,v 1.5 2003/12/02 13:02:44 alanh Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_common.h,v 1.6 2003/12/02 18:42:40 alanh Exp $
  *
  */
 
 #ifndef _RADEON_COMMON_H_
 #define _RADEON_COMMON_H_
 
-#include <inttypes.h>
 #include "xf86drm.h"
 
 /* WARNING: If you change any of these defines, make sure to change
@@ -453,7 +452,11 @@ typedef struct drm_radeon_irq_wait {
 
 typedef struct drm_radeon_set_param {
 	unsigned int param;
+#ifdef XFree86Server
+	INT64        value;
+#else
 	int64_t      value;
+#endif
 } drmRadeonSetParam;
 
 #define RADEON_SETPARAM_FB_LOCATION     1
