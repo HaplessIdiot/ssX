@@ -8,7 +8,7 @@
  * Definitions that are internal to the Quartz modes or use Mac OS X
  * specific types should be in quartzCommon.h instead of here.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzShared.h,v 1.9 2001/09/19 01:44:41 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzShared.h,v 1.10 2001/09/23 04:04:49 torrey Exp $ */
 
 #ifndef _QUARTZSHARED_H
 #define _QUARTZSHARED_H
@@ -19,6 +19,9 @@ extern int                  darwinFakeButtons;
 extern int                  darwinFakeMouse2Mask;
 extern int                  darwinFakeMouse3Mask;
 extern char                 *darwinKeymapFile;
+extern unsigned int         darwinDesiredWidth, darwinDesiredHeight;
+extern int                  darwinDesiredDepth;
+extern int                  darwinDesiredRefresh;
 
 // location of X11's (0,0) point in global screen coordinates
 extern int                  darwinMainScreenX;

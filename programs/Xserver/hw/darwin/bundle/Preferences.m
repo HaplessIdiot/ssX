@@ -3,10 +3,19 @@
 //
 //  This class keeps track of the user preferences.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.m,v 1.11 2001/09/23 23:02:38 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.m,v 1.12 2001/10/07 18:47:49 torrey Exp $ */
 
 #import "Preferences.h"
 #import "quartzCommon.h"
+#include <IOKit/hidsystem/IOLLEvent.h>	// for modifier masks
+
+// Macros to build the path name
+#ifndef XBINDIR
+#define XBINDIR /usr/X11R6/bin
+#endif
+#define STR(s) #s
+#define XSTRPATH(s) STR(s)
+
 
 @implementation Preferences
 
@@ -14,21 +23,28 @@
 {
     // Provide user defaults if needed
     NSDictionary *appDefaults = [NSDictionary dictionaryWithObjectsAndKeys:
-                    [NSNumber numberWithInt:0], @"Display",
-                    @"YES", @"FakeButtons",
-                    @"USA.keymapping", @"KeymappingFile",
-                    @"YES", @"UseKeymappingFile",
-                    @"Cmd-Opt-a", @"SwitchString",
-                    @"NO", @"UseRootlessMode",
-                    @"YES", @"ShowModePickWindow",
-                    @"YES", @"ShowStartupHelp",
-                    [NSNumber numberWithInt:0], @"SwitchKeyCode",
-                    [NSNumber numberWithInt:(NSCommandKeyMask | NSAlternateKeyMask)],
-                    @"SwitchModifiers", @"NO", @"UseSystemBeep", 
-                    @"NO", @"DockSwitch", 
-                    @"NO", @"AllowMouseAccelChange",
-                    [NSNumber numberWithInt:qdCursor_Not8Bit], @"UseQDCursor",
-                    @"YES", @"Xinerama", nil];
+        [NSNumber numberWithInt:0], @"Display",
+        @"YES", @"FakeButtons",
+        [NSNumber numberWithInt:NX_COMMANDMASK], @"Button2Mask",
+        [NSNumber numberWithInt:NX_ALTERNATEMASK], @"Button3Mask",
+        @"USA.keymapping", @"KeymappingFile",
+        @"YES", @"UseKeymappingFile",
+        @"Cmd-Opt-a", @"SwitchString",
+        @"NO", @"UseRootlessMode",
+        @"YES", @"ShowModePickWindow",
+        @"YES", @"ShowStartupHelp",
+        [NSNumber numberWithInt:0], @"SwitchKeyCode",
+        [NSNumber numberWithInt:(NSCommandKeyMask | NSAlternateKeyMask)],
+        @"SwitchModifiers", @"NO", @"UseSystemBeep", 
+        @"YES", @"DockSwitch", 
+        @"NO", @"AllowMouseAccelChange",
+        [NSNumber numberWithInt:qdCursor_Not8Bit], @"UseQDCursor",
+        @"YES", @"Xinerama",
+        @"YES", @"AddToPath",
+        [NSString stringWithCString:XSTRPATH(XBINDIR)], @"AddToPathString",
+        @"YES", @"UseDefaultShell",
+        @"/bin/tcsh", @"Shell",
+        [NSNumber numberWithInt:depth_Current], @"Depth", nil];
 
     [super initialize];
     [[NSUserDefaults standardUserDefaults] registerDefaults:appDefaults];
@@ -53,29 +69,67 @@
     return self;
 }
 
+// Set a modifiers checkbox matrix to match a modifier mask
+- (void)resetMatrix:(NSMatrix *)aMatrix withMask:(int)aMask
+{
+    [aMatrix setState:(aMask & NX_SHIFTMASK)       atRow:0 column:0];
+    [aMatrix setState:(aMask & NX_CONTROLMASK)     atRow:1 column:0];
+    [aMatrix setState:(aMask & NX_COMMANDMASK)     atRow:2 column:0];
+    [aMatrix setState:(aMask & NX_ALTERNATEMASK)   atRow:3 column:0];
+    [aMatrix setState:(aMask & NX_SECONDARYFNMASK) atRow:4 column:0];
+}
+
+// Generate a modifiers mask from a modifiers checkbox matrix
+- (int)getMaskFromMatrix:(NSMatrix *)aMatrix
+{
+    int theMask = 0;
+
+    if ([[aMatrix cellAtRow:0 column:0] state])
+        theMask |= NX_SHIFTMASK;
+    if ([[aMatrix cellAtRow:1 column:0] state])
+        theMask |= NX_CONTROLMASK;
+    if ([[aMatrix cellAtRow:2 column:0] state])
+        theMask |= NX_COMMANDMASK;
+    if ([[aMatrix cellAtRow:3 column:0] state])
+        theMask |= NX_ALTERNATEMASK;
+    if ([[aMatrix cellAtRow:4 column:0] state])
+        theMask |= NX_SECONDARYFNMASK;
+
+    return theMask;
+}
+
 // Set the window controls to the state in user defaults
 - (void)resetWindow
 {
-    [loadKeymapFileButton setIntValue:[Preferences useKeymapFile]];
-
     if ([Preferences keymapFile] == nil)
         [keymapFileField setStringValue:@" "];
     else
         [keymapFileField setStringValue:[Preferences keymapFile]];
 
     if ([Preferences switchString] == nil)
-        [keyField setTitle:@"--"];
+        [switchKeyButton setTitle:@"--"];
     else
-        [keyField setTitle:[Preferences switchString]];
+        [switchKeyButton setTitle:[Preferences switchString]];
 
-    [displayNumber setIntValue:[Preferences display]];
+    [displayField setIntValue:[Preferences display]];
     [dockSwitchButton setIntValue:[Preferences dockSwitch]];
     [fakeButton setIntValue:[Preferences fakeButtons]];
+    [self resetMatrix:button2ModifiersMatrix
+          withMask:[Preferences button2Mask]];
+    [self resetMatrix:button3ModifiersMatrix
+          withMask:[Preferences button3Mask]];
     [modeMatrix setState:[Preferences rootless] atRow:0 column:1];
     [startupHelpButton setIntValue:[Preferences startupHelp]];
     [modeWindowButton setIntValue:[Preferences modeWindow]];
     [systemBeepButton setIntValue:[Preferences systemBeep]];
     [mouseAccelChangeButton setIntValue:[Preferences mouseAccelChange]];
+    [useXineramaButton setIntValue:[Preferences xinerama]];
+    [addToPathButton setIntValue:[Preferences addToPath]];
+    [addToPathField setStringValue:[Preferences addToPathString]];
+    [useDefaultShellMatrix setState:![Preferences useDefaultShell]
+                           atRow:1 column:0];
+    [useOtherShellField setStringValue:[Preferences shellString]];
+    [depthButton selectItemAtIndex:[Preferences depth]];
 }
 
 - (void)awakeFromNib
@@ -120,15 +174,26 @@
     [Preferences setModifiers:modifiers];
     [Preferences setSwitchString:switchString];
     [Preferences setKeymapFile:[keymapFileField stringValue]];
-    [Preferences setUseKeymapFile:[loadKeymapFileButton intValue]];
-    [Preferences setDisplay:[displayNumber intValue]];
+    [Preferences setUseKeymapFile:YES];
+    [Preferences setDisplay:[displayField intValue]];
     [Preferences setDockSwitch:[dockSwitchButton intValue]];
     [Preferences setFakeButtons:[fakeButton intValue]];
+    [Preferences setButton2Mask:
+                    [self getMaskFromMatrix:button2ModifiersMatrix]];
+    [Preferences setButton3Mask:
+                    [self getMaskFromMatrix:button3ModifiersMatrix]];
     [Preferences setRootless:[[modeMatrix cellAtRow:0 column:1] state]];
     [Preferences setModeWindow:[modeWindowButton intValue]];
     [Preferences setStartupHelp:[startupHelpButton intValue]];
     [Preferences setSystemBeep:[systemBeepButton intValue]];
     [Preferences setMouseAccelChange:[mouseAccelChangeButton intValue]];
+    [Preferences setXinerama:[useXineramaButton intValue]];
+    [Preferences setAddToPath:[addToPathButton intValue]];
+    [Preferences setAddToPathString:[addToPathField stringValue]];
+    [Preferences setUseDefaultShell:
+                    [[useDefaultShellMatrix cellAtRow:0 column:0] state]];
+    [Preferences setShellString:[useOtherShellField stringValue]];
+    [Preferences setDepth:[depthButton indexOfSelectedItem]];
     [Preferences saveToDisk];
 
     [window orderOut:nil];
@@ -136,7 +201,7 @@
 
 - (IBAction)setKey:(id)sender
 {
-    [keyField setTitle:@"Press key"];
+    [switchKeyButton setTitle:@"Press key"];
     isGettingKeyCode=YES;
     [switchString setString:@""];
 }
@@ -163,7 +228,7 @@
             [switchString appendString:@"Fn-"];
         
         [switchString appendString:[anEvent charactersIgnoringModifiers]];
-        [keyField setTitle:switchString];
+        [switchKeyButton setTitle:switchString];
         
         keyCode = [anEvent keyCode];
         modifiers = [anEvent modifierFlags];
@@ -224,6 +289,22 @@
     darwinFakeButtons = newFakeButtons;
 }
 
++ (void)setButton2Mask:(int)newFakeMask
+{
+    [[NSUserDefaults standardUserDefaults] setInteger:newFakeMask
+            forKey:@"Button2Mask"];
+    // Update the setting used by the X server thread
+    darwinFakeMouse2Mask = newFakeMask;
+}
+
++ (void)setButton3Mask:(int)newFakeMask
+{
+    [[NSUserDefaults standardUserDefaults] setInteger:newFakeMask
+            forKey:@"Button3Mask"];
+    // Update the setting used by the X server thread
+    darwinFakeMouse3Mask = newFakeMask;
+}
+
 + (void)setMouseAccelChange:(BOOL)newMouseAccelChange
 {
     [[NSUserDefaults standardUserDefaults] setBool:newMouseAccelChange
@@ -268,6 +349,36 @@
 {
     [[NSUserDefaults standardUserDefaults] setBool:newXinerama
             forKey:@"Xinerama"];
+}
+
++ (void)setAddToPath:(BOOL)newAddToPath
+{
+    [[NSUserDefaults standardUserDefaults] setBool:newAddToPath
+            forKey:@"AddToPath"];
+}
+
++ (void)setAddToPathString:(NSString*)newAddToPathString
+{
+    [[NSUserDefaults standardUserDefaults] setObject:newAddToPathString
+            forKey:@"AddToPathString"];
+}
+
++ (void)setUseDefaultShell:(BOOL)newUseDefaultShell
+{
+    [[NSUserDefaults standardUserDefaults] setBool:newUseDefaultShell
+            forKey:@"UseDefaultShell"];
+}
+
++ (void)setShellString:(NSString*)newShellString
+{
+    [[NSUserDefaults standardUserDefaults] setObject:newShellString
+            forKey:@"Shell"];
+}
+
++ (void)setDepth:(int)newDepth
+{
+    [[NSUserDefaults standardUserDefaults] setInteger:newDepth
+            forKey:@"Depth"];
 }
 
 + (void)saveToDisk
@@ -321,6 +432,18 @@
     return [[NSUserDefaults standardUserDefaults] boolForKey:@"FakeButtons"];
 }
 
++ (int)button2Mask
+{
+    return [[NSUserDefaults standardUserDefaults]
+                integerForKey:@"Button2Mask"];
+}
+
++ (int)button3Mask
+{
+    return [[NSUserDefaults standardUserDefaults]
+                integerForKey:@"Button3Mask"];
+}
+
 + (BOOL)mouseAccelChange
 {
     return [[NSUserDefaults standardUserDefaults]
@@ -360,5 +483,35 @@
 {
     return [[NSUserDefaults standardUserDefaults] boolForKey:@"Xinerama"];
 }
+
++ (BOOL)addToPath
+{
+    return [[NSUserDefaults standardUserDefaults] boolForKey:@"AddToPath"];
+}
+
++ (NSString*)addToPathString
+{
+    return [[NSUserDefaults standardUserDefaults]
+                stringForKey:@"AddToPathString"];
+}
+
++ (BOOL)useDefaultShell
+{
+    return [[NSUserDefaults standardUserDefaults]
+                boolForKey:@"UseDefaultShell"];
+}
+
++ (NSString*)shellString
+{
+    return [[NSUserDefaults standardUserDefaults]
+                stringForKey:@"Shell"];
+}
+
++ (int)depth
+{
+    return [[NSUserDefaults standardUserDefaults]
+                integerForKey:@"Depth"];
+}
+
 
 @end
