@@ -113,6 +113,9 @@ extern void MGAValidatePolyArc(GCPtr, unsigned long, DrawablePtr);
 extern void MGAValidatePolyPoint(GCPtr, unsigned long, DrawablePtr);
 extern void MGAFillCacheBltRects(ScrnInfoPtr, int, unsigned int, int, BoxPtr,
 				int, int, XAACacheInfoPtr);
+extern void MGATEGlyphRenderer(ScrnInfoPtr, int, int, int, int, int, int, 
+				unsigned int **glyphs, int, int, int, int, 
+				unsigned planemask);
 
 Bool
 MGANAME(AccelInit)(ScreenPtr pScreen) 
@@ -303,6 +306,7 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 			infoPtr->SubsequentCPUToScreenColorExpandFill) {
 	infoPtr->FillColorExpandRects = MGAFillColorExpandRects; 
 	infoPtr->WriteBitmap = MGAWriteBitmapColorExpand;
+	infoPtr->TEGlyphRenderer = MGATEGlyphRenderer;  
         if(BITMAP_SCANLINE_PAD == 32)
 	    infoPtr->NonTEGlyphRenderer = MGANonTEGlyphRenderer;  
     }
@@ -341,6 +345,7 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 	infoPtr->FillSolidSpansFlags |= NO_PLANEMASK;
 	infoPtr->FillMono8x8PatternRectsFlags |= NO_PLANEMASK;
 	infoPtr->NonTEGlyphRendererFlags |= NO_PLANEMASK;
+	infoPtr->TEGlyphRendererFlags |= NO_PLANEMASK;
 	infoPtr->FillCacheBltRectsFlags |= NO_PLANEMASK;
     }
 
@@ -450,7 +455,14 @@ void MGAStormEngineInit(ScrnInfoPtr pScrn)
     
     pMga->fifoCount = 0;
 
-    WAITFIFO(12);
+    while(MGAISBUSY());
+
+    if(!pMga->FifoSize) {
+	pMga->FifoSize = INREG8(MGAREG_FIFOSTATUS);
+	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "%i DWORD fifo\n",
+						pMga->FifoSize);
+    }
+
     OUTREG(MGAREG_PITCH, pLayout->displayWidth);
     OUTREG(MGAREG_YDSTORG, pMga->YDstOrg);
     OUTREG(MGAREG_MACCESS, maccess);
@@ -1391,6 +1403,7 @@ MGAWriteBitmapColorExpand(
 			(pScrn, x, y, w, maxlines, skipleft);
 	count = maxlines;
 	while(count--) {
+	    WAITFIFO(dwords);
 	    destptr = MoveDWORDS(destptr, (CARD32*)src, dwords);
 	    src += srcwidth;
 	    if(destptr > maxptr) 
@@ -1404,13 +1417,14 @@ MGAWriteBitmapColorExpand(
 				pScrn, x, y, w, h, skipleft);
 
     while(h--) {
+	WAITFIFO(dwords);
 	destptr = MoveDWORDS(destptr, (CARD32*)src, dwords);
 	src += srcwidth;
 	if(destptr > maxptr) 
 		destptr = (CARD32*)infoRec->ColorExpandBase;
     }
-    MGAStormSync(infoRec->pScrn);
-    infoRec->NeedToSync = FALSE;
+    DISABLE_CLIP();
+    SET_SYNC_FLAG(infoRec);
 }
 
 
@@ -1466,6 +1480,7 @@ MGAFillColorExpandRects(
 			pBox->x1, y, pBox->x2 - pBox->x1, maxlines, 0);
 	   count = maxlines;
 	   while(count--) {
+		WAITFIFO(dwords);
 		destptr = (*StippleFunc)(
 			destptr, (CARD32*)srcp, srcx, stipplewidth, dwords);
 		if(destptr > maxptr) 
@@ -1485,6 +1500,7 @@ MGAFillColorExpandRects(
 			pBox->x1, y , pBox->x2 - pBox->x1, h, 0);
 
 	while(h--) {
+	    WAITFIFO(dwords);
 	    destptr = (*StippleFunc)(
 		destptr, (CARD32*)srcp, srcx, stipplewidth, dwords);
 	    if(destptr > maxptr) 
@@ -1499,8 +1515,8 @@ MGAFillColorExpandRects(
 
 	pBox++;
     }
-    MGAStormSync(infoRec->pScrn);
-    infoRec->NeedToSync = FALSE;
+    DISABLE_CLIP();
+    SET_SYNC_FLAG(infoRec);
 }
 
 
@@ -1699,6 +1715,7 @@ void MGANonTEGlyphRenderer(
 	    OUTREG(MGAREG_AR3, 0);
 	    OUTREG(MGAREG_FXBNDRY, ((x2 - 1) << 16) | (x1 & 0xFFFF));
 	    OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y1 << 16) | h);
+	    WAITFIFO(dwords * maxlines);
 	    MoveDWORDS((CARD32*)infoRec->ColorExpandBase, 
 				(CARD32*)src, dwords * maxlines);
 	    src += dwords * maxlines << 2;
@@ -1712,12 +1729,12 @@ void MGANonTEGlyphRenderer(
 	OUTREG(MGAREG_AR3, 0);
 	OUTREG(MGAREG_FXBNDRY, ((x2 - 1) << 16) | (x1 & 0xFFFF));
 	OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y1 << 16) | h);
-
+	WAITFIFO(dwords);
 	MoveDWORDS((CARD32*)infoRec->ColorExpandBase, (CARD32*)src, dwords);
     }  
 
-    MGAStormSync(infoRec->pScrn);
-    infoRec->NeedToSync = FALSE;
+    DISABLE_CLIP();
+    SET_SYNC_FLAG(infoRec);
 }
 
 void
@@ -1908,6 +1925,47 @@ MGAFillCacheBltRects(
 	pBox++;
     }
     
+    SET_SYNC_FLAG(infoRec);
+}
+
+void 
+MGATEGlyphRenderer(
+    ScrnInfoPtr pScrn,
+    int x, int y, int w, int h, int skipleft, int startline, 
+    unsigned int **glyphs, int glyphWidth,
+    int fg, int bg, int rop, unsigned planemask
+){
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
+    GlyphScanlineFuncPtr GlyphFunc = 
+			XAAGlyphScanlineFuncLSBFirst[glyphWidth - 1];
+    MGAPtr pMga = MGAPTR(pScrn);
+    CARD32* base;
+    int dwords;
+
+    (*infoRec->SetupForCPUToScreenColorExpandFill)(
+				pScrn, fg, bg, rop, planemask);
+
+    w += skipleft;
+    x -= skipleft;
+    dwords = (w + 31) >> 5;
+
+    (*infoRec->SubsequentCPUToScreenColorExpandFill)(
+				pScrn, x, y, w, h, skipleft);
+
+    base = (CARD32*)infoRec->ColorExpandBase;
+
+    if((dwords * h) <= infoRec->ColorExpandRange)
+	while(h--) {
+	    WAITFIFO(dwords);
+	    base = (*GlyphFunc)(base, glyphs, startline++, w, glyphWidth);
+	}
+    else
+	while(h--) {
+	    WAITFIFO(dwords);
+	    (*GlyphFunc)(base, glyphs, startline++, w, glyphWidth);
+	}
+
+    DISABLE_CLIP();
     SET_SYNC_FLAG(infoRec);
 }
 
