@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.25 2003/01/13 05:04:35 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.26 2003/01/29 03:05:54 paulo Exp $
 ;;
 
 (require "syntax")
@@ -36,7 +36,7 @@
 
 (defsynprop *prop-format*
     "format"
-    :font	"*lucidatypewriter-medium-r*12*"
+    :font	"*lucidatypewriter-medium-r*-12-*"
     :foreground	"RoyalBlue2"
     :underline	t
 )
