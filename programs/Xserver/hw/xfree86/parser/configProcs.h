@@ -59,8 +59,10 @@ void xf86freeModeList(XF86ModePtr ptr);
 int xf86validateScreen(XF86ConfigPtr p);
 /* Vendor.c */
 XF86ConfVendorPtr xf86parseVendorSection(void);
+XF86ConfVendSubPtr xf86parseVendorSubSection (void);
 void xf86freeVendorList(XF86ConfVendorPtr p);
 void xf86printVendorSection(FILE * cf, XF86ConfVendorPtr ptr);
+void xf86freeVendorSubList (XF86ConfVendSubPtr ptr);
 /* Video.c */
 XF86ConfVideoPortPtr xf86parseVideoPortSubSection(void);
 XF86ConfVideoAdaptorPtr xf86parseVideoAdaptorSection(void);

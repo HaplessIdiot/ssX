@@ -937,11 +937,12 @@ xf86nameCompare (const char *s1, const char *s2)
 {
 	char c1, c2;
 
-	if (!s1 || *s1 == 0)
+	if (!s1 || *s1 == 0) {
 		if (!s2 || *s2 == 0)
 			return (0);
 		else
 			return (1);
+		}
 
 	while (*s1 == '_' || *s1 == ' ' || *s1 == '\t')
 		s1++;
