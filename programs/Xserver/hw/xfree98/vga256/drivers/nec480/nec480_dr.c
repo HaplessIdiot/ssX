@@ -6,7 +6,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/nec480/nec480_dr.c,v 3.1 1996/02/04 09:17:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/nec480/nec480_dr.c,v 3.2 1996/03/29 22:19:08 dawes Exp $ */
 
 /*
  * These are X and server generic header files.
@@ -130,6 +130,7 @@ vgaVideoChipRec NEC480 = {
 	FALSE,
 	0,
 	0,
+	FALSE,
 	FALSE,
 	FALSE,
 	NULL,

@@ -107,3 +107,5 @@
 #define CASE_HP_MEM_LOCK 68
 #define CASE_HP_MEM_UNLOCK 69
 #define CASE_HP_BUGGY_LL 70
+#define CASE_HPA 71
+#define CASE_VPA 72

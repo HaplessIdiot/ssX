@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/7 1996/01/26 10:50:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.17 1996/06/29 09:09:41 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.18 1996/06/29 14:12:24 dawes Exp $
 #include <Server.tmpl>
 
 #ifdef i386MachArchitecture
@@ -41,8 +41,11 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.17 1996/06/2
 # if ElographicsSupport
    ELOGRAPHICS_SRC = xf86Elo.c
 # endif
+# if SummaSketchSupport
+   SUMMASKETCH_SRC = xf86Summa.c
+# endif
 # if ! BuildDynamicLoading
-    XINPUT_DEVICES = JoystickDefines WacomDefines ElographicsDefines
+    XINPUT_DEVICES = JoystickDefines WacomDefines ElographicsDefines SummaSketchDefines
 #  if JoystickSupport
       JOYSTICK_OBJ = xf86Jstk.o
 #  endif
@@ -51,6 +54,9 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.17 1996/06/2
 #  endif
 #  if ElographicsSupport
    ELOGRAPHICS_OBJ = xf86Elo.o
+#  endif
+#  if SummaSketchSupport
+   SUMMASKETCH_OBJ = xf86Summa.o
 #  endif
 # else
  SHARED_CFLAGS = PositionIndependentCFlags $(MODULEDEFINES)
@@ -116,6 +122,7 @@ SRCS =	\
 	$(JOYSTICK_SRC) \
 	$(WACOM_SRC) \
 	$(ELOGRAPHICS_SRC) \
+	$(SUMMASKETCH_SRC) \
 	$(XKBDDXSRC) \
 	$(BETASRC) \
 	$(SERVERSRCS)
@@ -132,6 +139,7 @@ OBJS = \
 	$(JOYSTICK_OBJ) \
 	$(WACOM_OBJ) \
 	$(ELOGRAPHICS_OBJ) \
+	$(SUMMASKETCH_OBJ) \
 	$(XKBDDXOBJ) \
 	$(BETAOBJ) \
 	$(KBD).o
@@ -185,6 +193,13 @@ SpecialObjectRule(xf86Elo.o,xf86Elo.c,$(SHARED_CFLAGS))
 DynamicModuleTarget(xf86Elo.so,xf86Elo.o)
 #   ifndef DontInstallPC98Version
 InstallDynamicModule(xf86Elo.so,$(MODULEDIR))
+#   endif
+#  endif
+#  if SummaSketchSupport
+SpecialObjectRule(xf86Summa.o,xf86Summa.c,$(SHARED_CFLAGS))
+DynamicModuleTarget(xf86Summa.so,xf86Summa.o)
+#   ifndef DontInstallPC98Version
+InstallDynamicModule(xf86Summa.so,$(MODULEDIR))
 #   endif
 #  endif
 # endif
@@ -247,6 +262,7 @@ LinkSourceFile(xf86Events.c,$(XF86SRC)/common)
 LinkSourceFile(xf86ExtInit.h,$(XF86SRC)/common)
 LinkSourceFile(xf86Init.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Jstk.c,$(XF86SRC)/common)
+LinkSourceFile(xf86Summa.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Wacom.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Xinput.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Xinput.h,$(XF86SRC)/common)

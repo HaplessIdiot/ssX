@@ -23,13 +23,11 @@
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  *
  * ToDo: 	Set 64K/16M colours
- *            Fix Clocks ? (only first 4 seem to work ?)
- *		Hardware Cursor ?
- *		(Linear ? - Ain't working - FIXME!)
+ *		Linear is broke - FIXME ! - Can't find linear address space.
  *
  * Currently only works for VGA16 with Non-Interlaced modes.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.7 1996/06/29 09:09:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.8 1996/06/30 04:42:44 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -47,19 +45,32 @@
 #include "vga.h"
 #include "vgaPCI.h"
 
+#ifdef XFreeXDGA
+#include "X.h"
+#include "Xproto.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
+
 #ifdef XF86VGA16
 #define MONOVGA
+#endif
+
+#ifndef MONOVGA
+extern vgaHWCursorRec vgaHWCursor;
 #endif
 
 typedef struct {
 	vgaHWRec std;          		/* std IBM VGA register 	*/
 	unsigned char ClockReg;
+	unsigned char ClockReg2;
 	unsigned char DualBanks;
 	unsigned char BankReg;
 	unsigned char CRTCOff;
 	unsigned char DispCRT;
-	unsigned char ReadBank;
-	unsigned char WriteBank;
+	unsigned char Unknown;
 } vgaSISRec, *vgaSISPtr;
 
 static Bool SISClockSelect();
@@ -75,6 +86,16 @@ static void SISAdjust();
 extern void SISSetRead();
 extern void SISSetWrite();
 extern void SISSetReadWrite();
+
+extern int SISCursorHotX;
+extern int SISCursorHotY;
+extern int SISCursorWidth;
+extern int SISCursorHeight;
+
+extern void SISCursorInit();
+extern void SISRestoreCursor();
+extern void SISWarpCursor();
+extern void SISQueryBestSize();
 
 vgaVideoChipRec SIS = {
   SISProbe,
@@ -104,8 +125,8 @@ vgaVideoChipRec SIS = {
   FALSE,
   0,
   0,
-  FALSE, /* 16bpp - not yet ! */	
-  FALSE, /* 32bpp - not yet ! */
+  TRUE,
+  TRUE,
   NULL,
   1,
 };
@@ -118,6 +139,7 @@ vgaVideoChipRec SIS = {
 
 int SISchipset;
 Bool sisUseLinear = FALSE;
+static int SISDisplayableMemory;
 
 /*
  * SISIdent --
@@ -263,6 +285,9 @@ SISProbe()
 
 	vga256InfoRec.bankedMono = TRUE;
 #ifndef MONOVGA
+	/* We support Direct Video Access */
+	vga256InfoRec.directMode = XF86DGADirectPresent;
+
 	/* MaxClock set at 90MHz for 256 - ??? */
 	OFLG_SET(OPTION_LINEAR, &SIS.ChipOptionFlags);
 #else
@@ -281,17 +306,23 @@ static void
 SISFbInit()
 {
 #ifndef MONOVGA
+	unsigned long j;
+	unsigned long i;
+	pointer sisVideoMem;
+	long *poker;
+	int offscreen_available;
 	/*
 	 * The PCI Configuration Space doesn't seem to set a base
 	 * address for the linear aperture. We can do this with the
 	 * linear registers. But - We must use MemBase to do this.
 	 */
+#if 0	/* BROKE - FIXME ! Can't find linear address space */	
+	/* Must be missing some bit flip to turn it on.    */
 	outb(0x3C4, 0x20);
 	SIS.ChipLinearBase = (inb(0x3C5) << 8) * 1024; 	/* Get Linear Status */
 
 	if (SIS.ChipLinearBase == 0)
-		SIS.ChipLinearBase = (64 * 1024 * 1024) -
-					(vga256InfoRec.videoRam * 1024);
+		SIS.ChipLinearBase = (62 * 1024 * 1024);
 
 	if (vga256InfoRec.MemBase != 0)
 		SIS.ChipLinearBase = vga256InfoRec.MemBase;
@@ -299,8 +330,19 @@ SISFbInit()
 	if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
 	{
 		sisUseLinear = TRUE;
-		outw(0x3C4, 0x0621); /* Enable Linear */
+		outw(0x3C4, 0xF820); /* Set at 62MB */
+		outw(0x3C4, 0x6021); /* Enable Linear */
 	}
+
+	for (i=0x2000000;i<0xff000000;i+=0x10000){
+		sisVideoMem = xf86MapVidMem(0, LINEAR_REGION, (pointer)i,
+						1024);
+		poker = (long *) sisVideoMem;
+		if (*poker != 0xffffffff)
+		ErrorF("Memory at 0x%x is 0x%x\n",i,*poker);
+		xf86UnMapVidMem(0, LINEAR_REGION, sisVideoMem, 1024);
+	}
+#endif
 
 	if (xf86LinearVidMem() && sisUseLinear)
 	{
@@ -310,10 +352,38 @@ SISFbInit()
 			SIS.ChipLinearBase, SIS.ChipLinearSize/1048576);
 	}
 
+	SIS.ChipLinearSize = 2048 * 1024;
+
 	if (sisUseLinear)
 		SIS.ChipUseLinearAddressing = TRUE;
 	else
 		SIS.ChipUseLinearAddressing = FALSE;
+
+	SISDisplayableMemory = vga256InfoRec.virtualX * vga256InfoRec.virtualY
+				* (vgaBitsPerPixel / 8);
+
+	offscreen_available = vga256InfoRec.videoRam * 1024 - 
+					SISDisplayableMemory;
+
+	if (OFLG_ISSET(OPTION_HW_CURSOR, &vga256InfoRec.options))
+	{
+		/* SiS needs upper 16K for hardware cursor */
+		if (offscreen_available < 16384)
+			ErrorF("%s %s: Not enough off-screen video"
+				" memory for hardware cursor, using software cursor.\n",
+				XCONFIG_PROBED, vga256InfoRec.name);
+		else {
+			SISCursorWidth = 64;
+			SISCursorHeight = 64;
+			vgaHWCursor.Initialized = TRUE;
+			vgaHWCursor.Init = SISCursorInit;
+			vgaHWCursor.Restore = SISRestoreCursor;
+			vgaHWCursor.Warp = SISWarpCursor;
+			vgaHWCursor.QueryBestSize = SISQueryBestSize;
+			ErrorF("%s %s: Using hardware cursor\n",
+				XCONFIG_GIVEN, vga256InfoRec.name);
+		}
+	}
 #endif /* MONOVGA */
 }
 
@@ -326,6 +396,14 @@ SISEnterLeave(enter)
 	Bool enter;
 {
   	unsigned char temp;
+
+#ifndef MONOVGA
+#ifdef XFreeXDGA
+	if (vga256InfoRec.directMode & XF86DGADirectGraphics && !enter)
+	if (OFLG_ISSET(OPTION_HW_CURSOR, &vga256InfoRec.options))
+		SISHideCursor();
+#endif
+#endif
 
   	if (enter)
     	{
@@ -353,15 +431,18 @@ SISRestore(restore)
      	vgaSISPtr restore;
 {
 	outw(0x3C4, ((restore->BankReg) << 8) | 0x06);
+	outw(0x3C4, ((restore->Unknown) << 8) | 0x08);
 	outw(0x3C4, ((restore->CRTCOff) << 8) | 0x0A);
 	outw(0x3C4, ((restore->ClockReg) << 8) | 0x07);
 	outw(0x3C4, ((restore->DualBanks) << 8) | 0x0B);
 	outw(0x3C4, ((restore->DispCRT) << 8) | 0x27);
-	
+
 	/*
 	 * Now restore generic VGA Registers
 	 */
 	vgaHWRestore((vgaHWPtr)restore);
+
+	outb(0x3C2, restore->ClockReg2);
 }
 
 /*
@@ -375,10 +456,12 @@ SISSave(save)
   	save = (vgaSISPtr)vgaHWSave((vgaHWPtr)save, sizeof(vgaSISRec));
 
 	outb(0x3C4, 0x06); save->BankReg = inb(0x3C5);
+	outb(0x3C4, 0x08); save->Unknown = inb(0x3C5);
 	outb(0x3C4, 0x0A); save->CRTCOff = inb(0x3C5);
 	outb(0x3C4, 0x07); save->ClockReg = inb(0x3C5);
 	outb(0x3C4, 0x0B); save->DualBanks = inb(0x3C5);
 	outb(0x3C4, 0x27); save->DispCRT = inb(0x3C5);
+	save->ClockReg2 = inb(0x3CC);
 
   	return ((void *) save);
 }
@@ -409,13 +492,20 @@ SISInit(mode)
 	new->std.CRTC[20] = 0x40;
 	new->std.CRTC[23] = 0xA3;
 
+#if 0
 	if (sisUseLinear)
 	{
 		temp = ((SIS.ChipLinearBase/1024) & 0xFF00) >> 8;
+		temp = 0x7C;
 		outw(0x3C4, (temp << 8) | 0x20);
 	}
 #endif
+#endif
+	new->Unknown = 0x3f;
 	new->BankReg = 0x02;
+	if (vgaBitsPerPixel == 16) new->BankReg |= 0x08;
+	if (vgaBitsPerPixel == 32) new->BankReg |= 0x10;
+
 	new->DualBanks = 0x08;
 
 	new->std.CRTC[0x13] = offset & 0xFF;
@@ -425,7 +515,10 @@ SISInit(mode)
 		new->BankReg |= 0x20;
 
 	if (new->std.NoClock >= 0)
+	{
 		new->ClockReg = new->std.NoClock;
+		new->ClockReg2 = inb(0x3CC) | 0x0C;
+	}
 
         return(TRUE);
 }

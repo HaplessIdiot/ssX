@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xconsole.c /main/22 1995/12/07 13:52:50 kaleb $
- * $XFree86: xc/programs/xconsole/xconsole.c,v 3.12 1996/01/24 22:04:33 dawes Exp $
+ * $XFree86: xc/programs/xconsole/xconsole.c,v 3.13 1996/06/10 09:17:57 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -56,6 +56,12 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 #include <X11/Shell.h>
 #include <ctype.h>
+
+#ifdef X_NOT_STDC_ENV
+extern char *malloc ();
+#else
+#include <stdlib.h>
+#endif
 
 #ifdef MINIX
 #define USE_FILE
@@ -334,12 +340,6 @@ IOError(dpy)
 	kill(child_pid, SIGTERM);
     (*ioerror)(dpy);
 }
-#endif
-
-#ifdef X_NOT_STDC_ENV
-extern char *malloc ();
-#else
-#include <stdlib.h>
 #endif
 
 static void

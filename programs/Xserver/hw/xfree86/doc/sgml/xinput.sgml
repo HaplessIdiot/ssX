@@ -111,6 +111,15 @@ The server supports the following extended devices :
 		<item>Motion history capability.
 	</itemize>
 
+	<item> SummaSketch tablet. Features :
+	<itemize>
+		<item>Absolute or relative modes.
+		<item>2 valuators (x and y axis).
+		<item>2 button stylus or 4 button puck.
+		<item>Proximity report.
+		<item>Motion history capability.
+	</itemize>
+
 </itemize>
 
 To  enable  an   extended  device, you  must   add   en  entry  in the
@@ -130,7 +139,7 @@ Consult the man pages for details.
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/xinput.sgml,v 3.0 1996/05/12 12:36:36 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/xinput.sgml,v 3.1 1996/05/12 12:41:46 dawes Exp $
 </verb>
 
 </article>
