@@ -47,71 +47,61 @@ cfb8_32PositionWindow(
     return TRUE;
 }
 
-
-
-void
-cfb8_32CopyWindow(
-    WindowPtr pWin,
-    DDXPointRec ptOldOrg,
-    RegionPtr prgnSrc
-){
+void 
+cfb8_32CopyWindow(pWin, ptOldOrg, prgnSrc)
+    WindowPtr pWin;
+    DDXPointRec ptOldOrg;
+    RegionPtr prgnSrc;
+{
     ScreenPtr pScreen = pWin->drawable.pScreen;
     DDXPointPtr ppt, pptSrc;
-    RegionRec rgnDst8, rgnDst32;
+    RegionRec rgnDst;
+    RegionPtr borderClip = &pWin->borderClip;
     BoxPtr pbox;
-    int i, nbox, dx, dy;
-    unsigned long pm = (pWin->drawable.depth == 24) ? ~0 : 0xff000000;
-    WindowPtr pRoot = WindowTable[pScreen->myNum];
+    int dx, dy, i, nbox;
+    WindowPtr pwinRoot;
+    Bool doUnderlay = miOverlayCopyUnderlay(pScreen);
+    Bool freeReg = FALSE;
 
-    REGION_INIT(pScreen, &rgnDst8, NullBox, 0);
-    REGION_INIT(pScreen, &rgnDst32, NullBox, 0);
+    pwinRoot = WindowTable[pScreen->myNum];
+
+    if(doUnderlay)
+	freeReg = miOverlayCollectUnderlayRegions(pWin, &borderClip);
+
+    REGION_INIT(pScreen, &rgnDst, NullBox, 0);
 
     dx = ptOldOrg.x - pWin->drawable.x;
     dy = ptOldOrg.y - pWin->drawable.y;
     REGION_TRANSLATE(pScreen, prgnSrc, -dx, -dy);
-    REGION_INTERSECT(pScreen, &rgnDst8, &pWin->borderClip, prgnSrc);
+    REGION_INTERSECT(pScreen, &rgnDst, borderClip, prgnSrc);
 
-    nbox = REGION_NUM_RECTS(&rgnDst8);
-    if(nbox &&
-	(pptSrc = (DDXPointPtr )ALLOCATE_LOCAL(nbox * sizeof(DDXPointRec)))) {
+    pbox = REGION_RECTS(&rgnDst);
+    nbox = REGION_NUM_RECTS(&rgnDst);
+    if(!nbox || 
+       !(pptSrc = (DDXPointPtr )ALLOCATE_LOCAL(nbox * sizeof(DDXPointRec))))
+    {
+	REGION_UNINIT(pScreen, &rgnDst);
+	return;
+    }
+    ppt = pptSrc;
 
-	pbox = REGION_RECTS(&rgnDst8);
-	for (i = nbox, ppt = pptSrc; i--; ppt++, pbox++) {
-	    ppt->x = pbox->x1 + dx;
-	    ppt->y = pbox->y1 + dy;
-	}
-	if(pm == ~0)
-	   cfb32DoBitbltCopy((DrawablePtr)pRoot, (DrawablePtr)pRoot,
-                		GXcopy, &rgnDst8, pptSrc, ~0L);
-	else
-	   cfbDoBitblt8To8GXcopy((DrawablePtr)pRoot, (DrawablePtr)pRoot,
-				GXcopy, &rgnDst8, pptSrc, ~0, 0);
-	DEALLOCATE_LOCAL(pptSrc);
+    for (i = nbox; --i >= 0; ppt++, pbox++)
+    {
+	ppt->x = pbox->x1 + dx;
+	ppt->y = pbox->y1 + dy;
     }
 
-    if(pm != ~0) {
-      miSegregateChildren(pWin, &rgnDst32, 24);
-      if(REGION_NOTEMPTY(pScreen, &rgnDst32)) {
-	REGION_INTERSECT(pScreen, &rgnDst32, &rgnDst32, prgnSrc);
-	nbox = REGION_NUM_RECTS(&rgnDst32);
-	if(nbox &&
-	  (pptSrc = (DDXPointPtr )ALLOCATE_LOCAL(nbox * sizeof(DDXPointRec)))){
+    if(doUnderlay)
+	cfbDoBitblt24To24GXcopy((DrawablePtr)pwinRoot, (DrawablePtr)pwinRoot,
+			GXcopy, &rgnDst, pptSrc, ~0, 0);
+    else
+	cfbDoBitblt8To8GXcopy((DrawablePtr)pwinRoot, (DrawablePtr)pwinRoot,
+			GXcopy, &rgnDst, pptSrc, ~0, 0);
 
-	    pbox = REGION_RECTS(&rgnDst32);
-	    for (i = nbox, ppt = pptSrc; i--; ppt++, pbox++) {
-		ppt->x = pbox->x1 + dx;
-		ppt->y = pbox->y1 + dy;
-	    }
-
-	    cfbDoBitblt24To24GXcopy((DrawablePtr)pRoot, (DrawablePtr)pRoot,
-				GXcopy, &rgnDst32, pptSrc, ~0, 0);
-	    DEALLOCATE_LOCAL(pptSrc);
-	}
-      }
-    }
-
-    REGION_UNINIT(pScreen, &rgnDst8);
-    REGION_UNINIT(pScreen, &rgnDst32);
+    DEALLOCATE_LOCAL(pptSrc);
+    REGION_UNINIT(pScreen, &rgnDst);
+    if(freeReg) 
+	REGION_DESTROY(pScreen, borderClip);
 }
 
 Bool
@@ -120,25 +110,6 @@ cfb8_32ChangeWindowAttributes(
     unsigned long mask
 ){
     return TRUE;
-}
-
-
-void
-cfb8_32WindowExposures(
-   WindowPtr pWin,
-   RegionPtr pReg,
-   RegionPtr pOtherReg
-){
-
-    if(REGION_NUM_RECTS(pReg) && (pWin->drawable.depth == 24)) {
-	cfb8_32ScreenPtr pScreenPriv = 
-		CFB8_32_GET_SCREEN_PRIVATE(pWin->drawable.pScreen);
-
-	cfb8_32FillBoxSolid8((DrawablePtr)pWin, REGION_NUM_RECTS(pReg),
-		REGION_RECTS(pReg), pScreenPriv->key);
-    }
-
-    miWindowExposures(pWin, pReg, pOtherReg);
 }
 
 

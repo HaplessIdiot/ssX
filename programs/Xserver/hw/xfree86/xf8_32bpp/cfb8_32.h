@@ -85,6 +85,13 @@ cfb8_32ValidateGC32(
     DrawablePtr		pDrawable
 );
 
+void
+cfb32ValidateGC_Underlay(
+    GCPtr  		pGC,
+    unsigned long 	changes,
+    DrawablePtr		pDrawable
+);
+
 Bool cfb8_32CreateGC(GCPtr pGC);
 
 void
@@ -132,13 +139,6 @@ cfb8_32ScreenInit (
     int dpix, int dpiy,	
     int width
 );
-
-void
-cfb8_32SegregateChildren (
-    WindowPtr pWin, 
-    RegionPtr pReg32
-);
-
 
 void
 cfb8_32FillBoxSolid8 (
@@ -212,12 +212,6 @@ cfb8_32ChangeWindowAttributes(
     unsigned long mask
 );
 
-void
-cfb8_32WindowExposures(
-   WindowPtr pWin,
-   RegionPtr pReg,
-   RegionPtr pOtherReg
-);
 
 #define CFB8_32_GET_GC_PRIVATE(pGC)\
    (cfb8_32GCPtr)((pGC)->devPrivates[cfb8_32GCPrivateIndex].ptr)
@@ -226,8 +220,5 @@ cfb8_32WindowExposures(
    (cfb8_32ScreenPtr)((pScreen)->devPrivates[cfb8_32ScreenPrivateIndex].ptr)
 
 Bool xf86Overlay8Plus32Init (ScreenPtr pScreen);
-
-unsigned char
-cfb8_32GetKey(ScreenPtr pScreen);
 
 #endif /* _CFB8_32_H */

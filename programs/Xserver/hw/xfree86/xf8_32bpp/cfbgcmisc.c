@@ -23,6 +23,7 @@
 
 static void cfb8_32ValidateGC(GCPtr, unsigned long, DrawablePtr);
 static void cfb8_32DestroyGC(GCPtr pGC);
+static void cfb32DestroyGC_Underlay(GCPtr pGC);
 
 static
 GCFuncs cfb8_32GCFuncs = {
@@ -34,6 +35,31 @@ GCFuncs cfb8_32GCFuncs = {
     miDestroyClip,
     miCopyClip,
 };
+
+
+static
+GCFuncs cfb32GCFuncs_Underlay = {
+    cfb32ValidateGC_Underlay,
+    miChangeGC,
+    miCopyGC,
+    cfb32DestroyGC_Underlay,
+    miChangeClip,
+    miDestroyClip,
+    miCopyClip,
+};
+
+static void
+cfb32DestroyGC_Underlay(GCPtr pGC)
+{
+    cfb8_32GCPtr pGCPriv = CFB8_32_GET_GC_PRIVATE(pGC);
+
+    if (pGC->freeCompClip)
+        REGION_DESTROY(pGC->pScreen, pGC->pCompositeClip);
+
+    if(pGC->ops)
+	miDestroyGCOps(pGC->ops);
+}
+
 
 static void
 cfb8_32DestroyGC(GCPtr pGC)
@@ -56,8 +82,6 @@ cfb8_32CreateGC(GCPtr pGC)
 
     if (PixmapWidthPaddingInfo[pGC->depth].padPixelsLog2 == LOG2_BITMAP_PAD)
         return (mfbCreateGC(pGC));
-    if (pGC->depth == 24)
-	return (cfb32CreateGC(pGC));
 
     pGC->clientClip = NULL;
     pGC->clientClipType = CT_NONE;
@@ -71,13 +95,17 @@ cfb8_32CreateGC(GCPtr pGC)
     pPriv->oneRect = FALSE;
 
     pGC->ops = NULL;
-    pGC->funcs = &cfb8_32GCFuncs;
 
-    pGCPriv = CFB8_32_GET_GC_PRIVATE(pGC);
-    pGCPriv->Ops8bpp = NULL;
-    pGCPriv->Ops32bpp = NULL;
-    pGCPriv->OpsAre8bpp = FALSE;
-    pGCPriv->changes = 0;
+    if (pGC->depth == 8) {
+	pGC->funcs = &cfb8_32GCFuncs;
+
+	pGCPriv = CFB8_32_GET_GC_PRIVATE(pGC);
+	pGCPriv->Ops8bpp = NULL;
+	pGCPriv->Ops32bpp = NULL;
+	pGCPriv->OpsAre8bpp = FALSE;
+	pGCPriv->changes = 0;
+    } else
+	pGC->funcs = &cfb32GCFuncs_Underlay;
 	
     return TRUE;
 }

@@ -1,4 +1,3 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbgc.c,v 1.1 1999/01/03 03:58:56 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -41,21 +40,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-
-
-/*
-
-PSZ		8	16	24	32
-PIXEL_ADDR	True	True	True	True
-NO_ONE_RECT	False	False	False	False
-WriteBitGroup	True	True	True	True
-FOUR_BIT_CODE	True	False	False	False
-LOWMEMFTPT	False	False	False	False
-
-*/
-
-
-/* This gets built twice.  Once for 8bpp and another for 32bpp */
+#define PSZ 32
 
 #include "X.h"
 #include "Xmd.h"
@@ -72,54 +57,47 @@ LOWMEMFTPT	False	False	False	False
 #include "mistruct.h"
 #include "mibstore.h"
 #include "migc.h"
-#include "mioverlay.h"
 
-#include "cfb8_32.h"
 #include "cfbmskbits.h"
 #include "cfb8bit.h"
 
-
-#if PSZ == 8
-# define useTEGlyphBlt  cfbTEGlyphBlt8
+#ifdef WriteBitGroup
+#  define useTEGlyphBlt	cfbImageGlyphBlt8
 #else
-# ifdef WriteBitGroup
-#  define useTEGlyphBlt cfbImageGlyphBlt8
-# else
-#  define useTEGlyphBlt cfbTEGlyphBlt
-# endif
+#  define useTEGlyphBlt	cfbTEGlyphBlt
 #endif
 
 #ifdef WriteBitGroup
-# define useImageGlyphBlt       cfbImageGlyphBlt8
-# define usePolyGlyphBlt        cfbPolyGlyphBlt8
+# define useImageGlyphBlt	cfbImageGlyphBlt8
+# define usePolyGlyphBlt	cfbPolyGlyphBlt8
 #else
-# define useImageGlyphBlt       miImageGlyphBlt
-# define usePolyGlyphBlt        miPolyGlyphBlt
+# define useImageGlyphBlt	miImageGlyphBlt
+# define usePolyGlyphBlt	miPolyGlyphBlt
 #endif
 
 #ifdef FOUR_BIT_CODE
-# define usePushPixels  cfbPushPixels8
+# define usePushPixels	cfbPushPixels8
 #else
 #ifndef LOWMEMFTPT
-# define usePushPixels  mfbPushPixels
+# define usePushPixels	mfbPushPixels
 #else
-# define usePushPixels  miPushPixels
+# define usePushPixels	miPushPixels
 #endif /* ifndef LOWMEMFTPT */
 #endif
 
 #ifdef PIXEL_ADDR
-# define ZeroPolyArc    cfbZeroPolyArcSS8Copy
+# define ZeroPolyArc	cfbZeroPolyArcSS8Copy
 #else
-# define ZeroPolyArc    miZeroPolyArc
+# define ZeroPolyArc	miZeroPolyArc
 #endif
 
 
-static GCOps cfb8_32TEOps1Rect = {
+static GCOps cfbTEOps1Rect = {
     cfbSolidSpansCopy,
     cfbSetSpans,
-    cfb8_32PutImage,
-    cfb8_32CopyArea,
-    cfb8_32CopyPlane,
+    cfbPutImage,
+    cfbCopyArea,
+    cfbCopyPlane,
     cfbPolyPoint,
 #ifdef PIXEL_ADDR
     cfb8LineSS1Rect,
@@ -145,12 +123,12 @@ static GCOps cfb8_32TEOps1Rect = {
 #endif
 };
 
-static GCOps cfb8_32NonTEOps1Rect = {
+static GCOps cfbNonTEOps1Rect = {
     cfbSolidSpansCopy,
     cfbSetSpans,
-    cfb8_32PutImage,
-    cfb8_32CopyArea,
-    cfb8_32CopyPlane,
+    cfbPutImage,
+    cfbCopyArea,
+    cfbCopyPlane,
     cfbPolyPoint,
 #ifdef PIXEL_ADDR
     cfb8LineSS1Rect,
@@ -176,12 +154,12 @@ static GCOps cfb8_32NonTEOps1Rect = {
 #endif
 };
 
-static GCOps cfb8_32TEOps = {
+static GCOps cfbTEOps = {
     cfbSolidSpansCopy,
     cfbSetSpans,
-    cfb8_32PutImage,
-    cfb8_32CopyArea,
-    cfb8_32CopyPlane,
+    cfbPutImage,
+    cfbCopyArea,
+    cfbCopyPlane,
     cfbPolyPoint,
     cfbLineSS,
     cfbSegmentSS,
@@ -202,12 +180,12 @@ static GCOps cfb8_32TEOps = {
 #endif
 };
 
-static GCOps cfb8_32NonTEOps = {
+static GCOps cfbNonTEOps = {
     cfbSolidSpansCopy,
     cfbSetSpans,
-    cfb8_32PutImage,
-    cfb8_32CopyArea,
-    cfb8_32CopyPlane,
+    cfbPutImage,
+    cfbCopyArea,
+    cfbCopyPlane,
     cfbPolyPoint,
     cfbLineSS,
     cfbSegmentSS,
@@ -233,7 +211,9 @@ static GCOps cfb8_32NonTEOps = {
 };
 
 static GCOps *
-cfb8_32MatchCommon (GCPtr pGC, cfbPrivGCPtr devPriv)
+cfb32MatchCommon_Underlay (pGC, devPriv)
+    GCPtr	    pGC;
+    cfbPrivGCPtr    devPriv;
 {
     if (pGC->lineWidth != 0)
 	return 0;
@@ -254,46 +234,32 @@ cfb8_32MatchCommon (GCPtr pGC, cfbPrivGCPtr devPriv)
 #endif
 	)
 #ifdef NO_ONE_RECT
-            return &cfb8_32TEOps1Rect;
+            return &cfbTEOps1Rect;
 #else
 	    if (devPriv->oneRect)
-		return &cfb8_32TEOps1Rect;
+		return &cfbTEOps1Rect;
 	    else
-		return &cfb8_32TEOps;
+		return &cfbTEOps;
 #endif
 	else
 #ifdef NO_ONE_RECT
-	    return &cfb8_32NonTEOps1Rect;
+	    return &cfbNonTEOps1Rect;
 #else
 	    if (devPriv->oneRect)
-		return &cfb8_32NonTEOps1Rect;
+		return &cfbNonTEOps1Rect;
 	    else
-		return &cfb8_32NonTEOps;
+		return &cfbNonTEOps;
 #endif
     }
     return 0;
 }
 
 
-/* Clipping conventions
-	if the drawable is a window
-	    CT_REGION ==> pCompositeClip really is the composite
-	    CT_other ==> pCompositeClip is the window clip region
-	if the drawable is a pixmap
-	    CT_REGION ==> pCompositeClip is the translated client region
-		clipped to the pixmap boundary
-	    CT_other ==> pCompositeClip is the pixmap bounding box
-*/
-
 void
-#if PSZ == 8
-cfb8_32ValidateGC8(
-#else
-cfb8_32ValidateGC32(
-#endif
-    GCPtr  		pGC,
-    unsigned long 	changes,
-    DrawablePtr		pDrawable
+cfb32ValidateGC_Underlay(
+    GCPtr  pGC,
+    unsigned long   changes,
+    DrawablePtr	    pDrawable
 ){
     int         mask;		/* stateChanges */
     int         index;		/* used for stepping through bitfields */
@@ -320,9 +286,13 @@ cfb8_32ValidateGC32(
      */
 
     if ((changes & (GCClipXOrigin|GCClipYOrigin|GCClipMask|GCSubwindowMode)) ||
-	(pDrawable->serialNumber != (pGC->serialNumber & DRAWABLE_SERIAL_BITS)))
+	(pDrawable->serialNumber != (pGC->serialNumber & DRAWABLE_SERIAL_BITS))
+	)
     {
-	miComputeCompositeClip (pGC, pDrawable);
+	if(pDrawable->type == DRAWABLE_WINDOW)
+	    miOverlayComputeCompositeClip (pGC, (WindowPtr)pDrawable);
+	else
+	    miComputeCompositeClip (pGC, pDrawable);
 #ifdef NO_ONE_RECT
 	devPriv->oneRect = FALSE;
 #else
@@ -422,13 +392,14 @@ cfb8_32ValidateGC32(
     }
 
     if(!pGC->ops)
-	pGC->ops = & cfb8_32NonTEOps;
+	pGC->ops = & cfbNonTEOps;
+
 
     if (new_rrop || new_fillspans || new_text || new_fillarea || new_line)
     {
 	GCOps	*newops;
 
-	if ((newops = cfb8_32MatchCommon (pGC, devPriv)))
+	if (newops = cfb32MatchCommon_Underlay (pGC, devPriv))
  	{
 	    if (pGC->ops->devPrivate.val)
 		miDestroyGCOps (pGC->ops);
