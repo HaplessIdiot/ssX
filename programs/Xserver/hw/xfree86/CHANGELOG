@@ -1,4 +1,19 @@
 XFree86 4.2.99.902 (XX February 2003)
+ 861. Resync with DRI mesa-4-0-4 branch:
+       - Correct RADEON_MAX_TCL_VERTSIZE and set MaxArrayLockSize
+         (Keith Whitwell).
+       - Fix EAGAIN handling in radeon_cp_dispatch_texture(), which fixes
+         corruption of large textures (Michel Dänzer).
+       - Fix bufferSize and alphaMask for DRI in several drivers (Brian Paul,
+         Leif Delgass).
+       - Avoid a loop on validating destroyed drawable (Keith Whitwell).
+       - Reorder DestroyContext, GarbageCollectDrawables to avoid error
+         (Egbert Eich).
+       - Remove untested BSD DRM vlank signal code (Eric Anholt).
+       - Update Radeon PCI IDs for BSD drm driver (Eric Anholt).
+       - Uninitialize mutexes on cleanup in the BSD drm driver, which
+         fixes panics with FreeBSD-5.0 with WITNESS (Eric Anholt).
+       - Remove the untested/unused gamma DRM driver for BSD (Eric Anholt).
  860. Fix byte swapping of the refresh rate argument to RandR's
       SetScreenConfig request, and fix a 1.0 client compatibility problem
       with SetScreenConfig (#A.1574, Keith Packard).
@@ -16285,4 +16300,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2535 2003/02/07 20:41:00 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2536 2003/02/08 03:52:29 dawes Exp $

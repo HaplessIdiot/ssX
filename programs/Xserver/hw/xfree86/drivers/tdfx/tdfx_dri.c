@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.23 2001/05/21 21:43:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.24 2002/10/17 01:02:08 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -195,7 +195,7 @@ TDFXInitVisualConfigs(ScreenPtr pScreen)
 	    else
 	      pConfigs[i].doubleBuffer = FALSE;
 	    pConfigs[i].stereo = FALSE;
-	    pConfigs[i].bufferSize = 16;
+	    pConfigs[i].bufferSize = (pScrn->bitsPerPixel==32) ? 32 : 24;
 	    if (depth) {
 	      if (pTDFX->cpp > 2)
 		pConfigs[i].depthSize = 24;

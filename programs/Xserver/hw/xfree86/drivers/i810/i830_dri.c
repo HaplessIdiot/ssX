@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_dri.c,v 1.10 2002/12/18 15:49:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_dri.c,v 1.11 2003/01/28 22:47:09 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -328,7 +328,7 @@ I830InitVisualConfigs(ScreenPtr pScreen)
 	       pConfigs[i].redMask = 0x00FF0000;
 	       pConfigs[i].greenMask = 0x0000FF00;
 	       pConfigs[i].blueMask = 0x000000FF;
-	       pConfigs[i].alphaMask = 0xff000000;;
+	       pConfigs[i].alphaMask = 0x00000000;;
 	       if (accum) {
 		  pConfigs[i].accumRedSize = 16;
 		  pConfigs[i].accumGreenSize = 16;
@@ -346,7 +346,7 @@ I830InitVisualConfigs(ScreenPtr pScreen)
 		  pConfigs[i].doubleBuffer = FALSE;
 	       }
 	       pConfigs[i].stereo = FALSE;
-	       pConfigs[i].bufferSize = 32;
+	       pConfigs[i].bufferSize = 24;
 	       if (depth) {
 		  pConfigs[i].depthSize = 24;
 		  pConfigs[i].stencilSize = 8;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.27 2003/01/31 15:43:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.28 2003/02/07 18:08:59 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -247,7 +247,7 @@ static Bool RADEONInitVisualConfigs(ScreenPtr pScreen)
 		else
 		    pConfigs[i].doubleBuffer   = FALSE;
 		pConfigs[i].stereo             = FALSE;
-		pConfigs[i].bufferSize         = 24;
+		pConfigs[i].bufferSize         = 32;
 		if (stencil) {
 		    pConfigs[i].depthSize      = 24;
 		    pConfigs[i].stencilSize    = 8;
