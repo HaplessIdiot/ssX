@@ -1,4 +1,6 @@
 XFree86 3.9g (xx June 1997)
+1032. Fix SEGV in solx86's xf86MapVidMem() when called without first
+      calling xf86LinearVidMem() (David Thompson).
 1031. Fix for pci detection code in S3 server (#683, Harald Koenig).
 1030. Fix problems with rop -1 in S3V server (#679,681,682, Huver Hu, Harald
       Koenig).
