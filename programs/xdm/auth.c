@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/auth.c,v 3.31tsi Exp $ */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.32 2003/12/22 17:48:12 tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -1427,6 +1427,7 @@ RemoveUserAuthorization (struct display *d, struct verify_info *verify)
     Debug ("Lock is %d\n", lockStatus);
     if (lockStatus != LOCK_SUCCESS)
 	return;
+    old = NULL;
     if (openFiles (name, new_name, &old, &new))
     {
 	initAddrs ();
