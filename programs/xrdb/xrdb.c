@@ -2,7 +2,7 @@
  * xrdb - X resource manager database utility
  *
  * $XConsortium: xrdb.c,v 11.76 95/05/12 18:36:46 mor Exp $
- * $XFree86: xc/programs/xrdb/xrdb.c,v 3.3 1996/01/05 13:22:55 dawes Exp $
+ * $XFree86: xc/programs/xrdb/xrdb.c,v 3.4 1996/08/25 14:15:32 dawes Exp $
  */
 
 /*
@@ -921,7 +921,14 @@ main (argc, argv)
 	strcpy(tmpname2, "xrdbD_XXXXXX");
 	strcpy(tmpname3, "\\temp\\xrdbD_XXXXXX");
 #else
+#ifdef __EMX__
+	{ char *tmpdir=getenv("TMP");
+	  if (!tmpdir) tmpdir="\\";
+	  sprintf(tmpname2, "%s\\xrdbD_XXXXXX",tmpdir);
+	}
+#else
 	strcpy(tmpname2, "/tmp/xrdbD_XXXXXX");
+#endif
 #endif
 	(void) mktemp(tmpname2);
     }
@@ -938,7 +945,14 @@ main (argc, argv)
 #ifdef WIN32
 	strcpy(tmpname, "\\temp\\xrdb_XXXXXX");
 #else
+#ifdef __EMX__
+	{ char *tmpdir=getenv("TMP");
+	  if (!tmpdir) tmpdir="\\";
+	  sprintf(tmpname, "%s\\xrdb_XXXXXX",tmpdir);
+	}
+#else
 	strcpy(tmpname, "/tmp/xrdb_XXXXXX");
+#endif
 #endif
 	(void) mktemp(tmpname);
 	filename = tmpname;

@@ -1,3 +1,7 @@
+XFree86 3.1.2G (3 September 1996)
+774. Fix some XF86Setup typos.
+773. OS/2 updates (Holger Veit).
+
 XFree86 3.1.2Fc (3 September 1996)
 772. XF86Setup updates (see XF86Setup/CHANGELOG for details) (Joe Moss).
 771. PCI detection for the Alliance ProMotion 6422 (Kent Hamilton).
