@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/mouse-cfg.c,v 1.4 2000/09/26 15:57:22 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/mouse-cfg.c,v 1.5 2000/10/20 14:59:06 alanh Exp $
  */
 
 #include "xf86config.h"
@@ -115,8 +115,8 @@ MouseConfig(XtPointer config)
 	    input = (XF86ConfInputPtr)(input->list.next);
 	}
 	do {
-	    ++nmouses;
 	    XmuSnprintf(mouse_name, sizeof(mouse_name), "Mouse%d", nmouses);
+	    ++nmouses;
 	} while (xf86findInput(mouse_name,
 		 XF86Config->conf_input_lst));
 
