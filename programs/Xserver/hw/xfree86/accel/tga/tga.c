@@ -23,7 +23,7 @@
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.12 1996/12/28 08:15:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.13 1997/01/05 11:54:29 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -419,17 +419,6 @@ tgaProbe()
 
   tgaInfoRec.displayWidth = tgaInfoRec.virtualX;
 
-  if (xf86bpp < 0)
-	xf86bpp = tgaInfoRec.depth;
-
-  switch (xf86bpp) {
-	case 8:
-		break;
-	default:
-		ErrorF("Invalid value for bpp. 8bpp is only supported.\n");
-		return(FALSE);
-  }
-
   if (OFLG_ISSET(OPTION_DAC_8_BIT, &tgaInfoRec.options))
 	tgaDAC8Bit = TRUE;
 
@@ -438,6 +427,20 @@ tgaProbe()
 
   if (OFLG_ISSET(OPTION_POWER_SAVER, &tgaInfoRec.options))
 	tgaPowerSaver = TRUE;
+
+  if (xf86bpp < 0)
+	xf86bpp = tgaInfoRec.depth;
+  if (xf86weight.red == 0 || xf86weight.green == 0 || xf86weight.blue == 0)
+	xf86weight = tgaInfoRec.weight;
+  switch (xf86bpp) {
+	case 8:
+		/* XAA uses this */
+		xf86weight.green = (tgaDAC8Bit ? 8 : 6);
+		break;
+	default:
+		ErrorF("Invalid value for bpp. 8bpp is only supported.\n");
+		return(FALSE);
+  }
 
 #ifdef XFreeXDGA
 #ifdef NOTYET
@@ -482,8 +485,8 @@ tgaInitialize (scr_index, pScreen, argc, argv)
 	if (monitorResolution)
 		displayResolution = monitorResolution;
 	
-#if 0
-	/* Can't do it yet - glibc-1.99 causes a SIGFPE when XAA inited */
+#if 1
+	/* Let's use the new XAA Architecture.....*/
  	TGAAccelInit();
 
 	if (!xf86XAAScreenInit8bpp(pScreen,
