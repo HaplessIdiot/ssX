@@ -1,3 +1,6 @@
+1226. Fix pixmap cache when more than 16MB of memory on Permedia 3
+      (Alan Hourihane).
+1225. Fix colourmap problems at depth15/16 on Permedia3 (Alan Hourihane).
 1224. Bump xc/programs/Xserver/GL/dri (libdri.a) version to 3.1.0 to
       correspond with change 1212, and modify drivers accordingly
       (Alan Hourihane).
@@ -12141,4 +12144,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1496 2000/12/21 08:45:40 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1497 2000/12/21 12:22:54 alanh Exp $
