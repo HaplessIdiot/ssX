@@ -5,8 +5,8 @@
  * Copyright 2002,2003 by Thomas Winischhofer, Vienna, Austria.
  * All Rights Reserved.
  *
- * Formerly based on the mga Xv driver by Mark Vojkovich and i810 Xv
- * driver by Jonathan Bian <jonathan.bian@intel.com>.
+ * Formerly and in basic structure based on the mga Xv driver by Mark Vojkovich
+ * and i810 Xv driver by Jonathan Bian <jonathan.bian@intel.com>.
  *
  * Formerly based on a mostly non-working fragment for the 630 by
  * Silicon Integrated Systems Corp, Inc., HsinChu, Taiwan.

@@ -78,10 +78,6 @@ typedef unsigned long IOADDRESS;
 #define SISMERGED	/* TW: Include Merged-FB mode */
 #endif
 
-#if 1			/* TW: Include code for 330 - highly preliminary */
-#define INCL_SIS330
-#endif
-
 #if 1			/* TW: Include code for cycling CRT2 type via keyboard */
 #define CYCLECRT2	/* (not functional yet) */
 #endif
@@ -204,6 +200,7 @@ typedef unsigned long IOADDRESS;
 #define VB_LCD_1024x600         0x00001000
 #define VB_LCD_640x480_2	0x00002000  	/* DSTN/FSTN */
 #define VB_LCD_640x480_3	0x00004000  	/* DSTN/FSTN */
+#define VB_LCD_848x480		0x00008000	/* LVDS only, otherwise handled as custom */
 #define VB_LCD_BARCO1366        0x20000000
 #define VB_LCD_CUSTOM  		0x40000000
 #define VB_LCD_EXPANDING	0x80000000
@@ -252,7 +249,7 @@ typedef unsigned char UChar;
 #define SIS_530_VGA 1
 #define SIS_OLD_VGA 2
 #define SIS_300_VGA 3
-#define SIS_315_VGA 4
+#define SIS_315_VGA 4   /* Includes Xabre; see ChipFlags */
 
 /* oldChipset */
 #define OC_UNKNOWN  0
@@ -279,23 +276,25 @@ typedef unsigned char UChar;
 #define SiSCF_Is652        0x00000020
 #define SiSCF_Is65x        (SiSCF_Is651 | SiSCF_IsM650 | SiSCF_IsM652 | SiSCF_IsM653 | SiSCF_Is652)
 #define SiSCF_IsM660       0x00000100
-#define SiSCF_Is66x        (SiSCF_IsM660)
+#define SiSCF_IsM760       0x00000200
+#define SiSCF_Is66x        (SiSCF_IsM660 | SiSCF_IsM760)
+#define SiSCF_XabreCore    0x00010000
 
 /* For backup of register contents */
 typedef struct {
-        unsigned char sisRegs3C4[0x50];
-        unsigned char sisRegs3D4[0x90];
-        unsigned char sisRegs3C2;
-	unsigned char sisCapt[0x60];
-	unsigned char sisVid[0x50];
-        unsigned char VBPart1[0x50];
-        unsigned char VBPart2[0x50];
-        unsigned char VBPart3[0x50];
-        unsigned char VBPart4[0x50];
-        unsigned short ch70xx[64];
-	unsigned long sisMMIO85C0;
-	unsigned char sis6326tv[0x46];
-	unsigned long sisRegsPCI50, sisRegsPCIA0;
+    unsigned char sisRegs3C4[0x50];
+    unsigned char sisRegs3D4[0x90];
+    unsigned char sisRegs3C2;
+    unsigned char sisCapt[0x60];
+    unsigned char sisVid[0x50];
+    unsigned char VBPart1[0x50];
+    unsigned char VBPart2[0x50];
+    unsigned char VBPart3[0x50];
+    unsigned char VBPart4[0x50];
+    unsigned short ch70xx[64];
+    unsigned long sisMMIO85C0;
+    unsigned char sis6326tv[0x46];
+    unsigned long sisRegsPCI50, sisRegsPCIA0;
 } SISRegRec, *SISRegPtr;
 
 typedef struct _sisModeInfoPtr {
@@ -306,11 +305,11 @@ typedef struct _sisModeInfoPtr {
     struct _sisModeInfoPtr *next;
 } sisModeInfoRec, *sisModeInfoPtr;
 
-/*     SISFBLayout is mainly there because of DGA. It holds the
-       current layout parameters needed for acceleration and other
-       stuff. When switching mode using DGA, these are set up
-       accordingly and not necessarily match pScrn's. Therefore,
-       driver modules should read these values instead of pScrn's.
+/* SISFBLayout is mainly there because of DGA. It holds the
+ * current layout parameters needed for acceleration and other
+ * stuff. When switching mode using DGA, these are set up
+ * accordingly and not necessarily match pScrn's. Therefore,
+ * driver modules should read these values instead of pScrn's.
  */
 typedef struct {
     int                bitsPerPixel;   	/* = pScrn->bitsPerPixel */
@@ -319,7 +318,7 @@ typedef struct {
     DisplayModePtr     mode;		/* = pScrn->currentMode */
 } SISFBLayout;
 
-/* TW: Dual head private entity structure */
+/* Dual head private entity structure */
 #ifdef SISDUALHEAD
 typedef struct {
     ScrnInfoPtr         pScrn_1;
@@ -604,7 +603,6 @@ typedef struct {
     CARD32              detectedCRT2Devices;	/* detected CRT2 devices before mask-out */
     Bool                NoHostBus;		/* Enable/disable 5597/5598 host bus */
     Bool		noInternalModes;	/* Use our own default modes? */
-    char *              sbiosn;			/* For debug */
     int			OptUseOEM;		/* Use internal OEM data? */
     int			chtvlumabandwidthcvbs;  /* TV settings for Chrontel TV encoder */
     int			chtvlumabandwidthsvideo;
@@ -628,6 +626,8 @@ typedef struct {
     BOOL		donttrustpdc;		/* Don't trust the detected PDC */
     unsigned char	sisfbpdc;
     unsigned char       sisfblcda;
+    int			sisfbscalelcd;
+    unsigned long	sisfbspecialtiming;
     int			NoYV12;			/* Disable Xv YV12 support (old series) */
     unsigned char       postVBCR32;
     int			newFastVram;		/* Replaces FastVram */
@@ -680,6 +680,9 @@ typedef struct {
     int			FSTN;
     BOOLEAN		AddedPlasmaModes;
     short               scrnPitch2;
+    CARD32		CurFGCol, CurBGCol;
+    unsigned char *	CurMonoSrc;
+    CARD32 *            CurARGBDest;
 #ifdef SISMERGED
     Bool		MergedFB;
     SiSScrn2Rel		CRT2Position;
@@ -769,6 +772,7 @@ typedef struct _customttable {
     unsigned short chipID;
     char *biosversion;
     char *biosdate;
+    unsigned long bioschksum;
     unsigned short biosFootprintAddr[5];
     unsigned char biosFootprintData[5];
     unsigned short pcisubsysvendor;

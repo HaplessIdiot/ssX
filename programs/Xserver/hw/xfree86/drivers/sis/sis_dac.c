@@ -1,9 +1,9 @@
 /* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.21 2001/11/30 12:12:00 eich Exp $ */
 /*
  * DAC helper functions (Save/Restore, MemClk, etc)
- * 
- * Copyright 1998,1999 by Alan Hourihane, Wigan, England.
+ *
  * Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria.
+ * Parts Copyright 1998,1999 by Alan Hourihane, Wigan, England.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -23,12 +23,14 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
- * Authors:  Alan Hourihane <alanh@fairlite.demon.co.uk>
- *           Mike Chapman <mike@paranoia.com>,
- *           Juanjo Santamarta <santamarta@ctv.es>,
- *           Mitani Hiroshi <hmitani@drl.mei.co.jp>
- *           David Thomas <davtom@dream.org.uk>.
- *	     Thomas Winischhofer <thomas@winischhofer.net>
+ * Author:  	Thomas Winischhofer <thomas@winischhofer.net>
+ *
+ * MemClock functions by:
+ *	 	Alan Hourihane <alanh@fairlite.demon.co.uk>
+ *           	Mike Chapman <mike@paranoia.com>,
+ *           	Juanjo Santamarta <santamarta@ctv.es>,
+ *           	Mitani Hiroshi <hmitani@drl.mei.co.jp>
+ *           	David Thomas <davtom@dream.org.uk>.
  */
 
 #include "xf86.h"
@@ -62,9 +64,6 @@ static void SiS301LoadPalette(ScrnInfoPtr pScrn, int numColors,
 static void SiSThreshold(ScrnInfoPtr pScrn, DisplayModePtr mode,
                       unsigned short *Low, unsigned short *High);
 static void SetBlock(CARD16 port, CARD8 from, CARD8 to, CARD8 *DataPtr);
-#if 0
-Bool        SiSI2CInit(ScrnInfoPtr pScrn);
-#endif
 
 static const unsigned short ch700xidx[] = {
       0x00,0x07,0x08,0x0a,0x0b,0x04,0x09,0x20,0x21,0x18,0x19,0x1a,
@@ -349,13 +348,13 @@ SiSCalcClock(ScrnInfoPtr pScrn, int clock, int max_VLD, unsigned int *vclk)
   vclk[Pidx]    = bestP;
   vclk[PSNidx]  = bestPSN;
 
-        PDEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
+  PDEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
                 "Freq. selected: %.2f MHz, M=%d, N=%d, VLD=%d, P=%d, PSN=%d\n",
-                (float)(clock / 1000.), vclk[Midx], vclk[Nidx], vclk[VLDidx], 
+                (float)(clock / 1000.), vclk[Midx], vclk[Nidx], vclk[VLDidx],
                 vclk[Pidx], vclk[PSNidx]));
-        PDEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
+  PDEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
                 "Freq. set: %.2f MHz\n", bestFout / 1.0e6));
-        PDEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
+  PDEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
                 "VCO Freq.: %.2f MHz\n", bestFout*bestP / 1.0e6));
 }
 
@@ -846,9 +845,9 @@ SiS315Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
 #endif
 
-    /* TW: Wait for accelerator to finish on-going drawing operations. */
+    /* Wait for accelerator to finish on-going drawing operations. */
     inSISIDXREG(SISSR, 0x1E, temp);
-    if (temp & (0x40|0x10|0x02))  {	/* TW: 0x40 = 2D, 0x10 = 3D enabled*/
+    if (temp & (0x40|0x10|0x02))  {	/* 0x40 = 2D, 0x10 = 3D enabled*/
         while ( (MMIO_IN32(pSiS->IOBase, 0x85CC) & 0x80000000) != 0x80000000){};
 	while ( (MMIO_IN32(pSiS->IOBase, 0x85CC) & 0x80000000) != 0x80000000){};
 	while ( (MMIO_IN32(pSiS->IOBase, 0x85CC) & 0x80000000) != 0x80000000){};
@@ -861,13 +860,13 @@ SiS315Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     outSISIDXREG(SISCR, 0x79, sisReg->sisRegs3D4[0x79]);
     outSISIDXREG(SISCR, 0x63, sisReg->sisRegs3D4[0x63]);
 
-    /* TW: Leave PCI_IO_ENABLE on if accelerators are on (Is this required?) */
+    /* Leave PCI_IO_ENABLE on if accelerators are on (Is this required?) */
     if (sisReg->sisRegs3C4[0x1e] & 0x50) {  /*0x40=2D, 0x10=3D*/
 	sisReg->sisRegs3C4[0x20] |= 0x20;
 	outSISIDXREG(SISSR, 0x20, sisReg->sisRegs3C4[0x20]);
     }
 
-    /* TW: We reset the command queue before restoring.
+    /* We reset the command queue before restoring.
      * This might be required because we never know what
      * console driver (like the kernel framebuffer driver)
      * or application is running and which queue mode it
@@ -880,7 +879,7 @@ SiS315Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     for (i = 0x06; i <= 0x3F; i++) {
 	outSISIDXREG(SISSR, i, sisReg->sisRegs3C4[i]);
     }
-    /* TW: Restore VCLK and ECLK */
+    /* Restore VCLK and ECLK */
     andSISIDXREG(SISSR,0x31,0xcf);
     if(pSiS->VBFlags & VB_LVDS) {
         orSISIDXREG(SISSR,0x31,0x20);
@@ -911,9 +910,9 @@ SiS315Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
         outSISIDXREG(SISSR,0x2d,0x01);
     }
 
-    /* TW: Initialize read/write pointer for command queue */
+    /* Initialize read/write pointer for command queue */
     MMIO_OUT32(pSiS->IOBase, 0x85C4, MMIO_IN32(pSiS->IOBase, 0x85C8));
-    /* TW: Restore queue location */
+    /* Restore queue location */
     MMIO_OUT32(pSiS->IOBase, 0x85C0, sisReg->sisMMIO85C0);
 
     /* Restore Misc register */
@@ -1041,10 +1040,10 @@ SiS301Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     SetBlock(SISPART1, 0x02, Part1max, &(sisReg->VBPart1[0x02]));
     switch (pSiS->VGAEngine) {
       case SIS_300_VGA:
-        /* TW: Nothing special here. */
+        /* Nothing special here. */
       	break;
       case SIS_315_VGA:
-        /* TW: Restore extra registers on 315 series */
+        /* Restore extra registers on 315 series */
 	SetBlock(SISPART1, 0x2C, 0x2E, &(sisReg->VBPart1[0x2C]));
       	break;
     }
@@ -1374,115 +1373,6 @@ SiSddc1Read(ScrnInfoPtr pScrn)
     return((temp & 0x02)>>1);
 }
 
-#if 0  /* TW: I2C functions not in use */
-/*
-static void
-SiS_I2CGetBits(I2CBusPtr b, int *clock, int *data)
-{
-  SISPtr pSiS = SISPTR(xf86Screens[b->scrnIndex]);
-  unsigned char val;
-
-  outSISIDXREG(SISSR, 0x05, 0x86);
-  inSISIDXREG(SISSR, pSiS->SiS_DDC2_Index, val);
-  *clock = (val & pSiS->SiS_DDC2_Clk) != 0;
-  *data  = (val & pSiS->SiS_DDC2_Data) != 0;
-}
-
-static void
-SiS_I2CPutBits(I2CBusPtr b, int clock, int data)
-{
-  SISPtr pSiS = SISPTR(xf86Screens[b->scrnIndex]);
-  unsigned char temp;
-
-  outSISIDXREG(SISSR, 0x05, 0x86);
-  inSISIDXREG(SISSR, pSiS->SiS_DDC2_Index, temp);
-
-  temp &= ~(pSiS->SiS_DDC2_Clk | pSiS->SiS_DDC2_Data);
-
-  temp |= ((clock ? pSiS->SiS_DDC2_Clk : 0) | (data ? pSiS->SiS_DDC2_Data : 0));
-
-  outSISIDXREG(SISSR, pSiS->SiS_DDC2_Index, temp);
-}
-*/
-
-static Bool
-SiS_I2CAddress(I2CDevPtr d, I2CSlaveAddr addr)
-{
-   I2CBusPtr b = d->pI2CBus;
-   SISPtr pSiS = SISPTR(xf86Screens[b->scrnIndex]);
-   SiS_SetSwitchDDC2(pSiS->SiS_Pr);
-   return(SiS_I2C_Address(pSiS->SiS_Pr, addr));
-}
-
-static void
-SiS_I2CStop(I2CDevPtr d)
-{
-  I2CBusPtr b = d->pI2CBus;
-  SISPtr pSiS = SISPTR(xf86Screens[b->scrnIndex]);
-  SiS_I2C_Stop(pSiS->SiS_Pr);
-}
-
-static Bool
-SiS_I2CGetByte(I2CDevPtr d, I2CByte *data, Bool last)
-{
-  I2CBusPtr b = d->pI2CBus;
-  SISPtr pSiS = SISPTR(xf86Screens[b->scrnIndex]);
-  USHORT temp = SiS_I2C_GetByte(pSiS->SiS_Pr);
-  if(temp == 0xffff) return FALSE;
-  return TRUE;
-}
-
-static Bool
-SiS_I2CPutByte(I2CDevPtr d, I2CByte data)
-{
-  I2CBusPtr b = d->pI2CBus;
-  SISPtr pSiS = SISPTR(xf86Screens[b->scrnIndex]);
-  return(SiS_I2C_PutByte(pSiS->SiS_Pr, (USHORT)data));
-}
-
-Bool
-SiSI2CInit(ScrnInfoPtr pScrn)
-{
-    SISPtr pSiS = SISPTR(pScrn);
-    I2CBusPtr I2CPtr;
-    USHORT temp, i;
-    unsigned char buffer[256];
-    xf86MonPtr    pMonitor;
-
-    I2CPtr = xf86CreateI2CBusRec();
-    if(!I2CPtr) return FALSE;
-
-    pSiS->I2C = I2CPtr;
-
-    I2CPtr->BusName    = "DDC";
-    I2CPtr->scrnIndex  = pScrn->scrnIndex;
-/*
-    I2CPtr->I2CPutBits = SiS_I2CPutBits;
-    I2CPtr->I2CGetBits = SiS_I2CGetBits;
-*/
-    I2CPtr->I2CPutByte = SiS_I2CPutByte;
-    I2CPtr->I2CGetByte = SiS_I2CGetByte;
-    I2CPtr->I2CAddress = SiS_I2CAddress;
-    I2CPtr->I2CStop    = SiS_I2CStop;
-    I2CPtr->AcknTimeout = 30;
-
-
-
-    pSiS->SiS_Pr->SiS_DDC_Index = pSiS->SiS_DDC2_Index;
-    pSiS->SiS_Pr->SiS_DDC_Data  = pSiS->SiS_DDC2_Data;
-    pSiS->SiS_Pr->SiS_DDC_Clk   = pSiS->SiS_DDC2_Clk;
-    pSiS->SiS_Pr->SiS_DDC_DataShift = 0x00;
-
-    if (!xf86I2CBusInit(I2CPtr)) {
-        xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-	    "Could not create I2C bus record\n");
-	return FALSE;
-    }
-
-    return TRUE;
-}
-#endif
-
 #if 0  /* TW: The following function should take a threshold value
         *     from predefined tables. This is only needed on some
 	*     530 boards, which have an ESS sound device on-board.
@@ -1548,7 +1438,7 @@ SiSThreshold(ScrnInfoPtr pScrn, DisplayModePtr mode,
 
 
 /* Auxiliary function to find real memory clock (in Khz) */
-/* TW: Not for 530/620 if UMA (on these, the mclk is stored in SR10) */
+/* Not for 530/620 if UMA (on these, the mclk is stored in SR10) */
 int
 SiSMclk(SISPtr pSiS)
 { 
@@ -1618,15 +1508,15 @@ SiSMclk(SISPtr pSiS)
     return(mclk);
 }
 
-/* TW: This estimates the CRT2 clock we are going to use.
- *     The total bandwidth is to be reduced by the value
- *     returned here in order to get an idea of the maximum
- *     dotclock left for CRT1.
- *     Since we don't know yet, what mode the user chose,
- *     we return the maximum dotclock used by
- *     - either the LCD attached, or
- *     - TV
- *     For VGA2, we share the bandwith equally.
+/* This estimates the CRT2 clock we are going to use.
+ * The total bandwidth is to be reduced by the value
+ * returned here in order to get an idea of the maximum
+ * dotclock left for CRT1.
+ * Since we don't know yet, what mode the user chose,
+ * we return the maximum dotclock used by
+ * - either the LCD attached, or
+ * - TV
+ * For VGA2, we share the bandwith equally.
  */
 static int
 SiSEstimateCRT2Clock(ScrnInfoPtr pScrn)
@@ -1885,13 +1775,13 @@ int SiSMemBandWidth(ScrnInfoPtr pScrn, BOOLEAN IsForCRT2)
         }
 }
 
-/* TW: Load the palette. We do this for all supported color depths
- *     in order to support gamma correction. We hereby convert the
- *     given colormap to a complete 24bit color palette and enable
- *     the correspoding bit in SR7 to enable the 24bit lookup table.
- *     Gamma correction is only supported on CRT1.
- *     Why are there 6-bit-RGB values submitted even if bpp is 16 and
- *     weight is 565? (Maybe because rgbBits is 6?)
+/* Load the palette. We do this for all supported color depths
+ * in order to support gamma correction. We hereby convert the
+ * given colormap to a complete 24bit color palette and enable
+ * the correspoding bit in SR7 to enable the 24bit lookup table.
+ * Gamma correction is only supported on CRT1.
+ * Why are there 6-bit-RGB values submitted even if bpp is 16 and
+ * weight is 565? (Maybe because rgbBits is 6?)
  */
 void
 SISLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
@@ -2084,99 +1974,6 @@ SiS301LoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
 	 }
 }
 
-
-#ifdef DEBUG
-/* TW: Debug function to dump registers */
-void SiSIODump(ScrnInfoPtr pScrn)
-{
-    SISPtr  pSiS = SISPTR(pScrn);
-    int     i, max3c4, min3d4, max3d4;
-    unsigned char   temp;
-
-    switch (pSiS->Chipset)  {
-        case PCI_CHIP_SIS6326:
-            max3c4 = 0x3F;
-            max3d4 = 0x19;
-            min3d4 = 0x26;
-            break;
-        case PCI_CHIP_SIS530:
-            max3c4 = 0x3F;
-            max3d4 = 0x19;
-            min3d4 = 0x26;
-            break;
-        case PCI_CHIP_SIS300:
-        case PCI_CHIP_SIS630:
-        case PCI_CHIP_SIS540:
-	    max3c4 = 0x3D;
-            max3d4 = 0x37;
-            min3d4 = 0x30;
-            break;
-	case PCI_CHIP_SIS550:
-	case PCI_CHIP_SIS650:
-	case PCI_CHIP_SIS315:
-	case PCI_CHIP_SIS315H:
-	case PCI_CHIP_SIS315PRO:
-	case PCI_CHIP_SIS330:
-	case PCI_CHIP_SIS660:
-            max3c4 = 0x3F;
-            max3d4 = 0x7a;
-            min3d4 = 0x30;
-            break;
-        default:
-            max3c4 = 0x38;
-            max3d4 = 0x19;
-            min3d4 = 0x26;
-    }
-    /* dump Misc Registers */
-    temp = inb(pSiS->RelIO+0x4c);
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Misc Output 3CC=%x\n", temp);
-
-    temp = inb(pSiS->RelIO+0x4a);
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Feature Control 3CA=%x\n", temp);
-
-    /* Dump GR */
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "-------------\n");
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Registers 3CE\n");
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "-------------\n");
-    for (i=0; i<=8; i++)  {
-        inSISIDXREG(SISGR, i, temp);
-        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "[%2x]=%2x\n", i, temp);
-    }
-
-    /* dump SR0 ~ SR4 */
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "-------------\n");
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Registers 3C4\n");
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "-------------\n");
-    for (i=0; i<=4; i++)  {
-        inSISIDXREG(SISSR, i, temp);
-        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "[%2x]=%2x\n", i, temp);
-    }
-
-    /* dump extended SR */
-#ifdef UNLOCK_ALWAYS
-    sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
-#endif
-    for (i=5; i<=max3c4; i++)  {
-        inSISIDXREG(SISSR, i, temp);
-        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "[%2x]=%2x\n", i, temp);
-    }
-
-    /* dump CR0 ~ CR18 */
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "-------------\n");
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Registers 3D4\n");
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "-------------\n");
-    for (i=0; i<=0x18; i++)  {
-        inSISIDXREG(SISCR, i, temp);
-        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "[%2x]=%2x\n", i, temp);
-    }
-    /* dump extended CR */
-    for (i=min3d4; i<=max3d4; i++)  {
-        inSISIDXREG(SISCR, i, temp);
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "[%2x]=%2x\n", i, temp);
-    }
-}
-#endif
-
 void
 SISDACPreInit(ScrnInfoPtr pScrn)
 {
@@ -2201,7 +1998,7 @@ SISDACPreInit(ScrnInfoPtr pScrn)
         pSiS->SiSRestoreLVDSChrontel = SiSLVDSChrontelRestore;
         pSiS->LoadCRT2Palette        = SiS301LoadPalette;
         pSiS->SetThreshold           = SiSThreshold;
-	pSiS->i2cInit		     = NULL; /* SiSI2CInit;  */
+	pSiS->i2cInit		     = NULL;
         break;
       case PCI_CHIP_SIS300:
       case PCI_CHIP_SIS630:
@@ -2217,7 +2014,7 @@ SISDACPreInit(ScrnInfoPtr pScrn)
         pSiS->SiSRestoreLVDSChrontel = SiSLVDSChrontelRestore;
         pSiS->LoadCRT2Palette        = SiS301LoadPalette;
         pSiS->SetThreshold           = SiSThreshold;
-	pSiS->i2cInit		     = NULL;  /* SiSI2CInit;  */
+	pSiS->i2cInit		     = NULL;
         break;
       case PCI_CHIP_SIS5597:
       case PCI_CHIP_SIS6326:

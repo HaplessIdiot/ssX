@@ -2,7 +2,6 @@
 /*
  * Basic hardware and memory detection
  *
- * Copyright 1998,1999 by Alan Hourihane, Wigan, England.
  * Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -23,13 +22,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
- * Authors:  Thomas Winischhofer <thomas@winischhofer.net>
- *		(nearly entirely rewritten)
- *           Alan Hourihane, alanh@fairlite.demon.co.uk
- *           Mike Chapman <mike@paranoia.com>,
- *           Juanjo Santamarta <santamarta@ctv.es>,
- *           Mitani Hiroshi <hmitani@drl.mei.co.jp>
- *           David Thomas <davtom@dream.org.uk>.
+ * Author:  Thomas Winischhofer <thomas@winischhofer.net>
  *
  */
  

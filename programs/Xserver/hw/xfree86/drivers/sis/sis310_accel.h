@@ -1,9 +1,7 @@
 /* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis310_accel.h,v 0.1 2002/04/17 12:40:33 tw Exp $ */
 /*
- * 2D Acceleration for SiS 315 series (315, 550, 650, 740, M650, 651, 652)
+ * 2D Acceleration for SiS 315 and Xabre series
  * Definitions for the SIS engine communication.
- *
- * Does this work on the Xabre/660?
  *
  * Copyright 2002, 2003 by Thomas Winischhofer, Vienna, Austria
  *
@@ -27,7 +25,7 @@
  *
  * Based on sis300_accel.h
  *
- *      Author:  Thomas Winischhofer <thomas@winischhofer.net>
+ * Author:  	Thomas Winischhofer <thomas@winischhofer.net>
  *
  */
 
@@ -169,20 +167,27 @@
    bits 7:0:   2D counter 1
 
    Where is the command queue length (current amount of commands the queue
-   can accept) on the 315 series? (The current implementation is taken
-   from 300 series and certainly wrong...)
+   can accept) on the 315 series? (The current implementation works, but only
+   as long as there is no 3D driver which uses the queue without your knowledge)
 */
 
-int     CmdQueLen;
+#define CmdQueLen pSiS->cmdQueueLen
 
 /* TW: FIXME: CmdQueLen is... where....? */
+/* We assume a length of 4 bytes per command; since 512K of
+ * of RAM are allocated, the number of commands is easily
+ * calculated (assuming that there is no 3D support yet)
+ * We calculate it very cautiously (128K only) and let the
+ * rest to the (never?)-to-come (?) 3D engine. (The 3D engine
+ * can use a similar technique, using the remaining 384K,
+ * hence a queue overflow is avoided)
+ */
 #define SiSIdle \
   { \
-  while( (MMIO_IN16(pSiS->IOBase, Q_STATUS+2) & 0x8000) != 0x8000){}; \
-  while( (MMIO_IN16(pSiS->IOBase, Q_STATUS+2) & 0x8000) != 0x8000){}; \
-  CmdQueLen=MMIO_IN16(pSiS->IOBase, Q_STATUS); \
+     while( (MMIO_IN16(pSiS->IOBase, Q_STATUS+2) & 0x8000) != 0x8000) {}; \
+     while( (MMIO_IN16(pSiS->IOBase, Q_STATUS+2) & 0x8000) != 0x8000) {}; \
+     CmdQueLen = ((128 * 1024) / 4) - 64; \
   }
-  /* TW: (do twice like on 300 series?) */
 
 #define SiSSetupSRCBase(base) \
       if (CmdQueLen <= 0)  SiSIdle;\

@@ -1,9 +1,10 @@
 /* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_opt.c,v 1.8 2001/08/01 00:44:54 tsi Exp $ */
 /*
- *
  * SiS driver option evaluation
  *
- * Parts Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria
+ * Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria
+ *
+ * Based on code by ? (included in XFree86 4.1)
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -23,8 +24,8 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
- * Authors:  	?
- *		Thomas Winischhofer <thomas@winischhofer.net>
+ * Authors:  	Thomas Winischhofer <thomas@winischhofer.net>
+ *		?
  */
 
 #include "xf86.h"
@@ -58,7 +59,6 @@ typedef enum {
     OPTION_USEROMDATA,
     OPTION_NOINTERNALMODES,
     OPTION_USEOEM,
-    OPTION_SBIOSN,
     OPTION_NOYV12,
     OPTION_CHTVOVERSCAN,
     OPTION_CHTVSOVERSCAN,
@@ -142,7 +142,6 @@ static const OptionInfoRec SISOptions[] = {
     { OPTION_USEROMDATA,		"UseROMData",	          OPTV_BOOLEAN,   {0}, -1    },
     { OPTION_NOINTERNALMODES,   	"NoInternalModes",        OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_USEOEM, 			"UseOEMData",		  OPTV_BOOLEAN,   {0}, -1    },
-    { OPTION_SBIOSN,            	"BIOSFile",               OPTV_STRING,    {0}, FALSE },
     { OPTION_NOYV12, 			"NoYV12",		  OPTV_BOOLEAN,   {0}, -1    },
     { OPTION_CHTVTYPE,			"CHTVType",	          OPTV_BOOLEAN,   {0}, -1    },
     { OPTION_CHTVOVERSCAN,		"CHTVOverscan",	          OPTV_BOOLEAN,   {0}, -1    },
@@ -334,7 +333,7 @@ SiSOptions(ScrnInfoPtr pScrn)
     /* Collect the options */
 
 #if 0
-    /* PCI retry - TW: What the heck is/was this for? */
+    /* PCI retry - What the heck is/was this for? */
     from = X_DEFAULT;
     if(xf86GetOptValBool(pSiS->Options, OPTION_PCI_RETRY, &pSiS->UsePCIRetry)) {
         from = X_CONFIG;
@@ -344,7 +343,7 @@ SiSOptions(ScrnInfoPtr pScrn)
 #endif
 
    /* Mem clock */
-#if 0  /* TW: This is not used */
+#if 0  /* This is not used */
     if(xf86GetOptValFreq(pSiS->Options, OPTION_SET_MEMCLOCK, OPTUNITS_MHZ,
                                                             &temp)) {
         pSiS->MemClock = (int)(temp * 1000.0);
@@ -377,13 +376,13 @@ SiSOptions(ScrnInfoPtr pScrn)
     }
 
    /* MaxXFBMem
-    * TW: This options limits the amount of video memory X uses for screen
-    *     and off-screen buffers. This option should be used if using DRI
-    *     is intended. The kernel framebuffer driver required for DRM will
-    *     start its memory heap at 12MB if it detects more than 16MB, at 8MB if
-    *     between 8 and 16MB are available, otherwise at 4MB. So, if the amount
-    *     of memory X uses, a clash between the framebuffer's memory heap
-    *     and X is avoided. The amount is to be specified in KB.
+    * This options limits the amount of video memory X uses for screen
+    * and off-screen buffers. This option should be used if using DRI
+    * is intended. The kernel framebuffer driver required for DRM will
+    * start its memory heap at 12MB if it detects more than 16MB, at 8MB if
+    * between 8 and 16MB are available, otherwise at 4MB. So, if the amount
+    * of memory X uses, a clash between the framebuffer's memory heap
+    * and X is avoided. The amount is to be specified in KB.
     */
     if(xf86GetOptValULong(pSiS->Options, OPTION_MAXXFBMEM,
                                 &pSiS->maxxfbmem)) {
@@ -742,15 +741,6 @@ SiSOptions(ScrnInfoPtr pScrn)
 	         "Internal LCD/TV/VGA2 OEM data usage shall be %s\n",
 	         val ? enabledstr : disabledstr);
 	  }
-
-	 /* TW: This remains undocumented :)
-	  */
-	  pSiS->sbiosn = NULL;
-          strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_SBIOSN);
-          if(strptr != NULL) {
-	     pSiS->sbiosn = xalloc(strlen(strptr)+1);
-             if(pSiS->sbiosn) strcpy(pSiS->sbiosn, strptr);
-          }
 
          /* TW: ForceCRT1 (300/315/330 series only)
           *     This option can be used to force CRT1 to be switched on/off. Its

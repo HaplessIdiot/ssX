@@ -22,8 +22,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
- * Author:
- *      	Thomas Winischhofer <thomas@winischhofer.net>
+ * Author:     	Thomas Winischhofer <thomas@winischhofer.net>
  *
  */
 
@@ -148,24 +147,35 @@ static const chswtable mychswtable[] = {
 
 const customttable mycustomttable[] = {
         { SIS_630, "2.00.07", "09/27/2002-13:38:25",
-	  { 0x220, 0x227, 0x228, 0x229, 0x22a },
-	  {  0x01,  0xe3,  0x9a,  0x6a,  0x00 },
+	  0x3240A8,
+	  { 0x220, 0x227, 0x228, 0x229, 0x0ee },
+	  {  0x01,  0xe3,  0x9a,  0x6a,  0xef },
 	  0x1039, 0x6300,
 	  "Barco", "iQ R200L/300/400", CUT_BARCO1366, "BARCO1366"
 	},
 	{ SIS_630, "2.00.07", "09/27/2002-13:38:25",
-	  { 0x220, 0x227, 0x228, 0x229, 0x22a },
-	  {  0x00,  0x5a,  0x64,  0x41,  0x00 },
+	  0x323FBD,
+	  { 0x220, 0x227, 0x228, 0x229, 0x0ee },
+	  {  0x00,  0x5a,  0x64,  0x41,  0xef },
 	  0x1039, 0x6300,
 	  "Barco", "iQ G200L/300/400/500", CUT_BARCO1024, "BARCO1024"
 	},
 	{ SIS_650, "", "",
+	  0,
 	  { 0, 0, 0, 0, 0 },
 	  { 0, 0, 0, 0, 0 },
 	  0x0e11, 0x083c,
-	  "Compaq", "Presario 3045US", CUT_COMPAQ1280, "COMPAQ1280"
+	  "Compaq", "Presario 3045US", CUT_COMPAQ12802, "COMPAQ1280"
+	},
+	{ 4321, "", "",			/* This is hopefully NEVER autodetected */
+	  0,
+	  { 0, 0, 0, 0, 0 },
+	  { 0, 0, 0, 0, 0 },
+	  0, 0,
+	  "Generic", "LVDS/Parallel 848x480", CUT_PANEL848, "PANEL848x480"
 	},
 	{ 0, "", "",
+	  0,
 	  { 0, 0, 0, 0 },
 	  { 0, 0, 0, 0 },
 	  0, 0,

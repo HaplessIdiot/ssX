@@ -25,8 +25,9 @@
  *
  * Author: Thomas Winischhofer <thomas@winischhofer.net>
  *		- driver entirely rewritten, only basic structure taken from old code
- *              - 315 series (315/550/650/651/M650/652/M652/M653/740/M650) support
- *		- (possibly incomplete) Xabre (SiS330/660) support
+ *		  (except sis_dri.c and parts of sis_dga.c)
+ *              - 315 series (315/550/650/651/M650/652/M652/740) support
+ *		- Xabre series (330/660/M660/760/M760) support
  *              - new mode switching code for 300, 315 and 330 series
  *              - dual head support on 300, 315 and 330 series
  * 		- merged-framebuffer support on 300, 315 and 330 series
@@ -35,9 +36,9 @@
  *              - VESA mode switching (deprecated),
  *              - extended CRT2/video bridge handling support,
  *              - 650/740/Chrontel 7019/LVDS support (up to 1600x1200)
- *              - 30xB/30xLV video bridge support (300, 315, 330 series)
- *              - Xv support for 5597/5598, 6326, 530/620, 315 and 330 series
+ *              - 30x/30xB/30xLV video bridge support (300, 315, 330 series)
  *              - entirely rewritten Xv support for 300 series
+ *              - Xv support for 5597/5598, 6326, 530/620, 315 and 330 series
  *              - TV and hi-res support for the 6326
  *		- Color HW cursor support for 300(emulated), 315 and 330 series
  *              - etc. etc. etc.
@@ -214,10 +215,8 @@ static SymTabRec SISChipsets[] = {
     { PCI_CHIP_SIS315PRO,   "SIS315PRO" },
     { PCI_CHIP_SIS550,	    "SIS550" },
     { PCI_CHIP_SIS650,      "SIS650/M650/651/652/M652/740" },
-#ifdef INCL_SIS330
     { PCI_CHIP_SIS330,      "SIS330(Xabre)" },
     { PCI_CHIP_SIS660,      "SIS660/M660/760/M760" },
-#endif
     { -1,                   NULL }
 };
 
@@ -233,10 +232,8 @@ static PciChipsets SISPciChipsets[] = {
     { PCI_CHIP_SIS315H,     PCI_CHIP_SIS315H,   RES_SHARED_VGA },
     { PCI_CHIP_SIS315PRO,   PCI_CHIP_SIS315PRO, RES_SHARED_VGA },
     { PCI_CHIP_SIS650,      PCI_CHIP_SIS650,    RES_SHARED_VGA },
-#ifdef INCL_SIS330
     { PCI_CHIP_SIS330,      PCI_CHIP_SIS330,    RES_SHARED_VGA },
     { PCI_CHIP_SIS660,      PCI_CHIP_SIS660,    RES_SHARED_VGA },
-#endif
     { -1,                   -1,                 RES_UNDEFINED }
 };
 
@@ -1442,7 +1439,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     xf86LoaderReqSymLists(vgahwSymbols, NULL);
 
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-        "SiS driver (2003/06/21-1) by "
+        "SiS driver (2003/06/26-2) by "
 	"Thomas Winischhofer <thomas@winischhofer.net>\n");
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
         "See http://www.winischhofer.net/linuxsisvga.shtml "
@@ -1702,6 +1699,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	case PCI_CHIP_SIS330:
 		pSiS->sishw_ext.jChipType = SIS_330;
 		pSiS->VGAEngine = SIS_315_VGA;
+		pSiS->ChipFlags |= SiSCF_XabreCore;
 		break;
 	case PCI_CHIP_SIS660: /* 660 + 760 */
 		pSiS->sishw_ext.jChipType = SIS_660;
@@ -1709,6 +1707,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 			pSiS->sishw_ext.jChipType = SIS_760;
 		}
 		pSiS->VGAEngine = SIS_315_VGA;
+		pSiS->ChipFlags |= SiSCF_XabreCore;
 		break;
 	case PCI_CHIP_SIS530:
 		pSiS->sishw_ext.jChipType = SIS_530;
@@ -1735,6 +1734,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     pSiS->donttrustpdc = FALSE;
     pSiS->sisfbpdc = 0;
     pSiS->sisfblcda = 0xff;
+    pSiS->sisfbscalelcd = -1;
+    pSiS->sisfbspecialtiming = CUT_NONE;
     pSiS->OldMode = 0;
 
     if(pSiS->VGAEngine == SIS_300_VGA || pSiS->VGAEngine == SIS_315_VGA) {
@@ -1813,6 +1814,10 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		            if(sisfbversion >= 0x01050E) {
 		               if(pSiS->VGAEngine == SIS_315_VGA) {
 		                  pSiS->sisfblcda = mysisfbinfo.sisfb_lcda;
+			       }
+			       if(sisfbversion >= 0x01060D) {
+			          pSiS->sisfbscalelcd = mysisfbinfo.sisfb_scalelcd;
+				  pSiS->sisfbspecialtiming = mysisfbinfo.sisfb_specialtiming;
 			       }
 		            }
 		         }
@@ -2360,18 +2365,6 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
           xf86DrvMsg(pScrn->scrnIndex, from, "Internal OEM LCD/TV/VGA2 data usage is disabled\n");
 	  
        pSiS->SiS_Pr->UsePanelScaler = pSiS->UsePanelScaler;
-
-       if(pSiS->sbiosn) {
-         if(pSiS->BIOS) {
-           FILE *fd = NULL;
-	   int i;
-           if((fd = fopen(pSiS->sbiosn, "w" ))) {
-	     i = fwrite(pSiS->BIOS, 65536, 1, fd);
-	     fclose(fd);
-	   }
-         }
-         xfree(pSiS->sbiosn);
-       }
     }
 
     /* Do basic configuration */
@@ -2466,7 +2459,12 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
      * HWCursur setting. Also, initialize some variables used
      * in other modules.
      */
+     
     pSiS->cursorOffset = 0;
+    pSiS->CurARGBDest = NULL;
+    pSiS->CurMonoSrc = NULL;
+    pSiS->CurFGCol = pSiS->CurBGCol = 0;
+
     switch (pSiS->VGAEngine) {
       case SIS_300_VGA:
       	pSiS->TurboQueueLen = 512;
@@ -2612,10 +2610,12 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
          case PCI_CHIP_SIS550:
 	   pSiS->hasTwoOverlays = TRUE;
 	   break;
-	 case PCI_CHIP_SIS315PRO: /* No idea about 315 and 315H */
+	 case PCI_CHIP_SIS315PRO:
+	   /* No idea about 315 and 315H */
 	   pSiS->ChipFlags |= SiSCF_LARGEOVERLAY;
 	   break;
-         case PCI_CHIP_SIS330:    /* Confirmed: has only 1 overlay */
+         case PCI_CHIP_SIS330:
+	   /* Confirmed: has only 1 overlay */
 	   pSiS->ChipFlags |= SiSCF_LARGEOVERLAY;
 	   break;
 	 case PCI_CHIP_SIS660:
@@ -2743,7 +2743,6 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
      * need to find out using the BIOS version and date strings.
      */
     pSiS->SiS_Pr->SiS_ChSW = FALSE;
-    pSiS->SiS_Pr->SiS_CustomT = CUT_NONE;
     if(pSiS->Chipset == PCI_CHIP_SIS630) {
        int i = 0;
        do {
@@ -2767,6 +2766,11 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        int i = 0, j;
        unsigned short bversptr = pSiS->BIOS[0x16] | (pSiS->BIOS[0x17] << 8);
        BOOLEAN footprint;
+       unsigned long chksum = 0;
+
+       for(i=0; i<32768; i++) chksum += pSiS->BIOS[i];
+
+       i = 0;
        do {
 	  if( (mycustomttable[i].chipID == pSiS->sishw_ext.jChipType)                 &&
 	      ((!strlen(mycustomttable[i].biosversion)) ||
@@ -2775,6 +2779,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	      ((!strlen(mycustomttable[i].biosdate)) ||
 	       (!strncmp(mycustomttable[i].biosdate, (char *)&pSiS->BIOS[0x2c],
 	                strlen(mycustomttable[i].biosdate))))			      &&
+	      ((!mycustomttable[i].bioschksum) ||
+	       (mycustomttable[i].bioschksum == chksum))			      &&
 	      (mycustomttable[i].pcisubsysvendor == pSiS->PciInfo->subsysVendor)      &&
 	      (mycustomttable[i].pcisubsyscard == pSiS->PciInfo->subsysCard) ) {
 	     footprint = TRUE;
@@ -3751,7 +3757,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 			    "Not using mode \"%s\" (interlace not supported on CRT2)\n",
 			    p->name);
 		     }
-	             if(pSiS->VBFlags & CRT2_LCD) {
+	             if((pSiS->VBFlags & CRT2_LCD) && (pSiS->SiS_Pr->SiS_CustomT != CUT_PANEL848)) {
 		        if((p->HDisplay > pSiS->LCDwidth) || (p->VDisplay > pSiS->LCDheight)) {
 		            p->status = MODE_PANEL;
 		            xf86DrvMsg(pScrn->scrnIndex, X_INFO,
@@ -3773,7 +3779,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 #ifdef SISMERGED
 		     if(!pSiS->MergedFB) {
 #endif
-	                if(pSiS->VBFlags & CRT2_LCD) {
+	                if((pSiS->VBFlags & CRT2_LCD) && (pSiS->SiS_Pr->SiS_CustomT != CUT_PANEL848)) {
 		           if((p->HDisplay > pSiS->LCDwidth) || (p->VDisplay > pSiS->LCDheight)) {
 		              p->status = MODE_PANEL;
 		              xf86DrvMsg(pScrn->scrnIndex, X_INFO,
@@ -3937,7 +3943,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		    "Not using mode \"%s\" (not suitable for MergeFB mode)\n",
 		    p->name);
 	     }
-	     if(pSiS->VBFlags & CRT2_LCD) {
+	     if((pSiS->VBFlags & CRT2_LCD) && (pSiS->SiS_Pr->SiS_CustomT != CUT_PANEL848)) {
 		if((p->HDisplay > pSiS->LCDwidth) || (p->VDisplay > pSiS->LCDheight)) {
 		   p->status = MODE_PANEL;
 		   xf86DrvMsg(pScrn->scrnIndex, X_INFO,
@@ -5013,12 +5019,16 @@ SISRestore(ScrnInfoPtr pScrn)
            }		 
 		 
 	   if(vesasuccess == FALSE) {
- 	      if((pSiS->VBFlags & (VB_301B|VB_302B|VB_301LV|VB_302LV))) {	
+
+	      int backupscaler = pSiS->SiS_Pr->UsePanelScaler;
+	      unsigned long backupspecialtiming = pSiS->SiS_Pr->SiS_CustomT;
+
+ 	      if((pSiS->VBFlags & (VB_301B|VB_302B|VB_301LV|VB_302LV))) {
 	        /* !!! REQUIRED for 630+301B-DH, otherwise the text modes
-	         *     will not be restored correctly !!! 
+	         *     will not be restored correctly !!!
 	         * !!! Do this ONLY for LCD; VGA2 will not be restored
-	         *     correctly otherwise.  
-	         */	 
+	         *     correctly otherwise.
+	         */
 	         unsigned char temp;
 	         inSISIDXREG(SISCR, 0x30, temp);
 	         if(temp & 0x20) {
@@ -5028,9 +5038,11 @@ SISRestore(ScrnInfoPtr pScrn)
 	            }
 	         }
 	      }
-		 
+
 	      pSiS->SiS_Pr->UseCustomMode = FALSE;
 	      pSiS->SiS_Pr->CRT1UsesCustomMode = FALSE;
+	      pSiS->SiS_Pr->UsePanelScaler = pSiS->sisfbscalelcd;
+	      pSiS->SiS_Pr->SiS_CustomT = pSiS->sisfbspecialtiming;
 	      SiSSetMode(pSiS->SiS_Pr, &pSiS->sishw_ext, pScrn, pSiS->OldMode, FALSE);
 	      if(changedmode) {
 	   	 pSiS->OldMode = 0x03;
@@ -5038,6 +5050,9 @@ SISRestore(ScrnInfoPtr pScrn)
 	      }
 	      SISSpecialRestore(pScrn);
 	      SiS_GetSetModeID(pScrn,pSiS->OldMode);
+	      pSiS->SiS_Pr->UsePanelScaler = backupscaler;
+	      pSiS->SiS_Pr->SiS_CustomT = backupspecialtiming;
+
 	   }
 
         } else {
@@ -8866,33 +8881,43 @@ SiS_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBF
       if((havecustommodes) && (!(mode->type & M_T_DEFAULT)))
          return 0xfe;
 
-      if( (mode->HDisplay <= pSiS->LCDwidth) &&
-          (mode->VDisplay <= pSiS->LCDheight) ) {
+      if( ((mode->HDisplay <= pSiS->LCDwidth) &&
+           (mode->VDisplay <= pSiS->LCDheight)) ||
+	  ((pSiS->SiS_Pr->SiS_CustomT == CUT_PANEL848) &&
+	   (((mode->HDisplay == 1360) && (mode->HDisplay == 768)) ||
+	    ((mode->HDisplay == 1024) && (mode->HDisplay == 768)) ||
+	    ((mode->HDisplay ==  800) && (mode->HDisplay == 600)))) ) {
 
         if(VBFlags & (VB_LVDS | VB_30xBDH)) {        		/* LCD on Panel link (LVDS, 301BDH) */
 
           switch(mode->HDisplay)
   	  {
 	  case 320:
-     	  	if(mode->VDisplay == 200) {
+	   	if(pSiS->SiS_Pr->SiS_CustomT != CUT_PANEL848) {
+     	  	   if(mode->VDisplay == 200) {
 	  		ModeIndex = ModeIndex_320x200[i];
-	  	} else if(mode->VDisplay == 240) {
-		   if(!pSiS->FSTN) {
-	  		ModeIndex = ModeIndex_320x240[i];
-          	   } else if(pSiS->VGAEngine == SIS_315_VGA) {
-                	ModeIndex = ModeIndex_320x240_FSTN[i];
-		   }
-	  	}
+	  	   } else if(mode->VDisplay == 240) {
+		      if(!pSiS->FSTN) {
+	  		 ModeIndex = ModeIndex_320x240[i];
+          	      } else if(pSiS->VGAEngine == SIS_315_VGA) {
+                	 ModeIndex = ModeIndex_320x240_FSTN[i];
+		      }
+	  	   }
+		}
           	break;
      	  case 400:
-          	if(mode->VDisplay == 300) {
-             		ModeIndex = ModeIndex_400x300[i];
-	  	}
+	  	if(pSiS->SiS_Pr->SiS_CustomT != CUT_PANEL848) {
+          	   if(mode->VDisplay == 300) {
+             	      ModeIndex = ModeIndex_400x300[i];
+	  	   }
+		}
           	break;
 	  case 512:
-		if(mode->VDisplay == 384) {
-		   if(pSiS->LCDwidth != 1024 || pSiS->LCDheight != 600) { /* not supported on 1024x600 panels */
-		      ModeIndex = ModeIndex_512x384[i];
+	        if(pSiS->SiS_Pr->SiS_CustomT != CUT_PANEL848) {
+		   if(mode->VDisplay == 384) {
+		      if(pSiS->LCDwidth != 1024 || pSiS->LCDheight != 600) { /* not supported on 1024x600 panels */
+		         ModeIndex = ModeIndex_512x384[i];
+		      }
 		   }
 		}
 		break;
@@ -8900,12 +8925,21 @@ SiS_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBF
 		if(mode->VDisplay == 480) {
 		   ModeIndex = ModeIndex_640x480[i];
 		} else if(mode->VDisplay == 400) {
-		   ModeIndex = ModeIndex_640x400[i];
+		   if(pSiS->SiS_Pr->SiS_CustomT != CUT_PANEL848) {
+		      ModeIndex = ModeIndex_640x400[i];
+		   }
 		}
 		break;
 	  case 800:
 		if(mode->VDisplay == 600) {
 		   ModeIndex = ModeIndex_800x600[i];
+		}
+		break;
+	  case 848:
+	        if(mode->VDisplay == 480) {
+		   if(pSiS->SiS_Pr->SiS_CustomT == CUT_PANEL848) {
+		      ModeIndex = ModeIndex_848x480[i];
+		   }
 		}
 		break;
 	  case 1024:
@@ -8945,6 +8979,11 @@ SiS_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBF
 		      if(mode->VDisplay == 1024) {
 		         ModeIndex = ModeIndex_300_1360x1024[i];
 		      }
+		   }
+		}
+		if(mode->VDisplay == 768) {
+		   if(pSiS->SiS_Pr->SiS_CustomT == CUT_PANEL848) {
+		      ModeIndex = ModeIndex_1360x768[i];
 		   }
 		}
 	        break;
@@ -9116,7 +9155,7 @@ SiS_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBF
 		}
                 break;
 	case 768:
-		if(!(VBFlags & (TV_HIVISION | TV_HIVISION_LV))) {
+	        if(!(VBFlags & (TV_HIVISION | TV_HIVISION_LV))) {
           	   if(mode->VDisplay == 576) {
 		      if(VBFlags & TV_PAL)
 	     	         ModeIndex = ModeIndex_768x576[i];

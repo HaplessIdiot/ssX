@@ -28,7 +28,7 @@
  *           Juanjo Santamarta <santamarta@ctv.es>,
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp>
  *           David Thomas <davtom@dream.org.uk>.
- *	     Thomas Winischhofer <thomas@winischhofer.net>:
+ *	     Thomas Winischhofer <thomas@winischhofer.net>
  */
 
 #include "xf86.h"
@@ -50,14 +50,47 @@ extern void    SISWaitRetraceCRT1(ScrnInfoPtr pScrn);
 extern void    SISWaitRetraceCRT2(ScrnInfoPtr pScrn);
 extern Bool    InRegion(int x, int y, region r);
 
+/* Helper function for Xabre to convert mono image to ARGB */
+/* The Xabre's cursor engine for CRT2 is buggy and can't
+ * handle mono cursors. We therefore convert the mono image
+ * to ARGB
+ */
+static void
+SiSXConvertMono2ARGB(SISPtr pSiS)
+{
+   unsigned char *src = pSiS->CurMonoSrc;
+   CARD32 *dest = pSiS->CurARGBDest;
+   CARD8  chunk, mask;
+   CARD32 fg = pSiS->CurFGCol | 0xff000000;
+   CARD32 bg = pSiS->CurBGCol | 0xff000000;
+   int i,j,k;
+
+   if(!dest || !src) return;
+
+   if(pSiS->UseHWARGBCursor) return;
+
+   for(i = 0; i < 64; i++) {
+      for(j = 0; j < 8; j++) {
+         chunk = *(src + 8); mask = *src++;
+	 for(k = 128; k != 0; k >>= 1) {
+	    if(mask & k)       *dest++ = 0x00000000;
+	    else if(chunk & k) *dest++ = fg;
+	    else               *dest++ = bg;
+	 }
+      }
+      src += 8;
+   }
+}
+
+
 static void
 SiSShowCursor(ScrnInfoPtr pScrn)
 {
     SISPtr        pSiS = SISPTR(pScrn);
     unsigned char sridx, cridx;
 
-    /* TW: Backup current indices of SR and CR since we run async:ly
-     *     and might be interrupting an on-going register read/write
+    /* Backup current indices of SR and CR since we run async:ly
+     * and might be interrupting an on-going register read/write
      */
     sridx = inSISREG(SISSR); cridx = inSISREG(SISCR);
 
@@ -103,7 +136,7 @@ SiS300ShowCursor(ScrnInfoPtr pScrn)
     } else {
 #endif
         if(pSiS->UseHWARGBCursor) {
-#ifdef SIS300_USE_ARGB16	
+#ifdef SIS300_USE_ARGB16
 	   sis300EnableHWARGB16Cursor()
 #else
 	   sis300EnableHWARGBCursor()
@@ -126,12 +159,11 @@ SiS300ShowCursor(ScrnInfoPtr pScrn)
 #endif
 }
 
-/* TW: 315 series */
 static void
 SiS310ShowCursor(ScrnInfoPtr pScrn)
 {
     SISPtr  pSiS = SISPTR(pScrn);
-    
+
 #ifdef SISDUALHEAD
     if(pSiS->DualHeadMode) {
 	if(pSiS->SecondHead) {
@@ -143,23 +175,38 @@ SiS310ShowCursor(ScrnInfoPtr pScrn)
 		}
         } else {
 		/* TW: Head 1 is always CRT2 */
-		if(pSiS->UseHWARGBCursor) {
-		   sis301EnableHWARGBCursor310()
+		if(pSiS->ChipFlags & SiSCF_XabreCore) {
+		   sis301EnableHWCursor330()
 		} else {
-		   sis301EnableHWCursor310()
+		   if(pSiS->UseHWARGBCursor) {
+		      sis301EnableHWARGBCursor310()
+		   } else {
+		      sis301EnableHWCursor310()
+		   }
 		}
 	}
     } else {
 #endif
-        if(pSiS->UseHWARGBCursor) {
-    	   sis310EnableHWARGBCursor()
-    	   if(pSiS->VBFlags & CRT2_ENABLE)  {
-        	sis301EnableHWARGBCursor310()
-      	   }
+	if(pSiS->ChipFlags & SiSCF_XabreCore) {
+	   if(pSiS->UseHWARGBCursor) {
+	      sis310EnableHWARGBCursor()
+	   } else {
+	      sis310EnableHWCursor()
+	   }
+	   if(pSiS->VBFlags & CRT2_ENABLE) {
+	      sis301EnableHWCursor330()
+	   }
 	} else {
-	   sis310EnableHWCursor()
-    	   if(pSiS->VBFlags & CRT2_ENABLE)  {
-        	sis301EnableHWCursor310()
+           if(pSiS->UseHWARGBCursor) {
+    	      sis310EnableHWARGBCursor()
+    	      if(pSiS->VBFlags & CRT2_ENABLE)  {
+	         sis301EnableHWARGBCursor310()
+	      }
+      	   } else {
+	      sis310EnableHWCursor()
+    	      if(pSiS->VBFlags & CRT2_ENABLE) {
+	         sis301EnableHWCursor310()
+	      }
       	   }
 	}
 #ifdef SISDUALHEAD
@@ -213,7 +260,6 @@ SiS300HideCursor(ScrnInfoPtr pScrn)
 #endif
 }
 
-/* TW: 315 series */
 static void
 SiS310HideCursor(ScrnInfoPtr pScrn)
 {
@@ -227,16 +273,26 @@ SiS310HideCursor(ScrnInfoPtr pScrn)
 		sis310SetCursorPositionY(2000, 0)
         } else {
 		/* TW: Head 1 is always CRT2 */
-		sis301DisableHWCursor310()
-		sis301SetCursorPositionY310(2000, 0)
+		if(pSiS->ChipFlags & SiSCF_XabreCore) {
+		   sis301DisableHWCursor330()
+		   sis301SetCursorPositionY330(2000, 0)
+		} else {
+		   sis301DisableHWCursor310()
+		   sis301SetCursorPositionY310(2000, 0)
+		}
 	}
     } else {
 #endif
     	sis310DisableHWCursor()
 	sis310SetCursorPositionY(2000, 0)
     	if(pSiS->VBFlags & CRT2_ENABLE) {
-        	sis301DisableHWCursor310()
-		sis301SetCursorPositionY310(2000, 0)
+	   if(pSiS->ChipFlags & SiSCF_XabreCore) {
+              sis301DisableHWCursor330()
+	      sis301SetCursorPositionY330(2000, 0)
+	   } else {
+	      sis301DisableHWCursor310()
+	      sis301SetCursorPositionY310(2000, 0)
+	   }
     	}
 #ifdef SISDUALHEAD
     }
@@ -346,8 +402,13 @@ SiSSetCursorPositionMerged(ScrnInfoPtr pScrn1, int x, int y)
     } else {
        sis310SetCursorPositionX(x1, x1_preset)
        sis310SetCursorPositionY(y1, y1_preset)
-       sis301SetCursorPositionX310(x2 + 17, x2_preset)
-       sis301SetCursorPositionY310(y2, y2_preset)
+       if(pSiS->ChipFlags & SiSCF_XabreCore) {
+          sis301SetCursorPositionX330(x2 + 17, x2_preset)
+          sis301SetCursorPositionY330(y2, y2_preset)
+       } else {
+          sis301SetCursorPositionX310(x2 + 17, x2_preset)
+          sis301SetCursorPositionY310(y2, y2_preset)
+       }
     }
 }
 #endif
@@ -380,8 +441,8 @@ SiS300SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
     else if(mode->Flags & V_DBLSCAN)  y *= 2;
 
 #ifdef SISDUALHEAD
-    if (pSiS->DualHeadMode) {
-	if (pSiS->SecondHead) {
+    if(pSiS->DualHeadMode) {
+	if(pSiS->SecondHead) {
 		/* TW: Head 2 is always CRT1 */
 		sis300SetCursorPositionX(x, x_preset)
     		sis300SetCursorPositionY(y, y_preset)
@@ -438,16 +499,26 @@ SiS310SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
     		sis310SetCursorPositionY(y, y_preset)
         } else {
 		/* TW: Head 1 is always CRT2 */
-		sis301SetCursorPositionX310(x + 17, x_preset)
-      		sis301SetCursorPositionY310(y, y_preset)
+		if(pSiS->ChipFlags & SiSCF_XabreCore) {
+		   sis301SetCursorPositionX330(x + 17, x_preset)
+      		   sis301SetCursorPositionY330(y, y_preset)
+		} else {
+		   sis301SetCursorPositionX310(x + 17, x_preset)
+      		   sis301SetCursorPositionY310(y, y_preset)
+		}
 	}
     } else {
 #endif
     	sis310SetCursorPositionX(x, x_preset)
     	sis310SetCursorPositionY(y, y_preset)
     	if(pSiS->VBFlags & CRT2_ENABLE) {
-      		sis301SetCursorPositionX310(x + 17, x_preset)
-      		sis301SetCursorPositionY310(y, y_preset)
+	   if(pSiS->ChipFlags & SiSCF_XabreCore) {
+      	      sis301SetCursorPositionX330(x + 17, x_preset)
+      	      sis301SetCursorPositionY330(y, y_preset)
+	   } else {
+	      sis301SetCursorPositionX310(x + 17, x_preset)
+      	      sis301SetCursorPositionY310(y, y_preset)
+	   }
     	}
 #ifdef SISDUALHEAD
     }
@@ -491,6 +562,8 @@ SiS300SetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 {
     SISPtr pSiS = SISPTR(pScrn);
 
+    if(pSiS->UseHWARGBCursor) return;
+
 #ifdef SISDUALHEAD
     if(pSiS->DualHeadMode) {
 	if(pSiS->SecondHead) {
@@ -519,7 +592,9 @@ static void
 SiS310SetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 {
     SISPtr pSiS = SISPTR(pScrn);
-    
+
+    if(pSiS->UseHWARGBCursor) return;
+
 #ifdef SISDUALHEAD
     if(pSiS->DualHeadMode) {
 	if(pSiS->SecondHead) {
@@ -528,16 +603,33 @@ SiS310SetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
     		sis310SetCursorFGColor(fg)
         } else {
 		/* TW: Head 1 is always CRT2 */
-        	sis301SetCursorBGColor310(bg)
-        	sis301SetCursorFGColor310(fg)
+		if(pSiS->ChipFlags & SiSCF_XabreCore) {
+		   if((fg != pSiS->CurFGCol) || (bg != pSiS->CurBGCol)) {
+      		      pSiS->CurFGCol = fg;
+    		      pSiS->CurBGCol = bg;
+        	      SiSXConvertMono2ARGB(pSiS);
+		   }
+		} else {
+		   sis301SetCursorBGColor310(bg)
+        	   sis301SetCursorFGColor310(fg)
+		}
 	}
     } else {
 #endif
     	sis310SetCursorBGColor(bg)
     	sis310SetCursorFGColor(fg)
-    	if(pSiS->VBFlags & CRT2_ENABLE)  {
-        	sis301SetCursorBGColor310(bg)
-        	sis301SetCursorFGColor310(fg)
+
+	if(pSiS->VBFlags & CRT2_ENABLE)  {
+	   if(pSiS->ChipFlags & SiSCF_XabreCore) {
+	      if((fg != pSiS->CurFGCol) || (bg != pSiS->CurBGCol)) {
+	         pSiS->CurFGCol = fg;
+                 pSiS->CurBGCol = bg;
+	         SiSXConvertMono2ARGB(pSiS);
+	      }
+	   } else {
+	      sis301SetCursorBGColor310(bg)
+              sis301SetCursorFGColor310(fg)
+	   }
     	}
 #ifdef SISDUALHEAD
     }
@@ -676,7 +768,7 @@ static void
 SiS310LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 {
     SISPtr pSiS = SISPTR(pScrn);
-    int cursor_addr;
+    unsigned long cursor_addr, cursor_addr2 = 0;
     CARD32 status1 = 0, status2 = 0;
     unsigned char *dest = pSiS->FbBase;
     BOOLEAN sizedouble = FALSE;
@@ -712,40 +804,67 @@ SiS310LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
        }
     } else {
        memcpy((unsigned char *)dest + (cursor_addr * 1024), src, 1024);
-       /* memset((unsigned char *)dest + (cursor_addr * 1024), 0xff, 1024); */ /* DEBUG */
-
     }
-    
-    if(pSiS->UseHWARGBCursor) {
-        if(pSiS->VBFlags & DISPTYPE_CRT1) {
-	   status1 = sis310GetCursorStatus;
-	   sis310DisableHWCursor()
-	   if(pSiS->VBFlags & CRT2_ENABLE)  {
-	      status2 = sis301GetCursorStatus310;
-	      sis301DisableHWCursor310()
+
+    if(pSiS->ChipFlags & SiSCF_XabreCore) {
+
+       /* Convert Mono image to color image */
+
+       cursor_addr2 = pScrn->videoRam - pSiS->cursorOffset - ((pSiS->CursorSize/1024) * 2);
+
+       pSiS->CurMonoSrc = (unsigned char *)dest + (cursor_addr * 1024);
+       pSiS->CurARGBDest = (CARD32 *)((unsigned char *)dest + (cursor_addr2 * 1024));
+
+       SiSXConvertMono2ARGB(pSiS);
+
+       if(pSiS->UseHWARGBCursor) {
+           if(pSiS->VBFlags & DISPTYPE_CRT1) {
+	      status1 = sis310GetCursorStatus;
+	      sis310DisableHWCursor();
+	      SISWaitRetraceCRT1(pScrn);
+	      sis310SwitchToMONOCursor();
 	   }
-	   SISWaitRetraceCRT1(pScrn); 
-	   sis310SwitchToMONOCursor(); 
-	   if(pSiS->VBFlags & CRT2_ENABLE)  {
-	      SISWaitRetraceCRT2(pScrn); 
-	      sis301SwitchToMONOCursor310(); 
+	}
+
+    } else {
+
+       if(pSiS->UseHWARGBCursor) {
+           if(pSiS->VBFlags & DISPTYPE_CRT1) {
+	      status1 = sis310GetCursorStatus;
+	      sis310DisableHWCursor()
+	      if(pSiS->VBFlags & CRT2_ENABLE) {
+	         status2 = sis301GetCursorStatus310;
+	         sis301DisableHWCursor310()
+	      }
+	      SISWaitRetraceCRT1(pScrn);
+	      sis310SwitchToMONOCursor();
+	      if(pSiS->VBFlags & CRT2_ENABLE)  {
+	         SISWaitRetraceCRT2(pScrn);
+	         sis301SwitchToMONOCursor310();
+	      }
 	   }
 	}
     }
+
     sis310SetCursorAddress(cursor_addr);
     sis310SetCursorPatternSelect(0);
     if(status1) sis310SetCursorStatus(status1)
     
-    if(pSiS->VBFlags & CRT2_ENABLE)  {  
-    	if((pSiS->UseHWARGBCursor) && (!pSiS->VBFlags & DISPTYPE_CRT1)) {
-	    status2 = sis301GetCursorStatus310;
-	    sis301DisableHWCursor310()
-	    SISWaitRetraceCRT2(pScrn); 
-	    sis301SwitchToMONOCursor310();   
-	}  
-        sis301SetCursorAddress310(cursor_addr)
-        sis301SetCursorPatternSelect310(0)
-	if(status2) sis301SetCursorStatus310(status2)
+    if(pSiS->VBFlags & CRT2_ENABLE) {
+       if(pSiS->ChipFlags & SiSCF_XabreCore) {
+          sis301SetCursorAddress330(cursor_addr2)
+          sis301SetCursorPatternSelect330(0)
+       } else {
+          if((pSiS->UseHWARGBCursor) && (!pSiS->VBFlags & DISPTYPE_CRT1)) {
+	     status2 = sis301GetCursorStatus310;
+	     sis301DisableHWCursor310()
+	     SISWaitRetraceCRT2(pScrn);
+	     sis301SwitchToMONOCursor310();
+	  }
+          sis301SetCursorAddress310(cursor_addr)
+          sis301SetCursorPatternSelect310(0)
+	  if(status2) sis301SetCursorStatus310(status2)
+       }
     }
     
     pSiS->UseHWARGBCursor = FALSE;
@@ -1121,36 +1240,56 @@ static void SiS310LoadCursorImageARGB(ScrnInfoPtr pScrn, CursorPtr pCurs)
 	   }
     }
 
-    if(!pSiS->UseHWARGBCursor) {
-        if(pSiS->VBFlags & DISPTYPE_CRT1) {
-	   status1 = sis310GetCursorStatus;
-	   sis310DisableHWCursor()
-	   if(pSiS->VBFlags & CRT2_ENABLE)  {
-	      status2 = sis301GetCursorStatus310;
-	      sis301DisableHWCursor310()
-	   }
-	   SISWaitRetraceCRT1(pScrn); 
-	   sis310SwitchToRGBCursor(); 
-	   if(pSiS->VBFlags & CRT2_ENABLE)  {
-	      SISWaitRetraceCRT2(pScrn); 
-	      sis301SwitchToRGBCursor310(); 
-	   }
-	}
+    if(pSiS->ChipFlags & SiSCF_XabreCore) {
+
+       if(!pSiS->UseHWARGBCursor) {
+          if(pSiS->VBFlags & DISPTYPE_CRT1) {
+	     status1 = sis310GetCursorStatus;
+	     sis310DisableHWCursor()
+	  }
+	  SISWaitRetraceCRT1(pScrn);
+	  sis310SwitchToRGBCursor();
+       }
+
+    } else {
+
+       if(!pSiS->UseHWARGBCursor) {
+          if(pSiS->VBFlags & DISPTYPE_CRT1) {
+	     status1 = sis310GetCursorStatus;
+	     sis310DisableHWCursor()
+	     if(pSiS->VBFlags & CRT2_ENABLE) {
+	        status2 = sis301GetCursorStatus310;
+	        sis301DisableHWCursor310()
+	     }
+	  }
+	  SISWaitRetraceCRT1(pScrn);
+	  sis310SwitchToRGBCursor();
+	  if(pSiS->VBFlags & CRT2_ENABLE)  {
+	     SISWaitRetraceCRT2(pScrn);
+	     sis301SwitchToRGBCursor310();
+	  }
+       }
     }
+
     sis310SetCursorAddress(cursor_addr);
     sis310SetCursorPatternSelect(0);
     if(status1) sis310SetCursorStatus(status1)
     
-    if(pSiS->VBFlags & CRT2_ENABLE) {  
-    	if((!pSiS->UseHWARGBCursor) && (!pSiS->VBFlags & DISPTYPE_CRT1)) {
-	    status2 = sis301GetCursorStatus310;
-	    sis301DisableHWCursor310()
-	    SISWaitRetraceCRT2(pScrn); 
-	    sis301SwitchToRGBCursor310();   
-	}
-        sis301SetCursorAddress310(cursor_addr)
-        sis301SetCursorPatternSelect310(0)
-	if(status2) sis301SetCursorStatus310(status2)
+    if(pSiS->VBFlags & CRT2_ENABLE) {
+       if(pSiS->ChipFlags & SiSCF_XabreCore) {
+          sis301SetCursorAddress330(cursor_addr)
+          sis301SetCursorPatternSelect330(0)
+       } else {
+          if((!pSiS->UseHWARGBCursor) && (!pSiS->VBFlags & DISPTYPE_CRT1)) {
+	     status2 = sis301GetCursorStatus310;
+	     sis301DisableHWCursor310()
+	     SISWaitRetraceCRT2(pScrn);
+	     sis301SwitchToRGBCursor310();
+	  }
+          sis301SetCursorAddress310(cursor_addr)
+          sis301SetCursorPatternSelect310(0)
+	  if(status2) sis301SetCursorStatus310(status2)
+       }
     }
     
     pSiS->UseHWARGBCursor = TRUE;

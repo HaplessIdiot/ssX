@@ -214,11 +214,13 @@ typedef struct _SiS_ModeResInfoStruct
 typedef UCHAR DRAM4Type[4];
 
 /* Defines for SiS_Customt */
-#define CUT_NONE       0
-#define CUT_FORCENONE  1
-#define CUT_BARCO1366  2
-#define CUT_BARCO1024  3
-#define CUT_COMPAQ1280 4
+#define CUT_NONE        0
+#define CUT_FORCENONE   1
+#define CUT_BARCO1366   2
+#define CUT_BARCO1024   3
+#define CUT_COMPAQ1280  4
+#define CUT_COMPAQ12802 5
+#define CUT_PANEL848    6
 
 typedef struct _SiS_Private
 {
@@ -444,6 +446,8 @@ typedef struct _SiS_Private
 	const SiS_LVDSDataStruct  *SiS_LVDSBARCO1366Data_2;
 	const SiS_LVDSDataStruct  *SiS_LVDSBARCO1024Data_1;
 	const SiS_LVDSDataStruct  *SiS_LVDSBARCO1024Data_2;
+	const SiS_LVDSDataStruct  *SiS_LVDS848x480Data_1;
+	const SiS_LVDSDataStruct  *SiS_LVDS848x480Data_2;
 	const SiS_LVDSDataStruct  *SiS_CHTVUNTSCData;
 	const SiS_LVDSDataStruct  *SiS_CHTVONTSCData;
 	const SiS_LVDSDataStruct  *SiS_CHTVUPALData;
