@@ -23,7 +23,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.5 2000/08/31 20:22:00 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.6 2000/09/01 19:26:41 mvojkovi Exp $ */
 
 /*
  * i810_video.c: i810 Xv driver. Based on the mga Xv driver by Mark Vojkovich.
@@ -889,14 +889,6 @@ I810DisplayVideo(
 
     OVERLAY_UPDATE(pI810->OverlayPhysical);
 
-    /* wait for the current buffer flipped in */
-    while (((INREG(DOV0STA)&0x00100000)>>20) != pPriv->currentBuf);
-
-    /* buffer swap */
-    if (pPriv->currentBuf == 0)
-	pPriv->currentBuf = 1;
-    else
-	pPriv->currentBuf = 0;
 }
 
 static int 
@@ -911,6 +903,7 @@ I810PutImage(
   Bool sync,
   RegionPtr clipBoxes, pointer data
 ){
+   I810Ptr pI810 = I810PTR(pScrn);
    I810PortPrivPtr pPriv = (I810PortPrivPtr)data;
    INT32 x1, x2, y1, y2;
    int srcPitch;
@@ -950,6 +943,15 @@ I810PutImage(
 	srcPitch = (width << 1);
 	break;
    }  
+
+   /* wait for the last rendered buffer to be flipped in */
+   while (((INREG(DOV0STA)&0x00100000)>>20) != pPriv->currentBuf);
+
+   /* buffer swap */
+   if (pPriv->currentBuf == 0)
+     pPriv->currentBuf = 1;
+   else
+     pPriv->currentBuf = 0;
 
     /* copy data */
     top = y1 >> 16;
