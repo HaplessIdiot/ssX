@@ -1,5 +1,5 @@
 /* $XConsortium: mach8.c,v 1.1 94/03/28 21:09:56 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.0 1994/05/31 08:04:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.1 1994/06/15 15:40:51 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -86,6 +86,7 @@ ScrnInfoRec mach8InfoRec = {
     {0, },              /* OFlagSet clockOptions */
     {0, },              /* OFlagSet xconfigFlag */
     NULL,	       	/* char *chipset */
+    NULL,	       	/* char *ramdac */
     0,			/* int clocks */
     {0, },		/* int clock[MAXCLOCKS] */
     0,			/* int maxClock */

@@ -1,4 +1,5 @@
 /* $XConsortium: xf86Procs.h,v 1.1 94/03/28 21:23:46 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -50,10 +51,24 @@ extern void xf86VerifyOptions(
 #endif
 );
 
-extern void x386DeleteMode(
+extern void xf86DeleteMode(
 #if NeedFunctionPrototypes
 	ScrnInfoPtr,		/* infoptr */
 	DisplayModePtr		/* dispmp */
+#endif
+);
+
+extern char *xf86TokenToString(
+#if NeedFunctionPrototypes
+	SymTabPtr,		/* table */
+	int			/* token */
+#endif
+);
+
+extern int xf86StringToToken(
+#if NeedFunctionPrototypes
+	SymTabPtr,		/* table */
+	char *			/* string */
 #endif
 );
 

@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.1 94/03/28 21:55:24 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.3 1994/06/15 15:44:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.4 1994/06/18 16:29:09 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -106,6 +106,7 @@ ScrnInfoRec vga256InfoRec = {
   {0, },		/* OFlagSet clockOptions */
   {0, },                /* OFlagSet xconfigFlag */
   NULL,			/* char *chipset */
+  NULL,			/* char *ramdac */
   0,			/* int clocks */
   {0, },		/* int clock[MAXCLOCKS] */
   DEFAULT_MAX_CLOCK,	/* int maxClock */

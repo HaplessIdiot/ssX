@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.1 1994/05/08 05:20:47 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.2 1994/06/15 15:42:33 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -60,8 +60,7 @@ static int screenno = -100;      /* some little number ... */
 
 static int textClockValue = -1;
 
-static int tol_table[] = {0, 5, 10, 50, 100, 500, 1000, 2000};
-#define NUM_PASSES (sizeof(tol_table)/sizeof(tol_table[0]))
+#define TOLERANCE	2000	/* 2MHz */
 
 extern char *getenv();
 extern char *defaultFontPath;
@@ -372,11 +371,11 @@ validateGraphicsToken(validTokens, token)
 }
 
 /*
- * tokenToString --
+ * xf86TokenToString --
  *	returns the string corresponding to token
  */
-static char *
-tokenToString(table, token)
+char *
+xf86TokenToString(table, token)
      SymTabPtr table;
      int token;
 {
@@ -388,6 +387,22 @@ tokenToString(table, token)
     return("unknown");
   else
     return(table[i].name);
+}
+ 
+/*
+ * xf86StringToToken --
+ *	returns the string corresponding to token
+ */
+int
+xf86StringToToken(table, string)
+     SymTabPtr table;
+     char *string;
+{
+  int i;
+
+  for (i = 0; table[i].token >= 0 && StrCaseCmp(string, table[i].name); i++)
+    ;
+  return(table[i].token);
 }
  
 /*
@@ -624,6 +639,7 @@ configGraphics(scr_index)
     screen->virtualY = -1;
     screen->defaultVisual = -1;
     screen->chipset = NULL;
+    screen->ramdac = NULL;
     screen->modes = NULL;
     OFLG_ZERO(&(screen->options));
     OFLG_ZERO(&(screen->xconfigFlag));
@@ -651,7 +667,7 @@ configGraphics(scr_index)
       char mesg[80];
 
       sprintf(mesg, "\"%s\" is not valid keyword for %s",
-              tokenToString(GraphicsTab, token), screen->name);
+              xf86TokenToString(GraphicsTab, token), screen->name);
       configError(mesg);
     }
 
@@ -697,6 +713,12 @@ configGraphics(scr_index)
       if (getToken(NULL) != STRING) configError("Chipset string expected");
       screen->chipset = val.str;
       OFLG_SET(XCONFIG_CHIPSET,&(screen->xconfigFlag));
+      break;
+
+    case RAMDAC:
+      if (getToken(NULL) != STRING) configError("RAMDAC string expected");
+      screen->ramdac = val.str;
+      OFLG_SET(XCONFIG_RAMDAC,&(screen->xconfigFlag));
       break;
 
     case CLOCKS:
@@ -1119,6 +1141,31 @@ findConfigFile(filename, fp)
 }
 
 /*
+ * xf86GetNearestClock --
+ *	Find closest clock to given frequency (in kHz).  This assumes the
+ *	number of clocks is greater than zero.
+ */
+static int
+xf86GetNearestClock(Screen, Frequency)
+	ScrnInfoPtr Screen;
+	int Frequency;
+{
+  int NearestClock = 0;
+  int MinimumGap = abs(Frequency - Screen->clock[0]);
+  int i;
+  for (i = 1;  i < Screen->clocks;  i++)
+  {
+    int Gap = abs(Frequency - Screen->clock[i]);
+    if (Gap < MinimumGap)
+    {
+      MinimumGap = Gap;
+      NearestClock = i;
+    }
+  }
+  return NearestClock;
+}
+
+/*
  * xf86Config --
  *	Fill some internal structure with userdefined setups. Many internal
  *      Structs are initialized.  The drivers are selected and initialized.
@@ -1420,28 +1467,16 @@ xf86Config (vtopen)
         /* Find the Index of the Text Clock for the ClockProg */
         if (driver->clockprog && textClockValue > 0)
         {
-          Bool found_clock = FALSE;
-
-          for (j = 0; j < NUM_PASSES; j++)
-          {
-            for (i=0; i < driver->clocks; i++)
-	      if (abs(textClockValue - driver->clock[i]) <= tol_table[j])
-              {
-	        found_clock = TRUE;
-                driver->textclock = i;
-                break;
-              }
-            if (found_clock)
-              break;
-          }
-          if (found_clock && xf86Verbose)
-            ErrorF("$s %s: text clock = %7.3f, clock used = %7.3f\n",
+          driver->textclock = xf86GetNearestClock(driver, textClockValue);
+          if (abs(textClockValue - driver->clock[driver->textclock]) >
+              TOLERANCE)
+            FatalError(
+              "There is no defined dot-clock matching the text clock\n");
+          if (xf86Verbose)
+            ErrorF("%s %s: text clock = %7.3f, clock used = %7.3f\n",
               XCONFIG_GIVEN,
               driver->name, textClockValue / 1000.0,
               driver->clock[driver->textclock] / 1000.0);
-          if (!found_clock)
-            FatalError(
-             "There is no defined dot-clock matching the text clock\n");
         }
         if (defaultColorVisualClass < 0)
           defaultColorVisualClass = driver->defaultVisual;
@@ -1605,7 +1640,7 @@ xf86Config (vtopen)
       if (!xf86Screens[i])
       {
         ErrorF("%s%s", needcomma ? ", " : "",
-               tokenToString(SymTab, xf86ScreenNames[i]));
+               xf86TokenToString(SymTab, xf86ScreenNames[i]));
         needcomma = TRUE;
       }
     }
@@ -1661,9 +1696,10 @@ xf86LookupMode(target, driver)
      ScrnInfoPtr    driver;
 {
   DisplayModePtr p;
-  int            i, j, mode_clock;
+  DisplayModePtr best_mode = NULL;
+  int            i, Gap;
+  int            Minimum_Gap = TOLERANCE + 1;
   Bool           found_mode = FALSE;
-  Bool           found_clock = FALSE;
   Bool           clock_too_high = FALSE;
   static Bool	 first_time = TRUE;
 
@@ -1674,112 +1710,99 @@ xf86LookupMode(target, driver)
     first_time = FALSE;
   }
 
-  for (j = 0; j < NUM_PASSES; j++)
+  for (p = pModes; p != NULL; p = p->next)	/* scan list */
   {
-    for (p = pModes; p != NULL; p = p->next)    /* scan list */
+    if (!strcmp(p->name, target->name))		/* names equal ? */
     {
-      if (!strcmp(p->name, target->name))       /* names equal ? */
+      if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &(driver->clockOptions)))
       {
-        if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &(driver->clockOptions))) {
-	    if (driver->clocks == 0) {
-	    /* this we know */
-	       driver->clock[0] = 25175;	/* 25.175Mhz */
-	       driver->clock[1] = 28322;	/* 28.322MHz */
-	       driver->clocks = 2;
-	    }
+        if (driver->clocks == 0)
+        {
+          /* this we know */
+          driver->clock[0] = 25175;		/* 25.175Mhz */
+          driver->clock[1] = 28322;		/* 28.322MHz */
+          driver->clocks = 2;
+        }
 
-	    if ((p->Clock / 1000) > (driver->maxClock / 1000))
-	       clock_too_high = TRUE;
-	    else
-	    {
-	       /* We fill in the the programmable clocks as we go */
-               for (i=0; i < driver->clocks; i++)
-                  if (driver->clock[i] ==  p->Clock)
-                     break;
+        if ((p->Clock / 1000) > (driver->maxClock / 1000))
+          clock_too_high = TRUE;
+        else
+        {
+          /* We fill in the the programmable clocks as we go */
+          for (i=0; i < driver->clocks; i++)
+            if (driver->clock[i] == p->Clock)
+              break;
 
-               if (i >= MAXCLOCKS)
-	       {
-                  ErrorF("Too many programable clocks used (limit %d)!\n",
-			     MAXCLOCKS);
-		return FALSE;
-	       }
+          if (i >= MAXCLOCKS)
+          {
+            ErrorF("Too many programmable clocks used (limit %d)!\n",
+                   MAXCLOCKS);
+            return FALSE;
+          }
 
-	       if (i == driver->clocks)
-	       {
-                   driver->clock[i] = p->Clock;
-	           driver->clocks++;
-	       }
+          if (i == driver->clocks)
+          {
+            driver->clock[i] = p->Clock;
+            driver->clocks++;
+          }
 	       
-               found_clock = TRUE;
-	       mode_clock = p->Clock;
-	       target->Clock      = i;
-	       target->HDisplay   = p->HDisplay;
-	       target->HSyncStart = p->HSyncStart;
-	       target->HSyncEnd   = p->HSyncEnd;
-	       target->HTotal     = p->HTotal;
-	       target->VDisplay   = p->VDisplay;
-	       target->VSyncStart = p->VSyncStart;
-	       target->VSyncEnd   = p->VSyncEnd;
-	       target->VTotal     = p->VTotal;
-	       target->Flags      = p->Flags;
-	    }
-	}
-	else
-	 for (i=0; i < driver->clocks; i++)      /* scan clocks */
-	  if (abs(p->Clock - driver->clock[i]) <= tol_table[j])
-	  {
-	    if ((driver->clock[i] / 1000) > (driver->maxClock / 1000))
-	    {
-	      clock_too_high = TRUE;
-	      break;
-	    }
-	    found_clock = TRUE;
-            mode_clock = p->Clock;
-	    target->Clock      = i;
-	    target->HDisplay   = p->HDisplay;
-	    target->HSyncStart = p->HSyncStart;
-	    target->HSyncEnd   = p->HSyncEnd;
-	    target->HTotal     = p->HTotal;
-	    target->VDisplay   = p->VDisplay;
-	    target->VSyncStart = p->VSyncStart;
-	    target->VSyncEnd   = p->VSyncEnd;
-	    target->VTotal     = p->VTotal;
-	    target->Flags      = p->Flags;
-            break;
-	  }
-        found_mode = TRUE;
+          target->Clock = i;
+          best_mode = p;
+        }
       }
-    }
-    if (found_clock && xf86Verbose)
-      if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &(driver->clockOptions))) 
-	 ErrorF("%s %s: Mode \"%s\": mode clock = %7.3f\n",
-              XCONFIG_GIVEN,driver->name, target->name, mode_clock / 1000.0);
       else
-	 ErrorF("%s %s: Mode \"%s\": mode clock = %7.3f, clock used = %7.3f\n",
-              XCONFIG_GIVEN,driver->name, target->name, mode_clock / 1000.0,
-              driver->clock[target->Clock] / 1000.0);       
-    if (found_clock || !found_mode) break;
+      {
+        i = xf86GetNearestClock(driver, p->Clock);
+        Gap = abs(p->Clock - driver->clock[i]);
+        if (Gap < Minimum_Gap)
+        {
+          if ((driver->clock[i] / 1000) > (driver->maxClock / 1000))
+            clock_too_high = TRUE;
+          else
+          {
+            target->Clock = i;
+            best_mode = p;
+            Minimum_Gap = Gap;
+          }
+        }
+      }
+      found_mode = TRUE;
+    }
   }
-  if (!found_mode)
+
+  if (best_mode != NULL)
+  {
+    target->HDisplay   = best_mode->HDisplay;
+    target->HSyncStart = best_mode->HSyncStart;
+    target->HSyncEnd   = best_mode->HSyncEnd;
+    target->HTotal     = best_mode->HTotal;
+    target->VDisplay   = best_mode->VDisplay;
+    target->VSyncStart = best_mode->VSyncStart;
+    target->VSyncEnd   = best_mode->VSyncEnd;
+    target->VTotal     = best_mode->VTotal;
+    target->Flags      = best_mode->Flags; 
+    if (xf86Verbose)
     {
+      ErrorF("%s %s: Mode \"%s\": mode clock = %7.3f",
+             XCONFIG_GIVEN, driver->name, target->name,
+             best_mode->Clock / 1000.0);
+      if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &(driver->clockOptions)))
+        ErrorF(", clock used = %7.3f", driver->clock[target->Clock] / 1000.0);       
+      ErrorF("\n");
+    }
+  }
+  else if (!found_mode)
     ErrorF("There is no mode definition named \"%s\"\n", target->name);
-    return FALSE;
-    }
-  if (!found_clock && clock_too_high)
-    {
+  else if (clock_too_high)
     ErrorF("Clocks for mode \"%s\" %s\n\tLimit is %7.3f (MHz)\n",
-	       target->name,
-	       "are too high for the configured hardware.",
-	       driver->maxClock / 1000.0);
-    return FALSE;
-    }
-  if (!found_clock)
-    {
+           target->name,
+           "are too high for the configured hardware.",
+           driver->maxClock / 1000.0);
+  else
     ErrorF("There is no defined dot-clock matching mode \"%s\"\n",
-               target->name);
-    return FALSE;
-    }
-  return TRUE;
+           target->name);
+
+  return (best_mode != NULL);
 }
 
 void

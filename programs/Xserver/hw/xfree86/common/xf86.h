@@ -1,5 +1,5 @@
 /* $XConsortium: xf86.h,v 1.1 94/03/28 21:22:43 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.1 1994/05/31 08:09:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.2 1994/06/15 15:42:31 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -107,6 +107,7 @@ typedef struct {
   OFlagSet       clockOptions;
   OFlagSet	 xconfigFlag;
   char           *chipset;
+  char           *ramdac;
   int            clocks;
   int            clock[MAXCLOCKS];
   int            maxClock;
@@ -130,6 +131,11 @@ typedef struct {
   unsigned int   POSbase;         /* AGX - I/O address of POS regs    */
   unsigned int   instance;        /* AGX - video card instance number */
 } ScrnInfoRec, *ScrnInfoPtr;
+
+typedef struct {
+  int           token;                /* id of the token */
+  char          *name;                /* pointer to the LOWERCASED name */
+} SymTabRec, *SymTabPtr;
 
 #define VGA_DRIVER  1
 #define V256_DRIVER 2

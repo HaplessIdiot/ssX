@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Config.h,v 1.1 94/03/28 21:23:53 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.1 1994/05/05 07:49:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.2 1994/06/15 15:42:35 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -37,11 +37,6 @@
 #ifdef SCROLLLOCK
 #undef SCROLLLOCK
 #endif
-
-typedef struct {
-  int           token;                /* id of the token */
-  char          *name;                /* pointer to the LOWERCASED name */
-} SymTabRec, *SymTabPtr;
 
 typedef struct {
   int           num;                  /* returned number */
@@ -225,12 +220,12 @@ static SymTabRec MouseTab[] = {
 #define BLACK       23
 #define WHITE       24
 #define MEMBASE     25
-
 #define IOBASE      26
 #define DACBASE     27
 #define COPBASE     28
 #define POSBASE     29
 #define INSTANCE    30
+#define RAMDAC      31
 
 
 #ifdef INIT_CONFIG
@@ -257,13 +252,13 @@ static SymTabRec GraphicsTab[] = {
   { BIOSBASE,   "biosbase" },
   { BLACK,	"black" },
   { WHITE,	"white" },
-
   { MEMBASE,	"membase" },
   { IOBASE,     "iobase" },
   { DACBASE,    "dacbase" },
   { COPBASE,    "copbase" },
   { POSBASE,    "posbase" },
   { INSTANCE,   "instance" },
+  { RAMDAC,     "ramdac" },
 
   { -1,         "" },
 };
@@ -305,6 +300,7 @@ static SymTabRec TimingTab[] = {
 #define XCONFIG_SPEEDUP         9       /* Xconfig or default/calculated */
 #define XCONFIG_NOMEMACCESS     10      /* set if forced on */
 #define XCONFIG_INSTANCE        11      /* Xconfig or default */
+#define XCONFIG_RAMDAC          12      /* Xconfig or default */
 
 #define XCONFIG_GIVEN		"(**)"
 #define XCONFIG_PROBED		"(--)"

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.6 1994/06/15 15:41:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.7 1994/06/18 16:24:41 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -84,6 +84,7 @@ ScrnInfoRec s3InfoRec =
    {0,},			/* OFlagSet clockOptions */   
    {0, },              		/* OFlagSet xconfigFlag */
    NULL,			/* char *chipset */
+   NULL,			/* char *ramdac */
    0,				/* int clocks */
    {0,},			/* int clock[MAXCLOCKS] */
    0,				/* int maxClock */
@@ -134,6 +135,15 @@ static unsigned S3_IOPorts[] = {
 	0xBAE8, 0xBEE8, 0xE2E8, 0xE2EA,
 };
 static int Num_S3_IOPorts = (sizeof(S3_IOPorts)/sizeof(S3_IOPorts[0]));
+
+static SymTabRec s3DacTable[] = {
+   { NORMAL_DAC,	"normal" },
+   { BT485_DAC,		"bt485" },
+   { ATT20C505_DAC,	"att20c505" },
+   { TI3020_DAC,	"ti3020" },
+   { ATT20C498_DAC,	"att20c498" },
+   { -1,		"" },
+};
 
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 Bool  (*s3ClockSelectFunc) ();
@@ -328,6 +338,21 @@ s3Probe()
       return(FALSE);
    }
 
+   /*
+    * Just an example of how the .ramdac field might be used
+    */
+#ifdef NOT_YET
+   if (s3InfoRec.ramdac) {
+      s3RamdacType = xf86StringToToken(s3DacTable, s3InfoRec.ramdac);
+      if (s3RamdacType < 0) {
+	 ErrorF(%s %s: Unknown RAMDAC type \"%s\"\n", XCONFIG_GIVEN,
+		s3InfoRec.name, s3InfoRec.ramdac);
+	 xf86DisableIOPorts(s3InfoRec.scrnIndex);
+	 return(FALSE);
+      }
+   }
+#endif
+
    OFLG_ZERO(&validOptions);
    OFLG_SET(OPTION_LEGEND, &validOptions);
    OFLG_SET(OPTION_NOLINEAR_MODE, &validOptions);
@@ -490,6 +515,11 @@ s3Probe()
       s3Mbanks = 0;
 
    /*
+    * When using the s3InfoRec.ramdac field, the sanity checks/warnings stay,
+    * but, the OPTION flag setting/checking goes.
+    */
+
+   /*
     * Handle RAMDAC Option flags first.
     */
    if (OFLG_ISSET(OPTION_NORMAL_DAC, &s3InfoRec.options)) {
@@ -566,6 +596,11 @@ s3Probe()
    /* Make sure CR55 is unlocked for Bt485 probe */
    outb(vgaCRIndex, 0x39);
    outb(vgaCRReg, 0xA5);
+
+   /*
+    * To set the s3InfoRec.ramdac string from the token, do:
+    * s3InfoRec.ramdac = xf86TokenToString(s3DacTable, s3RamdacType);
+    */
 
    /* For chipsets other than 928 or 864/964, there is only one RAMDAC type possible */
    if (!S3_928_SERIES(s3ChipId) && !S3_x64_SERIES(s3ChipId)) {
