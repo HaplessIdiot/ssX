@@ -1,4 +1,7 @@
-XFree86 3.9.17d (8 February 2000)
+XFree86 3.9.17e (11 February 2000)
+3684. Fix a vbe-related build problem on Solaris (David Dawes).
+
+XFree86 3.9.17d (9 February 2000)
 3684. XKB could crash with keycodes larger than the range given in the
       keycodes file (David Dawes).
 3683. Allow the passing of all extended keycodes, which makes it possible
@@ -9512,4 +9515,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.978 2000/02/08 19:29:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.979 2000/02/09 13:30:39 dawes Exp $
