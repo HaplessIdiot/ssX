@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/X/Imakefile,v 1.12tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/X/Imakefile,v 1.13 2002/11/22 22:55:59 tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -64,7 +64,7 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src \
 
 LibraryObjectRule()
 
-SubdirLibraryRule($(XMESA_OBJS))
+AllTarget($(XMESA_OBJS))
 NormalLintTarget($(XMESA_SRCS))
 
 DependTarget()

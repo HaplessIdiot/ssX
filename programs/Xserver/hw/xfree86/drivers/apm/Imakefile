@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/Imakefile,v 1.23 2002/05/07 12:53:49 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/Imakefile,v 1.24 2003/02/17 17:06:41 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -35,7 +35,7 @@ SubdirLibraryRule($(OBJS))
 
 ModuleObjectRule()
 
-ObjectModuleTarget(apm,$(OBJS))
+ObjectModuleTarget(apm,$(OBJS),drivers)
 
 InstallObjectModule(apm,$(MODULEDIR),drivers)
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/font/FreeType/module/Imakefile,v 1.17 2003/11/20 02:35:40 dawes Exp $
+XCOMM $XFree86: xc/lib/font/FreeType/module/Imakefile,v 1.18 2004/03/17 19:48:33 dawes Exp $
 
 FT2SOURCEDIR = $(TOP)/extras/freetype2/src
 FT2INCDIR = $(TOP)/extras/freetype2/include
@@ -71,11 +71,11 @@ LinkSourceFile(bdf.c,$(FT2SOURCEDIR)/bdf)
 LinkSourceFile(pcf.c,$(FT2SOURCEDIR)/pcf)
 
 ModuleObjectRule()
-LibraryModuleTarget(freetype,$(OBJS))
+LibraryModuleTarget(freetype,$(OBJS),fonts)
 InstallLibraryModule(freetype,$(MODULEDIR),fonts)
 
 #if !BuildXTrueType
-LibraryModuleTarget(xtt,$(XTTOBJS))
+LibraryModuleTarget(xtt,$(XTTOBJS),fonts)
 InstallLibraryModule(xtt,$(MODULEDIR),fonts)
 #endif
 

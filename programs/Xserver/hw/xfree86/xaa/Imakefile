@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xaa/Imakefile,v 3.40 1999/11/04 21:32:55 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xaa/Imakefile,v 3.42 2000/09/20 02:05:41 keithp Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -52,7 +52,7 @@ MakeMutex($(SUBDIRS) $(EXPOBJS) $(DONES))
 ObjectFromSpecialSource(xaaSeg, xaaLine, -DPOLYSEGMENT)
 ObjectFromSpecialSource(xaaDashSeg, xaaDashLine, -DPOLYSEGMENT)
 
-DepLibraryModuleTarget(xaa, $(OBJS) $(SUBDIRS) $(DONES), $(OBJS) $(EXPOBJS))
+DepLibraryModuleTarget(xaa, $(OBJS) $(SUBDIRS) $(DONES), $(OBJS) $(EXPOBJS),.)
 
 InstallLibraryModule(xaa,$(MODULEDIR),.)
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/glx/Imakefile,v 1.11 2004/01/28 18:11:50 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/glx/Imakefile,v 1.12 2004/02/12 02:25:00 torrey Exp $
 
 #if DoLoadableServer
 # if !BuildModuleInSubdir
@@ -45,7 +45,6 @@ XCOMM add DEBUG to the define in ../mesa/src/X/xf86glx.c
 
 #ifdef IHaveModules
 ModuleObjectRule()
-LibraryModuleTarget(glx,$(OBJS))
 #else
 NormalLibraryObjectRule()
 NormalLibraryTarget(glx,$(OBJS))

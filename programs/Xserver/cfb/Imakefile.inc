@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:48:12 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile.inc,v 1.3tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile.inc,v 1.4 2002/11/22 22:56:02 tsi Exp $
 
 #if DoLoadableServer
 #if !BuildModuleInSubdir
@@ -115,7 +115,7 @@ CFBNAME = cfb32
 
 #ifdef IHaveModules
 ModuleObjectRule()
-LibraryModuleTarget($(CFBNAME),$(OBJS))
+LibraryModuleTarget($(CFBNAME),$(OBJS),.)
 #else
 NormalLibraryObjectRule()
 NormalLibraryTarget($(CFBNAME),$(OBJS))

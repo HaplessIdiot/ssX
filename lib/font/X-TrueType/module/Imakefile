@@ -1,5 +1,5 @@
 XCOMM X-TrueType Server - TrueType rasterizer for X
-XCOMM $XFree86: xc/lib/font/X-TrueType/module/Imakefile,v 1.8 2002/02/13 21:32:48 dawes Exp $
+XCOMM $XFree86: xc/lib/font/X-TrueType/module/Imakefile,v 1.9 2003/09/06 23:38:05 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -32,7 +32,7 @@ MODULE_O = xttmodule.o
 #include "../Imakefile.inc"
 
 ModuleObjectRule()
-LibraryModuleTarget(xtt,$(OBJS))
+LibraryModuleTarget(xtt,$(OBJS),fonts)
 InstallLibraryModule(xtt,$(MODULEDIR),fonts)
 
 DependTarget()

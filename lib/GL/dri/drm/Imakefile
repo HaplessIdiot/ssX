@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/dri/drm/Imakefile,v 1.22 2003/09/28 20:15:00 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/dri/drm/Imakefile,v 1.23 2003/12/02 13:02:37 alanh Exp $
 
 #if GlxUseBuiltInDRIDriver
 #define DoNormalLib (NormalLibGlx || SharedLibGlxWithoutPIC)
@@ -51,7 +51,7 @@ LinkSourceFile(drm.h,$(XF86OSSRC)/$(OS_SUBDIR3)/drm/kernel)
 
 LibraryObjectRule()
 
-SubdirLibraryRule($(OBJS))
+AllTarget($(OBJS))
 NormalLintTarget($(SRCS))
 
 DependTarget()

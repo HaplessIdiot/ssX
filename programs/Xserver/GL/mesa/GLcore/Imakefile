@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/GLcore/Imakefile,v 1.3 2002/05/31 18:12:36 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/GLcore/Imakefile,v 1.4 2002/06/02 01:21:13 dawes Exp $
 
 #if DoLoadableServer
 #if !BuildModuleInSubdir
@@ -52,7 +52,7 @@ SUBDIRS = module
 #ifdef IHaveModules
 ModuleObjectRule()
 
-DepLibraryModuleTarget(GLcore, $(DONES) $(OBJS),$(OBJS) $(XOBJS))
+DepLibraryModuleTarget(GLcore, $(DONES) $(OBJS),$(OBJS) $(XOBJS),extensions)
 InstallLibraryModule(GLcore,$(MODULEDIR),extensions)
 
 #else

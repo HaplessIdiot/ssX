@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/12/16 12:31:46 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.85 2003/08/31 12:59:58 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.86 2003/10/08 14:58:25 dawes Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -127,10 +127,10 @@ clean::
 
 xf86Build.h: FRC
 	RemoveFile(build.new)
-	echo "#define BUILD_DATE $(BUILD_DATE)" > build.new
-	echo "#define CLOG_DATE $(CLOG_DATE)" >> build.new
-	@if cmp -s build.new $@; then :; \
-	else (set -x; RemoveFile($@); $(MV) build.new $@); fi
+	-echo "#define BUILD_DATE $(BUILD_DATE)" > build.new
+	-echo "#define CLOG_DATE $(CLOG_DATE)" >> build.new
+	-@if cmp -s build.new $@; then :; \
+	else (set -x; : RemoveFile($@); $(MV) build.new $@); fi
 	RemoveFile(build.new)
 
 FRC:

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/int10/Imakefile,v 1.1 2000/04/05 18:13:55 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/int10/Imakefile,v 1.2 2003/10/05 01:46:24 dawes Exp $
 
 #define IHaveModules
 
@@ -91,7 +91,7 @@ OBJS = $(OBJS1) xf86x86emu.o linux.o $(X86EMUOBJS)
 
 #if defined(XF86INT10_BUILD) && XF86INT10_BUILD > X86EMU_GENERIC
 
-LibraryModuleTarget(int10, $(OBJS))
+LibraryModuleTarget(int10, $(OBJS),linux)
 
 InstallLibraryModule(int10,$(MODULEDIR),linux)
 
