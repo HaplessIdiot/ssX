@@ -2,7 +2,7 @@ XFree86 3.9l (31 July 1997)
 1168. Xterm support for compound text cut and paste (#836, Kaleb Keithley).
 1166. Fix some I128 problems reported with PPro CPUs (#834, Robin Cutshaw).
 1165. Disable C&T fill at 32bpp (#831, David Bateman).
-1164. Update VideoBoard98 file (#830, Takaaki Nomura).
+1164. Update VideoBoard98 file (#830, 842 Takaaki Nomura, Isao Ohishi).
 1163. Prevent re-allocation of cfb ScreenPrivateIndex for multi-head
       server (#829, Stuart Anderson).
 1162. Fix unintended changes in PCI code.
@@ -5213,4 +5213,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.513 1997/07/29 12:07:19 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.515 1997/07/31 07:16:04 dawes Exp $
