@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbgc.c,v 3.0 1996/08/18 01:45:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbgc.c,v 3.1 1998/03/20 21:04:54 hohndel Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -123,6 +123,7 @@ afbCreateGC(pGC)
 	/* afb wants to translate before scan convesion */
 	pGC->miTranslate = 1;
 
+	pPriv = (afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr);
 	afbReduceRop(pGC->alu, pGC->fgPixel, pGC->planemask, pGC->depth,
 		pPriv->rrops);
 	afbReduceOpaqueStipple(pGC->fgPixel, pGC->bgPixel, pGC->planemask,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.52 1999/06/06 08:48:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.53 1999/06/20 08:41:37 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -556,7 +556,7 @@ MGANAME(SubsequentScreenToScreenCopy)(
     ScrnInfoPtr pScrn,
     int srcX, int srcY, int dstX, int dstY, int w, int h
 ){
-    int start, end, SrcOrg, DstOrg;
+    int start, end, SrcOrg = 0, DstOrg = 0;
     MGAPtr pMga = MGAPTR(pScrn);
 
     if (pMga->AccelFlags & LARGE_ADDRESSES) {

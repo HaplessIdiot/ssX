@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.2 1999/04/18 04:08:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.3 1999/04/18 14:02:47 dawes Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -43,6 +43,8 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
+
+#include "xf86Resources.h"
 
 /* Drivers for PCI hardware need this */
 #include "xf86PciInfo.h"
@@ -122,7 +124,7 @@ static int      NEOValidMode(int scrnIndex, DisplayModePtr mode,
                                  Bool verbose, int flags);
 
 /* Internally used functions */
-static int      neoFindIsaDevice(void);
+static int      neoFindIsaDevice(GDevPtr dev);
 static Bool     neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static void     neoSave(ScrnInfoPtr pScrn);
 static void     neoRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg,
@@ -192,12 +194,12 @@ static PciChipsets NEOPCIchipsets[] = {
 };
 
 static IsaChipsets NEOISAchipsets[] = {
-    { NM2070,               RES_VGA },
-    { NM2090,               RES_VGA },
-    { NM2093,               RES_VGA },
-    { NM2097,               RES_VGA },
-    { NM2160,               RES_VGA },
-    { NM2200,               RES_VGA },
+    { NM2070,               RES_EXCLUSIVE_VGA },
+    { NM2090,               RES_EXCLUSIVE_VGA },
+    { NM2093,               RES_EXCLUSIVE_VGA },
+    { NM2097,               RES_EXCLUSIVE_VGA },
+    { NM2160,               RES_EXCLUSIVE_VGA },
+    { NM2200,               RES_EXCLUSIVE_VGA },
     { -1,			RES_UNDEFINED }
 };
 
@@ -301,11 +303,6 @@ static const char *ramdacSymbols[] = {
     NULL
 };
 
-static const char *racSymbols[] = {
-    "xf86RACInit",
-    NULL
-};
-
 static const char *shadowSymbols[] = {
     "ShadowFBInit",
     NULL
@@ -367,7 +364,7 @@ neoSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * might refer to.
 	 */
 	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols,
-			  ramdacSymbols, racSymbols, shadowSymbols,
+			  ramdacSymbols, shadowSymbols,
 			  ddcSymbols, i2cSymbols, NULL);
 	/*
 	 * The return value must be non-NULL on success even though there
@@ -423,11 +420,9 @@ NEOProbe(DriverPtr drv, int flags)
 {
     Bool foundScreen = FALSE;
     int numDevSections, numUsed;
-    GDevPtr *devSections, *usedDevs;
-    GDevPtr usedDev;
-    pciVideoPtr *usedPci;
+    GDevPtr *devSections;
     int *usedChips;
-    int usedChip;
+    int i;
 
     /*
      * Find the config file Device sections that match this
@@ -443,55 +438,38 @@ NEOProbe(DriverPtr drv, int flags)
 	numUsed = xf86MatchPciInstances(NEO_NAME, PCI_VENDOR_NEOMAGIC,
 					NEOChipsets, NEOPCIchipsets, 
 					devSections,numDevSections,
-					&usedDevs, &usedPci, &usedChips);
-	if (numUsed > 0){
-	    int i;
-	    for (i = 0; i < numUsed; i++) {
-		pciVideoPtr pPci;
-		BusResource Resource;
-		pPci = usedPci[i];
-		Resource = xf86FindPciResource(usedChips[i],NEOPCIchipsets);
-		if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func,
-				     Resource)) {  
-		    ScrnInfoPtr pScrn;
-		    /* Allocate a ScrnInfoRec and claim the slot */
-		    pScrn = xf86AllocateScreen(drv,0);
-		    xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func,
-				     Resource, &NEOMAGIC, usedChips[i],
-				     pScrn->scrnIndex);
-		    pScrn->driverVersion = VERSION;
-		    pScrn->driverName    = NEO_DRIVER_NAME;
-		    pScrn->name          = NEO_NAME;
-		    pScrn->Probe         = NEOProbe;
-		    pScrn->PreInit       = NEOPreInit;
-		    pScrn->ScreenInit    = NEOScreenInit;
-		    pScrn->SwitchMode    = NEOSwitchMode;
-		    pScrn->AdjustFrame   = NEOAdjustFrame;
-		    pScrn->EnterVT       = NEOEnterVT;
-		    pScrn->LeaveVT       = NEOLeaveVT;
-		    pScrn->FreeScreen    = NEOFreeScreen;
-		    pScrn->ValidMode     = NEOValidMode;
-		    pScrn->device        = usedDevs[i];
-		    foundScreen = TRUE;
-		}
-	    }
-      
-	    xfree(usedDevs);
-	    xfree(usedPci);
+					drv, &usedChips);
+	for (i = 0; i < numUsed; i++) {
+	    ScrnInfoPtr pScrn;
+	    /* Allocate a ScrnInfoRec and claim the slot */
+	    pScrn = xf86AllocateScreen(drv,0);
+	    pScrn->driverVersion = VERSION;
+	    pScrn->driverName    = NEO_DRIVER_NAME;
+	    pScrn->name          = NEO_NAME;
+	    pScrn->Probe         = NEOProbe;
+	    pScrn->PreInit       = NEOPreInit;
+	    pScrn->ScreenInit    = NEOScreenInit;
+	    pScrn->SwitchMode    = NEOSwitchMode;
+	    pScrn->AdjustFrame   = NEOAdjustFrame;
+	    pScrn->EnterVT       = NEOEnterVT;
+	    pScrn->LeaveVT       = NEOLeaveVT;
+	    pScrn->FreeScreen    = NEOFreeScreen;
+	    pScrn->ValidMode     = NEOValidMode;
+	    foundScreen = TRUE;
+	    xf86ConfigActivePciEntity(pScrn, usedChips[i], NEOPCIchipsets,
+				      NULL, NULL, NULL, NULL, NULL);
 	}
+	xfree(usedChips);
     }
     /* Isa Bus */
 
-    usedChip = xf86MatchIsaInstances(NEO_NAME,NEOChipsets,NEOISAchipsets,
-				     neoFindIsaDevice,devSections,
-				     numDevSections,&usedDev);
-    if(usedChip >= 0)
-    {
+    numUsed = xf86MatchIsaInstances(NEO_NAME,NEOChipsets,NEOISAchipsets,
+				     drv,neoFindIsaDevice,devSections,
+				     numDevSections,&usedChips);
+    for (i = 0; i < numUsed; i++) {
 	ScrnInfoPtr pScrn;
-	int Resource = xf86FindIsaResource(usedChip,NEOISAchipsets);
-	  
+
 	pScrn = xf86AllocateScreen(drv,0);
-	xf86ClaimIsaSlot(Resource,&NEOMAGIC,usedChip,pScrn->scrnIndex);
 	pScrn->driverVersion = VERSION;
 	pScrn->driverName    = NEO_DRIVER_NAME;
 	pScrn->name          = NEO_NAME;
@@ -504,8 +482,9 @@ NEOProbe(DriverPtr drv, int flags)
 	pScrn->LeaveVT       = NEOLeaveVT;
 	pScrn->FreeScreen    = NEOFreeScreen;
 	pScrn->ValidMode     = NEOValidMode;
-	pScrn->device        = usedDev;
 	foundScreen = TRUE;
+	xf86ConfigActiveIsaEntity(pScrn, usedChips[i], NEOISAchipsets,
+				  NULL, NULL, NULL, NULL, NULL);
     }
 
     xfree(devSections);
@@ -513,7 +492,7 @@ NEOProbe(DriverPtr drv, int flags)
 }
 
 static int
-neoFindIsaDevice(void)
+neoFindIsaDevice(GDevPtr dev)
 {
     unsigned char vgaIOBase;
     unsigned char id;
@@ -544,12 +523,10 @@ neoFindIsaDevice(void)
 Bool
 NEOPreInit(ScrnInfoPtr pScrn, int flags)
 {
-    pciVideoPtr *pciList = NULL;
     ClockRangePtr clockRanges;
     char *mod = NULL;
     int i;
     NEOPtr nPtr;
-    int *numChipsets;
     const char *reqSym = NULL;
     int bppSupport = NoDepth24Support;
     int videoRam = 896;
@@ -562,8 +539,6 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
     int w;
     int apertureSize;
     
-    xf86AddControlledResource(pScrn,IO);
-
     /* The vgahw module should be loaded here when needed */
     if (!xf86LoadSubModule(pScrn, "vgahw"))
 	return FALSE;
@@ -590,11 +565,25 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
     /* Since, the capabilities are determined by the chipset the very
      * first thing to do is, figure out the chipset and its capabilities
      */
-    if(xf86FindChipsetsForScreen(pScrn->scrnIndex,&NEOMAGIC,&numChipsets) > 1)
+    /* This driver doesn't expect more than one entity per screen */
+    if (pScrn->numEntities > 1)
 	RETURN;
 
-    nPtr->NeoChipset = *numChipsets;
-    pScrn->chipset = (char *)xf86TokenToString(NEOChipsets, *numChipsets);
+    /* This is the general case */
+    for (i = 0; i<pScrn->numEntities; i++) {
+	nPtr->pEnt = xf86GetEntityInfo(pScrn->entityList[i]);
+	if (nPtr->pEnt->resources) return FALSE;
+	nPtr->NeoChipset = nPtr->pEnt->chipset;
+	pScrn->chipset = (char *)xf86TokenToString(NEOChipsets,
+						   nPtr->pEnt->chipset);
+	/* This driver can handle ISA and PCI buses */
+	if (nPtr->pEnt->location.type == BUS_PCI) {
+	    nPtr->PciInfo = xf86GetPciInfoForEntity(nPtr->pEnt->index);
+	    nPtr->PciTag = pciTag(nPtr->PciInfo->bus, 
+				  nPtr->PciInfo->device,
+				  nPtr->PciInfo->func);
+	}
+    }
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Chipset is a ");
     switch(nPtr->NeoChipset){
     case NM2070:
@@ -617,25 +606,6 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	break;
     }
     ErrorF("\n");
-    
-    if(xf86IsPciBus(pScrn->scrnIndex)){
-	i = xf86GetPciInfoForScreen(pScrn->scrnIndex, &pciList, NULL);
-	if (i > 1) {
-	    /* This shouldn't happen */
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		       "Expected one PCI card, but found %d\n", i);
-	    xfree(pciList);
-	    RETURN;
-	}
-	nPtr->PciInfo = *pciList;
-	xfree(pciList);
-	      
-	nPtr->PciTag = pciTag(nPtr->PciInfo->bus, 
-			      nPtr->PciInfo->device,
-			      nPtr->PciInfo->func);
-    }
-
-    xf86EnableAccess(&pScrn->Access);
     
     vgaHWGetIOBase(VGAHWPTR(pScrn));
     nPtr->vgaIOBase = (unsigned int)(inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
@@ -879,8 +849,9 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
     nPtr->NeoFbMapSize = linearSize * 1024;
     nPtr->NeoCursorOffset = CursorOff;
 
-    if (pScrn->device->MemBase) {
-	nPtr->NeoLinearAddr = pScrn->device->MemBase;
+    if (nPtr->pEnt->device->MemBase) {
+	/* XXX Check this matches a PCI base address */
+	nPtr->NeoLinearAddr = nPtr->pEnt->device->MemBase;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		   "base address is set at 0x%X.\n",
 		   nPtr->NeoLinearAddr);
@@ -888,8 +859,9 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	nPtr->NeoLinearAddr = 0;
     }
 
-    if (pScrn->device->IOBase) {
-	nPtr->NeoMMIOAddr = pScrn->device->IOBase;
+    if (nPtr->pEnt->device->IOBase) {
+	/* XXX Check this matches a PCI base address */
+	nPtr->NeoMMIOAddr = nPtr->pEnt->device->IOBase;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		   "base address is set at 0x%X.\n",
 		   nPtr->NeoMMIOAddr);
@@ -897,7 +869,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	nPtr->NeoMMIOAddr = 0;
     }
 	
-    if (xf86IsPciBus(pScrn->scrnIndex)) {
+    if (nPtr->pEnt->location.type == BUS_PCI) {
 	if (!nPtr->NeoLinearAddr) {
 	    nPtr->NeoLinearAddr = nPtr->PciInfo->memBase[0];
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
@@ -923,9 +895,13 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 		       "base address is set at 0x%X.\n",
 		       nPtr->NeoMMIOAddr);
 	}
+	/* XXX What about VGA resources in OPERATING mode? */
+	if (xf86RegisterResources(nPtr->pEnt->index, NULL, ResExclusive))
+	    RETURN;
 	    
-    } else if (xf86IsIsaBus(pScrn->scrnIndex)) {
+    } else if (nPtr->pEnt->location.type == BUS_ISA) {
 	unsigned int addr;
+	resRange linearRes[] = { {ResExcMemBlock|ResBios,0,0},_END };
 	
 	if (!nPtr->NeoLinearAddr) {
 	    outw(GRAX, 0x2609);
@@ -943,11 +919,16 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 		       "base address is set at 0x%X.\n",
 		       nPtr->NeoMMIOAddr);
 	}
+	linearRes[0].rBegin = nPtr->NeoLinearAddr;
+	linearRes[1].rEnd = nPtr->NeoLinearAddr + nPtr->NeoFbMapSize - 1;
+	if (xf86RegisterResources(nPtr->pEnt->index,linearRes,ResNone)) {
+	    nPtr->noLinear = TRUE; /* XXX */
+	}
     } else
 	RETURN;
 
-    if (pScrn->device->videoRam != 0) {
-	pScrn->videoRam = pScrn->device->videoRam;
+    if (nPtr->pEnt->device->videoRam != 0) {
+	pScrn->videoRam = nPtr->pEnt->device->videoRam;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "VideoRAM: %d kByte\n",
 		   pScrn->videoRam);
     } else {
@@ -956,8 +937,8 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 		   pScrn->videoRam);
     }
     
-    if (pScrn->device->dacSpeeds[0] != 0) {
-	maxClock = pScrn->device->dacSpeeds[0];
+    if (nPtr->pEnt->device->dacSpeeds[0] != 0) {
+	maxClock = nPtr->pEnt->device->dacSpeeds[0];
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Max Clock: %d kByte\n",
 		   maxClock);
     } else {
@@ -1072,9 +1053,6 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	    RETURN;
 	xf86LoaderReqSymLists(ramdacSymbols, NULL);
     }
-    if (!xf86LoadSubModule(pScrn, "rac"))
-	RETURN;
-    xf86LoaderReqSymLists(racSymbols, NULL);
 
     return TRUE;
 }
@@ -1156,8 +1134,6 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Map the Neo memory and possible MMIO areas */
     if (!neoMapMem(pScrn))
 	return FALSE;
-
-    xf86EnableAccess(&pScrn->Access);
 
     /*
      * next we save the current state and setup the first mode
@@ -1300,8 +1276,6 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	pBankInfo->pBankB = (unsigned char *)hwp->Base + 0x10000;
 	pBankInfo->BankSize = 0x10000;
 	pBankInfo->nBankDepth = pScrn->depth;
-	xf86AddControlledResource(pScrn,MEM_IO);
-	xf86EnableAccess(&pScrn->Access);
 	
 	pBankInfo->SetSourceBank = (miBankProcPtr)NEOSetRead;
 	pBankInfo->SetDestinationBank =
@@ -1441,7 +1415,6 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 static Bool
 NEOSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 {
-    xf86EnableAccess(&xf86Screens[scrnIndex]->Access);
     return neoModeInit(xf86Screens[scrnIndex], mode);
 }
 
@@ -1508,7 +1481,6 @@ NEOCloseScreen(int scrnIndex, ScreenPtr pScreen)
     NEOPtr nPtr = NEOPTR(pScrn);
 
     if(pScrn->vtSema){
-	xf86EnableAccess(&pScrn->Access);
 	if (nPtr->NeoHWCursorShown)
 	    NeoHideCursor(pScrn);
 	neoRestore(pScrn, &(VGAHWPTR(pScrn))->SavedReg, &nPtr->NeoSavedReg, TRUE);
@@ -1622,7 +1594,7 @@ neoMapMem(ScrnInfoPtr pScrn)
 
     if (!nPtr->noLinear) {
 	if (!nPtr->noMMIO) {
-	    if (xf86IsPciBus(pScrn->scrnIndex))
+	    if (nPtr->pEnt->location.type == BUS_PCI)
 		nPtr->NeoMMIOBase =
 		    xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
 				  nPtr->PciTag, nPtr->NeoMMIOAddr,
@@ -1636,7 +1608,7 @@ neoMapMem(ScrnInfoPtr pScrn)
 	if (nPtr->NeoMMIOBase == NULL)
 	    return FALSE;
 
-	if (xf86IsPciBus(pScrn->scrnIndex))
+	if (nPtr->pEnt->location.type == BUS_PCI)
 	    nPtr->NeoFbBase =
 		xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
 			      nPtr->PciTag,
@@ -2442,8 +2414,6 @@ NeoDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 
     if (pScrn->vtSema)
 	return;
-
-    xf86EnableAccess(&pScrn->Access);
 
     switch (PowerManagementMode) {
     case DPMSModeOn:

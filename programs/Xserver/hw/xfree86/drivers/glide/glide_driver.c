@@ -36,7 +36,7 @@
      rather hard).
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.1 1999/04/11 13:10:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.2 1999/04/18 13:49:10 dawes Exp $ */
 
 #include "xaa.h"
 #include "xf86Cursor.h"
@@ -118,6 +118,7 @@ typedef struct {
   u32                 grResolution;
   Bool                OnAtExit;
   Bool                GlideInitiated;
+  EntityInfoPtr       pEnt;
 } GLIDERec, *GLIDEPtr;
 
 static pgrSstQueryBoards_t pgrSstQueryBoards;
@@ -371,12 +372,14 @@ GLIDEProbe(DriverPtr drv, int flags)
       GlideDevice = xf86SetIntOption(dev->options, "GlideDevice", 0);
       if (GlideDevice == sst)
       {
+        int entity;
         /* Match */
         /* Allocate a ScrnInfoRec and claim the slot */
         pScrn = xf86AllocateScreen(drv, 0);
         
         /* I'm not going to "claim" the glide device since no other driver than this can drive it */
         /* (A glide device is not a PCI device) */
+        /* XXX Need to see how this fits in with the new RAC */
 
         /* Fill in what we can of the ScrnInfoRec */
         pScrn->driverVersion = VERSION;
@@ -388,8 +391,14 @@ GLIDEProbe(DriverPtr drv, int flags)
         pScrn->EnterVT	     = GLIDEEnterVT;
         pScrn->LeaveVT	     = GLIDELeaveVT;
         pScrn->FreeScreen    = GLIDEFreeScreen;
-        pScrn->device	     = dev;
         pScrn->driverPrivate = (void*)sst;
+        /*
+         * XXX This is a hack because don't have the PCI info.  Set it as
+         * an ISA entity with no resources.
+         */
+        entity = xf86ClaimIsaSlot(drv, 0, dev, TRUE);
+        xf86ConfigActiveIsaEntity(pScrn, entity, NULL, NULL, NULL, NULL, NULL,
+                                  NULL);
         foundScreen = TRUE;
         break;
       }
@@ -415,6 +424,10 @@ GLIDEPreInit(ScrnInfoPtr pScrn, int flags)
   char *mod = NULL;
   const char *reqSym = NULL;
   int sst;
+
+  /* Check the number of entities, and fail if it isn't one. */
+  if (pScrn->numEntities != 1)
+    return FALSE;
 
   sst = (int)(pScrn->driverPrivate);
   pScrn->driverPrivate = NULL;
@@ -487,6 +500,9 @@ GLIDEPreInit(ScrnInfoPtr pScrn, int flags)
 
   pGlide = GLIDEPTR(pScrn);
 
+  /* Get the entity */
+  pGlide->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
+
   /* Collect all of the relevant option flags (fill in pScrn->options) */
   xf86CollectOptions(pScrn, NULL);
 
@@ -508,8 +524,8 @@ GLIDEPreInit(ScrnInfoPtr pScrn, int flags)
    * If the user has specified the amount of memory in the XF86Config
    * file, we respect that setting.
    */
-  if (pScrn->device->videoRam != 0) {
-    pScrn->videoRam = pScrn->device->videoRam;
+  if (pGlide->pEnt->device->videoRam != 0) {
+    pScrn->videoRam = pGlide->pEnt->device->videoRam;
     from = X_CONFIG;
   } else {
     pScrn->videoRam = 8192; /* It's just virtual framebuffer anyway so let's say we have an 8MB sized framebuffer */
