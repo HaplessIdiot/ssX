@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.86 2003/07/16 01:38:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.87 2003/08/23 15:03:01 dawes Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -264,10 +264,12 @@ static const char *drmSymbols[] = {
    "drmAgpEnable",
    "drmAgpFree",
    "drmAgpRelease",
+   "drmAgpUnbind",
    "drmAuthMagic",
    "drmCommandWrite",
    "drmCreateContext",
    "drmCtlInstHandler",
+   "drmCtlUninstHandler",
    "drmDestroyContext",
    "drmFreeVersion",
    "drmGetInterruptFromBusID",
