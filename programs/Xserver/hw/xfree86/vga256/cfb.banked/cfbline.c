@@ -1,4 +1,5 @@
 /* $XConsortium: cfbline.c,v 1.2 94/04/17 20:32:21 dpw Exp $ */
+/* $XFree86$ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -465,7 +466,7 @@ else
 					adx, ady,
 					&clip1, &clip2,
 					axis, (signdx == signdy),
-					oc1, oc2) == 11)
+					oc1, oc2) == -1)
 		    {
 		    	pbox++;
 		    	continue;
