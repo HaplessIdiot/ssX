@@ -35,8 +35,8 @@
 /*
  * patch.c++
  *
- * $Date: 2001/01/15 21:48:36 $ $Revision: 1.1 $
- * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/patch.cc,v 1.1 2001/01/15 21:48:36 dawes Exp $
+ * $Date: 2001/04/07 17:13:25 $ $Revision: 1.2 $
+ * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/patch.cc,v 1.2 2001/04/07 17:13:25 dawes Exp $
  */
 
 #include <stdio.h>
@@ -50,6 +50,7 @@
 #include "quilt.h"
 #include "nurbsconsts.h"
 #include "simplemath.h" //for abs function in ::singleStep();
+#include "gluint.h"
 
 
 /*--------------------------------------------------------------------------
@@ -321,43 +322,43 @@ Patch::getstepsize( void )
 		if( ss != 0.0 && tt != 0.0 ) {
 		    /* printf( "ssv[0] %g ssv[1] %g ttv[0] %g ttv[1] %g\n", 
 			ssv[0], ssv[1], ttv[0], ttv[1] ); */
-		    REAL ttq = ::sqrtf( (float) ss );
-		    REAL ssq = ::sqrtf( (float) tt );
-		    REAL ds = ::sqrtf( 4 * t2 * ttq / ( ss * ttq + st * ssq ) );
-		    REAL dt = ::sqrtf( 4 * t2 * ssq / ( tt * ssq + st * ttq ) );
+		    REAL ttq = ::SQRT( (float) ss );
+		    REAL ssq = ::SQRT( (float) tt );
+		    REAL ds = ::SQRT( 4 * t2 * ttq / ( ss * ttq + st * ssq ) );
+		    REAL dt = ::SQRT( 4 * t2 * ssq / ( tt * ssq + st * ttq ) );
 		    pspec[0].stepsize = ( ds < pspec[0].range[2] ) ? ds : pspec[0].range[2];
 		    REAL scutoff = 2.0 * t2 / ( pspec[0].range[2] * pspec[0].range[2]);
-		    pspec[0].sidestep[0] = (ssv[0] > scutoff) ? ::sqrtf( 2.0 * t2 / ssv[0] ) : pspec[0].range[2];
-		    pspec[0].sidestep[1] = (ssv[1] > scutoff) ? ::sqrtf( 2.0 * t2 / ssv[1] ) : pspec[0].range[2];
+		    pspec[0].sidestep[0] = (ssv[0] > scutoff) ? ::SQRT( 2.0 * t2 / ssv[0] ) : pspec[0].range[2];
+		    pspec[0].sidestep[1] = (ssv[1] > scutoff) ? ::SQRT( 2.0 * t2 / ssv[1] ) : pspec[0].range[2];
     
 		    pspec[1].stepsize = ( dt < pspec[1].range[2] ) ? dt : pspec[1].range[2];
 		    REAL tcutoff = 2.0 * t2 / ( pspec[1].range[2] * pspec[1].range[2]);
-		    pspec[1].sidestep[0] = (ttv[0] > tcutoff) ? ::sqrtf( 2.0 * t2 / ttv[0] ) : pspec[1].range[2];
-		    pspec[1].sidestep[1] = (ttv[1] > tcutoff) ? ::sqrtf( 2.0 * t2 / ttv[1] ) : pspec[1].range[2];
+		    pspec[1].sidestep[0] = (ttv[0] > tcutoff) ? ::SQRT( 2.0 * t2 / ttv[0] ) : pspec[1].range[2];
+		    pspec[1].sidestep[1] = (ttv[1] > tcutoff) ? ::SQRT( 2.0 * t2 / ttv[1] ) : pspec[1].range[2];
 		} else if( ss != 0.0 ) {
 		    REAL x = pspec[1].range[2] * st;
-		    REAL ds = ( ::sqrtf( x * x + 8.0 * t2 * ss ) - x ) / ss;
+		    REAL ds = ( ::SQRT( x * x + 8.0 * t2 * ss ) - x ) / ss;
 		    pspec[0].stepsize = ( ds < pspec[0].range[2] ) ? ds : pspec[0].range[2];
 		    REAL scutoff = 2.0 * t2 / ( pspec[0].range[2] * pspec[0].range[2]);
-		    pspec[0].sidestep[0] = (ssv[0] > scutoff) ? ::sqrtf( 2.0 * t2 / ssv[0] ) : pspec[0].range[2];
-		    pspec[0].sidestep[1] = (ssv[1] > scutoff) ? ::sqrtf( 2.0 * t2 / ssv[1] ) : pspec[0].range[2];
+		    pspec[0].sidestep[0] = (ssv[0] > scutoff) ? ::SQRT( 2.0 * t2 / ssv[0] ) : pspec[0].range[2];
+		    pspec[0].sidestep[1] = (ssv[1] > scutoff) ? ::SQRT( 2.0 * t2 / ssv[1] ) : pspec[0].range[2];
 		    pspec[1].singleStep();
 		} else if( tt != 0.0 ) {
 		    REAL x = pspec[0].range[2] * st;
-		    REAL dt = ( ::sqrtf( x * x + 8.0 * t2 * tt ) - x )  / tt;
+		    REAL dt = ( ::SQRT( x * x + 8.0 * t2 * tt ) - x )  / tt;
 		    pspec[0].singleStep();
 		    REAL tcutoff = 2.0 * t2 / ( pspec[1].range[2] * pspec[1].range[2]);
 		    pspec[1].stepsize = ( dt < pspec[1].range[2] ) ? dt : pspec[1].range[2];
-		    pspec[1].sidestep[0] = (ttv[0] > tcutoff) ? ::sqrtf( 2.0 * t2 / ttv[0] ) : pspec[1].range[2];
-		    pspec[1].sidestep[1] = (ttv[1] > tcutoff) ? ::sqrtf( 2.0 * t2 / ttv[1] ) : pspec[1].range[2];
+		    pspec[1].sidestep[0] = (ttv[0] > tcutoff) ? ::SQRT( 2.0 * t2 / ttv[0] ) : pspec[1].range[2];
+		    pspec[1].sidestep[1] = (ttv[1] > tcutoff) ? ::SQRT( 2.0 * t2 / ttv[1] ) : pspec[1].range[2];
 		} else {
 		    if( 4.0 * t2  > st * pspec[0].range[2] * pspec[1].range[2] ) {
 			pspec[0].singleStep();
 			pspec[1].singleStep();
 		    } else {
 			REAL area = 4.0 * t2 / st;
-			REAL ds = ::sqrtf( area * pspec[0].range[2] / pspec[1].range[2] );
-			REAL dt = ::sqrtf( area * pspec[1].range[2] / pspec[0].range[2] );
+			REAL ds = ::SQRT( area * pspec[0].range[2] / pspec[1].range[2] );
+			REAL dt = ::SQRT( area * pspec[1].range[2] / pspec[0].range[2] );
 			pspec[0].stepsize = ( ds < pspec[0].range[2] ) ? ds : pspec[0].range[2];
 			pspec[0].sidestep[0] = pspec[0].range[2];
 			pspec[0].sidestep[1] = pspec[0].range[2];
@@ -417,8 +418,8 @@ Patch::getstepsize( void )
 		if( ms != 0.0 &&  mt != 0.0 ) {
 			REAL d = 1.0 / (ms * mt);
 			t *= M_SQRT2;
-			REAL ds = t * ::sqrtf( d * pspec[0].range[2] / pspec[1].range[2] );
-			REAL dt = t * ::sqrtf( d * pspec[1].range[2] / pspec[0].range[2] );
+			REAL ds = t * ::SQRT( d * pspec[0].range[2] / pspec[1].range[2] );
+			REAL dt = t * ::SQRT( d * pspec[1].range[2] / pspec[0].range[2] );
 			pspec[0].stepsize = ( ds < pspec[0].range[2] ) ? ds : pspec[0].range[2];
 			pspec[0].sidestep[0] = ( msv[0] * pspec[0].range[2] > t ) ? (t / msv[0]) : pspec[0].range[2];
 			pspec[0].sidestep[1] = ( msv[1] * pspec[0].range[2] > t ) ? (t / msv[1]) : pspec[0].range[2];

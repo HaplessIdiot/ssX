@@ -35,8 +35,8 @@
 /*
  * curve.c++
  *
- * $Date: 2001/01/15 21:48:26 $ $Revision: 1.1 $
- * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/curve.cc,v 1.1 2001/01/15 21:48:26 dawes Exp $
+ * $Date: 2001/04/07 17:13:25 $ $Revision: 1.2 $
+ * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/curve.cc,v 1.2 2001/04/07 17:13:25 dawes Exp $
  */
 
 #include "glimports.h"
@@ -48,6 +48,7 @@
 #include "types.h"
 #include "quilt.h"
 #include "nurbsconsts.h"
+#include "gluint.h"
 
 /*--------------------------------------------------------------------------
  * Curve::Curve - copy curve from quilt and transform control points
@@ -170,7 +171,7 @@ Curve::getstepsize( void )
             REAL t = mapdesc->getProperty( N_PIXEL_TOLERANCE );
 	    if( mapdesc->isParametricDistanceSampling() ) {
 		REAL d = mapdesc->calcPartialVelocity( &tmp[0][0], tstride, order, 2, range[2] );
-		stepsize = (d > 0.0) ? ::sqrtf( 8.0 * t / d ) : range[2];
+		stepsize = (d > 0.0) ? ::SQRT( 8.0 * t / d ) : range[2];
 		minstepsize = ( mapdesc->maxrate > 0.0 ) ? (range[2] / mapdesc->maxrate) : 0.0;
 	    } else if( mapdesc->isPathLengthSampling() ) {
 		// t is upper bound on path (arc) length

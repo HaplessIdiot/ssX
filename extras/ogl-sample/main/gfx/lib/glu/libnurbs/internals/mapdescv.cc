@@ -35,8 +35,8 @@
 /*
  * mapdescv.c++
  *
- * $Date: 2001/01/15 21:48:31 $ $Revision: 1.1 $
- * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/mapdescv.cc,v 1.1 2001/01/15 21:48:31 dawes Exp $
+ * $Date: 2001/04/07 17:13:25 $ $Revision: 1.2 $
+ * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/mapdescv.cc,v 1.2 2001/04/07 17:13:25 dawes Exp $
  */
 
 #include "glimports.h"
@@ -46,6 +46,7 @@
 #include "mymath.h"
 #include "nurbsconsts.h"
 #include "mapdesc.h"
+#include "gluint.h"
 
 /*--------------------------------------------------------------------------
  * calcPartialVelocity - calculate maximum magnitude of a given partial
@@ -93,7 +94,7 @@ Mapdesc::calcPartialVelocity (
     REAL max = 0.0;
     for( j=0; j != ncols-partial; j++ )
 	if( mag[j] > max ) max = mag[j];
-    max = fac * ::sqrtf( (float) max );
+    max = fac * ::SQRT( (float) max );
 
     return max;
 }
@@ -217,8 +218,8 @@ Mapdesc::calcPartialVelocity (
 	    j = ncols-tpartial-1;
 	    if( mag[i][j] > dist[1] ) dist[1] = mag[i][j];
 	}
-	dist[0] = fac * ::sqrtf( dist[0] );
-	dist[1] = fac * ::sqrtf( dist[1] );
+	dist[0] = fac * ::SQRT( dist[0] );
+	dist[1] = fac * ::SQRT( dist[1] );
     } else if( side == 1 ) {
 	// compute max magnitude of first and last row
 	dist[0] = 0.0;
@@ -230,11 +231,11 @@ Mapdesc::calcPartialVelocity (
 	    i = nrows-spartial-1;
 	    if( mag[i][j] > dist[1] ) dist[1] = mag[i][j];
 	}
-	dist[0] = fac * ::sqrtf( dist[0] );
-	dist[1] = fac * ::sqrtf( dist[1] );
+	dist[0] = fac * ::SQRT( dist[0] );
+	dist[1] = fac * ::SQRT( dist[1] );
     }
 
-    max = fac * ::sqrtf( (float) max );
+    max = fac * ::SQRT( (float) max );
 
     return max;
 }
