@@ -1,6 +1,6 @@
 /*
- * $XConsortium: charproc.c /main/188 1995/12/08 17:18:02 kaleb $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.12 1996/01/05 13:23:06 dawes Exp $
+ * $XConsortium: charproc.c /main/189 1996/01/10 17:15:44 kaleb $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.13 1996/01/10 05:44:08 dawes Exp $
  */
 
 /*
@@ -2872,7 +2872,7 @@ static void VTInitI18N()
 	       *end,
 		tmp[1024],
 	  	buf[32];
-    XIM		xim = 0;
+    XIM		xim = (XIM) NULL;
     XIMStyles  *xim_styles;
     XIMStyle	input_style = 0;
     Boolean	found;
@@ -2886,7 +2886,7 @@ static void VTInitI18N()
 	for(ns=s=tmp; ns && *s;) {
 	    while (*s && isspace(*s)) s++;
 	    if (!*s) break;
-	    if (!(ns = end = index(s, ',')))
+	    if ((ns = end = index(s, ',')) != 0)
 		end = s + strlen(s);
 	    while (isspace(*end)) end--;
 	    *end = '\0';

@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c /main/239 1995/12/10 17:21:49 gildea $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.25 1996/01/06 05:25:55 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.26 1996/01/10 05:44:13 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -413,7 +413,7 @@ int	Ptyfd;
 
 #include <signal.h>
 
-#if defined(sco) || defined(ISC)
+#if defined(sco) || (defined(ISC) && !defined(_POSIX_SOURCE))
 #undef SIGTSTP			/* defined, but not the BSD way */
 #endif
 

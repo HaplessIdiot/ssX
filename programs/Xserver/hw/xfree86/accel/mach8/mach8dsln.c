@@ -1,4 +1,4 @@
-/* $XConsortium: mach8dsln.c,v 1.2 94/04/17 20:30:54 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8dsln.c,v 1.1.1.2 1996/01/03 07:13:38 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -54,6 +54,7 @@ Further modifications by Tiago Gons (tiago@comosjn.hobby.nl)
 */
 
 /* 17-sep-93 TCG: mach8dsln.c from ibm8514dsln.c */
+/* $XConsortium: mach8dsln.c /main/4 1995/11/13 11:24:06 kaleb $ */
 
 #include "X.h"
 
@@ -100,6 +101,8 @@ mach8DashLine(pDrawable, pGC, mode, npt, pptInit)
     int e, e1, e2;              /* bresenham error and increments */
     int len;                    /* length of segment */
     int axis;                   /* major axis */
+    int octant;
+    unsigned int bias = miGetZeroLineBias(pDrawable->pScreen);
     short cmd = CMD_LINE | PLANAR | WRTDATA | LASTPIX;
     short cmd2;
     short fix;
@@ -166,11 +169,8 @@ mach8DashLine(pDrawable, pGC, mode, npt, pptInit)
         /* sloped line */
         {
             cmd2 = cmd;
-            signdx = 1;
             if ((adx = x2 - x1) < 0)
             {
-                adx = -adx;
-                signdx = -1;
                 fix = 0;
             }
             else
@@ -178,16 +178,13 @@ mach8DashLine(pDrawable, pGC, mode, npt, pptInit)
                 cmd2 |= INC_X;
                 fix = -1;
             }
-            signdy = 1;
-            if ((ady = y2 - y1) < 0)
-            {
-                ady = -ady;
-                signdy = -1;
-            }
-            else
+            if ((ady = y2 - y1) >= 0)
             {
                 cmd2 |= INC_Y;
             }
+
+	    CalcLineDeltas(x1, y1, x2, y2, adx, ady, signdx, signdy,
+			   1, 1, octant);
 
             if (adx > ady)
             {
@@ -203,7 +200,10 @@ mach8DashLine(pDrawable, pGC, mode, npt, pptInit)
                 e2 = e1 - (ady << 1);
                 e = e1 - ady;
                 cmd2 |= YMAJAXIS;
+		SetYMajorOctant(octant);
             }
+
+	    FIXUP_ERROR(e, octant, bias);
 
             /* we have bresenham parameters and two points.
              */
@@ -346,7 +346,7 @@ mach8DashLine(pDrawable, pGC, mode, npt, pptInit)
 					&new_x2, &new_y2,
 					adx, ady,
 					&clip1, &clip2,
-					axis, (signdx == signdy),
+					octant, bias,
 					oc1, oc2) == -1)
                     {
                         pbox++;

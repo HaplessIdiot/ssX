@@ -1,5 +1,5 @@
 .\" $XConsortium: Xserver.man /main/57 1995/12/15 14:05:48 gildea $
-.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.1 1995/11/12 09:50:17 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.2 1996/01/05 13:16:25 dawes Exp $
 .\" Copyright (c) 1984 - 1991, 1993, 1994  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -150,9 +150,6 @@ causes all remaining command line arguments to be ignored.
 .TP 8
 .B \-kb
 disables the XKEYBOARD extension if present.
-.TP 8
-.B \-noscale
-disables scaling of bitmap fonts.
 .TP 8
 .B \-p \fIminutes\fP
 sets screen-saver pattern cycle time in minutes.

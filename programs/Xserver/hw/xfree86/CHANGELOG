@@ -1,3 +1,16 @@
+XFree86 3.1.2Bf (11 January 1996)
+212. Fix core dump when exiting an X server started with XKB enabled.
+211. Update accelerated servers' use of miZeroClipLine().
+210. Include XC fix-trackers to seq-4031 (includes update of RECORD spec
+     to version 1.13, some Xlib and xterm fixes, and preliminary ISO Latin-2
+     compose upposrt).
+209. Add code to detect the Trio32 BITBLT bug, and automatically enable
+     the workaround when it is detected (Harald Koenig).
+208. Final changes for POSIXized ISC build (Michael Rohleder).
+207. Define NO_READAHEAD for ISC in xconsole (Michael Rohleder).
+206. Fix(?) Xalloca.h problem on Solaris 2.5.
+205. Fix missing XFreeDGA #ifdef in change 187 (Kaleb Keithley).
+
 XFree86 3.1.2Be (10 January 1996)
 204. Fix build with BuildServersOnly set to YES (Takefumi Tsukada).
 203. Major xterm cleanup (including prototyping), and fixes to the colour
