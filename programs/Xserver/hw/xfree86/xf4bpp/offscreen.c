@@ -53,7 +53,7 @@
         ((unsigned char *)(((PixmapPtr)((pWin)->drawable.pScreen->devPrivate))->devPrivate.ptr))
 
 #define SAVEDSCREEN(pWin, x, y) \
-	(*(saved_screen(pWin) + (y) * (BYTES_PER_LINE(pWin) << 3) + (x)))
+	(*(saved_screen(pWin) + (y) * (BYTES_PER_LINE(pWin)) + (x)))
 
 #define DO_ROP(src,dst,alu,planes) \
 	((dst) = do_rop((src),(dst),(alu),(planes)))
