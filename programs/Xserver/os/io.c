@@ -53,7 +53,7 @@ SOFTWARE.
  *   InsertFakeRequest, ResetCurrentRequest
  *
  *****************************************************************/
-/* $XFree86: xc/programs/Xserver/os/io.c,v 3.34 2002/05/31 18:46:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/io.c,v 3.35 2003/04/27 21:31:08 herrb Exp $ */
 
 #if 0
 #define DEBUG_COMMUNICATION
@@ -500,7 +500,10 @@ ReadRequestFromClient(ClientPtr client)
 	oci->bufptr += (sizeof(xBigReq) - sizeof(xReq));
 	*(xReq *)oci->bufptr = *request;
 	oci->lenLastReq -= (sizeof(xBigReq) - sizeof(xReq));
-	client->req_len -= (sizeof(xBigReq) - sizeof(xReq)) >> 2;
+	if (client->req_len > (sizeof(xBigReq) - sizeof(xReq)) >> 2)
+	    client->req_len -= (sizeof(xBigReq) - sizeof(xReq)) >> 2;
+	else
+	    client->req_len = 0;
     }
 #endif
     client->requestBuffer = (pointer)oci->bufptr;
