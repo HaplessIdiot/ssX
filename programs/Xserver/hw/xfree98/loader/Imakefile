@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/loader/Imakefile,v 1.3 1997/04/08 14:56:02 hohndel Exp $ */
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/loader/Imakefile,v 1.4 1997/07/29 12:08:19 hohndel Exp $ */
 
 
 
@@ -47,14 +47,18 @@ SpecialObjectRule(dixsym.o,dixsym.c,$(EXT_DEFINES))
 LinkSourceFile(README,$(XF86SRC)/loader)
 LinkSourceFile(aout.h,$(XF86SRC)/loader)
 LinkSourceFile(aoutloader.c,$(XF86SRC)/loader)
+LinkSourceFile(aoutloader.h,$(XF86SRC)/loader)
 LinkSourceFile(ar.h,$(XF86SRC)/loader)
 LinkSourceFile(coff.h,$(XF86SRC)/loader)
 LinkSourceFile(coffloader.c,$(XF86SRC)/loader)
+LinkSourceFile(coffloader.h,$(XF86SRC)/loader)
 LinkSourceFile(dixsym.c,$(XF86SRC)/loader)
 LinkSourceFile(dlloader.c,$(XF86SRC)/loader)
 LinkSourceFile(elf.h,$(XF86SRC)/loader)
 LinkSourceFile(elfloader.c,$(XF86SRC)/loader)
+LinkSourceFile(elfloader.h,$(XF86SRC)/loader)
 LinkSourceFile(hash.c,$(XF86SRC)/loader)
+LinkSourceFile(hash.h,$(XF86SRC)/loader)
 LinkSourceFile(loader.c,$(XF86SRC)/loader)
 LinkSourceFile(loader.h,$(XF86SRC)/loader)
 LinkSourceFile(loaderProcs.h,$(XF86SRC)/loader)
