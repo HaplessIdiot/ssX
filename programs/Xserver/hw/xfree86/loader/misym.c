@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.4 1997/05/06 09:46:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.5 1997/08/26 10:01:32 hohndel Exp $ */
 
 
 
@@ -88,7 +88,6 @@ LOOKUP miLookupTab[] = {
    SYMFUNC(miFindMaxBand)
    SYMFUNC(miClipSpans)
    SYMFUNC(miAllocateGCPrivateIndex)
-   SYMFUNC(miRegisterGCPrivateIndex)
    SYMFUNC(miScreenInit)
    SYMFUNC(miRectAlloc)
    SYMFUNC(miInitializeBackingStore)

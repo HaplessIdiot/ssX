@@ -1,4 +1,6 @@
 XFree86 3.9Ae (20 March 1998)
+1620. Link X11 apps against libxpg4 on FreeBSD to get multibyte locale
+      support.
 1619. SVGA/chips. include support for the new 69000 chipset. Fix up the
       memory probing for the 65554, 65555 and 68554 chips. Add probing for
       the 64200, 64300 and 69000 chips to SuperProbe. Fix  the memory probing
@@ -6028,4 +6030,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.572 1998/03/20 19:07:47 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.573 1998/03/20 21:05:14 hohndel Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.15 1997/06/25 08:25:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.17 1998/03/20 21:07:01 hohndel Exp $ */
 
 
 
@@ -128,11 +128,13 @@ static loader_funcs funcs[] = {
 	 AOUTResolveSymbols,
 	 AOUTCheckForUnresolved,
 	 AOUTUnloadModule, {0,0,0,0,0}},
+#ifdef DLOPEN_SUPPORT
 	/* LD_AOUTDLOBJECT */
-	{AOUTLoadModule,
-	 AOUTResolveSymbols,
-	 AOUTCheckForUnresolved,
-	 AOUTUnloadModule, {0,0,0,0,0}},
+	{DLLoadModule,
+	 DLResolveSymbols,
+	 DLCheckForUnresolved,
+	 DLUnloadModule, {0,0,0,0,0}},
+#endif
 	};
 
 int	numloaders=sizeof(funcs)/sizeof(loader_funcs);
@@ -212,10 +214,14 @@ long	offset;
         /* AOUTMAGIC, BSDI */
         return LD_AOUTOBJECT;
     }
-    if( buf[0] == 0xc0 && buf[1] == 0x86) {
+#ifdef DLOPEN_SUPPORT
+    if ((buf[0] == 0xc0 && buf[1] == 0x86) ||
+	(buf[3] == 0xc0 && buf[2] == 0x86))
+    {
         /* i386 shared object */
         return LD_AOUTDLOBJECT;
     }
+#endif
 
     return LD_UNKNOWN;
 }

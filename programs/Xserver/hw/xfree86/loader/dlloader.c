@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.c,v 1.3 1997/11/16 11:51:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.c,v 1.4 1998/03/20 19:07:51 hohndel Exp $ */
 
 
 
@@ -94,31 +94,24 @@ DLFindSymbol(char *name)
  * public interface
  */
 void *
-DLLoadModule(int modtype,
-	     char *modname,
-	     int handle,
-	     int fd)
+DLLoadModule(loaderPtr modrec, int dllfd, LOOKUP **ppLookup)
 {
     DLModulePtr dlfile;
     DLModuleList *l;
 
-    if (modtype != LD_AOUTDLOBJECT) {
-	ErrorF("DLLoadModule(): modtype != shared object\n");
-	return NULL;
-    }
-    if ((dlfile=(DLModulePtr)calloc(1,sizeof(DLModuleRec)))==NULL) {
+    if ((dlfile=(DLModulePtr)xcalloc(1,sizeof(DLModuleRec)))==NULL) {
 	ErrorF("Unable  to allocate DLModuleRec\n");
 	return NULL;
     }
-    dlfile->handle = handle;
-    dlfile->dlhandle = dlopen(modname, DLOPEN_FLAGS);
-    if (handle == 0) {
+    dlfile->handle = modrec->handle;
+    dlfile->dlhandle = dlopen(modrec->name, DLOPEN_FLAGS);
+    if (dlfile->dlhandle == 0) {
 	ErrorF("dlopen: %s\n", dlerror());
-	free(dlfile);
+	xfree(dlfile);
 	return NULL;
     }
     /* Add it to the module list */
-    l = (DLModuleList *)malloc(sizeof(DLModuleList));
+    l = (DLModuleList *)xalloc(sizeof(DLModuleList));
     l->module = dlfile;
     l->next = dlModuleList;
     dlModuleList = l;
@@ -127,13 +120,13 @@ DLLoadModule(int modtype,
 }
 
 void
-DLResolveSymbols(void)
+DLResolveSymbols(void *mod)
 {
     return;
 }
 
 int
-DLCheckForUnresolved(int color_depth)
+DLCheckForUnresolved(int color_depth, void *mod)
 {
     return 0;
 }

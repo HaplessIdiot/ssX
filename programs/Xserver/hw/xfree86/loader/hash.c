@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.3 1997/02/25 14:21:11 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.5 1998/03/20 21:07:01 hohndel Exp $ */
 
 
 
@@ -29,7 +29,9 @@
 #if defined(Lynx)
 #define MAXINT	32000
 #else
-#include <values.h>
+#include <limits.h>
+#undef MAXINT
+#define MAXINT INT_MAX
 #endif
 
 #include "os.h"
