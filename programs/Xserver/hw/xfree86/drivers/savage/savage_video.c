@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_video.c,v 1.1 2001/02/13 21:15:19 dawes Exp $ */
 
 #include "Xv.h"
 #include "dix.h"
@@ -35,10 +35,46 @@ static int SavagePutImage( ScrnInfoPtr,
 static int SavageQueryImageAttributes(ScrnInfoPtr, 
 	int, unsigned short *, unsigned short *,  int *, int *);
 
+static void SavageInitStreamsOld(ScrnInfoPtr pScrn);
+static void SavageInitStreamsNew(ScrnInfoPtr pScrn);
+static void (*SavageInitStreams)(ScrnInfoPtr pScrn) = NULL;
+
+static void SavageSetColorKeyOld(ScrnInfoPtr pScrn);
+static void SavageSetColorKeyNew(ScrnInfoPtr pScrn);
+static void (*SavageSetColorKey)(ScrnInfoPtr pScrn) = NULL;
+
+static void SavageSetColorOld(ScrnInfoPtr pScrn );
+static void SavageSetColorNew(ScrnInfoPtr pScrn );
+static void (*SavageSetColor)(ScrnInfoPtr pScrn ) = NULL;
+
+static void SavageDisplayVideoOld(
+    ScrnInfoPtr pScrn, int id, int offset,
+    short width, short height, int pitch, 
+    int x1, int y1, int x2, int y2,
+    BoxPtr dstBox,
+    short src_w, short src_h,
+    short drw_w, short drw_h
+);
+static void SavageDisplayVideoNew(
+    ScrnInfoPtr pScrn, int id, int offset,
+    short width, short height, int pitch, 
+    int x1, int y1, int x2, int y2,
+    BoxPtr dstBox,
+    short src_w, short src_h,
+    short drw_w, short drw_h
+);
+static void (*SavageDisplayVideo)(
+    ScrnInfoPtr pScrn, int id, int offset,
+    short width, short height, int pitch, 
+    int x1, int y1, int x2, int y2,
+    BoxPtr dstBox,
+    short src_w, short src_h,
+    short drw_w, short drw_h
+) = NULL;
+
 /*static void SavageBlockHandler(int, pointer, pointer, pointer);*/
 
-/*#define XVTRACE*/
-/*#define XVTRACE1*/
+#define XVTRACE	4
 
 #define MAKE_ATOM(a) MakeAtom(a, sizeof(a) - 1, TRUE)
 
@@ -83,7 +119,6 @@ static XF86AttributeRec Attributes[NUM_ATTRIBUTES] =
  * For completeness sake, here is a cracking of the fourcc's I support.
  *
  * YUY2, packed 4:2:2, byte order: Y0 U0 Y1 V0  Y2 U2 Y3 V2
- * UYVY, packed 4:2:2, byte order: U0 Y0 V0 Y1  U2 Y2 V2 Y3
  * Y211, packed 2:1:1, byte order: Y0 U0 Y2 V0  Y4 U2 Y6 V2
  * YV12, planar 4:1:1, Y plane HxW, V plane H/2xW/2, U plane H/2xW/2
  * I420, planar 4:1:1, Y plane HxW, U plane H/2xW/2, V plane H/2xW/2
@@ -96,7 +131,6 @@ static XF86ImageRec Images[NUM_IMAGES] =
    XVIMAGE_YUY2,
    XVIMAGE_YV12,
    XVIMAGE_I420,
-   XVIMAGE_UYVY,
    {
 	FOURCC_RV16,
         XvRGB,
@@ -162,6 +196,7 @@ typedef struct {
    CARD32	videoStatus;
    Time		offTime;
    Time		freeTime;
+   int		lastKnownPitch;
 } SavagePortPrivRec, *SavagePortPrivPtr;
 
 
@@ -173,6 +208,9 @@ typedef struct {
 **************************************/
 
 #define EXT_MISC_CTRL2              0x67
+
+/* New streams */
+
 /* CR67[2] = 1 : enable stream 1 */
 #define ENABLE_STREAM1              0x04
 /* CR67[1] = 1 : enable stream 2 */
@@ -182,35 +220,140 @@ typedef struct {
 /* CR67[3] = 1 : Mem-mapped regs */
 #define USE_MM_FOR_PRI_STREAM       0x08
 
+/* Old Streams */
+
+#define ENABLE_STREAMS_OLD	    0x0c
+#define NO_STREAMS_OLD		    0xf3
+/* CR69[0] = 1 : Mem-mapped regs */
+#define USE_MM_FOR_PRI_STREAM_OLD   0x01
+
+
+/*
+ * There are two different streams engines used in the Savage line.
+ * The old engine is in the 3D, 4, Pro, and Twister.
+ * The new engine is in the 2000, MX and IX.
+ */
+
+
+/* streams registers for old engine */
+#define PSTREAM_CONTROL_REG		0x8180
+#define COL_CHROMA_KEY_CONTROL_REG	0x8184
+#define SSTREAM_CONTROL_REG		0x8190
+#define CHROMA_KEY_UPPER_BOUND_REG	0x8194
+#define SSTREAM_STRETCH_REG		0x8198
+#define COLOR_ADJUSTMENT_REG		0x819C
+#define BLEND_CONTROL_REG		0x81A0
+#define PSTREAM_FBADDR0_REG		0x81C0
+#define PSTREAM_FBADDR1_REG		0x81C4
+#define PSTREAM_STRIDE_REG		0x81C8
+#define DOUBLE_BUFFER_REG		0x81CC
+#define SSTREAM_FBADDR0_REG		0x81D0
+#define SSTREAM_FBADDR1_REG		0x81D4
+#define SSTREAM_STRIDE_REG		0x81D8
+#define SSTREAM_VSCALE_REG		0x81E0
+#define SSTREAM_VINITIAL_REG		0x81E4
+#define SSTREAM_LINES_REG		0x81E8
+#define STREAMS_FIFO_REG		0x81EC
+#define PSTREAM_WINDOW_START_REG	0x81F0
+#define PSTREAM_WINDOW_SIZE_REG		0x81F4
+#define SSTREAM_WINDOW_START_REG	0x81F8
+#define SSTREAM_WINDOW_SIZE_REG		0x81FC
+#define PSTREAM_FBSIZE_REG		0x8300
+#define SSTREAM_FBSIZE_REG		0x8304
+#define SSTREAM_FBADDR2_REG		0x8308
+
+#define OS_XY(x,y)	(((x+1)<<16)|(y+1))
+#define OS_WH(x,y)	(((x-1)<<16)|(y))
 
 static
 unsigned int GetBlendForFourCC( int id )
 {
     switch( id ) {
 	case FOURCC_YUY2:
-	case FOURCC_UYVY:
 	case FOURCC_YV12:
 	case FOURCC_I420:
-	    return 1 << 9;
+	    return 1;
 	case FOURCC_Y211:
-	    return 4 << 9;
+	    return 4;
 	case FOURCC_RV15:
-	    return 3 << 9;
+	    return 3;
 	case FOURCC_RV16:
-	    return 5 << 9;
+	    return 5;
         default:
 	    return 0;
     }
 }
 
-void SavageInitStreams(ScrnInfoPtr pScrn)
+void myOUTREG( SavagePtr psav, unsigned long offset, unsigned long value )
+{
+    ErrorF( "MMIO %04x, was %08x, want %08x,", 
+	offset, MMIO_IN32( psav->MapBase, offset ), value );
+    MMIO_OUT32( psav->MapBase, offset, value );
+    ErrorF( " now %08x\n", MMIO_IN32( psav->MapBase, offset ) );
+}
+
+void SavageInitStreamsOld(ScrnInfoPtr pScrn)
+{
+    SavagePtr psav = SAVPTR(pScrn);
+    unsigned long jDelta;
+    unsigned long format = 0;
+
+    /*
+     * For the OLD streams engine, several of these registers
+     * cannot be touched unless streams are on.  Seems backwards to me;
+     * I'd want to set 'em up, then cut 'em loose.
+     */
+
+    xf86ErrorFVerb(XVTRACE, "SavageInitStreams\n" );
+
+    /* Primary stream reflects the frame buffer. */
+
+    switch( pScrn->depth ) {
+    case  8: format = 0 << 24; break;
+    case 15: format = 3 << 24; break;
+    case 16: format = 5 << 24; break;
+    case 24: format = 7 << 24; break;
+    }
+
+    jDelta = pScrn->displayWidth * pScrn->bitsPerPixel / 8;
+    OUTREG( PSTREAM_WINDOW_START_REG, OS_XY(0,0) );
+    OUTREG( PSTREAM_WINDOW_SIZE_REG, OS_WH(pScrn->displayWidth, pScrn->virtualY) );
+    OUTREG( PSTREAM_FBADDR0_REG, pScrn->fbOffset );
+    OUTREG( PSTREAM_FBADDR1_REG, 0 );
+    OUTREG( PSTREAM_STRIDE_REG, jDelta );
+    OUTREG( PSTREAM_CONTROL_REG, format );
+    OUTREG( PSTREAM_FBSIZE_REG, jDelta * pScrn->virtualY >> 3 );
+
+    OUTREG( COL_CHROMA_KEY_CONTROL_REG, 0 );
+    OUTREG( SSTREAM_CONTROL_REG, 0 );
+    OUTREG( CHROMA_KEY_UPPER_BOUND_REG, 0 );
+    OUTREG( SSTREAM_STRETCH_REG, 0 );
+    OUTREG( COLOR_ADJUSTMENT_REG, 0 );
+    OUTREG( BLEND_CONTROL_REG, 1 << 24 );
+    OUTREG( DOUBLE_BUFFER_REG, 0 );
+    OUTREG( SSTREAM_FBADDR0_REG, 0 );
+    OUTREG( SSTREAM_FBADDR1_REG, 0 );
+    OUTREG( SSTREAM_FBADDR2_REG, 0 );
+/*    OUTREG( SSTREAM_FBSIZE_REG, 0 ); */
+    OUTREG( SSTREAM_STRIDE_REG, 0 );
+    OUTREG( SSTREAM_VSCALE_REG, 0 );
+    OUTREG( SSTREAM_LINES_REG, 0 );
+    OUTREG( SSTREAM_VINITIAL_REG, 0 );
+    OUTREG( SSTREAM_WINDOW_START_REG, OS_XY(0xfffe, 0xfffe) );
+    OUTREG( SSTREAM_WINDOW_SIZE_REG, OS_WH(10,2) );
+}
+
+#undef OUTREG
+#define OUTREG(a,v)	myOUTREG(psav,a,v)
+#undef OUTREG
+#define OUTREG(addr,val) MMIO_OUT32(psav->MapBase, addr, val)
+
+void SavageInitStreamsNew(ScrnInfoPtr pScrn)
 {
     SavagePtr psav = SAVPTR(pScrn);
     unsigned long jDelta;
 
-#ifdef XVTRACE
-    ErrorF( "SavageInitStreams\n" );
-#endif
+    xf86ErrorFVerb(XVTRACE, "SavageInitStreams\n" );
 
     /* Primary stream reflects the frame buffer. */
 
@@ -238,8 +381,6 @@ void SavageInitStreams(ScrnInfoPtr pScrn)
     OUTREG( SEC_STREAM_COLOR_CONVERT1, 0x0000C892 );
     OUTREG( SEC_STREAM_COLOR_CONVERT2, 0x00039F9A );
     OUTREG( SEC_STREAM_COLOR_CONVERT3, 0x01F1547E );
-
-    /* Wait for VBLANK. */
 }
 
 void SavageStreamsOn(ScrnInfoPtr pScrn, int id)
@@ -249,9 +390,7 @@ void SavageStreamsOn(ScrnInfoPtr pScrn, int id)
     unsigned char jStreamsControl;
     unsigned short vgaIOBase, vgaCRIndex, vgaCRReg;
 
-#ifdef XVTRACE
-    ErrorF( "SavageStreamsOn\n" );
-#endif
+    xf86ErrorFVerb(XVTRACE, "SavageStreamsOn\n" );
 
     /* Sequence stolen from streams.c in M7 NT driver */
 
@@ -271,26 +410,43 @@ void SavageStreamsOn(ScrnInfoPtr pScrn, int id)
     VGAOUT16(0x3c4, 0x0608);
 
     VGAOUT8( vgaCRIndex, EXT_MISC_CTRL2 );
-    jStreamsControl = VGAIN8( vgaCRReg ) | ENABLE_STREAM1;
 
-    /* Wait for VBLANK. */
-    
-    VerticalRetraceWait();
+    if( (psav->Chipset == S3_SAVAGE_MX)  ||
+        (psav->Chipset == S3_SAVAGE2000) )
+    {
+	jStreamsControl = VGAIN8( vgaCRReg ) | ENABLE_STREAM1;
 
-    /* Fire up streams! */
+	/* Wait for VBLANK. */
+	
+	VerticalRetraceWait();
 
-    VGAOUT16( vgaCRIndex, (jStreamsControl << 8) | EXT_MISC_CTRL2 );
+	/* Fire up streams! */
 
-    psav->blendBase = GetBlendForFourCC( id );
-#ifdef XVTRACE
-    ErrorF("Format %4.4s, blend is %08x\n", &id, psav->blendBase );
-#endif
-    OUTREG( BLEND_CONTROL, psav->blendBase | 0x08 );
+	VGAOUT16( vgaCRIndex, (jStreamsControl << 8) | EXT_MISC_CTRL2 );
 
-    /* These values specify brightness, contrast, saturation and hue. */
-    OUTREG( SEC_STREAM_COLOR_CONVERT1, 0x0000C892 );
-    OUTREG( SEC_STREAM_COLOR_CONVERT2, 0x00039F9A );
-    OUTREG( SEC_STREAM_COLOR_CONVERT3, 0x01F1547E );
+	psav->blendBase = GetBlendForFourCC( id ) << 9;
+	xf86ErrorFVerb(XVTRACE+1,"Format %4.4s, blend is %08x\n", &id, psav->blendBase );
+	OUTREG( BLEND_CONTROL, psav->blendBase | 0x08 );
+
+	/* These values specify brightness, contrast, saturation and hue. */
+	OUTREG( SEC_STREAM_COLOR_CONVERT1, 0x0000C892 );
+	OUTREG( SEC_STREAM_COLOR_CONVERT2, 0x00039F9A );
+	OUTREG( SEC_STREAM_COLOR_CONVERT3, 0x01F1547E );
+    }
+    else
+    {
+	jStreamsControl = VGAIN8( vgaCRReg ) | ENABLE_STREAMS_OLD;
+
+	/* Wait for VBLANK. */
+	
+	VerticalRetraceWait();
+
+	/* Fire up streams! */
+
+	VGAOUT16( vgaCRIndex, (jStreamsControl << 8) | EXT_MISC_CTRL2 );
+
+	SavageInitStreamsOld( pScrn );
+    }
 
     /* Wait for VBLANK. */
     
@@ -312,9 +468,7 @@ void SavageStreamsOff(ScrnInfoPtr pScrn)
     unsigned char jStreamsControl;
     unsigned short vgaIOBase, vgaCRIndex, vgaCRReg;
 
-#ifdef XVTRACE
-    ErrorF( "SavageStreamsOff\n" );
-#endif
+    xf86ErrorFVerb(XVTRACE, "SavageStreamsOff\n" );
 
     hwp = VGAHWPTR(pScrn);
 
@@ -332,7 +486,11 @@ void SavageStreamsOff(ScrnInfoPtr pScrn)
     VGAOUT16(0x3c4, 0x0608);
 
     VGAOUT8( vgaCRIndex, EXT_MISC_CTRL2 );
-    jStreamsControl = VGAIN8( vgaCRReg ) & NO_STREAMS;
+    if( (psav->Chipset == S3_SAVAGE_MX)  ||
+        (psav->Chipset == S3_SAVAGE2000) )
+	jStreamsControl = VGAIN8( vgaCRReg ) & NO_STREAMS;
+    else
+	jStreamsControl = VGAIN8( vgaCRReg ) & NO_STREAMS_OLD;
 
     /* Wait for VBLANK. */
 
@@ -341,6 +499,10 @@ void SavageStreamsOff(ScrnInfoPtr pScrn)
     /* Kill streams. */
 
     VGAOUT16( vgaCRIndex, (jStreamsControl << 8) | EXT_MISC_CTRL2 );
+
+    VGAOUT16( vgaCRIndex, 0x0093 );
+    VGAOUT8( vgaCRIndex, 0x92 );
+    VGAOUT8( vgaCRReg, VGAIN8(vgaCRReg) & 0x40 );
 
     psav->videoFlags &= ~VF_STREAMS_ON;
 }
@@ -354,14 +516,31 @@ void SavageInitVideo(ScreenPtr pScreen)
     SavagePtr psav = SAVPTR(pScrn);
     int num_adaptors;
 
-#ifdef XVTRACE
-    ErrorF("SavageInitVideo\n");
-#endif
-
-    if( psav->Chipset == S3_SAVAGE_MX )
+    xf86ErrorFVerb(XVTRACE,"SavageInitVideo\n");
+xf86Break1();
+    if(
+	(psav->Chipset == S3_SAVAGE_MX) ||
+	(psav->Chipset == S3_SAVAGE2000)
+    )
     {
 	newAdaptor = SavageSetupImageVideo(pScreen);
 	SavageInitOffscreenImages(pScreen);
+
+	SavageInitStreams = SavageInitStreamsNew;
+	SavageSetColor = SavageSetColorNew;
+	SavageSetColorKey = SavageSetColorKeyNew;
+	SavageDisplayVideo = SavageDisplayVideoNew;
+    }
+    else
+    {
+	newAdaptor = SavageSetupImageVideo(pScreen);
+	SavageInitOffscreenImages(pScreen);
+    /*DELETENEXTLINE*/
+	/* Since newAdaptor is still NULL, these are still disabled for now. */
+	SavageInitStreams = SavageInitStreamsOld;
+	SavageSetColor = SavageSetColorOld;
+	SavageSetColorKey = SavageSetColorKeyOld;
+	SavageDisplayVideo = SavageDisplayVideoOld;
     }
  
     num_adaptors = xf86XVListGenericAdaptors(pScrn, &adaptors);
@@ -389,12 +568,67 @@ void SavageInitVideo(ScreenPtr pScreen)
     if(newAdaptors)
 	xfree(newAdaptors);
 
-    if( psav->Chipset == S3_SAVAGE_MX )
-	SavageInitStreams(pScrn);
+    if( newAdaptor )
+    {
+	if( SavageInitStreams == SavageInitStreamsNew )
+	    SavageInitStreams(pScrn);
+	psav->videoFlags = 0;
+	psav->videoFourCC = 0;
+    }
 }
 
 
-void SavageSetColorKey(ScrnInfoPtr pScrn) 
+void SavageSetColorKeyOld(ScrnInfoPtr pScrn)
+{
+    SavagePtr psav = SAVPTR(pScrn);
+    SavagePortPrivPtr pPriv = psav->adaptor->pPortPrivates[0].ptr;
+    int red, green, blue;
+
+    /* Here, we reset the colorkey and all the controls. */
+
+    red = (pPriv->colorKey & pScrn->mask.red) >> pScrn->offset.red;
+    green = (pPriv->colorKey & pScrn->mask.green) >> pScrn->offset.green;
+    blue = (pPriv->colorKey & pScrn->mask.blue) >> pScrn->offset.blue;
+
+    if( !pPriv->colorKey ) {
+	OUTREG( COL_CHROMA_KEY_CONTROL_REG, 0 );
+	OUTREG( CHROMA_KEY_UPPER_BOUND_REG, 0 );
+	OUTREG( BLEND_CONTROL_REG, 0 );
+    }
+    else {
+	switch (pScrn->depth) {
+	case 8:
+	    OUTREG( COL_CHROMA_KEY_CONTROL_REG,
+		0x37000000 | (pPriv->colorKey & 0xFF) );
+	    OUTREG( CHROMA_KEY_UPPER_BOUND_REG,
+		0x00000000 | (pPriv->colorKey & 0xFF) );
+	    break;
+	case 15:
+	    OUTREG( COL_CHROMA_KEY_CONTROL_REG, 
+		0x05000000 | (red<<19) | (green<<11) | (blue<<3) );
+	    OUTREG( CHROMA_KEY_UPPER_BOUND_REG, 
+		0x00000000 | (red<<19) | (green<<11) | (blue<<3) );
+	    break;
+	case 16:
+	    OUTREG( COL_CHROMA_KEY_CONTROL_REG, 
+		0x16000000 | (red<<19) | (green<<10) | (blue<<3) );
+	    OUTREG( CHROMA_KEY_UPPER_BOUND_REG, 
+		0x00020002 | (red<<19) | (green<<10) | (blue<<3) );
+	    break;
+	case 24:
+	    OUTREG( COL_CHROMA_KEY_CONTROL_REG, 
+		0x17000000 | (red<<16) | (green<<8) | (blue) );
+	    OUTREG( CHROMA_KEY_UPPER_BOUND_REG, 
+		0x00000000 | (red<<16) | (green<<8) | (blue) );
+	    break;
+	}    
+
+	/* We use destination colorkey */
+	OUTREG( BLEND_CONTROL_REG, 0x05000000 );
+    }
+}
+
+void SavageSetColorKeyNew(ScrnInfoPtr pScrn) 
 {
     SavagePtr psav = SAVPTR(pScrn);
     SavagePortPrivPtr pPriv = psav->adaptor->pPortPrivates[0].ptr;
@@ -445,7 +679,41 @@ void SavageSetColorKey(ScrnInfoPtr pScrn)
 }
 
 
-void SavageSetColor( ScrnInfoPtr pScrn )
+void SavageSetColorOld( ScrnInfoPtr pScrn )
+{
+    SavagePtr psav = SAVPTR(pScrn);
+    SavagePortPrivPtr pPriv = psav->adaptor->pPortPrivates[0].ptr;
+
+    xf86ErrorFVerb(XVTRACE, "bright %d, contrast %d, saturation %d, hue %d\n",
+	pPriv->brightness, pPriv->contrast, pPriv->saturation, pPriv->hue );
+
+    if( 
+	(psav->videoFourCC == FOURCC_RV15) ||
+	(psav->videoFourCC == FOURCC_RV16)
+    )
+    {
+	OUTREG( COLOR_ADJUSTMENT_REG, 0 );
+    }
+    else
+    {
+        /* Change 0..255 into 0..15 */
+	long sat = pPriv->saturation * 16 / 256;
+	double hue = pPriv->hue * 0.017453292;
+	unsigned long hs1 = ((long)(sat * cos(hue))) & 0x1f;
+	unsigned long hs2 = ((long)(sat * sin(hue))) & 0x1f;
+
+	OUTREG( COLOR_ADJUSTMENT_REG, 
+	    0x80008000 |
+	    (pPriv->brightness + 128) |
+	    ((pPriv->contrast & 0xf8) << (12-7)) | 
+	    (hs1 << 16) |
+	    (hs2 << 24)
+	);
+
+    }
+}
+
+void SavageSetColorNew( ScrnInfoPtr pScrn )
 {
     SavagePtr psav = SAVPTR(pScrn);
     SavagePortPrivPtr pPriv = psav->adaptor->pPortPrivates[0].ptr;
@@ -458,10 +726,8 @@ void SavageSetColor( ScrnInfoPtr pScrn )
     double h = pPriv->hue * 0.017453292;
     unsigned long assembly;
 
-#ifdef XVTRACE1
-    ErrorF( "bright %d, contrast %d, saturation %d, hue %d\n",
+    xf86ErrorFVerb(XVTRACE, "bright %d, contrast %d, saturation %d, hue %d\n",
 	pPriv->brightness, pPriv->contrast, pPriv->saturation, pPriv->hue );
-#endif
 
     if( psav->videoFourCC == FOURCC_Y211 )
 	k = 1.0;	/* YUV */
@@ -489,35 +755,29 @@ void SavageSetColor( ScrnInfoPtr pScrn )
     k2 = (int)(dk2+0.5) & 0x1ff;
     k3 = (int)(dk3+0.5) & 0x1ff;
     assembly = (k3<<18) | (k2<<9) | k1;
-#ifdef XVTRACE1
-    ErrorF( "CC1 = %08x  ", assembly );
-#endif
+    xf86ErrorFVerb(XVTRACE+1, "CC1 = %08x  ", assembly );
     OUTREG( SEC_STREAM_COLOR_CONVERT1, assembly );
+
     k4 = (int)(dk4+0.5) & 0x1ff;
     k5 = (int)(dk5+0.5) & 0x1ff;
     k6 = (int)(dk6+0.5) & 0x1ff;
     assembly = (k6<<18) | (k5<<9) | k4;
-#ifdef XVTRACE1
-    ErrorF( "CC2 = %08x  ", assembly );
-#endif
+    xf86ErrorFVerb(XVTRACE+1, "CC2 = %08x  ", assembly );
     OUTREG( SEC_STREAM_COLOR_CONVERT2, assembly );
+
     k7 = (int)(dk7+0.5) & 0x1ff;
     kb = (int)(dkb+0.5) & 0xffff;
     assembly = (kb<<9) | k7;
-#ifdef XVTRACE1
-    ErrorF( "CC3 = %08x\n", assembly );
-#endif
+    xf86ErrorFVerb(XVTRACE+1, "CC3 = %08x\n", assembly );
     OUTREG( SEC_STREAM_COLOR_CONVERT3, assembly );
 }
 
 
 void SavageResetVideo(ScrnInfoPtr pScrn) 
 {
-#ifdef XVTRACE
-    ErrorF("SavageResetVideo\n");
-#endif
-    SavageSetColorKey( pScrn );
+    xf86ErrorFVerb(XVTRACE,"SavageResetVideo\n");
     SavageSetColor( pScrn );
+    SavageSetColorKey( pScrn );
 }
 
 
@@ -529,9 +789,7 @@ SavageSetupImageVideo(ScreenPtr pScreen)
     XF86VideoAdaptorPtr adapt;
     SavagePortPrivPtr pPriv;
 
-#ifdef XVTRACE
-    ErrorF("SavageSetupImageVideo\n");
-#endif
+    xf86ErrorFVerb(XVTRACE,"SavageSetupImageVideo\n");
 
     if(!(adapt = xcalloc(1, sizeof(XF86VideoAdaptorRec) +
 			    sizeof(SavagePortPrivRec) +
@@ -579,6 +837,7 @@ SavageSetupImageVideo(ScreenPtr pScreen)
     pPriv->contrast = 128;
     pPriv->saturation = 128;
     pPriv->hue = 0;
+    pPriv->lastKnownPitch = 0;
 
     /* gotta uninit this someplace */
     REGION_INIT(pScreen, &pPriv->clip, NullBox, 0); 
@@ -704,9 +963,7 @@ SavageStopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
     SavagePortPrivPtr pPriv = (SavagePortPrivPtr)data;
     /*SavagePtr psav = SAVPTR(pScrn); */
 
-#ifdef XVTRACE
-    ErrorF("SavageStopVideo\n");
-#endif
+    xf86ErrorFVerb(XVTRACE,"SavageStopVideo\n");
 
     REGION_EMPTY(pScrn->pScreen, &pPriv->clip);   
 
@@ -917,7 +1174,7 @@ SavageAllocateMemory(
 }
 
 static void
-SavageDisplayVideo(
+SavageDisplayVideoOld(
     ScrnInfoPtr pScrn,
     int id,
     int offset,
@@ -930,6 +1187,7 @@ SavageDisplayVideo(
 ){
     SavagePtr psav = SAVPTR(pScrn);
     vgaHWPtr hwp = VGAHWPTR(pScrn);
+    SavagePortPrivPtr pPriv = psav->adaptor->pPortPrivates[0].ptr;
     /*DisplayModePtr mode = pScrn->currentMode;*/
     int vgaCRIndex, vgaCRReg, vgaIOBase;
 
@@ -947,23 +1205,28 @@ SavageDisplayVideo(
 	SavageResetVideo(pScrn);
     }
 
+    /* Set surface format. */
+
+    OUTREG(SSTREAM_CONTROL_REG, 
+	(GetBlendForFourCC(psav->videoFourCC) << 24) + src_w );
+
     /* Calculate horizontal scale factor. */
 
-    OUTREG(SEC_STREAM_HSCALING, 
-	((src_w&0xfff)<<20) | ((65536 * src_w / drw_w) & 0x1FFFF ));
+    OUTREG(SSTREAM_STRETCH_REG, 32768 * src_w / drw_w );
 
     /* Calculate vertical scale factor. */
-    /* BUGBUG need to add 00040000 if src stride > 2048 */
 
-    OUTREG(SEC_STREAM_VSCALING, 
-	((src_h&0xfff)<<20) | ((65536 * src_h / drw_h) & 0x1FFFF ));
+    OUTREG(SSTREAM_LINES_REG, src_h );
+    OUTREG(SSTREAM_VINITIAL_REG, 0 );
+    OUTREG(SSTREAM_VSCALE_REG, 32768 * src_h / drw_h );
 
     /* Set surface location and stride. */
 
-    OUTREG(SEC_STREAM_FBUF_ADDR0, (offset + (x1>>15)) & 0x3ffff0 );
-    OUTREG(SEC_STREAM_STRIDE, pitch & 0xfff );
-    OUTREG(SEC_STREAM_WINDOW_START, ((dstBox->x1) << 16) | dstBox->y1 );
-    OUTREG(SEC_STREAM_WINDOW_SZ, (drw_w << 16) | drw_h );
+    OUTREG(SSTREAM_FBADDR0_REG, (offset + (x1>>15)) & 0x3ffff0 );
+    OUTREG(SSTREAM_STRIDE_REG, pitch & 0xfff );
+
+    OUTREG(SSTREAM_WINDOW_START_REG, OS_XY(dstBox->x1, dstBox->y1) );
+    OUTREG(SSTREAM_WINDOW_SIZE_REG, OS_WH(drw_w, drw_h) );
 
     /* Set color key on primary. */
 
@@ -971,12 +1234,105 @@ SavageDisplayVideo(
 
     /* Set FIFO L2 on second stream. */
 
-    pitch = (pitch + 7) / 8 - 4;
-    VGAOUT8(vgaCRIndex, 0x92);
-    VGAOUT8(vgaCRReg, (pitch >> 8) | 0x80);
-    VGAOUT8(vgaCRIndex, 0x93);
-    VGAOUT8(vgaCRReg, pitch);
+    if( pPriv->lastKnownPitch != pitch )
+    {
+	unsigned char cr92;
 
+	pPriv->lastKnownPitch = pitch;
+
+	pitch = (pitch + 7) / 8;
+	VGAOUT8(vgaCRIndex, 0x92);
+	cr92 = VGAIN8(vgaCRReg);
+	VGAOUT8(vgaCRReg, (cr92 & 0x40) | (pitch >> 8) | 0x80);
+	VGAOUT8(vgaCRIndex, 0x93);
+	VGAOUT8(vgaCRReg, pitch);
+    }
+
+}
+
+static void
+SavageDisplayVideoNew(
+    ScrnInfoPtr pScrn,
+    int id,
+    int offset,
+    short width, short height,
+    int pitch, 
+    int x1, int y1, int x2, int y2,
+    BoxPtr dstBox,
+    short src_w, short src_h,
+    short drw_w, short drw_h
+){
+    SavagePtr psav = SAVPTR(pScrn);
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
+    /*DisplayModePtr mode = pScrn->currentMode;*/
+    SavagePortPrivPtr pPriv = psav->adaptor->pPortPrivates[0].ptr;
+    int vgaCRIndex, vgaCRReg, vgaIOBase;
+
+
+    vgaIOBase = hwp->IOBase;
+    vgaCRIndex = vgaIOBase + 4;
+    vgaCRReg = vgaIOBase + 5;
+
+    if( psav->videoFourCC != id )
+	SavageStreamsOff(pScrn);
+
+    if( !psav->videoFlags & VF_STREAMS_ON )
+    {
+	SavageStreamsOn(pScrn, id);
+	SavageResetVideo(pScrn);
+    }
+
+    /* Calculate horizontal and vertical scale factors. */
+
+    if( psav->Chipset == S3_SAVAGE2000 )
+    {
+	OUTREG(SEC_STREAM_HSCALING, 
+	    (65536 * src_w / drw_w) & 0x1FFFFF );
+	if( src_w < drw_w )
+	    OUTREG(SEC_STREAM_HSCALE_NORMALIZE,
+		((2048 * src_w / drw_w) & 0x7ff) << 16 );
+	else
+	    OUTREG(SEC_STREAM_HSCALE_NORMALIZE, 2048 << 16 );
+	OUTREG(SEC_STREAM_VSCALING, 
+	    (65536 * src_h / drw_h) & 0x1FFFFF );
+    }
+    else
+    {
+	OUTREG(SEC_STREAM_HSCALING, 
+	    ((src_w&0xfff)<<20) | ((65536 * src_w / drw_w) & 0x1FFFF ));
+	/* BUGBUG need to add 00040000 if src stride > 2048 */
+	OUTREG(SEC_STREAM_VSCALING, 
+	    ((src_h&0xfff)<<20) | ((65536 * src_h / drw_h) & 0x1FFFF ));
+    }
+
+    /*
+     * Set surface location and stride.  We use x1>>15 because all surfaces
+     * are 2 bytes/pixel.
+     */
+
+    OUTREG(SEC_STREAM_FBUF_ADDR0, (offset + (x1>>15)) & 0x3ffff0 );
+    OUTREG(SEC_STREAM_STRIDE, pitch & 0xfff );
+    OUTREG(SEC_STREAM_WINDOW_START, ((dstBox->x1+1) << 16) | (dstBox->y1+1) );
+    OUTREG(SEC_STREAM_WINDOW_SZ, ((drw_w) << 16) | drw_h );
+
+    /* Set color key on primary. */
+
+    SavageSetColorKey( pScrn );
+
+    /* Set FIFO L2 on second stream. */
+
+    if( pPriv->lastKnownPitch != pitch )
+    {
+	unsigned char cr92;
+
+	pPriv->lastKnownPitch = pitch;
+	pitch = (pitch + 7) / 8 - 4;
+	VGAOUT8(vgaCRIndex, 0x92);
+	cr92 = VGAIN8(vgaCRReg);
+	VGAOUT8(vgaCRReg, (cr92 & 0x40) | (pitch >> 8) | 0x80);
+	VGAOUT8(vgaCRIndex, 0x93);
+	VGAOUT8(vgaCRReg, pitch);
+    }
 }
 
 static int 
@@ -1049,7 +1405,6 @@ SavagePutImage(
     case FOURCC_RV15:		/* RGB15 */
     case FOURCC_RV16:		/* RGB16 */
     case FOURCC_YUY2:		/* YUY2 */
-    case FOURCC_UYVY:		/* YUY2 */
     default:
 	srcPitch = (width << 1);
 	break;
@@ -1147,7 +1502,6 @@ SavageQueryImageAttributes(
     case FOURCC_RV15:		/* RGB15 */
     case FOURCC_RV16:		/* RGB16 */
     case FOURCC_YUY2:
-    case FOURCC_UYVY:
     default:
 	size = *w << 1;
 	if(pitches) pitches[0] = size;

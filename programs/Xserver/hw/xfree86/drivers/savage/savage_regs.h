@@ -3,11 +3,11 @@
 
 /* These are here until xf86PciInfo.h is updated. */
 
-#ifndef PCI_CHIP_TWISTER_P
-#define PCI_CHIP_TWISTER_P	0x8d01
+#ifndef PCI_CHIP_S3TWISTER_P
+#define PCI_CHIP_S3TWISTER_P	0x8d01
 #endif
-#ifndef PCI_CHIP_TWISTER_K
-#define PCI_CHIP_TWISTER_K	0x8d02
+#ifndef PCI_CHIP_S3TWISTER_K
+#define PCI_CHIP_S3TWISTER_K	0x8d02
 #endif
 
 #define S3_SAVAGE3D_SERIES(chip)  ((chip>=S3_SAVAGE3D) && (chip<=S3_SAVAGE_MX))
@@ -73,6 +73,8 @@ enum S3CHIPTAGS {
 #define SEC_STREAM_HSCALING             0x81a0
 /* Secondary Stream 1 Frame Buffer Size */
 #define SEC_STREAM_BUFFERSIZE           0x81a8
+/* Secondary Stream 1 Horizontal Scaling Normalization (2K only) */
+#define SEC_STREAM_HSCALE_NORMALIZE	0x81ac
 /* Secondary Stream 1 Horizontal Scaling */
 #define SEC_STREAM_VSCALING             0x81e8
 /* Secondary Stream 1 Frame Buffer Address 0 */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_image.c,v 1.1 2000/12/02 01:16:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_image.c,v 1.2 2000/12/04 18:50:00 dawes Exp $ */
 
 #include "savage_driver.h"
 #include "xaarop.h"
@@ -38,7 +38,7 @@ void SavageWriteBitmapScreenToScreenColorExpand(
     BCI_BD_SET_STRIDE(bd, srcwidth);
     bd_offset = srcwidth * srcy + (srcx >> 3) + src;
 
-    WaitQueue(10);
+    psav->WaitQueue(psav,10);
     BCI_SEND(cmd);
     BCI_SEND((unsigned int)bd_offset);
     BCI_SEND(bd);
@@ -158,7 +158,7 @@ void SavageSubsequentImageWriteRect
     int count;
 
     count = ((w * pScrn->bitsPerPixel + 31) / 32) * h;
-    WaitQueue( count );
+    psav->WaitQueue( psav, count );
     BCI_SEND(psav->SavedBciCmd);
     BCI_SEND(BCI_CLIP_LR(x+skipleft, x+w-1));
     if( psav->SavedBgColor != -1 )

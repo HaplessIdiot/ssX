@@ -1,4 +1,13 @@
 XFree86 4.0.99.3 (xx April 2001)
+ 389. Add support to the mga driver for auto-detecting the display type
+      (#4555, Stephane Duguay (Matrox)).
+ 388. Savage driver updates, including:
+       - Enable the Render extension.
+       - Make the DGA mode setup look more like the other drivers.
+       - First cut at Xvideo for the Savage4.
+       - Add a "ShadowStatus" option, which is a reliable workaround for the
+         scrolling hang that many experience.
+      (#4554, Tim Roberts).
  387. Enable wide character support for NetBSD 1.5P and later (#4553,
       Matthias Scheler).
  386. Add offscreen image support to the i810 driver (for Xv), and fix
@@ -12974,4 +12983,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1690 2001/04/18 09:24:44 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1691 2001/04/18 14:52:38 dawes Exp $

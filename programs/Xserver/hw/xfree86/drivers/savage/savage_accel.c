@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.5 2001/02/13 21:15:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.6 2001/03/03 22:26:12 tsi Exp $ */
 
 /*
  *
@@ -15,6 +15,7 @@
  *
  */
 
+#include <math.h>
 #include "Xarch.h"
 #include "xaalocal.h"
 #include "xaarop.h"
@@ -23,9 +24,6 @@
 #include "savage_driver.h"
 #include "savage_regs.h"
 #include "savage_bci.h"
-
-
-static unsigned int dwBCIWait2DIdle;
 
 /* Forward declaration of functions used in the driver */
 
@@ -234,39 +232,85 @@ SavageInitialize2DEngine(ScrnInfoPtr pScrn)
     OUTREG16(0x8134, 0x27);
     OUTREG16(0x8136, 0x07);
 
+    if( psav->ShadowStatus && !psav->ShadowPhysical )
+    {
+	psav->ShadowPhysical = 
+	    psav->FrameBufferBase + psav->CursorKByte*1024 + 4096 - 32;
+
+	psav->ShadowVirtual = (unsigned long*)
+	    (psav->FBBase + psav->CursorKByte*1024 + 4096 - 32);
+
+	xf86DrvMsg( pScrn->scrnIndex, X_PROBED,
+	    "Shadow area physical %08x, linear %08x\n",
+	    psav->ShadowPhysical, psav->ShadowVirtual );
+    }
+
     switch( psav->Chipset ) {
 
     case S3_SAVAGE3D:
     case S3_SAVAGE_MX:
 	/* Disable BCI */
 	OUTREG(0x48C18, INREG(0x48C18) & 0x3FF0);
-	/* Disable shadow status update */
-	OUTREG(0x48C0C, 0);
 	/* Setup BCI command overflow buffer */
 	OUTREG(0x48C14, (psav->cobOffset >> 11) | (psav->cobIndex << 29));
-	/* Enable BCI and command overflow buffer */
-	OUTREG(0x48C18, INREG(0x48C18) | 0x0C);
+	/* Program shadow status update. */
+	OUTREG(0x48C10, 0x78207220);
+	if( psav->ShadowStatus )
+	{
+	    OUTREG(0x48C0C, psav->ShadowPhysical | 1 );
+	    /* Enable BCI and command overflow buffer */
+	    OUTREG(0x48C18, INREG(0x48C18) | 0x0E);
+	}
+	else
+	{
+	    OUTREG(0x48C0C, 0);
+	    /* Enable BCI and command overflow buffer */
+	    OUTREG(0x48C18, INREG(0x48C18) | 0x0C);
+	}
 	break;
 
     case S3_SAVAGE4:
     case S3_PROSAVAGE:
 	/* Disable BCI */
 	OUTREG(0x48C18, INREG(0x48C18) & 0x3FF0);
-	/* Disable shadow status update */
-	OUTREG(0x48C0C, 0);
-	/* Enable BCI without the COB */
-	OUTREG(0x48C18, INREG(0x48C18) | 0x08);
+	/* Program shadow status update */
+	OUTREG(0x48C10, 0x00700040);
+	if( psav->ShadowStatus )
+	{
+	    OUTREG(0x48C0C, psav->ShadowPhysical | 1 );
+	    /* Enable BCI without the COB */
+	    OUTREG(0x48C18, INREG(0x48C18) | 0x0a);
+	}
+	else
+	{
+	    OUTREG(0x48C0C, 0);
+	    /* Enable BCI without the COB */
+	    OUTREG(0x48C18, INREG(0x48C18) | 0x08);
+	}
 	break;
 
     case S3_SAVAGE2000:
 	/* Disable BCI */
 	OUTREG(0x48C18, 0);
-	/* Disable shadow status update */
-	OUTREG(0x48A30, 0);
 	/* Setup BCI command overflow buffer */
 	OUTREG(0x48C18, (psav->cobOffset >> 7) | (psav->cobIndex));
-	/* Enable BCI and command overflow buffer */
-	OUTREG(0x48C18, INREG(0x48C18) | 0x00280000 );
+	if( psav->ShadowStatus )
+	{
+	    /* Set shadow update threshholds. */
+	    OUTREG(0x48C10, 0x6090 );
+	    OUTREG(0x48C14, 0x70A8 );
+	    /* Enable shadow status update */
+	    OUTREG(0x48A30, psav->ShadowPhysical );
+	    /* Enable BCI, command overflow buffer and shadow status. */
+	    OUTREG(0x48C18, INREG(0x48C18) | 0x00380000 );
+	}
+	else
+	{
+	    /* Disable shadow status update */
+	    OUTREG(0x48A30, 0);
+	    /* Enable BCI and command overflow buffer */
+	    OUTREG(0x48C18, INREG(0x48C18) | 0x00280000 );
+	}
 	break;
     }
 
@@ -278,19 +322,7 @@ SavageInitialize2DEngine(ScrnInfoPtr pScrn)
     /* stride.  Writing the register later, after the mode switch, works */
     /* correctly.  This needs to get resolved. */
 
-    psav->SavedGbd = 1 | 8 | BCI_BD_BW_DISABLE;
-    BCI_BD_SET_BPP(psav->SavedGbd, pScrn->bitsPerPixel);
-    BCI_BD_SET_STRIDE(psav->SavedGbd, pScrn->displayWidth);
-
     SavageSetGBD(pScrn);
-
-    if( psav->StatusHack )
-    {
-	if( psav->Chipset == S3_SAVAGE2000 )
-	    dwBCIWait2DIdle = 0xc0040000;
-	else
-	    dwBCIWait2DIdle = 0xc0020000;
-    }
 } 
 
 
@@ -301,13 +333,11 @@ SavageSetGBD( ScrnInfoPtr pScrn )
     SavagePtr psav = SAVPTR(pScrn);
     unsigned int vgaCRIndex = hwp->IOBase + 4;
     unsigned int vgaCRReg = hwp->IOBase + 5;
+    unsigned long GlobalBitmapDescriptor;
 
-    if( !psav->SavedGbd )
-    {
-	psav->SavedGbd = 1 | 8 | BCI_BD_BW_DISABLE;
-	BCI_BD_SET_BPP(psav->SavedGbd, pScrn->bitsPerPixel);
-	BCI_BD_SET_STRIDE(psav->SavedGbd, pScrn->displayWidth);
-    }
+    GlobalBitmapDescriptor = 1 | 8 | BCI_BD_BW_DISABLE;
+    BCI_BD_SET_BPP(GlobalBitmapDescriptor, pScrn->bitsPerPixel);
+    BCI_BD_SET_STRIDE(GlobalBitmapDescriptor, pScrn->displayWidth);
 
     /* Turn on 16-bit register access. */
 
@@ -325,12 +355,12 @@ SavageSetGBD( ScrnInfoPtr pScrn )
 
     /* Now set the GBD and SBDs. */
 
-    OUTREG(0x8168,0);
-    OUTREG(0x816C,psav->SavedGbd);
-    OUTREG(0x8170,0);
-    OUTREG(0x8174,psav->SavedGbd);
-    OUTREG(0x8178,0);
-    OUTREG(0x817C,psav->SavedGbd);
+    OUTREG(0x8168, 0);
+    OUTREG(0x816C, GlobalBitmapDescriptor);
+    OUTREG(0x8170, 0);
+    OUTREG(0x8174, GlobalBitmapDescriptor);
+    OUTREG(0x8178, 0);
+    OUTREG(0x817C, GlobalBitmapDescriptor);
 
     OUTREG(PRI_STREAM_STRIDE, pScrn->displayWidth * pScrn->bitsPerPixel >> 3);
     OUTREG(SEC_STREAM_STRIDE, pScrn->displayWidth * pScrn->bitsPerPixel >> 3);
@@ -417,6 +447,8 @@ SavageInitAccel(ScreenPtr pScreen)
 	| HARDWARE_PATTERN_SCREEN_ORIGIN
 	| BIT_ORDER_IN_BYTE_LSBFIRST
 	;
+    if( psav->Chipset == S3_SAVAGE4 )
+	xaaptr->Mono8x8PatternFillFlags |= NO_TRANSPARENCY;
 #endif
 
     /* Color 8x8 pattern fills */
@@ -487,6 +519,10 @@ SavageInitAccel(ScreenPtr pScreen)
 	| BIT_ORDER_IN_BYTE_MSBFIRST
 	| LEFT_EDGE_CLIPPING
 	;
+
+    if( psav->Chipset == S3_SAVAGE4 )
+	xaaptr->ScanlineCPUToScreenColorExpandFillFlags |= ROP_NEEDS_SOURCE;
+
     xaaptr->SetupForScanlineCPUToScreenColorExpandFill =
             SavageSetupForCPUToScreenColorExpandFill;
     xaaptr->SubsequentScanlineCPUToScreenColorExpandFill =
@@ -532,44 +568,9 @@ void
 SavageAccelSync(ScrnInfoPtr pScrn)
 {
     SavagePtr psav = SAVPTR(pScrn);
-
-    if( psav->StatusHack )
-    {
-	static int counter = 0;
-	int i;
-
-	/*
-	 * This is an attempt to work around the status register read hang
-	 * that affects about 4% of all Savage chips.  Instead of reading
-	 * the register through MMIO, we send a BCI command to wait for
-	 * engine idle (which does not hang), then another BCI command to
-	 * set an incrementing value into an innocuous register (the
-	 * Cr Base register used in YUV page flipping).  Then we loop
-	 * waiting for the MMIO value of that register to change.
-	 */
-
-	BCI_GET_PTR;
-	BCI_SEND(dwBCIWait2DIdle);	/* wait for 2D idle */
-	BCI_SEND(0x96010045);		/* update New Cr Base Address ... */
-	counter++;
-	BCI_SEND(counter);		/* ... to this value */
-	for(
-	    i = 0;
-	    (INREG(0x48914) != counter) && (i < 100000);
-	    i++
-	)
-	    ;
-    }
-    else
-    {
-	if( psav->StatusDelay )
-	    usleep( psav->StatusDelay );
-	WaitIdleEmpty();
-    }
+    psav->WaitIdleEmpty(psav);
 }
 
-#undef WaitQueue
-#define WaitQueue(x)	SavageAccelSync(pScrn)
 
 /*
  * The XAA ROP helper routines all assume that a solid color is a 
@@ -704,7 +705,7 @@ SavageSubsequentScreenToScreenCopy(
         h ++;
     }
 
-    WaitQueue(6);
+    psav->WaitQueue(psav,6);
     BCI_SEND(psav->SavedBciCmd);
     if (psav->SavedBgColor != -1) 
 	BCI_SEND(psav->SavedBgColor);
@@ -770,7 +771,7 @@ SavageSubsequentSolidFillRect(
     if( !w || !h )
 	return;
 
-    WaitQueue(5);
+    psav->WaitQueue(psav,5);
 
     BCI_SEND(psav->SavedBciCmd);
     if( psav->SavedBciCmd & BCI_CMD_SEND_COLOR )
@@ -854,7 +855,7 @@ SavageSubsequentScanlineCPUToScreenColorExpandFill(
     /* XAA will be sending bitmap data next.  */
     /* We should probably wait for empty/idle here. */
 
-    WaitQueue(20);
+    psav->WaitQueue(psav,20);
 
     BCI_SEND(psav->SavedBciCmd);
     BCI_SEND(BCI_CLIP_LR(x+skipleft, x+w-1));
@@ -884,7 +885,7 @@ SavageSubsequentColorExpandScanline(
 
     if( xr.height )
     {
-	WaitQueue(20);
+	psav->WaitQueue(psav,20);
 	BCI_SEND(BCI_X_Y( xr.x, xr.y));
 	BCI_SEND(BCI_W_H( xr.width, 1 ));
         psav->Rect.height--;
@@ -951,7 +952,16 @@ SavageSubsequentMono8x8PatternFillRect(
     SavagePtr psav = SAVPTR(pScrn);
     BCI_GET_PTR;
 
-    WaitQueue(7);
+    /*
+     * I didn't think it was my job to do trivial rejection, but 
+     * miFillGeneralPolygon definitely generates null spans, and XAA
+     * just passes them through.
+     */
+
+    if( !w || !h )
+	return;
+
+    psav->WaitQueue(psav,7);
     BCI_SEND(psav->SavedBciCmd);
     if( psav->SavedBciCmd & BCI_CMD_SEND_COLOR )
 	BCI_SEND(psav->SavedFgColor);
@@ -1015,7 +1025,10 @@ SavageSubsequentColor8x8PatternFillRect(
     SavagePtr psav = SAVPTR(pScrn);
     BCI_GET_PTR;
 
-    WaitQueue(5);
+    if( !w || !h )
+	return;
+
+    psav->WaitQueue(psav,5);
     BCI_SEND(psav->SavedBciCmd);
     BCI_SEND(psav->SavedSbdOffset);
     BCI_SEND(psav->SavedSbd);
@@ -1047,7 +1060,7 @@ SavageSubsequentSolidBresenhamLine(
         x1, y1, length, octant, e2, e1, psav->SavedFgColor );
 #endif
 
-    WaitQueue( 5 );
+    psav->WaitQueue(psav, 5 );
     BCI_SEND(cmd);
     if( cmd & BCI_CMD_SEND_COLOR )
 	BCI_SEND( psav->SavedFgColor );
@@ -1112,7 +1125,7 @@ SavageSubsequentSolidTwoPointLine(
     cmd = (psav->SavedBciCmd & 0x00ffffff);
     cmd |= BCI_CMD_LINE_LAST_PIXEL;
 
-    WaitQueue(5);
+    psav->WaitQueue(psav,5);
     BCI_SEND( cmd );
     if( cmd & BCI_CMD_SEND_COLOR )
 	BCI_SEND( psav->SavedFgColor );
@@ -1140,7 +1153,7 @@ SavageSetClippingRectangle(
 #endif
 
     cmd = BCI_CMD_NOP | BCI_CMD_CLIP_NEW;
-    WaitQueue(3);
+    psav->WaitQueue(psav,3);
     BCI_SEND(cmd);
     BCI_SEND(BCI_CLIP_TL(y1, x1));
     BCI_SEND(BCI_CLIP_BR(y2, x2));
@@ -1154,90 +1167,9 @@ static void SavageDisableClipping( ScrnInfoPtr pScrn )
 #ifdef DEBUG_EXTRA
     ErrorF("Kill ClipRect\n");
 #endif
-    psav->SavedBciCmd &= ~BCI_CMD_CLIP_NEW;
+    psav->SavedBciCmd &= ~BCI_CMD_CLIP_CURRENT;
 }
 
-
-/* Trapezoid solid fills. XAA passes the coordinates of the top start
- * and end points, and the slopes of the left and right vertexes. We
- * use this info to generate the bottom points. We use a mixture of
- * floating-point and fixed point logic; the biases are done in fixed
- * point. Essentially, these were determined experimentally. The function
- * passes xtest, but I suspect that it will not match cfb for large polygons.
- *
- * This code is from the ViRGE.  We need to modify it for Savage if we ever
- * decide to turn it on.
- */
-
-#if 0
-void
-SavageSubsequentSolidFillTrap(
-    ScrnInfoPtr pScrn,
-    int y,
-    int h,
-    int left,
-    int dxl,
-    int dyl,
-    int el,
-    int right,
-    int dxr,
-    int dyr,
-    int er)
-{
-    int l_xdelta, r_xdelta;
-    double lendx, rendx, dl_delta, dr_delta;
-    int lbias, rbias;
-    unsigned int cmd;
-    double l_sgn = -1.0, r_sgn = -1.0;
-
-    cmd |= (CMD_POLYFILL | CMD_AUTOEXEC | MIX_MONO_PATT) ;
-    cmd |= (psav->SavedRectCmdForLine & (0xff << 17));
-   
-    l_xdelta = -(dxl << 20)/ dyl;
-    r_xdelta = -(dxr << 20)/ dyr;
-
-    dl_delta = -(double) dxl / (double) dyl;
-    dr_delta = -(double) dxr / (double) dyr;
-    if (dl_delta < 0.0) l_sgn = 1.0;
-    if (dr_delta < 0.0) r_sgn = 1.0;
-   
-    lendx = l_sgn * ((double) el / (double) dyl) + left + ((h - 1) * dxl) / (double) dyl;
-    rendx = r_sgn * ((double) er / (double) dyr) + right + ((h - 1) * dxr) / (double) dyr;
-
-    /* We now have four cases */
-
-    if (fabs(dl_delta) > 1.0) {  /* XMAJOR line */
-        if (dxl > 0) { lbias = ((1 << 20) - h); }
-        else { lbias = 0; }
-        }
-    else {
-        if (dxl > 0) { lbias = ((1 << 20) - 1) + l_xdelta / 2; }
-        else { lbias = 0; }
-        }
-
-    if (fabs(dr_delta) > 1.0) {   /* XMAJOR line */
-        if (dxr > 0) { rbias = (1 << 20); }
-        else { rbias = ((1 << 20) - 1); }
-        }
-    else {
-        if (dxr > 0) { rbias = (1 << 20); }
-        else { rbias = ((1 << 20) - 1); }
-        }
-
-    WaitQueue(8);
-    CACHE_SETP_CMD_SET(cmd);
-    SETP_PRDX(r_xdelta);
-    SETP_PLDX(l_xdelta);
-    SETP_PRXSTART(((int) (rendx * (double) (1 << 20))) + rbias);
-    SETP_PLXSTART(((int) (lendx * (double) (1 << 20))) + lbias);
-
-    SETP_PYSTART(y + h - 1);
-    SETP_PYCNT((h) | 0x30000000);
-
-    CACHE_SETB_CMD_SET(psav->SavedRectCmdForLine);
-
-}
-#endif
 
 /* Routines for debugging. */
 

@@ -1,8 +1,5 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_vbe.c,v 1.1 2000/12/02 01:16:15 dawes Exp $ */
-
 #include "savage_driver.h"
 #include "savage_vbe.h"
-#include "vbe.h"
 
 #if X_BYTE_ORDER == X_LITTLE_ENDIAN
 #define B_O16(x)  (x) 
@@ -14,6 +11,7 @@
 #endif
 #define L_ADD(x)  (B_O32(x) & 0xffff) + ((B_O32(x) >> 12) & 0xffff00)
 
+Bool vbeModeInit( vbeInfoPtr, int );
 
 static void
 SavageClearVM86Regs( xf86Int10InfoPtr pInt )
@@ -54,9 +52,19 @@ SavageSetVESAMode( SavagePtr psav, int n, int Refresh )
 
     /* Now, make this mode current. */
 
-    if( !VBESetVBEMode( psav->pVbe, n, NULL ) )
+    if( xf86LoaderCheckSymbol( "VBESetVBEMode" ) )
     {
-	ErrorF("Set video mode failed\n");
+	if( !VBESetVBEMode( psav->pVbe, n, NULL ) )
+	{
+	    ErrorF("Set video mode failed\n");
+	}
+    }
+    else
+    {
+	if( !vbeModeInit( psav->pVbe, n ) )
+	{
+	    ErrorF("Set video mode failed\n");
+	}
     }
 }
 

@@ -53,8 +53,8 @@ typedef struct _S3VMODETABLE {
 
 typedef struct {
     unsigned int mode, refresh;
-    unsigned char SR08, SR0A, SR0F;
-    unsigned char SR10, SR11, SR12, SR13, SR15, SR18, SR29;
+    unsigned char SR08, SR0E, SR0F;
+    unsigned char SR10, SR11, SR12, SR13, SR15, SR18, SR29, SR30;
     unsigned char SR54[8];
     unsigned char Clock;
     unsigned char CR31, CR32, CR33, CR34, CR36, CR3A, CR3B, CR3C;
@@ -63,7 +63,6 @@ typedef struct {
     unsigned char CR60, CR63, CR65, CR66, CR67, CR68, CR69, CR6D, CR6F;
     unsigned char CR86, CR88;
     unsigned char CR90, CR91, CRB0;
-    unsigned char ColorStack[8];
     unsigned int  STREAMS[22];	/* yuck, streams regs */
     unsigned int  MMPR0, MMPR1, MMPR2, MMPR3;
 } SavageRegRec, *SavageRegPtr;
@@ -88,6 +87,7 @@ typedef struct _Savage {
     /* These are physical addresses. */
     unsigned long	FrameBufferBase;
     unsigned long	MmioBase;
+    unsigned long	ShadowPhysical;
 
     /* These are linear addresses. */
     unsigned char*	MapBase;
@@ -95,6 +95,7 @@ typedef struct _Savage {
     unsigned char*	MapBaseDense;
     unsigned char*	FBBase;
     unsigned char*	FBStart;
+    unsigned long volatile *	ShadowVirtual;
 
     Bool		PrimaryVidMapped;
     int			dacSpeedBpp;
@@ -118,8 +119,9 @@ typedef struct _Savage {
     Bool		UseBIOS;
     int			rotate;
     double		LCDClock;
-    int			StatusDelay;
-    Bool		StatusHack;
+    Bool		ShadowStatus;
+    int			PanelX;
+    int			PanelY;
 
     CloseScreenProcPtr	CloseScreen;
     pciVideoPtr		PciInfo;
@@ -129,12 +131,12 @@ typedef struct _Savage {
     int			ChipRev;
     vbeInfoPtr		pVbe;
     int			EntityIndex;
+    int			ShadowCounter;
 
     /* The various Savage wait handlers. */
-    int			(*myWaitQueue)(struct _Savage *, int);
-    int			(*myWaitIdle)(struct _Savage *);
-    int			(*myWaitIdleEmpty)(struct _Savage *);
-    int			(*myWaitCommandEmpty)(struct _Savage *);
+    int			(*WaitQueue)(struct _Savage *, int);
+    int			(*WaitIdle)(struct _Savage *);
+    int			(*WaitIdleEmpty)(struct _Savage *);
 
     /* Support for shadowFB and rotation */
     unsigned char *	ShadowPtr;
@@ -147,11 +149,8 @@ typedef struct _Savage {
     unsigned int	SavedBciCmd;
     unsigned int	SavedFgColor;
     unsigned int	SavedBgColor;
-    unsigned int	SavedGbdOffset;
-    unsigned int	SavedGbd;
     unsigned int	SavedSbdOffset;
     unsigned int	SavedSbd;
-    Bool		Entering;
 
     /* Support for Int10 processing */
     xf86Int10InfoPtr	pInt10;
@@ -181,14 +180,6 @@ typedef struct _Savage {
 /* Video flags. */
 
 #define VF_STREAMS_ON	0x0001
-
-
-/* Shortcuts.  These depend on a local symbol "psav". */
-
-#define WaitIdle()		psav->myWaitIdle(psav)
-#define WaitIdleEmpty()		psav->myWaitIdleEmpty(psav)
-#define	WaitQueue(k)		psav->myWaitQueue(psav,k)
-#define WaitCommandEmpty()	psav->myWaitCommandEmpty(psav)
 
 #define SAVPTR(p)	((SavagePtr)((p)->driverPrivate))
 

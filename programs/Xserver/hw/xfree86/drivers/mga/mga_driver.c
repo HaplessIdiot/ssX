@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.195 2001/04/06 02:09:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.196 2001/04/10 16:08:01 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1163,8 +1163,10 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     MGAEntPtr pMgaEnt = NULL;
 #ifdef USEMGAHAL
     MGAMODEINFO mgaModeInfo = {0};
-    Bool digital = FALSE;
-    Bool tv = FALSE;
+    Bool digital1 = FALSE;
+    Bool digital2 = FALSE;
+    Bool tv1 = FALSE;
+    Bool tv2 = FALSE;
     Bool swap_head = FALSE;
     ULONG status;
 #endif
@@ -1486,18 +1488,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     if (xf86GetOptValBool(MGAOptions, OPTION_HW_CURSOR, &pMga->HWCursor)) {
 	from = X_CONFIG;
     }
-#ifdef USEMGAHAL
-    if (pMga->HALLoaded) {
-        xf86GetOptValBool(MGAOptions, OPTION_TV, &tv);
-	if (tv == TRUE) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "TV Support\n");
-	}
-	xf86GetOptValBool(MGAOptions, OPTION_DIGITAL, &digital);
-	if (digital == TRUE) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Digital Screen Support\n");
-	}
-    }
-#endif
+
     /* For compatibility, accept this too (as an override) */
     if (xf86ReturnOptValBool(MGAOptions, OPTION_NOACCEL, FALSE)) {
 	pMga->NoAccel = TRUE;
@@ -1781,7 +1772,8 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	    xf86GetOptValBool(MGAOptions, OPTION_CRTC2HALF, &UseHalf);
 	    adjust = pScrn->videoRam / 2;
 
-	    if (UseHalf == TRUE || xf86GetOptValInteger(MGAOptions, OPTION_CRTC2RAM, &adjust)) {
+	    if (UseHalf == TRUE ||
+		  xf86GetOptValInteger(MGAOptions, OPTION_CRTC2RAM, &adjust)) {
 	        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 			   "Crtc2 will use %dK of VideoRam\n",
 			   adjust);
@@ -2049,29 +2041,45 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
         = xf86ReturnOptValBool(MGAOptions, OPTION_SWAPPED_HEAD, FALSE);
 
     if(pMga->SecondCrtc == FALSE) {
-        pMga->pBoard = (LPBOARDHANDLE) xalloc (sizeof(CLIENTDATA) + MGAGetBOARDHANDLESize());
-        pMga->pClientStruct = (LPCLIENTDATA) xalloc (sizeof(CLIENTDATA));
+        pMga->pBoard = xalloc(sizeof(CLIENTDATA) + MGAGetBOARDHANDLESize());
+        pMga->pClientStruct = xalloc(sizeof(CLIENTDATA));
         pMga->pClientStruct->pMga = (MGAPtr) pMga;
 
         MGAMapMem(pScrn);
         MGAOpenLibrary(pMga->pBoard,pMga->pClientStruct,sizeof(CLIENTDATA));
         MGAUnmapMem(pScrn);
-        pMga->pMgaHwInfo = (LPMGAHWINFO) xalloc (sizeof(MGAHWINFO));
+        pMga->pMgaHwInfo = xalloc(sizeof(MGAHWINFO));
         MGAGetHardwareInfo(pMga->pBoard,pMga->pMgaHwInfo);
 
-        /* copy the board handles */
-        if(xf86IsEntityShared(pScrn->entityList[0])) {
-	    pMgaEnt->pClientStruct = pMga->pClientStruct;
-	    pMgaEnt->pBoard = pMga->pBoard;
-	    pMgaEnt->pMgaHwInfo = pMga->pMgaHwInfo;
-	}
+        digital1 = ISDIGITAL1(pMga);
+        digital2 = ISDIGITAL2(pMga);
+        tv1 = ISTV1(pMga);
+        tv2 = ISTV2(pMga);
 
-        if (!swap_head) {
-          mgaModeInfo.flOutput = (digital == TRUE) ? MGAMODEINFO_DIGITAL2
-					: MGAMODEINFO_ANALOG1;
+        /* Display type information */
+        if (digital1) {
+            xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+				"Digital screen detected on first head.\n");
+            mgaModeInfo.flOutput = MGAMODEINFO_DIGITAL2;
+        } else if (tv1) {
+            xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+				"TV detected on first head.\n");
+            mgaModeInfo.flOutput = MGAMODEINFO_TV;
         } else {
-          mgaModeInfo.flOutput = MGAMODEINFO_ANALOG2;
+            if (!swap_head) {
+                mgaModeInfo.flOutput = MGAMODEINFO_ANALOG1;
+            } else {
+                mgaModeInfo.flOutput = MGAMODEINFO_ANALOG2;
+            }
         }
+
+        /* copy the board handles */
+        if (xf86IsEntityShared(pScrn->entityList[0])) {
+            pMgaEnt->pClientStruct = pMga->pClientStruct;
+            pMgaEnt->pBoard = pMga->pBoard;
+            pMgaEnt->pMgaHwInfo = pMga->pMgaHwInfo;
+        }
+
         mgaModeInfo.ulDispWidth = pScrn->virtualX;
         mgaModeInfo.ulDispHeight = pScrn->virtualY;
         mgaModeInfo.ulDeskWidth = pScrn->virtualX;
@@ -2079,10 +2087,10 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
         mgaModeInfo.ulBpp = pScrn->bitsPerPixel;
         mgaModeInfo.ulZoom = 1;
     } else { /* Second CRTC && entity is shared */
-        if (digital == TRUE) {
+        if (digital2 == TRUE) {
             mgaModeInfo.flOutput = MGAMODEINFO_DIGITAL2 |
             			   MGAMODEINFO_SECOND_CRTC;
-        } else if (tv == TRUE) {
+        } else if (tv2 == TRUE) {
             mgaModeInfo.flOutput = MGAMODEINFO_TV |
             			   MGAMODEINFO_SECOND_CRTC;
         } else {
@@ -2102,18 +2110,40 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
         mgaModeInfo.ulZoom = 1;
         pMga->pBoard = pMgaEnt->pBoard;
         pMga->pClientStruct = pMgaEnt->pClientStruct;
-        pMga->pMgaHwInfo = pMga->pMgaHwInfo;
+        pMga->pMgaHwInfo = pMgaEnt->pMgaHwInfo;
+
+        digital1 = ISDIGITAL1(pMga);
+        digital2 = ISDIGITAL2(pMga);
+        tv1 = ISTV1(pMga);
+        tv2 = ISTV2(pMga);
+                  
+        if (digital2) {
+            xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+			"Digital screen detected on second head.\n");
+            mgaModeInfo.flOutput = MGAMODEINFO_DIGITAL2 |
+				   MGAMODEINFO_SECOND_CRTC; 
+        } else if (tv2) {
+            xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+			"TV detected on second head.\n");
+            mgaModeInfo.flOutput = MGAMODEINFO_TV |
+				   MGAMODEINFO_SECOND_CRTC;
+        } else {
+            mgaModeInfo.flOutput = MGAMODEINFO_ANALOG2 |
+				   MGAMODEINFO_SECOND_CRTC;
+        }
     }
+
     if((status = MGAValidateMode(pMga->pBoard,&mgaModeInfo)) != 0) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		   "MGAValidateMode from HALlib found the mode to be invalid: 0x%lx\n", status);
+		   "MGAValidateMode from HALlib found the mode to be invalid.\n"
+		   "\tError: 0x%lx\n", status);
         return FALSE;
     }
     pScrn->displayWidth = mgaModeInfo.ulFBPitch;
     );	/* MGA_HAL */
 #endif
 
-    if(pMga->HasSDRAM) { /* don't bother checking */ }
+    if (pMga->HasSDRAM) { /* don't bother checking */ }
     else if ((pMga->PciInfo->subsysCard == PCI_CARD_MILL_G200_SD) ||
 	(pMga->PciInfo->subsysCard == PCI_CARD_MARV_G200_SD) ||
 	(pMga->PciInfo->subsysCard == PCI_CARD_MYST_G200_SD) ||
@@ -2512,7 +2542,7 @@ static void FillModeInfoStruct(ScrnInfoPtr pScrn, DisplayModePtr mode)
     const char *s;
     MGAPtr pMga = MGAPTR(pScrn);
 
-    pMga->pMgaModeInfo = (LPMGAMODEINFO) xalloc (sizeof(MGAMODEINFO));
+    pMga->pMgaModeInfo = xalloc(sizeof(MGAMODEINFO));
     pMga->pMgaModeInfo->flOutput = 0;
     pMga->pMgaModeInfo->ulDispWidth = mode->HDisplay;
     pMga->pMgaModeInfo->ulDispHeight = mode->VDisplay;
@@ -2584,16 +2614,18 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     MGAPtr pMga = MGAPTR(pScrn);
     MGARegPtr mgaReg;
 #ifdef USEMGAHAL
-    Bool digital = FALSE;
-    Bool tv = FALSE;
+    Bool digital1 = FALSE;
+    Bool digital2 = FALSE;
+    Bool tv1 = FALSE;
+    Bool tv2 = FALSE;
     ULONG status;
     Bool swap_head
       = xf86ReturnOptValBool(MGAOptions, OPTION_SWAPPED_HEAD, FALSE);
 
-    /* Verify if user wants digital screen output */
-    xf86GetOptValBool(MGAOptions, OPTION_DIGITAL, &digital);
-    /* Verify if user wants TV output */
-    xf86GetOptValBool(MGAOptions, OPTION_TV, &tv);
+    digital1 = ISDIGITAL1(pMga);
+    digital2 = ISDIGITAL2(pMga);
+    tv1 = ISTV1(pMga);
+    tv2 = ISTV2(pMga);
 #endif
 
     vgaHWUnlock(hwp);
@@ -2616,50 +2648,51 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     FillModeInfoStruct(pScrn,mode);
 
     if(pMga->SecondCrtc == TRUE) {
-	if (digital == TRUE) {
-	    pMga->pMgaModeInfo->flOutput = MGAMODEINFO_DIGITAL2 |
-	    				   MGAMODEINFO_SECOND_CRTC |
-	    				   MGAMODEINFO_FORCE_PITCH |
-	    				   MGAMODEINFO_FORCE_DISPLAYORG;
-	} else if (tv == TRUE) {
-	    pMga->pMgaModeInfo->flOutput = MGAMODEINFO_TV |
-	    				   MGAMODEINFO_SECOND_CRTC |
-	    				   MGAMODEINFO_FORCE_PITCH |
-	    				   MGAMODEINFO_FORCE_DISPLAYORG;
+	pMga->pMgaModeInfo->flOutput = MGAMODEINFO_SECOND_CRTC |
+				       MGAMODEINFO_FORCE_PITCH |
+				       MGAMODEINFO_FORCE_DISPLAYORG;
+	if (digital2) {
+	    pMga->pMgaModeInfo->flOutput |= MGAMODEINFO_DIGITAL2;
+	} else if (tv2) {
+	    pMga->pMgaModeInfo->flOutput |= MGAMODEINFO_TV;
 	} else {
             if (!swap_head) {
-	      pMga->pMgaModeInfo->flOutput = MGAMODEINFO_ANALOG2 |
-	    				     MGAMODEINFO_SECOND_CRTC |
-	    				     MGAMODEINFO_FORCE_PITCH |
-	    				     MGAMODEINFO_FORCE_DISPLAYORG;
+	      pMga->pMgaModeInfo->flOutput |= MGAMODEINFO_ANALOG2;
             } else {
-              pMga->pMgaModeInfo->flOutput = MGAMODEINFO_ANALOG1 |
-                                             MGAMODEINFO_SECOND_CRTC |
-                                             MGAMODEINFO_FORCE_PITCH |
-                                             MGAMODEINFO_FORCE_DISPLAYORG;
+              pMga->pMgaModeInfo->flOutput |= MGAMODEINFO_ANALOG1;
             }
 	}
     } else {
-        if (!swap_head) {
-	  pMga->pMgaModeInfo->flOutput = 
-	    ((digital == TRUE) ? MGAMODEINFO_DIGITAL2 : MGAMODEINFO_ANALOG1) |
-	    MGAMODEINFO_FORCE_PITCH;
-        } else {
-          pMga->pMgaModeInfo->flOutput = MGAMODEINFO_ANALOG2 |
-                                         MGAMODEINFO_FORCE_PITCH;
+	pMga->pMgaModeInfo->flOutput = MGAMODEINFO_FORCE_PITCH;
+        if (digital1) {
+	    pMga->pMgaModeInfo->flOutput |= MGAMODEINFO_DIGITAL2;
+        } else if (tv1) {
+	    pMga->pMgaModeInfo->flOutput |= MGAMODEINFO_TV;
+       	} else {
+            if (!swap_head) {
+	        pMga->pMgaModeInfo->flOutput |= MGAMODEINFO_ANALOG1;
+            } else {
+                pMga->pMgaModeInfo->flOutput |= MGAMODEINFO_ANALOG2;
+            }
         }
     }
 
     pMga->pMgaModeInfo->ulFBPitch = pScrn->displayWidth;
+
     /* Validate the parameters */
     if ((status = MGAValidateMode(pMga->pBoard, pMga->pMgaModeInfo)) != 0) {
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "MGAValidateMode from HALlib found the mode to be invalid. Error: %lx\n", status);
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		"MGAValidateMode from HALlib found the mode to be invalid.\n"
+		"\tError: %lx\n", status);
 	return FALSE;
     }
 
     /* Validates the Video parameters */
-    if ((status = MGAValidateVideoParameters(pMga->pBoard, pMga->pMgaModeInfo)) != 0) {
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "MGAValidateVideoParameters from HALlib found the mode to be invalid. Error: %lx\n", status);
+    if ((status = MGAValidateVideoParameters(pMga->pBoard, pMga->pMgaModeInfo))
+	!= 0) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		"MGAValidateVideoParameters from HALlib found the mode to be"
+		" invalid.\n\tError: %lx\n", status);
 	return FALSE;
     }
     );	/* MGA_HAL */
@@ -2676,7 +2709,8 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     /* Initialize the board */
     if(MGASetMode(pMga->pBoard,pMga->pMgaModeInfo) != 0) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-	"MGASetMode returned an error. Make sure to validate the mode before.\n");
+		"MGASetMode returned an error."
+		"  Make sure to validate the mode before.\n");
 	return FALSE;
     }
     );	/* MGA_HAL */
@@ -2817,23 +2851,27 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 #ifdef USEMGAHAL
        MGA_HAL(
        if(pMgaEnt->refCount == 1) {
-	  pMga->pBoard = (LPBOARDHANDLE) xalloc (sizeof(CLIENTDATA) + MGAGetBOARDHANDLESize());
-	  pMga->pClientStruct = (LPCLIENTDATA) xalloc (sizeof(CLIENTDATA));
+	  pMga->pBoard = xalloc(sizeof(CLIENTDATA) + MGAGetBOARDHANDLESize());
+	  pMga->pClientStruct = xalloc(sizeof(CLIENTDATA));
 	  pMga->pClientStruct->pMga = (MGAPtr) pMga;
 
 	  MGAOpenLibrary(pMga->pBoard,pMga->pClientStruct,sizeof(CLIENTDATA));
-	  pMga->pMgaHwInfo = (LPMGAHWINFO) xalloc (sizeof(MGAHWINFO));
+	  pMga->pMgaHwInfo = xalloc(sizeof(MGAHWINFO));
 	  MGAGetHardwareInfo(pMga->pBoard,pMga->pMgaHwInfo);
 
 	  /* Detecting for type of display */
 	  if (pMga->pMgaHwInfo->ulCapsSecondOutput & MGAHWINFOCAPS_OUTPUT_TV) {
 	  	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "TV detected\n");
 	  }
-	  if (pMga->pMgaHwInfo->ulCapsFirstOutput & MGAHWINFOCAPS_OUTPUT_DIGITAL) {
-	  	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Digital Screen detected\n");
+	  if (pMga->pMgaHwInfo->ulCapsFirstOutput &
+			MGAHWINFOCAPS_OUTPUT_DIGITAL) {
+	  	xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+				"Digital Screen detected\n");
 	  }
-	  if (pMga->pMgaHwInfo->ulCapsSecondOutput & MGAHWINFOCAPS_OUTPUT_DIGITAL) {
-	  	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Digital Screen detected\n");
+	  if (pMga->pMgaHwInfo->ulCapsSecondOutput &
+			MGAHWINFOCAPS_OUTPUT_DIGITAL) {
+	  	xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+				"Digital Screen detected\n");
 	  }
 
 	  /* Now copy these to the entitystructure */
@@ -2850,12 +2888,12 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     } else {
 #ifdef USEMGAHAL
 	  MGA_HAL(
-	  pMga->pBoard = (LPBOARDHANDLE) xalloc (sizeof(CLIENTDATA) + MGAGetBOARDHANDLESize());
-	  pMga->pClientStruct = (LPCLIENTDATA) xalloc (sizeof(CLIENTDATA));
+	  pMga->pBoard = xalloc(sizeof(CLIENTDATA) + MGAGetBOARDHANDLESize());
+	  pMga->pClientStruct = xalloc(sizeof(CLIENTDATA));
 	  pMga->pClientStruct->pMga = (MGAPtr) pMga;
 
 	  MGAOpenLibrary(pMga->pBoard,pMga->pClientStruct,sizeof(CLIENTDATA));
-	  pMga->pMgaHwInfo = (LPMGAHWINFO) xalloc (sizeof(MGAHWINFO));
+	  pMga->pMgaHwInfo = xalloc(sizeof(MGAHWINFO));
 	  MGAGetHardwareInfo(pMga->pBoard,pMga->pMgaHwInfo);
 	  );	/* MGA_HAL */
 #endif
@@ -2998,19 +3036,18 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
        pMga->directRenderingEnabled = FALSE;
        driFrom = X_CONFIG;
     }
-    else if ( pMga->SecondCrtc == TRUE ) {
+    else if (pMga->SecondCrtc == TRUE) {
        xf86DrvMsg( pScrn->scrnIndex, X_ERROR,
 		   "Not initializing the DRI on the second head\n" );
        pMga->directRenderingEnabled = FALSE;
     }
-    else if ( (pMga->FbMapSize /
-	       (width * (pScrn->bitsPerPixel >> 3))) <= height * 3 ) {
-       xf86DrvMsg( pScrn->scrnIndex, X_ERROR,
-		   "Static buffer allocation failed, not initializing the DRI\n" );
-       xf86DrvMsg( pScrn->scrnIndex, X_ERROR,
-		   "Need at least %d kB video memory at this resolution, bit depth\n",
-		   (3 * displayWidth * height *
-		    (pScrn->bitsPerPixel >> 3)) / 1024 );
+    else if ((pMga->FbMapSize /
+	       (width * (pScrn->bitsPerPixel >> 3))) <= height * 3) {
+       xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+	  "Static buffer allocation failed, not initializing the DRI\n");
+       xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+	  "Need at least %d kB video memory at this resolution, bit depth\n",
+	  (3 * displayWidth * height * (pScrn->bitsPerPixel >> 3)) / 1024 );
        pMga->directRenderingEnabled = FALSE;
        driFrom = X_PROBED;
     }
@@ -3632,7 +3669,8 @@ dbg_inreg8(ScrnInfoPtr pScrn,int addr,int verbose)
     pMga = MGAPTR(pScrn);
     ret = *(volatile CARD8 *)(pMga->IOBase + (addr));
     if(verbose)
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "inreg8 : 0x%8x = 0x%x\n",addr,ret);
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+			"inreg8 : 0x%8x = 0x%x\n",addr,ret);
     return ret;
 }
 
@@ -3645,7 +3683,8 @@ dbg_inreg16(ScrnInfoPtr pScrn,int addr,int verbose)
     pMga = MGAPTR(pScrn);
     ret = *(volatile CARD16 *)(pMga->IOBase + (addr));
     if(verbose)
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "inreg16: 0x%8x = 0x%x\n",addr,ret);
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+			"inreg16: 0x%8x = 0x%x\n",addr,ret);
     return ret;
 }
 
@@ -3658,7 +3697,8 @@ dbg_inreg32(ScrnInfoPtr pScrn,int addr,int verbose)
     pMga = MGAPTR(pScrn);
     ret = *(volatile CARD32 *)(pMga->IOBase + (addr));
     if(verbose)
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "inreg32: 0x%8x = 0x%x\n",addr,ret);
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+			"inreg32: 0x%8x = 0x%x\n",addr,ret);
     return ret;
 }
 
@@ -3675,7 +3715,8 @@ dbg_outreg8(ScrnInfoPtr pScrn,int addr,int val)
 #endif
     if( addr != 0x3c00 ) {
 	ret = dbg_inreg8(pScrn,addr,0);
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "outreg8 : 0x%8x = 0x%x was 0x%x\n",addr,val,ret);
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+			"outreg8 : 0x%8x = 0x%x was 0x%x\n",addr,val,ret);
     }
     else {
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "outreg8 : index 0x%x\n",val);
@@ -3695,7 +3736,8 @@ dbg_outreg16(ScrnInfoPtr pScrn,int addr,int val)
 #endif
     pMga = MGAPTR(pScrn);
     ret = dbg_inreg16(pScrn,addr,0);
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "outreg16 : 0x%8x = 0x%x was 0x%x\n",addr,val,ret);
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+			"outreg16 : 0x%8x = 0x%x was 0x%x\n",addr,val,ret);
     *(volatile CARD16 *)(pMga->IOBase + (addr)) = (val);
 }
 
@@ -3721,7 +3763,8 @@ dbg_outreg32(ScrnInfoPtr pScrn,int addr,int val)
     }
     pMga = MGAPTR(pScrn);
     ret = dbg_inreg32(pScrn,addr,0);
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "outreg32 : 0x%8x = 0x%x was 0x%x\n",addr,val,ret);
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+			"outreg32 : 0x%8x = 0x%x was 0x%x\n",addr,val,ret);
     *(volatile CARD32 *)(pMga->IOBase + (addr)) = (val);
 }
 #endif /* DEBUG */

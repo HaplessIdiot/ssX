@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.72 2001/03/21 17:02:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.73 2001/04/05 17:42:32 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -195,6 +195,11 @@ typedef struct {
 } MGAPaletteInfo;
 
 #define MGAPTR(p) ((MGAPtr)((p)->driverPrivate))
+
+#define ISDIGITAL1(p) ((p->pMgaHwInfo->ulCapsFirstOutput) & MGAHWINFOCAPS_OUTPUT_DIGITAL)
+#define ISDIGITAL2(p) ((p->pMgaHwInfo->ulCapsSecondOutput) & MGAHWINFOCAPS_OUTPUT_DIGITAL)
+#define ISTV1(p) ((p->pMgaHwInfo->ulCapsFirstOutput) & MGAHWINFOCAPS_OUTPUT_TV)
+#define ISTV2(p) ((p->pMgaHwInfo->ulCapsSecondOutput) & MGAHWINFOCAPS_OUTPUT_TV)
 
 #ifdef DISABLE_VGA_IO
 typedef struct mgaSave {
