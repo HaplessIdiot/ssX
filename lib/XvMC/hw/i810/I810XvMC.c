@@ -33,7 +33,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 **
 **
 ***************************************************************************/
-/* $XFree86: xc/lib/XvMC/hw/i810/I810XvMC.c,v 1.2 2001/09/27 08:58:01 alanh Exp $ */
+/* $XFree86: xc/lib/XvMC/hw/i810/I810XvMC.c,v 1.3 2001/09/29 09:54:18 alanh Exp $ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -2822,7 +2822,7 @@ Status XvMCPutSurface(Display *display,XvMCSurface *surface,
   int clipped_srcx, clipped_srcy, clipped_destx, clipped_desty;
   int clipped_srcw, clipped_srch, clipped_destw, clipped_desth;
   uint x1,y1,root_width,root_height;
-  int x2 = 0, y2 = 0;
+  int x2 = 0, y2 = 0,unused;
   uint nChilds;
   int stat;
   Window win,root,parent,*pChilds;
@@ -2878,7 +2878,8 @@ Status XvMCPutSurface(Display *display,XvMCSurface *surface,
     y1 += y2;
     win = parent;
   }while(win != root);
-  XGetGeometry(display,root, &root, &d, &d, &root_width, &root_height, &d, &d);
+  XGetGeometry(display,root, &root, &unused, &unused,
+               &root_width, &root_height, &d, &d);
 
   /* Left edge of Video window clipped to screen */
   extents.x1 = 0;
