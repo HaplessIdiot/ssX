@@ -1,0 +1,52 @@
+XCOMM $XFree86$
+
+/*
+ * Only need SharedLib build unless OSMesa lib is built, or driver is built
+ * in to libGL
+ */
+#if BuildXF86DRI && !GlxUseSGISI && \
+	(GlxUseBuiltInDRIDriver || \
+	 !GlxBuiltInMesa || !defined(GlxDriverUsesMesa))
+#define DoNormalLib (NormalLibGlx || SharedLibGlxWithoutPIC)
+#define DoSharedLib (SharedLibGlx && !SharedLibGlxWithoutPIC)
+#define DoExtraLib SharedLibGlx
+#define DoDebugLib DebugLibGlx
+#define DoProfileLib ProfileLibGlx
+#else
+#define DoNormalLib SharedLibGlxWithoutPIC
+#define DoSharedLib !SharedLibGlxWithoutPIC
+#define DoExtraLib NO
+#define DoDebugLib NO
+#define DoProfileLib NO
+#endif
+
+#if Malloc0ReturnsNull
+ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
+#endif
+
+#define MesaSPARCBuildDir /**/
+#define NeedToLinkMesaSrc
+#include "Imakefile.inc"
+
+      DEFINES = $(ALLOC_DEFINES) GlxDefines $(MESA_ASM_DEFINES)
+     INCLUDES = -I$(INCLUDESRC) -I$(EXTINCSRC) -I$(MESASRCDIR)/src \
+		-I$(MESASRCDIR)/src/SPARC \
+		-I../../../include
+
+         SRCS = $(MESA_ASM_SRCS)
+         OBJS = $(MESA_ASM_OBJS)
+
+#include <Library.tmpl>
+
+LibraryObjectRule()
+
+STD_CPP_DEFINES = StandardDefines $(PROJECT_DEFINES)
+
+SubdirLibraryRule($(OBJS))
+NormalLintTarget($(SRCS))
+
+ObjectFromAsmSource(xform, NullParameter)
+ObjectFromAsmSource(clip, NullParameter)
+ObjectFromAsmSource(norm, NullParameter)
+
+DependTarget()

@@ -25,7 +25,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_dd.c,v 1.1 2001/10/04 18:28:21 alanh Exp $ */
 
 /*
  * Author:
@@ -62,7 +62,7 @@ static const GLubyte *i830DDGetString( GLcontext *ctx, GLenum name )
    case GL_VENDOR:
       return (GLubyte *)"VA Linux Systems";
    case GL_RENDERER:
-      return (GLubyte *)"Mesa DRI I830 20001127";
+      return (GLubyte *)"Mesa DRI I830 20020221";
    default:
       return 0;
    }

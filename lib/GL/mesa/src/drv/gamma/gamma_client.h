@@ -37,7 +37,7 @@
 
 #define AreaStippleEnable          0x00001
 #define LineStippleEnable          0x00002
-#define ResetLineStipple           0x00004
+#define GResetLineStipple          0x00004
 #define FastFillEnable             0x00008
 #define PrimitiveLine              0x00000
 #define PrimitiveTrapezoid         0x00040

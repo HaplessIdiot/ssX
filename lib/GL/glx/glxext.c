@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.12 2001/03/21 16:04:39 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.13 2001/04/10 16:07:49 dawes Exp $ */
 
 /*
 ** License Applicability. Except to the extent portions of this file are
@@ -125,7 +125,6 @@ void __glXSetCurrentContext(__GLXcontext *c)
 
 /* Used by the __glXLock() and __glXUnlock() macros */
 xmutex_rec __glXmutex;
-xmutex_rec __glXSwapBuffersMutex;
 
 #else
 
@@ -479,7 +478,6 @@ __GLXdisplayPrivate *__glXInitialize(Display* dpy)
         if (firstCall) {
             /* initialize the GLX mutexes */
             xmutex_init(&__glXmutex);
-            xmutex_init(&__glXSwapBuffersMutex);
             firstCall = 0;
         }
     }
@@ -726,10 +724,6 @@ GLXDrawable glXGetCurrentDrawable(void)
     return gc->currentDrawable;
 }
 
-GLXDrawable glXGetCurrentDrawableEXT(void)
-{
-    return glXGetCurrentDrawable();
-}
 
 /************************************************************************/
 
@@ -764,7 +758,7 @@ __DRIscreen *__glXFindDRIScreen(Display *dpy, int scrn)
 ** Make a particular context current.
 ** NOTE: this is in this file so that it can access dummyContext.
 */
-Bool glXMakeCurrent(Display *dpy, GLXDrawable draw, GLXContext gc)
+Bool GLX_PREFIX(glXMakeCurrent)(Display *dpy, GLXDrawable draw, GLXContext gc)
 {
     xGLXMakeCurrentReq *req;
     xGLXMakeCurrentReply reply;

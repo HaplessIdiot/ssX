@@ -24,7 +24,7 @@
  * Authors:
  *    Keith Whitwell <keithw@valinux.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.h,v 1.8 2001/04/01 13:59:59 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.h,v 1.9 2001/04/10 16:07:50 dawes Exp $ */
 
 #ifndef _MGA_INIT_H_
 #define _MGA_INIT_H_
@@ -32,10 +32,8 @@
 #ifdef GLX_DIRECT_RENDERING
 
 #include <sys/time.h>
-#include "dri_tmm.h"
-#include "dri_mesaint.h"
-#include "dri_mesa.h"
-#include "types.h"
+#include "dri_util.h"
+#include "mtypes.h"
 #include "mgaregs.h"
 
 typedef struct mga_screen_private_s {

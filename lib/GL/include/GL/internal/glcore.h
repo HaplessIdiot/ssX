@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/include/GL/internal/glcore.h,v 1.6 2001/03/21 17:31:19 dawes Exp $ */
+/* $XFree86: xc/lib/GL/include/GL/internal/glcore.h,v 1.7 2001/03/25 05:32:00 tsi Exp $ */
 #ifndef __gl_core_h_
 #define __gl_core_h_
 
@@ -383,7 +383,8 @@ typedef struct __GLexportsRec {
     /* Context management (return GL_FALSE on failure) */
     GLboolean (*destroyContext)(__GLcontext *gc);
     GLboolean (*loseCurrent)(__GLcontext *gc);
-    GLboolean (*makeCurrent)(__GLcontext *gc, __GLdrawablePrivate *glPriv);
+    /* oldglPriv isn't used anymore, kept for backwards compatibility */
+    GLboolean (*makeCurrent)(__GLcontext *gc, __GLdrawablePrivate *oldglPriv);
     GLboolean (*shareContext)(__GLcontext *gc, __GLcontext *gcShare);
     GLboolean (*copyContext)(__GLcontext *dst, const __GLcontext *src, GLuint mask);
     GLboolean (*forceCurrent)(__GLcontext *gc);

@@ -1,7 +1,7 @@
 #ifndef __GLX_glx_h__
 #define __GLX_glx_h__
 
-/* $XFree86: xc/include/GL/glx.h,v 1.7 2000/06/30 18:27:00 dawes Exp $ */
+/* $XFree86: xc/include/GL/glx.h,v 1.8 2001/03/21 15:51:38 dawes Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -108,14 +108,29 @@ extern int glXQueryContext (Display *dpy, GLXContext ctx, int attribute, int *va
 extern void glXSelectEvent (Display *dpy, GLXDrawable draw, unsigned long event_mask);
 extern void glXGetSelectedEvent (Display *dpy, GLXDrawable draw, unsigned long *event_mask);
 
-/*** SGI GLX extensions */
+/* GLX 1.4 and later */
+extern void (*glXGetProcAddress(const GLubyte *procname))();
+
+
+#ifndef GLX_GLXEXT_LEGACY
+
+#include <GL/glxext.h>
+
+#else
+
+/* GLX extensions */
+#define GLX_EXT_import_context	1
+#define GLX_EXT_visual_info	1
+#define GLX_EXT_visual_rating	1
+#define GLX_ARB_get_proc_address 1
 extern GLXContextID glXGetContextIDEXT (const GLXContext ctx);
-extern GLXDrawable glXGetCurrentDrawableEXT (void);
 extern GLXContext glXImportContextEXT (Display *dpy, GLXContextID contextID);
 extern void glXFreeContextEXT (Display *dpy, GLXContext ctx);
 extern int glXQueryContextInfoEXT (Display *dpy, GLXContext ctx, int attribute, int *value);
-
+extern Display * glXGetCurrentDisplayEXT (void);
 extern void (*glXGetProcAddressARB(const GLubyte *procName))( void );
+
+#endif /* GLX_GLXEXT_LEGACY */
 
 /*** Should these go here, or in another header? */
 /*

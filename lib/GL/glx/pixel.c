@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/pixel.c,v 1.4 2001/03/21 16:04:39 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/pixel.c,v 1.5 2001/10/28 03:32:27 tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -124,6 +124,7 @@ static GLint ElementsPerGroup(GLenum format, GLenum type)
       case GL_BLUE:
       case GL_ALPHA:
       case GL_LUMINANCE:
+      case GL_INTENSITY:
 	return 1;
       default:
 	return 0;
