@@ -46,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/events.c,v 3.6 2001/01/17 23:45:28 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/events.c,v 3.7tsi Exp $ */
 
 #include	<swaprep.h>
 
@@ -103,6 +103,7 @@ ProcGetEventMask(ClientPtr client)
     rep.length = SIZEOF(fsGetEventMaskReply) >> 2;
     rep.event_mask = client->eventmask;
 
+    WriteReplyToClient(client, SIZEOF(fsGetEventMaskReply), &rep);
     return client->noClientException;
 }
 
