@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.45 2001/08/06 20:51:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.46 2001/08/17 13:27:56 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -430,8 +430,6 @@ MouseCommonOptions(InputInfoPtr pInfo)
     if (pMse->emulate3Buttons) {
 	xf86Msg(X_CONFIG, "%s: Emulate3Buttons, Emulate3Timeout: %d\n",
 		pInfo->name, pMse->emulate3Timeout);
-	RegisterBlockAndWakeupHandlers (MouseBlockHandler, MouseWakeupHandler,
-					(pointer) pInfo);
     }
 
     pMse->chordMiddle = xf86SetBoolOption(pInfo->options, "ChordMiddle", FALSE);
@@ -1733,6 +1731,11 @@ MouseProc(DeviceIntPtr device, int what)
 	for (i = 1; i <= 5; i++)
 	    xf86PostButtonEvent(device,0,i,0,0,0);
 	xf86UnblockSIGIO (blocked);
+	if (pMse->emulate3Buttons)
+	{
+	    RegisterBlockAndWakeupHandlers (MouseBlockHandler, MouseWakeupHandler,
+					    (pointer) pInfo);
+	}
 	break;
 	    
     case DEVICE_OFF:
@@ -1745,6 +1748,11 @@ MouseProc(DeviceIntPtr device, int what)
 	    }
 	    xf86CloseSerial(pInfo->fd);
 	    pInfo->fd = -1;
+	    if (pMse->emulate3Buttons)
+	    {
+		RemoveBlockAndWakeupHandlers (MouseBlockHandler, MouseWakeupHandler,
+					      (pointer) pInfo);
+	    }
 	}
 	device->public.on = FALSE;
 	usleep(300000);
