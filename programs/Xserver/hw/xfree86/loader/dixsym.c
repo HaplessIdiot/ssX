@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.45 2001/11/17 16:05:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.46 2002/01/23 17:00:28 dawes Exp $ */
 
 
 /*
@@ -115,8 +115,10 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(QueueWorkProc)
   SYMFUNC(RegisterBlockAndWakeupHandlers)
   SYMFUNC(RemoveBlockAndWakeupHandlers)
+#ifdef XCSECURITY
   SYMFUNC(SecurityLookupDrawable)
   SYMFUNC(SecurityLookupWindow)
+#endif
   /* events.c */
   SYMFUNC(CheckCursorConfinement)
   SYMFUNC(DeliverEvents)
@@ -210,8 +212,10 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(LookupIDByType)
   SYMFUNC(LookupIDByClass)
   SYMFUNC(LegalNewID)
+#ifdef XCSECURITY
   SYMFUNC(SecurityLookupIDByClass)
   SYMFUNC(SecurityLookupIDByType)
+#endif
   /* swaprep.c */
   SYMFUNC(CopySwap32Write)
   SYMFUNC(Swap32Write)
