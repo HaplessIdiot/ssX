@@ -1542,48 +1542,6 @@ _mesa_pack_rgba_span( GLcontext *ctx,
          rgba[i][ACOMP] = srcRgba[i][ACOMP] * ascale;
       }
 
-      /*
-       * Apply scale, bias and lookup-tables if enabled.
-       */
-      if (applyTransferOps) {
-         /* scale & bias */
-         if (ctx->Pixel.ScaleOrBiasRGBA) {
-            _mesa_scale_and_bias_rgba( ctx, n, rgba );
-         }
-         /* color map lookup */
-         if (ctx->Pixel.MapColorFlag) {
-            _mesa_map_rgba( ctx, n, rgba );
-         }
-         /* GL_COLOR_TABLE lookup */
-         if (ctx->Pixel.ColorTableEnabled) {
-            _mesa_lookup_rgba(&ctx->ColorTable, n, rgba);
-         }
-         /* XXX convolution here */
-         /* GL_POST_CONVOLUTION_COLOR_TABLE lookup */
-         if (ctx->Pixel.PostConvolutionColorTableEnabled) {
-            _mesa_lookup_rgba(&ctx->PostConvolutionColorTable, n, rgba);
-         }
-         /* color matrix transform */
-         if (ctx->ColorMatrix.type != MATRIX_IDENTITY ||
-             ctx->Pixel.ScaleOrBiasRGBApcm) {
-            _mesa_transform_rgba(ctx, n, rgba);
-         }
-         /* GL_POST_COLOR_MATRIX_COLOR_TABLE lookup */
-         if (ctx->Pixel.PostColorMatrixColorTableEnabled) {
-            _mesa_lookup_rgba(&ctx->PostColorMatrixColorTable, n, rgba);
-         }
-         /* update histogram count */
-         if (ctx->Pixel.HistogramEnabled) {
-            _mesa_update_histogram(ctx, n, (CONST GLfloat (*)[4]) rgba);
-         }
-         /* XXX min/max here */
-         if (ctx->Pixel.MinMaxEnabled) {
-            _mesa_update_minmax(ctx, n, (CONST GLfloat (*)[4]) rgba);
-            if (ctx->MinMax.Sink)
-               return;
-         }
-      }
-
       _mesa_pack_float_rgba_span(ctx, n, (const GLfloat (*)[4]) rgba,
                                  format, type, destination,
                                  packing, applyTransferOps);
