@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/miext/rootless/rootless.h,v 1.4 2003/09/16 00:36:20 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootless.h,v 1.5 2003/10/18 00:00:34 torrey Exp $ */
 
 #ifndef _ROOTLESS_H
 #define _ROOTLESS_H
@@ -81,8 +81,7 @@ extern int rootlessGlobalOffsetY;
 #endif
 
 /* The minimum number of bytes or pixels for which to use the
-   implementation's accelerated functions. Set to zero if not
-   available. */
+   implementation's accelerated functions. */
 extern unsigned int rootless_CopyBytes_threshold;
 extern unsigned int rootless_FillBytes_threshold;
 extern unsigned int rootless_CompositePixels_threshold;
@@ -270,7 +269,6 @@ typedef void (*RootlessSwitchWindowProc)
 /*
  * Copy bytes. (Optional)
  *  Source and destinate may overlap and the right thing should happen.
- *  This will never be called if rootless_CopyBytes_threshold == 0.
  *
  *  width       Bytes to copy per row
  *  height      Number of rows
@@ -286,7 +284,6 @@ typedef void (*RootlessCopyBytesProc)
 
 /*
  * Fill memory with 32-bit pattern. (Optional)
- *  This will never be called if rootless_FillBytes_threshold == 0.
  *
  *  width       Bytes to fill per row
  *  height      Number of rows
@@ -300,7 +297,6 @@ typedef void (*RootlessFillBytesProc)
 
 /*
  * Composite pixels from source and mask to destination. (Optional)
- *  This will never be called if rootless_CompositePixels_threshold == 0.
  *
  *  width, height   Size of area to composite to in pizels
  *  function        Composite function built with RL_COMPOSITE_FUNCTION
@@ -326,7 +322,6 @@ typedef int (*RootlessCompositePixelsProc)
 
 /*
  * Copy area in frame to another part of frame. (Optional)
- *  This will never be called if rootless_CopyWindow_threshold == 0.
  *
  *  wid         Frame id
  *  dstNrects   Number of rectangles to copy

@@ -1,4 +1,6 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 520. Add accelerated rootless drawing support and fix bug in rootless
+      FillSpans (Torrey T. Lyons and John Harper).
  519. Update SiS driver:
       - Merge 661/741/760 support
       - Clean up
@@ -18022,7 +18024,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2898 2003/10/21 21:15:03 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2899 2003/10/23 15:33:29 twini Exp $
 
 
 

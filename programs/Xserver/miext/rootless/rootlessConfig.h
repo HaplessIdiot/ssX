@@ -26,13 +26,14 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootless.h,v 1.2 2002/08/28 06:41:26 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessConfig.h,v 1.1 2003/04/15 01:05:44 torrey Exp $ */
 
 #ifndef _ROOTLESSCONFIG_H
 #define _ROOTLESSCONFIG_H
 
 #ifdef __DARWIN__
 
+# define ROOTLESS_ACCEL TRUE
 # define ROOTLESS_GLOBAL_COORDS TRUE
 # define ROOTLESS_PROTECT_ALPHA TRUE
 # define ROOTLESS_REDISPLAY_DELAY 10

@@ -32,7 +32,7 @@
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  */
- /* $XFree86: xc/programs/Xserver/miext/rootless/safeAlpha/safeAlphaPicture.c,v 1.1 2003/09/16 00:36:20 torrey Exp $ */
+ /* $XFree86: xc/programs/Xserver/miext/rootless/safeAlpha/safeAlphaPicture.c,v 1.2 2003/10/18 00:00:34 torrey Exp $ */
 
 #ifdef RENDER
 
@@ -155,8 +155,8 @@ SafeAlphaCompositeSolidMask_nx8x8888(
     fbComposeGetStart (pMask, xMask, yMask, CARD8, maskStride, maskLine, 1);
 
     if (dstMask == FB_ALLONES && pDst->pDrawable->bitsPerPixel == 32 &&
-	rootless_CompositePixels_threshold &&
-        width * height > rootless_CompositePixels_threshold)
+        width * height > rootless_CompositePixels_threshold &&
+        SCREENREC(pDst->pDrawable->pScreen)->imp->CompositePixels)
     {
 	void *srcp[2], *destp[2];
 	unsigned int dest_rowbytes[2];
