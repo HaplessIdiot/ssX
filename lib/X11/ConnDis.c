@@ -1,5 +1,5 @@
 /* $XConsortium: ConnDis.c,v 11.121 94/04/17 20:18:53 mor Exp $ */
-/* $XFree86: xc/lib/X11/ConnDis.c,v 3.0 1994/04/28 12:31:02 dawes Exp $ */
+/* $XFree86: xc/lib/X11/ConnDis.c,v 3.1 1994/05/08 05:15:10 dawes Exp $ */
 /*
  
 Copyright (c) 1989  X Consortium
@@ -160,7 +160,7 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
     /* check if phostname == localnodename */
     if (phostname && uname(&sys) >= 0 &&
 	!strncmp(phostname, sys.nodename, strlen(sys.nodename)))
-	phostname = "unix";
+	phostname = copystring("unix", 4);
 #endif
 
 

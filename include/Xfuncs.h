@@ -1,5 +1,6 @@
 /*
  * $XConsortium: Xfuncs.h,v 1.15 94/04/17 20:10:50 rws Exp $
+ * $XFree86$
  * 
  * 
 Copyright (c) 1990  X Consortium
@@ -77,6 +78,7 @@ int bcmp();
 #include <memory.h>
 #define memmove(dst,src,len) bcopy((char *)(src),(char *)(dst),(int)(len))
 #if defined(SYSV) && defined(_XBCOPYFUNC)
+#undef memmove
 #define memmove(dst,src,len) _XBCOPYFUNC((char *)(src),(char *)(dst),(int)(len))
 #define _XNEEDBCOPYFUNC
 #endif

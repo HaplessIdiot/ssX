@@ -1,5 +1,6 @@
 #!/bin/sh
 
+# $XFree86$
 #
 # This accepts bsd-style install arguments and makes the appropriate calls
 # to the System V install.
@@ -128,6 +129,11 @@ fi
 if [ x$dostrip = xstrip ]
 then
 	strip $dst/$srcbase
+fi
+
+if [ x$mode != x ]
+then
+	chmod $mode $dst/$srcbase
 fi
 
 # and clean up
