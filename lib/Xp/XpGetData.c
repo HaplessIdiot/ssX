@@ -34,12 +34,12 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86: xc/lib/Xp/XpGetData.c,v 1.3 2000/09/26 15:56:57 tsi Exp $ */
+/* $XFree86: xc/lib/Xp/XpGetData.c,v 1.4 2001/01/17 19:43:02 dawes Exp $ */
 
 #define NEED_REPLIES
 
-#include "Printstr.h"
-#include "Xlibint.h"
+#include <X11/extensions/Printstr.h>
+#include <X11/Xlibint.h>
 #include "XpExtUtil.h"
 
 #define MAX_XP_BUFFER_SIZE 32768

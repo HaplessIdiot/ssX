@@ -1,5 +1,5 @@
 /* $XConsortium: XF86VMode.c /main/2 1995/11/14 18:17:58 kaleb $ */
-/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.31 2001/05/07 20:11:13 mvojkovi Exp $ */
+/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.32 2001/07/25 15:04:54 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -35,17 +35,10 @@ from Kaleb S. KEITHLEY.
 
 #define NEED_EVENTS
 #define NEED_REPLIES
-#ifndef XBUILD_IN_CLIENT
-#include "Xlibint.h"
-#include "xf86vmstr.h"
-#include "Xext.h"
-#include "extutil.h"
-#else
-#include "lib/X11/Xlibint.h"
-#include "include/extensions/xf86vmstr.h"
-#include "include/extensions/Xext.h"
-#include "include/extensions/extutil.h"
-#endif
+#include <X11/Xlibint.h>
+#include <X11/extensions/xf86vmstr.h>
+#include <X11/extensions/Xext.h>
+#include <X11/extensions/extutil.h>
 
 #ifdef DEBUG
 #include <stdio.h>

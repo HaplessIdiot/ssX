@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/lib/Xi/XChgFCtl.c,v 3.2 2001/01/17 19:42:47 dawes Exp $ */
+/* $XFree86: xc/lib/Xi/XChgFCtl.c,v 3.3 2001/12/14 19:55:03 dawes Exp $ */
 
 /***********************************************************************
  *
@@ -54,11 +54,11 @@ SOFTWARE.
  *
  */
 
-#include "XI.h"
-#include "XIproto.h"
-#include "Xlibint.h"
-#include "XInput.h"
-#include "extutil.h"
+#include <X11/extensions/XI.h>
+#include <X11/extensions/XIproto.h>
+#include <X11/Xlibint.h>
+#include <X11/extensions/XInput.h>
+#include <X11/extensions/extutil.h>
 #include "XIint.h"
 
 int

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xxf86vm/Imakefile,v 3.0 1996/01/16 15:01:52 dawes Exp $
+XCOMM $XFree86: xc/lib/Xxf86vm/Imakefile,v 3.2 2002/09/16 18:05:27 eich Exp $
 #define DoNormalLib NormalLibXxf86vm
 #define DoSharedLib SharedLibXxf86vm
 #define DoExtraLib SharedLibXxf86vm
@@ -22,7 +22,6 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 
       DEFINES = $(ALLOC_DEFINES)
-     INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC)
          SRCS = $(VIDMODESRCS)
          OBJS = $(VIDMODEOBJS)
      LINTLIBS = $(LINTXLIB)

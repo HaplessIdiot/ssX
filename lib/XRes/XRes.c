@@ -1,17 +1,17 @@
 /*
    Copyright (c) 2002  XFree86 Inc
 */
-/* $XFree86: xc/lib/XRes/XRes.c,v 1.2 2002/03/05 04:32:37 mvojkovi Exp $ */
+/* $XFree86: xc/lib/XRes/XRes.c,v 1.3 2002/03/10 22:06:53 mvojkovi Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
 #include <stdlib.h>
 #include <X11/Xlibint.h>
 #include <X11/Xutil.h>
-#include "Xext.h"
-#include "extutil.h"
-#include "XResproto.h"
-#include "XRes.h"
+#include <X11/extensions/Xext.h>
+#include <X11/extensions/extutil.h>
+#include <X11/extensions/XResproto.h>
+#include <X11/extensions/XRes.h>
 
 
 static XExtensionInfo _xres_ext_info_data;

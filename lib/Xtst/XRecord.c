@@ -50,17 +50,17 @@ from The Open Group.
 /*
  * By Stephen Gildea, X Consortium, and Martha Zimet, NCD.
  */
-/* $XFree86: xc/lib/Xtst/XRecord.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/lib/Xtst/XRecord.c,v 1.5 2002/09/18 17:11:43 tsi Exp $ */
 
 #include <stdio.h>
 #include <assert.h>
 #define NEED_EVENTS
 #define NEED_REPLIES
 #include <X11/Xlibint.h>
-#include "Xext.h"
+#include <X11/extensions/Xext.h>
 #include <X11/Xtrans.h>
-#include "extutil.h"
-#include "recordstr.h"
+#include <X11/extensions/extutil.h>
+#include <X11/extensions/recordstr.h>
 
 extern unsigned long _XSetLastRequestRead();
 

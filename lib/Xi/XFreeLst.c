@@ -45,6 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
+/* $XFree86$ */
 
 /***********************************************************************
  *
@@ -53,7 +54,7 @@ SOFTWARE.
  */
 
 #include <stdio.h>
-#include "Xlib.h"
+#include <X11/Xlib.h>
 
 /***********************************************************************
  *

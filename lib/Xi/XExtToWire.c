@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/lib/Xi/XExtToWire.c,v 3.3 2001/08/01 00:44:39 tsi Exp $ */
+/* $XFree86: xc/lib/Xi/XExtToWire.c,v 3.4 2001/12/14 19:55:11 dawes Exp $ */
 
 /****************************************************************
  *
@@ -55,13 +55,12 @@ SOFTWARE.
 #define NEED_EVENTS
 #define NEED_REPLIES
 
-#include "Xlibint.h"
-#include "XInput.h"
-#include "XIproto.h"
-#include "extutil.h"
+#include <X11/extensions/XIproto.h>
+#include <X11/Xlibint.h>
+#include <X11/extensions/XInput.h>
+#include <X11/extensions/extutil.h>
 #include "XIint.h"
 
-Status
 _XiEventToWire(dpy, re, event, count)
     register Display *dpy;	/* pointer to display structure */
     register XEvent *re;	/* pointer to client event */
