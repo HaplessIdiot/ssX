@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include <stdio.h>
 #include <X11/Xlib.h>
 #include "Xrandr.h"
