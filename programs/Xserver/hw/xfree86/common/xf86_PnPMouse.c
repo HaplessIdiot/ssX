@@ -1,9 +1,25 @@
-/* $XFree86:$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_PnPMouse.c,v 1.1 1998/02/07 09:10:38 hohndel Exp $ */
 
 /*
  * Copyright 1998 by Kazutaka YOKOTA <yokota@zodiac.mech.utsunomiya-u.ac.jp>
  *
- * The standard copyright notice should come here... (not completed yet)
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Kazutaka YOKOTA not be used in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific, written prior permission.  Kazutaka YOKOTA makes no representations
+ * about the suitability of this software for any purpose.  It is provided
+ * "as is" without express or implied warranty.
+ *
+ * KAZUTAKA YOKOTA DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ * EVENT SHALL KAZUTAKA YOKOTA BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
  */
 
 #define NEED_EVENTS
@@ -17,6 +33,14 @@
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
 #include "xf86_Config.h"
+
+#ifdef ISC
+#define TIOCMGET	0x5415
+#define TIOCMBIS	0x5416
+#define TIOCMSET	0x5418
+#define	TIOCM_DTR	0x002
+#define	TIOCM_RTS	0x004
+#endif
 
 /* serial PnP ID string */
 typedef struct {
@@ -45,6 +69,7 @@ static symtab_t pnpprod[] = {
     { "MSH0001",	P_IMSERIAL },	/* MS IntelliMouse */
     { "MSH0004",	P_IMSERIAL },	/* MS IntelliMouse TrackBall */
     { "KYEEZ00",	P_MS },		/* Genius EZScroll */
+    { "KYE0001",	P_MS },		/* Genius PnP Mouse */
     { "KYE0003",	P_IMSERIAL },	/* Genius NetMouse */
     { "LGI800C",	P_IMSERIAL },	/* Logitech MouseMan (4 button model) */
     { "LGI8050",	P_IMSERIAL },	/* Logitech MouseMan+ */
@@ -145,6 +170,7 @@ MouseDevPtr mouse;
 	return -1;
     if ((t = pnpproto(&pnpid)) == NULL)
 	return -1;
+    ErrorF("Mouse: protocol: %d\n", t->val);
     return (t->val);
 }
 
@@ -200,8 +226,7 @@ char *buf;
     usleep(200000);
 
     /* wait for response, 1st phase (2.1.4) */
-    i = FREAD;
-    ioctl(mouse->mseFd, TIOCFLUSH, &i);
+    xf86FlushInput(mouse->mseFd);
     i = TIOCM_RTS;		/* DTR = 1, RTS = 1 */
     ioctl(mouse->mseFd, TIOCMBIS, &i);
 
@@ -218,8 +243,7 @@ char *buf;
         usleep(200000);
 
 	/* wait for respose, 2nd phase (2.1.6) */
-        i = FREAD;
-        ioctl(mouse->mseFd, TIOCFLUSH, &i);
+	xf86FlushInput(mouse->mseFd);
         i = TIOCM_DTR | TIOCM_RTS;	/* DTR = 1, RTS = 1 */
         ioctl(mouse->mseFd, TIOCMBIS, &i);
 
@@ -245,8 +269,7 @@ char *buf;
     xf86SetMouseSpeed(mouse, 1200, 1200, (CS7 | CREAD | CLOCAL | HUPCL));
 
     /* wait for respose */
-    i = FREAD;
-    ioctl(mouse->mseFd, TIOCFLUSH, &i);
+    xf86FlushInput(mouse->mseFd);
     i = TIOCM_DTR | TIOCM_RTS;	/* DTR = 1, RTS = 1 */
     ioctl(mouse->mseFd, TIOCMBIS, &i);
 

@@ -67,7 +67,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: misc.h /main/28 1996/12/02 10:22:01 lehors $ */
-/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.7 1997/04/12 13:47:09 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.8 1998/01/24 16:59:00 hohndel Exp $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*
@@ -189,13 +189,16 @@ typedef struct _xReq *xReqPtr;
  */
 #define lowbit(x) ((x) & (~(x) + 1))
 
+#ifdef linux
+#include <values.h>
+#else
 #ifndef MAXSHORT
 #define MAXSHORT 32767
 #endif
 #ifndef MINSHORT
 #define MINSHORT -MAXSHORT 
 #endif
-
+#endif
 
 /* some macros to help swap requests, replies, and events */
 

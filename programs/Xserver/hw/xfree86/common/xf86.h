@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.69 1998/01/24 16:57:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.70 1998/02/07 08:58:13 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -445,6 +445,7 @@ extern Bool        xf86VTSema;
 #define MSE_MAPTOX		(-1)
 #define MSE_MAPTOY		(-2)
 #define MSE_MAXBUTTONS		12
+#define MSE_DFLTBUTTONS		3
 
 typedef struct _MouseDevRec {
     DeviceProc    mseProc;              /* procedure for initializing */
@@ -463,6 +464,7 @@ typedef struct _MouseDevRec {
     int           sampleRate;
     int           lastButtons;
     int           threshold, num, den;  /* acceleration */
+    int           buttons;		/* # of buttons */
     int           emulateState;         /* automata state for 2 button mode */
     Bool          emulate3Buttons;
     int           emulate3Timeout;      /* Timeout for 3 button emulation */
