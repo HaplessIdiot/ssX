@@ -15,7 +15,7 @@
 <date>15 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.111 2001/02/09 04:15:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.112 2001/03/02 17:40:48 dawes Exp $
 </ident>
 
 <abstract>
@@ -79,6 +79,10 @@ is supported before upgrading to the 4.x series.
 
 Specific release enhancements can be viewed in the
 <htmlurl name="Release Notes" url="RELNOTES.html">.
+
+The XFree86 version numbering system has had some changes as of the
+4.0.2 release.  Information about this can be found in the
+<htmlurl name="Versions Document" url="Versions.html">.
 
 Information about binary distributions and the attendant installation
 instructions can be found in the <htmlurl name="Installation Document"
