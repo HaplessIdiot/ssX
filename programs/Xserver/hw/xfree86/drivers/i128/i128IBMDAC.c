@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128IBMDAC.c,v 1.1 2000/10/04 23:34:59 robin Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -155,15 +155,19 @@ I128IBMRealizeCursor(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
 void 
 I128IBMShowCursor(ScrnInfoPtr pScrn)
 {
-   CARD32 tmp;
+   CARD32 tmpl, tmph;
    I128Ptr pI128 = I128PTR(pScrn);
 
    /* Enable cursor - X11 mode */
-   tmp = pI128->mem.rbase_g[IDXL_I] & 0xFF;
+   tmpl = pI128->mem.rbase_g[IDXL_I] & 0xFF;
+   tmph = pI128->mem.rbase_g[IDXH_I] & 0xFF;
+   pI128->mem.rbase_g[IDXCTL_I] = 0;					MB;
+   pI128->mem.rbase_g[IDXH_I] = 0;					MB;
    pI128->mem.rbase_g[IDXL_I] = IBMRGB_curs;				MB;
    pI128->mem.rbase_g[DATA_I] = 0x27;					MB;
 
-   pI128->mem.rbase_g[IDXL_I] = tmp;					MB;
+   pI128->mem.rbase_g[IDXH_I] = tmph;					MB;
+   pI128->mem.rbase_g[IDXL_I] = tmpl;					MB;
 
    return;
 }
@@ -171,15 +175,19 @@ I128IBMShowCursor(ScrnInfoPtr pScrn)
 void
 I128IBMHideCursor(ScrnInfoPtr pScrn)
 {
-   CARD32 tmp, tmp1;
+   CARD32 tmpl, tmph, tmp1;
    I128Ptr pI128 = I128PTR(pScrn);
 
-   tmp = pI128->mem.rbase_g[IDXL_I] & 0xFF;
+   tmpl = pI128->mem.rbase_g[IDXL_I] & 0xFF;
+   tmph = pI128->mem.rbase_g[IDXH_I] & 0xFF;
+   pI128->mem.rbase_g[IDXCTL_I] = 0;					MB;
+   pI128->mem.rbase_g[IDXH_I] = 0;					MB;
    pI128->mem.rbase_g[IDXL_I] = IBMRGB_curs;				MB;
    tmp1 = pI128->mem.rbase_g[DATA_I] & 0xFC;
    pI128->mem.rbase_g[DATA_I] = tmp1;					MB;
 
-   pI128->mem.rbase_g[IDXL_I] = tmp;					MB;
+   pI128->mem.rbase_g[IDXH_I] = tmph;					MB;
+   pI128->mem.rbase_g[IDXL_I] = tmpl;					MB;
 
    return;
 }
@@ -187,14 +195,16 @@ I128IBMHideCursor(ScrnInfoPtr pScrn)
 void
 I128IBMSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 {
-   CARD32 tmp;
+   CARD32 tmpl, tmph;
    I128Ptr pI128 = I128PTR(pScrn);
 
    x += 64;
    y += 64;
 
-   tmp = pI128->mem.rbase_g[IDXL_I] & 0xFF;
+   tmpl = pI128->mem.rbase_g[IDXL_I] & 0xFF;
+   tmph = pI128->mem.rbase_g[IDXH_I] & 0xFF;
 
+   pI128->mem.rbase_g[IDXH_I] = 0;					MB;
    pI128->mem.rbase_g[IDXL_I] = IBMRGB_curs_hot_x;			MB;
    pI128->mem.rbase_g[DATA_I] = 0x3F;					MB;
    pI128->mem.rbase_g[IDXL_I] = IBMRGB_curs_hot_y;			MB;
@@ -208,7 +218,8 @@ I128IBMSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
    pI128->mem.rbase_g[IDXL_I] = IBMRGB_curs_yh;				MB;
    pI128->mem.rbase_g[DATA_I] = (y >> 8) & 0x0F;			MB;
 
-   pI128->mem.rbase_g[IDXL_I] = tmp;					MB;
+   pI128->mem.rbase_g[IDXH_I] = tmph;					MB;
+   pI128->mem.rbase_g[IDXL_I] = tmpl;					MB;
 
    return;
 }
@@ -252,8 +263,6 @@ I128IBMLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
    tmpc = pI128->mem.rbase_g[IDXCTL_I] & 0xFF;
    tmph = pI128->mem.rbase_g[IDXH_I] & 0xFF;
    tmpl = pI128->mem.rbase_g[IDXL_I] & 0xFF;
-
-   pI128->mem.rbase_g[IDXL_I] = IBMRGB_curs;				MB;
 
    pI128->BlockCursor = TRUE;
 
