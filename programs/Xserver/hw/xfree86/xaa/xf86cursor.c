@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cursor.c,v 3.2 1997/09/19 11:24:37 hohndel Exp $ */
 /*
  * Copyright 1996  The XFree86 Project
  *
@@ -107,11 +107,6 @@ static void RecolorCursor(ScreenPtr pScr, CursorPtr pCurs, Bool displayed);
 static void LoadCursor(ScreenPtr pScr, CursorPtr pCurs, int x, int y);
 static void LoadCursorToCard(ScreenPtr pScr, CursorPtr pCurs, int xoffset,
     int yoffset);
-
-
-/*
- * Functions that are part of the higher level interface.
- */
 
 /*
  * This is a high-level init function, called once; it passes a local
@@ -573,7 +568,7 @@ static void RecolorCursor(ScreenPtr pScr, CursorPtr pCurs, Bool displayed)
     if (xf86AccelInfoRec.BitsPerPixel == 8 &&
     !(XAACursorInfoRec.Flags & HARDWARE_CURSOR_TRUECOLOR_AT_8BPP)) {
         xColorItem sourceColor, maskColor;
-        vgaGetInstalledColormaps(pScr, &pmap);
+        XAACursorInfoRec.GetInstalledColormaps(pScr, &pmap);
 	sourceColor.red = pCurs->foreRed;
 	sourceColor.green = pCurs->foreGreen;
 	sourceColor.blue = pCurs->foreBlue;

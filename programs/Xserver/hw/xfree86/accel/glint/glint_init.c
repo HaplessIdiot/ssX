@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_init.c,v 1.5 1997/09/09 10:27:41 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_init.c,v 1.7 1997/09/19 08:30:00 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -117,10 +117,10 @@ static int partprodPermedia[] = {
 	             -1,              -1,              -1, PARTPROD(4,5,5), 
 	             -1,              -1,              -1,              -1,
 	             -1,              -1,              -1, PARTPROD(5,5,5), 
+	PARTPROD(1,5,6), PARTPROD(2,5,6),              -1, PARTPROD(3,5,6),
+	             -1,              -1,              -1, PARTPROD(4,5,6),
 	             -1,              -1,              -1,              -1,
-	             -1,              -1,              -1,              -1,
-	             -1,              -1,              -1,              -1,
-	             -1,              -1,              -1,              -1,
+	             -1,              -1,              -1, PARTPROD(5,5,6),
 	             -1,              -1,              -1,              -1,
 	             -1,              -1,              -1,              -1,
 	             -1,              -1,              -1,              -1,
@@ -145,9 +145,9 @@ Shiftbpp(int value)
 	
     int logbytesperaccess;
 	
-    if (coprotype == PCI_CHIP_3DLABS_500TX)
+    if (IS_3DLABS_TX_MX_CLASS(coprotype))
 	logbytesperaccess = 3;
-    else if (coprotype == PCI_CHIP_3DLABS_PERMEDIA)
+    else if (IS_3DLABS_PERMEDIA_CLASS(coprotype))
 	logbytesperaccess = 2;
 
     switch (glintInfoRec.bitsPerPixel) {
@@ -190,34 +190,36 @@ glintCalcCRTCRegs(glintCRTCRegPtr crtcRegs, DisplayModePtr mode)
 
     crtcRegs->pitch		= mode->CrtcHDisplay;
 
-    if (coprotype == PCI_CHIP_3DLABS_500TX) {
+    if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
 	crtcRegs->vtgpolarity = 
 	    (((mode->Flags & V_PHSYNC) ? 0 : 2) << 2) | 
 	    ((mode->Flags & V_PVSYNC) ? 0 : 2) | (0xb0);
     }
-    else if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) {
+    else if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
 	crtcRegs->vtgpolarity = 
  	    (((mode->Flags & V_PHSYNC) ? 0x1 : 0x3) << 3) |  
  	    (((mode->Flags & V_PVSYNC) ? 0x1 : 0x3) << 5) | 1; 
     }
 
     crtcRegs->clock_sel = glintInfoRec.clock[mode->Clock];
-    if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) 
-	{
-	    crtcRegs->vclkctl = 0x03 | 
-	      (((33*10000*6 + (crtcRegs->clock_sel-1)) / crtcRegs->clock_sel) << 2);
-	}
-    else
-	{
-	    /*
-	     * tell DAC to use the ICD chip clock 0 as ref clock 
-	     * and set up some more video timining generator registers
-	     */
-	    crtcRegs->vclkctl = 0x00;
-	    crtcRegs->vtgserialclk = 0x05;
-	    crtcRegs->fbmodesel = 0xa07; /* 4way interleave */
-	    crtcRegs->vtgmodectl = 0x44;
-	}
+    if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
+	crtcRegs->vclkctl = 0x03 | 
+	  (((33*10000*6 + (crtcRegs->clock_sel-1)) / crtcRegs->clock_sel) << 2);
+    }
+    else if (IS_3DLABS_PM2_CLASS(coprotype)) {
+        crtcRegs->vclkctl = 0x02 |
+	  (((33*10000*6 + (crtcRegs->clock_sel-1)) / crtcRegs->clock_sel) << 2);
+    }
+    else {
+	/*
+	 * tell DAC to use the ICD chip clock 0 as ref clock 
+	 * and set up some more video timining generator registers
+	 */
+	crtcRegs->vclkctl = 0x00;
+	crtcRegs->vtgserialclk = 0x05;
+	crtcRegs->fbmodesel = 0xa07; /* 4way interleave */
+	crtcRegs->vtgmodectl = 0x44;
+    }
 }
 
 void
@@ -225,7 +227,7 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 {
     unsigned long usData;
 
-    if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) {
+    if (IS_3DLABS_PM_FAMILY(coprotype)) {
 	pprod = partprodPermedia[crtcRegs->pitch >> 5];
     } else {
 	pprod = partprod500TX[crtcRegs->pitch >> 5];
@@ -235,10 +237,10 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
      * in order to set up a mode we need to do a few more
      * things here than just set up the CRTC regs...
      */
-    if (coprotype == PCI_CHIP_3DLABS_500TX) {
+    if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
 	GLINT_WRITE_REG(crtcRegs->vtgpolarity,	VTGPolarity);
     }
-    else if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) {
+    else if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
 	GLINT_WRITE_REG(crtcRegs->vtgpolarity,	PMVideoControl);
     }
 
@@ -252,7 +254,7 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 	FatalError("Can't handle pitch %d\n",crtcRegs->pitch);
     }
 
-    if (coprotype == PCI_CHIP_3DLABS_500TX) {
+    if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
 	GLINT_WRITE_REG(pprod | 0x600,	LBReadMode);
 	GLINT_WRITE_REG(0x01,		LBWriteMode);
    }
@@ -270,7 +272,7 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
     /*
      * this one depends on the color depth
      */  
-    if (coprotype == PCI_CHIP_3DLABS_500TX) {
+    if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
 	switch (glintInfoRec.bitsPerPixel) {
 	case 8:
 	    GLINT_WRITE_REG(0x400 | (0x0e << 2) | 0,DitherMode);
@@ -298,7 +300,7 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 	GLINT_WRITE_REG(0xffffffff,	FBHardwareWriteMask);
 	GLINT_WRITE_REG(0xffffffff,	FBSoftwareWriteMask);
 	GLINT_WRITE_REG(0x0,		RasterizerMode);
-	GLINT_WRITE_REG(0x0,		Depth);
+	GLINT_WRITE_REG(0x0,		GLINTDepth);
 	GLINT_WRITE_REG(0x0,		FBSourceOffset);
 	GLINT_WRITE_REG(0x0,		FBPixelOffset);
 	GLINT_WRITE_REG(0x0,		LBSourceOffset);
@@ -318,19 +320,20 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 	    break;
 	}
     }
-    else if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) {
-	switch (glintInfoRec.depth) {
+    else if (IS_3DLABS_PM_FAMILY(coprotype)) {
+	switch (glintInfoRec.bitsPerPixel) {
 	case 8:
-	  GLINT_WRITE_REG(0x0, FBReadPixel);
+	  GLINT_WRITE_REG(0x0, FBReadPixel); /* 8 Bits */
 	  break;
-	case 15: case 16:
-	  GLINT_WRITE_REG(0x1, FBReadPixel);
+	case 16:
+	  GLINT_WRITE_REG(0x1, FBReadPixel); /* 16 Bits */
 	  break;
-	case 24: case 32:
-	  GLINT_WRITE_REG(0x2, FBReadPixel);
+	case 32:
+	  GLINT_WRITE_REG(0x2, FBReadPixel); /* 32 Bits */
 	  break;
 	}
 
+	/*  Framebufferorganisation */
 	GLINT_WRITE_REG(0x0,		DitherMode);
 	GLINT_WRITE_REG(0x3000,		AlphaBlendMode);
 	GLINT_WRITE_REG(0x0,		ColorDDAMode);
@@ -345,7 +348,7 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 	GLINT_WRITE_REG(0xffffffff,	FBHardwareWriteMask);
 	GLINT_WRITE_REG(0xffffffff,	FBSoftwareWriteMask);
 	GLINT_WRITE_REG(0x0,		RasterizerMode);
-	GLINT_WRITE_REG(0x0,		Depth);
+	GLINT_WRITE_REG(0x0,		GLINTDepth);
 	GLINT_WRITE_REG(0x0,		FBSourceOffset);
 	GLINT_WRITE_REG(0x0,		FBPixelOffset);
 	GLINT_WRITE_REG(0x0,		LBSourceOffset);
@@ -354,7 +357,7 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 	GLINT_WRITE_REG(0x0,		LBWindowBase);
     }
 
-    if (coprotype == PCI_CHIP_3DLABS_500TX) {
+    if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
 	GLINT_WRITE_REG(0x0,		TextureAddressMode);
 	GLINT_WRITE_REG(0x0,		TextureReadMode);
 	GLINT_WRITE_REG(0x0,		RouterMode);
@@ -391,14 +394,40 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 	GLINT_WRITE_REG(crtcRegs->v_blank_end-1,VTGVGateStart);
 	GLINT_WRITE_REG(crtcRegs->v_blank_end,	VTGVGateEnd);
     } 
-    else if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) {
-      
+    else if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
       /* Max dotclock is 80 kHz for Permedia 8Mb */
-      if (!glintInfoRec.dacSpeeds[0] && 
-	  crtcRegs->clock_sel > 80000 && 
-	  coprotype == PCI_CHIP_3DLABS_PERMEDIA)
- 	FatalError("Pixelclock ist to high for permedia = %d MHz.\nMax mode clock <= 80 MHz. \n",
- 		   crtcRegs->clock_sel/1000);
+	if (glintInfoRec.dacSpeeds[0] || glintInfoRec.dacSpeeds[1] || 
+	    glintInfoRec.dacSpeeds[2] || glintInfoRec.dacSpeeds[3])
+	  {
+	    /* the 4MB Gloria-S have Errors wich clockspeed > 80MHz !? */
+	    if (glintInfoRec.videoRam > 4096)
+	      {
+		if (crtcRegs->clock_sel > 80000)  
+		  FatalError("Pixelclock ist to high for permedia and ,,no_accel'' Mode = %d MHz.\nMax mode clock <= 80 MHz. \n", crtcRegs->clock_sel/1000);
+	      }
+	    else
+	      switch (glintInfoRec.depth) 
+		{
+		case 8: 
+		  if (crtcRegs->clock_sel > 200000) 
+		    FatalError("Pixelclock ist to high for permedia Mode = %d MHz.\nMax mode clock <= 200 MHz. \n",
+			       crtcRegs->clock_sel/1000);
+		  break;
+		case 15: 
+		case 16:
+		case 32: /* 32 bpp have tested with 8Mb Gloria-S */
+		  ErrorF("Test Clock_sel = %d \n", crtcRegs->clock_sel);
+		  if (crtcRegs->clock_sel > 100000) 
+		    FatalError("Pixelclock ist to high for permedia Mode = %d MHz.\nMax mode clock <= 100 MHz. \n",
+			       crtcRegs->clock_sel/1000);
+		  break;
+		default:
+		  if (crtcRegs->clock_sel > 50000) 
+		    FatalError("Pixelclock ist to high for permedia Mode = %d MHz.\nMax mode clock <= 50 MHz. \n",
+			       crtcRegs->clock_sel/1000);
+		  break;
+		}
+	  }
 
       GLINT_WRITE_REG(0x0,			TextureAddressMode);
       GLINT_WRITE_REG(0x0,			TextureReadMode);
@@ -425,20 +454,26 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 	GLINT_WRITE_REG(crtcRegs->v_sync_end-1,	PMVsEnd);
     }
 
-    IBMRGB52x_Init_Stdmode(crtcRegs->clock_sel);
+    if (IS_3DLABS_TX_MX_CLASS(coprotype)|| 
+        IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
+	IBMRGB52x_Init_Stdmode(crtcRegs->clock_sel);
+    }
+    else if (IS_3DLABS_PM2_CLASS(coprotype) ) {
+    	PM2DACInit(crtcRegs->clock_sel);
+    }
   
-    if (coprotype == PCI_CHIP_3DLABS_500TX) 
-	{
-	    GLINT_WRITE_REG(crtcRegs->fbmodesel, FBModeSel);
-	} 
+    if (IS_3DLABS_TX_MX_CLASS(coprotype))
+    {
+	GLINT_WRITE_REG(crtcRegs->fbmodesel, FBModeSel);
+    } 
 }
 
 void
 saveGLINTstate()
 {
-    int i;unsigned short usData;
+    int i;
 
-    if (coprotype == PCI_CHIP_3DLABS_500TX) {
+    if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
 	SR.glintRegs[0] = GLINT_READ_REG(VTGHLimit);
 	SR.glintRegs[1] = GLINT_READ_REG(VTGHSyncStart);
 	SR.glintRegs[2] = GLINT_READ_REG(VTGHSyncEnd);
@@ -449,7 +484,7 @@ saveGLINTstate()
 	SR.glintRegs[7] = GLINT_READ_REG(VTGVBlankEnd);
 	SR.glintRegs[8] = GLINT_READ_REG(VTGPolarity);
 
-    } else if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) {
+    } else if (IS_3DLABS_PM_FAMILY(coprotype)) {
 	SR.glintRegs[5] = GLINT_READ_REG(PMScreenStride);
 	SR.glintRegs[6] = GLINT_READ_REG(PMHTotal);
 	SR.glintRegs[7] = GLINT_READ_REG(PMHbEnd);
@@ -481,7 +516,7 @@ restoreGLINTstate(void)
     glintDumpRegs();
 #endif
 
-    if (coprotype == PCI_CHIP_3DLABS_500TX) {
+    if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
 	GLINT_WRITE_REG(SR.glintRegs[0], VTGHLimit);
 	GLINT_WRITE_REG(SR.glintRegs[1], VTGHSyncStart);
 	GLINT_WRITE_REG(SR.glintRegs[2], VTGHSyncEnd);
@@ -495,8 +530,7 @@ restoreGLINTstate(void)
 	for (i=0; i<0x100; i++) 
 	    glintOutIBMRGBIndReg(i, 0, SR.DacRegs[i]);
 
-    } else if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) 
-	{
+    } else if (IS_3DLABS_PM_FAMILY(coprotype)) {
 	    GLINT_WRITE_REG(SR.glintRegs[8],  PMHgEnd);
 	    GLINT_WRITE_REG(SR.glintRegs[18], VClkCtl);
 	    GLINT_WRITE_REG(SR.glintRegs[16], PMScreenBase);
@@ -524,23 +558,28 @@ restoreGLINTstate(void)
 
 	    GLINT_WRITE_REG(SR.glintRegs[20], PMInterruptLine);
 
-	    /* restore ramdac */
-	    for (i=0; i<0x100; i++) 
-		glintOutIBMRGBIndReg(i, 0, SR.DacRegs[i]);
+	    if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
+		/* restore ramdac */
+		for (i=0; i<0x100; i++) 
+		    glintOutIBMRGBIndReg(i, 0, SR.DacRegs[i]);
 
-	    /* restore colors */
-	    GLINT_SLOW_WRITE_REG(0x00, IBMRGB_WRITE_ADDR);
-	    for (i=0; i<256; i++) {
-		GLINT_SLOW_WRITE_REG(oldlut[i].r,IBMRGB_RAMDAC_DATA);
-		GLINT_SLOW_WRITE_REG(oldlut[i].g,IBMRGB_RAMDAC_DATA);
-		GLINT_SLOW_WRITE_REG(oldlut[i].b,IBMRGB_RAMDAC_DATA);
+		/* restore colors */
+		GLINT_SLOW_WRITE_REG(0x00, IBMRGB_WRITE_ADDR);
+		for (i=0; i<256; i++) {
+		    GLINT_SLOW_WRITE_REG(oldlut[i].r,IBMRGB_RAMDAC_DATA);
+		    GLINT_SLOW_WRITE_REG(oldlut[i].g,IBMRGB_RAMDAC_DATA);
+		    GLINT_SLOW_WRITE_REG(oldlut[i].b,IBMRGB_RAMDAC_DATA);
+		}
+		/* switch to VGA */
+		GLINT_WRITE_REG((unsigned char)PERMEDIA_VGA_CTRL_INDEX, 
+		                PERMEDIA_MMVGA_INDEX_REG);
+		usData = GLINT_READ_REG(PERMEDIA_MMVGA_DATA_REG);
+		usData |= 
+		    ((PERMEDIA_VGA_ENABLE | PERMEDIA_VGA_MEMORYACCESS) << 8) | 
+		    PERMEDIA_VGA_CTRL_INDEX;
+		GLINT_WRITE_REG(usData, PERMEDIA_MMVGA_INDEX_REG);
 	    }
 
-	    /* switch to VGA */
-	    GLINT_WRITE_REG((unsigned char)PERMEDIA_VGA_CTRL_INDEX, PERMEDIA_MMVGA_INDEX_REG);
-	    usData = (unsigned short)GLINT_READ_REG(PERMEDIA_MMVGA_DATA_REG);
-	    usData |= ((PERMEDIA_VGA_ENABLE | PERMEDIA_VGA_MEMORYACCESS) << 8) | PERMEDIA_VGA_CTRL_INDEX;
-	    GLINT_WRITE_REG((unsigned short)usData, PERMEDIA_MMVGA_INDEX_REG);
 	}
 }
 
@@ -589,8 +628,7 @@ glintInit(DisplayModePtr mode)
     int i,j;
     unsigned short usData;
 
-    if (coprotype == PCI_CHIP_3DLABS_500TX) 
-	{
+    if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
 	    if (!glintInitialized)
 		saveGLINTstate();
 #ifdef COMPATIBELMODE
@@ -600,12 +638,12 @@ glintInit(DisplayModePtr mode)
 			   glintInfoRec.bitsPerPixel / 8);
 	    IBMRGB52x_Init(mode);
 #endif
-	}
+    }
 
     /*
      * this is hardwired for setting the FB and LB memory control
      */
-    if (coprotype == PCI_CHIP_3DLABS_500TX) {
+    if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
 	GLINT_WRITE_REG(0xdc000017,  LBMemoryEDO);
 	GLINT_WRITE_REG(0x60400800,  FBMemoryCtl);
 	GLINT_WRITE_REG(0xFFFFFFFF,  FBWrMaskk);
@@ -613,9 +651,11 @@ glintInit(DisplayModePtr mode)
     } 
 
 
-    if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) 
-	{
+    if (IS_3DLABS_PM_FAMILY(coprotype)) {
 	  permediapreinit();
+    }
+
+    if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
 	  
 	  /* switch to graphics Mode */
 	  GLINT_WRITE_REG((unsigned char)PERMEDIA_VGA_CTRL_INDEX, PERMEDIA_MMVGA_INDEX_REG);
@@ -623,7 +663,7 @@ glintInit(DisplayModePtr mode)
 	  usData &= ~PERMEDIA_VGA_ENABLE;
 	  usData = (usData << 8) | PERMEDIA_VGA_CTRL_INDEX;
 	  GLINT_WRITE_REG((unsigned short)usData, PERMEDIA_MMVGA_INDEX_REG);
-	}
+    }
 
     xf86memcpy(glintVideoMemSave, (unsigned char *)glintVideoMem, VGASize);
 #if MEMDEBUG
@@ -748,8 +788,7 @@ glintInitAperture(int screen_idx)
 {
     unsigned short usData;
   
-    if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) 
-	{
+    if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
 	    if (!glintInitialized)
 		{
 		    SR.glintRegs[0]  = GLINT_READ_REG(Aperture0);
@@ -879,14 +918,17 @@ glintDumpRegs()
     else
 	ErrorF("0x%08x       ",v);
     ErrorF("\n\n");
-    ErrorF("IBM RAMDAC  Register Dump\n");
-    for (i=0; i<0x100; i++)
+    if (IS_3DLABS_TX_MX_CLASS(coprotype) ||
+	IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
+	ErrorF("IBM RAMDAC  Register Dump\n");
+	for (i=0; i<0x100; i++)
 	{
 	    if( i % 8 == 0 )
 		ErrorF("\n 0x%04x\t",i);
 	    ErrorF("0x%02x ",glintInIBMRGBIndReg(i));
 	}
-    ErrorF("\n\n");
+	ErrorF("\n\n");
+    }
 }
 
 void

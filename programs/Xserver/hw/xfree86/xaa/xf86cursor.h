@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cursor.h,v 3.2 1997/09/19 11:24:38 hohndel Exp $ */
 typedef struct {
     int Flags;
     int MaxWidth;
@@ -10,6 +10,7 @@ typedef struct {
     void (*LoadCursorImage)(void *bits, int xorigin, int yorigin);
     void (*HideCursor)();
     void (*ShowCursor)();
+    int (*GetInstalledColormaps)();
 } XAACursorInfoRecType;
 
 enum {

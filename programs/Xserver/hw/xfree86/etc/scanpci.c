@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.46 1997/08/15 07:19:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.47 1997/08/26 10:01:32 hohndel Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -774,6 +774,9 @@ struct pci_vendor_device {
                             { 0x0140, "946C 01", NF },
                             { 0x1040, "946C 10", NF },
                             { 0x0000, (char *)NULL, NF } } },
+	{ 0x104c, "Texas Instruments", {
+			    { 0x3d07, "3DLabs Permedia 2", NF },
+                            { 0x0000, (char *)NULL, NF } } },
         { 0x105A, "Promise", {
                             { 0x5300, "DC5030", NF },
                             { 0x0000, (char *)NULL, NF } } },
@@ -894,6 +897,9 @@ struct pci_vendor_device {
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1281, "YOKOGAWA", {
                             { 0x0000, (char *)NULL, NF } } },
+        { 0x1C1C, "NVIDIA/SGS-Thomson", {
+                            { 0x0018, "RIVA 128", NF },
+                            { 0x0000, (char *)NULL, NF } } },
         { 0x1C1C, "Symphony", {
                             { 0x0001, "82C101", NF },
                             { 0x0000, (char *)NULL, NF } } },
@@ -905,6 +911,8 @@ struct pci_vendor_device {
                             { 0x0002, "GLINT 500TX", NF },
                             { 0x0003, "GLINT Delta", NF },
                             { 0x0004, "GLINT Permedia", NF },
+                            { 0x0006, "GLINT MX", NF },
+                            { 0x0007, "GLINT Permedia 2", NF },
 			    { 0x0000, (char *)NULL, NF } } } ,
         { 0x4005, "Avance", {
                             { 0x0000, (char *)NULL, NF } } },

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/IBMRGB.c,v 1.2 1997/09/09 10:27:39 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/IBMRGB.c,v 1.3 1997/09/12 09:23:11 hohndel Exp $ */
 /*
  * Copyright 1995 The XFree86 Project, Inc
  *
@@ -399,17 +399,17 @@ glintIBMRGB_Init()
     GLINT_SLOW_WRITE_REG(0, IBMRGB_INDEX_HIGH);        /* index high byte */
 }
 
-
+#if 0
 int IBMRGB52x_Init(DisplayModePtr mode)
 {
     unsigned char tmp, tmp2;
 
-    if (coprotype == PCI_CHIP_3DLABS_500TX) {
+    if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
 	/* uses 64bit wide VRAM
 	 * set VRAM size to 128/64 bit and disable VRAM mask */
 	glintOutIBMRGBIndReg(IBMRGB_misc1, 0, 0x31);
 	glintOutIBMRGBIndReg(IBMRGB_misc2, ~0x08, 0x47);
-    } else if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) {
+    } else if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
 	/* uses 32bit SDRAM
 	 * set 32bit and use LCK */
 	glintOutIBMRGBIndReg(IBMRGB_misc1, 0, 0x30);
@@ -433,29 +433,9 @@ int IBMRGB52x_Init(DisplayModePtr mode)
     else
 	glintOutIBMRGBIndReg(IBMRGB_misc3, 0, 0);
 
-#if 0
-    if (OFLG_ISSET(OPTION_IBMRGB_CURS, &glintInfoRec.options)) {
-	/* enable interlaced cursor;
-	   not very useful without CR45 bit 5 set, but anyway */
-	if (mode->Flags & V_INTERLACE) {
-	    static int already = 0;
-	    if (!already) {
-		already++;
-		ErrorF("%s %s: IBMRGB hardware cursor in interlaced modes "
-		       "doesn't work correctly,\n"
-		       "\tplease use Option \"sw_cursor\" when using "
-		       "interlaced modes!\n"
-		       ,XCONFIG_PROBED, glintInfoRec.name);
-	    }
-	    glintOutIBMRGBIndReg(TI_CURS_CONTROL, ~0x60, 0x60);
-	}
-	else
-	    glintOutIBMRGBIndReg(TI_CURS_CONTROL, ~0x60, 0x00);
-    }
-#endif
     return 1;
 }
-
+#endif
 
 int IBMRGB52x_Init_Stdmode(int clock)
 {
@@ -472,34 +452,32 @@ int IBMRGB52x_Init_Stdmode(int clock)
        2 = 1 -> Standard Mode - program with N, M, P, and C registers */
     /* glintOutIBMRGBIndReg(IBMRGB_sysclk, 0, 0x05); */
 
-    if (coprotype == PCI_CHIP_3DLABS_500TX) {
+    if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
 	glintOutIBMRGBIndReg(IBMRGB_misc1, 0, SENS_DSAB_DISABLE | VRAM_SIZE_64);
-	glintOutIBMRGBIndReg(IBMRGB_misc2, 0, COL_RES_8BIT | PORT_SEL_VRAM |
-			     PCLK_SEL_PLL);
-
-    } else if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) 
-    {
-	glintOutIBMRGBIndReg(IBMRGB_misc1, 0, SENS_DSAB_DISABLE | VRAM_SIZE_32);
 	glintOutIBMRGBIndReg(IBMRGB_misc2, 0, COL_RES_8BIT | PORT_SEL_VRAM | PCLK_SEL_PLL);
+
+    } else if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
+	glintOutIBMRGBIndReg(IBMRGB_misc1, 0, SENS_DSAB_DISABLE | VRAM_SIZE_32);
+	if (glintInfoRec.depth == 32)
+	  glintOutIBMRGBIndReg(IBMRGB_misc2, 0, COL_RES_8BIT | PORT_SEL_VRAM | PCLK_SEL_LCLK);
+	else
+	  glintOutIBMRGBIndReg(IBMRGB_misc2, 0, COL_RES_8BIT | PORT_SEL_VRAM | PCLK_SEL_PLL);
     }
 
-#if 0
-    /* Byteswap for True Color */
+     /* this is a hack for accelerated 16 bpp mode for 3.9o, which swaps
+        red and blue pixel components */
+
+    /* Swap RB for no_accel */
     if (glintDoubleBufferMode)
-	glintOutIBMRGBIndReg(IBMRGB_misc3, 0, 0x81);
+      glintOutIBMRGBIndReg(IBMRGB_misc3, 0, 
+			   OFLG_ISSET(OPTION_NOACCEL, &glintInfoRec.options) ? 0x81 : 0x01);
     else
-	glintOutIBMRGBIndReg(IBMRGB_misc3, 0, 0x80);
-#endif
+      glintOutIBMRGBIndReg(IBMRGB_misc3, 0, 
+			   OFLG_ISSET(OPTION_NOACCEL, &glintInfoRec.options) ? 0x80 : 0x00);
 
-
-    /*    if (mode->Flags & V_DBLCLK) */
-    /*      glintOutIBMRGBIndReg(IBMRGB_misc_clock, 0xf0, 0x83); */
-    /*    else  */
-    /*      glintOutIBMRGBIndReg(IBMRGB_misc_clock, 0xf0, 0x87);  */
-    if (coprotype == PCI_CHIP_3DLABS_500TX) {
+    if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
 	glintOutIBMRGBIndReg(IBMRGB_misc_clock, 0xf0, 0x87);
-    } else if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) 
-    {
+    } else if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
 	glintOutIBMRGBIndReg(IBMRGB_misc_clock, 0x0, 0x1);
     }
 
@@ -508,46 +486,37 @@ int IBMRGB52x_Init_Stdmode(int clock)
 
     /* glintOutIBMRGBIndReg(IBMRGB_pwr_mgmt, 0, 0x08); */ /* disable DDOTCLK */
     glintOutIBMRGBIndReg(IBMRGB_pwr_mgmt, 0, 0x0);
-    glintOutIBMRGBIndReg(IBMRGB_dac_op, 0, DPE_ENABLE | DSR_DAC_SLOW); /* Fast DAC mode */
-    /* glintOutIBMRGBIndReg(IBMRGB_dac_op, 0, 0); */
+    /* glintOutIBMRGBIndReg(IBMRGB_dac_op, 0, DPE_ENABLE | DSR_DAC_SLOW); */ /* Fast DAC mode */
+    glintOutIBMRGBIndReg(IBMRGB_dac_op, 0, 0);
 
     glintOutIBMRGBIndReg(IBMRGB_pal_ctrl, 0, 0);
     glintOutIBMRGBIndReg(IBMRGB_curs, 0, 0x20);
 
-    if (glintInfoRec.bitsPerPixel == 32) {			/* 32 bpp */
+    switch (glintInfoRec.depth)
+      {
+      case 32: 
 	glintOutIBMRGBIndReg(IBMRGB_pix_fmt, 0xf8, 6);
-	glintOutIBMRGBIndReg(IBMRGB_32bpp, 0, 3);
-    } else if (glintInfoRec.bitsPerPixel == 16) {             /* 16 bpp 555 */
+	glintOutIBMRGBIndReg(IBMRGB_32bpp, 0, 0x03);
+	break;
+	/* not supported by glint 
+      case 24:
+	glintOutIBMRGBIndReg(IBMRGB_pix_fmt, 0xf8, 5);
+	glintOutIBMRGBIndReg(IBMRGB_24bpp, 0, 0x01);
+	break;*/
+      case 16:
 	glintOutIBMRGBIndReg(IBMRGB_pix_fmt, 0xf8, 4);
-	/* glintOutIBMRGBIndReg(IBMRGB_16bpp, 0, 0xC5); */
-	glintOutIBMRGBIndReg(IBMRGB_16bpp, 0, 0xC4);
-    } else {                                        /*  8 bpp */
+ 	glintOutIBMRGBIndReg(IBMRGB_16bpp, 0, 0xC7);
+	break;
+      case 15: 
+	glintOutIBMRGBIndReg(IBMRGB_pix_fmt, 0xf8, 4);
+ 	glintOutIBMRGBIndReg(IBMRGB_16bpp, 0, 0xC5);
+	break;
+      case 8: 
 	glintOutIBMRGBIndReg(IBMRGB_pix_fmt, 0xf8, 3);
-	glintOutIBMRGBIndReg(IBMRGB_8bpp, 0, 0);
-    }
+	glintOutIBMRGBIndReg(IBMRGB_8bpp, 0, 0x00);
+	break;
+      }
 
-#if 0
-    if (OFLG_ISSET(OPTION_IBMRGB_CURS, &glintInfoRec.options)) {
-	/* enable interlaced cursor;
-	   not very useful without CR45 bit 5 set, but anyway */
-	if (mode->Flags & V_INTERLACE) {
-	    static int already = 0;
-	    if (!already) {
-		already++;
-		ErrorF("%s %s: IBMRGB hardware cursor in interlaced modes "
-		       "doesn't work correctly,\n"
-		       "\tplease use Option \"sw_cursor\" when using "
-		       "interlaced modes!\n"
-		       ,XCONFIG_PROBED, glintInfoRec.name);
-	    }
-	    glintOutIBMRGBIndReg(TI_CURS_CONTROL, ~0x60, 0x60);
-	}
-	else
-	    glintOutIBMRGBIndReg(TI_CURS_CONTROL, ~0x60, 0x00);
-    }
-#endif
-
-    /* ###############################      */
     /* if 526 oder 624 ramdac */	
     if ((ActualDacId == RGB526DB_RAMDAC) ||
 	(ActualDacId == RGB526_RAMDAC)   ||
@@ -555,12 +524,12 @@ int IBMRGB52x_Init_Stdmode(int clock)
 	(ActualDacId == RGB624_RAMDAC))
     {
 
-	RefClkSpeed = coprotype == PCI_CHIP_3DLABS_500TX ? 
+	RefClkSpeed = IS_3DLABS_TX_MX_CLASS(coprotype) ? 
 	    GLINT_DEFAULT_CLOCK_SPEED_DELTA : PERMEDIA_REF_CLOCK_SPEED;
 
 	PixelClock  = clock * 1000;
 
-	SystemClock = coprotype == PCI_CHIP_3DLABS_500TX ? 
+	SystemClock = IS_3DLABS_TX_MX_CLASS(coprotype) ?
 	    GLINT_DEFAULT_CLOCK_SPEED : 
 	    (1000000000L) / ((GLINT_READ_REG(ChipConfig) >> 28) + 10);
       
@@ -568,18 +537,11 @@ int IBMRGB52x_Init_Stdmode(int clock)
 	RefClkSpeed /= 100;
 	PixelClock  /= 100;
 	CheckRGBClockInteraction(&PixelClock, &SystemClock);
-      
+
 	P=M=N=C=0;
 	PixelClock = 
-	    RGB526_CalculateMNPCForClock(RefClkSpeed,
-					 PixelClock,
-					 1,
-					 650000,
-					 MaxVco,
-					 &M,
-					 &N,
-					 &P,
-					 &C);
+	    RGB526_CalculateMNPCForClock(RefClkSpeed, PixelClock, 1, 650000, MaxVco,
+					 &M, &N, &P, &C);
 #ifdef DEBUG      
 	if (!PixelClock)
 	    ErrorF("Glit - RGB526_CalculateMNPCForClock == 0!\n");
@@ -599,15 +561,8 @@ int IBMRGB52x_Init_Stdmode(int clock)
 
 	P = 1;
 	SystemClock =
-	    RGB526_CalculateMNPCForClock(RefClkSpeed,
-					 PixelClock,
-					 0,
-					 650000,
-					 MaxVco,
-					 &M,
-					 &N,
-					 &P,
-					 &C);
+	    RGB526_CalculateMNPCForClock(RefClkSpeed, PixelClock, 0, 650000, MaxVco, 
+					 &M, &N, &P, &C);
 #ifdef DEBUG	  
 	if (!SystemClock)
 	    ErrorF("Glit - RGB526_CalculateMNPCForClock == 0!\n");
@@ -621,41 +576,5 @@ int IBMRGB52x_Init_Stdmode(int clock)
 	glintOutIBMRGBIndReg(IBMRGB_sysclk_p, 0x00, P);
 	glintOutIBMRGBIndReg(IBMRGB_sysclk_c, 0x00, C);
     }
-    return 1;
-}
-
-int glintIBMRGB52x_PreInit()
-{
-    /* Verify that depth is supported by ramdac */
-    /* all are supported */
-
-    /* Set cursor options */
-    if (OFLG_ISSET(OPTION_SW_CURSOR, &glintInfoRec.options)) {
-	ErrorF("%s %s: Use of IBM RGB52x cursor disabled in XF86Config\n",
-	       XCONFIG_GIVEN, glintInfoRec.name);
-	OFLG_CLR(OPTION_IBMRGB_CURS, &glintInfoRec.options);
-    } else {
-	/* use the ramdac cursor by default */
-	ErrorF("%s %s: Using hardware cursor from IBM RGB52x RAMDAC\n",
-	       OFLG_ISSET(OPTION_IBMRGB_CURS, &glintInfoRec.options) ?
-	       XCONFIG_GIVEN : XCONFIG_PROBED, glintInfoRec.name);
-	OFLG_SET(OPTION_IBMRGB_CURS, &glintInfoRec.options);
-    }
-   
-    /*
-     * fixed refclk of 40MHz
-     */
-    glintInfoRec.s3RefClk = 40000;
-
-    if (xf86Verbose) {
-	ErrorF("%s %s: Using IBM RGB52x programmable clock",
-	       XCONFIG_PROBED, glintInfoRec.name);
-	ErrorF("\n");	
-	ErrorF("%s %s: with refclock %1.3f MHz \n",
-	       XCONFIG_PROBED,glintInfoRec.name,glintInfoRec.s3RefClk/1e3);
-    }
-
-    glintInfoRec.maxClock = glintInfoRec.dacSpeeds[0];
-
     return 1;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.11 1997/08/15 07:19:23 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.12 1997/09/19 08:30:09 hohndel Exp $ */
 
 
 #include "windowstr.h"
@@ -144,5 +144,6 @@ XAACursorInfoRecType XAACursorInfoRec = {
     NULL,	/* SetCursorPosition */
     NULL,	/* LoadCursorImage */
     NULL,	/* HideCursor */
-    NULL	/* ShowCursor */
+    NULL,	/* ShowCursor */
+    NULL 	/* GetInstalledColormaps */
 };

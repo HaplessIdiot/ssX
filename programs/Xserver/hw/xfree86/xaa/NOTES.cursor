@@ -15,7 +15,9 @@ Flags
 
     Indicates that at 8bpp, the background and foreground pixel values
     passed in SetCursorColors will be in 8-8-8 truecolor format, as
-    opposed to an 8-bit palette index.
+    opposed to an 8-bit palette index. If this is not defined then,
+    GetInstalledColormap function should point to vgaGetInstalledColormaps.
+    See below for more details.
 
     HARDWARE_CURSOR_PROGRAMMED_BITS
 
@@ -111,6 +113,10 @@ ShowCursor()
     Some chipsets have the option of using a Windows or X11 based cursor.
     Enabling of the appropriate one should be done here too.
 
+GetInstalledColormaps()
 
+   This needs to be defined for chips that don't have
+   HARDWARE_CURSOR_TRUECOLOR_AT_8BPP defined. Normally it should be set
+   to vgaGetInstalledColormaps for vga based chipsets.
 
-$XFree86: $
+$XFree86: xc/programs/Xserver/hw/xfree86/xaa/NOTES.cursor,v 3.1 1997/09/19 08:30:08 hohndel Exp $
