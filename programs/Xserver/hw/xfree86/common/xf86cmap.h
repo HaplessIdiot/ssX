@@ -1,12 +1,14 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.h,v 1.2 1998/11/22 10:37:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.h,v 1.3 1998/11/29 10:50:21 dawes Exp $ */
 
 #ifndef _XF86CMAP_H
 #define _XF86CMAP_H
 
+#include "xf86str.h"
 #include "colormapst.h"
 
 #define CMAP_PALETTED_TRUECOLOR		0x0000001
 #define CMAP_RELOAD_ON_MODE_SWITCH	0x0000002
+#define CMAP_LOAD_EVEN_IF_OFFSCREEN	0x0000004
 
 typedef void (*LoadPaletteFuncPtr)(
     ScrnInfoPtr pScrn, 
@@ -18,7 +20,7 @@ typedef void (*LoadPaletteFuncPtr)(
 
 typedef void (*SetOverscanFuncPtr)(
     ScrnInfoPtr pScrn,
-    int index
+    int Index
 );
 
 Bool xf86HandleColormaps(

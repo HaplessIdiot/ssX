@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.33 1999/05/05 14:29:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.34 1999/05/09 06:06:22 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -51,6 +51,7 @@ typedef enum {
     MODE_NOMODE,	/* no mode with a maching name */
     MODE_NO_INTERLACE,	/* interlaced mode not supported */
     MODE_NO_DBLESCAN,	/* doublescan mode not supported */
+    MODE_NO_VSCAN,	/* multiscan mode not supported */
     MODE_MEM,		/* insufficient video memory */
     MODE_VIRTUAL_X,	/* mode width too large for specified virtual size */
     MODE_VIRTUAL_Y,	/* mode height too large for specified virtual size */
@@ -61,7 +62,16 @@ typedef enum {
     MODE_CLOCK_RANGE,	/* clock/mode isn't in a ClockRange */
     MODE_BAD_HVALUE,	/* horizontal timing was out of range */
     MODE_BAD_VVALUE,	/* vertical timing was out of range */
-    MODE_BAD,		/* unspecified reason */
+    MODE_BAD_VSCAN,	/* VScan value out of range */
+    MODE_HSYNC_NARROW,	/* horizontal sync too narrow */
+    MODE_HSYNC_WIDE,	/* horizontal sync too wide */
+    MODE_HBLANK_NARROW,	/* horizontal blanking too narrow */
+    MODE_HBLANK_WIDE,	/* horizontal blanking too wide */
+    MODE_VSYNC_NARROW,	/* vertical sync too narrow */
+    MODE_VSYNC_WIDE,	/* vertical sync too wide */
+    MODE_VBLANK_NARROW,	/* vertical blanking too narrow */
+    MODE_VBLANK_WIDE,	/* vertical blanking too wide */
+    MODE_BAD = -2,	/* unspecified reason */
     MODE_ERROR	= -1	/* error condition */
 } ModeStatus;
 
@@ -549,7 +559,6 @@ typedef struct _ScrnInfoRec {
     char *		ramdac;			/* ramdac name */
     char *		clockchip;		/* clock name */
     Bool		progClock;		/* clock is programmable */
-    int			dacSpeeds[MAXDACSPEEDS];/* list of clock limits */
     int			numClocks;		/* number of clocks */
     int			clock[MAXCLOCKS];	/* list of clock frequencies */
     int			videoRam;		/* amount of video ram (kb) */

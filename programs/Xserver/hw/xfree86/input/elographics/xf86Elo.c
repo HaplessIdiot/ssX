@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.19.2.3 1998/11/04 15:19:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/xf86Elo.c,v 1.1 1999/04/04 07:03:23 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -1414,7 +1414,7 @@ xf86EloAllocate(void)
   }
   
 #ifdef XFREE86_V4
-  priv->input_dev = xf86strdup(ELO_PORT);
+  priv->input_dev = strdup(ELO_PORT);
 #else
   priv->input_dev = ELO_PORT;
   priv->link_speed = ELO_LINK_SPEED;
@@ -1499,7 +1499,7 @@ init_xf86Elo(unsigned long      server_version)
 #endif
 
 #else /* XFREE86_V4 */
-static char *default_options[] = {
+static const char *default_options[] = {
   "BaudRate", "9600",
   "StopBits", "1",
   "DataBits", "8",
@@ -1535,7 +1535,7 @@ Plug(pointer	module,
   dev = xf86FindOptionValue(merged, "Device");
   if (dev) {
     xfree(priv->input_dev);
-    priv->input_dev = xf86strdup(dev);
+    priv->input_dev = strdup(dev);
   }
 
   local->name = xf86SetStrOption(merged, "DeviceName", XI_TOUCHSCREEN);

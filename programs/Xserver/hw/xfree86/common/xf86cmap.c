@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.11 1999/03/21 07:35:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.12 1999/03/28 15:32:29 dawes Exp $ */
 
 #ifdef _XOPEN_SOURCE
 #include <math.h>
@@ -34,8 +34,10 @@
 #define SCREEN_EPILOGUE(pScreen, field, wrapper)\
     ((pScreen)->field = wrapper)
 
-#define LOAD_PALETTE(pmap, index) ((pmap == miInstalledMaps[index]) && \
- 				xf86Screens[index]->vtSema) 
+#define LOAD_PALETTE(pmap, index) \
+    ((pmap == miInstalledMaps[index]) && \
+     ((pScreenPriv->flags & CMAP_LOAD_EVEN_IF_OFFSCREEN) || \
+      xf86Screens[index]->vtSema))
 
 
 typedef struct _CMapLink {

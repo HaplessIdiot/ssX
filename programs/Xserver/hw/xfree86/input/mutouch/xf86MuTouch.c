@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mutouch/xf86MuTouch.c,v 1.1 1999/04/11 13:11:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mutouch/xf86MuTouch.c,v 1.2 1999/04/15 01:29:15 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -1320,7 +1320,7 @@ xf86MuTAllocate(char	*name,
     return NULL;
   }
 
-  priv->input_dev = xf86strdup(MuT_PORT);
+  priv->input_dev = strdup(MuT_PORT);
 #ifndef XFREE86_V4
   priv->link_speed = MuT_LINK_SPEED;
 #endif
@@ -1456,7 +1456,7 @@ init_xf86MuTouch(unsigned long      server_version)
 #endif
 
 #else /* XFREE86_V4 */
-static char *default_options[] = {
+static const char *default_options[] = {
   "BaudRate", "9600",
   "StopBits", "1",
   "DataBits", "8",
@@ -1488,10 +1488,10 @@ Plug(pointer	module,
     *errmaj = LDR_BADUSAGE;
     return NULL;
   }
-  if (xf86strcasecmp(type, "finger") == 0) {
+  if (strcasecmp(type, "finger") == 0) {
     local = xf86MuTAllocateFinger();
   }
-  else if (xf86strcasecmp(type, "stylus") == 0) {
+  else if (strcasecmp(type, "stylus") == 0) {
     local = xf86MuTAllocateStylus();
   }
   else {
@@ -1507,7 +1507,7 @@ Plug(pointer	module,
   dev = xf86FindOptionValue(merged, "Device");
   if (dev) {
     xfree(priv->input_dev);
-    priv->input_dev = xf86strdup(dev);
+    priv->input_dev = strdup(dev);
   }
 
   /*
@@ -1520,7 +1520,7 @@ Plug(pointer	module,
   while (current) {
     /*    xf86Msg(X_NONE, "On y passe\n");*/
     if ((current->device_control == xf86MuTControl) &&
-	(xf86strcmp(((MuTPrivatePtr) (current->private))->input_dev, priv->input_dev) == 0)) {
+	(strcmp(((MuTPrivatePtr) (current->private))->input_dev, priv->input_dev) == 0)) {
       xf86Msg(X_CONFIG, "MicroTouch config detected a device share between %s and %s\n",
 	      local->type_name, current->name);
       xfree(priv->input_dev);
@@ -1544,7 +1544,7 @@ Plug(pointer	module,
 
   tmp = xf86FindOptionValue(merged, "DeviceName");
   if (tmp) {
-    local->name = xf86strdup(tmp);
+    local->name = strdup(tmp);
   }
   xf86Msg(X_CONFIG, "Microtouch X device name: %s\n", local->name);  
   priv->screen_no = xf86SetIntOption(merged, "ScreenNo", 0);

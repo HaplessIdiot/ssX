@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.4 1999/04/04 10:59:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.5 1999/04/05 07:13:14 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
@@ -76,7 +76,7 @@
  * Be sure to set vmin appropriately for your device's protocol. You want to
  * read a full packet before returning
  */
-static char *default_options[] =
+static const char *default_options[] =
 {
 	"BaudRate", "9600",
 	"StopBits", "1",
@@ -2447,13 +2447,13 @@ xf86WcmPlug(pointer	module,
     /* Type is mandatory */
     s = xf86FindOptionValue(options, "Type");
 
-    if (s && (xf86strcasecmp(s, "stylus") == 0)) {
+    if (s && (strcasecmp(s, "stylus") == 0)) {
 	local = xf86WcmAllocateStylus();
     }
-    else if (s && (xf86strcasecmp(s, "cursor") == 0)) {
+    else if (s && (strcasecmp(s, "cursor") == 0)) {
 	local = xf86WcmAllocateCursor();
     }
-    else if (s && (xf86strcasecmp(s, "eraser") == 0)) {
+    else if (s && (strcasecmp(s, "eraser") == 0)) {
 	local = xf86WcmAllocateEraser();
     }
     else {
@@ -2522,10 +2522,10 @@ xf86WcmPlug(pointer	module,
 
     s = xf86FindOptionValue(merged, "Mode");
 
-    if (s && (xf86strcasecmp(s, "absolute") == 0)) {
+    if (s && (strcasecmp(s, "absolute") == 0)) {
 	priv->flags = priv->flags | ABSOLUTE_FLAG;
     }
-    else if (s && (xf86strcasecmp(s, "relative") == 0)) {
+    else if (s && (strcasecmp(s, "relative") == 0)) {
 	priv->flags = priv->flags & ~ABSOLUTE_FLAG;
     }
     else if (s) {

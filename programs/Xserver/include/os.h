@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.27 1999/04/28 05:36:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.28 1999/05/14 14:11:22 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -82,6 +82,7 @@ typedef struct _NewClientRec *NewClientPtr;
 #define xrealloc(ptr, size) Xrealloc((pointer)(ptr), (unsigned long)(size))
 #define xfree(ptr) Xfree((pointer)(ptr))
 #define xstrdup(s) Xstrdup(s)
+#define xnfstrdup(s) XNFstrdup(s)
 #endif
 
 #ifndef IN_MODULE
@@ -420,6 +421,7 @@ extern void OsInitAllocator(
 );
 
 extern char *Xstrdup(const char *s);
+extern char *XNFstrdup(const char *s);
 
 typedef SIGVAL (*OsSigHandlerPtr)(
 #if NeedFunctionPrototypes

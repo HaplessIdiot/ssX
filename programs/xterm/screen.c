@@ -54,7 +54,7 @@
  * SOFTWARE.
  */
 
-/* $XFree86: xc/programs/xterm/screen.c,v 3.38 1999/05/03 12:16:12 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/screen.c,v 3.39 1999/05/15 06:25:06 dawes Exp $ */
 
 /* screen.c */
 
@@ -744,7 +744,7 @@ ScrnRefresh (
 	   gc = updatedXtermGC(screen, flags, fg_bg, hilite);
 	   gc_changes |= (flags & (FG_COLOR|BG_COLOR));
 
-	   x = CurCursorX(screen, row, col);
+	   x = CurCursorX(screen, row + topline, col);
 	   lastind = col;
 
 	   for (; col <= maxcol; col++) {

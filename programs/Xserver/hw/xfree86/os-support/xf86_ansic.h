@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.22 1999/04/17 07:31:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.23 1999/05/04 09:35:26 dawes Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -261,6 +261,7 @@ extern long xf86fpossize(void);
 #include <sys/ioctl.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <ctype.h>
 #endif /* XFree86LOADER NEED_XF86_TYPES */
 
 /*

@@ -24,7 +24,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/magellan/magellan.c,v 1.6 1999/03/06 13:12:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/magellan/magellan.c,v 1.7 1999/04/04 07:03:26 dawes Exp $ */
 
 #define _MAGELLAN_C_
 /*****************************************************************************
@@ -71,7 +71,7 @@ static XF86ModuleVersionInfo VersionRec =
  * Be sure to set vmin appropriately for your device's protocol. You want to
  * read a full packet before returning
  */
-static char *default_options[] =
+static const char *default_options[] =
 {
 	"BaudRate", "9600",
 	"StopBits", "2",
@@ -280,7 +280,7 @@ DeviceInit (DeviceIntPtr dev)
 		}
 	}
 
-#if BELL_FEEDBACK_SUPPORT
+#ifdef BELL_FEEDBACK_SUPPORT
 	/*
 	The InitBellFeedbackClassDeviceStruct function is not exported in the
 	4.3.0 or 4.3.1 Xmetro loader. We'll leave this out to stay compatible
@@ -403,7 +403,7 @@ ControlProc (LocalDevicePtr local, xDeviceCtl * control)
 	return (Success);
 }
 
-#if BELL_FEEDBACK_SUPPORT
+#ifdef BELL_FEEDBACK_SUPPORT
 /*
 The bell functions are stubbed out for now because they can't be used with the
 4.3.0 and 4.3.1 Xmetro binaries. The device can only control the duration of

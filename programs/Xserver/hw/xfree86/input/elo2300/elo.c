@@ -48,7 +48,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elo2300/elo.c,v 1.6 1999/03/06 13:12:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elo2300/elo.c,v 1.7 1999/04/04 07:03:23 dawes Exp $ */
 
 #define _elo_C_
 /*****************************************************************************
@@ -91,7 +91,7 @@ static XF86ModuleVersionInfo VersionRec =
 								 * a tool */
 };
 
-static char *default_options[] =
+static const char *default_options[] =
 {
 	"BaudRate", "9600",
 	"StopBits", "1",

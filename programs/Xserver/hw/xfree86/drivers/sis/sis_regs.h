@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_regs.h,v 1.6 1999/05/09 10:51:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_regs.h,v 1.7 1999/05/15 06:24:56 dawes Exp $ */
 
 /* 3C4 */
 #define BankReg 0x06
@@ -84,19 +84,19 @@ extern int sisReg32MMIO[];
 
 #define sisCMDENHCOLEXP		0x2000
 
-#define sisCLIPINTRN		0x00
-#define sisCLIPEXTRN		0x80
-
 #define sisXINCREASE		0x10
 #define sisYINCREASE		0x20
 #define sisCLIPENABL		0x40
+#define sisCLIPINTRN		0x80 
+#define sisCLIPEXTRN		0x00
+
 
 #define sisPATREG		0x08
 #define sisPATFG		0x04
 #define sisPATBG		0x00
 
-#define sisLASTPIX		0x08
-#define sisXMAJOR		0x04
+#define sisLASTPIX		0x0800
+#define sisXMAJOR		0x0400
 
 
 /* Macros to do useful things with the SIS BitBLT engine */
@@ -189,17 +189,17 @@ extern int sisReg32MMIO[];
 /* Line drawing */
 
 #define sisSETXStart(XStart) \
-  *(volatile unsigned short *)(pSiS->IOBase + BR(0)) = XStart
+  *(volatile unsigned int *)(pSiS->IOBase + BR(0)) = XStart&0xFFFF
 
 #define sisSETYStart(YStart) \
-  *(volatile unsigned short *)(pSiS->IOBase + BR(1)) = YStart
+  *(volatile unsigned int *)(pSiS->IOBase + BR(1)) = YStart&0xFFFF
 
 #define sisSETLineMajorCount(MajorAxisCount) \
-  *(volatile unsigned short *)(pSiS->IOBase + BR(3)) = MajorAxisCount
+  *(volatile unsigned int *)(pSiS->IOBase + BR(3)) = MajorAxisCount&0xFFFF
 
 #define sisSETLineSteps(K1,K2) \
-  *(volatile unsigned int *)(pSiS->IOBase + BR(6)) = (((K2)&0xFFFF)<<16)| \
-      ((K1)&0xFFFF)
+  *(volatile unsigned int *)(pSiS->IOBase + BR(6)) = (((K1)&0xFFFF)<<16)| \
+      ((K2)&0xFFFF)
 
 #define sisSETLineErrorTerm(ErrorTerm) \
   *(volatile unsigned short *)(pSiS->IOBase + BR(7)) = ErrorTerm

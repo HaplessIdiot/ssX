@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.42 1999/05/09 06:06:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.43 1999/05/14 14:11:15 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -140,6 +140,7 @@ xf86AllocateScreen(DriverPtr drv, int flags)
 void
 xf86DeleteScreen(int scrnIndex, int flags)
 {
+    ScrnInfoPtr pScrn;
     int i;
 
     /* First check if the screen is valid */
@@ -149,25 +150,33 @@ xf86DeleteScreen(int scrnIndex, int flags)
     if (scrnIndex > xf86NumScreens - 1)
 	return;
 
-    if (xf86Screens[scrnIndex] == NULL)
+    if (!(pScrn = xf86Screens[scrnIndex]))
 	return;
 
     /* If a FreeScreen function is defined, call it here */
-    if (xf86Screens[scrnIndex]->FreeScreen != NULL)
-	xf86Screens[scrnIndex]->FreeScreen(scrnIndex, 0);
+    if (pScrn->FreeScreen != NULL)
+	pScrn->FreeScreen(scrnIndex, 0);
+
+    while (pScrn->modes)
+	xf86DeleteMode(&pScrn->modes, pScrn->modes);
+
+    while (pScrn->modePool)
+	xf86DeleteMode(&pScrn->modePool, pScrn->modePool);
+
+    xf86OptionListFree(pScrn->options);
 
 #ifdef XFree86LOADER
-    if (xf86Screens[scrnIndex]->module)
-	UnloadModule(xf86Screens[scrnIndex]->module);
+    if (pScrn->module)
+	UnloadModule(pScrn->module);
 #endif
 
-    if (xf86Screens[scrnIndex]->drv)
-	xf86Screens[scrnIndex]->drv->refCount--;
+    if (pScrn->drv)
+	pScrn->drv->refCount--;
 
-    if (xf86Screens[scrnIndex]->privates);
-	xfree(xf86Screens[scrnIndex]->privates);
+    if (pScrn->privates);
+	xfree(pScrn->privates);
 
-    xfree(xf86Screens[scrnIndex]);
+    xfree(pScrn);
 
     /* Move the other entries down, updating their scrnIndex fields */
     
@@ -1820,14 +1829,17 @@ xf86GetClocks(ScrnInfoPtr pScrn, int num, Bool (*ClockFunc)(ScrnInfoPtr, int),
 
     for (i = 0; i < num; i++) 
     {
-	(*ProtectRegs)(pScrn, TRUE);
+	if (ProtectRegs)
+	    (*ProtectRegs)(pScrn, TRUE);
 	if (!(*ClockFunc)(pScrn, i))
 	{
 	    pScrn->clock[i] = -1;
 	    continue;
 	}
-	(*ProtectRegs)(pScrn, FALSE);
-	(*BlankScreen)(pScrn, FALSE);
+	if (ProtectRegs)
+	    (*ProtectRegs)(pScrn, FALSE);
+	if (BlankScreen)
+	    (*BlankScreen)(pScrn, FALSE);
 	    
     	usleep(50000);     /* let VCO stabilise */
 
@@ -1865,7 +1877,8 @@ finish:
 	xf86EnableInterrupts();
 
 	pScrn->clock[i] = cnt ? cnt : -1;
-        (*BlankScreen)(pScrn, TRUE);
+	if (BlankScreen)
+            (*BlankScreen)(pScrn, TRUE);
     }
 
 #if defined(CSRG_BASED) || defined(MACH386)
@@ -1915,7 +1928,7 @@ xf86GetVisualName(int visual)
 int
 xf86GetVerbosity()
 {
-    return xf86Verbose;
+    return max(xf86Verbose, xf86LogVerbose);
 }
 
 
@@ -1979,6 +1992,13 @@ Bool
 xf86ServerIsInitialising()
 {
     return xf86Initialising;
+}
+
+
+Bool
+xf86ServerIsOnlyProbing(void)
+{
+    return xf86ProbeOnly;
 }
 
 

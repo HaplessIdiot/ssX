@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.24 1999/05/09 10:52:12 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.25 1999/05/15 06:25:08 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_103">Patch #103 - 1999/5/14 - XFree86 3.9Pm</A>
 <LI><A HREF="#xterm_102">Patch #102 - 1999/5/12 - XFree86 3.9Pm</A>
 <LI><A HREF="#xterm_101">Patch #101 - 1999/5/10 - XFree86 3.9Pm</A>
 <LI><A HREF="#xterm_100">Patch #100 - 1999/5/3 - XFree86 3.9Pl</A>
@@ -145,6 +146,37 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_103">Patch #103 - 1999/5/14 - XFree86 3.9Pm</A></H1>
+<ul>
+	<li>correct selection logic: I omitted an offset that accounts for
+	  the distance into the scrollback buffer when rewriting this for
+	  patch #101.  Also fixed a similar problem for selecting double
+	  size characters from the scrollback buffer (first was reported
+	  by D Roland Walker &lt;walker@pobox.com&gt;).
+
+	<li>improved support for Unix98 PTY's, using patch in Debian bug report
+	  #35650, by J.H.M. Dassen &lt;jdassen@wi.leidenuniv.nl&gt;. From
+	  the patch description:
+	<blockquote>
+	<ul>
+	<li>No longer links xterm against libutil on a glibc2.1 system. 
+	  libutil is a compatibility library and should only be used when
+	  necessary.  Rather than having get_pty() use openpty() from this
+	  compatibility library, use the real UNIX98 pty support in get_pty()
+	  (open()ing the master pty, through getpt() if available (glibc
+	  extension)).  Use openpty() only under glibc2.0.
+	<li>GNU libc2 is not Linux-specific; already it runs on the Hurd.  It
+	  provides the UNIX98 pty functions (plus the getpt() extension),
+	  regardless of the underlying OS.  Changed two constructs to look for
+	  GNU libc2 only, not GNU libc2 on Linux.
+	</ul>
+	</blockquote>
+
+	<li>improve font configuration, by checking if the user's resource
+	 settings for normal and bold fonts give the same font sizes
+	 (fixes problem reported by Peter Waltenberg &lt;peterw@dascom.com&gt;).
+</ul>
 
 <H1><A NAME="xterm_102">Patch #102 - 1999/5/12 - XFree86 3.9Pm</A></H1>
 <ul>

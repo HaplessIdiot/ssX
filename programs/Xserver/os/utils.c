@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.50 1999/04/28 05:36:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.51 1999/05/14 14:11:23 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -1354,6 +1354,20 @@ Xstrdup(const char *s)
     sd = (char *)Xalloc(strlen(s) + 1);
     if (sd != NULL)
 	strcpy(sd, s);
+    return sd;
+}
+
+
+char *
+XNFstrdup(const char *s)
+{
+    char *sd;
+
+    if (s == NULL)
+	return NULL;
+
+    sd = (char *)XNFalloc(strlen(s) + 1);
+    strcpy(sd, s);
     return sd;
 }
 

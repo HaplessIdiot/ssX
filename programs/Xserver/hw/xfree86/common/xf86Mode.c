@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.13 1999/03/21 16:20:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.14 1999/04/05 07:13:08 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -75,6 +75,8 @@ xf86ModeStatusToString(ModeStatus status)
 	return "interlace mode not supported";
     case MODE_NO_DBLESCAN:
 	return "doublescan mode not supported";
+    case MODE_NO_VSCAN:
+	return "multiscan mode not supported";
     case MODE_MEM:
 	return "insufficient memory for mode";
     case MODE_VIRTUAL_X:
@@ -95,6 +97,24 @@ xf86ModeStatusToString(ModeStatus status)
 	return "horizontal timing out of range";
     case MODE_BAD_VVALUE:
 	return "vertical timing out of range";
+    case MODE_BAD_VSCAN:
+	return "VScan value out of range";
+    case MODE_HSYNC_NARROW:
+	return "horizontal sync too narrow";
+    case MODE_HSYNC_WIDE:
+	return "horizontal sync too wide";
+    case MODE_HBLANK_NARROW:
+	return "horizontal blanking too narrow";
+    case MODE_HBLANK_WIDE:
+	return "horizontal blanking too wide";
+    case MODE_VSYNC_NARROW:
+	return "vertical sync too narrow";
+    case MODE_VSYNC_WIDE:
+	return "vertical sync too wide";
+    case MODE_VBLANK_NARROW:
+	return "vertical blanking too narrow";
+    case MODE_VBLANK_WIDE:
+	return "vertical blanking too wide";
     case MODE_BAD:
 	return "unknown reason";
     case MODE_ERROR:
@@ -730,13 +750,16 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
     if (scrp->depth > 4)
 	BankFormat = &scrp->fbFormat;
     else
-	BankFormat = xf86GetPixFormat(scrp, scrp->depth);
+	BankFormat = xf86GetPixFormat(scrp, 1);	/* >not< scrp->depth! */
 
     bitsPerPixel = scrp->fbFormat.bitsPerPixel;
     pixmapPad = scrp->fbFormat.scanlinePad;
     if (scrp->depth == 4)
 	pixmapPad *= 4;		/* 4 planes */
 
+#define _VIRTUALX(x) \
+    ((((((x) * BankFormat->bitsPerPixel) + pitchInc - 1) / pitchInc) * \
+      pitchInc) / BankFormat->bitsPerPixel)
 #define _VIDEOSIZE(w, x, y) \
     ((((((w) * bitsPerPixel) + pixmapPad - 1) / pixmapPad) * pixmapPad * \
      ((y) - 1)) + ((x) * bitsPerPixel))
@@ -769,6 +792,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	    return -1;
 	}
 
+	virtualX = _VIRTUALX(virtualX);
 	if (linePitches != NULL) {
 	    for (i = 0; linePitches[i] != 0; i++) {
 		if ((linePitches[i] >= virtualX) &&
@@ -826,6 +850,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 		}
 		new->prev = q;
 		q = new;
+		q->name = xnfstrdup(p->name);
 	    } else {
 		if (p->type & M_T_BUILTIN)
 		    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
@@ -871,6 +896,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	}
 	q->name = xnfalloc(strlen(modeNames[i]) + 1);
 	strcpy(q->name, modeNames[i]);
+	q->type = 0;
     }
     q->next = NULL;
     /*
@@ -901,7 +927,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	 * current values and if they are not fixed.
 	 */
 	if (virtualX <= 0 && p->HDisplay > newVirtX)
-	    newVirtX = p->HDisplay;
+	    newVirtX = _VIRTUALX(p->HDisplay);
 	if (virtualY <= 0 && p->VDisplay > newVirtY)
 	    newVirtY = p->VDisplay;
 
@@ -952,6 +978,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	numModes++;
     }
 
+#undef _VIRTUALX
 #undef _VIDEOSIZE
 
     /* Update the ScrnInfoRec parameters */
@@ -1006,16 +1033,8 @@ xf86DeleteMode(DisplayModePtr *modeList, DisplayModePtr mode)
 	    mode->next->prev = mode->prev;
     }
 
-#if 0
-    /*
-     * Not all names can be freed like this.  XXX Need to consider if things
-     * should be changed so that each copy has its own xalloc'd name.
-     */
-    if (mode->name)
-	xfree(mode->name);
-#endif
-    if (mode)
-	xfree(mode);
+    xfree(mode->name);
+    xfree(mode);
 }
 
 /*

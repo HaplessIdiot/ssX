@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.174 1999/05/09 06:06:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.175 1999/05/14 14:11:14 dawes Exp $ */
 
 
 /*
@@ -1462,7 +1462,7 @@ configMonitor(MonPtr monitorp, XF86ConfMonitorPtr conf_monitor)
         mode->Flags      = cmodep->ml_flags;
         mode->HSkew      = cmodep->ml_hskew;
         mode->VScan      = cmodep->ml_vscan;
-        mode->name       = cmodep->ml_identifier;
+        mode->name       = xnfstrdup(cmodep->ml_identifier);
         if( last ) {
             mode->prev = last;
             last->next = mode;
@@ -1680,6 +1680,8 @@ addDefaultModes(MonPtr monitorp)
 	    {
 		mode = xnfalloc(sizeof(DisplayModeRec));
 		memcpy(mode,&xf86DefaultModes[i],sizeof(DisplayModeRec));
+		if (xf86DefaultModes[i].name)
+		    mode->name = xnfstrdup(xf86DefaultModes[i].name);
 		if( last ) {
 		    mode->prev = last;
 		    last->next = mode;

@@ -95,7 +95,7 @@ from The Open Group.
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/t1info.c,v 1.10 1999/05/04 09:35:23 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1info.c,v 1.11 1999/05/09 12:21:47 dawes Exp $ */
 
 #include "fntfilst.h"
 #include "fontutil.h"
@@ -109,7 +109,7 @@ from The Open Group.
 #endif
 #include "FSproto.h"
 #include "t1intf.h"
- 
+
 #ifdef BUILDCID
 #ifndef FONTMODULE
 #ifdef _XOPEN_SOURCE
@@ -153,14 +153,13 @@ extern cidfont *CIDFontP;
 static int stdpropsinit = 0;
 
 typedef struct cfm_rec {
-    long total_raw_width;
-    unsigned int allExist;
     xCharInfo   maxbounds;
     xCharInfo   minbounds;
     xCharInfo   ink_maxbounds;
     xCharInfo   ink_minbounds;
-    short       maxOverlap;
-    short       pad;
+    INT32       totalrw;
+    INT16       maxo;
+    INT16       alle;
 } cfmrec;
 #endif
 
@@ -332,10 +331,10 @@ ComputeBounds(pInfo, pChars, Vals)
 #ifdef BUILDCID
 #ifdef CID_ALL_CHARS
 void
-ComputeBoundsAll(FontPtr pFont, char *cfmfilename, double sxmult)
+ComputeBoundsAllChars(FontPtr pFont, char *cfmfilename, double sxmult)
 {
     FILE *cfm;
-    long magic;
+    CARD32 magic;
     int count = 0;
     int maxlap, overlap, i, j, k, ret;
     xCharInfo minchar, maxchar;
@@ -355,7 +354,7 @@ ComputeBoundsAll(FontPtr pFont, char *cfmfilename, double sxmult)
         p = strrchr(cfmfilename, '/');
         if (p == NULL) exit(1);
         strcpy(cfmd, cfmDefaultDir);
-        strcat(cfmd, p);
+        strcat(cfmd, p + 1);
         if (!(cfm = fopen(cfmd, "w"))) {
             fprintf(stderr,
             "Switching to current directory. Unable to open the file %s.\n",
@@ -378,7 +377,7 @@ ComputeBoundsAll(FontPtr pFont, char *cfmfilename, double sxmult)
         maxchar.characterWidth = maxchar.attributes = -32767;
 
     maxlap = -32767;
-    cfmp->allExist = 1;
+    cfmp->alle = 1;
     cidrangeP = CIDFontP->cidrangeP;
 
     /* go through all character codes specified in a given CMap */
@@ -401,7 +400,7 @@ ComputeBoundsAll(FontPtr pFont, char *cfmfilename, double sxmult)
               overlap = pmetrics->rightSideBearing - pmetrics->characterWidth;
              if (overlap > maxlap) maxlap = overlap;
            }
-           else cfmp->allExist = 0;
+           else cfmp->alle = 0;
         }
       }
     }
@@ -416,7 +415,7 @@ ComputeBoundsAll(FontPtr pFont, char *cfmfilename, double sxmult)
         }
     }
 
-    cfmp->total_raw_width = total_raw_width;
+    cfmp->totalrw = (INT32)total_raw_width;
 
     cfmp->maxbounds.leftSideBearing =
         floor((double)maxchar.leftSideBearing * sxmult + 0.5);
@@ -466,10 +465,10 @@ ComputeBoundsAll(FontPtr pFont, char *cfmfilename, double sxmult)
         floor((double)minchar.descent * sxmult + 0.5);
     cfmp->ink_minbounds.attributes = minchar.attributes;
 
-    cfmp->maxOverlap = maxlap + -(minchar.leftSideBearing);
+    cfmp->maxo = (INT32)(maxlap + -(minchar.leftSideBearing));
 
     magic = CFMMAGIC;
-    fwrite(&magic, sizeof(long), 1, cfm);
+    fwrite(&magic, sizeof(CARD32), 1, cfm);
     fwrite(cfmp, sizeof(cfmrec), 1, cfm);
     xfree(cfmp);
     fclose(cfm);
@@ -896,7 +895,6 @@ CIDGetInfoScalable(fpe, pInfo, entry, fontName, fileName, Vals)
 }
 #endif
 
-#ifndef CID_ALL_CHARS
 /*ARGSUSED*/
 int
 Type1GetInfoScalable(fpe, pInfo, entry, fontName, fileName, Vals)
@@ -925,7 +923,6 @@ Type1GetInfoScalable(fpe, pInfo, entry, fontName, fileName, Vals)
     Type1CloseFont(pfont);
     return Successful;
 }
-#endif
 
 #ifdef BUILDCID
 #ifndef CID_ALL_CHARS
@@ -957,7 +954,7 @@ CIDFillFontInfo(pFont, Vals, Filename, Fontname, Cmapname, sAscent, sDescent, sx
     FILE *cfm;
     cfmrec *cfmp;
     int gotcfm = 0;
-    long magic;
+    CARD32 magic;
 #endif
     long sWidth = 0;
     FontInfoPtr         pInfo = &pFont->info;
@@ -966,12 +963,12 @@ CIDFillFontInfo(pFont, Vals, Filename, Fontname, Cmapname, sAscent, sDescent, sx
 
 #ifdef HAVE_CFM
     if ((cfm = fopen(cfmfilename,"r"))) {
-        fread(&magic,sizeof(long),1,cfm);
+        fread(&magic,sizeof(CARD32),1,cfm);
         if(magic == CFMMAGIC) {
             if ((cfmp = (cfmrec *)xalloc(sizeof(cfmrec))) != NULL) {
                 fread(cfmp,sizeof(cfmrec),1,cfm);
-                sWidth = cfmp->total_raw_width;
-                pInfo->allExist = cfmp->allExist;
+                sWidth = (long)cfmp->totalrw;
+                pInfo->allExist = cfmp->alle;
                 if (sxmult != 0) {
                     pInfo->maxbounds.leftSideBearing =
                         floor((double)cfmp->maxbounds.leftSideBearing /
@@ -1031,7 +1028,7 @@ CIDFillFontInfo(pFont, Vals, Filename, Fontname, Cmapname, sAscent, sDescent, sx
                     pInfo->ink_minbounds.attributes =
                         cfmp->ink_minbounds.attributes;
 
-                    pInfo->maxOverlap = cfmp->maxOverlap;
+                    pInfo->maxOverlap = (short)cfmp->maxo;
 
                     gotcfm = 1;
                 }
@@ -1050,8 +1047,8 @@ CIDFillFontInfo(pFont, Vals, Filename, Fontname, Cmapname, sAscent, sDescent, sx
     CIDComputeStdProps(pInfo, Vals, Filename, Cmapname, Fontname, sAscent,
         sDescent, sWidth);
 }
-#endif
-#endif
+#endif /* CID_ALL_CHARS */
+#endif /* BUILDCID */
 
 void
 T1FillFontInfo(pFont, Vals, Filename, Fontname, sWidth)
