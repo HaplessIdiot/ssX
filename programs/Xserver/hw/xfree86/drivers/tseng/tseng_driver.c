@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.64 2000/02/15 18:01:18 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.66 2000/02/27 02:45:32 alanh Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -470,7 +470,6 @@ TsengProbe(DriverPtr drv, int flags)
     
     
     PDEBUG("	TsengProbe\n");
-    if (flags & PROBE_DETECTFBDEV) return FALSE;
     /*
      * The aim here is to find all cards that this driver can handle,
      * and for the ones not already claimed by another driver, claim the
@@ -512,11 +511,10 @@ TsengProbe(DriverPtr drv, int flags)
 					TsengChipsets, TsengPciChipsets, 
 					devSections,numDevSections, drv,
 					&usedChips);
-	if ((numUsed > 0) && (flags & PROBE_DETECTPCI))
-		return TRUE;
-	if ((numUsed <= 0) && (flags & PROBE_DETECTPCI))
-		return FALSE;
-	for (i = 0; i < numUsed; i++) {
+	if (numUsed > 0)
+	if (flags & PROBE_DETECT)
+		foundScreen = TRUE;
+	else for (i = 0; i < numUsed; i++) {
 		/* Allocate a ScrnInfoRec  */
 		ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
 		TsengAssignFPtr(pScrn);
@@ -532,9 +530,9 @@ TsengProbe(DriverPtr drv, int flags)
 			TsengIsaChipsets,drv, TsengFindIsaDevice, devSections,
 			numDevSections, &usedChips);
     if (numUsed > 0)  {
-	if (flags & PROBE_DETECTISA)
-	    return TRUE;
-	for (i = 0; i < numUsed; i++) {
+	if (flags & PROBE_DETECT)
+	    foundScreen = TRUE;
+	else for (i = 0; i < numUsed; i++) {
 	    ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
 	    TsengAssignFPtr(pScrn);
 	    foundScreen = TRUE;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.77 2000/02/23 19:16:43 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.78 2000/02/24 05:36:51 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1668,25 +1668,22 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
     }
 
     if (xf86DoConfigure && xf86DoConfigurePass1) {
-	pciVideoPtr ConfCard;
+	GDevPtr pGDev;
 	int actualcards = 0;
-	ConfiguredPciCard = xnfrealloc((pciVideoPtr)ConfiguredPciCard, sizeof(pciVideoRec) * (allocatedInstances + FoundPciCards));
-	ConfCard = ConfiguredPciCard;
-	for (i = 0; i < FoundPciCards; i++) 
-	    ConfCard++;
 	for (i = 0; i < allocatedInstances; i++) {
 	    if (instances[i].foundHW) {
 		actualcards++;
-	    	pPci = instances[i].pci;
-	    	ConfCard->vendor = pPci->vendor;
-	    	ConfCard->chipType = pPci->chipType;
-	    	ConfCard->device = pPci->device;
-	    	ConfCard->bus = pPci->bus;
-	    	ConfCard->func = pPci->func;
-	    	ConfCard++;
+	    	pGDev = xf86AddDeviceToConfigure((char *)driverName,
+						 instances[i].pci, -1);
+		if (pGDev) {
+		   /*
+		    * XF86Match???Instances() treat chipID and chipRev as
+		    * overrides, so clobber them here.
+		    */
+		   pGDev->chipID = pGDev->chipRev = -1;
+		}
 	    }
 	}
-	FoundPciCards += actualcards;
 	xfree(instances);
 	return actualcards;
     }
@@ -1868,25 +1865,24 @@ xf86MatchIsaInstances(const char *driverName, SymTabPtr chipsets,
     IsaChipsets *Chips;
     int i;
     int numFound = 0;
+    int foundChip = -1;
     int *retEntities = NULL;
 
     *foundEntities = NULL;
 
-    /* For now, bail here when xf86DoProbe is set. */
-    if (xf86DoProbe)
+    if (xf86DoProbe || (xf86DoConfigure && xf86DoConfigurePass1)) {
+	if (FindIsaDevice &&
+	    ((foundChip = (*FindIsaDevice)(NULL)) != -1)) {
+	    xf86AddDeviceToConfigure((char *)driverName, NULL, foundChip);
+	    return 1;
+	}
 	return 0;
-
-    if (xf86DoConfigure && xf86DoConfigurePass1) {
-	if (FindIsaDevice) ConfiguredIsaCard = (*FindIsaDevice)(NULL);
-	if (ConfiguredIsaCard != -1) return 1;
-	else return 0;
     }
 
     for (i = 0; i < numDevs; i++) {
 	MessageType from = X_CONFIG;
 	GDevPtr dev = NULL;
 	GDevPtr devBus = NULL;
-	int foundChip = -1;
 
 	if (devList[i]->busID && *devList[i]->busID) {
 	    if (xf86ParseIsaBusString(devList[i]->busID)) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.11 1999/11/18 16:52:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.13 2000/02/27 02:45:25 alanh Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -349,7 +349,8 @@ ATIPreInit
     int             minPitch, maxPitch = 0xFFU, pitchInc;
     LookupModeFlags Strategy = LOOKUP_CLOSEST_CLOCK;
 
-    if (flags & PROBE_DETECT) return FALSE;
+    if (flags & PROBE_DETECT)
+        return FALSE;
 
     if (pScreenInfo->numEntities != 1)
     {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.38 2000/02/15 18:01:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.40 2000/02/27 02:45:33 alanh Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -238,7 +238,6 @@ GenericProbe(DriverPtr drv, int flags)
     int *usedChips;
     int i;
 
-    if (flags & PROBE_DETECTFBDEV) return FALSE;
     /*
      * Find the config file Device sections that match this
      * driver, and return if there are none.
@@ -254,15 +253,10 @@ GenericProbe(DriverPtr drv, int flags)
 					GenericChipsets, GenericPCIchipsets, 
 					devSections,numDevSections,
 					drv, &usedChips);
-  	if (numUsed<=0) return FALSE;
-
-  	if (flags & PROBE_DETECTPCI)
-    	    return TRUE;
-
-	if (flags & PROBE_DETECTISA)
-	    goto detectisa;
-
-	if (numUsed > 0) {
+  	if (numUsed > 0)
+  	if (flags & PROBE_DETECT)
+    	    foundScreen = TRUE;
+	else {
 	    for (i = 0; i < numUsed; i++) {
 		/* Allocate a ScrnInfoRec  */
 		ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
@@ -284,16 +278,16 @@ GenericProbe(DriverPtr drv, int flags)
 	    }
 	}
     }
-detectisa:
+
     /* Isa Bus */
     numUsed = xf86MatchIsaInstances(VGA_NAME,GenericChipsets,
 				     GenericISAchipsets,drv,
 				     VGAFindIsaDevice,devSections,
 				     numDevSections,&usedChips);
     if(numUsed > 0) {
-	if (flags & PROBE_DETECTISA)
-	    return TRUE;
-	for (i = 0; i < numUsed; i++) {
+	if (flags & PROBE_DETECT)
+	    foundScreen = TRUE;
+	else for (i = 0; i < numUsed; i++) {
 	    ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
 	    
 	    pScrn->driverVersion = VGA_VERSION_CURRENT;

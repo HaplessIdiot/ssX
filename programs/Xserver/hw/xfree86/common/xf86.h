@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.127 2000/02/15 18:00:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.129 2000/02/23 19:16:42 alanh Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -24,9 +24,6 @@
 /* General parameters */
 extern int xf86DoConfigure;
 extern Bool xf86DoConfigurePass1;
-extern int FoundPciCards;
-extern pciVideoPtr ConfiguredPciCard;
-extern int ConfiguredIsaCard;
 extern int xf86ScreenIndex;		/* Index into pScreen.devPrivates */
 extern int xf86CreateRootWindowIndex;	/* Index into pScreen.devPrivates */
 extern int xf86PixmapIndex;
@@ -124,6 +121,9 @@ Bool xf86DeregisterStateChangeNotificationCallback(xf86StateChangeNotificationCa
 Bool xf86QueueAsyncEvent(void (*func)(pointer),pointer arg);
 #endif
  
+/* xf86Configure.c */
+GDevPtr xf86AddDeviceToConfigure(char *driver, pciVideoPtr pVideo,
+				 int chipset);
  
 /* xf86Cursor.c */
 

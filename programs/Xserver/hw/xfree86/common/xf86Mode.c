@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.24 1999/11/18 16:52:07 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.25 1999/12/13 01:39:46 robin Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -1106,14 +1106,18 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	strategy &= ~LOOKUP_OPTIONAL_TOLERANCES;
     } else {
 	if (scrp->monitor->nHsync <= 0) {
-	    ErrorF("xf86ValidateModes: called with missing monitor horizontal"
-		   " sync rates\n");
-	    return -1;
+	    ErrorF("xf86ValidateModes: using default hsync range of"
+		   " 28-33kHz\n");
+	    scrp->monitor->hsync[0].lo = 28;
+	    scrp->monitor->hsync[0].hi = 33;
+	    scrp->monitor->nHsync = 1;
 	}
 	if (scrp->monitor->nVrefresh <= 0) {
-	    ErrorF("xf86ValidateModes: called with missing monitor vertical"
-		   " refresh rates\n");
-	    return -1;
+	    ErrorF("xf86ValidateModes: using default vrefresh range of"
+		   " 43-72Hz\n");
+	    scrp->monitor->vrefresh[0].lo = 43;
+	    scrp->monitor->vrefresh[0].hi = 72;
+	    scrp->monitor->nVrefresh = 1;
 	}
     }
 

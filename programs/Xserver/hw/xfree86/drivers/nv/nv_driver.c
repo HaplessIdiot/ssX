@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.37 2000/02/27 02:45:29 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.38 2000/02/29 03:09:19 dawes Exp $ */
 
 #include "nv_include.h"
 
@@ -407,9 +407,6 @@ NVProbe(DriverPtr drv, int flags)
      * data structures.
      */
 
-    if (flags & PROBE_DETECTISA) return FALSE;
-    if (flags & PROBE_DETECTFBDEV) return FALSE;
-
     /*
      * Check if there has been a chipset override in the config file.
      * For this we must find out if there is an active device section which
@@ -457,10 +454,9 @@ NVProbe(DriverPtr drv, int flags)
     if (numUsed <= 0)
         return FALSE;
 
-    if (flags & PROBE_DETECTPCI)
-	return TRUE;
-
-    for (i = 0; i < numUsed; i++) {
+    if (flags & PROBE_DETECT)
+	foundScreen = TRUE;
+    else for (i = 0; i < numUsed; i++) {
         ScrnInfoPtr pScrn;
         
         /* Allocate a ScrnInfoRec and claim the slot */

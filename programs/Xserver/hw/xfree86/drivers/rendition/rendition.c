@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.27 2000/02/29 03:09:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.28 2000/03/01 00:25:24 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -294,9 +294,6 @@ renditionProbe(DriverPtr drv, int flags)
     int *usedChips;
     int c;
 
-    if (flags & PROBE_DETECTISA) return FALSE;
-    if (flags & PROBE_DETECTFBDEV) return FALSE;
-
     /* Find the config file Device sections that match this
      * driver, and return if there are none. */
     if ((numDevSections=xf86MatchDevice(RENDITION_NAME, &devSections)) <= 0)
@@ -308,10 +305,10 @@ renditionProbe(DriverPtr drv, int flags)
                     renditionChipsets, renditionPCIchipsets, 
                     devSections, numDevSections, drv, &usedChips);
 
-	if (numUsed > 0 && (flags & PROBE_DETECTPCI))
-	    return TRUE;
-
-        for (c=0; c<numUsed; c++) {
+        if (numUsed > 0)
+        if (flags & PROBE_DETECT)
+            foundScreen = TRUE;
+        else for (c=0; c<numUsed; c++) {
             ScrnInfoPtr pScrn;
             /* Allocate a ScrnInfoRec and claim the slot */
             pScrn=xf86AllocateScreen(drv, 0);

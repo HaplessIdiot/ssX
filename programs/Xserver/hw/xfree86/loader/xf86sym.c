@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.130 2000/02/15 18:01:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.133 2000/02/23 19:21:16 alanh Exp $ */
 
 /*
  *
@@ -287,6 +287,9 @@ LOOKUP xfree86LookupTab[] = {
 #ifdef async
    SYMFUNC(xf86QueueAsyncEvent)
 #endif
+
+   /* xf86Configure.c */
+   SYMFUNC(xf86AddDeviceToConfigure)
 	   
    /* xf86Cursor.c  XXX not all of these should be exported */
    SYMFUNC(xf86LockZoom)

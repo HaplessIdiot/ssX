@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.39 2000/02/15 18:01:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.41 2000/02/27 02:45:31 alanh Exp $ */
 
 
 #define PSZ 8
@@ -398,8 +398,6 @@ SISProbe(DriverPtr drv, int flags)
      * we'll ignore that.
      */
 
-    if (flags & PROBE_DETECTISA) return FALSE;
-    if (flags & PROBE_DETECTFBDEV) return FALSE;
     /*
      * We need to probe the hardware first.  We then need to see how this
      * fits in with what is given in the config file, and allow the config
@@ -429,10 +427,9 @@ SISProbe(DriverPtr drv, int flags)
     if (numUsed <= 0)
 	return FALSE;
 
-    if (flags & PROBE_DETECTPCI)
-	return TRUE;
-
-    for (i = 0; i < numUsed; i++) {
+    if (flags & PROBE_DETECT)
+	foundScreen = TRUE;
+    else for (i = 0; i < numUsed; i++) {
 	ScrnInfoPtr pScrn;
 
 	/* Allocate a ScrnInfoRec and claim the slot */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.19 2000/02/22 02:00:52 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.23 2000/02/29 22:35:50 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -626,9 +626,6 @@ static Bool R128Probe(DriverPtr drv, int flags)
     Bool          foundScreen = FALSE;
     int           i;
 
-    if (flags & PROBE_DETECTISA) return FALSE;
-    if (flags & PROBE_DETECTFBDEV) return FALSE;
-
     if ((numDevSections = xf86MatchDevice(R128_NAME, &devSections)) <= 0)
 	return FALSE;
 
@@ -645,10 +642,9 @@ static Bool R128Probe(DriverPtr drv, int flags)
 
     if (numUsed<=0) return FALSE;
 
-    if (flags & PROBE_DETECTPCI)
-    	return TRUE;
-
-    for (i = 0; i < numUsed; i++) {
+    if (flags & PROBE_DETECT)
+    	foundScreen = TRUE;
+    else for (i = 0; i < numUsed; i++) {
 	pEnt = xf86GetEntityInfo(usedChips[i]);
 
 	if (pEnt->active) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.64 2000/02/08 13:13:06 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.66 2000/02/12 23:59:10 eich Exp $ */
 
 /*
  * Copyright (c) 1997-2000 by The XFree86 Project, Inc.
@@ -669,10 +669,8 @@ typedef struct {
  * Flags for driver Probe() functions.
  */
 #define PROBE_DEFAULT	  0x00
-#define PROBE_DETECTPCI	  0x01
-#define PROBE_DETECTISA	  0x02
-#define PROBE_DETECTFBDEV 0x04
-#define PROBE_DETECT	(PROBE_DETECTPCI | PROBE_DETECTISA | PROBE_DETECTFBDEV)
+#define PROBE_DETECT	  0x01
+#define PROBE_TRYHARD	  0x02
 
 /*
  * ScrnInfoRec

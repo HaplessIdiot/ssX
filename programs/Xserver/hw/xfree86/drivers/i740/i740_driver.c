@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.12 2000/02/22 02:00:50 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.16 2000/02/29 22:11:48 alanh Exp $ */
 
 /*
  * Authors:
@@ -357,9 +357,6 @@ I740Probe(DriverPtr drv, int flags) {
   Bool foundScreen = FALSE;
   EntityInfoPtr pEnt;
 
-  if (flags & PROBE_DETECTISA) return FALSE;
-  if (flags & PROBE_DETECTFBDEV) return FALSE;
-    
   /*
    Find the config file Device sections that match this
    driver, and return if there are none.
@@ -380,10 +377,10 @@ I740Probe(DriverPtr drv, int flags) {
 				  devSections, numDevSections,
 				  drv, &usedChips);
 
-  if (numUsed > 0 && (flags & PROBE_DETECTPCI))
-    return TRUE;
-
-  for (i=0; i<numUsed; i++) {
+  if (numUsed > 0)
+  if (flags & PROBE_DETECT)
+    foundScreen = TRUE;
+  else for (i=0; i<numUsed; i++) {
     pEnt = xf86GetEntityInfo(usedChips[i]);
 
     if (pEnt->active) {
@@ -418,10 +415,10 @@ I740Probe(DriverPtr drv, int flags) {
 				  devSections, numDevSections,
 				  drv, &usedChips);
 
-  if (numUsed > 0 && (flags & PROBE_DETECTPCI))
-    return TRUE;
-
-  for (i=0; i<numUsed; i++) {
+  if (numUsed > 0)
+  if (flags & PROBE_DETECT)
+    foundScreen = TRUE;
+  else for (i=0; i<numUsed; i++) {
     pEnt = xf86GetEntityInfo(usedChips[i]);
 
     if (pEnt->active) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Device.c,v 1.10 1999/05/30 14:04:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Device.c,v 1.13 2000/01/30 00:55:36 alanh Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -75,6 +75,7 @@ parseDeviceSection (void)
 	/* Zero is a valid value for these */
 	ptr->dev_chipid = -1;
 	ptr->dev_chiprev = -1;
+	ptr->dev_irq = -1;
 	while ((token = xf86GetToken (DeviceTab)) != ENDSECTION)
 	{
 		switch (token)
@@ -287,9 +288,9 @@ printDeviceSection (FILE * cf, XF86ConfDevicePtr ptr)
 		if (ptr->dev_clockchip)
 			fprintf (cf, "\tClockChip   \"%s\"\n", ptr->dev_clockchip);
 		if (ptr->dev_chipid != -1)
-			fprintf (cf, "\tChipId      %d\n", ptr->dev_chipid);
+			fprintf (cf, "\tChipId      0x%x\n", ptr->dev_chipid);
 		if (ptr->dev_chiprev != -1)
-			fprintf (cf, "\tChipRev     %d\n", ptr->dev_chiprev);
+			fprintf (cf, "\tChipRev     0x%x\n", ptr->dev_chiprev);
 
 		for (optr = ptr->dev_option_lst; optr; optr = optr->list.next)
 		{

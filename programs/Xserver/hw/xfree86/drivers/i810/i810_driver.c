@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.3 2000/02/21 19:23:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.5 2000/02/27 02:45:28 alanh Exp $ */
 
 /*
  * Authors:
@@ -421,7 +421,10 @@ I810Probe(DriverPtr drv, int flags) {
 				   devSections, numDevSections,
 				   drv, &usedChips);
 
-   for (i=0; i<numUsed; i++) {
+   if (numUsed > 0)
+   if (flags & PROBE_DETECT)
+	foundScreen = TRUE;
+   else for (i=0; i<numUsed; i++) {
       pEnt = xf86GetEntityInfo(usedChips[i]);
 
       if (pEnt->active) {

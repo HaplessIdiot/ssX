@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.79 2000/02/15 18:01:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.81 2000/02/27 02:45:25 alanh Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -822,7 +822,6 @@ CHIPSProbe(DriverPtr drv, int flags)
     int *usedChips;
     int i;
     
-    if (flags & PROBE_DETECTFBDEV) return FALSE;
     /*
      * Find the config file Device sections that match this
      * driver, and return if there are none.
@@ -837,12 +836,10 @@ CHIPSProbe(DriverPtr drv, int flags)
 					CHIPSChipsets, CHIPSPCIchipsets, 
 					devSections,numDevSections, drv,
 					&usedChips);
-	if ((numUsed > 0) && (flags & PROBE_DETECTPCI))
-		return TRUE;
-	if ((numUsed <= 0) && (flags & PROBE_DETECTPCI))
-		return FALSE; 
 	if (numUsed > 0) {
-	    for (i = 0; i < numUsed; i++) {
+	    if (flags & PROBE_DETECT)
+		foundScreen = TRUE;
+	    else for (i = 0; i < numUsed; i++) {
 		/* Allocate a ScrnInfoRec  */
 		ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
 		pScrn->driverVersion = VERSION;
@@ -868,9 +865,9 @@ CHIPSProbe(DriverPtr drv, int flags)
 				     drv,chipsFindIsaDevice,devSections,
 				     numDevSections,&usedChips);
     if(numUsed > 0)
-	if (flags & PROBE_DETECTISA)
-	    return TRUE;
-	for (i = 0; i < numUsed; i++) {
+	if (flags & PROBE_DETECT)
+	    foundScreen = TRUE;
+	else for (i = 0; i < numUsed; i++) {
 	    ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
 	    
 	    pScrn->driverVersion = VERSION;
@@ -890,8 +887,7 @@ CHIPSProbe(DriverPtr drv, int flags)
 				      NULL,NULL,NULL,NULL,NULL);
 	}
     }
-    if (devSections)
-	xfree(devSections);
+    xfree(devSections);
     return foundScreen;
 }
 

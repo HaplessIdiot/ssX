@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiio.h,v 1.4 1999/08/01 07:57:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiio.h,v 1.5 2000/02/18 12:19:23 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -117,12 +117,18 @@ extern void ATIAccessMach64PLLReg FunctionPrototype((ATIPtr, const CARD8,
     {                                        \
         while (inw(GP_STAT) & (GPBUSY | 1)); \
     }
-#define ProbeWaitIdleEmpty()                    \
-    {                                           \
-        int _i;                                 \
-        for (_i = 0;  _i < 100000;  _i++)       \
-            if (!(inw(GP_STAT) & (GPBUSY | 1))) \
-                break;                          \
+#define ProbeWaitIdleEmpty()              \
+    {                                     \
+        int _i;                           \
+        CARD16 _value;                    \
+        for (_i = 0;  _i < 100000;  _i++) \
+        {                                 \
+            _value = inw(GP_STAT);        \
+            if (_value == (CARD16)(-1))   \
+                break;                    \
+            if (!(_value & (GPBUSY | 1))) \
+                break;                    \
+        }                                 \
     }
 
 /* Wait until GP has data available */

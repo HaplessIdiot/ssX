@@ -9,7 +9,7 @@
  *	Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.50 2000/02/08 13:13:14 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.51 2000/02/18 12:19:57 tsi Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -222,8 +222,6 @@ CIRProbe(DriverPtr drv, int flags)
 	 * fits in with what is given in the config file, and allow the config
 	 * file info to override any contradictions.
 	 */
-	if (flags & PROBE_DETECTISA) return FALSE; 
-	if (flags & PROBE_DETECTFBDEV) return FALSE;
 
 	/*
 	 * All of the cards this driver supports are PCI, so the "probing" just
@@ -246,10 +244,9 @@ CIRProbe(DriverPtr drv, int flags)
 	devSections = NULL;
 	if (numUsed <= 0)
 		return FALSE;
-	if (flags & PROBE_DETECTPCI)
-		return TRUE;
-
-	for (i = 0; i < numUsed; i++) {
+	if (flags & PROBE_DETECT)
+		foundScreen = TRUE;
+	else for (i = 0; i < numUsed; i++) {
 		ScrnInfoPtr pScrn;
 
 		/* Allocate a ScrnInfoRec and claim the slot */

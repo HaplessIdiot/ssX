@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.37 2000/01/30 01:15:55 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.40 2000/02/27 02:45:31 alanh Exp $ */
 
 /*  #include "compiler.h" */
 /* everybody includes these */
@@ -314,8 +314,6 @@ TGAProbe(DriverPtr drv, int flags)
     Bool foundScreen = FALSE;
     EntityInfoPtr pEnt;
 
-    if (flags & PROBE_DETECTISA) return FALSE;
-    if (flags & PROBE_DETECTFBDEV) return FALSE;
     /*
      * The aim here is to find all cards that this driver can handle,
      * and for the ones not already claimed by another driver, claim the
@@ -372,10 +370,9 @@ TGAProbe(DriverPtr drv, int flags)
     if (numUsed <= 0)
 	return FALSE;
 
-    if (flags & PROBE_DETECTPCI)
-	return TRUE;
-
-    for (i = 0; i < numUsed; i++) {
+    if (flags & PROBE_DETECT)
+	foundScreen = TRUE;
+    else for (i = 0; i < numUsed; i++) {
 	pEnt = xf86GetEntityInfo(usedChips[i]);
 
 	/*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.16 2000/02/12 05:57:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.17 2000/02/18 12:19:32 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -833,14 +833,6 @@ ATIProbe
         (_p)->iEntity = -2;                                                \
     } while (0)
 
-    /*
-     * This driver doesn't invoke, nor depend on, any support for fbdev.  Also,
-     * temporarily disable -configure support until it gets fixed to not depend
-     * on optional driver behaviour.
-     */
-    if (flags & (PROBE_DETECTFBDEV | PROBE_DETECTPCI | PROBE_DETECTISA))
-        return FALSE;
-
     if (!(flags & PROBE_DETECT))
     {
         /*
@@ -1519,7 +1511,17 @@ NoVGAWonder:;
                 ((pATI->Adapter != ATI_ADAPTER_8514A) ||
                  ((pATI->VGAAdapter != ATI_ADAPTER_VGA) &&
                   (pATI->VGAAdapter != ATI_ADAPTER_NONE))))
+            {
                 nAdapter++;
+                pGDev = xf86AddDeviceToConfigure(ATI_DRIVER_NAME,
+                    pATI->PCIInfo, ATI_CHIPSET_ATI);
+                if (pGDev)
+                {
+                    /* Fill in additional information */
+                    pGDev->vendor = ATI_NAME;
+                    pGDev->chipset = (char *)ATIChipsetNames[ATI_CHIPSET_ATI];
+                }
+            }
 
             xfree(pATI);
         }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.17 2000/02/22 02:00:50 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.19 2000/02/27 02:45:27 alanh Exp $ */
 
 /*
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
@@ -253,9 +253,7 @@ FBDevProbe(DriverPtr drv, int flags)
 	TRACE("probe start");
 
 	/* For now, just bail out for PROBE_DETECT. */
-	if ((flags & PROBE_DETECTISA) ||
-	    (flags & PROBE_DETECTFBDEV) ||
-	    (flags & PROBE_DETECTPCI))
+	if (flags & PROBE_DETECT)
 		return FALSE;
 
 	pScrn0 = xf86AllocateScreen(drv, 0);
