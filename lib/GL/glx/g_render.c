@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/g_render.c,v 1.7 2003/11/14 16:20:55 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/g_render.c,v 1.8 2004/01/28 18:11:38 alanh Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -170,23 +170,6 @@
       __GLX_PUT_ ## type (4 + (1 * type ## _SIZE), v2); \
       __GLX_PUT_ ## type (4 + (2 * type ## _SIZE), v3); \
       __GLX_PUT_ ## type (4 + (3 * type ## _SIZE), v4); \
-      __GLX_END(cmdlen); \
-   }
-
-#define glxproto_enum1_1s(name, rop, type) \
-   void __indirect_gl ## name (GLenum e, type v1) \
-   { \
-      __GLX_DECLARE_VARIABLES(); \
-      __GLX_LOAD_VARIABLES(); \
-      cmdlen = 4 + RENDER_SIZE(type, 1); \
-      __GLX_BEGIN(rop, cmdlen); \
-      if (type ## _SIZE == 8) { \
-	 __GLX_PUT_ ## type (4 + (0 * type ## _SIZE), v1); \
-	 __GLX_PUT_LONG     (4 + (1 * type ## _SIZE), e); \
-      } else { \
-	 __GLX_PUT_LONG(4, e); \
-	 __GLX_PUT_ ## type (8 + (0 * type ## _SIZE), v1); \
-      } \
       __GLX_END(cmdlen); \
    }
 
