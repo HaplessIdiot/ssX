@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.45 2001/07/23 13:15:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.46 2001/07/24 08:32:58 alanh Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -385,7 +385,7 @@ SOFTWARE.
 	defined(__i386__) || \
 	defined(__EMX__) || \
 	defined(__OS2ELF__) || \
-	defined(__QNX__)
+	defined(__QNX__) || \
 	defined(__s390x__) || defined(__s390__)
   
 #ifndef IMAGE_BYTE_ORDER
