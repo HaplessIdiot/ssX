@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx December 2001)
+ 563. Fix acceleration, hw cursor and console restoration in the "nv" driver
+      on PowerPC (Mark Vojkovich).
  562. Fix console switching on r128 & radeon drivers using FBDev (#5075,
       Benjamin Herrenschmidt (radeon), Michel Dänzer (r128) ).
  561. Implement double buffering for XVputimage in the mga driver (#A.601,
@@ -14314,4 +14316,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2082 2001/12/10 23:02:30 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2083 2001/12/10 23:13:36 alanh Exp $
