@@ -1,3 +1,6 @@
+XCOMM $XFree86: $
+
+
 #include <Server.tmpl>
 
 SRCS = vga_driver.c
