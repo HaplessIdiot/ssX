@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.271 2003/08/24 17:36:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.272 2003/08/24 20:52:30 dawes Exp $ */
 
 
 /*
@@ -1451,7 +1451,7 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
 	indp[count - 1].extraOptions = xf86addNewOption(NULL, "CorePointer", NULL);
 	indp[count].identifier = NULL;
 	servlayoutp->inputs = indp;
-    } else {
+    } else if (!havePointer) {
 	/* This should never happen. */
 	xf86Msg(X_ERROR, "Cannot locate a core pointer device.\n");
 	return FALSE;
@@ -1473,7 +1473,7 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
 	indp[count - 1].extraOptions = xf86addNewOption(NULL, "CoreKeyboard", NULL);
 	indp[count].identifier = NULL;
 	servlayoutp->inputs = indp;
-    } else {
+    } else if (!haveKeyboard) {
 	/* This should never happen. */
 	xf86Msg(X_ERROR, "Cannot locate a core keyboard device\n");
 	return FALSE;

@@ -1,4 +1,7 @@
 XFree86 4.3.99.12 (xx August 2003)
+ 407. Fix a bug introduced with #397 that results in the core pointer and
+      keyboard devices specified in a ServerLayout section being ignored
+      (David Dawes).
  406. Added big5hkscs encoding to font encoding files (Bugzilla #575, 
       Jungshik Shin).
  405. Don't call FBIOPAN_DISPLAY ioctl with arguments that will cause a
@@ -17629,7 +17632,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2828 2003/08/26 10:57:04 daenzer Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2829 2003/08/26 11:34:54 eich Exp $
 
 
 
