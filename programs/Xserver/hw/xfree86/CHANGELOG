@@ -1,4 +1,6 @@
 XFree86 4.2.99.3 (xx November 2002)
+ 484. Remove "Option VideoRam" from savage driver, there's no need for it,
+      and utilize the entities given VideoRam size (Alan Hourihane).
  483. Fix fontconfig to obey NothingOutsideProjectRoot, so that the directory
       /usr/share/fonts is ignored in this case (#A.1325, Joe Moss).
  482. Fix a segfault when using xkbcomp's -I option, and update the man
@@ -15503,4 +15505,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2388 2002/11/15 03:17:09 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2389 2002/11/15 09:29:35 alanh Exp $
