@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.10 2001/06/26 18:23:34 keithp Exp $
+ * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.11 2001/06/26 19:47:00 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  *
@@ -510,9 +510,6 @@ RREditConnectionInfo (ScreenPtr pScreen)
 	root = (xWindowRoot *) ((char *) depth);
 	screen++;
     }
-    ErrorF ("old size %dx%d %dx%d\n",
-	    pScreen->width, pScreen->height, 
-	    pScreen->mmWidth, pScreen->mmHeight);
     root->pixWidth = pScreen->width;
     root->pixHeight = pScreen->height;
     root->mmWidth = pScreen->mmWidth;
