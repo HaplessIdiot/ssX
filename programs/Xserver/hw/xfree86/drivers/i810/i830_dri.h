@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_dri.h,v 1.3 2002/09/11 00:29:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_dri.h,v 1.4 2002/10/30 12:52:18 alanh Exp $ */
 
 #ifndef _I830_DRI_H
 #define _I830_DRI_H
@@ -9,7 +9,7 @@
 #define I830_MAX_DRAWABLES 256
 
 #define I830_MAJOR_VERSION 1
-#define I830_MINOR_VERSION 0
+#define I830_MINOR_VERSION 3
 #define I830_PATCHLEVEL 0
 
 #define I830_REG_SIZE 0x80000
@@ -115,6 +115,32 @@ typedef struct _I830SAREA {
    int ctxOwner;			/* last context to upload state */
 
    int vertex_prim;
+
+   int pf_enabled;                  /* is pageflipping allowed? */
+   int pf_active;                   /* is pageflipping active right now? */
+   int pf_current_page; 	    /* which buffer is being displayed? */
+
+   int perf_boxes;             /* performance boxes to be displayed */
+
+   /* Here's the state for texunits 2,3:
+    */
+   unsigned int TexState2[I830_TEX_SETUP_SIZE];
+   unsigned int TexBlendState2[I830_TEXBLEND_SIZE];
+   unsigned int TexBlendStateWordsUsed2;
+
+   unsigned int TexState3[I830_TEX_SETUP_SIZE];
+   unsigned int TexBlendState3[I830_TEXBLEND_SIZE];
+   unsigned int TexBlendStateWordsUsed3;
+   
+   unsigned int StippleState[I830_STP_SETUP_SIZE];
 } I830SAREARec, *I830SAREAPtr;
+
+/* Flags for perf_boxes
+ */
+#define I830_BOX_RING_EMPTY    0x1 /* populated by kernel */
+#define I830_BOX_FLIP          0x2 /* populated by kernel */
+#define I830_BOX_WAIT          0x4 /* populated by kernel & client */
+#define I830_BOX_TEXTURE_LOAD  0x8 /* populated by kernel */
+#define I830_BOX_LOST_CONTEXT  0x10 /* populated by client */
 
 #endif

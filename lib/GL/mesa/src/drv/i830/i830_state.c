@@ -25,7 +25,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_state.c,v 1.3 2002/09/10 00:39:38 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_state.c,v 1.4 2002/09/11 00:29:26 dawes Exp $ */
 
 /*
  * Author:
@@ -729,15 +729,71 @@ static void i830DepthMask(GLcontext *ctx, GLboolean flag)
 
    imesa->Setup[I830_CTXREG_ENABLES_2] &= ~ENABLE_DIS_DEPTH_WRITE_MASK;
 
-   if (flag)
+   if (flag && ctx->Depth.Test)
       imesa->Setup[I830_CTXREG_ENABLES_2] |= ENABLE_DEPTH_WRITE;
    else
       imesa->Setup[I830_CTXREG_ENABLES_2] |= DISABLE_DEPTH_WRITE;
 }
 
-/* The i830 has no stipple hardware */
-static void i830PolygonStipple(GLcontext *ctx, const GLubyte *mask)
+/* =============================================================
+ * Polygon stipple
+ *
+ * The i830 supports a 4x4 stipple natively, GL wants 32x32.
+ * Fortunately stipple is usually a repeating pattern.
+ */
+static void i830PolygonStipple( GLcontext *ctx, const GLubyte *mask )
 {
+   i830ContextPtr imesa = I830_CONTEXT(ctx);
+   const GLubyte *m = mask;
+   GLubyte p[4];
+   int i,j,k;
+   int active = (ctx->Polygon.StippleFlag &&
+		 imesa->reduced_primitive == GL_TRIANGLES);
+   GLuint newMask;
+
+   if (active) {
+      I830_STATECHANGE(imesa, I830_UPLOAD_STIPPLE);
+      imesa->StippleSetup[I830_STPREG_ST1] &= ~ST1_ENABLE;
+   }
+
+   p[0] = mask[12] & 0xf; p[0] |= p[0] << 4;
+   p[1] = mask[8] & 0xf; p[1] |= p[1] << 4;
+   p[2] = mask[4] & 0xf; p[2] |= p[2] << 4;
+   p[3] = mask[0] & 0xf; p[3] |= p[3] << 4;
+
+   for (k = 0 ; k < 8 ; k++)
+      for (j = 3 ; j >= 0; j--)
+	 for (i = 0 ; i < 4 ; i++, m++)
+	    if (*m != p[j]) {
+	       imesa->hw_stipple = 0;
+	       return;
+	    }
+
+   newMask = (((p[0] & 0xf) << 0) |
+	      ((p[1] & 0xf) << 4) |
+	      ((p[2] & 0xf) << 8) |
+	      ((p[3] & 0xf) << 12));
+
+
+   if (newMask == 0xffff || newMask == 0x0) {
+      /* this is needed to make conform pass */
+      imesa->hw_stipple = 0;
+      return;
+   }
+
+   imesa->StippleSetup[I830_STPREG_ST1] &= ~0xffff;
+   imesa->StippleSetup[I830_STPREG_ST1] |= newMask;
+   imesa->hw_stipple = 1;
+
+   if (active)
+      imesa->StippleSetup[I830_STPREG_ST1] |= ST1_ENABLE;
+}
+
+static void i830PolygonStippleFallback( GLcontext *ctx, const GLubyte *mask )
+{
+   i830ContextPtr imesa = I830_CONTEXT(ctx);
+   imesa->hw_stipple = 0;
+   (void) i830PolygonStipple;
 }
 
 /* =============================================================
@@ -760,6 +816,12 @@ static void i830Scissor(GLcontext *ctx, GLint x, GLint y,
    if (y1 < 0) y1 = 0;
    if (x2 < 0) x2 = 0;
    if (y2 < 0) y2 = 0;
+
+   if (x2 >= imesa->i830Screen->width) x2 = imesa->i830Screen->width-1;
+   if (y2 >= imesa->i830Screen->height) y2 = imesa->i830Screen->height-1;
+   if (x1 >= imesa->i830Screen->width) x1 = imesa->i830Screen->width-1;
+   if (y1 >= imesa->i830Screen->height) y1 = imesa->i830Screen->height-1;
+
 
    I830_STATECHANGE(imesa, I830_UPLOAD_BUFFERS);
    imesa->BufferSetup[I830_DESTREG_SR1] = (y1 << 16) | (x1 & 0xffff);
@@ -843,33 +905,93 @@ static void i830RenderMode( GLcontext *ctx, GLenum mode )
    FALLBACK( imesa, I830_FALLBACK_RENDERMODE, (mode != GL_RENDER) );
 }
 
-static void i830SetDrawBuffer(GLcontext *ctx, GLenum mode )
+#if 0
+void i830DrawBuffer(GLcontext *ctx, GLenum mode )
 {
    i830ContextPtr imesa = I830_CONTEXT(ctx);
+   int front;
 
-   if (mode == GL_FRONT_LEFT) {
-      I830_FIREVERTICES(imesa);
-      I830_STATECHANGE(imesa, I830_UPLOAD_BUFFERS);
+   /*
+    * _DrawDestMask is easier to cope with than <mode>.
+    */
+   switch ( ctx->Color._DrawDestMask ) {
+   case FRONT_LEFT_BIT:
+      front = 1;
+      break;
+   case BACK_LEFT_BIT:
+      front = 0;
+      break;
+   default:
+      /* GL_NONE or GL_FRONT_AND_BACK or stereo left&right, etc */
+      FALLBACK( imesa, I830_FALLBACK_DRAW_BUFFER, GL_TRUE );
+      return;
+   }
 
+   if ( imesa->sarea->pf_current_page == 1 ) 
+      front ^= 1;
+   
+   FALLBACK( imesa, I830_FALLBACK_DRAW_BUFFER, GL_FALSE );
+   I830_FIREVERTICES(imesa);
+   I830_STATECHANGE(imesa, I830_UPLOAD_BUFFERS);
+   i830XMesaSetFrontClipRects( imesa );
+
+   if (front) {
       imesa->BufferSetup[I830_DESTREG_CBUFADDR] = imesa->i830Screen->fbOffset;
-
       imesa->drawMap = (char *)imesa->driScreen->pFB;
       imesa->readMap = (char *)imesa->driScreen->pFB;
-      i830XMesaSetFrontClipRects( imesa );
-      FALLBACK( imesa, I830_FALLBACK_DRAW_BUFFER, GL_FALSE );
-   } else if (mode == GL_BACK_LEFT) {
-      I830_FIREVERTICES(imesa);
-      I830_STATECHANGE(imesa, I830_UPLOAD_BUFFERS);
-
-      imesa->BufferSetup[I830_DESTREG_CBUFADDR] = 
-					imesa->i830Screen->backOffset;
-
+   } else {
+      imesa->BufferSetup[I830_DESTREG_CBUFADDR] = imesa->i830Screen->backOffset;
       imesa->drawMap = imesa->i830Screen->back.map;
       imesa->readMap = imesa->i830Screen->back.map;
-      i830XMesaSetBackClipRects( imesa );
-      FALLBACK( imesa, I830_FALLBACK_DRAW_BUFFER, GL_FALSE );
-   } else {
+   }
+
+   /* We want to update the s/w rast state too so that i830SetBuffer()
+    * gets called.
+    */
+   _swrast_DrawBuffer(ctx, mode);
+}
+
+
+static void i830ReadBuffer(GLcontext *ctx, GLenum mode )
+{
+   /* nothing, until h/w glRead/CopyPixels */
+}
+#endif
+
+
+void i830SetDrawBuffer(GLcontext *ctx, GLenum mode )
+{
+   i830ContextPtr imesa = I830_CONTEXT(ctx);
+   int front = 0;
+ 
+   switch (mode) {
+   case GL_FRONT_LEFT:
+      front = 1;
+      break;
+   case GL_BACK_LEFT:
+      front = 0;
+      break;
+   default:
       FALLBACK( imesa, I830_FALLBACK_DRAW_BUFFER, GL_TRUE );
+      return;
+   }
+
+   if ( imesa->sarea->pf_current_page == 1 ) 
+      front ^= 1;
+   
+   FALLBACK( imesa, I830_FALLBACK_DRAW_BUFFER, GL_FALSE );
+   I830_FIREVERTICES(imesa);
+   I830_STATECHANGE(imesa, I830_UPLOAD_BUFFERS);
+   i830XMesaSetFrontClipRects( imesa );
+
+   if (front) {
+      imesa->BufferSetup[I830_DESTREG_CBUFADDR] = imesa->i830Screen->fbOffset;
+      imesa->drawMap = (char *)imesa->driScreen->pFB;
+      imesa->readMap = (char *)imesa->driScreen->pFB;
+   } else {
+      imesa->BufferSetup[I830_DESTREG_CBUFADDR] = imesa->i830Screen->backOffset;
+      imesa->drawMap = imesa->i830Screen->back.map;
+      imesa->readMap = imesa->i830Screen->back.map;
    }
 }
 
@@ -1098,6 +1220,10 @@ static void i830Enable(GLcontext *ctx, GLenum cap, GLboolean state)
 	 imesa->Setup[I830_CTXREG_ENABLES_1] |= ENABLE_DEPTH_TEST;
       else
 	 imesa->Setup[I830_CTXREG_ENABLES_1] |= DISABLE_DEPTH_TEST;
+
+      /* Also turn off depth writes when GL_DEPTH_TEST is disabled:
+       */
+      i830DepthMask( ctx, state );
       break;
 
    case GL_SCISSOR_TEST:
@@ -1148,8 +1274,8 @@ static void i830Enable(GLcontext *ctx, GLenum cap, GLboolean state)
       break;
 
    case GL_TEXTURE_2D:
-      I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
-      imesa->Setup[I830_CTXREG_ENABLES_1] &= ~ENABLE_SPEC_ADD_MASK;
+/*       I830_STATECHANGE(imesa, I830_UPLOAD_CTX); */
+/*       imesa->Setup[I830_CTXREG_ENABLES_1] &= ~ENABLE_SPEC_ADD_MASK; */
       break;
 
    case GL_STENCIL_TEST:
@@ -1168,7 +1294,6 @@ static void i830Enable(GLcontext *ctx, GLenum cap, GLboolean state)
       break;
 
    case GL_POLYGON_STIPPLE:
-      FALLBACK(imesa, I830_FALLBACK_STIPPLE, ctx->Polygon.StippleFlag);
       break;
 
    default:
@@ -1212,11 +1337,6 @@ void i830EmitDrawingRectangle( i830ContextPtr imesa )
    
    /* Just add in our dirty flag, since we might be called when locked */
    /* Might want to modify how this is done. */
-#if 0
-   if (imesa->vertex_low != imesa->vertex_last_prim)
-      i830FlushPrimsLocked(imesa);
-#endif
-
    imesa->dirty |= I830_UPLOAD_BUFFERS;
 
    if (0)
@@ -1262,7 +1382,7 @@ static void i830DepthRange( GLcontext *ctx,
 
 void i830PrintDirty( const char *msg, GLuint state )
 {
-   fprintf(stderr, "%s (0x%x): %s%s%s%s%s%s\n",
+   fprintf(stderr, "%s (0x%x): %s%s%s%s%s%s%s\n",
 	   msg,
 	   (unsigned int) state,
 	   (state & I830_UPLOAD_TEX0)  ? "upload-tex0, " : "",
@@ -1270,7 +1390,8 @@ void i830PrintDirty( const char *msg, GLuint state )
 	   (state & I830_UPLOAD_CTX)        ? "upload-ctx, " : "",
 	   (state & I830_UPLOAD_BUFFERS)    ? "upload-bufs, " : "",
 	   (state & I830_UPLOAD_TEXBLEND0)  ? "upload-blend0, " : "",
-	   (state & I830_UPLOAD_TEXBLEND1)  ? "upload-blend1, " : ""
+	   (state & I830_UPLOAD_TEXBLEND1)  ? "upload-blend1, " : "",
+	   (state & I830_UPLOAD_STIPPLE)  ? "stipple, " : ""
 	   );
 }
 
@@ -1299,7 +1420,8 @@ void i830EmitHwStateLocked( i830ContextPtr imesa )
 		imesa->CurrentTexObj[i]->Setup,
 		sizeof(imesa->sarea->TexState[i]));
 	 /* Update the LRU usage */
-	 i830UpdateTexLRU(imesa, imesa->CurrentTexObj[i]);
+	 if (imesa->CurrentTexObj[i]->MemBlock)
+	    i830UpdateTexLRU(imesa, imesa->CurrentTexObj[i]);
       }
    }
    /* Need to figure out if texturing state, or enable changed. */
@@ -1315,10 +1437,13 @@ void i830EmitHwStateLocked( i830ContextPtr imesa )
    }
 
    if (imesa->dirty & I830_UPLOAD_BUFFERS) {
-      if (I830_DEBUG & DEBUG_STATE)
-	 fprintf(stderr,"\nCopying BufferState to shared area\n");
       memcpy( imesa->sarea->BufferState,imesa->BufferSetup, 
 	      sizeof(imesa->BufferSetup) );
+   }
+
+   if (imesa->dirty & I830_UPLOAD_STIPPLE) {
+      memcpy( imesa->sarea->StippleState,imesa->StippleSetup, 
+	      sizeof(imesa->StippleSetup) );
    }
 
    if (imesa->dirty & I830_UPLOAD_TEX_PALETTE_SHARED) {
@@ -1338,6 +1463,7 @@ void i830EmitHwStateLocked( i830ContextPtr imesa )
 		 sizeof(imesa->sarea->Palette[1]));
       }
    }
+   
    imesa->sarea->dirty |= (imesa->dirty & ~(I830_UPLOAD_TEX_MASK | 
 					    I830_UPLOAD_TEXBLEND_MASK));
 
@@ -1564,9 +1690,11 @@ void i830DDInitState( GLcontext *ctx )
    imesa->LcsCullMode = CULLMODE_CW; /* GL default */
 
    memset(imesa->BufferSetup, 0, sizeof(imesa->BufferSetup));
+   memset(imesa->StippleSetup, 0, sizeof(imesa->StippleSetup));
 
 
-   if (imesa->glCtx->Color.DriverDrawBuffer == GL_BACK_LEFT) {
+   if (imesa->glCtx->Visual.doubleBufferMode &&
+       imesa->sarea->pf_current_page == 0) {
       imesa->drawMap = i830Screen->back.map;
       imesa->readMap = i830Screen->back.map;
       imesa->BufferSetup[I830_DESTREG_CBUFADDR] = i830Screen->backOffset;
@@ -1652,7 +1780,7 @@ void i830DDInitStateFuncs(GLcontext *ctx)
    ctx->Driver.LineWidth = i830LineWidth;
    ctx->Driver.PointSize = i830PointSize;
    ctx->Driver.LogicOpcode = i830LogicOp;
-   ctx->Driver.PolygonStipple = i830PolygonStipple;
+   ctx->Driver.PolygonStipple = i830PolygonStippleFallback;
    ctx->Driver.RenderMode = i830RenderMode;
    ctx->Driver.Scissor = i830Scissor;
    ctx->Driver.SetDrawBuffer = i830SetDrawBuffer;

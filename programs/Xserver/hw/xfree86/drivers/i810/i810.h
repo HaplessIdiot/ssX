@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.34 2002/10/30 12:52:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.36 2002/11/25 14:04:59 eich Exp $ */
 
 /*
  * Authors:
@@ -67,8 +67,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define I810_NAME "I810"
 #define I810_DRIVER_NAME "i810"
 #define I810_MAJOR_VERSION 1
-#define I810_MINOR_VERSION 1
+#define I810_MINOR_VERSION 3
 #define I810_PATCHLEVEL 0
+
 
 /* HWMC Surfaces */
 #define I810_MAX_SURFACES 7

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.25 2002/09/11 00:29:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.26 2002/10/30 12:52:18 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -218,7 +218,7 @@ I810AllocateGARTMemory(ScrnInfoPtr pScrn)
  * Need to make it less likely that we miss out on this - probably
  * need to move the frontbuffer away from the 'guarenteed' alignment
  * of the first memory segment, or perhaps allocate a discontigous
- * framebuffer to get more alignment 'sweet spots'.  
+ * framebuffer to get more alignment 'sweet spots'.
  */
 void
 I810SetTiledMemory(ScrnInfoPtr pScrn, int nr, unsigned int start,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.h,v 1.8 2002/10/08 20:15:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.h,v 1.9 2002/10/30 12:52:17 alanh Exp $ */
 
 #ifndef _I810_DRI_
 #define _I810_DRI_
@@ -93,7 +93,7 @@ typedef struct {
     * texture space, and can make informed decisions as to which
     * areas to kick out.  There is no need to choose whether to
     * kick out your own texture or someone else's - simply eject
-    * them all in LRU order.  
+    * them all in LRU order.
     */
    I810TexRegionRec texList[I810_NR_TEX_REGIONS + 1];	/* Last elt is sentinal */
 

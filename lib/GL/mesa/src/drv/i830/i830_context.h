@@ -25,7 +25,7 @@
 /* Adapted for use in the I830M driver: 
  *   Jeff Hartmann <jhartmann@2d3d.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_context.h,v 1.1 2002/09/09 19:18:47 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_context.h,v 1.2 2002/09/11 00:29:25 dawes Exp $ */
 
 #ifndef I830CONTEXT_INC
 #define I830CONTEXT_INC
@@ -165,10 +165,11 @@ struct i830_context_t
    GLuint dirty;		/* I810_UPLOAD_* */
    GLuint Setup[I830_CTX_SETUP_SIZE];
    GLuint BufferSetup[I830_DEST_SETUP_SIZE];
+   GLuint StippleSetup[I830_STP_SETUP_SIZE];
    int vertex_size;
    int vertex_stride_shift;
    GLint lastStamp;
-   GLboolean stipple_in_hw;
+   GLboolean hw_stipple;
 
    GLenum TexEnvImageFmt[2];
 
@@ -186,7 +187,6 @@ struct i830_context_t
     */
    GLuint needClip;
    GLframebuffer *glBuffer;
-   GLboolean doPageFlip;
 
    /* These refer to the current draw (front vs. back) buffer:
     */
@@ -201,7 +201,10 @@ struct i830_context_t
    int texAge;
    int ctxAge;
    int dirtyAge;
+   int perf_boxes;
 
+   int do_irqs;
+   
    GLboolean scissor;
    XF86DRIClipRectRec draw_rect;
    XF86DRIClipRectRec scissor_rect;
@@ -241,9 +244,11 @@ do {              					\
   
   /* Unlock the hardware using the global current context 
    */
-#define UNLOCK_HARDWARE(imesa)                  			\
-   DRM_UNLOCK(imesa->driFd, imesa->driHwLock, imesa->hHWContext);
-
+#define UNLOCK_HARDWARE(imesa)						\
+do {									\
+   imesa->perf_boxes |= imesa->sarea->perf_boxes;			\
+   DRM_UNLOCK(imesa->driFd, imesa->driHwLock, imesa->hHWContext);	\
+} while (0)
 
   /* This is the wrong way to do it, I'm sure.  Otherwise the drm
    * bitches that I've already got the heavyweight lock.  At worst,
@@ -292,6 +297,13 @@ extern int I830_DEBUG;
 #define DEBUG_SANITY    0x200
 #define DEBUG_SYNC      0x400
 #define DEBUG_SLEEP     0x800
+
+
+#define PCI_CHIP_845_G			0x2562
+#define PCI_CHIP_I830_M			0x3577
+
+
+
 	
 #endif
 

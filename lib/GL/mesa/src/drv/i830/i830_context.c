@@ -24,7 +24,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  * **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_context.c,v 1.3 2002/09/11 00:29:25 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_context.c,v 1.4 2002/09/12 02:20:08 tsi Exp $ */
 
 /*
  * Authors:
@@ -72,9 +72,7 @@ int I830_DEBUG = (0);
  * Mesa's Driver Functions
  ***************************************/
 
-#define PCI_CHIP_845_G			0x2562
-#define PCI_CHIP_I830_M			0x3577
-#define DRIVER_DATE                     "20020803"
+#define DRIVER_DATE                     "20021111"
 
 static const GLubyte *i830DDGetString( GLcontext *ctx, GLenum name )
 {
@@ -100,7 +98,15 @@ static const GLubyte *i830DDGetString( GLcontext *ctx, GLenum name )
       }
       break;
    default:
-      return 0;
+      switch (name) {
+      case GL_VENDOR:
+	 return (GLubyte *)"Tungsten Graphics, Inc";
+      case GL_RENDERER:
+	 return (GLubyte *)"Mesa DRI Unknown Intel Chipset " DRIVER_DATE;
+      default:
+	 return 0;
+      }
+      break;
    }
 }
 
@@ -126,8 +132,8 @@ static void i830InitExtensions( GLcontext *ctx )
    _mesa_enable_extension( ctx, "GL_ARB_multitexture" );
    _mesa_enable_extension( ctx, "GL_ARB_texture_env_add" );
    _mesa_enable_extension( ctx, "GL_EXT_texture_env_add" );
-   _mesa_enable_extension( ctx, "GL_ARB_texture_env_combine" );
-   _mesa_enable_extension( ctx, "GL_EXT_texture_env_combine" );
+   _mesa_enable_extension( ctx, "GL_ARB_texture_env_combine" ); 
+   _mesa_enable_extension( ctx, "GL_EXT_texture_env_combine" ); 
    _mesa_enable_extension( ctx, "GL_EXT_blend_color" );
    _mesa_enable_extension( ctx, "GL_EXT_blend_minmax" );
    _mesa_enable_extension( ctx, "GL_EXT_blend_subtract" );
@@ -325,8 +331,10 @@ GLboolean i830CreateContext( Display *dpy, const __GLcontextModes *mesaVis,
    imesa->CurrentTexObj[0] = 0;
    imesa->CurrentTexObj[1] = 0;
 
-   _math_matrix_ctr (&imesa->ViewportMatrix);
+   imesa->do_irqs = (imesa->i830Screen->irq_active &&
+		     !getenv("I830_NO_IRQS"));
 
+   _math_matrix_ctr (&imesa->ViewportMatrix);
 
    i830InitExtensions (ctx);
    i830DDInitStateFuncs( ctx );
@@ -343,6 +351,12 @@ GLboolean i830CreateContext( Display *dpy, const __GLcontextModes *mesaVis,
    if (getenv("I830_DEBUG"))
       add_debug_flags( getenv("I830_DEBUG") );
 #endif
+
+   if (getenv("I830_NO_RAST") || 
+       getenv("INTEL_NO_RAST")) {
+      fprintf(stderr, "disabling 3D rasterization\n");
+      FALLBACK(imesa, I830_FALLBACK_USER, 1); 
+   }
 
 
    return GL_TRUE;
@@ -386,7 +400,7 @@ void i830XMesaSetBackClipRects( i830ContextPtr imesa )
 {
    __DRIdrawablePrivate *dPriv = imesa->driDrawable;
 
-   if (dPriv->numBackClipRects == 0) {
+   if (imesa->sarea->pf_enabled == 0 && dPriv->numBackClipRects == 0) {
       imesa->numClipRects = dPriv->numClipRects;
       imesa->pClipRects = dPriv->pClipRects;
       imesa->drawX = dPriv->x;
@@ -421,10 +435,11 @@ GLboolean i830UnbindContext(__DRIcontextPrivate *driContextPriv)
    i830ContextPtr imesa = (i830ContextPtr) driContextPriv->driverPrivate;
    if (imesa) {
       /* Might want to change this so texblend isn't always updated */
-      imesa->dirty = (I830_UPLOAD_CTX |
-		      I830_UPLOAD_BUFFERS |
-		      I830_UPLOAD_TEXBLEND0 |
-		      I830_UPLOAD_TEXBLEND1);
+      imesa->dirty |= (I830_UPLOAD_CTX |
+		       I830_UPLOAD_BUFFERS |
+		       I830_UPLOAD_STIPPLE |
+		       I830_UPLOAD_TEXBLEND0 |
+		       I830_UPLOAD_TEXBLEND1);
 
       if (imesa->CurrentTexObj[0]) imesa->dirty |= I830_UPLOAD_TEX0;
       if (imesa->CurrentTexObj[1]) imesa->dirty |= I830_UPLOAD_TEX1;
@@ -460,6 +475,41 @@ GLboolean i830MakeCurrent(__DRIcontextPrivate *driContextPriv,
    return GL_TRUE;
 }
 
+/* Turn on/off page flipping according to the flags in the sarea:
+ */
+static void
+i830UpdatePageFlipping( i830ContextPtr imesa )
+{
+   GLcontext *ctx = imesa->glCtx;
+   int front = 0;
+
+   switch (ctx->Color.DriverDrawBuffer) {
+   case GL_FRONT_LEFT:
+      front = 1;
+      break;
+   case GL_BACK_LEFT:
+      front = 0;
+      break;
+   default:
+      return;
+   }
+
+   if ( imesa->sarea->pf_current_page == 1 ) 
+      front ^= 1;
+   
+   if (front) {
+      imesa->BufferSetup[I830_DESTREG_CBUFADDR] = imesa->i830Screen->fbOffset;
+      imesa->drawMap = (char *)imesa->driScreen->pFB;
+      imesa->readMap = (char *)imesa->driScreen->pFB;
+   } else {
+      imesa->BufferSetup[I830_DESTREG_CBUFADDR] = imesa->i830Screen->backOffset;
+      imesa->drawMap = imesa->i830Screen->back.map;
+      imesa->readMap = imesa->i830Screen->back.map;
+   }
+
+   imesa->dirty |= I830_UPLOAD_BUFFERS;
+}
+
 void i830GetLock( i830ContextPtr imesa, GLuint flags )
 {
    __DRIdrawablePrivate *dPriv = imesa->driDrawable;
@@ -485,13 +535,15 @@ void i830GetLock( i830ContextPtr imesa, GLuint flags )
    if (sarea->ctxOwner != me) {
       imesa->upload_cliprects = GL_TRUE;
       imesa->dirty |= (I830_UPLOAD_CTX |
-		       I830_UPLOAD_BUFFERS);
+		       I830_UPLOAD_BUFFERS | 
+		       I830_UPLOAD_STIPPLE);
 
       if(imesa->CurrentTexObj[0]) imesa->dirty |= I830_UPLOAD_TEX0;
       if(imesa->CurrentTexObj[1]) imesa->dirty |= I830_UPLOAD_TEX1;
       if(imesa->TexBlendWordsUsed[0]) imesa->dirty |= I830_UPLOAD_TEXBLEND0;
       if(imesa->TexBlendWordsUsed[1]) imesa->dirty |= I830_UPLOAD_TEXBLEND1;
 
+      sarea->perf_boxes = imesa->perf_boxes | I830_BOX_LOST_CONTEXT;
       sarea->ctxOwner = me;
    }
 
@@ -522,6 +574,7 @@ void i830GetLock( i830ContextPtr imesa, GLuint flags )
    }
 
    if (imesa->lastStamp != dPriv->lastStamp) {
+      i830UpdatePageFlipping( imesa );
       i830XMesaWindowMoved( imesa );
       imesa->lastStamp = dPriv->lastStamp;
    }
@@ -539,8 +592,10 @@ void i830SwapBuffers(Display *dpy, void *drawablePrivate)
       imesa = (i830ContextPtr) dPriv->driContextPriv->driverPrivate;
       ctx = imesa->glCtx;
       if (ctx->Visual.doubleBufferMode) {
-	 _mesa_swapbuffers( ctx );  /* flush pending rendering comands */
-	 if ( imesa->doPageFlip ) {
+	 /* flush pending rendering comands */
+	 _mesa_swapbuffers( ctx );
+	 if ( imesa->sarea->pf_active && 
+	      (dPriv->w * dPriv->h * imesa->i830Screen->cpp) > (300*300*4) ) {
 	    i830PageFlip( dPriv );
 	 } else {
 	    i830CopyBuffer( dPriv );

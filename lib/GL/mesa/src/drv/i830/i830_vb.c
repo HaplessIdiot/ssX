@@ -23,7 +23,7 @@
  * Adapted for use on the I830M:
  *   Jeff Hartmann <jhartmann@2d3d.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_vb.c,v 1.3 2002/09/10 00:39:38 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_vb.c,v 1.4 2002/09/11 00:29:26 dawes Exp $ */
 
 #include "glheader.h"
 #include "mtypes.h"
@@ -491,12 +491,17 @@ void i830ChooseVertexState( GLcontext *ctx )
    if (ctx->Fog.Enabled)
       ind |= I830_FOG_BIT;
 
+   /* unit 1 */
    if (ctx->Texture._ReallyEnabled & TEXTURE1_ANY)
       ind |= I830_TEX1_BIT|I830_TEX0_BIT;
+   /* unit 0 */
    else if (ctx->Texture._ReallyEnabled & TEXTURE0_ANY)
       ind |= I830_TEX0_BIT;
 
    imesa->SetupIndex = ind;
+
+   if (I830_DEBUG & (DEBUG_VERTS|DEBUG_STATE))
+      i830PrintSetupFlags( __FUNCTION__, ind );
 
    if (ctx->_TriangleCaps & (DD_TRI_LIGHT_TWOSIDE|DD_TRI_UNFILLED)) {
       tnl->Driver.Render.Interp = i830_interp_extras;

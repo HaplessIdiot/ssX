@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830.h,v 1.4 2002/10/30 12:52:18 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830.h,v 1.5 2002/11/05 02:43:59 dawes Exp $ */
 
 /*
  * Authors:
@@ -74,32 +74,19 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /* I830 Video BIOS support */
 
 /*
- * The mode handling is based upon the VESA driver written by:
- * Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
+ * The mode handling is based upon the VESA driver written by
+ * Paulo César Pereira de Andrade <pcpa@conectiva.com.br>.
  */
 
 typedef struct _VESARec {
-   vbeInfoPtr pVbe;
-   VbeInfoBlock *vbeInfo;
-   pointer state, pstate;		/* SVGA state */
+   /* SVGA state */
+   pointer state, pstate;
    int statePage, stateSize, stateMode;
    CARD32 *savedPal;
+   int savedScanlinePitch;
    xf86MonPtr monitor;
-   CARD8 saveSWF1;
-   CARD8 newSWF1;
-   Bool overrideBIOSMemSize;
-   Bool useDefaultRefresh;		/*
-					 * Don't try to set the refresh rate
-					 * for any modes.
-					 */
-   Bool enableDisplays;			/*
-					 * Use BIOS call 0x5f64 to explicitly
-					 * enable displays.
-					 */
-   Bool useExtendedRefresh;		/*
-					 * Use BIOS call 0x5f05 to set the
-					 * refresh rate.
-					 */
+   /* Don't try to set the refresh rate for any modes. */
+   Bool useDefaultRefresh;
 } VESARec, *VESAPtr;
 
 
@@ -118,7 +105,7 @@ typedef struct _I830MemRange *I830MemRangePtr;
 typedef struct _I830MemRange {
    long Start;
    long End;
-   unsigned long Size;
+   long Size;
    unsigned long Physical;
    unsigned long Offset;		/* Offset of AGP-allocated portion */
    unsigned long Alignment;
@@ -159,12 +146,14 @@ typedef struct _I830Rec {
    unsigned long FbMapSize;
    unsigned long TotalVideoRam;
    I830MemRange StolenMemory;		/* pre-allocated memory */
+   unsigned long BIOSMemorySize;	/* min stolen pool size */
 
    /* These change according to what has been allocated. */
-   unsigned long FreeMemory;
+   long FreeMemory;
    I830MemRange MemoryAperture;
    I830MemPool StolenPool;
-  
+   unsigned long allocatedMemory;
+
    /* Regions allocated either from the above pools, or from agpgart. */
    I830MemRange FrontBuffer;
    I830MemRange	CursorMem;
@@ -187,9 +176,12 @@ typedef struct _I830Rec {
    I830MemRange BufferMem;
    I830MemRange ContextMem;
    int TexGranularity;
+   int drmMinor;
+   Bool have3DWindows;
 #endif
 
    Bool NeedRingBufferLow;
+   Bool allowPageFlip;
 
    int auxPitch;
    int auxPitchBits;
@@ -233,15 +225,16 @@ typedef struct _I830Rec {
    I830WriteByteFunc writeStandard;
    I830ReadByteFunc readStandard;
 
-   Bool XvEnabled;			/* false if I830_XV not defined. */
+   Bool XvDisabled;			/* Xv disabled in PreInit. */
+   Bool XvEnabled;			/* Xv enabled for this generation. */
 
 #ifdef I830_XV
    int colorKey;
    XF86VideoAdaptorPtr adaptor;
    Bool overlayOn;
 #endif
-   
-   Bool directRenderingDisabled;	/* DRI disabled always. */
+
+   Bool directRenderingDisabled;	/* DRI disabled in PreInit. */
    Bool directRenderingEnabled;		/* DRI enabled this generation. */
 
 #ifdef XF86DRI
@@ -261,16 +254,46 @@ typedef struct _I830Rec {
    /* Stolen memory support */
    Bool StolenOnly;
 
-   /* Video BIOS support */
+   /* Video BIOS support. */
+   vbeInfoPtr pVbe;
+   VbeInfoBlock *vbeInfo;
    VESAPtr vesa;
 
+   Bool overrideBIOSMemSize;
+   int saveBIOSMemSize;
+   int newBIOSMemSize;
+   Bool useSWF1;
+   int saveSWF1;
+
+   Bool swfSaved;
+   CARD32 saveSWF0;
+   CARD32 saveSWF4;
+
+   /* Use BIOS call 0x5f64 to explicitly enable displays. */
+   Bool enableDisplays;
+   /* Use BIOS call 0x5f05 to set the refresh rate. */
+   Bool useExtendedRefresh;
+
    int configuredDevices;
+
+   /* These are indexed by the display types */
+   Bool displayAttached[NumDisplayTypes];
+   Bool displayPresent[NumDisplayTypes];
+   BoxRec displaySize[NumDisplayTypes];
+
    /* [0] is Pipe A, [1] is Pipe B. */
-   int pipeDevices[2];
-   Bool pipeEnabled[2];
-   BoxRec pipeDisplaySize[2];
+   int availablePipes;
+   int pipeDevices[MAX_DISPLAY_PIPES];
    /* [0] is display plane A, [1] is display plane B. */
-   int planeEnabled[2];
+   Bool pipeEnabled[MAX_DISPLAY_PIPES];
+   BoxRec pipeDisplaySize[MAX_DISPLAY_PIPES];
+   int planeEnabled[MAX_DISPLAY_PIPES];
+
+   /* Driver phase/state information */
+   Bool starting;
+   Bool closing;
+   Bool suspended;
+
 } I830Rec;
 
 #define I830PTR(p) ((I830Ptr)((p)->driverPrivate))
@@ -296,18 +319,19 @@ extern void I830EmitFlush(ScrnInfoPtr pScrn);
 
 extern Bool I830DGAInit(ScreenPtr pScreen);
 
+#ifdef I830_XV
 extern void I830InitVideo(ScreenPtr pScreen);
+extern void I830VideoSwitchModeBefore(ScrnInfoPtr pScrn, DisplayModePtr mode);
+extern void I830VideoSwitchModeAfter(ScrnInfoPtr pScrn, DisplayModePtr mode);
+#endif
 
 #ifdef XF86DRI
-extern Bool I830Allocate3DMemory(ScrnInfoPtr pScrn);
+extern Bool I830Allocate3DMemory(ScrnInfoPtr pScrn, const int flags);
 extern void I830SetupMemoryTiling(ScrnInfoPtr pScrn);
-extern Bool I830DoPoolAllocation(ScrnInfoPtr pScrn, I830MemPool *pool);
 extern Bool I830DRIScreenInit(ScreenPtr pScreen);
 extern Bool I830DRIDoMappings(ScreenPtr pScreen);
 extern void I830DRICloseScreen(ScreenPtr pScreen);
 extern Bool I830DRIFinishScreenInit(ScreenPtr pScreen);
-extern Bool I830InitDma(ScrnInfoPtr pScrn);
-extern Bool I830CleanupDma(ScrnInfoPtr pScrn);
 #endif
 extern Bool I830AccelInit(ScreenPtr pScreen);
 extern void I830SetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir,
@@ -322,8 +346,11 @@ extern void I830SetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
 extern void I830SubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y,
 					int w, int h);
 
-extern int I830CheckAvailableMemory(ScrnInfoPtr pScrn);
-extern Bool I830Allocate2DMemory(ScrnInfoPtr pScrn, Bool initial);
+extern void I830ResetAllocations(ScrnInfoPtr pScrn, const int flags);
+extern long I830CheckAvailableMemory(ScrnInfoPtr pScrn);
+extern long I830GetExcessMemoryAllocations(ScrnInfoPtr pScrn);
+extern Bool I830Allocate2DMemory(ScrnInfoPtr pScrn, const int flags);
+extern Bool I830DoPoolAllocation(ScrnInfoPtr pScrn, I830MemPool *pool);
 extern Bool I830FixupOffsets(ScrnInfoPtr pScrn);
 extern Bool I830BindGARTMemory(ScrnInfoPtr pScrn);
 extern Bool I830UnbindGARTMemory(ScrnInfoPtr pScrn);
@@ -334,23 +361,34 @@ extern unsigned long I830AllocVidMem(ScrnInfoPtr pScrn, I830MemRange *result,
 extern void I830PrintAllRegisters(I830RegPtr i830Reg);
 extern void I830ReadAllRegisters(I830Ptr pI830, I830RegPtr i830Reg);
 
-/*
- * 8000KB is the amount reported by VBE when 8MB is reserved.
- * 132K of that is used for tables, leaving 8060KB, but VBE reports in
- * multiples of 64K so rounding down gives 8000KB.
- */
-#define I830_MINIMUM_VBIOS_MEM		8000
-#define I830_DEFAULT_VIDEOMEM		(MB(8) / 1024)
+extern void I830ChangeFrontbuffer(ScrnInfoPtr pScrn,int buffer);
 
-/* Flags for I830AllocVidMem() */
-#define FROM_ANYWHERE			0x0000
-#define FROM_POOL_ONLY			0x0001
-#define FROM_NEW_ONLY			0x0002
-#define FROM_MASK			0x000f
-#define ALLOCATE_AT_TOP			0x0010
-#define ALLOCATE_AT_BOTTOM		0x0020
-#define	FORCE_GAPS			0x0040
-#define NEED_PHYSICAL_ADDR		0x0100
-#define ALIGN_BOTH_ENDS			0x0200
+/*
+ * 12288 is set as the maximum, chosen because it is enough for
+ * 1920x1440@32bpp with a 2048 pixel line pitch with some to spare.
+ */
+#define I830_MAXIMUM_VBIOS_MEM		12288
+#define I830_DEFAULT_VIDEOMEM_2D	(MB(8) / 1024)
+#define I830_DEFAULT_VIDEOMEM_3D	(MB(32) / 1024)
+
+/* Flags for memory allocation function */
+#define FROM_ANYWHERE			0x00000000
+#define FROM_POOL_ONLY			0x00000001
+#define FROM_NEW_ONLY			0x00000002
+#define FROM_MASK			0x0000000f
+
+#define ALLOCATE_AT_TOP			0x00000010
+#define ALLOCATE_AT_BOTTOM		0x00000020
+#define FORCE_GAPS			0x00000040
+
+#define NEED_PHYSICAL_ADDR		0x00000100
+#define ALIGN_BOTH_ENDS			0x00000200
+#define FORCE_LOW			0x00000400
+
+#define ALLOC_NO_TILING			0x00001000
+#define ALLOC_INITIAL			0x00002000
+
+#define ALLOCATE_DRY_RUN		0x80000000
+
 
 #endif /* _I830_H_ */

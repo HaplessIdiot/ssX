@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_tris.c,v 1.2 2002/09/09 19:18:48 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_tris.c,v 1.3 2002/09/11 00:29:26 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -549,7 +549,7 @@ static void i830FastRenderClippedPoly( GLcontext *ctx, const GLuint *elts,
 
 #define POINT_FALLBACK (0)
 #define LINE_FALLBACK (DD_LINE_STIPPLE)
-#define TRI_FALLBACK (DD_TRI_STIPPLE)
+#define TRI_FALLBACK (0)
 #define ANY_FALLBACK_FLAGS (POINT_FALLBACK|LINE_FALLBACK|TRI_FALLBACK|\
                             DD_TRI_STIPPLE)
 #define ANY_RASTER_FLAGS (DD_TRI_LIGHT_TWOSIDE|DD_TRI_OFFSET|DD_TRI_UNFILLED)
@@ -588,8 +588,9 @@ static void i830ChooseRenderState(GLcontext *ctx)
 	 if (flags & TRI_FALLBACK)
 	    imesa->draw_tri = i830_fallback_tri;
 
-	 if (flags & DD_TRI_STIPPLE)
+	 if ((flags & DD_TRI_STIPPLE) && !imesa->hw_stipple) {
 	    imesa->draw_tri = i830_fallback_tri;
+	 }
 
 	 index |= I830_FALLBACK_BIT;
       }
@@ -666,8 +667,10 @@ static void i830RunPipeline( GLcontext *ctx )
    i830ContextPtr imesa = I830_CONTEXT(ctx);
 
    if (imesa->new_state) {
-      if (imesa->new_state & _NEW_TEXTURE)
+      if (imesa->new_state & _NEW_TEXTURE) {
+	 I830_FIREVERTICES( imesa );
 	 i830UpdateTextureState( ctx ); /* may modify imesa->new_state */
+      }
 
       if (!imesa->Fallback) {
 	 if (imesa->new_state & _I830_NEW_VERTEX)
@@ -710,6 +713,7 @@ void i830RasterPrimitive( GLcontext *ctx,
 {
    i830ContextPtr imesa = I830_CONTEXT(ctx);
    GLuint aa = imesa->Setup[I830_CTXREG_AA];
+   GLuint st1 = imesa->StippleSetup[I830_STPREG_ST1];
 
    aa &= ~AA_LINE_ENABLE;
 
@@ -752,8 +756,13 @@ void i830RasterPrimitive( GLcontext *ctx,
    switch (rprim) {
    case GL_TRIANGLES:
       aa |= AA_LINE_DISABLE;
+      if (ctx->Polygon.StippleFlag)
+	 st1 |= ST1_ENABLE;
+      else
+	 st1 &= ~ST1_ENABLE;
       break;
    case GL_LINES:
+      st1 &= ~ST1_ENABLE;
       if (ctx->Line.SmoothFlag) {
 	 aa |= AA_LINE_ENABLE;
       } else {
@@ -761,6 +770,7 @@ void i830RasterPrimitive( GLcontext *ctx,
       }
       break;
    case GL_POINTS:
+      st1 &= ~ST1_ENABLE;
       aa |= AA_LINE_DISABLE;
       break;
    default:
@@ -771,10 +781,17 @@ void i830RasterPrimitive( GLcontext *ctx,
 
    if (aa != imesa->Setup[I830_CTXREG_AA]) {
       I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
-      imesa->hw_primitive = hwprim;
       imesa->Setup[I830_CTXREG_AA] = aa;
    }
-   else if (hwprim != imesa->hw_primitive) {
+   
+#if 0
+   if (st1 != imesa->StippleSetup[I830_STPREG_ST1]) {
+      I830_STATECHANGE(imesa, I830_UPLOAD_STIPPLE);
+      imesa->StippleSetup[I830_STPREG_ST1] = st1;
+   }
+#endif
+
+   if (hwprim != imesa->hw_primitive) {
       I830_STATECHANGE(imesa, 0);
       imesa->hw_primitive = hwprim;
    }
