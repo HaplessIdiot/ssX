@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.75 2001/08/17 22:08:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.78 2002/09/16 18:05:47 eich Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -178,6 +178,7 @@ Bool xf86LoadModules(char **list, pointer *optlist);
 void xf86KbdBell(int percent, DeviceIntPtr pKeyboard, pointer ctrl,
 		 int unused);
 void xf86KbdLeds(void);
+void xf86UpdateKbdLeds(void);
 void xf86KbdCtrl(DevicePtr pKeyboard, KeybdCtrl *ctrl); 
 void xf86InitKBD(Bool init);  
 int xf86KbdProc(DeviceIntPtr pKeyboard, int what);

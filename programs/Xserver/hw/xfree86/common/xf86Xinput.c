@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.65 2001/08/16 14:33:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.67 2002/04/04 14:05:40 eich Exp $ */
 
 #include "Xfuncproto.h"
 #include "Xmd.h"
@@ -1304,6 +1304,28 @@ xf86PostKeyEvent(DeviceIntPtr	device,
 	}
     }
     va_end(var);
+}
+
+void
+xf86PostKeyboardEvent(DeviceIntPtr      device,
+                      unsigned int      key_code,
+                      int               is_down)
+{
+    xEvent                      xE[2];
+    deviceKeyButtonPointer      *xev = (deviceKeyButtonPointer*) xE;
+
+    if (xf86IsCoreKeyboard(device)) {
+        xev->type = is_down ? KeyPress : KeyRelease;
+    } else {
+        xev->type = is_down ? DeviceKeyPress : DeviceKeyRelease;
+    }
+    xev->detail = key_code;
+    xf86Info.lastEventTime = xev->time = GetTimeInMillis();
+
+#ifdef XFreeXDGA
+    /* if(!DGAStealKeyEvent(xf86EventQueue.pEnqueueScreen->myNum, xE)) */
+#endif
+    ENQUEUE(xE);
 }
 
 /* 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.49 2002/03/06 21:13:02 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.51 2002/09/26 02:56:49 keithp Exp $ */
 
 
 /*
@@ -57,6 +57,9 @@
 #include "mipict.h"
 #endif
 #include "selection.h"
+#ifdef XKB
+#include <X11/extensions/XKBsrv.h>
+#endif
 
 extern Selection *CurrentSelections;
 extern int NumCurrentSelections;
@@ -320,6 +323,14 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(InitPointerDeviceStruct)
   SYMFUNC(LookupKeyboardDevice)
   SYMFUNC(LookupPointerDevice)
+
+#ifdef XKB
+  /* xkb/xkbInit.c */
+  SYMFUNC(XkbInitKeyboardDeviceStruct)
+  SYMFUNC(XkbSetRulesDflts)
+  SYMVAR(noXkbExtension)
+#endif
+
 #ifdef XINPUT
   /* Xi */
   /* exevents.c */

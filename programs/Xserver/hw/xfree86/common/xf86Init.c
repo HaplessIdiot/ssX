@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.189 2002/09/26 02:56:49 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.190 2002/09/29 23:54:34 keithp Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -1011,6 +1011,7 @@ InitInput(argc, argv)
 
     if (coreKeyboard) {
       xf86Info.pKeyboard = coreKeyboard->dev;
+      xf86Info.kbdEvents = NULL; /* to prevent the internal keybord driver usage*/
     }
     else {
       xf86Info.pKeyboard = AddInputDevice(xf86Info.kbdProc, TRUE);

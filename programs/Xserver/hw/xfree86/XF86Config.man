@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.7 2002/01/23 00:38:47 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.8 2002/03/04 16:11:05 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH XF86Config __filemansuffix__ __vendorversion__
@@ -450,6 +450,10 @@ by a function key
 This prevents the X server trapping the
 keys used for the default VT switch sequence, which means that clients can
 access them.  Default: off.
+.TP 7
+.BI "Option \*qXkbDisable\*q \*q" boolean \*q
+disable/enable the XKEYBOARD extension.  The \-kb command line
+option overrides this config file option.  Default: XKB is enabled.
 .\" The following four options are "undocumented".
 .ig
 .TP 7

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.180 2002/02/14 19:08:17 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.181 2002/02/22 21:32:33 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -108,7 +108,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.180 2002/02/14 19:08:17 dawes Exp 
 /*
  * Select the XInput devices you want by uncommenting this.
  *
-#define XInputDrivers		mouse acecad calcomp citron \
+#define XInputDrivers		mouse keyboard acecad calcomp citron \
 				digitaledge dmc dynapro elographics \
 				microtouch mutouch penmount spaceorb summa \
 				wacom void magictouch

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.215tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.216 2002/10/08 22:14:12 tsi Exp $ */
 
 /*
  *
@@ -42,6 +42,7 @@
 # include "xf86Xinput.h"
 #endif
 #include "xf86OSmouse.h"
+#include "xf86OSKbd.h"
 #include "xf86xv.h"
 #include "xf86xvmc.h"
 #include "xf86cmap.h"
@@ -211,6 +212,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86SerialModemClearBits)
    SYMFUNC(xf86LoadKernelModule)
    SYMFUNC(xf86OSMouseInit)
+   SYMFUNC(xf86OSKbdPreInit)
    SYMFUNC(xf86AgpGARTSupported)
    SYMFUNC(xf86GetAGPInfo)
    SYMFUNC(xf86AcquireGART)
@@ -396,6 +398,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86GetModInDevAllowNonLocal)
    SYMFUNC(xf86GetModInDevEnabled)
    SYMFUNC(xf86GetAllowMouseOpenFail)
+   SYMFUNC(xf86CommonSpecialKey)
    SYMFUNC(xf86IsPc98)
    SYMFUNC(xf86GetVersion)
    SYMFUNC(xf86GetModuleVersion)
@@ -601,6 +604,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86PostProximityEvent)
    SYMFUNC(xf86PostButtonEvent)
    SYMFUNC(xf86PostKeyEvent)
+   SYMFUNC(xf86PostKeyboardEvent)
    SYMFUNC(xf86GetMotionEvents)
    SYMFUNC(xf86MotionHistoryAllocate)
    SYMFUNC(xf86FirstLocalDevice)

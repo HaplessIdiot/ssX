@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_io.c,v 3.14 2000/04/05 18:13:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_io.c,v 3.15 2002/05/31 18:46:01 dawes Exp $ */
 /*
  * (c) Copyright 1994,1999 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -220,3 +220,11 @@ Bool xf86SupportedMouseTypes[] =
 int xf86NumMouseTypes = sizeof(xf86SupportedMouseTypes) /
 			sizeof(xf86SupportedMouseTypes[0]);
 #endif
+
+#include "xf86OSKbd.h"
+
+Bool
+xf86OSKbdPreInit(KbdDevPtr pKbd)
+{
+    return FALSE;
+}

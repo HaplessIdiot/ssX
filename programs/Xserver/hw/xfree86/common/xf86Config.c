@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.261 2002/09/16 18:05:43 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.262 2002/09/17 19:30:47 dawes Exp $ */
 
 
 /*
@@ -684,6 +684,7 @@ typedef enum {
     FLAG_ALLOWMOUSEOPENFAIL,
     FLAG_VTINIT,
     FLAG_VTSYSREQ,
+    FLAG_XKBDISABLE,
     FLAG_PCIPROBE1,
     FLAG_PCIPROBE2,
     FLAG_PCIFORCECONFIG1,
@@ -724,6 +725,8 @@ static OptionInfoRec FlagOptions[] = {
   { FLAG_VTINIT,		"VTInit",			OPTV_STRING,
 	{0}, FALSE },
   { FLAG_VTSYSREQ,		"VTSysReq",			OPTV_BOOLEAN,
+	{0}, FALSE },
+  { FLAG_XKBDISABLE,		"XkbDisable",			OPTV_BOOLEAN,
 	{0}, FALSE },
   { FLAG_PCIPROBE1,		"PciProbe1"		,	OPTV_BOOLEAN,
 	{0}, FALSE },
@@ -844,10 +847,20 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
     if (xf86GetOptValBool(FlagOptions, FLAG_VTSYSREQ, &value)) {
 #ifdef USE_VT_SYSREQ
 	xf86Info.vtSysreq = value;
-	xf86Msg(X_CONFIG, "VTSysReq enabled\n");
+	xf86Msg(X_CONFIG, "VTSysReq %s\n", value ? "enabled" : "disabled");
 #else
 	if (value)
 	    xf86Msg(X_WARNING, "VTSysReq is not supported on this OS\n");
+#endif
+    }
+
+    if (xf86GetOptValBool(FlagOptions, FLAG_XKBDISABLE, &value)) {
+#ifdef XKB
+	noXkbExtension = value;
+	xf86Msg(X_CONFIG, "Xkb %s\n", value ? "disabled" : "enabled");
+#else
+	if (!value)
+	    xf86Msg(X_WARNING, "Xserver doesn't support XKB\n");
 #endif
     }
 
@@ -1119,6 +1132,9 @@ configInputKbd(IDevPtr inputp)
   if (noXkbExtension)
     from = X_CMDLINE;
   else if (xf86FindOption(inputp->commonOptions, "XkbDisable")) {
+    xf86Msg(X_WARNING, "KEYBOARD: XKB should be disabled in the "
+	    "ServerFlags section instead\n"
+	    "\tof in the \"keyboard\" InputDevice section.\n");
     noXkbExtension =
 	xf86SetBoolOption(inputp->commonOptions, "XkbDisable", FALSE);
     from = X_CONFIG;

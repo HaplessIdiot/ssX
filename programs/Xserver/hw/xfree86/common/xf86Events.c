@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.130 2002/05/07 21:38:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.132 2002/09/16 18:05:45 eich Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -118,9 +118,9 @@ extern void  XTestStealMotionData();
  */
 
 #ifdef USE_VT_SYSREQ
-static Bool VTSysreqToggle = FALSE;
+Bool VTSysreqToggle = FALSE;
 #endif /* !USE_VT_SYSREQ */
-static Bool VTSwitchEnabled = TRUE;   /* Allows run-time disabling for
+Bool VTSwitchEnabled = TRUE;		/* Allows run-time disabling for
                                          *BSD and for avoiding VT
                                          switches when using the DRI
                                          automatic full screen mode.*/
@@ -902,7 +902,7 @@ special:
 #endif /* !CSRG_BASED && ... */
     }
   }
-  if (updateLeds) xf86KbdLeds();
+  if (updateLeds) xf86UpdateKbdLeds();
 #ifdef XKB
   }
 #endif
@@ -943,6 +943,85 @@ special:
 }
 #endif /* !__UNIXOS2__ */
 
+#define ModifierIsSet(k) ((modifiers & (k)) == (k))
+
+Bool
+xf86CommonSpecialKey(int key, Bool down, int modifiers)
+{
+  if ((ModifierIsSet(ControlMask | AltMask)) ||
+      (ModifierIsSet(ControlMask | AltLangMask))) {
+      switch (key) {
+	
+      case KEY_BackSpace:
+	if (!xf86Info.dontZap) {
+#ifdef XFreeXDGA
+	 DGAShutdown();
+#endif
+	 GiveUp(0);
+        }
+	break;
+
+      /*
+       * Check grabs
+       */
+      case KEY_KP_Divide:
+	if (!xf86Info.grabInfo.disabled && xf86Info.grabInfo.allowDeactivate) {
+	  if (inputInfo.pointer && inputInfo.pointer->grab != NULL &&
+	      inputInfo.pointer->DeactivateGrab)
+	    inputInfo.pointer->DeactivateGrab(inputInfo.pointer);
+	  if (inputInfo.keyboard && inputInfo.keyboard->grab != NULL &&
+	      inputInfo.keyboard->DeactivateGrab)
+	    inputInfo.keyboard->DeactivateGrab(inputInfo.keyboard);
+	}
+	break;
+      case KEY_KP_Multiply:
+	if (!xf86Info.grabInfo.disabled && xf86Info.grabInfo.allowClosedown) {
+	  ClientPtr pointer, keyboard, server;
+
+	  pointer = keyboard = server = NULL;
+	  if (inputInfo.pointer && inputInfo.pointer->grab != NULL)
+	    pointer = clients[CLIENT_ID(inputInfo.pointer->grab->resource)];
+	  if (inputInfo.keyboard && inputInfo.keyboard->grab != NULL) {
+	    keyboard = clients[CLIENT_ID(inputInfo.keyboard->grab->resource)];
+	    if (keyboard == pointer)
+	      keyboard = NULL;
+	  }
+	  if ((xf86Info.grabInfo.server.grabstate == SERVER_GRABBED) &&
+	      (((server = xf86Info.grabInfo.server.client) == pointer) ||
+	       (server == keyboard)))
+	      server = NULL;
+
+	  if (pointer)
+	    CloseDownClient(pointer);
+	  if (keyboard)
+	    CloseDownClient(keyboard);
+	  if (server)
+	    CloseDownClient(server);
+	}
+	break;
+	
+	/*
+	 * The idea here is to pass the scancode down to a list of
+	 * registered routines. There should be some standard conventions
+	 * for processing certain keys.
+	 */
+      case KEY_KP_Minus:   /* Keypad - */
+	if (!xf86Info.dontZoom) {
+	  if (down) xf86ZoomViewport(xf86Info.currentScreen, -1);
+	  return TRUE;
+	}
+	break;
+	
+      case KEY_KP_Plus:   /* Keypad + */
+	if (!xf86Info.dontZoom) {
+	  if (down) xf86ZoomViewport(xf86Info.currentScreen,  1);
+	  return TRUE;
+	}
+	break;
+      }
+  }
+  return FALSE;
+}
 
 /*
  * xf86Wakeup --

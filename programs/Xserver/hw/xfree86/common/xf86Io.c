@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.48 2002/05/05 18:54:01 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.50 2002/09/16 18:05:46 eich Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -72,37 +72,54 @@ xf86KbdBell(percent, pKeyboard, ctrl, unused)
 }
 
 void
-xf86KbdLeds ()
+xf86UpdateKbdLeds()
 {
   int leds = 0;
-#ifdef XKB
-  if (!noXkbExtension) {
-    XkbEventCauseRec cause;
-   XkbSetCauseUnknown(&cause);
-    XkbUpdateIndicators((DeviceIntPtr)xf86Info.pKeyboard,
-			XkbAllIndicatorsMask, False, NULL, &cause);
-    return;
+  if (xf86Info.capsLock) leds |= XLED1;
+  if (xf86Info.numLock)  leds |= XLED2;
+  if (xf86Info.scrollLock || xf86Info.modeSwitchLock) leds |= XLED3;
+  if (xf86Info.composeLock) leds |= XLED4;
+  xf86Info.leds = (xf86Info.leds & xf86Info.xleds) | (leds & ~xf86Info.xleds);
+  xf86KbdLeds();
+}
+
+void
+xf86KbdLeds ()
+{
+  int leds, real_leds = 0;
+
+#if defined (__sparc__)
+  static int kbdSun = -1;
+  if (kbdSun == -1) {
+  if ((xf86Info.xkbmodel && !strcmp(xf86Info.xkbmodel, "sun")) ||
+      (xf86Info.xkbrules && !strcmp(xf86Info.xkbrules, "sun")))
+      kbdSun = 1;
+  else
+      kbdSun = 0;
   }
-#endif
+  if (kbdSun) {
+     if (xf86Info.leds & 0x08) real_leds |= XLED1;
+     if (xf86Info.leds & 0x04) real_leds |= XLED3;
+     if (xf86Info.leds & 0x02) real_leds |= XLED4;
+     if (xf86Info.leds & 0x01) real_leds |= XLED2;
+     leds = real_leds;
+     real_leds = 0;
+  } else {
+     leds = xf86Info.leds;
+  }
+#endif /* defined (__sparc__) */
 #ifdef LED_CAP
-  if (xf86Info.capsLock && !(xf86Info.xleds & XLED1))
-    leds |= LED_CAP;
-
-  if (xf86Info.numLock && !(xf86Info.xleds & XLED2))
-    leds |= LED_NUM;
-
-  if ((xf86Info.scrollLock || 
-       xf86Info.modeSwitchLock || 
-       xf86Info.composeLock) && 
-      !(xf86Info.xleds & XLED3))
-    leds |= LED_SCR;
-
-  if ((xf86Info.leds & xf86Info.xleds) & XLED1) leds |= LED_CAP;
-  if ((xf86Info.leds & xf86Info.xleds) & XLED2) leds |= LED_NUM;
-  if ((xf86Info.leds & xf86Info.xleds) & XLED3) leds |= LED_SCR;
-
-  xf86SetKbdLeds(leds);
-#endif /* LED_CAP */
+  if (leds & XLED1)  real_leds |= LED_CAP;
+  if (leds & XLED2)  real_leds |= LED_NUM;
+  if (leds & XLED3)  real_leds |= LED_SCR;
+#ifdef LED_COMP
+  if (leds & XLED4)  real_leds |= LED_COMP;
+#else
+  if (leds & XLED4)  real_leds |= LED_SCR;
+#endif
+#endif
+  xf86SetKbdLeds(real_leds);
+  return;
 }
 
 /*
@@ -116,19 +133,30 @@ xf86KbdCtrl (pKeyboard, ctrl)
      DevicePtr     pKeyboard;        /* Keyboard to alter */
      KeybdCtrl     *ctrl;
 {
+  int leds;
   xf86Info.bell_pitch    = ctrl->bell_pitch;
   xf86Info.bell_duration = ctrl->bell_duration;
   xf86Info.autoRepeat    = ctrl->autoRepeat;
-  xf86Info.leds          = (ctrl->leds & ~(XCAPS | XNUM | XSCR));
 
   xf86Info.composeLock   = (ctrl->leds & XCOMP) ? TRUE : FALSE;
+
+  leds = (ctrl->leds & ~(XCAPS | XNUM | XSCR));
+#ifdef XKB
+  if (noXkbExtension) {
+#endif
+      xf86Info.leds = (leds & xf86Info.xleds)|(xf86Info.leds & ~xf86Info.xleds);
+#ifdef XKB
+  } else {
+      xf86Info.leds = leds;
+  }
+#endif
 
   xf86KbdLeds();
 }
 
 /*
  * xf86InitKBD --
- *      Reinitialize the keyboard. Only set Lockkeys accrding to ours leds.
+ *      Reinitialize the keyboard. Only set Lockkeys according to ours leds.
  *      Depress all other keys.
  */
 

@@ -1,4 +1,13 @@
 XFree86 4.2.99.2 (xx October 2002)
+ 381. Add a "kbd" driver module that can eventually replace the built-in
+      "keyboard" driver (#5344, Ivan Pascal).
+ 381. Add os-support level support for a loadable keyboard driver for BSD
+      and Linux (#5344, Ivan Pascal).
+ 380. Add some new common layer functions for supporting a loadable keyboard
+      driver (#5344, Ivan Pascal).
+ 379. Move the XkbDisable option to a global server flag rather than
+      keyboard driver flag, since it really is a global setting (#5344,
+      Ivan Pascal).
  378. Fix RenderCreateCursor's conversion from an ARGB cursor to a 2-color
       cursor when the cursor is wider than 8 pixels (#5353, Greg Parker).
  377. Fix 24bpp displays with the fbdev driver when not using shadowfb
@@ -15278,4 +15287,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2331 2002/10/09 00:09:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2332 2002/10/10 01:58:42 dawes Exp $
