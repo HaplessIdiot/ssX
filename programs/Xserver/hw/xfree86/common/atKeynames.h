@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/atKeynames.h,v 3.10 1997/06/20 11:30:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/atKeynames.h,v 3.11 1999/04/29 05:12:54 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -31,7 +31,7 @@
 #include "keysym.h"
 
 #define GLYPHS_PER_KEY	4
-#define NUM_KEYCODES	127
+#define NUM_KEYCODES	248
 #define MIN_KEYCODE     8
 #define MAX_KEYCODE     (NUM_KEYCODES + MIN_KEYCODE - 1)
 

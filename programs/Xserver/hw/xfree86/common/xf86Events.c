@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.86 2000/02/08 13:13:04 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.87 2000/02/08 17:19:06 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -433,7 +433,15 @@ xf86PostKbdEvent(unsigned key)
     default:
       xf86MsgVerb(X_INFO, 2, "Unreported Prefix0 scancode: 0x%02x\n",
 		  scanCode);
+      /*
+       * "Internet" keyboards are generating lots of new codes.  Let them
+       * pass.  There is little consistency between them, so don't bother
+       * with symbolic names at this level.
+       */
+      scanCode += 0x78;
+#if 0
       return;                                  /* skip illegal */
+#endif
     }
   }
   

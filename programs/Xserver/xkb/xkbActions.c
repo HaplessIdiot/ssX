@@ -1,5 +1,5 @@
 /* $XConsortium: xkbActions.c /main/3 1996/03/01 14:31:12 kaleb $ */
-/* $XFree86: xc/programs/Xserver/xkb/xkbActions.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbActions.c,v 3.1 1996/09/24 13:59:37 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -138,7 +138,7 @@ XkbAction *		pActs;
 static XkbAction 	fake;
 
     xkb= xkbi->desc;
-    if (!XkbKeyHasActions(xkb,key)) {
+    if (!XkbKeyHasActions(xkb,key) || !XkbKeycodeInRange(xkb,key)) {
 	fake.type = XkbSA_NoAction;
 	return fake;
     }
