@@ -1,0 +1,21 @@
+/*
+ * Host.def for building Solaris/sparc bindists
+ *
+ * $XFree86$
+ */
+
+#define InstallEmptyHostDef
+#define BuildBindist
+
+#define ForceNormalLib YES
+
+#define BuildXFree86OnSparcSunOS YES
+
+#define Build64BitLibraries YES
+
+#define HasLibpng       YES
+#define LibpngDir       /usr/local
+#define ExtraLibDirPath /usr/local/lib
+
+#define UseSeparateConfDir      YES
+
