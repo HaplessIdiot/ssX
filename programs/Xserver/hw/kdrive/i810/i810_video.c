@@ -58,7 +58,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 **************************************************************************/
 
 
-/* $XFree86: xc/programs/Xserver/hw/kdrive/i810/i810_video.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/kdrive/i810/i810_video.c,v 1.3 2003/11/10 18:21:49 tsi Exp $ */
 
 /*
  * i810_video.c: i810 KDrive Xv driver. 
@@ -960,7 +960,7 @@ i810PutImage(
     dstBox.y2 = drw_y + drw_h;
 
     I810ClipVideo(&dstBox, &x1, &x2, &y1, &y2, 
-		  REGION_EXTENTS(pScreen, clipBoxes), width, height);
+		  REGION_EXTENTS(screen->pScreen, clipBoxes), width, height);
 
     if((x1 >= x2) || (y1 >= y2))
        return Success;

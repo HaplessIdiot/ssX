@@ -35,7 +35,7 @@ of the copyright holder.
 
 */
 
-/* $XFree86: xc/programs/Xserver/hw/kdrive/kxv.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/kdrive/kxv.c,v 1.5 2003/11/10 18:21:48 tsi Exp $ */
 
 #include "kdrive.h"
 
@@ -595,12 +595,14 @@ KdXVUpdateCompositeClip(XvPortRecPrivatePtr portPriv)
 {
    RegionPtr	pregWin, pCompositeClip;
    WindowPtr	pWin;
+   ScreenPtr	pScreen;
    Bool 	freeCompClip = FALSE;
 
    if(portPriv->pCompositeClip)
 	return;
 
    pWin = (WindowPtr)portPriv->pDraw;
+   pScreen = pWin->drawable.pScreen;
 
    /* get window clip list */
    if(portPriv->subWindowMode == IncludeInferiors) {
@@ -615,19 +617,19 @@ KdXVUpdateCompositeClip(XvPortRecPrivatePtr portPriv)
 	return;
    }
 
-   pCompositeClip = REGION_CREATE(pWin->pScreen, NullBox, 1);
-   REGION_COPY(pWin->pScreen, pCompositeClip, portPriv->clientClip);
-   REGION_TRANSLATE(pWin->pScreen, pCompositeClip,
+   pCompositeClip = REGION_CREATE(pScreen, NullBox, 1);
+   REGION_COPY(pScreen, pCompositeClip, portPriv->clientClip);
+   REGION_TRANSLATE(pScreen, pCompositeClip,
 			portPriv->pDraw->x + portPriv->clipOrg.x,
 			portPriv->pDraw->y + portPriv->clipOrg.y);
-   REGION_INTERSECT(pWin->pScreen, pCompositeClip, pregWin, pCompositeClip);
+   REGION_INTERSECT(pScreen, pCompositeClip, pregWin, pCompositeClip);
 
    portPriv->pCompositeClip = pCompositeClip;
    portPriv->FreeCompositeClip = TRUE;
 
    if(freeCompClip) {
-   	REGION_DESTROY(pWin->pScreen, pregWin);
-   }    
+   	REGION_DESTROY(pScreen, pregWin);
+   }
 }
 
 /* Save the current clientClip and update the CompositeClip whenever
@@ -638,6 +640,8 @@ KdXVCopyClip(
    XvPortRecPrivatePtr portPriv, 
    GCPtr pGC
 ){
+    ScreenPtr pScreen = pGC->pScreen;
+
     /* copy the new clip if it exists */
     if((pGC->clientClipType == CT_REGION) && pGC->clientClip) {
 	if(!portPriv->clientClip)
@@ -651,7 +655,7 @@ KdXVCopyClip(
 
     /* get rid of the old clip list */
     if(portPriv->pCompositeClip && portPriv->FreeCompositeClip) {
-	REGION_DESTROY(pWin->pScreen, portPriv->pCompositeClip);
+	REGION_DESTROY(pScreen, portPriv->pCompositeClip);
     }
 
     portPriv->clipOrg = pGC->clipOrg;
@@ -681,7 +685,7 @@ KdXVRegetVideo(XvPortRecPrivatePtr portPriv)
   /* clip to the window composite clip */
   REGION_INIT(pScreen, &WinRegion, &WinBox, 1);
   REGION_NULL(pScreen, &ClipRegion);
-  REGION_INTERSECT(Screen, &ClipRegion, &WinRegion, portPriv->pCompositeClip); 
+  REGION_INTERSECT(pScreen, &ClipRegion, &WinRegion, portPriv->pCompositeClip); 
   
   /* that's all if it's totally obscured */
   if(!REGION_NOTEMPTY(pScreen, &ClipRegion)) {
@@ -745,7 +749,7 @@ KdXVReputVideo(XvPortRecPrivatePtr portPriv)
   /* clip to the window composite clip */
   REGION_INIT(pScreen, &WinRegion, &WinBox, 1);
   REGION_NULL(pScreen, &ClipRegion);
-  REGION_INTERSECT(Screen, &ClipRegion, &WinRegion, portPriv->pCompositeClip); 
+  REGION_INTERSECT(pScreen, &ClipRegion, &WinRegion, portPriv->pCompositeClip); 
 
   /* clip and translate to the viewport */
   if(portPriv->AdaptorRec->flags & VIDEO_CLIP_TO_VIEWPORT) {
@@ -758,7 +762,7 @@ KdXVReputVideo(XvPortRecPrivatePtr portPriv)
      VPBox.y2 = screen->height;
 
      REGION_INIT(pScreen, &VPReg, &VPBox, 1);
-     REGION_INTERSECT(Screen, &ClipRegion, &ClipRegion, &VPReg); 
+     REGION_INTERSECT(pScreen, &ClipRegion, &ClipRegion, &VPReg); 
      REGION_UNINIT(pScreen, &VPReg);
   }
   
@@ -834,7 +838,7 @@ KdXVReputImage(XvPortRecPrivatePtr portPriv)
   /* clip to the window composite clip */
   REGION_INIT(pScreen, &WinRegion, &WinBox, 1);
   REGION_NULL(pScreen, &ClipRegion);
-  REGION_INTERSECT(Screen, &ClipRegion, &WinRegion, portPriv->pCompositeClip); 
+  REGION_INTERSECT(pScreen, &ClipRegion, &WinRegion, portPriv->pCompositeClip); 
 
   /* clip and translate to the viewport */
   if(portPriv->AdaptorRec->flags & VIDEO_CLIP_TO_VIEWPORT) {
@@ -847,7 +851,7 @@ KdXVReputImage(XvPortRecPrivatePtr portPriv)
      VPBox.y2 = screen->height;
 
      REGION_INIT(pScreen, &VPReg, &VPBox, 1);
-     REGION_INTERSECT(Screen, &ClipRegion, &ClipRegion, &VPReg); 
+     REGION_INTERSECT(pScreen, &ClipRegion, &ClipRegion, &VPReg); 
      REGION_UNINIT(pScreen, &VPReg);
   }
   
@@ -1362,7 +1366,7 @@ KdXVPutStill(
      VPBox.y2 = screen->height;
 
      REGION_INIT(pScreen, &VPReg, &VPBox, 1);
-     REGION_INTERSECT(Screen, &ClipRegion, &ClipRegion, &VPReg); 
+     REGION_INTERSECT(pScreen, &ClipRegion, &ClipRegion, &VPReg); 
      REGION_UNINIT(pScreen, &VPReg);
   }
 
@@ -1663,7 +1667,7 @@ KdXVPutImage(
      VPBox.y2 = pScreen->height;
 
      REGION_INIT(pScreen, &VPReg, &VPBox, 1);
-     REGION_INTERSECT(Screen, &ClipRegion, &ClipRegion, &VPReg); 
+     REGION_INTERSECT(pScreen, &ClipRegion, &ClipRegion, &VPReg); 
      REGION_UNINIT(pScreen, &VPReg);
   }
 

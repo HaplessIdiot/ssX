@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/kdrive/mach64/mach64video.c,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/kdrive/mach64/mach64video.c,v 1.11 2003/11/10 18:21:52 tsi Exp $ */
 #include "mach64.h"
 
 #include "Xv.h"
@@ -613,7 +613,7 @@ mach64PutImage(KdScreenInfo	    *screen,
     dstBox.y2 = drw_y + drw_h;
 
     Mach64ClipVideo(&dstBox, &x1, &x2, &y1, &y2, 
-		  REGION_EXTENTS(pScreen, clipBoxes), width, height);
+		  REGION_EXTENTS(screen->pScreen, clipBoxes), width, height);
 
     if((x1 >= x2) || (y1 >= y2))
 	return Success;
