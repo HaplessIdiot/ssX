@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.20 1999/07/06 11:38:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.23 2000/02/08 13:13:29 eich Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -333,6 +333,7 @@
 #define PCI_PPB_MEMLIMIT_EXTRACT(x)     (((x) <<  0) & 0xFFFF0000)
 
 #define PCI_PCI_BRIDGE_CONTROL_REG         0x3E
+#define PCI_PCI_BRIDGE_ISA_EN              0x04
 #define PCI_PCI_BRIDGE_VGA_EN              0x08
 
 /* Subsystem identification register */
