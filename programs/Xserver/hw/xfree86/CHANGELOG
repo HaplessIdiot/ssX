@@ -1,4 +1,5 @@
 XFree86 4.3.99.3 (xx April 2003)
+ 117. Added missing files to the SDK so it can actually be used (Sven Luther).
  116. mkfontscale enhancements (bugzilla #166, Julius Chroboczek). 
  115. Fix handling of local host names in /etc/X<n>.hosts (bugzilla #156,
       Alan Coopersmith).
@@ -16807,4 +16808,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2646 2003/04/19 12:31:11 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2647 2003/04/20 19:05:49 herrb Exp $
