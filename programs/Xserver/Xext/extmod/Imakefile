@@ -1,14 +1,8 @@
-XCOMM $XFree86: xc/programs/Xserver/Xext/extmod/Imakefile,v 1.11 1998/12/13 05:32:34 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xext/extmod/Imakefile,v 1.12 1999/01/03 03:58:18 dawes Exp $
 XCOMM This directory is only entered if DoLoadableServer is set
 
 #define IHaveModules
 #include <Server.tmpl>
-
-#if HasShm
-         SHMSRCS = shm.c
-         SHMOBJS = shm.o
-LinkSourceFile(shm.c,..)
-#endif
 
 #if BuildMultibuffer
      MULTIBUFSRC = mbuf.c
@@ -60,19 +54,6 @@ LinkSourceFile(xvmod.c,..)
 LinkSourceFile(anti.c,..)
 #endif
 
-#if BuildAppgroup
-    APPGROUPSRCS = appgroup.c
-    APPGROUPOBJS = appgroup.o
-LinkSourceFile(appgroup.c,..)
-#endif
-#if BuildXCSecurity
-    SECURITYSRCS = security.c
-    SECURITYOBJS = security.o
- SERVERCONFIGDIR = ServerConfigDir
-   POLICYFILEDEF = -DDEFAULTPOLICYFILE=\"$(SERVERCONFIGDIR)/SecurityPolicy\"
-LinkSourceFile(security.c,..)
-#endif
-
 #if BuildEVI
          EVISRCS = EVI.c sampleEVI.c
          EVIOBJS = EVI.o sampleEVI.o
@@ -86,24 +67,16 @@ LinkSourceFile(sampleEVI.c,..)
 LinkSourceFile(cup.c,..)
 #endif
 
-#if BuildXinerama
-        PNRXSRCS = panoramiX.c panoramiXSwap.c panoramiXprocs.c
-        PNRXOBJS = panoramiX.o panoramiXSwap.o panoramiXprocs.o
-    PNRXINCLUDES = -I$(FONTINCSRC) -I../../mi
-#endif
-
      MODINITSRCS = modinit.c 
      MODINITOBJS = modinit.o
 
-       SRCS = shape.c $(SHMSRCS) $(MULTIBUFSRC) \
-              mitmisc.c xtest.c xtest1di.c xtest1dd.c sleepuntil.c \
+       SRCS = shape.c $(MULTIBUFSRC) \
+              mitmisc.c \
 	      bigreq.c sync.c $(SCRNSAVSRC) xcmisc.c $(VIDMODESRCS) \
-	      $(XF86MISCSRCS) $(XF86DGASRCS) $(SECURITYSRCS) \
-	      $(APPGROUPSRCS) xprint.c $(CUPSRCS) $(PNRXSRCS) $(DPMSSRCS) \
+	      $(XF86MISCSRCS) $(XF86DGASRCS) \
+	      $(CUPSRCS) $(DPMSSRCS) \
 	      $(EVISRCS) $(XVSRCS) $(XANTISRCS) $(MODINITSRCS)
 
-      SOBJS = $(SHMOBJS) $(APPGROUPOBJS) $(SECURITYOBJS) xprint.o \
-	      xtest.o xtest1di.o xtest1dd.o sleepuntil.o $(PNRXOBJS)
       MOBJS = $(MODINITOBJS) shape.o $(MULTIBUFOBJ) mitmisc.o \
 	      bigreq.o sync.o $(SCRNSAVOBJ) xcmisc.o \
 	      $(VIDMODEOBJS) $(XF86MISCOBJS) $(XF86DGAOBJS) \
@@ -113,32 +86,19 @@ LinkSourceFile(cup.c,..)
 
 XF86INCLUDES = -I$(XF86COMSRC)
     INCLUDES = -I.. -I../../include -I$(XINCLUDESRC) -I$(EXTINCSRC) \
-	       $(XF86INCLUDES) -I$(FONTINCSRC) -I$(PNRXINCLUDES)
+	       $(XF86INCLUDES) -I$(FONTINCSRC)
     LINTLIBS = ../../dix/llib-ldix.ln ../../os/llib-los.ln
 
 LinkSourceFile(shape.c,..)
 LinkSourceFile(mitmisc.c,..)
-LinkSourceFile(xtest.c,..)
-LinkSourceFile(xtest1di.c,..)
-LinkSourceFile(xtest1dd.c,..)
-LinkSourceFile(sleepuntil.c,..)
 LinkSourceFile(bigreq.c,..)
 LinkSourceFile(sync.c,..)
 LinkSourceFile(xcmisc.c,..)
-LinkSourceFile(xprint.c,..)
-LinkSourceFile(panoramiX.c,..)
-LinkSourceFile(panoramiXSwap.c,..)
-LinkSourceFile(panoramiXprocs.c,..)
 
 ModuleObjectRule()
 SpecialCObjectRule(modinit,$(ICONFIGFILES),$(EXT_DEFINES))
 LibraryModuleTarget(extmod,$(MOBJS))
-NormalLibraryTarget(exts,$(SOBJS))
 NormalLintTarget($(SRCS))
-
-#if BuildXCSecurity
-SpecialCObjectRule(security,$(ICONFIGFILES),$(POLICYFILEDEF))
-#endif
 
 InstallLibraryModule(extmod,$(MODULEDIR),extensions)
 

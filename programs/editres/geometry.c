@@ -1,14 +1,9 @@
 /*
- * $XConsortium: geometry.c,v 1.16 94/04/17 20:38:55 dave Exp $
+ * $TOG: geometry.c /main/17 1998/02/09 13:42:28 kaleb $
  *
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -16,16 +11,17 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
  *
  * Author:  Chris D. Peterson, MIT X Consortium
  */
+/* $XFree86 */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
@@ -36,15 +32,20 @@ in this Software without prior written authorization from the X Consortium.
 
 #include "editresP.h"
 
-extern void SetMessage(), SetCommand(), SetAndCenterTreeNode(), AddString();
-extern void GetAllStrings(), InsertWidgetFromNode();
-extern int HandleXErrors();
-extern WNode * FindNode();
-
-static WNode *FindWidgetFromWindow(), *FindWidgetFromWindowGivenNode();
-static void CreateFlashWidget(), FlashWidgets();
-static void AddToFlashList(), _AddToFlashList();
-static void FlashWidgetsOn(), FlashWidgetsOff(), FlashWidgetsCleanup();
+/*
+ * Local function definitions 
+ */
+static void AddToFlashList ( TreeInfo * tree_info, GetGeomInfo * geom_info, 
+			     char ** errors );
+static void _AddToFlashList ( TreeInfo * tree_info, char ** errors, 
+			      WNode * node, int x, int y, unsigned int width, 
+			      unsigned int height );
+static void CreateFlashWidget ( TreeInfo * tree_info, int x, int y, 
+				unsigned int width, unsigned int height );
+static void FlashWidgets ( TreeInfo * tree_info );
+static void FlashWidgetsOn ( XtPointer info_ptr, XtIntervalId * id );
+static void FlashWidgetsOff ( XtPointer info_ptr, XtIntervalId * id );
+static void FlashWidgetsCleanup ( XtPointer info_ptr, XtIntervalId * id );
 
 /*	Function Name: _FindWidget
  *	Description: Finds a widget in the tree and shows it to the user.
@@ -58,7 +59,7 @@ Widget w;
 {
     char msg[BUFSIZ];
     WNode * node;
-    Window win, GetClientWindow();
+    Window win;
     int x, y;			/* location of event in root coordinates. */
 
     sprintf(msg, res_labels[14]);
@@ -83,49 +84,6 @@ Widget w;
       res_labels[15]);
 }
 
-/*	Function Name: FindWidgetFromWindow
- *	Description: finds a widget in the current tree given its window id.
- *	Arguments: tree_info - information about this tree.
- *                 win - window to search for.
- *	Returns: node - the node corrosponding to this widget.
- */
-
-static WNode * 
-FindWidgetFromWindow(tree_info, win)
-TreeInfo * tree_info;
-Window win;
-{
-    if (tree_info == NULL)
-	return(NULL);
-
-    return(FindWidgetFromWindowGivenNode(tree_info->top_node, win));
-}
-
-/*	Function Name: FindWidgetFromWindowGivenNode
- *	Description: finds a widget in the current tree given its window id.
- *	Arguments: node - current node.
- *                 win - window to search for.
- *	Returns: node - the node corrosponding to this widget.
- */
-
-static WNode *
-FindWidgetFromWindowGivenNode(node, win)
-WNode * node;
-Window win;
-{
-    int i;
-    WNode * ret_node;
-
-    if (node->window == win)
-	return(node);
-
-    for (i = 0; i < node->num_children; i++) {
-	ret_node = FindWidgetFromWindowGivenNode(node->children[i], win);
-	if (ret_node != NULL)
-	    return(ret_node);
-    }
-    return(NULL);
-}
 
 /*	Function Name: DisplayChild
  *	Description: Displays the child node returned by the client
@@ -140,7 +98,6 @@ Event * event;
     FindChildEvent * find_event = (FindChildEvent *) event;
     WNode * node;
     char msg[BUFSIZ];
-    void _FlashActiveWidgets();
 
     node = FindNode(global_tree_info->top_node, find_event->widgets.ids,
 		    find_event->widgets.num_widgets);

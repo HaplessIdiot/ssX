@@ -22,6 +22,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Chris D. Peterson, MIT X Consortium
  */
+/* $XFree86 */
 
 #include <X11/Xmu/EditresP.h>
 #include <X11/Xresource.h>
@@ -52,7 +53,9 @@ in this Software without prior written authorization from The Open Group.
 #define ANY_RADIO_DATA ("the any widget")
 #define RESOURCE_BOX ("resourceBox")
 
+#ifdef X_NOT_STDC_ENV
 extern void exit();
+#endif
 
 /*
  * Retrieving ResType and Boolean is the same as retrieving a Card8 except
@@ -317,7 +320,7 @@ typedef union _Event {
     extern char* global_effective_toolkit;
     extern int global_error_code;
     extern unsigned long global_serial_num;
-    extern int (*global_old_error_handler)();
+    extern int (*global_old_error_handler)(Display *, XErrorEvent *);
     extern Boolean global_resource_box_up;
 
     extern TreeInfo *global_tree_info;
@@ -347,3 +350,79 @@ typedef union _Event {
 #define NUM_TM_ENTRIES 16
 #define TM_OFFSET 0
 #define TM_NUM 16
+
+/*
+ * Prototypes
+ */
+extern void ActivateResourceWidgets ( Widget w, XtPointer node_ptr, XtPointer junk );
+extern void ActivateWidgetsAndSetResourceString ( Widget w, XtPointer node_ptr, XtPointer call_data );
+extern void AddString ( char ** str, char *add );
+extern void AddTreeNode ( Widget tree, WNode * top );
+extern void AnyChosen ( Widget w, XtPointer any_info_ptr, XtPointer state_ptr );
+extern void ApplyResource ( Widget w, XtPointer node_ptr, XtPointer junk );
+extern void BuildVisualTree ( Widget tree_parent, Event * event );
+extern void BuildWidgetTree ( Widget parent );
+extern Boolean CheckDatabase ( XrmDatabase db, XrmQuarkList names, XrmQuarkList classes );
+extern void CreateResourceBox ( WNode * node, char ** errors );
+extern void CreateResourceBoxWidgets ( WNode * node, char **names, char **cons_names );
+extern TreeInfo * CreateTree ( Event * event );
+extern void DisplayChild ( Event * event );
+extern void DumpTreeToFile ( Widget w, XtPointer junk, XtPointer garbage );
+extern void ExecuteOverAllNodes ( WNode * top_node, void (*func)(WNode *, XtPointer), XtPointer data );
+extern WNode * FindNode ( WNode *top_node, unsigned long * ids, Cardinal number );
+extern void FindWidget ( Widget w, XtPointer client_data, XtPointer call_data );
+extern WNode * FindWidgetFromWindow ( TreeInfo * tree_info, Window win );
+extern void FlashActiveWidgets ( Widget w, XtPointer junk, XtPointer garbage );
+extern void GetAllStrings ( char *in, char sep, char ***out, int * num );
+extern Window GetClientWindow ( Widget w, int *x, int *y );
+extern char * GetFailureMessage ( ProtocolStream * stream );
+extern void GetNamesAndClasses ( WNode * node, char *** names, char ***classes );
+extern ResIdent GetNewIdent ( void );
+extern void GetResourceList ( Widget w, XtPointer junk, XtPointer garbage );
+extern char * GetResourceValueForSetValues ( WNode * node, unsigned short * size );
+extern char * HandleFlashWidget ( Event * event );
+extern char * HandleGetResources ( Event * event );
+extern int HandleXErrors ( Display * display, XErrorEvent * error );
+extern void InitSetValues ( Widget w, XtPointer client_data, XtPointer call_data );
+extern void InsertWidgetFromNode ( ProtocolStream * stream, WNode * node );
+extern void InternAtoms ( Display * dpy );
+extern void LayoutTree ( Widget tree );
+extern int main ( int argc, char **argv );
+extern void ModifySVEntry ( Widget w, XEvent *event, String * params, Cardinal * num_params );
+extern void PannerCallback ( Widget w, XtPointer closure, XtPointer report_ptr );
+extern void PerformTreeToFileDump ( WNode * node, int num_tabs, FILE * fp );
+extern void PopdownResBox ( Widget w, XtPointer shell_ptr, XtPointer junk );
+extern void PopupCentered ( XEvent * event, Widget w, XtGrabKind mode );
+extern void PopupSetValues ( Widget parent, XEvent * event );
+extern void PortholeCallback ( Widget w, XtPointer panner_ptr, XtPointer report_ptr );
+extern void PrepareToLayoutTree ( Widget tree );
+extern void PrintNodes ( WNode * top );
+extern char * PrintSetValuesError ( Event * event );
+extern char * ProtocolFailure ( ProtocolStream * stream );
+extern XrmQuarkList Quarkify ( char ** list, char * ptr );
+extern void Quit ( Widget w, XtPointer client_data, XtPointer call_data );
+extern void RebuildMenusAndLabel ( String toolkit );
+extern void ResourceListCallback ( Widget list, XtPointer node_ptr, XtPointer junk );
+extern void SaveResource ( Widget w, XtPointer res_box_ptr, XtPointer junk );
+extern void SendTree ( Widget w, XtPointer value, XtPointer call_data );
+extern void SetAndCenterTreeNode ( WNode * node );
+extern void SetApplicationActions ( XtAppContext app_con );
+extern void SetCommand ( Widget w, ResCommand command, char * msg );
+extern void SetEntriesSensitive ( Widget *entries, int num, Boolean sensitive );
+extern void SetFile ( Widget w, XtPointer junk, XtPointer garbage );
+extern void SetMessage ( Widget w, char * str );
+extern void SetResourceString ( Widget w, XtPointer node_ptr, XtPointer junk );
+extern void TreeRelabel ( Widget w, XtPointer client_data, XtPointer call_data );
+extern void TreeSelect ( Widget w, XtPointer client_data, XtPointer call_data );
+extern void TreeToggle ( Widget w, XtPointer node_ptr, XtPointer state_ptr );
+extern void _DumpTreeToFile ( Widget w, XtPointer tree_ptr, XtPointer filename );
+extern void _FindWidget ( Widget w );
+extern void _FlashActiveWidgets ( TreeInfo * tree_info );
+extern void _PopdownFileDialog ( Widget w, XtPointer client_data, XtPointer junk );
+extern void _PopupFileDialog ( Widget w, String str, String default_value, XtCallbackProc func, XtPointer data );
+extern void _TreeActivateNode ( WNode * node, SelectTypes type );
+extern void _TreeRelabel ( TreeInfo * tree_info, LabelTypes type );
+extern void _TreeRelabelNode ( WNode * node, LabelTypes type, Boolean recurse );
+extern void _TreeSelect ( TreeInfo * tree_info, SelectTypes type );
+extern void _TreeSelectNode ( WNode * node, SelectTypes type, Boolean recurse );
+

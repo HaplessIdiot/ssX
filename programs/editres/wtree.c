@@ -1,14 +1,9 @@
 /*
- * $XConsortium: wtree.c,v 1.18 94/04/17 20:38:59 rws Exp $
+ * $TOG: wtree.c /main/20 1998/02/09 13:43:02 kaleb $
  *
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -16,14 +11,15 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
  */
+/* $XFree86 */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -37,20 +33,15 @@ in this Software without prior written authorization from the X Consortium.
 
 #include "editresP.h"
 
-extern ScreenData global_screen_data;
-extern void SetMessage();
-
-static Boolean IsActiveNode();
-static void AddChild(), FillNode();
-static void AddNode();
-static void AddNodeToActiveList(), RemoveNodeFromActiveList();
-
-extern void PrepareToLayoutTree(), LayoutTree();
-
-extern void _TreeSelectNode(), _TreeActivateNode(), _TreeRelabelNode();
-static WNode ** CopyActiveNodes();
-
-void TreeToggle();
+static void AddNodeToActiveList ( WNode * node );
+static void RemoveNodeFromActiveList ( WNode * node );
+static Boolean IsActiveNode ( WNode * node );
+static void AddNode ( WNode ** top_node, WidgetTreeInfo * info, 
+		      TreeInfo * tree_info );
+static void FillNode ( WidgetTreeInfo * info, WNode * node, 
+		       TreeInfo * tree_info );
+static void AddChild ( WNode * parent, WNode * child );
+static WNode ** CopyActiveNodes ( TreeInfo * tree_info );
 
 /*	Function Name: BuildVisualTree
  *	Description: Creates the Tree and shows it.
@@ -66,8 +57,6 @@ Widget tree_parent;
 Event * event;
 {
     WNode * top;
-    TreeInfo *CreateTree();
-    void AddTreeNode();
     char msg[BUFSIZ];
 
     if (global_tree_info != NULL) {
@@ -157,7 +146,7 @@ TreeToggle(w, node_ptr, state_ptr)
 Widget w;
 XtPointer node_ptr, state_ptr;
 {
-    Boolean state = (Boolean) state_ptr;
+    Boolean state = (Boolean)(long) state_ptr;
     WNode * node = (WNode *) node_ptr;
 
     if (state) 
@@ -327,9 +316,7 @@ LabelTypes type;
  */
 
 void
-_TreeSelect(tree_info, type)
-TreeInfo * tree_info;
-SelectTypes type;
+_TreeSelect(TreeInfo *tree_info, SelectTypes type)
 {
     WNode ** active_nodes;
     Cardinal num_active_nodes;
@@ -375,10 +362,7 @@ SelectTypes type;
  */
 
 void
-_TreeSelectNode(node, type, recurse)
-WNode * node;
-SelectTypes type;
-Boolean recurse;
+_TreeSelectNode(WNode *node, SelectTypes type, Boolean recurse)
 {
     int i;
     Arg args[1];
@@ -405,7 +389,7 @@ Boolean recurse;
 
     XtSetArg(args[0], XtNstate, state);
     XtSetValues(node->widget, args, ONE);
-    TreeToggle(node->widget, (XtPointer) node, (XtPointer) state);
+    TreeToggle(node->widget, (XtPointer) node, (XtPointer)(long) state);
 
     if (!recurse)
 	return;
@@ -423,10 +407,7 @@ Boolean recurse;
  */
 
 void
-_TreeRelabelNode(node, type, recurse)
-WNode * node;
-LabelTypes type;
-Boolean recurse;
+_TreeRelabelNode(WNode *node, LabelTypes type, Boolean recurse)
 {
     int i;
     Arg args[1];
@@ -524,7 +505,6 @@ SelectTypes type;
  *
  ************************************************************/
 
-WNode * FindNode();
 
 /*	Function Name: AddNode
  *	Description: adds a node to the widget tree.

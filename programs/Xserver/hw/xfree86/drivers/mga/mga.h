@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.29 1998/12/13 07:37:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.30 1999/01/31 12:21:51 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -128,6 +128,9 @@ typedef struct {
     Bool		UsePCIRetry;
     Bool		ShowCache;
     Bool		Overlay8Plus24;
+    Bool		ShadowFB;
+    unsigned char *	ShadowPtr;
+    int			ShadowPitch;
     int			MemClk;
     int			MinClock;
     int			MaxClock;

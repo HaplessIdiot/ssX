@@ -1,15 +1,9 @@
-/* $XConsortium: BitmapP.h,v 1.13 94/04/17 20:23:41 rws Exp $ */
+/* $TOG: BitmapP.h /main/14 1998/02/09 13:40:01 kaleb $ */
 /*
 
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,17 +11,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
+/* $XFree86$ */
 
 /*
  * Author:  Davor Matic, MIT X Consortium
@@ -38,7 +33,10 @@ from the X Consortium.
 #ifndef _BitmapP_h
 #define _BitmapP_h
 
+#define bit int
+
 #include "Bitmap.h"
+#include "Requests.h"
 #include <X11/Xaw/SimpleP.h>
 
 typedef struct {
@@ -59,16 +57,20 @@ typedef struct _BitmapClassRec {
 
 extern BitmapClassRec bitmapClassRec;
 
+typedef void (*EngageProc)(Widget, BWStatus *, XtPointer, int *);
+typedef void (*TerminateProc)( Widget, BWStatus *, XtPointer);
+typedef void (*RemoveProc)(Widget w, BWStatus *, XtPointer);
+
 /**********/
 struct _BWRequestRec {
-  char       *name;
-  int         status_size;
-  void      (*engage)();
-  XtPointer   engage_client_data;
-  void      (*terminate)();
-  XtPointer   terminate_client_data;
-  void      (*remove)();
-  XtPointer   remove_client_data;
+  char         *name;
+  int           status_size;
+  EngageProc    engage;
+  XtPointer     engage_client_data;
+  TerminateProc terminate;
+  XtPointer     terminate_client_data;
+  RemoveProc    remove;
+  XtPointer     remove_client_data;
 } ;
 
 typedef struct {
@@ -119,7 +121,7 @@ typedef struct {
   /* private state */
   String           size;
   Position         horizOffset, vertOffset;
-  void           (*notify)();
+  XtActionProc     notify;
   BWRequestStack  *request_stack;
   Cardinal         cardinal, current;
   /*Boolean          trapping;*/
@@ -190,7 +192,16 @@ typedef struct _BitmapRec {
 #define Value(BW, button)   (BW->bitmap.button_function[button - 1])
 
 #define CreateCleanData(length) XtCalloc(length, sizeof(char))
-XImage *CreateBitmapImage();
-void DestroyBitmapImage();
+XImage *CreateBitmapImage(BitmapWidget BW, char *data, Dimension width, Dimension height);
+void DestroyBitmapImage(XImage **image);
+void  TransferImageData(XImage *source, XImage *destination);
+void CopyImageData(XImage *source, XImage *destination, 
+	      Position from_x, Position from_y, 
+	      Position to_x, Position to_y, 
+	      Position at_x, Position at_y);
+XImage *GetImage(BitmapWidget BW, Pixmap pixmap);
+XImage *ConvertToBitmapImage(BitmapWidget BW, XImage *image);
+XImage *ScaleBitmapImage(BitmapWidget BW, XImage *src, 
+			 double scale_x, double scale_y);
 
 #endif /* _BitmapP_h */

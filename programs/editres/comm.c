@@ -1,15 +1,9 @@
-/* $XConsortium: comm.c,v 1.23 94/04/17 20:38:51 dave Exp $ */
+/* $TOG: comm.c /main/24 1998/02/09 13:41:59 kaleb $ */
 /*
 
-Copyright (c) 1990  X Consortium
+Copyright 1990, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,17 +11,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
+/* $XFree86 */
 
 
 /*
@@ -44,6 +39,7 @@ from the X Consortium.
 
 #include <stdio.h>
 #include <X11/Xmu/Error.h>
+#include <X11/Xmu/WinUtil.h>
 
 #include "editresP.h"
 
@@ -54,28 +50,22 @@ from the X Consortium.
 static Atom atom_comm, atom_command, atom_resource_editor, atom_client_value;
 static Atom atom_editres_protocol;
 
-/*
- * external function definitions.
- */
-
-extern void RebuildMenusAndLabel();
-extern ResIdent GetNewIdent();
-extern void SetMessage(), BuildVisualTree(),DisplayChild();
-extern char * GetFormattedSetValuesError(), *HandleFlashWidget();
-extern char * HandleGetResources(),  *PrintSetValuesError();
-char * GetFailureMessage(), * ProtocolFailure();
-extern int HandleXErrors();
-extern void SetEntriesSensitive();
-
-static void TellUserAboutMessage(), BuildHeader(), FreeEvent();
-static Event * BuildEvent();
-static char * DispatchEvent();
-static void GetClientValue();
-static void ClientTimedOut(), LoseSelection(), SelectionDone();
-static Boolean ConvertCommand();
-
-
 extern Widget CM_entries[NUM_CM_ENTRIES], TM_entries[NUM_TM_ENTRIES];
+
+static void ClientTimedOut ( XtPointer data, XtIntervalId * id );
+static void TellUserAboutMessage ( Widget label, ResCommand command );
+static Boolean ConvertCommand ( Widget w, Atom * selection, Atom * target, 
+				Atom * type_ret, XtPointer *value_ret, 
+				unsigned long * length_ret, int * format_ret );
+static void SelectionDone ( Widget w, Atom *sel, Atom *targ );
+static void LoseSelection ( Widget w, Atom * sel );
+static void GetClientValue ( Widget w, XtPointer data, Atom *selection, 
+			     Atom *type, XtPointer value, 
+			     unsigned long *length, int * format );
+static void BuildHeader ( CurrentClient * client_data );
+static Event * BuildEvent ( ProtocolStream * stream );
+static void FreeEvent ( Event * event );
+static char * DispatchEvent ( Event * event );
 
 
 
@@ -400,7 +390,7 @@ int * format;
     Event * event;
     ProtocolStream alloc_stream, *stream;
     unsigned char ident, error_code;
-    char * error_str, msg[BUFSIZ];
+    char * error_str = NULL, msg[BUFSIZ];
 
     if (*length == 0)
 	return;

@@ -1,14 +1,9 @@
 /*
- * $XConsortium: widgets.c,v 1.22 94/04/17 20:38:58 dave Exp $
+ * $TOG: widgets.c /main/23 1998/02/09 13:42:57 kaleb $
  *
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -16,14 +11,15 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
  */
+/* $XFree86 */
 
 /*
  * Code for creating all widgets used by EditRes.
@@ -57,21 +53,20 @@ in this Software without prior written authorization from the X Consortium.
  * functions.
  */
 
-static void CreateResourceNameForm(), SetToggleGroupLeaders(), CreateLists();
-static void CreateCommandMenu(), CreateTreeCommandMenu(), FreeClientData();
-static void FreeResBox(), CreateValueWidget(), PopupOnNode();
-static Widget CreateTopArea();
-static void MakeBoxLookNice();
-
-extern void GetResourceList(), AnyChosen(), SetResourceString();
-extern void PannerCallback(), PortholeCallback(), DumpTreeToFile();
-extern void Quit(), SendTree(), FlashActiveWidgets();
-extern void TreeSelect(), TreeRelabel(), TreeActivate(), FindWidget();
-extern void ResourceListCallback(), PopdownResBox(), SaveResource();
-extern void GetNamesAndClasses(), ApplyResource(), ActivateResourceWidgets();
-extern void ActivateWidgetsAndSetResourceString(), SetFile();
-
-extern void InitSetValues();
+static Widget CreateTopArea ( Widget parent );
+static void CreateCommandMenu ( Widget parent, String toolkit );
+static void CreateTreeCommandMenu ( Widget parent, String toolkit );
+static void CreateResourceNameForm ( Widget parent, WNode * node );
+static void SetToggleGroupLeaders ( WNode * node );
+static void MakeBoxLookNice ( Widget dot, Widget star, Widget any, 
+			      Widget single, Widget name, Widget class, 
+			      int endbox );
+static void CreateLists ( Widget parent, WNode * node, char **names, 
+			  char **cons_names );
+static void CreateValueWidget ( Widget parent, WNode * node );
+static void PopupOnNode ( WNode * node, Widget shell );
+static void FreeClientData ( Widget w, XtPointer ptr, XtPointer junk );
+static void FreeResBox ( Widget w, XtPointer ptr, XtPointer junk );
 
 
 
@@ -241,10 +236,7 @@ Widget parent;
  *	Returns: none.
  */
 void
-SetEntriesSensitive(entries, num, sensitive)
-Widget *entries;
-int num;
-Boolean sensitive;
+SetEntriesSensitive(Widget *entries, int num, Boolean sensitive)
 {
 int i; for (i=0; i<num; i++) XtSetSensitive(entries[i], sensitive); 
 }
@@ -382,7 +374,7 @@ String toolkit;
 			      NULL, ZERO);
 
     for ( i = 0, number = XtNumber(tree_menu) ; i < number ; i++) {
-	void (*func)();
+	XtCallbackProc func;
 	WidgetClass class = smeBSBObjectClass;
 
 	switch (tree_menu[i].type) {
@@ -553,7 +545,7 @@ Widget parent;
 WNode * node;
 {
     ResourceBoxInfo * res_box = node->resources->res_box;
-    AnyInfo *new_info, *old_info;
+    AnyInfo *new_info = NULL, *old_info;
     char **names, **classes;
     Widget form;
     NameInfo * name_info = NULL;

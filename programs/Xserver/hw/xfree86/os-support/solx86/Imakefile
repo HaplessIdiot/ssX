@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/Imakefile,v 3.5.2.2 1998/06/06 16:22:30 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/Imakefile,v 3.7 1998/07/25 16:57:04 dawes Exp $
 
 
 
@@ -26,10 +26,6 @@ OBJS = solx86_init.o solx86_vid.o sysv_io.o $(BIOS_MOD).o \
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC)
-
-#if HasSolx86ApertureDriver
-DEFINES = -DHAS_APERTURE_DRV
-#endif
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()

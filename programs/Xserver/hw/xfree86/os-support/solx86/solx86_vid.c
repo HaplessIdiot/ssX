@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_vid.c,v 3.6.2.2 1998/06/06 16:22:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_vid.c,v 3.9 1998/07/25 16:57:05 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -43,7 +43,6 @@ Bool
 xf86LinearVidMem()
 {
 
-#ifdef HAS_APERTURE_DRV
 	int	mmapFd;
 
 	apertureDevName = "/dev/xsvc";
@@ -55,7 +54,7 @@ xf86LinearVidMem()
 		xf86Msg(X_WARNING,
 			"xf86LinearVidMem: failed to open %s (%s)\n",
 			apertureDevName, strerror(errno));
-		xf86Msg(X_WARNING, "xf86LinearVidMem: `aperture' device "
+		xf86Msg(X_WARNING, "xf86LinearVidMem: either /dev/fbs/aperture, or /dev/xsvc device "
 				   "driver required\n");
 		xf86Msg(X_WARNING,
 			"xf86LinearVidMem: linear memory access disabled\n");
@@ -64,9 +63,6 @@ xf86LinearVidMem()
 	}
 	close(mmapFd);
 	return TRUE;
-#else
-	return FALSE;
-#endif
 
 }
 
@@ -87,14 +83,13 @@ xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
  	 * it requires a device driver.
  	 * 
 	 * So what we'll do is use /dev/vtXX for the A0000-FFFFF stuff, and
-	 * try to use the /dev/fbs/aperture driver if the server
-	 * tries to mmap anything > FFFFF, and HAS_APERTURE_DRV is
-	 * defined. (its very very unlikely that the server will try to mmap
+	 * try to use the /dev/fbs/aperture or /dev/xsvc driver if the server
+	 * tries to mmap anything > FFFFF
+	 * its very very unlikely that the server will try to mmap
 	 * anything below FFFFF that can't be handled by /dev/vtXX.
-	 * If the server tries to mmap anything above FFFFF, and
-	 * HAS_APERTURE_DRV the server will die.)
 	 * 
 	 * DWH - 2/23/94
+	 * DWH - 1/31/99 (Gee has it really been 5 years?) 
 	 */
 
 	if(Base < (pointer)0xFFFFF)
@@ -102,7 +97,6 @@ xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 	else
 
 	{
-#ifdef HAS_APERTURE_DRV
 		if (!apertureDevName)
 			if (!xf86LinearVidMem())
 				FatalError("xf86MapVidMem: Could not mmap "
@@ -110,11 +104,6 @@ xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 					   Size, Base);
 		
 		sprintf(solx86_vtname, apertureDevName);
-#else
-		FatalError("%s: Could not mmap framebuffer [s=%x,a=%x] (%s)\n",
-			   "xf86MapVidMem", Size, Base,
-			   "aperture driver unavailable");
-#endif
 	}
 
 	if ((fd = open(solx86_vtname, O_RDWR,0)) < 0)

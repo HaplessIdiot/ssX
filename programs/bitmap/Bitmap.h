@@ -1,15 +1,9 @@
-/* $XConsortium: Bitmap.h,v 1.12 94/04/17 20:23:40 rws Exp $ */
+/* $TOG: Bitmap.h /main/13 1998/02/09 13:40:22 kaleb $ */
 /*
 
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,17 +11,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
+/* $XFree86$ */
 
 /*
  * Author:  Davor Matic, MIT X Consortium
@@ -179,89 +174,6 @@ from the X Consortium.
 
 /* bitmap exports */
 
-extern Boolean BWEngageRequest();
-extern Boolean BWTreminateRequest();
-
-extern void BWClearAll();
-extern void BWSetAll();
-extern void BWInvertAll();
-extern void BWUp();
-extern void BWDown();
-extern void BWLeft();
-extern void BWRight();
-extern void BWRotateRight();
-extern void BWRotateLeft();
-extern void BWSwitchGrid();
-extern void BWGrid();
-extern void BWSwitchDashed();
-extern void BWDashed();
-extern void BWSwitchAxes();
-extern void BWAxes();
-extern void BWDrawSquare();
-extern void BWDrawLine();
-extern void BWDrawRectangle();
-extern void BWDrawFilledRectangle();
-extern void BWDrawCircle();
-extern void BWDrawFilledCircle();
-extern void BWFloodFill();
-extern void BWMark();
-extern void BWMarkAll();
-extern void BWUnmark();
-extern void BWSelect();
-extern void BWUnmark();
-extern void BWStore();
-extern void BWStoreToBuffer();
-extern void BWUndo();
-extern void BWResize();
-extern void BWClip();
-extern void BWUnclip();
-extern void BWGrabSelection();
-extern void BWRequestSelection();
-extern void BWSetChanged();
-extern Boolean BWQueryChanged();
-extern int BWReadFile();
-extern int BWWriteFile();
-extern String BWUnparseStatus();
-extern String BWGetFilename();
-extern String BWGetBasename();
-extern void BWChangeBasename();
-extern void BWRemoveAllRequests();
-extern void BWClearHotSpot();
-extern Boolean BWQueryMarked();
-extern void BWFold();
-extern void BWClear();
-extern void BWSet();
-extern void BWInvert();
-extern void BWFlipHoriz();
-extern void BWFlipVert();
-extern void BWClearMarked();
-extern Boolean BWAddRequest();
-extern void BWChangeNotify();
-extern Pixmap BWGetUnzoomedPixmap();
-extern void BWClearChanged();
-extern Boolean BWQueryStored();
-extern Boolean BWQueryStippled();
-extern void BWSwitchStippled();
-extern void BWRedrawMark();
-extern Boolean BWQueryAxes();
-extern void BWHighlightAxes();
-extern void BWChangedFilename();
-extern String BWGetFilepath();
-extern void BWZoomOut();
-extern void BWZoomMarked();
-extern void BWRescale();
-extern Boolean BWQueryZooming();
-extern void BWRedrawGrid();
-extern void BWRedrawSquares();
-extern void BWRedrawHotSpot();
-extern Boolean BWQueryGrid();
-extern Boolean BWQueryDashed();
-extern Boolean BWQueryProportional();
-extern void BWSwitchProportional();
-extern void BWDrawGrid();
-extern void BWChangeFilename();
-extern Boolean BWParseSize();
-
 typedef struct _BWRequestRec BWRequestRec;
 typedef char *BWRequest;
 
@@ -272,6 +184,98 @@ typedef struct _BitmapRec      *BitmapWidget;
 /* declare the class constant */
 
 extern WidgetClass bitmapWidgetClass;
+
+extern Boolean BWEngageRequest(Widget w, BWRequest name, Boolean trap, 
+			       XtPointer call_data, Cardinal call_data_size);
+extern Boolean BWTerminateRequest(Widget w, Boolean cont);
+
+extern void BWUp ( Widget w );
+extern void BWDown ( Widget w );
+extern void BWLeft ( Widget w );
+extern void BWRight ( Widget w );
+extern void BWRotateRight ( Widget w );
+extern void BWRotateLeft ( Widget w );
+extern void BWSwitchGrid ( Widget w );
+extern void BWGrid ( Widget w, Boolean _switch );
+extern void BWSwitchDashed ( Widget w );
+extern void BWDashed ( Widget w, Boolean _switch );
+extern void BWSwitchAxes ( Widget w );
+extern void BWAxes ( Widget w, Boolean _switch );
+extern void BWRedrawAxes( Widget w );
+extern void BWDrawLine ( Widget w, Position from_x, Position from_y, Position to_x, Position to_y, int value );
+extern void BWDrawRectangle ( Widget w, Position from_x, Position from_y, Position to_x, Position to_y, int value );
+extern void BWDrawFilledRectangle ( Widget w, Position from_x, Position from_y, Position to_x, Position to_y, int value );
+extern void BWDrawCircle ( Widget w, Position origin_x, Position origin_y, Position point_x, Position point_y, int value );
+extern void BWDrawFilledCircle ( Widget w, Position origin_x, Position origin_y, Position point_x, Position point_y, int value );
+extern void BWFloodFill ( Widget w, Position x, Position y, int value );
+extern void BWMark ( Widget w, Position from_x, Position from_y, Position to_x, Position to_y );
+extern void BWMarkAll ( Widget w );
+extern void BWUnmark ( Widget w );
+extern void BWSelect ( Widget w, Position from_x, Position from_y, Position to_x, Position to_y, Time btime );
+extern void BWStore ( Widget w );
+extern void BWStoreToBuffer ( Widget w );
+extern void BWUndo ( Widget w );
+extern void BWResize ( Widget w, Dimension width, Dimension height );
+extern void BWClip ( Widget w, Position x, Position y, Dimension width, Dimension height );
+extern void BWUnclip ( Widget w );
+extern void BWGrabSelection ( Widget w, Time btime );
+extern void BWRequestSelection ( Widget w, Time btime, Boolean wait );
+extern void BWSetChanged ( Widget w );
+extern Boolean BWQueryChanged ( Widget w );
+extern int BWReadFile ( Widget w, String filename, String basename );
+extern int BWWriteFile ( Widget w, String filename, String basename );
+extern String BWUnparseStatus ( Widget w );
+extern String BWGetFilename ( Widget w, String *str );
+extern String BWGetBasename ( Widget w, String *str );
+extern void BWChangeBasename ( Widget w, String str );
+extern void BWRemoveAllRequests ( Widget w );
+extern void BWClearHotSpot ( Widget w );
+extern Boolean BWQueryMarked ( Widget w );
+extern void BWFold ( Widget w );
+extern void BWClear ( Widget w );
+extern void BWSet ( Widget w );
+extern void BWInvert ( Widget w );
+extern void BWFlipHoriz ( Widget w );
+extern void BWFlipVert ( Widget w );
+extern void BWClearMarked ( Widget w );
+extern Boolean BWAddRequest ( Widget w, BWRequest name, Boolean trap, XtPointer call_data, Cardinal call_data_size );
+extern void BWChangeNotify ( Widget w );
+extern Pixmap BWGetUnzoomedPixmap ( Widget w );
+extern void BWClearChanged ( Widget w );
+extern Boolean BWQueryStored ( Widget w );
+extern Boolean BWQueryStippled ( Widget w );
+extern void BWSwitchStippled ( Widget w );
+extern void BWRedrawMark ( Widget w );
+extern Boolean BWQueryAxes ( Widget w );
+extern void BWHighlightAxes ( Widget w );
+extern String BWGetFilepath ( Widget w, String *str );
+extern void BWZoomOut ( Widget w );
+extern void BWZoomMarked ( Widget w );
+extern void BWRescale ( Widget w, Dimension width, Dimension height );
+extern Boolean BWQueryZooming ( Widget w );
+extern void BWRedrawGrid ( Widget w, Position x, Position y, Dimension width, Dimension height );
+extern void BWRedrawSquares ( Widget w, Position x, Position y, Dimension width, Dimension height );
+extern void BWRedrawHotSpot ( Widget w );
+extern void BWSetHotSpot(Widget w, Position x, Position y);
+extern Boolean BWQueryGrid ( Widget w );
+extern Boolean BWQueryDashed ( Widget w );
+extern Boolean BWQueryProportional ( Widget w );
+extern void BWSwitchProportional ( Widget w );
+extern void BWDrawGrid ( Widget w, Position from_x, Position from_y, Position to_x, Position to_y );
+extern void BWChangeFilename ( Widget w, String str );
+extern Boolean BWParseSize ( String size, Dimension *width, Dimension *height );
+extern Boolean BWQuerySelection ( Widget w, Time btime );
+extern int BWStoreFile ( Widget w, String filename, String *basename );
+extern void BWNotify ( Widget w, XtActionProc proc );
+extern void BWTMark ( Widget w, XEvent *event, String *params, Cardinal *num_params  );
+extern void BWTMarkAll ( Widget w, XEvent *event, String *params, Cardinal *num_params );
+extern void BWTUnmark ( Widget w, XEvent *event, String *params, Cardinal *num_params );
+extern void BWTPaste ( Widget w, XEvent *event, String *params, Cardinal *num_params );
+extern void BWDebug ( Widget w, XEvent *event, String *params, Cardinal *num_params );
+extern void BWAbort ( Widget w );
+extern Boolean BWRemoveRequest ( Widget w );
+extern void BWRedraw ( Widget w );
+extern Pixmap BWGetPixmap( Widget w );
 
 #endif /* _Bitmap_h */
 

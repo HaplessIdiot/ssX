@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/bitmap/bmtoa.c,v 3.2 1998/03/20 21:08:25 hohndel Exp $ */
+/* $XFree86: xc/programs/bitmap/bmtoa.c,v 3.3 1998/10/04 09:39:59 dawes Exp $ */
 
 /*
  * bmtoa - bitmap to ascii filter
@@ -50,8 +50,11 @@ extern char *mktemp();
 
 char *ProgramName;
 
+static void print_scanline (unsigned int width, unsigned int height, 
+			    unsigned char *data, char *chars);
 
-static void usage ()
+static void 
+usage (void)
 {
     fprintf (stderr, "usage:  %s [-options ...] [filename]\n\n",
 	     ProgramName);
@@ -63,7 +66,8 @@ static void usage ()
     exit (1);
 }
 
-static char *copy_stdin ()
+static char *
+copy_stdin (void)
 {
 #ifdef WIN32
     static char tmpfilename[] = "/temp/bmtoa.XXXXXX";
@@ -111,9 +115,8 @@ static char *copy_stdin ()
     return tmpfilename;
 }
 
-main (argc, argv) 
-    int argc;
-    char **argv;
+int
+main (int argc, char *argv[]) 
 {
     char *filename = NULL;
     int isstdin = 0;
@@ -171,10 +174,11 @@ main (argc, argv)
     exit (0);
 }
 
-print_scanline (width, height, data, chars)
-    unsigned int width, height;
-    unsigned char *data;
-    char *chars;
+static void
+print_scanline (unsigned int width, 
+		unsigned int height, 
+		unsigned char *data, 
+		char *chars)
 {
     char *scanline = (char *) malloc (width + 1);
     unsigned char *dp = data;

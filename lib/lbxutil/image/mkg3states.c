@@ -22,7 +22,7 @@
  * LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE 
  * OF THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/lbxutil/image/mkg3states.c,v 1.2 1998/10/05 13:22:02 dawes Exp $ */
 
 /*
  * Program to construct Group 3 & Group 4 decoding tables.
@@ -64,6 +64,8 @@
  * END (from the original source)
  */
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
 #ifndef TRUE
 #define	TRUE	1
