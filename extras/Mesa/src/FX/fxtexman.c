@@ -41,7 +41,7 @@
  *
  * See fxapi.h for more revision/author details.
  */
-
+/* $XFree86$ */
 
 /* fxtexman.c - 3Dfx VooDoo texture memory functions */
 

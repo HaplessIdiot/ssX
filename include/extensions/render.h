@@ -1,5 +1,5 @@
 /*
- * $Id: render.h,v 1.1 2000/08/26 00:33:42 keithp Exp $
+ * $XFree86$
  *
  * Copyright © 2000 SuSE, Inc.
  *

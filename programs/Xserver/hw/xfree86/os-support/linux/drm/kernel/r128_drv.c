@@ -28,6 +28,7 @@
  *          Kevin E. Martin <martin@valinux.com>
  *
  */
+/* $XFree86$ */
 
 #include <linux/config.h>
 #include "drmP.h"

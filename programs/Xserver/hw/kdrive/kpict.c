@@ -1,5 +1,5 @@
 /*
- * $Id: kpict.c,v 1.1 2000/08/26 00:24:38 keithp Exp $
+ * $XFree86$
  *
  * Copyright © 1999 Keith Packard
  *

@@ -1,3 +1,4 @@
+/* $XFree86$ */
 
 static __inline void TAG(triangle)(GLcontext *ctx,
 				   GLuint e0, GLuint e1, GLuint e2,

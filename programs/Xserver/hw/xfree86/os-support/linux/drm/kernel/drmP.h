@@ -28,6 +28,7 @@
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  * 
  */
+/* $XFree86$ */
 
 #ifndef _DRM_P_H_
 #define _DRM_P_H_

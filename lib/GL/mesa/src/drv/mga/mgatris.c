@@ -23,6 +23,7 @@
  *
  *    Wittawat Yamwong <Wittawat.Yamwong@stud.uni-hannover.de>
  */
+/* $XFree86$ */
 
 #include <stdio.h>
 #include <math.h>

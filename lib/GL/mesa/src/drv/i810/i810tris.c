@@ -22,6 +22,7 @@
  *
  *
  */
+/* $XFree86$ */
 
 #include <stdio.h>
 #include <math.h>

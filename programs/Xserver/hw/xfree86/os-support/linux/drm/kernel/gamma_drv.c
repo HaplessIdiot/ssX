@@ -28,6 +28,7 @@
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *
  */
+/* $XFree86$ */
 
 #include <linux/config.h>
 #include "drmP.h"

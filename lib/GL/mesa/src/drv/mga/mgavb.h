@@ -23,6 +23,7 @@
  *
  *    Wittawat Yamwong <Wittawat.Yamwong@stud.uni-hannover.de>
  */
+/* $XFree86$ */
 
 #ifndef MGAVB_INC
 #define MGAVB_INC

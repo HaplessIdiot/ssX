@@ -1,5 +1,5 @@
 /*
- * $Id: picturestr.h,v 1.1 2000/08/25 23:40:58 keithp Exp $
+ * $XFree86$
  *
  * Copyright © 2000 SuSE, Inc.
  *

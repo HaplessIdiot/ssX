@@ -28,6 +28,7 @@
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  * 
  */
+/* $XFree86$ */
 
 #ifndef _GAMMA_DRV_H_
 #define _GAMMA_DRV_H_

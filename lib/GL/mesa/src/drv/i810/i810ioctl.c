@@ -1,6 +1,7 @@
+/* $XFree86$ */
+
 #include <stdio.h>
 #include <unistd.h>
-
 
 #include "types.h"
 #include "pb.h"

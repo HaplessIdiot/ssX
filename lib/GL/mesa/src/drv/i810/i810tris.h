@@ -22,6 +22,7 @@
  *
  *
  */
+/* $XFree86$ */
 
 #ifndef I810TRIS_INC
 #define I810TRIS_INC

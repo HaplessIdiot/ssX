@@ -28,6 +28,7 @@
  * 	    Jeff Hartmann <jhartmann@valinux.com>
  *
  */
+/* $XFree86$ */
 
 #ifndef _MGA_DRV_H_
 #define _MGA_DRV_H_

@@ -41,7 +41,7 @@
  *
  * See fxapi.h for more revision/author details.
  */
-
+/* $XFree86$ */
 
 #ifdef HAVE_CONFIG_H
 #include "conf.h"
