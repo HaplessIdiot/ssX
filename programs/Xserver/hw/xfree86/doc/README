@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                                30 June 2000
+                               8 December 2000
 
                                   Abstract
 
@@ -134,13 +134,19 @@ for the general X11 documentation.  The third contains the general X11 docu-
 mentation in hardcopy format.
 
 A source patch relative to version 4.0.1 is also available.  Because of its
-size, it is split into two parts.  The patch files are 4.0.1-4.0.2.diff1.gz
-and 4.0.1-4.0.2.diff2.gz.  These patches should be applied to a clean 4.0.1
-source tree, working from the directory containing the xc/ directory.  The
-patches should be applied by running:
+size, it is split into four parts.  The patch files are 4.0.1-4.0.2.diff1.gz,
+4.0.1-4.0.2.diff2.gz, 4.0.1-4.0.2.diff3.gz and 4.0.1-4.0.2.diff4.gz.  There
+is also a tarball that contains some files that have components that can't be
+included in a diff.  It is 4.0.2.tgz.  These patches should be applied to a
+clean 4.0.1 source tree, working from the directory containing the xc/ direc-
+tory.  The patches should be applied by running:
 
-     gunzip < 4.0.1-4.0.2.diff1.gz | patch -p0 -E
-     gunzip < 4.0.1-4.0.2.diff2.gz | patch -p0 -E
+     gzip -d < 4.0.1-4.0.2.diff1.gz | patch -p0 -E
+     gzip -d < 4.0.1-4.0.2.diff2.gz | patch -p0 -E
+     gzip -d < 4.0.1-4.0.2.diff3.gz | patch -p0 -E
+     gzip -d < 4.0.1-4.0.2.diff4.gz | patch -p0 -E
+
+     gzip -d < 4.0.2.tgz | tar vxf -
 
 The contrib part of the distribution has been folded into the main source
 tree, so a separate contrib tarball is no longer required.
@@ -157,7 +163,7 @@ yourself, send the entire log file with your bug report but not the operating
 system core dump.  Do not edit  the log file as our developers use it to
 reproduce and debug your problem.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.107 2000/07/02 16:35:56 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.109 2000/12/09 03:06:24 dawes Exp $
 
 
 $XFree86$
