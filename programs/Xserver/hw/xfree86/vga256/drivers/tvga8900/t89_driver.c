@@ -1,5 +1,5 @@
 /* $XConsortium: t89_driver.c,v 1.4 95/01/16 13:18:25 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.21 1996/01/13 12:22:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.22 1996/01/13 13:10:50 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -1446,6 +1446,8 @@ TVGA8900Save(save)
 #endif
 			outb(vgaIOBase + 4, 0x39);
 			save->PCIReg = inb(vgaIOBase + 5);
+			outb(0x3CE, 0x2F);
+			save->MiscIntContReg = inb(0x3CF);
 		}
 #endif
 	}
@@ -1655,7 +1657,8 @@ TVGA8900Init(mode)
 		else
 			new->GraphEngReg = 0x80; /* Enable 0x21XX, GER */
 #endif
-		new->MiscIntContReg = 0x04;	/* double line width */
+		outb(0x3CE, 0x2F);
+		new->MiscIntContReg = inb(0x3CF) | 0x04; /* double line width */
 		if (vgaBitsPerPixel == 16)
 		{
 			new->std.Attribute[17] = 0x00;
