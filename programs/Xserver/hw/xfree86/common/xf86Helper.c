@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.113 2001/06/13 23:10:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.114 2001/07/23 13:15:46 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1367,6 +1367,7 @@ xf86LogInit()
     }
     if ((logfile = fopen(xf86LogFile, "w")) == NULL)
 	FatalError("Cannot open log file \"%s\"\n", xf86LogFile);
+    xf86LogFileWasOpened = TRUE;
     setvbuf(logfile, NULL, _IONBF, 0);
 #ifdef DDXOSVERRORF
     if (!OsVendorVErrorFProc)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.180 2001/07/23 13:15:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.181 2001/07/25 15:05:05 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -1115,7 +1115,7 @@ OsVendorFatalError()
 {
   ErrorF("\nWhen reporting a problem related to a server crash, please send\n"
 	 "the full server output, not just the last messages.\n");
-  if (xf86LogFile)
+  if (xf86LogFile && xf86LogFileWasOpened)
     ErrorF("This can be found in the log file \"%s\".\n", xf86LogFile);
   ErrorF("Please report problems to %s.\n",BUILDERADDR);
   ErrorF("\n");

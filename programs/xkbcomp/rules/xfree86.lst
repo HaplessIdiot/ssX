@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.31 2001/05/24 19:43:05 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.32 2001/05/25 18:41:02 dawes Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -104,4 +104,8 @@
   grp_led:num		Num_Lock LED shows alternative group
   grp_led:caps		Caps_Lock LED shows alternative group
   grp_led:scroll	Scroll_Lock LED shows alternative group
-
+  caps			CapsLock key behavior
+  caps:internal		uses internal capitalization. Shift cancels Caps.
+  caps:internal_nocancel uses internal capitalization. Shift doesn't cancel Cap$
+  caps:shift		acts as Shift with locking. Shift cancels Caps.
+  caps:shift_nocancel	acts as Shift with locking. Shift doesn't cancel Caps.

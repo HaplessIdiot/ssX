@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.71 2001/05/15 10:19:35 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.72 2001/05/15 18:22:21 paulo Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -61,6 +61,7 @@ extern const char *xf86ModulePath;
 extern MessageType xf86ModPathFrom;
 extern const char *xf86LogFile;
 extern MessageType xf86LogFileFrom;
+extern Bool xf86LogFileWasOpened;
 extern serverLayoutRec xf86ConfigLayout;
 extern Pix24Flags xf86ConfigPix24;
 
