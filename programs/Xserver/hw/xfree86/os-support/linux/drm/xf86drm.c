@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.37 1999/06/07 13:01:42 faith Exp $
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.1 1999/06/14 07:32:01 dawes Exp $
  * 
  */
 
@@ -63,6 +63,11 @@ extern int xf86RemoveSIGIOHandler(int fd);
 #  define _DRM_MALLOC Xmalloc
 #  define _DRM_FREE   Xfree
 # endif
+#endif
+
+/* Not all systems have MAP_FAILED defined */
+#ifndef MAP_FAILED
+#define MAP_FAILED ((void *)-1)
 #endif
 
 #include <sys/sysmacros.h>	/* for makedev() */
