@@ -1599,8 +1599,10 @@ SiS_GetLCDResInfo(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex,
 	      SiS_Pr->SiS_LCDInfo |= DontExpandLCD;
 	   }
 	} else if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1600x1200) {
-	   /* TEMP - no idea about the timing and zoom factors */
-	   SiS_Pr->SiS_LCDInfo |= DontExpandLCD;
+	   if(SiS_Pr->SiS_VBType & VB_SIS301B302B) {
+	      /* TEMP - no idea about the timing and zoom factors */
+	      SiS_Pr->SiS_LCDInfo |= DontExpandLCD;
+	   }
 	}
 	if(SiS_Pr->SiS_CustomT == CUT_CLEVO1024) {
            if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1024x768) {
@@ -1609,13 +1611,7 @@ SiS_GetLCDResInfo(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex,
 	}
      }
      if(SiS_Pr->SiS_VBInfo & SetCRT2ToLCDA) {
-        if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1024x768) {
-	   if( (ModeNo == 0x59) || (ModeNo == 0x41) || (ModeNo ==  0x4f) ||
-	       (ModeNo == 0x50) || (ModeNo == 0x56) || (ModeNo ==  0x53) ||
-	       (ModeNo == 0x51) || (ModeNo == 0x57) || (ModeNo ==  0x54) ) {
-	      SiS_Pr->SiS_LCDInfo &= ~DontExpandLCD;
-	   }
-	} else if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1400x1050) {
+        if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1400x1050) {
 	   if(ModeNo == 0x3a || ModeNo == 0x4d || ModeNo == 0x65) {
 	      /* Bridge does not scale to 1280x1024 - TODO: TEST */
 	      SiS_Pr->SiS_LCDInfo |= DontExpandLCD;
@@ -1694,11 +1690,11 @@ SiS_GetLCDResInfo(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex,
   }
 
   if(SiS_Pr->SiS_VBInfo & SetInSlaveMode) {
-    	if(SiS_Pr->SiS_VBInfo & SetNotSimuMode) {
-      		SiS_Pr->SiS_SetFlag |= LCDVESATiming;
-    	}
+     if(SiS_Pr->SiS_VBInfo & SetNotSimuMode) {
+     	SiS_Pr->SiS_SetFlag |= LCDVESATiming;
+     }
   } else {
-    	SiS_Pr->SiS_SetFlag |= LCDVESATiming;
+     SiS_Pr->SiS_SetFlag |= LCDVESATiming;
   }
 
 #ifdef SIS315H
@@ -2889,7 +2885,6 @@ SiS_GetCRT2PtrA(SiS_Private *SiS_Pr,USHORT ModeNo,USHORT ModeIdIndex,
 
   if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1600x1200)      tempbx = 4;
   else if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1400x1050) tempbx = 3;
-  else if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1280x960)  tempbx = 2;
   else tempbx -= SiS_Pr->SiS_Panel1024x768;
 
   if(SiS_Pr->SiS_LCDInfo & DontExpandLCD)  tempbx += 5;
@@ -3058,14 +3053,12 @@ SiS_GetCRT2DataLVDS(SiS_Private *SiS_Pr,USHORT ModeNo,USHORT ModeIdIndex,
                       &CRT2Index,&ResIndex);
 
       switch (CRT2Index) {
-      	case  0:  LVDSData = SiS_Pr->SiS_LVDS1024x768Data_1;    break;
-      	case  1:  LVDSData = SiS_Pr->SiS_LVDS1280x1024Data_1;   break;
-        case  2:  LVDSData = SiS_Pr->SiS_LVDS1280x960Data_1;    break;
+      	case  0:  LVDSData = SiS_Pr->SiS_LCDA1024x768Data_1;    break;
+      	case  1:  LVDSData = SiS_Pr->SiS_LCDA1280x1024Data_1;   break;
 	case  3:  LVDSData = SiS_Pr->SiS_LCDA1400x1050Data_1;   break;
 	case  4:  LVDSData = SiS_Pr->SiS_LCDA1600x1200Data_1;   break;
-      	case  5:  LVDSData = SiS_Pr->SiS_LVDS1024x768Data_2;    break;
-      	case  6:  LVDSData = SiS_Pr->SiS_LVDS1280x1024Data_2;   break;
-      	case  7:  LVDSData = SiS_Pr->SiS_LVDS1280x960Data_2;    break;
+      	case  5:  LVDSData = SiS_Pr->SiS_LCDA1024x768Data_2;    break;
+      	case  6:  LVDSData = SiS_Pr->SiS_LCDA1280x1024Data_2;   break;
 	case  8:  LVDSData = SiS_Pr->SiS_LCDA1400x1050Data_2;   break;
 	case  9:  LVDSData = SiS_Pr->SiS_LCDA1600x1200Data_2;   break;
 	default:  LVDSData = SiS_Pr->SiS_LVDS1024x768Data_1;    break;
@@ -3529,6 +3522,12 @@ SiS_GetLVDSDesPtrA(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex,
 	}
      }
   }
+  if(SiS_Pr->SiS_CustomT == CUT_UNIWILL1024) {
+     if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1024x768) {
+	tempbx = 82;
+	if(SiS_Pr->SiS_LCDInfo & DontExpandLCD) tempbx++;
+     }
+  }
 
   if(ModeNo <= 0x13)
      tempal = SiS_Pr->SiS_SModeIDTable[ModeIdIndex].St_CRT2CRTC;
@@ -3572,8 +3571,10 @@ SiS_GetLVDSDesData(SiS_Private *SiS_Pr, USHORT ModeNo,USHORT ModeIdIndex,
      	case  5: PanelDesPtr = SiS_Pr->LVDS1280x1024Des_2;  break;
 	case  6: PanelDesPtr = SiS_Pr->LVDS1400x1050Des_2;  break;
 	case  7: PanelDesPtr = SiS_Pr->LVDS1600x1200Des_2;  break;
-	case 80: PanelDesPtr = (SiS_LVDSDesStruct *)Clevo1024x768Des_1;  break;  /*  custom  */
-	case 81: PanelDesPtr = (SiS_LVDSDesStruct *)Clevo1024x768Des_2;  break;
+	case 80: PanelDesPtr = (SiS_LVDSDesStruct *)Clevo1024x768Des_1;   break;  /*  custom  */
+	case 81: PanelDesPtr = (SiS_LVDSDesStruct *)Clevo1024x768Des_2;   break;
+	case 82: PanelDesPtr = (SiS_LVDSDesStruct *)Uniwill1024x768Des_1; break;
+	case 83: PanelDesPtr = (SiS_LVDSDesStruct *)Uniwill1024x768Des_2; break;
 	default: PanelDesPtr = SiS_Pr->LVDS1024x768Des_1;   break;
      }
 #endif
@@ -9738,7 +9739,11 @@ SiS_SetChReg(SiS_Private *SiS_Pr, USHORT tempbx, USHORT myor)
 {
   USHORT tempah,temp,i;
 
-  for(i=0; i<10; i++) {	/* Do only 10 attempts to write */
+  for(i=0; i<20; i++) {				/* Do 20 attempts to write */
+     if(i) {
+        SiS_SetStop(SiS_Pr);
+	SiS_DDC2Delay(SiS_Pr,SiS_I2CDELAYSHORT);
+     }
      if(SiS_SetStart(SiS_Pr)) continue;		/* Set start condition */
      tempah = SiS_Pr->SiS_DDC_DeviceAddr;
      temp = SiS_WriteDDC2Data(SiS_Pr,tempah);	/* Write DAB (S0=0=write) */
@@ -9762,12 +9767,13 @@ SiS_SetChReg(SiS_Private *SiS_Pr, USHORT tempbx, USHORT myor)
 void
 SiS_SetCH700x(SiS_Private *SiS_Pr, USHORT tempbx)
 {
+  SiS_Pr->SiS_DDC_DataShift = 0x00;
+  SiS_Pr->SiS_DDC_DeviceAddr = 0xEA;  		/* DAB (Device Address Byte) */
+
   if(!(SiS_Pr->SiS_ChrontelInit)) {
      SiS_Pr->SiS_DDC_Index = 0x11;		/* Bit 0 = SC;  Bit 1 = SD */
      SiS_Pr->SiS_DDC_Data  = 0x02;              /* Bitmask in IndexReg for Data */
      SiS_Pr->SiS_DDC_Clk   = 0x01;              /* Bitmask in IndexReg for Clk */
-     SiS_Pr->SiS_DDC_DataShift = 0x00;
-     SiS_Pr->SiS_DDC_DeviceAddr = 0xEA;  	/* DAB (Device Address Byte) */
   }
 
   if( (!(SiS_SetChReg(SiS_Pr, tempbx, 0x80))) &&
@@ -9775,8 +9781,6 @@ SiS_SetCH700x(SiS_Private *SiS_Pr, USHORT tempbx)
      SiS_Pr->SiS_DDC_Index = 0x0a;		/* Bit 7 = SC;  Bit 6 = SD */
      SiS_Pr->SiS_DDC_Data  = 0x80;              /* Bitmask in IndexReg for Data */
      SiS_Pr->SiS_DDC_Clk   = 0x40;              /* Bitmask in IndexReg for Clk */
-     SiS_Pr->SiS_DDC_DataShift = 0x00;
-     SiS_Pr->SiS_DDC_DeviceAddr = 0xEA;  	/* DAB (Device Address Byte) */
 
      SiS_SetChReg(SiS_Pr, tempbx, 0x80);
   }
@@ -9810,7 +9814,11 @@ SiS_GetChReg(SiS_Private *SiS_Pr, USHORT myor)
 {
   USHORT tempah,temp,i;
 
-  for(i=0; i<20; i++) {				/* Do only 20 attempts to read */
+  for(i=0; i<20; i++) {				/* Do 20 attempts to read */
+     if(i) {
+        SiS_SetStop(SiS_Pr);
+	SiS_DDC2Delay(SiS_Pr,SiS_I2CDELAYSHORT);
+     }
      if(SiS_SetStart(SiS_Pr)) continue;		/* Set start condition */
      tempah = SiS_Pr->SiS_DDC_DeviceAddr;
      temp = SiS_WriteDDC2Data(SiS_Pr,tempah);	/* Write DAB (S0=0=write) */
@@ -9823,7 +9831,7 @@ SiS_GetChReg(SiS_Private *SiS_Pr, USHORT myor)
      temp = SiS_WriteDDC2Data(SiS_Pr,tempah);	/* DAB (S0=1=read) */
      if(temp) continue;				/*        (ERROR: no ack) */
      tempah = SiS_ReadDDC2Data(SiS_Pr,tempah);	/* Read byte */
-     if (SiS_SetStop(SiS_Pr)) continue;		/* Stop condition */
+     if(SiS_SetStop(SiS_Pr)) continue;		/* Stop condition */
      SiS_Pr->SiS_ChrontelInit = 1;
      return(tempah);
   }
@@ -9837,12 +9845,13 @@ SiS_GetCH700x(SiS_Private *SiS_Pr, USHORT tempbx)
 {
   USHORT result;
 
+  SiS_Pr->SiS_DDC_DataShift = 0x00;
+  SiS_Pr->SiS_DDC_DeviceAddr = 0xEA;		/* DAB */
+
   if(!(SiS_Pr->SiS_ChrontelInit)) {
      SiS_Pr->SiS_DDC_Index = 0x11;		/* Bit 0 = SC;  Bit 1 = SD */
      SiS_Pr->SiS_DDC_Data  = 0x02;              /* Bitmask in IndexReg for Data */
      SiS_Pr->SiS_DDC_Clk   = 0x01;              /* Bitmask in IndexReg for Clk */
-     SiS_Pr->SiS_DDC_DataShift = 0x00;
-     SiS_Pr->SiS_DDC_DeviceAddr = 0xEA;		/* DAB */
   }
 
   SiS_Pr->SiS_DDC_ReadAddr = tempbx;
@@ -9850,11 +9859,9 @@ SiS_GetCH700x(SiS_Private *SiS_Pr, USHORT tempbx)
   if( ((result = SiS_GetChReg(SiS_Pr,0x80)) == 0xFFFF) &&
       (!SiS_Pr->SiS_ChrontelInit) ) {
 
-     SiS_Pr->SiS_DDC_Index = 0x0a;		/* Bit 0 = SC;  Bit 1 = SD */
-     SiS_Pr->SiS_DDC_Data  = 0x80;              /* Bitmask in IndexReg for Data */
-     SiS_Pr->SiS_DDC_Clk   = 0x40;              /* Bitmask in IndexReg for Clk */
-     SiS_Pr->SiS_DDC_DataShift = 0x00;
-     SiS_Pr->SiS_DDC_DeviceAddr = 0xEA;  	/* DAB (Device Address Byte) */
+     SiS_Pr->SiS_DDC_Index = 0x0a;
+     SiS_Pr->SiS_DDC_Data  = 0x80;
+     SiS_Pr->SiS_DDC_Clk   = 0x40;
 
      result = SiS_GetChReg(SiS_Pr,0x80);
   }
@@ -10899,8 +10906,8 @@ SiS_WriteDDC2Data(SiS_Private *SiS_Pr, USHORT tempax)
 {
   USHORT i,flag,temp;
 
-  flag=0x80;
-  for(i=0;i<8;i++) {
+  flag = 0x80;
+  for(i=0; i<8; i++) {
     SiS_SetSCLKLow(SiS_Pr);				                      /* SC->low */
     if(tempax & flag) {
       SiS_SetRegANDOR(SiS_Pr->SiS_DDC_Port,SiS_Pr->SiS_DDC_Index,
@@ -10946,7 +10953,7 @@ SiS_SetSCLKLow(SiS_Private *SiS_Pr)
 USHORT
 SiS_SetSCLKHigh(SiS_Private *SiS_Pr)
 {
-  USHORT temp,watchdog=1000;
+  USHORT temp, watchdog=1000;
 
   SiS_SetRegANDOR(SiS_Pr->SiS_DDC_Port,SiS_Pr->SiS_DDC_Index,
                   ~SiS_Pr->SiS_DDC_Clk,SiS_Pr->SiS_DDC_Clk);  	/* SetSCLKHigh()  */

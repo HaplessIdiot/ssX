@@ -214,17 +214,18 @@ typedef struct _SiS_ModeResInfoStruct
 typedef UCHAR DRAM4Type[4];
 
 /* Defines for SiS_Customt */
-#define CUT_NONE        0
-#define CUT_FORCENONE   1
-#define CUT_BARCO1366   2
-#define CUT_BARCO1024   3
-#define CUT_COMPAQ1280  4
-#define CUT_COMPAQ12802 5
-#define CUT_PANEL848    6
-#define CUT_CLEVO1024   7
-#define CUT_CLEVO10242  8
-#define CUT_CLEVO1400   9
-#define CUT_CLEVO14002 10
+#define CUT_NONE         0
+#define CUT_FORCENONE    1
+#define CUT_BARCO1366    2
+#define CUT_BARCO1024    3
+#define CUT_COMPAQ1280   4
+#define CUT_COMPAQ12802  5
+#define CUT_PANEL848     6
+#define CUT_CLEVO1024    7
+#define CUT_CLEVO10242   8
+#define CUT_CLEVO1400    9
+#define CUT_CLEVO14002  10
+#define CUT_UNIWILL1024 11
 
 typedef struct _SiS_Private
 {
@@ -441,6 +442,10 @@ typedef struct _SiS_Private
 	const SiS_LVDSDataStruct  *SiS_LVDS640x480Data_1;
 	const SiS_LVDSDataStruct  *SiS_LVDS640x480Data_2;
 	const SiS_LVDSDataStruct  *SiS_LVDS320x480Data_1;
+	const SiS_LVDSDataStruct  *SiS_LCDA1024x768Data_1;
+	const SiS_LVDSDataStruct  *SiS_LCDA1024x768Data_2;
+	const SiS_LVDSDataStruct  *SiS_LCDA1280x1024Data_1;
+	const SiS_LVDSDataStruct  *SiS_LCDA1280x1024Data_2;
 	const SiS_LVDSDataStruct  *SiS_LCDA1400x1050Data_1;
 	const SiS_LVDSDataStruct  *SiS_LCDA1400x1050Data_2;
 	const SiS_LVDSDataStruct  *SiS_LCDA1600x1200Data_1;

@@ -189,6 +189,13 @@ const customttable mycustomttable[] = {
 	  0x1558, 0x0400,  /* possibly 401 and 402 as well; not panelsize specific (?) */
 	  "Clevo", "D400S/D410S/D400H/D410H", CUT_CLEVO1400, "CLEVO400"
 	},
+	{ SIS_650, "", "",
+	  0,
+	  { 0, 0, 0, 0, 0 },
+	  { 0, 0, 0, 0, 0 },
+	  0x1734, 0x101f,
+	  "Uniwill", "N243S9", CUT_UNIWILL1024, "UNIWILL1024"
+	},
 	{ 4321, "", "",			/* This is hopefully NEVER autodetected */
 	  0,
 	  { 0, 0, 0, 0, 0 },
