@@ -68,7 +68,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.27 2002/02/19 11:09:21 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.30 2003/07/04 16:24:24 eich Exp $ */
 
 #ifdef PANORAMIX_DEBUG
 #include <stdio.h>
@@ -3297,6 +3297,8 @@ ProcSetScreenSaver            (client)
 	ScreenSaverInterval = stuff->interval * MILLI_PER_SECOND;
     else
 	ScreenSaverInterval = defaultScreenSaverInterval;
+
+    SetScreenSaverTimer();
     return (client->noClientException);
 }
 
