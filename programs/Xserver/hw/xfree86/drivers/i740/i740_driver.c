@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.39 2002/10/23 16:08:36 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.40 2003/02/17 16:52:56 dawes Exp $ */
 
 /*
  * Authors:
@@ -128,10 +128,6 @@ static Bool I740CloseScreen(int scrnIndex, ScreenPtr pScreen);
 
 /* Change screensaver state */
 static Bool I740SaveScreen(ScreenPtr pScreen, int mode);
-
-/* Allow mode switching */
-Bool I740SwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
-/* Allow moving the viewport */
 
 /* Cleanup server private data */
 static void I740FreeScreen(int scrnIndex, int flags);
