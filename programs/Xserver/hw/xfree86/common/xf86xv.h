@@ -151,8 +151,8 @@ typedef struct {
 		  short drw_w, short drw_h,
 		  RegionPtr clipBoxes);
   int (*stop)    (XF86SurfacePtr surface);
-  int (*getAttribute) (XF86SurfacePtr surface, Atom attr, INT32 *value);
-  int (*setAttribute) (XF86SurfacePtr surface, Atom attr, INT32 value);
+  int (*getAttribute) (ScrnInfoPtr pScrn, Atom attr, INT32 *value);
+  int (*setAttribute) (ScrnInfoPtr pScrn, Atom attr, INT32 value);
   int max_width;
   int max_height;
   int num_attributes;
