@@ -1,4 +1,6 @@
 XFree86 3.9.18Za (6 March 2000)
+3949. Fixed the unresolved VBE symbols and a crash related to referencing
+      vgahw symbols before the module is loaded (Kevin Martin).
 3948. Fix a -configure crash in the tdfx driver (David Dawes).
 3947. Fix a mouse driver bug that prevented the X server from seeing the
       mouse button 4 and above when three button emulation is enabled
@@ -9992,4 +9994,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1067 2000/03/06 19:07:07 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1068 2000/03/06 22:59:17 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.23 2000/02/29 22:35:50 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.25 2000/03/01 20:12:55 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -237,6 +237,12 @@ static const char *fbdevHWSymbols[] = {
     NULL
 };
 
+static const char *vbeSymbols[] = {
+    "VBEInit",
+    "vbeDoEDID",
+    NULL
+};
+
 #if 0
 				/* Not used until DDC is supported. */
 static const char *ddcSymbols[] = {
@@ -342,6 +348,7 @@ static pointer R128Setup(pointer module, pointer opts, int *errmaj,
                           xf8_32bppSymbols,
 			  ramdacSymbols,
 			  fbdevHWSymbols,
+			  vbeSymbols,
                           0 /* ddcsymbols */,
 			  0 /* i2csymbols */,
 			  0 /* shadowSymbols */,
@@ -1066,10 +1073,7 @@ static Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
     R128TRACE(("R128PreInit\n"));
     if (pScrn->numEntities != 1) return FALSE;
 
-    if (!R128GetRec(pScrn)) {
-	vgaHWFreeHWRec(pScrn);
-	return FALSE;
-    }
+    if (!R128GetRec(pScrn)) return FALSE;
 
     info               = R128PTR(pScrn);
 
@@ -1083,7 +1087,10 @@ static Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
 
     if (!xf86LoadSubModule(pScrn, "vgahw")) return FALSE;
     xf86LoaderReqSymLists(vgahwSymbols, NULL);
-    if (!vgaHWGetHWRec(pScrn)) return FALSE;
+    if (!vgaHWGetHWRec(pScrn)) {
+	R128FreeRec(pScrn);
+	return FALSE;
+    }
 
     info->PciInfo      = xf86GetPciInfoForEntity(info->pEnt->index);
     info->PciTag       = pciTag(info->PciInfo->bus,
