@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.64 1996/01/13 12:17:56 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.65 1996/01/14 13:33:20 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -153,15 +153,6 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.64 1996/01/13 12:17:56 dawes Exp $
  */
 
 /*
- * Do you want to install the default system config files, this will overwrite
- * and files that you may be currently using.  This would only be required
- * on a first time build.
- *
- */
-#define InstallXdmConfig	YES
-#define InstallXinitConfig	YES
-
-/*
  * If you only run the X server under xdm the X servers don't need to be
  * installed SetUID, and you may comment out the lines below.  If you run
  * the servers by hand (with xinit or startx), then they do need to be
@@ -178,7 +169,6 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.64 1996/01/13 12:17:56 dawes Exp $
  *
  */
 #define BuildFontServer		YES
-#define InstallFSConfig		YES	/* install sample fs config */
 
 /*
  * Do you want to Build Fonts (Usually you only want to build and install
@@ -266,6 +256,25 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.64 1996/01/13 12:17:56 dawes Exp $
  * uncomment this line.  This option is only relevant when XIE is built.
  *
 #define BuildDIS		YES
+ */
+
+/*
+ * By default, the sample config files for xinit, xdm and xfs are installed
+ * only when there is no pre-existing version installed.  Uncommenting the
+ * following lines will force the sample versions to be installed even if
+ * it means over-writing existing versions.
+ *
+#define InstallXinitConfig	YES
+#define InstallXdmConfig	YES
+#define InstallFSConfig		YES
+ */
+
+/*
+ * By default the application defaults files are always installed.
+ * Uncommenting the the following will prevent exising application
+ * defaults files from being over-written.
+ *
+#define InstallAppDefFiles	NO
  */
 
 /*

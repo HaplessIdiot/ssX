@@ -1,5 +1,5 @@
 ! $XConsortium: XErrorDB /main/33 1995/12/09 15:44:40 kaleb $
-! $XFree86: xc/lib/X11/XErrorDB,v 3.6 1996/01/16 15:01:05 dawes Exp $
+! $XFree86: xc/lib/X11/XErrorDB,v 3.7 1996/01/17 12:45:31 dawes Exp $
 ! Copyright (c) 1993, 1995  X Consortium
 ! 
 ! Permission is hereby granted, free of charge, to any person obtaining
@@ -575,6 +575,7 @@ XRequest.XFree86-VidModeExtension.2: XF86VidModeModModeLine
 XRequest.XFree86-VidModeExtension.3: XF86VidModeSwitchMode
 XRequest.XFree86-VidModeExtension.4: XF86VidModeGetMonitor
 XRequest.XFree86-VidModeExtension.5: XF86VidModeLockModeSwitch
+XRequest.XFree86-VidModeExtension.6: XF86VidModeGetAllModeLines
 XProtoError.XFree86-VidModeExtension.0: XF86VidModeBadClock
 XProtoError.XFree86-VidModeExtension.1: XF86VidModeBadHTimings
 XProtoError.XFree86-VidModeExtension.2: XF86VidModeBadVTimings
