@@ -1,4 +1,8 @@
 XFree86 4.1.99.1 (xx June 2001)
+ 110. Fix int10 build for GCC 3.0 (Marc La France).
+ 109. An attempt at fixing the i740 driver to not reference options before they
+      are collected (Marc La France).
+ 108. Fix for RandR build (Bill Crawford).
  109. Fix 3Dfx Voodoo Banshee boards with timing issues (Alan Hourihane).
  108. Allow Cygwin/XFree86 to be cross compiled (#4784-#4786 Harold Hunt).
  107. Fix fatal bug in XAA's N-to-N CopyPlane acceleration (Elliot Lee).
@@ -13508,4 +13512,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1856 2001/06/25 11:02:24 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1857 2001/06/26 08:41:56 alanh Exp $
