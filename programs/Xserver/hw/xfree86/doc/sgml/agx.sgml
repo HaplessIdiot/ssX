@@ -159,7 +159,7 @@ Device Section Entries and Options Currently Supported:
                                  The BT481/2 are limited to 85Mhz.
                                  8bpp, 15bpp, 16bpp are supported. 
 
-<tag/&dquot;AT&amp;T20c490&dquot;/
+<tag/&dquot;ATT20c490&dquot;/
                                  AT&amp;T490 RAMDAC (includes 49[123]  
                                  - supports 8-bit DAC). Limited
                                  to 110Mhz at 8bpp. 8bpp, 15bpp, 
@@ -592,7 +592,7 @@ Set or clear CPU access wait state, default is the POST setting.
 
 <verb>
 $XConsortium: agx.sgml,v 1.4 95/01/27 16:14:35 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.9 1995/06/24 10:28:41 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.10 1995/06/25 09:53:43 dawes Exp $
 </verb>
 
 </article>
