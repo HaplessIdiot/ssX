@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.55 2001/06/15 21:23:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.57 2001/10/01 13:44:12 eich Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -58,7 +58,7 @@
 #include "xf86Resources.h"
 #include "xf86int10.h"
 
-/* Some systems define VGA for their own purposes */
+/* Some systems #define VGA for their own purposes */
 #undef VGA
 
 /* A few things all drivers should have */
@@ -85,7 +85,7 @@ static void       GenericLeaveVT(int, int);
 static void       GenericFreeScreen(int, int);
 static int        VGAFindIsaDevice(GDevPtr dev);
 #ifdef SPECIAL_FB_BYTE_ACCESS
-static Bool       genericMapMem(ScrnInfoPtr scrp);
+static Bool       GenericMapMem(ScrnInfoPtr scrp);
 #endif
 
 static int GenericValidMode(int, DisplayModePtr, Bool, int);
@@ -95,9 +95,6 @@ DriverRec VGA =
 {
     VGA_VERSION_CURRENT,
     VGA_DRIVER_NAME,
-#if 0
-    "Generic VGA driver",
-#endif
     GenericIdentify,
     GenericProbe,
     GenericAvailableOptions,
@@ -496,16 +493,16 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
     if (xf86LoadSubModule(pScreenInfo, "int10")) {
  	xf86Int10InfoPtr pInt;
  	xf86LoaderReqSymLists(int10Symbols, NULL);
-	xf86DrvMsg(pScreenInfo->scrnIndex,X_INFO,"initializing int10\n");
+	xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO, "initializing int10\n");
 	pInt = xf86InitInt10(pEnt->index);
 	xf86FreeInt10(pInt);
     }
 
     
     {
-	resRange unusedmem[] =	{ {ResShrMemBlock,0xB0000,0xB7FFF},
-				  {ResShrMemBlock,0xB8000,0xBFFFF},
-				  _END };
+	static resRange unusedmem[] =	{ {ResShrMemBlock,0xB0000,0xB7FFF},
+					  {ResShrMemBlock,0xB8000,0xBFFFF},
+					  _END };
 	
 	/* XXX Should this be "disabled" or "unused"? */
 	xf86SetOperatingState(unusedmem, pEnt->index, ResUnusedOpr);
@@ -596,7 +593,6 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
     if (!vgaHWGetHWRec(pScreenInfo))
         return FALSE;
 
-
     pvgaHW = VGAHWPTR(pScreenInfo);
     pvgaHW->MapSize = 0x00010000;       /* Standard 64kB VGA window */
     vgaHWGetIOBase(pvgaHW);             /* Get VGA I/O base */
@@ -630,12 +626,12 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
         for (i = 0;  i < pScreenInfo->numClocks;  i++)
             pScreenInfo->clock[i] = pEnt->device->clock[i];
         From = X_CONFIG;
-    } else  if (xf86ReturnOptValBool(pGenericPriv->Options,OPTION_VGA_CLOCKS,FALSE)) {
+    } else
+    if (xf86ReturnOptValBool(pGenericPriv->Options,OPTION_VGA_CLOCKS,FALSE)) {
         pScreenInfo->numClocks = 2;
         pScreenInfo->clock[0] = 25175;
         pScreenInfo->clock[1] = 28322;
-    } else
-    {
+    } else {
         xf86GetClocks(pScreenInfo, 4, GenericClockSelect, GenericProtect,
             GenericBlankScreen, VGAHW_GET_IOBASE() + 0x0A, 0x08, 1, 28322);
         From = X_PROBED;
@@ -698,26 +694,29 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
     /* Set display resolution */
     xf86SetDpi(pScreenInfo, 0, 0);
 
-    if (xf86ReturnOptValBool(pGenericPriv->Options,OPTION_SHADOW_FB,FALSE)) {
+    if (xf86ReturnOptValBool(pGenericPriv->Options, OPTION_SHADOW_FB, FALSE)) {
 	pGenericPriv->ShadowFB = TRUE;
-        xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG,
+	xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG,
 		   "Using \"Shadow Framebuffer\"\n");
     }
 #ifdef SPECIAL_FB_BYTE_ACCESS
-     if (!pGenericPriv->ShadowFB && (pScreenInfo->depth == 4)) {
-       xf86DrvMsg(pScreenInfo->scrnIndex,X_INFO,"Architecture requires "
- 		 "special FB access for this depth: ShadowFB enabled\n");
+    if (!pGenericPriv->ShadowFB && (pScreenInfo->depth == 4)) {
+	xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
+		   "Architecture requires special FB access for this depth:"
+		   "  ShadowFB enabled\n");
  	pGenericPriv->ShadowFB = TRUE;
- 	}
+    }
 #endif
-     if (pGenericPriv->ShadowFB) {
+    if (pGenericPriv->ShadowFB) {
         pScreenInfo->bitmapBitOrder = BITMAP_BIT_ORDER;
         pScreenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
 	Module = "fb";
+	Sym = NULL;
 	if (!xf86LoadSubModule(pScreenInfo, "shadowfb"))
 	    return FALSE;
 	xf86LoaderReqSymLists(shadowfbSymbols, NULL);
     }
+
     /* Ensure depth-specific entry points are available */
     if (Module && !xf86LoadSubModule(pScreenInfo, Module))
 	return FALSE;
@@ -937,9 +936,9 @@ GenericRefreshArea4bpp(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
     FBPitch = pScrn->displayWidth >> 3;
     SRCPitch = pPriv->ShadowPitch >> 2;
 
-    pvgaHW->writeGr(pvgaHW, 0x05, 0x00);
-    pvgaHW->writeGr(pvgaHW, 0x01, 0x00);
-    pvgaHW->writeGr(pvgaHW, 0x08, 0xFF);
+    (*pvgaHW->writeGr)(pvgaHW, 0x05, 0x00);
+    (*pvgaHW->writeGr)(pvgaHW, 0x01, 0x00);
+    (*pvgaHW->writeGr)(pvgaHW, 0x08, 0xFF);
 
     while(num--) {
 	left = pbox->x1 & ~7;
@@ -955,7 +954,7 @@ GenericRefreshArea4bpp(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 	}
 
         while(height--) {
-	    pvgaHW->writeSeq(pvgaHW, 0x02, 1);
+	    (*pvgaHW->writeSeq)(pvgaHW, 0x02, 1);
 	    dstPtr = dst;
 	    srcPtr = src;
 	    i = width;
@@ -985,7 +984,7 @@ GenericRefreshArea4bpp(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 		srcPtr += 2;
 	    }
 
-	    pvgaHW->writeSeq(pvgaHW, 0x02, 1 << 1);
+	    (*pvgaHW->writeSeq)(pvgaHW, 0x02, 1 << 1);
 	    dstPtr = dst;
 	    srcPtr = src;
 	    i = width;
@@ -1015,7 +1014,7 @@ GenericRefreshArea4bpp(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 		srcPtr += 2;
 	    }
 
-	    pvgaHW->writeSeq(pvgaHW, 0x02, 1 << 2);
+	    (*pvgaHW->writeSeq)(pvgaHW, 0x02, 1 << 2);
 	    dstPtr = dst;
 	    srcPtr = src;
 	    i = width;
@@ -1045,7 +1044,7 @@ GenericRefreshArea4bpp(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 		srcPtr += 2;
 	    }
 	    
-	    pvgaHW->writeSeq(pvgaHW, 0x02, 1 << 3);
+	    (*pvgaHW->writeSeq)(pvgaHW, 0x02, 1 << 3);
 	    dstPtr = dst;
 	    srcPtr = src;
 	    i = width;
@@ -1100,9 +1099,9 @@ GenericRefreshArea4bpp(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
     FBPitch = pScrn->displayWidth >> 3;
     SRCPitch = pPriv->ShadowPitch >> 2;
 
-    pvgaHW->writeGr(pvgaHW, 0x05, 0x00);
-    pvgaHW->writeGr(pvgaHW, 0x01, 0x00);
-    pvgaHW->writeGr(pvgaHW, 0x08, 0xFF);
+    (*pvgaHW->writeGr)(pvgaHW, 0x05, 0x00);
+    (*pvgaHW->writeGr)(pvgaHW, 0x01, 0x00);
+    (*pvgaHW->writeGr)(pvgaHW, 0x08, 0xFF);
 
     while(num--) {
 	left = pbox->x1 & ~7;
@@ -1118,7 +1117,7 @@ GenericRefreshArea4bpp(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 	}
 
         while(height--) {
-	    pvgaHW->writeSeq(pvgaHW, 0x02, 1);
+	    (*pvgaHW->writeSeq)(pvgaHW, 0x02, 1);
 	    dstPtr = dst;
 	    srcPtr = src;
 	    i = width;
@@ -1151,7 +1150,7 @@ GenericRefreshArea4bpp(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 		srcPtr += 2;
 	    }
 
-	    pvgaHW->writeSeq(pvgaHW, 0x02, 1 << 1);
+	    (*pvgaHW->writeSeq)(pvgaHW, 0x02, 1 << 1);
 	    dstPtr = dst;
 	    srcPtr = src;
 	    i = width;
@@ -1184,7 +1183,7 @@ GenericRefreshArea4bpp(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 		srcPtr += 2;
 	    }
 
-	    pvgaHW->writeSeq(pvgaHW, 0x02, 1 << 2);
+	    (*pvgaHW->writeSeq)(pvgaHW, 0x02, 1 << 2);
 	    dstPtr = dst;
 	    srcPtr = src;
 	    i = width;
@@ -1217,7 +1216,7 @@ GenericRefreshArea4bpp(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 		srcPtr += 2;
 	    }
 	    
-	    pvgaHW->writeSeq(pvgaHW, 0x02, 1 << 3);
+	    (*pvgaHW->writeSeq)(pvgaHW, 0x02, 1 << 3);
 	    dstPtr = dst;
 	    srcPtr = src;
 	    i = width;
@@ -1276,14 +1275,12 @@ GenericScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Map VGA aperture */
 #ifdef SPECIAL_FB_BYTE_ACCESS
     if (pGenericPriv->ShadowFB && (pScreenInfo->depth == 4)) {
-      if (!genericMapMem(pScreenInfo))
-	return FALSE;
+	if (!GenericMapMem(pScreenInfo))
+	    return FALSE;
     } else 
 #endif
-      {
-	if (!vgaHWMapMem(pScreenInfo))
-	  return FALSE;
-      }
+    if (!vgaHWMapMem(pScreenInfo))
+	return FALSE;
 
     /* Initialise graphics mode */
     if (!GenericEnterGraphics(pScreen, pScreenInfo))
@@ -1299,7 +1296,7 @@ GenericScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			  pScreenInfo->rgbBits, pScreenInfo->defaultVisual))
 	return FALSE;
 
-    miSetPixmapDepths ();
+    miSetPixmapDepths();
 
     /* Initialise the framebuffer */
     switch (pScreenInfo->depth)
@@ -1318,6 +1315,8 @@ GenericScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 				      pScreenInfo->xDpi, pScreenInfo->yDpi,
 				      pScreenInfo->displayWidth,
 				      pScreenInfo->bitsPerPixel);
+		if (!Inited)
+		    break;
 #ifdef RENDER
 		fbPictureInit (pScreen, 0, 0);
 #endif
@@ -1345,6 +1344,8 @@ GenericScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 				      pScreenInfo->xDpi, pScreenInfo->yDpi,
 				      pScreenInfo->displayWidth,
 				      pScreenInfo->bitsPerPixel);
+		if (!Inited)
+		    break;
 #ifdef RENDER
 		fbPictureInit (pScreen, 0, 0);
 #endif
@@ -1461,7 +1462,7 @@ GenericValidMode(int scrnIndex, DisplayModePtr pMode, Bool Verbose, int flags)
 #ifdef SPECIAL_FB_BYTE_ACCESS
 
 static Bool
-genericMapMem(ScrnInfoPtr scrp)
+GenericMapMem(ScrnInfoPtr scrp)
 {
     vgaHWPtr hwp = VGAHWPTR(scrp);
     int scr_index = scrp->scrnIndex;
