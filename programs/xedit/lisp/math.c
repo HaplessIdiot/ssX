@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.5 2002/02/12 16:07:55 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.6 2002/02/14 04:48:10 paulo Exp $ */
 
 #include "math.h"
 #include "private.h"
@@ -248,15 +248,11 @@ Lisp_Less(LispMac *mac, LispBuiltin *builtin)
     more_numbers = ARGUMENT(1);
     compare = ARGUMENT(0);
 
-    if (!REAL_P(compare))
-	LispDestroy(mac, "%s: %s is not a real number",
-		    STRFUN(builtin), STROBJ(compare));
+    ERROR_CHECK_REAL(compare);
     for (; CONS_P(more_numbers); more_numbers = CDR(more_numbers)) {
 	number = CAR(more_numbers);
 
-	if (!REAL_P(number))
-	    LispDestroy(mac, "%s: %s is not a real number",
-			STRFUN(builtin), STROBJ(number));
+	ERROR_CHECK_REAL(number);
 	if (math_compare(mac, builtin, compare, number) >= 0)
 	    return (NIL);
 	compare = number;
@@ -276,15 +272,11 @@ Lisp_LessEqual(LispMac *mac, LispBuiltin *builtin)
     more_numbers = ARGUMENT(1);
     compare = ARGUMENT(0);
 
-    if (!REAL_P(compare))
-	LispDestroy(mac, "%s: %s is not a real number",
-		    STRFUN(builtin), STROBJ(compare));
+    ERROR_CHECK_REAL(compare);
     for (; CONS_P(more_numbers); more_numbers = CDR(more_numbers)) {
 	number = CAR(more_numbers);
 
-	if (!REAL_P(number))
-	    LispDestroy(mac, "%s: %s is not a real number",
-			STRFUN(builtin), STROBJ(number));
+	ERROR_CHECK_REAL(number);
 	if (math_compare(mac, builtin, compare, number) > 0)
 	    return (NIL);
 	compare = number;
@@ -326,15 +318,11 @@ Lisp_Greater(LispMac *mac, LispBuiltin *builtin)
     more_numbers = ARGUMENT(1);
     compare = ARGUMENT(0);
 
-    if (!REAL_P(compare))
-	LispDestroy(mac, "%s: %s is not a real number",
-		    STRFUN(builtin), STROBJ(compare));
+    ERROR_CHECK_REAL(compare);
     for (; CONS_P(more_numbers); more_numbers = CDR(more_numbers)) {
 	number = CAR(more_numbers);
 
-	if (!REAL_P(number))
-	    LispDestroy(mac, "%s: %s is not a real number",
-			STRFUN(builtin), STROBJ(number));
+	ERROR_CHECK_REAL(number);
 	if (math_compare(mac, builtin, compare, number) <= 0)
 	    return (NIL);
 	compare = number;
@@ -354,15 +342,11 @@ Lisp_GreaterEqual(LispMac *mac, LispBuiltin *builtin)
     more_numbers = ARGUMENT(1);
     compare = ARGUMENT(0);
 
-    if (!REAL_P(compare))
-	LispDestroy(mac, "%s: %s is not a real number",
-		    STRFUN(builtin), STROBJ(compare));
+    ERROR_CHECK_REAL(compare);
     for (; CONS_P(more_numbers); more_numbers = CDR(more_numbers)) {
 	number = CAR(more_numbers);
 
-	if (!REAL_P(number))
-	    LispDestroy(mac, "%s: %s is not a real number",
-			STRFUN(builtin), STROBJ(number));
+	ERROR_CHECK_REAL(number);
 	if (math_compare(mac, builtin, compare, number) < 0)
 	    return (NIL);
 	compare = number;
@@ -413,15 +397,11 @@ Lisp_Min(LispMac *mac, LispBuiltin *builtin)
     more_numbers = ARGUMENT(1);
     result = ARGUMENT(0);
 
-    if (!REAL_P(result))
-	LispDestroy(mac, "%s: %s is not a real number",
-		    STRFUN(builtin), STROBJ(result));
+    ERROR_CHECK_REAL(result);
     for (; CONS_P(more_numbers); more_numbers = CDR(more_numbers)) {
 	number = CAR(more_numbers);
 
-	if (!REAL_P(number))
-	    LispDestroy(mac, "%s: %s is not a real number",
-			STRFUN(builtin), STROBJ(number));
+	ERROR_CHECK_REAL(number);
 	if (math_compare(mac, builtin, result, number) > 0)
 	    result = number;
     }
@@ -440,15 +420,11 @@ Lisp_Max(LispMac *mac, LispBuiltin *builtin)
     more_numbers = ARGUMENT(1);
     result = ARGUMENT(0);
 
-    if (!REAL_P(result))
-	LispDestroy(mac, "%s: %s is not a real number",
-		    STRFUN(builtin), STROBJ(result));
+    ERROR_CHECK_REAL(result);
     for (; CONS_P(more_numbers); more_numbers = CDR(more_numbers)) {
 	number = CAR(more_numbers);
 
-	if (!REAL_P(number))
-	    LispDestroy(mac, "%s: %s is not a real number",
-			STRFUN(builtin), STROBJ(number));
+	ERROR_CHECK_REAL(number);
 	if (math_compare(mac, builtin, result, number) < 0)
 	    result = number;
     }
@@ -501,15 +477,11 @@ Lisp_Complex(LispMac *mac, LispBuiltin *builtin)
     imagpart = ARGUMENT(1);
     realpart = ARGUMENT(0);
 
-    if (!REAL_P(realpart))
-	LispDestroy(mac, "%s: %s is not a real number",
-		    STRFUN(builtin), STROBJ(realpart));
+    ERROR_CHECK_REAL(realpart);
 
     if (imagpart == NIL)
 	return (realpart);
-    else if (!REAL_P(imagpart))
-	LispDestroy(mac, "%s: %s is not a real number",
-		    STRFUN(builtin), STROBJ(imagpart));
+    else ERROR_CHECK_REAL(imagpart);
     else if (!FLOAT_P(imagpart)) {
 	int cmp;
 
@@ -572,8 +544,7 @@ Lisp_Decf(LispMac *mac, LispBuiltin *builtin)
     if (SYMBOL_P(place)) {
 	number = LispGetVar(mac, place);
 	if (number == NULL)
-	    LispDestroy(mac, "EVAL: the variable %s is unbound",
-			STRPTR(place));
+	    LispDestroy(mac, "EVAL: the variable %s is unbound", STROBJ(place));
     }
     else
 	number = EVAL(place);
@@ -695,9 +666,7 @@ Lisp_Float(LispMac *mac, LispBuiltin *builtin)
     other = ARGUMENT(1);
     number = ARGUMENT(0);
 
-    if (!FLOAT_P(other))
-	LispDestroy(mac, "%s: %s is not a float number",
-		    STRFUN(builtin), STROBJ(other));
+    ERROR_CHECK_FLOAT(other);
 
     return (LispFloatCoerce(mac, builtin, number));
 }
@@ -707,9 +676,7 @@ LispFloatCoerce(LispMac *mac, LispBuiltin *builtin, LispObj *number)
 {
     double value = 0.0;
 
-    if (!REAL_P(number))
-	LispDestroy(mac, "%s: %s is not a real number",
-		    STRFUN(builtin), STROBJ(number));
+    ERROR_CHECK_REAL(number);
     if (FLOAT_P(number))
 	return (number);
 
@@ -764,18 +731,14 @@ Lisp_Gcd(LispMac *mac, LispBuiltin *builtin)
 
     integer = CAR(integers);
 
-    if (!INTEGER_P(integer))
-	LispDestroy(mac, "%s: %s is not an integer",
-		    STRFUN(builtin), STROBJ(integer));
+    ERROR_CHECK_INTEGER(integer);
     integer = copy_real(mac, builtin, integer);
     integers = CDR(integers);
 
     for (; CONS_P(integers); integers = CDR(integers)) {
 	operand = CAR(integers);
 
-	if (!INTEGER_P(operand))
-	    LispDestroy(mac, "%s: %s is not an integer",
-			STRFUN(builtin), STROBJ(operand));
+	ERROR_CHECK_INTEGER(operand);
 	gcd_accumulator(mac, builtin, integer, operand);
     }
     abs_accumulator(mac, builtin, integer);
@@ -795,9 +758,7 @@ Lisp_Imagpart(LispMac *mac, LispBuiltin *builtin)
 
     if (COMPLEX_P(number))
 	return (number->data.complex.imag);
-    else if (!REAL_P(number))
-	LispDestroy(mac, "%s: %s is not a number",
-		    STRFUN(builtin), STROBJ(number));
+    else ERROR_CHECK_REAL(number);
 
     return (INTEGER(0));
 }
@@ -817,8 +778,7 @@ Lisp_Incf(LispMac *mac, LispBuiltin *builtin)
     if (SYMBOL_P(place)) {
 	number = LispGetVar(mac, place);
 	if (number == NULL)
-	    LispDestroy(mac, "EVAL: the variable %s is unbound",
-			STRPTR(place));
+	    LispDestroy(mac, "EVAL: the variable %s is unbound", STROBJ(place));
     }
     else
 	number = EVAL(place);
@@ -931,9 +891,7 @@ Lisp_Lcm(LispMac *mac, LispBuiltin *builtin)
 
     integer = CAR(integers);
 
-    if (!INTEGER_P(integer))
-	LispDestroy(mac, "%s: %s is not an integer",
-		    STRFUN(builtin), STROBJ(integer));
+    ERROR_CHECK_INTEGER(integer);
     integer = copy_real(mac, builtin, integer);
     integers = CDR(integers);
     if (CONS_P(integers))
@@ -945,9 +903,7 @@ Lisp_Lcm(LispMac *mac, LispBuiltin *builtin)
 	if (XTYPE(integer) == FI && XFI(integer) == 0)
 	    break;
 
-	if (!INTEGER_P(operand))
-	    LispDestroy(mac, "%s: %s is not an integer",
-			STRFUN(builtin), STROBJ(operand));
+	ERROR_CHECK_INTEGER(operand);
 
 	/* calculate gcd before changing integer */
 	set_real(mac, builtin, gcd, integer);
@@ -1422,10 +1378,7 @@ Lisp_Rational(LispMac *mac, LispBuiltin *builtin)
 
     number = ARGUMENT(0);
 
-    if (!REAL_P(number))
-	LispDestroy(mac, "%s: %s is not a real number",
-		    STRFUN(builtin), STROBJ(number));
-
+    ERROR_CHECK_REAL(number);
     if (FLOAT_P(number)) {
 	double numerator = number->data.real;
 
@@ -1470,9 +1423,7 @@ Lisp_Realpart(LispMac *mac, LispBuiltin *builtin)
 
     if (COMPLEX_P(number))
 	return (CXR(number));
-    else if (!REAL_P(number))
-	LispDestroy(mac, "%s: %s is not a number",
-		    STRFUN(builtin), STROBJ(number));
+    else ERROR_CHECK_REAL(number);
 
     return (number);
 }
@@ -1487,10 +1438,7 @@ Lisp_Sqrt(LispMac *mac, LispBuiltin *builtin)
 
     number = ARGUMENT(0);
 
-    if (!NUMBER_P(number))
-	LispDestroy(mac, "%s: %s is not a number",
-		    STRFUN(builtin), STROBJ(number));
-
+    ERROR_CHECK_NUMBER(number);
     result = copy_number(mac, builtin, number);
     sqrt_accumulator(mac, builtin, result);
 

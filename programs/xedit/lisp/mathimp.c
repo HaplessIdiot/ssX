@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/mathimp.c,v 1.2 2002/01/31 04:33:27 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/mathimp.c,v 1.3 2002/02/08 02:59:29 paulo Exp $ */
 
 #ifdef __GNUC__
 #define CONST __attribute__ ((__const__))
@@ -101,10 +101,7 @@
 #define XWARN(msg)					\
     LispWarning(mac, "%s: " msg, STRFUN(builtin))
 
-#define CHECK_OPERAND(ope)				\
-if (!NUMBER_P(ope))					\
-    LispDestroy(mac, "%s: %s is not a number",		\
-		STRFUN(builtin), STROBJ(ope))
+#define CHECK_OPERAND(ope) ERROR_CHECK_NUMBER(ope)
 
 
 /*

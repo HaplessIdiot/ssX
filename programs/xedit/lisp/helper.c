@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.20 2002/02/12 16:07:54 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.21 2002/02/14 04:48:09 paulo Exp $ */
 
 #include "helper.h"
 #include "pathname.h"
@@ -356,7 +356,7 @@ LispReallyDo(LispMac *mac, LispBuiltin *builtin, int refs)
  do* init test &rest body
  */
 {
-    int length = mac->protect.length;
+    int syms, length = mac->protect.length;
     LispObj *result, *init, *test, *body, *object, *list, *env;
 
     body = ARGUMENT(2);
@@ -375,7 +375,8 @@ LispReallyDo(LispMac *mac, LispBuiltin *builtin, int refs)
 	LispDestroy(mac, "%s: %s is not a list",
 		    STRFUN(builtin), STROBJ(init));
 
-    for (object = init; CONS_P(object); object = CDR(object)) {
+    syms = 0;
+    for (object = init; CONS_P(object); object = CDR(object), syms++) {
 	LispObj *symbol, *value, *step;
 
 	symbol = value = NIL;
@@ -423,28 +424,63 @@ LispReallyDo(LispMac *mac, LispBuiltin *builtin, int refs)
     if (!refs) {
 	for (object = env; object != NIL; object = CDR(object)) {
 	    list = CAR(object);
-	    LispAddVar(mac, CAR(list), CAR(CDR(list)));
+	    LispAddVar(mac, CAR(list), CADR(list));
 	    mac->env.head += 2;
 	}
     }
 
     /* Execute iterations */
     for (;;) {
-	if (EVAL(CAR(test)) != NIL) {
-	    if (CDR(test) != NIL)
-		result = EVAL(CAR(CDR(test)));
+	if (EVAL(CAR(test)) != NIL)
 	    break;
-	}
 	for (object = body; CONS_P(object); object = CDR(object))
 	    (void)EVAL(CAR(object));
+
 	/* Update variables */
-	for (object = env; object != NIL; object = CDR(object)) {
-	    list = CAR(object);
-	    if (CDR(CDR(list)) != NIL)
-		LispSetVar(mac, CAR(list),
-			   EVAL(CAR(CDR(CDR(list)))));
+	if (refs) {
+	    /* Variables are sequentially updated */
+	    for (object = env; CONS_P(object); object = CDR(object)) {
+		list = CAR(object);
+		if (CONS_P(CDDR(list)))
+		    LispSetVar(mac, CAR(list), EVAL(CAR(CDDR(list))));
+	    }
+	}
+	else {
+	    /* Variables are only bound after all new values calculated */
+	    int i, protect;
+
+	    protect = mac->protect.length;
+	    while (protect + syms > mac->protect.space)
+		LispMoreProtects(mac);
+
+	    /* Calculate new symbols values */
+	    for (object = env; CONS_P(object); object = CDR(object)) {
+		list = CAR(object);
+		if (CONS_P(CDDR(list)))
+		    result = EVAL(CAR(CDDR(list)));
+		else
+		    result = NIL;
+		/* XXX this assumes mac->protect.length is always propertly
+		 * restored. Another option would set the offset correctly,
+		 * but would need to initialize fields to NIL, and it would
+		 * consume a "vital" time for loops */
+		mac->protect.objects[mac->protect.length++] = result;
+	    }
+
+	    /* Update symbols values */
+	    i = protect;
+	    for (object = env; CONS_P(object); object = CDR(object), i++) {
+		list = CAR(object);
+		if (CONS_P(CDDR(list)))
+		    LispSetVar(mac, CAR(list), mac->protect.objects[i]);
+	    }
+
+	    mac->protect.length = protect;
 	}
     }
+
+    if (CONS_P(CDR(test)))
+	result = EVAL(CADR(test));
 
     mac->protect.length = length;
 
@@ -667,8 +703,13 @@ LispLoadFile(LispMac *mac, LispObj *filename,
 		LispDestroy(mac, "dot allowed only on lists");
 	    mac->protect.objects[length] = obj;
 	    result = EVAL(obj);
-	    if (print)
+	    if (print) {
+		int i;
+
 		LispPrint(mac, result, NIL, 1);
+		for (i = 0; i < RETURN_COUNT; i++)
+		    LispPrint(mac, RETURN(i), NIL, 1);
+	    }
 	}
 	if (mac->eof)
 	    break;

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.17 2002/02/12 16:07:54 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.18 2002/02/14 17:42:59 tsi Exp $ */
 
 #include "io.h"
 #include "write.h"
@@ -2065,9 +2065,7 @@ Lisp_Format(LispMac *mac, LispBuiltin *builtin)
     protect = mac->protect.length;
 
     /* check format and stream */
-    if (!STRING_P(format))
-	LispDestroy(mac, "%s: %s is not a string",
-		    STRFUN(builtin), STROBJ(format));
+    ERROR_CHECK_STRING(format);
     if (stream == NIL) {	/* return a string */
 	stream = STRINGSTREAM((unsigned char*)"", STREAM_READ | STREAM_WRITE);
 	if (protect + 1 >= mac->protect.space)

@@ -27,13 +27,97 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.7 2002/02/10 02:50:07 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.8 2002/02/12 16:07:55 paulo Exp $ */
 
 #include "helper.h"
 #include "read.h"
 #include "string.h"
 #include "private.h"
 #include <ctype.h>
+
+#define CHAR_LESS		1
+#define CHAR_LESS_EQUAL		2
+#define CHAR_EQUAL		3
+#define CHAR_GREATER_EQUAL	4
+#define CHAR_GREATER		5
+#define CHAR_NOT_EQUAL		6
+
+/*
+ * Prototypes
+ */
+static LispObj *LispCharCompare(LispMac*, LispBuiltin*, int, int);
+
+/*
+ * Implementation
+ */
+static LispObj *
+LispCharCompare(LispMac *mac, LispBuiltin *builtin,
+		int operation, int ignore_case)
+{
+    LispObj *object;
+    int cmp, value, next_value;
+
+    LispObj *character, *more_characters;
+
+    more_characters = ARGUMENT(1);
+    character = ARGUMENT(0);
+
+    ERROR_CHECK_CHARACTER(character);
+    value = character->data.integer;
+    if (ignore_case && islower(value))
+	value = toupper(value);
+
+    if (!CONS_P(more_characters))
+	return (T);
+
+    /* First check if all parameters are characters */
+    for (object = more_characters; CONS_P(object); object = CDR(object))
+	ERROR_CHECK_CHARACTER(CAR(object));
+
+    /* All characters in list must be different */
+    if (operation == CHAR_NOT_EQUAL) {
+	/* Compare all characters */
+	do {
+	    for (object = more_characters; CONS_P(object); object = CDR(object)) {
+		character = CAR(object);
+		next_value = character->data.integer;
+		if (ignore_case && islower(next_value))
+		    next_value = toupper(next_value);
+		if (value == next_value)
+		    return (NIL);
+	    }
+	    value = CAR(more_characters)->data.integer;
+	    if (ignore_case && islower(value))
+		value = toupper(value);
+	    more_characters = CDR(more_characters);
+	} while (CONS_P(more_characters));
+
+	return (T);
+    }
+
+    /* Linearly compare characters */
+    for (; CONS_P(more_characters); more_characters = CDR(more_characters)) {
+	character = CAR(more_characters);
+	next_value = character->data.integer;
+	if (ignore_case && islower(next_value))
+	    next_value = toupper(next_value);
+
+	switch (operation) {
+	    case CHAR_LESS:		cmp = value < next_value;	break;
+	    case CHAR_LESS_EQUAL:	cmp = value <= next_value;	break;
+	    case CHAR_EQUAL:		cmp = value == next_value;	break;
+	    case CHAR_GREATER_EQUAL:	cmp = value >= next_value;	break;
+	    case CHAR_GREATER:		cmp = value > next_value;	break;
+	    default:			cmp = 0;			break;
+	}
+
+	if (!cmp)
+	    return (NIL);
+	value = next_value;
+    }
+
+    return (T);
+}
 
 LispObj *
 Lisp_AlphaCharP(LispMac *mac, LispBuiltin *builtin)
@@ -45,9 +129,7 @@ Lisp_AlphaCharP(LispMac *mac, LispBuiltin *builtin)
 
     character = ARGUMENT(0);
 
-    if (!CHAR_P(character))
-	LispDestroy(mac, "%s: %s is not a character",
-		    STRFUN(builtin), STROBJ(character));
+    ERROR_CHECK_CHARACTER(character);
 
     return (isalpha(character->data.integer) ? T : NIL);
 }
@@ -67,12 +149,8 @@ Lisp_Char(LispMac *mac, LispBuiltin *builtin)
     oindex = ARGUMENT(1);
     ostring = ARGUMENT(0);
 
-    if (!STRING_P(ostring))
-	LispDestroy(mac, "%s: %s is not a string",
-		    STRFUN(builtin), STROBJ(ostring));
-    if (!INDEX_P(oindex))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(oindex));
+    ERROR_CHECK_STRING(ostring);
+    ERROR_CHECK_INDEX(oindex);
     offset = oindex->data.integer;
     string = THESTR(ostring);
     length = strlen(string);
@@ -104,20 +182,14 @@ Lisp_XeditCharStore(LispMac *mac, LispBuiltin *builtin)
     oindex = ARGUMENT(1);
     ostring = ARGUMENT(0);
 
-    if (!STRING_P(ostring))
-	LispDestroy(mac, "%s: %s is not a string",
-		    STRFUN(builtin), STROBJ(ostring));
-    if (!INDEX_P(oindex))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(oindex));
+    ERROR_CHECK_STRING(ostring);
+    ERROR_CHECK_INDEX(oindex);
     length = olength->data.integer;
     offset = oindex->data.integer;
     if (offset >= length)
 	LispDestroy(mac, "%s: index %d too large for string length %d",
 		    STRFUN(builtin), offset, length);
-    if (!CHAR_P(ovalue))
-	LispDestroy(mac, "%s: %s is not a character",
-		    STRFUN(builtin), STROBJ(ovalue));
+    ERROR_CHECK_CHARACTER(ovalue);
 
     character = ovalue->data.integer;
 
@@ -136,29 +208,7 @@ Lisp_CharLess(LispMac *mac, LispBuiltin *builtin)
  char< character &rest more-characters
  */
 {
-    int value, next_value;
-    LispObj *character, *more_characters;
-
-    more_characters = ARGUMENT(1);
-    character = ARGUMENT(0);
-
-    if (!CHAR_P(character))
-	LispDestroy(mac, "%s: %s is not a character",
-		    STRFUN(builtin), STROBJ(character));
-    value = character->data.integer;
-
-    for (; CONS_P(more_characters); more_characters = CDR(more_characters)) {
-	character = CAR(more_characters);
-	if (!CHAR_P(character))
-	    LispDestroy(mac, "%s: %s is not a character",
-			STRFUN(builtin), STROBJ(character));
-	next_value = character->data.integer;
-	if (next_value <= value)
-	    return (NIL);
-	value = next_value;
-    }
-
-    return (T);
+    return (LispCharCompare(mac, builtin, CHAR_LESS, 0));
 }
 
 LispObj *
@@ -167,29 +217,7 @@ Lisp_CharLessEqual(LispMac *mac, LispBuiltin *builtin)
  char<= character &rest more-characters
  */
 {
-    int value, next_value;
-    LispObj *character, *more_characters;
-
-    more_characters = ARGUMENT(1);
-    character = ARGUMENT(0);
-
-    if (!CHAR_P(character))
-	LispDestroy(mac, "%s: %s is not a character",
-		    STRFUN(builtin), STROBJ(character));
-    value = character->data.integer;
-
-    for (; CONS_P(more_characters); more_characters = CDR(more_characters)) {
-	character = CAR(more_characters);
-	if (!CHAR_P(character))
-	    LispDestroy(mac, "%s: %s is not a character",
-			STRFUN(builtin), STROBJ(character));
-	next_value = character->data.integer;
-	if (next_value < value)
-	    return (NIL);
-	value = next_value;
-    }
-
-    return (T);
+    return (LispCharCompare(mac, builtin, CHAR_LESS_EQUAL, 0));
 }
 
 LispObj *
@@ -198,29 +226,7 @@ Lisp_CharEqual_(LispMac *mac, LispBuiltin *builtin)
  char= character &rest more-characters
  */
 {
-    int value, next_value;
-    LispObj *character, *more_characters;
-
-    more_characters = ARGUMENT(1);
-    character = ARGUMENT(0);
-
-    if (!CHAR_P(character))
-	LispDestroy(mac, "%s: %s is not a character",
-		    STRFUN(builtin), STROBJ(character));
-    value = character->data.integer;
-
-    for (; CONS_P(more_characters); more_characters = CDR(more_characters)) {
-	character = CAR(more_characters);
-	if (!CHAR_P(character))
-	    LispDestroy(mac, "%s: %s is not a character",
-			STRFUN(builtin), STROBJ(character));
-	next_value = character->data.integer;
-	if (next_value != value)
-	    return (NIL);
-	value = next_value;
-    }
-
-    return (T);
+    return (LispCharCompare(mac, builtin, CHAR_EQUAL, 0));
 }
 
 LispObj *
@@ -229,29 +235,7 @@ Lisp_CharGreater(LispMac *mac, LispBuiltin *builtin)
  char> character &rest more-characters
  */
 {
-    int value, next_value;
-    LispObj *character, *more_characters;
-
-    more_characters = ARGUMENT(1);
-    character = ARGUMENT(0);
-
-    if (!CHAR_P(character))
-	LispDestroy(mac, "%s: %s is not a character",
-		    STRFUN(builtin), STROBJ(character));
-    value = character->data.integer;
-
-    for (; CONS_P(more_characters); more_characters = CDR(more_characters)) {
-	character = CAR(more_characters);
-	if (!CHAR_P(character))
-	    LispDestroy(mac, "%s: %s is not a character",
-			STRFUN(builtin), STROBJ(character));
-	next_value = character->data.integer;
-	if (next_value >= value)
-	    return (NIL);
-	value = next_value;
-    }
-
-    return (T);
+    return (LispCharCompare(mac, builtin, CHAR_GREATER, 0));
 }
 
 LispObj *
@@ -260,29 +244,7 @@ Lisp_CharGreaterEqual(LispMac *mac, LispBuiltin *builtin)
  char>= character &rest more-characters
  */
 {
-    int value, next_value;
-    LispObj *character, *more_characters;
-
-    more_characters = ARGUMENT(1);
-    character = ARGUMENT(0);
-
-    if (!CHAR_P(character))
-	LispDestroy(mac, "%s: %s is not a character",
-		    STRFUN(builtin), STROBJ(character));
-    value = character->data.integer;
-
-    for (; CONS_P(more_characters); more_characters = CDR(more_characters)) {
-	character = CAR(more_characters);
-	if (!CHAR_P(character))
-	    LispDestroy(mac, "%s: %s is not a character",
-			STRFUN(builtin), STROBJ(character));
-	next_value = character->data.integer;
-	if (next_value > value)
-	    return (NIL);
-	value = next_value;
-    }
-
-    return (T);
+    return (LispCharCompare(mac, builtin, CHAR_GREATER_EQUAL, 0));
 }
 
 LispObj *
@@ -291,39 +253,7 @@ Lisp_CharNotEqual_(LispMac *mac, LispBuiltin *builtin)
  char/= character &rest more-characters
  */
 {
-    long value;
-    LispObj *obj, *character, *more_characters;
-
-    more_characters = ARGUMENT(1);
-    character = ARGUMENT(0);
-
-    if (!CHAR_P(character))
-	LispDestroy(mac, "%s: %s is not a character",
-		    STRFUN(builtin), STROBJ(character));
-    value = character->data.integer;
-
-    if (!CONS_P(more_characters))
-	return (T);
-
-    /* first check if all parameters are characters */
-    for (obj = more_characters; CONS_P(obj); obj = CDR(obj)) {
-	if (!CHAR_P(CAR(obj)))
-	    LispDestroy(mac, "%s: %s is not a character",
-			STRFUN(builtin), STROBJ(CAR(obj)));
-    }
-
-    /* compare all characters */
-    do {
-	for (obj = more_characters; CONS_P(obj); obj = CDR(obj)) {
-	    character = CAR(obj);
-	    if (value == character->data.integer)
-		return (NIL);
-	}
-	value = CAR(more_characters)->data.integer;
-	more_characters = CDR(more_characters);
-    } while (CONS_P(more_characters));
-
-    return (T);
+    return (LispCharCompare(mac, builtin, CHAR_NOT_EQUAL, 0));
 }
 
 LispObj *
@@ -332,29 +262,7 @@ Lisp_CharLessp(LispMac *mac, LispBuiltin *builtin)
  char-lessp character &rest more-characters
  */
 {
-    int value, next_value;
-    LispObj *character, *more_characters;
-
-    more_characters = ARGUMENT(1);
-    character = ARGUMENT(0);
-
-    if (!CHAR_P(character))
-	LispDestroy(mac, "%s: %s is not a character",
-		    STRFUN(builtin), STROBJ(character));
-    value = toupper(character->data.integer);
-
-    for (; CONS_P(more_characters); more_characters = CDR(more_characters)) {
-	character = CAR(more_characters);
-	if (!CHAR_P(character))
-	    LispDestroy(mac, "%s: %s is not a character",
-			STRFUN(builtin), STROBJ(character));
-	next_value = toupper(character->data.integer);
-	if (next_value <= value)
-	    return (NIL);
-	value = next_value;
-    }
-
-    return (T);
+    return (LispCharCompare(mac, builtin, CHAR_LESS, 1));
 }
 
 LispObj *
@@ -363,60 +271,16 @@ Lisp_CharNotGreaterp(LispMac *mac, LispBuiltin *builtin)
  char-not-greaterp character &rest more-characters
  */
 {
-    int value, next_value;
-    LispObj *character, *more_characters;
-
-    more_characters = ARGUMENT(1);
-    character = ARGUMENT(0);
-
-    if (!CHAR_P(character))
-	LispDestroy(mac, "%s: %s is not a character",
-		    STRFUN(builtin), STROBJ(character));
-    value = toupper(character->data.integer);
-
-    for (; CONS_P(more_characters); more_characters = CDR(more_characters)) {
-	character = CAR(more_characters);
-	if (!CHAR_P(character))
-	    LispDestroy(mac, "%s: %s is not a character",
-			STRFUN(builtin), STROBJ(character));
-	next_value = toupper(character->data.integer);
-	if (next_value < value)
-	    return (NIL);
-	value = next_value;
-    }
-
-    return (T);
+    return (LispCharCompare(mac, builtin, CHAR_LESS_EQUAL, 1));
 }
 
 LispObj *
 Lisp_CharEqual(LispMac *mac, LispBuiltin *builtin)
 /*
- char-not-greaterp character &rest more-characters
+ char-equalp character &rest more-characters
  */
 {
-    int value, next_value;
-    LispObj *character, *more_characters;
-
-    more_characters = ARGUMENT(1);
-    character = ARGUMENT(0);
-
-    if (!CHAR_P(character))
-	LispDestroy(mac, "%s: %s is not a character",
-		    STRFUN(builtin), STROBJ(character));
-    value = toupper(character->data.integer);
-
-    for (; CONS_P(more_characters); more_characters = CDR(more_characters)) {
-	character = CAR(more_characters);
-	if (!CHAR_P(character))
-	    LispDestroy(mac, "%s: %s is not a character",
-			STRFUN(builtin), STROBJ(character));
-	next_value = toupper(character->data.integer);
-	if (next_value != value)
-	    return (NIL);
-	value = next_value;
-    }
-
-    return (T);
+    return (LispCharCompare(mac, builtin, CHAR_EQUAL, 1));
 }
 
 LispObj *
@@ -425,29 +289,7 @@ Lisp_CharGreaterp(LispMac *mac, LispBuiltin *builtin)
  char-greaterp character &rest more-characters
  */
 {
-    int value, next_value;
-    LispObj *character, *more_characters;
-
-    more_characters = ARGUMENT(1);
-    character = ARGUMENT(0);
-
-    if (!CHAR_P(character))
-	LispDestroy(mac, "%s: %s is not a character",
-		    STRFUN(builtin), STROBJ(character));
-    value = toupper(character->data.integer);
-
-    for (; CONS_P(more_characters); more_characters = CDR(more_characters)) {
-	character = CAR(more_characters);
-	if (!CHAR_P(character))
-	    LispDestroy(mac, "%s: %s is not a character",
-			STRFUN(builtin), STROBJ(character));
-	next_value = toupper(character->data.integer);
-	if (next_value >= value)
-	    return (NIL);
-	value = next_value;
-    }
-
-    return (T);
+    return (LispCharCompare(mac, builtin, CHAR_GREATER, 1));
 }
 
 LispObj *
@@ -456,29 +298,7 @@ Lisp_CharNotLessp(LispMac *mac, LispBuiltin *builtin)
  char-not-lessp &rest more-characters
  */
 {
-    int value, next_value;
-    LispObj *character, *more_characters;
-
-    more_characters = ARGUMENT(1);
-    character = ARGUMENT(0);
-
-    if (!CHAR_P(character))
-	LispDestroy(mac, "%s: %s is not a character",
-		    STRFUN(builtin), STROBJ(character));
-    value = toupper(character->data.integer);
-
-    for (; CONS_P(more_characters); more_characters = CDR(more_characters)) {
-	character = CAR(more_characters);
-	if (!CHAR_P(character))
-	    LispDestroy(mac, "%s: %s is not a character",
-			STRFUN(builtin), STROBJ(character));
-	next_value = toupper(character->data.integer);
-	if (next_value > value)
-	    return (NIL);
-	value = next_value;
-    }
-
-    return (T);
+    return (LispCharCompare(mac, builtin, CHAR_GREATER_EQUAL, 1));
 }
 
 LispObj *
@@ -487,39 +307,7 @@ Lisp_CharNotEqual(LispMac *mac, LispBuiltin *builtin)
  char-not-equal character &rest more-characters
  */
 {
-    long value;
-    LispObj *obj, *character, *more_characters;
-
-    more_characters = ARGUMENT(1);
-    character = ARGUMENT(0);
-
-    if (!CHAR_P(character))
-	LispDestroy(mac, "%s: %s is not a character",
-		    STRFUN(builtin), STROBJ(character));
-    value = toupper(character->data.integer);
-
-    if (!CONS_P(more_characters))
-	return (T);
-
-    /* first check if all parameters are characters */
-    for (obj = more_characters; CONS_P(obj); obj = CDR(obj)) {
-	if (!CHAR_P(CAR(obj)))
-	    LispDestroy(mac, "%s: %s is not a character",
-			STRFUN(builtin), STROBJ(CAR(obj)));
-    }
-
-    /* compare all characters */
-    do {
-	for (obj = more_characters; CONS_P(obj); obj = CDR(obj)) {
-	    character = CAR(obj);
-	    if (value == toupper(character->data.integer))
-		return (NIL);
-	}
-	value = toupper(CAR(more_characters)->data.integer);
-	more_characters = CDR(more_characters);
-    } while (CONS_P(more_characters));
-
-    return (T);
+    return (LispCharCompare(mac, builtin, CHAR_NOT_EQUAL, 1));
 }
 
 LispObj *
@@ -560,9 +348,7 @@ Lisp_CharDowncase(LispMac *mac, LispBuiltin *builtin)
 
     character = ARGUMENT(0);
 
-    if (!CHAR_P(character))
-	LispDestroy(mac, "%s: %s is not a character",
-		    STRFUN(builtin), STROBJ(character));
+    ERROR_CHECK_CHARACTER(character);
 
     c = tolower((int)character->data.integer);
     if (c == character->data.integer)
@@ -581,9 +367,7 @@ Lisp_CharInt(LispMac *mac, LispBuiltin *builtin)
 
     character = ARGUMENT(0);
 
-    if (!CHAR_P(character))
-	LispDestroy(mac, "%s: %s is not a character",
-		    STRFUN(builtin), STROBJ(character));
+    ERROR_CHECK_CHARACTER(character);
 
     return (INTEGER(character->data.integer));
 }
@@ -600,9 +384,7 @@ Lisp_CharUpcase(LispMac *mac, LispBuiltin *builtin)
 
     character = ARGUMENT(0);
 
-    if (!CHAR_P(character))
-	LispDestroy(mac, "%s: %s is not a character",
-		    STRFUN(builtin), STROBJ(character));
+    ERROR_CHECK_CHARACTER(character);
 
     c = toupper((int)character->data.integer);
     if (c == character->data.integer)
@@ -623,16 +405,12 @@ Lisp_DigitCharP(LispMac *mac, LispBuiltin *builtin)
     oradix = ARGUMENT(1);
     ochar = ARGUMENT(0);
 
-    if (!CHAR_P(ochar))
-	LispDestroy(mac, "%s: %s is not a character",
-		    STRFUN(builtin), STROBJ(ochar));
+    ERROR_CHECK_CHARACTER(ochar);
 
     character = ochar->data.integer;
 
     if (oradix != NIL) {
-	if (!INDEX_P(oradix))
-	    LispDestroy(mac, "%s: %s is not a positive integer",
-			STRFUN(builtin), STROBJ(oradix));
+	ERROR_CHECK_INDEX(oradix);
 	radix = oradix->data.integer;
     }
 
@@ -640,25 +418,19 @@ Lisp_DigitCharP(LispMac *mac, LispBuiltin *builtin)
 	LispDestroy(mac, "radix must be >= 2 and <= 36, not %d",
 		    STRFUN(builtin), radix);
 
-    if (character >= '0') {
-	if (radix <= 10 || character <= '9') {
-	    if (character - '0' < radix) {
-		character -= '0';
-		result = T;
-	    }
+    if (character >= '0' && character <= '9') {
+	if (character - '0' < radix) {
+	    character -= '0';
+	    result = T;
 	}
-	else {
-	    if (character >= 'A' && character <= 'Z') {
-		if (character - 'A' < radix - 10) {
-		    character -= 'A' - 10;
-		    result = T;
-		}
-	    }
-	    else if (character >= 'a' && character <= 'z') {
-		if (character - 'a' < radix - 10) {
-		    character -= 'a' - 10;
-		    result = T;
-		}
+    }
+    else {
+	if (islower(character))
+	    character = toupper(character);
+	if (character >= 'A' && character <= 'Z') {
+	    if (character - 'A' + 10 < radix) {
+		character -= 'A' - 10;
+		result = T;
 	    }
 	}
     }
@@ -705,37 +477,24 @@ Lisp_ParseInteger(LispMac *mac, LispBuiltin *builtin)
     ostart = ARGUMENT(1);
     ostring = ARGUMENT(0);
 
-    start = end = radix = 0; result = NIL;	/* fix gcc warning */
+    start = end = radix = 0;
+    result = NIL;
 
-    if (!STRING_P(ostring))
-	LispDestroy(mac, "%s: %s is not a string",
-		    STRFUN(builtin), STROBJ(ostring));
+    ERROR_CHECK_STRING(ostring);
     string = THESTR(ostring);
     length = strlen(string);
 
-    if (ostart == NIL)
-	start = 0;
-    else if (!INDEX_P(ostart))
-	LispDestroy(mac, "%s: %s is not a positive fixnum",
-		    STRFUN(builtin), STROBJ(ostart));
-    else
-	start = ostart->data.integer;
+    if (ostart == NIL)	start = 0;
+    else ERROR_CHECK_INDEX(ostart);
+    else		start = ostart->data.integer;
 
-    if (oend == NIL)
-	end = length;
-    else if (!INDEX_P(oend))
-	LispDestroy(mac, "%s: %s is not a positive fixnum",
-		    STRFUN(builtin), STROBJ(oend));
-    else
-	end = oend->data.integer;
+    if (oend == NIL)	end = length;
+    else ERROR_CHECK_INDEX(oend);
+    else		end = oend->data.integer;
 
-    if (oradix == NIL)
-	radix = 10;
-    else if (!INDEX_P(oradix))
-	LispDestroy(mac, "%s: %s is not a positive fixnum",
-		    STRFUN(builtin), STROBJ(oradix));
-    else
-	radix = oradix->data.integer;
+    if (oradix == NIL)	radix = 10;
+    else ERROR_CHECK_INDEX(oradix);
+    else		radix = oradix->data.integer;
 
     if (start > end)
 	LispDestroy(mac, "%s: :START %d larger than :END %d",
@@ -748,19 +507,24 @@ Lisp_ParseInteger(LispMac *mac, LispBuiltin *builtin)
 		    STRFUN(builtin), radix);
 
     integer = check = 0;
-    string += start;
-    ptr = string;
+    ptr = string + start;
     sign = overflow = 0;
-    for (i = start, ptr = string; i < end; start++, i++)
-	if (!isspace(*ptr))
-	    break;
-    if (*ptr == '-' || *ptr == '+') {
+
+    /* Skip leading white spaces */
+    for (i = start; i < end && *ptr && isspace(*ptr); ptr++, i++)
+	;
+
+    /* Check for sign specification */
+    if (i < end && (*ptr == '-' || *ptr == '+')) {
 	sign = *ptr == '-';
 	++ptr;
+	++i;
     }
-    string = ptr;
-    for (junk = 0, ptr = string; i < end; i++, ptr++) {
-	character = toupper(*ptr);
+
+    for (junk = 0; i < end; i++, ptr++) {
+	character = *ptr;
+	if (islower(character))
+	    character = toupper(character);
 	if (character >= '0' && character <= '9') {
 	    if (character - '0' >= radix)
 		junk = 1;
@@ -770,20 +534,31 @@ Lisp_ParseInteger(LispMac *mac, LispBuiltin *builtin)
 	    }
 	}
 	else if (character >= 'A' && character <= 'Z') {
-	    if (character - 'A' - 10 >= radix)
+	    if (character - 'A' + 10 >= radix)
 		junk = 1;
 	    else {
 		check = integer;
-		integer = integer * radix + character - 'A' - 10;
+		integer = integer * radix + character - 'A' + 10;
 	    }
 	}
-	else if (!isspace(character))
+	else {
+	    if (isspace(character))
+		break;
 	    junk = 1;
-	if (junk || check > integer) {
-	    overflow = !junk;
-	    break;
 	}
+
+	if (junk)
+	    break;
+
+	if (!overflow && check > integer)
+	    overflow = 1;
+	/* keep looping just to count read bytes */
     }
+
+    if (!junk)
+	/* Skip white spaces */
+	for (; i < end && *ptr && isspace(*ptr); ptr++, i++)
+	    ;
 
     if ((junk || ptr == string) && junk_allowed == NIL)
 	LispDestroy(mac, "%s: %s has a bad integer representation",
@@ -808,6 +583,12 @@ Lisp_ParseInteger(LispMac *mac, LispBuiltin *builtin)
     else
 	result = INTEGER(sign ? -integer : integer);
 
+    GCProtect();		/* Protect result from GC */
+    RETURN_CHECK(1);
+    RETURN(0) = INTEGER(i);
+    RETURN_COUNT = 1;
+    GCUProtect();
+
     return (result);
 }
 
@@ -824,9 +605,7 @@ Lisp_String(LispMac *mac, LispBuiltin *builtin)
     return (LispStringCoerce(mac, builtin, object));
 }
 
-/* XXX preserve-whitespace is being ignored
- * XXX still only one return value
- */
+/* XXX preserve-whitespace is being ignored */
 LispObj *
 Lisp_ReadFromString(LispMac *mac, LispBuiltin *builtin)
 /*
@@ -835,7 +614,7 @@ Lisp_ReadFromString(LispMac *mac, LispBuiltin *builtin)
 {
     char *string;
     LispObj *stream, *result;
-    int eof = mac->eof, length, start, end;
+    int eof = mac->eof, length, start, end, bytes_read;
 
     LispObj *ostring, *eof_error_p, *eof_value,
 	    *ostart, *oend, *preserve_white_space;
@@ -847,29 +626,19 @@ Lisp_ReadFromString(LispMac *mac, LispBuiltin *builtin)
     eof_error_p = ARGUMENT(1);
     ostring = ARGUMENT(0);
 
-    start = end = 0;	/* fix gcc warning */
+    start = end = 0;
 
-    if (!STRING_P(ostring))
-	LispDestroy(mac, "%s: %s is not a string",
-		    STRFUN(builtin), STROBJ(ostring));
+    ERROR_CHECK_STRING(ostring);
     string = (char*)THESTR(ostring);
     length = strlen(string);
 
-    if (ostart == NIL)
-	start = 0;
-    else if (!INDEX_P(ostart))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(ostart));
-    else
-	start = ostart->data.integer;
+    if (ostart == NIL)		start = 0;
+    else ERROR_CHECK_INDEX(ostart);
+    else			start = ostart->data.integer;
 
-    if (oend == NIL)
-	end = length;
-    else if (!INDEX_P(oend))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(oend));
-    else
-	end = oend->data.integer;
+    if (oend == NIL)		end = length;
+    else ERROR_CHECK_INDEX(oend);
+    else			end = oend->data.integer;
 
     if (start > end)
 	LispDestroy(mac, "%s: :START %d larger than :END %d",
@@ -890,6 +659,9 @@ Lisp_ReadFromString(LispMac *mac, LispBuiltin *builtin)
 	LispFree(mac, string);
     LispPushInput(mac, stream);
     result = LispRead(mac);
+    /* stream->data.stream.source.string->input is
+     * the offset of the last byte read in string */
+    bytes_read = stream->data.stream.source.string->input;
     LispPopInput(mac, stream);
 
     mac->eof = eof;
@@ -904,6 +676,12 @@ Lisp_ReadFromString(LispMac *mac, LispBuiltin *builtin)
 	else
 	    LispDestroy(mac, "%s: unexpected end of input", STRFUN(builtin));
     }
+
+    GCProtect();		/* Protect result from GC */
+    RETURN_CHECK(1);
+    RETURN(0) = INTEGER(bytes_read);
+    RETURN_COUNT = 1;
+    GCUProtect();
 
     return (result);
 }
@@ -1388,18 +1166,17 @@ Lisp_StringConcat(LispMac *mac, LispBuiltin *builtin)
     if (strings == NIL)
 	return (STRING(""));
 
-    for (length = 1, object = strings; CONS_P(object); object = CDR(object))
-	if (STRING_P(CAR(object)))
-	    length += strlen(THESTR(CAR(object)));
-	else
-	    LispDestroy(mac, "%s: %s is not a string",
-			STRFUN(builtin), STROBJ(CAR(object)));
+    for (length = 1, object = strings; CONS_P(object); object = CDR(object)) {
+	ERROR_CHECK_STRING(CAR(object));
+	length += strlen(THESTR(CAR(object)));
+    }
 
     string = LispMalloc(mac, length);
-    *string = '\0';
-    /* XXX shouldn't just memcpy at the correct address? */
-    for (object = strings; CONS_P(object); object = CDR(object))
-	strcat(string, THESTR(CAR(object)));
+
+    for (length = 0, object = strings; CONS_P(object); object = CDR(object)) {
+	strcpy(string + length, THESTR(CAR(object)));
+	length += strlen(string + length);
+    }
 
     object = STRING2(string);
 
