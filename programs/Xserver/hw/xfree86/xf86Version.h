@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Version.h,v 1.6 95/01/23 15:33:26 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.118 1995/12/26 08:35:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.119 1995/12/28 01:32:06 dawes Exp $ */
 
 #define XF86_VERSION " 3.1.2B "
 
@@ -19,4 +19,4 @@
 			XF86_VERSION_BETA,			\
 			XF86_VERSION_ALPHA)
 
-#define XF86_DATE	"Dec 27 1995"
+#define XF86_DATE	"Dec 28 1995"

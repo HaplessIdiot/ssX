@@ -1,4 +1,4 @@
-XFree86 3.1.2B (27 December 1995)
+XFree86 3.1.2B (28 December 1995)
 173. Fix a problem with the ARK/ICS5342 clock programming (don't know if this
      completely fixes the clock programming problems).
 172. Don't do PCI probe in S3 server for PC98 (Takefumi Tsukada).

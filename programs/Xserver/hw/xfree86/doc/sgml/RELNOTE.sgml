@@ -4,7 +4,7 @@
 
  <title>Release Notes for XFree86&tm; 3.1.2B (beta version)
  <author>The XFree86 Project, Inc
- <date>27 December 1995
+ <date>28 December 1995
 
 
 <abstract>
@@ -414,7 +414,7 @@ instructions, the files for that version will still be in the
 /usr/XFree86-3.1.2A directory.
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.10 1995/12/26 10:41:45 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.11 1995/12/28 01:32:34 dawes Exp $
 </verb>
 
 </article>
