@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.215 1999/04/11 13:10:25 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.216 1999/04/17 07:05:36 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -7,17 +7,6 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.215 1999/04/11 13:10:25 dawes Exp $
  * BeforeVendor part of the site.def file.
  */
 XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
-
-/*
- * The LinkKit needs to inherit some settings (from the xc build that
- * generated it) before we go too much further...
- */
-#ifndef XF86LinkKit
-#define XF86LinkKit	NO
-#endif
-#if XF86LinkKit
-#include <LinkKit.tmpl>
-#endif
 
 /*
  * settings for the config file parser
@@ -725,54 +714,6 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #define XprtServer			YES
 #endif
 
-#if XF86LinkKit
-/*
- * Definitions for LinkKit self-containment.  This should work whether or not
- * UseInstalled is defined.
- */
-# ifndef HasLdRunPath
-#  define HasLdRunPath	NO
-# endif
-
-# ifndef TopIncludes
-#  ifdef IncRoot
-#   define TopIncludes	-I$(INCROOT)
-#  else
-#   define TopIncludes	/**/
-#  endif
-# endif
-# ifndef ClientLibDir
-#  if defined(UsrLibDir) || HasLdRunPath
-#   define ClientLibDir	/**/
-#  else
-#   define ClientLibDir	-L$(USRLIBDIR)
-#  endif
-# endif
-# ifndef LdPreLib
-#  if defined(LdPostLib) && defined(UsrLibDir) && !HasLdRunPath
-#   define LdPreLib	-L$(USRLIBDIR)
-#  else
-#   define LdPreLib	/**/
-#  endif
-# endif
-# ifndef LdPostLib
-#  if defined(UsrLibDir) && !HasLdRunPath
-#   define LdPostLib	-L$(USRLIBDIR)
-#  else
-#   define LdPostLib	/**/
-#  endif
-# endif
-
-#endif
-
-#ifndef LinkKitDefines
-#if XF86LinkKit
-#define LinkKitDefines	-DLINKKIT
-#else
-#define LinkKitDefines	/**/
-#endif
-#endif
-
 #ifndef ServerExtraDefines
 #define ServerExtraDefines	XFree86ServerDefines
 #endif
@@ -781,45 +722,10 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #define ServerOSDefines		XFree86ServerOSDefines
 #endif
 
-#ifndef LinkKitDir
-#define LinkKitDir	$(USRLIBDIR)/Server
-#endif
-
-LINKKITDIR = LinkKitDir
-XF98LINKKITDIR = LinkKitDir
-
 /*
  * Some commonly refered to directories are defined here.
  */
 
-#if XF86LinkKit
-       XF86SRC = $(TOP)
-  XF86ACCELSRC = $(XF86SRC)/lib86
-    XF86COMSRC = $(XF86SRC)/lib86
- XF86PARSERSRC = $(XF86SRC)/parser
-     XF86OSSRC = $(XF86SRC)/lib86
- XF86DRIVERSRC = $(XF86SRC)/drivers
-     DRIVERSRC = $(XF86DRIVERSRC)
- SVGADRIVERSRC = $(XF86SRC)/drivers/svga
-   S3DRIVERSRC = $(XF86SRC)/drivers/s3
-  S3VDRIVERSRC = $(XF86SRC)/drivers/s3_virge
-
-           XF98SRC = $(TOP)
-      XF98ACCELSRC = $(XF98SRC)/lib98
-        XF98COMSRC = $(XF98SRC)/lib98
-         XF98OSSRC = $(XF98SRC)/lib98
-     XF98DRIVERSRC = $(XF98SRC)/drivers98
- XF98SVGADRIVERSRC = $(XF98SRC)/drivers98/svga
-XF98NECS3DRIVERSRC = $(XF98SRC)/drivers98/s3nec
-XF98PWSKBDRIVERSRC = $(XF98SRC)/drivers98/s3pwskb
- XF98PWLBDRIVERSRC = $(XF98SRC)/drivers98/s3pwlb
-XF98GA968DRIVERSRC = $(XF98SRC)/drivers98/s3ga968
-
-#ifdef SiteIConfigFiles
-#undef SiteIConfigFiles
-#endif
-#define SiteIConfigFiles $(TOP)/xf86site.def $(TOP)/Imakefile $(IRULESRC)/host.def
-#else
        XF86SRC = $(SERVERSRC)/hw/xfree86
   XF86ACCELSRC = $(XF86SRC)/accel
     XF86COMSRC = $(XF86SRC)/common
@@ -848,7 +754,6 @@ XF98NECS3DRIVERSRC = $(XF98SRC)/accel/s3nec/drivers
 XF98PWSKBDRIVERSRC = $(XF98SRC)/accel/s3pwskb/drivers
  XF98PWLBDRIVERSRC = $(XF98SRC)/accel/s3pwlb/drivers
 XF98GA968DRIVERSRC = $(XF98SRC)/accel/s3ga968/drivers
-#endif
 
 /*
  * Installed location of the XFree86 documentation
@@ -911,13 +816,13 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 			  -Wredundant-decls -Wnested-externs
 #endif
 #ifndef DefaultCCOptions
-#if defined(UseInstalled) && !XF86LinkKit
+#if defined(UseInstalled)
 #define DefaultCCOptions /* -ansi */
 #else
 #define DefaultCCOptions -ansi -pedantic GccWarningOptions
 #endif
 #endif
-#if defined(UseInstalled) || XF86LinkKit
+#if defined(UseInstalled)
 #ifndef UseGccMakeDepend
 #define UseGccMakeDepend YES
 #endif

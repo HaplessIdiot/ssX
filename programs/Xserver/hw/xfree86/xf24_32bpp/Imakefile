@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/Imakefile,v 1.1 1999/01/23 09:56:12 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/Imakefile,v 1.2 1999/02/28 11:19:48 dawes Exp $
 #define IHaveModules
 #include <Server.tmpl>
 
@@ -33,7 +33,5 @@ ObjectFromSpecialSource(cfbgc32,cfbgc,-DPSZ=32)
 
 
 InstallLibraryModule(xf24_32bpp,$(MODULEDIR),.)
-InstallLinkKitLibrary(xf24_32bpp,$(LINKKITDIR)/lib)
-InstallLinkKitNonExecFile(cfb24_32.h,$(LINKKITDIR)/include)
 
 DependTarget()

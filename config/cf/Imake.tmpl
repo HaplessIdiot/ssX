@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.55 1999/04/05 08:28:20 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.56 1999/04/11 13:10:23 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -1557,7 +1557,9 @@ XCOMM rules for building in SUBDIRS - do not edit
 
 InstallSubdirs($(SUBDIRS))
 InstallManSubdirs($(SUBDIRS))
+#if 0
 InstallLinkKitSubdirs($(SUBDIRS))
+#endif
 CleanSubdirs($(SUBDIRS))
 TagSubdirs($(SUBDIRS))
 MakefileSubdirs($(SUBDIRS))
@@ -1580,8 +1582,10 @@ install::
 install.man::
 	@echo "install.man in $(CURRENT_DIR) done"
 
+#if 0
 install.linkkit::
 	@echo "install.linkkit in $(CURRENT_DIR) done"
+#endif
 
 Makefiles::
 

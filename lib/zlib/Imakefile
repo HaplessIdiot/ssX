@@ -4,7 +4,7 @@ XCOMM $TOG: Imakefile /main/4 1998/02/04 14:32:56 kaleb $
 
 
 
-XCOMM $XFree86: xc/lib/zlib/Imakefile,v 1.4 1998/12/20 11:57:22 dawes Exp $
+XCOMM $XFree86: xc/lib/zlib/Imakefile,v 1.5 1999/03/28 15:32:09 dawes Exp $
 
 #define DoNormalLib   YES
 #define DoSharedLib   NO
@@ -30,7 +30,5 @@ OBJS = adler32.o compress.o crc32.o gzio.o uncompr.o deflate.o \
        infcodes.o infutil.o inffast.o
 
 #include <Library.tmpl>
-
-InstallLinkKitLibrary(z,$(LINKKITDIR)/lib)
 
 DependTarget()

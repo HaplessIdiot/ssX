@@ -2,8 +2,9 @@ XCOMM $XConsortium: xf86.tmpl /main/2 1996/10/31 15:01:41 kaleb $
 
 
 
-XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.20 1998/12/06 06:08:09 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.21 1999/03/14 05:50:51 dawes Exp $
 
+#if 0
 #if XF86LinkKit
     TOP_INCLUDES = TopIncludes
    IMAKE_DEFINES = -DXF86LinkKit=1
@@ -21,6 +22,7 @@ XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.20 1998/12/06 06:08:09 dawes Exp $
 #else
 #define ImakeSubCmdHelper $(IMAKEPREFIX)$(IMAKE) -I$(IMAKETOP) \
 			  -I$(IMAKEPREFIX)$(IRULESRC) $(IMAKE_DEFINES)
+#endif
 #endif
 #endif
 

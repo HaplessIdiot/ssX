@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xf86.rules /main/9 1996/10/31 14:54:26 kaleb $
-XCOMM $XFree86: xc/config/cf/xf86.rules,v 3.20 1997/05/18 12:12:03 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86.rules,v 3.21 1999/04/17 07:31:51 dawes Exp $
 
 /*
  * These rules are needed to build the XFree86 X Servers
@@ -117,10 +117,12 @@ clean::									@@\
 #endif
 
 
-#if !XF86LinkKit
+#if 0
 
 /*
  * Rules for installing LinkKit parts (target is install.linkkit)
+ *
+ * These are no longer used.  They're kept for reference.
  */
 
 #ifndef InstallLinkKitNonExecFile
@@ -171,5 +173,5 @@ NamedTargetSubdirs(install.linkkit,dirs,"installing link kit",DESTDIR='$(DESTDIR
 InstallMultipleDestFlags(install.linkkit,list,dest,flags)
 #endif
 
-#endif /* !XF86LinkKit */
+#endif /* 0 */
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: $
+XCOMM $XFree86: xc/programs/Xserver/Xprint/pcl/Imakefile,v 1.3 1997/04/08 14:54:18 hohndel Exp $
 
 
 
@@ -73,7 +73,5 @@ LinkSourceFile(PclSpans.c,LinkDirectory)
 LinkSourceFile(PclText.c,LinkDirectory)
 LinkSourceFile(PclWindow.c,LinkDirectory)
 #endif
-
-InstallLinkKitLibrary(pcl,$(LINKKITDIR)/lib)
 
 DependTarget()

@@ -23,7 +23,7 @@
  *
  * Author:  Keith Packard, Network Computing Devices
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/lbx/Imakefile,v 1.2 1997/01/08 20:52:02 dawes Exp $ */
 
 #include <Server.tmpl>
 
@@ -52,7 +52,5 @@ NormalLibraryObjectRule()
 NormalLibraryTarget(lbx,$(OBJS))
 LintLibraryTarget(lbx,$(SRCS))
 NormalLintTarget($(SRCS))
-
-InstallLinkKitLibrary(lbx,$(LINKKITDIR)/lib)
 
 DependTarget()

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xaa/Imakefile.EXP,v 1.2 1998/07/25 16:58:38 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xaa/Imakefile.EXP,v 1.3 1998/09/27 04:43:43 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -36,8 +36,5 @@ LinkSourceFile(xaaTEGlyphBlt.s, LinkDirectory)
 #endif
 
 ObjectFromSpecialSource(xaaBitmap3, xaaBitmap, -DTRIPLE_BITS)
-
-InstallLinkKitNonExecFile(EXPOBJECTNAME.o,$(LINKKITDIR)/lib)
-
 
 DependTarget()

@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/2 1996/09/28 17:06:40 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/dbe/Imakefile,v 3.4 1998/07/26 09:56:06 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/dbe/Imakefile,v 3.5 1999/01/03 03:58:21 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -25,7 +25,6 @@ LibraryModuleTarget(dbe,$(OBJS))
 LintLibraryTarget(dbe,$(SRCS))
 NormalLintTarget($(SRCS))
 
-InstallLinkKitLibrary(dbe,$(LINKKITDIR)/lib)
 InstallLibraryModule(dbe,$(MODULEDIR),extensions)
 
 DependTarget()

@@ -1,6 +1,6 @@
 XCOMM
 XCOMM $XConsortium: Imakefile /main/9 1996/09/28 16:54:20 rws $
-XCOMM $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level3/Imakefile,v 3.7 1998/07/25 07:36:21 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level3/Imakefile,v 3.8 1998/09/19 12:14:39 dawes Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -58,8 +58,6 @@ NormalLibraryTarget(ddpex3,$(OBJS))
 
 LintLibraryTarget(dp3, $(SRCS))
 NormalLintTarget($(SRCS))
-
-InstallLinkKitLibrary(ddpex3,$(LINKKITDIR)/lib)
 
 DependTarget()
 

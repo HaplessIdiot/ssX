@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/Imakefile,v 1.6 1999/03/21 07:35:02 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -7,9 +7,6 @@ SRCS = apm_accel.c apm_cursor.c apm_driver.c apm_i2c.c
                    
 OBJS = apm_accel.o apm_cursor.o apm_driver.o apm_i2c.o
 
-#if XF86LinkKit
-INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
-#else
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
            -I$(SERVERSRC)/mfb  -I$(SERVERSRC)/mi \
            -I$(SERVERSRC)/cfb  -I$(XF86SRC)/xaa \
@@ -17,7 +14,6 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
            -I$(XF86SRC)/vgahw  -I$(XF86SRC)/ramdac \
 	   -I$(XF86SRC)/i2c -I$(XF86SRC)/ddc \
            -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(FONTINCSRC)
-#endif
 
 #if MakeHasPosixVariableSubstitutions
 SubdirLibraryRule($(OBJS))
@@ -29,16 +25,6 @@ ObjectModuleTarget(apm,$(OBJS))
 
 /* XXX Is this needed? */
 ObjectFromSpecialSource(apm_accel24, apm_accel, -DPSZ=24)
-
-InstallLinkKitNonExecFile(apm.h,$(LINKKITDIR)/drivers/apm)
-InstallLinkKitNonExecFile(apm_accel.c,$(LINKKITDIR)/drivers/apm)
-InstallLinkKitNonExecFile(apm_accel24.c,$(LINKKITDIR)/drivers/apm)
-InstallLinkKitNonExecFile(apm_cursor.c,$(LINKKITDIR)/drivers/apm)
-InstallLinkKitNonExecFile(apm_driver.c,$(LINKKITDIR)/drivers/apm)
-InstallLinkKitNonExecFile(apm_funcs.c,$(LINKKITDIR)/drivers/apm)
-InstallLinkKitNonExecFile(apm_i2c.c,$(LINKKITDIR)/drivers/apm)
-InstallLinkKitNonExecFile(apm_regs.h,$(LINKKITDIR)/drivers/apm)
-InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/apm)
 
 InstallObjectModule(apm,$(MODULEDIR),drivers)
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/glxStub/Imakefile,v 1.3 1997/05/03 09:15:55 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/glxStub/Imakefile,v 1.4 1997/05/11 04:58:51 dawes Exp $
 
 
 
@@ -15,7 +15,5 @@ NormalLibraryObjectRule()
 NormalLibraryTarget(ServerGlx,$(OBJS))
 LintLibraryTarget(ServerGlx,$(SRCS))
 NormalLintTarget($(SRCS))
-
-InstallLinkKitLibrary(ServerGlx,$(LINKKITDIR)/lib)
 
 DependTarget()

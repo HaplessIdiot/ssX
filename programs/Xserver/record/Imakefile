@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/record/Imakefile,v 1.5 1998/07/26 09:56:23 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/record/Imakefile,v 1.6 1999/01/03 03:58:58 dawes Exp $
 XCOMM
 XCOMM
 XCOMM $XConsortium: Imakefile /main/3 1996/09/28 17:15:43 rws $
@@ -22,7 +22,6 @@ LibraryModuleTarget(record,$(OBJS))
 LintLibraryTarget(record,$(SRCS))
 NormalLintTarget($(SRCS))
 
-InstallLinkKitLibrary(record,$(LINKKITDIR)/lib)
 InstallLibraryModule(record,$(MODULEDIR),extensions)
 
 DependTarget()

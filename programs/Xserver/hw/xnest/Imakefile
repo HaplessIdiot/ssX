@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/12 1997/11/03 14:13:20 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/hw/xnest/Imakefile,v 3.9 1998/04/05 02:28:43 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xnest/Imakefile,v 3.10 1998/10/04 09:38:52 dawes Exp $
 #include <Server.tmpl>
 
 #ifdef OS2Architecture
@@ -65,7 +65,5 @@ NormalLibraryObjectRule()
 NormalLibraryTarget(xnest,$(OBJS))
 
 InstallManPage(Xnest,$(MANDIR))
-
-InstallLinkKitLibrary(xnest,$(LINKKITDIR)/lib)
 
 DependTarget()

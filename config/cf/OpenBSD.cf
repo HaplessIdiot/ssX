@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.20 1999/03/21 01:44:58 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.21 1999/03/21 07:34:23 dawes Exp $
 XCOMM
 XCOMM $OpenBSD: OpenBSD.cf,v 1.33 1998/09/27 04:52:48 rahnds Exp $
 XCOMM
@@ -71,7 +71,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 
 #undef CcCmd
 #define CcCmd 			gcc
-#if defined(UseInstalled) && (!defined(XF86LinkKit) || !XF86LinkKit)
+#if defined(UseInstalled)
 #define DefaultCCOptions 	/**/
 #else
 #define DefaultCCOptions 	-ansi -Dasm=__asm GccWarningOptions

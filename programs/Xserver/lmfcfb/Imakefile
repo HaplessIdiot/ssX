@@ -290,19 +290,4 @@ stipsprcte32.o: stipsprcte32.s
 #endif
 #endif
 
-#if PixelSize == 32
-InstallLinkKitNamedLibrary(cfb,cfb32,$(LINKKITDIR)/lib)
-#endif
-#if PixelSize == 16
-InstallLinkKitNamedLibrary(cfb,cfb16,$(LINKKITDIR)/lib)
-#endif
-#if PixelSize == 8
-InstallLinkKitLibrary(cfb,$(LINKKITDIR)/lib)
-InstallLinkKitNonExecFile(cfb.h,$(LINKKITDIR)/include)
-InstallLinkKitNonExecFile(cfb8bit.h,$(LINKKITDIR)/include)
-InstallLinkKitNonExecFile(cfbmap.h,$(LINKKITDIR)/include)
-InstallLinkKitNonExecFile(cfbmskbits.h,$(LINKKITDIR)/include)
-InstallLinkKitNonExecFile(cfbrrop.h,$(LINKKITDIR)/include)
-#endif
-
 DependTarget()

@@ -3,7 +3,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/makedepend/Imakefile,v 3.4 1996/12/23 05:54:51 dawes Exp $
+XCOMM $XFree86: xc/config/makedepend/Imakefile,v 3.5 1997/06/11 12:24:23 dawes Exp $
 
     SRCS = include.c main.c parse.c pr.c cppsetup.c ifparser.c 
     OBJS = include.o main.o parse.o pr.o cppsetup.o ifparser.o 
@@ -89,4 +89,3 @@ all::
 	$(CP) ProgramTargetName(makedepend) /
 #endif
 
-InstallLinkKitNamedProg(makedepend,makedepend,$(LINKKITDIR)/config/makedepend)
