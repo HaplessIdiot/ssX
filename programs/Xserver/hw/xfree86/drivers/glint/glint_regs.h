@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.30 2001/11/28 21:53:01 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.31 2001/12/08 16:01:52 alanh Exp $ */
 
 /*
  * glint register file 
@@ -1240,6 +1240,20 @@ do{								\
 	    int tmp;						\
 	    while((tmp=GLINT_READ_REG(InFIFOSpace))<(n));	\
 	    /* Clamp value due to bugs in PM3 */		\
+	    if ((CARD32) tmp > pGlint->FIFOSize)		\
+		tmp = pGlint->FIFOSize;				\
+	    pGlint->InFifoSpace = tmp - (n);			\
+	}							\
+}while(0)
+
+#define GLINT_SLOW_WAIT(n)					\
+do{								\
+	if ((CARD32)pGlint->InFifoSpace>=(n))			\
+	    pGlint->InFifoSpace -= (n);				\
+	else {							\
+	    CARD32 tmp;						\
+	    while((tmp=GLINT_READ_REG(InFIFOSpace))<(n));	\
+	    /* Clamp value due to bugs in PM3 */		\
 	    if (tmp > pGlint->FIFOSize)				\
 		tmp = pGlint->FIFOSize;				\
 	    pGlint->InFifoSpace = tmp - (n);			\
@@ -1258,7 +1272,7 @@ do{								\
 #define GLINT_SLOW_WRITE_REG(v,r)				\
 do{								\
 	mem_barrier();						\
-	GLINT_WAIT(pGlint->FIFOSize);	     			\
+	GLINT_SLOW_WAIT(pGlint->FIFOSize);	     		\
 	mem_barrier();						\
         GLINT_WRITE_REG(v,r);					\
 }while(0)
