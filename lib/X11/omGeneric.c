@@ -32,7 +32,7 @@
  * Modifier:  Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/omGeneric.c,v 3.23 2002/11/25 14:04:53 eich Exp $ */
+/* $XFree86: xc/lib/X11/omGeneric.c,v 3.19 2001/03/02 23:01:28 dawes Exp $ */
 
 /*
  * Fixed the algorithms in parse_fontname() and parse_fontdata()
@@ -706,7 +706,7 @@ parse_all_name(oc, font_data, pattern)
             return False;
         }
         else if ((is_match_charset(font_data, prop_fname) != True)) {
-            Xfree(prop_fname);
+            XFree(prop_fname);
             XFreeFontInfo(fn_list, fs_list, list_num);
             return False;
         }
@@ -1013,10 +1013,10 @@ parse_fontdata(oc, font_set, font_data, font_data_count, name_list,
 		  * FontSet's "substitute" font for a match.  If we find a
 		  * match, we'll keep searching in hopes of finding an exact 
 		  * match later down the FontSet list.
- 		  *
- 		  * when we return and we have found a font font_data_return
- 		  * contains the first (ie. best) match no matter if this
- 		  * is a C_PRIMARY or a C_SUBSTITUTE font
+		  *
+		  * when we return and we have found a font font_data_return
+		  * contains the first (ie. best) match no matter if this
+		  * is a C_PRIMARY or a C_SUBSTITUTE font
 		  */
 		  ret = parse_fontdata(oc, font_set, font_set->substitute,
 				       font_set->substitute_num, name_list, 
@@ -1073,28 +1073,20 @@ parse_vw(oc, font_set, name_list, count)
     int		count;
 {
     FontData	vmap = font_set->vmap;
-    FontDataRec font_data_return;
     VRotate	vrotate = font_set->vrotate;
     int		vmap_num = font_set->vmap_num;
     int		vrotate_num = font_set->vrotate_num;
     int		ret = 0, i = 0;
 
     if(vmap_num > 0) {
-	if(parse_fontdata(oc, font_set, vmap, vmap_num, name_list, count,
-			  C_VMAP, NULL) == -1) {
-	    if(font_data_return.xlfd_name != NULL)
-		 Xfree(font_data_return.xlfd_name);
+	if(parse_fontdata(oc, font_set, vmap, vmap_num, name_list,
+			  count, C_VMAP,NULL) == -1)
 	    return (-1);
-	}
-	if(font_data_return.xlfd_name != NULL)
-	    Xfree(font_data_return.xlfd_name);
     }
 
     if(vrotate_num > 0) {
 	ret = parse_fontdata(oc, font_set, (FontData) vrotate, vrotate_num,
 			     name_list, count, C_VROTATE, NULL);
-	if(font_data_return.xlfd_name != NULL)
-	    Xfree(font_data_return.xlfd_name);
 	if(ret == -1) {
 	    return (-1);
 	} else if(ret == False) {
@@ -1177,11 +1169,13 @@ parse_fontname(oc)
 	    * a "missing_charset" will be reported to the client 
 	    * for this CharSet.
 	    */
+	    font_data_return. xlfd_name = NULL;
+	    font_data_return.side       = XlcUnknown;
 
 	    ret = parse_fontdata(oc, font_set, font_set->font_data,
 				 font_set->font_data_count,
 				 name_list, count, C_PRIMARY,
-				 NULL);
+				 &font_data_return);
 	    if(ret == -1) {
 		goto err;
 	    } else if(ret == True) {
@@ -1208,24 +1202,13 @@ parse_fontname(oc)
 	    }
 
 	} else if(font_set->substitute_num > 0) {
-
-           /* If there are no FontSets defined for this 
+           /*
+	    * If there are no FontSets defined for this 
 	    * CharSet.  We can only find "substitute" fonts.
 	    */
-	    font_data_return.name       = NULL;
-	    font_data_return.side       = XlcUnknown;
-	    font_data_return.scopes_num = 0;
-	    font_data_return.scopes     = NULL;
-	    font_data_return.xlfd_name  = NULL;
-	    font_data_return.font       = NULL;
-
 	    ret = parse_fontdata(oc, font_set, font_set->substitute,
 				 font_set->substitute_num,
-				 name_list, count, C_SUBSTITUTE, &font_data_return);
-	    if(font_data_return.xlfd_name != NULL) {
-		Xfree(font_data_return.xlfd_name);
-		font_data_return.xlfd_name = NULL;
-	    }
+				 name_list, count, C_SUBSTITUTE, NULL);
 	    if(ret == -1) {
 		goto err;
 	    } else if(ret == True) {
@@ -1263,8 +1246,6 @@ err:
     XFreeStringList(name_list);
     /* Prevent this from being freed twice */
     oc->core.base_name_list = NULL;
-    if(font_data_return.xlfd_name != NULL)
-	Xfree(font_data_return.xlfd_name);
 
     return -1;
 }
@@ -1450,7 +1431,7 @@ void destroy_fontdata(gen,dpy)
 	font_set = gen->font_set;
 	font_set_num = gen->font_set_num;
 	for( ; font_set_num-- ; font_set++) {
-	    if(font_set->font) {
+	    if (font_set->font) {
 		if(font_set->font->fid)
 		    XFreeFont(dpy,font_set->font);
 		else
@@ -1458,13 +1439,6 @@ void destroy_fontdata(gen,dpy)
 		font_set->font = NULL;
 	    }
 	    if(font_set->font_data) {
-		if (font_set->font) {
-		    if(font_set->font->fid)
-			XFreeFont(dpy,font_set->font);
-		    else
-			XFreeFontInfo(NULL, font_set->font, 1);
-		    font_set->font = NULL;
-		}
 		if (font_set->info)
 		    XFreeFontInfo(NULL, font_set->info, 1);
 		free_fontdataOC(dpy,
