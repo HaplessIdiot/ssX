@@ -19,7 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.15 2003/11/17 01:01:31 dawes Exp $ */
+/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.16 2003/11/17 03:35:48 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,13 +31,14 @@
 #include <errno.h>
 
 #include <X11/fonts/fontenc.h>
-#include <freetype/freetype.h>
-#include <freetype/ftsnames.h>
-#include <freetype/tttables.h>
-#include <freetype/ttnameid.h>
-#include <freetype/t1tables.h>
-#include <freetype/ftbdf.h>
-#include <freetype/tttables.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include FT_SFNT_NAMES_H
+#include FT_TRUETYPE_TABLES_H
+#include FT_TRUETYPE_IDS_H
+#include FT_TYPE1_TABLES_H
+#include FT_BDF_H
+#include FT_TRUETYPE_TABLES_H
 
 #include "list.h"
 #include "hash.h"
