@@ -64,7 +64,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.31 1999/10/13 16:49:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.32 1999/10/13 22:33:06 dawes Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -187,6 +187,9 @@ extern int xf86InstallSIGIOHandler(int fd, void (*f)(int, void *), void *);
 extern int xf86RemoveSIGIOHandler(int fd);
 extern int xf86BlockSIGIO (void);
 extern void xf86UnblockSIGIO (int);
+#ifdef XFree86Server
+extern void xf86AssertBlockedSIGIO (char *);
+#endif
 
 #ifdef XF86_OS_PRIVS
 extern void xf86OpenConsole(void);

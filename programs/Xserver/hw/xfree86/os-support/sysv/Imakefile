@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/Imakefile,v 3.17 1999/05/22 14:52:28 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/Imakefile,v 3.18 1999/09/04 13:04:49 dawes Exp $
 
 
 
@@ -19,11 +19,11 @@ MOUSEOBJ = sysv_mouse.o
 
 SRCS = sysv_init.c sysv_video.c sysv_io.c $(BIOS_MOD).c VTsw_usl.c \
        sysv_kbd.c std_kbdEv.c posix_tty.c $(MOUSESRC) xqueue.c \
-       libc_wrapper.c stdResource.c vidmem.c
+       libc_wrapper.c stdResource.c vidmem.c sigiostubs.c
 
 OBJS = sysv_init.o sysv_video.o sysv_io.o $(BIOS_MOD).o VTsw_usl.o \
        sysv_kbd.o std_kbdEv.o posix_tty.o $(MOUSEOBJ) xqueue.o \
-       libc_wrapper.o stdResource.o vidmem.o
+       libc_wrapper.o stdResource.o vidmem.o sigiostubs.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(EXTINCSRC) -I$(SERVERSRC)/mi
@@ -47,5 +47,6 @@ LinkSourceFile(posix_tty.c,../shared)
 LinkSourceFile(libc_wrapper.c,../shared)
 LinkSourceFile(stdResource.c,../shared)
 LinkSourceFile(vidmem.c,../shared)
+LinkSourceFile(sigiostubs.c,../shared)
 
 DependTarget()

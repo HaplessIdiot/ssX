@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/Imakefile,v 3.12 1999/07/10 07:24:48 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/Imakefile,v 3.13 1999/09/04 13:04:45 dawes Exp $
 #include <Server.tmpl>
 
 #if !defined(PpcArchitecture)
@@ -17,12 +17,12 @@ MOUSEOBJ = lynx_mouse.o
 SRCS = lynx_init.c lynx_video.c lynx_io.c lynx_mmap.c mapVT_noop.c \
        VTsw_usl.c std_kbdEv.c posix_tty.c $(MOUSESRC) \
        $(IOPERM_SRCS) $(PPC_SRCS) libc_wrapper.c stdResource.c \
-       vidmem.c
+       vidmem.c sigiostubs.c
 
 OBJS = lynx_init.o lynx_video.o lynx_io.o lynx_mmap.o mapVT_noop.o \
        VTsw_usl.o std_kbdEv.o posix_tty.o $(MOUSEOBJ) \
        $(IOPERM_OBJS) $(PPC_OBJS) libc_wrapper.o stdResource.o \
-       vidmem.o
+       vidmem.o sigiostubs.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(EXTINCSRC)
@@ -44,5 +44,6 @@ LinkSourceFile(posix_tty.c,../shared)
 LinkSourceFile(libc_wrapper.c,../shared)
 LinkSourceFile(stdResource.c,../shared)
 LinkSourceFile(vidmem.c,../shared)
+LinkSourceFile(sigiostubs.c,../shared)
 
 DependTarget()

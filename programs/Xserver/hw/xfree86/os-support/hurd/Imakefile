@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/Imakefile,v 1.5 1999/05/22 08:40:11 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/Imakefile,v 1.6 1999/09/04 13:04:43 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -9,11 +9,11 @@ MOUSEOBJ = hurd_mouse.o
 
 SRCS = hurd_init.c hurd_video.c hurd_io.c libc_wrapper.c $(BIOS_MOD).c \
        mapVT_noop.c VTsw_noop.c posix_tty.c std_kbdEv.c $(MOUSESRC) \
-       stdResource.c
+       stdResource.c sigiostubs.c
 
 OBJS = hurd_init.o hurd_video.o hurd_io.o libc_wrapper.o $(BIOS_MOD).o \
        mapVT_noop.o VTsw_noop.o posix_tty.o std_kbdEv.o $(MOUSEOBJ) \
-       stdResource.o
+       stdResource.o sigiostubs.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(EXTINCSRC) -I$(SERVERSRC)/mi
@@ -32,6 +32,7 @@ LinkSourceFile(posix_tty.c,../shared)
 LinkSourceFile(std_kbdEv.c,../shared)
 LinkSourceFile(libc_wrapper.c,../shared)
 LinkSourceFile(stdResource.c,../shared)
+LinkSourceFile(sigiostubs.c,../shared)
 
 DependTarget()
 
