@@ -55,7 +55,7 @@
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
-#include "xf86version.h"
+#include "xf86Version.h"
 #include "vga.h"
 
 /* Includes for Options flags */
