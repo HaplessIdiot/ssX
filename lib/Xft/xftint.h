@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftint.h,v 1.32 2002/05/31 23:21:23 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftint.h,v 1.34 2002/06/19 20:18:00 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -154,6 +154,23 @@ typedef struct _XftFontInt {
     FcBool		use_free_glyphs;   /* Use XRenderFreeGlyphs */
 } XftFontInt;
 
+typedef enum _XftClipType {
+    XftClipTypeNone, XftClipTypeRegion, XftClipTypeRectangles
+} XftClipType;
+
+typedef struct _XftClipRect {
+    int			xOrigin;
+    int			yOrigin;
+    int			n;
+} XftClipRect;
+
+#define XftClipRects(cr)    ((XRectangle *) ((cr) + 1))
+
+typedef union _XftClip {
+    XftClipRect	    *rect;
+    Region	    region;
+} XftClip;
+
 struct _XftDraw {
     Display	    *dpy;
     int		    screen;
@@ -162,7 +179,8 @@ struct _XftDraw {
     Drawable	    drawable;
     Visual	    *visual;	/* NULL for bitmaps */
     Colormap	    colormap;
-    Region	    clip;
+    XftClipType	    clip_type;
+    XftClip	    clip;
     int		    subwindow_mode;
     struct {
 	Picture		pict;

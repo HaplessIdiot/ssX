@@ -265,6 +265,14 @@ Bool
 XftDrawSetClip (XftDraw	    *d,
 		Region	    r);
 
+
+Bool
+XftDrawSetClipRectangles (XftDraw		*d,
+			  int			xOrigin,
+			  int			yOrigin,
+			  _Xconst XRectangle	*rects,
+			  int			n);
+
 void
 XftDrawSetSubwindowMode (XftDraw    *d,
 			 int	    mode);
