@@ -34,7 +34,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.18 2003/11/23 06:04:01 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.19 2003/11/24 05:39:01 torrey Exp $ */
 
 #include "quartzCommon.h"
 
@@ -1316,7 +1316,8 @@ static io_connect_t root_port;
         QuartzMessageServerThread(kXDarwinControllerNotify, 1,
                                   AppleWMHideAll);
     } else {
-        // FIXME: We need to hide Xplugin windows here
+        if (quartzProcs->HideWindows)
+            quartzProcs->HideWindows(YES);
     }
 }
 
@@ -1326,7 +1327,8 @@ static io_connect_t root_port;
         QuartzMessageServerThread(kXDarwinControllerNotify, 1,
                                   AppleWMShowAll);
     } else {
-        [NSApp arrangeInFront:nil];
+        if (quartzProcs->HideWindows)
+            quartzProcs->HideWindows(NO);
     }
 }
 
