@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/mi/Imakefile,v 3.18 1997/04/10 10:07:02 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/mi/Imakefile,v 3.19 1997/05/03 09:19:58 dawes Exp $
 XCOMM $XConsortium: Imakefile /main/44 1996/12/02 10:22:16 lehors $
 #include <Server.tmpl>
 
@@ -44,21 +44,6 @@ EXT_DEFINES = ExtensionDefines -UXINPUT -UXF86VIDMODE -UXFreeXDGA -UXF86MISC \
 #else
 EXT_DEFINES = ExtensionDefines
 #endif
-#if PexModule | DoLoadableServer
-PEX_MODULE_DEFINES = -DPEX_MODULE
-#endif
-#if XieModule | DoLoadableServer
-XIE_MODULE_DEFINES = -DXIE_MODULE
-#endif
-#if GlxModule | DoLoadableServer
-GLX_MODULE_DEFINES = -DGLX_MODULE
-#else
-GLX_MODULE_DEFINES = -UGLXEXT
-#endif
-
-EXT_MODULES_DEFINES  =  $(PEX_MODULE_DEFINES) \
-			$(XIE_MODULE_DEFINES) \
-			$(GLX_MODULE_DEFINES)
 
 INCLUDES = -I. -I../include -I../../../include/fonts \
            -I$(XINCLUDESRC) -I$(FONTINCSRC)

@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $TOG: miinitext.c /main/44 1997/10/30 15:51:48 kaleb $ */
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.24 1997/09/09 10:27:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.25 1997/11/16 06:42:19 dawes Exp $ */
 
 #include "misc.h"
 #include "extension.h"
@@ -207,7 +207,7 @@ InitExtensions(argc, argv)
 #ifdef MITSHM
     ShmExtensionInit();
 #endif
-#ifdef PEXEXT
+#if defined(PEXEXT) && !(defined(PEX_MODULE) && defined(NO_MODULES_EXTS))
 #ifndef PEX_MODULE
     PexExtensionInit();
 #else
@@ -246,7 +246,7 @@ InitExtensions(argc, argv)
 #ifdef XV
     XvExtensionInit();
 #endif
-#ifdef XIE
+#if defined(XIE) && !(defined(PEX_MODULE) && defined(NO_MODULES_EXTS))
 #ifndef XIE_MODULE
     XieInit();
 #else
@@ -288,19 +288,23 @@ InitExtensions(argc, argv)
 #ifdef TOGCUP
     XcupExtensionInit();
 #endif
-#if defined(XF86VIDMODE) && !defined(PRINT_ONLY_SERVER)
+#if defined(XF86VIDMODE) && !defined(PRINT_ONLY_SERVER) && \
+	!defined(NO_HW_ONLY_EXTS)
     XFree86VidModeExtensionInit();
 #endif
-#if defined(XF86MISC) && !defined(PRINT_ONLY_SERVER)
+#if defined(XF86MISC) && !defined(PRINT_ONLY_SERVER) && \
+	!defined(NO_HW_ONLY_EXTS)
     XFree86MiscExtensionInit();
 #endif
-#if defined(XFreeXDGA) && !defined(PRINT_ONLY_SERVER)
+#if defined(XFreeXDGA) && !defined(PRINT_ONLY_SERVER) && \
+	!defined(NO_HW_ONLY_EXTS)
     XFree86DGAExtensionInit();
 #endif
-#if defined(DPMSExtension) && !defined(PRINT_ONLY_SERVER)
+#if defined(DPMSExtension) && !defined(PRINT_ONLY_SERVER) && \
+	!defined(NO_HW_ONLY_EXTS)
     DPMSExtensionInit();
 #endif
-#ifdef GLXEXT
+#if defined(GLXEXT) && !defined(NO_HW_ONLY_EXTS)
 #ifndef GLX_MODULE
 #ifndef XPRINT	/* we don't want Glx in the Xprint server */
     GlxExtensionInit();
