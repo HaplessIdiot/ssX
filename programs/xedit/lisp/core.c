@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.15 2001/10/20 00:19:33 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.16 2001/10/28 03:34:29 tsi Exp $ */
 
 #include "core.h"
 #include "format.h"
@@ -2191,7 +2191,7 @@ LispObj *
 Lisp_Tagbody(LispMac *mac, LispObj *list, char *fname)
 {
     int did_jump, *pdid_jump = &did_jump, body_jump, *pbody_jump = &body_jump;
-    volatile LispObj *body;
+    LispObj * volatile body;
     LispObj *res, **pres = &res;
     LispBlock *block, *body_block;
 
