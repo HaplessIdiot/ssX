@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.27 1999/10/13 22:32:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.30 1999/12/03 19:17:22 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -948,7 +948,7 @@ DGAProcessKeyboardEvent (ScreenPtr pScreen, dgaEvent *de, DeviceIntPtr keybd)
     else
     {
 	/* If the keyboard is actively grabbed, deliver a grabbed core event */
-	if (keybd->grab && !keybd->activatingKey)
+	if (keybd->grab && !keybd->fromPassiveGrab)
 	{
 	    core.u.u.type		    = coreEquiv;
 	    core.u.u.detail		    = de->u.u.detail;
