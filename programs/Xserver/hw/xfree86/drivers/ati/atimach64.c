@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.9 1999/11/02 16:16:37 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.10 2000/02/18 12:19:25 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -350,7 +350,7 @@ ATIMach64Save
     pATIHW->config_cntl = inl(pATI->CPIO_CONFIG_CNTL);
 
     /* Save draw engine state */
-    if ((pATI->OptionAccel) && (pATIHW == &pATI->OldHW))
+    if (pATI->OptionAccel && (pATIHW == &pATI->OldHW))
     {
         ATIMach64WaitForIdle();
 
@@ -634,6 +634,7 @@ ATIMach64Set
     /* Load draw engine */
     if (pATI->OptionAccel)
     {
+        pATI->EngineIsBusy = TRUE;      /* Force engine poll */
         ATIMach64WaitForIdle();
 
         /* Load FIFO size */

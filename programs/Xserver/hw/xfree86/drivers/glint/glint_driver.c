@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.67 2000/02/23 04:47:11 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.69 2000/02/27 02:45:27 alanh Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -621,9 +621,6 @@ GLINTProbe(DriverPtr drv, int flags)
      * specified.
      */
 
-    if (flags & PROBE_DETECTISA) return FALSE;
-    if (flags & PROBE_DETECTFBDEV) return FALSE;  /* SEE BELOW */
-
     if ((numDevSections = xf86MatchDevice(GLINT_DRIVER_NAME,
 					  &devSections)) <= 0) {
 	/*
@@ -672,11 +669,11 @@ GLINTProbe(DriverPtr drv, int flags)
 				/* Check for pm2fb */
 		    if (strcmp(fbdevHWGetName(pScrn0),"Permedia2")) continue;
 
-#if 0 /* Need to find better way of detecting FBDEV */
-      /* Probably to use BUSID FBDEV */
-		    if (flags & PROBE_DETECTFBDEV)
+		    if (flags & PROBE_DETECT) {
+			xf86AddDeviceToConfigure(GLINT_NAME, NULL, -1);
 			return TRUE;
-#endif
+		    }
+
 		    foundScreen = FBDev = TRUE;
 		    pScrn = xf86AllocateScreen(drv, 0);
 		    xf86LoadSubModule(pScrn, "fbdevhw");
@@ -732,10 +729,9 @@ GLINTProbe(DriverPtr drv, int flags)
 	devSections = NULL;
 	if (numUsed <= 0)
 	    return FALSE;
-	if (flags & PROBE_DETECTPCI)
-	    return TRUE;
 	foundScreen = TRUE;
 
+	if (!(flags & PROBE_DETECT))
 	for (i = 0; i < numUsed; i++) {
 	    ScrnInfoPtr pScrn;
 	

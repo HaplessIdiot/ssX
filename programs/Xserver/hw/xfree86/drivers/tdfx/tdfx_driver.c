@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.24 2000/02/27 02:45:31 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.26 2000/02/29 22:02:28 alanh Exp $ */
 
 /*
  * Authors:
@@ -420,9 +420,8 @@ TDFXProbe(DriverPtr drv, int flags) {
   if (numUsed<=0) return FALSE;
 
   if (flags & PROBE_DETECT)
-    return TRUE;
-
-  for (i=0; i<numUsed; i++) {
+    foundScreen = TRUE;
+  else for (i=0; i<numUsed; i++) {
     ScrnInfoPtr pScrn;
 
     /* Allocate new ScrnInfoRec and claim the slot */

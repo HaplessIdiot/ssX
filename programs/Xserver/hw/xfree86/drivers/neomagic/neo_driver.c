@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.14 2000/02/15 18:01:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.16 2000/02/27 02:45:29 alanh Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -444,7 +444,6 @@ NEOProbe(DriverPtr drv, int flags)
     int *usedChips;
     int i;
 
-    if (flags & PROBE_DETECTFBDEV) return FALSE;
     /*
      * Find the config file Device sections that match this
      * driver, and return if there are none.
@@ -461,12 +460,10 @@ NEOProbe(DriverPtr drv, int flags)
 					devSections,numDevSections,
 					drv, &usedChips);
 
-	if (numUsed > 0 && (flags & PROBE_DETECTPCI))
-	    return TRUE;
-	if (numUsed <= 0 && (flags & PROBE_DETECTPCI))
-	    return FALSE;
-
-	for (i = 0; i < numUsed; i++) {
+	if (numUsed > 0)
+	if (flags & PROBE_DETECT)
+	    foundScreen = TRUE;
+	else for (i = 0; i < numUsed; i++) {
 	    ScrnInfoPtr pScrn;
 	    /* Allocate a ScrnInfoRec and claim the slot */
 	    pScrn = xf86AllocateScreen(drv,0);
@@ -494,10 +491,10 @@ NEOProbe(DriverPtr drv, int flags)
     numUsed = xf86MatchIsaInstances(NEO_NAME,NEOChipsets,NEOISAchipsets,
 				     drv,neoFindIsaDevice,devSections,
 				     numDevSections,&usedChips);
-    if (numUsed > 0 && (flags & PROBE_DETECTISA))
-	    return TRUE;
-
-    for (i = 0; i < numUsed; i++) {
+    if (numUsed > 0)
+    if (flags & PROBE_DETECT)
+	foundScreen = TRUE;
+    else for (i = 0; i < numUsed; i++) {
 	ScrnInfoPtr pScrn;
 
 	pScrn = xf86AllocateScreen(drv,0);
@@ -520,8 +517,7 @@ NEOProbe(DriverPtr drv, int flags)
     if (numUsed > 0)
 	xfree(usedChips);
 
-    if (devSections)
-	xfree(devSections);
+    xfree(devSections);
     return foundScreen;
 }
 

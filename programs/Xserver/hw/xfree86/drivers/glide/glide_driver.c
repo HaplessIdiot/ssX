@@ -45,7 +45,7 @@
    * Support static loading.  
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.9 2000/02/11 22:36:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.11 2000/02/27 02:45:27 alanh Exp $ */
 
 #include "xaa.h"
 #include "xf86Cursor.h"
@@ -393,8 +393,10 @@ GLIDEProbe(DriverPtr drv, int flags)
   
   
   /* hw.num_sst : number of Glide boards available */
-  if (hw.num_sst > 0 && (flags & PROBE_DETECT))
+  if (hw.num_sst > 0 && (flags & PROBE_DETECT)) {
+    /* XXX Need to call xf886AddDeviceToConfigure() here */
     return TRUE;
+  }
 
   for (sst = 0; sst < hw.num_sst; sst++)
   {

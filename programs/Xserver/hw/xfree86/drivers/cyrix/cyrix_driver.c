@@ -26,7 +26,7 @@
  *          Dirk H. Hohndel (hohndel@suse.de),
  *          Portions: the GGI project & confidential CYRIX databooks.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.3 2000/02/15 18:01:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.5 2000/02/27 02:46:09 alanh Exp $ */
 
 #include "compiler.h"
 #include "fb.h"
@@ -318,8 +318,6 @@ CYRIXProbe(DriverPtr drv, int flags)
     int device_step, device_revision;
     ScrnInfoPtr pScrn;
 
-    if (flags & PROBE_DETECT) return FALSE;
-
     /*
      * The aim here is to find all cards that this driver can handle,
      * and for the ones not already claimed by another driver, claim the
@@ -346,6 +344,9 @@ CYRIXProbe(DriverPtr drv, int flags)
 					CYRIXISAChipsets,drv,
 					CYRIXFindIsaDevice,devSections,
 					numDevSections,&usedChips);
+
+    if (numUsed <= 0)
+	return FALSE;
 
     /* use register probing to decide whether the chip is
      * `suitable' for us.
@@ -386,6 +387,9 @@ CYRIXProbe(DriverPtr drv, int flags)
     /*      end GGI MediaGX driver based code */
     if (padsize == 0) return (FALSE);
 
+    if (flags & PROBE_DETECT)
+	return TRUE;
+
     xf86ErrorF("%s: GX_BASE: 0x%x\n",CYRIX_NAME, physbase);
     xf86ErrorF("%s: Scratchpad size: %d kbytes\n",CYRIX_NAME, padsize);
 
@@ -417,9 +421,7 @@ CYRIXProbe(DriverPtr drv, int flags)
 
     /* Free it since we don't need that list after this */
     xfree(devSections);
-    devSections = NULL;
 
-    if (numUsed >= 0)
 	for (i=0; i < numUsed; i++) {
 
 
@@ -440,8 +442,8 @@ CYRIXProbe(DriverPtr drv, int flags)
 	    pScrn->ValidMode     = CYRIXValidMode;
 	    xf86ConfigActiveIsaEntity(pScrn, usedChips[i], CYRIXISAChipsets,
 					NULL, NULL, NULL, NULL, NULL);
-	    return (TRUE);
 	}
+    return (TRUE);
 }
 
 static int
@@ -449,8 +451,7 @@ CYRIXFindIsaDevice(GDevPtr dev)
 {
     CARD32 CurrentValue, TestValue;
 
-    /* Unlock VGA registers */
-    VGAHW_UNLOCK(vgaIOBase);
+    /* No need to unlock VGA CRTC registers here */
 
     /* VGA has one more read/write attribute register than EGA */
     (void) inb(vgaIOBase + 0x0AU);  /* Reset flip-flop */
@@ -460,9 +461,6 @@ CYRIXFindIsaDevice(GDevPtr dev)
     outb(0x3C0, 0x14 | 0x20);
     TestValue = inb(0x3C1);
     outb(0x3C0, CurrentValue);
-
-    /* XXX:  This should restore lock state, rather than relock */
-    VGAHW_LOCK(vgaIOBase);
 
     /* Quit now if no VGA is present */
     if ((CurrentValue ^ 0x0F) != TestValue)

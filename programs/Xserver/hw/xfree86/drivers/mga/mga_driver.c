@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.139 2000/02/15 18:01:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.145 2000/02/28 19:53:12 alanh Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -539,8 +539,6 @@ MGAProbe(DriverPtr drv, int flags)
      * data structures.
      */
 
-    if (flags & PROBE_DETECTISA) return FALSE;
-    if (flags & PROBE_DETECTFBDEV) return FALSE; /* can't detect fbdev yet */
     /*
      * Check if there has been a chipset override in the config file.
      * For this we must find out if there is an active device section which
@@ -585,10 +583,9 @@ MGAProbe(DriverPtr drv, int flags)
     if (numUsed <= 0)
 	return FALSE;
 
-    if (flags & PROBE_DETECTPCI)
-	return TRUE;
-
-    for (i = 0; i < numUsed; i++) {
+    if (flags & PROBE_DETECT)
+	foundScreen = TRUE;
+    else for (i = 0; i < numUsed; i++) {
 	ScrnInfoPtr pScrn;
 #ifdef DISABLE_VGA_IO
 	MgaSavePtr smga;

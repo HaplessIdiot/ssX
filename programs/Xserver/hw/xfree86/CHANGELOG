@@ -1,3 +1,10 @@
+3903. Remove unnecessary VGA CRTC unlock/relock in cyrix driver
+      (Marc La France).
+3902. Fix ATI driver's 8514/A probe delay when one isn't present
+      (Marc La France).
+3901. Changes to -configure:  ATI driver interface;  Move default monitor
+      tolerances to xf86ValidateModes();  Let drivers decide on default depth
+      and mode;  Don't "special-case" VGA driver.  (Marc La France)
 3900. Fix xc/lib/Imakefile for BuildServersOnly (Marc La France).
 
 XFree86 3.9.18b (29 February 2000)
@@ -9908,4 +9915,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1047 2000/03/01 00:25:16 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1048 2000/03/01 12:54:03 tsi Exp $

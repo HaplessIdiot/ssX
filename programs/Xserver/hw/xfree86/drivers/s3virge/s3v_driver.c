@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.48 2000/02/14 19:20:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.51 2000/02/27 02:45:30 alanh Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -501,9 +501,6 @@ S3VProbe(DriverPtr drv, int flags)
     
     PVERB5("	S3VProbe begin\n");
 
-    if (flags & PROBE_DETECTISA) return FALSE;
-    if (flags & PROBE_DETECTFBDEV) return FALSE;
-    
     if ((numDevSections = xf86MatchDevice(S3VIRGE_DRIVER_NAME,
 					  &devSections)) <= 0) {
 	/*
@@ -527,10 +524,9 @@ S3VProbe(DriverPtr drv, int flags)
     if (numUsed <= 0)
 	return FALSE;
 
-    if (flags & PROBE_DETECTPCI)
-	return TRUE;
-
-    for (i = 0; i < numUsed; i++) {
+    if (flags & PROBE_DETECT)
+	foundScreen = TRUE;
+    else for (i = 0; i < numUsed; i++) {
 	/* Allocate a ScrnInfoRec and claim the slot */
 	ScrnInfoPtr pScrn = xf86AllocateScreen(drv, 0);
 	

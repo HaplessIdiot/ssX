@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.84 2000/02/17 22:39:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.88 2000/02/27 02:45:32 alanh Exp $ */
 
 #include "cfb24_32.h"
 
@@ -769,8 +769,6 @@ TRIDENTProbe(DriverPtr drv, int flags)
     int numUsed;
     Bool foundScreen = FALSE;
 
-    if (flags & PROBE_DETECTFBDEV) return FALSE;
-
     if ((numDevSections = xf86MatchDevice(TRIDENT_DRIVER_NAME,
 					  &devSections)) <= 0) {
 	/*
@@ -800,12 +798,10 @@ TRIDENTProbe(DriverPtr drv, int flags)
 		   TRIDENTChipsets, TRIDENTPciChipsets, devSections,
 		   numDevSections, drv, &usedChips);
 
-        if (numUsed > 0 && (flags & PROBE_DETECTPCI))
-	    return TRUE;
-        if (numUsed <= 0 && (flags & PROBE_DETECTPCI))
-	    return FALSE;
-
-    	for (i = 0; i < numUsed; i++) {
+	if (numUsed > 0)
+	if (flags & PROBE_DETECT)
+	    foundScreen = TRUE;
+    	else for (i = 0; i < numUsed; i++) {
 	    ScrnInfoPtr pScrn;
 
 	    /* Allocate a ScrnInfoRec and claim the slot */
@@ -836,11 +832,9 @@ TRIDENTProbe(DriverPtr drv, int flags)
 				     drv,TridentFindIsaDevice,devSections,
 				     numDevSections,&usedChips);
     if (numUsed > 0) {
-
-        if (flags & PROBE_DETECTISA)
-	    return TRUE;
-
-	for (i = 0; i < numUsed; i++) {
+	if (flags & PROBE_DETECT)
+	    foundScreen = TRUE;
+	else for (i = 0; i < numUsed; i++) {
 	    ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
 	    
 	    pScrn->driverVersion = VERSION;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.8 1999/11/18 22:27:04 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.9 2000/02/18 12:19:30 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -490,7 +490,7 @@ ATIPrintRegisters
     if (pATI->pBlock[0])
     {
         xf86ErrorFVerb(4, " Block 0 aperture at 0x%08X.\n", pATI->pBlock[0]);
-        if (inl(pATI->CPIOBase) == *((CARD32 *)pATI->pBlock[0]))
+        if (inl(pATI->CPIOBase) == MMIO_IN32(pATI->pBlock[0], 0))
             xf86ErrorFVerb(4, " MMIO registers are correctly mapped.\n");
         else
             xf86ErrorFVerb(4, " MMIO mapping is in error!\n");

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.34 2000/02/27 02:45:24 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.35 2000/02/29 03:09:17 dawes Exp $ */
 
 
 #include "apm.h"
@@ -375,8 +375,6 @@ ApmProbe(DriverPtr drv, int flags)
     EntityInfoPtr	pEnt;
     int			foundScreen = FALSE;
 
-    if (flags & PROBE_DETECTFBDEV) return FALSE;
-
     /*
      * Check if there is a chipset override in the config file
      */
@@ -397,12 +395,10 @@ ApmProbe(DriverPtr drv, int flags)
 		    ApmChipsets, ApmPciChipsets, DevSections, numDevSections,
 		    drv, &usedChips);
 
-    if ((numUsed > 0) && (flags & PROBE_DETECTPCI))
-	return TRUE;
-    if ((numUsed <= 0) && (flags & PROBE_DETECTPCI))
-	return FALSE;
     if (numUsed > 0) {
-	for (i = 0; i < numUsed; i++) {
+	if (flags & PROBE_DETECT)
+	    foundScreen = TRUE;
+	else for (i = 0; i < numUsed; i++) {
 	    pEnt = xf86GetEntityInfo(usedChips[i]);
 
 	    if (pEnt && pEnt->active) {
@@ -430,9 +426,9 @@ ApmProbe(DriverPtr drv, int flags)
 			ApmIsaChipsets, drv, ApmFindIsaDevice, DevSections,
 			numDevSections, &usedChips);
     if (numUsed > 0) {
-	if (flags & PROBE_DETECTISA)
-	    return TRUE;
-	for (i = 0; i < numUsed; i++) {
+	if (flags & PROBE_DETECT)
+	    foundScreen = TRUE;
+	else for (i = 0; i < numUsed; i++) {
 	    ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
 
 	    /*
@@ -444,9 +440,7 @@ ApmProbe(DriverPtr drv, int flags)
 				      NULL, NULL, NULL, NULL, NULL);
 	}
     }
-    if (DevSections)
-	xfree(DevSections);
-    DevSections = NULL;
+    xfree(DevSections);
     return foundScreen;
 }
 
