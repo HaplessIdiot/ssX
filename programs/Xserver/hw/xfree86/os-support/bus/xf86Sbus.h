@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Sbus.h,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Sbus.h,v 1.8tsi Exp $ */
 
 #ifndef _XF86_SBUS_H
 #define _XF86_SBUS_H
@@ -51,9 +51,26 @@
 #endif
 
 /*
- * Some of these vary by OS (or are non-existent on some).  If this is ever
- * ported to older systems, all FBTYPE's will likely need to be here.
+ * Some of these vary by OS (or are non-existent on some).  Also,
+ * adapter-specific headers are not always installed/available, so don't
+ * #include them.
  */
+
+#ifndef   FBTYPE_SUN2BW
+# define  FBTYPE_SUN2BW 2
+#endif
+
+#ifndef   FBTYPE_SUN2COLOR
+# define  FBTYPE_SUN2COLOR 3
+#endif
+
+#ifndef   FBTYPE_SUN3COLOR
+# define  FBTYPE_SUN3COLOR 6
+#endif
+
+#ifndef   FBTYPE_SUNFAST_COLOR
+# define  FBTYPE_SUNFAST_COLOR 12
+#endif
 
 #ifndef   FBTYPE_SUNGP3
 # define  FBTYPE_SUNGP3 17
@@ -68,18 +85,21 @@
 #endif
 
 #ifndef   FBTYPE_MDICOLOR
-# ifndef CSRG_BASED
-#  define FBTYPE_MDICOLOR 20
-# else
+# ifdef CSRG_BASED
 #  define FBTYPE_MDICOLOR 28
+# else
+#  define FBTYPE_MDICOLOR 20
 # endif
+#endif
+#ifndef   CG14_REGS_VOFF
+# define  CG14_REGS_VOFF	0x00000000
 #endif
 
 #ifndef   FBTYPE_TCXCOLOR
-# ifndef CSRG_BASED
-#  define FBTYPE_TCXCOLOR 21
-# else
+# ifdef CSRG_BASED
 #  define FBTYPE_TCXCOLOR 29
+# else
+#  define FBTYPE_TCXCOLOR 21
 # endif
 #endif
 

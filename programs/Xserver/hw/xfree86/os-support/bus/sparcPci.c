@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.14 2003/08/24 17:37:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.15tsi Exp $ */
 /*
  * Copyright (C) 2001-2003 The XFree86 Project, Inc.
  * All rights reserved.
@@ -269,7 +269,7 @@ static pciBusFuncs_t sabrePCIFunctions =
     pciAddrNOOP
 };
 
-static int pagemask;
+static long pagemask;
 
 /* Scan PROM for all PCI host bridges in the system */
 void
@@ -625,8 +625,7 @@ xf86MapDomainMemory(int ScreenNum, int Flags, PCITAG Tag,
 
     if ((domain <= 0) || (domain >= pciNumDomains) ||
 	!(pDomain = xf86DomainInfo[domain]) ||
-	(((unsigned long long)Base + (unsigned long long)Size) >
-	 pDomain->mem_size))
+	(((unsigned long long)Base + Size) > pDomain->mem_size))
 	FatalError("xf86MapDomainMemory() called with invalid parameters.\n");
 
     result = sparcMapAperture(ScreenNum, Flags, pDomain->mem_addr + Base, Size);
@@ -648,8 +647,7 @@ xf86MapDomainIO(int ScreenNum, int Flags, PCITAG Tag,
 
     if ((domain <= 0) || (domain >= pciNumDomains) ||
 	!(pDomain = xf86DomainInfo[domain]) ||
-	(((unsigned long long)Base + (unsigned long long)Size) >
-	 pDomain->io_size))
+	(((unsigned long long)Base + Size) > pDomain->io_size))
 	FatalError("xf86MapDomainIO() called with invalid parameters.\n");
 
     /* Permanently map all of I/O space */

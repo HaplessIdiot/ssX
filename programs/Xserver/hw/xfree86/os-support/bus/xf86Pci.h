@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.39 2003/08/24 17:37:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.40tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -791,9 +791,9 @@ PCITAG	      pciTag(int busnum, int devnum, int funcnum);
 int	      pciGetBaseSize(PCITAG tag, int indx, Bool destructive, Bool *min);
 CARD32	      pciCheckForBrokenBase(PCITAG tag,int basereg);
 pointer	      xf86MapPciMem(int ScreenNum, int Flags, PCITAG Tag,
-				ADDRESS Base, unsigned long Size);
+			    ADDRESS Base, unsigned long Size);
 int	      xf86ReadPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
-				unsigned char *Buf, int Len);
+			      unsigned char *Buf, int Len);
 int	      xf86ReadPciBIOSByType(unsigned long Offset, PCITAG Tag,
 				    int basereg, unsigned char *Buf,
 				    int Len, PciBiosType Type);

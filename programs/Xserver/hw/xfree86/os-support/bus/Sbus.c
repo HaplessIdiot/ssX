@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Sbus.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Sbus.c,v 1.5tsi Exp $ */
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -54,6 +54,7 @@ struct sbus_devtable sbusDeviceTable[] = {
     { SBUS_DEVICE_BW2, FBTYPE_SUN2BW, "bwtwo", "Sun Monochrome (bwtwo)" },
     { SBUS_DEVICE_CG2, FBTYPE_SUN2COLOR, "cgtwo", "Sun Color2 (cgtwo)" },
     { SBUS_DEVICE_CG3, FBTYPE_SUN3COLOR, "cgthree", "Sun Color3 (cgthree)" },
+    { SBUS_DEVICE_CG3, FBTYPE_SUN3COLOR, "cgRDI", "Sun Color3 RDI (cgthree)" },
     { SBUS_DEVICE_CG4, FBTYPE_SUN4COLOR, "cgfour", "Sun Color4 (cgfour)" },
     { SBUS_DEVICE_CG6, FBTYPE_SUNFAST_COLOR, "cgsix", "Sun GX" },
     { SBUS_DEVICE_CG8, FBTYPE_MEMCOLOR, "cgeight", "Sun CG8/RasterOps" },
@@ -133,6 +134,7 @@ promGetBool(const char *prop)
 #define PROM_NODE_SBUS    0x04
 #define PROM_NODE_EBUS    0x08
 #define PROM_NODE_PCI     0x10
+#define PROM_NODE_FREE    0x20
 
 static int
 promSetNode(sbusPromNodePtr pnode)
@@ -258,13 +260,18 @@ sparcPromGetBool(sbusPromNodePtr pnode, const char *prop)
 }
 
 static void
-promWalkAssignNodes(int node, int oldnode, int flags, sbusDevicePtr *devicePtrs)
+promWalkAssignNodes(sbusPromNode *pCurrent, sbusPromParentPtr pParent,
+		    sbusDevicePtr *devicePtrs)
 {
-    int nextnode;
-    int len, sbus = flags & PROM_NODE_SBUS;
+    int len, sbus;
     char *prop;
     int devId, i, j;
-    sbusPromNode pNode, pNode2;
+    sbusPromNode Node, Node2, newNode;
+    sbusPromParentPtr Parent, Parent2;
+
+    newNode = *pCurrent;
+
+    sbus = newNode.cookie[0] & PROM_NODE_SBUS;
 
     prop = promGetProperty("device_type", &len);
     do {
@@ -290,10 +297,10 @@ promWalkAssignNodes(int node, int oldnode, int flags, sbusDevicePtr *devicePtrs)
 	    if (devId == SBUS_DEVICE_FFB) {
 		/*
 		 * All /SUNW,ffb outside of SBUS tree come before all
-		 * /SUNW,afb outside of SBUS tree in Linux.
+		 * /SUNW,afb outside of SBUS tree.
 		 */
 		if (!strcmp(prop, "afb"))
-		    flags |= PROM_NODE_PREF;
+		    newNode.cookie[0] |= PROM_NODE_PREF;
 	    } else if (devId != SBUS_DEVICE_CG14)
 		break;
 	}
@@ -304,22 +311,30 @@ promWalkAssignNodes(int node, int oldnode, int flags, sbusDevicePtr *devicePtrs)
 
 	    if (devicePtrs[i]->node.node) {
 		if ((devicePtrs[i]->node.cookie[0] & ~PROM_NODE_SIBLING) <=
-		    (flags & ~PROM_NODE_SIBLING))
+		    (newNode.cookie[0] & ~PROM_NODE_SIBLING))
 		    continue;
 
-		pNode = devicePtrs[i]->node;
+		Node = devicePtrs[i]->node;
+		Parent = devicePtrs[i]->parent;
 		for (j = i; ++j < 32; ) {
 		    if (!devicePtrs[j] || (devicePtrs[j]->devId != devId))
 			continue;
 
-		    pNode2 = devicePtrs[j]->node;
-		    devicePtrs[j]->node = pNode;
-		    pNode = pNode2;
+		    Node2 = devicePtrs[j]->node;
+		    Parent2 = devicePtrs[j]->parent;
+		    devicePtrs[j]->node = Node;
+		    devicePtrs[j]->parent = Parent;
+		    Node = Node2;
+		    Parent = Parent2;
 		}
 	    }
-	    devicePtrs[i]->node.node = node;
-	    devicePtrs[i]->node.cookie[0] = flags;
-	    devicePtrs[i]->node.cookie[1] = oldnode;
+	    devicePtrs[i]->node = newNode;
+	    devicePtrs[i]->parent = pParent;
+
+	    for (Parent = pParent;
+		 Parent && (Parent->node.cookie[0] & PROM_NODE_FREE);
+		 Parent = Parent->parent)
+		Parent->node.cookie[0] &= ~PROM_NODE_FREE;
 	    break;
 	}
     } while (0);
@@ -329,13 +344,26 @@ promWalkAssignNodes(int node, int oldnode, int flags, sbusDevicePtr *devicePtrs)
 	(!strcmp(prop, "sbus") || !strcmp(prop, "sbi")))
 	sbus = PROM_NODE_SBUS;
 
-    nextnode = promGetChild(node);
-    if (nextnode)
-	promWalkAssignNodes(nextnode, node, sbus, devicePtrs);
+    newNode.cookie[1] = newNode.node;
+    if ((newNode.node = promGetChild(newNode.cookie[1]))) {
+	newNode.cookie[0] = sbus;
 
-    nextnode = promGetSibling(node);
-    if (nextnode)
-	promWalkAssignNodes(nextnode, node, PROM_NODE_SIBLING | sbus, devicePtrs);
+	Parent = xnfalloc(sizeof(*Parent));
+	Parent->node = *pCurrent;
+	Parent->node.cookie[0] |= PROM_NODE_FREE;
+	Parent->parent = pParent;
+
+	promWalkAssignNodes(&newNode, Parent, devicePtrs);
+
+	if (Parent->node.cookie[0] & PROM_NODE_FREE)
+	    xfree(Parent);
+    }
+
+    if ((newNode.node = promGetSibling(newNode.cookie[1]))) {
+	newNode.cookie[0] = sbus | PROM_NODE_SIBLING;
+
+	promWalkAssignNodes(&newNode, pParent, devicePtrs);
+    }
 }
 
 void
@@ -343,6 +371,7 @@ sparcPromAssignNodes(void)
 {
     sbusDevicePtr psdp, *psdpp;
     sbusDevicePtr devicePtrs[32];
+    sbusPromNode root;
 
 #if defined(linux)
 
@@ -412,8 +441,10 @@ sparcPromAssignNodes(void)
 
 #endif
 
-    promGetSibling(0);
-    promWalkAssignNodes(promRootNode, 0, PROM_NODE_PREF, devicePtrs);
+    root.node = promGetSibling(0);
+    root.cookie[0] = PROM_NODE_SIBLING | PROM_NODE_PREF;
+    root.cookie[1] = 0;
+    promWalkAssignNodes(&root, NULL, devicePtrs);
 
 #if defined(linux)
 
