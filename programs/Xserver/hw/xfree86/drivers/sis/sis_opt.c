@@ -329,8 +329,13 @@ SiSOptions(ScrnInfoPtr pScrn)
     pSiS->CRT1gamma = TRUE;
     pSiS->CRT2gamma = TRUE;
     pSiS->enablesisctrl = FALSE;
-    pSiS->XvDefBri = 0;
-    pSiS->XvDefCon = 4;
+    if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
+       pSiS->XvDefBri = 10;
+       pSiS->XvDefCon = 5;
+    } else {
+       pSiS->XvDefBri = 0;
+       pSiS->XvDefCon = 4;
+    }
     pSiS->XvDefHue = 0; 
     pSiS->XvDefSat = 0;
     pSiS->XvDefDisableGfx = FALSE;
