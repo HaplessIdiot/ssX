@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.32 2002/11/30 23:13:12 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.33 2002/12/04 05:27:58 paulo Exp $ */
 
 #include <errno.h>
 #include "read.h"
@@ -529,7 +529,7 @@ LispRead(void)
 {
     READ_ENTER();
     read_info info;
-    LispObj *result;
+    LispObj *result, *code = COD;
 
     info.level = info.nodot = info.discard = 0;
     info.circle_count = 0;
@@ -556,6 +556,13 @@ LispRead(void)
 	READ_ERROR0("object cannot start with #\\)");
     else if (result == DOT)
 	READ_ERROR0("dot allowed only on lists");
+
+    if (result != NULL && POINTERP(result)) {
+	if (code == NIL)
+	    COD = result;
+	else
+	    COD = CONS(COD, result);
+    }
 
     return (result);
 }
@@ -728,7 +735,7 @@ LispReadCheckCircle(LispObj *object, read_info *info)
 static LispObj *
 LispDoRead(read_info *info)
 {
-    LispObj *object, *code = COD;
+    LispObj *object;
     int ch = LispSkipWhiteSpace();
 
     switch (ch) {
@@ -762,14 +769,6 @@ LispDoRead(read_info *info)
 	    object = LispReadObject(0, info);
 	    break;
     }
-
-    if (!POINTERP(object) || INVALIDP(object))
-	return (object);
-
-    if (code == NIL)
-	COD = object;
-    else
-	COD = CONS(COD, object);
 
     return (object);
 }

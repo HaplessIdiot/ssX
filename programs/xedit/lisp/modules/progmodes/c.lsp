@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.22 2002/12/16 03:59:28 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.23 2002/12/20 04:32:47 paulo Exp $
 ;;
 
 (require "syntax")
@@ -162,6 +162,12 @@
     (indtoken "\\w+"		:expression)
     (indtoken ";"		:semi		:nospec t)
     (indtoken ":"		:collon		:nospec t)
+    ;;  Ignore spaces before collon, this avoids dedenting ternary
+    ;; and bitfield definitions as the parser does not distinguish
+    ;; labels from those, another option would be to use the pattern
+    ;; "\\w+:", but this way should properly handle labels generated
+    ;; by macros, example: `MACRO_LABEL(value):'
+    (indtoken "\\s+:"		nil)
 
     (indinit			(c-braces 0))
     (indtoken "{"
@@ -372,6 +378,7 @@
 	    (if (and
 		    (zerop c-complex)
 		    (zerop c-cases)
+		    (zerop c-bra)
 		    (= (caar c-exp-indent) (caadr c-exp-indent))
 		)
 		;; Two statements with the same indentation
@@ -476,6 +483,8 @@
     (indreduce :while
 	t
 	((:c-while :parens)
+	 ;; Assume that it is yet being edited, or adjusting indentation
+	(:c-while)
 	)
 	(incf c-complex)
     )
@@ -673,7 +682,18 @@
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; For/while/do
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (indinit			c-do-flow)
     (indresolve (:for :while :do)
+	(if (eq *ind-token* :do)
+	    (and (< *ind-offset* *ind-start*) (push c-flow c-do-flow))
+	    (when (and c-do-flow (eq *ind-token* :while))
+		(while (< c-flow (car c-do-flow))
+		    (incf *indent* *base-indent*)
+		    (incf c-flow)
+		)
+		(pop c-do-flow)
+	    )
+	)
 	(and (< *ind-offset* *ind-start*)
 	    (incf *indent* *base-indent*)
 	    (incf c-flow)
@@ -889,7 +909,8 @@
 		)
 		(setq
 		    text	(read-text offset (- point offset))
-		    match	(re-exec #.(re-comp "(case|else)\\w?\\>") text)
+		    match	(re-exec #.(re-comp "(case|else|while)\\w?\\>")
+				    text)
 		)
 		(and
 		    (consp match)
