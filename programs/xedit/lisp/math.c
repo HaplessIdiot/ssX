@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.6 2002/02/14 04:48:10 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.7 2002/03/08 04:33:18 paulo Exp $ */
 
 #include "math.h"
 #include "private.h"
@@ -76,6 +76,14 @@ LispMathInit(LispMac *mac)
     object		= STATIC_ATOM("PI");
     result = math_pi(mac);
     LispProclaimSpecial(mac, object, result, NIL);
+    LispExportSymbol(mac, object);
+
+    object		= STATIC_ATOM("MOST-POSITIVE-FIXNUM");
+    LispDefconstant(mac, object, INTEGER(LONG_MAX), NIL);
+    LispExportSymbol(mac, object);
+
+    object		= STATIC_ATOM("MOST-NEGATIVE-FIXNUM");
+    LispDefconstant(mac, object, INTEGER(LONG_MIN), NIL);
     LispExportSymbol(mac, object);
 }
 

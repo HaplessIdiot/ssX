@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.10 2002/02/27 06:56:36 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.11 2002/03/08 04:33:18 paulo Exp $ */
 
 #include <errno.h>
 #include "read.h"
@@ -590,13 +590,12 @@ LispParseAtom(LispMac *mac, char *package, char *symbol,
 	PACKAGE = thepackage;
 
 	/* Get the object pointer */
-	object = ATOM(symbol);
+	if (pack == mac->key)
+	    object = KEYWORD(symbol);
+	else
+	    object = ATOM(symbol);
 	if (unreadable)
 	    object->data.atom->unreadable = 1;
-
-	if (pack == mac->key)
-	    /* All keywords are external symbols */
-	    LispExportSymbol(mac, object);
 
 	/* Restore current package */
 	mac->pack = savepack;

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.9 2002/02/14 04:48:10 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.10 2002/03/08 04:33:18 paulo Exp $ */
 
 #include "struct.h"
 
@@ -166,7 +166,7 @@ Lisp_Defstruct(LispMac *mac, LispBuiltin *builtin)
 LispObj *
 Lisp_XeditMakeStruct(LispMac *mac, LispBuiltin *builtin)
 /*
- xedit::make-struct atom &rest init
+ lisp::make-struct atom &rest init
  */
 {
     int nfld, ncvt, length = mac->protect.length;
@@ -281,7 +281,7 @@ Lisp_XeditMakeStruct(LispMac *mac, LispBuiltin *builtin)
 LispObj *
 Lisp_XeditStructAccess(LispMac *mac, LispBuiltin *builtin)
 /*
- xedit::struct-access atom struct
+ lisp::struct-access atom struct
  */
 {
     int offset = 0;
@@ -313,7 +313,7 @@ Lisp_XeditStructAccess(LispMac *mac, LispBuiltin *builtin)
 LispObj *
 Lisp_XeditStructStore(LispMac *mac, LispBuiltin *builtin)
 /*
- xedit::struct-store atom struct value
+ lisp::struct-store atom struct value
  */
 {
     int offset = 0;
@@ -346,7 +346,7 @@ Lisp_XeditStructStore(LispMac *mac, LispBuiltin *builtin)
 LispObj *
 Lisp_XeditStructType(LispMac *mac, LispBuiltin *builtin)
 /*
- xedit::struct-type atom struct
+ lisp::struct-type atom struct
  */
 {
     LispAtom *atom = NULL;

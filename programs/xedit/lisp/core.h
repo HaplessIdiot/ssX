@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.11 2002/03/01 16:42:44 tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.12 2002/03/08 04:33:17 paulo Exp $ */
 
 #ifndef Lisp_core_h
 #define Lisp_core_h
@@ -52,6 +52,7 @@ LispObj *Lisp_Cdr(LispMac*, LispBuiltin*);		/* cdr */
 LispObj *Lisp_Coerce(LispMac*, LispBuiltin*);		/* coerce */
 LispObj *Lisp_Cond(LispMac*, LispBuiltin*);		/* cond */
 LispObj *Lisp_Cons(LispMac*, LispBuiltin*);		/* cons */
+LispObj *Lisp_Defconstant(LispMac*, LispBuiltin*);	/* defconstant */
 LispObj *Lisp_Defmacro(LispMac*, LispBuiltin*);		/* defmacro */
 LispObj *Lisp_Defun(LispMac*, LispBuiltin*);		/* defun */
 LispObj *Lisp_Defsetf(LispMac*, LispBuiltin*);		/* defsetf */
@@ -113,9 +114,7 @@ LispObj *Lisp_ReturnFrom(LispMac*, LispBuiltin*);	/* return-from */
 LispObj *Lisp_Reverse(LispMac*, LispBuiltin*);		/* reverse */
 LispObj *Lisp_Rplaca(LispMac*, LispBuiltin*);		/* rplaca */
 LispObj *Lisp_Rplacd(LispMac*, LispBuiltin*);		/* rplaca */
-#ifdef HAVE_SETENV
 LispObj *Lisp_Setenv(LispMac*, LispBuiltin*);		/* setenv */
-#endif
 LispObj *Lisp_Set(LispMac*, LispBuiltin*);		/* set */
 LispObj *Lisp_Setf(LispMac*, LispBuiltin*);		/* setf */
 LispObj *Lisp_SetQ(LispMac*, LispBuiltin*);		/* setq */
@@ -131,15 +130,13 @@ LispObj *Lisp_The(LispMac*, LispBuiltin*);		/* the */
 LispObj *Lisp_Typep(LispMac*, LispBuiltin*);		/* typep */
 LispObj *Lisp_Unless(LispMac*, LispBuiltin*);		/* unless */
 LispObj *Lisp_Until(LispMac*, LispBuiltin*);		/* unless */
-#ifdef HAVE_SETENV
 LispObj *Lisp_Unsetenv(LispMac*, LispBuiltin*);		/* unsetenv */
-#endif
 LispObj *Lisp_UnwindProtect(LispMac*, LispBuiltin*);	/* unwind-protect */
 LispObj *Lisp_Vector(LispMac*, LispBuiltin*);		/* vector */
 LispObj *Lisp_When(LispMac*, LispBuiltin*);		/* when */
 LispObj *Lisp_While(LispMac*, LispBuiltin*);		/* while */
-LispObj *Lisp_XeditEltStore(LispMac*, LispBuiltin*);    /* xedit::elt-store */
-LispObj *Lisp_XeditPut(LispMac*, LispBuiltin*);		/* xedit::put */
-LispObj *Lisp_XeditVectorStore(LispMac*, LispBuiltin*);	/* xedit::vector-store */
+LispObj *Lisp_XeditEltStore(LispMac*, LispBuiltin*);    /* lisp::elt-store */
+LispObj *Lisp_XeditPut(LispMac*, LispBuiltin*);		/* lisp::put */
+LispObj *Lisp_XeditVectorStore(LispMac*, LispBuiltin*);	/* lisp::vector-store */
 
 #endif /* Lisp_core_h */

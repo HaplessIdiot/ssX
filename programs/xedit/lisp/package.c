@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.4 2002/02/27 06:56:36 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.5 2002/03/08 04:33:18 paulo Exp $ */
 
 #include "package.h"
 #include "private.h"
@@ -228,6 +228,7 @@ LispReallyDoSymbols(LispMac *mac, LispBuiltin *builtin,
 	result_form = init;
 
     /* Initialize iteration variable */
+    ERROR_CHECK_CONSTANT(variable);
     LispAddVar(mac, variable, NIL);
     mac->env.head += 2;
 

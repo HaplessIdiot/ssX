@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.17 2002/02/27 06:56:36 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.18 2002/03/08 04:33:17 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -292,6 +292,12 @@
 #define ERROR_CHECK_STREAM(object)				\
     if (!STREAM_P(object))					\
 	LispDestroy(mac, "%s: %s is not a stream",		\
+		    STRFUN(builtin), STROBJ(object))
+
+/* Don't check if object is a symbol */
+#define ERROR_CHECK_CONSTANT(object)				\
+    if ((object)->data.atom->constant)				\
+	LispDestroy(mac, "%s: %s is a constant",		\
 		    STRFUN(builtin), STROBJ(object))
 
 /*

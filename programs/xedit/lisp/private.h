@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.22 2002/03/03 05:44:50 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.23 2002/03/08 04:33:18 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -193,6 +193,9 @@ struct _LispAtom {
 
     /* Symbol value may need special handling when changed */
     unsigned int watch : 1;
+
+    /* Symbol value is constant, cannot be changed */
+    unsigned int constant : 1;
 
     char *string;
     LispObj *object;		/* backpointer to object ATOM */
@@ -446,6 +449,7 @@ void LispSetAtomStructProperty(LispMac*, LispAtom*, LispObj*, int);
 void LispRemAtomStructProperty(LispMac*, LispAtom*);
 
 void LispProclaimSpecial(LispMac*, LispObj*, LispObj*, LispObj*);
+void LispDefconstant(LispMac*, LispObj*, LispObj*, LispObj*);
 
 typedef enum _LispDocType_t {
     LispDocVariable,
