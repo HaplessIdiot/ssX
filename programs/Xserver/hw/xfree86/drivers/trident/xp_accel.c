@@ -23,7 +23,7 @@
  * 
  * BladeXP accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_accel.c,v 1.22 2001/09/24 11:19:10 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/xp_accel.c,v 1.1 2002/04/01 12:06:20 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -95,6 +95,7 @@ XPInitializeAccelerator(ScrnInfoPtr pScrn)
     pTrident->EngineOperation |= 0x40;
     switch (pScrn->bitsPerPixel) {
 	case 8:
+	default:		/* Muffle compiler */
 		shift = 18;
 		break;
 	case 16:
