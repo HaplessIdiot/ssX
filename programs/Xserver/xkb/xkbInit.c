@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.29 2003/09/06 14:07:18 pascal Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.30 2003/09/08 11:22:14 pascal Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -558,10 +558,11 @@ XkbEventCauseRec	cause;
 	if ((file.file=XkbDDXOpenConfigFile(XkbInitialMap,NULL,0))!=NULL) {
 	    XkmReadFile(file.file,0,XkmKeymapLegal,&file.xkbinfo);
 	    if (file.xkbinfo.xkb==NULL) {
-		ErrorF("(EE) Error loading keymap file %s (%s in %s)\n",
+		LogMessage(X_ERROR,
+				"Error loading keymap file %s (%s in %s)\n"
+				"\treverting to defaults\n",
 				XkbInitialMap, _XkbErrMessages[_XkbErrCode],
 				(_XkbErrLocation?_XkbErrLocation:"unknown"));
-		ErrorF("(EE)      reverting to defaults\n");
 		fclose(file.file);
 		file.file= NULL;
 		bzero(&file.xkbinfo,sizeof(XkbFileInfo));
@@ -578,7 +579,7 @@ XkbEventCauseRec	cause;
 	    }
 	}
 	else {
-	    ErrorF("(EE) Error opening keymap file %s, reverting to defaults\n",
+	    LogMessage(X_ERROR, "Error opening keymap file %s, reverting to defaults\n",
 	    	    XkbInitialMap);
 	}
     }
@@ -833,7 +834,7 @@ XkbRF_VarDefsRec	defs;
 	_XkbInitFileInfo= &finfo;
     }
     else {
-	ErrorF("(EE) Couldn't load XKB keymap, falling back to pre-XKB keymap\n");
+	LogMessage(X_ERROR, "Couldn't load XKB keymap, falling back to pre-XKB keymap\n");
     }
     ok= InitKeyboardDeviceStruct((DevicePtr)dev,pSyms,pMods,bellProc,ctrlProc);
     if ((config!=NULL)&&(dev && dev->key && dev->key->xkbInfo))
@@ -1003,7 +1004,7 @@ XkbProcessArguments(argc,argv,i)
 	if(++i < argc) {
 #if !defined(WIN32) && !defined(__UNIXOS2__) && !defined(__CYGWIN__)
 	    if (getuid() != geteuid()) {
-		ErrorF("(WW) -xkbdir is not available for setuid X servers\n");
+		LogMessage(X_WARNING, "-xkbdir is not available for setuid X servers\n");
 		return -1;
 	    } else
 #endif
@@ -1012,7 +1013,7 @@ XkbProcessArguments(argc,argv,i)
 		    XkbBaseDirectory= argv[i];
 		    return 2;
 	        } else {
-		    ErrorF("(EE) -xkbdir pathname too long\n");
+		    LogMessage(X_ERROR, "-xkbdir pathname too long\n");
 		    return -1;
 		}
 	    }
@@ -1027,7 +1028,7 @@ XkbProcessArguments(argc,argv,i)
 		XkbInitialMap= argv[i];
 		return 2;
 	    } else {
-		ErrorF("(EE) -xkbmap pathname too long\n");
+		LogMessage(X_ERROR, "-xkbmap pathname too long\n");
 		return -1;
 	    }
 	}
@@ -1041,7 +1042,7 @@ XkbProcessArguments(argc,argv,i)
 		XkbDB= argv[i];
 		return 2;
 	    } else {
-		ErrorF("(EE) -xkbdb pathname too long\n");
+		LogMessage(X_ERROR, "-xkbdb pathname too long\n");
 		return -1;
 	    }
 	}

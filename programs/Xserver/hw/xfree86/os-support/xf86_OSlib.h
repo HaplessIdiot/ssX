@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.91 2003/07/07 15:34:27 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.92 2003/08/24 17:37:03 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -92,10 +92,6 @@ extern int xf86getpagesize(void);
 extern int xf86GetErrno(void);  
 typedef unsigned long xf86size_t;
 typedef signed long xf86ssize_t;
-#ifdef NEED_SNPRINTF
-extern int snprintf(char *str, size_t size, const char *format, ...);
-extern int vsnprintf(char *str, size_t size, const char *format, va_list ap);
-#endif
 #endif
 
 #include <stdio.h>

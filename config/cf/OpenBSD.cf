@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.88 2003/07/11 22:17:41 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.89 2003/09/08 20:59:17 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -744,7 +744,7 @@ install:: fonts.alias							@@\
 
 # define ServerOSDefines 	-DDDXOSINIT
 # define ServerExtraDefines	-DAVOID_GLYPHBLT -DPIXPRIV  -DXFree86Server \
-				ServerSnprintfDefines DebugDefines \
+				DebugDefines \
 				-DX_BYTE_ORDER=$(X_BYTE_ORDER)
 # define BuildXF86MiscExt	NO
 # define BuildMITMiscExt	NO

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.204 2003/08/25 05:54:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.205 2003/09/02 17:13:39 tsi Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -1231,6 +1231,26 @@ OsVendorFatalError()
   ErrorF("\n");
 }
 
+int
+xf86SetVerbosity(int verb)
+{
+    int save = xf86Verbose;
+
+    xf86Verbose = verb;
+    LogSetParameter(XLOG_VERBOSITY, verb);
+    return save;
+}
+
+int
+xf86SetLogVerbosity(int verb)
+{
+    int save = xf86LogVerbose;
+
+    xf86LogVerbose = verb;
+    LogSetParameter(XLOG_FILE_VERBOSITY, verb);
+    return save;
+}
+
 /*
  * ddxProcessArgument --
  *	Process device-dependent command line args. Returns 0 if argument is
@@ -1249,19 +1269,6 @@ ddxProcessArgument(int argc, char **argv, int i)
    * Note: can't use xalloc/xfree here because OsInit() hasn't been called
    * yet.  Use malloc/free instead.
    */
-
-#ifdef DDXOSVERRORF
-  static Bool beenHere = FALSE;
-
-  if (!beenHere) {
-    /*
-     * This initialises our hook into VErrorF() for catching log messages
-     * that are generated before OsInit() is called.
-     */
-    OsVendorVErrorFProc = OsVendorVErrorF;
-    beenHere = TRUE;
-  }
-#endif
 
   /* First the options that are only allowed for root */
   if (getuid() == 0)
@@ -1379,11 +1386,11 @@ ddxProcessArgument(int argc, char **argv, int i)
       val = strtol(argv[i], &end, 0);
       if (*end == '\0')
       {
-	xf86Verbose = val;
+	xf86SetVerbosity(val);
 	return 2;
       }
     }
-    xf86Verbose++;
+    xf86SetVerbosity(++xf86Verbose);
     return 1;
   }
   if (!strcmp(argv[i],"-logverbose"))
@@ -1395,16 +1402,16 @@ ddxProcessArgument(int argc, char **argv, int i)
       val = strtol(argv[i], &end, 0);
       if (*end == '\0')
       {
-	xf86LogVerbose = val;
+	xf86SetLogVerbosity(val);
 	return 2;
       }
     }
-    xf86LogVerbose++;
+    xf86SetLogVerbosity(++xf86LogVerbose);
     return 1;
   }
   if (!strcmp(argv[i],"-quiet"))
   {
-    xf86Verbose = 0;
+    xf86SetVerbosity(0);
     return 1;
   }
   if (!strcmp(argv[i],"-showconfig") || !strcmp(argv[i],"-version"))
@@ -1743,17 +1750,7 @@ xf86PrintBanner()
 static void
 xf86PrintMarkers()
 {
-    /* Show what the marker symbols mean */
-  ErrorF("Markers: " X_PROBE_STRING " probed, "
-		     X_CONFIG_STRING " from config file, "
-		     X_DEFAULT_STRING " default setting,\n"
-	 "         " X_CMDLINE_STRING " from command line, "
-		     X_NOTICE_STRING " notice, "
-		     X_INFO_STRING " informational,\n"
-	 "         " X_WARNING_STRING " warning, "
-		     X_ERROR_STRING " error, "
-		     X_NOT_IMPLEMENTED_STRING " not implemented, "
-		     X_UNKNOWN_STRING " unknown.\n");
+  LogPrintMarkers();
 }
 
 static void

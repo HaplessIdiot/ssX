@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.272 2003/08/24 20:52:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.273 2003/08/27 02:50:25 dawes Exp $ */
 
 
 /*
@@ -940,9 +940,11 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
 	    if (!xf86NameCmp(s,"flush")) {
 		xf86Msg(X_CONFIG, "Flushing logfile enabled\n");
 		xf86Info.log = LogFlush;
+		LogSetParameter(XLOG_FLUSH, TRUE);
 	    } else if (!xf86NameCmp(s,"sync")) {
 		xf86Msg(X_CONFIG, "Syncing logfile enabled\n");
 		xf86Info.log = LogSync;
+		LogSetParameter(XLOG_SYNC, TRUE);
 	    } else {
 		xf86Msg(X_WARNING,"Unknown Log option\n");
 	    }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.93 2003/08/24 17:36:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.94 2003/08/24 19:58:03 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
@@ -478,20 +478,6 @@ typedef struct _confdrirec {
 #define NUM_RESERVED_FUNCS		15
 
 typedef pointer (*funcPointer)(void);
-
-/* Flags for driver messages */
-typedef enum {
-    X_PROBED,			/* Value was probed */
-    X_CONFIG,			/* Value was given in the config file */
-    X_DEFAULT,			/* Value is a default */
-    X_CMDLINE,			/* Value was given on the command line */
-    X_NOTICE,			/* Notice */
-    X_ERROR,			/* Error message */
-    X_WARNING,			/* Warning message */
-    X_INFO,			/* Informational message */
-    X_NONE,			/* No prefix */
-    X_NOT_IMPLEMENTED		/* Not implemented */
-} MessageType;
 
 /* flags for depth 24 pixmap options */
 typedef enum {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.37 2003/02/20 04:05:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.38 2003/08/24 17:36:55 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
@@ -220,38 +220,6 @@ typedef struct {
 #define SYSCONS		   8
 #define PCVT		  16
 #define WSCONS		  32
-#endif
-
-/* Prefix strings for driver messages */
-#ifndef X_UNKNOWN_STRING
-#define X_UNKNOWN_STRING	"(\?\?)"
-#endif
-#ifndef X_PROBE_STRING
-#define X_PROBE_STRING		"(--)"
-#endif
-#ifndef X_CONFIG_STRING
-#define X_CONFIG_STRING		"(**)"
-#endif
-#ifndef X_DEFAULT_STRING
-#define X_DEFAULT_STRING	"(==)"
-#endif
-#ifndef X_CMDLINE_STRING
-#define X_CMDLINE_STRING	"(++)"
-#endif
-#ifndef X_NOTICE_STRING
-#define X_NOTICE_STRING		"(!!)"
-#endif
-#ifndef X_ERROR_STRING
-#define X_ERROR_STRING		"(EE)"
-#endif
-#ifndef X_WARNING_STRING
-#define X_WARNING_STRING	"(WW)"
-#endif
-#ifndef X_INFO_STRING
-#define X_INFO_STRING		"(II)"
-#endif
-#ifndef X_NOT_IMPLEMENTED_STRING
-#define X_NOT_IMPLEMENTED_STRING	"(NI)"
 #endif
 
 #endif /* _XF86PRIVSTR_H */

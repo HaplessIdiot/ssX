@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoScanPci.c,v 1.12 2002/07/15 20:46:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoScanPci.c,v 1.13 2003/08/24 17:36:52 dawes Exp $ */
 /*
  * Copyright (c) 1999-2002 by The XFree86 Project, Inc.
  *
@@ -65,7 +65,8 @@ void DoScanPci(int argc, char **argv, int i)
    * -verbose on the command line increases it, because that is a 
    * verbose flag for scanpci...
    */
-  globalVerbose = --xf86Verbose;
+  globalVerbose = xf86GetVerbosity();
+  xf86SetVerbosity(globalVerbose - 1);
   /*
    * next we process the arguments that are remaining on the command line,
    * so that things like the module path can be set there
@@ -77,11 +78,11 @@ void DoScanPci(int argc, char **argv, int i)
   /*
    * was the verbosity level increased?
    */
-  if( (globalVerbose == 0) && (xf86Verbose > 0) )
-    scanpciVerbose = xf86Verbose - globalVerbose -1;
+  if( (globalVerbose == 0) && (xf86GetVerbosity() > 0) )
+    scanpciVerbose = xf86GetVerbosity() - globalVerbose - 1;
   else
-    scanpciVerbose = xf86Verbose - globalVerbose;
-  xf86Verbose = globalVerbose;
+    scanpciVerbose = xf86GetVerbosity() - globalVerbose;
+  xf86SetVerbosity(globalVerbose);
   /*
    * now get the loader set up and load the scanpci module
    */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.131 2003/08/23 15:02:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.132 2003/08/24 17:36:52 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
@@ -64,7 +64,6 @@
 #endif
 
 static int xf86ScrnInfoPrivateCount = 0;
-static FILE *logfile = NULL;
 
 
 #ifdef XFree86LOADER
@@ -1263,123 +1262,36 @@ xf86EnableDisableFBAccess(int scrnIndex, Bool enable)
     }
 }
 
-/* Buffer to hold log data written before the log file is opened */
-static char *saveBuffer = NULL;
-static int size = 0, unused = 0, pos = 0;
-
-/* These functions do the actual writes. */
-static void
-VWrite(int verb, const char *f, va_list args)
-{
-    static char buffer[1024];
-    int len = 0;
-
-    /*
-     * Since a va_list can only be processed once, write the string to a
-     * buffer, and then write the buffer out to the appropriate output
-     * stream(s).
-     */
-    if (verb < 0 || xf86LogVerbose >= verb || xf86Verbose >= verb) {
-	vsnprintf(buffer, sizeof(buffer), f, args);
-	len = strlen(buffer);
-    }
-    if ((verb < 0 || xf86Verbose >= verb) && len > 0)
-	fwrite(buffer, len, 1, stderr);
-    if ((verb < 0 || xf86LogVerbose >= verb) && len > 0) {
-	if (logfile) {
-	    fwrite(buffer, len, 1, logfile);
-	    if (xf86Info.log) {
-		fflush(logfile);
-		if (xf86Info.log == LogSync)
-		    fsync(fileno(logfile));
-	    }
-	} else {
-	    /*
-	     * Note, this code is used before OsInit() has been called, so
-	     * xalloc and friends can't be used.
-	     */
-	    if (len > unused) {
-		size += 1024;
-		unused += 1024;
-		saveBuffer = realloc(saveBuffer, size);
-		if (!saveBuffer)
-		    FatalError("realloc() failed while saving log messages\n");
-	    }
-	    unused -= len;
-	    memcpy(saveBuffer + pos, buffer, len);
-	    pos += len;
-	}
-    }
-}
-
-static void
-Write(int verb, const char *f, ...)
-{
-    va_list args;
-
-    va_start(args, f);
-    VWrite(verb, f, args);
-    va_end(args);
-}
-
 /* Print driver messages in the standard format */
+
+#undef PREFIX_SIZE
+#define PREFIX_SIZE 14
 
 void
 xf86VDrvMsgVerb(int scrnIndex, MessageType type, int verb, const char *format,
 		va_list args)
 {
-    char *s = X_UNKNOWN_STRING;
-    
-    /* Ignore verbosity for X_ERROR */
-    if (xf86Verbose >= verb || xf86LogVerbose >= verb || type == X_ERROR) {
-	switch (type) {
-	case X_PROBED:
-	    s = X_PROBE_STRING;
-	    break;
-	case X_CONFIG:
-	    s = X_CONFIG_STRING;
-	    break;
-	case X_DEFAULT:
-	    s = X_DEFAULT_STRING;
-	    break;
-	case X_CMDLINE:
-	    s = X_CMDLINE_STRING;
-	    break;
-	case X_NOTICE:
-	    s = X_NOTICE_STRING;
-	    break;
-	case X_ERROR:
-	    s = X_ERROR_STRING;
-	    if (verb > 0)
-		verb = 0;
-	    break;
-	case X_WARNING:
-	    s = X_WARNING_STRING;
-	    break;
-	case X_INFO:
-	    s = X_INFO_STRING;
-	    break;
-	case X_NOT_IMPLEMENTED:
-	    s = X_NOT_IMPLEMENTED_STRING;
-	    break;
-	case X_NONE:
-	    s = NULL;
-	    break;
-	}
+    char *tmpFormat;
 
-	if (s != NULL)
-	    Write(verb, "%s ", s);
-	if (scrnIndex >= 0 && scrnIndex < xf86NumScreens)
-	    Write(verb, "%s(%d): ", xf86Screens[scrnIndex]->name, scrnIndex);
-	VWrite(verb, format, args);
-#if 0
-	if (type == X_ERROR && xf86Verbose < xf86LogVerbose) {
-	    fprintf(stderr, X_ERROR_STRING " Please check the log file \"%s\""
-			" >before<\n\treporting a problem.\n", xf86LogFile);
-	}
-#endif
-    }
+    /* Prefix the scrnIndex name to the format string. */
+    if (scrnIndex >= 0 && scrnIndex < xf86NumScreens &&
+	xf86Screens[scrnIndex]->name) {
+	tmpFormat = xalloc(strlen(format) +
+			   strlen(xf86Screens[scrnIndex]->name) +
+			   PREFIX_SIZE + 1);
+	if (!tmpFormat)
+	    return;
+
+	snprintf(tmpFormat, PREFIX_SIZE + 1, "%s(%d): ",
+		 xf86Screens[scrnIndex]->name, scrnIndex);
+
+	strcat(tmpFormat, format);
+	LogVMessageVerb(type, verb, tmpFormat, args);
+	xfree(tmpFormat);
+    } else
+	LogVMessageVerb(type, verb, format, args);
 }
+#undef PREFIX_SIZE
 
 /* Print driver messages, with verbose level specified directly */
 void
@@ -1434,7 +1346,7 @@ xf86ErrorFVerb(int verb, const char *format, ...)
 
     va_start(ap, format);
     if (xf86Verbose >= verb || xf86LogVerbose >= verb)
-	VWrite(verb, format, ap);
+	LogVWrite(verb, format, ap);
     va_end(ap);
 }
 
@@ -1446,15 +1358,10 @@ xf86ErrorF(const char *format, ...)
 
     va_start(ap, format);
     if (xf86Verbose >= 1 || xf86LogVerbose >= 1)
-	VWrite(1, format, ap);
+	LogVWrite(1, format, ap);
     va_end(ap);
 }
 
-void
-OsVendorVErrorF(const char *f, va_list args)
-{
-    VWrite(-1, f, args);
-}
 
 void
 xf86LogInit()
@@ -1467,62 +1374,28 @@ xf86LogInit()
     /* Get the log file name */
     if (xf86LogFileFrom == X_DEFAULT) {
 	/* Append the display number and ".log" */
-	lf = malloc(strlen(xf86LogFile) + strlen(display) +
+	lf = malloc(strlen(xf86LogFile) + strlen("%s") +
 		    strlen(LOGSUFFIX) + 1);
 	if (!lf)
 	    FatalError("Cannot allocate space for the log file name\n");
-	sprintf(lf, "%s%s" LOGSUFFIX, xf86LogFile, display);
+	sprintf(lf, "%s%%s" LOGSUFFIX, xf86LogFile);
 	xf86LogFile = lf;
     }
-    {
-	struct stat buf;
-	if (!stat(xf86LogFile,&buf) && S_ISREG(buf.st_mode)) {
-	    char *oldlog = (char *)malloc(strlen(xf86LogFile)
-					  + strlen(LOGOLDSUFFIX));
-	    if (!oldlog)
-		FatalError("Cannot allocate space for the log file name\n");
-	    sprintf(oldlog, "%s" LOGOLDSUFFIX, xf86LogFile);
-#ifdef __UNIXOS2__
-	    remove(oldlog);
-#endif
-	    if (rename(xf86LogFile,oldlog) == -1)
-		FatalError("Cannot move old logfile \"%s\"\n",oldlog);
-	    free(oldlog);
-	}
-    }
-    
-    if ((logfile = fopen(xf86LogFile, "w")) == NULL)
-	FatalError("Cannot open log file \"%s\"\n", xf86LogFile);
-    xf86LogFileWasOpened = TRUE;
-    setvbuf(logfile, NULL, _IONBF, 0);
-#ifdef DDXOSVERRORF
-    if (!OsVendorVErrorFProc)
-	OsVendorVErrorFProc = OsVendorVErrorF;
-#endif
 
-    /* Flush saved log information */
-    if (saveBuffer && size > 0) {
-	fwrite(saveBuffer, pos, 1, logfile);
-	if (xf86Info.log) {
-	    fflush(logfile);
-	    if (xf86Info.log == LogFlush)
-		fsync(fileno(logfile));
-	}
-	free(saveBuffer);	/* Note, must be free(), not xfree() */
-	saveBuffer = 0;
-	size = 0;
-    }
+    xf86LogFile = LogInit(xf86LogFile, LOGOLDSUFFIX);
+    xf86LogFileWasOpened = TRUE;
+
+    xf86SetVerbosity(xf86Verbose);
+    xf86SetLogVerbosity(xf86LogVerbose);
 
 #undef LOGSUFFIX
+#undef LOGOLDSUFFIX
 }
 
 void
 xf86CloseLog()
 {
-    if (logfile) {
-	fclose(logfile);
-	logfile = NULL;
-    }
+    LogClose();
 }
 
 
@@ -2304,7 +2177,6 @@ xf86GetVerbosity()
 {
     return max(xf86Verbose, xf86LogVerbose);
 }
-
 
 Pix24Flags
 xf86GetPix24()

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.80 2002/12/12 18:29:10 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.81 2003/08/24 17:36:55 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2002 by The XFree86 Project, Inc.
@@ -190,10 +190,11 @@ void xf86GrabServerCallback(CallbackListPtr *, pointer, pointer);
 /* xf86Helper.c */
 void xf86LogInit(void);
 void xf86CloseLog(void);
-void OsVendorVErrorF(const char *f, va_list args);
 
 /* xf86Init.c */
 Bool xf86LoadModules(char **list, pointer *optlist);
+int xf86SetVerbosity(int verb);
+int xf86SetLogVerbosity(int verb);
 
 /* xf86Io.c */
 

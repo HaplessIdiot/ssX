@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.32 2003/09/06 14:07:18 pascal Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.33 2003/09/08 11:22:14 pascal Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -483,12 +483,12 @@ unsigned	missing;
     }
     file= XkbDDXOpenConfigFile(nameRtrn,fileName,PATH_MAX);
     if (file==NULL) {
-	ErrorF("(EE) Couldn't open compiled keymap file %s\n",fileName);
+	LogMessage(X_ERROR, "Couldn't open compiled keymap file %s\n",fileName);
 	return 0;
     }
     missing= XkmReadFile(file,need,want,finfoRtrn);
     if (finfoRtrn->xkb==NULL) {
-	ErrorF("(EE) Error loading keymap %s\n",fileName);
+	LogMessage(X_ERROR, "Error loading keymap %s\n",fileName);
 	fclose(file);
 	(void) unlink (fileName);
 	return 0;

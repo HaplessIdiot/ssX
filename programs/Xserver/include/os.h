@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.45 2003/07/04 16:24:29 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.46 2003/08/27 19:57:21 herrb Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -185,8 +185,6 @@ extern void CloseDownFileDescriptor(ClientPtr /* client */);
 
 extern void AvailableClientInput(ClientPtr /* client */);
 
-extern void Error(char* /*str*/);
-
 extern CARD32 GetTimeInMillis(void);
 
 extern void AdjustWaitForDelay(
@@ -257,21 +255,6 @@ typedef SIGVAL (*OsSigHandlerPtr)(int /* sig */);
 extern OsSigHandlerPtr OsSignal(int /* sig */, OsSigHandlerPtr /* handler */);
 
 extern int auditTrailLevel;
-
-extern void AuditPrefix(const char *);
-
-extern void AuditF(const char* /*f*/, ...);
-
-extern void FatalError(const char* /*f*/, ...)
-#if defined(__GNUC__) && \
-    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ > 4)))
-__attribute((noreturn))
-#endif
-;
-
-extern void ErrorF(const char* /*f*/, ...);
-
-extern void VErrorF(const char *f, va_list args);
 
 #ifdef SERVER_LOCK
 extern void LockServer(void);
@@ -484,5 +467,56 @@ extern CallbackListPtr FlushCallback;
 extern void AbortDDX(void);
 extern void ddxGiveUp(void);
 extern int TimeSinceLastInputEvent(void);
+
+/* Logging. */
+typedef enum _LogParameter {
+    XLOG_FLUSH,
+    XLOG_SYNC,
+    XLOG_VERBOSITY,
+    XLOG_FILE_VERBOSITY
+} LogParameter;
+
+/* Flags for log messages. */
+typedef enum {
+    X_PROBED,			/* Value was probed */
+    X_CONFIG,			/* Value was given in the config file */
+    X_DEFAULT,			/* Value is a default */
+    X_CMDLINE,			/* Value was given on the command line */
+    X_NOTICE,			/* Notice */
+    X_ERROR,			/* Error message */
+    X_WARNING,			/* Warning message */
+    X_INFO,			/* Informational message */
+    X_NONE,			/* No prefix */
+    X_NOT_IMPLEMENTED,		/* Not implemented */
+    X_UNKNOWN = -1		/* unknown -- this must always be last */
+} MessageType;
+
+extern const char *LogInit(const char *fname, const char *backup);
+extern void LogClose(void);
+extern Bool LogSetParameter(LogParameter param, int value);
+extern void LogVWrite(int verb, const char *f, va_list args);
+extern void LogWrite(int verb, const char *f, ...);
+extern void LogVMessageVerb(MessageType type, int verb, const char *format,
+			    va_list args);
+extern void LogMessageVerb(MessageType type, int verb, const char *format,
+			   ...);
+extern void LogMessage(MessageType type, const char *format, ...);
+extern char *AuditPrefix(const char *f);
+extern void AuditF(const char *f, ...);
+extern void FatalError(const char *f, ...)
+#if defined(__GNUC__) && \
+    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ > 4)))
+__attribute((noreturn))
+#endif
+;
+extern void VErrorF(const char *f, va_list args);
+extern void ErrorF(const char *f, ...);
+extern void Error(char *str);
+extern void LogPrintMarkers(void);
+
+#ifdef NEED_SNPRINTF
+extern int snprintf(char *str, size_t size, const char *format, ...);
+extern int vsnprintf(char *str, size_t size, const char *format, va_list ap);
+#endif
 
 #endif /* OS_H */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoProbe.c,v 1.11 2002/07/02 02:00:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoProbe.c,v 1.12 2003/08/24 17:36:52 dawes Exp $ */
 /*
  * Copyright (c) 1999-2002 by The XFree86 Project, Inc.
  *
@@ -91,11 +91,9 @@ DoProbe()
 
 	    /* If we have a result, then call driver's Identify function */
 	    if (xf86DriverList[i]->Identify != NULL) {
-		int verbose = xf86Verbose;
-
-		xf86Verbose = 1;
+		int verbose = xf86SetVerbosity(1);
 		(*xf86DriverList[i]->Identify)(0);
-		xf86Verbose = verbose;
+		xf86SetVerbosity(verbose);
 	    }
 	}
     }

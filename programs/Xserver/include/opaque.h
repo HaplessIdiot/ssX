@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/include/opaque.h,v 1.12 2003/07/04 16:24:29 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/include/opaque.h,v 1.13 2003/07/24 13:50:25 eich Exp $ */
 
 #ifndef OPAQUE_H
 #define OPAQUE_H
@@ -77,6 +77,7 @@ extern Bool defeatAccessControl;
 extern long maxBigRequestSize;
 extern Bool blackRoot;
 
+extern Bool CoreDump;
 
 
 #endif /* OPAQUE_H */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.27 2002/06/17 08:04:18 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.28 2003/04/27 21:31:09 herrb Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -216,6 +216,11 @@ OsInit(void)
 #ifdef DDXOSINIT
     OsVendorInit();
 #endif
+    /*
+     * No log file by default.  OsVendorInit() should call LogInit() with the
+     * log file name if logging to a file is desired.
+     */
+    LogInit(NULL, NULL);
 #ifdef SMART_SCHEDULE
     if (!SmartScheduleDisable)
 	if (!SmartScheduleInit ())

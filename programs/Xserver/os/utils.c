@@ -49,7 +49,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.90 2003/07/24 13:50:25 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.91 2003/08/27 19:57:21 herrb Exp $ */
 
 #ifdef __CYGWIN__
 #include <stdlib.h>
@@ -134,10 +134,6 @@ Bool PanoramiXVisibilityNotifySent = FALSE;
 Bool PanoramiXMapped = FALSE;
 Bool PanoramiXWindowExposureSent = FALSE;
 Bool PanoramiXOneExposeRequest = FALSE;
-#endif
-
-#ifdef DDXOSVERRORF
-void (*OsVendorVErrorFProc)(const char *, va_list args) = NULL;
 #endif
 
 int auditTrailLevel = 1;
@@ -428,27 +424,6 @@ GiveUp(int sig)
 	OsSignal(sig, SIG_IGN);
 #endif
     errno = olderrno;
-}
-
-#ifdef __GNUC__
-static void AbortServer(void) __attribute__((noreturn));
-#endif
-
-static void
-AbortServer(void) 
-{
-    OsCleanup();
-    AbortDDX();
-    fflush(stderr);
-    if (CoreDump)
-	abort();
-    exit (1);
-}
-
-void
-Error(char *str)
-{
-    perror(str);
 }
 
 #ifndef DDXTIME
@@ -1383,109 +1358,6 @@ XNFstrdup(const char *s)
     sd = (char *)XNFalloc(strlen(s) + 1);
     strcpy(sd, s);
     return sd;
-}
-
-
-void
-AuditPrefix(const char *f)
-{
-    time_t tm;
-    char *autime, *s;
-    if (*f != ' ')
-    {
-	time(&tm);
-	autime = ctime(&tm);
-	if ((s = strchr(autime, '\n')))
-	    *s = '\0';
-	if ((s = strrchr(argvGlobal[0], '/')))
-	    s++;
-	else
-	    s = argvGlobal[0];
-	ErrorF("AUDIT: %s: %d %s: ", autime, getpid(), s);
-    }
-}
-
-void
-AuditF(const char * f, ...)
-{
-    va_list args;
-
-    AuditPrefix(f);
-
-    va_start(args, f);
-    VErrorF(f, args);
-    va_end(args);
-}
-
-void
-FatalError(const char *f, ...)
-{
-    va_list args;
-    static Bool beenhere = FALSE;
-
-    if (beenhere)
-	ErrorF("\nFatalError re-entered, aborting\n");
-    else
-	ErrorF("\nFatal server error:\n");
-
-    va_start(args, f);
-    VErrorF(f, args);
-    va_end(args);
-    ErrorF("\n");
-#ifdef DDXOSFATALERROR
-    if (!beenhere)
-	OsVendorFatalError();
-#endif
-#ifdef ABORTONFATALERROR
-    abort();
-#endif
-    if (!beenhere) {
-	beenhere = TRUE;
-	AbortServer();
-    } else
-	abort();
-    /*NOTREACHED*/
-}
-
-void
-VErrorF(const char *f, va_list args)
-{
-#ifdef AIXV3
-    if (SyncOn)
-        sync();
-#else
-#ifdef DDXOSVERRORF
-    if (OsVendorVErrorFProc)
-	OsVendorVErrorFProc(f, args);
-    else
-	vfprintf(stderr, f, args);
-#else
-    vfprintf(stderr, f, args);
-#endif
-#endif /* AIXV3 */
-}
-
-#if 0
-void
-VFatalError(const char *msg, va_list args)
-{
-    VErrorF(msg, args);
-    ErrorF("\n");
-#ifdef DDXOSFATALERROR
-    OsVendorFatalError();
-#endif
-    AbortServer();
-    /*NOTREACHED*/
-}
-#endif
-
-void
-ErrorF(const char * f, ...)
-{
-    va_list args;
-    va_start(args, f);
-    VErrorF(f, args);
-    va_end(args);
 }
 
 #ifdef SMART_SCHEDULE
