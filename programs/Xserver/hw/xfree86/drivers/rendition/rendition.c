@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.43 2001/06/15 21:22:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.45 2001/10/01 13:44:08 eich Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -69,7 +69,7 @@
 
 #undef DEBUG
 
-#define RENDITION_NAME            "Rendition"
+#define RENDITION_NAME            "RENDITION"
 #define RENDITION_DRIVER_NAME     "rendition"
 #define RENDITION_VERSION_NAME    "4.0"
 #define RENDITION_VERSION_MAJOR   4
@@ -298,12 +298,12 @@ renditionProbe(DriverPtr drv, int flags)
 
     /* Find the config file Device sections that match this
      * driver, and return if there are none. */
-    if ((numDevSections=xf86MatchDevice(RENDITION_NAME, &devSections)) <= 0)
+    if ((numDevSections=xf86MatchDevice(RENDITION_DRIVER_NAME, &devSections)) <= 0)
         return FALSE;
   
     /* PCI BUS */
     if (xf86GetPciVideoInfo()) {
-        numUsed=xf86MatchPciInstances(RENDITION_NAME, PCI_VENDOR_RENDITION,
+        numUsed=xf86MatchPciInstances(RENDITION_DRIVER_NAME, PCI_VENDOR_RENDITION,
                     renditionChipsets, renditionPCIchipsets, 
                     devSections, numDevSections, drv, &usedChips);
 

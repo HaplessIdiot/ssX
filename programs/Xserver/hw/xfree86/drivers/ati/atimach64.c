@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.41 2001/08/28 16:55:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.42 2001/10/28 03:33:23 tsi Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -247,7 +247,7 @@ ATIMach64PreInit
         {
             case 8:
                 pATIHW->dp_chain_mask = DP_CHAIN_8BPP;
-                pATIHW->dp_pix_width = DP_BYTE_PIX_ORDER |
+                pATIHW->dp_pix_width =
                     SetBits(PIX_WIDTH_8BPP, DP_DST_PIX_WIDTH) |
                     SetBits(PIX_WIDTH_8BPP, DP_SRC_PIX_WIDTH) |
                     SetBits(PIX_WIDTH_1BPP, DP_HOST_PIX_WIDTH);
@@ -255,7 +255,7 @@ ATIMach64PreInit
 
             case 15:
                 pATIHW->dp_chain_mask = DP_CHAIN_15BPP_1555;
-                pATIHW->dp_pix_width = DP_BYTE_PIX_ORDER |
+                pATIHW->dp_pix_width =
                     SetBits(PIX_WIDTH_15BPP, DP_DST_PIX_WIDTH) |
                     SetBits(PIX_WIDTH_15BPP, DP_SRC_PIX_WIDTH) |
                     SetBits(PIX_WIDTH_1BPP, DP_HOST_PIX_WIDTH);
@@ -263,7 +263,7 @@ ATIMach64PreInit
 
             case 16:
                 pATIHW->dp_chain_mask = DP_CHAIN_16BPP_565;
-                pATIHW->dp_pix_width = DP_BYTE_PIX_ORDER |
+                pATIHW->dp_pix_width =
                     SetBits(PIX_WIDTH_16BPP, DP_DST_PIX_WIDTH) |
                     SetBits(PIX_WIDTH_16BPP, DP_SRC_PIX_WIDTH) |
                     SetBits(PIX_WIDTH_1BPP, DP_HOST_PIX_WIDTH);
@@ -273,7 +273,7 @@ ATIMach64PreInit
                 if (pATI->bitsPerPixel == 24)
                 {
                     pATIHW->dp_chain_mask = DP_CHAIN_24BPP_888;
-                    pATIHW->dp_pix_width = DP_BYTE_PIX_ORDER |
+                    pATIHW->dp_pix_width =
                         SetBits(PIX_WIDTH_8BPP, DP_DST_PIX_WIDTH) |
                         SetBits(PIX_WIDTH_8BPP, DP_SRC_PIX_WIDTH) |
                         SetBits(PIX_WIDTH_1BPP, DP_HOST_PIX_WIDTH);
@@ -281,7 +281,7 @@ ATIMach64PreInit
                 else
                 {
                     pATIHW->dp_chain_mask = DP_CHAIN_32BPP_8888;
-                    pATIHW->dp_pix_width = DP_BYTE_PIX_ORDER |
+                    pATIHW->dp_pix_width =
                         SetBits(PIX_WIDTH_32BPP, DP_DST_PIX_WIDTH) |
                         SetBits(PIX_WIDTH_32BPP, DP_SRC_PIX_WIDTH) |
                         SetBits(PIX_WIDTH_1BPP, DP_HOST_PIX_WIDTH);
@@ -291,6 +291,12 @@ ATIMach64PreInit
             default:
                 break;
         }
+
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
+
+        pATIHW->dp_pix_width |= DP_BYTE_PIX_ORDER;
+
+#endif /* X_BYTE_ORDER */
 
         pATIHW->dp_mix = SetBits(MIX_SRC, DP_FRGD_MIX) |
             SetBits(MIX_DST, DP_BKGD_MIX);
@@ -1695,6 +1701,13 @@ ATIMach64AccelInit
 
     /* 8x8 mono pattern fills */
     pXAAInfo->Mono8x8PatternFillFlags =
+
+#if X_BYTE_ORDER != X_LITTLE_ENDIAN
+
+        BIT_ORDER_IN_BYTE_MSBFIRST |
+
+#endif /* X_BYTE_ORDER */
+
         HARDWARE_PATTERN_PROGRAMMED_BITS | HARDWARE_PATTERN_SCREEN_ORIGIN;
     pXAAInfo->SetupForMono8x8PatternFill = ATIMach64SetupForMono8x8PatternFill;
     pXAAInfo->SubsequentMono8x8PatternFillRect =
@@ -1706,13 +1719,6 @@ ATIMach64AccelInit
      */
     pXAAInfo->ScanlineCPUToScreenColorExpandFillFlags =
         LEFT_EDGE_CLIPPING | LEFT_EDGE_CLIPPING_NEGATIVE_X |
-
-#if X_BYTE_ORDER != X_LITTLE_ENDIAN
-
-        BIT_ORDER_IN_BYTE_MSBFIRST |    /* Temporary */
-
-#endif /* X_BYTE_ORDER */
-
         CPU_TRANSFER_PAD_DWORD | SCANLINE_PAD_DWORD;
     if (pATI->XModifier != 1)
         pXAAInfo->ScanlineCPUToScreenColorExpandFillFlags |= TRIPLE_BITS_24BPP;

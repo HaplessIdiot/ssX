@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_init.c,v 1.2 2001/08/17 22:08:15 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_init.c,v 1.3 2001/10/28 03:34:03 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -198,6 +198,43 @@ xf86CloseConsole(void)
 #endif
 #if defined(__SOL8__) || !defined(i386)
     int tmp;
+#endif
+
+#ifndef i386
+    int fd;
+
+    /*
+     * Wipe out framebuffer just like the non-SI Xsun server does.  This could be improved by saving
+     * framebuffer contents in xf86OpenConsole() above and restoring them here.  Also, it's unclear
+     * at this point whether this should be done for all framebuffers in the system, rather than
+     * only the console.
+     */
+    if ((fd = open("/dev/fb", O_RDWR, 0)) < 0) {
+	xf86Msg(X_WARNING, "xf86CloseConsole():  unable to open framebuffer (%s)\n",
+		strerror(errno));
+    } else {
+	struct fbgattr fbattr;
+
+	if ((ioctl(fd, FBIOGATTR, &fbattr) < 0) && (ioctl(fd, FBIOGTYPE, &fbattr.fbtype) < 0)) {
+	    xf86Msg(X_WARNING,
+		    "xf86CloseConsole():  unable to retrieve framebuffer attributes (%s)\n",
+		    strerror(errno));
+	} else {
+	    pointer fbdata;
+
+	    fbdata = mmap(NULL, fbattr.fbtype.fb_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	    if (fbdata == MAP_FAILED) {
+		xf86Msg(X_WARNING, "xf86CloseConsole():  unable to mmap framebuffer (%s)\n",
+			strerror(errno));
+	    } else {
+		(void)memset(fbdata, 0, fbattr.fbtype.fb_size);
+		(void)munmap(fbdata, fbattr.fbtype.fb_size);
+	    }
+	}
+
+	close(fd);
+    }
+
 #endif
 
 #ifdef HAS_USL_VTS
