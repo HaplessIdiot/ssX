@@ -13,7 +13,7 @@
     <date>15 March 2001
 
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.20 2001/04/05 19:29:42 dawes Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.21 2001/04/10 16:07:58 dawes Exp $
     </ident>
 
     <toc>
@@ -1048,7 +1048,7 @@
           on your motherboard.
 
 <p>
-          Compaq has funded the implementation of AGP acclerated
+          Compaq has funded the implementation of AGP accelerated
           ReadPixels and DrawPixels in this driver.  With this
           implementation, on a G400 drawing directly from AGP memory
           (exported to the client), throughput of up to 1 GB/sec has

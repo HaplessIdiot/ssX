@@ -11,7 +11,7 @@
 <date> 1st January 2001
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.33 2000/12/02 21:52:22 dbateman Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.34 2001/05/09 19:57:04 dbateman Exp $
 </ident>
 
 <!-- Table of contents -->
@@ -599,7 +599,7 @@ options.
 
 <sect> Dual Display Channel<p>
 
-XFree releases later than 4.1.0 support dual-channel display on the ct69030. 
+XFree86 releases later than 4.1.0 support dual-channel display on the ct69030. 
 This support can be used to give a single display image on two screen with
 different refresh rates, or entirely different images on the two displays.
 
@@ -761,7 +761,7 @@ Max dotclock = min(MaxDClk,  0.70  * 4 * MemoryClk / (BytesPerPixel +
 
 otherwise. This effectively means that there are two limits on the
 dotclock. One the overall maximum, and another due to the available
-memory bandwidth of the chip.  The 69030 qnd 69000 have a 64bit memory
+memory bandwidth of the chip.  The 69030 and 69000 have a 64bit memory
 bus and thus transfer 8 bytes every clock thus (hence the 8), while
 the other HiQV chipsets are 32bit and transfer 4 bytes per clock cycle
 (hence the 4). However, after accounting for the RAS/CAS signaling
@@ -975,9 +975,9 @@ video processor beyond it capabilities won't cause damage.
 	However, 8 and 24 bit colour depths seem to work fine.
 <tag> My ct69030 machine locks up when starting XFree</tag>
 	The ct69030 chipset introduced a new dual channel architecture. In its
-	current form, XFree can not take advantage of this second display
+	current form, XFree86 can not take advantage of this second display
 	channel. In fact if the video BIOS on the machine sets the ct69030
-	to a dual channel mode by default, XFree will lockup hard at this
+	to a dual channel mode by default, XFree86 will lockup hard at this
 	point. The solution is to use the BIOS setup to change to a single
 	display channel mode, ensuring that both the IOSS and MSS registers
 	are set to a single channel mode. Work is underway to fix this.

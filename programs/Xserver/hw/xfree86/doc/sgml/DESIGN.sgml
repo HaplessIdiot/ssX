@@ -36,7 +36,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.41 2001/05/02 14:53:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.42 2001/05/04 19:05:31 dawes Exp $
 </ident>
 
 
@@ -5780,7 +5780,7 @@ programming the standard VGA registers, and for handling VGA colourmaps.
       &s.code;hwp-&gt;PIOOffset&e.code; is initialised with
       &s.code;offset&e.code;, calculated in such a way that when the
       standard VGA I/O port value is added to it the correct offset into
-      the PIO area results.  This value is initalised to zero in
+      the PIO area results.  This value is initialised to zero in
       &s.code;vgaHWGetHWRec()&e.code;.  (Note: the PIOOffset functionality
       is present in XFree86 4.1.0 and later.)
 
