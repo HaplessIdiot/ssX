@@ -15,9 +15,9 @@
 .\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 .\" GNU General Public License for more details.
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.cpp,v 1.1 2000/11/02 02:51:21 dawes Exp $
 .\"
-.TH CITRON 4 "Version 4.0.1" "XFREE86"
+.TH CITRON __drivermansuffix__ "Version 4.0.2" "XFREE86"
 .SH NAME
 citron \- Citron Infrared Touch Driver (CiTouch)
 .SH SYNOPSIS
@@ -626,6 +626,6 @@ every 20ms. This option is only available for "ZPress" and
 
 
 .SH "SEE ALSO"
-XFree86(1), XF86Config(5x), xf86config(1), Xserver(1), X(1).
+XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__).
 .SH AUTHORS
 2000 - written  by  Citron GmbH (support@citron.de)

@@ -1,7 +1,7 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3virge.cpp,v 1.9 2000/06/14 02:13:13 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3virge.cpp,v 1.10 2000/11/28 20:59:18 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
-.TH s3virge __drivermansuffix__ "Version 4.0.1"  "XFree86"
+.TH s3virge __drivermansuffix__ "Version 4.0.2"  "XFree86"
 .SH NAME
 s3virge \- S3 ViRGE video driver
 .SH SYNOPSIS

@@ -1,7 +1,7 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.cpp,v 1.1 2000/11/02 16:55:29 tsi Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.cpp,v 1.2 2000/12/05 20:11:41 mvojkovi Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
-.TH R128 __drivermansuffix__ "Version 4.0.1"  "XFree86"
+.TH R128 __drivermansuffix__ "Version 4.0.2"  "XFree86"
 .SH NAME
 r128 \- ATI Rage 128 video driver
 .SH SYNOPSIS

@@ -1,7 +1,7 @@
-.\" $XFree86:$ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suntcx/suntcx.cpp,v 1.1 2000/06/30 17:15:16 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
-.TH SUNTCX __drivermansuffix__ "Version 4.0"  "XFree86"
+.TH SUNTCX __drivermansuffix__ "Version 4.0.2"  "XFree86"
 .SH NAME
 suntcx \- TCX video driver
 .SH SYNOPSIS

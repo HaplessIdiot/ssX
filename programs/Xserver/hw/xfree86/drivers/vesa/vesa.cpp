@@ -1,7 +1,7 @@
-.\" $XFree86$ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.cpp,v 1.1 2000/10/20 14:59:01 alanh Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
-.TH VESA __drivermansuffix__ "Version 4.0.1"  "XFree86"
+.TH VESA __drivermansuffix__ "Version 4.0.2"  "XFree86"
 .SH NAME
 vesa \- Generic VESA video driver
 .SH SYNOPSIS

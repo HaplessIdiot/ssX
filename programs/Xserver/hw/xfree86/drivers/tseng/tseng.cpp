@@ -1,7 +1,7 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.cpp,v 1.3 2000/03/21 19:57:20 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.cpp,v 1.5 2000/08/08 08:58:06 eich Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
-.TH TSENG __drivermansuffix__ "Version 4.0.1"  "XFree86"
+.TH TSENG __drivermansuffix__ "Version 4.0.2"  "XFree86"
 .SH NAME
 tseng \- Tseng Labs video driver
 .SH SYNOPSIS

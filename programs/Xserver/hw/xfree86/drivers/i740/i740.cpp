@@ -1,7 +1,7 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740.cpp,v 1.3 2000/03/21 19:57:14 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740.cpp,v 1.4 2000/06/14 02:13:10 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
-.TH I740 __drivermansuffix__ "Version 4.0.1"  "XFree86"
+.TH I740 __drivermansuffix__ "Version 4.0.2"  "XFree86"
 .SH NAME
 i740 \- Intel i740 video driver
 .SH SYNOPSIS

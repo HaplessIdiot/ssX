@@ -1,5 +1,5 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/penmount/penmount.cpp,v 1.1 2000/03/03 01:05:48 dawes Exp $ 
-.TH PENNMOUNT __drivermansuffix__ "Version 4.0.1"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/penmount/penmount.cpp,v 1.1 2000/08/01 18:59:58 dawes Exp $ 
+.TH PENNMOUNT __drivermansuffix__ "Version 4.0.2"  "XFree86"
 .SH NAME
 penmount \- PenMount input driver
 .SH SYNOPSIS
@@ -32,6 +32,6 @@ section only covers configuration details specific to this driver.
 .PP
 Config details...
 .SH "SEE ALSO"
-XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(1).
+XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__).
 .SH AUTHORS
 Authors include...
