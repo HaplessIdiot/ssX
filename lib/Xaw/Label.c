@@ -489,22 +489,6 @@ static void Redisplay(gw, event, region)
     if (*Superclass->core_class.expose != NULL)
       (*Superclass->core_class.expose)(gw, event, region);
 
-    /*
-     * now we'll see if we need to draw the rest of the label
-     */
-    if (region != NULL) {
-	int x = w->label.label_x;
-	unsigned int width = w->label.label_width;
-	if (w->label.lbm_width) {
-	    if (w->label.label_x > (x = w->label.internal_width))
-		width += w->label.label_x - x;
-	}
-	if (XRectInRegion(region, x, w->label.label_y,
-			 width, w->label.label_height) == RectangleOut){
-	    return;
-	}
-    }
-
     gc = XtIsSensitive(gw) ? w->label.normal_GC : w->label.gray_GC;
 #ifdef notdef
     if (region != NULL)

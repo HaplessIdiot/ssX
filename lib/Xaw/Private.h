@@ -1,7 +1,7 @@
 /*
  * $Id$
  *
- * Copyright (c) 1996 by The XFree86 Project, Inc.
+ * Copyright (c) 1998 by The XFree86 Project, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -27,7 +27,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: $ */
+/* $XFree86: xc/lib/Xaw/Private.h,v 3.2 1998/04/28 13:33:33 robin Exp $ */
 
 #ifndef _XawPrivate_h
 #define _XawPrivate_h

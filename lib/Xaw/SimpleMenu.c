@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
  */
 
-/* $XFree86: xc/lib/Xaw/SimpleMenu.c,v 3.1.6.3 1998/05/20 05:06:17 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SimpleMenu.c,v 3.2 1998/06/28 08:41:46 dawes Exp $ */
 
 /*
  * SimpleMenu.c - Source code file for SimpleMenu widget.
@@ -50,6 +50,8 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xmu/CharSet.h>
 
 #include "XawAlloc.h"
+
+#include "Private.h"
 
 #define streq(a, b)        ( strcmp((a), (b)) == 0 )
 
@@ -76,6 +78,10 @@ static XtResource resources[] = {
      offset(top_margin), XtRImmediate, (XtPointer) 0},
   {XtNbottomMargin,  XtCVerticalMargins, XtRDimension, sizeof(Dimension),
      offset(bottom_margin), XtRImmediate, (XtPointer) 0},
+  {XtNleftMargin,  XtCHorizontalMargins, XtRDimension, sizeof(Dimension),
+     offset(left_margin), XtRImmediate, (XtPointer) 0},
+  {XtNrightMargin,  XtCHorizontalMargins, XtRDimension, sizeof(Dimension),
+     offset(right_margin), XtRImmediate, (XtPointer) 0},
 
 /*
  * Misc. Resources
@@ -93,6 +99,9 @@ static XtResource resources[] = {
   {XtNbackingStore, XtCBackingStore, XtRBackingStore, sizeof (int),
       offset(backing_store), 
       XtRImmediate, (XtPointer) (Always + WhenMapped + NotUseful)},
+  {XawNdisplayList, XawCDisplayList, XawRDisplayList, sizeof (XawDisplayList*),
+      offset(display_list), 
+      XtRImmediate, (XtPointer) NULL},
 };  
 #undef offset
 
@@ -127,6 +136,8 @@ static Dimension GetMenuWidth(), GetMenuHeight();
 static Widget FindMenu();
 static SmeObject GetEventEntry();
 static void MoveMenu();
+static void CalculateNewSize();
+static void MakeResizeRequest();
 
 static XtActionsRec actionsList[] =
 {
@@ -261,6 +272,7 @@ ArgList args;
 Cardinal *num_args;
 {
   SimpleMenuWidget smw = (SimpleMenuWidget) new;
+  Dimension width, height;
 
   XmuCallInitializers(XtWidgetToApplicationContext(new));
 
@@ -274,18 +286,21 @@ Cardinal *num_args;
   if (smw->simple_menu.label_string != NULL)
       CreateLabel(new);
 
+  width = height = 0;
+  CalculateNewSize(new, &width, &height);
+
   smw->simple_menu.menu_width = TRUE;
 
   if (smw->core.width == 0) {
       smw->simple_menu.menu_width = FALSE;
-      smw->core.width = GetMenuWidth(new, (Widget)NULL);
+      smw->core.width = width;
   }
 
   smw->simple_menu.menu_height = TRUE;
 
   if (smw->core.height == 0) {
       smw->simple_menu.menu_height = FALSE;
-      smw->core.height = GetMenuHeight(new);
+      smw->core.height = height;
   }
 
 /*
@@ -316,6 +331,9 @@ Region region;
 
     if (region == NULL)
 	XClearWindow(XtDisplay(w), XtWindow(w));
+
+    if (smw->simple_menu.display_list)
+      XawRunDisplayList(w, smw->simple_menu.display_list, event, region);
 
     /*
      * Check and Paint each of the entries - including the label.
@@ -382,15 +400,10 @@ static void
 Resize(w)
 Widget w;
 {
-    SimpleMenuWidget smw = (SimpleMenuWidget) w;
-    SmeObject * entry;
-
     if ( !XtIsRealized(w) ) return;
 
-    ForAllChildren(smw, entry) 	/* reset width of all entries. */
-	if (XtIsManaged( (Widget) *entry))
-	    (*entry)->rectangle.width = smw->core.width;
-    
+    Layout(w, NULL, NULL);
+
     Redisplay(w, (XEvent *) NULL, (Region) NULL);
 }
 
@@ -904,7 +917,7 @@ Layout(w, width_ret, height_ret)
 Widget w;
 Dimension *width_ret, *height_ret;
 {
-    SmeObject current_entry, *entry;
+    SmeObject current_entry;
     SimpleMenuWidget smw;
     Dimension width, height;
     Boolean do_layout = ((height_ret == NULL) || (width_ret == NULL));
@@ -923,50 +936,145 @@ Dimension *width_ret, *height_ret;
     allow_change_size = (!XtIsRealized((Widget)smw) ||
 			 (smw->shell.allow_shell_resize));
 
-    if ( smw->simple_menu.menu_height )
-	height = smw->core.height;
-    else
-	if (do_layout) {
-	    height = smw->simple_menu.top_margin;
-	    ForAllChildren(smw, entry) {
-		if (!XtIsManaged( (Widget) *entry)) continue;
+    if (do_layout)
+      {
+	Widget kid;
+	Cardinal i, count;
+	int width_kid, height_kid, tmp_w, tmp_h, n;
+	short vadd, hadd, x_ins, y_ins;
+	Dimension *widths;
 
-		if ( (smw->simple_menu.row_height != 0) && 
-		    (*entry != smw->simple_menu.label) ) 
-		    (*entry)->rectangle.height = smw->simple_menu.row_height;
-		
-		(*entry)->rectangle.y = height;
-		(*entry)->rectangle.x = 0;
-		height += (*entry)->rectangle.height;
-	    }
-	    height += smw->simple_menu.bottom_margin;
-	}
-	else {
-	    if ((smw->simple_menu.row_height != 0) && 
-		(current_entry != smw->simple_menu.label) )
-		height = smw->simple_menu.row_height;
-	}
-    
-    if (smw->simple_menu.menu_width)
-	width = smw->core.width;
-    else if ( allow_change_size )
-	width = GetMenuWidth((Widget) smw, (Widget) current_entry);
-    else
-	width = smw->core.width;
+	for (i = smw->simple_menu.label ? 1 : 0;
+	     i < smw->composite.num_children;
+	     i++)
+	  {
+	    XtWidgetGeometry preferred;
 
-    if (do_layout) {
-	ForAllChildren(smw, entry)
-	    if (XtIsManaged( (Widget) *entry)) 
-		(*entry)->rectangle.width = width;
+	    kid = smw->composite.children[i];
+	    if (!XtIsManaged(kid))
+	      continue;
+	    if (smw->simple_menu.row_height != 0)
+	      XtHeight(kid) = smw->simple_menu.row_height;
+	    XtQueryGeometry(kid, NULL, &preferred);
+	    if (preferred.request_mode & CWWidth)
+	      XtWidth(kid) = preferred.width;
+	  }
+
+	/* reset */
+	if (!smw->simple_menu.menu_width)
+	  XtWidth(smw) = 0;
+	if (!smw->simple_menu.menu_height)
+	  XtHeight(smw) = 0;
+	if (!XtWidth(smw) || !XtHeight(smw))
+	  MakeResizeRequest(smw);
+
+	widths = (Dimension *)XtMalloc(sizeof(Dimension));
+	hadd = smw->simple_menu.left_margin;
+	vadd = smw->simple_menu.top_margin;
+	if (smw->simple_menu.label)
+	  vadd += XtHeight(smw->simple_menu.label);
+
+	count = 1;
+	width = tmp_w = tmp_h = n = 0;
+	height = vadd;
+
+	for (i = smw->simple_menu.label ? 1 : 0;
+	     i < smw->composite.num_children;
+	     i++)
+	  {
+	    kid = smw->composite.children[i];
+	    if (!XtIsManaged(kid))
+	      continue;
+	    width_kid = XtWidth(kid);
+	    height_kid = XtHeight(kid);
+
+	    if (n && (height + height_kid + smw->simple_menu.bottom_margin
+		      > XtHeight(smw)))
+	      {
+		++count;
+		widths = (Dimension *)XtRealloc((char *)widths,
+						sizeof(Dimension) * count);
+		widths[count - 1] = width_kid;
+		width += tmp_w;
+		tmp_w = width_kid;
+		height = height_kid + vadd;
+	      }
+	    else
+		height += height_kid;
+	    if (height > tmp_h)
+	      tmp_h = height;
+	    if (width_kid > tmp_w)
+	      widths[count - 1] = tmp_w = width_kid;
+	    ++n;
+	  }
+
+	height = tmp_h + smw->simple_menu.bottom_margin;
+	width += tmp_w;
+
+	if (smw->simple_menu.label && width < XtWidth(smw->simple_menu.label))
+	  {
+	    float inc;
+
+	    inc = (XtWidth(smw->simple_menu.label) - width) / (float)count;
+	    width = XtWidth(smw->simple_menu.label);
+	    for (n = 0; n < count; n++)
+	      widths[n] += inc;
+	  }
+
+	width += hadd + smw->simple_menu.right_margin;
+
+	x_ins = n = count = 0;
+	tmp_w = widths[0];
+	tmp_h = vadd;
+
+	for (i = smw->simple_menu.label ? 1 : 0;
+	     i < smw->composite.num_children;
+	     i++)
+	  {
+	    kid = smw->composite.children[i];
+	    if (!XtIsManaged(kid))
+	      continue;
+
+	    height_kid = XtHeight(kid);
+
+	    if (n && (tmp_h + height_kid + smw->simple_menu.bottom_margin
+		      > XtHeight(smw)))
+	      {
+		x_ins = tmp_w;
+		y_ins = vadd;
+		++count;
+		tmp_w += widths[count];
+		tmp_h = height_kid + vadd;
+	      }
+	    else
+	      {
+		y_ins = tmp_h;
+		tmp_h += height_kid;
+	      }
+	    ++n;
+
+	    XtX(kid) = x_ins + hadd;
+	    XtY(kid) = y_ins;
+	    XtWidth(kid) = widths[count];
+	  }
+
+	XtFree((char *)widths);
 
 	if (allow_change_size)
-	    MakeSetValuesRequest((Widget) smw, width, height);
-    }
-    else {
-	*width_ret = width;
-	if (height != 0)
-	    *height_ret = height;
-    }
+	  MakeSetValuesRequest((Widget) smw, width, height);
+
+	if (smw->simple_menu.label)
+	  {
+	    XtX(smw->simple_menu.label) = 0;
+	    XtY(smw->simple_menu.label) = smw->simple_menu.top_margin;
+	    XtWidth(smw->simple_menu.label) = XtWidth(smw);
+	  }
+      }
+    else
+      {
+	*width_ret = XtWidth(current_entry);
+	*height_ret = XtHeight(current_entry);
+      }
 }
     
 /*	Function Name: AddPositionAction
@@ -1169,39 +1277,20 @@ Dimension width, height;
  *      Returns: width of menu.
  */
 
+/* ARGSUSED */
 static Dimension
 GetMenuWidth(w, w_ent)
 Widget w, w_ent;
 {
-    SmeObject cur_entry = (SmeObject) w_ent;
     SimpleMenuWidget smw = (SimpleMenuWidget) w;
-    Dimension width, widest = (Dimension) 0;
-    SmeObject * entry;
+    Dimension width, height;
     
     if ( smw->simple_menu.menu_width ) 
 	return(smw->core.width);
 
-    ForAllChildren(smw, entry) {
-	XtWidgetGeometry preferred;
+    CalculateNewSize(w, &width, &height);
 
-	if (!XtIsManaged( (Widget) *entry)) continue;
-	
-	if (*entry != cur_entry) {
-	    XtQueryGeometry((Widget) *entry, (XtWidgetGeometry *)NULL, &preferred);
-	    
-	    if (preferred.request_mode & CWWidth)
-		width = preferred.width;
-	    else
-		width = (*entry)->rectangle.width;
-	}
-	else
-	    width = (*entry)->rectangle.width;
-	
-	if ( width > widest )
-	    widest = width;
-    }
-    
-    return(widest);
+    return (width);
 }
 
 /*      Function Name: GetMenuHeight
@@ -1215,22 +1304,14 @@ GetMenuHeight(w)
 Widget w;
 {
     SimpleMenuWidget smw = (SimpleMenuWidget) w;
-    SmeObject * entry;
-    Dimension height;
+    Dimension width, height;
     
     if (smw->simple_menu.menu_height)
 	return(smw->core.height);
 
-    height = smw->simple_menu.top_margin + smw->simple_menu.bottom_margin;
-    
-    if (smw->simple_menu.row_height == 0) {
-	ForAllChildren(smw, entry) 
-	    if (XtIsManaged ((Widget) *entry)) 
-		height += (*entry)->rectangle.height;
-    } else 
-	height += smw->simple_menu.row_height * smw->composite.num_children;
-	
-    return(height);
+    CalculateNewSize(w, &width, &height);
+
+    return (height);
 }
 
 /*      Function Name: GetEventEntry
@@ -1239,46 +1320,21 @@ Widget w;
  *                 event - the event.
  *      Returns: the entry that this point is in.
  */
-
 static SmeObject
-GetEventEntry(w, event)
+DoGetEventEntry(w, x_loc, y_loc)
 Widget w;
-XEvent * event;
+Position x_loc, y_loc;
 {
-    Position x_loc, y_loc;
     SimpleMenuWidget smw = (SimpleMenuWidget) w;
     SmeObject * entry;
-    
-    switch (event->type) {
-    case MotionNotify:
-	x_loc = event->xmotion.x;
-	y_loc = event->xmotion.y;
-	break;
-    case EnterNotify:
-    case LeaveNotify:
-	x_loc = event->xcrossing.x;
-	y_loc = event->xcrossing.y;
-	break;
-    case ButtonPress:
-    case ButtonRelease:
-	x_loc = event->xbutton.x;
-	y_loc = event->xbutton.y;
-	break;
-    default:
-	XtAppError(XtWidgetToApplicationContext(w),
-		   "Unknown event type in GetEventEntry().");
-	break;
-    }
-    
-    if ( (x_loc < 0) || (x_loc >= (int)smw->core.width) || (y_loc < 0) ||
-	(y_loc >= (int)smw->core.height) )
-	return(NULL);
-    
+
     ForAllChildren(smw, entry) {
 	if (!XtIsManaged ((Widget) *entry)) continue;
 
-	if ( ((*entry)->rectangle.y < y_loc) &&
-	    ((*entry)->rectangle.y + (int) (*entry)->rectangle.height > y_loc) )
+	if (x_loc > XtX(*entry) &&
+	    x_loc <= XtX(*entry) + XtWidth(*entry) &&
+	    y_loc > XtY(*entry) &&
+	    y_loc <= XtY(*entry) + XtHeight(*entry))
 	    if ( *entry == smw->simple_menu.label )
 		return(NULL);	/* cannot select the label. */
 	    else
@@ -1286,4 +1342,203 @@ XEvent * event;
     }
     
     return(NULL);
+}
+
+static SmeObject
+GetEventEntry(w, event)
+Widget w;
+XEvent * event;
+{
+    Position x_loc, y_loc, x_root;
+    SimpleMenuWidget smw = (SimpleMenuWidget) w;
+    SmeObject entry;
+    int warp, move;
+    
+    switch (event->type) {
+    case MotionNotify:
+	x_loc = event->xmotion.x;
+	y_loc = event->xmotion.y;
+	x_root = event->xmotion.x_root;
+	break;
+    case EnterNotify:
+    case LeaveNotify:
+	x_loc = event->xcrossing.x;
+	y_loc = event->xcrossing.y;
+	x_root = event->xcrossing.x_root;
+	break;
+    case ButtonPress:
+    case ButtonRelease:
+	x_loc = event->xbutton.x;
+	y_loc = event->xbutton.y;
+	x_root = event->xbutton.x_root;
+	break;
+    default:
+	XtAppError(XtWidgetToApplicationContext(w),
+		   "Unknown event type in GetEventEntry().");
+	return (NULL);
+    }
+    
+    if ( (x_loc < 0) || (x_loc >= (int)smw->core.width) || (y_loc < 0) ||
+	(y_loc >= (int)smw->core.height) )
+	return(NULL);
+
+    /* Move the menu if it's outside the screen, does not check
+     * smw->simple_menu.menu_on_screen because menus is bigger than screen
+     */
+    if (x_root == WidthOfScreen(XtScreen(w)) - 1
+	&& XtX(w) + XtWidth(w) + (XtBorderWidth(w)) > x_root)
+      {
+	warp = -8;
+	if (smw->simple_menu.entry_set)
+	  {
+	    entry = DoGetEventEntry(w,
+				     XtX(smw->simple_menu.entry_set)
+				     + XtWidth(smw->simple_menu.entry_set) + 1,
+				     y_loc);
+	    Unhighlight(w, event, NULL, NULL);
+	    if (entry)
+	      {
+		warp = -(int)XtWidth(entry)>>1;
+		move = x_loc - XtWidth(entry) - XtX(entry) + XtBorderWidth(w);
+	      }
+	    else
+	      move = WidthOfScreen(XtScreen(w)) -
+		(XtX(w) + XtWidth(w) + (XtBorderWidth(w)<<1));
+	  }
+	else
+	  move = WidthOfScreen(XtScreen(w)) -
+	    (XtX(w) + XtWidth(w) + (XtBorderWidth(w)<<1));
+      }
+    else if (x_root == 0 && XtX(w) < 0)
+      {
+	warp = 8;
+	if (smw->simple_menu.entry_set)
+	  {
+	    entry = DoGetEventEntry(w, XtX(smw->simple_menu.entry_set) - 1,
+				     y_loc);
+	    Unhighlight(w, event, NULL, NULL);
+	    if (entry)
+	      {
+		warp = XtWidth(entry)>>1;
+		move = x_loc - XtX(entry);
+	      }
+	    else
+	      move = x_loc + XtBorderWidth(w);
+	  }
+	else
+	  move = x_loc + XtBorderWidth(w);
+      }
+    else
+      move = warp = 0;
+
+    if (move)
+      XtMoveWidget(w, XtX(w) + move, XtY(w));
+    if (warp)
+      XWarpPointer(XtDisplay(w), None, None, 0, 0, 0, 0, warp, 0);
+
+    return (DoGetEventEntry(w, x_loc, y_loc));
+}
+
+void
+CalculateNewSize(w, width_return, height_return)
+     Widget w;
+     Dimension *width_return, *height_return;
+{
+  SimpleMenuWidget xaw = (SimpleMenuWidget)w;
+  Widget kid;
+  Cardinal i;
+  int width_kid, height_kid;
+  int width, height, tmp_w, tmp_h, max_dim;
+  short vadd, hadd;
+  int n, columns, insert_pos;
+  Boolean try_layout = False;
+
+  hadd = xaw->simple_menu.left_margin + xaw->simple_menu.right_margin;
+  vadd = xaw->simple_menu.top_margin + xaw->simple_menu.bottom_margin;
+  if (xaw->simple_menu.label)
+    vadd += XtHeight(xaw->simple_menu.label);
+
+  if (*height_return)
+    max_dim = *height_return;
+  else if (!XtHeight(w))
+    {
+      max_dim = HeightOfScreen(XtScreen(w));
+      try_layout = True;
+    }
+  else
+    max_dim = XtHeight(w);
+  max_dim -= vadd;
+
+  width = height = tmp_w = tmp_h = n = 0;
+  columns = 1;
+  for (i = xaw->simple_menu.label ? 1 : 0;
+       i < xaw->composite.num_children;
+       i++)
+    {
+      kid = xaw->composite.children[i];
+      if (!XtIsManaged(kid))
+	continue;
+      width_kid = XtWidth(kid);
+      height_kid = XtHeight(kid);
+
+      if (n && (height + height_kid > max_dim))
+	{
+	  ++columns;
+	  width += tmp_w;
+	  tmp_w = width_kid;
+	  height = height_kid;
+	}
+      else
+	height += height_kid;
+      if (height > tmp_h)
+	tmp_h = height;
+      if (width_kid > tmp_w)
+	tmp_w = width_kid;
+      ++n;
+    }
+
+  insert_pos = height + vadd + xaw->simple_menu.bottom_margin;
+  height = tmp_h + vadd;
+  width += tmp_w + hadd;
+
+  if (xaw->simple_menu.label)
+    width = XawMax(width, XtWidth(xaw->simple_menu.label) + hadd);
+
+  *width_return = width;
+  *height_return = height;
+
+  if (try_layout && columns > 1 && xaw->composite.num_children > 2)
+    {
+      int space;
+
+      kid = xaw->composite.children[xaw->composite.num_children - 1];
+      space = height - insert_pos - XtHeight(kid);
+
+      if (space > XtHeight(kid) * columns)
+	{
+	  *height_return -= space / columns;
+	  CalculateNewSize(w, width_return, height_return);
+	}
+    }
+}
+
+void
+MakeResizeRequest(w)
+     Widget w;
+{
+  int tries;
+  Dimension width, height;
+  
+  width = XtWidth(w);
+  height = XtHeight(w);
+
+  for (tries = 0; tries < 100; tries++)
+    {
+      CalculateNewSize(w, &width, &height);
+      if (width == XtWidth(w) && height == XtHeight(w))
+        break;
+      if (XtMakeResizeRequest(w, width, height, &width, &height) ==
+          XtGeometryNo)
+        break;
+    }
 }

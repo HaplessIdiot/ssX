@@ -437,8 +437,7 @@ Boolean change;
   very_thick = cbw->command.highlight_thickness >
                (Dimension)((Dimension) Min(cbw->core.width, cbw->core.height)/2);
 
-  if (cbw->command.highlight_thickness <= 0)
-  {
+  if (cbw->command.highlight_thickness <= 0) {
     (*SuperClass->core_class.expose) (w, event, region);
     return;
   }
@@ -456,6 +455,8 @@ Boolean change;
     rev_gc = cbw->command.inverse_GC;
   }
 
+  (*SuperClass->core_class.expose) (w, event, region);
+
   if ( !( (!change && (cbw->command.highlighted == HighlightNone)) ||
 	  ((cbw->command.highlighted == HighlightWhenUnset) &&
 	   (cbw->command.set))) ) {
@@ -471,7 +472,6 @@ Boolean change;
 		     cbw->core.height - cbw->command.highlight_thickness);
     }
   }
-  (*SuperClass->core_class.expose) (w, event, region);
 }
 
 static void 

@@ -952,6 +952,8 @@ Direction dir;
     EraseInternalBorders(pw);
     ForAllPanes(pw, childP) 
         PaneInfo(*childP)->olddelta = -99;
+
+    EraseTrackLines(pw);
 }
 
 /*	Function Name: MoveGripAdjustment

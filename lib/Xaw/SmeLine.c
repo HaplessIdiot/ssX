@@ -45,6 +45,8 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xaw/SmeLineP.h>
 #include <X11/Xaw/Cardinals.h>
 
+#include "Private.h"
+
 #define offset(field) XtOffsetOf(SmeLineRec, sme_line.field)
 static XtResource resources[] = {
   {XtNlineWidth, XtCLineWidth, XtRDimension, sizeof(Dimension),
@@ -221,7 +223,7 @@ Region region;
 
     XFillRectangle(XtDisplayOfObject(w), XtWindowOfObject(w),
 		   entry->sme_line.gc, 
-		   0, y, (unsigned int) entry->rectangle.width, 
+		   XtX(w), y, (unsigned int) entry->rectangle.width, 
 		   (unsigned int) entry->sme_line.line_width );
 }
 

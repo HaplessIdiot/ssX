@@ -239,9 +239,17 @@ static void FillArea(w, top, bottom, thumb)
   Position top, bottom;
   int thumb;
 {
-    Dimension length = bottom-top;
+    Dimension length;
 
-    if (bottom < 0) return;
+    top = MAX(1, top);
+    if (w->scrollbar.orientation == XtorientHorizontal) 
+      bottom = MIN(bottom, w->core.width - 1);
+    else
+      bottom = MIN(bottom, w->core.height - 1);
+
+    if (bottom <= top) return;
+
+    length = bottom-top;
 
     switch(thumb) {
 	/* Fill the new Thumb location */
@@ -717,8 +725,6 @@ static void MoveThumb( gw, event, params, num_params )
 
     ExtractPosition( event, &x, &y );
     w->scrollbar.top = FractionLoc(w, x, y);
-    PaintThumb(w);
-    XFlush(XtDisplay(w));	/* re-draw it before Notifying */
 }
 
 
@@ -740,6 +746,11 @@ static void NotifyThumb( gw, event, params, num_params )
        the intent is to pass a (truncated) float by value. */
     XtCallCallbacks( gw, XtNthumbProc, *(XtPointer*)&w->scrollbar.top);
     XtCallCallbacks( gw, XtNjumpProc, (XtPointer)&w->scrollbar.top);
+
+    /* Redraw the thumb after MoveThumb, because most programs like to
+     * recalculate the thumb position calling XawScrollbarSetThumb.
+     */
+    PaintThumb(w);
 }
 
 
@@ -776,6 +787,5 @@ float top, shown;
     w->scrollbar.shown = (shown > 1.0) ? 1.0 :
 			 (shown >= 0.0) ? shown :
 			     w->scrollbar.shown;
-
     PaintThumb( w );
 }

@@ -191,7 +191,8 @@ static void DoLayout(bbw, width, height, reply_width, reply_height, position)
 
     w = 0;
     for (i = 0; i < bbw->composite.num_children; i++) {
-	if ( bbw->composite.children[i]->core.width > w )
+	if ( XtIsManaged(bbw->composite.children[i])
+	     && bbw->composite.children[i]->core.width > w )
             w = bbw->composite.children[i]->core.width;
     }
     w += h_space;

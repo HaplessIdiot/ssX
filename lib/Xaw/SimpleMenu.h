@@ -69,10 +69,13 @@ in this Software without prior written authorization from the X Consortium.
  columnWidth         ColumnWidth        Dimension       Width of widest text
  cursor              Cursor             Cursor          None
  destroyCallback     Callback		Pointer		NULL
+ displayList	     DisplayList	XawDisplayList*	NULL
  height		     Height		Dimension	0
  label               Label              String          NULL (No label)
  labelClass          LabelClass         Pointer         smeBSBObjectClass
+ leftMargin	     HorizontalMargins	Dimension	0
  mappedWhenManaged   MappedWhenManaged	Boolean		True
+ rightMargin	     HorizontalMargins	Dimension	0
  rowHeight           RowHeight          Dimension       Height of Font
  sensitive	     Sensitive		Boolean		True
  topMargin           VerticalMargins    Dimension       VerticalSpace
@@ -95,6 +98,9 @@ extern WidgetClass simpleMenuWidgetClass;
 #define XtNpopupOnEntry "popupOnEntry"
 #define XtNrowHeight "rowHeight"
 #define XtNtopMargin "topMargin"
+#define XtNleftMargin "leftMargin"
+#define XtNrightMargin "rightMargin"
+#define XawNdisplayList "displayList"
 
 #define XtCColumnWidth "ColumnWidth"
 #define XtCLabelClass "LabelClass"
@@ -102,6 +108,10 @@ extern WidgetClass simpleMenuWidgetClass;
 #define XtCPopupOnEntry "PopupOnEntry"
 #define XtCRowHeight "RowHeight"
 #define XtCVerticalMargins "VerticalMargins"
+#define XtCHorizontalMargins "HorizontalMargins"
+#define XawCDisplayList "DisplayList"
+
+#define XawRDisplayList "XawDisplayList"
 
 /************************************************************
  *

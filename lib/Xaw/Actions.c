@@ -1,7 +1,5 @@
 /*
- * $Id$
- *
- * Copyright (c) 1996 by The XFree86 Project, Inc.
+ * Copyright (c) 1998 by The XFree86 Project, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -27,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Actions.c,v 3.2 1998/04/28 13:33:32 robin Exp $ */
+/* $XFree86: xc/lib/Xaw/Actions.c,v 3.3 1998/06/04 16:43:07 hohndel Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
