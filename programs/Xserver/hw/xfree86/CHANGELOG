@@ -1,3 +1,22 @@
+XFree86 3.0Fe (26 September 1994)
+387. Fix for S3 line drawing overwriting HW cursor storage.
+386. Include Monitors and Devices files which contain the Monitor and Device
+     XF86Config sections that have been submitted (Gertjan Akkerman).
+385. Update Cirrus probing for 543x chips in SuperProbe (Harm Hanemaayer).
+384. Update ET4000/W32 probing for SuperProbe (Glenn Lai).
+383. 16bpp support for S3 GENDAC + 801/805 (Harald Koenig).
+382. Updates to S3 GENDAC code -- program best matching clock frequency
+     (Harald Koenig).
+381. Fix most (all?) pixel shift problems for #9GXE64Pro (Hans Nasten and
+     Robin Cutshaw).
+380. Don't allow the S3 "dac_8_bit" option to have any affect at 16/32bpp,
+     and fix related problem when using the SC15025 RAMDAC.
+379. Fix problem with Spea Mercury (Norbert Distler).
+378. Documentation updates.
+377. Updates to SolX86 aperture driver config (David Holland).
+376. Don't write mouse speed setting commands when using a non-logitech
+     protocols.
+
 XFree86 3.0Fd (25 September 1994)
 375. AGX documentation updates (Henry Worth).
 374. Fix for text-mode restore problem with AGX server (Henry Worth).
