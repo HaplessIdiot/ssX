@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.97 1999/03/28 15:32:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.98 1999/03/29 07:06:33 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -50,7 +50,9 @@ Bool xf86ClaimPciSlot(int bus, int device, int func, BusResource res,
 		      DriverPtr drvp, int chipset, int scrnIndex);
 void xf86ReleasePciSlot(int bus, int device, int func);
 pciVideoPtr *xf86GetPciVideoInfo(void);
+#ifdef _XF86PCI_H
 pciConfigPtr *xf86GetPciConfigInfo(void);
+#endif
 int xf86GetPciInfoForScreen(int scrnIndex, pciVideoPtr **pPciList,
 			    BusResource **pRes);
 Bool xf86CheckIsaSlot(BusResource res);
