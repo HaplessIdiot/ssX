@@ -30,7 +30,7 @@
  *     Machine-independent DBE code
  *
  *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/dbe/midbe.c,v 3.2 2000/04/06 14:47:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dbe/midbe.c,v 3.3 2001/01/17 22:36:42 dawes Exp $ */
 
 
 /* INCLUDES */
@@ -821,16 +821,16 @@ miDbeInit(pScreen, pDbeScreenPriv)
 
         miDbeWindowPrivPrivIndex = (*pDbeScreenPriv->AllocWinPrivPrivIndex)();
 
-        if (!(*pDbeScreenPriv->AllocWinPrivPriv)(pScreen,
-            miDbeWindowPrivPrivIndex, sizeof(MiDbeWindowPrivPrivRec)))
-        {
-            return(FALSE);
-        }
-
         /* Make sure we only do this code once. */
 	miDbePrivPrivGeneration = serverGeneration;
 
     } /* if -- Reset priv privs. */
+
+    if (!(*pDbeScreenPriv->AllocWinPrivPriv)(pScreen,
+        miDbeWindowPrivPrivIndex, sizeof(MiDbeWindowPrivPrivRec)))
+    {
+        return(FALSE);
+    }
 
     /* Wrap functions. */
     pDbeScreenPriv->PositionWindow = pScreen->PositionWindow;

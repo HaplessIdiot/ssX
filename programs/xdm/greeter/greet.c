@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/greet.c,v 3.10 2001/01/17 23:45:25 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/greet.c,v 3.11 2001/02/13 19:19:17 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -36,6 +36,10 @@ from The Open Group.
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
 #include <X11/XKBlib.h>
+
+#ifdef USE_XINERAMA
+#include <X11/extensions/Xinerama.h>
+#endif
 
 #include "dm.h"
 #include "dm_error.h"
@@ -165,6 +169,10 @@ InitGreet (struct display *d)
     Screen		*scrn;
     static char	*argv[] = { "xlogin", 0 };
     Display		*dpy;
+#ifdef USE_XINERAMA
+    XineramaScreenInfo *screens;
+    int                 s_num;
+#endif
 
     Debug ("greet %s\n", d->name);
     argc = 1;
@@ -209,6 +217,21 @@ InitGreet (struct display *d)
 				    arglist, i);
     XtRealizeWidget (toplevel);
 
+#ifdef USE_XINERAMA
+    if (
+	XineramaIsActive(dpy) &&
+	(screens = XineramaQueryScreens(dpy, &s_num)) != NULL
+       )
+    {
+	XWarpPointer(dpy, None, XRootWindowOfScreen (scrn),
+			0, 0, 0, 0,
+			screens[0].x_org + screens[0].width / 2,
+			screens[0].y_org + screens[0].height / 2);
+
+	XFree(screens);
+    }
+    else
+#endif
     XWarpPointer(dpy, None, XRootWindowOfScreen (scrn),
 		    0, 0, 0, 0,
 		    XWidthOfScreen(scrn) / 2,

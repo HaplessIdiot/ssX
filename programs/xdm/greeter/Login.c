@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/Login.c,v 3.11 2000/09/19 12:46:23 eich Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/Login.c,v 3.12 2001/01/17 23:45:25 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -55,6 +55,10 @@ from The Open Group.
 #include <X11/extensions/shape.h>
 #include <X11/cursorfont.h>
 #endif /* XPM */
+
+#ifdef USE_XINERAMA
+#include <X11/extensions/Xinerama.h>
+#endif
 
 static void RedrawFail (LoginWidget w);
 static void ResetLogin (LoginWidget w);
@@ -1014,6 +1018,10 @@ static void Initialize (
     XGCValues	myXGCV;
     Arg		position[2];
     Position	x, y;
+#ifdef USE_XINERAMA
+    XineramaScreenInfo *screens;
+    int                 s_num;
+#endif
 
 #ifdef XPM
     myXGCV.foreground = w->login.hipixel;
@@ -1152,10 +1160,27 @@ SkipXpmLoad:
         
 #endif /* XPM */
     }
-    if ((x = w->core.x) == -1)
-	x = (int)(XWidthOfScreen (XtScreen (w)) - w->core.width) / 2;
-    if ((y = w->core.y) == -1)
-	y = (int)(XHeightOfScreen (XtScreen (w)) - w->core.height) / 3;
+#ifdef USE_XINERAMA
+    if (
+	XineramaIsActive(XtDisplay(w)) &&
+	(screens = XineramaQueryScreens(XtDisplay(w), &s_num)) != NULL
+       )
+    {
+	if ((x = w->core.x) == -1)
+	    x = screens[0].x_org + (int)(screens[0].width - w->core.width) / 2;
+	if ((y = w->core.y) == -1)
+	    y = screens[0].y_org + (int)(screens[0].height - w->core.height) / 3;
+	
+	XFree(screens);
+    }
+    else
+#endif
+    {
+	if ((x = w->core.x) == -1)
+	    x = (int)(XWidthOfScreen (XtScreen (w)) - w->core.width) / 2;
+	if ((y = w->core.y) == -1)
+	    y = (int)(XHeightOfScreen (XtScreen (w)) - w->core.height) / 3;
+    }
     XtSetArg (position[0], XtNx, x);
     XtSetArg (position[1], XtNy, y);
     XtSetValues (XtParent (w), position, (Cardinal) 2);
