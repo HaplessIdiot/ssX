@@ -1,4 +1,5 @@
 /* Misc routines used elsewhere in driver */
+/* $XFree86: $ */
 
 #include "rendition.h"
 #include "vtypes.h"

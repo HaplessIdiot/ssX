@@ -3,6 +3,7 @@
  * 
  * Copyright 1999 by Andrew C Aitchison <A.C.Aitchison@dpmms.cam.ac.uk>
  */
+/* $XFree86: $ */
 
 #include "misc.h"
 #include "xf86.h"

@@ -22,6 +22,8 @@
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
+/* $XFree86: $ */
+
 
 #include    "fntfilst.h"
 

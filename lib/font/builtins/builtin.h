@@ -22,6 +22,8 @@
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
+/* $XFree86: $ */
+
 #include <X11/Xdefs.h>
 #include <font.h>
 #include "fontxlfd.h"

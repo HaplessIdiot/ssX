@@ -1,3 +1,5 @@
+/* $XFree86: $ */
+
 #ifndef __VMISC_H__
 #define __VMISC_H__
 

@@ -22,6 +22,8 @@
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
+/* $XFree86: $ */
+
 #include "builtin.h"
 static char file_6x13[] = {
   '\001',  '\146',  '\143',  '\160',  '\011',  '\000',  '\000',  '\000', 
