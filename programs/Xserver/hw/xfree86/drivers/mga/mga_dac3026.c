@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.37 1999/01/14 13:04:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.38 1999/01/31 12:21:55 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -60,7 +60,7 @@
  * Only change these bits in the Option register.  Make sure that the
  * vgaioen bit is never in this mask because it is controlled elsewhere
  */
-#define OPTION_MASK 0x20001000	/* pci_retry | interleave */
+#define OPTION_MASK 0x201F1000	/* pci_retry | interleave */
 
 static void MGA3026LoadPalette(ScrnInfoPtr, int, int*, LOCO*, short);
 static void MGA3026LoadPalette16(ScrnInfoPtr, int, int*, LOCO*, short);
@@ -646,6 +646,17 @@ MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	else
 	    pReg->Option |= 0x20000000;
 
+	/* now make sure that the refresh counter is set to something
+	   reasonable. Especially secondary cards in multi head configurations
+	   don't get this setup by the BIOS.
+	   A value of 12 seems to work for both 2064 and 2164 */
+	if((pReg->Option & 0x001F0000) == 0) {
+	    pReg->Option |= 0x000C0000;
+#ifdef DEBUG
+	    ErrorF("setting refresh counter 0x%08X\n",pReg->Option);
+#endif
+	}
+
 	pVga->MiscOutReg |= 0x0C; 
 	/* XXX Need to check the first argument */
 	MGATi3026SetPCLK( pScrn, mode->Clock, 1 << pMga->BppShift );
@@ -799,6 +810,13 @@ MGA3026Save(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	
 	mgaReg->Option = pciReadLong(pMga->PciTag, PCI_OPTION_REG);
 	
+#ifdef DEBUG		
+	ErrorF("read: %02X %02X %02X	%02X %02X %02X	%08lX\n",
+		mgaReg->DacClk[0], mgaReg->DacClk[1], mgaReg->DacClk[2], mgaReg->DacClk[3], mgaReg->DacClk[4], mgaReg->DacClk[5], mgaReg->Option);
+	for (i=0; i<sizeof(MGADACregs); i++) ErrorF("%02X ", mgaReg->DacRegs[i]);
+	for (i=0; i<6; i++) ErrorF(" %02X", mgaReg->ExtVga[i]);
+	ErrorF("\n");
+#endif
 }
 
 
