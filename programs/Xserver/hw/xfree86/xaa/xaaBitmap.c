@@ -113,6 +113,9 @@ BitmapScanline_Shifted_Inverted(
      return base;
 }
 
+#define BitmapScanline_Shifted_Careful BitmapScanline_Shifted
+#define BitmapScanline_Shifted_Inverted_Careful BitmapScanline_Shifted_Inverted
+
 #else
 static CARD32*
 BitmapScanline(
@@ -192,6 +195,36 @@ BitmapScanline_Shifted_Inverted(
      }
      return base;
 }
+
+static CARD32*
+BitmapScanline_Shifted_Careful(
+   CARD32 *bits, CARD32 *base,
+   int count, int skipleft )
+{
+     while(--count) {
+	WRITE_BITS(SHIFT_R(*bits,skipleft) | 
+		SHIFT_L(*(bits + 1),(32 - skipleft)));
+	bits++;
+     }
+     WRITE_BITS(SHIFT_R(*bits,skipleft));
+
+     return base;
+}
+
+static CARD32*
+BitmapScanline_Shifted_Inverted_Careful(
+   CARD32 *bits, CARD32 *base,
+   int count, int skipleft )
+{
+     while(--count) {
+	WRITE_BITS(~(SHIFT_R(*bits,skipleft) | 
+		SHIFT_L(*(bits + 1),(32 - skipleft))));
+	bits++;
+     }
+     WRITE_BITS(~(SHIFT_R(*bits,skipleft)));
+     return base;
+}
+
 #endif
 
 /*  
@@ -250,8 +283,14 @@ EXPNAME(XAAWriteBitmapColorExpand)(
 	(!(infoRec->CPUToScreenColorExpandFillFlags & LEFT_EDGE_CLIPPING_NEGATIVE_X) && 
 		(skipleft > x)))) {
 #endif
-	firstFunc = BitmapScanline_Shifted;
- 	secondFunc = BitmapScanline_Shifted_Inverted;
+	if((skipleft + ((w + 31) & ~31)) > ((skipleft + w + 31) & ~31)) {
+	    /* don't read past the end */
+	    firstFunc = BitmapScanline_Shifted_Careful;
+ 	    secondFunc = BitmapScanline_Shifted_Inverted_Careful;
+	} else {
+	    firstFunc = BitmapScanline_Shifted;
+ 	    secondFunc = BitmapScanline_Shifted_Inverted;
+	}
 	shift = skipleft;
 	skipleft = 0;
     } else {
@@ -360,8 +399,14 @@ EXPNAME(XAAWriteBitmapScanlineColorExpand)(
 	(!(infoRec->ScanlineCPUToScreenColorExpandFillFlags &
 		 LEFT_EDGE_CLIPPING_NEGATIVE_X) && (skipleft > x)))) {
 #endif
-	firstFunc = BitmapScanline_Shifted;
- 	secondFunc = BitmapScanline_Shifted_Inverted;
+	if((skipleft + ((w + 31) & ~31)) > ((skipleft + w + 31) & ~31)) {
+	    /* don't read past the end */
+	    firstFunc = BitmapScanline_Shifted_Careful;
+ 	    secondFunc = BitmapScanline_Shifted_Inverted_Careful;
+	} else {
+	    firstFunc = BitmapScanline_Shifted;
+ 	    secondFunc = BitmapScanline_Shifted_Inverted;
+	}
 	shift = skipleft;
 	skipleft = 0;
     } else {
