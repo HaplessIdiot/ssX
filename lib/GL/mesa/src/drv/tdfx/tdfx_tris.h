@@ -23,14 +23,13 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_tris.h,v 1.1 2001/03/21 16:14:28 dawes Exp $ */
 
 /*
  * Authors:
  *	Keith Whitwell <keithw@valinux.com>
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810tris.h,v 1.8 2000/12/04 19:21:43 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_tris.h,v 1.3 2002/02/22 21:45:04 dawes Exp $ */
 
 #ifndef TDFX_TRIS_INC
 #define TDFX_TRIS_INC

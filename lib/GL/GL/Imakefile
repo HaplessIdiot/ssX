@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.10 2001/11/24 11:22:35 herrb Exp $
+XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.11 2002/02/23 00:45:45 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -187,16 +187,14 @@ OTHERREQUIREDLIBS = -lglide3 -ldl
     DRVDOBJS = $(SISDOBJS) $(MESADOBJS) $(DRIMESADOBJS) $(DRMDOBJS)
     DRVPOBJS = $(SISPOBJS) $(MESAPOBJS) $(DRIMESAPOBJS) $(DRMPOBJS)
 
-#elif GlxBuiltInMesa
+#elif GlxBuiltInXMesa
 
-#ifndef GlxDriverUsesMesa
+#include "../mesa/src/X/Imakefile.inc"
 
-     DRVOBJS = $(MESAOBJS)
-    DRVUOBJS = $(MESAUOBJS)
-    DRVDOBJS = $(MESADOBJS)
-    DRVPOBJS = $(MESAPOBJS)
-
-#endif
+     DRVOBJS = $(MESAOBJS) $(XMESA_OBJS)
+    DRVUOBJS = $(MESAUOBJS) $(XMESA_UOBJS)
+    DRVDOBJS = $(MESADOBJS) $(XMESA_DOBJS)
+    DRVPOBJS = $(MESAPOBJS) $(XMESA_POBJS)
 
 #else
 

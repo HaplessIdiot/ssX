@@ -1,14 +1,18 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/X/Imakefile,v 1.8 2002/02/22 20:47:39 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/X/Imakefile,v 1.9 2002/02/23 00:45:47 dawes Exp $
 
 #include <Threads.tmpl>
 
 /*
- * Only need SharedLib build unless OSMesa lib is built, or driver is built
- * in to libGL
+ * Need both shared and unshared Mesa objects in the following cases:
+ *   GlxDriverUsesMesa
+ *   GlxBuiltInXMesa
+ *   BuildOSMesaLib
+ *
+ * In other cases, only the shared version is needed to link in to loadable
+ * driver modules.
  */
-#if BuildXF86DRI && !GlxUseSGISI && \
-        (GlxUseBuiltInDRIDriver || \
-         !GlxBuiltInMesa || !defined(GlxDriverUsesMesa))
+
+#if GlxDriverUsesMesa || GlxBuiltInXMesa || BuildOSMesaLib
 #define DoNormalLib (NormalLibGlx || SharedLibGlxWithoutPIC)
 #define DoSharedLib (SharedLibGlx && !SharedLibGlxWithoutPIC)
 #define DoExtraLib SharedLibGlx
@@ -21,6 +25,7 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/X/Imakefile,v 1.8 2002/02/22 20:47:39 dawes E
 #define DoDebugLib NO
 #define DoProfileLib NO
 #endif
+
 
 #define MesaXBuildDir /**/
 #define NeedToLinkMesaSrc
