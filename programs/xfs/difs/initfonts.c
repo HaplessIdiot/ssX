@@ -43,6 +43,7 @@ in this Software without prior written authorization from The Open Group.
  * %W%	%E%
  *
  */
+/* $XFree86$ */
 
 #include        "font.h"
 #include	"difs.h"

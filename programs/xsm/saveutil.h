@@ -19,6 +19,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
+/* $XFree86$ */
 
 extern void set_session_save_file_name(char *session_name);
 extern int ReadSave(char *session_name, char **sm_id);

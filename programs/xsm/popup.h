@@ -23,6 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
+/* $XFree86$ */
 
 extern void PopupPopup(Widget parent, Widget popup, Bool transient, 
 		       Bool first_time, int offset_x, int offset_y, 
