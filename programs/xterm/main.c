@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.225.1.1 95/01/13 21:13:04 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.14 1995/01/29 02:10:18 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.15 1995/03/04 06:24:52 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -170,8 +170,29 @@ static Bool IsPts = False;
 #define WTMP
 #endif
 
+#ifdef Lynx
+#define USE_SYSV_TERMIO
+#undef  TIOCSLTC
+#include <sys/termio.h>
+#undef CAPS_LOCK
+#endif
+
 #include <sys/ioctl.h>
 #include <sys/stat.h>
+
+#ifdef Lynx
+#undef CAPS_LOCK
+#define CAPS_LOCK	0x01
+#ifndef BSDLY
+#define BSDLY	0
+#endif
+#ifndef VTDLY
+#define VTDLY	0
+#endif
+#ifndef FFDLY
+#define FFDLY	0
+#endif
+#endif
 
 #ifdef USE_TERMIOS
 #include <termios.h>
@@ -319,6 +340,11 @@ extern Time_t time ();
 #else
 #ifdef ISC
 #include <sys/types.h>
+#endif
+#ifdef Lynx
+#ifdef UTMP
+#undef UTMP
+#endif
 #endif
 #include <utmp.h>
 #if defined(_CRAY) && OSMAJORVERSION < 8
@@ -2503,6 +2529,18 @@ spawn ()
 #endif /* !USE_SYSV_PGRP */
 
 #endif /* AMOEBA */
+
+#ifdef Lynx
+{
+	struct termio	t;
+	if (ioctl(0, TCGETA, &t) >= 0)
+	{
+		/* this gets lost somewhere on our way... */
+		t.c_oflag |= OPOST;
+		ioctl(0, TCSETA, &t);
+	}
+}
+#endif
 
 #ifdef UTMP
 		pw = getpwuid(screen->uid);

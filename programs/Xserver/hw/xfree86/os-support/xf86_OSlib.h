@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_OSlib.h,v 1.7 95/01/16 13:17:55 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.15 1995/03/11 14:14:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.16 1995/03/12 13:01:02 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -188,6 +188,35 @@ extern int errno;
 # define USE_VT_SYSREQ
 
 #endif /* linux */
+
+/**************************************************************************/
+/* LynxOS AT                                                              */
+/**************************************************************************/
+#if defined(Lynx)
+ 
+# include <termio.h>
+# include <sys/ioctl.h>
+# include <sys/param.h>
+# include <signal.h>
+# include <sys/kd.h>
+# include <sys/vt.h>
+# include <sys/stat.h>
+
+# include <errno.h>
+extern int errno;
+ 
+/* smem_create et.al. to access physical memory */ 
+# include <smem.h>
+ 
+/* keyboard types */
+# define KB_84		1
+# define KB_101 	2
+# define KB_OTHER	3
+
+/* atc drivers ignores argument to VT_RELDISP ioctl */
+# define VT_ACKACQ	2
+
+#endif /* Lynx */
 
 /**************************************************************************/
 /* 386BSD and derivatives,  BSD/386                                       */

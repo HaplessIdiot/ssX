@@ -1,4 +1,5 @@
 /* $XConsortium: atom.c,v 1.6 94/04/17 19:56:10 dpw Exp $ */
+/* $XFree86$ */
 /*
  * font server atom manipulations
  */
@@ -53,7 +54,7 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 #include "misc.h"
-#include "resource.h"
+#include "fsresource.h"
 
 #define InitialTableSize 100
 #define	FSA_LAST_PREDEFINED	0 /* only None is predefined */

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.5 95/01/26 15:38:28 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/Imakefile,v 3.8 1995/01/26 02:20:53 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/Imakefile,v 3.10 1995/01/28 17:08:00 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = cir_driver.c cir_fill.c cir_blt.c cir_bltC.c cir_im.c cir_bank.s \
@@ -19,7 +19,7 @@ OBJS = cir_driver.o cir_fill.o cir_blt.o cir_bltC.o cir_im.o cir_bank.o \
 DEFINES = -DPSZ=8
 
 #if XF86LinkKit
-INCLUDES = -I. -I../../../include -I../..
+INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
 #else
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
            -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \

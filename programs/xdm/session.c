@@ -1,5 +1,5 @@
 /* $XConsortium: session.c,v 1.72 94/04/17 20:03:45 gildea Exp $ */
-/* $XFree86: xc/programs/xdm/session.c,v 3.3 1994/07/24 12:00:07 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.4 1994/11/26 12:49:31 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -860,7 +860,7 @@ char	*user, *home;
     return env;
 }
 
-#if defined(SCO) && !defined(SCO_USA)
+#if defined(Lynx) || defined(SCO) && !defined(SCO_USA)
 char *crypt(s1, s2)
 	char	*s1, *s2;
 {

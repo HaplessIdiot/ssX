@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.26 94/02/10 21:47:08 rws Exp $
-XCOMM $XFree86: xc/programs/xfs/Imakefile,v 3.0 1994/10/20 06:15:23 dawes Exp $
+XCOMM $XFree86: xc/programs/xfs/Imakefile,v 3.1 1995/05/27 03:18:59 dawes Exp $
 #undef ServerDefines
 #include <Server.tmpl>
 #define	IHaveSubdirs
@@ -34,7 +34,11 @@ MakeMutex(config $(FSDIRS) $(FSLIBS))
 
 all:: config
 
+#ifndef LynxOSArchitecture
 ServerTarget(xfs,$(FSDIRS),NullParameter,$(FSLIBS),$(SYSLIBS))
+#else
+ServerTarget(xfs,$(FSDIRS),difs/main.o,$(FSLIBS),$(SYSLIBS))
+#endif
 
 CppFileTarget(config,config.cpp,$(SITE_CONFIG),$(ICONFIGFILES))
 

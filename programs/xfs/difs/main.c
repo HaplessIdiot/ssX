@@ -1,4 +1,5 @@
 /* $XConsortium: main.c,v 1.15 94/04/17 19:56:18 mor Exp $ */
+/* $XFree86$ */
 /*
  * Font server main routine
  */
@@ -51,7 +52,7 @@ in this Software without prior written authorization from the X Consortium.
 #include	"FS.h"
 #include	"FSproto.h"
 #include	"clientstr.h"
-#include	"resource.h"
+#include	"fsresource.h"
 #include	"misc.h"
 #include	"globals.h"
 #include	"servermd.h"
