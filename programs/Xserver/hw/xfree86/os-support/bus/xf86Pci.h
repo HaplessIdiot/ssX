@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.13 1999/04/18 04:08:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.14 1999/04/25 10:02:38 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -121,6 +121,11 @@
 #define PCI_CLASS_DOCKING		0x0a
 #define PCI_CLASS_PROCESSOR		0x0b
 #define PCI_CLASS_SERIALBUS		0x0c
+#define PCI_CLASS_WIRELESS		0x0d
+#define PCI_CLASS_I2O			0x0e
+#define PCI_CLASS_SATELLITE		0x0f
+#define PCI_CLASS_CRYPT			0x10
+#define PCI_CLASS_DATA_ACQUISTION	0x11
 #define PCI_CLASS_UNDEFINED             0xff
 
 /* sub class */
@@ -168,11 +173,16 @@
 #define PCI_SUBCLASS_BRIDGE_MC          0x03
 #define PCI_SUBCLASS_BRIDGE_PCI         0x04
 #define PCI_SUBCLASS_BRIDGE_PCMCIA      0x05
+#define PCI_SUBCLASS_BRIDGE_NUBUS	0x06
+#define PCI_SUBCLASS_BRIDGE_CARDBUS	0x07
+#define PCI_SUBCLASS_BRIDGE_RACEWAY	0x08
 #define PCI_SUBCLASS_BRIDGE_MISC        0x80
 
 /* 0x07 communications controller subclasses */
 #define PCI_SUBCLASS_COMMUNICATIONS_SERIAL	0x00
 #define PCI_SUBCLASS_COMMUNICATIONS_PARALLEL	0x01
+#define PCI_SUBCLASS_COMMUNICATIONS_MULTISERIAL	0x02
+#define PCI_SUBCLASS_COMMUNICATIONS_MODEM	0x03
 #define PCI_SUBCLASS_COMMUNICATIONS_MISC	0x80
 
 /* 0x08 generic system peripherals subclasses */
@@ -180,12 +190,15 @@
 #define PCI_SUBCLASS_SYSPERIPH_DMA	0x01
 #define PCI_SUBCLASS_SYSPERIPH_TIMER	0x02
 #define PCI_SUBCLASS_SYSPERIPH_RTC	0x03
+#define PCI_SUBCLASS_SYSPERIPH_HOTPCI	0x04
 #define PCI_SUBCLASS_SYSPERIPH_MISC	0x80
 
 /* 0x09 input device subclasses */
 #define PCI_SUBCLASS_INPUT_KEYBOARD	0x00
 #define PCI_SUBCLASS_INPUT_DIGITIZER	0x01
 #define PCI_SUBCLASS_INPUT_MOUSE	0x02
+#define PCI_SUBCLASS_INPUT_SCANNER	0x03
+#define PCI_SUBCLASS_INPUT_GAMEPORT	0x04
 #define PCI_SUBCLASS_INPUT_MISC		0x80
 
 /* 0x0a docking station subclasses */
@@ -198,6 +211,7 @@
 #define PCI_SUBCLASS_PROCESSOR_PENTIUM	0x02
 #define PCI_SUBCLASS_PROCESSOR_ALPHA	0x10
 #define PCI_SUBCLASS_PROCESSOR_POWERPC	0x20
+#define PCI_SUBCLASS_PROCESSOR_MIPS	0x30
 #define PCI_SUBCLASS_PROCESSOR_COPROC	0x40
 
 /* 0x0c serial bus controller subclasses */
@@ -206,6 +220,32 @@
 #define PCI_SUBCLASS_SERIAL_SSA			0x02
 #define PCI_SUBCLASS_SERIAL_USB			0x03
 #define PCI_SUBCLASS_SERIAL_FIBRECHANNEL	0x04
+#define PCI_SUBCLASS_SERIAL_SMBUS		0x05
+
+/* 0x0d wireless controller subclasses */
+#define PCI_SUBCLASS_WIRELESS_IRDA		0x00
+#define PCI_SUBCLASS_WIRELESS_CONSUMER_IR	0x01
+#define PCI_SUBCLASS_WIRELESS_RF		0x02
+#define PCI_SUBCLASS_WIRELESS_MISC		0x80
+
+/* 0x0e intelligent I/O controller subclasses */
+#define PCI_SUBCLASS_I2O_I2O		0x00
+
+/* 0x0f satellite communications controller subclasses */
+#define PCI_SUBCLASS_SATELLITE_TV	0x01
+#define PCI_SUBCLASS_SATELLITE_AUDIO	0x02
+#define PCI_SUBCLASS_SATELLITE_VOICE	0x03
+#define PCI_SUBCLASS_SATELLITE_DATA	0x04
+
+/* 0x10 encryption/decryption controller subclasses */
+#define PCI_SUBCLASS_CRYPT_NET_COMPUTING	0x00
+#define PCI_SUBCLASS_CRYPT_ENTERTAINMENT	0x10
+#define PCI_SUBCLASS_CRYPT_MISC			0x80
+
+/* 0x11 data acquisition and signal processing controller subclasses */
+#define PCI_SUBCLASS_DATAACQ_DPIO	0x00
+#define PCI_SUBCLASS_DATAACQ_MISC	0x80
+
 
 /* Header */
 #define PCI_HEADER_MISC			0x0c

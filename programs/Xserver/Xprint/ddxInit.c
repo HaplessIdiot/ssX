@@ -30,7 +30,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/ddxInit.c,v 1.7 1997/11/22 10:43:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ddxInit.c,v 1.8 1999/04/28 05:36:07 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -220,13 +220,6 @@ OsVendorInit()
 #ifdef DDXOSFATALERROR
 void
 OsVendorFatalError()
-{
-}
-#endif
-
-#ifdef DDXOSVERRORF
-void
-OsVendorVErrorF(const char *f, va_list args)
 {
 }
 #endif

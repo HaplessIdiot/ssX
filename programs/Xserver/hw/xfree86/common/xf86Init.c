@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.115 1999/05/09 10:51:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.116 1999/05/09 12:49:48 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -162,7 +162,8 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 	const char *ct;
 	t = time(NULL);
 	ct = ctime(&t);
-	xf86MsgVerb(xf86LogFileFrom, 0, "Log file: \"%s\", Time: %s",
+	if (xf86LogFile)
+	    xf86MsgVerb(xf86LogFileFrom, 0, "Log file: \"%s\", Time: %s",
 			xf86LogFile, ct);
     }
 
@@ -259,7 +260,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
      * module pointers for drivers.
      * XXX Nothing keeps track of them for other modules.
      */
-    /* XXX What do we do if all of these couldn't be loaded? */
+    /* XXX What do we do if not all of these could be loaded? */
 #endif
 
     /*
@@ -802,23 +803,10 @@ InitInput(argc, argv)
 void
 OsVendorInit()
 {
-#if 0	/* Moved directly to OsInit() in osinit.c */
-  /* Init the libc wrappers */
-  xf86WrapperInit();
-#endif
 
-
+  /* xf86WrapperInit() is called directly from OsInit() */
 #ifdef SIGCHLD
   signal(SIGCHLD, SIG_DFL);	/* Need to wait for child processes */
-#endif
-#ifdef USE_XF86_SERVERLOCK
-  extern void xf86LockServer();
-  static Bool been_here = FALSE;
-
-  if (!been_here) {
-    xf86LockServer();
-    been_here = TRUE;
-  }
 #endif
   OsDelayInitColors = TRUE;
 #ifdef XFree86LOADER
@@ -908,7 +896,10 @@ void
 OsVendorFatalError()
 {
   ErrorF("\nWhen reporting a problem related to a server crash, please send\n"
-	 "the full server output, not just the last messages\n\n");
+	 "the full server output, not just the last messages\n");
+  if (xf86LogFile)
+    ErrorF("This can be found in the log file \"%s\"\n", xf86LogFile);
+  ErrorF("\n");
 }
 
 /*

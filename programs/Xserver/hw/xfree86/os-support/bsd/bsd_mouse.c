@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.1 1999/05/09 06:06:29 dawes Exp $ */
 
 /*
  * Copyright 1999 by The XFree86 Project, Inc.
@@ -12,17 +12,27 @@
 static int
 SupportedInterfaces(void)
 {
-    return MSE_SERIAL | MSE_BUS | MSE_PS2 | MSE_XPS2 | MSE_AUTO;
+    return MSE_SERIAL | MSE_BUS | MSE_PS2 | MSE_XPS2 | MSE_AUTO | MSE_MISC;
 }
 
-static const char *names[] = {
-#if defined(__FreeBSD__)
-	"SysMouse",
-#elif defined(WSCONS_SUPPORT)
+/* Names of protocols that are handled internally here. */
+static const char *internalNames[] = {
+#if defined(WSCONS_SUPPORT)
 	"WSMouse",
 #endif
 	NULL
 };
+
+/*
+ * Names of MSC_MISC protocols that the OS supports.  These are decoded by
+ * main "mouse" driver.
+ */
+static const char *miscNames[] = {
+#if defined(__FreeBSD__)
+	"SysMouse",
+#endif
+	NULL
+}
 
 static const char **
 BuiltinNames(void)
@@ -35,7 +45,10 @@ CheckProtocol(const char *protocol)
 {
     int i;
 
-    for (i = 0; names[i]; i++)
+    for (i = 0; internalNames[i]; i++)
+	if (xf86NameCmp(protocol, names[i]) == 0)
+	    return TRUE;
+    for (i = 0; miscNames[i]; i++)
 	if (xf86NameCmp(protocol, names[i]) == 0)
 	    return TRUE;
     return FALSE;
@@ -102,7 +115,7 @@ SetupAuto(InputInfoPtr pInfo, int *protoPara)
 }
 
 static void
-SetSysMouseRes(InputInfoPtr pInfo, int rate, int res)
+SetSysMouseRes(InputInfoPtr pInfo, const char *protocol, int rate, int res)
 {
     mousemode_t mode;
 
@@ -155,6 +168,7 @@ xf86OSMouseInit(int flags)
     p->SetupAuto = SetupAuto;
     p->SetPS2Res = SetSysMouseRes;
     p->SetBMRes = SetSysMouseRes;
+    p->SetMiscRes = SetSysMouseRes;
 #endif
 #if defined(__FreeBSD__)
     p->PreInit = SysMousePreInit;

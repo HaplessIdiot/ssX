@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.26 1999/04/04 00:21:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.27 1999/04/28 05:36:17 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -107,6 +107,7 @@ typedef struct _NewClientRec *NewClientPtr;
 #endif
 
 extern Bool OsDelayInitColors;
+extern void (*OsVendorVErrorFProc)(const char *, va_list args);
 
 extern int WaitForSomething(
 #if NeedFunctionPrototypes
@@ -506,8 +507,6 @@ extern void OsVendorFatalError(
     void
 #endif
 );
-
-extern void OsVendorVErrorF(const char *, va_list);
 
 extern void OsVendorInit(
 #if NeedFunctionPrototypes

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.h,v 1.1 1999/05/09 06:06:27 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -32,6 +32,7 @@ typedef enum {
     PROT_NETSCPS2,
     PROT_BM,
     PROT_AUTO,
+    PROT_SYSMOUSE,
     PROT_NUMPROTOS	/* This must always be last. */
 } ProtocolID;
 
@@ -46,6 +47,7 @@ typedef struct _MouseDevRec {
     const char *	mseDevice;
     const char *	protocol;
     ProtocolID		protocolID;
+    int			class;
     Bool		automatic;
     int			mseModel;
     int			baudRate;

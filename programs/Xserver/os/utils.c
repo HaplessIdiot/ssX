@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.49 1999/04/04 00:21:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.50 1999/04/28 05:36:18 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -123,6 +123,10 @@ Bool PanoramiXVisibilityNotifySent = FALSE;
 Bool PanoramiXMapped = FALSE;
 Bool PanoramiXWindowExposureSent = FALSE;
 Bool PanoramiXOneExposeRequest = FALSE;
+#endif
+
+#ifdef DDXOSVERRORF
+void (*OsVendorVErrorFProc)(const char *, va_list args) = NULL;
 #endif
 
 int auditTrailLevel = 1;
@@ -1456,9 +1460,13 @@ VErrorF(f, args)
     if (SyncOn)
         sync();
 #else
-    vfprintf(stderr, f, args);
 #ifdef DDXOSVERRORF
-    OsVendorVErrorF(f, args);
+    if (OsVendorVErrorFProc)
+	OsVendorVErrorFProc(f, args);
+    else
+	vfprintf(stderr, f, args);
+#else
+    vfprintf(stderr, f, args);
 #endif
 #endif /* AIXV3 */
 }
@@ -1466,7 +1474,7 @@ VErrorF(f, args)
 void
 VFatalError(const char *msg, va_list args)
 {
-    vfprintf(stderr, msg, args);
+    VErrorF(msg, args);
     ErrorF("\n");
 #ifdef DDXOSFATALERROR
     OsVendorFatalError();

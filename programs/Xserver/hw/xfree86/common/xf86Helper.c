@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.41 1999/05/07 02:56:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.42 1999/05/09 06:06:18 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1019,46 +1019,26 @@ xf86SaveRestoreImage(int scrnIndex, SaveRestoreFlags what)
     return ret;
 }
 
-/* These functions do the actual writes */
-static void
-VWriteStderr(int verb, const char *f, va_list args)
-{
-    if (xf86Verbose >= verb)
-	vfprintf(stderr, f, args);
-}
-
-static void
-WriteStderr(int verb, const char *f, ...)
-{
-    va_list args;
-
-    va_start(args, f);
-    VWriteStderr(verb, f, args);
-    va_end(args);
-}
-
-static void
-VWriteLogFile(int verb, const char *f, va_list args)
-{
-    if (logfile && xf86LogVerbose >= verb)
-	vfprintf(logfile, f, args);
-}
-
-static void
-WriteLogFile(int verb, const char *f, ...)
-{
-    va_list args;
-
-    va_start(args, f);
-    VWriteLogFile(verb, f, args);
-    va_end(args);
-}
-
+/* These functions do the actual writes. */
 static void
 VWrite(int verb, const char *f, va_list args)
 {
-    VWriteStderr(verb, f, args);
-    VWriteLogFile(verb, f, args);
+    static char buffer[1024];
+    int len = 0;
+
+    /*
+     * Since a va_list can only be processed once, write the string to a
+     * buffer, and then write the buffer out to the appropriate output
+     * stream(s).
+     */
+    if (verb < 0 || xf86LogVerbose >= verb || xf86Verbose >= verb) {
+	vsnprintf(buffer, sizeof(buffer), f, args);
+	len = strlen(buffer);
+    }
+    if ((verb < 0 || xf86Verbose >= verb) && len > 0)
+	fwrite(buffer, len, 1, stderr);
+    if (logfile && (verb < 0 || xf86LogVerbose >= verb) && len > 0)
+	fwrite(buffer, len, 1, logfile);
 }
 
 static void
@@ -1067,8 +1047,7 @@ Write(int verb, const char *f, ...)
     va_list args;
 
     va_start(args, f);
-    VWriteStderr(verb, f, args);
-    VWriteLogFile(verb, f, args);
+    VWrite(verb, f, args);
     va_end(args);
 }
 
@@ -1120,8 +1099,7 @@ xf86VDrvMsgVerb(int scrnIndex, MessageType type, int verb, const char *format,
 	    Write(verb, "%s(%d): ", xf86Screens[scrnIndex]->name, scrnIndex);
 	VWrite(verb, format, args);
 	if (type == X_ERROR && xf86Verbose < xf86LogVerbose) {
-	    WriteStderr(xf86Verbose,
-			X_ERROR_STRING " Please check the log file \"%s\""
+	    fprintf(stderr, X_ERROR_STRING " Please check the log file \"%s\""
 			" >before<\n\treporting a problem.\n", xf86LogFile);
 	}
     }
@@ -1196,6 +1174,12 @@ xf86ErrorF(const char *format, ...)
     va_end(ap);
 }
 
+static void
+OsVendorVErrorF(const char *f, va_list args)
+{
+    VWrite(-1, f, args);
+}
+
 void
 xf86LogInit()
 {
@@ -1217,11 +1201,11 @@ xf86LogInit()
     if ((logfile = fopen(xf86LogFile, "w")) == NULL)
 	FatalError("Cannot open log file \"%s\"\n", xf86LogFile);
     setvbuf(logfile, NULL, _IONBF, 0);
-#if 0
-    xf86Msg(xf86LogFileFrom, "Log file is \"%s\"\n", xf86LogFile);
-#endif
+    OsVendorVErrorFProc = OsVendorVErrorF;
 
 #undef LOGSUFFIX
+#else /* __EMX__ */
+    xf86LogFile = NULL;
 #endif /* __EMX__ */
 }
 
@@ -1232,12 +1216,6 @@ xf86CloseLog()
 	fclose(logfile);
 	logfile = NULL;
     }
-}
-
-void
-OsVendorVErrorF(const char *f, va_list args)
-{
-    VWriteLogFile(xf86LogVerbose, f, args);
 }
 
 

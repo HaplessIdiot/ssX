@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.173 1999/05/05 14:29:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.174 1999/05/09 06:06:16 dawes Exp $ */
 
 
 /*
@@ -350,11 +350,11 @@ xf86ConfigError(char *msg, ...)
 {
     va_list ap;
 
-    va_start(ap, msg);
     ErrorF("\nConfig Error:\n");
+    va_start(ap, msg);
     VErrorF(msg, ap);
-    ErrorF("\n");
     va_end(ap);
+    ErrorF("\n");
     return;
 }
 
@@ -1237,6 +1237,7 @@ configImpliedLayout(serverLayoutPtr servlayoutp, XF86ConfScreenPtr conf_screen)
     MessageType from;
     XF86ConfScreenPtr s;
     screenLayoutPtr slp;
+    IDevPtr indp;
 
     if (!servlayoutp)
 	return FALSE;
@@ -1275,6 +1276,10 @@ configImpliedLayout(serverLayoutPtr servlayoutp, XF86ConfScreenPtr conf_screen)
     servlayoutp->screens = slp;
     servlayoutp->inactives = NULL;
     servlayoutp->options = NULL;
+    /* XXX Need to handle input devices.  Set up an empty list for now. */
+    indp = xnfalloc(sizeof(IDevRec));
+    indp->identifier = NULL;
+    servlayoutp->inputs = indp;
     return TRUE;
 }
 

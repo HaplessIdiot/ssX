@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.221 1999/05/04 09:35:20 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.222 1999/05/09 06:06:12 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -699,12 +699,19 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #endif
 #endif
 
+#if !HasSnprintf
+#define ServerSnprintfDefines -DNEED_SNPRINTF
+#else
+#define ServerSnprintfDefines /**/
+#endif
+
 /* Server defines required for all OSs */
 #ifndef XFree86ServerDefines
 #define XFree86ServerDefines	-DAVOID_GLYPHBLT -DPIXPRIV -DSINGLEDEPTH \
 				XFree86DGADefines XFree86XvDefines \
 				XFree86LoaderDefines -DXFree86Server \
 				VidModeExtensionDefines \
+				ServerSnprintfDefines \
 				-DX_BYTE_ORDER=ByteOrder NewInputDefines
 #endif
 
