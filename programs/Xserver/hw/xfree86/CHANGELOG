@@ -1,17 +1,35 @@
-3983. Fix Xinerama problems that occured when screen zero was not at (0,0)
+XFree86 4.0a (xx March 2000)
+  22. Fix Xinerama problems that occured when screen zero was not at (0,0)
       (Mark Vojkovich).
-3982. Add untested support for Matrox SDRAM G400s (Mark Vojkovich).
-3981. Improve memory probing reliability in the Matrox driver (Mark Vojkovich).
-3980. Change loader search order to look in more specific subdirectories first,
+  21. Add untested support for Matrox SDRAM G400s (Mark Vojkovich).
+  20. Improve memory probing reliability in the Matrox driver (Mark Vojkovich).
+  19. Change loader search order to look in more specific subdirectories first,
+  18. Fix DESIGN doc and XF86Config man page information about the Screen
+      entry format in the ServerLayout sections (David Dawes).
+  17. Attempt to add support for Matrox SDRAM G400s (Mark Vojkovich).
+  16. Improve memory probing reliability in the Matrox driver (Mark Vojkovich).
+  15. Change loader search order to look in more specific subdirectories first,
       thereby avoiding loading 3.3.* module versions (Marc La France).
-3979. Fix some problems with layers forgetting that SwitchMode is an
+  14. Remove the var-* bindist files for platforms that don't use Xvar.tgz
+      (David Dawes).
+  13. No Xset.tgz, so remove the set-list bindist files (David Dawes).
+  12. Fix Xinstall's symlink testing for Solaris (/bin/sh's builtin doesn't
+      recognise '-L') (David Dawes).
+  11. Update Xinstall.sh to handle the xkb/compiled directory properly in all
+      cases, including when there is no Xvar.tgz tarball (David Dawes).
+  10. Add missing cs_CZ.ISO_8859-2 entries to locale.alias (#A.20,
+      Cejka Rudolf).
+   9. Updates to Linux-ix86 bindist host.def file.
+   8. Fix installation of iso8859-{1,2,3} Compose files, and fix the czech
+      entry in locale.alias (Charles Lopes).
+   7. Fix some problems with layers forgetting that SwitchMode is an
       optional function (Mark Vojkovich).
-3978. Parser bug fix for hexadecimal numbers (Marc La France).
-3977. Fix scanpci (Marc La France).
-3976. DPMS #include fix (Marc La France).
-3975. Fix an event ordering problem in Xinerama (Mark Vojkovich).
-3974. Fix some clipping bugs in the Xv DDX (Mark Vojkovich).
-3973. Remove 24bpp shadowfb support from the NV driver since the hardware
+   6. Parser bug fix for hexadecimal numbers (Marc La France).
+   5. Fix scanpci (Marc La France).
+   4. DPMS #include fix (Marc La France).
+   3. Fix an event ordering problem in Xinerama (Mark Vojkovich).
+   2. Fix some clipping bugs in the Xv DDX (Mark Vojkovich).
+   1. Remove 24bpp shadowfb support from the NV driver since the hardware
       is not capable of 24bpp (Mark Vojkovich).
 
 XFree86 4.0 (8 March 2000)
@@ -10051,4 +10069,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1086 2000/03/18 19:33:19 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1089 2000/03/18 23:07:36 mvojkovi Exp $
