@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.175 2001/02/08 23:36:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.176 2001/05/18 23:35:31 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -1146,6 +1146,7 @@ ddxProcessArgument(int argc, char **argv, int i)
    * yet.  Use malloc/free instead.
    */
 
+#ifdef DDXOSVERRORF
   static Bool beenHere = FALSE;
 
   if (!beenHere) {
@@ -1156,6 +1157,7 @@ ddxProcessArgument(int argc, char **argv, int i)
     OsVendorVErrorFProc = OsVendorVErrorF;
     beenHere = TRUE;
   }
+#endif
 
   /* First the options that are only allowed for root */
   if (getuid() == 0)

@@ -3,7 +3,7 @@
 
 
 
-// $XFree86: xc/programs/xkbcomp/keymap/xfree86,v 3.19 2001/03/23 01:27:09 paulo Exp $
+// $XFree86: xc/programs/xkbcomp/keymap/xfree86,v 3.20 2001/05/18 23:35:34 dawes Exp $
 
 default xkb_keymap "us" {
     xkb_keycodes	{ include "xfree86"		};
@@ -124,12 +124,19 @@ xkb_keymap "lt_p"	{
     xkb_symbols		{ include "en_US(pc105)+lt_p"	};
     xkb_geometry 	{ include "pc(pc102)"		};
 };
+xkb_keymap "lv"	{
+    xkb_keycodes	{ include "xfree86"		};
+    xkb_types		{ include "default"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{ include "en_US(pc105)+lv"	};
+    xkb_geometry 	{ include "pc(pc102)"		};
+};
 xkb_keymap "mk" {
-    xkb_keycodes        { include "xfree86"                     };
-    xkb_types           { include "default"                     };
-    xkb_compatibility   { include "default"                     };
-    xkb_symbols         { include "en_US(pc105)+mk"             };
-    xkb_geometry        { include "pc(pc102)"                   };
+    xkb_keycodes	{ include "xfree86"		};
+    xkb_types		{ include "default"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{ include "en_US(pc105)+mk"	};
+    xkb_geometry	{ include "pc(pc102)"		};
 };
 xkb_keymap "no"	{
     xkb_keycodes	{ include "xfree86"		};
@@ -244,70 +251,68 @@ xkb_keymap "br"	{
 // are designed to replace old czechoslovakian and czsk keyboards
 // and their prog variants. Those are now obsolete and should not be used anymore.
 xkb_keymap "cz" {
-    xkb_keycodes      { include "xfree86"             };
-    xkb_types         { include "default"             };
-    xkb_options       { include "grp_led:scroll"      };
-    xkb_symbols       { include "cz"                  };
-    xkb_geometry      { include "pc"                  };
+    xkb_keycodes	{ include "xfree86"		};
+    xkb_types		{ include "default"		};
+    xkb_options		{ include "grp_led:scroll"	};
+    xkb_symbols		{ include "cz"			};
+    xkb_geometry	{ include "pc"			};
 };
 xkb_keymap "cz_qwerty" {
-    xkb_keycodes      { include "xfree86"             };
-    xkb_types         { include "default"             };
-    xkb_options       { include "grp_led:scroll"      };
-    xkb_symbols       { include "cz_qwerty"           };
-    xkb_geometry      { include "pc"                  };
+    xkb_keycodes	{ include "xfree86"		};
+    xkb_types		{ include "default"		};
+    xkb_options		{ include "grp_led:scroll"	};
+    xkb_symbols		{ include "cz_qwerty"		};
+    xkb_geometry	{ include "pc"			};
 };
 xkb_keymap "sk" {
-    xkb_keycodes      { include "xfree86"             };
-    xkb_types         { include "default"             };
-    xkb_options       { include "grp_led:scroll"      };
-    xkb_symbols       { include "sk"                  };
-    xkb_geometry      { include "pc"                  };
+    xkb_keycodes	{ include "xfree86"		};
+    xkb_types		{ include "default"		};
+    xkb_options		{ include "grp_led:scroll"	};
+    xkb_symbols		{ include "sk"			};
+    xkb_geometry	{ include "pc"			};
 };
 xkb_keymap "sk_qwerty" {
-    xkb_keycodes      { include "xfree86"             };
-    xkb_types         { include "default"             };
-    xkb_options       { include "grp_led:scroll"      };
-    xkb_symbols       { include "sk_qwerty"           };
-    xkb_geometry      { include "pc"                  };
+    xkb_keycodes	{ include "xfree86"		};
+    xkb_types		{ include "default"		};
+    xkb_options		{ include "grp_led:scroll"	};
+    xkb_symbols		{ include "sk_qwerty"		};
+    xkb_geometry	{ include "pc"			};
 };
 
-xkb_keymap "sl"        {
-    xkb_keycodes       { include "xfree86"             };
-    xkb_types          { include "default"             };
-    xkb_compatibility  { include "default"             };
-    xkb_symbols                { include "en_US(pc105)+si"     };
-    xkb_geometry       { include "pc(pc102)"           };
+xkb_keymap "sl" {
+    xkb_keycodes	{ include "xfree86"		};
+    xkb_types		{ include "default"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{ include "en_US(pc105)+si"	};
+    xkb_geometry	{ include "pc(pc102)"		};
 };
-xkb_keymap "sl_SI"     {
-    xkb_keycodes       { include "xfree86"             };
-    xkb_types          { include "default"             };
-    xkb_compatibility  { include "default"             };
-    xkb_symbols                { include "en_US(pc105)+si"     };
-    xkb_geometry       { include "pc(pc102)"           };
+xkb_keymap "sl_SI" {
+    xkb_keycodes	{ include "xfree86"		};
+    xkb_types		{ include "default"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{ include "en_US(pc105)+si"	};
+    xkb_geometry	{ include "pc(pc102)"		};
 };
 
 // Additions by Cristian Gafton, <gafton@redhat.com>
-xkb_keymap "ro"        {
-    xkb_keycodes       { include "xfree86"                     };
-    xkb_types          { include "default"                     };
-    xkb_compatibility  { include "default"                     };
-    xkb_symbols                { include "en_US(pc101)+ro(pc101)"
-    };
-    xkb_geometry       { include "pc(pc101)"                   };
+xkb_keymap "ro" {
+    xkb_keycodes	{ include "xfree86"			};
+    xkb_types		{ include "default"			};
+    xkb_compatibility	{ include "default"			};
+    xkb_symbols		{ include "en_US(pc101)+ro(pc101)"	};
+    xkb_geometry	{ include "pc(pc101)"			};
 };
-xkb_keymap "ro_microsoft"      {
-    xkb_keycodes       { include "xfree86"                     };
-    xkb_types          { include "default"                     };
-    xkb_compatibility  { include "default"                     };
-    xkb_symbols                { include "en_US(pc105)+ro(pc105)"
-    };
-    xkb_geometry       { include "pc(pc105)"                   };
+xkb_keymap "ro_microsoft" {
+    xkb_keycodes	{ include "xfree86"			};
+    xkb_types		{ include "default"			};
+    xkb_compatibility	{ include "default"			};
+    xkb_symbols		{ include "en_US(pc105)+ro(pc105)"	};
+    xkb_geometry	{ include "pc(pc105)"			};
 };
-xkb_keymap "tr"         {
-    xkb_keycodes        { include "xfree86"             };
-    xkb_types           { include "default"             };
-    xkb_compatibility   { include "default"             };
-    xkb_symbols         { include "en_US(pc105)+tr"     };
-    xkb_geometry        { include "pc(pc102)"           };
+xkb_keymap "tr" {
+    xkb_keycodes	{ include "xfree86"		};
+    xkb_types		{ include "default"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{ include "en_US(pc105)+tr"	};
+    xkb_geometry	{ include "pc(pc102)"		};
 };

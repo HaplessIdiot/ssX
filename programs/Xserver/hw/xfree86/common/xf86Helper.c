@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.110 2001/05/04 19:05:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.111 2001/05/15 18:22:21 paulo Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1368,8 +1368,10 @@ xf86LogInit()
     if ((logfile = fopen(xf86LogFile, "w")) == NULL)
 	FatalError("Cannot open log file \"%s\"\n", xf86LogFile);
     setvbuf(logfile, NULL, _IONBF, 0);
+#ifdef DDXOSVERRORF
     if (!OsVendorVErrorFProc)
 	OsVendorVErrorFProc = OsVendorVErrorF;
+#endif
 
     /* Flush saved log information */
     if (saveBuffer && size > 0) {

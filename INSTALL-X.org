@@ -86,9 +86,15 @@ This quick summary is no substitute for reading the full build instruc-
 tions later in this document.
 
 Edit xc/config/cf/site.def for local preferences.  If you want to
-install somewhere other than /usr/X11R6.5.1, change ProjectRoot. (Do not
-use DESTDIR.)  If you want to build with gcc uncomment the HasGcc2 line.
-If you have gcc, but not cc, please read the full build instructions.
+install and use the installation from somewhere other than
+/usr/X11R6.5.1, change ProjectRoot. (Do not use DESTDIR.)
+
+If you are cross compiling you will want to use DESTDIR to specify where
+the installation should take place. Failure to do so will corrupt your
+native installation of X.
+
+If you want to build with gcc uncomment the HasGcc2 line.  If you have
+gcc, but not cc, please read the full build instructions.
 
 If some time has elapsed since the initial release of R6.5.1, check to
 see if any public patches have been released. The source tar files may
