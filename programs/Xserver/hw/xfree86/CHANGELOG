@@ -1,4 +1,5 @@
 XFree86 4.0.99.3 (xx April 2001)
+ 412. Fix installation of specs docs (#4575, Branden Robinson).
  411. Make Cygwin/XFree86 call miSetPixmapDepth for RENDER extension
       (Alan Hourihane).
  410. Xterm patch #155 (Thomas Dickey): correct change to return-type of
@@ -13030,4 +13031,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1707 2001/04/21 12:35:18 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1708 2001/04/22 19:52:33 alanh Exp $
