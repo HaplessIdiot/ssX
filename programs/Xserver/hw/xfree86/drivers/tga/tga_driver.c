@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.14 1999/01/26 05:54:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.15 1999/02/07 11:11:15 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -604,7 +604,7 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
     }
     else { /* try to divine the amount of RAM */
       Base = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
-			   pTga->PciTag, (pointer)pTga->IOAddress, 4);
+			   pTga->PciTag, (pointer)pTga->FbAddress, 4);
       pTga->CardType = (*(unsigned int *)Base >> 12) & 0xf;
       xf86UnMapVidMem(pScrn->scrnIndex, Base, 4);
     }
@@ -1239,8 +1239,9 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!miCreateDefColormap(pScreen))
 	return FALSE;
 
-    if (!RamDacHandleColormaps(pScreen, 256, pScrn->rgbBits,
-	 CMAP_RELOAD_ON_MODE_SWITCH | CMAP_PALETTED_TRUECOLOR))
+    if ((pScrn->bitsPerPixel==8) && 
+        (!RamDacHandleColormaps(pScreen, 256, pScrn->rgbBits,
+	 CMAP_RELOAD_ON_MODE_SWITCH | CMAP_PALETTED_TRUECOLOR)))
 	return FALSE;
 
     pTga->CloseScreen = pScreen->CloseScreen;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.95 1999/01/24 13:32:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.96 1999/01/26 10:40:17 dawes Exp $ */
 
 /*
  * Copyright 1991-1998 by The XFree86 Project, Inc.
@@ -1010,10 +1010,14 @@ ddxProcessArgument(int argc, char **argv, int i)
     xf86ScreenName = argv[i];
     return 2;
   }
+  if (!strcmp(argv[i], "-scanpci"))
+  {
+ErrorF("scanpci option found\n");
+    DoScanPci(argc, argv, i);
+  }
   /* OS-specific processing */
   return xf86ProcessArgument(argc, argv, i);
 }
-
 
 /*
  * ddxUseMsg --

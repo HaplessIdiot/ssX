@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.13 1999/01/31 12:21:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.14 1999/02/07 06:18:34 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -14,35 +14,108 @@
 /* PCI Pseudo Vendor */
 #define PCI_VENDOR_GENERIC      0x00FF
 
+#define PCI_VENDOR_COMPAQ	0x0E11
 #define PCI_VENDOR_NCR_1	0x1000
 #define PCI_VENDOR_ATI		0x1002
+#define PCI_VENDOR_VLSI		0x1004
 #define PCI_VENDOR_AVANCE	0x1005
+#define PCI_VENDOR_NS		0x100B
 #define PCI_VENDOR_TSENG	0x100C
 #define PCI_VENDOR_WEITEK	0x100E
 #define PCI_VENDOR_DIGITAL	0x1011
 #define PCI_VENDOR_CIRRUS	0x1013
 #define PCI_VENDOR_IBM		0x1014
 #define PCI_VENDOR_NCR_2	0x101A
+#define PCI_VENDOR_WD		0x101C
+#define PCI_VENDOR_AMD		0x1022
 #define PCI_VENDOR_TRIDENT	0x1023
+#define PCI_VENDOR_ALI		0x1025
 #define PCI_VENDOR_MATROX	0x102B
 #define PCI_VENDOR_CHIPSTECH	0x102C
+#define PCI_VENDOR_MIRO		0x1031
+#define PCI_VENDOR_NEC		0x1033
+#define PCI_VENDOR_FD		0x1036
 #define PCI_VENDOR_SIS		0x1039
+#define PCI_VENDOR_HP		0x103C
+#define PCI_VENDOR_SMC_PCTECH	0x1042
+#define PCI_VENDOR_DPT		0x1044
+#define PCI_VENDOR_OPTI		0x1045
+#define PCI_VENDOR_ELSA		0x1048
 #define PCI_VENDOR_SGS		0x104A
+#define PCI_VENDOR_BUSLOGIC	0x104B
 #define PCI_VENDOR_TI		0x104C
+#define PCI_VENDOR_OAK		0x104E
+#define PCI_VENDOR_WINBOND	0x1050
+#define PCI_VENDOR_MOTOROLA	0x1057
+#define PCI_VENDOR_PROMISE	0x105A
 #define PCI_VENDOR_NUMNINE	0x105D
 #define PCI_VENDOR_UMC		0x1060
+#define PCI_VENDOR_X		0x1061
+#define PCI_VENDOR_PICOP	0x1066
+#define PCI_VENDOR_APPLE	0x106B
+#define PCI_VENDOR_NEXGEN	0x1074
+#define PCI_VENDOR_QLOGIC	0x1077
+#define PCI_VENDOR_CYRIX	0x1078
+#define PCI_VENDOR_LEADTEK	0x107D
+#define PCI_VENDOR_CONTAQ	0x1080
+#define PCI_VENDOR_FOREX	0x1083
+#define PCI_VENDOR_OLICOM	0x108D
+#define PCI_VENDOR_SUN		0x108E
+#define PCI_VENDOR_DIAMOND	0x1092
+#define PCI_VENDOR_CMD		0x1095
+#define PCI_VENDOR_VISION	0x1098
 #define PCI_VENDOR_BROOKTREE	0x109E
+#define PCI_VENDOR_SIERRA	0x10A8
+#define PCI_VENDOR_ACC		0x10AA
+#define PCI_VENDOR_WINBOND_2	0x10AB
+#define PCI_VENDOR_DATABOOK	0x10B3
+#define PCI_VENDOR_3COM		0x10B7
+#define PCI_VENDOR_SMC		0x10B8
+#define PCI_VENDOR_ALI_2	0x10B9
+#define PCI_VENDOR_MITSUBISHI	0x10BA
+#define PCI_VENDOR_SURECOM	0x10BD
 #define PCI_VENDOR_NEOMAGIC	0x10C8
+#define PCI_VENDOR_ASP		0x10CD
+#define PCI_VENDOR_CERN		0x10DC
 #define PCI_VENDOR_NVIDIA	0x10DE
+#define PCI_VENDOR_IMS		0x10E0
+#define PCI_VENDOR_TEKRAM	0x10E1
+#define PCI_VENDOR_TUNDRA	0x10E3
+#define PCI_VENDOR_AMCC		0x10E8
+#define PCI_VENDOR_INTEGRAPHICS	0x10EA
+#define PCI_VENDOR_REALTEC	0x10EC
+#define PCI_VENDOR_TRUEVISION	0x10FA
+#define PCI_VENDOR_INITIO	0x1101
+#define PCI_VENDOR_VIA		0x1106
+#define PCI_VENDOR_VORTEX	0x1119
+#define PCI_VENDOR_EF		0x111A
+#define PCI_VENDOR_FORE		0x1127
+#define PCI_VENDOR_IMAGTEC	0x112F
+#define PCI_VENDOR_PLX		0x113C
 #define PCI_VENDOR_ALLIANCE	0x1142
+#define PCI_VENDOR_VMIC		0x114A
+#define PCI_VENDOR_DIGI		0x114F
+#define PCI_VENDOR_MUTECH	0x1159
 #define PCI_VENDOR_RENDITION	0x1163
+#define PCI_VENDOR_TOSHIBA	0x1179
+#define PCI_VENDOR_ZEINET	0x1193
+#define PCI_VENDOR_SPECIALIX	0x11CB
+#define PCI_VENDOR_CONTROL	0x11FE
+#define PCI_VENDOR_CYCLADES	0x120E
 #define PCI_VENDOR_3DFX		0x121A
+#define PCI_VENDOR_SIGMADESIGNS	0x1236
+#define PCI_VENDOR_YOKOGAWA	0x1281
 #define PCI_VENDOR_TRITECH	0x1292
 #define PCI_VENDOR_NVIDIA_SGS	0x12d2
-#define PCI_VENDOR_SIGMADESIGNS	0x1236
+#define PCI_VENDOR_SYMPHONY	0x1C1C
+#define PCI_VENDOR_TEKRAM_2	0x1DE1
 #define PCI_VENDOR_3DLABS	0x3D3D
+#define PCI_VENDOR_AVANCE_2	0x4005
+#define PCI_VENDOR_HERCULES	0x4843
 #define PCI_VENDOR_S3		0x5333
 #define PCI_VENDOR_INTEL	0x8086
+#define PCI_VENDOR_ADAPTEC	0x9004
+#define PCI_VENDOR_ATRONICS	0x907F
 #define PCI_VENDOR_ARK		0xEDD8
 
 
@@ -50,25 +123,63 @@
 #define PCI_CHIP_VGA            0x0000
 #define PCI_CHIP_8514           0x0001
 
+/* Compaq */
+#define PCI_CHIP_QV1280		0x3033
+#define PCI_CHIP_SMART		0xAE10
+#define PCI_CHIP_NETELL100	0xAE32
+#define PCI_CHIP_NETELL10	0xAE34
+#define PCI_CHIP_NETFLEX3	0xAE35
+#define PCI_CHIP_NETELL100D	0xAE40
+#define PCI_CHIP_NETELL100PL	0xAE43
+#define PCI_CHIP_NETELL100I	0xB011
+#define PCI_CHIP_THUNDERLAN	0xF130
+#define PCI_CHIP_NETFLEX3BNC	0xF150
+
+/* NCR */
+#define PCI_CHIP_53C810		0x0001
+#define PCI_CHIP_53C820		0x0002
+#define PCI_CHIP_53C825		0x0003
+#define PCI_CHIP_53C815		0x0004
+#define PCI_CHIP_53C810AP	0x0005
+#define PCI_CHIP_53C860		0x0006
+#define PCI_CHIP_53C896		0x000B
+#define PCI_CHIP_53C895		0x000C
+#define PCI_CHIP_53C885		0x000D
+#define PCI_CHIP_53C875		0x000F
+#define PCI_CHIP_53C875J	0x008F
+
 /* ATI */
 #define PCI_CHIP_MACH32		0x4158
-#define PCI_CHIP_MACH64GX	0x4758
-#define PCI_CHIP_MACH64CX	0x4358
 #define PCI_CHIP_MACH64CT	0x4354
+#define PCI_CHIP_MACH64CX	0x4358
 #define PCI_CHIP_MACH64ET	0x4554
-#define PCI_CHIP_MACH64VT	0x5654
-#define PCI_CHIP_MACH64VU	0x5655
-#define PCI_CHIP_MACH64GP	0x4750
-#define PCI_CHIP_MACH64GT	0x4754
-#define PCI_CHIP_MACH64GU	0x4755
-#define PCI_CHIP_MACH64LT	0x4C47
 #define PCI_CHIP_MACH64GB	0x4742
 #define PCI_CHIP_MACH64GD	0x4744
 #define PCI_CHIP_MACH64GI	0x4749
+#define PCI_CHIP_MACH64GP	0x4750
 #define PCI_CHIP_MACH64GQ	0x4751
+#define PCI_CHIP_MACH64GT	0x4754
+#define PCI_CHIP_MACH64GU	0x4755
+#define PCI_CHIP_MACH64GX	0x4758
+#define PCI_CHIP_MACH64LT	0x4C47
+#define PCI_CHIP_MACH64VT	0x5654
+#define PCI_CHIP_MACH64VU	0x5655
+
+/* VLSI */
+#define PCI_CHIP_82C592_FC1	0x0005
+#define PCI_CHIP_82C593_FC1	0x0006
+#define PCI_CHIP_82C594_AFC2	0x0007
+#define PCI_CHIP_82C597_AFC2	0x0009
+#define PCI_CHIP_82C541		0x000C
+#define PCI_CHIP_82C543		0x000D
+#define PCI_CHIP_VAS96011  	0x0702
 
 /* Avance Logic */
 #define PCI_CHIP_ALG2301	0x2301
+
+/* NS */
+#define PCI_CHIP_87415		0x0002
+#define PCI_CHIP_87410		0xD001
 
 /* Tseng */
 #define PCI_CHIP_ET4000_W32P_A	0x3202
@@ -83,7 +194,16 @@
 #define PCI_CHIP_P9100		0x9100
 
 /* Digital */
+#define PCI_CHIP_DC21050	0x0001
+#define PCI_CHIP_DC21040_10	0x0002
 #define PCI_CHIP_DEC21030	0x0004
+#define PCI_CHIP_DC21040_100	0x0009
+#define PCI_CHIP_TGA2    	0x000D
+#define PCI_CHIP_DEFPA   	0x000F
+#define PCI_CHIP_DC21041    	0x0014
+#define PCI_CHIP_DC21142   	0x0019
+#define PCI_CHIP_DC21052 	0x0021
+#define PCI_CHIP_DC21152 	0x0024
 
 /* Cirrus Logic */
 #define PCI_CHIP_GD7548		0x0038
@@ -98,9 +218,24 @@
 #define PCI_CHIP_GD5464		0x00D4
 #define PCI_CHIP_GD5464BD	0x00D5
 #define PCI_CHIP_GD5465		0x00D6
-#define PCI_CHIP_GD7541		0x1204
+#define PCI_CHIP_6729		0x1100
+#define PCI_CHIP_6832		0x1110
 #define PCI_CHIP_GD7542		0x1200
 #define PCI_CHIP_GD7543		0x1202
+#define PCI_CHIP_GD7541		0x1204
+
+/* IBM */
+#define PCI_CHIP_FIRE_CORAL	0x000A
+#define PCI_CHIP_TOKEN_RING	0x0018
+#define PCI_CHIP_82G2675	0x001D
+#define PCI_CHIP_82351		0x0022
+
+/* WD */
+#define PCI_CHIP_7197		0x3296
+
+/* AMD */
+#define PCI_CHIP_79C970		0x2000
+#define PCI_CHIP_53C974		0x2020
 
 /* Trident */
 #define PCI_CHIP_9320		0x9320
@@ -114,6 +249,9 @@
 #define PCI_CHIP_9750		0x9750
 #define PCI_CHIP_9850		0x9850
 
+/* ALI */
+#define PCI_CHIP_M1435		0x1435
+
 /* Matrox */
 #define PCI_CHIP_MGA2085	0x0518
 #define PCI_CHIP_MGA2064	0x0519
@@ -122,6 +260,7 @@
 #define PCI_CHIP_MGA2164_AGP	0x051f
 #define PCI_CHIP_MGAG200_PCI	0x0520
 #define PCI_CHIP_MGAG200	0x0521
+#define PCI_CHIP_IMPRESSION	0x0D10
 #define PCI_CHIP_MGAG100	0x1001
 
 /* Chips & Tech */
@@ -133,26 +272,89 @@
 #define PCI_CHIP_68554		0x00F4
 #define PCI_CHIP_69000		0x00C0
 
+/* Miro */
+#define PCI_CHIP_ZR36050	0x5601
+
+/* NEC */
+#define PCI_CHIP_POWER_VR	0x0046
+
+/* FD */
+#define PCI_CHIP_TMC_18C30	0x0000
+
 /* SiS */
 #define PCI_CHIP_SG86C201	0x0001
 #define PCI_CHIP_SG86C202	0x0002
+#define PCI_CHIP_SG85C503	0x0008
+#define PCI_CHIP_SIS5597	0x0200
 #define PCI_CHIP_SG86C205	0x0205
 #define PCI_CHIP_SG86C215	0x0215
 #define PCI_CHIP_SG86C225	0x0225
-#define PCI_CHIP_SIS5597	0x0200
+#define PCI_CHIP_85C501		0x0406
+#define PCI_CHIP_85C496		0x0496
+#define PCI_CHIP_85C601		0x0601
+#define PCI_CHIP_85C5107	0x5107
+#define PCI_CHIP_85C5511	0x5511
+#define PCI_CHIP_85C5513	0x5513
+#define PCI_CHIP_SIS5571	0x5571
+#define PCI_CHIP_SIS5597_2	0x5597
 #define PCI_CHIP_SIS6326	0x6326
+#define PCI_CHIP_SIS7001	0x7001
+
+/* HP */
+#define PCI_CHIP_J2585A		0x1030
+#define PCI_CHIP_J2585B		0x1031
+
+/* SMC/PCTECH */
+#define PCI_CHIP_RZ1000		0x1000
+#define PCI_CHIP_RZ1001		0x1001
+
+/* DPT */
+#define PCI_CHIP_SMART_CACHE	0xA400
+
+/* Opti */
+#define PCI_CHIP_92C178		0xC178
+#define PCI_CHIP_82C557		0xC557
+#define PCI_CHIP_82C558		0xC558
+#define PCI_CHIP_82C621		0xC621
+#define PCI_CHIP_82C700		0xC700
+#define PCI_CHIP_82C701		0xC701
+#define PCI_CHIP_82C814		0xC814
+#define PCI_CHIP_82C822		0xC822
 
 /* SGS */
 #define PCI_CHIP_STG2000	0x0008
 #define PCI_CHIP_STG1764	0x0009
 
+/* BusLogic */
+#define PCI_CHIP_946C_01	0x0140
+#define PCI_CHIP_946C_10	0x1040
+#define PCI_CHIP_FLASH_POINT	0x8130
+
 /* Texas Instruments */
 #define PCI_CHIP_TI_PERMEDIA	0x3d04
 #define PCI_CHIP_TI_PERMEDIA2	0x3d07
+#define PCI_CHIP_PCI_1130	0xAC12
+#define PCI_CHIP_PCI_1131	0xAC15
+
+/* Oak */
+#define PCI_CHIP_OTI107		0x0107
+
+/* Winbond */
+#define PCI_CHIP_89C940		0x0940
+
+/* Motorola */
+#define PCI_CHIP_MPC105_EAGLE	0x0001
+#define PCI_CHIP_MPC105_GRACKLE	0x0002
+#define PCI_CHIP_RAVEN	 	0x4801
+
+/* Promise */
+#define PCI_CHIP_ULTRA_DMA	0x4D33
+#define PCI_CHIP_DC5030		0x5300
 
 /* Number Nine */
 #define PCI_CHIP_I128		0x2309
 #define PCI_CHIP_I128_2		0x2339
+#define PCI_CHIP_I128_T2R	0x493D
 
 /* BrookTree */
 #define PCI_CHIP_BT848		0x0350
@@ -189,6 +391,7 @@
 #define PCI_CHIP_PERMEDIA2V	0x0009
 
 /* S3 */
+#define PCI_CHIP_PLATO		0x0551
 #define PCI_CHIP_VIRGE		0x5631
 #define PCI_CHIP_TRIO		0x8811
 #define PCI_CHIP_AURORA64VP	0x8812
@@ -209,6 +412,7 @@
 #define PCI_CHIP_Savage3D	0x8A20
 #define PCI_CHIP_Savage3D_MV	0x8A21
 #define PCI_CHIP_VIRGE_MX	0x8C01
+#define PCI_CHIP_VIRGE_MXPLUS	0x8C01
 #define PCI_CHIP_VIRGE_MXP	0x8C03
 
 /* ARK Logic */
@@ -349,22 +553,216 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_STG2000,	"STG2000"},
 				{PCI_CHIP_STG1764,	"STG1764"},
 				{0x0000,		NULL}}},
+    {PCI_VENDOR_BUSLOGIC, "BusLogic", {
+				{PCI_CHIP_946C_01,	"946C 01"},
+				{PCI_CHIP_946C_10,	"946C 10"},
+				{PCI_CHIP_FLASH_POINT,	"FlashPoint"},
+				{0x0000,		NULL}}},
     {PCI_VENDOR_TI,	"Texas Instruments",	{
 				{PCI_CHIP_TI_PERMEDIA,	"Permedia"},
 				{PCI_CHIP_TI_PERMEDIA2,	"Permedia 2"},
+				{PCI_CHIP_PCI_1130,	"PCI 1130"},
+				{PCI_CHIP_PCI_1131,	"PCI 1131"},
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_OAK,	"Oak", {
+				{PCI_CHIP_OTI107,	"OTI107"},
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_WINBOND,"Winbond", {
+				{PCI_CHIP_89C940,	"89C940 NE2000-PCI"},
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_MOTOROLA, "Motorola", {
+				{PCI_CHIP_MPC105_EAGLE,	"MPC105 Eagle"},
+				{PCI_CHIP_MPC105_GRACKLE,"MPC105 Grackle"},
+				{PCI_CHIP_RAVEN,	"Raven"},
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_OAK,	"Promise", {
+				{PCI_CHIP_ULTRA_DMA,	"IDE UltraDMA/33"},
+				{PCI_CHIP_DC5030,	"DC5030"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_NUMNINE, "Number Nine", {
 				{PCI_CHIP_I128,		"Imagine 128"},
 				{PCI_CHIP_I128_2,	"Imagine 128 II"},
+				{PCI_CHIP_I128_T2R,	"Imagine 128 T2R"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_UMC,	"UMC",	{
+                                {0x0101,		"UM8673F"},
+                                {0x673A,		"UM8886BF"},
+                                {0x886A,		"UM8886A"},
+                                {0x8881,		"UM8881F"},
+                                {0x8886,		"UM8886F"},
+                                {0x8891,		"UM8891A"},
+                                {0x9017,		"UM9017F"},
+                                {0xE886,		"UM8886N"},
+                                {0xE891,		"UM8891N"},
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_X , "X", {
+                                {0x0001,		"ITT AGX016"},
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_PICOP , "PICOP", {
+                                {0x0001,		"PT86C52x Vesuvius" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_APPLE, "Apple", {
+                                {0x0001,		"Bandit" },
+				{0x0002,		"Grand Central" },
+				{0x000E,		"Hydra" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_NEXGEN, "Nexgen", {
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_QLOGIC, "QLogic", {
+                                {0x1020,		"ISP1020" },
+				{0x1022,		"ISP1022" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_CYRIX, "Cyrix", {
+                                {0x0000,		"5510" },
+				{0x0001,		"PCI Master" },
+				{0x0002,		"5520" },
+				{0x0100,		"5530 Kahlua Legacy" },
+				{0x0101,		"5530 Kahlua SMI" },
+				{0x0102,		"5530 Kahlua IDE" },
+				{0x0103,		"5530 Kahlua Audio" },
+				{0x0104,		"5530 Kahlua Video" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_LEADTEK, "Leadtek", {
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_CONTAQ, "Contaq", {
+                                {0x0600,		"82C599" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_FOREX, "FOREX", {
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_OLICOM, "Olicom", {
+                                {0x0001,		"OC-3136" },
+				{0x0011,		"OC-2315" },
+				{0x0012,		"OC-2325" },
+				{0x0013,		"OC-2183" },
+				{0x0014,		"OC-2326" },
+				{0x0021,		"OC-6151" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_SUN, "Sun", {
+                                {0x1000,		"EBUS" },
+				{0x1001,		"Happy Meal" },
+				{0x8000,		"PCI Bus Module" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_CMD, "CMD", {
+                                {0x0640,		"640A" },
+				{0x0643,		"643" },
+				{0x0646,		"646" },
+				{0x0670,		"670" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_VISION, "Vision", {
+                                {0x0001,		"QD 8500" },
+				{0x0002,		"QD 8580" },
 				{0x0000,		NULL}}},
     {PCI_VENDOR_BROOKTREE,	"BrookTree",	{
 				{PCI_CHIP_BT848,	"848"},
 				{PCI_CHIP_BT849,	"849"},
 				{0x0000,		NULL}}},
+    {PCI_VENDOR_SIERRA, "Sierra", {
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_ACC, "ACC", {
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_WINBOND_2, "Winbond", {
+                                {0x0001,		"W83769F" },
+                                {0x0105,		"SL82C105" },
+                                {0x0565,		"W83C553" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_DATABOOK, "Databook", {
+                                { 0xB106, "DB87144" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_3COM, "3COM", {
+                                { 0x5900, "3C590 10bT" },
+                                { 0x5950, "3C595 100bTX" },
+                                { 0x5951, "3C595 100bT4" },
+                                { 0x5952, "3C595 10b-MII" },
+                                { 0x9000, "3C900 10bTPO" },
+                                { 0x9001, "3C900 10b Combo" },
+                                { 0x9050, "3C905 100bTX" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_SMC, "SMC", {
+                                { 0x0005, "9432 TX" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_ALI_2, "ALI", {
+                                { 0x1445, "M1445" },
+                                { 0x1449, "M1449" },
+                                { 0x1451, "M1451" },
+                                { 0x1461, "M1461" },
+                                { 0x1489, "M1489" },
+                                { 0x1511, "M1511" },
+                                { 0x1513, "M1513" },
+                                { 0x1521, "M1521" },
+                                { 0x1523, "M1523" },
+                                { 0x1531, "M1531 Aladdin IV" },
+                                { 0x1533, "M1533 Aladdin IV" },
+                                { 0x5215, "M4803" },
+                                { 0x5219, "M5219" },
+                                { 0x5229, "M5229 TXpro" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_MITSUBISHI, "Mitsubishi", {
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_SURECOM, "Surecom", {
+                                { 0x0E34, "NE-34PCI Lan" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_NEOMAGIC,	"Neomagic",	{
+				{PCI_CHIP_NM2070,	"NM2070"},
+				{PCI_CHIP_NM2090,	"NM2090"},
+				{PCI_CHIP_NM2093,	"NM2093"},
+				{PCI_CHIP_NM2160,	"NM2160"},
+				{PCI_CHIP_NM2200,	"NM2200"},
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_ASP, "Advanced System Products", {
+                                { 0x1200, "ABP940" },
+                                { 0x1300, "ABP940U" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_CERN, "CERN", {
+                                { 0x0001, "STAR/RD24 SCI-PCI (PMC)" },
+                                { 0x0002, "STAR/RD24 SCI-PCI (PMC)" },
+				{0x0000,		NULL}}},
     {PCI_VENDOR_NVIDIA,	"NVidia",	{
 				{PCI_CHIP_NV1,		"NV1"},
+				{0x009,			"DAC64"},
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_IMS, "IMS", {
+                                {0x8849, "8849" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_TEKRAM, "Tekram", {
+                                {0x690C, "DC690C" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_TUNDRA, "Tundra", {
+                                {0x0000, "CA91C042 Universe" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_AMCC, "AMCC", {
+                                {0x8043, "Myrinet PCI (M2-PCI-32)" },
+                                {0x807D, "S5933 PCI44" },
+                                {0x809C, "S5933 Traquair HEPC3" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_INTEGRAPHICS, "Intergraphics", {
+                                {0x1680, "IGA-1680" },
+                                {0x1682, "IGA-1682" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_REALTEC, "Realtek", {
+                                {0x8029, "8029" },
+                                {0x8129, "8129" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_TRUEVISION, "Truevision", {
+                                {0x000C, "Targa 1000" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_INITIO, "Initio Corp", {
+                                {0x9100, "320 P" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_VIA, "VIA", {
+                                {0x0505, "VT 82C505" },
+                                {0x0561, "VT 82C505" },
+                                {0x0576, "VT 82C576 3V" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_VORTEX, "Vortex", {
+                                {0x0001, "GDT 6000b" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_EF, "EF", {
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_FORE, "Fore Systems", {
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_IMAGTEC, "Imaging Technology", {
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_PLX, "PLX", {
 				{0x0000,		NULL}}},
     {PCI_VENDOR_NVIDIA_SGS,	"NVidia/SGS-Thomson",	{
 				{PCI_CHIP_RIVA128,	"Riva128"},
@@ -374,13 +772,48 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_AP6422,	"ProMotion 6422"},
 				{PCI_CHIP_AT24,		"ProMotion AT24"},
 				{0x0000,		NULL}}},
+    {PCI_VENDOR_VMIC, "VMIC", {
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_DIGI, "DIGI*", {
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_MUTECH, "Mutech", {
+                                {0x0001,		 "MV1000" },
+				{0x0000,		NULL}}},
     {PCI_VENDOR_RENDITION, "Rendition",	{
 				{PCI_CHIP_V1000,	"Verite 1000"},
 				{PCI_CHIP_V2x00,	"Verite 2x00"},
 				{0x0000,		NULL}}},
+    { 0x1179, "Toshiba", {
+				{0x0000,		NULL}}},
+    { 0x1193, "Zeinet", {
+                                {0x0001, "1221" },
+				{0x0000,		NULL}}},
+    { 0x11CB, "Specialix", {
+				{0x0000,		NULL}}},
+    { 0x11FE, "Control", {
+				{0x0000,		NULL}}},
+    { 0x120E, "Cyclades", {
+				{0x0000,		NULL}}},
     {PCI_VENDOR_3DFX,	"3Dfx Interactive", {
 				{PCI_CHIP_VOODOO_GRAPHICS, "Voodoo Graphics"},
 				{PCI_CHIP_VOODOO2, "Voodoo2"},
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_SIGMADESIGNS, "Sigma Designs", {
+                                {0x6401, "REALmagic64/GX (SD 6425)" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_YOKOGAWA, "YOKOGAWA", {
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_TRITECH,	"Tritech Microelectronics",	{
+				{PCI_CHIP_TR25202,	"Pyramid3D TR25202"},
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_NVIDIA_SGS, "NVidia/SGS-Thomson", {
+                                {0x0018, "Riva128" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_SYMPHONY, "Symphony", {
+                                {0x0001, "82C101" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_TEKRAM_2, "Tekram", {
+                                {0xDC29, "DC290" },
 				{0x0000,		NULL}}},
     {PCI_VENDOR_3DLABS, "3Dlabs", {
 				{PCI_CHIP_300SX,	"GLINT 300SX"},
@@ -392,7 +825,10 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_GAMMA,	"GLINT Gamma"},
 				{PCI_CHIP_PERMEDIA2V,	"GLINT Permedia 2v"},
 				{0x0000,		NULL}}},
+    {PCI_VENDOR_AVANCE_2, "Avance", {
+				{0x0000,		NULL}}},
     {PCI_VENDOR_S3,	"S3",	{
+				{PCI_CHIP_PLATO,	"PLATO/PX"},
 				{PCI_CHIP_VIRGE,	"ViRGE"},
 				{PCI_CHIP_TRIO,		"Trio32/64"},
 				{PCI_CHIP_AURORA64VP,	"Aurora64V+"},
@@ -406,7 +842,8 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_Savage3D,	"Savage3D (86E391)"},
 				{PCI_CHIP_Savage3D_MV,	"Savage3D+MacroVision (86E390)"},
 				{PCI_CHIP_VIRGE_MX,	"ViRGE/MX"},
-				{PCI_CHIP_VIRGE_MXP,	"ViRGE/MX+"},
+				{PCI_CHIP_VIRGE_MXPLUS,	"ViRGE/MX+"},
+				{PCI_CHIP_VIRGE_MXP,	"ViRGE/MX+MV"},
 				{PCI_CHIP_868,		"868"},
 				{PCI_CHIP_928,		"928"},
 				{PCI_CHIP_864_0,	"864"},
@@ -415,27 +852,170 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_964_1,	"964"},
 				{PCI_CHIP_968,		"968"},
 				{0x0000,		NULL}}},
+    {PCI_VENDOR_INTEL,	"Intel",{
+                                { 0x0482, "82375EB pci-eisa bridge"},
+				{ 0x0483, "82424ZX cache dram controller"},
+				{ 0x0484, "82378IB/ZB pci-isa bridge"},
+				{ 0x0486, "82430ZX Aries"},
+				{ 0x04A3, "82434LX/NX pci cache mem controller"},
+				{ 0x1230, "82371 bus-master IDE controller"},
+				{ 0x1223, "SAA7116"},
+				{ 0x1229, "82557 10/100MBit network controller"},
+				{ 0x122D, "82437 Triton"},
+				{ 0x122E, "82471 Triton"},
+				{ 0x1230, "82438"},
+				{ 0x1250, "82439"},
+				{ 0x7000, "82371 pci-isa bridge"},
+				{ 0x7010, "82371 bus-master IDE controller"},
+				{ 0x7100, "82439 TX"},
+				{ 0x7110, "82371AB PIIX4 ISA"},
+				{ 0x7111, "82371AB PIIX4 IDE"},
+				{ 0x7112, "82371AB PIIX4 USB"},
+				{ 0x7113, "82371AB PIIX4 ACPI"},
+				{PCI_CHIP_I740,		"i740"},
+				{0x0000,		NULL}}},
     {PCI_VENDOR_ARK,	"ARK Logic", {
 				{PCI_CHIP_1000PV,	"1000PV"},
 				{PCI_CHIP_2000PV,	"2000PV"},
 				{PCI_CHIP_2000MT,	"2000MT"},
 				{PCI_CHIP_2000MI,	"2000MI"},
 				{0x0000,		NULL}}},
-    {PCI_VENDOR_TRITECH,	"Tritech Microelectronics",	{
-				{PCI_CHIP_TR25202,	"Pyramid3D TR25202"},
-				{0x0000,		NULL}}},
-    {PCI_VENDOR_NEOMAGIC,	"Neomagic",	{
-				{PCI_CHIP_NM2070,	"NM2070"},
-				{PCI_CHIP_NM2090,	"NM2090"},
-				{PCI_CHIP_NM2093,	"NM2093"},
-				{PCI_CHIP_NM2160,	"NM2160"},
-				{PCI_CHIP_NM2200,	"NM2200"},
-				{0x0000,		NULL}}},
-    {PCI_VENDOR_INTEL,	"Intel Corp.",	{
-				{PCI_CHIP_I740,		"i740"},
-				{0x0000,		NULL}}},
     {0x0000,		NULL,	{
 				{0x0000,		NULL}}},
+};
+#endif
+
+#ifdef INIT_PCI_CARD_INFO
+
+/* Increase this as required */
+#define MAX_CARD_PER_VENDOR 80
+
+typedef struct {
+    unsigned short VendorID;
+    char *VendorName;
+    struct pciCard {
+	unsigned short SubsystemID;
+	char *CardName;
+        void (*print_func)(pciCfgRegs *);
+    } Device[MAX_CARD_PER_VENDOR];
+} pciVendorCardInfo;
+
+extern pciVendorCardInfo xf86PCICardInfo[];
+
+#define NF ((void (*)())NULL)
+
+pciVendorCardInfo xf86PCICardInfo[] = {
+        { PCI_VENDOR_ATI, "ATI", {
+                        { 0x4755, "Mach64-GT-B+DVD", NF },
+                        { 0x0084, "Xpert'98", NF },
+                        { 0x4d55, "264GT3 (Rage3D III)", NF },
+                        { 0x0088, "Mach64 (SuSE Econ)", NF },
+                        { 0x4c42, "XPERT LCD", NF },
+                        { 0x0000, (char *)NULL, NF } } },
+	{ PCI_VENDOR_DIAMOND, "Diamond", {
+                        { 0x8000, "C&T 69000", NF },
+                        { 0x1103, "Fire GL 1000", NF },
+                        { 0x0154, "Fire GL 1000 PRO", NF },
+                        { 0x0003, "Monster Fusion", NF },
+                        { 0x8a10, "Stealth 3D 4000", NF },
+                        { 0x0100, "Stealth II G460", NF },
+                        { 0x2000, "Stealth II S220", NF },
+                        { 0x1092, "Viper 330", NF },
+                        { 0x0550, "Viper 550", NF },
+                        { 0x0000, (char *)NULL, NF } } },
+	{ PCI_VENDOR_ELSA, "Elsa", {
+                        { 0x0914, "Elsa Winner 1000", NF },
+                        { 0x0930, "Elsa Winner 1000PRO 864", NF },
+                        { 0x0931, "Elsa Winner 1000PRO Trio32", NF },
+                        { 0x0932, "Elsa Winner 1000Trio Trio64", NF },
+                        { 0x0933, "Elsa Winner 1000TrioV Trio64V+", NF },
+                        { 0x0934, "Elsa Victory 3D", NF },
+                        { 0x0935, "Elsa Winner 1000 T2D", NF },
+                        { 0x0936, "Elsa Winner 1000PRO 868", NF },
+                        { 0x0937, "Elsa Winner 1000PRO/X 868", NF },
+                        { 0x0938, "Elsa Winner 1000ViRGE", NF },
+                        { 0x0939, "Elsa Winner 1000ViRGE/DX", NF },
+                        { 0x093a, "Elsa Winner 1000/T2DX", NF },
+                        { 0x093b, "Elsa Winner DUO M5", NF },
+                        { 0x093c, "Elsa Victory 1000", NF },
+                        { 0x0940, "Elsa Winner 2000PRO 964/TVP3020", NF },
+                        { 0x0941, "Elsa Winner 2000PRO/X 968/TVP3020", NF },
+                        { 0x0942, "Elsa Winner 2000PRO/X 968/TVP3026", NF },
+                        { 0x0943, "Elsa Winner 2000AVI 968/TVP3026", NF },
+                        { 0x0948, "Elsa Winner 2000PRO-8 964/RGB528", NF },
+                        { 0x094a, "Elsa Winner 2000PRO-8 968/RGB528", NF },
+                        { 0x094b, "Elsa Winner 2000PRO-8 968/TVP3030", NF },
+                        { 0x0950, "Elsa ViRGE/VX", NF },
+                        { 0x0951, "Elsa Winner 2000AVI 3D", NF },
+                        { 0x0952, "Elsa Winner 2000AVI 220", NF },
+                        { 0x0960, "Elsa Winner 3000M", NF },
+                        { 0x0962, "Elsa Winner 3000L", NF },
+                        { 0x0964, "Elsa Winner 3000XL", NF },
+                        { 0x096a, "Elsa Winner 3000Twin", NF },
+                        { 0x096c, "Elsa Winner 3000LT", NF },
+                        { 0x0980, "Elsa GLoria 4 TVP3026", NF },
+                        { 0x0982, "Elsa GLoria 4 TVP3030", NF },
+                        { 0x0981, "Elsa GLoria 8", NF },
+                        { 0x0a10, "Elsa GLoria M", NF },
+                        { 0x0a14, "Elsa GLoria S", NF },
+                        { 0x0a31, "Elsa Winner 2000 Office", NF },
+                        { 0x0a32, "Elsa GLoria Synergy P2C", NF },
+                        { 0x0a33, "Elsa GLoria Synergy P2C", NF },
+                        { 0x0a34, "Elsa GLoria Synergy P2V", NF },
+                        { 0x0a35, "Elsa GLoria Synergy P2A", NF },
+                        { 0x0a36, "Elsa Quad GLoria Synergy P2A", NF },
+                        { 0x0a40, "Elsa GLoria MX", NF },
+                        { 0x0a41, "Elsa GLoria XL", NF },
+                        { 0x0a42, "Elsa GLoria XXL", NF },
+                        { 0x0a43, "Elsa Winner 2000 Office P2V", NF },
+                        { 0x0a44, "Elsa Winner 2000 Office P2A", NF },
+                        { 0x0a80, "Elsa GLoria S MAC", NF },
+                        { 0x0c10, "Elsa Victory Erazor 4", NF },
+                        { 0x0c11, "Elsa Victory Erazor 8", NF },
+                        { 0x0c12, "Elsa Winner 1000 R3D", NF },
+                        { 0x0c13, "Elsa Winner 1000 ZX4", NF },
+                        { 0x0c14, "Elsa Victory Erazor/LT SGRAM", NF },
+                        { 0x0c15, "Elsa Victory Erazor/LT SDRAM", NF },
+                        { 0x0c18, "Elsa Erazor II SGRAM", NF },
+                        { 0x0c19, "Elsa Erazor II SDRAM video", NF },
+                        { 0x0c1a, "Elsa Synergy Pro", NF },
+                        { 0x0c1c, "Elsa Erazor II SDRAM", NF },
+                        { 0x0c20, "Elsa Synergy II 32", NF },
+                        { 0x0c21, "Elsa Synergy II 16", NF },
+                        { 0x0c22, "Elsa Erazor III", NF },
+                        { 0x0c23, "Elsa Erazor III video", NF },
+                        { 0x0d10, "Elsa Victory II SGRAM", NF },
+                        { 0x0d11, "Elsa Victory II SDRAM", NF },
+                        { 0x0000, (char *)NULL, NF } } },
+	{ PCI_VENDOR_HERCULES, "Hercules", {
+                        { 0x0001, "Thriller3D", NF },
+                        { 0x0000, (char *)NULL, NF } } },
+	{ PCI_VENDOR_IBM, "IBM", {
+                        { 0x00ba, "Thinkpad 600 NeoMagic NM2160", NF },
+                        { 0x0000, (char *)NULL, NF } } },
+	{ PCI_VENDOR_MATROX, "Matrox", {
+                        { 0x1100, "Mystique", NF },
+                        { 0x1000, "Millennium II", NF },
+                        { 0x0100, "Millennium II", NF },
+                        { 0x1200, "Millennium II", NF },
+                        { 0xff00, "Millennium G200 SD", NF },
+                        { 0xff03, "Millennium G200 SG", NF },
+                        { 0xff02, "Mystique G200 SD", NF },
+                        { 0xff04, "Marvel G200 SD", NF },
+                        { 0x1001, "Productiva G100 SG", NF },
+                        { 0x0000, (char *)NULL, NF } } },
+	{ PCI_VENDOR_SIS, "SIS", {
+                        { 0x6326, "6326", NF },
+                        { 0x0000, (char *)NULL, NF } } },
+	{ PCI_VENDOR_S3, "S3", {
+                        { 0x8904, "Trio3D", NF },
+                        { 0x8a10, "ViRGE/GX2", NF },
+                        { 0x0000, (char *)NULL, NF } } },
+	{ PCI_VENDOR_TOSHIBA, "Toshiba", {
+                        { 0x0001, "4010CDT CT65555", NF },
+                        { 0x0000, (char *)NULL, NF } } },
+	{0x0000,		NULL,	{
+	  		{0x0000,  NULL, NF } } },
 };
 #endif
 

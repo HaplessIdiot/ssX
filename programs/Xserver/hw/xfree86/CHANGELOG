@@ -1,3 +1,19 @@
+XFree86 3.9Pa (13 February 1999)
+2252. Add -scanpci option and a scanpci module to the server. Add tons
+      of PCI2.1 subsystem ids to identify specifc cards; the PCI data
+      base needs more work (Dirk Hohndel).
+2251. Remove obsolete xf86[GS]etDefaultColorVisualClass() and fix some
+      small typos and comments; make type of BIOS, Memory and I/O
+      bases consistent (#2460,2465 Marc LaFrance). 
+2250. Add ScanlineCPUToScreen for TX/MX and older Permedia chipsets
+      for when PCI retries are not enabled (#2459,2461,2462,2463 
+      Alan Hourihane). 
+2249. Add 24/8 overlay support for 3Dlabs chipsets and switch to MMIO
+      for vga access (#2459, Alan Hourihane).
+2248. Add 24/8 overlay support to IBM526 and IBM640 ramdacs, fix IBM640 hw
+      cursor (#2458, Alan Hourihane).
+2247. Fix depth 24 support in TGA driver (#2456, Tim Rowley).
+
 XFree86 3.9P (7 February 1999)
 2246. Some TGA driver speedups and cleanups (#2454, Matt Grossman).
 2245. Fix a lock_display() prototype problem in Xlibint.h that shows up
@@ -7264,4 +7280,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.684 1999/02/07 06:18:30 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.685 1999/02/07 11:11:11 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/IBM.h,v 1.5 1998/08/29 05:44:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/IBM.h,v 1.6 1998/08/29 14:34:41 dawes Exp $ */
 
 #include <xf86RamDac.h>
 
@@ -98,10 +98,13 @@ void IBMramdac640HWCursorInit(xf86CursorInfoPtr infoPtr);
 #define IBMRGB_border_col_r	0x60
 #define IBMRGB_border_col_g	0x61
 #define IBMRGB_botder_col_b	0x62
+#define IBMRGB_key		0x68
+#define IBMRGB_key_mask		0x6C
 #define IBMRGB_misc1		0x70
 #define IBMRGB_misc2		0x71
 #define IBMRGB_misc3		0x72
 #define IBMRGB_misc4		0x73  /* not RGB525 */
+#define IBMRGB_key_control	0x78
 #define IBMRGB_dac_sense	0x82
 #define IBMRGB_misr_r		0x84
 #define IBMRGB_misr_g		0x86
@@ -354,6 +357,8 @@ void IBMramdac640HWCursorInit(xf86CursorInfoPtr infoPtr);
 #define		IBM640_AUXPLL	0x04
 #define		IBM640_AUX_HI	0x02
 #define		IBM640_AUX_LO	0x01
+#define RGB640_CHROMA_KEY0		0x20
+#define RGB640_CHROMA_MASK0		0x21
 #define RGB640_CURS_X_LOW		0x40
 #define RGB640_CURS_X_HIGH		0x41
 #define RGB640_CURS_Y_LOW		0x42
@@ -366,9 +371,11 @@ void IBMramdac640HWCursorInit(xf86CursorInfoPtr infoPtr);
 #define		IBM640_CURS_MODE1	0x02
 #define		IBM640_CURS_MODE2	0x03
 #define		IBM640_CURS_ADV		0x04
+#define RGB640_CROSSHAIR_CONTROL	0x57
 #define RGB640_VRAM_MASK0		0xf0
 #define RGB640_VRAM_MASK1		0xf1
 #define RGB640_VRAM_MASK2		0xf2
+#define RGB640_DIAGS			0xfa
 #define RGB640_CURS_WRITE		0x1000
 #define RGB640_CURS_COL0		0x4800
 #define RGB640_CURS_COL1		0x4801

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.159 1999/01/24 03:13:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.160 1999/01/26 10:40:15 dawes Exp $ */
 
 
 /*
@@ -436,6 +436,8 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
     int i;
     Pix24Flags pix24 = Pix24DontCare;
 
+    if(flagsconf == NULL)
+	return TRUE;
     /*
      * Merge the ServerLayout and ServerFlags options.  The former have
      * precedence over the latter.

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.17 1999/01/26 05:53:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.18 1999/01/26 10:40:19 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -220,7 +220,7 @@ typedef struct {
    char *			busID;
    int				videoRam;
    int				textClockFreq;
-   int				BiosBase;	/* Base address of video BIOS */
+   unsigned long		BiosBase;	/* Base address of video BIOS */
    unsigned long		MemBase;	/* Frame buffer base address */
    unsigned long		IOBase;
    int				chipID;

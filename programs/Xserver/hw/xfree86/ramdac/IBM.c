@@ -23,7 +23,7 @@
  *
  * IBM RAMDAC routines.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/IBM.c,v 1.7 1998/09/05 06:37:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/IBM.c,v 1.8 1998/12/06 06:08:36 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -173,14 +173,16 @@ void
 IBMramdacRestore(ScrnInfoPtr pScrn, RamDacRecPtr ramdacPtr,
 				    RamDacRegRecPtr ramdacReg)
 {
-	int i, maxreg;
+	int i, maxreg, dacreg;
 
 	switch (ramdacPtr->RamDacType) {
 	    case IBM640_RAMDAC:
 		maxreg = 0x300;
+		dacreg = 1024;
 		break;
 	    default:
 		maxreg = 0x100;
+		dacreg = 768;
 		break;
 	}
 
@@ -190,25 +192,31 @@ IBMramdacRestore(ScrnInfoPtr pScrn, RamDacRecPtr ramdacPtr,
 	    (*ramdacPtr->WriteDAC)
 	        (pScrn, i, (ramdacReg->DacRegs[i] & 0xFF00) >> 8, 
 						ramdacReg->DacRegs[i]);
+
+	(*ramdacPtr->WriteAddress)(pScrn, 0);
+	for (i=0;i<dacreg;i++)
+	    	(*ramdacPtr->WriteData)(pScrn, ramdacReg->DAC[i]);
 }
 
 void
 IBMramdacSave(ScrnInfoPtr pScrn, RamDacRecPtr ramdacPtr, 
 				 RamDacRegRecPtr ramdacReg)
 {
-	int i, maxreg;
+	int i, maxreg, dacreg;
 
 	switch (ramdacPtr->RamDacType) {
 	    case IBM640_RAMDAC:
 		maxreg = 0x300;
+		dacreg = 1024;
 		break;
 	    default:
 		maxreg = 0x100;
+		dacreg = 768;
 		break;
 	}
 	
-	(*ramdacPtr->ReadAddress)(pScrn, 0); /* Start at index 0 */
-	for (i=0;i<768;i++)
+	(*ramdacPtr->ReadAddress)(pScrn, 0);
+	for (i=0;i<dacreg;i++)
 	    ramdacReg->DAC[i] = (*ramdacPtr->ReadData)(pScrn);
 
 	for (i=0;i<maxreg;i++) 
@@ -311,6 +319,8 @@ IBMramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs/* , RamDacRe
 void
 IBMramdac526SetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr ramdacReg)
 {
+    ramdacReg->DacRegs[IBMRGB_key_control] = 0x00; /* Disable Chroma Key */
+
     switch (pScrn->bitsPerPixel) {
 	case 32:
 	    ramdacReg->DacRegs[IBMRGB_pix_fmt] = PIXEL_FORMAT_32BPP;
@@ -318,6 +328,11 @@ IBMramdac526SetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr ramdacReg)
 	    ramdacReg->DacRegs[IBMRGB_24bpp] = 0;
 	    ramdacReg->DacRegs[IBMRGB_16bpp] = 0;
 	    ramdacReg->DacRegs[IBMRGB_8bpp] = 0;
+	    if (ramdacReg->Overlay) {
+		ramdacReg->DacRegs[IBMRGB_key_control] = 0x01; /* Enable Key */
+		ramdacReg->DacRegs[IBMRGB_key] = 0xFF; 
+		ramdacReg->DacRegs[IBMRGB_key_mask] = 0xFF;
+	    }
 	    break;
 	case 24:
 	    ramdacReg->DacRegs[IBMRGB_pix_fmt] = PIXEL_FORMAT_24BPP;
@@ -362,7 +377,14 @@ IBMramdac526SetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr ramdacReg)
 void
 IBMramdac640SetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr ramdacReg)
 {
-    unsigned char temp = 0x00;
+    unsigned char bpp = 0x00;
+    unsigned char overlaybpp = 0x00;
+    unsigned char offset = 0x00;
+    unsigned char dispcont = 0x44;
+
+    ramdacReg->DacRegs[RGB640_SER_WID_03_00] = 0x00;
+    ramdacReg->DacRegs[RGB640_SER_WID_07_04] = 0x00;
+    ramdacReg->DacRegs[RGB640_DIAGS] = 0x07;
 
     switch (pScrn->depth) {
 	case 8:
@@ -372,7 +394,7 @@ IBMramdac640SetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr ramdacReg)
 	    ramdacReg->DacRegs[RGB640_SER_31_24] = 0x00;
     	    ramdacReg->DacRegs[RGB640_SER_MODE] = IBM640_SER_16_1; /*16:1 Mux*/
     	    ramdacReg->DacRegs[RGB640_MISC_CONF] = IBM640_PCLK_8; /* pll / 8 */
-	    temp = 0x03;
+	    bpp = 0x03;
 	    break;
 	case 16:
 	    ramdacReg->DacRegs[RGB640_SER_07_00] = 0x10; 
@@ -381,7 +403,7 @@ IBMramdac640SetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr ramdacReg)
 	    ramdacReg->DacRegs[RGB640_SER_31_24] = 0x00;
     	    ramdacReg->DacRegs[RGB640_SER_MODE] = IBM640_SER_8_1; /* 8:1 Mux*/
     	    ramdacReg->DacRegs[RGB640_MISC_CONF] = IBM640_PCLK_8; /* pll / 8 */
-	    temp = 0x05;
+	    bpp = 0x05;
 	    break;
 	case 24:
 	    ramdacReg->DacRegs[RGB640_SER_07_00] = 0x30; 
@@ -390,7 +412,15 @@ IBMramdac640SetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr ramdacReg)
 	    ramdacReg->DacRegs[RGB640_SER_31_24] = 0x33;
     	    ramdacReg->DacRegs[RGB640_SER_MODE] = IBM640_SER_4_1; /* 4:1 Mux*/
     	    ramdacReg->DacRegs[RGB640_MISC_CONF] = IBM640_PCLK_8; /* pll / 8 */
-	    temp = 0x09;
+	    bpp = 0x09;
+	    if (ramdacReg->Overlay) {
+		ramdacReg->DacRegs[RGB640_SER_WID_07_04] = 0x04;
+		ramdacReg->DacRegs[RGB640_CHROMA_KEY0] = 0xFF;
+		ramdacReg->DacRegs[RGB640_CHROMA_MASK0] = 0xFF;
+		offset = 0x04;
+		overlaybpp = 0x04;
+		dispcont = 0x48;
+	    }
 	    break;
 	case 30: /* 10 bit dac */
 	    ramdacReg->DacRegs[RGB640_SER_07_00] = 0x30; 
@@ -398,8 +428,9 @@ IBMramdac640SetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr ramdacReg)
 	    ramdacReg->DacRegs[RGB640_SER_23_16] = 0x32;
 	    ramdacReg->DacRegs[RGB640_SER_31_24] = 0x33;
     	    ramdacReg->DacRegs[RGB640_SER_MODE] = IBM640_SER_4_1; /* 4:1 Mux*/
-    	    ramdacReg->DacRegs[RGB640_MISC_CONF] = IBM640_PCLK_8; /* pll / 8 */
-	    temp = 0x0D;
+    	    ramdacReg->DacRegs[RGB640_MISC_CONF] = IBM640_PSIZE10 | 
+						   IBM640_PCLK_8; /* pll / 8 */
+	    bpp = 0x0D;
 	    break;
     }
 	
@@ -407,15 +438,15 @@ IBMramdac640SetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr ramdacReg)
 	int i;
     	for (i=0x100;i<0x140;i+=4) {
 	    /* Initialize FrameBuffer Window Attribute Table */
-	    ramdacReg->DacRegs[i+0] = temp;
-	    ramdacReg->DacRegs[i+1] = 0x00;
+	    ramdacReg->DacRegs[i+0] = bpp;
+	    ramdacReg->DacRegs[i+1] = offset;
 	    ramdacReg->DacRegs[i+2] = 0x00;
 	    ramdacReg->DacRegs[i+3] = 0x00;
 	    /* Initialize Overlay Window Attribute Table */
-	    ramdacReg->DacRegs[i+0x100] = 0x00;
+	    ramdacReg->DacRegs[i+0x100] = overlaybpp;
 	    ramdacReg->DacRegs[i+0x101] = 0x00;
 	    ramdacReg->DacRegs[i+0x102] = 0x00;
-	    ramdacReg->DacRegs[i+0x103] = 0x44;
+	    ramdacReg->DacRegs[i+0x103] = dispcont;
         }
     }
 }
@@ -436,6 +467,7 @@ IBMramdac640ShowCursor(ScrnInfoPtr pScrn)
 
    /* Enable cursor - mode2 (x11 mode) */
    (*ramdacPtr->WriteDAC)(pScrn, RGB640_CURSOR_CONTROL, 0x00, 0x0B);
+   (*ramdacPtr->WriteDAC)(pScrn, RGB640_CROSSHAIR_CONTROL, 0x00, 0x00);
 }
 
 void
@@ -505,13 +537,20 @@ void
 IBMramdac640SetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 {
    RamDacRecPtr ramdacPtr = RAMDACSCRPTR(pScrn);
-
-   (*ramdacPtr->WriteDAC)(pScrn, RGB640_CURS_COL2, 0x00, bg>>16);
-   (*ramdacPtr->WriteDAC)(pScrn, RGB640_CURS_COL2, 0x00, bg>>8);
-   (*ramdacPtr->WriteDAC)(pScrn, RGB640_CURS_COL2, 0x00, bg);
-   (*ramdacPtr->WriteDAC)(pScrn, RGB640_CURS_COL3, 0x00, fg>>16);
-   (*ramdacPtr->WriteDAC)(pScrn, RGB640_CURS_COL3, 0x00, fg>>8);
-   (*ramdacPtr->WriteDAC)(pScrn, RGB640_CURS_COL3, 0x00, fg);
+  
+   (*ramdacPtr->WriteDAC)(pScrn, RGB640_CURS_COL0, 0x00, 0);
+   (*ramdacPtr->WriteData)(pScrn, fg>>16);
+   (*ramdacPtr->WriteData)(pScrn, fg>>8);
+   (*ramdacPtr->WriteData)(pScrn, fg);
+   (*ramdacPtr->WriteData)(pScrn, bg>>16);
+   (*ramdacPtr->WriteData)(pScrn, bg>>8);
+   (*ramdacPtr->WriteData)(pScrn, bg);
+   (*ramdacPtr->WriteData)(pScrn, fg>>16);
+   (*ramdacPtr->WriteData)(pScrn, fg>>8);
+   (*ramdacPtr->WriteData)(pScrn, fg);
+   (*ramdacPtr->WriteData)(pScrn, bg>>16);
+   (*ramdacPtr->WriteData)(pScrn, bg>>8);
+   (*ramdacPtr->WriteData)(pScrn, bg);
 }
 
 void 

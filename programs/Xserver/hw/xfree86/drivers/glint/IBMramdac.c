@@ -24,7 +24,7 @@
  * glintOutIBMRGBIndReg() and glintInIBMRGBIndReg() are used to access 
  * the indirect IBM RAMDAC registers only.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/IBMramdac.c,v 1.4 1998/08/29 05:43:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/IBMramdac.c,v 1.5 1998/08/29 14:34:34 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -53,8 +53,8 @@ glintOutIBMRGBIndReg(ScrnInfoPtr pScrn,
   GLINTPtr pGlint = GLINTPTR(pScrn);
   unsigned char tmp = 0x00;
 
-  GLINT_SLOW_WRITE_REG (reg & 0xFF, IBMRGB_INDEX_LOW);
   GLINT_SLOW_WRITE_REG((reg>>8) & 0xff, IBMRGB_INDEX_HIGH);
+  GLINT_SLOW_WRITE_REG (reg & 0xFF, IBMRGB_INDEX_LOW);
 
   if (mask != 0x00)
     tmp = GLINT_READ_REG (IBMRGB_INDEX_DATA) & mask;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.26 1999/02/05 04:49:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.27 1999/02/07 06:18:33 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -741,7 +741,7 @@ xf86SetDpi(ScrnInfoPtr pScrn, int x, int y)
 void
 xf86SetBlackWhitePixels(ScreenPtr pScreen)
 {
-    if (xf86GetFlipPixels()) {
+    if (xf86FlipPixels) {
 	pScreen->whitePixel = 0;
 	pScreen->blackPixel = 1;
     } else {
@@ -1739,20 +1739,6 @@ const char *
 xf86GetServerName()
 {
     return xf86ServerName;
-}
-
-
-void
-xf86SetDefaultColorVisualClass(int class)
-{
-    defaultColorVisualClass = class;
-}
-
-
-int
-xf86GetDefaultColorVisualClass()
-{
-    return defaultColorVisualClass;
 }
 
 

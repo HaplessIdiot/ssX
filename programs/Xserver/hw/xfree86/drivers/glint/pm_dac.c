@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_dac.c,v 1.4 1998/08/29 05:43:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_dac.c,v 1.5 1999/02/07 06:18:42 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -141,6 +141,7 @@ PermediaInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	ramdacReg->DacRegs[IBMRGB_pll_ctrl1] = 0x05;
 	ramdacReg->DacRegs[IBMRGB_pll_ctrl2] = 0x00;
 
+	p = 1;
     	clock = IBMramdac526CalculateMNPCForClock(pGlint->RefClock, mode->Clock,
 			0, pGlint->MinClock, pGlint->MaxClock, &m, &n, &p, &c);
 
@@ -163,6 +164,8 @@ PermediaInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     ramdacReg->DacRegs[IBMRGB_pwr_mgmt] = 0;
     ramdacReg->DacRegs[IBMRGB_dac_op] = 0;
     ramdacReg->DacRegs[IBMRGB_pal_ctrl] = 0;
+
+    if (pGlint->Overlay) ramdacReg->Overlay = TRUE;
 
     (*pGlint->RamDac->SetBpp)(pScrn, ramdacReg);
 
@@ -211,22 +214,20 @@ PermediaRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     };
 #endif
 
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[ChipConfig >> 3], ChipConfig);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[DFIFODis >> 3], DFIFODis);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[FIFODis >> 3], FIFODis);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[Aperture0 >> 3], Aperture0);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[Aperture1 >> 3], Aperture1);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMFramebufferWriteMask >> 3], 
 							PMFramebufferWriteMask);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMBypassWriteMask >> 3], 
 							PMBypassWriteMask);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[DFIFODis >> 3], DFIFODis);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[FIFODis >> 3], FIFODis);
 
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMVideoControl >> 3], 
 								PMVideoControl);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMHgEnd >> 3], PMHgEnd);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMScreenBase >> 3], PMScreenBase);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[VClkCtl >> 3], VClkCtl);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMScreenStride >> 3], 
-								PMScreenStride);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMHTotal >> 3], PMHTotal);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMHgEnd >> 3], PMHbEnd);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMHsStart >> 3], PMHsStart);
@@ -235,5 +236,7 @@ PermediaRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMVbEnd >> 3], PMVbEnd);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMVsStart >> 3], PMVsStart);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMVsEnd >> 3], PMVsEnd);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[ChipConfig >> 3], ChipConfig);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMScreenBase >> 3], PMScreenBase);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMScreenStride >> 3], 
+								PMScreenStride);
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.88 1999/01/26 10:40:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.89 1999/02/07 06:18:33 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -155,8 +155,6 @@ rgb xf86GetWeight(void);
 Gamma xf86GetGamma(void);
 Bool xf86GetFlipPixels(void);
 const char *xf86GetServerName(void);
-void xf86SetDefaultColorVisualClass(int class);
-int xf86GetDefaultColorVisualClass(void);
 Bool xf86ServerIsExiting(void);
 Bool xf86ServerIsResetting(void);
 Bool xf86CaughtSignal(void);
@@ -174,6 +172,7 @@ int xf86NewSerialNumber(WindowPtr p, pointer unused);
 
 PixmapFormatPtr xf86GetPixFormat(ScrnInfoPtr pScrn, int depth);
 int xf86GetBppFromDepth(ScrnInfoPtr pScrn, int depth);
+void xf86ScanPciRegister(void(*func)(void));
 
 /* xf86Mode.c */
 

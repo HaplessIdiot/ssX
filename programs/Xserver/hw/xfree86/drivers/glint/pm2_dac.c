@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.8 1998/11/28 10:43:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.9 1999/02/07 06:18:40 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -234,8 +234,13 @@ Permedia2Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 				 	PM2DAC_GRAPHICS | PM2DAC_PACKED;
     	break;
     case 32:
-	pReg->DacRegs[PM2DACIndexCMR] = PM2DAC_RGB | PM2DAC_TRUECOLOR|
+	pReg->DacRegs[PM2DACIndexCMR] = PM2DAC_RGB | 
 				 	PM2DAC_GRAPHICS | PM2DAC_8888;
+	if (pGlint->Overlay) {
+	    pReg->DacRegs[PM2DACIndexColorKeyControl] = 0x11;
+	    pReg->DacRegs[PM2DACIndexColorKeyOverlay] = 0xFF;
+	} else
+	    pReg->DacRegs[PM2DACIndexCMR] |= PM2DAC_TRUECOLOR;
     	break;
     }
 
@@ -277,6 +282,10 @@ Permedia2Save(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     for (i=0;i<768;i++)
 	glintReg->cmap[i] = Permedia2ReadData(pScrn);
 
+    glintReg->DacRegs[PM2DACIndexColorKeyOverlay] = 
+				Permedia2InIndReg(pScrn, PM2DACIndexColorKeyOverlay);
+    glintReg->DacRegs[PM2DACIndexColorKeyControl] = 
+				Permedia2InIndReg(pScrn, PM2DACIndexColorKeyControl);
     glintReg->DacRegs[PM2DACIndexMCR] = 
 				Permedia2InIndReg(pScrn, PM2DACIndexMCR);
     glintReg->DacRegs[PM2DACIndexMDCR] =
@@ -350,6 +359,10 @@ Permedia2Restore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     for (i=0;i<768;i++)
         Permedia2WriteData(pScrn, glintReg->cmap[i]);
 
+    Permedia2OutIndReg(pScrn, PM2DACIndexColorKeyOverlay, 0x00, 
+					glintReg->DacRegs[PM2DACIndexColorKeyOverlay]);
+    Permedia2OutIndReg(pScrn, PM2DACIndexColorKeyControl, 0x00, 
+					glintReg->DacRegs[PM2DACIndexColorKeyControl]);
     Permedia2OutIndReg(pScrn, PM2DACIndexMCR, 0x00, 
 					glintReg->DacRegs[PM2DACIndexMCR]);
     Permedia2OutIndReg(pScrn, PM2DACIndexMDCR, 0x00, 
