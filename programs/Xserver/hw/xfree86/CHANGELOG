@@ -1,4 +1,8 @@
 XFree86 4.0.1Z (8 December 2000)
+1145. Add -textmode mode option for xf86cfg, to run a ncurses interface, and
+      add the "expert" interface, to provide more control over the config file.
+      Updates to vesa driver, removed debug messages and fixed problem with
+      console restoration in some S3 cards.
 1144. Merge tdfx 3D driver code (VA Linux).
 1143. Add support PPC support on Rage 128 and disable Int10 for PPC on
       Rage 128 (until the bug in PPC Int10 support is fixed) (Kevin Martin).
@@ -11986,4 +11990,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1459 2000/12/08 19:15:29 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1460 2000/12/08 19:36:21 alanh Exp $
