@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.116 2001/02/07 13:26:19 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.117 2001/02/15 11:03:56 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -66,7 +66,8 @@
 #define DPMS_SERVER
 #include "extensions/dpms.h"
 
-#define DEBUG 0
+#define DEBUG 1
+#define PM3Video 1
 
 #if DEBUG
 # define TRACE_ENTER(str)       ErrorF("glint: " str " %d\n",pScrn->scrnIndex)
@@ -2490,6 +2491,10 @@ GLINTRestore(ScrnInfoPtr pScrn)
 	Permedia2VRestore(pScrn, glintReg);
 	break;
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
+#ifdef PM3Video
+	TRACE("PM3Video : VideoLeaveVT");
+	Permedia3VideoLeaveVT(pScrn);
+#endif
 	Permedia3Restore(pScrn, glintReg);
 	break;
     case PCI_VENDOR_TI_CHIP_PERMEDIA:
@@ -2518,6 +2523,10 @@ GLINTRestore(ScrnInfoPtr pScrn)
 	    (*pGlint->RamDac->Restore)(pScrn, pGlint->RamDacRec, RAMDACreg);
 	    break;
 	case PCI_CHIP_PERMEDIA3:
+#ifdef PM3Video
+	    TRACE("PM3Video : VideoLeaveVT");
+	    Permedia3VideoLeaveVT(pScrn);
+#endif
 	    if (pGlint->numMultiDevices == 2) {
 		ACCESSCHIP2();
 	    	Permedia3Restore(pScrn, glintReg2);
@@ -2887,6 +2896,19 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
         case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
         case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
 	    Permedia2VideoInit(pScreen);
+	    break;
+#ifdef PM3Video
+        case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
+	    TRACE("PM3Video : VideoInit");
+	    Permedia3VideoInit(pScreen);
+	    break;
+	case PCI_VENDOR_3DLABS_CHIP_GAMMA:
+	    switch (pGlint->MultiChip) {
+		case PCI_CHIP_PERMEDIA3:
+		    TRACE("PM3Video : VideoInit");
+		    Permedia3VideoInit(pScreen);
+	    }
+#endif
     }
 
 #if 0
@@ -3033,6 +3055,19 @@ GLINTEnterVT(int scrnIndex, int flags)
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
 	Permedia2VideoEnterVT(pScrn);
+	break;
+#ifdef PM3Video
+    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
+	TRACE("PM3Video : VideoEnterVT");
+	Permedia3VideoEnterVT(pScrn);
+	break;
+    case PCI_VENDOR_3DLABS_CHIP_GAMMA:
+	switch (pGlint->MultiChip) {
+	    case PCI_CHIP_PERMEDIA3:
+		TRACE("PM3Video : VideoEnterVT");
+		Permedia3VideoEnterVT(pScrn);
+	}
+#endif
     }
 
     if (!pGlint->NoAccel) {
@@ -3125,6 +3160,18 @@ GLINTCloseScreen(int scrnIndex, ScreenPtr pScreen)
         case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
         case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
 	    Permedia2VideoUninit(pScrn);
+	    break;
+#ifdef PM3Video
+        case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
+	    TRACE("PM3Video : VideoUninit");
+	    Permedia3VideoUninit(pScrn);
+	case PCI_VENDOR_3DLABS_CHIP_GAMMA:
+	    switch (pGlint->MultiChip) {
+		case PCI_CHIP_PERMEDIA3:
+		    TRACE("PM3Video : VideoUninit");
+		    Permedia3VideoUninit(pScrn);
+	}
+#endif
     }
 
     if (pScrn->vtSema) {
@@ -3170,6 +3217,7 @@ GLINTCloseScreen(int scrnIndex, ScreenPtr pScreen)
 static void
 GLINTFreeScreen(int scrnIndex, int flags)
 {
+    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     TRACE_ENTER("GLINTFreeScreen");
     if (xf86LoaderCheckSymbol("fbdevHWFreeRec"))
 	fbdevHWFreeRec(xf86Screens[scrnIndex]);
