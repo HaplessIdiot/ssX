@@ -1,4 +1,13 @@
 XFree86 4.4.99.8 (xx June 2004)
+ 138. SiS driver update 2004-06-20
+    - Fix some modes for 1400x1050 and 1600x1200 panels
+    - Fixes for 661/741/760 (BIOS data layout related)
+    - Fix Xv (minimum overlay size; linebuffer size)
+    - Fix LCD support for ECS A90x
+    - Fix LCD support for ECS A907 (broken BIOS)
+    - Add video blitter as second Xv adaptor (M650/651 and later)
+    - Add hotplug support (including LCD)
+    - Add preliminary support for SiS340
  137. Fixes and updates for XKB keymaps:
     - Update Serbian keymap with new variant (Bugzilla #1176, Zvezdan Petkovic).
     - Add Genius KB-12e model to inet keymap (Ricardo Cruz).
@@ -19001,7 +19010,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3280 2004/06/17 23:27:40 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3281 2004/06/19 13:55:05 pascal Exp $
 
 
 
