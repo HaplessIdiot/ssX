@@ -1,4 +1,8 @@
 XFree86 4.3.99.2 (xx March 2003)
+  59. Fixed DPMS problem on C&T 69000 due to incorrect LCD flag (Bugz: 101,
+      Egbert Eich).
+  58. Added xkb symbols layout for BTC 5090 internet keyboard  
+      (Bugz: 57, Jack Angel).
   57. Fix the Xinstall.sh script so that it can handle being run from a
       directory with white space in its path name (#A.1690, Eric Branlund).
   56. Allow AGPGART support to be enabled for OpenBSD (#A.1684, Brian Feldman).
@@ -16650,4 +16654,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2613 2003/04/03 16:58:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2614 2003/04/04 00:48:05 dawes Exp $

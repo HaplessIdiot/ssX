@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.121 2002/09/16 18:05:52 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.122 2002/11/25 14:04:58 eich Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -7444,7 +7444,7 @@ chipsSetPanelType(CHIPSPtr cPtr)
 	    /* LCD                                                 */
 	    tmp = cPtr->readFR(cPtr, 0x01);
 	    if ((tmp & 0x03) == 0x02) {
-	        cPtr->PanelType |= ChipsLCD;
+	        cPtr->PanelType |= ChipsLCD | ChipsLCDProbed;
 	    }
 	    tmp = cPtr->readXR(cPtr,0xD0);	
 	    if (tmp & 0x01) {
