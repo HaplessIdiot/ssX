@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/geode/panel/platform.c,v 1.1tsi Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/geode/panel/platform.c,v 1.2tsi Exp $ */ 
 /*
  * $Workfile: platform.c $
- * $Revision: 1.2 $
+ * $Revision: 1.3 $
  *
  * File Contents: This file contains platform dependent functions
  *                which provide interface to that platform.
@@ -191,13 +191,13 @@ int FindStringInSeg(unsigned int, char *);
 static unsigned char get_sys_board_type(SYS_BOARD_INFO *, SYS_BOARD_INFO *);
 
 #if defined(linux) && !defined(__KERNEL__) 
-#if defined(XFree86Server) && !defined(IN_MODULE)
+#if !defined(XFree86Server)
 static void protected_mode_access(unsigned int, unsigned int, 
 				unsigned long, unsigned char* );
 static void setup_pma();
 static void close_pma();
 static int     fd;
-#endif /* IN_MODULE */
+#endif /* !XFree86Server */
 #endif /* __KERNEL__ */
 
 
@@ -205,10 +205,10 @@ static int     fd;
 int Detect_Platform(void)
 {
 #if defined(linux) && !defined(__KERNEL__) 
-#if defined(XFree86Server) && !defined(IN_MODULE)
+#if !defined(XFree86Server)
 	setup_pma();		
 
-#endif /* IN_MODULE */
+#endif /* !XFree86Server */
 
 #endif /* __KERNEL__ */
 
@@ -229,9 +229,9 @@ int Detect_Platform(void)
 }
 
 #if defined(linux) && !defined(__KERNEL__) 
-#if defined(XFree86Server) && !defined(IN_MODULE)
+#if !defined(XFree86Server)
 	close_pma();
-#endif /* IN_MODULE */
+#endif /* XFree86Server */
 #endif /* __KERNEL__ */
 
 return (Sys_info.sys_board);
@@ -308,7 +308,7 @@ int FindStringInSeg( unsigned int segment_address, char *string_ptr )
 	XpressROMPtr = (unsigned char *)ioremap(mem_ptr, SEGMENT_LENGTH+1);
 	psegment_buf = (char *)XpressROMPtr;
 #else
-#if defined(XFree86Server) && defined(IN_MODULE)
+#if defined(XFree86Server)
 	psegment_buf = (char *)XpressROMPtr;
 #else
 	/* Fill the segment_buffer with 16 page accesses */
@@ -319,7 +319,7 @@ int FindStringInSeg( unsigned int segment_address, char *string_ptr )
 			 &(segment_buffer[( cursor * PAGE_LENGTH )]) );
 	}
 	psegment_buf = segment_buffer;
-#endif /* defined(XFree86Server) && defined(IN_MODULE) */
+#endif /* defined(XFree86Server) */
 #endif /* __KERNEL__ */
 
 #elif defined(_WIN32) /* Windows */
@@ -406,7 +406,7 @@ static unsigned char get_sys_board_type( SYS_BOARD_INFO *sys_info,
 } /* end get_sys_board_type() */
 
 #if defined(linux) && !defined(__KERNEL__) 
-#if defined(XFree86Server) && !defined(IN_MODULE)
+#if !defined(XFree86Server)
 
 /******************************************************************
  *
@@ -738,5 +738,5 @@ static void close_pma()
 	close( fd );
 	return;
 }
-#endif /* IN_MODULE */
+#endif /* !XFree86Server */
 #endif /* linux && !__KERNEL__ */
