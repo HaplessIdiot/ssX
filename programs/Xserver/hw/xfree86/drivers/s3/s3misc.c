@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3misc.c,v 1.2 1997/02/16 10:27:27 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3misc.c,v 1.1 1997/03/06 23:16:37 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -258,12 +258,6 @@ static void S3SetSynthClock(DisplayModePtr mode)
    }
 
 }
-
-
-
-
-
-
 
 
 
@@ -616,7 +610,6 @@ void S3FillInModeInfo(DisplayModePtr mode)
     short pixMuxShift = 0;
     Bool changed=FALSE;
     int oldCrtcHSyncStart, oldCrtcHSyncEnd, oldCrtcHTotal;
-    int p24_fact = 4;
 
 #ifdef S3_DEBUG 
     ErrorF("In S3FillInModeInfo()\n");
@@ -691,7 +684,6 @@ void S3FillInModeInfo(DisplayModePtr mode)
 	    mode->CrtcHTotal += 3 - mode->CrtcHTotal % 3;
 	    mode->CrtcHTotal <<= 3;
 	    changed = TRUE;
-	    p24_fact = 3;
 	 }
       }
       if (changed) {
@@ -701,76 +693,24 @@ void S3FillInModeInfo(DisplayModePtr mode)
 		,mode->HDisplay, mode->HSyncStart, mode->HSyncEnd, mode->HTotal
 		,mode->VDisplay, mode->VSyncStart, mode->VSyncEnd, mode->VTotal
 		);
-	 ErrorF("\t\tto     %4d %4d %4d %4d   %4d %4d %4d %4d\n"
-		,((mode->CrtcHDisplay   << 8) >> (8-pixMuxShift)) * 4 / p24_fact
-		,((mode->CrtcHSyncStart << 8) >> (8-pixMuxShift)) * 4 / p24_fact
-		,((mode->CrtcHSyncEnd   << 8) >> (8-pixMuxShift)) * 4 / p24_fact
-		,((mode->CrtcHTotal     << 8) >> (8-pixMuxShift)) * 4 / p24_fact
-		,mode->VDisplay, mode->VSyncStart, mode->VSyncEnd, mode->VTotal
+	 if(pixMuxShift < 0)
+	    ErrorF("\t\tto     %4d %4d %4d %4d   %4d %4d %4d %4d\n",
+		mode->CrtcHDisplay >> -pixMuxShift,
+		mode->CrtcHSyncStart >> -pixMuxShift,
+		mode->CrtcHSyncEnd  >> -pixMuxShift,
+		mode->CrtcHTotal >> -pixMuxShift,
+		mode->VDisplay, mode->VSyncStart, mode->VSyncEnd, mode->VTotal
+		);
+	  else
+	    ErrorF("\t\tto     %4d %4d %4d %4d   %4d %4d %4d %4d\n",
+		mode->CrtcHDisplay << pixMuxShift,
+		mode->CrtcHSyncStart << pixMuxShift,
+		mode->CrtcHSyncEnd  << pixMuxShift,
+		mode->CrtcHTotal << pixMuxShift,
+		mode->VDisplay, mode->VSyncStart, mode->VSyncEnd, mode->VTotal
 		);
       }
 
 
 }
-
-/*
- *  S3EnableLinear --
- *
- */
-
-void S3EnableLinear(void) 
-{
-      WaitIdle();
-  
-      if(!S3_801_928_SERIES (s3ChipId))
-      	return;
-
-      /* begin 801 sequence for going in to linear mode */
-      outb (vgaCRIndex, 0x40);
-      outb (vgaCRReg,(s3Port40 & 0xf6) | 0x0a);
-
-#if defined (S3_MMIO) || defined (S3_NEWMMIO)
-      outb(vgaCRIndex, 0x53); 
-      outb(vgaCRReg, inb(vgaCRReg) & 0xEF); 
-#endif
-
-      /* go on to linear mode */
-      outb (vgaCRIndex, 0x58);
-      outb (vgaCRReg, s3LinApOpt | s3SAM256);
-      if (!S3_x64_SERIES(s3ChipId)) {
-         outb (vgaCRIndex, 0x54); outb (vgaCRReg, (s3Port54 + 07));
-      }
-
-      /* end  801 sequence to go into linear mode, now lock the registers */
-      outb(vgaCRIndex, 0x39); outb(vgaCRReg, 0x50); 
-}
-
-
-
-/*
- *  S3DisableLinear --
- *
- */
-
-void S3DisableLinear(void) 
-{
-      if(!S3_801_928_SERIES (s3ChipId)) 
-	 	return;
-
-      outb(vgaCRIndex, 0x39); outb(vgaCRReg, 0xa5);
-
-      /* begin 801  sequence to go into enhanced mode */
-      if (!S3_x64_SERIES(s3ChipId)) {
-         outb (vgaCRIndex, 0x54); outb (vgaCRReg, s3Port54);
-      }
-
-      outb (vgaCRIndex, 0x58); outb (vgaCRReg, s3SAM256);
-      outb (vgaCRIndex, 0x40); outb (vgaCRReg, s3Port40);
-
-#if defined (S3_MMIO) || defined (S3_NEWMMIO)
-      outb(vgaCRIndex, 0x53); 
-      outb(vgaCRReg, inb(vgaCRReg) | 0x10); 
-#endif
-}
-
 

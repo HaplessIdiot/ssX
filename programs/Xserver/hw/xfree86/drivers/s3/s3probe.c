@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3probe.c,v 1.5 1997/04/08 10:13:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3probe.c,v 1.6 1997/06/03 14:12:15 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -318,26 +318,21 @@ Bool S3Probe()
    /* Here's where we bail if the driver doesn't have support for
 	the particular chipset */
 
-   if(
-#if defined(S3_VIRGE)
-	!S3_ViRGE_SERIES(s3ChipId)
-#else
-   #if defined(S3_NEWMMIO)
-	!S3_TRIO64V_SERIES(s3ChipId) && !S3_x68_SERIES(s3ChipId)
-   #else 
-	#if defined(S3_MMIO)
-	   !S3_928_SERIES(s3ChipId)
-        #else   /* S3_GENERIC */
-	   S3_ViRGE_SERIES(s3ChipId)  
-	#endif
-   #endif
-#endif
-   ) {
-      ErrorF("This chipset is unsupported by the %s driver\n", S3Ident(0));
+   if(S3_ViRGE_SERIES(s3ChipId)) {
+      ErrorF("The ViRGE chipset is unsupported by the %s driver\n"
+	  	"\tPlease use the s3v driver instead\n", S3Ident(0));
       S3EnterLeave(LEAVE);
       return(FALSE);
    }
 
+#ifdef S3_NEWMMIO
+   if(!S3_TRIO64V_SERIES(s3ChipId) && !S3_x68_SERIES(s3ChipId)){
+      ErrorF("This chipset is unsupported by the %s driver\n"
+		"\tPlease use the s3_pio driver instead\n", S3Ident(0));
+      S3EnterLeave(LEAVE);
+      return(FALSE);
+   }
+#endif
 
 	/***************************************\
 	| 	    Set Some Options  		|
@@ -363,10 +358,18 @@ Bool S3Probe()
    if (OFLG_ISSET(OPTION_POWER_SAVER, &vga256InfoRec.options))
       s3PowerSaver = TRUE;
 
-
-     /* very important. Force this */
-   OFLG_SET(OPTION_NOLINEAR_MODE, &vga256InfoRec.options);
-
+#ifdef S3_NEWMMIO
+   if (OFLG_ISSET(OPTION_NOLINEAR_MODE, &vga256InfoRec.options)) {
+	ErrorF("Linear addressing is required for the newmmio driver\n"
+	   "\tPlease remove \"no_linear\" option from the XF86Config file\n");
+      S3EnterLeave(LEAVE);
+      return(FALSE);
+   }
+#else
+   if (S3_911_SERIES(s3ChipId)) {
+	OFLG_SET(OPTION_NOLINEAR_MODE, &vga256InfoRec.options);
+   }
+#endif
 
 	/***************************************\
    	|	 LocalBus, EISA or PCI ?	|
@@ -399,6 +402,19 @@ Bool S3Probe()
 				vga256InfoRec.name, bustype);
    }
 
+#ifdef S3_NEWMMIO
+   if(OFLG_ISSET(OPTION_PCI_RETRY, &vga256InfoRec.options)) {
+	if(config & 0x02) {
+       	    ErrorF("%s %s: Using PCI retry\n", XCONFIG_GIVEN, 
+					vga256InfoRec.name);
+	    s3PCIRetry = TRUE;
+	} else {
+       	    ErrorF("%s %s: PCI retry only available on PCI bus\n"
+		"\t\tOption disabled\n", XCONFIG_GIVEN, vga256InfoRec.name);
+	    OFLG_CLR(OPTION_PCI_RETRY, &vga256InfoRec.options);
+	}
+   }
+#endif
 	
 	/***************************************\
 	|	Detect VideoRam amount 		|
@@ -751,6 +767,9 @@ Bool S3Probe()
    OFLG_SET(OPTION_TRIO64VP_BUG1, &s3InfoRec.ChipOptionFlags);
    OFLG_SET(OPTION_TRIO64VP_BUG2, &s3InfoRec.ChipOptionFlags);
    OFLG_SET(OPTION_TRIO64VP_BUG3, &s3InfoRec.ChipOptionFlags);
+#ifdef S3_NEWMMIO
+   OFLG_SET(OPTION_PCI_RETRY, &s3InfoRec.ChipOptionFlags);
+#endif
 
    return TRUE;
 }

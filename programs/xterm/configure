@@ -2893,7 +2893,7 @@ if test "${enable_color_mode+set}" = set; then
   enableval="$enable_color_mode"
   test "$enableval" != yes && enableval=no
   if test "$enableval" != "no" ; then
-    default_colormode=$withval 
+    default_colormode=TRUE 
   else
     default_colormode=FALSE
   fi

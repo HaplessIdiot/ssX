@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3reg.h,v 1.3 1997/03/22 09:35:53 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3reg.h,v 1.4 1997/03/27 08:30:50 hohndel Exp $ */
 /*
  * s3reg.h
  * 
@@ -439,60 +439,13 @@
 
 typedef struct {
      unsigned char r, g, b;
-#define       _16BIT          0x0200
-#define       _32BIT          0x0400
-
 } LUTENTRY;
 
-#define WaitQueue(v)   do {  			\
-	mem_barrier(); 				\
-	while(inb(GP_STAT) & (0x0100 >> (v))); 	\
-} while (0)
-
-#define	WaitQueue16(v) do {   				\
-	mem_barrier(); 					\
-	while(inw(GP_STAT) & (0x8000 >> (v-9))); 	\
-} while (0)
-
-#define	WaitIdleEmpty()  do {  				\
-	int fx86=(S3_x64_SERIES(s3ChipId)?0xF800:0); 	\
-	mem_barrier();				 	\
-	while (inw(GP_STAT) & (GPBUSY | 1 | fx86)); 	\
-} while (0)
 
 #define WaitIdle() 	do {  		\
 	mem_barrier(); 			\
 	while(inw(GP_STAT) & GPBUSY); 	\
 } while(0)
-
-#if PSZ <= 16
-  #define WaitQueue16_32(n16,n32)	WaitQueue(n16);
-#else
-  #ifdef S3_NEWMMIO
-    #define CMD_REG_WIDTH  0x200  	/* select 32bit command register */
-  #else
-    #define CMD_REG_WIDTH  0  	/* select 16bit command register */
-  #endif
-
-  #define WaitQueue16_32(n16,n32) \
-	    if (n32 < 8) { \
-	       WaitQueue(n32+1); \
-	       SET_MULT_MISC(CMD_REG_WIDTH); \
-	    } else { \
-	       WaitQueue(1); \
-	       SET_MULT_MISC(CMD_REG_WIDTH); \
-	       WaitQueue(n32); \
-	    }
-#endif
-
-#ifndef NULL
- #define NULL	0
-#endif
-
-#define RGB8_PSEUDO      (-1)
-#define RGB16_565         0
-#define RGB16_555         1
-#define RGB32_888         2
 
 
 #define BLOCK_CURSOR	s3BlockCursor = TRUE;
@@ -504,18 +457,33 @@ typedef struct {
 }
 
 
-
-
 #ifndef S3_NEWMMIO
 
-  #if defined(S3_MMIO)
-	/* define S3_OUT? macros here */
-  #else
-     #define S3_OUTW(p,n) outw(p,n)
-     #define S3_OUTL(p,n) outl(p,n)
-     /* we can define the PSZ 32 case separately */
-     #define S3_OUTW32(p,n) outw(p,n) 
-  #endif
+   #define WaitQueue(v)   do {  		\
+	mem_barrier(); 				\
+	while(inb(GP_STAT) & (0x0100 >> (v))); 	\
+   } while (0)
+
+   #define CMD_REG_WIDTH  0  	/* select 16bit command register */
+
+   #define WaitQueue16_32(n16,n32) 		\
+	if(s3Bpp <= 2) { WaitQueue(n16); }	\
+	else if (n32 < 8) { 			\
+	       WaitQueue(n32+1); 		\
+	       SET_MULT_MISC(CMD_REG_WIDTH); 	\
+	} else { 				\
+	       WaitQueue(1); 			\
+	       SET_MULT_MISC(CMD_REG_WIDTH); 	\
+	       WaitQueue(n32); 			\
+	}
+
+  #define S3_OUTW(p,n) outw(p,n)
+  #define S3_OUTL(p,n) outl(p,n)
+
+  #define S3_OUTW32(p,n)	if(s3Bpp > 2) { 	\
+				   outw(p,n);		\
+				   outw(p,(n) >> 16);	\
+				} else outw(p,n)	
 
   #define SET_FRGD_MIX(fmix)	S3_OUTW(FRGD_MIX, (fmix))
   #define SET_BKGD_MIX(bmix)	S3_OUTW(BKGD_MIX, (bmix))
@@ -577,17 +545,18 @@ typedef struct {
   #define INB_GP_STAT() 		inb(GP_STAT)
   #define INW_GP_STAT() 		inw(GP_STAT)
 
+  #define SET_PIX_TRANS_L(val)	outl(PIX_TRANS, val)
+  #define SET_MIX(fmix,bmix) { 	\
+	SET_FRGD_MIX(fmix); 	\
+	SET_BKGD_MIX(bmix); 	\
+}
+
 #else  
   #include "newmmio.h"
 #endif /* !S3_NEWMMIO */
 
-
 #define SET_PIX_TRANS_W(val)	outw(PIX_TRANS, val)
-#define SET_PIX_TRANS_L(val)	outl(PIX_TRANS, val)
-#define SET_MIX(fmix,bmix) { 	\
-	SET_FRGD_MIX(fmix); 	\
-	SET_BKGD_MIX(bmix); 	\
-}
+
 #define SET_DAC_W_INDEX(index)  outb(DAC_W_INDEX, index)
 #define SET_DAC_DATA(val) 	outb(DAC_DATA,val)
 

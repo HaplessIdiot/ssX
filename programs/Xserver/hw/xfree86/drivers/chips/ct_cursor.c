@@ -24,7 +24,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.3 1997/04/08 10:12:24 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.4 1997/05/31 13:51:31 dawes Exp $ */
 
 /*
  * Hardware cursor handling. Adapted from cirrus/cir_cursor.c and
@@ -126,10 +126,13 @@ CHIPSCursorInit(pm, pScr)
 void
 CHIPSShowCursor()
 {
+    unsigned char tmp;
     /* turn the cursor on */
-    if (ctisHiQV32)
-	outw(0x3D6, 0x11A0);
-    else
+    if (ctisHiQV32) {
+        outb(0x3D6, 0xA0);
+        tmp = inb(0x3D7);
+	outb(0x3D7, ((tmp & 0xF8) | 1));
+    } else
       if(!ctUseMMIO) {
 	HW_DEBUG(0x8);
 	outw(DR(0x8), 0x21);
@@ -143,12 +146,16 @@ CHIPSShowCursor()
 void
 CHIPSHideCursor()
 {
+    unsigned char tmp;
+  
     ctBLTWAITGENERAL;
     
     /* turn the cursor off */
-    if (ctisHiQV32)
-	outw(0x3D6, 0x10A0);
-    else
+    if (ctisHiQV32) {
+        outb(0x3D6, 0xA0);
+        tmp = inb(0x3D7);
+	outb(0x3D7, (tmp & 0xF8));
+    } else
       if(!ctUseMMIO) {
 	HW_DEBUG(0x8);
 	outw(DR(0x8), 0x20);

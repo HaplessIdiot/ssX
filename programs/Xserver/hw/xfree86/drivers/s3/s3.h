@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3.h,v 1.3 1997/03/22 09:35:46 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3.h,v 1.4 1997/03/27 08:30:44 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -16,12 +16,15 @@
 #include "vga.h"
 #include "vgaPCI.h"
 
-/* s3InfoRec needs to be defined as the directory everything is in. 
-   Here is also where I am defining S3_GENERIC, S3_MMIO, S3_NEWMMIO
-   or S3_VIRGE.  Only S3_GENERIC works as yet.  (MArk)	*/
+/* s3InfoRec needs to be defined as the directory everything is in. */
 
-#define s3InfoRec S3 
-#define S3_GENERIC
+#ifdef S3_NEWMMIO
+ #define s3InfoRec S3_MMIO 
+#else
+ #define s3InfoRec S3_PIO
+#endif
+
+/* You define which one you build here (S3_NEWMMIO or S3_GENERIC) */
 
 /* uncomment S3_DEBUG to get a comfortable level of debugging info (MArk) */
 /* #define S3_DEBUG */
@@ -79,6 +82,7 @@ extern short s3alu[16];
 extern char  s3Mbanks;
 extern char *s3ClockChipProbed;
 extern Bool  s3Localbus;
+extern Bool  s3PCIRetry;
 extern Bool  s3VLB;
 extern Bool  s3DAC8Bit;
 extern Bool  s3DACSyncOnGreen;
@@ -91,11 +95,8 @@ extern Bool  s3ReloadCursor;
 extern Bool  s3InitCursorFlag;
 extern Bool  s3clockDoublingPossible;
 extern Bool  s3Initialized;
-extern Bool  s3LinearAperature;
 extern unsigned char s3Port31;
-extern unsigned char s3Port40;
 extern unsigned char s3Port51;
-extern unsigned char s3Port54;
 extern unsigned char s3Port59;
 extern unsigned char s3Port5A;
 extern unsigned char s3LinApOpt;
@@ -126,8 +127,6 @@ extern void  S3CleanUp(void);
 extern void  S3FillInModeInfo(DisplayModePtr);
 extern void  S3EnterLeave(Bool);
 extern void  S3Adjust(int,int);
-extern void  S3EnableLinear(void); 
-extern void  S3DisableLinear(void); 
 extern void  S3AccelInit(void);
 extern void  S3QueryBestSize(int, unsigned short*, unsigned short*, ScreenPtr);
 extern void  S3WarpCursor(ScreenPtr, int, int);

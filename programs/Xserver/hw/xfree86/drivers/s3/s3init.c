@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3init.c,v 1.2 1997/03/10 10:12:10 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3init.c,v 1.3 1997/03/27 08:30:45 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -44,7 +44,6 @@ extern int nonMuxMaxClock;
 /*
  *  S3Init --
  *  
- *	The SVGA server's Save and Restore functions are useless.
  *	The SVGA server does Init then Save then Restore. The idea
  *	being that Init doesn't write any registers but merely fills
  * 	in a data structure. Save then saves the original state (you
@@ -60,17 +59,8 @@ extern int nonMuxMaxClock;
  *	saves.  I call it sooner on the first pass through Init (S3
  *	server style) and restore it explicitly in the EnterLeave
  *	function (also S3 server style).
- * <- I'm sick of these damn little asterisks!
-	   I had the idea of a three level init.  Level 3 is when
-	you merely do a simple mode switch. Level 2 is for a more
- 	complicated mode switch (like mux/non-mux switch). Level 1
-	is a full reinitialization.   Hopefully this will solve many
-	problems with incompatible modes.
-
-
-
-
  *
+ *					MArk
  */
 
 
@@ -341,44 +331,6 @@ Bool S3InitLevelThree(DisplayModePtr mode)
    }
 
 
-#ifdef S3_MMIO
-   if (OFLG_ISSET(OPTION_STB_PEGASUS, &vga256InfoRec.options) &&
-       !OFLG_ISSET(OPTION_NOLINEAR_MODE, &vga256InfoRec.options)) {
-     /*
-       Set bit 7 of CRTC register 5C to map video memory with
-       LAW31-26 = 011111 rather than 000000.  Note that this remaps
-       all addresses seen by the 928, including the VGA Base Address.
-     */
-     int cr5c;
-     outb(vgaCRIndex, 0x5C);
-     cr5c = inb(vgaCRReg);
-     outb(vgaCRIndex, 0x5C);
-     outb(vgaCRReg, cr5c | 0x80);
-     vgaBase = vgaBaseHigh;
-   }
-
-   if (OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &vga256InfoRec.options) &&
-       !OFLG_ISSET(OPTION_NOLINEAR_MODE, &vga256InfoRec.options)) {
-     int cr5c;
-     outb(vgaCRIndex, 0x5C);
-     cr5c = inb(vgaCRReg);
-     outb(vgaCRIndex, 0x5C);
-       switch(vga256InfoRec.depth) {
-       case 24:
-       case 32:
-	 outb(vgaCRReg, cr5c | 0xf0);
-	 break;
-       case 16:
-       case 15:
-	 outb(vgaCRReg, cr5c | 0x70);
-	 break;
-       default:
-	 outb(vgaCRReg, cr5c | 0xa0);
-       }
-       vgaBase = vgaBaseHigh;
-    }
-#endif /* S3_MMIO */
-
    /* Don't change the clock bits when using an external clock program */
 
    if (new->NoClock < 0) {
@@ -442,15 +394,18 @@ Bool S3InitLevelThree(DisplayModePtr mode)
       outb(0x3C0, new->Attribute[i]);
    }
 
-   /* two page setup for 2048 width */
+   /****** CR31 ******/
+   /*  We need to save CR31 since it is also used for the display
+	start address.  Here we initialize for two page setup when
+	using a 2048 width */
    if (s3DisplayWidth == 2048)
       s3Port31 = 0x8f;
    else
       s3Port31 = 0x8d;
    outb(vgaCRIndex, 0x31); outb(vgaCRReg, s3Port31);
 
-
-   /* Back compatibility registers */
+   /***** CR32, CR33 and CR34 *****/
+   /* These are the backwards compatibility registers */
    outb(vgaCRIndex, 0x32); outb(vgaCRReg, 0x00); /* Back compat 1 */
    outb(vgaCRIndex, 0x33);			 /* Back compat 2 */
    if (OFLG_ISSET(OPTION_STB_PEGASUS, &vga256InfoRec.options))
@@ -462,37 +417,40 @@ Bool S3InitLevelThree(DisplayModePtr mode)
    S3BankZero();
 
 
-   /* PCI Read Burst Disable ? */
-   outb(vgaCRIndex, 0x66);  
-   tmp = inb(vgaCRReg) | 0x80;
-   outb(vgaCRReg, tmp);
+   /****** CR3A ******/
    outb(vgaCRIndex, 0x3a);
    if (OFLG_ISSET(OPTION_SLOW_DRAM_REFRESH, &vga256InfoRec.options))
 	outb(vgaCRReg, 0xb7);
    else
 	outb(vgaCRReg, 0xb5);
 
+   /****** CR3B ******/
+   /* CR3B and CR3C may undergo some additional modifications
+	later on */
    outb(vgaCRIndex, 0x3b);
    outb(vgaCRReg, (new->CRTC[0] + new->CRTC[4] + 1) / 2);
+
+   /****** CR3C ******/
    outb(vgaCRIndex, 0x3c);
    outb(vgaCRReg, new->CRTC[0]/2);	/* Interlace mode frame offset */
 
-   /* x64: CR40 changed a lot for 864/964; wait and see if this still works */
+   /****** CR40 ******/
    outb(vgaCRIndex, 0x40);
    tmp = inb(vgaCRReg);
    if (S3_911_SERIES (s3ChipId)) 
-      s3Port40 = (tmp & 0xf2) | 0x09;
+      tmp = (tmp & 0xf2) | 0x09;
    else {
       if (s3Localbus) {
-	 s3Port40 = tmp & 0xf2;
+	 tmp &= 0xf2;
 	 if (OFLG_ISSET(OPTION_STB_PEGASUS, &vga256InfoRec.options) ||
 	     OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &vga256InfoRec.options))
-	   s3Port40 |= 0x01; 	   /* no wait states */
-	 else s3Port40 |= 0x05;    /* one wait state */
-      } else s3Port40 = (tmp & 0xf6) | 0x01;
+	   tmp |= 0x01; 	   /* no wait states */
+	 else tmp |= 0x05;    /* one wait state */
+      } else tmp = (tmp & 0xf6) | 0x01;
    }
-   outb(vgaCRReg, s3Port40);
+   outb(vgaCRReg, tmp);
 
+   /****** CR43 ******/
    outb(vgaCRIndex, 0x43);
    switch (vga256InfoRec.depth) {
    case 24:
@@ -536,8 +494,11 @@ Bool S3InitLevelThree(DisplayModePtr mode)
       break;
    }
 
+   /****** CR43 ******/
+   /* What is this? */
    outb(vgaCRIndex, 0x44); outb(vgaCRReg, 0x00);
 
+   /****** CR44 ******/
    outb(vgaCRIndex, 0x45);
    tmp = inb(vgaCRReg) & 0xf2;
    /* hi/true cursor color enable */
@@ -557,7 +518,11 @@ Bool S3InitLevelThree(DisplayModePtr mode)
    }
    outb(vgaCRReg, tmp);
 
+
+   /************  Big section for all but 911/914 **************/
+
    if (S3_801_928_SERIES(s3ChipId)) {
+      /****** CR50 ******/
       outb(vgaCRIndex, 0x50);
       tmp = inb(vgaCRReg) & ~0xf1;
       switch (vga256InfoRec.bitsPerPixel) {
@@ -594,6 +559,7 @@ Bool S3InitLevelThree(DisplayModePtr mode)
       }
       outb(vgaCRReg, tmp);
 
+      /****** CR51 ******/
       outb(vgaCRIndex, 0x51);
       s3Port51 = (inb(vgaCRReg) & 0xC0) | ((s3BppDisplayWidth >> 7) & 0x30);
       if (OFLG_ISSET(OPTION_STB_PEGASUS, &vga256InfoRec.options) ||
@@ -607,29 +573,16 @@ Bool S3InitLevelThree(DisplayModePtr mode)
       }
       outb(vgaCRReg, s3Port51);
 
-      outb(vgaCRIndex, 0x58); outb(vgaCRReg, s3SAM256);
-
-      outb(vgaCRIndex, 0x59); outb(vgaCRReg, s3Port59);
-      outb(vgaCRIndex, 0x5A); outb(vgaCRReg, s3Port5A);
       
+      /****** CR53 ******/
       outb(vgaCRIndex, 0x53);
-      tmp = inb(vgaCRReg) & ~0x18;
-#ifdef S3_MMIO
-      tmp |= 0x10;
-#endif
-#ifdef S3_NEWMMIO
-      if (vga256InfoRec.MemBase != 0) {
-	    s3Port59 = (vga256InfoRec.MemBase >> 24) & 0xfc;
-	    s3Port5A = 0;
-	    outb(vgaCRIndex, 0x59);
-	    outb(vgaCRReg, s3Port59);
-	    outb(vgaCRIndex, 0x5a);
-	    outb(vgaCRReg, s3Port5A);
-	    outb(vgaCRIndex, 0x53);
-      }
-      tmp |= 0x18;
-#endif
+      tmp = inb(vgaCRReg);
 
+#ifdef S3_NEWMMIO
+      tmp |= 0x18;
+#else
+      tmp &= ~0x18;
+#endif
       /*
        * Now the DRAM interleaving bit for the 801/805 chips
        * Note, we don't touch this bit for 928 chips because they use it
@@ -643,12 +596,8 @@ Bool S3InitLevelThree(DisplayModePtr mode)
       }
       outb(vgaCRReg, tmp);
 
-#ifdef S3_NEWMMIO
-      outb (vgaCRIndex, 0x58);
-      /* window size for linear mode */
-      outb (vgaCRReg, (s3LinApOpt & ~0x04) | s3SAM256);        
-#endif
 
+      /****** CR54 ******/
       n = 255;
       outb(vgaCRIndex, 0x54);
       if (S3_x64_SERIES(s3ChipId) || S3_805_I_SERIES(s3ChipId)) {
@@ -678,19 +627,23 @@ Bool S3InitLevelThree(DisplayModePtr mode)
          m = 2;
       else
 	 m = 20;
+
       if (OFLG_ISSET(OPTION_STB_PEGASUS, &vga256InfoRec.options))
- 	s3Port54 = 0x7F;
+ 	tmp = 0x7F;
       else if (OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &vga256InfoRec.options))
-	s3Port54 = 0;
-      else s3Port54 = m << 3;
-      outb(vgaCRReg, s3Port54);
+	tmp = 0;
+      else tmp = m << 3;
+      outb(vgaCRReg, tmp);
       
+      /****** CR60 ******/
       n -= vga256InfoRec.s3Nadjust;
       if (n < 0) n = 0;
       else if (n > 255) n = 255;
       outb(vgaCRIndex, 0x60);
       outb(vgaCRReg, n);
 
+	
+      /****** CR55 ******/
       if(!OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &vga256InfoRec.options)) {
 	outb(vgaCRIndex, 0x55);
 	/* remove mysterious dot at 60Hz */
@@ -708,6 +661,8 @@ Bool S3InitLevelThree(DisplayModePtr mode)
       }
 
 
+      /****** CR5E ******/
+      outb(vgaCRIndex, 0x5e);
       if ((S3_TRIO64V_SERIES(s3ChipId) && (s3ChipRev <= 0x53) && (s3Bpp==1)) ^
 	  !!OFLG_ISSET(OPTION_TRIO64VP_BUG2, &vga256InfoRec.options))
 	 i = (((mode->CrtcVTotal - 2) & 0x400) >> 10)  |
@@ -719,8 +674,6 @@ Bool S3InitLevelThree(DisplayModePtr mode)
 	     (((mode->CrtcVDisplay - 1) & 0x400) >> 9) |
 	     (((mode->CrtcVSyncStart) & 0x400) >> 8)   |
 	     (((mode->CrtcVSyncStart) & 0x400) >> 6)   | 0x40;
-	  
-      outb(vgaCRIndex, 0x5e);
       outb(vgaCRReg, i);
 
       if ((S3_TRIO64V_SERIES(s3ChipId) && (s3ChipRev <= 0x53) && (s3Bpp==1)) ^
@@ -745,6 +698,7 @@ Bool S3InitLevelThree(DisplayModePtr mode)
 	 i |= 0x20;   /* add another 32 DCLKs to hsync pulse width */
 
 
+      /****** CR3B ******/
       outb(vgaCRIndex, 0x3b);
       if (DAC_IS_IBMRGB528) {
 	 if (s3Bpp==1)
@@ -763,38 +717,41 @@ Bool S3InitLevelThree(DisplayModePtr mode)
       }
       outb(vgaCRReg, itmp & 0xff);
       i |= (itmp&0x100) >> 2;
+
+      /****** CR3C ******/
       outb(vgaCRIndex, 0x3c);
      /* Interlace mode frame offset */
       outb(vgaCRReg, (new->CRTC[0] + ((i&0x01)<<8)) /2);	
 
+      /****** CR5D ******/
       outb(vgaCRIndex, 0x5d);
       tmp = (inb(vgaCRReg) & 0x80) | i;
       outb(vgaCRReg, tmp);
 
       if (vga256InfoRec.videoRam > 1024 && S3_x64_SERIES(s3ChipId)) 
 	 i = mode->HDisplay * s3Bpp / 8 + 1;
-      else
-	 i = mode->HDisplay * s3Bpp / 4 + 1; /* XXX should be checked for 801/805 */
+      else	/* XXX should be checked for 801/805 */
+	 i = mode->HDisplay * s3Bpp / 4 + 1; 
       
+      /****** CR61 ******/
       outb(vgaCRIndex, 0x61);
       tmp = 0x80 | (inb(vgaCRReg) & 0x60) | (i >> 8);
       outb(vgaCRReg, tmp);
       outb(vgaCRIndex, 0x62);
       outb(vgaCRReg, i & 0xff);
-   } /*  (S3_801_928_SERIES(s3ChipId) || S3_964_SERIES(s3ChipId)) */
+   } /*  (S3_801_928_SERIES(s3ChipId) */
 
 
-   if ((mode->Flags & V_INTERLACE) != 0) {
-      outb(vgaCRIndex, 0x42);
-      tmp = 0x20 | inb(vgaCRReg);
-      outb(vgaCRReg, tmp);
-   }
-   else {
-      outb(vgaCRIndex, 0x42);
-      tmp = ~0x20 & inb(vgaCRReg);
-      outb(vgaCRReg, tmp);
-   }
+   /****** CR42 ******/
+   outb(vgaCRIndex, 0x42);
+   tmp = inb(vgaCRReg);
+   if ((mode->Flags & V_INTERLACE) != 0) 
+      tmp |= 0x20;
+   else 
+      tmp &= ~0x20;
+   outb(vgaCRReg, tmp);
 
+   /****** CR67, CR6D and CR65 ******/
    if (mode->Private) {
       if (mode->Private[0] & (1 << S3_INVERT_VCLK)) {
 	outb(vgaCRIndex, 0x67);
@@ -816,6 +773,18 @@ Bool S3InitLevelThree(DisplayModePtr mode)
       }
    }
 
+
+   /****** CR66 ******/
+   /* PCI disconect enable -  perhaps this can be hidden from the 911
+	and 914 in the 801_928 section above */
+   outb(vgaCRIndex, 0x66);  
+   tmp = inb(vgaCRReg);
+#ifdef S3_NEWMMIO
+   if(s3PCIRetry)
+   	outb(vgaCRReg, tmp | 0x88);
+   else
+#endif
+   	outb(vgaCRReg, tmp | 0x80);
 
 /* I suspect most of this is init level 1 stuff if the sequence isn't
 	important (MArk) */
@@ -989,32 +958,21 @@ Bool S3InitLevelThree(DisplayModePtr mode)
    crtswitch(1);
 #endif
 
-     /************* prepare for linear here ?  MArk **/
+	/***************************************\
+	|	Set up Linear Addressing 	|
+	\***************************************/
+	
 
-   if (xf86LinearVidMem() &&
-	  !OFLG_ISSET(OPTION_NOLINEAR_MODE, &vga256InfoRec.options)) {
-	 if (s3Localbus && !S3_911_SERIES(s3ChipId) &&
-	     !OFLG_ISSET(OPTION_NO_MEM_ACCESS, &vga256InfoRec.options)) {
-
-
-	    if (S3_801_928_SERIES (s3ChipId)) {
-	       outb(vgaCRIndex, 0x59); outb(vgaCRReg, s3Port59);
-	       outb(vgaCRIndex, 0x5a); outb(vgaCRReg, s3Port5A);
-
-	       if (vga256InfoRec.videoRam <= 1024) {
-		  s3LinApOpt=0x15;
-	       } else if (vga256InfoRec.videoRam <= 2048) {
-		  s3LinApOpt=0x16;
-	       } else {
-		  s3LinApOpt=0x17;
-	       }
-       	       s3BankSize = vga256InfoRec.videoRam * 1024;
-	       S3EnableLinear();
-	    }
-
-	}
+   if (s3InfoRec.ChipUseLinearAddressing) {
+	outb(vgaCRIndex, 0x59); outb(vgaCRReg, s3Port59);
+	outb(vgaCRIndex, 0x5a); outb(vgaCRReg, s3Port5A);
+		
+      	outb (vgaCRIndex, 0x58);
+      	outb (vgaCRReg, s3LinApOpt | s3SAM256);        
+   } else {
+      	outb(vgaCRIndex, 0x58); 
+	outb(vgaCRReg, s3SAM256);
    }
-
 
    SET_SCISSORS(0,0,s3ScissR,s3ScissB);
 
@@ -1043,17 +1001,12 @@ void S3CleanUp()
    vgaProtect(TRUE);
 
 
-#ifdef S3_MMIO
-   /* disable linear mode */
-   outb (vgaCRIndex, 0x58); outb (vgaCRReg, s3SAM256); 
-#endif
-
    WaitQueue(8);
    S3BankZero();
 
    outw(ADVFUNC_CNTL, 0);
 
-#if defined(S3_MMIO) || defined(S3_NEWMMIO)
+#ifdef S3_NEWMMIO
    outb(vgaCRIndex, 0x53); outb(vgaCRReg, 0x00);
 #endif
 

@@ -37,11 +37,6 @@ extern vgaHWCursorRec vgaHWCursor;
 /*
  *   S3FbInit --
  *
- *	This is typical of what is done in the mga server. ie. the
- *	registers are memory mapped, the linear base is determined
- *	and XAA and hardware cursor are set up.  Note that X -probeonly
- *	will get into this function so hardware initialization is not
- *	possible this early on.
  *	  This function is different in that some stuff seemingly more
  *	suitable for the Probe function is in here, but that is only 
  *	because it had to wait until after the modelines were validated
@@ -196,7 +191,6 @@ void S3FbInit(void)
 	 	XCONFIG_PROBED, vga256InfoRec.name, s3DisplayWidth);
 
 
-
 	/* I should probably stick this somewhere else ? */
    s3ScissB = ((vga256InfoRec.videoRam * 1024) / s3BppDisplayWidth) - 1;
    s3ScissR = s3DisplayWidth - 1;
@@ -207,98 +201,66 @@ void S3FbInit(void)
 	|	Set Linear Base	 	|
 	\*******************************/
 
-    s3BankSize = 0x10000;
-    s3LinApOpt = 0x14;
-
 
       /* determine if we are linear addressing */
  
-   if (S3_801_928_SERIES(s3ChipId) && s3Localbus && xf86LinearVidMem()
+#ifndef S3_NEWMMIO
+   if (S3_801_928_SERIES(s3ChipId) && s3Localbus 
 	  && !OFLG_ISSET(OPTION_NOLINEAR_MODE, &vga256InfoRec.options)
 	  && !OFLG_ISSET(OPTION_NO_MEM_ACCESS, &vga256InfoRec.options)) {
-	 if (S3_x64_SERIES(s3ChipId)) { 
-	    if (vga256InfoRec.MemBase) {
-#ifdef S3_NEWMMIO
-	       if (vga256InfoRec.MemBase & 0x3ffffff) {
-		  ErrorF("%s %s: base address not correctly aligned to 64MB\n",
-			 XCONFIG_PROBED, vga256InfoRec.name);
-		  ErrorF("\t\tbase address changed from 0x%08lx to 0x%08lx\n",
-		   vga256InfoRec.MemBase, vga256InfoRec.MemBase & ~0x3ffffff);
-		  vga256InfoRec.MemBase &= ~0x3ffffff;
-	       }
-#endif /* S3_NEWMMIO */
-	       s3InfoRec.ChipLinearBase = vga256InfoRec.MemBase;
-	    }
-#ifdef S3_NEWMMIO
-	    else {
-	       unsigned long OrigBase;
-
-	       outb(vgaCRIndex, 0x59);
-	       s3InfoRec.ChipLinearBase = inb(vgaCRReg) << 24;
-	       outb(vgaCRIndex, 0x5a);
-	       s3InfoRec.ChipLinearBase |= inb(vgaCRReg) << 16;
-	       OrigBase = s3InfoRec.ChipLinearBase;
-	       s3InfoRec.ChipLinearBase &= 0xfc000000;
-	       if (!s3InfoRec.ChipLinearBase || 
-			s3InfoRec.ChipLinearBase != OrigBase) {
-		  /* the aligned address may clash with other devices,
-		     so use a pretty random base address... */
-		  s3InfoRec.ChipLinearBase = 0xb4000000;  /* last resort */
-		  ErrorF("%s %s: PCI: base address not correctly aligned\n",
-			 XCONFIG_PROBED, vga256InfoRec.name);
-		  ErrorF("\t\tbase address changed from 0x%08lx to 0x%08lx\n",
-			 OrigBase, s3InfoRec.ChipLinearBase);
-	       }
-	    }
 #else
-	    else 
-	       s3InfoRec.ChipLinearBase = 0xf3000000; 
-#endif /* S3_NEWMMIO */
-	 } else {  /* not x64 series */
-#ifdef PC98_PWLB
-	    if (pc98BoardType == PWLB)
-	       s3InfoRec.ChipLinearBase = 0x0;
-	    else
+   {
 #endif
+
+         s3InfoRec.ChipUseLinearAddressing = TRUE;   
+
+	  
+	 if (vga256InfoRec.MemBase) 
+	    s3InfoRec.ChipLinearBase = vga256InfoRec.MemBase;
+         else if (vgaPCIInfo && (vgaPCIInfo->Vendor == PCI_S3_VENDOR_ID))
+	    s3InfoRec.ChipLinearBase = vgaPCIInfo->MemBase & 0xFF800000;
+	 else if (S3_x64_SERIES(s3ChipId)) 
+	    s3InfoRec.ChipLinearBase = 0xf3000000; 
+	 else 
 	    s3InfoRec.ChipLinearBase = 0x03000000;
-	 }
-   } 
+	 
 
-
-   /* s3Port59/s3Port5A need to be checked/initialized
-	 before s3Init() is called the first time */
-   if(s3InfoRec.ChipLinearBase) {
-        s3InfoRec.ChipUseLinearAddressing = TRUE;   
     	s3Port59 = s3InfoRec.ChipLinearBase >> 24;
    	s3Port5A = s3InfoRec.ChipLinearBase >> 16;
-   } else {   /* this is what it worked out to in the S3 server. If
-	it really isn't important what these are when you aren't linear
-	addressing, then remove this. (MArk) */
-    	s3Port59 = 0xA0000 >> 24;
-   	s3Port5A = 0xA0000 >> 16;
-   }
+
+       	s3InfoRec.ChipLinearSize =  vga256InfoRec.videoRam * 1024;
+
+#ifdef S3_NEWMMIO
+	/* Map the registers */
+   	if(!(s3MmioMem = xf86MapVidMem(vga256InfoRec.scrnIndex, MMIO_REGION, 
+      		(pointer)(s3InfoRec.ChipLinearBase + S3_NEWMMIO_REGBASE), 	
+		S3_NEWMMIO_REGSIZE)))
+      	FatalError("Unable to memory map registers!\n");   
+#endif
+			
+	if (vga256InfoRec.videoRam <= 1024) 
+	    s3LinApOpt = 0x15;
+	else if (vga256InfoRec.videoRam <= 2048) 
+	    s3LinApOpt = 0x16;
+	else 
+	    s3LinApOpt = 0x17;
+
+#ifdef S3_NEWMMIO
+	s3LinApOpt &= ~0x04;	
+#endif
+	     
+   } 
 
    if(xf86Verbose) {
   	if(s3InfoRec.ChipUseLinearAddressing) 
 	    ErrorF("%s %s: Linear mapped framebuffer at 0x%08lx\n",
-		 XCONFIG_PROBED, vga256InfoRec.name,s3InfoRec.ChipLinearBase);
+		 XCONFIG_PROBED, vga256InfoRec.name, s3InfoRec.ChipLinearBase);
 	else
 	    ErrorF("%s %s: Bank switching... Bank size %i\n",
-			 XCONFIG_PROBED, vga256InfoRec.name,s3BankSize);
+			 XCONFIG_PROBED, vga256InfoRec.name, 0x10000);
     }
 
 
-	/***************************************\
-	|	Memory map the registers 	|
-	\***************************************/
-
-#if defined(S3_MMIO) || defined(S3_NEWMMIO)
-
-/*  I'm a little intimidated by this stuff.  Harald? */
-
-   s3MmioMem = xf86MapVidMem(Your ad here);
-
-#endif
 	/*******************************\
 	|	Setup XAA	 	|
 	\*******************************/
