@@ -1,4 +1,6 @@
 XFree86 4.1.99.6 (xx January 2002)
+ 656. Update XDarwin man page and usage message for XFree86 4.2.0. Add
+      XFree86 man page to XDarwin distribution (Torrey T. Lyons).
  655. Add bn_BD.UTF-8 to locale.dir (Taneem Ahmed).
  654. Fix luit not dropping priviledges when run with the -c flag (#5134,
       Juliusz Chroboczek).
@@ -14487,4 +14489,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2118 2002/01/08 18:59:24 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2119 2002/01/09 16:14:16 dawes Exp $
