@@ -331,11 +331,11 @@ TIramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs/* , RamDacRec
     ramdacHelperPtr = RamDacHelperCreateInfoRec();
     switch (TIramdac_ID) {
 	case TI3030_RAMDAC:
- 	    ramdacHelperPtr->SetBpp = TIramdac3026SetBpp;
+ 	    ramdacHelperPtr->SetBpp = TIramdac3030SetBpp;
     	    ramdacHelperPtr->HWCursorInit = TIramdac3030HWCursorInit;
 	    break;
 	case TI3026_RAMDAC:
- 	    ramdacHelperPtr->SetBpp = TIramdac3030SetBpp;
+ 	    ramdacHelperPtr->SetBpp = TIramdac3026SetBpp;
     	    ramdacHelperPtr->HWCursorInit = TIramdac3030HWCursorInit;
 	    break;
     }
