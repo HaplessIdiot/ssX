@@ -8,7 +8,7 @@
 <date>1999</date>
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.5 1999/07/19 13:36:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.6 2000/01/19 22:37:33 dawes Exp $
 </ident>
 
 <sect>XFree86 License
@@ -610,6 +610,50 @@ Copyright (c) 1994-1999 Silicon Graphics, Inc. All Rights Reserved.
 [NOTE: When using this text in connection with Subject Software delivered 
 solely in object code form, Recipient may replace the words "this file" with
 "this software" in both the first and second sentences.]
+
+<sect1>Bigelow &amp; Holmes Inc and Y&amp;Y Inc Lucidux font license
+<p>
+
+Copyright (C) 2000 Bigelow &amp; Holmes Inc. and Y&amp;Y, Inc.  Patents pending.
+All Rights Reserved. Lucidux is a trademark of Bigelow &amp; Holmes Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of these Fonts and associated documentation files (the "Font
+Software"), to deal in the Font Software, including without limitation the
+rights to use, copy, merge, publish, distribute, sublicense, and/or sell
+copies of the Font Software, and to permit persons to whom the Font
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright, trademark, patent notices and this permission notice
+shall be included in all copies of one or more of the Font Software.
+
+The Font Software may not be modified, altered, or added to, and in
+particular the designs of glyphs or characters in the Fonts may not be
+modified nor may additional glyphs or characters be added to the Fonts,
+except that composite characters composed of two or more characters in the
+Fonts may be created using the seac (Standard Encoding Accented Character)
+Type 1 operator.
+
+THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT.  IN NO EVENT SHALL BIGELOW &amp;
+HOLMES INC. OR Y&amp;Y, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR
+CONSEQUENTIAL DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
+OTHER DEALINGS IN THE FONT SOFTWARE.
+
+Except as contained in this notice, the names of Bigelow &amp; Holmes Inc. and
+Y&amp;Y, Inc. shall not be used in advertising or otherwise to promote the
+sale, use or other dealings in this Font Software without prior written
+authorization from the Bigelow &amp; Holmes Inc. and Y&amp;Y, Inc.
+
+For further information, contact:
+
+<email>sales@yandy.com</email>
+or
+<email>design@bigelowandholmes.com</email>
 
 
 </article>

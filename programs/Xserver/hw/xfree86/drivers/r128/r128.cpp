@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128.cpp,v 1.1 2000/03/03 01:05:41 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128.cpp,v 1.2 2000/03/06 13:57:44 martin Exp $ 
 .TH R128 __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 r128 \- ATI Rage 128 video driver
@@ -15,7 +15,7 @@ r128 \- ATI Rage 128 video driver
 .SH DESCRIPTION
 .B r128
 is an XFree86 driver for ATI Rage 128 based video cards.  It contains
-full support for 8, 15, 16, 24 and 32 bit per pixel depths, hardware
+full support for 8, 15, 16 and 24 bit pixel depths, hardware
 acceleration of drawing primitives, hardware cursor, video modes up to
 1800x1440 @ 70Hz, doublescan modes (e.g., 320x200 and 320x240), gamma
 correction at all pixel depths, a fully programming dot clock and robust

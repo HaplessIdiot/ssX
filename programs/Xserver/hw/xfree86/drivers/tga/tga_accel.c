@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_accel.c,v 1.9 1999/12/16 02:26:30 robin Exp $ */
 
 /*
  * Copyright 1996,1997 by Alan Hourihane, Wigan, England.
@@ -115,12 +115,14 @@ DEC21030AccelInit(ScreenPtr pScreen)
 
   /*  ErrorF("XAACreateInfoRec called"); */
 
-  pTga->Bpp = pScrn->depth / 8; /* Bytes per pixel */
-  if(pScrn->depth == 8)
+  if(pScrn->depth == 8) {
     pTga->depthflag = BPP8PACKED;
-  else
+    pTga->Bpp = 1;
+  } else {
     pTga->depthflag = BPP24;
-  
+    pTga->Bpp = 4;
+  }
+ 
   TGA_AccelInfoRec->Flags =  PIXMAP_CACHE | LINEAR_FRAMEBUFFER |
     OFFSCREEN_PIXMAPS;
   
@@ -133,8 +135,8 @@ DEC21030AccelInit(ScreenPtr pScreen)
   TGA_AccelInfoRec->SubsequentSolidFillRect = TGASubsequentSolidFillRect;
 
   /* screen to screen copy */
-  if(pScrn->depth == 8) {  /* screen to screen copy apparently doesn't work
-			      for 32bpp tga */
+  if(pTga->depthflag == BPP8PACKED) {  /* screen to screen copy apparently doesn't work
+			                  for 32bpp tga */
     TGA_AccelInfoRec->ScreenToScreenCopyFlags = NO_TRANSPARENCY;
     TGA_AccelInfoRec->SetupForScreenToScreenCopy =
       TGASetupForScreenToScreenCopy;
@@ -152,30 +154,34 @@ DEC21030AccelInit(ScreenPtr pScreen)
     TGASubsequentMono8x8PatternFillRect;
 
   /* color expand */
-  /* does this work for 32bpp? */  
-  TGA_AccelInfoRec->ScanlineCPUToScreenColorExpandFillFlags =
-    BIT_ORDER_IN_BYTE_LSBFIRST;
+  /* does not work for 32bpp (yet) */
+  if(pTga->depthflag == BPP8PACKED) {
+    TGA_AccelInfoRec->ScanlineCPUToScreenColorExpandFillFlags =
+      BIT_ORDER_IN_BYTE_LSBFIRST;
   
-  TGA_AccelInfoRec->NumScanlineColorExpandBuffers = 1;
-  pTga->buffers[0] = (CARD32 *)malloc(CE_BUFSIZE);
-  TGA_AccelInfoRec->ScanlineColorExpandBuffers =
-    (unsigned char **)pTga->buffers;
-  TGA_AccelInfoRec->SetupForScanlineCPUToScreenColorExpandFill =
-    TGASetupForScanlineCPUToScreenColorExpandFill;
-  TGA_AccelInfoRec->SubsequentScanlineCPUToScreenColorExpandFill = 
-    TGASubsequentScanlineCPUToScreenColorExpandFill;
-  TGA_AccelInfoRec->SubsequentColorExpandScanline = 
-    TGASubsequentColorExpandScanline;
+    TGA_AccelInfoRec->NumScanlineColorExpandBuffers = 1;
+    pTga->buffers[0] = (CARD32 *)malloc(CE_BUFSIZE);
+    TGA_AccelInfoRec->ScanlineColorExpandBuffers =
+      (unsigned char **)pTga->buffers;
+    TGA_AccelInfoRec->SetupForScanlineCPUToScreenColorExpandFill =
+      TGASetupForScanlineCPUToScreenColorExpandFill;
+    TGA_AccelInfoRec->SubsequentScanlineCPUToScreenColorExpandFill = 
+      TGASubsequentScanlineCPUToScreenColorExpandFill;
+    TGA_AccelInfoRec->SubsequentColorExpandScanline = 
+      TGASubsequentColorExpandScanline;
+  }
 
   /* lines */
   
   TGA_AccelInfoRec->PolylinesThinSolid = TGAPolyLines;
-  TGA_AccelInfoRec->PolySegmentThinSolid = TGAPolySegment;
+  if(pTga->NoXaaPolySegment == FALSE)
+    TGA_AccelInfoRec->PolySegmentThinSolid = TGAPolySegment;
   TGA_AccelInfoRec->PolylinesThinSolidFlags = 0x0;
   TGA_AccelInfoRec->PolySegmentThinSolidFlags = 0x0;
 
   TGA_AccelInfoRec->PolylinesThinDashed = TGAPolyLinesDashed;
-  TGA_AccelInfoRec->PolySegmentThinDashed = TGAPolySegmentDashed;
+  if(pTga->NoXaaPolySegment == FALSE)
+    TGA_AccelInfoRec->PolySegmentThinDashed = TGAPolySegmentDashed;
   TGA_AccelInfoRec->PolylinesThinDashedFlags = 0x0;
   TGA_AccelInfoRec->PolySegmentThinDashedFlags = 0x0;
   TGA_AccelInfoRec->DashedLineFlags = LINE_PATTERN_LSBFIRST_LSBJUSTIFIED;
@@ -213,7 +219,7 @@ TGASetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
     TGA_GET_OFFSET();
 
 /*      ErrorF("TGASetupForScanlineCPUToScreenColorExpandFill called\n"); */
-    if(pScrn->depth == 8) {
+    if(pTga->depthflag == BPP8PACKED) {
       fgcolor = (fg | (fg << 8) | (fg << 16) | (fg << 24));
       bgcolor = bg | (bg << 8) | (bg << 16) | (bg << 24);
       pmask = planemask | (planemask << 8) | (planemask << 16)
@@ -232,7 +238,7 @@ TGASetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 	  pTga->block_or_opaque_p = USE_BLOCK_FILL;
 	  TGA_FAST_WRITE_REG(fgcolor, TGA_BLOCK_COLOR0_REG);
 	  TGA_FAST_WRITE_REG(fgcolor, TGA_BLOCK_COLOR1_REG);
-	  if(pScrn->depth == 32) {
+	  if(pTga->depthflag == BPP24) {
 	    TGA_FAST_WRITE_REG(fgcolor, TGA_BLOCK_COLOR2_REG);
 	    TGA_FAST_WRITE_REG(fgcolor, TGA_BLOCK_COLOR3_REG);
 	    TGA_FAST_WRITE_REG(fgcolor, TGA_BLOCK_COLOR4_REG);
@@ -433,7 +439,7 @@ TGASetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
   TGA_GET_OFFSET();
   /*  ErrorF("TGASetupForSolidFill called"); */
 
-  if(pScrn->depth == 8) {
+  if(pTga->depthflag == BPP8PACKED) {
     fgcolor = color | (color << 8) | (color << 16) | (color << 24);
     pmask = planemask | (planemask << 8) | (planemask << 16) |
 		     (planemask << 24);
@@ -448,7 +454,7 @@ TGASetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
     pTga->block_or_opaque_p = USE_BLOCK_FILL;
     TGA_FAST_WRITE_REG(fgcolor, TGA_BLOCK_COLOR0_REG);
     TGA_FAST_WRITE_REG(fgcolor, TGA_BLOCK_COLOR1_REG);
-    if(pScrn->depth == 32) {
+    if(pTga->depthflag == BPP24) {
       TGA_FAST_WRITE_REG(fgcolor, TGA_BLOCK_COLOR2_REG);
       TGA_FAST_WRITE_REG(fgcolor, TGA_BLOCK_COLOR3_REG);
       TGA_FAST_WRITE_REG(fgcolor, TGA_BLOCK_COLOR4_REG);
@@ -867,7 +873,7 @@ TGASetupForMono8x8PatternFill(ScrnInfoPtr pScrn, int patx, int paty,
   else
     pTga->block_or_opaque_p = USE_OPAQUE_FILL;
 
-  if(pScrn->depth == 8) {
+  if(pTga->depthflag == BPP8PACKED) {
     fgcolor = fg | (fg << 8) | (fg << 16) | (fg << 24);
     bgcolor = bg | (bg << 8) | (bg << 16) | (bg << 24);
     pmask = planemask | (planemask << 8) | (planemask << 16) |
@@ -885,7 +891,7 @@ TGASetupForMono8x8PatternFill(ScrnInfoPtr pScrn, int patx, int paty,
     /* we can use block fill mode to draw a transparent stipple */
     TGA_FAST_WRITE_REG(fgcolor, TGA_BLOCK_COLOR0_REG);
     TGA_FAST_WRITE_REG(fgcolor, TGA_BLOCK_COLOR1_REG);
-    if(pScrn->depth == 32) {
+    if(pTga->depthflag == BPP24) {
       TGA_FAST_WRITE_REG(fgcolor, TGA_BLOCK_COLOR2_REG);
       TGA_FAST_WRITE_REG(fgcolor, TGA_BLOCK_COLOR3_REG);
       TGA_FAST_WRITE_REG(fgcolor, TGA_BLOCK_COLOR4_REG);
@@ -934,7 +940,7 @@ TGASubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, int patx, int paty,
     TGA_FAST_WRITE_REG(pTga->current_rop, TGA_RASTEROP_REG);
 
   TGA_FAST_WRITE_REG(pTga->current_planemask, TGA_PLANEMASK_REG);
-  if(pScrn->depth == 8)
+  if(pTga->depthflag == BPP8PACKED)
     align = FB_OFFSET(x, y) % 4;
   else
     align = x % 4;
@@ -1249,7 +1255,7 @@ TGASetupForDashedLine(ScrnInfoPtr pScrn, int fg, int bg, int rop,
   TGA_GET_OFFSET();
 /*    ErrorF("TGASetupForDashedLine called\n"); */
 
-  if(pScrn->depth == 8) {
+  if(pTga->depthflag == BPP8PACKED) {
     color1 = fg | (fg << 8) | (fg << 16) | (fg << 24);
     color2 = bg | (bg << 8) | (bg << 16) | (bg << 24);
     pmask = planemask | (planemask << 8) | (planemask << 16)

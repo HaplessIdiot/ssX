@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.16 2000/02/08 17:19:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.17 2000/02/14 19:20:50 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -146,8 +146,9 @@ S3VAccelInit(ScreenPtr pScreen)
     infoPtr->ImageWriteFlags =  	ROP_NEEDS_SOURCE |
 					NO_TRANSPARENCY |
 					CPU_TRANSFER_PAD_DWORD |
-                                        SCANLINE_PAD_DWORD |
-                                  	LEFT_EDGE_CLIPPING; 
+					SCANLINE_PAD_DWORD |
+					NO_GXCOPY |  /* added - kjb */
+					LEFT_EDGE_CLIPPING; 
 
     infoPtr->ImageWriteRange = 0x8000;
     infoPtr->ImageWriteBase = ps3v->MapBaseDense;

@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga.h,v 1.12 1999/11/19 13:54:51 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga.h,v 1.13 1999/12/13 23:48:20 robin Exp $ */
 
 #ifndef _TGA_H_
 #define _TGA_H_
@@ -52,6 +52,7 @@ typedef struct {
     long		FbMapSize;
     unsigned long	regOffset;
     Bool		NoAccel;
+    Bool		NoXaaPolySegment;
     Bool		Dac6Bit;
     Bool		SyncOnGreen;
     Bool		HWCursor;

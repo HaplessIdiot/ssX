@@ -7,10 +7,10 @@
 <!-- made up title -->
 <title> Information for ISC Users
 <author> Michael Rohleder
-<date> 06 March 1999
+<date> 05 March 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.22 1999/08/28 10:43:33 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.23 2000/03/03 21:28:11 dawes Exp $
 </ident>
 
 <toc>
@@ -34,6 +34,13 @@ There is currently no support for shared Libraries so it will be filespace
 consuming if you want to build X11-clients with X11R6. Best you mix X11R6
 Server with X11R5 and X11R4 clients. And only compile clients who need the 
 new facilities provided in the X11R6 Libraries against them.
+
+<code>
+Please note: 
+       XFree86 Version 4.0 will be the last version which is known
+       to compile on Interactive Unix.
+       I've only tested this version on Interactive Unix, Version 4.1mu.
+</code>
 
 <sect> Things needed for compiling the sources<p>
 
@@ -336,23 +343,6 @@ I could only test these cards on Interactive UNIX
 
 </itemize>
 
-<!-- this is out of date
-<sect>XKeyboard Extension<p>
-
-<itemize>
-<item>Sample Setup &hellip; <p>
-Here is a sample XKeyboard Definition to include inside the Keyboard Section
-of your XF86Config File.
-<verb>
-   XkbRules        "xfree86"
-   XkbModel        "pc102"
-   XkbLayout       "de"
-   XkbVariant      "nodeadkeys"
-</verb>
-
-</itemize>
--->
-
 <sect> Multibuffer Extension <p>
 
 This is an obsolete Extension. Anyway, if you want to include this Extension 
@@ -362,72 +352,44 @@ Please note, this Extension should be disabled when building the Loader Server.
 
 <sect> Default Definitions <p>
 
-These are default options defined inside isc.cf. 
+These are default options defined inside isc.cf.
 You can redefine them inside host.def.
 
-<verb>
-/* Disable the use of /var/X11 */
-#ifndef HasVarDirectory
-#define HasVarDirectory		NO
-#endif
+Here is a sample host.def (the one I use for XFree86 4.0):
 
-/* Use mmap Driver                                                   */
-#ifndef HasSVR3mmapDrv
-# define HasSVR3mmapDrv		YES
-#endif
+<verb>
+
+/* Disable the use of /var/X11  and /etc/X11 */
+#define HasVarDirectory         NO
+#define UseEtcX11               NO
 
 /* Use inline Math from linux ;-) package inline-math-2.6.tar.gz */
 /* should be available on your favorite linux ftp                */
-#ifndef UseInlineMath
 # define UseInlineMath		YES
-#endif
 
 /* Use cbrt from liboptm.a (Interactive icc Compiler) */
-#ifndef HasCbrt
 # define HasCbrt		YES
-#endif
 
 /* Use GNUs MallocLibrary (and the Location for the Lib)             */
-#ifndef UseGnuMalloc
 # define UseGnuMalloc		YES
-#endif
-
-/* Install Zlib Headers - used in lib/zlib/Imakefile */
-#ifndef OsNeedZlibHeaders
-# define OsNeedZlibHeaders	YES
-#endif
 
 /* Expand Manual Pages (needs S5L)                                   */
-#ifndef ExpandManNames
 # define ExpandManNames		YES
-#endif
 
 /* if you have groff or the TextProcessingWorkbench - don't preformat*/
-#ifndef FormattedManPages
 # define FormattedManPages      NO
-#endif
-
-#ifndef HasSgmlFmt	/* HasLinuxDoc */
-# define HasSgmlFmt             YES
-#endif
 
 /* XF86Setup Util */
-#ifndef HasTk
-#define HasTk			YES
-#define HasTcl			YES
-#endif
+# define HasTk			YES
+# define HasTcl			YES
 
-#ifndef HasPosixRegex		/* Need extra/regex since 3.9Ns */
-#define HasPosixRegex		NO
-#endif
+/* use doctools */
+# define HasSgmlFmt             YES
+# define BuildAllDocs            YES
+# define BuildLinuxDocText       NO
+# define BuildLinuxDocPS         NO
 
-#ifndef DoLoadableServer
-#define DoLoadableServer        YES
-#endif
-
-#ifndef CpuOption
-#define CpuOption	-mpentium
-#endif
+#define GlxBuiltInMesa         YES
 
 </verb>
 
@@ -446,12 +408,6 @@ make install.man
 </verb>
 to install the compressed nroff versions of the manual pages into 
 /usr/X11R6/man. This directory will be generated if it doesn't exist.
-<!--
-<verb>
-make install.linkkit
-</verb>
-to install the server binary LinkKit into /usr/X11R6/lib/Server.
--->
 
 <code>
        You should tune the Kernel using the command-file
@@ -508,22 +464,6 @@ You could do this automatically with menu entry no. 5.
 <item>Xprt:<p>
        The new Xprint Server is configured to use lpr as its print helper
        so you have to install and configure lpr to use Xprt.<p>
-
-<!-- out of date
-<item>Keyboard:<p>
-       You don't need any modmap-File to get your keyboard
-       working with any iso-8859-1 Font. Simply enable 
-
-   <itemize>
-	<item>LeftAlt  Meta
-
-	<item>RightAlt ModeShift
-
-	<item>RightCtl Compose
-   </itemize>
-
-        in your XF86Config - Section "Keyboard"
--->
 
 <item>xpcterm: <p>
         if you want to get the German 'Umlaut' inside your ISC X11R4 client

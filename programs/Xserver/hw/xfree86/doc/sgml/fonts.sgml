@@ -6,18 +6,17 @@
 
 <title>Fonts in XFree86
 <author>Juliusz Chroboczek, <tt/Juliusz.Chroboczek@ens.fr/
-<date>14 February 2000</date>
+<date>5 March 2000</date>
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.5 2000/02/11 18:06:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.6 2000/02/14 19:20:44 dawes Exp $
 </ident>
 
 <toc>
 
-<p>This version of XFree86 includes a number of improvements to the
-handling of fonts, including
+<p>XFree86 contains a number of improvements related to fonts, including
 <itemize>
-<item> new Unicode-encoded bitmap fonts;
+<item> inclusion of new fonts;
 <item> internationalisation of the scalable font backends (Type 1, Speedo,
     and TrueType);
 <item> support for TrueType fonts;
@@ -113,14 +112,16 @@ When used in X11, Unicode-encoded fonts should have the last two
 fields of their XLFD set to `<tt/iso10646-1/'.
 
 
-<sect>Unicode-encoded bitmap fonts
+<sect>New fonts
+
+<sect1>Bitmap fonts
 
 <p>XFree86 includes two new Unicode-encoded fonts with a large
 collection of non-ideographic glyphs.  While it is possible to use
 these fonts as main fonts, applications may also use them as fallbacks
 when a given glyph is not available in the current font.
 
-<sect1>The Unicode `fixed' font
+<sect2>The Unicode `fixed' font
 
 <p>The font file
 <tscreen>
@@ -151,7 +152,7 @@ with XLFD
 The standard aliases `<tt/fixed/' and `<tt/6x13/' still point at the
 ISO&nbsp;8859-1 versions of the font.
 
-<sect1>The ClearlyU Unicode font
+<sect2>The ClearlyU Unicode font
 
 <p>The ClearlyU font set of fonts provides a set of 12pt, 100dpi
 proportional fonts with many of the glyphs needed for Unicode text.
@@ -172,6 +173,47 @@ Additional ClearlyU fonts include
 <p>-mutt-ClearlyU&nbsp;Ligature-medium-r-normal--17-120-100-100-p-141-fontspecific-0
 <p>-mutt-ClearlyU&nbsp;PUA-medium-r-normal--17-120-100-100-p-111-iso10646-1
 </tscreen>
+
+<sect1>Scalable fonts
+
+<p>XFree86 includes the ``Lucidux'' family of Type&nbsp;1 fonts.  This
+family consists of the fonts ``Lucidux Serif'', with XLFD
+<tscreen>
+-b&amp;h-lucidux serif-medium-*-normal--*-*-*-*-p-*-*-*
+</tscreen>
+``Lucidux Sans'', with XLFD
+<tscreen>
+-b&amp;h-lucidux sans-medium-*-normal--*-*-*-*-p-*-*-*
+</tscreen>
+and ``Lucidux Mono'', with XLFD
+<tscreen>
+-b&amp;h-lucidux mono-medium-*-normal--*-*-*-*-m-*-*-*
+</tscreen>
+Each of these fonts currently comes in Roman and oblique variants
+(bold variants will be included in a future release) and has 337
+glyphs covering the basic ``ASCII'' glyph set, the Latin&nbsp;1 glyph
+set, as well as the ``Extended Latin'' glyph set.  In particular,
+these fonts include all the glyphs needed for ISO&nbsp;8859 parts 1,
+2, 3, 4, 9 and 15.
+
+The Lucidux fonts are original designs by Charles Bigelow and Kris
+Holmes.  Lucidux fonts include seriffed, sans-serif, and monospaced
+styles which share the same stem weight, x-height, capital height,
+ascent and descent.  Lucidux fonts harmonise with Lucida (R) fonts of
+the same vertical proportions and weights.  The character width
+metrics of Lucidux roman fonts match those of core fonts bundled with
+several window systems.
+
+Each PFA file has a copy of the license terms in PS comment lines.
+The license terms are also included in the file <tt/COPYRIGHT.BH/ for
+convenience, and in the <htmlurl name="License document" url="LICENSE.html">.
+
+The design and font outlines were donated by Charles Bigelow and
+Kris Holmes from Bigelow and Holmes Inc., and the hinting was donated
+by Berthold Horn and Blenda Horn from Y&amp;Y, Inc.  For more information,
+please contact <email/design@bigelowandholmes.com/ or
+<email/sales@yandy.com/, or consult <url name="Y&amp;Y's web site"
+url="http://www.yandy.com">.
 
 
 <sect>Internationalisation of scalable font backends.

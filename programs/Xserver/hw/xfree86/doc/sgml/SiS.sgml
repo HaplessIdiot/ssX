@@ -6,11 +6,11 @@
 
 <!-- Title information -->
 <title>Information for SiS Users
-<author>Juanjo Santamarta (<it>santamarta@ctv.es</it>)
-<date>17 April 1999
+<author>Juanjo Santamarta (<email>santamarta@ctv.es</email>)
+<date>5 March 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SiS.sgml,v 3.5 1999/07/19 13:36:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SiS.sgml,v 3.6 1999/10/13 04:21:08 dawes Exp $
 </ident>
 
 <!-- Table of contents -->
@@ -30,6 +30,7 @@ The driver supports :
   <item>XAA support (XFree86 Acceleration Architecture)
 </itemize>
 
+<!-- this is incorrect
 <sect> Supported chips <p>
 
 <quote>
@@ -40,14 +41,13 @@ This driver needs linear framebuffer support in the card. Because this
 SiS 86C201 and 86C202 based cards don't work with this driver.
 
 Color expansion is not supported by the engine in 16M-color graphic mode.
+-->
 
 <sect> XF86Config Options <p>
 
-The following options are of particular interest for the SiS driver. Each of
-them must be specified in the `svga' driver section of the XF86Config file,
-within the Screen subsections of the depths to which they are applicable
-(you can enable options for all depths by specifying them in the Device
-section).
+The following options are of particular interest for the SiS
+driver. Each of them must be specified in the Device section of the
+XF86Config file for this card.
 
 <descrip>
 <tag>Option "SetMclk"</tag>
@@ -62,6 +62,7 @@ section).
         This option lets you to modify the maximum allowed dotclock).	
 <tag>Option "sw_cursor", "hw_cursor"</tag>
 	The default is for using the hardware cursor.
+<!-- Which of these chips is even supported? -->
 <tag>Option "Turboqueue"</tag>
 	5597/8 and 6326 have the option to extend the engine command queue on
 	VRAM. With extended queue length, the driver only checks queue status 
@@ -75,6 +76,17 @@ section).
         Enables 1 cycle memory access. Try it. Increased memory bandwidth reduces
 	the possibility of glitches and noise on high resolution modes. 
 
+<tag>Option "PciRetry"</tag>
+
+<tag>Option "NoAccel"</tag>
+        Disables various hardware accelerations.
+
+<tag>VideoRAM size</tag> The SiS chips can only directly address 4096K
+        bytes of video RAM.  Some video cards using these chips are
+        shipped with additional video RAM.  The videoRAM must be
+        explicitly limited to 4096 for those cards.  Attempting to use
+        the additional RAM leads to a variety of scrambled screen
+        artifacts.
 
 </descrip>
 
@@ -106,8 +118,10 @@ driver you'll need to consider several points:
 
 <sect> Troubleshooting <p>
 
+<!-- don't have XF86Setup for 4.0
 The generic VGA driver don't work with 6326, so XF86Setup can't be used
 for this card. Please use xf86config instead.
+-->
 
 Some video modes with high dot-clocks don't work at all, resulting on black 
 screen. Lowering dotclock in that case could solve the problem. 

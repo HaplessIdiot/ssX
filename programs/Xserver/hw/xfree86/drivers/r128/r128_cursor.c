@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_cursor.c,v 1.4 2000/02/13 19:33:56 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_cursor.c,v 1.5 2000/02/23 04:47:18 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -65,11 +65,17 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "r128_reg.h"
 
 #if X_BYTE_ORDER == X_BIG_ENDIAN
-#define        P_SWAP( a , b )             \
-       ((char *)a)[0] = ((char *)b)[3];    \
-       ((char *)a)[1] = ((char *)b)[2];    \
-       ((char *)a)[2] = ((char *)b)[1];    \
+#define P_SWAP32( a , b )                 \
+       ((char *)a)[0] = ((char *)b)[3];   \
+       ((char *)a)[1] = ((char *)b)[2];   \
+       ((char *)a)[2] = ((char *)b)[1];   \
        ((char *)a)[3] = ((char *)b)[0]
+
+#define P_SWAP16( a , b )                   \
+        ((char *)a)[0] = ((char *)b)[1];  \
+        ((char *)a)[1] = ((char *)b)[0];  \
+        ((char *)a)[2] = ((char *)b)[3];  \
+        ((char *)a)[3] = ((char *)b)[2]
 #endif
 
 
@@ -117,23 +123,50 @@ static void R128LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *image)
 
     save = INREG(R128_CRTC_GEN_CNTL);
     OUTREG(R128_CRTC_GEN_CNTL, save & ~R128_CRTC_CUR_EN);
-    for (y = 0; y < 64; y++) {
+ 
 #if X_BYTE_ORDER == X_BIG_ENDIAN
-        P_SWAP(d,s);
-        d++; s++;
-        P_SWAP(d,s);
-        d++; s++;
-        P_SWAP(d,s);
-        d++; s++;
-        P_SWAP(d,s);
-        d++; s++;
-#else
-	*d++ = *s++;
-	*d++ = *s++;
-	*d++ = *s++;
-	*d++ = *s++;
-#endif
+    switch(info->pixel_bytes) {
+       case 4:
+       case 3:
+          for (y = 0; y < 64; y++) {
+             P_SWAP32(d,s);
+             d++; s++;
+             P_SWAP32(d,s);
+             d++; s++;
+             P_SWAP32(d,s);
+             d++; s++;
+             P_SWAP32(d,s);
+             d++; s++;
+          }
+          break;
+       case 2:
+          for (y = 0; y < 64; y++) {
+             P_SWAP16(d,s);
+             d++; s++;
+             P_SWAP16(d,s);
+             d++; s++;
+             P_SWAP16(d,s);
+             d++; s++;
+             P_SWAP16(d,s);
+             d++; s++;
+          }
+          break;
+      default:
+         for (y = 0; y < 64; y++) {
+            *d++ = *s++;
+            *d++ = *s++;
+            *d++ = *s++;
+            *d++ = *s++;
+         }
     }
+#else
+   for (y = 0; y < 64; y++) {
+	*d++ = *s++;
+	*d++ = *s++;
+	*d++ = *s++;
+	*d++ = *s++;
+    }
+#endif
     OUTREG(R128_CRTC_GEN_CNTL, save);
 }
 

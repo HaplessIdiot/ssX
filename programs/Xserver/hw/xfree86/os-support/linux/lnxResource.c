@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnxResource.c,v 3.5 2000/02/15 02:00:14 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnxResource.c,v 3.6 2000/02/18 16:23:24 dawes Exp $ */
 
 /* Resource information code */
 
@@ -147,6 +147,62 @@ xf86AccResFromOS(resPtr ret)
     RANGE(range,0,0x1ff,ResExcIoBlock | ResEstimated);
     ret = xf86AddResToList(ret, &range, -1);
     /* XXX add others */
+    return ret;
+}
+
+#elif defined(__powerpc__)
+
+ /* XXX this isn't exactly correct but it will get the server working 
+  * for now until we get something better.
+  */
+  
+resRange PciAvoid[] = {_PCI_AVOID_PC_STYLE, _END};
+
+resPtr
+xf86BusAccWindowsFromOS(void)
+{
+    resPtr ret = NULL;
+    resRange range;
+
+    RANGE(range,0,0xffffffff,ResExcMemBlock);
+    ret = xf86AddResToList(ret, &range, -1);
+
+    RANGE(range,0,0x0000ffff,ResExcIoBlock);
+    ret = xf86AddResToList(ret, &range, -1);
+    return ret;
+}
+
+resPtr
+xf86PciBusAccWindowsFromOS(void)
+{
+    resPtr ret = NULL;
+    resRange range;
+
+    RANGE(range,0,0xffffffff,ResExcMemBlock);
+    ret = xf86AddResToList(ret, &range, -1);
+
+    RANGE(range,0,0x0000ffff,ResExcIoBlock);
+    ret = xf86AddResToList(ret, &range, -1);
+    return ret;
+}
+
+resPtr
+xf86IsaBusAccWindowsFromOS(void)
+{
+    resPtr ret = NULL;
+    resRange range;
+
+    RANGE(range,0,0xffffffff,ResExcMemBlock);
+    ret = xf86AddResToList(ret, &range, -1);
+
+    RANGE(range,0,0x0000ffff,ResExcIoBlock);
+    ret = xf86AddResToList(ret, &range, -1);
+    return ret;
+}
+
+resPtr
+xf86AccResFromOS(resPtr ret)
+{
     return ret;
 }
 

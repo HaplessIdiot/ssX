@@ -9,7 +9,7 @@
 <date>1 March 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.31 2000/02/29 18:01:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.32 2000/03/03 21:28:10 dawes Exp $
 </ident>
 
 <abstract>
@@ -174,12 +174,12 @@ older modules working with newer core X server binaries).
 
 <bf>Note about module security</bf>
 <quote><p>
-	The XFree86 X server runs with root privileges, which means that the
-	X server loadable modules also run with these privileges.  For this
-	reason we recommend that all users be careful to only use loadable
-	modules from reliable sources.  By the time that XFree86 4.0 is
-	released, we hope to have implemented a method for signing/verifying
-	modules that we provide.
+	The XFree86 X server runs with root privileges, which means that
+	the X server loadable modules also run with these privileges.
+	For this reason we recommend that all users be careful to only
+	use loadable modules from reliable sources.  We hope to have a
+	mechanism for signing/verifying modules that we provide available
+	in a future release.
 
 </quote>
 
@@ -755,7 +755,7 @@ name="README.chips" url="chips.html">.
 <sect2>s3virge
 <p>
 
-The s3virge driver is a port of the 3.3.3.1 SVGA S3 ViRGE driver.  As
+The s3virge driver is a port of the 3.3.x SVGA S3 ViRGE driver.  As
 such it should be as stable and functional as previous XFree86
 releases.  There are a couple additional benefits included primarily due
 to common enhancements:
@@ -769,6 +769,9 @@ to common enhancements:
   <item>Multi-head is reported to work.
   <item>The <tt>s3virge</tt> man page lists options and has configuration
 	notes for this release of the driver.
+  <item>Trio 3D and Trio 3D/2X support has been added, matching the 3.3.6
+	driver.
+  <item>Supports screen rotation and shadow framebuffer.
 
 </itemize>
 
@@ -1282,6 +1285,21 @@ Known problems:
 
 </itemize>
 
+<sect1>Lucidux fonts from Bigelow and Holmes
+<p>
+
+XFree86 now includes the ``Lucidux'' family of professionally hinted
+Type 1 fonts.  This family consists of the fonts ``Lucidux Serif'',
+``Lucidux Sans'' and ``Lucidux Mono'' in Roman and oblique variants,
+and includes over 370 glyphs in each font covering among others the
+glyphs needed for ISO 8859-1, 2, 3, 4, 9 and 15.  Bold variants will be
+included in a future release.  The design and font outlines were donated
+by Charles Bigelow and Kris Holmes from Bigelow and Holmes Inc., and
+the hinting was donated by Berthold Horn and Blenda Horn from Y&amp;Y, Inc.
+For more information, please contact
+<email>design@bigelowandholmes.com</email> or
+<email>sales@yandy.com</email>, or consult <url name="Y&amp;Y's web site"
+url="http://www.yandy.com">.
 
 <sect>Miscellaneous
 <p>
