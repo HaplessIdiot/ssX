@@ -21,9 +21,11 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbblt.c,v 1.1 1999/11/19 13:53:41 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbblt.c,v 1.2 2000/01/21 01:11:56 dawes Exp $ */
 
 #include "fb.h"
+
+#define FbSelectPart(x,o)   FbSelectPatternPart(x,o)
 
 #define InitializeShifts(sx,dx,ls,rs) { \
     if (sx != dx) { \
@@ -62,6 +64,7 @@ fbBlt (FbBits   *srcLine,
     FbBits  bits, bits1;
     int	    n, nmiddle;
     Bool    destInvarient;
+    int	    startbyte, endbyte;
     FbDeclareMergeRop ();
 
 #ifdef FB_24BIT
@@ -81,7 +84,8 @@ fbBlt (FbBits   *srcLine,
 	srcStride = -srcStride;
 	dstStride = -dstStride;
     }
-    FbMaskBits(dstX, width, startmask, nmiddle, endmask);
+    FbMaskBitsBytes (dstX, width, destInvarient, startmask, startbyte,
+		     nmiddle, endmask, endbyte);
     if (reverse)
     {
 	srcLine += ((srcX + width - 1) >> FB_SHIFT) + 1;
@@ -110,7 +114,7 @@ fbBlt (FbBits   *srcLine,
 		{
 		    bits = *--src;
 		    --dst;
-		    *dst = FbDoMaskMergeRop (bits, *dst, endmask);
+		    FbDoRightMaskByteMergeRop(dst, bits, endbyte, endmask);
 		}
 		n = nmiddle;
 		if (destInvarient)
@@ -131,7 +135,7 @@ fbBlt (FbBits   *srcLine,
 		{
 		    bits = *--src;
 		    --dst;
-		    *dst = FbDoMaskMergeRop(bits, *dst, startmask);
+		    FbDoLeftMaskByteMergeRop(dst, bits, startbyte, startmask);
 		}
 	    }
 	    else
@@ -139,7 +143,7 @@ fbBlt (FbBits   *srcLine,
 		if (startmask)
 		{
 		    bits = *src++;
-		    *dst = FbDoMaskMergeRop (bits, *dst, startmask);
+		    FbDoLeftMaskByteMergeRop(dst, bits, startbyte, startmask);
 		    dst++;
 		}
 		n = nmiddle;
@@ -183,7 +187,7 @@ fbBlt (FbBits   *srcLine,
 		if (endmask)
 		{
 		    bits = *src;
-		    *dst = FbDoMaskMergeRop(bits, *dst, endmask);
+		    FbDoRightMaskByteMergeRop(dst, bits, endbyte, endmask);
 		}
 	    }
 	}
@@ -221,7 +225,7 @@ fbBlt (FbBits   *srcLine,
 			bits |= FbScrLeft(bits1, leftShift);
 		    }
 		    --dst;
-		    *dst = FbDoMaskMergeRop (bits, *dst, endmask);
+		    FbDoRightMaskByteMergeRop(dst, bits, endbyte, endmask);
 		}
 		n = nmiddle;
 		if (destInvarient)
@@ -255,7 +259,7 @@ fbBlt (FbBits   *srcLine,
 			bits |= FbScrLeft(bits1, leftShift);
 		    }
 		    --dst;
-		    *dst = FbDoMaskMergeRop (bits, *dst, startmask);
+		    FbDoLeftMaskByteMergeRop (dst, bits, startbyte, startmask);
 		}
 	    }
 	    else
@@ -267,7 +271,7 @@ fbBlt (FbBits   *srcLine,
 		    bits = FbScrLeft(bits1, leftShift); 
 		    bits1 = *src++;
 		    bits |= FbScrRight(bits1, rightShift);
-		    *dst = FbDoMaskMergeRop (bits, *dst, startmask);
+		    FbDoLeftMaskByteMergeRop (dst, bits, startbyte, startmask);
 		    dst++;
 		}
 		n = nmiddle;
@@ -301,7 +305,7 @@ fbBlt (FbBits   *srcLine,
 			bits1 = *src;
 			bits |= FbScrRight(bits1, rightShift);
 		    }
-		    *dst = FbDoMaskMergeRop (bits, *dst, endmask);
+		    FbDoRightMaskByteMergeRop (dst, bits, endbyte, endmask);
 		}
 	    }
 	}

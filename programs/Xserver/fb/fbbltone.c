@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbbltone.c,v 1.1 1999/11/19 13:53:42 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbbltone.c,v 1.2 2000/01/21 01:11:57 dawes Exp $ */
 
 #include "fb.h"
 
@@ -46,6 +46,8 @@
  *  rightShift = 8
  */
 
+#define FbSelectPart(x,o)   FbSelectPatternPart(x,o)
+    
 #define LoadBits {\
     if (leftShift) { \
 	bitsRight = *src++; \
@@ -56,6 +58,93 @@
 	bits = *src++; \
 }
     
+#ifndef FBNOPIXADDR
+#define LaneBits    (FB_MASK >> 3)
+    
+#define LaneOff1(o) (o)
+#define LaneOff2(o) (o)
+#define LaneOff4(o) (o)
+    
+#define LaneCase1(n,a,o)    ((n) == 0x01 ? (*(CARD8 *) ((a)+LaneOff1(o)) = fgxor) : 0)
+#define LaneCase2(n,a,o)    ((n) == 0x03 ? (*(CARD16 *) ((a)+LaneOff2(o)) = fgxor) : \
+			     (LaneCase1((n)&1,a,o), LaneCase1((n)>>1,a,(o)+1)))
+#define LaneCase4(n,a,o)    ((n) == 0x0f ? (*(CARD32 *) ((a)+LaneOff4(o)) = fgxor) : \
+			     (LaneCase2((n)&3,a,o), LaneCase2((n)>>2,a,(o)+2)))
+#define LaneCase8(n,a,o)    ((n) == 0xff ? (*(FbBits *) ((a)+(o)) = fgxor) : \
+			     (LaneCase4((n)&0xf,a,o), LaneCase4((n)>>4,a,(o)+4)))
+
+#if FB_SHIFT == 6
+#define LaneCases1(n,a)	    case n: LaneCase8(n,a,0); break;
+#define LaneCases(a)	    LaneCases256(0,a)
+#endif
+    
+#if FB_SHIFT == 5
+#define LaneCases1(n,a)	    case n: LaneCase4(n,a,0); break;
+#define LaneCases(a)	    LaneCases16(0,a)
+#endif
+							   
+#define LaneCases2(n,a)	    LaneCases1(n,a) LaneCases1(n+1,a)
+#define LaneCases4(n,a)	    LaneCases2(n,a) LaneCases2(n+2,a)
+#define LaneCases8(n,a)	    LaneCases4(n,a) LaneCases4(n+4,a)
+#define LaneCases16(n,a)    LaneCases8(n,a) LaneCases8(n+8,a)
+#define LaneCases32(n,a)    LaneCases16(n,a) LaneCases16(n+16,a)
+#define LaneCases64(n,a)    LaneCases32(n,a) LaneCases32(n+32,a)
+#define LaneCases128(n,a)   LaneCases64(n,a) LaneCases64(n+64,a)
+#define LaneCases256(n,a)   LaneCases128(n,a) LaneCases128(n+128,a)
+    
+#if FB_SHIFT == 6
+CARD8	fb8Lane[256] = {
+0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
+60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78,
+79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97,
+98, 99, 100, 101, 102,103,104,105,106,107,108,109,110,111,112,113,114,115,
+116, 117, 118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,
+134, 135, 136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,
+152, 153, 154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,
+170, 171, 172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,
+188, 189, 190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,
+206, 207, 208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,
+224, 225, 226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,
+242, 243, 244,245,246,247,248,249,250,251,252,253,254,255,
+};
+
+CARD8	fb16Lane[256] = {
+    0x00, 0x03, 0x0c, 0x0f,
+    0x30, 0x33, 0x3c, 0x3f,
+    0xc0, 0xc3, 0xcc, 0xcf,
+    0xf0, 0xf3, 0xfc, 0xff,
+};
+
+CARD8	fb32Lane[16] = {
+    0x00, 0x0f, 0xf0, 0xff,
+};
+#endif
+
+#if FB_SHIFT == 5
+CARD8	fb8Lane[16] = {
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+};
+
+CARD8	fb16Lane[16] = {
+    0, 3, 12, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+};
+
+CARD8	fb32Lane[16] = {
+    0, 15,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+};
+#endif
+
+CARD8	*fbLaneTable[33] = {
+    0, 0, 0, 0, 0, 0, 0, 0,
+    fb8Lane,  0, 0, 0, 0, 0, 0, 0, 
+    fb16Lane, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    fb32Lane
+};
+#endif
+
 void
 fbBltOne (FbStip    *src,
 	  FbStride  srcStride,	    /* FbStip units per scanline */
@@ -91,6 +180,10 @@ fbBltOne (FbStip    *src,
     int		    srcinc;			/* source units consumed */
     int		    dstinc;			/* dest units produced */
     Bool	    endNeedsLoad;		/* need load for endmask */
+#ifndef FBNOPIXADDR
+    CARD8	    *fbLane;
+#endif
+    int		    startbyte, endbyte;
 
 #ifdef FB_24BIT
     if (dstBpp == 24)
@@ -118,7 +211,7 @@ fbBltOne (FbStip    *src,
     transparent = FALSE;
     if (bgand == 0 && fgand == 0)
 	copy = TRUE;
-    else if (bgand == FB_ALLONES && bgxor == 0)
+    else if (bgand == FB_ALLONES && bgxor == 0 && fgand == 0)
 	transparent = TRUE;
 
     /*
@@ -129,7 +222,8 @@ fbBltOne (FbStip    *src,
     srcX &= FB_STIP_MASK;
     dstX &= FB_MASK;
 
-    FbMaskBits(dstX, width, startmask, nmiddle, endmask);
+    FbMaskBitsBytes(dstX, width, copy, 
+		    startmask, startbyte, nmiddle, endmask, endbyte);
 
     /*
      * Compute effective dest alignment requirement for
@@ -155,6 +249,11 @@ fbBltOne (FbStip    *src,
     fbBits = 0;	/* unused */
     if (pixelsPerDst <= 8)
 	fbBits = fbStippleTable[pixelsPerDst];
+#ifndef FBNOPIXADDR
+    fbLane = 0;
+    if (transparent && dstBpp >= 8)
+	fbLane = fbLaneTable[dstBpp];
+#endif
     
     /*
      * Compute total number of destination words written, but 
@@ -214,11 +313,18 @@ fbBltOne (FbStip    *src,
 		else
 #endif
 		    mask = fbBits[FbLeftStipBits(bits,pixelsPerDst)];
-		if (!transparent || (mask & startmask))
+#ifndef FBNOPIXADDR		
+		if (fbLane)
 		{
-		    *dst = FbStippleRRopMask (*dst, mask, 
-					      fgand, fgxor, bgand, bgxor, 
-					      startmask);
+		    fbTransparentSpan (dst, mask & startmask, fgxor, 1);
+		}
+		else
+#endif
+		{
+		    if (mask || !transparent)
+			FbDoLeftMaskByteStippleRRop (dst, mask,
+						     fgand, fgxor, bgand, bgxor,
+						     startbyte, startmask);
 		}
 		bits = FbStipLeft (bits, pixelsPerDst);
 		dst++;
@@ -231,49 +337,39 @@ fbBltOne (FbStip    *src,
 	    for (;;)
 	    {
 		w -= n;
-#if FB_UNIT > 32
-		if (pixelsPerDst == 16)
+		if (copy)
 		{
-		    if (copy)
+		    while (n--)
 		    {
-			while (n--)
-			{
+#if FB_UNIT > 32
+			if (pixelsPerDst == 16)
 			    mask = FbStipple16Bits(FbLeftStipBits(bits,16));
-			    *dst = FbOpaqueStipple (mask, fgxor, bgxor);
-			    dst++;
-			    bits = FbStipLeft(bits, 16);
-			}
-		    }
-		    else
-		    {
-			while (n--)
-			{
-			    left = FbLeftStipBits(bits,16);
-			    if (left || !transparent)
-			    {
-				mask = FbStipple16Bits(left);
-				*dst = FbStippleRRop (*dst, mask,
-						      fgand, fgxor, bgand, bgxor);
-			    }
-			    dst++;
-			    bits = FbStipLeft(bits, 16);
-			}
+			else
+#endif
+			    mask = fbBits[FbLeftStipBits(bits,pixelsPerDst)];
+			*dst = FbOpaqueStipple (mask, fgxor, bgxor);
+			dst++;
+			bits = FbStipLeft(bits, pixelsPerDst);
 		    }
 		}
 		else
-#endif
 		{
-		    if (copy)
+#ifndef FBNOPIXADDR
+		    if (fbLane)
 		    {
-			while (n--)
+			while (bits && n)
 			{
-			    mask = fbBits[FbLeftStipBits(bits,pixelsPerDst)];
-			    *dst = FbOpaqueStipple (mask, fgxor, bgxor);
+			    switch (fbLane[FbLeftStipBits(bits,pixelsPerDst)]) {
+				LaneCases((CARD8 *) dst);
+			    }
+			    bits = FbStipLeft(bits,pixelsPerDst);
 			    dst++;
-			    bits = FbStipLeft(bits, pixelsPerDst);
+			    n--;
 			}
+			dst += n;
 		    }
 		    else
+#endif
 		    {
 			while (n--)
 			{
@@ -315,13 +411,19 @@ fbBltOne (FbStip    *src,
 	    else
 #endif
 		mask = fbBits[FbLeftStipBits(bits,pixelsPerDst)];
-	    if (!transparent || (mask & endmask))
+#ifndef FBNOPIXADDR
+	    if (fbLane)
 	    {
-		*dst = FbStippleRRopMask (*dst, mask, 
-					  fgand, fgxor, bgand, bgxor, 
-					  endmask);
+		fbTransparentSpan (dst, mask & endmask, fgxor, 1);
 	    }
-	    dst;
+	    else
+#endif
+	    {
+		if (mask || !transparent)
+		    FbDoRightMaskByteStippleRRop (dst, mask, 
+						  fgand, fgxor, bgand, bgxor,
+						  endbyte, endmask);
+	    }
 	}
 	dst += dstStride;
 	src += srcStride;

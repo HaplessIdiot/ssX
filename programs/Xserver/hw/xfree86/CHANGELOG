@@ -1,4 +1,4 @@
-XFree86 3.9.17a (20 January 2000)
+XFree86 3.9.17a (21 January 2000)
 3565. Update linux.cf to use the kernel header files on Debian rather than
       those packaged with the libc headers (#3544, Simon Richter).
 3564. Add an item to the default twm menu to open an xterm window (#3584,
@@ -27,7 +27,7 @@ XFree86 3.9.17a (20 January 2000)
 3549. Fix TCP font server connections (#3560, Keith Packard).
 3548. Implement the "OverclockMem" option for the Millennium and Millennium
       II (#3558, Andrew Aitchison).
-3547. Speed up some FB performance problems (#3557, 3559, 3560,
+3547. Speed up some FB performance problems (#3557, 3559, 3560, 3588,
       Keith Packard).
 3546. Work around a bad code generation bug in gcc 2.7.2.3 that shows up
       in XAA (#3550, Rik Faith).
@@ -9301,4 +9301,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.938 2000/01/21 01:12:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.939 2000/01/21 02:29:42 dawes Exp $

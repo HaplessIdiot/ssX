@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.4 2000/01/20 01:40:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.5 2000/01/21 01:11:55 dawes Exp $ */
 
 #ifndef _FB_H_
 #define _FB_H_
@@ -174,6 +174,222 @@ extern void fbSetBits (FbStip *bits, int stride, FbStip data);
     n >>= FB_SHIFT; \
 }
 
+#ifdef FBNOPIXADDR
+#define FbMaskBitsBytes(x,w,copy,l,lb,n,r,rb) FbMaskBits(x,w,l,n,r)
+#define FbDoLeftMaskByteRRop(dst,lb,l,and,xor) { \
+    *dst = FbDoRRop(*dst,and,xor,l);
+}
+#define FbDoRightMaskByteRRop(dst,rb,r,and,xor) { \
+    *dst = FbDoRRop(*dst,and,xor,r);
+}
+#else
+
+#define FbByteMaskInvalid   0x10
+
+#define FbPtrOffset(p,o,t)	    ((t *) ((CARD8 *) (p) + (o)))
+#define FbSelectPatternPart(xor,o)  ((xor) >> ((o) << 3))
+#define FbStorePart(dst,off,t,xor)  *FbPtrOffset(dst,off,t) = FbSelectPart(xor,off)
+
+#define FbMaskBitsBytes(x,w,copy,l,lb,n,r,rb) { \
+    n = (w); \
+    lb = 0; \
+    rb = 0; \
+    r = FbRightMask((x)+n); \
+    if (r) { \
+	/* compute right byte length */ \
+	if ((copy) && (((x) + n) & 7) == 0) { \
+	    rb = (((x) + n) & FB_MASK) >> 3; \
+	} else { \
+	    rb = FbByteMaskInvalid; \
+	} \
+    } \
+    l = FbLeftMask(x); \
+    if (l) { \
+	/* compute left byte length */ \
+	if ((copy) && ((x) & 7) == 0) { \
+	    lb = ((x) & FB_MASK) >> 3; \
+	} else { \
+	    lb = FbByteMaskInvalid; \
+	} \
+	/* subtract out the portion painted by leftMask */ \
+	n -= FB_UNIT - ((x) & FB_MASK); \
+	if (n < 0) { \
+	    if (lb != FbByteMaskInvalid) { \
+		if (rb == FbByteMaskInvalid) { \
+		    lb = FbByteMaskInvalid; \
+		} else if (rb) { \
+		    lb |= (rb - lb) << (FB_SHIFT - 3); \
+		    rb = 0; \
+		} \
+	    } \
+	    n = 0; \
+	    l &= r; \
+	    r = 0; \
+	}\
+    } \
+    n >>= FB_SHIFT; \
+}
+
+#if FB_SHIFT == 6
+#define FbDoLeftMaskByteRRop6Cases \
+    case (sizeof (FbBits) - 7) | (1 << (FB_SHIFT - 3)): \
+	FbStorePart(dst,sizeof (FbBits) - 7,CARD8,xor); \
+	break; \
+    case (sizeof (FbBits) - 7) | (2 << (FB_SHIFT - 3)): \
+	FbStorePart(dst,sizeof (FbBits) - 7,CARD8,xor); \
+	FbStorePart(dst,sizeof (FbBits) - 6,CARD8,xor); \
+	break; \
+    case (sizeof (FbBits) - 7) | (3 << (FB_SHIFT - 3)): \
+	FbStorePart(dst,sizeof (FbBits) - 7,CARD8,xor); \
+	FbStorePart(dst,sizeof (FbBits) - 6,CARD16,xor); \
+	break; \
+    case (sizeof (FbBits) - 7) | (4 << (FB_SHIFT - 3)): \
+	FbStorePart(dst,sizeof (FbBits) - 7,CARD8,xor); \
+	FbStorePart(dst,sizeof (FbBits) - 6,CARD16,xor); \
+	FbStorePart(dst,sizeof (FbBits) - 4,CARD8,xor); \
+	break; \
+    case (sizeof (FbBits) - 7) | (5 << (FB_SHIFT - 3)): \
+	FbStorePart(dst,sizeof (FbBits) - 7,CARD8,xor); \
+	FbStorePart(dst,sizeof (FbBits) - 6,CARD16,xor); \
+	FbStorePart(dst,sizeof (FbBits) - 4,CARD16,xor); \
+	break; \
+    case (sizeof (FbBits) - 7) | (6 << (FB_SHIFT - 3)): \
+	FbStorePart(dst,sizeof (FbBits) - 7,CARD8,xor); \
+	FbStorePart(dst,sizeof (FbBits) - 6,CARD16,xor); \
+	FbStorePart(dst,sizeof (FbBits) - 4,CARD16,xor); \
+	FbStorePart(dst,sizeof (FbBits) - 2,CARD8,xor); \
+	break; \
+    case (sizeof (FbBits) - 7): \
+	FbStorePart(dst,sizeof (FbBits) - 7,CARD8,xor); \
+	FbStorePart(dst,sizeof (FbBits) - 6,CARD16,xor); \
+	FbStorePart(dst,sizeof (FbBits) - 4,CARD32,xor); \
+	break; \
+    case (sizeof (FbBits) - 6) | (1 << (FB_SHIFT - 3)): \
+	FbStorePart(dst,sizeof (FbBits) - 6,CARD8,xor); \
+	break; \
+    case (sizeof (FbBits) - 6) | (2 << (FB_SHIFT - 3)): \
+	FbStorePart(dst,sizeof (FbBits) - 6,CARD16,xor); \
+	break; \
+    case (sizeof (FbBits) - 6) | (3 << (FB_SHIFT - 3)): \
+	FbStorePart(dst,sizeof (FbBits) - 6,CARD16,xor); \
+	FbStorePart(dst,sizeof (FbBits) - 4,CARD8,xor); \
+	break; \
+    case (sizeof (FbBits) - 6) | (4 << (FB_SHIFT - 3)): \
+	FbStorePart(dst,sizeof (FbBits) - 6,CARD16,xor); \
+	FbStorePart(dst,sizeof (FbBits) - 4,CARD16,xor); \
+	break; \
+    case (sizeof (FbBits) - 6) | (5 << (FB_SHIFT - 3)): \
+	FbStorePart(dst,sizeof (FbBits) - 6,CARD16,xor); \
+	FbStorePart(dst,sizeof (FbBits) - 4,CARD16,xor); \
+	FbStorePart(dst,sizeof (FbBits) - 2,CARD8,xor); \
+	break; \
+    case (sizeof (FbBits) - 6): \
+	FbStorePart(dst,sizeof (FbBits) - 6,CARD16,xor); \
+	FbStorePart(dst,sizeof (FbBits) - 4,CARD32,xor); \
+	break; \
+    case (sizeof (FbBits) - 5) | (1 << (FB_SHIFT - 3)): \
+	FbStorePart(dst,sizeof (FbBits) - 5,CARD8,xor); \
+	break; \
+    case (sizeof (FbBits) - 5) | (2 << (FB_SHIFT - 3)): \
+	FbStorePart(dst,sizeof (FbBits) - 5,CARD8,xor); \
+	FbStorePart(dst,sizeof (FbBits) - 4,CARD8,xor); \
+	break; \
+    case (sizeof (FbBits) - 5) | (3 << (FB_SHIFT - 3)): \
+	FbStorePart(dst,sizeof (FbBits) - 5,CARD8,xor); \
+	FbStorePart(dst,sizeof (FbBits) - 4,CARD16,xor); \
+	break; \
+    case (sizeof (FbBits) - 5) | (4 << (FB_SHIFT - 3)): \
+	FbStorePart(dst,sizeof (FbBits) - 5,CARD8,xor); \
+	FbStorePart(dst,sizeof (FbBits) - 4,CARD16,xor); \
+	FbStorePart(dst,sizeof (FbBits) - 2,CARD8,xor); \
+	break; \
+    case (sizeof (FbBits) - 5): \
+	FbStorePart(dst,sizeof (FbBits) - 5,CARD8,xor); \
+	FbStorePart(dst,sizeof (FbBits) - 4,CARD32,xor); \
+	break; \
+    case (sizeof (FbBits) - 4) | (1 << (FB_SHIFT - 3)): \
+	FbStorePart(dst,sizeof (FbBits) - 4,CARD8,xor); \
+	break; \
+    case (sizeof (FbBits) - 4) | (2 << (FB_SHIFT - 3)): \
+	FbStorePart(dst,sizeof (FbBits) - 4,CARD16,xor); \
+	break; \
+    case (sizeof (FbBits) - 4) | (3 << (FB_SHIFT - 3)): \
+	FbStorePart(dst,sizeof (FbBits) - 4,CARD16,xor); \
+	FbStorePart(dst,sizeof (FbBits) - 2,CARD8,xor); \
+	break; \
+    case (sizeof (FbBits) - 4): \
+	FbStorePart(dst,sizeof (FbBits) - 4,CARD32,xor); \
+	break;
+
+#define FbDoRightMaskByteRRop6Cases \
+    case 4: \
+	FbStorePart(dst,0,CARD32,xor); \
+	break; \
+    case 5: \
+	FbStorePart(dst,0,CARD32,xor); \
+	FbStorePart(dst,4,CARD8,xor); \
+	break; \
+    case 6: \
+	FbStorePart(dst,0,CARD32,xor); \
+	FbStorePart(dst,4,CARD16,xor); \
+	break; \
+    case 7: \
+	FbStorePart(dst,0,CARD32,xor); \
+	FbStorePart(dst,4,CARD16,xor); \
+	FbStorePart(dst,6,CARD8,xor); \
+	break;
+#else
+#define FbDoLeftMaskByteRRop6Cases
+#define FbDoRightMaskByteRRop6Cases
+#endif
+
+#define FbDoLeftMaskByteRRop(dst,lb,l,and,xor) { \
+    switch (lb) { \
+    FbDoLeftMaskByteRRop6Cases \
+    case (sizeof (FbBits) - 3) | (1 << (FB_SHIFT - 3)): \
+	FbStorePart(dst,sizeof (FbBits) - 3,CARD8,xor); \
+	break; \
+    case (sizeof (FbBits) - 3) | (2 << (FB_SHIFT - 3)): \
+	FbStorePart(dst,sizeof (FbBits) - 3,CARD8,xor); \
+	FbStorePart(dst,sizeof (FbBits) - 2,CARD8,xor); \
+	break; \
+    case (sizeof (FbBits) - 2) | (1 << (FB_SHIFT - 3)): \
+	FbStorePart(dst,sizeof (FbBits) - 2,CARD8,xor); \
+	break; \
+    case sizeof (FbBits) - 3: \
+	FbStorePart(dst,sizeof (FbBits) - 3,CARD8,xor); \
+    case sizeof (FbBits) - 2: \
+	FbStorePart(dst,sizeof (FbBits) - 2,CARD16,xor); \
+	break; \
+    case sizeof (FbBits) - 1: \
+	FbStorePart(dst,sizeof (FbBits) - 1,CARD8,xor); \
+	break; \
+    default: \
+	*dst = FbDoMaskRRop(*dst, and, xor, l); \
+	break; \
+    } \
+}
+
+
+#define FbDoRightMaskByteRRop(dst,rb,r,and,xor) { \
+    switch (rb) { \
+    case 1: \
+	FbStorePart(dst,0,CARD8,xor); \
+	break; \
+    case 2: \
+	FbStorePart(dst,0,CARD16,xor); \
+	break; \
+    case 3: \
+	FbStorePart(dst,0,CARD16,xor); \
+	FbStorePart(dst,2,CARD8,xor); \
+	break; \
+    FbDoRightMaskByteRRop6Cases \
+    default: \
+	*dst = FbDoMaskRRop (*dst, and, xor, r); \
+    } \
+}
+#endif
+
 #define FbMaskStip(x,w,l,n,r) { \
     n = (w); \
     r = FbRightStipMask((x)+n); \
@@ -240,6 +456,7 @@ typedef struct {
     FbBits		fg, bg, pm;	/* expanded and filled */
     unsigned int	dashLength;	/* total of all dash elements */
     Bool		oneRect;	/* clip list is single rectangle */
+    Bool		evenStipple;	/* stipple is even */
 } FbGCPrivRec, *FbGCPrivPtr;
 
 #define fbGetGCPrivate(pGC)	((FbGCPrivPtr)\
@@ -1216,6 +1433,13 @@ fbSolid24 (FbBits   *dst,
 /*
  * fbstipple.c
  */
+
+void
+fbTransparentSpan (FbBits   *dst,
+		   FbBits   stip,
+		   FbBits   fgxor,
+		   int	    n);
+
 void
 fbEvenStipple (FbBits   *dst,
 	       FbStride dstStride,
@@ -1226,6 +1450,7 @@ fbEvenStipple (FbBits   *dst,
 	       int	height,
 
 	       FbStip   *stip,
+	       FbStride	stipStride,
 	       int	stipHeight,
 
 	       FbBits   fgand,
@@ -1271,6 +1496,7 @@ fbStipple (FbBits   *dst,
 	   FbStride stipStride,
 	   int	    stipWidth,
 	   int	    stipHeight,
+	   Bool	    even,
 
 	   FbBits   fgand,
 	   FbBits   fgxor,

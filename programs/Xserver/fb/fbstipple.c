@@ -21,9 +21,78 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbstipple.c,v 1.1 1999/11/19 13:53:46 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbstipple.c,v 1.2 2000/01/21 01:11:59 dawes Exp $ */
 
 #include "fb.h"
+
+#define FbSelectPart(x,o)   FbSelectPatternPart(x,o)
+
+#ifndef FBNOPIXADDR
+/*
+ * This is a slight abuse of the preprocessor to generate repetitive
+ * code, the idea is to generate code for each case of a copy-mode
+ * transparent stipple
+ */
+#define LaneBits    (FB_MASK >> 3)
+    
+#define LaneOff1(o) (o)
+#define LaneOff2(o) (o)
+#define LaneOff4(o) (o)
+    
+#define LaneCase1(c,a,o)    ((c) == 0x01 ? (*(CARD8 *) ((a)+LaneOff1(o)) = fgxor) : 0)
+#define LaneCase2(c,a,o)    ((c) == 0x03 ? (*(CARD16 *) ((a)+LaneOff2(o)) = fgxor) : \
+			     (LaneCase1((c)&1,a,o), LaneCase1((c)>>1,a,(o)+1)))
+#define LaneCase4(c,a,o)    ((c) == 0x0f ? (*(CARD32 *) ((a)+LaneOff4(o)) = fgxor) : \
+			     (LaneCase2((c)&3,a,o), LaneCase2((c)>>2,a,(o)+2)))
+#define LaneCase8(c,a,o)    ((c) == 0xff ? (*(FbBits *) ((a)+(o)) = fgxor) : \
+			     (LaneCase4((c)&0xf,a,o), LaneCase4((c)>>4,a,(o)+4)))
+
+#if FB_SHIFT == 6
+#define LaneCases1(c,a)	    case c: while (n--) { LaneCase8(c,((CARD8 *) a),0); a++; } break;
+#define LaneCases(a)	    LaneCases256(0,a)
+#endif
+    
+#if FB_SHIFT == 5
+#define LaneCases1(c,a)	    case c: while (n--) { LaneCase4(c,((CARD8 *) a),0); a++; } break;
+#define LaneCases(a)	    LaneCases16(0,a)
+#endif
+							   
+#define LaneCases2(c,a)	    LaneCases1(c,a) LaneCases1(c+1,a)
+#define LaneCases4(c,a)	    LaneCases2(c,a) LaneCases2(c+2,a)
+#define LaneCases8(c,a)	    LaneCases4(c,a) LaneCases4(c+4,a)
+#define LaneCases16(c,a)    LaneCases8(c,a) LaneCases8(c+8,a)
+#define LaneCases32(c,a)    LaneCases16(c,a) LaneCases16(c+16,a)
+#define LaneCases64(c,a)    LaneCases32(c,a) LaneCases32(c+32,a)
+#define LaneCases128(c,a)   LaneCases64(c,a) LaneCases64(c+64,a)
+#define LaneCases256(c,a)   LaneCases128(c,a) LaneCases128(c+128,a)
+    
+/*
+ * Repeat a transparent stipple across a scanline n times
+ */
+
+void
+fbTransparentSpan (FbBits   *dst,
+		   FbBits   stip,
+		   FbBits   fgxor,
+		   int	    n)
+{
+    FbStip  s;
+
+    s  = ((FbStip) (stip      ) & 0x01);
+    s |= ((FbStip) (stip >>  8) & 0x02);
+    s |= ((FbStip) (stip >> 16) & 0x04);
+    s |= ((FbStip) (stip >> 24) & 0x08);
+#if FB_SHIFT > 5
+    s |= ((FbStip) (stip >> 32) & 0x10);
+    s |= ((FbStip) (stip >> 40) & 0x20);
+    s |= ((FbStip) (stip >> 48) & 0x40);
+    s |= ((FbStip) (stip >> 56) & 0x80);
+#endif
+    switch (s) {
+	LaneCases(dst);
+    }
+}
+#endif
 
 void
 fbEvenStipple (FbBits	*dst,
@@ -35,6 +104,7 @@ fbEvenStipple (FbBits	*dst,
 	       int	height,
 
 	       FbStip	*stip,
+	       FbStride	stipStride,
 	       int	stipHeight,
 
 	       FbBits	fgand,
@@ -52,6 +122,16 @@ fbEvenStipple (FbBits	*dst,
     int		rot, stipX, stipY;
     int		pixelsPerDst;
     const FbBits    *fbBits;
+    Bool	transparent;
+    int		startbyte, endbyte;
+    
+    /*
+     * Check for a transparent stipple (stencil)
+     */
+    transparent = FALSE;
+    if (dstBpp >= 8 &&
+	fgand == 0 && bgand == FB_ALLONES && bgxor == 0)
+	transparent = TRUE;
     
     pixelsPerDst = FB_UNIT / dstBpp;
     /*
@@ -59,7 +139,9 @@ fbEvenStipple (FbBits	*dst,
      */
     dst += dstX >> FB_SHIFT;
     dstX &= FB_MASK;
-    FbMaskBits(dstX, width, startmask, nmiddle, endmask);
+    FbMaskBitsBytes (dstX, width, fgand == 0 && bgand == 0,
+		     startmask, startbyte, nmiddle, endmask, endbyte);
+		     
     if (startmask)
 	dstStride--;
     dstStride -= nmiddle;
@@ -68,9 +150,9 @@ fbEvenStipple (FbBits	*dst,
     /*
      * Compute stip start scanline and rotation parameters
      */
-    stipEnd = stip + FbBitsStrideToStipStride(1) * stipHeight;
+    stipEnd = stip + stipStride * stipHeight;
     modulus (- yRot, stipHeight, stipY);
-    s = stip + FbBitsStrideToStipStride(1) * stipY;
+    s = stip + stipStride * stipY;
     modulus (- xRot, FB_UNIT, stipX);
     rot = stipX;
     
@@ -87,7 +169,7 @@ fbEvenStipple (FbBits	*dst,
 	 * Extract stipple bits for this scanline;
 	 */
 	bits = *s;
-	s += FbBitsStrideToStipStride(1);
+	s += stipStride;
 	if (s == stipEnd)
 	    s = stip;
 #if FB_UNIT > 32
@@ -103,26 +185,45 @@ fbEvenStipple (FbBits	*dst,
 	and = fgand & mask | bgand & ~mask;
 	xor = fgxor & mask | bgxor & ~mask;
 	
-	/*
-	 * Fill scanline
-	 */
-	if (startmask)
+#ifndef FBNOPIXADDR
+	if (transparent)
 	{
-	    *dst = FbDoMaskRRop(*dst, and, xor, startmask);
-	    dst++;
-	}
-	n = nmiddle;
-	if (!and)
-	    while (n--)
-		*dst++ = xor;
-	else
-	    while (n--)
+	    if (startmask)
 	    {
-		*dst = FbDoRRop (*dst, and, xor);
+		fbTransparentSpan(dst, mask&startmask, fgxor, 1);
 		dst++;
 	    }
-	if (endmask)
-	    *dst = FbDoMaskRRop (*dst, and, xor, endmask);
+	    fbTransparentSpan (dst, mask, fgxor, nmiddle);
+	    dst += nmiddle;
+	    if (endmask)
+		fbTransparentSpan(dst, mask&endmask, fgxor, 1);
+	}
+	else
+#endif
+	{
+	    /*
+	     * Fill scanline
+	     */
+	    if (startmask)
+	    {
+		FbDoLeftMaskByteRRop (dst, startbyte, startmask, and, xor);
+		dst++;
+	    }
+	    n = nmiddle;
+	    if (!and)
+		while (n--)
+		    *dst++ = xor;
+	    else
+	    {
+		while (n--)
+		{
+		    *dst = FbDoRRop (*dst, and, xor);
+		    dst++;
+		}
+	    }
+	    if (endmask)
+		FbDoRightMaskByteRRop(dst, endbyte, endmask, and, xor);
+	}
 	dst += dstStride;
     }
 }
@@ -205,6 +306,7 @@ fbStipple (FbBits	*dst,
 	   FbStride	stipStride,
 	   int		stipWidth,
 	   int		stipHeight,
+	   Bool		even,
 
 	   FbBits	fgand,
 	   FbBits	fgxor,
@@ -214,9 +316,9 @@ fbStipple (FbBits	*dst,
 	   int		xRot,
 	   int		yRot)
 {
-    if (FbEvenStip (stipWidth, dstBpp))
+    if (even)
 	fbEvenStipple (dst, dstStride, dstX, dstBpp, width, height,
-		       stip, stipHeight,
+		       stip, stipStride, stipHeight,
 		       fgand, fgxor, bgand, bgxor, xRot, yRot);
     else
 	fbOddStipple (dst, dstStride, dstX, dstBpp, width, height,
