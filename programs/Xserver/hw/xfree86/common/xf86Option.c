@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.27 2003/08/24 17:36:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.28 2003/10/08 14:30:38 dawes Exp $ */
 /*
  * Copyright (c) 1998-2003 by The XFree86 Project, Inc.
  *
@@ -672,20 +672,27 @@ xf86ProcessOptions(int scrnIndex, pointer options, OptionInfoPtr optinfo)
 OptionInfoPtr
 xf86TokenToOptinfo(const OptionInfoRec *table, int token)
 {
-    const OptionInfoRec *p;
+    const OptionInfoRec *p, *match = NULL, *set = NULL;
 
     if (!table) {
 	ErrorF("xf86TokenToOptinfo: table is NULL\n");
 	return NULL;
     }
 
-    for (p = table; p->token >= 0 && p->token != token; p++)
-	;
+    for (p = table; p->token >= 0; p++) {
+	if (p->token == token) {
+	    match = p;
+	    if (p->found)
+		set = p;
+	}
+    }
 
-    if (p->token < 0)
-	return NULL;
+    if (set)
+	return (OptionInfoPtr)set;
+    else if (match)
+	return (OptionInfoPtr)match;
     else
-	return (OptionInfoPtr)p;
+	return NULL;
 }
 
 
