@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.17 1999/05/07 02:56:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.18 1999/05/09 06:06:32 dawes Exp $ */
 /*
  * Copyright 1993-1999 by The XFree86 Project, Inc.
  *
@@ -300,7 +300,7 @@ xf86OpenSerial (pointer options)
 	t.c_oflag &= ~OPOST;
 	t.c_lflag &= ~(ECHO|ECHONL|ICANON|ISIG|IEXTEN);
 	t.c_cflag &= ~(CSIZE|PARENB);
-	t.c_cflag |= CS8;
+	t.c_cflag |= CS8|CLOCAL;
 
 	cfsetispeed (&t, B9600);
 	cfsetospeed (&t, B9600);

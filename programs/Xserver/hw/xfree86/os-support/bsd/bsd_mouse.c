@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.6 1999/05/23 04:31:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.7 1999/05/23 05:02:01 dawes Exp $ */
 
 /*
  * Copyright 1999 by The XFree86 Project, Inc.
@@ -11,6 +11,9 @@
 #include "xf86_OSlib.h"
 #include "xisb.h"
 #include "mipointer.h"
+#ifdef WSCONS_SUPPORT
+#include <dev/wscons/wsconsio.h>
+#endif
 
 static int
 SupportedInterfaces(void)
@@ -141,7 +144,7 @@ SetSysMouseRes(InputInfoPtr pInfo, const char *protocol, int rate, int res)
 #endif
 
 #if defined(WSCONS_SUPPORT)
-#define EVENTS_BUFSIZE 64
+#define NUMEVENTS 64
 
 static int
 wsconsMouseProc(DeviceIntPtr pPointer, int what)
@@ -150,7 +153,6 @@ wsconsMouseProc(DeviceIntPtr pPointer, int what)
     MouseDevPtr pMse;
     unsigned char map[MSE_MAXBUTTONS + 1];
     int nbuttons;
-    int mousefd;
 
     pInfo = pPointer->public.devicePrivate;
     pMse = pInfo->private;
@@ -171,11 +173,11 @@ wsconsMouseProc(DeviceIntPtr pPointer, int what)
 				miPointerGetMotionBufferSize());
 
 	/* X valuator */
-	xf86InitValuatorAxisStruct(device, 0, 0, -1, 1, 0, 1);
-	xf86InitValuatorDefaults(device, 0);
+	xf86InitValuatorAxisStruct(pPointer, 0, 0, -1, 1, 0, 1);
+	xf86InitValuatorDefaults(pPointer, 0);
 	/* Y valuator */
-	xf86InitValuatorAxisStruct(device, 1, 0, -1, 1, 0, 1);
-	xf86InitValuatorDefaults(device, 1);
+	xf86InitValuatorAxisStruct(pPointer, 1, 0, -1, 1, 0, 1);
+	xf86InitValuatorDefaults(pPointer, 1);
 	xf86MotionHistoryAllocate(pInfo);
 	break;
 
@@ -185,7 +187,7 @@ wsconsMouseProc(DeviceIntPtr pPointer, int what)
 	    xf86Msg(X_WARNING, "%s: cannot open input device\n", pInfo->name);
 	else {
 	    pMse->buffer = XisbNew(pInfo->fd,
-			      EVENTS_BUFSIZE * sizeof(struct wscons_event));
+			      NUMEVENTS * sizeof(struct wscons_event));
 	    if (!pMse->buffer) {
 		xfree(pMse);
 		xf86CloseSerial(pInfo->fd);
@@ -197,7 +199,7 @@ wsconsMouseProc(DeviceIntPtr pPointer, int what)
 	}
 	pMse->lastButtons = 0;
 	pMse->emulateState = 0;
-	device->public.on = TRUE;
+	pPointer->public.on = TRUE;
 	break;
 
     case DEVICE_OFF:
@@ -211,12 +213,13 @@ wsconsMouseProc(DeviceIntPtr pPointer, int what)
 	    xf86CloseSerial(pInfo->fd);
 	    pInfo->fd = -1;
 	}
-	device->public.on = FALSE;
+	pPointer->public.on = FALSE;
 	usleep(300000);
 	break;
     }
     return Success;
 }
+
 
 static void
 wsconsReadInput(InputInfoPtr pInfo)
@@ -224,7 +227,7 @@ wsconsReadInput(InputInfoPtr pInfo)
     MouseDevPtr pMse;
     static struct wscons_event eventList[NUMEVENTS];
     int n, c; 
-    wscons_event *event = eventList;
+    struct wscons_event *event = eventList;
     unsigned char *pBuf;
 
     pMse = pInfo->private;
@@ -232,8 +235,9 @@ wsconsReadInput(InputInfoPtr pInfo)
     XisbBlockDuration(pMse->buffer, -1);
     pBuf = (unsigned char *)eventList;
     n = 0;
-    while ((c = XisbRead(pMse->buffer)) >= 0 && n < sizeof(eventList))
-	pBuf[n] = (unsigned char)c;
+    while ((c = XisbRead(pMse->buffer)) >= 0 && n < sizeof(eventList)) {
+	pBuf[n++] = (unsigned char)c;
+    }
 
     if (n == 0)
 	return;
@@ -244,26 +248,26 @@ wsconsReadInput(InputInfoPtr pInfo)
 	int dx = 0, dy = 0, dz = 0;
 	switch (event->type) {
 	case WSCONS_EVENT_MOUSE_UP:
-#define BUTBIT (1 << (event.value <= 2 ? 2 - event.value : event.value))
+#define BUTBIT (1 << (event->value <= 2 ? 2 - event->value : event->value))
 	    buttons &= ~BUTBIT;
 	    break;
 	case WSCONS_EVENT_MOUSE_DOWN:
 	    buttons |= BUTBIT;
 	    break;
 	case WSCONS_EVENT_MOUSE_DELTA_X:
-	    dx = event.value;
+	    dx = event->value;
 	    break;
 	case WSCONS_EVENT_MOUSE_DELTA_Y:
-	    dy = -event.value;
+	    dy = -event->value;
 	    break;
 #ifdef WSCONS_EVENT_MOUSE_DELTA_Z
 	case WSCONS_EVENT_MOUSE_DELTA_Z:
-	    dz = ev.value;
+	    dz = event->value;
 	    break;
 #endif
 	default:
 	    xf86Msg(X_WARNING, "%s: bad wsmouse event type=%d\n", pInfo->name,
-		    event.type);
+		    event->type);
 	    continue;
 	}
 
@@ -277,7 +281,7 @@ wsconsReadInput(InputInfoPtr pInfo)
 static Bool
 wsconsPreInit(InputInfoPtr pInfo, const char *protocol, int flags)
 {
-    MouseDevPtr pMse;
+    MouseDevPtr pMse = pInfo->private;
 
     pMse->protocol = protocol;
     xf86Msg(X_CONFIG, "%s: Protocol: %s\n", pInfo->name, protocol);
@@ -294,7 +298,7 @@ wsconsPreInit(InputInfoPtr pInfo, const char *protocol, int flags)
 	else {
 	    xf86Msg(X_ERROR, "%s: cannot open input device\n", pInfo->name);
 	    xfree(pMse);
-	    return pInfo;
+	    return FALSE;
 	}
     }
     xf86CloseSerial(pInfo->fd);

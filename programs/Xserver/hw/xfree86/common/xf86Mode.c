@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.15 1999/05/15 12:10:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.16 1999/05/22 14:52:27 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -676,7 +676,7 @@ xf86CheckModeForDriver(ScrnInfoPtr scrp, DisplayModePtr mode, int flags)
  *    linePitches  (optional) a list of line pitches
  *    minPitch     (optional) minimum line pitch (in pixels)
  *    maxPitch     (optional) maximum line pitch (in pixels)
- *    pitchInc     (optional) pitch increment (in bits)
+ *    pitchInc     (mandatory) pitch increment (in bits)
  *    minHeight    (optional) minimum virtual height (in pixels)
  *    maxHeight    (optional) maximum virtual height (in pixels)
  *    virtualX     (optional) virtual width requested (in pixels)
