@@ -1,0 +1,14 @@
+#if 0
+#ifndef BuildSharedLispModules
+#if HasDlopen
+#define BuildSharedLispModules	YES
+#else
+#define BuildSharedLispModules	NO
+#endif
+#endif
+#else
+#define BuildSharedLispModules	NO
+#endif
+
+GPERF		= gperf
+LISPDIR		= $(LIBDIR)/xedit/lisp
