@@ -2,7 +2,7 @@ XCOMM $XConsortium: os2.cf /main/1 1996/10/31 14:47:25 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.21 1997/02/25 14:18:43 hohndel Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.22 1997/03/10 10:09:39 hohndel Exp $
 
 #define OSName           OS/2
 #define OSVendor	 IBM
@@ -197,7 +197,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.21 1997/02/25 14:18:43 hohnde
 #define InstallFlags /**/
 
 #ifdef i386Architecture
-# define OptimizedCDebugFlags 	-m486 DefaultGcc2i386Opt
+# define OptimizedCDebugFlags 	DefaultGcc2i386Opt
 # define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME
 #else
 # define OptimizedCDebugFlags 	-O

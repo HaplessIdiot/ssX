@@ -2,7 +2,7 @@ XCOMM platform:  $XConsortium: NetBSD.cf /main/16 1996/10/31 14:47:14 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.56 1997/05/21 15:16:56 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.57 1997/05/22 14:22:16 dawes Exp $
 
 
 #ifndef OSName
@@ -142,7 +142,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #endif
 
 #ifdef i386Architecture
-# define OptimizedCDebugFlags 	-m486 DefaultGcc2i386Opt
+# define OptimizedCDebugFlags 	DefaultGcc2i386Opt
 # if OSMajorVersion < 1
 #  define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DXNO_SYSCONF
 # else

@@ -1,4 +1,17 @@
 XFree86 3.9c (xx May 1997)
+ 835. Remove '-m486' from the default gcc options.
+ 834. Add detection of other variants of the Cyber9385 to the trident
+      driver and SuperProbe (Arthur Tateishi and Alan Hourihane).
+ 833. Change the SVGA server to tell DGA clients that the memory available
+      is InfoRec.videoRam rather than ChipLinearSize (which is often 
+      too large).
+ 832. Cards db updates (#511, Harm Hanemaayer).
+ 831. Fix LynxOS inconsistent TERMCAP use by xterm and resize ($504,
+      Thomas Mueller).
+ 830. Fix a duplicate declaration in imConv.c that shows up when building
+      without XKB support, and remove a "Const" from the declaration
+      (#505, David A. Koontz).
+ 829. Remove all local symlinks for 'make clean' in lnxLib.rules.
  828. Add an autoconf configuration script for xterm.  This isn't used
       in the standard build process, but is useful when building xterm
       standalone (#500, Thomas E. Dickey).
@@ -4627,4 +4640,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.475 1997/05/22 14:22:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.476 1997/05/23 12:28:01 dawes Exp $

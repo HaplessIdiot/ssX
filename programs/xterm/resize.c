@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: resize.c,v 1.34 95/05/24 22:12:04 gildea Exp $
- *	$XFree86: xc/programs/xterm/resize.c,v 3.18 1997/01/18 07:03:22 dawes Exp $
+ *	$XFree86: xc/programs/xterm/resize.c,v 3.19 1997/05/23 09:19:54 dawes Exp $
  */
 
 /*
@@ -85,6 +85,9 @@
 #define USE_SYSV_TERMIO
 #ifndef Lynx
 #define USE_SYSV_UTMP
+#else
+#define USE_TERMCAP
+#define NO_TERMCAP_H
 #endif
 #else /* else not SYSV */
 #define USE_TERMCAP

@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf /main/27 1996/12/26 08:52:44 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.62 1997/05/03 09:14:36 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.63 1997/05/03 10:29:44 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -202,7 +202,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define LdPostLib		/* Never needed */
 
 #ifdef i386Architecture
-#define OptimizedCDebugFlags	DefaultGcc2i386Opt -m486
+#define OptimizedCDebugFlags	DefaultGcc2i386Opt
 #if LinuxCLibMajorVersion >= 6
 #undef HasLibCrypt
 #define HasLibCrypt		YES

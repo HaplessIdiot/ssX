@@ -1,5 +1,5 @@
 XCOMM $XConsortium: svr4.cf /main/16 1996/09/28 16:13:41 rws $
-XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.25tsi Exp $
+XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.26 1997/03/27 18:37:29 hohndel Exp $
 /*
  * A default OS name
  */
@@ -158,9 +158,9 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.25tsi Exp $
 #ifndef DefaultCDebugFlags
 #if HasGcc
 #if HasGcc2
-#define DefaultCDebugFlags DefaultGcc2i386Opt -m486
+#define DefaultCDebugFlags DefaultGcc2i386Opt
 #else
-#define DefaultCDebugFlags -O2 -m486
+#define DefaultCDebugFlags -O2
 #endif
 #else
 #define DefaultCDebugFlags -O

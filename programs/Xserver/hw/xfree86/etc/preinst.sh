@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/preinst.sh,v 3.8 1997/01/22 11:07:57 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/preinst.sh,v 3.9 1997/05/21 15:17:10 dawes Exp $
 #
 # preinst.sh  (for XFree86 3.2A)
 #
@@ -43,7 +43,11 @@ LIBLIST=" \
 	liboldX.so.6 \
 	"
 
-OLDFILES=""
+OLDFILES=" \
+	lib/X11/doc/LbxproxyOnly \
+	lib/X11/xkb/keycodes/sgi \
+	lib/X11/xkb/symbols/de_nodead \
+	"
 
 # First, do some checks for Linux/ELF
 

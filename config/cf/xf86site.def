@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.117 1997/05/11 02:52:59 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.118 1997/05/12 13:27:50 hohndel Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -45,6 +45,8 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.117 1997/05/11 02:52:59 dawes Exp 
  * here to work around a bug in -O2 for GCC 2.x on i386 platforms.
  * If you are using a version that doesn't have this bug, you can
  * uncomment the following line, and remove '-fno-strength-reduce'
+ * If you are building binaries for a 486, it may be beneficial to add
+ * -m486
  *
 #define DefaultGcc2i386Opt	-O2 -fno-strength-reduce
  */

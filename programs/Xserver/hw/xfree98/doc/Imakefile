@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/15 1996/10/28 05:13:52 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/doc/Imakefile,v 3.21 1997/01/23 11:04:33 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/doc/Imakefile,v 3.22 1997/01/25 04:21:03 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -87,7 +87,7 @@ HWREADME =  README.ati README.trident README.tseng README.WstDig \
             README.Mach32 \
             README.Mach64 README.ark README.MGA README.NV1
 
-MAINDOCS = COPYRIGHT README README.Config INSTALL RELNOTES
+MAINDOCS = COPYRIGHT README README.Config BUILD RELNOTES
 
 OTHERDOCS = /*VideoModes.doc*/ QuickStart.doc README.clkprog xinput
 #endif
@@ -109,7 +109,7 @@ LinkSourceFile(AccelCards,$(XF86SRC)/doc)
 LinkSourceFile(BetaReport,$(XF86SRC)/doc)
 LinkSourceFile(COPYRIGHT,$(XF86SRC)/doc)
 LinkSourceFile(Devices,$(XF86SRC)/doc)
-LinkSourceFile(INSTALL,$(XF86SRC)/doc)
+LinkSourceFile(BUILD,$(XF86SRC)/doc)
 LinkSourceFile(LbxproxyOnly,$(XF86SRC)/doc)
 LinkSourceFile(Monitors,$(XF86SRC)/doc)
 LinkSourceFile(OS2.Notes,$(XF86SRC)/doc)

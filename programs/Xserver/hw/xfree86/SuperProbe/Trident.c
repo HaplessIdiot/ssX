@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Trident.c,v 3.10 1996/12/23 06:31:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Trident.c,v 3.11 1997/01/18 06:53:42 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -87,12 +87,16 @@ int *Chipset;
 						*Chipset = CHIP_TVGA9685;
 						break;
 					case 0x30:
+					case 0x33:
+					case 0x34:
 						*Chipset = CHIP_TVGA9385;
 						break;
 					case 0x38:
 						*Chipset = CHIP_TVGA9385_1;
 						break;
 					case 0x40:
+					case 0x42:
+					case 0xB3:
 						*Chipset = CHIP_TVGA9382;
 						break;
 					case 0x50:

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/10/28 05:13:56 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/doc/sgml/Imakefile,v 3.16 1997/01/25 04:21:13 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/doc/sgml/Imakefile,v 3.17 1997/02/10 06:38:10 hohndel Exp $
 
 #include <Server.tmpl>
 
@@ -91,7 +91,7 @@ LinuxDocReadmeTarget(tseng)
 LinuxDocTargetLong(CPYRIGHT.sgml,COPYRIGHT,COPYRIGHT)
 LinuxDocTargetLong(RELNOTE.sgml,RELNOTES,RELNOTES)
 LinuxDocReadmeTarget(Config)
-LinuxDocTarget(INSTALL)
+LinuxDocTarget(BUILD)
 LinuxDocTarget(README)
 LinuxDocTargetLong(QStart.sgml,QuickStart.doc,QuickStart)
 LinuxDocTarget(DocIndex)
@@ -111,7 +111,7 @@ LinkSourceFile(Config.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(DECtga.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(DocIndex.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(FreeBSD.sgml,$(XF86SRC)/doc/sgml)
-LinkSourceFile(INSTALL.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(BUILD.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(LinkKit.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(Linux.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(LynxOS.sgml,$(XF86SRC)/doc/sgml)

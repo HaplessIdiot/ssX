@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.90 1997/04/12 13:46:36 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.91 1997/05/03 09:19:23 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -970,7 +970,7 @@ vgaProbe()
 #ifdef XFreeXDGA
 	  if (vgaUseLinearAddressing) {
 	      vga256InfoRec.physBase = vgaPhysLinearBase;
-	      vga256InfoRec.physSize = vgaLinearSize;
+	      vga256InfoRec.physSize = vga256InfoRec.videoRam;
 	  } else {
 	      vga256InfoRec.physBase = 0xA0000 + Drivers[i]->ChipWriteBottom;
 	      vga256InfoRec.physSize = Drivers[i]->ChipSegmentSize;

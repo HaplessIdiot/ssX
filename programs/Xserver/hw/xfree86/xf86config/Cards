@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.51 1997/01/25 04:20:55 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.52 1997/05/03 09:19:47 dawes Exp $
 
 #Chips & Technologies
 
@@ -167,6 +167,10 @@ CHIPSET CL-GD5462
 SEE Cirrus Logic GD5462
 
 NAME Creative Labs Graphics Blaster MA334
+CHIPSET CL-GD5464
+SEE Cirrus Logic GD5464
+
+NAME Creative Labs Graphics Blaster 3D
 CHIPSET CL-GD5464
 SEE Cirrus Logic GD5464
 
@@ -1557,5 +1561,71 @@ NAME Diamond Edge 3D
 CHIPSET nv1
 SERVER SVGA
 NOCLOCKPROBE
+
+# Misc
+
+NAME Techworks Ultimate 3D
+CHIPSET CL-GD5464
+SEE Cirrus Logic GD5464
+
+NAME VideoLogic GrafixStar 550
+CHIPSET CL-GD5464
+SEE Cirrus Logic GD5464
+
+NAME Jaton Video-70P
+CHIPSET CL-GD5464
+SEE Cirrus Logic GD5464
+
+NAME Jaton Video-58P
+SEE ET6000 (generic)
+
+NAME S3 ViRGE/DX
+CHIPSET S3 ViRGE/DX
+SERVER SVGA
+NOCLOCKPROBE
+
+NAME S3 ViRGE/GX
+CHIPSET S3 ViRGE/GX
+SERVER SVGA
+NOCLOCKPROBE
+
+NAME Diamond Stealth 3D Pro
+CHIPSET S3 ViRGE/DX
+SEE S3 ViRGE/DX
+
+NAME Diamond Stealth Video 2500
+CHIPSET Alliance AT24 
+SERVER SVGA
+NOCLOCKPROBE
+
+NAME Hercules Terminator 3D/DX
+CHIPSET S3 ViRGE/DX
+SEE S3 ViRGE/DX
+
+NAME STB Nitro 3D
+CHIPSET S3 ViRGE/GX
+SEE S3 ViRGE/GX
+
+NAME Matrox Mystique
+CHIPSET MGA1064SG
+SERVER SVGA
+NOCLOCKPROBE
+
+NAME Rendition Verite 1000
+CHIPSET Verite 1000
+SEE Unsupported VGA compatible
+
+NAME Creative Labs 3D Blaster PCI (Verite 1000)
+SEE Rendition Verite 1000
+
+NAME Canopus Total-3D
+SEE Rendition Verite 1000
+
+NAME Sierra Screaming 3D
+SEE Rendition Verite 1000
+
+NAME NeoMagic (laptop/notebook)
+CHIPSET NeoMagic 128/V/ZV
+SEE Unsupported VGA compatible
 
 END
