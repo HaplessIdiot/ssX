@@ -1,12 +1,12 @@
-XCOMM $XFree86: xc/lib/GL/dri/Imakefile,v 1.5 2000/02/15 07:13:25 martin Exp $
+XCOMM $XFree86: xc/lib/GL/dri/Imakefile,v 1.6 2001/03/23 19:18:32 dawes Exp $
 
 #include <Threads.tmpl>
 
-#define DoNormalLib NO
-#define DoSharedLib YES
-#define DoExtraLib NO
-#define DoDebugLib NO
-#define DoProfileLib NO
+#define DoNormalLib NormalLibGlx
+#define DoSharedLib SharedLibGlx
+#define DoExtraLib SharedLibGlx
+#define DoDebugLib DebugLibGlx
+#define DoProfileLib ProfileLibGlx
 
 #if Malloc0ReturnsNull
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
@@ -31,7 +31,8 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 
 LibraryObjectRule()
 
-AllTarget($(OBJS))
+SubdirLibraryRule($(OBJS))
+NormalLintTarget($(SRCS))
 
 #define IHaveSubdirs
 #define PassCDebugFlags
@@ -42,3 +43,4 @@ MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
 
 DependTarget()
+

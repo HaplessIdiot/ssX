@@ -1,12 +1,21 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/ffb/Imakefile,v 1.8 2001/03/21 16:14:20 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/ffb/Imakefile,v 1.9 2001/03/23 19:18:39 dawes Exp $
 
 #include <Threads.tmpl>
 
+
+#if GlxUseBuiltInDRIDriver
+#define DoNormalLib NormalLibGlx
+#define DoSharedLib SharedLibGlx
+#define DoExtraLib SharedLibGlx
+#define DoDebugLib DebugLibGlx
+#define DoProfileLib ProfileLibGlx
+#else
 #define DoSharedLib YES
 #define DoNormalLib NO
 #define DoExtrasLib NO
 #define DoDebugLib NO
 #define DoProfileLib NO
+#endif
 
 #include "../common/Imakefile.inc"
 #include "Imakefile.inc"
@@ -33,10 +42,12 @@ REQUIREDLIBS = MathLibrary $(LDPRELIB) $(GLXLIB)
 
 #include <Library.tmpl>
 
-LibraryObjectRule()
+SubdirLibraryRule($(OBJS))
+NormalLintTarget($(SRCS))
 
+#if !GlxUseBuiltInDRIDriver
 LIBNAME = ffb_dri.so
-SharedDriModuleTarget($(LIBNAME),$(FFBOBJS),$(OBJS))
+SharedDriModuleTarget($(LIBNAME),DONE,$(OBJS))
 InstallDynamicModule($(LIBNAME),$(MODULEDIR),dri)
 #endif
 
