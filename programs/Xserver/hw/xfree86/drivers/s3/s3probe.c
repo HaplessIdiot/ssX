@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3probe.c,v 1.8 1997/06/15 07:12:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3probe.c,v 1.9 1997/08/26 10:01:23 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -628,22 +628,11 @@ Bool S3Probe()
 
    if (S3_911_SERIES(s3ChipId)) {
       s3maxDisplayWidth = 1024;
-      s3maxDisplayHeight = 1023; /* Cursor takes exactly 1 line for 911 */
-   } else if ((OFLG_ISSET(OPTION_BT485_CURS, &vga256InfoRec.options) &&
-	       DAC_IS_BT485_SERIES) ||
-	      (OFLG_ISSET(OPTION_TI3020_CURS, &vga256InfoRec.options) &&
-	       DAC_IS_TI3020_SERIES) ||
-	      (OFLG_ISSET(OPTION_TI3026_CURS, &vga256InfoRec.options) &&
-	       (DAC_IS_TI3026 || DAC_IS_TI3030)) ||
-	      (OFLG_ISSET(OPTION_IBMRGB_CURS, &vga256InfoRec.options) &&
-	       DAC_IS_IBMRGB) ||
-	      OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options)) {
-      s3maxDisplayWidth = 2048;
-      s3maxDisplayHeight = 4096;
+      s3maxDisplayHeight = 1024;
    } else {
       s3maxDisplayWidth = 2048;
-      s3maxDisplayHeight = 4093; /* Cursor can take up to 3 lines */
-   }
+      s3maxDisplayHeight = 4096;
+   } 
 
    if((vga256InfoRec.virtualX <= 0) || (vga256InfoRec.virtualY <= 0))
 	VirtualNotGiven = TRUE;
@@ -811,21 +800,6 @@ int S3ValidMode(DisplayModePtr pMode, Bool verbose, int flag)
     ProposedBppDisplayWidth = ProposedDisplayWidth * s3Bpp;
     ProposedMemUsage = ProposedBppDisplayWidth * ProposedVirtualY;
 
-
-    if (!OFLG_ISSET(OPTION_BT485_CURS,  &vga256InfoRec.options) &&
-	!OFLG_ISSET(OPTION_TI3020_CURS, &vga256InfoRec.options) &&
-	!OFLG_ISSET(OPTION_TI3026_CURS, &vga256InfoRec.options) &&
-	!OFLG_ISSET(OPTION_IBMRGB_CURS, &vga256InfoRec.options) &&
-	!OFLG_ISSET(OPTION_SW_CURSOR,   &vga256InfoRec.options)) {
-
-        int cursorX,cursorY,cursorL;
-
-	ProposedMemUsage = (ProposedMemUsage + 1023) & ~1023;
-	cursorX = ProposedMemUsage % ProposedBppDisplayWidth;
-	cursorY = ProposedMemUsage / ProposedBppDisplayWidth;
-        cursorL = ((cursorX + 1023) / ProposedBppDisplayWidth) + 1;
-	ProposedMemUsage = ProposedBppDisplayWidth * (cursorY + cursorL);
-    }
 
 		/***********************\
 		|  Trivial Size Tests 	|

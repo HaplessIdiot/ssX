@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3ramdacs.c,v 1.6 1997/06/15 07:12:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3ramdacs.c,v 1.7 1997/06/20 09:24:47 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -259,8 +259,6 @@ s3RamdacInfo s3Ramdacs[] = {
 static Bool TEMPLATE_PreInit()
 {
     /* Verify that depth is supported by ramdac */
-
-    /* Set cursor options */
    
     /* Check if PixMux is supported and set the PixMux
 	related flags and variables */
@@ -352,18 +350,6 @@ static int BT485_SERIES_PreInit()
 {
     /* Verify that depth is supported by ramdac */
 	/* all are supported */
-
-    /* Set cursor options */
-   if(!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options)) {
-      ErrorF("%s %s: Using hardware cursor from Bt485/20C505 RAMDAC\n",
-	OFLG_ISSET(OPTION_BT485_CURS, &vga256InfoRec.options) ? XCONFIG_GIVEN :
-	XCONFIG_PROBED, vga256InfoRec.name);
-	OFLG_SET(OPTION_BT485_CURS, &vga256InfoRec.options);
-   } else {
-       ErrorF("%s %s: Use of Bt485/20C505 cursor disabled in XF86Config\n",
-	        XCONFIG_GIVEN, vga256InfoRec.name);
-       OFLG_CLR(OPTION_BT485_CURS, &vga256InfoRec.options);
-   }
    
     /* Check if PixMux is supported and set the PixMux
 	related flags and variables */
@@ -887,18 +873,6 @@ static int TI3020_3025_PreInit()
 {
     /* Verify that depth is supported by ramdac */
 	/* all are supported */
-
-    /* Set cursor options */
-   if(!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options)) {
-      ErrorF("%s %s: Using hardware cursor from Ti3020/25 RAMDAC\n",
-	OFLG_ISSET(OPTION_TI3020_CURS, &vga256InfoRec.options) ? XCONFIG_GIVEN :
-	XCONFIG_PROBED, vga256InfoRec.name);
-      OFLG_SET(OPTION_TI3020_CURS, &vga256InfoRec.options);
-   } else {
-       ErrorF("%s %s: Use of Ti3020/25 cursor disabled in XF86Config\n",
-	        XCONFIG_GIVEN, vga256InfoRec.name);
-       OFLG_CLR(OPTION_TI3020_CURS, &vga256InfoRec.options);
-   }
 
 
     /* Check if PixMux is supported and set the PixMux
@@ -1469,9 +1443,6 @@ static int ATT409_498_PreInit()
     /* Verify that depth is supported by ramdac */
 	/* all are supported */
 	
-    /* Set cursor options */
-   	/* none */
-
     /* Check if PixMux is supported and set the PixMux
 	related flags and variables */
     if((xf86bpp <= 8) && 
@@ -1711,9 +1682,6 @@ static int SC15025_PreInit()
     /* Verify that depth is supported by ramdac */
 	/* all are supported */
 
-    /* Set cursor options */
-   	/* none */
-
     /* Check if PixMux is supported and set the PixMux
 	related flags and variables */
 	/* no PixMux */
@@ -1883,9 +1851,6 @@ static int STG17xx_PreInit()
 {
     /* Verify that depth is supported by ramdac */
 	/* all are supported */
-
-    /* Set cursor options */
-	/* none */
    
     /* Check if PixMux is supported and set the PixMux
 	related flags and variables */
@@ -2265,9 +2230,6 @@ static int S3_SDAC_GENDAC_PreInit()
 {
     /* Verify that depth is supported by ramdac */
 	/* all are supported */
-
-    /* Set cursor options */
-	/* none */
    
     /* Check if PixMux is supported and set the PixMux
 	related flags and variables */
@@ -2558,9 +2520,6 @@ static int S3_TRIO_PreInit()
     /* Verify that depth is supported by ramdac */
 	/* all are supported */
 
-    /* Set cursor options */
-	/* none */
-   
     /* Check if PixMux is supported and set the PixMux
 	related flags and variables */
     if(xf86bpp <= 8) {
@@ -2897,19 +2856,6 @@ static int TI3030_3026_PreInit()
 
     /* Verify that depth is supported by ramdac */
 	/* all are supported */
-
-    /* Set cursor options */
-   if(!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options)) {
-      ErrorF("%s %s: Using hardware cursor from Ti3026/3030 RAMDAC\n",
-	OFLG_ISSET(OPTION_TI3026_CURS, &vga256InfoRec.options) ? XCONFIG_GIVEN :
-	XCONFIG_PROBED, vga256InfoRec.name);
-	OFLG_SET(OPTION_TI3026_CURS, &vga256InfoRec.options);
-   } else {
-       ErrorF("%s %s: Use of Ti3026/3030 cursor disabled in XF86Config\n",
-	        XCONFIG_GIVEN, vga256InfoRec.name);
-       OFLG_CLR(OPTION_TI3026_CURS, &vga256InfoRec.options);
-   }
-
     
     /* Check if PixMux is supported and set the PixMux
 	related flags and variables */
@@ -3360,19 +3306,6 @@ static int IBMRGB52x_PreInit()
 {
     /* Verify that depth is supported by ramdac */
 	/* all are supported */
-
-    /* Set cursor options */
-   if(!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options)) {
-      ErrorF("%s %s: Using hardware cursor from IBM RGB52x RAMDAC\n",
-	OFLG_ISSET(OPTION_IBMRGB_CURS, &vga256InfoRec.options) ? XCONFIG_GIVEN :
-	XCONFIG_PROBED, vga256InfoRec.name);
-      OFLG_SET(OPTION_IBMRGB_CURS, &vga256InfoRec.options);
-   } else {
-       ErrorF("%s %s: Use of IBM RGB52x cursor disabled in XF86Config\n",
-	        XCONFIG_GIVEN, vga256InfoRec.name);
-       OFLG_CLR(OPTION_IBMRGB_CURS, &vga256InfoRec.options);
-   }
-
   
     /* Check if PixMux is supported and set the PixMux
 	related flags and variables */
@@ -3888,9 +3821,6 @@ static int MISC_HI_COLOR_PreInit()
      }	
 
 
-    /* Set cursor options */
-   	/* none */
-
     /* Check if PixMux is supported and set the PixMux
 	related flags and variables */
 	/* No PixMux */
@@ -4060,9 +3990,6 @@ static int NORMAL_PreInit()
 	"\"normal\" RAMDAC.\n");
 	return 0;	/* BAD_DEPTH */
     }
-
-    /* Set cursor options */
-   	/* none */
 
     /* Check if PixMux is supported and set the PixMux
 	related flags and variables */

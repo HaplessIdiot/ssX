@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.8 1997/01/18 06:53:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.9 1997/02/25 14:19:43 hohndel Exp $ */
 
 /*
 
@@ -25,6 +25,7 @@ Copyright (c) 1995, 1996  XFree86 Inc
 #include <X11/Xtrans.h>
 #include "../os/osdep.h"
 #include <X11/Xauth.h>
+#ifndef USL
 #ifndef ESIX
 #ifndef Lynx
 #include <sys/socket.h>
@@ -34,6 +35,7 @@ Copyright (c) 1995, 1996  XFree86 Inc
 #else
 #include <lan/socket.h>
 #endif
+#endif	/* USL */
 #include "../hw/xfree86/common/xf86.h"
 
 extern int xf86ScreenIndex;

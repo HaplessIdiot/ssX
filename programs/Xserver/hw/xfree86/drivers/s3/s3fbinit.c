@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3fbinit.c,v 1.1 1997/03/06 23:16:35 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3fbinit.c,v 1.3 1997/06/10 12:30:29 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -139,27 +139,6 @@ void S3FbInit(void)
 
    /* At this point, the vga256InfoRec.clock[] values are pixel clocks */
 
-	/*******************************\
-	|	Locate Cursor Storage	|
-	\*******************************/
-
-
-   if (OFLG_ISSET(OPTION_BT485_CURS, &vga256InfoRec.options) ||
-       OFLG_ISSET(OPTION_TI3020_CURS, &vga256InfoRec.options) ||
-       OFLG_ISSET(OPTION_TI3026_CURS, &vga256InfoRec.options) ||
-       OFLG_ISSET(OPTION_IBMRGB_CURS, &vga256InfoRec.options) ||
-       OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options)) {
-      		s3CursorStartY = vga256InfoRec.virtualY;
-   		s3CursorLines = 0;
-   } else {
-      int st_addr, CursorStartX;
-
-      st_addr = (vga256InfoRec.virtualY * s3BppDisplayWidth + 1023) & ~1023;
-      CursorStartX = st_addr % s3BppDisplayWidth;
-      s3CursorStartY = st_addr / s3BppDisplayWidth;
-      s3CursorLines = ((CursorStartX + 1023) / s3BppDisplayWidth) + 1;
-   }
-
 
   /*
     * Reduce the videoRam value if necessary to prevent Y coords exceeding
@@ -261,35 +240,27 @@ void S3FbInit(void)
     }
 
 
+
+	/*******************************\
+      	|	Hardware Cursor		|
+	\*******************************/
+
+    if(!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options)) 
+	S3CursorInit();
+    else {
+      	ErrorF("%s %s: Hardware cursor disabled in XF86Config\n",
+			XCONFIG_GIVEN, vga256InfoRec.name);
+	s3CursorBytes = 0;
+    }
+
+
 	/*******************************\
 	|	Setup XAA	 	|
 	\*******************************/
 
     if(!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)) 
 	S3AccelInit();
-    
-
-	/*******************************\
-      	|	Hardware Cursor		|
-	\*******************************/
-
-/* only these cursors work yet (MArk) */
-
-    if( OFLG_ISSET(OPTION_BT485_CURS, &vga256InfoRec.options) ||
-        OFLG_ISSET(OPTION_TI3020_CURS, &vga256InfoRec.options) ||
-	OFLG_ISSET(OPTION_TI3026_CURS, &vga256InfoRec.options) ||
-	OFLG_ISSET(OPTION_IBMRGB_CURS, &vga256InfoRec.options)) {
-#ifdef S3_DEBUG
-   ErrorF("Using Hardware Cursor\n");
-#endif
-
-    	vgaHWCursor.Initialized = TRUE;
-   	vgaHWCursor.Init = S3CursorInit;
-   	vgaHWCursor.Restore = S3RestoreCursor;
-    	vgaHWCursor.Warp = S3WarpCursor;
-    	vgaHWCursor.QueryBestSize = S3QueryBestSize;
-    }
-    
+            
 
 }
 

@@ -1,34 +1,9 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3cursor.c,v 1.2 1997/03/17 07:18:05 hohndel Exp $
- * 
- * Copyright 1991 MIPS Computer Systems, Inc.
- * 
- * Permission to use, copy, modify, distribute, and sell this software and its
- * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of MIPS not be used in advertising or
- * publicity pertaining to distribution of the software without specific,
- * written prior permission.  MIPS makes no representations about the
- * suitability of this software for any purpose.  It is provided "as is"
- * without express or implied warranty.
- * 
- * MIPS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL MIPS
- * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY
- * DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
- * AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
- * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- */
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3cursor.c,v 1.3 1997/05/03 12:53:08 dawes Exp $
+*
+*/
 
-/*
- * Modified by Amancio Hasty and Jon Tombs
- * 
- */
-
-/*
- * Device independent (?) part of HW cursor support
- */
+/* Written by Mark Vojkovich  (mvojkovi@ucsd.edu) */
 
 #define PSZ 8
 
@@ -50,404 +25,211 @@
 #include "xf86_Option.h"
 #include "xf86_OSlib.h"
 #include "vga.h"
+#include "xf86cursor.h"
+
+#define XCONFIG_FLAGS_ONLY
+#include "xf86_Config.h"
 
 #include "s3.h"
 #include "s3reg.h"
 
-#define MAX_CURS 64
+extern void s3IBMRGBShowCursor();
+extern void s3IBMRGBHideCursor();
+extern void s3IBMRGBSetCursorPosition();
+extern void s3IBMRGBSetCursorColors();
+extern void s3IBMRGBLoadCursorImage();
 
-static Bool s3UnrealizeCursor(
-#if NeedFunctionPrototypes
-     ScreenPtr	/* pScr */,
-     CursorPtr	/* pCurs */
-#endif
-);
-static void s3SetCursor(
-#if NeedFunctionPrototypes
-     ScreenPtr	/* pScr */,
-     CursorPtr	/* pCurs */,
-     int  	/* x */,
-     int  	/* y */
-#endif
-);
-static void s3MoveCursor(
-#if NeedFunctionPrototypes
-     ScreenPtr	/* pScr */,
-     int  	/* x */,
-     int  	/* y */
-#endif
-);
+extern void s3BtShowCursor();
+extern void s3BtHideCursor();
+extern void s3BtSetCursorPosition();
+extern void s3BtSetCursorColors();
+extern void s3BtLoadCursorImage();
 
-extern Bool s3BtRealizeCursor(ScreenPtr, CursorPtr);
-extern void s3BtMoveCursor(ScreenPtr, int, int);
-extern Bool s3TiRealizeCursor(ScreenPtr, CursorPtr);
-extern void s3TiMoveCursor(ScreenPtr, int, int);
-extern Bool s3Ti3026RealizeCursor(ScreenPtr, CursorPtr);
-extern void s3Ti3026MoveCursor(ScreenPtr, int, int);
-extern Bool s3IBMRGBRealizeCursor(ScreenPtr, CursorPtr);
-extern void s3IBMRGBMoveCursor(ScreenPtr, int, int);
+extern void s3TiShowCursor();
+extern void s3TiHideCursor();
+extern void s3TiSetCursorPosition();
+extern void s3TiSetCursorColors();
+extern void s3TiLoadCursorImage();
 
-extern Bool s3BtRecolorCursor(ScreenPtr, CursorPtr);
-extern Bool s3TiRecolorCursor(ScreenPtr, CursorPtr);
-extern Bool s3Ti3026RecolorCursor(ScreenPtr, CursorPtr);
-extern Bool s3IBMRGBRecolorCursor(ScreenPtr, CursorPtr);
+extern void s3Ti3026ShowCursor();
+extern void s3Ti3026HideCursor();
+extern void s3Ti3026SetCursorPosition();
+extern void s3Ti3026SetCursorColors();
+extern void s3Ti3026LoadCursorImage();
 
-extern void s3BtCursorOn();
-extern void s3TiCursorOn();
-extern void s3Ti3026CursorOn();
-extern void s3IBMRGBCursorOn();
+static void s3ShowCursor();
+static void s3HideCursor();
+static void s3SetCursorPosition();
+static void s3SetCursorColors();
+static void s3LoadCursorImage();
 
-extern void s3BtCursorOff();
-extern void s3TiCursorOff();
-extern void s3Ti3026CursorOff();
-extern void s3IBMRGBCursorOff();
+extern vgaHWCursorRec vgaHWCursor;
 
-extern void s3BtLoadCursor(ScreenPtr, CursorPtr, int, int);
-extern void s3TiLoadCursor(ScreenPtr, CursorPtr, int, int);
-extern void s3Ti3026LoadCursor(ScreenPtr, CursorPtr, int, int);
-extern void s3IBMRGBLoadCursor(ScreenPtr, CursorPtr, int, int);
+extern Bool XAACursorInit();
+extern void XAARestoreCursor();
+extern void XAAWarpCursor();
+extern void XAAQueryBestSize();
 
-/*
-	Note that I lost support for anything other than
-	the IBMRGB, Ti, and Bt ramdac cursors.  Support for
-	any other hardware cursors needs to be rethough in light
-	of the XAA.  I also hope to get rid of the "if else"
-	statements for the cursor types and replace with function
-	pointers  (MArk).
-*/
+static unsigned int CursorAddress;
 
-
-
-static miPointerSpriteFuncRec s3BtPointerSpriteFuncs =
+void S3CursorInit()
 {
-   s3BtRealizeCursor,
-   s3UnrealizeCursor,
-   s3SetCursor,
-   s3BtMoveCursor,
-};
+    s3CursorBytes = 0;
 
-static miPointerSpriteFuncRec s3TiPointerSpriteFuncs =
-{
-   s3TiRealizeCursor,
-   s3UnrealizeCursor,
-   s3SetCursor,
-   s3TiMoveCursor,
-};
+    XAACursorInfoRec.MaxWidth = 64;
+    XAACursorInfoRec.MaxHeight = 64;
 
-static miPointerSpriteFuncRec s3Ti3026PointerSpriteFuncs =
-{
-   s3Ti3026RealizeCursor,
-   s3UnrealizeCursor,
-   s3SetCursor,
-   s3Ti3026MoveCursor,
-};
+    if(DAC_IS_BT485_SERIES) {
+    	XAACursorInfoRec.Flags = USE_HARDWARE_CURSOR |
+				HARDWARE_CURSOR_TRUECOLOR_AT_8BPP |
+				HARDWARE_CURSOR_AND_SOURCE_WITH_MASK |
+				HARDWARE_CURSOR_PROGRAMMED_ORIGIN |		
+				HARDWARE_CURSOR_CHAR_BIT_FORMAT |
+				HARDWARE_CURSOR_PROGRAMMED_BITS;
+	XAACursorInfoRec.SetCursorColors = s3BtSetCursorColors;
+	XAACursorInfoRec.SetCursorPosition = s3BtSetCursorPosition;
+	XAACursorInfoRec.LoadCursorImage = s3BtLoadCursorImage;
+	XAACursorInfoRec.HideCursor = s3BtHideCursor;
+	XAACursorInfoRec.ShowCursor = s3BtShowCursor; 
+      	ErrorF("%s %s: Using Bt485/att20c505 hardware cursor.\n", 
+			XCONFIG_PROBED, vga256InfoRec.name);    
+     }
+     else if(DAC_IS_IBMRGB) {
+    	XAACursorInfoRec.Flags = USE_HARDWARE_CURSOR |
+				HARDWARE_CURSOR_TRUECOLOR_AT_8BPP |
+				HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE |
+				HARDWARE_CURSOR_AND_SOURCE_WITH_MASK |
+				HARDWARE_CURSOR_PROGRAMMED_ORIGIN |		
+				HARDWARE_CURSOR_CHAR_BIT_FORMAT |
+				HARDWARE_CURSOR_PROGRAMMED_BITS;
+	XAACursorInfoRec.SetCursorColors = s3IBMRGBSetCursorColors;
+	XAACursorInfoRec.SetCursorPosition = s3IBMRGBSetCursorPosition;
+	XAACursorInfoRec.LoadCursorImage = s3IBMRGBLoadCursorImage;
+	XAACursorInfoRec.HideCursor = s3IBMRGBHideCursor;
+	XAACursorInfoRec.ShowCursor = s3IBMRGBShowCursor;
+      	ErrorF("%s %s: Using IBM RGB_52x hardware cursor.\n", 
+			XCONFIG_PROBED, vga256InfoRec.name);    
+    } 
+    else if(DAC_IS_TI3020_SERIES) {
+    	XAACursorInfoRec.Flags = USE_HARDWARE_CURSOR |
+				HARDWARE_CURSOR_TRUECOLOR_AT_8BPP |
+				HARDWARE_CURSOR_AND_SOURCE_WITH_MASK |
+				HARDWARE_CURSOR_PROGRAMMED_ORIGIN |		
+				HARDWARE_CURSOR_CHAR_BIT_FORMAT |
+				HARDWARE_CURSOR_PROGRAMMED_BITS;
+	XAACursorInfoRec.SetCursorColors = s3TiSetCursorColors;
+	XAACursorInfoRec.SetCursorPosition = s3TiSetCursorPosition;
+	XAACursorInfoRec.LoadCursorImage = s3TiLoadCursorImage;
+	XAACursorInfoRec.HideCursor = s3TiHideCursor;
+	XAACursorInfoRec.ShowCursor = s3TiShowCursor;
+      	ErrorF("%s %s: Using Ti3020/3025 hardware cursor.\n", 
+			XCONFIG_PROBED, vga256InfoRec.name);    
+    } else if(DAC_IS_TI3026 || DAC_IS_TI3030) {
+    	XAACursorInfoRec.Flags = USE_HARDWARE_CURSOR |
+				HARDWARE_CURSOR_TRUECOLOR_AT_8BPP |
+				HARDWARE_CURSOR_AND_SOURCE_WITH_MASK |
+				HARDWARE_CURSOR_PROGRAMMED_ORIGIN |		
+				HARDWARE_CURSOR_CHAR_BIT_FORMAT |
+				HARDWARE_CURSOR_PROGRAMMED_BITS;
+	XAACursorInfoRec.SetCursorColors = s3Ti3026SetCursorColors;
+	XAACursorInfoRec.SetCursorPosition = s3Ti3026SetCursorPosition;
+	XAACursorInfoRec.LoadCursorImage = s3Ti3026LoadCursorImage;
+	XAACursorInfoRec.HideCursor = s3Ti3026HideCursor;
+	XAACursorInfoRec.ShowCursor = s3Ti3026ShowCursor;
+      	ErrorF("%s %s: Using Ti3026/3030 hardware cursor.\n", 
+			XCONFIG_PROBED, vga256InfoRec.name);    
+    } else {	/* generic S3 cursor */
+        CursorAddress =  (vga256InfoRec.videoRam - 1) << 10;
 
-static miPointerSpriteFuncRec s3IBMRGBPointerSpriteFuncs =
-{
-   s3IBMRGBRealizeCursor,
-   s3UnrealizeCursor,
-   s3SetCursor,
-   s3IBMRGBMoveCursor,
-};
+	if(CursorAddress < (vga256InfoRec.virtualY * s3BppDisplayWidth)) {
+      	    ErrorF("%s %s: Not enough video memory left for hardware cursor "
+		"storage... Disabling.\n", XCONFIG_PROBED, vga256InfoRec.name);
+    	   OFLG_SET(OPTION_SW_CURSOR, &vga256InfoRec.options); 
+ 	   return;
+	}
 
-extern miPointerScreenFuncRec xf86PointerScreenFuncs;
-extern xf86InfoRec xf86Info;
-
-static int s3CursGeneration = -1;
-static CursorPtr s3SaveCursors[MAXSCREENS];
-Bool tmp_useSWCursor;   /* I'm not sure this is going to work (MArk) */
+        XAACursorInfoRec.CursorDataX = CursorAddress % s3BppDisplayWidth;
+        XAACursorInfoRec.CursorDataY = CursorAddress / s3BppDisplayWidth;
+        s3CursorBytes = 1024;
+        CursorAddress >>= 10;
 
 
-void
-s3RecolorCursor(pScr, pCurs, displayed)
-     ScreenPtr pScr;
-     CursorPtr pCurs;
-     Bool displayed;
-{
+    	XAACursorInfoRec.Flags = USE_HARDWARE_CURSOR |
+				HARDWARE_CURSOR_PROGRAMMED_ORIGIN |		
+				HARDWARE_CURSOR_BIT_ORDER_MSBFIRST |
+				HARDWARE_CURSOR_SHORT_BIT_FORMAT;
+	XAACursorInfoRec.SetCursorColors = s3SetCursorColors;
+	XAACursorInfoRec.SetCursorPosition = s3SetCursorPosition;
+	XAACursorInfoRec.HideCursor = s3HideCursor;
+	XAACursorInfoRec.ShowCursor = s3ShowCursor;
 
-   if (!xf86VTSema || tmp_useSWCursor) {
-      miRecolorCursor(pScr, pCurs, displayed);
-      return;
-   }
+      	ErrorF("%s %s: Using built-in S3 hardware cursor.\n", 
+			XCONFIG_PROBED, vga256InfoRec.name);    
+    }
 
-   if (!displayed)
-      return;
-
-   if (OFLG_ISSET(OPTION_BT485_CURS, &vga256InfoRec.options))
-      s3BtRecolorCursor(pScr, pCurs);
-   else if (OFLG_ISSET(OPTION_TI3020_CURS, &vga256InfoRec.options))
-      s3TiRecolorCursor(pScr, pCurs);
-   else if (OFLG_ISSET(OPTION_TI3026_CURS, &vga256InfoRec.options))
-      s3Ti3026RecolorCursor(pScr, pCurs);
-   else if (OFLG_ISSET(OPTION_IBMRGB_CURS, &vga256InfoRec.options))
-      s3IBMRGBRecolorCursor(pScr, pCurs);
+    if(XAACursorInfoRec.Flags & USE_HARDWARE_CURSOR) {
+	vgaHWCursor.Init = XAACursorInit;
+	vgaHWCursor.Initialized = TRUE;
+	vgaHWCursor.Restore = XAARestoreCursor;
+	vgaHWCursor.Warp = XAAWarpCursor;
+	vgaHWCursor.QueryBestSize = XAAQueryBestSize;
+    }
 }
 
-#define	reorder(a,b)	b = \
-	(a & 0x80) >> 7 | \
-	(a & 0x40) >> 5 | \
-	(a & 0x20) >> 3 | \
-	(a & 0x10) >> 1 | \
-	(a & 0x08) << 1 | \
-	(a & 0x04) << 3 | \
-	(a & 0x02) << 5 | \
-	(a & 0x01) << 7;
-
-S3CursorInit(pm, pScr)
-     char *pm;
-     ScreenPtr pScr;
-{
-   int i;
-
-   s3BlockCursor = FALSE;
-   s3ReloadCursor = FALSE;
-   
-   if (s3CursGeneration != serverGeneration) {
-      s3hotX = 0;
-      s3hotY = 0;
-
-      for (i = 0; i < 256; i++) {
-	  reorder (i, s3SwapBits[i]);
-      }
-
-      if (OFLG_ISSET(OPTION_BT485_CURS, &vga256InfoRec.options)) {
-         if (!(miPointerInitialize(pScr, &s3BtPointerSpriteFuncs,
-				   &xf86PointerScreenFuncs, FALSE)))
-            return FALSE;
-      } else if (OFLG_ISSET(OPTION_TI3020_CURS, &vga256InfoRec.options)) {
-         if (!(miPointerInitialize(pScr, &s3TiPointerSpriteFuncs,
-				   &xf86PointerScreenFuncs, FALSE)))
-            return FALSE;
-      } else if (OFLG_ISSET(OPTION_TI3026_CURS, &vga256InfoRec.options)) {
-         if (!(miPointerInitialize(pScr, &s3Ti3026PointerSpriteFuncs,
-				   &xf86PointerScreenFuncs, FALSE)))
-            return FALSE;
-      } else if (OFLG_ISSET(OPTION_IBMRGB_CURS, &vga256InfoRec.options)) {
-         if (!(miPointerInitialize(pScr, &s3IBMRGBPointerSpriteFuncs,
-				   &xf86PointerScreenFuncs, FALSE)))
-            return FALSE;
-      } else return FALSE; 
-
-      pScr->RecolorCursor = s3RecolorCursor;
-
-      s3CursGeneration = serverGeneration;
-   }
-
-   return TRUE;
-}
-
-void
+ 
+void 
 s3ShowCursor()
 {
-   if (tmp_useSWCursor) 
-      return;
+   unsigned char tmp;
 
-   if (OFLG_ISSET(OPTION_BT485_CURS, &vga256InfoRec.options))
-      s3BtCursorOn();
-   else if (OFLG_ISSET(OPTION_TI3020_CURS, &vga256InfoRec.options))
-      s3TiCursorOn();
-   else if (OFLG_ISSET(OPTION_TI3026_CURS, &vga256InfoRec.options))
-      s3Ti3026CursorOn();
-   else if (OFLG_ISSET(OPTION_IBMRGB_CURS, &vga256InfoRec.options))
-      s3IBMRGBCursorOn();
+   UNLOCK_SYS_REGS;
+
+   outb(vgaCRIndex, 0x55);
+   tmp = inb(vgaCRReg);
+   outb(vgaCRReg, tmp | 0x10);
+
+   outb(vgaCRIndex, 0x4c);
+   outb(vgaCRReg, CursorAddress >> 8);
+   outb(vgaCRIndex, 0x4d);
+   outb(vgaCRReg, CursorAddress);
+
+   outb(vgaCRIndex, 0x45);
+   tmp = inb(vgaCRReg);
+   outb(vgaCRReg, tmp | 0x01);
+
+   LOCK_SYS_REGS;
 }
+
 
 void
 s3HideCursor()
 {
-   if (tmp_useSWCursor) 
-      return;
-
-   if (OFLG_ISSET(OPTION_BT485_CURS, &vga256InfoRec.options))
-      s3BtCursorOff();
-   else if (OFLG_ISSET(OPTION_TI3020_CURS, &vga256InfoRec.options))
-      s3TiCursorOff();
-   else if (OFLG_ISSET(OPTION_TI3026_CURS, &vga256InfoRec.options))
-      s3Ti3026CursorOff();
-   else if (OFLG_ISSET(OPTION_IBMRGB_CURS, &vga256InfoRec.options))
-      s3IBMRGBCursorOff();
-}
-
-
-static Bool
-s3UnrealizeCursor(pScr, pCurs)
-     ScreenPtr pScr;
-     CursorPtr pCurs;
-{
-   pointer priv;
-
-   if (pCurs->bits->height > MAX_CURS || pCurs->bits->width > MAX_CURS) {
-      extern miPointerSpriteFuncRec miSpritePointerFuncs;
-      return (miSpritePointerFuncs.UnrealizeCursor)(pScr, pCurs);
-   }
-
-   if (pCurs->bits->refcnt <= 1 &&
-       (priv = pCurs->bits->devPriv[pScr->myNum]))
-      xfree(priv);
-   return TRUE;
-}
-
-
-static void
-s3SetCursor(pScr, pCurs, x, y)
-     ScreenPtr pScr;
-     CursorPtr pCurs;
-     int   x, y;
-{
-   int indx2 = pScr->myNum;
-
-   if (!pCurs)
-      return;
-
-   if (pCurs->bits->height > MAX_CURS || pCurs->bits->width > MAX_CURS) {
-      extern miPointerSpriteFuncRec miSpritePointerFuncs;
-      s3HideCursor();
-      tmp_useSWCursor = TRUE;
-      (miSpritePointerFuncs.SetCursor)(pScr, pCurs, x, y);
-      return;
-   }
-   if (tmp_useSWCursor) {  /* hide mi cursor */
-      extern miPointerSpriteFuncRec miSpritePointerFuncs;
-      (miSpritePointerFuncs.MoveCursor)(pScr, -9999, -9999);  /* XXX */
-      tmp_useSWCursor = FALSE;      
-      s3ShowCursor();
-   }
-
-   s3hotX = pCurs->bits->xhot;
-   s3hotY = pCurs->bits->yhot;
-   s3SaveCursors[indx2] = pCurs;
-
-   if (!s3BlockCursor) {
-      if (OFLG_ISSET(OPTION_BT485_CURS, &vga256InfoRec.options))
-         s3BtLoadCursor(pScr, pCurs, x, y);
-      else if (OFLG_ISSET(OPTION_TI3020_CURS, &vga256InfoRec.options))
-         s3TiLoadCursor(pScr, pCurs, x, y);
-      else if (OFLG_ISSET(OPTION_TI3026_CURS, &vga256InfoRec.options))
-         s3Ti3026LoadCursor(pScr, pCurs, x, y);
-      else if (OFLG_ISSET(OPTION_IBMRGB_CURS, &vga256InfoRec.options))
-         s3IBMRGBLoadCursor(pScr, pCurs, x, y);
-   } else
-      s3ReloadCursor = TRUE;
-}
-
-void
-S3RestoreCursor(pScr)
-     ScreenPtr pScr;
-{
-   int indx2 = pScr->myNum;
-   int x, y;
-
-   if (tmp_useSWCursor) 
-      return;
-
-   s3ReloadCursor = FALSE;
-   miPointerPosition(&x, &y);
-   if (OFLG_ISSET(OPTION_BT485_CURS, &vga256InfoRec.options))
-      s3BtLoadCursor(pScr, s3SaveCursors[indx2], x, y);
-   else if (OFLG_ISSET(OPTION_TI3020_CURS, &vga256InfoRec.options))
-      s3TiLoadCursor(pScr, s3SaveCursors[indx2], x, y);
-   else if (OFLG_ISSET(OPTION_TI3026_CURS, &vga256InfoRec.options))
-      s3Ti3026LoadCursor(pScr, s3SaveCursors[indx2], x, y);
-   else if (OFLG_ISSET(OPTION_IBMRGB_CURS, &vga256InfoRec.options))
-      s3IBMRGBLoadCursor(pScr, s3SaveCursors[indx2], x, y);
-}
-
-void
-s3RepositionCursor(pScr)
-     ScreenPtr pScr;
-{
-   int x, y;
-
-   if (tmp_useSWCursor)
-      return;
-
-   miPointerPosition(&x, &y);
-   if (OFLG_ISSET(OPTION_BT485_CURS, &vga256InfoRec.options))
-      s3BtMoveCursor(pScr, x, y);
-   else if (OFLG_ISSET(OPTION_TI3020_CURS, &vga256InfoRec.options))
-      s3TiMoveCursor(pScr, x, y);
-   else if (OFLG_ISSET(OPTION_TI3026_CURS, &vga256InfoRec.options))
-      s3Ti3026MoveCursor(pScr, x, y);
-   else if (OFLG_ISSET(OPTION_IBMRGB_CURS, &vga256InfoRec.options))
-      s3IBMRGBMoveCursor(pScr, x, y);
-}
-
-static void
-s3MoveCursor(pScr, x, y)
-     ScreenPtr pScr;
-     int   x, y;
-{
-   unsigned char xoff, yoff;
-
-   if (!xf86VTSema)
-      return;
-
-   if (tmp_useSWCursor) {
-      extern miPointerSpriteFuncRec miSpritePointerFuncs;
-      (miSpritePointerFuncs.MoveCursor)(pScr, x, y);
-      return;
-   }
-
-   if (s3BlockCursor)
-      return;
-
-   x -= vga256InfoRec.frameX0 - s3AdjustCursorXPos;
-   y -= vga256InfoRec.frameY0;
-
-   if (!S3_TRIOxx_SERIES(s3ChipId)) {
-      if (S3_968_SERIES(s3ChipId))
-	 x *= (2 * s3Bpp);
-      else if (!S3_x64_SERIES(s3ChipId) && !S3_805_I_SERIES(s3ChipId)) 
-	 x *= s3Bpp;
-      else if (s3Bpp > 2)
-	 x *= 2;
-   }
-
-   x -= s3hotX;
-   y -= s3hotY;
-
-   if (S3_968_SERIES(s3ChipId))
-      x -= x % (2 * s3Bpp);
-   else if (!S3_x64_SERIES(s3ChipId) && !S3_805_I_SERIES(s3ChipId))
-      x -= x % s3Bpp;
-   else if (s3Bpp > 2)
-      x &= ~1;
+   unsigned char tmp;
 
    UNLOCK_SYS_REGS;
 
-   /*
-    * Make these even when used.  There is a bug/feature on at least
-    * some chipsets that causes a "shadow" of the cursor in interlaced
-    * mode.  Making this even seems to have no visible effect, so just
-    * do it for the generic case.
-    */
-   if (x < 0) {
-     xoff = ((-x) & 0xFE);
-     x = 0;
-   } else {
-     xoff = 0;
-   }
+   outb(vgaCRIndex, 0x45);
+   tmp = inb(vgaCRReg);
+   outb(vgaCRReg, tmp & ~0x01);
 
-   if (y < 0) {
-      yoff = ((-y) & 0xFE);
-      y = 0;
-   } else {
-      yoff = 0;
-   }
+   LOCK_SYS_REGS;
+}
 
-   if (vga256InfoRec.modes->Flags & V_DBLSCAN)
-	y *= 2;
-   WaitIdle();
 
-   /* This is the recomended order to move the cursor */
+void
+s3SetCursorPosition(x, y, xoff, yoff)
+     int x, y, xoff, yoff;
+{
+   UNLOCK_SYS_REGS;
+
    outb(vgaCRIndex, 0x46);
-   outb(vgaCRReg, (x & 0xff00)>>8);
+   outb(vgaCRReg, x >> 8);
 
    outb(vgaCRIndex, 0x47);
-   outb(vgaCRReg, (x & 0xff));
+   outb(vgaCRReg, x);
 
    outb(vgaCRIndex, 0x49);
-   outb(vgaCRReg, (y & 0xff));
+   outb(vgaCRReg, y);
 
    outb(vgaCRIndex, 0x4e);
    outb(vgaCRReg, xoff);
@@ -456,54 +238,73 @@ s3MoveCursor(pScr, x, y)
    outb(vgaCRReg, yoff);      
 
    outb(vgaCRIndex, 0x48);
-   outb(vgaCRReg, (y & 0xff00)>>8);
+   outb(vgaCRReg, y >> 8);
 
    LOCK_SYS_REGS;
+
 }
 
 void
-s3RenewCursorColor(pScr)
-   ScreenPtr pScr;
-{
-   if (!xf86VTSema)
-      return;
+s3SetCursorColors(bg, fg)
+   unsigned int bg, fg;
+{	 
+    unsigned short packfg, packbg;
 
-   if (s3SaveCursors[pScr->myNum])
-      s3RecolorCursor(pScr, s3SaveCursors[pScr->myNum], TRUE);
+    switch(s3Bpp) {
+	case 1:
+    	   outb(vgaCRIndex, 0x45);
+    	   inb(vgaCRReg);		/* reset stack pointer */ 
+    	   outb(vgaCRIndex, 0x4A);
+    	   outb(vgaCRReg, fg);
+    	   outb(vgaCRReg, fg);
+
+    	   outb(vgaCRIndex, 0x45);
+    	   inb(vgaCRReg);		/* reset stack pointer */
+    	   outb(vgaCRIndex, 0x4B);
+    	   outb(vgaCRReg, bg);
+    	   outb(vgaCRReg, bg);
+	   break;
+	case 2:
+	   if(vga256InfoRec.depth == 15) {
+	      packfg = ((fg & 0x00F80000) >> 19) | ((fg & 0x0000F800) >> 6) |
+			((fg & 0x000000F8) <<  7);
+	      packbg = ((bg & 0x00F80000) >> 19) | ((bg & 0x0000F800) >> 6) |
+			((bg & 0x000000F8) << 7);
+	   } else {
+	      packfg = ((fg & 0x00F80000) >> 19) | ((fg & 0x0000Fc00) >> 5) |
+			((fg & 0x000000F8) <<  8);
+	      packbg = ((bg & 0x00F80000) >> 19) | ((bg & 0x0000Fc00) >> 5) |
+			((bg & 0x000000F8) << 8);
+	   }
+
+    	   outb(vgaCRIndex, 0x45);
+    	   inb(vgaCRReg);		/* reset stack pointer */ 
+    	   outb(vgaCRIndex, 0x4A);
+    	   outb(vgaCRReg, packfg);
+    	   outb(vgaCRReg, packfg >> 8);
+
+    	   outb(vgaCRIndex, 0x45);
+    	   inb(vgaCRReg);		/* reset stack pointer */
+    	   outb(vgaCRIndex, 0x4B);
+    	   outb(vgaCRReg, packbg);
+    	   outb(vgaCRReg, packbg >> 8);
+	   break;
+	default:
+    	   outb(vgaCRIndex, 0x45);
+    	   inb(vgaCRReg);		/* reset stack pointer */ 
+    	   outb(vgaCRIndex, 0x4A);
+    	   outb(vgaCRReg, (fg & 0x00FF0000) >> 16);
+    	   outb(vgaCRReg, (fg & 0x0000FF00) >> 8);
+    	   outb(vgaCRReg, (fg & 0x000000FF));
+
+    	   outb(vgaCRIndex, 0x45);
+    	   inb(vgaCRReg);		/* reset stack pointer */
+    	   outb(vgaCRIndex, 0x4B);
+    	   outb(vgaCRReg, (bg & 0x00FF0000) >> 16);
+    	   outb(vgaCRReg, (bg & 0x0000FF00) >> 8);
+    	   outb(vgaCRReg, (bg & 0x000000FF));
+	   break;
+    }
 }
 
 
-void
-S3WarpCursor(pScr, x, y)
-     ScreenPtr pScr;
-     int   x, y;
-{
-   if (xf86VTSema) {
-      /* Wait for vertical retrace */
-      S3RetraceWait();
-   }
-   miPointerWarpCursor(pScr, x, y);
-   xf86Info.currentScreen = pScr;
-}
-
-void 
-S3QueryBestSize(class, pwidth, pheight, pScreen)
-     int class;
-     unsigned short *pwidth;
-     unsigned short *pheight;
-     ScreenPtr pScreen;
-{
-   if (*pwidth > 0) {
-      switch (class) {
-         case CursorShape:
-	    if (*pwidth > 64)
-	       *pwidth = 64;
-	    if (*pheight > 64)
-	       *pheight = 64;
-	    break;
-         default:
-	    mfbQueryBestSize(class, pwidth, pheight, pScreen);
-	    break;
-      }
-   }
-}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.26 1997/08/26 10:01:33 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.27 1997/09/09 10:27:50 hohndel Exp $ */
 
 
 
@@ -109,6 +109,11 @@ LOOKUP xfree86LookupTab[] = {
 #endif
 #ifdef DPMSExtension
    SYMFUNC(DPMSSet)
+#endif
+#ifdef XQUEUE
+   SYMFUNC(xf86XqueKbdProc)
+   SYMFUNC(xf86XqueMseProc)
+   SYMFUNC(xf86XqueEvents)
 #endif
 
    SYMFUNC(xf86dactopel)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3BtCursor.c,v 1.1 1997/03/06 23:16:29 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3BtCursor.c,v 1.2 1997/08/26 10:01:22 hohndel Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -45,9 +45,10 @@
 static unsigned short s3BtLowBits[] = { 0x3C8, 0x3C9, 0x3C6, 0x3C7 };
 static unsigned char s3BtYPosMask = 0xFF;
 
-#define MAX_CURS 64
-
-extern Bool tmp_useSWCursor;
+/*
+ * Convert the cursor from server-format to hardware-format.  The Bt485
+ * has two planes, output sequentially.
+ */
 
 #ifndef __GNUC__
 # define __inline__ /**/
@@ -195,78 +196,9 @@ static __inline__ void s3EndBtData()
    outb(vgaCRReg, tmp);
 }
 
-/*
- * Convert the cursor from server-format to hardware-format.  The Bt485
- * has two planes, output sequentially.
- */
-Bool
-s3BtRealizeCursor(pScr, pCurs)
-     ScreenPtr pScr;
-     CursorPtr pCurs;
-{
-   register int i, j;
-   unsigned char *pServMsk;
-   unsigned char *pServSrc;
-   int   index = pScr->myNum;
-   pointer *pPriv = &pCurs->bits->devPriv[index];
-   int   wsrc, h;
-   unsigned char *ram, *plane0, *plane1;
-   CursorBitsPtr bits = pCurs->bits;
-
-   if (bits->height > MAX_CURS || bits->width > MAX_CURS)
-	return FALSE;
-
-   if (pCurs->bits->refcnt > 1)
-      return TRUE;
-
-   ram = (unsigned char *)xalloc(1024);
-   *pPriv = (pointer) ram;
-   plane0 = ram;
-   plane1 = ram+512;
-
-   if (!ram)
-      return FALSE;
-
-   pServSrc = (unsigned char *)bits->source;
-   pServMsk = (unsigned char *)bits->mask;
-
-   h = bits->height;
-   if (h > MAX_CURS)
-      h = MAX_CURS;
-
-   wsrc = PixmapBytePad(bits->width, 1);	/* bytes per line */
-
-   for (i = 0; i < MAX_CURS; i++) {
-      for (j = 0; j < MAX_CURS / 8; j++) {
-	 unsigned char mask, source;
-
-	 if (i < h && j < wsrc) {
-	    source = *pServSrc++;
-	    mask = *pServMsk++;
-
-	    source = s3SwapBits[source];
-	    mask = s3SwapBits[mask];
-
-	    if (j < MAX_CURS / 8) {
-	       *plane0++ = source & mask;
-	       *plane1++ = mask;
-	    }
-	 } else {
-	    *plane0++ = 0x00;
-	    *plane1++ = 0x00;
-	 }
-      }
-      /*
-       * if we still have more bytes on this line (j < wsrc),
-       * we have to ignore the rest of the line.
-       */
-       while (j++ < wsrc) pServMsk++,pServSrc++;
-   }
-   return TRUE;
-}
 
 void 
-s3BtCursorOn()
+s3BtCursorShowCursor()
 {
    unsigned char tmp;
 
@@ -288,11 +220,10 @@ s3BtCursorOn()
    s3OutBtReg(BT_COMMAND_REG_2, 0xFC, 0x03);
 
    LOCK_SYS_REGS;
-   return;
 }
 
 void
-s3BtCursorOff()
+s3BtHideCursor()
 {
    UNLOCK_SYS_REGS;
 
@@ -306,48 +237,23 @@ s3BtCursorOff()
    s3OutBtReg(BT_COMMAND_REG_2, 0xFC, 0x00);
 
    LOCK_SYS_REGS;
-   return;
 }
 
 void
-s3BtMoveCursor(pScr, x, y)
-     ScreenPtr pScr;
-     int   x, y;
+s3BtSetCursorPosition(x, y, xorigin, yorigin)
+     int   x, y, xorigin, yorigin;
 {
-   if (!xf86VTSema)
-      return;
-
-   if (tmp_useSWCursor) {
-      extern miPointerSpriteFuncRec miSpritePointerFuncs;
-      (miSpritePointerFuncs.MoveCursor)(pScr, x, y);
-      return;
-   }
-
-   if (s3BlockCursor)
-      return;
-   
-   x -= vga256InfoRec.frameX0 - s3AdjustCursorXPos;
-   x += 64;
-   x -= s3hotX;
+   x += 64 - xorigin;
    /* Compensate for using Bt485 Cursor without pixel multiplexing. */
    if ((OFLG_ISSET(OPTION_STB_PEGASUS, &vga256InfoRec.options) ||
 	OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &vga256InfoRec.options)) &&
        !s3PixelMultiplexing)
      x -= 2;
 
-   if (x < 0)
-      return;
-
-   y -= vga256InfoRec.frameY0;
-
    if (vga256InfoRec.modes->Flags & V_DBLSCAN)
       y <<= 1;
 
-   y += 64;
-   y -= s3hotY;
-   if (y < 0)
-      return;
-
+   y += 64 - yorigin; 
 
    UNLOCK_SYS_REGS;
 
@@ -362,9 +268,8 @@ s3BtMoveCursor(pScr, x, y)
 }
 
 void
-s3BtRecolorCursor(pScr, pCurs)
-     ScreenPtr pScr;
-     CursorPtr pCurs;
+s3BtSetCursorColors(bg, fg)
+   int bg, fg;
 {
    UNLOCK_SYS_REGS;
 
@@ -373,60 +278,46 @@ s3BtRecolorCursor(pScr, pCurs)
 
    /* Background color */
    if (s3DAC8Bit) {
-      s3OutBtData(BT_CURS_DATA, (pCurs->backRed >> 8) & 0xFF);
-      s3OutBtData(BT_CURS_DATA, (pCurs->backGreen >> 8) & 0xFF);
-      s3OutBtData(BT_CURS_DATA, (pCurs->backBlue >> 8) & 0xFF);
+      s3OutBtData(BT_CURS_DATA, (bg & 0x00FF0000) >> 16);
+      s3OutBtData(BT_CURS_DATA, (bg & 0x0000FF00) >> 8);
+      s3OutBtData(BT_CURS_DATA, (bg & 0x000000FF));
    } else {
-      s3OutBtData(BT_CURS_DATA, (pCurs->backRed >> 10) & 0xFF);
-      s3OutBtData(BT_CURS_DATA, (pCurs->backGreen >> 10) & 0xFF);
-      s3OutBtData(BT_CURS_DATA, (pCurs->backBlue >> 10) & 0xFF);
+      s3OutBtData(BT_CURS_DATA, (bg & 0x00FF0000) >> 18);
+      s3OutBtData(BT_CURS_DATA, (bg & 0x0000FF00) >> 10);
+      s3OutBtData(BT_CURS_DATA, (bg & 0x0000FF00) >> 2);
    }
 
    /* Foreground color */
    if (s3DAC8Bit) {
-      s3OutBtData(BT_CURS_DATA, (pCurs->foreRed >> 8) & 0xFF);
-      s3OutBtData(BT_CURS_DATA, (pCurs->foreGreen >> 8) & 0xFF);
-      s3OutBtData(BT_CURS_DATA, (pCurs->foreBlue >> 8) & 0xFF);
+      s3OutBtData(BT_CURS_DATA, (fg & 0x00FF0000) >> 16);
+      s3OutBtData(BT_CURS_DATA, (fg & 0x0000FF00) >> 8);
+      s3OutBtData(BT_CURS_DATA, (fg & 0x000000FF));
    } else {
-      s3OutBtData(BT_CURS_DATA, (pCurs->foreRed >> 10) & 0xFF);
-      s3OutBtData(BT_CURS_DATA, (pCurs->foreGreen >> 10) & 0xFF);
-      s3OutBtData(BT_CURS_DATA, (pCurs->foreBlue >> 10) & 0xFF);
+      s3OutBtData(BT_CURS_DATA, (fg & 0x00FF0000) >> 18);
+      s3OutBtData(BT_CURS_DATA, (fg & 0x0000FF00) >> 10);
+      s3OutBtData(BT_CURS_DATA, (fg & 0x0000FF00) >> 2);
    }
 
    /* Now clean up */
    s3EndBtData();
 
    LOCK_SYS_REGS;
-   return;
 }
 
 void 
-s3BtLoadCursor(pScr, pCurs, x, y)
-     ScreenPtr pScr;
-     CursorPtr pCurs;
-     int x, y;
+s3BtLoadCursorImage(bits, xorigin, yorigin)
+   unsigned char *bits;
+   int xorigin, yorigin;
 {
-   int   index = pScr->myNum;
    register int   i, j;
-   unsigned char *ram, *p, tmpcurs;
+   unsigned char *p, tmpcurs;
 
-   if (!xf86VTSema)
-      return;
-
-   if (!pCurs)
-      return;
 
    /* turn the cursor off */
    if ((tmpcurs = s3InBtReg(BT_COMMAND_REG_2)) & 0x03)
-      s3BtCursorOff();
-
-   /* load colormap */
-   s3BtRecolorCursor(pScr, pCurs);
-
-   ram = (unsigned char *)pCurs->bits->devPriv[index];
+      s3BtHideCursor();
 
    UNLOCK_SYS_REGS;
-   BLOCK_CURSOR;
 
    /* 
     * Bit 2 == 1 ==> 64x64 cursor; 2 low-order bits are extensions to the
@@ -439,14 +330,14 @@ s3BtLoadCursor(pScr, pCurs, x, y)
       s3StartBtData(BT_WRITE_ADDR, 0x00, BT_CURS_RAM_DATA);
 
       for (i=0; i < 64; i++) {		/* 64 rows in cursor */
-	 p = ram + (((i % 2) ? i-1 : i+1)*8);
+	 p = bits + (((i % 2) ? i-1 : i+1)*8);
 	 for (j=0; j < 8; j++,p++) {	/* 8 bytes per row */
             s3OutBtData(BT_CURS_RAM_DATA, *p);
 	 }
       }
-      ram += 512;
+      bits += 512;
       for (i=0; i < 64; i++) {		/* 64 rows in cursor */
-	 p = ram + (((i % 2) ? i-1 : i+1)*8);
+	 p = bits + (((i % 2) ? i-1 : i+1)*8);
 	 for (j=0; j < 8; j++,p++) {	/* 8 bytes per row */
             s3OutBtData(BT_CURS_RAM_DATA, *p);
 	 }
@@ -460,22 +351,22 @@ s3BtLoadCursor(pScr, pCurs, x, y)
       s3StartBtData(BT_WRITE_ADDR, 0x00, BT_CURS_RAM_DATA);
 
       for (i=0; i < 32; i++) {		/* 64 rows in cursor */
-	 p = ram + i * 8;
+	 p = bits + i * 8;
 	 for (j=0; j < 8; j++,p++) {	/* 8 bytes per row */
             s3OutBtData(BT_CURS_RAM_DATA, *p);
 	 }
-	 p = ram + i * 8;
+	 p = bits + i * 8;
 	 for (j=0; j < 8; j++,p++) {	/* 8 bytes per row */
             s3OutBtData(BT_CURS_RAM_DATA, *p);
 	 }
       }
-      ram += 512;
+      bits += 512;
       for (i=0; i < 32; i++) {		/* 64 rows in cursor */
-	 p = ram + i * 8;
+	 p = bits + i * 8;
 	 for (j=0; j < 8; j++,p++) {	/* 8 bytes per row */
             s3OutBtData(BT_CURS_RAM_DATA, *p);
 	 }
-	 p = ram + i * 8;
+	 p = bits + i * 8;
 	 for (j=0; j < 8; j++,p++) {	/* 8 bytes per row */
             s3OutBtData(BT_CURS_RAM_DATA, *p);
 	 }
@@ -489,13 +380,8 @@ s3BtLoadCursor(pScr, pCurs, x, y)
       /* Start data output */
       s3StartBtData(BT_WRITE_ADDR, 0x00, BT_CURS_RAM_DATA);
 
-      /* 
-       * Output the cursor data.  The realize function has put the planes into
-       * their correct order, so we can just blast this out.
-       */
-      p = ram;
-      for (i = 0; i < 1024; i++,p++)
-         s3OutBtData(BT_CURS_RAM_DATA, *p);
+      for (i = 0; i < 1024; i++)
+         s3OutBtData(BT_CURS_RAM_DATA, *bits++);
 
       s3EndBtData();
 
@@ -503,18 +389,9 @@ s3BtLoadCursor(pScr, pCurs, x, y)
       s3OutBtReg(BT_COMMAND_REG_2, 0xF7, 0x00);
    }
 
-   UNBLOCK_CURSOR;
    LOCK_SYS_REGS;
 
-   /* position cursor */
-   s3BtMoveCursor(0, x, y);
-
    /* turn the cursor on */
-   if ((tmpcurs & 0x03) || s3InitCursorFlag)
-      s3BtCursorOn();
-
-   if (s3InitCursorFlag)
-      s3InitCursorFlag = FALSE;
-
-   return;
+   if (tmpcurs & 0x03)
+      s3BtShowCursor();
 }

@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.47 1997/08/26 10:01:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.48 1997/09/25 07:31:14 hohndel Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -897,7 +897,7 @@ struct pci_vendor_device {
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1281, "YOKOGAWA", {
                             { 0x0000, (char *)NULL, NF } } },
-        { 0x1C1C, "NVIDIA/SGS-Thomson", {
+        { 0x12d2, "NVIDIA/SGS-Thomson", {
                             { 0x0018, "RIVA 128", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1C1C, "Symphony", {

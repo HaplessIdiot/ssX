@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.22 1997/02/14 10:29:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.23 1997/02/25 14:19:44 hohndel Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -24,6 +24,7 @@
 #include <X11/Xtrans.h>
 #include "../os/osdep.h"
 #include <X11/Xauth.h>
+#ifndef USL
 #ifndef ESIX
 #ifndef Lynx
 #include <sys/socket.h>
@@ -33,6 +34,7 @@
 #else
 #include <lan/socket.h>
 #endif
+#endif /* USL */
 
 #include "swaprep.h"
 

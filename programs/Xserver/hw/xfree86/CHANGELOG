@@ -1,4 +1,13 @@
 XFree86 3.9r (25 September 1997)
+1284. XAA hw cursor support for s3/svga. IBM cursor works, other RAMDAC
+      cursors need to be implemented/verified. S3 builtin curser seems
+      to work in 8bpp, but fails in other depths (#992, Mark Vojkovich).
+1283. Some fixes for Unixware 2.1.2 (#989, Steve Forsythe).
+1282. Fix the remaining line drawing problems for the CL-GD5428 and CL-GD754x 
+      chips (#985, Corin Anderson).
+1281. Fix build problem (982, Takaaki Nomura).
+1280. Add more acceleration for Permedia and remove Trapezoid bug in 500TX
+      support of glint server (Helmut Fahrion).
 1279. Build fixes for XAA hw cursor and updates to glint XAA hw cursor (#983,
       984, Alan Hourihane).
 1278. Better color depth support and cleanups for glint server (Helmut Fahrion).
@@ -5379,4 +5388,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.530 1997/09/19 11:24:34 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.531 1997/09/25 07:31:08 hohndel Exp $

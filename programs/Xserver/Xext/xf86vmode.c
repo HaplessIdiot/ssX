@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.35 1997/06/11 12:24:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.36 1997/07/06 12:08:35 dawes Exp $ */
 
 /*
 
@@ -48,6 +48,7 @@ from Kaleb S. KEITHLEY
 #include <X11/Xtrans.h>
 #include "../os/osdep.h"
 #include <X11/Xauth.h>
+#ifndef USL
 #ifndef ESIX
 #ifndef Lynx
 #include <sys/socket.h>
@@ -57,6 +58,7 @@ from Kaleb S. KEITHLEY
 #else
 #include <lan/socket.h>
 #endif
+#endif /* USL */
 
 #include "swaprep.h"
 

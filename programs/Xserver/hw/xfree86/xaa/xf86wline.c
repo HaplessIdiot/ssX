@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86wline.c,v 1.2 1997/08/26 11:57:24 hohndel Exp $ */
 /*
 
 xf86WideLine does not maintain a span list and subsequently does not
@@ -31,6 +31,10 @@ ICEILTEMPDECL
 #include "xf86xaa.h"
 #include "xf86local.h"
 #include "xf86_ansic.h"
+
+#ifndef XFree86LOADER
+extern double xf86sqrt(double);
+#endif
 
 static int LeftClip, RightClip, TopClip, BottomClip;
 
