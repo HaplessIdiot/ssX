@@ -10,4 +10,3 @@ bin/xdm
 bin/xmseconfig
 bin/*.Xaw3d
 bin/*.XawXPM
-lib/X11/app-defaults/Chooser
