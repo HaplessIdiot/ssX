@@ -13,7 +13,7 @@
  @end
 
 ***************************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/HALlib/binding.h,v 1.2 2000/09/26 15:57:12 tsi Exp $ */
 
 #ifndef _BINDING
 #define _BINDING
@@ -159,6 +159,8 @@ typedef struct TAGMGAHWINFO {
  @field IN OUT ULONG | ulDstOrg          | Origin of the drawing Offset in the frame (pixels)
  @field IN OUT ULONG | ulPanXGran        | Panning in X granularity in pixel
  @field IN OUT ULONG | ulPanYGran        | Panning in Y granularity in pixel
+ @field IN OUT ULONG | ulTVStandard      | TV Standard
+ @field IN OUT ULONG | ulCableType       | Cable Type
  @end                            
  **************************************************************************************************/
 typedef struct TAGMAGMODEINFO {
@@ -184,6 +186,8 @@ typedef struct TAGMAGMODEINFO {
     ULONG   ulDstOrg;           /* Origin of the drawing Offset in the frame (bytes)        */
     ULONG   ulPanXGran;         /* Panning in X granularity in pixel                        */
     ULONG   ulPanYGran;         /* Panning in Y granularity in pixel                        */
+    ULONG   ulTVStandard;       /* TV Standard                                              */
+    ULONG   ulCableType;        /* Cable Type                                               */
 } MGAMODEINFO, FAR *LPMGAMODEINFO;
 
 #define MGAHWINFOCAPS_CRTC1_ANALOG          1L      
@@ -205,7 +209,19 @@ typedef struct TAGMAGMODEINFO {
 #define MGAMODEINFO_DIGITAL2           (1L << 4) 
 #define MGAMODEINFO_FORCE_PITCH        (1L << 5) 
 #define MGAMODEINFO_FORCE_DISPLAYORG   (1L << 6) 
+#define MGAMODEINFO_TV                 (1L << 7)
 #define MGAMODEINFO_TESTONLY           0x80000000
+
+/* Cable Type */
+#define TV_YC_COMPOSITE                 0
+#define TV_SCART_RGB                    1
+#define TV_SCART_COMPOSITE              2
+#define TV_SCART_TYPE2                  3
+
+/* TV Standard */
+
+#define TV_PAL                          0
+#define TV_NTSC                         1
 
 #if defined(__cplusplus)
     extern "C" {
@@ -225,6 +241,8 @@ ULONG MGAGetHardwareInfo(LPBOARDHANDLE pBoard, LPMGAHWINFO pMgaHwInfo);
 LPVOID MGAGetClientPointer(LPBOARDHANDLE pBoard);
 ULONG MGAOpenLibrary(LPBOARDHANDLE pBoard, LPVOID lpClient, ULONG ulClientSize);
 ULONG MGAGetBOARDHANDLESize(void);
+ULONG MGASetTVStandard(LPBOARDHANDLE pBoard, ULONG ulTVStandard);
+ULONG MGASetTVCableType(LPBOARDHANDLE pBoard, ULONG ulCableType);
 
 #if defined(__cplusplus)
     }

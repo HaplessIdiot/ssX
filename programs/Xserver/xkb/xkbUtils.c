@@ -1,5 +1,5 @@
 /* $XConsortium: xkbUtils.c /main/24 1996/09/28 17:16:26 rws $ */
-/* $XFree86: xc/programs/Xserver/xkb/xkbUtils.c,v 3.9 1996/12/23 07:10:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbUtils.c,v 3.10 1997/07/10 08:17:47 hohndel Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -855,7 +855,7 @@ XkbComputeDerivedState(xkbi)
 {
 XkbStatePtr	state= &xkbi->state;
 XkbControlsPtr	ctrls= xkbi->desc->ctrls;
-unsigned	grp;
+char		grp;
 
     state->mods= (state->base_mods|state->latched_mods);
     state->mods|= state->locked_mods;
@@ -866,11 +866,11 @@ unsigned	grp;
 
 
     grp= state->locked_group;
-    if (grp>=ctrls->num_groups)
+    if ((grp>=ctrls->num_groups) || (grp<0))
 	state->locked_group= XkbAdjustGroup(grp,ctrls);
 
     grp= state->locked_group+state->base_group+state->latched_group;
-    if (grp>=ctrls->num_groups)
+    if ((grp>=ctrls->num_groups) || (grp<0))
 	 state->group= XkbAdjustGroup(grp,ctrls);
     else state->group= grp;
     XkbComputeCompatState(xkbi);

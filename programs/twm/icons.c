@@ -18,7 +18,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  * */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/twm/icons.c,v 1.3 1999/02/20 15:07:23 hohndel Exp $ */
 
 /**********************************************************************
  *
@@ -491,7 +491,7 @@ CreateIconWindow(tmp_win, def_x, def_y)
 	attributes.background_pixmap = pm;
     }
 
-    tmp_win->icon_w_width = XTextWidth(Scr->IconFont.font,
+    tmp_win->icon_w_width = MyFont_TextWidth(&Scr->IconFont,
 	tmp_win->icon_name, strlen(tmp_win->icon_name));
 
     tmp_win->icon_w_width += 6;

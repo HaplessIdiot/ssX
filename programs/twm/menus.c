@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/menus.c,v 1.5 1998/10/04 09:40:39 dawes Exp $ */
+/* $XFree86: xc/programs/twm/menus.c,v 1.7 2000/10/03 22:39:30 keithp Exp $ */
 /*****************************************************************************/
 /*
 
@@ -403,9 +403,9 @@ int exposure;
 	    XFillRectangle(dpy, mr->w, Scr->NormalGC, 0, y_offset,
 		mr->width, Scr->EntryHeight);
 
-	    FBF(mi->hi_fore, mi->hi_back, Scr->MenuFont.font->fid);
+	    MyFont_ChangeGC(mi->hi_fore, mi->hi_back, &Scr->MenuFont);
 
-	    XDrawString(dpy, mr->w, Scr->NormalGC, mi->x,
+	    MyFont_DrawString(dpy, mr->w, &Scr->MenuFont, Scr->NormalGC, mi->x,
 		text_y, mi->item, mi->strlen);
 
 	    gc = Scr->NormalGC;
@@ -419,14 +419,15 @@ int exposure;
 		XFillRectangle(dpy, mr->w, Scr->NormalGC, 0, y_offset,
 		    mr->width, Scr->EntryHeight);
 
-		FBF(mi->fore, mi->back, Scr->MenuFont.font->fid);
+		MyFont_ChangeGC(mi->fore, mi->back, &Scr->MenuFont);
 		gc = Scr->NormalGC;
 	    }
 	    else
 		gc = Scr->MenuGC;
 
-	    XDrawString(dpy, mr->w, gc, mi->x,
-		text_y, mi->item, mi->strlen);
+	    MyFont_DrawString(dpy, mr->w, &Scr->MenuFont, gc, 
+		    mi->x, text_y, mi->item, mi->strlen);
+
 	}
 
 	if (mi->func == F_MENU)
@@ -463,9 +464,9 @@ int exposure;
 	    XDrawLine(dpy, mr->w, Scr->NormalGC, 0, y, mr->width, y);
 	}
 
-	FBF(mi->fore, mi->back, Scr->MenuFont.font->fid);
+	MyFont_ChangeGC(mi->fore, mi->back, &Scr->MenuFont);
 	/* finally render the title */
-	XDrawString(dpy, mr->w, Scr->NormalGC, mi->x,
+	MyFont_DrawString(dpy, mr->w, &Scr->MenuFont, Scr->NormalGC, mi->x,
 	    text_y, mi->item, mi->strlen);
     }
 }
@@ -756,7 +757,7 @@ AddToMenu(menu, item, action, sub, func, fore, back)
     tmp->func = func;
 
     if (!Scr->HaveFonts) CreateFonts();
-    width = XTextWidth(Scr->MenuFont.font, item, tmp->strlen);
+    width = MyFont_TextWidth(&Scr->MenuFont, item, tmp->strlen);
     if (width <= 0)
 	width = 1;
     if (width > menu->width)
@@ -834,7 +835,7 @@ MenuRoot *mr;
 		cur->x = 5;
 	    else
 	    {
-		cur->x = width - XTextWidth(Scr->MenuFont.font, cur->item,
+		cur->x = width - MyFont_TextWidth(&Scr->MenuFont, cur->item,
 		    cur->strlen);
 		cur->x /= 2;
 	    }
@@ -1253,8 +1254,8 @@ resizeFromCenter(w, tmp_win)
   bw2 = tmp_win->frame_bw * 2;
   AddingW = tmp_win->attr.width + bw2;
   AddingH = tmp_win->attr.height + tmp_win->title_height + bw2;
-  width = (SIZE_HINDENT + XTextWidth (Scr->SizeFont.font,
-				      tmp_win->name, namelen));
+  width = (SIZE_HINDENT + MyFont_TextWidth (&Scr->SizeFont,
+					     tmp_win->name, namelen));
   height = Scr->SizeFont.height + SIZE_VINDENT * 2;
   XGetGeometry(dpy, w, &JunkRoot, &origDragX, &origDragY,
 	       (unsigned int *)&DragWidth, (unsigned int *)&DragHeight, 
@@ -1266,11 +1267,11 @@ resizeFromCenter(w, tmp_win)
 		 &AddingX, &AddingY, &JunkMask);
 /*****
   Scr->SizeStringOffset = width +
-    XTextWidth(Scr->SizeFont.font, ": ", 2);
+    MyFont_TextWidth(&Scr->SizeFont, ": ", 2);
   XResizeWindow (dpy, Scr->SizeWindow, Scr->SizeStringOffset +
 		 Scr->SizeStringWidth, height);
-  XDrawImageString (dpy, Scr->SizeWindow, Scr->NormalGC, width,
-		    SIZE_VINDENT + Scr->SizeFont.font->ascent,
+  MyFont_DrawImageString (dpy, Scr->SizeWindow, &Scr->SizeFont, Scr->NormalGC,
+		    width, SIZE_VINDENT + Scr->SizeFont.ascent,
 		    ": ", 2);
 *****/
   lastx = -10000;
@@ -2745,7 +2746,7 @@ Identify (t)
     width = 1;
     for (i = 0; i < n; i++)
     {
-	twidth = XTextWidth(Scr->DefaultFont.font, Info[i],
+	twidth = MyFont_TextWidth(&Scr->DefaultFont, Info[i], 
 	    strlen(Info[i]));
 	if (twidth > width)
 	    width = twidth;

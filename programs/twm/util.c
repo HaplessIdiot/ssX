@@ -44,7 +44,7 @@ in this Software without prior written authorization from The Open Group.
 /**    TORTIOUS ACTION, ARISING OUT OF OR IN  CONNECTION  WITH  THE  USE    **/
 /**    OR PERFORMANCE OF THIS SOFTWARE.                                     **/
 /*****************************************************************************/
-/* $XFree86: xc/programs/twm/util.c,v 1.3 1999/02/20 15:07:25 hohndel Exp $ */
+/* $XFree86: xc/programs/twm/util.c,v 1.4 1999/02/25 06:01:04 dawes Exp $ */
 
 
 /***********************************************************************
@@ -619,11 +619,68 @@ char *name;
     }
 }
 
+/* 
+ * The following functions are sensible to 'use_fontset'.
+ * When 'use_fontset' is True,
+ *  - XFontSet-related internationalized functions are used
+ *     so as multibyte languages can be displayed.
+ * When 'use_fontset' is False,
+ *  - XFontStruct-related conventional functions are used
+ *     so as 8-bit characters can be displayed even when
+ *     locale is not set properly.
+ */
 void
 GetFont(font)
 MyFont *font;
 {
     char *deffontname = "fixed";
+    char **missing_charset_list_return;
+    int missing_charset_count_return;
+    char *def_string_return;
+    XFontSetExtents *font_extents;
+    XFontStruct **xfonts;
+    char **font_names;
+    register int i;
+    int ascent;
+    int descent;
+    int fnum;
+    char *basename2;
+
+    if (use_fontset) {
+	if (font->fontset != NULL){
+	    XFreeFontSet(dpy, font->fontset);
+	}
+
+	basename2 = (char *)malloc(strlen(font->name) + 3);
+	if (basename2) sprintf(basename2, "%s,*", font->name);
+	else basename2 = font->name;
+	if( (font->fontset = XCreateFontSet(dpy, basename2,
+					    &missing_charset_list_return,
+					    &missing_charset_count_return,
+					    &def_string_return)) == NULL) {
+	    fprintf (stderr, "%s:  unable to open fontset \"%s\"\n",
+			 ProgramName, font->name);
+	    exit(1);
+	}
+	if (basename2 != font->name) free(basename2);
+	for(i=0; i<missing_charset_count_return; i++){
+	    printf("%s: warning: font for charset %s is lacking.\n",
+		   ProgramName, missing_charset_list_return[i]);
+	}
+
+	font_extents = XExtentsOfFontSet(font->fontset);
+	fnum = XFontsOfFontSet(font->fontset, &xfonts, &font_names);
+	for( i = 0, ascent = 0, descent = 0; i<fnum; i++){
+	    if (ascent < (*xfonts)->ascent) ascent = (*xfonts)->ascent;
+	    if (descent < (*xfonts)->descent) descent = (*xfonts)->descent;
+	    xfonts++;
+	}
+	font->height = font_extents->max_logical_extent.height;
+	font->y = ascent;
+	font->ascent = ascent;
+	font->descent = descent;
+	return;
+    }
 
     if (font->font != NULL)
 	XFreeFont(dpy, font->font);
@@ -643,8 +700,139 @@ MyFont *font;
     }
     font->height = font->font->ascent + font->font->descent;
     font->y = font->font->ascent;
+    font->ascent = font->font->ascent;
+    font->descent = font->font->descent;
 }
 
+int
+MyFont_TextWidth(font, string, len)
+    MyFont *font;
+    char *string;
+    int len;
+{
+    XRectangle ink_rect;
+    XRectangle logical_rect;
+
+    if (use_fontset) {
+	XmbTextExtents(font->fontset, string, len,
+		       &ink_rect, &logical_rect);
+	return logical_rect.width;
+    }
+    return XTextWidth(font->font, string, len);
+}
+
+void
+MyFont_DrawImageString(dpy, d, font, gc, x, y, string, len)
+    Display *dpy;
+    Drawable d;
+    MyFont *font;
+    GC gc;
+    int x,y;
+    char *string;
+    int len;
+{
+    if (use_fontset) {
+	XmbDrawImageString(dpy, d, font->fontset, gc, x, y, string, len);
+	return;
+    }
+    XDrawImageString (dpy, d, gc, x, y, string, len);
+}
+
+void
+MyFont_DrawString(dpy, d, font, gc, x, y, string, len)
+    Display *dpy;
+    Drawable d;
+    MyFont *font;
+    GC gc;
+    int x,y;
+    char *string;
+    int len;
+{
+    if (use_fontset) {
+	XmbDrawString(dpy, d, font->fontset, gc, x, y, string, len);
+	return;
+    }
+    XDrawString (dpy, d, gc, x, y, string, len);
+}
+
+void
+MyFont_ChangeGC(fix_fore, fix_back, fix_font)
+    unsigned long fix_fore, fix_back;
+    MyFont *fix_font;
+{
+    Gcv.foreground = fix_fore;
+    Gcv.background = fix_back;
+    if (use_fontset) {
+	XChangeGC(dpy, Scr->NormalGC, GCForeground|GCBackground, &Gcv);
+	return;
+    }
+    Gcv.font = fix_font->font->fid;
+    XChangeGC(dpy, Scr->NormalGC, GCFont|GCForeground|GCBackground,&Gcv);
+}
+
+/*
+ * The following functions are internationalized substitutions
+ * for XFetchName and XGetIconName using XGetWMName and
+ * XGetWMIconName.  
+ *
+ * Please note that the third arguments have to be freed using free(), 
+ * not XFree().
+ */
+Status
+I18N_FetchName(dpy, w, winname)
+    Display *dpy;
+    Window w;
+    char ** winname;
+{
+    int    status;
+    XTextProperty text_prop;
+
+    status = XGetWMName(dpy, w, &text_prop);
+    if (!status || !text_prop.value || !text_prop.nitems) return 0;
+    if (text_prop.encoding == XA_STRING) {
+	if (!text_prop.value) {*winname = NULL; return 0;}
+	*winname = (char *)strdup(text_prop.value);
+	XFree(text_prop.value);
+	return 1;
+    } else {
+	char **list;
+	int    num;
+	status = XmbTextPropertyToTextList(dpy, &text_prop, &list, &num);
+	if (!num || !*list) return 0;
+	XFree(text_prop.value);
+	*winname = (char *)strdup(*list);
+	XFreeStringList(list);
+	return 1;
+    }
+}
+
+Status
+I18N_GetIconName(dpy, w, iconname)
+    Display *dpy;
+    Window w;
+    char ** iconname;
+{
+    int    status;
+    XTextProperty text_prop;
+	
+    status = XGetWMIconName(dpy, w, &text_prop);
+    if (!status || !text_prop.value || !text_prop.nitems) return 0;
+    if (text_prop.encoding == XA_STRING) {
+	if (!text_prop.value) {*iconname = NULL; return 0;}
+	*iconname = (char *)strdup(text_prop.value);
+	XFree(text_prop.value);
+	return 1;
+    } else {
+	char **list;
+	int    num;
+	status = XmbTextPropertyToTextList(dpy, &text_prop, &list, &num);
+	if (!num || !*list) return 0;
+	XFree(text_prop.value);
+	*iconname = (char *)strdup(*list);
+	XFreeStringList(list);
+	return 1;
+    }
+}
 
 /*
  * SetFocus - separate routine to set focus to make things more understandable

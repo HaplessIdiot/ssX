@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.7 2000/08/25 13:42:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.8 2000/09/24 13:51:28 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -357,7 +357,7 @@ Bool MGADRIScreenInit(ScreenPtr pScreen)
    if (!xf86LoaderCheckSymbol("drmAvailable"))        return FALSE;
    if (!xf86LoaderCheckSymbol("DRIQueryVersion")) {
       xf86DrvMsg(pScreen->myNum, X_ERROR,
-                 "TDFXDRIScreenInit failed (libdri.a too old)\n");
+                 "MGADRIScreenInit failed (libdri.a too old)\n");
       return FALSE;
    }
      

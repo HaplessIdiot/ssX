@@ -44,7 +44,7 @@ in this Software without prior written authorization from The Open Group.
 /**    TORTIOUS ACTION, ARISING OUT OF OR IN  CONNECTION  WITH  THE  USE    **/
 /**    OR PERFORMANCE OF THIS SOFTWARE.                                     **/
 /*****************************************************************************/
-/* $XFree86: $ */
+/* $XFree86: xc/programs/twm/gc.c,v 1.3 1999/02/20 15:07:22 hohndel Exp $ */
 
 
 /**********************************************************************
@@ -97,7 +97,8 @@ CreateGCs()
     gcm = 0;
     gcm |= GCForeground;    gcv.foreground = Scr->MenuC.fore;
     gcm |= GCBackground;    gcv.background = Scr->MenuC.back;
-    gcm |= GCFont;	    gcv.font =  Scr->MenuFont.font->fid;
+    if (!use_fontset)
+	{gcm |= GCFont;	    gcv.font =  Scr->MenuFont.font->fid;}
 
     Scr->MenuGC = XCreateGC(dpy, Scr->Root, gcm, &gcv);
 

@@ -44,7 +44,7 @@ in this Software without prior written authorization from The Open Group.
 /**    TORTIOUS ACTION, ARISING OUT OF OR IN  CONNECTION  WITH  THE  USE    **/
 /**    OR PERFORMANCE OF THIS SOFTWARE.                                     **/
 /*****************************************************************************/
-/* $XFree86: xc/programs/twm/util.h,v 1.3 1999/02/20 15:07:26 hohndel Exp $ */
+/* $XFree86: xc/programs/twm/util.h,v 1.4 1999/02/25 06:01:04 dawes Exp $ */
 
 
 /***********************************************************************
@@ -75,6 +75,16 @@ extern void LocateStandardColormaps ( void );
 extern void GetColor ( int kind, Pixel *what, char *name );
 extern void GetColorValue ( int kind, XColor *what, char *name );
 extern void GetFont ( MyFont *font );
+extern int MyFont_TextWidth( MyFont *font, char *string, int len);
+extern void MyFont_DrawImageString( Display *dpy, Drawable d, MyFont *font, 
+				    GC gc, int x, int y, char * string, 
+				    int len);
+extern void MyFont_DrawString( Display *dpy, Drawable d, MyFont *font, 
+			       GC gc, int x, int y, char * string, int len);
+extern void MyFont_ChangeGC( unsigned long fix_fore, unsigned long fix_back, 
+			     MyFont *fix_font);
+extern Status I18N_FetchName( Display *dpy, Window win, char **winname);
+extern Status I18N_GetIconName( Display *dpy, Window win, char **iconname);
 extern void SetFocus ( TwmWindow *tmp_win, Time time );
 extern void Bell ( int type, int percent, Window win );
 

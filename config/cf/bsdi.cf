@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: bsdi.cf /main/22 1996/09/28 16:09:30 rws $
-XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.30 2000/06/30 17:15:05 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.31 2000/08/01 23:38:45 dawes Exp $
 
 #ifndef OSName
 #define OSName		DefaultOSName
@@ -103,6 +103,8 @@ XCOMM xf86site.def
 #define HasWChar32      YES
 #define DirFailPrefix -
 #define AvoidNullMakeCommand YES
+#define HasVarRun       YES
+#define HasVarDb        YES
 
 # ifndef GccUsesGas
 #  define GccUsesGas    YES
@@ -119,6 +121,20 @@ XCOMM xf86site.def
 # define GccGasOption -DGCCUSESGAS
 #else
 # define GccGasOption /**/
+#endif
+
+/*
+ * Build a threaded X server on 4.1 and newer systems
+ */
+#if (OSMajorVersion == 4 && OSMinorVersion >= 1) || (OSMajorVersion > 4)
+#define HasPosixThreads         YES     /* this will autodefine HasThreadedX */
+#define HasThreadSafeAPI        YES
+XCOMM math.h uses _REENTRANT in FreeBSD, so we define it here too
+#define SystemMTDefines         -D_REENTRANT -D_THREAD_SAFE
+/*
+ * Heck, build a server that can load modules too...
+ */
+#define DoLoadableServer        YES
 #endif
 
 #ifdef i386Architecture

@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/include/bitmap.h,v 1.6 1999/07/17 05:30:46 dawes Exp $ */
+/* $XFree86: xc/lib/font/include/bitmap.h,v 1.7 1999/08/01 07:56:57 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -68,7 +68,7 @@ typedef struct _BitmapFont {
 #define ACCESSENCODING(enc,i) \
 (enc[(i)/BITMAP_FONT_SEGMENT_SIZE]?\
 (enc[(i)/BITMAP_FONT_SEGMENT_SIZE][(i)%BITMAP_FONT_SEGMENT_SIZE]):\
-NULL)
+0)
 #define ACCESSENCODINGL(enc,i) \
 (enc[(i)/BITMAP_FONT_SEGMENT_SIZE][(i)%BITMAP_FONT_SEGMENT_SIZE])
 

@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.16 2000/09/17 01:36:27 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.17 2000/09/26 15:57:11 tsi Exp $ */
 
 /*
  * Authors:
@@ -311,6 +311,14 @@ extern void I810InitVideo(ScreenPtr pScreen);
     OUTREG(LP_RING + RING_TAIL, outring);	\
 }
 
+#ifdef __GNUC__
+#define LP_RING_MESSAGE(n) \
+   ErrorF("BEGIN_LP_RING %d in %s\n", n, __FUNCTION__)
+#else
+#define LP_RING_MESSAGE(n) \
+   ErrorF("BEGIN_LP_RING %d in %s:%d\n", n, __FILE__, __LINE__)
+#endif
+
 #define BEGIN_LP_RING(n)						\
    unsigned int outring, ringmask;					\
    volatile unsigned char *virt;							\
@@ -318,7 +326,7 @@ extern void I810InitVideo(ScreenPtr pScreen);
    if (pI810->LpRing.space < n*4) I810WaitLpRing( pScrn, n*4, 0);	\
    pI810->LpRing.space -= n*4;						\
    if (I810_DEBUG & DEBUG_VERBOSE_RING) 				\
-      ErrorF( "BEGIN_LP_RING %d in %s\n", n, __FUNCTION__);		\
+      LP_RING_MESSAGE(n);						\
    outring = pI810->LpRing.tail;					\
    ringmask = pI810->LpRing.tail_mask;					\
    virt = pI810->LpRing.virtual_start;			

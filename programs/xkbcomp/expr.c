@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/expr.c,v 3.2 1996/08/26 15:01:40 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/expr.c,v 3.3 1997/10/26 13:25:28 dawes Exp $ */
 
 #include "xkbcomp.h"
 #include "tokens.h"
@@ -960,6 +960,8 @@ ExprResolveEnum(expr,val_rtrn,values)
 	while (values && values->name) {
 	    if (nOut!=0)	INFO1(", %s",values->name);
 	    else		INFO1("%s",values->name);
+	    values++;
+	    nOut++;
 	}
 	INFO(")\n");
 	return False;

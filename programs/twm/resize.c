@@ -56,7 +56,7 @@ in this Software without prior written authorization from The Open Group.
  *
  ***********************************************************************/
 
-/* $XFree86: xc/programs/twm/resize.c,v 1.4 1998/10/04 09:40:40 dawes Exp $ */
+/* $XFree86: xc/programs/twm/resize.c,v 1.5 1999/02/19 21:27:30 hohndel Exp $ */
 
 #include <stdio.h>
 #include "twm.h"
@@ -553,11 +553,11 @@ int height;
 
     (void) sprintf (str, " %4d x %-4d ", dwidth, dheight);
     XRaiseWindow(dpy, Scr->SizeWindow);
-    FBF(Scr->DefaultC.fore, Scr->DefaultC.back, Scr->SizeFont.font->fid);
-    XDrawImageString (dpy, Scr->SizeWindow, Scr->NormalGC,
-		      Scr->SizeStringOffset,
-		      Scr->SizeFont.font->ascent + SIZE_VINDENT,
-		      str, 13);
+    MyFont_ChangeGC(Scr->DefaultC.fore, Scr->DefaultC.back, &Scr->SizeFont);
+    MyFont_DrawImageString (dpy, Scr->SizeWindow, &Scr->SizeFont, 
+			    Scr->NormalGC, Scr->SizeStringOffset,
+			    Scr->SizeFont.ascent + SIZE_VINDENT,
+			    str, 13);
 }
 
 /***********************************************************************
