@@ -2,7 +2,7 @@
  * O/S-dependent (mis)feature macro definitions
  *
  * $XConsortium: Xosdefs.h,v 1.13 94/04/17 20:10:51 rws Exp $
- * $XFree86: xc/include/Xosdefs.h,v 3.2 1994/08/01 12:01:14 dawes Exp $
+ * $XFree86: xc/include/Xosdefs.h,v 3.3 1994/10/20 06:01:52 dawes Exp $
  *
 Copyright (c) 1991  X Consortium
 
@@ -111,7 +111,7 @@ in this Software without prior written authorization from the X Consortium.
 #define X_NOT_STDC_ENV
 #endif
 
-#ifdef MINIX
+#if defined(MINIX) || defined(WIN32)
 #define X_NO_SYS_PARAM
 #endif
 

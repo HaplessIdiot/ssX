@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.26 1994/10/23 12:58:41 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.27 1994/10/29 22:37:13 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1948,7 +1948,7 @@ MonPtr monp;
         case TT_NCSYNC:    pNew->Flags |= V_NCSYNC;     break;
         case TT_DBLSCAN:   pNew->Flags |= V_DBLSCAN;    break;
         default:
-          configError("bug found in config reader"); break;
+          configError("Unknown flag string"); break;
         }
         token = getToken(NULL);
       }

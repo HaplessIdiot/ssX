@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.0 1994/05/14 06:50:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.1 1994/08/31 04:19:41 dawes Exp $ */
 
 #include "Probe.h"
 #include "PatchLevel.h"
@@ -33,7 +33,7 @@
 char MyName[20];
 Word vgaIOBase;
 Bool Verbose = FALSE;
-Byte Chip_data = 0xFF;
+Long Chip_data = (Long)~0;
 Byte *Bios_Base = (Byte *)0;
 Bool NoBIOS = FALSE;
 

@@ -1,6 +1,6 @@
 .\" $XConsortium: XF86_Acc.man,v 1.3 94/04/11 16:03:08 matt Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.15 1994/09/27 10:27:15 dawes Exp $
-.TH XF86_Accel 1 "Version 3.1"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.16 1994/09/27 14:18:16 dawes Exp $
+.TH XF86_Accel 1 "Version 3.1.1"  "XFree86"
 .SH NAME
 XF86_Accel - accelerated X Window System servers for
 UNIX on x86 platforms with an S3, Mach8, Mach32, P9000, AGX, ET4000/W32
@@ -286,8 +286,11 @@ if the server fails to detect the Bt485.
 either if the server fails to detect the 20C505, or if the card has a Bt485
 RAMDAC and there are problems using clocks higher than 67.5Mhz.
 .sp
-\fBatt20c498\fP - (S3) Card has an AT&T 20C498 RAMDAC.  This must be specified
-if the server fails to detect it.
+\fBatt20c498\fP - (S3) Card has an AT&T 20C498 or 21C498 RAMDAC.
+This must be specified if the server fails to detect it.
+.sp
+\fBatt22c498\fP - (S3) Card has an AT&T 22C498 RAMDAC.
+This must be specified if the server fails to detect it.
 .sp
 \fBstg1700\fP - (S3) Card has an STG1700 RAMDAC.  This must be specified
 if the server fails to detect it.
@@ -331,10 +334,13 @@ For details of how to use it, refer to \fIREADME.agx\fP and
 specifies the hard-wired part of the linear framebuffer base address.  This
 option is only used by the P9000, S3, and Mach32 servers (and only when using a
 linear framebuffer).  For the S3 server, the hard-wired part is the high
-6 bits of the 32-bit address (ie \fImemaddress\fP is masked with
-\fI0xFC000000\fP).  Note: this should not be required for the 864 and 964
-chips where the entire framebuffer address is software-selectable.  For
-the Mach32 server, the mask is \fI0xF8000000\fP
+10 bits of the 32-bit address (ie \fImemaddress\fP is masked with
+\fI0xFFC00000\fP).  Note: this should not be required for the 864 and 964
+chips where the entire framebuffer address is software-selectable.  Also, note
+that the in versions prior to 3.1.1, the S3 server used only the top 6 bits
+of \fImemaddress\fP, and ored it with 0x3C00000.  To get the same behaviour,
+or 0x3C00000 with the value given previously.
+For the Mach32 server, the mask is \fI0xF8000000\fP
 (except for PCI cards, where the membase setting is ignored).
 .sp
 This option must be specified with the P9000 server.  With local bus

@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.34 1994/10/30 02:57:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.35 1994/10/30 04:44:05 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -376,9 +376,11 @@ s3Init(mode)
        */
       if (S3_964_SERIES(s3ChipId) && !DAC_IS_TI3025)
          s3SAM256 = 0x40;
+      else if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options))
+         s3SAM256 = 0x80; /* set 6 MCLK cycles for R/W time on Mercury */
       else
          s3SAM256 = 0x00;
-      
+
       /*
        * Save AT&T 20C490/1 command register.
        */
@@ -794,8 +796,21 @@ s3Init(mode)
 
       if (pixel_multiplexing) { /* x64:pixmux */
 	 /* pixmux with 16/32 bpp not possible for 864 ==> only 8bit mode  */
+	 int daccomm;
 	 tmp = xf86getdaccomm();
-	 xf86setdaccomm( (tmp&0x0f) | 0x20 );  /* set mode 2,
+	 
+	 if (DAC_IS_ATT22C498) {
+	    if (s3InfoRec.clock[mode->Clock]/2 < 22500) daccomm = 0x20;
+	    else if (s3InfoRec.clock[mode->Clock]/2 < 45000) daccomm = 0x21;
+	    else daccomm = 0x24;
+#if 0
+	    /* using digital clock doubler; 20C498 compatible */
+	    daccomm = 0x25;
+#endif
+	 }
+	 else daccomm = 0x20;
+
+	 xf86setdaccomm( (tmp&0x02) | daccomm );  /* set mode 2,
 						  pixel multiplexing on */
 
 	 outb(vgaCRIndex, 0x33);
@@ -1142,13 +1157,16 @@ s3Init(mode)
 	    outb(vgaCRReg, 0);
          }
 
-	 /* Setting this for the SPEA Mercury affects clocks > 120MHz */
-	 if (!OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)) {
-            /* set s3 reg65 for some unknown reason                        */
-            outb(vgaCRIndex, 0x65);
-            tmp = inb(vgaCRReg);
-            outb(vgaCRReg, tmp | 0x20);
-	 }
+         if (!OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)) {
+	    outb(vgaCRReg, tmp | 0x20);
+ 	    /* set s3 reg65 for some unknown reason                      */
+	    /* Setting this for the SPEA Mercury affects clocks > 120MHz */
+	  } else if (s3DisplayWidth >= 1024) {
+	    outb(vgaCRReg, tmp | 0x40);
+	    /* remove horizontal stripes in 1600/8bpp and 1152/16bpp      */
+	    /* linewidth pixmux modes                                     */
+	    /* someone should check this for other 928 + Bt485 cards      */
+	  } else outb(vgaCRReg, tmp & 0xBF);
 
          /*
           * set output clocking to 4:1 multiplexing
@@ -1269,11 +1287,18 @@ s3Init(mode)
 	    s3OutTiIndReg(TI_INPUT_CLOCK_SELECT, 0x00, TI_ICLK_CLK1);
       }
 
+      outb(vgaCRIndex, 0x65);
       if (DAC_IS_TI3025) {
-         /* set s3 reg65 for some unknown reason                        */
-         outb(vgaCRIndex, 0x65);
          outb(vgaCRReg, 0x82);
          /* was 0x02 for all, now 0x82 is required on new ones */
+      } else {
+	 /* set s3 reg65 for some unknown reason			*/
+	 if (s3InfoRec.bitsPerPixel == 32)
+	    outb(vgaCRReg, 0x80);
+	 else if (s3InfoRec.bitsPerPixel == 16)
+	    outb(vgaCRReg, 0x40);
+	 else
+	    outb(vgaCRReg, 0x00);
       }
 
       if (pixel_multiplexing) {
@@ -1611,10 +1636,14 @@ s3Init(mode)
 	 outb(vgaCRReg, 0x10);
       else if (S3_864_SERIES(s3ChipId))
 	 outb(vgaCRReg, 0x08);  /* 0x88 can't be used for 864/964 */
-      else if (S3_928_SERIES(s3ChipId) && DAC_IS_SC15025)
-	 outb(vgaCRReg, 0x01);  /* ELSA Winner 1000 */
-      else if (DAC_IS_BT485_SERIES && S3_928_SERIES(s3ChipId))
-	 outb(vgaCRReg, 0x00);
+      else if (S3_928_SERIES(s3ChipId)) {
+	 if (DAC_IS_SC15025)
+	    outb(vgaCRReg, 0x01);  /* ELSA Winner 1000 */
+	 else if (DAC_IS_BT485_SERIES || DAC_IS_TI3020)
+	    outb(vgaCRReg, 0x00);
+	 else
+	    outb(vgaCRReg, 0x09);  /* who uses this ? */
+      }
       else 
 	 outb(vgaCRReg, 0x09);
       break;
@@ -1632,11 +1661,13 @@ s3Init(mode)
    /* hi/true cursor color enable */
    switch (s3InfoRec.bitsPerPixel) {
    case 16:
-      if (!S3_x64_SERIES(s3ChipId) && !S3_805_I_SERIES(s3ChipId))
+      if (!S3_x64_SERIES(s3ChipId) && !S3_805_I_SERIES(s3ChipId) &&
+          !DAC_IS_TI3020)
 	 i = i | 0x04;
       break;
    case 32:
-      if (S3_x64_SERIES(s3ChipId) || S3_805_I_SERIES(s3ChipId))
+      if (S3_x64_SERIES(s3ChipId) || S3_805_I_SERIES(s3ChipId) ||
+	  DAC_IS_TI3020)
 	 i = i | 0x04; /* for 16bit RAMDAC, 0x0c for 8bit RAMDAC */
       else
 	 i = i | 0x08;
@@ -1920,7 +1951,8 @@ InitLUT()
       }
    }
 
-   if (s3InfoRec.bitsPerPixel > 8 && (DAC_IS_SC15025 || DAC_IS_TI3025)) {
+   if (s3InfoRec.bitsPerPixel > 8 &&
+       (DAC_IS_SC15025 || DAC_IS_TI3020_SERIES)) {
       int r,g,b;
       int mr,mg,mb;
       int nr=5, ng=5, nb=5;
@@ -1928,7 +1960,7 @@ InitLUT()
       extern LUTENTRY currents3dac[];
 
       if (!LUTInited) {
-	 if (s3Weight == RGB32_888 || DAC_IS_TI3025) {
+	 if (s3Weight == RGB32_888 || DAC_IS_TI3020_SERIES) {
 	    for(i=0; i<256; i++) {
 	       currents3dac[i].r = xf86rGammaMap[i];
 	       currents3dac[i].g = xf86gGammaMap[i];

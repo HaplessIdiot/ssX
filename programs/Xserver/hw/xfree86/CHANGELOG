@@ -1,3 +1,31 @@
+XFree86 3.1.0c (5 November 1994)
+ 70. Modify S3 linear fb probe to handle the non-standard CR5A[6:7] address
+     mapping used by some Diamond boards (including the Diamond Stealth Pro).
+     Also, the 10 most significant bits of a specified MemBase value are
+     now used (which leads to an incompatibility with previous usage)
+     (Dick Streefland).
+ 69. Fix clock matching and some other problems in vgawonder driver
+     (Marc Aurele La France).
+ 68. Reduce RAS to 6 MCLKs for SPEA Mercury (Norbert Distler).
+ 67. Fix setting of CR65 for the SPEA Mercury -- fixes 1600 width at 8bpp
+     and 1152 width at 16bpp (Norbert Dislter).
+ 66. Change MCLK from 46MHz to 49MHz in the SC11412 clock code (Norbert
+     Distler).
+ 65. S3 code to detect 866/868/966/968/Trio32/Trio64 and treat them as
+     an 864 (Harald Koenig).
+ 64. Update SuperProbe to detect  STG1700, S3 GENDAC and SDAC, ATT22C498,
+     S3 Vision866, 868, Trio32 and Trio64 (Harald Koenig).
+ 63. Enforce 95MHz limit for 864 when no pixmux (eg, 16bpp) (Harald Koenig).
+ 62. Increase pixmux cut-in point for ATT20C498 to 95MHz (Harald Koenig).
+ 61. ATT22C498 detection and (untested) support (Harald Koenig).
+ 60. New code for S3 SDAC/GENDAC detection, and enable the programmable
+     clock when one of these is detected (Harald Koenig).
+ 59. Fixes for S3 RAMDAC detection (STG1700 and SDAC) (Harald Koenig).
+ 58. Fix ICD2061A code for clocks between 110MHz and 120MHz (Harald Koenig).
+ 57. Chips & Technology SVGA driver (Jon Block and others?).
+ 56. 16/32bpp support for #9 boards with Ti3020 ramdac (Robin Cutshaw).
+ 55. Fix bsdi.cf problems with gcc options (Hans Nasten).
+
 XFree86 3.1.0b (30 October 1994)
  54. 16/32bpp support for Elsa Winner2000Pro (964+Ti3020) (Dirk Hohndel).
  53. Update to cirrus programmable clock code (Harm Hanemaayer).

@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.1 1994/08/31 04:19:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.2 1994/09/26 15:31:00 dawes Exp $ */
 
 /*
  * Includes
@@ -195,7 +195,7 @@ void Print_CoProc_Name __STDCARGS((int));
 extern char MyName[];
 extern Word vgaIOBase;
 extern Bool Verbose;
-extern Byte Chip_data;
+extern Long Chip_data;
 extern Byte *Bios_Base;
 extern Bool AssumeEGA;
 
@@ -291,9 +291,13 @@ extern Chip_Descriptor ATIMach_Descriptor;
 #define DAC_TVP3020	25	/* TI ViewPoint TVP3020 RAMDAC */
 #define DAC_TVP3025	26	/* TI ViewPoint TVP3025 RAMDAC */
 #define DAC_EDSUN	27	/* EDSUN CEG DAC */
-#define DAC_ATT498	28	/* AT&T 20C498 15/16/24-bit DAC w/pixel-mux */
+#define DAC_ATT498	28	/* AT&T 20C498/21C498 15/16/24-bit DAC w/pixel-mux */
+#define DAC_ATT22C498	29	/* AT&T 22C498 15/16/24-bit DAC w/pixel-mux */
+#define DAC_STG1700	30	/* STG 1700 15/16/24-bit DAC w/pixel-mux */
+#define DAC_S3_GENDAC	31	/* S3 86C708 GENDAC 15/16/24-bit DAC w/PLL  */
+#define DAC_S3_SDAC	32	/* S3 86C716 SDAC 15/16/24 w/pixel-mux w/PLL */
 
-#define DAC_MAX		DAC_ATT498	/* UPDATE THIS! */
+#define DAC_MAX		DAC_S3_SDAC	/* UPDATE THIS! */
 
 #define DAC_6_8_PROGRAM	0x40	/* RAMDAC programmable for 6/8-bit tables */
 #define DAC_8BIT	0x80	/* RAMDAC with 8-bit wide lookup tables */
@@ -458,6 +462,12 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_S3_928P	SVGA_TYPE(V_S3,13)	/* S3 86c928PCI		*/
 #define CHIP_S3_864	SVGA_TYPE(V_S3,14)	/* S3 Vision864		*/
 #define CHIP_S3_964	SVGA_TYPE(V_S3,15)	/* S3 Vision964		*/
+#define CHIP_S3_866	SVGA_TYPE(V_S3,16)	/* S3 Vision866		*/
+#define CHIP_S3_868	SVGA_TYPE(V_S3,17)	/* S3 Vision868		*/
+#define CHIP_S3_966	SVGA_TYPE(V_S3,18)	/* S3 Vision966		*/
+#define CHIP_S3_968	SVGA_TYPE(V_S3,19)	/* S3 Vision968		*/
+#define CHIP_S3_Trio32	SVGA_TYPE(V_S3,20)	/* S3 Trio32		*/
+#define CHIP_S3_Trio64	SVGA_TYPE(V_S3,21)	/* S3 Trio64		*/
 #define CHIP_TVGA_UNK	SVGA_TYPE(V_TRIDENT,0)	/* Trident unknown	*/
 #define CHIP_TVGA8200	SVGA_TYPE(V_TRIDENT,1)	/* Trident LX8200	*/
 #define CHIP_TVGA8800BR	SVGA_TYPE(V_TRIDENT,2)	/* Trident 8800BR	*/

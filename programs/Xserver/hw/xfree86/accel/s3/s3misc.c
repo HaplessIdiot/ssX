@@ -1,6 +1,6 @@
 
 /* $XConsortium: s3misc.c,v 1.1 94/03/28 21:16:11 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.13 1994/09/23 10:09:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.14 1994/10/23 12:58:21 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -122,7 +122,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	 unsigned char reg53tmp;
 
 	 s3InitEnvironment();
-	 s3ImageWriteNoMem(0, 0, 4, 1, (char *) &pVal, 4, 0, 0,
+	 s3ImageWriteNoMem(0, 0, 4 / S3Bpp, 1, (char *) &pVal, 4 / S3Bpp, 0, 0,
 			   (short) s3alu[GXcopy], ~0);	 
 
 	 if (S3_801_928_SERIES (s3ChipId)) {
@@ -181,8 +181,8 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	    pVal = 0x12345678;
 
 	    s3InitEnvironment();
-	    s3ImageWriteNoMem(0, 0, 4, 1, (char *) &pVal, 4, 0, 0,
-			      (short) s3alu[GXcopy], ~0);	 
+	    s3ImageWriteNoMem(0, 0, 4 / s3Bpp, 1, (char *) &pVal, 4 / s3Bpp,
+			      0, 0, (short) s3alu[GXcopy], ~0);	 
 
 	    if (S3_801_928_SERIES (s3ChipId)) {
 	       int j;
@@ -226,8 +226,8 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	     * which values of LAW are decoded (see s3TryAddress() below).
 	     */
 	    if (OFLG_ISSET(OPTION_FB_DEBUG, &s3InfoRec.options)) {
-	       for (i = 0xfc; i >= 0; i-=4) {
-		  unsigned long addr = (i << 24) + (0x3<<24);
+	       for (i = 0xff; i >= 3; i--) { /* 4080Mb..48Mb stepsize 16Mb */
+		  unsigned long addr = (i << 24);
 
 	          s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
 				          (pointer)addr, 4096);
@@ -239,20 +239,21 @@ s3Initialize(scr_index, pScreen, argc, argv)
 		  
 	    /*
 	     * If a MemBase value was given in the XF86Config, skip the LAW
-	     * probe and use the high 6 bits for the hw part of LAW.
+	     * probe and use the high 10 bits for the hw part of LAW.
+	     * Normally only 6 bits are set in hw, but the Diamond Stealth
+	     * Pro is different.
 	     */
 	    if (s3InfoRec.MemBase != 0) {
 	       unsigned long addr;
 
-	       /* Software part of LAW is 60MB = 0x3c00000 */
-	       addr = (s3InfoRec.MemBase & 0xfc000000) + 0x3c00000;
+	       addr = (s3InfoRec.MemBase & 0xffc00000);
 	       s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
 					  (pointer)addr, s3BankSize);
 	       outb(vgaCRIndex, 0x5a);
-	       outb(vgaCRReg, 0xC0);
+	       outb(vgaCRReg, (addr >> 16) & 0xff);
 	       s3LinearAperture = TRUE;
-	       ErrorF("%s %s: Local bus LAW31-26 is %X\n", 
-		      XCONFIG_GIVEN, s3InfoRec.name, (addr >> 24) & 0xfc);
+	       ErrorF("%s %s: Local bus LAW is 0x%04lXxxxx\n", 
+		      XCONFIG_GIVEN, s3InfoRec.name, (addr >> 16) & 0xffff);
 	    } else {
 	       if (S3_x64_SERIES(s3ChipId)) {
 		  /* So far, only tested for the PCI ELSA W2000Pro */
@@ -272,11 +273,9 @@ s3Initialize(scr_index, pScreen, argc, argv)
                   ErrorF("%s %s: Local bus LAW is 0x%08lX\n", 
                          XCONFIG_PROBED, s3InfoRec.name, addr);
 	       } else {
-	          for (i = 0xfc; i >= 0; i-=4) {
-		     unsigned long addr;
-	    
-		     /* Start at LAW(hw) + 48MB */
-		     addr = (i << 24) + (0x3<<24);
+	          for (i = 0xff; i >= 3; i--) { /* 4080Mb..48Mb stepsize 16Mb */
+		     unsigned long addr = (i << 24);
+
 		     s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
 						(pointer)addr, s3BankSize);
 		     poker = (long *) s3VideoMem; 
@@ -284,7 +283,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 		     if (s3TryAddress(poker, pVal, addr, 1)) {
 			/* We found some ram, but is it ours? */
 	       
-			/* move it up by 12MB to LAW(hw) + 60MB */
+			/* move it up by 12MB */
 			outb(vgaCRIndex, 0x5a);
 			outb(vgaCRReg, 0xC0);
 			if (!s3TryAddress(poker, pVal, addr, 2)) {
@@ -297,8 +296,27 @@ s3Initialize(scr_index, pScreen, argc, argv)
 		     
 			   if (s3TryAddress((long *)s3VideoMem, pVal,
 					    addr, 3)) {
-			      ErrorF("%s %s: Local bus LAW31-26 is %X\n", 
+			      ErrorF("%s %s: Local bus LAW31-24 is %X\n", 
 				     XCONFIG_PROBED, s3InfoRec.name, i);
+			      s3LinearAperture = TRUE;
+			      break;
+			   }
+			   /*
+			    * Special test for Diamond Stealth Pro.
+			    * On this card, bits 6 and 7 of register 0x5a
+			    * control address bits A29 and A26 rather than
+			    * A22 and A23. Don't ask we why.
+			    */
+			   addr = (i << 24) | 0x24000000;
+			   xf86UnMapVidMem(scr_index, LINEAR_REGION,
+					   s3VideoMem, s3BankSize);
+			   s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
+						      (pointer)addr,
+						      s3BankSize);
+			   if (s3TryAddress((long *)s3VideoMem, pVal,
+					    addr, 4)) {
+			      ErrorF("%s %s: Local bus LAW31-24 is %X\n", 
+				     XCONFIG_PROBED, s3InfoRec.name, i | 0x24);
 			      s3LinearAperture = TRUE;
 			      break;
 			   }
@@ -309,6 +327,8 @@ s3Initialize(scr_index, pScreen, argc, argv)
 			   ErrorF("\t address range.\n");
 			   CachedFrameBuffer = TRUE;
 			}
+			outb(vgaCRIndex, 0x5a);
+			outb(vgaCRReg, 0x00);	/* reset for next probe */
 		     }
 		     xf86UnMapVidMem(scr_index, LINEAR_REGION, s3VideoMem,
 				     s3BankSize);

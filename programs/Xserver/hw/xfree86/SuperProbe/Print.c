@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.1 1994/08/31 04:19:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.2 1994/09/26 15:30:57 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -93,7 +93,14 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "S3 86C928, A,B,C, or D-step", "S3 86C928, E-step",
 		  "S3 86C928PCI",
 		  "S3 Vision864",
-		  "S3 Vision964"  },
+		  "S3 Vision964",
+		  "S3 Vision866",
+		  "S3 Vision868",
+		  "S3 Vision966",
+		  "S3 Vision968",
+		  "S3 Trio32",
+		  "S3 Trio64",
+	       },
 /* Trident */	{ "Trident (chipset unknown)",
 		  "Trident LX8200",
 		  "Trident 8800BR", "Trident 8800CS",
@@ -173,7 +180,11 @@ struct RamDac_Name RamDac_Names[] =
 	{ "TVP3025",
 	  "TI ViewPoint3025 24-bit TrueColor DAC w/cursor,pixel-mux,clock" },
 	{ "EDSUN", "EDSUN CEG DAC" },
-	{ "20C498", "AT&T 20C498 15/16/24-bit DAC w/pixel-mux" },
+	{ "20C498", "AT&T 20C498/21C498 15/16/24-bit DAC w/pixel-mux" },
+	{ "22C498", "AT&T 22C498 15/16/24-bit DAC w/pixel-mux" },
+	{ "STG1700", "STG1700 15/16/24-bit DAC w/pixel-mux" },
+	{ "S3_GENDAC", "S3 86C708 GENDAC 15/16/24-bit DAC w/clock-PLL" },
+	{ "S3_SDAC", "S3 86C716 SDAC 15/16/24-bit DAC w/pixel-mux w/clock-PLL" },
 };
 
 static CONST char *CoProc_Names[NUM_CP_TYPES][CHPS_PER_CPTYPE] = 
@@ -189,7 +200,7 @@ int Chipset;
 	int vendor = SVGA_VENDOR(Chipset);
 	int chip = SVGA_CHIP(Chipset);
 	printf("\tChipset: %s\n", SVGA_Names[vendor][chip]);
-	if ((!chip) && (Chip_data != 0xFF))
+	if ((!chip) && (~Chip_data))
 	{
 		printf("\t\tSignature data: %02x (please report)\n", 
 		       Chip_data);

@@ -29,7 +29,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.3 1994/08/31 04:20:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.4 1994/09/19 14:20:30 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -48,6 +48,8 @@ static Bool TestDACBit __STDCARGS((Byte, Byte, Byte));
 static Bool S3_Bt485Check __STDCARGS((int *));
 static Bool S3_TVP3020Check __STDCARGS((int *));
 static Bool S3_ATT498Check __STDCARGS((int *));
+static Bool S3_STG1700Check __STDCARGS((int *));
+static Bool S3_GENDACCheck __STDCARGS((int *));
 static void CheckMach32 __STDCARGS((int *));
 
 #ifdef __STDC__
@@ -319,7 +321,7 @@ int *RamDac;
 static Bool S3_ATT498Check(RamDac)
 int *RamDac;
 {
-	Byte mir, dir;
+	Byte mir, dir, daccomm;
 	int i;
 	Bool Found = FALSE;
 
@@ -339,12 +341,126 @@ int *RamDac;
 	dactopel();
 
 	if ((mir == 0x84) && (dir == 0x98)) {
-                Found = TRUE;
-		*RamDac = DAC_ATT498;
-		*RamDac |= DAC_6_8_PROGRAM;
+	   daccomm = getdaccomm();
+	   SetComm(0);
+	   SetComm(0x0a);
+	   if (getdaccomm() == 0)
+	      *RamDac = DAC_ATT22C498;
+	   else
+	      *RamDac = DAC_ATT498;
+	   SetComm(daccomm);
+	   Found = TRUE;
+	   *RamDac |= DAC_6_8_PROGRAM;
 	}
 
 	return(Found);
+}
+
+static Bool S3_STG1700Check(RamDac)
+int *RamDac;
+{
+	Byte cid, did, daccomm, readmask;
+	int i;
+	Bool Found = FALSE;
+
+	readmask = inp(0x3c6);
+	dactopel();
+	daccomm = getdaccomm();
+	SetComm(daccomm | 0x10);
+	dactocomm();
+	inp(0x3C6);
+	outp(0x3c6, 0x00);
+	outp(0x3c6, 0x00);
+	cid = inp(0x3c6);     /* company ID */
+	did = inp(0x3c6);     /* device ID */
+	dactopel();
+	outp(0x3c6,readmask);
+	SetComm(daccomm);
+
+	if ((cid == 0x44) && (did == 0x00)) {
+	   Found = TRUE;
+	   *RamDac = DAC_STG1700;
+	   *RamDac |= DAC_6_8_PROGRAM;
+	}
+
+	return(Found);
+}
+
+static Bool S3_GENDACCheck(RamDac)
+int *RamDac;
+{
+   Byte daccomm;
+   int i;
+   Bool Found = FALSE;
+   Byte lock1, lock2;
+
+   Byte saveCR55, savelut[6];
+   long clock01, clock23;
+
+   /* probe for S3 GENDAC or SDAC */
+   /* 
+    * S3 GENDAC and SDAC have two fixed read only PLL clocks
+    *     CLK0 f0: 25.255MHz   M-byte 0x28  N-byte 0x61
+    *     CLK0 f1: 28.311MHz   M-byte 0x3d  N-byte 0x62
+    * which can be used to detect GENDAC and SDAC since there is no chip-id
+    * for the GENDAC.
+    * 
+    * NOTE: for the GENDAC on a MIRO 10SD (805+GENDAC) reading PLL values
+    * for CLK0 f0 and f1 always returns 0x7f (but is documented "read only)
+    */
+
+
+   lock1 = rdinx(CRTC_IDX, 0x38);
+   lock2 = rdinx(CRTC_IDX, 0x39);
+   wrinx(CRTC_IDX, 0x38, 0x48);
+   wrinx(CRTC_IDX, 0x39, 0xA5);
+	 
+   saveCR55 = rdinx(CRTC_IDX, 0x55);
+   wrinx(CRTC_IDX, 0x55, saveCR55 & ~1);
+   
+   outp(0x3c7,0);
+   for(i=0; i<2*3; i++)		/* save first two LUT entries */
+      savelut[i] = inp(0x3c9);
+   outp(0x3c8,0);
+   for(i=0; i<2*3; i++)		/* set first two LUT entries to zero */
+      outp(0x3c9,0);
+
+   wrinx(CRTC_IDX, 0x55, saveCR55 | 1);
+	 
+   outp(0x3c7,0);
+   for(i=clock01=0; i<4; i++)
+      clock01 = (clock01 << 8) | (inp(0x3c9) & 0xff);
+   for(i=clock23=0; i<4; i++)
+      clock23 = (clock23 << 8) | (inp(0x3c9) & 0xff);
+
+   wrinx(CRTC_IDX, 0x55, saveCR55 & ~1);
+
+   outp(0x3c8,0);
+   for(i=0; i<2*3; i++)		/* restore first two LUT entries */
+      outp(0x3c9,savelut[i]);
+
+   wrinx(CRTC_IDX, 0x55, saveCR55);
+   wrinx(CRTC_IDX, 0x39, lock2);
+   wrinx(CRTC_IDX, 0x38, lock1);
+
+   if ( clock01 == 0x28613d62 ||
+       (clock01 == 0x7f7f7f7f && clock23 != 0x7f7f7f7f)) {      
+      Found = TRUE;
+      
+      dactopel();
+      inp(0x3c6);
+      inp(0x3c6);
+      inp(0x3c6);
+      
+      /* the forth read will show the SDAC chip ID and revision */
+      if (((i=inp(0x3c6)) & 0xf0) == 0x70)
+	 *RamDac = DAC_S3_SDAC;
+      else
+	 *RamDac = DAC_S3_GENDAC;
+      dactopel();
+   }
+      
+   return(Found);
 }
 
 static Bool S3_SC15025Check(RamDac)
@@ -525,7 +641,25 @@ int *RamDac;
 		DisableIOPorts(NUMPORTS, Ports);
 		return;
 	    }
+	    if (S3_STG1700Check(RamDac))
+	    {
+		DisableIOPorts(NUMPORTS, Ports);
+		return;
+	    }
+	    if (S3_GENDACCheck(RamDac))
+	    {
+		DisableIOPorts(NUMPORTS, Ports);
+		return;
+	    }
 	    if (S3_SC15025Check(RamDac))
+	    {
+		DisableIOPorts(NUMPORTS, Ports);
+		return;
+	    }
+	}
+	else if ((SVGA_VENDOR(Chipset) == V_S3) && (Chipset >= CHIP_S3_801B))
+	{
+	    if (S3_GENDACCheck(RamDac))
 	    {
 		DisableIOPorts(NUMPORTS, Ports);
 		return;
