@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# $XFree86$
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/postinst.sh,v 3.0 1995/11/19 01:24:55 dawes Exp $
 #
 # postinst.sh
 #
@@ -20,16 +20,16 @@ NEWDIR=/usr/XFree86-$BETAVERSION
 RUNDIR=/usr/X11R6
 SAVEDIR=/usr/XFree86-$ORIGVERSION
 
-if [ ! -d $NEWDIR ]; then
+if [ ! -d $NEWDIR/. ]; then
 	echo $NEWDIR does not exist
 	exit 1
 fi
-if [ ! -d !RUNDIR ]; then
+if [ ! -d $RUNDIR/. ]; then
 	echo $RUNDIR does not exist
 	exit 1
 fi
 cd $NEWDIR
-for i in `find . -type f -print`; do
+for i in `find * -type f -print`; do
 	d=`dirname $i`
 	if [ ! -d $SAVEDIR/$d ]; then
 		mkdir -p $SAVEDIR/$d
@@ -37,7 +37,7 @@ for i in `find . -type f -print`; do
 	if [ ! -d $RUNDIR/$d ]; then
 		mkdir -p $RUNDIR/$d
 	fi
-	if [ -f $RUNDIR/$i && ! -f $SAVEDIR/$i ]; then
+	if [ -f $RUNDIR/$i -a ! -f $SAVEDIR/$i ]; then
 		mv $RUNDIR/$i $SAVEDIR/$i
 		echo saved $ORIGVERSION version of $i to $SAVEDIR
 	fi
