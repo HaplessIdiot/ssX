@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.30 2000/09/25 23:56:14 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.31 2003/08/16 01:11:40 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -2052,7 +2052,7 @@ XAAWriteColor8x8PatternToCache(
          nw = w;
          memcpy(dstPtr, srcPtr, w * Bpp);
          while (nw != 8) {
-            memcpy(dstPtr + (nw * Bpp), srcPtr, nw * Bpp);
+            memcpy(dstPtr + (nw * Bpp), dstPtr, nw * Bpp);
             nw <<= 1;
          }
    }
