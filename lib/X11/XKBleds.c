@@ -1,4 +1,4 @@
-/* $XConsortium: XKBleds.c,v 1.1 94/04/01 18:42:43 erik Exp $ */
+/* $Xorg: XKBleds.c,v 1.3 2000/08/17 19:45:03 cpqbld Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -25,7 +25,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-#include <stdio.h>
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include "Xlibint.h"
@@ -33,84 +32,68 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "XKBlibint.h"
 
 Status
+#if NeedFunctionPrototypes
+XkbGetIndicatorState(Display *dpy,unsigned deviceSpec,unsigned *pStateRtrn)
+#else
 XkbGetIndicatorState(dpy,deviceSpec,pStateRtrn)
     Display *		dpy;
     unsigned int	deviceSpec;
     unsigned int *	pStateRtrn;
+#endif
 {
     register xkbGetIndicatorStateReq *req;
     xkbGetIndicatorStateReply	rep;
     XkbInfoPtr xkbi;
-
+    Bool ok;
     
     if ((dpy->flags & XlibDisplayNoXkb) ||
-	(!dpy->xkb_info && !XkbUseExtension(dpy)))
-	return False;
+	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)))
+	return BadAccess;
     LockDisplay(dpy);
     xkbi = dpy->xkb_info;
     GetReq(kbGetIndicatorState, req);
     req->reqType = xkbi->codes->major_opcode;
     req->xkbReqType = X_kbGetIndicatorState;
     req->deviceSpec = deviceSpec;
-    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
-	UnlockDisplay(dpy);
-	SyncHandle();
-	return False;
-    }
-    if (pStateRtrn)
+    ok=_XReply(dpy, (xReply *)&rep, 0, xFalse);
+    if (ok && (pStateRtrn!=NULL))
 	*pStateRtrn= rep.state;
-    return True;
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return (ok?Success:BadImplementation);
 }
 
-Status
-XkbGetIndicatorMap(dpy,which,xkb)
-    Display *dpy;
-    unsigned long which;
-    XkbDescRec *xkb;
+Status	
+#if NeedFunctionPrototypes
+_XkbReadGetIndicatorMapReply(	Display *			dpy,
+				xkbGetIndicatorMapReply *	rep,
+				XkbDescPtr			xkb,
+				int	*			nread_rtrn)
+#else
+_XkbReadGetIndicatorMapReply(dpy,rep,xkb,nread_rtrn)
+    Display *			dpy;
+    xkbGetIndicatorMapReply *	rep;
+    XkbDescPtr			xkb;
+    int	*			nread_rtrn;
+#endif
 {
-    register xkbGetIndicatorMapReq	*req;
-    XkbIndicatorRec	*leds;
-    xkbGetIndicatorMapReply rep;
-    XkbInfoPtr xkbi;
-    XkbReadBufferRec buf;
+XkbIndicatorPtr		leds;
+XkbReadBufferRec	buf;
 
-    if ((dpy->flags & XlibDisplayNoXkb) ||
-	(!dpy->xkb_info && !XkbUseExtension(dpy)))
-	return False;
-    if ((!which)||(!xkb))
-	return False;
+    if ((!xkb->indicators)&&(XkbAllocIndicatorMaps(xkb)!=Success))
+	return BadAlloc;
+    leds= xkb->indicators;
 
-    LockDisplay(dpy);
-    xkbi = dpy->xkb_info;
-    GetReq(kbGetIndicatorMap, req);
-    if (!xkb->indicators) {
-	xkb->indicators = (XkbIndicatorRec *)Xmalloc(sizeof(XkbIndicatorRec));
-	if (xkb->indicators)
-	    bzero(xkb->indicators,sizeof(XkbIndicatorRec));
-    }
-    leds = xkb->indicators;
-    req->reqType = xkbi->codes->major_opcode;
-    req->xkbReqType = X_kbGetIndicatorMap;
-    req->deviceSpec = xkb->device_spec;
-    req->which = which;
-    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
-	UnlockDisplay(dpy);
-	SyncHandle();
-	return False;
-    }
-
-    leds->num_phys_indicators = rep.nRealIndicators;
-    if (rep.length>0) {
+    leds->phys_indicators = rep->realIndicators;
+    if (rep->length>0) {
 	register int left;
-	if (!_XkbInitReadBuffer(dpy,&buf,rep.length*4)) {
-	    UnlockDisplay(dpy);
-	    SyncHandle();
-	    return False;
-	}
-
-	if (rep.which) {
+	if (!_XkbInitReadBuffer(dpy,&buf,(int)rep->length*4))
+	    return BadAlloc;
+	if (nread_rtrn)
+	    *nread_rtrn= (int)rep->length*4;
+	if (rep->which) {
 	    register int i,bit;
-	    left= rep.which;
+	    left= (int)rep->which;
 	    for (i=0,bit=1;(i<XkbNumIndicators)&&(left);i++,bit<<=1) {
 		if (left&bit) {
 		    xkbIndicatorMapWireDesc *wire;
@@ -119,37 +102,81 @@ XkbGetIndicatorMap(dpy,which,xkb)
 					SIZEOF(xkbIndicatorMapWireDesc));
 		    if (wire==NULL) {
 			_XkbFreeReadBuffer(&buf);
-			UnlockDisplay(dpy);
-			SyncHandle();
-			return True;
+			return BadAlloc;
 		    }
 		    leds->maps[i].flags= wire->flags;
 		    leds->maps[i].which_groups= wire->whichGroups;
 		    leds->maps[i].groups= wire->groups;
 		    leds->maps[i].which_mods= wire->whichMods;
-		    leds->maps[i].mask= wire->mods;
-		    leds->maps[i].real_mods= wire->realMods;
-		    leds->maps[i].vmods= wire->virtualMods;
+		    leds->maps[i].mods.mask= wire->mods;
+		    leds->maps[i].mods.real_mods= wire->realMods;
+		    leds->maps[i].mods.vmods= wire->virtualMods;
 		    leds->maps[i].ctrls= wire->ctrls;
 		    left&= ~bit;
 		}
 	    }
 	}
 	left= _XkbFreeReadBuffer(&buf);
-	if (left>0) {
-	    fprintf(stderr,"GetIndicatorMap! Extra data %d bytes\n",left);
-	}
     }
-    UnlockDisplay(dpy);
-    SyncHandle();
-    return True;
+    return Success;
 }
 
-Status
+Bool
+#if NeedFunctionPrototypes
+XkbGetIndicatorMap(Display *dpy,unsigned long which,XkbDescPtr xkb)
+#else
+XkbGetIndicatorMap(dpy,which,xkb)
+    Display *		dpy;
+    unsigned long 	which;
+    XkbDescPtr		xkb;
+#endif
+{
+    register xkbGetIndicatorMapReq *	req;
+    xkbGetIndicatorMapReply 		rep;
+    XkbInfoPtr 				xkbi;
+    Status				status;
+
+    if ((dpy->flags & XlibDisplayNoXkb) ||
+	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)))
+	return BadAccess;
+    if ((!which)||(!xkb))
+	return BadValue;
+
+    LockDisplay(dpy);
+    xkbi = dpy->xkb_info;
+    if (!xkb->indicators) {
+	xkb->indicators = _XkbTypedCalloc(1,XkbIndicatorRec);
+	if (!xkb->indicators) {
+	    UnlockDisplay(dpy);
+	    SyncHandle();
+	    return BadAlloc;
+	}
+    }
+    GetReq(kbGetIndicatorMap, req);
+    req->reqType = xkbi->codes->major_opcode;
+    req->xkbReqType = X_kbGetIndicatorMap;
+    req->deviceSpec = xkb->device_spec;
+    req->which = (CARD32)which;
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return BadValue;
+    }
+    status= _XkbReadGetIndicatorMapReply(dpy,&rep,xkb,NULL);
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return status;
+}
+
+Bool
+#if NeedFunctionPrototypes
+XkbSetIndicatorMap(Display *dpy,unsigned long which,XkbDescPtr xkb)
+#else
 XkbSetIndicatorMap(dpy,which,xkb)
-    Display *dpy;
-    unsigned long which;
-    XkbDescRec *xkb;
+    Display *		dpy;
+    unsigned long 	which;
+    XkbDescPtr		xkb;
+#endif
 {
     register xkbSetIndicatorMapReq	*req;
     register int i,bit;
@@ -158,7 +185,7 @@ XkbSetIndicatorMap(dpy,which,xkb)
     XkbInfoPtr xkbi;
 
     if ((dpy->flags & XlibDisplayNoXkb) ||
-	(!dpy->xkb_info && !XkbUseExtension(dpy)))
+	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)))
 	return False;
     if ((!xkb)||(!which)||(!xkb->indicators))
 	return False;
@@ -168,7 +195,7 @@ XkbSetIndicatorMap(dpy,which,xkb)
     req->reqType = xkbi->codes->major_opcode;
     req->xkbReqType = X_kbSetIndicatorMap;
     req->deviceSpec = xkb->device_spec;
-    req->which = which;
+    req->which = (CARD32)which;
     for (i=nMaps=0,bit=1;i<32;i++,bit<<=1) {
 	if (which&bit)
 	    nMaps++;
@@ -182,8 +209,8 @@ XkbSetIndicatorMap(dpy,which,xkb)
 	    wire->whichGroups= xkb->indicators->maps[i].which_groups;
 	    wire->groups= xkb->indicators->maps[i].groups;
 	    wire->whichMods= xkb->indicators->maps[i].which_mods;
-	    wire->mods= xkb->indicators->maps[i].mask;
-	    wire->virtualMods= xkb->indicators->maps[i].vmods;
+	    wire->mods= xkb->indicators->maps[i].mods.real_mods;
+	    wire->virtualMods= xkb->indicators->maps[i].mods.vmods;
 	    wire->ctrls= xkb->indicators->maps[i].ctrls;
 	    wire++;
 	}
@@ -193,3 +220,188 @@ XkbSetIndicatorMap(dpy,which,xkb)
     return True;
 }
 
+Bool
+#if NeedFunctionPrototypes
+XkbGetNamedDeviceIndicator(	Display *		dpy,
+				unsigned		device,
+				unsigned		class,
+				unsigned		id,
+				Atom			name,
+				int	*		pNdxRtrn,
+    				Bool *			pStateRtrn,
+				XkbIndicatorMapPtr	pMapRtrn,
+				Bool *			pRealRtrn)
+#else
+XkbGetNamedDeviceIndicator(dpy,device,class,id,name,pNdxRtrn,pStateRtrn,
+							pMapRtrn,pRealRtrn)
+    Display *		dpy;
+    unsigned		device;
+    unsigned		class;
+    unsigned		id;
+    Atom		name;
+    int	*		pNdxRtrn;
+    Bool *		pStateRtrn;
+    XkbIndicatorMapPtr	pMapRtrn;
+    Bool *		pRealRtrn;
+#endif
+{
+    register xkbGetNamedIndicatorReq *req;
+    xkbGetNamedIndicatorReply	rep;
+    XkbInfoPtr xkbi;
+    
+    if ((dpy->flags & XlibDisplayNoXkb) || (name==None) ||
+	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)))
+	return False;
+    LockDisplay(dpy);
+    xkbi = dpy->xkb_info;
+    GetReq(kbGetNamedIndicator, req);
+    req->reqType = xkbi->codes->major_opcode;
+    req->xkbReqType = X_kbGetNamedIndicator;
+    req->deviceSpec = device;
+    req->ledClass = class;
+    req->ledID = id;
+    req->indicator = (CARD32)name;
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return False;
+    }
+    if ((!rep.found)||(!rep.supported))
+	return False;
+    if (pNdxRtrn!=NULL)
+	*pNdxRtrn= rep.ndx;
+    if (pStateRtrn!=NULL)
+	*pStateRtrn= rep.on;
+    if (pMapRtrn!=NULL) {
+	pMapRtrn->flags= rep.flags;
+	pMapRtrn->which_groups= rep.whichGroups;
+	pMapRtrn->groups= rep.groups;
+	pMapRtrn->which_mods= rep.whichMods;
+	pMapRtrn->mods.mask= rep.mods;
+	pMapRtrn->mods.real_mods= rep.realMods;
+	pMapRtrn->mods.vmods= rep.virtualMods;
+	pMapRtrn->ctrls= rep.ctrls;
+    }
+    if (pRealRtrn!=NULL) 
+	*pRealRtrn= rep.realIndicator;
+    return True;
+}
+
+Bool
+#if NeedFunctionPrototypes
+XkbGetNamedIndicator(	Display *		dpy,
+			Atom			name,
+			int	*		pNdxRtrn,
+    			Bool *			pStateRtrn,
+			XkbIndicatorMapPtr	pMapRtrn,
+			Bool *			pRealRtrn)
+#else
+XkbGetNamedIndicator(dpy,name,pNdxRtrn,pStateRtrn,pMapRtrn,pRealRtrn)
+    Display *		dpy;
+    Atom		name;
+    int	*		pNdxRtrn;
+    Bool *		pStateRtrn;
+    XkbIndicatorMapPtr	pMapRtrn;
+    Bool *		pRealRtrn;
+#endif
+{
+    return XkbGetNamedDeviceIndicator(dpy,XkbUseCoreKbd,
+					  XkbDfltXIClass,XkbDfltXIId,
+					  name,pNdxRtrn,pStateRtrn,
+					  pMapRtrn,pRealRtrn);
+}
+
+Bool
+#if NeedFunctionPrototypes
+XkbSetNamedDeviceIndicator(	Display *		dpy,
+				unsigned		device,
+				unsigned		class,
+				unsigned		id,
+				Atom			name,
+				Bool			changeState,
+				Bool			state,
+				Bool			createNewMap,
+				XkbIndicatorMapPtr	pMap)
+#else
+XkbSetNamedDeviceIndicator(dpy,device,class,id,name,changeState,
+							state,createNewMap,pMap)
+    Display *		dpy;
+    unsigned		device;
+    unsigned		class;
+    unsigned		id;
+    Atom		name;
+    Bool		changeState;
+    Bool		state;
+    Bool		createNewMap;
+    XkbIndicatorMapPtr	pMap;
+#endif
+{
+    register xkbSetNamedIndicatorReq	*req;
+    XkbInfoPtr xkbi;
+
+    if ((dpy->flags & XlibDisplayNoXkb) || (name==None) ||
+ 	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)))
+	return False;
+    LockDisplay(dpy);
+    xkbi = dpy->xkb_info;
+    GetReq(kbSetNamedIndicator, req);
+    req->reqType = xkbi->codes->major_opcode;
+    req->xkbReqType = X_kbSetNamedIndicator;
+    req->deviceSpec = device;
+    req->ledClass = class;
+    req->ledID = id;
+    req->indicator= (CARD32)name;
+    req->setState= changeState;
+    if (req->setState)
+	 req->on= state;
+    else req->on= False;
+    if (pMap!=NULL) {
+	req->setMap= True;
+	req->createMap= createNewMap;
+	req->flags= pMap->flags;
+	req->whichGroups= pMap->which_groups;
+	req->groups= pMap->groups;
+	req->whichMods= pMap->which_mods;
+	req->realMods= pMap->mods.real_mods;
+	req->virtualMods= pMap->mods.vmods;
+	req->ctrls= pMap->ctrls;
+    }
+    else {
+	req->setMap= 		False;
+	req->createMap= 	False;
+	req->flags= 		0;
+	req->whichGroups= 	0;
+	req->groups= 		0;
+	req->whichMods= 	0;
+	req->realMods= 		0;
+	req->virtualMods= 	0;
+	req->ctrls=		0;
+    }
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return True;
+}
+
+Bool
+#if NeedFunctionPrototypes
+XkbSetNamedIndicator(	Display *		dpy,
+			Atom			name,
+			Bool			changeState,
+			Bool			state,
+			Bool			createNewMap,
+			XkbIndicatorMapPtr	pMap)
+#else
+XkbSetNamedIndicator(dpy,name,changeState,state,createNewMap,pMap)
+    Display *		dpy;
+    Atom		name;
+    Bool		changeState;
+    Bool		state;
+    Bool		createNewMap;
+    XkbIndicatorMapPtr	pMap;
+#endif
+{
+    return XkbSetNamedDeviceIndicator(dpy,XkbUseCoreKbd,
+					  XkbDfltXIClass,XkbDfltXIId,
+					  name,changeState,state,
+					  createNewMap,pMap);
+}

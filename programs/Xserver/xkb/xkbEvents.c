@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbEvents.c,v 3.6 2000/08/26 15:11:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbEvents.c,v 3.7 2001/01/17 22:37:15 dawes Exp $ */
 
 #include <stdio.h>
 #define NEED_EVENTS 1
@@ -925,7 +925,7 @@ XkbSrvInfoPtr	xkbi;
 	     	(_XkbIsReleaseEvent(xE[0].u.u.type)) ) {
 	    return False;
 	}
-	if ((pXDev->grab != NullGrab) &&
+	if ((pXDev->grab != NullGrab) && pXDev->fromPassiveGrab &&
 	    ((xE[0].u.u.type==KeyPress)||(xE[0].u.u.type==KeyRelease))) {
 	    register unsigned state,flags;
 
