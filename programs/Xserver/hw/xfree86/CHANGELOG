@@ -1,4 +1,9 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 291. Fix problems in Xnest when MouseKeys is enabled and patched it to
+      use XKB to allow clients to change keyboard description and
+      configuration whithout interfering with the "real" X server
+      (Paulo César Pereira de Andrade).
+ 290. Dvorak keymap fix (#A.343, J Phillips).
  289. Some vesa driver updates, including:
        - Wrap CloseScreen().
        - Call xf86PrintModes().
@@ -12744,4 +12749,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1640 2001/03/21 19:46:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1641 2001/03/22 04:00:41 dawes Exp $

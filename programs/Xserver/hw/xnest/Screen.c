@@ -12,7 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Screen.c,v 3.7 1998/12/20 11:57:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Screen.c,v 3.8 2001/01/17 22:36:55 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -37,6 +37,7 @@ is" without express or implied warranty.
 #include "Visual.h"
 #include "Events.h"
 #include "Init.h"
+#include "mipointer.h"
 #include "Args.h"
 
 extern Window xnestParentWindow;
@@ -99,6 +100,28 @@ static Bool xnestSaveScreen(pScreen, what)
     return True;
   }
 }
+
+static Bool
+xnestCursorOffScreen (ppScreen, x, y)
+    ScreenPtr   *ppScreen;
+    int         *x, *y;
+{
+    return FALSE;
+}
+
+static void
+xnestCrossScreen (pScreen, entering)
+    ScreenPtr   pScreen;
+    Bool        entering;
+{
+}
+
+static miPointerScreenFuncRec xnestPointerCursorFuncs =
+{
+    xnestCursorOffScreen,
+    xnestCrossScreen,
+    miPointerWarpCursor
+};
 
 Bool xnestOpenScreen(index, pScreen, argc, argv)
      int index;
@@ -183,6 +206,8 @@ Bool xnestOpenScreen(index, pScreen, argc, argv)
 	       numVisuals, visuals);
 
   miInitializeBackingStore(pScreen);
+
+  miDCInitialize(pScreen, &xnestPointerCursorFuncs);
 
   pScreen->mmWidth = xnestWidth * DisplayWidthMM(xnestDisplay, 
 		       DefaultScreen(xnestDisplay)) / 
