@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.147 2001/11/05 23:30:07 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.149 2001/11/30 12:12:02 eich Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -229,7 +229,9 @@ typedef enum {
     OPTION_NOMMIO,
     OPTION_NOPCIBURST,
     OPTION_CYBER_SHADOW,
-    OPTION_CYBER_STRETCH
+    OPTION_CYBER_STRETCH,
+    OPTION_XV_HSYNC,
+    OPTION_XV_VSYNC
 } TRIDENTOpts;
 
 static const OptionInfoRec TRIDENTOptions[] = {
@@ -246,6 +248,8 @@ static const OptionInfoRec TRIDENTOptions[] = {
     { OPTION_MMIO_ONLY,		"MMIOonly",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_CYBER_SHADOW,	"CyberShadow",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_CYBER_STRETCH,	"CyberStretch",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_XV_HSYNC,          "XvHsync",      OPTV_INTEGER,   {0}, FALSE },
+    { OPTION_XV_VSYNC,          "XvVsync",      OPTV_INTEGER,   {0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -1284,6 +1288,18 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 						&pTrident->MUXThreshold)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "MUX Threshold set to %d\n",
 						pTrident->MUXThreshold);
+    }
+    pTrident->OverrideHsync = 0;
+    if (xf86GetOptValInteger(pTrident->Options, OPTION_XV_HSYNC, 
+						&pTrident->OverrideHsync)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Xv Hsync set to %d\n",
+						pTrident->OverrideHsync);
+    }
+    pTrident->OverrideVsync = 0;
+    if (xf86GetOptValInteger(pTrident->Options, OPTION_XV_VSYNC, 
+						&pTrident->OverrideVsync)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Xv Vsync set to %d\n",
+						pTrident->OverrideVsync);
     }
     if (xf86ReturnOptValBool(pTrident->Options, OPTION_SHADOW_FB, FALSE)) {
         if (!pTrident->Linear) 

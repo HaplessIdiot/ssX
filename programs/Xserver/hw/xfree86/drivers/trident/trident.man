@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.man,v 1.4 2001/09/12 13:39:20 alanh Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.man,v 1.5 2001/09/18 11:21:31 alanh Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH TRIDENT __drivermansuffix__ __vendorversion__
@@ -82,6 +82,18 @@ Default: undefined.
 .BI "Option \*qNoPciBurst\*q \*q" boolean \*q
 Turn off PCI burst mode, PCI Bursting is on by default.
 Default: off.
+.TP
+.BI "Option \*qXvHsync\*q \*q" real \*q
+Override the default Horizontal-sync value for the Xv extension.
+This is used to center the Xv image on the screen.  By default the values
+are assigned based on the video card.
+Default: undefined.
+.TP
+.BI "Option \*qXvVsync\*q \*q" real \*q
+Override the default Vertical-sync value for the Xv extension.
+This is used to center the Xv image on the screen.  By default the values
+are assigned based on the video card.
+Default: undefined.
 .SH "SEE ALSO"
 XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__)
 .SH AUTHOR

@@ -1,5 +1,6 @@
 XFree86 4.1.99.2 (xx November 2001)
-
+ 543. Add XvHsync, XvVsync to adjust skew values for centering of an
+      Xvideo window for the trident driver (Geoffrey Hausheer, Alan Hourihane).
  542. Fixed xkb to avoid setting of AccessXTimeout to 0 (Egbert Eich).
  541. Added option to sync the logfile after every line written (Egbert Eich).
  540. Improved APM handling: 
@@ -14277,4 +14278,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2066 2001/11/27 21:11:48 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2068 2001/11/30 12:11:51 eich Exp $

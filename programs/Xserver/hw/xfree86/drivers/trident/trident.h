@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.46 2001/09/24 20:40:14 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.48 2001/11/30 12:12:02 eich Exp $ */
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -142,6 +142,8 @@ typedef struct {
     CARD32              videoFlags;
     int			keyOffset;
 #endif
+    int                 OverrideHsync;
+    int                 OverrideVsync;
     OptionInfoPtr	Options;
 } TRIDENTRec, *TRIDENTPtr;
 
