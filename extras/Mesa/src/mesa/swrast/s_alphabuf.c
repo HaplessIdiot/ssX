@@ -21,7 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/mesa/swrast/s_alphabuf.c,v 1.3 2004/10/26 22:07:40 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/swrast/s_alphabuf.c,v 1.4 2004/12/10 15:30:13 alanh Exp $ */
 
 /*
  * Software alpha planes.  Many frame buffers don't have alpha bits so
@@ -178,13 +178,10 @@ GLchan *get_alpha_buffer( GLcontext *ctx )
    switch (swrast->CurrentBufferBit) {
    case DD_FRONT_LEFT_BIT:
       return ctx->DrawBuffer->FrontLeftAlpha;
-      break;
    case DD_BACK_LEFT_BIT:
       return ctx->DrawBuffer->BackLeftAlpha;
-      break;
    case DD_FRONT_RIGHT_BIT:
       return ctx->DrawBuffer->FrontRightAlpha;
-      break;
    case DD_BACK_RIGHT_BIT:
       return ctx->DrawBuffer->BackRightAlpha;
    default:

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/mesa/sparc/norm.S,v 1.2 2004/04/22 13:58:37 tsi Exp $ */
 
 #include "sparc_matrix.h"
 
@@ -11,7 +11,7 @@
 
 	.text
 
-#if defined(__sparc_v9__) && !defined(__linux__)
+#if (defined(__sparc_v9__) && (!defined(__linux__) || defined(__linux_sparc_64__)))
 #define STACK_VAR_OFF	(2047 + (8 * 16))
 #else
 #define STACK_VAR_OFF	(4 * 16)

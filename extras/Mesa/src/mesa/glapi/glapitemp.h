@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/glapi/glapitemp.h,v 1.3 2004/06/10 14:43:40 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/glapi/glapitemp.h,v 1.4 2004/12/10 15:30:11 alanh Exp $ */
 /* DO NOT EDIT - This file generated automatically by gl_apitemp.py (from Mesa) script */
 
 /*
@@ -4679,7 +4679,7 @@ KEYWORD1 void KEYWORD2 NAME(PointParameterfvSGIS)(GLenum pname, const GLfloat * 
 #error TABLE_ENTRY must be defined
 #endif
 
-static void * DISPATCH_TABLE_NAME[] = {
+static _glapi_proc DISPATCH_TABLE_NAME[] = {
    TABLE_ENTRY(NewList),
    TABLE_ENTRY(EndList),
    TABLE_ENTRY(CallList),
@@ -5503,7 +5503,7 @@ static void * DISPATCH_TABLE_NAME[] = {
  * We list the functions which are not otherwise used.
  */
 #ifdef UNUSED_TABLE_NAME
-static const void * const UNUSED_TABLE_NAME[] = {
+static _glapi_proc UNUSED_TABLE_NAME[] = {
    TABLE_ENTRY(ActiveTexture),
    TABLE_ENTRY(ClientActiveTexture),
    TABLE_ENTRY(MultiTexCoord1d),

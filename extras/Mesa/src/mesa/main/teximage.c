@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/main/teximage.c,v 1.3 2004/10/26 22:07:39 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/main/teximage.c,v 1.4 2004/12/10 15:30:12 alanh Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  6.1
@@ -331,6 +331,9 @@ static GLboolean
 is_color_format(GLenum format)
 {
    switch (format) {
+      case GL_RED:
+      case GL_GREEN:
+      case GL_BLUE:
       case GL_ALPHA:
       case GL_ALPHA4:
       case GL_ALPHA8:
@@ -2795,6 +2798,9 @@ compressed_texture_error_check(GLcontext *ctx, GLint dimensions,
    maxTextureSize = 1 << (maxLevels - 1);
 
    if (!is_compressed_format(ctx, internalFormat))
+      return GL_INVALID_ENUM;
+
+   if (_mesa_base_tex_format(ctx, internalFormat) < 0)
       return GL_INVALID_ENUM;
 
    if (border != 0)

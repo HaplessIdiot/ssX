@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_swtcl.c,v 1.1.1.3 2004/12/10 15:05:59 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_swtcl.c,v 1.1.1.4 2004/12/10 15:33:03 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -117,12 +117,17 @@ static void r200SetVertexFormat( GLcontext *ctx )
    }
 
    rmesa->swtcl.coloroffset = offset;
+#if MESA_LITTLE_ENDIAN 
    EMIT_ATTR( _TNL_ATTRIB_COLOR0, EMIT_4UB_4F_RGBA, (R200_VTX_PK_RGBA << R200_VTX_COLOR_0_SHIFT) );
+#else
+   EMIT_ATTR( _TNL_ATTRIB_COLOR0, EMIT_4UB_4F_ABGR, (R200_VTX_PK_RGBA << R200_VTX_COLOR_0_SHIFT) );
+#endif
    offset += 1;
 
    rmesa->swtcl.specoffset = 0;
    if (index & (_TNL_BIT_COLOR1|_TNL_BIT_FOG)) {
 
+#if MESA_LITTLE_ENDIAN 
       if (index & _TNL_BIT_COLOR1) {
 	 rmesa->swtcl.specoffset = offset;
 	 EMIT_ATTR( _TNL_ATTRIB_COLOR1, EMIT_3UB_3F_RGB, (R200_VTX_PK_RGBA << R200_VTX_COLOR_1_SHIFT) );
@@ -137,6 +142,22 @@ static void r200SetVertexFormat( GLcontext *ctx )
       else {
 	 EMIT_PAD( 1 );
       }
+#else
+      if (index & _TNL_BIT_FOG) {
+	 EMIT_ATTR( _TNL_ATTRIB_FOG, EMIT_1UB_1F, (R200_VTX_PK_RGBA << R200_VTX_COLOR_1_SHIFT) );
+      }
+      else {
+	 EMIT_PAD( 1 );
+      }
+
+      if (index & _TNL_BIT_COLOR1) {
+	 rmesa->swtcl.specoffset = offset;
+	 EMIT_ATTR( _TNL_ATTRIB_COLOR1, EMIT_3UB_3F_BGR, (R200_VTX_PK_RGBA << R200_VTX_COLOR_1_SHIFT) );
+      }
+      else {
+	 EMIT_PAD( 3 );
+      }
+#endif
    }
 
    if (index & _TNL_BITS_TEX_ANY) {

@@ -21,7 +21,7 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  */
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/common/xmlconfig.c,v 1.3 2004/06/10 14:43:38 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/common/xmlconfig.c,v 1.4 2004/12/10 15:30:09 alanh Exp $ */
 /**
  * \file xmlconfig.c
  * \brief Driver-independent client-side part of the XML configuration
@@ -50,6 +50,10 @@
 #undef GET_PROGRAM_NAME
 
 #if (defined(__GNU_LIBRARY__) || defined(__GLIBC__)) && !defined(__UCLIBC__)
+#    if !defined(__GLIBC__) || (__GLIBC__ < 2)
+/* These aren't declared in any libc5 header */
+extern char *program_invocation_name, *program_invocation_short_name;
+#    endif
 #    define GET_PROGRAM_NAME() program_invocation_short_name
 #elif defined(__FreeBSD__) && (__FreeBSD__ >= 2)
 #    include <osreldate.h>
