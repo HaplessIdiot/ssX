@@ -4,7 +4,7 @@
 //  Rules for resolving XKB components for use with XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.38 2001/10/03 07:44:23 alanh Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.39 2001/10/10 19:18:31 herrb Exp $
 //
 
 ! model 	=	keycodes	geometry
@@ -23,6 +23,7 @@
   abnt2		=	xfree86(abnt2)	pc
   hp		=       xfree86         pc(pc104)
   itouch	=       xfree86         pc(pc104)
+  itouch2	=       xfree86         pc(pc104)
   logicordless  =	xfree86		pc(pc104)
   logiinternet  =	xfree86		pc(pc104)
   compaq	=       xfree86         pc(pc104)
@@ -93,6 +94,9 @@
   itouch	us	=	us(pc104)+inet(itouch)
   itouch	en_US	=	en_US(pc104)+inet(itouch)
   itouch	*	=	en_US(pc104)+inet(itouch)+%l%(v)
+  itouch2	us	=	us(pc104)+inet(itouch2)
+  itouch2	en_US	=	en_US(pc104)+inet(itouch2)
+  itouch2	*	=	en_US(pc104)+inet(itouch2)+%l%(v)
   logicordless	us	=	us(pc104)+inet(logicordless)
   logicordless	en_US	=	en_US(pc104)+inet(logicordless)
   logicordless	*	=	en_US(pc104)+inet(logicordless)+%l%(v)

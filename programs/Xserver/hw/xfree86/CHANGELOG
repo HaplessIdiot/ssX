@@ -1,4 +1,10 @@
 XFree86 4.1.99.4 (xx December 2001)
+ 622. Add XKB layout info for a newer Logitech iTouch keyboard (#A.727,
+      Dimitromanolakis Apostolos).
+ 621. Fix a problem that shows up with the summa tablet driver when using
+      a Genius EasyPen (#A.714, Anders Melchiorsen).
+ 620. Fix for VT switch problem with the S3 driver (based on #A.677,
+      Juergen Lesny).
  619. Remove some more spurious entries in the KSC 5601 encoding file (#A.678,
       Jungshik Shin).
  618. Fix for APM problem on devfs-based Linux systems with APM in a kernel
@@ -14419,4 +14425,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2103 2001/12/24 17:15:12 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2104 2001/12/24 23:21:22 dawes Exp $

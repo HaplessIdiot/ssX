@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.37 2001/11/21 21:20:54 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.38 2001/11/21 22:28:52 dawes Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -22,6 +22,7 @@
   abnt2		Brazilian ABNT2
   hp		HP Internet
   itouch	Logitech iTouch
+  itouch2	Logitech iTouch (newer model)
   logicordless	Logitech Cordless Desktop Pro
   logiinternet	Logitech Internet Keyboard
   compaq	Compaq Internet
