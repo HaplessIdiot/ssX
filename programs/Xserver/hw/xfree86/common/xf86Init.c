@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Init.c,v 1.8 95/01/16 13:17:00 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.22 1995/11/05 06:54:20 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.23 1995/11/05 07:20:17 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -735,18 +735,22 @@ xf86CheckBeta()
     if (m) {
       putc('\007', m);
       fprintf(m, "\n");
-      fprintf(m, "             This is a beta version of XFree86\n\n");
+      fprintf(m, "             This is a beta version of XFree86.\n\n");
+      fprintf(m, " This binary may be redistributed providing it is not"
+		 " modified in any way.\n\n");
       fprintf(m, " Please send success and problem reports to"
-		 " <report@XFree86.org>\n\n");
+		 " <report@XFree86.org>.\n\n");
       if (expired) {
-	fprintf(m, " This version (%s) has expired\n", XF86_VERSION);
-	fprintf(m, " Please get the release version or a newer beta version\n");
+	fprintf(m, " This version (%s) has expired.\n", XF86_VERSION);
+	fprintf(m, " Please get the release version or a newer beta"
+		   " version.\n");
       } else if (expiresoon) {
 	fprintf(m, " WARNING! This version (%s) will expire in less than"
 		   " %d day(s)\n at %s\n", XF86_VERSION,
 		(expirytime - time(NULL)) / DAY_IN_SECONDS + 1,
 		ctime(&expirytime));
-	fprintf(m, " Please get the release version or a newer beta version\n");
+	fprintf(m, " Please get the release version or a newer beta"
+		   " version.\n");
       } else if (expirytime != 0) {
 	fprintf(m, " This version (%s) will expire at %s\n", XF86_VERSION,
 		ctime(&expirytime));
