@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftdpy.c,v 1.14 2002/08/02 18:48:56 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftdpy.c,v 1.17 2002/09/26 02:56:48 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -484,11 +484,9 @@ XftDefaultSubstitute (Display *dpy, int screen, FcPattern *pattern)
 	int	subpixel;
 #if RENDER_MAJOR > 0 || RENDER_MINOR >= 6
 	subpixel = XRenderQuerySubpixelOrder (dpy, screen);
-	if (subpixel == SubPixelNone)
+#else
+	subpixel = FC_RGBA_UNKNOWN;
 #endif
-	{
-	    subpixel = FC_RGBA_NONE;
-	}
 
 	FcPatternAddInteger (pattern, FC_RGBA,
 			      XftDefaultGetInteger (dpy, FC_RGBA, screen, 

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/XftCompat.h,v 1.3 2002/05/22 17:14:33 keithp Exp $
+ * $XFree86: xc/lib/Xft/XftCompat.h,v 1.4 2002/05/24 05:54:02 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -74,11 +74,12 @@ typedef FcChar32    XftChar32;
 #define XFT_MONO		FC_MONO
 #define XFT_CHARCELL		FC_CHARCELL
 
-#define XFT_RGBA_NONE		FC_RGBA_NONE
+#define XFT_RGBA_UNKNOWN	FC_RGBA_UNKNOWN
 #define XFT_RGBA_RGB		FC_RGBA_RGB
 #define XFT_RGBA_BGR		FC_RGBA_BGR
 #define XFT_RGBA_VRGB		FC_RGBA_VRGB
 #define XFT_RGBA_VBGR		FC_RGBA_VBGR
+#define XFT_RGBA_NONE		FC_RGBA_NONE
 
 /*
  * Old constants
