@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.34 2003/04/07 16:23:34 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.35 2003/04/11 15:17:08 dawes Exp $ */
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
  *
@@ -65,7 +65,7 @@ static int i810_pitch_flags[] = {
    0
 };
 
-Bool
+static Bool
 I810CleanupDma(ScrnInfoPtr pScrn)
 {
    I810Ptr pI810 = I810PTR(pScrn);
@@ -84,7 +84,7 @@ I810CleanupDma(ScrnInfoPtr pScrn)
    return TRUE;
 }
 
-Bool
+static Bool
 I810InitDma(ScrnInfoPtr pScrn)
 {
    I810Ptr pI810 = I810PTR(pScrn);
