@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.186 2002/11/25 14:04:47 eich Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.187 2002/11/30 06:21:26 keithp Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1590,8 +1590,8 @@ XCOMM X Window System make variables; these need to be coordinated with rules
         MKFONTDIR = $(BINDIR)/mkfontdir
           FCCACHE = $(BINDIR)/fc-cache
       MKHTMLINDEX = $(BINDIR)/mkhtmlindex
-          UCS2ANY = $(BINDIR)/ucs2any.pl
-      BDFTRUNCATE = $(BINDIR)/bdftruncate.pl
+          UCS2ANY = $(BINDIR)/ucs2any
+      BDFTRUNCATE = $(BINDIR)/bdftruncate
      UCSMAPPREFIX = $(FONTDIR)/util/map-
        XCURSORGEN = $(BINDIR)/xcursorgen
 #else
