@@ -27,7 +27,7 @@
  *
  * Much code taken from X11R3 String and Disk Sources.
  */
-/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.26 2002/06/06 18:09:38 paulo Exp $ */
+/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.27 2002/07/04 17:04:20 paulo Exp $ */
 
 /*
 
@@ -297,6 +297,9 @@ XawMultiSrcInitialize(Widget request, Widget cnew,
     src->text_src.changed = False;
 #endif
     src->multi_src.allocated_string = False;
+
+    if (src->multi_src.use_string_in_place && src->multi_src.string == NULL)
+	src->multi_src.use_string_in_place = False;
 
     file = InitStringOrFile(src, src->multi_src.type == XawAsciiFile);
     LoadPieces(src, file, NULL);
