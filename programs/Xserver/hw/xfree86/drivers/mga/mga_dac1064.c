@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac1064.c,v 1.8 1997/09/09 10:27:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac1064.c,v 1.9 1997/10/13 17:16:41 hohndel Exp $ */
 
 
 /*
@@ -194,6 +194,7 @@ unsigned char reg, val;
 	OUTREG8(RAMDAC_OFFSET + reg, val);
 }
 
+#ifdef	PC98_MGA
 /*
  * MGA-1064SG for PC98
  *
@@ -266,6 +267,7 @@ for(i=0; i<sizeof(MGADACregs); i++) {
 
 	outb(MGAREG_MISC_WRITE, 0xd);
 }
+#endif	/* PC98_MGA */
 
 /*
  * MGA1064SGCalcClock - Calculate the PLL settings (m, n, p, s).
