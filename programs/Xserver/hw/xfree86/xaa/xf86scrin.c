@@ -1,5 +1,5 @@
 /* $XConsortium: vgabppscrin.c,v 1.2 95/06/19 19:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.24 1998/04/05 16:42:22 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.25 1998/04/26 16:05:09 robin Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -84,6 +84,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "xf86maploc.h"
 #include "xf86local.h"
 #include "xf86pcache.h"
+#include "xf86scrin.h"
 
 #ifdef VGA256
 #define xaaVersRec xaavga256VersRec
