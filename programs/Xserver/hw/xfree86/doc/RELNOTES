@@ -44,6 +44,10 @@
   report@XFree86.org.  Please do not send these reports to our usual
   support address.
 
+  The XFree86 FAQ <http://www.xfree86.org/FAQ> contains a section about
+  the current beta version.  It includes a regularly updated list of
+  known problems.
+
   2.  New Features in 3.1.2B
 
   2.1.  General X server changes
@@ -59,10 +63,10 @@
      o  An implementation of the XInput extension is now included.  It
         has support for the following devices:
 
+
         +  Joystick (Linux and FreeBSD only at the moment)
 
         +  Wacom tablet (Wacom IV protocol only)
-
 
         +  Elographics touchscreen
 
@@ -125,9 +129,8 @@
         version.  A problem with it has been found and fixed in 3.1.2B,
         but it hasn't been tested.
 
+
   2.6.  S3 server
-
-
 
 
      o  Workaround for the hardware bug in some new Trio32 chips that
@@ -257,10 +260,10 @@
 
         +  dga -- a test program for the XFree86-DGA extension.
 
+
+
         +  xsetmode, xsetpointer -- programs for use with the XInput
            extension.
-
-
 
   3.  New Features in 3.1.2A
 
@@ -323,10 +326,9 @@
   3.5.  WD90C24 driver (SVGA server)
 
 
+
+
      o  A problem with snow at high clocks has been fixed.
-
-
-
 
   3.6.  S3 server
 
@@ -390,9 +392,9 @@
   3.10.  AGX server
 
 
+
+
      o  Fix for clock probing with AGX-010 chips.
-
-
 
   3.11.  VGA16 server
 
@@ -457,9 +459,9 @@
 
 
 
+
   (*)Note: The PC98 servers are for use only on PC98 machines (if you
   don't know what a PC98 machine is, you don't need these).  Binaries
-
   for these are available only for FreeBSD and NetBSD.
 
   If you don't already have XFree86 3.1.2 installed, first install that.
@@ -493,9 +495,7 @@
   /usr/XFree86-3.1.2A directory.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.15 1995/12/31 12:02:13 dawes Exp $
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.16 1996/01/21 01:49:46 dawes Exp $
 
 
 
