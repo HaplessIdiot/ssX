@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tridenthelper.c,v 1.9 1999/06/20 07:14:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tridenthelper.c,v 1.8 1999/06/13 15:49:06 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"

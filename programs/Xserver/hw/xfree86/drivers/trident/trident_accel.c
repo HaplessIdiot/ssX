@@ -23,7 +23,7 @@
  * 
  * Trident accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_accel.c,v 1.7 1999/06/20 07:14:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_accel.c,v 1.6 1999/04/25 10:02:28 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"

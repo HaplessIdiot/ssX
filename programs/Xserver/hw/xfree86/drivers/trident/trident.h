@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.14 1999/07/18 03:27:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.13 1999/07/04 06:39:06 dawes Exp $ */
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -32,8 +32,6 @@
 #include "compiler.h"
 #include "vgaHW.h"
 #include "xf86i2c.h"
-
-#define USE_MMIO 1
 
 typedef struct {
 	unsigned char tridentRegs3x4[0x100];
@@ -70,12 +68,14 @@ typedef struct {
     Bool		UsePCIRetry;
     Bool		UseGERetry;
     Bool		NewClockCode;
-    Bool		IsCyber;
     Bool		Clipping;
     Bool		DstEnable;
     Bool		ROP;
     Bool		HasSGRAM;
     Bool		MUX;
+    Bool		IsCyber;
+    Bool		CyberShadow;
+    Bool		NoMMIO;
     float		frequency;
     unsigned char	REGPCIReg;
     unsigned char	REGNewMode1;
@@ -122,9 +122,12 @@ void TridentReadAddress(ScrnInfoPtr pScrn, CARD32 index);
 void TridentWriteData(ScrnInfoPtr pScrn, unsigned char data);
 unsigned char TridentReadData(ScrnInfoPtr pScrn);
 void 	TridentLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indicies, LOCO *colors, VisualPtr pVisual);
-void TGUISetRead(int bank);
-void TGUISetWrite(int bank);
-void TGUISetReadWrite(int bank);
+int TGUISetRead(ScreenPtr pScreen, int bank);
+int TGUISetWrite(ScreenPtr pScreen, int bank);
+int TGUISetReadWrite(ScreenPtr pScreen, int bank);
+int TVGA8900SetRead(ScreenPtr pScreen, int bank);
+int TVGA8900SetWrite(ScreenPtr pScreen, int bank);
+int TVGA8900SetReadWrite(ScreenPtr pScreen, int bank);
 
 float CalculateMCLK(ScrnInfoPtr pScrn);
 
@@ -132,49 +135,56 @@ float CalculateMCLK(ScrnInfoPtr pScrn);
  * Trident Chipset Definitions
  */
 
-#define TVGA8200LX	0
-#define TVGA8800CS	1
-#define TVGA8900B	2
-#define TVGA8900C	3
-#define TVGA8900CL	4
-#define TVGA8900D	5
-#define TVGA9000	6
-#define TVGA9000i	7
-#define TVGA9100B	8
-#define TVGA9200CXr	9
-#define TGUI9400CXi	10
-#define TGUI9420	11
-#define TGUI9420DGi	12
-#define TGUI9430DGi	13
-#define TGUI9440AGi	14
-#define CYBER9320	15
-#define TGUI96xx	16 /* Backwards compatibility */
-#define TGUI9660	16
-#define TGUI9680	17
-#define PROVIDIA9682	18
-#define PROVIDIA9685	19
-#define CYBER9382	20
-#define CYBER9385	21
-#define CYBER9388	22
-#define CYBER9397	23
-#define CYBER9520	24
-#define IMAGE975	25
-#define IMAGE985	26
-#define CYBER939A	27
-#define CYBER9525	28
-#define BLADE3D		29
-#define CYBERBLADEI7	30
-#define CYBERBLADEI7D	31
-#define CYBERBLADEI1	32
+/* Supported chipsets */
+typedef enum {
+    TVGA8200LX,
+    TVGA8800CS,
+    TVGA8900B,
+    TVGA8900C,
+    TVGA8900CL,
+    TVGA8900D,
+    TVGA9000,
+    TVGA9000i,
+    TVGA9100B,
+    TVGA9200CXr,
+    TGUI9420DGi,
+    TGUI9430DGi,
+    TGUI9440AGi,
+    CYBER9320,
+    TGUI9660,
+    TGUI9680,
+    PROVIDIA9682,
+    PROVIDIA9685,
+    CYBER9382,
+    CYBER9385,
+    CYBER9388,
+    CYBER9397,
+    CYBER9397DVD,
+    CYBER9520,
+    CYBER9525DVD,
+    IMAGE975,
+    IMAGE985,
+    BLADE3D,
+    CYBERBLADEI7,
+    CYBERBLADEI7D,
+    CYBERBLADEI1
+} TRIDENTType;
+
+#define UseMMIO		(pTrident->NoMMIO == FALSE)
+
+#define IsPciCard	(pTrident->pEnt->location.type == BUS_PCI)
+
+#define IsPrimaryCard	((xf86IsPrimaryPci(pTrident->PciInfo)) || \
+			 (xf86IsPrimaryIsa()))
 
 #define HAS_DST_TRANS	((pTrident->Chipset == PROVIDIA9682) || \
 			 (pTrident->Chipset == PROVIDIA9685))
 
 #define Is3Dchip	((pTrident->Chipset == CYBER9388) || \
 			 (pTrident->Chipset == CYBER9397) || \
-			 (pTrident->Chipset == CYBER939A) || \
+			 (pTrident->Chipset == CYBER9397DVD) || \
 			 (pTrident->Chipset == CYBER9520) || \
-			 (pTrident->Chipset == CYBER9525) || \
+			 (pTrident->Chipset == CYBER9525DVD) || \
 			 (pTrident->Chipset == IMAGE975)  || \
 			 (pTrident->Chipset == IMAGE985)  || \
 			 (pTrident->Chipset == CYBERBLADEI7)  || \
