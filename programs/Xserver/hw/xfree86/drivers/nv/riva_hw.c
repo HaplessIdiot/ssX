@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.32 2002/04/30 20:04:44 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.33 2002/08/05 20:47:06 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -1297,7 +1297,7 @@ static void CalcStateExt
             state->cursor0  = 0x80 | (chip->CursorStart >> 17);
             state->cursor1  = (chip->CursorStart >> 11) << 2;
 	    state->cursor2  = chip->CursorStart >> 24;
-	    if (flags & V_DBLSCAN)
+	    if (flags & V_DBLSCAN) 
 		state->cursor1 |= 2;
             state->pllsel   = 0x10000700;
             state->config   = chip->PFB[0x00000200/4];
@@ -1601,7 +1601,17 @@ static void LoadStateExt
             for (i = 0; i < 4; i++)
                 chip->PGRAPH[0x00000F54/4] = 0x00000000;
 
+            chip->PCRTC[0x00000810/4] = state->cursorConfig;
+
             if(chip->flatPanel) {
+#if 0
+               switch(chip->Chipset & 0x0ff0) {
+               case 0x0170: 
+                   chip->PRAMDAC[0x083C/4] |= 1;
+               default: break;
+               }
+#endif
+
                VGA_WR08(chip->PCIO, 0x03D4, 0x53);
                VGA_WR08(chip->PCIO, 0x03D5, 0);
                VGA_WR08(chip->PCIO, 0x03D4, 0x54);
@@ -1609,7 +1619,6 @@ static void LoadStateExt
                VGA_WR08(chip->PCIO, 0x03D4, 0x21);
                VGA_WR08(chip->PCIO, 0x03D5, 0xfa);
             }
-            break;
 
             VGA_WR08(chip->PCIO, 0x03D4, 0x41);
             VGA_WR08(chip->PCIO, 0x03D5, state->extra);
@@ -1753,6 +1762,7 @@ static void UnloadStateExt
             }
             VGA_WR08(chip->PCIO, 0x03D4, 0x41);
             state->extra = VGA_RD08(chip->PCIO, 0x03D5);
+            state->cursorConfig = chip->PCRTC[0x00000810/4];
             break;
     }
 }
