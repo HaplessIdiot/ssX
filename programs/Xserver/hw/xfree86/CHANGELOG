@@ -1,4 +1,25 @@
 XFree86 4.X.Ya (?? January 2001)
+1267. Add external CRT support for the Rage 128 Mobility (Kevin Martin
+      and ATI).
+1266. Radeon DRI fixes (VA Linux Systems).
+      - Re-enable freeing resources when the screen is destroyed (Kevin
+        Martin)
+      - Use screen-relative instead of window-relative coordiantes to
+        calculate the tiled depth buffer offset address (Kevin Martin)
+      - Fix texture upload at offset 0 bug.  Quake 2 engine games use
+        TexSubImage to update lightmaps and the like, and we were
+        uploading the updates before the image had space in the texture
+        heap allocated to it. (Gareth Hughes)
+      - Add XF86Config file option to enable depth buffer moves (they
+        are disabled by default since they are excuciatingly slow)
+        (Kevin Martin)
+      - Enable bus mastering in PCI config space for those systems that
+        do not automatically have it enabled (Kevin Martin)
+      - Remove AGP_CNTL register programming -- it was a holdover from
+        the Rage 128 driver and is not needed on the Radeon (Kevin
+        Martin)
+      - Fix offscreen memory allocation calculation for textures (Kevin
+        Martin)
 1265. Allow libGLU to be built (Craig Dunwoody, SGI, David Dawes,
       Alan Hourihane).
 1264. Import the GLU parts of ogl-sample.
@@ -12228,4 +12249,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1521 2001/01/15 22:18:09 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1522 2001/01/16 00:39:27 dawes Exp $

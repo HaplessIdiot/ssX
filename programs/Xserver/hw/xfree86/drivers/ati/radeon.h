@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.10 2001/01/08 01:07:35 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.11 2001/01/11 03:36:57 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -280,11 +280,15 @@ typedef struct {
 
     Bool              IsPCI;            /* Current card is a PCI card */
 
+    Bool              depthMoves;       /* Enable depth moves -- slow! */
+
     drmSize           agpSize;
     drmHandle         agpMemHandle;     /* Handle from drmAgpAlloc */
     unsigned long     agpOffset;
     unsigned char     *AGP;             /* Map */
     int               agpMode;
+
+    CARD32            pciCommand;
 
     Bool              CPInUse;          /* CP has been used by X server */
     int               CPMode;           /* CP mode that server/clients use */

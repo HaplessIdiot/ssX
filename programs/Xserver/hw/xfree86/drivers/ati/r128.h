@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.8 2000/12/08 19:15:33 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.9 2001/01/06 20:19:10 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -202,8 +202,9 @@ typedef struct {
     unsigned long     FbMapSize;    /* Size of frame buffer, in bytes        */
     int               Flags;        /* Saved copy of mode flags              */
 
+    CARD8             BIOSDisplay;  /* Device the BIOS is set to display to  */
+
     Bool              HasPanelRegs; /* Current chip can connect to a FP      */
-    Bool              CRTOnly;      /* Only use External CRT instead of FP   */
     CARD8             *VBIOS;       /* Video BIOS for mode validation on FPs */
     int               FPBIOSstart;  /* Start of the flat panel info          */
 
