@@ -1,5 +1,5 @@
 # $XConsortium: Makefile /main/36 1996/11/13 14:42:50 lehors $
-# $XFree86: xc/Makefile,v 3.7 1997/04/13 14:50:02 dawes Exp $
+# $XFree86: xc/Makefile,v 3.8 1998/03/27 23:22:55 hohndel Exp $
 
 # Luna users will need to either run make as "make MAKE=make"
 # or add "MAKE = make" to this file.
@@ -57,7 +57,7 @@ World:
 	$(MAKE_CMD) $(MFLAGS) includes
 	$(MAKE_CMD) $(MFLAGS) depend
 	$(MAKE_CMD) $(MFLAGS) $(WORLDOPTS) World
-	find . -name Makefile.bak -type f -print | xargs -r rm
+	find . -name Makefile.bak -type f -exec rm {} \;
 	@echo ""
 	@date
 	@echo ""
