@@ -1,4 +1,4 @@
-/* $XFree86: xf86Config.c,v 3.254 2002/01/15 01:56:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.256 2002/04/04 14:05:39 eich Exp $ */
 
 
 /*
@@ -976,6 +976,9 @@ configInputKbd(IDevPtr inputp)
   xf86Info.panix106      = FALSE;
 #endif
   xf86Info.kbdCustomKeycodes = FALSE;
+#ifdef WSCONS_SUPPORT
+  xf86Info.kbdFd 	   = -1;
+#endif
 #ifdef XKB
   if (!xf86IsPc98()) {
     xf86Info.xkbrules      = "xfree86";
@@ -1050,6 +1053,11 @@ configInputKbd(IDevPtr inputp)
 #ifdef WSKBD_TYPE_ADB
      case WSKBD_TYPE_ADB:
 	     xf86Msg(X_PROBED, "Keyboard type: ADB\n");
+	     break;
+#endif
+#ifdef WSKBD_TYPE_SUN
+     case WSKBD_TYPE_SUN:
+	     xf86Msg(X_PROBED, "Keyboard type: Sun\n");
 	     break;
 #endif
      default:

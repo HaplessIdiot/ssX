@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.45 2001/10/01 13:44:01 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.47 2002/04/04 14:05:40 eich Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -351,10 +351,16 @@ xf86KbdProc (pKeyboard, what)
      * passing on parts of the VT switch sequence.
      */
     sleep(1);
-    if (kbdFd != -1) {
-	char buf[16];
-	read(kbdFd, buf, 16);
+#if defined(WSCONS_SUPPORT)
+    if (xf86Info.consType != WSCONS) {
+#endif
+	if (kbdFd != -1) {
+		char buf[16];
+		read(kbdFd, buf, 16);
+    	}
+#if defined(WSCONS_SUPPORT)
     }
+#endif
 
 #if !defined(__EMX__) /* Under EMX, keyboard cannot be select()'ed */
     if (kbdFd != -1)
