@@ -1,6 +1,7 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/bundle/Imakefile,v 1.9 2001/04/18 20:28:52 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/bundle/Imakefile,v 1.10 2001/05/15 02:53:00 torrey Exp $
 
 #include <Server.tmpl>
+#define IHaveSubdirs
 
 SRCS =	Preferences.m \
         XApplication.m \
@@ -35,6 +36,17 @@ XDARWINROOT = $(BINDIR)
 XDARWINROOT = /Applications
 #endif
 
+#if XFree86Devel
+PBXBUILDSTYLE = -buildstyle Development
+#else
+PBXBUILDSTYLE = -buildstyle Deployment
+#endif
+
+SUBDIRS = English.lproj Japanese.lproj
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
+
 NormalLibraryObjectRule()
 NormalLibraryTarget(XQuartz,$(OBJS))
 
@@ -49,13 +61,14 @@ install::
 
 AllTarget(XDarwin)
 XDarwin:
-	pbxbuild -target XDarwin
+	pbxbuild -target XDarwin $(PBXBUILDSTYLE)
 
 install::
-	pbxbuild install -target XDarwin DSTROOT=$(DESTDIR)$(XDARWINROOT)
+	pbxbuild install -target XDarwin $(PBXBUILDSTYLE) \
+		DSTROOT=$(DESTDIR)$(XDARWINROOT)
 
 clean::
-	pbxbuild "clean" -target XDarwin
+	pbxbuild "clean" -target XDarwin $(PBXBUILDSTYLE)
 
 DependTarget()
 

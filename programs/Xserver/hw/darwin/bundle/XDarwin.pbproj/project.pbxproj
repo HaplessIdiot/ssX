@@ -341,7 +341,7 @@
 	<key>CFBundleExecutable</key>
 	<string>XDarwin</string>
 	<key>CFBundleGetInfoString</key>
-	<string>XFree86 Version 4.1</string>
+	<string>XDarwin 1.0, ©2001 XFree86 Project, Inc.</string>
 	<key>CFBundleIconFile</key>
 	<string>XDarwin.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -353,11 +353,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>XDarwin version 0.6</string>
+	<string>XDarwin 1.0</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>0.6</string>
+	<string></string>
 	<key>NSHelpFile</key>
 	<string>XDarwinHelp.html</string>
 	<key>NSMainNibFile</key>
@@ -518,6 +518,50 @@
 			name = Products;
 			refType = 4;
 		};
+		1BD8DE4200B8A3567F000001 = {
+			children = (
+				1BD8DE4300B8A3567F000001,
+				1BD8DE4700B8A3C77F000001,
+			);
+			isa = PBXVariantGroup;
+			name = InfoPlist.strings.cpp;
+			path = "";
+			refType = 4;
+		};
+		1BD8DE4300B8A3567F000001 = {
+			isa = PBXFileReference;
+			name = English;
+			path = English.lproj/InfoPlist.strings.cpp;
+			refType = 4;
+		};
+		1BD8DE4400B8A38E7F000001 = {
+			children = (
+				1BD8DE4500B8A38E7F000001,
+				1BD8DE4800B8A4167F000001,
+			);
+			isa = PBXVariantGroup;
+			name = XDarwinHelp.html.cpp;
+			path = "";
+			refType = 4;
+		};
+		1BD8DE4500B8A38E7F000001 = {
+			isa = PBXFileReference;
+			name = English;
+			path = English.lproj/XDarwinHelp.html.cpp;
+			refType = 4;
+		};
+		1BD8DE4700B8A3C77F000001 = {
+			isa = PBXFileReference;
+			name = Japanese;
+			path = Japanese.lproj/InfoPlist.strings.cpp;
+			refType = 4;
+		};
+		1BD8DE4800B8A4167F000001 = {
+			isa = PBXFileReference;
+			name = Japanese;
+			path = Japanese.lproj/XDarwinHelp.html.cpp;
+			refType = 4;
+		};
 		1BE4F84D0006C9890A000002 = {
 			isa = PBXFrameworkReference;
 			name = Carbon.framework;
@@ -598,9 +642,11 @@
 			children = (
 				29B97318FDCFA39411CA2CEA,
 				089C165CFE840E0CC02AAC07,
+				1BD8DE4200B8A3567F000001,
 				1220774300712D2D416877C2,
 				0157A37D002CF6D7CE6F79C2,
 				02E03CA000348209CE6F79C2,
+				1BD8DE4400B8A38E7F000001,
 				015698ED003DF345CE6F79C2,
 			);
 			isa = PBXGroup;
