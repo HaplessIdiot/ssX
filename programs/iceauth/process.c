@@ -24,7 +24,7 @@ in this Software without prior written authorization from The Open Group.
  * Modified into "iceauth"    : Ralph Mor, X Consortium
  */
 
-/* $XFree86: xc/programs/iceauth/process.c,v 3.4 2001/07/25 15:05:13 dawes Exp $ */
+/* $XFree86: xc/programs/iceauth/process.c,v 3.5 2001/12/02 14:49:59 herrb Exp $ */
 
 #include "iceauth.h"
 #include <ctype.h>
@@ -494,6 +494,9 @@ static Bool dieing = False;
 #define _signal_t void
 #endif
 
+/* poor man's puts(), for under signal handlers */
+#define WRITES(fd, S) (void)write((fd), (S), strlen((S)))
+
 /* ARGSUSED */
 static _signal_t die (sig)
     int sig;
@@ -512,7 +515,15 @@ static _signal_t catchsig (sig)
 #ifdef SYSV
     if (sig > 0) signal (sig, die);	/* re-establish signal handler */
 #endif
-    if (verbose && iceauth_modified) write (STDOUT_FILENO, "\r\n", 2);
+    /*
+     * fileno() might not be reentrant, avoid it if possible, and use
+     * stderr instead of stdout
+     */
+#ifdef STDERR_FILENO
+    if (verbose && iceauth_modified) WRITES(STDERR_FILENO, "\r\n");
+#else
+    if (verbose && iceauth_modified) WRITES(fileno(stderr), "\r\n");
+#endif
     die (sig);
     /* NOTREACHED */
 #ifdef SIGNALRETURNSINT
@@ -668,10 +679,20 @@ int auth_finalize ()
     if (iceauth_modified) {
 	if (dieing) {
 	    if (verbose) {
-		snprintf (temp_name, sizeof temp_name,
-			  "Aborting changes to authority file %s\n",
-			  iceauth_filename);
-		write(STDERR_FILENO, temp_name, strlen(temp_name));
+		/*
+		 * called from a signal handler -- printf is *not* reentrant; also
+		 * fileno() might not be reentrant, avoid it if possible, and use
+		 * stderr instead of stdout
+		 */
+#ifdef STDERR_FILENO
+		WRITES(STDERR_FILENO, "\nAborting changes to authority file ");
+		WRITES(STDERR_FILENO, iceauth_filename);
+		WRITES(STDERR_FILENO, "\n");
+#else
+		WRITES(fileno(stderr), "\nAborting changes to authority file ");
+		WRITES(fileno(stderr), iceauth_filename);
+		WRITES(fileno(stderr), "\n");
+#endif
 	    }
 	} else if (!iceauth_allowed) {
 	    fprintf (stderr, 
