@@ -1,3 +1,7 @@
+XFree86 3.1.0Bf (14 January 1995)
+199. Fix VTSema-related problem in s3bstore.c (Henry Worth).
+198. Merge in XC's pre-fix-07 LBX code.
+
 XFree86 3.1.0Be (12 January 1995)
 197. Include Japanese translations of some XFree86 3.1 docs (Kazuyuki Okamoto).
 196. Updates to SPEA detection code (Norbert Distler).
