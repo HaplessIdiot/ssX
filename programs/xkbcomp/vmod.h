@@ -1,4 +1,4 @@
-/* $XConsortium: vmod.h,v 1.2 94/04/08 15:25:42 erik Exp $ */
+/* $Xorg: vmod.h,v 1.3 2000/08/17 19:54:33 cpqbld Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -36,66 +36,50 @@ typedef struct _VModInfo {
 } VModInfo;
 
 extern void	InitVModInfo(
-#if NeedFunctionPrototypes
     VModInfo *	/* info */,
     XkbDescPtr	/* xkb */
-#endif
 );
 
 extern void	ClearVModInfo(
-#if NeedFunctionPrototypes
     VModInfo *	/* info */,
     XkbDescPtr	/* xkb */
-#endif
 );
 
 extern Bool	HandleVModDef(
-#if NeedFunctionPrototypes
     VModDef *	/* stmt */,
     unsigned	/* mergeMode */,
     VModInfo *	/* info */
-#endif
 );
 
 extern Bool	ApplyVModDefs(
-#if NeedFunctionPrototypes
     VModInfo *	/* info */,
     XkbDescPtr	/* xkb */
-#endif
 );
 
 extern int	LookupVModIndex(
-#if NeedFunctionPrototypes
     XPointer 		/* priv */,
-    StringToken		/* elem */,
-    StringToken		/* field */,
+    Atom		/* elem */,
+    Atom		/* field */,
     unsigned		/* type */,
     ExprResult *	/* val_rtrn */
-#endif
 );
 
 extern int	LookupVModMask(
-#if NeedFunctionPrototypes
     XPointer 		/* priv */,
-    StringToken		/* elem */,
-    StringToken		/* field */,
+    Atom		/* elem */,
+    Atom		/* field */,
     unsigned		/* type */,
     ExprResult *	/* val_rtrn */
-#endif
 );
 
 extern int	FindKeypadVMod(
-#if NeedFunctionPrototypes
     XkbDescPtr		/* xkb */
-#endif
 );
 
 extern Bool	ResolveVirtualModifier(
-#if NeedFunctionPrototypes
     ExprDef *		/* def */,
     ExprResult *	/* value_rtrn */,
     VModInfo *		/* info */
-#endif
 );
 
 #endif /* VMOD_H */

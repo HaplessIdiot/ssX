@@ -65,30 +65,26 @@ typedef struct _ActionInfo {
 } ActionInfo;
 
 extern int HandleActionDef(
-#if NeedFunctionPrototypes
 	ExprDef *		/* def */,
 	XkbDescPtr		/* xkb */,
 	XkbAnyAction *		/* action */,
 	unsigned		/* mergeMode */,
 	ActionInfo *		/* info */
-#endif
 );
 
 extern int SetActionField(
-#if NeedFunctionPrototypes
 	XkbDescPtr		/* xkb */,
 	char *			/* elem */,
 	char *			/* field */,
 	ExprDef *		/* index */,
 	ExprDef *		/* value */,
 	ActionInfo **		/* info_rtrn */
-#endif
 );
 
 extern void ActionsInit(
-#if NeedFunctionPrototypes
 	void
-#endif
 );
+
+extern LookupEntry ctrlNames[];
 
 #endif /* ACTION_H */

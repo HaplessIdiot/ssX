@@ -1,4 +1,4 @@
-/* $XConsortium: keymap.c,v 1.2 94/04/08 15:26:16 erik Exp $ */
+/* $Xorg: keymap.c,v 1.3 2000/08/17 19:54:32 cpqbld Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -26,131 +26,142 @@
  ********************************************************/
 
 #include "xkbcomp.h"
-#include "xkbfile.h"
 #include "tokens.h"
 #include "expr.h"
 #include "vmod.h"
 #include "action.h"
+#include "misc.h"
 #include "indicators.h"
 
+#define	KEYCODES	0
+#define	GEOMETRY	1
+#define	TYPES		2
+#define	COMPAT		3
+#define	SYMBOLS		4
+#define	MAX_SECTIONS	5
+
+XkbFile *	sections[MAX_SECTIONS];
+
 Bool
-CompileKeymap(file,result,merge)
-    XkbFile	*	file;
-    XkbFileInfo *	result;
-    unsigned	 	merge;
+CompileKeymap(XkbFile *file,XkbFileInfo *result,unsigned merge)
 {
 unsigned	have;
 Bool		ok;
-unsigned	required,optional,legal;
+unsigned	required,legal;
 unsigned	mainType;
-StringToken	mainName;
+char *		mainName;
+LEDInfo	*	unbound= NULL;
 
+    bzero(sections,MAX_SECTIONS*sizeof(XkbFile *));
     mainType= file->type;
     mainName= file->name;
     switch (mainType) {
 	case XkmSemanticsFile:
 	    required= XkmSemanticsRequired;
-	    optional= XkmSemanticsOptional;
 	    legal= XkmSemanticsLegal;
 	    break;
 	case XkmLayoutFile:
 	    required= XkmLayoutRequired;
-	    optional= XkmLayoutOptional;
 	    legal= XkmKeymapLegal;
 	    break;
 	case XkmKeymapFile:
 	    required= XkmKeymapRequired;
-	    optional= XkmKeymapOptional;
 	    legal= XkmKeymapLegal;
 	    break;
 	default:
-	    uError("Cannot compile %s alone into an XKM file\n",
-						XkbConfigText(mainType));
+	    ERROR1("Cannot compile %s alone into an XKM file\n",
+					XkbConfigText(mainType,XkbMessage));
 	    return False;
     }
     have= 0;
     ok= 1;
-    file= (XkbFile *)file->common.next;
+    file= (XkbFile *)file->defs;
     while ((file)&&(ok)) {
+	file->topName= mainName;
 	if ((have&(1<<file->type))!=0) {
-	    uError("More than one %s section in a %s file\n",
-					XkbConfigText(file->type),
-					XkbConfigText(mainType));
-	    uAction("All sections after the first ignored\n");
+	    ERROR2("More than one %s section in a %s file\n",
+					XkbConfigText(file->type,XkbMessage),
+					XkbConfigText(mainType,XkbMessage));
+	    ACTION("All sections after the first ignored\n");
 	    ok= False;
 	}
 	else if ((1<<file->type)&(~legal)) {
-	    uError("Cannot define %s in a %s file\n",XkbConfigText(file->type),
-	    					     XkbConfigText(mainType));
+	    ERROR2("Cannot define %s in a %s file\n",
+	    				XkbConfigText(file->type,XkbMessage),
+	    			     	XkbConfigText(mainType,XkbMessage));
 	    ok= False;
 	}
 	else switch (file->type) {
 	    case XkmSemanticsFile:
 	    case XkmLayoutFile:
 	    case XkmKeymapFile:
-		uInternalError("Illegal %s configuration in a %s file\n",
-						XkbConfigText(file->type),
-						XkbConfigText(mainType));
-		uAction("Ignored\n");
+		WSGO2("Illegal %s configuration in a %s file\n",
+					XkbConfigText(file->type,XkbMessage),
+					XkbConfigText(mainType,XkbMessage));
+		ACTION("Ignored\n");
 		ok= False;
 		break;
 	    case XkmKeyNamesIndex:
-		ok= CompileKeycodes(file,result,MergeReplace);
-		    
+		sections[KEYCODES]= file;
 		break;
 	    case XkmTypesIndex:
-		ok= CompileKeyTypes(file,result,MergeReplace);
+		sections[TYPES]= file;
 		break;
 	    case XkmSymbolsIndex:
-		ok= CompileSymbols(file,result,MergeReplace,True);
+		sections[SYMBOLS]= file;
 		break;
 	    case XkmCompatMapIndex:
-		ok= CompileCompatMap(file,result,MergeReplace);
+		sections[COMPAT]= file;
 		break;
 	    case XkmGeometryIndex:
 	    case XkmGeometryFile:
-		uInternalError("Geometry file not supported yet\n");
+		sections[GEOMETRY]= file;
 		break;
 	    case XkmVirtualModsIndex:
 	    case XkmIndicatorsIndex:
-		uInternalError("Found an isolated %s section\n",
-						XkbConfigText(file->type));
-		break;
-	    case XkmAlternateSymsFile:
-		uError("Keymap file contains alternate symbol map\n");
-		uAction("Illegal component ignored\n");
-		ok= False;
+		WSGO1("Found an isolated %s section\n",
+					XkbConfigText(file->type,XkbMessage));
 		break;
 	    default:
-		uInternalError("Unknown file type %d\n",file->type);
+		WSGO1("Unknown file type %d\n",file->type);
 		break;
 	}
 	if (ok)
 	    have|= (1<<file->type);
 	file= (XkbFile*)file->common.next;
     }
-    result->configs= have;
+    if (ok) {
+	if (ok && (sections[KEYCODES]!=NULL))
+	    ok= CompileKeycodes(sections[KEYCODES],result,MergeOverride);
+	if (ok && (sections[GEOMETRY]!=NULL))
+	    ok= CompileGeometry(sections[GEOMETRY],result,MergeOverride);
+	if (ok && (sections[TYPES]!=NULL))
+	    ok= CompileKeyTypes(sections[TYPES],result,MergeOverride);
+	if (ok && (sections[COMPAT]!=NULL))
+	    ok=CompileCompatMap(sections[COMPAT],result,MergeOverride,&unbound);
+	if (ok && (sections[SYMBOLS]!=NULL))
+	    ok= CompileSymbols(sections[SYMBOLS],result,MergeOverride);
+    }
+    if (!ok)
+   	return False; 
+    result->defined= have;
     if (required&(~have)) {
 	register int i,bit;
 	unsigned missing;
 	missing= required&(~have);
 	for (i=0,bit=1;missing!=0;i++,bit<<=1) {
 	    if (missing&bit) {
-		uError("Missing %s section in a %s file\n",XkbConfigText(i),
-						XkbConfigText(mainType));
+		ERROR2("Missing %s section in a %s file\n",
+					XkbConfigText(i,XkbMessage),
+					XkbConfigText(mainType,XkbMessage));
 		missing&=~bit;
 	    }
 	}
-	uAction("Description of %s not compiled\n",XkbConfigText(mainType));
+	ACTION1("Description of %s not compiled\n",
+					XkbConfigText(mainType,XkbMessage));
 	ok= False;
     }
-    if ((mainType==XkmSemanticsFile)&&(mainName!=NullStringToken)) {
-        if (result->xkb.names!=NULL)
-	    result->xkb.names->semantics= mainName;
-    }
-    if (result->defined&XkbIndicatorMapsDefined) {
-	ok= BindIndicators(result,False);
-    }
+    ok= BindIndicators(result,True,unbound,NULL);
     return ok;
 }
 

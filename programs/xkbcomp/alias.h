@@ -1,4 +1,4 @@
-/* $XConsortium: alias.h /main/1 1995/11/30 19:06:57 kaleb $ */
+/* $Xorg: alias.h,v 1.3 2000/08/17 19:54:30 cpqbld Exp $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -35,32 +35,26 @@ typedef struct _AliasInfo {
 } AliasInfo;
 
 extern int HandleAliasDef(
-#if NeedFunctionPrototypes
 	KeyAliasDef *		/* def   */,
 	unsigned		/* merge */,
 	unsigned		/* file_id */,
 	AliasInfo **		/* info  */
-#endif
 );
 
 extern void ClearAliases(
-#if NeedFunctionPrototypes
 	AliasInfo **		/* info */
-#endif
 );
 
 extern Bool MergeAliases(
-#if NeedFunctionPrototypes
 	AliasInfo **		/* into */,
-	AliasInfo **		/* merge */
-#endif
+	AliasInfo **		/* merge */,
+	unsigned		/* how_merge */
 );
 
 extern int ApplyAliases(
-#if NeedFunctionPrototypes
 	XkbDescPtr		/* xkb */,
+	Bool			/* toGeom */,
 	AliasInfo **		/* info */
-#endif
 );
 
 #endif /* ALIAS_H */
