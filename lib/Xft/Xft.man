@@ -1,0 +1,150 @@
+.\"
+.\" $XFree86$
+.\"
+.\" Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
+.\"
+.\" Permission to use, copy, modify, distribute, and sell this software and its
+.\" documentation for any purpose is hereby granted without fee, provided that
+.\" the above copyright notice appear in all copies and that both that
+.\" copyright notice and this permission notice appear in supporting
+.\" documentation, and that the name of Keith Packard not be used in
+.\" advertising or publicity pertaining to distribution of the software without
+.\" specific, written prior permission.  Keith Packard makes no
+.\" representations about the suitability of this software for any purpose.  It
+.\" is provided "as is" without express or implied warranty.
+.\"
+.\" KEITH PACKARD DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+.\" INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+.\" EVENT SHALL KEITH PACKARD BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+.\" CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+.\" DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+.\" TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+.\" PERFORMANCE OF THIS SOFTWARE.
+.\"
+.de TQ
+.br
+.ns
+.TP \\$1
+..
+.TH XFT 3 "Version 1.0" "XFree86"
+
+.SH NAME
+ XFT \- X FreeType interface library
+
+.SH DESCRIPTION
+.B Xft
+is a simple library designed to interface the FreeType rasterizer with the X
+Rendering Extension.  This manual page barely scratches the surface of this
+library.
+
+.SH DATATYPES
+
+.B XftFont
+is an opaque pointer to a font object containing references to both the X
+server GlyphSet and the FreeType outline data.
+
+.B XftFontName
+contains matching information for accessing fonts.  Each field is matched
+with a bit in the mask indicating whether that field has valid data.
+
+.Ds 0
+.TA .5i 3i
+.ta .5i 3i
+typedef struct _XftFontName {
+	unsigned long	mask;
+	char	*face;
+	char	*encoding;
+	char	*file;
+	int	size;
+	int	rotation;
+	int	spacing;
+} XftFontName;
+
+#define XftFontNameFace	    0x1
+#define XftFontNameEncoding 0x2
+#define XftFontNameFile	    0x4
+#define XftFontNameSize	    0x8
+#define XftFontNameRotation 0x10
+#define XftFontNameSpacing  0x20
+
+#define XftFontSpacingAny   0
+#define XftFontSpacingMono  1
+#define XftFontSpacingCell  2
+
+.SH FUNCTIONS
+XftFont	*
+XftLoadFont (Display *dpy, XftFontName *name);
+
+void
+XftFreeFont (Display *dpy, XftFont *font);
+
+int
+XftFontAscent(Display *dpy, XftFont *font);
+
+int
+XftFontDescent(Display *dpy, XftFont *font);
+
+int
+XftFontHeight(Display *dpy, XftFont *font);
+
+int
+XftFontMaxAdvanceWidth (Display *dpy, XftFont *font);
+    
+void
+XftExtentsString (Display	*dpy,
+		  XftFont	*font,
+		  unsigned char	*string, 
+		  int		len,
+		  XGlyphInfo	*extents);
+
+void
+XftDrawString (Display	*dpy,
+	       Picture	 src,
+	       XftFont	*font,
+	       Picture	dst,
+	       int	srcx,
+	       int	srcy,
+	       int	x,
+	       int	y,
+	       char	*string,
+	       int	len);
+
+.SH XftConfig
+The 
+.B XftConfig
+file contains instructions for converting an XftFontName structure into
+a usable set of glyphs.  XftFontNames are refined through a series of
+matching and editing steps.
+
+ents	:	ents ent
+	|
+	;
+ent	:	edit
+	|	path
+	|	dir
+	;
+edit	:	MATCH patterns EDIT patterns
+	;
+patterns:	pattern patterns
+	|
+	;
+pattern	:	FACE EQUAL STRING
+	|	ENCODING EQUAL STRING
+	|	FILE EQUAL STRING
+	|	SIZE EQUAL NUMBER
+	|	ROTATION EQUAL NUMBER
+	|	SPACING EQUAL NUMBER
+	;
+path	:	PATH STRING
+	;
+dir	:	DIR STRING
+	;
+
+
+.SH RESTRICTIONS
+.B Xft
+will probably change radically in the future; weak attempts will be made to
+retain some level of source-file compatibility.
+
+.SH AUTHOR
+Keith Packard, member of the XFree86 Project, Inc.

@@ -1,0 +1,51 @@
+XCOMM $XFree86: $
+
+#define DoNormalLib NormalLibXft
+#define DoSharedLib SharedLibXft
+#define DoExtraLib SharedLibXft
+#define DoDebugLib DebugLibXft
+#define DoProfileLib ProfileLibXft
+#define HasSharedData YES
+#define LibName Xft
+#define SoRev SOXFTREV
+#define IncSubdir X11
+#define IncSubSubdir Xft
+
+#include <Threads.tmpl>
+
+FREETYPEDIR=Freetype2Dir
+
+FREETYPE=$(FREETYPEDIR)/obj/libfreetype.a
+INCLUDES=-I$(FREETYPEDIR)/include
+
+#ifndef XftLibDir
+#define XftLibDir $(LIBDIR)
+#endif
+
+XFTLIBDIR=XftLibDir
+XFTCONFIG=$(XFTLIBDIR)/XftConfig
+
+DEFINES=-DXFT_DEFAULT_PATH=\"$(XFTCONFIG)\"
+REQUIREDLIBS=$(LDPRELIBS) $(XRENDER) $(XLIB) $(FREETYPE)
+
+HEADERS = Xft.h
+   SRCS = drawstr.c extents.c glyphs.c lex.c load.c match.c metrics.c parse.c
+   OBJS = drawstr.o extents.o glyphs.o lex.o load.o match.o metrics.o parse.o
+
+#include <Library.tmpl>
+
+#if DoSharedLib && SharedDataSeparation
+SpecialCObjectRule(sharedlib,NullParameter,$(SHLIBDEF))
+#endif
+
+CppFileTarget(XftConfig,XftConfig.cpp,$(DEFINES),$(ICONFIGFILES))
+
+#if InstallFSConfig
+InstallNonExecFile(XftConfig,$(XFTLIBDIR))
+#else
+InstallNonExecFileNoClobber(XftConfig,$(XFTLIBDIR))
+#endif
+
+MANSUFFIX = $(LIBMANSUFFIX)
+InstallManPage(Xft,$(LIBMANDIR))
+DependTarget()
