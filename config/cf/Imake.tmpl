@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.152 2003/10/31 20:49:03 herrb Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.153 2003/11/04 01:25:31 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -520,11 +520,6 @@ X_BYTE_ORDER = ByteOrder
 #endif
 #ifndef HasGcc2ForCplusplus
 #define HasGcc2ForCplusplus	NO
-#endif
-#if HasGcc2ForCplusplus
-#ifndef CplusplusLibC
-#define CplusplusLibC		-lstdc++
-#endif
 #endif
 #ifndef HasCplusplus
 #if HasGcc2ForCplusplus
@@ -1094,7 +1089,11 @@ TCLIBDIR = TclLibDir
 # define CplusplusFilt	c++filt
 #endif
 #ifndef CplusplusLibC
+#if HasGcc2ForCplusplus
+#define CplusplusLibC	-lstdc++
+#else
 #define CplusplusLibC /**/
+#endif
 #endif
 #ifndef CplusplusStandardDefines
 #define CplusplusStandardDefines StandardDefines
