@@ -1,4 +1,5 @@
 /* $XConsortium: posix_tty.c,v 1.1 94/03/28 21:31:42 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -52,6 +53,26 @@ unsigned cflag;
 		ErrorF("Warning: unable to get status of mouse fd (%s)\n",
 		       strerror(errno));
 		return;
+	}
+
+	/* this will query the initial baudrate only once */
+	if (xf86Info.oldBaudRate < 0) { 
+	   switch (cfgetispeed(&tty)) 
+	      {
+	      case B9600: 
+		 xf86Info.oldBaudRate = 9600;
+		 break;
+	      case B4800: 
+		 xf86Info.oldBaudRate = 4800;
+		 break;
+	      case B2400: 
+		 xf86Info.oldBaudRate = 2400;
+		 break;
+	      case B1200: 
+	      default:
+		 xf86Info.oldBaudRate = 1200;
+		 break;
+	      }
 	}
 
 	tty.c_iflag = IGNBRK | IGNPAR;
