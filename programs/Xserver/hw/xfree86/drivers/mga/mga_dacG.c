@@ -150,6 +150,7 @@ MGAGCalcClock ( ScrnInfoPtr pScrn, long f_out,
 		post_div_max = 7;
 		break;
 	case PCI_CHIP_MGAG100:
+	case PCI_CHIP_MGAG100_PCI:
 	case PCI_CHIP_MGAG200:
 	case PCI_CHIP_MGAG200_PCI:
 	default:

@@ -173,6 +173,7 @@ static SymTabRec MGAChipsets[] = {
     { PCI_CHIP_MGA1064,		"mga1064sg" },
     { PCI_CHIP_MGA2164,		"mga2164w" },
     { PCI_CHIP_MGA2164_AGP,	"mga2164w AGP" },
+    { PCI_CHIP_MGAG100_PCI,	"mgag100" },
     { PCI_CHIP_MGAG100,		"mgag100" },
     { PCI_CHIP_MGAG200,		"mgag200" },
     { PCI_CHIP_MGAG200_PCI,	"mgag200 PCI" },
@@ -186,6 +187,7 @@ static PciChipsets MGAPciChipsets[] = {
     { PCI_CHIP_MGA2164,		PCI_CHIP_MGA2164,	RES_SHARED_VGA },
     { PCI_CHIP_MGA2164_AGP,	PCI_CHIP_MGA2164_AGP,	RES_SHARED_VGA },
     { PCI_CHIP_MGAG100,		PCI_CHIP_MGAG100,	RES_SHARED_VGA },
+    { PCI_CHIP_MGAG100_PCI,	PCI_CHIP_MGAG100_PCI,	RES_SHARED_VGA },
     { PCI_CHIP_MGAG200,		PCI_CHIP_MGAG200,	RES_SHARED_VGA },
     { PCI_CHIP_MGAG200_PCI,	PCI_CHIP_MGAG200_PCI,	RES_SHARED_VGA },
     { PCI_CHIP_MGAG400,		PCI_CHIP_MGAG400,	RES_SHARED_VGA },
@@ -912,6 +914,7 @@ MGACountRam(ScrnInfoPtr pScrn)
 	ProbeSize = 16384;
 	break;
     case PCI_CHIP_MGAG100:
+    case PCI_CHIP_MGAG100_PCI:
 	if(biosInfo) /* I'm not sure if the docs are correct */
 	    return (biosInfo & (1 << 12)) ? 16384 : 8192;
     case PCI_CHIP_MGA1064:
@@ -1570,6 +1573,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	break;
     case PCI_CHIP_MGA1064:
     case PCI_CHIP_MGAG100:
+    case PCI_CHIP_MGAG100_PCI:
     case PCI_CHIP_MGAG200:
     case PCI_CHIP_MGAG200_PCI:
     case PCI_CHIP_MGAG400:
@@ -1940,6 +1944,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	   }
 	   break;
 	case PCI_CHIP_MGAG100:
+	case PCI_CHIP_MGAG100_PCI:
 	   maxPitch = 2048;
 	   break;
 	case PCI_CHIP_MGAG200:
