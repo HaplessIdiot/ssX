@@ -1,4 +1,6 @@
 XFree86 4.3.99.12 (xx August 2003)
+ 413. Add missing REQUEST_SIZE_MATCH() to xSyncSetCounter protocol request
+      (noticed by Ruben Nunez Francisco).
  412. Allow building libOSMesa during non-XFree86 builds (Marc La France).
  411. Rip out incorrect limits on the number of PCI buses an ix86 chipset can
       handle and implement an improved solution for avoiding "phantom" PCI
@@ -17641,7 +17643,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2835 2003/08/29 21:07:36 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2836 2003/09/01 21:20:23 tsi Exp $
 
 
 
