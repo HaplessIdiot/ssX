@@ -95,6 +95,9 @@ Set the video color key.  Default: a little off full blue.
 .BI "Option \*qByteSwap\*q \*q" boolean \*q
 Turn on byte swapping for capturing using SMI demo board.  Default: off.
 .TP
+.BI "Option \*qInterlaced\*q \*q" boolean \*q
+Turn on interlaced video capturing.  Default: off.
+.TP
 .BI "Option \*qUseBIOS\*q \*q" boolean \*q
 Use the BIOS to set the modes. This is used for custom panel timings.
 Default: on.
@@ -196,4 +199,5 @@ Matt Grossman,
 Harald Koenig,
 Sebastien Marineau,
 Mark Vojkovich,
-Frido Garritsen.
+Frido Garritsen,
+Corvin Zahn.

@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from the XFree86 Project and silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_accel.c,v 1.3 2001/02/09 03:23:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_accel.c,v 1.5 2001/11/30 12:11:59 eich Exp $ */
 
 #include "smi.h"
 
@@ -72,9 +72,9 @@ SMI_AccelInit(ScreenPtr pScreen)
 	XAAInfoRecPtr infoPtr;
 	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
 	SMIPtr pSmi = SMIPTR(pScrn);
-	BoxRec AvailFBArea;
+    /*BoxRec AvailFBArea;*/
 	Bool ret;
-	int numLines, maxLines;
+    /*int numLines, maxLines;*/
 
 	ENTER_PROC("SMI_AccelInit");
 
@@ -196,6 +196,10 @@ SMI_AccelInit(ScreenPtr pScreen)
 
 	SMI_EngineReset(pScrn);
 
+
+    /* CZ 18.06.2001: moved to smi_driver.c before the NoAccel question
+       to have offscreen framebuffer in NoAccel mode */
+#if 0
 	maxLines = pSmi->FBReserved / (pSmi->width * pSmi->Bpp);
 	if (pSmi->rotate)
 	{
@@ -220,6 +224,7 @@ SMI_AccelInit(ScreenPtr pScreen)
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "FrameBuffer Box: %d,%d - %d,%d\n",
 			AvailFBArea.x1, AvailFBArea.y1, AvailFBArea.x2, AvailFBArea.y2);
 	xf86InitFBManager(pScreen, &AvailFBArea);
+#endif
 
 	ret = XAAInit(pScreen, infoPtr);
 	if (ret && pSmi->shadowFB)										/* #671 */
@@ -877,10 +882,12 @@ SMI_SetClippingRectangle(ScrnInfoPtr pScrn, int left, int top, int right,
 	DEBUG((VERBLEV, "left=%d top=%d right=%d bottom=%d\n", left, top, right,
 			bottom));
 
+    /* CZ 26.10.2001: this code prevents offscreen pixmaps being drawn ???
 	left   = max(left, 0);
 	top    = max(top, 0);
 	right  = min(right, pSmi->width);
 	bottom = min(bottom, pSmi->height);
+    */
 
 	if (pScrn->bitsPerPixel == 24)
 	{

@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.16 2001/10/01 13:44:09 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.18 2001/11/30 12:11:59 eich Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -82,12 +82,12 @@ static void SMI_FreeScreen(int ScrnIndex, int flags);
 static void SMI_ProbeDDC(ScrnInfoPtr pScrn, int index);
 
 
-#define SILICONMOTION_NAME		"SILICONMOTION"
+#define SILICONMOTION_NAME          "Silicon Motion"
 #define SILICONMOTION_DRIVER_NAME	"siliconmotion"
-#define SILICONMOTION_VERSION_NAME	"1.2.2"
+#define SILICONMOTION_VERSION_NAME  "1.3.1"
 #define SILICONMOTION_VERSION_MAJOR	1
-#define SILICONMOTION_VERSION_MINOR	2
-#define SILICONMOTION_PATCHLEVEL	2
+#define SILICONMOTION_VERSION_MINOR 3
+#define SILICONMOTION_PATCHLEVEL    1
 #define SILICONMOTION_DRIVER_VERSION	( (SILICONMOTION_VERSION_MAJOR << 24)  \
 										| (SILICONMOTION_VERSION_MINOR << 16)  \
 										| (SILICONMOTION_PATCHLEVEL)		   \
@@ -153,6 +153,9 @@ typedef enum
 #ifdef XvExtension
 	OPTION_VIDEOKEY,
 	OPTION_BYTESWAP,
+    /* CZ 26.10.2001: interlaced video */
+    OPTION_INTERLACED,
+    /* end CZ */
 #endif
 	OPTION_USEBIOS,
 	OPTION_ZOOMONLCD,
@@ -177,6 +180,9 @@ static const OptionInfoRec SMIOptions[] =
 #ifdef XvExtension
    { OPTION_VIDEOKEY,		 "VideoKey",		  OPTV_INTEGER, {0}, FALSE },
    { OPTION_BYTESWAP,		 "ByteSwap",		  OPTV_BOOLEAN, {0}, FALSE },
+    /* CZ 26.10.2001: interlaced video */
+   { OPTION_INTERLACED,      "Interlaced",        OPTV_BOOLEAN, {0}, FALSE },
+   /* end CZ */
 #endif
    { OPTION_USEBIOS,		 "UseBIOS",			  OPTV_BOOLEAN,	{0}, FALSE },
    { OPTION_ZOOMONLCD,		 "ZoomOnLCD",		  OPTV_BOOLEAN,	{0}, FALSE },
@@ -808,6 +814,18 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 	{
 		pSmi->ByteSwap = FALSE;
 	}
+
+    /* CZ 26.10.2001: interlaced video */
+    if (xf86ReturnOptValBool(pSmi->Options, OPTION_INTERLACED, FALSE))
+    {
+        pSmi->interlaced = TRUE;
+        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: Interlaced enabled.\n");
+    }
+    else
+    {
+        pSmi->interlaced = FALSE;
+    }
+    /* end CZ */
 #endif
 
 	if (xf86GetOptValBool(pSmi->Options, OPTION_USEBIOS, &pSmi->useBIOS))
@@ -1460,6 +1478,12 @@ SMI_Save(ScrnInfoPtr pScrn)
 		}
 	}
 
+    /* CZ 2.11.2001: for gamma correction (TODO: other chipsets?) */
+    if (pSmi->Chipset == SMI_LYNX3DM) {
+        save->CCR66 = VGAIN8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x66);
+    }
+    /* end CZ */
+
 	save->DPR10 = READ_DPR(pSmi, 0x10);
 	save->DPR1C = READ_DPR(pSmi, 0x1C);
 	save->DPR20 = READ_DPR(pSmi, 0x20);
@@ -1658,6 +1682,12 @@ SMI_WriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, SMIRegPtr restore)
 			}
 		}
 	}
+
+    /* CZ 2.11.2001: for gamma correction (TODO: other chipsets?) */
+    if (pSmi->Chipset == SMI_LYNX3DM) {
+        VGAOUT8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x66, restore->CCR66);
+    }
+    /* end CZ */
 
 	VGAOUT8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x81, 0x00);
 
@@ -2047,22 +2077,55 @@ SMI_ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	/* must be after RGB ordering fixed */
 	fbPictureInit(pScreen, 0, 0);
 #endif
-
-	/* Initialize acceleration layer */
-	if (!pSmi->NoAccel)
+ 
+	/* CZ 18.06.2001: moved here from smi_accel.c to have offscreen
+	   framebuffer in NoAccel mode */
 	{
-		if (!SMI_AccelInit(pScreen))
-		{
-			LEAVE_PROC("SMI_ScreenInit");
-			return(FALSE);
+	    int numLines, maxLines;
+	    BoxRec AvailFBArea;
+ 
+	    maxLines = pSmi->FBReserved / (pSmi->width * pSmi->Bpp);
+	    if (pSmi->rotate) {
+		numLines = maxLines;
+	    } else {
+		/* CZ 3.11.2001: What does the following code? see also smi_video.c aaa line 1226 */
+/*#if defined(XvExtension) && SMI_USE_VIDEO */
+#if 0
+		numLines = ((pSmi->FBReserved - pSmi->width * pSmi->Bpp
+			     * pSmi->height) * 25 / 100 + pSmi->width
+			    * pSmi->Bpp - 1) / (pSmi->width * pSmi->Bpp);
+		numLines += pSmi->height;
+#else
+		numLines = maxLines;
+#endif
+	    }
+ 
+	    AvailFBArea.x1 = 0;
+	    AvailFBArea.y1 = 0;
+	    AvailFBArea.x2 = pSmi->width;
+	    AvailFBArea.y2 = numLines;
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		       "FrameBuffer Box: %d,%d - %d,%d\n",
+		       AvailFBArea.x1, AvailFBArea.y1, AvailFBArea.x2,
+		       AvailFBArea.y2);
+	    xf86InitFBManager(pScreen, &AvailFBArea);
+	}
+	/* end CZ */
+	
+	
+	/* Initialize acceleration layer */
+	if (!pSmi->NoAccel) {
+		if (!SMI_AccelInit(pScreen)) {
+		    LEAVE_PROC("SMI_ScreenInit");
+		    return(FALSE);
 		}
 	}
 	
 	miInitializeBackingStore(pScreen);
-
+	
 	/* hardware cursor needs to wrap this layer */
   	SMI_DGAInit(pScreen);
-
+	
 	/* Initialise cursor functions */
 	miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
@@ -2104,8 +2167,9 @@ SMI_ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	/* Initialize colormap layer.  Must follow initialization of the default
 	 * colormap.  And SetGamma call, else it will load palette with solid white.
 	 */
-	if (!xf86HandleColormaps(pScreen, 256, 6, SMI_LoadPalette, NULL,
-			CMAP_RELOAD_ON_MODE_SWITCH))
+    /* CZ 2.11.2001: CMAP_PALETTED_TRUECOLOR for gamma correction */
+    if (!xf86HandleColormaps(pScreen, 256, pScrn->rgbBits, SMI_LoadPalette, NULL,
+            CMAP_RELOAD_ON_MODE_SWITCH | CMAP_PALETTED_TRUECOLOR))
 	{
 		LEAVE_PROC("SMI_ScreenInit");
 		return(FALSE);
@@ -2475,6 +2539,29 @@ SMI_ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		}
 	}
 
+
+    /* CZ 2.11.2001: for gamma correction (TODO: other chipsets?) */
+    new->CCR66 = VGAIN8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x66);
+    if (pSmi->Chipset == SMI_LYNX3DM) {
+        switch (pScrn->bitsPerPixel) {
+	    case 8:
+		new->CCR66 = (new->CCR66 & 0xF3) | 0x00; /* 6 bits-RAM */
+		break;
+	    case 16:
+		new->CCR66 = (new->CCR66 & 0xF3) | 0x00; /* 6 bits-RAM */
+		/* no Gamma correction in 16 Bit mode (s. Release.txt 1.3.1) */
+		break;
+	    case 24:
+	    case 32:
+		new->CCR66 = (new->CCR66 & 0xF3) | 0x04; /* Gamma correct ON */
+		break;
+	    default:
+		LEAVE_PROC("SMI_ModeInit");
+		return(FALSE);
+        }
+    }
+    /* end CZ */
+
 	outb(VGA_SEQ_INDEX, 0x30);
 	if (inb(VGA_SEQ_DATA) & 0x01)
 	{
@@ -2707,7 +2794,8 @@ SMI_CloseScreen(int scrnIndex, ScreenPtr pScreen)
 #endif
 	if (pSmi->I2C != NULL)
 	{
-		xf86DestroyI2CBusRec(pSmi->I2C, TRUE, TRUE);
+		xf86DestroyI2CBusRec(pSmi->I2C, FALSE, TRUE);
+		xfree(pSmi->I2C);
 		pSmi->I2C = NULL;
 	}
 	/* #670 */
@@ -2813,6 +2901,8 @@ SMI_LoadPalette(ScrnInfoPtr pScrn, int numColors, int *indicies, LOCO *colors,
 
 	for(i = 0; i < numColors; i++)
 	{
+        DEBUG((VERBLEV, "pal[%d] = %d %d %d\n", indicies[i],
+           colors[indicies[i]].red, colors[indicies[i]].green, colors[indicies[i]].blue));
 		VGAOUT8(pSmi, VGA_DAC_WRITE_ADDR, indicies[i]);
 		VGAOUT8(pSmi, VGA_DAC_DATA, colors[indicies[i]].red);
 		VGAOUT8(pSmi, VGA_DAC_DATA, colors[indicies[i]].green);

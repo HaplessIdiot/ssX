@@ -1,3 +1,45 @@
+--------------------------------------------------------------------------------
+                     Silicon Motion Driver for XFree86 4.1.0
+                         Alpha Release 1.3.1cz, 11/12/2001
+-------------------------------------------------------------------------------
+
+Extensions:
+
+- gamma correction for 24 bit true color mode.
+
+Known problems:
+
+- gamma correction does not work for 16 bit true color mode:
+  LoadPalette gets a gamma correction color table for 5:6:5 RGB,
+  whereas the SMI RAMDAC wants a 8:8:8 RGB color table.
+
+- gamma correction only implemented for the Lynx3DM
+
+- StopVideo don't work. The graphics controller continues to write
+  into the capture buffer
+
+Fixed bugs (or new bugs :) ):
+
+- in SMI_ScreenInit frame buffer size calculation for video changed.
+
+
+--------------------------------------------------------------------------------
+                     Silicon Motion Driver for XFree86 4.1.0
+                         Alpha Release 1.3.0cz, 10/26/2001
+-------------------------------------------------------------------------------
+
+Fixed bugs:
+
+- XAA: clipping rectangle was clipped to visible screen, so offscreen
+  pixmaps could not been drawn at with accelerated drawing functions.
+
+Extensions:
+
+- smi_video: partly rewritten.
+  - Support for 7111
+  - interlaced video via
+    - XF86Config Option "Interlaced" or
+    - attribute XV_INTERLACED
 
 --------------------------------------------------------------------------------
                      Silicon Motion Driver for XFree86 4.0.2

@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from the XFree86 Project and Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi.h,v 1.6 2001/05/15 10:19:40 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi.h,v 1.7 2001/11/30 12:11:59 eich Exp $ */
 
 #ifndef _SMI_H
 #define _SMI_H
@@ -95,6 +95,9 @@ typedef struct
 	CARD8	CR90[16], CR9F_2;
 	CARD8	CRA0[14];
 	CARD8	smiDACMask, smiDacRegs[256][3];
+    /* CZ 2.11.2001: for gamma correction */
+    CARD8   CCR66;
+    /* end CZ */
 	CARD8	smiFont[8192];
 	CARD32	DPR10, DPR1C, DPR20, DPR24, DPR28, DPR2C, DPR30, DPR3C, DPR40,
 			DPR44;
@@ -240,11 +243,13 @@ typedef struct
 #ifdef XvExtension
 	int			videoKey;	/* Video chroma key */
 	Bool			ByteSwap;	/* Byte swap for ZV port */
+    Bool        interlaced;   /* True: Interlaced Video */
 	/* XvExtension */
 	XF86VideoAdaptorPtr	ptrAdaptor;	/* Pointer to VideoAdapter
 						   structure */
 	void (*BlockHandler)(int i, pointer blockData, pointer pTimeout,
 						 pointer pReadMask);
+    GCPtr videoGC;
 #endif
 	OptionInfoPtr		Options;
         CARD8 DACmask;

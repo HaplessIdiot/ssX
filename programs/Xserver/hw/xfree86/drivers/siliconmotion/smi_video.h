@@ -50,18 +50,39 @@ authorization from the XFree86 Project and silicon Motion.
 #define TIMER_MASK			(OFF_TIMER | FREE_TIMER)
 
 #define SAA7110				0x9C
+#define SAA7111             0x48
+
+/*
+ * Attributes
+ */
+
+#define N_ATTRS                 7
+
+#define XV_ENCODING             0
+#define XV_BRIGHTNESS           1
+#define XV_CONTRAST             2
+#define XV_SATURATION           3
+#define XV_HUE                  4
+#define XV_COLORKEY             5
+#define XV_INTERLACED           6
 
 typedef struct
 {
 	FBAreaPtr	area;
 	RegionRec	clip;
-	CARD32		colorKey;
-	CARD32		brightness;
+    /* Attributes */
+    CARD32      Attribute[N_ATTRS];
 	CARD32		videoStatus;
 	Time		offTime;
 	Time		freeTime;
-	int			i2cDevice;
+    I2CDevRec   I2CDev;
 
+    /* Encodings */
+    XF86VideoEncodingPtr        enc;
+    int                         *input;
+    int                         *norm;
+    int                         *channel;
+    int                         nenc,cenc;
 } SMI_PortRec, *SMI_PortPtr;
 
 typedef struct
