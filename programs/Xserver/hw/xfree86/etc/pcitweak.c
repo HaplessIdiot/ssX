@@ -5,7 +5,7 @@
  *
  * Author: David Dawes <dawes@xfree86.org>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/pcitweak.c,v 1.6 1999/04/25 10:02:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/pcitweak.c,v 1.7 1999/05/03 04:35:36 dawes Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -401,5 +401,11 @@ Bool
 xf86ServerIsInitialising()
 {
     return FALSE;
+}
+
+memType
+getValidBIOSBase(PCITAG tag, int num)
+{
+    return 0;
 }
 
