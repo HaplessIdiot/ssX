@@ -1,3 +1,8 @@
+XFree86 3.0Da (3 August 1994)
+167. Use XOR'd extended register addresses for S3 server -- avoids clash
+     with "COM4" I/O address (Jon Tombs).
+166. 16bpp S3 support (no ramdac initialisation yet) (Jon Tombs).
+
 XFree86 3.0D (1 August 1994)
 165. Fix for text restore problems with cl6420 driver (Manfred Brands).
 164. Change S3 screensaver code to do the same thing as the vga256 code
