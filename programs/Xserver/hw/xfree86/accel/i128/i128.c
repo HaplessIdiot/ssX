@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.0 1995/12/07 07:24:00 dawes Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -98,8 +98,10 @@ ScrnInfoRec i128InfoRec =
    0,				/* int suspendTime */
    0,				/* int offTime */
    -1,				/* int s3BlankDelay */
+#ifdef XFreeXDGA
    0,				/* int directMode */
    NULL,			/* Set Vid Page */
+#endif
 };
 
 short i128alu[16] =

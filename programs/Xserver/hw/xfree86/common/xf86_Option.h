@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.6 95/01/23 15:34:06 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.35 1995/11/16 11:05:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.36 1995/12/02 05:05:23 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -78,6 +78,8 @@ typedef struct {
 #define OPTION_SLOW_VRAM	32 /* (s3) */
 #define OPTION_SLOW_DRAM_REFRESH 33 /* (s3) */
 #define OPTION_FAST_VRAM	34 /* (s3) */
+#define OPTION_PCI_BURST_ON	35 /* W32/SVGA */
+#define OPTION_PCI_BURST_OFF	36 /* W32/SVGA */
 
 /* Accel/cursor features */
 #define OPTION_NOACCEL		40 /* Disable accel support in SVGA server */
@@ -215,6 +217,8 @@ OptFlagRec xf86_OptionTab[] = {
   { "s3_slow_dram_refresh",OPTION_SLOW_DRAM_REFRESH },
   { "fast_vram",	OPTION_FAST_VRAM },
   { "s3_fast_vram",	OPTION_FAST_VRAM },
+  { "pci_burst_on",	OPTION_PCI_BURST_ON },
+  { "pci_burst_off",	OPTION_PCI_BURST_OFF },
 
   { "noaccel",		OPTION_NOACCEL },
   { "hw_cursor",	OPTION_HW_CURSOR },

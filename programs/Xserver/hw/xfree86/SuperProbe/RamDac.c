@@ -30,7 +30,7 @@
  */
 
 /* $XConsortium: RamDac.c,v 1.4 95/01/12 19:19:44 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.11 1995/07/05 12:37:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.12 1995/11/16 11:04:25 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -880,6 +880,11 @@ int *RamDac;
                  ||(SVGA_VENDOR(Chipset) == V_TSENG) ) 
 	{
 	    if (S3_GENDACCheck(RamDac))
+	    {
+		DisableIOPorts(NUMPORTS, Ports);
+		return;
+	    }
+	    if (S3_STG1700Check(RamDac))
 	    {
 		DisableIOPorts(NUMPORTS, Ports);
 		return;

@@ -1,5 +1,5 @@
 /* $XConsortium: s3cmap.c,v 1.2 94/10/12 20:07:37 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3cmap.c,v 3.4 1995/05/27 03:10:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3cmap.c,v 3.5 1995/12/02 05:05:07 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -44,11 +44,13 @@
 #include "s3.h"
 #include "regs3.h"
 
+#ifdef XFreeXDGA
 #include "extnsionst.h"
 #include "scrnintstr.h"
 #include "servermd.h"
-#define _XF86VIDMODE_SERVER_
-#include "extensions/xf86vmstr.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 
 extern unsigned char xf86rGammaMap[], xf86gGammaMap[], xf86bGammaMap[];
 
@@ -139,7 +141,11 @@ s3StoreColors(pmap, ndef, pdefs)
          b = currents3dac[pdefs[i].pixel].b =
 	    xf86bGammaMap[pdefs[i].blue  >> 8] >> 2;
       }
-      if (xf86VTSema || (s3InfoRec.directMode&XF86VidModeDirectGraphics)) {
+      if (xf86VTSema 
+#ifdef XFreeXDGA
+	  || (s3InfoRec.directMode & XF86DGADirectGraphics)
+#endif
+         ) {
 	 outb(DAC_W_INDEX, pdefs[i].pixel);
 	 outb(DAC_DATA, r);
 	 outb(DAC_DATA, g);

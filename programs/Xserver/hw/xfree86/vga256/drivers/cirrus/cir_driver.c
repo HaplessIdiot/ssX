@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.6 95/01/23 15:35:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.44 1995/11/30 13:05:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.45 1995/12/02 05:06:51 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -94,13 +94,15 @@
 #include "vga.h"
 #include "region.h"
 
+#ifdef XFreeXDGA
 #include "X.h"
 #include "Xproto.h"
 #include "extnsionst.h"
 #include "scrnintstr.h"
 #include "servermd.h"
-#define _XF86VIDMODE_SERVER_
-#include "extensions/xf86vmstr.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 
 
 #ifdef XF86VGA16
@@ -829,7 +831,7 @@ cirrusProbe()
 #ifdef XFreeXDGA
      /* we support direct Video mode */
 
-     vga256InfoRec.directMode = XF86VidModeDirectPresent;
+     vga256InfoRec.directMode = XF86DGADirectPresent;
 #endif
 
      if (vgaBitsPerPixel == 16 &&
@@ -1671,11 +1673,13 @@ cirrusEnterLeave(enter)
   static unsigned char temp;
 
 #ifndef MONOVGA
-  if (vga256InfoRec.directMode&XF86VidModeDirectGraphics && !enter)
+#ifdef XFreeXDGA
+  if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter)
      {
       cirrusHideCursor();
       return;
   }
+#endif
 #endif
   if (enter)
        {

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 5.39 94/11/21 18:30:11 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.3 1995/02/12 02:35:23 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.4 1995/06/08 06:21:56 dawes Exp $
 #include <Server.tmpl>
 
 #if HasShm
@@ -17,12 +17,19 @@ XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.3 1995/02/12 02:35:23 daw
  VIDMODEOBJS = xf86vmode.o
 #endif
 
+#if BuildXF86DGA
+ XF86DGASRCS = xf86dga.c
+ XF86DGAOBJS = xf86dga.o
+#endif
+
        SRCS = shape.c $(SHMSRCS) mbuf.c mbufpx.c mbufbf.c	\
               mitmisc.c xtest.c xtest1di.c xtest1dd.c sleepuntil.c	\
-	      bigreq.c sync.c xcmisc.c $(SCRNSAVSRC) $(VIDMODESRCS)
+	      bigreq.c sync.c $(SCRNSAVSRC) $(VIDMODESRCS) \
+	      $(XF86DGASRCS) xcmisc.c
        OBJS = shape.o $(SHMOBJS) mbuf.o mbufpx.o mbufbf.o	\
               mitmisc.o xtest.o xtest1di.o xtest1dd.o sleepuntil.o	\
-              bigreq.o sync.o xcmisc.o $(SCRNSAVOBJ) $(VIDMODEOBJS)
+              bigreq.o sync.o $(SCRNSAVOBJ) $(VIDMODEOBJS) \
+	      $(XF86DGAOBJS) xcmisc.o
    INCLUDES = -I../include -I$(INCLUDESRC) -I$(EXTINCSRC)
    LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln
 

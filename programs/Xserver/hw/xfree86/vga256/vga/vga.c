@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.6 95/01/16 13:18:27 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.36 1995/07/03 10:11:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.37 1995/12/02 05:07:11 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -44,11 +44,13 @@
 #include "xf86_Config.h"
 #include "vga.h"
 
+#ifdef XFreeXDGA
 #include "extnsionst.h"
 #include "scrnintstr.h"
 #include "servermd.h"
-#define _XF86VIDMODE_SERVER_
-#include "extensions/xf86vmstr.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 
 #if !defined(MONOVGA) && !defined(XF86VGA16)
 #include "vga256.h"
@@ -167,8 +169,10 @@ ScrnInfoRec vga256InfoRec = {
   0,			/* int suspendTime */
   0,			/* int offTime */
   -1,			/* int s3BlankDelay */
+#ifdef XFreeXDGA
   0,                    /* int directMode */
   NULL,                 /* Set Vid Page */
+#endif
 };
 
 pointer vgaOrigVideoState = NULL;
@@ -1243,7 +1247,14 @@ vgaEnterLeaveVT(enter, screen_idx)
        * abnormaly. Therefore there MUST be a check whether vgaOrigVideoState
        * is valid or not.
        */
-      if (!(vga256InfoRec.directMode&XF86VidModeDirectGraphics)) {      
+#ifdef XFreeXDGA
+      if (vga256InfoRec.directMode & XF86DGADirectGraphics) {      
+         /* make sure we are in linear mode */
+         /* hide any harware cursors */
+         (vgaEnterLeaveFunc)(LEAVE);
+      } else
+#endif
+      {
          if (vgaOrigVideoState)
             vgaRestore(vgaOrigVideoState);
 
@@ -1254,10 +1265,6 @@ vgaEnterLeaveVT(enter, screen_idx)
             {
                xf86UnMapDisplay(screen_idx, LINEAR_REGION);
             }
-      } else {
-         /* make sure we are in linear mode */
-         /* hide any harware cursors */
-         (vgaEnterLeaveFunc)(LEAVE);
       }
   
       saveInitFunc = vgaInitFunc;

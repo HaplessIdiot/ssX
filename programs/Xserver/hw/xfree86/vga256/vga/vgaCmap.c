@@ -1,5 +1,5 @@
 /* $XConsortium: vgaCmap.c,v 1.2 94/10/13 13:04:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaCmap.c,v 3.3 1995/01/28 17:10:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaCmap.c,v 3.4 1995/12/02 05:07:12 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -31,11 +31,13 @@
 #include "xf86.h"
 #include "vga.h"
 
+#ifdef XFreeXDGA
 #include "extnsionst.h"
 #include "scrnintstr.h"
 #include "servermd.h"
-#define _XF86VIDMODE_SERVER_
-#include "extensions/xf86vmstr.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 
 
 #define NOMAPYET        (ColormapPtr) 0
@@ -101,7 +103,11 @@ vgaStoreColors(pmap, ndef, pdefs)
 		if (cmap[2] == 63) cmap[2]= 62;
 	}
 
-        if (xf86VTSema || (vga256InfoRec.directMode&XF86VidModeDirectGraphics))
+        if (xf86VTSema
+#ifdef XFreeXDGA
+	    || (vga256InfoRec.directMode & XF86DGADirectGraphics)
+#endif
+	   )
 	{
 	    outb(0x3C8, pdefs[i].pixel);
 	    DACDelay;
@@ -159,7 +165,11 @@ vgaStoreColors(pmap, ndef, pdefs)
 	        overscan = tmp_overscan;
 	    }
 	    ((vgaHWPtr)vgaNewVideoState)->Attribute[OVERSCAN] = overscan;
-            if (xf86VTSema || (vga256InfoRec.directMode&XF86VidModeDirectGraphics))
+            if (xf86VTSema
+#ifdef XFreeXDGA
+	        || (vga256InfoRec.directMode&XF86DGADirectGraphics)
+#endif
+	       )
 	    {
 	        (void)inb(vgaIOBase + 0x0A);
 	        outb(0x3C0, OVERSCAN);

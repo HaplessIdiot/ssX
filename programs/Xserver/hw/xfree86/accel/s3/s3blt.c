@@ -1,8 +1,8 @@
 /* $XConsortium: s3blt.c,v 1.5 94/12/27 11:29:42 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.8 1994/11/26 12:44:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.10 1995/01/28 17:01:48 dawes Exp $ */
 /*
 
-Copyright (c) 1998  X Consortium
+Copyright (c) 1989  X Consortium
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

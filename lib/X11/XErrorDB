@@ -1,5 +1,5 @@
 ! $XConsortium: XErrorDB,v 1.25 94/04/13 18:11:43 gildea Exp $
-! $XFree86: xc/lib/X11/XErrorDB,v 3.2 1995/07/02 07:43:06 dawes Exp $
+! $XFree86: xc/lib/X11/XErrorDB,v 3.3 1995/12/02 05:03:19 dawes Exp $
 ! Copyright 1993 Massachusetts Institute of Technology
 !
 ! Permission to use, copy, modify, distribute, and sell this software and
@@ -555,13 +555,14 @@ XRequest.XFree86-VidModeExtension.5: XF86VidModeLockModeSwitch
 XRequest.XFree86-VidModeExtension.6: XF86VidModeGetSaver
 XRequest.XFree86-VidModeExtension.7: XF86VidModeSetSaver
 XRequest.XFree86-VidModeExtension.8: XF86VidModeGetServerName
-XRequest.XFree86-VidModeExtension.9: XF86VidModeGetVideoLL
-XRequest.XFree86-VidModeExtension.10: XF86VidModeDirectVideo
-XRequest.XFree86-VidModeExtension.11: XF86VidModeGetViewPort
-XRequest.XFree86-VidModeExtension.12: XF86VidModeSetViewPort
-XRequest.XFree86-VidModeExtension.13: XF86VidModeGetVidPage
-XRequest.XFree86-VidModeExtension.14: XF86VidModeSetVidPage
 XProtoError.XFree86-VidModeExtension.0: XF86VidModeBadClock
 XProtoError.XFree86-VidModeExtension.1: XF86VidModeBadHTimings
 XProtoError.XFree86-VidModeExtension.2: XF86VidModeBadVTimings
 XProtoError.XFree86-VidModeExtension.3: XF86VidModeModeUnsuitable
+! XFree86-DGA  -- not an X Consortium standard
+XRequest.XFree86-DGA.0: XF86DGAGetVideoLL
+XRequest.XFree86-DGA.1: XF86DGADirectVideo
+XRequest.XFree86-DGA.2: XF86DGAGetViewPort
+XRequest.XFree86-DGA.3: XF86DGASetViewPort
+XRequest.XFree86-DGA.4: XF86DGAGetVidPage
+XRequest.XFree86-DGA.5: XF86DGASetVidPage

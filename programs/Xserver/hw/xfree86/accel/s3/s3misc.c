@@ -1,6 +1,6 @@
 
 /* $XConsortium: s3misc.c,v 1.6 95/01/23 15:34:03 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.30 1995/07/22 04:17:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.31 1995/12/02 05:05:10 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -48,13 +48,15 @@
 #include "xf86_Config.h"
 #include "s3linear.h"
 
+#ifdef XFreeXDGA
 #include "X.h"
 #include "Xproto.h"
 #include "extnsionst.h"
 #include "scrnintstr.h"
 #include "servermd.h"
-#define _XF86VIDMODE_SERVER_
-#include "extensions/xf86vmstr.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
  
 extern char s3Mbanks;
 extern Bool s3Mmio928;
@@ -493,20 +495,25 @@ s3EnterLeaveVT(enter, screen_idx)
 	    pspix->devPrivate.ptr = ppix->devPrivate.ptr;
 	 }
       }
-      if (s3InfoRec.directMode & XF86VidModeDirectGraphics) {
+#ifdef XFreeXDGA
+      if (s3InfoRec.directMode & XF86DGADirectGraphics) {
 	s3HideCursor();
-      } else if (AlreadyInited) {
+      } else
+#endif
+        if (AlreadyInited) {
 	  s3CleanUp();
           AlreadyInited = FALSE;
-      }
+        }
 
       xf86UnMapDisplay(screen_idx, VGA_REGION);
       if (s3VideoMem != vgaBase)
          xf86UnMapDisplay(screen_idx, LINEAR_REGION);
-      if (s3InfoRec.directMode & XF86VidModeDirectGraphics) {
+#ifdef XFreeXDGA
+      if (s3InfoRec.directMode & XF86DGADirectGraphics) {
         /* make sure we are in linear mode */
 	s3EnableLinear();
       }
+#endif
    }
 }
 

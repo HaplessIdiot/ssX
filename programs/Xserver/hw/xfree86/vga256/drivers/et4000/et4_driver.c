@@ -1,6 +1,6 @@
 /*
  * $XConsortium: et4_driver.c,v 1.6 95/01/16 13:18:14 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.16 1995/11/16 11:06:12 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.17 1995/11/30 13:05:19 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -87,6 +87,7 @@ typedef struct {
 #define TYPE_ET4000W32		1
 #define TYPE_ET4000W32I		2
 #define TYPE_ET4000W32P		3
+#define TYPE_ET4000W32Pc	4
 
 static Bool     ET4000Probe();
 static char *   ET4000Ident();
@@ -201,7 +202,7 @@ static Bool
 ET4000ClockSelect(no)
      int no;
 {
-  static unsigned char save1, save2, save3;
+  static unsigned char save1, save2, save3, save4;
   unsigned char temp;
 
   switch(no)
@@ -210,24 +211,44 @@ ET4000ClockSelect(no)
       save1 = inb(0x3CC);
       outb(vgaIOBase + 4, 0x34); save2 = inb(vgaIOBase + 5);
       outb(0x3C4, 7); save3 = inb(0x3C5);
+      if( et4000_type > TYPE_ET4000 )
+      {
+         outb(vgaIOBase + 4, 0x31); save4 = inb(vgaIOBase + 5);
+      }
       break;
     case CLK_REG_RESTORE:
       outb(0x3C2, save1);
       outw(vgaIOBase + 4, 0x34 | (save2 << 8));
       outw(0x3C4, 7 | (save3 << 8));
+      if( et4000_type > TYPE_ET4000 )
+      {
+         outw(vgaIOBase + 4, 0x31 | (save4 << 8));
+      }
       break;
     default:
       temp = inb(0x3CC);
       outb(0x3C2, ( temp & 0xf3) | ((no << 2) & 0x0C));
-      outw(vgaIOBase + 4, 0x34 | ((no & 0x04) << 7));
+      outb(vgaIOBase + 4, 0x34);	/* don't nuke the other bits in CR34 */
+      temp = inb(vgaIOBase + 5);
+      outw(vgaIOBase + 4, 0x34 | ((temp & 0xFD) << 8) | ((no & 0x04) << 7));
 
-      outb(0x3C4, 7); temp = inb(0x3C5);
-      outb(0x3C5, (save_divide ^ ((no & 0x08) << 3)) | (temp & 0xBF));
+#if NEW_CLOCK_SCHEME
+      {
+         outb(vgaIOBase + 4, 0x31);
+         temp = inb(vgaIOBase + 5);
+         outb(vgaIOBase + 5, (temp & 0x3f) | ((no & 0x10) << 2));
+         outb(0x3C4, 7); temp = inb(0x3C5);
+         outb(0x3C5, (save_divide ^ ((no & 0x8) << 3)) | (temp & 0xBF));
+      }
+#else
+      {
+         outb(0x3C4, 7); temp = inb(0x3C5);
+         outb(0x3C5, (save_divide ^ ((no & 0x10) << 2)) | (temp & 0xBF));
+      }
+#endif
   }
   return(TRUE);
 }
-
-
 
 /*
  * LegendClockSelect --
@@ -394,9 +415,10 @@ ET4000Probe()
               break;
           case 2 : /* ET4000/W32p rev a */
           case 5 : /* ET4000/W32p rev b */
+              et4000_type = TYPE_ET4000W32P;
           case 6 : /* ET4000/W32p rev d */
           case 7 : /* ET4000/W32p rev c */
-              et4000_type = TYPE_ET4000W32P;
+              et4000_type = TYPE_ET4000W32Pc;
               break;
           default :
               ErrorF("%s %s: ET4000W32: Unknown type. Try chipset override.\n",
@@ -452,6 +474,8 @@ ET4000Probe()
   OFLG_SET(OPTION_LEGEND, &ET4000.ChipOptionFlags);
   OFLG_SET(OPTION_HIBIT_HIGH, &ET4000.ChipOptionFlags);
   OFLG_SET(OPTION_HIBIT_LOW, &ET4000.ChipOptionFlags);
+  OFLG_SET(OPTION_PCI_BURST_ON, &ET4000.ChipOptionFlags);
+  OFLG_SET(OPTION_PCI_BURST_OFF, &ET4000.ChipOptionFlags);
 #ifndef MONOVGA
   OFLG_SET(OPTION_FAST_DRAM, &ET4000.ChipOptionFlags);
 #endif
@@ -482,7 +506,10 @@ ET4000Probe()
     else
       {
         ClockSelect = ET4000ClockSelect;
-        numClocks   = 16;
+        if( et4000_type > TYPE_ET4000 )
+           numClocks = 32;
+	else
+           numClocks = 16;
       }
   }   
   
@@ -732,9 +759,12 @@ ET4000Save(save)
 
   /*
    * we need this here , cause we MUST disable the ROM SYNC feature
+   * this bit changed with W32p_rev_c...
    */
-  outb(vgaIOBase + 4, 0x34); temp1 = inb(vgaIOBase + 5);
-  outb(vgaIOBase + 5, temp1 & 0x1F);
+     outb(vgaIOBase + 4, 0x34); temp1 = inb(vgaIOBase + 5);
+  if( et4000_type < TYPE_ET4000W32Pc) {
+     outb(vgaIOBase + 5, temp1 & 0x1F);
+  }
   temp2 = inb(0x3CD); outb(0x3CD, 0x00); /* segment select */
 
   save = (vgaET4000Ptr)vgaHWSave((vgaHWPtr)save, sizeof(vgaET4000Rec));
@@ -890,6 +920,23 @@ ET4000Init(mode)
    new->VSConf2 = initialVSConf2;
    if (vga256InfoRec.clock[mode->Clock] > 80000)
      new->VSConf2 = (new->VSConf2 & 0x7f) | 0x80;
+  /*
+   * next, we check the PCI Burst option and turn that on or of
+   */
+  if (OFLG_ISSET(OPTION_PCI_BURST_OFF, &vga256InfoRec.options))
+  {
+#ifdef DEBUG
+     ErrorF("Turn off PCI Burst\n");
+#endif
+     new->Compatibility &= 0xEF;
+  }
+  if (OFLG_ISSET(OPTION_PCI_BURST_ON, &vga256InfoRec.options))
+  {
+#ifdef DEBUG
+     ErrorF("Turn off PCI Burst\n");
+#endif
+     new->Compatibility |= 0x10;
+  }
 #endif
 #endif
     
@@ -953,7 +1000,8 @@ ET4000Init(mode)
     {
       new->AuxillaryMode = (save_divide ^ ((new->std.NoClock & 8) << 3)) |
                            (new->AuxillaryMode & 0xBF);
-      new->Compatibility = (new->std.NoClock & 0x04) >> 1;
+      new->Compatibility = (new->Compatibility & 0xFD) | 
+      				((new->std.NoClock & 0x04) >> 1);
     }
 
   return(TRUE);

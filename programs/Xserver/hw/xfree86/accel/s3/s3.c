@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.105 1995/11/30 13:03:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.106 1995/12/02 05:05:01 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -48,13 +48,15 @@
 #include "Ti302X.h"
 #include "IBMRGB.h"
 #include "s3ELSA.h"
+#ifdef XFreeXDGA
 #include "X.h"
 #include "Xproto.h"
 #include "extnsionst.h"
 #include "scrnintstr.h"
 #include "servermd.h"
-#define _XF86VIDMODE_SERVER_
-#include "extensions/xf86vmstr.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 
 extern int s3MaxClock;
 char s3Mbanks;
@@ -133,8 +135,10 @@ ScrnInfoRec s3InfoRec =
    0,				/* int suspendTime */
    0,				/* int offTime */
    -1,				/* int s3BlankDelay */
+#ifdef XFreeXDGA
    0,				/* int directMode */
    s3SetVidPage,		/* Set Vid Page */
+#endif
 };
 
 short s3alu[16] =
@@ -3342,7 +3346,7 @@ s3Probe()
 
 #ifdef XFreeXDGA
       s3InfoRec.displayWidth = s3DisplayWidth;
-      s3InfoRec.directMode = XF86VidModeDirectPresent;
+      s3InfoRec.directMode = XF86DGADirectPresent;
 #endif
    return TRUE;
 }
@@ -3798,9 +3802,11 @@ STG1703ClockSelect(freq)
    return(result);
 }
 
+#ifdef XFreeXDGA
 static Bool
 s3ValidMode(mode)
      DisplayModePtr mode;
 {
    return(TRUE);
 }
+#endif

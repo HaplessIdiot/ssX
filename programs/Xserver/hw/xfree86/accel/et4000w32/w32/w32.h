@@ -1,5 +1,5 @@
 /* $XConsortium: w32.h,v 1.4 95/01/27 15:36:30 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32.h,v 3.6 1995/10/21 11:33:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32.h,v 3.7 1995/11/16 11:04:36 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -53,8 +53,10 @@ int W32RamdacType;
 #define ATT20C493_DAC   5
 #define ATT20C491_DAC   6
 #define ATT20C492_DAC   7
-#define ICS5341_DAC 10
-#define GENDAC_DAC  11
+#define ICS5341_DAC    10
+#define GENDAC_DAC     11
+#define STG1700_DAC    12
+#define STG1703_DAC    13
 
 
 extern

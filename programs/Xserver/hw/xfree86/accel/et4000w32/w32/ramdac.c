@@ -1,5 +1,5 @@
 /* $XConsortium: ramdac.c,v 1.4 95/01/06 20:56:54 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/ramdac.c,v 3.6 1995/06/14 07:34:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/ramdac.c,v 3.7 1995/10/21 11:33:50 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -53,6 +53,8 @@ static SymTabRec W32DacTable[] = {
    { ATT20C492_DAC,      "att20c492" },
    { ICS5341_DAC,        "ics5341" },
    { GENDAC_DAC,         "gendac" },
+   { STG1700_DAC,	 "stg1700" },
+   { STG1703_DAC,	 "stg1703" },
    { -1,                "" },
 };
 
@@ -398,6 +400,39 @@ W32SaveScreen (pScreen, on)
 int W32RamdacType = UNKNOWN_DAC;
 
 static Bool
+ProbeSTG1703(Bool quiet)
+{
+	unsigned char cid, did, daccomm, readmask;
+	int i;
+	Bool Found = FALSE;
+
+	readmask = inb(0x3c6);
+	xf86dactopel();
+	daccomm = xf86getdaccomm();
+	xf86setdaccomm(daccomm | 0x10);
+	xf86dactocomm();
+	inb(0x3C6);
+	outb(0x3c6, 0x00);
+	outb(0x3c6, 0x00);
+	cid = inb(0x3c6);     /* company ID */
+	did = inb(0x3c6);     /* device ID */
+	xf86dactopel();
+	outb(0x3c6,readmask);
+	xf86setdaccomm(daccomm);
+
+	if ((cid == 0x44) && (did == 0x00)) {
+	   Found = TRUE;
+	   W32RamdacType = STG1700_DAC;
+	}
+	if ((cid == 0x44) && (did == 0x03)) {
+	   Found = TRUE;
+	   W32RamdacType = STG1703_DAC;
+	}
+
+	return(Found);
+}
+
+static Bool
 ProbeGenDAC(Bool quiet)
 {
    /* probe for ICS GENDAC (ICS5341) */
@@ -462,24 +497,25 @@ ProbeGenDAC(Bool quiet)
        (clock01 == 0x7f7f7f7f && clock23 != 0x7f7f7f7f)) {
       found = TRUE;
 
-      if (!quiet) {
-	 xf86dactopel();
-	 inb(0x3c6);
-	 inb(0x3c6);
-	 inb(0x3c6);
+      xf86dactopel();
+      inb(0x3c6);
+      inb(0x3c6);
+      inb(0x3c6);
 
-         dbyte = inb(0x3c6);
-	 /* the fourth read will show the SDAC chip ID and revision */
-	 if ((dbyte & 0xf0) == 0xb0) {
+      dbyte = inb(0x3c6);
+      /* the fourth read will show the SDAC chip ID and revision */
+      if ((dbyte & 0xf0) == 0xb0) {
+         if (!quiet) {
 	    ErrorF("%s %s: Ramdac: ICS 5341 GenDAC ,and programmable clock (MClk = %1.2f MHz)\n",
 		   XCONFIG_PROBED, vga256InfoRec.name, mclk);
-	    W32RamdacType = ICS5341_DAC;
 	 }
-	 else {
+         W32RamdacType = ICS5341_DAC;
+      } else {
+         if (!quiet) {
 	    ErrorF("%s %s: Ramdac: unknown GENDAC and programmable clock (ID code = 0x%02x)\n",
 		   XCONFIG_PROBED, vga256InfoRec.name, dbyte);
-	    W32RamdacType = GENDAC_DAC;
 	 }
+	 W32RamdacType = GENDAC_DAC;
       }
       xf86dactopel();
    }
@@ -564,6 +600,7 @@ static void check_ramdac()
             case ATT20C492_DAC:
             case ICS5341_DAC:
             case GENDAC_DAC:
+            case STG1703_DAC:
             default:
                   RamdacShift = 10;
                   vgaRamdacMask = 0x3f;
@@ -574,8 +611,15 @@ static void check_ramdac()
     else
     {
           /* now see if it's an ICS GenDAC */
-          if (!ProbeGenDAC(FALSE))
-          
+          if (ProbeGenDAC(FALSE))
+	  {
+	    /* this is a gendac. nothing to do here */
+	  }
+	  else if (ProbeSTG1703(FALSE))
+	  {
+	    /* this is the STG1703 */
+	  }
+	  else
           /* if none of the above: start probing for other DAC's */
           {
             outb(RMR, 0xff); GlennsIODelay();

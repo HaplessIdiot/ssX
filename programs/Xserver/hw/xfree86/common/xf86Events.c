@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Events.c,v 1.11 95/01/16 13:16:59 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.17 1995/11/12 09:51:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.18 1995/12/02 05:05:22 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -39,12 +39,14 @@
 
 #include "osdep.h"
 
+#ifdef XFreeXDGA
 #include "Xproto.h"
 #include "extnsionst.h"
 #include "scrnintstr.h"
 #include "servermd.h"
-#define _XF86VIDMODE_SERVER_
-#include "extensions/xf86vmstr.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 
 
 #define XE_POINTER  1
@@ -114,8 +116,11 @@ extern unsigned char xf86CodrvMap[];
 #endif
 
 static void xf86VTSwitch();
+#ifdef XFreeXDGA
 static void XF86DirectVideoMoveMouse();
 static void XF86DirectVideoKeyEvent();
+#endif
+
 /*
  * Lets create a simple finite-state machine:
  *
@@ -842,10 +847,14 @@ xf86PostKbdEvent(key)
     }
   else 
     {
-      if (((ScrnInfoPtr)(xf86Info.currentScreen->devPrivates[xf86ScreenIndex].ptr))->directMode&XF86VidModeDirectKeyb) {
+#ifdef XFreeDGA
+      if (((ScrnInfoPtr)(xf86Info.currentScreen->devPrivates[xf86ScreenIndex].ptr))->directMode&XF86DGADirectKeyb) {
 	  XF86DirectVideoKeyEvent(&kevent, keycode, (down ? KeyPress : KeyRelease));
-      } else {
+      } else
+#endif
+      {
          ENQUEUE(&kevent, keycode, (down ? KeyPress : KeyRelease), XE_KEYBOARD);
+
       }
     }
 
@@ -905,9 +914,12 @@ xf86PostMseEvent(buttons, dx, dy)
       dy = (dy * xf86Info.num)/ xf86Info.den;
     }
 
-    if (((ScrnInfoPtr)(xf86Info.currentScreen->devPrivates[xf86ScreenIndex].ptr))->directMode&XF86VidModeDirectMouse) {
+#ifdef XFreeXDGA
+    if (((ScrnInfoPtr)(xf86Info.currentScreen->devPrivates[xf86ScreenIndex].ptr))->directMode&XF86DGADirectMouse) {
 	XF86DirectVideoMoveMouse(dx, dy, mevent.u.keyButtonPointer.time);
-    } else {
+    } else
+#endif
+    {
         MOVEPOINTER(dx, dy, mevent.u.keyButtonPointer.time);
     }
   }
@@ -1183,7 +1195,7 @@ XTestGenerateEvent(dev_type, keycode, keystate, mousex, mousey)
 #endif /* XTESTEXT1 */
 
 
-#if 1 /* XF86DGA */
+#ifdef XFreeXDGA
 extern void DeliverFocusedEvent();
 extern void DeliverDeviceEvents();
 extern WindowPtr GetSpriteWindow();

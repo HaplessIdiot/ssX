@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/xf86dga/XF86Dga.c,v 3.0 1995/12/02 05:07:32 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/Shell.h>
@@ -13,27 +13,28 @@
 #include <X11/Xaw/Toggle.h>
 #include <X11/Xmu/StdSel.h>
 #include <X11/Xmd.h>
-#include <X11/extensions/xf86vmode.h>
+#include <X11/extensions/xf86dga.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/fcntl.h>
 #include <sys/mman.h>
 #include <sys/wait.h>
 #include <signal.h>
+extern int errno;
 
 static char * _XFree86addr = NULL;
 static int    _XFree86size = 0;
 
-XF86VidModeDirectVideo(dis, screen, enable)
+XF86DGADirectVideo(dis, screen, enable)
 Display *dis;
 int screen;
 int enable;
 {
-   if (enable&XF86VidModeDirectGraphics) {
+   if (enable&XF86DGADirectGraphics) {
 	 fprintf(stderr, "video memory unprotecting\n");
       if (_XFree86addr && _XFree86size)
          if (mprotect(_XFree86addr,_XFree86size, PROT_READ|PROT_WRITE)) {
-         fprintf(stderr, "XF86VidModeDirectVideo: mprotect (%s)\n",
+         fprintf(stderr, "XF86DGADirectVideo: mprotect (%s)\n",
                            strerror(errno));
 		exit (-3);
 	 }
@@ -41,12 +42,12 @@ int enable;
       if (_XFree86addr && _XFree86size)
 	 fprintf(stderr, "video memory protecting\n");
          if (mprotect(_XFree86addr,_XFree86size, PROT_READ)) {
-         fprintf(stderr, "XF86VidModeDirectVideo: mprotect (%s)\n",
+         fprintf(stderr, "XF86DGADirectVideo: mprotect (%s)\n",
                            strerror(errno));
 		exit (-4);
 	 }
    }
-   XF86VidModeDirectVideoLL(dis, screen, enable);
+   XF86DGADirectVideoLL(dis, screen, enable);
 }
 
 
@@ -54,12 +55,12 @@ static void cleanup()
 {
         Display *disp;
 	disp = XOpenDisplay(NULL);
-	XF86VidModeDirectVideo(disp, 0, 0);
+	XF86DGADirectVideo(disp, 0, 0);
 	XSync(disp,False);
         _exit(3);
 }
 
-XF86VidModeGetVideo(dis, screen, addr, width, bank, ram)
+XF86DGAGetVideo(dis, screen, addr, width, bank, ram)
 Display *dis;
 int screen;
 char **addr;
@@ -68,20 +69,20 @@ int *width, *bank, *ram;
    int offset, fd;
    int pid, status;
 
-   XF86VidModeGetVideoLL(dis, screen , &offset, width, bank, ram);
+   XF86DGAGetVideoLL(dis, screen , &offset, width, bank, ram);
 
    if ((fd = open("/dev/mem", O_RDWR)) < 0)
    {
-        fprintf(stderr, "XF86VidModeGetVideo: failed to open /dev/mem (%s)\n",
+        fprintf(stderr, "XF86DGAGetVideo: failed to open /dev/mem (%s)\n",
                            strerror(errno));
         exit (-1);
    }
 
-   /* This requirers linux-0.99.pl10 or above */
+   /* This requires linux-0.99.pl10 or above */
    *addr = (void *)mmap(NULL, *bank, PROT_READ,
                             MAP_SHARED, fd, (off_t)offset);
    if (*addr == (char *) -1) {
-        fprintf(stderr, "XF86VidModeGetVideo: failed to mmap /dev/mem (%s)\n",
+        fprintf(stderr, "XF86DGAGetVideo: failed to mmap /dev/mem (%s)\n",
                            strerror(errno));
         exit (-2);
    }
@@ -93,7 +94,7 @@ int *width, *bank, *ram;
         Display *disp;
 	waitpid(pid, &status, 0);
 	disp = XOpenDisplay(NULL);
-	XF86VidModeDirectVideo(disp, screen, 0);
+	XF86DGADirectVideo(disp, screen, 0);
 	XSync(disp,False);
         if (WIFEXITED(status))
 	    _exit(0);
@@ -101,7 +102,11 @@ int *width, *bank, *ram;
 	    _exit(-1);
    }
 #else
+#ifdef linux
     on_exit(cleanup, 0);
+#else
+    atexit(cleanup);
+#endif
     /* one shot cleanup attempts */
     signal(SIGSEGV, cleanup);
     signal(SIGBUS, cleanup);
