@@ -3,7 +3,7 @@ XCOMM!/bin/sh
 XCOMM
 XCOMM makedepend which uses 'gcc -M'
 XCOMM
-XCOMM $XFree86: xc/config/util/gccmdep.cpp,v 3.3.4.3 2000/08/08 03:23:15 dawes Exp $
+XCOMM $XFree86: xc/config/util/gccmdep.cpp,v 3.6 2001/01/26 23:01:44 herrb Exp $
 XCOMM
 XCOMM Based on mdepend.cpp and code supplied by Hongjiu Lu <hjl@nynexst.com>
 XCOMM
@@ -13,18 +13,6 @@ CC=CCCMD
 RM=RMCMD
 LN=LNCMD
 MV=MVCMD
-
-XCOMM Security: if $tmp exists exit immediately
-rm -f ${TMP}
-if [ -e ${TMP} ] ; then
-    echo "$0: ${TMP} exists already, exit." 1>&2
-    exit 1;
-fi
-#if defined(HAS_MKTEMP)
-if [ -n "`type -p mktemp`" ] ; then
-    TMP="`mktemp ${TMP}.XXXXXX`" || exit 1
-fi
-#endif
 
 trap "$RM ${TMP}*; exit 1" 1 2 15
 trap "$RM ${TMP}*; exit 0" 1 2 13
@@ -45,7 +33,7 @@ while [ $# != 0 ]; do
 	    -D*|-I*)
 		args="$args '$1'"
 		;;
-	    -g|-O)
+	    -g*|-O*)
 		;;
 	    *)
 		if [ "$endmarker"x = x ]; then
