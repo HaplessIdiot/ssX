@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.37 2000/03/08 15:14:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.38 2000/03/08 19:25:09 dawes Exp $ */
 
 
 #include "apm.h"
@@ -7,8 +7,6 @@
 #include "xf86Resources.h"
 #include "xf86int10.h"
 #include "xf86RAC.h"
-
-#include "compiler.h"
 
 #ifdef DPMSExtension
 #include "opaque.h"

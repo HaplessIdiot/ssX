@@ -36,7 +36,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.23 2000/02/15 18:00:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.24 2000/03/18 20:06:21 dawes Exp $
 </ident>
 
 
@@ -2664,6 +2664,7 @@ The following include files are typically required by video drivers:
   <quote>
     &s.code;"compiler.h"&e.code;
   </quote>
+  Note: in drivers, this must be included after &s.code;"xf86_ansic.h"&e.code;.
    
   Drivers that need to access PCI vendor/device definitions need this:
   <quote>
@@ -6183,6 +6184,7 @@ visible symbols.
   <quote>
     &s.code;"compiler.h"&e.code;
   </quote>
+  Note: in drivers, this must be included after &s.code;"xf86_ansic.h"&e.code;.
    
   Drivers that need to access PCI vendor/device definitions need this:
   <quote>

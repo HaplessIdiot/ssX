@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbbltone.c,v 1.6 2000/02/14 19:20:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbbltone.c,v 1.7 2000/02/23 20:29:42 dawes Exp $ */
 
 #include "fb.h"
 
@@ -823,7 +823,10 @@ fbBltPlane (FbBits	    *src,
 	    if (srcBits & srcMask)
 		dstBits |= dstMask;
 	    dstUnion |= dstMask;
-	    srcMask = FbScrRight(srcMask,srcBpp);
+	    if (srcBpp == 32)
+		srcMask = 0;
+	    else
+		srcMask = FbScrRight(srcMask,srcBpp);
 	    dstMask = FbStipRight(dstMask,1);
 	}
 	if (dstUnion)

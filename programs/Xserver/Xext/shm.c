@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.20 2000/01/02 00:18:21 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.21 2000/03/05 16:59:01 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -92,6 +92,8 @@ static void SShmCompletionEvent(
 #endif
     );
 
+static Bool ShmDestroyPixmap (PixmapPtr pPixmap);
+
 static DISPATCH_PROC(ProcShmAttach);
 static DISPATCH_PROC(ProcShmCreatePixmap);
 static DISPATCH_PROC(ProcShmDetach);
@@ -112,12 +114,16 @@ static DISPATCH_PROC(SProcShmQueryVersion);
 static unsigned char ShmReqCode;
 int ShmCompletionCode;
 int BadShmSegCode;
-RESTYPE ShmSegType, ShmPixType;
+RESTYPE ShmSegType;
 static ShmDescPtr Shmsegs;
 static Bool sharedPixmaps;
 static int pixmapFormat;
 static int shmPixFormat[MAXSCREENS];
 static ShmFuncsPtr shmFuncs[MAXSCREENS];
+static DestroyPixmapProcPtr destroyPixmap[MAXSCREENS];
+#ifdef PIXPRIV
+static int  shmPixmapPrivate;
+#endif
 static ShmFuncs miFuncs = {NULL, miShmPutImage};
 static ShmFuncs fbFuncs = {fbShmCreatePixmap, fbShmPutImage};
 
@@ -218,11 +224,27 @@ ShmExtensionInit()
       }
       if (!pixmapFormat)
 	pixmapFormat = ZPixmap;
+      if (sharedPixmaps)
+      {
+	for (i = 0; i < screenInfo.numScreens; i++)
+	{
+	    destroyPixmap[i] = screenInfo.screens[i]->DestroyPixmap;
+	    screenInfo.screens[i]->DestroyPixmap = ShmDestroyPixmap;
+	}
+#ifdef PIXPRIV
+	shmPixmapPrivate = AllocatePixmapPrivateIndex();
+	for (i = 0; i < screenInfo.numScreens; i++)
+	{
+	    if (!AllocatePixmapPrivate(screenInfo.screens[i],
+				       shmPixmapPrivate, 0))
+		return FALSE;
+	}
+#endif
+      }
     }
 #endif
     ShmSegType = CreateNewResourceType(ShmDetachSegment);
-    ShmPixType = CreateNewResourceType(ShmDetachSegment);
-    if (ShmSegType && ShmPixType &&
+    if (ShmSegType &&
 	(extEntry = AddExtension(SHMNAME, ShmNumberEvents, ShmNumberErrors,
 				 ProcShmDispatch, SProcShmDispatch,
 				 ShmResetProc, StandardMinorOpcode)))
@@ -262,6 +284,40 @@ ShmSetPixmapFormat(pScreen, format)
     int format;
 {
     shmPixFormat[pScreen->myNum] = format;
+}
+
+static Bool
+ShmDestroyPixmap (PixmapPtr pPixmap)
+{
+    ScreenPtr	    pScreen = pPixmap->drawable.pScreen;
+    Bool	    ret;
+    if (pPixmap->refcnt == 1)
+    {
+	ShmDescPtr  shmdesc;
+#ifdef PIXPRIV
+	shmdesc = (ShmDescPtr) pPixmap->devPrivates[shmPixmapPrivate].ptr;
+#else
+	char	*base = (char *) pPixmap->devPrivate.ptr;
+	
+	if (base != (pointer) (pPixmap + 1))
+	{
+	    for (shmdesc = Shmsegs; shmdesc; shmdesc = shmdesc->next)
+	    {
+		if (shmdesc->addr <= base && base <= shmdesc->addr + shmdesc->size)
+		    break;
+	    }
+	}
+	else
+	    shmdesc = 0;
+#endif
+	if (shmdesc)
+	    ShmDetachSegment ((pointer) shmdesc, pPixmap->drawable.id);
+    }
+    pScreen->DestroyPixmap = destroyPixmap[pScreen->myNum];
+    ret = (*pScreen->DestroyPixmap) (pPixmap);
+    destroyPixmap[pScreen->myNum] = pScreen->DestroyPixmap;
+    pScreen->DestroyPixmap = ShmDestroyPixmap;
+    return ret;
 }
 
 void
@@ -767,7 +823,7 @@ CreatePmap:
 	xfree(newPix);
     } else {
 	shmdesc->refcnt++;
-	AddResource(stuff->pid, ShmPixType, shmdesc);
+
 	AddResource(stuff->pid, XRT_PIXMAP, newPix);
     }
 
@@ -1260,14 +1316,15 @@ CreatePmap:
 			    shmdesc->addr + stuff->offset);
     if (pMap)
     {
+#ifdef PIXPRIV
+	pMap->devPrivates[shmPixmapPrivate].ptr = (pointer) shmdesc;
+#endif
+	shmdesc->refcnt++;
 	pMap->drawable.serialNumber = NEXT_SERIAL_NUMBER;
 	pMap->drawable.id = stuff->pid;
 	if (AddResource(stuff->pid, RT_PIXMAP, (pointer)pMap))
 	{
-	    shmdesc->refcnt++;
-	    if (AddResource(stuff->pid, ShmPixType, (pointer)shmdesc))
-		return(client->noClientException);
-	    FreeResource(stuff->pid, RT_NONE);
+	    return(client->noClientException);
 	}
     }
     return (BadAlloc);

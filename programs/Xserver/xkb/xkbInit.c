@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.14 1997/07/10 08:17:46 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.15 1998/10/04 09:39:55 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -684,7 +684,7 @@ XkbFileInfo		finfo;
 KeySymsRec		tmpSyms,*pSyms;
 CARD8			tmpMods[XkbMaxLegalKeyCode+1],*pMods;
 char			name[PATH_MAX],*rules;
-Bool			ok;
+Bool			ok=False;
 XPointer		config;
 XkbComponentNamesRec	cfgNames;
 XkbRF_VarDefsRec	defs;
@@ -702,12 +702,18 @@ XkbRF_VarDefsRec	defs;
 	XkbComponentNamesRec	rNames;
 	bzero(&rNames,sizeof(XkbComponentNamesRec));
 	if (XkbDDXNamesFromRules(dev,rules,&defs,&rNames)) {
-	    if (rNames.keymap)		names->keymap= rNames.keymap;
-	    if (rNames.keycodes)	names->keycodes= rNames.keycodes;
-	    if (rNames.types)		names->types= rNames.types;
-	    if (rNames.compat)		names->compat= rNames.compat;
-	    if (rNames.symbols)		names->symbols= rNames.symbols;
-	    if (rNames.geometry)	names->geometry= rNames.geometry;
+	    if (rNames.keymap   && !names->keymap)
+                names->keymap =     rNames.keymap;
+	    if (rNames.keycodes && !names->keycodes)
+                names->keycodes =   rNames.keycodes;
+	    if (rNames.types    && !names->types)
+		names->types =      rNames.types;
+	    if (rNames.compat   && !names->compat)
+		names->compat =     rNames.compat;
+	    if (rNames.symbols  && !names->symbols)
+		names->symbols =    rNames.symbols;
+	    if (rNames.geometry && !names->geometry)
+                names->geometry =   rNames.geometry;
 	    XkbSetRulesUsed(&defs);
 	}
     }
@@ -718,9 +724,18 @@ XkbRF_VarDefsRec	defs;
     if (cfgNames.symbols)	names->symbols= cfgNames.symbols;
     if (cfgNames.geometry)	names->geometry= cfgNames.geometry;
 
-    if ((XkbDDXLoadKeymapByNames(dev,names,XkmAllIndicesMask,0,
-						&finfo,name,PATH_MAX))&&
-						(finfo.xkb!=NULL)) {
+    if (names->keymap) {
+        XkbComponentNamesRec	tmpNames;
+	bzero(&tmpNames,sizeof(XkbComponentNamesRec));
+	tmpNames.keymap = names->keymap;
+        ok = (Bool) XkbDDXLoadKeymapByNames(dev,&tmpNames,XkmAllIndicesMask,0,
+					    &finfo,name,PATH_MAX);
+    }
+    if (!(ok && (finfo.xkb!=NULL)))
+        ok = (Bool) XkbDDXLoadKeymapByNames(dev,names,XkmAllIndicesMask,0,
+					    &finfo,name,PATH_MAX);
+
+    if (ok && (finfo.xkb!=NULL)) {
 	XkbDescPtr	xkb;
 	int		minKC,maxKC;
 

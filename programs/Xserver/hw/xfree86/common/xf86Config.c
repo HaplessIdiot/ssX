@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.214 2000/03/08 05:38:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.215 2000/03/22 21:19:29 tsi Exp $ */
 
 
 /*
@@ -13,6 +13,11 @@
  *
  * Author: Dirk Hohndel <hohndel@XFree86.Org>
  */
+
+#ifdef XF86DRI
+#include <sys/types.h>
+#include <grp.h>
+#endif
 
 #include "xf86.h"
 #include "xf86Parser.h"
@@ -1843,13 +1848,22 @@ configDRI(XF86ConfDRIPtr drip)
     int                count = 0;
     XF86ConfBuffersPtr bufs;
     int                i;
+    struct group       *grp;
 
-    xf86ConfigDRI.group      = drip ? drip->dri_group : NULL;
-    xf86ConfigDRI.mode       = drip ? drip->dri_mode  : NULL;
+    xf86ConfigDRI.group      = -1;
+    xf86ConfigDRI.mode       = 0;
     xf86ConfigDRI.bufs_count = 0;
     xf86ConfigDRI.bufs       = NULL;
 
     if (drip) {
+	if (drip->dri_group_name) {
+	    if ((grp = getgrnam(drip->dri_group_name)))
+		xf86ConfigDRI.group = grp->gr_gid;
+	} else {
+	    if (drip->dri_group >= 0)
+		xf86ConfigDRI.group = drip->dri_group;
+	}
+	xf86ConfigDRI.mode = drip->dri_mode;
 	for (bufs = drip->dri_buffers_lst; bufs; bufs = bufs->list.next)
 	    ++count;
 	

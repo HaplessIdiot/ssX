@@ -24,7 +24,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $XFree86: xc/programs/Xserver/hw/xfree86/parser/DRI.c,v 1.3 2000/03/05 17:04:19 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/parser/DRI.c,v 1.4 2000/03/31 20:13:39 dawes Exp $
  * 
  */
 
@@ -81,13 +81,18 @@ parseDRISection (void)
 {
     parsePrologue (XF86ConfDRIPtr, XF86ConfDRIRec);
 
+    /* Zero is a valid value for this. */
+    ptr->dri_group = -1;
     while ((token = xf86GetToken (DRITab)) != ENDSECTION) {
 	switch (token)
 	    {
 	    case GROUP:
-		if (xf86GetToken (NULL) != NUMBER)
-		    Error (QUOTE_MSG, "Group");
-		ptr->dri_group = val.num;
+		if (xf86GetToken (NULL) == STRING)
+		    ptr->dri_group_name = val.str;
+		else if (xf86GetToken (NULL) == NUMBER)
+		    ptr->dri_group = val.num;
+		else
+		    Error (GROUP_MSG, NULL);
 		break;
 	    case MODE:
 		if (xf86GetToken (NULL) != NUMBER)
@@ -124,7 +129,9 @@ printDRISection (FILE * cf, XF86ConfDRIPtr ptr)
     if (ptr == NULL)
 	return;
     
-    if (ptr->dri_group)
+    if (ptr->dri_group_name)
+	fprintf (cf, "\tGroup        \"%s\"\n", ptr->dri_group_name);
+    else if (ptr->dri_group >= 0)
 	fprintf (cf, "\tGroup        %d\n", ptr->dri_group);
     for (bufs = ptr->dri_buffers_lst; bufs; bufs = bufs->list.next) {
 	fprintf (cf, "\tBuffers      %d %d",

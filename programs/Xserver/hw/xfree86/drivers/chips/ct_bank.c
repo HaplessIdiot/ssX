@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_bank.c,v 1.3 1998/07/25 16:55:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_bank.c,v 1.4 1998/12/20 11:57:42 dawes Exp $ */
 
 /*
  * Copyright 1997
@@ -36,13 +36,13 @@
  */
 /* #define DIRECT_REGISTER_ACCESS */
 
-/* Everything using inb/outb, etc needs "compiler.h" */
-#include "compiler.h"
-
 /* All drivers should typically include these */
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
+
+/* Everything using inb/outb, etc needs "compiler.h" */
+#include "compiler.h"
 
 /* Drivers for PCI hardware need this */
 #include "xf86PciInfo.h"

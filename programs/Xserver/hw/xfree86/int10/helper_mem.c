@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/int10/helper_mem.c,v 1.3 1999/12/03 19:17:41 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_mem.c,v 1.2 2000/02/08 13:13:26 eich Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -6,12 +6,12 @@
  */
 #include "xf86.h"
 #include "xf86str.h"
+#include "xf86_ansic.h"
 #include "compiler.h"
 #include "xf86Pci.h"
 #define _INT10_PRIVATE
 #include "int10Defines.h"
 #include "xf86int10.h"
-#include "xf86_ansic.h"
 
 #define REG pInt
 

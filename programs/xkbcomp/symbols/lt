@@ -1,21 +1,35 @@
-// $XFree86$
+// $XFree86: xc/programs/xkbcomp/symbols/lt,v 1.1 1998/01/11 03:48:34 dawes Exp $
 
 partial alphanumeric_keys modifier_keys 
 xkb_symbols "basic" {
 
     // Describes the differences between a very simple en_US
     // keyboard and a very simple Lithuanian keyboard
-    // Usage: put this in `XF86Config' file and remove other Xkb* commands:
-    //     Xkbkeycodes "xfree86"
-    //     XkbTypes    "default"
-    //     XkbCompat   "default"
-    //     XkbSymbols  "en_US(pc102)+lt(pc102)+group(ctrl_shift_toggle)"
-    //     XkbGeometry "pc"
-    // or preferably, use:
-    //     XkbModel    "pc102"
-    //     XkbLayout   "lt"
-    //     XkbOptions  "grp:ctrl_shift_toggle"
+    // Ričardas Čepas <rch@richard.eu.org>
+    //  Usage: put these commands in `XF86Config' file
+    // and remove other Xkb* commands:
 
+    // # XFree86 4.x syntax:
+    //  Section "InputDevice"
+    //  	Identifier  "Keyboard0"
+    //  	Driver      "keyboard"
+    //  	Option	"XkbRules"        "xfree86"
+    //  	Option	"XkbModel"        "pc102"
+    //   # +lt(left_switch) turns key between left ctrl and shift on "German" keyboards into AltGr
+    //  	Option	"XkbLayout"       "lt+lt(left_switch)"
+    //  	Option	"XkbOptions"      "grp:shift_toggle"
+    //  EndSection
+    //
+    // # XFree86 3.x syntax:
+    //  Section "Keyboard"
+    //...
+    //     XkbRules        "xfree86"
+    //     XkbModel        "pc102"
+    // # +lt(left_switch) turns key between left ctrl and shift on "German" keyboards into AltGr
+    //     XkbLayout       "lt+lt(left_switch)"
+    //     XkbOptions      "grp:ctrl_shift_toggle"
+    //  EndSection
+    //  
     name[Group1]= "US/ASCII";
     name[Group2]= "Lithuanian";
 
@@ -91,7 +105,6 @@ xkb_symbols "basic" {
 
 xkb_symbols "generic101" {
     include "lt(basic)"
-    include "lt(function)"
 };
 
 xkb_symbols "pc101" {
@@ -119,24 +132,6 @@ xkb_symbols "nodeadkeys" {
     include "lt(basic)" // for consistent naming
 };
 
-// "extra" function keys.
-xkb_symbols "function" {
-    // Begin "Function" section
-    key <FK01> {	[ 	 F1,		F11		]	};
-    key <FK02> {	[	 F2,		F12		]	};
-    key <FK03> {	[	 F3,		F13		]	};
-    key <FK04> {	[	 F4,		F14		]	};
-    key <FK05> {	[	 F5,		F15		]	};
-    key <FK06> {	[	 F6,		F16		]	};
-    key <FK07> {	[	 F7,		F17		]	};
-    key <FK08> {	[	 F8,		F18		]	};
-    key <FK09> {	[        F9,		F19		]	};
-    key <FK10> {	[        F10,		F20		]	};
-    key <FK11> {	[        F11,		F21		]	};
-    key <FK12> {	[ 	 F12,		F22		]	};
-    // End "Function" section
-};
-
 // definition for the extra key on 102-key keyboards
 // between left Control and Alt
 xkb_symbols "left_switch" {
@@ -145,4 +140,7 @@ xkb_symbols "left_switch" {
     // Begin modifier mappings 
     modifier_map Mod3   { Mode_switch };
 };
+
+
+
 

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.1 1999/03/28 15:32:57 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -101,7 +101,7 @@ sparcPciInit()
 CARD32
 sparcPciCfgRead(PCITAG tag, int off)
 {
-	int bus, dfn, len;
+	int bus, dfn;
 	CARD32 val = 0xffffffff;
 
 	bus = PCI_BUS_FROM_TAG(tag);
@@ -114,7 +114,7 @@ sparcPciCfgRead(PCITAG tag, int off)
 void
 sparcPciCfgWrite(PCITAG tag, int off, CARD32 val)
 {
-	int bus, dfn, len;
+	int bus, dfn;
 
 	bus = PCI_BUS_FROM_TAG(tag);
 	dfn = PCI_DFN_FROM_TAG(tag);
@@ -125,7 +125,7 @@ sparcPciCfgWrite(PCITAG tag, int off, CARD32 val)
 void
 sparcPciCfgSetBits(PCITAG tag, int off, CARD32 mask, CARD32 bits)
 {
-    int bus, dfn, len;
+    int bus, dfn;
     CARD32 val = 0xffffffff;
 
     bus = PCI_BUS_FROM_TAG(tag);

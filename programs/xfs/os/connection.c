@@ -63,16 +63,14 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/connection.c,v 3.16 1998/12/20 11:58:20 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/connection.c,v 3.17 1999/03/07 11:41:06 dawes Exp $ */
 
 #include	<X11/Xtrans.h>
+#include	<stdlib.h>
 #include	"misc.h"
 #include	<stdio.h>
 #include	<errno.h>
 #include	<X11/Xos.h>
-#ifdef linux
-#include	<stdlib.h>
-#endif
 #ifndef MINIX
 #ifndef Lynx
 #include	<sys/param.h>

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_accel.c,v 1.6 2000/02/13 19:33:55 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_accel.c,v 1.7 2000/02/23 04:47:18 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -993,6 +993,9 @@ Bool R128AccelInit(ScreenPtr pScreen)
 
 				/* Screen-to-screen Copy */
     a->ScreenToScreenCopyFlags          = 0;
+    /* keithp--r128 doesnt seem to do this right */
+    if (pScrn->bitsPerPixel == 24)
+	a->ScreenToScreenCopyFlags     |= NO_TRANSPARENCY;
     a->SetupForScreenToScreenCopy       = R128SetupForScreenToScreenCopy;
     a->SubsequentScreenToScreenCopy     = R128SubsequentScreenToScreenCopy;
 

@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.25 2000/02/08 13:13:12 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.26 2000/03/05 16:59:13 dawes Exp $ */
 
 
 #ifndef _CT_DRIVER_H_
@@ -34,6 +34,7 @@
 #include "xf86Cursor.h"
 #include "xf86i2c.h"
 #include "xf86DDC.h"
+#include "xf86xv.h"
 
 /* Supported chipsets */
 typedef enum {
@@ -103,15 +104,16 @@ typedef struct {
 #define ChipsDPMSSupport	0x00000020
 #define ChipsTMEDSupport	0x00000040
 #define ChipsGammaSupport	0x00000080
+#define ChipsVideoSupport	0x00000100
 
 /* Options flags for the C&T chipsets */
-#define ChipsHWCursor		0x00000100
-#define ChipsShadowFB		0x00000200
-#define ChipsOverlay8plus16	0x00000400
+#define ChipsHWCursor		0x00001000
+#define ChipsShadowFB		0x00002000
+#define ChipsOverlay8plus16	0x00004000
 
 /* Architecture type flags */
-#define ChipsHiQV		0x00001000
-#define ChipsWingine		0x00002000
+#define ChipsHiQV		0x00010000
+#define ChipsWingine		0x00020000
 #define IS_Wingine(x)		((x->Flags) & ChipsWingine)
 #define IS_HiQV(x)		((x->Flags) & ChipsHiQV)
 
@@ -283,6 +285,13 @@ typedef struct _CHIPSRec {
     Bool		DGAactive;
     int			DGAViewportStatus;
     CloseScreenProcPtr	CloseScreen;
+    ScreenBlockHandlerProcPtr BlockHandler;
+    int			videoKey;
+    XF86VideoAdaptorPtr	adaptor;
+    int			OverlaySkewX;
+    int			OverlaySkewY;
+    int			VideoZoomMax;
+
 #ifdef __arm32__
 #ifdef __NetBSD__
     int			TVMode;
@@ -317,6 +326,10 @@ extern unsigned int ChipsReg32HiQV[];
 
 void CHIPSAdjustFrame(int scrnIndex, int x, int y, int flags);
 Bool CHIPSSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
+
+/* video */
+void CHIPSInitVideo(ScreenPtr pScreen);
+void CHIPSResetVideo(ScrnInfoPtr pScrn);
 
 /* banking */
 int CHIPSSetRead(ScreenPtr pScreen, int bank);

@@ -21,21 +21,19 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbpixmap.c,v 1.2 1999/12/27 01:26:21 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbpixmap.c,v 1.3 2000/02/23 20:29:45 dawes Exp $ */
 
 #include "fb.h"
 
 PixmapPtr
-fbCreatePixmap (ScreenPtr pScreen, int width, int height, int depth)
+fbCreatePixmapBpp (ScreenPtr pScreen, int width, int height, int depth, int bpp)
 {
     PixmapPtr	pPixmap;
     int		datasize;
     int		paddedWidth;
-    int		bpp;
     int		adjust;
     int		base;
 
-    bpp = BitsPerPixel(depth);
     paddedWidth = ((width * bpp + FB_MASK) >> FB_SHIFT) * sizeof (FbBits);
     datasize = height * paddedWidth;
 #ifdef PIXPRIV
@@ -72,6 +70,13 @@ fbCreatePixmap (ScreenPtr pScreen, int width, int height, int depth)
     fbInitializeDrawable (&pPixmap->drawable);
 #endif
     return pPixmap;
+}
+
+PixmapPtr
+fbCreatePixmap (ScreenPtr pScreen, int width, int height, int depth)
+{
+    return fbCreatePixmapBpp (pScreen, width, height, depth, 
+			      BitsPerPixel(depth));
 }
 
 Bool

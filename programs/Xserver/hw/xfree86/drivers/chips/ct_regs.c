@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_regs.c,v 1.2 1999/12/03 19:17:31 eich Exp $ */
 
 /*
  * The functions in this file are used to read/write the C&T extension register
@@ -48,13 +48,13 @@
  */
 
 
-/* Everything using inb/outb, etc needs "compiler.h" */
-#include "compiler.h"
-
 /* All drivers should typically include these */
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
+
+/* Everything using inb/outb, etc needs "compiler.h" */
+#include "compiler.h"
 
 /* Drivers for PCI hardware need this */
 #include "xf86PciInfo.h"

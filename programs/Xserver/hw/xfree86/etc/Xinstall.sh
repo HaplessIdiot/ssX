@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.8 2000/03/17 18:49:44 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.9 2000/03/18 19:58:56 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Portions Copyright © 1996-2000 by The XFree86 Project, Inc.
@@ -790,7 +790,7 @@ if [ X"$EtcToMove" != X ]; then
 		;;
 	esac
 	echo ""
-	if [ X"NoSymlinks" != XYES ]; then
+	if [ X"$NoSymLinks" != XYES ]; then
 		for i in $EtcToMove; do
 			echo "Moving $RUNDIR/lib/X11/$i to $ETCDIR/$i ..."
 			if [ ! -d $ETCDIR/$i ]; then

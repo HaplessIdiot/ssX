@@ -24,7 +24,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.9 2000/02/14 06:27:24 martin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.10 2000/02/23 04:47:23 martin Exp $
  * 
  */
 
@@ -214,7 +214,7 @@ static int drmOpenByName(const char *name)
 
 #if defined(XFree86Server)
     mode  = xf86ConfigDRI.mode ? xf86ConfigDRI.mode : DRM_DEV_MODE;
-    group = xf86ConfigDRI.group ? xf86ConfigDRI.group : DRM_DEV_GID;
+    group = (xf86ConfigDRI.group >= 0) ? xf86ConfigDRI.group : DRM_DEV_GID;
 #endif
 
     if (!geteuid()) {

@@ -1,5 +1,4 @@
 /* $XConsortium: xkbActions.c /main/3 1996/03/01 14:31:12 kaleb $ */
-/* $XFree86: xc/programs/Xserver/xkb/xkbActions.c,v 3.1 1996/09/24 13:59:37 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -25,6 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
+/* $XFree86: xc/programs/Xserver/xkb/xkbActions.c,v 3.2 2000/02/09 13:30:47 dawes Exp $ */
 
 #include <stdio.h>
 #include <math.h>
@@ -845,7 +845,7 @@ XkbEventCauseRec	cause;
 	filter->keycode= 0;
 	filter->active= 0;
     }
-    return 0;
+    return 1;
 }
 
 static int
@@ -929,7 +929,7 @@ XkbStateRec	old;
 unsigned	mods,mask,oldCoreState,oldCorePrevState;
 
     if ((filter->keycode!=0)&&(filter->keycode!=keycode))
-	return 0;
+	return 1;
 
     GetSpritePosition(&x,&y);
     ev.u.keyButtonPointer.time = GetTimeInMillis();
@@ -983,8 +983,6 @@ unsigned	mods,mask,oldCoreState,oldCorePrevState;
 	    xkbi->device->key->prev_state= oldCorePrevState;
 	    xkbi->state= old;
 	}
-
-	return 0;
     }
     else if (filter->keycode==keycode) {
 
@@ -1019,9 +1017,8 @@ unsigned	mods,mask,oldCoreState,oldCorePrevState;
 
 	filter->keycode= 0;
 	filter->active= 0;
-	return 0;
     }
-    return 0;
+    return 1;
 }
 
 #ifdef XINPUT

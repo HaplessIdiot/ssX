@@ -1,12 +1,12 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_ddc.c,v 1.4 1999/07/19 13:36:25 dawes Exp $ */
-
-/* Everything using inb/outb, etc needs "compiler.h" */
-#include "compiler.h"
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_ddc.c,v 1.6 1999/12/03 19:17:27 eich Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
+
+/* Everything using inb/outb, etc needs "compiler.h" */
+#include "compiler.h"
 
 /* Drivers for PCI hardware need this */
 #include "xf86PciInfo.h"

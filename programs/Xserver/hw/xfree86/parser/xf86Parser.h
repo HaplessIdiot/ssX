@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.17 1999/09/04 13:04:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.19 2000/01/26 02:00:51 alanh Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -356,8 +356,9 @@ XF86ConfBuffersRec, *XF86ConfBuffersPtr;
 
 typedef struct
 {
+	char *dri_group_name;
 	int dri_group;
-        int dri_mode;
+	int dri_mode;
 	XF86ConfBuffersPtr dri_buffers_lst;
 }
 XF86ConfDRIRec, *XF86ConfDRIPtr;
