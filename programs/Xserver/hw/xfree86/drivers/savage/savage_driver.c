@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.13 2001/04/18 15:29:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.14 2001/04/19 14:07:05 tsi Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -851,7 +851,9 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 
     if (xf86LoadSubModule(pScrn, "vbe")) {
 	xf86LoaderReqSymLists(vbeSymbols, NULL);
+#ifdef XFree86LOADER
 	LoaderRefSymLists(vbeOptSymbols, NULL);
+#endif
 	psav->pVbe = VBEInit(psav->pInt10, pEnt->index);
     }
 
