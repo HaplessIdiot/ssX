@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.h,v 1.16 2001/01/06 20:19:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.h,v 1.18 2001/02/16 10:04:31 eich Exp $ */
 
 /*
  *                   XFree86 int10 module
@@ -151,7 +151,7 @@ void Mem_wl(int addr, CARD32 val);
 
 /* helper_mem.c */
 void setup_int_vect(xf86Int10InfoPtr pInt);
-int setup_system_bios(unsigned long base_addr);
+int setup_system_bios(void *base_addr);
 void reset_int_vect(xf86Int10InfoPtr pInt);
 void set_return_trap(xf86Int10InfoPtr pInt);
 Bool int10skip(ScrnInfoPtr pScrn, int entityIndex);

@@ -5,7 +5,7 @@
 
    Copyright: 1998,1999
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.17 2000/12/15 15:19:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.18 2000/12/20 01:30:46 mvojkovi Exp $ */
 
 #ifndef _TDFX_H_
 #define _TDFX_H_
@@ -78,8 +78,8 @@ extern void FillPrivateDRI(TDFXPtr pTDFX, TDFXDRIPtr pTDFXDRI);
 #define TDFXTRACEREG if(0) ErrorF
 #endif
 
-#include <xaa.h>
-#include <xf86Cursor.h>
+#include "xaa.h"
+#include "xf86Cursor.h"
 
 typedef void (*TDFXWriteIndexedByteFunc)(TDFXPtr pTDFX, int addr, 
 					 char index, char value);

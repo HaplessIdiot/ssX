@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/summa/xf86Summa.c,v 1.3 1999/06/13 05:18:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/summa/xf86Summa.c,v 1.4 2000/08/11 19:10:48 dawes Exp $ */
 
 static const char identification[] = "$Identification: 18 $";
 
@@ -1169,9 +1169,9 @@ xf86SumAllocate()
     local->old_y = -1;
 
 #if defined(sun) && !defined(i386)
-    if (def_name) {
+    if (dev_name) {
 	priv->sumDevice = xalloc(strlen(dev_name) + 1);
-	strcpy(priv->sumDevice, device_name);
+	strcpy(priv->sumDevice, dev_name);
 	ErrorF("xf86SumOpen port changed to '%s'\n", priv->sumDevice);
     } else {
 	priv->sumDevice = "";
