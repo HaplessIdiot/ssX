@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftdraw.c,v 1.15 2001/05/16 19:20:43 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftdraw.c,v 1.16 2002/02/15 07:36:11 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -731,6 +731,9 @@ XftDrawSetClip (XftDraw	*draw,
     Region			n = 0;
 
     if (!r && !draw->clip)
+	return True;
+
+    if (r && draw->clip && XEqualRegion (r, draw->clip))
 	return True;
 
     if (r)

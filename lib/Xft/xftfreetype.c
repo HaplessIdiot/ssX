@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.14 2001/09/21 19:54:53 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.17 2002/02/15 07:36:11 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -282,7 +282,7 @@ XftFontOpenPattern (Display *dpy, FcPattern *pattern)
     XftDisplayInfo  *info = _XftDisplayInfoGet (dpy);
     XftFtFile	    *file;
     FT_Face	    face;
-    const FcChar8   *filename;
+    FcChar8	    *filename;
     int		    id;
     double	    dsize;
     FT_F26Dot6	    size;
