@@ -1,4 +1,5 @@
 XFree86 4.0.1Zb (14 December 2000)
+1191. Trident driver bug fixes (Alan Hourihane).
 1190. Make it possible to install hardcopy specs docs that we can't generate
       from source (David Dawes).
 1189. Set the HasPerl default correctly for LynxOS (#4384, Thomas Mueller).
@@ -12074,4 +12075,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1477 2000/12/14 17:16:31 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1478 2000/12/14 18:23:12 dawes Exp $

@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tridenthelper.c,v 1.13 2000/09/19 12:46:19 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tridenthelper.c,v 1.14 2000/12/07 16:48:06 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -70,7 +70,7 @@ TGUISetClock(ScrnInfoPtr pScrn, int clock, CARD8 *a, CARD8 *b)
 
  	freq = clock;
 
-	for (k=0;k<=endk;k++)
+	for (k=endk;k>=0;k--)
 	  for (n=startn;n<=endn;n++)
 	    for (m=1;m<=endm;m++)
 	    {
