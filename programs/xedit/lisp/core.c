@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.41 2002/05/24 01:08:58 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.42 2002/06/03 21:39:23 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -2161,7 +2161,7 @@ LispMember(LispMac *mac, LispBuiltin *builtin, int comparison)
 	key = ARGUMENT(2);
 	list = ARGUMENT(1);
 	predicate = ARGUMENT(0);
-	test = test_not = NIL;
+	test = test_not = item = NIL;
     }
 
     if (list == NIL)
@@ -3024,7 +3024,8 @@ LispRemoveOrSubstitute(LispMac *mac, LispBuiltin *builtin,
 	i = comparison == NONE ? 8 : 6;
     else if (function == SUBSTITUTE)
 	i = comparison == NONE ? 9 : 7;
-    /* else */
+    else
+	return NIL;			/* ?!?!? */
 
     key = ARGUMENT(i);			--i;
     ocount = ARGUMENT(i);		--i;
@@ -3042,6 +3043,8 @@ LispRemoveOrSubstitute(LispMac *mac, LispBuiltin *builtin,
 	predicate = ARGUMENT(i);	--i;
 	if (function == SUBSTITUTE)
 	    newitem = ARGUMENT(0);
+	else
+	    newitem = NIL;
 	item = NIL;
     }
     else {
