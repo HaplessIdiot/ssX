@@ -38,7 +38,7 @@ name of the map to be used.
 .SH OPTIONS
 .TP 8
 .B \-a
-Show all keyboard information, reporting implicit or dervied information
+Show all keyboard information, reporting implicit or derived information
 as a comment.  Only affects \fI.xkb\fP format output.
 .TP 8
 .B \-C

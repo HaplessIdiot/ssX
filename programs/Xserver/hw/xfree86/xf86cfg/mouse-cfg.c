@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/mouse-cfg.c,v 1.1 2000/04/04 22:37:00 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/mouse-cfg.c,v 1.2 2000/05/18 16:29:59 dawes Exp $
  */
 
 #include "xf86config.h"
@@ -160,7 +160,7 @@ MouseConfig(XtPointer config)
 	    if ((option = xf86FindOption(mouse->inp_option_lst, Device)) != NULL) {
 		XtFree(option->opt_val);
 		option->opt_val = XtNewString(device);
-/*		XtFree(option->opt_comment);*/
+		XtFree(option->opt_comment);
 	    }
 	    else {
 		if (mouse->inp_option_lst == NULL)
@@ -174,7 +174,7 @@ MouseConfig(XtPointer config)
 	    if ((option = xf86FindOption(mouse->inp_option_lst, Protocol)) != NULL) {
 		XtFree(option->opt_val);
 		option->opt_val = XtNewString(protocol);
-/*		XtFree(option->opt_comment);*/
+		XtFree(option->opt_comment);
 	    }
 	    else
 		xf86addNewOption(mouse->inp_option_lst,
@@ -247,7 +247,6 @@ MouseEmulateCallback(Widget w, XtPointer user_data, XtPointer call_data)
     emulate = (Bool)call_data;
 }
 
-/* This function does not yet work in 4.0 */
 static void
 MouseApplyCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
@@ -255,6 +254,10 @@ MouseApplyCallback(Widget w, XtPointer user_data, XtPointer call_data)
 
     XF86MiscGetMouseSettings(XtDisplay(w), &mouse);
     XtFree(mouse.device);
+
+    if (mouse.baudrate == 0 || mouse.baudrate < 0 || mouse.baudrate > 9600 ||
+	mouse.baudrate % 1200)
+	mouse.baudrate = 1200;
 
     if (strcmp(protocol, "BusMouse") == 0)
 	mouse.type = MTYPE_BUSMOUSE;
@@ -286,7 +289,6 @@ MouseApplyCallback(Widget w, XtPointer user_data, XtPointer call_data)
     mouse.emulate3buttons = emulate;
     mouse.flags |= MF_REOPEN;
 
-    /* This was not working in 3.3 */
     mouse.device = device;
 
     XFlush(XtDisplay(w));

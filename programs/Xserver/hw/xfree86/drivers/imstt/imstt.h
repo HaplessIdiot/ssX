@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt.h,v 1.1 2000/06/14 00:16:09 dawes Exp $ */
 
 #ifndef _IMSTT_H
 #define _IMSTT_H
@@ -22,6 +22,7 @@ typedef struct _IMSTTRec {
 	long			FBMapSize;
 	unsigned long		videoRam;
 	unsigned long		ramdac;
+	int			rev;
 	OptionInfoPtr		Options;
 	unsigned int		Flags;
 	CARD32			Bus;
@@ -32,8 +33,13 @@ typedef struct _IMSTTRec {
 	Bool			InitDAC;
 	Bool			FBDev;
 	int			Chipset, ChipRev;
+	int			ydir;
 	unsigned long		pitch;
 	unsigned long		ll;
+	unsigned long		screen_width;
+	unsigned long		sp;
+	unsigned long		dp;
+	unsigned long		cnt;
 	unsigned long		bltctl;
 	unsigned short		hes;
 	unsigned short		heb;
@@ -51,6 +57,9 @@ typedef struct _IMSTTRec {
 	unsigned char		lckl_p[3];
 } IMSTTRec, *IMSTTPtr;
 
+#if 0
+#define IMSTTTRACE	ErrorF
+#endif
 
 #define IMSTTPTR(p)	((IMSTTPtr)((p)->driverPrivate))
 

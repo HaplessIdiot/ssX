@@ -66,7 +66,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/xkbcomp/listing.c,v 3.4 1997/10/26 13:25:29 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/listing.c,v 3.5 1998/10/04 09:41:26 dawes Exp $ */
 
 
 #include <stdio.h>
@@ -480,6 +480,7 @@ char *		mapName;
 		    WARN1("Couldn't open \"%s\"\n",list[i].file);
 		continue;
 	    }
+	    setScanState(list[i].file, 1);
 	    if (XKBParseFile(inputFile,&rtrn)&&(rtrn!=NULL)) {
 		mapName= list[i].map;
 		mapToUse= rtrn;

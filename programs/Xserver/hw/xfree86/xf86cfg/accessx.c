@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/accessx.c,v 1.3 2000/06/13 23:15:51 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/accessx.c,v 1.4 2000/06/20 05:08:50 dawes Exp $
  */
 
 #include "config.h"
@@ -82,6 +82,7 @@ static void ScaleEnableCallback(Widget, XtPointer, XtPointer);
 static void ScaleJumpCallback(Widget, XtPointer, XtPointer);
 
 static void ApplyCallback(Widget, XtPointer, XtPointer);
+static void AccessXInitialize(void);
 
 /*
  * Implementation
@@ -90,10 +91,12 @@ void
 startaccessx(void)
 {
     InitializeKeyboard();
+
     XkbGetControls(DPY, XkbAllControlsMask, xkb_info->xkb);
     if (xkb_info->xkb->ctrls == NULL)
 	xkb_info->xkb->ctrls = (XkbControlsPtr)
 	    XtCalloc(1, sizeof(XkbControlsRec));
+
     xkb_info->xkb->ctrls->enabled_ctrls |= XkbMouseKeysMask |
 					   XkbMouseKeysAccelMask;
     xkb_info->xkb->ctrls->mk_delay = 40;
@@ -153,7 +156,7 @@ AccessXInitialize(void)
     Arg args[1];
     Boolean state;
     Widget stickyForm, mouseForm, repeatForm, slowForm, bounceForm;
-    float val;
+    float val, tmp;
 
     if (!first)
 	return;
@@ -380,19 +383,20 @@ AccessXInitialize(void)
     XtSetArg(args[0], XtNstate, &state);
     XtGetValues(mouse, args, 1);
     EnableCallback(mouse, (XtPointer)mouseForm, (XtPointer)(int)state);
-    if (xkb_info->xkb->ctrls->mk_interval > 10)
-	val = (float)(xkb_info->xkb->ctrls->mk_interval - 10) /
-	      (float)MAX_MOUSE_SPEED;
-    else
-	val = 10.0 / (float)MAX_MOUSE_SPEED;
-    ScaleJumpCallback(mouseSpeed->scroller, (XtPointer)mouseSpeed,
-		      (XtPointer)&val);
     if (xkb_info->xkb->ctrls->mk_time_to_max > 10)
-	val = (float)(xkb_info->xkb->ctrls->mk_time_to_max - 10) /
+	val = (float)((xkb_info->xkb->ctrls->mk_time_to_max * (40. / 10.))) /
 	      (float)(MAX_MOUSE_TIME * 100);
     else
 	val = 10.0 / (float)(MAX_MOUSE_TIME * 100);
     ScaleJumpCallback(mouseTime->scroller, (XtPointer)mouseTime,
+		      (XtPointer)&val);
+    tmp = mouseTime->value;
+    if (xkb_info->xkb->ctrls->mk_max_speed != 0)
+	val = (float)(xkb_info->xkb->ctrls->mk_max_speed / tmp - 10) /
+	      (float)MAX_MOUSE_SPEED;
+    else
+	val = 10.0 / (float)MAX_MOUSE_SPEED;
+    ScaleJumpCallback(mouseSpeed->scroller, (XtPointer)mouseSpeed,
 		      (XtPointer)&val);
     if (xkb_info->xkb->ctrls->mk_delay > 10)
 	val = (float)(xkb_info->xkb->ctrls->mk_delay - 10) /
@@ -584,13 +588,16 @@ ApplyCallback(Widget w, XtPointer user_data, XtPointer call_data)
 	    xkb_info->xkb->ctrls->enabled_ctrls |= XkbMouseKeysMask |
 						   XkbMouseKeysAccelMask;
 	    xkb_info->config.mk_delay =
-	    xkb_info->xkb->ctrls->mk_delay = mouseDelay->value * 100;
+		xkb_info->xkb->ctrls->mk_delay = mouseDelay->value * 100;
 	    xkb_info->config.mk_interval =
-	    xkb_info->xkb->ctrls->mk_interval = mouseSpeed->value;
+		xkb_info->xkb->ctrls->mk_interval = 40;
 	    xkb_info->config.mk_time_to_max =
-	    xkb_info->xkb->ctrls->mk_time_to_max = mouseTime->value * 100;
-/*	    xkb_info->xkb->ctrls->mk_max_speed = 500;
-	    xkb_info->xkb->ctrls->mk_curve = 0;*/
+	    xkb_info->xkb->ctrls->mk_time_to_max =
+		(mouseTime->value * 1000) / xkb_info->xkb->ctrls->mk_interval;
+	    xkb_info->config.mk_max_speed =
+	    xkb_info->xkb->ctrls->mk_max_speed =
+		mouseSpeed->value * mouseTime->value;
+	    xkb_info->config.mk_curve = xkb_info->xkb->ctrls->mk_curve = 0;
 	}
 	else {
 	    xkb_info->config.initial_ctrls &= ~(XkbMouseKeysMask |

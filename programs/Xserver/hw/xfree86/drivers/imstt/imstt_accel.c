@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_accel.c,v 1.2 2000/06/14 02:36:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_accel.c,v 1.3 2000/07/26 01:52:19 tsi Exp $ */
 
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
@@ -55,10 +55,11 @@ static void IMSTTSetupForSolidFill(ScrnInfoPtr pScrn, int color,
 	IMSTTPtr iptr = IMSTTPTR(pScrn);
 	IMSTTMMIO_VARS();
 
+	OUTREG(IMSTT_DP_OCTL, iptr->ll);
+	OUTREG(IMSTT_SP, iptr->ll);
 	OUTREG(IMSTT_BI, 0xffffffff);
 	OUTREG(IMSTT_MBC, 0xffffffff);
 	OUTREG(IMSTT_CLR, color);
-	OUTREG(IMSTT_DP_OCTL, (pScrn->displayWidth * (pScrn->bitsPerPixel >> 3)));
 }
 
 
@@ -68,9 +69,13 @@ static void IMSTTSubsequentSolidFillRect(ScrnInfoPtr pScrn,
 	IMSTTPtr iptr = IMSTTPTR(pScrn);
 	IMSTTMMIO_VARS();
 
-	OUTREG(IMSTT_DSA, y + x);
-	OUTREG(IMSTT_CNT, (h << 16) | w);
-	OUTREG(IMSTT_BLTCTL, 0x840);
+	OUTREG(IMSTT_DSA, y * iptr->ll + x * (pScrn->bitsPerPixel >> 3));
+	OUTREG(IMSTT_S1SA, y * iptr->ll + x * (pScrn->bitsPerPixel >> 3));
+	OUTREG(IMSTT_CNT, ((h - 1) << 16) | (w * (pScrn->bitsPerPixel >> 3) - 1));
+	if (iptr->rev == 2)
+		OUTREG(IMSTT_BLTCTL, 0x200000);
+	else
+		OUTREG(IMSTT_BLTCTL, 0x840);
 }
 
 
@@ -83,24 +88,28 @@ static void IMSTTSetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir,
 	unsigned long sp, dp, ll, cnt;
 
 	iptr->bltctl = 0x05;
-	ll = pScrn->displayWidth * (pScrn->bitsPerPixel >> 3);
-	iptr->ll = ll;
+	ll = iptr->ll;
 	sp = ll << 16;
-	cnt = pScrn->virtualY << 16;
-	if (xdir >= 0) {
-		dp = -(ll) & 0xffff;
-		sp |= dp;
-	}
-	if (ydir >= 0) {
+
+	if (xdir > 0) {
 		iptr->bltctl |= 0x80;
-		cnt |= -(pScrn->displayWidth) & 0xffff;
+		iptr->cnt = 1;
 	} else {
-		cnt |= pScrn->displayWidth;
+		iptr->cnt = 0;
 	}
 
-	OUTREG(IMSTT_SP, sp);
-	OUTREG(IMSTT_CNT, cnt);
-	OUTREG(IMSTT_DP_OCTL, dp);
+	if (ydir > 0) {
+		sp |= -(ll) & 0xffff;
+		dp = -(ll) & 0xffff;
+		iptr->ydir = 1;
+	} else {
+		sp |= ll;
+		dp = ll;
+		iptr->ydir = 0;
+	}
+
+	iptr->sp = sp;
+	iptr->dp = dp;
 }
 
 
@@ -111,12 +120,32 @@ static void IMSTTSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
 {
 	IMSTTPtr iptr = IMSTTPTR(pScrn);
 	IMSTTMMIO_VARS();
+	unsigned long cnt;
 
-	OUTREG(IMSTT_S1SA, x1 * iptr->ll * y1);
-	OUTREG(IMSTT_DSA, x2 * iptr->ll * y2);
+	w--;
+	h--;
+	cnt = h << 16;
+
+	if (iptr->cnt) {
+		x1 += w;
+		x2 += w;
+		cnt |= -(w) & 0xffff;
+	}
+	else
+		cnt |= w;
+
+	if (iptr->ydir) {
+		y1 += h;
+		y2 += h;
+	}
+
+	OUTREG(IMSTT_S1SA, y1 * iptr->ll + x1);
+	OUTREG(IMSTT_SP, iptr->sp);
+	OUTREG(IMSTT_DSA, y2 * iptr->ll + x2);
+	OUTREG(IMSTT_CNT, cnt);
+	OUTREG(IMSTT_DP_OCTL, iptr->dp);
 	OUTREG(IMSTT_BLTCTL, iptr->bltctl);
 }
-
 
 
 
@@ -129,12 +158,18 @@ Bool IMSTTAccelInit(ScreenPtr pScreen)
 	if (!(xaaptr = iptr->AccelInfoRec = XAACreateInfoRec()))
 		return FALSE;
 
+	iptr->ll = pScrn->displayWidth * (pScrn->bitsPerPixel >> 3);
+
+	iptr->screen_width = iptr->pitch = iptr->ll;
+
 	xaaptr->Flags = (PIXMAP_CACHE | OFFSCREEN_PIXMAPS | LINEAR_FRAMEBUFFER);
 
 	xaaptr->Sync = IMSTTSync;
+
 	xaaptr->SetupForSolidFill = IMSTTSetupForSolidFill;
 	xaaptr->SubsequentSolidFillRect = IMSTTSubsequentSolidFillRect;
-	xaaptr->ScreenToScreenCopyFlags = 0;
+
+	xaaptr->ScreenToScreenCopyFlags = NO_TRANSPARENCY;
 	xaaptr->SetupForScreenToScreenCopy = IMSTTSetupForScreenToScreenCopy;
 	xaaptr->SubsequentScreenToScreenCopy = IMSTTSubsequentScreenToScreenCopy;
 

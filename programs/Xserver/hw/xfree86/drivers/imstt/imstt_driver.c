@@ -1,14 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.6 2000/06/22 16:59:28 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.7 2000/07/26 01:52:21 tsi Exp $ */
 
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
  *
  *	XFree86 4.0 driver for the Integrated Micro Solutions
  *		Twin Turbo 128 chipset
- *
- *	Credits:
- *		Sigurdur Asgeirsson, Jeffrey Kuskin, Ryan Nielsen
- *		for their work on imsttfb
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -28,6 +24,9 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
+ *	Credits:
+ *		Sigurdur Asgeirsson, Jeffrey Kuskin, Ryan Nielsen
+ *		for their work on imsttfb
  *
  */
 
@@ -86,8 +85,8 @@ static Bool IMSTTMapMem(ScrnInfoPtr pScrn);
 static void IMSTTUnmapMem(ScrnInfoPtr pScrn);
 static Bool IMSTTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static void IMSTTAdjustFrame(int scrnIndex, int x, int y, int flags);
-static Bool IMSTTCloseScreen(int scrnIndex, ScreenPtr pScreen);
-static Bool IMSTTSaveSCreen(ScreenPtr pScreen, int mode);
+Bool IMSTTCloseScreen(int scrnIndex, ScreenPtr pScreen);
+Bool IMSTTSaveScreen(ScreenPtr pScreen, int mode);
 static void IMSTTLoadPalette(ScrnInfoPtr pScrn, int numColors,
 			     int *indicies, LOCO *colors,
 			     VisualPtr pVisual);
@@ -158,6 +157,11 @@ static const char *cfbSymbols[] = {
 };
 
 
+static const char *fbSymbols[] = {
+	"fbScreenInit",
+	NULL
+};
+
 static const char *xaaSymbols[] = {
 	"XAADestroyInfoRec",
 	"XAACreateInfoRec",
@@ -189,8 +193,13 @@ static const char *fbdevHWSymbols[] = {
 
 
 #ifdef XFree86LOADER
-static pointer IMSTTSetup(pointer module, pointer opts, int *errmaj,
+
+MODULESETUPPROTO(IMSTTSetup);
+
+/*
+pointer IMSTTSetup(pointer module, pointer opts, int *errmaj,
 			  int *errmin);
+*/
 
 static XF86ModuleVersionInfo IMSTTVersRec = {
 	"imstt",
@@ -205,13 +214,14 @@ static XF86ModuleVersionInfo IMSTTVersRec = {
 	{0, 0, 0, 0}
 };
 
-XF86ModuleData IMSTTModuleData = { &IMSTTVersRec, IMSTTSetup, NULL };
+XF86ModuleData imsttModuleData = { &IMSTTVersRec, IMSTTSetup, NULL };
 
-static pointer IMSTTSetup(pointer module, pointer opts, int *errmaj,
+pointer IMSTTSetup(pointer module, pointer opts, int *errmaj,
 			  int *errmin)
 {
 	static Bool setupDone = FALSE;
 
+	IMSTTTRACE("IMSTTSetup -- begin\n");
 	if (!setupDone) {
 		setupDone = TRUE;
 		xf86AddDriver(&IMSTT, module, 0);
@@ -222,6 +232,7 @@ static pointer IMSTTSetup(pointer module, pointer opts, int *errmaj,
 			*errmaj = LDR_ONCEONLY;
 		return NULL;
 	}
+	IMSTTTRACE("IMSTTSetup -- end\n");
 }
 
 
@@ -271,6 +282,7 @@ static Bool IMSTTProbe(DriverPtr drv, int flags)
 	int numUsed;
 	Bool foundScreen = FALSE;
 
+	IMSTTTRACE("IMSTTProbe begin\n");
 	/* sanity checks */
 	if ((numDevSections = xf86MatchDevice("imstt", &devSections)) <= 0)
 		return FALSE;
@@ -310,6 +322,9 @@ static Bool IMSTTProbe(DriverPtr drv, int flags)
 		xf86ConfigActivePciEntity(pScrn, usedChips[i], IMSTTPciChipsets,
 					  NULL, NULL, NULL, NULL, NULL);
 	}
+
+
+	IMSTTTRACE("IMSTTProbe end\n");
 
 	xfree(usedChips);
 	return foundScreen;
@@ -363,6 +378,9 @@ static Bool IMSTTPreInit(ScrnInfoPtr pScrn, int flags)
 
 	if (pScrn->depth == 8)
 		pScrn->rgbBits = 8;
+
+	if (!xf86SetDefaultVisual(pScrn, -1))
+		return FALSE;
 
 	pScrn->progClock = TRUE;
 
@@ -481,15 +499,19 @@ static Bool IMSTTPreInit(ScrnInfoPtr pScrn, int flags)
 		return FALSE;
 	}
 
+	iptr->rev = (INREG(IMSTT_SSTATUS) & 0x0f00) >> 8;
+
+	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "revision %d\n", iptr->rev);
+
 	if (!pScrn->videoRam) {
+		pScrn->videoRam = iptr->videoRam / 1024;
 		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 			   "probed videoram = %dk\n",
-			   (iptr->videoRam / 1024));
-		pScrn->videoRam = (iptr->videoRam / 1024);
+			    pScrn->videoRam);
 	} else {
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 			   "videoram = %dk\n",
-			   pScrn->videoRam);
+			   pScrn->videoRam / 1024);
 	}
 
 	/* XXX this is sorta a guess, got some info from the TVP3030 manual */
@@ -537,31 +559,16 @@ static Bool IMSTTPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86PrintModes(pScrn);
 	xf86SetDpi(pScrn, 0, 0);
 
-	switch (pScrn->bitsPerPixel) {
-		case 8:
-			mod = "cfb";
-			reqSym = "cfbScreenInit";
-			break;
-		case 16:
-			mod = "cfb16";
-			reqSym = "cfb16ScreenInit";
-			break;
-		case 32:
-			mod = "cfb32";
-			reqSym = "cfb32ScreenInit";
-			break;
-	}
-	if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
-		IMSTTFreeRec(pScrn);
+	xf86LoadSubModule(pScrn, "fb");
+/*	xf86LoaderReqSymbols(fbSymbols, NULL); */
+	xf86LoaderReqSymbols("fbScreenInit", NULL);
+
+	if (!xf86LoadSubModule(pScrn, "xaa"))
 		return FALSE;
-	}
 
-	xf86LoaderReqSymbols(reqSym, NULL);
+	xf86LoaderReqSymLists(xaaSymbols, NULL);
 
-	if (!iptr->NoAccel) {
-		if (!xf86LoadSubModule(pScrn, "xaa"))
-			return FALSE;
-	}
+	IMSTTTRACE("PreInit -- END\n");
 
 	return TRUE;
 }
@@ -574,18 +581,16 @@ static Bool IMSTTMapMem(ScrnInfoPtr pScrn)
 
 	iptr = IMSTTPTR(pScrn);
 
-	if (iptr->FBDev) {
-		iptr->MMIOBase = fbdevHWMapMMIO(pScrn);
-	} else {
-		iptr->MMIOBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, iptr->PciTag,
-					       iptr->PciInfo->memBase[0] + 0x800000,
-					       0x1000);
-	}
+	iptr->MMIOBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, iptr->PciTag,
+				       iptr->PciInfo->memBase[0] + 0x800000,
+				       0x41000);
 	if (!iptr->MMIOBase) {
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 			   "Internal error: could not map MMIO\n");
 		return FALSE;
 	}
+
+	IMSTTTRACE("Mapped MMIO @ 0x%x with size 0x1000\n", iptr->PciInfo->memBase[0] + 0x800000);
 
 	IMSTTGetVideoMemSize(pScrn);
 
@@ -655,6 +660,11 @@ static void IMSTTGetVideoMemSize(ScrnInfoPtr pScrn)
 	IMSTTMMIO_VARS();
 	unsigned long tmp;
 
+	if (iptr->FBDev) {
+		iptr->videoRam = fbdevHWGetVidmem(pScrn);
+		return;
+	}
+
 	tmp = INREG(IMSTT_PRC);
 	if (iptr->ramdac == RAMDAC_IBM)
 		iptr->videoRam = (tmp & 0x0004) ? 0x400000 : 0x200000;
@@ -675,86 +685,92 @@ static Bool IMSTTScreenInit(int scrnIndex, ScreenPtr pScreen,
 	VisualPtr visual;
 	int r = TRUE;
 
+	IMSTTTRACE("ScreenInit -- Begin\n");
+
 	pScrn = xf86Screens[pScreen->myNum];
+
 	iptr = IMSTTPTR(pScrn);
 
-	/* initialize the card */
-	tmp = INREG(IMSTT_STGCTL);
-	OUTREG(IMSTT_STGCTL, tmp & ~0x1);
-	OUTREG(IMSTT_SSR, 0);
+	if (!iptr->FBDev) {
+		/* initialize the card */
+		tmp = INREG(IMSTT_STGCTL);
 
-	if (iptr->InitDAC) {
-		/* set default values for DAC registers */
-		if (iptr->ramdac == RAMDAC_IBM) {
-			iptr->CMAPBase[IBM624_PPMASK] = 0xff;	eieio();
-			iptr->CMAPBase[IBM624_PIDXHI] = 0;	eieio();
-			OUTREGPI(IBM624_CLKCTL, 0x21);
-			OUTREGPI(IBM624_SYNCCTL, 0x00);
-			OUTREGPI(IBM624_HSYNCPOS, 0x00);
-			OUTREGPI(IBM624_PWRMNGMT, 0x00);
-			OUTREGPI(IBM624_DACOP, 0x02);
-			OUTREGPI(IBM624_PALETCTL, 0x00);
-			OUTREGPI(IBM624_SYSCLKCTL, 0x01);
-			OUTREGPI(IBM624_BPP8, 0x00);
-			OUTREGPI(IBM624_BPP16, 0x01);
-			OUTREGPI(IBM624_BPP24, 0x00);
-			OUTREGPI(IBM624_BPP32, 0x00);
-			OUTREGPI(IBM624_PIXCTL1, 0x05);
-			OUTREGPI(IBM624_PIXCTL2, 0x00);
-			OUTREGPI(IBM624_SYSCLKN, 0x08);
-			OUTREGPI(IBM624_SYSCLKM, 0x4f);
-			OUTREGPI(IBM624_SYSCLKP, 0x00);
-			OUTREGPI(IBM624_SYSCLKC, 0x00);
-			OUTREGPI(IBM624_CURSCTL, 0x00);
-			OUTREGPI(IBM624_CURSACCTL, 0x01);
-			OUTREGPI(IBM624_CURSACATTR, 0xa8);
-			OUTREGPI(IBM624_CURS1R, 0xff);
-			OUTREGPI(IBM624_CURS1G, 0xff);
-			OUTREGPI(IBM624_CURS1B, 0xff);
-			OUTREGPI(IBM624_CURS2R, 0xff);
-			OUTREGPI(IBM624_CURS2G, 0xff);
-			OUTREGPI(IBM624_CURS2B, 0xff);
-			OUTREGPI(IBM624_CURS3R, 0xff);
-			OUTREGPI(IBM624_CURS3G, 0xff);
-			OUTREGPI(IBM624_CURS3B, 0xff);
-			OUTREGPI(IBM624_BORDR, 0xff);
-			OUTREGPI(IBM624_BORDG, 0xff);
-			OUTREGPI(IBM624_BORDB, 0xff);
-			OUTREGPI(IBM624_MISCTL1, 0x01);
-			OUTREGPI(IBM624_MISCTL2, 0x45);
-			OUTREGPI(IBM624_MISCTL3, 0x00);
-			OUTREGPI(IBM624_KEYCTL, 0x00);
-		} else {
-			OUTREGPT(TVP_IRICC, 0x00);
-			OUTREGPT(TVP_IRBRC, 0xe4);
-			OUTREGPT(TVP_IRLAC, 0x06);
-			OUTREGPT(TVP_IRTCC, 0x80);
-			OUTREGPT(TVP_IRMXC, 0x4d);
-			OUTREGPT(TVP_IRCLS, 0x05);
-			OUTREGPT(TVP_IRPPG, 0x00);
-			OUTREGPT(TVP_IRGEC, 0x00);
-			OUTREGPT(TVP_IRMIC, 0x08);
-			OUTREGPT(TVP_IRCKL, 0xff);
-			OUTREGPT(TVP_IRCKH, 0xff);
-			OUTREGPT(TVP_IRCRL, 0xff);
-			OUTREGPT(TVP_IRCRH, 0xff);
-			OUTREGPT(TVP_IRCGL, 0xff);
-			OUTREGPT(TVP_IRCGH, 0xff);
-			OUTREGPT(TVP_IRCBL, 0xff);
-			OUTREGPT(TVP_IRCBH, 0xff);
-			OUTREGPT(TVP_IRCKC, 0x00);
-			OUTREGPT(TVP_IRPLA, 0x00);
-			OUTREGPT(TVP_IRPPD, 0xc0);
-			OUTREGPT(TVP_IRPPD, 0xd5);
-			OUTREGPT(TVP_IRPPD, 0xea);
-			OUTREGPT(TVP_IRPLA, 0x00);
-			OUTREGPT(TVP_IRMPD, 0xb9);
-			OUTREGPT(TVP_IRMPD, 0x3a);
-			OUTREGPT(TVP_IRMPD, 0xb1);
-			OUTREGPT(TVP_IRPLA, 0x00);
-			OUTREGPT(TVP_IRLPD, 0xc1);
-			OUTREGPT(TVP_IRLPD, 0x3d);
-			OUTREGPT(TVP_IRLPD, 0xf3);
+		OUTREG(IMSTT_STGCTL, tmp & ~0x1);
+		OUTREG(IMSTT_SSR, 0);
+
+		if (iptr->InitDAC) {
+			/* set default values for DAC registers */
+			if (iptr->ramdac == RAMDAC_IBM) {
+				iptr->CMAPBase[IBM624_PPMASK] = 0xff;	eieio();
+				iptr->CMAPBase[IBM624_PIDXHI] = 0;	eieio();
+				OUTREGPI(IBM624_CLKCTL, 0x21);
+				OUTREGPI(IBM624_SYNCCTL, 0x00);
+				OUTREGPI(IBM624_HSYNCPOS, 0x00);
+				OUTREGPI(IBM624_PWRMNGMT, 0x00);
+				OUTREGPI(IBM624_DACOP, 0x02);
+				OUTREGPI(IBM624_PALETCTL, 0x00);
+				OUTREGPI(IBM624_SYSCLKCTL, 0x01);
+				OUTREGPI(IBM624_BPP8, 0x00);
+				OUTREGPI(IBM624_BPP16, 0x01);
+				OUTREGPI(IBM624_BPP24, 0x00);
+				OUTREGPI(IBM624_BPP32, 0x00);
+				OUTREGPI(IBM624_PIXCTL1, 0x05);
+				OUTREGPI(IBM624_PIXCTL2, 0x00);
+				OUTREGPI(IBM624_SYSCLKN, 0x08);
+				OUTREGPI(IBM624_SYSCLKM, 0x4f);
+				OUTREGPI(IBM624_SYSCLKP, 0x00);	
+				OUTREGPI(IBM624_SYSCLKC, 0x00);
+				OUTREGPI(IBM624_CURSCTL, 0x00);
+				OUTREGPI(IBM624_CURSACCTL, 0x01);
+				OUTREGPI(IBM624_CURSACATTR, 0xa8);
+				OUTREGPI(IBM624_CURS1R, 0xff);
+				OUTREGPI(IBM624_CURS1G, 0xff);
+				OUTREGPI(IBM624_CURS1B, 0xff);
+				OUTREGPI(IBM624_CURS2R, 0xff);
+				OUTREGPI(IBM624_CURS2G, 0xff);
+				OUTREGPI(IBM624_CURS2B, 0xff);
+				OUTREGPI(IBM624_CURS3R, 0xff);
+				OUTREGPI(IBM624_CURS3G, 0xff);
+				OUTREGPI(IBM624_CURS3B, 0xff);
+				OUTREGPI(IBM624_BORDR, 0xff);
+				OUTREGPI(IBM624_BORDG, 0xff);
+				OUTREGPI(IBM624_BORDB, 0xff);
+				OUTREGPI(IBM624_MISCTL1, 0x01);
+				OUTREGPI(IBM624_MISCTL2, 0x45);
+				OUTREGPI(IBM624_MISCTL3, 0x00);
+				OUTREGPI(IBM624_KEYCTL, 0x00);
+			} else {
+				OUTREGPT(TVP_IRICC, 0x00);
+				OUTREGPT(TVP_IRBRC, 0xe4);
+				OUTREGPT(TVP_IRLAC, 0x06);
+				OUTREGPT(TVP_IRTCC, 0x80);
+				OUTREGPT(TVP_IRMXC, 0x4d);
+				OUTREGPT(TVP_IRCLS, 0x05);
+				OUTREGPT(TVP_IRPPG, 0x00);
+				OUTREGPT(TVP_IRGEC, 0x00);
+				OUTREGPT(TVP_IRMIC, 0x08);
+				OUTREGPT(TVP_IRCKL, 0xff);
+				OUTREGPT(TVP_IRCKH, 0xff);
+				OUTREGPT(TVP_IRCRL, 0xff);
+				OUTREGPT(TVP_IRCRH, 0xff);
+				OUTREGPT(TVP_IRCGL, 0xff);
+				OUTREGPT(TVP_IRCGH, 0xff);
+				OUTREGPT(TVP_IRCBL, 0xff);
+				OUTREGPT(TVP_IRCBH, 0xff);
+				OUTREGPT(TVP_IRCKC, 0x00);
+				OUTREGPT(TVP_IRPLA, 0x00);
+				OUTREGPT(TVP_IRPPD, 0xc0);
+				OUTREGPT(TVP_IRPPD, 0xd5);
+				OUTREGPT(TVP_IRPPD, 0xea);
+				OUTREGPT(TVP_IRPLA, 0x00);
+				OUTREGPT(TVP_IRMPD, 0xb9);
+				OUTREGPT(TVP_IRMPD, 0x3a);
+				OUTREGPT(TVP_IRMPD, 0xb1);
+				OUTREGPT(TVP_IRPLA, 0x00);
+				OUTREGPT(TVP_IRLPD, 0xc1);
+				OUTREGPT(TVP_IRLPD, 0x3d);
+				OUTREGPT(TVP_IRLPD, 0xf3);
+			}
 		}
 	}
 
@@ -782,28 +798,16 @@ static Bool IMSTTScreenInit(int scrnIndex, ScreenPtr pScreen,
 
 	switch (pScrn->bitsPerPixel) {
 		case 8:
-			r = cfbScreenInit(pScreen, iptr->FBBase, pScrn->virtualX,
-					  pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
-					  pScrn->displayWidth);
-			break;
 		case 16:
-			r = cfb16ScreenInit(pScreen, iptr->FBBase, pScrn->virtualX,
-					  pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
-					  pScrn->displayWidth);
-			break;
 		case 24:
-			r = cfb24ScreenInit(pScreen, iptr->FBBase, pScrn->virtualX,
-					  pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
-					  pScrn->displayWidth);
-			break;
 		case 32:
-			r = cfb32ScreenInit(pScreen, iptr->FBBase, pScrn->virtualX,
+			r = fbScreenInit(pScreen, iptr->FBBase, pScrn->virtualX,
 					  pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
-					  pScrn->displayWidth);
+					  pScrn->displayWidth, pScrn->bitsPerPixel);
 			break;
 		default:
-			r = FALSE;
-			break;
+			ErrorF("invalid bpp %d\n", pScrn->bitsPerPixel);
+			return FALSE;
 	}
 
 	if (!r) {
@@ -852,6 +856,12 @@ static Bool IMSTTScreenInit(int scrnIndex, ScreenPtr pScreen,
 
 	if (serverGeneration == 1)
 		xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);
+
+	pScreen->SaveScreen = IMSTTSaveScreen;
+	pScreen->CloseScreen = IMSTTCloseScreen;
+
+	IMSTTTRACE("ScreenInit -- End\n");
+
 
 	return TRUE;
 }
@@ -1289,4 +1299,24 @@ static void IMSTTAdjustFrame(int scrnIndex, int x, int y, int flags)
 	OUTREG(IMSTT_SSR, offset);
 
 	return;
+}
+
+
+Bool IMSTTCloseScreen(int scrnIndex, ScreenPtr pScreen)
+{
+	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+	IMSTTPtr iptr = IMSTTPTR(pScrn);
+
+	if (iptr->FBDev)
+		fbdevHWSave(pScrn);
+
+	return TRUE;
+}
+
+
+Bool IMSTTSaveScreen(ScreenPtr pScreen, int mode)
+{
+	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+
+	return TRUE;
 }
