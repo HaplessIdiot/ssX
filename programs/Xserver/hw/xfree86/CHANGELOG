@@ -1,4 +1,9 @@
 XFree86 4.1.99.1 (xx July 2001)
+ 172. Do not build Cygwin/XFree86 with -ansi as Cygwin's library (newlib) lacks
+      some prototype definitions that cause runtime failures (hypot being one
+      of them) (Alan Hourihane).
+ 171. Add extra library flags (commented out for now) for building
+      Cygwin/XFree86's server (#4834, Harold Hunt).
  170. Fix a bug in the v4l module which caused multiple TV cards not to work
       (#4835, Gerd Knorr).
  169. Add multi-monitor support to XDarwin for all display modes using
@@ -13606,4 +13611,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1894 2001/08/01 05:34:04 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1895 2001/08/03 08:33:57 alanh Exp $
