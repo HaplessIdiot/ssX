@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_accel.c,v 1.7 2000/09/02 02:42:44 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_accel.c,v 1.8 2000/09/08 22:43:05 mvojkovi Exp $ */
 
 /*
  * Authors:
@@ -186,6 +186,7 @@ I810AccelInit( ScreenPtr pScreen )
 	 NO_PLANEMASK | 
 	 ROP_NEEDS_SOURCE |
 	 BIT_ORDER_IN_BYTE_MSBFIRST | 
+         LEFT_EDGE_CLIPPING |
 	 0);
 
       infoPtr->ScanlineColorExpandBuffers = (unsigned char **) 
@@ -515,6 +516,7 @@ I810SetupForScanlineCPUToScreenColorExpandFill( ScrnInfoPtr pScrn,
 }
 
 
+static int I810SkipBytes = 0;
 
 static void 
 I810SubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
@@ -530,6 +532,13 @@ I810SubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 	      "%d,%d %dx%x %d\n", 
 	      x,y,w,h,skipleft);
 
+   x += skipleft;
+   w -= skipleft;
+
+   I810SkipBytes = skipleft >> 3;
+
+   pI810->BR[0] = BR00_BITBLT_CLIENT | BR00_OP_MONO_SRC_COPY_BLT | 0x06 |
+                  ((skipleft & 7) << 17);
    pI810->BR[9] = (pI810->bufferOffset + 
 		   (y * pScrn->displayWidth + x) * pI810->cpp);
    pI810->BR[14] = ( (1 << 16) | (w * pI810->cpp));
@@ -543,7 +552,7 @@ I810SubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
    I810Ptr pI810 = I810PTR(pScrn);
 
    pI810->BR[12] = (pI810->AccelInfoRec->ScanlineColorExpandBuffers[0] - 
-		    pI810->FbBase);
+		    pI810->FbBase + I810SkipBytes);
 
    if (I810_DEBUG & DEBUG_VERBOSE_ACCEL)
       ErrorF( "I810SubsequentColorExpandScanline %d (addr %x)\n",
@@ -553,10 +562,7 @@ I810SubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
 
    {
       BEGIN_LP_RING( 8 );
-      OUT_RING( BR00_BITBLT_CLIENT | 
-		BR00_OP_MONO_SRC_COPY_BLT |
-		0x6 );
-
+      OUT_RING( pI810->BR[0]);
       OUT_RING( pI810->BR[13]);
       OUT_RING( pI810->BR[14] );
       OUT_RING( pI810->BR[9] );
