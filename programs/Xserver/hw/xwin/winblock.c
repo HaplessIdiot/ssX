@@ -27,14 +27,15 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winblock.c,v 1.1 2001/04/05 20:13:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winblock.c,v 1.2 2001/04/18 17:14:06 dawes Exp $ */
 
 #include "win.h"
 
 /* See Porting Layer Definition - p. 6 */
 void
-winBlockHandler (pointer pBlockData,
-		 OSTimePtr pptv,
+winBlockHandler (int nScreen,
+		 pointer pBlockData,
+		 pointer pTimeout,
 		 pointer pReadMask)
 {
 }

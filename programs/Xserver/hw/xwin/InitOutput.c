@@ -22,17 +22,20 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.12 2001/06/12 14:06:01 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.13 2001/06/25 08:12:32 alanh Exp $ */
 
 #include "win.h"
 
 int		g_iNumScreens;
 winScreenInfo	g_ScreenInfo[MAXSCREENS];
 int		g_iLastScreen = -1;
-ColormapPtr	g_cmInstalledMaps[MAXSCREENS];
 int		g_fdMessageQueue = WIN_FD_INVALID;
 int		g_iScreenPrivateIndex = -1;
+int		g_iCmapPrivateIndex = -1;
+int		g_iGCPrivateIndex = -1;
+int		g_iPixmapPrivateIndex = -1;
 unsigned long	g_ulServerGeneration = 0;
+HBITMAP		g_hbmpGarbage = NULL;
 
 static PixmapFormatRec g_PixmapFormats[] = {
         { 1,    1,      BITMAP_SCANLINE_PAD },
@@ -43,6 +46,7 @@ static PixmapFormatRec g_PixmapFormats[] = {
         { 24,   24,     BITMAP_SCANLINE_PAD },
 	{ 32,	32,	BITMAP_SCANLINE_PAD }
 };
+
 const int NUMFORMATS = sizeof (g_PixmapFormats) / sizeof (g_PixmapFormats[0]);
 
 void
@@ -60,6 +64,10 @@ winInitializeDefaultScreens (void)
       g_ScreenInfo[i].pfb = NULL;
       g_ScreenInfo[i].fFullScreen = FALSE;
       g_ScreenInfo[i].iE3BTimeout = WIN_E3B_OFF;
+      g_ScreenInfo[i].dwWidth_mm = (WIN_DEFAULT_WIDTH / WIN_DEFAULT_DPI)
+	* 25.4;
+      g_ScreenInfo[i].dwHeight_mm = (WIN_DEFAULT_HEIGHT / WIN_DEFAULT_DPI)
+	* 25.4;
     }
   g_iNumScreens = 1;
 }
@@ -219,6 +227,18 @@ ddxProcessArgument (int argc, char *argv[], int i)
 		  argv[i + 2]);
 	  return 0;
 	}
+
+      /* Set a default DPI, if no parameter was passed */
+      if (monitorResolution == 0)
+	monitorResolution = WIN_DEFAULT_DPI;
+	  
+      /* Calculate the screen width and height in millimeters */
+      g_ScreenInfo[nScreenNum].dwWidth_mm
+	= (g_ScreenInfo[nScreenNum].dwWidth
+	   / monitorResolution) * 25.4;
+      g_ScreenInfo[nScreenNum].dwHeight_mm
+	= (g_ScreenInfo[nScreenNum].dwHeight
+	   / monitorResolution) * 25.4;
 
       /*
        * FIXME: This logic is surely broken.  I have no idea what it
@@ -460,7 +480,7 @@ InitOutput (ScreenInfo *screenInfo, int argc, char *argv[])
   screenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
   screenInfo->bitmapBitOrder = BITMAP_BIT_ORDER;
   screenInfo->numPixmapFormats = NUMFORMATS;
-
+  
   /* Describe how we want common pixmap formats padded */
   for (i = 0; i < NUMFORMATS; i++)
     {

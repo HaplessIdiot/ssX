@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winsetsp.c,v 1.1 2001/04/05 20:13:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winsetsp.c,v 1.2 2001/06/04 13:04:41 alanh Exp $ */
 
 #include "win.h"
 
@@ -41,7 +41,10 @@ winSetSpansNativeGDI (DrawablePtr	pDrawable,
 		      int		nSpans,
 		      int		fSorted)
 {
-#if 0
+#if WIN_NATIVE_GDI_SUPPORT
+  winGCPriv(pGC);
+  winPrivPixmapPtr	pPixmapPriv = NULL;
+  PixmapPtr		pPixmap = NULL;
   int			iIdx = 0;
   static int		iCount = 0;
   HBITMAP		hBitmap = NULL;
@@ -81,6 +84,12 @@ winSetSpansNativeGDI (DrawablePtr	pDrawable,
       break;
     case GXcopy:
       ErrorF ("winSetSpans () - GXcopy\n");
+      
+      /*
+       * FIXME: Assuming that the drawable is a pixmap.
+       */
+      pPixmap = (PixmapPtr) pDrawable;
+      pPixmapPriv = winGetPixmapPriv (pPixmap);
 
       /* Loop through spans */
       for (iIdx = 0; iIdx < nSpans; ++iIdx)
@@ -89,7 +98,8 @@ winSetSpansNativeGDI (DrawablePtr	pDrawable,
 	  pPoint = pPoints + iIdx;
 	  
 	  /* Blast the bits to the drawable */
-	  SetDIBits (g_hdcMem, ((PixmapPtr)pDrawable)->devPrivate.ptr,
+	  SetDIBits (pGCPriv->hdcMem,
+		     pPixmapPriv->hBitmap,
 		     pPoint->y, 1, pSrc, &bmih, 0);
 	  
 	  /* Display some useful information */
@@ -122,7 +132,7 @@ winSetSpansNativeGDI (DrawablePtr	pDrawable,
     case GXinvert:
       ErrorF ("winSetSpans () - GXinvert\n");
 
-      hdcMem = CreateCompatibleDC (g_hdc);
+      hdcMem = CreateCompatibleDC (pGCPriv->hdc);
  
       /* Loop through spans */
       for (iIdx = 0; iIdx < nSpans; ++iIdx)
@@ -150,12 +160,13 @@ winSetSpansNativeGDI (DrawablePtr	pDrawable,
 	    }
 	  else
 	    {
-	      hBitmap = CreateDIBitmap (g_hdcMem, &bmih, 0, pSrc, NULL, 0);
+	      hBitmap = CreateDIBitmap (pGCPriv->hdcMem,
+					&bmih, 0, pSrc, NULL, 0);
 	    }
 	  hBitmap = SelectObject (hdcMem, hBitmap);
 
 	  /* Blit the span line to the drawable */
-	  BitBlt (g_hdcMem, pPoint->x, pPoint->y,
+	  BitBlt (pGCPriv->hdcMem, pPoint->x, pPoint->y,
 		  *pWidth / pDrawable->depth, 1,
 		  hdcMem, 0, 0, NOTSRCCOPY);
 

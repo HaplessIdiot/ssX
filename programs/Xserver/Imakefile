@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:47:01 cpqbld Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.238 2001/06/04 13:04:38 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.239 2001/06/09 16:37:39 torrey Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -1197,11 +1197,13 @@ XCOMM X Server for MS Windows
 XCOMM
 FBDIR = fb
 SHADOWDIR = miext/shadow
+LAYERDIR = miext/layer
 XWINDDXDIR = hw/xwin
 XWINLIB = $(XWINDDXDIR)/LibraryTargetName(Xwin)
-XWINDIRS = $(STDDIRS) $(FBDIR) $(SHADOWDIR) $(XWINDDXDIR) $(DEPDIRS)
+XWINDIRS = $(STDDIRS) $(FBDIR) $(SHADOWDIR) $(LAYERDIR) $(XWINDDXDIR) \
+	   $(DEPDIRS)
 XWINOBJS = $(XWINDDXDIR)/stubs.o
-XWINLIBS = PreFbLibs $(XWINLIB) FbPostFbLibs $(SHADOW)
+XWINLIBS = PreFbLibs $(XWINLIB) FbPostFbLibs $(LAYER) $(SHADOW)
 XWINSYSLIBS = $(FONTLIBS) $(LDPRELIBS) $(XLIB) $(SYSLIBS) -lgdi32 -lddraw
 
 #if HasParallelMake

@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadddnl.c,v 1.10 2001/06/20 12:55:24 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadddnl.c,v 1.11 2001/06/25 08:12:34 alanh Exp $ */
 
 #include "win.h"
 
@@ -392,6 +392,11 @@ winShadowUpdateDDNL (ScreenPtr pScreen,
   DWORD			dwBox = REGION_NUM_RECTS (damage);
   BoxPtr		pBox = REGION_RECTS (damage);
 
+#if 0
+  ErrorF ("winShadowUpdateDDNL () dwBox %d\n",
+	  dwBox);
+#endif
+
   /* Return immediately if the app is not active and we are fullscreen */
   if (!pScreenPriv->fActive && pScreenInfo->fFullScreen) return;
 
@@ -404,6 +409,11 @@ winShadowUpdateDDNL (ScreenPtr pScreen,
   /* Loop through all boxes in the damaged region */
   while (dwBox--)
     {
+#if 0
+      ErrorF ("winShadowUpdateDDNL () x1 %d y1 %d x2 %d y2 %d\n",
+	      pBox->x1, pBox->y1, pBox->x2, pBox->y2);
+#endif
+
       /* Assign damage box to source rectangle */
       rcSrc.left = pBox->x1;
       rcSrc.top = pBox->y1;
@@ -423,7 +433,13 @@ winShadowUpdateDDNL (ScreenPtr pScreen,
 					&rcSrc,
 					DDBLT_WAIT,
 					NULL);
-      
+      if (FAILED (ddrval))
+	{
+	  ErrorF ("winShadowUpdateDDNL () - IDirectDrawSurface4_Blt () "
+		  "failed: %08x\n",
+		  ddrval);
+	}
+
       /* Get a pointer to the next box */
       ++pBox;
     }
@@ -441,7 +457,7 @@ winCloseScreenShadowDDNL (int nIndex, ScreenPtr pScreen)
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
   Bool			fReturn;
 
-#if CYGDEBUG
+#if 1
   ErrorF ("winCloseScreenShadowDDNL () - Freeing screen resources\n");
 #endif
 
@@ -585,18 +601,9 @@ winInitVisualsShadowDDNL (ScreenPtr pScreen)
       return FALSE;
     }
 
-  /* Setup a fake PseudoColor visual for legacy apps */
-  if (!miSetVisualTypes (8, PseudoColorMask, 8, -1))
-    {
-      ErrorF ("winInitVisualsShadowDDNL () - miSetVisualTypes failed\n");
-      return FALSE;
-    }
-
-  /* Set DPI info */
-  pScreenInfo->dwDPIx = 100;
-  pScreenInfo->dwDPIy = 100;
-
+#if CYGDEBUG
   ErrorF ("winInitVisualsShadowDDNL () - Returning\n");
+#endif
 
   return TRUE;
 }
@@ -779,6 +786,9 @@ winSetEngineFunctionsShadowDDNL (ScreenPtr pScreen)
   pScreenPriv->pwinFinishScreenInit = winFinishScreenInitFB;
   pScreenPriv->pwinBltExposedRegions = winBltExposedRegionsShadowDDNL;
   pScreenPriv->pwinActivateApp = winActivateAppShadowDDNL;
+  pScreenPriv->pwinRedrawScreen = (winRedrawScreenProcPtr) NoopDDA;
+  pScreenPriv->pwinRealizeInstalledPalette
+    = (winRealizeInstalledPaletteProcPtr) NoopDDA;
 
   return TRUE;
 }

@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winfillsp.c,v 1.1 2001/04/05 20:13:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winfillsp.c,v 1.2 2001/06/04 13:04:41 alanh Exp $ */
 
 #include "win.h"
 
@@ -40,31 +40,39 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
 		       int		*pWidths,
 		       int		fSorted)
 {
-#if 0
+#if WIN_NATIVE_GDI_SUPPORT
+  winGCPriv(pGC);
   int		iIdx = 0, i, iX;
   DDXPointPtr	pPoint = NULL;
   int		*pnWidth = 0;
   PixmapPtr	pPixmap = NULL;
-  HDC		hdcStipple;
-  HBITMAP	hbmpFilledStipple;
-  HBITMAP	hbmpMaskedForeground;
-  HBITMAP	hbmpDrawable;
-  HBRUSH	hbrushStipple;
-  HBRUSH	hBrush;
+  HDC		hdcStipple = NULL;
+  HDC		hdc = pGCPriv->hdc;
+  HDC		hdcMem = pGCPriv->hdcMem;
+  HBITMAP	hbmpFilledStipple = NULL;
+  HBITMAP	hbmpMaskedForeground = NULL;
+  HBITMAP	hbmpDrawable = NULL;
+  HBRUSH	hbrushStipple = NULL;
+  HBRUSH	hBrush = NULL;
   DEBUG_FN_NAME("winFillSpans");
   DEBUGVARS;
-  //DEBUGPROC_MSG;
   
-  ErrorF ( "winFillSpans () - pDrawable: %08x\n",
-	   pDrawable);
+  ErrorF ("winFillSpans () - pDrawable: %08x\n",
+	  pDrawable);
 
   /* Branch on the fill type */
   switch (pGC->fillStyle)
     {
     case FillSolid:
-      BitBlt (g_hdc, pDrawable->width, pDrawable->height,
+      /*
+       * REMOVE: This is just a visual verification
+       */
+      BitBlt (hdc,
 	      pDrawable->width, pDrawable->height,
-	      g_hdcMem, 0, 0, SRCCOPY);
+	      pDrawable->width, pDrawable->height,
+	      hdcMem,
+	      0, 0,
+	      SRCCOPY);
       DEBUG_MSG("Solid fill - original drawable");
 
       /* Enumerate spans */
@@ -75,8 +83,8 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
 	  pnWidth = pWidths + iIdx;
 	  
 	  /* Draw the requested line */
-	  MoveToEx (g_hdcMem, pPoint->x, pPoint->y, NULL);
-	  LineTo (g_hdcMem, pPoint->x + *pnWidth, pPoint->y);
+	  MoveToEx (hdcMem, pPoint->x, pPoint->y, NULL);
+	  LineTo (hdcMem, pPoint->x + *pnWidth, pPoint->y);
 
 	  ErrorF ("(%dx%dx%d) from: (%d,%d) to: (%d,%d), color: %08x\n",
 		  pDrawable->width, pDrawable->height, pDrawable->depth,
@@ -84,31 +92,28 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
 		  pGC->fgPixel);
 	}
 
-      BitBlt (g_hdc, pDrawable->width * 2, pDrawable->height,
+      /*
+       * REMOVE: This is just a visual verification
+       */
+      BitBlt (hdc,
+	      pDrawable->width * 2, pDrawable->height,
 	      pDrawable->width, pDrawable->height,
-	      g_hdcMem, 0, 0, SRCCOPY);
+	      hdcMem,
+	      0, 0, SRCCOPY);
       DEBUG_MSG("Solid Fill - Filled");
       break;
     case FillStippled:
       /* TODO: Construct the correct stipple, store it in hdcStipple */
       ErrorF ("winFillSpans () - Stipple bitmap: %08x (%dx%d)\n",
-	      pGC->stipple->devPrivate.ptr,
+	      winGetPixmapPriv(pGC->stipple)->hBitmap,
 	      pGC->stipple->drawable.width,
 	      pGC->stipple->drawable.height);
-      SelectObject (hdcStipple, (HBITMAP)pGC->stipple->devPrivate.ptr);
-      BitBlt (g_hdc, 0, 0,
-	      pGC->stipple->drawable.width,
-	      pGC->stipple->drawable.height,
-	      hdcStipple,
-	      0, 0,
-	      SRCCOPY);
-      DEBUG_MSG("Blitted original stipple to screen");
 
       /* Create a memory DC to hold the stipple */
-      hdcStipple = CreateCompatibleDC (g_hdc);
+      hdcStipple = CreateCompatibleDC (hdc);
 
       /* Create a destination sized compatible bitmap */
-      hbmpFilledStipple = CreateCompatibleBitmap (g_hdc,
+      hbmpFilledStipple = CreateCompatibleBitmap (hdc,
 						  pDrawable->width,
 						  pDrawable->height);
       
@@ -120,30 +125,47 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
       SetBkColor (hdcStipple, RGB (0x00, 0x00, 0x00));
       
       /* Create a pattern brush from the original stipple */
-      hbrushStipple = CreatePatternBrush (pGC->stipple->devPrivate.ptr);
+      hbrushStipple = CreatePatternBrush (winGetPixmapPriv(pGC->stipple)->hBitmap);
       
       /* Select the original stipple brush into the stipple DC */
       SelectObject (hdcStipple, hbrushStipple);
 
       /* PatBlt the original stipple to the filled stipple */
-      PatBlt (hdcStipple, 0, 0, pDrawable->width, pDrawable->height, PATCOPY);
-      BitBlt (g_hdc, pDrawable->width, 0,
+      PatBlt (hdcStipple,
+	      0, 0,
 	      pDrawable->width, pDrawable->height,
-	      hdcStipple, 0, 0, SRCCOPY);
+	      PATCOPY);
+      BitBlt (hdc,
+	      pDrawable->width, 0,
+	      pDrawable->width, pDrawable->height,
+	      hdcStipple,
+	      0, 0,
+	      SRCCOPY);
       DEBUG_MSG("Filled a drawable-sized stipple");
 
-      /* Mask out the bits from the drawable that are being preserved;
-	 hbmpFilledStipple now contains the preserved original bits */
-      BitBlt (hdcStipple, 0, 0, pDrawable->width, pDrawable->height,
-	      g_hdcMem, 0, 0, SRCERASE);
-      BitBlt (g_hdc, pDrawable->width * 2, 0,
+      /*
+       * Mask out the bits from the drawable that are being preserved;
+       * hbmpFilledStipple now contains the preserved original bits.
+       */
+      BitBlt (hdcStipple,
+	      0, 0,
 	      pDrawable->width, pDrawable->height,
-	      hdcStipple, 0, 0, SRCCOPY);
+	      hdcMem,
+	      0, 0,
+	      SRCERASE);
+      BitBlt (hdc,
+	      pDrawable->width * 2, 0,
+	      pDrawable->width, pDrawable->height,
+	      hdcStipple,
+	      0, 0,
+	      SRCCOPY);
       DEBUG_MSG("Preserved original bits");
 
-      /* Create a destination sized compatible bitmap to hold
-	 the masked foreground color */
-      hbmpMaskedForeground = CreateCompatibleBitmap (g_hdc,
+      /*
+       * Create a destination sized compatible bitmap to hold
+       * the masked foreground color.
+       */
+      hbmpMaskedForeground = CreateCompatibleBitmap (hdc,
 						     pDrawable->width,
 						     pDrawable->height);
 
@@ -151,80 +173,87 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
       /* Set the foreground color for the stipple fill */
       if (pGC->fgPixel == 0x1)
 	{
-	  SetTextColor (g_hdcMem, RGB(0x00, 0x00, 0x00));
+	  SetTextColor (hdcMem, RGB(0xFF, 0xFF, 0xFF));
 	  DEBUG_MSG("Grey fill");
 	}
       else if (pGC->fgPixel == 0xFFFF)
 	{
-	  SetTextColor (g_hdcMem, RGB(0xFF, 0xFF, 0xFF));
+	  SetTextColor (hdcMem, RGB(0xFF, 0xFF, 0xFF));
 	  DEBUG_MSG("White fill");
 	}
       else
 	{
-	  SetTextColor (g_hdcMem, RGB(0x00, 0x00, 0x00));
+	  SetTextColor (hdcMem, RGB(0x00, 0x00, 0x00));
 	  DEBUG_MSG("Black fill");
 	}
-      SetBkColor (g_hdcMem, RGB(0x00, 0x00, 0x00));
+      SetBkColor (hdcMem, RGB(0x00, 0x00, 0x00));
 
-      /* Select the masked foreground bitmap into the default memory DC;
-	 this should pop the drawable bitmap out of the default DC */
-      hbmpDrawable = SelectObject (g_hdcMem, hbmpMaskedForeground);
+      /*
+       * Select the masked foreground bitmap into the default memory DC;
+       * this should pop the drawable bitmap out of the default DC.
+       */
+      hbmpDrawable = SelectObject (hdcMem, hbmpMaskedForeground);
 
       /* Free the original drawable */
       DeleteObject (hbmpDrawable);
       hbmpDrawable = NULL;
   
       /* Select the stipple brush into the default memory DC */
-      SelectObject (g_hdcMem, hbrushStipple);
+      SelectObject (hdcMem, hbrushStipple);
 
       /* Create the masked foreground bitmap using the original stipple */
-      PatBlt (g_hdcMem, 0, 0, pDrawable->width, pDrawable->height, PATCOPY);
-      BitBlt (g_hdc, pDrawable->width * 3, 0,
+      PatBlt (hdcMem, 0, 0, pDrawable->width, pDrawable->height, PATCOPY);
+      BitBlt (hdc, pDrawable->width * 3, 0,
 	      pDrawable->width, pDrawable->height,
-	      g_hdcMem, 0, 0, SRCCOPY);
+	      hdcMem, 0, 0, SRCCOPY);
       DEBUG_MSG("Masked foreground bitmap");
       
-      /* Combine the masked foreground with the masked drawable;
-       hbmpFilledStipple will contain the drawable stipple filled
-       with the current foreground color */
+      /*
+       * Combine the masked foreground with the masked drawable;
+       * hbmpFilledStipple will contain the drawable stipple filled
+       * with the current foreground color.
+       */
       BitBlt (hdcStipple, 0, 0, pDrawable->width, pDrawable->height,
-	      g_hdcMem, 0, 0, SRCPAINT);
-      BitBlt (g_hdc, pDrawable->width * 4, 0,
+	      hdcMem, 0, 0, SRCPAINT);
+      BitBlt (hdc, pDrawable->width * 4, 0,
 	      pDrawable->width, pDrawable->height,
 	      hdcStipple, 0, 0, SRCCOPY);
       DEBUG_MSG("Completed stipple");
 
       /* Release the stipple DC */
       DeleteDC (hdcStipple);
+      hdcStipple = NULL;
       
       /* Pop the stipple pattern brush out of the default mem DC */
-      SelectObject (g_hdcMem, GetStockObject (WHITE_BRUSH));
+      SelectObject (hdcMem, GetStockObject (WHITE_BRUSH));
 
       /* Destroy the original stipple pattern brush */
       DeleteObject (hbrushStipple);
 
       /* Select the result into the default memory DC */
-      SelectObject (g_hdcMem, hbmpFilledStipple);
+      SelectObject (hdcMem, hbmpFilledStipple);
 
       /* Free the masked foreground bitmap */
       DeleteObject (hbmpMaskedForeground);
       
       /* Point the drawable to the new bitmap */
-      ((PixmapPtr)pDrawable)->devPrivate.ptr = hbmpFilledStipple;
+      winGetPixmapPriv((PixmapPtr)pDrawable)->hBitmap = hbmpFilledStipple;
       break;
     case FillOpaqueStippled:
       ErrorF ("\n\nwinFillSpans () - OpaqueStippled\n\n");
       break;
     case FillTiled:
-      /* Assumes that the drawable is the screen and the tile has been
-	 selected into the default memory DC */
+      /*
+       * Assumes that the drawable is the screen and the tile has been
+       * selected into the default memory DC.
+       */
 #if 0
       hBrush = CreatePatternBrush (pGC->tile.pixmap->devPrivate.ptr);
-      hBrush = SelectObject (g_hdc, hBrush);
+      hBrush = SelectObject (hdc, hBrush);
 
-      PatBlt (g_hdc, 0, 0, pDrawable->width, pDrawable->height, PATCOPY);
+      PatBlt (hdc, 0, 0, pDrawable->width, pDrawable->height, PATCOPY);
 
-      hBrush = SelectObject (g_hdc, hBrush);
+      hBrush = SelectObject (hdc, hBrush);
       
       DeleteObject (hBrush);
 #endif
@@ -238,14 +267,15 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
 	  
 	  for (iX = 0; iX < *pnWidth; iX += pGC->tile.pixmap->drawable.width)
 	    {
-	      /* Blit the tile to the screen,
-		 one line at a time */
-	      BitBlt (g_hdc,
+	      /*
+	       * Blit the tile to the screen, one line at a time.
+	       */
+	      BitBlt (hdc,
 		      pPoint->x + iX,
 		      pPoint->y,
 		      pGC->tile.pixmap->drawable.width,
 		      1,
-		      g_hdcMem,
+		      hdcMem,
 		      0,
 		      pPoint->y % pGC->tile.pixmap->drawable.height,
 		      SRCCOPY);
@@ -253,8 +283,7 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
 	}
       break;
     default:
-      ErrorF ("winFillSpans () - Unknown fillStyle\n");
-      exit (1);
+      FatalError ("winFillSpans () - Unknown fillStyle\n");
       break;
     }
 #endif

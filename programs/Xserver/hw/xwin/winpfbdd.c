@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winpfbdd.c,v 1.6 2001/06/05 10:10:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winpfbdd.c,v 1.7 2001/06/25 08:12:33 alanh Exp $ */
 
 #include "win.h"
 
@@ -344,10 +344,6 @@ winInitVisualsPrimaryDD (ScreenPtr pScreen)
       ErrorF ("winInitVisualsPrimaryDD () - Unknown screen depth\n");
       return FALSE;
     }
-
-  /* Set DPI info */
-  pScreenInfo->dwDPIx = 100;
-  pScreenInfo->dwDPIy = 100;
 
   ErrorF ("winInitVisualsPrimaryDD () - Returning\n");
 

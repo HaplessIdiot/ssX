@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.7 2001/06/15 08:09:20 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.8 2001/06/25 08:12:34 alanh Exp $ */
 
 #include "win.h"
 
@@ -80,6 +80,10 @@ winWindowProc (HWND hWnd, UINT message,
   switch (message)
     {
     case WM_CREATE:
+#if CYGDEBUG
+      ErrorF ("winWindowProc () - WM_CREATE\n");
+#endif
+      
       /*
        * Add a property to our display window that references
        * this screens' privates.
@@ -101,6 +105,9 @@ winWindowProc (HWND hWnd, UINT message,
       return 0;
 
     case WM_PAINT:
+#if CYGDEBUG
+      ErrorF ("winWindowProc () - WM_PAINT\n");
+#endif
       /* Only paint if we have privates and the server is enabled */
       if (pScreenPriv == NULL
 	  || !pScreenPriv->fEnabled
@@ -113,6 +120,35 @@ winWindowProc (HWND hWnd, UINT message,
       /* Call the engine dependent repainter */
       (*pScreenPriv->pwinBltExposedRegions) (pScreen);
       return 0;
+
+#if WIN_PSEUDO_SUPPORT
+    case WM_PALETTECHANGED:
+      {
+#if CYGDEBUG
+	ErrorF ("winWindowProc () WM_PALETTECHANGED\n");
+#endif
+	/* Don't process if we don't have privates */
+	if (pScreenPriv == NULL
+	    || pScreenInfo->dwEngine != WIN_SERVER_SHADOW_GDI
+	    || pScreenPriv->pcmapInstalled == NULL)
+	  break;
+
+	/* Return if we changed the palette */
+	if ((HWND) wParam == hWnd)
+	  {
+	    /* Redraw the screen */
+	    (*pScreenPriv->pwinRedrawScreen) (pScreen);
+	    return 0;
+	  }
+	
+	/* Reinstall the windows palette */
+	(*pScreenPriv->pwinRealizeInstalledPalette) (pScreen);
+	
+	/* Redraw the screen */
+	(*pScreenPriv->pwinRedrawScreen) (pScreen);
+	return 0;
+      }
+#endif
 
     case WM_MOUSEMOVE:
       /* We can't do anything without privates */
@@ -447,6 +483,9 @@ winWindowProc (HWND hWnd, UINT message,
       break;
 
     case WM_ACTIVATE:
+#if CYGDEBUG
+      ErrorF ("winWindowProc () - WM_ACTIVATE\n");
+#endif
       /*
        * Focus is being changed to another window.
        * The other window may or may not belong to
@@ -537,6 +576,10 @@ winWindowProc (HWND hWnd, UINT message,
       return 0;
 
     case WM_ACTIVATEAPP:
+#if CYGDEBUG
+      ErrorF ("winWindowProc () - WM_ACTIVATEAPP\n");
+#endif
+
       /* We can't do anything if we don't have screen privates */
       if (pScreenPriv == NULL)
 	break;

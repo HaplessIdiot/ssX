@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.11 2001/06/20 12:55:24 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.12 2001/06/25 08:12:34 alanh Exp $ */
 
 #include "win.h"
 
@@ -191,7 +191,9 @@ winAllocateFBShadowGDI (ScreenPtr pScreen)
   winScreenPriv(pScreen);
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
   BITMAPINFOHEADER	*pbmih = NULL;
+#if CYGDEBUG
   DIBSECTION		dibsection;
+#endif
   Bool			fReturn = TRUE;
 
   /* Get device contexts for the screen and shadow bitmap */
@@ -233,11 +235,11 @@ winAllocateFBShadowGDI (ScreenPtr pScreen)
 #endif
     }
 
+#if CYGDEBUG
   /* Get information about the bitmap that was allocated */
   GetObject (pScreenPriv->hbmpShadow, sizeof (dibsection),
 	     &dibsection);
 
-#if CYGDEBUG
   /* Print information about bitmap allocated */
   ErrorF ("winAllocateFBShadowGDI () - Dibsection width: %d height: %d\n",
 	  dibsection.dsBmih.biWidth, dibsection.dsBmih.biHeight);
@@ -331,7 +333,7 @@ winShadowUpdateGDI (ScreenPtr pScreen,
 /* See Porting Layer Definition - p. 33 */
 /*
  * We wrap whatever CloseScreen procedure was specified by fb;
- * a pointer to said procedure is stored in our devPrivate
+ * a pointer to said procedure is stored in our privates.
  */
 Bool
 winCloseScreenShadowGDI (int nIndex, ScreenPtr pScreen)
@@ -375,7 +377,7 @@ winCloseScreenShadowGDI (int nIndex, ScreenPtr pScreen)
       pScreenPriv->hwndScreen = NULL;
     }
 
-  /* Kill our screeninfo's pointer to the screen */
+  /* Invalidate our screeninfo's pointer to the screen */
   pScreenInfo->pScreen = NULL;
 
   /* Invalidate the ScreenInfo's fb pointer */
@@ -383,7 +385,7 @@ winCloseScreenShadowGDI (int nIndex, ScreenPtr pScreen)
 
   /* Free the screen privates for this screen */
   xfree ((pointer) pScreenPriv);
- 
+
   return fReturn;
 }
 
@@ -430,7 +432,6 @@ winInitVisualsShadowGDI (ScreenPtr pScreen)
       break;
 
     case 8:
-#if WIN_PSEUDO_SUPPORT
       if (!miSetVisualTypesAndMasks (pScreenInfo->dwDepth,
 				     PseudoColorMask,
 				     pScreenPriv->dwBitsPerRGB,
@@ -443,7 +444,8 @@ winInitVisualsShadowGDI (ScreenPtr pScreen)
 	  return FALSE;
 	}
       break;
-#else /* WIN_PSEUDO_SUPPORT */
+
+#if 0 /* Old StaticColor root visual support.  Pre PseudoColor support. */
       if (!miSetVisualTypesAndMasks (pScreenInfo->dwDepth,
 				     StaticColorMask,
 				     pScreenPriv->dwBitsPerRGB,
@@ -456,27 +458,16 @@ winInitVisualsShadowGDI (ScreenPtr pScreen)
 	  return FALSE;
 	}
       break;
-#endif /* WIN_PSEUDO_SUPPORT */
+#endif
 
     default:
       ErrorF ("winInitVisualsGDI () - Unknown screen depth\n");
       return FALSE;
     }
 
-#if !WIN_PSEUDO_SUPPORT
-  /* Setup a fake PseudoColor visual for legacy apps */
-  if (!miSetVisualTypes (8, PseudoColorMask, 8, -1))
-    {
-      ErrorF ("winInitVisualsShadowGDI () - miSetVisualTypes failed\n");
-      return FALSE;
-    }
-#endif
-
-  /* Set DPI info */
-  pScreenInfo->dwDPIx = 100;
-  pScreenInfo->dwDPIy = 100;
-
+#if CYGDEBUG
   ErrorF ("winInitVisualsGDI () - Returning\n");
+#endif
 
   return TRUE;
 }
@@ -534,11 +525,21 @@ winBltExposedRegionsShadowGDI (ScreenPtr pScreen)
 {
   winScreenPriv(pScreen);
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
+  winPrivCmapPtr	pCmapPriv = NULL;
   HDC			hdcUpdate;
   PAINTSTRUCT		ps;
 
   /* BeginPaint gives us an hdc that clips to the invalidated region */
   hdcUpdate = BeginPaint (pScreenPriv->hwndScreen, &ps);
+
+  /* Realize the palette, if we have one */
+  if (pScreenPriv->pcmapInstalled != NULL)
+    {
+      pCmapPriv = winGetCmapPriv (pScreenPriv->pcmapInstalled);
+      
+      SelectPalette (hdcUpdate, pCmapPriv->hPalette, FALSE);
+      RealizePalette (hdcUpdate);
+    }
 
   /* Our BitBlt will be clipped to the invalidated region */
   BitBlt (hdcUpdate,
@@ -560,12 +561,15 @@ winActivateAppShadowGDI (ScreenPtr pScreen)
   winScreenPriv(pScreen);
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
 
+#if CYGDEBUG
+  ErrorF ("winActivateAppShadowGDI ()\n");
+#endif
+
   /*
    * Are we active?
    * Are we fullscreen?
    */
-  if (pScreenPriv != NULL
-      && pScreenPriv->fActive
+  if (pScreenPriv->fActive
       && pScreenInfo->fFullScreen)
     {
       /*
@@ -574,14 +578,8 @@ winActivateAppShadowGDI (ScreenPtr pScreen)
        */
       ShowWindow (pScreenPriv->hwndScreen, SW_RESTORE);
     }
-	  
-  /*
-   * Are we inactive?
-   * Are we fullscreen?
-   */
-  if (pScreenPriv != NULL
-      && !pScreenPriv->fActive
-      && pScreenInfo->fFullScreen)
+  else if (!pScreenPriv->fActive
+	   && pScreenInfo->fFullScreen)
     {
       /*
        * Deactivating, stuff our window onto the
@@ -590,6 +588,74 @@ winActivateAppShadowGDI (ScreenPtr pScreen)
       ShowWindow (pScreenPriv->hwndScreen, SW_MINIMIZE);
     }
 
+#if CYGDEBUG
+  ErrorF ("winActivateAppShadowGDI () - Returning\n");
+#endif
+
+  return TRUE;
+}
+
+/*
+ * Reblit the shadow framebuffer to the screen.
+ */
+Bool
+winRedrawScreenShadowGDI (ScreenPtr pScreen)
+{
+  winScreenPriv(pScreen);
+  winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
+
+  /* Redraw the whole window, to take account for the new colors */
+  BitBlt (pScreenPriv->hdcScreen,
+	  0, 0,
+	  pScreenInfo->dwWidth, pScreenInfo->dwHeight,
+	  pScreenPriv->hdcShadow,
+	  0, 0,
+	  SRCCOPY);
+
+  return TRUE;
+}
+
+Bool
+winRealizeInstalledPaletteShadowGDI (ScreenPtr pScreen)
+{
+  winScreenPriv(pScreen);
+  winPrivCmapPtr	pCmapPriv = NULL;
+
+#if CYGDEBUG
+  ErrorF ("winRealizeInstalledPaletteShadowGDI ()\n");
+#endif
+
+  /* Don't do anything if there is not a colormap */
+  if (pScreenPriv->pcmapInstalled == NULL)
+    {
+#if CYGDEBUG
+      ErrorF ("winRealizeInstalledPaletteShadowGDI () - No colormap "
+	      "installed\n");
+#endif
+      return TRUE;
+    }
+
+  pCmapPriv = winGetCmapPriv (pScreenPriv->pcmapInstalled);
+  
+  /* Realize our palette for the screen */
+  if (RealizePalette (pScreenPriv->hdcScreen) == GDI_ERROR)
+    {
+      ErrorF ("winRealizeInstalledPaletteShadowGDI () - RealizePalette () "
+	      "failed\n");
+      return FALSE;
+    }
+  
+  /* Set the DIB color table */
+  if (SetDIBColorTable (pScreenPriv->hdcShadow,
+			0,
+			WIN_NUM_PALETTE_ENTRIES,
+			pCmapPriv->rgbColors) == 0)
+    {
+      ErrorF ("winRealizeInstalledPaletteShadowGDI () - SetDIBColorTable () "
+	      "failed\n");
+      return FALSE;
+    }
+  
   return TRUE;
 }
 
@@ -613,6 +679,9 @@ winSetEngineFunctionsShadowGDI (ScreenPtr pScreen)
   pScreenPriv->pwinFinishScreenInit = winFinishScreenInitFB;
   pScreenPriv->pwinBltExposedRegions = winBltExposedRegionsShadowGDI;
   pScreenPriv->pwinActivateApp = winActivateAppShadowGDI;
+  pScreenPriv->pwinRedrawScreen = winRedrawScreenShadowGDI;
+  pScreenPriv->pwinRealizeInstalledPalette = 
+    winRealizeInstalledPaletteShadowGDI;
 
   return TRUE;
 }

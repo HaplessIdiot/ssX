@@ -28,7 +28,7 @@
  * Authors:	drewry, september 1986
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winpixmap.c,v 1.3 2001/05/02 00:45:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winpixmap.c,v 1.4 2001/06/04 13:04:41 alanh Exp $ */
 
 #include "win.h"
 
@@ -39,49 +39,25 @@ winCreatePixmapNativeGDI (ScreenPtr pScreen,
 			  int nWidth, int nHeight,
 			  int nDepth)
 {
-#ifdef CYGX_GDI
-  PixmapPtr		pPixmap;
-  HBITMAP		hBitmap;
-  BITMAPINFOHEADER	bmih;
-
-  ErrorF ("winCreatePixmap()\n");
-
-  /* FIXME: For now we create all pixmaps in system memory.  Pixmaps
-     with the same depth as the screen depth can be created in offscreen
-     video memory.  It is a simple optimization, but an easy one to
-     screw up, so I'm leaving it out in this first implementation
-  */
-
-  /* Setup the bitmap header info */
-  bmih.biSize = sizeof (bmih);
-  bmih.biWidth = nWidth;
-  bmih.biHeight = nHeight;
-  bmih.biPlanes = 1;
-  bmih.biBitCount = nDepth;
-  bmih.biCompression = BI_RGB;
-  bmih.biSizeImage = 0;
-  bmih.biXPelsPerMeter = 0;
-  bmih.biYPelsPerMeter = 0;
-  bmih.biClrUsed = 0;
-  bmih.biClrImportant = 0;
-
-  /* Create the bitmap */
-  if (nDepth == 1)
-    {
-      hBitmap = CreateDIBitmap (NULL, &bmih, 0, NULL, NULL, 0);
-    }
-  else
-    {
-      hBitmap = CreateDIBitmap (g_hdcMem, &bmih, 0, NULL, NULL, 0);
-    }
-
-  /* Allocate a pixmap structure */
-  pPixmap = (PixmapPtr) xalloc (sizeof (PixmapRec));
+#if WIN_NATIVE_GDI_SUPPORT
+  winPrivPixmapPtr	pPixmapPriv = NULL;
+  PixmapPtr		pPixmap = NULL;
+  BITMAPINFOHEADER	*pbmih = NULL;
+  HDC			hdcMem = NULL;
+  
+  /* Allocate pixmap memory */
+  pPixmap = AllocatePixmap (pScreen, 0);
   if (!pPixmap)
-    return NullPixmap;
+    {
+      ErrorF ("winCreatePixmapNativeGDI () - Couldn't allocate a pixmap\n");
+      return NullPixmap;
+    }
 
-  /* Set other fields of the pixmap, all fields must be set to
-     valid values */
+  ErrorF ("winCreatePixmap () - w %d h %d d %d bw %d\n",
+	  nWidth, nHeight, nDepth,
+	  PixmapBytePad (nWidth, nDepth));
+
+  /* Setup pixmap values */
   pPixmap->drawable.type = DRAWABLE_PIXMAP;
   pPixmap->drawable.class = 0;
   pPixmap->drawable.pScreen = pScreen;
@@ -93,20 +69,98 @@ winCreatePixmapNativeGDI (ScreenPtr pScreen,
   pPixmap->drawable.y = 0;
   pPixmap->drawable.width = nWidth;
   pPixmap->drawable.height = nHeight;
-  pPixmap->devKind = nWidth; // Was paddedWidth in mfb
+  pPixmap->devKind = 0;
   pPixmap->refcnt = 1;
-
-  /* We will use devPrivate to point to our bitmap */
-  pPixmap->devPrivate.ptr = hBitmap;
+  pPixmap->devPrivate.ptr = NULL;
   
+  /* Check for zero width or height pixmaps */
+  if (nWidth == 0 || nHeight == 0)
+    {
+      /* Don't allocate a real pixmap, just set fields and return */
+      return pPixmap;
+    }
+
+  /* Pixmap privates are allocated by AllocatePixmap */
+  pPixmapPriv = winGetPixmapPriv (pPixmap);
+
+#if CYGDEBUG
+  ErrorF ("winCreatePixmapNativeGDI () - Allocated privates\n");
+#endif
+
+  /* Create a scratch DC */
+  hdcMem = CreateCompatibleDC (NULL);
+  if (hdcMem == NULL)
+    {
+      ErrorF ("winCreatePixmapNativeGDI () - CreateCompatibleDC () failed\n");
+      return NULL;
+    }
+
+  /* Allocate bitmap info header */
+  pbmih = (BITMAPINFOHEADER*) xalloc (sizeof (BITMAPINFOHEADER)
+				      + 256 * sizeof (RGBQUAD));
+  if (pbmih == NULL)
+    {
+      ErrorF ("winCreatePixmapNativeGDI () - xalloc () failed\n");
+      return FALSE;
+    }
+  ZeroMemory (pbmih, sizeof(BITMAPINFOHEADER) + 256 * sizeof (RGBQUAD));
+
+  /* Describe bitmap to be created */
+  pbmih->biSize = sizeof (BITMAPINFOHEADER);
+  pbmih->biWidth = nWidth;
+  pbmih->biHeight = -nHeight;
+  pbmih->biPlanes = 1;
+  pbmih->biBitCount = nDepth;
+  pbmih->biCompression = BI_RGB;
+  pbmih->biSizeImage = 0;
+  pbmih->biXPelsPerMeter = 0;
+  pbmih->biYPelsPerMeter = 0;
+  pbmih->biClrUsed = 0;
+  pbmih->biClrImportant = 0;
+
+#if CYGDEBUG 
+  ErrorF ("winCreatePixmapNativeGDI () - Calling CreateDIBSection ()\n");
+#endif
+
+  /* Create a DIB with a bit pointer */
+  pPixmapPriv->hBitmap = CreateDIBSection (hdcMem,
+					   (BITMAPINFO *) pbmih,
+					   DIB_RGB_COLORS,
+					   &pPixmapPriv->pvBits,
+					   NULL,
+					   0);
+  if (pPixmapPriv->hBitmap == NULL)
+    {
+      ErrorF ("winCreatePixmapNativeGDI () - CreateDIBSection () failed\n");
+      return NullPixmap;
+    }
+
+  /* Free the bitmap info header memory */
+  xfree (pbmih);
+  pbmih = NULL;
+
+#if CYGDEBUG
+  ErrorF ("winCreatePixmapNativeGDI () - CreateDIBSection () returned\n");
+#endif
+
+  /* Save the pixmap padded scanlie width */
+  pPixmapPriv->dwScanlineBytes = PixmapBytePad (nWidth, nDepth);
+  pPixmapPriv->hdcSelected = NULL;
+
+  /* Free the scratch DC */
+  DeleteDC (hdcMem);
+  hdcMem = NULL;
+
+#if CYGDEBUG
   ErrorF ("winCreatePixmap () - Created a pixmap %08x, %dx%dx%d, for " \
 	  "screen: %08x\n",
-	  hBitmap, nWidth, nHeight, nDepth, pScreen);
+	  pPixmapPriv->hBitmap, nWidth, nHeight, nDepth, pScreen);
+#endif
 
   return pPixmap;
-#else /* CYGX_GDI */
-  return NULL;
-#endif /* CYGX_GDI */
+#else 
+  return NullPixmap;
+#endif
 }
 
 /* See Porting Layer Definition - p. 35 */
@@ -114,27 +168,44 @@ winCreatePixmapNativeGDI (ScreenPtr pScreen,
 Bool
 winDestroyPixmapNativeGDI (PixmapPtr pPixmap)
 {
-  HBITMAP		hBitmap;
+  winPrivPixmapPtr		pPixmapPriv = NULL;
+  
+  ErrorF ("winDestroyPixmapNativeGDI ()\n");
 
-  ErrorF ("winDestroyPixmap - pPixmap->devPrivate.ptr: %08x\n",
-	  (UINT) pPixmap->devPrivate.ptr);
-
-  /* Decrement reference count, and, if zero, free the pixmap */
-  --(pPixmap->refcnt);
-
-  /* Are there any more references to this pixmap? */
-  if (pPixmap->refcnt == 0)
+  if (pPixmap == NULL)
     {
-      /* Free GDI bitmap */
-      hBitmap = pPixmap->devPrivate.ptr;
-      if (hBitmap) DeleteObject (hBitmap);
-      hBitmap = NULL;
-
-      /* Free the PixmapRec */
-      xfree (pPixmap);
-      pPixmap = NULL;
+      ErrorF ("winDestroyPixmapNativeGDI () - No pixmap to destroy\n");
+      return TRUE;
     }
 
+  pPixmapPriv = winGetPixmapPriv (pPixmap);
+
+  ErrorF ("winDestroyPixmapNativeGDI - pPixmapPriv->hBitmap: %08x\n",
+	  pPixmapPriv->hBitmap);
+
+  /* Decrement reference count, return if nonzero */
+  if (--pPixmap->refcnt)
+    return TRUE;
+
+  /* Free GDI bitmap */
+  if (pPixmapPriv->hBitmap) DeleteObject (pPixmapPriv->hBitmap);
+  
+  /* Free the pixmap memory */
+  xfree (pPixmap);
+  pPixmap = NULL;
+
+  return TRUE;
+}
+
+Bool
+winModifyPixmapHeaderNativeGDI (PixmapPtr pPixmap,
+				int iWidth, int iHeight,
+				int iDepth,
+				int iBitsPerPixel,
+				int devKind,
+				pointer pPixData)
+{
+  ErrorF ("winModifyPixmapHeaderNativeGDI ()\n");
   return TRUE;
 }
 

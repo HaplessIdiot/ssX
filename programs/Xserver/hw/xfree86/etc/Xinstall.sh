@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.26 2001/06/06 18:45:59 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.27 2001/06/06 19:23:16 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -400,6 +400,16 @@ DoOsChecks()
 FindDistName()
 {
 	case "$OsName" in
+	CYGWIN*)
+		case "$OsArch" in
+		i*86)
+			DistName="Cygwin-ix86"
+			;;
+		*)
+			Message="Cygwin binaries are only available for ix86 platforms"
+			;;
+		esac
+		;;
 	Darwin)
 		case "$OsArch" in
 		Power*)
@@ -857,6 +867,9 @@ GetOsInfo
 # Make OS-specific adjustments
 
 case "$OsName" in
+CYGWIN*)
+	SERVDIST="Xxserv.tgz"
+	;;
 Darwin)
 	SERVDIST="Xxserv.tgz"
 	EXTRAOPTDIST="Xquartz.tgz"
@@ -942,8 +955,16 @@ if [ X"$ExtractOK" != XYES ]; then
 fi
 
 # Link extract to gnu-tar so it can also be used as a regular tar
-rm -f gnu-tar
-ln extract gnu-tar
+case "$OsName" in
+CYGWIN*)
+	rm -f gnu-tar
+	ln -s extract.exe gnu-tar
+	;;
+*)
+	rm -f gnu-tar
+	ln extract gnu-tar
+	;;
+esac
 
 EXTRACT=$WDIR/extract
 TAR=$WDIR/gnu-tar

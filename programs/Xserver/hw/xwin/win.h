@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.10 2001/06/15 08:09:20 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.11 2001/06/25 08:12:32 alanh Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -42,8 +42,12 @@
 #define YES			1
 #endif
 
-/* Temporary toggle for experimental PseudoColor support */
-#define WIN_PSEUDO_SUPPORT	NO
+/*
+ * Build toggles for experimental features
+ */
+#define WIN_PSEUDO_SUPPORT	YES
+#define WIN_NATIVE_GDI_SUPPORT	YES
+#define WIN_LAYER_SUPPORT	NO
 
 /* Turn debug messages on or off */
 #define CYGDEBUG		NO
@@ -90,9 +94,15 @@
 #define WIN_DEFAULT_BLACKPIXEL	0
 #define WIN_DEFAULT_LINEBIAS	0
 #define WIN_DEFAULT_E3B_TIME	50 /* milliseconds */
+#define WIN_DEFAULT_DPI		75
 
 #define WIN_DIB_MAXIMUM_SIZE	0x08000000 /* 16 MB on Windows 95, 98, Me */
 #define WIN_DIB_MAXIMUM_SIZE_MB (WIN_DIB_MAXIMUM_SIZE / 8 / 1024 / 1024)
+
+/*
+ * Windows only supports 256 color palettes, I think
+ */
+#define WIN_NUM_PALETTE_ENTRIES	256
 
 /*
  * Build a supported display depths mask by shifting one to the left
@@ -111,6 +121,7 @@
 #define WIN_SERVER_SHADOW_DD	0x2L	/* 2 */
 #define WIN_SERVER_SHADOW_DDNL	0x4L	/* 4 */
 #define WIN_SERVER_PRIMARY_DD	0x8L	/* 8 */
+#define WIN_SERVER_NATIVE_GDI	0x10L	/* 16 */
 
 #define AltMapIndex		Mod1MapIndex
 #define NumLockMapIndex		Mod2MapIndex
@@ -166,10 +177,15 @@
 #include "miline.h"
 #include "shadow.h"
 #include "fb.h"
+#include "layer.h"
 
 #ifdef RENDER
 #include "mipict.h"
 #include "picturestr.h"
+#endif
+
+#ifdef RANDR
+#include "randrstr.h"
 #endif
 
 /*
@@ -199,7 +215,7 @@ typedef Bool (*winInitVisualsProcPtr)(ScreenPtr);
 
 typedef Bool (*winAdjustVideoModeProcPtr)(ScreenPtr);
 
-typedef void (*winCreateBoundingWindowProcPtr)(ScreenPtr);
+typedef Bool (*winCreateBoundingWindowProcPtr)(ScreenPtr);
 
 typedef Bool (*winFinishScreenInitProcPtr)(int, ScreenPtr, int, char **);
 
@@ -207,17 +223,39 @@ typedef Bool (*winBltExposedRegionsProcPtr)(ScreenPtr);
 
 typedef Bool (*winActivateAppProcPtr)(ScreenPtr);
 
+typedef Bool (*winRedrawScreenProcPtr)(ScreenPtr pScreen);
+
+typedef Bool (*winRealizeInstalledPaletteProcPtr)(ScreenPtr pScreen);
+
 /*
  * Privates structures
  */
 
-typedef struct {
+typedef struct
+{
   DWORD			dwDummy;
-} winPrivWin;
+} winPrivWinRec, *winPrivWinPtr;
 
-typedef struct {
-  DWORD			dwDummy;
-} winPrivGC;
+typedef struct
+{
+  HDC			hdc;
+  HDC			hdcMem;
+} winPrivGCRec, *winPrivGCPtr;
+
+typedef struct
+{
+  HDC			hdcSelected;
+  HBITMAP		hBitmap;
+  void			*pvBits;
+  DWORD			dwScanlineBytes;
+} winPrivPixmapRec, *winPrivPixmapPtr;
+
+typedef struct
+{
+  HPALETTE		hPalette;
+  RGBQUAD		rgbColors[WIN_NUM_PALETTE_ENTRIES];
+  PALETTEENTRY		peColors[WIN_NUM_PALETTE_ENTRIES];
+} winPrivCmapRec, *winPrivCmapPtr;
 
 typedef struct
 {
@@ -226,10 +264,10 @@ typedef struct
   DWORD			dwWidth;
   DWORD			dwPaddedWidth;
   DWORD			dwHeight;
+  DWORD			dwWidth_mm;
+  DWORD			dwHeight_mm;
   DWORD			dwDepth;
   DWORD			dwRefreshRate;
-  DWORD			dwDPIx;
-  DWORD			dwDPIy;
   DWORD			dwStrideBytes;
   DWORD			dwStride;
   DWORD			dwBPP;
@@ -263,8 +301,16 @@ typedef struct
 
   DWORD			dwModeKeyStates;
 
+  /* Layer support */
+  DWORD			dwLayerKind;
+  DWORD			dwOrigDepth;
+  LayerPtr		pLayer;
+
   /* Palette management */
-  ColormapPtr		pcmapInstalledColormap;
+  ColormapPtr		pcmapInstalled;
+
+  /* Pointer to the root visual so we only have to look it up once */
+  VisualPtr		pRootVisual;
 
   /* 3 button emulation variables */
   int			iE3BCachedPress;
@@ -308,17 +354,21 @@ typedef struct
   winFinishScreenInitProcPtr		pwinFinishScreenInit;
   winBltExposedRegionsProcPtr		pwinBltExposedRegions;
   winActivateAppProcPtr			pwinActivateApp;
+  winRedrawScreenProcPtr		pwinRedrawScreen;
+  winRealizeInstalledPaletteProcPtr	pwinRealizeInstalledPalette;
 } winPrivScreenRec, *winPrivScreenPtr;
 
-extern ColormapPtr		g_cmInstalledMaps[];
 extern winScreenInfo		g_ScreenInfo[];
-extern char			*g_pcDisplay;
 extern miPointerScreenFuncRec	g_winPointerCursorFuncs;
 extern DWORD			g_dwEvents;
 extern int			g_fdMessageQueue;
 extern int			g_iScreenPrivateIndex;
+extern int			g_iCmapPrivateIndex;
+extern int			g_iGCPrivateIndex;
+extern int			g_iPixmapPrivateIndex;
 extern unsigned long		g_ulServerGeneration;
 extern CARD32			g_c32LastInputEventTime;
+extern HBITMAP			g_hbmpGarbage;
 
 /*
  * Screen privates macros
@@ -331,6 +381,42 @@ extern CARD32			g_c32LastInputEventTime;
 
 #define winScreenPriv(pScreen) \
 	winPrivScreenPtr pScreenPriv = winGetScreenPriv(pScreen)
+
+/*
+ * Colormap privates macros
+ */
+#define winGetCmapPriv(pCmap) \
+	((winPrivCmapPtr) (pCmap)->devPrivates[g_iCmapPrivateIndex].ptr)
+
+#define winSetCmapPriv(pCmap,v) \
+	((pCmap)->devPrivates[g_iCmapPrivateIndex].ptr = (pointer) v)
+
+#define winCmapPriv(pCmap) \
+	winPrivCmapPtr pCmapPriv = winGetCmapPriv(pCmap)
+
+/*
+ * GC privates macros
+ */
+#define winGetGCPriv(pGC) \
+	((winPrivGCPtr) (pGC)->devPrivates[g_iGCPrivateIndex].ptr)
+
+#define winSetGCPriv(pGC,v) \
+	((pGC)->devPrivates[g_iGCPrivateIndex].ptr = (pointer) v)
+
+#define winGCPriv(pGC) \
+	winPrivGCPtr pGCPriv = winGetGCPriv(pGC)
+
+/*
+ * Pixmap privates macros
+ */
+#define winGetPixmapPriv(pPixmap) \
+	((winPrivPixmapPtr) (pPixmap)->devPrivates[g_iPixmapPrivateIndex].ptr)
+
+#define winSetPixmapPriv(pPixmap,v) \
+	((pPixmap)->devPrivates[g_iPixmapPrivateIndex].ptr = (pointer) v)
+
+#define winPixmapPriv(pPixmap) \
+	winPrivPixmapPtr pPixmapPriv = winGetPixmapPriv(pPixmap)
 
 /*
  * Window privates macros
@@ -365,13 +451,20 @@ winBitsPerPixel (DWORD dwDepth);
 Bool
 winAllocatePrivates (ScreenPtr pScreen);
 
+Bool
+winInitCmapPrivates (ColormapPtr pCmap);
+
+Bool
+winAllocateCmapPrivates (ColormapPtr pCmap);
+
 /*
  * winblock.c
  */
 
 void
-winBlockHandler (pointer pBlockData,
-		 OSTimePtr pptv,
+winBlockHandler (int nScreen,
+		 pointer pBlockData,
+		 pointer pTimeout,
 		 pointer pReadMask);
 
 /*
@@ -387,9 +480,6 @@ winPixmapToRegionNativeGDI (PixmapPtr pPix);
 
 int
 winListInstalledColormaps (ScreenPtr pScreen, Colormap *pmaps);
-
-Bool
-winInitVisualsNativeGDI (ScreenPtr pScreen);
 
 void
 winStoreColors (ColormapPtr pmap, int ndef, xColorItem *pdefs);
@@ -537,6 +627,32 @@ winIsFakeCtrl_L (UINT message, WPARAM wParam, LPARAM lParam);
 void
 winKeybdReleaseModifierKeys ();
 
+
+/*
+ * winlayer.c
+ */
+
+LayerPtr
+winLayerCreate (ScreenPtr pScreen);
+
+int
+winLayerAdd (WindowPtr pWindow, pointer value);
+
+int
+winLayerRemove (WindowPtr pWindow, pointer value);
+
+Bool
+winRandRGetInfo (ScreenPtr pScreen, Rotation *pRotations);
+
+Bool
+winRandRSetConfig (ScreenPtr		pScreen,
+		   Rotation		rotateKind,
+		   RRScreenSizePtr	pSize,
+		   RRVisualGroupPtr	pVisualGroup);
+
+Bool
+winRandRInit (ScreenPtr pScreen);
+
 /*
  * winmisc.c
  */
@@ -571,6 +687,29 @@ int
 winMouseButtonsHandle (ScreenPtr pScreen,
 		       int iEventType, int iButton,
 		       WPARAM wParam);
+
+/*
+ * winnativegdi.c
+ */
+
+Bool
+winCloseScreenNativeGDI (int nIndex, ScreenPtr pScreen);
+
+Bool
+winInitVisualsNativeGDI (ScreenPtr pScreen);
+
+Bool
+winAdjustVideoModeNativeGDI (ScreenPtr pScreen);
+
+Bool
+winActivateAppNativeGDI (ScreenPtr pScreen);
+
+HBITMAP
+winCreateDIBNativeGDI (int iWidth, int iHeight, int iDepth,
+		       void **ppvBits);
+
+Bool
+winSetEngineFunctionsNativeGDI (ScreenPtr pScreen);
 
 /*
  * winpfbddd.c
@@ -613,6 +752,14 @@ winYRotatePixmapNativeGDI (PixmapPtr pPix, int rh);
 void
 winCopyRotatePixmapNativeGDI (PixmapPtr psrcPix, PixmapPtr *ppdstPix,
 			      int xrot, int yrot);
+
+Bool
+winModifyPixmapHeaderNativeGDI (PixmapPtr pPixmap,
+				int iWidth, int iHeight,
+				int iDepth,
+				int iBitsPerPixel,
+				int devKind,
+				pointer pPixData);
 
 /*
  * winpntwin.c
@@ -666,10 +813,10 @@ winDetectSupportedEngines (ScreenPtr pScreen);
 Bool
 winSetEngine (ScreenPtr pScreen);
 
-void
+Bool
 winCreateBoundingWindowFullScreen (ScreenPtr pScreen);
 
-void
+Bool
 winCreateBoundingWindowWindowed (ScreenPtr pScreen);
 
 /*
@@ -767,15 +914,22 @@ Bool
 winActivateAppShadowGDI (ScreenPtr pScreen);
 
 Bool
+winRedrawScreenShadowGDI (ScreenPtr pScreen);
+
+Bool
 winSetEngineFunctionsShadowGDI (ScreenPtr pScreen);
+
+Bool
+winRealizeInstalledPaletteShadowGDI (ScreenPtr pScreen);
 
 /*
  * winwakeup.c
  */
 
 void
-winWakeupHandler (pointer pWakeupData,
-		  int err,
+winWakeupHandler (int nScreen,
+		  pointer pWakeupData,
+		  unsigned long ulResult,
 		  pointer pReadmask);
 
 /*

@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshaddd.c,v 1.10 2001/06/20 12:55:24 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshaddd.c,v 1.11 2001/06/25 08:12:33 alanh Exp $ */
 
 #include "win.h"
 
@@ -618,18 +618,9 @@ winInitVisualsShadowDD (ScreenPtr pScreen)
       return FALSE;
     }
 
-  /* Setup a fake PseudoColor visual for legacy apps */
-  if (!miSetVisualTypes (8, PseudoColorMask, 8, -1))
-    {
-      ErrorF ("winInitVisualsShadowDD () - miSetVisualTypes failed\n");
-      return FALSE;
-    }
-
-  /* Set DPI info */
-  pScreenInfo->dwDPIx = 100;
-  pScreenInfo->dwDPIy = 100;
-
+#if CYGDEBUG
   ErrorF ("winInitVisualsShadowDD () - Returning\n");
+#endif
 
   return TRUE;
 }
@@ -865,6 +856,9 @@ winSetEngineFunctionsShadowDD (ScreenPtr pScreen)
   pScreenPriv->pwinFinishScreenInit = winFinishScreenInitFB;
   pScreenPriv->pwinBltExposedRegions = winBltExposedRegionsShadowDD;
   pScreenPriv->pwinActivateApp = winActivateAppShadowDD;
+  pScreenPriv->pwinRedrawScreen = (winRedrawScreenProcPtr) NoopDDA;
+  pScreenPriv->pwinRealizeInstalledPalette
+    = (winRealizeInstalledPaletteProcPtr) NoopDDA;
 
   return TRUE;
 }
