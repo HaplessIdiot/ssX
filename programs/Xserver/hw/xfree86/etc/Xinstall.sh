@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.79 2005/01/30 21:26:03 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.80 2005/01/30 23:43:12 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -1106,7 +1106,7 @@ if [ X"$1" = "X-check" ]; then
 fi
 
 echo ""
-echo "		Welcome to the XFree86 $SCRIPTVERSION installer"
+echo "		Welcome to the XFree86(R) $SCRIPTVERSION installer"
 echo ""
 echo "You are strongly advised to backup your existing XFree86 installation"
 echo "before proceeding.  This includes the $ROOTDIR/usr/X11R6, $ROOTDIR/etc/X11"
