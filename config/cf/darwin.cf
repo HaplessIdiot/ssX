@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.26 2002/04/02 01:35:25 torrey Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.27 2002/06/01 21:41:53 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -93,7 +93,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 
 /* our cpp isn't in /lib/cpp and it doesn't like -undef */
 #define CppCmd                  /usr/bin/cpp
-#define RawCppCmd               CppCmd
+#define RawCppCmd               /usr/bin/cc -E -undef
 
 /* we have a gcc compatible compiler, but its not called gcc */
 #define CcCmd                   /usr/bin/cc
