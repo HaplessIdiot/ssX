@@ -1,4 +1,5 @@
 /* $XConsortium: ibm8514im.c,v 1.1 94/03/28 21:04:41 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *

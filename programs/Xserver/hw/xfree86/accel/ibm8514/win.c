@@ -1,4 +1,5 @@
 /* $XConsortium: ibm8514win.c,v 1.2 94/04/17 20:30:40 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987  X Consortium
