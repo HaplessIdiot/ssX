@@ -1,4 +1,5 @@
 XFree86 4.0g (26 June 2000)
+ 392. Fix a missing -I in sunffb/Imakefile (#4038, David S. Miller).
  391. Some -misc-fixed-* BDF font updates, primarily expanding the 7x13
       set to include the same 8-bit variants as the 6x13 set, including
       a new oblique/italic version (#4037, Markus Kuhn).
@@ -10764,4 +10765,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1216 2000/06/26 22:27:42 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1217 2000/06/26 23:00:31 dawes Exp $
