@@ -9,7 +9,7 @@
 <date>3 July 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.41 2000/07/02 02:35:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.42 2000/07/03 16:27:10 dawes Exp $
 </ident>
 
 <abstract>
@@ -955,6 +955,13 @@ for some boards.
 
 Further information about this driver can be found in the 'glint' driver
 man page.
+
+<sect2>Trident <label id="trident">
+<p>
+
+The "trident" driver supports all PCI based Trident cards, including one ISA
+based - the 8900D. 3.3.x is still needed for older SVGA ISA/VLB based cards,
+yet 4.0.2 is much faster for the newer boards. 
 
 <sect>X libraries and clients
 <p>
