@@ -1,4 +1,7 @@
 XFree86 3.2A (28 January 1997)
+ 381. Fix problems with the Trident driver in 16-colour mode (Alan Hourihane).
+ 380. Back out change 370 because it is obsoleted by change 373.
+ 379. Fix 369 was missing, and is now included.
  378. OS/2 updates (including documentation) (Holger Veit).
  377. Add bitblt acceleration for 16 and 32bpp for the I128 server
       (Robin Cutshaw).
