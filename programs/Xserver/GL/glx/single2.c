@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/glx/single2.c,v 1.6 2001/06/06 19:00:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/glx/single2.c,v 1.7 2004/02/09 23:46:31 alanh Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -341,7 +341,11 @@ int DoGetString(__GLXclientState *cl, GLbyte *pc, GLboolean need_swap)
 	string = buf;
     }
     else if ( name == GL_VERSION ) {
+#if defined(XFree86LOADER) && defined(IN_MODULE)
 	if ( xf86atof( string ) > xf86atof( GLServerVersion ) ) {
+#else
+	if ( atof( string ) > atof( GLServerVersion ) ) {
+#endif
 	    buf = __glXMalloc( __glXStrlen( string ) 
 			       + __glXStrlen( GLServerVersion )
 			       + 3 );
