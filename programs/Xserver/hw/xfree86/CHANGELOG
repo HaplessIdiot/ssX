@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx October 2001)
+ 451. Update Japanese localization of XDarwin help file (Toshimitsu Tanaka).
+ 450. Update XDarwin help file (Torrey T. Lyons).
  449. Fix XDarwin SHAPE support in rootless mode (Gregory Parker).
  448. More corrections to Xaw manpage (#5022, Branden Robinson).
  447. Fix XDarwin crash if a NULL mask is passed to Composite in rootless
@@ -14105,4 +14107,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2023 2001/11/04 21:16:37 paulo Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2024 2001/11/05 05:12:14 torrey Exp $
