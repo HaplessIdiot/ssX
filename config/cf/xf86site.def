@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.57 1995/12/23 09:36:30 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.58 1995/12/26 06:02:47 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -279,9 +279,12 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.57 1995/12/23 09:36:30 dawes Exp $
 /*
  * To build the servers with Extended input devices.
  * Select the devices you want setting them to YES.       
- * Note: Joystick support is only included for Linux at the moment, and
- * it requires the Joystick module to be installed (it isn't part of the
- * standard kernel distribution).
+ *
+ * Note: Joystick support is only included for Linux and FreeBSD at the
+ * moment.  For Linux it requires the Joystick module to be installed (it
+ * isn't part of the standard kernel distribution).  For FreeBSD, a kernel
+ * will need to be built with the Joystick driver in order to be able to
+ * use this.
  *
  */
 #define BuildXInputExt		YES

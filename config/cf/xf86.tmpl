@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.1 1995/07/12 15:27:40 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.2 1995/12/23 09:36:29 dawes Exp $
 
 #if XF86LinkKit
     TOP_INCLUDES = TopIncludes
@@ -20,23 +20,36 @@ XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.1 1995/07/12 15:27:40 dawes Exp $
 #endif
 #endif
 
+#ifndef JoystickSupport
+#define JoystickSupport		NO
+#endif
+#ifndef Joystick2Support
+#define Joystick2Support	NO
+#endif
+#ifndef WacomSupport
+#define WacomSupport		NO
+#endif
+#ifndef ElographicsSupport
+#define ElographicsSupport	NO
+#endif
+
 #if BuildXInputExt
-# if defined(JoystickSupport) && JoystickSupport
+# if JoystickSupport
 #  define JoystickDefines -DJOYSTICK_SUPPORT
 # else
 #  define JoystickDefines
 # endif
-# if defined(Joystick2Support) && Joystick2Support
+# if Joystick2Support
 #  define Joystick2Defines -DJOYSTICK2_SUPPORT
 # else
 #  define Joystick2Defines
 # endif
-# if defined(WacomSupport) && WacomSupport
+# if WacomSupport
 #  define WacomDefines -DWACOM_SUPPORT
 # else
 #  define WacomDefines
 # endif
-# if defined(ElographicsSupport) && ElographicsSupport
+# if ElographicsSupport
 #  define ElographicsDefines -DELOGRAPHICS_SUPPORT
 # else
 #  define ElographicsDefines

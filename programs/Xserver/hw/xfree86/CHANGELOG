@@ -1,4 +1,6 @@
-XFree86 3.1.2Af (23 December 1995)
+XFree86 3.1.2Af (26 December 1995)
+169. Added a simple standalone program (joycal) to get the Joystick
+     calibration coordinates.
 168. Modify the Joystick code to auto-detect the centre values at startup
      if they are not given the XF86Config (this assumes that the Joystick
      is centred when first enabled).

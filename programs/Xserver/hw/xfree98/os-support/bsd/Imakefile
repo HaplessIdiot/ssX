@@ -1,13 +1,22 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/os-support/bsd/Imakefile,v 3.0 1995/12/17 10:05:55 dawes Exp $
 #include <Server.tmpl>
+
+#ifdef FreeBSDArchitecture
+#ifdef BuildXInputExt
+#if JoystickSupport || Joystick2Support
+ JOYSTICK_SRC = bsd_jstk.c
+ JOYSTICK_OBJ = bsd_jstk.o
+#endif
+#endif
+#endif
 
 SRCS = bsd_init.c bsd_video.c bsd_io.c bsd_VTsw.c bios_devmem.c mapVT_noop.c \
        ioperm_noop.c std_kbdEv.c posix_tty.c std_mouse.c \
-       std_mseEv.c
+       std_mseEv.c $(JOYSTICK_SRC)
 
 OBJS = bsd_init.o bsd_video.o bsd_io.o bsd_VTsw.o bios_devmem.o mapVT_noop.o \
        ioperm_noop.o std_kbdEv.o posix_tty.o std_mouse.o \
-       std_mseEv.o
+       std_mseEv.o $(JOYSTICK_OBJ)
 
 INCLUDES = -I$(XF98COMSRC) -I$(XF98OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(INCLUDESRC)
@@ -27,6 +36,7 @@ LinkSourceFile(bsd_VTsw.c,$(XF86OSSRC)/bsd)
 LinkSourceFile(bsd_init.c,$(XF86OSSRC)/bsd)
 LinkSourceFile(bsd_io.c,$(XF86OSSRC)/bsd)
 LinkSourceFile(bsd_video.c,$(XF86OSSRC)/bsd)
+LinkSourceFile(bsd_jstk.c,$(XF86OSSRC)/bsd)
 
 ObjectFromSpecialSource(bios_devmem,$(XF86OSSRC)/shared/bios_devmem,/**/)
 ObjectFromSpecialSource(mapVT_noop,$(XF86OSSRC)/shared/mapVT_noop,/**/)

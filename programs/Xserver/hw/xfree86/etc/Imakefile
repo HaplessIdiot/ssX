@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.10 1995/11/19 01:24:54 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.11 1995/11/30 13:04:51 dawes Exp $
 #include <Server.tmpl>
 
 #if SystemV
@@ -80,7 +80,16 @@ NormalProgramTarget(scanpci,scanpci.o,NullParameter,NullParameter,NullParameter)
 InstallProgram(scanpci,$(BINDIR))
 #endif
 
-        SRCS = $(SRCS1) $(SRCS2)
+#if JoystickSupport || Joystick2Support
+       SRCS3 = joycal.c
+
+AllTarget(ProgramTargetName(joycal))
+
+NormalProgramTarget(joycal,joycal.o,NullParameter,NullParameter,NullParameter)
+InstallProgram(joycal,$(BINDIR))
+#endif
+
+        SRCS = $(SRCS1) $(SRCS2) $(SRCS3)
 
 #if (SystemV && !defined(i386ScoArchitecture)) || SystemV4
 InstallNamedProg($(INSTPROG),xf86install,$(LIBDIR)/etc)
