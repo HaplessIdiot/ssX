@@ -1,4 +1,16 @@
 XFree86 4.4.99.5 (xx April 2004)
+ 106. Fixes and updates for XKB keymaps:
+      - Replace comma keysym on KPDL key in Brasilian keymap with KP_Separator
+        (Rafael Ávila de Espíndola).
+      - Add multi-layout compatible Hungarian keymaps (Soós Péter).
+      - Remove unneeded Alt key changes in altwin:meta_win and left_meta_win
+        (Bugzilla #1341, Denis Barbier)
+      - Add multi-layout compatible Azerbaidjani, Canadian, Mongolian and
+        Vietnamese keymaps (Ivan Pascal).
+ 105. Fix ct_encoding sequence in zh_CN.gbk locale (Bugzilla #1362, Su Yong).
+ 104. Replace unicode keysyms in en_US.UTF-8 Compose file with 'traditional'
+      ones where such keysym exist (reported Bugzilla #1278) (Ivan Pascal).
+ 103. Add to xev WM_DELETE_WINDOW processing (Bugzilla #1154, Noah Levitt).
  102. Remove some more stale amoeba bits (Matthieu Herrb).
  101. Fix some typos in OS/2-specific code (Bugzilla #1358, Frank Giessler).
  100. Avoid wrapping a screen with RAC if it doesn't need it (Marc La France).
@@ -18904,7 +18916,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3251 2004/05/06 00:54:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3252 2004/05/06 21:10:56 herrb Exp $
 
 
 
