@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/6 1996/10/25 10:34:41 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF86Setup/Imakefile,v 3.16 1998/03/20 21:07:35 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF86Setup/Imakefile,v 3.17 1998/04/05 00:46:03 robin Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
@@ -41,7 +41,7 @@ includes::
 		   tcllib/tkerror.tcl tcllib/uparrow.xbm tcllib/license.terms
       PICS_FILES = pics/vidcard.xbm pics/vidcard.msk \
 		   pics/XFree86.xbm pics/XFree86.msk
-      SUBDIRS    = tcllib pics scripts
+      SUBDIRS    = tcllib pics scripts texts
 
 #if BuildServersOnly && !defined(UseInstalled)
 /* Use installed X libraries and headers */
@@ -69,7 +69,10 @@ includes::
 #endif
  TCLTK_LIBRARIES = $(TKLIBRARY) $(TCLLIBRARY)
 
+     XF86CONFLIB = $(XF98SRC)/config/LibraryTargetName(xf86config)
+
  LOCAL_LIBRARIES = $(USEBUILTLIB) $(XKBUILIB) $(XKBFILELIB) \
+		   $(XF86CONFLIB) \
 		   $(TCLTK_LIBRARIES) $(XXF86VMLIB) $(XXF86MISCLIB) \
 		   $(USEINSTALLEDLIB) XawClientLibs MathLibrary
          DEPLIBS = XawClientDepLibs $(DEPXXF86VMLIB)
@@ -84,7 +87,7 @@ includes::
 
  XF86SETUPLIBDIR = $(LIBDIR)/XF86Setup
          DEFINES = -DCARD_DATABASE_FILE='"$(CARDDBFILE)"' \
-		   $(XCONFIG_DEFINES) $(MODULEDEFINES) -DOLD_PARSER -DPC98
+		   $(XCONFIG_DEFINES) $(MODULEDEFINES) -DPC98
         INCLUDES = -I../os-support -I../common \
 		   -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(INCLUDESRC) \
 		   -I$(EXTINCSRC) $(USEINSTALLEDINC) \

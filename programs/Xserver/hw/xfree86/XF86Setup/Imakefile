@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/4 1996/10/24 10:16:33 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/Imakefile,v 3.22 1997/12/14 10:03:54 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/Imakefile,v 3.23 1998/03/27 23:23:04 hohndel Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
@@ -23,10 +23,10 @@ includes::
 
 #else
             SRCS = main.c tclmisc.c tclvidmode.c tclcards.c tclother.c \
-		   tclkbd.c tclxfconf.c xf86Config.c cards.c tclxkbui.c \
+		   tclkbd.c tclxfconf.c cards.c tclxkbui.c \
 		   tkother.c 
             OBJS = main.o tclmisc.o tclvidmode.o tclcards.o tclother.o \
-		   tclkbd.o tclxfconf.o xf86Config.o cards.o tclxkbui.o \
+		   tclkbd.o tclxfconf.o cards.o tclxkbui.o \
 		   tkother.o 
        TCL_FILES = phase1.tcl phase2.tcl phase3.tcl phase4.tcl phase5.tcl \
 		   setuplib.tcl srvflags.tcl carddata.tcl \
@@ -42,7 +42,7 @@ includes::
 		   tcllib/tkerror.tcl tcllib/uparrow.xbm tcllib/license.terms
       PICS_FILES = pics/vidcard.xbm pics/vidcard.msk \
 		   pics/XFree86.xbm pics/XFree86.msk
-         SUBDIRS = scripts
+         SUBDIRS = scripts texts
 
 #if BuildServersOnly && !defined(UseInstalled)
 /* Use installed X libraries and headers */
@@ -70,12 +70,14 @@ includes::
 #endif
  TCLTK_LIBRARIES = $(TKLIBRARY) $(TCLLIBRARY)
 
+     XF86CONFLIB = $(XF86SRC)/config/LibraryTargetName(xf86config)
+
  LOCAL_LIBRARIES = $(USEBUILTLIB) $(XKBUILIB) $(XKBFILELIB) \
+		   $(XF86CONFLIB) \
 		   $(TCLTK_LIBRARIES) $(XXF86VMLIB) $(XXF86MISCLIB) \
 		   $(USEINSTALLEDLIB) XawClientLibs MathLibrary
          DEPLIBS = XawClientDepLibs $(DEPXXF86VMLIB)
       CARDDBFILE = $(LIBDIR)/Cards
-      XCONFIGSRC = xf86Config
      XCONFIGFILE = XF86Config
 
  XCONFIG_DEFINES = $(EXT_DEFINES) -DXF86SETUP \
@@ -85,7 +87,7 @@ includes::
 
  XF86SETUPLIBDIR = $(LIBDIR)/XF86Setup
          DEFINES = -DCARD_DATABASE_FILE='"$(CARDDBFILE)"' \
-		   $(XCONFIG_DEFINES) $(MODULEDEFINES) -DOLD_PARSER
+		   $(XCONFIG_DEFINES) $(MODULEDEFINES)
         INCLUDES = -I../os-support -I../common \
 		   -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(INCLUDESRC) \
 		   -I$(EXTINCSRC) $(USEINSTALLEDINC) \
@@ -103,7 +105,6 @@ AllTarget(ProgramTargetName(XF86Setup))
 LinkSourceFile(Cards,../xf86config)
 LinkSourceFile(cards.h,../xf86config)
 LinkSourceFile(cards.c,../xf86config)
-LinkSourceFile(xf86Config.c,../common)
 LinkSourceFile(xf86_Config.h,../common)
 
 CppFileTarget(mseproto.tcl, mseproto.cpp, $(MSEPROTODEFS), NullParameter)

@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.15 1997/06/17 08:17:53 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.16 1997/07/29 12:07:25 hohndel Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -12,12 +12,14 @@
 #
 
 #
-# Phase I - Initial text mode interaction w/user and starting of VGA16 server
+# Phase I - Initial text mode interaction w/user and starting of SVGA server
 #
 set clicks1 [clock clicks]
 
 # load the autoload stuff
 source $tcl_library/init.tcl
+# load language specific library
+source $XF86Setup_library/texts/local_text.tcl
 # load in our library
 source $XF86Setup_library/setuplib.tcl
 source $XF86Setup_library/filelist.tcl
@@ -42,7 +44,7 @@ proc find_dialog {} {
 }
 
 proc check_for_files { xwinhome } {
-	global FilePermsDescriptions FilePermsReadMe
+	global FilePermsDescriptions FilePermsReadMe messages
 
 	foreach var [array names FilePermsDescriptions] {
 	    global FilePerms$var
@@ -50,10 +52,10 @@ proc check_for_files { xwinhome } {
 		set pattern [lindex $tmp 0]
 		set perms   [lindex $tmp 1] ;# ignored (for now at least)
 		if ![llength [glob -nocomplain -- $xwinhome/$pattern]] {
-			set msg [format "Not all of the %s %s %s %s" \
+			set msg [format "$messages(phase1.1) %s %s %s %s" \
 				$FilePermsDescriptions($var) \
-				"are installed. The file" \
-				$xwinhome/$pattern "is missing"]
+				$messages(phase1.2) \
+				$xwinhome/$pattern $messages(phase1.3)]
 			mesg [parafmt 65 $msg] okay
 			exit 1
 		}
@@ -63,10 +65,7 @@ proc check_for_files { xwinhome } {
 	    set pattern [lindex $readme 0]
 	    set perms   [lindex $readme 1] ;# ignored (for now at least)
 	    if ![llength [glob -nocomplain -- $xwinhome/$pattern]] {
-		mesg [parafmt 65 "Warning! Not all of the READMEs are\
-			installed. You may not be able to view some of\
-			the instructions regarding setting up your card,\
-			but otherwise, everything should work correctly"] \
+		mesg [parafmt 65 $messages(phase1.4)] \
 			okay
 		break
 	    }
@@ -74,7 +73,7 @@ proc check_for_files { xwinhome } {
 }
 
 proc set_xf86config_defaults {} {
-    global Xwinhome ConfigFile
+    global Xwinhome ConfigFile messages
     global Files Server Keyboard Pointer MonitorIDs DeviceIDs
 
     if {![catch {xf86config_readfile $Xwinhome files server \
@@ -172,8 +171,7 @@ proc set_xf86config_defaults {} {
 	    }
 	}
     } else {
-	mesg "Error encountered reading existing\
-		configuration file" okay
+	mesg $messages(phase1.5) okay
 	puts $tmp
 	exit 0
     }
@@ -204,56 +202,38 @@ if !$pc98 {
 if { [string length $ConfigFile] > 0 } {
 	if [info exists env(DISPLAY)] {
 		set msg [format "%s\n \n%s\n \n%s" \
-			    [parafmt 65 "It appears that you are currently \
-				running under X11. If this is correct \
-				and you are interested in making some \
-				adjustments to your current setup, \
-				answer yes to the following question."] \
-			    [parafmt 65 "If this is incorrect or you \
-				would like to go through the full \
-				configuration process, then answer no."] \
-			    "Is this a reconfiguration?" ]
+			    [parafmt 65 $messages(phase1.6)] \
+			    [parafmt 65 $messages(phase1.7)] \
+			    $messages(phase1.8) ]
 		set ReConfig [mesg $msg yesno]
 	}
 	if { $ReConfig } {
 		set UseConfigFile 1
 		set StartServer 0
 		if { [getuid] != 0 } {
-		    set proceed [mesg "You are not running as\
-			root.\n\nSuperuser privileges are usually\
-			required to save any changes\nyou make\
-			in a directory that is searched by the\
-			server and\nare required to change the\
-			mouse device.\n\nWould you like\
-			to continue anyway?" yesno]
+		    set proceed [mesg $messages(phase1.9) yesno]
 		    if !$proceed {
 		        exit 1
 		    }
 		}
 	} else {
 		if { [getuid] != 0 } {
-		    mesg "You need to be root to set the initial\
-			configuration with this program" okay
+		    mesg $messages(phase1.10) okay
 		    exit 1
 		}
 		if !$pc98 {
-		    if { !$UseLoader && ![file exists $Xwinhome/bin/XF86_VGA16] } {
-		        mesg "The XFree86 loader (XF86_LOADER) or the VGA16\n\
-		    	    server is required when using\n\
-			    this program to set the initial configuration" okay
+		    if { !$UseLoader && ![file exists $Xwinhome/bin/XF86_SVGA] } {
+		        mesg $messages(phase1.11) okay
 		        exit 1
 		    }
 		} else {
 		    if { !$UseLoader && ![file exists $Xwinhome/bin/XF98_EGC] \
 			          && ![file exists $Xwinhome/bin/XF98_PEGC]} {
-		        mesg "The XFree86 loader (XF98_LOADER) or the EGC\n\
-		    	    or the PEGC server is required when using\n\
-			    this program to set the initial configuration" okay
+		        mesg $messages(phase1.12) okay
 		        exit 1
 		    }
 		}
-		set UseConfigFile [mesg "Would you like to use the\
-		    existing XF86Config file for defaults?" yesno]
+		set UseConfigFile [mesg $messages(phase1.13) yesno]
 	}
 	# initialize the configuration variables
 	initconfig $Xwinhome
@@ -264,23 +244,20 @@ if { [string length $ConfigFile] > 0 } {
 } else {
 	set ConfigFile /etc/XF86Config
 	if { [getuid] != 0 } {
-	    mesg "You need to be root to run this program" okay
+	    mesg $messages(phase1.14) okay
 	    exit 1
 	}
 	if !$pc98 {
 	    if { !$ReConfig && !$UseLoader
-		    && ![file exists $Xwinhome/bin/XF86_VGA16] } {
-	        mesg "Either the XFree86 loader (XF86_LOADER) or the\n\
-	    	    VGA16 server is required to run this program" okay
+		    && ![file exists $Xwinhome/bin/XF86_SVGA] } {
+	        mesg $messages(phase1.15) okay
 	        exit 1
 	    }
 	} else {
 	    if { !$ReConfig && !$UseLoader
 		    && ![file exists $Xwinhome/bin/XF98_EGC]
 		    && ![file exists $Xwinhome/bin/XF98_PEGC] } {
-	        mesg "Either the XFree86 loader (XF98_LOADER) or the\n\
-	    	    EGC server or the PEGC server is required to run\n\
-		    this program" okay
+	        mesg $messages(phase1.16) okay
 	        exit 1
 	    }
 	}
@@ -295,8 +272,7 @@ if { ![getuid] } {
 	# Check for the SysV Xqueue mouse driver
 	if { [file exists /etc/conf/pack.d/xque]
 		&& [file exists /usr/lib/mousemgr] } {
-	    set xque [mesg "Would you like to use the Xqueue driver\n\
-			for mouse and keyboard input?" yesno]
+	    set xque [mesg $messages(phase1.17) yesno]
 	    if $xque {
 		set Keyboard(Protocol)	Xqueue
 		set Pointer(Protocol)	Xqueue
@@ -307,8 +283,7 @@ if { ![getuid] } {
 	# Check for the SCO OsMouse
 	if { [file exists /etc/conf/pack.d/cn/class.h]
 		&& [file exists /etc/conf/pack.d/ev] } {
-	    set osmse [mesg "Would you like to use the system event\
-			queue for mouse input?" yesno]
+	    set osmse [mesg $messages(phase1.18) yesno]
 	    if $osmse {
 		set Pointer(Protocol)	OsMouse
 		set Pointer(Device)	""
@@ -326,8 +301,7 @@ if { [info exists env(TMPDIR)] } {
 
 
 if ![mkdir $XF86SetupDir 0700] {
-	mesg "Unable to make directory $XF86SetupDir\n\
-		 for storing temporary files" okay
+	mesg "$messages(phase1.19)$XF86SetupDir$messages(phase1.20)" okay
 	exit 1
 }
 
@@ -337,8 +311,7 @@ set rand2 [random 1073741823]
 
 set TmpDir $XF86SetupDir/[format "%x-%x" $rand1 $rand2]
 if ![mkdir $TmpDir 0700] {
-	mesg "Unable to make directory $TmpDir\n\
-		 for storing temporary files" okay
+	mesg "$messages(phase1.19)$TmpDir$messages(phase1.20)" okay
 	exit 1
 }
 check_tmpdirs
@@ -368,11 +341,10 @@ if $StartServer {
 	# write out a temp XF86Config file
 	writeXF86Config $Confname-1 -vgamode -generic
 
-	mesg "Ready to switch to graphics mode.\n\
-		\nIt may take a while" okay
+	mesg $messages(phase1.23) okay
 
 	if !$pc98 {
-	    set ServerPID [start_server VGA16 $Confname-1 ServerOut-1]
+	    set ServerPID [start_server SVGA $Confname-1 ServerOut-1]
 	} else {
 	    if !$pc98_EGC {
 		set ServerPID [start_server PEGC $Confname-1 ServerOut-1]
@@ -387,14 +359,14 @@ if $StartServer {
 	}
 
 	if { $ServerPID == 0 } {
-		mesg "Unable to start X server!" info
+		mesg $messages(phase1.24) info
 		exit 1
 	}
 	if { $ServerPID == -1 } {
-		mesg "Unable to communicate with X server!" info
+		mesg $messages(phase1.25) info
 		exit 1
 	}
 } else {
-	mesg "Please wait\n\nThis may take a while..." info
+	mesg $messages(phase1.26) info
 }
 

@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase5.tcl,v 3.9 1997/06/17 08:17:53 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase5.tcl,v 3.10 1997/12/14 10:03:56 hohndel Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -67,18 +67,17 @@ if { ![getuid] } {
     }
     if [info exists linkname] {
 	set linkdir [file dirname $lastlink]
-	set mklink [mesg "Do you want to create an 'X' link\
-		to the $server server?\n\n(the link will be\
-		created in the directory: $linkdir) Okay?" yesno]
+	set mklink [mesg \
+		"$messages(phase5.1)$server$messages(phase5.2)\
+		$linkdir$messages(phase5.3)" yesno]
 	if $mklink {
 	    set CWD [pwd]
 	    cd $linkdir
 	    catch "unlink X" ret
 	    if [catch "link $Xwinhome/bin/XF86_$server X" ret] {
-		mesg "Link creation failed!\n\
-			You'll have to do it yourself" okay
+		mesg $messages(phase5.4) okay
 	    } else {
-		mesg "Link created successfully." okay
+		mesg $messages(phase5.5) okay
 	    }
 	    cd $CWD
 	}
@@ -86,7 +85,7 @@ if { ![getuid] } {
 }
 
 clear_scrn
-puts "\n\nConfiguration complete."
+puts $messages(phase5.6)
 
 exit 0
 

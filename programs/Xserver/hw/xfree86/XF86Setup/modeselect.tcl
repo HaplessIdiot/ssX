@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/modeselect.tcl,v 3.9 1996/12/27 06:54:07 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/modeselect.tcl,v 3.1 1997/12/14 10:03:55 hohndel Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #           1997 by Dirk H Hohndel <hohndel@XFree86.Org>
@@ -18,11 +18,17 @@
 
 proc Modeselect_create_widgets { win } {
 	global MonitorIDs monDevNum monCanvas MonitorDescriptions
+	global pc98_EGC messages
 
 	set w [winpathprefix $win]
 
-	frame $w.modesel -width 640 -height 420 \
-		-relief ridge -borderwidth 5
+	if !$pc98_EGC {
+		frame $w.modesel -width 640 -height 420 \
+			-relief ridge -borderwidth 5
+	} else {
+		frame $w.modesel -width 640 -height 400 \
+			-relief ridge -borderwidth 5
+	}
 	frame $w.modesel.top
 	frame $w.modesel.mid -relief sunken -borderwidth 3
 	frame $w.modesel.bot
@@ -33,68 +39,111 @@ proc Modeselect_create_widgets { win } {
 	label $w.modesel.top.title -text "Select the modes you want to use"
 	frame $w.modesel.type
 	pack $w.modesel.top.title $w.modesel.type -in $w.modesel.top -side top
-	frame $w.modesel.buttons
-	pack $w.modesel.buttons -in $w.modesel.mid \
-		-side top -pady 2m
-	checkbutton $w.modesel.m640x480 -text 640x480 \
+	set canv [canvas $w.modesel.buttons]
+
+	checkbutton $w.modesel.buttons.m640x480 \
+		-text $messages(modeselect.2) \
 		-indicatoron no -variable m640x480 \
 		-command [list modesel_enable $win " 640x480*"]
-	checkbutton $w.modesel.m800x600 -text 800x600 \
+	lappend lbuttons $w.modesel.buttons.m640x480
+	checkbutton $w.modesel.buttons.m800x600 \
+		-text $messages(modeselect.3) \
 		-indicatoron no -variable m800x600 \
 		-command [list modesel_enable $win " 800x600*"]
-	checkbutton $w.modesel.m1024x768 -text 1024x768 \
+	lappend lbuttons $w.modesel.buttons.m800x600
+	checkbutton $w.modesel.buttons.m1024x768 \
+		-text $messages(modeselect.4) \
 		-indicatoron no -variable m1024x768 \
 		-command [list modesel_enable $win "1024x768*"]
-	checkbutton $w.modesel.m1152x864 -text 1152x864 \
+	lappend lbuttons $w.modesel.buttons.m1024x768
+	checkbutton $w.modesel.buttons.m1152x864 \
+		-text $messages(modeselect.5) \
 		-indicatoron no -variable m1152x864 \
 		-command [list modesel_enable $win "1152x864*"]
-	checkbutton $w.modesel.m1280x1024 -text 1280x1024 \
-		-indicatoron no -variable m1280x1024 \
+	lappend lbuttons $w.modesel.buttons.m1152x864
+	checkbutton $w.modesel.buttons.m1280x1024 \
+		-text $messages(modeselect.6) \
+  		-indicatoron no -variable m1280x1024 \
 		-command [list modesel_enable $win "1280x1024*"]
-	checkbutton $w.modesel.m1600x1200 -text 1600x1200 \
+	lappend lbuttons $w.modesel.buttons.m1280x1024
+	checkbutton $w.modesel.buttons.m1600x1200 \
+		-text $messages(modeselect.7) \
 		-indicatoron no -variable m1600x1200 \
 		-command [list modesel_enable $win "1600x1200*"]
-	checkbutton $w.modesel.m640x400 -text 640x400 \
+	lappend lbuttons $w.modesel.buttons.m1600x1200
+	checkbutton $w.modesel.buttons.m640x400 \
+		-text $messages(modeselect.8) \
 		-indicatoron no -variable m640x400 \
 		-command [list modesel_enable $win " 640x400*"]
-	checkbutton $w.modesel.m320x200 -text 320x200 \
+	lappend lbuttons $w.modesel.buttons.m640x400
+	checkbutton $w.modesel.buttons.m320x200 \
+		-text $messages(modeselect.9) \
 		-indicatoron no -variable m320x200 \
 		-command [list modesel_enable $win " 320x200*"]
-	checkbutton $w.modesel.m320x240 -text 320x240 \
+	lappend lbuttons $w.modesel.buttons.m320x200
+	checkbutton $w.modesel.buttons.m320x240 \
+		-text $messages(modeselect.10) \
 		-indicatoron no -variable m320x240 \
 		-command [list modesel_enable $win " 320x240*"]
-	checkbutton $w.modesel.m400x300 -text 400x300 \
+	lappend lbuttons $w.modesel.buttons.m320x240
+	checkbutton $w.modesel.buttons.m400x300 \
+		-text $messages(modeselect.11) \
 		-indicatoron no -variable m400x300 \
 		-command [list modesel_enable $win " 400x300*"]
-	checkbutton $w.modesel.m480x300 -text 480x300 \
+	lappend lbuttons $w.modesel.buttons.m400x300
+	checkbutton $w.modesel.buttons.m480x300 \
+		-text $messages(modeselect.12) \
 		-indicatoron no -variable m480x300 \
 		-command [list modesel_enable $win " 480x300*"]
-	checkbutton $w.modesel.m512x384 -text 512x384 \
+	lappend lbuttons $w.modesel.buttons.m480x300
+	checkbutton $w.modesel.buttons.m512x384 \
+		-text $messages(modeselect.13) \
 		-indicatoron no -variable m512x384 \
 		-command [list modesel_enable $win " 512x384*"]
-	pack $w.modesel.m640x480 $w.modesel.m800x600 $w.modesel.m1024x768 \
-	        $w.modesel.m1152x864 $w.modesel.m1280x1024 $w.modesel.m1600x1200 \
-	        $w.modesel.m640x400 $w.modesel.m320x200 $w.modesel.m320x240 \
-	        $w.modesel.m400x300 $w.modesel.m480x300 $w.modesel.m512x384 \
-	        -in $w.modesel.buttons \
-		-side top -fill x -padx 3m -anchor w
-    frame $w.modesel.dcd
-    label $w.modesel.dcd.title -text "Select the default color depth you want to use"
-    radiobutton $w.modesel.8bpp -text " 8bpp " -indicatoron false \
-	-variable ColorDepth -value "depth8" -underline 19 \
-	-command [list modesel_color_select $w 8]
-    radiobutton $w.modesel.16bpp -text " 16bpp " -indicatoron false \
-	-variable ColorDepth -value "depth16" -underline 19 \
-	-command [list modesel_color_select $w 16]
-    radiobutton $w.modesel.24bpp -text " 24bpp " -indicatoron false \
-	-variable ColorDepth -value "depth24" -underline 19 \
-	-command [list modesel_color_select $w 24]
-    radiobutton $w.modesel.32bpp -text " 32bpp " -indicatoron false \
-	-variable ColorDepth -value "depth32" -underline 19 \
-	-command [list modesel_color_select $w 32]
-    pack $w.modesel.8bpp $w.modesel.16bpp $w.modesel.24bpp $w.modesel.32bpp  \
-    -side left -fill x -expand yes -in $w.modesel.dcd
-    pack $w.modesel.dcd.title $w.modesel.dcd -side left -fill y -expand yes
+	lappend lbuttons $w.modesel.buttons.m512x384
+	set ht 0
+	set wd 0
+	foreach wb $lbuttons {
+		set bwd [winfo reqwidth $wb]
+		if {$wd < $bwd} {set wd $bwd}
+	}
+	foreach wb $lbuttons {
+		$canv create window \
+			[expr ($wd-[winfo reqwidth $wb])/2] $ht \
+			-anchor nw -window $wb
+		set ht [expr $ht + [winfo reqheight $wb]]
+	}
+	$canv configure -yscrollcommand [list $w.modesel.sb set] \
+		-scrollregion [list 0 0 $wd $ht] \
+			-width $wd
+	scrollbar $w.modesel.sb \
+		-command [list $canv yview]
+	pack $canv -in $w.modesel.mid \
+		-side left -fill both -expand yes -pady 2m
+	pack $w.modesel.sb -in $w.modesel.mid -side right \
+		-fill y -expand yes
+	frame $w.modesel.dcd
+	label $w.modesel.dcd.title -text $messages(modeselect.14)
+	radiobutton $w.modesel.8bpp -text $messages(modeselect.15) \
+		-indicatoron false -variable ColorDepth \
+		-value "depth8" -underline 19 \
+		-command [list modesel_color_select $w 8]
+	radiobutton $w.modesel.16bpp -text $messages(modeselect.16) \
+		-indicatoron false -variable ColorDepth \
+		-value "depth16" -underline 19 \
+		-command [list modesel_color_select $w 16]
+	radiobutton $w.modesel.24bpp -text $messages(modeselect.17) \
+		-indicatoron false -variable ColorDepth \
+		-value "depth24" -underline 19 \
+		-command [list modesel_color_select $w 24]
+	radiobutton $w.modesel.32bpp -text $messages(modeselect.18) \
+		-indicatoron false -variable ColorDepth \
+		-value "depth32" -underline 19 \
+		-command [list modesel_color_select $w 32]
+	pack $w.modesel.8bpp $w.modesel.16bpp $w.modesel.24bpp \
+		$w.modesel.32bpp -side left -fill x -expand yes \
+		-in $w.modesel.dcd
+	pack $w.modesel.dcd.title $w.modesel.dcd -side left -fill y -expand yes
 }
 
 proc Modeselection_activate { win } {

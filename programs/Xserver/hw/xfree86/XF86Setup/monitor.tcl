@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/monitor.tcl,v 3.10 1997/07/10 08:17:20 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/monitor.tcl,v 3.11 1997/07/29 12:07:24 hohndel Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -17,7 +17,7 @@
 
 proc Monitor_create_widgets { win } {
 	global MonitorIDs monDevNum monCanvas MonitorDescriptions
-	global pc98_EGC
+	global pc98_EGC messages
 
 	set w [winpathprefix $win]
 	set monDevNum 0
@@ -33,11 +33,12 @@ proc Monitor_create_widgets { win } {
 
 	frame $w.monitor.sync.line1
 	pack  $w.monitor.sync.line1 -side top -fill x -expand yes
-	label $w.monitor.sync.title -text "Monitor sync rates"
+	label $w.monitor.sync.title -text $messages(monitor.1)
 	pack  $w.monitor.sync.title -side left -fill x \
 		-in $w.monitor.sync.line1 -expand yes
 	if { [llength $MonitorIDs] > 1 } {
-		label $w.monitor.sync.monsel -text "Monitor selected:" -anchor w
+		label $w.monitor.sync.monsel \
+			-text $messages(monitor.2) -anchor w
 		pack  $w.monitor.sync.monsel -side left \
 			-in $w.monitor.sync.line1
 		combobox $w.monitor.sync.monselect -state disabled -bd 2
@@ -52,14 +53,14 @@ proc Monitor_create_widgets { win } {
 	}
 	frame $w.monitor.sync.horz
 	pack  $w.monitor.sync.horz -side left -padx 10m
-	label $w.monitor.sync.horz.title -text "Horizontal"
+	label $w.monitor.sync.horz.title -text $messages(monitor.3)
 	entry $w.monitor.sync.horz.entry -width 35 -bd 2
 	pack  $w.monitor.sync.horz.title -side left
 	pack  $w.monitor.sync.horz.entry -side left
 
 	frame $w.monitor.sync.vert
 	pack  $w.monitor.sync.vert -side left -padx 10m
-	label $w.monitor.sync.vert.title -text "Vertical"
+	label $w.monitor.sync.vert.title -text $messages(monitor.4)
 	entry $w.monitor.sync.vert.entry -width 35 -bd 2
 	pack  $w.monitor.sync.vert.title -side left
 	pack  $w.monitor.sync.vert.entry -side left 
@@ -156,9 +157,7 @@ proc Monitor_create_widgets { win } {
 	}
 	
 	frame $w.monitor.bot
-	label $w.monitor.bot.message -text \
-		"Enter the Horizontal and Vertical Sync ranges for your monitor\n\
-		or if you do not have that information, choose from the list"
+	label $w.monitor.bot.message -text $messages(monitor.5)
 	pack $w.monitor.bot -side top
 	pack $w.monitor.bot.message
 
@@ -252,29 +251,6 @@ proc Monitor_cbox_setentry { cb text } {
 	}
 }
 
-proc Monitor_popup_help { win } {
-	catch {destroy .monitorhelp}
-        toplevel .monitorhelp -bd 5 -relief ridge
-        wm title .monitorhelp "Help"
-	wm geometry .monitorhelp +30+30
-        text .monitorhelp.text
-        .monitorhelp.text insert 0.0 "\n\n\n\
-		Enter the horizontal and vertical sync rates of your\n\
-		monitor.  These should be listed in your manual.\n\n\
-		If you can not find this information, you can pick from the\n\
-		the list of common monitor capabilities, the one that best\n\
-		describes your monitor, and the appropriate sync rates\n\
-		will be filled in for you.\n\n\
-		It is very important that these values be correct!\n\n\
-		Using video modes that require sync rates beyond the\n\
-		capabilities of your monitor may damage it.\n\
-		The server will automatically exclude any video modes\n\
-		that require sync rates beyond those you enter."
-        .monitorhelp.text configure -state disabled
-        button .monitorhelp.ok -text "Dismiss" -command "destroy .monitorhelp"
-        pack .monitorhelp.text .monitorhelp.ok
-}
-
 proc Monitor_setstandard { win c } {
 	global MonitorHsyncRanges MonitorVsyncRanges
 
@@ -290,7 +266,7 @@ proc Monitor_setstandard { win c } {
 }
 
 proc Monitor_sync_ent { win c dir } {
-	global pc98_EGC
+	global tk_version pc98_EGC
 
 	set w [winpathprefix $win]
 	if { [string compare $dir horz] == 0 } {
@@ -317,6 +293,15 @@ proc Monitor_sync_ent { win c dir } {
 	set rnglist [split $rng ,]
 	set count 0
 	catch {$c delete ${dir}rng}
+	if { $tk_version == 4.0 } {
+		# workaround a bug in Tk4.0 canvases
+		set beg $min
+		set end $max
+		catch {$c delete blank}
+		$c create rectangle \
+			[expr $x1] [expr $y1] [expr $x2] [expr $y2] \
+			-fill white -tag blank
+	}
 	foreach elem $rnglist {
 		set beg [set end 0]
 		set elem [zap_white $elem]

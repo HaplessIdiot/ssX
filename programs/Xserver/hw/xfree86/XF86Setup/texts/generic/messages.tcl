@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/texts/generic/messages.tcl,v 1.1.2.4 1998/02/26 20:11:20 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/texts/generic/messages.tcl,v 1.2 1998/04/05 15:30:30 robin Exp $
 #
 # messages in done.tcl :
 set messages(done.1)	"\n\n\
@@ -9,6 +9,7 @@ set messages(done.1)	"\n\n\
 		press one of the buttons at the top and then\n\
 		press \"Done\" again, when you've finished."
 set messages(done.2) "Okay."
+set messages(done.3) "Just a moment..."
 
 # messages in srvflags :
 set messages(srvflags.1) "Optional server settings\n\n\
@@ -22,6 +23,70 @@ set messages(srvflags.4) "Don't Trap Signals\
 set messages(srvflags.5) "Allow video mode changes from other hosts"
 set messages(srvflags.6) "Allow changes to keyboard and mouse settings\
 		from other hosts"
+
+# messages in phase1 :
+set messages(phase1.1) "Not all of the"
+set messages(phase1.2) "are installed. The file"
+set messages(phase1.3) "is missing"
+set messages(phase1.4) \
+	"Warning! Not all of the READMEs are\
+	installed. You may not be able to view some of\
+	the instructions regarding setting up your card,\
+	but otherwise, everything should work correctly"
+set messages(phase1.5) "Error encountered reading existing\
+	configuration file"
+set messages(phase1.6) \
+	"It appears that you are currently \
+	running under X11. If this is correct \
+	and you are interested in making some \
+	adjustments to your current setup, \
+	answer yes to the following question."
+set messages(phase1.7) \
+	"If this is incorrect or you \
+	would like to go through the full \
+	configuration process, then answer no."
+set messages(phase1.8) "Is this a reconfiguration?"
+set messages(phase1.9) \
+	"You are not running as root.\n\n\
+	Superuser privileges are usually required to save any changes\n\
+	you make in a directory that is searched by the server and\n\
+	are required to change the mouse device.\n\n\
+	Would you like to continue anyway?"
+set messages(phase1.10) \
+	"You need to be root to set the initial\
+	configuration with this program"
+set messages(phase1.11) \
+	"The XFree86 loader (XF86_LOADER) or the SVGA\n\
+	server is required when using\n\
+	this program to set the initial configuration"
+set messages(phase1.12) \
+	"The XFree86 loader (XF98_LOADER) or the EGC\n\
+	or the PEGC server is required when using\n\
+	this program to set the initial configuration"
+set messages(phase1.13) \
+	"Would you like to use the\
+	existing XF86Config file for defaults?"
+set messages(phase1.14) "You need to be root to run this program"
+set messages(phase1.15) \
+	"Either the XFree86 loader (XF86_LOADER) or the\n\
+	SVGA server is required to run this program"
+set messages(phase1.16) \
+	"Either the XFree86 loader (XF98_LOADER) or the\n\
+	EGC server or the PEGC server is required to run\n\
+	this program" 
+set messages(phase1.17) \
+	"Would you like to use the Xqueue driver\n\
+	for mouse and keyboard input?"
+set messages(phase1.18) \
+	"Would you like to use the system event\
+	queue for mouse input?" 
+set messages(phase1.19) "Unable to make directory "
+set messages(phase1.20) "\nfor storing temporary files"
+set messages(phase1.23) "Ready to switch to graphics mode.\n\
+	\nIt may take a while"
+set messages(phase1.24) "Unable to start X server!" 
+set messages(phase1.25) "Unable to communicate with X server!"
+set messages(phase1.26) "Please wait\n\nThis may take a while..."
 
 # messages in phase2 :
 set messages(phase2.1) "Loading  -  Please wait...\n\n\n"
@@ -67,6 +132,17 @@ set messages(phase2.12) "\n\
 		You can also press ? or click on the Help button at\
 			any time for additional instructions\n\n"
 set messages(phase2.13) "Dismiss"
+set messages(phase2.14) "The program is running on a different\
+			virtual terminal\n\n\
+			Please switch to the correct virtual terminal"
+
+# messages in phase3 :
+set messages(phase3.1) "Attempting to start server..."
+set messages(phase3.2) "Unable to communicate with X server"
+set messages(phase3.3) "Unable to start X server"
+set messages(phase3.4) "\n\nPress \[Enter\] to try configuration again"
+set messages(phase3.5) \
+	"Ack! Unable to get the VGA16 server going again!"
 
 # messages in phase4 :
 set messages(phase4.1) "Loading  -  Please wait..."
@@ -84,6 +160,26 @@ set messages(phase4.10) "Save the configuration and exit"
 set messages(phase4.11) "Abort - Don't save the configuration"
 set messages(phase4.12) "Aborted"
 set messages(phase4.13) "Congratulations, you've got a running server!\n\n"
+set messages(phase4.14) "Just a moment..."
+set messages(phase4.15) 
+set messages(phase4.16) "The program is running on a different\
+			virtual terminal\n\n\
+			Please switch to the correct virtual terminal"
+
+# messages in phase5.tcl :
+set messages(phase5.1) "Do you want to create an 'X' link to the "
+set messages(phase5.2) \
+	" server?\n\n(the link will be created in the directory:"
+set messages(phase5.3) ") Okay?"
+set messages(phase5.4) "Link creation failed!\n\
+	You'll have to do it yourself"
+set messages(phase5.5) "Link created successfully."
+set messages(phase5.6) "\n\nConfiguration complete."
+
+# messages in setuplib.tcl :
+set messages(setuplib.1) "\n\nPress \[Enter\] to continue..."
+set messages(setuplib.2) "The temporary files directory ("
+set messages(setuplib.3) ")\nis no longer secure!"
 
 # messages in card.tcl :
 set messages(card.1) "Card selected:"

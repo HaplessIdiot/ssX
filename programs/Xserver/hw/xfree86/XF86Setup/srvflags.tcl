@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/srvflags.tcl,v 3.4 1996/12/27 06:54:14 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/srvflags.tcl,v 3.5 1997/07/29 12:07:25 hohndel Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -18,7 +18,7 @@
 proc Other_create_widgets { win } {
 	global ServerFlags otherZap otherZoom otherTrapSignals
 	global otherXvidtune otherInpDevMods
-	global pc98_EGC
+	global pc98_EGC messages
 
 	set w [winpathprefix $win]
 	if !$pc98_EGC {
@@ -31,29 +31,25 @@ proc Other_create_widgets { win } {
 	frame $w.srvflags -bd 2 -relief sunken
 	pack  $w.srvflags -in $w.other \
 		-fill both -expand yes -padx 20m -pady 20m
-	label $w.srvflags.title -text "Optional server settings\n\n\
-		These should be set to reasonable values, by default,\n\
-		so you probably don't need to change anything"
+	label $w.srvflags.title -text $messages(srvflags.1)
 	pack  $w.srvflags.title -side top -fill both -expand yes
 	frame $w.srvflags.line -height 2 -bd 2 -relief sunken
 	pack  $w.srvflags.line -side top -fill x -pady 2m
 	checkbutton $w.srvflags.zap         -indicatoron true \
-		-text "Allow server to be killed with\
-		hotkey sequence (Ctrl-Alt-Backspace)" \
+		-text $messages(srvflags.2) \
 		-variable otherZap -anchor w
 	checkbutton $w.srvflags.zoom        -indicatoron true \
-		-text "Allow video mode switching" \
+		-text $messages(srvflags.3) \
 		-variable otherZoom -anchor w
 	checkbutton $w.srvflags.trapsignals -indicatoron true \
-		-text "Don't Trap Signals\
-			- prevents the server from exitting cleanly" \
+		-text $messages(srvflags.4) \
 		-variable otherTrapSignals -anchor w
 	checkbutton $w.srvflags.nonlocalxvidtune -indicatoron true \
-		-text "Allow video mode changes from other hosts" \
+		-text $messages(srvflags.5) \
 		-variable otherXvidtune -anchor w
 	checkbutton $w.srvflags.nonlocalmodindev -indicatoron true \
-		-text "Allow changes to keyboard and mouse settings\
-		from other hosts" -variable otherInpDevMods -anchor w
+		-text $messages(srvflags.6) \
+		-variable otherInpDevMods -anchor w
 	pack $w.srvflags.zap $w.srvflags.zoom $w.srvflags.trapsignals \
 		-anchor w -expand yes -fill x -padx 15m
 	pack $w.srvflags.nonlocalxvidtune $w.srvflags.nonlocalmodindev \

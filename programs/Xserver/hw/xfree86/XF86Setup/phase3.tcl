@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase3.tcl,v 3.3 1996/08/26 10:47:45 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase3.tcl,v 3.4 1996/12/27 06:54:11 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -17,12 +17,13 @@
 #
 
 source $tcl_library/init.tcl
+source $XF86Setup_library/texts/local_text.tcl
 source $XF86Setup_library/setuplib.tcl
 source $XF86Setup_library/carddata.tcl
 source $XF86Setup_library/mondata.tcl
 source $StateFileName
 
-mesg "Attempting to start server..." info
+mesg $messages(phase3.1) info
 sleep 2
 writeXF86Config $Confname-2 -defaultmodes
 
@@ -33,19 +34,19 @@ set server [set Device_${devid}(Server)]
 set ServerPID [start_server $server $Confname-2 ServerOut-2 ]
 
 if { $ServerPID == -1 } {
-	set msg "Unable to communicate with X server"
+	set msg $messages(phase3.2)
 }
 
 if { $ServerPID == 0 } {
-	set msg "Unable to start X server"
+	set msg $messages(phase3.3)
 }
 
 if { $ServerPID < 1 } {
-	mesg "$msg\n\nPress \[Enter\] to try configuration again" okay
+	mesg "$msg$messages(phase3.4)" okey
 	set Phase2FallBack 1
 	set ServerPID [start_server $server $Confname-1 ServerOut-1Bis]
 	if { $ServerPID < 1 } {
-		mesg "Ack! Unable to get the VGA16 server going again!" info
+		mesg $messages(phase3.5) info
 		exit 1
 	}
 }

@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.22 1997/07/29 12:07:24 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.23 1998/03/27 23:23:04 hohndel Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -295,7 +295,7 @@ proc Mouse_create_widgets { win } {
   			-tag {mbut mbut3}
 	$canv create text 0.7i 2.20i -tag coord
 
-	button $w.mouse.mid.right.apply -text "Apply" \
+	button $w.mouse.mid.right.apply -text $messages(mouse.15) \
 		-command [list Mouse_setsettings $win]
 	pack $canv $w.mouse.mid.right.apply -side top
 	if $pc98_EGC {
@@ -304,8 +304,7 @@ proc Mouse_create_widgets { win } {
 		    -fill x -pady 3m
 	}
 
-	label $w.mouse.bot.mesg \
-		-text "Press ? or Alt-H for a list of key bindings" \
+	label $w.mouse.bot.mesg $messages(mouse.16) \
 		-foreground [$w.mouse.top.title cget -foreground]
 	pack $w.mouse.bot.mesg
 
@@ -373,75 +372,6 @@ proc Mouse_deactivate { win } {
 	bind $win r			""
 	bind $win s			""
 	bind $win t			""
-}
-
-proc Mouse_popup_help { win } {
-        global pc98_EGC pc98
-        toplevel .mousehelp -bd 5 -relief ridge
-        wm title .mousehelp "Help"
-	if !$pc98 {
-	    wm geometry .mousehelp +30+30
-	} else {
-	    wm geometry .mousehelp +30+10
-	}
-        if !$pc98_EGC {
-	    set mousetext [text .mousehelp.text -takefocus 0 \
-		    -width 90 -height 30]
-	} else {
-	    frame .mousehelp.text
-	    scrollbar .mousehelp.text.scroll \
-		    -command ".mousehelp.text.text yview"
-	    set mousetext [text .mousehelp.text.text -takefocus 0 \
-		    -yscrollcommand ".mousehelp.text.scroll set"]
-	    pack .mousehelp.text.scroll -side right -fill y
-	    pack .mousehelp.text.text -side left
-	    bind .mousehelp <Prior> \
-		    ".mousehelp.text.text yview scroll -1 unit;break;"
-	    bind .mousehelp <Next> \
-		    ".mousehelp.text.text yview scroll 1 unit;break;"
-	    bind .mousehelp <space> {
-		if {[llength [info commands .mousehelp.ok]] != 0} {
-		    .mousehelp.ok invoke;
-		}
-	    }
-	}
-        $mousetext insert end \
-{ First select the protocol for your mouse using 'p', then if needed, change the device
- name.  If applicable, also set the baud rate (1200 should work).  Avoid moving the
- mouse or pressing buttons before the correct protocol has been selected.  Press 'a'
- to apply the changes and try moving your mouse around.  If the mouse pointer does
- not move properly, try a different protocol or device name.
-
-   Once the mouse is moving properly, test that the various buttons also work correctly.
- If you have a three button mouse and the middle button does not work, try the buttons
- labeled ChordMiddle and Emulate3Buttons.
-
-   Note: the `Logitech' protocol is only used by older Logitech mice.  Most current
- models use the `Microsoft' or `MouseMan' protocol.
-
-       Key    Function
-     ------------------------------------------------------
-        a  -  Apply changes
-        b  -  Change to next baud rate
-        c  -  Toggle the ChordMiddle button
-        d  -  Toggle the ClearDTR button
-        e  -  Toggle the Emulate3button button
-        n  -  Set the name of the device
-        p  -  Select the next protocol
-        r  -  Toggle the ClearRTS button
-        s  -  Increase the sample rate
-        t  -  Increase the 3-button emulation timeout
-     ------------------------------------------------------
- You can also use Tab, and Shift-Tab to move around and then use Enter to activate
- the selected button.
- 
- See the documentation for more information
-}
-
-        button .mousehelp.ok -text "Dismiss" -command "destroy .mousehelp"
-	focus .mousehelp.ok
-	$mousetext configure -state disabled
-        pack .mousehelp.text .mousehelp.ok
 }
 
 proc Mouse_selectentry { win } {

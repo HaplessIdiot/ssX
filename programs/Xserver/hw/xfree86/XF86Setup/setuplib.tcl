@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.19 1997/12/14 10:03:56 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.20 1998/03/27 23:23:05 hohndel Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -30,6 +30,8 @@ proc initconfig {xwinhome} {
 		  $fontdir/Type1 $fontdir/Speedo  \
 		  $fontdir/misc $fontdir/75dpi $fontdir/100dpi ]
 	set Files(RGBPath)		$xwinhome/lib/X11/rgb
+	set Files(ModulePath)		""
+	set Files(LogFile)		""
 
 
 	if !$pc98 {
@@ -55,7 +57,8 @@ proc initconfig {xwinhome} {
 	foreach key { AutoRepeat LeftAlt RightAlt ScrollLock
 			RightCtl XLeds VTSysReq VTInit
 			XkbKeycodes XkbTypes XkbCompat
-			XkbSymbols XkbGeometry XkbKeymap } {
+			XkbSymbols XkbGeometry XkbKeymap
+			Panix106 } {
 		set Keyboard($key) ""
 	}
 	if !$pc98 {
@@ -78,7 +81,8 @@ proc initconfig {xwinhome} {
 		set Pointer(Emulate3Buttons)	1
 	}
 
-	set Pointer(Device)		/dev/mouse
+#	set Pointer(Device)		/dev/mouse
+	set Pointer(Device)		""
 	set Pointer(BaudRate)		""
 	set Pointer(Emulate3Timeout)	""
 	set Pointer(ChordMiddle)	""
@@ -87,6 +91,7 @@ proc initconfig {xwinhome} {
 	set Pointer(Buttons)		""
 	set Pointer(ClearDTR)		""
 	set Pointer(ClearRTS)		""
+	set Pointer(AlwaysCore)		""
 
 	if !$pc98_EGC {
 	    set id				"Primary Monitor"
@@ -108,7 +113,21 @@ proc initconfig {xwinhome} {
 	set id				"Primary Card"
 	set Device_${id}(VendorName)	Unknown
 	set Device_${id}(BoardName)	Unknown
-	set Device_${id}(Server)	SVGA
+	if !$pc98 {
+		set Device_${id}(Server)	SVGA
+	} else {
+		if !$pc98_EGC {
+			set Device_${id}(Server)	NEC480
+		} else {
+			set Device_${id}(Server)	EGC
+		}
+		set uname [exec uname]
+		if {$uname == {FreeBSD}} {
+			set Pointer(Device)	/dev/mse0
+		} elseif {$uname == {NetBSD}} {
+			set Pointer(Device)	/dev/lms0
+		}
+	}
 	foreach key {Chipset Ramdac DacSpeed Clocks ClockChip
 			ClockProg Options VideoRam BIOSBase Membase
 			IOBase DACBase POSBase COPBase VGABase
@@ -123,6 +142,7 @@ proc initconfig {xwinhome} {
 	set Scrn_Accel(Monitor)		"Primary Monitor"
 	set Scrn_Accel(ScreenNo)	""
 	set Scrn_Accel(BlankTime)	""
+	set Scrn_Accel(StandbyTime)	""
 	set Scrn_Accel(SuspendTime)	""
 	set Scrn_Accel(OffTime)		""
 	set Scrn_Accel(DefaultColorDepth)	""
@@ -447,7 +467,8 @@ proc writeXF86Config {filename args} {
 		     ![string compare $drvr "SVGA"] } {
 			puts $fd "   DefaultColorDepth $DefaultColorDepth"
 		}
-		foreach key {ScreenNo BlankTime SuspendTime OffTime } {
+		foreach key {ScreenNo BlankTime StandbyTime SuspendTime 
+			     OffTime } {
 			if { [string length [set Scrn_${drvr}($key)]] } {
 				puts $fd [format "   %-15s %s" \
 					$key [set Scrn_${drvr}($key)] ]
@@ -616,7 +637,7 @@ proc clear_scrn {} {
 }
 
 proc mesg { text {buttontype okay} } {
-	global Dialog
+	global Dialog messages
 
 	if { ![string length $Dialog] } {
 		puts -nonewline $text
@@ -628,7 +649,7 @@ proc mesg { text {buttontype okay} } {
 			return [string match {[yY]} [string index $response 0]]
 		}
 		if { [string compare $buttontype okay] == 0 } {
-			puts -nonewline "\n\nPress \[Enter\] to continue..."
+			puts -nonewline $messages(setuplib.1)
 			flush stdout
 			gets stdin response
 		}
@@ -722,7 +743,7 @@ proc shutdown {args} {
 }
 
 proc check_tmpdirs {} {
-	global TmpDir XF86SetupDir
+	global TmpDir XF86SetupDir messages
 
 	file lstat $XF86SetupDir xfsdir
 	file lstat $TmpDir tmpdir
@@ -733,8 +754,7 @@ proc check_tmpdirs {} {
 		|| $xfsdir(mode)&0077
 		|| $tmpdir(mode)&0077 } \
 	{
-		mesg "The temporary files directory ($TmpDir)\n\
-			is no longer secure!"
+		mesg "$messages(setuplib.2)$TmpDir$messages(setuplib.3)"
 		shutdown 1
 		exit 1
 	}

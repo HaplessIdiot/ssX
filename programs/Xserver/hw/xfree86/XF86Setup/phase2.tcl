@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase2.tcl,v 3.13 1997/12/14 10:03:55 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase2.tcl,v 3.14 1998/03/27 23:23:05 hohndel Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -22,27 +22,18 @@ wm withdraw .
 create_main_window [set w .xf86setup]
 
 # put up a message ASAP so the user knows we're still alive
-label $w.waitmsg -text "Loading  -  Please wait...\n\n\n"
+label $w.waitmsg -text $messages(phase2.1)
 pack  $w.waitmsg -expand yes -fill both
 update idletasks
 
 if $StartServer {
-	mesg "The program is running on a different virtual terminal\n\n\
-	    Please switch to the correct virtual terminal" info
+	mesg $messages(phase2.14) info
 }
 
 set XKBrules $Xwinhome/lib/X11/xkb/rules/xfree86
 
 if { [catch {set XKBhandle [xkb_read from_server]} res] } {
-	$w.waitmsg configure -text \
-	    "Unable to read keyboard information from the server.\n\n\
-	    This problem most often occurs when you are running when\n\
-	    you are running a server which does not have the XKEYBOARD\n\
-	    extension or which has it disabled.\n\n\
-	    The ability of this program to configure the keyboard is\n\
-	    reduced without the XKEYBOARD extension, but is still\
-	    functional.\n\n\
-	    Continuing..."
+	$w.waitmsg configure -text $messages(phase2.2)
 	update idletasks
 	after 10000
 	set XKBinserver 0
@@ -89,7 +80,7 @@ source $XF86Setup_library/modeselect.tcl
 
 proc Intro_create_widgets { win } {
 	global XF86Setup_library
-	global pc98_EGC pc98
+	global pc98_EGC pc98 messages
 
 	set w [winpathprefix $win]
         if !$pc98_EGC {
@@ -111,34 +102,8 @@ proc Intro_create_widgets { win } {
 	$w.intro.textframe.text tag configure heading \
 		-justify center -foreground yellow \
 		-font -adobe-times-bold-i-normal--24-240-*-*-p-*-iso8859-1
-	$w.intro.textframe.text insert end "Introduction to Configuration\
-					with XF86Setup" heading
-	if !$pc98 {
-	    $w.intro.textframe.text insert end "\n"
-	}
-	$w.intro.textframe.text insert end "\n\
-		There are five areas of configuration that need to\
-			be completed, corresponding to the buttons\n\
-		along the top:\n\n\
-		\tMouse\t\t- Use this to set the protocol, baud rate, etc.\
-			used by your mouse\n\
-		\tKeyboard\t- Set the nationality and layout of\
-			your keyboard\n\
-		\tCard\t\t- Used to select the chipset, RAMDAC, etc.\
-			of your card\n\
-		\tMonitor\t\t- Use this to enter your\
-			monitor's capabilities\n\
-		\tModeselction\t\t- Use this to chose the modes\
-			that you want to use\n\
-		\tOther\t\t- Configure some miscellaneous settings\n\n\
-		You'll probably want to start with configuring your\
-			mouse (you can just press \[Enter\] to do so)\n\
-		and when you've finished configuring all five of these,\
-			select the Done button.\n\n\
-		To select any of the buttons, press the underlined\
-			letter together with either Control or Alt.\n\
-		You can also press ? or click on the Help button at\
-			any time for additional instructions\n\n"
+	make_intro_headline $w.intro.textframe.text
+	$w.intro.textframe.text insert end $messages(phase2.12)
 	if !$pc98_EGC {
 	    pack $w.intro.textframe.text -fill both -expand yes
 	    pack $w.intro.textframe -fill both -expand yes -padx 10 -pady 10
@@ -169,39 +134,6 @@ proc Intro_deactivate { win } {
 	pack forget $w.intro
 }
 
-proc Intro_popup_help { win } {
-	catch {destroy .introhelp}
-	toplevel .introhelp -bd 5 -relief ridge
-	wm title .introhelp "Help"
-	wm geometry .introhelp +30+30
-	text   .introhelp.text
-	.introhelp.text insert 0.0 "\n\
-		You need to fill in the requested information on each\
-		of the five\n\
-		configuration screens.  The buttons along the top allow\
-		you to choose which\n\
-		screen you are going to work on.  You can do them in\
-		any order or go back\n\
-		to each of them as many times as you like, however,\
-		it will be very\n\
-		difficult to use some of them if your mouse is not\
-		working, so you\n\
-		should configure your mouse first.\n\n\
-		Until you get your mouse working, here are some keys you\
-		can use:\n\n\
-		\ \ Tab, Ctrl-Tab    Move to the \"next\" widget\n\
-		\ \ Shift-Tab        Move to the \"previous\" widget\n\
-		\ \ <Arrow keys>     Move in the appropriate direction\n\
-		\ \ Return           Activate the selected widget\n\n\
-		Also, you can press Alt and one of the underlined letters\
-		to activate the\n\
-		corresponding button."
-	.introhelp.text configure -state disabled
-	button .introhelp.ok -text "Dismiss" -command "destroy .introhelp"
-	focus  .introhelp.ok
-	pack   .introhelp.text .introhelp.ok
-}
-
 proc config_select { win } {
 	global CfgSelection prevSelection
 
@@ -222,43 +154,52 @@ proc config_help { win } {
 
 frame $w.menu -width 640
 
-radiobutton $w.menu.mouse -text Mouse -indicatoron false \
+radiobutton $w.menu.mouse -text $messages(phase2.3) -indicatoron false \
 	-variable CfgSelection -value Mouse -underline 0 \
 	-command [list config_select $w]
-radiobutton $w.menu.keyboard -text Keyboard -indicatoron false \
+radiobutton $w.menu.keyboard -text $messages(phase2.4) -indicatoron false \
 	-variable CfgSelection -value Keyboard -underline 0 \
 	-command [list config_select $w]
-radiobutton $w.menu.card -text Card -indicatoron false \
+radiobutton $w.menu.card -text $messages(phase2.5) -indicatoron false \
 	-variable CfgSelection -value Card -underline 0 \
 	-command [list config_select $w]
-radiobutton $w.menu.monitor -text Monitor -indicatoron false \
+radiobutton $w.menu.monitor -text $messages(phase2.6) -indicatoron false \
 	-variable CfgSelection -value Monitor -underline 2 \
 	-command [list config_select $w]
-radiobutton $w.menu.modeselect -text Modeselection -indicatoron false \
+radiobutton $w.menu.modeselect -text $messages(phase2.7) -indicatoron false \
 	-variable CfgSelection -value Modeselection -underline 4 \
 	-command [list config_select $w]
-radiobutton $w.menu.other -text Other -indicatoron false \
+radiobutton $w.menu.other -text $messages(phase2.8) -indicatoron false \
 	-variable CfgSelection -value Other -underline 0 \
 	-command [list config_select $w]
-pack $w.menu.mouse $w.menu.keyboard $w.menu.card $w.menu.monitor \
-	$w.menu.modeselect $w.menu.other -side left -fill both -expand yes
+if !$pc98 {
+	pack $w.menu.mouse $w.menu.keyboard $w.menu.card \
+		$w.menu.monitor $w.menu.modeselect $w.menu.other \
+		-side left -fill both -expand yes
+} else {
+	pack $w.menu.mouse $w.menu.card $w.menu.monitor \
+		$w.menu.modeselect $w.menu.other \
+		-side left -fill both -expand yes
+}
 
 frame $w.buttons
 #label $w.buttons.xlogo -bitmap @/usr/X11R6/include/X11/bitmaps/xlogo16 -anchor w
 #label $w.buttons.xlogo -bitmap @/usr/tmp/xfset1.xbm -anchor w \
 	-foreground black
 #pack $w.buttons.xlogo -side left -anchor w -expand no -padx 0 -fill x
-button $w.buttons.abort -text Abort -underline 0 \
+button $w.buttons.abort -text $messages(phase2.9) -underline 0 \
 	-command "clear_scrn;puts stderr Aborted;shutdown 1"
-button $w.buttons.done  -text Done  -underline 0 \
+button $w.buttons.done  -text $messages(phase2.10) -underline 0 \
 	-command [list Done_execute $w]
-button $w.buttons.help  -text Help  -underline 0 \
+button $w.buttons.help  -text $messages(phase2.11) -underline 0 \
 	-command [list config_help $w]
 pack   $w.buttons.abort $w.buttons.done $w.buttons.help \
 	-expand no -side left -padx 50
 
 Intro_create_widgets	$w
-Keyboard_create_widgets	$w
+if !$pc98 {
+	Keyboard_create_widgets	$w
+}
 Mouse_create_widgets	$w
 Card_create_widgets	$w
 Monitor_create_widgets	$w

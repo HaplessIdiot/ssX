@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.74 1998/02/07 08:58:16 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.75 1998/03/27 23:23:32 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -748,10 +748,11 @@ void *
 /* xf86Config.c */
 extern int xf86GetNearestClock(ScrnInfoPtr, int);
 extern char *xf86GetPathElem(char **);
+extern char *xf86ValidateFontPath(char *);
 extern void xf86ConfigError(char *, ...);
 extern void xf86SetErrorLog(char *);
 extern ScrnInfoPtr loadDevice(char *, XF86OptionPtr);
-extern ScrnInfoPtr configDevice(XF86ConfDevicePtr);
+extern ScrnInfoPtr configDevice(XF86ConfScreenPtr, XF86ConfDevicePtr);
 extern DisplayModePtr configDisplayModes(XF86ModePtr);
 extern int lookupVisual(char *);
 extern int configScreen(XF86ConfScreenPtr);

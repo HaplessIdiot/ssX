@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.141 1998/03/27 23:23:29 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.142 1998/04/05 00:45:52 robin Exp $
  *
  * Loosely based on code bearing the following copyright:
  *
@@ -60,24 +60,21 @@ extern void VErrorF(char *, va_list);
 #endif
 #include "xf86_Config.h"
 
+#ifndef OLD_PARSER
+#define INIT_SYMTABS
+#include "xf86Symtabs.h"
+#endif
+
 #ifdef XKB
 #include "inputstr.h"
 #include "XKBsrv.h"
 #endif
 
-#ifdef XF86SETUP
-#include "xfsconf.h"
-#endif
-
-#ifndef XF86SETUP
 #ifdef XFree86LOADER
 #include <vga.h>
 extern void * videoDrivers[];
 #include "../loader/loader.h"
 #include "../loader/loaderProcs.h"
-#endif
-#else
-#define xf86memset(a,b,c) memset(a,b,c)
 #endif
 
 int xf86xaaloaded = FALSE;
@@ -89,9 +86,7 @@ int xf86ismonotype = FALSE;
 
 #include "xf86DCConf.h"
 
-#ifndef XF86SETUP
 extern DeviceAssocRec	mouse_assoc;
-#endif
 #endif
 
 static char *configPath;                /* path to config file */
@@ -101,16 +96,11 @@ static char *logFilePath;
        OFlagSet  GenericXF86ConfigFlag;
 extern Bool xf86ScreensOpen;
 
-#ifdef XF86SETUP
-#define STATIC_OR_NOT
-#else
-#define STATIC_OR_NOT static
-#endif
-#if defined(XF86SETUP) || defined(OLD_PARSER)
-STATIC_OR_NOT int n_monitors = 0;
-STATIC_OR_NOT MonPtr monitor_list = NULL;
-STATIC_OR_NOT int n_devices = 0;
-STATIC_OR_NOT GDevPtr device_list = NULL;
+#ifdef OLD_PARSER
+static int n_monitors = 0;
+static MonPtr monitor_list = NULL;
+static int n_devices = 0;
+static GDevPtr device_list = NULL;
 #endif
 
 extern CARD32 defaultScreenSaverTime;
@@ -142,21 +132,13 @@ int loader_errmaj, loader_errmin;
 
 #endif
 
-extern char * xf86GetPathElem(char **pnt);
-static char * xf86ValidateFontPath(char * /* path */);
-static DisplayModePtr xf86PruneModes(
-#if NeedFunctionPrototypes
-    MonPtr monp,
-    DisplayModePtr allmodes,
-    ScrnInfoPtr scrp,
-    Bool card
-#endif
-);
-static char *xf86ValidateFontPath(char *);
+char * xf86GetPathElem(char **pnt);
+char * xf86ValidateFontPath(char * /* path */);
 static DisplayModePtr xf86PruneModes(MonPtr, DisplayModePtr, ScrnInfoPtr, Bool);
 static int StringToToken(char *str, SymTabRec tab[]);
 #ifndef OLD_PARSER
 static int getStringToken(SymTabRec [], char *);
+static int getScreenIndex(char *);
 #else
 static Bool graphFound = FALSE;
 static int getScreenIndex(int token);
@@ -222,7 +204,7 @@ xf86GetPathElem(pnt)
  *	element is removed from the font path.
  */
 #define CHECK_TYPE(mode, type) ((S_IFMT & (mode)) == (type))
-static char *
+char *
 xf86ValidateFontPath(path)
      char *path;
 {
@@ -312,6 +294,56 @@ getStringToken(tab,s)
   return StringToToken (s, tab);
 }
 
+static SymTabRec DriverTab[] = {
+  { SVGA,	"svga" },
+  { SVGA,	"vga256" },
+  { VGA2,	"vga2" },
+  { MONO,	"mono" },
+  { VGA16,	"vga16" },
+  { ACCEL,	"accel" },
+  { ACCEL,	"agx" },
+  { ACCEL,	"dec_tga" },
+  { ACCEL,	"i128" },
+  { ACCEL,	"ibm8514" },
+  { ACCEL,	"mach32" },
+  { ACCEL,	"mach64" },
+  { ACCEL,	"mach8" },
+  { ACCEL,	"p9000" },
+  { ACCEL,	"s3" },
+  { ACCEL,	"s3v" },
+  { ACCEL,	"glint" },
+  { FBDEV,	"fbdev" },
+  { XF86,	"xfree86" },
+  { -1,		"" },
+};
+
+/*
+ * getScreenIndex --
+ *	Given the screen name, returns the index in xf86Screens, or -1 if
+ *	the screen type is not applicable to this server.
+ */
+static int
+getScreenIndex(name)
+     char *name;
+{
+  int token;
+  int i;
+
+  token = getStringToken(DriverTab, name);
+
+  /* Once we find a screen and configure it, we don't want to find it again.
+   * This is used for multihead support.
+   */
+  for (i = 0;
+       xf86ScreenNames[i] >= 0
+	   && (xf86ScreenNames[i] != token || xf86Screens[i]->configured);
+       i++)
+      ;
+  if (xf86ScreenNames[i] < 0)
+    return(-1);
+  else
+    return(i);
+}
 
 /*
  * xf86ConfigError --
@@ -319,13 +351,8 @@ getStringToken(tab,s)
  *      interesting is printed.  Even a pointer to the erroneous place is
  *      printed.  Maybe our e-mail will be less :-)
  */
-#ifdef XF86SETUP
-int
-XF86SetupXF86ConfigError(char *msg, ...)
-#else
 void
 xf86ConfigError(char *msg, ...)
-#endif
 {
   va_list ap;
 
@@ -334,7 +361,6 @@ xf86ConfigError(char *msg, ...)
   VErrorF(msg, ap);
   ErrorF("\n");
   va_end(ap);
-  return;
 }
 
 void
@@ -398,8 +424,8 @@ configServerFlags(XF86ConfFlagsPtr flagconf)
       xf86MiscModInDevEnabled = FALSE;
       continue;
       }
-    if(StrCaseCmp(optr->opt_name,"allownonlocalxvidtune") == 0 ) {
-      xf86VidModeAllowNonLocal = TRUE;
+    if(StrCaseCmp(optr->opt_name,"allownonlocalmodindev") == 0 ) {
+      xf86MiscModInDevAllowNonLocal = TRUE;
       continue;
       }
 #endif
@@ -618,22 +644,22 @@ configKeyboard(XF86ConfKeyboardPtr keybconf)
 
   if ( keybconf->keyb_specialKeyMap[LEFTALT - LEFTALT] ) {
     xf86Info.specialKeyMap[LEFTALT - LEFTALT] =
-			keybconf->keyb_specialKeyMap[LEFTALT - LEFTALT];
+      keybconf->keyb_specialKeyMap[LEFTALT - LEFTALT] - CONF_KM_META + KM_META;
   }
 
   if ( keybconf->keyb_specialKeyMap[RIGHTALT - LEFTALT] ) {
     xf86Info.specialKeyMap[RIGHTALT - LEFTALT] =
-			keybconf->keyb_specialKeyMap[RIGHTALT - LEFTALT];
+      keybconf->keyb_specialKeyMap[RIGHTALT - LEFTALT] - CONF_KM_META + KM_META;
   }
 
   if ( keybconf->keyb_specialKeyMap[SCROLLLOCK - LEFTALT] ) {
     xf86Info.specialKeyMap[SCROLLLOCK - LEFTALT] =
-			keybconf->keyb_specialKeyMap[SCROLLLOCK - LEFTALT];
+      keybconf->keyb_specialKeyMap[SCROLLLOCK - LEFTALT] - CONF_KM_META + KM_META;
   }
 
   if ( keybconf->keyb_specialKeyMap[RIGHTCTL - LEFTALT] ) {
     xf86Info.specialKeyMap[RIGHTCTL - LEFTALT] =
-			keybconf->keyb_specialKeyMap[RIGHTCTL - LEFTALT];
+      keybconf->keyb_specialKeyMap[RIGHTCTL - LEFTALT] - CONF_KM_META + KM_META;
   }
 
   if ( keybconf->keyb_vtinit ) {
@@ -754,33 +780,6 @@ configKeyboard(XF86ConfKeyboardPtr keybconf)
   return 1;
 }
 
-/* XXX The following table is defined in xf86_Config.h. Why do we have
-   to duplicate it here... */
-static SymTabRec MouseTab[] = {
-  { MICROSOFT,	"microsoft" },
-  { MOUSESYS,	"mousesystems" },
-  { MMSERIES,	"mmseries" },
-  { LOGITECH,	"logitech" },
-  { BUSMOUSE,	"busmouse" },
-  { LOGIMAN,	"mouseman" },
-  { PS_2,	"ps/2" },
-  { MMHITTAB,	"mmhittab" },
-  { GLIDEPOINT,	"glidepoint" },
-  { IMSERIAL,	"intellimouse" },
-  { THINKING,	"thinkingmouse" },
-  { IMPS2,	"imps/2" },
-  { THINKINGPS2,"thinkingmouseps/2" },
-  { MMANPLUSPS2,"mousemanplusps/2" },
-  { GLIDEPOINTPS2,"glidepointps/2" },
-  { NETPS2,	"netmouseps/2" },
-  { NETSCROLLPS2,"netscrollps/2" },
-  { SYSMOUSE,	"sysmouse" },
-  { AUTOMOUSE,	"auto" },
-  { XQUE,	"xqueue" },
-  { OSMOUSE,	"osmouse" },
-  { -1,		"" },
-};
-
 /* XXXSTU The interface in xf86XInput.c also needs to change to match this.
  * This function is also used for the (*device_config)() function */
 
@@ -835,7 +834,7 @@ configPointer(MouseDevPtr mouse_dev, XF86ConfPointerPtr pointerconf)
 #else
       mouseType = (char *)strdup(pointerconf->pntr_protocol);
 #endif
-      mtoken = getStringToken(MouseTab,pointerconf->pntr_protocol); /* Which mouse? */
+      mtoken = getStringToken(xf86MouseTab, pointerconf->pntr_protocol);
 #ifdef AMOEBA
       mouse_dev->mseProc    = xf86MseProc;
       mouse_dev->mseEvents  = NULL;
@@ -969,8 +968,10 @@ configPointer(MouseDevPtr mouse_dev, XF86ConfPointerPtr pointerconf)
 
   if( pointerconf->pntr_buttons ) {
     if (pointerconf->pntr_buttons <= 0 
-	|| pointerconf->pntr_buttons > MSE_MAXBUTTONS)
+	|| pointerconf->pntr_buttons > MSE_MAXBUTTONS) {
       xf86ConfigError("Number of buttons (1..12) expected");
+      return FALSE;
+    }
     mouse_dev->buttons = pointerconf->pntr_buttons;
   }
 
@@ -985,8 +986,10 @@ configPointer(MouseDevPtr mouse_dev, XF86ConfPointerPtr pointerconf)
         if (pointerconf->pntr_negativeZ <= 0
 	    || pointerconf->pntr_negativeZ > MSE_MAXBUTTONS
             || pointerconf->pntr_positiveZ <= 0 
-	    || pointerconf->pntr_positiveZ > MSE_MAXBUTTONS)
+	    || pointerconf->pntr_positiveZ > MSE_MAXBUTTONS) {
 	  xf86ConfigError("Button number (1..12) expected");
+	  return FALSE;
+	}
         mouse_dev->negativeZ = 1 << (pointerconf->pntr_negativeZ - 1);
         mouse_dev->positiveZ = 1 << (pointerconf->pntr_positiveZ - 1);
 	if (pointerconf->pntr_negativeZ > mouse_dev->buttons)
@@ -998,7 +1001,7 @@ configPointer(MouseDevPtr mouse_dev, XF86ConfPointerPtr pointerconf)
   }
 
   if (xf86Verbose && mouse_dev->mseType >= 0) {
-    Bool formatFlag = FALSE;
+    Bool formatFlag = TRUE;
     ErrorF("%s Mouse: type: %s, device: %s",
        XCONFIG_GIVEN, mouseType, mouse_dev->mseDevice);
     if (mtoken != BUSMOUSE       && mtoken != PS_2
@@ -1006,46 +1009,41 @@ configPointer(MouseDevPtr mouse_dev, XF86ConfPointerPtr pointerconf)
 	&& mtoken != MMANPLUSPS2 && mtoken != GLIDEPOINTPS2
 	&& mtoken != NETPS2      && mtoken != NETSCROLLPS2
 	&& mtoken != SYSMOUSE)
-    {
-      formatFlag = TRUE;
       ErrorF(", baudrate: %d", mouse_dev->baudRate);
-    }
     if (mouse_dev->sampleRate)
     {
-      ErrorF("%ssamplerate: %d", formatFlag ? ",\n       " : ", ",
-             mouse_dev->sampleRate);
-      formatFlag = !formatFlag;
+      ErrorF("\n%s Mouse: samplerate: %d",
+             XCONFIG_GIVEN, mouse_dev->sampleRate);
+      formatFlag = FALSE;
     }
     if (mouse_dev->resolution)
     {
-      ErrorF("%sresolution: %d", formatFlag ? ",\n       " : ", ",
+      if (formatFlag)
+	ErrorF("\n%s Mouse:", XCONFIG_GIVEN);
+      ErrorF("%sresolution: %d", formatFlag ? " " : ", ",
              mouse_dev->resolution);
-      formatFlag = !formatFlag;
+      formatFlag = FALSE;
     }
-    ErrorF("%sbuttons: %d", formatFlag ? ",\n       " : ", ",
-           mouse_dev->buttons);
-    formatFlag = !formatFlag;
+    ErrorF("%s%s Mouse: buttons: %d", formatFlag ? "" : "\n",
+           XCONFIG_GIVEN, mouse_dev->buttons);
     if (mouse_dev->emulate3Buttons)
-    {
-      ErrorF("%s3 button emulation (timeout: %dms)",
-             formatFlag ? ",\n       " : ", ", mouse_dev->emulate3Timeout);
-      formatFlag = !formatFlag;
-    }
+      ErrorF(", 3 button emulation (timeout: %dms)",
+             mouse_dev->emulate3Timeout);
     if (mouse_dev->chordMiddle)
-      ErrorF("%sChorded middle button", formatFlag ? ",\n       " : ", ");
+      ErrorF(", Chorded middle button"); 
     ErrorF("\n");
 
     switch (mouse_dev->negativeZ) {
     case 0: /* none */
       break;
     case MSE_MAPTOX:
-      ErrorF("       zaxismapping: X\n");
+      ErrorF("%s Mouse: zaxismapping: X\n", XCONFIG_GIVEN);
       break;
     case MSE_MAPTOY:
-      ErrorF("       zaxismapping: Y\n");
+      ErrorF("%s Mouse: zaxismapping: Y\n", XCONFIG_GIVEN);
       break;
     default: /* buttons */
-      ErrorF("       zaxismapping: (-)%d (+)%d\n", 
+      ErrorF("%s Mouse: zaxismapping: (-)%d (+)%d\n", XCONFIG_GIVEN,
 	     pointerconf->pntr_negativeZ, pointerconf->pntr_positiveZ);
       break;
     }
@@ -1161,13 +1159,13 @@ XF86OptionPtr	optr;
 #endif /* XFree86LOADER */
 }
 
+#if defined(XFree86LOADER)
 ScrnInfoPtr
 loadDevice(driver, options)
 char	*driver;
 XF86OptionPtr	options;
 {
   ScrnInfoPtr (*ptr)(void), screenp = NULL;
-#if defined(XFree86LOADER)
   int handle;
 	ModuleDescPtr desc;
 	int a, b;
@@ -1260,27 +1258,35 @@ XF86OptionPtr	options;
   }
 
   LoaderResolveSymbols();
-#else
-  screenp = xf86Screens[0];
-#endif /* XFree86LOADER */
 
   return screenp;
 
 }
+#endif /* XFree86LOADER */
 
 ScrnInfoPtr
-configDevice(device)
+configDevice(screen, device)
+  XF86ConfScreenPtr	screen;
   XF86ConfDevicePtr	device;
 {
   ScrnInfoPtr screenp;
   XF86OptionPtr optr;
   int i;
 
+#if defined(XFree86LOADER)
   screenp = loadDevice(device->dev_driver, device->dev_option_lst);
   if( screenp == NULL ) {
     xf86ConfigError("Error loading the Device");
     return NULL;
   }
+#else
+  i = getScreenIndex(screen->scrn_identifier);
+  if (i < 0) {
+    /* XXX: error message? */
+    return NULL;
+  }
+  screenp = xf86Screens[i];
+#endif
 
   if( device->dev_chipset ) {
     screenp->chipset  = device->dev_chipset;
@@ -1301,7 +1307,7 @@ configDevice(device)
   if( device->dev_clockchip ) {
     if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &(screenp->clockOptions))) {
       xf86ConfigError("Only one Clock chip may be specified.");
-      return FALSE;
+      return NULL;
     }
     if (device->dev_clocks == 0) {
 /*
@@ -1318,7 +1324,7 @@ configDevice(device)
       }
       if (xf86_ClockOptionTab[i].token == -1) {
         xf86ConfigError("Unknown clock chip");
-        return FALSE;
+        return NULL;
       }
     }
     else {
@@ -1345,7 +1351,6 @@ configDevice(device)
           screenp->speedup = 0;
         else
           xf86ConfigError("Unrecognised SpeedUp option");
-      
   }
 
   if( device->dev_clockprog ) {
@@ -1403,6 +1408,11 @@ configDevice(device)
   if( device->dev_pos_base ) {
     screenp->POSbase   = device->dev_pos_base;
     OFLG_SET(XCONFIG_POSBASE,&(screenp->xconfigFlag));
+  }
+
+  if( device->dev_vga_base ) {
+    screenp->VGAbase   = device->dev_vga_base;
+    OFLG_SET(XCONFIG_VGABASE, &(screenp->xconfigFlag));
   }
 
   if( device->dev_instance ) {
@@ -1484,7 +1494,6 @@ char	*visname;
 return -1;
 }
 
-
 static XF86ConfScreenPtr xf86ConfScreens[MAXSCREENS];
 
 int
@@ -1492,7 +1501,7 @@ configScreen(screen)
   XF86ConfScreenPtr	 screen;
 {
   ScrnInfoPtr screenp;
-  XF86ConfDisplayPtr	disp;
+  XF86ConfDisplayPtr disp;
   int i;
 
   if( screen->list.next ) {
@@ -1501,93 +1510,98 @@ configScreen(screen)
           XCONFIG_GIVEN, screen->scrn_identifier );
   }
 
-    /*
-     * no -bpp option given, so use DefaultColorDepth, If that's
-	 * not set, use the depth of the first display subsection
-     */
-  if (xf86bpp < 0)
-	{
-	if (screen->scrn_defaultcolordepth > 0)
-		xf86bpp = screen->scrn_defaultcolordepth;
-	else
-		xf86bpp = screen->scrn_display_lst->disp_depth;;
-	}
+  /*
+   * no -bpp option given, so use DefaultColorDepth, If that's
+   * not set, use the depth of the first display subsection
+   */
+  if (xf86bpp < 0) {
+    if (screen->scrn_defaultcolordepth > 0)
+      xf86bpp = screen->scrn_defaultcolordepth;
+    else
+      /* 
+       * XXX: we shouldn't do this for VGA2 and VGA16? The olde parser
+       * certainly didn't.
+       */
+      xf86bpp = screen->scrn_display_lst->disp_depth;;
+  }
+  /* XXX: xf86bpp can still be 0? */
 
-	disp = screen->scrn_display_lst;
-	while (disp)
-	{
-		if (disp->disp_depth == xf86bpp)
-			break;
-		disp = disp->list.next;
-	}
-	if (disp == NULL)
-	{
-		FatalError ("There is no SubSection \"Display\" with Depth %d\n", xf86bpp);
-	}
+  disp = xf86FindDisplay(xf86bpp, screen->scrn_display_lst);
+  if (disp == NULL) {
+    FatalError ("There is no SubSection \"Display\" with Depth %d\n", xf86bpp);
+  }
 
-  if( (screenp=configDevice(screen->scrn_device)) == NULL ) {
+  if( (screenp = configDevice(screen, screen->scrn_device)) == NULL ) {
 	xf86ConfigError("Error configuring the Device");
 	return FALSE;
   }
-
 
   if( !configMonitor(screenp, screen->scrn_monitor) ) {
 	xf86ConfigError("Error configuring the Monitor");
 	return FALSE;
   }
 
-	/*
-      The DPMS times should really be per-screen, but for now they are globals
-	*/
-	if (screen->scrn_blanktime)
-	{
-		defaultScreenSaverTime = ScreenSaverTime =
-			screen->scrn_blanktime * MILLI_PER_MIN;
-	}
+  /*
+   * The DPMS times should really be per-screen, but for now they are globals
+   */
+  if (screen->scrn_blanktime) {
+    defaultScreenSaverTime = ScreenSaverTime
+                           = screen->scrn_blanktime * MILLI_PER_MIN;
+  }
 
-	if (screen->scrn_standbytime)
-	{
-		DPMSEnabledSwitch = TRUE;
-        defaultDPMSStandbyTime = DPMSStandbyTime =
-			screen->scrn_standbytime * MILLI_PER_MIN;
-	}
-	if (screen->scrn_suspendtime)
-	{
-		DPMSEnabledSwitch = TRUE;
-        defaultDPMSSuspendTime = DPMSSuspendTime =
-			screen->scrn_suspendtime * MILLI_PER_MIN;
-	}
-	if (screen->scrn_offtime)
-	{
-		DPMSEnabledSwitch = TRUE;
-        defaultDPMSOffTime = DPMSOffTime =
-			screen->scrn_offtime * MILLI_PER_MIN;
-	}
+#ifdef DPMSExtension
+  if (screen->scrn_standbytime) {
+    DPMSEnabledSwitch = TRUE;
+    defaultDPMSStandbyTime = DPMSStandbyTime
+			   = screen->scrn_standbytime * MILLI_PER_MIN;
+  }
+  if (screen->scrn_suspendtime) {
+    DPMSEnabledSwitch = TRUE;
+    defaultDPMSSuspendTime = DPMSSuspendTime
+			   = screen->scrn_suspendtime * MILLI_PER_MIN;
+  }
+  if (screen->scrn_offtime) {
+    DPMSEnabledSwitch = TRUE;
+    defaultDPMSOffTime = DPMSOffTime 
+		       = screen->scrn_offtime * MILLI_PER_MIN;
+  }
+#endif /* DPMSExtension */
 
   screenp->configured = TRUE;
+  if (xf86bpp > 0)
+    screenp->depth = xf86bpp;
   screenp->tmpIndex = screenno++;
-  disp = screen->scrn_display_lst;
   screenp->frameX0 = disp->disp_frameX0;
   screenp->frameY0 = disp->disp_frameY0;
   screenp->virtualX = disp->disp_virtualX;
   screenp->virtualY = disp->disp_virtualY;
-  if (disp->disp_weight.red)
-  	screenp->weight.red = disp->disp_weight.red;
-  if (disp->disp_weight.green)
-  	screenp->weight.green = disp->disp_weight.green;
-  if (disp->disp_weight.blue)
-  	screenp->weight.blue = disp->disp_weight.blue;
+  if (xf86weight.red || xf86weight.green || xf86weight.blue)
+    screenp->weight = xf86weight;
+  else {
+    if (disp->disp_weight.red)
+      screenp->weight.red = disp->disp_weight.red;
+    if (disp->disp_weight.green)
+      screenp->weight.green = disp->disp_weight.green;
+    if (disp->disp_weight.blue)
+      screenp->weight.blue = disp->disp_weight.blue;
+    xf86weight = screenp->weight;
+  }
   screenp->defaultVisual = lookupVisual(disp->disp_visual);
   screenp->modes = configDisplayModes(disp->disp_mode_lst);
+#if 0
+  /* XXX: the following rgb values are only relevant to VGA2. */
+  screenp->whiteColour = disp->disp_whiteColour;
+  screenp->blackColour = disp->disp_blackColour;
+  /* XXX: copy options from the display subsections? */
+#endif
   for ( i=0; i < xf86MaxScreens; i++ )
-    if ( !xf86Screens[i] ) {
+    if ( !xf86Screens[i] || xf86Screens[i] == screenp) {
       xf86Screens[i]=screenp;
       xf86ConfScreens[i]=screen;
       screenp->scrnIndex = i;
       ErrorF("%s Screen %d: %s\n", XCONFIG_PROBED, i, screenp->name);
       break;
     }
-
   return TRUE;
 }
 
@@ -1739,6 +1753,7 @@ xf86Config (vtopen)
 {
   int            i, j;
   XF86ConfigPtr	 config;
+  XF86ConfScreenPtr	screen;
 #ifdef XINPUT
   LocalDevicePtr	local;
 #endif
@@ -1755,7 +1770,7 @@ xf86Config (vtopen)
   xf86Info.caughtSignal = FALSE;
 
   /* Allocate mouse device */
-#if defined(XINPUT) && !defined(XF86SETUP)
+#if defined(XINPUT)
   local = mouse_assoc.device_allocate();
   xf86Info.mouseLocal = (pointer) local;
   xf86Info.mouseDev = (MouseDevPtr) local->private;
@@ -1809,9 +1824,21 @@ xf86Config (vtopen)
           FatalError("Error in Layout section of the config file");
         }
   } else {
+#if defined(XFree86LOADER)
 	if( !configScreen(config->conf_screen_lst) ) {
           FatalError("Error in Screen section of the config file");
         }
+#else
+	screen = config->conf_screen_lst;
+	while (screen) {
+	  if (getScreenIndex(screen->scrn_identifier) >= 0
+	      && configScreen(screen))
+	    break;
+	  screen = screen->list.next;
+	}
+	if (screen == NULL)
+          FatalError("Error in Screen section of the config file");
+#endif
   }
   if( !configFrameBuffers() ) {
     FatalError("Error configuring Frame Buffers");
@@ -1863,9 +1890,11 @@ xf86Config (vtopen)
 	  xf86Screens[i+1] = xf86Screens[i];
 	  xf86Screens[i] = temp;
 	}
-
  }
 
+#ifdef NEED_RETURN_VALUE
+ return RET_OKAY;
+#endif
 }
 
 #else /* OLD_PARSER??? */
@@ -5832,6 +5861,7 @@ xf86PruneModes(monp, allmodes, scrp, card)
 	}
 	return remainder; /* Return pointer to {the first / the list } */
 }
+#endif
 
 #ifndef XF86SETUP
 void
@@ -5912,4 +5942,3 @@ xf86VerifyOptions(allowedOptions, driver)
 	OFLG_CLR(xf86_OptionTab[j].token, &driver->options);
       }
 }
-

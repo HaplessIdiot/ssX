@@ -4,14 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/xfsconf.h,v 3.1 1996/06/30 10:44:16 dawes Exp $ */
-
-/* Fake some stuff to get xf86Config.c to compile here */
-
-#include "tcl.h"
-#define NEED_RETURN_VALUE
-#define RET_OKAY	TCL_OK
-#define RET_ERROR	TCL_ERROR
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/xfsconf.h,v 3.2 1996/12/27 06:54:27 dawes Exp $ */
 
 extern char *XtMalloc(
 #if NeedFunctionPrototypes
@@ -38,14 +31,3 @@ extern void XtFree(
     char*		/* ptr */
 #endif
 );
-
-#define Xcalloc(size)	XtCalloc(1,size)
-#define Xfree		XtFree
-#define Xalloc		XtMalloc
-#define Xrealloc	XtRealloc
-
-#ifndef XF86SETUP_NO_FUNC_RENAME
-#define FatalError	return XF86SetupFatalError
-#define xf86ConfigError	return XF86SetupXF86ConfigError
-#endif
-
