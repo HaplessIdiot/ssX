@@ -1,7 +1,12 @@
+3292. Add GeForce/Quadro support to the NVIDIA driver (Chas Inman, 
+      Mark Vojkovich).
+3291. Fix a DGA colormap problem (Mark Vojkovich).
+3290. Disable the Double-Buffer extension in Xinerama mode since it
+      doesn't work (Mark Vojkovich).
 3289. Fix XAA scanline color expansion routines to check the buffer address
       after the Subsequent function is called.  This allows the driver to
       change buffers on-the-fly (Mark Vojkovich).
-3288. Update PCI device IDs for newer NVidia chipsets (Mark Vojkovich).
+3288. Update PCI device IDs for newer NVIDIA chipsets (Mark Vojkovich).
 3287. Add an 80 Hz sample rate option for PS/2 mice (Mark Vojkovich).
 3286. Remove ATI driver's meddling with LCD power management facilities
       (Marc La France).
@@ -22,7 +27,7 @@
       sections are optional and use this for ATI LCD support (Marc La France).
 3277. Replace xf86Exiting with its DIX counterpart, dispatchException's
       DE_TERMINATE bit (Marc La France).
-3276. Nvidia driver changes (Mark Vojkovich):
+3276. NVIDIA driver changes (Mark Vojkovich):
       - Improved shadowfb support (screen rotation).
       - Improved acceleration (color expansion, lines).
       - Fixed some rendering correctness issues. 
