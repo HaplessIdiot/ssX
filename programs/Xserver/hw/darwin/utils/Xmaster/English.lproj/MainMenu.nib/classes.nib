@@ -1,0 +1,25 @@
+{
+    IBClasses = (
+        {
+            ACTIONS = {showHelp = id; }; 
+            CLASS = FirstResponder; 
+            LANGUAGE = ObjC; 
+            SUPERCLASS = NSObject; 
+        }, 
+        {
+            ACTIONS = {close = id; setDisplay = id; setFakeButtons = id; setKey = id; }; 
+            CLASS = Preferences; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {displayNumber = id; fakeButtons = id; keyField = id; window = id; }; 
+            SUPERCLASS = NSObject; 
+        }, 
+        {
+            CLASS = XApplication; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {preferences = id; xserver = id; }; 
+            SUPERCLASS = NSApplication; 
+        }, 
+        {CLASS = Xserver; LANGUAGE = ObjC; SUPERCLASS = NSObject; }
+    ); 
+    IBVersion = 1; 
+}

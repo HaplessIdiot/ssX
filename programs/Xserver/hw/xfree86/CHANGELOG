@@ -1,4 +1,6 @@
 XFree86 4.X.Ya (?? January 2001)
+1268. New version of Xmaster, a Mac OS X application that controls the 
+      X server (#4427, Torrey T. Lyons, Andreas Monitzer).
 1267. Add external CRT support for the Rage 128 Mobility (Kevin Martin
       and ATI).
 1266. Radeon DRI fixes (VA Linux Systems).
@@ -12249,4 +12251,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1522 2001/01/16 00:39:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1523 2001/01/16 05:11:02 martin Exp $
