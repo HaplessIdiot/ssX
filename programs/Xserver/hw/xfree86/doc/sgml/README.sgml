@@ -13,10 +13,10 @@
 
 <title>README for XFree86&tm; &relvers;
 <author>The XFree86 Project, Inc
-<date>11 December 2003
+<date>18 December 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.136 2003/12/03 04:51:30 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.137 2003/12/12 00:40:54 dawes Exp $
 </ident>
 
 <abstract>
@@ -82,17 +82,15 @@ Specific release enhancements can be viewed in the
 
 Most modern PC video hardware is supported in XFree86 &relvers;, and
 most PC video hardware that isn't supported explicitly can be used with
-the "vesa" driver.  The <htmlurl name="Driver Status document"
-url="Status.html"> has a summary of what hardware is supported in
-&relvers; compared with the old 3.3.x (&legacyvers;) series.  It is a
-good idea to check there before upgrading if you are currently running
-&legacyvers; with older hardware.
+the "vesa" driver.  The <htmlurl name="Releaes Notes" url="RELNOTES3.html">
+has a table showing the drivers provided with XFree86 &relvers;, and links
+to related documentation.
 
 XFree86 is produced by The XFree86 Project, Inc, which is a group of
 mostly volunteer independent developers.  XFree86 is a non-commercial
 organisation, and would not be viable without the invaluable development
-contributions of volunteers.  This release is dedicated to all who have
-supported and contributed to XFree86 over the last eleven years.
+contributions of volunteers.  This release is dedicated to the greater
+XFree86 community.
 
 <![ %snapshot [
 <sect>Redistribution of Snapshots
@@ -143,6 +141,10 @@ other information are available at the <url name="XFree86 support page"
 url="http://www.xfree86.org/support.html">.
 
 <sect>The Public Mailing Lists
+<p>
+Current information about the XFree86 public mailing lists can be found
+at our <url name="web site" url="http://www.xfree86.org/lists.html">.
+
 <sect1>CVS Commit
 <p>
 For those who want to see what has been committed recently to our CVS
@@ -162,16 +164,21 @@ This list is available for any discussions and questions related to XFree86.
 Support related questions should be sent here.  Many experienced XFree86
 developers monitor this list.
 
-</sect1>
-</sect>
+<sect1>Forum
+<p>
+This list is available for high level discussions about XFree86 and related
+technologies, their future, and for inter-project communication.
 
 <sect>Contributing to XFree86
 <p>
 If you have any new work or enhancements/bug fixes for existing work,
-please submit them to <email>fixes@XFree86.org</email>.  This will ensure
-that they are included in future releases.  For new work, it's usually
-a good idea to discuss it first on the <email>devel@XFree86.org</email>
-list.
+please submit them to <email>patch@XFree86.org</email> or to our <url
+name="bug tracking system" url="http://bugs.xfree86.org/">.  This will
+ensure that they are included in future releases.  New works should be
+discussed on our <email>devel@XFree86.org</email> list prior to submission.
+
+Current information about the XFree86 development process can be found
+at our <url name="web site" url="http://www.xfree86.org/developer.html">.
 
 <sect>How to get XFree86 &relvers;
 <p>

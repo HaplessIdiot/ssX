@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/28 05:13:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.84 2003/03/19 01:49:28 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.85 2003/10/18 13:31:17 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -19,7 +19,7 @@ RELNOTES=RELNOTES.sgml
 
 SGMLDEPENDS = defs.ent
 MANSGMLDEPENDS = mdefs.ent
-  INDEXLIST = README.sgml $(RELNOTES) Status.sgml LICENSE.sgml Install.sgml \
+  INDEXLIST = README.sgml $(RELNOTES) LICENSE.sgml Install.sgml \
 	      BUILD.sgml DESIGN.sgml Versions.sgml \
 	      mouse.sgml fonts.sgml DRI.sgml DRIcomp.sgml dps.sgml \
 	      XKB-Config.sgml XKB-Enhancing.sgml \

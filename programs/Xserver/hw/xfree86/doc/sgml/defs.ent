@@ -1,9 +1,9 @@
-<!-- $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/defs.ent,v 1.34 2003/12/03 04:51:30 dawes Exp $ -->
+<!-- $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/defs.ent,v 1.35 2003/12/05 16:08:06 dawes Exp $ -->
 
 <!-- shared entity definitions for the XFree86 documentation -->
 
 <!-- XFree86 version string -->
-<!ENTITY relvers CDATA "4.3.99.901">
+<!ENTITY relvers CDATA "4.3.99.902">
 <!ENTITY prevrelvers CDATA "4.3.0">
 <!ENTITY fullrelvers CDATA "4.4.0">
 <!ENTITY prevfullrelvers CDATA "4.3.0">
@@ -16,9 +16,9 @@
 <!ENTITY prevfullsrcvers CDATA "430">
 <!ENTITY whichfullrel CDATA "seventh">
 <!ENTITY whichupdaterel CDATA "none">
-<!ENTITY reltag CDATA "xf-4_3_99_901">
+<!ENTITY reltag CDATA "xf-4_3_99_902">
 <!ENTITY relbranchtag CDATA "xf-4_4-branch">
-<!ENTITY rcnum CDATA "1">
+<!ENTITY rcnum CDATA "2">
 
 <!-- Version of the most recent 3.3.x release -->
 <!ENTITY legacyvers CDATA "3.3.6">
@@ -29,9 +29,12 @@
 <!-- utils version strings -->
 <!ENTITY utilsvers CDATA "1.1.1">
 
+<!-- xtest version strings -->
+<!ENTITY xtestvers CDATA "4.0.2">
+
 <!-- These should be set according to which snapshot/release this is -->
-<!ENTITY % firstsnap 'INCLUDE'>
-<!ENTITY % latersnap 'IGNORE'>
+<!ENTITY % firstsnap 'IGNORE'>
+<!ENTITY % latersnap 'INCLUDE'>
 <!ENTITY % snapshot 'INCLUDE'>
 <!ENTITY % notsnapshot 'IGNORE'>
 <!ENTITY % relcandidate 'INCLUDE'>
