@@ -27,7 +27,7 @@
  *   Gareth Hughes <gareth@valinux.com>
  *   Kevin E. Martin <martin@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmR128.h,v 3.7 2001/01/11 03:37:00 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmR128.h,v 3.8 2001/03/21 18:08:53 dawes Exp $
  *
  */
 
@@ -90,7 +90,7 @@ extern int drmR128FlushVertexBuffer( int fd, int prim, int indx,
 extern int drmR128FlushIndices( int fd, int prim, int indx,
 				int start, int end, int discard );
 
-extern int drmR128TextureBlit( int fd, int index,
+extern int drmR128TextureBlit( int fd, int indx,
 			       int offset, int pitch, int format,
 			       int x, int y, int width, int height );
 
@@ -107,7 +107,7 @@ extern int drmR128ReadDepthPixels( int fd, int n,
 
 extern int drmR128PolygonStipple( int fd, unsigned int *mask );
 
-extern int drmR128FlushIndirectBuffer( int fd, int index,
+extern int drmR128FlushIndirectBuffer( int fd, int indx,
 				       int start, int end, int discard );
 
 #endif

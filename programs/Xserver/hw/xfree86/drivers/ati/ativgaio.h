@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativgaio.h,v 1.1 2000/10/11 22:52:58 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativgaio.h,v 1.2 2001/01/06 20:58:08 tsi Exp $ */
 /*
  * Copyright 2000 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -49,7 +49,7 @@ extern void ATISetVGAIOBase FunctionPrototype((ATIPtr, const CARD8));
     {                                     \
         outb(_Register, _Index);          \
         outb((_Register) + 1, _Value);    \
-    } while(0)
+    } while (0)
 
 #endif /* AVOID_CPIO */
 

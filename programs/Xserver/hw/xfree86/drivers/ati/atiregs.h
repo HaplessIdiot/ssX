@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.14 2001/01/06 20:58:07 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.15 2001/02/12 03:36:58 tsi Exp $ */
 /*
  * Copyright 1994 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -735,9 +735,23 @@
 #define CRTC2_OFF_PITCH		BlockIOTag(0x17u)	/* LTPro */
 #define CUR_CLR0		IOPortTag(0x0bu, 0x18u)
 #define CUR_CLR1		IOPortTag(0x0cu, 0x19u)
+/* These are for both CUR_CLR0 and CUR_CLR1 */
+#define CUR_CLR_I			0x000000fful
+#define CUR_CLR_B			0x0000ff00ul
+#define CUR_CLR_G			0x00ff0000ul
+#define CUR_CLR_R			0xff000000ul
+#define CUR_CLR				(CUR_CLR_R | CUR_CLR_G | CUR_CLR_B)
 #define CUR_OFFSET		IOPortTag(0x0du, 0x1au)
 #define CUR_HORZ_VERT_POSN	IOPortTag(0x0eu, 0x1bu)
+#define CUR_HORZ_POSN			0x000007fful
+/*	?				0x0000f800ul */
+#define CUR_VERT_POSN			0x07ff0000ul
+/*	?				0xf8000000ul */
 #define CUR_HORZ_VERT_OFF	IOPortTag(0x0fu, 0x1cu)
+#define CUR_HORZ_OFF			0x0000007ful
+/*	?				0x0000ff80ul */
+#define CUR_VERT_OFF			0x007f0000ul
+/*	?				0xff800000ul */
 #define CONFIG_PANEL		BlockIOTag(0x1du)	/* LT */
 #define PANEL_FORMAT			0x00000007ul
 /*	?				0x00000008ul */
@@ -1281,7 +1295,7 @@
 /*	DST_Y_X			BlockIOTag(0x4du) */	/* Duplicate */
 #define TRAIL_BRES_ERR		BlockIOTag(0x4eu)	/* GT */
 #define TRAIL_BRES_INC		BlockIOTag(0x4fu)	/* GT */
-#define	TRAIL_BRES_DEC		BlockIOTag(0x50u)	/* GT */
+#define TRAIL_BRES_DEC		BlockIOTag(0x50u)	/* GT */
 #define LEAD_BRES_LNTH		BlockIOTag(0x51u)	/* GT */
 #define Z_OFF_PITCH		BlockIOTag(0x52u)	/* GT */
 #define Z_CNTL			BlockIOTag(0x53u)	/* GT */

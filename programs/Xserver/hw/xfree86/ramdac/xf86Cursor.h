@@ -1,8 +1,9 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.h,v 1.3 1999/01/31 12:22:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.h,v 1.4 1999/03/14 11:18:08 dawes Exp $ */
 
 #ifndef _XF86CURSOR_H
 #define _XF86CURSOR_H
 
+#include "xf86str.h"
 #include "mipointrst.h"
 
 typedef struct _xf86CursorInfoRec {

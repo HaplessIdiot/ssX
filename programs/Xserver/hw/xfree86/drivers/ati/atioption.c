@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.c,v 1.14 2001/01/06 20:19:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.c,v 1.15 2001/01/06 20:58:06 tsi Exp $ */
 /*
  * Copyright 1999 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -54,12 +54,25 @@ OptionInfoRec ATIPublicOptions[] =
         FALSE
     },
     {
+        ATI_OPTION_HWCURSOR,
+        "hw_cursor",
+        OPTV_BOOLEAN,
+        {0, },
+        FALSE,
+    },
+
+#ifndef AVOID_CPIO
+
+    {
         ATI_OPTION_LINEAR,
         "linear",
         OPTV_BOOLEAN,
         {0, },
         FALSE
     },
+
+#endif /* AVOID_CPIO */
+
     {
         ATI_OPTION_MMIO_CACHE,
         "mmio_cache",
@@ -87,6 +100,13 @@ OptionInfoRec ATIPublicOptions[] =
         OPTV_BOOLEAN,
         {0, },
         FALSE
+    },
+    {
+        ATI_OPTION_SWCURSOR,
+        "sw_cursor",
+        OPTV_BOOLEAN,
+        {0, },
+        FALSE,
     },
     {
         -1,

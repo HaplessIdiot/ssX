@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.36 2001/03/21 19:46:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.37 2001/03/21 20:24:52 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -886,7 +886,9 @@ xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
 		}
 	    }
 	}
-	if (pcrp->pci_baserom) {
+        /* Ignore disabled non-video ROMs */
+	if ((res == activeRes) &&
+	    (pcrp->pci_baserom & PCI_MAP_ROM_DECODE_ENABLE)) {
 	    P_M_RANGE(range,pcrp->tag,PCIGETROM(pcrp->pci_baserom),
 		  pcrp->basesize[6], ResExcMemBlock | resMisc);
 	    if (range.rBegin) {

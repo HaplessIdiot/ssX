@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_vb.c,v 1.2 2001/01/11 03:36:55 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_vb.c,v 1.3 2001/03/21 16:14:25 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -88,7 +88,7 @@ do {									\
    }									\
 } while (0)
 
-#if USE_RHW2
+#ifdef USE_RHW2
 
 #define TEX1_4								\
 do {									\

@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.15 2001/03/02 22:39:27 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.17 2001/03/24 01:17:20 paulo Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -1807,7 +1807,8 @@ UpdateMenuDeviceList(int type)
 	    sme = XtCreateManagedWidget(label, smeBSBObjectClass, menu, NULL, 0);
 	    XtAddCallback(sme, XtNcallback, SmeConfigureDeviceCallback,
 			  computer.devices[i]->config ?
-			  computer.devices[i]->config : - (type + 100));
+			  computer.devices[i]->config :
+			  (XtPointer) (-(type + 100)));
 	}
 }
 

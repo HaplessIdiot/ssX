@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64io.h,v 1.6 2001/01/11 03:36:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64io.h,v 1.7 2001/02/12 03:31:05 tsi Exp $ */
 /*
  * Copyright 2000 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -187,7 +187,7 @@ extern void ATIAccessMach64PLLReg FunctionPrototype((ATIPtr, const CARD8,
     {                                               \
         ATIAccessMach64PLLReg(pATI, _Index, TRUE);  \
         out8(CLOCK_CNTL + 2, _Value);               \
-    } while(0)
+    } while (0)
 
 #define ATIGetMach64LCDReg(_Index)                       \
     (                                                    \
@@ -199,7 +199,7 @@ extern void ATIAccessMach64PLLReg FunctionPrototype((ATIPtr, const CARD8,
     {                                                    \
         out8(LCD_INDEX, SetBits(_Index, LCD_REG_INDEX)); \
         outr(LCD_DATA, _Value);                          \
-    } while(0)
+    } while (0)
 
 #define ATIGetMach64TVReg(_Index)                          \
     (                                                      \
@@ -211,6 +211,6 @@ extern void ATIAccessMach64PLLReg FunctionPrototype((ATIPtr, const CARD8,
     {                                                      \
         out8(TV_OUT_INDEX, SetBits(_Index, TV_REG_INDEX)); \
         outr(TV_OUT_DATA, _Value);                         \
-    } while(0)
+    } while (0)
 
 #endif /* ___ATIMACH64IO_H___ */

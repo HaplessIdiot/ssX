@@ -1,4 +1,16 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 303. XvMC build fix (Marc La France).
+ 302. Fix recently introduced bug in xf86cfg (Marc La France).
+ 301. Re-instate warning fixes clobbered by DRI merge (Marc La France).
+ 300. Ignore disabled non-video PCI ROMs (Marc La France).
+ 299. Hardware cursor implementation for Mach64 variants (William Blew,
+      Ani Joshi, Marc La France).
+ 298. Some endianness fixes in the ATI driver (incomplete) (Marc La France).
+ 297. Fix MMIO ordering problems for Mach64 acceleration (Marc La France).
+ 296. Fix ATI driver behaviour when it finds the LCD panel has been disabled
+      on entry (Marc La France).
+ 295. Fix ECP clock for GATOS (Vladimir Dergachev).
+ 294. Undo part of CHANGELOG 36 (Marc La France).
  293. Rework the building of libGL and the DRI drivers (David Dawes).
  292. Update greek keyboard layout and compose map.
       (#4513, Katsaloulis Panagiotis)
@@ -12752,4 +12764,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1643 2001/03/23 18:25:13 paulo Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1644 2001/03/23 23:08:04 dawes Exp $

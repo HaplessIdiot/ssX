@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/GL/glx/glxbuf.c,v 1.5 2001/03/21 16:29:35 dawes Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -79,7 +79,7 @@ __glXFBInitDrawable(__GLXdrawablePrivate *glxPriv, __GLcontextModes *modes)
 	}
     }
 
-#if __GL_MAX_AUXBUFFERS > 0
+#if defined(__GL_MAX_AUXBUFFERS) && (__GL_MAX_AUXBUFFERS > 0)
     if (modes->maxAuxBuffers > 0) {
 	GLint i;
 
@@ -148,7 +148,7 @@ __glXPixInitDrawable(__GLXdrawablePrivate *glxPriv, __GLcontextModes *modes)
 	}
     }
 
-#if __GL_MAX_AUXBUFFERS > 0
+#if defined(__GL_MAX_AUXBUFFERS) && (__GL_MAX_AUXBUFFERS > 0)
     if (modes->maxAuxBuffers > 0) {
 	GLint i;
 
@@ -203,7 +203,7 @@ __glXResizeBuffers(__GLdrawablePrivate *glPriv,
 	__GLX_SET_ACCEL_BUFFER_MASK(__GL_BACK_BUFFER_MASK);
     }
 
-#if __GL_MAX_AUXBUFFERS > 0
+#if defined(__GL_MAX_AUXBUFFERS) && (__GL_MAX_AUXBUFFERS > 0)
     if (modes->maxAuxBuffers > 0) {
 	GLint i;
 
@@ -264,7 +264,7 @@ __glXFreeBuffers(__GLXdrawablePrivate *glxPriv)
 	(*glPriv->backBuffer.free)(&glPriv->backBuffer, glPriv);
     }
 
-#if __GL_MAX_AUXBUFFERS > 0
+#if defined(__GL_MAX_AUXBUFFERS) && (__GL_MAX_AUXBUFFERS > 0)
     if (modes->maxAuxBuffers > 0) {
 	GLint i;
 

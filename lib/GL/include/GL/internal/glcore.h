@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/include/GL/internal/glcore.h,v 1.6 2001/03/21 17:31:19 dawes Exp $ */
 #ifndef __gl_core_h_
 #define __gl_core_h_
 
@@ -279,7 +279,7 @@ struct __GLdrawablePrivateRec {
     __GLdrawableBuffer accumBuffer;
     __GLdrawableBuffer depthBuffer;
     __GLdrawableBuffer stencilBuffer;
-#if __GL_NUMBER_OF_AUX_BUFFERS > 0
+#if defined(__GL_NUMBER_OF_AUX_BUFFERS) && (__GL_NUMBER_OF_AUX_BUFFERS > 0)
     __GLdrawableBuffer *auxBuffer;
 #endif
 

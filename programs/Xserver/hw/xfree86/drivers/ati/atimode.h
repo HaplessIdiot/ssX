@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimode.h,v 1.1 2000/10/11 22:52:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimode.h,v 1.2 2001/01/06 20:58:06 tsi Exp $ */
 /*
  * Copyright 2000 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -37,8 +37,5 @@ extern Bool ATIModeCalculate FunctionPrototype((int, ATIPtr, ATIHWPtr,
                                                 DisplayModePtr));
 extern void ATIModeSet       FunctionPrototype((ScrnInfoPtr, ATIPtr,
                                                 ATIHWPtr));
-
-extern Bool ATIModeAccelInit FunctionPrototype((ScrnInfoPtr, ScreenPtr,
-                                                ATIPtr));
 
 #endif /* ___ATIMODE_H___ */

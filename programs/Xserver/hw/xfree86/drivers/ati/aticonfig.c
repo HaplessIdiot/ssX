@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonfig.c,v 1.3 2001/02/15 18:04:55 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonfig.c,v 1.4 2001/02/22 16:21:10 tsi Exp $ */
 /*
  * Copyright 2000 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -24,11 +24,12 @@
 #include "ati.h"
 #include "atiadapter.h"
 #include "aticonfig.h"
+#include "aticursor.h"
 #include "atioption.h"
 #include "atistruct.h"
 
 /*
- * Recognised XF86Config options.
+ * Non-publicised XF86Config options.
  */
 typedef enum
 {
@@ -81,10 +82,18 @@ ATIProcessOptions
 #   define CRTScreen   PublicOption[ATI_OPTION_CRT].value.bool
 #   define CSync       PublicOption[ATI_OPTION_CSYNC].value.bool
 #   define Devel       PrivateOption[ATI_OPTION_DEVEL].value.bool
+#   define HWCursor    PublicOption[ATI_OPTION_HWCURSOR].value.bool
+
+#ifndef AVOID_CPIO
+
 #   define Linear      PublicOption[ATI_OPTION_LINEAR].value.bool
+
+#endif /* AVOID_CPIO */
+
 #   define CacheMMIO   PublicOption[ATI_OPTION_MMIO_CACHE].value.bool
 #   define ProbeClocks PublicOption[ATI_OPTION_PROBE_CLOCKS].value.bool
 #   define ShadowFB    PublicOption[ATI_OPTION_SHADOW_FB].value.bool
+#   define SWCursor    PublicOption[ATI_OPTION_SWCURSOR].value.bool
 #   define Sync        PrivateOption[ATI_OPTION_SYNC].value.bool
 
 #   define ReferenceClock \
@@ -102,7 +111,14 @@ ATIProcessOptions
 #endif /* AVOID_CPIO */
 
     {
-        Accel = Linear = CacheMMIO = TRUE;
+        Accel = CacheMMIO = HWCursor = TRUE;
+
+#ifndef AVOID_CPIO
+
+        Linear = TRUE;
+
+#endif /* AVOID_CPIO */
+
     }
 
     ReferenceClock = ((double)157500000.0) / ((double)11.0);
@@ -124,6 +140,8 @@ ATIProcessOptions
     xf86ProcessOptions(pScreenInfo->scrnIndex, pScreenInfo->options,
         PrivateOption);
 
+#ifndef AVOID_CPIO
+
     /* Disable linear apertures if the OS doesn't support them */
     if (!xf86LinearVidMem() && Linear)
     {
@@ -133,16 +151,37 @@ ATIProcessOptions
         Linear = FALSE;
     }
 
+#endif /* AVOID_CPIO */
+
     /* Move option values into driver private structure */
     pATI->OptionAccel = Accel;
     pATI->OptionCRT = CRTScreen;
     pATI->OptionCSync = CSync;
     pATI->OptionDevel = Devel;
+
+#ifndef AVOID_CPIO
+
     pATI->OptionLinear = Linear;
+
+#endif /* AVOID_CPIO */
+
     pATI->OptionMMIOCache = CacheMMIO;
     pATI->OptionProbeClocks = ProbeClocks;
     pATI->OptionShadowFB = ShadowFB;
     pATI->OptionSync = Sync;
+
+    /* Validate and set cursor options */
+    if (SWCursor || !HWCursor)
+    {
+        pATI->Cursor = ATI_CURSOR_SOFTWARE;
+        if (HWCursor && PublicOption[ATI_OPTION_HWCURSOR].found)
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                "Option \"sw_cursor\" overrides Option \"hw_cursor\".\n");
+    }
+    else
+    {
+        pATI->Cursor = ATI_CURSOR_HARDWARE;
+    }
 
     /* Only set the reference clock if it hasn't already been determined */
     if (!pATI->ReferenceNumerator || !pATI->ReferenceDenominator)

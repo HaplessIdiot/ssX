@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/glx/vertarr.c,v 1.3 2001/03/21 16:04:39 dawes Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -569,8 +569,8 @@ void glDrawArrays(GLenum mode, GLint first, GLsizei count)
 {
     __GLXcontext *gc = __glXGetCurrentContext();
     __GLXvertArrayState *va = &gc->state.vertArray;
-    const char *vaPtr = NULL, *naPtr = NULL, *caPtr = NULL, 
-               *iaPtr = NULL, *tcaPtr[__GLX_MAX_TEXTURE_UNITS];
+    const GLubyte *vaPtr = NULL, *naPtr = NULL, *caPtr = NULL, 
+                  *iaPtr = NULL, *tcaPtr[__GLX_MAX_TEXTURE_UNITS];
     const GLboolean *efaPtr = NULL;
     GLint i, j;
 
