@@ -1,6 +1,6 @@
 /* ft_conf.h.  Xserver-specific version. */
 
-/* $XFree86: xc/lib/font/FreeType/ft_conf.h,v 1.7 1999/04/25 10:01:35 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ft_conf.h,v 1.8 2000/11/14 16:54:42 dawes Exp $ */
 
 /* we need the following because there are some typedefs in this file */
 #ifndef FT_CONF_H
@@ -107,7 +107,7 @@
 /* by the engine and need no extensions, undefine this configuration     */
 /* macro to save a few more bytes.                                       */
 
-#undef  TT_CONFIG_OPTION_EXTEND_ENGINE
+/* #undef  TT_CONFIG_OPTION_EXTEND_ENGINE */
 
 
 /*************************************************************************/

@@ -1,4 +1,9 @@
 XFree86 4.0.1g (28 November 2000)
+1019. Fix Estonian_Estonia.1257 entry in locale.alias (#4297,
+      Nerijus Baliunas).
+1018. New Lithuanian XKB map (#4296, Nerijus Baliunas).
+1017. Fix a problem with the "xtt" font module introduced with recent
+      changes to the "freetype" module (#4295, ISHIKAWA Mutsumi).
 1016. Fix the return value for the "indirect" converter in Xlib (#4294,
       Bruno Haible).
 1015. ANSI C cleanup of Xlib locale core code (#4293, Bruno Haible).
@@ -11686,4 +11691,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1415 2000/11/28 17:25:10 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1416 2000/11/28 18:50:11 dawes Exp $

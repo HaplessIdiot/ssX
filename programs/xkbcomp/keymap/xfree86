@@ -1,5 +1,5 @@
 // $TOG: xfree86 /main/13 1997/08/02 10:11:21 kaleb $
-// $XFree86: xc/programs/xkbcomp/keymap/xfree86,v 3.11 1999/08/30 02:34:24 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/keymap/xfree86,v 3.13 2000/09/19 12:46:24 eich Exp $
 default xkb_keymap "us" {
     xkb_keycodes	{ include "xfree86"		};
     xkb_types		{ include "default"		};
@@ -103,6 +103,27 @@ xkb_keymap "it"	{
     xkb_types		{ include "default"		};
     xkb_compatibility	{ include "default"		};
     xkb_symbols		{ include "en_US(pc105)+it"	};
+    xkb_geometry 	{ include "pc(pc102)"		};
+};
+xkb_keymap "lt"	{
+    xkb_keycodes	{ include "xfree86"		};
+    xkb_types		{ include "default"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{ include "en_US(pc105)+lt"	};
+    xkb_geometry 	{ include "pc(pc102)"		};
+};
+xkb_keymap "lt_std"	{
+    xkb_keycodes	{ include "xfree86"		};
+    xkb_types		{ include "default"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{ include "en_US(pc105)+lt_std"	};
+    xkb_geometry 	{ include "pc(pc102)"		};
+};
+xkb_keymap "lt_p"	{
+    xkb_keycodes	{ include "xfree86"		};
+    xkb_types		{ include "default"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{ include "en_US(pc105)+lt_p"	};
     xkb_geometry 	{ include "pc(pc102)"		};
 };
 xkb_keymap "mk" {
