@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.129 2002/09/16 18:05:12 eich Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.130 2002/10/12 16:06:38 herrb Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -1256,11 +1256,7 @@ TCLIBDIR = TclLibDir
 #endif
 #ifndef LdPreLib
 # if !defined(UseInstalled)
-#  if !BuildLibraries && AlternateUsrLibDir
-#   define LdPreLib -L$(BUILDLIBDIR) -L$(USRLIBDIR)
-#  else
-#   define LdPreLib -L$(BUILDLIBDIR)
-#  endif
+#  define LdPreLib -L$(BUILDLIBDIR)
 # else
 # if AlternateUsrLibDir
 #  define LdPreLib -L$(USRLIBDIR)
@@ -1871,6 +1867,7 @@ MODLDCOMBINEFLAGS = ModuleLdCombineFlags
 #else
 # define TopInclude	-I$(TOP)
 #endif
+
       CDEBUGFLAGS = DefaultCDebugFlags
         CCOPTIONS = DefaultCCOptions	/* to distinguish from param flags */
 /*
@@ -1884,7 +1881,7 @@ MODLDCOMBINEFLAGS = ModuleLdCombineFlags
        ALLDEFINES = $(ALLINCLUDES) $(STD_DEFINES) $(PROTO_DEFINES) $(THREADS_DEFINES) $(MODULE_DEFINES) $(DEFINES) $(EXTRA_DEFINES)
            CFLAGS = $(CDEBUGFLAGS) $(CCOPTIONS) $(THREADS_CFLAGS) $(MODULE_CFLAGS) $(ALLDEFINES)
         LINTFLAGS = $(LINTOPTS) -DLINT $(ALLDEFINES) $(DEPEND_DEFINES)
-         LDPRELIB = LdPreLib
+         LDPRELIB = LdPreLib $(INSTALLED_LIBS)
         LDPOSTLIB = LdPostLib
         LDOPTIONS = $(CDEBUGFLAGS) $(CCOPTIONS)  $(EXTRA_LDOPTIONS) $(THREADS_LDFLAGS) $(LOCAL_LDFLAGS) $(LDPRELIBS)
      CXXLDOPTIONS = $(CXXDEBUGFLAGS) $(CXXOPTIONS) $(EXTRA_LDOPTIONS) $(THREADS_CXXLDFLAGS) $(LOCAL_LDFLAGS) $(LDPRELIBS)
@@ -1972,6 +1969,9 @@ XCOMM Not sure this belongs here
 INSTALLED_INCLUDES = -I$(INCROOT)
 #endif
 
+#if !defined(UseInstalled) && !BuildLibraries && AlternateUsrLibDir
+INSTALLED_LIBS = -L$(USRLIBDIR)
+#endif
 
 #ifdef FixupLibReferences
 FixupLibReferences()
@@ -1983,7 +1983,7 @@ FixupLibReferences()
            OSNAME = OSName
 #endif
     USRLIBDIRPATH = UsrLibDirPath
-        LDPRELIBS = LdPreLibs
+        LDPRELIBS = LdPreLibs $(INSTALLED_LIBS)
        LDPOSTLIBS = LdPostLibs
      TOP_INCLUDES = TopIncludes
   PROJECT_DEFINES = ProjectDefines
