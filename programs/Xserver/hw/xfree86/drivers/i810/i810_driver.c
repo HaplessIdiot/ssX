@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.80 2003/02/26 04:19:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.81 2003/04/07 16:23:34 eich Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -2221,7 +2221,7 @@ I810EnterVT(int scrnIndex, int flags)
       return FALSE;
    }
    if (!I810DRIEnter(pScrn)) {
-       return FALSE;
+      return FALSE;
    }
 #ifdef XF86DRI
    if (pI810->directRenderingEnabled) {
@@ -2267,7 +2267,7 @@ I810LeaveVT(int scrnIndex, int flags)
    if (!I810UnbindGARTMemory(pScrn))
       return;
    if (!I810DRILeave(pScrn))
-       return;
+      return;
 
    vgaHWLock(hwp);
 }

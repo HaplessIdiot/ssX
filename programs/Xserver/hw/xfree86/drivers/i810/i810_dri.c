@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.32 2002/11/25 14:04:59 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.34 2003/04/07 16:23:34 eich Exp $ */
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
  *
@@ -1222,80 +1222,79 @@ I810DRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
 Bool
 I810DRILeave(ScrnInfoPtr pScrn)
 {
-    I810Ptr pI810 = I810PTR(pScrn);
+   I810Ptr pI810 = I810PTR(pScrn);
     
-    if (pI810->directRenderingEnabled) {
-	if (pI810->dcacheHandle != 0) 
-	    if (drmAgpUnbind(pI810->drmSubFD, pI810->dcacheHandle) != 0) {
-		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,"%s\n",strerror(errno));
-		return FALSE;
-	    }
-	if (pI810->backHandle != 0) 
-	    if (drmAgpUnbind(pI810->drmSubFD, pI810->backHandle) != 0) {
-		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,"%s\n",strerror(errno));
- 		return FALSE;
-	    }
-	if (pI810->zHandle != 0)
-	    if (drmAgpUnbind(pI810->drmSubFD, pI810->zHandle) != 0) {
-		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,"%s\n",strerror(errno));
-  		return FALSE;
-	    }
-	if (pI810->sysmemHandle != 0)
-	    if (drmAgpUnbind(pI810->drmSubFD, pI810->sysmemHandle) != 0) {
-		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,"%s\n",strerror(errno));
-  		return FALSE;
-	    }
-	if (pI810->xvmcHandle != 0)
-	    if (drmAgpUnbind(pI810->drmSubFD, pI810->xvmcHandle) != 0) {
-		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,"%s\n",strerror(errno));
-  		return FALSE;
-	    }
-	if (pI810->cursorHandle != 0)
-	    if (drmAgpUnbind(pI810->drmSubFD, pI810->cursorHandle) != 0) {
-		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,"%s\n",strerror(errno));
-		return FALSE;
-	    }
-	if (pI810->agpAcquired == TRUE)
-	    drmAgpRelease(pI810->drmSubFD);
-	pI810->agpAcquired = FALSE;
-    }
-    return TRUE;
+   if (pI810->directRenderingEnabled) {
+      if (pI810->dcacheHandle != 0) 
+	 if (drmAgpUnbind(pI810->drmSubFD, pI810->dcacheHandle) != 0) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,"%s\n",strerror(errno));
+	    return FALSE;
+	 }
+      if (pI810->backHandle != 0) 
+	 if (drmAgpUnbind(pI810->drmSubFD, pI810->backHandle) != 0) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,"%s\n",strerror(errno));
+ 	    return FALSE;
+	 }
+      if (pI810->zHandle != 0)
+	 if (drmAgpUnbind(pI810->drmSubFD, pI810->zHandle) != 0) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,"%s\n",strerror(errno));
+  	    return FALSE;
+	 }
+      if (pI810->sysmemHandle != 0)
+	 if (drmAgpUnbind(pI810->drmSubFD, pI810->sysmemHandle) != 0) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,"%s\n",strerror(errno));
+  	    return FALSE;
+	 }
+      if (pI810->xvmcHandle != 0)
+	 if (drmAgpUnbind(pI810->drmSubFD, pI810->xvmcHandle) != 0) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,"%s\n",strerror(errno));
+  	    return FALSE;
+	 }
+      if (pI810->cursorHandle != 0)
+	 if (drmAgpUnbind(pI810->drmSubFD, pI810->cursorHandle) != 0) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,"%s\n",strerror(errno));
+	    return FALSE;
+	 }
+      if (pI810->agpAcquired == TRUE)
+	 drmAgpRelease(pI810->drmSubFD);
+      pI810->agpAcquired = FALSE;
+   }
+   return TRUE;
 }
 
 Bool
 I810DRIEnter(ScrnInfoPtr pScrn)
 {
-    I810Ptr pI810 = I810PTR(pScrn);
+   I810Ptr pI810 = I810PTR(pScrn);
 
-    if (pI810->directRenderingEnabled) {
+   if (pI810->directRenderingEnabled) {
 
-	if (pI810->agpAcquired == FALSE)
-	    drmAgpAcquire(pI810->drmSubFD);
-	pI810->agpAcquired = TRUE;
-	if (pI810->dcacheHandle != 0)
-	    if (drmAgpBind(pI810->drmSubFD, pI810->dcacheHandle,
-			   pI810->DepthOffset) != 0)
-		return FALSE;
-	if (pI810->backHandle != 0)
-	    if (drmAgpBind(pI810->drmSubFD, pI810->backHandle,
-			   pI810->BackOffset) != 0)
-		return FALSE;
-	if (pI810->zHandle != 0)
-	    if (drmAgpBind(pI810->drmSubFD, pI810->zHandle,
-			   pI810->DepthOffset) != 0)
-		return FALSE;
-	if (pI810->sysmemHandle != 0)
-	    if (drmAgpBind(pI810->drmSubFD, pI810->sysmemHandle,
-			   0) != 0)
-		return FALSE;
-	if (pI810->xvmcHandle != 0)
-	    if (drmAgpBind(pI810->drmSubFD, pI810->xvmcHandle,
-			   pI810->MC.Start) != 0)
-		return FALSE;
-	if (pI810->cursorHandle != 0)
-	    if (drmAgpBind(pI810->drmSubFD, pI810->cursorHandle,
-			   pI810->CursorStart) != 0)
-		return FALSE;
-    }
-    return TRUE;
+      if (pI810->agpAcquired == FALSE)
+	 drmAgpAcquire(pI810->drmSubFD);
+      pI810->agpAcquired = TRUE;
+      if (pI810->dcacheHandle != 0)
+	 if (drmAgpBind(pI810->drmSubFD, pI810->dcacheHandle,
+			pI810->DepthOffset) != 0)
+	    return FALSE;
+      if (pI810->backHandle != 0)
+	 if (drmAgpBind(pI810->drmSubFD, pI810->backHandle,
+			pI810->BackOffset) != 0)
+	    return FALSE;
+      if (pI810->zHandle != 0)
+	 if (drmAgpBind(pI810->drmSubFD, pI810->zHandle,
+			pI810->DepthOffset) != 0)
+	    return FALSE;
+      if (pI810->sysmemHandle != 0)
+	 if (drmAgpBind(pI810->drmSubFD, pI810->sysmemHandle, 0) != 0)
+	    return FALSE;
+      if (pI810->xvmcHandle != 0)
+	 if (drmAgpBind(pI810->drmSubFD, pI810->xvmcHandle,
+			pI810->MC.Start) != 0)
+	    return FALSE;
+      if (pI810->cursorHandle != 0)
+	 if (drmAgpBind(pI810->drmSubFD, pI810->cursorHandle,
+			pI810->CursorStart) != 0)
+	    return FALSE;
+   }
+   return TRUE;
 }
