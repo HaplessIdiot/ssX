@@ -36,7 +36,7 @@ See the Release Notes for non-OS dependent new features in XFree86 4.1.0.
 
 3.1  New OS dependent features in 4.2
 
-   o Support for OpenBSD/powerpc on the ATI Rage128 based Power Macintosh.
+   o Support for OpenBSD/macppc on the ATI Rage128 based Power Macintosh.
 
 3.2  New OS dependent features in 4.0.3
 
@@ -275,13 +275,18 @@ tree to rebuild from sources.  The OpenBSD XF4 source tree is available by
 anoncvs from all OpenBSD anoncvs servers. See http://www.openbsd.org/anon-
 cvs.html for details on anoncvs.
 
-8.2.1  XFree86 on OpenBSD/powerpc
+8.2.1  XFree86 on OpenBSD/macppc
 
 The XFree86 server is currently known to work on the G4 Macs with ATI Rage
-128 cards. Other machines are more or less untested.
+128 cards with OpenBSD 3.0.  Other machines are more or less untested. Ear-
+lier OpenBSD versions lack some kernel support for it.
 
 Use xf86config to build a /etc/X11/XF86Config file before starting the server
 for the first time.
+
+Tou configure the keyboard, the protocol should be specified as wskbd and the
+device as /dev/wskbd0.  Using a wsmux device as the keyboard device doesn't
+work (yet). Use Macintosh as XkbModel.
 
 For the Titanium Powerbook G4, you can try the following mode line in
 /etc/X11/XF86Config to match the flat panel resolution:
@@ -289,7 +294,7 @@ For the Titanium Powerbook G4, you can try the following mode line in
      Modeline "1152x768" 78.741 1152 1173 1269 1440  768 769 772 800 +HSync +VSync
 
 You need a kernel compiled with ``option INSECURE'' in the configuration file
-to run XFree86 on OpenBSD/powerpc.
+to run XFree86 on OpenBSD/macppc.
 
 9.  Building New X Clients
 
@@ -305,7 +310,7 @@ Many thanks to all people who contributed to make XFree86 work on *BSD, in
 particular, David Dawes, Pace Willison, Amancio Hasty, Christoph Robitschko,
 Nate Williams, Rod Grimes, Jack Velte and Michael Smith.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.19 2001/08/15 19:35:53 herrb Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.20 2001/09/29 20:32:30 herrb Exp $
 
 
 $XFree86$
