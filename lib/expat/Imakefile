@@ -26,6 +26,8 @@ REQUIREDLIBS=$(LDPRELIBS)
 SRCS = xmlparse.c xmltok.c xmlrole.c
 OBJS = xmlparse.o xmltok.o xmlrole.o
 
+HEADERS = expat.h
+
 #include <Library.tmpl>
 
 #if DoSharedLib && SharedDataSeparation
