@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xauth/process.c,v 3.22 2003/07/18 15:53:28 tsi Exp $ */
+/* $XFree86: xc/programs/xauth/process.c,v 3.23 2003/11/25 03:15:04 dawes Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -1049,6 +1049,20 @@ extract_entry(char *inputfilename, int lineno, Xauth *auth, char *data)
 }
 
 
+static int
+eq_auth(Xauth *a, Xauth *b)
+{
+    return((a->family == b->family &&
+	    a->address_length == b->address_length &&
+	    a->number_length == b->number_length &&
+	    a->name_length == b->name_length &&
+	    a->data_length == b->data_length &&
+	    memcmp(a->address, b->address, a->address_length) == 0 &&
+	    memcmp(a->number, b->number, a->number_length) == 0 &&
+	    memcmp(a->name, b->name, a->name_length) == 0 &&
+	    memcmp(a->data, b->data, a->data_length) == 0) ? 1 : 0);
+}
+	    
 static int 
 match_auth_dpy(register Xauth *a, register Xauth *b)
 {
@@ -1134,6 +1148,62 @@ merge_entries(AuthList **firstp, AuthList *second, int *nnewp, int *nreplp)
 
 }
 
+static Xauth *
+copyAuth(Xauth *auth)
+{
+    Xauth *a;
+
+    a = (Xauth *)malloc(sizeof(Xauth));
+    if (a == NULL) {
+	return NULL;
+    }
+    memset(a, 0, sizeof(Xauth));
+    a->family = auth->family;
+    if (auth->address_length != 0) {
+	a->address = malloc(auth->address_length);
+	if (a->address == NULL) {
+	    free(a);
+	    return NULL;
+	}
+	memcpy(a->address, auth->address, auth->address_length);
+	a->address_length = auth->address_length;
+    }
+    if (auth->number_length != 0) {
+	a->number = malloc(auth->number_length);
+	if (a->number == NULL) {
+	    free(a->address);
+	    free(a);
+	    return NULL;
+	}
+	memcpy(a->number, auth->number, auth->number_length);
+	a->number_length = auth->number_length;
+    }
+    if (auth->name_length != 0) {
+	a->name = malloc(auth->name_length);
+	if (a->name == NULL) {
+	    free(a->address);
+	    free(a->number);
+	    free(a);
+	    return NULL;
+	}
+	memcpy(a->name, auth->name, auth->name_length);
+	a->name_length = auth->name_length;
+    }
+    if (auth->data_length != 0) {
+	a->data = malloc(auth->data_length);
+	if (a->data == NULL) {
+	    free(a->address);
+	    free(a->number);
+	    free(a->name);
+	    free(a);
+	    return NULL;
+	}
+	memcpy(a->data, auth->data, auth->data_length);
+	a->data_length = auth->data_length;
+    }
+    return a;
+}
+    
 typedef int (*YesNoFunc)(char *, int, Xauth *, char *);
 
 static int 
@@ -1144,6 +1214,7 @@ iterdpy (char *inputfilename, int lineno, int start,
     int i;
     int status;
     int errors = 0;
+    Xauth *tmp_auth;
     AuthList *proto_head, *proto;
     AuthList *l, *next;
 
@@ -1162,17 +1233,20 @@ iterdpy (char *inputfilename, int lineno, int start,
 	for (l = xauth_head; l; l = next) {
 	    Bool matched = False;
 
+	    /* l may be freed by remove_entry below. so save its contents */
 	    next = l->next;
+	    tmp_auth = copyAuth(l->auth);
 	    for (proto = proto_head; proto; proto = proto->next) {
-		if (match_auth_dpy (proto->auth, l->auth)) {
+		if (match_auth_dpy (proto->auth, tmp_auth)) {
 		    matched = True;
 		    if (yfunc) {
 			status = (*yfunc) (inputfilename, lineno,
-					   l->auth, data);
+					   tmp_auth, data);
 			if (status < 0) break;
 		    }
 		}
 	    }
+	    XauDisposeAuth(tmp_auth);
 	    if (matched == False) {
 		if (nfunc) {
 		    status = (*nfunc) (inputfilename, lineno,
@@ -1208,7 +1282,7 @@ remove_entry(char *inputfilename, int lineno, Xauth *auth, char *data)
     /*
      * unlink the auth we were asked to
      */
-    while ((list = *listp)->auth != auth)
+    while (!eq_auth((list = *listp)->auth, auth))
 	listp = &list->next;
     *listp = list->next;
     XauDisposeAuth (list->auth);                    /* free the auth */
