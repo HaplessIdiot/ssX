@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.3 2000/11/09 03:24:36 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.4 2000/11/18 19:37:12 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -69,8 +69,6 @@
  *   ImageWrites:   Same as CPUToScreenColorExpandFill
  *
  */
-
-#define RADEON_IMAGEWRITE 0     /* Turned off by default - slower in accel */
 
 				/* Driver data structures */
 #include "radeon.h"
@@ -645,7 +643,6 @@ static void RADEONSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
     }
 }
 
-#if RADEON_IMAGEWRITE
 /* Setup for XAA indirect image write. */
 static void RADEONSetupForScanlineImageWrite(ScrnInfoPtr pScrn,
 					     int rop,
@@ -758,7 +755,6 @@ static void RADEONSubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
 	}
     }
 }
-#endif
 
 /* Initialize the acceleration hardware. */
 void RADEONEngineInit(ScrnInfoPtr pScrn)
@@ -917,7 +913,6 @@ static void RADEONMMIOAccelInit(ScrnInfoPtr pScrn, XAAInfoRecPtr a)
     a->DashedLineFlags                 = (LINE_PATTERN_LSBFIRST_LSBJUSTIFIED
 					  | LINE_PATTERN_POWER_OF_2_ONLY);
 
-#if RADEON_IMAGEWRITE
 				/* ImageWrite */
     a->NumScanlineImageWriteBuffers    = 1;
     a->ScanlineImageWriteBuffers       = info->scratch_buffer;
@@ -936,7 +931,6 @@ static void RADEONMMIOAccelInit(ScrnInfoPtr pScrn, XAAInfoRecPtr a)
 					 | SCANLINE_PAD_DWORD
 					 | LEFT_EDGE_CLIPPING
 					 | LEFT_EDGE_CLIPPING_NEGATIVE_X;
-#endif
 
 #if 0
 				/* Color 8x8 Pattern Fill */
