@@ -59,7 +59,7 @@ in this Software without prior written authorization from The Open Group.
  * 27-Oct-87 Thomas E. LaStrange	File created
  * 10-Oct-90 David M. Sternlicht        Storing saved colors on root
  ***********************************************************************/
-/* $XFree86: xc/programs/twm/twm.c,v 3.11 2001/12/08 19:31:37 herrb Exp $ */
+/* $XFree86: xc/programs/twm/twm.c,v 3.12 2001/12/14 20:01:10 dawes Exp $ */
 
 #include <stdio.h>
 #include <signal.h>
@@ -825,26 +825,6 @@ RestoreWithdrawnLocation (tmp)
 }
 
 
-/***********************************************************************
- *
- *  Procedure:
- *	Done - cleanup and exit twm
- *
- *  Returned Value:
- *	none
- *
- *  Inputs:
- *	none
- *
- *  Outputs:
- *	none
- *
- *  Special Considerations:
- *	none
- *
- ***********************************************************************
- */
-
 void 
 Reborder (time)
 Time time;
@@ -872,6 +852,25 @@ Time time;
     SetFocus ((TwmWindow*)NULL, time);
 }
 
+/***********************************************************************
+ *
+ *  Procedure:
+ *	Done - cleanup and exit twm
+ *
+ *  Returned Value:
+ *	none
+ *
+ *  Inputs:
+ *	none
+ *
+ *  Outputs:
+ *	none
+ *
+ *  Special Considerations:
+ *	none
+ *
+ ***********************************************************************
+ */
 SIGNAL_T 
 Done(int sig)
 {
