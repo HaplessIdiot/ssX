@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/242 1997/11/11 08:57:43 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.117 1997/09/19 09:01:09 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.118 1997/11/16 06:17:48 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -1867,10 +1867,10 @@ $(XVFBOBJS) $(XVFB) $(XVFBLIBS) $(XVFBSYSLIBS):: $(XVFBDIRS)
 #endif
 #if DoLoadableServer
 #if XF86LoaderServer
-ServerTarget(Xvfb,$(XVFBDIRS),$(XVFBOBJS) $(MIINITEXTOBJ),$(XVFBLIBS) $(XF86OSLIB),$(XVFBSYSLIBS))
+ServerTarget(Xvfb,$(XVFBDIRS),$(XVFBOBJS),$(XVFBLIBS) $(XF86OSLIB),$(XVFBSYSLIBS))
 #endif
 #if XF98LoaderServer
-ServerTarget(Xvfb,$(XVFBDIRS),$(XVFBOBJS) $(MIINITEXTOBJ),$(XVFBLIBS) $(XF98OSLIB),$(XVFBSYSLIBS))
+ServerTarget(Xvfb,$(XVFBDIRS),$(XVFBOBJS),$(XVFBLIBS) $(XF98OSLIB),$(XVFBSYSLIBS))
 #endif
 #else
 ServerTarget(Xvfb,$(XVFBDIRS),$(XVFBOBJS),$(XVFBLIBS),$(XVFBSYSLIBS))
