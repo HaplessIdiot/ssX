@@ -131,6 +131,14 @@ typedef void (*FindResType)(
 #endif
 );
 
+typedef Bool (*FindComplexResType)(
+#if NeedNestedPrototypes
+    pointer /*value*/,
+    XID /*id*/,
+    pointer /*cdata*/
+#endif
+);
+
 extern RESTYPE CreateNewResourceType(
 #if NeedFunctionPrototypes
     DeleteType /*deleteFunc*/
@@ -231,6 +239,15 @@ extern pointer LookupIDByClass(
 #if NeedFunctionPrototypes
     XID /*id*/,
     RESTYPE /*classes*/
+#endif
+);
+
+extern pointer LookupClientResourceComplex(
+#if NeedFunctionPrototypes
+    ClientPtr client,
+    RESTYPE type,
+    FindComplexResType func,
+    pointer cdata
 #endif
 );
 
