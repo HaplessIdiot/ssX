@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.80 2005/01/30 23:43:12 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.81 2005/01/31 03:21:22 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -1185,7 +1185,7 @@ Interactive)	# Need the correct name for this
 Linux)
 	VARDIST="Xvar.tgz"
 	XKBDBDIR="$VARDIR/lib/xkb"
-	EXTRAOPTDIST="Xdrm.tgz"
+	EXTRAOPTDIST="Xdrm.tgz Xtinyx.tgz"
 	;;
 esac
 
