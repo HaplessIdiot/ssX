@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Xos.h,v 1.66 94/04/17 20:10:51 rws Exp $
- * $XFree86: xc/include/Xos.h,v 3.2 1994/07/24 11:39:50 dawes Exp $
+ * $XFree86: xc/include/Xos.h,v 3.3 1994/08/01 12:01:13 dawes Exp $
  * 
  * 
 Copyright (c) 1987  X Consortium
@@ -79,22 +79,22 @@ in this Software without prior written authorization from the X Consortium.
 
 #include <string.h>
 #ifndef index
-#define index(s,c) (strchr((s),(c)))
+#define index strchr
 #endif
 #ifndef rindex
-#define rindex(s,c) (strrchr((s),(c)))
+#define rindex strrchr
 #endif
 
 #else
 
 #ifdef SYSV
 #include <string.h>
-#define index(s,c) (strchr((s),(c)))
-#define rindex(s,c) (strrchr((s),(c)))
+#define index strchr
+#define rindex strrchr
 #else
 #include <strings.h>
-#define strchr(s,c) (index((s),(c)))
-#define strrchr(s,c) (rindex((s),(c)))
+#define strchr index
+#define strrchr rindex
 #endif
 
 #endif /* X_NOT_STDC_ENV */
