@@ -2835,25 +2835,33 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
     /*
      * The first thing we should figure out is the depth, bpp, etc.
+     * Set SupportConvert... flags since we use the fb layer which
+     * supports this conversion. (24to32 seems not implemented though)
      * Additionally, determine the size of the HWCursor memory area.
      */
     switch(pSiS->VGAEngine) {
       case SIS_300_VGA:
         pSiS->CursorSize = 4096;
-    	pix24flags = Support32bppFb;
+    	pix24flags = Support32bppFb |
+		     SupportConvert24to32;
 	break;
       case SIS_315_VGA:
         pSiS->CursorSize = 16384;
-    	pix24flags = Support32bppFb;
+    	pix24flags = Support32bppFb |
+		     SupportConvert24to32;
 	break;
       case SIS_530_VGA:
         pSiS->CursorSize = 2048;
-    	pix24flags = Support32bppFb |
-	             Support24bppFb;
+    	pix24flags = Support32bppFb 	  |
+	             Support24bppFb 	  |
+		     SupportConvert24to32 |
+		     SupportConvert32to24;
         break;
       default:
         pSiS->CursorSize = 2048;
-        pix24flags = Support24bppFb;
+        pix24flags = Support24bppFb 	  |
+		     SupportConvert32to24 |
+		     PreferConvert32to24;
 	break;
     }
 
