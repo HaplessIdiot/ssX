@@ -1,4 +1,5 @@
 XFree86 4.1.99.2 (xx October 2001)
+ 436. Corrections and updates to Xaw manpage (#5020, Branden Robinson).
  435. Add German localization of XDarwin front end (Andreas Monitzer).
  434. Add the DEC-XTRAP extension and sample clients (#4904, 4918,
       Paul Stewart).
@@ -14084,4 +14085,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2015 2001/11/02 23:29:30 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2016 2001/11/03 00:25:32 torrey Exp $
