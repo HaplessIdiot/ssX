@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.20 2002/11/13 04:35:47 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.21 2002/11/15 07:01:31 paulo Exp $ */
 
 #include "write.h"
 #include "hash.h"
@@ -596,6 +596,10 @@ LispWriteList(LispObj *stream, LispObj *object, write_info *info, int paren)
 	long print_length = info->length;
 
 	if (info->circles && (circle = LispCheckCircle(object, info)) >= 0) {
+	    if (!paren) {
+		length += LispWriteStr(stream, ". ", 2);
+		paren = 1;
+	    }
 	    if (LispPrintCircle(stream, object, circle, &length, info) == 0) {
 		DECDEPTH();
 

@@ -509,15 +509,23 @@ LispRead(void)
 static void
 LispReadFixCircle(LispObj *object, read_info *info)
 {
+    LispObj *cons;
+
 fix_again:
     switch (OBJECT_TYPE(object)) {
 	case LispCons_t:
-	    for (; CONSP(object); object = CDR(object)) {
+	    for (cons = object;
+		 CONSP(object);
+		 cons = object, object = CDR(object)) {
 		if (READLABELP(CAR(object)))
 		    CAR(object) = LispReadLabelCircle(CAR(object), info);
 		else
 		    LispReadFixCircle(CAR(object), info);
 	    }
+	    if (READLABELP(object))
+		CDR(cons) = LispReadLabelCircle(object, info);
+	    else
+		goto fix_again;
 	    break;
 	case LispArray_t:
 	    if (READLABELP(object->data.array.list))
