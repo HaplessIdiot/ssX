@@ -1,4 +1,14 @@
 XFree86 4.4.99.3 (xx March 2004)
+  55. Fixes and updates for XKB keyboard maps:
+      - Add nodeadkeys variant to gb keymap (Philip Clayton).
+      - Rename microsoftprose keyboard model to microsoftprousb because it
+        is not Swedish specific but common USB variant (Bugzilla #1155,
+        Alex Holland)
+      - Fix wrong brokenbar keysym in de_CH keymap (Bugzilla #1255,
+        Adrian Fiechter)
+      - Add German Dvorak keymap (Bugzilla #1280, Andreas Rüden)
+      - Add Sorbian keymap (Bugzilla #1304, Edi Werner)
+      - Update Hindi/Devanagari keymap (Bugzilla #1317, David Holl)
   54. Fix xfs log file opening with -user nobody option (Matthieu Herrb).
   53. Add missing `make all` rule in sdk/Imakefile (Bugzilla #1323).
   52. Fix XDarwin's launch of X clients by double clicking in the Finder when
@@ -18788,7 +18798,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3203 2004/04/02 15:58:58 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3204 2004/04/03 10:54:02 herrb Exp $
 
 
 
