@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.4 2001/03/14 18:42:02 pookie Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.263 2002/07/19 04:24:32 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.264 2002/08/28 06:41:23 torrey Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -197,21 +197,21 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
       RANDRLIB = $(RANDRDIR)/librandr.a
 #endif
 #if DoLoadableServer
-     EXTENSIONS = $(OTHEREXTS) $(RENDERLIB) $(RANDRLIB)
+     EXTENSIONS = $(OTHEREXTS) $(RANDRLIB) $(RENDERLIB)
    LOADABLEEXTS = $(PEXLIBS) $(XIEEXT) $(MISCEXT) $(DBEEXT) $(RECORDEXT) \
                   $(GLXEXT) $(XTRAPEXT)
         MISCEXT = Xext/LibraryTargetName(ext)
       OTHEREXTS = Xext/LibraryTargetName(exts) $(XKBEXT) $(XINPUTEXT) \
                   $(LBXEXT) $(SITEEXTS)
 #else
-     EXTENSIONS = $(OTHEREXTS) $(PEXLIBS) $(GLXEXT) $(RENDERLIB) $(RANDRLIB)
+     EXTENSIONS = $(OTHEREXTS) $(PEXLIBS) $(GLXEXT) $(RANDRLIB) $(RENDERLIB)
       OTHEREXTS = Xext/LibraryTargetName(ext) $(XKBEXT) $(XINPUTEXT) \
                   $(XIEEXT) $(LBXEXT) $(DBEEXT) $(RECORDEXT) \
                   $(SITEEXTS) $(XTRAPEXT)
 #endif
         EXTDIRS = Xext $(XKBDIR) $(XIDIR) $(XIEDIR) $(PEXDIR) $(GLXDIR) \
                   $(LBXDIRS) $(DBEDIR) $(RECORDDIR) $(SITEEXTDIRS) \
-                  $(RENDERDIR) $(RANDRDIR) $(XTRAPDIR)
+                  $(RANDRDIR) $(RENDERDIR) $(XTRAPDIR)
 #if BuildLBX || GzipFontCompression
            ZLIB = GzipLibrary
 #endif
@@ -697,7 +697,7 @@ XCOMM
 
 #define StdKdDirs $(KDRIVE) $(KDOSDIR) $(PSEUDO8DIR) fb $(DEPDIRS)
 #define StdKdSysLibs $(FONTLIBS) $(SYSLIBS)
-#define KdLibs $(KD) $(KDOS) $(PSEUDO8) MiExtLibs $(RENDERLIB) $(RANDRLIB)
+#define KdLibs $(KD) $(KDOS) $(PSEUDO8) MiExtLibs $(RANDRLIB) $(RENDERLIB)
 
 #if XfbdevServer
 XCOMM
@@ -1284,7 +1284,7 @@ AQUAGLXLIB = GL/glx/LibraryTargetName(glx) \
 AQUALOADABLEEXTS = $(PEXLIBS) $(XIEEXT) $(MISCEXT) $(DBEEXT) $(RECORDEXT) \
                    $(AQUAGLXLIB)
 #else
-AQUAEXTENSIONS = $(OTHEREXTS) $(PEXLIBS) $(AQUAGLXLIB) $(RENDERLIB) $(RANDRLIB)
+AQUAEXTENSIONS = $(OTHEREXTS) $(PEXLIBS) $(AQUAGLXLIB) $(RANDRLIB) $(RENDERLIB)
 #endif
 
 #if !BuildXinerama
