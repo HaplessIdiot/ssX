@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.15 1999/04/18 04:08:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.16 2000/01/29 17:17:05 dawes Exp $ */
 
 /*
  *
@@ -80,5 +80,13 @@ void LoaderVReqSymbols(const char *, va_list args);
 void LoaderShowStack(void);
 void *LoaderSymbolHandle(const char *, int);
 int LoaderUnload(int);
+
+void LoaderResetOptions(void);
+void LoaderSetOptions(unsigned long);
+void LoaderClearOptions(unsigned long);
+
+/* Options for LoaderSetOptions */
+#define LDR_OPT_ABI_MISMATCH_NONFATAL		0x0001
+
 
 #endif /* _LOADERPROCS_H */

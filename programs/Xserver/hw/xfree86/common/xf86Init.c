@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.168 2000/10/30 23:02:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.170 2000/11/03 18:46:07 eich Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -1249,6 +1249,13 @@ ddxProcessArgument(int argc, char **argv, int i)
     xf86BestRefresh = TRUE;
     return 1;
   }
+  if (!strcmp(argv[i],"-ignoreABI"))
+  {
+#ifdef XFree86LOADER
+    LoaderSetOptions(LDR_OPT_ABI_MISMATCH_NONFATAL);
+#endif
+    return 1;
+  }
 #ifdef DO_CHECK_BETA
   if (!strcmp(argv[i],"-extendExpiry"))
   {
@@ -1531,7 +1538,8 @@ ddxUseMsg()
   ErrorF("                       from non-local clients\n");
   ErrorF("-allowMouseOpenFail    start server even if the mouse can't be initialized\n");
 #endif
-  ErrorF("-bestRefresh           chose modes with the best refresh rate\n");
+  ErrorF("-bestRefresh           choose modes with the best refresh rate\n");
+  ErrorF("-ignoreABI             make module ABI mismatches non-fatal\n");
   ErrorF("-version               show the server version\n");
   /* OS-specific usage */
   xf86UseMsg();
