@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.8 1998/01/24 16:57:53 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.9 1998/06/04 16:43:25 hohndel Exp $ */
 
 /*
  * Copyright 1994  The XFree86 Project
@@ -202,7 +202,7 @@ CHIPSLoadCursorImage(bits, xorigin, yorigin)
 	outl(DR(0xC),*(unsigned long *)tmp);
 	tmp += 2;
       }
-      tmp = bits + 1;
+      tmp = (unsigned long *)bits + 1;
       for (i=0;i<32;i++) {
 	outl(DR(0xC),*(unsigned long *)tmp);
 	tmp += 2;
