@@ -48,7 +48,7 @@
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsInit.c,v 1.2 1996/12/25 04:02:06 dawes Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -231,7 +231,7 @@ AllocatePsPrivates(ScreenPtr pScreen)
     PsGeneration = serverGeneration;
   }
   pScreen->devPrivates[PsScreenPrivateIndex].ptr =
-           (pointer)Xalloc(sizeof(PsScreenPrivRec));
+           (pointer)xalloc(sizeof(PsScreenPrivRec));
 }
 
 /*
@@ -363,7 +363,7 @@ PsDestroyContext(pCon)
   if( pConPriv->jobFileName!=(char *)NULL )
   {
     unlink(pConPriv->jobFileName);
-    Xfree(pConPriv->jobFileName);
+    xfree(pConPriv->jobFileName);
     pConPriv->jobFileName = (char *)NULL;
   }
 

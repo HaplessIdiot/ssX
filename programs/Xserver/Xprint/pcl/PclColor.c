@@ -45,7 +45,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclColor.c,v 1.2 1996/12/25 04:01:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclColor.c,v 1.3 1996/12/26 01:38:25 dawes Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -148,7 +148,7 @@ PclCreateColormap(ColormapPtr pColor)
 	/*
 	 * Set up the mapping between the color map and the context
 	 */
-    new = (PclCmapToContexts *)malloc( sizeof( PclCmapToContexts ) );
+    new = (PclCmapToContexts *)xalloc( sizeof( PclCmapToContexts ) );
 
     if( new )
       {
@@ -221,7 +221,7 @@ PclDestroyColormap(ColormapPtr pColor)
 		
 		tCon = con;
 		con = con->next;
-		free( tCon );
+		xfree( tCon );
 	    }
 	  
 	  /*
@@ -387,7 +387,7 @@ PclFindPaletteMap(PclContextPrivPtr cPriv,
       }
 
     /* If the colormap isn't already there, make an entry for it */
-    new = (PclPaletteMapPtr)malloc( sizeof( PclPaletteMap ) );
+    new = (PclPaletteMapPtr)xalloc( sizeof( PclPaletteMap ) );
     new->colormapId = cmap->mid;
     new->paletteId = cPriv->nextPaletteId++;
     new->downloaded = 0;
@@ -454,7 +454,7 @@ PclUpdateColormap(DrawablePtr pDrawable,
 		tCmap = pCmap;
 		pCmap = pCmap->next;
 	    }
-	  new = (PclContextListPtr)malloc( sizeof( PclContextList ) );
+	  new = (PclContextListPtr)xalloc( sizeof( PclContextList ) );
 	  new->context = pCon;
 	  new->next = pCmap->contexts;
 	  pCmap->contexts = new;
@@ -739,7 +739,7 @@ unsigned char *PclReadMap(char *name, int *dim)
 	return(NULL);
     }
     
-    if ((data = (unsigned char *) malloc(sizeof(char) * size)) == NULL) {
+    if ((data = (unsigned char *) xalloc(sizeof(char) * size)) == NULL) {
 	fclose(fp);
 	return(NULL);
     }

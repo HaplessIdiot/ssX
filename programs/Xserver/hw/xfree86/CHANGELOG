@@ -1,3 +1,19 @@
+XFree86 3.2l (30 December 1996)
+ 153. Fix inconsistent usage of malloc/xalloc/Xalloc in the Xprt server.
+ 152. Fix segfault at startup of clients linked with libICE on SVR4.0
+ 151. Add detection for the 250MHz ramdac used on the PowerDoc Edition
+      variant of the Matrox Millennium (Dirk Hohndel).
+ 150. Fix some comile/cpp warnings (Marc Aurele La France).
+ 149. Add support to makedepend for the '^' and '? :' operators
+      (Marc Aurele La France).
+ 148. Change GZIP to GZIPCMD in Makefiles because of a conflict with
+      an environment variable used by gzip (Marc Aurele La France).
+ 147. Fix make depend problem for xdm-shadow (Marc Aurele La France).
+ 146. Update Linux a.out support for R6.3 (Harald Koenig).
+ 145. Trident doc updates (Alan Hourihane).
+ 144. TGUI solidfill updates (Alan Hourihane).
+ 143. XC fixes.
+
 XFree86 3.2k (28 December 1996)
  142. Fix a problem introduced in 3.2i which causes the S3 server to crashed
       for cards with a Ti3026.

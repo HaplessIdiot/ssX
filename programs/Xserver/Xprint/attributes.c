@@ -44,7 +44,7 @@ copyright holders.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xprint/attributes.c,v 1.2 1996/12/26 01:38:19 dawes Exp $ */
 
 #include <Xproto.h>
 #include <string.h>
@@ -153,7 +153,7 @@ XpGetConfigDir(useLocale)
 	{
 	    if(strcmp(langName, "C") == 0)
 		return (char *)NULL;
-	    langDir = (char *)malloc(strlen(langName) + 2);
+	    langDir = (char *)xalloc(strlen(langName) + 2);
 	    sprintf(langDir, "/%s", langName);
 	    freeLangDir = True;
 	}
@@ -167,12 +167,12 @@ XpGetConfigDir(useLocale)
     if((configDir = getenv("XPCONFIGDIR")) == (char *)NULL)
 	configDir = XPRINTDIR;
 
-    dirName = (char *)malloc(strlen(configDir) + strlen(XPDIR) + 
+    dirName = (char *)xalloc(strlen(configDir) + strlen(XPDIR) + 
 			      strlen(langDir) + 1);
     sprintf(dirName, "%s%s%s", configDir, langDir, XPDIR);
 
     if(freeLangDir == True)
-	free(langDir);
+	xfree(langDir);
 
     return dirName;
 }
@@ -191,7 +191,7 @@ GetMergedDatabase(attrName)
 
     if((dirName = XpGetConfigDir(False)) == (char *)NULL)
 	return (XrmDatabase)NULL;
-    if((fileName = (char *)malloc(strlen(dirName) + strlen(attrName) + 1)) ==
+    if((fileName = (char *)xalloc(strlen(dirName) + strlen(attrName) + 1)) ==
        (char *)NULL)
 	return (XrmDatabase)NULL;
     sprintf(fileName, "%s%s", dirName, attrName);
@@ -201,7 +201,7 @@ GetMergedDatabase(attrName)
 
     if((dirName = XpGetConfigDir(True)) == (char *)NULL) 
 	return db;
-    if((fileName = (char *)malloc(strlen(dirName) + strlen(attrName) + 1)) ==
+    if((fileName = (char *)xalloc(strlen(dirName) + strlen(attrName) + 1)) ==
        (char *)NULL)
 	return db;
     sprintf(fileName, "%s%s", dirName, attrName);
@@ -320,7 +320,7 @@ BuildPrinterAttrs(printerName, qualifierName)
 
         if(value.addr != (XPointer)NULL)
         {
-            fileName = (char *)malloc(strlen(XPMODELDIR) + 
+            fileName = (char *)xalloc(strlen(XPMODELDIR) + 
 				      strlen((char *)value.addr) + 
 				      strlen("model-config") + 3);
 	    sprintf(fileName, "%s/%s/%s", XPMODELDIR, value.addr,
@@ -441,9 +441,9 @@ FreeAttrList()
 	    XrmDestroyDatabase(pAttr->docAttrs);
 	if(pAttr->jobAttrs != (XrmDatabase)NULL)
 	    XrmDestroyDatabase(pAttr->jobAttrs);
-	free(pAttr->name);
-	free(pAttr->qualifier);
-	free(pAttr);
+	xfree(pAttr->name);
+	xfree(pAttr->qualifier);
+	xfree(pAttr);
     }
     attrList = (PrAttrPtr)NULL;
 }
@@ -475,7 +475,7 @@ XpBuildAttributeStore(printerName, qualifierName)
 {
     PrAttrPtr pAttr;
 
-    if((pAttr = (PrAttrPtr)malloc(sizeof(PrAttrs))) == (PrAttrPtr)NULL)
+    if((pAttr = (PrAttrPtr)xalloc(sizeof(PrAttrs))) == (PrAttrPtr)NULL)
 	return;
 
     if(attrGeneration != serverGeneration)
@@ -888,12 +888,12 @@ XpGetAttributes( pContext, class )
     }
     if(db == (XrmDatabase)NULL) 
     {
-	char *retval = (char *)malloc(1);
+	char *retval = (char *)xalloc(1);
 	retval[0] = (char)'\0';
 	return retval;
     }
 
-    if((enumStruct.stringDb = (char *)malloc(1024)) == (char *)NULL)
+    if((enumStruct.stringDb = (char *)xalloc(1024)) == (char *)NULL)
 	return (char *)NULL;
     enumStruct.stringDb[0] = (char)'\0';
     enumStruct.nextPos = 0;
@@ -1055,13 +1055,13 @@ XpSpoolerGetServerAttributes()
     if(!localeName || strlen(localeName) == 0)
 	localeName = "C";
 
-    if((totalAttrs = (char *)malloc(strlen(serverAttrStr) + strlen(localeName)
+    if((totalAttrs = (char *)xalloc(strlen(serverAttrStr) + strlen(localeName)
 				    + 11)) == (char *)NULL)
 	return (XrmDatabase)NULL;
     sprintf(totalAttrs, "%s\n%s\t%s", serverAttrStr, "*locale:", localeName);
 
     db =  XrmGetStringDatabase(totalAttrs);
-    free(totalAttrs);
+    xfree(totalAttrs);
     return db;
 }
 
@@ -1276,7 +1276,7 @@ GetToken(
 	    break;
     }
 
-    if((*outStr = (char *)malloc(i + 1)) == (char *)NULL)
+    if((*outStr = (char *)xalloc(i + 1)) == (char *)NULL)
 	return 0;
     strncpy(*outStr, tok, i);
     (*outStr)[i] = (char)'\0';
@@ -1292,8 +1292,8 @@ FreeVector(
     if(vector == (char **)NULL) return;
 
     for(i = 0; vector[i] != (char *)NULL; i++)
-	free(vector[i]);
-    free(vector);
+	xfree(vector[i]);
+    xfree(vector);
 }
 
 
@@ -1313,7 +1313,7 @@ AddVector(
     for(numAdd = 0; pAddition[numAdd] != (char *)NULL; numAdd++)
 	;
 
-    *pTarget = (char **)realloc((void *)*pTarget, (numTarget + numAdd + 1) * 
+    *pTarget = (char **)xrealloc((void *)*pTarget, (numTarget + numAdd + 1) * 
 	       sizeof(char *));
     if(*pTarget == (char **)NULL)
 	return;
@@ -1334,7 +1334,7 @@ BuildArgVector(
     static int beenHere = 0; /* prevent recursion on embedded %options%
 			     */
 
-    pVector = (char **)malloc(sizeof(char *));
+    pVector = (char **)xalloc(sizeof(char *));
     pVector[0] = (char *)NULL;
     for(i = 0; (numChars = GetToken(argString, &curTok)) != 0; 
 	i++, argString += numChars)
@@ -1343,11 +1343,12 @@ BuildArgVector(
 	{
 	    if(curTok[0] == (char)'\0')
 	    {
-		free(curTok);
+		xfree(curTok);
 	    }
 	    else
 	    {
-	        pVector = realloc((void *)pVector, (i + 2)*sizeof(char *));
+	        pVector = (char **)xrealloc((void *)pVector,
+					    (i + 2)*sizeof(char *));
 	        if(pVector == (char **)NULL)
 	            return (char **)NULL;
 	        pVector[i] = curTok;
@@ -1361,14 +1362,14 @@ BuildArgVector(
 	    curTok = ReplaceAllKeywords(pContext, curTok);
 	    beenHere = 1;
 	    optionsVec = BuildArgVector(curTok, pContext);
-	    free(curTok);
+	    xfree(curTok);
 	    beenHere = 0;
 	    AddVector(&pVector, optionsVec);
-	    free(optionsVec);
+	    xfree(optionsVec);
 	}
     }
     if(numChars == 0 && curTok != (char *)NULL)
-	free(curTok);
+	xfree(curTok);
     return pVector;
 }
 
@@ -1426,7 +1427,7 @@ XpSubmitJob(fileName, pContext)
 	return BadAlloc;
 
     cmdNam = VectorizeCommand(command, &vector, pContext);
-    free(command);
+    xfree(command);
 
     if(cmdNam == (char *)NULL)
 	return BadAlloc;
@@ -1436,10 +1437,10 @@ XpSubmitJob(fileName, pContext)
         vector[i] = ReplaceAllKeywords(pContext, vector[i]);
 	if(vector[i] == (char *)NULL)
 	{
-	    free(cmdNam);
+	    xfree(cmdNam);
 	    for(i = 0; vector[i] != (char *)NULL; i++)
-		free(vector[i]);
-	    free(vector);
+		xfree(vector[i]);
+	    xfree(vector);
 	    return BadAlloc;
 	}
     }
@@ -1451,7 +1452,7 @@ XpSubmitJob(fileName, pContext)
     SendFileToCommand(fileName, cmdNam, vector, userName);
 
     FreeVector(vector);
-    free(cmdNam);
+    xfree(cmdNam);
 }
 
 /*
@@ -1493,20 +1494,20 @@ SearchInputTrays(XpContextPtr pCon,
 
 	  if( which == MEDIUM && !strcmp( val, medium ) )
 	    {
-		free( copy );
+		xfree( copy );
 		return strdup( tray );
 	    }
 
 	  if( which == TRAY && !strcmp( val, tray ) )
 	    {
-		free( copy );
+		xfree( copy );
 		return strdup( medium );
 	    }
 	  
 	  pS = pE + 1;
       }
 
-    free( copy );
+    xfree( copy );
     return strdup( NULL_STRING );
 }
 
@@ -1545,7 +1546,7 @@ XpGetTrayMediumFromContext(XpContextPtr pCon,
     m = SearchInputTrays( pCon, TRAY, defTray );
     if( !strcmp( m, defMedium ) )
       {
-	  Xfree( m );
+	  xfree( m );
 	  *tray = strdup( defTray );
 	  *medium = strdup( defMedium );
 	  return;
@@ -1571,5 +1572,5 @@ XpGetTrayMediumFromContext(XpContextPtr pCon,
      */
     *tray = strdup( defTray );
     *medium = m;
-    Xfree( t );
+    xfree( t );
 }

@@ -48,6 +48,7 @@
 **    *********************************************************
 ** 
 ********************************************************************/
+/* $XFree86$ */
 
 #include "Xos.h"	/* for SIGCLD on pre-POSIX systems */
 #include <stdio.h>
@@ -173,7 +174,7 @@ GetPropString(
 
 	n = (pProp->format/8) * pProp->size; *//* size (bytes) of prop */
 /*
-	retVal = (char *)Xalloc(n + 1);
+	retVal = (char *)xalloc(n + 1);
 	(void)memcpy((void *)retVal, (void *)pProp->data, n);
 	retVal[n] = '\0';
 
@@ -279,7 +280,7 @@ PsLineAttrs(
     if( !nDsh ) dsh = (int *)0;
     else
     {
-      dsh = (int *)malloc(sizeof(int)*nDsh);
+      dsh = (int *)xalloc(sizeof(int)*nDsh);
       for( i=0 ; i<nDsh ; i++ ) dsh[i] = (int)pGC->dash[i]&0xFF;
     }
   }
@@ -291,5 +292,5 @@ PsLineAttrs(
     PsOut_LineAttrs(psOut, (int)pGC->lineWidth,
                     cap, join, nDsh, dsh, dshOff,
                     PsGetPixelColor(cMap, pGC->bgPixel));
-  if( nDsh && dsh ) free(dsh);
+  if( nDsh && dsh ) xfree(dsh);
 }

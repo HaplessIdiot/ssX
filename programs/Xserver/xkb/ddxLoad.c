@@ -1,5 +1,4 @@
 /* $XConsortium: ddxLoad.c /main/20 1996/12/02 10:23:54 lehors $ */
-/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.15 1996/12/23 07:10:08 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -25,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.16 1996/12/26 07:02:05 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>

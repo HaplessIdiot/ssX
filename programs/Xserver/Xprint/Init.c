@@ -50,6 +50,7 @@ copyright holders.
 **    *********************************************************
 ** 
 ********************************************************************/
+/* $XFree86$ */
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -95,9 +96,13 @@ typedef char *XPointer;
 
 extern  char    *display;		/* display number as a string */
 
+#if 0
 /* extern char *Xalloc(); */
 extern void  Xfree();
 /* extern char *Xrealloc(); */
+#else
+#include "os.h"
+#endif
 
 extern char *getenv();
 extern void XpAddPrinterAttribute();
@@ -539,11 +544,11 @@ FreeNameMap()
 	pEntry = pTmp)
     {
 	if(pEntry->name != (char *)NULL)
-	    free(pEntry->name);
+	    xfree(pEntry->name);
 	if(pEntry->qualifier != (char *)NULL)
-	    free(pEntry->qualifier);
+	    xfree(pEntry->qualifier);
 	pTmp = pEntry->next;
-	free(pEntry);
+	xfree(pEntry);
     }
     nameMap = (NameMapPtr)NULL;
 }
@@ -558,7 +563,7 @@ AddNameMap(name, qualifier)
 {
     NameMapPtr pEntry;
 
-    if((pEntry = (NameMapPtr)malloc(sizeof(NameMapEntry))) == (NameMapPtr)NULL)
+    if((pEntry = (NameMapPtr)xalloc(sizeof(NameMapEntry))) == (NameMapPtr)NULL)
 	return FALSE;
     pEntry->name = name;
     pEntry->qualifier = qualifier;
@@ -698,35 +703,37 @@ GetConfigFileName()
      */
     if(dirName = XpGetConfigDir(TRUE))
     {
-        filePath = malloc(strlen(dirName) + strlen(XPRINTERSFILENAME) + 2);
+        filePath = (char *)xalloc(strlen(dirName) +
+				  strlen(XPRINTERSFILENAME) + 2);
 
 	if(filePath == (char *)NULL)
 	{
-	    free(dirName);
+	    xfree(dirName);
 	    return (char *)NULL;
 	}
 
 	sprintf(filePath, "%s/%s", dirName, XPRINTERSFILENAME);
-	free(dirName);
+	xfree(dirName);
 	if(access(filePath, R_OK) == 0)
 	    return filePath;
 
-	free(filePath);
+	xfree(filePath);
     }
 
     if(dirName = XpGetConfigDir(FALSE))
     {
-	filePath = malloc(strlen(dirName) + strlen(XPRINTERSFILENAME) + 2);
+	filePath = (char *)xalloc(strlen(dirName) +
+				  strlen(XPRINTERSFILENAME) + 2);
 	if(filePath == (char *)NULL)
 	{
-	    free(dirName);
+	    xfree(dirName);
 	    return (char *)NULL;
 	}
 	sprintf(filePath, "%s/%s", dirName, XPRINTERSFILENAME);
-	free(dirName);
+	xfree(dirName);
 	if(access(filePath, R_OK) == 0)
 	    return filePath;
-	free(filePath);
+	xfree(filePath);
     }
     return (char *)NULL;
 }
@@ -786,7 +793,7 @@ BuildPrinterDb()
 		    name = strdup(tok);
 		    if((tok = strtok((char *)NULL, " \t\012")) == (char *)NULL)
 		    {
-			free(name);
+			xfree(name);
 			continue;
 		    }
 		    qualifier = strdup(tok);
@@ -830,7 +837,7 @@ BuildPrinterDb()
 
     if(freeConfigFileName)
     {
-	free(configFileName);
+	xfree(configFileName);
 	configFileName = (char *)NULL;
     }
 
@@ -884,7 +891,7 @@ XpRehashPrinterList()
 	if(pDrvEnt != (DriverMapPtr)NULL) 
 	    continue;
 
-	if((pDrvEnt = (DriverMapPtr)malloc(sizeof(DriverMapEntry))) == 
+	if((pDrvEnt = (DriverMapPtr)xalloc(sizeof(DriverMapEntry))) == 
 	    (DriverMapPtr)NULL)
 	{
 	    FreeDriverMap(driverMap);
@@ -962,7 +969,7 @@ ValidateFontDir(
     if(!configDir || !modelName)
 	return (char *)NULL;
 
-    pathName = (char *)Xalloc(strlen(configDir) + strlen(MODELDIRNAME) +
+    pathName = (char *)xalloc(strlen(configDir) + strlen(MODELDIRNAME) +
 			      strlen(modelName) + strlen(FONTDIRNAME) + 
 			      strlen("fonts.dir") + 5);
     if(!pathName)
@@ -971,7 +978,7 @@ ValidateFontDir(
 	    FONTDIRNAME, "fonts.dir");
     if(access(pathName, R_OK) != 0)
     {
-	Xfree(pathName);
+	xfree(pathName);
 	return (char *)NULL;
     }
     pathName[strlen(pathName) - 9] = (char)'\0'; /* erase fonts.dir */
@@ -1309,7 +1316,7 @@ PrinterInitOutput(pScreenInfo, argc, argv)
     /*
      * Allocate memory for the worst case - a driver per printer
      */
-    driverNames = (char **)Xalloc(sizeof(char *) * driverCount);
+    driverNames = (char **)xalloc(sizeof(char *) * driverCount);
 
     /*
      * Assign the driver for the first printer to the first screen
@@ -1387,7 +1394,7 @@ PrinterInitOutput(pScreenInfo, argc, argv)
 	}
     }
 
-    Xfree(driverNames);
+    xfree(driverNames);
 
     AugmentFontPath();
 
@@ -1555,7 +1562,7 @@ QualifyName(fileName, searchPath)
       if ((nextPath = strchr(curPath, ':')) != NULL)
         *nextPath = 0;
   
-      chance = (char *)malloc(strlen(curPath) + strlen(fileName) + 2);
+      chance = (char *)xalloc(strlen(curPath) + strlen(fileName) + 2);
       sprintf(chance,"%s/%s",curPath,fileName);
   
       /* see if we can read from the file */
@@ -1569,7 +1576,7 @@ QualifyName(fileName, searchPath)
         return chance;
       }
   
-      free(chance);
+      xfree(chance);
 
       if (nextPath == NULL) /* End of path list? */
         break;

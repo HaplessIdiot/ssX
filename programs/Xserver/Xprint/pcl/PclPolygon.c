@@ -44,6 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
+/* $XFree86$ */
 
 
 #include "Pcl.h"
@@ -80,7 +81,7 @@ PclPolyRectangle( pDrawable, pGC, nRects, pRects )
      * regions. 
      */
     region = miRegionCreate( NULL, 0 );
-    drawRects = (xRectangle *)Xalloc( nRects * sizeof( xRectangle ) );
+    drawRects = (xRectangle *)xalloc( nRects * sizeof( xRectangle ) );
     
     fudge = 3 * pGC->lineWidth + 1;
     
@@ -138,7 +139,7 @@ PclPolyRectangle( pDrawable, pGC, nRects, pRects )
      */
     miRegionDestroy( drawRegion );
     miRegionDestroy( region );
-    Xfree( drawRects );
+    xfree( drawRects );
 }
 
 void
@@ -291,7 +292,7 @@ PclPolyFillRect( pDrawable, pGC, nRects, pRects )
      * regions.
      */
     region = miRegionCreate( NULL, 0 );
-    drawRects = (xRectangle *)Xalloc( nRects * sizeof( xRectangle ) );
+    drawRects = (xRectangle *)xalloc( nRects * sizeof( xRectangle ) );
 
 
     fudge = 3 * pGC->lineWidth + 1;
@@ -349,6 +350,6 @@ PclPolyFillRect( pDrawable, pGC, nRects, pRects )
      */
     miRegionDestroy( drawRegion );
     miRegionDestroy( region );
-    Xfree( drawRects );
+    xfree( drawRects );
 }
 

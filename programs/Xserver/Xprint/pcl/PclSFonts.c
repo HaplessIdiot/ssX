@@ -45,6 +45,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
+/* $XFree86$ */
 
 
 #include <stdio.h>
@@ -134,7 +135,7 @@ PclCreateSoftFontInfo(
 {
 PclSoftFontInfoPtr pSoftFontInfo;
 
-    pSoftFontInfo = (PclSoftFontInfoPtr)Xalloc(sizeof(PclSoftFontInfoRec));
+    pSoftFontInfo = (PclSoftFontInfoPtr)xalloc(sizeof(PclSoftFontInfoRec));
     if ( pSoftFontInfo == (PclSoftFontInfoPtr) NULL)
 	return (PclSoftFontInfoPtr) NULL;
     pSoftFontInfo->phead8 = (PclFontHead8Ptr)NULL;
@@ -161,35 +162,35 @@ int i, j;
 
     pfh8  = pSoftFontInfo->phead8;
     while (pfh8 != (PclFontHead8Ptr) NULL) {
-	Xfree(pfh8->fontname);
-	Xfree(pfh8->index);
+	xfree(pfh8->fontname);
+	xfree(pfh8->index);
 	pfh8_next = pfh8->next;
-	Xfree(pfh8);
+	xfree(pfh8);
 	pfh8 = pfh8_next;
     }
 
     pfh16 = pSoftFontInfo->phead16;
     while (pfh16 != (PclFontHead16Ptr) NULL) {
-	Xfree(pfh16->fontname);
+	xfree(pfh16->fontname);
 	nindex_col = pfh16->lastCol - pfh16->firstCol + 1;
 	nindex_row = pfh16->lastRow - pfh16->firstRow + 1;
 	for (i=0; i<nindex_row; i++)
-	    Xfree(pfh16->index[i]);
-	Xfree(pfh16->index);
+	    xfree(pfh16->index[i]);
+	xfree(pfh16->index);
 	pfh16_next = pfh16->next;
-	Xfree(pfh16);
+	xfree(pfh16);
 	pfh16 = pfh16_next;
     }
 
     pin = pSoftFontInfo->pinfont;
     while (pin != (PclInternalFontPtr) NULL) {
-	Xfree(pin->fontname);
+	xfree(pin->fontname);
 	pin_next = pin->next;
-	Xfree(pin);
+	xfree(pin);
 	pin = pin_next;
     }
 
-    Xfree(pSoftFontInfo);
+    xfree(pSoftFontInfo);
 }
 
 /* -*- PclDownloadHeader -*-
@@ -333,7 +334,7 @@ unsigned char *raster;
      */
     if (raster) {
 	fwrite(raster, nbytes, 1, fp);
-	Xfree(raster);
+	xfree(raster);
     } else
 	fwrite(cd->raster_top, nbytes, 1, fp);
 
@@ -364,12 +365,12 @@ int i, j, k, w;
     *nbytes = cd->height * byte_width;
 
     /* Create buffer for storing compress bitmap glyph  */
-    raster = (unsigned char *)Xalloc(*nbytes);
+    raster = (unsigned char *)xalloc(*nbytes);
     rptr_s = raster;
     rptr_e = raster;
     rptr_end = raster + *nbytes;
 
-    tmp_s = (unsigned char *)Xalloc(cd->width * 8 + 2);
+    tmp_s = (unsigned char *)xalloc(cd->width * 8 + 2);
 
     p = cd->raster_top;
     for (i=0; i<cd->height; i++) {
@@ -414,8 +415,8 @@ int i, j, k, w;
 	    *rptr_s += 1;
 	else {
 	    if ( rptr_e + (tmp_ptr - tmp_s) > rptr_end ) {
-		Xfree(raster);
-		Xfree(tmp_s);
+		xfree(raster);
+		xfree(tmp_s);
 		return (unsigned char *)NULL;
 	    }
 	    memcpy (rptr_e, tmp_s, tmp_ptr - tmp_s);
@@ -423,7 +424,7 @@ int i, j, k, w;
 	    rptr_e = rptr_s + (tmp_ptr - tmp_s);
 	}
     }
-    Xfree(tmp_s);
+    xfree(tmp_s);
     *nbytes = rptr_e - raster;
 
     return raster;

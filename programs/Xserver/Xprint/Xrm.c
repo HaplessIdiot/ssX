@@ -57,6 +57,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XFree86$ */
 
 #include	<stdio.h>
 #include	<ctype.h>
@@ -487,7 +488,7 @@ static XrmDatabase NewDatabase()
 {
     register XrmDatabase db;
 
-    db = (XrmDatabase) Xalloc(sizeof(XrmHashBucketRec));
+    db = (XrmDatabase) xalloc(sizeof(XrmHashBucketRec));
     if (db) {
 	db->table = (NTable)NULL;
 #ifdef NOT_IN_SERVER
@@ -525,7 +526,7 @@ static void MoveValues(ftable, ttable)
 	    fentry->next = tentry;
 	}
     }
-    Xfree((char *)ftable->buckets);
+    xfree((char *)ftable->buckets);
 }
 
 /* move all tables from ftable to ttable, and free ftable.
@@ -552,7 +553,7 @@ static void MoveTables(ftable, ttable)
 	    fentry->next = tentry;
 	}
     }
-    Xfree((char *)ftable);
+    xfree((char *)ftable);
 }
 
 /* grow the table, based on current number of entries */
@@ -576,7 +577,7 @@ static void GrowTable(prev)
 	ltable = (LTable)table;
 	/* cons up a copy to make MoveValues look symmetric */
 	otable = *ltable;
-	ltable->buckets = (VEntry *)Xalloc(i * sizeof(VEntry));
+	ltable->buckets = (VEntry *)xalloc(i * sizeof(VEntry));
 	if (!ltable->buckets) {
 	    ltable->buckets = otable.buckets;
 	    return;
@@ -587,7 +588,7 @@ static void GrowTable(prev)
     } else {
 	register NTable ntable;
 
-	ntable = (NTable)Xalloc(sizeof(NTableRec) + i * sizeof(NTable));
+	ntable = (NTable)xalloc(sizeof(NTableRec) + i * sizeof(NTable));
 	if (!ntable)
 	    return;
 	*ntable = *table;
@@ -645,7 +646,7 @@ static void MergeValues(ftable, pprev, override)
 		    fentry = *prev;
 		    *prev = tentry->next;
 		    /* free the overridden entry */
-		    Xfree((char *)tentry);
+		    xfree((char *)tentry);
 		    /* get next tentry */
 		    tentry = *prev;
 		} else {
@@ -654,7 +655,7 @@ static void MergeValues(ftable, pprev, override)
 		    tentry = fentry; /* use as a temp var */
 		    fentry = fentry->next;
 		    /* free the overpowered entry */
-		    Xfree((char *)tentry);
+		    xfree((char *)tentry);
 		    /* get next tentry */
 		    tentry = *prev;
 		}
@@ -672,8 +673,8 @@ static void MergeValues(ftable, pprev, override)
 	    }
 	}
     }
-    Xfree((char *)ftable->buckets);
-    Xfree((char *)ftable);
+    xfree((char *)ftable->buckets);
+    xfree((char *)ftable);
     /* resize if necessary, now that we're all done */
     GROW(pprev);
 }
@@ -747,7 +748,7 @@ static void MergeTables(ftable, pprev, override)
 	    }
 	}
     }
-    Xfree((char *)ftable);
+    xfree((char *)ftable);
     /* resize if necessary, now that we're all done */
     GROW(pprev);
 }
@@ -793,7 +794,7 @@ void XrmCombineDatabase(from, into, override)
 	    }
 	}
 	(from->methods->destroy)(from->mbstate);
-	Xfree((char *)from);
+	xfree((char *)from);
     }
 }
 
@@ -819,7 +820,7 @@ static void PutEntry(db, bindings, quarks, type, value)
     NTable *nprev, *firstpprev;
 
 #define NEWTABLE(q,i) \
-    table = (NTable)Xalloc(sizeof(LTableRec)); \
+    table = (NTable)xalloc(sizeof(LTableRec)); \
     if (!table) \
 	return; \
     table->name = q; \
@@ -832,7 +833,7 @@ static void PutEntry(db, bindings, quarks, type, value)
 	nprev = NodeBuckets(table); \
     } else { \
 	table->leaf = 1; \
-	if (!(nprev = (NTable *)Xalloc(sizeof(VEntry *)))) \
+	if (!(nprev = (NTable *)xalloc(sizeof(VEntry *)))) \
 	    return; \
 	((LTable)table)->buckets = (VEntry *)nprev; \
     } \
@@ -918,7 +919,7 @@ static void PutEntry(db, bindings, quarks, type, value)
 		}
 		/* splice out and free old entry */
 		*vprev = entry->next;
-		Xfree((char *)entry);
+		xfree((char *)entry);
 		(*pprev)->entries--;
 	    }
 	    /* this is where to insert */
@@ -944,7 +945,7 @@ static void PutEntry(db, bindings, quarks, type, value)
 	prev = nprev;
     }
     /* now allocate the value entry */
-    entry = (VEntry)Xalloc(((type == XrmQString) ?
+    entry = (VEntry)xalloc(((type == XrmQString) ?
 			     sizeof(VEntryRec) : sizeof(DEntryRec)) +
 			    value->size);
     if (!entry)
@@ -974,10 +975,10 @@ static void PutEntry(db, bindings, quarks, type, value)
 	unsigned oldsize = (maxResourceQuark + 1) >> 3;
 	unsigned size = ((q | 0x7f) + 1) >> 3; /* reallocate in chunks */
 	if (resourceQuarks)
-	    resourceQuarks = (unsigned char *)Xrealloc((char *)resourceQuarks,
+	    resourceQuarks = (unsigned char *)xrealloc((char *)resourceQuarks,
 						       size);
 	else
-	    resourceQuarks = (unsigned char *)Xalloc(size);
+	    resourceQuarks = (unsigned char *)xalloc(size);
 	if (resourceQuarks) {
 	    bzero((char *)&resourceQuarks[oldsize], size - oldsize);
 	    maxResourceQuark = (size << 3) - 1;
@@ -1094,7 +1095,7 @@ static void GetDatabase(db, str, filename, doall)
     if (!db)
 	return;
 
-    if (!(value_str = (char *)Xalloc(sizeof(char) * alloc_chars)))
+    if (!(value_str = (char *)xalloc(sizeof(char) * alloc_chars)))
 	return;
 
     (*db->methods->mbinit)(db->mbstate);
@@ -1427,10 +1428,10 @@ static void GetDatabase(db, str, filename, doall)
 		char * temp_str;
 
 		alloc_chars += BUFSIZ/10;		
-		temp_str = (char *)Xrealloc(value_str, sizeof(char) * alloc_chars);
+		temp_str = (char *)xrealloc(value_str, sizeof(char) * alloc_chars);
 
 		if (!temp_str) {
-		    Xfree(value_str);
+		    xfree(value_str);
 		    (*db->methods->mbfinish)(db->mbstate);
 		    return;
 		}
@@ -1455,7 +1456,7 @@ static void GetDatabase(db, str, filename, doall)
 	PutEntry(db, bindings, quarks, XrmQString, &value);
     }
 
-    Xfree(value_str);
+    xfree(value_str);
     (*db->methods->mbfinish)(db->mbstate);
 }
 
@@ -1530,7 +1531,7 @@ char * filename;
 
     GetSizeOfFile(filename, size);
 	
-    if (!(filebuf = (char *)Xalloc(size + 1))) { /* leave room for '\0' */
+    if (!(filebuf = (char *)xalloc(size + 1))) { /* leave room for '\0' */
 	close(fd);
 	return (char *)NULL;
     }
@@ -1538,7 +1539,7 @@ char * filename;
     if (ReadFile(fd, filebuf, size) != size) { /* If we didn't read the
 						  correct number of bytes. */
 	CloseFile(fd);
-	Xfree(filebuf);
+	xfree(filebuf);
 	return (char *)NULL;
     }
     CloseFile(fd);
@@ -1574,7 +1575,7 @@ GetIncludeFile(db, base, fname, fnamelen)
     if (!(str = ReadInFile(realfname)))
 	return;
     GetDatabase(db, str, realfname, True);
-    Xfree(str);
+    xfree(str);
 }
 
 #if NeedFunctionPrototypes
@@ -1593,7 +1594,7 @@ XrmDatabase XrmGetFileDatabase(filename)
 
     db = NewDatabase();
     GetDatabase(db, str, filename, True);
-    Xfree(str);
+    xfree(str);
     return db;
 }
 
@@ -1621,7 +1622,7 @@ Status XrmCombineFileDatabase(filename, target, override)
     } else
 	db = NewDatabase();
     GetDatabase(db, str, filename, True);
-    Xfree(str);
+    xfree(str);
     if (!override)
 	XrmCombineDatabase(db, target, False);
     return 1;
@@ -2506,11 +2507,11 @@ static void DestroyLTable(table)
     for (i = table->table.mask; i >= 0; i--, buckets++) {
 	for (next = *buckets; entry = next; ) {
 	    next = entry->next;
-	    Xfree((char *)entry);
+	    xfree((char *)entry);
 	}
     }
-    Xfree((char *)table->buckets);
-    Xfree((char *)table);
+    xfree((char *)table->buckets);
+    xfree((char *)table);
 }
 
 /* destroy all contained tables, plus table itself */
@@ -2531,7 +2532,7 @@ static void DestroyNTable(table)
 		DestroyNTable(entry);
 	}
     }
-    Xfree((char *)table);
+    xfree((char *)table);
 }
 
 char *XrmLocaleOfDatabase(db)
@@ -2554,6 +2555,6 @@ void XrmDestroyDatabase(db)
 		DestroyNTable(table);
 	}
 	(*db->methods->destroy)(db->mbstate);
-	Xfree((char *)db);
+	xfree((char *)db);
     }
 }

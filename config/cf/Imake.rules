@@ -1,7 +1,7 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
 XCOMM rules:  $XConsortium: Imake.rules /main/217 1996/12/05 09:48:26 kaleb $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.29 1996/12/23 05:50:04 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.30 1996/12/26 06:58:47 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1814,6 +1814,8 @@ dst.c:  src.c								@@\
 	$(LN) $? $@							@@\
 									@@\
 SpecialCObjectRule(dst,NullParameter,flags)				@@\
+									@@\
+includes:: dst.c							@@\
 									@@\
 depend::  dst.c								@@\
 									@@\

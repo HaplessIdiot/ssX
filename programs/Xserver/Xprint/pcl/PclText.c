@@ -44,6 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
+/* $XFree86$ */
 
 #ifdef DO_TWO_BYTE_PCL
 #include "iconv.h"
@@ -140,7 +141,7 @@ char font_type;
 		fillCharDescData(&cd, *chinfo);
         	PclDownloadSoftFont8(pConPriv->pJobFile, pSoftFontInfo,
 					pfh8, &cd, p);
-        	Xfree(cd.raster_top);
+        	xfree(cd.raster_top);
 	    }
 	}
 
@@ -327,7 +328,7 @@ char font_type;
 		fillCharDescData(&cd, *chinfo);
 		PclDownloadSoftFont16(pConPriv->pJobFile, pSoftFontInfo,
 				pfh16, &cd, row, col);
-		Xfree(cd.raster_top);
+		xfree(cd.raster_top);
 	    }
 	}
 
@@ -531,7 +532,7 @@ unsigned int space_width;
     /*
      * Create Font Header Information
      */
-    pfh8 = (PclFontHead8Ptr)Xalloc(sizeof(PclFontHead8Rec));
+    pfh8 = (PclFontHead8Ptr)xalloc(sizeof(PclFontHead8Rec));
     if (pfh8 == (PclFontHead8Ptr)NULL)
 	return (PclFontHead8Ptr)NULL;
 
@@ -545,18 +546,18 @@ unsigned int space_width;
 
     fillFontDescData(pfont, &(pfh8->fd), space_width);
     pfh8->fid = 0;
-    pfh8->fontname = (char *)Xalloc(strlen(fontname) + 1);
+    pfh8->fontname = (char *)xalloc(strlen(fontname) + 1);
     if (pfh8->fontname == (char *)NULL) {
-	Xfree(pfh8);
+	xfree(pfh8);
 	return (PclFontHead8Ptr) NULL;
     }
     strcpy(pfh8->fontname, fontname);
 
     nindex = 0xff;
-    pfh8->index = (unsigned char *)Xalloc(nindex);
+    pfh8->index = (unsigned char *)xalloc(nindex);
     if ( pfh8->index == (unsigned char *) NULL ) {
-	Xfree(pfh8->fontname);
-	Xfree(pfh8);
+	xfree(pfh8->fontname);
+	xfree(pfh8);
 	return (PclFontHead8Ptr) NULL;
     }
 
@@ -607,7 +608,7 @@ unsigned int space_width;
     /*
      * Create Font Header Information
      */
-    pfh16 = (PclFontHead16Ptr)Xalloc(sizeof(PclFontHead16Rec));
+    pfh16 = (PclFontHead16Ptr)xalloc(sizeof(PclFontHead16Rec));
     if (pfh16 == (PclFontHead16Ptr)NULL)
 	return (PclFontHead16Ptr)NULL;
 
@@ -624,9 +625,9 @@ unsigned int space_width;
     fillFontDescData(pfont, &(pfh16->fd), space_width);
     pfh16->cur_fid = 0;
     pfh16->cur_cindex = 0;
-    pfh16->fontname = (char *)Xalloc(strlen(fontname) + 1);
+    pfh16->fontname = (char *)xalloc(strlen(fontname) + 1);
     if (pfh16->fontname == (char *)NULL) {
-	Xfree(pfh16);
+	xfree(pfh16);
 	return (PclFontHead16Ptr) NULL;
     }
     strcpy(pfh16->fontname, fontname);
@@ -634,19 +635,19 @@ unsigned int space_width;
     pfi = (FontInfoRec *)&pfont->info;
     nindex_col = pfi->lastCol - pfi->firstCol + 1;
     nindex_row = pfi->lastRow - pfi->firstRow + 1;
-    index = (PclFontMapRec **)Xalloc(sizeof(PclFontMapRec *)*nindex_row);
+    index = (PclFontMapRec **)xalloc(sizeof(PclFontMapRec *)*nindex_row);
     if (index == (PclFontMapRec **)NULL) {
-	Xfree(pfh16->fontname);
-	Xfree(pfh16);
+	xfree(pfh16->fontname);
+	xfree(pfh16);
 	return (PclFontHead16Ptr) NULL;
     }
     for (i=0; i<nindex_row; i++) {
-	index[i] = (PclFontMapRec *)Xalloc(sizeof(PclFontMapRec)*nindex_col);
+	index[i] = (PclFontMapRec *)xalloc(sizeof(PclFontMapRec)*nindex_col);
 	if (index[i] == (PclFontMapRec *)NULL) {
 	    for(j=0; j<i; j++)
-		Xfree(index[j]);
-	    Xfree(pfh16->fontname);
-	    Xfree(pfh16);
+		xfree(index[j]);
+	    xfree(pfh16->fontname);
+	    xfree(pfh16);
 	    return (PclFontHead16Ptr) NULL;
 	}
         for (j=0; j<=nindex_col; j++)
@@ -701,13 +702,13 @@ int i;
     /*
      * Create Internal Font Information
      */
-    pin = (PclInternalFontPtr)Xalloc(sizeof(PclInternalFontRec));
+    pin = (PclInternalFontPtr)xalloc(sizeof(PclInternalFontRec));
     if (pin == (PclInternalFontPtr)NULL)
 	return (PclInternalFontPtr)NULL;
 
-    pin->fontname = (char *)Xalloc(strlen(fontname) + 1);
+    pin->fontname = (char *)xalloc(strlen(fontname) + 1);
     if (pin->fontname == (char *)NULL) {
-	Xfree(pin);
+	xfree(pin);
 	return (PclInternalFontPtr) NULL;
     }
     strcpy(pin->fontname, fontname);
@@ -739,8 +740,8 @@ int i;
 	}
     }
     if ( mask != 0x1f ) {
-	Xfree(pin->fontname);
-	Xfree(pin);
+	xfree(pin->fontname);
+	xfree(pin);
 	return (PclInternalFontPtr) NULL;
     }
 
@@ -799,7 +800,7 @@ int i, j;
     pcd->font_pitch = pci->metrics.characterWidth;
 
     byte_width = (pcd->width + 7)/8;
-    pcd->raster_top = (unsigned char *)Xalloc(byte_width * pcd->height);
+    pcd->raster_top = (unsigned char *)xalloc(byte_width * pcd->height);
     if (pcd->raster_top == (unsigned char *)NULL)
 	return (PclCharDataPtr)NULL;
 

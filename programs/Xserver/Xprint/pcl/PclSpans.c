@@ -44,6 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
+/* $XFree86$ */
 
 
 #include "Pcl.h"
@@ -74,7 +75,7 @@ PclFillSpans( pDrawable, pGC, nSpans, pPoints, pWidths, fSorted )
     /*
      * Build a region out of the spans
      */
-    rects = (xRectangle *)Xalloc( nSpans * sizeof( xRectangle ) );
+    rects = (xRectangle *)xalloc( nSpans * sizeof( xRectangle ) );
     xoffset = pDrawable->x;
     yoffset = pDrawable->y;
     
@@ -118,7 +119,7 @@ PclFillSpans( pDrawable, pGC, nSpans, pPoints, pWidths, fSorted )
      */
     miRegionDestroy( fillRegion );
     miRegionDestroy( region );
-    Xfree( rects );
+    xfree( rects );
 }
 
 void

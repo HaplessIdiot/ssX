@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclWindow.c,v 1.2 1996/12/24 08:47:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclWindow.c,v 1.3 1996/12/25 04:01:57 dawes Exp $ */
 
 
 #include <stdio.h>
@@ -129,7 +129,7 @@ PclCreateWindow(
 	        ChangeWindowProperty(pWin, propName, XA_STRING, 8, 
 			             PropModeReplace,  strlen(propVal), 
 			             (pointer)propVal, FALSE);
-	        Xfree(propVal);
+	        xfree(propVal);
 	    }
 	}
     }

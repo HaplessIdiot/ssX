@@ -48,8 +48,10 @@
 **    *********************************************************
 **
 ********************************************************************/
+/* $XFree86$ */
 
 #include <stdlib.h>
+#include "os.h"
 #include "psout.h"
 
 PsElmPtr PsCloneFillElementList(int nElms, PsElmPtr elms);
@@ -423,7 +425,7 @@ PsOut_BeginFile(FILE *fp)
  *  Get ready to output PostScript header
  */
   PsOutPtr psout;
-  psout = (PsOutPtr)malloc(sizeof(PsOutRec));
+  psout = (PsOutPtr)xalloc(sizeof(PsOutRec));
   memset(psout, 0, sizeof(PsOutRec));
   psout->Fp = fp;
 
@@ -465,14 +467,14 @@ PsOut_EndFile(PsOutPtr self, int closeFile)
   int  i;
 
   S_Comment(self, "%%EOF");
-  if( self->NDashes && self->Dashes ) free(self->Dashes);
-  if( self->FontName ) free(self->FontName);
-  if( self->Patterns ) free(self->Patterns);
-  if( self->Clip.rects ) free(self->Clip.rects);
+  if( self->NDashes && self->Dashes ) xfree(self->Dashes);
+  if( self->FontName ) xfree(self->FontName);
+  if( self->Patterns ) xfree(self->Patterns);
+  if( self->Clip.rects ) xfree(self->Clip.rects);
   if( closeFile ) fclose(self->Fp);
-  for( i=0 ; i<self->NDownloads ; i++ ) free(self->Downloads[i]);
-  if( self->Downloads ) free(self->Downloads);
-  free(self);
+  for( i=0 ; i<self->NDownloads ; i++ ) xfree(self->Downloads[i]);
+  if( self->Downloads ) xfree(self->Downloads);
+  xfree(self);
 }
 
 void
@@ -528,8 +530,8 @@ PsOut_DirtyAttributes(PsOutPtr self)
   self->NDashes     = -1;
   self->FontSize    = -1;
   for( i=0 ; i<4 ; i++ ) self->FontMtx[i] = -1.;
-  if( self->Dashes   ) { free(self->Dashes);   self->Dashes   = (int *)0;  }
-  if( self->FontName ) { free(self->FontName); self->FontName = (char *)0; }
+  if( self->Dashes   ) { xfree(self->Dashes);   self->Dashes   = (int *)0;  }
+  if( self->FontName ) { xfree(self->FontName); self->FontName = (char *)0; }
 }
 
 void
@@ -611,8 +613,8 @@ PsOut_Clip(PsOutPtr self, int clpTyp, PsClipPtr clpinf)
   }
   if( !changed ) return;
 
-  if( self->Clip.rects )       free(self->Clip.rects);
-  if( self->Clip.outterClips ) free(self->Clip.outterClips);
+  if( self->Clip.rects )       xfree(self->Clip.rects);
+  if( self->Clip.outterClips ) xfree(self->Clip.outterClips);
   if( self->Clip.elms )
     PsDestroyFillElementList(self->Clip.nElms, self->Clip.elms);
   self->ClipType          = clpTyp;
@@ -621,13 +623,14 @@ PsOut_Clip(PsOutPtr self, int clpTyp, PsClipPtr clpinf)
   self->Clip.nOutterClips = clpinf->nOutterClips;
   if( clpinf->nRects )
   {
-    self->Clip.rects = malloc(clpinf->nRects*sizeof(PsRectRec));
+    self->Clip.rects = (PsRectPtr)xalloc(clpinf->nRects*sizeof(PsRectRec));
     memcpy(self->Clip.rects, clpinf->rects, clpinf->nRects*sizeof(PsRectRec));
   }
   else self->Clip.rects = 0;
   if( clpinf->nOutterClips )
   {
-    self->Clip.outterClips = malloc(clpinf->nOutterClips*sizeof(PsRectRec));
+    self->Clip.outterClips = (PsRectPtr)xalloc(clpinf->nOutterClips*
+					       sizeof(PsRectRec));
     memcpy(self->Clip.outterClips, clpinf->outterClips,
            clpinf->nOutterClips*sizeof(PsRectRec));
   }
@@ -756,10 +759,10 @@ PsOut_LineAttrs(PsOutPtr self, int wd, PsCapEnum cap, PsJoinEnum join,
   if( !same )
   {
     if( self->NDashes && self->Dashes )
-      { free(self->Dashes); self->Dashes = (int *)0; }
+      { xfree(self->Dashes); self->Dashes = (int *)0; }
     self->NDashes    = nDsh;
     self->DashOffset = dshOff;
-    if( nDsh ) self->Dashes = (int *)malloc(sizeof(int)*nDsh);
+    if( nDsh ) self->Dashes = (int *)xalloc(sizeof(int)*nDsh);
     S_OutTok(self, "[", 0);
     for( i=0 ; i<nDsh ; i++ )
     {
@@ -781,8 +784,8 @@ PsOut_TextAttrs(PsOutPtr self, char *fnam, int siz, int iso)
   char      buf[256];
   if( self->FontName && strcmp(fnam, self->FontName)==0 &&
       siz==self->FontSize ) return;
-  if( self->FontName ) free(self->FontName);
-  self->FontName = malloc(strlen(fnam)+1);
+  if( self->FontName ) xfree(self->FontName);
+  self->FontName = (char *)xalloc(strlen(fnam)+1);
   strcpy(self->FontName, fnam);
   self->FontSize = siz;
   for( i=0 ; i<4 ; i++ ) self->FontMtx[i] = -1.;
@@ -802,8 +805,8 @@ PsOut_TextAttrsMtx(PsOutPtr self, char *fnam, float *mtx, int iso)
   if( self->FontName && strcmp(fnam, self->FontName)==0 &&
       mtx[0]==self->FontMtx[0] && mtx[1]==self->FontMtx[1] &&
       mtx[2]==self->FontMtx[2] && mtx[3]==self->FontMtx[3] ) return;
-  if( self->FontName ) free(self->FontName);
-  self->FontName = malloc(strlen(fnam)+1);
+  if( self->FontName ) xfree(self->FontName);
+  self->FontName = (char *)xalloc(strlen(fnam)+1);
   strcpy(self->FontName, fnam);
   for( i=0 ; i<4 ; i++ ) self->FontMtx[i] = mtx[i];
   self->FontSize = -1;
@@ -1152,12 +1155,12 @@ PsOut_BeginPattern(PsOutPtr self, void *tag, int w, int h, PsFillEnum type,
     {
       self->MxPatterns *= 2;
       self->Patterns =
-        realloc(self->Patterns, sizeof(PsPatRec)*self->MxPatterns);
+        (PsPatPtr)xrealloc(self->Patterns, sizeof(PsPatRec)*self->MxPatterns);
     }
     else
     {
       self->MxPatterns = 64;
-      self->Patterns = malloc(sizeof(PsPatRec)*self->MxPatterns);
+      self->Patterns = (PsPatPtr)xalloc(sizeof(PsPatRec)*self->MxPatterns);
     }
   }
   self->Patterns[self->NPatterns].tag  = tag;
@@ -1243,17 +1246,17 @@ PsOut_DownloadType1(PsOutPtr self, char *name, char *fname)
     if( self->NDownloads )
     {
       self->MxDownloads *= 2;
-      self->Downloads = realloc(self->Downloads,
+      self->Downloads = (char **)xrealloc(self->Downloads,
                                 self->MxDownloads*sizeof(char *));
     }
     else
     {
       self->MxDownloads = 32;
-      self->Downloads = malloc(self->MxDownloads*sizeof(char *));
+      self->Downloads = (char **)xalloc(self->MxDownloads*sizeof(char *));
     }
   }
 
-  self->Downloads[self->NDownloads] = malloc(strlen(name)+1);
+  self->Downloads[self->NDownloads] = (char *)xalloc(strlen(name)+1);
   strcpy(self->Downloads[self->NDownloads], name);
   self->NDownloads += 1;
 

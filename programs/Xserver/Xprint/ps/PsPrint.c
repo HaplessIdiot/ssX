@@ -48,7 +48,7 @@
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsPrint.c,v 1.2 1996/12/25 04:02:08 dawes Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -126,7 +126,7 @@ PsEndJob(
     priv->pJobFile = NULL;
 
     unlink(priv->jobFileName);
-    Xfree(priv->jobFileName);
+    xfree(priv->jobFileName);
     priv->jobFileName = (char *)NULL;
 
     return Success;
@@ -152,7 +152,7 @@ PsEndJob(
     }
 
     unlink(priv->jobFileName);
-    Xfree(priv->jobFileName);
+    xfree(priv->jobFileName);
     priv->jobFileName = (char *)NULL;
 
     return BadAlloc;
@@ -184,7 +184,7 @@ PsEndJob(
   }
 
   unlink(priv->jobFileName);
-  Xfree(priv->jobFileName);
+  xfree(priv->jobFileName);
   priv->jobFileName = (char *)NULL;
 
   return r;
