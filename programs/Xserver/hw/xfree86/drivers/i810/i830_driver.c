@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.5 2001/10/31 20:09:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.6 2001/11/19 15:33:40 tsi Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -135,29 +135,6 @@ static OptionInfoRec I830BIOSOptions[] = {
    { -1, NULL, OPTV_NONE, {0}, FALSE}
 };
 
-static const char *vgahwSymbols[] = {
-   "vgaHWGetHWRec",
-   "vgaHWSave", 
-   "vgaHWRestore",
-   "vgaHWProtect",
-   "vgaHWInit",
-   "vgaHWMapMem",
-   "vgaHWSetMmioFuncs",
-   "vgaHWGetIOBase",
-   "vgaHWLock",
-   "vgaHWUnlock",
-   "vgaHWFreeHWRec",
-   "vgaHWSaveScreen",
-   "vgaHWHandleColormaps",
-   0
-};
-
-static const char *ramdacSymbols[] = {
-   "xf86InitCursor",
-   "xf86CreateCursorInfoRec",
-   "xf86DestroyCursorInfoRec",
-   NULL
-};
 
 static VBEInfoBlock *I830VESAGetVBEInfo(ScrnInfoPtr pScrn);
 static Bool I830BIOSGetRec(ScrnInfoPtr pScrn);
@@ -564,10 +541,11 @@ Bool I830BIOSPreInit (ScrnInfoPtr pScrn,int flags)
 
    /* The vgahw module should be loaded here when needed */
    if (!xf86LoadSubModule (pScrn,"vgahw")) return (FALSE);
-   xf86LoaderReqSymLists (vgahwSymbols,NULL);
+   xf86LoaderReqSymLists (I810vgahwSymbols,NULL);
 
     /* Load int10 module */
    if (!xf86LoadSubModule (pScrn,"int10")) return (FALSE);
+   xf86LoaderReqSymLists (I810int10Symbols,NULL);
 
    /* Allocate a vgaHWRec */
    if (!vgaHWGetHWRec (pScrn)) return (FALSE);
@@ -631,7 +609,6 @@ Bool I830BIOSPreInit (ScrnInfoPtr pScrn,int flags)
    pVesa = pI810->vesa;
 
    /* Initialize Vesa record */
-   if (!xf86LoadSubModule (pScrn,"int10")) return (FALSE);
 
    if ((pVesa->pInt = xf86InitInt10(pI810->pEnt->index)) == NULL)
 	 {
@@ -789,10 +766,12 @@ Bool I830BIOSPreInit (ScrnInfoPtr pScrn,int flags)
 
    /* Load vbe module */
    if((pVbeModule = xf86LoadSubModule(pScrn, "vbe")) == NULL) return FALSE;
+   xf86LoaderReqSymLists(I810vbeSymbols, NULL);
    if((pVbe = VBEInit(pVesa->pInt, pVesa->pEnt->index)) == NULL) return FALSE;
 
    /* Load ddc module */
    if((pDDCModule = xf86LoadSubModule(pScrn, "ddc")) == NULL) return FALSE;
+   xf86LoaderReqSymLists(I810ddcSymbols, NULL);
 
    if((pVesa->monitor = vbeDoEDID(pVbe, pDDCModule)) != NULL) {
       xf86PrintEDID(pVesa->monitor);
@@ -1157,13 +1136,14 @@ Bool I830BIOSPreInit (ScrnInfoPtr pScrn,int flags)
 		return FALSE;
 	 }
 
-   xf86LoaderReqSymbols ("fbScreenInit",NULL);
+   xf86LoaderReqSymLists(I810fbSymbols, NULL);
 
    if (!xf86ReturnOptValBool(I810AvailableOptions(0,0), OPTION_NOACCEL, FALSE)) {
       if (!xf86LoadSubModule(pScrn, "xaa")) {
 	 I830BIOSFreeRec(pScrn);
 	 return FALSE;
       }
+      xf86LoaderReqSymLists(I810xaaSymbols, NULL);
    }
 
    if (!xf86ReturnOptValBool(I810AvailableOptions(0,0), OPTION_SW_CURSOR, FALSE)) {
@@ -1171,7 +1151,7 @@ Bool I830BIOSPreInit (ScrnInfoPtr pScrn,int flags)
 	 I830BIOSFreeRec(pScrn);
 	 return FALSE;
       }
-      xf86LoaderReqSymLists(ramdacSymbols, NULL);
+      xf86LoaderReqSymLists(I810ramdacSymbols, NULL);
    }
 
    /*  We wont be using the VGA access after the probe */
