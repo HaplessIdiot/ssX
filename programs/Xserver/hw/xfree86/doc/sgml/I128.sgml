@@ -1,9 +1,15 @@
-<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
+<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN"[
+<!ENTITY % defs SYSTEM "defs.ent"> %defs;
+]>
 
 <article>
 <title>Information for Number Nine I128 Users
 <author>The XFree86 Project Inc.
-<date>24 October 1998
+<date>3 November 2000
+<ident>
+$XFree86$
+</ident>
+
 <toc>
 
 <sect>Supported hardware
@@ -82,16 +88,12 @@ Silicon Graphics Flat Panel display.
 <sect>Author(s)
 <p>
 
-Robin Cutshaw, <it>robin@XFree86.Org</it>
+Robin Cutshaw, <email>robin@XFree86.Org</email>
 
 and special help from:
 
 <itemize>
-<item>Galen Brooks, <it>galen@nine.com</it>
+<item>Galen Brooks, <email>galen@nine.com</email>
 </itemize>
-
-<verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/I128.sgml,v 1.3 1999/08/28 10:43:32 dawes Exp $
-</verb>
 
 </article>
