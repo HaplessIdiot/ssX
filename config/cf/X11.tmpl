@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.110 2001/04/04 22:55:10 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.111 2001/04/05 02:43:33 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -144,13 +144,13 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 /* Some bdf font generation details.  The scripts for this require perl. */
 #ifndef TruncateUCSFonts
-#define TruncateUCSFonts	HasPerl
+#define TruncateUCSFonts	HasPerl5
 #endif
 #ifndef MaxUCSChar
 #define MaxUCSChar		0x3200
 #endif
 #ifndef DerivedUCSFonts
-#define DerivedUCSFonts		HasPerl
+#define DerivedUCSFonts		HasPerl5
 #endif
 /* These primarily control generation of derived 8-bit fonts. */
 #ifndef BuildUCSFonts
@@ -2875,7 +2875,7 @@ InstallNamedTarget(install,edir/encodings.dir,$(INSTDATFLAGS),fdir,encodings.dir
 
 
 #ifndef MakeBdfFontFromUCSMaster
-#if HasPerl
+#if HasPerl5
 #define MakeBdfFontFromUCSMaster(font,enc)				@@\
 includes:: font-enc.bdf							@@\
 									@@\
@@ -2889,7 +2889,7 @@ clean::									@@\
 #endif
 
 #ifndef MakeTruncatedUCSBdfFont
-#if HasPerl
+#if HasPerl5
 #define MakeTruncatedUCSBdfFont(font,trunc,name)			@@\
 includes:: name.bdf							@@\
 									@@\
