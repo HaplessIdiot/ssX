@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.144 2003/02/20 04:05:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.145 2003/02/20 04:19:21 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -342,6 +342,7 @@ xf86ProcessActionEvent(ActionEvent action, void *arg)
 	if (VTSwitchEnabled && !xf86Info.dontVTSwitch) {
 	    if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno - 1) < 0)
 		ErrorF("Failed to switch consoles (%s)\n", strerror(errno));
+	}
 	break;
 #endif
     default:
