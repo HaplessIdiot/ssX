@@ -1,4 +1,5 @@
 XFree86 3.9Pj (18 April 1999)
+2729. Fix a bug in xf86CollectOptions() that could cause a server crash.
 2728. Fix the problem causing the mouse acceleration to be done twice
       (#2671, Frederic Lepied).
 2727. Disable clipping in the trident driver for FillRectSolid because the
@@ -7776,4 +7777,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.725 1999/04/15 06:38:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.726 1999/04/15 08:36:15 dawes Exp $
