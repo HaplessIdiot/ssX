@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.4 1999/01/23 09:56:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.5 1999/03/21 07:35:26 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -837,22 +837,11 @@ validateMonitor (XF86ConfigPtr p, XF86ConfScreenPtr screen)
 		if (!modes)
 		{
 			xf86ValidationError (UNDEFINED_MODES_MSG, 
-					     modeslnk->ml_modes_str, screen->scrn_identifier);
+					     modeslnk->ml_modes_str, 
+					     screen->scrn_identifier);
 			return (FALSE);
-		}
-		else
-		{
-			modeslnk->ml_modes = modes;
-
-			/* now add the modes found in the modes section to the list of modes
-			   for this monitor */
-			monitor->mon_modeline_lst = (XF86ConfModeLinePtr)
-				addListItem((GenericListPtr)monitor->mon_modeline_lst,
-					    (GenericListPtr)modes->mon_modeline_lst);
 		}
 		modeslnk = modeslnk->list.next;
 	}
-	/* finally add the default modes as well */
-	
 	return (TRUE);
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.94 1999/03/07 08:29:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.95 1999/03/14 03:21:49 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -74,7 +74,6 @@ Bool xf86IsPrimaryIsa(void);
 int xf86CheckPciGAType(pciVideoPtr pPci);
 
 /* xf86Config.c */
-
 
 /* xf86Cursor.c */
 

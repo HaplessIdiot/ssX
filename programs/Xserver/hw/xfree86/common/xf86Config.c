@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.163 1999/03/14 03:21:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.164 1999/03/20 08:59:08 dawes Exp $ */
 
 
 /*
@@ -44,6 +44,7 @@ static Bool configMonitor(MonPtr monitorp, XF86ConfMonitorPtr conf_monitor);
 static Bool configDevice(GDevPtr devicep, XF86ConfDevicePtr conf_device,
 			 Bool active);
 static Bool configDisplay(DispPtr displayp, XF86ConfDisplayPtr conf_display);
+static Bool addDefaultModes(MonPtr monitorp);
 
 /*
  * xf86GetPathElem --
@@ -1273,6 +1274,8 @@ configMonitor(MonPtr monitorp, XF86ConfMonitorPtr conf_monitor)
     int count;
     DisplayModePtr mode,last = NULL;
     XF86ConfModeLinePtr cmodep;
+    XF86ConfModesPtr modes;
+    XF86ConfModesLinkPtr modeslnk = conf_monitor->mon_modes_sect_lst;
     Gamma zeros = {0.0, 0.0, 0.0};
     float badgamma = 0.0;
     
@@ -1301,6 +1304,24 @@ configMonitor(MonPtr monitorp, XF86ConfMonitorPtr conf_monitor)
         monitorp->vrefresh[count].lo = conf_monitor->mon_vrefresh[count].lo;
     }
     monitorp->nVrefresh = conf_monitor->mon_n_vrefresh;
+
+    /*
+     * first we collect the mode lines from the UseModes directive
+     */
+    while(modeslnk)
+    {
+	modes = xf86FindModes (modeslnk->ml_modes_str, 
+			       xf86configptr->conf_modes_lst);
+	modeslnk->ml_modes = modes;
+	    
+	/* now add the modes found in the modes
+	   section to the list of modes for this
+	   monitor */
+	conf_monitor->mon_modeline_lst = (XF86ConfModeLinePtr)
+	    addListItem((GenericListPtr)conf_monitor->mon_modeline_lst,
+			(GenericListPtr)modes->mon_modeline_lst);
+	modeslnk = modeslnk->list.next;
+    }
 
     /*
      * we need to hook in the mode lines now
@@ -1343,6 +1364,10 @@ configMonitor(MonPtr monitorp, XF86ConfMonitorPtr conf_monitor)
       last->next = NULL;
     }
     monitorp->Last = last;
+
+    /* add the (VESA) default modes */
+    if (! addDefaultModes(monitorp) )
+	return FALSE;
 
     if (conf_monitor->mon_gamma_red > GAMMA_ZERO)
 	monitorp->gamma.red = conf_monitor->mon_gamma_red;
@@ -1488,6 +1513,58 @@ configDevice(GDevPtr devicep, XF86ConfDevicePtr conf_device, Bool active)
 	devicep->clock[i] = conf_device->dev_clock[i];
     }
     devicep->claimed = FALSE;
+
+    return TRUE;
+}
+
+static Bool
+modeIsPresent(char * modename,MonPtr monitorp)
+{
+    DisplayModePtr knownmodes = monitorp->Modes;
+
+    /* all I can think of is a linear search... */
+    while(knownmodes != NULL)
+    {
+	if(strcmp(modename,knownmodes->name) == 0)
+	    return TRUE;
+	knownmodes = knownmodes->next;
+    }
+    return FALSE;
+}
+
+static Bool
+addDefaultModes(MonPtr monitorp)
+{
+    DisplayModePtr mode;
+    DisplayModePtr last = monitorp->Last;
+    DisplayModePtr vesamodep;
+    int i = 0;
+
+    while (xf86DefaultModes[i].name != NULL)
+    {
+	if ( ! modeIsPresent(xf86DefaultModes[i].name,monitorp) )
+	    do
+	    {
+		mode = xnfalloc(sizeof(DisplayModeRec));
+		memcpy(mode,&xf86DefaultModes[i],sizeof(DisplayModeRec));
+		if( last ) {
+		    mode->prev = last;
+		    last->next = mode;
+		}
+		else {
+		    /* this is the first mode */
+		    monitorp->Modes = mode;
+		    mode->prev = NULL;
+		}
+		last = mode;
+		i++;
+	    }
+	    while((xf86DefaultModes[i].name != NULL) &&
+		  (!strcmp(xf86DefaultModes[i].name,xf86DefaultModes[i-1].name)));
+	else
+	    i++;
+    }
+    monitorp->Last = last;
 
     return TRUE;
 }

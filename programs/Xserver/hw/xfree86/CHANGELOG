@@ -1,3 +1,8 @@
+XFree86 3.9Pg (xx March 1999)
+2412. Add VESA default modes, small perl hack to create an initialized data
+      structure from them, and the code to use those modes as default if no
+      other modes with the same name are defined (Dirk Hohndel).
+
 XFree86 3.9Pf (21 March 1999)
 2411. Fix some malloc problems in xf86xv.c (Michael Schimek).
 2410. Fix building of Xprt, Xnest and Xvfb when doing a loader build
@@ -7563,4 +7568,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.711 1999/03/21 12:46:36 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.712 1999/03/21 12:59:21 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.21 1999/03/14 03:21:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.22 1999/03/14 11:18:00 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -70,7 +70,7 @@ typedef enum {
 # define M_T_CRTC_C  (0x04 | M_T_BUILTIN) /* built-in mode - configure CRTC  */
 # define M_T_CLOCK_CRTC_C  (M_T_CLOCK_C | M_T_CRTC_C)
                                /* built-in mode - configure CRTC and clock */
-
+# define M_T_DEFAULT 0x10	/* (VESA) default modes */
 /* Video mode */
 
 typedef struct _DisplayModeRec {

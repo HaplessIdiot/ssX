@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.35 1999/02/13 16:44:57 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.36 1999/03/14 03:21:53 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -97,6 +97,10 @@ void xf86AccessEnter(void);
 void xf86AccessLeave(void);
 void xf86AccessSetup(void);
 void xf86FindPrimaryDevice(void);
+
+/* xf86DefaultModes */
+
+extern DisplayModeRec xf86DefaultModes [];
 
 /* xf86Dl.c */
 

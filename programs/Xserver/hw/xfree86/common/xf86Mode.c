@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.11 1999/01/17 11:25:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.12 1999/01/26 10:40:18 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -1038,31 +1038,33 @@ xf86PruneMonitorModes(MonPtr monp)
 	n = p->next;
 	status = xf86CheckModeForMonitor(p, monp);
 	if (status != MODE_OK) {
-	    if (first) {
-		first = FALSE;
-		xf86Msg(X_INFO, "Bad modes for monitor \"%s\"\n",
+	    if ((p->type & M_T_DEFAULT) == 0) {
+		if (first) {
+		    first = FALSE;
+		    xf86Msg(X_INFO, "Bad modes for monitor \"%s\"\n",
 			    monp->id);
-	    }
-	    xf86Msg(X_INFO, "  Mode \"%s\" deleted (%s", p->name,	/*) */
+		}
+		xf86Msg(X_INFO, "  Mode \"%s\" deleted (%s", p->name,	/*) */
 			xf86ModeStatusToString(status));
-	    switch (status) {
-	    case MODE_HSYNC:
-		xf86ErrorF(": %.2f kHz", (double)p->Clock / p->HTotal);
-		break;
-	    case MODE_VSYNC:
-		refresh = p->Clock * 1000.0 / (p->HTotal * p->VTotal);
-		if (p->Flags & V_INTERLACE)
-		    refresh *= 2.0;
-		if (p->Flags & V_DBLSCAN)
-		    refresh /= 2.0;
-		if (p->VScan > 1)
-		    refresh /= (float)(p->VScan);
-		xf86ErrorF(": %.2f Hz", refresh);
-		break;
-	    default:
-		break;
+		switch (status) {
+		case MODE_HSYNC:
+		    xf86ErrorF(": %.2f kHz", (double)p->Clock / p->HTotal);
+		    break;
+		case MODE_VSYNC:
+		    refresh = p->Clock * 1000.0 / (p->HTotal * p->VTotal);
+		    if (p->Flags & V_INTERLACE)
+			refresh *= 2.0;
+		    if (p->Flags & V_DBLSCAN)
+			refresh /= 2.0;
+		    if (p->VScan > 1)
+			refresh /= (float)(p->VScan);
+		    xf86ErrorF(": %.2f Hz", refresh);
+		    break;
+		default:
+		    break;
+		}
+		xf86ErrorF( /*( */ ")\n");
 	    }
-	    xf86ErrorF( /*( */ ")\n");
 	    xf86DeleteMode(&(monp->Modes), p);
 	}
 	p = n;
@@ -1094,7 +1096,7 @@ xf86PruneDriverModes(ScrnInfoPtr scrp)
 		xf86DrvMsg(scrp->scrnIndex, X_WARNING,
 			   "Built-in mode \"%s\" deleted (%s)\n", p->name,
 			   xf86ModeStatusToString(p->status));
-	    else
+	    else if ((p->type & M_T_DEFAULT) == 0)
 		xf86DrvMsg(scrp->scrnIndex, X_WARNING,
 			   "Mode \"%s\" deleted (%s)\n", p->name,
 			   xf86ModeStatusToString(p->status));
@@ -1174,7 +1176,8 @@ xf86SetCrtcForModes(ScrnInfoPtr scrp, int adjustFlags)
 		p->CrtcHBlankStart = p->CrtcHBlankEnd - 63 * 8;
 	    }
 	}
-	ErrorF("Mode %s: %d (%d) %d %d (%d) %d %d (%d) %d %d (%d) %d\n",
+	ErrorF("%s %s: %d (%d) %d %d (%d) %d %d (%d) %d %d (%d) %d\n",
+	       (p->type & M_T_DEFAULT) ? "(VESA)Mode" : "Mode",
 	       p->name, p->CrtcHDisplay, p->CrtcHBlankStart,
 	       p->CrtcHSyncStart, p->CrtcHSyncEnd, p->CrtcHBlankEnd,
 	       p->CrtcHTotal, p->CrtcVDisplay, p->CrtcVBlankStart,
