@@ -1,4 +1,7 @@
 XFree86 3.9c (xx May 1997)
+ 856. Disable 8x8 pattern fill when less than 8 scanlines are available
+      in the XAA pixmap cache (#566, David Bateman).
+ 855. Fix some sgml problems in fbdev.sgml (#564, Matthieu Herrb).
  854. Cards db updates (#548, Koen Gadeyne, #552, Matthieu Herrb,
       #555, Harald Koenig).
  853. Make the TGA server us the same black/white pixel defaults as the
@@ -4676,4 +4679,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.479 1997/05/26 15:34:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.480 1997/05/27 06:30:52 dawes Exp $
