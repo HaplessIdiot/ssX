@@ -1,4 +1,5 @@
 XFree86 3.1.1d (19 March 1995)
+ 39. Preliminary mode checking for the VGAHelp extension.
  38. Add timeout for 3 button emulation (Mike Hench).
  37. Reorganise Ti302x code to remove S3-specifics from common_hw
      (Robin Cutshaw).

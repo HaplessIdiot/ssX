@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/include/extensions/VGAHelp.h,v 3.1 1995/03/19 10:08:11 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -43,10 +43,11 @@ from the Kaleb S. KEITHLEY
 
 #define VGAHelpNumberEvents		0
 
-#define BadClock			0
-#define BadHTimings			1
-#define BadVTimings			2
-#define VGAHelpNumberErrors		(BadVTimings + 1)
+#define VGAHelpBadClock			0
+#define VGAHelpBadHTimings		1
+#define VGAHelpBadVTimings		2
+#define VGAHelpModeUnsuitable		3
+#define VGAHelpNumberErrors		(VGAHelpModeUnsuitable + 1)
 
 #ifndef _XVGAHELP_SERVER_
 
@@ -71,9 +72,9 @@ typedef struct {
     char*		vendor;
     char*		model;
     float		bandwidth;
-    unsigned short	nhsync;
+    unsigned char	nhsync;
     XVGAHelpSyncRange*	hsync;
-    unsigned short	nvsync;
+    unsigned char	nvsync;
     XVGAHelpSyncRange*	vsync;
 } XVGAHelpMonitor;
     
