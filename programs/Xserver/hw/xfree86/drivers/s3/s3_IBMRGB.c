@@ -24,7 +24,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_IBMRGB.c,v 1.4 2002/12/11 17:30:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_IBMRGB.c,v 1.6tsi Exp $ */
 
 
 #include "xf86.h"
@@ -119,6 +119,9 @@ Bool S3ProbeIBMramdac(ScrnInfoPtr pScrn)
 		return FALSE;
 
 	pS3->RamDacRec = RamDacCreateInfoRec();
+	if (!pS3->RamDacRec)
+		return FALSE;
+
 	pS3->RamDacRec->ReadDAC = S3InIBMRGBIndReg;
 	pS3->RamDacRec->WriteDAC = S3OutIBMRGBIndReg;
 	pS3->RamDacRec->ReadAddress = S3IBMReadAddress;
@@ -129,6 +132,7 @@ Bool S3ProbeIBMramdac(ScrnInfoPtr pScrn)
 
 	if (!RamDacInit(pScrn, pS3->RamDacRec)) {
 		RamDacDestroyInfoRec(pS3->RamDacRec);
+		pS3->RamDacRec = NULL;
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "RamDacInit failed\n");
 		return FALSE;
 	}
@@ -136,6 +140,9 @@ Bool S3ProbeIBMramdac(ScrnInfoPtr pScrn)
 	pS3->RamDac = IBMramdacProbe(pScrn, S3IBMRamdacs);
 	if (pS3->RamDac)
 		return TRUE;
+
+	RamDacDestroyInfoRec(pS3->RamDacRec);
+	pS3->RamDacRec = NULL;
 
 	return FALSE;
 }
