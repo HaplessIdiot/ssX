@@ -33,7 +33,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 **
 **
 ***************************************************************************/
-/* $XFree86: xc/lib/XvMC/hw/i810/I810XvMC.c,v 1.5 2001/11/14 21:54:38 mvojkovi Exp $ */
+/* $XFree86: xc/lib/XvMC/hw/i810/I810XvMC.c,v 1.6 2001/12/04 21:17:51 tsi Exp $ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -83,6 +83,30 @@ drmBufPtr i810_get_free_buffer(i810XvMCContext *pI810XvMC) {
    buf->total = dma.request_size;
    buf->address = (drmAddress)dma.virtual;
    return buf;
+}
+
+/***************************************************************************
+// Function: free_privContext
+// Description: Free's the private context structure if the reference
+//  count is 0.
+***************************************************************************/
+void i810_free_privContext(i810XvMCContext *pI810XvMC) {
+
+  I810_LOCK(pI810XvMC,DRM_LOCK_QUIESCENT);
+
+
+  pI810XvMC->ref--;
+  if(!pI810XvMC->ref) {
+    drmUnmapBufs(pI810XvMC->dmabufs);
+    drmUnmap(pI810XvMC->overlay.address,pI810XvMC->overlay.size);
+    drmUnmap(pI810XvMC->surfaces.address,pI810XvMC->surfaces.size);
+    drmClose(pI810XvMC->fd);
+
+    free(pI810XvMC->dmabufs->list);
+    free(pI810XvMC);
+  }
+
+  I810_UNLOCK(pI810XvMC);
 }
 
 
@@ -241,7 +265,6 @@ Status XvMCCreateContext(Display *display, XvPortID port,
   free(priv_data);
   
   /* Initialize private context values */
-  pI810XvMC->num_surfaces = 0; /* FIXME: Still needed? */
   pI810XvMC->current = 0;
   pI810XvMC->lock = 0;
   pI810XvMC->last_flip = 0;
@@ -334,6 +357,8 @@ Status XvMCCreateContext(Display *display, XvPortID port,
   pI810XvMC->oregs->OV0CMD = VC_UP_INTERPOLATION | HC_UP_INTERPOLATION | 
     Y_ADJUST | YUV_420;
 
+  pI810XvMC->ref = 1;
+
   I810_UNLOCK(pI810XvMC);
 
   return Success;
@@ -382,23 +407,19 @@ Status XvMCDestroyContext(Display *display, XvMCContext *context) {
   
     /* Wait for the flip */
     BLOCK_OVERLAY(pI810XvMC,pI810XvMC->current);
+
+    I810_UNLOCK(pI810XvMC);
   }
-
-  drmUnmapBufs(pI810XvMC->dmabufs);
-  drmUnmap(pI810XvMC->overlay.address,pI810XvMC->overlay.size);
-  drmUnmap(pI810XvMC->surfaces.address,pI810XvMC->surfaces.size);
-
-  I810_UNLOCK(pI810XvMC);
-
-  drmClose(pI810XvMC->fd);
 
   /* Pass Control to the X server to destroy the drmContext */
   _xvmc_destroy_context(display, context);
-  free(pI810XvMC->dmabufs->list);
-  free(pI810XvMC);
+
+  i810_free_privContext(pI810XvMC);
   context->privData = NULL;
-  return 0;
+
+  return Success;
 }
+
 
 /***************************************************************************
 // Function: XvMCCreateSurface
@@ -420,9 +441,6 @@ Status XvMCCreateSurface( Display *display, XvMCContext *context,
     return (error_base + XvMCBadContext);
   }
 
-  if(pI810XvMC->num_surfaces >= I810_XVMC_MAXSURFACES) {
-    return BadAlloc;
-  }
 
   surface->privData = (i810XvMCSurface *)malloc(sizeof(i810XvMCSurface));
   if(!surface->privData) {
@@ -431,13 +449,14 @@ Status XvMCCreateSurface( Display *display, XvMCContext *context,
   pI810Surface = (i810XvMCSurface *)surface->privData;
 
   /* Initialize private values */
-  pI810Surface->context = context;
+  pI810Surface->privContext = pI810XvMC;
   pI810Surface->last_render = 0;
   pI810Surface->last_flip = 0;
   pI810Surface->second_field = 0;
 
   if((ret = _xvmc_create_surface(display, context, surface,
 				&priv_count, &priv_data))) {
+    free(pI810Surface);
     printf("Unable to create XvMCSurface.\n");
     return ret;
   }
@@ -450,6 +469,7 @@ Status XvMCCreateSurface( Display *display, XvMCContext *context,
     printf("_xvmc_create_surface() return incorrect data size.\n");
     printf("Expected 2 got %d\n",priv_count);
     free(priv_data);
+    free(pI810Surface);
     return BadAlloc;
   }
   /* Data == Client Address, offset == Physical address offset */
@@ -563,7 +583,8 @@ Status XvMCCreateSurface( Display *display, XvMCContext *context,
 			  pI810Surface->offsets[0]) & ~0xfc000fff;
     break;
   }
-  pI810XvMC->num_surfaces++;
+  pI810XvMC->ref++;
+
   return Success;
 }
 
@@ -586,10 +607,12 @@ Status XvMCDestroySurface(Display *display, XvMCSurface *surface) {
   if(pI810Surface->last_flip) {
     XvMCSyncSurface(display,surface);
   }
-  pI810XvMC = (i810XvMCContext *)pI810Surface->context->privData;
-  pI810XvMC->num_surfaces--;
+  pI810XvMC = (i810XvMCContext *)pI810Surface->privContext;
 
   _xvmc_destroy_surface(display,surface);
+
+  i810_free_privContext(pI810XvMC);
+
   free(pI810Surface);
   surface->privData = NULL;
   return Success;
@@ -2829,7 +2852,7 @@ Status XvMCPutSurface(Display *display,XvMCSurface *surface,
     return (error_base + XvMCBadSurface);
   }
   pI810Surface = (i810XvMCSurface *)surface->privData;
-  pI810XvMC = (i810XvMCContext *)pI810Surface->context->privData;
+  pI810XvMC = (i810XvMCContext *)pI810Surface->privContext;
   pORegs = (i810OverlayRecPtr)pI810XvMC->oregs;
 
 
@@ -3278,7 +3301,7 @@ Status XvMCFlushSurface(Display * display, XvMCSurface *surface) {
 Status XvMCGetSurfaceStatus(Display *display, XvMCSurface *surface,
 			    int *stat) {
   i810XvMCSurface *privSurface;
-  i810XvMCContext *privContext;
+  i810XvMCContext *pI810XvMC;
   int temp;
 
   if((display == NULL) || (surface == NULL) || (stat == NULL)) {
@@ -3289,15 +3312,16 @@ Status XvMCGetSurfaceStatus(Display *display, XvMCSurface *surface,
   }
   *stat = 0;
   privSurface = surface->privData;
-  if(privSurface->context->privData == NULL) {
-    return BadValue;
-  }
-  privContext = privSurface->context->privData;
 
-  I810_LOCK(privContext,0);
+  pI810XvMC = privSurface->privContext;
+  if(pI810XvMC == NULL) {
+    return (error_base + XvMCBadSurface);
+  }
+
+  I810_LOCK(pI810XvMC,0);
   if(privSurface->last_flip) {
     /* This can not happen */
-    if(privContext->last_flip < privSurface->last_flip) {
+    if(pI810XvMC->last_flip < privSurface->last_flip) {
       printf("Error: Context last flip is less than surface last flip.\n");
       return BadValue;
     }
@@ -3305,12 +3329,12 @@ Status XvMCGetSurfaceStatus(Display *display, XvMCSurface *surface,
       If the context has 2 or more flips after this surface it
       cannot be displaying. Don't bother to check.
     */
-    if(!(privContext->last_flip > (privSurface->last_flip + 1))) {
+    if(!(pI810XvMC->last_flip > (privSurface->last_flip + 1))) {
       /*
-	If this surface was the last flipped is is either displaying
+	If this surface was the last flipped it is either displaying
 	or about to be so don't bother checking.
       */
-      if(privContext->last_flip == privSurface->last_flip) {
+      if(pI810XvMC->last_flip == privSurface->last_flip) {
 	*stat |= XVMC_DISPLAYING;
       }
       else {
@@ -3318,8 +3342,8 @@ Status XvMCGetSurfaceStatus(Display *display, XvMCSurface *surface,
 	  In this case there has been one more flip since our surface's
 	  but we need to check if it is finished or not.
 	*/
-	temp = GET_FSTATUS(privContext);
-	if(((temp & (1<<20))>>20) != privContext->current) { 
+	temp = GET_FSTATUS(pI810XvMC);
+	if(((temp & (1<<20))>>20) != pI810XvMC->current) { 
 	  *stat |= XVMC_DISPLAYING;
 	}
       }
@@ -3327,10 +3351,10 @@ Status XvMCGetSurfaceStatus(Display *display, XvMCSurface *surface,
   }
 
   if(privSurface->last_render &&
-      (privSurface->last_render > GET_RSTATUS(privContext))) {
+      (privSurface->last_render > GET_RSTATUS(pI810XvMC))) {
     *stat |= XVMC_RENDERING;
   }
-  I810_UNLOCK(privContext);
+  I810_UNLOCK(pI810XvMC);
 
   return Success;
 }
@@ -3384,7 +3408,10 @@ Status XvMCHideSurface(Display *display, XvMCSurface *surface) {
   }
  
   /* Get the associated context pointer */
-  pI810XvMC = (i810XvMCContext *)pI810Surface->context->privData;
+  pI810XvMC = (i810XvMCContext *)pI810Surface->privContext;
+  if(pI810XvMC == NULL) {
+    return (error_base + XvMCBadSurface);
+  }
 
   if(pI810XvMC->last_flip) {
     I810_LOCK(pI810XvMC,DRM_LOCK_QUIESCENT);
@@ -3497,7 +3524,8 @@ Status XvMCCreateSubpicture(Display *display, XvMCContext *context,
   pI810Subpicture->offset = pI810XvMC->surfaces.offset;
 
   /* Initialize private values */
-  pI810Subpicture->context = context;
+  pI810Subpicture->privContext = pI810XvMC;
+
   pI810Subpicture->last_render = 0;
   pI810Subpicture->last_flip = 0;
 
@@ -3555,6 +3583,8 @@ Status XvMCCreateSubpicture(Display *display, XvMCContext *context,
     free(subpicture->privData);
     return BadMatch;
   }
+
+  pI810XvMC->ref++;
   return Success;
 }
 
@@ -3590,7 +3620,7 @@ Status XvMCClearSubpicture(Display *display, XvMCSubpicture *subpicture,
   }
   pI810Subpicture = (i810XvMCSubpicture *)subpicture->privData;
 
-  pI810XvMC = (i810XvMCContext *)pI810Subpicture->context;
+  pI810XvMC = (i810XvMCContext *)pI810Subpicture->privContext;
   if(pI810XvMC == NULL) {
     return (error_base + XvMCBadSubpicture);
   }
@@ -3646,7 +3676,7 @@ Status XvMCCompositeSubpicture(Display *display, XvMCSubpicture *subpicture,
   }
   pI810Subpicture = (i810XvMCSubpicture *)subpicture->privData;
 
-  pI810XvMC = (i810XvMCContext *)pI810Subpicture->context;
+  pI810XvMC = (i810XvMCContext *)pI810Subpicture->privContext;
   if(pI810XvMC == NULL) {
     return (error_base + XvMCBadSubpicture);
   }
@@ -3694,6 +3724,7 @@ Status XvMCCompositeSubpicture(Display *display, XvMCSubpicture *subpicture,
 Status XvMCDestroySubpicture(Display *display, XvMCSubpicture *subpicture) {
 
   i810XvMCSubpicture *pI810Subpicture;
+  i810XvMCContext *pI810XvMC;
 
   if((display == NULL) || (subpicture == NULL)) {
     return BadValue;
@@ -3703,11 +3734,20 @@ Status XvMCDestroySubpicture(Display *display, XvMCSubpicture *subpicture) {
   }
   pI810Subpicture = (i810XvMCSubpicture *)subpicture->privData;
 
+  pI810XvMC = (i810XvMCContext *)pI810Subpicture->privContext;
+  if(!pI810XvMC) {
+    return (error_base + XvMCBadSubpicture);
+  }
+
+
   if(pI810Subpicture->last_render) {
     XvMCSyncSubpicture(display,subpicture);
   }
 
   _xvmc_destroy_subpicture(display,subpicture);
+
+  i810_free_privContext(pI810XvMC);
+
   free(pI810Subpicture);
   subpicture->privData = NULL;
   return Success;
@@ -3847,7 +3887,7 @@ Status XvMCBlendSubpicture2(Display *display,
   }
   privSubpicture = (i810XvMCSubpicture *)subpicture->privData;
 
-  pI810XvMC = (i810XvMCContext *)privSubpicture->context->privData;
+  pI810XvMC = (i810XvMCContext *)privSubpicture->privContext;
   if(pI810XvMC == NULL) {
     return (error_base + XvMCBadSubpicture);
   }
@@ -4243,7 +4283,7 @@ Status XvMCGetSubpictureStatus(Display *display, XvMCSubpicture *subpicture,
                              int *stat) {
 
   i810XvMCSubpicture *privSubpicture;
-  i810XvMCContext *privContext;
+  i810XvMCContext *pI810XvMC;
 
   if((display == NULL) || (stat == NULL)) {
     return BadValue;
@@ -4252,19 +4292,20 @@ Status XvMCGetSubpictureStatus(Display *display, XvMCSubpicture *subpicture,
     return (error_base + XvMCBadSubpicture);
   }
   *stat = 0;
-  privSubpicture = subpicture->privData;
-  if(privSubpicture->context->privData == NULL) {
+  privSubpicture = (i810XvMCSubpicture *)subpicture->privData;
+
+  pI810XvMC = (i810XvMCContext *)privSubpicture->privContext;
+  if(pI810XvMC == NULL) {
     return (error_base + XvMCBadSubpicture);
   }
-  privContext = privSubpicture->context->privData;
 
-  I810_LOCK(privContext,0);
+  I810_LOCK(pI810XvMC,0);
 
   if(privSubpicture->last_render &&
-      (privSubpicture->last_render > GET_RSTATUS(privContext))) {
+      (privSubpicture->last_render > GET_RSTATUS(pI810XvMC))) {
     *stat |= XVMC_RENDERING;
   }
-  I810_UNLOCK(privContext);
+  I810_UNLOCK(pI810XvMC);
 
   return Success;
 }

@@ -1,4 +1,12 @@
 XFree86 4.1.99.3 (xx December 2001)
+ 582. Add proper reference counting to the XvMCContext so that destroying
+      the context before destroying associated surfaces is handled correctly
+      (#5083, Matthew J. Sottek).
+ 581. Fix the xtt (X-TrueType) font module so that it will recognise
+      fonts with upper-case suffixes (".TTF" and ".TTC") (#5082,
+      ISHIKAWA Mutsumi).
+ 580. Use uname instead of hostname in rstart and xon scripts for portability,
+      plus some other rstart and xon fixes (#5081, Chris Bare, from X11R6.6).
  579. Some newport driver cleanups (#5080, Guido Guenther).
  578. Fix XagNsingleScreen definition and some related side-effects (#5077,
       Chris Bare, from X11R6.6).
@@ -14347,4 +14355,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2090 2001/12/17 20:00:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2091 2001/12/17 20:52:25 dawes Exp $

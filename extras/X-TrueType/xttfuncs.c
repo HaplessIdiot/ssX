@@ -31,7 +31,7 @@
 
 Notice===
 */
-/* $XFree86: xc/extras/X-TrueType/xttfuncs.c,v 1.9 2001/10/28 03:32:08 tsi Exp $ */
+/* $XFree86: xc/extras/X-TrueType/xttfuncs.c,v 1.10 2001/11/25 15:20:54 alanh Exp $ */
 
 #include "xttversion.h"
 
@@ -2052,6 +2052,18 @@ static FontRendererRec renderers[] =
     },
     {
         ".ttc", 4,
+        (int (*)()) 0, FreeTypeOpenScalable,
+        (int (*)()) 0, FreeTypeGetInfoScalable,
+        0, CAP_MATRIX | CAP_CHARSUBSETTING
+    },
+    {
+        ".TTF", 4,
+        (int (*)()) 0, FreeTypeOpenScalable,
+        (int (*)()) 0, FreeTypeGetInfoScalable,
+        0, CAP_MATRIX | CAP_CHARSUBSETTING
+    },
+    {
+        ".TTC", 4,
         (int (*)()) 0, FreeTypeOpenScalable,
         (int (*)()) 0, FreeTypeGetInfoScalable,
         0, CAP_MATRIX | CAP_CHARSUBSETTING
