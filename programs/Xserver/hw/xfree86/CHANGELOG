@@ -1,4 +1,7 @@
 XFree86 4.4.99.16 (xx October 2004)
+ 197. Fix an integer overflow in libICE/libSM (Radu Octavian, David Dawes).
+ 196. Fix NULL dereference in libSM when given a bad previous session ID
+      (Radu Octavian).
  195. Asm build fix (David Dawes).
 
 XFree86 4.4.99.15 (12 October 2004)
@@ -19122,7 +19125,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3325 2004/10/12 11:02:26 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3326 2004/10/12 14:45:53 dawes Exp $
 
 
 
