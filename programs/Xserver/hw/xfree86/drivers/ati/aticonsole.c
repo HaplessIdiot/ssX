@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.c,v 1.7 2000/02/15 18:01:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.c,v 1.8 2000/02/16 14:43:51 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -206,6 +206,10 @@ ATIEnterVT
 
     if (!ATIEnterGraphics(NULL, pScreenInfo, pATI))
         return FALSE;
+
+    /* The rest of this isn't needed for shadowfb */
+    if (pATI->OptionShadowFB)
+	return TRUE;
 
     /* If used, modify banking interface */
     if (!miModifyBanking(pScreen, &pATI->BankInfo))
