@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.c,v 1.1 2000/10/13 13:27:00 tsi Exp $ */
 /*
  * Copyright 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -73,10 +73,17 @@ ATILoadModules
 
 #endif /* AVOID_CPIO */
 
+#ifdef USE_FB
+	"fbScreenInit",
+#ifdef RENDER
+	"fbPictureInit",
+#endif
+#else
         "cfbScreenInit",
         "cfb16ScreenInit",
         "cfb24ScreenInit",
         "cfb32ScreenInit",
+#endif
         "ShadowFBInit",
         "XAACreateInfoRec",
         "XAADestroyInfoRec",
@@ -112,6 +119,13 @@ ATILoadModules
 
 #endif /* AVOID_CPIO */
 
+#ifdef USE_FB
+	case 8:
+	case 16:
+	case 24:
+	case 32:
+	    return ATILoadModule(pScreenInfo, "fb", "fbScreenInit");
+#else
         case 8:
             return ATILoadModule(pScreenInfo, "cfb", "cfbScreenInit");
 
@@ -123,7 +137,7 @@ ATILoadModules
 
         case 32:
             return ATILoadModule(pScreenInfo, "cfb32", "cfb32ScreenInit");
-
+#endif
         default:
             return FALSE;
     }
