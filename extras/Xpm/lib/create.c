@@ -32,7 +32,7 @@
 *                                                                             *
 *  Developed by Arnaud Le Hors                                                *
 \*****************************************************************************/
-/* $XFree86: xc/extras/Xpm/lib/create.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/extras/Xpm/lib/create.c,v 1.4 2003/05/27 22:26:20 tsi Exp $ */
 
 /*
  * The code related to FOR_MSW has been added by
@@ -126,7 +126,9 @@ LFUNC(PutImagePixels1, void, (XImage *image, unsigned int width,
 
 LFUNC(PutPixel1, int, (XImage *ximage, int x, int y, unsigned long pixel));
 LFUNC(PutPixel, int, (XImage *ximage, int x, int y, unsigned long pixel));
+#if !defined(WORD64) && !defined(LONG64)
 LFUNC(PutPixel32, int, (XImage *ximage, int x, int y, unsigned long pixel));
+#endif
 LFUNC(PutPixel32MSB, int, (XImage *ximage, int x, int y, unsigned long pixel));
 LFUNC(PutPixel32LSB, int, (XImage *ximage, int x, int y, unsigned long pixel));
 LFUNC(PutPixel16MSB, int, (XImage *ximage, int x, int y, unsigned long pixel));
@@ -1807,6 +1809,7 @@ PutPixel(ximage, x, y, pixel)
     return 1;
 }
 
+#if !defined(WORD64) && !defined(LONG64)
 static int
 PutPixel32(ximage, x, y, pixel)
     register XImage *ximage;
@@ -1820,6 +1823,7 @@ PutPixel32(ximage, x, y, pixel)
     *((unsigned long *)addr) = pixel;
     return 1;
 }
+#endif
 
 static int
 PutPixel32MSB(ximage, x, y, pixel)
