@@ -9,7 +9,7 @@
 <date>8 March 2005
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.127 2005/03/04 03:23:52 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.128 2005/03/08 21:11:14 dawes Exp $
 </ident>
 
 <abstract>
@@ -73,7 +73,7 @@ automatically generated configuration from the
 <tt>/var/log/XFree86.0.log</tt> file into an <tt>XF86Config</tt> file
 and make your customisations there.  If you want to customise some parts
 of the configuration while leaving others to be automatically detected,
-you can combine a static partial configuration with the automaticaly
+you can combine a static partial configuration with the automatically
 detected information by running:
 
 <tscreen><verb>
@@ -383,7 +383,7 @@ session are not initially visible.
 
 <item>Fix some DRM-related problems.
 
-<item>Cleanup the DDC/EDID retreival.
+<item>Cleanup the DDC/EDID retrieval.
 
 </itemize>
 
@@ -436,7 +436,7 @@ architectures.
 NetBSD, OpenBSD, and SunOS/Solaris, eliminating the need to provide any
 of this information in the config file in the majority of situations.
 
-<item>Increase the maximum number of buttons supproted from 12 to 24.
+<item>Increase the maximum number of buttons supported from 12 to 24.
 
 <item>Fix a multiple-free bug, that could lead to a crash.
 
@@ -450,7 +450,7 @@ of this information in the config file in the majority of situations.
 
 <item>Add an <tt>"AllowNoCntl"</tt> option, which allows the driver to be
 used with some other protocols, like the SmartSet 2500s, which share the
-same default protcol.
+same default protocol.
 
 <item>Fix a problem with the cursor not correctly following the touch
 in a dual-head configuration.  This fix has also been applied to other
@@ -461,7 +461,7 @@ relevant input drivers.
 <sect2>eloinput
 <p>
 <itemize>
-<item>A new driver for ELO Graphics 2500U USB touchscreens.
+<item>A new driver for ELO Graphics 2500U USB touch screens.
 
 </itemize>
 
@@ -492,7 +492,7 @@ is not Swedish-specific but a common USB variant.
 
 <item>Add nodeadkeys variant to the gb map.
 
-<item>Replace the comma keysm on the KPDL key in the Brazillian map with
+<item>Replace the comma keysym on the KPDL key in the Brazilian map with
 KP_Separator.
 
 <item>Add multi-layout compatible Hungarian, Azerbaijani, Canadian,
@@ -503,7 +503,7 @@ Mongolian, and Vietnamese maps.
 <item>Add Genius KB-12e model to the inet map.
 
 <item>Update ABNT2 geometry (including two variants) and change the
-Brazillian map to avoid ABNT2 specific keycodes section.
+Brazilian map to avoid ABNT2 specific keycodes section.
 
 <item>Add Classical Latin map.
 
@@ -950,14 +950,14 @@ to crash.
 
 <item>Fix freetype module segfault with some Type1 fonts.
 
-<item>Replace unicode keysms in the en_US.UTF-8 Compose file with "traditional"
-ones wehre such keysyms exist.
+<item>Replace unicode keysyms in the en_US.UTF-8 Compose file with "traditional"
+ones where such keysyms exist.
 
 <item>Fix the ct_encoding sequence in the zh_CN.gbk locale.
 
 <item>Update the 8859-7 unicode conversion data file to the current version.
 
-<item>Update the gb3212.1980-0 encoding to hande fonts that do not have
+<item>Update the gb3212.1980-0 encoding to handle fonts that do not have
 a unicode table.
 
 <item>Add encoding files for cns11643-1, cns11643-2, cns11643-3, and
