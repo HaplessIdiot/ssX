@@ -2,12 +2,11 @@
 
                 Juliusz Chroboczek, Juliusz.Chroboczek@ens.fr
 
-                              14 February 2000
+                                5 March 2000
 
-This version of XFree86 includes a number of improvements to the handling of
-fonts, including
+XFree86 contains a number of improvements related to fonts, including
 
-   o  new Unicode-encoded bitmap fonts;
+   o  inclusion of new fonts;
 
    o  internationalisation of the scalable font backends (Type 1, Speedo, and
      TrueType);
@@ -97,14 +96,16 @@ the two standards are always equivalent, and this document uses the terms
 When used in X11, Unicode-encoded fonts should have the last two fields of
 their XLFD set to `iso10646-1'.
 
-2.  Unicode-encoded bitmap fonts
+2.  New fonts
+
+2.1  Bitmap fonts
 
 XFree86 includes two new Unicode-encoded fonts with a large collection of
 non-ideographic glyphs.  While it is possible to use these fonts as main
 fonts, applications may also use them as fallbacks when a given glyph is not
 available in the current font.
 
-2.1  The Unicode `fixed' font
+2.1.1  The Unicode `fixed' font
 
 The font file
 
@@ -134,7 +135,7 @@ with XLFD
 The standard aliases `fixed' and `6x13' still point at the ISO 8859-1 ver-
 sions of the font.
 
-2.2  The ClearlyU Unicode font
+2.1.2  The ClearlyU Unicode font
 
 The ClearlyU font set of fonts provides a set of 12pt, 100dpi proportional
 fonts with many of the glyphs needed for Unicode text.  Together, the fonts
@@ -157,6 +158,44 @@ Additional ClearlyU fonts include
      -mutt-ClearlyU Ligature-medium-r-normal--17-120-100-100-p-141-fontspecific-0
 
      -mutt-ClearlyU PUA-medium-r-normal--17-120-100-100-p-111-iso10646-1
+
+2.2  Scalable fonts
+
+XFree86 includes the ``Lucidux'' family of Type 1 fonts.  This family con-
+sists of the fonts ``Lucidux Serif'', with XLFD
+
+     -b&h-lucidux serif-medium-*-normal--*-*-*-*-p-*-*-*
+
+``Lucidux Sans'', with XLFD
+
+     -b&h-lucidux sans-medium-*-normal--*-*-*-*-p-*-*-*
+
+and ``Lucidux Mono'', with XLFD
+
+     -b&h-lucidux mono-medium-*-normal--*-*-*-*-m-*-*-*
+
+Each of these fonts currently comes in Roman and oblique variants (bold vari-
+ants will be included in a future release) and has 337 glyphs covering the
+basic ``ASCII'' glyph set, the Latin 1 glyph set, as well as the ``Extended
+Latin'' glyph set.  In particular, these fonts include all the glyphs needed
+for ISO 8859 parts 1, 2, 3, 4, 9 and 15.
+
+The Lucidux fonts are original designs by Charles Bigelow and Kris Holmes.
+Lucidux fonts include seriffed, sans-serif, and monospaced styles which share
+the same stem weight, x-height, capital height, ascent and descent.  Lucidux
+fonts harmonise with Lucida (R) fonts of the same vertical proportions and
+weights.  The character width metrics of Lucidux roman fonts match those of
+core fonts bundled with several window systems.
+
+Each PFA file has a copy of the license terms in PS comment lines.  The
+license terms are also included in the file COPYRIGHT.BH for convenience, and
+in the License document.
+
+The design and font outlines were donated by Charles Bigelow and Kris Holmes
+from Bigelow and Holmes Inc., and the hinting was donated by Berthold Horn
+and Blenda Horn from Y&Y, Inc.  For more information, please contact
+<design@bigelowandholmes.com> or <sales@yandy.com>, or consult Y&Y's web site
+<URL:http://www.yandy.com>.
 
 3.  Internationalisation of scalable font backends.
 
@@ -730,7 +769,7 @@ used for horizontal text (e.g. the CMap `KSC-EUC-H' will be used, but not
 `KSC-EUC-V').  This limitation is due to the fact that the core X11 protocol
 only provides support for horizontal writing.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.6 2000/02/14 19:20:44 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.7 2000/03/06 22:59:25 dawes Exp $
 
 
 $XFree86$

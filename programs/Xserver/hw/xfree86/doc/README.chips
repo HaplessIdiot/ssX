@@ -1,7 +1,7 @@
                  Information for Chips and Technologies Users
 
-                  David Bateman (dbateman@eng.uts.edu.au),
-                   Egbert Eich (Egbert.Eich@Physik.TH-Darmstadt.DE)
+                David Bateman (<dbateman@club-internet.fr>),
+                           Egbert Eich (<eich@xfree86.org>)
 
                                 19th July 1999
 
@@ -816,8 +816,8 @@ the screen is having problems.
 If you are having driver-related problems that are not addressed by this doc-
 ument, or if you have found bugs in accelerated functions, you can try con-
 tacting the XFree86 team (the current driver maintainer can be reached at
-dbateman@eng.uts.edu.au or Egbert.Eich@Physik.TH-Darmstadt.DE), or post in
-the Usenet newsgroup "comp.windows.x.i386unix".
+<dbateman@club-internet.fr> or <eich@xfree86.org>), or post in the Usenet
+newsgroup "comp.windows.x.i386unix".
 
 7.  Disclaimer
 
@@ -858,7 +858,7 @@ Contributors (In no particular order)
 We also thank the many people on the net who have contributed by reporting
 bugs and extensively testing this server.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.29 1999/08/28 11:18:16 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.30 2000/03/05 16:59:11 dawes Exp $
 
 
 $XFree86$

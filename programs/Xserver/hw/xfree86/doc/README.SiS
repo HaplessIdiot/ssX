@@ -1,8 +1,8 @@
                           Information for SiS Users
 
-                    Juanjo Santamarta (santamarta@ctv.es)
+                   Juanjo Santamarta (<santamarta@ctv.es>)
 
-                                17 April 1999
+                                5 March 2000
 
 1.  Introduction
 
@@ -22,21 +22,11 @@ The driver supports :
 
    o XAA support (XFree86 Acceleration Architecture)
 
-2.  Supported chips
-
-     SiS 530, SiS 86c2x5, SiS 5597/5598, SiS 6326
-
-This driver needs linear framebuffer support in the card. Because this SiS
-86C201 and 86C202 based cards don't work with this driver.
-
-Color expansion is not supported by the engine in 16M-color graphic mode.
-
-3.  XF86Config Options
+2.  XF86Config Options
 
 The following options are of particular interest for the SiS driver. Each of
-them must be specified in the `svga' driver section of the XF86Config file,
-within the Screen subsections of the depths to which they are applicable (you
-can enable options for all depths by specifying them in the Device section).
+them must be specified in the Device section of the XF86Config file for this
+card.
 
       Option "SetMclk"
             This option lets you to modify the memory clocking of your card.
@@ -69,7 +59,19 @@ can enable options for all depths by specifying them in the Device section).
             reduces the possibility of glitches and noise on high resolution
             modes.
 
-4.  Modelines
+      Option "PciRetry"
+
+      Option "NoAccel"
+            Disables various hardware accelerations.
+
+      VideoRAM size
+            The SiS chips can only directly address 4096K bytes of video RAM.
+            Some video cards using these chips are shipped with additional
+            video RAM.  The videoRAM must be explicitly limited to 4096 for
+            those cards.  Attempting to use the additional RAM leads to a
+            variety of scrambled screen artifacts.
+
+3.  Modelines
 
 When constructing a modeline for use with the Sis driver you'll need to con-
 sider several points:
@@ -101,17 +103,14 @@ sider several points:
            1600x1200 :
                  4, 8  bpp at 65Hz Non-interlaced
 
-5.  Troubleshooting
-
-The generic VGA driver don't work with 6326, so XF86Setup can't be used for
-this card. Please use xf86config instead.
+4.  Troubleshooting
 
 Some video modes with high dot-clocks don't work at all, resulting on black
 screen. Lowering dotclock in that case could solve the problem.
 
 Document based on 3.3 version written by Xavier Ducoin.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SiS.sgml,v 3.6 1999/10/13 04:21:08 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SiS.sgml,v 3.7 2000/03/06 22:59:24 dawes Exp $
 
 
 $XFree86$

@@ -317,7 +317,7 @@ below for additional information for specific hardware.
   2.  Verify you're running XFree86 4.0 and not an older version.  If you run
       xdpyinfo and look for the following line near the top:
 
-                       vendor release number:    400
+                       vendor release number:    4000
 
   3.  Verify that your XF86Config file (usually found at /etc/X11/XF86Config)
       loads the glx and dri modules and has a DRI section.
@@ -538,5 +538,7 @@ forge.net/resources/resources.html
 
    o XXX Linux distro support?
 
-     $XFree86$
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.2 2000/03/07 13:37:49 dawes Exp $
 
+
+$XFree86$

@@ -2,7 +2,7 @@
 
                               Michael Rohleder
 
-                                06 March 1999
+                                05 March 2000
 
 1.  X11R6/XFree86 on Interactive Unix
 
@@ -26,6 +26,11 @@ There is currently no support for shared Libraries so it will be filespace
 consuming if you want to build X11-clients with X11R6. Best you mix X11R6
 Server with X11R5 and X11R4 clients. And only compile clients who need the
 new facilities provided in the X11R6 Libraries against them.
+
+     Please note:
+            XFree86 Version 4.0 will be the last version which is known
+            to compile on Interactive Unix.
+            I've only tested this version on Interactive Unix, Version 4.1mu.
 
 2.  Things needed for compiling the sources
 
@@ -324,68 +329,39 @@ building the Loader Server.
 These are default options defined inside isc.cf.  You can redefine them
 inside host.def.
 
-     /* Disable the use of /var/X11 */
-     #ifndef HasVarDirectory
-     #define HasVarDirectory       NO
-     #endif
+Here is a sample host.def (the one I use for XFree86 4.0):
 
-     /* Use mmap Driver                                                   */
-     #ifndef HasSVR3mmapDrv
-     # define HasSVR3mmapDrv       YES
-     #endif
+     /* Disable the use of /var/X11  and /etc/X11 */
+     #define HasVarDirectory         NO
+     #define UseEtcX11               NO
 
      /* Use inline Math from linux ;-) package inline-math-2.6.tar.gz */
      /* should be available on your favorite linux ftp                */
-     #ifndef UseInlineMath
      # define UseInlineMath        YES
-     #endif
 
      /* Use cbrt from liboptm.a (Interactive icc Compiler) */
-     #ifndef HasCbrt
      # define HasCbrt         YES
-     #endif
 
      /* Use GNUs MallocLibrary (and the Location for the Lib)             */
-     #ifndef UseGnuMalloc
      # define UseGnuMalloc         YES
-     #endif
-
-     /* Install Zlib Headers - used in lib/zlib/Imakefile */
-     #ifndef OsNeedZlibHeaders
-     # define OsNeedZlibHeaders    YES
-     #endif
 
      /* Expand Manual Pages (needs S5L)                                   */
-     #ifndef ExpandManNames
      # define ExpandManNames       YES
-     #endif
 
      /* if you have groff or the TextProcessingWorkbench - don't preformat*/
-     #ifndef FormattedManPages
      # define FormattedManPages      NO
-     #endif
-
-     #ifndef HasSgmlFmt  /* HasLinuxDoc */
-     # define HasSgmlFmt             YES
-     #endif
 
      /* XF86Setup Util */
-     #ifndef HasTk
-     #define HasTk            YES
-     #define HasTcl           YES
-     #endif
+     # define HasTk           YES
+     # define HasTcl               YES
 
-     #ifndef HasPosixRegex         /* Need extra/regex since 3.9Ns */
-     #define HasPosixRegex         NO
-     #endif
+     /* use doctools */
+     # define HasSgmlFmt             YES
+     # define BuildAllDocs            YES
+     # define BuildLinuxDocText       NO
+     # define BuildLinuxDocPS         NO
 
-     #ifndef DoLoadableServer
-     #define DoLoadableServer        YES
-     #endif
-
-     #ifndef CpuOption
-     #define CpuOption   -mpentium
-     #endif
+     #define GlxBuiltInMesa         YES
 
 8.  Installation
 
@@ -510,7 +486,7 @@ All thanks should go to the members of the XFree86 Team for their great work
 and the X Consortium for their Public Release of X11R6, as to all who con-
 tribute to this excellent piece of free software.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.23 2000/03/03 21:28:11 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.24 2000/03/06 22:59:25 dawes Exp $
 
 
 $XFree86$

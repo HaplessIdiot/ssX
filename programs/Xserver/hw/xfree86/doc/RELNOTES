@@ -59,9 +59,9 @@ Note about module security
      The XFree86 X server runs with root privileges, which means that
      the X server loadable modules also run with these privileges.  For
      this reason we recommend that all users be careful to only use
-     loadable modules from reliable sources.  By the time that XFree86
-     4.0 is released, we hope to have implemented a method for sign-
-     ing/verifying modules that we provide.
+     loadable modules from reliable sources.  We hope to have a mecha-
+     nism for signing/verifying modules that we provide available in a
+     future release.
 
 3.2  Configuration File
 
@@ -442,20 +442,23 @@ the monitor gamma (brightness) curve, and the screen size and pitch.
 3.9  GLX and the Direct Rendering Infrastructure (DRI)
 
 Precision Insight <URL:http://www.precisioninsight.com> has been provided
-with funding and support from Red Hat <URL:http://www.redhat.com> and SGI
-<URL:http://www.sgi.com> to integrate the GLX extension for 3D rendering in
-an X11 window.  The 3D core rendering component is the Mesa
-<URL:http://www.mesa3d.org> library.  SGI has released the sources to the
+with funding and support from Red Hat <URL:http://www.redhat.com>, SGI
+<URL:http://www.sgi.com>, 3Dfx <URL:http://www.3dfx.com>, Intel
+<URL:http://www.intel.com>, ATI <URL:http://www.ati.com>, and Matrox
+<URL:http://www.matrox.com> to integrate the GLX extension for 3D rendering
+in an X11 window.  The 3D core rendering component is the Mesa
+<URL:http://www.mesa3d.org> library.  SGI has released the sources to the GLX
 extension framework under an open license, which essentially provides the
 glue between the 3D library and this windowing system.  Precision Insight has
-integrated these components into this XFree86 X Server and added a Direct
-Rendering Infrastructure.  Direct Rendering provides a highly optimized path
-for sending 3D data directly to the graphics hardware.  This release demon-
-strates a sample implementation of direct rendering <URL:http://www.preci-
-sioninsight.com/demo.html> by providing a single path of 3D hardware acceler-
-ated rendering for the GMX2000 and 3dfx voodoo graphics cards.  Future
-releases will support much broader implementations of hardware accelerated
-direct rendering on a wide range of 3D capable graphics devices.
+integrated these components into the XFree86 X Server and added a Direct Ren-
+dering Infrastructure (DRI).  Direct Rendering provides a highly optimized
+path for sending 3D data directly to the graphics hardware.  This release
+provides a complete implementation of direct rendering support for the 3Dfx
+Banshee and Voodoo3 graphics cards.  Additional direct rendering drivers will
+be available for 3Dfx, Intel, ATI and Matrox boards during the second quarter
+of 2000.  Updated information on DRI compatible drivers can be found at the
+DRI Project <URL:http://dri.sourceforge.net> on SourceForge
+<URL:http://www.sourceforge.net>.
 
 3.10  X-Video Extension (Xv)
 
@@ -492,7 +495,7 @@ XFree86 4.0 includes the following drivers:
                     |cyrix (*)   | Cyrix MediaGX        |
                     |fbdev       | Linux fbdev          |
                     |glide       | Glide2x (3Dfx)       |
-                    |glint       | 3Dlabs               |
+                    |glint       | 3Dlabs, TI           |
                     |i740        | Intel i740           |
                     |i810        | Intel i810           |
                     |mga         | Matrox               |
@@ -546,7 +549,7 @@ Information about the C&T driver can be found in README.chips.
 
 3.12.3  s3virge
 
-The s3virge driver is a port of the 3.3.3.1 SVGA S3 ViRGE driver.  As such it
+The s3virge driver is a port of the 3.3.x SVGA S3 ViRGE driver.  As such it
 should be as stable and functional as previous XFree86 releases.  There are a
 couple additional benefits included primarily due to common enhancements:
 
@@ -560,6 +563,11 @@ couple additional benefits included primarily due to common enhancements:
 
    o The s3virge man page lists options and has configuration notes for this
      release of the driver.
+
+   o Trio 3D and Trio 3D/2X support has been added, matching the 3.3.6
+     driver.
+
+   o Supports screen rotation and shadow framebuffer.
 
 Outstanding items not implemented or fully tested:
 
@@ -625,6 +633,16 @@ man page.
 
 For Voodoo Banshee and Voodoo 3 boards or later: Please use the tdfx driver
 which talks directly to the hardware and is much faster.
+
+3.12.9  GLINT
+
+The "glint" driver supports most 3Dlabs/Texas Instruments GLINT/Permedia
+chips. There is a rather complete support (better than in 3.3.x) for acceler-
+ation at 8, 15, 16, and 24 bit depths (limited by some chips at some depths).
+8+24 overlay is supported. The Xv extension is supported for some boards.
+
+Further information about this driver can be found in the 'glint' driver man
+page.
 
 4.  X libraries and clients
 
@@ -982,6 +1000,19 @@ Known problems:
    o ISO 10646 Level 2 combining characters not yet supported by xterm (will
      be needed for instance for the Thai script).
 
+5.6  Lucidux fonts from Bigelow and Holmes
+
+XFree86 now includes the ``Lucidux'' family of professionally hinted Type 1
+fonts.  This family consists of the fonts ``Lucidux Serif'', ``Lucidux Sans''
+and ``Lucidux Mono'' in Roman and oblique variants, and includes over 370
+glyphs in each font covering among others the glyphs needed for ISO 8859-1,
+2, 3, 4, 9 and 15.  Bold variants will be included in a future release.  The
+design and font outlines were donated by Charles Bigelow and Kris Holmes from
+Bigelow and Holmes Inc., and the hinting was donated by Berthold Horn and
+Blenda Horn from Y&Y, Inc.  For more information, please contact
+<design@bigelowandholmes.com> or <sales@yandy.com>, or consult Y&Y's web site
+<URL:http://www.yandy.com>.
+
 6.  Miscellaneous
 
 6.1  Directory rearrangements
@@ -993,7 +1024,7 @@ been implemented is a modified search path for the X server's XF86Config
 file.  The details of this can be found above in the Configuration File (sec-
 tion 3.2, page 1) section.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.32 2000/03/03 21:28:10 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.34 2000/03/07 01:37:46 dawes Exp $
 
 
 $XFree86$

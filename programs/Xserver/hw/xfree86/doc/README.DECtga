@@ -2,14 +2,15 @@
 
                           The XFree86 Project, Inc.
 
-                              April 29th, 1999
+                               March 5th, 2000
 
 1.  DEC 21030
 
    o The DEC 21030 is supported by XFree86 4.0.  The driver is now partially
      accelerated.  The built-in graphics on the Multia is supported in
      8-plane mode, and PCI cards with 8 or 16 MB framebuffers are supported
-     in 24-plane mode.
+     in 24-plane mode.  TGA2 (aka PowerStorm 3D30/4D20) cards are not cur-
+     rently supported.
 
    o Current Known Problems
 
@@ -21,7 +22,12 @@
 
        3.  After the server has been run using the hardware cursor, the Linux
            TGA console cursor (which also uses the hardware cursor) is
-           shifted down by one pixel.
+           shifted down by one pixel. This problem does not affect Linux ker-
+           nels 2.2.10 and above, which do not use the hardware cursor.
+
+       4.  The XAA PolySegment() method is buggy. If you experience server
+           crashes with SIGFPE, or server hangs, try disabling it (see
+           below).
 
    o The following options may be specified for the 21030 driver:
 
@@ -31,7 +37,7 @@
                  bus, device, and function numbers in the 21030 section.  On
                  a Multia, this should be "PCI:0:11:0".
 
-           MemBase "0x???????"
+           MemBase 0x???????
                  If the server does not detect the base address of the 21030,
                  then check /proc/pci for the 21030 and look for the
                  "Prefetchable 32 bit memory at 0x???????" and enter this as
@@ -43,15 +49,20 @@
            Option "swcursor"
                  Disables the hardware cursor.
 
+           Option "NoXaaPolySegment"
+                 Disables the XAA PolySegment() method.
+
 2.  Authors
 
    o Matthew Grossman, <mattg@oz.net>
 
    o Alan Hourihane, <alanh@fairlite.demon.co.uk>
 
+   o Martin Lucina, <mato@kotelna.sk>
+
    o Tim Rowley, <tor@cs.brown.edu>
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DECtga.sgml,v 3.8 1999/07/19 13:36:20 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DECtga.sgml,v 3.9 2000/03/06 22:59:23 dawes Exp $
 
 
 $XFree86$
