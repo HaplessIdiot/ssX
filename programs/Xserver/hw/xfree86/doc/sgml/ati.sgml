@@ -15,7 +15,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.31tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.32 2000/08/04 21:07:11 tsi Exp $
 </ident>
 
 <abstract>
@@ -143,7 +143,7 @@ CRTC is used, and modes whose colour depth greater than or equal to 8 are to be
 used.
 This support is as yet incomplete and can be disabled entirely with an
 XF86Config option.<p>
-On non-Intel platforms, the driver can, currenly, only support PCI Mach64
+On non-Intel platforms, the driver can, currently, only support PCI Mach64
 adapters.<p>
 <sect>Current implementation of generic VGA support for non-ATI adapters<p>
 Support for generic VGA with non-ATI adapters is also implemented, but has
