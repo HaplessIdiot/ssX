@@ -35,9 +35,13 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86$ */
+/* $XFree86: xc/config/pswrap/pswparser.y,v 1.2 2000/05/11 18:14:08 tsi Exp $ */
 
+/* 
+ * Not all yaccs understand this.
+ *
 %expect 1
+ */
 
 %{
 
