@@ -1,4 +1,5 @@
 XFree86 4.3.99.7 (xx June 2003)
+ 240. Fixed wraparound bug in TimerSet() (Peter Osterlund).
  239. Fixed X*LookupString() in imDevLkup.c to return status 
       XBufferOverflow and the required size as required 
       (Bugzilla #397, Kusanagi Kouichi).
@@ -17139,7 +17140,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2744 2003/06/21 13:05:17 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2745 2003/06/23 17:35:45 eich Exp $
 
 
 
