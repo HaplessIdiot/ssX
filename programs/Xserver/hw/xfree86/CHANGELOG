@@ -1,4 +1,6 @@
 XFree86 4.3.99.16 (xx November 2003)
+ 590. Fix typing in XDarwin Preference panel going to X11 (Torrey T. Lyons).
+ 589. Fix rootless build after REGION_* macro rework (Torrey T. Lyons).
  588. Fix broken GLX indirect rendering (David Dawes).
  587. Fix the XKB definitions for the "Hiragana_Katakana" key, and fix
       some incorrect definitions in symbols/jp (Chisato Yamauchi).
@@ -18183,7 +18185,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2961 2003/11/14 02:45:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2962 2003/11/14 04:21:45 dawes Exp $
 
 
 

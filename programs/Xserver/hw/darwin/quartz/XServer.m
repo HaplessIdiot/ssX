@@ -34,7 +34,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.15 2003/11/12 01:16:14 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.16 2003/11/12 20:21:51 torrey Exp $ */
 
 #include "quartzCommon.h"
 
@@ -121,6 +121,7 @@ static io_connect_t root_port;
     pendingClients = nil;
     clientPID = 0;
     sendServerEvents = NO;
+    x11Active = YES;
     serverVisible = NO;
     rootlessMenuBarVisible = YES;
     queueShowServer = YES;
@@ -139,6 +140,11 @@ static io_connect_t root_port;
                                 forMode:NSDefaultRunLoopMode];
     [[NSRunLoop currentRunLoop] addPort:signalPort
                                 forMode:NSModalPanelRunLoopMode];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                          selector:@selector(windowBecameKey:)
+                                          name:NSWindowDidBecomeKeyNotification
+                                          object:nil];
 
     return self;
 }
@@ -270,7 +276,12 @@ static io_connect_t root_port;
                 if (!quartzProcs->IsX11Window([anEvent window],
                                               [anEvent windowNumber]))
                 {
+                    if (x11Active)
+                        [self activateX11:NO];
                     return NO;
+                } else {
+                    if (!x11Active)
+                        [self activateX11:YES];
                 }
             }
             mouse1Pressed = YES;
@@ -307,6 +318,8 @@ static io_connect_t root_port;
             break;
         case NSKeyDown:
         case NSKeyUp:
+            if (!x11Active)
+                return NO;
             // If the mouse is not on the valid X display area,
             // we don't send the X server key events.
             if (![self getMousePosition:&xe fromEvent:nil])
@@ -318,6 +331,8 @@ static io_connect_t root_port;
             xe.u.u.detail = [anEvent keyCode];
             break;
         case NSFlagsChanged:
+            if (!x11Active)
+                return NO;
             [self getMousePosition:&xe fromEvent:nil];
             xe.u.u.type = kXDarwinUpdateModifiers;
             xe.u.clientMessage.u.l.longs0 = flags;
@@ -910,8 +925,7 @@ static io_connect_t root_port;
             quartzProcs->CaptureScreens();
             HideMenuBar();
         }
-        xe.u.u.type = kXDarwinActivate;
-        [self sendXEvent:&xe];
+        [self activateX11:YES];
 
         // the mouse location will have moved; track it
         xe.u.u.type = MotionNotify;
@@ -934,8 +948,7 @@ static io_connect_t root_port;
             [self writePasteboard];
         }
 
-        xe.u.u.type = kXDarwinDeactivate;
-        [self sendXEvent:&xe];
+        [self activateX11:NO];
     }
 
     serverVisible = show;
@@ -1165,6 +1178,31 @@ static io_connect_t root_port;
 {
     QuartzMessageServerThread(kXDarwinPasteboardNotify, 1,
                               AppleWMCopyToPasteboard);
+}
+
+// Set whether or not X11 is active and should receive all key events
+- (void)activateX11:(BOOL)state
+{
+    if (state) {
+	QuartzMessageServerThread(kXDarwinActivate, 0);
+    }
+    else {
+	QuartzMessageServerThread(kXDarwinDeactivate, 0);
+    }
+
+    x11Active = state;
+}
+
+// Some NSWindow became the key window
+- (void)windowBecameKey:(NSWindow *)window
+{
+    if (quartzProcs->IsX11Window(window, [window windowNumber])) {
+        if (!x11Active)
+            [self activateX11:YES];
+    } else {
+        if (x11Active)
+            [self activateX11:NO];
+    }
 }
 
 // Set the Apple-WM specifiable part of the window menu
