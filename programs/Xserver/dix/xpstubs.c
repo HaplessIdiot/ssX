@@ -24,7 +24,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 */
 
-/* $Xorg: xpstubs.c,v 1.4 2001/02/09 02:04:41 xorgcvs Exp $ */
+/* $Xorg: xpstubs.c,v 1.5 2001/03/08 17:52:08 pookie Exp $ */
 
 #include "misc.h"
 #include "font.h"
@@ -42,4 +42,12 @@ XpClientIsPrintClient(client, fpe)
     FontPathElementPtr fpe;
 {
     return FALSE;
+}
+int
+XprintOptions(argc, argv, i)
+    int argc;
+    char **argv;
+    int i;
+{
+    return i;
 }

@@ -50,7 +50,7 @@ copyright holders.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/Init.c,v 1.10 2001/10/28 03:32:53 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/Init.c,v 1.11 2001/12/19 21:28:44 dawes Exp $ */
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -90,11 +90,7 @@ typedef char *XPointer;
 #include "DiPrint.h"
 #include "attributes.h"
 
-extern  char    *display;		/* display number as a string */
-
 #include "os.h"
-
-extern WindowPtr *WindowTable; /* declared in dix:globals.c */
 
 static void GenericScreenInit(
     int index,
@@ -229,7 +225,6 @@ PixmapFormatRec	PSPixmapFormats[] = {
 #define NUMPSFORMATS	(sizeof PSPixmapFormats)/(sizeof PSPixmapFormats[0])
 
 #include "ps/Ps.h"
-extern XpValidatePoolsRec PsValidatePoolsRec;
 
 #endif
 
@@ -356,7 +351,6 @@ XprintOptions(
     char **argv,
     int i)
 {
-    extern void ddxUseMsg();
     if(strcmp(argv[i], "-XpFile") == 0)
     {
 	if ((i + 1) >= argc) {

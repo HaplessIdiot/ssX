@@ -76,7 +76,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclInit.c,v 1.8 2001/01/17 22:36:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclInit.c,v 1.9 2001/10/28 03:32:54 tsi Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -97,8 +97,6 @@ extern XpValidatePoolsRec PclValidatePoolsRec;
 static void AllocatePclPrivates(ScreenPtr pScreen);
 static int PclInitContext(XpContextPtr pCon);
 static Bool PclDestroyContext(XpContextPtr pCon);
-
-extern unsigned char *PclReadMap(char *, int *);
 
 int PclScreenPrivateIndex;
 int PclContextPrivateIndex;

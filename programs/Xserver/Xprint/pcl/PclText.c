@@ -1,4 +1,4 @@
-/* $Xorg: PclText.c,v 1.4 2000/08/17 19:48:08 cpqbld Exp $ */
+/* $Xorg: PclText.c,v 1.5 2001/03/06 16:28:48 pookie Exp $ */
 /*******************************************************************
 **
 **    *********************************************************
@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclText.c,v 1.8 2001/01/19 17:10:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclText.c,v 1.9 2001/10/28 03:32:55 tsi Exp $ */
 
 #ifdef DO_TWO_BYTE_PCL
 #include "iconv.h"
@@ -859,7 +859,7 @@ FontInfoPtr pfi;
 FontPropPtr props;
 Atom dest;
 
-    dest = MakeAtom("DESTINATION", strlen("DESTINATION"), TRUE);
+    dest = MakeAtom("PRINTER_RESIDENT_FONT", strlen("PRINTER_RESIDENT_FONT"), TRUE);
 
     pfi = (FontInfoRec *)&pfont->info;
     props = pfi->props;
