@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.28 2003/02/07 18:08:59 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.29 2003/02/08 21:26:55 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -931,7 +931,7 @@ static Bool RADEONDRIPciInit(RADEONInfoPtr info, ScreenPtr pScreen)
 	       (unsigned long)info->ring);
     xf86DrvMsg(pScreen->myNum, X_INFO,
 	       "[pci] Ring contents 0x%08lx\n",
-	       *(unsigned long *)info->ring);
+	       *(unsigned long *)(pointer)info->ring);
 
     if (drmAddMap(info->drmFD, info->ringReadOffset, info->ringReadMapSize,
 		  DRM_SCATTER_GATHER, flags, &info->ringReadPtrHandle) < 0) {
@@ -954,7 +954,7 @@ static Bool RADEONDRIPciInit(RADEONInfoPtr info, ScreenPtr pScreen)
 	       (unsigned long)info->ringReadPtr);
     xf86DrvMsg(pScreen->myNum, X_INFO,
 	       "[pci] Ring read ptr contents 0x%08lx\n",
-	       *(unsigned long *)info->ringReadPtr);
+	       *(unsigned long *)(pointer)info->ringReadPtr);
 
     if (drmAddMap(info->drmFD, info->bufStart, info->bufMapSize,
 		  DRM_SCATTER_GATHER, 0, &info->bufHandle) < 0) {
@@ -977,7 +977,7 @@ static Bool RADEONDRIPciInit(RADEONInfoPtr info, ScreenPtr pScreen)
 	       (unsigned long)info->buf);
     xf86DrvMsg(pScreen->myNum, X_INFO,
 	       "[pci] Vertex/indirect buffers contents 0x%08lx\n",
-	       *(unsigned long *)info->buf);
+	       *(unsigned long *)(pointer)info->buf);
 
     return TRUE;
 }
