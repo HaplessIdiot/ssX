@@ -29,7 +29,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.25 2001/12/14 20:01:30 dawes Exp $ */
+/* $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.26 2001/12/27 20:02:34 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -166,7 +166,7 @@ print_display_info(Display *dpy)
 		printf(".%d", vendrel % 10);
 	    }
 	} else {
-	    /* post-4.0.2 */
+	    /* post-4.0.x */
 	    printf("%d.%d.%d", vendrel / 10000000,
 			      (vendrel /   100000) % 100,
 			      (vendrel /     1000) % 100);
