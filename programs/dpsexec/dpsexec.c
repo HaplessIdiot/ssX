@@ -34,8 +34,9 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/dpsexec/dpsexec.c,v 1.1 2001/03/01 01:23:58 dawes Exp $ */
 
+#include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
@@ -64,7 +65,7 @@ static void MyStatusProc (ctxt, code)
     }
 }
 
-void main(argc, argv)
+int main(argc, argv)
     int argc;
     char **argv;
 {
@@ -201,11 +202,15 @@ void main(argc, argv)
     DPSSuppressBinaryConversion(ctxt, True);
     
     while (1) {
-	mask = (1<<0) | (1<<ConnectionNumber(dpy));
+	fd_set fdmask;
+	FD_ZERO(&fdmask);
+	FD_SET(0, &fdmask);
+	FD_SET(ConnectionNumber(dpy), &fdmask);
 	DPSFlushContext(ctxt);
-	select(ConnectionNumber(dpy)+1, &mask, NULL, NULL, NULL);
-	
-	if (mask & (1<<0)) { /* Read from command line, send to context */
+	if (select(ConnectionNumber(dpy)+1, &fdmask, NULL, NULL, NULL) < 0)
+	    fprintf(stderr, "select() error %d\n", errno);
+	else if (FD_ISSET(0, &fdmask)) {
+	    /* Read from command line, send to context */
 	    if (fgets(buf, 1000, stdin) == NULL) break;
 	    DPSWriteData(ctxt, buf, strlen(buf));
 	}
@@ -220,5 +225,5 @@ void main(argc, argv)
 
     DPSDestroySpace(DPSSpaceFromContext(ctxt));
     XFlush(dpy);
-    exit(0);
+    return 0;
 }
