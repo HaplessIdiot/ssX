@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.129 2001/04/04 12:46:35 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.130 2001/04/09 09:38:59 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -1124,9 +1124,11 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     vgaHWGetIOBase(VGAHWPTR(pScrn));
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
-    if (xf86LoadSubModule(pScrn, "int10")) {
-	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"Initializing int10\n");
-	pTrident->Int10 = xf86InitInt10(pTrident->pEnt->index);
+    if (!xf86IsPc98())
+        if (xf86LoadSubModule(pScrn, "int10")) {
+	    xf86DrvMsg(pScrn->scrnIndex,X_INFO,"Initializing int10\n");
+	    pTrident->Int10 = xf86InitInt10(pTrident->pEnt->index);
+        }
     }
 
     xf86SetOperatingState(RES_SHARED_VGA, pTrident->pEnt->index, ResUnusedOpr);
