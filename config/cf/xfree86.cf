@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.147 1997/03/12 06:21:27 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.157 1997/04/17 08:16:38 hohndel Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -56,7 +56,11 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #define XF86I128Module		XF86LoaderServer
 #endif
 #ifndef XF86GLINTModule
+#if 0
 #define XF86GLINTModule		XF86LoaderServer
+#else
+#define XF86GLINTModule		NO
+#endif
 #endif
 #ifndef XF86Mach64Module
 #define XF86Mach64Module        XF86LoaderServer
@@ -108,7 +112,7 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #define XF86I128Server		YES
 #endif
 #ifndef XF86GLINTServer
-#define XF86GLINTServer		YES
+#define XF86GLINTServer		NO
 #endif
 #endif
 #endif

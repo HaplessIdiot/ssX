@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.110 1997/03/18 06:42:45 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.111 1997/04/10 10:05:27 hohndel Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -143,6 +143,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.110 1997/03/18 06:42:45 hohndel Ex
 #define XF86P9000Module         NO
 #define XF86I128Module          NO
 #define XF86Mach64Module        NO
+#define XF86GLINTModule         NO
 
 #define XF86SVGAServer          NO
 #define XF86VGA16Server         NO
@@ -159,6 +160,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.110 1997/03/18 06:42:45 hohndel Ex
 #define XF86AGXServer		NO
 #define XF86W32Server		NO
 #define XF86I128Server		NO
+#define XF86GLINTServer         NO
  */
 
 /*
