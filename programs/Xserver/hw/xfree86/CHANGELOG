@@ -2,6 +2,7 @@ XFree86 4.3.99.17 (xx November 2003)
  616. XDarwin fixes:
        - Fix intermittent crash on XDarwin startup.
        - Fix failure to redraw after resizing with cr implementation.
+       - Fix install failure when DESTDIR is specified.
       (Torrey T. Lyons).
  615. Add command line options to mkfontscale to enable/disable generation
       of iso10646-1 lines (Bugzilla #885, Roland Mainz).
@@ -18246,7 +18247,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2985 2003/11/22 05:22:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2986 2003/11/23 06:14:56 torrey Exp $
 
 
 

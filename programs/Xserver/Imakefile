@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.4 2001/03/14 18:42:02 pookie Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.294tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.295 2003/11/07 13:45:26 tsi Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -1287,8 +1287,8 @@ XPRDIRS = $(QUARTZDIR)/xpr $(ROOTLESSDIR) $(ROOTLESSDIR)/safeAlpha
 XPRLIBS = $(QUARTZDIR)/xpr/LibraryTargetName(xpr) $(ROOTLESSLIB)
 
 BundleProgramTarget(xpr,XDarwinApp,$(XPRDIRS),$(QUARTZDIR)/xpr/xprScreen.o, \
-	$(XPRLIBS),-framework ApplicationServices $(XPLUGINLIB), \
-	$(XDARWINAPPDIR)/Resources)
+	$(XPRLIBS),-framework ApplicationServices \
+	$(XPLUGINLIB),$(XDARWINAPPDIR)/Resources)
 #endif
 
 CRDIRS = $(QUARTZDIR)/cr $(ROOTLESSDIR) $(ROOTLESSDIR)/safeAlpha
@@ -1296,7 +1296,7 @@ CRLIBS = $(QUARTZDIR)/cr/LibraryTargetName(cr) $(ROOTLESSLIB)
 
 BundleProgramTarget(cr,XDarwinApp,$(CRDIRS),$(QUARTZDIR)/cr/crScreen.o, \
 	$(CRLIBS),-framework ApplicationServices -framework Cocoa \
-	-framework Carbon -ObjC, $(XDARWINAPPDIR)/Resources)
+	-framework Carbon -ObjC,$(XDARWINAPPDIR)/Resources)
 
 FSDIRS = $(QUARTZDIR)/fullscreen $(SHADOWDIR)
 FSLIBS = $(QUARTZDIR)/fullscreen/LibraryTargetName(fullscreen) $(SHADOW)
@@ -1310,13 +1310,13 @@ BundleProgramTarget(fullscreen,XDarwinApp,$(FSDIRS), \
  * (installed in their own bundles inside XDarwin's)
  */
 BundleProgramTarget(glxAGL,XDarwinApp,GL,GL/glx/glxext.o,GL/glx/libglx.a \
-	GL/apple/libAGLcore.a,-framework AGL -framework OpenGL, \
-	$(XDARWINAPPDIR)/Resources)
+	GL/apple/libAGLcore.a, \
+	-framework AGL -framework OpenGL,$(XDARWINAPPDIR)/Resources)
 
 #if BuildAppleDRI
 BundleProgramTarget(glxCGL,XDarwinApp,GL,GL/glx/glxext.o,GL/glx/libglx.a \
-	GL/apple/libCGLcore.a,-framework OpenGL $(XPLUGINLIB), \
-	$(XDARWINAPPDIR)/Resources)
+	GL/apple/libCGLcore.a, \
+	-framework OpenGL $(XPLUGINLIB),$(XDARWINAPPDIR)/Resources)
 #endif
 
 BundleProgramTarget(glxMesa,XDarwinApp,GL,GL/glx/glxext.o,GL/glx/libglx.a \
