@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.11 2002/03/08 04:33:18 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.12 2002/03/10 04:57:47 paulo Exp $ */
 
 #include <errno.h>
 #include "read.h"
@@ -94,6 +94,15 @@ LispRead(LispMac *mac)
 	    object = LispReadList(mac);
 	    break;
 	case ')':
+	    for (;;) {
+		ch = LispGet(mac);
+		if (!isspace(ch)) {
+		    LispUnget(mac, ch);
+		    break;
+		}
+		else if (ch == '\n')
+		    break;
+	    }
 	    return (EOLIST);
 	case EOF:
 	    return (NULL);

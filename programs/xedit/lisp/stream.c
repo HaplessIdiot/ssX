@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.5 2002/02/14 04:48:10 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.6 2002/03/08 04:33:18 paulo Exp $ */
 
 #include "read.h"
 #include "stream.h"
@@ -484,7 +484,7 @@ Lisp_Read(LispMac *mac, LispBuiltin *builtin)
 	if (!STREAM_P(input_stream))
 	    LispDestroy(mac, "%s: %s is not a stream",
 			STRFUN(builtin), STROBJ(input_stream));
-	else if (input_stream->data.stream.readable)
+	else if (!input_stream->data.stream.readable)
 	    LispDestroy(mac, "%s: stream %s is not readable",
 			STRFUN(builtin), STROBJ(input_stream));
     }
@@ -558,7 +558,7 @@ Lisp_ReadLine(LispMac *mac, LispBuiltin *builtin)
 {
     char *string;
     int ch, length;
-    LispObj *result;
+    LispObj *result, *status = NIL;
 
     LispObj *input_stream, *eof_error_p, *eof_value, *recursive_p;
 
@@ -587,7 +587,9 @@ Lisp_ReadLine(LispMac *mac, LispBuiltin *builtin)
 		    LispDestroy(mac, "%s: EOS found reading %s",
 				STRFUN(builtin), STROBJ(input_stream));
 
-		return (eof_value);
+		status = T;
+		result = eof_value;
+		goto read_line_done;
 	    }
 
 	    start = SSTREAMP(input_stream)->string +
@@ -604,14 +606,15 @@ Lisp_ReadLine(LispMac *mac, LispBuiltin *builtin)
 	    LispFree(mac, string);
 	    SSTREAMP(input_stream)->input += length;
 	}
-	else if (input_stream->data.stream.type == LispStreamFile ||
-		 input_stream->data.stream.type == LispStreamPipe) {
+	else /*if (input_stream->data.stream.type == LispStreamFile ||
+		 input_stream->data.stream.type == LispStreamStandard ||
+		 input_stream->data.stream.type == LispStreamPipe)*/ {
 	    LispFile *file;
 
-	    if (input_stream->data.stream.type == LispStreamFile)
-		file = FSTREAMP(input_stream);
-	    else
+	    if (input_stream->data.stream.type == LispStreamPipe)
 		file = IPSTREAMP(input_stream);
+	    else
+		file = FSTREAMP(input_stream);
 
 	    if (file->nonblock) {
 		if (fcntl(file->descriptor, F_SETFL, 0) < 0)
@@ -632,7 +635,9 @@ Lisp_ReadLine(LispMac *mac, LispBuiltin *builtin)
 		    if (string)
 			LispFree(mac, string);
 
-		    return (eof_value);
+		    status = T;
+		    result = eof_value;
+		    goto read_line_done;
 		}
 		else if (ch == '\n')
 		    break;
@@ -652,10 +657,6 @@ Lisp_ReadLine(LispMac *mac, LispBuiltin *builtin)
 	}
     }
     else {
-	/* XXX reader don't consume ending newlines */
-	if ((ch = LispGet(mac)) != '\n')
-	    LispUnget(mac, ch);
-
 	while ((ch = LispGet(mac)) != '\n') {
 	    if (ch == EOF) {
 		if (length)
@@ -667,7 +668,9 @@ Lisp_ReadLine(LispMac *mac, LispBuiltin *builtin)
 		if (string)
 		    LispFree(mac, string);
 
-		return (eof_value);
+		status = T;
+		result = eof_value;
+		goto read_line_done;
 	    }
 	    else if ((length % 64) == 0)
 		string = LispRealloc(mac, string, length + 64);
@@ -683,6 +686,11 @@ Lisp_ReadLine(LispMac *mac, LispBuiltin *builtin)
 	else
 	    result = STRING("");
     }
+
+read_line_done:
+    RETURN_CHECK(1);
+    RETURN(0) = status;
+    RETURN_COUNT = 1;
 
     return (result);
 }

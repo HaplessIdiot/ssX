@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.14 2002/02/12 16:07:54 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.15 2002/02/27 06:56:36 paulo Exp $ */
 
 #include <ctype.h>
 #include "io.h"
@@ -202,19 +202,6 @@ LispDebugger(LispMac *mac, LispDebugCall call, LispObj *name, LispObj *arg)
 		/* update hits counter */
 		CAR(CDR(CDR(CDR(CAR(obj)))))->data.integer += 1;
 	    }
-
-	    /* If in interactive mode, in the toplevel and reading from stdin
-	     * then the ending newline was not read */
-	    if (mac->interactive && mac->debug_level == 0 &&
-		SINPUT->data.stream.type == LispStreamStandard) {
-		int ch;
-
-		/* Remove newline and optional spaces */
-		for (ch = LispFgetc(Stdin); isspace(ch); ch = LispFgetc(Stdin))
-		    if (ch == EOF || ch == '\n')
-			break;
-	    }
-
 	    break;
 	case LispDebugCallEnd:
 	    DBG = CDR(DBG);
