@@ -373,7 +373,7 @@ SISFreeRec(ScrnInfoPtr pScrn)
 
     /* Just to make sure... */
     if(!pSiS) return;
-    
+
 #ifdef SISDUALHEAD
     pSiSEnt = pSiS->entityPrivate;
 #endif
@@ -382,9 +382,10 @@ SISFreeRec(ScrnInfoPtr pScrn)
     pSiS->pstate = NULL;
     if(pSiS->fonts) xfree(pSiS->fonts);
     pSiS->fonts = NULL;
+
 #ifdef SISDUALHEAD
     if(pSiSEnt) {
-      if(!pSiS->SecondHead) {
+       if(!pSiS->SecondHead) {
           /* Free memory only if we are first head; in case of an error
 	   * during init of the second head, the server will continue -
 	   * and we need the BIOS image and SiS_Private for the first
@@ -394,16 +395,21 @@ SISFreeRec(ScrnInfoPtr pScrn)
           pSiSEnt->BIOS = pSiS->BIOS = NULL;
 	  if(pSiSEnt->SiS_Pr) xfree(pSiSEnt->SiS_Pr);
           pSiSEnt->SiS_Pr = pSiS->SiS_Pr = NULL;
-      } else {
+	  if(pSiSEnt->RenderAccelArray) xfree(pSiSEnt->RenderAccelArray);
+	  pSiSEnt->RenderAccelArray = pSiS->RenderAccelArray = NULL;
+       } else {
       	  pSiS->BIOS = NULL;
 	  pSiS->SiS_Pr = NULL;
-      }
+	  pSiS->RenderAccelArray = NULL;
+       }
     } else {
 #endif
-      if(pSiS->BIOS) xfree(pSiS->BIOS);
-      pSiS->BIOS = NULL;
-      if(pSiS->SiS_Pr) xfree(pSiS->SiS_Pr);
-      pSiS->SiS_Pr = NULL;
+       if(pSiS->BIOS) xfree(pSiS->BIOS);
+       pSiS->BIOS = NULL;
+       if(pSiS->SiS_Pr) xfree(pSiS->SiS_Pr);
+       pSiS->SiS_Pr = NULL;
+       if(pSiS->RenderAccelArray) xfree(pSiS->RenderAccelArray);
+       pSiS->RenderAccelArray = NULL;
 #ifdef SISDUALHEAD
     }
 #endif
@@ -2813,6 +2819,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	     pSiSEnt->DisableDual = FALSE;
 	     pSiSEnt->BIOS = NULL;
 	     pSiSEnt->SiS_Pr = NULL;
+	     pSiSEnt->RenderAccelArray = NULL;
 	  } else {
 	     /* Second Head (always CRT1) */
 	     pSiS->SecondHead = TRUE;
@@ -3188,7 +3195,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 #ifdef SISMERGED
     /* Due to palette & timing problems we don't support 8bpp in MFBM */
     if((pSiS->MergedFB) && (pScrn->bitsPerPixel == 8)) {
-       SISErrorLog(pScrn, "Color depth 8 not supported in MergedFB mode, %s\n", mergeddisstr);
+       SISErrorLog(pScrn, "MergedFB: Color depth 8 not supported, %s\n", mergeddisstr);
        pSiS->MergedFB = pSiS->MergedFBAuto = FALSE;
     }
 #endif
@@ -5221,8 +5228,6 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
     if(pSiS->enablesisctrl) pSiS->SiS_SD_Flags |= SiS_SD_ENABLED;
 
-    if(pSiS->CurrentLayout.bitsPerPixel == 8) pSiS->SiS_SD_Flags |= SiS_SD_ISDEPTH8;
-
     return TRUE;
 }
 
@@ -6864,6 +6869,9 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 #endif
        SISSaveScreen(pScreen, SCREEN_SAVER_OFF);
 
+    pSiS->SiS_SD_Flags &= ~SiS_SD_ISDEPTH8;
+    if(pSiS->CurrentLayout.bitsPerPixel == 8) pSiS->SiS_SD_Flags |= SiS_SD_ISDEPTH8;
+
     return TRUE;
 }
 
@@ -7771,11 +7779,6 @@ SISCloseScreen(int scrnIndex, ScreenPtr pScreen)
     if(pSiS->AccelLinearScratch) {
        xf86FreeOffscreenLinear(pSiS->AccelLinearScratch);
        pSiS->AccelLinearScratch = NULL;
-    }
-
-    if(pSiS->RenderAccelArray) {
-       xfree(pSiS->RenderAccelArray);
-       pSiS->RenderAccelArray = NULL;
     }
 
     if(pSiS->AccelInfoPtr) {

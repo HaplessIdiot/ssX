@@ -36,7 +36,7 @@
 
 #define SISDRIVERVERSIONYEAR    3
 #define SISDRIVERVERSIONMONTH   10
-#define SISDRIVERVERSIONDAY     30
+#define SISDRIVERVERSIONDAY     31
 #define SISDRIVERREVISION       1
 
 #define SISDRIVERIVERSION (SISDRIVERVERSIONYEAR << 16) | (SISDRIVERVERSIONMONTH << 8) \
@@ -491,6 +491,7 @@ typedef struct {
     int			AllowHotkey;
     BOOLEAN		enablesisctrl;
     unsigned long	cmdQ_SharedWritePort_2D;
+    unsigned char       *RenderAccelArray;
 #ifdef SIS_CP
     SIS_CP_H_ENT
 #endif

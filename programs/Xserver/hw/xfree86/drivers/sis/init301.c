@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init301.c,v 1.42 2003/10/30 18:53:41 twini Exp $ */
+/* $XFree86$ */
 /*
  * Mode initializing code (CRT2 section)
  * for SiS 300/305/540/630/730 and
@@ -43,6 +43,10 @@
  
 #if 0
 #define SET_EMI
+#endif
+
+#if 1
+#define SET_EMI_CPQ
 #endif
 
 #include "init301.h"
@@ -694,125 +698,96 @@ SiS_ShortDelay(SiS_Private *SiS_Pr, USHORT delay)
 }
 
 static void
-SiS_PanelDelay(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
-                  USHORT DelayTime)
+SiS_PanelDelay(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, USHORT DelayTime)
 {
   UCHAR  *ROMAddr = HwInfo->pjVirtualRomBase;
-  USHORT PanelID, DelayIndex, Delay;
-#ifdef SIS300
-  USHORT temp;
-#endif
+  USHORT PanelID, DelayIndex, Delay=0;
 
   if(HwInfo->jChipType < SIS_315H) {
 
 #ifdef SIS300
 
-      if(SiS_Pr->SiS_IF_DEF_LVDS == 1) {			/* 300 series, LVDS */
-
-	  PanelID = SiS_GetReg(SiS_Pr->SiS_P3d4,0x36);
-
-	  DelayIndex = PanelID >> 4;
-
-	  if((DelayTime >= 2) && ((PanelID & 0x0f) == 1))  {
-              Delay = 3;
-          } else {
-              if(DelayTime >= 2) DelayTime -= 2;
-
-              if(!(DelayTime & 0x01)) {
-       		  Delay = SiS_Pr->SiS_PanelDelayTbl[DelayIndex].timer[0];
-              } else {
-       		  Delay = SiS_Pr->SiS_PanelDelayTbl[DelayIndex].timer[1];
-              }
-	      if((ROMAddr) && (SiS_Pr->SiS_UseROM)) {
-                  if(ROMAddr[0x220] & 0x40) {
-                      if(!(DelayTime & 0x01)) {
-	    	          Delay = (USHORT)ROMAddr[0x225];
-                      } else {
-	    	          Delay = (USHORT)ROMAddr[0x226];
-                      }
-                  }
-              }
-          }
-	  SiS_ShortDelay(SiS_Pr,Delay);
-
-      } else if(SiS_Pr->SiS_VBType & VB_SISVB) {		/* 300 series, 301(B) */
-
-	  PanelID = SiS_GetReg(SiS_Pr->SiS_P3d4,0x36);
-	  temp = SiS_GetReg(SiS_Pr->SiS_P3c4,0x18);
-          if(!(temp & 0x10))  PanelID = 0x12;
-
-          DelayIndex = PanelID >> 4;
-
-	  if((DelayTime >= 2) && ((PanelID & 0x0f) == 1))  {
-              Delay = 3;
-          } else {
-              if(DelayTime >= 2) DelayTime -= 2;
-
-              if(!(DelayTime & 0x01)) {
-       		  Delay = SiS_Pr->SiS_PanelDelayTbl[DelayIndex].timer[0];
-              } else {
-       		  Delay = SiS_Pr->SiS_PanelDelayTbl[DelayIndex].timer[1];
-              }
-	      if((ROMAddr) && (SiS_Pr->SiS_UseROM)) {
-                  if(ROMAddr[0x220] & 0x40) {
-                      if(!(DelayTime & 0x01)) {
-	    	          Delay = (USHORT)ROMAddr[0x225];
-                      } else {
-	    	          Delay = (USHORT)ROMAddr[0x226];
-                      }
-                  }
-              }
-          }
-	  SiS_ShortDelay(SiS_Pr,Delay);
-
+      PanelID = SiS_GetReg(SiS_Pr->SiS_P3d4,0x36);
+      if(SiS_Pr->SiS_VBType & VB_SISVB) {
+         if(!(SiS_GetReg(SiS_Pr->SiS_P3c4,0x18) & 0x10)) PanelID = 0x12;
       }
+      DelayIndex = PanelID >> 4;
+      if((DelayTime >= 2) && ((PanelID & 0x0f) == 1))  {
+         Delay = 3;
+      } else {
+         if(DelayTime >= 2) DelayTime -= 2;
+
+         if(!(DelayTime & 0x01)) {
+       	    Delay = SiS_Pr->SiS_PanelDelayTbl[DelayIndex].timer[0];
+         } else {
+       	    Delay = SiS_Pr->SiS_PanelDelayTbl[DelayIndex].timer[1];
+         }
+	 if((ROMAddr) && (SiS_Pr->SiS_UseROM)) {
+            if(ROMAddr[0x220] & 0x40) {
+               if(!(DelayTime & 0x01)) {
+	          Delay = (USHORT)ROMAddr[0x225];
+               } else {
+	    	  Delay = (USHORT)ROMAddr[0x226];
+               }
+            }
+         }
+      }
+      SiS_ShortDelay(SiS_Pr,Delay);
 
 #endif  /* SIS300 */
 
    } else {
 
-      if(HwInfo->jChipType >= SIS_330) return;
-
 #ifdef SIS315H
 
-      if(SiS_Pr->SiS_IF_DEF_LVDS == 1) {			/* 315 series, LVDS */
+      if(HwInfo->jChipType >= SIS_330) return;
 
-          if(SiS_Pr->SiS_IF_DEF_CH70xx == 0) {
-              PanelID = SiS_GetReg(SiS_Pr->SiS_P3d4,0x36);
-	      DelayIndex = PanelID >> 4;
-	      if((DelayTime >= 2) && ((PanelID & 0x0f) == 1))  {
-                 Delay = 3;
-              } else {
-                 if(DelayTime >= 2) DelayTime -= 2;
+      if((SiS_Pr->SiS_IF_DEF_LVDS == 1) ||
+         (SiS_Pr->SiS_CustomT == CUT_COMPAQ1280) ||
+	 (SiS_Pr->SiS_CustomT == CUT_CLEVO1400)) {			/* 315 series, LVDS; Special */
 
-                 if(!(DelayTime & 0x01)) {
-       		     Delay = SiS_Pr->SiS_PanelDelayTblLVDS[DelayIndex].timer[0];
-                 } else {
-       		     Delay = SiS_Pr->SiS_PanelDelayTblLVDS[DelayIndex].timer[1];
-                 }
-	         if((ROMAddr) && (SiS_Pr->SiS_UseROM)) {
-                    if(ROMAddr[0x13c] & 0x40) {
-                        if(!(DelayTime & 0x01)) {
-	    	           Delay = (USHORT)ROMAddr[0x17e];
-                        } else {
-	    	           Delay = (USHORT)ROMAddr[0x17f];
-                        }
-                    }
-                 }
-              }
-	      SiS_ShortDelay(SiS_Pr,Delay);
-	  }
+         if(SiS_Pr->SiS_IF_DEF_CH70xx == 0) {
+            PanelID = SiS_GetReg(SiS_Pr->SiS_P3d4,0x36);
+	    if(SiS_Pr->SiS_CustomT == CUT_CLEVO1400) {
+	       if(!(SiS_GetReg(SiS_Pr->SiS_P3c4,0x1b) & 0x10)) PanelID = 0x12;
+	    }
+	    if(SiS_Pr->SiS_CustomT == CUT_COMPAQ1280) {
+	       DelayIndex = PanelID & 0x0f;
+	    } else {
+	       DelayIndex = PanelID >> 4;
+	    }
+	    if((DelayTime >= 2) && ((PanelID & 0x0f) == 1))  {
+               Delay = 3;
+            } else {
+               if(DelayTime >= 2) DelayTime -= 2;
+               if(!(DelayTime & 0x01)) {
+       		  Delay = SiS_Pr->SiS_PanelDelayTblLVDS[DelayIndex].timer[0];
+               } else {
+       		  Delay = SiS_Pr->SiS_PanelDelayTblLVDS[DelayIndex].timer[1];
+               }
+	       if((ROMAddr) && (SiS_Pr->SiS_UseROM)) {
+                  if(ROMAddr[0x13c] & 0x40) {
+                     if(!(DelayTime & 0x01)) {
+	    	        Delay = (USHORT)ROMAddr[0x17e];
+                     } else {
+	    	        Delay = (USHORT)ROMAddr[0x17f];
+                     }
+                  }
+               }
+            }
+	    SiS_ShortDelay(SiS_Pr,Delay);
+	 }
 
       } else if(SiS_Pr->SiS_VBType & VB_SISVB) {			/* 315 series, 301(B) */
 
-          PanelID = SiS_GetReg(SiS_Pr->SiS_P3d4,0x36);
-	  DelayIndex = PanelID >> 4;
-          if(!(DelayTime & 0x01)) {
-       		Delay = SiS_Pr->SiS_PanelDelayTbl[DelayIndex].timer[0];
-          } else {
-       		Delay = SiS_Pr->SiS_PanelDelayTbl[DelayIndex].timer[1];
-          }
-	  SiS_DDC2Delay(SiS_Pr, Delay * 4);
+         PanelID = SiS_GetReg(SiS_Pr->SiS_P3d4,0x36);
+	 DelayIndex = PanelID >> 4;
+         if(!(DelayTime & 0x01)) {
+       	    Delay = SiS_Pr->SiS_PanelDelayTbl[DelayIndex].timer[0];
+         } else {
+       	    Delay = SiS_Pr->SiS_PanelDelayTbl[DelayIndex].timer[1];
+         }
+	 SiS_DDC2Delay(SiS_Pr, Delay * 4);
 
       }
 
@@ -3836,13 +3811,18 @@ SiS_DisableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 
               if(SiS_Pr->SiS_VBType & VB_SIS301LV302LV) {			/* LV */
 
-#ifdef SET_EMI
+
 	         if(SiS_Pr->SiS_VBType & VB_SIS302LV) {
-	            if(SiS_Pr->SiS_CustomT != CUT_CLEVO1400) {
+		    if(SiS_Pr->SiS_CustomT == CUT_COMPAQ1280) {
+#ifdef SET_EMI_CPQ
+		       SiS_SetReg(SiS_Pr->SiS_Part4Port,0x30,0x00);
+#endif
+	            } else if(SiS_Pr->SiS_CustomT != CUT_CLEVO1400) {
+#ifdef SET_EMI
 	               SiS_SetReg(SiS_Pr->SiS_Part4Port,0x30,0x00);
+#endif
 		    }
 		 }
-#endif
 
 		 if( (modenum <= 0x13) ||
 		     (!(SiS_IsDualEdge(SiS_Pr,HwInfo))) ||
@@ -4418,9 +4398,12 @@ SiS_EnableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 		     if((SiS_Pr->SiS_CustomT != CUT_COMPAQ1280) &&
 		        (SiS_Pr->SiS_CustomT != CUT_CLEVO1400)) {
 		        SiS_PanelDelayLoop(SiS_Pr, HwInfo, 3, 2);
+			SiS_SetRegOR(SiS_Pr->SiS_Part4Port,0x26,0x02);
+	                SiS_PanelDelayLoop(SiS_Pr, HwInfo, 3, 2);
+		     } else {
+		        SiS_SetRegOR(SiS_Pr->SiS_Part4Port,0x26,0x02);
+			SiS_PanelDelay(SiS_Pr, HwInfo, 0);
 		     }
-		     SiS_SetRegOR(SiS_Pr->SiS_Part4Port,0x26,0x02);
-	             SiS_PanelDelayLoop(SiS_Pr, HwInfo, 3, 2);
 	          }
 	       }
 
@@ -4512,26 +4495,16 @@ SiS_EnableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 
 	    if(SiS_Pr->SiS_VBType & VB_SIS301LV302LV) {
 
-	       if(SiS_Pr->SiS_CustomT != CUT_CLEVO1400) {
-#ifdef SET_EMI
-	          if(SiS_Pr->SiS_VBType & VB_SIS302LV) {
-	             SiS_SetReg(SiS_Pr->SiS_Part4Port,0x30,0x00);	  /* All this from 1.10.7u */
-		  }
-#endif
-	          SiS_SetRegOR(SiS_Pr->SiS_Part4Port,0x27,0x0c);
-#ifdef SET_EMI
-		  if(SiS_Pr->SiS_VBType & VB_SIS302LV) {
-	             SiS_SetRegOR(SiS_Pr->SiS_Part4Port,0x30,0x20);
-		  }
-#endif
-	       }
-
 	       if(SiS_Pr->SiS_CustomT == CUT_COMPAQ1280) {
-#ifdef SET_EMI
+#ifdef SET_EMI_CPQ
 	          if(SiS_Pr->SiS_VBType & VB_SIS302LV) {
+		     SiS_SetReg(SiS_Pr->SiS_Part4Port,0x30,0x00);
+		     SiS_SetRegOR(SiS_Pr->SiS_Part4Port,0x27,0x0c);
+		     SiS_SetRegOR(SiS_Pr->SiS_Part4Port,0x30,0x20);
 		     SiS_SetReg(SiS_Pr->SiS_Part4Port,0x31,0x08);
 	             SiS_SetReg(SiS_Pr->SiS_Part4Port,0x32,0x10);
 	             SiS_SetReg(SiS_Pr->SiS_Part4Port,0x33,0x4d);
+		     SiS_SetReg(SiS_Pr->SiS_Part4Port,0x34,0x10);
 		     if((SiS_GetReg(SiS_Pr->SiS_P3d4,0x36) & 0x0f) != 0x02) {
 		        SiS_SetReg(SiS_Pr->SiS_Part4Port,0x31,0x0d);
 	                SiS_SetReg(SiS_Pr->SiS_Part4Port,0x32,0x70);
@@ -4543,6 +4516,13 @@ SiS_EnableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 	       } else if(SiS_Pr->SiS_CustomT != CUT_CLEVO1400) {
 #ifdef SET_EMI
 	          if(SiS_Pr->SiS_VBType & VB_SIS302LV) {
+	             SiS_SetReg(SiS_Pr->SiS_Part4Port,0x30,0x00);	  /* All this from 1.10.7u */
+		  }
+#endif
+	          SiS_SetRegOR(SiS_Pr->SiS_Part4Port,0x27,0x0c);
+#ifdef SET_EMI
+	          if(SiS_Pr->SiS_VBType & VB_SIS302LV) {
+		     SiS_SetRegOR(SiS_Pr->SiS_Part4Port,0x30,0x20);
 	             SiS_SetReg(SiS_Pr->SiS_Part4Port,0x31,0x12);
 	             SiS_SetReg(SiS_Pr->SiS_Part4Port,0x32,0xd0);
 	             SiS_SetReg(SiS_Pr->SiS_Part4Port,0x33,0x6b);
@@ -4579,7 +4559,7 @@ SiS_EnableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 		     SiS_PanelDelay(SiS_Pr, HwInfo, 1);
 		     SiS_WaitVBRetrace(SiS_Pr, HwInfo);
 		     SiS_PanelDelay(SiS_Pr, HwInfo, 3);
-#ifdef SET_EMI
+#ifdef SET_EMI_CPQ
 		     if(SiS_Pr->SiS_VBType & VB_SIS302LV) {
 	                SiS_SetRegOR(SiS_Pr->SiS_Part4Port,0x30,0x40);
 		     }
@@ -4894,7 +4874,7 @@ SiS_SetCRT2Offset(SiS_Private *SiS_Pr,USHORT ModeNo,
 
   temp = (UCHAR)(offset & 0xFF);
   SiS_SetReg(SiS_Pr->SiS_Part1Port,0x07,temp);
-  temp = (UCHAR)((offset & 0xFF00) >> 8);
+  temp = (UCHAR)(offset >> 8);
   SiS_SetReg(SiS_Pr->SiS_Part1Port,0x09,temp);
   temp = (UCHAR)(((offset >> 3) & 0xFF) + 1);
   SiS_SetReg(SiS_Pr->SiS_Part1Port,0x03,temp);
@@ -5494,7 +5474,10 @@ SiS_SetGroup1_LCDA(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex,
   if(SiS_Pr->SiS_SetFlag & EnableLVDSDDA)   temp |= 0x40;
   if(SiS_Pr->SiS_VBType & VB_SISVB) {
      /* Don't check Part1Port,0x00 -> is not being set if LCDA! */
-     if(SiS_Pr->SiS_LCDInfo & LCDRGB18Bit) temp |= 0x80;
+     /* We check SR06 instead here: */
+     if(SiS_Pr->SiS_LCDInfo & LCDRGB18Bit) {
+        if(SiS_GetReg(SiS_Pr->SiS_P3c4,0x06) & 0x10) temp |= 0x80;
+     }
   } else {
      if(SiS_Pr->SiS_LCDInfo & LCDRGB18Bit) {
         if(SiS_GetReg(SiS_Pr->SiS_Part1Port,0x00) & 0x01) temp |= 0x80;
@@ -5905,16 +5888,13 @@ SiS_SetGroup1_301(SiS_Private *SiS_Pr, USHORT ModeNo,USHORT ModeIdIndex,
 
   SiS_SetReg(SiS_Pr->SiS_Part1Port,0x12,0x00);              	/* 0x12 CR17 */
 
+  temp = 0x00;
   if(SiS_Pr->SiS_LCDInfo & LCDRGB18Bit) {
-     if(IS_SIS650) {
-        /* 650/30xLV 1.10.6s */
-        if(SiS_GetReg(SiS_Pr->SiS_Part1Port,0x00) & 0x01) {
-	   temp = 0x80;
-	}
-     } else temp = 0x80;
-  } else temp = 0x00;
+     if(SiS_GetReg(SiS_Pr->SiS_Part1Port,0x00) & 0x01) {
+	temp = 0x80;
+     }
+  }
   SiS_SetReg(SiS_Pr->SiS_Part1Port,0x1A,temp);                	/* 0x1A SR0E */
-
 }
 
 /*********** Set Part 1 / LVDS ***********/
@@ -8366,13 +8346,21 @@ SiS_SetGroup4(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex,
 	   if(SiS_IsDualLink(SiS_Pr, HwInfo)) {
 	      SiS_SetRegOR(SiS_Pr->SiS_Part4Port,0x27,0x2c);
 	   }
+	   if(SiS_Pr->SiS_CustomT == CUT_COMPAQ1280) {
+#ifdef SET_EMI_CPQ
+	      if(SiS_Pr->SiS_VBType & VB_SIS302LV) {
+	         SiS_SetReg(SiS_Pr->SiS_Part4Port,0x2a,0x00);
+	         SiS_SetReg(SiS_Pr->SiS_Part4Port,0x30,0x00);
+	         SiS_SetReg(SiS_Pr->SiS_Part4Port,0x34,0x10);
+	      }
+#endif
+	   } else if(SiS_Pr->SiS_VBType & VB_SIS302LV) {
 #ifdef SET_EMI
-	   if(SiS_Pr->SiS_VBType & VB_SIS302LV) {
 	      SiS_SetReg(SiS_Pr->SiS_Part4Port,0x2a,0x00);
 	      SiS_SetReg(SiS_Pr->SiS_Part4Port,0x30,0x00);
 	      SiS_SetReg(SiS_Pr->SiS_Part4Port,0x34,0x10);
-	   }
 #endif
+	   }
 	}
    	return;
      }
@@ -8562,13 +8550,21 @@ SiS_SetGroup4(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex,
 	      SiS_SetRegOR(SiS_Pr->SiS_Part4Port,0x27,0x2c);
 	   }
 	}
+	if(SiS_Pr->SiS_CustomT == CUT_COMPAQ1280) {
+#ifdef SET_EMI_CPQ
+	   if(SiS_Pr->SiS_VBType & VB_SIS302LV) {
+	      SiS_SetReg(SiS_Pr->SiS_Part4Port,0x2a,0x00);
+	      SiS_SetReg(SiS_Pr->SiS_Part4Port,0x30,0x00);
+	      SiS_SetReg(SiS_Pr->SiS_Part4Port,0x34,0x10);
+	   }
+#endif
+	} else if(SiS_Pr->SiS_VBType & VB_SIS302LV) {
 #ifdef SET_EMI
-	if(SiS_Pr->SiS_VBType & VB_SIS302LV) {
 	   SiS_SetReg(SiS_Pr->SiS_Part4Port,0x2a,0x00);
 	   SiS_SetReg(SiS_Pr->SiS_Part4Port,0x30,0x00);
 	   SiS_SetReg(SiS_Pr->SiS_Part4Port,0x34,0x10);
-	}
 #endif
+	}
      }
 
   }  /* 301B */
@@ -9612,8 +9608,7 @@ SiS_SetCRT2Group(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, USHORT ModeNo)
 	   /* For 301BDH (Panel link initialization): */
 	   if((SiS_Pr->SiS_VBType & VB_NoLCD) && (SiS_Pr->SiS_VBInfo & SetCRT2ToLCD)) {
 	      if(SiS_Pr->SiS_LCDResInfo != SiS_Pr->SiS_Panel640x480) {
-		 if(!((SiS_Pr->SiS_SetFlag & SetDOSMode) &&
-		    ((ModeNo == 0x03) || (ModeNo == 0x10)))) {
+		 if(!((SiS_Pr->SiS_SetFlag & SetDOSMode) && ((ModeNo == 0x03) || (ModeNo == 0x10)))) {
 		    if(SiS_Pr->SiS_VBInfo & SetInSlaveMode) {
 		       SiS_ModCRT1CRTC(SiS_Pr,ModeNo,ModeIdIndex,
 		                       RefreshRateTableIndex,HwInfo);

@@ -283,7 +283,10 @@ InitTo300Pointer(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
    SiS_Pr->SiS_NoScaleData1280x1024 = (SiS_LCDDataStruct *)SiS300_NoScaleData1280x1024;
 
    SiS_Pr->SiS_PanelDelayTbl     = (SiS_PanelDelayTblStruct *)SiS300_PanelDelayTbl;
+   SiS_Pr->SiS_PanelDelayTblLVDS = (SiS_PanelDelayTblStruct *)SiS300_PanelDelayTbl;
+#if 0
    SiS_Pr->SiS_PanelDelayTblLVDS = (SiS_PanelDelayTblStruct *)SiS300_PanelDelayTblLVDS;
+#endif
 
    SiS_Pr->SiS_CHTVUPALData  = (SiS_LVDSDataStruct *)SiS300_CHTVUPALData;
    SiS_Pr->SiS_CHTVOPALData  = (SiS_LVDSDataStruct *)SiS300_CHTVOPALData;
@@ -2550,10 +2553,11 @@ static void
 SiS_SetCRT1ModeRegs(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
                     USHORT ModeNo,USHORT ModeIdIndex,USHORT RefreshRateTableIndex)
 {
-  USHORT data,data2,data3;
+  USHORT data,data2;
   USHORT infoflag=0,modeflag;
   USHORT resindex,xres,resinfo = 0;
 #ifdef SIS315H
+  USHORT data3;
   ULONG  longdata;
 #endif
 
@@ -2570,7 +2574,8 @@ SiS_SetCRT1ModeRegs(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
      }
   }
 
-  SiS_SetRegAND(SiS_Pr->SiS_P3c4,0x1F,0x3F); 		/* DAC pedestal */
+  /* Disable DPMS */
+  SiS_SetRegAND(SiS_Pr->SiS_P3c4,0x1F,0x3F);
 
   if(ModeNo > 0x13) data = infoflag;
   else data = 0;
@@ -2579,8 +2584,7 @@ SiS_SetCRT1ModeRegs(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
   if(ModeNo > 0x13) {
      if(SiS_Pr->SiS_ModeType > 0x02) {
         data2 |= 0x02;
-        data3 = (SiS_Pr->SiS_ModeType - ModeVGA) << 2;
-        data2 |= data3;
+        data2 |= ((SiS_Pr->SiS_ModeType - ModeVGA) << 2);
      }
   }
 
@@ -2606,14 +2610,12 @@ SiS_SetCRT1ModeRegs(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
   if(HwInfo->jChipType != SIS_300) {
      data = 0x0000;
      if(infoflag & InterlaceMode) {
-        if(xres <= 800)  data = 0x0020;
+        if(xres <= 800) data = 0x0020;
         else if(xres <= 1024) data = 0x0035;
         else data = 0x0048;
      }
-     data2 = data & 0x00FF;
-     SiS_SetReg(SiS_Pr->SiS_P3d4,0x19,data2);
-     data2 = (data & 0xFF00) >> 8;
-     SiS_SetRegANDOR(SiS_Pr->SiS_P3d4,0x1a,0xFC,data2);
+     SiS_SetReg(SiS_Pr->SiS_P3d4,0x19,(data & 0x00FF));
+     SiS_SetRegANDOR(SiS_Pr->SiS_P3d4,0x1a,0xFC,(data >> 8));
   }
 
   if(modeflag & HalfDCLK) {
@@ -2632,7 +2634,6 @@ SiS_SetCRT1ModeRegs(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
      } else {
         SiS_SetRegAND(SiS_Pr->SiS_P3c4,0x0F,0xB7);
      }
-     /* BIOS does something for mode 0x12 here */
      if(SiS_Pr->SiS_ModeType == ModeEGA) {
         if(ModeNo > 0x13) {
   	   SiS_SetRegOR(SiS_Pr->SiS_P3c4,0x0F,0x40);
@@ -2652,9 +2653,8 @@ SiS_SetCRT1ModeRegs(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
                               RefreshRateTableIndex,HwInfo);
 	data2 >>= 1;
 	if(infoflag & InterlaceMode) data2 >>= 1;
-	data3 = SiS_GetColorDepth(SiS_Pr,ModeNo,ModeIdIndex);
-	data3 >>= 1;
-	if(data3 == 0) data3++;
+	data3 = SiS_GetColorDepth(SiS_Pr,ModeNo,ModeIdIndex) >> 1;
+	if(!data3) data3++;
 	data2 /= data3;
 	if(data2 >= 0x50) {
 	   data &= 0x0f;
@@ -2679,13 +2679,12 @@ SiS_SetCRT1ModeRegs(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
            data2 = SiS_Pr->SiS_VCLKData[data2].CLOCK;
 	}
 
-	data3 = SiS_GetColorDepth(SiS_Pr,ModeNo,ModeIdIndex);
-	data3 >>= 1;
+	data3 = SiS_GetColorDepth(SiS_Pr,ModeNo,ModeIdIndex) >> 1;
+	if(!data3) data3++;
 
 	data2 *= data3;
 
-	data3 = SiS_GetMCLK(SiS_Pr, HwInfo);
-	longdata = data3 * 1024;
+	longdata = SiS_GetMCLK(SiS_Pr, HwInfo) * 1024;
 
 	data2 = longdata / data2;
 
