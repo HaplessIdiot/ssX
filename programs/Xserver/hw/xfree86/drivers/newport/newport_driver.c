@@ -30,7 +30,7 @@
  * Project.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.5 2000/12/09 03:31:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.6 2000/12/14 20:59:12 dawes Exp $ */
 
 /* function prototypes, common data structures & generic includes */
 #include "newport.h"
@@ -55,14 +55,6 @@
 /* Xv Extension */
 #include "xf86xv.h"
 #include "Xv.h"
-
-/* Temporary workaround.  A module really shouldn't need this */
-#ifndef XFree86LOADER
-# include "xf86_OSlib.h"
-# ifndef MAP_FAILED
-#  define MAP_FAILED ((pointer)(-1))
-# endif
-#endif
 
 #define VERSION			4000
 #define NEWPORT_NAME		"Newport"

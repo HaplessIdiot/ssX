@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_accel.c,v 1.6 2000/12/22 05:27:45 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_accel.c,v 1.7 2001/02/27 23:04:59 alanh Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -402,7 +402,7 @@ static void R128SetupForDashedLine(ScrnInfoPtr pScrn,
 {
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
-    CARD32        pat       = *(CARD32 *)pattern;
+    CARD32        pat       = *(CARD32 *)(pointer)pattern;
 
 #ifdef XF86DRI
     R128CCE_TO_MMIO(pScrn, info);
@@ -820,13 +820,13 @@ static void R128SubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
     OUTREG(R128_DST_HEIGHT_WIDTH, (h << 16)      | ((w + 31) & ~31));
 }
 
-/* Subsequent XAA indirect CPU-to-screen color expandion.  This is called
+/* Subsequent XAA indirect CPU-to-screen color expansion.  This is called
    once for each scanline. */
 static void R128SubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
 {
     R128InfoPtr     info      = R128PTR(pScrn);
     unsigned char   *R128MMIO = info->MMIO;
-    CARD32          *p        = (CARD32 *)info->scratch_buffer[bufno];
+    CARD32          *p        = (pointer)info->scratch_buffer[bufno];
     int             i;
     int             left      = info->scanline_words;
     volatile CARD32 *d;
@@ -970,7 +970,7 @@ static void R128SubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
 {
     R128InfoPtr     info      = R128PTR(pScrn);
     unsigned char   *R128MMIO = info->MMIO;
-    CARD32          *p        = (CARD32 *)info->scratch_buffer[bufno];
+    CARD32          *p        = (pointer)info->scratch_buffer[bufno];
     int             i;
     int             left      = info->scanline_words;
     volatile CARD32 *d;

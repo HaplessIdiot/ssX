@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.16 2001/01/03 23:46:33 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.17 2001/01/25 02:26:00 mvojkovi Exp $ */
 
 #include "r128.h"
 #include "r128_reg.h"
@@ -37,7 +37,7 @@ static int  R128QueryImageAttributes(ScrnInfoPtr, int, unsigned short *,
 
 static void R128ResetVideo(ScrnInfoPtr);
 
-static void R128VideoTimerCallback(ScrnInfoPtr pScrn, Time time);
+static void R128VideoTimerCallback(ScrnInfoPtr pScrn, Time now);
 
 
 #define MAKE_ATOM(a) MakeAtom(a, sizeof(a) - 1, TRUE)
@@ -253,8 +253,8 @@ RegionsEqual(RegionPtr A, RegionPtr B)
        (A->extents.y2 != B->extents.y2))
 	return FALSE;
 
-    dataA = (int*)REGION_RECTS(A);
-    dataB = (int*)REGION_RECTS(B);
+    dataA = (pointer)REGION_RECTS(A);
+    dataB = (pointer)REGION_RECTS(B);
 
     while(num--) {
 	if((dataA[0] != dataB[0]) || (dataA[1] != dataB[1]))
@@ -953,21 +953,21 @@ R128QueryImageAttributes(
 }
 
 static void
-R128VideoTimerCallback(ScrnInfoPtr pScrn, Time time)
+R128VideoTimerCallback(ScrnInfoPtr pScrn, Time now)
 {
     R128InfoPtr info = R128PTR(pScrn);
     R128PortPrivPtr pPriv = info->adaptor->pPortPrivates[0].ptr;
 
     if(pPriv->videoStatus & TIMER_MASK) {
 	if(pPriv->videoStatus & OFF_TIMER) {
-	    if(pPriv->offTime < time) {
+	    if(pPriv->offTime < now) {
 		unsigned char *R128MMIO = info->MMIO;
 		OUTREG(R128_OV0_SCALE_CNTL, 0);
 		pPriv->videoStatus = FREE_TIMER;
-		pPriv->freeTime = time + FREE_DELAY;
+		pPriv->freeTime = now + FREE_DELAY;
 	    }
 	} else {  /* FREE_TIMER */
-	    if(pPriv->freeTime < time) {
+	    if(pPriv->freeTime < now) {
 		if(pPriv->linear) {
 		   xf86FreeOffscreenLinear(pPriv->linear);
 		   pPriv->linear = NULL;

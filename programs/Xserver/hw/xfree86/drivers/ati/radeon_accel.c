@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.8 2001/01/11 03:36:58 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.9 2001/01/21 21:19:20 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -476,7 +476,7 @@ static void RADEONSetupForDashedLine(ScrnInfoPtr pScrn,
 {
     RADEONInfoPtr info        = RADEONPTR(pScrn);
     unsigned char *RADEONMMIO = info->MMIO;
-    CARD32        pat         = *(CARD32 *)pattern;
+    CARD32        pat         = *(CARD32 *)(pointer)pattern;
 
     switch (length) {
     case  2: pat |= pat <<  2;  /* fall through */
@@ -745,13 +745,13 @@ static void RADEONSubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr
     OUTREG(RADEON_DST_HEIGHT_WIDTH, (h << 16)       | ((w + 31) & ~31));
 }
 
-/* Subsequent XAA indirect CPU-to-screen color expandion.  This is called
+/* Subsequent XAA indirect CPU-to-screen color expansion.  This is called
    once for each scanline. */
 static void RADEONSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
 {
     RADEONInfoPtr   info        = RADEONPTR(pScrn);
     unsigned char   *RADEONMMIO = info->MMIO;
-    CARD32          *p          = (CARD32 *)info->scratch_buffer[bufno];
+    CARD32          *p          = (pointer)info->scratch_buffer[bufno];
     int             i;
     int             left        = info->scanline_words;
     volatile CARD32 *d;
@@ -864,7 +864,7 @@ static void RADEONSubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
 {
     RADEONInfoPtr   info        = RADEONPTR(pScrn);
     unsigned char   *RADEONMMIO = info->MMIO;
-    CARD32          *p          = (CARD32 *)info->scratch_buffer[bufno];
+    CARD32          *p          = (pointer)info->scratch_buffer[bufno];
     int             i;
     int             left        = info->scanline_words;
     volatile CARD32 *d;
