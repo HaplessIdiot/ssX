@@ -26,7 +26,7 @@
  *          Dirk H. Hohndel (hohndel@suse.de),
  *          Portions: the GGI project & confidential CYRIX databooks.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.10 2000/07/10 14:03:36 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.11 2000/07/26 01:52:18 tsi Exp $ */
 
 #include "fb.h"
 #include "mibank.h"
@@ -1071,6 +1071,8 @@ CYRIXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     miInitializeBackingStore(pScreen);
     xf86SetBackingStore(pScreen);
+
+    xf86SetSilkenMouse(pScreen);
 
     /* Initialise cursor functions */
     miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
