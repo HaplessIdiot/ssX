@@ -1,0 +1,341 @@
+                    Driver Status for XFree86[tm] 3.9.17
+
+                          The XFree86 Project, Inc
+
+                               23 January 2000
+
+                                  Abstract
+
+     This document provides information about the status of the driver
+     and hardware support in XFree86 3.9.17 compared with that in
+     XFree86 3.3.6.  Please send updates for this document to
+     <dawes@xfree86.org>
+
+1.  Introduction
+
+This document contains one section per vendor (organised alphabetically) for
+each chipset family that is supported in XFree86 3.3.6 or XFree86 3.9.17.  It
+includes information about the status of the drivers and the hardware they
+support, including a comparison of the level of support between versions
+3.3.6 and 3.9.17.
+
+NOTE: Status information needs to be checked carefully and expanded where
+possible.  E.g., include information about acceleration, multi-head, known
+problems, hardware known to work on, platform dependencies/limitations, other
+architectures known to work on (e.g., Alpha, PPC), etc.
+
+2.  3Dfx
+
+      3.3.6:
+            Support (including acceleration) for Voodoo Banshee and Voodoo 3.
+            Support is provided by the XF86_SVGA server with the tdfx
+            driver).
+
+      3.9.17:
+            Support for Voodoo 1 and Voodoo 2 via glide on platforms where
+            glide is available (Linux and FreeBSD(?)).  Support is provided
+            by the "glide" driver (requires Glide 2x).
+
+            Support (including acceleration) for Voodoo Banshee and Voodoo 3.
+            Support is provided by the "tdfx" driver.
+
+      Summary:
+            All hardware supported in 3.3.6 is also supported in 3.9.17.
+
+3.  3Dlabs
+
+      3.3.6:
+            Support (including acceleration) for GLINT 500TX (with IBM RGB526
+            ramdac), GLINT MX plus Delta or Gamma (with IBM RGB526 and RGB640
+            ramdacs), Permedia with IBM RGB526 ramdac, Permedia 2, 2a, 2v.
+            Support is provided by the XF86_3DLabs server.
+
+      3.9.17:
+            Support (including acceleration) for Permedia, Permedia 2, 2v
+            (and 2a??) GLINT 500TX, GLINT MX, GLINT Gamma, and Glint Delta
+            coproc.  Support is provided by the "glint" driver.
+
+      Summary:
+            All hardware supported in 3.3.6 is also supported in 3.9.17.
+
+4.  Alliance
+
+      3.3.6:
+            Support (including acceleration) for the AT24, AP6422, AT3D.
+            Support is provided by the XF86_SVGA server with the apm driver.
+
+      3.9.17:
+            Support (including acceleration?) for the AT25 and AT3D.  This
+            support is provided by the "apm" driver.  This driver currently
+            has no native support for the AP6422 and AT24.  The driver status
+            is uncertain.  Test reports are required.  NEED TO CHECK IF THESE
+            CARDS WILL WORK WITH fbdev.
+
+      Summary:
+            The AT24 and AP6422 are supported in 3.3.6 but not in 3.9.17.
+            The AT25 is supported in 3.9.17 but not in 3.3.6.  The status of
+            the driver in 3.9.17 is uncertain.
+
+5.  ARK Logic
+
+      3.3.6:
+            Support (including acceleration) for the ARK1000PV, ARK2000PV,
+            and ARK2000MT.  Support is provided by the XF86_SVGA server with
+            the ark driver.
+
+      3.9.17:
+            No native support for these chipsets, because the old driver has
+            not been ported.  NEED TO CHECK IF THESE CARDS WILL WORK WITH
+            fbdev.
+
+      Summary:
+            No ARK Logic chips are supported in 3.9.17.
+
+6.  ATI
+
+      3.3.6:
+            Accelerated support is provided for the Mach8 chips (by the
+            XF86_Mach8 server), Mach32 chips (by the XF86_Mach32 server), the
+            following Mach64 and Rage chips: GX, CX, CT, ET, VT, VT3, GT,
+            RageII+DVD, RagePro (GB, GD, GI, FP, GQ), VT4, Rage IIC (GV, GW,
+            GZ), Rage LT Pro (LD, LB, LI, LP), Rage LT, Rage XL or XC (GL,
+            GM, GN, GO, GR, GS) and Rage Mobility (LM, LN, LR, LS) (by the
+            XF86_Mach64 server).  Unaccelerated support is provided for most
+            of the above (except some early Mach8 and Mach32 adapters), as
+            well the old VGAWonder series chipsets (18800, 18800-1, 28800-2,
+            28800-4, 28800-5, 28800-6) by the XF86_SVGA server with the ati
+            driver.  Accelerated support is provided for the Rage 128 chips
+            by the XF86_SVGA server with the r128 driver.
+
+      3.9.17:
+            Accelerated support is provided for the Rage 128 chips by the
+            "r128" driver.  Unaccelerated support is provided for all of the
+            others except the Mach8 and some early Mach32 chips by the "ati"
+            driver.
+
+      Summary:
+            All chips supported in 3.3.6 are supported in 3.9.17 except for
+            Mach8 and some old Mach32 chips.  The support in 3.9.17 is, how-
+            ever, unaccelerated for all chips except the Rage 128.
+
+7.  Avance Logic
+
+      3.3.6:
+            Support for the AL2101, ALI2228, ALI2301, ALI2302, ALI2308,
+            ALI2401 chipsets.  Support is provided by the XF86_SVGA server,
+            using the al2101 driver for the AL2101, and the ali driver for
+            the others.  The status of this support is unknown because we
+            don't have any recent test reports.
+
+      3.9.17:
+            No native support for these chipsets, because the old drivers
+            have not been ported.  NEED TO CHECK IF THESE CARDS WILL WORK
+            WITH fbdev.
+
+      Summary:
+            No Avance Logic chips are supported in 3.9.17.
+
+8.  Chips and Technologies
+
+      3.3.6:
+            Support for ...
+
+      3.9.17:
+            Support for ....
+
+9.  Cirrus Logic
+
+      3.3.6:
+            Support for ...
+
+      3.9.17:
+            Support for ....
+
+10.  Compaq/Digital
+
+      3.3.6:
+            Support for ...
+
+      3.9.17:
+            Support for ....
+
+11.  Cyrix
+
+      3.3.6:
+            Support for ...
+
+      3.9.17:
+            Support for ....
+
+12.  Epson
+
+      3.3.6:
+            Support for ...
+
+      3.9.17:
+            Support for ....
+
+13.  Genoa
+
+      3.3.6:
+            Support for ...
+
+      3.9.17:
+            Support for ....
+
+14.  IBM
+
+      3.3.6:
+            Support for ...
+
+      3.9.17:
+            Support for ....
+
+15.  Intel
+
+      3.3.6:
+            Support for ...
+
+      3.9.17:
+            Support for ....
+
+16.  Matrox
+
+      3.3.6:
+            Support for ...
+
+      3.9.17:
+            Support for ....
+
+17.  MX (???)
+
+      3.3.6:
+            Support for ...
+
+      3.9.17:
+            Support for ....
+
+18.  NCR
+
+      3.3.6:
+            Support for ...
+
+      3.9.17:
+            Support for ....
+
+19.  Neomagic
+
+      3.3.6:
+            Support for ...
+
+      3.9.17:
+            Support for ....
+
+20.  NVIDIA
+
+      3.3.6:
+            Support for ...
+
+      3.9.17:
+            Support for ....
+
+21.  Number Nine
+
+      3.3.6:
+            Support for ...
+
+      3.9.17:
+            Support for ....
+
+22.  Oak
+
+      3.3.6:
+            Support for ...
+
+      3.9.17:
+            Support for ....
+
+23.  Paradise/Western Digital
+
+      3.3.6:
+            Support for ...
+
+      3.9.17:
+            Support for ....
+
+24.  RealTek
+
+      3.3.6:
+            Support for ...
+
+      3.9.17:
+            Support for ....
+
+25.  Rendition/Micron
+
+      3.3.6:
+            Support for ...
+
+      3.9.17:
+            Support for ....
+
+26.  S3
+
+      3.3.6:
+            Support for ...
+
+      3.9.17:
+            Support for ....
+
+27.  Silicon Integrated Systems (SiS)
+
+      3.3.6:
+            Support for ...
+
+      3.9.17:
+            Support for ....
+
+28.  Silicon Motion, Inc
+
+      3.3.6:
+            Support for ...
+
+      3.9.17:
+            Support for ....
+
+29.  Trident Microsystems
+
+      3.3.6:
+            Support for ...
+
+      3.9.17:
+            Support for ....
+
+30.  Tseng Labs
+
+      3.3.6:
+            Support for ...
+
+      3.9.17:
+            Support for ....
+
+31.  Video 7
+
+      3.3.6:
+            Support for ...
+
+      3.9.17:
+            Support for ....
+
+32.  Weitek
+
+      3.3.6:
+            Support for ...
+
+      3.9.17:
+            Support for ....
+
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.2 2000/01/23 21:34:37 dawes Exp $
+
+
+$XFree86$
