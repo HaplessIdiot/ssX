@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/188 1996/01/01 10:48:30 kaleb $
-XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.5 1996/01/05 13:11:04 dawes Exp $
+XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.6 1996/01/07 03:46:02 dawes Exp $
 #define DoNormalLib NormalLibX11
 #define DoSharedLib SharedLibX11
 #define DoDebugLib DebugLibX11
@@ -884,6 +884,7 @@ LCOBJS = \
 
 OBJS = $(OBJS1) $(OBJS2) $(OBJS3)
 
+#if !BuildServersOnly
 #include <Library.tmpl>
 
 SpecialCLibObjectRule(ErrDes,$(ICONFIGFILES),$(EDB_DEFINES))
@@ -955,3 +956,8 @@ clean::
 	RemoveFiles(ks_tables_h ks_tables.h ProgramTargetName(makekeys))
 
 DependTarget3($(SRCS1),$(SRCS2),$(SRCS3))
+#else
+all::
+
+BuildIncludesTop($(HEADERS))
+#endif

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/r61_main/1 1995/12/11 20:58:09 mor $
-XCOMM $XFree86: xc/lib/Imakefile,v 3.5 1996/01/05 13:10:12 dawes Exp $
+XCOMM $XFree86: xc/lib/Imakefile,v 3.6 1996/01/08 08:48:07 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags
 
@@ -28,7 +28,7 @@ LINTSUBDIRS = Xau Xdmcp $(THRSTUBLIB) X11 oldX ICE SM Xext $(EXEXTLIB) \
 	     Xt Xmu Xaw XIE Xi Xtst FS PEX5 $(XKBLIBDIR)
 #else
 /* For ServersOnly */
-LINTSUBDIRS = Xau Xdmcp $(XKBLIBDIR)
+LINTSUBDIRS = Xau Xdmcp X11 $(XKBLIBDIR)
 #endif
 FONTSUBDIR = font
 
