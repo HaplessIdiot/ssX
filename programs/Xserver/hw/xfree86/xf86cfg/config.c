@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/config.c,v 1.3 2000/10/20 14:59:05 alanh Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/config.c,v 1.4 2000/10/27 18:31:05 dawes Exp $
  */
 
 #include "config.h"
@@ -136,7 +136,7 @@ StartConfig(void)
 	fprintf(stderr, "Cannot to open config file.\n");
 	exit(1);
     }
-    XF86Config_path = filename;
+    XF86Config_path = (char *)filename;
     if ((XF86Config = xf86readConfigFile()) == NULL) {
 	fprintf(stderr, "Problem when parsing config file\n");
 	exit(1);

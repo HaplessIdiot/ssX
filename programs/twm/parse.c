@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/parse.c,v 1.5 1999/02/19 21:27:30 hohndel Exp $ */
+/* $XFree86: xc/programs/twm/parse.c,v 1.6 2000/10/24 22:45:15 dawes Exp $ */
 /*****************************************************************************/
 /*
 
@@ -77,10 +77,10 @@ in this Software without prior written authorization from The Open Group.
 static FILE *twmrc;
 static int ptr = 0;
 static int len = 0;
-static unsigned char buff[BUF_LEN+1];
+static char buff[BUF_LEN+1];
 static unsigned char overflowbuff[20];		/* really only need one */
 static int overflowlen;
-static unsigned char **stringListSource, *currentString;
+static char **stringListSource, *currentString;
 
 static int doparse ( int (*ifunc)(void), char *srctypename, char *srcname );
 static int twmFileInput ( void );
@@ -94,7 +94,7 @@ int ConstrainedMoveTime = 400;		/* milliseconds, event times */
 
 int (*twmInputFunc)(void);
 
-extern unsigned char *defTwmrc[];		/* default bindings */
+extern char *defTwmrc[];		/* default bindings */
 
 
 /***********************************************************************
@@ -235,7 +235,7 @@ int ParseTwmrc (filename)
 }
 
 int ParseStringList (sl)
-    unsigned char **sl;
+    char **sl;
 {
     stringListSource = sl;
     currentString = *sl;

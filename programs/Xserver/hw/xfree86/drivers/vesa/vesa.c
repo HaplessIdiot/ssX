@@ -26,7 +26,7 @@
  *
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.4 2000/10/27 18:31:04 dawes Exp $
  */
 
 #include "vesa.h"
@@ -118,7 +118,7 @@ static IsaChipsets VESAISAchipsets[] = {
 };
 
 typedef enum {
-    OPTION_SHADOW_FB,
+    OPTION_SHADOW_FB
 } VESAOpts;
 
 static OptionInfoRec VESAOptions[] = {
