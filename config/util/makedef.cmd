@@ -1,5 +1,5 @@
 /* This is OS/2 REXX */
-/* $XFree86: xc/config/util/makedef.cmd,v 1.4 2003/11/12 00:10:24 dawes Exp $
+/* $XFree86: xc/config/util/makedef.cmd,v 1.5 2004/01/14 17:32:39 dawes Exp $
  *
  * This file was taken from Odin32 project and modified to suit
  * XFree86 4.x build process
@@ -181,7 +181,7 @@ sInitTerm = 0
 rc = LoadDBFile(sDBFile,sLibrary)
 
 /* engage gcc to parse the corresponding -def.cpp file */
-'@gcc -E -D__UNIXOS2__ 'sLibrary'-def.cpp >tmpos2.def'
+'@gcc -E -D__UNIXOS2__ -DHAS_SHM 'sLibrary'-def.cpp >tmpos2.def'
 
 /* Signature */
 sEnhSign = '##1##'
