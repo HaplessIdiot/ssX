@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xf86.rules,v 1.1 94/03/29 15:34:48 gildea Exp $
-XCOMM $XFree86: xc/config/cf/xf86.rules,v 3.3 1994/12/17 09:32:51 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86.rules,v 3.4 1994/12/25 14:01:29 dawes Exp $
 
 /*
  * These rules are needed to build the Xfree86 X Servers
@@ -12,37 +12,38 @@ XCOMM $XFree86: xc/config/cf/xf86.rules,v 3.3 1994/12/17 09:32:51 dawes Exp $
 #endif
 
 #ifndef AssembleObject
-#define AssembleObject(flags) CPPOnlyAsm($*,flags)                      @@\
-	$(AS) -o $*.o $*.i                                              @@\
+#define AssembleObject(flags) CPPOnlyAsm($*,flags)			@@\
+	$(AS) -o $*.o $*.i						@@\
 	RemoveFile($*.i)
 #endif
 
 #ifndef NormalAsmObjectRule
-#define NormalAsmObjectRule()                                           @@\
-.s.o:                                                                   @@\
+#define NormalAsmObjectRule()						@@\
+.s.o:									@@\
 	AssembleObject($(_NOOP_))					@@\
 									@@\
-.s.i:                                                                   @@\
+.s.i:									@@\
 	CPPOnlyAsm($*,$(_NOOP_))
 #endif
 
 #ifndef ObjectFromSpecialAsmSource
-#define ObjectFromSpecialAsmSource(dst,src,flags)                       @@\
-dst.s:  src.s                                                           @@\
-	RemoveFile($@)                                                  @@\
-	$(LN) $? $@                                                     @@\
-                                                                        @@\
-dst.o:  dst.s                                                           @@\
-	AssembleObject(flags)                                           @@\
-                                                                        @@\
+#define ObjectFromSpecialAsmSource(dst,src,flags)			@@\
+dst.s:  src.s								@@\
+	RemoveFile($@)							@@\
+	$(LN) $? $@							@@\
+									@@\
+dst.o:  dst.s								@@\
+	AssembleObject(flags)						@@\
+									@@\
 dst.i:  dst.s								@@\
 	CPPOnlyAsm(dst,flags)						@@\
-                                                                        @@\
-depend:: dst.s                                                          @@\
-                                                                        @@\
-clean::                                                                 @@\
+									@@\
+depend:: dst.s								@@\
+									@@\
+clean::									@@\
 	RemoveFile(dst.s)
 #endif
+
 
 /*
  * Rules for building config files from scripts
@@ -53,20 +54,20 @@ clean::                                                                 @@\
 #endif
  
 #ifndef ConfigTargetLong
-#define ConfigTargetLong(target,dep,script,args,extra)                  @@\
-all:: Configure                                                         @@\
+#define ConfigTargetLong(target,dep,script,args,extra)			@@\
+all:: Configure								@@\
                                                                         @@\
-Configure:: target.o                                                    @@\
-                                                                        @@\
-target.c: script dep                                                    @@\
-	$(MAKE) $(MFLAGS) Makefile                                      @@\
-	$(MAKE) $(MFLAGS) extra Concat(Build,target)                    @@\
-                                                                        @@\
-Concat(Build,target):                                                   @@\
-	$(RM) target.c                                                  @@\
-	$(SHELL) script args                                            @@\
-                                                                        @@\
-clean::                                                                 @@\
+Configure:: target.o							@@\
+									@@\
+target.c: script dep							@@\
+	$(MAKE) $(MFLAGS) Makefile					@@\
+	$(MAKE) $(MFLAGS) extra Concat(Build,target)			@@\
+									@@\
+Concat(Build,target):							@@\
+	$(RM) target.c							@@\
+	$(SHELL) script args						@@\
+									@@\
+clean::									@@\
 	$(RM) target.c
 #endif
 
@@ -120,3 +121,4 @@ install.linkkit:: srcname						@@\
 #define InstallLinkKitSubdirs(dirs) \
 NamedTargetSubdirs(install.linkkit,dirs,"installing link kit",DESTDIR='$(DESTDIR)',install.linkkit)
 #endif
+

@@ -1,3 +1,6 @@
+XFree86 3.1.0Zd (27 January 1995)
+257. Define X_LOCALE for Linux.
+
 XFree86 3.1.0Zc (27 January 1995)
 256. Doc updates.
 255. Minor hw/xfree86 updates for fix-11 (Kaleb Keithley).

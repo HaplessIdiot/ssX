@@ -45,7 +45,7 @@ url="ftp://ftp.eecs.umich.edu/BSD/XFree86">
 If you're still running NetBSD 0.9, you'll have to build it from the source.
 If you've done it and want to share your binaries, please let us know.
 
-This release has also been tested on NetBSD-current of January, 11th 1995 with
+This release has also been tested on NetBSD-current of January, 19th 1995 with
 <tt/option "COMPAT_10"/ in the kernel config file.
 
 XFree86 now also builds on NetBSD/sparc. See section <ref id="sparc"
@@ -62,11 +62,10 @@ this file and we'll revise it.
 <sect>Installing the Binaries
 
 <p>
-The binary distribution is composed of a number of split tar archives
+The binary distribution is composed of a number of  tar archives
 which are the executables, servers, fonts, libraries, include files,
 man pages, config files, and the server link kit.  The full distribution
-takes over 55MB of disk space.  The large archives are split into
-smaller chunks.
+takes over 55MB of disk space.  
 
 All archives are now made using the NetBSD package tools. We recommend
 that you install these tools first.  All packages can be installed
@@ -81,38 +80,38 @@ XFree86 binary distribution.
 <descrip>
 <tag/REQUIRED:/
     <descrip>
-    <tag/doc/ READMEs and XFree86 specific man pages.
-    <tag/bin/ all of the executable X client applications and shared libs
-    <tag/fonts/ the misc and 75dpi fonts
-    <tag/lib/ data files needed at runtime
-    <tag/config/ customizable xinit, xdm, and fs runtime configuration files.
+    <tag/X311doc/ READMEs and XFree86 specific man pages.
+    <tag/X311bin/ all of the executable X client applications and shared libs
+    <tag/X311font/ the misc and 75dpi fonts
+    <tag/X311lib/ data files needed at runtime
+    <tag/X311cfg/ customizable xinit, xdm, and fs runtime configuration files.
     </descrip>
 
     Choose at least one of the following to match your hardware:
 
     <descrip>
-    <tag/SVGA/  the 8-bit pseudo-color X server for Super VGA cards
-    <tag/VGA16/ the 4-bit pseudo-color X server for VGA &amp; SVGA cards.
-    <tag/Mono/  the Monochrome X Server
-    <tag/8514/  the X server for IBM 8514/A and compatible boards
-    <tag/AGX/   the X server for AGX boards
-    <tag/Mach8/ the X server for ATI Mach8 graphics boards
-    <tag/Mach32/ the X server for ATI Mach32 graphics boards
-    <tag/Mach64/ the X server for ATI Mach64 graphics boards
-    <tag/P9000/	the X server for P9000 based boards
-    <tag/S3/ 	the X server for S3 based boards
-    <tag/W32/	the X server for et4000w32 based boards
+    <tag/X311svga/  the 8-bit pseudo-color X server for Super VGA cards
+    <tag/X311vg16/ the 4-bit pseudo-color X server for VGA &amp; SVGA cards.
+    <tag/X311mono/  the Monochrome X Server
+    <tag/X3118514/  the X server for IBM 8514/A and compatible boards
+    <tag/X311agx/   the X server for AGX boards
+    <tag/X311mc8/ the X server for ATI Mach8 graphics boards
+    <tag/X311mc32/ the X server for ATI Mach32 graphics boards
+    <tag/X311mc64/ the X server for ATI Mach64 graphics boards
+    <tag/X311p900/	the X server for P9000 based boards
+    <tag/X311s3/ 	the X server for S3 based boards
+    <tag/X311w32/	the X server for et4000w32 based boards
     </descrip>
 
 <tag/OPTIONAL:/
 
     <descrip>
-    <tag/fs/ the font server with man pages.
-    <tag/prog/ the X11 header files and static libraries needed only 
+    <tag/X311fs/ the font server with man pages.
+    <tag/X311prog/ the X11 header files and static libraries needed only 
 		  for compiling other X applications
-    <tag/man/ man pages except XFree86 specific ones in the doc archive
-    <tag/otherfonts/ the other fonts (100dpi, scaled, Japanese, Chinese, etc)
-    <tag/linkkit/ X server reconfiguration kit
+    <tag/X311man/ man pages except XFree86 specific ones in the doc archive
+    <tag/X311xfnt/ the other fonts (100dpi, scaled, Japanese, Chinese, etc)
+    <tag/X311link/ X server reconfiguration kit
     </descrip>
 </descrip>
 
@@ -124,21 +123,11 @@ config, and one X server.
 
 <p>
 <enum>
-<item> Concatenate back the multi-part packages you want to install
-(bin, fonts, linkkit and otherfonts): 
-<tscreen><verb>
- % cat xf86-3.1.1-bin.tar.gz.* > xf86-3.1.1-bin.tar.gz
- % cat xf86-3.1.1-fonts.tar.gz.* > xf86-3.1.1-fonts.tar.gz
- % cat xf86-3.1.1-linkkit.tar.gz.* > xf86-3.1.1-linkkit.tar.gz
- % cat xf86-3.1.1-otherfonts.tar.gz.* > xf86-3.1.1-otherfonts.tar.gz
-</verb></tscreen>
-You can remove individual parts once they are cat'd together.
-
 <item> Become ``root''.
 
 <item> For each package that you want to install type:
 <tscreen><verb>
- # pkg_add xf86-3.1.1-<pkg>.tar.gz
+ # pkg_add <pkg>.tgz
 </verb></tscreen>
 If you don't have enough room in /usr/X11R6 you can specify another
 directory by using the <tt/-p/ option to <tt/pkg_add/. See
@@ -180,22 +169,22 @@ below.
 <tscreen><verb>
  cd /usr/X11R6
 
- cat xf86-3.1.1-bin.tar.gz.* | tar xzf -
- cat xf86-3.1.1-fonts.tar.gz.* | tar xzf -
- cat xf86-3.1.1-linkkit.tar.gz.* | tar xzf -
- cat xf86-3.1.1-other-fonts.tar.gz.* | tar xzf -
+ tar xzf X311doc.tgz
+ tar xzf X311bin.tgz
+ tar xzf X311lib.tgz 
+ tar xzf X311font.tgz
+ tar xzf X311man.tgz
 
- tar xzf xf86-3.1.1-config.tar.gz
- tar xzf xf86-3.1.1-doc.tar.gz
- tar xzf xf86-3.1.1-fs.tar.gz
- tar xzf xf86-3.1.1-lib.tar.gz 
- tar xzf xf86-3.1.1-man.tar.gz
- tar xzf xf86-3.1.1-man.tar.gz
- tar xzf xf86-3.1.1-prog.tar.gz
+ tar xzf X311link.tgz
+ tar xzf X311prog.tgz
+ tar xzf X311xfnt.tgz
+ tar xzf X311fs.tgz
+ tar xzf X311cfg.tgz
+
 </verb></tscreen>
 	And unpack the server(s) you need:
 <tscreen><verb>
- tar xzf xf86-<server>.tar.gz
+ tar xzf X311<server>.tgz
 </verb></tscreen>
 
 <item> <label id="install-cont"> Set the <tt/XWINHOME/ environment
@@ -629,7 +618,7 @@ and many others.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.6 1995/01/21 10:44:26 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.7 1995/01/25 11:08:49 dawes Exp $
 </verb>
 
 </article>

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: lnxLib.rules,v 1.2 94/03/31 11:37:29 gildea Exp $
-XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.8 1994/12/02 05:38:33 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.9 1995/01/14 10:39:34 dawes Exp $
 
 /*
  * Linux shared library rules (DLL & ELF versions)
@@ -132,7 +132,7 @@ clean::									@@\
  *  JUMP_IS_HOST_Xfoo = YES
  *  JUMP_STUBLIBS_Xfoo = libXfoo.sa
  *  JUMP_DIR_Xfoo = $(JUMP_ROOT_Xfoo)/shared		<work directory>
- *  JUMP_DEFS_Xfoo = -DFOO                              <defs for jump files>
+ *  JUMP_DEFS_Xfoo = -DFOO				<defs for jump files>
  *  JUMP_VARS_Xfoo = $(JUMP_ROOT_Xfoo)/jump_vars	<see DLL docs>
  *  JUMP_FUNCS_Xfoo = $(JUMP_ROOT_Xfoo)/jump_funcs	<see DLL docs>
  *  JUMP_IGNORE_Xfoo = $(JUMP_ROOT_Xfoo)/jump_ignore	<see DLL docs>

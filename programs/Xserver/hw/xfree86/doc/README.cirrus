@@ -1,14 +1,20 @@
   Information for Cirrus Chipset Users
-  Harm Hanemaayer (hhanemaa@cs.ruu.nl)
-  7 January 1995
+  Harm Hanemaayer (hhanemaa@cs.ruu.nl), Randy Hendry
+  (randy@sgi.com)
+  27 January 1995
 
   1.  Supported chipsets
 
 
-  The driver is used in the 256-color SVGA server (with acceleration)
-  and the mono server (without acceleration). The SVGA server supports
-  16 and 32 bits-per-pixel truecolor modes on some configurations. The
-  following chipsets by Cirrus Logic are supported:
+  There are two different SVGA drivers for Cirrus chipsets, one called
+  ``cirrus'' and one called ``cl64xx''.  The ``cirrus'' driver is used
+  in the 256-color SVGA server (with acceleration) and the mono server
+  (without acceleration). The SVGA server supports 16 and 32 bits-per-
+  pixel truecolor modes on some configurations.  The ``cl64xx'' driver
+  is used in the 256-color SVGA, 16-color and mono servers.  Note that
+  except where stated otherwise, this document is referring to the
+  ``cirrus'' driver.  The following chipsets by Cirrus Logic are
+  supported:
 
      CL-GD5420
         ISA SVGA chipset, 1Mbyte; maximum dot clock is 45 MHz (256 color
@@ -27,12 +33,13 @@
         on external displays). Take note of the "noaccel" option.
 
      CL-GD6420/6440
-        These chipsets are not compatible with the 542x series, but is
-        supported by a separate driver (cl64xx). It is used in recent
+        These chipsets are not compatible with the 542x series, but are
+        supported by the ``cl64xx'' driver. It is used in recent
         laptops, and bears some similarity to old Cirrus chipsets
         (5410/AVGA2). The driver may also work for other 64xx chips. The
         configuration identifiers for this driver are "cl6420" and
-        "cl6440". This document does not apply to it.
+        "cl6440".  This driver is discussed in detail in section ``The
+        cl64xx Driver''.
 
      CL-GD5424
         Basically VLB version of the 5422, but resembles the 5426 in
@@ -64,19 +71,19 @@
   Here's a list of maximum dot clocks for each supported depth:
 
 
-                  mono        8 bpp (256c)    16 bpp____      32 bpp
-  CL-GD62x5       45 MHz      45 MHz____
-  CL-GD5420       80 MHz      45 MHz (1)
-  CL-GD542x/512K  80 MHz      45 MHz____
-  CL-GD5422/24    80 MHz      80 MHz____      40 MHz____
-  CL-GD5426/28    85 MHz      85 MHz____      45 MHz (2)
-  CL-GD5429       85 MHz      85 MHz____      50 MHz____
-  CL-GD5430       85 MHz      85 MHz____      45 MHz (2)
-  CL-GD5434/1Mb   85 MHz      85 MHz____      45 MHz (2)
-  CL-GD5434/2Mb   85 MHz      85 MHz____      85 MHz____      45 MHz (2)
+                       mono        8 bpp (256c)    16 bpp____      32 bpp
+       CL-GD62x5       45 MHz      45 MHz____
+       CL-GD5420       80 MHz      45 MHz (1)
+       CL-GD542x/512K  80 MHz      45 MHz____
+       CL-GD5422/24    80 MHz      80 MHz____      40 MHz____
+       CL-GD5426/28    85 MHz      85 MHz____      45 MHz (2)
+       CL-GD5429       85 MHz      85 MHz____      50 MHz____
+       CL-GD5430       85 MHz      85 MHz____      45 MHz (2)
+       CL-GD5434/1Mb   85 MHz      85 MHz____      45 MHz (2)
+       CL-GD5434/2Mb   85 MHz      85 MHz____      85 MHz____      45 MHz (2)
 
-  (1) with 512K memory.
-  (2) 50 MHz with high MCLK setting.
+       (1) with 512K memory.
+       (2) 50 MHz with high MCLK setting.
 
 
 
@@ -123,13 +130,13 @@
   your chip has the BitBLT engine, if that doesn't work, try the
   "noaccel"; option, which disables all accelerated functions. The
   "no_imageblt" option may be sufficient.
-
   In order to be able to run at a depth of 16bpp and 32bpp, and to
   improve performance at 8bpp, linear addressing must be enabled. This
   is generally possible on 543x local bus cards, and if you have less
   than 16Mb of system memory, on local bus 542x cards and ISA 543x
   cards. You must specify the "linear" option and possibly a Membase
   address. See the following sections for a detailed description.
+
   Lastly, on the 543x, it is advisable to use the "mmio" option in the
   Device section for better acceleration (this might also apply to the
   5429, which has not been tested).
@@ -321,13 +328,13 @@
         62x5 laptop chipsets with maximum white colors.
 
 
-
   4.  Mode issues
 
 
   The accelerated 256-color driver uses 256 bytes of scratch space in
   video memory, and the hardware cursor also uses 1K. Consequently, a
   1024x1024 virtual resolution should not be used with a 1Mbyte card.
+
   The use of a higher dot clock frequencies has a negative effect on the
   performance of graphics operations, especially BitBlt, when little
   DRAM bandwidth is left for drawing (the amount is displayed during
@@ -453,13 +460,6 @@
 
 
 
-
-
-
-
-
-
-
   Section "screen"
       SubSection "Display"
           Depth 8
@@ -487,7 +487,62 @@
 
 
 
-  6.  Trouble shooting
+  6.  The ``cl64xx'' Driver
+
+  The cl64xx driver supports the cl-gd6440 found in many laptops.  For
+  example, Nan Tan Computer's NP9200, NP3600, etc., which are OEM-ed by
+  Sager, ProStar, etc. and Texas Instruments TI4000 series are
+  supported.
+
+  The driver works in LCD-only, CRT-only, and the chip's SimulScan mode
+  which allows one to use both the LCD and external CRT displays
+  simultaneously.  The LCD and Simulscan modes' resolution is 640x480
+  while, for CRT-only, the standard VESA modes of 640x480, 600x800, and
+  1024x768 have been tested.  Interlaced 1024x768 mode has never been
+  debugged and does not work on the machines tested.
+
+  The chip has a documented maximum operating limit for its dot clock
+  that is related to its core voltage.  Specifically, for 5.0V the
+  maximum dot clock is 65MHz and for 3.3V the maximum dot clock is
+  40MHz.  The driver checks the core voltage and limits the maximum dot
+  clock to the corresponding value.  This translates to a maximum
+  resolution of about 1024x768 at a 60Hz refresh rate.  The internal
+  frequency generator can be programmed higher than these limits and is
+  done so during server startup when the clocks are probed which
+  momentarily exceeding the chip's operating limit.  Once a set of valid
+  clocks is obtained, I would recommend using Clocks lines in
+  XF86Config.  Doing so will also decrease startup time significantly.
+  The clocks may be obtained by running the X server -probeonly (see the
+  XFree86 man page for more information about -probeonly).
+
+  The data book indicates that only a configuration of one megabyte of
+  video memory is supported by the chip.  This size has been directly
+  set in the driver.  If one finds a need, one should be able to
+  override the default size in XF86Config.  Also, with 1MB of video
+  memory, one should be able to have a virtual screen size of e.g.
+  1024x1024 and this is possible in CRT-only screen mode.  However,
+  whenever the LCD is in use (LCD and SimulScan), the chip uses a
+  portion of upper video ram for its own internal acceleration purposes.
+  Thus, the maximum video memory available for virtual resolution in LCD
+  modes is about 0.75MB e.g.  1024x768.  If you set the virtual
+  resolution above this, you will see what might be described as a
+  compressed aliased band when the accelerated area is displayed.
+
+  Currently, the driver does not support switching of screen modes among
+  LCD, CRT, and SimulScan, and, at least on the NP9200, the mode must be
+  chosen at OS boot time (e.g. Linux's LILO) while the BIOS is still
+  active.  It should be possible to add screen mode type selection as a
+  ModeLine flag option in XF86Config to allow for dynamic screen mode
+  selection from within the X server.  Finally, the driver does not
+  currently support any of the powerdown saving features of the chip nor
+  does it shut off the LCD's backlight on screen blank.  I hope to
+  implement all these features in future releases.
+
+  The primary contact for the cl6440 problems with ``cl64xx'' driver is
+  Randy Hendry <randy@sgi.com>.
+
+
+  7.  Trouble shooting with the ``cirrus'' driver
 
   First of all, make sure that the default modes selected from your
   XF86Config is supported by your monitor, i.e. make sure the horizontal
@@ -537,7 +592,6 @@
         functions, or a problem with the BitBLT engine. Try the
         "noaccel" option, or the "no_bitblt" option. Also check the BIOS
         settings.
-
      `Blitter timeout' messages from the server.
         Same as for the above entry.
 
@@ -592,7 +646,8 @@
   reached at hhanemaa@cs.ruu.nl), or post in the Usenet newsgroup
   "comp.windows.x.i386unix".
 
-  7.  Driver changes
+
+  8.  Driver Changes
 
   Bugs fixed since XFree86 3.1:
 
@@ -622,7 +677,18 @@
 
      o  Support for dot clocks up to 110 MHz on the 5434.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.7 1995/01/21 07:16:51 dawes Exp $
+     o  Support for the CL6440 in the ``cl64xx'' driver.
+
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.8 1995/01/27 04:51:53 dawes Exp $
+
+
+
+
+
+
+
+
+
 
 
 

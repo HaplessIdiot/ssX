@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf,v 1.4 94/04/07 15:46:42 rws Exp $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.19 1995/01/21 10:37:13 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.20 1995/01/22 03:02:19 dawes Exp $
 
 #define OSName			Linux
 #define OSVendor		/**/
@@ -10,7 +10,6 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.19 1995/01/21 10:37:13 dawe
 #ifndef UseElfFormat
 #define UseElfFormat		NO
 #endif
-
 #define HasGcc			YES
 #define HasGcc2			YES
 #ifndef HasGcc2ForCplusplus
@@ -58,7 +57,9 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.19 1995/01/21 10:37:13 dawe
 #define LdCombineFlags		-r
 #define OptimizedCDebugFlags	-O2 -m486
 #define StandardDefines		-Dlinux -D__i386__ -D_POSIX_SOURCE \
-				-D_BSD_SOURCE -D_GNU_SOURCE
+				-D_BSD_SOURCE -D_GNU_SOURCE -DX_LOCALE
+#define XawI18nDefines		-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
+#define HasWChar32		YES
 #define StandardCppDefines	-traditional StandardDefines
 #define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME -DPART_NET
 #define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
