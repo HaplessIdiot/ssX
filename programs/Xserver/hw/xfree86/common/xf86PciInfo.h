@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.101 2001/07/14 19:38:28 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.102 2001/07/19 02:22:49 tsi Exp $ */
 /*
  * PCI Probe
  *
@@ -233,6 +233,9 @@
 #define PCI_CHIP_MACH64LP	0x4C50
 #define PCI_CHIP_MACH64LR	0x4C52
 #define PCI_CHIP_MACH64LS	0x4C53
+#define PCI_CHIP_RADEON_LW	0x4C57
+#define PCI_CHIP_RADEON_LY	0x4C59
+#define PCI_CHIP_RADEON_LZ	0x4C5A
 #define PCI_CHIP_RAGE128MF	0x4D46
 #define PCI_CHIP_RAGE128ML	0x4D4C
 #define PCI_CHIP_RAGE128PD	0x5044
@@ -242,12 +245,18 @@
 #define PCI_CHIP_RADEON_QE	0x5145
 #define PCI_CHIP_RADEON_QF	0x5146
 #define PCI_CHIP_RADEON_QG	0x5147
-#define PCI_CHIP_RADEON_VE	0x5159
+#define PCI_CHIP_RADEON_QY	0x5159
+#define PCI_CHIP_RADEON_QZ	0x515A
 #define PCI_CHIP_RAGE128RE	0x5245
 #define PCI_CHIP_RAGE128RF	0x5246
 #define PCI_CHIP_RAGE128RG	0x5247
 #define PCI_CHIP_RAGE128RK	0x524B
 #define PCI_CHIP_RAGE128RL	0x524C
+#define PCI_CHIP_RAGE128TF	0x5446
+#define PCI_CHIP_RAGE128TL	0x544C
+#define PCI_CHIP_RAGE128TR	0x5452
+
+
 #define PCI_CHIP_MACH64VT	0x5654
 #define PCI_CHIP_MACH64VU	0x5655
 #define PCI_CHIP_MACH64VV	0x5656
@@ -834,11 +843,17 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_RAGE128PD,	"Rage 128 Pro PD",0},
 				{PCI_CHIP_RAGE128PF,	"Rage 128 Pro PF",0},
 				{PCI_CHIP_RAGE128PR,	"Rage 128 Pro PR",0},
+				{PCI_CHIP_RAGE128TF,	"Rage 128 Pro TF",0},
+				{PCI_CHIP_RAGE128TL,	"Rage 128 Pro TL",0},
+				{PCI_CHIP_RAGE128TR,	"Rage 128 Pro TR",0},
 				{PCI_CHIP_RADEON_QD,	"Radeon QD",0},
 				{PCI_CHIP_RADEON_QE,	"Radeon QE",0},
 				{PCI_CHIP_RADEON_QF,	"Radeon QF",0},
 				{PCI_CHIP_RADEON_QG,	"Radeon QG",0},
-				{PCI_CHIP_RADEON_VE,	"Radeon VE",0},
+				{PCI_CHIP_RADEON_QY,	"Radeon VE QY",0},
+				{PCI_CHIP_RADEON_QZ,	"Radeon VE QZ",0},
+				{PCI_CHIP_RADEON_LY,	"Radeon Mobility M6 LY",0},
+				{PCI_CHIP_RADEON_LZ,	"Radeon Mobility M6 LZ",0},
 				{PCI_CHIP_RAGE128RE,	"Rage 128 RE",0},
 				{PCI_CHIP_RAGE128RF,	"Rage 128 RF",0},
 				{PCI_CHIP_RAGE128RK,	"Rage 128 RK",0},

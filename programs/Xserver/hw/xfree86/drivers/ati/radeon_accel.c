@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.14 2001/05/02 15:06:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.15 2001/05/25 02:44:36 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -72,6 +72,7 @@
 
 				/* Driver data structures */
 #include "radeon.h"
+#include "radeon_probe.h"
 #include "radeon_reg.h"
 #ifdef XF86DRI
 #define _XF86DRI_SERVER_
@@ -106,6 +107,8 @@ static struct {
     { RADEON_ROP3_DSan, RADEON_ROP3_DPan }, /* GXnand         */
     { RADEON_ROP3_ONE,  RADEON_ROP3_ONE  }  /* GXset          */
 };
+
+extern int gRADEONEntityIndex;
 
 /* The FIFO has 64 slots.  This routines waits until at least `entries' of
    these slots are empty. */
@@ -232,6 +235,7 @@ void RADEONEngineReset(ScrnInfoPtr pScrn)
     CARD32        clock_cntl_index;
     CARD32        mclk_cntl;
     CARD32        rbbm_soft_reset;
+    CARD32        host_path_cntl;
 
     RADEONEngineFlush(pScrn);
 
@@ -246,6 +250,11 @@ void RADEONEngineReset(ScrnInfoPtr pScrn)
 			      RADEON_FORCEON_MC |
 			      RADEON_FORCEON_AIC));
 
+    /*Soft resetting HDP thru RBBM_SOFT_RESET register can
+      cause some unexpected behaviour on some machines.
+      Here we use RADEON_HOST_PATH_CNTL to reset it.*/ 
+    host_path_cntl   = INREG(RADEON_HOST_PATH_CNTL);
+
     rbbm_soft_reset   = INREG(RADEON_RBBM_SOFT_RESET);
 
     OUTREG(RADEON_RBBM_SOFT_RESET, rbbm_soft_reset |
@@ -255,23 +264,27 @@ void RADEONEngineReset(ScrnInfoPtr pScrn)
 				   RADEON_SOFT_RESET_RE |
 				   RADEON_SOFT_RESET_PP |
 				   RADEON_SOFT_RESET_E2 |
-				   RADEON_SOFT_RESET_RB |
-				   RADEON_SOFT_RESET_HDP);
+				   RADEON_SOFT_RESET_RB );
     INREG(RADEON_RBBM_SOFT_RESET);
-    OUTREG(RADEON_RBBM_SOFT_RESET, rbbm_soft_reset & (CARD32)
+    OUTREG(RADEON_RBBM_SOFT_RESET, rbbm_soft_reset &
 				 ~(RADEON_SOFT_RESET_CP |
 				   RADEON_SOFT_RESET_HI |
 				   RADEON_SOFT_RESET_SE |
 				   RADEON_SOFT_RESET_RE |
 				   RADEON_SOFT_RESET_PP |
 				   RADEON_SOFT_RESET_E2 |
-				   RADEON_SOFT_RESET_RB |
-				   RADEON_SOFT_RESET_HDP));
+				   RADEON_SOFT_RESET_RB ));
     INREG(RADEON_RBBM_SOFT_RESET);
 
-    OUTPLL(RADEON_MCLK_CNTL,        mclk_cntl);
-    OUTREG(RADEON_CLOCK_CNTL_INDEX, clock_cntl_index);
+    OUTREG(RADEON_HOST_PATH_CNTL, host_path_cntl | RADEON_HDP_SOFT_RESET);
+    INREG(RADEON_HOST_PATH_CNTL);
+    OUTREG(RADEON_HOST_PATH_CNTL, host_path_cntl);
+
     OUTREG(RADEON_RBBM_SOFT_RESET,  rbbm_soft_reset);
+
+    OUTREG(RADEON_CLOCK_CNTL_INDEX, clock_cntl_index);
+    OUTPLL(RADEON_MCLK_CNTL,        mclk_cntl);
+
 }
 
 /* Restore the acceleration hardware to its previous state. */
@@ -322,6 +335,67 @@ void RADEONEngineRestore(ScrnInfoPtr pScrn)
 
     RADEONWaitForIdle(pScrn);
 }
+
+/* This callback is required for multiheader cards using XAA */
+static
+void RADEONRestoreAccelState(ScrnInfoPtr pScrn)
+{
+    RADEONInfoPtr info        = RADEONPTR(pScrn);
+    unsigned char *RADEONMMIO = info->MMIO;
+    CARD32 pitch64;
+    RADEONEntPtr pRADEONEnt;
+    DevUnion* pPriv;
+
+    /*xf86DrvMsg(pScrn->scrnIndex, X_INFO, "===>Restore\n");*/
+    pPriv = xf86GetEntityPrivate(pScrn->entityList[0],
+            gRADEONEntityIndex);
+    pRADEONEnt = pPriv->ptr;
+    if(pRADEONEnt->IsDRIEnabled)
+    {
+        /*not working yet*/
+        /*
+        RADEONInfoPtr info0 = RADEONPTR(pRADEONEnt->pPrimaryScrn);
+        RADEONCP_TO_MMIO(pRADEONEnt->pPrimaryScrn, info0);
+        */
+    }
+    pitch64 = ((pScrn->displayWidth * (pScrn->bitsPerPixel / 8) + 0x3f)) >> 6;
+
+    OUTREG(RADEON_DEFAULT_OFFSET, (pScrn->fbOffset>>10) |
+				  (pitch64 << 22));
+
+    /* FIXME: May need to restore other things, 
+       like BKGD_CLK FG_CLK...*/
+
+    RADEONWaitForIdle(pScrn);
+
+    /*xf86DrvMsg(pScrn->scrnIndex, X_INFO, "<===Restore\n");*/
+
+}
+
+/* This callback is required for multiheader cards using XAA */
+#ifdef XF86DRI
+static
+void RADEONRestoreCPAccelState(ScrnInfoPtr pScrn)
+{
+    RADEONInfoPtr info        = RADEONPTR(pScrn);
+    unsigned char *RADEONMMIO = info->MMIO;
+    /*xf86DrvMsg(pScrn->scrnIndex, X_INFO, "===>RestoreCP\n");*/
+
+    RADEONWaitForFifo(pScrn, 1);
+    OUTREG( RADEON_DEFAULT_OFFSET, info->frontPitchOffset);
+
+    RADEONWaitForIdle(pScrn);
+
+    /*Not working yet*/
+    /*
+    RADEONMMIO_TO_CP(pScrn, info);
+    */
+   
+    /* FIXME: May need to restore other things, 
+       like BKGD_CLK FG_CLK...*/
+
+}
+#endif 
 
 /* Initialize the acceleration hardware. */
 static void RADEONEngineInit(ScrnInfoPtr pScrn)
@@ -516,6 +590,7 @@ static void RADEONSubsequentDashedTwoPointLine(ScrnInfoPtr pScrn,
 
     if (xa < xb) direction |= RADEON_DST_X_DIR_LEFT_TO_RIGHT;
     if (ya < yb) direction |= RADEON_DST_Y_DIR_TOP_TO_BOTTOM;
+
 
     RADEONWaitForFifo(pScrn, 5);
     if (!(flags & OMIT_LAST))
@@ -1200,6 +1275,10 @@ static void RADEONCPAccelInit(ScrnInfoPtr pScrn, XAAInfoRecPtr a)
     a->ScreenToScreenCopyFlags          = 0;
     a->SetupForScreenToScreenCopy       = RADEONCPSetupForScreenToScreenCopy;
     a->SubsequentScreenToScreenCopy     = RADEONCPSubsequentScreenToScreenCopy;
+
+    if(!info->IsSecondary && xf86IsEntityShared(pScrn->entityList[0]))
+        a->RestoreAccelState           = RADEONRestoreCPAccelState;
+
 }
 #endif
 
@@ -1271,6 +1350,21 @@ static void RADEONMMIOAccelInit(ScrnInfoPtr pScrn, XAAInfoRecPtr a)
     a->DashedLineFlags                 = (LINE_PATTERN_LSBFIRST_LSBJUSTIFIED
 					  | LINE_PATTERN_POWER_OF_2_ONLY);
 
+    if(xf86IsEntityShared(pScrn->entityList[0]))
+    {
+        DevUnion* pPriv;
+        RADEONEntPtr pRADEONEnt;
+        pPriv = xf86GetEntityPrivate(pScrn->entityList[0],
+                gRADEONEntityIndex);
+        pRADEONEnt = pPriv->ptr;
+        
+        /*if there are more than one devices sharing this entity, we
+          have to assign this call back, otherwise the XAA will be
+          disabled */
+        if(pRADEONEnt->HasSecondary || pRADEONEnt->BypassSecondary)
+           a->RestoreAccelState           = RADEONRestoreAccelState;
+    }
+
 				/* ImageWrite */
     a->NumScanlineImageWriteBuffers    = 1;
     a->ScanlineImageWriteBuffers       = info->scratch_buffer;
@@ -1311,8 +1405,12 @@ Bool RADEONAccelInit(ScreenPtr pScreen)
     RADEONInfoPtr info  = RADEONPTR(pScrn);
     XAAInfoRecPtr a;
 
-    if (!(a = info->accel = XAACreateInfoRec())) return FALSE;
-
+    if (!(a = info->accel = XAACreateInfoRec())) 
+    {
+        xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
+            "XAACreateInfoRec Error\n");
+        return FALSE;
+    }
 #ifdef XF86DRI
     if (info->directRenderingEnabled)
 	RADEONCPAccelInit(pScrn, a);
@@ -1321,5 +1419,12 @@ Bool RADEONAccelInit(ScreenPtr pScreen)
 	RADEONMMIOAccelInit(pScrn, a);
 
     RADEONEngineInit(pScrn);
-    return XAAInit(pScreen, a);
+    
+    if(!XAAInit(pScreen, a))
+    {
+        xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
+            "XAAInit Error\n");
+        return FALSE;
+    }    
+    return TRUE;
 }

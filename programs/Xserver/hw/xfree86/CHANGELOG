@@ -1,4 +1,7 @@
 XFree86 4.1.99.1 (xx June 2001)
+ 151. Add support for ATI's Radeon VE, Mobility M6, All-In-Wonder Radeon
+      and Rage128 Pro Ultra, Digital Flat Panel support. Use DDC2 interface.
+      (#4817, Mike Smith, ATI Technologies).
  150. Add IBM S/390 support for building the tree (#4815, Mike A. Harris)
  149. Fixes incorrect spelling of "XChangeWindowAttributes" found in
       XCreateColormap(3X11) and XInstallColormap(3X11)
@@ -13577,4 +13580,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1880 2001/07/23 20:47:18 paulo Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1881 2001/07/24 08:32:54 alanh Exp $

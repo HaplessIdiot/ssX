@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.33 2001/06/13 23:34:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.34 2001/06/15 21:22:46 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -886,6 +886,10 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 	case PCI_CHIP_RAGE128RL:
 	case PCI_CHIP_RAGE128PD:
 	case PCI_CHIP_RAGE128PF:
+	/* R128 ULTRA can have dual-head and DFP, not support yet */
+	case PCI_CHIP_RAGE128TF: 
+	case PCI_CHIP_RAGE128TL:
+	case PCI_CHIP_RAGE128TR:
 	default:                 info->HasPanelRegs = FALSE; break;
 	}
     }
@@ -941,6 +945,9 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
     switch (info->MemCntl & 0x3) {
     case 0:                     /* SDR SGRAM 1:1 */
 	switch (info->Chipset) {
+	case PCI_CHIP_RAGE128TF:
+	case PCI_CHIP_RAGE128TL:
+	case PCI_CHIP_RAGE128TR:
 	case PCI_CHIP_RAGE128LE:
 	case PCI_CHIP_RAGE128LF:
 	case PCI_CHIP_RAGE128MF:
@@ -1023,6 +1030,9 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 	case PCI_CHIP_RAGE128RG:
 	case PCI_CHIP_RAGE128RL:
 	case PCI_CHIP_RAGE128PF:
+	case PCI_CHIP_RAGE128TF:
+	case PCI_CHIP_RAGE128TL:
+	case PCI_CHIP_RAGE128TR:
 	default:                 info->IsPCI = FALSE; break;
 	}
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.13 2001/04/10 16:07:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.14 2001/05/02 15:06:08 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -715,6 +715,9 @@ static Bool R128DRIPciInit(R128InfoPtr info, ScreenPtr pScreen)
     case PCI_CHIP_RAGE128RG:
     case PCI_CHIP_RAGE128RL:
     case PCI_CHIP_RAGE128PF:
+    case PCI_CHIP_RAGE128TF:
+    case PCI_CHIP_RAGE128TL:
+    case PCI_CHIP_RAGE128TR:
     default:
 	/* This is really an AGP card, force PCI GART mode */
         chunk = INREG(R128_BM_CHUNK_0_VAL);
