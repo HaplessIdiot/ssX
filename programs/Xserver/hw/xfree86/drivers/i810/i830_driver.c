@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.65 2005/03/19 01:28:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.66 2005/04/01 14:19:11 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -1652,6 +1652,7 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
    int i, n;
    char *s;
    pointer pDDCModule, pVBEModule;
+   DisplayModePtr p;
    Bool enable;
    const char *chipname;
    unsigned int ver;
