@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_exec.c,v 1.18 2002/04/04 14:05:51 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_exec.c,v 1.19 2002/04/06 18:11:14 tsi Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -405,37 +405,37 @@ x_outl(CARD16 port, CARD32 val)
 }
 
 CARD8
-Mem_rb(int addr)
+Mem_rb(CARD32 addr)
 {
     return (*Int10Current->mem->rb)(Int10Current, addr);
 }
 
 CARD16
-Mem_rw(int addr)
+Mem_rw(CARD32 addr)
 {
     return (*Int10Current->mem->rw)(Int10Current, addr);
 }
 
 CARD32
-Mem_rl(int addr)
+Mem_rl(CARD32 addr)
 {
     return (*Int10Current->mem->rl)(Int10Current, addr);
 }
 
 void
-Mem_wb(int addr, CARD8 val)
+Mem_wb(CARD32 addr, CARD8 val)
 {
     (*Int10Current->mem->wb)(Int10Current, addr, val);
 }
 
 void
-Mem_ww(int addr, CARD16 val)
+Mem_ww(CARD32 addr, CARD16 val)
 {
     (*Int10Current->mem->ww)(Int10Current, addr, val);
 }
 
 void
-Mem_wl(int addr, CARD32 val)
+Mem_wl(CARD32 addr, CARD32 val)
 {
     (*Int10Current->mem->wl)(Int10Current, addr, val);
 }

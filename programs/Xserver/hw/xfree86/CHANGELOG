@@ -1,4 +1,5 @@
 XFree86 4.2.99.2 (xx July 2002)
+ 209. Fix int10 miscompilation glitch on IA-64 (Marc La France).
  208. Add support for Permedia3 (rev C) chips that use slightly different
       clock programming techniques (Jay Estabrook).
  207. Fix Finder warnings about XDarwin plist format on Jaguar
@@ -14954,4 +14955,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2266 2002/07/17 01:24:49 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2267 2002/07/19 15:33:42 alanh Exp $
