@@ -4,7 +4,7 @@
 //  Rules for resolving XKB components for use with XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.30 2001/03/08 21:25:16 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.31 2001/04/03 17:00:11 dawes Exp $
 //
 
 ! model 	=	keycodes	geometry
@@ -29,6 +29,7 @@
   microsoftpro	=	xfree86		microsoft(natural)
   geniuscomfy	=       xfree86         pc(pc104)
   btc9000	=       xfree86         pc(pc104)
+  rapidaccess	=       xfree86         pc(pc104)
   macintosh	=	xfree86		macintosh(macintosh)
   macintosh_old	=	macintosh	macintosh(macintosh)
   powerpcps2	=	powerpcps2	pc(pc104)
@@ -104,6 +105,9 @@
   btc9000	us	=	us(pc104)+inet(btc9000)
   btc9000	en_US	=	en_US(pc104)+inet(btc9000)
   btc9000	*	=	en_US(pc104)+inet(btc9000)+%l%(v)
+  rapidaccess	us	=	us(pc104)+inet(rapidaccess)
+  rapidaccess	en_US	=	en_US(pc104)+inet(rapidaccess)
+  rapidaccess	*	=	en_US(pc104)+inet(rapidaccess)+%l%(v)
   macintosh	us	=	macintosh/us(extended)
   macintosh	en_US	=	macintosh/us(extended)
   macintosh	*	=	macintosh/us(extended)+macintosh/%l%(v)

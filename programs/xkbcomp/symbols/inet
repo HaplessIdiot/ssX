@@ -1,4 +1,4 @@
-// $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.9 2001/03/01 01:24:00 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.10 2001/04/03 17:00:11 dawes Exp $
 
 partial alphanumeric_keys 
 xkb_symbols "hp" {
@@ -166,5 +166,28 @@ xkb_symbols "btc9000" {
     key <I5F>	{	[ XF86Standby		]	};
     key <I5E>   {	[ XF86PowerOff		]	};
     key <I63>   {	[ XF86WakeUp		]	};
+};
+
+
+partial alphanumeric_keys 
+xkb_symbols "rapidaccess" {
+
+    // Describes the extra keys on an IBM Rapid Access keyboard
+
+    name[Group1]= "RapidAccess";
+    key <I22>	{	[ XF86AudioPause	]	};
+    key <I12>	{	[ XF86AudioMute		]	};
+    key <I1E>	{	[ XF86AudioLowerVolume	]	};
+    key <I20>	{	[ XF86AudioRaiseVolume	]	};
+    key <I19>	{	[ XF86AudioPlay		]	};
+    key <I24>	{	[ XF86AudioStop		]	};
+    key <I23>	{	[ XF86AudioPrev		]	};
+    key <I21>	{	[ XF86AudioNext		]	};
+    key <I25>	{	[ XF86Standby		]	};
+    key <I32>	{	[ XF86Launch1		]	};
+    key <I17>	{	[ XF86Launch2		]	};
+    key <I30>	{	[ XF86Launch3		]	};
+    key <I2E>	{	[ XF86Launch4		]	};
+    key <I26>	{	[ XF86Launch5		]	};
 };
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/XF86keysym.h,v 1.8 2001/03/02 14:21:43 dawes Exp $ */
+/* $XFree86: xc/include/XF86keysym.h,v 1.9 2001/04/03 17:00:07 dawes Exp $ */
 
 /*
  * XFree86 vendor specific keysyms.
@@ -74,5 +74,10 @@
 #define XF86XK_OpenURL		0x1008FF38
 #define XF86XK_AddFavorite	0x1008FF39
 #define XF86XK_HotLinks		0x1008FF3A
+#define XF86XK_Launch1		0x1008FF3B
+#define XF86XK_Launch2		0x1008FF3C
+#define XF86XK_Launch3		0x1008FF3D
+#define XF86XK_Launch4		0x1008FF3E
+#define XF86XK_Launch5		0x1008FF3F
 
 
