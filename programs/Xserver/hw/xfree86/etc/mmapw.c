@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapw.c,v 1.6 2004/12/23 22:17:48 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapw.c,v 1.7tsi Exp $ */
 /*
  * Copyright 2002 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -49,11 +49,11 @@
 # define strtoull strtouq
 #endif
 
-static unsigned char datab;
-static unsigned short dataw;
-static unsigned int datal;
-static unsigned long dataL;
-static unsigned long long dataq;
+#define datab unsigned char
+#define dataw unsigned short
+#define datal unsigned int
+#define dataL unsigned long
+#define dataq unsigned long long
 
 static void
 usage(void)

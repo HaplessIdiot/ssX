@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.282 2005/01/26 05:31:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.283tsi Exp $ */
 
 
 /*
@@ -6077,7 +6077,7 @@ convertDRIBuffer(confDRIBufferPtr pDriBuf, const XF86ConfBuffersRec *bufConf)
      * FIXME: Flags not implemented.  These could be used, for example,
      * to specify a contiguous block and/or write-combining cache policy.
      */
-    pDriBuf->flags = 0;
+    pDriBuf->flags = XF86DRI_NO_FLAGS;
     return pDriBuf;
 }
 

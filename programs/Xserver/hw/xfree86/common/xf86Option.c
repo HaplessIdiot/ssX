@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.33 2005/01/07 23:03:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.34tsi Exp $ */
 /*
  * Copyright (c) 1998-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -460,10 +460,10 @@ xf86OptionListPrint(int verb, MessageType from, const char *prefix,
     p = EMPTYIFNULL(prefix);
     while (opts) {
 	if (xf86optionValue(opts))
-	    xf86MsgVerb(verb, from, "%sOption \"%s\" \"%s\"\n", p,
+	    xf86MsgVerb(from, verb, "%sOption \"%s\" \"%s\"\n", p,
 			xf86optionName(opts), xf86optionValue(opts));
 	else
-	    xf86MsgVerb(verb, from, "%sOption \"%s\"\n", p,
+	    xf86MsgVerb(from, verb, "%sOption \"%s\"\n", p,
 			xf86optionName(opts));
 	opts = xf86nextOption(opts);
     }

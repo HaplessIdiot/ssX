@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/dmx.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/dmx.c,v 1.3tsi Exp $ */
 /*
  * Copyright 2002-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -66,8 +66,6 @@ extern int           PanoramiXNumScreens;
 
 extern void DMXExtensionInit(void);
 
-static unsigned char DMXCode;
-
 static DISPATCH_PROC(ProcDMXDispatch);
 static DISPATCH_PROC(ProcDMXQueryVersion);
 static DISPATCH_PROC(ProcDMXSync);
@@ -106,8 +104,9 @@ static int _DMXXineramaActive(void)
 {
 #ifdef PANORAMIX
     return !noPanoramiXExtension;
-#endif
+#else
     return 0;
+#endif
 }
 
 static void DMXResetProc(ExtensionEntry *extEntry)
@@ -117,12 +116,9 @@ static void DMXResetProc(ExtensionEntry *extEntry)
 /** Initialize the extension. */
 void DMXExtensionInit(void)
 {
-    ExtensionEntry *extEntry;
-    
-    if ((extEntry = AddExtension(DMX_EXTENSION_NAME, 0, 0,
-                                 ProcDMXDispatch, SProcDMXDispatch,
-                                 DMXResetProc, StandardMinorOpcode)))
-	DMXCode = extEntry->base;
+    AddExtension(DMX_EXTENSION_NAME, 0, 0,
+                 ProcDMXDispatch, SProcDMXDispatch,
+                 DMXResetProc, StandardMinorOpcode);
 }
 
 static void dmxSetScreenAttribute(int bit, DMXScreenAttributesPtr attr,
@@ -344,8 +340,8 @@ static int ProcDMXGetScreenAttributes(ClientPtr client)
 
     REQUEST_SIZE_MATCH(xDMXGetScreenAttributesReq);
 
-    if (stuff->physicalScreen < 0
-        || stuff->physicalScreen >= dmxGetNumScreens()) return BadValue;
+    if (stuff->physicalScreen >= dmxGetNumScreens())
+	return BadValue;
 
     if (!dmxGetScreenAttributes(stuff->physicalScreen, &attr))
         return BadValue;
