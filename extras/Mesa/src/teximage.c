@@ -584,7 +584,7 @@ make_null_texture( GLcontext *ctx, GLenum internalFormat,
     * interesting instead of leaving it indeterminate.
     */
    if (texImage->Data) {
-      char message[8][32] = {
+      static char message[8][32] = {
          "   X   X  XXXXX   XXX     X    ",
          "   XX XX  X      X   X   X X   ",
          "   X X X  X      X      X   X  ",

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.23 2000/02/15 18:01:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.24 2000/02/21 19:23:07 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -59,6 +59,7 @@
 #include "vmodes.h"
 #include "vvga.h"
 #include "accel.h"
+#include "vramdac.h"
 
 /*
  * defines
@@ -97,6 +98,7 @@ static Bool renditionUnmapMem(ScrnInfoPtr pScreenInfo);
 static xf86MonPtr renditionDDC(ScrnInfoPtr pScreenInfo);
 static unsigned int renditionDDC1Read (ScrnInfoPtr pScreenInfo);
 
+static void renditionLoadPalette(ScrnInfoPtr, int, int *, LOCO *, VisualPtr);
 
 /* 
  * global data
@@ -253,8 +255,7 @@ static PciChipsets renditionPCIchipsets[] = {
  * functions
  */
 
-static
-OptionInfoPtr
+static OptionInfoPtr
 renditionAvailableOptions(int chipid, int busid)
 {
     return renditionOptions;
@@ -550,7 +551,7 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
 
     /* determine colour weights */
     pScreenInfo->rgbBits=8;
-
+    
     if (pScreenInfo->depth > 8) {
       rgb defaultWeight = {0, 0, 0};
       rgb defaultMask = {0, 0, 0};
@@ -772,7 +773,7 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
 
     renditionUnmapMem(pScreenInfo);
 
-#if USE_ACCEL
+#ifdef DEBUG
     ErrorF("PreInit OK...!!!!\n");
     sleep(2);
 #endif
@@ -785,13 +786,13 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
 static void
 renditionSave(ScrnInfoPtr pScreenInfo)
 {
-#if USE_ACCEL
+#ifdef DEBUG
     ErrorF("Save...!!!!\n");
     sleep(1);
 #endif
     vgaHWSave(pScreenInfo, &VGAHWPTR(pScreenInfo)->SavedReg,VGA_SR_ALL);
 	
-#if USE_ACCEL
+#ifdef DEBUG
     ErrorF("Save OK...!!!!\n");
     sleep(1);
 #endif
@@ -812,7 +813,6 @@ renditionRestore(ScrnInfoPtr pScreenInfo)
     vgaHWProtect(pScreenInfo, FALSE);
 
     v_setmode(pScreenInfo, &RENDITIONPTR(pScreenInfo)->mode);
-
 #ifdef DEBUG
     ErrorF("Restore OK...!!!!\n");
     sleep(1);
@@ -922,9 +922,7 @@ renditionEnterGraphics(ScreenPtr pScreen, ScrnInfoPtr pScreenInfo)
 
 #ifdef DEBUG
     ErrorF("RENDITION: renditionEnterGraphics() called\n");
-
-    ErrorF("Entergraphics...!!!!\n");
-    sleep(1);
+    sleep(2);
 #endif
 
     /* Map VGA aperture */
@@ -1061,7 +1059,7 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!miSetVisualTypes(pScreenInfo->depth,
               miGetDefaultVisualMask(pScreenInfo->depth),
               pScreenInfo->rgbBits, pScreenInfo->defaultVisual))
-    return FALSE;
+      return FALSE;
 
     /* initialise the framebuffer */
     switch (pScreenInfo->bitsPerPixel)
@@ -1167,7 +1165,13 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* Try the new code based on the new colormap layer */
     if (pScreenInfo->depth > 1)
-        vgaHWHandleColormaps(pScreen);
+      if (!xf86HandleColormaps(pScreen, 256, pScreenInfo->rgbBits,
+			       renditionLoadPalette,
+			       NULL, CMAP_RELOAD_ON_MODE_SWITCH)) {
+        xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR, "Colormap initialization failed\n");
+        return FALSE;
+      }
+
 
 #ifdef DPMSExtension
     xf86DPMSInit(pScreen, renditionDPMSSet, 0);
@@ -1268,12 +1272,13 @@ renditionValidMode(int scrnIndex, DisplayModePtr pMode, Bool Verbose, int flags)
     return MODE_OK;
 }
 
-static Bool renditionMapMem(ScrnInfoPtr pScreenInfo)
+static Bool
+renditionMapMem(ScrnInfoPtr pScreenInfo)
 {
   Bool WriteCombine;
   int mapOption;
 
-#ifdef DEBUG0
+#ifdef DEBUG
   ErrorF("Mapping ...\n");
   ErrorF("%d %d %d %x %d\n", pScreenInfo->scrnIndex, VIDMEM_FRAMEBUFFER, 
      RENDITIONPTR(pScreenInfo)->pcitag,
@@ -1314,9 +1319,10 @@ static Bool renditionMapMem(ScrnInfoPtr pScreenInfo)
 #endif
 }
 
-static Bool renditionUnmapMem(ScrnInfoPtr pScreenInfo)
+static Bool
+renditionUnmapMem(ScrnInfoPtr pScreenInfo)
 {
-#ifdef DEBUG0
+#ifdef DEBUG
   ErrorF("Unmapping ...\n");
 #endif
     xf86UnMapVidMem(pScreenInfo->scrnIndex,
@@ -1327,7 +1333,17 @@ static Bool renditionUnmapMem(ScrnInfoPtr pScreenInfo)
 #endif
 }
 
-static xf86MonPtr renditionDDC (ScrnInfoPtr pScreenInfo)
+static void
+renditionLoadPalette(ScrnInfoPtr pScreenInfo, int numColors,
+		     int *indices, LOCO *colors,
+		     VisualPtr pVisual)
+{
+  v_setpalette(pScreenInfo, numColors, indices, colors, pVisual);
+}
+
+
+static xf86MonPtr
+renditionDDC (ScrnInfoPtr pScreenInfo)
 {
   renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
   vu16 iob=pRendition->board.io_base;
@@ -1359,7 +1375,8 @@ static xf86MonPtr renditionDDC (ScrnInfoPtr pScreenInfo)
   return MonInfo;
 }
 
-static unsigned int renditionDDC1Read (ScrnInfoPtr pScreenInfo)
+static unsigned int
+renditionDDC1Read (ScrnInfoPtr pScreenInfo)
 {
   renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
   vu16 iob=pRendition->board.io_base;

@@ -3,7 +3,8 @@
  *
  * accelerator functions for X
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/accelX.c,v 1.4 1999/12/14 03:12:09 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/accelX.c,v 1.5 2000/01/18 16:35:51 tsi Exp $ */
+
 
 
 
@@ -28,19 +29,21 @@
 /*
  * defines
  */
+#if 1
 /* Global imported during compile-time */
 char MICROCODE_DIR [PATH_MAX] = MODULEDIR;
+#endif
 
 
-#define waitfifo(size)  { int c=0; \
+#define waitfifo(size)  do { int c=0; \
                           while ((c++<0xfffff)&&((v_in8(iob+FIFOINFREE)&0x1f)<size)) /* if(!(c%0xffff))ErrorF("#1# !0x%x! -- ",v_in8(iob+FIFOINFREE)) */; \
                           if (c >= 0xfffff) { \
                               ErrorF("RENDITION: Input fifo full (1) FIFO in == %d\n",v_in8(iob+FIFOINFREE)&0x1f); \
-                             /* return; */\
+                              return; \
                           } \
-                        }
+                        } while (0)
 
-#define waitfifo2(size, rv) { int c=0; \
+#define waitfifo2(size, rv) do { int c=0; \
                           while ((c++<0xfffff)&&((v_in8(iob+FIFOINFREE)&0x1f)<size)) /* if(!(c%0xffff))ErrorF("#2# !0x%x! -- ",v_in8(iob+FIFOINFREE)) */; \
                           if (c >= 0xfffff) { \
                               ErrorF("RENDITION: Input fifo full (2) FIFO in ==%d\n",v_in8(iob+FIFOINFREE)&0x1f); \
@@ -48,7 +51,7 @@ char MICROCODE_DIR [PATH_MAX] = MODULEDIR;
                               pRendition->board.accel=0; \
                               return rv; \
                           } \
-                        }
+                        } while (0)
 
 #define P1(x)           ((vu32)x)
 #define P2(x, y)        ((((vu16)x)<<16)+((vu16)y))
@@ -110,7 +113,8 @@ static int Rop2Rop[]={
  * functions
  */
 
-void RENDITIONAccelPreInit(ScrnInfoPtr pScreenInfo)
+void
+RENDITIONAccelPreInit(ScrnInfoPtr pScreenInfo)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
     int c;
@@ -125,6 +129,13 @@ void RENDITIONAccelPreInit(ScrnInfoPtr pScreenInfo)
     memset (pRendition->board.vmem_base,0,MC_SIZE);
 #endif
 
+#if 0
+    if (RENDITIONLoadUcode(pScreenInfo)){
+      ErrorF ("RENDITION: AccelPreInit - Warning. Loading of microcode failed!!\n");
+    }
+#endif
+
+#if 1 /* Test */
     if (V1000_DEVICE == pRendition->board.chip){
       c=v_load_ucfile(pScreenInfo, strcat ((char *)MICROCODE_DIR,"v10002d.uc"));
     }
@@ -139,25 +150,27 @@ void RENDITIONAccelPreInit(ScrnInfoPtr pScreenInfo)
     }
 
     pRendition->board.ucode_entry=c;
-    RENDITIONSaveUcode(pScreenInfo);
 
-    pRendition->board.fbOffset += MC_SIZE;
+    ErrorF("UCode_Entry == 0x%x\n",pRendition->board.ucode_entry);
+#endif
 
 #ifdef DEBUG
+    pRendition->board.fbOffset += MC_SIZE;
     ErrorF("RENDITION: Offset is now %d\n",pRendition->board.fbOffset);
-    ErrorF("RENDITION: RENDITIONAccelPreInit End \n");
     sleep(2);
 #endif
 
 }
 
-void RENDITIONAccelXAAInit(ScreenPtr pScreen)
+void
+RENDITIONAccelXAAInit(ScreenPtr pScreen)
 {
     ScrnInfoPtr  pScreenInfo = xf86Screens[pScreen->myNum];
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
     XAAInfoRecPtr pXAAinfo;
 
     BoxRec AvailFBArea;
+    int c;
 
 #ifdef DEBUG
     ErrorF("RENDITION: RENDITIONAccelInit called\n");
@@ -197,27 +210,31 @@ void RENDITIONAccelXAAInit(ScreenPtr pScreen)
                 RENDITIONSetupForSolidFill;
     pXAAinfo->SubsequentSolidFillRect=
                 RENDITIONSubsequentSolidFillRect;
-#endif
 
-#if 0
     /* line */
     xf86AccelInfoRec.SubsequentTwoPointLine =  
         RENDITIONSubsequentTwoPointLine;
 #endif /* #if 0 */
 
-#ifdef DEBUG
-    ErrorF("RENDITION: RENDITIONAccelInit restore\n");
-    sleep(2);
-#endif
-
-    /* Restore u-code previously loaded in PreInit-stage */
-    RENDITIONRestoreUcode(pScreenInfo);
-
     if (RENDITIONLoadUcode(pScreenInfo)) return;
 
-    if (RENDITIONInitUcode(pScreenInfo)) return;
+#if 1 /* Testingcode */
+    if (V1000_DEVICE == pRendition->board.chip){
+      c=v_load_ucfile(pScreenInfo, MICROCODE_DIR);
+    }
+    else {
+      /* V2x00 chip */
+      c=v_load_ucfile(pScreenInfo, MICROCODE_DIR);
+    }
 
-    RENDITIONSaveUcode(pScreenInfo);
+    if (c == -1) {
+      ErrorF( "RENDITION: Microcode loading failed !!!\n");
+      return;
+    }
+
+    pRendition->board.ucode_entry=c;
+#endif
+    if (RENDITIONInitUcode(pScreenInfo)) return;
 
     v_check_csucode(pScreenInfo);
     /* the remaining code was copied from s3v_accel.c.
@@ -257,7 +274,8 @@ void RENDITIONAccelXAAInit(ScreenPtr pScreen)
 
 
 
-void RENDITIONAccelNone(ScrnInfoPtr pScreenInfo)
+void
+RENDITIONAccelNone(ScrnInfoPtr pScreenInfo)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
     XAAInfoRecPtr pXAAinfo=pRendition->AccelInfoRec;
@@ -282,7 +300,8 @@ void RENDITIONAccelNone(ScrnInfoPtr pScreenInfo)
 
 
 
-int RENDITIONLoadUcode(ScrnInfoPtr pScreenInfo)
+int
+RENDITIONLoadUcode(ScrnInfoPtr pScreenInfo)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
 
@@ -312,7 +331,8 @@ int RENDITIONLoadUcode(ScrnInfoPtr pScreenInfo)
 }
 
 
-int RENDITIONInitUcode(ScrnInfoPtr pScreenInfo)
+int
+RENDITIONInitUcode(ScrnInfoPtr pScreenInfo)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
     vu16 iob = pRendition->board.io_base;
@@ -335,18 +355,26 @@ int RENDITIONInitUcode(ScrnInfoPtr pScreenInfo)
     stride1=1;
     */
 
+    ErrorF("#InitUcode(1)# FIFOIN_FREE 0x%x -- \n",v_in8(iob+FIFOINFREE));
+
     /* init the ucode */
 
     /* ... and start accelerator */
     v1k_flushicache(pScreenInfo);
     v1k_start(pScreenInfo, pRendition->board.csucode_base);
 
+    ErrorF("#InitUcode(2)# FIFOIN_FREE 0x%x -- \n",v_in8(iob+FIFOINFREE));
+
     v_out32(iob, 0);     /* a0 - ucode init command */
     v_out32(iob, 0);     /* a1 - 1024 byte context store area */
     v_out32(iob, 0);     /* a2 */
     v_out32(iob, pRendition->board.ucode_entry);
 
+    ErrorF("#InitUcode(3)# FIFOIN_FREE 0x%x -- \n",v_in8(iob+FIFOINFREE));
+
     waitfifo2(6, 1);
+
+    ErrorF("#InitUcode(4)# FIFOIN_FREE 0x%x -- \n",v_in8(iob+FIFOINFREE));
 
     v_out32(iob, CMD_SETUP);
     v_out32(iob, P2(pRendition->board.mode.virtualwidth,
@@ -360,6 +388,8 @@ int RENDITIONInitUcode(ScrnInfoPtr pScreenInfo)
     v_out32(iob, (pRendition->board.mode.stride1<<12)|
 	    (pRendition->board.mode.stride0<<8)); 
 
+    ErrorF("#InitUcode(5)# FIFOIN_FREE 0x%x -- \n",v_in8(iob+FIFOINFREE));
+
 #if 0
     v_out32(iob+0x60, 129);
     ErrorF("RENDITION: PC at %x\n", v_in32(iob+0x64));
@@ -368,7 +398,8 @@ int RENDITIONInitUcode(ScrnInfoPtr pScreenInfo)
     return 0;
 }
 
-void RENDITIONRestoreUcode(ScrnInfoPtr pScreenInfo)
+void
+RENDITIONRestoreUcode(ScrnInfoPtr pScreenInfo)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
     vu16 iob = pRendition->board.io_base;
@@ -377,6 +408,10 @@ void RENDITIONRestoreUcode(ScrnInfoPtr pScreenInfo)
 
 #ifdef DEBUG
     ErrorF("RENDITION: RENDITIONRestoreUcode called\n");
+#endif
+
+#ifdef DEBUG
+    ErrorF("Restore...1\n");
     sleep(2);
 #endif
 
@@ -406,13 +441,14 @@ void RENDITIONRestoreUcode(ScrnInfoPtr pScreenInfo)
 
 
 
-void RENDITIONSaveUcode(ScrnInfoPtr pScreenInfo)
+void
+RENDITIONSaveUcode(ScrnInfoPtr pScreenInfo)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
     vu16 iob = pRendition->board.io_base;
     vu8 memend;
 
-#if 1
+#ifdef DEBUG
     ErrorF("RENDITION: RENDITIONSaveUcode called\n");
     sleep(2);
 #endif
@@ -440,7 +476,8 @@ void RENDITIONSaveUcode(ScrnInfoPtr pScreenInfo)
 /*
  * synchronization -- wait for RISC and pixel engine to become idle
  */
-void RENDITIONSyncV1000(ScrnInfoPtr pScreenInfo)
+void
+RENDITIONSyncV1000(ScrnInfoPtr pScreenInfo)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
     vu16 iob = pRendition->board.io_base;
@@ -458,10 +495,11 @@ void RENDITIONSyncV1000(ScrnInfoPtr pScreenInfo)
     c=0;
     /* empty output fifo,
        i.e. if there is any valid data in the output fifo then read it */
-    while ((c++<0xfffff) && ((v_in8(iob+FIFOOUTVALID)&0x7)>0))
-       (void)v_in32(iob);
 
-/*      if(!(c%10000))ErrorF("#F1# !0x%x! -- ",v_in8(iob+FIFOOUTVALID)); */
+    while ((c++<0xfffff) && ((v_in8(iob+FIFOOUTVALID)&0x7)>0))
+      (void)v_in32(iob);
+
+/*       if(!(c%0xffff))ErrorF("#F1# !0x%x! -- ",v_in8(iob+FIFOOUTVALID)); */
 
     if (c >= 0xfffff) { 
         ErrorF("RENDITION: RISC synchronization failed (1) FIFO out == %d!\n",
@@ -478,17 +516,14 @@ void RENDITIONSyncV1000(ScrnInfoPtr pScreenInfo)
     while ((c++<0xfffff) && ((v_in8(iob+FIFOOUTVALID)&0x7)>0))
       (void)v_in32(iob);
 
-/*       if(!(c%10000))ErrorF("#F2# !0x%x! -- ",v_in8(iob+FIFOOUTVALID)); */
+/*       if(!(c%0xffff))ErrorF("#F2# !0x%x! -- ",v_in8(iob+FIFOOUTVALID)); */
+
 
     if (c >= 0xfffff) { 
         ErrorF("RENDITION: RISC synchronization failed (2) FIFO out == %d!\n",
 	       v_in8(iob+FIFOOUTVALID)&0x1f);
         return; 
     }
-
-    /* This assumes that there are data to read out! Check if correct */
-    if (c < 0xffffff)
-        (void)v_in32(iob);
 
     /* sync pixel engine using csucode -- I suppose this is quite slow <ml> */
     v1k_stop(pScreenInfo);
@@ -499,7 +534,7 @@ void RENDITIONSyncV1000(ScrnInfoPtr pScreenInfo)
     while ((c++<0xfffff) && ((v_in8(iob+FIFOOUTVALID)&0x7)>0))
       (void)v_in32(iob);
 
-/*      if(!(c%10000))ErrorF("#F3# !0x%x! -- ",v_in8(iob+FIFOOUTVALID)); */
+/*      if(!(c%0xffff))ErrorF("#F3# !0x%x! -- ",v_in8(iob+FIFOOUTVALID)); */
 
     if (c == 0xfffff) { 
         ErrorF("RENDITION: Pixel engine synchronization failed FIFO out == %d!\n",
@@ -533,7 +568,8 @@ void RENDITIONSyncV1000(ScrnInfoPtr pScreenInfo)
 /*
  * screen to screen copy
  */
-void RENDITIONSetupForScreenToScreenCopy(ScrnInfoPtr pScreenInfo,
+void
+RENDITIONSetupForScreenToScreenCopy(ScrnInfoPtr pScreenInfo,
 					 int xdir, int ydir, int rop,
 					 unsigned planemask, int trans_color)
 {
@@ -548,7 +584,8 @@ void RENDITIONSetupForScreenToScreenCopy(ScrnInfoPtr pScreenInfo,
     pRendition->board.Rop=Rop2Rop[rop];
 }
 
-void RENDITIONSubsequentScreenToScreenCopy(ScrnInfoPtr pScreenInfo,
+void
+RENDITIONSubsequentScreenToScreenCopy(ScrnInfoPtr pScreenInfo,
 					   int srcX, int srcY,
 					   int dstX, int dstY,
 					   int w, int h)
@@ -581,13 +618,14 @@ void RENDITIONSubsequentScreenToScreenCopy(ScrnInfoPtr pScreenInfo,
 /*
  * solid filled rectangles
  */
-void RENDITIONSetupForSolidFill(ScrnInfoPtr pScreenInfo, 
+void
+RENDITIONSetupForSolidFill(ScrnInfoPtr pScreenInfo, 
 				int color, int rop,
 				unsigned planemask)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
 
-#if 1 /* def DEBUG */
+#ifdef DEBUG
     ErrorF("RENDITION: RENDITIONSetupForSolidFill called\n");
     ErrorF("RENDITION: Rop is %x/%x\n", rop, Rop2Rop[rop]);
 #endif
@@ -600,7 +638,8 @@ void RENDITIONSetupForSolidFill(ScrnInfoPtr pScreenInfo,
         pRendition->board.Color|=(pRendition->board.Color<<8);
 }
 
-void RENDITIONSubsequentSolidFillRect(ScrnInfoPtr pScreenInfo,
+void
+RENDITIONSubsequentSolidFillRect(ScrnInfoPtr pScreenInfo,
 				      int x, int y, int w, int h)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
@@ -629,7 +668,8 @@ void RENDITIONSubsequentSolidFillRect(ScrnInfoPtr pScreenInfo,
  * line
  */
 
-void RENDITIONSubsequentTwoPointLine(ScrnInfoPtr pScreenInfo,
+void
+RENDITIONSubsequentTwoPointLine(ScrnInfoPtr pScreenInfo,
 				     int x1, int y1,
 				     int x2, int y2,
 				     int bias)

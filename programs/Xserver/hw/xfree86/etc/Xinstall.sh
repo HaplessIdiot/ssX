@@ -1,9 +1,10 @@
 #!/bin/sh
 
 #
-# $XFree86$
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.1 2000/02/24 18:50:45 dawes Exp $
 #
-# Copyright © 2000 by The XFree86 Project, Inc
+# Copyright © 1995-2000 by The XFree86 Project, Inc
+# Portions Copyright © 2000 by Precision Insight, Inc
 #
 # Xinstall.sh  (for XFree86 4.0)
 #

@@ -1,4 +1,5 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.h,v 1.3 1999/10/13 04:21:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.h,v 1.4 1999/12/14 03:12:10 robin Exp $ */
+
 /*
  * vboard.h
  *

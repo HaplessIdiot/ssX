@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vos.h,v 1.3 1999/04/25 10:02:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vos.h,v 1.5 1999/11/19 13:54:47 hohndel Exp $ */
 /*
  * file vos.h
  *
@@ -46,7 +46,6 @@
 #define v_write_memory8(base, offset, data)  MMIO_OUT8(base, offset, data)
 
 /* the rest of it */
-
 void v_enableio(void);
 void v_disableio(void);
 vu8 *v_mapmemory(vu8 *membase, vu32 size);

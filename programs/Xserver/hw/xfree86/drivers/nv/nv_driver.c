@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.33 2000/02/15 18:01:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.35 2000/02/22 02:00:51 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -142,6 +142,7 @@ static const char *vgahwSymbols[] = {
     NULL
 };
 
+#ifndef NV_USE_FB
 static const char *cfbSymbols[] = {
     "cfbScreenInit",
     "cfb16ScreenInit",
@@ -152,6 +153,13 @@ static const char *cfbSymbols[] = {
     "cfb32BresS",
     NULL
 };
+#else
+static const char *fbSymbols[] = {
+    "fbScreenInit",
+    "fbBres",
+    NULL
+};
+#endif
 
 static const char *xaaSymbols[] = {
     "XAADestroyInfoRec",
@@ -337,7 +345,12 @@ nvSetup(pointer module, pointer opts, int *errmaj, int *errmin)
          * Tell the loader about symbols from other modules that this module
          * might refer to.
          */
-        LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols,
+        LoaderRefSymLists(vgahwSymbols, xaaSymbols,
+#ifndef NV_USE_FB
+                          cfbSymbols,
+#else
+                          fbSymbols,
+#endif                          
                           ramdacSymbols, shadowSymbols,
                           i2cSymbols, ddcSymbols,
                           fbdevHWSymbols, int10Symbols, NULL);
@@ -1205,7 +1218,8 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
      * XXX This should be taken into account in some way in the mode valdation
      * section.
      */
-    
+
+#ifndef NV_USE_FB    
     /* Load bpp-specific modules */
     switch (pScrn->bitsPerPixel) {
         case 8:
@@ -1229,7 +1243,15 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     xf86LoaderReqSymbols(reqSym, NULL);
+#else
+    if (xf86LoadSubModule(pScrn, "fb") == NULL) {
+	NVFreeRec(pScrn);
+	return FALSE;
+    }
 
+    xf86LoaderReqSymLists(fbSymbols, NULL);
+#endif
+    
     /* Load XAA if needed */
     if (!pNv->NoAccel) {
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
@@ -1534,6 +1556,7 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
 
     switch (pScrn->bitsPerPixel) {
+#ifndef NV_USE_FB        
         case 8:
             ret = cfbScreenInit(pScreen, FBStart, width, height,
                                 pScrn->xDpi, pScrn->yDpi, displayWidth);
@@ -1546,6 +1569,15 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
             ret = cfb32ScreenInit(pScreen, FBStart, width, height,
                                   pScrn->xDpi, pScrn->yDpi, displayWidth);
             break;
+#else
+        case 8:
+        case 16:
+        case 32:
+            ret = fbScreenInit(pScreen, FBStart, pScrn->virtualX,
+                               pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
+                               displayWidth, pScrn->bitsPerPixel);
+            break;
+#endif           
         default:
             xf86DrvMsg(scrnIndex, X_ERROR,
                        "Internal error: invalid bpp (%d) in NVScreenInit\n",

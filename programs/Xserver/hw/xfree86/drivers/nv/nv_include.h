@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_include.h,v 1.5 2000/01/30 17:58:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_include.h,v 1.6 2000/02/08 17:19:10 dawes Exp $ */
 
 #ifndef __NV_INCLUDE_H__
 #define __NV_INCLUDE_H__
@@ -8,6 +8,7 @@
 #include "xf86_OSproc.h"
 #include "xf86Resources.h"
 #include "compiler.h"
+#include "xf86_ansic.h"
 
 /* Drivers for PCI hardware need this */
 #include "xf86PciInfo.h"
@@ -26,6 +27,9 @@
 #include "xf86DDC.h"
 
 #include "xf86RAC.h"
+
+#include "nv_const.h"
+#ifndef NV_USE_FB
 /*
  * If using cfb, cfb.h is required.  Select the others for the bpp values
  * the driver supports.
@@ -36,6 +40,9 @@
 #include "cfb16.h"
 #include "cfb24.h"
 #include "cfb32.h"
+#else
+#include "fb.h"
+#endif
 
 #include "xaa.h"
 #include "xf86cmap.h"
@@ -53,7 +60,6 @@
 #include "region.h"
 
 #include "nv_local.h"
-#include "nv_const.h"
 #include "nv_type.h"
 #include "nv_proto.h"
 
