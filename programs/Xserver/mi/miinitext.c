@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.66 2002/11/30 06:21:33 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.67 2003/01/12 02:44:27 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -205,8 +205,13 @@ extern void XFree86MiscExtensionInit(INITARGS);
 extern void XFree86DGAExtensionInit(INITARGS);
 #endif
 #ifdef GLXEXT
+#ifndef __DARWIN__
 extern void GlxExtensionInit(INITARGS);
 extern void GlxWrapInitVisuals(miInitVisualsProcPtr *);
+#else
+extern void DarwinGlxExtensionInit(INITARGS);
+extern void DarwinGlxWrapInitVisuals(miInitVisualsProcPtr *);
+#endif
 #endif
 #ifdef XF86DRI
 extern void XFree86DRIExtensionInit(INITARGS);
@@ -350,7 +355,11 @@ InitExtensions(argc, argv)
 #endif
 #ifdef GLXEXT
 #ifndef XPRINT	/* we don't want Glx in the Xprint server */
+#ifndef __DARWIN__
     GlxExtensionInit();
+#else
+    DarwinGlxExtensionInit();
+#endif
 #endif
 #endif
 #ifdef DPSEXT
@@ -375,7 +384,11 @@ InitVisualWrap()
     miResetInitVisuals();
 #ifdef GLXEXT
 #ifndef XPRINT
+#ifndef __DARWIN__
     GlxWrapInitVisuals(&miInitVisualsProc);
+#else
+    DarwinGlxWrapInitVisuals(&miInitVisualsProc);
+#endif
 #endif
 #endif
 }

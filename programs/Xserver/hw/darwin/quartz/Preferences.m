@@ -3,7 +3,7 @@
 //
 //  This class keeps track of the user preferences.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.m,v 1.14 2002/01/30 06:50:46 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/Preferences.m,v 1.1 2002/03/28 02:21:18 torrey Exp $ */
 
 #import "Preferences.h"
 #import "quartzCommon.h"
@@ -30,7 +30,8 @@
         NSLocalizedString(@"USA.keymapping",@""), @"KeymappingFile",
         @"YES", @"UseKeymappingFile",
         NSLocalizedString(@"Cmd-Opt-a",@""), @"SwitchString",
-        @"NO", @"UseRootlessMode",
+        @"YES", @"UseRootlessMode",
+        @"YES", @"UseAGLforGLX",
         @"YES", @"ShowModePickWindow",
         @"YES", @"ShowStartupHelp",
         [NSNumber numberWithInt:0], @"SwitchKeyCode",
@@ -331,6 +332,12 @@
             forKey:@"UseRootlessMode"];
 }
 
++ (void)setUseAGL:(BOOL)newUseAGL
+{
+    [[NSUserDefaults standardUserDefaults] setBool:newUseAGL
+            forKey:@"UseAGLforGLX"];
+}
+
 + (void)setStartupHelp:(BOOL)newStartupHelp
 {
     [[NSUserDefaults standardUserDefaults] setBool:newStartupHelp
@@ -460,6 +467,12 @@
 {
     return [[NSUserDefaults standardUserDefaults]
                 boolForKey:@"UseRootlessMode"];
+}
+
++ (BOOL)useAGL
+{
+    return [[NSUserDefaults standardUserDefaults]
+                boolForKey:@"UseAGLforGLX"];
 }
 
 + (BOOL)modeWindow

@@ -1,4 +1,6 @@
 XFree86 4.2.99.4 (xx January 2003)
+ 712. XDarwin now loads GLX support dynamically. Current options are Apple's
+      OpenGL framework or Mesa (Torrey T. Lyons).
  711. GeForceFX support in the nv driver (Mark Vojkovich).
  710. DPMS support in the nv driver.  CRTs only at this time (Mark Vojkovich).
  709. Fix for recognition of non-existent PCI devices (Marc La France).
@@ -15976,4 +15978,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2472 2003/01/13 02:22:47 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2473 2003/01/13 02:27:27 mvojkovi Exp $

@@ -33,7 +33,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCocoa.m,v 1.11 2001/12/22 05:28:35 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCocoa.m,v 1.1 2002/03/28 02:21:19 torrey Exp $ */
 
 #include <Cocoa/Cocoa.h>
 
@@ -56,13 +56,19 @@ void QuartzReadPreferences(void)
     quartzMouseAccelChange = [Preferences mouseAccelChange];
     quartzUseSysBeep = [Preferences systemBeep];
 
-    // Rootless: use PseudoramiX not Xinerama (quartzRootless already set)
+    // quartzRootless has already been set
     if (quartzRootless) {
+        // Use PseudoramiX instead of Xinerama
         noPanoramiXExtension = TRUE;
         noPseudoramiXExtension = ![Preferences xinerama];
+
+        quartzUseAGL = [Preferences useAGL];
     } else {
         noPanoramiXExtension = ![Preferences xinerama];
         noPseudoramiXExtension = TRUE;
+
+        // Full screen can't use AGL for GLX
+        quartzUseAGL = FALSE;
     }
 
     if ([Preferences useKeymapFile]) {

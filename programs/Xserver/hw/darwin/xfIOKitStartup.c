@@ -28,9 +28,14 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKitStartup.c,v 1.10 2002/11/15 00:55:10 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKitStartup.c,v 1.11 2002/11/20 23:51:58 torrey Exp $ */
 
 #include "quartz/quartz.h"
+#include "micmap.h"
+
+void GlxExtensionInit(void);
+void GlxWrapInitVisuals(miInitVisualsProcPtr *procPtr);
+
 
 /*
  * DarwinHandleGUI
@@ -42,6 +47,27 @@ void DarwinHandleGUI(
     char        *argv[],
     char        *envp[] )
 {
+}
+
+
+/*
+ * DarwinGlxExtensionInit
+ *  Initialize the GLX extension.
+ *  Mesa is linked into the IOKit mode X server so we just call directly.
+ */
+void DarwinGlxExtensionInit(void)
+{
+    GlxExtensionInit();
+}
+
+
+/*
+ * DarwinGlxWrapInitVisuals
+ */
+void DarwinGlxWrapInitVisuals(
+    miInitVisualsProcPtr *procPtr)
+{
+    GlxWrapInitVisuals(procPtr);
 }
 
 

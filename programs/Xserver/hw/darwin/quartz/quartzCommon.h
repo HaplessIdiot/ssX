@@ -31,7 +31,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCommon.h,v 1.4 2002/10/12 00:32:45 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCommon.h,v 1.5 2002/11/15 00:55:10 torrey Exp $ */
 
 #ifndef _QUARTZCOMMON_H
 #define _QUARTZCOMMON_H
@@ -70,6 +70,7 @@ extern int              quartzStartClients;
 // User preferences used by Quartz modes
 extern int              quartzRootless;
 extern int              quartzUseSysBeep;
+extern int              quartzUseAGL;
 
 // Other shared data
 extern int              quartzServerVisible;
