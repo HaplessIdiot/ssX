@@ -55,6 +55,10 @@ SOFTWARE.
 #include "PEXErr.h"
 #include "miRender.h"
 #include "miLight.h"
+
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
  
 extern ddpex3rtn	InquireLUTEntryAddress();
 ddpex3rtn ComputeWCEyePosition();
@@ -81,7 +85,9 @@ miApply_Lighting(pRend, pddc, point, mat_color, normal, out_color)
     ddRgbFloatColour	*out_color;
 {
 /* calls */
+#ifndef XFree86LOADER
     double		pow();
+#endif
 
 /* uses */
     listofObj		*light_sources = pddc->Dynamic->pPCAttr->lightState;

@@ -1,5 +1,5 @@
 /* $XConsortium: miFillArea.c,v 5.10 94/04/17 20:37:05 hersh Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miFillArea.c,v 3.0 1996/03/29 22:09:37 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -65,6 +65,10 @@ SOFTWARE.
 #include "miClip.h"
 
 #include <stdio.h>
+
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
 
 static ddpex3rtn	Complete_FillArea_Facetlist();
 static ddpex3rtn	Calculate_FillArea_Facet_Normal();

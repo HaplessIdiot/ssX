@@ -57,6 +57,10 @@ SOFTWARE.
 #include "miStruct.h"
 #include "miStrMacro.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 extern void     InquirePickStatus();
 extern void     InquireSearchStatus();
 

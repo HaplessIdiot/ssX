@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.2 1997/02/17 09:46:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.3 1997/02/18 10:54:16 hohndel Exp $ */
 
 
 
@@ -54,6 +54,8 @@ extern void writev () ;
 LOOKUP dixLookupTab[] = {
 
   /*dix/ */
+  /* atom.c */
+  SYMFUNC(MakeAtom)
   /* colormap.c */
   SYMFUNC(AllocColor)
   SYMFUNC(CreateColormap)
@@ -64,9 +66,11 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(TellGainedMap)
   SYMFUNC(QueryColors)
   /* dispatch.c */
-  SYMFUNC(SetInputCheck)
   SYMVAR(isItTimeToYield)
+  SYMFUNC(SetInputCheck)
+  SYMFUNC(SendErrorToClient)
   /* dixutils.c */
+  SYMFUNC(CopyISOLatin1Lowered)
   SYMFUNC(NoopDDA)
   /* events.c */
   SYMFUNC(CheckCursorConfinement)
@@ -74,17 +78,21 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(NewCurrentScreen)
   SYMFUNC(PointerConfinedToScreen)
   SYMFUNC(TryClientEvents)
+  SYMFUNC(WriteEventsToClient)
   /* extension.c */
   SYMFUNC(AddExtension)
+  SYMFUNC(MinorOpcodeOfRequest)
   SYMFUNC(StandardMinorOpcode)
   /* gc.c */
   SYMFUNC(CopyGC)
   SYMFUNC(CreateGC)
+  SYMFUNC(CreateScratchGC)
   SYMFUNC(ChangeGC)
   SYMFUNC(DoChangeGC)
   SYMFUNC(FreeGC)
   SYMFUNC(FreeScratchGC)
   SYMFUNC(GetScratchGC)
+  SYMFUNC(SetClipRects)
   SYMFUNC(ValidateGC)
   /* globals.c */
   SYMVAR(currentTime)
@@ -111,6 +119,7 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(CreateNewResourceClass)
   SYMFUNC(CreateNewResourceType)
   SYMFUNC(FakeClientID)
+  SYMFUNC(FreeResource)
   SYMFUNC(FreeResourceByType)
   SYMFUNC(LookupIDByType)
   SYMFUNC(LookupIDByClass)
@@ -119,6 +128,8 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(CopySwap32Write)
   SYMFUNC(SwapShorts)
   SYMFUNC(SwapLongs)
+  /* tables.c */
+  SYMVAR(EventSwapVector)
   /* window.c */
   SYMFUNC(GravityTranslate)
   SYMFUNC(MoveWindowInStack)

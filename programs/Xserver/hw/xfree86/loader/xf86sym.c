@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.4 1997/02/17 14:22:55 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.5 1997/02/18 10:54:21 hohndel Exp $ */
 
 
 
@@ -150,6 +150,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86log)
    SYMFUNC(xf86pow)
    SYMFUNC(xf86sqrt)
+   SYMFUNC(xf86cos)
 
 /*
  * these are our own interfaces where libc functions

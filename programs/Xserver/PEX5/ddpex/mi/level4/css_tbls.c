@@ -53,6 +53,10 @@ SOFTWARE.
 #include "ddpex.h"
 #include "miStruct.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 /* declarations for procs which handle elements stored in PEX format
  * this includes elements stored in PEX format and any extra elements
  * which are not defined in the protocol

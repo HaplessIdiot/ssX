@@ -1,5 +1,5 @@
 /* $XConsortium: miInquire.c,v 5.10 95/06/08 23:20:39 gildea Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miInquire.c,v 3.1 1995/07/07 15:34:35 dawes Exp $ */
 
 /***********************************************************
 
@@ -57,6 +57,10 @@ SOFTWARE.
 #include "ddpex2.h"
 #include "miStruct.h"
 #include "pexUtils.h"
+
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
 
 /*
 	opposites of parse, although since we know in advance (from storing)

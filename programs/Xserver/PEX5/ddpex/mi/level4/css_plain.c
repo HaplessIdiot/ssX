@@ -58,6 +58,10 @@ SOFTWARE.
 #include "ddpex.h"
 #include "miStrMacro.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 extern ocTableType ParseOCTable[];
 extern destroyTableType DestroyOCTable[];
 extern ocTableType CopyOCTable[];

@@ -34,6 +34,10 @@ in this Software without prior written authorization from the X Consortium.
 #include "pexLookup.h"
 #include "ddpex4.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 ErrorCode
 PutZBuffer(prend, x, y, width, height, normalizedValues, numValues, Zbuffer)
     ddRendererStr prend;

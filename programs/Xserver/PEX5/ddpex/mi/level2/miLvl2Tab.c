@@ -53,6 +53,10 @@ SOFTWARE.
 
 #include "mipex.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 /* procedures for PickExecuteOCTable and SearchExecuteOCTable */
 
 extern	ddpex2rtn	miTestPickGdp3d(),

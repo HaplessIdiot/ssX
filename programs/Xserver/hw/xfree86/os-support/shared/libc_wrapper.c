@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.1 1997/02/17 11:03:53 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.2 1997/02/18 10:55:18 hohndel Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -122,4 +122,10 @@ double
 xf86sqrt(double x)
 {
 	return(sqrt(x));
+}
+
+double 
+xf86cos(double x)
+{
+	return(cos(x));
 }

@@ -58,6 +58,10 @@ SOFTWARE.
 
 #include <stdio.h>
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 #define IRINT(x) ( ((x) >= 0.0) ? ((int)((x) + 0.5)) : ((int)((x) - 0.5)) )
 
 /*++

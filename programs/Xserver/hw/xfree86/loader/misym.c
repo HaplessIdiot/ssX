@@ -49,6 +49,7 @@ LOOKUP miLookupTab[] = {
    SYMFUNC(miEmptyBox)
    SYMFUNC(miEmptyData)
    SYMFUNC(miIntersect)
+   SYMFUNC(miRegionCopy)
    SYMFUNC(miRegionDestroy)
    SYMFUNC(miTranslateRegion)
    SYMFUNC(miHandleExposures)
@@ -98,6 +99,7 @@ LOOKUP miLookupTab[] = {
    SYMFUNC(miRecolorCursor)
    SYMFUNC(miPointerWarpCursor)
    SYMFUNC(miDCInitialize)
+   SYMFUNC(miRectsToRegion)
 
    SYMVAR(miSpritePointerFuncs)
 

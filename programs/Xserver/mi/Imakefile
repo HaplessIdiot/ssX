@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/mi/Imakefile,v 3.10 1996/10/03 08:49:08 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/mi/Imakefile,v 3.11 1996/12/23 07:09:40 dawes Exp $
 XCOMM $XConsortium: Imakefile /main/44 1996/12/02 10:22:16 lehors $
 #include <Server.tmpl>
 
@@ -36,10 +36,10 @@ EXT_DEFINES = ExtensionDefines -UXINPUT -UXF86VIDMODE -UXFreeXDGA -UXF86MISC
 #else
 EXT_DEFINES = ExtensionDefines
 #endif
-#if PexDynamicModule
+#if PexModule
 PEX_MODULE_DEFINES = -DPEX_MODULE
 #endif
-#if XieDynamicModule
+#if XieModule
 XIE_MODULE_DEFINES = -DXIE_MODULE
 #endif
 EXT_MODULES_DEFINES = $(PEX_MODULE_DEFINES) $(XIE_MODULE_DEFINES)

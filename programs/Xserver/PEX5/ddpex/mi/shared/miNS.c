@@ -55,6 +55,10 @@ SOFTWARE.
 #include	"PEXErr.h"
 #include	"pexUtils.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 /*  Level 4 Shared Resources  */
 /*  Name Set Procedures  */
 

@@ -80,6 +80,10 @@ SOFTWARE.
 
 #include"floatconv.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 #define BITMASK(n) ((((unsigned long)1)<<n)-1)
 #define VAX_EXPONENT_BIAS	0x00000081
 #define IEEE_EXPONENT_BIAS	0x0000007f

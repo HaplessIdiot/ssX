@@ -1,6 +1,6 @@
 XCOMM
 XCOMM $XConsortium: Imakefile /main/13 1996/09/28 16:54:53 rws $
-XCOMM $XFree86: xc/programs/Xserver/PEX5/dipex/objects/Imakefile,v 3.6 1996/10/03 08:30:29 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/PEX5/dipex/objects/Imakefile,v 3.7 1996/12/23 06:26:26 dawes Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -54,7 +54,7 @@ OBJS =  pexRndr.o pexFont.o pexLut.o pexNs.o pexStr.o \
 	pexPhigs.o pexInfo.o pexSc.o pexPick.o pexPc.o pexRndrPick.o
 XCOMM	pexTM.o pexAccBuf.o
 
-#define DoSharedLib	PexDynamicModule
+#define DoSharedLib	BuildDynamicLoading && PexModule
 #include <ServerLib.tmpl>
 #if DoSharedLib
 SubdirLibraryRule($(OBJS))

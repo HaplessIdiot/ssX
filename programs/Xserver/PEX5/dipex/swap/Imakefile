@@ -1,6 +1,6 @@
 XCOMM
 XCOMM $XConsortium: Imakefile /main/13 1996/09/28 16:55:03 rws $
-XCOMM $XFree86: xc/programs/Xserver/PEX5/dipex/swap/Imakefile,v 3.2 1996/10/03 08:30:33 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/PEX5/dipex/swap/Imakefile,v 3.3 1996/12/23 06:26:31 dawes Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -56,7 +56,7 @@ OBJS =  convUtil.o cOCprim.o uOCprim.o floatconv.o check.o \
 
 PEX_SW_LIBNAME = libdiswapex.a
 
-#define DoSharedLib	PexDynamicModule
+#define DoSharedLib	BuildDynamicLoading && PexModule
 #include <ServerLib.tmpl>
 #if DoSharedLib
 SubdirLibraryRule($(OBJS))

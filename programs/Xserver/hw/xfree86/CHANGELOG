@@ -1,4 +1,8 @@
-XFree86 3.2Ag (18 February 1997)
+XFree86 3.2Ag (19 February 1997)
+ 465. Convert PEX and XIE to be loadable with the new style loader
+      (Dirk Hohndel).
+ 464. Clean up configuration files to distinguish old and new style
+      loading of extensions (Dirk Hohndel).
  463. Add DPMS support (off mode only) to the P9000 server
       (#9, Karl Anders Oygard).
  462. Add PCI probing to the P9000 server (#9, Karl Anders Oygard).

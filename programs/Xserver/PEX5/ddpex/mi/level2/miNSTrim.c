@@ -1,5 +1,5 @@
 /* $XConsortium: miNSTrim.c,v 5.5 94/04/17 20:37:11 hersh Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miNSTrim.c,v 3.0 1996/03/29 22:09:41 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -60,6 +60,10 @@ SOFTWARE.
 #include "miNurbs.h"
 
 #include <stdio.h>
+
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
 
 #define INACTIVE	0
 

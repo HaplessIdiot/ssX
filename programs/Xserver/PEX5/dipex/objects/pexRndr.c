@@ -1,5 +1,5 @@
 /* $XConsortium: pexRndr.c,v 5.29 94/09/09 20:32:50 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexRndr.c,v 3.0 1995/07/07 15:36:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexRndr.c,v 3.1 1996/01/05 13:16:43 dawes Exp $ */
 
 /***********************************************************
 
@@ -95,6 +95,10 @@ SOFTWARE.
 #include "pexUtils.h"
 #include "pex_site.h"
 #include "scrnintstr.h"
+
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
 
 
 #ifndef PEX_BUFFER_CHUNK

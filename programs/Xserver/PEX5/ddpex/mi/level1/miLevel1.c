@@ -52,6 +52,10 @@ SOFTWARE.
 
 #include "ddpex.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 ddpex1rtn
 PexTriangle(pRend, pPt1, pPt2, pPt3, pColour1, pColour2, pColour3)
 /* in */

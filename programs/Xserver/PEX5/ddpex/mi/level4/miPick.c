@@ -57,6 +57,10 @@ SOFTWARE.
 #include "PEXErr.h"
 #include "pexExtract.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 extern ddpex4rtn    UpdateStructRefs();
 extern ddpex43rtn   UpdateNSRefs();
 extern ddpex3rtn    BeginStructure();

@@ -12,7 +12,7 @@ OBJS = control/?*.o fax/?*.o import/?*.o jpeg/?*.o process/?*.o export/?*.o
 DONES = control/DONE fax/DONE import/DONE jpeg/DONE process/DONE export/DONE 
 #endif
 
-#if !XieDynamicModule
+#if 0 && !XieModule
 #define	IHaveSubdirs
 
 

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/5 1996/09/28 16:56:25 rws $
-XCOMM $XFree86: xc/programs/Xserver/XIE/mixie/process/Imakefile,v 3.1 1996/10/03 09:17:34 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/XIE/mixie/process/Imakefile,v 3.2 1996/12/23 06:28:51 dawes Exp $
 XCOMM build device dependent machine independent process element objs
 #include <Server.tmpl>
 
@@ -27,7 +27,7 @@ OBJS2 = mparith.o mpbandc.o mpbande.o mpbands.o mpblend.o mpcfromi.o \
               ../control/llib-lctrl.ln ../export/llib-lmexp.ln ../fax/llib-lfax.ln \
               ../import/llib-lmimp.ln ../jpeg/llib-ljpeg.ln ../process/llib-lmproc.ln
 
-#define DoSharedLib	XieDynamicModule
+#define DoSharedLib	BuildDynamicLoading && XieModule
 #include <ServerLib.tmpl>
 SubdirLibraryRule($(OBJS))
 LintLibraryTarget(mproc,$(SRCS))

@@ -61,6 +61,10 @@ SOFTWARE.
 #include "pexLookup.h"
 #include "convertStr.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 #undef LOCAL_FLAG
 #define LOCAL_FLAG
 #include "OCattr.h"

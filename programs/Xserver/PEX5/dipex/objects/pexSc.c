@@ -1,5 +1,5 @@
 /* $XConsortium: pexSc.c,v 5.9 94/04/17 20:36:13 hersh Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexSc.c,v 3.0 1995/07/07 15:36:14 dawes Exp $ */
 
 /***********************************************************
 
@@ -68,6 +68,10 @@ SOFTWARE.
 #include "pexLookup.h"
 #include "pexUtils.h"
 #include "pexExtract.h"
+
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
 
 #ifdef min
 #undef min

@@ -59,6 +59,10 @@ SOFTWARE.
 #include "miStrMacro.h"
 #include "pexUtils.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 extern ocTableType ParseOCTable[];
 extern ocTableType CopyOCTable[];
 extern ocTableType InquireOCTable[];
