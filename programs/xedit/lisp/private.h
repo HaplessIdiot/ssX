@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.18 2002/02/12 16:07:55 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.19 2002/02/14 04:48:10 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -353,6 +353,7 @@ char *LispIntToOpaqueType(LispMac*, int);
 void LispPrint(LispMac*, LispObj*, LispObj*, int);
 
 LispBlock *LispBeginBlock(LispMac*, LispObj*, LispBlockType);
+#define BLOCKJUMP(block)	longjmp((block)->jmp, 1)
 void LispEndBlock(LispMac*, LispBlock*);
 	/* if unwind-protect active, jump to cleanup code, else do nothing */
 void LispBlockUnwind(LispMac*, LispBlock*);

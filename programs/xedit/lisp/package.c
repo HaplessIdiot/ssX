@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.1 2002/02/12 16:07:55 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.2 2002/02/14 04:48:10 paulo Exp $ */
 
 #include "package.h"
 #include "private.h"
@@ -351,6 +351,7 @@ Lisp_InPackage(LispMac *mac, LispBuiltin *builtin)
 
     /* Update pointer to package symbol table */
     mac->pack = package->data.package.package;
+    PACKAGE = package;
 
     LispSetVar(mac, PACKNAM, package);
 

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.14 2002/02/12 16:07:54 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.15 2002/02/14 04:48:09 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -175,7 +175,7 @@
 #define STROBJ(obj)		LispStrObj(mac, obj)
 
 #define CONSTANT_P(obj)					\
-    ((obj)->type < LispAtom_t || KEYWORD_P(obj))
+    ((obj)->type < LispAtom_t || (obj->type == LispAtom_t && KEYWORD_P(obj)))
 
 /* slightly faster test, since keywords are very uncommon as eval arguments */
 #define NCONSTANT_P(obj)				\

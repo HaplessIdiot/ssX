@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.7 2002/02/13 04:11:27 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.8 2002/02/14 04:48:10 paulo Exp $ */
 
 #include <errno.h>
 #include "read.h"
@@ -267,9 +267,6 @@ LispSkipWhiteSpace(LispMac *mac)
 static LispObj *
 LispReadList(LispMac *mac)
 {
-#ifdef COMPILE_LAMBDA
-    int lambda;
-#endif
     LispObj *result, *cons, *object;
     int dot = 0, protect = mac->protect.length;
 
@@ -283,11 +280,6 @@ LispReadList(LispMac *mac)
 	    LispDestroy(mac, "READ: illegal start of dotted list");
 	return (NIL);
     }
-
-#ifdef COMPILE_LAMBDA
-    /* if it is a lambda expression, "compile" it at read time */
-    lambda = SYMBOL_P(object) && ATOMID(object) == Slambda;
-#endif
 
     result = cons = CONS(object, NIL);
 
@@ -338,11 +330,6 @@ LispReadList(LispMac *mac)
     }
 
     mac->protect.length = protect;
-
-#ifdef COMPILE_LAMBDA
-    if (lambda)
-	result = EVAL(result);
-#endif
 
     return (result);
 }

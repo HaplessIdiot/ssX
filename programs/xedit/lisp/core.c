@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.22 2002/02/12 16:07:54 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.23 2002/02/14 04:48:09 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -1091,10 +1091,6 @@ Lisp_Go(LispMac *mac, LispBuiltin *builtin)
     tag = ARGUMENT(0);
     MACRO_ARGUMENT1();
 
-    if (tag != NIL && tag != T && !SYMBOL_P(tag) && !FIXNUM_P(tag))
-	LispDestroy(mac, "%s: bad tag %s",
-		    STRFUN(builtin), STROBJ(tag));
-
     while (blevel) {
 	LispBlock *block = mac->block.block[--blevel];
 
@@ -1104,7 +1100,7 @@ Lisp_Go(LispMac *mac, LispBuiltin *builtin)
 	if (block->type == LispBlockBody) {
 	    mac->block.block_ret = tag;
 	    LispBlockUnwind(mac, block);
-	    longjmp(block->jmp, 1);
+	    BLOCKJUMP(block);
 	}
      }
 
@@ -2480,7 +2476,7 @@ Lisp_Return(LispMac *mac, LispBuiltin *builtin)
 	if (block->type == LispBlockTag && block->tag.type == LispNil_t) {
 	    mac->block.block_ret = NCONSTANT_P(result) ? EVAL(result) : result;
 	    LispBlockUnwind(mac, block);
-	    longjmp(block->jmp, 1);
+	    BLOCKJUMP(block);
 	}
     }
     LispDestroy(mac, "%s: no visible NIL block", STRFUN(builtin));
@@ -2530,7 +2526,7 @@ Lisp_ReturnFrom(LispMac *mac, LispBuiltin *builtin)
 	if (jmp) {
 	    mac->block.block_ret = NCONSTANT_P(result) ? EVAL(result) : result;
 	    LispBlockUnwind(mac, block);
-	    longjmp(block->jmp, 1);
+	    BLOCKJUMP(block);
 	}
 	if (block->type != LispBlockTag)
 	    /* can use return-from only in the current function */
@@ -3020,101 +3016,84 @@ Lisp_Tagbody(LispMac *mac, LispBuiltin *builtin)
  tagbody &rest body
  */
 {
-    int did_jump, *pdid_jump = &did_jump, body_jump, *pbody_jump = &body_jump;
-    LispObj *list, *body, **pbody = &body, *res, **pres = &res;
-    LispBlock *block, *body_block;
+    int head, lex, length, dyn, found;
+    LispObj *list, *body, *ptr, *tag, **p_list;
+    LispBlock *block;
 
     body = ARGUMENT(0);
     MACRO_ARGUMENT1();
 
+    /* Initialize */
     list = body;
+    p_list = &list;
+    block = LispBeginBlock(mac, NIL, LispBlockBody);
 
-    for (; CONS_P(body); body = CDR(body))
-	if (CONS_P(body))
+    /* Save environment information */
+    head = mac->env.head;
+    lex = mac->env.lex;
+    length = mac->env.length;
+    dyn = mac->dyn.length;
+
+    /* Skip leading tag(s) */
+    for (; CONS_P(body); body = CDR(body)) {
+	if (CONS_P(CAR(body)))
 	    break;
-
-    if (!CONS_P(body))
-	return (NIL);
-
-    *pdid_jump = 1;
-    *pres = NIL;
-    block = LispBeginBlock(mac, NIL, LispBlockTag);
-    if (setjmp(block->jmp) == 0) {
-	body = list;
-	while (1) {
-	    *pbody_jump = 1;
-	    body_block = LispBeginBlock(mac, NIL, LispBlockBody);
-	    if (setjmp(body_block->jmp) == 0) {
-		for (; CONS_P(body); body = CDR(body)) {
-		    if (CONS_P(CAR(body)))
-			*pres = EVAL(CAR(body));
-		}
-		*pbody_jump = 0;
-	    }
-	    LispEndBlock(mac, body_block);
-	    if (*pbody_jump) {
-		int found = 0;
-		LispObj *ptr, *tag;
-
-		tag = mac->block.block_ret;
-		for (ptr = body; CONS_P(ptr); ptr = CDR(ptr)) {
-		    if (CAR(ptr)->type == tag->type &&
-			((CAR(ptr) == NIL && tag->type == LispNil_t) ||
-			 (CAR(ptr) == T && tag->type == LispTrue_t) ||
-			 (FIXNUM_P(ptr) && FIXNUM_P(tag) &&
-			  FIXNUM_VALUE(ptr) == FIXNUM_VALUE(tag)) ||
-			 (SYMBOL_P(CAR(ptr)) && SYMBOL_P(tag) &&
-			  CAR(ptr)->data.atom == tag->data.atom))) {
-			found = 1;
-			break;
-		    }
-		}
-		if (ptr == NIL) {
-		    for (ptr = list; ptr != body; ptr = CDR(ptr)) {
-			if (CAR(ptr)->type == tag->type &&
-			    ((CAR(ptr) == NIL && tag->type == LispNil_t) ||
-			     (CAR(ptr) == T && tag->type == LispTrue_t) ||
-			     (FIXNUM_P(ptr) && FIXNUM_P(tag) &&
-			      FIXNUM_VALUE(ptr) == FIXNUM_VALUE(tag)) ||
-			     (SYMBOL_P(CAR(ptr)) && SYMBOL_P(tag) &&
-			      CAR(ptr)->data.atom == tag->data.atom))) {
-			    found = 1;
-			    break;
-			}
-		    }
-		}
-		/* XXX no search for duplicated tags, if there are
-		 * duplicated tags, will just search the body for the tag,
-		 * if the end of the list is reached, search again from
-		 * beginning. This is (I believe) allowable for an interpreter,
-		 * but if (byte) compiled code is to be generated, duplicated
-		 * tags must not be allowed. */
-		if ((body = ptr) == NIL)
-		    LispDestroy(mac, "%s: no such tag %s",
-				STRFUN(builtin), STROBJ(tag));
-
-		/* search for start of code */
-		for (body = CDR(body); CONS_P(body); body = CDR(body)) {
-		    if (CAR(body)->type == LispCons_t)
-			break;
-		}
-
-		/* just jumped to the bottom of the code body */
-		if (*pbody == NIL)
-		    break;
-	    }
-	    else
-		/* 'go' not called */
-		break;
-	    *pdid_jump = 1;
-	}
-	*pdid_jump = 0;
     }
-    LispEndBlock(mac, block);
-    if (*pdid_jump)
-	*pres = mac->block.block_ret;
 
-    return (*pres);
+    /* Loop */
+    if (setjmp(block->jmp) != 0) {
+	/* Restore environment */
+	mac->env.head = head;
+	mac->env.lex = lex;
+	mac->env.length = length;
+	mac->dyn.length = dyn;
+
+	found = 0;
+	tag = mac->block.block_ret;
+	for (ptr = *p_list; CONS_P(ptr); ptr = CDR(ptr)) {
+	    if (CAR(ptr)->type == tag->type) {
+		switch (tag->type) {
+		    case LispNil_t:
+		    case LispTrue_t:
+		    case LispAtom_t:
+			found = CAR(ptr) == tag;
+			break;
+		    case LispInteger_t:
+			found = CAR(ptr)->data.integer == tag->data.integer;
+			break;
+		    default:
+			break;
+		}
+	    }
+	    if (found)
+		break;
+	}
+
+	if (!found)
+	    LispDestroy(mac, "%s: no such tag %s", STRFUN(builtin), STROBJ(tag));
+
+	body = CDR(ptr);
+    }
+
+    /* Skip tags */
+    for (; CONS_P(body); body = CDR(body)) {
+	if (CONS_P(CAR(body)))
+	    break;
+    }
+
+    /* Execute code */
+    for (; CONS_P(body); body = CDR(body)) {
+	if (CONS_P(CAR(body)))
+	    /* If not a tag */
+	    EVAL(CAR(body));
+    }
+    /* If got here, (go) not called */
+
+    /* Finished */
+    LispEndBlock(mac, block);
+
+    /* Always return NIL */
+    return (NIL);
 }
 
 LispObj *
@@ -3212,7 +3191,7 @@ Lisp_Throw(LispMac *mac, LispBuiltin *builtin)
 	    if (jmp) {
 		mac->block.block_ret = NCONSTANT_P(result) ? EVAL(result) : result;
 		LispBlockUnwind(mac, block);
-		longjmp(block->jmp, 1);
+		BLOCKJUMP(block);
 	    }
 	}
     }
