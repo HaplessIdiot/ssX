@@ -35,9 +35,13 @@
 /*
  * mymath.h
  *
- * $Date: 2001/01/15 21:48:33 $ $Revision: 1.1 $
- * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/mymath.h,v 1.1 2001/01/15 21:48:33 dawes Exp $
+ * $Date: 2001/02/18 20:01:01 $ $Revision: 1.2 $
+ * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/mymath.h,v 1.2 2001/02/18 20:01:01 dawes Exp $
  */
+
+
+
+/* $XFree86$ */
 
 #ifndef __glumymath_h_
 #define __glumymath_h_
@@ -54,7 +58,12 @@
 extern "C" double	sqrt(double);
 extern "C" float	ceilf(float);
 extern "C" float	floorf(float);
+#ifndef NEEDCEILF
 #define NEEDCEILF
+#endif
+#elif defined(NEEDCEILF)
+extern "C" float	ceilf(float);
+extern "C" float	floorf(float);
 #endif
 
 #ifdef LIBRARYBUILD
