@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
 XCOMM $XConsortium: Project.tmpl /main/r61_main/6 1996/01/15 12:26:59 gildea $
-XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.29 1996/08/13 11:24:04 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.30 1996/08/20 13:47:15 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1088,6 +1088,10 @@ UnsharedLibReferences(FS,FS,$(FSLIBSRC))
          FONTLIBSRC = $(LIBSRC)/font
 UnsharedLibReferences(FONT,font,$(FONTLIBSRC))
 
+#ifndef LdLibraryPath
+#define LdLibraryPath LD_LIBRARY_PATH
+#endif
+
 #ifdef BuildXKBlib
     XKBFILELIBSRC = $(LIBSRC)/xkbfile
 UnsharedLibReferences(XKBFILE,xkbfile,$(XKBFILELIBSRC))
@@ -1110,7 +1114,7 @@ UnsharedLibReferences(XKBFILE,xkbfile,$(XKBFILELIBSRC))
 #else
      XKBCOMPSRC = $(PROGRAMSRC)/xkbcomp
 #if HasSharedLibraries
-XKBCOMPENVSETUP = LD_LIBRARY_PATH=$(BUILDLIBDIR)
+XKBCOMPENVSETUP = LdLibraryPath=$(BUILDLIBDIR):$(LdLibraryPath)
 #endif
      XKBCOMPCMD = $(XKBCOMPENVSETUP) $(XKBCOMPSRC)/xkbcomp
 #endif

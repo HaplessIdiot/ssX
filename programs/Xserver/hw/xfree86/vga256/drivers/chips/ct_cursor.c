@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_cursor.c,v 3.0 1996/08/11 13:02:44 dawes Exp $ */
 
 /*
  * Hardware cursor handling. Adapted from cirrus/cir_cursor.c and
@@ -148,8 +148,14 @@ CHIPSCursorInit(pm, pScr)
 	outb(0x3D6, 0xA3);
 	outb(0x3D7, (ctCursorAddress >> 16) & 0x3F);
     } else
-	outl(0xB3D0, ctCursorAddress);
-
+#ifdef CHIPS_SUPPORT_MMIO
+      if(!ctUseMMIO)
+#endif
+	outl(DR(0xC), ctCursorAddress);
+#ifdef CHIPS_SUPPORT_MMIO
+      else
+	MMIOmem(0xB3D0) = ctCursorAddress;
+#endif
     return TRUE;
 }
 
@@ -160,7 +166,14 @@ CHIPSShowCursor()
     if (ctisHiQV32)
 	outw(0x3D6, 0x11A0);
     else
-	outw(0xA3D0, 0x21);
+#ifdef CHIPS_SUPPORT_MMIO
+      if(!ctUseMMIO)
+#endif
+	outw(DR(0x8), 0x21);
+#ifdef CHIPS_SUPPORT_MMIO
+      else
+	MMIOmem(0xA3D0) = 0x21;
+#endif
     ctHWcursorShown = TRUE;
 }
 
@@ -171,7 +184,14 @@ CHIPSHideCursor()
     if (ctisHiQV32)
 	outw(0x3D6, 0x10A0);
     else
-	outw(0xA3D0, 0x20);
+#ifdef CHIPS_SUPPORT_MMIO
+      if(!ctUseMMIO)
+#endif
+	outw(DR(0x8), 0x20);
+#ifdef CHIPS_SUPPORT_MMIO
+      else
+	MMIOmem(0xA3D0) = 0x20;
+#endif
     ctHWcursorShown = FALSE;
 }
 
@@ -328,7 +348,7 @@ CHIPSUnrealizeCursor(pScr, pCurs)
 	    while (inb(0x3D7) & 0x1) {
 	    };
 	} else {
-	    while (inw(0x93D2) & 0x10) {
+	    while (inw(DR(0x4)+2) & 0x10) {
 	    };
 	}
 	CHIPSHideCursor();
@@ -353,7 +373,7 @@ CHIPSLoadCursorToCard(pScr, pCurs, x, y)
 	while (inb(0x3D7) & 0x1) {
 	};
     } else {
-	while (inw(0x93D2) & 0x10) {
+	while (inw(DR(0x4)+2) & 0x10) {
 	};
     }
 
@@ -386,8 +406,15 @@ CHIPSLoadCursorToCard(pScr, pCurs, x, y)
 	    CHIPSSetWrite(ctCursorAddress >> 16);
 	    memcpy((unsigned char *)vgaBase + (ctCursorAddress & 0xFFFF),
 		cursor_image, 256);
-	    outl(0xB3D0,
+#ifdef CHIPS_SUPPORT_MMIO
+	    if(!ctUseMMIO)
+#endif
+	      outl(DR(0xC),
 		 (int)((unsigned char *)vgaBase + (ctCursorAddress & 0xFFFF)));
+#ifdef CHIPS_SUPPORT_MMIO
+	    else
+	      MMIOmem(0xB3D0) = (int)(unsigned char *)vgaBase + (ctCursorAddress & 0xFFFF);
+#endif
 	}
 	vgaRestoreBank();
 
@@ -399,8 +426,14 @@ CHIPSLoadCursorToCard(pScr, pCurs, x, y)
 	outb(0x3D6, 0xA3);
 	outb(0x3D7, (ctCursorAddress >> 16) & 0x3F);
     } else
-	outl(0xB3D0, ctCursorAddress);
-
+#ifdef CHIPS_SUPPORT_MMIO
+      if (!ctUseMMIO)
+#endif
+	outl(DR(0xC), ctCursorAddress);
+#ifdef CHIPS_SUPPORT_MMIO
+      else
+	MMIOmem(0xB3D0) = ctCursorAddress;
+#endif
 }
 
 /*
@@ -440,7 +473,7 @@ CHIPSLoadCursor(pScr, pCurs, x, y)
 	while (inb(0x3D7) & 0x1) {
 	};
     } else {
-	while (inw(0x93D2) & 0x10) {
+	while (inw(DR(0x4)+2) & 0x10) {
 	};
     }
 
@@ -526,7 +559,14 @@ CHIPSMoveCursor(pScr, x, y)
 
 	xy = y;
 	xy = (xy << 16) | x;
-	outl(0xAFD0, xy);
+#ifdef CHIPS_SUPPORT_MMIO
+	if(!ctUseMMIO)
+#endif
+	  outl(DR(0xB), xy);
+#ifdef CHIPS_SUPPORT_MMIO
+	else
+	  MMIOmem(0xAFD0) = xy;
+#endif
     }
 
 }
@@ -586,7 +626,14 @@ CHIPSRecolorCursor(pScr, pCurs, displayed)
 		| ((pCurs->backBlue & 0xf800) >> 11);
 	}
 	packedcolfg = (packedcolfg << 16) | packedcolbg;
-	outl(0xA7D0, packedcolfg);
+#ifdef CHIPS_SUPPORT_MMIO
+	if(!ctUseMMIO)
+#endif
+	  outl(DR(0x9), packedcolfg);
+#ifdef CHIPS_SUPPORT_MMIO
+	else
+	  MMIOmem(0xA7D0) = packedcolfg;
+#endif
     }
 }
 

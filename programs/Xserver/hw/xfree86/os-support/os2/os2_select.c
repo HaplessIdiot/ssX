@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_select.c,v 3.0 1996/05/10 06:59:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_select.c,v 3.1 1996/05/13 06:40:08 dawes Exp $ */
 
 /*
  * (c) Copyright 1996 by Sebastien Marineau
@@ -482,3 +482,48 @@ ULONG os2_get_sys_millis()
    return(milli);
 }
 
+#define MIN(a,b) (((a) < (b)) ? (a) : (b))
+
+int _select2 (int nfds, fd_set *readfds, fd_set *writefds,
+             fd_set *exceptfds, struct timeval *timeout)
+{
+  struct _select args;
+  int i, j, n;
+
+  args.nfds = nfds;
+  args.readfds = readfds;
+  args.writefds = writefds;
+  args.exceptfds = exceptfds;
+  args.timeout = timeout;
+  n = MIN (FD_SETSIZE, _nfiles);
+  if (readfds != NULL)
+    {
+      for (i = 0; i < n; ++i) {
+        if (FD_ISSET (i, readfds) && (!(_files[i] & F_PIPE)))
+         {
+            FD_CLR (i, readfds);    
+         }
+       }
+    }
+
+   if (writefds != NULL)
+    {
+      for (i = 0; i < n; ++i) {
+        if (FD_ISSET (i, writefds) && (!(_files[i] & F_PIPE)))
+         {
+            FD_CLR (i, writefds);
+         }
+       }
+    }
+   if (exceptfds != NULL)
+    {
+      for (i = 0; i < n; ++i) {
+        if (FD_ISSET (i, exceptfds) && (!(_files[i] & F_PIPE)))
+         {
+            FD_CLR (i, exceptfds);
+         }
+       }
+    }
+
+ return __select (&args);
+}

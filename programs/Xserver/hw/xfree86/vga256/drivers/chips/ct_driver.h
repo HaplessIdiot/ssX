@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.h,v 3.0 1996/08/11 13:02:48 dawes Exp $ */
 
 extern Bool ctLinearSupport;	       /*linear addressing enable */
 extern Bool ctAccelSupport;	       /*acceleration enable */
@@ -42,6 +42,12 @@ extern unsigned char *ctMMIOBase;
 extern int ctAluConv[];		       /* Map Alu to Chips ROP */
 
 extern unsigned long ctFrameBufferSize;		/* Frame buffer size */
+
+/* 
+ * Definitions for IO access to 32 bit ports
+ */
+extern unsigned CHIPS_ExtPorts32[];
+#define DR(x) CHIPS_ExtPorts32[x]
 
 /*
  * Forward definitions for the functions that make up the driver.    See
@@ -68,6 +74,7 @@ extern RegionPtr ctcfb24CopyArea();
 
 /* in ct_pci.c */
 extern int ctPCIMemBase();
+extern int ctPCIIOBase();
 
 /* in ct_FillRct.c */
 extern void ctcfbPolyFillRect();
@@ -78,3 +85,5 @@ extern void ctMMIOLineSS();
 extern void ctMMIOSegmentSS();
 
 #endif
+
+#define MMIOmem(x) *(unsigned int *)(ctMMIOBase + x)

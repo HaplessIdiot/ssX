@@ -1,3 +1,9 @@
+XFree86 3.1.2Ek (21 August 1996)
+682. Update SuperProbe to identify the amount of memory for a 65550/54,
+     and fix detection of 65545 (David Bateman).
+681. Fix for 65545 PCI problems in the C&T driver (Egbert Eich).
+680. resync os2_select.c (Holger Veit).
+
 XFree86 3.1.2Ej (20 August 1996)
 679. Fix install problem when xkbcomp is linked against shared libs.
 678. Prevent server exit if the mouse device is changed to something

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: util.c,v 1.31 91/06/20 18:34:47 gildea Exp $
- *	$XFree86: xc/programs/xterm/util.c,v 3.8 1996/08/11 13:04:52 dawes Exp $
+ *	$XFree86: xc/programs/xterm/util.c,v 3.9 1996/08/13 11:37:11 dawes Exp $
  */
 
 /*
@@ -625,7 +625,16 @@ ClearInLine(screen, row, col, len)
 	int len;
 {
 	int rc = 1;
-	int flags = CHARDRAWN | TERM_COLOR_FLAGS;
+	int flags = TERM_COLOR_FLAGS;
+
+	/*
+	 * If we're clearing to the end of the line, we won't count this as
+	 * "drawn" characters.  We'll only do cut/paste on "drawn" characters,
+	 * so this has the effect of suppressing trailing blanks from a
+	 * selection.
+	 */
+	if (col + len + 1 < screen->max_col)
+		flags |= CHARDRAWN;
 
 	/* If we've marked protected text on the screen, we'll have to
 	 * check each time we do an erase.

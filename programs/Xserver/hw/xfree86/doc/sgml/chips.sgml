@@ -418,11 +418,12 @@ software.
 <item>Egbert Eich
 <item>Ken Raeburn
 <item>Xavier Ducoin
+<item>Shigehiro Nomura
 <item>David Bateman
 </itemize>
 
 <verb>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.1 1996/08/20 13:06:07 dawes Exp $
 </verb>
 
 </article>

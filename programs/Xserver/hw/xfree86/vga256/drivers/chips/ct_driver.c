@@ -1,8 +1,5 @@
-#define CHIPS_SUPPORT_MMIO
-#define CT_LINE_ACCL		       /* Enable line acceleration */
-
 /* $XConsortium: ct_driver.c /main/6 1996/01/12 12:16:39 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.15 1996/08/14 14:32:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.16 1996/08/20 12:30:23 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -12,6 +9,7 @@
  * Modified 1996 by Egbert Eich <Egbert.Eich@Physik.TH-Darmstadt.DE>
  * Modified 1996 by David Bateman <dbateman@ee.uts.edu.au>
  * Modified 1996 by Xavier Ducoin <xavier@rd.lectra.fr>
+ * Modified 1996 by Shigehiro Nomura <nomura@sm.sony.co.jp>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -185,6 +183,7 @@ static void CHIPSFbInit();
 #if 0
 static void CHIPSSaveScreen();
 #endif
+static void ctSetupIO();
 
 #if 0				       /*it is not used but leaved for the future */
 static void CHIPSGetMode();
@@ -327,18 +326,22 @@ static unsigned CHIPS_ExtPorts[] =
     0x3D6,			       /*Chips & Technologies index, R/W by word */
     0x3D7,			       /*Chips & Technologies R/W by byte */
     0x3D8,
+  };
 
+unsigned int CHIPS_ExtPorts32[] =
+{
   /*BitBLT */
-    0x83D0,			       /*src/dest offset */
-    0x87D0,			       /*BilBlt. address of freeVram? */
-    0x8BD0,			       /*BitBlt. paintBrush, or tile pattern */
-    0x93D0,			       /*BitBlt. */
-    0x97D0,			       /*BitBlt. srcAddr, or 0 in in VRAM */
-    0x9BD0,			       /*BitBlt. dest? */
-    0x9FD0,			       /*BitBlt. width << 16 | height */
+    0x83D0,			       /*DR0 src/dest offset */
+    0x87D0,			       /*DR1 BitBlt. address of freeVram? */
+    0x8BD0,			       /*DR2 BitBlt. paintBrush, or tile pat.*/
+    0x8FD0,                            /*DR3*/
+    0x93D0,			       /*DR4 BitBlt. */
+    0x97D0,			       /*DR5 BitBlt. srcAddr, or 0 in VRAM */
+    0x9BD0,			       /*DR6 BitBlt. dest? */
+    0x9FD0,			       /*DR7 BitBlt. width << 16 | height */
 
   /*H/W cursor */
-    0xA3D0,			       /*write/erase cursor */
+    0xA3D0,			       /*DR8 write/erase cursor */
 		/*bit 0-1 if 0  cursor is not shown
 		 * if 1  32x32 cursor
 		 * if 2  64x64 cursor
@@ -347,20 +350,23 @@ static unsigned CHIPS_ExtPorts[] =
 		/*bit 7 if 1  cursor is not shown */
 		/*bit 9 cursor expansion in X */
 		/*bit 10 cursor expansion in Y */
-    0xA7D0,			       /*foreGroundCursorColor */
-    0xABD0,			       /*backGroundCursorColor */
-    0xAFD0,			       /*cursorPosition */
+    0xA7D0,			       /*DR9 foreGroundCursorColor */
+    0xABD0,			       /*DR0xA backGroundCursorColor */
+    0xAFD0,			       /*DR0xB cursorPosition */
 		/*bit 0-7       x coordinate */
 		/*bit 8-14      0 */
 		/*bit 15        x signum */
 		/*bit 16-23     y coordinate */
 		/*bit 24-30     0 */
 		/*bit 31        y signum */
-    0xB3D0,			       /*address of cursor pattern */
+    0xB3D0,			       /*DR0xC address of cursor pattern */
 };
 
 static int Num_CHIPS_ExtPorts =
 (sizeof(CHIPS_ExtPorts) / sizeof(CHIPS_ExtPorts[0]));
+
+static int Num_CHIPS_ExtPorts32 =
+(sizeof(CHIPS_ExtPorts32) / sizeof(CHIPS_ExtPorts32[0]));
 
 #define CT_520   0
 #define CT_530   1
@@ -847,6 +853,7 @@ CHIPSProbe()
 {
     unsigned char temp;
     int NoClocks, i;
+    unsigned  PCIIOBase;
 
 #ifdef DEBUG
     ErrorF("CHIPSProbe\n");
@@ -860,6 +867,7 @@ CHIPSProbe()
     xf86ClearIOPortList(vga256InfoRec.scrnIndex);
     xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
     xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_CHIPS_ExtPorts, CHIPS_ExtPorts);
+    xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_CHIPS_ExtPorts32, CHIPS_ExtPorts32);
 
     /*
      * First we attempt to figure out if one of the supported chipsets
@@ -1352,7 +1360,6 @@ CHIPSProbe()
 	    ErrorF("PCI Bus\n");
 	    ctPCI = TRUE;
 	    CHIPS.ChipLinearBase = ctPCIMemBase(ctisHiQV32);
-
 	    /* If no valid PCI device was found then disable linear
 	     * addressing. This would indicate a faulty PCI device */
 	    if (CHIPS.ChipLinearBase == -1) {
@@ -1361,6 +1368,23 @@ CHIPSProbe()
 		ctLinearSupport = FALSE;
 		ctHDepth = FALSE;
 		ctAccelSupport = FALSE;
+	    }
+	    if ((CHIPSchipset == CT_545) || (CHIPSchipset == CT_546)){
+	      PCIIOBase = ctPCIIOBase();
+	      if (PCIIOBase == 0){
+#ifdef CHIPS_SUPPORT_MMIO
+		ErrorF("%s %s: ct65545+: IO not supported enabling MMIO\n",
+		       XCONFIG_PROBED, vga256InfoRec.name);
+		ctUseMMIO = TRUE;
+#else 
+		ErrorF("%s %s: ct65545+: Disabling Linear Addressing\n",
+		    XCONFIG_PROBED, vga256InfoRec.name);
+		ctLinearSupport = FALSE;
+		ctHDepth = FALSE;
+		ctAccelSupport = FALSE;
+#endif		
+	      }else
+	      ctSetupIO(PCIIOBase);
 	    }
 #ifdef CHIPS_SUPPORT_MMIO
 	    /* Turn on the MMIO addressing for 6554x chips with PCI */
@@ -1617,7 +1641,14 @@ CHIPSEnterLeave(enter)
 		outb(0x3D6, 0xA0);
 		outb(0x3D7, ctHWcursorContents & 0xFF);
 	    } else {
-		outl(0xA3D0, ctHWcursorContents);
+#ifdef CHIPS_SUPPORT_MMIO
+	      if(!ctUseMMIO)
+#endif
+		  outl(DR(0x8), ctHWcursorContents);
+#ifdef CHIPS_SUPPORT_MMIO
+	      else
+		  MMIOmem(0xA3D0) = ctHWcursorContents;
+#endif
 	    }
 	}
     } else {
@@ -1631,8 +1662,17 @@ CHIPSEnterLeave(enter)
 		ctHWcursorContents = inb(0x3D7);
 		outb(0x3D7, ctHWcursorContents & 0xF8);
 	    } else {
-		ctHWcursorContents = inl(0xA3D0);
-		outw(0xA3D0, ctHWcursorContents & 0xFFFE);
+#ifdef CHIPS_SUPPORT_MMIO
+	      if(!ctUseMMIO){
+#endif
+		ctHWcursorContents = inl(DR(0x8));
+		outw(DR(0x8), ctHWcursorContents & 0xFFFE);
+#ifdef CHIPS_SUPPORT_MMIO
+	      } else {
+		ctHWcursorContents = MMIOmem(0xA3D0);
+		MMIOmem(0xA3D0) = ctHWcursorContents & 0xFFFE;
+	      }
+#endif
 	    }
 	}
 	/* Protect CRTC[0-7] */
@@ -1914,11 +1954,23 @@ CHIPSSave(save)
 	save->Port_3D6[0x55] = ctHorizontalStretch ;
 	save->Port_3D6[0x57] = ctVerticalStretch ;
 
-	save->Port_83D0 = inl(0x83D0);
-	save->Port_A3D0 = inl(0xA3D0);
-	save->Port_A7D0 = inl(0xA7D0);
-	save->Port_ABD0 = inl(0xABD0);
-	save->Port_B3D0 = inl(0xB3D0);
+#ifdef CHIPS_SUPPORT_MMIO
+	if(!ctUseMMIO){ 
+#endif
+	    save->Port_83D0 = inl(DR(0x0));
+	    save->Port_A3D0 = inl(DR(0x8));
+	    save->Port_A7D0 = inl(DR(0x9));
+	    save->Port_ABD0 = inl(DR(0xA));
+	    save->Port_B3D0 = inl(DR(0xC));
+#ifdef CHIPS_SUPPORT_MMIO
+	} else {
+	    save->Port_83D0 = MMIOmem(0x83D0);
+	    save->Port_A3D0 = MMIOmem(0xA3D0);
+	    save->Port_A7D0 = MMIOmem(0xA7D0);
+	    save->Port_ABD0 = MMIOmem(0xABD0);
+	    save->Port_B3D0 = MMIOmem(0xB3D0);
+	}
+#endif
     }
     save->XMode = ctXMode;
     return ((void *)save);
@@ -3067,12 +3119,23 @@ ctRestore(restore)
 		outb(ctCRvalue, restore->Port_3D4[i]);
 	}
     } else {
-	outl(0x83D0, restore->Port_83D0);
-	outl(0xA3D0, restore->Port_A3D0);
-	outl(0xA7D0, restore->Port_A7D0);
-	outl(0xABD0, restore->Port_ABD0);
-	outl(0xB3D0, restore->Port_B3D0);
-
+#ifdef CHIPS_SUPPORT_MMIO
+	if(!ctUseMMIO){
+#endif
+	    outl(DR(0x0), restore->Port_83D0);
+	    outl(DR(0x8), restore->Port_A3D0);
+	    outl(DR(0x9), restore->Port_A7D0);
+	    outl(DR(0xA), restore->Port_ABD0);
+	    outl(DR(0xC), restore->Port_B3D0);
+#ifdef CHIPS_SUPPORT_MMIO
+	} else {
+	    MMIOmem(0x83D0) = restore->Port_83D0;
+	    MMIOmem(0xA3D0) = restore->Port_A3D0;
+	    MMIOmem(0xA7D0) = restore->Port_A7D0;
+	    MMIOmem(0xABD0) = restore->Port_ABD0;
+	    MMIOmem(0xB3D0) = restore->Port_B3D0;
+	}
+#endif
 	for (i = 0; i < 0x30; i++) {
 	    outb(0x3D6, i);
 	    if (inb(0x3D7) != restore->Port_3D6[i])
@@ -3154,4 +3217,24 @@ ctVideoMode(vgaBitsPerPixel, weightGreen, displaySize)
     }
 
     return videoMode;
+}
+
+void ctSetupIO(IOBase)
+unsigned int IOBase;    
+{
+#if NOTYET
+  DR(0x0) = IOBase + 0;
+  DR(0x1) = IOBase + 0;
+  DR(0x2) = IOBase + 0;
+  DR(0x3) = IOBase + 0;
+  DR(0x4) = IOBase + 0;
+  DR(0x5) = IOBase + 0;
+  DR(0x6) = IOBase + 0;
+  DR(0x7) = IOBase + 0;
+  DR(0x8) = IOBase + 0;
+  DR(0x9) = IOBase + 0;
+  DR(0xA) = IOBase + 0;
+  DR(0xB) = IOBase + 0;
+  DR(0xC) = IOBase + 0;
+#endif  
 }

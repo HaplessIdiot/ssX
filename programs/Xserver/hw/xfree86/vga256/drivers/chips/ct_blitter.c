@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_blitter.c,v 3.0 1996/08/11 13:02:42 dawes Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -245,8 +245,8 @@ _ctcfbBLT8x8PatternFill(destaddr, w, h, pattern, yrot, patternpitch,
 	curreg = inb(0x3D7);
 	outb(0x3D7, curreg & 0xF7);
     } else {
-	curreg = inl(0xA3D0);
-	outw(0xA3D0, curreg & 0xFFF7);
+	curreg = inl(DR(0x8));
+	outw(DR(0x8), curreg & 0xFFF7);
     }
     if (patternpitch == 8)
 	memcpy((unsigned char *)vgaLinearBase + ctBLTPatternAddress,
@@ -268,7 +268,7 @@ _ctcfbBLT8x8PatternFill(destaddr, w, h, pattern, yrot, patternpitch,
 	outb(0x3D7, curreg);
     } else {
 	ctBLTWAIT;
-	outw(0xA3D0, curreg);
+	outw(DR(0x8), curreg);
     }
 }
 
@@ -313,8 +313,8 @@ _ctcfbBLT16x16PatternFill(destaddr, x, w, h, pattern, yrot, patternpitch,
 	curreg = inb(0x3D7);
 	outb(0x3D7, curreg & 0xF7);
     } else {
-	curreg = inl(0xA3D0);
-	outw(0xA3D0, curreg & 0xFFF7);
+	curreg = inl(DR(0x8));
+	outw(DR(0x8), curreg & 0xFFF7);
     }
 
     if (vgaBitsPerPixel == 8) {
@@ -515,7 +515,7 @@ _ctcfbBLT16x16PatternFill(destaddr, x, w, h, pattern, yrot, patternpitch,
 	outb(0x3D6, 0xA0);
 	outb(0x3D7, curreg);
     } else {
-	outw(0xA3D0, curreg);
+	outw(DR(0x8), curreg);
     }
 }
 
@@ -570,8 +570,8 @@ _ctcfbBLT32x32PatternFill(destaddr, x, w, h, pattern, yrot, patternpitch,
 	curreg = inb(0x3D7);
 	outb(0x3D7, curreg & 0xF7);
     } else {
-	curreg = inl(0xA3D0);
-	outw(0xA3D0, curreg & 0xFFF7);
+	curreg = inl(DR(0x8));
+	outw(DR(0x8), curreg & 0xFFF7);
     }
 
     ctSETPITCH(8, destpitch * 4);      /* Four-way interleave */
@@ -734,6 +734,6 @@ _ctcfbBLT32x32PatternFill(destaddr, x, w, h, pattern, yrot, patternpitch,
 	ctBLTWAIT;
 	outb(0x3D6, 0x40);
 	outb(0x3D7, bltreg);
-	outw(0xA3D0, curreg);
+	outw(DR(0x8), curreg);
     }
 }

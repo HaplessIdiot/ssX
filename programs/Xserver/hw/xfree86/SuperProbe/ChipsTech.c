@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ChipsTech.c,v 3.6 1996/02/04 08:56:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ChipsTech.c,v 3.7 1996/08/11 12:37:14 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -104,6 +104,8 @@ int *Chipset;
 				*Chipset = CHIP_CTF65540;
 				break;
 			case 0x8:
+			case 0x9:
+			case 0xa:
 				*Chipset = CHIP_CTF65545;
 				break;
 			case 0xb:
@@ -217,6 +219,22 @@ int Chipset;
 			break;
 		case 0x03:
 			Mem = 1024;
+			break;
+		}
+		break;
+	case CHIP_CTF65550:
+	case CHIP_CTF65554:
+		switch ((rdinx(0x3D6, 0x43) & 0x06) >> 1)
+		{
+		case 0x00:
+			Mem = 1024;
+			break;
+		case 0x01:
+			Mem = 2048;
+			break;
+		case 0x03:
+		case 0x04:
+			Mem = 4096;
 			break;
 		}
 		break;

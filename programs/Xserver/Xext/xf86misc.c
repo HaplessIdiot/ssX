@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.16 1996/08/13 11:27:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.17 1996/08/20 12:25:11 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -396,8 +396,8 @@ ProcXF86MiscSetMouseSettings(client)
         xf86Info.mouseDev->sampleRate = samplerate;
 
 	xf86Info.pMouse->public.on = FALSE;
-	xf86MouseInit(xf86Info.mouseDev);
 	xf86AllowMouseOpenFail = TRUE;
+	xf86MouseInit(xf86Info.mouseDev);
         (xf86Info.mouseDev->mseProc)(xf86Info.pMouse, DEVICE_ON);
     }
 
