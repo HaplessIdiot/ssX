@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cparea.c,v 3.6 1997/10/25 13:51:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cparea.c,v 3.7 1997/11/08 16:24:33 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -480,6 +480,7 @@ xf86DoImageWrite(pSrc, pDst, alu, prgnDst, pptSrc, planemask, bitPlane)
     int Bpp = xf86bpp >> 3; 
     BoxPtr pbox = REGION_RECTS(prgnDst);
     int nbox = REGION_NUM_RECTS(prgnDst);
+    Bool be_careful;
 
     cfbGetByteWidthAndPointer(pSrc, srcwidth, psrcBase);
 
@@ -492,9 +493,11 @@ xf86DoImageWrite(pSrc, pDst, alu, prgnDst, pptSrc, planemask, bitPlane)
 
         srcPntr = psrcBase + (pptSrc->y * srcwidth) + (pptSrc->x * Bpp);
 
+	be_careful = FALSE;
 	if((skipleft = (int)srcPntr & 0x03)) {
 	    if(!(xf86AccelInfoRec.ImageWriteFlags & LEFT_EDGE_CLIPPING)) {
 		skipleft = 0;
+		be_careful = TRUE;
 		goto BAD_ALIGNMENT;
 	    }
 
@@ -506,6 +509,7 @@ xf86DoImageWrite(pSrc, pDst, alu, prgnDst, pptSrc, planemask, bitPlane)
 	    if((x < skipleft) && !(xf86AccelInfoRec.ImageWriteFlags &
 				 LEFT_EDGE_CLIPPING_NEGATIVE_X)) {
 		skipleft = 0;
+		be_careful = TRUE;
 		goto BAD_ALIGNMENT;
 	    }
 	    x -= skipleft;	     
@@ -532,6 +536,14 @@ BAD_ALIGNMENT:
 
 	xf86AccelInfoRec.SubsequentImageWrite(x,pbox->y1,w,h,skipleft);
 
+	/* This sucks.  In cases where we have bad alignment due to
+	   not being able to clip, we have to be careful about reading
+	   past the end of the source on the last dword */
+  	if(be_careful) {
+	    if((pptSrc->x*Bpp + (dwords << 2)) > srcwidth) h--;
+	    else be_careful = FALSE;
+	}
+
 	if(dwords <= xf86AccelInfoRec.ImageWriteRange) {
            if(srcwidth == (dwords << 2)) {
 	   	int decrement = xf86AccelInfoRec.ImageWriteRange/dwords;
@@ -545,6 +557,7 @@ BAD_ALIGNMENT:
 	   	if(h) {
 	     	    MoveDWORDS(xf86AccelInfoRec.ImageWriteBase,
 	 		(CARD32*)srcPntr, dwords * h);
+		    if(be_careful) srcPntr += (srcwidth * h);
 	   	}
 	    } else {
     	    	while(h--) {
@@ -553,11 +566,35 @@ BAD_ALIGNMENT:
 	   	    srcPntr += srcwidth;
      	    	}
 	    }
+
+       	    if(be_careful) {
+		int shift = ((int)srcPntr & 0x03) << 3;
+		if(--dwords)
+		    MoveDWORDS(xf86AccelInfoRec.ImageWriteBase,
+					(CARD32*)srcPntr, dwords);
+	    	srcPntr = 
+		   (unsigned char*)((int)(srcPntr + (dwords << 2)) & ~0x03);
+     
+		((CARD32*)xf86AccelInfoRec.ImageWriteBase)[dwords] = 
+		    *((CARD32*)srcPntr) >> shift;
+	    }
 	} else {
     	    while(h--) {
 	   	MoveDWORDS_FixedBase(xf86AccelInfoRec.ImageWriteBase, 
 			(CARD32*)srcPntr, dwords);
 	   	srcPntr += srcwidth;
+	    }
+
+       	    if(be_careful) {
+		int shift = ((int)srcPntr & 0x03) << 3;
+		if(--dwords)
+		    MoveDWORDS_FixedBase(xf86AccelInfoRec.ImageWriteBase,
+					(CARD32*)srcPntr, dwords);
+	    	srcPntr = 
+		   (unsigned char*)((int)(srcPntr + (dwords << 2)) & ~0x03);
+     
+		*((CARD32*)xf86AccelInfoRec.ImageWriteBase) = 
+		    *((CARD32*)srcPntr) >> shift;
 	    }
 	}
 

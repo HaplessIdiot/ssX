@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.14 1997/10/13 17:16:41 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.15 1997/12/05 22:01:42 hohndel Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -576,14 +576,18 @@ MGATi3026SetMCLK( f_out )
 	      ErrorF( "warning: 2164W memory refresh disabled!\n");
 #endif
 	  } /* MGAchipset choice */
-	
-	pciWriteLong( MGAPciTag, PCI_OPTION_REG, ( rfhcnt << 16 ) |
-		( pciReadLong( MGAPciTag, PCI_OPTION_REG ) & ~0xf0000 ));
 
 #ifdef DEBUG
 	ErrorF( "rfhcnt=%d\n", rfhcnt );
-#endif
+#endif	
 
+	rfhcnt <<= 16;
+
+    	if(OFLG_ISSET(OPTION_NO_PCI_RETRY, &vga256InfoRec.options))
+	   rfhcnt |= (1 << 29);
+
+ 	pciWriteLong( MGAPciTag, PCI_OPTION_REG, rfhcnt |
+		( pciReadLong( MGAPciTag, PCI_OPTION_REG ) & ~0x200f0000 ));
 
 	/* Output MCLK PLL on MCLK pin */
 	outTi3026( TVP3026_MCLK_CTL, 0, ( mclk_ctl & 0xe7 ) | 0x10 );
@@ -1094,10 +1098,7 @@ MGA3026LoadCursorImage(src, xorigin, yorigin)
 {
     register int i;
     register unsigned char *mask = src + 1;
-   
-    /* Disable cursor */
-    outTi3026(TVP3026_CURSOR_CTL, 0xfc, 0x00);
-    
+       
     outTi3026(TVP3026_CURSOR_CTL, 0xf3, 0x00); /* reset A9,A8 */
     /* reset cursor RAM load address A7..A0 */
     outTi3026dreg(TVP3026_WADR_PAL, 0x00); 
@@ -1106,9 +1107,6 @@ MGA3026LoadCursorImage(src, xorigin, yorigin)
         outTi3026dreg(TVP3026_CUR_RAM, *mask);    
     for (i = 0; i < 512; i++, src+=2) 
         outTi3026dreg(TVP3026_CUR_RAM, *src);   
- 
-    /* Enable cursor - X11 mode */
-    outTi3026(TVP3026_CURSOR_CTL, 0x6c, 0x13);
 }
 
 static void 

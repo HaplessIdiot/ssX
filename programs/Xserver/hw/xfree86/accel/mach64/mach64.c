@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.85 1997/10/25 13:50:10 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.86 1997/12/20 14:20:54 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996,1997 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -1215,6 +1215,9 @@ mach64Probe()
 	break;
     }
 
+    if (mach64InfoRec.dacSpeeds[0] > 0)
+	mach64InfoRec.maxClock = mach64InfoRec.dacSpeeds[0];
+
     OFLG_ZERO(&validOptions);
     OFLG_SET(OPTION_CLKDIV2, &validOptions);
     OFLG_SET(OPTION_HW_CURSOR, &validOptions);
@@ -1705,6 +1708,11 @@ mach64Probe()
 		   mach64InfoRec.name,
 		   mach64RamdacTable[i].name);
 	}
+	ErrorF("%s %s: Ramdac speed: %d MHz\n",
+	       OFLG_ISSET(XCONFIG_DACSPEED, &mach64InfoRec.xconfigFlag) ?
+	       XCONFIG_GIVEN : XCONFIG_PROBED,
+	       mach64InfoRec.name,
+	       mach64InfoRec.maxClock / 1000);
     }
 
     mach64DAC8Bit = ((!OFLG_ISSET(OPTION_DAC_6_BIT, &mach64InfoRec.options) &&

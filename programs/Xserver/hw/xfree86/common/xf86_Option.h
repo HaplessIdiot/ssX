@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.79 1997/10/13 17:16:38 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.80 1997/11/01 15:04:38 hohndel Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -156,8 +156,9 @@ typedef struct {
 #define OPTION_SUSPEND_HACK	135 /* (CT) Use different suspend/resume scheme */
 #define OPTION_18_BIT_BUS	136 /* (CT) Use 18bit TFT bus for 24bpp mode */
 #define OPTION_PCI_RETRY	137 /* Use PCI-retry instead of busy-waiting */
-#define OPTION_NO_PCI_DISC	138 /* Disable PCI disconnect (S3) */
-#define OPTION_NO_SPLIT_XFER	139 /* Disable split VRAM transfers to avoid pixel wrapping (S3) */
+#define OPTION_NO_PCI_RETRY	138 /* Disable PCI-retry */
+#define OPTION_NO_PCI_DISC	139 /* Disable PCI disconnect (S3) */
+#define OPTION_NO_SPLIT_XFER	140 /* Disable split VRAM transfers to avoid pixel wrapping (S3) */
 
 /* Debugging options */
 #define OPTION_SHOWCACHE	150 /* Allow cache to be seen (S3) */
@@ -382,6 +383,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "suspend_hack",	OPTION_SUSPEND_HACK },
   { "use_18bit_bus",	OPTION_18_BIT_BUS },
   { "pci_retry",	OPTION_PCI_RETRY },
+  { "no_pci_retry",	OPTION_NO_PCI_RETRY },
   { "no_pci_disconnect",	OPTION_NO_PCI_DISC },
   { "no_split_xfer",	OPTION_NO_SPLIT_XFER },
 

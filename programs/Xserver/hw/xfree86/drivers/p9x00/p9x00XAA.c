@@ -19,7 +19,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
  * SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/p9x00/p9x00XAA.c,v 1.1 1998/01/11 03:36:48 dawes Exp $ */
 
 #include "vga256.h"
 #include "xf86.h"
@@ -32,7 +32,7 @@
 
 extern int p9x00type;
 extern type_p9x00_registers p9x00regs;
-extern ScrnInfoRec p9x00InfoRec;
+extern ScrnInfoRec P9X00;
 
 /*extern int *p9x00raster;
  */
@@ -95,7 +95,7 @@ void p9x00AccelInit() {
      * field itself, so this line can be omitted when using the SVGA
      * server.
      */
-    xf86AccelInfoRec.ServerInfoRec = &p9x00InfoRec;
+    xf86AccelInfoRec.ServerInfoRec = &P9X00;
 
     /*
      * Finally, we set up the video memory space available to the pixmap

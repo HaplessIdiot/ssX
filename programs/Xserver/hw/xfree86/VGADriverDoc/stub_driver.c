@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.21 1997/05/27 06:30:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.22 1997/08/26 10:00:52 hohndel Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
@@ -233,9 +233,29 @@ vgaVideoChipRec STUB = {
 	 */
 	0,
 	/*
-	 * This is TRUE if the driver has support for 16bpp for the detected
+	 * This is TRUE if the driver has support for 1bpp for the detected
 	 * configuration. It must be set in the Probe function.
 	 * It most cases it should be FALSE.
+	 */
+	FALSE,
+	/*
+	 * This is TRUE if the driver has support for 4bpp for the detected
+	 * configuration.
+	 */
+	FALSE,
+	/*
+	 * This is TRUE if the driver has support for 8bpp for the detected
+	 * configuration.
+	 */
+	FALSE,
+	/*
+	 * This is TRUE if the driver has support for 15bpp for the detected
+	 * configuration.
+	 */
+	FALSE,
+	/*
+	 * This is TRUE if the driver has support for 16bpp for the detected
+	 * configuration.
 	 */
 	FALSE,
 	/*
@@ -250,7 +270,7 @@ vgaVideoChipRec STUB = {
 	FALSE,
 	/*
 	 * This is a pointer to a list of builtin driver modes.
-	 * This is rarely used, and in must cases, set it to NULL
+	 * This is rarely used, and in most cases, set it to NULL
 	 */
 	NULL,
 	/*

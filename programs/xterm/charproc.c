@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/196 1996/12/03 16:52:46 swick $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.56 1997/12/28 21:28:39 hohndel Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.57 1998/01/11 03:48:35 dawes Exp $
  */
 
 /*
@@ -261,6 +261,9 @@ static void reset_SGR_Foreground PROTO((void));
 #define XtNcolorAttrMode "colorAttrMode"
 #define XtNboldColors "boldColors"
 #define XtNdynamicColors "dynamicColors"
+#if OPT_HIGHLIGHT_COLOR
+#define XtNhighlightColor "highlightColor"
+#endif /* OPT_HIGHLIGHT_COLOR */
 #define XtNunderLine "underLine"
 #define XtNdecTerminalID "decTerminalID"
 
@@ -776,6 +779,11 @@ static XtResource resources[] = {
 {XtNdynamicColors, XtCDynamicColors, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, misc.dynamicColors),
 	XtRBoolean, (XtPointer) &defaultTRUE},
+#if OPT_HIGHLIGHT_COLOR
+{XtNhighlightColor, XtCForeground, XtRPixel, sizeof(Pixel),
+	XtOffsetOf(XtermWidgetRec, screen.highlightcolor),
+	XtRString, "XtDefaultForeground"},
+#endif /* OPT_HIGHLIGHT_COLOR */
 {XtNunderLine, XtCUnderLine, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, screen.underline),
 	XtRBoolean, (XtPointer) &defaultTRUE},
@@ -2046,13 +2054,13 @@ static void VTparse()
 
 		 case CASE_RIS:
 			/* RIS */
-			VTReset(TRUE);
+			VTReset(TRUE, TRUE);
 			parsestate = groundtable;
 			break;
 
 		 case CASE_DECSTR:
 			/* DECSTR */
-			VTReset(FALSE);
+			VTReset(FALSE, FALSE);
 			parsestate = groundtable;
 			break;
 
@@ -3695,6 +3703,10 @@ static void VTInitialize (wrequest, wnew, args, num_args)
    new->sgr_foreground = -1;
 #endif /* OPT_ISO_COLORS */
 
+#if OPT_HIGHLIGHT_COLOR
+   new->screen.highlightcolor = request->screen.highlightcolor;
+#endif
+
 #if OPT_DEC_CHRSET
    new->num_ptrs = 5;
 #endif
@@ -4409,12 +4421,20 @@ BlinkCursor(closure, id)	/* XtTimerCallbackProc */
  *
  *	+ autowrap mode should be reset (instead it's reset to the resource
  *	  default).
+ *	+ the popup menu offers a choice of resetting the savedLines, or not.
+ *	  (but the control sequence does this anyway).
  */
 void
-VTReset(full)
+VTReset(full, saved)
     Boolean full;
+    Boolean saved;
 {
 	register TScreen *screen = &term->screen;
+
+	if (saved) {
+		screen->savedlines = 0;
+		ScrollBarDrawThumb(screen->scrollWidget);
+	}
 
 	/* make cursor visible */
 	screen->cursor_set = ON;
@@ -4443,6 +4463,7 @@ VTReset(full)
 		update_appkeypad();
 		update_decbkm();
 		show_8bit_control(False);
+		reset_decudk();
 
 		FromAlternate(screen);
 		ClearScreen(screen);

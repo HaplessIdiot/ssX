@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86wrapper.c,v 3.8 1997/05/03 09:19:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86wrapper.c,v 3.9 1997/11/22 00:00:20 hohndel Exp $ */
 
 
 #include "gcstruct.h"
@@ -286,7 +286,10 @@ xf86PutImageWrapper(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
 {
     SYNC_CHECK;     
 
-    cfbPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage);
+    if (pGC->alu == GXcopy)
+	cfbPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage);
+    else
+	miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage);
 }
 
 

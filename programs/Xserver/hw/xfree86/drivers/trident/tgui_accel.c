@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_accel.c,v 1.11 1997/10/13 17:16:43 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_accel.c,v 1.12 1997/11/08 16:24:28 hohndel Exp $ */
 
 /*
  * Copyright 1996 by Alan Hourihane, Wigan, England.
@@ -95,6 +95,7 @@ void TGUISetupForImageWrite();
 void TGUISubsequentImageWrite();
 
 #define REPLICATE(x)  				\
+	x = x & ((1 << vgaBitsPerPixel) - 1);	\
 	if (vgaBitsPerPixel < 32) {		\
 		x |= x << 16;			\
 		if (vgaBitsPerPixel < 16)	\
@@ -106,9 +107,8 @@ void TGUISubsequentImageWrite();
 	       (1 << vgaBitsPerPixel)-1		
 	
 
-#define HAVE_CLIPPING (IsTGUI9685 || IsTGUI9682 || IsTGUI9680 || \
-		       IsTGUI9660 || IsAdvCyber)
-#define HAVE_TRANSPARENCY (IsTGUI9440 || IsTGUI9682 || IsTGUI9685 || IsAdvCyber)
+#define HAVE_CLIPPING (IsTGUI9685 || IsTGUI9682 || IsTGUI9680 || IsTGUI9660 || IsAdvCyber)
+#define HAVE_TRANSPARENCY (IsTGUI9440 || IsTGUI9660 || IsTGUI9680 || IsTGUI9682 || IsTGUI9685 || IsAdvCyber)
 #define HAVE_DASHEDLINES (IsTGUI9685)
 
 /*
@@ -318,7 +318,7 @@ transparency_color)
 
     if (xdir < 0) direction |= XNEG;
     if (ydir < 0) direction |= YNEG;
-    if ((HAVE_TRANSPARENCY) && (transparency_color != -1)) {
+    if (transparency_color != -1) {
 	direction |= TRANS_ENABLE;
 	REPLICATE(transparency_color);
 	TGUI_BCOLOUR(transparency_color);
@@ -381,7 +381,7 @@ void TGUISetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
 	REPLICATE(fg);
 
 	TGUI_FCOLOUR(fg);
-	if ((HAVE_TRANSPARENCY) && (bg == -1)) {
+	if (bg == -1) {
 		drawflag |= TRANS_ENABLE;
 		TGUI_BCOLOUR(~fg);
 	} else {
@@ -407,7 +407,7 @@ transparency_color)
     int transparency_color;
 {
 	int direction = 0;
-    	if ((HAVE_TRANSPARENCY) && (transparency_color != -1)) {
+    	if (transparency_color != -1) {
 		direction |= TRANS_ENABLE;
 		REPLICATE(transparency_color);
 		TGUI_BCOLOUR(transparency_color);
@@ -437,7 +437,7 @@ void TGUISetupForScreenToScreenColorExpand(bg, fg, rop, planemask)
 	REPLICATE(fg);
 
 	TGUI_FCOLOUR(fg);
-	if ((HAVE_TRANSPARENCY) && (bg == -1)) {
+	if (bg == -1) {
 		drawflag |= TRANS_ENABLE;
 		TGUI_BCOLOUR(~fg);
 	} else {
@@ -462,7 +462,7 @@ void TGUISetupForImageWrite(rop, planemask, transparency_color)
  	unsigned planemask;
 {
 	int direction = 0;
-    	if ((HAVE_TRANSPARENCY) && (transparency_color != -1)) {
+    	if (transparency_color != -1) {
 		direction |= TRANS_ENABLE;
 		REPLICATE(transparency_color);
 		TGUI_BCOLOUR(transparency_color);
@@ -486,7 +486,7 @@ void TGUISetupForDashedLine(fg, bg, rop, planemask, size)
 	REPLICATE(fg);
 
 	TGUI_FPATCOL(fg);
-	if ((HAVE_TRANSPARENCY) && (bg == -1)) {
+	if (bg == -1) {
 		dashdrawflag |= TRANS_ENABLE;
 		TGUI_BPATCOL(~fg);
 	} else {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac1064.c,v 1.9 1997/10/13 17:16:41 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac1064.c,v 1.10 1997/10/14 04:51:09 hohndel Exp $ */
 
 
 /*
@@ -607,8 +607,14 @@ MGA1064SGSetMCLK( f_out )
 	rfhcnt = ( 332.0 * f_pll / 1280000.0 );
 	if ( rfhcnt > 15 )
 		rfhcnt = 0;
-	pciWriteLong( MGAPciTag, PCI_OPTION_REG, ( rfhcnt << 16 ) |
-		( pciReadLong( MGAPciTag, PCI_OPTION_REG ) & ~0xf0000 ));
+
+	rfhcnt <<= 16;
+
+    	if(OFLG_ISSET(OPTION_NO_PCI_RETRY, &vga256InfoRec.options))
+	   rfhcnt |= (1 << 29);
+
+ 	pciWriteLong( MGAPciTag, PCI_OPTION_REG, rfhcnt |
+		( pciReadLong( MGAPciTag, PCI_OPTION_REG ) & ~0x200f0000 ));
 
 #ifdef DEBUG
 	ErrorF( "MGA1064SGSetMCLK: syspll_m=%x syspll_n=%x syspll_p=%x, option_reg=%x\n"

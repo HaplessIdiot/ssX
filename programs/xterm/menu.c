@@ -1,5 +1,5 @@
 /* $XConsortium: menu.c /main/66 1996/12/01 23:46:59 swick $ */
-/* $XFree86: xc/programs/xterm/menu.c,v 3.14 1997/10/25 13:51:21 hohndel Exp $ */
+/* $XFree86: xc/programs/xterm/menu.c,v 3.15 1997/12/28 21:28:42 hohndel Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -826,7 +826,7 @@ static void do_softreset (gw, closure, data)
     Widget gw GCC_UNUSED;
     XtPointer closure GCC_UNUSED, data GCC_UNUSED;
 {
-    VTReset (FALSE);
+    VTReset (FALSE, FALSE);
 }
 
 
@@ -834,7 +834,7 @@ static void do_hardreset (gw, closure, data)
     Widget gw GCC_UNUSED;
     XtPointer closure GCC_UNUSED, data GCC_UNUSED;
 {
-    VTReset (TRUE);
+    VTReset (TRUE, FALSE);
 }
 
 
@@ -842,11 +842,7 @@ static void do_clearsavedlines (gw, closure, data)
     Widget gw GCC_UNUSED;
     XtPointer closure GCC_UNUSED, data GCC_UNUSED;
 {
-    register TScreen *screen = &term->screen;
-
-    screen->savedlines = 0;
-    ScrollBarDrawThumb(screen->scrollWidget);
-    VTReset (TRUE); 
+    VTReset (TRUE, TRUE); 
 }
 
 

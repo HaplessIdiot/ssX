@@ -1,3 +1,31 @@
+XFree86 3.9Ad (24 January 1998)
+1581. Fix 9397 detection in Trident driver (#1376, Alan Hourihane).
+1580. Add support for the DacSpeed entry to the Mach64 server (#1375,
+      Kevin Martin).
+1579. Fix 16bpp for the Permedia 2 (#1373, Alan Hourihane).
+1578. Fix DPMS for Trident cards (#1372, Alan Hourihane).
+1577. Add Option "no_pci_retry" to option code and the MGA driver (#1370,1371, 
+      Mark Vojkovich).
+1576. Add back CyberCont that was removed from Trident driver in 3.9Ac by
+      mistake (#1369, Alan Hourihane).
+1575. Fix ImageWrite code to not read beyond the end of the source in cases
+      of bad alignment (#1368, Mark Vojkovich).
+1574. xterm updates (#1366,1378 Thomas Dickey) including:
+      - change the terminfo entry so that rs1 does a hard reset
+      - modify treatment of hard reset by the xterm program to reset the saved 
+        lines
+      - correct hard reset by also resetting user-defined keys.
+      - change the way highlihting is implemented
+1573. Fix PutImage to work with Rops other than GXcopy (#1364, Alan Hourihane).
+1572. Fix clipping in 16bpp on tgui chipsets, fix 32bpp and add transparency
+      (#1345,1346,1349 Alan Hourihane).
+1571. Some updates to stub driver to reflect current layout (#1343,
+      Dejan Ilic).
+1570. Change xdm config to explicitly specify the VT used on OpenBSD (#1337,
+      Matthieu Herrb).
+1569. Build fix for P9x00 driver (#1336,1344 Takaaki Nomura).
+1568. Resync xaa/Imakefile for PC98 (#1335, Takaaki Nomura).
+
 XFree86 3.9Ac (11 January 1998)
 1567. Fix some VSW5 failures in libXt (#1333, Kaleb Keithley).
 1566. xterm updates (#1332, Thomas Dickey) including:
@@ -5879,4 +5907,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.563 1998/01/01 20:35:21 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.564 1998/01/11 03:48:20 dawes Exp $
