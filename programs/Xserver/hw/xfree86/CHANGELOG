@@ -1,4 +1,15 @@
 XFree86 4.4.99.3 (xx March 2004)
+  56. Via driver updates:
+      - Workaround for not properly detected memory allocation failure
+        of the drm module.
+      - In case of drm memory allocation failure, added a fallback to
+        linear allocation in the pixmap cache when XFREE86_44 is set.
+      - Increased the pixmap cache size to the hardware blitting limit
+        if XFREE86_44 is set.
+      - Restructuring and cleanups in via_accel.c (Removed unecessary
+        comments and moved ViaInitLinear to via_memory.c)
+      - Fixed some warnings about unresolved drm symbols.
+      (Bugzilla #1320, Thomas Hellström).
   55. Fixes and updates for XKB keyboard maps:
       - Add nodeadkeys variant to gb keymap (Philip Clayton).
       - Rename microsoftprose keyboard model to microsoftprousb because it
@@ -18798,7 +18809,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3204 2004/04/03 10:54:02 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3205 2004/04/03 13:44:25 pascal Exp $
 
 
 
