@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_reg.h,v 1.3 2000/11/18 19:37:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_reg.h,v 1.4 2000/12/04 19:21:53 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -288,6 +288,8 @@
 #define R128_CONFIG_APER_SIZE             0x0108
 #define R128_CONFIG_BONDS                 0x00e8
 #define R128_CONFIG_CNTL                  0x00e0
+#       define APER_0_BIG_ENDIAN_16BPP_SWAP (1 << 0)
+#       define APER_0_BIG_ENDIAN_32BPP_SWAP (2 << 0)
 #define R128_CONFIG_MEMSIZE               0x00f8
 #define R128_CONFIG_MEMSIZE_EMBEDDED      0x0114
 #define R128_CONFIG_REG_1_BASE            0x010c
