@@ -1,10 +1,10 @@
-XCOMM $XFree86: xc/config/cf/cross.rules,v 1.5 2001/10/10 12:56:58 alanh Exp $
+XCOMM $XFree86: xc/config/cf/cross.rules,v 1.7 2002/04/04 14:05:33 eich Exp $
 
 #ifndef HostCcCmd
 #define HostCcCmd cc
 #endif
 
-#define HostLinkRule(target, flags, src, libs)  HostCcCmd -I$(BUILDINCDIR) -o target src libs
+#define HostLinkRule(target,flags,objs,libs)  HostCcCmd -I$(BUILDINCDIR) -o target flags objs libs
 
 /* ComplexHostProgramTarget - Compile a program such that we can run
  * it on this host, i.e., don't use the default cross compiler.
