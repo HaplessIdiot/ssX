@@ -1,4 +1,5 @@
 XFree86 3.9.17c (27 January 2000)
+3599. Force BIOS to be read from 0xc0000 for r128 driver (Kevin Martin).
 3598. Add a XXXAvailableOptions to DriverRec which allows passing available
       options back to the -configure option.
 3597. Avoid PCI-PCI bridges with an unexpected header type, which avoids
@@ -9369,4 +9370,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.962 2000/01/26 22:05:49 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.964 2000/01/27 01:27:45 alanh Exp $

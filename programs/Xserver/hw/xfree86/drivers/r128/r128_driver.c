@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.3 2000/01/17 20:53:30 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.5 2000/01/27 01:09:35 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -760,8 +760,14 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 
 				/* BIOS */
     from              = X_PROBED;
+#if 1
+    /* Force to read BIOS from C000:0 */
+    info->BIOSAddr    = 0;
+    info->BIOSFromPCI = FALSE;
+#else
     info->BIOSAddr    = info->PciInfo->biosBase & 0xfffe0000;
     info->BIOSFromPCI = TRUE;
+#endif
     if (!info->BIOSAddr) {
 	info->BIOSAddr    = 0x000c0000;
 	from              = X_DEFAULT;
