@@ -1,7 +1,7 @@
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.304tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.305tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -346,6 +346,9 @@ TINY_EXTENSIONS = $(TINY_STATICEXTS) $(TINY_LOADABLEEXTS)
        CFB24DIR = cfb24
        CFB32DIR = cfb32
          AFBDIR = afb
+       LAYERDIR = miext/layer
+    ROOTLESSDIR = miext/rootless
+      SHADOWDIR = miext/shadow
 
 XCOMM
 XCOMM This turns off the default rule for compiling .c files because
@@ -584,8 +587,6 @@ CFB8SUBDIR = cfb
 CFB16SUBDIR = cfb16
 CFB24SUBDIR = cfb24
 CFB32SUBDIR = cfb32
-SHADOWDIR = miext/shadow
-LAYERDIR = miext/layer
 #ifdef OS2Architecture
 SERVERDEFFILE = XFree86.def
 XNESTDEFFILE = Xnest.def
@@ -728,8 +729,6 @@ XCOMM
        TINYXOS = $(TINYXOSDIR)/LibraryTargetName(vxworks)
 #endif
 
-     SHADOWDIR = miext/shadow
-      LAYERDIR = miext/layer
       FBSUBDIR = fb
          TINYX = $(TINYXDIR)/LibraryTargetName(tinyx)
     TINYXFBDEV = $(TINYXDIR)/fbdev/LibraryTargetName(fbdev)
@@ -1011,8 +1010,6 @@ XCOMM
     PCMCIADIR = $(TINYXDIR)/pcmcia
        PCMCIA = $(PCMCIADIR)/LibraryTargetName(pcmcia)
 
-    SHADOWDIR = miext/shadow
-
       IPAQDIR = $(TINYXDIR)/ipaq
          IPAQ = $(IPAQDIR)/LibraryTargetName(ipaq)
 
@@ -1252,9 +1249,7 @@ XDMXDDXDIR = hw/dmx
 #else
 XDMXDDXDIR = hw
 #endif
-FBDIR = fb
 FBSUBDIR = fb
-SHADOWDIR = miext/shadow
 XDMXDIRS = $(STDDIRS) $(XDMXDDXDIR) $(SHADOWDIR) $(DEPDIRS) $(FBDIR)
 #if BuildGlxInDmx
 #if BuildXinerama
@@ -1294,10 +1289,7 @@ XCOMM
 XCOMM X Server for MS Windows
 XCOMM
 FBSUBDIR = fb
-SHADOWDIR = miext/shadow
-#if 0
-LAYERDIR = miext/layer
-#else
+#if 1
 LAYERDIR = 
 #endif
 XWINDDXDIR = hw/xwin
@@ -1359,8 +1351,6 @@ XCOMM
 XCOMM X Darwin server for Mac OS X / Darwin
 XCOMM
 FBSUBDIR = fb
-SHADOWDIR = miext/shadow
-ROOTLESSDIR = miext/rootless
 DARWINDDXDIR = hw/darwin
 DARWINDIRS = $(STDDIRS) $(FBDIR) $(SHADOWDIR) $(DARWINDDXDIR) $(DEPDIRS)
 DARWINOBJS = $(DARWINDDXDIR)/miinitext.o
