@@ -1,3 +1,19 @@
+XFree86 3.0F (20 September 1994)
+326. Fix problem building reconfig when BuildServersOnly is YES.
+325. Upates to README.FreeBSD (Rich Murphey).
+324. Fix P9000 problem starting at 16bpp (Erik Nygren).
+323. Fix AGX screen saver, and a flash that occurs when switching into
+     XGA mode (Henry Worth).
+322. Preliminary support for the ICS2595 clock chip (not enabled yet)
+     (Norbert Distler).
+321. Fix pixel shift problem with GXE64Pro at 8bpp and 16bpp (Robin Cutshaw).
+320. Change clock doubler transition to 80MHz for Ti3025 (Robin Cutshaw).
+319. Add README.Bsdi (Hans Nasten).
+318. Removed the need to specify the "elsa_w1000pro" and "elsa_w1000isa"
+     Options.
+317. Remove "stealth64" and "miro_crystal20sv" Options -- they are no longer
+     needed.
+
 XFree86 3.0Ec (19 September 1994)
 316. Fixes for Ti3025 support -- fixes problem with machine lockups, and
      adds preliminary 16bpp support (Robin Cutshaw).
