@@ -1,11 +1,11 @@
 /*
  * $XConsortium: charproc.c /main/196 1996/12/03 16:52:46 swick $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.94 1999/11/19 13:55:16 hohndel Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.95 1999/12/30 02:05:51 robin Exp $
  */
 
 /*
 
-Copyright 1999 by Thomas E. Dickey <dickey@clark.net>
+Copyright 1999-2000 by Thomas E. Dickey <dickey@clark.net>
 
                         All Rights Reserved
 
@@ -681,9 +681,9 @@ static XtResource resources[] = {
 	XtOffsetOf(XtermWidgetRec, screen.Acolors[COLOR_15]),
 	XtRString, DFT_COLOR("white")},
 #if OPT_256_COLORS
-# include "256colres.h"
+# include <256colres.h>
 #elif OPT_88_COLORS
-# include "88colres.h"
+# include <88colres.h>
 #endif
 {XtNcolorBD, XtCForeground, XtRPixel, sizeof(Pixel),
 	XtOffsetOf(XtermWidgetRec, screen.Acolors[COLOR_BD]),
@@ -5274,21 +5274,14 @@ static void HandleKeymapChange(
 
 /* ARGSUSED */
 static void HandleBell(
-	Widget w,
+	Widget w GCC_UNUSED,
 	XEvent *event GCC_UNUSED,
 	String *params,		/* [0] = volume */
 	Cardinal *param_count)	/* 0 or 1 */
 {
     int percent = (*param_count) ? atoi(params[0]) : 0;
 
-    TRACE(("BELL %d action\n", percent))
-
-#ifdef XKB
-    int which= XkbBI_TerminalBell;
-    XkbStdBell(XtDisplay(w),XtWindow(w),percent,which);
-#else
-    XBell( XtDisplay(w), percent );
-#endif
+    Bell(XkbBI_TerminalBell, percent);
 }
 
 

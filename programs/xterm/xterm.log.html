@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <!--
  *****************************************************************************
- * Copyright 1997,1998,1999 by Thomas E. Dickey (dickey@clark.net)           *
+ * Copyright 1997-2000 by Thomas E. Dickey (dickey@clark.net)                *
  * All Rights Reserved.                                                      *
  *                                                                           *
  * Permission to use, copy, modify, and distribute this software and its     *
@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.40 1999/11/19 13:55:24 hohndel Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.41 1999/12/30 02:06:00 robin Exp $
   -->
 <HTML>
 <HEAD>
@@ -29,7 +29,7 @@
 </HEAD>
 <BODY>
 <HR>
-Copyright 1997,1998,1999 by Thomas E. Dickey
+Copyright 1997-2000 by Thomas E. Dickey
 <HR>
 <H1>Contents</H1>
 This file contains a list of the changes that I have made for XFree86 xterm,
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_123">Patch #123 - 2000/1/22 - XFree86 3.9.17a</A>
 <LI><A HREF="#xterm_122">Patch #122 - 1999/12/28 - XFree86 3.9.16f</A>
 <LI><A HREF="#xterm_121">Patch #121 - 1999/11/14 - XFree86 3.9.16c</A>
 <LI><A HREF="#xterm_120">Patch #120 - 1999/10/28 - XFree86 3.9.16c</A>
@@ -165,6 +166,27 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_123">Patch #123 - 1999/1/22 - XFree86 3.9.17a</A></H1>
+<ul>
+	<li>add a note reserving OSC 51 for use in Emacs shell (request by
+	  Rob Myoff &lt;mayoff@dqd.com&gt;).
+
+	<li>correct a missing backslash in xterm-vt220 termcap.
+
+	<li>cleanup remaining quoted includes, preferring bracketed form.
+
+	<li>minor configure-script macro updates from tin and vile.
+
+	<li>add configure-script option for using utempter library, adapted
+	  from Redhat 6.1 patch for XFree86 3.3.5
+
+	<li>resync with XFree86 3.9.17a:
+	<ul>
+	  <li>correction to QNX support (Frank Guangxin Liu)
+	  <li>some cosmetic changes that did not correct any reported problems.
+	</ul>
+</ul>
 
 <H1><A NAME="xterm_122">Patch #122 - 1999/12/28 - XFree86 3.9.16f</A></H1>
 <ul>

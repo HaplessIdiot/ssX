@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/keysym2ucs.c,v 1.2 1999/06/20 08:41:45 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/keysym2ucs.c,v 1.3 1999/07/11 08:49:37 dawes Exp $ */
 /*
  * This module converts keysym values into the corresponding ISO 10646-1
  * (UCS, Unicode) values.
@@ -32,7 +32,7 @@
  * This software is in the public domain. Share and enjoy!
  */
 
-#include "keysym2ucs.h"
+#include <keysym2ucs.h>
 
 struct codepair {
   unsigned short keysym;
