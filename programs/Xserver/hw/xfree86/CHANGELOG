@@ -1,4 +1,5 @@
 XFree86 4.0.99.1 (?? February 2001)
+ 123. Make modeline2c.pl script case-insensitive (#4453, Mike Harris).
  122. Change ATI driver to detect panel dimensions of non-PC systems using an
       LT or LT Pro (Marc La France).
  121. Fix misdetection of sparse I/O PCI bases and handling of unassigned PCI
@@ -12398,4 +12399,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1571 2001/02/12 03:36:55 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1572 2001/02/12 03:53:06 tsi Exp $
