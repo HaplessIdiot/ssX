@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.1 2000/11/02 16:55:43 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markhom, Ontario
  *	      and VA Linux Systems, Inc., Sunnyvale, California.
@@ -2798,9 +2798,6 @@ void RADEONAdjustFrame(int scrnIndex, int x, int y, int flags)
     }
 
     Base &= ~7;			/* 3 lower bits are always 0 */
-
-    if (info->CurrentLayout.pixel_code == 24)
-	Base += 8 * (Base % 3); /* Must be multiple of 8 and 3 */
 
     OUTREG(RADEON_CRTC_OFFSET, Base);
 }

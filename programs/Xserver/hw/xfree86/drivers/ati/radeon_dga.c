@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dga.c,v 1.1 2000/11/02 16:55:42 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario
  *	      and VA Linux Systems, Inc., Sunnyvale, California.
@@ -222,19 +222,6 @@ Bool RADEONDGAInit(ScreenPtr pScreen)
 			       ((pScrn->depth != 16)
 				? 0 : pScrn->displayWidth),
 			       0xf800, 0x07e0, 0x001f, DirectColor);
-
-    /* 24 */
-    modes = RADEONSetupDGAMode(pScrn, modes, &num, 24, 24,
-			       (pScrn->bitsPerPixel == 24),
-			       ((pScrn->bitsPerPixel != 24)
-				? 0 : pScrn->displayWidth),
-			       0xff0000, 0x00ff00, 0x0000ff, TrueColor);
-
-    modes = RADEONSetupDGAMode(pScrn, modes, &num, 24, 24,
-			       (pScrn->bitsPerPixel == 24),
-			       ((pScrn->bitsPerPixel != 24)
-				? 0 : pScrn->displayWidth),
-			       0xff0000, 0x00ff00, 0x0000ff, DirectColor);
 
     /* 32 */
     modes = RADEONSetupDGAMode(pScrn, modes, &num, 32, 24,
