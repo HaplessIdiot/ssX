@@ -1,4 +1,5 @@
 XFree86 3.1.2Be (10 January 1996)
+204. Fix build with BuildServersOnly set to YES (Takefumi Tsukada).
 203. Major xterm cleanup (including prototyping), and fixes to the colour
      code (Thomas E. Dickey).
 202. PC98 EGC (16 colour) server added (X98 core team).
