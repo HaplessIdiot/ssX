@@ -51,7 +51,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.33 1997/11/16 06:42:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.34 1997/11/22 06:50:33 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -211,9 +211,16 @@ OsSignal(sig, handler)
  * server at a time.  This keeps the servers from stomping on each other
  * if the user forgets to give them different display numbers.
  */
-#define LOCK_PATH "/tmp/.X"
-#define LOCK_TMPPATH "/tmp/.tX"
+#ifndef __EMX__
+#define LOCK_DIR "/tmp"
+#define LOCK_TMP_PREFIX "/.tX"
+#define LOCK_PREFIX "/.X"
 #define LOCK_SUFFIX "-lock"
+#else
+#define LOCK_TMP_PREFIX "/xf86$"
+#define LOCK_PREFIX "/xf86_"
+#define LOCK_SUFFIX ".lck"
+#endif
 
 #ifdef _MINIX
 #include <limits.h>	/* For PATH_MAX */
@@ -239,6 +246,7 @@ OsSignal(sig, handler)
 #endif
 
 static Bool StillLocking = FALSE;
+static char LockFile[PATH_MAX];
 
 /*
  * LockServer --
@@ -250,24 +258,31 @@ void
 LockServer()
 {
 #ifndef AMOEBA
-  char tmp[PATH_MAX], lock[PATH_MAX], pid_str[12];
+  char tmp[PATH_MAX], pid_str[12];
   int lfd, i, haslock, l_pid, t;
+  char *tmppath = NULL;
+  int len;
 
   if (nolock) return;
   /*
    * Path names
    */
 #ifndef __EMX__
-  (void) sprintf(tmp, "%s%s%s", LOCK_TMPPATH, display, LOCK_SUFFIX);
-  (void) sprintf(lock, "%s%s%s", LOCK_PATH, display, LOCK_SUFFIX);
+  tmppath = LOCK_DIR;
 #else
   /* OS/2 uses TMP directory, must also prepare for 8.3 names */
-  { char *tmppath = getenv("TMP");
+  tmppath = getenv("TMP");
   if (!tmppath)
     FatalError("No TMP dir found\n");
-  (void) sprintf(tmp, "%s/xf86$%s.lck",tmppath, display);
-  (void) sprintf(lock, "%s/xf86_%s.lck",tmppath, display); }
 #endif
+
+  len = strlen(LOCK_PREFIX) > strlen(LOCK_TMP_PREFIX) ? strlen(LOCK_PREFIX) :
+						strlen(LOCK_TMP_PREFIX);
+  len += strlen(tmppath) + strlen(display) + strlen(LOCK_SUFFIX) + 1;
+  if (len > sizeof(LockFile))
+    FatalError("Display name `%s' is too long\n");
+  (void)sprintf(tmp, "%s" LOCK_TMP_PREFIX "%s" LOCK_SUFFIX, tmppath, display);
+  (void)sprintf(LockFile, "%s" LOCK_PREFIX "%s" LOCK_SUFFIX, tmppath, display);
 
   /*
    * Create a temporary file containing our PID.  Attempt three times
@@ -315,7 +330,7 @@ LockServer()
   i = 0;
   haslock = 0;
   while ((!haslock) && (i++ < 3)) {
-    haslock = (link(tmp,lock) == 0);
+    haslock = (link(tmp,LockFile) == 0);
     if (haslock) {
       /*
        * We're done.
@@ -326,17 +341,17 @@ LockServer()
       /*
        * Read the pid from the existing file
        */
-      lfd = open(lock, O_RDONLY);
+      lfd = open(LockFile, O_RDONLY);
       if (lfd < 0) {
         unlink(tmp);
-        FatalError("Can't read lock file %s\n", lock);
+        FatalError("Can't read lock file %s\n", LockFile);
       }
       pid_str[0] = '\0';
       if (read(lfd, pid_str, 11) != 11) {
         /*
          * Bogus lock file.
          */
-        unlink(lock);
+        unlink(LockFile);
         close(lfd);
         continue;
       }
@@ -353,7 +368,7 @@ LockServer()
         /*
          * Stale lock file.
          */
-        unlink(lock);
+        unlink(LockFile);
         continue;
       }
       else if (((t < 0) && (errno == EPERM)) || (t == 0)) {
@@ -363,42 +378,33 @@ LockServer()
         unlink(tmp);
 	FatalError("Server is already active for display %s\n%s %s\n%s\n",
 		   display, "\tIf this server is no longer running, remove",
-		   lock, "\tand start again.");
+		   LockFile, "\tand start again.");
       }
     }
   }
   unlink(tmp);
   if (!haslock)
-    FatalError("Could not create server lock file: %s\n", lock);
+    FatalError("Could not create server lock file: %s\n", LockFile);
   StillLocking = FALSE;
 #endif /* !AMOEBA */
 }
 
 /*
- * Unlock_Server --
+ * UnlockServer --
  *      Remove the server lock file.
  */
 void
 UnlockServer()
 {
 #ifndef AMOEBA
-  char buf[PATH_MAX];
-
   if (nolock) return;
 
   if (!StillLocking){
 
-#ifndef __EMX__
-  (void) sprintf(buf, "%s%s%s", LOCK_PATH, display, LOCK_SUFFIX);
-#else
-  /* OS/2 uses TMP directory, must also prepare for 8.3 names */
-   char *tmppath = getenv("TMP");
-  if (!tmppath)
-    FatalError("No TMP dir found\n");
-  (void) sprintf(buf, "%s/xf86_%s.lck",tmppath, display);
-  (void) chmod(buf,S_IREAD|S_IWRITE);
+#ifdef __EMX__
+  (void) chmod(LockFile,S_IREAD|S_IWRITE);
 #endif /* __EMX__ */
-  (void) unlink(buf);
+  (void) unlink(LockFile);
   }
 #endif
 

@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.21 1997/10/25 13:51:13 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.22 1997/12/14 02:55:40 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -171,6 +171,21 @@ SOFTWARE.
 #endif
 
 #endif /* WIN32 */
+
+#ifndef PATH_MAX
+#ifndef Lynx
+#include <sys/param.h>
+#else
+#include <param.h>
+#endif 
+#ifndef PATH_MAX
+#ifdef MAXPATHLEN
+#define PATH_MAX MAXPATHLEN
+#else
+#define PATH_MAX 1024
+#endif
+#endif
+#endif 
 
 #include "dixstruct.h"
 #include "osdep.h"
@@ -790,7 +805,8 @@ ResetHosts (display)
     register HOST	*host;
     char                lhostname[120], ohostname[120];
     char 		*hostname = ohostname;
-    char		fname[100];
+    char		fname[PATH_MAX + 1];
+    int			fnamelen;
     FILE		*fd;
     char		*ptr;
     int                 i, hostlen;
@@ -826,13 +842,21 @@ ResetHosts (display)
         FreeHost (host);
     }
 #ifndef __EMX__
-    strcpy (fname, "/etc/X");
-    strcat (fname, display);
-    strcat (fname, ".hosts");
+#define ETC_HOST_PREFIX "/etc/X"
+#define ETC_HOST_SUFFIX ".hosts"
 #else
-    sprintf (fname, "/XFree86/lib/X11/X%s.hosts",display);
+#define ETC_HOST_PREFIX "/XFree86/lib/X11/X"
+#define ETC_HOST_SUFFIX ".hosts"
+#endif /* __EMX__ */
+    fnamelen = strlen(ETC_HOST_PREFIX) + strlen(ETC_HOST_SUFFIX) +
+		strlen(display) + 1;
+    if (fnamelen > sizeof(fname))
+	FatalError("Display name `%s' is too long\n");
+    sprintf(fname, ETC_HOST_PREFIX "%s" ETC_HOST_SUFFIX, display);
+#ifdef __EMX__
     strcpy(fname, (char*)__XOS2RedirRoot(fname));
 #endif /* __EMX__ */
+
     if (fd = fopen (fname, "r")) 
     {
         while (fgets (ohostname, sizeof (ohostname), fd))

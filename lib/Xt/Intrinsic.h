@@ -1,5 +1,4 @@
-/* $XConsortium: Intrinsic.h /main/176 1996/08/31 06:51:04 kaleb $ */
-/* $XFree86: xc/lib/Xt/Intrinsic.h,v 3.1 1995/06/14 07:12:11 dawes Exp $ */
+/* $TOG: Intrinsic.h /main/177 1998/01/15 15:00:52 barstow $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -50,6 +49,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
+/* $XFree86: xc/lib/Xt/Intrinsic.h,v 3.2 1996/12/23 06:01:18 dawes Exp $ */
 
 #ifndef _XtIntrinsic_h
 #define _XtIntrinsic_h
@@ -1295,7 +1295,7 @@ extern void XtAppNextEvent(
 #define XtIMSignal		8
 #define XtIMAll (XtIMXEvent | XtIMTimer | XtIMAlternateInput | XtIMSignal)
 
-extern XtInputMask XtPending( /* obsolete */
+extern Boolean XtPending( /* obsolete */
 #if NeedFunctionPrototypes
     void
 #endif

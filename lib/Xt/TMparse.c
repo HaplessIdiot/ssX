@@ -1,4 +1,4 @@
-/* $TOG: TMparse.c /main/119 1997/05/15 17:31:29 kaleb $ */
+/* $TOG: TMparse.c /main/120 1998/01/16 17:26:57 kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/TMparse.c,v 3.0 1996/03/10 11:52:29 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/TMparse.c,v 3.1 1997/05/17 12:52:16 dawes Exp $ */
 
 /*
 
@@ -853,7 +853,7 @@ static KeySym StringToKeySym(str, error)
 #endif
 
     Syntax("Unknown keysym name: ", str);
-    *error = True;
+    *error = TRUE;
     return NoSymbol;
 }
 /* ARGSUSED */
@@ -931,8 +931,8 @@ static String ParseKeyAndModifiers(str, closure, event,error)
     str = ParseKeySym(str, closure, event,error);
     if ((unsigned long) closure == 0) {
 	Value metaMask; /* unused */
-	(void) _XtLookupModifier(QMeta, &event->event.lateModifiers, False,
-				 &metaMask, False);
+	(void) _XtLookupModifier(QMeta, &event->event.lateModifiers, FALSE,
+				 &metaMask, FALSE);
     } else {
 	event->event.modifiers |= (unsigned long) closure;
 	event->event.modifierMask |= (unsigned long) closure;
@@ -1162,7 +1162,7 @@ static String ParseQuotedStringEvent(str, event,error)
     if (*error) return PanicModeRecovery(str);
     event->event.eventCodeMask = ~0L;
     event->event.matchEvent = _XtMatchUsingStandardMods;
-    event->event.standard = True;
+    event->event.standard = TRUE;
 
     return str;
 }
@@ -1475,7 +1475,7 @@ static String ParseRepeat(str, reps, plus, error)
 	    *reps = StrToNum(repStr);
 	} else {
 	    Syntax("Repeat count too large.", "");
-	    *error = True;
+	    *error = TRUE;
 	    return str;
 	}
     }
@@ -1493,7 +1493,7 @@ static String ParseRepeat(str, reps, plus, error)
 	str++;
     else {
 	Syntax("Missing ')'.","");
-	*error = True;
+	*error = TRUE;
     }
 
     return str;
@@ -1552,7 +1552,7 @@ static String ParseEventSeq(str, eventSeqP, actionsP,error)
              else str++;
 	} else {
 	    int reps = 0;
-	    Boolean plus = False;
+	    Boolean plus = FALSE;
 
             event = XtNew(EventRec);
             event->event = nullEvent;
@@ -1807,24 +1807,24 @@ static void ShowProduction(currentProduction)
  * Parses one line of event bindings.
  ***********************************************************************/
 
-static String ParseTranslationTableProduction(parseTree, str)
+static String ParseTranslationTableProduction(parseTree, str, error)
     TMParseStateTree	 parseTree;
     register String str;
+    Boolean* error;
 {
     EventSeqPtr	eventSeq = NULL;
     ActionPtr	*actionsP;
-    Boolean error = FALSE;
     String	production = str;
 
-    str = ParseEventSeq(str, &eventSeq, &actionsP,&error);
-    if (error == TRUE) {
+    str = ParseEventSeq(str, &eventSeq, &actionsP,error);
+    if (*error == TRUE) {
 	ShowProduction(production);
         FreeEventSeq(eventSeq);
         return (str);
     }
     ScanWhitespace(str);
-    str = ParseActionSeq(parseTree, str, actionsP, &error);
-    if (error) {
+    str = ParseActionSeq(parseTree, str, actionsP, error);
+    if (*error == TRUE) {
 	ShowProduction(production);
         FreeEventSeq(eventSeq);
         return (str);
@@ -1833,79 +1833,6 @@ static String ParseTranslationTableProduction(parseTree, str)
     _XtAddEventSeqToStateTree(eventSeq, parseTree);
     FreeEventSeq(eventSeq);
     return (str);
-}
-
-
-/*ARGSUSED*/
-Boolean XtCvtStringToAcceleratorTable(dpy, args, num_args, from, to, closure)
-    Display*	dpy;
-    XrmValuePtr args;
-    Cardinal    *num_args;
-    XrmValuePtr from,to;
-    XtPointer	*closure;
-{
-    String str;
-
-    if (*num_args != 0)
-        XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
-	  "wrongParameters","cvtStringToAcceleratorTable",XtCXtToolkitError,
-          "String to AcceleratorTable conversion needs no extra arguments",
-	  (String *)NULL, (Cardinal *)NULL);
-     str = (String)(from->addr);
-     if (str == NULL)
-         return False;
-
-    if (to->addr != NULL) {
-	if (to->size < sizeof(XtAccelerators)) {
-	    to->size = sizeof(XtAccelerators);
-	    return False;
-	}
-	*(XtAccelerators*)to->addr = XtParseAcceleratorTable(str);
-    }
-    else {
-	static XtAccelerators staticStateTable;
-	staticStateTable = XtParseAcceleratorTable(str);
-	to->addr = (XPointer) &staticStateTable;
-	to->size = sizeof(XtAccelerators);
-    }
-    return True;
-}
-
-
-/*ARGSUSED*/
-Boolean
-XtCvtStringToTranslationTable(dpy, args, num_args, from, to, closure_ret)
-    Display	*dpy;
-    XrmValuePtr args;
-    Cardinal    *num_args;
-    XrmValuePtr from,to;
-    XtPointer	*closure_ret;
-{
-    String str;
-    
-    if (*num_args != 0)
-      XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
-	    "wrongParameters","cvtStringToTranslationTable",XtCXtToolkitError,
-	    "String to TranslationTable conversion needs no extra arguments",
-	    (String *)NULL, (Cardinal *)NULL);
-    str = (String)(from->addr);
-    if (str == NULL)
-      return False;
-
-    if (to->addr != NULL) {
-	if (to->size < sizeof(XtTranslations)) {
-	    to->size = sizeof(XtTranslations);
-	    return False;
-	}
-	*(XtTranslations*)to->addr = XtParseTranslationTable(str);
-    }
-    else {
-	static XtTranslations staticStateTable;
-	staticStateTable = XtParseTranslationTable(str);
-	to->addr = (XPointer) &staticStateTable;
-	to->size = sizeof(XtTranslations);
-    }
-    return True;
 }
 
 static String CheckForPoundSign(str, defaultOp, actualOpRtn)
@@ -1943,10 +1870,11 @@ static String CheckForPoundSign(str, defaultOp, actualOpRtn)
     return str;
 }
 
-static XtTranslations ParseTranslationTable(source, isAccelerator, defaultOp)
+static XtTranslations ParseTranslationTable(source, isAccelerator, defaultOp, error)
     String 	source;
     Boolean	isAccelerator;
     _XtTranslateOp defaultOp;
+    Boolean*	error;
 {
     XtTranslations		xlations;
     TMStateTree			stateTrees[8];
@@ -1963,12 +1891,12 @@ static XtTranslations ParseTranslationTable(source, isAccelerator, defaultOp)
     if (isAccelerator && actualOp == XtTableReplace)
 	actualOp = defaultOp;
 
-    parseTree->isSimple = True;
-    parseTree->mappingNotifyInterest = False;
+    parseTree->isSimple = TRUE;
+    parseTree->mappingNotifyInterest = FALSE;
     parseTree->isAccelerator = isAccelerator;
     parseTree->isStackBranchHeads =
       parseTree->isStackQuarks =
-	parseTree->isStackComplexBranchHeads = True;
+	parseTree->isStackComplexBranchHeads = TRUE;
 
     parseTree->numQuarks =
       parseTree->numBranchHeads =
@@ -1983,7 +1911,8 @@ static XtTranslations ParseTranslationTable(source, isAccelerator, defaultOp)
     parseTree->complexBranchHeadTbl = stackComplexBranchHeads;
 
     while (source != NULL && *source != '\0') {
-	source =  ParseTranslationTableProduction(parseTree, source);
+	source =  ParseTranslationTableProduction(parseTree, source, error);
+	if (*error == TRUE) break;
     }
     stateTrees[0] = _XtParseTreeToStateTree(parseTree);
 
@@ -2005,6 +1934,103 @@ static XtTranslations ParseTranslationTable(source, isAccelerator, defaultOp)
 
 /*** public procedures ***/
 
+/*ARGSUSED*/
+Boolean XtCvtStringToAcceleratorTable(dpy, args, num_args, from, to, closure)
+    Display*	dpy;
+    XrmValuePtr args;
+    Cardinal    *num_args;
+    XrmValuePtr from,to;
+    XtPointer	*closure;
+{
+    String str;
+    Boolean error = FALSE;
+
+    if (*num_args != 0)
+        XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+	  "wrongParameters","cvtStringToAcceleratorTable",XtCXtToolkitError,
+          "String to AcceleratorTable conversion needs no extra arguments",
+	  (String *)NULL, (Cardinal *)NULL);
+    str = (String)(from->addr);
+    if (str == NULL) {
+        XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+	  "badParameters","cvtStringToAcceleratorTable",XtCXtToolkitError,
+          "String to AcceleratorTable conversion needs string",
+	  (String *)NULL, (Cardinal *)NULL);
+	return FALSE;
+    }
+    if (to->addr != NULL) {
+	if (to->size < sizeof(XtAccelerators)) {
+	    to->size = sizeof(XtAccelerators);
+	    return FALSE;
+	}
+	*(XtAccelerators*)to->addr = 
+	    (XtAccelerators) ParseTranslationTable(str, TRUE, XtTableAugment, &error);
+    }
+    else {
+	static XtAccelerators staticStateTable;
+	staticStateTable = 
+	    (XtAccelerators) ParseTranslationTable(str, TRUE, XtTableAugment, &error);
+	to->addr = (XPointer) &staticStateTable;
+	to->size = sizeof(XtAccelerators);
+    }
+    if (error == TRUE) 
+        XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+	  "parseError","cvtStringToAcceleratorTable",XtCXtToolkitError,
+          "String to AcceleratorTable conversion encountered errors",
+	  (String *)NULL, (Cardinal *)NULL);
+    return (error != TRUE);
+}
+
+
+/*ARGSUSED*/
+Boolean
+XtCvtStringToTranslationTable(dpy, args, num_args, from, to, closure_ret)
+    Display	*dpy;
+    XrmValuePtr args;
+    Cardinal    *num_args;
+    XrmValuePtr from,to;
+    XtPointer	*closure_ret;
+{
+    String str;
+    Boolean error = FALSE;
+    
+    if (*num_args != 0)
+      XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+	    "wrongParameters","cvtStringToTranslationTable",XtCXtToolkitError,
+	    "String to TranslationTable conversion needs no extra arguments",
+	    (String *)NULL, (Cardinal *)NULL);
+    str = (String)(from->addr);
+    if (str == NULL) {
+        XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+	  "badParameters","cvtStringToTranslation",XtCXtToolkitError,
+          "String to TranslationTable conversion needs string",
+	  (String *)NULL, (Cardinal *)NULL);
+	return FALSE;
+    }
+    if (to->addr != NULL) {
+	if (to->size < sizeof(XtTranslations)) {
+	    to->size = sizeof(XtTranslations);
+	    return FALSE;
+	}
+	*(XtTranslations*)to->addr = 
+	    ParseTranslationTable(str, FALSE, XtTableReplace, &error);
+    }
+    else {
+	static XtTranslations staticStateTable;
+	staticStateTable = 
+	    ParseTranslationTable(str, FALSE, XtTableReplace, &error);
+	to->addr = (XPointer) &staticStateTable;
+	to->size = sizeof(XtTranslations);
+    }
+    if (error == TRUE) 
+        XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+	  "parseError","cvtStringToTranslationTable",XtCXtToolkitError,
+          "String to TranslationTable conversion encountered errors",
+	  (String *)NULL, (Cardinal *)NULL);
+    return (error != TRUE);
+}
+
+
 /*
  * Parses a user's or applications translation table
  */
@@ -2017,7 +2043,15 @@ XtAccelerators XtParseAcceleratorTable(source)
     String source;
 #endif
 {
-    return ((XtAccelerators)ParseTranslationTable(source, True, XtTableAugment));
+    Boolean error = FALSE;
+    XtAccelerators ret =
+	(XtAccelerators) ParseTranslationTable (source, TRUE, XtTableAugment, &error);
+    if (error == TRUE) 
+        XtWarningMsg ("parseError", "cvtStringToAcceleratorTable",
+	  XtCXtToolkitError,
+          "String to AcceleratorTable conversion encountered errors",
+	  (String *)NULL, (Cardinal *)NULL);
+    return ret;
 }
 
 #if NeedFunctionPrototypes
@@ -2029,7 +2063,14 @@ XtTranslations XtParseTranslationTable(source)
     String source;
 #endif
 {
-    return (ParseTranslationTable(source, False, XtTableReplace));
+    Boolean error = FALSE;
+    XtTranslations ret = ParseTranslationTable(source, FALSE, XtTableReplace, &error);
+    if (error == TRUE) 
+        XtWarningMsg ("parseError",
+	  "cvtStringToTranslationTable", XtCXtToolkitError,
+          "String to TranslationTable conversion encountered errors",
+	  (String *)NULL, (Cardinal *)NULL);
+    return ret;
 }
 
 void _XtTranslateInitialize()

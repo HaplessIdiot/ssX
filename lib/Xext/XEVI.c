@@ -1,4 +1,4 @@
-/* $TOG: XEVI.c /main/1 1997/11/24 16:48:21 kaleb $ */
+/* $TOG: XEVI.c /main/2 1998/01/11 08:40:32 kaleb $ */
 /************************************************************
 Copyright (c) 1997 by Silicon Graphics Computer Systems, Inc.
 Permission to use, copy, modify, and distribute this
@@ -21,7 +21,7 @@ DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
 OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xext/XEVI.c,v 1.2 1998/01/11 06:54:24 dawes Exp $ */
 #define NEED_EVENTS
 #define NEED_REPLIES
 #include "Xlibint.h"

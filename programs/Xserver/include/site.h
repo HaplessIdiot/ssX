@@ -1,4 +1,4 @@
-/* $XConsortium: site.h,v 1.24 94/04/17 20:26:10 rws Exp $ */
+/* $TOG: site.h /main/28 1997/12/17 17:17:54 kaleb $ */
 /************************************************************
 
 Copyright (c) 1987  X Consortium
@@ -54,7 +54,7 @@ SOFTWARE.
  * server executable.
  */
 #ifndef VENDOR_STRING
-#define VENDOR_STRING "X Consortium"
+#define VENDOR_STRING "The Open Group"
 #endif
 
 /*
@@ -63,7 +63,7 @@ SOFTWARE.
  * by the vendor.
  */
 #ifndef VENDOR_RELEASE
-#define VENDOR_RELEASE	6000
+#define VENDOR_RELEASE	6400
 #endif
 
 /*

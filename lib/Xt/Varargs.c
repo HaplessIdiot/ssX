@@ -1,4 +1,4 @@
-/* $TOG: Varargs.c /main/33 1998/01/09 16:08:52 kaleb $ */
+/* $TOG: Varargs.c /main/34 1998/01/12 16:31:42 kaleb $ */
 
 /*
 
@@ -398,11 +398,9 @@ _XtVaToArgList(widget, var, max_count, args_return, num_args_return)
 	return;
     }
 
-    max_count *= 2;
-    args = (ArgList)__XtMalloc((unsigned)(max_count * sizeof(Arg)));
-    for (count = max_count; --count >= 0; )
+    args = (ArgList)__XtMalloc((unsigned)(max_count * 2 * sizeof(Arg)));
+    for (count = max_count * 2; --count >= 0; )
 	args[count].value = (XtArgVal) NULL;
-    max_count /= 2;
     count = 0;
 
     for(attr = va_arg(var, String) ; attr != NULL;
@@ -424,9 +422,11 @@ _XtVaToArgList(widget, var, max_count, args_return, num_args_return)
 					  &args[max_count + count]);
 	    }
 	} else if (strcmp(attr, XtVaNestedList) == 0) {
-	    if (widget != NULL || !fetched_resource_list) {
-		GetResources(widget, &resources, &num_resources);
-		fetched_resource_list = True;
+	    if (widget != NULL) {
+		if (!fetched_resource_list) {
+		    GetResources(widget, &resources, &num_resources);
+		    fetched_resource_list = True;
+		}
 	    }
 
 	    count += NestedArgtoArg(widget, va_arg(var, XtTypedArgList),
@@ -439,7 +439,8 @@ _XtVaToArgList(widget, var, max_count, args_return, num_args_return)
 	}
     }
 
-    XtFree((XtPointer)resources);
+    if (resources != NULL)
+	XtFree((XtPointer)resources);
 
     *num_args_return = (Cardinal)count;
     *args_return = (ArgList)args;

@@ -1,4 +1,4 @@
-/* $TOG: EVI.c /main/1 1997/11/24 16:48:29 kaleb $ */
+/* $TOG: EVI.c /main/2 1998/01/11 08:40:38 kaleb $ */
 /************************************************************
 Copyright (c) 1997 by Silicon Graphics Computer Systems, Inc.
 Permission to use, copy, modify, and distribute this
@@ -21,7 +21,7 @@ DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
 OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xext/EVI.c,v 3.2 1998/01/11 06:54:25 dawes Exp $ */
 #include "X.h"
 #include "Xproto.h"
 #include "dixstruct.h"

@@ -1,4 +1,4 @@
-/* $TOG: io.c /main/12 1997/12/04 13:13:53 barstow $ */
+/* $TOG: io.c /main/13 1998/01/11 08:25:36 kaleb $ */
 /*
 
 Copyright "1986-1997 The Open Group All Rights Reserved

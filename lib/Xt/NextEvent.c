@@ -1,5 +1,4 @@
-/* $XConsortium: NextEvent.c /main/135 1996/01/31 16:47:11 kaleb $ */
-/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.11 1996/01/05 13:12:52 dawes Exp $ */
+/* $TOG: NextEvent.c /main/136 1998/01/15 15:01:01 barstow $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -60,6 +59,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
+/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.12 1996/02/04 08:54:37 dawes Exp $ */
 
 #include "IntrinsicI.h"
 #include <stdio.h>
@@ -1482,9 +1482,9 @@ void XtAppProcessEvent(app, mask)
 	}
 }
 
-XtInputMask XtPending()
+Boolean XtPending()
 {
-	return XtAppPending(_XtDefaultAppContext());
+	return (XtAppPending(_XtDefaultAppContext()) != 0);
 }
 
 XtInputMask XtAppPending(app)
