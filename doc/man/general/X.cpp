@@ -24,6 +24,9 @@
 .\" be used in advertising or otherwise to promote the sale, use or other 
 .\" dealing in this Software without prior written authorization from the 
 .\" X Consortium.
+.\"
+.\" $XFree86$
+.\"
 .TH X __miscmansuffix__ "XFree86 4.0.2" "X Version 11"
 .SH NAME
 X \- a portable, network-transparent window system

@@ -18,6 +18,9 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
+.\"
+.\" $XFree86$
+.\"
 .TH XVFB 1 "Release 6.4" "X Version 11"
 .SH NAME
 Xvfb \- virtual framebuffer X server for X Version 11
