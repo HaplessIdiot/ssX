@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_context.h,v 1.1.1.1tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_context.h,v 1.1.1.2 2004/06/10 14:23:06 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -339,9 +339,9 @@ struct radeon_state_atom {
 #define LIT_DIRECTION_Y            18
 #define LIT_DIRECTION_Z            19
 #define LIT_DIRECTION_W            20
-#define LIT_ATTEN_CONST            21
+#define LIT_ATTEN_QUADRATIC        21
 #define LIT_ATTEN_LINEAR           22
-#define LIT_ATTEN_QUADRATIC        23
+#define LIT_ATTEN_CONST            23
 #define LIT_ATTEN_XXX              24
 #define LIT_CMD_1                  25
 #define LIT_SPOT_DCD               26
@@ -349,7 +349,7 @@ struct radeon_state_atom {
 #define LIT_SPOT_CUTOFF            28
 #define LIT_SPECULAR_THRESH        29
 #define LIT_RANGE_CUTOFF           30 /* ? */
-#define LIT_RANGE_ATTEN            31 /* ? */
+#define LIT_ATTEN_CONST_INV        31
 #define LIT_STATE_SIZE             32
 
 /* Fog
@@ -699,7 +699,7 @@ struct radeon_context {
    driTexHeap          * texture_heaps[ RADEON_NR_TEX_HEAPS ];
    driTextureObject      swapped;
    int                   texture_depth;
-
+   float                 initialMaxAnisotropy;
 
    /* Rasterization and vertex state:
     */

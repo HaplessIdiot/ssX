@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_context.c,v 1.1.1.1tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_context.c,v 1.1.1.2 2004/06/10 14:23:06 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -49,6 +49,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "tnl/tnl.h"
 #include "tnl/t_pipeline.h"
+
+#include "drivers/common/driverfuncs.h"
 
 #include "radeon_context.h"
 #include "radeon_ioctl.h"
@@ -175,15 +177,11 @@ static const struct tnl_pipeline_stage *radeon_pipeline[] = {
 
 /* Initialize the driver's misc functions.
  */
-static void radeonInitDriverFuncs( GLcontext *ctx )
+static void radeonInitDriverFuncs( struct dd_function_table *functions )
 {
-    ctx->Driver.GetBufferSize		= radeonGetBufferSize;
-    ctx->Driver.ResizeBuffers           = _swrast_alloc_buffers;
-    ctx->Driver.GetString		= radeonGetString;
-
-    ctx->Driver.Error			= NULL;
-    ctx->Driver.DrawPixels		= NULL;
-    ctx->Driver.Bitmap			= NULL;
+    functions->GetBufferSize	= radeonGetBufferSize;
+    functions->ResizeBuffers	= _swrast_alloc_buffers;
+    functions->GetString	= radeonGetString;
 }
 
 static const struct dri_debug_control debug_control[] =
@@ -222,6 +220,7 @@ radeonCreateContext( const __GLcontextModes *glVisual,
 {
    __DRIscreenPrivate *sPriv = driContextPriv->driScreenPriv;
    radeonScreenPtr screen = (radeonScreenPtr)(sPriv->private);
+   struct dd_function_table functions;
    radeonContextPtr rmesa;
    GLcontext *ctx, *shareCtx;
    int i;
@@ -236,12 +235,29 @@ radeonCreateContext( const __GLcontextModes *glVisual,
    if ( !rmesa )
       return GL_FALSE;
 
+   /* Parse configuration files.
+    * Do this here so that initialMaxAnisotropy is set before we create
+    * the default textures.
+    */
+   driParseConfigFiles (&rmesa->optionCache, &screen->optionCache,
+			screen->driScreen->myNum, "radeon");
+   rmesa->initialMaxAnisotropy = driQueryOptionf(&rmesa->optionCache,
+                                                 "def_max_anisotropy");
+
+   /* Init default driver functions then plug in our Radeon-specific functions
+    * (the texture functions are especially important)
+    */
+   _mesa_init_driver_functions( &functions );
+   radeonInitDriverFuncs( &functions );
+   radeonInitTextureFuncs( &functions );
+
    /* Allocate the Mesa context */
    if (sharedContextPrivate)
       shareCtx = ((radeonContextPtr) sharedContextPrivate)->glCtx;
    else
       shareCtx = NULL;
-   rmesa->glCtx = _mesa_create_context(glVisual, shareCtx, (void *) rmesa, GL_TRUE);
+   rmesa->glCtx = _mesa_create_context(glVisual, shareCtx,
+                                       &functions, (void *) rmesa);
    if (!rmesa->glCtx) {
       FREE(rmesa);
       return GL_FALSE;
@@ -256,10 +272,6 @@ radeonCreateContext( const __GLcontextModes *glVisual,
    rmesa->dri.hwLock = &sPriv->pSAREA->lock;
    rmesa->dri.fd = sPriv->fd;
    rmesa->dri.drmMinor = sPriv->drmMinor;
-
-   /* Parse configuration files */
-   driParseConfigFiles (&rmesa->optionCache, &screen->optionCache,
-			screen->driScreen->myNum, "radeon");
 
    rmesa->radeonScreen = screen;
    rmesa->sarea = (RADEONSAREAPrivPtr)((GLubyte *)sPriv->pSAREA +
@@ -368,10 +380,12 @@ radeonCreateContext( const __GLcontextModes *glVisual,
    _tnl_isolate_materials( ctx, GL_TRUE );
 
 
-   /* Configure swrast to match hardware characteristics:
+   /* Configure swrast and T&L to match hardware characteristics:
     */
    _swrast_allow_pixel_fog( ctx, GL_FALSE );
    _swrast_allow_vertex_fog( ctx, GL_TRUE );
+   _tnl_allow_pixel_fog( ctx, GL_FALSE );
+   _tnl_allow_vertex_fog( ctx, GL_TRUE );
 
 
    _math_matrix_ctr( &rmesa->TexGenMatrix[0] );
@@ -386,11 +400,10 @@ radeonCreateContext( const __GLcontextModes *glVisual,
    if (rmesa->dri.drmMinor >= 9)
       _mesa_enable_extension( ctx, "GL_NV_texture_rectangle");
 
-   radeonInitDriverFuncs( ctx );
+   /* XXX these should really go right after _mesa_init_driver_functions() */
    radeonInitIoctlFuncs( ctx );
    radeonInitStateFuncs( ctx );
    radeonInitSpanFuncs( ctx );
-   radeonInitTextureFuncs( ctx );
    radeonInitState( rmesa );
    radeonInitSwtcl( ctx );
 
@@ -427,12 +440,14 @@ radeonCreateContext( const __GLcontextModes *glVisual,
    tcl_mode = driQueryOptioni(&rmesa->optionCache, "tcl_mode");
    if (driQueryOptionb(&rmesa->optionCache, "no_rast")) {
       fprintf(stderr, "disabling 3D acceleration\n");
-      FALLBACK(rmesa, RADEON_FALLBACK_DISABLE, 1); 
+      FALLBACK(rmesa, RADEON_FALLBACK_DISABLE, 1);
    } else if (tcl_mode == DRI_CONF_TCL_SW ||
 	      !(rmesa->radeonScreen->chipset & RADEON_CHIPSET_TCL)) {
-      rmesa->radeonScreen->chipset &= ~RADEON_CHIPSET_TCL;
-      fprintf(stderr, "disabling TCL support\n");
-      TCL_FALLBACK(rmesa->glCtx, RADEON_TCL_FALLBACK_TCL_DISABLE, 1); 
+      if (rmesa->radeonScreen->chipset & RADEON_CHIPSET_TCL) {
+	 rmesa->radeonScreen->chipset &= ~RADEON_CHIPSET_TCL;
+	 fprintf(stderr, "Disabling HW TCL support\n");
+      }
+      TCL_FALLBACK(rmesa->glCtx, RADEON_TCL_FALLBACK_TCL_DISABLE, 1);
    }
 
    if (rmesa->radeonScreen->chipset & RADEON_CHIPSET_TCL) {
@@ -561,7 +576,7 @@ radeonMakeCurrent( __DRIcontextPrivate *driContextPriv,
 	 (radeonContextPtr) driContextPriv->driverPrivate;
 
       if (RADEON_DEBUG & DEBUG_DRI)
-	 fprintf(stderr, "%s ctx %p\n", __FUNCTION__, (void *)newCtx->glCtx);
+	 fprintf(stderr, "%s ctx %p\n", __FUNCTION__, (void *) newCtx->glCtx);
 
       if ( newCtx->dri.drawable != driDrawPriv ) {
 	 driDrawableInitVBlank( driDrawPriv, newCtx->vblank_flags );
@@ -601,7 +616,7 @@ radeonUnbindContext( __DRIcontextPrivate *driContextPriv )
    radeonContextPtr rmesa = (radeonContextPtr) driContextPriv->driverPrivate;
 
    if (RADEON_DEBUG & DEBUG_DRI)
-      fprintf(stderr, "%s ctx %p\n", __FUNCTION__, (void *)rmesa->glCtx);
+      fprintf(stderr, "%s ctx %p\n", __FUNCTION__, (void *) rmesa->glCtx);
 
    return GL_TRUE;
 }

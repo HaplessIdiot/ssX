@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_ioctl.c,v 1.1.1.1tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_ioctl.c,v 1.1.1.2 2004/06/10 14:23:06 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -834,7 +834,7 @@ void radeonCopyBuffer( const __DRIdrawablePrivate *dPriv )
    radeonContextPtr rmesa;
    GLint nbox, i, ret;
    GLboolean   missed_target;
-   int64_t     ust;
+   uint64_t ust;
 
    assert(dPriv);
    assert(dPriv->driContextPriv);

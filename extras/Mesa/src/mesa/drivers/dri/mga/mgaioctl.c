@@ -25,7 +25,7 @@
  *    Keith Whitwell <keith@tungstengraphics.com>
  *    Gareth Hughes <gareth@valinux.com>
  */
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/mga/mgaioctl.c,v 1.1.1.1tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/mga/mgaioctl.c,v 1.1.1.2 2004/06/10 14:22:55 alanh Exp $ */
 
 #include <errno.h>
 #include "mtypes.h"
@@ -157,7 +157,7 @@ drmBufPtr mga_get_buffer_ioctl( mgaContextPtr mmesa )
 
 
 static void
-mgaDDClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
+mgaClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
             GLint cx, GLint cy, GLint cw, GLint ch )
 {
    mgaContextPtr mmesa = MGA_CONTEXT(ctx);
@@ -390,7 +390,7 @@ void mgaCopyBuffer( const __DRIdrawablePrivate *dPriv )
 
 /* This is overkill
  */
-void mgaDDFinish( GLcontext *ctx  )
+static void mgaFinish( GLcontext *ctx  )
 {
    mgaContextPtr mmesa = MGA_CONTEXT(ctx);
 
@@ -588,7 +588,7 @@ void mgaGetILoadBufferLocked( mgaContextPtr mmesa )
 {
    if (MGA_DEBUG&DEBUG_VERBOSE_IOCTL)
       fprintf(stderr, "mgaGetIloadBuffer (buffer now %p)\n",
-	   (void *)mmesa->iload_buffer);
+              (void *) mmesa->iload_buffer);
 
    mmesa->iload_buffer = mga_get_buffer_ioctl( mmesa );
 }
@@ -600,7 +600,7 @@ drmBufPtr mgaGetBufferLocked( mgaContextPtr mmesa )
 
 
 
-void mgaDDFlush( GLcontext *ctx )
+static void mgaFlush( GLcontext *ctx )
 {
    mgaContextPtr mmesa = MGA_CONTEXT( ctx );
 
@@ -670,9 +670,9 @@ int mgaFlushDMA( int fd, drmLockFlags flags )
    }
 }
 
-void mgaDDInitIoctlFuncs( GLcontext *ctx )
+void mgaInitIoctlFuncs( struct dd_function_table *functions )
 {
-   ctx->Driver.Clear = mgaDDClear;
-   ctx->Driver.Flush = mgaDDFlush;
-   ctx->Driver.Finish = mgaDDFinish;
+   functions->Clear = mgaClear;
+   functions->Flush = mgaFlush;
+   functions->Finish = mgaFinish;
 }

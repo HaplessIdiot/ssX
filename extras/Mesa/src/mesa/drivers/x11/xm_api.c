@@ -1,9 +1,9 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/x11/xm_api.c,v 1.2 2004/04/22 13:58:37 tsi Exp $ */
 /*
  * Mesa 3-D graphics library
- * Version:  5.1
+ * Version:  6.1
  *
- * Copyright (C) 1999-2003  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2004  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -78,11 +78,13 @@
 #include "swrast_setup/swrast_setup.h"
 #include "array_cache/acache.h"
 #include "tnl/tnl.h"
+#include "tnl/t_context.h"
+#include "tnl/t_pipeline.h"
+#include "drivers/common/driverfuncs.h"
 
-#ifndef GLX_NONE_EXT
-#define GLX_NONE_EXT 0x8000
+#ifdef XFree86Server
+#include <GL/glxtokens.h>
 #endif
-
 
 /*
  * Global X driver lock
@@ -270,8 +272,7 @@ static GLint gamma_adjust( GLfloat gamma, GLint value, GLint max )
 
 static int bits_per_pixel( XMesaVisual xmv )
 {
-   XMesaVisualInfo visinfo = xmv->visinfo;
-   const int depth = visinfo->nplanes;
+   const int depth = xmv->nplanes;
    int i;
    for (i = 0; i < screenInfo.numPixmapFormats; i++) {
       if (screenInfo.formats[i].depth == depth)
@@ -884,8 +885,6 @@ static GLboolean setup_grayscale( int client, XMesaVisual v,
 static GLboolean setup_dithered_color( int client, XMesaVisual v,
                                        XMesaBuffer buffer, XMesaColormap cmap )
 {
-   (void) DitherValues;  /* silence warning */
-
    if (GET_VISUAL_DEPTH(v)<4 || GET_VISUAL_DEPTH(v)>16) {
       return GL_FALSE;
    }
@@ -1199,26 +1198,25 @@ static GLboolean initialize_visual_and_buffer( int client,
        * being color indexed.  This is weird but might be useful to someone.
        */
       v->dithered_pf = v->undithered_pf = PF_Index;
-      v->index_bits = GET_VISUAL_DEPTH(v);
+      v->mesa_visual.indexBits = GET_VISUAL_DEPTH(v);
    }
    else {
       /* RGB WINDOW:
        * We support RGB rendering into almost any kind of visual.
        */
-      int xclass;
-      xclass = GET_VISUAL_CLASS(v);
-      if (xclass==TrueColor || xclass==DirectColor) {
+      const int xclass = v->mesa_visual.visualType;
+      if (xclass==GLX_TRUE_COLOR || xclass==GLX_DIRECT_COLOR) {
 	 setup_truecolor( v, b, cmap );
       }
-      else if (xclass==StaticGray && GET_VISUAL_DEPTH(v)==1) {
+      else if (xclass==GLX_STATIC_GRAY && GET_VISUAL_DEPTH(v)==1) {
 	 setup_monochrome( v, b );
       }
-      else if (xclass==GrayScale || xclass==StaticGray) {
+      else if (xclass==GLX_GRAY_SCALE || xclass==GLX_STATIC_GRAY) {
          if (!setup_grayscale( client, v, b, cmap )) {
             return GL_FALSE;
          }
       }
-      else if ((xclass==PseudoColor || xclass==StaticColor)
+      else if ((xclass==GLX_PSEUDO_COLOR || xclass==GLX_STATIC_COLOR)
                && GET_VISUAL_DEPTH(v)>=4 && GET_VISUAL_DEPTH(v)<=16) {
 	 if (!setup_dithered_color( client, v, b, cmap )) {
             return GL_FALSE;
@@ -1228,7 +1226,7 @@ static GLboolean initialize_visual_and_buffer( int client,
 	 _mesa_warning(NULL, "XMesa: RGB mode rendering not supported in given visual.");
 	 return GL_FALSE;
       }
-      v->index_bits = 0;
+      v->mesa_visual.indexBits = 0;
 
       if (_mesa_getenv("MESA_NO_DITHER")) {
 	 v->dithered_pf = v->undithered_pf;
@@ -1245,7 +1243,7 @@ static GLboolean initialize_visual_and_buffer( int client,
       _mesa_printf("X/Mesa visual = %p\n", (void *) v);
       _mesa_printf("X/Mesa dithered pf = %u\n", v->dithered_pf);
       _mesa_printf("X/Mesa undithered pf = %u\n", v->undithered_pf);
-      _mesa_printf("X/Mesa level = %d\n", v->level);
+      _mesa_printf("X/Mesa level = %d\n", v->mesa_visual.level);
       _mesa_printf("X/Mesa depth = %d\n", GET_VISUAL_DEPTH(v));
       _mesa_printf("X/Mesa bits per pixel = %d\n", v->BitsPerPixel);
    }
@@ -1409,6 +1407,34 @@ xmesa_color_to_pixel( XMesaContext xmesa, GLubyte r, GLubyte g, GLubyte b, GLuby
 }
 
 
+#define NUM_VISUAL_TYPES   6
+
+/**
+ * Convert an X visual type to a GLX visual type.
+ * 
+ * \param visualType X visual type (i.e., \c TrueColor, \c StaticGray, etc.)
+ *        to be converted.
+ * \return If \c visualType is a valid X visual type, a GLX visual type will
+ *         be returned.  Otherwise \c GLX_NONE will be returned.
+ * 
+ * \note
+ * This code was lifted directly from lib/GL/glx/glcontextmodes.c in the
+ * DRI CVS tree.
+ */
+static GLint
+xmesa_convert_from_x_visual_type( int visualType )
+{
+    static const int glx_visual_types[ NUM_VISUAL_TYPES ] = {
+	GLX_STATIC_GRAY,  GLX_GRAY_SCALE,
+	GLX_STATIC_COLOR, GLX_PSEUDO_COLOR,
+	GLX_TRUE_COLOR,   GLX_DIRECT_COLOR
+    };
+
+    return ( (unsigned) visualType < NUM_VISUAL_TYPES )
+	? glx_visual_types[ visualType ] : GLX_NONE;
+}
+
+
 /**********************************************************************/
 /*****                       Public Functions                     *****/
 /**********************************************************************/
@@ -1434,7 +1460,7 @@ xmesa_color_to_pixel( XMesaContext xmesa, GLubyte r, GLubyte g, GLubyte b, GLuby
  *         accum_alpha_size - requested bits/alpha accum values, or zero
  *         num_samples - number of samples/pixel if multisampling, or zero
  *         level - visual level, usually 0
- *         visualCaveat - ala the GLX extension, usually GLX_NONE_EXT
+ *         visualCaveat - ala the GLX extension, usually GLX_NONE
  * Return;  a new XMesaVisual or 0 if error.
  */
 XMesaVisual XMesaCreateVisual( XMesaDisplay *display,
@@ -1487,28 +1513,13 @@ XMesaVisual XMesaCreateVisual( XMesaDisplay *display,
     * the struct but we may need some of the information contained in it
     * at a later time.
     */
-#ifdef XFree86Server
-   v->visinfo = visinfo;
-#else
+#ifndef XFree86Server
    v->visinfo = (XVisualInfo *) MALLOC(sizeof(*visinfo));
    if(!v->visinfo) {
       FREE(v);
       return NULL;
    }
    MEMCPY(v->visinfo, visinfo, sizeof(*visinfo));
-#endif
-
-#ifdef XFree86Server
-   /* Initialize the depth of the screen */
-   {
-       PixmapFormatRec *format;
-
-       for (format = screenInfo.formats;
-	    format->depth != display->rootDepth;
-	    format++)
-	   ;
-       v->screen_depth = format->bitsPerPixel;
-   }
 #endif
 
    /* check for MESA_GAMMA environment variable */
@@ -1525,15 +1536,42 @@ XMesaVisual XMesaCreateVisual( XMesaDisplay *display,
    }
 
    v->ximage_flag = ximage_flag;
-   v->level = level;
-   v->VisualCaveat = visualCaveat;
+
+#ifdef XFree86Server
+   /* We could calculate these values by ourselves.  nplanes is either the sum
+    * of the red, green, and blue bits or the number index bits.
+    * ColormapEntries is either (1U << index_bits) or
+    * (1U << max(redBits, greenBits, blueBits)).
+    */
+   v->nplanes = visinfo->nplanes;
+   v->ColormapEntries = visinfo->ColormapEntries;
+
+   v->mesa_visual.redMask = visinfo->redMask;
+   v->mesa_visual.greenMask = visinfo->greenMask;
+   v->mesa_visual.blueMask = visinfo->blueMask;
+   v->mesa_visual.visualID = visinfo->vid;
+   v->mesa_visual.screen = 0; /* FIXME: What should be done here? */
+#else
+   v->mesa_visual.redMask = visinfo->red_mask;
+   v->mesa_visual.greenMask = visinfo->green_mask;
+   v->mesa_visual.blueMask = visinfo->blue_mask;
+   v->mesa_visual.visualID = visinfo->visualid;
+   v->mesa_visual.screen = visinfo->screen;
+#endif
+
+#if defined(XFree86Server) || !(defined(__cplusplus) || defined(c_plusplus))
+   v->mesa_visual.visualType = xmesa_convert_from_x_visual_type(visinfo->class);
+#else
+   v->mesa_visual.visualType = xmesa_convert_from_x_visual_type(visinfo->c_class);
+#endif
+
+   v->mesa_visual.visualRating = visualCaveat;
 
    (void) initialize_visual_and_buffer( 0, v, NULL, rgb_flag, 0, 0 );
 
    {
-      int xclass;
-      xclass = GET_VISUAL_CLASS(v);
-      if (xclass==TrueColor || xclass==DirectColor) {
+      const int xclass = v->mesa_visual.visualType;
+      if (xclass==GLX_TRUE_COLOR || xclass==GLX_DIRECT_COLOR) {
          red_bits   = bitcount(GET_REDMASK(v));
          green_bits = bitcount(GET_GREENMASK(v));
          blue_bits  = bitcount(GET_BLUEMASK(v));
@@ -1560,12 +1598,14 @@ XMesaVisual XMesaCreateVisual( XMesaDisplay *display,
                             rgb_flag, db_flag, stereo_flag,
                             red_bits, green_bits,
                             blue_bits, alpha_bits,
-                            v->index_bits,
+                            v->mesa_visual.indexBits,
                             depth_size,
                             stencil_size,
                             accum_red_size, accum_green_size,
                             accum_blue_size, accum_alpha_size,
                             0 );
+
+   v->mesa_visual.level = level;
    return v;
 }
 
@@ -1586,43 +1626,39 @@ void XMesaDestroyVisual( XMesaVisual v )
 
 
 
-/*
+/**
  * Create a new XMesaContext.
- * Input:  v - XMesaVisual
- *         share_list - another XMesaContext with which to share display
- *                      lists or NULL if no sharing is wanted.
- * Return:  an XMesaContext or NULL if error.
+ * \param v  the XMesaVisual
+ * \param share_list  another XMesaContext with which to share display
+ *                    lists or NULL if no sharing is wanted.
+ * \return an XMesaContext or NULL if error.
  */
 XMesaContext XMesaCreateContext( XMesaVisual v, XMesaContext share_list )
 {
    static GLboolean firstTime = GL_TRUE;
    XMesaContext c;
-   GLboolean direct = GL_TRUE; /* not really */
    GLcontext *mesaCtx;
+   struct dd_function_table functions;
+   TNLcontext *tnl;
 
    if (firstTime) {
       _glthread_INIT_MUTEX(_xmesa_lock);
       firstTime = GL_FALSE;
    }
 
+   /* Note: the XMesaContext contains a Mesa GLcontext struct (inheritance) */
    c = (XMesaContext) CALLOC_STRUCT(xmesa_context);
-   if (!c) {
+   if (!c)
       return NULL;
-   }
 
    mesaCtx = &(c->mesa);
 
-   /* Setup these pointers here since they're using for making the default
-    * and proxy texture objects.  Actually, we don't really need to do
-    * this since we're using the default fallback functions which
-    * _mesa_initialize_context() would plug in if needed.
-    */
-   mesaCtx->Driver.NewTextureObject = _mesa_new_texture_object;
-   mesaCtx->Driver.DeleteTexture = _mesa_delete_texture_object;
-
+   /* initialize with default driver functions, then plug in XMesa funcs */
+   _mesa_init_driver_functions(&functions);
+   xmesa_init_driver_functions(v, &functions);
    if (!_mesa_initialize_context(mesaCtx, &v->mesa_visual,
                       share_list ? &(share_list->mesa) : (GLcontext *) NULL,
-                      (void *) c, direct)) {
+                      &functions, (void *) c)) {
       FREE(c);
       return NULL;
    }
@@ -1632,21 +1668,14 @@ XMesaContext XMesaCreateContext( XMesaVisual v, XMesaContext share_list )
    _mesa_enable_1_4_extensions(mesaCtx);
    _mesa_enable_1_5_extensions(mesaCtx);
 
-   if (CHECK_BYTE_ORDER(v)) {
-      c->swapbytes = GL_FALSE;
-   }
-   else {
-      c->swapbytes = GL_TRUE;
-   }
-
+   /* finish up xmesa context initializations */
+   c->swapbytes = CHECK_BYTE_ORDER(v) ? GL_FALSE : GL_TRUE;
    c->xm_visual = v;
    c->xm_draw_buffer = NULL;   /* set later by XMesaMakeCurrent */
    c->xm_read_buffer = NULL;   /* set later by XMesaMakeCurrent */
    c->xm_buffer = NULL;   /* set later by XMesaMakeCurrent */
    c->display = v->display;
    c->pixelformat = v->dithered_pf;      /* Dithering is enabled by default */
-
-   mesaCtx->Driver.UpdateState = xmesa_update_state;
 
    /* Initialize the software rasterizer and helper modules.
     */
@@ -1655,15 +1684,15 @@ XMesaContext XMesaCreateContext( XMesaVisual v, XMesaContext share_list )
    _tnl_CreateContext( mesaCtx );
    _swsetup_CreateContext( mesaCtx );
 
+   /* tnl setup */
+   tnl = TNL_CONTEXT(mesaCtx);
+   tnl->Driver.RunPipeline = _tnl_run_pipeline;
+   /* swrast setup */
    xmesa_register_swrast_functions( mesaCtx );
-
-   /* Set up some constant pointers:
-    */
-   xmesa_init_pointers( mesaCtx );
+   _swsetup_Wakeup(mesaCtx);
 
    return c;
 }
-
 
 
 
@@ -1802,15 +1831,19 @@ XMesaBuffer XMesaCreateWindowBuffer2( XMesaVisual v, XMesaWindow w,
        }
        attribs[numAttribs++] = FXMESA_NONE;
 
-       /* [dBorca]  we should take an envvar for `fxMesaSelectCurrentBoard'!!! */
-       if ((hw = fxMesaSelectCurrentBoard(0))==GR_SSTTYPE_VOODOO) {
+       /* [dBorca] we should take an envvar for `fxMesaSelectCurrentBoard'!!! */
+       hw = fxMesaSelectCurrentBoard(0);
+       if ((hw == GR_SSTTYPE_VOODOO) || (hw == GR_SSTTYPE_Voodoo2)) {
          b->FXctx = fxMesaCreateBestContext(0, b->width, b->height, attribs);
          if ((v->undithered_pf!=PF_Index) && (b->backimage)) {
 	   b->FXisHackUsable = b->FXctx ? GL_TRUE : GL_FALSE;
-	   if (fxEnvVar[0]=='w' || fxEnvVar[0]=='W')
-	     b->FXwindowHack = b->FXctx ? GL_TRUE : GL_FALSE;
-	   else
+	   if (b->FXctx && (fxEnvVar[0]=='w' || fxEnvVar[0]=='W')) {
+	     b->FXwindowHack = GL_TRUE;
+	     FX_grSstControl(GR_CONTROL_DEACTIVATE);
+	   }
+           else {
 	     b->FXwindowHack = GL_FALSE;
+	   }
          }
        }
        else {
@@ -1847,13 +1880,14 @@ XMesaBuffer XMesaCreateWindowBuffer( XMesaVisual v, XMesaWindow w )
 }
 
 
-/*
+/**
  * Create a new XMesaBuffer from an X pixmap.
- * Input:  v - the XMesaVisual
- *         p - the pixmap
- *         cmap - the colormap, may be 0 if using a TrueColor or DirectColor
- *                visual for the pixmap
- * Return:  new XMesaBuffer or NULL if error
+ *
+ * \param v    the XMesaVisual
+ * \param p    the pixmap
+ * \param cmap the colormap, may be 0 if using a \c GLX_TRUE_COLOR or
+ *             \c GLX_DIRECT_COLOR visual for the pixmap
+ * \returns new XMesaBuffer or NULL if error
  */
 XMesaBuffer XMesaCreatePixmapBuffer( XMesaVisual v,
 				     XMesaPixmap p, XMesaColormap cmap )
@@ -2181,6 +2215,10 @@ GLboolean XMesaSetFXmode( GLint mode )
          return GL_FALSE;
       }
       if (ctx) {
+         /* [dBorca] Hack alert: 
+	  * oh, this is sooo wrong: ctx above is
+	  * really an fxMesaContext, not an XMesaContext
+	  */
          XMesaContext xmesa = XMESA_CONTEXT(ctx);
          if (mode == XMESA_FX_WINDOW) {
 	    if (xmesa->xm_draw_buffer->FXisHackUsable) {
@@ -2240,10 +2278,7 @@ static void FXgetImage( XMesaBuffer b )
       xmesa_alloc_back_buffer( b );
    }
 
-   /* [dBorca]
-    * not needed for Voodoo2 anymore.
-    * should we test fxMesa->bgrOrder?
-    */
+   /* [dBorca] we're always in the right GR_COLORFORMAT... aren't we? */
    /* grLfbWriteColorFormat(GR_COLORFORMAT_ARGB); */
    if (b->xm_visual->undithered_pf==PF_5R6G5B) {
       /* Special case: 16bpp RGB */
@@ -2567,8 +2602,6 @@ unsigned long XMesaDitherColor( XMesaContext xmesa, GLint x, GLint y,
    GLint g = (GLint) (green * 255.0F);
    GLint b = (GLint) (blue  * 255.0F);
    GLint a = (GLint) (alpha * 255.0F);
-
-   (void) DitherValues; /* silence warning */
 
    switch (xmesa->pixelformat) {
       case PF_Index:

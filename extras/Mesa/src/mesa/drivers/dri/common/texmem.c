@@ -28,7 +28,7 @@
  *    Kevin E. Martin <kem@users.sourceforge.net>
  *    Gareth Hughes <gareth@nvidia.com>
  */
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/common/texmem.c,v 1.1.1.1tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/common/texmem.c,v 1.1.1.2 2004/06/10 14:22:40 alanh Exp $ */
 
 /** \file texmem.c
  * Implements all of the device-independent texture memory management.
@@ -572,9 +572,10 @@ driAllocateTexture( driTexHeap * const * heap_array, unsigned nr_heaps,
    }
    else {
       assert( t->heap == NULL );
-
+#if 0
       fprintf( stderr, "[%s:%d] unable to allocate texture\n",
 	       __FUNCTION__, __LINE__ );
+#endif
       return -1;
    }
 }
@@ -1183,7 +1184,7 @@ driCalculateTextureFirstLastLevel( driTextureObject * t )
 {
    struct gl_texture_object * const tObj = t->tObj;
    const struct gl_texture_image * const baseImage =
-       tObj->Image[tObj->BaseLevel];
+       tObj->Image[0][tObj->BaseLevel];
 
    /* These must be signed values.  MinLod and MaxLod can be negative numbers,
     * and having firstLevel and lastLevel as signed prevents the need for

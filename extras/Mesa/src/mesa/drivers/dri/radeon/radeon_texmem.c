@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_texmem.c,v 1.1.1.1tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_texmem.c,v 1.1.1.2 2004/06/10 14:23:10 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -135,10 +135,10 @@ static void radeonUploadRectSubImage( radeonContextPtr rmesa,
 		    __FUNCTION__, src_pitch, dstPitch);
 
 	 if (src_pitch == dstPitch) {
-	    memcpy( region.address, tex, lines * src_pitch );
+	    memcpy( region.address + region.start, tex, lines * src_pitch );
 	 } 
 	 else {
-	    char *buf = region.address;
+	    char *buf = region.address + region.start;
 	    int i;
 	    for (i = 0 ; i < lines ; i++) {
 	       memcpy( buf, tex, src_pitch );
@@ -200,26 +200,7 @@ static void uploadSubImage( radeonContextPtr rmesa, radeonTexObjPtr t,
       return;
    }
 
-   switch (face) {
-   case 0:
-      texImage = t->base.tObj->Image[level];
-      break;
-   case 1:
-      texImage = t->base.tObj->NegX[level];
-      break;
-   case 2:
-      texImage = t->base.tObj->PosY[level];
-      break;
-   case 3:
-      texImage = t->base.tObj->NegY[level];
-      break;
-   case 4:
-      texImage = t->base.tObj->PosZ[level];
-      break;
-   case 5:
-      texImage = t->base.tObj->NegZ[level];
-      break;
-   }
+   texImage = t->base.tObj->Image[face][level];
 
    if ( !texImage ) {
       if ( RADEON_DEBUG & DEBUG_TEXTURE )

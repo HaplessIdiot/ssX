@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r128/r128_ioctl.c,v 1.1.1.1tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r128/r128_ioctl.c,v 1.1.1.2 2004/06/10 14:22:57 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -406,7 +406,7 @@ void r128PageFlip( const __DRIdrawablePrivate *dPriv )
  * Buffer clear
  */
 
-static void r128DDClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
+static void r128Clear( GLcontext *ctx, GLbitfield mask, GLboolean all,
 			 GLint cx, GLint cy, GLint cw, GLint ch )
 {
    r128ContextPtr rmesa = R128_CONTEXT(ctx);
@@ -811,7 +811,7 @@ void r128WaitForIdleLocked( r128ContextPtr rmesa )
     }
 }
 
-void r128DDInitIoctlFuncs( GLcontext *ctx )
+void r128InitIoctlFuncs( struct dd_function_table *functions )
 {
-    ctx->Driver.Clear = r128DDClear;
+    functions->Clear = r128Clear;
 }

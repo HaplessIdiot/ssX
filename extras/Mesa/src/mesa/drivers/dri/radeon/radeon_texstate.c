@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_texstate.c,v 1.1.1.1tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_texstate.c,v 1.1.1.2 2004/06/10 14:23:10 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -104,7 +104,7 @@ static void radeonSetTexImages( radeonContextPtr rmesa,
 				struct gl_texture_object *tObj )
 {
    radeonTexObjPtr t = (radeonTexObjPtr)tObj->DriverData;
-   const struct gl_texture_image *baseImage = tObj->Image[tObj->BaseLevel];
+   const struct gl_texture_image *baseImage = tObj->Image[0][tObj->BaseLevel];
    GLint curOffset;
    GLint i;
    GLint numLevels;
@@ -131,9 +131,9 @@ static void radeonSetTexImages( radeonContextPtr rmesa,
     */
 
    driCalculateTextureFirstLastLevel( (driTextureObject *) t );
-   log2Width  = tObj->Image[t->base.firstLevel]->WidthLog2;
-   log2Height = tObj->Image[t->base.firstLevel]->HeightLog2;
-   log2Depth  = tObj->Image[t->base.firstLevel]->DepthLog2;
+   log2Width  = tObj->Image[0][t->base.firstLevel]->WidthLog2;
+   log2Height = tObj->Image[0][t->base.firstLevel]->HeightLog2;
+   log2Depth  = tObj->Image[0][t->base.firstLevel]->DepthLog2;
 
    numLevels = t->base.lastLevel - t->base.firstLevel + 1;
 
@@ -149,7 +149,7 @@ static void radeonSetTexImages( radeonContextPtr rmesa,
       const struct gl_texture_image *texImage;
       GLuint size;
 
-      texImage = tObj->Image[i + t->base.firstLevel];
+      texImage = tObj->Image[0][i + t->base.firstLevel];
       if ( !texImage )
 	 break;
 
@@ -214,17 +214,17 @@ static void radeonSetTexImages( radeonContextPtr rmesa,
    t->pp_txformat |= ((log2Width << RADEON_TXFORMAT_WIDTH_SHIFT) |
 		      (log2Height << RADEON_TXFORMAT_HEIGHT_SHIFT));
 
-   t->pp_txsize = (((tObj->Image[t->base.firstLevel]->Width - 1) << 0) |
-                   ((tObj->Image[t->base.firstLevel]->Height - 1) << 16));
+   t->pp_txsize = (((tObj->Image[0][t->base.firstLevel]->Width - 1) << 0) |
+                   ((tObj->Image[0][t->base.firstLevel]->Height - 1) << 16));
 
    /* Only need to round to nearest 32 for textures, but the blitter
     * requires 64-byte aligned pitches, and we may/may not need the
     * blitter.   NPOT only!
     */
    if (baseImage->IsCompressed)
-      t->pp_txpitch = (tObj->Image[t->base.firstLevel]->Width + 63) & ~(63);
+      t->pp_txpitch = (tObj->Image[0][t->base.firstLevel]->Width + 63) & ~(63);
    else
-      t->pp_txpitch = ((tObj->Image[t->base.firstLevel]->Width * baseImage->TexFormat->TexelBytes) + 63) & ~(63);
+      t->pp_txpitch = ((tObj->Image[0][t->base.firstLevel]->Width * baseImage->TexFormat->TexelBytes) + 63) & ~(63);
    t->pp_txpitch -= 32;
 
    t->dirty_state = TEX_ALL;
@@ -237,375 +237,6 @@ static void radeonSetTexImages( radeonContextPtr rmesa,
 /* ================================================================
  * Texture combine functions
  */
-
-#define RADEON_DISABLE		0
-#define RADEON_REPLACE		1
-#define RADEON_MODULATE		2
-#define RADEON_DECAL		3
-#define RADEON_BLEND		4
-#define RADEON_ADD		5
-#define RADEON_MAX_COMBFUNC	6
-
-static GLuint radeon_color_combine[][RADEON_MAX_COMBFUNC] =
-{
-   /* Unit 0:
-    */
-   {
-      /* Disable combiner stage
-       */
-      (RADEON_COLOR_ARG_A_ZERO |
-       RADEON_COLOR_ARG_B_ZERO |
-       RADEON_COLOR_ARG_C_CURRENT_COLOR |
-       RADEON_BLEND_CTL_ADD |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_REPLACE = 0x00802800
-       */
-      (RADEON_COLOR_ARG_A_ZERO |
-       RADEON_COLOR_ARG_B_ZERO |
-       RADEON_COLOR_ARG_C_T0_COLOR |
-       RADEON_BLEND_CTL_ADD |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_MODULATE = 0x00800142
-       */
-      (RADEON_COLOR_ARG_A_CURRENT_COLOR |
-       RADEON_COLOR_ARG_B_T0_COLOR |
-       RADEON_COLOR_ARG_C_ZERO |
-       RADEON_BLEND_CTL_ADD |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_DECAL = 0x008c2d42
-       */
-      (RADEON_COLOR_ARG_A_CURRENT_COLOR |
-       RADEON_COLOR_ARG_B_T0_COLOR |
-       RADEON_COLOR_ARG_C_T0_ALPHA |
-       RADEON_BLEND_CTL_BLEND |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_BLEND = 0x008c2902
-       */
-      (RADEON_COLOR_ARG_A_CURRENT_COLOR |
-       RADEON_COLOR_ARG_B_TFACTOR_COLOR |
-       RADEON_COLOR_ARG_C_T0_COLOR |
-       RADEON_BLEND_CTL_BLEND |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_ADD = 0x00812802
-       */
-      (RADEON_COLOR_ARG_A_CURRENT_COLOR |
-       RADEON_COLOR_ARG_B_ZERO |
-       RADEON_COLOR_ARG_C_T0_COLOR |
-       RADEON_COMP_ARG_B |
-       RADEON_BLEND_CTL_ADD |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-   },
-
-   /* Unit 1:
-    */
-   {
-      /* Disable combiner stage
-       */
-      (RADEON_COLOR_ARG_A_ZERO |
-       RADEON_COLOR_ARG_B_ZERO |
-       RADEON_COLOR_ARG_C_CURRENT_COLOR |
-       RADEON_BLEND_CTL_ADD |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_REPLACE = 0x00803000
-       */
-      (RADEON_COLOR_ARG_A_ZERO |
-       RADEON_COLOR_ARG_B_ZERO |
-       RADEON_COLOR_ARG_C_T1_COLOR |
-       RADEON_BLEND_CTL_ADD |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_MODULATE = 0x00800182
-       */
-      (RADEON_COLOR_ARG_A_CURRENT_COLOR |
-       RADEON_COLOR_ARG_B_T1_COLOR |
-       RADEON_COLOR_ARG_C_ZERO |
-       RADEON_BLEND_CTL_ADD |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_DECAL = 0x008c3582
-       */
-      (RADEON_COLOR_ARG_A_CURRENT_COLOR |
-       RADEON_COLOR_ARG_B_T1_COLOR |
-       RADEON_COLOR_ARG_C_T1_ALPHA |
-       RADEON_BLEND_CTL_BLEND |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_BLEND = 0x008c3102
-       */
-      (RADEON_COLOR_ARG_A_CURRENT_COLOR |
-       RADEON_COLOR_ARG_B_TFACTOR_COLOR |
-       RADEON_COLOR_ARG_C_T1_COLOR |
-       RADEON_BLEND_CTL_BLEND |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_ADD = 0x00813002
-       */
-      (RADEON_COLOR_ARG_A_CURRENT_COLOR |
-       RADEON_COLOR_ARG_B_ZERO |
-       RADEON_COLOR_ARG_C_T1_COLOR |
-       RADEON_COMP_ARG_B |
-       RADEON_BLEND_CTL_ADD |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-   },
-
-   /* Unit 2:
-    */
-   {
-      /* Disable combiner stage
-       */
-      (RADEON_COLOR_ARG_A_ZERO |
-       RADEON_COLOR_ARG_B_ZERO |
-       RADEON_COLOR_ARG_C_CURRENT_COLOR |
-       RADEON_BLEND_CTL_ADD |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_REPLACE = 0x00803800
-       */
-      (RADEON_COLOR_ARG_A_ZERO |
-       RADEON_COLOR_ARG_B_ZERO |
-       RADEON_COLOR_ARG_C_T2_COLOR |
-       RADEON_BLEND_CTL_ADD |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_MODULATE = 0x008001c2
-       */
-      (RADEON_COLOR_ARG_A_CURRENT_COLOR |
-       RADEON_COLOR_ARG_B_T2_COLOR |
-       RADEON_COLOR_ARG_C_ZERO |
-       RADEON_BLEND_CTL_ADD |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_DECAL = 0x008c3dc2
-       */
-      (RADEON_COLOR_ARG_A_CURRENT_COLOR |
-       RADEON_COLOR_ARG_B_T2_COLOR |
-       RADEON_COLOR_ARG_C_T2_ALPHA |
-       RADEON_BLEND_CTL_BLEND |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_BLEND = 0x008c3902
-       */
-      (RADEON_COLOR_ARG_A_CURRENT_COLOR |
-       RADEON_COLOR_ARG_B_TFACTOR_COLOR |
-       RADEON_COLOR_ARG_C_T2_COLOR |
-       RADEON_BLEND_CTL_BLEND |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_ADD = 0x00813802
-       */
-      (RADEON_COLOR_ARG_A_CURRENT_COLOR |
-       RADEON_COLOR_ARG_B_ZERO |
-       RADEON_COLOR_ARG_C_T2_COLOR |
-       RADEON_COMP_ARG_B |
-       RADEON_BLEND_CTL_ADD |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-   }
-};
-
-static GLuint radeon_alpha_combine[][RADEON_MAX_COMBFUNC] =
-{
-   /* Unit 0:
-    */
-   {
-      /* Disable combiner stage
-       */
-      (RADEON_ALPHA_ARG_A_ZERO |
-       RADEON_ALPHA_ARG_B_ZERO |
-       RADEON_ALPHA_ARG_C_CURRENT_ALPHA |
-       RADEON_BLEND_CTL_ADD |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_REPLACE = 0x00800500
-       */
-      (RADEON_ALPHA_ARG_A_ZERO |
-       RADEON_ALPHA_ARG_B_ZERO |
-       RADEON_ALPHA_ARG_C_T0_ALPHA |
-       RADEON_BLEND_CTL_ADD |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_MODULATE = 0x00800051
-       */
-      (RADEON_ALPHA_ARG_A_CURRENT_ALPHA |
-       RADEON_ALPHA_ARG_B_T0_ALPHA |
-       RADEON_ALPHA_ARG_C_ZERO |
-       RADEON_BLEND_CTL_ADD |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_DECAL = 0x00800100
-       */
-      (RADEON_ALPHA_ARG_A_ZERO |
-       RADEON_ALPHA_ARG_B_ZERO |
-       RADEON_ALPHA_ARG_C_CURRENT_ALPHA |
-       RADEON_BLEND_CTL_ADD |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_BLEND = 0x00800051
-       */
-      (RADEON_ALPHA_ARG_A_CURRENT_ALPHA |
-       RADEON_ALPHA_ARG_B_TFACTOR_ALPHA |
-       RADEON_ALPHA_ARG_C_T0_ALPHA |
-       RADEON_BLEND_CTL_BLEND |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_ADD = 0x00800051
-       */
-      (RADEON_ALPHA_ARG_A_CURRENT_ALPHA |
-       RADEON_ALPHA_ARG_B_ZERO |
-       RADEON_ALPHA_ARG_C_T0_ALPHA |
-       RADEON_COMP_ARG_B |
-       RADEON_BLEND_CTL_ADD |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-   },
-
-   /* Unit 1:
-    */
-   {
-      /* Disable combiner stage
-       */
-      (RADEON_ALPHA_ARG_A_ZERO |
-       RADEON_ALPHA_ARG_B_ZERO |
-       RADEON_ALPHA_ARG_C_CURRENT_ALPHA |
-       RADEON_BLEND_CTL_ADD |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_REPLACE = 0x00800600
-       */
-      (RADEON_ALPHA_ARG_A_ZERO |
-       RADEON_ALPHA_ARG_B_ZERO |
-       RADEON_ALPHA_ARG_C_T1_ALPHA |
-       RADEON_BLEND_CTL_ADD |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_MODULATE = 0x00800061
-       */
-      (RADEON_ALPHA_ARG_A_CURRENT_ALPHA |
-       RADEON_ALPHA_ARG_B_T1_ALPHA |
-       RADEON_ALPHA_ARG_C_ZERO |
-       RADEON_BLEND_CTL_ADD |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_DECAL = 0x00800100
-       */
-      (RADEON_ALPHA_ARG_A_ZERO |
-       RADEON_ALPHA_ARG_B_ZERO |
-       RADEON_ALPHA_ARG_C_CURRENT_ALPHA |
-       RADEON_BLEND_CTL_ADD |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_BLEND = 0x00800061
-       */
-      (RADEON_ALPHA_ARG_A_CURRENT_ALPHA |
-       RADEON_ALPHA_ARG_B_TFACTOR_ALPHA |
-       RADEON_ALPHA_ARG_C_T1_ALPHA |
-       RADEON_BLEND_CTL_BLEND |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_ADD = 0x00800061
-       */
-      (RADEON_ALPHA_ARG_A_CURRENT_ALPHA |
-       RADEON_ALPHA_ARG_B_ZERO |
-       RADEON_ALPHA_ARG_C_T1_ALPHA |
-       RADEON_COMP_ARG_B |
-       RADEON_BLEND_CTL_ADD |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-   },
-
-   /* Unit 2:
-    */
-   {
-      /* Disable combiner stage
-       */
-      (RADEON_ALPHA_ARG_A_ZERO |
-       RADEON_ALPHA_ARG_B_ZERO |
-       RADEON_ALPHA_ARG_C_CURRENT_ALPHA |
-       RADEON_BLEND_CTL_ADD |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_REPLACE = 0x00800700
-       */
-      (RADEON_ALPHA_ARG_A_ZERO |
-       RADEON_ALPHA_ARG_B_ZERO |
-       RADEON_ALPHA_ARG_C_T2_ALPHA |
-       RADEON_BLEND_CTL_ADD |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_MODULATE = 0x00800071
-       */
-      (RADEON_ALPHA_ARG_A_CURRENT_ALPHA |
-       RADEON_ALPHA_ARG_B_T2_ALPHA |
-       RADEON_ALPHA_ARG_C_ZERO |
-       RADEON_BLEND_CTL_ADD |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_DECAL = 0x00800100
-       */
-      (RADEON_ALPHA_ARG_A_ZERO |
-       RADEON_ALPHA_ARG_B_ZERO |
-       RADEON_ALPHA_ARG_C_CURRENT_ALPHA |
-       RADEON_BLEND_CTL_ADD |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_BLEND = 0x00800071
-       */
-      (RADEON_ALPHA_ARG_A_CURRENT_ALPHA |
-       RADEON_ALPHA_ARG_B_TFACTOR_ALPHA |
-       RADEON_ALPHA_ARG_C_T2_ALPHA |
-       RADEON_BLEND_CTL_BLEND |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-
-      /* GL_ADD = 0x00800021
-       */
-      (RADEON_ALPHA_ARG_A_CURRENT_ALPHA |
-       RADEON_ALPHA_ARG_B_ZERO |
-       RADEON_ALPHA_ARG_C_T2_ALPHA |
-       RADEON_COMP_ARG_B |
-       RADEON_BLEND_CTL_ADD |
-       RADEON_SCALE_1X |
-       RADEON_CLAMP_TX),
-   }
-};
-
 
 /* GL_ARB_texture_env_combine support
  */
@@ -774,441 +405,275 @@ static GLboolean radeonUpdateTextureEnv( GLcontext *ctx, int unit )
        */
       rmesa->state.texture.unit[unit].format = 0;
       rmesa->state.texture.unit[unit].envMode = 0;
-      color_combine = radeon_color_combine[unit][RADEON_DISABLE];
-      alpha_combine = radeon_alpha_combine[unit][RADEON_DISABLE];
+      color_combine = RADEON_COLOR_ARG_A_ZERO | RADEON_COLOR_ARG_B_ZERO
+         | RADEON_COLOR_ARG_C_CURRENT_COLOR | RADEON_BLEND_CTL_ADD
+         | RADEON_SCALE_1X | RADEON_CLAMP_TX;
+      alpha_combine = RADEON_ALPHA_ARG_A_ZERO | RADEON_ALPHA_ARG_B_ZERO
+         | RADEON_ALPHA_ARG_C_CURRENT_ALPHA | RADEON_BLEND_CTL_ADD
+         | RADEON_SCALE_1X | RADEON_CLAMP_TX;
    }
    else {
-      const struct gl_texture_object *tObj = texUnit->_Current;
-      const GLenum format = tObj->Image[tObj->BaseLevel]->Format;
       GLuint color_arg[3], alpha_arg[3];
-      GLuint i, numColorArgs = 0, numAlphaArgs = 0;
-      GLuint RGBshift = texUnit->CombineScaleShiftRGB;
-      GLuint Ashift = texUnit->CombineScaleShiftA;
+      GLuint i;
+      const GLuint numColorArgs = texUnit->_CurrentCombine->_NumArgsRGB;
+      const GLuint numAlphaArgs = texUnit->_CurrentCombine->_NumArgsA;
+      GLuint RGBshift = texUnit->_CurrentCombine->ScaleShiftRGB;
+      GLuint Ashift = texUnit->_CurrentCombine->ScaleShiftA;
 
-      switch ( texUnit->EnvMode ) {
+      /* Don't cache these results.
+       */
+      rmesa->state.texture.unit[unit].format = 0;
+      rmesa->state.texture.unit[unit].envMode = 0;
+
+
+      /* Step 1:
+       * Extract the color and alpha combine function arguments.
+       */
+      for ( i = 0 ; i < numColorArgs ; i++ ) {
+	 const GLuint op = texUnit->_CurrentCombine->OperandRGB[i] - GL_SRC_COLOR;
+	 assert(op >= 0);
+	 assert(op <= 3);
+	 switch ( texUnit->_CurrentCombine->SourceRGB[i] ) {
+	 case GL_TEXTURE:
+	    color_arg[i] = radeon_texture_color[op][unit];
+	    break;
+	 case GL_CONSTANT:
+	    color_arg[i] = radeon_tfactor_color[op];
+	    break;
+	 case GL_PRIMARY_COLOR:
+	    color_arg[i] = radeon_primary_color[op];
+	    break;
+	 case GL_PREVIOUS:
+	    color_arg[i] = radeon_previous_color[op];
+	    break;
+	 case GL_ZERO:
+	    color_arg[i] = radeon_zero_color[op];
+	    break;
+	 case GL_ONE:
+	    color_arg[i] = radeon_zero_color[op+1];
+	    break;
+	 default:
+	    return GL_FALSE;
+	 }
+      }
+
+      for ( i = 0 ; i < numAlphaArgs ; i++ ) {
+	 const GLuint op = texUnit->_CurrentCombine->OperandA[i] - GL_SRC_ALPHA;
+	 assert(op >= 0);
+	 assert(op <= 1);
+	 switch ( texUnit->_CurrentCombine->SourceA[i] ) {
+	 case GL_TEXTURE:
+	    alpha_arg[i] = radeon_texture_alpha[op][unit];
+	    break;
+	 case GL_CONSTANT:
+	    alpha_arg[i] = radeon_tfactor_alpha[op];
+	    break;
+	 case GL_PRIMARY_COLOR:
+	    alpha_arg[i] = radeon_primary_alpha[op];
+	    break;
+	 case GL_PREVIOUS:
+	    alpha_arg[i] = radeon_previous_alpha[op];
+	    break;
+	 case GL_ZERO:
+	    alpha_arg[i] = radeon_zero_alpha[op];
+	    break;
+	 case GL_ONE:
+	    alpha_arg[i] = radeon_zero_alpha[op+1];
+	    break;
+	 default:
+	    return GL_FALSE;
+	 }
+      }
+
+      /* Step 2:
+       * Build up the color and alpha combine functions.
+       */
+      switch ( texUnit->_CurrentCombine->ModeRGB ) {
       case GL_REPLACE:
-         switch ( format ) {
-	 case GL_RGBA:
-         case GL_LUMINANCE_ALPHA:
-         case GL_INTENSITY:
-	    color_combine = radeon_color_combine[unit][RADEON_REPLACE];
-	    alpha_combine = radeon_alpha_combine[unit][RADEON_REPLACE];
-	    break;
-	 case GL_ALPHA:
-	    color_combine = radeon_color_combine[unit][RADEON_DISABLE];
-	    alpha_combine = radeon_alpha_combine[unit][RADEON_REPLACE];
-	    break;
-	 case GL_LUMINANCE:
-	 case GL_RGB:
-	 case GL_YCBCR_MESA:
-	    color_combine = radeon_color_combine[unit][RADEON_REPLACE];
-	    alpha_combine = radeon_alpha_combine[unit][RADEON_DISABLE];
-	    break;
-	 case GL_COLOR_INDEX:
-	 default:
-	    return GL_FALSE;
-	 }
+	 color_combine = (RADEON_COLOR_ARG_A_ZERO |
+			  RADEON_COLOR_ARG_B_ZERO |
+			  RADEON_BLEND_CTL_ADD |
+			  RADEON_CLAMP_TX);
+	 RADEON_COLOR_ARG( 0, C );
 	 break;
-
       case GL_MODULATE:
-	 switch ( format ) {
-	 case GL_RGBA:
-	 case GL_LUMINANCE_ALPHA:
-	 case GL_INTENSITY:
-	    color_combine = radeon_color_combine[unit][RADEON_MODULATE];
-	    alpha_combine = radeon_alpha_combine[unit][RADEON_MODULATE];
-	    break;
-	 case GL_ALPHA:
-	    color_combine = radeon_color_combine[unit][RADEON_DISABLE];
-	    alpha_combine = radeon_alpha_combine[unit][RADEON_MODULATE];
-	    break;
-	 case GL_RGB:
-	 case GL_LUMINANCE:
-	 case GL_YCBCR_MESA:
-	    color_combine = radeon_color_combine[unit][RADEON_MODULATE];
-	    alpha_combine = radeon_alpha_combine[unit][RADEON_DISABLE];
-	    break;
-	 case GL_COLOR_INDEX:
-	 default:
-	    return GL_FALSE;
-	 }
+	 color_combine = (RADEON_COLOR_ARG_C_ZERO |
+			  RADEON_BLEND_CTL_ADD |
+			  RADEON_CLAMP_TX);
+	 RADEON_COLOR_ARG( 0, A );
+	 RADEON_COLOR_ARG( 1, B );
 	 break;
-
-      case GL_DECAL:
-	 switch ( format ) {
-	 case GL_RGBA:
-	 case GL_RGB:
-	 case GL_YCBCR_MESA:
-	    color_combine = radeon_color_combine[unit][RADEON_DECAL];
-	    alpha_combine = radeon_alpha_combine[unit][RADEON_DISABLE];
-	    break;
-	 case GL_ALPHA:
-	 case GL_LUMINANCE:
-	 case GL_LUMINANCE_ALPHA:
-	 case GL_INTENSITY:
-	    color_combine = radeon_color_combine[unit][RADEON_DISABLE];
-	    alpha_combine = radeon_alpha_combine[unit][RADEON_DISABLE];
-	    break;
-	 case GL_COLOR_INDEX:
-	 default:
-	    return GL_FALSE;
-	 }
-	 break;
-
-      case GL_BLEND:
-	 switch ( format ) {
-	 case GL_RGBA:
-	 case GL_RGB:
-	 case GL_LUMINANCE:
-	 case GL_LUMINANCE_ALPHA:
-	 case GL_YCBCR_MESA:
-	    color_combine = radeon_color_combine[unit][RADEON_BLEND];
-	    alpha_combine = radeon_alpha_combine[unit][RADEON_MODULATE];
-	    break;
-	 case GL_ALPHA:
-	    color_combine = radeon_color_combine[unit][RADEON_DISABLE];
-	    alpha_combine = radeon_alpha_combine[unit][RADEON_MODULATE];
-	    break;
-	 case GL_INTENSITY:
-	    color_combine = radeon_color_combine[unit][RADEON_BLEND];
-	    alpha_combine = radeon_alpha_combine[unit][RADEON_BLEND];
-	    break;
-	 case GL_COLOR_INDEX:
-	 default:
-	    return GL_FALSE;
-	 }
-	 break;
-
       case GL_ADD:
-	 switch ( format ) {
-	 case GL_RGBA:
-	 case GL_RGB:
-	 case GL_LUMINANCE:
-	 case GL_LUMINANCE_ALPHA:
-	 case GL_YCBCR_MESA:
-	    color_combine = radeon_color_combine[unit][RADEON_ADD];
-	    alpha_combine = radeon_alpha_combine[unit][RADEON_MODULATE];
-	    break;
-	 case GL_ALPHA:
-	    color_combine = radeon_color_combine[unit][RADEON_DISABLE];
-	    alpha_combine = radeon_alpha_combine[unit][RADEON_MODULATE];
-	    break;
-	 case GL_INTENSITY:
-	    color_combine = radeon_color_combine[unit][RADEON_ADD];
-	    alpha_combine = radeon_alpha_combine[unit][RADEON_ADD];
-	    break;
-	 case GL_COLOR_INDEX:
-	 default:
-	    return GL_FALSE;
-	 }
+	 color_combine = (RADEON_COLOR_ARG_B_ZERO |
+			  RADEON_COMP_ARG_B |
+			  RADEON_BLEND_CTL_ADD |
+			  RADEON_CLAMP_TX);
+	 RADEON_COLOR_ARG( 0, A );
+	 RADEON_COLOR_ARG( 1, C );
+	 break;
+      case GL_ADD_SIGNED:
+	 color_combine = (RADEON_COLOR_ARG_B_ZERO |
+			  RADEON_COMP_ARG_B |
+			  RADEON_BLEND_CTL_ADDSIGNED |
+			  RADEON_CLAMP_TX);
+	 RADEON_COLOR_ARG( 0, A );
+	 RADEON_COLOR_ARG( 1, C );
+	 break;
+      case GL_SUBTRACT:
+	 color_combine = (RADEON_COLOR_ARG_B_ZERO |
+			  RADEON_COMP_ARG_B |
+			  RADEON_BLEND_CTL_SUBTRACT |
+			  RADEON_CLAMP_TX);
+	 RADEON_COLOR_ARG( 0, A );
+	 RADEON_COLOR_ARG( 1, C );
+	 break;
+      case GL_INTERPOLATE:
+	 color_combine = (RADEON_BLEND_CTL_BLEND |
+			  RADEON_CLAMP_TX);
+	 RADEON_COLOR_ARG( 0, B );
+	 RADEON_COLOR_ARG( 1, A );
+	 RADEON_COLOR_ARG( 2, C );
 	 break;
 
-      case GL_COMBINE:
-	 /* Don't cache these results.
+      case GL_DOT3_RGB_EXT:
+      case GL_DOT3_RGBA_EXT:
+	 /* The EXT version of the DOT3 extension does not support the
+	  * scale factor, but the ARB version (and the version in OpenGL
+	  * 1.3) does.
 	  */
-	 rmesa->state.texture.unit[unit].format = 0;
-	 rmesa->state.texture.unit[unit].envMode = 0;
+	 RGBshift = 0;
+	 Ashift = 0;
+	 /* FALLTHROUGH */
 
-	 /* Step 0:
-	  * Calculate how many arguments we need to process.
+      case GL_DOT3_RGB:
+      case GL_DOT3_RGBA:
+	 /* The R100 / RV200 only support a 1X multiplier in hardware
+	  * w/the ARB version.
 	  */
-	 switch ( texUnit->CombineModeRGB ) {
-	 case GL_REPLACE:
-	    numColorArgs = 1;
-	    break;
-	 case GL_MODULATE:
-	 case GL_ADD:
-	 case GL_ADD_SIGNED:
-	 case GL_SUBTRACT:
-	 case GL_DOT3_RGB:
-	 case GL_DOT3_RGBA:
-	 case GL_DOT3_RGB_EXT:
-	 case GL_DOT3_RGBA_EXT:
-	    numColorArgs = 2;
-	    break;
-	 case GL_INTERPOLATE:
-	 case GL_MODULATE_ADD_ATI:
-	 case GL_MODULATE_SIGNED_ADD_ATI:
-	 case GL_MODULATE_SUBTRACT_ATI:
-	    numColorArgs = 3;
-	    break;
-	 default:
+	 if ( RGBshift != (RADEON_SCALE_1X >> RADEON_SCALE_SHIFT) ) {
 	    return GL_FALSE;
 	 }
 
-	 switch ( texUnit->CombineModeA ) {
-	 case GL_REPLACE:
-	    numAlphaArgs = 1;
-	    break;
-	 case GL_MODULATE:
-	 case GL_ADD:
-	 case GL_ADD_SIGNED:
-	 case GL_SUBTRACT:
-	    numAlphaArgs = 2;
-	    break;
-	 case GL_INTERPOLATE:
-	 case GL_MODULATE_ADD_ATI:
-	 case GL_MODULATE_SIGNED_ADD_ATI:
-	 case GL_MODULATE_SUBTRACT_ATI:
-	    numAlphaArgs = 3;
-	    break;
-	 default:
-	    return GL_FALSE;
-	 }
+	 RGBshift += 2;
+	 Ashift = RGBshift;
 
-	 /* Step 1:
-	  * Extract the color and alpha combine function arguments.
-	  */
-	 for ( i = 0 ; i < numColorArgs ; i++ ) {
-	    const GLuint op = texUnit->CombineOperandRGB[i] - GL_SRC_COLOR;
-	    assert(op >= 0);
-	    assert(op <= 3);
-	    switch ( texUnit->CombineSourceRGB[i] ) {
-	    case GL_TEXTURE:
-	       color_arg[i] = radeon_texture_color[op][unit];
-	       break;
-	    case GL_CONSTANT:
-	       color_arg[i] = radeon_tfactor_color[op];
-	       break;
-	    case GL_PRIMARY_COLOR:
-	       color_arg[i] = radeon_primary_color[op];
-	       break;
-	    case GL_PREVIOUS:
-	       color_arg[i] = radeon_previous_color[op];
-	       break;
-	    case GL_ZERO:
-	       color_arg[i] = radeon_zero_color[op];
-	       break;
-	    case GL_ONE:
-	       color_arg[i] = radeon_zero_color[op+1];
-	       break;
-	    default:
-	       return GL_FALSE;
-	    }
-	 }
-
-	 for ( i = 0 ; i < numAlphaArgs ; i++ ) {
-	    const GLuint op = texUnit->CombineOperandA[i] - GL_SRC_ALPHA;
-	    assert(op >= 0);
-	    assert(op <= 1);
-	    switch ( texUnit->CombineSourceA[i] ) {
-	    case GL_TEXTURE:
-	       alpha_arg[i] = radeon_texture_alpha[op][unit];
-	       break;
-	    case GL_CONSTANT:
-	       alpha_arg[i] = radeon_tfactor_alpha[op];
-	       break;
-	    case GL_PRIMARY_COLOR:
-	       alpha_arg[i] = radeon_primary_alpha[op];
-	       break;
-	    case GL_PREVIOUS:
-	       alpha_arg[i] = radeon_previous_alpha[op];
-	       break;
-	    case GL_ZERO:
-	       alpha_arg[i] = radeon_zero_alpha[op];
-	       break;
-	    case GL_ONE:
-	       alpha_arg[i] = radeon_zero_alpha[op+1];
-	       break;
-	    default:
-	       return GL_FALSE;
-	    }
-	 }
-
-	 /* Step 2:
-	  * Build up the color and alpha combine functions.
-	  */
-	 switch ( texUnit->CombineModeRGB ) {
-	 case GL_REPLACE:
-	    color_combine = (RADEON_COLOR_ARG_A_ZERO |
-			     RADEON_COLOR_ARG_B_ZERO |
-			     RADEON_BLEND_CTL_ADD |
-			     RADEON_CLAMP_TX);
-	    RADEON_COLOR_ARG( 0, C );
-	    break;
-	 case GL_MODULATE:
-	    color_combine = (RADEON_COLOR_ARG_C_ZERO |
-			     RADEON_BLEND_CTL_ADD |
-			     RADEON_CLAMP_TX);
-	    RADEON_COLOR_ARG( 0, A );
-	    RADEON_COLOR_ARG( 1, B );
-	    break;
-	 case GL_ADD:
-	    color_combine = (RADEON_COLOR_ARG_B_ZERO |
-			     RADEON_COMP_ARG_B |
-			     RADEON_BLEND_CTL_ADD |
-			     RADEON_CLAMP_TX);
-	    RADEON_COLOR_ARG( 0, A );
-	    RADEON_COLOR_ARG( 1, C );
-	    break;
-	 case GL_ADD_SIGNED:
-	    color_combine = (RADEON_COLOR_ARG_B_ZERO |
-			     RADEON_COMP_ARG_B |
-			     RADEON_BLEND_CTL_ADDSIGNED |
-			     RADEON_CLAMP_TX);
-	    RADEON_COLOR_ARG( 0, A );
-	    RADEON_COLOR_ARG( 1, C );
-	    break;
-	 case GL_SUBTRACT:
-	    color_combine = (RADEON_COLOR_ARG_B_ZERO |
-			     RADEON_COMP_ARG_B |
-			     RADEON_BLEND_CTL_SUBTRACT |
-			     RADEON_CLAMP_TX);
-	    RADEON_COLOR_ARG( 0, A );
-	    RADEON_COLOR_ARG( 1, C );
-	    break;
-	 case GL_INTERPOLATE:
-	    color_combine = (RADEON_BLEND_CTL_BLEND |
-			     RADEON_CLAMP_TX);
-	    RADEON_COLOR_ARG( 0, B );
-	    RADEON_COLOR_ARG( 1, A );
-	    RADEON_COLOR_ARG( 2, C );
-	    break;
-
-	 case GL_DOT3_RGB_EXT:
-	 case GL_DOT3_RGBA_EXT:
-	    /* The EXT version of the DOT3 extension does not support the
-	     * scale factor, but the ARB version (and the version in OpenGL
-	     * 1.3) does.
-	     */
-	    RGBshift = 0;
-	    Ashift = 0;
-	    /* FALLTHROUGH */
-
-	 case GL_DOT3_RGB:
-	 case GL_DOT3_RGBA:
-	    /* The R100 / RV200 only support a 1X multiplier in hardware
-	     * w/the ARB version.
-	     */
-	    if ( RGBshift != (RADEON_SCALE_1X >> RADEON_SCALE_SHIFT) ) {
-	       return GL_FALSE;
-	    }
-
-	    RGBshift += 2;
-	    Ashift = RGBshift;
-
-	    color_combine = (RADEON_COLOR_ARG_C_ZERO |
-			     RADEON_BLEND_CTL_DOT3 |
-			     RADEON_CLAMP_TX);
-	    RADEON_COLOR_ARG( 0, A );
-	    RADEON_COLOR_ARG( 1, B );
-	    break;
-
-	 case GL_MODULATE_ADD_ATI:
-	    color_combine = (RADEON_BLEND_CTL_ADD |
-			     RADEON_CLAMP_TX);
-	    RADEON_COLOR_ARG( 0, A );
-	    RADEON_COLOR_ARG( 1, C );
-	    RADEON_COLOR_ARG( 2, B );
-	    break;
-	 case GL_MODULATE_SIGNED_ADD_ATI:
-	    color_combine = (RADEON_BLEND_CTL_ADDSIGNED |
-			     RADEON_CLAMP_TX);
-	    RADEON_COLOR_ARG( 0, A );
-	    RADEON_COLOR_ARG( 1, C );
-	    RADEON_COLOR_ARG( 2, B );
-	    break;
-	 case GL_MODULATE_SUBTRACT_ATI:
-	    color_combine = (RADEON_BLEND_CTL_SUBTRACT |
-			     RADEON_CLAMP_TX);
-	    RADEON_COLOR_ARG( 0, A );
-	    RADEON_COLOR_ARG( 1, C );
-	    RADEON_COLOR_ARG( 2, B );
-	    break;
-	 default:
-	    return GL_FALSE;
-	 }
-
-	 switch ( texUnit->CombineModeA ) {
-	 case GL_REPLACE:
-	    alpha_combine = (RADEON_ALPHA_ARG_A_ZERO |
-			     RADEON_ALPHA_ARG_B_ZERO |
-			     RADEON_BLEND_CTL_ADD |
-			     RADEON_CLAMP_TX);
-	    RADEON_ALPHA_ARG( 0, C );
-	    break;
-	 case GL_MODULATE:
-	    alpha_combine = (RADEON_ALPHA_ARG_C_ZERO |
-			     RADEON_BLEND_CTL_ADD |
-			     RADEON_CLAMP_TX);
-	    RADEON_ALPHA_ARG( 0, A );
-	    RADEON_ALPHA_ARG( 1, B );
-	    break;
-	 case GL_ADD:
-	    alpha_combine = (RADEON_ALPHA_ARG_B_ZERO |
-			     RADEON_COMP_ARG_B |
-			     RADEON_BLEND_CTL_ADD |
-			     RADEON_CLAMP_TX);
-	    RADEON_ALPHA_ARG( 0, A );
-	    RADEON_ALPHA_ARG( 1, C );
-	    break;
-	 case GL_ADD_SIGNED:
-	    alpha_combine = (RADEON_ALPHA_ARG_B_ZERO |
-			     RADEON_COMP_ARG_B |
-			     RADEON_BLEND_CTL_ADDSIGNED |
-			     RADEON_CLAMP_TX);
-	    RADEON_ALPHA_ARG( 0, A );
-	    RADEON_ALPHA_ARG( 1, C );
-	    break;
-	 case GL_SUBTRACT:
-	    alpha_combine = (RADEON_COLOR_ARG_B_ZERO |
-			     RADEON_COMP_ARG_B |
-			     RADEON_BLEND_CTL_SUBTRACT |
-			     RADEON_CLAMP_TX);
-	    RADEON_ALPHA_ARG( 0, A );
-	    RADEON_ALPHA_ARG( 1, C );
-	    break;
-	 case GL_INTERPOLATE:
-	    alpha_combine = (RADEON_BLEND_CTL_BLEND |
-			     RADEON_CLAMP_TX);
-	    RADEON_ALPHA_ARG( 0, B );
-	    RADEON_ALPHA_ARG( 1, A );
-	    RADEON_ALPHA_ARG( 2, C );
-	    break;
-
-	 case GL_MODULATE_ADD_ATI:
-	    alpha_combine = (RADEON_BLEND_CTL_ADD |
-			     RADEON_CLAMP_TX);
-	    RADEON_ALPHA_ARG( 0, A );
-	    RADEON_ALPHA_ARG( 1, C );
-	    RADEON_ALPHA_ARG( 2, B );
-	    break;
-	 case GL_MODULATE_SIGNED_ADD_ATI:
-	    alpha_combine = (RADEON_BLEND_CTL_ADDSIGNED |
-			     RADEON_CLAMP_TX);
-	    RADEON_ALPHA_ARG( 0, A );
-	    RADEON_ALPHA_ARG( 1, C );
-	    RADEON_ALPHA_ARG( 2, B );
-	    break;
-	 case GL_MODULATE_SUBTRACT_ATI:
-	    alpha_combine = (RADEON_BLEND_CTL_SUBTRACT |
-			     RADEON_CLAMP_TX);
-	    RADEON_ALPHA_ARG( 0, A );
-	    RADEON_ALPHA_ARG( 1, C );
-	    RADEON_ALPHA_ARG( 2, B );
-	    break;
-	 default:
-	    return GL_FALSE;
-	 }
-
-	 if ( (texUnit->CombineModeRGB == GL_DOT3_RGB_EXT)
-	      || (texUnit->CombineModeRGB == GL_DOT3_RGB) ) {
-	    alpha_combine |= RADEON_DOT_ALPHA_DONT_REPLICATE;
-	 }
-
-	 /* Step 3:
-	  * Apply the scale factor.
-	  */
-	 color_combine |= (RGBshift << RADEON_SCALE_SHIFT);
-	 alpha_combine |= (Ashift   << RADEON_SCALE_SHIFT);
-
-	 /* All done!
-	  */
+	 color_combine = (RADEON_COLOR_ARG_C_ZERO |
+			  RADEON_BLEND_CTL_DOT3 |
+			  RADEON_CLAMP_TX);
+	 RADEON_COLOR_ARG( 0, A );
+	 RADEON_COLOR_ARG( 1, B );
 	 break;
 
+      case GL_MODULATE_ADD_ATI:
+	 color_combine = (RADEON_BLEND_CTL_ADD |
+			  RADEON_CLAMP_TX);
+	 RADEON_COLOR_ARG( 0, A );
+	 RADEON_COLOR_ARG( 1, C );
+	 RADEON_COLOR_ARG( 2, B );
+	 break;
+      case GL_MODULATE_SIGNED_ADD_ATI:
+	 color_combine = (RADEON_BLEND_CTL_ADDSIGNED |
+			  RADEON_CLAMP_TX);
+	 RADEON_COLOR_ARG( 0, A );
+	 RADEON_COLOR_ARG( 1, C );
+	 RADEON_COLOR_ARG( 2, B );
+	 break;
+      case GL_MODULATE_SUBTRACT_ATI:
+	 color_combine = (RADEON_BLEND_CTL_SUBTRACT |
+			  RADEON_CLAMP_TX);
+	 RADEON_COLOR_ARG( 0, A );
+	 RADEON_COLOR_ARG( 1, C );
+	 RADEON_COLOR_ARG( 2, B );
+	 break;
       default:
 	 return GL_FALSE;
       }
+
+      switch ( texUnit->_CurrentCombine->ModeA ) {
+      case GL_REPLACE:
+	 alpha_combine = (RADEON_ALPHA_ARG_A_ZERO |
+			  RADEON_ALPHA_ARG_B_ZERO |
+			  RADEON_BLEND_CTL_ADD |
+			  RADEON_CLAMP_TX);
+	 RADEON_ALPHA_ARG( 0, C );
+	 break;
+      case GL_MODULATE:
+	 alpha_combine = (RADEON_ALPHA_ARG_C_ZERO |
+			  RADEON_BLEND_CTL_ADD |
+			  RADEON_CLAMP_TX);
+	 RADEON_ALPHA_ARG( 0, A );
+	 RADEON_ALPHA_ARG( 1, B );
+	 break;
+      case GL_ADD:
+	 alpha_combine = (RADEON_ALPHA_ARG_B_ZERO |
+			  RADEON_COMP_ARG_B |
+			  RADEON_BLEND_CTL_ADD |
+			  RADEON_CLAMP_TX);
+	 RADEON_ALPHA_ARG( 0, A );
+	 RADEON_ALPHA_ARG( 1, C );
+	 break;
+      case GL_ADD_SIGNED:
+	 alpha_combine = (RADEON_ALPHA_ARG_B_ZERO |
+			  RADEON_COMP_ARG_B |
+			  RADEON_BLEND_CTL_ADDSIGNED |
+			  RADEON_CLAMP_TX);
+	 RADEON_ALPHA_ARG( 0, A );
+	 RADEON_ALPHA_ARG( 1, C );
+	 break;
+      case GL_SUBTRACT:
+	 alpha_combine = (RADEON_COLOR_ARG_B_ZERO |
+			  RADEON_COMP_ARG_B |
+			  RADEON_BLEND_CTL_SUBTRACT |
+			  RADEON_CLAMP_TX);
+	 RADEON_ALPHA_ARG( 0, A );
+	 RADEON_ALPHA_ARG( 1, C );
+	 break;
+      case GL_INTERPOLATE:
+	 alpha_combine = (RADEON_BLEND_CTL_BLEND |
+			  RADEON_CLAMP_TX);
+	 RADEON_ALPHA_ARG( 0, B );
+	 RADEON_ALPHA_ARG( 1, A );
+	 RADEON_ALPHA_ARG( 2, C );
+	 break;
+
+      case GL_MODULATE_ADD_ATI:
+	 alpha_combine = (RADEON_BLEND_CTL_ADD |
+			  RADEON_CLAMP_TX);
+	 RADEON_ALPHA_ARG( 0, A );
+	 RADEON_ALPHA_ARG( 1, C );
+	 RADEON_ALPHA_ARG( 2, B );
+	 break;
+      case GL_MODULATE_SIGNED_ADD_ATI:
+	 alpha_combine = (RADEON_BLEND_CTL_ADDSIGNED |
+			  RADEON_CLAMP_TX);
+	 RADEON_ALPHA_ARG( 0, A );
+	 RADEON_ALPHA_ARG( 1, C );
+	 RADEON_ALPHA_ARG( 2, B );
+	 break;
+      case GL_MODULATE_SUBTRACT_ATI:
+	 alpha_combine = (RADEON_BLEND_CTL_SUBTRACT |
+			  RADEON_CLAMP_TX);
+	 RADEON_ALPHA_ARG( 0, A );
+	 RADEON_ALPHA_ARG( 1, C );
+	 RADEON_ALPHA_ARG( 2, B );
+	 break;
+      default:
+	 return GL_FALSE;
+      }
+
+      if ( (texUnit->_CurrentCombine->ModeRGB == GL_DOT3_RGB_EXT)
+	   || (texUnit->_CurrentCombine->ModeRGB == GL_DOT3_RGB) ) {
+	 alpha_combine |= RADEON_DOT_ALPHA_DONT_REPLICATE;
+      }
+
+      /* Step 3:
+       * Apply the scale factor.
+       */
+      color_combine |= (RGBshift << RADEON_SCALE_SHIFT);
+      alpha_combine |= (Ashift   << RADEON_SCALE_SHIFT);
+
+      /* All done!
+       */
    }
 
    if ( rmesa->hw.tex[unit].cmd[TEX_PP_TXCBLEND] != color_combine ||
@@ -1496,7 +961,7 @@ static GLboolean update_tex_common( GLcontext *ctx, int unit )
    GLenum format;
 
    /* Fallback if there's a texture border */
-   if ( tObj->Image[tObj->BaseLevel]->Border > 0 ) {
+   if ( tObj->Image[0][tObj->BaseLevel]->Border > 0 ) {
       fprintf(stderr, "%s: border\n", __FUNCTION__);
       return GL_FALSE;
    }
@@ -1549,7 +1014,7 @@ static GLboolean update_tex_common( GLcontext *ctx, int unit )
       rmesa->NewGLState |= _NEW_TEXTURE_MATRIX;
    }
 
-   format = tObj->Image[tObj->BaseLevel]->Format;
+   format = tObj->Image[0][tObj->BaseLevel]->Format;
    if ( rmesa->state.texture.unit[unit].format != format ||
 	rmesa->state.texture.unit[unit].envMode != texUnit->EnvMode ) {
       rmesa->state.texture.unit[unit].format = format;

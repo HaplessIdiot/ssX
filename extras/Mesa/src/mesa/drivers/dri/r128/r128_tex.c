@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r128/r128_tex.c,v 1.1.1.2tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r128/r128_tex.c,v 1.1.1.3 2004/06/10 14:22:58 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -48,9 +48,9 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "texstore.h"
 #include "texformat.h"
 #include "teximage.h"
-#include "texobj.h"
 #include "imports.h"
 #include "colormac.h"
+#include "texobj.h"
 
 #include "xmlpool.h"
 
@@ -147,7 +147,7 @@ static r128TexObjPtr r128AllocTexObj( struct gl_texture_object *texObj )
    r128TexObjPtr t;
 
    if ( R128_DEBUG & DEBUG_VERBOSE_API ) {
-      fprintf( stderr, "%s( %p )\n", __FUNCTION__, (void *)texObj );
+      fprintf( stderr, "%s( %p )\n", __FUNCTION__, (void *) texObj );
    }
 
    t = (r128TexObjPtr) CALLOC_STRUCT( r128_tex_obj );
@@ -414,7 +414,7 @@ static void r128TexSubImage2D( GLcontext *ctx,
 }
 
 
-static void r128DDTexEnv( GLcontext *ctx, GLenum target,
+static void r128TexEnv( GLcontext *ctx, GLenum target,
 			  GLenum pname, const GLfloat *param )
 {
    r128ContextPtr rmesa = R128_CONTEXT(ctx);
@@ -502,9 +502,9 @@ static void r128DDTexEnv( GLcontext *ctx, GLenum target,
 }
 
 
-static void r128DDTexParameter( GLcontext *ctx, GLenum target,
-				struct gl_texture_object *tObj,
-				GLenum pname, const GLfloat *params )
+static void r128TexParameter( GLcontext *ctx, GLenum target,
+                              struct gl_texture_object *tObj,
+                              GLenum pname, const GLfloat *params )
 {
    r128ContextPtr rmesa = R128_CONTEXT(ctx);
    r128TexObjPtr t = (r128TexObjPtr)tObj->DriverData;
@@ -553,22 +553,20 @@ static void r128DDTexParameter( GLcontext *ctx, GLenum target,
    }
 }
 
-static void r128DDBindTexture( GLcontext *ctx, GLenum target,
+static void r128BindTexture( GLcontext *ctx, GLenum target,
 			       struct gl_texture_object *tObj )
 {
    if ( R128_DEBUG & DEBUG_VERBOSE_API ) {
-      fprintf( stderr, "%s( %p ) unit=%d\n", __FUNCTION__, (void *)tObj,
+      fprintf( stderr, "%s( %p ) unit=%d\n", __FUNCTION__, (void *) tObj,
 	       ctx->Texture.CurrentUnit );
    }
 
-   if ( target == GL_TEXTURE_2D || target == GL_TEXTURE_1D ) {
-      if ( tObj->DriverData == NULL ) {
-	 r128AllocTexObj( tObj );
-      }
-   }
+   assert( (target != GL_TEXTURE_2D && target != GL_TEXTURE_1D) ||
+           (tObj->DriverData != NULL) );
 }
 
-static void r128DDDeleteTexture( GLcontext *ctx,
+
+static void r128DeleteTexture( GLcontext *ctx,
 				 struct gl_texture_object *tObj )
 {
    r128ContextPtr rmesa = R128_CONTEXT(ctx);
@@ -585,34 +583,33 @@ static void r128DDDeleteTexture( GLcontext *ctx,
    _mesa_delete_texture_object(ctx, tObj);
 }
 
-void r128DDInitTextureFuncs( GLcontext *ctx )
+/**
+ * Allocate a new texture object.
+ * Called via ctx->Driver.NewTextureObject.
+ * Note: we could use containment here to 'derive' the driver-specific
+ * texture object from the core mesa gl_texture_object.  Not done at this time.
+ */
+static struct gl_texture_object *
+r128NewTextureObject( GLcontext *ctx, GLuint name, GLenum target )
 {
-   r128ContextPtr rmesa = R128_CONTEXT(ctx);
-
-
-   ctx->Driver.TexEnv			= r128DDTexEnv;
-   ctx->Driver.ChooseTextureFormat	= r128ChooseTextureFormat;
-   ctx->Driver.TexImage1D		= r128TexImage1D;
-   ctx->Driver.TexSubImage1D		= r128TexSubImage1D;
-   ctx->Driver.TexImage2D		= r128TexImage2D;
-   ctx->Driver.TexSubImage2D		= r128TexSubImage2D;
-   ctx->Driver.TexImage3D               = _mesa_store_teximage3d;
-   ctx->Driver.TexSubImage3D            = _mesa_store_texsubimage3d;
-   ctx->Driver.CopyTexImage1D           = _swrast_copy_teximage1d;
-   ctx->Driver.CopyTexImage2D           = _swrast_copy_teximage2d;
-   ctx->Driver.CopyTexSubImage1D        = _swrast_copy_texsubimage1d;
-   ctx->Driver.CopyTexSubImage2D        = _swrast_copy_texsubimage2d;
-   ctx->Driver.CopyTexSubImage3D        = _swrast_copy_texsubimage3d;
-   ctx->Driver.TestProxyTexImage        = _mesa_test_proxy_teximage;
-   ctx->Driver.TexParameter		= r128DDTexParameter;
-   ctx->Driver.BindTexture		= r128DDBindTexture;
-   ctx->Driver.DeleteTexture		= r128DDDeleteTexture;
-   ctx->Driver.UpdateTexturePalette	= NULL;
-   ctx->Driver.ActiveTexture		= NULL;
-   ctx->Driver.IsTextureResident	= driIsTextureResident;
-   ctx->Driver.PrioritizeTexture	= NULL;
-
-   driInitTextureObjects( ctx, & rmesa->swapped,
-			  DRI_TEXMGR_DO_TEXTURE_1D
-			  | DRI_TEXMGR_DO_TEXTURE_2D );
+   struct gl_texture_object *obj;
+   obj = _mesa_new_texture_object(ctx, name, target);
+   r128AllocTexObj( obj );
+   return obj;
 }
+
+void r128InitTextureFuncs( struct dd_function_table *functions )
+{
+   functions->TexEnv			= r128TexEnv;
+   functions->ChooseTextureFormat	= r128ChooseTextureFormat;
+   functions->TexImage1D		= r128TexImage1D;
+   functions->TexSubImage1D		= r128TexSubImage1D;
+   functions->TexImage2D		= r128TexImage2D;
+   functions->TexSubImage2D		= r128TexSubImage2D;
+   functions->TexParameter		= r128TexParameter;
+   functions->BindTexture		= r128BindTexture;
+   functions->NewTextureObject		= r128NewTextureObject;
+   functions->DeleteTexture		= r128DeleteTexture;
+   functions->IsTextureResident		= driIsTextureResident;
+}
+

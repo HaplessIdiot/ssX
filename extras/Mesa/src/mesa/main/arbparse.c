@@ -1,6 +1,6 @@
 /*
  * Mesa 3-D graphics library
- * Version:  6.0
+ * Version:  6.1
  *
  * Copyright (C) 1999-2004  Brian Paul   All Rights Reserved.
  *
@@ -21,7 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/mesa/main/arbparse.c,v 1.2 2004/04/26 00:23:36 tsi Exp $ */
 
 #define DEBUG_PARSING 0
 
@@ -3056,7 +3056,7 @@ parse_generic_attrib_num(GLcontext *ctx, GLubyte ** inst,
 {
    *attrib = parse_integer(inst, Program);
 
-   if (*attrib > MAX_VERTEX_PROGRAM_ATTRIBS)
+   if ((*attrib < 0) || (*attrib > MAX_VERTEX_PROGRAM_ATTRIBS))
    {
       _mesa_set_program_error (ctx, Program->Position,
                                "Invalid generic vertex attribute index");
@@ -3079,7 +3079,7 @@ parse_texcoord_num (GLcontext * ctx, GLubyte ** inst,
 {
    *coord = parse_integer (inst, Program);
 
-   if (*coord >= ctx->Const.MaxTextureUnits) {
+   if ((*coord < 0) || (*coord >= ctx->Const.MaxTextureUnits)) {
       _mesa_set_program_error (ctx, Program->Position,
                                "Invalid texture unit index");
       _mesa_error (ctx, GL_INVALID_OPERATION, "Invalid texture unit index");
@@ -3516,7 +3516,7 @@ static GLuint
 parse_program_single_item (GLcontext * ctx, GLubyte ** inst,
                            struct arb_program *Program, GLint * state_tokens)
 {
-   if (Program->type == GL_FRAGMENT_PROGRAM_ARB)
+   if (Program->Base.Target == GL_FRAGMENT_PROGRAM_ARB)
       state_tokens[0] = STATE_FRAGMENT_PROGRAM;
    else
       state_tokens[0] = STATE_VERTEX_PROGRAM;
@@ -3528,10 +3528,10 @@ parse_program_single_item (GLcontext * ctx, GLubyte ** inst,
          state_tokens[2] = parse_integer (inst, Program);
 
          /* Check state_tokens[2] against the number of ENV parameters available */
-         if (((Program->type == GL_FRAGMENT_PROGRAM_ARB) &&
+         if (((Program->Base.Target == GL_FRAGMENT_PROGRAM_ARB) &&
               (state_tokens[2] >= (GLint) ctx->Const.MaxFragmentProgramEnvParams))
              ||
-             ((Program->type == GL_VERTEX_PROGRAM_ARB) &&
+             ((Program->Base.Target == GL_VERTEX_PROGRAM_ARB) &&
               (state_tokens[2] >= (GLint) ctx->Const.MaxVertexProgramEnvParams))) {
             _mesa_set_program_error (ctx, Program->Position,
                                      "Invalid Program Env Parameter");
@@ -3548,10 +3548,10 @@ parse_program_single_item (GLcontext * ctx, GLubyte ** inst,
          state_tokens[2] = parse_integer (inst, Program);
 
          /* Check state_tokens[2] against the number of LOCAL parameters available */
-         if (((Program->type == GL_FRAGMENT_PROGRAM_ARB) &&
+         if (((Program->Base.Target == GL_FRAGMENT_PROGRAM_ARB) &&
               (state_tokens[2] >= (GLint) ctx->Const.MaxFragmentProgramLocalParams))
              ||
-             ((Program->type == GL_VERTEX_PROGRAM_ARB) &&
+             ((Program->Base.Target == GL_VERTEX_PROGRAM_ARB) &&
               (state_tokens[2] >= (GLint) ctx->Const.MaxVertexProgramLocalParams))) {
             _mesa_set_program_error (ctx, Program->Position,
                                      "Invalid Program Local Parameter");
@@ -3627,7 +3627,7 @@ parse_attrib_binding (GLcontext * ctx, GLubyte ** inst,
    GLint err = 0;
 
    *is_generic = 0;
-   if (Program->type == GL_FRAGMENT_PROGRAM_ARB) {
+   if (Program->Base.Target == GL_FRAGMENT_PROGRAM_ARB) {
       switch (*(*inst)++) {
          case FRAGMENT_ATTRIB_COLOR:
             err = parse_color_type (ctx, inst, Program, &coord);
@@ -3806,7 +3806,7 @@ parse_result_binding (GLcontext * ctx, GLubyte ** inst, GLuint * binding,
    switch (*(*inst)++) {
       case FRAGMENT_RESULT_COLOR:
          /* for frag programs, this is FRAGMENT_RESULT_COLOR */
-         if (Program->type == GL_FRAGMENT_PROGRAM_ARB) {
+         if (Program->Base.Target == GL_FRAGMENT_PROGRAM_ARB) {
             *binding = FRAG_OUTPUT_COLR;
             *binding_idx = 0;
          }
@@ -3818,7 +3818,7 @@ parse_result_binding (GLcontext * ctx, GLubyte ** inst, GLuint * binding,
 
       case FRAGMENT_RESULT_DEPTH:
          /* for frag programs, this is FRAGMENT_RESULT_DEPTH */
-         if (Program->type == GL_FRAGMENT_PROGRAM_ARB) {
+         if (Program->Base.Target == GL_FRAGMENT_PROGRAM_ARB) {
             *binding = FRAG_OUTPUT_DEPR;
             *binding_idx = 2;
          }
@@ -4001,7 +4001,7 @@ parse_param_elements (GLcontext * ctx, GLubyte ** inst,
             GLuint end_idx = parse_integer (inst, Program);
 
             out_of_range = 0;
-            if (Program->type == GL_FRAGMENT_PROGRAM_ARB) {
+            if (Program->Base.Target == GL_FRAGMENT_PROGRAM_ARB) {
                if (((state_tokens[1] == STATE_ENV)
                     && (end_idx >= ctx->Const.MaxFragmentProgramEnvParams))
                    || ((state_tokens[1] == STATE_LOCAL)
@@ -4060,10 +4060,10 @@ parse_param_elements (GLcontext * ctx, GLubyte ** inst,
    }
 
    /* Make sure we haven't blown past our parameter limits */
-   if (((Program->type == GL_VERTEX_PROGRAM_ARB) &&
+   if (((Program->Base.Target == GL_VERTEX_PROGRAM_ARB) &&
         (Program->Base.NumParameters >=
          ctx->Const.MaxVertexProgramLocalParams))
-       || ((Program->type == GL_FRAGMENT_PROGRAM_ARB)
+       || ((Program->Base.Target == GL_FRAGMENT_PROGRAM_ARB)
            && (Program->Base.NumParameters >=
                ctx->Const.MaxFragmentProgramLocalParams))) {
       _mesa_set_program_error (ctx, Program->Position,
@@ -4086,8 +4086,7 @@ static GLuint
 parse_param (GLcontext * ctx, GLubyte ** inst, struct var_cache **vc_head,
              struct arb_program *Program)
 {
-   GLuint found;
-   GLint specified_length;
+   GLuint found, specified_length, err;
    char *error_msg;
    struct var_cache *param_var;
 
@@ -4217,10 +4216,10 @@ parse_temp (GLcontext * ctx, GLubyte ** inst, struct var_cache **vc_head,
 
       temp_var->type = vt_temp;
 
-      if (((Program->type == GL_FRAGMENT_PROGRAM_ARB) &&
+      if (((Program->Base.Target == GL_FRAGMENT_PROGRAM_ARB) &&
            (Program->Base.NumTemporaries >=
             ctx->Const.MaxFragmentProgramTemps))
-          || ((Program->type == GL_VERTEX_PROGRAM_ARB)
+          || ((Program->Base.Target == GL_VERTEX_PROGRAM_ARB)
               && (Program->Base.NumTemporaries >=
                   ctx->Const.MaxVertexProgramTemps))) {
          _mesa_set_program_error (ctx, Program->Position,
@@ -4650,16 +4649,16 @@ parse_extended_swizzle_mask (GLubyte ** inst, GLubyte * mask, GLboolean * Negate
             mask[a] = SWIZZLE_ONE;
             break;
          case COMPONENT_X:
-            mask[a] = 0;
+            mask[a] = SWIZZLE_X;
             break;
          case COMPONENT_Y:
-            mask[a] = 1;
+            mask[a] = SWIZZLE_Y;
             break;
          case COMPONENT_Z:
-            mask[a] = 2;
+            mask[a] = SWIZZLE_Z;
             break;
          case COMPONENT_W:
-            mask[a] = 3;
+            mask[a] = SWIZZLE_W;
             break;
 
       }
@@ -4684,8 +4683,7 @@ parse_src_reg (GLcontext * ctx, GLubyte ** inst, struct var_cache **vc_head,
                GLboolean *IsRelOffset )
 {
    struct var_cache *src;
-   GLuint binding_state, binding_idx, is_generic, found;
-   GLint offset;
+   GLuint binding_state, binding_idx, is_generic, found, offset;
 
    /* And the binding for the src */
    switch (*(*inst)++) {
@@ -5797,27 +5795,27 @@ parse_arb_program (GLcontext * ctx, GLubyte * inst, struct var_cache **vc_head,
          case OPTION:
             switch (*inst++) {
                case ARB_PRECISION_HINT_FASTEST:
-                  Program->HintPrecisionFastest = 1;
+                  Program->PrecisionOption = GL_FASTEST;
                   break;
 
                case ARB_PRECISION_HINT_NICEST:
-                  Program->HintPrecisionNicest = 1;
+                  Program->PrecisionOption = GL_NICEST;
                   break;
 
                case ARB_FOG_EXP:
-                  Program->HintFogExp = 1;
+                  Program->FogOption = GL_EXP;
                   break;
 
                case ARB_FOG_EXP2:
-                  Program->HintFogExp2 = 1;
+                  Program->FogOption = GL_EXP2;
                   break;
 
                case ARB_FOG_LINEAR:
-                  Program->HintFogLinear = 1;
+                  Program->FogOption = GL_LINEAR;
                   break;
 
                case ARB_POSITION_INVARIANT:
-                  if (Program->type == GL_VERTEX_PROGRAM_ARB)						
+                  if (Program->Base.Target == GL_VERTEX_PROGRAM_ARB)
                      Program->HintPositionInvariant = 1;
                   break;
             }
@@ -5826,7 +5824,7 @@ parse_arb_program (GLcontext * ctx, GLubyte * inst, struct var_cache **vc_head,
          case INSTRUCTION:
             Program->Position = parse_position (&inst);
 
-            if (Program->type == GL_FRAGMENT_PROGRAM_ARB) {
+            if (Program->Base.Target == GL_FRAGMENT_PROGRAM_ARB) {
 
                /* Check the instruction count 
                 * XXX: Does END count as an instruction?
@@ -5888,7 +5886,7 @@ parse_arb_program (GLcontext * ctx, GLubyte * inst, struct var_cache **vc_head,
    }
 
    /* Finally, tag on an OPCODE_END instruction */
-   if (Program->type == GL_FRAGMENT_PROGRAM_ARB) {
+   if (Program->Base.Target == GL_FRAGMENT_PROGRAM_ARB) {
       Program->FPInstructions =
          (struct fp_instruction *) _mesa_realloc (Program->FPInstructions,
 						  Program->Base.NumInstructions*sizeof(struct fp_instruction),
@@ -5939,21 +5937,6 @@ _mesa_parse_arb_program (GLcontext * ctx, const GLubyte * str, GLsizei len,
    struct var_cache *vc_head;
    dict *dt;
    GLubyte *parsed, *inst;
-   GLubyte *strCopy;
-
-   /* init to zero in case of parse error */
-   _mesa_bzero(program, sizeof(*program));
-
-   /* Need a null-terminated string for parsing */
-   strCopy = (GLubyte *) _mesa_malloc(len + 1);
-   if (!strCopy) {
-      _mesa_error (ctx, GL_OUT_OF_MEMORY, "glProgramStringARB");
-      return 1;
-   }
-   _mesa_memcpy(strCopy, str, len);
-   strCopy[len] = 0;
-   str = strCopy;
-
 
 #if DEBUG_PARSING
    fprintf (stderr, "Loading grammar text!\n");
@@ -5964,7 +5947,6 @@ _mesa_parse_arb_program (GLcontext * ctx, const GLubyte * str, GLsizei len,
       _mesa_set_program_error (ctx, error_pos, error_msg);
       _mesa_error (ctx, GL_INVALID_OPERATION,
                    "Error loading grammer rule set");
-      _mesa_free(strCopy);
       return 1;
    }
 
@@ -5981,7 +5963,6 @@ _mesa_parse_arb_program (GLcontext * ctx, const GLubyte * str, GLsizei len,
       _mesa_error (ctx, GL_INVALID_OPERATION, "Parse Error");
 
       dict_destroy (&dt);
-      _mesa_free(strCopy);
       return 1;
    }
 
@@ -5991,7 +5972,6 @@ _mesa_parse_arb_program (GLcontext * ctx, const GLubyte * str, GLsizei len,
    dict_destroy (&dt);
 
    /* Initialize the arb_program struct */
-   program->Base.String = strCopy;
    program->Base.NumInstructions =
    program->Base.NumTemporaries =
    program->Base.NumParameters =
@@ -6001,11 +5981,9 @@ _mesa_parse_arb_program (GLcontext * ctx, const GLubyte * str, GLsizei len,
    program->OutputsWritten = 0;
    program->Position = 0;
    program->MajorVersion = program->MinorVersion = 0;
-   program->HintPrecisionFastest =
-   program->HintPrecisionNicest =
-   program->HintFogExp2 =
-   program->HintFogExp =
-   program->HintFogLinear = program->HintPositionInvariant = 0;
+   program->PrecisionOption = GL_DONT_CARE;
+   program->FogOption = GL_NONE;
+   program->HintPositionInvariant = GL_FALSE;
    for (a = 0; a < MAX_TEXTURE_IMAGE_UNITS; a++)
       program->TexturesUsed[a] = 0;
    program->NumAluInstructions =
@@ -6030,11 +6008,11 @@ _mesa_parse_arb_program (GLcontext * ctx, const GLubyte * str, GLsizei len,
    else {
       switch (*inst++) {
          case FRAGMENT_PROGRAM:
-            program->type = GL_FRAGMENT_PROGRAM_ARB;
+            program->Base.Target = GL_FRAGMENT_PROGRAM_ARB;
             break;
 
          case VERTEX_PROGRAM:
-            program->type = GL_VERTEX_PROGRAM_ARB;
+            program->Base.Target = GL_VERTEX_PROGRAM_ARB;
             break;
       }
 
@@ -6053,6 +6031,5 @@ _mesa_parse_arb_program (GLcontext * ctx, const GLubyte * str, GLsizei len,
 #if DEBUG_PARSING
    printf ("_mesa_parse_arb_program() done\n");
 #endif
-
    return err;
 }

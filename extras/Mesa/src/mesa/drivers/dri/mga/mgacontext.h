@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/mga/mgacontext.h,v 1.1.1.1tsi Exp $*/
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/mga/mgacontext.h,v 1.1.1.2 2004/06/10 14:22:55 alanh Exp $*/
 /*
  * Copyright 2000-2001 VA Linux Systems, Inc.
  * All Rights Reserved.

@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r128/r128_texstate.c,v 1.1.1.1tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r128/r128_texstate.c,v 1.1.1.2 2004/06/10 14:22:58 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -51,7 +51,7 @@ static void r128SetTexImages( r128ContextPtr rmesa,
                               const struct gl_texture_object *tObj )
 {
    r128TexObjPtr t = (r128TexObjPtr) tObj->DriverData;
-   struct gl_texture_image *baseImage = tObj->Image[tObj->BaseLevel];
+   struct gl_texture_image *baseImage = tObj->Image[0][tObj->BaseLevel];
    int log2Pitch, log2Height, log2Size, log2MinSize;
    int totalSize;
    int i;
@@ -61,7 +61,7 @@ static void r128SetTexImages( r128ContextPtr rmesa,
    assert(baseImage);
 
    if ( R128_DEBUG & DEBUG_VERBOSE_API )
-      fprintf( stderr, "%s( %p )\n", __FUNCTION__, (void *)tObj );
+      fprintf( stderr, "%s( %p )\n", __FUNCTION__, (void *) tObj );
 
    switch (baseImage->TexFormat->MesaFormat) {
    case MESA_FORMAT_ARGB8888:
@@ -96,8 +96,8 @@ static void r128SetTexImages( r128ContextPtr rmesa,
    firstLevel = t->base.firstLevel;
    lastLevel  = t->base.lastLevel;
 
-   log2Pitch = tObj->Image[firstLevel]->WidthLog2;
-   log2Height = tObj->Image[firstLevel]->HeightLog2;
+   log2Pitch = tObj->Image[0][firstLevel]->WidthLog2;
+   log2Height = tObj->Image[0][firstLevel]->HeightLog2;
    log2Size = MAX2(log2Pitch, log2Height);
    log2MinSize = log2Size;
 
@@ -106,7 +106,7 @@ static void r128SetTexImages( r128ContextPtr rmesa,
    for ( i = firstLevel; i <= lastLevel; i++ ) {
       const struct gl_texture_image *texImage;
 
-      texImage = tObj->Image[i];
+      texImage = tObj->Image[0][i];
       if ( !texImage || !texImage->Data ) {
          lastLevel = i - 1;
 	 break;
@@ -115,14 +115,14 @@ static void r128SetTexImages( r128ContextPtr rmesa,
       log2MinSize = texImage->MaxLog2;
 
       t->image[i - firstLevel].offset = totalSize;
-      t->image[i - firstLevel].width  = tObj->Image[i]->Width;
-      t->image[i - firstLevel].height = tObj->Image[i]->Height;
+      t->image[i - firstLevel].width  = tObj->Image[0][i]->Width;
+      t->image[i - firstLevel].height = tObj->Image[0][i]->Height;
 
       t->base.dirty_images[0] |= (1 << i);
 
-      totalSize += (tObj->Image[i]->Height *
-		    tObj->Image[i]->Width *
-		    tObj->Image[i]->TexFormat->TexelBytes);
+      totalSize += (tObj->Image[0][i]->Height *
+		    tObj->Image[0][i]->Width *
+		    tObj->Image[0][i]->TexFormat->TexelBytes);
 
       /* Offsets must be 32-byte aligned for host data blits and tiling */
       totalSize = (totalSize + 31) & ~31;
@@ -199,12 +199,12 @@ static GLboolean r128UpdateTextureEnv( GLcontext *ctx, int unit )
    GLint source = rmesa->tmu_source[unit];
    const struct gl_texture_unit *texUnit = &ctx->Texture.Unit[source];
    const struct gl_texture_object *tObj = texUnit->_Current;
-   const GLenum format = tObj->Image[tObj->BaseLevel]->Format;
+   const GLenum format = tObj->Image[0][tObj->BaseLevel]->Format;
    GLuint combine;
 
    if ( R128_DEBUG & DEBUG_VERBOSE_API ) {
       fprintf( stderr, "%s( %p, %d )\n",
-	       __FUNCTION__, (void *)ctx, unit );
+	       __FUNCTION__, (void *) ctx, (void *) unit );
    }
 
    if ( unit == 0 ) {
@@ -535,7 +535,7 @@ static GLboolean update_tex_common( GLcontext *ctx, int unit )
 
 
    /* Fallback if there's a texture border */
-   if ( tObj->Image[tObj->BaseLevel]->Border > 0 ) {
+   if ( tObj->Image[0][tObj->BaseLevel]->Border > 0 ) {
       return GL_FALSE;
    }
 
