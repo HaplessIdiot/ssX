@@ -1,7 +1,7 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
 XCOMM $XConsortium: Project.tmpl,v 1.242 94/04/13 14:58:40 rws Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.0 1994/05/29 02:01:43 dawes Exp $
 
 /****************************************************************************
  *                                                                          *
@@ -497,13 +497,16 @@ UnsharedLibReferences(XONLY,X11,$(XLIBSRC))
 #define ProfileLibXext		NO	/* profiled Xext library */
 #endif
       XEXTLIBSRC = $(LIBSRC)/Xext
+   LBXXEXTLIBSRC = $(TOP)/workInProgress/lbx/lib/Xext
 #if SharedLibXext
 #ifndef SharedXextRev
 #define SharedXextRev 6.0
 #endif
 SharedLibReferences(EXTENSION,Xext,$(XEXTLIBSRC),SOXEXTREV,SharedXextRev)
+SharedLibReferences(LBXXEXT,lbxXext,$(LBXXEXTLIBSRC),SOXEXTREV,SharedXextRev)
 #else
 UnsharedLibReferences(EXTENSION,Xext,$(XEXTLIBSRC))
+UnsharedLibReferences(LBXXEXT,lbxXext,$(LBXXEXTLIBSRC))
 #endif
 LINTEXTENSIONLIB = $(LINTEXTENSION)
           DEPXLIB = $(DEPEXTENSIONLIB) $(DEPXONLYLIB)

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/sco.cf,v 3.1 1994/05/22 01:45:18 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sco.cf,v 3.2 1994/05/30 08:17:50 dawes Exp $
 
 /*****************************************************************************
  *	            Defaults for SCO-specfic parameters                          *
@@ -59,7 +59,7 @@ XCOMM platform:  $XFree86: xc/config/cf/sco.cf,v 3.1 1994/05/22 01:45:18 dawes E
 #define ManSourcePath		$(MANPATH)/cat.
 
 #if ScoOsMouse
-# define	ServerExtraDefines	-DUSE_OSMOUSE LinkKitDefines
+# define	ServerExtraDefines	-DUSE_OSMOUSE XFree86ServerDefines
 # define	LocalLibraries		-lmalloc -lpt -levent
 #else
 # define	LocalLibraries		-lmalloc -lpt

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.2 1994/06/05 05:52:59 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.3 1994/06/05 13:39:11 dawes Exp $
 /******************************************************************************/
 /*
  * This file is provide a quick method for most people to change the
@@ -36,8 +36,44 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.2 1994/06/05 05:52:59 dawes Exp $
  */
 
 /*
+ * To build Xvfb, uncomment this.
+ *
 #define XVirtualFramebufferServer	YES
 */
+
+/*
+ * To play with LBX, uncomment this.  Note, after doing this, you should
+ * do the following to build a server with lbx:
+ *   cd programs/Xserver
+ *   make clean
+ *   make Makefile
+ *   make Makefiles
+ *   make includes
+ *   make depend
+ *   make
+ *
+ * To build the lbxproxy, do:
+ *   cd workInProgress
+ *   make Makefile
+ *   make SUBDIRS=lbx Makefiles
+ *   cd lbx
+ *   make includes
+ *   make depend
+ *   make
+ *
+ * For information about using LBX, refer to the README in workInProgress/lbx/.
+ *
+ */
+#define BuildLBX YES
+
+/* Should probably put this somewhere else */
+#if defined(BuildLBX) && BuildLBX
+#define SitePervasiveExtensionDefines -DLBX
+#define SiteExtensionLibs $(TOP)/workInProgress/lbx/programs/Xserver/lbx/liblbx.a $(TOP)/workInProgress/lbx/lib/lbxutil/liblbxutil.a
+#define SiteExtensionDirs $(TOP)/workInProgress/lbx/lib/lbxutil $(TOP)/workInProgress/lbx/programs/Xserver/lbx
+#define BigReqDefines /**/
+#endif
+
 
 /*
  * Do you want to install the default system config files, this will overwrite

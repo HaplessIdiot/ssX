@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.2 94/03/31 11:37:26 gildea Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.8 1994/06/05 13:39:13 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.9 1994/06/11 06:07:56 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -157,6 +157,11 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.8 1994/06/05 13:39:13 dawes Exp $
 #define StripInstalledPrograms	YES
 #endif
 
+/* Server defines required for all OSs */
+#ifndef XFree86ServerDefines
+#define XFree86ServerDefines	-DAVOID_GLYPHBLT LinkKitDefines 
+#endif
+
 #ifndef XF86LinkKit
 #define XF86LinkKit	NO
 #endif
@@ -170,7 +175,7 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.8 1994/06/05 13:39:13 dawes Exp $
 #endif
 
 #ifndef ServerExtraDefines
-#define ServerExtraDefines	LinkKitDefines
+#define ServerExtraDefines	XFree86ServerDefines
 #endif
 
 #ifndef LinkKitDir

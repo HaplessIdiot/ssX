@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/minix.cf,v 3.0 1994/05/08 05:13:02 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/minix.cf,v 3.1 1994/05/30 08:17:48 dawes Exp $
 
 
 /*
@@ -14,7 +14,7 @@ XCOMM platform:  $XFree86: xc/config/cf/minix.cf,v 3.0 1994/05/08 05:13:02 dawes
 #define AcdGcc
 
 #ifdef AcdGcc
-#define ServerExtraDefines	-DGCCUSESGAS LinkKitDefines
+#define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
 #define AsmDefines -DUSE_GAS
 #endif
 
