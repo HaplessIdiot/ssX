@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_xmesa.c,v 1.10 2001/10/02 11:44:13 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_xmesa.c,v 1.11 2001/10/31 22:50:25 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -80,8 +80,8 @@ GLboolean XMesaInitDriver( __DRIscreenPrivate *sPriv )
    }
 
    /* Check that the DRM driver version is compatible */
-   if ( sPriv->drmMajor != 3 ||
-	sPriv->drmMinor < 0 ) {
+   if ( sPriv->drmMajor != 2 ||
+	sPriv->drmMinor < 2 ) {
       char msg[1000];
       sprintf( msg, "R128 DRI driver expected DRM driver version 3.0 or greater but got version %d.%d.%d", sPriv->drmMajor, sPriv->drmMinor, sPriv->drmPatch );
       __driMesaMessage( msg );

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.19 2001/10/02 11:44:16 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.20 2001/11/08 04:00:13 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -994,12 +994,12 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
     /* Check the r128 DRM version */
     version = drmGetVersion(info->drmFD);
     if (version) {
-	if (version->version_major != 3 ||
-	    version->version_minor < 0) {
+	if (version->version_major != 2 ||
+	    version->version_minor < 2) {
 	    /* incompatible drm version */
 	    xf86DrvMsg(pScreen->myNum, X_ERROR,
 		"[dri] R128DRIScreenInit failed because of a version mismatch.\n"
-		"[dri] r128.o kernel module version is %d.%d.%d but version 3.0 or greater is needed.\n"
+		"[dri] r128.o kernel module version is %d.%d.%d but version 2.2 or greater is needed.\n"
 		"[dri] Disabling the DRI.\n",
 		version->version_major,
 		version->version_minor,
