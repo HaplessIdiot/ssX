@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.25 2002/07/24 19:06:52 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.26 2002/07/25 05:06:16 tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -181,6 +181,10 @@
 #  define ARCH_PCI_INIT freebsdPciInit
 #  define INCLUDE_XF86_MAP_PCI_MEM
 #  define INCLUDE_XF86_NO_DOMAIN
+# elif defined(__NetBSD__)
+#  defined ARCH_PCI_INIT netbsdPciInit
+#  define INCLUDE_XF86_MAP_PCI_MEM
+#  define INCLUDE_XF86_NO_DOMAIN
 # endif
 #elif defined(__arm__)
 # if defined(linux)
@@ -227,6 +231,10 @@
 #  define INCLUDE_XF86_NO_DOMAIN	/* Needs kernel work to remove */
 # elif defined(__OpenBSD__)
 #  define  ARCH_PCI_INIT freebsdPciInit
+#  define INCLUDE_XF86_MAP_PCI_MEM
+#  define INCLUDE_XF86_NO_DOMAIN
+# elif defined(__NetBSD__)
+#  define ARCH_PCI_INIT netbsdPciInit
 #  define INCLUDE_XF86_MAP_PCI_MEM
 #  define INCLUDE_XF86_NO_DOMAIN
 # elif defined(PowerMAX_OS)		/* This port is broken */
