@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/16 1996/11/13 14:43:28 lehors $
-XCOMM $XFree86: xc/config/util/Imakefile,v 3.23 1999/12/30 03:56:16 robin Exp $
+XCOMM $XFree86: xc/config/util/Imakefile,v 3.24 2000/03/21 19:57:01 dawes Exp $
 
 #if UseCCMakeDepend
 MDEP_PROG = makedepend
@@ -90,7 +90,7 @@ MANREFPRINTF="%s.%s.html"
 RMANVERSION="3.0.8+XFree86"
 AllTarget(ProgramTargetName(rman))
 SimpleProgramTarget_5(rman)
-SpecialCObjectRule(rman,NullParameter,-DVOLLIST='$(VOLLIST)' -DMANTITLEPRINTF='$(MANTITLEPRINTF)' -DMANREFPRINTF='$(MANREFPRINTF)' -DPOLYGLOTMANVERSION='$(RMANVERSION)')
+SpecialCObjectRule(rman,NullParameter,-DVOLLIST='$(VOLLIST)' -DMANTITLEPRINTF='$(MANTITLEPRINTF)' -DMANREFPRINTF='$(MANREFPRINTF)' -DPOLYGLOTMANVERSION='$(RMANVERSION)' -DXFree86)
 LinkSourceFile(rman.c,$(TOP)/extras/rman)
 LinkFile(rman.man,$(TOP)/extras/rman/rman.1)
 LinkBuildBinary(ProgramTargetName(rman))
@@ -119,6 +119,7 @@ InstallDriverSDKNamedProg(gccmakedep,gccmakedep,$(DRIVERSDKDIR)/config/util)
 InstallNamedProg(mergelib,mergelib,$(BINDIR))
 InstallNamedProg(makeg.sh,makeg,$(BINDIR))
 InstallManPage(makeg,$(MANDIR))
+InstallNamedProg(mkhtmlindex.sh,mkhtmlindex,$(BINDIR))
 #endif
 InstallManPage(mkdirhier,$(MANDIR))
 #if UseCCMakeDepend

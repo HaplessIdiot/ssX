@@ -16,7 +16,7 @@ static char rcsid[] = "Header: /home/cs/phelps/spine/rman/RCS/rman.c,v 1.144 199
      source interpretation added September 24, 1996
 	renamed PolyglotMan due to lawsuit by Rosetta, Inc. August 8, 1997
 */
-/* $XFree86$ */
+/* $XFree86: xc/extras/rman/rman.c,v 1.2 2000/03/21 17:29:53 dawes Exp $ */
 
 
 /* TO DO ****
@@ -1527,7 +1527,12 @@ HTML(enum command cmd) {
 /*		printf("<ISINDEX>\n");*/
 		/* better title possible? */
 		printf("<TITLE>"); printf(manTitle, manName, manSect); printf("</TITLE>\n");
+#ifdef XFree86
+		printf("</HEAD>\n<BODY BGCOLOR=\"#efefef\" TEXT=\"black\" "
+			"LINK=\"blue\" VLINK=\"#551A8B\" ALINK=\"red\">\n");
+#else
 		printf("</HEAD>\n<BODY bgcolor=white>\n");
+#endif
 		printf("<A HREF=\"#toc\">%s</A><P>\n", TABLEOFCONTENTS);
 		I=0;
 		break;

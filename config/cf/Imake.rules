@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.66 2000/03/21 19:56:55 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.67 2000/03/21 21:08:06 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1251,7 +1251,7 @@ install.man::								@@\
 #endif /* InstallGenManPageAliases */
 
 #ifndef BuildInstallHtmlManPage
-#if BuildHtmlManPages
+#if BuildHtmlManPages || 1
 #define BuildInstallHtmlManPage(file,dest,suffix)			@@\
 AllTarget(dest.suffix.html)						@@\
 									@@\
