@@ -1,5 +1,5 @@
 /* $XConsortium: s3Ti3020.h,v 1.1 94/03/28 21:14:12 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Ti3020.h,v 3.3 1994/09/08 14:26:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Ti3020.h,v 3.4 1994/09/18 08:48:40 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@paros.com>
  *
@@ -77,6 +77,8 @@
 #define   TI_MUX1_DIRECT_555	0x04
 #define   TI_MUX1_DIRECT_664	0x03
 #define   TI_MUX1_WEIRD_MODE_1	0xC6
+#define   TI_MUX1_WEIRD_MODE_2	0x4D
+#define   TI_MUX1_WEIRD_MODE_3	0x4E
 #define TI_MUX_CONTROL_2	0x19
 #define   TI_MUX2_BUS_VGA	0x98
 #define   TI_MUX2_BUS_PC_D8P64	0x1C
@@ -86,6 +88,8 @@
 #define   TI_MUX2_BUS_TC_D24P64	0x04
 #define   TI_MUX2_BUS_TC_D16P64	0x04
 #define   TI_MUX2_BUS_TC_D15P64	0x04
+#define   TI_MUX2_WEIRD_MODE_2	0x14
+#define   TI_MUX2_WEIRD_MODE_3	0x04
 #define TI_INPUT_CLOCK_SELECT	0x1A
 #define   TI_ICLK_CLK0		0x00
 #define   TI_ICLK_CLK0_DOUBLE	0x10
@@ -108,6 +112,7 @@
 #define   TI_OCLK_S_V4_R4	0x52
 #define   TI_OCLK_S_V1_R2	0x41
 #define   TI_OCLK_S_V2_R2	0x49
+#define   TI_OCLK_NS_V1_R1	0x80     /* 3025 only */
 #define   TI_OCLK_NS_V2_R2	0x89     /* 3025 only */
 #define   TI_OCLK_NS_V4_R4	0x92     /* 3025 only */
 #define TI_PALETTE_PAGE		0x1C

@@ -29,7 +29,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.2 1994/08/11 06:40:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.3 1994/08/31 04:20:01 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -269,21 +269,40 @@ int *RamDac;
 
 	outp(0x3C6, 0x3F);     /* write ID register index to index register */
 	old4 = inp(0x3C7);     /* read ID register from data register       */
-	if ((old4 == 0x20) || (old4 == 0x25)) {
+	if (old4 == 0x20) {
 		Found = TRUE;
-		if (old4 == 0x20) {
-			*RamDac = DAC_TVP3020;
-		}
-		else {
-			*RamDac = DAC_TVP3025;
-		}
-		*RamDac |= DAC_6_8_PROGRAM;
+		*RamDac = DAC_TVP3020 | DAC_6_8_PROGRAM;
 		wrinx(CRTC_IDX, 0x55, (old2 & 0xFC) | 0x00); /* regular VGA */
 		if (Width8Check())
 		{
 			*RamDac |= DAC_8BIT;
 		}
-	}
+	} else {
+	    Byte old5, old6;
+
+	    /* check for Ti3025 hiding behind Bt485 mode */
+	    old5 = rdinx(CRTC_IDX, 0x5C);
+
+	    /* clear 0x20 (RS4) for 3020 mode */
+	    wrinx(CRTC_IDX, 0x5C, old5 & 0xDF);
+	    /* already twiddled CR55 above */
+	    old6 = inp(0x3C6);          /* read current index register value */
+	    outp(0x3C6, 0x3F);  /* write ID register index to index register */
+	    old4 = inp(0x3C7);  /* read ID register from data register       */
+	    if (old4 == 0x25) {
+		Found = TRUE;
+	        *RamDac = DAC_TVP3025 | DAC_6_8_PROGRAM;
+		wrinx(CRTC_IDX, 0x55, (old2 & 0xFC) | 0x00); /* regular VGA */
+		if (Width8Check())
+		{
+			*RamDac |= DAC_8BIT;
+		}
+	        wrinx(CRTC_IDX, 0x55, (old2 & 0xFC) | 0x01);
+	    }
+
+	    outp(0x3C6, old6);              /* restore index register value */
+	    wrinx(CRTC_IDX, 0x5C, old5);    /* restore 5C                   */
+        }
 
 	wrinx(CRTC_IDX, 0x55, (old2 & 0xFC) | 0x01); /* high four registers */
 	outp(0x3C6, old3);                  /* restore index register value */
@@ -491,12 +510,12 @@ int *RamDac;
 	}
 	else if ((SVGA_VENDOR(Chipset) == V_S3) && (Chipset >= CHIP_S3_928D))
 	{
-	    if (S3_Bt485Check(RamDac))
+	    if (S3_TVP3020Check(RamDac))
 	    {
 		DisableIOPorts(NUMPORTS, Ports);
 		return;
 	    }
-	    if (S3_TVP3020Check(RamDac))
+	    if (S3_Bt485Check(RamDac))
 	    {
 		DisableIOPorts(NUMPORTS, Ports);
 		return;
