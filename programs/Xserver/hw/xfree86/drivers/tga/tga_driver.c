@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.2 1998/07/25 16:55:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.3 1998/08/13 14:45:57 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -538,7 +538,7 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     pTga->PciInfo = *pciList;
-    pTga->RamDac = -1;
+    pTga->RamDac = NULL;
     /*
      * Set the Chipset and ChipRev, allowing config file entries to
      * override.
@@ -646,7 +646,7 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
             TGAMapMem(pScrn);
 	    pTga->RamDac = BTramdacProbe(pScrn, BTramdacs);
             TGAUnmapMem(pScrn);
-	    if (pTga->RamDac == -1)
+	    if (pTga->RamDac == NULL)
 		return FALSE;
 	    break;
     }
@@ -940,10 +940,7 @@ TGASave(ScrnInfoPtr pScrn)
     {
     case PCI_CHIP_DEC21030:
 	DEC21030Save(pScrn, tgaReg);
-        switch (pTga->RamDac) {
-        case BT485_RAMDAC:
-	    BTramdacSave(pScrn, pTga->RamDacRec, BTreg);
-        }
+	(*pTga->RamDac->Save)(pScrn, pTga->RamDacRec, BTreg);
 	break;
     }
 }
@@ -985,10 +982,7 @@ TGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     switch (pTga->Chipset) {
     case PCI_CHIP_DEC21030:
 	DEC21030Restore(pScrn, tgaReg);
-        switch (pTga->RamDac) {
-        case BT485_RAMDAC:
-	    BTramdacRestore(pScrn, pTga->RamDacRec, BTreg);
-        }
+	(*pTga->RamDac->Restore)(pScrn, pTga->RamDacRec, BTreg);
 	break;
     }
 
@@ -1017,10 +1011,7 @@ TGARestore(ScrnInfoPtr pScrn)
     switch (pTga->Chipset) {
     case PCI_CHIP_DEC21030:
 	DEC21030Restore(pScrn, tgaReg);
-        switch (pTga->RamDac) {
-        case BT485_RAMDAC:
-	    BTramdacRestore(pScrn, pTga->RamDacRec, BTreg);
-        }
+	(*pTga->RamDac->Restore)(pScrn, pTga->RamDacRec, BTreg);
 	break;
     }
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: PolyReg.c,v 11.22 94/04/17 20:20:27 rws Exp $ */
+/* $XConsortium: PolyReg.c,v 11.23 94/11/17 21:59:37 converse Exp $ */
 /************************************************************************
 
 Copyright (c) 1987  X Consortium
@@ -401,13 +401,17 @@ static int PtsToRegion(numFullPtBlocks, iCurPtBlock, FirstPtBlock, reg)
     register int i;
     register BOX *extents;
     register int numRects;
- 
+    BOX *prevRects = reg->rects;
+
     extents = &reg->extents;
  
     numRects = ((numFullPtBlocks * NUMPTSTOBUFFER) + iCurPtBlock) >> 1;
  
     if (!(reg->rects = (BOX *)Xrealloc((char *)reg->rects, 
-	    (unsigned) (sizeof(BOX) * numRects))))       return(0);
+	    (unsigned) (sizeof(BOX) * numRects))))  {
+	Xfree(prevRects);
+	return(0);
+    }
  
     reg->size = numRects;
     CurPtBlock = FirstPtBlock;
@@ -426,7 +430,7 @@ static int PtsToRegion(numFullPtBlocks, iCurPtBlock, FirstPtBlock, reg)
 	    if (numRects && pts->x == rects->x1 && pts->y == rects->y2 &&
 		pts[1].x == rects->x2 &&
 		(numRects == 1 || rects[-1].y1 != rects->y1) &&
-		(!i || pts[2].y > pts[1].y)) {
+		(i && pts[2].y > pts[1].y)) {
 		rects->y2 = pts[1].y + 1;
 		continue;
 	    }

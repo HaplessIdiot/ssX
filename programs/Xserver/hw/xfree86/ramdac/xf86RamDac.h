@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDac.h,v 1.2 1998/07/25 16:57:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDac.h,v 1.3 1998/08/13 14:46:08 dawes Exp $ */
 
 #ifndef _XF86RAMDAC_H
 #define _XF86RAMDAC_H 1
@@ -62,6 +62,27 @@ typedef struct _RamDacRec {
     );
 } RamDacRec, *RamDacRecPtr;
 
+typedef struct _RamDacHelperRec {
+    CARD32 RamDacType;
+
+    void (*Restore)(
+	ScrnInfoPtr pScrn,
+	RamDacRecPtr ramdacPtr,
+	RamDacRegRecPtr ramdacReg
+    );
+
+    void (*Save)(
+	ScrnInfoPtr pScrn,
+	RamDacRecPtr ramdacPtr,
+	RamDacRegRecPtr ramdacReg
+    );
+
+    void (*SetBpp)(
+	ScrnInfoPtr pScrn,
+	RamDacRegRecPtr ramdacReg
+    );
+} RamDacHelperRec, *RamDacHelperRecPtr;
+
 #define RAMDACHWPTR(p) ((RamDacHWRecPtr)((p)->privates[RamDacGetHWIndex()].ptr))
 
 #ifdef PERSCREEN
@@ -88,7 +109,9 @@ typedef struct {
 } RamDacSupportedInfoRec, *RamDacSupportedInfoRecPtr;
 
 RamDacRecPtr RamDacCreateInfoRec(void);
+RamDacHelperRecPtr RamDacHelperCreateInfoRec(void);
 void RamDacDestroyInfoRec(RamDacRecPtr RamDacRec);
+void RamDacHelperDestroyInfoRec(RamDacHelperRecPtr RamDacRec);
 Bool RamDacInit(ScrnInfoPtr pScrn, RamDacRecPtr RamDacRec);
 void RamDacSetGamma(ScrnInfoPtr pScrn, Bool Real8BitDac);
 void RamDacRestoreDACValues(ScrnInfoPtr pScrn);

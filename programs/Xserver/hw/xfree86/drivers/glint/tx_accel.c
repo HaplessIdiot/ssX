@@ -28,7 +28,7 @@
  * 
  * GLINT 500TX / MX accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_accel.c,v 1.3 1998/07/31 10:41:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_accel.c,v 1.4 1998/08/13 14:45:53 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -178,6 +178,7 @@ TXAccelInit(ScreenPtr pScreen)
     XAAInfoRecPtr infoPtr;
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     GLINTPtr pGlint = GLINTPTR(pScrn);
+    long memory = pGlint->FbMapSize;
     BoxRec AvailFBArea;
 
     pGlint->AccelInfoRec = infoPtr = XAACreateInfoRec();
@@ -235,9 +236,10 @@ TXAccelInit(ScreenPtr pScreen)
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
     AvailFBArea.x2 = pScrn->displayWidth;
-    AvailFBArea.y2 = pGlint->FbMapSize / (pScrn->displayWidth * 
+    if (memory > 16777216) memory = 16777216; /* Cater for >16MB of videoRAM */
+    AvailFBArea.y2 = memory / (pScrn->displayWidth * 
 					  pScrn->bitsPerPixel / 8);
- 
+
     xf86InitFBManager(pScreen, &AvailFBArea);
 
     return (XAAInit(pScreen, infoPtr));
@@ -964,8 +966,8 @@ TXNonTEGlyphRenderer(
     SET_SYNC_FLAG(infoRec);
 }
 
-void 
-TXWritePixmap (
+static void 
+TXWritePixmap(
    ScrnInfoPtr pScrn,
    int x, int y, int w, int h,
    unsigned char *src,	

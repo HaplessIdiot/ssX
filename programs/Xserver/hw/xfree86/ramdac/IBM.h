@@ -1,11 +1,12 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/IBM.h,v 1.2 1998/07/25 16:57:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/IBM.h,v 1.3 1998/08/13 14:46:08 dawes Exp $ */
 
 #include <xf86RamDac.h>
 
-int IBMramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs);
+RamDacHelperRecPtr IBMramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs);
 void IBMramdacSave(ScrnInfoPtr pScrn, RamDacRecPtr RamDacRec, RamDacRegRecPtr RamDacRegRec);
 void IBMramdacRestore(ScrnInfoPtr pScrn, RamDacRecPtr RamDacRec, RamDacRegRecPtr RamDacRegRec);
-void IBMramdacSetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr RamDacRegRec);
+void IBMramdac526SetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr RamDacRegRec);
+void IBMramdac640SetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr RamDacRegRec);
 unsigned long IBMramdac526CalculateMNPCForClock(unsigned long RefClock,
     unsigned long ReqClock, char IsPixClock, unsigned long MinClock,
     unsigned long MaxClock, unsigned long *rM, unsigned long *rN,

@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.3 1998/07/31 10:41:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.4 1998/08/13 14:45:50 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -863,7 +863,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	i--;
     }
     pGlint->DoubleBuffer = FALSE;
-    pGlint->RamDac = -1;
+    pGlint->RamDac = NULL;
     /*
      * Set the Chipset and ChipRev, allowing config file entries to
      * override.
@@ -1007,6 +1007,16 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	pGlint->VGAcore = FALSE;
     }
 
+    if((pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_500TX) &&
+       (pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_MX)) {
+	GLINTMapMem(pScrn);
+        xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Chip %s AGP Capable\n",
+		((GLINT_READ_REG(ChipConfig) & 0x200) ? "is" : "is not"));
+        xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "AGP Sidebanding is %sabled\n",
+		((GLINT_READ_REG(ChipConfig) & 0x100) ? "en" : "dis"));
+	GLINTUnmapMem(pScrn);
+    }
+
     /* Let's check what type of DAC we have and reject if necessary */
     switch (pGlint->Chipset)
     {
@@ -1053,7 +1063,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
             GLINTMapMem(pScrn);
 	    pGlint->RamDac = IBMramdacProbe(pScrn, PermediaRamdacs);
             GLINTUnmapMem(pScrn);
-	    if (pGlint->RamDac == -1)
+	    if (pGlint->RamDac == NULL)
 		return FALSE;
 	    break;
 	case PCI_VENDOR_3DLABS_CHIP_500TX:
@@ -1072,7 +1082,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
             GLINTMapMem(pScrn);
 	    pGlint->RamDac = IBMramdacProbe(pScrn, TXMXRamdacs);
             GLINTUnmapMem(pScrn);
-	    if (pGlint->RamDac == -1)
+	    if (pGlint->RamDac == NULL)
 		return FALSE;
 	    break;
     }
@@ -1474,19 +1484,12 @@ GLINTSave(ScrnInfoPtr pScrn)
     case PCI_VENDOR_TI_CHIP_PERMEDIA:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA:
 	PermediaSave(pScrn, glintReg);
-        switch (pGlint->RamDac) {
-        case IBM526DB_RAMDAC:
-	    IBMramdacSave(pScrn, pGlint->RamDacRec, IBMreg);
-        }
+	(*pGlint->RamDac->Save)(pScrn, pGlint->RamDacRec, IBMreg);
 	break;
     case PCI_VENDOR_3DLABS_CHIP_500TX:
     case PCI_VENDOR_3DLABS_CHIP_MX:
 	TXSave(pScrn, glintReg);
-        switch (pGlint->RamDac) {
-        case IBM526DB_RAMDAC:
-        case IBM640_RAMDAC:
-	    IBMramdacSave(pScrn, pGlint->RamDacRec, IBMreg);
-        }
+	(*pGlint->RamDac->Save)(pScrn, pGlint->RamDacRec, IBMreg);
 	break;
     }
 }
@@ -1561,19 +1564,12 @@ GLINTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     case PCI_VENDOR_TI_CHIP_PERMEDIA:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA:
 	PermediaRestore(pScrn, glintReg);
-        switch (pGlint->RamDac) {
-        case IBM526DB_RAMDAC:
-	    IBMramdacRestore(pScrn, pGlint->RamDacRec, IBMreg);
-        }
+	(*pGlint->RamDac->Restore)(pScrn, pGlint->RamDacRec, IBMreg);
 	break;
     case PCI_VENDOR_3DLABS_CHIP_500TX:
     case PCI_VENDOR_3DLABS_CHIP_MX:
 	TXRestore(pScrn, glintReg);
-        switch (pGlint->RamDac) {
-        case IBM526DB_RAMDAC:
-	case IBM640_RAMDAC:
-	    IBMramdacRestore(pScrn, pGlint->RamDacRec, IBMreg);
-        }
+	(*pGlint->RamDac->Restore)(pScrn, pGlint->RamDacRec, IBMreg);
 	break;
     }
 
@@ -1615,19 +1611,12 @@ GLINTRestore(ScrnInfoPtr pScrn)
     case PCI_VENDOR_TI_CHIP_PERMEDIA:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA:
 	PermediaRestore(pScrn, glintReg);
-        switch (pGlint->RamDac) {
-        case IBM526DB_RAMDAC:
-	    IBMramdacRestore(pScrn, pGlint->RamDacRec, IBMreg);
-        }
+	(*pGlint->RamDac->Restore)(pScrn, pGlint->RamDacRec, IBMreg);
 	break;
     case PCI_VENDOR_3DLABS_CHIP_500TX:
     case PCI_VENDOR_3DLABS_CHIP_MX:
 	TXRestore(pScrn, glintReg);
-        switch (pGlint->RamDac) {
-        case IBM526DB_RAMDAC:
-        case IBM640_RAMDAC:
-	    IBMramdacRestore(pScrn, pGlint->RamDacRec, IBMreg);
-        }
+	(*pGlint->RamDac->Restore)(pScrn, pGlint->RamDacRec, IBMreg);
 	break;
     }
 
@@ -1822,17 +1811,21 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* Initialise cursor functions */
     if (pGlint->HWCursor) {
-#if 0
+#if 0	/* Permedia2`s cursor just dont wanna work - FIXME */
 	if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V)
 	    Permedia2vHWCursorInit(pScreen);
 	else
+	if ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2) || 
+	    (pGlint->Chipset == PCI_VENDOR_TI_CHIP_PERMEDIA2))
+	    Permedia2HWCursorInit(pScreen);
+	else
 #endif
-	if ((pGlint->RamDac == (IBM526DB_RAMDAC)) ||
-	    (pGlint->RamDac == (IBM526_RAMDAC))) {
+	if ((pGlint->RamDac->RamDacType == (IBM526DB_RAMDAC)) ||
+	    (pGlint->RamDac->RamDacType == (IBM526_RAMDAC))) {
 	    glintIBM526HWCursorInit(pScreen);
 	}
 	else
-	if (pGlint->RamDac == (IBM640_RAMDAC))
+	if (pGlint->RamDac->RamDacType == (IBM640_RAMDAC))
 	    glintIBM640HWCursorInit(pScreen);
 	else
 	    xf86DrvMsg(scrnIndex, X_ERROR,
