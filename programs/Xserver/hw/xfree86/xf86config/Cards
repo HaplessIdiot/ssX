@@ -19,7 +19,7 @@
 # chipset/server and untested.
 # 
 # $XConsortium: Cards,v 1.3 95/01/23 15:35:21 kaleb Exp $
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.21 1995/11/18 02:31:32 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.22 1995/11/30 13:05:36 dawes Exp $
 
 # Cirrus Logic
 
@@ -689,7 +689,6 @@ SERVER Mach64
 NAME ATI Mach64 with AT&T 20C408 RAMDAC
 CHIPSET ATI-Mach64
 SERVER Mach64
-LINE     Option "program_clocks"
 NOCLOCKPROBE
 
 NAME ATI Xpression with AT&T 20C408 RAMDAC
