@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.9 2001/06/05 10:10:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.10 2001/06/06 18:02:16 alanh Exp $ */
 
 #include "win.h"
 
@@ -462,7 +462,7 @@ winInitVisualsShadowGDI (ScreenPtr pScreen)
     }
 
   /* Setup a fake PseudoColor visual for legacy apps */
-  if (!miSetVisualTypes (8, PseudoColorMask, 8, PseudoColor))
+  if (!miSetVisualTypes (8, PseudoColorMask, 8, -1))
     {
       ErrorF ("winInitVisualsShadowGDI () - miSetVisualTypes failed\n");
       return FALSE;

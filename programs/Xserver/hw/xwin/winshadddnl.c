@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadddnl.c,v 1.8 2001/06/05 10:10:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadddnl.c,v 1.9 2001/06/06 18:02:16 alanh Exp $ */
 
 #include "win.h"
 
@@ -557,9 +557,9 @@ winInitVisualsShadowDDNL (ScreenPtr pScreen)
       ErrorF ("winInitVisualsDDNL () - Unknown screen depth\n");
       return FALSE;
     }
-  
+
   /* Setup a fake PseudoColor visual for legacy apps */
-  if (!miSetVisualTypes (8, PseudoColorMask, 8, PseudoColor))
+  if (!miSetVisualTypes (8, PseudoColorMask, 8, -1))
     {
       ErrorF ("winInitVisualsShadowDDNL () - miSetVisualTypes failed\n");
       return FALSE;

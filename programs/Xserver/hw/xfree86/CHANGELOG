@@ -1,4 +1,6 @@
 XFree86 4.1.99.1 (xx June 2001)
+ 105. Fix SharedLibGL to SharedLibGlx in cygwin.rules and some Cygwin/XFree86
+      fixes including enabling backing store. (#4770, #4771 Harold Hunt).
  104. xf86UnMapVidMem shows the wrong number of arguments in
       os-support/README.OS-lib (#4357, Guido Guenther).
  103. Some driver loader symbol req/ref registration cleanups (David Dawes).
@@ -13502,4 +13504,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1850 2001/06/15 21:22:39 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1851 2001/06/20 00:42:07 paulo Exp $

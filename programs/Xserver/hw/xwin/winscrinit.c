@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.10 2001/06/05 10:10:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.11 2001/06/08 08:06:53 alanh Exp $ */
 
 #include "win.h"
 
@@ -341,6 +341,12 @@ winFinishScreenInitFB (int index,
   /* Render extension initialization, calls miPictureInit */
   fbPictureInit (pScreen, NULL, 0);
 #endif
+
+  /*
+   * Backing store support should reduce network traffic and increase
+   * performance.
+   */
+  miInitializeBackingStore(pScreen);
 
   /* Setup the cursor routines */
 #if CYGDEBUG
