@@ -360,6 +360,14 @@ OpenFont(client, fid, flags, lenfname, pfontname)
     int         i;
     FontPtr     cached = (FontPtr)0;
 
+#ifdef FONTDEBUG
+    char *f;
+    f = (char *)xalloc(lenfname + 1);
+    memmove(f, pfontname, lenfname);
+    f[lenfname] = '\0';
+    ErrorF("OpenFont: fontname is \"%s\"\n", f);
+    xfree(f);
+#endif
     if (!lenfname)
 	return BadName;
     if (patternCache)

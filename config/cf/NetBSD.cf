@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: NetBSD.cf,v 1.5 95/04/07 19:42:55 kaleb Exp $
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.21 1995/09/17 06:27:45 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.22 1995/09/22 07:06:27 dawes Exp $
 
 #define OSName		NetBSD 1.0
 #define	OSVendor	/**/
@@ -128,13 +128,10 @@ XCOMM operating system:  OSName
 /*
  * Documentation formatting
  */
-#undef	TblCmd
-#define	TblCmd 			/usr/bin/tbl
-#undef	EqnCmd
-#define	EqnCmd 			/usr/bin/eqn -Tascii
-          COL = /usr/bin/col
-         NEQN = /usr/bin/neqn
-        NROFF = /usr/bin/nroff
+#define	EqnCmd 			eqn -Tps
+          COL = col
+         NEQN = neqn
+        NROFF = nroff
 #define TroffCmd        	groff -Tps
 
 /*
