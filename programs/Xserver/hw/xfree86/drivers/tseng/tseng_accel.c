@@ -11,7 +11,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.13 1997/10/13 17:16:47 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.14 1997/11/08 16:24:32 hohndel Exp $ */
 
 
 /*
@@ -237,12 +237,12 @@ void TsengAccelInit() {
        | HARDWARE_PATTERN_PROGRAMMED_ORIGIN;
 #ifdef ET6K_TRANSPARENCY
     xf86AccelInfoRec.PatternFlags |= HARDWARE_PATTERN_NO_PLANEMASK;
-#endif
 
     if (Is_ET6K)
     {
       xf86AccelInfoRec.PatternFlags |= HARDWARE_PATTERN_TRANSPARENCY;
     }
+#endif
 
     if ( (vgaBitsPerPixel != 24) && (et4000_type > TYPE_ET4000W32) )
     {

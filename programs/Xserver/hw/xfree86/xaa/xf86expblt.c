@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.16 1997/09/29 08:40:34 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.17 1997/10/13 17:16:51 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -478,6 +478,7 @@ unsigned int *DrawTextScanlineWidth6PMSBFirst();
 static unsigned int *DrawTextScanlineWidth8();
 unsigned int *DrawTextScanlineWidth8P();
 unsigned int *DrawTextScanlineWidth8PMSBFirst();
+static unsigned int *DrawTextScanlineWidth9();
 static unsigned int *DrawTextScanlineWidth10();
 static unsigned int *DrawTextScanlineWidth12();
 static unsigned int *DrawTextScanlineWidth14();
@@ -515,7 +516,7 @@ unsigned int *(*glyphwidth_function[32])(
 #else
     DrawTextScanlineWidth8,
 #endif
-    NULL, DrawTextScanlineWidth10, NULL, DrawTextScanlineWidth12,
+    DrawTextScanlineWidth9, DrawTextScanlineWidth10, NULL, DrawTextScanlineWidth12,
     NULL, DrawTextScanlineWidth14, NULL, DrawTextScanlineWidth16,
     NULL, DrawTextScanlineWidth18, NULL, NULL,
     NULL, NULL, NULL, DrawTextScanlineWidth24,
@@ -526,7 +527,7 @@ unsigned int *(*glyphwidth_function[32])(
 #if defined(MSBFIRST) && !defined(FIXEDBASE)
 /* This one needs to be defined only once. */
 int glyphwidth_stretchsize[32] = {
-    0, 0, 0, 0, 0, 16, 0, 8, 0, 16, 0, 8, 0, 16, 0, 8,
+    0, 0, 0, 0, 0, 16, 0, 8, 32, 16, 0, 8, 0, 16, 0, 8,
     0, 16, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0
 };
 #else
@@ -1018,6 +1019,72 @@ static unsigned int *DrawTextScanlineWidth8(base, glyphp, line, nglyph)
     WRITE_IN_BITORDER(base, 1, bits);
     return base + 2;
 #endif
+    return base;
+}
+
+static unsigned int *DrawTextScanlineWidth9(base, glyphp, line, nglyph)
+    unsigned int *base;
+    unsigned int **glyphp; 
+    int line;
+    int nglyph;
+{
+    while (nglyph >= 32) {
+        unsigned int bits;
+        bits = glyphp[0][line];
+        bits |= glyphp[1][line] << 9;
+        bits |= glyphp[2][line] << 18;
+        bits |= glyphp[3][line] << 27;
+        WRITE_IN_BITORDER(base, 0, bits);
+        bits = glyphp[3][line] >> 5;
+        bits |= glyphp[4][line] << 4;
+        bits |= glyphp[5][line] << 13;
+        bits |= glyphp[6][line] << 22;
+        bits |= glyphp[7][line] << 31;
+        WRITE_IN_BITORDER(base, 1, bits);
+        bits = glyphp[7][line] >> 1;
+        bits |= glyphp[8][line] << 8;
+        bits |= glyphp[9][line] << 17;
+        bits |= glyphp[10][line] << 26;
+        WRITE_IN_BITORDER(base, 2, bits);
+        bits = glyphp[10][line] >> 6;
+        bits |= glyphp[11][line] << 3;
+        bits |= glyphp[12][line] << 12;
+        bits |= glyphp[13][line] << 21;
+        bits |= glyphp[14][line] << 30;
+        WRITE_IN_BITORDER(base, 3, bits);
+        bits = glyphp[14][line] >> 2;
+        bits |= glyphp[15][line] << 7;
+        bits |= glyphp[16][line] << 16;
+        bits |= glyphp[17][line] << 25;
+        WRITE_IN_BITORDER(base, 4, bits);
+        bits = glyphp[17][line] >> 7;
+        bits |= glyphp[18][line] << 2;
+        bits |= glyphp[19][line] << 11;
+        bits |= glyphp[20][line] << 20;
+        bits |= glyphp[21][line] << 29;
+        WRITE_IN_BITORDER(base, 5, bits);
+        bits = glyphp[21][line] >> 3;
+        bits |= glyphp[22][line] << 6;
+        bits |= glyphp[23][line] << 15;
+        bits |= glyphp[24][line] << 24;
+        WRITE_IN_BITORDER(base, 6, bits);
+        bits = glyphp[24][line] >> 8;
+        bits |= glyphp[25][line] << 1;
+        bits |= glyphp[26][line] << 10;
+        bits |= glyphp[27][line] << 19;
+        bits |= glyphp[28][line] << 28;
+        WRITE_IN_BITORDER(base, 7, bits);
+        bits = glyphp[28][line] >> 4;
+        bits |= glyphp[29][line] << 5;
+        bits |= glyphp[30][line] << 14;
+        bits |= glyphp[31][line] << 23;
+        WRITE_IN_BITORDER(base, 8, bits);
+#ifndef FIXEDBASE
+        base += 9;
+#endif
+        nglyph -= 32;
+        glyphp += 32;
+    }
     return base;
 }
 
