@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/xprScreen.c,v 1.9 2003/11/27 01:59:53 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/xprScreen.c,v 1.10 2004/07/02 01:30:33 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartz.h"
@@ -335,6 +335,11 @@ xprSetupScreen(int index, ScreenPtr pScreen)
 static void
 xprUpdateScreen(ScreenPtr pScreen)
 {
+    rootlessGlobalOffsetX = darwinMainScreenX;
+    rootlessGlobalOffsetY = darwinMainScreenY;
+
+    AppleWMSetScreenOrigin(WindowTable[pScreen->myNum]);
+
     RootlessRepositionWindows(pScreen);
     RootlessUpdateScreenPixmap(pScreen);
 }
@@ -371,6 +376,7 @@ static QuartzModeProcsRec xprModeProcs = {
     QuartzResumeXCursor,
     NULL,               // No capture or release in rootless mode
     NULL,
+    NULL,               // Xplugin sends screen change events directly
     xprAddPseudoramiXScreens,
     xprUpdateScreen,
     xprIsX11Window,

@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/cr/crScreen.m,v 1.6 2003/11/27 01:59:53 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/cr/crScreen.m,v 1.7 2004/07/02 01:30:33 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "cr.h"
@@ -263,12 +263,28 @@ CRSetupScreen(int index, ScreenPtr pScreen)
 
 
 /*
+ * CRScreenChanged
+ *  Configuration of displays has changed.
+ */
+static void
+CRScreenChanged(void)
+{
+    QuartzMessageServerThread(kXDarwinDisplayChanged, 0);
+}
+
+
+/*
  * CRUpdateScreen
  *  Update screen after configuation change.
  */
 static void
 CRUpdateScreen(ScreenPtr pScreen)
 {
+    rootlessGlobalOffsetX = darwinMainScreenX;
+    rootlessGlobalOffsetY = darwinMainScreenY;
+
+    AppleWMSetScreenOrigin(WindowTable[pScreen->myNum]);
+
     RootlessRepositionWindows(pScreen);
     RootlessUpdateScreenPixmap(pScreen);
 }
@@ -324,6 +340,7 @@ static QuartzModeProcsRec crModeProcs = {
     QuartzResumeXCursor,
     NULL,               // No capture or release in rootless mode
     NULL,
+    CRScreenChanged,
     CRAddPseudoramiXScreens,
     CRUpdateScreen,
     CRIsX11Window,
