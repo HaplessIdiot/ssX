@@ -1,6 +1,6 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.137 2004/06/01 00:16:53 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.138 2004/07/18 15:10:26 dickey Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -3295,7 +3295,7 @@ target::								@@\
 		   imakeprefix=$$newtop/ ;; \				@@\
 		esac; \							@@\
 		RemoveFile($$i/Makefile.bak); \				@@\
-		if [ -f $$i/Makefile ]; then \				@@\
+		if [ -e $$i/Makefile ]; then \				@@\
 			echo "	$(MV) Makefile Makefile.bak"; \		@@\
 			if [ "$$executeit" != "no" ]; then \		@@\
 				$(MV) $$i/Makefile $$i/Makefile.bak; \	@@\
