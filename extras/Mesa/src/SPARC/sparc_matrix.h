@@ -1,8 +1,13 @@
+/* $XFree86$ */
 
 #ifndef _SPARC_MATRIX_H
 #define _SPARC_MATRIX_H
 
-#ifdef __sparc_v9__
+#if defined(__sparc_v9__) && !defined(__linux__)
+#define SPARC_64BIT_ADDR
+#endif
+
+#ifdef SPARC_64BIT_ADDR
 #define LDPTR		ldx
 #define MAT_M		0x00
 #define MAT_INV		0x08

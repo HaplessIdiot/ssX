@@ -1,3 +1,4 @@
+/* $XFree86$ */
 
 /*
  * Mesa 3-D graphics library
@@ -32,6 +33,9 @@
 #include "math/m_xform.h"
 #include "tnl/t_context.h"
 #include "sparc.h"
+#if defined(__sparc_v9__) && !defined(__linux__)
+#define SPARC_64BIT_ADDR
+#endif
 
 #ifdef DEBUG
 #include "math/m_debug.h"
@@ -160,7 +164,7 @@ void _mesa_init_sparc_glapi_relocs(void)
 	disp_addr = (unsigned long) &_glapi_Dispatch;
 
 	while (insn_ptr < end_ptr) {
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 		insn_ptr[0] |= (disp_addr >> (32 + 10));
 		insn_ptr[1] |= ((disp_addr & 0xffffffff) >> 10);
 		__glapi_sparc_icache_flush(&insn_ptr[0]);
