@@ -42,6 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XFree86$ */
 
 #ifndef _XtinitialI_h
 #define _XtinitialI_h
@@ -194,6 +195,9 @@ typedef struct _XtAppStruct {
     ThreadAppProc free_lock;
 #endif
 } XtAppStruct;
+
+extern void _XtHeapInit(Heap* heap);
+extern void _XtHeapFree(Heap* heap);
 
 #ifdef XTTRACEMEMORY
 
@@ -452,5 +456,11 @@ extern void _XtFreeWWTable(
     XtPerDisplay pd
 #endif
 );
+
+extern String _XtGetUserName(String dest, int len);
+extern XrmDatabase _XtPreparseCommandLine(XrmOptionDescRec *urlist,
+			Cardinal num_urs, int argc, String *argv,
+			String *applName, String *displayName,
+			String *language);
 
 #endif /* _XtinitialI_h */

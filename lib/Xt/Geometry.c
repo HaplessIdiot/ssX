@@ -54,15 +54,15 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/Geometry.c,v 1.9 2001/01/17 19:43:04 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Geometry.c,v 1.10 2001/08/18 02:41:29 dawes Exp $ */
 
 #include "IntrinsicI.h"
 #include "ShellP.h"
 #include "ShellI.h"
 
-static void ClearRectObjAreas(r, old)
-    RectObj r;
-    XWindowChanges* old;
+static void ClearRectObjAreas(
+    RectObj r,
+    XWindowChanges* old)
 {
     Widget pw = _XtWindowedAncestor((Widget)r);
     int bw2;
@@ -410,11 +410,12 @@ _XtMakeGeometryRequest (widget, request, reply, clear_rect_obj)
 	if (req.changeMask & CWStackMode) {
 	    req.changes.stack_mode = request->stack_mode;
 	    CALLGEOTAT(_XtGeoTrace(widget,"stack_mode changing\n"));
-	    if (req.changeMask & CWSibling)
+	    if (req.changeMask & CWSibling) {
 		if (XtIsWidget(request->sibling))
 		    req.changes.sibling = XtWindow(request->sibling);
 		else
 		    req.changeMask &= ~(CWStackMode | CWSibling);
+	    }
 	}
 
 #ifdef XT_GEO_TATTLER
@@ -532,16 +533,18 @@ XtMakeResizeRequest (widget, width, height, replyWidth, replyHeight)
     } else {
 	r = _XtMakeGeometryRequest(widget, &request, &reply, &junk);
     }
-    if (replyWidth != NULL)
+    if (replyWidth != NULL) {
 	if (r == XtGeometryAlmost && reply.request_mode & CWWidth)
 	    *replyWidth = reply.width;
 	else
 	    *replyWidth = width;
-    if (replyHeight != NULL)
+    }
+    if (replyHeight != NULL) {
 	if (r == XtGeometryAlmost && reply.request_mode & CWHeight)
 	    *replyHeight = reply.height;
 	else
 	    *replyHeight = height;
+    }
     UNLOCK_APP(app);
     return ((r == XtGeometryDone) ? XtGeometryYes : r);
 } /* XtMakeResizeRequest */

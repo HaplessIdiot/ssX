@@ -54,7 +54,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xt/Alloc.c,v 1.7 2001/07/29 05:01:12 tsi Exp $ */
 
 /*
  * X Toolkit Memory Allocation Routines
@@ -63,6 +63,7 @@ in this Software without prior written authorization from The Open Group.
  */
 
 #include "IntrinsicI.h"
+#include "InitialI.h"
 #undef _XBCOPYFUNC
 
 #include <stdlib.h>

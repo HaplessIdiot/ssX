@@ -1,4 +1,4 @@
-/* $XConsortium: GetValues.c,v 1.13 94/04/17 20:14:09 kaleb Exp $ */
+/* $Xorg: GetValues.c,v 1.3 2000/08/17 19:46:12 cpqbld Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -36,14 +36,9 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 /*
 
-Copyright (c) 1987, 1988  X Consortium
+Copyright 1987, 1988, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -51,28 +46,26 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 */
+/* $XFree86$ */
 
 #include "IntrinsicI.h"
 #include "StringDefs.h"
 
-extern void _XtCopyToArg();
-extern XrmResourceList* _XtCreateIndirectionTable();
-
-static int GetValues(base, res, num_resources, args, num_args)
-  char*			base;		/* Base address to fetch values from */
-  XrmResourceList*      res;		/* The current resource values.      */
-  register Cardinal	num_resources;	/* number of items in resources      */
-  ArgList 		args;		/* The resource values requested     */
-  Cardinal		num_args;	/* number of items in arg list       */
+static int GetValues(
+  char*			base,		/* Base address to fetch values from */
+  XrmResourceList*      res,		/* The current resource values.      */
+  register Cardinal	num_resources,	/* number of items in resources      */
+  ArgList 		args,		/* The resource values requested     */
+  Cardinal		num_args)	/* number of items in arg list       */
 {
     register ArgList		arg;
     register int 		i;
@@ -123,11 +116,11 @@ static int GetValues(base, res, num_resources, args, num_args)
     return translation_arg_num;
 } /* GetValues */
 
-static void CallGetValuesHook(widget_class, w, args, num_args)
-    WidgetClass	  widget_class;
-    Widget	  w;
-    ArgList	  args;
-    Cardinal	  num_args;
+static void CallGetValuesHook(
+    WidgetClass	  widget_class,
+    Widget	  w,
+    ArgList	  args,
+    Cardinal	  num_args)
 {
     WidgetClass superclass;
     XtArgsProc get_values_hook;
@@ -147,11 +140,11 @@ static void CallGetValuesHook(widget_class, w, args, num_args)
 
 
 
-static void CallConstraintGetValuesHook(widget_class, w, args, num_args)
-    WidgetClass	  widget_class;
-    Widget	  w;
-    ArgList	  args;
-    Cardinal	  num_args;
+static void CallConstraintGetValuesHook(
+    WidgetClass	  widget_class,
+    Widget	  w,
+    ArgList	  args,
+    Cardinal	  num_args)
 {
     ConstraintClassExtension ext;
 
@@ -217,9 +210,9 @@ void XtGetValues(w, args, num_args)
     }
 
     /* Get constraint values if necessary */
-    /* assert: !XtIsShell(w) => (XtParent(w) != NULL) */
     /* constraints may be NULL if constraint_size==0 */
-    if (!XtIsShell(w) && XtIsConstraint(XtParent(w)) && w->core.constraints) {
+    if (XtParent(w) != NULL && !XtIsShell(w) && XtIsConstraint(XtParent(w)) && 
+	w->core.constraints) {
 	ConstraintWidgetClass cwc
 	    = (ConstraintWidgetClass) XtClass(XtParent(w));
 	LOCK_PROCESS;
@@ -232,7 +225,7 @@ void XtGetValues(w, args, num_args)
     CallGetValuesHook(wc, w, args, num_args);
 
     /* Notify constraint get_values if necessary */
-    if (!XtIsShell(w) && XtIsConstraint(XtParent(w)))
+    if (XtParent(w) != NULL && !XtIsShell(w) && XtIsConstraint(XtParent(w)))
 	CallConstraintGetValuesHook(XtClass(XtParent(w)), w, args,num_args);
     UNLOCK_APP(app);
 } /* XtGetValues */

@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/IntrinsicI.h,v 3.5 2001/01/17 19:43:05 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/IntrinsicI.h,v 3.6 2001/07/25 15:04:52 dawes Exp $ */
 
 #ifndef _XtintrinsicI_h
 #define _XtintrinsicI_h
@@ -61,14 +61,6 @@ SOFTWARE.
 
 #include "ConvertI.h"
 #include "TranslateI.h"
-#include "CallbackI.h"
-#include "EventI.h"
-#include "HookObjI.h"
-#include "PassivGraI.h"
-#include "ThreadsI.h"
-#include "InitialI.h"
-#include "ResourceI.h"
-#include "StringDefs.h"
 
 #define RectObjClassFlag	0x02
 #define WidgetClassFlag		0x04
@@ -229,6 +221,9 @@ extern void _XtAddShellToHookObj(
     Widget      /* widget */
 #endif
 );
+
+/* GCManager.c */
+extern void _XtGClistFree(Display *dpy, XtPerDisplay pd);
 
 /** GeoTattler stuff */
 
