@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_accel.c,v 1.15 2002/10/30 12:52:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_accel.c,v 1.17 2002/11/25 14:04:59 eich Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -300,7 +300,7 @@ I810Sync(ScrnInfoPtr pScrn)
 #ifdef XF86DRI
    /* VT switching tries to do this.  
     */
-   if (!pI810->LockHeld && pI810->directRenderingEnabled) {
+   if ((!pI810->LockHeld && pI810->directRenderingEnabled) || !pScrn->vtSema) {
       return;
    }
 #endif

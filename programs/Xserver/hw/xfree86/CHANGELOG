@@ -1,4 +1,6 @@
 XFree86 4.3.99.3 (xx April 2003)
+ 139. Add test for vtSema to i8x0Sync() to prevent touching MMIO registers
+      while switched away (Egbert Eich).
  138. Fix mmapw SEGV (Marc La France).
  137. From the DRI trunk...
        - Install dummy/noop read & poll fops unless the driver has
@@ -33,7 +35,7 @@ XFree86 4.3.99.3 (xx April 2003)
       when RENDER extension requests were made while X was switched away.
       (Egbert Eich).
  124. i810 driver: call drmCtlUninstHandler() on CloseScreen() 
-      (?,Leif Delgass).
+      (David Airlie).
  123. Savage driver updated to 1.1.1.27: several fixes for video glitches
       (Tim Roberts).
  122. Put back the DRM part of Charl Botha's Radeon suspend/resume support
@@ -16872,7 +16874,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2656 2003/04/24 02:58:06 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2657 2003/04/24 15:20:36 tsi Exp $
 
 
 
