@@ -33,9 +33,6 @@
 
 extern void _tnl_save_Begin( GLenum mode );
 extern void _tnl_Begin( GLenum mode );
-
-extern void _tnl_Begin( GLenum mode );
-
 extern void _tnl_End(void);
 
 
