@@ -303,6 +303,12 @@ lgSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 
 #endif /* XFree86LOADER */
 
+OptionInfoPtr
+LgAvailableOptions(int chipid)
+{
+    return LgOptions;
+}
+
 Bool
 LgProbe(int entity, ScrnInfoPtr pScrn)
 {

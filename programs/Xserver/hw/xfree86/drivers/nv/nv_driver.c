@@ -39,6 +39,7 @@
  * Forward definitions for the functions that make up the driver.
  */
 /* Mandatory functions */
+static OptionInfoPtr NVAvailableOptions(int chipid);
 static void    NVIdentify(int flags);
 static Bool    NVProbe(DriverPtr drv, int flags);
 static Bool    NVPreInit(ScrnInfoPtr pScrn, int flags);
@@ -81,6 +82,7 @@ DriverRec NV = {
 #endif
         NVIdentify,
         NVProbe,
+	NVAvailableOptions,
         NULL,
         0
 };
@@ -336,7 +338,12 @@ nvSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 
 #endif /* XFree86LOADER */
 
-
+static
+OptionInfoPtr
+NVAvailableOptions(int chipid)
+{
+    return NVOptions;
+}
 
 /* Mandatory */
 static void

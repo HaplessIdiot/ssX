@@ -293,6 +293,12 @@ alpSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 
 #endif /* XFree86LOADER */
 
+OptionInfoPtr
+AlpAvailableOptions(int chipid)
+{
+    return CirOptions;
+}
+
 Bool
 AlpProbe(int entity, ScrnInfoPtr pScrn)
 {

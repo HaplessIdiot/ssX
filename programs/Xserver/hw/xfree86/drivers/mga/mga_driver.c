@@ -109,6 +109,7 @@
  */
 
 /* Mandatory functions */
+static OptionInfoPtr	MGAAvailableOptions(int chipid);
 static void	MGAIdentify(int flags);
 static Bool	MGAProbe(DriverPtr drv, int flags);
 static Bool	MGAPreInit(ScrnInfoPtr pScrn, int flags);
@@ -166,6 +167,7 @@ DriverRec MGA = {
 #endif
     MGAIdentify,
     MGAProbe,
+    MGAAvailableOptions,
     NULL,
     0
 };
@@ -440,6 +442,12 @@ MGAFreeRec(ScrnInfoPtr pScrn)
     pScrn->driverPrivate = NULL;
 }
 
+static
+OptionInfoPtr
+MGAAvailableOptions(int chipid)
+{
+    return MGAOptions;
+}
 
 /* Mandatory */
 static void

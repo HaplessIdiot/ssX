@@ -87,6 +87,7 @@
 # define TRACE(str)
 #endif
 
+static OptionInfoPtr	GLINTAvailableOptions(int chipid);
 static void	GLINTIdentify(int flags);
 static Bool	GLINTProbe(DriverPtr drv, int flags);
 static Bool	GLINTPreInit(ScrnInfoPtr pScrn, int flags);
@@ -145,6 +146,7 @@ DriverRec GLINT = {
 #endif
     GLINTIdentify,
     GLINTProbe,
+    GLINTAvailableOptions,
     NULL,
     0
 };
@@ -569,6 +571,12 @@ GLINTIdentify(int flags)
     xf86PrintChipsets(GLINT_NAME, "driver for 3Dlabs chipsets", GLINTChipsets);
 }
 
+static
+OptionInfoPtr
+GLINTAvailableOptions(int chipid)
+{
+    return GLINTOptions;
+}
 
 /* Mandatory */
 static Bool

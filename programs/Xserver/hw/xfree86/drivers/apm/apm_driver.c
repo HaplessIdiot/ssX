@@ -27,6 +27,7 @@
 #define TEXT_AMOUNT 32768
 
 /* Mandatory functions */
+static OptionInfoPtr	ApmAvailableOptions(int chipid);
 static void     ApmIdentify(int flags);
 static Bool     ApmProbe(DriverPtr drv, int flags);
 static Bool     ApmPreInit(ScrnInfoPtr pScrn, int flags);
@@ -65,6 +66,7 @@ DriverRec APM = {
 #endif
 	ApmIdentify,
 	ApmProbe,
+	ApmAvailableOptions,
 	NULL,
 	0
 };
@@ -309,6 +311,13 @@ ApmIdentify(int flags)
 {
     xf86PrintChipsets(APM_NAME, "driver for the Alliance chipsets",
 		      ApmChipsets);
+}
+
+static
+OptionInfoPtr
+ApmAvailableOptions(int chipid)
+{
+    return ApmOptions;
 }
 
 static int
