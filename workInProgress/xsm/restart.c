@@ -1,4 +1,5 @@
-/* $XConsortium: restart.c,v 1.4 94/04/17 21:15:18 mor Exp $ */
+/* $XConsortium: restart.c,v 1.5 94/05/12 11:59:01 mor Exp $ */
+/* $XFree86$ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -44,6 +45,9 @@ restart_everything()
     char	*program;
     char	**args;
     char	**env;
+#ifdef MINIX
+    char	*no_env= NULL;
+#endif
     char	**pp;
     int		cnt;
     extern char **environ;
@@ -195,7 +199,8 @@ restart_everything()
 		printf("\n");
 	    }
 
-	    if (!strncmp(c->clientHostname, "local/", 6))
+	    if (strncmp(c->clientHostname, "tcp/", 4) != 0 &&
+		strncmp(c->clientHostname, "decnet/", 7) != 0)
 	    {
 		/*
 		 * The client is being restarted on the local machine.
@@ -227,6 +232,10 @@ restart_everything()
 		 * The client is being restarted on a remote machine.
 		 */
 
+#ifdef MINIX
+		if (env == NULL)
+			env= &no_env;
+#endif
 		remote_start (c->clientHostname, program, args, cwd, env,
 		    non_local_display_env, non_local_session_env);
 	    }

@@ -1,4 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.7 94/02/22 15:42:37 mor Exp $
+XCOMM $XFree86$
 #if !defined(RshCmd)
 #if SystemV
 #ifdef HPArchitecture
@@ -16,16 +17,29 @@ XCOMM $XConsortium: Imakefile,v 1.7 94/02/22 15:42:37 mor Exp $
         DEPLIBS = XawClientDepLibs
 LOCAL_LIBRARIES = XawClientLibs
 
+#ifdef MinixArchitecture
+           SRCS1 = auth.c list.c misc.c printhex.c remote.c restart.c save.c \
+                   xsm.c xtwatch.c Shell.c
+                   
+           OBJS1 = auth.o list.o misc.o printhex.o remote.o restart.o save.o \
+                   xsm.o xtwatch.o Shell.o
+#else
            SRCS1 = auth.c list.c misc.c printhex.c remote.c restart.c save.c \
                    xsm.c xtwatch.c
                    
            OBJS1 = auth.o list.o misc.o printhex.o remote.o restart.o save.o \
                    xsm.o xtwatch.o
+#endif
 
           PROGS1 = xsm
 
+#ifdef MinixArchitecture
+           SRCS2 = xsmclient.c Shell.c
+           OBJS2 = xsmclient.o Shell.o
+#else
            SRCS2 = xsmclient.c
            OBJS2 = xsmclient.o
+#endif
           PROGS2 = xsmclient
 
             SRCS = $(SRCS1) $(SRCS2)
@@ -37,4 +51,7 @@ ComplexProgramTarget_2(xsmclient,$(LOCAL_LIBRARIES),NullParameter)
 SpecialCObjectRule(remote,NullParameter,'-DRSHCMD="$(RSHCMD)"')
 #if !HasPutenv
 SpecialCObjectRule(misc,NullParameter,-DNOPUTENV)
+#endif
+#ifdef MinixArchitecture
+ObjectFromSpecialSource(Shell,../../lib/Xt/Shell,-I../../lib/Xt)
 #endif

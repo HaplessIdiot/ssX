@@ -1,4 +1,5 @@
 /* $XConsortium: xtwatch.c,v 1.7 94/04/17 21:15:22 mor Exp $ */
+/* $XFree86$ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -27,7 +28,6 @@ in this Software without prior written authorization from the X Consortium.
 
 #include <X11/ICE/ICElib.h>
 #include <X11/Intrinsic.h>
-
 
 Status
 InitWatchProcs (appContext)
@@ -79,5 +79,9 @@ XtInputId	*id;
 {
     IceConn	ice_conn = (IceConn) client_data;
 
+#ifdef MINIX
+    if (!MNX_IceMessagesAvailable(ice_conn))
+    	return;
+#endif
     IceProcessMessages (ice_conn, NULL, NULL);
 }
