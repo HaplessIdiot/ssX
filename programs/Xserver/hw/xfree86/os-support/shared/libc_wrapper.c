@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.58 2000/02/08 13:13:31 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.59 2000/02/08 17:19:23 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -1849,6 +1849,12 @@ xf86shmat(int id, char *addr, int xf86shmflg)
 
 int
 xf86shmctl(int id, int xf86cmd, pointer *buf)
+{
+    return -1;
+}
+
+int
+xf86shmdt(char *addr)
 {
     return -1;
 }
