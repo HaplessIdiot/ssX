@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/Imakefile,v 1.9 2000/02/13 03:36:08 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/Imakefile,v 1.10 2000/06/17 00:03:33 martin Exp $
 
 #include <Server.tmpl>
 
@@ -8,11 +8,11 @@ MOUSESRC = hurd_mouse.c
 MOUSEOBJ = hurd_mouse.o
 
 SRCS = hurd_init.c hurd_video.c hurd_io.c libc_wrapper.c $(BIOS_MOD).c \
-       mapVT_noop.c VTsw_noop.c posix_tty.c std_kbdEv.c $(MOUSESRC) \
+       VTsw_noop.c posix_tty.c std_kbdEv.c $(MOUSESRC) \
        stdResource.c stdPci.c sigiostubs.c pm_noop.c kmod_noop.c
 
 OBJS = hurd_init.o hurd_video.o hurd_io.o libc_wrapper.o $(BIOS_MOD).o \
-       mapVT_noop.o VTsw_noop.o posix_tty.o std_kbdEv.o $(MOUSEOBJ) \
+       VTsw_noop.o posix_tty.o std_kbdEv.o $(MOUSEOBJ) \
        stdResource.o stdPci.o sigiostubs.o pm_noop.o kmod_noop.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
@@ -27,7 +27,6 @@ NormalLibraryObjectRule()
 
 
 LinkSourceFile(VTsw_noop.c,../shared)
-LinkSourceFile(mapVT_noop.c,../shared)
 LinkSourceFile(posix_tty.c,../shared)
 LinkSourceFile(std_kbdEv.c,../shared)
 LinkSourceFile(libc_wrapper.c,../shared)

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/amoeba/Imakefile,v 3.2 1999/07/10 07:24:47 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/amoeba/Imakefile,v 3.3 2000/06/17 00:03:27 martin Exp $
 
 
 
@@ -12,9 +12,9 @@ IOSRC = inout.S
 IOOBJ = inout.o
 #endif
 
-SRCS = am_init.c am_video.c am_io.c mapVT_noop.c ioperm_noop.c \
+SRCS = am_init.c am_video.c am_io.c ioperm_noop.c \
 	VTsw_noop.c $(IOSRC) kmod_noop.c
-OBJS = am_init.o am_video.o am_io.o mapVT_noop.o ioperm_noop.o \
+OBJS = am_init.o am_video.o am_io.o ioperm_noop.o \
 	VTsw_noop.o $(IOOBJ) kmod_noop.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
@@ -24,7 +24,6 @@ SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
 NormalAsmObjectRule()
 
-ObjectFromSpecialSource(mapVT_noop,../shared/mapVT_noop,/**/)
 ObjectFromSpecialSource(ioperm_noop,../shared/ioperm_noop,/**/)
 ObjectFromSpecialSource(VTsw_noop,../shared/VTsw_noop,/**/)
 ObjectFromSpecialSource(kmod_noop,../shared/kmod_noop,/**/)
