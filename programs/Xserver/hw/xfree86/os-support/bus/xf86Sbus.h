@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Sbus.h,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Sbus.h,v 1.9 2004/12/07 21:53:46 tsi Exp $ */
 
 #ifndef _XF86_SBUS_H
 #define _XF86_SBUS_H
@@ -90,9 +90,6 @@
 # else
 #  define FBTYPE_MDICOLOR 20
 # endif
-#endif
-#ifndef   CG14_REGS_VOFF
-# define  CG14_REGS_VOFF	0x00000000
 #endif
 
 #ifndef   FBTYPE_TCXCOLOR
