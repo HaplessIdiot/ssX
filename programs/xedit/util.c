@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/util.c,v 1.19 2002/02/10 02:50:05 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/util.c,v 1.20 2002/05/31 18:46:11 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>		/* for realpath() */
@@ -420,12 +420,11 @@ SwitchTextSource(xedit_flist_item *item)
     XtSetValues(filenamewindow, args, num_args);
 }
 
+/* XXX sizeof(name) must match argument size for realpath */
+static char name[BUFSIZ];
 char *
 ResolveName(char *filename)
 {
-    /* XXX sizeof(name) must match argument size for realpath */
-    static char name[BUFSIZ];
-
     if (filename == NULL)
 	filename = GetString(filenamewindow);
 
