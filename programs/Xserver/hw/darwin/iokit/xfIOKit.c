@@ -33,7 +33,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.17 2002/12/15 06:10:15 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.18 2003/03/15 18:02:08 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -120,10 +120,10 @@ static void XFIOKitStoreColors(
 
 
 /*
- * XFIOKitBell
+ * DarwinModeBell
  *  FIXME
  */
-void XFIOKitBell(
+void DarwinModeBell(
     int             loud,
     DeviceIntPtr    pDevice,
     pointer         ctrl,
@@ -133,10 +133,10 @@ void XFIOKitBell(
 
 
 /*
- * XFIOKitGiveUp
+ * DarwinModeGiveUp
  *  Closes the connections to IOKit services
  */
-void XFIOKitGiveUp( void )
+void DarwinModeGiveUp( void )
 {
     int i;
 
@@ -548,10 +548,10 @@ static Bool SetupFBandHID(
 
 
 /*
- * XFIOKitAddScreen
+ * DarwinModeAddScreen
  *  IOKit specific initialization for each screen.
  */
-Bool XFIOKitAddScreen(
+Bool DarwinModeAddScreen(
     int index,
     ScreenPtr pScreen)
 {
@@ -614,10 +614,10 @@ static void XFIOKitShadowUpdate(ScreenPtr pScreen,
 
 
 /*
- * XFIOKitSetupScreen
+ * DarwinModeSetupScreen
  *  Finalize IOKit specific initialization of each screen.
  */
-Bool XFIOKitSetupScreen(
+Bool DarwinModeSetupScreen(
     int index,
     ScreenPtr pScreen)
 {
@@ -650,10 +650,10 @@ Bool XFIOKitSetupScreen(
 
 
 /*
- * XFIOKitInitOutput
+ * DarwinModeInitOutput
  *  One-time initialization of IOKit output support.
  */
-void XFIOKitInitOutput(
+void DarwinModeInitOutput(
     int argc,
     char **argv)
 {
@@ -739,10 +739,10 @@ void XFIOKitInitOutput(
 
 
 /*
- * XFIOKitInitInput
+ * DarwinModeInitInput
  *  One-time initialization of IOKit input support.
  */
-void XFIOKitInitInput(
+void DarwinModeInitInput(
     int argc,
     char **argv)
 {
@@ -759,4 +759,16 @@ void XFIOKitInitInput(
     pthread_create(&inputThread, NULL,
                    XFIOKitHIDThread, (void *) fd[1]);
 
+}
+
+
+/*
+ * DarwinModeProcessEvent
+ *  Process IOKit specific events.
+ */
+void DarwinModeProcessEvent(
+    xEvent *xe)
+{
+    // No mode specific events
+    ErrorF("Unknown X event caught: %d\n", xe->u.u.type);
 }

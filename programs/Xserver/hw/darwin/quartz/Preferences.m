@@ -3,10 +3,16 @@
 //
 //  This class keeps track of the user preferences.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/Preferences.m,v 1.1 2002/03/28 02:21:18 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/Preferences.m,v 1.2 2003/01/15 02:34:06 torrey Exp $ */
+
+#import "quartzCommon.h"
+
+#define BOOL xBOOL
+#include "darwin.h"
+#undef BOOL
 
 #import "Preferences.h"
-#import "quartzCommon.h"
+
 #include <IOKit/hidsystem/IOLLEvent.h>	// for modifier masks
 
 // Macros to build the path name
@@ -311,7 +317,7 @@
     [[NSUserDefaults standardUserDefaults] setBool:newMouseAccelChange
             forKey:@"AllowMouseAccelChange"];
     // Update the setting used by the X server thread
-    quartzMouseAccelChange = newMouseAccelChange;
+    darwinMouseAccelChange = newMouseAccelChange;
 }
 
 + (void)setUseQDCursor:(int)newUseQDCursor

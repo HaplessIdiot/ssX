@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.5 2002/12/05 01:07:40 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.6 2003/04/30 23:15:39 torrey Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -14,6 +14,7 @@ SRCS =  Preferences.m \
         quartzAudio.c \
         quartzCocoa.m \
         quartzPasteboard.c \
+        quartzStartup.c \
         pseudoramiX.c \
         aquaPicture.c \
         aquaWindow.c
@@ -27,6 +28,7 @@ OBJS =  Preferences.o \
         quartzAudio.o \
         quartzCocoa.o \
         quartzPasteboard.o \
+        quartzStartup.o \
         pseudoramiX.o \
         aquaPicture.o \
         aquaWindow.o
@@ -45,6 +47,7 @@ SRCS =  Preferences.m \
         quartzCocoa.m \
         quartzCursor.c \
         quartzPasteboard.c \
+        quartzStartup.c \
         rootlessAquaGlue.c \
         rootlessAquaImp.m \
         rootlessCommon.c \
@@ -66,6 +69,7 @@ OBJS =  Preferences.o \
         quartzCocoa.o \
         quartzCursor.o \
         quartzPasteboard.o \
+        quartzStartup.o \
         rootlessAquaGlue.o \
         rootlessAquaImp.o \
         rootlessCommon.o \
@@ -111,8 +115,6 @@ SUBDIRS = xpr
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(XQuartz,$(OBJS))
-
-AllTarget(quartzStartup.o)
 
 AllTarget(XDarwinStartup)
 NormalProgramTarget(XDarwinStartup,XDarwinStartup.o, \

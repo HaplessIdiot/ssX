@@ -36,7 +36,7 @@
 //
 //=============================================================================
 
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.16 2002/03/28 02:21:08 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.17 2002/12/10 00:00:38 torrey Exp $ */
 
 /*
 ===========================================================================
@@ -63,12 +63,10 @@
 #include <IOKit/hidsystem/ev_keymap.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <sys/stat.h>
 #include <architecture/byte_order.h>  // For the NXSwap*
 #include "darwin.h"
-#include "xfIOKit.h"
-#include "quartz/quartzAudio.h"
-#include "quartz/quartzShared.h"
 
 #define XK_TECHNICAL		// needed to get XK_Escape
 #define XK_PUBLISHING
@@ -464,7 +462,6 @@ void DarwinKeyboardInit(
     NXKeyMapping        keyMap;
     DataStream          *keyMapStream;
     unsigned char const *numPadStart = 0;
-    BellProcPtr         bellProc;
     Bool                haveKeymap = FALSE;
 
     memset( modMap, NoSymbol, sizeof( modMap ) );
@@ -690,13 +687,8 @@ void DarwinKeyboardInit(
     keySyms.minKeyCode = MIN_KEYCODE;
     keySyms.maxKeyCode = MAX_KEYCODE;
 
-    if (quartz)
-        bellProc = QuartzBell;
-    else
-        bellProc = XFIOKitBell;
-
     assert( InitKeyboardDeviceStruct( (DevicePtr)pDev, &keySyms, modMap,
-                                      bellProc,
+                                      DarwinModeBell,
                                       DarwinChangeKeyboardControl ));
 }
 

@@ -29,7 +29,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.c,v 1.7 2003/01/23 00:34:26 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.c,v 1.8 2003/04/30 23:15:39 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartz.h"
@@ -73,10 +73,10 @@ int                     noPseudoramiXExtension = TRUE;
 */
 
 /*
- * QuartzAddScreen
+ * DarwinModeAddScreen
  *  Do mode dependent initialization of each screen for Quartz.
  */
-Bool QuartzAddScreen(
+Bool DarwinModeAddScreen(
     int index,
     ScreenPtr pScreen)
 {
@@ -94,10 +94,10 @@ Bool QuartzAddScreen(
 
 
 /*
- * QuartzSetupScreen
+ * DarwinModeSetupScreen
  *  Finalize mode specific setup of each screen.
  */
-Bool QuartzSetupScreen(
+Bool DarwinModeSetupScreen(
     int index,
     ScreenPtr pScreen)
 {
@@ -119,10 +119,10 @@ Bool QuartzSetupScreen(
 
 
 /*
- * QuartzInitOutput
+ * DarwinModeInitOutput
  *  Quartz display initialization.
  */
-void QuartzInitOutput(
+void DarwinModeInitOutput(
     int argc,
     char **argv )
 {
@@ -163,10 +163,10 @@ void QuartzInitOutput(
 
 
 /*
- * QuartzInitInput
+ * DarwinModeInitInput
  *  Inform the main thread the X server is ready to handle events.
  */
-void QuartzInitInput(
+void DarwinModeInitInput(
     int argc,
     char **argv )
 {
@@ -247,10 +247,10 @@ static void QuartzSetRootClip(
 
 
 /*
- * QuartzProcessEvent
+ * DarwinModeProcessEvent
  *  Process Quartz specific events.
  */
-void QuartzProcessEvent(
+void DarwinModeProcessEvent(
     xEvent *xe)
 {
     switch (xe->u.u.type) {
@@ -287,11 +287,11 @@ void QuartzProcessEvent(
 
 
 /*
- * QuartzGiveUp
+ * DarwinModeGiveUp
  *  Cleanup before X server shutdown
  *  Release the screen and restore the Aqua cursor.
  */
-void QuartzGiveUp(void)
+void DarwinModeGiveUp(void)
 {
 #if 0
 // Trying to switch cursors when quitting causes deadlock

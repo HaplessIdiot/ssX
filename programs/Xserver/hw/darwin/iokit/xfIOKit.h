@@ -1,16 +1,10 @@
 /*
- * quartzShared.h
- *
- * Shared definitions between the Darwin X Server and the Cocoa front end
- *
- * This file is included in all parts of the Darwin X Server and must not
- * include any types defined in X11 or Mac OS X specific headers.
- * Definitions that are internal to the Quartz modes or use Mac OS X
- * specific types should be in quartzCommon.h instead of here.
- */
+  xfIOKit.h
+
+  IOKit specific functions and definitions
+*/
 /*
- * Copyright (c) 2001 Torrey T. Lyons and Greg Parker.
- *                 All Rights Reserved.
+ * Copyright (c) 2001-2002 Torrey T. Lyons. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -34,24 +28,30 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzShared.h,v 1.1 2002/03/28 02:21:19 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.h,v 1.10 2003/03/15 18:02:08 torrey Exp $ */
 
-#ifndef _QUARTZSHARED_H
-#define _QUARTZSHARED_H
+#ifndef _XFIOKIT_H
+#define _XFIOKIT_H
 
-// User preferences used by generic Darwin X server code
-extern int                  quartzMouseAccelChange;
-extern int                  darwinFakeButtons;
-extern int                  darwinFakeMouse2Mask;
-extern int                  darwinFakeMouse3Mask;
-extern char                 *darwinKeymapFile;
-extern unsigned int         darwinDesiredWidth, darwinDesiredHeight;
-extern int                  darwinDesiredDepth;
-extern int                  darwinDesiredRefresh;
+#include <pthread.h>
+#include <IOKit/graphics/IOFramebufferShared.h>
+#include "X11/Xproto.h"
+#include "screenint.h"
+#include "darwin.h"
 
-// location of X11's (0,0) point in global screen coordinates
-extern int                  darwinMainScreenX;
-extern int                  darwinMainScreenY;
+typedef struct {
+    io_connect_t        fbService;
+    StdFBShmem_t       *cursorShmem;
+    unsigned char      *framebuffer;
+    unsigned char      *shadowPtr;
+} XFIOKitScreenRec, *XFIOKitScreenPtr;
 
-#endif	/* _QUARTZSHARED_H */
+#define XFIOKIT_SCREEN_PRIV(pScreen) \
+    ((XFIOKitScreenPtr)pScreen->devPrivates[xfIOKitScreenIndex].ptr)
 
+extern int xfIOKitScreenIndex; // index into pScreen.devPrivates
+extern io_connect_t xfIOKitInputConnect;
+
+Bool XFIOKitInitCursor(ScreenPtr pScreen);
+
+#endif	/* _XFIOKIT_H */

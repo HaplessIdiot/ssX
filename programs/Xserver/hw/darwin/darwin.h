@@ -23,7 +23,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.h,v 1.15 2002/12/10 00:00:38 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.h,v 1.16 2003/04/30 23:15:39 torrey Exp $ */
 
 #ifndef _DARWIN_H
 #define _DARWIN_H
@@ -32,7 +32,6 @@
 #include "inputstr.h"
 #include "scrnintstr.h"
 #include "extensions/XKB.h"
-#include "quartz/quartzShared.h"
 
 typedef struct {
     void                *framebuffer;
@@ -66,6 +65,17 @@ int DarwinModifierNXKeyToNXMask(int key);
 int DarwinModifierNXMaskToNXKey(int mask);
 int DarwinModifierStringToNXKey(const char *string);
 
+// Mode specific functions
+Bool DarwinModeAddScreen(int index, ScreenPtr pScreen);
+Bool DarwinModeSetupScreen(int index, ScreenPtr pScreen);
+void DarwinModeInitOutput(int argc,char **argv);
+void DarwinModeInitInput(int argc, char **argv);
+int DarwinModeProcessArgument(int argc, char *argv[], int i);
+void DarwinModeProcessEvent(xEvent *xe);
+void DarwinModeGiveUp(void);
+void DarwinModeBell(int volume, DeviceIntPtr pDevice, pointer ctrl, int class);
+
+
 #undef assert
 #define assert(x) { if ((x) == 0) \
     FatalError("assert failed on line %d of %s!\n", __LINE__, __FILE__); }
@@ -78,6 +88,7 @@ int DarwinModifierStringToNXKey(const char *string);
 
 #define MIN_KEYCODE XkbMinLegalKeyCode     // unfortunately, this isn't 0...
 
+
 /*
  * Global variables from darwin.c
  */
@@ -85,7 +96,21 @@ extern int              darwinScreenIndex; // index into pScreen.devPrivates
 extern int              darwinScreensFound;
 extern io_connect_t     darwinParamConnect;
 extern int              darwinEventFD;
-extern Bool             quartz;
+
+// User preferences
+extern int              darwinMouseAccelChange;
+extern int              darwinFakeButtons;
+extern int              darwinFakeMouse2Mask;
+extern int              darwinFakeMouse3Mask;
+extern char            *darwinKeymapFile;
+extern unsigned int     darwinDesiredWidth, darwinDesiredHeight;
+extern int              darwinDesiredDepth;
+extern int              darwinDesiredRefresh;
+
+// location of X11's (0,0) point in global screen coordinates
+extern int              darwinMainScreenX;
+extern int              darwinMainScreenY;
+
 
 /*
  * Special ddx events understood by the X server

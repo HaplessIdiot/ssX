@@ -28,7 +28,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzStartup.c,v 1.2 2003/01/15 02:34:06 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzStartup.c,v 1.3 2003/01/19 06:35:13 torrey Exp $ */
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -98,7 +98,6 @@ void DarwinHandleGUI(
         }
     }
 
-    quartz = TRUE;
     main_exit = NSApplicationMain(argc, argv);
     exit(main_exit);
 }
@@ -186,7 +185,7 @@ void DarwinGlxWrapInitVisuals(
 }
 
 
-int QuartzProcessArgument( int argc, char *argv[], int i )
+int DarwinModeProcessArgument( int argc, char *argv[], int i )
 {
     // fullscreen: CoreGraphics full-screen mode
     // rootless: Cocoa rootless mode
@@ -208,7 +207,7 @@ int QuartzProcessArgument( int argc, char *argv[], int i )
                 QUARTZ_SAFETY_DELAY );
 #endif
         return 1;
-     }
+    }
 
     if ( !strcmp( argv[i], "-quartz" ) ) {
         ErrorF( "Running in parallel with Mac OS X Quartz window server.\n" );
