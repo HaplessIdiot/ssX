@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.50 1998/12/20 11:56:16 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.51 1999/01/03 03:58:09 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -276,6 +276,32 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef HasStickyDirBit
 #define HasStickyDirBit		YES
 #endif
+/* byte-order defaults */
+#ifndef ByteOrder
+#if defined(VaxArchitecture)
+#define ByteOrder		X_LITTLE_ENDIAN
+#elif defined(MipsArchitecture) && (defined(UltrixArchitecture) || defined(OSF1Architecture))
+#define ByteOrder		X_LITTLE_ENDIAN
+#elif defined(MipsArchitecture)
+#define ByteOrder		X_BIG_ENDIAN
+#elif defined(i386Architecture)
+#define ByteOrder		X_LITTLE_ENDIAN
+#elif defined(SparcArchitecture)
+#define ByteOrder		X_BIG_ENDIAN
+#elif defined(AlphaArchitecture)
+#define ByteOrder		X_LITTLE_ENDIAN
+#elif defined(Mc68000Architecture)
+#define ByteOrder		X_BIG_ENDIAN
+#elif defined(Mc68020Architecture)
+#define ByteOrder		X_BIG_ENDIAN
+#elif defined(Mc88000Architecture)
+#define ByteOrder		X_BIG_ENDIAN
+#elif defined(Arm32Architecture)
+#define ByteOrder		X_LITTLE_ENDIAN
+#elif defined(PpcArchitecture)
+#define ByteOrder		X_BIG_ENDIAN
+#endif
+#endif /* ByteOrder */
 #ifndef HasFortran
 #define HasFortran		NO
 #endif

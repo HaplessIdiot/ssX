@@ -83,7 +83,7 @@
  * initial rev
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/vbfill.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/vbfill.c,v 1.2 1999/03/14 03:20:55 dawes Exp $ */
 
 /*
  * This file implements the functions for filling the vertex buffer:
@@ -97,11 +97,11 @@
 #ifndef XFree86Server
 #include <assert.h>
 #endif
+#include "mmath.h"
 #include "context.h"
 #include "light.h"
 #include "macros.h"
 #include "matrix.h"
-#include "mmath.h"
 #include "pb.h"
 #include "types.h"
 #include "vb.h"

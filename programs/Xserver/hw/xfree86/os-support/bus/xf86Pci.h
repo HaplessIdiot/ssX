@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.7 1999/01/14 13:05:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.8 1999/02/07 06:18:47 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -309,7 +309,7 @@ typedef struct pci_cfg_regs {
     union { 	/* Offset 0x0 - 0x3 */
 	CARD32 device_vendor;
 	struct {
-#if BYTE_ORDER == BIG_ENDIAN		
+#if X_BYTE_ORDER == X_BIG_ENDIAN		
 	    CARD16 device;
 	    CARD16 vendor;
 #else	    
@@ -322,7 +322,7 @@ typedef struct pci_cfg_regs {
     union {    /* Offset 0x4 - 0x8 */
         CARD32 status_command;
 	struct {
-#if BYTE_ORDER == BIG_ENDIAN
+#if X_BYTE_ORDER == X_BIG_ENDIAN
 	CARD16 status;
 	CARD16 command;
 #else
@@ -335,7 +335,7 @@ typedef struct pci_cfg_regs {
     union {   /* Offset 0x8 - 0xb */
         CARD32 class_revision;
 	struct {
-#if BYTE_ORDER == BIG_ENDIAN		
+#if X_BYTE_ORDER == X_BIG_ENDIAN		
 	    CARD8 base_class;
 	    CARD8 sub_class;
 	    CARD8 prog_if;
@@ -352,7 +352,7 @@ typedef struct pci_cfg_regs {
     union {	/* Offset 0xc - 0xf */
         CARD32 bist_header_latency_cache;
 	struct {
-#if BYTE_ORDER == BIG_ENDIAN		
+#if X_BYTE_ORDER == X_BIG_ENDIAN		
 	    CARD8 bist;
 	    CARD8 header_type;
 	    CARD8 latency_timer;
@@ -377,7 +377,7 @@ typedef struct pci_cfg_regs {
 	} dv;
 	struct {
 	    CARD32 bg_rsrvd[2];
-#if BYTE_ORDER == BIG_ENDIAN	    
+#if X_BYTE_ORDER == X_BIG_ENDIAN	    
 	    CARD8 secondary_latency_timer;
 	    CARD8 subordinate_bus_number;
 	    CARD8 secondary_bus_number;
@@ -418,7 +418,7 @@ typedef struct pci_cfg_regs {
 	CARD32 subsys_card_vendor;
 	CARD32 rsvd2;
 	struct {
-#if BYTE_ORDER == BIG_ENDIAN		
+#if X_BYTE_ORDER == X_BIG_ENDIAN		
 	    CARD16 subsys_card;
 	    CARD16 subsys_vendor;
 #else	    
@@ -433,7 +433,7 @@ typedef struct pci_cfg_regs {
     union {	/* Offset 0x3c - 0x3f */
         CARD32 max_min_ipin_iline;
 	struct {
-#if BYTE_ORDER == BIG_ENDIAN		
+#if X_BYTE_ORDER == X_BIG_ENDIAN		
 	    CARD8 max_lat;
 	    CARD8 min_gnt;
 	    CARD8 int_pin;

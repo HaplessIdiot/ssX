@@ -1,4 +1,6 @@
 XFree86 3.9Pe (14 March 1999)
+2357. Set X_BYTE_ORDER from the imake config, and use it in place of
+      the system's BYTE_ORDER (David Dawes).
 2356. Update copyright notices in the s3virge driver (#2546, Kevin Brosius).
 2355. Xterm patch #93 (#2546, Thomas Dickey).
 2354. Fix some minor fbdev problems in fbdevhw and the mga driver (#2545,
@@ -7467,4 +7469,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.702 1999/03/12 02:36:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.703 1999/03/14 03:21:36 dawes Exp $

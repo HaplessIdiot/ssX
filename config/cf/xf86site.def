@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.136 1999/02/07 06:18:10 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.137 1999/03/01 02:13:58 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -363,7 +363,13 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.136 1999/02/07 06:18:10 dawes Exp 
  */
 
 /*
- * Select the XInput devices you want by setting them to YES.       
+ * Select the XInput devices you want by uncommenting this.
+ *
+#define XInputDrivers dial elographics magellan microtouch spaceorb wacom
+ */
+
+/*
+ * Uncomment this for joystick support.
  *
  * Note: Joystick support is only included for Linux and FreeBSD at the
  * moment.  For Linux it requires the Joystick module to be installed (it
@@ -371,12 +377,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.136 1999/02/07 06:18:10 dawes Exp 
  * will need to be built with the Joystick driver in order to be able to
  * use this.
  *
-#define JoystickSupport		NO
-#define WacomSupport		YES
-#define ElographicsSupport	YES 
-#define MicroTouchSupport	YES
-#define SummaSketchSupport	YES
-#define AceCadSupport		YES
+#define JoystickSupport YES
  */
 
 /*

@@ -25,12 +25,21 @@
  * IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/include/Xarch.h,v 1.6tsi Exp $ */
+/* $XFree86: xc/include/Xarch.h,v 1.7 1999/03/14 03:20:35 dawes Exp $ */
 
 
 /*
  * Determine the machine's byte order.
  */
+
+/* See if it is set in the imake config first */
+#ifdef X_BYTE_ORDER
+
+#define X_BIG_ENDIAN 4321
+#define X_LITTLE_ENDIAN 1234
+
+#else
+
 #ifdef SVR4
 #if defined(NCR) || defined(Mips)
 #include <sys/endian.h>
@@ -98,5 +107,11 @@
 #endif
 #endif /* sun */
 #endif /* BYTE_ORDER */
+
+#define X_BYTE_ORDER BYTE_ORDER
+#define X_BIG_ENDIAN BIG_ENDIAN
+#define X_LITTLE_ENDIAN LITTLE_ENDIAN
+
+#endif /* not in imake config */
 
 #endif /* _XARCH_H_ */

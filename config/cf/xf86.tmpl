@@ -2,7 +2,7 @@ XCOMM $XConsortium: xf86.tmpl /main/2 1996/10/31 15:01:41 kaleb $
 
 
 
-XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.19 1998/07/25 05:57:17 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.20 1998/12/06 06:08:09 dawes Exp $
 
 #if XF86LinkKit
     TOP_INCLUDES = TopIncludes
@@ -26,54 +26,6 @@ XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.19 1998/07/25 05:57:17 dawes Exp $
 
 #ifndef JoystickSupport
 #define JoystickSupport		NO
-#endif
-#ifndef WacomSupport
-#define WacomSupport		NO
-#endif
-#ifndef ElographicsSupport
-#define ElographicsSupport	NO
-#endif
-#ifndef MicroTouchSupport
-#define MicroTouchSupport	NO
-#endif
-#ifndef SummaSketchSupport
-#define SummaSketchSupport	NO
-#endif
-#ifndef AceCadSupport
-#define AceCadSupport		NO
-#endif
-
-#if !DoLoadableServer && BuildXInputExt
-# if JoystickSupport
-#  define JoystickDefines -DJOYSTICK_SUPPORT
-# else
-#  define JoystickDefines
-# endif
-# if WacomSupport
-#  define WacomDefines -DWACOM_SUPPORT
-# else
-#  define WacomDefines
-# endif
-# if ElographicsSupport
-#  define ElographicsDefines -DELOGRAPHICS_SUPPORT
-# else
-#  define ElographicsDefines
-# endif
-# if MicroTouchSupport
-#  define MicroTouchDefines -DMICROTOUCH_SUPPORT
-# else
-#  define MicroTouchDefines
-# endif
-# if SummaSketchSupport
-#  define SummaSketchDefines -DSUMMASKETCH_SUPPORT
-# else
-#  define SummaSketchDefines
-# endif
-# if AceCadSupport
-#  define AceCadDefines -DACECAD_SUPPORT
-# else
-#  define AceCadDefines
-# endif
 #endif
 
 /* Module support: These overrides must be here, not in xf86.rules,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/interpret_vdif.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/interpret_vdif.c,v 1.3 1999/03/14 03:21:55 dawes Exp $ */
 
 #include "Xarch.h"
 #include "vdif.h"
@@ -17,7 +17,7 @@ InterpretVdif(CARD8 *c)
     unsigned long l = 0;
 
     if (c == NULL) return NULL;
-#if BYTE_ORDER == BIG_ENDIAN
+#if X_BYTE_ORDER == X_BIG_ENDIAN
     length = swap_byte_order(p->FileLength);
     for (i = 0; i < (length >>2); i++) 
 	((CARD32*)c)[i] = swap_byte_order(((CARD32*)c)[i]) ;

@@ -73,6 +73,7 @@
 #ifdef PC_HEADER
 #include "all.h"
 #else
+#include "mmath.h"
 #include "context.h"
 #include "feedback.h"
 #include "macros.h"
@@ -81,7 +82,6 @@
 #include "texstate.h"
 #include "types.h"
 #include "vb.h"
-#include "mmath.h"
 #ifdef XFree86Server
 #include "GL/xf86glx.h"
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.7 1999/01/15 02:55:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.8 1999/02/28 11:19:46 dawes Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -793,7 +793,7 @@ pciCfgMech1SetBits(PCITAG tag, int offset, CARD32 mask, CARD32 val)
 CARD32
 pciByteSwap(CARD32 u)
 {
-#if BYTE_ORDER == BIG_ENDIAN
+#if X_BYTE_ORDER == X_BIG_ENDIAN
 # if defined(__powerpc__) && defined(PowerMAX_OS)
   CARD32 tmp;
 

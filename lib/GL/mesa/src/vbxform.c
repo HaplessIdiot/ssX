@@ -95,7 +95,7 @@
  * initial rev
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/vbxform.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/vbxform.c,v 1.2 1999/03/14 03:20:55 dawes Exp $ */
 
 /*
  * This file implements transformation, clip testing and projection of
@@ -109,12 +109,12 @@
 #ifndef XFree86Server
 #include <stdlib.h>
 #endif
+#include "mmath.h"
 #include "context.h"
 #include "fog.h"
 #include "light.h"
 #include "macros.h"
 #include "matrix.h"
-#include "mmath.h"
 #include "texture.h"
 #include "types.h"
 #include "vb.h"
