@@ -155,7 +155,8 @@ SECOND_PASS:
 	);
 
 	if(oneMore) { /* first one is narrow width */
-	    mode->bytesPerScanline = ((pMode->HDisplay * Bpp) + 3) & ~3L;
+	    /* Force stride to multiple of 16 pixels. */
+	    mode->bytesPerScanline = ((pMode->HDisplay + 15) & ~15) * Bpp;
 	    mode->imageWidth = pMode->HDisplay;
 	    mode->imageHeight =  pMode->VDisplay;
 	    mode->pixmapWidth = mode->imageWidth;
@@ -172,7 +173,7 @@ SECOND_PASS:
  
 	    goto SECOND_PASS;
 	} else {
-	    mode->bytesPerScanline = ((pScrn->displayWidth * Bpp) + 3) & ~3L;
+	    mode->bytesPerScanline = ((pScrn->displayWidth + 15) & ~15) * Bpp;
 	    mode->imageWidth = pScrn->displayWidth;
 	    mode->imageHeight = psav->videoRambytes / mode->bytesPerScanline;
 	    mode->pixmapWidth = mode->imageWidth;
@@ -260,6 +261,7 @@ Savage_SetMode(
     static int OldDisplayWidth[MAXSCREENS];
     static int OldBitsPerPixel[MAXSCREENS];
     static int OldDepth[MAXSCREENS];
+    static DisplayModePtr OldMode[MAXSCREENS];
     int index = pScrn->pScreen->myNum;
     SavagePtr psav = SAVPTR(pScrn);
 
@@ -269,6 +271,7 @@ Savage_SetMode(
 	pScrn->displayWidth = OldDisplayWidth[index];
 	pScrn->bitsPerPixel = OldBitsPerPixel[index];
 	pScrn->depth = OldDepth[index];
+	pScrn->currentMode = OldMode[index];
 
 	SavageSwitchMode(index, pScrn->currentMode, 0);
 	if( psav->hwcursor )
@@ -293,6 +296,7 @@ Savage_SetMode(
 	    OldDisplayWidth[index] = pScrn->displayWidth;
 	    OldBitsPerPixel[index] = pScrn->bitsPerPixel;
 	    OldDepth[index] = pScrn->depth;
+	    OldMode[index] = pScrn->currentMode;
 
 	    psav->DGAactive = TRUE;
 	}
@@ -302,7 +306,7 @@ Savage_SetMode(
 	pScrn->displayWidth = pMode->bytesPerScanline / 
 	    (pMode->bitsPerPixel >> 3);
 
-	psav->UseBIOS = FALSE;
+/*	psav->UseBIOS = FALSE; */
 	SavageSwitchMode(index, pMode->mode, 0);
 	psav->UseBIOS = holdBIOS;
     }

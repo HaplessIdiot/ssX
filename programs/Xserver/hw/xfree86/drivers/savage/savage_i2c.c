@@ -41,23 +41,37 @@ in this Software without prior written authorization from the XFree86 Project.
 static void
 SavageI2CPutBits(I2CBusPtr b, int clock,  int data)
 {
-    SavagePtr psav = SAVPTR(xf86Screens[b->scrnIndex]);
-    unsigned int reg = 0x10;
+    ScrnInfoPtr pScrn = (ScrnInfoPtr)(xf86Screens[b->scrnIndex]);
+    SavagePtr psav = SAVPTR(pScrn);
+    vgaHWPtr hwp;
+    int vgaIOBase;
+    unsigned char reg = 0x10;
+
+    hwp = VGAHWPTR(pScrn);
+    vgaHWGetIOBase(hwp);
+    vgaIOBase = hwp->IOBase;
 
     if(clock) reg |= 0x1;
     if(data)  reg |= 0x2;
 
-    OUTREG(DDC_REG,reg);
+    OutI2CREG(reg);
     /*ErrorF("SavageI2CPutBits: %d %d\n", clock, data); */
 }
 
 static void
 SavageI2CGetBits(I2CBusPtr b, int *clock, int *data)
 {
-    SavagePtr psav = SAVPTR(xf86Screens[b->scrnIndex]);
-    unsigned int reg;
+    ScrnInfoPtr pScrn = (ScrnInfoPtr)(xf86Screens[b->scrnIndex]);
+    SavagePtr psav = SAVPTR(pScrn);
+    vgaHWPtr hwp;
+    int vgaIOBase;
+    unsigned char reg = 0x10;
 
-    reg = (INREG(DDC_REG));
+    hwp = VGAHWPTR(pScrn);
+    vgaHWGetIOBase(hwp);
+    vgaIOBase = hwp->IOBase;
+
+    InI2CREG(reg);
 
     *clock = reg & 0x4;
     *data = reg & 0x8;

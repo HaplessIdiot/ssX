@@ -35,6 +35,9 @@
 #define INREG16(addr) MMIO_IN16(psav->MapBase, addr)
 #define OUTREG16(addr,val) MMIO_OUT16(psav->MapBase, addr, val)
 
+#define SAVAGE_CRT_ON	1
+#define SAVAGE_LCD_ON	2
+#define SAVAGE_TV_ON	4
 
 typedef struct _S3VMODEENTRY {
    unsigned short Width;
@@ -121,8 +124,29 @@ typedef struct _Savage {
     int			rotate;
     double		LCDClock;
     Bool		ShadowStatus;
-    int			PanelX;
-    int			PanelY;
+    Bool		CrtOnly;
+    Bool		TvOn;
+    Bool		PAL;
+    int			iDevInfo;
+    int			iDevInfoPrim;
+
+    int			PanelX;		/* panel width */
+    int			PanelY;		/* panel height */
+    int			iResX;		/* crtc X display */
+    int			iResY;		/* crtc Y display */
+    int			XFactor;	/* overlay X factor */
+    int			YFactor;	/* overlay Y factor */
+    int			displayXoffset;	/* overlay X offset */
+    int			displayYoffset;	/* overlay Y offset */
+    int			XExpansion;	/* expansion factor in x */
+    int			XExp1;
+    int			XExp2;
+    int			YExpansion;	/* expansion factor in x */
+    int			YExp1;
+    int			YExp2;
+    int			cxScreen;
+    int			TVSizeX;
+    int			TVSizeY;
 
     CloseScreenProcPtr	CloseScreen;
     pciVideoPtr		PciInfo;
