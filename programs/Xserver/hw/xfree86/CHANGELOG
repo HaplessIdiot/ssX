@@ -1,4 +1,11 @@
 XFree86 4.3.99.903 (xx February 2004)
+ 793. Fix for the way the FreeType backend sets the
+      _ADOBE_POSTSCRIPT_FONTNAME property for Type1 fonts (Bugzilla #1123,
+      David Dawes, based on Roland Mainz, reported by David Capshaw).
+ 792. Fix formatting of the XLookupString bytes that xev prints out (Bugzilla
+      #1153, Noah Levitt).
+ 791. Likely fix for FreeBSD 5.2 libGL build problem (David Dawes, reported by
+      Terry R. Friedrichsen).
  790. Fix typo in bsd_mouse.c (Tyler Retzlaff).
  789. Fix off-by-one errors in the emulation of an ix86's BT, BTS, BTR and BTC
       instructions (Marc La France).
@@ -18619,7 +18626,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3130 2004/02/05 18:24:54 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3131 2004/02/06 17:15:28 tsi Exp $
 
 
 
