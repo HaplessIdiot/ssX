@@ -102,7 +102,7 @@
  * o Error checking.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/gtf.c,v 1.1 2002/11/12 01:31:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/gtf.c,v 1.2 2002/11/15 17:01:53 tsi Exp $ */
 
 
 #include <stdio.h>
@@ -111,6 +111,9 @@
 #include <math.h>
 
 
+#if defined(__Lynx__)
+#define rint(x) floor(x)
+#endif
 
 #define MARGIN_PERCENT    1.8   /* % of active vertical image                */
 #define CELL_GRAN         8.0   /* assumed character cell granularity        */
