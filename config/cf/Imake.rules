@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.95 2001/06/08 06:08:27 herrb Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.96 2001/06/25 08:12:30 alanh Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1620,6 +1620,15 @@ step:: list								@@\
  *
  * Since the link is used in the installation process, we need to
  * make the link relative in order to honor $(DESTDIR) if it is set.
+ *
+ * Note: The sed script used here is not completely general.  It assumes
+ * that no elements of the path are '..', and that none start with '.'
+ * that aren't just '.'.
+ *
+ * For a more general solution $(REVPATH) could be used.  Even though
+ * it was intended for something a little different, it does do what is
+ * required here.
+ *
  */
 #ifndef LinkConfDirectoryLong
 #if UseSeparateConfDir && HasSymLinks
@@ -1630,7 +1639,7 @@ install::								@@\
 	@MakeFlagsToShellFlags(i,set +e); \				@@\
 	if [ -d Concat($(DESTDIR),opath/cdir) ]; then \			@@\
 	  RELPATH=`echo opath/cdir | \					@@\
-		sed -e 's:^.::' -e 's:[^/.][^/]*:..:'g`; \		@@\
+		sed -e 's:^/::' -e 's:[^/.][^/]*:..:'g -e 's:/\.$::'	@@\
 	  cd Concat($(DESTDIR),opath/cdir); \				@@\
 	  if [ -d rdir -a ! -h rdir ]; then \ 				@@\
 	    (cd rdir; tar cf - . | \					@@\
