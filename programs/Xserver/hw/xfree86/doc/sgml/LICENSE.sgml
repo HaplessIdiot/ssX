@@ -5,24 +5,51 @@
 <article>
 <title>Licenses</title>
 <author>Compiled by The XFree86 Project</author>
-<date>January 2004</date>
+<date>February 2004</date>
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.23 2004/02/08 00:30:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.24 2004/02/13 23:58:42 dawes Exp $
 </ident>
 
 <sect>Introduction
 <p>
-XFree86&trade; code without an explicit copyright is covered by the
-XFree86 copyright/license as shown in the next section.  Portions of
-code are covered by other licenses/copyrights, as shown in subsequent
-sections.  In all cases, see individual source files for specific license
-details, copyright owner information, and copyright dates.
+XFree86&trade; code without an explicit copyright or not explicitly
+marked as being in the public domain is covered by the XFree86
+copyright/license as shown in the next section.  Portions of code are
+covered by other licenses/copyrights, as shown in subsequent sections.
+In all cases, see individual source files for specific license details,
+copyright owner information, and copyright dates.
 
-<sect>XFree86 License
+<sect>XFree86 Project Licensing Policy
+<p>
+The XFree86 Project's basic licensing philosophy has always been summed
+up as "You can do what you like with the code except claim you wrote
+it."  Expressed more formally, it means that the licenses acceptable
+for code that makes up XFree86 must meet the following conditions:
+
+<itemize>
+<item>The code must be redistributable by others in either source or
+	binary form.
+
+<item>Others must be permitted to modify the code, and to distribute
+	modified code or derived code without being required to pay a
+	licensing fee or other financial consideration to the copyright
+	holder.
+
+<item>Others must be permitted to distribute binary-only forms of the
+	code if they which to do so.
+</itemize>
+
+A range of Open Source and Free Software licenses meet these conditions.
+The licenses in this document are examples of acceptable licenses.
+Contributors to XFree86 are encouraged to choose the license type that
+best suits them.  If you have any questions about whether a specific license
+fits in with the XFree86 licensing policy, please contact us.
+
+
+<sect>XFree86 License (version 1.1)
 <p>
 
-<p>
 Copyright (C) 1994-2004 The XFree86 Project, Inc.<newline>
 All rights reserved.
 
@@ -148,12 +175,44 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 
+<sect1>XFree86 License (version 1.0)
+<p>
+XFree86 code without an explicit copyright is covered by the following
+copyright/license:
+
+<p>
+Copyright (C) 1994-2004 The XFree86 Project, Inc.  All Rights Reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+THE XFREE86 PROJECT BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
+OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Except as contained in this notice, the name of the XFree86 Project shall
+not be used in advertising or otherwise to promote the sale, use or other
+dealings in this Software without prior written authorization from the
+XFree86 Project.
+
 <sect>Berkeley-style Licenses
 <p>
 The Berkeley-style licenses are similar to the X/MIT-style licenses,
-except that they include conditions requiring attributions accompany
-binary distributions and/or are included with end user documetation
-and/or advertising material.
+except that they may include conditions requiring copies of the licenses
+and copyright notices accompany binary distributions, and in some cases
+that specific attributions accompany binary distributions and/or are
+included with end user documentation and/or advertising material.
 
 <sect1>General
 <p>

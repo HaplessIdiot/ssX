@@ -13,10 +13,10 @@
 
 <title>README for XFree86&tm; &relvers;
 <author>The XFree86 Project, Inc
-<date>18 December 2003
+<date>14 February 2004
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.137 2003/12/12 00:40:54 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.138 2003/12/19 04:26:12 dawes Exp $
 </ident>
 
 <abstract>
@@ -53,9 +53,9 @@ XFree86 4.x series.
 ]]>
 
 <![ %snapshot [
-XFree86 &relvers; is a pre-release snapshot of XFree86 &nextfullrelvers;.
+XFree86 &relvers; is a pre-release snapshot of XFree86 &fullrelvers;.
 <![ %relcandidate [
-This snapshot is release candidate &rcnum; for version &nextfullrelvers;.
+This snapshot is release candidate &rcnum; for version &fullrelvers;.
 ]]>
 Pre-release snapshots are provided for beta testing.  You should only install
 snapshots if you're comfortable dealing with possibly unstable beta-level
@@ -65,7 +65,7 @@ to report your findings to the public XFree86 mailing list:
 
 <![ %relcandidate [
 XFree86 &relvers; is a feature-complete snapshot of XFree86
-&nextfullrelvers;.
+&fullrelvers;.
 ]]>
 ]]> 
 
@@ -105,17 +105,29 @@ release, we don't recommend including them in production releases.
 <p>
 
 XFree86 source code is covered by many licenses.  All of these licenses
-have in common the fact that they do not impose conditions on the
-modification or redistribution or either source code or binaries other
-than requiring that the copyright and/or license notices are left intact,
-and in some cases, that attributions are included with documentation
-accompanying binaries.  Most of these licenses are based on the MIT or
-BSD licenses, and all of them are consistent with the <htmlurl name="Open
-Source definition" url="http://www.opensource.org/docs/definition.php">.
+have in common the fact that they do not impose significant conditions
+on the modification or redistribution or either source code or binaries
+beyond requiring one or more of the following:
 
-Copyright and Licensing information for XFree86, including the attributions
-required by some of the licenses for binary distributions, can be found
-in the <htmlurl name="License Document" url="LICENSE.html">.
+<enum>
+<item>Copyright and/or license notices are left intact.
+<item>Copyright and/or license notices are reproduced verbatim in
+	documentation accompanying binary distributions.
+<item>Attributions are included with documentation accompanying binaries.
+</enum>
+
+Most of these licenses are based on the MIT, X Consortium, or BSD
+(original and revised) licenses.  All of them are consistent with the
+<htmlurl name="Open Source Definition"
+url="http://www.opensource.org/docs/definition.php">, and most are
+consistent with the Free Software Foundation's <htmlurl name="Free
+Software Definition" url="http://www.fsf.org/philosophy/free-sw.html">.
+
+Copyright and Licensing information for XFree86, including the reproduction
+of copyright and/or license notices and attributions required by some
+of the licenses for binary distributions, can be found in the <htmlurl
+name="License Document" url="LICENSE.html">.  If you find any omissions
+in that document, please contact us with details.
 
 <sect>Pointers to additional information
 <p>

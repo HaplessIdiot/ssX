@@ -6,10 +6,10 @@
 
 <title>Release Notes for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>28 January 2004
+<date>14 February 2004
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.107 2004/02/08 01:46:37 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.108 2004/02/10 02:18:41 dawes Exp $
 </ident>
 
 <abstract>
@@ -44,7 +44,7 @@ and &relvers;.  Please check there first before downloading &relvers;.
 XFree86 4.4 introduces an automatic configuration mechanism for the
 XFree86 server.  This makes it possible to start XFree86 in a usable
 way without first creating a configuration file.  The initial automatic
-configuration support is currently targetted towards Linux and FreeBSD.
+configuration support is currently targeted towards Linux and FreeBSD.
 Automatic configuration will be supported on other platforms in future
 releases.  If you're running Linux or FreeBSD, try it out if you don't
 already have a working <tt>XF86Config</tt> file.  If you want to customise
@@ -58,7 +58,7 @@ a platform that it isn't currently supported on, try one of the older
 methods for getting started.
 
 XFree86 comes with a graphical configuration tool called "<tt>xf86cfg</tt>".
-It also has a text mode interface.  It can be used to create an iniital
+It also has a text mode interface.  It can be used to create an initial
 configuration file, and to customise existing configurations.
 
 Next in the order of configuration preferences is to make use of the
@@ -126,13 +126,13 @@ don't have enough space to cover them all here.
 	<item>Support added to the nv driver for the GeForce FX 5700,
 		which didn't work with XFree86 4.3.
 
-	<item>The driver now does a much better job of autodetecting
+	<item>The driver now does a much better job of auto-detecting
 		which connector of dual output cards the monitor is
 		attached to, which should reduce or eliminate the need
 		for manual XF86Config overrides.
 
 	<item>The 2D acceleration for TNT and GeForce was completely
-		rewritten.  Performance should be substantiallly improved.
+		rewritten.  Performance should be substantially improved.
 
 	<item>TNT and GeForce cards have a new Xv PutImage adaptor which
 		does scaled YUV bit blits.
@@ -173,7 +173,7 @@ don't have enough space to cover them all here.
 <p>
 XFree86 4.4 supports IPv6, based on the code contributed by Sun
 Microsystems to X.Org. See 
-<url name="X.org's document" url="http://www.x.org/IPV6_Specific_Changes.html"> for a detailled list of the changes. 
+<url name="X.org's document" url="http://www.x.org/IPV6_Specific_Changes.html"> for a detailed list of the changes. 
 
 <sect2>Protocol names and aliases. 
 <p>
@@ -193,7 +193,7 @@ Or you can force a IPv6 connection by setting <bf>DISPLAY</bf> to
 The IPv6 XDMCP code is not enabled by default on platforms that don't 
 support binding a IPv6 socket to a IPv4 address. 
 <p>
-The XDM-AUTHORIZATION-1 authentification scheme does not support IPv6
+The XDM-AUTHORIZATION-1 authentication scheme does not support IPv6
 addresses. A new release of the protocol, XDM-AUTHORIZATION-2 has been
 designed, but is not implemented yet. 
 Note that  by default XFree86 builds do not enable the XDM-AUTHORIZATION-1
@@ -272,7 +272,7 @@ scroll-back(1, page-2)
 
 	Improved Font Handling:
 	<itemize>
-	<item>Document in xterm's manpage how to use XFree86 ":unscaled"
+	<item>Document in xterm's manual page how to use XFree86 ":unscaled"
 		keyword to suppress scaling of bold fonts.
 
 	<item>Improved logic for deriving bold fontname from normal
@@ -393,7 +393,12 @@ scroll-back(1, page-2)
 
 <item>The Compose file processing mechanism has been improved and made
 	more flexible.  See the <ref id="compose" name="Xlib Compose
-	file support and extensions section below">.  </itemize>
+	file support and extensions section below">.
+
+<item>The Bitstream Vera TrueType fonts that Bitstream, Inc donated to
+	the Gnome Foundation are included with this release.
+
+</itemize>
 
 <sect1>OS Support Updates
 
@@ -996,7 +1001,7 @@ XFree86 4.4.0.  The compose file is searched for in the following order:
 <item>If the environment variable <bf>$XCOMPOSEFILE</bf> is set, its value
 is used as the name of the Compose file.
 
-<item>If the user's home direcotry has a file named "<tt>.XCompose</tt>", it
+<item>If the user's home directory has a file named "<tt>.XCompose</tt>", it
 is used as the Compose file.
 
 <item>The old method is used, and the compose file is
@@ -1031,7 +1036,7 @@ rules can be added, and previous ones replaced.
 
 Finally, it is no longer necessary to specify in the right part of a rule
 a locale encoded string in addition to the keysym name.  If the string is
-opmitted, Xlib figures it out from the keysym according to the current
+omitted, Xlib figures it out from the keysym according to the current
 locale.  I.e., if a rule looks like:
 
 <tscreen><verb>
@@ -1102,7 +1107,7 @@ or the 'cvs log' information for individual source files.
   <tag>IPv6 support:</tag>Alan Coopersmith, Fabio Massimo Di Nitto,
 	Marc Aurele La France, Matthieu Herrb, David H. Dawes.
   <tag>NVIDIA 'nv' driver rewrite:</tag>Mark Vojkovich.
-  <tag>SiS driver enhancements:</tag>Thomas Winischhofer.
+  <tag>SiS driver development:</tag>Thomas Winischhofer.
   <tag>New VIA video driver:</tag>VIA, Alan Cox, Luc Verhaegen, Thomas
 	Hellstr&ouml;m.
   <tag>Intel 'i810' driver fixes and stability improvements:</tag>Egbert Eich,
@@ -1116,6 +1121,7 @@ or the 'cvs log' information for individual source files.
   <tag>GNU/Hurd updates and preliminary GNU/KFreeBSD and GNU/KNetBSD
 	support:</tag> Robert Millan.
   <tag>SCO support updates:</tag>Kean Johnston.
+  <tag>Bitstream Vera fonts:</tag>Bitstream, Inc, and the Gnome Foundation.
   </descrip>
 <tag>Integration:</tag>
   <descrip>
@@ -1343,6 +1349,9 @@ Joerg Wunsch,
 Chisato Yamauchi,
 Hui Yu.
   
+<tag>Docbook/XML conversion:</tag>John Himpel and the XFree86 documentation
+team.
+
 <tag>Webmaster:</tag>Georgina O. Economou
 
 </descrip>
