@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.449 2003/06/12 14:12:24 eich Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.450 2003/06/25 18:06:23 eich Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -187,7 +187,7 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 				digitaledge dmc dynapro elographics tek4957 \
 				microtouch mutouch penmount spaceorb summa \
 				wacom void magellan /* magictouch */ hyperpen \
-				jamstudio fpit aiptek \
+				jamstudio fpit \
 				palmax OSXInputDrivers ExtraXInputDrivers
 #endif
 
