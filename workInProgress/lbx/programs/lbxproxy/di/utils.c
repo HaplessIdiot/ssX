@@ -431,6 +431,7 @@ Xfree(ptr)
 	free((char *)ptr); 
 }
 
+void
 OsInitAllocator ()
 {
 #ifdef MEMBUG
