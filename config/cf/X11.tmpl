@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.78 2000/10/24 18:07:33 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.79 2000/11/02 20:39:05 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1165,11 +1165,17 @@ XCOMM X Window System make variables; these need to be coordinated with rules
             FONTC = $(BINDIR)/bdftopcf
         MKFONTDIR = $(BINDIR)/mkfontdir
       MKHTMLINDEX = $(BINDIR)/mkhtmlindex
+          UCS2ANY = $(BINDIR)/ucs2any.pl
+      BDFTRUNCATE = $(BINDIR)/bdftruncate.pl
+     UCSMAPPREFIX = $(FONTDIR)/util/map-
 #else
               RGB = $(CLIENTENVSETUP) $(XBUILDBINDIR)/rgb
             FONTC = $(CLIENTENVSETUP) $(XBUILDBINDIR)/bdftopcf
         MKFONTDIR = $(CLIENTENVSETUP) $(XBUILDBINDIR)/mkfontdir
       MKHTMLINDEX = $(SHELL) $(CONFIGSRC)/util/mkhtmlindex.sh
+          UCS2ANY = $(FONTSRC)/util/ucs2any.pl
+      BDFTRUNCATE = $(FONTSRC)/util/bdftruncate.pl
+     UCSMAPPREFIX = $(FONTSRC)/util/map-
 #endif
 
      HTMLINDEXCMD = HtmlIndexCmd
@@ -2329,7 +2335,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 all:: fonts.dir								@@\
 									@@\
 fonts.dir:  deplist							@@\
-	RunProgram(MKFONTDIR,.)						@@\
+	RunProgram(MKFONTDIR, $(MKFONTDIROPTS) .)			@@\
 									@@\
 clean::									@@\
 	RemoveFile(fonts.dir)
@@ -2395,13 +2401,13 @@ InstallTarget(install,fonts.scale,$(INSTDATFLAGS),dest)
 #endif /* InstallFontScale */
 
 /*
- * UncompressedFontTarget
+ * UncompressedFontTargetLong
  */
-#ifndef UncompressedFontTarget
-#define UncompressedFontTarget(basename)				@@\
-FontBaseObj(basename):  FontSrc(basename)				@@\
+#ifndef UncompressedFontTargetLong
+#define UncompressedFontTargetLong(sname,tname)				@@\
+FontBaseObj(tname):  FontSrc(sname)					@@\
 	RunProgram(FONTC,$(FONTCFLAGS) $? -o $@)
-#endif /* UncompressedFontTarget */
+#endif /* UncompressedFontTargetLong */
 
 /*
  * CompressedFontTarget
@@ -2410,20 +2416,32 @@ FontBaseObj(basename):  FontSrc(basename)				@@\
 #define GzipFontCompression NO
 #endif
 
-#ifndef CompressedFontTarget
+#ifndef CompressedFontTargetLong
 #if GzipFontCompression
-#define CompressedFontTarget(basename)					@@\
-FontBaseObj(basename).gz:  FontSrc(basename)				@@\
+#define CompressedFontTargetLong(sname,tname)				@@\
+FontBaseObj(tname).gz:  FontSrc(sname)					@@\
 	RunProgram(FONTC,$(FONTCFLAGS) $?) | $(GZIPCMD) > $@
 #else
-#define CompressedFontTarget(basename)					@@\
-FontBaseObj(basename).Z:  FontSrc(basename)				@@\
+#define CompressedFontTargetLong(sname,tname)				@@\
+FontBaseObj(tname).Z:  FontSrc(sname)					@@\
 	RunProgram(FONTC,$(FONTCFLAGS) $?) | $(COMPRESS) > $@
 #endif
+#endif /* CompressedFontTargetLong */
+
+/*
+ * UncompressedFontTarget
+ */
+#ifndef UncompressedFontTarget
+#define UncompressedFontTarget(basename) UncompressedFontTargetLong(basename,basename)
+#endif /* UncompressedFontTarget */
+
+#ifndef CompressedFontTarget
+#define CompressedFontTarget(basename) CompressedFontTargetLong(basename,basename)
 #endif /* CompressedFontTarget */
 
 #if !defined(FontTarget) && !defined(FontObj)
 #if CompressAllFonts
+#define FontTargetLong(sname,tname) CompressedFontTargetLong(sname,tname)
 #define FontTarget(basename) CompressedFontTarget(basename)
 #if GzipFontCompression
 #define FontObj(basename) FontBaseObj(basename).gz
@@ -2431,10 +2449,12 @@ FontBaseObj(basename).Z:  FontSrc(basename)				@@\
 #define FontObj(basename) FontBaseObj(basename).Z
 #endif
 #else
+#define FontTargetLong(sname,tname) UncompressedFontTargetLong(sname,tname)
 #define FontTarget(basename) UncompressedFontTarget(basename)
 #define FontObj(basename) FontBaseObj(basename)
 #endif /* CompressAllFonts */
 #endif
+
 
 #ifndef EncObj
 #define EncObj(basename) basename.enc
@@ -2502,6 +2522,35 @@ InstallEncObjs($(OBJS),dest)
 #ifndef InstallEncodingsDir
 #define InstallEncodingsDir(edir,fdir)					@@\
 InstallNamedTarget(install,edir/encodings.dir,$(INSTDATFLAGS),fdir,encodings.dir)
+#endif
+
+
+#ifndef MakeBdfFontFromUCSMaster
+#if HasPerl
+#define MakeBdfFontFromUCSMaster(font,enc)				@@\
+includes:: font-enc.bdf							@@\
+									@@\
+font-enc.bdf: font.bdf $(UCS2ANY)					@@\
+	RemoveFile($@)							@@\
+	RunPerlScript($(UCS2ANY),font.bdf $(UCSMAPPREFIX)enc enc)	@@\
+									@@\
+clean::									@@\
+	RemoveFile(font-enc.bdf)
+#endif
+#endif
+
+#ifndef MakeTruncatedUCSBdfFont(font,trunc,name)
+#if HasPerl
+#define MakeTruncatedUCSBdfFont(font,trunc,name)			@@\
+includes:: name.bdf							@@\
+									@@\
+name.bdf: font.bdf $(BDFTRUNCATE)					@@\
+	RemoveFile($@)							@@\
+	RunPerlScript($(BDFTRUNCATE),trunc < font.bdf > name.bdf)	@@\
+									@@\
+clean::									@@\
+	RemoveFile(name.bdf)
+#endif
 #endif
 
 
