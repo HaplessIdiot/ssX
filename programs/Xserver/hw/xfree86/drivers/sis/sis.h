@@ -35,8 +35,8 @@
 #define UNLOCK_ALWAYS
 
 #define SISDRIVERVERSIONYEAR    3
-#define SISDRIVERVERSIONMONTH   11
-#define SISDRIVERVERSIONDAY     30
+#define SISDRIVERVERSIONMONTH   12
+#define SISDRIVERVERSIONDAY     2
 #define SISDRIVERREVISION       1
 
 #define SISDRIVERIVERSION (SISDRIVERVERSIONYEAR << 16) | (SISDRIVERVERSIONMONTH << 8) \
@@ -455,7 +455,6 @@ typedef struct {
     int			OptTVSOver;
     int                 OptROMUsage;
     int			OptUseOEM;
-    int                 PDC;
     Bool                NoAccel;
     int			forceCRT1;
     int			DSTN, FSTN;
@@ -798,6 +797,7 @@ typedef struct {
     unsigned long	sisfbspecialtiming;
     BOOL		sisfb_haveemi;
     unsigned char	sisfb_emi30,sisfb_emi31,sisfb_emi32,sisfb_emi33;
+    int			EMI;
     int			NoYV12;			/* Disable Xv YV12 support (old series) */
     unsigned char       postVBCR32;
     int			newFastVram;		/* Replaces FastVram */

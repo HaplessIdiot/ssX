@@ -237,8 +237,6 @@ struct _SIS_HW_INFO
  
     PSIS_QUERYSPACE  pQueryNorthBridgeSpace;/* Get/Set North Bridge  */
                                             /* space  */
-
-    UCHAR  pdc;			/* PanelDelayCompensation */
 };
 #endif
 

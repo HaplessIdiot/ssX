@@ -277,7 +277,9 @@ typedef struct _SiS_Private
 	USHORT SiS_Backup70xx;
 	BOOLEAN HaveEMI;
 	BOOLEAN HaveEMILCD;
+	BOOLEAN OverruleEMI;
 	UCHAR  EMI_30,EMI_31,EMI_32,EMI_33;
+	UCHAR  PDC;
 	USHORT SiS_CRT1Mode;
 	USHORT SiS_flag_clearbuffer;
 	int    SiS_RAMType;
