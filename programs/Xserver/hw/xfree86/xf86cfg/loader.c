@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.c,v 1.8 2001/07/06 07:37:10 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.c,v 1.10 2001/07/07 20:19:08 paulo Exp $
  */
 
 #include "config.h"
@@ -42,6 +42,14 @@
 #include <string.h>
 #include <setjmp.h>
 #include <sys/signal.h>
+
+#if NeedVarargsPrototypes
+#include <stdarg.h>
+#define Va_start(a,b) va_start(a,b)
+#else
+#include <varargs.h>
+#define Va_start(a,b) va_start(a)
+#endif
 
 #ifndef SIGNALRETURNSINT
 void sig_handler(int);
@@ -64,6 +72,9 @@ static OptionInfoPtr option;
 
 extern FontModule *font_module;
 extern int numFontModules;
+
+char **checkerLegend;
+int *checkerErrors;
 
 #ifndef SIGNALRETURNSINT
 void
@@ -108,6 +119,19 @@ sig_handler(int sig)
     /*NOTREACHED*/
 }
 
+void
+CheckMsg(int code, char *fmt, ...)
+{
+    va_list ap;
+
+    ++checkerErrors[code];
+    ErrorF("%3d ", code);
+
+    Va_start(ap, fmt);
+    VErrorF(fmt, ap);
+    va_end(ap);
+}
+
 static Bool
 EnumDatabase(XrmDatabase db, XrmBindingList bindings, XrmQuarkList quarks,
 	     XrmRepresentation *type, XrmValue *value, XPointer closure)
@@ -120,8 +144,9 @@ EnumDatabase(XrmDatabase db, XrmBindingList bindings, XrmQuarkList quarks,
 	    return (False);
 	++option;
     }
-    ErrorF("    ERROR %s.%s is not used\n",
-	   XrmQuarkToString(quarks[0]), res);
+    CheckMsg(CHECKER_OPTION_UNUSED,
+	     "WARNING %s.%s is not used\n",
+	     XrmQuarkToString(quarks[0]), res);
     ++error_level;
 
     return (False);
@@ -149,8 +174,63 @@ LoaderInitializeOptions(void)
     };
 
     if (first) {
+	checkerLegend = (char**)
+	    XtCalloc(1, sizeof(char*) * (CHECKER_LAST_MESSAGE + 1));
+	checkerErrors = (int*)
+	    XtCalloc(1, sizeof(int) * (CHECKER_LAST_MESSAGE + 1));
 	xf86cfgLoaderInit();
 	first = 0;
+
+	checkerLegend[CHECKER_OPTIONS_FILE_MISSING] =
+	"The Options file, normally /usr/X11R6/lib/X11/Options was not found.\n"
+	"In the sources, it is at xc/programs/Xserver/hw/xfree86/Options.";
+	checkerLegend[CHECKER_OPTION_DESCRIPTION_MISSING] =
+	"No description for the module option. The description should be in\n"
+	"in the Options file, and using the sintax:\n"
+	"Module.Option:	any text describing the option";
+	checkerLegend[CHECKER_LOAD_FAILED] =
+	"Failed to load the module. Usually the loader will print a complete\n"
+	"description for the reason the module was not loaded. Use the -verbose\n"
+	"command line option if it is not printing any messages.";
+	checkerLegend[CHECKER_RECOGNIZED_AS] =
+	"This message means the module code did not follow what was expected\n"
+	"by the checker. For video drivers, it did not call xf86AddDriver,\n"
+	"a input module did not call xf86AddInputDriver and a font renderer\n"
+	"module did not call LoadFont. This message can also be printed if\n"
+	"the module is in the incorrect directory.";
+	checkerLegend[CHECKER_NO_OPTIONS_AVAILABLE] =
+	"The driver does not have an AvailableOptions function, or that\n"
+	"function is returning NULL. If the driver is returning NULL, and\n"
+	"really does not need any options from XF86Config, than the message\n"
+	"can be ignored.";
+	checkerLegend[CHECKER_NO_VENDOR_CHIPSET] =
+	"The checker could not fetch the PCI chipset/vendor information from\n"
+	"the module. The checker currently wraps xf86PrintChipsets and\n"
+	"xf86MatchPciInstances to read the information from the module.";
+	checkerLegend[CHECKER_CANNOT_VERIFY_CHIPSET] =
+	"The vendor id was not found, so it is not possible to search the list\n"
+	"of chipsets.";
+	checkerLegend[CHECKER_OPTION_UNUSED] =
+	"The option description is defined in the Options file, but the option\n"
+	"was name not retrieved when calling the module AvailableOptions.";
+	checkerLegend[CHECKER_NOMATCH_CHIPSET_STRINGS] =
+	"The string specified in the module does not match the one in\n"
+	"common/xf86PciInfo.h";
+	checkerLegend[CHECKER_CHIPSET_NOT_LISTED] =
+	"This means that common/xf86PciInfo.h does not have an entry for the\n"
+	"given vendor and id.";
+	checkerLegend[CHECKER_CHIPSET_NOT_SUPPORTED] =
+	"The chipset is listed in common/xf86PciInfo.h, but the driver does\n"
+	"not support it, or does not list it in the chipsets fetched by the checker.";
+	checkerLegend[CHECKER_CHIPSET_NO_VENDOR] =
+	"The vendor id specified to xf86MatchPciInstances is not defined in\n"
+	"common/xf86PciInfo.h";
+	checkerLegend[CHECKER_NO_CHIPSETS] =
+	"No chipsets were passed to xf86MatchPciIntances.";
+	checkerLegend[CHECKER_FILE_MODULE_NAME_MISMATCH] =
+	"The module name string does not match the the modname field of the\n"
+	"XF86ModuleVersionInfo structure. This generally is not an error, but\n"
+	"to may be a good idea to use the same string to avoid confusion.";
     }
 
     if (XF86Module_path == NULL) {
@@ -191,12 +271,14 @@ LoaderInitializeOptions(void)
 			signal(SIGFPE, sig_handler);
 			ErrorF("CHECK MODULE %s\n", *ploaderList);
 			if ((ok = xf86cfgCheckModule()) == 0) {
-			    ErrorF("  ERROR Failed to load module.\n");
+			    CheckMsg(CHECKER_LOAD_FAILED,
+				     "ERROR Failed to load module.\n");
 			    error_level += 50;
 			}
 			else if (module_type != module_types[i]) {
-			    ErrorF("  WARNING %s recognized as a \"%s\"\n", *ploaderList,
-				   module_strs[module_type]);
+			    CheckMsg(CHECKER_RECOGNIZED_AS,
+				     "WARNING %s recognized as a \"%s\"\n", *ploaderList,
+				     module_strs[module_type]);
 			    ++error_level;
 			}
 			signal(SIGTRAP, SIG_DFL);
@@ -208,7 +290,8 @@ LoaderInitializeOptions(void)
 			    if (options_ok) {
 				if ((module_options == NULL || module_options->option == NULL) &&
 				    module_type != GenericModule) {
-				    ErrorF("  WARNING Not a generic module, but no options available.\n");
+				    CheckMsg(CHECKER_NO_OPTIONS_AVAILABLE,
+					     "WARNING Not a generic module, but no options available.\n");
 				    ++error_level;
 				}
 				else if (module_options && strcmp(module_options->name, *ploaderList) == 0) {
@@ -219,7 +302,8 @@ LoaderInitializeOptions(void)
 					XmuSnprintf(query, sizeof(query), "%s.%s", *ploaderList, option->name);
 					if (!XrmGetResource(options_xrm, query, "Module.Option", &type, &value) ||
 					    value.addr == NULL) {
-					    ErrorF("    ERROR no description for %s\n", query);
+					    CheckMsg(CHECKER_OPTION_DESCRIPTION_MISSING,
+						     "WARNING no description for %s\n", query);
 					    ++error_level;
 					}
 					++option;
@@ -236,18 +320,22 @@ LoaderInitializeOptions(void)
 				}
 			    }
 			    else {
-				ErrorF("  ERROR Options file missing.\n");
+				CheckMsg(CHECKER_OPTIONS_FILE_MISSING,
+					 "ERROR Options file missing.\n");
 				error_level += 10;
 			    }
 
 			    if (module_type == VideoModule &&
 				(module_options == NULL || module_options->vendor < 0 ||
 				 module_options->chipsets == NULL)) {
-				ErrorF("  WARNING No vendor/chipset information available.\n");
+				CheckMsg(CHECKER_NO_VENDOR_CHIPSET,
+				         "WARNING No vendor/chipset information available.\n");
 				++error_level;
 			    }
 			    else if (module_type == VideoModule) {
 				if (module_options == NULL) {
+				    /* No description for this, if this happen,
+				     * something really strange happened. */
 				    ErrorF("  ERROR No module_options!?!\n");
 				    error_level += 50;
 				}
@@ -263,13 +351,11 @@ LoaderInitializeOptions(void)
 				    /* not an error */
 				    ErrorF("  NOTICE FontModule->name specification mismatch: \"%s\" \"%s\"\n",
 					   *ploaderList, font_module->name);
-				    ++error_level;
 				}
 				if (nfont_modules + 1 != numFontModules) {
 				    /* not an error */
 				    ErrorF("  NOTICE font module \"%s\" loaded more than one font renderer.\n",
 					   *ploaderList);
-				    ++error_level;
 				}
 			    }
 			    else if (nfont_modules != numFontModules) {
@@ -288,6 +374,17 @@ LoaderInitializeOptions(void)
 	}
 	else
 	    ErrorF("  ERROR Failed to initialize module list.\n");
+    }
+
+    if (!noverify) {
+	ErrorF("===================================== LEGEND ===============================\n");
+	ErrorF("NOTICE lines are just informative.\n");
+	ErrorF("WARNING lines add 1 to error_level.\n");
+	ErrorF("ERROR lines add 2 or more (based on the severity of the error) to error_level.\n\n");
+	for (i = 0; i <= CHECKER_LAST_MESSAGE; i++)
+	    if (checkerErrors[i]) {
+		ErrorF("%3d\n%s\n\n", i, checkerLegend[i]);
+	    }
     }
 
     return (True);
