@@ -1,4 +1,9 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 530. Call OsCleanup() at the end of each server generation, and add an
+      argument to indicate when the server is terminating.  This allows
+      misc end-of-generation cleanups to be added to OsCleanup() (David Dawes).
+ 529. Explicitly free the DPMS and ScreenSaver timer resources at the end
+      of each server generation (David Dawes).
  528. Cygwin configuration updates and install script updates (Bugzilla #799, 
       805, Harold L Hunt II, Alexander Gottwald)
  527. Build shared libraries for Xt and Xaw on Cygwin. (Bugzilla #804, 
@@ -18048,7 +18053,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2906 2003/10/27 02:04:26 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2907 2003/10/28 22:38:36 herrb Exp $
 
 
 
