@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_video.c,v 1.8 2004/03/29 16:25:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_video.c,v 1.9 2004/03/30 10:34:07 eich Exp $ */
 /*
  * $Workfile: nsc_gx2_video.c $
- * $Revision: 1.9 $
- * $Author: eich $
+ * $Revision: 1.10 $
+ * $Author: herrb $
  *
  * File Contents: This file consists of main Xfree video supported routines.
  *
@@ -234,19 +234,17 @@ GX2InitVideo(ScreenPtr pScreen)
 {
     GeodePtr pGeode;
     ScrnInfoPtr pScreenInfo = xf86Screens[pScreen->myNum];
-
-    pGeode = GEODEPTR(pScreenInfo);
-
-    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     XF86VideoAdaptorPtr *adaptors, *newAdaptors = NULL;
     XF86VideoAdaptorPtr newAdaptor = NULL;
 
     int num_adaptors;
 
+    pGeode = GEODEPTR(pScreenInfo);
+
     newAdaptor = GX2SetupImageVideo(pScreen);
     GX2InitOffscreenImages(pScreen);
 
-    num_adaptors = xf86XVListGenericAdaptors(pScrn, &adaptors);
+    num_adaptors = xf86XVListGenericAdaptors(pScreenInfo, &adaptors);
 
     if (newAdaptor) {
 	if (!num_adaptors) {
