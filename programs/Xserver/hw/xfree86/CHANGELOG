@@ -1,4 +1,4 @@
-XFree86 3.9.16f (xx December 1999)
+XFree86 3.9.16f (15 December 1999)
 3387. Fix posix compliance problem in Xserver/os/utils.c
       (Robin Cutshaw/Keith Packard).
 3386. Fix for os2_bios (#3483, Holger Veit).
@@ -9172,4 +9172,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.882 1999/12/14 03:26:13 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.883 1999/12/14 03:38:51 robin Exp $
