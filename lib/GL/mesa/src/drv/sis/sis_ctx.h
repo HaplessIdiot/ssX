@@ -222,6 +222,7 @@ __GLSiScontext;
 /* Macros to access hwcx */
 #define GET_IOBase(x) ((x)->IOBase)
 #define GET_FbBase(x) ((x)->FbBase)
+#define GET_AGPBase(x) ((x)->AGPBase)
 #define GET_DEPTH(x) ((x)->bytesPerPixel)
 #define GET_WIDTH(x) ((x)->displayWidth)
 #define GET_PITCH(x) ((x)->pitch)

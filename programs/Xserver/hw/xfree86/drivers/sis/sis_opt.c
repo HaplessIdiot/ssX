@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_opt.c,v 1.2 2000/02/12 23:08:06 dawes Exp $ */
 
 #include "xf86.h"
 
@@ -79,10 +79,11 @@ SiSOptions(ScrnInfoPtr pScrn)
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Fast VRAM enabled\n");
 	}
 
-	if (xf86ReturnOptValBool(SISOptions, OPTION_TURBOQUEUE, FALSE)) {
+/*	if (xf86ReturnOptValBool(SISOptions, OPTION_TURBOQUEUE, FALSE)) {
 		pSiS->TurboQueue = TRUE;
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Enabling TurboQueue\n");
-	}
+	}   */
+	pSiS->TurboQueue = TRUE;
 
 }
 

@@ -737,10 +737,22 @@ sis_set_texobj_parm (GLcontext * ctx, GLtextureObject * object, int hw_unit)
 
     for (i = 0; i < TxLevel + 1; i++)
       {
-	SIStextureArea *area =
-	  (SIStextureArea *) object->Image[i]->DriverData;
-	GLuint texOffset = ((GLuint) area->Data - (GLuint) GET_FbBase (hwcx));
+	SIStextureArea *area = (SIStextureArea *) object->Image[i]->DriverData;
+        GLuint texOffset;
 	GLuint texPitch = TransferTexturePitch (area->Pitch);
+
+	switch(area->memType){
+	case VIDEO_TYPE:
+	  texOffset = ((GLuint) area->Data - (GLuint) GET_FbBase (hwcx));
+	  break;
+	case AGP_TYPE:
+	  texOffset = ((GLuint) area->Data - (GLuint) GET_AGPBase (hwcx) +
+	               (GLuint) hwcx->AGPAddr);
+          current->texture[hw_unit].hwTextureMip |= (0x40000 << i);
+          break;
+        default:
+          assert(0);
+        }
 
 	switch (i)
 	  {

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/Imakefile,v 1.12 2000/06/26 08:29:13 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/Imakefile,v 1.13 2000/06/30 19:30:17 dawes Exp $
 
 #define DoNormalLib NormalLibGlx
 #define DoSharedLib SharedLibGlx
@@ -43,9 +43,7 @@ SUBDIRS += common
 SUBDIRS += mga
 SUBDIRS += i810
 SUBDIRS += r128
-#if 0
 SUBDIRS += sis
-#endif
 #elif defined(AlphaArchitecture) 
 SUBDIRS += gamma
 #if HasGlide3

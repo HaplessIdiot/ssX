@@ -16,16 +16,16 @@
     { \
       if(SIS_TRI_FUNC){ \
         MMIOBase[(REG_3D_TSZa+(i)*0x30)/4] = \
-  	(VB->Win.data[v][2] + ctx->PolygonZoffset) / 65535.0; \
+  	(VB->Win.data[v][2] + ctx->PolygonZoffset) / SIS_DEPTH_SCALE; \
       } \
       else{ \
         MMIOBase[(REG_3D_TSZa+(i)*0x30)/4] = \
-  	(VB->Win.data[v][2] + ctx->LineZoffset) / 65535.0; \
+  	(VB->Win.data[v][2] + ctx->LineZoffset) / SIS_DEPTH_SCALE; \
       } \
     } \
   else \
     { \
-      MMIOBase[(REG_3D_TSZa+(i)*0x30)/4] = VB->Win.data[v][2] / 65535.0; \
+      MMIOBase[(REG_3D_TSZa+(i)*0x30)/4] = VB->Win.data[v][2] / SIS_DEPTH_SCALE; \
     } \
 \
   if (SIS_STATES & SIS_TEXTURE0) \
@@ -142,14 +142,14 @@ AGP_CurrentPtr[1] = Y_FLIP (VB->Win.data[v][1]) + 0.5; \
 \
 if (ctx->TriangleCaps & DD_TRI_OFFSET){ \
   if(SIS_TRI_FUNC){ \
-    AGP_CurrentPtr[2] = (VB->Win.data[v][2] + ctx->PolygonZoffset) / 65535.0; \
+    AGP_CurrentPtr[2] = (VB->Win.data[v][2] + ctx->PolygonZoffset) / SIS_DEPTH_SCALE; \
   } \
   else{ \
-    AGP_CurrentPtr[2] = (VB->Win.data[v][2] + ctx->LineZoffset) / 65535.0; \
+    AGP_CurrentPtr[2] = (VB->Win.data[v][2] + ctx->LineZoffset) / SIS_DEPTH_SCALE; \
   } \
 } \
 else{ \
-  AGP_CurrentPtr[2] = VB->Win.data[v][2] / 65535.0; \
+  AGP_CurrentPtr[2] = VB->Win.data[v][2] / SIS_DEPTH_SCALE; \
 }\
 AGP_CurrentPtr+=3; \
 if (SIS_STATES & (SIS_USE_W)) \

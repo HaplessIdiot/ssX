@@ -18,6 +18,22 @@ XCOMM DEBUG_DEFINES = -DSIS_DEBUG
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 
+#if defined(LinuxArchitecture)
+OS_SUBDIR = linux
+#endif
+#if defined(FreeBSDArchitecture) || defined(BSDOSArchitecture)
+OS_SUBDIR = bsd
+#endif
+
+#ifdef i386Architecture
+#ifdef MesaUse3DNow
+     ASM_DEFS = -DUSE_MMX_ASM -DUSE_X86_ASM -DUSE_3DNOW_ASM
+#else
+     ASM_DEFS = -DUSE_MMX_ASM -DUSE_X86_ASM
+#endif
+#endif
+
+
 #if BuildXF86DRI
   DRI_DEFINES = GlxDefines $(SIS_DEFINES)
   DRI_INCLUDES = -I../../../../dri -I../../../../glx \
@@ -37,16 +53,12 @@ LinkSourceFile(xdriP.h, ../../X)
 #if 0
  DEBUG_SRC = sis_debug.c
  DEBUG_OBJ = sis_debug.o
- LinkSourceFile(sis_debug.c, ../../../../../../extras/Mesa/src/SIS)
- LinkSourceFile(sis_debug.h, ../../../../../../extras/Mesa/src/SIS)
  DEBUG_DEFINES += -DSIS_DUMP
 #endif
 
 #if 0
  STEREO_SRC = sis_stereo.c
  STEREO_OBJ = sis_stereo.o
- LinkSourceFile(sis_stereo.c, ../../../../../../extras/Mesa/src/SIS)
- LinkSourceFile(sis_stereo.h, ../../../../../../extras/Mesa/src/SIS)
  STEREO_DEFINES = -DSIS_STEREO=1
 #else
  STEREO_DEFINES = -DSIS_STEREO=0
@@ -286,7 +298,13 @@ LinkSourceFile(xdriP.h, ../../X)
 	 SRCS = $(DRISRCS) $(DRMSRCS) $(SISSRCS) $(MESASRCS) $(ASMSRCS)
 	 OBJS = $(DRIOBJS) $(DRMOBJS) $(SISOBJS) $(MESAOBJS) $(ASMOBJS)
 
-#if !GlxUseBuiltInDRIDriver || GlxDebugSIS 
+REQUIREDLIBS += -lm
+#if !GlxBuiltInSIS
+REQUIREDLIBS += -L../../../.. -lGL -L../../../../../X11 -lX11
+#endif
+
+
+#if !GlxUseBuiltInDRIDriver
 #undef DoNormalLib NormalLibGlx
 #undef DoExtraLib SharedLibGlx
 #undef DoDebugLib DebugLibGlx
@@ -300,16 +318,12 @@ LibraryObjectRule()
 SubdirLibraryRule($(OBJS))
 NormalLintTarget($(SRCS))
 
-#if !GlxUseBuiltInDRIDriver || GlxDebugSIS
-# if GlxDebugSIS && GlxUseBuiltInDRIDriver
-LIBNAME = libsis_dri.so
-# else
+#if !GlxUseBuiltInDRIDriver
 LIBNAME = sis_dri.so
-# endif
 ALL_OBJS = $(OBJS) 
 ALL_DEPS = DONE
 SharedDepModuleTarget($(LIBNAME),$(ALL_DEPS),$(ALL_OBJS))
-InstallDynamicModule($(LIBNAME),$(MODULEDIR)/dri,.)
+InstallDynamicModule($(LIBNAME),$(MODULEDIR),dri)
 #endif
 
 DependTarget()

@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.46 2000/06/21 17:28:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.47 2000/06/26 10:26:16 alanh Exp $ */
 
 
 #define PSZ 8
@@ -56,7 +56,7 @@
 
 #include "sis.h"
 #include "sis_regs.h"
-#include "sis_bios.h"
+#include "sis_vb.h"
 
 #ifdef XFreeXDGA
 #define _XF86DGA_SERVER_
@@ -69,31 +69,35 @@
 #include "extensions/dpms.h"
 #endif
 
-static void	SISIdentify(int flags);
-static Bool	SISProbe(DriverPtr drv, int flags);
-static Bool	SISPreInit(ScrnInfoPtr pScrn, int flags);
-static Bool	SISScreenInit(int Index, ScreenPtr pScreen, int argc,
-			      char **argv);
-static Bool	SISEnterVT(int scrnIndex, int flags);
-static void	SISLeaveVT(int scrnIndex, int flags);
-static Bool	SISCloseScreen(int scrnIndex, ScreenPtr pScreen);
-static Bool	SISSaveScreen(ScreenPtr pScreen, int mode);
+#ifdef XF86DRI
+#include "dri.h"
+#endif
+
+static void     SISIdentify(int flags);
+static Bool     SISProbe(DriverPtr drv, int flags);
+static Bool     SISPreInit(ScrnInfoPtr pScrn, int flags);
+static Bool     SISScreenInit(int Index, ScreenPtr pScreen, int argc,
+                              char **argv);
+static Bool     SISEnterVT(int scrnIndex, int flags);
+static void     SISLeaveVT(int scrnIndex, int flags);
+static Bool     SISCloseScreen(int scrnIndex, ScreenPtr pScreen);
+static Bool     SISSaveScreen(ScreenPtr pScreen, int mode);
 
 /* Optional functions */
-static void	SISFreeScreen(int scrnIndex, int flags);
-static int	SISValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
-			     int flags);
+static void     SISFreeScreen(int scrnIndex, int flags);
+static int      SISValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
+                             int flags);
 
 /* Internally used functions */
-static Bool	SISMapMem(ScrnInfoPtr pScrn);
-static Bool	SISUnmapMem(ScrnInfoPtr pScrn);
-static void	SISSave(ScrnInfoPtr pScrn);
-static void	SISRestore(ScrnInfoPtr pScrn);
-static Bool	SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
-static void	SISModifyModeInfo(DisplayModePtr mode);
+static Bool     SISMapMem(ScrnInfoPtr pScrn);
+static Bool     SISUnmapMem(ScrnInfoPtr pScrn);
+static void     SISSave(ScrnInfoPtr pScrn);
+static void     SISRestore(ScrnInfoPtr pScrn);
+static Bool     SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
+static void     SISModifyModeInfo(DisplayModePtr mode);
 
-#ifdef	DEBUG
-static void	SiSDumpModeInfo(ScrnInfoPtr pScrn, DisplayModePtr mode);
+#ifdef  DEBUG
+static void     SiSDumpModeInfo(ScrnInfoPtr pScrn, DisplayModePtr mode);
 #endif
 
 
@@ -124,46 +128,46 @@ DriverRec SIS = {
 
 static SymTabRec SISChipsets[] = {
 #if 0 
-    { PCI_CHIP_SG86C201,	"SIS86c201" },
-    { PCI_CHIP_SG86C202,	"SIS86c202" },
-    { PCI_CHIP_SG86C205,	"SIS86c205" },
-    { PCI_CHIP_SG86C215,	"SIS86c215" },
-    { PCI_CHIP_SG86C225,	"SIS86c225" },
+    { PCI_CHIP_SG86C201,        "SIS86c201" },
+    { PCI_CHIP_SG86C202,        "SIS86c202" },
+    { PCI_CHIP_SG86C205,        "SIS86c205" },
+    { PCI_CHIP_SG86C215,        "SIS86c215" },
+    { PCI_CHIP_SG86C225,        "SIS86c225" },
 #endif
-    { PCI_CHIP_SIS5597, 	"SIS5597" },
-    { PCI_CHIP_SIS5597, 	"SIS5598" },
-    { PCI_CHIP_SIS530,		"SIS530" },
-    { PCI_CHIP_SIS6326,		"SIS6326" },
-    { PCI_CHIP_SIS300,		"SIS300" },
-    { PCI_CHIP_SIS630,		"SIS630" },
-    { PCI_CHIP_SIS540,		"SIS540" },
-    { -1,				NULL }
+    { PCI_CHIP_SIS5597,         "SIS5597" },
+    { PCI_CHIP_SIS5597,         "SIS5598" },
+    { PCI_CHIP_SIS530,          "SIS530" },
+    { PCI_CHIP_SIS6326,         "SIS6326" },
+    { PCI_CHIP_SIS300,          "SIS300" },
+    { PCI_CHIP_SIS630,          "SIS630" },
+    { PCI_CHIP_SIS540,          "SIS540" },
+    { -1,                               NULL }
 };
 
 static PciChipsets SISPciChipsets[] = {
 #if 0
-    { PCI_CHIP_SG86C201,	PCI_CHIP_SG86C201,	RES_SHARED_VGA },
-    { PCI_CHIP_SG86C202,	PCI_CHIP_SG86C202,	RES_SHARED_VGA },
-    { PCI_CHIP_SG86C205,	PCI_CHIP_SG86C205,	RES_SHARED_VGA },
-    { PCI_CHIP_SG86C205,	PCI_CHIP_SG86C205,	RES_SHARED_VGA },
+    { PCI_CHIP_SG86C201,        PCI_CHIP_SG86C201,      RES_SHARED_VGA },
+    { PCI_CHIP_SG86C202,        PCI_CHIP_SG86C202,      RES_SHARED_VGA },
+    { PCI_CHIP_SG86C205,        PCI_CHIP_SG86C205,      RES_SHARED_VGA },
+    { PCI_CHIP_SG86C205,        PCI_CHIP_SG86C205,      RES_SHARED_VGA },
 #endif
-    { PCI_CHIP_SIS5597,		PCI_CHIP_SIS5597,	RES_SHARED_VGA },
-    { PCI_CHIP_SIS530,		PCI_CHIP_SIS530,	RES_SHARED_VGA },
-    { PCI_CHIP_SIS6326,		PCI_CHIP_SIS6326,	RES_SHARED_VGA },
-    { PCI_CHIP_SIS300,		PCI_CHIP_SIS300,	RES_SHARED_VGA },
-    { PCI_CHIP_SIS630,		PCI_CHIP_SIS630,	RES_SHARED_VGA },
-    { PCI_CHIP_SIS540,		PCI_CHIP_SIS540,	RES_SHARED_VGA },
-    { -1,		-1,		RES_UNDEFINED }
+    { PCI_CHIP_SIS5597,         PCI_CHIP_SIS5597,       RES_SHARED_VGA },
+    { PCI_CHIP_SIS530,          PCI_CHIP_SIS530,        RES_SHARED_VGA },
+    { PCI_CHIP_SIS6326,         PCI_CHIP_SIS6326,       RES_SHARED_VGA },
+    { PCI_CHIP_SIS300,          PCI_CHIP_SIS300,        RES_SHARED_VGA },
+    { PCI_CHIP_SIS630,          PCI_CHIP_SIS630,        RES_SHARED_VGA },
+    { PCI_CHIP_SIS540,          PCI_CHIP_SIS540,        RES_SHARED_VGA },
+    { -1,               -1,             RES_UNDEFINED }
 };
     
 
 
 int sisReg32MMIO[]={0x8280,0x8284,0x8288,0x828C,0x8290,0x8294,0x8298,0x829C,
-		    0x82A0,0x82A4,0x82A8,0x82AC};
+                    0x82A0,0x82A4,0x82A8,0x82AC};
 /* Engine Register for the 2nd Generation Graphics Engine */
 int sis2Reg32MMIO[]={0x8200,0x8204,0x8208,0x820C,0x8210,0x8214,0x8218,0x821C,
-		    0x8220,0x8224,0x8228,0x822C,0x8230,0x8234,0x8238,0x823C,
-		     0x8240, 0x8300};
+                    0x8220,0x8224,0x8228,0x822C,0x8230,0x8234,0x8238,0x823C,
+                     0x8240, 0x8300};
 
 static const char *xaaSymbols[] = {
     "XAADestroyInfoRec",
@@ -214,22 +218,63 @@ static const char *i2cSymbols[] = {
     NULL
 };
 
+#ifdef XF86DRI
+static const char *drmSymbols[] = {
+    "drmAddBufs",
+    "drmAddMap",
+    "drmAvailable",
+    "drmCtlAddCommand",
+    "drmCtlInstHandler",
+    "drmGetInterruptFromBusID",
+    "drmMapBufs",
+    "drmMarkBufs",
+    "drmUnmapBufs",
+    "drmAgpAcquire",
+    "drmAgpRelease",
+    "drmAgpEnable",
+    "drmAgpAlloc",
+    "drmAgpFree",
+    "drmAgpBind",
+    "drmAgpGetMode",
+    "drmAgpBase",
+    "drmAgpSize",
+    NULL
+};
+
+static const char *driSymbols[] = {
+    "DRIGetDrawableIndex",
+    "DRIFinishScreenInit",
+    "DRIDestroyInfoRec",
+    "DRICloseScreen",
+    "DRIDestroyInfoRec",
+    "DRIScreenInit",
+    "DRIDestroyInfoRec",
+    "DRICreateInfoRec",
+    "DRILock",
+    "DRIUnlock",
+    "DRIGetSAREAPrivate",
+    "DRIGetContext",
+    "GlxSetVisualConfigs",
+    NULL
+};
+#endif
+
 #ifdef XFree86LOADER
 
 static MODULESETUPPROTO(sisSetup);
 
 static XF86ModuleVersionInfo sisVersRec =
 {
-	"sis",
-	MODULEVENDORSTRING,
-	MODINFOSTRING1,
-	MODINFOSTRING2,
-	XF86_VERSION_CURRENT,
-	SIS_MAJOR_VERSION, SIS_MINOR_VERSION, SIS_PATCHLEVEL,
-	ABI_CLASS_VIDEODRV,			/* This is a video driver */
-	ABI_VIDEODRV_VERSION,
-	MOD_CLASS_VIDEODRV,
-	{0,0,0,0}
+        "sis",
+        MODULEVENDORSTRING,
+        MODINFOSTRING1,
+        MODINFOSTRING2,
+        XF86_VERSION_CURRENT,
+        SIS_MAJOR_VERSION, SIS_MINOR_VERSION, SIS_PATCHLEVEL,
+        ABI_CLASS_VIDEODRV,                     /* This is a video driver */
+        ABI_VIDEODRV_VERSION,
+        MOD_CLASS_VIDEODRV,
+        {0,0,0,0}
 };
 
 XF86ModuleData sisModuleData = { &sisVersRec, sisSetup, NULL };
@@ -240,13 +285,15 @@ sisSetup(pointer module, pointer opts, int *errmaj, int *errmin)
     static Bool setupDone = FALSE;
 
     if (!setupDone) {
-	setupDone = TRUE;
-	xf86AddDriver(&SIS, module, 0);
-	LoaderRefSymLists(vgahwSymbols, fbSymbols, i2cSymbols,
-			  NULL);
-	return (pointer)TRUE;
+        setupDone = TRUE;
+        xf86AddDriver(&SIS, module, 0);
+        LoaderRefSymLists(vgahwSymbols, fbSymbols, i2cSymbols,
+#ifdef XF86DRI
+                          drmSymbols, driSymbols,
+#endif
+                          NULL);
+        return (pointer)TRUE;
     } 
-ErrorF("sisSetup\n");
 
     if (errmaj) *errmaj = LDR_ONCEONLY;
     return NULL;
@@ -263,7 +310,7 @@ SISGetRec(ScrnInfoPtr pScrn)
      * the allocation has already been done.
      */
     if (pScrn->driverPrivate != NULL)
-	return TRUE;
+        return TRUE;
 
     pScrn->driverPrivate = xnfcalloc(sizeof(SISRec), 1);
     /* Initialise it */
@@ -275,7 +322,7 @@ static void
 SISFreeRec(ScrnInfoPtr pScrn)
 {
     if (pScrn->driverPrivate == NULL)
-	return;
+        return;
     xfree(pScrn->driverPrivate);
     pScrn->driverPrivate = NULL;
 }
@@ -284,52 +331,52 @@ SISFreeRec(ScrnInfoPtr pScrn)
 static void 
 SISDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
 {
-	unsigned char extDDC_PCR;
-	unsigned char crtc17 = 0;
-	unsigned char seq1 = 0 ;
+        unsigned char extDDC_PCR;
+        unsigned char crtc17 = 0;
+        unsigned char seq1 = 0 ;
         int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
-	xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,"SISDisplayPowerManagementSet(%d)\n",PowerManagementMode);
-	outb(vgaIOBase + 4, 0x17);
-	crtc17 = inb(vgaIOBase + 5);
-	outb(VGA_SEQ_INDEX, 0x11);
-	extDDC_PCR = inb(VGA_SEQ_DATA) & ~0xC0;
-	switch (PowerManagementMode)
-	{
-	case DPMSModeOn:
-	    /* HSync: On, VSync: On */
-	    seq1 = 0x00 ;
-	    crtc17 |= 0x80;
-	    break;
-	case DPMSModeStandby:
-	    /* HSync: Off, VSync: On */
-	    seq1 = 0x20 ;
-	    extDDC_PCR |= 0x40;
-	    break;
-	case DPMSModeSuspend:
-	    /* HSync: On, VSync: Off */
-	    seq1 = 0x20 ;
-	    extDDC_PCR |= 0x80;
-	    break;
-	case DPMSModeOff:
-	    /* HSync: Off, VSync: Off */
-	    seq1 = 0x20 ;
-	    extDDC_PCR |= 0xC0;
-	    /* DPMSModeOff is not supported with ModeStandby | ModeSuspend  */
+        xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,"SISDisplayPowerManagementSet(%d)\n",PowerManagementMode);
+        outb(vgaIOBase + 4, 0x17);
+        crtc17 = inb(vgaIOBase + 5);
+        outb(VGA_SEQ_INDEX, 0x11);
+        extDDC_PCR = inb(VGA_SEQ_DATA) & ~0xC0;
+        switch (PowerManagementMode)
+        {
+        case DPMSModeOn:
+            /* HSync: On, VSync: On */
+            seq1 = 0x00 ;
+            crtc17 |= 0x80;
+            break;
+        case DPMSModeStandby:
+            /* HSync: Off, VSync: On */
+            seq1 = 0x20 ;
+            extDDC_PCR |= 0x40;
+            break;
+        case DPMSModeSuspend:
+            /* HSync: On, VSync: Off */
+            seq1 = 0x20 ;
+            extDDC_PCR |= 0x80;
+            break;
+        case DPMSModeOff:
+            /* HSync: Off, VSync: Off */
+            seq1 = 0x20 ;
+            extDDC_PCR |= 0xC0;
+            /* DPMSModeOff is not supported with ModeStandby | ModeSuspend  */
             /* need same as the generic VGA function */
-	    crtc17 &= ~0x80;
-	    break;
-	}
-	outw(VGA_SEQ_INDEX, 0x0100);	/* Synchronous Reset */
-	outb(VGA_SEQ_INDEX, 0x01);	/* Select SEQ1 */
-	seq1 |= inb(VGA_SEQ_DATA) & ~0x20;
-	outb(VGA_SEQ_DATA, seq1);
-	usleep(10000);
-	outb(vgaIOBase + 4, 0x17);
-	outb(vgaIOBase + 5, crtc17);
-	outb(VGA_SEQ_INDEX, 0x11);
-	outb(VGA_SEQ_DATA, extDDC_PCR);
-	outw(VGA_SEQ_INDEX, 0x0300);	/* End Reset */
+            crtc17 &= ~0x80;
+            break;
+        }
+        outw(VGA_SEQ_INDEX, 0x0100);    /* Synchronous Reset */
+        outb(VGA_SEQ_INDEX, 0x01);      /* Select SEQ1 */
+        seq1 |= inb(VGA_SEQ_DATA) & ~0x20;
+        outb(VGA_SEQ_DATA, seq1);
+        usleep(10000);
+        outb(vgaIOBase + 4, 0x17);
+        outb(vgaIOBase + 5, crtc17);
+        outb(VGA_SEQ_INDEX, 0x11);
+        outb(VGA_SEQ_DATA, extDDC_PCR);
+        outw(VGA_SEQ_INDEX, 0x0300);    /* End Reset */
 }
 #endif
 
@@ -338,7 +385,7 @@ SISDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int fla
 static void
 SISIdentify(int flags)
 {
-    xf86PrintChipsets(SIS_NAME, "driver for SiS chipsets", SISChipsets);
+   xf86PrintChipsets(SIS_NAME, "driver for SiS chipsets", SISChipsets);
 }
 
 static void
@@ -386,12 +433,12 @@ SISProbe(DriverPtr drv, int flags)
      */
 
     if ((numDevSections = xf86MatchDevice(SIS_DRIVER_NAME,
-					  &devSections)) <= 0) {
-	/*
-	 * There's no matching device section in the config file, so quit
-	 * now.
-	 */
-	return FALSE;
+                                          &devSections)) <= 0) {
+        /*
+         * There's no matching device section in the config file, so quit
+         * now.
+         */
+        return FALSE;
     }
 
     /*
@@ -410,50 +457,50 @@ SISProbe(DriverPtr drv, int flags)
      * amounts to checking the PCI data that the server has already collected.
      */
     if (xf86GetPciVideoInfo() == NULL) {
-	/*
-	 * We won't let anything in the config file override finding no
-	 * PCI video cards at all.  This seems reasonable now, but we'll see.
-	 */
-	return FALSE;
+        /*
+         * We won't let anything in the config file override finding no
+         * PCI video cards at all.  This seems reasonable now, but we'll see.
+         */
+        return FALSE;
     }
 
     numUsed = xf86MatchPciInstances(SIS_NAME, PCI_VENDOR_SIS,
-		   SISChipsets, SISPciChipsets, devSections,
-		   numDevSections, drv, &usedChips);
+                   SISChipsets, SISPciChipsets, devSections,
+                   numDevSections, drv, &usedChips);
 
     /* Free it since we don't need that list after this */
     if (devSections)
         xfree(devSections);
     devSections = NULL;
     if (numUsed <= 0)
-	return FALSE;
+        return FALSE;
 
     if (flags & PROBE_DETECT)
         foundScreen = TRUE;
     else for (i = 0; i < numUsed; i++) {
-	ScrnInfoPtr pScrn;
+        ScrnInfoPtr pScrn;
 
-	/* Allocate a ScrnInfoRec and claim the slot */
-	pScrn = NULL;
+        /* Allocate a ScrnInfoRec and claim the slot */
+        pScrn = NULL;
 
-	if ((pScrn = xf86ConfigPciEntity(pScrn, 0, usedChips[i],
-					       SISPciChipsets, NULL, NULL,
-					       NULL, NULL, NULL))) {
-	    /* Fill in what we can of the ScrnInfoRec */
-	    pScrn->driverVersion	= SIS_CURRENT_VERSION;
-	    pScrn->driverName	= SIS_DRIVER_NAME;
-	    pScrn->name		= SIS_NAME;
-	    pScrn->Probe		= SISProbe;
-	    pScrn->PreInit		= SISPreInit;
-	    pScrn->ScreenInit	= SISScreenInit;
-	    pScrn->SwitchMode	= SISSwitchMode;
-	    pScrn->AdjustFrame	= SISAdjustFrame;
-	    pScrn->EnterVT		= SISEnterVT;
-	    pScrn->LeaveVT		= SISLeaveVT;
-	    pScrn->FreeScreen	= SISFreeScreen;
-	    pScrn->ValidMode	= SISValidMode;
-	    foundScreen = TRUE;
-	}
+        if ((pScrn = xf86ConfigPciEntity(pScrn, 0, usedChips[i],
+                                               SISPciChipsets, NULL, NULL,
+                                               NULL, NULL, NULL))) {
+            /* Fill in what we can of the ScrnInfoRec */
+            pScrn->driverVersion    = SIS_CURRENT_VERSION;
+            pScrn->driverName       = SIS_DRIVER_NAME;
+            pScrn->name             = SIS_NAME;
+            pScrn->Probe            = SISProbe;
+            pScrn->PreInit          = SISPreInit;
+            pScrn->ScreenInit       = SISScreenInit;
+            pScrn->SwitchMode       = SISSwitchMode;
+            pScrn->AdjustFrame      = SISAdjustFrame;
+            pScrn->EnterVT          = SISEnterVT;
+            pScrn->LeaveVT          = SISLeaveVT;
+            pScrn->FreeScreen       = SISFreeScreen;
+            pScrn->ValidMode        = SISValidMode;
+            foundScreen = TRUE;
+        }
     }
     xfree(usedChips);
     return foundScreen;
@@ -486,7 +533,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     ClockRangePtr clockRanges;
     char *mod = NULL;
     const char *Sym = NULL;
-    int	pix24flags;
+    int pix24flags;
 
     if (flags & PROBE_DETECT) return FALSE;
 
@@ -505,11 +552,11 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Check the number of entities, and fail if it isn't one. */
     if (pScrn->numEntities != 1)
-	return FALSE;
+        return FALSE;
 
     /* The vgahw module should be loaded here when needed */
     if (!xf86LoadSubModule(pScrn, "vgahw"))
-	return FALSE;
+        return FALSE;
 
     xf86LoaderReqSymLists(vgahwSymbols, NULL);
 
@@ -517,18 +564,18 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
      * Allocate a vgaHWRec
      */
     if (!vgaHWGetHWRec(pScrn))
-	return FALSE;
+        return FALSE;
 
-    VGAHWPTR(pScrn)->MapSize = 0x10000;		/* Standard 64k VGA window */
+    VGAHWPTR(pScrn)->MapSize = 0x10000;         /* Standard 64k VGA window */
 
     if (!vgaHWMapMem(pScrn))
-	return FALSE;
+        return FALSE;
     vgaHWGetIOBase(VGAHWPTR(pScrn));
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
     /* Allocate the SISRec driverPrivate */
     if (!SISGetRec(pScrn)) {
-	return FALSE;
+        return FALSE;
     }
     pSiS = SISPTR(pScrn);
     pSiS->pScrn = pScrn;
@@ -536,23 +583,23 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     /* Get the entity, and make sure it is PCI. */
     pSiS->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
     if (pSiS->pEnt->location.type != BUS_PCI)
-	return FALSE;
+        return FALSE;
 
     /* Find the PCI info for this screen */
     pSiS->PciInfo = xf86GetPciInfoForEntity(pSiS->pEnt->index);
     pSiS->PciTag = pciTag(pSiS->PciInfo->bus, pSiS->PciInfo->device,
-			  pSiS->PciInfo->func);
+                          pSiS->PciInfo->func);
 
     /*
      * XXX This could be refined if some VGA memory resources are not
      * decoded in operating mode.
      */
     {
-	resRange vgamem[] =	{ {ResShrMemBlock,0xA0000,0xAFFFF},
-				  {ResShrMemBlock,0xB0000,0xB7FFF},
-				  {ResShrMemBlock,0xB8000,0xBFFFF},
-				  _END };
-	xf86SetOperatingState(vgamem, pSiS->pEnt->index, ResUnusedOpr);
+        resRange vgamem[] =     { {ResShrMemBlock,0xA0000,0xAFFFF},
+                                  {ResShrMemBlock,0xB0000,0xB7FFF},
+                                  {ResShrMemBlock,0xB8000,0xBFFFF},
+                                  _END };
+        xf86SetOperatingState(vgamem, pSiS->pEnt->index, ResUnusedOpr);
     }
 
     /* Operations for which memory access is required */
@@ -562,7 +609,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* The ramdac module should be loaded here when needed */
     if (!xf86LoadSubModule(pScrn, "ramdac"))
-	return FALSE;
+        return FALSE;
 
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
@@ -573,59 +620,59 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
      * Our preference for depth 24 is 24bpp, so tell it that too.
      */
     pix24flags = Support32bppFb | Support24bppFb |
-		SupportConvert24to32 | SupportConvert32to24;
+                SupportConvert24to32 | SupportConvert32to24;
 
     if (!xf86SetDepthBpp(pScrn, 8, 8, 8, pix24flags)) {
-	return FALSE;
+        return FALSE;
     } else {
-	/* Check that the returned depth is one we support */
-	switch (pScrn->depth) {
-	case 8:
-	case 15:
-	case 16:
-	case 24:
-	    /* OK */
-	    break;
-	default:
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		       "Given depth (%d) is not supported by this driver\n",
-		       pScrn->depth);
-	    return FALSE;
-	}
+        /* Check that the returned depth is one we support */
+        switch (pScrn->depth) {
+        case 8:
+        case 15:
+        case 16:
+        case 24:
+            /* OK */
+            break;
+        default:
+            xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+                       "Given depth (%d) is not supported by this driver\n",
+                       pScrn->depth);
+            return FALSE;
+        }
     }
 
     xf86PrintDepthBpp(pScrn);
 
     /* Get the depth24 pixmap format */
     if (pScrn->depth == 24 && pix24bpp == 0)
-	pix24bpp = xf86GetBppFromDepth(pScrn, 24);
+        pix24bpp = xf86GetBppFromDepth(pScrn, 24);
 
     /*
      * This must happen after pScrn->display has been set because
      * xf86SetWeight references it.
      */
     if (pScrn->depth > 8) {
-	/* The defaults are OK for us */
-	rgb zeros = {0, 0, 0};
+        /* The defaults are OK for us */
+        rgb zeros = {0, 0, 0};
 
-	if (!xf86SetWeight(pScrn, zeros, zeros)) {
-	    return FALSE;
-	} else {
-	    /* XXX check that weight returned is supported */
+        if (!xf86SetWeight(pScrn, zeros, zeros)) {
+            return FALSE;
+        } else {
+            /* XXX check that weight returned is supported */
             ;
         }
     }
 
     if (!xf86SetDefaultVisual(pScrn, -1)) {
-	return FALSE;
+        return FALSE;
     } else {
-	/* We don't currently support DirectColor at > 8bpp */
-	if (pScrn->depth > 8 && pScrn->defaultVisual != TrueColor) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Given default visual"
-		       " (%s) is not supported at depth %d\n",
-		       xf86GetVisualName(pScrn->defaultVisual), pScrn->depth);
-	    return FALSE;
-	}
+        /* We don't currently support DirectColor at > 8bpp */
+        if (pScrn->depth > 8 && pScrn->defaultVisual != TrueColor) {
+            xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Given default visual"
+                       " (%s) is not supported at depth %d\n",
+                       xf86GetVisualName(pScrn->defaultVisual), pScrn->depth);
+            return FALSE;
+        }
     }
 
     /*
@@ -633,11 +680,11 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
      */
 
     {
-	Gamma zeros = {0.0, 0.0, 0.0};
+        Gamma zeros = {0.0, 0.0, 0.0};
 
-	if (!xf86SetGamma(pScrn, zeros)) {
-	    return FALSE;
-	}
+        if (!xf86SetGamma(pScrn, zeros)) {
+            return FALSE;
+        }
     }
 
     /* We use a programamble clock */
@@ -645,11 +692,11 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Set the bits per RGB for 8bpp mode */
     if (pScrn->depth == 8) {
-	pScrn->rgbBits = 6;
+        pScrn->rgbBits = 6;
     }
 
 
-    pSiS->ddc1Read = SiSddc1Read;	/* this cap will be modified */
+    pSiS->ddc1Read = SiSddc1Read;       /* this cap will be modified */
 
     from = X_DEFAULT;
     /*
@@ -657,27 +704,27 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
      * override.
      */
     if (pSiS->pEnt->device->chipset && *pSiS->pEnt->device->chipset)  {
-	pScrn->chipset = pSiS->pEnt->device->chipset;
-       	pSiS->Chipset = xf86StringToToken(SISChipsets, pScrn->chipset);
-       	from = X_CONFIG;
+        pScrn->chipset = pSiS->pEnt->device->chipset;
+        pSiS->Chipset = xf86StringToToken(SISChipsets, pScrn->chipset);
+        from = X_CONFIG;
     } else if (pSiS->pEnt->device->chipID >= 0) {
-	pSiS->Chipset = pSiS->pEnt->device->chipID;
-	pScrn->chipset = (char *)xf86TokenToString(SISChipsets, pSiS->Chipset);
+        pSiS->Chipset = pSiS->pEnt->device->chipID;
+        pScrn->chipset = (char *)xf86TokenToString(SISChipsets, pSiS->Chipset);
 
-	from = X_CONFIG;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipID override: 0x%04X\n",
-		   		pSiS->Chipset);
+        from = X_CONFIG;
+        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipID override: 0x%04X\n",
+                                pSiS->Chipset);
     } else {
-	from = X_PROBED;
-	pSiS->Chipset = pSiS->PciInfo->chipType;
-	pScrn->chipset = (char *)xf86TokenToString(SISChipsets, pSiS->Chipset);
+        from = X_PROBED;
+        pSiS->Chipset = pSiS->PciInfo->chipType;
+        pScrn->chipset = (char *)xf86TokenToString(SISChipsets, pSiS->Chipset);
     }
     if (pSiS->pEnt->device->chipRev >= 0) {
-	pSiS->ChipRev = pSiS->pEnt->device->chipRev;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipRev override: %d\n",
-	   		pSiS->ChipRev);
+        pSiS->ChipRev = pSiS->pEnt->device->chipRev;
+        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipRev override: %d\n",
+                        pSiS->ChipRev);
     } else {
-	pSiS->ChipRev = pSiS->PciInfo->chipRev;
+        pSiS->ChipRev = pSiS->PciInfo->chipRev;
     }
 
     /*
@@ -685,14 +732,14 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
      * SISProbe(), but check it just in case.
      */
     if (pScrn->chipset == NULL) {
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		   "ChipID 0x%04X is not recognised\n", pSiS->Chipset);
-	return FALSE;
+        xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+                   "ChipID 0x%04X is not recognised\n", pSiS->Chipset);
+        return FALSE;
     }
     if (pSiS->Chipset < 0) {
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		   "Chipset \"%s\" is not recognised\n", pScrn->chipset);
-	return FALSE;
+        xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+                   "Chipset \"%s\" is not recognised\n", pScrn->chipset);
+        return FALSE;
     }
 
 
@@ -701,13 +748,13 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* get VBIOS image */
     if (!(pSiS->BIOS=xcalloc(1, BIOS_SIZE)))  {
-	ErrorF("Allocate memory fail !!\n");
-	return FALSE;
+        ErrorF("Allocate memory fail !!\n");
+        return FALSE;
     }
     if (xf86ReadBIOS(BIOS_BASE, 0, pSiS->BIOS, BIOS_SIZE) != BIOS_SIZE)  {
-	xfree(pSiS->BIOS);
-	ErrorF("Read VBIOS image fail !!\n");
-	return FALSE;
+        xfree(pSiS->BIOS);
+        ErrorF("Read VBIOS image fail !!\n");
+        return FALSE;
     }
 
     SiSOptions(pScrn);
@@ -715,49 +762,49 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
     from = X_PROBED;
     if (pSiS->pEnt->device->MemBase != 0) {
-	/*
-	 * XXX Should check that the config file value matches one of the
-	 * PCI base address values.
-	 */
-	pSiS->FbAddress = pSiS->pEnt->device->MemBase;
-	from = X_CONFIG;
+        /*
+         * XXX Should check that the config file value matches one of the
+         * PCI base address values.
+         */
+        pSiS->FbAddress = pSiS->pEnt->device->MemBase;
+        from = X_CONFIG;
     } else {
-	pSiS->FbAddress = pSiS->PciInfo->memBase[0] & 0xFFFFFFF0;
+        pSiS->FbAddress = pSiS->PciInfo->memBase[0] & 0xFFFFFFF0;
     }
 
     xf86DrvMsg(pScrn->scrnIndex, from, "Linear framebuffer at 0x%lX\n",
-	       (unsigned long)pSiS->FbAddress);
+               (unsigned long)pSiS->FbAddress);
 
     if (pSiS->pEnt->device->IOBase != 0) {
-	/*
-	 * XXX Should check that the config file value matches one of the
-	 * PCI base address values.
-	 */
-	pSiS->IOAddress = pSiS->pEnt->device->IOBase;
-	from = X_CONFIG;
+        /*
+         * XXX Should check that the config file value matches one of the
+         * PCI base address values.
+         */
+        pSiS->IOAddress = pSiS->pEnt->device->IOBase;
+        from = X_CONFIG;
     } else {
-	pSiS->IOAddress = pSiS->PciInfo->memBase[1] & 0xFFFFFFF0;
+        pSiS->IOAddress = pSiS->PciInfo->memBase[1] & 0xFFFFFFF0;
     }
 
     xf86DrvMsg(pScrn->scrnIndex, from, "MMIO registers at 0x%lX\n",
-	       (unsigned long)pSiS->IOAddress);
+               (unsigned long)pSiS->IOAddress);
 
     pSiS->RelIO = pSiS->PciInfo->ioBase[2] & 0xFFFC;
     xf86DrvMsg(pScrn->scrnIndex, from, "Relocate IO registers at 0x%lX\n",
-	       (unsigned long)pSiS->RelIO);
+               (unsigned long)pSiS->RelIO);
 
     /* Register the PCI-assigned resources. */
     if (xf86RegisterResources(pSiS->pEnt->index, NULL, ResExclusive)) {
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		   "xf86RegisterResources() found resource conflicts\n");
-	return FALSE;
+        xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+                   "xf86RegisterResources() found resource conflicts\n");
+        return FALSE;
     }
 
     from = X_PROBED;
     if ((pSiS->pEnt->device->videoRam != 0) &&
-	(pSiS->pEnt->device->videoRam < pScrn->videoRam))  {
-	pScrn->videoRam = pSiS->pEnt->device->videoRam;
-	from = X_CONFIG;
+        (pSiS->pEnt->device->videoRam < pScrn->videoRam))  {
+        pScrn->videoRam = pSiS->pEnt->device->videoRam;
+        from = X_CONFIG;
     }
 
     xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n",
@@ -766,16 +813,17 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     pSiS->FbMapSize = pScrn->videoRam * 1024;
 
     SISVGAPreInit(pScrn);
-    SISLCDPreInit(pScrn);
-    SISTVPreInit(pScrn);
+    SISLCDPreInit(pScrn);  
+    SISTVPreInit(pScrn); 
+    SISCRT2PreInit(pScrn); 
     SISDACPreInit(pScrn);
 
     outw(VGA_SEQ_INDEX, (unlock << 8) | 0x05);
 
     /* Set the min pixel clock */
-    pSiS->MinClock = 16250;	/* XXX Guess, need to check this */
+    pSiS->MinClock = 16250;     /* XXX Guess, need to check this */
     xf86DrvMsg(pScrn->scrnIndex, X_DEFAULT, "Min pixel clock is %d MHz\n",
-	       pSiS->MinClock / 1000);
+               pSiS->MinClock / 1000);
 
     from = X_PROBED;
     /*
@@ -783,30 +831,30 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
      * file, we respect that setting.
      */
     if (pSiS->pEnt->device->dacSpeeds[0]) {
-	int speed = 0;
+        int speed = 0;
 
-	switch (pScrn->bitsPerPixel) {
-	case 8:
-	   speed = pSiS->pEnt->device->dacSpeeds[DAC_BPP8];
-	   break;
-	case 16:
-	   speed = pSiS->pEnt->device->dacSpeeds[DAC_BPP16];
-	   break;
-	case 24:
-	   speed = pSiS->pEnt->device->dacSpeeds[DAC_BPP24];
-	   break;
-	case 32:
-	   speed = pSiS->pEnt->device->dacSpeeds[DAC_BPP32];
-	   break;
-	}
-	if (speed == 0)
-	    pSiS->MaxClock = pSiS->pEnt->device->dacSpeeds[0];
-	else
-	    pSiS->MaxClock = speed;
-	from = X_CONFIG;
+        switch (pScrn->bitsPerPixel) {
+        case 8:
+           speed = pSiS->pEnt->device->dacSpeeds[DAC_BPP8];
+           break;
+        case 16:
+           speed = pSiS->pEnt->device->dacSpeeds[DAC_BPP16];
+           break;
+        case 24:
+           speed = pSiS->pEnt->device->dacSpeeds[DAC_BPP24];
+           break;
+        case 32:
+           speed = pSiS->pEnt->device->dacSpeeds[DAC_BPP32];
+           break;
+        }
+        if (speed == 0)
+            pSiS->MaxClock = pSiS->pEnt->device->dacSpeeds[0];
+        else
+            pSiS->MaxClock = speed;
+        from = X_CONFIG;
     } 
     xf86DrvMsg(pScrn->scrnIndex, from, "Max pixel clock is %d MHz\n",
-	       pSiS->MaxClock / 1000);
+               pSiS->MaxClock / 1000);
 
     /*
      * Setup the ClockRanges, which describe what clock ranges are available,
@@ -816,9 +864,9 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     clockRanges->next = NULL;
     clockRanges->minClock = pSiS->MinClock;
     clockRanges->maxClock = pSiS->MaxClock;
-    clockRanges->clockIndex = -1;		/* programmable */
+    clockRanges->clockIndex = -1;               /* programmable */
     clockRanges->interlaceAllowed = TRUE;
-    clockRanges->doubleScanAllowed = TRUE;	/* XXX check this */
+    clockRanges->doubleScanAllowed = TRUE;      /* XXX check this */
 
     /*
      * xf86ValidateModes will check that the mode HTotal and VTotal values
@@ -833,26 +881,26 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
      * XXX Assuming min height 128, max 4096
      */
     i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
-			      pScrn->display->modes, clockRanges,
-			      NULL, 256, 8192,
-			      pScrn->bitsPerPixel * 8, 128, 4096,
-			      pScrn->display->virtualX,
-			      pScrn->display->virtualY,
-			      pSiS->FbMapSize,
-			      LOOKUP_BEST_REFRESH);
+                              pScrn->display->modes, clockRanges,
+                              NULL, 256, 8192,
+                              pScrn->bitsPerPixel * 8, 128, 4096,
+                              pScrn->display->virtualX,
+                              pScrn->display->virtualY,
+                              pSiS->FbMapSize,
+                              LOOKUP_BEST_REFRESH);
 
     if (i == -1) {
-	SISFreeRec(pScrn);
-	return FALSE;
+        SISFreeRec(pScrn);
+        return FALSE;
     }
 
     /* Prune the modes marked as invalid */
     xf86PruneDriverModes(pScrn);
 
     if (i == 0 || pScrn->modes == NULL) {
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No valid modes found\n");
-	SISFreeRec(pScrn);
-	return FALSE;
+        xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No valid modes found\n");
+        SISFreeRec(pScrn);
+        return FALSE;
     }
 
     xf86SetCrtcForModes(pScrn, INTERLACE_HALVE_V);
@@ -869,57 +917,57 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     /* Load bpp-specific modules */
     switch (pScrn->bitsPerPixel) {
     case 1:
-	mod = "xf1bpp";
-	Sym = "xf1bppScreenInit";
-	break;
+        mod = "xf1bpp";
+        Sym = "xf1bppScreenInit";
+        break;
     case 4:
-	mod = "xf4bpp";
-	Sym = "xf4bppScreenInit";
-	break;
+        mod = "xf4bpp";
+        Sym = "xf4bppScreenInit";
+        break;
     case 8:
-	mod = "cfb";
-	Sym = "cfbScreenInit";
-	break;
+        mod = "cfb";
+        Sym = "cfbScreenInit";
+        break;
     case 16:
-	mod = "cfb16";
-	Sym = "cfb16ScreenInit";
-	break;
+        mod = "cfb16";
+        Sym = "cfb16ScreenInit";
+        break;
     case 24:
-	if (pix24bpp == 24) {
-	    mod = "cfb24";
-	    Sym = "cfb24ScreenInit";
-	} else {
-	    mod = "xf24_32bpp";
-	    Sym = "cfb24_32ScreenInit";
-	}
-	break;
+        if (pix24bpp == 24) {
+            mod = "cfb24";
+            Sym = "cfb24ScreenInit";
+        } else {
+            mod = "xf24_32bpp";
+            Sym = "cfb24_32ScreenInit";
+        }
+        break;
     case 32:
-	mod = "cfb32";
-	Sym = "cfb32ScreenInit";
-	break;
+        mod = "cfb32";
+        Sym = "cfb32ScreenInit";
+        break;
     }
 
     if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
-	SISFreeRec(pScrn);
-	return FALSE;
+        SISFreeRec(pScrn);
+        return FALSE;
     }
 
     xf86LoaderReqSymbols(Sym, NULL);
 
     if (!xf86LoadSubModule(pScrn, "i2c")) {
-	SISFreeRec(pScrn);
-	return FALSE;
+        SISFreeRec(pScrn);
+        return FALSE;
     }
 
     xf86LoaderReqSymLists(i2cSymbols, NULL);
 
     /* Load XAA if needed */
     if (!pSiS->NoAccel) {
-	xf86DrvMsg(pScrn->scrnIndex,X_INFO, "Accel Enable\n");
-	if (!xf86LoadSubModule(pScrn, "xaa")) {
-	    SISFreeRec(pScrn);
-	    return FALSE;
-	}
+        xf86DrvMsg(pScrn->scrnIndex,X_INFO, "Accel Enable\n");
+        if (!xf86LoadSubModule(pScrn, "xaa")) {
+            SISFreeRec(pScrn);
+            return FALSE;
+        }
 
         xf86LoaderReqSymLists(xaaSymbols, NULL);
     }
@@ -927,14 +975,14 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     /* Load DDC if needed */
     /* This gives us DDC1 - we should be able to get DDC2B using i2c */
     if (!xf86LoadSubModule(pScrn, "ddc")) {
-	SISFreeRec(pScrn);
-	return FALSE;
+        SISFreeRec(pScrn);
+        return FALSE;
     }
     xf86LoaderReqSymLists(ddcSymbols, NULL);
 
     /* Initialize DDC1 if possible */
-    if (pSiS->ddc1Read) 
-	xf86PrintEDID(xf86DoEDID_DDC1(pScrn->scrnIndex,vgaHWddc1SetSpeed,pSiS->ddc1Read ) );
+/*    if (pSiS->ddc1Read) 
+        xf86PrintEDID(xf86DoEDID_DDC1(pScrn->scrnIndex,vgaHWddc1SetSpeed,pSiS->ddc1Read ) ); */
 
 
     return TRUE;
@@ -966,9 +1014,9 @@ SISMapMem(ScrnInfoPtr pScrn)
     mmioFlags = VIDMEM_MMIO | VIDMEM_SPARSE;
 #endif
     pSiS->IOBase = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, 
-			pSiS->PciTag, pSiS->IOAddress, 0x10000);
+                        pSiS->PciTag, pSiS->IOAddress, 0x10000);
     if (pSiS->IOBase == NULL)
-	return FALSE;
+        return FALSE;
 
 #ifdef __alpha__
     /*
@@ -976,18 +1024,18 @@ SISMapMem(ScrnInfoPtr pScrn)
      * setting CPUToScreenColorExpandBase.
      */
     pSiS->IOBaseDense = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
-		pSiS->PciTag, pSiS->IOAddress, 0x10000);
+                pSiS->PciTag, pSiS->IOAddress, 0x10000);
 
     if (pSiS->IOBaseDense == NULL)
-	return FALSE;
+        return FALSE;
 #endif /* __alpha__ */
 
     pSiS->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
-				 pSiS->PciTag,
-				 (unsigned long)pSiS->FbAddress,
-				 pSiS->FbMapSize);
+                                 pSiS->PciTag,
+                                 (unsigned long)pSiS->FbAddress,
+                                 pSiS->FbMapSize);
     if (pSiS->FbBase == NULL)
-	return FALSE;
+        return FALSE;
 
     return TRUE;
 }
@@ -1055,41 +1103,45 @@ SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     SISRegPtr sisReg;
 
     vgaHWUnlock(hwp);
-
-    SISModifyModeInfo(mode);
+ 
+    SISModifyModeInfo(mode);  
 
     /* Initialise the ModeReg values */
     if (!vgaHWInit(pScrn, mode))
-	return FALSE;
-    pScrn->vtSema = TRUE;
+        return FALSE; 
+    pScrn->vtSema = TRUE; 
 
     if (!(*pSiS->ModeInit)(pScrn, mode))
-	return FALSE;
-
-    if (pSiS->VBFlags & CRT2_ENABLE)
-	if (!(*pSiS->ModeInit2)(pScrn, mode))  {	/* Disable VB */
-		pSiS->ModeReg.sisRegs3D4[0x31] |= 0x60;
-		pSiS->ModeReg.sisRegs3D4[0x30] &= 0xFC;
-	}
+        return FALSE;   
 
     PDEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		"HDisplay: %d, VDisplay: %d  \n",
-		mode->HDisplay, mode->VDisplay));
+                "HDisplay: %d, VDisplay: %d  \n",
+                mode->HDisplay, mode->VDisplay));
 
     /* Program the registers */
     vgaHWProtect(pScrn, TRUE);
     vgaReg = &hwp->ModeReg;
-    sisReg = &pSiS->ModeReg;
+    sisReg = &pSiS->ModeReg;   
 
     vgaReg->Attribute[0x10] = 0x01;
     if (pScrn->bitsPerPixel > 8) 
-    	vgaReg->Graphics[0x05] = 0x00;
+        vgaReg->Graphics[0x05] = 0x00;  
 
-    vgaHWRestore(pScrn, vgaReg, VGA_SR_MODE);
+    vgaHWRestore(pScrn, vgaReg, VGA_SR_MODE); 
 
-    (*pSiS->SiSRestore)(pScrn, sisReg);
+    if( (pSiS->Chipset == PCI_CHIP_SIS300) ||
+        (pSiS->Chipset == PCI_CHIP_SIS630) ||
+        (pSiS->Chipset == PCI_CHIP_SIS540) )
+    {
+        SiSPreSetMode(pScrn);
+        SiSSetMode(pScrn, pScrn->currentMode); 
+    }
+    else
+    {
+        (*pSiS->SiSRestore)(pScrn, sisReg);   
+    }
 
-    vgaHWProtect(pScrn, FALSE);
+    vgaHWProtect(pScrn, FALSE); 
 
 /* Reserved for debug
  *
@@ -1118,8 +1170,8 @@ SISRestore(ScrnInfoPtr pScrn)
 
     vgaHWProtect(pScrn, TRUE);
 
-    (*pSiS->SiSRestore)(pScrn, sisReg);
-
+    (*pSiS->SiSRestore)(pScrn, sisReg); 
+ 
     vgaHWRestore(pScrn, vgaReg, VGA_SR_ALL);
 
     vgaHWProtect(pScrn, FALSE);
@@ -1139,6 +1191,7 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     SISPtr pSiS;
     int ret;
     VisualPtr visual;
+    unsigned long OnScreenSize;
 
     /* 
      * First get the ScrnInfoRec
@@ -1147,18 +1200,18 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     hwp = VGAHWPTR(pScrn);
 
-    hwp->MapSize = 0x10000;		/* Standard 64k VGA window */
+    hwp->MapSize = 0x10000;             /* Standard 64k VGA window */
 
     pSiS = SISPTR(pScrn);
 
     /* Map the VGA memory and get the VGA IO base */
     if (!vgaHWMapMem(pScrn))
-	return FALSE;
+        return FALSE;
     vgaHWGetIOBase(hwp);
 
     /* Map the SIS memory and MMIO areas */
     if (!SISMapMem(pScrn))
-	return FALSE;
+        return FALSE;
 
     /* Save the current state */
     SISSave(pScrn);
@@ -1168,7 +1221,11 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* Initialise the first mode */
     if (!SISModeInit(pScrn, pScrn->currentMode))
-	return FALSE;
+        return FALSE;   
+
+    /* Clear frame buffer */
+    OnScreenSize = pScrn->displayWidth * pScrn->currentMode->VDisplay * (pScrn->bitsPerPixel / 8);
+    memset(pSiS->FbBase, 0, OnScreenSize);
 
     /* Darken the screen for aesthetic reasons and set the viewport */
     SISSaveScreen(pScreen, SCREEN_SAVER_ON);
@@ -1199,15 +1256,34 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      */
 
     if (pScrn->bitsPerPixel > 8) {
-	if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
-			      pScrn->defaultVisual))
-	    return FALSE;
+        if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
+                              pScrn->defaultVisual))
+            return FALSE;
     } else {
-	if (!miSetVisualTypes(pScrn->depth, 
-			      miGetDefaultVisualMask(pScrn->depth),
-			      pScrn->rgbBits, pScrn->defaultVisual))
-	    return FALSE;
+        if (!miSetVisualTypes(pScrn->depth, 
+                              miGetDefaultVisualMask(pScrn->depth),
+                              pScrn->rgbBits, pScrn->defaultVisual))
+            return FALSE;
     }
+
+  {
+    static int GlobalHWQueueLength = 0;  
+    
+    pSiS->cmdQueueLenPtr = &(GlobalHWQueueLength);  
+  }
+
+#ifdef XF86DRI
+  /*
+   * Setup DRI after visuals have been established, but before cfbScreenInit
+   * is called.   cfbScreenInit will eventually call into the drivers
+   * InitGLXVisuals call back.
+   */
+  pSiS->directRenderingEnabled = SISDRIScreenInit(pScreen);
+  /* Force the initialization of the context */
+#if 0
+  SISLostContext(pScreen);
+#endif
+#endif
 
     /*
      * Call the framebuffer layer's ScreenInit function, and fill in other
@@ -1216,51 +1292,51 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     switch (pScrn->bitsPerPixel) {
     case 1:
-	ret = xf1bppScreenInit(pScreen, pSiS->FbBase, pScrn->virtualX,
-			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
-			pScrn->displayWidth);
-	break;
+        ret = xf1bppScreenInit(pScreen, pSiS->FbBase, pScrn->virtualX,
+                        pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
+                        pScrn->displayWidth);
+        break;
     case 4:
-	ret = xf4bppScreenInit(pScreen, pSiS->FbBase, pScrn->virtualX,
-			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
-			pScrn->displayWidth);
-	break;
+        ret = xf4bppScreenInit(pScreen, pSiS->FbBase, pScrn->virtualX,
+                        pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
+                        pScrn->displayWidth);
+        break;
     case 8:
-	ret = cfbScreenInit(pScreen, pSiS->FbBase, pScrn->virtualX,
-			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
-			pScrn->displayWidth);
-	break;
+        ret = cfbScreenInit(pScreen, pSiS->FbBase, pScrn->virtualX,
+                        pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
+                        pScrn->displayWidth);
+        break;
     case 16:
-	ret = cfb16ScreenInit(pScreen, pSiS->FbBase, pScrn->virtualX,
-			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
-			pScrn->displayWidth);
-	break;
+        ret = cfb16ScreenInit(pScreen, pSiS->FbBase, pScrn->virtualX,
+                        pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
+                        pScrn->displayWidth);
+        break;
     case 24:
-	if (pix24bpp == 24)
-	    ret = cfb24ScreenInit(pScreen, pSiS->FbBase, pScrn->virtualX,
-			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
-			pScrn->displayWidth);
-	else
-	    ret = cfb24_32ScreenInit(pScreen, pSiS->FbBase, pScrn->virtualX,
-			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
-			pScrn->displayWidth);
-	break;
+        if (pix24bpp == 24)
+            ret = cfb24ScreenInit(pScreen, pSiS->FbBase, pScrn->virtualX,
+                        pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
+                        pScrn->displayWidth);
+        else
+            ret = cfb24_32ScreenInit(pScreen, pSiS->FbBase, pScrn->virtualX,
+                        pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
+                        pScrn->displayWidth);
+        break;
     case 32:
-	ret = cfb32ScreenInit(pScreen, pSiS->FbBase, pScrn->virtualX,
-			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
-			pScrn->displayWidth);
-	break;
+        ret = cfb32ScreenInit(pScreen, pSiS->FbBase, pScrn->virtualX,
+                        pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
+                        pScrn->displayWidth);
+        break;
     default:
-	xf86DrvMsg(scrnIndex, X_ERROR,
-		   "Internal error: invalid bpp (%d) in SISScrnInit\n",
-		   pScrn->bitsPerPixel);
-	    ret = FALSE;
-	break;
+        xf86DrvMsg(scrnIndex, X_ERROR,
+                   "Internal error: invalid bpp (%d) in SISScrnInit\n",
+                   pScrn->bitsPerPixel);
+            ret = FALSE;
+        break;
     }
     if (!ret)
     {
-	ErrorF ("SetMode Error@!\n");
-	return FALSE;
+        ErrorF ("SetMode Error@!\n");
+        return FALSE;
     }
 
     xf86SetBlackWhitePixels(pScreen);
@@ -1271,28 +1347,28 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
         /* Fixup RGB ordering */
         visual = pScreen->visuals + pScreen->numVisuals;
         while (--visual >= pScreen->visuals) {
-	    if ((visual->class | DynamicClass) == DirectColor) {
-		visual->offsetRed = pScrn->offset.red;
-		visual->offsetGreen = pScrn->offset.green;
-		visual->offsetBlue = pScrn->offset.blue;
-		visual->redMask = pScrn->mask.red;
-		visual->greenMask = pScrn->mask.green;
-		visual->blueMask = pScrn->mask.blue;
-	    }
-	}
+            if ((visual->class | DynamicClass) == DirectColor) {
+                visual->offsetRed = pScrn->offset.red;
+                visual->offsetGreen = pScrn->offset.green;
+                visual->offsetBlue = pScrn->offset.blue;
+                visual->redMask = pScrn->mask.red;
+                visual->greenMask = pScrn->mask.green;
+                visual->blueMask = pScrn->mask.blue;
+            }
+        }
     } else if (pScrn->depth == 1) {
-	SIS1bppColorMap(pScrn);
+        SIS1bppColorMap(pScrn);
     }
 
     if (!pSiS->NoAccel) {
         if ( pSiS->Chipset == PCI_CHIP_SIS300  ||
-	     pSiS->Chipset == PCI_CHIP_SIS630 ||
-	     pSiS->Chipset == PCI_CHIP_SIS540)
-	    SiS300AccelInit(pScreen);
-	else if (pSiS->Chipset == PCI_CHIP_SIS530)
-	    SiS530AccelInit(pScreen);
-	else
-	    SiSAccelInit(pScreen);
+             pSiS->Chipset == PCI_CHIP_SIS630 ||
+             pSiS->Chipset == PCI_CHIP_SIS540)
+            SiS300AccelInit(pScreen);
+        else if (pSiS->Chipset == PCI_CHIP_SIS530)
+            SiS530AccelInit(pScreen);
+        else
+            SiSAccelInit(pScreen);
     }
     miInitializeBackingStore(pScreen);
     xf86SetBackingStore(pScreen);
@@ -1301,23 +1377,39 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
 
     if (pSiS->HWCursor)
-	SiSHWCursorInit(pScreen);
+        SiSHWCursorInit(pScreen);
 
     /* Initialise default colourmap */
     if (!miCreateDefColormap(pScreen))
-	return FALSE;
+        return FALSE;
 
-/*  marked by archer for adding VB palette 
+/*  marked by archer for adding VB palette  
      if (!vgaHWHandleColormaps(pScreen))
-	return FALSE;
+        return FALSE;
 */
 
      if (!xf86HandleColormaps(pScreen, 256, 8, SISLoadPalette, NULL,
-			CMAP_RELOAD_ON_MODE_SWITCH))
-	return FALSE;
+                        CMAP_RELOAD_ON_MODE_SWITCH))
+        return FALSE; 
 
 #ifdef DPMSExtension
     xf86DPMSInit(pScreen, (DPMSSetProcPtr)SISDisplayPowerManagementSet, 0);
+#endif
+
+#ifdef XF86DRI
+    if (pSiS->directRenderingEnabled) {
+        /* Now that mi, cfb, drm and others have done their thing, 
+         * complete the DRI setup.
+         */
+        pSiS->directRenderingEnabled = SISDRIFinishScreenInit(pScreen);
+    }
+    if (pSiS->directRenderingEnabled) {
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "direct rendering enabled\n");
+        /* TODO */
+        /* SISSetLFBConfig(pSiS); */
+    } else {
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "direct rendering disabled\n");
+    }
 #endif
 
     pSiS->CloseScreen = pScreen->CloseScreen;
@@ -1326,7 +1418,7 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* Report any unused options (only for the first generation) */
     if (serverGeneration == 1) {
-	xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);
+        xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);
     }
 
     /* Turn on the screen now */
@@ -1340,7 +1432,18 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 Bool
 SISSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 {
-    return SISModeInit(xf86Screens[scrnIndex], mode);
+    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    SISPtr pSiS = SISPTR(pScrn);
+    if( (pSiS->Chipset == PCI_CHIP_SIS300) ||
+        (pSiS->Chipset == PCI_CHIP_SIS630) ||
+        (pSiS->Chipset == PCI_CHIP_SIS540) )
+    {
+        return SiSSetMode(xf86Screens[scrnIndex], mode);
+    }
+    else
+    {
+        return SISModeInit(xf86Screens[scrnIndex], mode); 
+    }
 }
 
 
@@ -1349,7 +1452,7 @@ SISSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
  * displayed location in the video memory.
  */
 /* Usually mandatory */
-void 
+void
 SISAdjustFrame(int scrnIndex, int x, int y, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
@@ -1368,52 +1471,54 @@ SISAdjustFrame(int scrnIndex, int x, int y, int flags)
     outw(VGA_SEQ_INDEX, 0x8605);
 
     if (pScrn->bitsPerPixel < 8) {
-	base = (y * pScrn->displayWidth + x + 3) >> 3;
+        base = (y * pScrn->displayWidth + x + 3) >> 3;
     } else {
-	base = y * pScrn->displayWidth + x ;
-	/* calculate base bpp dep. */
-	switch (pScrn->bitsPerPixel) {
-	  case 16:
-	    base >>= 1;
-	    break;
-	  case 24:
-	    base = ((base * 3)) >> 2;
-	    base -= base % 6;
-	    break;
-	  case 32:
-	    break;
-	  default:	/* 8bpp */
-	    base >>= 2;
-	    break;
-    	}
+        base = y * pScrn->displayWidth + x ;
+        /* calculate base bpp dep. */
+        switch (pScrn->bitsPerPixel) {
+          case 16:
+            base >>= 1;
+            break;
+          case 24:
+            base = ((base * 3)) >> 2;
+            base -= base % 6;
+            break;
+          case 32:
+            break;
+          default:      /* 8bpp */
+            base >>= 2;
+            break;
+        }
     }
 
     outw(vgaIOBase + 4, (base & 0x00FF00) | 0x0C);
     outw(vgaIOBase + 4, ((base & 0x00FF) << 8) | 0x0D);
     switch (pSiS->Chipset)  {
-	case PCI_CHIP_SIS300:
-	case PCI_CHIP_SIS630:
-	case PCI_CHIP_SIS540:
-	    outb(VGA_SEQ_INDEX, 0x0D);
-	    temp = (base & 0xFF0000) >> 16;
-	    PDEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
-			"3C5/0Dh set to hex %2X, base 0x%x\n", temp, base));
-	    outb(VGA_SEQ_DATA, temp);
-	    if (pSiS->VBFlags)  {
-		UnLockCRT2(pSiS->RelIO);
-		outSISIDXREG(pSiS->RelIO+4, 6, GETVAR8(base));
-		outSISIDXREG(pSiS->RelIO+4, 5, GETBITS(base, 15:8));
-		outSISIDXREG(pSiS->RelIO+4, 4, GETBITS(base, 23:16));
-		LockCRT2(pSiS->RelIO);
-	    }
-	    break;
-	default:
-	    outb(VGA_SEQ_INDEX, 0x27);
-	    temp = inb(VGA_SEQ_DATA) & 0xF0;
-	    temp |= (base & 0x0F0000) >> 16;
-	    PDEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
-			"3C5/27h set to hex %2X, base %d\n",  temp, base));
-	    outb(VGA_SEQ_DATA, temp);
+        case PCI_CHIP_SIS300:
+        case PCI_CHIP_SIS630:
+        case PCI_CHIP_SIS540:
+            outb(VGA_SEQ_INDEX, 0x0D);
+            temp = (base & 0xFF0000) >> 16;
+            PDEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
+                        "3C5/0Dh set to hex %2X, base 0x%x\n", temp, base));
+            outb(VGA_SEQ_DATA, temp);
+            if (pSiS->VBFlags)  {
+/*                UnLockCRT2VB(pSiS->RelIO); */
+                UnLockCRT2(pSiS->RelIO+0x30); 
+                outSISIDXREG(pSiS->RelIO+4, 6, GETVAR8(base));
+                outSISIDXREG(pSiS->RelIO+4, 5, GETBITS(base, 15:8));
+                outSISIDXREG(pSiS->RelIO+4, 4, GETBITS(base, 23:16));
+/*                LockCRT2VB(pSiS->RelIO); */
+                LockCRT2(pSiS->RelIO+0x30);
+            }
+            break;
+        default:
+            outb(VGA_SEQ_INDEX, 0x27);
+            temp = inb(VGA_SEQ_DATA) & 0xF0;
+            temp |= (base & 0x0F0000) >> 16;
+            PDEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
+                        "3C5/27h set to hex %2X, base %d\n",  temp, base));
+            outb(VGA_SEQ_DATA, temp);
     }
 
     outw(VGA_SEQ_INDEX, (SR5State << 8) | 0x05); /* Relock Registers */
@@ -1431,10 +1536,33 @@ static Bool
 SISEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    SISPtr pSiS = SISPTR(pScrn);
+
+#ifdef XF86DRI
+  ScreenPtr pScreen;
+#endif
+
+#ifdef XF86DRI
+  if (pSiS->directRenderingEnabled) {
+    pScreen = screenInfo.screens[scrnIndex];
+    DRIUnlock(pScreen);
+  }
+#endif
 
     /* Should we re-save the text mode on each VT enter? */
-    if (!SISModeInit(pScrn, pScrn->currentMode))
-	return FALSE;
+    if( (pSiS->Chipset == PCI_CHIP_SIS300) ||
+        (pSiS->Chipset == PCI_CHIP_SIS630) ||
+        (pSiS->Chipset == PCI_CHIP_SIS540) )
+    {
+        SiSPreSetMode(pScrn); 
+        if (!SiSSetMode(pScrn, pScrn->currentMode))
+           return FALSE;
+    }
+    else
+    {
+        if (!SISModeInit(pScrn, pScrn->currentMode)) 
+           return FALSE;
+    }
 
     SISAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
 
@@ -1456,8 +1584,22 @@ SISLeaveVT(int scrnIndex, int flags)
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     vgaHWPtr hwp = VGAHWPTR(pScrn);
 
+#ifdef XF86DRI
+  ScreenPtr pScreen;
+  SISPtr pSiS;
+#endif
+
     SISRestore(pScrn);
     vgaHWLock(hwp);
+
+#ifdef XF86DRI
+  pSiS = SISPTR(pScrn);
+  if (pSiS->directRenderingEnabled) {
+    pScreen = screenInfo.screens[scrnIndex];
+    DRILock(pScreen, 0);
+  }
+#endif
+
 }
 
 
@@ -1473,20 +1615,27 @@ SISCloseScreen(int scrnIndex, ScreenPtr pScreen)
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     SISPtr pSiS = SISPTR(pScrn);
-    xf86CursorInfoPtr	pCursorInfo = pSiS->CursorInfoPtr;
+    xf86CursorInfoPtr   pCursorInfo = pSiS->CursorInfoPtr;
+
+#ifdef XF86DRI
+    if (pSiS->directRenderingEnabled) {
+        SISDRICloseScreen(pScreen);
+        pSiS->directRenderingEnabled=FALSE;
+    }
+#endif
 
     if (pCursorInfo)
-    	pCursorInfo->HideCursor(pScrn);
+        pCursorInfo->HideCursor(pScrn);
 
     if (pScrn->vtSema) {
-    	SISRestore(pScrn);
-    	vgaHWLock(hwp);
-    	SISUnmapMem(pScrn);
+        SISRestore(pScrn); 
+        vgaHWLock(hwp);
+        SISUnmapMem(pScrn);
     }
     if(pSiS->AccelInfoPtr)
-	XAADestroyInfoRec(pSiS->AccelInfoPtr);
+        XAADestroyInfoRec(pSiS->AccelInfoPtr);
     if(pCursorInfo)
-	xf86DestroyCursorInfoRec(pCursorInfo);
+        xf86DestroyCursorInfoRec(pCursorInfo);
     pScrn->vtSema = FALSE;
     
     pScreen->CloseScreen = pSiS->CloseScreen;
@@ -1524,7 +1673,7 @@ SISSaveScreen(ScreenPtr pScreen, int mode)
     return vgaHWSaveScreen(pScreen, mode);
 }
 
-#ifdef	DEBUG
+#ifdef  DEBUG
 /* local used for debug */
 static void
 SiSDumpModeInfo(ScrnInfoPtr pScrn, DisplayModePtr mode)
@@ -1566,27 +1715,86 @@ static void
 SISModifyModeInfo(DisplayModePtr mode)
 {
 /*
-	mode->Clock = 31500;
-	mode->CrtcHTotal	= 832;
-	mode->CrtcHDisplay	= 640;
-	mode->CrtcHBlankStart	= 648;
-	mode->CrtcHSyncStart	= 664;
-	mode->CrtcHSyncEnd	= 704;
-	mode->CrtcHBlankEnd	= 824;
+        mode->Clock = 31500;
+        mode->CrtcHTotal        = 832;
+        mode->CrtcHDisplay      = 640;
+        mode->CrtcHBlankStart   = 648;
+        mode->CrtcHSyncStart    = 664;
+        mode->CrtcHSyncEnd      = 704;
+        mode->CrtcHBlankEnd     = 824;
 
-	mode->CrtcVTotal	= 520;
-	mode->CrtcVDisplay	= 480;
-	mode->CrtcVBlankStart	= 488;
-	mode->CrtcVSyncStart	= 489;
-	mode->CrtcVSyncEnd	= 492;
-	mode->CrtcVBlankEnd	= 512;
+        mode->CrtcVTotal        = 520;
+        mode->CrtcVDisplay      = 480;
+        mode->CrtcVBlankStart   = 488;
+        mode->CrtcVSyncStart    = 489;
+        mode->CrtcVSyncEnd      = 492;
+        mode->CrtcVBlankEnd     = 512;
 */
-	if (mode->CrtcHBlankStart == mode->CrtcHDisplay)
-		mode->CrtcHBlankStart++;
-	if (mode->CrtcHBlankEnd == mode->CrtcHTotal)
-		mode->CrtcHBlankEnd--;
-	if (mode->CrtcVBlankStart == mode->CrtcVDisplay)
-		mode->CrtcVBlankStart++;
-	if (mode->CrtcVBlankEnd == mode->CrtcVTotal)
-		mode->CrtcVBlankEnd--;
+        if (mode->CrtcHBlankStart == mode->CrtcHDisplay)
+                mode->CrtcHBlankStart++;
+        if (mode->CrtcHBlankEnd == mode->CrtcHTotal)
+                mode->CrtcHBlankEnd--;
+        if (mode->CrtcVBlankStart == mode->CrtcVDisplay)
+                mode->CrtcVBlankStart++;
+        if (mode->CrtcVBlankEnd == mode->CrtcVTotal)
+                mode->CrtcVBlankEnd--;
+}
+
+void SiSPreSetMode(ScrnInfoPtr pScrn)
+{
+     SISPtr pSiS = SISPTR(pScrn);
+     unsigned char  ulDispType;
+     unsigned char  ulTemp;
+     unsigned char  usTVType;
+     unsigned char  usScratchCR30, usScratchCR31, usScratchCR32;
+     unsigned short SR26, SR27;
+     unsigned long  temp;
+
+     ulDispType = 0;                   /* Default connect CRT */
+     ulTemp = GetReg1(SISCR, 0x32);
+     if( ulTemp & 0x10 )
+         ulDispType = MASK_DISPTYPE_CRT2;
+     if( ulTemp & 0x08 )
+         ulDispType = MASK_DISPTYPE_LCD;
+     if( ulTemp & 0x07 )
+         ulDispType = MASK_DISPTYPE_TV;
+
+     switch(ulDispType & MASK_DISPTYPE_DISP2)
+     {
+        case MASK_DISPTYPE_CRT2:
+                usScratchCR30 = 0x41;
+                usScratchCR31 = 0x40; 
+                break;
+        case MASK_DISPTYPE_LCD:
+                usScratchCR30 = 0x21;
+                usScratchCR31 = 0x40;
+                break;
+        case MASK_DISPTYPE_TV:
+                usScratchCR32 = GetReg1(SISCR, 0x32) & 0x07;
+                usScratchCR32 <<= 2;
+                usScratchCR30 = 0x01 | usScratchCR32;
+                usTVType = GetReg1(SISSR, 0x38) & 0x01;
+                if(usTVType) /* PAL */
+                     usScratchCR31 = 0x41;
+                else         /* NTSC */
+                     usScratchCR31 = 0x40;
+                break;
+        default:
+        /* disable CRT2 */
+        usScratchCR30 = 0x00;
+        usScratchCR31 = 0x60;
+     }
+     SetReg1(SISCR, 0x30, usScratchCR30);
+     SetReg1(SISCR, 0x31, usScratchCR31);
+      
+     /* Set Turbo Queue as 512K */
+     if (!pSiS->NoAccel) {
+        if (pSiS->TurboQueue) {
+           temp = (pScrn->videoRam/64) - 8;  
+           SR26 = temp & 0xFF; 
+           SR27 = ((temp >> 8) & 3) | 0xF0;  
+           SetReg1(SISSR, 0x26, SR26);
+           SetReg1(SISSR, 0x27, SR27);
+        }
+     } 
 }

@@ -9,6 +9,8 @@
 #define SIS_USE_Z 0x11
 #define SIS_FALLBACK 0x80000000
 
+#define SIS_DEPTH_SCALE 1.0
+
 /* 
  * TODO: assert(hwcx->AGPCmdBufSize % AGP_ALLOC_SIZE == 0) 
  *       depends on VB_SIZE is better
@@ -417,9 +419,10 @@ sis_set_render_func (GLcontext * ctx)
   hwcx->AGPParseSet &= ~0xffff7000;
   hwcx->AGPParseSet |= AGPParsingValues[line_index & ~SIS_FALLBACK];
 
-  /* Debug, test sw-render 
+  /* Debug, test sw-render
   ctx->Driver.LineFunc = NULL;
   ctx->Driver.TriangleFunc = NULL;  
+  hwcx->swRenderFlag = ~0x0;  
   */
 }
 
@@ -470,10 +473,6 @@ sis_FlushAGP (GLcontext * ctx)
       return;
     }
 
-  /* debug
-  d2f_once(ctx); 
-  */
-     
   mWait3DCmdQueue (5);
   mEndPrimitive ();
   MMIO (REG_3D_AGPCmBase, ((DWORD) AGP_StartPtr - (DWORD) hwcx->AGPCmdBufBase)
