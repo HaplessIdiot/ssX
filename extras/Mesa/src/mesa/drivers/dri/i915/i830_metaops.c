@@ -3,6 +3,26 @@
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
  * All Rights Reserved.
  * 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sub license, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice (including the
+ * next paragraph) shall be included in all copies or substantial portions
+ * of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
+ * IN NO EVENT SHALL TUNGSTEN GRAPHICS AND/OR ITS SUPPLIERS BE LIABLE FOR
+ * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * 
  **************************************************************************/
 
 #include "glheader.h"
@@ -143,10 +163,17 @@ static void set_color_mask( i830ContextPtr i830, GLboolean state )
  */
 static void set_no_texture( i830ContextPtr i830 )
 {
-   i830->meta.TexBlendWordsUsed[0] = 
-      i830SetBlend_GL1_2( i830, 0, GL_NONE, 0, 
-			  TEXBLENDARG_TEXEL0,
-			  i830->meta.TexBlend[0], 0 );
+   static const struct gl_tex_env_combine_state comb = {
+      GL_NONE, GL_NONE,
+      { GL_TEXTURE, 0, 0, }, { GL_TEXTURE, 0, 0, },
+      { GL_SRC_COLOR, 0, 0 }, { GL_SRC_ALPHA, 0, 0 },
+      0, 0, 0, 0
+   };
+
+   i830->meta.TexBlendWordsUsed[0] =
+     i830SetTexEnvCombine( i830, & comb, 0, TEXBLENDARG_TEXEL0,
+			   i830->meta.TexBlend[0], NULL);
+
    i830->meta.TexBlend[0][0] |= TEXOP_LAST_STAGE;
    i830->meta.emitted &= ~I830_UPLOAD_TEXBLEND(0);
 }
@@ -157,10 +184,17 @@ static void set_no_texture( i830ContextPtr i830 )
 static void enable_texture_blend_replace( i830ContextPtr i830,
 					  GLenum format )
 {
-   i830->meta.TexBlendWordsUsed[0] = 
-      i830SetBlend_GL1_2( i830, 0, GL_REPLACE, format, 
-			  TEXBLENDARG_TEXEL0,
-			  i830->meta.TexBlend[0], 0 );
+   static const struct gl_tex_env_combine_state comb = {
+      GL_REPLACE, GL_REPLACE,
+      { GL_TEXTURE, 0, 0, }, { GL_TEXTURE, 0, 0, },
+      { GL_SRC_COLOR, 0, 0 }, { GL_SRC_ALPHA, 0, 0 },
+      0, 0, 1, 1
+   };
+
+   i830->meta.TexBlendWordsUsed[0] =
+     i830SetTexEnvCombine( i830, & comb, 0, TEXBLENDARG_TEXEL0,
+			   i830->meta.TexBlend[0], NULL);
+
    i830->meta.TexBlend[0][0] |= TEXOP_LAST_STAGE;
    i830->meta.emitted &= ~I830_UPLOAD_TEXBLEND(0);
 
@@ -408,7 +442,7 @@ i830TryTextureReadPixels( GLcontext *ctx,
    int src_offset = i830->meta.Buffer[I830_DESTREG_CBUFADDR2];
    int destOffset = intelAgpOffsetFromVirtual( &i830->intel, pixels);
    int destFormat, depthFormat, destPitch;
-   XF86DRIClipRectRec tmp;
+   drm_clip_rect_t tmp;
 
    if (INTEL_DEBUG & DEBUG_PIXEL)
       fprintf(stderr, "%s\n", __FUNCTION__);

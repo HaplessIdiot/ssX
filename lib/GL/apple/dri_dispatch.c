@@ -2,6 +2,7 @@
    $Id$
 
    Copyright (c) 2002 Apple Computer, Inc. All rights reserved.
+   Copyright (c) Torrey T. Lyons. All rights reserved.
 
    Permission is hereby granted, free of charge, to any person
    obtaining a copy of this software and associated documentation files
@@ -27,7 +28,7 @@
    copyright holders shall not be used in advertising or otherwise to
    promote the sale, use or other dealings in this Software without
    prior written authorization. */
-/* $XFree86: xc/lib/GL/apple/dri_dispatch.c,v 1.3 2003/10/31 02:22:12 torrey Exp $ */
+/* $XFree86: xc/lib/GL/apple/dri_dispatch.c,v 1.4 2004/04/21 04:59:40 torrey Exp $ */
 
 #include <OpenGL/OpenGL.h>
 #include <OpenGL/CGLContext.h>
@@ -95,7 +96,7 @@ ret gl ## gn proto						\
 								\
 	return (*disp->gn) args;				\
     } else {							\
-	int a; return a = 0;					\
+	int a = 0; return (ret) a;				\
     }								\
 }
 

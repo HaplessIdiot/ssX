@@ -1,8 +1,27 @@
-/* $XFree86$ */
 /**************************************************************************
  * 
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
  * All Rights Reserved.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sub license, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice (including the
+ * next paragraph) shall be included in all copies or substantial portions
+ * of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
+ * IN NO EVENT SHALL TUNGSTEN GRAPHICS AND/OR ITS SUPPLIERS BE LIABLE FOR
+ * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  **************************************************************************/
 
@@ -68,13 +87,17 @@ static void i830_render_start( intelContextPtr intel )
       intel->coloroffset = 3;
    }
 
-   EMIT_ATTR( _TNL_ATTRIB_COLOR0, EMIT_4UB_4F_RGBA, VFT0_DIFFUSE );
+   if (index & _TNL_BIT_POINTSIZE) {
+      EMIT_ATTR( _TNL_ATTRIB_POINTSIZE, EMIT_1F, VFT0_POINT_WIDTH );
+   }
+
+   EMIT_ATTR( _TNL_ATTRIB_COLOR0, EMIT_4UB_4F_BGRA, VFT0_DIFFUSE );
       
    intel->specoffset = 0;
    if (index & (_TNL_BIT_COLOR1|_TNL_BIT_FOG)) {
       if (index & _TNL_BIT_COLOR1) {
 	 intel->specoffset = intel->coloroffset + 1;
-	 EMIT_ATTR( _TNL_ATTRIB_COLOR1, EMIT_3UB_3F_RGB, VFT0_SPEC );
+	 EMIT_ATTR( _TNL_ATTRIB_COLOR1, EMIT_3UB_3F_BGR, VFT0_SPEC );
       }
       else 
 	 EMIT_PAD( 3 );
@@ -98,10 +121,14 @@ static void i830_render_start( intelContextPtr intel )
 	    switch (sz) {
 	    case 1: 
 	    case 2: 
-	    case 3:		/* XXX: fix for CUBE/VOLUME textures */
 	       emit = EMIT_2F; 
 	       sz = 2; 
 	       mcs |= TEXCOORDTYPE_CARTESIAN; 
+	       break;
+	    case 3:
+	       emit = EMIT_3F; 
+	       sz = 3;
+	       mcs |= TEXCOORDTYPE_VECTOR;
 	       break;
 	    case 4: 
 	       emit = EMIT_3F_XYW; 
@@ -328,7 +355,7 @@ static void i830_emit_invarient_state( intelContextPtr intel )
 #define emit( intel, state, size )			\
 do {							\
    int k;						\
-   BEGIN_BATCH( (int) (size / sizeof(GLuint)));		\
+   BEGIN_BATCH( size / sizeof(GLuint));			\
    for (k = 0 ; k < size / sizeof(GLuint) ; k++)	\
       OUT_BATCH(state[k]);				\
    ADVANCE_BATCH();					\
@@ -341,9 +368,11 @@ static void i830_emit_state( intelContextPtr intel )
 {
    i830ContextPtr i830 = I830_CONTEXT(intel);
    struct i830_hw_state *state = i830->current;
-   BATCH_LOCALS;
    int i;
-   GLuint dirty = state->active & ~state->emitted;
+   GLuint dirty;
+   BATCH_LOCALS;
+
+   dirty = state->active & ~state->emitted;
 
    if (dirty & I830_UPLOAD_CTX) {
       if (VERBOSE) fprintf(stderr, "I830_UPLOAD_CTX:\n"); 

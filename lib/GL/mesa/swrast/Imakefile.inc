@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/swrast/Imakefile.inc,v 1.1tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/swrast/Imakefile.inc,v 1.2 2004/04/22 13:58:41 tsi Exp $
 
 #ifndef MesaSwrastBuildDir
 #define MesaSwrastBuildDir $(GLXLIBSRC)/mesa/swrast/
@@ -11,6 +11,7 @@ MESASWRASTBUILDDIR = MesaSwrastBuildDir
 		     $(MESASWRASTBUILDDIR)s_accum.c \
 		     $(MESASWRASTBUILDDIR)s_alpha.c \
 		     $(MESASWRASTBUILDDIR)s_alphabuf.c \
+		     $(MESASWRASTBUILDDIR)s_auxbuffer.c \
 		     $(MESASWRASTBUILDDIR)s_bitmap.c \
 		     $(MESASWRASTBUILDDIR)s_blend.c \
 		     $(MESASWRASTBUILDDIR)s_buffers.c \
@@ -48,6 +49,8 @@ LinkSourceFile(s_alpha.c, $(MESASRCDIR)/src/mesa/swrast)
 LinkSourceFile(s_alpha.h, $(MESASRCDIR)/src/mesa/swrast)
 LinkSourceFile(s_alphabuf.c, $(MESASRCDIR)/src/mesa/swrast)
 LinkSourceFile(s_alphabuf.h, $(MESASRCDIR)/src/mesa/swrast)
+LinkSourceFile(s_auxbuffer.c, $(MESASRCDIR)/src/mesa/swrast)
+LinkSourceFile(s_auxbuffer.h, $(MESASRCDIR)/src/mesa/swrast)
 LinkSourceFile(s_bitmap.c, $(MESASRCDIR)/src/mesa/swrast)
 LinkSourceFile(s_blend.c, $(MESASRCDIR)/src/mesa/swrast)
 LinkSourceFile(s_blend.h, $(MESASRCDIR)/src/mesa/swrast)
@@ -101,6 +104,7 @@ LinkSourceFile(swrast.h, $(MESASRCDIR)/src/mesa/swrast)
 		     $(MESASWRASTBUILDDIR)s_accum.o \
 		     $(MESASWRASTBUILDDIR)s_alpha.o \
 		     $(MESASWRASTBUILDDIR)s_alphabuf.o \
+		     $(MESASWRASTBUILDDIR)s_auxbuffer.o \
 		     $(MESASWRASTBUILDDIR)s_bitmap.o \
 		     $(MESASWRASTBUILDDIR)s_blend.o \
 		     $(MESASWRASTBUILDDIR)s_buffers.o \
@@ -130,6 +134,7 @@ LinkSourceFile(swrast.h, $(MESASRCDIR)/src/mesa/swrast)
 		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_accum.o \
 		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_alpha.o \
 		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_alphabuf.o \
+		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_auxbuffer.o \
 		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_bitmap.o \
 		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_blend.o \
 		     $(MESASWRASTBUILDDIR)$(EXTRASUBDIR)/s_buffers.o \
@@ -160,6 +165,7 @@ LinkSourceFile(swrast.h, $(MESASRCDIR)/src/mesa/swrast)
 		     $(MESASWRASTBUILDDIR)unshared/s_accum.o \
 		     $(MESASWRASTBUILDDIR)unshared/s_alpha.o \
 		     $(MESASWRASTBUILDDIR)unshared/s_alphabuf.o \
+		     $(MESASWRASTBUILDDIR)unshared/s_auxbuffer.o \
 		     $(MESASWRASTBUILDDIR)unshared/s_bitmap.o \
 		     $(MESASWRASTBUILDDIR)unshared/s_blend.o \
 		     $(MESASWRASTBUILDDIR)unshared/s_buffers.o \
@@ -192,6 +198,7 @@ LinkSourceFile(swrast.h, $(MESASRCDIR)/src/mesa/swrast)
 		     $(MESASWRASTBUILDDIR)debugger/s_accum.o \
 		     $(MESASWRASTBUILDDIR)debugger/s_alpha.o \
 		     $(MESASWRASTBUILDDIR)debugger/s_alphabuf.o \
+		     $(MESASWRASTBUILDDIR)debugger/s_auxbuffer.o \
 		     $(MESASWRASTBUILDDIR)debugger/s_bitmap.o \
 		     $(MESASWRASTBUILDDIR)debugger/s_blend.o \
 		     $(MESASWRASTBUILDDIR)debugger/s_buffers.o \
@@ -221,6 +228,7 @@ LinkSourceFile(swrast.h, $(MESASRCDIR)/src/mesa/swrast)
 		     $(MESASWRASTBUILDDIR)profiled/s_accum.o \
 		     $(MESASWRASTBUILDDIR)profiled/s_alpha.o \
 		     $(MESASWRASTBUILDDIR)profiled/s_alphabuf.o \
+		     $(MESASWRASTBUILDDIR)profiled/s_auxbuffer.o \
 		     $(MESASWRASTBUILDDIR)profiled/s_bitmap.o \
 		     $(MESASWRASTBUILDDIR)profiled/s_blend.o \
 		     $(MESASWRASTBUILDDIR)profiled/s_buffers.o \

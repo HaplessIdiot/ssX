@@ -26,7 +26,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/apple/dri_glx.c,v 1.1 2003/06/30 01:45:10 torrey Exp $ */
+/* $XFree86: xc/lib/GL/apple/dri_glx.c,v 1.2 2004/04/21 04:59:40 torrey Exp $ */
 
 /*
  * Authors:
@@ -51,7 +51,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /* Apple OpenGL "driver" information. */
 static const char *__driDriverName = "apple";
-static const char *__driConfigOptions = "";
+static const char __driConfigOptions[] = "";
 static const int __driDriverMajor = 1;
 static const int __driDriverMinor = 0;
 static const int __driDriverPatch = 0;
@@ -166,7 +166,7 @@ static void driDestroyDisplay(Display *dpy, void *private)
     __DRIdisplayPrivate *pdpyp = (__DRIdisplayPrivate *)private;
 
     if (pdpyp) {
-        Xfree(pdpyp->createScreen);
+        Xfree(pdpyp->libraryHandles);
         Xfree(pdpyp);
     }
 }
@@ -178,6 +178,7 @@ void *driCreateDisplay(Display *dpy, __DRIdisplay *pdisp)
     __DRIdisplayPrivate *pdpyp;
     int eventBase, errorBase;
     int major, minor, patch;
+    int scrn;
 
     /* Initialize these fields to NULL in case we fail.
      * If we don't do this we may later get segfaults trying to free random
@@ -197,7 +198,7 @@ void *driCreateDisplay(Display *dpy, __DRIdisplay *pdisp)
 
     pdpyp = (__DRIdisplayPrivate *)Xmalloc(sizeof(__DRIdisplayPrivate));
     if (!pdpyp) {
-    return NULL;
+        return NULL;
     }
 
     pdpyp->driMajor = major;
@@ -209,14 +210,30 @@ void *driCreateDisplay(Display *dpy, __DRIdisplay *pdisp)
     /* allocate array of pointers to createScreen funcs */
     pdisp->createScreen = (CreateScreenFunc *) Xmalloc(numScreens * sizeof(void *));
     if (!pdisp->createScreen)
-       return NULL;
+        return NULL;
+
+    /* allocate array of pointers to createScreen funcs */
+    pdisp->createNewScreen = (CreateNewScreenFunc *) Xmalloc(numScreens * sizeof(void *));
+    if (!pdisp->createNewScreen) {
+        Xfree(pdisp->createScreen);
+        Xfree(pdpyp);
+        return NULL;
+    }
+
+    /* allocate array of library handles */
+    pdpyp->libraryHandles = (void **) Xmalloc(numScreens * sizeof(void*));
+    if (!pdpyp->libraryHandles) {
+        Xfree(pdisp->createNewScreen);
+        Xfree(pdisp->createScreen);
+        Xfree(pdpyp);
+        return NULL;
+    }
 
     /* we'll statically bind to the __driCreateScreen function */
-    {
-       int i;
-       for (i = 0; i < numScreens; i++) {
-          pdisp->createScreen[i] = __driCreateScreen;
-       }
+    for (scrn = 0; scrn < numScreens; scrn++) {
+        pdisp->createScreen[scrn] = __driCreateScreen;
+        pdisp->createNewScreen[scrn] = NULL;
+        pdpyp->libraryHandles[scrn] = NULL;
     }
 
     return (void *)pdpyp;

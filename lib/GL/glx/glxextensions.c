@@ -1,5 +1,5 @@
 /*
- * (c) Copyright IBM Corporation 2002
+ * (C) Copyright IBM Corporation 2002, 2004
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -27,7 +27,7 @@
  *
  * \author Ian Romanick <idr@us.ibm.com>
  */
-/* $XFree86: xc/lib/GL/glx/glxextensions.c,v 1.1 2003/09/28 20:15:03 alanh Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxextensions.c,v 1.5 2004/12/10 16:06:56 alanh Exp $ */
 
 #include "glxclient.h"
 #include <extutil.h>

@@ -1,3 +1,30 @@
+/**************************************************************************
+ * 
+ * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
+ * All Rights Reserved.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sub license, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice (including the
+ * next paragraph) shall be included in all copies or substantial portions
+ * of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
+ * IN NO EVENT SHALL TUNGSTEN GRAPHICS AND/OR ITS SUPPLIERS BE LIABLE FOR
+ * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * 
+ **************************************************************************/
+
 #include "i915_reg.h"
 #include "i915_context.h"
 #include <stdio.h>
@@ -258,7 +285,7 @@ void i915_disassemble_program( const GLuint *program, GLuint sz )
    for (i = 1 ; i < sz ; i+=3, program+=3) {
       GLuint opcode = program[0] & (0x1f<<24);
 
-      if (opcode >= A0_NOP && opcode <= A0_SLT)
+      if ((GLint) opcode >= A0_NOP && opcode <= A0_SLT)
 	 print_arith_op(opcode >> 24, program);
       else if (opcode >= T0_TEXLD && opcode <= T0_TEXKILL)
 	 print_tex_op(opcode >> 24, program);

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/main/Imakefile.inc,v 1.1 2004/04/08 10:07:36 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/main/Imakefile.inc,v 1.2 2004/12/10 16:06:58 alanh Exp $
 
 #ifndef MesaBuildDir
 #define MesaBuildDir $(GLXLIBSRC)/mesa/main/
@@ -58,6 +58,8 @@ COREMESABASESRCS = \
 		$(MESABUILDDIR)state.c \
 		$(MESABUILDDIR)stencil.c \
 		$(MESABUILDDIR)texcompress.c \
+		$(MESABUILDDIR)texcompress_fxt1.c \
+		$(MESABUILDDIR)texcompress_s3tc.c \
 		$(MESABUILDDIR)texformat.c \
 		$(MESABUILDDIR)teximage.c \
 		$(MESABUILDDIR)texobj.c \
@@ -161,6 +163,8 @@ LinkSourceFile(state.h, $(MESASRCDIR)/src/mesa/main)
 LinkSourceFile(stencil.c, $(MESASRCDIR)/src/mesa/main)
 LinkSourceFile(stencil.h, $(MESASRCDIR)/src/mesa/main)
 LinkSourceFile(texcompress.c, $(MESASRCDIR)/src/mesa/main)
+LinkSourceFile(texcompress_fxt1.c, $(MESASRCDIR)/src/mesa/main)
+LinkSourceFile(texcompress_s3tc.c, $(MESASRCDIR)/src/mesa/main)
 LinkSourceFile(texcompress.h, $(MESASRCDIR)/src/mesa/main)
 LinkSourceFile(texformat.c, $(MESASRCDIR)/src/mesa/main)
 LinkSourceFile(texformat.h, $(MESASRCDIR)/src/mesa/main)
@@ -231,6 +235,8 @@ COREMESABASEOBJS = \
 		$(MESABUILDDIR)state.o \
 		$(MESABUILDDIR)stencil.o \
 		$(MESABUILDDIR)texcompress.o \
+		$(MESABUILDDIR)texcompress_fxt1.o \
+		$(MESABUILDDIR)texcompress_s3tc.o \
 		$(MESABUILDDIR)texformat.o \
 		$(MESABUILDDIR)teximage.o \
 		$(MESABUILDDIR)texobj.o \
@@ -356,6 +362,8 @@ COREMESABASEUOBJS = \
 		$(MESABUILDDIR)unshared/state.o \
 		$(MESABUILDDIR)unshared/stencil.o \
 		$(MESABUILDDIR)unshared/texcompress.o \
+		$(MESABUILDDIR)unshared/texcompress_fxt1.o \
+		$(MESABUILDDIR)unshared/texcompress_s3tc.o \
 		$(MESABUILDDIR)unshared/texformat.o \
 		$(MESABUILDDIR)unshared/teximage.o \
 		$(MESABUILDDIR)unshared/texobj.o \
@@ -417,6 +425,8 @@ COREMESABASEDOBJS = \
 		$(MESABUILDDIR)debugger/state.o \
 		$(MESABUILDDIR)debugger/stencil.o \
 		$(MESABUILDDIR)debugger/texcompress.o \
+		$(MESABUILDDIR)debugger/texcompress_fxt1.o \
+		$(MESABUILDDIR)debugger/texcompress_s3tc.o \
 		$(MESABUILDDIR)debugger/texformat.o \
 		$(MESABUILDDIR)debugger/teximage.o \
 		$(MESABUILDDIR)debugger/texobj.o \
@@ -475,6 +485,8 @@ COREMESABASEPOBJS = \
 		$(MESABUILDDIR)profiled/state.o \
 		$(MESABUILDDIR)profiled/stencil.o \
 		$(MESABUILDDIR)profiled/texcompress.o \
+		$(MESABUILDDIR)profiled/texcompress_fxt1.o \
+		$(MESABUILDDIR)profiled/texcompress_s3tc.o \
 		$(MESABUILDDIR)profiled/texformat.o \
 		$(MESABUILDDIR)profiled/teximage.o \
 		$(MESABUILDDIR)profiled/texobj.o \

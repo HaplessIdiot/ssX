@@ -21,7 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/mesa/sparc/sparc.c,v 1.4 2004/12/10 15:30:13 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/sparc/sparc.c,v 1.5 2004/12/10 15:41:02 alanh Exp $ */
 
 /*
  * Sparc assembly code by David S. Miller
@@ -144,8 +144,6 @@ void _mesa_init_all_sparc_transform_asm(void)
    _math_test_all_normal_transform_functions("sparc");
 #endif
 }
-
-#ifdef USE_SPARC_ASM
 
 extern unsigned int _mesa_sparc_glapi_begin;
 extern unsigned int _mesa_sparc_glapi_end;
