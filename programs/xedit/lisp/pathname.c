@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/pathname.c,v 1.5 2002/03/08 04:33:18 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/pathname.c,v 1.6 2002/03/10 04:57:47 paulo Exp $ */
 
 #include <stdio.h>		/* including dirent.h first may cause problems */
 #include <dirent.h>
@@ -608,7 +608,9 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
 	}
 	string[length] = '\0';
 
+	GCProtect();		/* XXX result is not gc protected */
 	CAR(result) = STRING(string);
+	GCUProtect();
 
 	return (PATHNAME(result));
     }
