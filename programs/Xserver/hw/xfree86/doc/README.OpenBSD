@@ -2,7 +2,7 @@
 
                                Matthieu Herrb
 
-                      Last modified on: 15 August 2001
+                      Last modified on: 2 December 2001
 
 1.  What and Where is XFree86?
 
@@ -48,8 +48,8 @@ See the Release Notes for non-OS dependent new features in XFree86 4.2.0.
 
    o Support for the OpenBSD ports tree,
 
-   o Preliminary support for the powerpc architecture (clients build and
-     work, the server doesn't work yet),
+   o Preliminary support for the macppc architecture (clients build and work,
+     the server doesn't work yet),
 
    o xdm now writes an utmp entry,
 
@@ -186,9 +186,9 @@ driver has a pcvt compatibility mode for X support.
 
 7.2  Aperture Driver
 
-By default OpenBSD includes the BSD 4.4 kernel security feature that disable
-access to the /dev/mem device when in multi-users mode. But the XFree86
-server require linear access to the display memory in most cases.
+By default OpenBSD includes the BSD 4.4 kernel security feature that disables
+access to the /dev/mem device when in multi-user mode. But the XFree86 server
+requires linear access to the display memory in most cases.
 
 OpenBSD now requires the aperture driver to be enabled for all X servers,
 because the aperture driver also controls access to the I/O ports of the
@@ -201,15 +201,15 @@ To enable the aperture driver, once included in the kernel, set
 in /etc/sysctl.conf.  See the xf86(4) manual page for details.
 
 Another (less recommended) way to enable linear memory and I/O ports access
-is to disable the kernel security feature by adding ``option INSECURE'' in
-your kernel configuration file and build a new kernel.  You will also need to
-comment out the line initializing securelevel to 1 in /etc/rc.securelevel.
+is to disable the kernel security feature by adding 'option INSECURE' in your
+kernel configuration file and build a new kernel.  You will also need to com-
+ment out the line initializing securelevel to 1 in /etc/rc.securelevel.
 
      Caveat: the aperture driver only allows one access at a time (so
      that the system is in the same security state once X is launched).
-     This means that if you run multiple servers on multiples VT, only
-     the first one will have linear memory access.  Use 'option INSE-
-     CURE' if you need more that one X server at a time.
+     This means that if you run multiple servers on multiple virtual
+     terminals, only the first one will have linear memory access.  Use
+     'option INSECURE' if you need more that one X server at a time.
 
 7.3  MIT-SHM
 
@@ -252,13 +252,12 @@ host.def:
 If you don't define XFree86ConsoleDefines in host.def the pccons and pcvt
 drivers will be supported by default.
 
-Native support for the wscons console driver found on OpenBSD/powerpc and on
-OpenBSD/i386 2.9  is built by adding:
+Native support for the wscons console driver found on OpenBSD/macppc and on
+OpenBSD/i386 2.9 and later is built by adding:
 
       #define XFree86ConsoleDefines -DWSCONS_SUPPORT
 
-to xc/config/host.def before rebuilding the server.  This has not been thor-
-oughly tested, except on the macppc.
+to xc/config/host.def before rebuilding the server.
 
 For the i386, you should include both pcvt and wscons support in order to use
 the pcvt compatibility mode of wscons:
@@ -269,7 +268,7 @@ the pcvt compatibility mode of wscons:
 
 XFree86  also compiles on other OpenBSD architectures.
 
-Note that OpenBSD project has now its own source tree, based on the XFree86
+Note that OpenBSD project now has its own source tree, based on the XFree86
 source tree, with some local modifications. You may want to start with this
 tree to rebuild from sources.  The OpenBSD XF4 source tree is available by
 anoncvs from all OpenBSD anoncvs servers. See http://www.openbsd.org/anon-
@@ -310,7 +309,7 @@ Many thanks to all people who contributed to make XFree86 work on *BSD, in
 particular, David Dawes, Pace Willison, Amancio Hasty, Christoph Robitschko,
 Nate Williams, Rod Grimes, Jack Velte and Michael Smith.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.20 2001/09/29 20:32:30 herrb Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.22 2001/12/04 21:08:07 herrb Exp $
 
 
-$XFree86:$
+$XFree86: lnxdoc.rules,v 3.24 2001/11/15 17:36:06 dawes Exp $
