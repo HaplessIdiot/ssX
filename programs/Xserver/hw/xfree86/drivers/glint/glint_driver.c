@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.128 2001/05/25 12:01:55 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.129 2001/05/29 11:23:38 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -245,12 +245,14 @@ static const char *ddcSymbols[] = {
     "xf86PrintEDID",
     "xf86DoEDID_DDC1",
     "xf86DoEDID_DDC2",
+    "xf86SetDDCproperties",
     NULL
 };
 
 static const char *i2cSymbols[] = {
     "xf86CreateI2CBusRec",
     "xf86DestroyI2CBusRec",
+    "xf86DestroyI2CDevRec",
     "xf86I2CBusInit",
     "xf86I2CDevInit",
     "xf86I2CProbeAddress",
