@@ -1,4 +1,4 @@
-/* $XConsortium: ddxKillSrv.c /main/1 1995/11/30 19:22:14 kaleb $ */
+/* $Xorg: ddxKillSrv.c,v 1.3 2000/08/17 19:53:46 cpqbld Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -36,14 +36,24 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "XKBsrv.h"
 #include "XI.h"
 
-extern	CARD16	xkbDebugFlags;
+#ifdef XF86DDXACTIONS
+#include "xf86.h"
+#endif
 
 int
+#if NeedFunctionPrototypes
+XkbDDXTerminateServer(DeviceIntPtr dev,KeyCode key,XkbAction *act)
+#else
 XkbDDXTerminateServer(dev,key,act)
     DeviceIntPtr  dev;
     KeyCode	  key;
     XkbAction	 *act;
+#endif
 {
+#ifdef XF86DDXACTIONS
+    xf86ProcessActionEvent(ACTION_TERMINATE, NULL);
+#else
     GiveUp(1);
+#endif
     return 0;
 }

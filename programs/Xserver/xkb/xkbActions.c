@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbActions.c,v 3.6 2001/02/12 18:26:00 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbActions.c,v 3.8 2002/09/16 18:06:19 eich Exp $ */
 
 #include <stdio.h>
 #include <math.h>
@@ -1266,6 +1266,11 @@ Bool		xiEvent;
 		case XkbSA_LockDeviceBtn:
 		    filter = _XkbNextFreeFilter();
 		    sendEvent= _XkbFilterDeviceBtn(xkbi,filter,key,&act);
+		    break;
+#endif
+#ifdef XFree86Server
+		case XkbSA_XFree86Private:
+		    sendEvent= XkbDDXPrivate(dev,key,&act);
 		    break;
 #endif
 	    }
