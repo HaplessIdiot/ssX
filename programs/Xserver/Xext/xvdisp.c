@@ -321,6 +321,7 @@ ProcXvQueryExtension(ClientPtr client)
 
   rep.type = X_Reply;
   rep.sequenceNumber = client->sequence;
+  rep.length = 0;
   rep.version = XvVersion;
   rep.revision = XvRevision;
 
