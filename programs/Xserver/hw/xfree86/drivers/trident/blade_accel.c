@@ -23,7 +23,7 @@
  * 
  * Trident Blade3D accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/blade_accel.c,v 1.10 2000/11/28 00:04:39 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/blade_accel.c,v 1.11 2000/12/01 12:46:32 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -216,7 +216,7 @@ BladeAccelInit(ScreenPtr pScreen)
 				BladeSubsequentScreenToScreenColorExpand;
 #endif
 
-    infoPtr->CPUToScreenColorExpandFillFlags = CPU_TRANSFER_PAD_DWORD |
+    infoPtr->ScanlineCPUToScreenColorExpandFillFlags = CPU_TRANSFER_PAD_DWORD |
 				NO_TRANSPARENCY |
 				LEFT_EDGE_CLIPPING |
 				SYNC_AFTER_COLOR_EXPAND |
@@ -225,9 +225,9 @@ BladeAccelInit(ScreenPtr pScreen)
 			        SCANLINE_PAD_DWORD;
     infoPtr->ColorExpandRange = 0x10000;
     infoPtr->ColorExpandBase = pTrident->IOBase + 0x10000;
-    infoPtr->SetupForCPUToScreenColorExpandFill = 	
+    infoPtr->SetupForScanlineCPUToScreenColorExpandFill = 	
 				BladeSetupForScanlineCPUToScreenColorExpand;
-    infoPtr->SubsequentCPUToScreenColorExpandFill = 		
+    infoPtr->SubsequentScanlineCPUToScreenColorExpandFill = 		
 				BladeSubsequentScanlineCPUToScreenColorExpand;
     infoPtr->SubsequentColorExpandScanline = 
 				BladeSubsequentColorExpandScanline;
@@ -239,11 +239,12 @@ BladeAccelInit(ScreenPtr pScreen)
     infoPtr->ScanlineColorExpandBuffers = 
 					pTrident->XAAScanlineColorExpandBuffers;
 
-    infoPtr->SetupForImageWrite = BladeSetupForScanlineImageWrite;
-    infoPtr->SubsequentImageWriteRect = BladeSubsequentScanlineImageWriteRect;
+    infoPtr->SetupForScanlineImageWrite = BladeSetupForScanlineImageWrite;
+    infoPtr->SubsequentScanlineImageWriteRect = 
+					BladeSubsequentScanlineImageWriteRect;
     infoPtr->SubsequentImageWriteScanline = 
 				BladeSubsequentImageWriteScanline;
-    infoPtr->ImageWriteFlags =  NO_PLANEMASK |
+    infoPtr->ScanlineImageWriteFlags =  NO_PLANEMASK |
 				NO_TRANSPARENCY |
 				LEFT_EDGE_CLIPPING |
 				CPU_TRANSFER_PAD_DWORD |
