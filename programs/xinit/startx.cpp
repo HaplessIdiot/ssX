@@ -11,7 +11,7 @@ XCOMM and pop a clock and serveral xterms.
 XCOMM
 XCOMM Site administrators are STRONGLY urged to write nicer versions.
 XCOMM
-XCOMM $XFree86: xc/programs/xinit/startx.cpp,v 3.11 2001/11/02 17:19:28 alanh Exp $
+XCOMM $XFree86: xc/programs/xinit/startx.cpp,v 3.12 2001/11/30 20:57:48 dawes Exp $
 
 #ifdef SCO
 
@@ -139,7 +139,8 @@ if [ x"$server" = x ]; then
 fi
 
 if [ x"$XAUTHORITY" = x ]; then
-    export XAUTHORITY=$HOME/.Xauthority
+    XAUTHORITY=$HOME/.Xauthority
+    export XAUTHORITY
 fi
 
 removelist=

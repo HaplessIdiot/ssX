@@ -1,4 +1,5 @@
 XFree86 4.2.99.1 (XX January 2002)
+  18. Fix startx script for ksh (Phillip B. Bruce).
   17. Fix Emulate3Buttons for wsmouse protocol on NetBSD and OpenBSD
       (Matthieu Herrb).
   16. Add Portuguese localization of XDarwin front end (Fabr’cio de Castro).
@@ -14587,4 +14588,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2153 2002/01/26 05:04:06 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2154 2002/01/27 18:59:30 herrb Exp $
