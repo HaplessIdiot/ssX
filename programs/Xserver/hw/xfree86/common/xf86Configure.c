@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.46 2000/12/06 15:35:09 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.47 2000/12/08 20:13:33 eich Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -331,7 +331,7 @@ static XF86ConfScreenPtr
 configureScreenSection (int screennum)
 {
     int i;
-    int depths[] = { 1, 4, 8, 15, 16, 24, 32 };
+    int depths[] = { 1, 4, 8, 15, 16, 24/*, 32*/ };
     parsePrologue (XF86ConfScreenPtr, XF86ConfScreenRec)
 
     ptr->scrn_identifier = xf86confmalloc(18);
@@ -341,7 +341,7 @@ configureScreenSection (int screennum)
     ptr->scrn_device_str = xf86confmalloc(16);
     sprintf(ptr->scrn_device_str, "Card%d", screennum);
 
-    for (i=0; i<7; i++)
+    for (i=0; i<sizeof(depths)/sizeof(depths[0]); i++)
     {
 	XF86ConfDisplayPtr display;
 
