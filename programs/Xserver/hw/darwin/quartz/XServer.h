@@ -29,7 +29,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.h,v 1.12 2003/09/16 00:36:12 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.h,v 1.13 2003/10/16 23:50:09 torrey Exp $ */
 
 #define BOOL xBOOL
 #include "Xproto.h"
@@ -41,6 +41,7 @@
     // server state
     int serverState;
     NSRecursiveLock *serverLock;
+    NSMutableArray *pendingClients;
     BOOL serverVisible;
     BOOL rootlessMenuBarVisible;
     BOOL queueShowServer;
@@ -75,6 +76,7 @@
 - (void)startX;
 - (void)finishStartX;
 - (BOOL)startXClients;
+- (void)runClient:(NSString *)filename;
 - (void)run;
 - (void)toggle;
 - (void)showServer:(BOOL)show;
@@ -113,6 +115,7 @@
 - (BOOL)applicationShouldHandleReopen:(NSApplication *)theApplication hasVisibleWindows:(BOOL)flag;
 - (void)applicationWillResignActive:(NSNotification *)aNotification;
 - (void)applicationWillBecomeActive:(NSNotification *)aNotification;
+- (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)filename;
 
 // NSPort delegate
 - (void)handlePortMessage:(NSPortMessage *)portMessage;
