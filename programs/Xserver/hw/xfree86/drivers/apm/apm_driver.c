@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.57 2002/01/25 21:55:54 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.58 2002/05/07 12:53:49 alanh Exp $ */
 
 #include "apm.h"
 #include "xf86cmap.h"
@@ -696,61 +696,61 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
     pApm->DPMSMask[DPMSModeSuspend]	= DPMSModeSuspend;
     pApm->DPMSMask[DPMSModeOff]		= DPMSModeOff;
     if ((s = xf86GetOptValString(pApm->Options, OPTION_REMAP_DPMS_ON))) {
-	if (!xf86strcmp(s, "on"))
+	if (!strcmp(s, "on"))
 	    pApm->DPMSMask[DPMSModeOn] = DPMSModeOn;
-	else if (!xf86strcmp(s, "standby"))
+	else if (!strcmp(s, "standby"))
 	    pApm->DPMSMask[DPMSModeOn] = DPMSModeStandby;
-	else if (!xf86strcmp(s, "suspend"))
+	else if (!strcmp(s, "suspend"))
 	    pApm->DPMSMask[DPMSModeOn] = DPMSModeSuspend;
-	else if (!xf86strcmp(s, "off"))
+	else if (!strcmp(s, "off"))
 	    pApm->DPMSMask[DPMSModeOn] = DPMSModeOff;
 	else if (s[0] >= '0' && s[0] <= '9') {
-	    pApm->DPMSMask[DPMSModeOn] = xf86strtol(s, NULL, 0);
+	    pApm->DPMSMask[DPMSModeOn] = strtol(s, NULL, 0);
 	    if (pApm->DPMSMask[DPMSModeOn] > (sizeof pApm->DPMSMask)-1)
 		pApm->DPMSMask[DPMSModeOn] = (sizeof pApm->DPMSMask) - 1;
 	}
     }
     if ((s = xf86GetOptValString(pApm->Options, OPTION_REMAP_DPMS_STANDBY))) {
-	if (!xf86strcmp(s, "on"))
+	if (!strcmp(s, "on"))
 	    pApm->DPMSMask[DPMSModeStandby] = DPMSModeOn;
-	else if (!xf86strcmp(s, "standby"))
+	else if (!strcmp(s, "standby"))
 	    pApm->DPMSMask[DPMSModeStandby] = DPMSModeStandby;
-	else if (!xf86strcmp(s, "suspend"))
+	else if (!strcmp(s, "suspend"))
 	    pApm->DPMSMask[DPMSModeStandby] = DPMSModeSuspend;
-	else if (!xf86strcmp(s, "off"))
+	else if (!strcmp(s, "off"))
 	    pApm->DPMSMask[DPMSModeStandby] = DPMSModeOff;
 	else if (s[0] >= '0' && s[0] <= '9') {
-	    pApm->DPMSMask[DPMSModeStandby] = xf86strtol(s, NULL, 0);
+	    pApm->DPMSMask[DPMSModeStandby] = strtol(s, NULL, 0);
 	    if (pApm->DPMSMask[DPMSModeStandby] > (sizeof pApm->DPMSMask)-1)
 		pApm->DPMSMask[DPMSModeStandby] = (sizeof pApm->DPMSMask) - 1;
 	}
     }
     if ((s = xf86GetOptValString(pApm->Options, OPTION_REMAP_DPMS_SUSPEND))) {
-	if (!xf86strcmp(s, "on"))
+	if (!strcmp(s, "on"))
 	    pApm->DPMSMask[DPMSModeSuspend] = DPMSModeOn;
-	else if (!xf86strcmp(s, "standby"))
+	else if (!strcmp(s, "standby"))
 	    pApm->DPMSMask[DPMSModeSuspend] = DPMSModeStandby;
-	else if (!xf86strcmp(s, "suspend"))
+	else if (!strcmp(s, "suspend"))
 	    pApm->DPMSMask[DPMSModeSuspend] = DPMSModeSuspend;
-	else if (!xf86strcmp(s, "off"))
+	else if (!strcmp(s, "off"))
 	    pApm->DPMSMask[DPMSModeSuspend] = DPMSModeOff;
 	else if (s[0] >= '0' && s[0] <= '9') {
-	    pApm->DPMSMask[DPMSModeSuspend] = xf86strtol(s, NULL, 0);
+	    pApm->DPMSMask[DPMSModeSuspend] = strtol(s, NULL, 0);
 	    if (pApm->DPMSMask[DPMSModeSuspend] > (sizeof pApm->DPMSMask)-1)
 		pApm->DPMSMask[DPMSModeSuspend] = (sizeof pApm->DPMSMask) - 1;
 	}
     }
     if ((s = xf86GetOptValString(pApm->Options, OPTION_REMAP_DPMS_OFF))) {
-	if (!xf86strcmp(s, "on"))
+	if (!strcmp(s, "on"))
 	    pApm->DPMSMask[DPMSModeOff] = DPMSModeOn;
-	else if (!xf86strcmp(s, "standby"))
+	else if (!strcmp(s, "standby"))
 	    pApm->DPMSMask[DPMSModeOff] = DPMSModeStandby;
-	else if (!xf86strcmp(s, "suspend"))
+	else if (!strcmp(s, "suspend"))
 	    pApm->DPMSMask[DPMSModeOff] = DPMSModeSuspend;
-	else if (!xf86strcmp(s, "off"))
+	else if (!strcmp(s, "off"))
 	    pApm->DPMSMask[DPMSModeOff] = DPMSModeOff;
 	else if (s[0] >= '0' && s[0] <= '9') {
-	    pApm->DPMSMask[DPMSModeOff] = xf86strtol(s, NULL, 0);
+	    pApm->DPMSMask[DPMSModeOff] = strtol(s, NULL, 0);
 	    if (pApm->DPMSMask[DPMSModeOff] > (sizeof pApm->DPMSMask)-1)
 		pApm->DPMSMask[DPMSModeOff] = (sizeof pApm->DPMSMask) - 1;
 	}
