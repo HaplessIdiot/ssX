@@ -35,9 +35,8 @@
 /*
 ** Author: Eric Veach, July 1994.
 **
-** $Date$ $Revision$
-** $Header$
 */
+/* $XFree86$ */
 
 #include "gluos.h"
 #include <stdlib.h>
@@ -50,7 +49,7 @@
 				 eDst->Sym->winding += eSrc->Sym->winding)
 
 /* __gl_meshTessellateMonoRegion( face ) tessellates a monotone region
- * (what else would it do??)  The region must consist of a single
+ * (what else would it do?)  The region must consist of a single
  * loop of half-edges (see mesh.h) oriented CCW.  "Monotone" in this
  * case means that any vertical line intersects the interior of the
  * region in a single interval.  

@@ -31,12 +31,8 @@
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 **
-** $Date$ $Revision$
 */
-/*
-** $Header$
-*/
-/* $XFree86$ */
+/* $XFree86: xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/interface/glinterface.cc,v 1.2 2001/01/21 21:19:07 tsi Exp $ */
 
 #include "gluos.h"
 #include <GL/gl.h>
@@ -430,7 +426,7 @@ gluGetNurbsProperty(GLUnurbs *r, GLenum property, GLfloat *value)
 }
 
 extern "C" void GLAPIENTRY
-gluNurbsCallback(GLUnurbs *r, GLenum which, GLvoid (*fn)())
+gluNurbsCallback(GLUnurbs *r, GLenum which, GLvoid (*fn)(GLvoid))
 {
     switch (which) {
     case GLU_NURBS_BEGIN:
