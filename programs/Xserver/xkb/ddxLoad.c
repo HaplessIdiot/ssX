@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.26 2000/11/14 18:20:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.27 2001/01/17 22:37:14 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -229,7 +229,6 @@ char *tmpbase;
 int i;
 #endif
     if ((names->keymap==NULL)||(names->keymap[0]=='\0')) {
-	extern char *display;
 	sprintf(keymap,"server-%s",display);
     }
     else {

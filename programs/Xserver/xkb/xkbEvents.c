@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbEvents.c,v 3.7 2001/01/17 22:37:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbEvents.c,v 3.8 2001/02/20 16:43:14 paulo Exp $ */
 
 #include <stdio.h>
 #define NEED_EVENTS 1
@@ -35,8 +35,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "inputstr.h"
 #include "windowstr.h"
 #include "XKBsrv.h"
-
-extern int (*InitialVector[3])();
 
 /***====================================================================***/
 
@@ -52,7 +50,6 @@ XkbSendNewKeyboardNotify(kbd,pNKN)
 register int	i;
 Time 		time;
 CARD16		changed;
-XkbChangesRec	changes;
 
     pNKN->type = XkbEventCode + XkbEventBase;
     pNKN->xkbType = XkbNewKeyboardNotify;
@@ -182,7 +179,7 @@ XkbSendMapNotify(kbd,pMN)
 {
 int 		i;
 XkbSrvInfoPtr	xkbi;
-unsigned	time,initialized;
+unsigned	time = 0,initialized;
 CARD16		changed;
 
     xkbi = kbd->key->xkbInfo;
