@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessCommon.c,v 1.4 2002/04/05 00:03:18 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessCommon.c,v 1.5 2002/04/05 02:05:10 torrey Exp $ */
 
 #include "rootlessCommon.h"
 
@@ -228,16 +228,29 @@ static void RootlessReallySetShape(WindowPtr pWin)
 void
 RootlessDamageRegion(WindowPtr pWindow, RegionPtr pRegion)
 {
+    RL_DEBUG_MSG("Damaged win 0x%x ", pWindow);
     pWindow = TopLevelParent(pWindow);
+    RL_DEBUG_MSG("parent 0x%x:\n", pWindow);
     if (!pWindow) {
         RL_DEBUG_MSG("RootlessDamageRegion: window is not framed\n");
     } else if (!WINREC(pWindow)) {
         RL_DEBUG_MSG("RootlessDamageRegion: top-level window not a frame\n");
     } else {
-//        REGION_TRANSLATE((pWindow)->drawable.pScreen, (pRegion), -1, -1);
         REGION_UNION((pWindow)->drawable.pScreen, &WINREC(pWindow)->damage,
                      &WINREC(pWindow)->damage, (pRegion));
     }
+
+#ifdef ROOTLESSDEBUG
+    {
+        BoxRec *box = REGION_RECTS(pRegion), *end;
+        int numBox = REGION_NUM_RECTS(pRegion);
+
+        for (end = box+numBox; box < end; box++) {
+            RL_DEBUG_MSG("Damage rect: %i, %i, %i, %i\n",
+                         box->x1, box->x2, box->y1, box->y2);
+        }
+    }
+#endif
 }
 
 
@@ -307,6 +320,10 @@ RootlessRedisplay(WindowPtr pWindow)
     {
         RootlessStopDrawing(pWindow);
         if (REGION_NOTEMPTY(pScreen, &winRec->damage)) {
+            RL_DEBUG_MSG("Redisplay Win 0x%x, %i x %i @ (%i, %i)\n",
+                         pWindow, winRec->frame.w, winRec->frame.h,
+                         winRec->frame.x, winRec->frame.y);
+
             REGION_INTERSECT(pScreen, &winRec->damage, &winRec->damage,
                              &pWindow->borderSize);
 

@@ -30,16 +30,6 @@
 			path = XView.m;
 			refType = 4;
 		};
-		014C68EF00ED6A9D7F000001 = {
-			isa = PBXFileReference;
-			path = XCarbonWindow.h;
-			refType = 4;
-		};
-		014C68F000ED6A9D7F000001 = {
-			isa = PBXFileReference;
-			path = XCarbonWindow.m;
-			refType = 4;
-		};
 		014C68F200ED7AD67F000001 = {
 			isa = PBXFileReference;
 			path = fakeBoxRec.h;
@@ -274,8 +264,6 @@
 				1C4A3109004D8F24CE6F79C2,
 				014C68EE00ED6A9D7F000001,
 				014C68ED00ED6A9D7F000001,
-				014C68F000ED6A9D7F000001,
-				014C68EF00ED6A9D7F000001,
 			);
 			isa = PBXGroup;
 			name = Classes;

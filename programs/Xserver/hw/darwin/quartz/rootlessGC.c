@@ -1,12 +1,33 @@
 /*
  * Graphics Context support for Mac OS X rootless X server
- *
- * Greg Parker     gparker@cs.stanford.edu
- *
- * February 2001  Created
- * March 3, 2001  Restructured as generic rootless mode
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessGC.c,v 1.3 2001/07/01 03:24:57 torrey Exp $ */
+/*
+ * Copyright (c) 2001 Greg Parker. All Rights Reserved.
+ * Copyright (c) 2002 Torrey T. Lyons. All Rights Reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ * THE ABOVE LISTED COPYRIGHT HOLDER(S) BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
+ * Except as contained in this notice, the name(s) of the above copyright
+ * holders shall not be used in advertising or otherwise to promote the sale,
+ * use or other dealings in this Software without prior written authorization.
+ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessGC.c,v 1.1 2002/03/28 02:21:19 torrey Exp $ */
 
 #include "mi.h"
 #include "scrnintstr.h"
@@ -15,6 +36,7 @@
 #include "windowstr.h"
 #include "dixfontstr.h"
 #include "mivalidate.h"
+#include "fb.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -139,18 +161,26 @@ RootlessCreateGC(GCPtr pGC)
 static void
 RootlessValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr pDrawable)
 {
-    GCFUNC_UNWRAP(pGC);
 
-    pGC->funcs->ValidateGC(pGC, changes, pDrawable);
+    GCFUNC_UNWRAP(pGC);
 
     gcrec->originalOps = NULL;
 
-    if (pDrawable->type == DRAWABLE_WINDOW) {
-        WindowPtr pWin = (WindowPtr) pDrawable;
+    if (pDrawable->type == DRAWABLE_WINDOW)
+    {
+        // We force a planemask so fb doesn't overwrite the alpha channel.
+        // Left to its own devices, fb will optimize away the planemask.
+        int depth = pDrawable->depth;
+        pDrawable->depth = pDrawable->bitsPerPixel;
+        pGC->planemask &= ~AquaAlphaMask(pDrawable->bitsPerPixel);
+        pGC->funcs->ValidateGC(pGC, changes, pDrawable);
+        pDrawable->depth = depth;
 
-        if (pWin->viewable) {
+        if (((WindowPtr) pDrawable)->viewable) {
             gcrec->originalOps = pGC->ops;
         }
+    } else {
+        pGC->funcs->ValidateGC(pGC, changes, pDrawable);
     }
 
     GCFUNC_WRAP(pGC);
@@ -480,7 +510,7 @@ static void RootlessPolyPoint(DrawablePtr dst, GCPtr pGC,
                 box.y2++;
                 TRIM_AND_TRANSLATE_BOX(box, dst, pGC);
                 if(BOX_NOT_EMPTY(box))
-                RootlessDamageBox ((WindowPtr) dst, &box);
+                    RootlessDamageBox ((WindowPtr) dst, &box);
                 box.x2 = box.x1 = firstx = pptInit->x;
                 box.y2 = box.y1 = firsty = pptInit->y;
             } else {
@@ -494,7 +524,7 @@ static void RootlessPolyPoint(DrawablePtr dst, GCPtr pGC,
         box.y2++;
         TRIM_AND_TRANSLATE_BOX(box, dst, pGC);
         if(BOX_NOT_EMPTY(box))
-        RootlessDamageBox ((WindowPtr) dst, &box);
+            RootlessDamageBox ((WindowPtr) dst, &box);
 #endif  /* ROOTLESS_CHANGED_AREA */
     }
 
@@ -572,7 +602,7 @@ static void RootlessPolylines(DrawablePtr dst, GCPtr pGC,
 
         TRIM_AND_TRANSLATE_BOX(box, dst, pGC);
         if(BOX_NOT_EMPTY(box))
-        RootlessDamageBox ((WindowPtr) dst, &box);
+            RootlessDamageBox ((WindowPtr) dst, &box);
     }
 
     GCOP_WRAP(pGC);
@@ -772,7 +802,8 @@ static void RootlessFillPolygon(DrawablePtr dst, GCPtr pGC,
 {
     GCOP_UNWRAP(pGC);
 
-    RL_DEBUG_MSG("fill poly start ");
+    RL_DEBUG_MSG("fill poly start (win 0x%x, fillStyle 0x%x)", dst,
+                 pGC->fillStyle);
 
     if (count <= 2) {
         pGC->ops->FillPolygon(dst, pGC, shape, mode, count, pptInit);
@@ -823,7 +854,7 @@ static void RootlessFillPolygon(DrawablePtr dst, GCPtr pGC,
 
         TRIM_AND_TRANSLATE_BOX(box, dst, pGC);
         if(BOX_NOT_EMPTY(box))
-        RootlessDamageBox ((WindowPtr) dst, &box);
+            RootlessDamageBox ((WindowPtr) dst, &box);
     }
 
     GCOP_WRAP(pGC);
@@ -836,7 +867,8 @@ static void RootlessPolyFillRect(DrawablePtr dst, GCPtr pGC,
 {
     GCOP_UNWRAP(pGC);
 
-    RL_DEBUG_MSG("fill rect start (win 0x%x)", dst);
+    RL_DEBUG_MSG("fill rect start (win 0x%x, fillStyle 0x%x)", dst,
+                 pGC->fillStyle);
 
     if (nRectsInit <= 0) {
         pGC->ops->PolyFillRect(dst, pGC, nRectsInit, pRectsInit);
@@ -861,10 +893,6 @@ static void RootlessPolyFillRect(DrawablePtr dst, GCPtr pGC,
             if(box.y2 < (pRects->y + pRects->height))
                 box.y2 = pRects->y + pRects->height;
         }
-
-        /* cfb messes with the pRectsInit so we have to do our
-        calculations first */
-        // FIXME: Still true with fb?
 
         RootlessStartDrawing((WindowPtr) dst);
         pGC->ops->PolyFillRect(dst, pGC, nRectsInit, pRectsInit);
@@ -918,7 +946,7 @@ static void RootlessPolyFillArc(DrawablePtr dst, GCPtr pGC,
     }
 
     GCOP_WRAP(pGC);
-    RL_DEBUG_MSG("fill arc end");
+    RL_DEBUG_MSG("fill arc end\n");
 }
 
 
@@ -1156,7 +1184,7 @@ static void RootlessPolyGlyphBlt(DrawablePtr dst, GCPtr pGC,
 
         TRIM_BOX(box, pGC);
         if(BOX_NOT_EMPTY(box))
-        RootlessDamageBox ((WindowPtr) dst, &box);
+            RootlessDamageBox ((WindowPtr) dst, &box);
     }
 
     GCOP_WRAP(pGC);

@@ -25,11 +25,11 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/XView.h,v 1.3 2001/11/05 05:12:16 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XView.h,v 1.1 2002/03/28 02:21:18 torrey Exp $ */
 
 #import <Cocoa/Cocoa.h>
 
-@interface XView : NSView
+@interface XView : NSQuickDrawView
 
 - (BOOL)isFlipped;
 - (BOOL)isOpaque;
