@@ -4,7 +4,7 @@
  
 <title> README for XFree86 3.1.1 on BSD/386 1.1
 <author> Hans Nasten
-<date> 21 January 1995
+<date> 27 January 1995
 <toc>
 
 <sect> What and Where is XFree86? <p>
@@ -44,12 +44,12 @@ or <it>XFree86@XFree86.org</it>
 if you have comments or suggestions about this file and we'll revise it.
 
 <sect> Installing the Binaries <p>
-The binary distribution is composed of a number of tar archives
+The binary distribution is composed of a number of gzipped tar archives
 which contains the executables, servers, fonts, libraries, include files,
 man pages, config files, and the server link kit. All tar archives should
 be extracted as root with <tt>/</tt> as the default directory. The full
-distribution
-takes over 40MB of disk space.
+distribution takes over 40MB of disk space.
+The file names are converted to be compatible with CD-rom conventions.
 
 Note that many clients were moved from the X11R6 distribution to the
 `contrib' area. However, they are still distributed with the
@@ -59,33 +59,33 @@ The contents of the archives are:
 <descrip>
 <tag>REQUIRED:</tag>
     <descrip>
-    <tag/xf86-doc.tar.gz/       READMEs and XFree86 specific man pages.
-    <tag/xf86-bin.tar.gz/       all of the executable X client applications.
-    <tag/xf86-fonts.tar.gz/     all fonts
-    <tag/xf86-lib.tar.gz/       data files needed at runtime
+    <tag/X311doc.tgz/     READMEs and XFree86 specific man pages.
+    <tag/X311bin.tgz/     all of the executable X client applications.
+    <tag/X311fnts.tgz/    all fonts
+    <tag/X311lib.tgz/     data files needed at runtime
     </descrip>
 <tag>Choose at least one of the following to match your hardware:</tag>
     <descrip>
-    <tag/XF86_SVGA.gz/    the 8-bit pseudo-color X server for Super VGA cards
-    <tag/XF86_VGA16.gz/   the 4-bit pseudo-color X server for VGA &amp;
+    <tag/X311SVGA.tgz/    the 8-bit pseudo-color X server for Super VGA cards
+    <tag/X311VG16.tgz/    the 4-bit pseudo-color X server for VGA &amp;
 			  SVGA cards.
-    <tag/XF86_Mono.gz/    the Monochrome X Server
-    <tag/XF86_8514.gz/    the X server for IBM 8514/A and compatible boards
-    <tag/XF86_AGX.gz/     the X server for AGX boards
-    <tag/XF86_Mach8.gz/   the X server for ATI Mach8 boards
-    <tag/XF86_Mach32.gz/  the X server for ATI Mach32 boards
-    <tag/XF86_Mach64.gz/  the X server for ATI Mach64 boards
-    <tag/XF86_P9000.gz/   the X server for P9000 based boards
-    <tag/XF86_S3.gz/      the X server for S3 based boards
-    <tag/XF86_W32.gz/     the X server for ET4000/W32 based boards
+    <tag/X311Mono.tgz/    the Monochrome X Server
+    <tag/X3118514.tgz/    the X server for IBM 8514/A and compatible boards
+    <tag/X311AGX.tgz/     the X server for AGX boards
+    <tag/X311Ma8.tgz/     the X server for ATI Mach8 boards
+    <tag/X311Ma32.tgz/    the X server for ATI Mach32 boards
+    <tag/X311Ma64.tgz/    the X server for ATI Mach64 boards
+    <tag/X311P9K.tgz/     the X server for P9000 based boards
+    <tag/X311S3.tgz/      the X server for S3 based boards
+    <tag/X311W32.tgz/     the X server for ET4000/W32 based boards
     </descrip>
 <tag/OPTIONAL:</tag>
     <descrip>
-    <tag/xf86-fs.tar.gz/        the font server with man pages.
-    <tag/xf86-prog.tar.gz/      the <tt>include/X11</tt> header files and
+    <tag/X311fsrv.tgz/    the font server with man pages.
+    <tag/X311prog.tgz/    the <tt>include/X11</tt> header files and
 	static libraries needed only for compiling other X applications
-    <tag/xf86-man.tar.gz/       all man pages
-    <tag/xf86-linkkit.tar.gz/   the server reconfiguration kit.
+    <tag/X311man.tgz/     all man pages
+    <tag/X311link.tgz/    the server reconfiguration kit.
     </descrip>
 </descrip>
 If this is your first time, then you should be able to safely
@@ -309,7 +309,7 @@ instructions on how to build a new kernel.
 </verb>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.6 1995/01/21 07:16:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.7 1995/01/22 03:06:27 dawes Exp $
 </verb>
 
 </article>

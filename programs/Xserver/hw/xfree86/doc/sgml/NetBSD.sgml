@@ -98,7 +98,7 @@ XFree86 binary distribution.
     <tag/X311mc8/ the X server for ATI Mach8 graphics boards
     <tag/X311mc32/ the X server for ATI Mach32 graphics boards
     <tag/X311mc64/ the X server for ATI Mach64 graphics boards
-    <tag/X311p900/	the X server for P9000 based boards
+    <tag/X311p9k/	the X server for P9000 based boards
     <tag/X311s3/ 	the X server for S3 based boards
     <tag/X311w32/	the X server for et4000w32 based boards
     </descrip>
@@ -618,7 +618,7 @@ and many others.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.7 1995/01/25 11:08:49 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.8 1995/01/27 10:31:27 dawes Exp $
 </verb>
 
 </article>

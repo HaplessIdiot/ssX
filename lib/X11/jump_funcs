@@ -1,4 +1,4 @@
-# $XFree86: xc/lib/X11/jump_funcs,v 3.3 1995/01/14 10:41:20 dawes Exp $
+# $XFree86: xc/lib/X11/jump_funcs,v 3.4 1995/01/27 09:32:24 dawes Exp $
 #
 00000000 T _XSaveContext        libX11         Context
 00000000 T _XFindContext        libX11         Context
@@ -648,7 +648,11 @@
 00000000 T __XRegisterFilterByMask libX11         XRegstFlt
 00000000 T __XRegisterFilterByType libX11         XRegstFlt
 00000000 T __XUnregisterFilter  libX11         XRegstFlt
+#ifdef X_LOCALE
+00000000 T __DUMMY__ libX11         XSetLocale
+#else
 00000000 T __XlcMapOSLocaleName libX11         XSetLocale
+#endif
 00000000 T _XDefaultString      libX11         XCnvToStr
 00000000 T __XlcDefaultLoader   libX11         XlcDefLd
 00000000 T __XrmInitParseInfo   libX11         XlcLoad

@@ -90,7 +90,7 @@ need 9Mb for the minimum required run-time binaries only.
 <tag/X311Mono.tgz/
      1-bit monochrome for VGA, Super-VGA, Hercules, and others.
 
-<tag/X311P900.tgz/
+<tag/X311P9K.tgz/
      8, 16, and 24-bit color for Weitek P9000 boards (Diamond Viper).
 
 <tag/X311S3.tgz/
@@ -570,7 +570,7 @@ Many thanks to:
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.7 1995/01/21 07:16:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.8 1995/01/21 10:44:19 dawes Exp $
 </verb>
 
 </article>
