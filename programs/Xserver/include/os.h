@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.59 2004/12/29 21:22:55 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.60tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -296,6 +296,11 @@ extern int set_font_authorizations(
 extern pointer Xalloc(unsigned long /*amount*/);
 extern pointer Xcalloc(unsigned long /*amount*/);
 extern pointer Xrealloc(pointer /*ptr*/, unsigned long /*amount*/);
+#if !defined(WORD64) && !defined(LONG64)
+extern pointer Xllalloc(unsigned long long /*amount*/);
+extern pointer Xllrealloc(pointer, unsigned long long /*amount*/);
+extern pointer Xllcalloc(unsigned long long /*amount*/);
+#endif
 extern void Xfree(pointer /*ptr*/);
 #endif
 

@@ -1,4 +1,6 @@
 XFree86 4.4.99.21 (xx December 2004)
+ 264. In font handling, avoid potential security issues related to wrap-around
+      of memory allocation requests (Marc La France).
  263. Add Intel i915GM support, also....
       - PanelID identification
       - DRI suspend/resume support
@@ -19268,7 +19270,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3381 2005/01/09 20:47:17 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3382 2005/01/11 08:59:42 alanh Exp $
 
 
 

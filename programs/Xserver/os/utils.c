@@ -48,7 +48,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.98 2004/06/02 22:43:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.99tsi Exp $ */
 /*
  * Copyright (c) 1996-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1245,22 +1245,22 @@ Xalloc(unsigned long amount)
 {
     register pointer  ptr;
 	
-    if ((long)amount <= 0) {
-	return (unsigned long *)NULL;
-    }
+    if ((long)amount <= 0)
+	return NULL;
+
     /* aligned extra on long word boundary */
     amount = (amount + (sizeof(long) - 1)) & ~(sizeof(long) - 1);
 #ifdef MEMBUG
     if (!Must_have_memory && Memory_fail &&
 	((random() % MEM_FAIL_SCALE) < Memory_fail))
-	return (unsigned long *)NULL;
+	return NULL;
 #endif
     if ((ptr = (pointer)malloc(amount))) {
-	return (unsigned long *)ptr;
+	return ptr;
     }
     if (Must_have_memory)
 	FatalError("Out of memory");
-    return (unsigned long *)NULL;
+    return NULL;
 }
 
 /*****************
@@ -1274,17 +1274,15 @@ XNFalloc(unsigned long amount)
     register pointer ptr;
 
     if ((long)amount <= 0)
-    {
-        return (unsigned long *)NULL;
-    }
+        return NULL;
+
     /* aligned extra on long word boundary */
     amount = (amount + (sizeof(long) - 1)) & ~(sizeof(long) - 1);
     ptr = (pointer)malloc(amount);
     if (!ptr)
-    {
         FatalError("Out of memory");
-    }
-    return ((unsigned long *)ptr);
+
+    return ptr;
 }
 
 /*****************
@@ -1298,7 +1296,7 @@ Xcalloc(unsigned long amount)
 
     ret = Xalloc (amount);
     if (ret)
-	bzero ((char *) ret, (int) amount);
+	bzero ((void *) ret, (int) amount);
     return ret;
 }
 
@@ -1329,13 +1327,13 @@ Xrealloc(pointer ptr, unsigned long amount)
 #ifdef MEMBUG
     if (!Must_have_memory && Memory_fail &&
 	((random() % MEM_FAIL_SCALE) < Memory_fail))
-	return (unsigned long *)NULL;
+	return NULL;
 #endif
     if ((long)amount <= 0)
     {
 	if (ptr && !amount)
 	    free(ptr);
-	return (unsigned long *)NULL;
+	return NULL;
     }
     amount = (amount + (sizeof(long) - 1)) & ~(sizeof(long) - 1);
     if (ptr)
@@ -1343,10 +1341,10 @@ Xrealloc(pointer ptr, unsigned long amount)
     else
 	ptr = (pointer)malloc(amount);
     if (ptr)
-        return (unsigned long *)ptr;
+        return ptr;
     if (Must_have_memory)
 	FatalError("Out of memory");
-    return (unsigned long *)NULL;
+    return NULL;
 }
                     
 /*****************
@@ -1392,6 +1390,31 @@ OsInitAllocator (void)
 }
 #endif /* !INTERNAL_MALLOC */
 
+#if !defined(WORD64) && !defined(LONG64)
+
+void *
+Xllalloc(unsigned long long amount)
+{
+    if (amount & ~((unsigned long long)(unsigned long)(-1L))) return NULL;
+    return Xalloc(amount);
+}
+
+void *
+Xllrealloc(void *ptr, unsigned long long amount)
+{
+    if (amount & ~((unsigned long long)(unsigned long)(-1L))) return NULL;
+    return Xrealloc(ptr, amount);
+}
+
+void *
+Xllcalloc(unsigned long long amount)
+{
+    if (amount & ~((unsigned long long)(unsigned long)(-1L))) return NULL;
+    return Xcalloc(amount);
+}
+
+
+#endif
 
 char *
 Xstrdup(const char *s)
