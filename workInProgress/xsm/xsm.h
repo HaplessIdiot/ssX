@@ -1,5 +1,5 @@
 /* $XConsortium: xsm.h,v 1.5 94/04/17 21:15:20 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/workInProgress/xsm/xsm.h,v 3.0 1994/06/28 12:41:23 dawes Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -49,7 +49,7 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 #include <setjmp.h>
 #include <limits.h>
-#ifndef X_NO_SYS_PARAM
+#ifndef MINIX
 #include <sys/param.h>
 #endif
 #ifndef PATH_MAX
