@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.151 2000/06/25 14:02:59 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.152 2000/06/25 14:06:56 alanh Exp $ */
 
 /*
  *
@@ -80,6 +80,7 @@ extern unsigned long  inl(unsigned int a);
 
 #if defined(__alpha__)
 #ifdef linux
+extern unsigned long _bus_base(void);
 extern void _outb(char val, unsigned short port);
 extern void _outw(short val, unsigned short port);
 extern void _outl(int val, unsigned short port);
@@ -854,6 +855,9 @@ LOOKUP xfree86LookupTab[] = {
                                    of the X server) easier. */
    SYMFUNC(xf86InstallSIGIOHandler)
    SYMFUNC(xf86RemoveSIGIOHandler)
+#ifdef __alpha__
+   SYMFUNC(_bus_base)
+#endif
 #endif
    SYMFUNC(xf86BlockSIGIO)
    SYMFUNC(xf86UnblockSIGIO)
