@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.32 94/04/09 21:46:51 rws Exp $
-XCOMM $XFree86: xc/config/cf/Imakefile,v 3.4 1995/01/04 04:35:57 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imakefile,v 3.5 1995/06/02 09:59:51 dawes Exp $
 
 #ifdef LocalConfigFiles
 LOCALFILES = LocalConfigFiles
@@ -7,7 +7,6 @@ LOCALFILES = LocalConfigFiles
 
 DEFFILES = \
 xf86site.def \
-host.def \
 site.def
 
 RULEFILES = \
@@ -97,3 +96,10 @@ INSTFILES = $(RULEFILES) $(TMPLFILES) $(DEFFILES) $(CFFILES) $(LOCALFILES)
 all::
 
 InstallMultipleDestFlags(install,$(INSTFILES),$(CONFIGDIR),$(INSTDATFLAGS))
+
+install::
+	@(TMP=/tmp/tmp.$$$$; \
+	RemoveFile($${TMP}); \
+	echo "" > $${TMP}; \
+	$(INSTALL) $(INSTALLFLAGS) $(INSTDATFLAGS) $${TMP} $(DESTDIR)$(CONFIGDIR)/host.def; \
+	RemoveFile($${TMP}))
