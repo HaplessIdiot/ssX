@@ -1,6 +1,5 @@
 /* $XConsortium: gen_driver.c,v 1.1 94/03/28 21:41:52 dpw Exp $ */
-/*
- */
+/* $XFree86$ */
 
 /*
  * Generic VGA driver for mono operation.  This driver doesn't do much since
