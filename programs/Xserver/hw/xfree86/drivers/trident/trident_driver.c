@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.150 2001/11/30 13:08:44 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.151 2001/12/11 15:32:02 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -2775,30 +2775,15 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		pScrn->PointerMoved = TRIDENTPointerMoved;
 	    }
 	    switch (pScrn->bitsPerPixel) {
-#if 1	      
 	    case 8:    pTrident->RefreshArea = TRIDENTRefreshArea8; break;
 	    case 16:   pTrident->RefreshArea = TRIDENTRefreshArea16; break;
 	    case 24:   pTrident->RefreshArea = TRIDENTRefreshArea24; break;
 	    case 32:   pTrident->RefreshArea = TRIDENTRefreshArea32; break;
-#else
-	    case 8:    shadowInit (pScreen, shadowUpdateRotate8, 0); break;
-	    case 16:    shadowInit (pScreen, shadowUpdateRotate16, 0); break;
-	    case 24:    shadowInit (pScreen, shadowUpdateRotate32, 0); break;
-#endif
 	    }
 	} else {
 	  pTrident->RefreshArea = TRIDENTRefreshArea;
-#if 0
-	  shadowInit (pScreen, shadowUpdatePacked, 0);
-#endif
 	}
-#if 1
-#if 0
 	ShadowFBInit(pScreen, pTrident->RefreshArea);
-#else
-	shadowInit (pScreen, TRIDENTShadowUpdate, 0);
-#endif
-#endif
     }
 
     xf86DPMSInit(pScreen, (DPMSSetProcPtr)TRIDENTDisplayPowerManagementSet, 0);
