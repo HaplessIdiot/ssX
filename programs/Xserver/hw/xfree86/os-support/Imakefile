@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:27:13 dpw Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.1 1994/05/14 06:53:19 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.2 1994/05/21 23:56:59 dawes Exp $
 #include <Server.tmpl>
 
 #define IHaveSubdirs
@@ -52,14 +52,9 @@ OBJS = $(OS_SUBDIR)/?*.o misc/?*.o
 
 DONES = $(OS_SUBDIR)/DONE misc/DONE
 
-/* Hack to force bsd make to do things in the correct order */
-all::
-
-all:: subdirs libxf86_os.a
-
-NamedMakeSubdirs(subdirs,$(SUBDIRS))
-
 NormalDepLibraryTarget(xf86_os,$(SUBDIRS) $(DONES),$(OBJS))
+
+ForceSubdirs($(SUBDIRS))
 
 InstallLinkKitLibrary(xf86_os,$(LINKKITDIR)/lib)
 InstallLinkKitNonExecFile(assyntax.h,$(LINKKITDIR)/include)
