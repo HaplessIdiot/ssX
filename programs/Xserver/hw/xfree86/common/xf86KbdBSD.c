@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdBSD.c,v 3.16 2001/08/15 08:58:36 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdBSD.c,v 3.17 2001/09/29 20:40:30 herrb Exp $ */
 /*
  * Derived from xf86Kbd.c by S_ren Schmidt (sos@login.dkuug.dk)
  * which is Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -1077,11 +1077,13 @@ WSKbdToKeycode(int keycode)
 			return KEY_UNKNOWN;
 		else 
 			return wsUsbMap[keycode];
+#ifdef WSKBD_TYPE_ADB			
 	case WSKBD_TYPE_ADB:
 		if (keycode < 0 || keycode >= WS_ADB_MAP_SIZE) 
 			return KEY_UNKNOWN;
 		else 
 			return wsAdbMap[keycode];
+#endif
 	default:
 		ErrorF("Unkown wskbd type %d\n", xf86Info.wsKbdType);
 		return KEY_UNKNOWN;

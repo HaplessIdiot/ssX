@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.248 2001/08/29 11:55:50 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.249 2001/09/29 20:40:30 herrb Exp $ */
 
 
 /*
@@ -1045,9 +1045,11 @@ configInputKbd(IDevPtr inputp)
      case WSKBD_TYPE_USB:
 	     xf86Msg(X_PROBED, "Keyboard type: USB\n");
 	     break;
+#ifdef WSKBD_TYPE_ADB
      case WSKBD_TYPE_ADB:
 	     xf86Msg(X_PROBED, "Keyboard type: ADB\n");
 	     break;
+#endif
      default:
 	     xf86ConfigError("Unsupported wskbd type \"%d\"", 
 			     xf86Info.wsKbdType);
