@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/version.h,v 3.59 2000/09/22 10:42:09 alanh Exp $ */
+/* $XFree86: xc/programs/xterm/version.h,v 3.60 2000/10/27 18:31:15 dawes Exp $ */
 
 /*
  * These definitions are used to build the string that's printed in response to
@@ -6,5 +6,5 @@
  * XFree86 to which this version of xterm has been built.  The number in
  * parentheses is my patch number (T.Dickey).
  */
-#define XTERM_PATCH   147
-#define XFREE86_VERSION "XFree86 4.0.1c"
+#define XTERM_PATCH   148
+#define XFREE86_VERSION "XFree86 4.0.1d"

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: resize.c,v 1.34 95/05/24 22:12:04 gildea Exp $
- *	$XFree86: xc/programs/xterm/resize.c,v 3.41 2000/05/18 00:33:21 dawes Exp $
+ *	$XFree86: xc/programs/xterm/resize.c,v 3.42 2000/09/22 10:42:08 alanh Exp $
  */
 
 /*
@@ -161,7 +161,7 @@ char *getenv();
 #ifdef USE_SYSV_TERMIO
 #ifdef X_NOT_POSIX
 #if !defined(SYSV) && !defined(i386)
-extern struct passwd *getpwuid(); 	/* does ANYBODY need this? */
+extern struct passwd *getpwuid();	/* does ANYBODY need this? */
 #endif /* SYSV && i386 */
 #endif /* X_NOT_POSIX */
 #define	bzero(s, n)	memset(s, 0, n)
@@ -191,6 +191,8 @@ extern struct passwd *getpwuid(); 	/* does ANYBODY need this? */
 #else
 #define ESC(string) "\033" string
 #endif
+
+#define CharOf(ch) ((unsigned char)(ch))
 
 #define	EMULATIONS	2
 #define	SUN		1
@@ -440,7 +442,7 @@ main (int argc, char **argv)
 	tio.c_cc[VMIN] = 6;
 	tio.c_cc[VTIME] = 1;
 #else	/* not USE_TERMIOS */
- 	ioctl (tty, TIOCGETP, &sgorig);
+	ioctl (tty, TIOCGETP, &sgorig);
 	sg = sgorig;
 	sg.sg_flags |= RAW;
 	sg.sg_flags &= ~ECHO;
@@ -583,7 +585,7 @@ static int
 checkdigits(register char *str)
 {
 	while(*str) {
-		if(!isdigit(*str))
+		if(!isdigit(CharOf(*str)))
 			return(0);
 		str++;
 	}

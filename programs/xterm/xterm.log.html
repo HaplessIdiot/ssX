@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.58 2000/09/22 10:42:09 alanh Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.59 2000/10/27 18:31:15 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -42,6 +42,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_148">Patch #148 - 2000/10/31 - XFree86 4.0.1d</A>
 <LI><A HREF="#xterm_147">Patch #147 - 2000/10/26 - XFree86 4.0.1c</A>
 <LI><A HREF="#xterm_146">Patch #146 - 2000/9/12 - XFree86 4.0.1c</A>
 <LI><A HREF="#xterm_145">Patch #145 - 2000/9/11 - XFree86 4.0.1c</A>
@@ -191,6 +192,55 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_148">Patch #148 - 2000/10/31 - XFree86 4.0.1d</A></H1>
+<ul>
+	<li>document logfile options in man-page.
+
+	<li>correct spelling of <code>-samename</code> option in help message.
+
+	<li>add configure script option <code>--enable-tcap-query</code>
+	  (request by Bram Moolenaar).
+
+	<li>patch by Bram Moolenaar to add a
+	  "Co" or "colors" entry to the OPT_TCAP_QUERY feature.
+	<li>patch by Kiyokazu SUTO &lt;suto@ks-and-ks.ne.jp&gt;:
+	<ul>
+	  <li>add support for bold font for double width characters.
+	     The font name may be specified with the command line option
+	     <code>-fwb</code> or with resource
+	     <code>wideBoldFont</code> (class <code>WideBoldFont</code>).
+	  <li>correct underlining of double width character string, which
+	     was drawn only half width.
+	  <li>correct binary search of precomposed character table, which
+	     may return wrong result when <code>int</code> is just 32 bits.
+	  </ul>
+
+	<li>some changes to align terminfo with ncurses 5.2:
+	<ul>
+	  <li>remove xtermm description, retaining xterm-mono since the former
+	    conflicts with ncurses.
+	  <li>modify initialization and reset strings to avoid putting the
+	    save/restore cursor operations bracketing changes to video
+	    attributes, since the changes could be lost when the cursor is
+	    restored.  This affects xterm-r6 and xterm-8bit (the xterm-xfree86
+	    entry uses the soft-reset feature which resets scrolling margins
+	    and origin mode without requiring us to save/restore the cursor
+	    position).
+	  <li>make a few entries explicitly inherit from xterm-xfree86 rather
+	    than xterm: xterm-rep, xterm-xmc, xterm-nrc
+	</ul>
+
+	<li>ensure that sign-extension does not affect <code>ctype</code>
+	  macros by using <code>CharOf()</code> macro to coerce the parameter
+	  to an unsigned char.
+
+	<li>resync with XFree86 4.0.1d:
+	<ul>
+	  <li>Add primitive support in xterm for Xft based fonts (Keith Packard).
+	    The changes are ifdef'd with <code>-DXRENDERFONT</code>.
+	</ul>
+</ul>
 
 <H1><A NAME="xterm_147">Patch #147 - 2000/10/26 - XFree86 4.0.1c</A></H1>
 <ul>
