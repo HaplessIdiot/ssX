@@ -19,6 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+/* $XFree86$ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -77,7 +78,7 @@ outbuf_flush(Iso2022Ptr is, int fd)
         } else {
             if(rc < 0 && errno == EINTR)
                 continue;
-            else if(rc == 0 || rc < 0 && errno == EAGAIN) {
+            else if((rc == 0) || ((rc < 0) && (errno == EAGAIN))) {
                 waitForOutput(fd);
                 continue;
             } else
@@ -670,8 +671,8 @@ copyOut(Iso2022Ptr is, int fd, unsigned char *buf, int count)
                     break;
                 case T_94192:
                     /* Use *s, not code */
-                    if(*s >= 0x21 && *s <= 0x7E ||
-                       *s >= 0xA1 && *s <= 0xFE) {
+                    if(((*s >= 0x21) && (*s <= 0x7E)) ||
+                       ((*s >= 0xA1) && (*s <= 0xFE))) {
                         outbufUTF8(is, fd,
                                    charset->recode(ku_code << 8 | *s,
                                                    charset));

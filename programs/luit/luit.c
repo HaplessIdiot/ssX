@@ -19,6 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+/* $XFree86$ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -457,7 +458,6 @@ child(char *line, char *path, char **argv)
 {
     int tty;
     int pgrp;
-    int rc;
 
     close(0);
     close(1);
@@ -547,14 +547,14 @@ parent(int pid, int pty)
         if(rc > 0) {
             if(rc & 2) {
                 i = read(pty, buf, BUFFER_SIZE);
-                if(i == 0 || i < 0 && errno != EAGAIN)
+                if((i == 0) || ((i < 0) && (errno != EAGAIN)))
                     break;
                 if(i > 0)
                     copyOut(outputState, 0, buf, i);
             }
             if(rc & 1) {
                 i = read(0, buf, BUFFER_SIZE);
-                if(i == 0 || i < 0 && errno != EAGAIN)
+                if((i == 0) || ((i < 0) && (errno != EAGAIN)))
                     break;
                 if(i > 0)
                     copyIn(inputState, pty, buf, i);

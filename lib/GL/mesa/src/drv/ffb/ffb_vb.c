@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/ffb/ffb_vb.c,v 1.1 2000/06/20 05:08:40 dawes Exp $
+/* $XFree86: xc/lib/GL/mesa/src/drv/ffb/ffb_vb.c,v 1.2 2000/09/24 13:51:03 alanh Exp $
  *
  * GLX Hardware Device Driver for Sun Creator/Creator3D
  * Copyright (C) 2000 David S. Miller
@@ -180,9 +180,11 @@ void ffbDDCheckPartialRasterSetup(GLcontext *ctx, struct gl_pipeline_stage *d)
 
 void ffbDDPartialRasterSetup(struct vertex_buffer *VB)
 {
+#if 0
 	ffbContextPtr fmesa = FFB_CONTEXT(VB->ctx);
 	GLuint new = VB->pipeline->new_outputs;
 	GLuint available = VB->pipeline->outputs;
+#endif
 	GLuint ind = 0;
 
 #if 1

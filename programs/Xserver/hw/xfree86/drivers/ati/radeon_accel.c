@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.19 2001/09/26 12:49:25 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.20 2001/10/28 03:33:25 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1294,7 +1294,7 @@ static void RADEONCPSetupForDashedLine(ScrnInfoPtr pScrn,
 				     int length, unsigned char *pattern)
 {
     RADEONInfoPtr info        = RADEONPTR(pScrn);
-    CARD32        pat         = *(CARD32 *)pattern;
+    CARD32        pat         = *(CARD32 *)(pointer)pattern;
 
     RING_LOCALS;
 

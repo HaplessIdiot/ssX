@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.20 2001/08/06 20:51:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.21 2001/09/27 08:28:13 alanh Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Dawes <dawes@xfree86.org>
@@ -141,10 +141,6 @@ void xf86SetKbdRepeat(rad)
 char rad;
 #endif
 {
-  int i;
-  int timeout;
-  int         value = 0x7f;    /* Maximum delay with slowest rate */
-
 #ifdef __sparc__
   int         rate  = 500;     /* Default rate */
   int         delay = 200;     /* Default delay */
@@ -153,6 +149,10 @@ char rad;
   int         delay = 250;     /* Default delay */
 #endif
 
+#if defined(__alpha__) || defined (__i386__) || defined(__ia64__)
+  int i;
+  int timeout;
+  int         value = 0x7f;    /* Maximum delay with slowest rate */
 
   static int valid_rates[] = { 300, 267, 240, 218, 200, 185, 171, 160, 150,
 			       133, 120, 109, 100, 92, 86, 80, 75, 67,
@@ -162,7 +162,7 @@ char rad;
 
   static int valid_delays[] = { 250, 500, 750, 1000 };
 #define DELAY_COUNT (sizeof( valid_delays ) / sizeof( int ))
-
+#endif
 
   if (xf86Info.kbdRate >= 0) 
     rate = xf86Info.kbdRate * 10;

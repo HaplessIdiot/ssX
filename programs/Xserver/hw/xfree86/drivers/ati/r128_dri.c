@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.18 2001/10/01 13:44:03 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.19 2001/10/02 11:44:16 alanh Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -658,7 +658,7 @@ static Bool R128DRIPciInit(R128InfoPtr info, ScreenPtr pScreen)
 	       (unsigned long)info->ring);
     xf86DrvMsg(pScreen->myNum, X_INFO,
 	       "[pci] Ring contents 0x%08lx\n",
-	       *(unsigned long *)info->ring);
+	       *(unsigned long *)(pointer)info->ring);
 
     if (drmAddMap(info->drmFD, info->ringReadOffset, info->ringReadMapSize,
 		  DRM_SCATTER_GATHER, flags, &info->ringReadPtrHandle) < 0) {
@@ -681,7 +681,7 @@ static Bool R128DRIPciInit(R128InfoPtr info, ScreenPtr pScreen)
 	       (unsigned long)info->ringReadPtr);
     xf86DrvMsg(pScreen->myNum, X_INFO,
 	       "[pci] Ring read ptr contents 0x%08lx\n",
-	       *(unsigned long *)info->ringReadPtr);
+	       *(unsigned long *)(pointer)info->ringReadPtr);
 
     if (drmAddMap(info->drmFD, info->bufStart, info->bufMapSize,
 		  DRM_SCATTER_GATHER, 0, &info->bufHandle) < 0) {
@@ -704,7 +704,7 @@ static Bool R128DRIPciInit(R128InfoPtr info, ScreenPtr pScreen)
 	       (unsigned long)info->buf);
     xf86DrvMsg(pScreen->myNum, X_INFO,
 	       "[pci] Vertex/indirect buffers contents 0x%08lx\n",
-	       *(unsigned long *)info->buf);
+	       *(unsigned long *)(pointer)info->buf);
 
     switch (info->Chipset) {
     case PCI_CHIP_RAGE128LE:
