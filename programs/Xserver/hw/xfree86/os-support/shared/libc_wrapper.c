@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.87 2003/02/21 03:11:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.88tsi Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -165,8 +165,9 @@ typedef struct dirent DIRENTRY;
 #endif
 #include <setjmp.h>
 
-#if defined(setjmp) && \
-    defined(__GLIBC__) && __GLIBC__ == 2 && __GLIBC_MINOR__ < 2
+#if defined(setjmp) && defined(__GNU_LIBRARY__) && \
+    (!defined(__GLIBC__) || (__GLIBC__ < 2) || \
+     ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 3)))
 #define HAS_GLIBC_SIGSETJMP 1
 #endif
 
@@ -1961,23 +1962,37 @@ xf86getjmptype()
 }
 
 #ifdef HAS_GLIBC_SIGSETJMP
+
 int
 xf86setjmp(xf86jmp_buf env)
 {
     FatalError("setjmp: type 0 called instead of type %d\n", xf86getjmptype());
 }
-#else
+
+#if !defined(__GLIBC__) || (__GLIBC__ < 2)	/* libc5 */
+
+int
+xf86setjmp1(xf86jmp_buf env, int arg2)
+{
+    return sigsetjmp((void *)env, arg2);
+}
+
+#endif
+
+#else	/* HAS_GLIBC_SIGSETJMP */
+
 int
 xf86setjmp1(xf86jmp_buf env, int arg2)
 {
     FatalError("setjmp: type 1 called instead of type %d\n", xf86getjmptype());
 }
-#endif
+
+#endif  /* HAS_GLIBC_SIGSETJMP */
 
 int
 xf86setjmp1_arg2()
 {
-    return 0;
+    return 1;
 }
 
 int

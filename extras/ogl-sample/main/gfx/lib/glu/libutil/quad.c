@@ -32,7 +32,7 @@
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 **
 */
-/* $XFree86: xc/extras/ogl-sample/main/gfx/lib/glu/libutil/quad.c,v 1.2 2001/04/03 02:18:41 dawes Exp $ */
+/* $XFree86: xc/extras/ogl-sample/main/gfx/lib/glu/libutil/quad.c,v 1.3tsi Exp $ */
 
 #include "gluos.h"
 #include "gluint.h"
@@ -45,6 +45,7 @@
 /* Make it not a power of two to avoid cache thrashing on the chip */
 #define CACHE_SIZE	240
 
+#undef  PI
 #define PI            3.14159265358979323846
 
 struct GLUquadric {
