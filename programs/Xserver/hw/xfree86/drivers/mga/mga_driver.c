@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.105 1999/06/27 14:08:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.106 1999/07/10 12:17:32 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -58,6 +58,8 @@
 
 /* All drivers need this */
 #include "xf86_ansic.h"
+
+#include "compiler.h"
 
 /* Drivers for PCI hardware need this */
 #include "xf86PciInfo.h"
@@ -2019,6 +2021,13 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     MGAStormEngineInit(pScrn);
     vgaHWProtect(pScrn, FALSE);
 
+    if (xf86IsPc98()) {
+	if (pMga->Chipset == PCI_CHIP_MGA2064)
+	    outb(0xfac, 0x01);
+	else
+	    outb(0xfac, 0x02);
+    }
+
     return TRUE;
 }
 
@@ -2430,6 +2439,9 @@ MGALeaveVT(int scrnIndex, int flags)
 
     MGARestore(pScrn);
     vgaHWLock(hwp);
+
+    if (xf86IsPc98())
+	outb(0xfac, 0x00);
 }
 
 
@@ -2468,6 +2480,9 @@ MGACloseScreen(int scrnIndex, ScreenPtr pScreen)
     if (pMga->DGAModes)
 	xfree(pMga->DGAModes);
     pScrn->vtSema = FALSE;
+
+    if (xf86Pc98())
+	outb(0xfac, 0x00);
 
     pScreen->CloseScreen = pMga->CloseScreen;
     return (*pScreen->CloseScreen)(scrnIndex, pScreen);

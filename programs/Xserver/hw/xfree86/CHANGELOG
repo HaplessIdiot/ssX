@@ -1,4 +1,9 @@
 XFree86 3.9Px (11 July 1999)
+2877. Add code to the mga driver to handle PC98 architecture machines
+      (Takaaki Nomura).
+2876. Add a global (ServerFlags) "PC98" Option for the Japanese PC98
+      architecture, and add a function xf86IsPc98() that drivers can call
+      to check for this.
 2875. Fix a relocation problem in the ELF loader that shows up on 64-bit
       platforms when mapping unresolved symbols to LoaderDefaultFunc()
       (#3005, Doug Rabson).
@@ -8415,4 +8420,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.795 1999/07/11 08:49:19 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.796 1999/07/11 09:41:53 dawes Exp $
