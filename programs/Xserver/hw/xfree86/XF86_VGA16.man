@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_VGA16.man,v 1.5 95/01/23 15:33:31 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_VGA16.man,v 3.10 1995/06/17 12:14:40 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_VGA16.man,v 3.11 1995/07/03 08:41:21 dawes Exp $
 .TH XF86_VGA16 1 "Version 3.1.2"  "XFree86"
 .SH NAME
 XF86_VGA16 - 4 bit non-accelerated X Window System server for UNIX on
@@ -9,7 +9,8 @@ x86 platforms
 [:displaynumber] [ option ] ...
 .SH DESCRIPTION
 .I XF86_VGA16
-is a 4-bit PseudoColor server for VGA cards.  It also includes support for
+is a 4-bit color server for VGA cards.  The default root visual for this
+server is StaticColor.  It also includes support for
 the non-VGA monochrome cards described in the \fIXF86_Mono(1)\fP manual
 page.  It may be run in a dual-headed configuration.
 .PP

@@ -1,5 +1,5 @@
 .\" $XConsortium: XFree86.man,v 1.6 95/01/23 15:33:32 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.11 1995/06/17 12:14:41 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.12 1995/07/03 08:41:23 dawes Exp $
 .TH XFree86 1 "Version 3.1.2"  "XFree86"
 .SH NAME
 XFree86 - X11R6 for UNIX on x86 platforms
@@ -15,7 +15,7 @@ operates under the following operating systems:
 .RS .5i
 .na
 .PP
--- SVR3.2: SCO 3.2.2, 3.2.4
+-- SVR3.2: SCO 3.2.2, 3.2.4, ISC 3.x, 4.x
 .br
 -- SVR4.0: ESIX, Microport, Dell, UHC, Consensys, MST, ISC, AT&T, NCR
 .br
@@ -25,7 +25,7 @@ operates under the following operating systems:
 .br
 -- FreeBSD 1.1.5, 2.0, 2.0.5, NetBSD 1.0 (i386 port only)
 .br
--- BSD/386 versions 1.1 and 2.0
+-- BSD/386 version 1.1 and BSD/OS 2.0
 .br
 -- Mach (from CMU)
 .br
@@ -284,7 +284,7 @@ bug-fixes.
 XFree86 was integrated into X11R6 by the following team:
 .PP
 .nf
-Stuart Anderson    \fIStuart.Anderson@ColumbiaSC.NCR.COM\fP
+Stuart Anderson    \fIanderson@metrolink.com\fP
 Doug Anson         \fIdanson@lgc.com\fP
 Gertjan Akkerman   \fIakkerman@dutiba.twi.tudelft.nl\fP
 Mike Bernson       \fImike@mbsun.mlb.org\fP
@@ -316,7 +316,8 @@ Orest Zborowski    \fIorestz@eskimo.com\fP
 The \fIXFree86\fP enhancement package was provided by:
 .TP 8
 David Dawes,       \fIdawes@XFree86.org\fP
-Administration of FTP repository and mailing lists.  Source tree management
+Release coordination, administration of FTP repository and mailing lists.
+Source tree management
 and integration, accelerated server integration, fixing, and coding.
 .TP 8
 Glenn Lai,         \fIglenn@cs.utexas.edu\fP
@@ -324,10 +325,10 @@ The SpeedUp code for ET4000 based SVGA cards, and ET4000/W32 accelerated
 server.
 .TP 8
 Jim Tsillas,       \fIjtsilla@ccs.neu.edu\fP
-Many server speedups from the fXF86 series of enhancements.
+Many server speedups from the fX386 series of enhancements.
 .TP 8
 David Wexelblat,   \fIdwex@XFree86.org\fP
-Release coordination, integration of the fXF86 code into the default server, 
+Integration of the fX386 code into the default server, 
 many driver fixes, and driver documentation, assembly of the VGA 
 card/monitor database, development of the generic video mode listing.
 Accelerated server integration, fixing, and coding.
@@ -368,6 +369,9 @@ Ported to \fBOSF/1\fP.
 .TP 8
 Philip Homburg,    \fIphilip@cs.vu.nl\fP
 Ported to \fBMinix-386vm\fP.
+.TP 8
+Thomas Mueller,    \fItm@systrix.de\fP
+Ported to \fBLynxOS\fP.
 .TP 8
 Jon Tombs,         \fItombs@XFree86.org\fP
 S3 server and accelerated server coordination.
@@ -412,17 +416,26 @@ P9000 server.
 Chris Mason,       \fImason@mail.csh.rit.edu\fP
 P9000 server.
 .TP 8
+Henrik Harmsen     \fIharmsen@eritel.se\fP
+P9000 server.
+.TP 8
 Simon Cooper,      \fIscooper@vizlab.rutgers.edu\fP
 Cirrus accelerated code (based on work by Bill Reynolds).
 .TP 8
 Harm Hanemaayer,   \fIhhanemaa@cs.ruu.nl\fP
-Cirrus accelerated code.
+Cirrus accelerated code, and ARK driver.
 .TP 8
 Mike Tierney,      \fIfloyd@eng.umd.edu\fP
 WD accelerated code.
 .TP 8
 Bill Conn,         \fIconn@bnr.ca\fP
 WD accelerated code.
+.TP 8
+Brad Bosch,        \fIbrad@lachman.com\fP
+WD 90C24A support.
+.TP 8
+Alan Hourihane,    \fIalanh@fairlite.demon.co.uk\fP
+Trident SVGA driver
 .TP 8
 Steve Goldman,     \fIsgoldman@encore.com\fP
 Oak 067/077 SVGA driver.
@@ -439,16 +452,28 @@ AL2101 SVGA driver
 Ching-Tai Chiu,    \fIcchiu@netcom.com\fP
 Avance Logic ALI SVGA driver
 .TP 8
-Manfred Brands     \fImb@oceonics.nl\fP
+Manfred Brands,    \fImb@oceonics.nl\fP
 Cirrus 64xx SVGA driver
 .TP 8
-Randy Hendry       \fIrandy@sgi.com\fP
+Randy Hendry,      \fIrandy@sgi.com\fP
 Cirrus 6440 support in the cl64xx SVGA driver
 .TP 8
-Frank Dikker       \fIdikker@cs.utwente.nl\fP
+Frank Dikker,      \fIdikker@cs.utwente.nl\fP
 MX SVGA driver
 .TP 8
-Craig Struble      \fIcstruble@acm.vt.edu\fP
+Regis Cridlig,     \fIcridlig@dmi.ens.fr\fP
+Chips & Technology driver
+.TP 8
+Jon Block,         \fIblock@frc.com\fP
+Chips & Technology driver
+.TP 8
+Mike Hollick,      \fIhollick@graphics.cis.upenn.edu\fP
+Chips & Technology driver
+.TP 8
+Peter Trattler,    \fIpeter@sbox.tu-graz.ac.at\fP
+RealTek SVGA driver
+.TP 8
+Craig Struble,     \fIcstruble@acm.vt.edu\fP
 Video7 SVGA driver
 .TP 8
 Gertjan Akkerman,  \fIakkerman@dutiba.twi.tudelft.nl\fP

@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_SVGA.man,v 1.6 95/01/23 15:33:29 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.20 1995/07/03 08:41:18 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.21 1995/07/08 10:27:58 dawes Exp $
 .TH XF86_SVGA 1 "Version 3.1.2"  "XFree86"
 .SH NAME
 XF86_SVGA - non-accelerated SVGA X Window System servers for UNIX on 
@@ -40,7 +40,7 @@ Tseng:
 ET3000, ET4000, ET4000/W32
 .TP 4
 Western Digital:
-PVGA1, WD90C00, WD90C10, WD90C11, WD90C30, WD90C31, WD90C33
+PVGA1, WD90C00, WD90C10, WD90C11, WD90C24A, WD90C30, WD90C31, WD90C33
 .TP 4
 Genoa:
 GVGA
@@ -61,7 +61,7 @@ ARK:
 ARK1000PV, ARK1000VL, ARK2000PV
 .TP 4
 RealTek:
-REALTEK
+RTG3106
 .TP 4
 Compaq:
 AVGA
@@ -126,7 +126,7 @@ Tseng:
 et3000, et4000, et4000w32, et4000w32i, et4000w32p
 .TP 4
 Western Digital:
-pvga1, wd90c00, wd90c10, wd90c30, wd90c31, wd90c33
+pvga1, wd90c00, wd90c10, wd90c24, wd90c30, wd90c31, wd90c33
 .TP 4
 Genoa:
 gvga
@@ -343,7 +343,7 @@ xdm(1), xinit(1)
 Bug reports are welcome, and should be emailed
 to the address listed below.
 .SH CONTACT INFO
-\fIXFree86\fP source is available from the FTP servers 
+\fIXFree86\fP source is available from the FTP server
 \fIftp.XFree86.org\fP.  Send email to
 \fIXFree86@XFree86.org\fP for details.
 .SH AUTHORS

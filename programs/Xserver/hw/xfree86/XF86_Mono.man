@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_Mono.man,v 1.6 95/01/23 15:33:29 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Mono.man,v 3.11 1995/07/03 08:41:16 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Mono.man,v 3.12 1995/07/03 10:49:57 dawes Exp $
 .TH XF86_Mono 1 "Version 3.1.2"  "XFree86"
 .SH NAME
 XF86_Mono - 1 bit non-accelerated X Window System servers for UNIX on
@@ -268,7 +268,7 @@ xvidtune(1), xdm(1), xinit(1)
 There are no known bugs at this time, although we welcome reports emailed
 to the address listed below.
 .SH CONTACT INFO
-\fIXFree86\fP source is available from the FTP servers 
+\fIXFree86\fP source is available from the FTP server
 \fIftp.XFree86.org\fP.  Send email to
 \fIXFree86@XFree86.org\fP for details.
 .SH AUTHORS
