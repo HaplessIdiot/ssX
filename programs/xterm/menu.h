@@ -1,9 +1,9 @@
-/* $XTermId: menu.h,v 1.85 2004/11/24 22:41:06 tom Exp $ */
+/* $XTermId: menu.h,v 1.87 2005/01/10 00:30:46 tom Exp $ */
 
 /* $Xorg: menu.h,v 1.4 2001/02/09 02:06:03 xorgcvs Exp $ */
 /*
 
-Copyright 1999-2001,2004 by Thomas E. Dickey
+Copyright 1999-2004,2005 by Thomas E. Dickey
 
                         All Rights Reserved
 
@@ -50,7 +50,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xterm/menu.h,v 3.33 2004/05/13 00:41:21 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/menu.h,v 3.34 2004/12/01 01:27:47 dickey Exp $ */
 
 #ifndef included_menu_h
 #define included_menu_h
@@ -129,7 +129,7 @@ extern void SetupMenus (Widget shell, Widget *forms, Widget *menus);
 
 #if OPT_TOOLBAR
 extern void SetupToolbar(Widget);
-extern void ShowToolbar(Boolean);
+extern void ShowToolbar(Bool);
 #endif
 
 /*

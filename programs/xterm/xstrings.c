@@ -1,10 +1,10 @@
-/* $XTermId: xstrings.c,v 1.19 2004/11/30 20:47:52 tom Exp $ */
+/* $XTermId: xstrings.c,v 1.21 2005/01/11 00:13:47 tom Exp $ */
 
-/* $XFree86: xc/programs/xterm/xstrings.c,v 1.7 2003/11/13 01:16:38 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/xstrings.c,v 1.8 2004/12/01 01:27:47 dickey Exp $ */
 
 /************************************************************
 
-Copyright 2000-2003,2004 by Thomas E. Dickey
+Copyright 2000-2004,2005 by Thomas E. Dickey
 
                         All Rights Reserved
 
@@ -83,7 +83,7 @@ x_strdup(const char *s)
     char *result = 0;
 
     if (s != 0) {
-	char *t = (char *) malloc(strlen(s) + 1);
+	char *t = CastMallocN(char, strlen(s));
 	if (t != 0) {
 	    strcpy(t, s);
 	}
