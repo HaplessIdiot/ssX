@@ -27,9 +27,33 @@
 xrandr \- primitive command line interface to RandR extension
 .SH SYNOPSIS
 .B "xrandr"
+[-help]  [-display \fIdisplay\fP]
+[-o \fIorientation\fP]
+[-q] [-v]
+[-s \fIsize\fP]
 .SH DESCRIPTION
 .I Xrandr
-displays a list of available video modes, prompts the user and switches to
-the selected mode.
+is uses to set the screen size and/or orientation.
+The
+.I -s
+option is a small integer index used to specify which size the screen should be set to.
+To find out what sizes are available, use the
+.I -q
+option, which reports the sizes available, the current rotation, and
+the possibee rotations.
+The
+.I -o
+option is used to specify the orientation of the screen,
+and can be one of
+\f"Inormal inverted left right 0 1 2 3"\fP.
+The
+.I -help
+option prints out a usage summary.
 .SH "SEE ALSO"
 RandR(3)
+.SH AUTHORS
+Keith Packard
+XFree86 Core Team, SuSE Inc.
+.br
+Jim Gettys, 
+Compaq Computer Corporation, Cambridge Research Laboratory
