@@ -1,4 +1,4 @@
-XCOMM $XFree86: $
+XCOMM $XFree86: xc/lib/Xcursor/Imakefile,v 1.1 2002/08/29 04:40:34 keithp Exp $
 
 #ifndef NormalLibXcursor
 #define NormalLibXcursor YES
@@ -23,7 +23,11 @@ SOXCURSORREV=1.0
 
 XCURSOR_REVISION=0
 
+#ifdef SharedXcursorReqs
+REQUIREDLIBS = SharedXcursorReqs
+#elif
 REQUIREDLIBS = $(LDPRELIB) $(XRENDERLIB)
+#endif
 
 ICONDIR=$(LIBDIR)/icons
 
