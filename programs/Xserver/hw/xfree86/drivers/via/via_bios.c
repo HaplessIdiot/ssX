@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_bios.c,v 1.7 2003/10/31 17:19:33 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_bios.c,v 1.8 2003/12/17 18:57:18 dawes Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -8180,11 +8180,9 @@ Bool VIAFindModeUseBIOSTable(VIABIOSInfoPtr pBIOSInfo)
     if ((pBIOSInfo->ActiveDevice & VIA_DEVICE_DFP) && (pBIOSInfo->PanelSize == VIA_PANEL_INVALID)) {
         VIAGetPanelInfo(pBIOSInfo);
     }
-    
-    /* Default settings have not been loaded, they must be
-       obtained from the BIOS */
-    pBIOSInfo->pUTUSERSETTING->DefaultSetting = FALSE;
 
+    pBIOSInfo->UserSetting->DefaultSetting = FALSE;
+        
     if (!pBIOSInfo->ActiveDevice) {
         pBIOSInfo->ActiveDevice = VIAGetDeviceDetect(pBIOSInfo);
     }
@@ -11080,7 +11078,7 @@ Bool VIASetModeUseBIOSTable(VIABIOSInfoPtr pBIOSInfo)
 {
     VIABIOSInfoPtr  pVia;
     VIAModeTablePtr pViaModeTable = pBIOSInfo->pModeTable;
-    UTUSERSETTINGptr    pUTUSERSETTING = pBIOSInfo->pUTUSERSETTING;
+    VIAUserSettingPtr UserSetting = pBIOSInfo->UserSetting;
     BOOL            setTV = FALSE;
     int             mode, resMode, refresh;
     int             port, offset, mask, data;
@@ -11527,16 +11525,16 @@ Bool VIASetModeUseBIOSTable(VIABIOSInfoPtr pBIOSInfo)
             case VIA_SAA7108:
                 VIAPostSetSAA7108Mode(pBIOSInfo);
                 break;
-			case VIA_FS454:
-	    		VIAPostSetFS454Mode(pBIOSInfo);
-				break;
+	    case VIA_FS454:
+		VIAPostSetFS454Mode(pBIOSInfo);
+		break;
         }
     }
 
     /* load/save TV attribute for utility. */
     if (!pBIOSInfo->HasSecondary && (pBIOSInfo->ActiveDevice & VIA_DEVICE_TV)) {
         /* Read User Setting */
-        if (pUTUSERSETTING->DefaultSetting) {
+        if (UserSetting->DefaultSetting) {
             VIARestoreUserSetting(pBIOSInfo);
         }
         else {                                      /* Read from I2C */
@@ -11545,13 +11543,6 @@ Bool VIASetModeUseBIOSTable(VIABIOSInfoPtr pBIOSInfo)
     }
 
     VIAEnabledPrimaryExtendedFIFO(pBIOSInfo);
-    /* Enable extended FIFO if the resolution > 1024x768
-    if (pBIOSInfo->CrtcHDisplay > 1024) {
-        VIAEnableExtendedFIFO(pBIOSInfo);
-    }
-    else {
-        VIADisableExtendedFIFO(pBIOSInfo);
-    }*/
 
     /* Enable CRT Controller (3D5.17 Hardware Reset) */
     VGAOUT8(0x3d4, 0x17);

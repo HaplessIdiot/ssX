@@ -21,7 +21,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_accel.c,v 1.5 2003/12/17 18:57:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_accel.c,v 1.6 2003/12/17 19:01:59 dawes Exp $ */
 
 /*************************************************************************
  *
@@ -418,7 +418,6 @@ VIAInitAccel(ScreenPtr pScreen)
             VIASubsequentMono8x8PatternFillRect;
     xaaptr->Mono8x8PatternFillFlags = NO_PLANEMASK |
                                       HARDWARE_PATTERN_PROGRAMMED_BITS |
-                                      HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
 				      ROP_NEEDS_SOURCE |
                                       BIT_ORDER_IN_BYTE_MSBFIRST |
                                       0;
@@ -430,7 +429,6 @@ VIAInitAccel(ScreenPtr pScreen)
     xaaptr->Color8x8PatternFillFlags = NO_PLANEMASK |
                                        NO_TRANSPARENCY |
                                        HARDWARE_PATTERN_PROGRAMMED_BITS |
-                                       HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
 				       ROP_NEEDS_SOURCE |
                                        0;
 
