@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/os/Imakefile,v 3.42 2004/03/31 16:37:10 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/os/Imakefile,v 3.43 2004/06/02 22:43:06 dawes Exp $
 /*
  * Copyright (c) 1996-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -132,6 +132,10 @@ SNPRINTF_SRCS = snprintf.c
 SNPRINTF_OBJS = snprintf.o
 #endif
 
+#if HasAsprintf
+ASPRINTF_DEFINES = -DHAS_ASPRINTF
+#endif
+
 #if !HasStrlcat
 STRLCAT_SRCS = strlcat.c strlcpy.c
 STRLCAT_OBJS = strlcat.o strlcpy.o
@@ -185,7 +189,8 @@ STRLCAT_DEFINES = -DNEED_STRLCAT
         DEFINES = -DXSERV_t -DTRANS_SERVER $(CONNECTION_FLAGS) $(MEM_DEFINES) \
 		  $(XDMAUTHDEFS) $(RPCDEFS) $(SIGNAL_DEFINES) $(OS_DEFINES) \
 		  $(KRB5_DEFINES) $(RGB_DEFINES) $(GETPEEREID_DEFINES) \
-		  $(STRLCAT_DEFINES) $(RANDOM_DEFINES) $(TINY_DEFINES)
+		  $(STRLCAT_DEFINES) $(RANDOM_DEFINES) $(TINY_DEFINES) \
+		  $(ASPRINTF_DEFINES)
        INCLUDES = -I$(SERVERSRC)/os -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
 		  -I$(EXTINCSRC) \
 		  -I$(SERVERSRC)/Xext -I$(FONTINCSRC) -I$(SERVERSRC)/render \

@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.166 2004/06/23 17:04:13 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.167 2004/10/12 14:45:53 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -465,6 +465,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef HasSnprintf
 #define HasSnprintf		NO	/* assume not */
+#endif
+#ifndef HasAsprintf
+#define HasAsprintf		NO	/* assume not */
 #endif
 #ifndef HasStrlcat
 #define HasStrlcat		NO	/* assume not */

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.151 2005/01/31 04:34:29 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.152 2005/01/31 23:57:36 dawes Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -90,6 +90,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define HasNdbm			YES
 #define HasPutenv		YES
 #define HasSnprintf		YES
+#define HasAsprintf		YES
 #if OSMajorVersion == 3 && OSMinorVersion >= 3 || OSMajorVersion > 3
 # define HasStrlcat		YES
 #endif
