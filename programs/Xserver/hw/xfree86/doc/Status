@@ -654,7 +654,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
       Summary:
             No Weitek chips are supported in 4.2.0.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.37 2002/01/16 20:38:45 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.38 2002/11/01 09:38:34 alanh Exp $
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/Status,v 1.29 2002/01/16 20:51:04 dawes Exp $
+$XFree86: $

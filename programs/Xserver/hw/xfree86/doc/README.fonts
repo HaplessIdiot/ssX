@@ -2,7 +2,7 @@
 
                     Juliusz Chroboczek, <jch@xfree86.org>
 
-                              26 November 2001
+                              29 September 2002
 
 1.  Introduction
 
@@ -220,7 +220,7 @@ order in which they appear.
      ...
      FontPath "/usr/local/fonts/bitmap"
 
-For more information, please consult the `XF86Config'(5) manual page.
+For more information, please consult the XF86Config(5) manual page.
 
 2.5  Troubleshooting
 
@@ -809,16 +809,15 @@ fonts with unusual names --- with encodings such as `adobe-fontspecific',
 `microsoft-win3.1' etc.  In order to use these fonts with standard applica-
 tions, it may be useful to remap them to their proper names.
 
-This is done by writing a `fonts.alias' file. The format of this file is sim-
-ilar to the format of the `fonts.dir' file, except that it maps XLFD names to
-XLFD names. A `fonts.alias' file might look as follows:
+This is done by writing a `fonts.alias' file. The format of this file is very
+simple: it consists of a series of lines each mapping an alias name to a font
+name.  A `fonts.alias' file might look as follows:
 
-     1
      "-ogonki-alamakota-medium-r-normal--0-0-0-0-p-0-iso8859-2" \
        "-ogonki-alamakota-medium-r-normal--0-0-0-0-p-0-adobe-fontspecific"
 
 (both XLFD names on a single line).  The syntax of the `fonts.alias' file is
-precisely described in the mkfontdir(1) manual page.
+more precisely described in the mkfontdir(1) manual page.
 
 5.  Additional notes about TrueType support
 
@@ -1023,7 +1022,7 @@ The IANA RFC documents, available from a number of sites throughout the
 world, often provide interesting information about character set issues; my
 favourite is RFC 373.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.15 2001/12/17 19:25:36 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.17 2002/11/20 23:21:45 dawes Exp $
 
 
 $XFree86: $

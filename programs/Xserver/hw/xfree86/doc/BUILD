@@ -42,21 +42,10 @@ case, the procedure is as follows:
 
           gzip -d < X420src-3.tgz | tar vxf -
 
-   o If the release is not a full release, it is available as a patch against
-     the previous full release in the
-     ftp://ftp.xfree86.org/pub/XFree86/4.2.0/patches/ directory. Get the
-     patch file from there and apply it by running the following command:
-
-          cd the directory containing the xc directory
-
-          gzip -d < file | patch -s -p0 -E
-
-     Look for special patching instructions in the Release Notes.
-
 Another option is to get the source by anonymous CVS or CVSup.  See
 http://www.xfree86.org/cvs/ for details on the different procedure available.
 
-All method will produce one main source directory called xc.
+All methods will produce one main source directory called xc.
 
 2.  Configuring the source before building
 
@@ -208,7 +197,7 @@ XFree86:
      shown do not match your system, you probably need to set them manually
      in host.def and report the problem to XFree86@XFree86.org.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.6 2001/11/15 17:32:16 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.7 2002/09/04 03:31:10 dawes Exp $
 
 
-$XFree86:$
+$XFree86: $
