@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.138 2004/03/14 02:25:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.139 2004/06/01 01:23:50 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
@@ -279,7 +279,7 @@ xf86DeleteScreen(int scrnIndex, int flags)
     if (pScrn->drv)
 	pScrn->drv->refCount--;
 
-    if (pScrn->privates);
+    if (pScrn->privates)
 	xfree(pScrn->privates);
 
     xf86ClearEntityListForScreen(scrnIndex);
