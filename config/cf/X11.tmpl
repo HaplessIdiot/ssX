@@ -523,8 +523,23 @@ VENDORMANVERSION = XVendorManVersionString
 #ifndef BuildXftLibrary
 #define BuildXftLibrary		BuildRenderLibrary
 #endif
+#ifndef BuildXft1Library
+#define BuildXft1Library	BuildRenderLibrary
+#endif
+#ifndef UseFontconfig
+#define UseFontconfig		BuildXftLibrary
+#endif
+#ifndef BuildFontconfigLibrary
+#define BuildFontconfigLibrary	(UseFontconfig && !HasFontconfig)
+#endif
 #ifndef UseFreetype2
-#define UseFreetype2		BuildXftLibrary
+#define UseFreetype2		(BuildXftLibrary || BuildXft1Library || UseFontconfig)
+#endif
+#ifndef UseLibxml2
+#define UseLibxml2		(UseFontconfig)
+#endif
+#ifndef BuildLibxml2Library
+#define BuildLibxml2Library	(UseLibxml2 && !HasLibxml2)
 #endif
 #ifndef BuildFreetype2Library
 #define BuildFreetype2Library	(UseFreetype2 && !HasFreetype2)
@@ -1456,6 +1471,7 @@ XCOMM X Window System make variables; these need to be coordinated with rules
               RGB = $(BINDIR)/rgb
             FONTC = $(BINDIR)/bdftopcf
         MKFONTDIR = $(BINDIR)/mkfontdir
+          FCCACHE = $(BINDIR)/fc-cache
          XFTCACHE = $(BINDIR)/xftcache
       MKHTMLINDEX = $(BINDIR)/mkhtmlindex
           UCS2ANY = $(BINDIR)/ucs2any.pl
@@ -1465,7 +1481,8 @@ XCOMM X Window System make variables; these need to be coordinated with rules
               RGB = $(CLIENTENVSETUP) $(XBUILDBINDIR)/rgb
             FONTC = $(CLIENTENVSETUP) $(PRELOADFONTSETUP) $(XBUILDBINDIR)/bdftopcf
         MKFONTDIR = $(CLIENTENVSETUP) $(PRELOADFONTSETUP) $(XBUILDBINDIR)/mkfontdir
-         XFTCACHE = $(CLIENTENVSETUP) $(PRELOADSETUP) XFT_CONFIG=$(XFTLIBSRC)/XftConfig $(XBUILDBINDIR)/xftcache
+          FCCACHE = $(CLIENTENVSETUP) $(PRELOADSETUP) FONTCONFIG_PATH=$(FONTCONFIGLIBSRC) $(XBUILDBINDIR)/fc-cache
+         XFTCACHE = $(CLIENTENVSETUP) $(PRELOADSETUP) XFT_CONFIG=$(XFT1LIBSRC)/XftConfig $(XBUILDBINDIR)/xftcache
 #if HasPerl
       MKHTMLINDEX = RunPerlScript($(CONFIGSRC)/util/mkhtmlindex.pl,)
 #else
@@ -2641,6 +2658,111 @@ FREETYPE2DEFINES = -DFREETYPE2
 #endif
 #endif
 
+#ifndef SharedLibLibxml2
+#define SharedLibLibxml2 HasSharedLibraries
+#endif
+#ifndef NormalLibLibxml2
+#define NormalLibLibxml2 (!SharedLibLibxml2 | ForceNormalLib)
+#endif
+#ifndef DebugLibLibxml2
+#define DebugLibLibxml2		NO
+#endif
+#ifndef ProfileLibLibxml2
+#define ProfileLibLibxml2		NO
+#endif
+          LIBXML2LIBSRC = $(LIBSRC)/libxml2
+
+/* Libxml2 2.4.14, version_info 6:4 */
+#ifndef Libxml2Version
+#define Libxml2Version 2.4.14
+#endif
+
+#if SharedLibLibxml2
+#ifndef SharedLibxml2Rev
+#if LibtoolMinorVersions
+#define SharedLibxml2Rev 2.4
+#else
+#define SharedLibxml2Rev 6.0
+#endif
+#endif
+SharedLibReferences(LIBXML2,xml2,$(LIBXML2LIBSRC),SOLIBXML2REV,SharedLibxml2Rev)
+#else
+ProjectUnsharedLibReferences(LIBXML2,xml2,$(LIBXML2LIBSRC),XBuildLibDir)
+#endif
+
+#if UseLibxml2
+
+#if BuildLibxml2Library
+LIBXML2INCLUDES=$(TOP_X_INCLUDES)/libxml2
+LIBXML2DEFINES=-DLIBXML2
+#else	/* BuildLibxml2Library */
+
+#if HasLibxml2
+
+#ifndef Libxml2Dir
+#define Libxml2Dir /usr
+#endif
+
+#ifndef Libxml2LibDir
+#define Libxml2LibDir Libxml2Dir/lib
+#endif
+
+#ifndef Libxml2IncDir
+#define Libxml2IncDir Libxml2Dir/include/libxml2
+#endif
+
+LIBXML2DIR = Libxml2Dir
+LIBXML2LIBDIR = Libxml2LibDir
+LIBXML2INCDIR = Libxml2IncDir
+LIBXML2INCLUDES = -I$(LIBXML2INCDIR)
+LIBXML2LIB = -L$(LIBXML2LIBDIR) -lxml2
+LIBXML2DEFINES = -DLIBXML2
+#endif /* HasLibxml2 */
+
+#endif /* else BuildLibxml2Library */
+
+#define Libxml2ClientLibs $(LIBXML2LIB) GzipLibrary MathLibrary
+#define Libxml2ClientDepLibs $(DEPLIBXML2LIB)
+
+#endif /* UseLibxml2 */
+
+#ifndef SharedLibXft1
+#define SharedLibXft1 HasSharedLibraries
+#endif
+#ifndef NormalLibXft1
+#define NormalLibXft1 		NO
+#endif
+#ifndef DebugLibXft1
+#define DebugLibXft1		NO
+#endif
+#ifndef ProfileLibXft1
+#define ProfileLibXft1		NO
+#endif
+          XFT1LIBSRC = $(LIBSRC)/Xft1
+#if SharedLibXft1
+#ifndef SharedXft1Rev
+#define SharedXft1Rev 1.1
+#endif
+SharedLibReferences(XFT1,Xft,$(XFT1LIBSRC),SOXFT1REV,SharedXft1Rev)
+#else
+ProjectUnsharedLibReferences(XFT1,Xft,$(XFT1LIBSRC),XBuildLibDir)
+#endif
+
+#ifndef Xft1ClientDepLibs
+#if UseFreetype2
+#define Xft1ClientDepLibs $(DEPXFT1LIB) $(DEPFREETYPE2LIB) $(DEPXRENDERLIB)
+#else
+#define Xft1ClientDepLibs $(DEPXFT1LIB) $(DEPXRENDERLIB)
+#endif
+#endif
+#ifndef Xft1ClientLibs
+#if UseFreetype2
+#define Xft1ClientLibs $(XFT1LIB) $(FREETYPE2LIB) $(XRENDERLIB)
+#else
+#define Xft1ClientLibs $(XFT1LIB) $(XRENDERLIB)
+#endif
+#endif
+
 #ifndef SharedLibXft
 #define SharedLibXft HasSharedLibraries
 #endif
@@ -2656,7 +2778,7 @@ FREETYPE2DEFINES = -DFREETYPE2
           XFTLIBSRC = $(LIBSRC)/Xft
 #if SharedLibXft
 #ifndef SharedXftRev
-#define SharedXftRev 1.1
+#define SharedXftRev 2.0
 #endif
 SharedLibReferences(XFT,Xft,$(XFTLIBSRC),SOXFTREV,SharedXftRev)
 #else
@@ -2664,19 +2786,75 @@ ProjectUnsharedLibReferences(XFT,Xft,$(XFTLIBSRC),XBuildLibDir)
 #endif
 
 #ifndef XftClientDepLibs
-#if UseFreetype2
-#define XftClientDepLibs $(DEPXFTLIB) $(DEPFREETYPE2LIB) $(DEPXRENDERLIB)
-#else
-#define XftClientDepLibs $(DEPXFTLIB) $(DEPXRENDERLIB)
-#endif
+#define XftClientDepLibs $(DEPXFTLIB) FontconfigClientDepLibs $(DEPXRENDERLIB)
 #endif
 #ifndef XftClientLibs
-#if UseFreetype2
-#define XftClientLibs $(XFTLIB) $(FREETYPE2LIB) $(XRENDERLIB)
+#define XftClientLibs $(XFTLIB) FontconfigClientLibs $(XRENDERLIB)
+#endif
+
+XFTINCLUDES=$(FONTCONFIGINCLUDES)
+
+#ifndef SharedLibFontconfig
+#define SharedLibFontconfig HasSharedLibraries
+#endif
+#ifndef NormalLibFontconfig
+#define NormalLibFontconfig (!SharedLibFontconfig | ForceNormalLib)
+#endif
+#ifndef DebugLibFontconfig
+#define DebugLibFontconfig		NO
+#endif
+#ifndef ProfileLibFontconfig
+#define ProfileLibFontconfig		NO
+#endif
+          FONTCONFIGLIBSRC = $(LIBSRC)/fontconfig
+#if SharedLibFontconfig
+#ifndef SharedFontconfigRev
+#define SharedFontconfigRev 1.0
+#endif
+SharedLibReferences(FONTCONFIG,fontconfig,$(FONTCONFIGLIBSRC),SOFONTCONFIGREV,SharedFontconfigRev)
 #else
-#define XftClientLibs $(XFTLIB) $(XRENDERLIB)
+ProjectUnsharedLibReferences(FONTCONFIG,fontconfig,$(FONTCONFIGLIBSRC),XBuildLibDir)
 #endif
+
+#ifndef FontconfigClientDepLibs
+#define FontconfigClientDepLibs $(DEPFONTCONFIGLIB) $(DEPFREETYPE2LIB) Libxml2ClientDepLibs
 #endif
+#ifndef FontconfigClientLibs
+#define FontconfigClientLibs $(FONTCONFIGLIB) $(FREETYPE2LIB) Libxml2ClientLibs
+#endif
+
+#if UseFontconfig
+
+#if BuildFontconfigLibrary
+
+FONTCONFIGINCLUDES=$(TOP_X_INCLUDES) $(FREETYPE2INCLUDES) $(LIBXML2INCLUDES)
+#else /* BuildFontconfigLibrary */
+
+#if HasFontconfig
+
+#ifndef FontconfigDir
+#define FontconfigDir /usr
+#endif
+
+#ifndef FontconfigLibDir
+#define FontconfigLibDir FontconfigDir/lib
+#endif
+
+#ifndef FontconfigIncDir
+#define FontconfigIncDir FontconfigDir/include
+#endif
+
+FONTCONFIGDIR = FontconfigDir
+FONTCONFIGLIBDIR = FontconfigLibDir
+FONTCONFIGINCDIR = FontconfigIncDir
+FONTCONFIGINCLUDES = -I$(FONTCONFIGINCDIR)
+FONTCONFIGLIB = -L$(FONTCONFIGLIBDIR) -lfontconfig
+FONTCONFIGDEFINES = -DFONTCONFIG
+
+#endif /* HasFontconfig */
+
+#endif /* else BuildFontconfigLibrary */
+#endif /* UseFontconfig */
 
 #ifndef XmuuClientDepLibs
 #define XmuuClientDepLibs $(DEPXMUULIB) $(DEPXLIB)
@@ -2830,17 +3008,22 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 
 #ifndef MakeXftCache
 #define MakeXftCache(deplist)						@@\
-all:: XftCache								@@\
+all:: fonts.cache XftCache						@@\
+									@@\
+fonts.cache: deplist							@@\
+	RunProgram(FCCACHE, $(FCCACHEOPTS) .)				@@\
 									@@\
 XftCache: deplist							@@\
 	RunProgram(XFTCACHE, $(XFTCACHEOPTS) .)				@@\
 									@@\
 clean::									@@\
+	RemoveFile(fonts.cache)						@@\
 	RemoveFile(XftCache)
 #endif /* MakeXftCache */
 
 #ifndef InstallXftCache
 #define InstallXftCache(dest)						@@\
+InstallTarget(install,fonts.cache,$(INSTDATFLAGS),dest)			@@\
 InstallTarget(install,XftCache,$(INSTDATFLAGS),dest)
 #endif /* InstallXftCache */
 

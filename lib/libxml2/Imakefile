@@ -18,6 +18,8 @@ LIBXML2INC = $(LIBXML2TOP)/include
 
 INCLUDES = -I$(LIBXML2INC) -I$(LIBXML2TOP) -I.
 
+REQUIREDLIBS=$(LDPRELIBS) GzipLibrary MathLibrary
+
 HEADERS=DOCBparser.h HTMLparser.h HTMLtree.h SAX.h catalog.h debugXML.h \
        encoding.h entities.h globals.h hash.h list.h nanoftp.h nanohttp.h \
        parser.h parserInternals.h threads.h tree.h uri.h valid.h \

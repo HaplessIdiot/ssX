@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:54:08 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/x11perf/Imakefile,v 3.5 2001/03/30 02:15:23 keithp Exp $
+XCOMM $XFree86: xc/programs/x11perf/Imakefile,v 3.6 2001/05/01 17:23:27 alanh Exp $
 
 #ifndef X11perfcompLib
 #define X11perfcompLib $(LIBDIR)/x11perfcomp
@@ -16,8 +16,10 @@ XCOMM $XFree86: xc/programs/x11perf/Imakefile,v 3.5 2001/03/30 02:15:23 keithp E
         XFTDEFS = -DXFT
         XFTDEPS = XftClientDepLibs $(DEPXRENDERLIB)
         XFTLIBS = XftClientLibs $(XRENDERLIB)
+        XFTINCS = $(XFTINCLUDES)
 #endif
         DEFINES = $(SIGNAL_DEFINES) $(SHMDEFS) $(XFTDEFS)
+       INCLUDES = $(XFTINCS)
         PERFLIB = X11perfcompLib
         HEADERS = x11perf.h bitmaps.h
            SRCS = x11perf.c bitmaps.c do_tests.c \
