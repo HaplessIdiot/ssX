@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.5 2000/02/27 04:44:29 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.6 2000/02/29 03:09:22 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Portions Copyright © 1996-2000 by The XFree86 Project, Inc.
@@ -775,7 +775,7 @@ if [ X"$EtcToMove" != X ]; then
 				mkdir $ETCDIR/$i
 			fi
 			$TAR -C $RUNDIR/lib/X11/$i -c -f - . | \
-				$TAR -C $ETCDIR/$i -v -x -p -f - && \
+				$TAR -C $ETCDIR/$i -v -x -p -U -f - && \
 				rm -fr $RUNDIR/lib/X11/$i && \
 				ln -s $ETCDIR/$i $RUNDIR/lib/X11/$i
 		done
@@ -819,7 +819,8 @@ for i in $ETCLINKS; do
 				mkdir $RUNDIR/lib/X11/$i
 			fi
 		fi
-		$TAR -C .etctmp/$i -c -f - . | $TAR -C $RUNDIR/lib/X11/$i -v -x -p -f -
+		$TAR -C .etctmp/$i -c -f - . | \
+			$TAR -C $RUNDIR/lib/X11/$i -v -x -p -U -f -
 	fi
 done
 rm -fr .etctmp

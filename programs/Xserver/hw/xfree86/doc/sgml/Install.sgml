@@ -6,10 +6,10 @@
 
 <title>Installation Details for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>26 February 2000
+<date>29 February 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.1 2000/02/26 04:56:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.3 2000/02/27 04:44:27 dawes Exp $
 </ident>
 
 <abstract>
@@ -270,7 +270,129 @@ especially if you run xdm (or equivalent) or the font server (xfs).
 
 <sect>Installing XFree86 &relvers; manually
 <p>
-This section may one day describe how to install XFree86 &relvers;
-manually.
+This section describes how to manually install the XFree86 &relvers; binary
+distributions.  You should only use this method if you know what you're
+doing.  The information here covers some common cases, but not every
+possible case.
+
+Put all of the downloaded files into a single directory (choose some
+temporary location with enough space).  Become the super user (root).
+All of the following commands should be run as root, and they should be
+run from the directory that has all of the downloaded files.  The
+"<tt>extract</tt>" utility should be used to unpack the tarballs.  This
+is a customised version of GNU tar that has the gzip code built-in, and
+which has a different usage when run under the name "extract".  One
+important thing that <tt>extract</tt> does that most versions of tar do
+not do by default is that it unlinks existing files before writing new
+ones.  This is important when installing over an existing version of X.
+If you choose to use some other utility to extract the tarballs, you're
+on your own.
+
+<sect1>A new installation
+<p>
+The simplest case is when there is no existing X installation.  The
+installation procedure for this case is as follows:
+
+<tscreen><verb>
+chmod +x extract
+mkdir /usr/X11R6
+mkdir /etc/X11
+./extract -C /usr/X11R6 X[a-df-uw-z]*.tgz
+./extract -C /usr/X11R6 Xvfb.tgz    # If you are installing Xvfb
+./extract -C /etc/X11 Xetc.tgz
+./extract -C /var Xvar.tgz
+ln -s /etc/X11/app-defaults /usr/X11R6/lib/X11
+ln -s /etc/X11/fs /usr/X11R6/lib/X11
+ln -s /etc/X11/lbxproxy /usr/X11R6/lib/X11
+ln -s /etc/X11/proxymngr /usr/X11R6/lib/X11
+ln -s /etc/X11/rstart /usr/X11R6/lib/X11
+ln -s /etc/X11/twm /usr/X11R6/lib/X11
+ln -s /etc/X11/xdm /usr/X11R6/lib/X11
+ln -s /etc/X11/xinit /usr/X11R6/lib/X11
+ln -s /etc/X11/xsm /usr/X11R6/lib/X11
+ln -s /etc/X11/xserver /usr/X11R6/lib/X11
+/sbin/ldconfig /usr/X11R6/lib       # For Linux
+/sbin/ldconfig -m /usr/X11R6/lib    # For FreeBSD, NetBSD, OpenBSD
+/usr/X11R6/bin/mkfontdir /usr/X11R6/lib/X11/fonts/misc
+</verb></tscreen>
+
+<sect1>Installing over an old installation
+<p>
+If you have an existing installation of X, you should make a backup copy
+of it before installing the new version over the top of it.
+
+Before doing anything else, make sure the <tt>extract</tt> command is
+executable, and also link it to the name "<tt>gnu-tar</tt>" so that it
+can be used as a regular <tt>tar</tt> command:
+
+<tscreen><verb>
+chmod +x extract
+rm -f gnu-tar
+ln extract gnu-tar
+</verb></tscreen>
+
+The first part of the procedure is to move the old run-time config files
+from <tt>/usr/X11R6/lib/X11</tt> to <tt>/etc/X11</tt>.  Create
+<tt>/etc/X11</tt> if it doesn't already exist.  For each of the following
+sub-directories (<tt>app-defaults</tt>, <tt>fs</tt>, <tt>lbxproxy</tt>,
+<tt>proxymngr</tt>, <tt>rstart</tt>, <tt>twm</tt>, <tt>xdm</tt>,
+<tt>xinit</tt>, <tt>xsm</tt>, <tt>xserver</tt>) that you want to move,
+check that there is a sub-directory of this name in
+<tt>/usr/X11R6/lib/X11</tt>.  Create a sub-directory of the same name
+under <tt>/etc/X11</tt>, then copy the files over by running:
+
+<tscreen><verb>
+./gnu-tar -C /usr/X11R6/lib/X11/subdir -c -f - . | \
+  ./gnu-tar -C /etc/X11/subdir -v -x -p -U -f -
+</verb></tscreen>
+
+For each subdirectory that is moved, remove the one under
+<tt>/usr/X11R6/lib/X11</tt> and create a symbolic link to the new
+location:
+
+<tscreen><verb>
+rm -fr /usr/X11R6/lib/X11/subdir
+ln -s /etc/X11/subdir /usr/X11R6/lib/X11
+</verb></tscreen>
+
+For those subdirectories that didn't already exist under
+<tt>/usr/X11R6/lib/X11</tt>, create one under <tt>/etc/X11</tt> and
+create the symbolic link to it:
+
+<tscreen><verb>
+mkdir /etc/X11/subdir
+ln -s /etc/X11/subdir /usr/X11R6/lib/X11
+</verb></tscreen>
+
+Once that is done, extract the config files from the <tt>Xetc.tgz</tt>
+tarball into a temporary directory:
+
+<tscreen><verb>
+mkdir tmpdir
+./extract -C tmpdir Xetc.tgz
+</verb></tscreen>
+
+and then copy each sub-directory over to the installed location:
+
+<tscreen><verb>
+./gnu-tar -C tmpdir/subdir -c -f - . | \
+  ./gnu-tar -C /usr/X11R6/lib/X11/subdir -v -x -p -U -f -
+</verb></tscreen>
+
+If you have customised any config files in your old installation, you
+may want to omit those sub-directories, or copy selected files over by
+hand.
+
+Once that's done, the main part of the installation can be done:
+
+<tscreen><verb>
+./extract -C /usr/X11R6 X[a-df-uw-z]*.tgz
+./extract -C /usr/X11R6 Xvfb.tgz    # If you are installing Xvfb
+./extract -C /var Xvar.tgz
+/sbin/ldconfig /usr/X11R6/lib       # For Linux
+/sbin/ldconfig -m /usr/X11R6/lib    # For FreeBSD, NetBSD, OpenBSD
+/usr/X11R6/bin/mkfontdir /usr/X11R6/lib/X11/fonts/misc
+</verb></tscreen>
+
 
 </article>

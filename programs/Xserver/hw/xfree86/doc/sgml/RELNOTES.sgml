@@ -9,7 +9,7 @@
 <date>21 February 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.29 2000/02/21 22:29:07 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.30 2000/02/29 03:09:15 dawes Exp $
 </ident>
 
 <abstract>
@@ -22,6 +22,9 @@ in XFree86 &relvers; and their status.
 <toc>
 
 <sect>Summary of new features in &relvers; compared with &prevrelvers;.
+<p>
+
+<sect>Summary of new features in 3.9.18 compared with 3.9.17.
 <p>
 This section contains a brief summary of what has changed since the
 previous snapshot.  Unfortunately, only a small number of changes are

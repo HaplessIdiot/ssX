@@ -13,7 +13,7 @@
 <date>26 February 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.100 2000/02/21 22:41:41 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.101 2000/02/26 21:27:54 dawes Exp $
 </ident>
 
 <abstract>
@@ -100,10 +100,10 @@ and not XFree86.
 <sect>Developers
 <p>
 
-If you would like to work on the development on XFree86 4.0, then it is
+If you would like to work on the development of XFree86 4, then it is
 recommended that you <url name="join the XFree86 development team"
-url="http://www.xfree86.org:/developer.html">.  That way you will have access
-to the latest source and to other developers.
+url="http://www.xfree86.org:/developer.html">.  That way you will have
+access to the latest source and to other developers.
 
 <sect>How to get XFree86 &relvers;
 <p>
