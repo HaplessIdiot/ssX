@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.31 94/12/08 02:28:20 kaleb Exp $
-XCOMM $XFree86: xc/programs/rgb/Imakefile,v 3.2 1995/01/28 16:16:16 dawes Exp $
+XCOMM $XFree86: xc/programs/rgb/Imakefile,v 3.3 1995/03/11 14:20:25 dawes Exp $
 
 #if UseRgbTxt
    RGB_DEFINES = -DUSE_RGB_TXT
@@ -21,13 +21,13 @@ XCOMM $XFree86: xc/programs/rgb/Imakefile,v 3.2 1995/01/28 16:16:16 dawes Exp $
          OBJS = $(OBJS1) $(OBJS2)
      PROGRAMS = $(RGB_PROG) ProgramTargetName(showrgb)
 #if !UseRgbTxt
-#ifdef BSD386Architecture
+#if defined(BSD386Architecture) || defined(NetBSDArchitecture)
     DATAFILES = rgb.db
       DATADEP = rgb.db
 #else
     DATAFILES = rgb.pag rgb.dir
       DATADEP = rgb.dir		/* just want one run of rgb */
-#if !(defined(SGIArchitecture) || defined(SVR4Architecture))
+#if !(defined(SGIArchitecture) || defined(SVR4Architecture) || defined(NetBSDArchitecture))
        DBMLIB = -ldbm
 #endif
 #endif

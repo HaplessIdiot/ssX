@@ -1,4 +1,14 @@
-XFree86 3.1.1Dd (21 July 1995)
+XFree86 3.1.1Z (22 July 1995)
+     Code Freeze for 3.1.2.
+230. Cyrillic fonts with KOI8 encoding added (Cronyx Ltd, Serge Vakulenko,
+     Andrey A. Chernov).
+229. Allow ndbm to be used for the rgb database on NetBSD for those
+     who want it (Matthieu Herrb).
+228. Attempt to fix register corruption for Cirrus 5430/5434/5436 in
+     SuperProbe.
+227. Remove -DUNIXCONN from the default SVR3 ConnectionFlags.
+226. Fix disappearing S3 hw cursor when switching modes with xvidtune
+     (Harald Koenig).
 225. Sync-on-green support for the ELSA Winner 2000Pro/X (Harald Koenig).
 224. Add vendor options to S3 server (hercules, stb, genoa) (Harald Koenig).
 223. Documentation updates (Joe Moss, Harald Koenig, Matthieu Herrb).
