@@ -9,7 +9,7 @@
 # This script is compatible with the BSD install script, but was written
 # from scratch.
 #
-# $Header$
+# Header: /usr2/foxharp/src/pgf/vile/RCS/install.sh,v 1.2 1994/07/11 22:56:20 pgf Exp
 
 
 # set DOITPROG to echo to test this script

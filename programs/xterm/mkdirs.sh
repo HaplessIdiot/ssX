@@ -5,7 +5,7 @@
 # Last modified: 1994-03-25
 # Public domain
 #
-# $Header$
+# Header: /usr2/foxharp/src/pgf/vile/RCS/mkdirs.sh,v 1.2 1994/07/11 22:56:20 pgf Exp
 #
 
 errstatus=0
