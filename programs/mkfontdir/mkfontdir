@@ -1,4 +1,0 @@
-#!/bin/sh
-# $XFree86$
-
-exec mkfontscale -b -s -l "$@"
