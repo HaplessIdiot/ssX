@@ -122,7 +122,6 @@ typedef struct {
     pciVideoPtr		PciInfo;
     PCITAG		PciTag;
     xf86AccessRec	Access;
-    xf86AccessPtr	oldAccess;
     int			Chipset;
     int                 ChipRev;
     Bool		Primary;

@@ -56,7 +56,7 @@ static Atom xvBrightness, xvContrast, xvColorKey;
 void MGAInitVideo(ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    XF86VideoAdaptorPtr *adaptors;
+    XF86VideoAdaptorPtr *adaptors, *newAdaptors = NULL;
     XF86VideoAdaptorPtr newAdaptor = NULL;
     MGAPtr pMga = MGAPTR(pScrn);
     int num_adaptors;
@@ -77,8 +77,6 @@ void MGAInitVideo(ScreenPtr pScreen)
 	    num_adaptors = 1;
 	    adaptors = &newAdaptor;
 	} else {
-	    XF86VideoAdaptorPtr *newAdaptors;
-
 	    newAdaptors =  /* need to free this someplace */
 		xalloc((num_adaptors + 1) * sizeof(XF86VideoAdaptorPtr*));
 	    if(newAdaptors) {
@@ -93,6 +91,9 @@ void MGAInitVideo(ScreenPtr pScreen)
 
     if(num_adaptors)
         xf86XVScreenInit(pScreen, adaptors, num_adaptors);
+
+    if(newAdaptors)
+	xfree(newAdaptors);
 }
 
 /* client libraries expect an encoding */
@@ -1021,6 +1022,8 @@ MGAInitOffscreenImages(ScreenPtr pScreen)
 	return;
 
     offscreenImages[0].image = &ImagesG[0];
+    offscreenImages[0].flags = VIDEO_OVERLAID_IMAGES | 
+			       VIDEO_CLIP_TO_VIEWPORT;
     offscreenImages[0].allocate = MGAAllocateSurface;
     offscreenImages[0].free = MGAFreeSurface;
     offscreenImages[0].display = MGADisplaySurface;
@@ -1034,6 +1037,8 @@ MGAInitOffscreenImages(ScreenPtr pScreen)
 
     if(num == 2) {
 	offscreenImages[1].image = &ImagesG[2];
+	offscreenImages[1].flags = VIDEO_OVERLAID_IMAGES | 
+				   VIDEO_CLIP_TO_VIEWPORT;
 	offscreenImages[1].allocate = MGAAllocateSurface;
 	offscreenImages[1].free = MGAFreeSurface;
 	offscreenImages[1].display = MGADisplaySurface;
