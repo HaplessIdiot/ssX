@@ -38,7 +38,7 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/Xext \
 	   -I$(XTOP)/include -I$(XF86OSSRC)/vbe
 #endif
 
-DEFINES = $(GLX_DEFINES)
+DEFINES = $(GLX_DEFINES) -DPPC_MMIO_IS_BE
 
 #if MakeHasPosixVariableSubstitutions
 SubdirLibraryRule($(OBJS))

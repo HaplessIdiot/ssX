@@ -1,4 +1,5 @@
 XFree86 4.0b (?? May 2000)
+ 154. Use MMIO_xx macros in glint driver (#3904, Michel Danzer)
  153. Fix lib/GL/mesa/src/X86/Imakefile for m4 (Alan Hourihane).
  152. Fix m4 rules in Imake.tmpl (Alan Hourihane).
  151. ATI documentation update (Marc La France).
