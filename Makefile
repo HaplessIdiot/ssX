@@ -1,5 +1,5 @@
 # $TOG: Makefile /main/37 1998/02/17 14:30:04 kaleb $
-# $XFree86: xc/Makefile,v 3.10 1998/03/30 15:26:18 robin Exp $
+# $XFree86: xc/Makefile,v 3.11 1998/10/02 05:05:35 dawes Exp $
 
 # Luna users will need to either run make as "make MAKE=make"
 # or add "MAKE = make" to this file.
@@ -22,7 +22,7 @@ IMAKE = $(IMAKESRC)/imake
 IMAKE_CMD = $(IMAKE) -I$(IRULESRC) $(IMAKE_DEFINES)
 MAKE_OPTS = -f xmakefile
 MAKE_CMD = $(MAKE) $(MAKE_OPTS)
-FLAGS = $(MFLAGS) -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"
+FLAGS = $(MFLAGS) -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)" CC="$(CC)"
 
 all:
 	@$(MAKE_CMD) xmakefile-exists || $(MAKE) all-initial
