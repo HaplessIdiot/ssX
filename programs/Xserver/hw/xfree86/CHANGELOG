@@ -10,7 +10,7 @@ XFree86 3.2d (9 November 1996)
   73. Fix an integer overflow in the S3V server when drawing long lines
       (Harald Koenig).
   72. Add detection of the Alliance ProMotion chips to SuperProbe
-      (patch not complete) (Joe Moss).
+      (Joe Moss).
   71. XAA udpates (including disabling non-TE text acceleration)
       (Harm Hanemaayer).
   70. Fix pixmap support in XAA (Harm Hanemaayer and Alan Hourihane).
