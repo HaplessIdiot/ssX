@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.27 1999/06/12 07:18:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.26 1999/04/27 12:05:16 dawes Exp $ */
 
 
 
@@ -241,6 +241,15 @@ typedef struct {
     CARD32* ColExpLUT;
     EntityInfoPtr       pEnt;
     memType   MMioBase;
+    memType scratchMemBase;
+    memType tsengCPU2ACLBase;
+    /* These will hold the ping-pong registers. */
+    int tsengFg;
+    int tsengBg;
+    int tsengPat;
+    int tseng_old_dir;
+    int old_x;
+    int old_y;
 } TsengRec, *TsengPtr;
 
 #define TsengPTR(p) ((TsengPtr)((p)->driverPrivate))

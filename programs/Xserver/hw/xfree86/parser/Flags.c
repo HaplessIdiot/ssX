@@ -194,22 +194,24 @@ printServerFlagsSection (FILE * f, XF86ConfFlagsPtr flags)
 static XF86OptionPtr
 addNewOption2 (XF86OptionPtr head, char *name, char *val, int used)
 {
-	XF86OptionPtr new, old = NULL;
+        XF86OptionPtr new, old = NULL;
 
 	/* Don't allow duplicates */
-	if (head != NULL && (old = FindOption(head, name)) != NULL)
-		new = old;
-	else
-		new = xf86confcalloc (1, sizeof (XF86OptionRec));
-	new->opt_name = name;
-	new->opt_val = val;
-	new->opt_used = used;
-	new->list.next = NULL;
-
-	if (old == NULL)
-		return ((XF86OptionPtr) addListItem ((glp) head, (glp) new));
-	else
-		return head;
+ 	if (head != NULL && (old = FindOption(head, name)) != NULL)
+ 	    new = old;
+ 	else {
+	    new = xf86confcalloc (1, sizeof (XF86OptionRec));
+ 	    new->list.next = NULL;
+ 	}
+ 	
+ 	new->opt_name = name;
+ 	new->opt_val = val;
+ 	new->opt_used = used;
+	
+  	if (old == NULL)
+	    return ((XF86OptionPtr) addListItem ((glp) head, (glp) new));
+ 	else 
+ 	    return head;
 }
 
 XF86OptionPtr
@@ -445,5 +447,14 @@ ULongToString(unsigned long i)
 		return NULL;
 	sprintf(s, "%lu", i);
 	return s;
+}
+
+void
+DebugListOptions(XF86OptionPtr Options)
+{
+    while (Options) {
+	ErrorF("Option: %s Value: %s\n",Options->opt_name,Options->opt_val);
+	Options = Options->list.next;
+    }
 }
 

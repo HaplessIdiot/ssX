@@ -75,39 +75,7 @@ int W32PatternOpTable[] =
     0xff			       /* Xset               1 */
 };
 
-long W32ForegroundPing;
-long W32ForegroundPong;
-long W32BackgroundPing;
-long W32BackgroundPong;
-long W32PatternPing;
-long W32PatternPong;
 
-LongP MemW32ForegroundPing;
-LongP MemW32ForegroundPong;
-LongP MemW32BackgroundPing;
-LongP MemW32BackgroundPong;
-LongP MemW32PatternPing;
-LongP MemW32PatternPong;
-
-unsigned char * tsengCPU2ACLBase;
-
-/* used for optimisation of direction-register writing */
-int tseng_old_dir = -1;
-int old_x = 0, old_y = 0;
-
-/* These will hold the ping-pong registers.
- * Note that ping-pong registers might not be needed when using
- * BACKGROUND_OPERATIONS (because of the WAIT()-ing involved)
- */
-
-LongP tsengMemFg;
-long tsengFg;
-
-LongP tsengMemBg;
-long tsengBg;
-
-LongP tsengMemPat;
-long tsengPat;
 
 /**********************************************************************/
 
@@ -134,7 +102,7 @@ tseng_recover_timeout(TsengPtr pTseng)
 {
     if (!Is_ET6K) {
 	ErrorF("trying to unlock......................................\n");
-	*tsengCPU2ACLBase = 0L;	       /* try unlocking the bus when CPU-to-accel gets stuck */
+	MMIO_OUT32(pTseng->tsengCPU2ACLBase,0,0L); /* try unlocking the bus when CPU-to-accel gets stuck */
     }
     if (Is_W32p) {		       /* flush the accelerator pipeline */
 	ACL_SUSPEND_TERMINATE(0x00);
@@ -143,14 +111,11 @@ tseng_recover_timeout(TsengPtr pTseng)
     }
 }
 
-long MMioBase;
-
 void 
 tseng_init_acl(ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     TsengPtr pTseng = TsengPTR(pScrn);
-    long scratchMemBase;
 
     PDEBUG("	tseng_init_acl\n");
     /*
@@ -158,17 +123,15 @@ tseng_init_acl(ScreenPtr pScreen)
      */
 
     if (pTseng->UseLinMem) {
-	pTseng->MMioBase = (long)pTseng->FbBase + 0x3FFF00;
-	scratchMemBase = (long)pTseng->FbBase + pTseng->AccelColorBufferOffset;
+	pTseng->scratchMemBase = (long)pTseng->FbBase + pTseng->AccelColorBufferOffset;
 	/* 
 	 * we won't be using tsengCPU2ACLBase in linear memory mode anyway, since
 	 * using the MMU apertures restricts the amount of useable video memory
 	 * to only 2MB, supposing we ONLY redirect MMU aperture 2 to the CPU.
 	 * (see data book W32p, page 207)
 	 */
-	tsengCPU2ACLBase = (unsigned char*) ((long)pTseng->FbBase + 0x200000);	/* MMU aperture 2 */
+	pTseng->tsengCPU2ACLBase = (memType)((long)pTseng->FbBase + 0x200000);	/* MMU aperture 2 */
     } else {
-	pTseng->MMioBase = (long)pTseng->FbBase + 0x1FF00L;
 	/*
 	 * MMU 0 is used for the scratchpad (i.e. FG and BG colors).
 	 *
@@ -177,39 +140,18 @@ tseng_init_acl(ScreenPtr pScreen)
 	 * being the first, and don't exceed 8kb (aperture size) in total
 	 * length.
 	 */
-	scratchMemBase = (long)pTseng->FbBase + 0x18000L;
-	MMIO_IN32(pTseng->MMioBase, 0x00<<2) = pTseng->AccelColorBufferOffset;
-	MMIO_IN32(pTseng->MMioBase, 0x04<<2) = pTseng->AccelImageWriteBufferOffsets[0];
+	pTseng->scratchMemBase = (long)pTseng->FbBase + 0x18000L;
+	MMIO_IN32(pTseng->MMioBase, 0x00<<0) = pTseng->AccelColorBufferOffset;
+	MMIO_IN32(pTseng->MMioBase, 0x04<<0) = pTseng->AccelImageWriteBufferOffsets[0];
 	/*
 	 * tsengCPU2ACLBase is used for CPUtoSCreen...() operations on < ET6000 devices
 	 */
-	tsengCPU2ACLBase = (unsigned char*) ((long)pTseng->FbBase + 0x1C000L);	/* MMU aperture 2 */
-	/*      MMIO_IN32(pTseng->MMioBase, 0x08<<2) = 200000; *//* TEST */
+	pTseng->tsengCPU2ACLBase = (memType) ((long)pTseng->FbBase + 0x1C000L);	/* MMU aperture 2 */
+	/*      MMIO_IN32(pTseng->MMioBase, 0x08<<0) = 200000; *//* TEST */
     }
-    
-    /* ErrorF("MMioBase = 0x%x, scratchMemBase = 0x%x\n", pTseng->MMioBase, scratchMemBase); */
-#if 1
+#ifdef DEBUG    
+    ErrorF("MMioBase = 0x%x, scratchMemBase = 0x%x\n", pTseng->MMioBase, pTseng->scratchMemBase);
 #endif
-
-    /* addresses in video memory (i.e. "0" = first byte in video memory) */
-    W32ForegroundPing = pTseng->AccelColorBufferOffset + 0;
-    W32ForegroundPong = pTseng->AccelColorBufferOffset + 8;
-
-    W32BackgroundPing = pTseng->AccelColorBufferOffset + 16;
-    W32BackgroundPong = pTseng->AccelColorBufferOffset + 24;
-
-    W32PatternPing = pTseng->AccelColorBufferOffset + 32;
-    W32PatternPong = pTseng->AccelColorBufferOffset + 40;
-
-    /* addresses in the memory map */
-    MemW32ForegroundPing = (LongP) (scratchMemBase + 0);
-    MemW32ForegroundPong = (LongP) (scratchMemBase + 8);
-
-    MemW32BackgroundPing = (LongP) (scratchMemBase + 16);
-    MemW32BackgroundPong = (LongP) (scratchMemBase + 24);
-
-    MemW32PatternPing = (LongP) (scratchMemBase + 32);
-    MemW32PatternPong = (LongP) (scratchMemBase + 40);
 
     /*
      * prepare the accelerator for some real work
@@ -229,7 +171,7 @@ tseng_init_acl(ScreenPtr pScreen)
 	ACL_MIX_CONTROL(0x33);
 	ACL_TRANSFER_DISABLE(0x00);  /* Undefined at power-on, enable all transfers */
     } else {			       /* W32i/W32p */
-	ACL_RELOAD_CONTROL(0x0);
+  	ACL_RELOAD_CONTROL(0x0); 
 	ACL_SYNC_ENABLE(0x1);	       /* | 0x2 = 0WS ACL read. Yields up to 10% faster operation for small blits */
 	ACL_ROUTING_CONTROL(0x00);
     }
@@ -281,11 +223,11 @@ tseng_init_acl(ScreenPtr pScreen)
 	 * linear memory when the accelerator is enabled.
 	 */
 	if (Is_W32p_ab) {
-	    MMIO_OUT32(pTseng->MMioBase, 0x00<<2, 0x200000L);
-	    MMIO_OUT32(pTseng->MMioBase, 0x04<<2, 0x280000L);
+	    MMIO_OUT32(pTseng->MMioBase, 0x00<<0, 0x200000L);
+	    MMIO_OUT32(pTseng->MMioBase, 0x04<<0, 0x280000L);
 	} else {		       /* rev C & D */
-	    MMIO_OUT32(pTseng->MMioBase, 0x00<<2, 0x0L);
-	    MMIO_OUT32 (pTseng->MMioBase, 0x04<<2, 0x100000L);
+	    MMIO_OUT32(pTseng->MMioBase, 0x00<<0, 0x0L);
+	    MMIO_OUT32 (pTseng->MMioBase, 0x04<<0, 0x100000L);
 	}
     }
 }

@@ -225,6 +225,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86MapVidMem)
    SYMFUNC(xf86UnMapVidMem)
    SYMFUNC(xf86MapReadSideEffects)
+   SYMFUNC(xf86UDelay) 
    SYMFUNC(xf86IODelay)
    SYMFUNC(xf86SlowBcopy)
 #ifdef __alpha__
@@ -249,7 +250,6 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86SerialModemClearBits)
    SYMFUNC(xf86LoadKernelModule)
    SYMFUNC(xf86OSMouseInit)
-   SYMFUNC(xf86UDelay)
    
 #ifdef XINPUT
 /* XISB routines  (Merged from Metrolink tree) */
@@ -499,6 +499,9 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86OptionListReport)
    SYMFUNC(xf86SetIntOption)
    SYMFUNC(xf86SetStrOption)
+   SYMFUNC(xf86ReplaceIntOption)
+   SYMFUNC(xf86ReplaceStrOption)
+   SYMFUNC(xf86ReplaceBoolOption)
    SYMFUNC(xf86FindOption)
    SYMFUNC(xf86FindOptionValue)
    SYMFUNC(xf86MarkOptionUsed)

@@ -237,8 +237,8 @@ TsengXAAInit_Colexp(ScrnInfoPtr pScrn)
 	    TsengSubsequentCPUToScreenColorExpandFill;
 
 	/* we'll be using MMU aperture 2 */
-	pXAAInfo->ColorExpandBase = tsengCPU2ACLBase;
-	/* ErrorF("tsengCPU2ACLBase = 0x%x\n", tsengCPU2ACLBase); */
+	pXAAInfo->ColorExpandBase = (CARD8 *)pTseng->tsengCPU2ACLBase;
+	/* ErrorF("tsengCPU2ACLBase = 0x%x\n", pTseng->tsengCPU2ACLBase); */
 	/* aperture size is 8kb in banked mode. Larger in linear mode, but 8kb is enough */
 	pXAAInfo->ColorExpandRange = 8192;
     }
@@ -326,8 +326,8 @@ TsengSubsequentColorExpandScanline(ScrnInfoPtr pScrn,
 void TsengSubsequentColorExpandScanline_8bpp(ScrnInfoPtr pScrn, int bufno)
 {
     TsengPtr pTseng = TsengPTR(pScrn);
-    CARD8 *dest = (CARD8 *) tsengCPU2ACLBase;
-    int i;
+    memType dest = pTseng->tsengCPU2ACLBase;
+    int i,j;
     CARD8 *bufptr;
 
     i = colexp_width_bytes;
@@ -337,11 +337,11 @@ void TsengSubsequentColorExpandScanline_8bpp(ScrnInfoPtr pScrn, int bufno)
     START_ACL (pTseng, ColorExpandDst);
 
 /*  *((LongP) (MMioBase + 0x08)) = (CARD32) ColorExpandDst;*/
-/*  *(CARD32*)tsengCPU2ACLBase = (CARD32)ColorExpandDst; */
-
+/*  MMIO_OUT32(tsengCPU2ACLBase,0, (CARD32)ColorExpandDst); */
+    j = 0;
     /* Copy scanline data to accelerator MMU aperture byte by byte */
     while (i--) {		       /* FIXME: we need to take care of PCI bursting and MMU overflow here! */
-	*dest++ = *bufptr++;
+	MMIO_OUT8(dest,j++, *bufptr++);
     }
 
     /* move to next scanline */
@@ -357,21 +357,22 @@ void TsengSubsequentColorExpandScanline_8bpp(ScrnInfoPtr pScrn, int bufno)
 void TsengSubsequentColorExpandScanline_16bpp(ScrnInfoPtr pScrn, int bufno)
 {
     TsengPtr pTseng = TsengPTR(pScrn);
-    CARD8 *dest = (CARD8 *) tsengCPU2ACLBase;
-    int i;
+    memType dest = pTseng->tsengCPU2ACLBase;
+    int i,j;
     CARD8 *bufptr;
     register CARD32 bits16;
-
+    
     i = colexp_width_dwords * 2;
     bufptr = (CARD8 *) (pTseng->XAAScanlineColorExpandBuffers[bufno]);
     
     wait_acl_queue(pTseng);
     START_ACL(pTseng, ColorExpandDst);
 
+    j = 0;
     while (i--) {
 	bits16 = pTseng->ColExpLUT[*bufptr++];
-	*dest++ = bits16 & 0xFF;
-	*dest++ = (bits16 >> 8) & 0xFF;
+	MMIO_OUT8(dest,j++,bits16 & 0xFF);
+	MMIO_OUT8(dest,j++,(bits16 >> 8) & 0xFF);
     }
 
     /* move to next scanline */
@@ -387,8 +388,8 @@ void TsengSubsequentColorExpandScanline_16bpp(ScrnInfoPtr pScrn, int bufno)
 void TsengSubsequentColorExpandScanline_24bpp(ScrnInfoPtr pScrn, int bufno)
 {
     TsengPtr pTseng = TsengPTR(pScrn);
-    CARD8 *dest = (CARD8 *) tsengCPU2ACLBase;
-    int i, j = -1;
+    memType dest =  pTseng->tsengCPU2ACLBase;
+    int i, k, j = -1;
     CARD8 *bufptr;
     register CARD32 bits24;
 
@@ -400,12 +401,13 @@ void TsengSubsequentColorExpandScanline_24bpp(ScrnInfoPtr pScrn, int bufno)
 
     /* take 8 input bits, expand to 3 output bytes */
     bits24 = pTseng->ColExpLUT[*bufptr++];
+    k = 0;
     while (i--) {
 	if ((j++) == 2) {	       /* "i % 3" operation is much to expensive */
 	    j = 0;
 	    bits24 = pTseng->ColExpLUT[*bufptr++];
 	}
-	*dest++ = bits24 & 0xFF;
+	MMIO_OUT8(dest,k++,bits24 & 0xFF);
 	bits24 >>= 8;
     }
 
@@ -422,8 +424,8 @@ void TsengSubsequentColorExpandScanline_24bpp(ScrnInfoPtr pScrn, int bufno)
 void TsengSubsequentColorExpandScanline_32bpp(ScrnInfoPtr pScrn, int bufno)
 {
     TsengPtr pTseng = TsengPTR(pScrn);
-    CARD8 *dest = (CARD8 *) tsengCPU2ACLBase;
-    int i;
+    memType dest = pTseng->tsengCPU2ACLBase;
+    int i,j;
     CARD8 *bufptr;
     register CARD32 bits32;
 
@@ -433,12 +435,13 @@ void TsengSubsequentColorExpandScanline_32bpp(ScrnInfoPtr pScrn, int bufno)
     wait_acl_queue(pTseng);
     START_ACL(pTseng, ColorExpandDst);
 
+    j = 0;
     while (i--) {
 	bits32 = pTseng->ColExpLUT[*bufptr++];
-	*dest++ = bits32 & 0xFF;
-	*dest++ = (bits32 >> 8) & 0xFF;
-	*dest++ = (bits32 >> 16) & 0xFF;
-	*dest++ = (bits32 >> 24) & 0xFF;
+	MMIO_OUT8(dest,j++,bits32 & 0xFF);
+	MMIO_OUT8(dest,j++,(bits32 >> 8) & 0xFF);
+	MMIO_OUT8(dest,j++,(bits32 >> 16) & 0xFF);
+	MMIO_OUT8(dest,j++,(bits32 >> 24) & 0xFF);
     }
 
     /* move to next scanline */
@@ -457,7 +460,7 @@ void TsengSetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 
 /*  ErrorF("X"); */
 
-    PINGPONG();
+    PINGPONG(pTseng);
 
     wait_acl_queue(pTseng);
 
@@ -512,7 +515,7 @@ TsengSetupForScreenToScreenColorExpandFill(ScrnInfoPtr pScrn,
 
 /*  ErrorF("SSC "); */
 
-    PINGPONG();
+    PINGPONG(pTseng);
 
     wait_acl_queue(pTseng);
 

@@ -411,6 +411,7 @@ TsengLock(void)
  * This code is only called when the chipset is not given beforehand,
  * and if the PCI code hasn't detected one previously.
  */
+#if 0
 static Bool
 ET4000MinimalProbe(void)
 {
@@ -450,6 +451,7 @@ ET4000MinimalProbe(void)
     }
     return TRUE;
 }
+#endif
 
 static int
 TsengFindIsaDevice(GDevPtr dev)
@@ -1964,7 +1966,7 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Map the Tseng memory areas */
     if (!TsengMapMem(pScrn))
 	return FALSE;
-    
+
     /* Save the current state */
     TsengSave(pScrn);
 
@@ -2297,10 +2299,37 @@ TsengMapMem(ScrnInfoPtr pScrn)
 		"Could not mmap linear video memory.\n");
 	    return FALSE;
 	}
+	if (pTseng->UseAccel) {
+	  pTseng->MMioBase = (memType)xf86MapPciMem(pScrn->scrnIndex, 
+					   VIDMEM_MMIO,
+					   pTseng->PciTag,
+					   (unsigned long)pTseng->LinFbAddress,
+					   pTseng->FbMapSize);
+	  if (pTseng->MMioBase == NULL) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		       "Could not mmap mmio memory.\n");
+	    return FALSE;
+	  }
+	  pTseng->MMioBase += 0x3FFF00L;
+	}
     } else {
-	pTseng->FbBase = VGAHWPTR(pScrn)->Base;
+        vgaHWPtr hwp = VGAHWPTR(pScrn);
+	if (pTseng->UseAccel) {
+	    pTseng->FbBase = hwp->Base;
+	    pTseng->MMioBase = (memType)xf86MapPciMem(pScrn->scrnIndex, 
+					     VIDMEM_MMIO,
+					     pTseng->PciTag,
+					     (unsigned long)hwp->MapPhys,
+					     hwp->MapSize);
+	    if (pTseng->MMioBase == NULL) {
+	      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			 "Could not mmap mmio memory.\n");
+	      return FALSE;
+	    }
+	    pTseng->MMioBase += 0x1FF00L;
+	}
     }
-
+    
     if (pTseng->FbBase == NULL)
 	return FALSE;
 
