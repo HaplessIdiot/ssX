@@ -1,5 +1,5 @@
 /* $XConsortium: ppcIO.c,v 1.3 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcIO.c,v 3.0 1994/05/04 15:03:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcIO.c,v 3.2 1995/01/28 17:06:06 dawes Exp $ */
 /*
 
 Copyright (c) 1990  X Consortium
@@ -70,19 +70,12 @@ SOFTWARE.
 extern ScreenRec vgaScreenRec ; /* Forward Declaration Here */
 
 VisualRec vgaVisuals[] = {
-	{
-	0,			/* unsigned long	vid */
-	PseudoColor,		/* short       class */
-	6,			/* short       bitsPerRGBValue */
-	1 << VGA_MAXPLANES,	/* short	ColormapEntries */
-	VGA_MAXPLANES,		/* short	nplanes */
-	0,			/* unsigned long	redMask */
-	0,			/* unsigned long	greenMask */
-	0,			/* unsigned long	blueMask */
-	0,			/* int		offsetRed */
-	0,			/* int		offsetGreen */
-	0			/* int		offsetBlue */
-	}
+/* StaticColor needs to be first so is can be used as the default */
+/* vid class     bpRGB cmpE nplan rMask gMask bMask oRed oGreen oBlue */
+{   0, StaticColor, 6, 1 << VGA_MAXPLANES, VGA_MAXPLANES, 0, 0, 0, 0, 0, 0 },
+{   0, StaticGray,  6, 1 << VGA_MAXPLANES, VGA_MAXPLANES, 0, 0, 0, 0, 0, 0 },
+{   0, GrayScale,   6, 1 << VGA_MAXPLANES, VGA_MAXPLANES, 0, 0, 0, 0, 0, 0 },
+{   0, PseudoColor, 6, 1 << VGA_MAXPLANES, VGA_MAXPLANES, 0, 0, 0, 0, 0, 0 },
 } ;
 
 #define NUM_VISUALS  (sizeof vgaVisuals/sizeof (VisualRec))
@@ -198,12 +191,38 @@ Init16Output( pScreen, pbits, virtx, virty, dpix, dpiy, width )
     int width;
 {
   extern int defaultColorVisualClass;
+  int defvisual,i;
 
-  if ( defaultColorVisualClass < 0 ) {
-    vgaVisuals[0].class = PseudoColor;
-  } else {
-    vgaVisuals[0].class = defaultColorVisualClass;
-  }
+  switch ( defaultColorVisualClass )
+    {
+    case StaticColor:
+    case PseudoColor:
+    case StaticGray:
+    case GrayScale:
+      defvisual = defaultColorVisualClass;
+      break;
+    case TrueColor:
+    case DirectColor:
+    ErrorF("(!!) VGA16: Visual Class %d is not supported, using StaticColor.\n",
+			defaultColorVisualClass );
+    default:
+      defvisual = StaticColor;
+    }
+
+  /* Initialize the list of vids used for depth 4 */
+  for(i=0; i<NUM_VISUALS; i++)
+	vgaDepthVIDs[i]=vgaVisuals[i].vid=FakeClientID(0);
+
+  /* Determine the default Visual */
+  for(i=0; i<NUM_VISUALS; i++)
+	if (vgaVisuals[i].class == defvisual)
+	    {
+	    defvisual=vgaVisuals[i].vid;
+	    break;
+	    }
+  /* should never needs this, but just to be safe */
+  if(i == NUM_VISUALS)
+	defvisual=vgaVisuals[0].vid;
 
   pScreen-> id = 0;
   pScreen->defColormap = FakeClientID(0);
@@ -212,8 +231,6 @@ Init16Output( pScreen, pbits, virtx, virty, dpix, dpiy, width )
   pScreen-> rgf = 0;
   *(pScreen-> GCperDepth) = *(sampleGCperDepth);
   *(pScreen-> PixmapPerDepth) = *(samplePixmapPerDepth);
-  pScreen-> numVisuals = sizeof vgaVisuals/sizeof (VisualRec);
-  pScreen-> visuals = &vgaVisuals[0];
   pScreen-> CloseScreen = vgaScreenClose;
   pScreen-> QueryBestSize = ppcQueryBestSize;
   pScreen-> GetImage = ppcGetImage;
@@ -238,16 +255,16 @@ Init16Output( pScreen, pbits, virtx, virty, dpix, dpiy, width )
   pScreen-> RealizeFont = mfbRealizeFont;
   pScreen-> UnrealizeFont = mfbUnrealizeFont;
   pScreen-> CreateGC = ppcCreateGC;
-  pScreen-> CreateColormap = (Bool (*)())ppcInitializeColormap;
+  pScreen-> CreateColormap = (Bool (*)())vga16InitializeColormap;
   pScreen-> DestroyColormap = (void (*)())NoopDDA;
-  pScreen-> ResolveColor = ppcResolveColor;
+  pScreen-> ResolveColor = vga16ResolveColor;
   pScreen-> BitmapToRegion = mfbPixmapToRegion;
 
   if (!mfbAllocatePrivates(pScreen, (int*)NULL, (int*)NULL))
 	return ;
 
   miScreenInit(pScreen, pbits, virtx, virty, 75, 75, virtx,
-	VGA_MAXPLANES, NUM_DEPTHS, vgaDepths, 0 /* See above */,
+	VGA_MAXPLANES, NUM_DEPTHS, vgaDepths, defvisual /* See above */,
 	NUM_VISUALS, vgaVisuals, &ppcBSFuncRec);
 
   /* GJA -- Now we override the supplied default: */

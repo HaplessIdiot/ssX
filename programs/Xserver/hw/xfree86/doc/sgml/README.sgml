@@ -813,8 +813,8 @@ and the following mirror sites:
 
 <item>   Asia/Australia:
 <itemize>
-<item>   <url url="ftp://x.physics.su.oz.au/pub/XFree86/3.1.1" 
-	name="x.physics.su.oz.au:/pub/XFree86/3.1.1">
+<item>   <url url="ftp://x.physics.usyd.edu.au/pub/XFree86/3.1.1" 
+	name="x.physics.usyd.edu.au:/pub/XFree86/3.1.1">
 	(source and binaries)
 <!--
 <item>   <url url="ftp://ftp.iij.ad.jp/pub/X/XFree86" 
@@ -846,7 +846,7 @@ compile-time option selections were made when building the distribution.
 
 <verb>
 $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.20 1995/02/12 02:39:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.21 1995/03/04 06:15:59 dawes Exp $
 </verb>
 
 </article>

@@ -1,5 +1,5 @@
 /* $XConsortium: ppcGC.c,v 1.3 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcGC.c,v 3.0 1994/05/04 15:03:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcGC.c,v 3.2 1995/01/28 17:06:03 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -167,7 +167,7 @@ static GCOps vgaGCOps = {
 	ppcSolidWindowFS,	/*  void (* FillSpans)() */
 	ppcSetSpans,		/*  void (* SetSpans)()	 */
 	miPutImage,		/*  void (* PutImage)()	 */
-	ppcCopyArea,		/*  RegionPtr (* CopyArea)()	 */
+	vga16CopyArea,		/*  RegionPtr (* CopyArea)()	 */
 	miCopyPlane,		/*  void (* CopyPlane)() */
 	ppcPolyPoint,		/*  void (* PolyPoint)() */
 	miZeroLine,		/*  void (* Polylines)() */
@@ -184,7 +184,10 @@ static GCOps vgaGCOps = {
 	(void (*)()) v16ImageGlyphBlt,	/*  GJA -- void (* ImageGlyphBlt)() */
 	(void (*)()) miPolyGlyphBlt,	/*  GJA -- void (* PolyGlyphBlt)() */
 	miPushPixels,		/*  void (* PushPixels)() */
-	miMiter			/*  void (* LineHelper)() */
+#ifdef NEED_LINEHELPER
+	miMiter,		/*  void (* LineHelper)() */
+#endif
+	NULL
 };
 
 Bool

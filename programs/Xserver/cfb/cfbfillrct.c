@@ -29,6 +29,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cfbfillrct.c,v 5.18 94/04/17 20:28:47 dpw Exp $ */
+/* $XFree86$ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -112,6 +113,14 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     void	    (*BoxFill)();
     int		    n;
     int		    xorg, yorg;
+
+#if PSZ != 8
+    if ((pGC->fillStyle == FillStippled) ||
+	(pGC->fillStyle == FillOpaqueStippled)) {
+       miPolyFillRect(pDrawable, pGC, nrectFill, prectInit);
+       return;
+    }
+#endif
 
     priv = cfbGetGCPrivate(pGC);
     prgnClip = priv->pCompositeClip;

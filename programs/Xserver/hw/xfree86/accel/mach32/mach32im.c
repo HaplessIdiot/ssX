@@ -1,5 +1,5 @@
 /* $XConsortium: mach32im.c,v 1.5 95/01/05 20:27:25 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32im.c,v 3.5 1994/11/26 12:41:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32im.c,v 3.7 1995/01/28 16:59:11 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -122,7 +122,7 @@ static int screenStride;
 #define __inline__ /**/
 #endif
 
-static __inline__ void outsw(void *buf, short count, unsigned short port)
+static __inline__ void outsw(void *buf, int count, unsigned short port)
 {
    __asm__ __volatile__ ("cld;rep;outsw"
 		     ::"d" (port),"S" (buf),"c" (count):"cx","si");
@@ -144,7 +144,7 @@ static __inline__ void XYSetVGAPage(int x, int y)
 
 static void outsw(buf, count, port)
 void *buf;
-short count;
+int count;
 register unsigned short port;
 {
 	register int i;

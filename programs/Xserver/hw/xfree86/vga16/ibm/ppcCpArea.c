@@ -1,5 +1,5 @@
 /* $XConsortium: ppcCpArea.c,v 1.3 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcCpArea.c,v 3.1 1994/06/18 16:26:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcCpArea.c,v 3.3 1995/01/28 17:06:02 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -186,202 +186,260 @@ if ( ! pPriv->pCompositeClip )
 	return prgnExposed ;
 }
 
+/*
+ * This now uses the same algorithm a mfb and cfb.
+ */
+
 RegionPtr
-ppcCopyArea( pSrcDrawable, pDstDrawable,
-	     pGC, srcx, srcy, width, height, dstx, dsty )
-register DrawablePtr pSrcDrawable ;
-register DrawablePtr pDstDrawable ;
-GC *pGC ;
-int srcx, srcy ;
-int width, height ;
-int dstx, dsty ;
+vga16CopyArea(pSrcDrawable, pDstDrawable,
+	    pGC, srcx, srcy, width, height, dstx, dsty)
+register DrawablePtr pSrcDrawable;
+register DrawablePtr pDstDrawable;
+register GC *pGC;
+int srcx, srcy;
+int width, height;
+int dstx, dsty;
 {
-	register BoxPtr pbox ;
-	register int dx ;
-	register int dy ;
-	int nbox ;
-	ScreenPtr pScreen ;
-	RegionPtr prgnDst ;
-	RegionPtr prgnExposed ;
-	int alu ;
-	unsigned long int pm ;
-	/* temporaries for shuffling rectangles */
-	xRectangle *origSource ;
-	DDXPointRec *origDest ;
-	ppcPrivGC *pPriv ;
+    RegionPtr prgnSrcClip;	/* may be a new region, or just a copy */
+    Bool freeSrcClip = FALSE;
 
-	if ( !( pm = pGC->planemask ) || ( ( alu = pGC->alu ) == GXnoop ) )
-		return NULL ;
+    RegionPtr prgnExposed;
+    RegionRec rgnDst;
+    DDXPointPtr pptSrc;
+    register DDXPointPtr ppt;
+    register BoxPtr pbox;
+    int i;
+    register int dx;
+    register int dy;
+    xRectangle origSource;
+    DDXPointRec origDest;
+    int numRects;
+    BoxRec fastBox;
+    int fastClip = 0;		/* for fast clipping with pixmap source */
+    int fastExpose = 0;		/* for fast exposures with pixmap source */
 
-	/*
-	 * If the destination drawable is not a window then call the mi version.
-	 */
-	if ( pDstDrawable->type != DRAWABLE_WINDOW )
-		return miCopyArea( pSrcDrawable, pDstDrawable, pGC,
-				   srcx, srcy, width, height, dstx, dsty ) ;
+    /*
+     * Check for a few special cases.
+     */
+    if ( pDstDrawable->type != DRAWABLE_WINDOW )
+	return miCopyArea( pSrcDrawable, pDstDrawable, pGC,
+			   srcx, srcy, width, height, dstx, dsty ) ;
+    /* BY HERE, You know you are going to a Window */
+    if ( !( (WindowPtr) pDstDrawable )->realized )
+	return NULL ;
 
-	/* BY HERE, You know you are going to a Window */
-	if ( !( (WindowPtr) pDstDrawable )->realized )
-		return NULL ;
+    if ( pSrcDrawable->type != DRAWABLE_WINDOW )
+	return ppcCopyAreaFromPixmap( (PixmapPtr) pSrcDrawable,
+				      pDstDrawable,
+				      pGC, srcx, srcy, width,
+				      height, dstx, dsty ) ;
 
-	if ( pSrcDrawable->type != DRAWABLE_WINDOW )
-		return ppcCopyAreaFromPixmap( (PixmapPtr) pSrcDrawable,
-					      pDstDrawable,
-					      pGC, srcx, srcy, width,
-					      height, dstx, dsty ) ;
+    /* Begin code from mfb/cfbCopyArea */
 
-	pPriv = (ppcPrivGC *) ( pGC->devPrivates[mfbGCPrivateIndex].ptr ) ;
-	/* BY HERE, You know you are going from a Window to a Window */
-	if ( pPriv->fExpose ) {
-		if ( !( origSource = (xRectangle *)
-		    ALLOCATE_LOCAL( sizeof( xRectangle ) ) ) )
-			return NULL ;
-		origSource->x = srcx ;
-		origSource->y = srcy ;
-		origSource->width = width ;
-		origSource->height = height ;
-		if ( !( origDest = (DDXPointRec *)
-		    ALLOCATE_LOCAL( sizeof( DDXPointRec ) ) ) ) {
-			DEALLOCATE_LOCAL( origSource ) ;
-			return NULL ;
-		}
-		origDest->x = dstx ;
-		origDest->y = dsty ;
-	}
-	else {
-		origSource = (xRectangle *) 0 ;
-		origDest = (DDXPointRec *) 0 ;
-	}
+    origSource.x = srcx;
+    origSource.y = srcy;
+    origSource.width = width;
+    origSource.height = height;
+    origDest.x = dstx;
+    origDest.y = dsty;
 
-	/* clip the left and top edges of the source */
-	if ( srcx < 0 ) {
-		width += srcx ;
-		srcx = pSrcDrawable->x ;
-	}
-	else
-		srcx += pSrcDrawable->x ;
-	if ( srcy < 0 ) {
-		height += srcy ;
-		srcy = pSrcDrawable->y ;
-	}
-	else
-		srcy += pSrcDrawable->y ;
+    if ((pSrcDrawable != pDstDrawable) &&
+	pSrcDrawable->pScreen->SourceValidate)
+    {
+	(*pSrcDrawable->pScreen->SourceValidate) (pSrcDrawable, srcx, srcy, width, height);
+    }
 
-	pScreen = pDstDrawable->pScreen ;
-	/* clip the source */
+    srcx += pSrcDrawable->x;
+    srcy += pSrcDrawable->y;
+
+    /* clip the source */
+
+    if (pSrcDrawable->type == DRAWABLE_PIXMAP)
+    {
+	if ((pSrcDrawable == pDstDrawable) &&
+	    (pGC->clientClipType == CT_NONE))
 	{
-		BoxRec srcBox ;
-
-		srcBox.x1 = srcx ;
-		srcBox.y1 = srcy ;
-		srcBox.x2 = srcx + width ;
-		srcBox.y2 = srcy + height ;
-
-		prgnDst = (* pScreen->RegionCreate)( &srcBox, 1 ) ;
-	}
-	if ( pGC->subWindowMode == IncludeInferiors ) {
-		register RegionPtr prgnSrcClip =
-			NotClippedByChildren( (WindowPtr) pSrcDrawable ) ;
-		(* pScreen->Intersect)( prgnDst, prgnDst, prgnSrcClip ) ;
-		(* pScreen->RegionDestroy)( prgnSrcClip ) ;
+	    prgnSrcClip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
 	}
 	else
-		(* pScreen->Intersect)( prgnDst, prgnDst,
-				&(((WindowPtr) pSrcDrawable)->clipList) ) ;
-
-	dstx += pDstDrawable->x ;
-	dsty += pDstDrawable->y ;
-
-	dx = srcx - dstx ;
-	dy = srcy - dsty ;
-
-	/* clip the shape of the dst to the destination composite clip */
-	(* pScreen->TranslateRegion)( prgnDst, -dx, -dy ) ;
-	(* pScreen->Intersect)( prgnDst, prgnDst, pPriv->pCompositeClip ) ;
-
-	/* nbox != 0 destination region is visable */
-	if ( nbox = REGION_NUM_RECTS(prgnDst) ) {
-		BoxPtr pboxTmp, pboxNext, pboxBase, pboxNew1, pboxNew2 ;
-
-		pbox = REGION_RECTS(prgnDst);
-
-		pboxNew1 = 0 ;
-		pboxNew2 = 0 ;
-		if ( nbox > 1 ) {
-			if ( dy < 0 ) {
-				/* walk source bottom to top */
-				/* keep ordering in each band, */
-				/* reverse order of bands */
-				if ( !( pboxNew1 = (BoxPtr)
-					ALLOCATE_LOCAL( nbox * sizeof (BoxRec) ) ) ) {
-					(* pScreen->RegionDestroy)( prgnDst ) ;
-					return NULL ;
-				}
-				for ( pboxBase = pboxNext = pbox + nbox - 1 ;
-				      pboxBase >= pbox ;
-				      pboxBase = pboxNext ) {
-					while ( pboxNext >= pbox
-					     && pboxBase->y1 == pboxNext->y1 )
-						pboxNext-- ;
-					for ( pboxTmp = pboxNext + 1 ;
-					      pboxTmp <= pboxBase ;
-					      *pboxNew1++ = *pboxTmp++ )
-						/*DO NOTHING*/ ;
-				}
-				pbox = ( pboxNew1 -= nbox ) ;
-			}
-			if ( dx < 0 ) {
-				/* walk source right to left */
-				/* reverse order of rects in each band */
-				if ( !( pboxNew2 = (BoxPtr)
-				    ALLOCATE_LOCAL( sizeof (BoxRec) * nbox ) ) ) {
-					(* pScreen->RegionDestroy)( prgnDst ) ;
-					return NULL ;
-				}
-				for ( pboxBase = pboxNext = pbox ;
-				      pboxBase < pbox + nbox ;
-				      pboxBase = pboxNext ) {
-					while ( pboxNext < pbox + nbox
-					     && pboxNext->y1 == pboxBase->y1 )
-						pboxNext++ ;
-					for ( pboxTmp = pboxNext ;
-					      pboxTmp != pboxBase ;
-					      *pboxNew2++ = *--pboxTmp )
-						/*DO NOTHING*/ ;
-				}
-				pbox = ( pboxNew2 -= nbox ) ;
-			}
-		}
-		{ /* Here is the "REAL" copy. All clipped and GO. */
-		for ( ; nbox-- ; pbox++ )
-			vgaBitBlt( (WindowPtr)pDstDrawable, alu, pm, pm,
-				 pbox->x1 + dx, pbox->y1 + dy,
-				 pbox->x1, pbox->y1,
-				 pbox->x2 - pbox->x1, pbox->y2 - pbox->y1 ) ;
-		}
-		/* free up stuff */
-		if ( pboxNew1 )
-			DEALLOCATE_LOCAL( pboxNew1 ) ;
-		if ( pboxNew2 )
-			DEALLOCATE_LOCAL( pboxNew2 ) ;
-
-		if ( origSource ) {
-			prgnExposed = miHandleExposures(
-					pSrcDrawable, pDstDrawable, pGC,
-			    		origSource->x, origSource->y,
-			    		origSource->width, origSource->height,
-			    		origDest->x, origDest->y,
-					pGC->planemask ) ;
-			DEALLOCATE_LOCAL( origSource ) ;
-			DEALLOCATE_LOCAL( origDest ) ;
-		}
-		else
-			prgnExposed = (RegionPtr) 0 ;
+	{
+	    fastClip = 1;
 	}
-	else /* nbox == 0 no visable destination region */
-		prgnExposed = (RegionPtr) 0 ;
+    }
+    else
+    {
+	if (pGC->subWindowMode == IncludeInferiors)
+	{
+	    if (!((WindowPtr) pSrcDrawable)->parent)
+	    {
+		/*
+		 * special case bitblt from root window in
+		 * IncludeInferiors mode; just like from a pixmap
+		 */
+		fastClip = 1;
+	    }
+	    else if ((pSrcDrawable == pDstDrawable) &&
+		(pGC->clientClipType == CT_NONE))
+	    {
+		prgnSrcClip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
+	    }
+	    else
+	    {
+		prgnSrcClip = NotClippedByChildren((WindowPtr)pSrcDrawable);
+		freeSrcClip = TRUE;
+	    }
+	}
+	else
+	{
+	    prgnSrcClip = &((WindowPtr)pSrcDrawable)->clipList;
+	}
+    }
 
-	(* pScreen->RegionDestroy)( prgnDst ) ;
+    fastBox.x1 = srcx;
+    fastBox.y1 = srcy;
+    fastBox.x2 = srcx + width;
+    fastBox.y2 = srcy + height;
 
-	return prgnExposed ;
+    /* Don't create a source region if we are doing a fast clip */
+    if (fastClip)
+    {
+	fastExpose = 1;
+	/*
+	 * clip the source; if regions extend beyond the source size,
+ 	 * make sure exposure events get sent
+	 */
+	if (fastBox.x1 < pSrcDrawable->x)
+	{
+	    fastBox.x1 = pSrcDrawable->x;
+	    fastExpose = 0;
+	}
+	if (fastBox.y1 < pSrcDrawable->y)
+	{
+	    fastBox.y1 = pSrcDrawable->y;
+	    fastExpose = 0;
+	}
+	if (fastBox.x2 > pSrcDrawable->x + (int) pSrcDrawable->width)
+	{
+	    fastBox.x2 = pSrcDrawable->x + (int) pSrcDrawable->width;
+	    fastExpose = 0;
+	}
+	if (fastBox.y2 > pSrcDrawable->y + (int) pSrcDrawable->height)
+	{
+	    fastBox.y2 = pSrcDrawable->y + (int) pSrcDrawable->height;
+	    fastExpose = 0;
+	}
+    }
+    else
+    {
+	(*pGC->pScreen->RegionInit)(&rgnDst, &fastBox, 1);
+	(*pGC->pScreen->Intersect)(&rgnDst, &rgnDst, prgnSrcClip);
+    }
+
+    dstx += pDstDrawable->x;
+    dsty += pDstDrawable->y;
+
+    if (pDstDrawable->type == DRAWABLE_WINDOW)
+    {
+	if (!((WindowPtr)pDstDrawable)->realized)
+	{
+	    if (!fastClip)
+		(*pGC->pScreen->RegionUninit)(&rgnDst);
+	    if (freeSrcClip)
+		(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+	    return NULL;
+	}
+    }
+
+    dx = srcx - dstx;
+    dy = srcy - dsty;
+
+    /* Translate and clip the dst to the destination composite clip */
+    if (fastClip)
+    {
+	RegionPtr cclip;
+
+        /* Translate the region directly */
+        fastBox.x1 -= dx;
+        fastBox.x2 -= dx;
+        fastBox.y1 -= dy;
+        fastBox.y2 -= dy;
+
+	/* If the destination composite clip is one rectangle we can
+	   do the clip directly.  Otherwise we have to create a full
+	   blown region and call intersect */
+	cclip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
+        if (REGION_NUM_RECTS(cclip) == 1)
+        {
+	    BoxPtr pBox = REGION_RECTS(cclip);
+
+	    if (fastBox.x1 < pBox->x1) fastBox.x1 = pBox->x1;
+	    if (fastBox.x2 > pBox->x2) fastBox.x2 = pBox->x2;
+	    if (fastBox.y1 < pBox->y1) fastBox.y1 = pBox->y1;
+	    if (fastBox.y2 > pBox->y2) fastBox.y2 = pBox->y2;
+
+	    /* Check to see if the region is empty */
+	    if (fastBox.x1 >= fastBox.x2 || fastBox.y1 >= fastBox.y2)
+		(*pGC->pScreen->RegionInit)(&rgnDst, NullBox, 0);
+	    else
+		(*pGC->pScreen->RegionInit)(&rgnDst, &fastBox, 1);
+	}
+        else
+	{
+	    /* We must turn off fastClip now, since we must create
+	       a full blown region.  It is intersected with the
+	       composite clip below. */
+	    fastClip = 0;
+	    (*pGC->pScreen->RegionInit)(&rgnDst, &fastBox,1);
+	}
+    }
+    else
+    {
+        (*pGC->pScreen->TranslateRegion)(&rgnDst, -dx, -dy);
+    }
+
+    if (!fastClip)
+    {
+	(*pGC->pScreen->Intersect)(&rgnDst,
+				   &rgnDst,
+				 ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip);
+    }
+
+    /* Do bit blitting */
+    numRects = REGION_NUM_RECTS(&rgnDst);
+    if (numRects && width && height)
+    {
+	/*
+	 * Don't both allocating some boxes, just call the blit routine
+	 * directly.
+	 */
+	pbox = REGION_RECTS(&rgnDst);
+	for (i = numRects; --i >= 0; pbox++, ppt++)
+	{
+	    vgaBitBlt( (WindowPtr)pDstDrawable, pGC->alu,
+			pGC->planemask, pGC->planemask,
+			pbox->x1 + dx,		/* x0 */
+			pbox->y1 + dy,		/* y0 */
+			pbox->x1,		/* x1 */
+			pbox->y1,		/* y1 */
+			pbox->x2 - pbox->x1,	/* w */
+			pbox->y2 - pbox->y1 );	/* h */
+	}
+    }
+
+    prgnExposed = NULL;
+    if (((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->fExpose) 
+    {
+        /* Pixmap sources generate a NoExposed (we return NULL to do this) */
+        if (!fastExpose)
+	    prgnExposed =
+		miHandleExposures(pSrcDrawable, pDstDrawable, pGC,
+				  origSource.x, origSource.y,
+				  (int)origSource.width,
+				  (int)origSource.height,
+				  origDest.x, origDest.y, (unsigned long)0);
+    }
+    (*pGC->pScreen->RegionUninit)(&rgnDst);
+    if (freeSrcClip)
+	(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+    return prgnExposed;
 }

@@ -1,5 +1,5 @@
 /* $XConsortium: vgaGC.c,v 1.3 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaGC.c,v 3.0 1994/05/04 15:03:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaGC.c,v 3.2 1995/01/28 17:06:19 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -132,7 +132,7 @@ register ppcPrivGCPtr devPriv ;
 	}
 	else {
 	    devPriv->FillArea	= ppcAreaFill ;
-	    pGC->ops->CopyArea	= ppcCopyArea ;
+	    pGC->ops->CopyArea	= vga16CopyArea ;
 	    pGC->ops->PolyFillRect	= ppcPolyFillRect ;
 	    pGC->ops->PushPixels	= miPushPixels ; /* GJA */
 	    pGC->ops->PolyArc	= v16ZeroPolyArc ;

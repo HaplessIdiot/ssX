@@ -25,10 +25,10 @@
 # Changed for XFree86 by Thomas Wolfram,
 # (thomas@aeon.in-berlin.de, wolf@prz.tu-berlin.de)
 # Changed for XFree86 3.1 to coexist with Interactive X11 by Michael Rohleder
-# (michael.rohleder%iktffm.uucp@Germany.EU.net)
+# (michael.rohleder@stadt-frankfurt.de)
 
 # $XConsortium: install.sv3,v 1.1 95/01/26 15:25:15 kaleb Exp $
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/install.sv3,v 3.2 1995/01/28 16:03:57 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/install.sv3,v 3.3 1995/02/12 02:40:55 dawes Exp $
 
 #
 # XFree86 version

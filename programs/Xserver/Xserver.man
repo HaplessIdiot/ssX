@@ -1,4 +1,5 @@
-.\" $XConsortium: Xserver.man,v 1.54 94/04/17 20:25:23 dpw Exp $
+.\" $XConsortium: Xserver.man,v 1.55 94/05/16 12:19:55 dpw Exp $
+.\" $XFree86$
 .\" Copyright (c) 1984 - 1991, 1993, 1994  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -275,11 +276,13 @@ keyboard description to load on startup
 .B [+-]accessx
 enable(+) or disable(-) AccessX key sequences
 .TP 8
-.B \-ar1
-set keyboard autorepeat delay
+.B \-ar1 \fImilliseconds\fP
+sets the length of time in milliseconds that a key must be depressed before
+autorepeat starts
 .TP 8
-.B \-ar2
-set keyboard autorepeat interval
+.B \-ar2 \fImilliseconds\fP
+sets the length of time in milliseconds that should elapse between
+autorepeat-generated keystrokes
 .PP
 Many servers also have device-specific command line options.  See the
 manual pages for the individual servers for more details.
@@ -421,7 +424,7 @@ Controlling the server once started: xset(1), xsetroot(1), xhost(1)
 .PP
 Server-specific man pages: 
 Xdec(1), XmacII(1), Xsun(1), Xnest(1), Xvfb(1),
-XF86_Acc(1), XF86_Mono(1), XF86_SVGA(1), XF86_VGA16(1), XFree86(1)
+XF86_Accel(1), XF86_Mono(1), XF86_SVGA(1), XF86_VGA16(1), XFree86(1)
 .PP
 Server internal documentation:
 .I "Definition of the Porting Layer for the X v11 Sample Server,"

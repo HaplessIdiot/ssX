@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.6 95/01/23 15:34:00 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.60 1995/04/10 12:00:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.61 1995/04/24 05:20:27 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -2575,10 +2575,7 @@ s3InitEnvironment()
   */
    WaitQueue16_32(6,7);
 
-   if (s3InfoRec.bitsPerPixel > 8)
-      outw32(FRGD_COLOR, 0);
-   else
-      outw32(FRGD_COLOR, 1);
+   outw32(FRGD_COLOR, 0);
 
    outw(CUR_X, 0);
    outw(CUR_Y, 0);

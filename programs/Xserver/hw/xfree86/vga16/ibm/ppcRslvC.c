@@ -1,5 +1,5 @@
 /* $XConsortium: ppcRslvC.c,v 1.3 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcRslvC.c,v 3.0 1994/05/04 15:03:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcRslvC.c,v 3.2 1995/01/28 17:06:13 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -65,69 +65,52 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "colormapst.h"	/* GJA */
 #include "OScompiler.h"
 
-
-void
-ppcResolveColor( pRed, pGreen, pBlue, pVisual )
-register unsigned short * const pRed ;
-register unsigned short * const pGreen ;
-register unsigned short * const pBlue ;
-register VisualPtr const pVisual ;
-{ 
-    /* GJA -- took this from cfb */
-    int shift = 16 - pVisual->bitsPerRGBValue;
-    unsigned lim = (1 << pVisual->bitsPerRGBValue) - 1;
-
-    if ((pVisual->class == PseudoColor) || (pVisual->class == DirectColor) ||
-	(pVisual->class == StaticColor))
-    {
-	/* rescale to rgb bits */
-	*pRed = ((*pRed >> shift) * 65535) / lim;
-	*pGreen = ((*pGreen >> shift) * 65535) / lim;
-	*pBlue = ((*pBlue >> shift) * 65535) / lim;
-    }
-    else if (pVisual->class == GrayScale)
-    {
-	/* rescale to gray then rgb bits */
-	*pRed = (30L * *pRed + 59L * *pGreen + 11L * *pBlue) / 100;
-	*pBlue = *pGreen = *pRed = ((*pRed >> shift) * 65535) / lim;
-    }
-    else if (pVisual->class == StaticGray)
-    {
-	unsigned limg = pVisual->ColormapEntries - 1;
-	/* rescale to gray then [0..limg] then [0..65535] then rgb bits */
-	*pRed = (30L * *pRed + 59L * *pGreen + 11L * *pBlue) / 100;
-	*pRed = ((((*pRed * (limg + 1))) >> 16) * 65535) / limg;
-	*pBlue = *pGreen = *pRed = ((*pRed >> shift) * 65535) / lim;
-    }
-    else {
-	Error( "can't resolve color for this visual" ) ;
-    }
-}
-	
-/* GJA -- took the following from Ferraro's book. */
-#if 1
-	/* use RGBI as palette */
-static unsigned char defaultpalette[16][3] = {
-    {  0,  0,  0 }, {  0,  0, 42 }, {  0, 42,  0 }, {  0, 42, 42 }, 
-    { 42,  0,  0 }, { 42,  0, 42 }, { 42, 21,  0 }, { 42, 42, 42 }, 
-    { 21, 21, 21 }, { 21, 21, 63 }, { 21, 63, 21 }, { 21, 63, 63 }, 
-    { 63, 21, 21 }, { 63, 21, 63 }, { 63, 63, 21 }, { 63, 63, 63 }
-};
-#else
-	/* use RrGgBb as palette */
-static unsigned char defaultpalette[16][3] = {
-    {  0,  0,  0 }, {  0,  0, 42 }, {  0, 42,  0 }, {  0, 42, 42 }, 
-    { 42,  0,  0 }, { 42,  0, 42 }, { 14, 14, 14 }, { 42, 42, 42 }, 
-    { 31, 31, 63 }, { 39, 31, 63 }, { 47, 31, 63 }, { 55, 31, 63 }, 
-    { 63, 31, 63 }, { 63, 31, 55 }, { 63, 31, 47 }, { 63, 31, 39 }
-};
-#endif
-
-/* GJA --
- * Took the code below from cfb. It's for staticgray visuals.
+/*
+ * New colormap routines that can support multiple Visual types.
  */
+
+static unsigned short defstaticpalette[16][3] = {
+	/*   R       G       B   */
+	{ 0x0000, 0x0000, 0x0000 },	/* black */
+	{ 0xFFFF, 0xFFFF, 0xFFFF },	/* white */
+	{ 0xAAAA, 0xAAAA, 0xAAAA },	/* grey */
+	{ 0x0000, 0x0000, 0xAAAA },	/* dark blue */
+	{ 0x0000, 0x0000, 0xFFFF },	/* medium blue */
+	{ 0x0000, 0xAAAA, 0xFFFF },	/* light blue */
+	{ 0x0000, 0xFFFF, 0xFFFF },	/* cyan */
+	{ 0x0000, 0xAAAA, 0x0000 },	/* dark green */
+	{ 0x0000, 0xFFFF, 0x0000 },	/* green */
+	{ 0xAAAA, 0xFFFF, 0x5555 },	/* pale green */
+	{ 0xAAAA, 0x5555, 0x0000 },	/* brown */
+	{ 0xFFFF, 0xAAAA, 0x0000 },	/* light brown */
+	{ 0xFFFF, 0xFFFF, 0x0000 },	/* yellow */
+	{ 0xAAAA, 0x0000, 0xAAAA },	/* purple */
+	{ 0xFFFF, 0x0000, 0xFFFF },	/* magenta */
+	{ 0xFFFF, 0x0000, 0x0000 },	/* red */
+	};
+
+static unsigned short staticgraypalette[16][3] = {
+	/*   R       G       B   */
+	{ 0x0000, 0x0000, 0x0000 },
+	{ 0x1000, 0x1000, 0x1000 },
+	{ 0x2000, 0x2000, 0x2000 },
+	{ 0x3000, 0x3000, 0x3000 },
+	{ 0x4400, 0x4400, 0x4400 },
+	{ 0x5400, 0x5400, 0x5400 },
+	{ 0x6400, 0x6400, 0x6400 },
+	{ 0x7400, 0x7400, 0x7400 },
+	{ 0x8800, 0x8800, 0x8800 },
+	{ 0x9800, 0x9800, 0x9800 },
+	{ 0xA800, 0xA800, 0xA800 },
+	{ 0xB800, 0xB800, 0xB800 },
+	{ 0xCC00, 0xCC00, 0xCC00 },
+	{ 0xDC00, 0xDC00, 0xDC00 },
+	{ 0xEC00, 0xEC00, 0xEC00 },
+	{ 0xFFFF, 0xFFFF, 0xFFFF },
+	};
+
 Bool
-ppcInitializeColormap(pmap)
+vga16InitializeColormap(pmap)
     register ColormapPtr	pmap;
 {
     register unsigned i;
@@ -139,29 +122,79 @@ ppcInitializeColormap(pmap)
     shift = 16 - pVisual->bitsPerRGBValue;
     maxent = pVisual->ColormapEntries - 1;
 
-    if (pVisual->class == StaticGray)
-    {
-	for(i = 0; i <= maxent; i++)
+    switch( pVisual->class )
 	{
-	    /* rescale to [0..65535] then rgb bits */
-	    pmap->red[i].co.local.red = ((((i * 65535) / maxent) >> shift)
-					 * 65535) / lim;
-	    pmap->red[i].co.local.green = pmap->red[i].co.local.red;
-	    pmap->red[i].co.local.blue = pmap->red[i].co.local.red;
+	case StaticGray:
+	    for ( i = 0 ; i < 16 ; i++ ) {
+		pmap->red[i].co.local.red   = (staticgraypalette[i][0]);
+		pmap->red[i].co.local.green = (staticgraypalette[i][1]);
+		pmap->red[i].co.local.blue  = (staticgraypalette[i][2]);
+	    }
+	case StaticColor:
+	    for ( i = 0 ; i < 16 ; i++ ) {
+		pmap->red[i].co.local.red   = (defstaticpalette[i][0]);
+		pmap->red[i].co.local.green = (defstaticpalette[i][1]);
+		pmap->red[i].co.local.blue  = (defstaticpalette[i][2]);
+	    }
+	    break;
+	case GrayScale:
+	case PseudoColor:
+	    for(i=0;i<=maxent;i++) {
+	        int a,b,c;
+		a = i << 10;
+		b = i << 12;
+		c = i << 14;
+		pmap->red[i].co.local.red   = a;
+		pmap->red[i].co.local.green = b;
+		pmap->red[i].co.local.blue  = c;
+	    }
+	    break;
+	case TrueColor:
+	case DirectColor:
+	default:
+	    ErrorF( "Unsupported Visual class %d\b", pVisual->class );
+	    return FALSE;
 	}
-    }
-    else if ( pVisual->class == StaticColor ) {
-	/* GJA -- I *know* we have 16 colours, otherwise this code is useless.
-	 */
-	for ( i = 0 ; i < 16 ; i++ ) {
-	    pmap->red[i].co.local.red   = (defaultpalette[i][0] << 10);
-	    pmap->red[i].co.local.green = (defaultpalette[i][1] << 10);
-	    pmap->red[i].co.local.blue  = (defaultpalette[i][2] << 10);
-	}
-    }
     return TRUE;
 }
 
+void
+vga16ResolveColor( pred, pgreen, pblue, pVisual )
+register unsigned short* const pred ;
+register unsigned short* const pgreen ;
+register unsigned short* const pblue ;
+register VisualPtr const pVisual ;
+{ 
+    unsigned lim, maxent, shift;
+
+    lim = (1 << pVisual->bitsPerRGBValue) - 1;
+    shift = 16 - pVisual->bitsPerRGBValue;
+    maxent = pVisual->ColormapEntries - 1;
+
+    switch( pVisual->class )
+	{
+	case StaticGray:
+	    *pred = (30L * *pred + 59L * *pgreen + 11L * *pblue) / 100;
+	    *pblue = *pgreen = *pred = (((*pred >> shift) * 65535)/lim)&0xFC00;
+	    break;
+	case StaticColor:
+	    break;
+	case GrayScale:
+	    *pred = (30L * *pred + 59L * *pgreen + 11L * *pblue) / 100;
+	    *pblue = *pgreen = *pred = ((*pred >> shift) * 65535) / lim;
+	    break;
+	case PseudoColor:
+	    /* rescale to rgb bits */
+	    *pred = ((*pred >> shift) * 65535) / lim;
+	    *pgreen = ((*pgreen >> shift) * 65535) / lim;
+	    *pblue = ((*pblue >> shift) * 65535) / lim;
+	    break;
+	case TrueColor:
+	case DirectColor:
+	default:
+	    ErrorF( "Unsupported Visual class %d\b", pVisual->class );
+	}
+}
 
 Bool
 vga16CreateDefColormap(pScreen)

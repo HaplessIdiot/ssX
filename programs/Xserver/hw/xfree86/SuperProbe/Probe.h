@@ -26,7 +26,7 @@
  */
 
 /* $XConsortium: Probe.h,v 1.5 95/01/16 13:16:20 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.9 1995/02/12 02:37:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.10 1995/04/09 13:44:38 dawes Exp $ */
 
 /*
  * Includes
@@ -497,6 +497,7 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_TVGA9400CX	SVGA_TYPE(V_TRIDENT,12)	/* Trident 9400CXi	*/
 #define CHIP_TVGA9420	SVGA_TYPE(V_TRIDENT,13)	/* Trident GUI9420	*/
 #define CHIP_TVGA9440	SVGA_TYPE(V_TRIDENT,14)	/* Trident GUI9440	*/
+#define CHIP_TVGA9660	SVGA_TYPE(V_TRIDENT,15)	/* Trident GUI9660	*/
 #define CHIP_TSENG_UNK	SVGA_TYPE(V_TSENG,0)	/* Tseng unknown	*/
 #define CHIP_ET3000	SVGA_TYPE(V_TSENG,1)	/* Tseng ET3000		*/
 #define CHIP_ET4000	SVGA_TYPE(V_TSENG,2)	/* Tseng ET4000		*/

@@ -1,5 +1,5 @@
 /* $XConsortium: s3scrin.c,v 1.4 95/01/16 20:07:23 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3scrin.c,v 3.6 1995/01/28 17:02:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3scrin.c,v 3.7 1995/01/28 17:15:18 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -154,8 +154,12 @@ s3ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 
     cfbWindowPrivateIndex = cfbGCPrivateIndex = -1;
     pScreen->defColormap = FakeClientID(0);
-    /* let CreateDefColormap do whatever it wants for pixels */ 
-    pScreen->blackPixel = pScreen->whitePixel = (Pixel) 0;
+    /*
+     * Set whitePixel to 1 and blackPixel to 0 to workaround problems
+     * with some S3 chips (Trio64/32, 805i)
+     */ 
+    pScreen->whitePixel = (Pixel) 1;
+    pScreen->blackPixel = (Pixel) 0;
     pScreen->QueryBestSize = mfbQueryBestSize;
     /* SaveScreen */
     pScreen->GetImage = s3GetImage;

@@ -1,5 +1,5 @@
 /* $XConsortium: vga16.h,v 1.2 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vga16.h,v 3.1 1994/06/18 16:26:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vga16.h,v 3.3 1995/01/28 17:06:18 dawes Exp $ */
 
 /*
  * some header files need to be included here to make
@@ -87,7 +87,7 @@ void ppcCopyClip(
 #endif
 );
 /* ppcCpArea.c */
-RegionPtr ppcCopyArea(
+RegionPtr vga16CopyArea(
 #if NeedFunctionPrototypes
     DrawablePtr,
     DrawablePtr,
@@ -474,7 +474,7 @@ void ppcPayServerHackersWhatTheyreWorth(
 #endif
 );
 /* ppcRslvC.c */
-void ppcResolveColor(
+void vga16ResolveColor(
 #if NeedFunctionPrototypes
     unsigned short *,
     unsigned short *,
@@ -482,7 +482,7 @@ void ppcResolveColor(
     VisualPtr 
 #endif
 );
-Bool ppcInitializeColormap(
+Bool vga16InitializeColormap(
 #if NeedFunctionPrototypes
     ColormapPtr 
 #endif

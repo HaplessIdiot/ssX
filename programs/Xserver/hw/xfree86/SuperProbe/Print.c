@@ -26,7 +26,7 @@
  */
 
 /* $XConsortium: Print.c,v 1.5 95/01/16 13:16:19 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.9 1995/02/12 02:37:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.10 1995/04/09 13:44:36 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -109,7 +109,8 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "Trident 8900B", "Trident 8900C", "Trident 8900CL/8900D",
 		  "Trident 9000", "Trident 9000i",
 		  "Trident LCD9100B", "Trident 9200CXr", "Trident LCD9320", 
-		  "Trident 9400CXi", "Trident GUI9420", "Trident GUI9440" },
+		  "Trident 9400CXi", "Trident GUI9420", "Trident GUI9440",
+		  "Trident GUI9660"},
 /* Tseng */	{ "Tseng (chipset unknown)",
 		  "Tseng ET3000", "Tseng ET4000", 
 		  "Tseng ET4000/W32", "Tseng ET4000/W32i", 
