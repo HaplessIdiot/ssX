@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.51 1999/01/03 03:58:09 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.52 1999/03/14 05:50:50 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -561,6 +561,22 @@ TCLIBDIR = TclLibDir
 #ifndef MiscManDir
 #define MiscManDir $(MANSOURCEPATH)$(MISCMANSUFFIX)
 #endif
+#ifndef DriverManDir
+#define DriverManDir $(MANSOURCEPATH)$(DRIVERMANSUFFIX)
+#endif
+#ifndef FileManDefs
+#define FileManDefs -D__filemansuffix__=$(FILEMANSUFFIX)
+#endif
+#ifndef MiscManDefs
+#define MiscManDefs -D__miscmansuffix__=$(MISCMANSUFFIX)
+#endif
+#ifndef DriverManDefs
+#define DriverManDefs -D__drivermansuffix__=$(DRIVERMANSUFFIX)
+#endif
+#ifndef ExtraManDefs
+#define ExtraManDefs /**/
+#endif
+
 #ifndef ConfigSrc
 #define ConfigSrc $(TOP)/config
 #endif
@@ -748,6 +764,9 @@ TCLIBDIR = TclLibDir
 #ifndef CppCmd
 #define CppCmd /lib/cpp
 #endif
+#ifndef RawCppCmd
+#define RawCppCmd CppCmd -undef
+#endif
 #ifndef CppNoLineInfoOption
 #define CppNoLineInfoOption /**/
 #endif
@@ -878,8 +897,11 @@ TCLIBDIR = TclLibDir
 #endif
 #endif
 #endif
+#ifndef StandardCppOptions
+#define StandardCppOptions /**/
+#endif
 #ifndef StandardCppDefines
-#define StandardCppDefines StandardDefines
+#define StandardCppDefines StandardCppOptions StandardDefines
 #endif
 #ifndef Malloc0ReturnsNull
 #if UseGnuMalloc
@@ -1107,6 +1129,13 @@ TCLIBDIR = TclLibDir
 #define MiscManSuffix	7		/* use just one tab or cpp will die */
 #endif
 #endif
+#ifndef DriverManSuffix
+#if SystemV || SystemV4 || defined(OSF1Architecture)
+#define DriverManSuffix	7		/* use just one tab or cpp will die */
+#else
+#define DriverManSuffix	4		/* use just one tab or cpp will die */
+#endif
+#endif
 #ifndef ExpandManNames
 #if SystemV
 #define ExpandManNames NO
@@ -1159,6 +1188,7 @@ TCLIBDIR = TclLibDir
         LIBMANDIR = LibmanDir		/* man pages for library routines */
        FILEMANDIR = FileManDir		/* man pages for config files */
        MISCMANDIR = MiscManDir		/* man pages for miscellaneous files */
+     DRIVERMANDIR = DriverManDir	/* man pages for drivers */
 
                AR = ArCmd
   BOOTSTRAPCFLAGS = BootstrapCFlags	/* set if cpp does not have uniq sym */
@@ -1189,6 +1219,7 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
          COMPRESS = CompressCmd
           GZIPCMD = GzipCmd
               CPP = CppCmd $(STD_CPP_DEFINES)		/* simple filters */
+           RAWCPP = RawCppCmd $(STD_CPP_OPTIONS)
     PREPROCESSCMD = PreProcessCmd $(STD_CPP_DEFINES)	/* prefered; mdep */
           INSTALL = InstallCmd
      INSTALLFLAGS = InstallFlags
@@ -1213,6 +1244,8 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
      LIBMANSUFFIX = LibManSuffix	/* suffix for library man pages */
     FILEMANSUFFIX = FileManSuffix	/* suffix for file format man pages */
     MISCMANSUFFIX = MiscManSuffix	/* suffix for misc man pages */
+  DRIVERMANSUFFIX = DriverManSuffix	/* suffix for driver man pages */
+          MANDEFS = FileManDefs MiscManDefs DriverManDefs ExtraManDefs
 
             TROFF = TroffCmd
             NROFF = NroffCmd
@@ -1250,6 +1283,7 @@ MODLDCOMBINEFLAGS = ModuleLdCombineFlags
     PROOFOPTIONS = ProofOptions
 #endif
      STD_INCLUDES = StandardIncludes
+  STD_CPP_OPTIONS = StandardCppOptions
   STD_CPP_DEFINES = StandardCppDefines $(PROJECT_DEFINES)
       STD_DEFINES = StandardDefines $(PROJECT_DEFINES)
  EXTRA_LOAD_FLAGS = ExtraLoadFlags

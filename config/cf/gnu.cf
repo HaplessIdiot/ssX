@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/gnu.cf,v 1.2 1998/10/25 07:11:09 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/gnu.cf,v 1.3 1999/03/07 14:05:01 dawes Exp $
 
 #ifndef OSName
 #define OSName			GNU
@@ -66,7 +66,8 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #else
 #define ServerExtraDefines	GccGasOption
 #endif
-#define StandardCppDefines	-traditional StandardDefines 
+#define StandardCppOptions	-traditional
+#define StandardCppDefines	StandardDefines 
 #define StandardDefines		-D_XOPEN_SOURCE -D_POSIX_SOURCE -D_BSD_SOURCE  -D__ELF__
 #define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME
 #define ConnectionFlags		-DTCPCONN

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.24 1998/12/20 11:56:23 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.25 1999/02/28 11:19:14 dawes Exp $
 
 
 #ifndef OSName
@@ -229,7 +229,8 @@ ComplexHostProgramTarget(program)
 
 #endif	/* !CrossCompiling */
 
-#define StandardCppDefines	-traditional StandardDefines
+#define StandardCppOptions	-traditional
+#define StandardCppDefines	StandardDefines
 #if defined(i386Architecture) || defined(PpcArchitecture)
 # define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET
 # if defined(PpcArchitecture)

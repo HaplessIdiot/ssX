@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.87tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.88 1999/03/14 03:20:31 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -290,7 +290,8 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define LdCombineFlags		-r
 #define LdPostLib		/* Never needed */
 #define HasWChar32		YES
-#define StandardCppDefines	-traditional StandardDefines
+#define StandardCppOptions	-traditional
+#define StandardCppDefines	StandardDefines
 
 #ifdef i386Architecture
 #define OptimizedCDebugFlags	DefaultGcc2i386Opt

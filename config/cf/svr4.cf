@@ -1,5 +1,5 @@
 XCOMM $TOG: svr4.cf /main/17 1997/06/08 20:08:31 kaleb $
-XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.32 1998/07/25 05:57:17 dawes Exp $
+XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.33 1999/01/03 03:58:11 dawes Exp $
 /*
  * A default OS name
  */
@@ -66,6 +66,11 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.32 1998/07/25 05:57:17 dawes Exp $
 #endif
 #ifndef CppCmd
 #define	CppCmd	/usr/ccs/lib/cpp
+#endif
+#ifndef RawCppCmd
+#if !defined(SunArchitecture)
+#define RawCppCmd CppCmd -Uunix -Ui386
+#endif
 #endif
 #ifndef LdCmd
 #define	LdCmd	/usr/ccs/bin/ld
