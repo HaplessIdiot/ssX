@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winlayer.c,v 1.2 2001/07/25 14:30:08 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winlayer.c,v 1.4 2001/07/31 09:46:57 alanh Exp $ */
 
 #include "win.h"
 
@@ -57,14 +57,14 @@ winLayerCreate (ScreenPtr pScreen)
   dwLayerKind = LAYER_FB;
   pPixmap = LAYER_SCREEN_PIXMAP;
 
- return LayerCreate (pScreen,
-		     dwLayerKind,
- 		     pScreenInfo->dwDepth,
- 		     pPixmap,
- 		     pScreenPriv->pwinShadowUpdate,
- 		     NULL, /* No ShadowWindowProc */
-		     0, /* Rotate */
- 		     0);
+  return LayerCreate (pScreen,
+		      dwLayerKind,
+		      pScreenInfo->dwDepth,
+		      pPixmap,
+		      pScreenPriv->pwinShadowUpdate,
+		      NULL, /* No ShadowWindowProc */
+		      0, /* Rotate */
+		      0);
 }
 
 #ifdef RANDR
