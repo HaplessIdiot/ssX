@@ -1,4 +1,6 @@
 XFree86 4.3.99.13 (xx September 2003)
+ 446. Fix IMPS/2 mouse wheel on platforms where char defaults to unsigned
+      (Rene Rebe).
  445. Fix rare xterm crash on Darwin due to dyld deadlock when a signal comes
       in while dyld is looking up a symbol (Rob Braun).
  444. XDarwin cleanup and improvements:
@@ -17733,7 +17735,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2855 2003/09/16 00:36:16 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2856 2003/09/17 01:22:51 torrey Exp $
 
 
 
