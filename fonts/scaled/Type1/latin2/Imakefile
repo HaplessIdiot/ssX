@@ -1,0 +1,12 @@
+XCOMM $XFree86$
+
+OBJS = arl2____.pfb arl2b___.pfb arl2bi__.pfb arl2i___.pfb cnl2____.pfb \
+       cnl2b___.pfb cnl2bi__.pfb cnl2i___.pfb \
+       tnrl2___.pfb tnrl2b__.pfb tnrl2bi_.pfb tnrl2i__.pfb
+
+FONTINSTDIR = $(FONTDIR)/Type1/latin2
+
+MakeFontsDir(fonts.scale)
+
+InstallFonts($(FONTINSTDIR))
+InstallFontScale($(FONTINSTDIR))

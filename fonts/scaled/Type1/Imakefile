@@ -1,4 +1,20 @@
 XCOMM $XConsortium: Imakefile,v 1.5 94/02/10 16:52:16 rws Exp $
+
+
+
+
+XCOMM $XFree86$
+
+
+#define IHaveSubdirs
+#define PassCDebugFlags /* as nothing */
+
+#if BuildLatin2Fonts
+LATIN2DIR = latin2
+#endif
+
+SUBDIRS = $(LATIN2DIR)
+
 OBJS = UTRG____.pfa UTB_____.pfa UTBI____.pfa UTI_____.pfa \
       cour.pfa courb.pfa courbi.pfa couri.pfa \
  c0648bt_.pfb c0649bt_.pfb c0632bt_.pfb c0633bt_.pfb \
@@ -11,3 +27,6 @@ MakeFontsDir(fonts.scale)
 
 InstallFonts($(FONTINSTDIR))
 InstallFontScale($(FONTINSTDIR))
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
