@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/render.c,v 1.15 2002/05/13 05:25:11 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/render.c,v 1.18 2002/09/26 02:56:52 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -1334,16 +1334,20 @@ static void
 SetBit (unsigned char *line, int x, int bit)
 {
     unsigned char   mask;
+    int byteoffset, bitoffset;
     
+    byteoffset = x / 8;
+    bitoffset = x % 8;
+
     if (screenInfo.bitmapBitOrder == LSBFirst)
-	mask = (1 << (x & 7));
+	mask = (1 << (bitoffset & 7));
     else
-	mask = (0x80 >> (x & 7));
+	mask = (0x80 >> (bitoffset & 7));
     /* XXX assumes byte order is host byte order */
     if (bit)
-	*line |= mask;
+	line[byteoffset] |= mask;
     else
-	*line &= ~mask;
+	line[byteoffset] &= ~mask;
 }
 
 static int
