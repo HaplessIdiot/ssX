@@ -26,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86: xc/lib/font/fontfile/fontfile.c,v 3.7 1998/06/27 12:53:42 hohndel Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontfile.c,v 3.8 1998/06/28 03:52:50 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -130,6 +130,7 @@ transfer_values_to_alias(entryname, entrynamelength, resolvedname,
 
     *aliasName = resolvedname;
     if ((len = strlen(*aliasName)) <= MAXFONTNAMELEN &&
+	(entrynamelength < MAXFONTNAMELEN) &&
 	FontFileCountDashes (*aliasName, len) == 14)
     {
 	FontScalableRec tmpVals;
