@@ -22,7 +22,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/SparcMulDiv.s,v 1.1 1999/03/28 15:32:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/SparcMulDiv.S,v 1.1 1999/07/10 07:24:51 dawes Exp $ */
 
 	.globl	urem_sparcv89, umul_sparcv89, udiv_sparcv89
 	.globl	rem_sparcv89, mul_sparcv89, div_sparcv89

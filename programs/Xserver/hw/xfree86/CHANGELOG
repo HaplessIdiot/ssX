@@ -1,4 +1,18 @@
 XFree86 4.0.1e (3 November 2000)
+ 860. Fix a typo introduced in a recent update to the 'no' xkb symbols
+      file (#4218, Pablo Saratxaga, 4219, Harald Nordgård-Hansen).
+ 859. Parser symbol update (#4217, Paulo Cesar Pereira de Andrade).
+ 858. Updates to iso8859-9e, microsoft_cp1251 charset handling, and
+      add real support for microsoft_cp1255 and microsoft_cp1256 (#4214, 4215,
+      Pablo Saratxaga).
+ 857. Fix Sparc build problems linking xf86cfb with libloader that were
+      related to various interdependencies (#4212, David S. Miller).
+ 856. Allow generic XVideo adaptors (like v4l) to be initialised for
+      the G400 crtc2 (#4211, Antti Tapaninen).
+ 855. Update mga driver to check the chipset much earlier to prevent
+      server hang when using g400 dual head + millennium 2, and some
+      G200 PCI/warp cleanups (#4211, Antti Tapaninen).
+ 854. Updates to the Macedonian xkb symbols (#4210, 4220, Damjan Georgievski).
  853. Combine the ATI, Rage128 and Radeon drivers into one with multiple
       sub-modules (Marc La France).
  852. Make BIOS accesses in the Rage128 and Radeon drivers independent of
@@ -68,7 +82,7 @@ XFree86 4.0.1d (27 October 2000)
       scheme) (#A.172, Damir Anicic, #4196, 4197, David Bateman).
  820. Pablo Saratxaga's i18n updates for XFree86 that are used in Mandrake 7.2.
       Includes various new and fixed xkb files, locale name additions and
-      updates, and new support for varios charset encodings (#4195,
+      updates, and new support for various charset encodings (#4195,
       Pablo Saratxaga).
  819. Improve Xaw 7 compatibility with version 6 in the form widget geometry
       management code.  This should fix some problems seen with ghostview
@@ -11402,4 +11416,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1370 2000/11/02 16:46:14 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1371 2000/11/02 17:00:25 tsi Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.167 2000/10/24 22:45:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.168 2000/10/30 23:02:13 tsi Exp $ */
 
 /*
  *
@@ -122,38 +122,6 @@ extern void _outl(int val, unsigned short port);
 extern unsigned int _inb(unsigned short port);
 extern unsigned int _inw(unsigned short port);
 extern unsigned int _inl(unsigned short port);
-#endif
-
-#if defined(__sparc__) && defined(__GNUC__)
-# define SYMFUNCDOT(func) { "." #func, (funcptr)&__sparc_dot_ ## func },
-# define SYMFUNCDOT89(func) { "." #func, (funcptr)&func ## _sparcv89 },
-# define DEFFUNCDOT(func) 					\
-extern void __sparc_dot_ ## func (void) __asm__ ("." #func);	\
-extern void func ## _sparcv89 (void);
-DEFFUNCDOT(rem)
-DEFFUNCDOT(urem)
-DEFFUNCDOT(mul)
-DEFFUNCDOT(umul)
-DEFFUNCDOT(div)
-DEFFUNCDOT(udiv)
-LOOKUP SparcV89LookupTab[] = {
-   SYMFUNCDOT89(rem)
-   SYMFUNCDOT89(urem)
-   SYMFUNCDOT89(mul)
-   SYMFUNCDOT89(umul)
-   SYMFUNCDOT89(div)
-   SYMFUNCDOT89(udiv)
-   { 0, 0 }
-};
-LOOKUP SparcLookupTab[] = {
-   SYMFUNCDOT(rem)
-   SYMFUNCDOT(urem)
-   SYMFUNCDOT(mul)
-   SYMFUNCDOT(umul)
-   SYMFUNCDOT(div)
-   SYMFUNCDOT(udiv)
-   { 0, 0 }
-};
 #endif
 
 #if defined(__powerpc__) && (defined(Lynx) || defined(linux))
