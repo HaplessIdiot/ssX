@@ -1383,29 +1383,25 @@ SIS6326PutImage(
    SIS6326DisplayVideo(pScrn, pPriv);
 
    /* update cliplist */
-#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,0,0)
    if(  pPriv->autopaintColorKey &&
         (pPriv->grabbedByV4L ||
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,0,0)
 	 !RegionsEqual(&pPriv->clip, clipBoxes)) ) {
+#else
+         !REGION_EQUAL(pScrn->pScreen, &pPriv->clip, clipBoxes)) ) {
+#endif
      /* We always paint colorkey for V4L */
      if(!pPriv->grabbedByV4L)
      	REGION_COPY(pScrn->pScreen, &pPriv->clip, clipBoxes);
      /* draw these */
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,0,0)
      XAAFillSolidRects(pScrn, pPriv->colorKey, GXcopy, ~0,
                     REGION_NUM_RECTS(clipBoxes),
                     REGION_RECTS(clipBoxes));
-   }
 #else
-   if(  pPriv->autopaintColorKey &&
-        (pPriv->grabbedByV4L ||
-	 !REGION_EQUAL(pScrn->pScreen, &pPriv->clip, clipBoxes)) ) {
-     /* We always paint colorkey for V4L */
-     if(!pPriv->grabbedByV4L)
-     	REGION_COPY(pScrn->pScreen, &pPriv->clip, clipBoxes);
-     /* draw these */
      xf86XVFillKeyHelper(pScrn->pScreen, pPriv->colorKey, clipBoxes);
-   }
 #endif
+   }
 
    pPriv->currentBuf ^= 1;
 
@@ -1658,7 +1654,7 @@ SIS6326DisplaySurface (
    SIS6326DisplayVideo(pScrn, pPriv);
 
    if(pPriv->autopaintColorKey) {
-#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,0,0)
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,0,0)
    	XAAFillSolidRects(pScrn, pPriv->colorKey, GXcopy, ~0,
                     REGION_NUM_RECTS(clipBoxes),
                     REGION_RECTS(clipBoxes));

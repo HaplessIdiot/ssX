@@ -48,11 +48,11 @@
 static Bool  SISInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static Bool  SIS300Init(ScrnInfoPtr pScrn, DisplayModePtr mode);
 /* To be used internally only */
-int    SISDoSense(ScrnInfoPtr pScrn, int tempbl, int tempbh, int tempcl, int tempch);
-void   SISSense30x(ScrnInfoPtr pScrn);
-int    SIS6326DoSense(ScrnInfoPtr pScrn, int tempbh, int tempbl, int tempch, int tempcl);
-void   SISSense6326(ScrnInfoPtr pScrn);
-static void SiS6326TVDelay(ScrnInfoPtr pScrn, int delay);
+static int   SISDoSense(ScrnInfoPtr pScrn, int tempbl, int tempbh, int tempcl, int tempch);
+static void  SISSense30x(ScrnInfoPtr pScrn);
+static int   SIS6326DoSense(ScrnInfoPtr pScrn, int tempbh, int tempbl, int tempch, int tempcl);
+static void  SISSense6326(ScrnInfoPtr pScrn);
+static void  SiS6326TVDelay(ScrnInfoPtr pScrn, int delay);
 
 const CARD8 SiS6326TVRegs1[14] = {
      0x00,0x01,0x02,0x03,0x04,0x11,0x12,0x13,0x21,0x26,0x27,0x3a,0x3c,0x43
@@ -977,7 +977,7 @@ SIS300Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
     return(TRUE);
 }
 
-int
+static int
 SISDoSense(ScrnInfoPtr pScrn, int tempbl, int tempbh, int tempcl, int tempch)
 {
     SISPtr  pSiS = SISPTR(pScrn);
@@ -995,7 +995,8 @@ SISDoSense(ScrnInfoPtr pScrn, int tempbl, int tempbh, int tempcl, int tempch)
 }
 
 /* Sense connected devices on 30x */
-void SISSense30x(ScrnInfoPtr pScrn)
+static void
+SISSense30x(ScrnInfoPtr pScrn)
 {
     SISPtr  pSiS = SISPTR(pScrn);
     unsigned char backupP4_0d,backupP2_00,biosflag;
@@ -1241,7 +1242,7 @@ SiS6326TVDelay(ScrnInfoPtr pScrn, int delay)
     }
 }
 
-int
+static int
 SIS6326DoSense(ScrnInfoPtr pScrn, int tempbh, int tempbl, int tempch, int tempcl)
 {
     unsigned char temp;
@@ -1261,7 +1262,7 @@ SIS6326DoSense(ScrnInfoPtr pScrn, int tempbh, int tempbl, int tempch, int tempcl
     return(tempcl);
 }
 
-void
+static void
 SISSense6326(ScrnInfoPtr pScrn)
 {
     SISPtr pSiS = SISPTR(pScrn);
@@ -1294,7 +1295,7 @@ SISSense6326(ScrnInfoPtr pScrn)
     }
 }
 
-/* TW: Detect video bridge and set VBFlags accordingly */
+/* Detect video bridge and set VBFlags accordingly */
 void SISVGAPreInit(ScrnInfoPtr pScrn)
 {
     SISPtr  pSiS = SISPTR(pScrn);
@@ -1700,6 +1701,7 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
      * relevant registers ourselves.
      */
     if(pSiS->VGAEngine == SIS_315_VGA) {
+
        if(pSiS->VBFlags & (VB_302B | VB_301LV | VB_302LV)) {
           if(pSiS->sisfblcda != 0xff) {	  
 	     if((pSiS->sisfblcda & 0x03) == 0x03) {

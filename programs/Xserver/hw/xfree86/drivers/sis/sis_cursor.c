@@ -155,7 +155,7 @@ SiS310HideCursor(ScrnInfoPtr pScrn)
 #endif
     	sis310DisableHWCursor()
 	sis310SetCursorPositionY(2000, 0)
-    	if(pSiS->VBFlags & CRT2_ENABLE) {
+	if(pSiS->VBFlags & VB_VIDEOBRIDGE) {
 	   if(pSiS->ChipFlags & SiSCF_XabreCore) {
               sis301DisableHWCursor330()
 	      sis301SetCursorPositionY330(2000, 0)
@@ -951,7 +951,8 @@ SiS300UseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
 	}
 #endif
 	if(pSiS->Chipset == PCI_CHIP_SIS330) {
-	   if((pSiS->VBFlags & CRT2_TV) &&
+	   if((pSiS->VBFlags & VB_SISBRIDGE) &&
+	      (pSiS->VBFlags & CRT2_TV) &&
 	      (pSiS->VBFlags & (TV_NTSC|TV_PALM))) {
 #ifdef SISMERGED
               if(pSiS->MergedFB) {
@@ -1020,8 +1021,15 @@ SiSUseHWCursorARGB(ScreenPtr pScreen, CursorPtr pCurs)
             return FALSE;
 	if(pCurs->bits->height > 64 || pCurs->bits->width > 64)
 	    return FALSE;
-	if((mode->Flags & V_DBLSCAN) && (pCurs->bits->height > 32))
-	    return FALSE;
+	if(mode->Flags & V_DBLSCAN) {
+	   if(pCurs->bits->height > 32)
+	      return FALSE;
+#ifdef SISDUALHEAD
+	   if((!pSiS->DualHeadMode) || (pSiS->SecondHead))
+#endif
+	      if(pSiS->VBFlags & CRT1_LCDA)
+	         return FALSE;
+	}
 	if((pSiS->CurrentLayout.bitsPerPixel == 8) && (pSiS->VBFlags & CRT2_ENABLE))
 	    return FALSE;
 #ifdef SISMERGED

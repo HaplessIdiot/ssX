@@ -995,11 +995,77 @@ unsigned const char SiSScalingP4Regs[] = {
 	0x13,0x14,0x15,0x16,0x17,0x18,0x19,0x1a,0x1b
 };
 
+/* Mandatory functions */
+static void SISIdentify(int flags);
+static Bool SISProbe(DriverPtr drv, int flags);
+static Bool SISPreInit(ScrnInfoPtr pScrn, int flags);
+static Bool SISScreenInit(int Index, ScreenPtr pScreen, int argc, char **argv);
+static Bool SISEnterVT(int scrnIndex, int flags);
+static void SISLeaveVT(int scrnIndex, int flags);
+static Bool SISCloseScreen(int scrnIndex, ScreenPtr pScreen);
+static Bool SISSaveScreen(ScreenPtr pScreen, int mode);
+static Bool SISSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
+static void SISAdjustFrame(int scrnIndex, int x, int y, int flags);
+#ifdef SISDUALHEAD
+static Bool SISSaveScreenDH(ScreenPtr pScreen, int mode);
+#endif
 
-USHORT 	      SiS_CalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, BOOLEAN hcm);
-USHORT        SiS_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBFlags, BOOLEAN hcm);
-unsigned char SiS_GetSetBIOSScratch(ScrnInfoPtr pScrn, USHORT offset, unsigned char value);
+/* Optional functions */
+static void SISFreeScreen(int scrnIndex, int flags);
+static int  SISValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
+                         int flags);
 
-void          SISMergePointerMoved(int scrnIndex, int x, int y);
+/* Internally used functions */
+static Bool    SISMapMem(ScrnInfoPtr pScrn);
+static Bool    SISUnmapMem(ScrnInfoPtr pScrn);
+static void    SISSave(ScrnInfoPtr pScrn);
+static void    SISRestore(ScrnInfoPtr pScrn);
+static void    SISVESARestore(ScrnInfoPtr pScrn);
+static Bool    SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
+static void    SISModifyModeInfo(DisplayModePtr mode);
+static void    SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode, int viewmode);
+static void    SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg);
+static void    SiS6326PostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg);
+static Bool    SiSSetVESAMode(ScrnInfoPtr pScrn, DisplayModePtr pMode);
+static void    SiSBuildVesaModeList(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe);
+static UShort  SiSCalcVESAModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode);
+static void    SISVESASaveRestore(ScrnInfoPtr pScrn, vbeSaveRestoreFunction function);
+static void    SISBridgeRestore(ScrnInfoPtr pScrn);
+static void    SiSEnableTurboQueue(ScrnInfoPtr pScrn);
+unsigned char  SISSearchCRT1Rate(ScrnInfoPtr pScrn, DisplayModePtr mode);
+static void    SISWaitVBRetrace(ScrnInfoPtr pScrn);
+void           SISWaitRetraceCRT1(ScrnInfoPtr pScrn);
+void           SISWaitRetraceCRT2(ScrnInfoPtr pScrn);
+Bool           InRegion(int x, int y, region r);
+static void    SISMergePointerMoved(int scrnIndex, int x, int y);
+BOOLEAN        SiSBridgeIsInSlaveMode(ScrnInfoPtr pScrn);
+USHORT 	       SiS_CalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBFlags, BOOLEAN hcm);
+USHORT         SiS_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBFlags, BOOLEAN hcm);
+unsigned char  SiS_GetSetBIOSScratch(ScrnInfoPtr pScrn, USHORT offset, unsigned char value);
+#ifdef DEBUG
+static void    SiSDumpModeInfo(ScrnInfoPtr pScrn, DisplayModePtr mode);
+#endif
+
+extern int      SiSTranslateToVESA(ScrnInfoPtr pScrn, int modenumber);
+extern BOOLEAN 	SiSBIOSSetMode(SiS_Private *SiS_Pr, PSIS_HW_INFO HwDeviceExtension,
+                               ScrnInfoPtr pScrn, DisplayModePtr mode, BOOLEAN IsCustom);
+extern BOOLEAN  SiSSetMode(SiS_Private *SiS_Pr, PSIS_HW_INFO HwDeviceExtension,
+                           ScrnInfoPtr pScrn,USHORT ModeNo, BOOLEAN dosetpitch);
+extern void	SiSRegInit(SiS_Private *SiS_Pr, USHORT BaseAddr);
+extern void     SiSSetLVDSetc(SiS_Private *SiS_Pr, PSIS_HW_INFO HwDeviceExtension,USHORT ModeNo);
+extern void     SiS_GetVBType(SiS_Private *SiS_Pr, PSIS_HW_INFO);
+extern DisplayModePtr  SiSBuildBuiltInModeList(ScrnInfoPtr pScrn, BOOLEAN includelcdmodes, BOOLEAN isfordvi);
+#ifdef SISDUALHEAD
+extern BOOLEAN 	SiSBIOSSetModeCRT1(SiS_Private *SiS_Pr, PSIS_HW_INFO HwDeviceExtension,
+				   ScrnInfoPtr pScrn, DisplayModePtr mode, BOOLEAN IsCustom);
+extern BOOLEAN 	SiSBIOSSetModeCRT2(SiS_Private *SiS_Pr, PSIS_HW_INFO HwDeviceExtension,
+				   ScrnInfoPtr pScrn, DisplayModePtr mode, BOOLEAN IsCustom);
+#endif
+
+/* For power management for 315 series */
+extern void SiS_Chrontel701xBLOn(SiS_Private *SiS_Pr, PSIS_HW_INFO HwDeviceExtension);
+extern void SiS_Chrontel701xBLOff(SiS_Private *SiS_Pr);
+extern void SiS_SiS30xBLOn(SiS_Private *SiS_Pr, PSIS_HW_INFO HwDeviceExtension);
+extern void SiS_SiS30xBLOff(SiS_Private *SiS_Pr, PSIS_HW_INFO HwDeviceExtension);
 
 

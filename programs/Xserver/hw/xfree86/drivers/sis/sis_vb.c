@@ -170,23 +170,25 @@ void SISCRT1PreInit(ScrnInfoPtr pScrn)
     unsigned char OtherDevices = 0;
 
     if(!(pSiS->VBFlags & VB_VIDEOBRIDGE)) {
-        pSiS->CRT1off = 0;
-        return;
+       pSiS->CRT1off = 0;
+       return;
     }
 
 #ifdef SISDUALHEAD
     if(pSiS->DualHeadMode) {
-        pSiS->CRT1off = 0;
-    	return;
+       pSiS->CRT1off = 0;
+       return;
     }
 #endif
 
 #ifdef SISMERGED
     if(pSiS->MergedFB) {
-        pSiS->CRT1off = 0;
-    	return;
+       pSiS->CRT1off = 0;
+       return;
     }
 #endif
+
+    if(pSiS->ForceCRT1Type != CRT1_VGA) return;
 
     inSISIDXREG(SISCR, 0x32, CR32);
 
@@ -223,24 +225,32 @@ void SISLCDPreInit(ScrnInfoPtr pScrn)
     unsigned char CR32, CR36, CR37;
 
     if(!(pSiS->VBFlags & VB_VIDEOBRIDGE)) {
-        return;
+       pSiS->ForceCRT1Type = CRT1_VGA;
+       return;
     }
 
     inSISIDXREG(SISCR, 0x32, CR32);
    
     if(CR32 & 0x08) pSiS->VBFlags |= CRT2_LCD;
     
-    /* TW: If no panel has been detected by the BIOS during booting,
-     * we try to detect it ourselves at this point. This is useful 
-     * on machines with DVI connectors where the panel was 
-     * connected after booting. This is only supported on the
-     * 315/330 series and the 301/30xB bridge (because the 30xLV/LVX
-     * don't seem to have a DDC port and operates only LVDS panels
-     * which mostly don't support DDC). We only do this if there was no
-     * secondary VGA detected by the BIOS, because LCD and VGA2
-     * share the same DDC channel and might be misdetected as the
-     * wrong type (especially if the LCD panel only supports
+    /* If no panel has been detected by the BIOS during booting,
+     * we try to detect it ourselves at this point. We do that
+     * if forcecrt2redetection was given, too.
+     * This is useful on machines with DVI connectors where the
+     * panel was connected after booting. This is only supported
+     * on the 315/330 series and the 301/30xB bridge (because the
+     * 30xLV don't seem to have a DDC port and operate only LVDS
+     * panels which mostly don't support DDC). We only do this if
+     * there was no secondary VGA detected by the BIOS, because LCD
+     * and VGA2 share the same DDC channel and might be misdetected
+     * as the wrong type (especially if the LCD panel only supports
      * EDID Version 1).
+     *
+     * By default, CRT2 redetection is forced since 12/09/2003, as
+     * I encountered numerous panels which deliver more or less
+     * bogus DDC data confusing the BIOS. Since out DDC detection
+     * is waaaay better, we prefer it instead of the primitive
+     * and buggy BIOS method.
      */
 #ifdef SISDUALHEAD
     if((!pSiS->DualHeadMode) || (!pSiS->SecondHead)) {
@@ -346,6 +356,10 @@ void SISLCDPreInit(ScrnInfoPtr pScrn)
 			(CR37 & 0x01) ? 18 : 24);
 	  }
        }
+    }
+
+    if(!(pSiS->VBFlags & CRT2_LCD)) {
+       pSiS->ForceCRT1Type = CRT1_VGA;
     }
 }
 

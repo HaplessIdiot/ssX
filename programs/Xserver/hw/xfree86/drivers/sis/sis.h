@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.60 2003/09/09 10:29:01 twini Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.23 2001/11/30 12:12:00 eich Exp $ */
 /*
  * Main global data and definitions
  *
@@ -36,7 +36,7 @@
 
 #define SISDRIVERVERSIONYEAR    3
 #define SISDRIVERVERSIONMONTH   9
-#define SISDRIVERVERSIONDAY     9
+#define SISDRIVERVERSIONDAY     25
 #define SISDRIVERREVISION       1
 
 #define SISDRIVERIVERSION (SISDRIVERVERSIONYEAR << 16) | (SISDRIVERVERSIONMONTH << 8) \
@@ -85,30 +85,26 @@ typedef unsigned long IOADDRESS;
 #endif
 
 #if 1
-#define SISDUALHEAD  	/* Include Dual Head code  */
+#define SISDUALHEAD  		/* Include Dual Head code  */
 #endif
 
 #if 1
-#define SISMERGED	/* Include Merged-FB mode */
+#define SISMERGED		/* Include Merged-FB mode */
 #endif
 
 #ifdef SISMERGED
 #if 1
-#define SISXINERAMA	/* Include SiS Pseudo-Xinerama for MergedFB mode */
+#define SISXINERAMA		/* Include SiS Pseudo-Xinerama for MergedFB mode */
 #define SIS_XINERAMA_MAJOR_VERSION  1
 #define SIS_XINERAMA_MINOR_VERSION  1
 #endif
 #endif
 
-#if 0			/* Include code for cycling CRT2 type via keyboard */
-#define CYCLECRT2	/* (not functional yet) */
-#endif
-
 #if 1
-#define SISGAMMA	/* Include code for gamma correction */
+#define SISGAMMA		/* Include code for gamma correction */
 #endif
 
-#if 1			/* Include code for color hardware cursors */
+#if 1				/* Include code for color hardware cursors */
 #define SIS_ARGB_CURSOR
 #endif
 
@@ -198,6 +194,8 @@ typedef unsigned long IOADDRESS;
 #define TV_PALN                 0x00002000
 #define TV_CHSCART              0x00008000
 #define TV_CHHDTV               0x00010000
+#define CRT1_VGA		0x00000000
+#define CRT1_LCDA		0x00020000
 #define VGA2_CONNECTED          0x00040000
 #define DISPTYPE_CRT1		0x00080000  	/* CRT1 connected and used */
 #define DISPTYPE_DISP1		DISPTYPE_CRT1
@@ -221,10 +219,10 @@ typedef unsigned long IOADDRESS;
 #define VB_DISPMODE_MIRROR	MIRROR_MODE  	/* alias */
 #define DUALVIEW_MODE		0x80000000   	/* CRT1 + CRT2 independent (dual head mode) */
 #define VB_DISPMODE_DUAL	DUALVIEW_MODE 	/* alias */
-#define DISPLAY_MODE            (SINGLE_MODE | MIRROR_MODE | DUALVIEW_MODE) /* TW */
+#define DISPLAY_MODE            (SINGLE_MODE | MIRROR_MODE | DUALVIEW_MODE)
 
-/* TW: pSiS->VBLCDFlags */
-#define VB_LCD_320x480		0x00000001	/* TW: DSTN/FSTN for 550 */
+/* pSiS->VBLCDFlags */
+#define VB_LCD_320x480		0x00000001	/* DSTN/FSTN for 550 */
 #define VB_LCD_640x480          0x00000002
 #define VB_LCD_800x600          0x00000004
 #define VB_LCD_1024x768         0x00000008
@@ -243,6 +241,11 @@ typedef unsigned long IOADDRESS;
 #define VB_LCD_BARCO1366        0x20000000
 #define VB_LCD_CUSTOM  		0x40000000
 #define VB_LCD_EXPANDING	0x80000000
+
+#define SIS_MODE_SIMU 		0		/* PresetMode argument */
+#define SIS_MODE_CRT1 		1
+#define SIS_MODE_CRT2 		2
+
 
 /* pSiS->MiscFlags */
 #define MISC_CRT1OVERLAY	0x00000001  /* Current display mode supports overlay */
@@ -271,7 +274,7 @@ typedef unsigned long IOADDRESS;
 #define SIS6326_TVDETECTED      0x00000010
 #define SIS6326_TVON            0x80000000
 
-#define HW_DEVICE_EXTENSION	SIS_HW_DEVICE_INFO
+#define HW_DEVICE_EXTENSION	SIS_HW_INFO
 
 #ifdef  DEBUG
 #define PDEBUG(p)       p
@@ -350,8 +353,9 @@ typedef unsigned char UChar;
 #define SiS_SD_SUPPORTSOVER   0x00001000   /* Support for Chrontel Super Overscan */
 #define SiS_SD_ENABLED        0x00002000   /* sisctrl is enabled (by option) */
 #define SiS_SD_PSEUDOXINERAMA 0x00004000   /* pseudo xinerama is active */
+#define SiS_SD_SUPPORTLCDA    0x00008000   /* Support LCD Channel A */
 
-#define SIS_DIRECTKEY       0x3145792
+#define SIS_DIRECTKEY         0x03145792
 
 /* SiSCtrl: Check mode for CRT2 */
 #define SiS_CF2_LCD        0x01
@@ -361,6 +365,7 @@ typedef unsigned char UChar;
 #define SiS_CF2_TVNTSC     0x10
 #define SiS_CF2_TVPALM     0x20
 #define SiS_CF2_TVPALN     0x40
+#define SiS_CF2_CRT1LCDA   0x80
 
 /* For backup of register contents */
 typedef struct {
@@ -429,12 +434,14 @@ typedef struct {
     int 		CRT2ModeNo;		/* Current display mode for CRT2 */
     DisplayModePtr	CRT2DMode;		/* Current display mode for CRT2 */
     Bool		CRT2IsCustom;
+    unsigned char	CRT2CR30, CRT2CR31, CRT2CR38;
     int			refCount;
     int 		lastInstance;		/* number of entities */
     Bool		DisableDual;		/* Emergency flag */
     Bool		ErrorAfterFirst;	/* Emergency flag: Error after first init -> Abort second */
     Bool		HWCursor;		/* Backup master settings for use on slave */
     Bool                TurboQueue;
+    int                 ForceCRT1Type;
     int                 ForceCRT2Type;
     int                 OptTVStand;
     int                 OptTVOver;
@@ -562,6 +569,7 @@ typedef struct {
     Bool                UsePCIRetry;
     Bool                TurboQueue;
     int			VESA;
+    int                 ForceCRT1Type;
     int                 ForceCRT2Type;
     int                 OptTVStand;
     int                 OptTVOver;
@@ -736,7 +744,7 @@ typedef struct {
     BOOL		Primary;		/* Display adapter is primary */
     xf86Int10InfoPtr    pInt;			/* Our int10 */
     int                 oldChipset;		/* Type of old chipset */
-    int                 RealVideoRam;		/* 6326 can only address 4MB, but TQ can be above */
+    int              	RealVideoRam;		/* 6326 can only address 4MB, but TQ can be above */
     CARD32              CmdQueLenMask;		/* Mask of queue length in MMIO register */
     CARD32              CmdQueLenFix;           /* Fix value to subtract from QueLen (530/620) */
     CARD32              CmdQueMaxLen;           /* (6326/5597/5598) Amount of cmds the queue can hold */
@@ -802,7 +810,10 @@ typedef struct {
     Atom		xv_TTE, xv_TCO, xv_TCC, xv_TCF, xv_TLF, xv_CMD, xv_CMDR, xv_CT1, xv_SGA;
     Atom		xv_GDV, xv_GHI, xv_OVR, xv_GBI, xv_TXS, xv_TYS, xv_CFI, xv_COC, xv_COF;
     Atom		xv_YFI, xv_GSS, xv_BRR, xv_BRG, xv_BRB, xv_PBR, xv_PBG, xv_PBB, xv_SHC;
-    BOOLEAN		xv_sisdirectunlocked;
+#ifdef TWDEBUG
+    Atom		xv_STR;
+#endif        
+    int			xv_sisdirectunlocked;
     unsigned long	xv_sd_result;
     int			CRT1isoff;
 #ifdef SIS_CP

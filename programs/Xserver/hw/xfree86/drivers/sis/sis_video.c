@@ -363,10 +363,17 @@ static char sisxvsdstorepbrir[] 			= "XV_SD_STOREDGAMMAPBRIR";
 static char sisxvsdstorepbrig[] 			= "XV_SD_STOREDGAMMAPBRIG";
 static char sisxvsdstorepbrib[] 			= "XV_SD_STOREDGAMMAPBRIB";
 static char sisxvsdhidehwcursor[] 			= "XV_SD_HIDEHWCURSOR";
+#ifdef TWDEBUG
+static char sisxvsetreg[]				= "XV_SD_SETREG";
+#endif
 
 #ifndef SIS_CP
 #define NUM_ATTRIBUTES_300 50
+#ifdef TWDEBUG
+#define NUM_ATTRIBUTES_315 54
+#else
 #define NUM_ATTRIBUTES_315 53
+#endif
 #endif
 
 static XF86AttributeRec SISAttributes_300[NUM_ATTRIBUTES_300] =
@@ -481,6 +488,9 @@ static XF86AttributeRec SISAttributes_315[NUM_ATTRIBUTES_315] =
    {XvSettable | XvGettable, 100, 10000,       sisxvsdstorepbrig},
    {XvSettable | XvGettable, 100, 10000,       sisxvsdstorepbrib},
    {XvSettable | XvGettable, 0, 1,             sisxvsdhidehwcursor},
+#ifdef TWDEBUG
+   {XvSettable             , 0, 0xffffffff,    sisxvsetreg},
+#endif
 #ifdef SIS_CP
    SIS_CP_VIDEO_ATTRIBUTES
 #endif
@@ -1244,11 +1254,14 @@ SISSetupImageVideo(ScreenPtr pScreen)
     pSiS->xv_PBG	      = MAKE_ATOM(sisxvsdstorepbrig);
     pSiS->xv_PBB	      = MAKE_ATOM(sisxvsdstorepbrib);
     pSiS->xv_SHC	      = MAKE_ATOM(sisxvsdhidehwcursor);
+#ifdef TWDEBUG
+    pSiS->xv_STR	      = MAKE_ATOM(sisxvsetreg);
+#endif
 #ifdef SIS_CP
     SIS_CP_VIDEO_ATOMS
 #endif
 
-    pSiS->xv_sisdirectunlocked = FALSE;
+    pSiS->xv_sisdirectunlocked = 0;
     pSiS->xv_sd_result = 0;
 
     /* 300 series require double words for addresses and pitches,
@@ -1432,10 +1445,15 @@ SISSetPortAttribute(ScrnInfoPtr pScrn, Atom attribute,
   } else if(attribute == pSiS->xvChromaMax) {
      pPriv->chromamax = value;
   } else if(attribute == pSiS->xv_USD) {
-     if((pSiS->enablesisctrl) && (value == SIS_DIRECTKEY))
-     	pSiS->xv_sisdirectunlocked = TRUE;
-     else
-     	pSiS->xv_sisdirectunlocked = FALSE;
+     if(pSiS->enablesisctrl) {
+        if(value == SIS_DIRECTKEY) {
+	   pSiS->xv_sisdirectunlocked++;
+	} else if(pSiS->xv_sisdirectunlocked) {
+	   pSiS->xv_sisdirectunlocked--;
+	}
+     } else {
+     	pSiS->xv_sisdirectunlocked = 0;
+     }
   } else if(attribute == pSiS->xv_SVF) {
 #ifdef SISDUALHEAD
      if(!pPriv->dualHeadMode)
@@ -1600,6 +1618,21 @@ SISSetPortAttribute(ScrnInfoPtr pScrn, Atom attribute,
 	   pSiS->HWCursorIsVisible = VisibleBackup;
 	}
      }
+#ifdef TWDEBUG
+  } else if(attribute == pSiS->xv_STR) {
+     unsigned short port;
+     switch((value & 0xff000000) >> 24) {
+     case 0x00: port = SISSR;    break;
+     case 0x01: port = SISPART1; break;
+     case 0x02: port = SISPART2; break;
+     case 0x03: port = SISPART3; break;
+     case 0x04: port = SISPART4; break;
+     case 0x05: port = SISCR;    break;
+     default:   return BadValue;
+     }
+     outSISIDXREG(port,((value & 0x00ff0000) >> 16), ((value & 0x0000ff00) >> 8));
+     return Success;
+#endif
 #ifdef SIS_CP
   SIS_CP_VIDEO_SETATTRIBUTE
 #endif
@@ -1684,7 +1717,7 @@ SISGetPortAttribute(
   } else if(attribute == pSiS->xv_GSF) {
      *value = pSiS->SiS_SD_Flags;
   } else if(attribute == pSiS->xv_USD) {
-     *value = pSiS->xv_sisdirectunlocked ? 1 : 0;
+     *value = pSiS->xv_sisdirectunlocked;
   } else if(attribute == pSiS->xv_TAF) {
      *value = SiS_GetSISTVantiflicker(pScrn);
   } else if(attribute == pSiS->xv_TSA) {
@@ -1840,16 +1873,17 @@ calc_scale_factor(SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
   int origdstH = dstH;
   int modeflags = pOverlay->currentmode->Flags;
 
-  /* TW: Stretch image due to panel link scaling */
-  if(pSiS->VBFlags & CRT2_LCD) {
+  /* Stretch image due to panel link scaling */
+  if(pSiS->VBFlags & (CRT2_LCD | CRT1_LCDA)) {
      if(pPriv->bridgeIsSlave) {
         if(pSiS->VBFlags & (VB_LVDS | VB_30xBDH)) {
            if(pSiS->MiscFlags & MISC_PANELLINKSCALER) {
   	      dstH = (dstH * LCDheight) / pOverlay->SCREENheight;
            }
 	}
-     } else if(iscrt2) {
-  	if(pSiS->VBFlags & (VB_LVDS | VB_30xBDH)) {
+     } else if((iscrt2 && (pSiS->VBFlags & CRT2_LCD)) ||
+               (!iscrt2 && (pSiS->VBFlags & CRT1_LCDA))) {
+  	if(pSiS->VBFlags & (VB_LVDS | VB_30xBDH | CRT1_LCDA)) {
 	   if(pSiS->MiscFlags & MISC_PANELLINKSCALER) {
    	      dstH = (dstH * LCDheight) / pOverlay->SCREENheight;
 	      if(pPriv->displayMode == DISPMODE_MIRROR) flag = 1;
@@ -3517,12 +3551,9 @@ SISPutImage(
 #endif
        (pPriv->PrevOverlay != pPriv->NoOverlay))) {
      /* We always paint the colorkey for V4L */
-     if(!pPriv->grabbedByV4L)
-#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,0,0)
+     if(!pPriv->grabbedByV4L) {
      	REGION_COPY(pScrn->pScreen, &pPriv->clip, clipBoxes);
-#else
-        REGION_COPY(pScrn->pScreen, &pPriv->clip, clipBoxes);
-#endif
+     }
      /* draw these */
      pPriv->PrevOverlay = pPriv->NoOverlay;
      if((pPriv->NoOverlay) && (!pSiS->NoAccel)) {
@@ -3532,7 +3563,7 @@ SISPutImage(
 			0x00422418, 0x18244200, 0, 0);
      } else {
         if(!pSiS->disablecolorkeycurrent) {
-#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,0,0)
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,0,0)
            XAAFillSolidRects(pScrn, pPriv->colorKey, GXcopy, ~0,
                            REGION_NUM_RECTS(clipBoxes),
                            REGION_RECTS(clipBoxes));

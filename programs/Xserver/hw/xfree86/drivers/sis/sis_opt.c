@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_opt.c,v 1.31 2003/09/04 15:32:44 twini Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_opt.c,v 1.8 2001/08/01 00:44:54 tsi Exp $ */
 /*
  * SiS driver option evaluation
  *
@@ -47,6 +47,7 @@ typedef enum {
     OPTION_NOHOSTBUS,
 /*  OPTION_SET_MEMCLOCK,   */
     OPTION_RENDER,
+    OPTION_FORCE_CRT1TYPE,
     OPTION_FORCE_CRT2TYPE,
     OPTION_SHADOW_FB,
     OPTION_ROTATE,
@@ -148,6 +149,7 @@ static const OptionInfoRec SISOptions[] = {
     { OPTION_FAST_VRAM,         	"FastVram",               OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_NOHOSTBUS,         	"NoHostBus",              OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_RENDER,        		"RenderAcceleration",     OPTV_BOOLEAN,   {0}, FALSE },
+    { OPTION_FORCE_CRT1TYPE,    	"ForceCRT1Type",          OPTV_ANYSTR,    {0}, FALSE },
     { OPTION_FORCE_CRT2TYPE,    	"ForceCRT2Type",          OPTV_ANYSTR,    {0}, FALSE },
     { OPTION_SHADOW_FB,         	"ShadowFB",               OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_ROTATE,            	"Rotate",                 OPTV_ANYSTR,    {0}, FALSE },
@@ -259,8 +261,7 @@ SiSOptions(ScrnInfoPtr pScrn)
     xf86CollectOptions(pScrn, NULL);
 
     /* Process the options */
-    if(!(pSiS->Options = xalloc(sizeof(SISOptions))))
-	return;
+    if(!(pSiS->Options = xalloc(sizeof(SISOptions)))) return;
 
     memcpy(pSiS->Options, SISOptions, sizeof(SISOptions));
 
@@ -323,7 +324,8 @@ SiSOptions(ScrnInfoPtr pScrn)
     pSiS->chtvtype = -1;
     pSiS->restorebyset = TRUE;
     pSiS->nocrt2ddcdetection = FALSE;
-    pSiS->forcecrt2redetection = FALSE;
+    pSiS->forcecrt2redetection = TRUE;   /* default changed since 13/09/2003 */
+    pSiS->ForceCRT1Type = CRT1_VGA;
     pSiS->ForceCRT2Type = CRT2_DEFAULT;
     pSiS->ForceTVType = -1;
     pSiS->CRT1gamma = TRUE;
@@ -470,7 +472,7 @@ SiSOptions(ScrnInfoPtr pScrn)
      */
     if(xf86ReturnOptValBool(pSiS->Options, OPTION_NOACCEL, FALSE)) {
         pSiS->NoAccel = TRUE;
-#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,0,0)
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,0,0)
 	pSiS->NoXvideo = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "2D Acceleration and Xv disabled\n");
 #else
@@ -710,6 +712,9 @@ SiSOptions(ScrnInfoPtr pScrn)
        if(xf86GetOptValBool(pSiS->Options, OPTION_FORCECRT2REDETECTION, &val)) {
           xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mystring, "ForceCRT2ReDetection");
        }
+       if(xf86GetOptValString(pSiS->Options, OPTION_FORCE_CRT1TYPE)) {
+          xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mystring, "ForceCRT1Type");
+       }
        if(xf86GetOptValString(pSiS->Options, OPTION_FORCE_CRT2TYPE)) {
           xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mystring, "ForceCRT2Type");
        }
@@ -870,19 +875,6 @@ SiSOptions(ScrnInfoPtr pScrn)
 	         val ? enabledstr : disabledstr);
 	  }
 
-          /* ForceCRT1 (300/315/330 series only)
-           * This option can be used to force CRT1 to be switched on/off. Its
-           * intention is mainly for old monitors that can't be detected
-           * automatically. This is only useful on machines with a video bridge.
-           * In normal cases, this option won't be necessary.
-           */
-	  if(xf86GetOptValBool(pSiS->Options, OPTION_FORCECRT1, &val)) {
-	     pSiS->forceCRT1 = val ? 1 : 0;
-	     xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-	         "CRT1 shall be forced to %s\n",
-	         val ? "ON" : "OFF");
-	  }
-
 	  /* NoCRT2DDCDetection (315/330 series only)
            * If set to true, this disables CRT2 detection using DDC. This is
            * to avoid problems with not entirely DDC compiant LCD panels or
@@ -910,6 +902,43 @@ SiSOptions(ScrnInfoPtr pScrn)
 	     } else  pSiS->forcecrt2redetection = FALSE;
           }
 
+
+	  /* ForceCRT1Type (315/330 series only)
+	   * Used for forcing the driver to initialize CRT1 as
+	   * VGA (analog) or LCDA (for simultanious LCD and TV
+           * display) - on M650/651 with 30xLV only!
+           */
+	  if(pSiS->VGAEngine == SIS_315_VGA) {
+             strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_FORCE_CRT1TYPE);
+             if(strptr != NULL) {
+                if(!xf86NameCmp(strptr,"VGA")) {
+                   pSiS->ForceCRT1Type = CRT1_VGA;
+		} else if( (!xf86NameCmp(strptr,"LCD")) ||
+		         (!xf86NameCmp(strptr,"LCDA")) ||
+			 (!xf86NameCmp(strptr,"LCD-A")) ) {
+		   pSiS->ForceCRT1Type = CRT1_LCDA;
+		} else {
+		   xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mybadparm, strptr, "ForceCRT1Type");
+	           xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	               "Valid parameters are \"VGA\" or \"LCD\"\n");
+		}
+	     }
+	  }
+
+	  /* ForceCRT1 (300/315/330 series only)
+           * This option can be used to force CRT1 to be switched on/off. Its
+           * intention is mainly for old monitors that can't be detected
+           * automatically. This is only useful on machines with a video bridge.
+           * In normal cases, this option won't be necessary.
+           */
+	  if(xf86GetOptValBool(pSiS->Options, OPTION_FORCECRT1, &val)) {
+	     pSiS->forceCRT1 = val ? 1 : 0;
+	     xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+	         "CRT1 shall be forced to %s\n",
+	         val ? "ON" : "OFF");
+	     if(!pSiS->forceCRT1) pSiS->ForceCRT1Type = CRT1_VGA;
+	  }
+
 	  /* ForceCRT2Type (300/315/330 series only)
 	   * Used for forcing the driver to initialize a given
 	   * CRT2 device type.
@@ -928,19 +957,29 @@ SiSOptions(ScrnInfoPtr pScrn)
              } else if(!xf86NameCmp(strptr,"SCART")) {
                 pSiS->ForceCRT2Type = CRT2_TV;
 	        pSiS->ForceTVType = TV_SCART;
-             } else if((!xf86NameCmp(strptr,"LCD")) || (!xf86NameCmp(strptr,"DVI-D")))
-                pSiS->ForceCRT2Type = CRT2_LCD;
-             else if((!xf86NameCmp(strptr,"VGA")) || (!xf86NameCmp(strptr,"DVI-A")))
+             } else if((!xf86NameCmp(strptr,"LCD")) || (!xf86NameCmp(strptr,"DVI-D"))) {
+	        if(pSiS->ForceCRT1Type == CRT1_VGA) {
+                   pSiS->ForceCRT2Type = CRT2_LCD;
+		} else {
+		   pSiS->ForceCRT2Type = 0;
+		   xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		   		"Can't set both CRT1 and CRT2 type to LCD; CRT2 disabled\n");
+		}
+             } else if((!xf86NameCmp(strptr,"VGA")) || (!xf86NameCmp(strptr,"DVI-A")))
                 pSiS->ForceCRT2Type = CRT2_VGA;
              else if(!xf86NameCmp(strptr,"NONE"))
                 pSiS->ForceCRT2Type = 0;
 	     else if(pSiS->Chipset == PCI_CHIP_SIS550) {
 	        if(!xf86NameCmp(strptr,"DSTN")) {
-		   pSiS->ForceCRT2Type = CRT2_LCD;
-		   pSiS->DSTN = TRUE;
+		   if(pSiS->ForceCRT1Type == CRT1_VGA) {
+		      pSiS->ForceCRT2Type = CRT2_LCD;
+		      pSiS->DSTN = TRUE;
+		   }
 		} else if(!xf86NameCmp(strptr,"FSTN")) {
-		   pSiS->ForceCRT2Type = CRT2_LCD;
-		   pSiS->FSTN = TRUE;
+		   if(pSiS->ForceCRT1Type == CRT1_VGA) {
+		      pSiS->ForceCRT2Type = CRT2_LCD;
+		      pSiS->FSTN = TRUE;
+		   }
 		}
 	     } else {
 	        xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mybadparm, strptr, "ForceCRT2Type");
@@ -1318,6 +1357,7 @@ SiSOptions(ScrnInfoPtr pScrn)
 		val ? enabledstr : disabledstr);
  	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 	    	"*** Option \"VESA\" is deprecated. *** \n");
+	    if(pSiS->VESA) pSiS->ForceCRT1Type = CRT1_VGA;
 	}
     }
 
@@ -1352,7 +1392,7 @@ SiSOptions(ScrnInfoPtr pScrn)
     }
     if(pSiS->ShadowFB) {
 	pSiS->NoAccel = TRUE;
-#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,0,0)
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,0,0)
 	pSiS->NoXvideo = TRUE;
     	xf86DrvMsg(pScrn->scrnIndex, from,
 	   "Using \"Shadow Frame Buffer\" - 2D acceleration and Xv disabled\n");
@@ -1384,7 +1424,7 @@ SiSOptions(ScrnInfoPtr pScrn)
           pSiS->ShadowFB = TRUE;
           pSiS->NoAccel  = TRUE;
           pSiS->HWCursor = FALSE;
-#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,0,0)
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,0,0)
 	  pSiS->NoXvideo = TRUE;
           xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
               "Rotating screen %sclockwise; (2D acceleration and Xv disabled)\n",
@@ -1408,7 +1448,7 @@ SiSOptions(ScrnInfoPtr pScrn)
    /* NoXVideo
     * Set this to TRUE to disable Xv hardware video acceleration
     */
-#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,0,0)
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,0,0)
     if((!pSiS->NoAccel) && (!pSiS->NoXvideo)) {
 #else
     if(!pSiS->NoXvideo) {
