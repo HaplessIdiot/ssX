@@ -1,4 +1,10 @@
 XFree86 4.3.99.17 (xx November 2003)
+ 644. When XDM-AUTHORIZATION-1 is used with IPv6 IPv4-mapped addresses,
+      (which should not happen with change 643, but can be done with other 
+      xdm implementations) send the IPv4 address in the auth data; otherwise
+      send fake data for alignement purposes. (Matthieu Herrb).
+ 643. Don't generate XDM-AUTHORIZATION-1 authentification data for 
+      IPv6 connections (Matthieu Herrb).
  642. Fix fontconfig timestamp checking problem that shows up on JFS
       (Bugzilla #932, Frank Giessler).
  641. Restore VT ownership at XFree86 server exit on Linux.  Should do the
@@ -18315,7 +18321,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3009 2003/12/02 20:45:10 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3010 2003/12/02 20:51:42 dawes Exp $
 
 
 
