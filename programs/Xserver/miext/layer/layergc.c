@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/layer/layergc.c,v 1.1 2001/05/29 04:54:13 keithp Exp $
+ * $XFree86: xc/programs/Xserver/miext/layer/layergc.c,v 1.2 2001/06/04 09:45:41 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -111,6 +111,8 @@ layerValidateGC(GCPtr         pGC,
 	 */
 	CreateGCProcPtr	CreateGC;
 	(*pGC->funcs->DestroyGC) (pGC);
+	
+	pGC->serialNumber = GC_CHANGE_SERIAL_BIT;
 
 	pLayGC->pKind = pKind;
 	
