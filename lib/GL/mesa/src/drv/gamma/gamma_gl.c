@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_gl.c,v 1.6 2000/06/17 00:02:55 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_gl.c,v 1.7 2000/11/27 10:59:36 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -445,7 +445,7 @@ void _gamma_Clear(GLbitfield mask)
 
 	temp = (gCCPriv->LBReadMode & LBPartialProdMask) | LBWindowOriginBot;
 	/* UGH - move this later ! */
-	if (gDRIPriv->numMXDevices == 2) temp |= LBScanLineInt2;
+	if (gDRIPriv->numMultiDevices == 2) temp |= LBScanLineInt2;
 
 	CHECK_DMA_BUFFER(gCC, gCCPriv, 1);
 	WRITE(gCCPriv->buf, LBReadMode, temp);
