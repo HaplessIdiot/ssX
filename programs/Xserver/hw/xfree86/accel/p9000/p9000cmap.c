@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000cmap.c,v 3.8 1996/09/22 08:47:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000cmap.c,v 3.9 1996/10/17 15:17:27 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -158,7 +158,8 @@ p9000StoreColors(pmap, ndef, pdefs)
         currentp9000dac[pdefs[i].pixel].b = pdefs[i].blue >> 8;
 	if (xf86VTSema
 #ifdef XFreeXDGA
-	    || !(p9000InfoRec.directMode & XF86DGADirectColormap)
+	    || ((p9000InfoRec.directMode & XF86DGADirectGraphics)
+	        && !(p9000InfoRec.directMode & XF86DGADirectColormap))
 	    || (p9000InfoRec.directMode & XF86DGAHasColormap)
 #endif
 	    ) {
