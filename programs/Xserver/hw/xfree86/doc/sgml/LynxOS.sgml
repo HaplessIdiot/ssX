@@ -151,7 +151,7 @@ few little adjustments to your system:
 
   With LynxOS 2.2.1 programs will not be stripped during
   installation. This is due to a problem with the strip program which
-  shows up when installing accross file system boundaries.
+  shows up when installing across file system boundaries.
 
   Refer to section 5 for manual page installation.
 
@@ -189,7 +189,7 @@ few little adjustments to your system:
 <sect2>Kernel build<p>
 
   If you plan to use PS/2 or Bus mice refer to the following section
-  befor rebuilding the kernel, if not, you should rebuild the kernel
+  before rebuilding the kernel, if not, you should rebuild the kernel
   now: 
 
   <tscreen><verb>
@@ -235,11 +235,11 @@ few little adjustments to your system:
                  ^
   </verb></tscreen>
 
-<sect1>X Server debug diagnostics output and other VT pecularities<p>
+<sect1>X Server debug diagnostics output and other VT peculiarities<p>
 
   The XFree86 X servers will produce a lot of diagnostics output on
   stderr during startup. This output will be lost after the server
-  reached a certain point in its console initialition process. You
+  reached a certain point in its console initialization process. You
   should redirect stdout and stderr if you want to analyze the
   diagnostics produced by the server.
 
@@ -284,8 +284,8 @@ few little adjustments to your system:
   </tscreen>
 
   The /bin/man command of LynxOS 2.2.1 does not support the MANPATH
-  environment variable proberly. The XFree86 manual pages must be
-  copied (or linked) to the standard manual page localtions
+  environment variable properly. The XFree86 manual pages must be
+  copied (or linked) to the standard manual page locations
   (<tt>/usr/man/catx</tt>) in  order to be read the man command:
 
   <tscreen><verb>
@@ -299,6 +299,6 @@ few little adjustments to your system:
   </verb></tscreen>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.0 1995/07/15 04:26:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.1 1995/07/15 15:09:17 dawes Exp $
 </verb>
 </article>
