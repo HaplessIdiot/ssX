@@ -1,4 +1,6 @@
 XFree86 4.3.99.903 (xx December 2003)
+ 719. Change v4l "norm" names to the bttv versions (#5993,
+      Marco Antonio Alvarez).
  718. Fix for symbols/hr map (#5991, Vlatko Kosturjak).
  717. The current VIA DRI driver isn't remotely compatible with the current
       code, so make sure it isn't loaded by requiring version 2.0.0 or later
@@ -18455,7 +18457,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3066 2003/12/31 05:47:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3067 2003/12/31 06:06:22 dawes Exp $
 
 
 
