@@ -1,13 +1,8 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/04/13 18:02:49 rws Exp $
-XCOMM $XFree86$
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
-#if !BuildLBXProxyOnly
-EXTDIR = Xext
-#endif
-
-SUBDIRS = $(EXTDIR) lbxutil
+SUBDIRS = Xext lbxutil
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
