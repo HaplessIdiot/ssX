@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.149 2000/06/20 05:08:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.150 2000/06/25 13:59:47 alanh Exp $ */
 
 /*
  *
@@ -60,8 +60,6 @@
  * method. */
 int sysctlbyname(const char*, void *, size_t *, void *, size_t);
 #endif
-
-extern xf86MonPtr ConfiguredMonitor;
 
 /* XXX Should get all of these from elsewhere */
 #if defined (PowerMAX_OS)
