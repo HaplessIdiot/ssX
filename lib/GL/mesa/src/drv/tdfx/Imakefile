@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile,v 1.18 2000/12/09 02:33:43 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile,v 1.19 2000/12/12 23:24:28 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -365,7 +365,7 @@ NormalLintTarget($(SRCS))
 LIBNAME = tdfx_dri.so
 ALL_OBJS = $(OBJS)
 ALL_DEPS = DONE
-SharedDepModuleTarget($(LIBNAME),$(ALL_DEPS),$(ALL_OBJS))
+SharedDriModuleTarget($(LIBNAME),$(ALL_DEPS),$(ALL_OBJS))
 InstallDynamicModule($(LIBNAME),$(MODULEDIR),dri)
 
 #ifdef GlxSoProf
