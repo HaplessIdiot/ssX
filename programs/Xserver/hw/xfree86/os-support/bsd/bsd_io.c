@@ -37,6 +37,10 @@
 void
 xf86SoundKbdBell(int loudness, int pitch, int duration)
 {
+#ifdef WSCONS_SUPPORT
+	struct wskbd_bell_data wsb;
+#endif
+
     	if (loudness && pitch)
 	{
 #ifdef PCCONS_SUPPORT
@@ -58,6 +62,15 @@ xf86SoundKbdBell(int loudness, int pitch, int duration)
 			ioctl(xf86Info.consoleFd, KDMKTONE,
 			      ((1193190 / pitch) & 0xffff) |
 			      (((unsigned long)duration*loudness/50)<<16));
+			break;
+#endif
+#if defined (WSCONS_SUPPORT)
+		case WSCONS:
+			wsb.which = WSKBD_BELL_DOALL;
+			wsb.pitch = pitch;
+			wsb.period = duration;
+			wsb.volume = loudness;
+			ioctl(xf86Info.kbdFd, WSKBDIO_COMPLEXBELL, &wsb);
 			break;
 #endif
 	    	}
@@ -115,7 +128,9 @@ xf86SetKbdRepeat(char rad)
 	}
 }
 
+#if defined(SYSCONS_SUPPORT) || defined(PCCONS_SUPPORT) || defined(PCVT_SUPPORT)
 static struct termio kbdtty;
+#endif
 
 void
 xf86KbdInit()
