@@ -1439,7 +1439,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     xf86LoaderReqSymLists(vgahwSymbols, NULL);
 
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-        "SiS driver (2003/06/26-2) by "
+        "SiS driver (2003/06/28-1) by "
 	"Thomas Winischhofer <thomas@winischhofer.net>\n");
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
         "See http://www.winischhofer.net/linuxsisvga.shtml "
@@ -1688,6 +1688,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	case PCI_CHIP_SIS550:
 		pSiS->sishw_ext.jChipType = SIS_550;
 		pSiS->VGAEngine = SIS_315_VGA;
+		pSiS->ChipFlags |= SiSCF_Integrated;
 		break;
 	case PCI_CHIP_SIS650: /* 650 + 740 */
 		pSiS->sishw_ext.jChipType = SIS_650;
@@ -1695,6 +1696,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 			pSiS->sishw_ext.jChipType = SIS_740;
 		}
 		pSiS->VGAEngine = SIS_315_VGA;
+		pSiS->ChipFlags |= SiSCF_Integrated;
 		break;
 	case PCI_CHIP_SIS330:
 		pSiS->sishw_ext.jChipType = SIS_330;
@@ -1707,7 +1709,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 			pSiS->sishw_ext.jChipType = SIS_760;
 		}
 		pSiS->VGAEngine = SIS_315_VGA;
-		pSiS->ChipFlags |= SiSCF_XabreCore;
+		pSiS->ChipFlags |= (SiSCF_XabreCore | SiSCF_Integrated);
 		break;
 	case PCI_CHIP_SIS530:
 		pSiS->sishw_ext.jChipType = SIS_530;

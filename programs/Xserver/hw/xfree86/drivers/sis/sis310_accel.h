@@ -181,12 +181,22 @@
  * rest to the (never?)-to-come (?) 3D engine. (The 3D engine
  * can use a similar technique, using the remaining 384K,
  * hence a queue overflow is avoided)
+ * UPDATE: using the command queue without syncing totally
+ * (ie assuming a QueueLength of 0) decreases system latency
+ * dramatically on the integrated chipsets (sound gets interrupted,
+ * etc.). We now sync every time... this is a little slower,
+ * but it keeps the rest of the box somewhat alive...
  */
 #define SiSIdle \
   { \
+     if(pSiS->ChipFlags & SiSCF_Integrated) { \
+        /* CmdQueLen = ((128 * 1024) / 4) - 64; - decreases system latecy dramatically */ \
+	CmdQueLen = 0; \
+     } else { \
+	CmdQueLen = ((128 * 1024) / 4) - 64; \
+     } \
      while( (MMIO_IN16(pSiS->IOBase, Q_STATUS+2) & 0x8000) != 0x8000) {}; \
      while( (MMIO_IN16(pSiS->IOBase, Q_STATUS+2) & 0x8000) != 0x8000) {}; \
-     CmdQueLen = ((128 * 1024) / 4) - 64; \
   }
 
 #define SiSSetupSRCBase(base) \
