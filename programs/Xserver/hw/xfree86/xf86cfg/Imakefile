@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.24tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.25 2003/10/31 15:02:55 tsi Exp $
 
 XCOMM CDEBUGFLAGS=-g -Wall -ansi -pedantic
 
@@ -17,6 +17,11 @@ STRLSRCS = strlcat.c strlcpy.c
 STRLOBJS = strlcat.o strlcpy.o
 #endif
 
+#if !HasSnprintf
+SNPRINTFSRCS = snprintf.c
+SNPRINTFOBJS = snprintf.o
+#endif
+
 SRCS	=\
 	accessx.c\
 	card-cfg.c\
@@ -32,6 +37,7 @@ SRCS	=\
 	options.c\
 	screen-cfg.c\
 	screen.c\
+	$(SNPRINTFSRCS)\
 	startx.c\
 	$(STRLSRCS)\
 	stubs.c\
@@ -54,6 +60,7 @@ OBJS	=\
 	options.o\
 	screen-cfg.o\
 	screen.o\
+	$(SNPRINTFOBJS)\
 	startx.o\
 	$(STRLOBJS)\
 	stubs.o\
@@ -139,6 +146,10 @@ SpecialCObjectRule(libc_wrapper,NullParameter,$(WRAPPERDEFINES) $(EXT_DEFINES))
 #if !HasStrlcat
 LinkSourceFile(strlcat.c,$(LIBSRC)/misc)
 LinkSourceFile(strlcpy.c,$(LIBSRC)/misc)
+#endif
+
+#if !HasSnprintf
+LinkSourceFile(snprintf.c,$(LIBSRC)/misc)
 #endif
 
 DependTarget()
