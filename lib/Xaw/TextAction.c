@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.38 2001/01/30 21:54:34 paulo Exp $ */
+/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.39 2001/02/01 19:15:19 paulo Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -185,6 +185,7 @@ static void ToggleOverwrite(Widget, XEvent*, String*, Cardinal*);
 static void Undo(Widget, XEvent*, String*, Cardinal*);
 #endif
 static void UpcaseWord(Widget, XEvent*, String*, Cardinal*);
+static void DestroyFocusCallback(Widget, XtPointer, XtPointer);
 
 /*
  * External
@@ -2845,6 +2846,14 @@ RedrawDisplay(Widget w, XEvent *event, String *p, Cardinal *n)
 struct _focus { Display *display; Widget widget; };
 static struct _focus *focus;
 static Cardinal num_focus;
+
+/*ARGSUSED*/
+static void
+DestroyFocusCallback(Widget w, XtPointer user_data, XtPointer call_data)
+{
+    ((struct _focus*)(user_data))->widget = NULL;
+}
+
 /*ARGSUSED*/
 static void
 TextFocusIn(Widget w, XEvent *event, String *p, Cardinal *n)
@@ -2872,16 +2881,18 @@ TextFocusIn(Widget w, XEvent *event, String *p, Cardinal *n)
 	focus = (struct _focus*)
 	    XtRealloc((XtPointer)focus, sizeof(struct _focus) * (num_focus + 1));
 	i = num_focus;
-	focus[i].widget = w;
+	focus[i].widget = NULL;
 	focus[i].display = XtDisplay(w);
 	num_focus++;
     }
     if (focus[i].widget != w) {
 	Widget old = focus[i].widget;
 
-	focus[i].widget = w;
 	if (old != NULL)
 	    TextFocusOut(old, event, p, n);
+	focus[i].widget = w;
+	XtAddCallback(w, XtNdestroyCallback,
+		      DestroyFocusCallback, (XtPointer)&focus[i]);
     }
 }
 
@@ -2910,6 +2921,12 @@ TextFocusOut(Widget w, XEvent *event, String *p, Cardinal *n)
 	 (i < num_focus && focus[i].widget == w))
 	 || event->xfocus.detail == NotifyPointer)
 	return;
+
+    if (i < num_focus && focus[i].widget) {
+	XtRemoveCallback(focus[i].widget, XtNdestroyCallback,
+			 DestroyFocusCallback, (XtPointer)&focus[i]);
+	focus[i].widget = NULL;
+    }
 
     /* Let the input method know focus has left.*/
     _XawImUnsetFocus(w);
