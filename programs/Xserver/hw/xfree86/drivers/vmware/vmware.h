@@ -3,7 +3,7 @@
  * All Rights Reserved
  * Id: vmware.h,v 1.6 2001/01/30 18:13:47 bennett Exp $
  * **********************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.h,v 1.6 2002/09/16 18:06:05 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.h,v 1.7 2002/10/16 22:12:53 alanh Exp $ */
 
 #ifndef VMWARE_H
 #define VMWARE_H
@@ -27,6 +27,9 @@
 
 #include "vm_basic_types.h"
 #include "svga_reg.h"
+#include "svga_struct.h"
+
+#include "offscreen_manager.h"
 
 /* Arbitrarily choose max cursor dimensions.  The emulation doesn't care. */
 #define MAX_CURS        32
@@ -84,6 +87,7 @@ typedef struct {
 
 #ifdef RENDER
     CompositeProcPtr Composite;
+    FBLinearPtr offscreenScratch;
 #endif /* RENDER */
 
     unsigned long mmioPhysBase;
@@ -117,6 +121,12 @@ typedef struct {
 
     unsigned char* xaaColorExpScanLine[1];
     unsigned int xaaColorExpSize; /* size of current scan line in DWords */
+
+    Heap* heap;
+    SVGASurface* frontBuffer;
+
+    SVGASurface* curPict;
+    int op;
 
 } VMWARERec, *VMWAREPtr;
 
@@ -158,7 +168,6 @@ static __inline ScrnInfoPtr infoFromScreen(ScreenPtr s) {
 extern const char *xaaSymbols[];
 
 /*#define DEBUG_LOGGING*/
-/*#undef DEBUG_LOGGING*/
 #ifdef DEBUG_LOGGING
 # define VmwareLog(args) ErrorF args
 # define TRACEPOINT VmwareLog((__FUNCTION__ ":" __FILE__ "\n"));
@@ -227,6 +236,13 @@ void vmwareWriteCursorRegs(
    Bool force
 #endif
    );
+
+void vmwareCursorHookWrappers(
+#if NeedFunctionPrototypes
+   ScreenPtr pScreen
+#endif
+   );
+
 
 /* vmwarexaa.c */
 Bool vmwareXAAScreenInit(

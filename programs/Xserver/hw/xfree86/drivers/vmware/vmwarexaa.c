@@ -6,11 +6,13 @@
 char rcsId_vmwarexaa[] =
     "Id: $";
 #endif
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmwarexaa.c,v 1.1 2002/10/16 22:21:51 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmwarexaa.c,v 1.2 2002/10/16 22:26:55 alanh Exp $ */
 
 #include "vmware.h"
 
-#define PAGE_SIZE 4096
+#define OFFSCREEN_SCRATCH_SIZE 1*1024*1024
+/* We'll assume we average about 32x32 alpha surfaces (4096 bytes) or larger */
+#define OFFSCREEN_SCRATCH_MAX_SLOTS OFFSCREEN_SCRATCH_SIZE / 4096
 
 const char *xaaSymbols[] = {
     "XAACreateInfoRec",
@@ -20,10 +22,12 @@ const char *xaaSymbols[] = {
 };
 
 static void vmwareXAASync(ScrnInfoPtr pScrn);
+
 static void vmwareSetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
                                     unsigned int planemask);
 static void vmwareSubsequentSolidFillRect(ScrnInfoPtr pScrn,
                                           int x, int y, int w, int h);
+
 static void vmwareSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
                                              int xdir, int ydir, int rop,
                                              unsigned int planemask,
@@ -32,6 +36,7 @@ static void vmwareSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
                                                int x1, int y1,
                                                int x2, int y2,
                                                int width, int height);
+
 static void vmwareSetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
                                                              int fg, int bg,
                                                              int rop,
@@ -41,6 +46,31 @@ static void vmwareSubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn
                                                                int w, int h,
                                                                int skipleft );
 static void vmwareSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno);
+
+#ifdef RENDER
+static Bool vmwareSetupForCPUToScreenAlphaTexture(ScrnInfoPtr pScrn, int op,
+                                                  CARD16 red, CARD16 green,
+                                                  CARD16 blue, CARD16 alpha,
+                                                  int alphaType, CARD8 *alphaPtr,
+                                                  int alphaPitch,
+                                                  int width, int height,
+                                                  int flags);
+
+static Bool vmwareSetupForCPUToScreenTexture(ScrnInfoPtr pScrn, int op,
+                                             int texType, CARD8 *texPtr,
+                                             int texPitch,
+                                             int width, int height,
+                                             int flags);
+
+static void vmwareSubsequentCPUToScreenTexture(ScrnInfoPtr pScrn,
+                                               int dstx, int dsty,
+                                               int srcx, int srcy,
+                                               int width, int height);
+
+CARD32 vmwareAlphaTextureFormats[2] = {PICT_a8, 0};
+CARD32 vmwareTextureFormats[2] = {PICT_a8r8g8b8, 0};
+
+#endif
 
 #define DESTROY_XAA_INFO(pVMWARE) \
     if (pVMWARE->xaaInfo) { XAADestroyInfoRec(pVMWARE->xaaInfo); \
@@ -52,6 +82,10 @@ vmwareXAAScreenInit(ScreenPtr pScreen)
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     VMWAREPtr pVMWARE = VMWAREPTR(pScrn);
     XAAInfoRecPtr xaaInfo;
+    int offscreenOffset = SVGA_OFFSCREEN_START_OFFSET(pVMWARE->fbOffset,
+                                                      pScrn->virtualY,
+                                                      pVMWARE->fbPitch);
+    int scratchSizeBytes = OFFSCREEN_SCRATCH_SIZE / (pVMWARE->bitsPerPixel / 8);
 
     pVMWARE->xaaInfo = XAACreateInfoRec();
     if (!pVMWARE->xaaInfo) {
@@ -81,7 +115,7 @@ vmwareXAAScreenInit(ScreenPtr pScreen)
 
     /*
      * We don't support SVGA_CAP_GLYPH without clipping, since we use clipping
-     * to for normal glyphs.
+     * for normal glyphs.
      */
     if (pVMWARE->vmwareCapability & SVGA_CAP_GLYPH_CLIPPING) {
         xaaInfo->SetupForScanlineCPUToScreenColorExpandFill =
@@ -103,24 +137,81 @@ vmwareXAAScreenInit(ScreenPtr pScreen)
         RegionRec region;
 
         box.x1 = 0;
-        box.y1 = (pVMWARE->FbSize + pVMWARE->fbPitch - 1) / pVMWARE->fbPitch;
-        box.x2 = pScrn->virtualX;  /*pScrn->displayWidth;*/
+        box.y1 = (offscreenOffset + pVMWARE->fbPitch - 1) / pVMWARE->fbPitch;
+        box.x2 = pScrn->displayWidth;
         box.y2 = (pVMWARE->videoRam) / pVMWARE->fbPitch;
 
-        REGION_INIT(pScreen, &region, &box, 1);
+        if (box.y2 > box.y1) {
+            REGION_INIT(pScreen, &region, &box, 1);
 
-        if (xf86InitFBManagerRegion(pScreen, &region)) {
-            VmwareLog(("Offscreen memory initialized: (%d, %d) - (%d, %d)\n",
-                       box.x1, box.y1, box.x2, box.y2));
+            if (REGION_NOTEMPTY(pScreen, &region) &&
+                xf86InitFBManagerRegion(pScreen, &region)) {
+                VmwareLog(("Offscreen memory initialized: (%d, %d) - (%d, %d)\n",
+                           box.x1, box.y1, box.x2, box.y2));
 
-            xaaInfo->Flags = LINEAR_FRAMEBUFFER | PIXMAP_CACHE | OFFSCREEN_PIXMAPS;
-        } else {
-            xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Offscreen memory manager "
-                       "initialization failed.\n");
+                xaaInfo->Flags =
+                   LINEAR_FRAMEBUFFER | PIXMAP_CACHE | OFFSCREEN_PIXMAPS;
+            } else {
+                xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Offscreen memory manager "
+                           "initialization failed.\n");
+            }
+
+            REGION_UNINIT(pScreen, &region);
         }
-
-        REGION_UNINIT(pScreen, &region);
     }
+
+#ifdef RENDER
+    if (xf86FBManagerRunning(pScreen) &&
+        pVMWARE->vmwareCapability & SVGA_CAP_ALPHA_BLEND &&
+        pScrn->bitsPerPixel > 8 &&
+        pVMWARE->videoRam - offscreenOffset > scratchSizeBytes) {
+
+        pVMWARE->offscreenScratch = 
+           xf86AllocateOffscreenLinear(pScreen, scratchSizeBytes, 0,
+                                       NULL, NULL, NULL);
+
+        if (pVMWARE->offscreenScratch != NULL) {
+            CARD8* osPtr;
+
+            /* xf86AllocOffscrLinear's size and offset are in PIXELS */
+            pVMWARE->offscreenScratch->size *= (pVMWARE->bitsPerPixel / 8);
+            pVMWARE->offscreenScratch->offset *= (pVMWARE->bitsPerPixel / 8);
+            osPtr = pVMWARE->offscreenScratch->offset + pVMWARE->FbBase;
+
+            VmwareLog(("Allocated %d bytes at offset %d for alpha scratch\n",
+                       pVMWARE->offscreenScratch->size,
+                       pVMWARE->offscreenScratch->offset)); 
+
+            pVMWARE->heap = Heap_Create(osPtr, pVMWARE->offscreenScratch->size,
+                                        OFFSCREEN_SCRATCH_MAX_SLOTS,
+                                        pVMWARE->offscreenScratch->offset,
+                                        pScrn->virtualX, pScrn->virtualY,
+                                        pVMWARE->bitsPerPixel,
+                                        pVMWARE->fbPitch,
+                                        pVMWARE->fbOffset);
+            pVMWARE->frontBuffer = Heap_GetFrontBuffer(pVMWARE->heap);
+
+            xaaInfo->SetupForCPUToScreenAlphaTexture =
+               vmwareSetupForCPUToScreenAlphaTexture;
+            xaaInfo->SubsequentCPUToScreenAlphaTexture =
+               vmwareSubsequentCPUToScreenTexture;
+            xaaInfo->CPUToScreenAlphaTextureFlags = XAA_RENDER_NO_TILE |
+               XAA_RENDER_NO_SRC_ALPHA;
+            xaaInfo->CPUToScreenAlphaTextureFormats = vmwareAlphaTextureFormats;
+
+            xaaInfo->SetupForCPUToScreenTexture =
+               vmwareSetupForCPUToScreenTexture;
+            xaaInfo->SubsequentCPUToScreenTexture = 
+               vmwareSubsequentCPUToScreenTexture;
+            xaaInfo->CPUToScreenTextureFlags = XAA_RENDER_NO_TILE;
+            xaaInfo->CPUToScreenTextureFormats = vmwareTextureFormats;
+        } else {
+            xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Allocation of offscreen "
+                       "scratch area for alpha blending failed\n");
+        }
+    }
+#endif
+
 
     if (!XAAInit(pScreen, xaaInfo)) {
         DESTROY_XAA_INFO(pVMWARE);
@@ -167,14 +258,29 @@ vmwareXAACloseScreen(ScreenPtr pScreen)
     }
 
     DESTROY_XAA_INFO(pVMWARE);
+    
+#ifdef RENDER
+    if (pVMWARE->heap) {
+        Heap_Destroy(pVMWARE->heap);
+        pVMWARE->heap = NULL;
+    }
+#endif
 }
 
 static void
 vmwareXAASync(ScrnInfoPtr pScrn)
 {
+    VMWAREPtr pVMWARE = VMWAREPTR(pScrn);
+
     VmwareLog(("Sync\n"));
 
-    vmwareWaitForFB(VMWAREPTR(pScrn));
+    vmwareWaitForFB(pVMWARE);
+
+#ifdef RENDER
+    if (pVMWARE->heap) {
+        Heap_Clear(pVMWARE->heap);
+    }
+#endif
 }
 
 static void
@@ -278,7 +384,7 @@ vmwareSetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 
     pVMWARE->xaaFGColor = fg;
     pVMWARE->xaaBGColor = bg;
-    VmwareLog(("Setup color expand (fb = %d, bg = %d, rop = %d)\n",
+    VmwareLog(("Setup color expand (fg = %d, bg = %d, rop = %d)\n",
                fg, bg, rop));
 }
 
@@ -325,3 +431,130 @@ vmwareSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
         vmwareWriteWordToFIFO(pVMWARE, *scanLine++);
     }
 }
+
+#ifdef RENDER
+
+static void
+RGBPlusAlphaChannelToPremultipliedRGBA(
+    CARD8 red, CARD8 blue, CARD8 green,
+    CARD8 *alphaPtr,   /* in bytes */
+    int alphaPitch,
+    CARD32 *dstPtr,
+    int dstPitch,	/* in dwords */
+    int width, int height)
+{
+    int x;
+
+    while (height--) {
+        for (x = 0; x < width; x++) {
+            CARD8 alpha = alphaPtr[x];
+            dstPtr[x] = (alpha << 24) |
+               ((red * alpha / 255) << 16) |
+               ((green * alpha / 255) << 8) |
+               (blue * alpha / 255);
+        }
+        dstPtr += dstPitch;
+        alphaPtr += alphaPitch;
+    } 
+}
+
+Bool
+vmwareSetupForCPUToScreenAlphaTexture(ScrnInfoPtr pScrn, int op,
+                                      CARD16 red, CARD16 green,
+                                      CARD16 blue, CARD16 alpha,
+                                      int alphaType, CARD8 *alphaPtr,
+                                      int alphaPitch,
+                                      int width, int height,
+                                      int flags)
+{
+    VMWAREPtr pVMWARE = VMWAREPTR(pScrn);
+    SVGASurface* surf;
+
+    VmwareLog(("Setup alpha texture (op = %d, r = %d, g = %d, b = %d,"
+               " a = %d, alphaType = %d, alphaPitch = %d, w = %d, h = %d,"
+               " flags = %d)\n", op, red, green, blue, alpha, alphaType,
+               alphaPitch, width, height, flags));
+
+    if (op > PictOpSaturate) {
+        return FALSE;
+    }
+    
+    surf = Heap_AllocSurface(pVMWARE->heap, width, height, width * 4, 32);
+    
+    if (!surf) {
+        return FALSE;
+    }
+
+    RGBPlusAlphaChannelToPremultipliedRGBA(
+       red >> 8, green >> 8, blue >> 8,
+       alphaPtr, alphaPitch,
+       (CARD32*)(pVMWARE->FbBase + surf->dataOffset),
+       width, width, height);
+
+    pVMWARE->curPict = surf;
+    pVMWARE->op = op;
+
+    return TRUE;
+}
+
+Bool
+vmwareSetupForCPUToScreenTexture(ScrnInfoPtr pScrn, int op,
+                                 int texType, CARD8 *texPtr,
+                                 int texPitch,
+                                 int width, int height,
+                                 int flags)
+{
+    VMWAREPtr pVMWARE = VMWAREPTR(pScrn);
+    SVGASurface* surf;
+
+    VmwareLog(("Setup texture (op = %d, texType = %d, texPitch = %d,"
+               " w = %d, h = %d, flags = %d)\n", op, texType, texPitch,
+               width, height, flags));
+
+    if (op > PictOpSaturate) {
+        return FALSE;
+    }
+    
+    surf = Heap_AllocSurface(pVMWARE->heap, width, height, texPitch, 32);
+    
+    if (!surf) {
+        return FALSE;
+    }
+
+    memcpy(pVMWARE->FbBase + surf->dataOffset, texPtr, texPitch * height);
+
+    pVMWARE->curPict = surf;
+    pVMWARE->op = op;
+
+    return TRUE;
+}
+
+void
+vmwareSubsequentCPUToScreenTexture(ScrnInfoPtr pScrn,
+                                   int dstx, int dsty,
+                                   int srcx, int srcy,
+                                   int width, int height)
+{
+    VMWAREPtr pVMWARE = VMWAREPTR(pScrn);
+
+    VmwareLog((" Do texture (dstx = %d, dsty = %d, srcx = %d, srcy = %d"
+               " w = %d, h = %d)\n", dstx, dsty, srcx, srcy, width, height));
+
+    pVMWARE->curPict->numQueued++;
+    pVMWARE->frontBuffer->numQueued++;
+       
+    vmwareWriteWordToFIFO(pVMWARE, SVGA_CMD_SURFACE_ALPHA_BLEND);
+    vmwareWriteWordToFIFO(pVMWARE, (CARD8*)pVMWARE->curPict - pVMWARE->FbBase);
+    vmwareWriteWordToFIFO(pVMWARE, (CARD8*)pVMWARE->frontBuffer - pVMWARE->FbBase);
+    vmwareWriteWordToFIFO(pVMWARE, srcx);
+    vmwareWriteWordToFIFO(pVMWARE, srcy);
+    vmwareWriteWordToFIFO(pVMWARE, dstx);
+    vmwareWriteWordToFIFO(pVMWARE, dsty);
+    vmwareWriteWordToFIFO(pVMWARE, width);
+    vmwareWriteWordToFIFO(pVMWARE, height);
+    vmwareWriteWordToFIFO(pVMWARE, pVMWARE->op);
+    vmwareWriteWordToFIFO(pVMWARE, 0);  /* flags */
+    vmwareWriteWordToFIFO(pVMWARE, 0);  /* param1 */
+    vmwareWriteWordToFIFO(pVMWARE, 0);  /* param2 */
+}
+#endif
