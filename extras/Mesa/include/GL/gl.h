@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/include/GL/gl.h,v 1.6 2000/08/11 16:36:41 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/include/GL/gl.h,v 1.7 2000/09/24 13:50:05 alanh Exp $ */
 
 
 #ifndef __gl_h_
@@ -2226,6 +2226,19 @@ GLAPI void GLAPIENTRY glWindowPos4dvMESA( const GLdouble *p );
 GLAPI void GLAPIENTRY glResizeBuffersMESA( void );
 
 #endif /* GL_MESA_resize_bufffers */
+
+
+
+/*
+ * 220. GL_EXT_texture_env_dot3
+ */
+#ifndef GL_EXT_texture_env_dot3
+#define GL_EXT_texture_env_dot3 1
+
+#define GL_DOT3_RGB_EXT				0x8740
+#define GL_DOT3_RGBA_EXT			0x8741
+
+#endif /* GL_EXT_texture_env_dot3 */
 
 
 #else  /* GL_GLEXT_LEGACY */

@@ -23,9 +23,11 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
- * Author: Kevin E. Martin <kevin@precisioninsight.com>
+ * Author:
+ *   Gareth Hughes <gareth@valinux.com>
+ *   Kevin E. Martin <martin@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmR128.h,v 3.4 2000/12/07 15:43:45 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmR128.h,v 3.5 2000/12/12 17:17:13 dawes Exp $
  *
  */
 
@@ -47,7 +49,7 @@ typedef struct {
    int sarea_priv_offset;
    int is_pci;
    int cce_mode;
-   int cce_secure;
+   int cce_secure;		/* FIXME: Deprecated, we should remove this */
    int ring_size;
    int usec_timeout;
 
@@ -76,6 +78,8 @@ extern int drmR128WaitForIdleCCE( int fd );
 
 extern int drmR128EngineReset( int fd );
 
+extern int drmR128FullScreen( int fd, int enable );
+
 extern int drmR128SwapBuffers( int fd );
 extern int drmR128Clear( int fd, unsigned int flags,
 			 int x, int y, int w, int h,
@@ -87,7 +91,7 @@ extern int drmR128FlushVertexBuffer( int fd, int prim, int indx,
 extern int drmR128FlushIndices( int fd, int prim, int indx,
 				int start, int end, int discard );
 
-extern int drmR128TextureBlit( int fd, int indx,
+extern int drmR128TextureBlit( int fd, int index,
 			       int offset, int pitch, int format,
 			       int x, int y, int width, int height );
 
@@ -104,7 +108,7 @@ extern int drmR128ReadDepthPixels( int fd, int n,
 
 extern int drmR128PolygonStipple( int fd, unsigned int *mask );
 
-extern int drmR128SubmitPacket( int fd, void *buffer,
-				int *count, int flags );
+extern int drmR128FlushIndirectBuffer( int fd, int index,
+				       int start, int end, int discard );
 
 #endif

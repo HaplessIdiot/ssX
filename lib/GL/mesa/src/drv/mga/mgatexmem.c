@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatexmem.c,v 1.1 2000/09/24 13:51:08 alanh Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -257,10 +257,10 @@ void mgaAgeTextures( mgaContextPtr mmesa, int heap )
  *
  * Performed with the hardware lock held.
  */
-static void mgaUploadSubImageLocked( mgaContextPtr mmesa,
-				     mgaTextureObjectPtr t,
-				     int level,	     
-				     int x, int y, int width, int height ) 
+void mgaUploadSubImageLocked( mgaContextPtr mmesa,
+			      mgaTextureObjectPtr t,
+			      int level,	     
+			      int x, int y, int width, int height ) 
 {
    int		x2;
    int		dwords;
@@ -387,13 +387,12 @@ static void mgaUploadTexLevel( mgaContextPtr mmesa,
 			       mgaTextureObjectPtr t,
 			       int l )
 {
-/*     return; */
-	mgaUploadSubImageLocked( mmesa,
-				 t,
-				 l,
-				 0, 0,
-				 t->tObj->Image[l]->Width,
-				 t->tObj->Image[l]->Height);
+   mgaUploadSubImageLocked( mmesa,
+			    t,
+			    l,
+			    0, 0,
+			    t->tObj->Image[l]->Width,
+			    t->tObj->Image[l]->Height);
 }
 
 
@@ -435,16 +434,14 @@ int mgaUploadTexImages( mgaContextPtr mmesa, mgaTextureObjectPtr t )
 	    break;
 
 	 if (mmesa->TexObjList[heap].prev->bound) {
-	    fprintf(stderr, 
-		    "Hit bound texture in upload\n"); 
+	    fprintf(stderr, "Hit bound texture in upload\n"); 
 	    return -1;
 	 }
 
 	 if (mmesa->TexObjList[heap].prev == 
 	     &(mmesa->TexObjList[heap])) 
 	 {
-	    fprintf(stderr, "Failed to upload texture, "
-		    "sz %d\n", t->totalSize);
+	    fprintf(stderr, "Failed to upload texture, sz %d\n", t->totalSize);
 	    mmDumpMemInfo( mmesa->texHeap[heap] );
 	    return -1;
 	 }

@@ -24,7 +24,7 @@
  *    John Carmack <johnc@idsoftware.com>
  *    Keith Whitwell <keithw@precisioninsight.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatex.h,v 1.3 2000/06/22 16:59:24 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatex.h,v 1.4 2000/09/24 13:51:07 alanh Exp $ */
 
 #ifndef MGATEX_INC
 #define MGATEX_INC
@@ -40,14 +40,15 @@ typedef struct mga_texture_object_s *mgaTextureObjectPtr;
  */
 void mgaUpdateTextureState( GLcontext *ctx );
 
-
-/* Driver functions which are called directly from mesa */
-
 void mgaConvertTexture( GLuint *dest, int texelBytes,
 			struct gl_texture_image *image,
 			int x, int y, int width, int height );
 
 
+void mgaUploadSubImageLocked( mgaContextPtr mmesa,
+			      mgaTextureObjectPtr t,
+			      int level,	     
+			      int x, int y, int width, int height );
 
 int mgaUploadTexImages( mgaContextPtr mmesa, mgaTextureObjectPtr t );
 

@@ -1,4 +1,3 @@
-/* $Id: pipeline.c,v 1.6 2000/11/30 15:39:04 dawes Exp $*/
 
 /*
  * Mesa 3-D graphics library

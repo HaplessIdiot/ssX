@@ -2,19 +2,19 @@
 /*
  * Mesa 3-D graphics library
  * Version:  3.4
- * 
+ *
  * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included
  * in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
@@ -61,16 +61,16 @@ static texgen_func texgen_sphere_map_tab[4];
 
 typedef void (*build_m_func)(GLfloat f[][3],
 			     GLfloat m[],
-			     const GLvector3f *normals, 
-			     const GLvector4f *coord_vec, 
+			     const GLvector3f *normals,
+			     const GLvector4f *coord_vec,
 			     const GLuint flags[],
 			     const GLubyte cullmask[] );
 
 
-typedef void (*build_f_func)( GLfloat *f, 
+typedef void (*build_f_func)( GLfloat *f,
 			      GLuint fstride,
 			      const GLvector3f *normal_vec,
-			      const GLvector4f *coord_vec, 
+			      const GLvector4f *coord_vec,
 			      const GLuint flags[],
 			      const GLubyte cullmask[] );
 
@@ -83,7 +83,7 @@ typedef void (*build_f_func)( GLfloat *f,
 #define FIRST_NORMAL     normals->start
 #define NEXT_NORMAL      STRIDE_F(normal, normals->stride)
 #define LOCAL_VARS
-#define CHECK            
+#define CHECK
 #define IDX              0
 #include "texgen_tmp.h"
 
@@ -91,7 +91,7 @@ typedef void (*build_f_func)( GLfloat *f,
 #define TAG(x)           x##_compacted
 #define FIRST_NORMAL     normals->start
 #define NEXT_NORMAL      ((flags[i]&VERT_NORM) ? (normal=first_normal[i]) : (normal))
-#define CHECK            
+#define CHECK
 #define IDX              2
 #define LOCAL_VARS        \
    GLfloat (*first_normal)[3] = (GLfloat (*)[3]) FIRST_NORMAL;
@@ -101,7 +101,7 @@ typedef void (*build_f_func)( GLfloat *f,
 #define TAG(x)           x##_masked
 #define FIRST_NORMAL     normals->start
 #define NEXT_NORMAL      STRIDE_F(normal, normals->stride)
-#define LOCAL_VARS       
+#define LOCAL_VARS
 #define CHECK            if (cullmask[i])
 #define IDX              1
 #include "texgen_tmp.h"
@@ -189,7 +189,7 @@ void gl_update_texture_unit( GLcontext *ctx, struct gl_texture_unit *texUnit )
 	    fprintf(stderr, "Bad value for texUnit->Enabled %x\n",
 		    texUnit->Enabled);
 	    break;
-	 }	 
+	 }
       }
 
       texUnit->ReallyEnabled = 0;
@@ -219,7 +219,7 @@ void gl_update_texture_unit( GLcontext *ctx, struct gl_texture_unit *texUnit )
          sz = 4;
          texUnit->GenFlags |= texUnit->GenBitR;
       }
-   
+
       texUnit->TexgenSize = sz;
       texUnit->Holes = (GLubyte) (all_bits[sz] & ~texUnit->TexGenEnabled);
       texUnit->func = texgen_generic_tab;
@@ -232,7 +232,7 @@ void gl_update_texture_unit( GLcontext *ctx, struct gl_texture_unit *texUnit )
 	    texUnit->func = texgen_normal_map_nv_tab;
 	 }
       }
-      else if (texUnit->TexGenEnabled == (S_BIT|T_BIT) && 
+      else if (texUnit->TexGenEnabled == (S_BIT|T_BIT) &&
 	       texUnit->GenFlags == TEXGEN_SPHERE_MAP) {
 	 texUnit->func = texgen_sphere_map_tab;
       }
@@ -398,7 +398,7 @@ static void palette_sample(const struct gl_texture_object *tObj,
 }
 
 
-   
+
 
 /*
  * Bitflags for texture border color sampling.
@@ -2003,6 +2003,7 @@ _mesa_set_texture_sampler( struct gl_texture_object *t )
 
 
 #define PROD(A,B)   ( (GLuint)(A) * ((GLuint)(B)+1) )
+#define S_PROD(A,B) ( (GLint)(A) * ((GLint)(B)+1) )
 
 static INLINE void
 _mesa_texture_combine(const GLcontext *ctx,
@@ -2215,6 +2216,29 @@ _mesa_texture_combine(const GLcontext *ctx,
                rgba[i][BCOMP] = (GLubyte) MIN2(b, 255);
             }
          }
+	 break;
+      case GL_DOT3_RGB_EXT:
+      case GL_DOT3_RGBA_EXT:
+         {
+            const GLubyte (*arg0)[4] = (const GLubyte (*)[4]) argRGB[0];
+            const GLubyte (*arg1)[4] = (const GLubyte (*)[4]) argRGB[1];
+	    /* ATI's EXT extension has a constant scale by 4.  The ARB
+	     * one will likely remove this restriction, and we should
+	     * drop the EXT extension in favour of the ARB one.
+	     */
+            RGBshift = 6;
+            for (i = 0; i < n; i++) {
+               GLint dot = (S_PROD((GLint)arg0[i][RCOMP] - 128,
+				   (GLint)arg1[i][RCOMP] - 128) +
+			    S_PROD((GLint)arg0[i][GCOMP] - 128,
+				   (GLint)arg1[i][GCOMP] - 128) +
+			    S_PROD((GLint)arg0[i][BCOMP] - 128,
+				   (GLint)arg1[i][BCOMP] - 128)) >> RGBshift;
+               rgba[i][RCOMP] = (GLubyte) CLAMP(dot, 0, 255);
+               rgba[i][GCOMP] = (GLubyte) CLAMP(dot, 0, 255);
+               rgba[i][BCOMP] = (GLubyte) CLAMP(dot, 0, 255);
+            }
+         }
          break;
       default:
          gl_problem(NULL, "invalid combine mode");
@@ -2285,6 +2309,14 @@ _mesa_texture_combine(const GLcontext *ctx,
          break;
       default:
          gl_problem(NULL, "invalid combine mode");
+   }
+
+   /* Fix the alpha component for GL_DOT3_RGBA_EXT combining.
+    */
+   if (textureUnit->CombineModeRGB == GL_DOT3_RGBA_EXT) {
+      for (i = 0; i < n; i++) {
+	 rgba[i][ACOMP] = rgba[i][RCOMP];
+      }
    }
 }
 #undef PROD

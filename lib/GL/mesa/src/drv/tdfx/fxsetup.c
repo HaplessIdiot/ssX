@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxsetup.c,v 1.1 2000/09/24 13:51:19 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxsetup.c,v 1.2 2000/12/08 19:36:23 alanh Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -93,7 +93,7 @@ fxTexValidate(GLcontext * ctx, struct gl_texture_object *tObj)
 
     fxTexGetFormat(tObj->Image[minl]->IntFormat, &(ti->info.format),
                    &(ti->baseLevelInternalFormat), NULL, NULL,
-                   fxMesa->haveHwStencil);
+                   fxMesa->isNapalm);
 
     switch (tObj->WrapS) {
     case GL_CLAMP_TO_EDGE:

@@ -24,7 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgabuffers.c,v 1.3 2000/08/25 13:42:22 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgabuffers.c,v 1.4 2000/09/24 13:51:05 alanh Exp $ */
 
 /*
  * Authors:
@@ -78,7 +78,7 @@ static void mgaXMesaSetBackClipRects( mgaContextPtr mmesa )
 }
 
 
-
+#if 0
 static void mgaUpdateRectsFromSarea( mgaContextPtr mmesa )
 {
    __DRIdrawablePrivate *driDrawable = mmesa->driDrawable;
@@ -128,7 +128,7 @@ static void mgaUpdateRectsFromSarea( mgaContextPtr mmesa )
 
    mmesa->dirty_cliprects = (MGA_FRONT|MGA_BACK) & ~(sarea->exported_buffers);
 }
-
+#endif
 
 
 static void printSareaRects( mgaContextPtr mmesa )
@@ -205,45 +205,22 @@ void mgaUpdateRects( mgaContextPtr mmesa, GLuint buffers )
    __DRIdrawablePrivate *driDrawable = mmesa->driDrawable;
    drm_mga_sarea_t *sarea = mmesa->sarea;
 
-   /* The MGA X driver will try to push one set of cliprects (back or
-    * front, the last active) for one drawable (the last used) into
-    * the sarea.  See if that window was ours, else retrieve both back
-    * and front rects from the X server via a protocol request.  
-    *
-    * If there isn't room for the cliprects in the sarea, the X server
-    * clears the drawable value to indicate failure.  
-    */
-   if (0) printSareaRects(mmesa);
+/*     fprintf(stderr, "%s\n", __FUNCTION__); */
 
-   if (0 && 
-       sarea->exported_drawable == driDrawable->draw && 
-       (sarea->exported_buffers & buffers) == buffers)
-   {
-      mgaUpdateRectsFromSarea( mmesa );
-   } 
-   else 
-   {
-      if(MGA_DEBUG & DEBUG_VERBOSE_MSG)
-		fprintf(stderr, "^");
-      driDrawable->lastStamp = 0;
-
-      XMESA_VALIDATE_DRAWABLE_INFO(mmesa->display, 
-				   mmesa->driScreen, 
-				   driDrawable); 
-      mmesa->dirty_cliprects = 0;	
-   }
+   XMESA_VALIDATE_DRAWABLE_INFO(mmesa->display, 
+				mmesa->driScreen, 
+				driDrawable); 
+   mmesa->dirty_cliprects = 0;	
 
    if (mmesa->draw_buffer == MGA_FRONT)
       mgaXMesaSetFrontClipRects( mmesa );
    else
       mgaXMesaSetBackClipRects( mmesa );
 
-
-   if (0) printMmesaRects(mmesa);
+/*     printMmesaRects(mmesa); */
 
    sarea->req_drawable = driDrawable->draw;
    sarea->req_draw_buffer = mmesa->draw_buffer;
-
    
    mgaUpdateClipping( mmesa->glCtx );
    

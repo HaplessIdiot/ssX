@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.337 2000/12/14 16:38:45 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.338 2000/12/14 16:59:06 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -642,6 +642,9 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #  ifndef GlxBuiltInR128
 #    define GlxBuiltInR128         NO
 #  endif
+#  ifndef GlxBuiltInRadeon
+#    define GlxBuiltInRadeon       NO
+#  endif
 #  ifndef GlxBuiltInFfb
 #    define GlxBuiltInFfb          NO
 #  endif
@@ -649,11 +652,11 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #    define GlxBuiltInSIS          NO
 #  endif
 
-#  if GlxBuiltInTdfx || GlxBuiltInMga || GlxBuiltInI810 || GlxBuiltInR128 || GlxBuildInFfb || GlxBuiltInSIS
+#  if GlxBuiltInTdfx || GlxBuiltInMga || GlxBuiltInI810 || GlxBuiltInR128 || GlxBuiltInRadeon || GlxBuildInFfb || GlxBuiltInSIS
 #    define GlxDriverUsesMesa      YES
 #  endif
 
-#  if GlxBuiltInGamma || GlxBuiltInTdfx || GlxBuiltInMga || GlxBuiltInI810 || GlxBuiltInR128 || GlxBuiltInFfb || GlxBuiltInSIS || GlxBuiltInMesa
+#  if GlxBuiltInGamma || GlxBuiltInTdfx || GlxBuiltInMga || GlxBuiltInI810 || GlxBuiltInR128 || GlxBuiltInRadeon || GlxBuiltInFfb || GlxBuiltInSIS || GlxBuiltInMesa
 #    define GlxUseBuiltInDRIDriver YES
 #    define DRIDynLoadDefines /**/
 #  else

@@ -26,7 +26,7 @@
  * Author: Kevin E. Martin <martin@valinux.com>
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmR128.c,v 1.5 2000/12/04 19:21:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmR128.c,v 1.6 2000/12/12 17:17:14 dawes Exp $ */
 
 #ifdef XFree86Server
 # include "xf86.h"
@@ -202,6 +202,23 @@ int drmR128WaitForIdleCCE( int fd )
 int drmR128EngineReset( int fd )
 {
    if ( ioctl( fd, DRM_IOCTL_R128_RESET, NULL ) ) {
+      return -errno;
+   } else {
+      return 0;
+   }
+}
+
+int drmR128FullScreen( int fd, int enable )
+{
+   drm_r128_fullscreen_t fs;
+
+   if ( enable ) {
+      fs.func = R128_INIT_FULLSCREEN;
+   } else {
+      fs.func = R128_CLEANUP_FULLSCREEN;
+   }
+
+   if ( ioctl( fd, DRM_IOCTL_R128_FULLSCREEN, &fs ) ) {
       return -errno;
    } else {
       return 0;
@@ -387,25 +404,19 @@ int drmR128PolygonStipple( int fd, unsigned int *mask )
    }
 }
 
-int drmR128SubmitPacket( int fd, void *buffer, int *count, int flags )
+int drmR128FlushIndirectBuffer( int fd, int index,
+				int start, int end, int discard )
 {
-   drm_r128_packet_t packet;
-   int ret;
+   drm_r128_indirect_t ind;
 
-   memset( &packet, 0, sizeof(drm_r128_packet_t) );
+   ind.idx = index;
+   ind.start = start;
+   ind.end = end;
+   ind.discard = discard;
 
-   packet.count = *count;
-   packet.flags = flags;
-
-   while (packet.count > 0) {
-      packet.buffer = (unsigned int *)buffer + (*count - packet.count);
-      ret = ioctl(fd, DRM_IOCTL_R128_PACKET, &packet);
-      if (ret < 0 && ret != -EAGAIN) {
-	 *count = packet.count;
-	 return -errno;
-      }
+   if ( ioctl( fd, DRM_IOCTL_R128_INDIRECT, &ind ) < 0 ) {
+      return -errno;
+   } else {
+      return 0;
    }
-
-   *count = 0;
-   return 0;
 }

@@ -3,19 +3,17 @@
 ]>
 
 <!-- Created: Mon Feb 28 13:00:00 2000 by brianp@valinux.com -->
-<!-- Revised: Fri May 19 09:41:48 2000 by martin@valinux.com -->
-<!-- Revised: Tue Aug 22 14:00:00 2000 by brianp@valinux.com -->
+<!-- Revised: Sat Jan  6 09:44:18 2001 by martin@valinux.com -->
 
   <article>
-
-      <title>DRI User Guide
-      <author>
-          <htmlurl url="http://www.valinux.com/"
-            name="VA Linux Systems, Inc."> Professional Services - Graphics.
-      <date>20 November 2000
+    <title>DRI User Guide
+    <author>
+        <htmlurl url="http://www.valinux.com/"
+          name="VA Linux Systems, Inc."> Professional Services - Graphics.
+    <date>5 January 2001
 
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.14 2000/12/12 17:48:09 alanh Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.15 2000/12/12 18:54:29 dawes Exp $
     </ident>
 
     <toc>
@@ -45,7 +43,8 @@
           3dfx, Voodoo3, Voodoo4, and Voodoo5 are registered trademarks of
           3dfx Interactive, Incorporated.
 	  Matrox is a registered trademark of Matrox Electronic Systems Ltd.
-	  ATI Rage is a registered trademark of ATI Technologies, Inc.
+	  ATI Rage and Radeon are registered trademarks of ATI Technologies,
+	  Inc.
           All other trademarks mentioned are the property of their
           respective owners.
 
@@ -76,11 +75,24 @@
 
     <sect>Supported Architectures & Hardware
 	<p>
-      <sect1>Architectures
+      <sect1>CPU Architectures
 	<p>
-          The Architectures currently supported by the DRI have grown
-          from the initial Intel i386 based machines to now include, 
-          the Alpha Processor and the Sun SPARC machines.
+          The architectures currently supported by the DRI have grown
+          from the initial Intel i386 systems to now include the Alpha
+          Processor and the Sun SPARC machines.
+
+          Intel's SSE (a.k.a. Katmai) instructions are used in optimized
+          vertex transformation functions in Mesa-based drivers.
+          This requires a recent Linux kernel both at compile and runtime.
+          See the DRI Compile Guide for compile-time requirements.
+          At runtime a check is made to determine if the CPU can execute
+          SSE instructions.  They're disabled otherwise.
+
+          AMD's 3DNow! instructions are also used in optimized vertex
+          transformation functions in the Mesa-based DRI drivers.
+          3DNow! is supported in most versions of Linux.
+          Like the SSE optimizations, a runtime check is made to determine
+          if the CPU can execute 3DNow! instructions.
 
           The build environment for both of these new architectures 
           have a pre-build environment that will correctly build the 
@@ -109,23 +121,19 @@
 
             http://www.support.compaq.com/alpha-tools/software/index.html
 
-            Once installed, you can set this option in your host.def
-            to build against the CPML libraries.
-
-            #define UseCompaqMathLibrary YES
+          Alpha systems can benefit from several compile-time optimizations
+          which are described in the DRI Compile Guide.
 
       <sect1> Graphics Hardware
 	<p>
           XFree86 4.0 (or later versions) includes 3D acceleration for the
           following graphics hardware:
 
-          NOTE: This is a complete list of graphics hardware supported. It
-          may not be supported on your platform.
-
         <itemize>
-          <item>3dfx:
+          <item>3dfx, supported on Intel x86, AMD and Alpha:
             <itemize>
               <item>Voodoo5 5500
+              <item>Voodoo4 4500
               <item>Voodoo3 3500 TV
               <item>Voodoo3 3000 AGP
               <item>Voodoo3 3000 PCI
@@ -136,18 +144,18 @@
             </itemize>
             There are many configurations of 3dfx cards on the market.
             Not all have been tested.
-          <item>Matrox:
+          <item>Matrox, supported on Intel x86 and AMD:
             <itemize>
 	      <item>Matrox G200
 	      <item>Matrox G400
             </itemize>
-          <item>Intel i810
+          <item>Intel i810 (motherboard chipset)
             <itemize>
               <item>i810
               <item>i810-dc100
               <item>i810e
             </itemize>
-	  <item>ATI Rage 128
+	  <item>ATI Rage 128, supported on Intel x86 and AMD:
             <itemize>
               <item>Rage Fury AGP
               <item>Rage Magnum AGP
@@ -157,13 +165,26 @@
 	      <item>All-in-Wonder 128 AGP
             </itemize>
 	    The PCI versions of these cards also have minimal support.
-	    Note that there are also Rage 128 Pro based boards on the
-	    market, and these are not yet supported.
-          <item>3Dlabs Oxygen GMX 2000 (MX/Gamma based)
+	    Note that there are Rage 128 Pro boards on the market but they're
+            not yet supported.
+	  <item>ATI Radeon, supported on Intel x86 and AMD:
+            <itemize>
+              <item>Radeon SDR AGP
+              <item>Radeon DDR AGP
+            </itemize>
+          <item>3Dlabs, supported on Intel x86 and AMD:
+            <itemize>
+              <item>Oxygen GMX 2000 (MX/Gamma based).
+                Note:  this driver is no longer being actively developed.
+            </itemize>
         </itemize>
 
       <p>
         Support for other hardware is underway.
+        Most of the DRI development work is funded by contracts with IHVs.
+        These contracts often prevent us from announcing drivers before
+        they're released.
+        Queries about upcoming drivers may not be answerable.
       <p>
 
 
@@ -385,17 +406,17 @@
           Among the output you should see something like this:
         <p>
         <verb>
-          OpenGL vendor string: Precision Insight, Inc.
+          OpenGL vendor string: VA Linux Systems, Inc.
           OpenGL renderer string: Mesa DRI Voodoo3 20000224
-          OpenGL version string: 1.2 Mesa 3.3 beta
+          OpenGL version string: 1.2 Mesa 3.4
         </verb>
         <p>
           or this:
         <p>
         <verb>
-          OpenGL vendor string: Precision Insight, Inc.
+          OpenGL vendor string: VA Linux Systems, Inc.
           OpenGL renderer string: Mesa GLX Indirect
-          OpenGL version string: 1.2 Mesa 3.3 beta
+          OpenGL version string: 1.2 Mesa 3.4
         </verb>
         <p>
           The first example indicates that the 3dfx driver is using
@@ -615,18 +636,20 @@
         This section presents hardware-specific information for normal
         use and troubleshooting.
 
-      <sect1>3dfx Voodoo3 Series
+      <sect1>3dfx Banshee, Voodoo3, Voodoo4 and Voodoo5 Series
 <p>
         <sect2>Dependencies
 <p>
-          The Voodoo3 DRI driver requires a special versions of
-          the 3dfx Glide library.
-          It can be downloaded from the DRI website.
+          The 3dfx DRI driver requires special versions of the 3dfx Glide
+          library.
+          Different versions of Glide are needed for Banshee/Voodoo3 than
+          for Voodoo4/5.
+          The Glide libraries can be downloaded from the DRI website.
 <p>
         <sect2>Configuration
 <p>
             Your XF86Config file's device section must specify the
-            <tt>tdfx</tt> device:
+            <tt>tdfx</tt> device.  For example:
             <verb>
         Section "Device"
             Identifier  "Voodoo3"
@@ -634,7 +657,18 @@
             Driver      "tdfx"
         EndSection
             </verb>
-            The Screen section should then reference the Voodoo3 device:
+<p>
+            Or,
+<p>
+            <verb>
+        Section "Device"
+            Identifier  "Voodoo5"
+            VendorName  "3dfx"
+            Driver      "tdfx"
+        EndSection
+            </verb>
+
+            The Screen section should then reference the Voodoo device:
             <verb>
 	Section "Screen"
 	    Identifier  "Screen 1"
@@ -648,6 +682,29 @@
 	    EndSubsection
         EndSection
             </verb>
+
+            Or,
+<p>
+
+            <verb>
+	Section "Screen"
+	    Identifier  "Screen 1"
+	    Device      "Voodoo5"
+	    Monitor     "High Res Monitor"
+	    DefaultDepth 24
+	    Subsection "Display"
+		Depth       16
+		Modes       "1280x1024" "1024x768" "800x600" "640x480"
+		ViewPort    0 0
+	    EndSubsection
+	    Subsection "Display"
+		Depth       24
+		Modes       "1280x1024" "1024x768" "800x600" "640x480"
+		ViewPort    0 0
+	    EndSubsection
+        EndSection
+            </verb>
+
           <p>
             The kernel module for the Voodoo3 is named <tt>tdfx.o</tt> and
 	    should be installed in /lib/modules/2.4.x/kernel/driver/char/drm/.
@@ -670,8 +727,8 @@
               it means that you have the wrong version of the Glide library
               for your hardware.
             <item>
-              3D acceleration for Voodoo3 is only supported in the 16
-              bit/pixel screen mode.
+              3D acceleration for Banshee and Voodoo3 is only supported in
+              the 16 bit/pixel screen mode.
               Use <tt/xdpyinfo/ to verify that all your visuals are depth 16.
               Edit your XF86Config file if needed.
            <item>
@@ -690,6 +747,12 @@
               The value of this variable indicates the maximum number of
               swap buffer commands can be buffered.
               Zero allows maximum frame rate.
+            <item>
+              On Voodoo4/5, rendering with 16-bits/texel textures is faster
+              than using 32-bit per texel textures.
+              The <tt/internalFormat/ parameter to <tt/glTexImage2D/ can be
+              used to control texel size.
+              Quake3 and other games let you control this as well.
             <item>
               The <tt/glTexEnv/ mode <tt/GL_BLEND/ is not directly supported
               by the Voodoo3 hardware.
@@ -734,18 +797,6 @@
                 <item>
                   Using <tt/glColorMask(r, g, b, a)/ when r!=g or g!=b.
               </itemize>
-          </itemize>
-
-        <sect2>Known Problems
-<p>
-          <itemize>
-            <item>
-              The Glide library cannot be used directly; it's only meant to
-              be used via the tdfx DRI driver.
-            <item>
-              SSystem has problems because of poorly set near and far
-              clipping planes.
-              The office.unc Performer model also suffers from this problem.
             <item>
               The lowest mipmap level is sometimes miscolored in trilinear-
               sampled polygons.
@@ -847,15 +898,23 @@
               Third, <tt/glColorMask/ is fully supported in hardware when
               the screen is configured for 32 bits/pixel.
           </itemize>
+
         <sect2>Known Problems
 <p>
           <itemize>
             <item>
-              The Glide library cannot be used directly; it's only meant to
-              be used via the tdfx DRI driver.
+              The lowest mipmap level is sometimes miscolored in trilinear-
+              sampled polygons (Voodoo3/Banshee).
             <item>
-              24bpp screen modes are supported by the hardware but not by
-              the current driver.  32bpp is fully supported.
+              Voodoo4/5 may be run at 24bpp (instead of 32bpp, the default)
+              but 3D acceleration is not supported in that mode.
+              32bpp mode is fully 3D accelerated.
+            <item>
+              Fog doesn't work with orthographic projections.
+            <item>
+              The accuracy of blending operations on Voodoo4/5 isn't always
+              very good.
+              If you run Glean, you'll find some test failures.
             <item>
               As of October, 2000 the second VSA-100 chip on the Voodoo5 is
               not yet operational.
@@ -863,6 +922,15 @@
               The second VSA-100 chip will allow Scan-Line Interleave (SLI)
               mode for full-screen applications and games, potentially doubling
               the system's fill rate.
+              When the second VSA-100 chip is activated
+              glGetString(GL_RENDERER) will report Voodoo5 instead of Voodoo4.
+            <item>
+              The Glide library cannot be used directly; it's only meant to
+              be used via the tdfx DRI driver.
+            <item>
+              SSystem has problems because of poorly set near and far
+              clipping planes.
+              The office.unc Performer model also suffers from this problem.
           </itemize>
 
 
@@ -1070,12 +1138,12 @@
         <sect2>Configuration
         <p>
           Your XF86Config file's device section must specify the
-          <tt>r128</tt> device:
+          <tt>ati</tt> device:
           <verb>
         Section "Device"
             Identifier  "Rage128"
             VendorName  "ATI"
-            Driver      "r128"
+            Driver      "ati"
         EndSection
             </verb>
             The Screen section should then reference the Rage 128 device:
@@ -1117,8 +1185,67 @@
 
         <sect2>Known Problems
 <p>
-          DGA is not yet supported in the ATI Rage 128 X server.  This
-          feature will be added in a future release.
+          None.
+
+
+      <sect1>ATI Radeon
+      <p>
+        <sect2>Dependencies
+        <p>
+          A Linux kernel with AGP GART support (such as the 2.4.x test
+          kernels) is needed.
+          <p>
+        <sect2>Configuration
+        <p>
+          Your XF86Config file's device section must specify the
+          <tt>ati</tt> device:
+          <verb>
+        Section "Device"
+            Identifier  "Radeon"
+            VendorName  "ATI"
+            Driver      "ati"
+        EndSection
+            </verb>
+            The Screen section should then reference the Radeon device:
+            <verb>
+	Section "Screen"
+	    Identifier  "Screen 1"
+	    Device      "Radeon"
+	    Monitor     "High Res Monitor"
+	    DefaultDepth 16
+	    Subsection "Display"
+		Depth       16
+		Modes       "1280x1024" "1024x768" "800x600" "640x480"
+		ViewPort    0 0
+	    EndSubsection
+	    Subsection "Display"
+		Depth       32
+		Modes       "1280x1024" "1024x768" "800x600" "640x480"
+		ViewPort    0 0
+	    EndSubsection
+        EndSection
+            </verb>
+          <p>
+            The kernel module for the Radeon is named <tt>radeon.o</tt> and
+	    should be installed in /lib/modules/2.4.x/kernel/driver/char/drm/.
+            It will be automatically loaded by the Xserver if needed.
+          <p>
+	    The DRI 3D driver for the Radeon should be in
+	    <tt>/usr/X11R6/lib/modules/dri/radeon_dri.so</tt>.
+            This will be automatically loaded by libGL.so.
+          <p>
+            You may also set your screen depth to 32 for 32bpp mode.
+          <p>
+
+        <sect2>Performance
+<p>
+          While this driver supports many of the features of ATI Radeon
+          cards, we do not <em/yet/ fully support the card's TCL
+          features.  This work is progressing, but is not yet ready.
+
+        <sect2>Known Problems
+<p>
+          None.
 
 
       <sect1>3DLabs Oxygen GMX 2000
@@ -1135,7 +1262,7 @@
           overlays, stereo, hardware-accelerated indirect rendering.
         <p>
           OpenGL-like functionality is provided with the Mesa library.
-          XFree86 4.0.1 uses Mesa 3.3.
+          XFree86 4.0.2 uses Mesa 3.4.
           Subsequent releases of XFree86 will use newer versions of Mesa.
           When newer versions of Mesa are available, the 3D drivers can
           be updated without reinstalling XFree86 or libGL.so.

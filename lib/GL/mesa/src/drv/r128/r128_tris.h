@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tris.h,v 1.2 2000/08/25 13:42:31 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tris.h,v 1.3 2000/12/04 19:21:47 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -28,22 +28,21 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * Authors:
- *   Kevin E. Martin <martin@valinux.com>
  *   Gareth Hughes <gareth@valinux.com>
+ *   Kevin E. Martin <martin@valinux.com>
  *
  */
 
-#ifndef _R128_TRIS_H_
-#define _R128_TRIS_H_
+#ifndef __R128_TRIS_H__
+#define __R128_TRIS_H__
 
 #ifdef GLX_DIRECT_RENDERING
 
 #include "r128_vb.h"
 
-extern void r128DDChooseRenderState(GLcontext *ctx);
-extern void r128DDTriangleFuncsInit(void);
+extern void r128DDChooseRenderState( GLcontext *ctx );
+extern void r128DDTriangleFuncsInit( void );
 
-#define R128_ANTIALIAS_BIT	0x00	/* Ignored for now */
 #define R128_FLAT_BIT		0x01
 #define R128_OFFSET_BIT		0x02
 #define R128_TWOSIDE_BIT	0x04
@@ -51,18 +50,18 @@ extern void r128DDTriangleFuncsInit(void);
 #define R128_FALLBACK_BIT	0x10
 #define R128_MAX_TRIFUNC	0x20
 
-/* Draw a triangle from the vertices in the vertex buffer */
-static __inline void r128_draw_triangle( r128ContextPtr r128ctx,
-					 r128Vertex *v0,
-					 r128Vertex *v1,
-					 r128Vertex *v2 )
+
+static __inline void r128_draw_triangle( r128ContextPtr rmesa,
+					 r128VertexPtr v0,
+					 r128VertexPtr v1,
+					 r128VertexPtr v2 )
 {
-   int vertsize = r128ctx->vertsize;
-   CARD32 *vb = r128AllocVerticesInline( r128ctx, 3 );
+   int vertsize = rmesa->vertsize;
+   CARD32 *vb = r128AllocVerticesInline( rmesa, 3 );
    int j;
 
 #if defined (USE_X86_ASM)
-   /* GTH: We can safely assume the vertex stride is some number of
+   /* GH: We can safely assume the vertex stride is some number of
     * dwords, and thus a "rep movsd" is okay.  The vb pointer is
     * automagically updated with this instruction, so we don't have
     * to manually take care of incrementing it.
@@ -93,19 +92,18 @@ static __inline void r128_draw_triangle( r128ContextPtr r128ctx,
 #endif
 }
 
-/* Draw a quad from the vertices in the vertex buffer */
-static __inline void r128_draw_quad( r128ContextPtr r128ctx,
-				     r128Vertex *v0,
-				     r128Vertex *v1,
-				     r128Vertex *v2,
-				     r128Vertex *v3 )
+static __inline void r128_draw_quad( r128ContextPtr rmesa,
+				     r128VertexPtr v0,
+				     r128VertexPtr v1,
+				     r128VertexPtr v2,
+				     r128VertexPtr v3 )
 {
-   int vertsize = r128ctx->vertsize;
-   CARD32 *vb = r128AllocVerticesInline( r128ctx, 6 );
+   int vertsize = rmesa->vertsize;
+   CARD32 *vb = r128AllocVerticesInline( rmesa, 6 );
    int j;
 
 #if defined (USE_X86_ASM)
-   /* GTH: We can safely assume the vertex stride is some number of
+   /* GH: We can safely assume the vertex stride is some number of
     * dwords, and thus a "rep movsd" is okay.  The vb pointer is
     * automagically updated with this instruction, so we don't have
     * to manually take care of incrementing it.
@@ -160,15 +158,14 @@ static __inline void r128_draw_quad( r128ContextPtr r128ctx,
 #endif
 }
 
-/* Draw a line from the vertices in the vertex buffer */
-static __inline void r128_draw_line( r128ContextPtr r128ctx,
-				     r128Vertex *tmp0,
-				     r128Vertex *tmp1,
+static __inline void r128_draw_line( r128ContextPtr rmesa,
+				     r128VertexPtr tmp0,
+				     r128VertexPtr tmp1,
 				     float width )
 {
 #if 1
-   int vertsize = r128ctx->vertsize;
-   CARD32 *vb = r128AllocVerticesInline( r128ctx, 6 );
+   int vertsize = rmesa->vertsize;
+   CARD32 *vb = r128AllocVerticesInline( rmesa, 6 );
    float dx, dy, ix, iy;
    int j;
 
@@ -221,12 +218,12 @@ static __inline void r128_draw_line( r128ContextPtr r128ctx,
 
 #else
 
-   int vertsize = r128ctx->vertsize;
-   CARD32 *vb = r128AllocVerticesInline( r128ctx, 2 );
+   int vertsize = rmesa->vertsize;
+   CARD32 *vb = r128AllocVerticesInline( rmesa, 2 );
    int j;
 
 #if defined (USE_X86_ASM)
-   /* GTH: We can safely assume the vertex stride is some number of
+   /* GH: We can safely assume the vertex stride is some number of
     * dwords, and thus a "rep movsd" is okay.  The vb pointer is
     * automagically updated with this instruction, so we don't have
     * to manually take care of incrementing it.
@@ -250,13 +247,12 @@ static __inline void r128_draw_line( r128ContextPtr r128ctx,
 #endif
 }
 
-/* Draw a point from the vertices in the vertex buffer */
-static __inline void r128_draw_point( r128ContextPtr r128ctx,
-				      r128Vertex *tmp, float sz )
+static __inline void r128_draw_point( r128ContextPtr rmesa,
+				      r128VertexPtr tmp, float sz )
 {
 #if 1
-   int vertsize = r128ctx->vertsize;
-   CARD32 *vb = r128AllocVerticesInline( r128ctx, 6 );
+   int vertsize = rmesa->vertsize;
+   CARD32 *vb = r128AllocVerticesInline( rmesa, 6 );
    int j;
 
    *(float *)&vb[0] = tmp->v.x - sz;
@@ -295,12 +291,12 @@ static __inline void r128_draw_point( r128ContextPtr r128ctx,
       vb[j] = tmp->ui[j];
 #else
 
-   int vertsize = r128ctx->vertsize;
-   CARD32 *vb = r128AllocVerticesInline( r128ctx, 1 );
+   int vertsize = rmesa->vertsize;
+   CARD32 *vb = r128AllocVerticesInline( rmesa, 1 );
    int j;
 
 #if defined (USE_X86_ASM)
-   /* GTH: We can safely assume the vertex stride is some number of
+   /* GH: We can safely assume the vertex stride is some number of
     * dwords, and thus a "rep movsd" is okay.  The vb pointer is
     * automagically updated with this instruction, so we don't have
     * to manually take care of incrementing it.
@@ -317,4 +313,4 @@ static __inline void r128_draw_point( r128ContextPtr r128ctx,
 }
 
 #endif
-#endif /* _R128_TRIS_H_ */
+#endif /* __R128_TRIS_H__ */
