@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.209 2003/10/17 20:02:12 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.210 2003/10/29 04:17:21 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -408,7 +408,6 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     if (xf86DoConfigure)
 	DoConfigure();
 
-#if 0
     if (autoconfig) {
 	if (!xf86AutoConfig()) {
 	    xf86Msg(X_ERROR, "Auto configuration failed\n");
@@ -416,7 +415,6 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 	}
 	PostConfigInit();
     }
-#endif
 
     /* Initialise the resource broker */
     xf86ResourceBrokerInit();
