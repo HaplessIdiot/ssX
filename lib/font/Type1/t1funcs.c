@@ -71,7 +71,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.30tsi Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.32 2003/07/17 08:19:26 eich Exp $ */
 
 /*
 
@@ -507,8 +507,7 @@ Type1OpenScalable (FontPathElementPtr fpe,
        struct XYspace *S;    /* coordinate space for character               */
        struct region *area;
        CharInfoRec *glyphs;
-       register int i;
-       int len, rc, count = 0;
+       int len, rc, count = 0, i = 0;
        struct type1font *type1;
        char *p;
        FontMapPtr mapping = NULL;
