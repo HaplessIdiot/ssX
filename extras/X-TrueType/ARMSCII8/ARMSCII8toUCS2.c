@@ -44,11 +44,14 @@ Notice===
 				Pablo Saratxaga <pablo@mandrakesoft.com>
 
  */
+/* $XFree86$ */
 
 #include "xttversion.h"
 
+#if 0
 static char const * const releaseID =
     _XTT_RELEASE_NAME;
+#endif
 
 #include "xttcommon.h"
 #include "xttcap.h"

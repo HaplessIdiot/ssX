@@ -30,12 +30,14 @@
 
 Notice===
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/X-TrueType/GBK/main.c,v 1.1tsi Exp $ */
 
 #include "xttversion.h"
 
+#if 0
 static char const * const releaseID =
     _XTT_RELEASE_NAME;
+#endif
 
 #include "xttcommon.h"
 #include "xttcap.h"

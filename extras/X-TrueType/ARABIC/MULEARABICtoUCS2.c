@@ -28,7 +28,7 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
    SUCH DAMAGE.
 
-   Major Release ID: X-TrueType Server Version 1.2 [Aoi MATSUBARA Release 2]
+   Major Release ID: X-TrueType Server Version 1.3 [Aoi MATSUBARA Release 3]
 
 Notice===
 
@@ -37,11 +37,14 @@ Notice===
     and help of Juliusz Chorobczek.
 
  */
+/* $XFree86$ */
 
 #include "xttversion.h"
 
+#if 0
 static char const * const releaseID =
     _XTT_RELEASE_NAME;
+#endif
 
 #include "xttcommon.h"
 #include "xttcap.h"
@@ -86,21 +89,21 @@ static ucs2_t tblMulearabic2ToUcs2[] = {
 
 
 CODE_CONV_ONE_OCTET_TO_UCS2(cc_mulearabic0_to_ucs2, /* function name */
-                          tblMulearabic0ToUcs2, /* table name */
-			  0x20,0x2a, /* begin and end of table */
-                          ALTCHR /* alt char code (on UCS2) */
-                          )
+                            tblMulearabic0ToUcs2, /* table name */
+                            0x20,0x2a, /* begin and end of table */
+                            ALTCHR /* alt char code (on UCS2) */
+                            )
 
 CODE_CONV_ONE_OCTET_TO_UCS2(cc_mulearabic1_to_ucs2, /* function name */
-                          tblMulearabic1ToUcs2, /* table name */
-                          0x20,0x69, /* begin and end of table */
-                          ALTCHR /* alt char code (on UCS2) */
-                          )
+                            tblMulearabic1ToUcs2, /* table name */
+                            0x20,0x69, /* begin and end of table */
+                            ALTCHR /* alt char code (on UCS2) */
+                            )
 
 CODE_CONV_ONE_OCTET_TO_UCS2(cc_mulearabic2_to_ucs2, /* function name */
-                          tblMulearabic2ToUcs2, /* table name */
-                          0x20,0x6e, /* begin and end of table */
-                          ALTCHR /* alt char code (on UCS2) */
-                          )
+                            tblMulearabic2ToUcs2, /* table name */
+                            0x20,0x6e, /* begin and end of table */
+                            ALTCHR /* alt char code (on UCS2) */
+                            )
 
 /* end of file */

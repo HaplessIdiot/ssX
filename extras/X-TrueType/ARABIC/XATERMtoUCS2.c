@@ -42,12 +42,14 @@ Notice===
 				Pablo Saratxaga <srtxg@chanae.alphanet.ch>
 
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/X-TrueType/ARABIC/XATERMtoUCS2.c,v 1.2tsi Exp $ */
 
 #include "xttversion.h"
 
+#if 0
 static char const * const releaseID =
     _XTT_RELEASE_NAME;
+#endif
 
 #include "xttcommon.h"
 #include "xttcap.h"

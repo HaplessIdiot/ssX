@@ -25,15 +25,18 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
    SUCH DAMAGE.
 
-   Major Release ID: X-TrueType Server Version 1.2 [Aoi MATSUBARA Release 2]
+   Major Release ID: X-TrueType Server Version 1.3 [Aoi MATSUBARA Release 3]
 
 Notice===
  */
+/* $XFree86$ */
 
 #include "xttversion.h"
 
+#if 0
 static char const * const releaseID =
     _XTT_RELEASE_NAME;
+#endif
 
 #include "xttcommon.h"
 #include "xttcap.h"
@@ -43,24 +46,24 @@ static char const * const releaseID =
 
 typedef enum
 {
-    BIG5ETEN
+    BIG5
 } CharSetMagic;
 
 static CharSetRelation const charSetRelations[] = {
-    { "big5",  "eten", NULL, BIG5ETEN, { 0x40, 0xff, 0xa1, 0xf9, 0xa140 } },
+    { "big5",  NULL, NULL, BIG5, { 0x40, 0xff, 0xa1, 0xf9, 0xa140 } },
     { NULL, NULL, NULL, 0, { 0, 0, 0, 0, 0 } }
 };
 
 
-CODECONV_TEMPLATE(cc_big5eten_to_ucs2);
+CODECONV_TEMPLATE(cc_big5_to_ucs2);
 static MapIDRelation const mapIDRelations[] = {
-    { BIG5ETEN,     EPlfmISO,     EEncISO10646,
-                                  cc_big5eten_to_ucs2,                 NULL },
-    { BIG5ETEN,     EPlfmUnicode, EEncAny,
-                                  cc_big5eten_to_ucs2,                 NULL },
-    { BIG5ETEN,     EPlfmMS,      EEncMSUnicode,
-                                  cc_big5eten_to_ucs2,                 NULL },
-    { BIG5ETEN,     EPlfmMS,      EEncMSBig5WGL4,    NULL,             NULL },
+    { BIG5,     EPlfmISO,     EEncISO10646,
+                                  cc_big5_to_ucs2,                 NULL },
+    { BIG5,     EPlfmUnicode, EEncAny,
+                                  cc_big5_to_ucs2,                 NULL },
+    { BIG5,     EPlfmMS,      EEncMSUnicode,
+                                  cc_big5_to_ucs2,                 NULL },
+    { BIG5,     EPlfmMS,      EEncMSBig5WGL4,    NULL,             NULL },
     { -1, 0, 0, NULL, NULL }
 };
 

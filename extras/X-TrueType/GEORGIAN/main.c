@@ -36,11 +36,14 @@ Notice===
     -georgian-ps is the "Parliament-Soros found" encoding.
 
  */
+/* $XFree86$ */
 
 #include "xttversion.h"
 
+#if 0
 static char const * const releaseID =
     _XTT_RELEASE_NAME;
+#endif
 
 #include "xttcommon.h"
 #include "xttcap.h"

@@ -34,11 +34,14 @@ Notice===
    by Jungshik Shin <jshin@mailaps.org>
 
  */
+/* $XFree86$ */
 
 #include "xttversion.h"
 
+#if 0
 static char const * const releaseID =
     _XTT_RELEASE_NAME;
+#endif
 
 #include "xttcommon.h"
 #include "xttcap.h"

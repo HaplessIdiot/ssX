@@ -30,11 +30,14 @@
 
 Notice===
  */
+/* $XFree86$ */
 
 #include "xttversion.h"
 
+#if 0
 static char const * const releaseID =
     _XTT_RELEASE_NAME;
+#endif
 
 #include "xttcommon.h"
 #include "xttcap.h"
@@ -132,5 +135,4 @@ cc_cp1250_to_ucs2(ft_char_code_t codeSrc)
 	return codeDst;
 }
 
-	
 /* end of file */

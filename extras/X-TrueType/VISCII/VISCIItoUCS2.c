@@ -39,12 +39,14 @@ Notice===
     positions (first char is at 0x02) so the table goes from 0x00 to 0xff.
 
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/X-TrueType/VISCII/VISCIItoUCS2.c,v 1.2tsi Exp $ */
 
 #include "xttversion.h"
 
+#if 0
 static char const * const releaseID =
     _XTT_RELEASE_NAME;
+#endif
 
 #include "xttcommon.h"
 #include "xttcap.h"
