@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_Acc.man,v 1.8 95/01/23 15:33:27 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.33 1995/07/16 09:13:13 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.34 1995/07/17 13:51:46 dawes Exp $
 .TH XF86_Accel 1 "Version 3.1.2"  "XFree86"
 .SH NAME
 XF86_Accel - accelerated X Window System servers for
@@ -60,7 +60,7 @@ is an 8-bit PseudoColor and 16-bit TrueColor server for AGX/XGA graphic accelera
 .PP
 .I XF86_W32
 is an 8-bit PseudoColor server for ET4000/W32, ET4000/W32i and ET4000/W32p
-grpahic accelerator boards.
+graphic accelerator boards.
 .PP
 .I XF86_8514
 is an 8-bit PseudoColor server for 8514/A graphic accelerator boards.  
@@ -77,7 +77,7 @@ The servers support the following chipsets:
 .TP 13
 XF86_S3:
 86C911, 86C924, 86C801, 86C805, 86C805i, 86C928, 86C928-P,
-86C732, 86C764, 86C864, 86C868, 86C964, 86C968
+86C732 (Trio32), 86C764 (Trio64), 86C864, 86C868, 86C964, 86C968
 .TP 13
 XF86_Mach8:
 ATI Mach8, ATI Mach32
@@ -177,7 +177,7 @@ s3_generic
 (for a standard IO driven server) 
 .TP 12
 mmio_928
-(for a memory mapped IO driven server on 86C928, 86C864 and 86C964 boards)
+(for a memory mapped IO driven server on 86C928, 86C732, 86C764, 86C864, 86C868, 86C964 and 86C968 boards)
 .RE
 .RS 8
 .PP
@@ -291,7 +291,8 @@ Possible values for the S3 server
 include \fB"icd2061a"\fP, \fB"ics9161a"\fP, \fB"dcs2834"\fP, \fB"sc11412"\fP,
 \fB"s3gendac"\fP, \fB"s3_sdac"\fP, \fB"ti3025"\fP, \fB"ti3026"\fP,
 \fB"ics2595"\fP,
-\fB"ics5300"\fP, \fB"ics5342"\fP and \fB"ch8391"\fP.
+\fB"ics5300"\fP, \fB"ics5342"\fP, \fB"ch8391"\fP,
+\fB"stg1703"\fP and \fB"ibm_rgb5xx"\fP.
 .TP 8
 .B Ramdac \fI"ramdac-type"\fP
 This specifies the type of RAMDAC used on the board.  Only the S3,
@@ -309,7 +310,7 @@ as a generic VGA RAMDAC.
 \fBatt20c490\fP - (S3, AGX) Card has an AT&T 20C490 or AT&T 20C491 RAMDAC.
 When the \fBdac_8_bit\fP option is specified, these
 RAMDACs may be operated in 8 bit per RGB mode.  It also allows 16bpp
-operation with 801/805/928 boards.  True AT&T 20C490 ramdacs should be
+operation with 801/805/928 boards.  True AT&T 20C490 RAMDACs should be
 auto-detected by the S3 server.  This RAMDAC must be specified explicitly
 in other cases.
 Note that 8 bit per RGB mode does not
@@ -341,6 +342,9 @@ RAMDAC and there are problems using clocks higher than 67.5Mhz.
 This must be specified if the server fails to detect it.
 .sp
 \fBatt22c498\fP - (S3) Card has an AT&T 22C498 RAMDAC.
+This must be specified if the server fails to detect it.
+.sp
+\fBibm_rgb514\fP - (S3) Card has an IBM RGB514 RAMDAC.
 This must be specified if the server fails to detect it.
 .sp
 \fBibm_rgb524\fP - (S3) Card has an IBM RGB524 RAMDAC.
@@ -451,7 +455,7 @@ This sets the XGA instance number for the AGX server.  Refer to
 .TP 8
 .B S3MClk \fImemclk\fP
 This allows the video card's memory clock value to be specified.  This is
-only used for 864 and Trio64 cards, and the value should not normally be
+only used for 805i, 864 and Trio32/64 cards, and the value should not normally be
 given here for cards with an S3 Gendac or Trio64).  This entry doesn't
 change the card's memory clock, but it is used to calculate the DRAM
 timing parameters.  For further details refer to \fIREADME.S3\fP.
@@ -462,7 +466,8 @@ cards.  For further details refer to \fIREADME.S3\fP.
 .TP 8
 .B S3RefClk \fIrefclk\fP
 This allows the PLL reference clock to be specified.  This may be required
-for some cards that use the IBM RGB52x RAMDACs.  The value is in MHz.
+for some cards that use the IBM RGB5xx RAMDACs.  The value is in MHz.
+For further details refer to \fIREADME.S3\fP.
 .PP
 \fBOption\fP flags may be specified in either the \fBDevice\fP section
 or the \fBDisplay\fP subsection of the XF86Config file.
@@ -493,8 +498,8 @@ and disables the font cache with the AGX.
 .sp
 \fBdac_8_bit\fP - (S3, Mach32, Mach64, AGX) Enables 8-bit per RGB.
 Currently only
-supported with the Ti3020/5, Bt485, AT&T 20C505, AT&T 20C490/1,
-Sierra SC15025/6, AT&T 20C498 and STG1700, IBM RGB52x (S3 server),
+supported with the Ti3020/5/6, Bt485, AT&T 20C505, AT&T 20C490/1,
+Sierra SC15025/6, AT&T 20C498 and STG1700/3, IBM RGB5xx (S3 server),
 Bt481 and Bt482 (AGX server),
 ATI68875/TLC34075/Bt885 (Mach32 server),
 ATI68875, TLC34075, ATI68860, ATI68880, STG1702, and STG1703 (Mach64
@@ -505,7 +510,7 @@ one of the above RAMDACs other than the AT&T 20C490/1 is used.
 would automatically be enabled.
 .sp
 \fBsync_on_green\fP - (S3, P9000) Enables generation of sync on the green
-signal on cards with Bt485, AT&T 20C505 or Ti3020/5 RAMDACs.  \fBNote:\fP
+signal on cards with Bt485, AT&T 20C505, Ti3020/5/6 or IBM RGB5xx RAMDACs.  \fBNote:\fP
 Although these RAMDACs support sync on green, it won't work on many cards
 because of the way they are designed.
 .sp
@@ -559,15 +564,25 @@ PCI 928 cards on machines with a buggy SMC UART.
 \fBs3_964_bt485_vclk\fP - (S3) Enables a workaround for possible problems
 on cards using the 964 and Bt485.
 .sp
+\fBgenoa\fP, \fBstb\fP, \fBhercules\fP or \fBnumber_nine\fP, - (S3) 
+These options may used to select different defaults for the blank delay 
+settings for untested cards with IBM RGB5xx RAMDACs to avoid 
+pixel wrapping problems.
+.sp
 .ig
 \fBs3_invert_vclk\fP - (S3) Inverts the VRAM clock.
 .sp
 ..
 \fBslow_vram\fP - (S3) Adjusts the VRAM timings for cards using slow
-VRAM.  This is required for some Diamond Stealth 64 VRAM cards.
+VRAM.  This is required for some Diamond Stealth 64 VRAM and
+Hercules Terminator 64 cards.
+.sp
+\fBfast_vram\fP - (S3) Adjusts the VRAM timings for faster VRAM access.
+There will be display errors and pixel garbage if your card can't support
+it.
 .sp
 \fBslow_dram_refresh\fP - (S3) Adjusts the DRAM refresh for cards with
-slow DRAM.
+slow DRAM to avoid lines of corrupted pixels when switching modes.
 .sp
 \fBno_block_write\fP - (Mach64) Disables the block write mode on
 certain types of VRAM Mach64 cards.  If noise or shadows appear on the
@@ -741,7 +756,7 @@ See also the
 manual page.
 .SH BUGS
 .PP
-Some S3 cards with Bt485 ramdacs are currently restricted to
+Some S3 cards with Bt485 RAMDACs are currently restricted to
 dot-clocks less than 85MHz.
 .sp
 The P9000 server may still have problems with cards other than the

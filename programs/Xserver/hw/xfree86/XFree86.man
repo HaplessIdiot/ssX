@@ -1,5 +1,5 @@
 .\" $XConsortium: XFree86.man,v 1.6 95/01/23 15:33:32 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.14 1995/07/12 15:32:51 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.15 1995/07/15 15:01:48 dawes Exp $
 .TH XFree86 1 "Version 3.1.2"  "XFree86"
 .SH NAME
 XFree86 - X11R6 for UNIX on x86 platforms
@@ -360,6 +360,9 @@ Ported to \fBSolaris x86\fP.
 David McCullough,  \fIdavidm@stallion.oz.au\fP
 Ported to \fBSCO SVR3\fP.
 .TP 8
+Michael Rohleder,  \fImichael.rohleder@stadt-frankfurt.de\fP
+Ported to \fBISC SVR3\fP.
+.TP 8
 Kees Verstoep,     \fIversto@cs.vu.nl\fP
 Ported to \fBAmoeba\fP based on Leendert van Doorn's original Amoeba port of
 X11R5.
@@ -436,6 +439,9 @@ WD 90C24A support.
 .TP 8
 Alan Hourihane,    \fIalanh@fairlite.demon.co.uk\fP
 Trident SVGA driver
+.TP 8
+Marc La France,    \fIMarc.La-France@ualberta.ca\fP
+ATI vgawonder SVGA driver
 .TP 8
 Steve Goldman,     \fIsgoldman@encore.com\fP
 Oak 067/077 SVGA driver.
