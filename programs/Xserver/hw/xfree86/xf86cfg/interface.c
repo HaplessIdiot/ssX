@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.11 2000/12/01 18:31:07 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.12 2000/12/08 21:51:05 paulo Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -225,8 +225,9 @@ main(int argc, char *argv[])
 	} else if (strcmp(argv[i], "-rgbpath") == 0) {
 	    if (i + 1 < argc)
 		XF86RGB_path = argv[++i];
+	}
 #ifdef HAS_NCURSES
-	} else if (strcmp(argv[i], "-textmode") == 0)
+	else if (strcmp(argv[i], "-textmode") == 0)
 	    textmode = True;
 #endif
     }
