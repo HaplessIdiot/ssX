@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.h,v 1.3 1999/05/16 06:55:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.h,v 1.4 1999/05/22 08:40:05 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -41,11 +41,14 @@ typedef enum {
  * layer.
  */
 
-typedef void (*PostEventProc)(InputInfoPtr pInfo, int buttons, int dx, int dy);
+typedef void (*PostMseEventProc)(InputInfoPtr pInfo, int buttons,
+			      int dx, int dy, int dz);
+typedef void (*MouseCommonOptProc)(InputInfoPtr pInfo);
 
 typedef struct _MouseDevRec {
     PtrCtrlProcPtr	Ctrl;
-    PostEventProc	PostEvent;
+    PostMseEventProc	PostEvent;
+    MouseCommonOptProc	CommonOptions;
     DeviceIntPtr	device;
     int			mseFd;
     const char *	mseDevice;
@@ -84,10 +87,11 @@ typedef struct _MouseDevRec {
     InputInfoPtr	pInfo;
 } MouseDevRec, *MouseDevPtr;
 
-/* Mouse device private record */
-
+/* Z axis mapping */
+#define MSE_NOZMAP	0
 #define MSE_MAPTOX	-1
 #define MSE_MAPTOY	-2
+
 #define MSE_MAXBUTTONS	12
 #define MSE_DFLTBUTTONS	 3
 

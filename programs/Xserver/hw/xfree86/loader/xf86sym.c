@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.92 1999/05/09 14:59:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.93 1999/05/09 15:17:58 dawes Exp $ */
 
 /*
  *
@@ -380,6 +380,8 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86FindOptionValue)
    SYMFUNC(xf86MarkOptionUsed)
    SYMFUNC(xf86MarkOptionUsedByName)
+   SYMFUNC(xf86CheckIfOptionUsed)
+   SYMFUNC(xf86CheckIfOptionUsedByName)
    SYMFUNC(xf86ShowUnusedOptions)
    SYMFUNC(xf86ProcessOptions)
    SYMFUNC(xf86TokenToOptinfo)

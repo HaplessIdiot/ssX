@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.10 1999/04/27 12:05:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.11 1999/05/09 06:06:20 dawes Exp $ */
 
 /*
  * Copyright (c) 1998 by The XFree86 Project, Inc.
@@ -271,6 +271,26 @@ xf86MarkOptionUsedByName(pointer options, const char *name)
 	opt->opt_used = TRUE;
 }
 
+Bool
+xf86CheckIfOptionUsed(pointer option)
+{
+    if (option != NULL)
+	return ((XF86OptionPtr)option)->opt_used;
+    else
+	return FALSE;
+}
+
+Bool
+xf86CheckIfOptionUsedByName(pointer options, const char *name)
+{
+    XF86OptionPtr opt;
+
+    opt = FindOption(options, name);
+    if (opt != NULL)
+	return opt->opt_used;
+    else
+	return FALSE;
+}
 
 void
 xf86ShowUnusedOptions(int scrnIndex, pointer options)
@@ -319,7 +339,10 @@ static Bool
 ParseOptionValue(int scrnIndex, pointer options, OptionInfoPtr p)
 {
     char *s, *end;
+    Bool wasUsed;
+
     if ((s = FindOptionValue(options, p->name)) != NULL) {
+	wasUsed = xf86CheckIfOptionUsedByName(options, p->name);
 	xf86MarkOptionUsedByName(options, p->name);
 	switch (p->type) {
 	case OPTV_INTEGER:
@@ -423,11 +446,14 @@ ParseOptionValue(int scrnIndex, pointer options, OptionInfoPtr p)
 	    break;
 	}
 	if (p->found) {
-	    xf86DrvMsgVerb(scrnIndex, X_CONFIG, 2, "Option \"%s\"", p->name);
+	    int verb = 2;
+	    if (wasUsed)
+		verb = 4;
+	    xf86DrvMsgVerb(scrnIndex, X_CONFIG, verb, "Option \"%s\"", p->name);
 	    if (!(p->type == OPTV_BOOLEAN && *s == 0)) {
-		xf86ErrorFVerb(2, " \"%s\"", s);
+		xf86ErrorFVerb(verb, " \"%s\"", s);
 	    }
-	    xf86ErrorFVerb(2, "\n");
+	    xf86ErrorFVerb(verb, "\n");
 	}
     } else if (p->type == OPTV_BOOLEAN) {
 	/* Look for matches with options with or without a "No" prefix. */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.6 1999/05/17 13:17:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.7 1999/05/22 08:40:04 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -78,7 +78,8 @@ static Bool MouseConvert(LocalDevicePtr local, int first, int num, int v0,
 		 	     int *y);
 
 static void MouseCtrl(DeviceIntPtr device, PtrCtrl *ctrl);
-static void MousePostEvent(InputInfoPtr pInfo, int buttons, int dx, int dy);
+static void MousePostEvent(InputInfoPtr pInfo, int buttons,
+			   int dx, int dy, int dz);
 
 #undef MOUSE
 InputDriverRec MOUSE = {
@@ -308,6 +309,39 @@ InitProtocols(void)
     return TRUE;
 }
 
+/* Process options common to all mouse types. */
+static void
+MouseCommonOptions(InputInfoPtr pInfo)
+{
+    MouseDevPtr pMse;
+    MessageType from = X_DEFAULT;
+
+    pMse = pInfo->private;
+
+    pMse->buttons = xf86SetIntOption(pInfo->options, "Buttons", 0);
+    from = X_CONFIG;
+    if (!pMse->buttons) {
+	pMse->buttons = MSE_DFLTBUTTONS;
+	from = X_DEFAULT;
+    }
+    xf86Msg(from, "%s: Buttons: %d\n", pInfo->name, pMse->buttons);
+    
+    pMse->emulate3Buttons = xf86SetBoolOption(pInfo->options,
+					      "Emulate3Buttons", FALSE);
+    pMse->emulate3Timeout = xf86SetIntOption(pInfo->options, "Emulate3Timeout",
+					     50);
+    if (pMse->emulate3Buttons) {
+	xf86Msg(X_CONFIG, "%s: Emulate3Buttons, Emulate3Timeout: %d\n",
+		pInfo->name, pMse->emulate3Timeout);
+    }
+
+    pMse->chordMiddle = xf86SetBoolOption(pInfo->options, "ChordMiddle", FALSE);
+    if (pMse->chordMiddle)
+	xf86Msg(X_CONFIG, "%s: ChordMiddle\n", pInfo->name);
+
+    /* XXX Add parsing of the ZAxisMapping option. */
+}
+
 static InputInfoPtr
 MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 {
@@ -349,6 +383,7 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     pInfo->private = pMse;
     pMse->Ctrl = MouseCtrl;
     pMse->PostEvent = MousePostEvent;
+    pMse->CommonOptions = MouseCommonOptions;
 
     /* Find the protocol type. */
     protocol = xf86SetStrOption(dev->commonOptions, "Protocol", NULL);
@@ -412,26 +447,7 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     xf86CloseSerial(pInfo->fd);
     pInfo->fd = -1;
 
-    pMse->buttons = xf86SetIntOption(pInfo->options, "Buttons", 0);
-    from = X_CONFIG;
-    if (!pMse->buttons) {
-	pMse->buttons = MSE_DFLTBUTTONS;
-	from = X_DEFAULT;
-    }
-    xf86Msg(from, "%s: Buttons: %d\n", pInfo->name, pMse->buttons);
-    
-    pMse->emulate3Buttons = xf86SetBoolOption(pInfo->options,
-					      "Emulate3Buttons", FALSE);
-    pMse->emulate3Timeout = xf86SetIntOption(pInfo->options, "Emulate3Timeout",
-					     50);
-    if (pMse->emulate3Buttons) {
-	xf86Msg(X_CONFIG, "%s: Emulate3Buttons, Emulate3Timeout: %d\n",
-		pInfo->name, pMse->emulate3Timeout);
-    }
-
-    pMse->chordMiddle = xf86SetBoolOption(pInfo->options, "ChordMiddle", FALSE);
-    if (pMse->chordMiddle)
-	xf86Msg(X_CONFIG, "%s: ChordMiddle\n", pInfo->name);
+    pMse->CommonOptions(pInfo);
 
     pMse->sampleRate = xf86SetIntOption(pInfo->options, "SampleRate", 0);
     if (pMse->sampleRate) {
@@ -458,8 +474,6 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 	    xf86ErrorF("ClearRTS");
 	}
     }
-
-    /* XXX Add parsing of the ZAxisMapping option. */
 
     pInfo->flags |= XI86_CONFIGURED;
     return pInfo;
@@ -1254,54 +1268,8 @@ MouseReadInput(InputInfoPtr pInfo)
 #endif
 
 post_event:
-	/* map the Z axis movement */
-	switch (pMse->negativeZ) {
-	case 0:	/* do nothing */
-	    break;
-	case MSE_MAPTOX:
-	    if (dz != 0) {
-		dx = dz;
-		dz = 0;
-	    }
-	    break;
-	case MSE_MAPTOY:
-	    if (dz != 0) {
-		dy = dz;
-		dz = 0;
-	    }
-	    break;
-	default:	/* buttons */
-	    buttons &= ~(pMse->negativeZ | pMse->positiveZ);
-	    if (dz < 0)
-		buttons |= pMse->negativeZ;
-	    else if (dz > 0)
-		buttons |= pMse->positiveZ;
-	    dz = 0;
-	    break;
-	}
-
-#ifdef EXTMOUSEDEBUG
-	ErrorF(":  buttons %c%c%c%c%c  delta (%d,%d)\n",
-		(buttons&0x10) ? '5' : '-',
-		(buttons&0x08) ? '4' : '-',
-		(buttons&0x04) ? '3' : '-',
-		(buttons&0x02) ? '2' : '-',
-		(buttons&0x01) ? '1' : '-',
-		dx, dy);
-#endif
-
 	/* post an event */
-	pMse->PostEvent(pInfo, buttons, dx, dy);
-
-	/* 
-	 * If dz has been mapped to a button `down' event, we need to cook
-	 * up a corresponding button `up' event.
-	 */
-	if ((pMse->negativeZ > 0) &&
-		(buttons & (pMse->negativeZ | pMse->positiveZ))) {
-	    buttons &= ~(pMse->negativeZ | pMse->positiveZ);
-	    pMse->PostEvent(pInfo, buttons, 0, 0);
-	}
+	pMse->PostEvent(pInfo, buttons, dx, dy, dz);
 
 	/* 
 	 * We don't reset pBufP here yet, as there may be an additional data
@@ -1455,7 +1423,7 @@ buttonTimer(OsTimerPtr timer, CARD32 now, pointer arg)
     pInfo = arg;
     pMse = pInfo->private;
 
-    pMse->PostEvent(pInfo, pMse->truebuttons, 0, 0);
+    pMse->PostEvent(pInfo, pMse->truebuttons, 0, 0, 0);
     return 0;
 }
 
@@ -1565,7 +1533,7 @@ static char hitachMap[16] = {  0,  2,  1,  3,
 #define reverseBits(map, b)	(((b) & ~0x0f) | map[(b) & 0x0f])
 
 static void
-MousePostEvent(InputInfoPtr pInfo, int buttons, int dx, int dy)
+MouseDoPostEvent(InputInfoPtr pInfo, int buttons, int dx, int dy)
 {
     static OsTimerPtr timer = NULL;
     MouseDevPtr pMse;
@@ -1635,5 +1603,55 @@ MousePostEvent(InputInfoPtr pInfo, int buttons, int dx, int dy)
 	}
     }
     pMse->lastButtons = truebuttons;
+
+}
+
+static void
+MousePostEvent(InputInfoPtr pInfo, int buttons, int dx, int dy, int dz)
+{
+    MouseDevPtr pMse;
+    int zbutton = 0;
+
+
+    pMse = pInfo->private;
+
+    /* Map the Z axis movement. */
+    /* XXX Could this go in the conversion_proc? */
+    switch (pMse->negativeZ) {
+    case MSE_NOZMAP:	/* do nothing */
+	break;
+    case MSE_MAPTOX:
+	if (dz != 0) {
+	    dx = dz;
+	    dz = 0;
+	}
+	break;
+    case MSE_MAPTOY:
+	if (dz != 0) {
+	    dy = dz;
+	    dz = 0;
+	}
+	break;
+    default:	/* buttons */
+	buttons &= ~(pMse->negativeZ | pMse->positiveZ);
+	if (dz < 0)
+	    zbutton = pMse->negativeZ;
+	else if (dz > 0)
+	    zbutton = pMse->positiveZ;
+	buttons |= zbutton;
+	dz = 0;
+	break;
+    }
+
+    MouseDoPostEvent(pInfo, buttons, dx, dy);
+
+    /*
+     * If dz has been mapped to a button `down' event, we need to cook up
+     * a corresponding button `up' event.
+     */
+    if (zbutton) {
+	buttons &= ~zbutton;
+	MouseDoPostEvent(pInfo, buttons, 0, 0);
+    }
 }
 
