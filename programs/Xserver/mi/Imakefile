@@ -23,7 +23,7 @@ SRCS =  $(CBRT_SRC) mivaltree.c mipolyseg.c mipolyrect.c \
 	miexpose.c miglblt.c mizerline.c mizerclip.c mifpolycon.c \
 	midash.c mibstore.c mibank.c $(MIINITEXTSRC) mieq.c \
 	mipointer.c misprite.c midispcur.c miscrinit.c miclipn.c migc.c \
-	micmap.c
+	micmap.c mioverlay.c
 
 OBJS =	$(CBRT_OBJ) mivaltree.o mipolyseg.o mipolyrect.o \
 	mipoly.o mipolycon.o mipolygen.o mipolyutil.o \
@@ -34,7 +34,7 @@ OBJS =	$(CBRT_OBJ) mivaltree.o mipolyseg.o mipolyrect.o \
 	miexpose.o miglblt.o mizerline.o mizerclip.o mifpolycon.o \
 	midash.o mibstore.o mibank.o $(MIINITEXTOBJ) mieq.o \
 	mipointer.o misprite.o midispcur.o miscrinit.o miclipn.o migc.o \
-	micmap.o
+	micmap.o mioverlay.o
 
 #ifdef XFree86Version
 /* 
