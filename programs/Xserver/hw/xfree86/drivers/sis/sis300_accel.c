@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis300_accel.c,v 1.9 2001/11/30 12:12:00 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis300_accel.c,v 1.10 2002/01/10 19:05:43 eich Exp $ */
 
 /*
  *
@@ -774,8 +774,8 @@ SiSSetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int fg, int bg,
 	};
 }
 
-int     srcpitch;
-int     xcurrent, ycurrent;     
+static int     srcpitch;
+static int     xcurrent, ycurrent;     
 static void SiSSubsequentScanlineCPUToScreenColorExpandFill(
                         ScrnInfoPtr pScrn, int x, int y, int w, 
                         int h, int skipleft)

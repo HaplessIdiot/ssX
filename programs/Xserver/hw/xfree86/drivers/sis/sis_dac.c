@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.21 2001/11/30 12:12:00 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.22 2002/01/10 19:05:45 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -64,10 +64,10 @@ static void SiSThreshold(ScrnInfoPtr pScrn, DisplayModePtr mode,
                       unsigned short *Low, unsigned short *High);
 static void SetBlock(CARD16 port, CARD8 from, CARD8 to, CARD8 *DataPtr);
 
-unsigned short ch7005idx[0x11]={0x00,0x07,0x08,0x0a,0x0b,0x04,0x09,0x20,0x21,0x18,0x19,0x1a,0x1b,0x1c,0x1d,0x1e,0x1f};
+static unsigned short ch7005idx[0x11]={0x00,0x07,0x08,0x0a,0x0b,0x04,0x09,0x20,0x21,0x18,0x19,0x1a,0x1b,0x1c,0x1d,0x1e,0x1f};
 
 int
-compute_vclk(
+SiScompute_vclk(
         int Clock,
         int *out_n,
         int *out_dn,
@@ -164,7 +164,7 @@ compute_vclk(
     }
     *out_n = best_n;
     *out_dn = best_dn;
-    PDEBUG(ErrorF("compute_vclk: Clock=%d, n=%d, dn=%d, div=%d, sbit=%d,"
+    PDEBUG(ErrorF("SiScompute_vclk: Clock=%d, n=%d, dn=%d, div=%d, sbit=%d,"
                     " scale=%d\n", Clock, best_n, best_dn, *out_div,
                     *out_sbit, *out_scale));
     return 1;
@@ -605,7 +605,7 @@ SiSChrontelSave(ScrnInfoPtr pScrn, SISRegPtr sisReg)
         inSISIDXREG(pSiS->RelIO+4, i, sisReg->VBPart1[i]);
     }
     for (i=0; i<0x11; i++)
-        sisReg->ch7005[i]=GetCH7005(ch7005idx[i]);
+        sisReg->ch7005[i]=SiSGetCH7005(ch7005idx[i]);
 
     sisReg->sisRegs3C4[0x32] &= ~0x20;      /* Disable Lock Mode */
 }
@@ -616,8 +616,8 @@ SiS301Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     SISPtr  pSiS = SISPTR(pScrn);
     unsigned char   temp, temp1;
 
-    DisableBridge(pSiS->RelIO+0x30); 
-    UnLockCRT2(pSiS->RelIO+0x30);  
+    SiSDisableBridge(pSiS->RelIO+0x30); 
+    SiSUnLockCRT2(pSiS->RelIO+0x30);  
 
     /* SetCRT2ModeRegs() */
     outSISIDXREG(pSiS->RelIO+0x04, 4, 0);
@@ -630,7 +630,7 @@ SiS301Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 
     if (!(sisReg->sisRegs3D4[0x30] & 0x03) &&
          (sisReg->sisRegs3D4[0x31] & 0x20))  {      /* disable CRT2 */
-            LockCRT2(pSiS->RelIO+0x30);  
+            SiSLockCRT2(pSiS->RelIO+0x30);  
             return;
     }
     SetBlock(pSiS->RelIO+0x04, 0x02, 0x23, &(sisReg->VBPart1[0x02]));
@@ -660,8 +660,8 @@ SiS301Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     orSISIDXREG(pSiS->RelIO+SROFFSET, 0x1E, 0x20);
     andSISIDXREG(pSiS->RelIO+SROFFSET, 1, ~0x20);   /* DisplayOn */
 
-    EnableBridge(pSiS->RelIO+0x30);  
-    LockCRT2(pSiS->RelIO+0x30);  
+    SiSEnableBridge(pSiS->RelIO+0x30);  
+    SiSLockCRT2(pSiS->RelIO+0x30);  
 }
 
 static void
@@ -669,8 +669,8 @@ SiSLVDSRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 {
         SISPtr  pSiS = SISPTR(pScrn);
 
-        DisableBridgeLVDS(pSiS->RelIO+0x30);
-        UnLockCRT2(pSiS->RelIO+0x30);  
+        SiSDisableBridgeLVDS(pSiS->RelIO+0x30);
+        SiSUnLockCRT2(pSiS->RelIO+0x30);  
 
         /* SetCRT2ModeRegs() */
         outSISIDXREG(pSiS->RelIO+0x04, 4, 0);
@@ -681,7 +681,7 @@ SiSLVDSRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 
         if (!(sisReg->sisRegs3D4[0x30] & 0x03) &&
              (sisReg->sisRegs3D4[0x31] & 0x20))  {      /* disable CRT2 */
-                LockCRT2(pSiS->RelIO+0x30);  
+                SiSLockCRT2(pSiS->RelIO+0x30);  
                 return;
         }
         SetBlock(pSiS->RelIO+0x04, 0x02, 0x23, &(sisReg->VBPart1[0x02]));
@@ -689,8 +689,8 @@ SiSLVDSRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
         orSISIDXREG(pSiS->RelIO+SROFFSET, 0x1E, 0x20);
         andSISIDXREG(pSiS->RelIO+SROFFSET, 1, ~0x20);   /* DisplayOn */
 
-        EnableBridgeLVDS(pSiS->RelIO+0x30);
-        LockCRT2(pSiS->RelIO+0x30);
+        SiSEnableBridgeLVDS(pSiS->RelIO+0x30);
+        SiSLockCRT2(pSiS->RelIO+0x30);
 }
 
 static void
@@ -700,12 +700,12 @@ SiSChrontelRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
         int i;
         unsigned short wtemp;
 
-        DisableBridge(pSiS->RelIO+0x30); 
-        UnLockCRT2(pSiS->RelIO+0x30);  
+        SiSDisableBridge(pSiS->RelIO+0x30); 
+        SiSUnLockCRT2(pSiS->RelIO+0x30);  
 
         for (i=0; i<0x11; i++)
         {       wtemp = ((sisReg->ch7005[i]) << 8) + (ch7005idx[i] & 0x00FF);
-                SetCH7005(wtemp);
+                SiSSetCH7005(wtemp);
         }
 
         /* SetCRT2ModeRegs() */
@@ -717,7 +717,7 @@ SiSChrontelRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 
         if (!(sisReg->sisRegs3D4[0x30] & 0x03) &&
              (sisReg->sisRegs3D4[0x31] & 0x20))  {      /* disable CRT2 */
-                LockCRT2(pSiS->RelIO+0x30);  
+                SiSLockCRT2(pSiS->RelIO+0x30);  
                 return;
         }
         SetBlock(pSiS->RelIO+0x04, 0x02, 0x23, &(sisReg->VBPart1[0x02]));
@@ -725,8 +725,8 @@ SiSChrontelRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
         orSISIDXREG(pSiS->RelIO+SROFFSET, 0x1E, 0x20);
         andSISIDXREG(pSiS->RelIO+SROFFSET, 1, ~0x20);   /* DisplayOn */
 
-        EnableBridge(pSiS->RelIO+0x30);  
-        LockCRT2(pSiS->RelIO+0x30);  
+        SiSEnableBridge(pSiS->RelIO+0x30);  
+        SiSLockCRT2(pSiS->RelIO+0x30);  
 }
 
 

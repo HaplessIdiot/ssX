@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_vga.c,v 1.8 2001/11/30 12:12:01 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_vga.c,v 1.10 2002/01/10 19:05:45 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -203,7 +203,7 @@ SISInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 
     /* Set vclk */  
-    if (compute_vclk(clock, &num, &denum, &div, &sbit, &scale)) {
+    if (SiScompute_vclk(clock, &num, &denum, &div, &sbit, &scale)) {
         switch  (pSiS->Chipset)  {
             case PCI_CHIP_SIS5597:
             case PCI_CHIP_SIS6326:
@@ -222,7 +222,7 @@ SISInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
         }
     }
     else  {
-    /* if compute_vclk cannot handle the request clock try sisCalcClock! */
+    /* if SiScompute_vclk cannot handle the request clock try sisCalcClock! */
         SiSCalcClock(pScrn, clock, 2, vclk);
         switch (pSiS->Chipset)  {
             case PCI_CHIP_SIS5597:
@@ -516,7 +516,7 @@ SIS300Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pReg->sisRegs3C4[0x1E] = 0x18;
 
     if (!pSiS->UseVESA) {	/* TW: clocks have surely been set by VESA, so don't touch them now */
-   	if (compute_vclk(clock, &num, &denum, &div, &sbit, &scale)) {  /* Set vclk */
+   	if (SiScompute_vclk(clock, &num, &denum, &div, &sbit, &scale)) {  /* Set vclk */
         	pReg->sisRegs3C4[0x2B] = (num -1) & 0x7f;
         	if (div == 2)
             		pReg->sisRegs3C4[0x2B] |= 0x80;
@@ -527,7 +527,7 @@ SIS300Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
         	pReg->sisRegs3C4[0x2D] = 0x80;
     	}
     	else  {
-    		/* if compute_vclk cannot handle the request clock try sisCalcClock! */
+    		/* if SiScompute_vclk cannot handle the request clock try sisCalcClock! */
         	SiSCalcClock(pScrn, clock, 2, vclk);
         	pReg->sisRegs3C4[0x2B] = (vclk[Midx] - 1) & 0x7f ;
         	pReg->sisRegs3C4[0x2B] |= ((vclk[VLDidx] == 2 ) ? 1 : 0 ) << 7 ;

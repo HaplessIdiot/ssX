@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_bios.c,v 1.11 2001/11/30 12:12:00 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_bios.c,v 1.12 2002/01/10 19:05:44 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86PciInfo.h"
@@ -10,7 +10,8 @@
 
 PDEBUG(static int scrnidx;)
 
-UShort DRAMType[17][5]={{0x0C,0x0A,0x02,0x40,0x39},{0x0D,0x0A,0x01,0x40,0x48},
+#if 0
+static UShort DRAMType[17][5]={{0x0C,0x0A,0x02,0x40,0x39},{0x0D,0x0A,0x01,0x40,0x48},
                      {0x0C,0x09,0x02,0x20,0x35},{0x0D,0x09,0x01,0x20,0x44},
                      {0x0C,0x08,0x02,0x10,0x31},{0x0D,0x08,0x01,0x10,0x40},
                      {0x0C,0x0A,0x01,0x20,0x34},{0x0C,0x09,0x01,0x08,0x32},
@@ -19,8 +20,9 @@ UShort DRAMType[17][5]={{0x0C,0x0A,0x02,0x40,0x39},{0x0D,0x0A,0x01,0x40,0x48},
                      {0x09,0x08,0x02,0x02,0x01},{0x0B,0x09,0x01,0x08,0x24},
                      {0x0B,0x08,0x01,0x04,0x20},{0x0A,0x08,0x01,0x02,0x10},
                      {0x09,0x08,0x01,0x01,0x00}};
+#endif
 
-UShort MDA_DAC[]={0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+static UShort MDA_DAC[]={0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
                0x15,0x15,0x15,0x15,0x15,0x15,0x15,0x15,
                0x15,0x15,0x15,0x15,0x15,0x15,0x15,0x15,
                0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,
@@ -29,7 +31,7 @@ UShort MDA_DAC[]={0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
                0x15,0x15,0x15,0x15,0x15,0x15,0x15,0x15,
                0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F};
 
-UShort CGA_DAC[]={0x00,0x10,0x04,0x14,0x01,0x11,0x09,0x15,
+static UShort CGA_DAC[]={0x00,0x10,0x04,0x14,0x01,0x11,0x09,0x15,
                0x00,0x10,0x04,0x14,0x01,0x11,0x09,0x15,
                0x2A,0x3A,0x2E,0x3E,0x2B,0x3B,0x2F,0x3F,
                0x2A,0x3A,0x2E,0x3E,0x2B,0x3B,0x2F,0x3F,
@@ -38,7 +40,7 @@ UShort CGA_DAC[]={0x00,0x10,0x04,0x14,0x01,0x11,0x09,0x15,
                0x2A,0x3A,0x2E,0x3E,0x2B,0x3B,0x2F,0x3F,
                0x2A,0x3A,0x2E,0x3E,0x2B,0x3B,0x2F,0x3F};
 
-UShort EGA_DAC[]={0x00,0x10,0x04,0x14,0x01,0x11,0x05,0x15,
+static UShort EGA_DAC[]={0x00,0x10,0x04,0x14,0x01,0x11,0x05,0x15,
                0x20,0x30,0x24,0x34,0x21,0x31,0x25,0x35,
                0x08,0x18,0x0C,0x1C,0x09,0x19,0x0D,0x1D,
                0x28,0x38,0x2C,0x3C,0x29,0x39,0x2D,0x3D,
@@ -47,7 +49,7 @@ UShort EGA_DAC[]={0x00,0x10,0x04,0x14,0x01,0x11,0x05,0x15,
                0x0A,0x1A,0x0E,0x1E,0x0B,0x1B,0x0F,0x1F,
                0x2A,0x3A,0x2E,0x3E,0x2B,0x3B,0x2F,0x3F};
 
-UShort VGA_DAC[]={0x00,0x10,0x04,0x14,0x01,0x11,0x09,0x15,
+static UShort VGA_DAC[]={0x00,0x10,0x04,0x14,0x01,0x11,0x09,0x15,
                0x2A,0x3A,0x2E,0x3E,0x2B,0x3B,0x2F,0x3F,
                0x00,0x05,0x08,0x0B,0x0E,0x11,0x14,0x18,
                0x1C,0x20,0x24,0x28,0x2D,0x32,0x38,0x3F,
@@ -59,14 +61,14 @@ UShort VGA_DAC[]={0x00,0x10,0x04,0x14,0x01,0x11,0x09,0x15,
                0x08,0x0C,0x10,0x08,0x0A,0x0C,0x0E,0x10,
                0x0B,0x0C,0x0D,0x0F,0x10};
 
-UShort  ModeIndex_640x480[]   = {0x2E, 0x44, 0x45, 0x62};
-UShort  ModeIndex_720x480[]   = {0x31, 0x33, 0x00, 0x35};
-UShort  ModeIndex_720x576[]   = {0x32, 0x34, 0x00, 0x36};
-UShort  ModeIndex_800x600[]   = {0x30, 0x47, 0x48, 0x63};
-UShort  ModeIndex_1024x768[]  = {0x38, 0x4A, 0x4B, 0x64};
-UShort  ModeIndex_1280x1024[] = {0x3A, 0x4D, 0x4E, 0x65};
-UShort  ModeIndex_1600x1200[] = {0x3C, 0x3D, 0x3E, 0x66};
-UShort  RefreshRate[7][8] = { 
+static UShort  ModeIndex_640x480[]   = {0x2E, 0x44, 0x45, 0x62};
+static UShort  ModeIndex_720x480[]   = {0x31, 0x33, 0x00, 0x35};
+static UShort  ModeIndex_720x576[]   = {0x32, 0x34, 0x00, 0x36};
+static UShort  ModeIndex_800x600[]   = {0x30, 0x47, 0x48, 0x63};
+static UShort  ModeIndex_1024x768[]  = {0x38, 0x4A, 0x4B, 0x64};
+static UShort  ModeIndex_1280x1024[] = {0x3A, 0x4D, 0x4E, 0x65};
+static UShort  ModeIndex_1600x1200[] = {0x3C, 0x3D, 0x3E, 0x66};
+static UShort  RefreshRate[7][8] = { 
                         {60, 72, 75, 85, 100, 120, 160, 200},
                         {56, 60, 72, 75,  85, 100, 120, 160},
                         {43, 60, 70, 75,  85, 100, 120,   0},
@@ -77,14 +79,14 @@ UShort  RefreshRate[7][8] = {
 
 #define MODEID_OFF 0x449
 
-UShort StResInfo[5][2]={{640,400},{640,350},{720,400},{720,350},{640,480}};
-UShort ModeResInfo[15][4]={{320,200,8,8},{320,240,8,8},{320,400,8,8},
+static UShort StResInfo[5][2]={{640,400},{640,350},{720,400},{720,350},{640,480}};
+static UShort ModeResInfo[15][4]={{320,200,8,8},{320,240,8,8},{320,400,8,8},
                        {400,300,8,8},{512,384,8,8},{640,400,8,16},
                        {640,480,8,16},{800,600,8,16},{1024,768,8,16},
                        {1280,1024,8,16},{1600,1200,8,16},{1920,1440,8,16},
                        {720,480,8,16},{720,576,8,16},{1280,960,8,16}};
 
-UShort HiTVExtTiming[61]={0x32,0x65,0x2C,0x5F,0x08,0x31,0x3A,0x64,
+static UShort HiTVExtTiming[61]={0x32,0x65,0x2C,0x5F,0x08,0x31,0x3A,0x64,
                           0x28,0x02,0x01,0x3D,0x06,0x3E,0x35,0x6D,
                           0x06,0x14,0x3E,0x35,0x6D,0x00,0xC5,0x3F,
                           0x64,0x90,0x33,0x8C,0x18,0x36,0x3E,0x13,
@@ -94,7 +96,7 @@ UShort HiTVExtTiming[61]={0x32,0x65,0x2C,0x5F,0x08,0x31,0x3A,0x64,
                           0x60,0x14,0x3D,0x63,0x4F,
                           0x027,0xFFFC,0x6A};
 
-UShort HiTVSt1Timing[61]={0x32,0x65,0x2C,0x5F,0x08,0x31,0x3A,0x65,
+static UShort HiTVSt1Timing[61]={0x32,0x65,0x2C,0x5F,0x08,0x31,0x3A,0x65,
                           0x28,0x02,0x01,0x3D,0x06,0x3E,0x35,0x6D,
                           0x06,0x14,0x3E,0x35,0x6D,0x00,0xC5,0x3F,
                           0x65,0x90,0x7B,0xA8,0x03,0xF0,0x87,0x03,
@@ -104,7 +106,7 @@ UShort HiTVSt1Timing[61]={0x32,0x65,0x2C,0x5F,0x08,0x31,0x3A,0x65,
                           0x60,0x04,0x86,0xAF,0x5D,
                           0xE,0xFFFC,0x2D};
 
-UShort HiTVSt2Timing[61]={0x32,0x65,0x2C,0x5F,0x08,0x31,0x3A,0x64,
+static UShort HiTVSt2Timing[61]={0x32,0x65,0x2C,0x5F,0x08,0x31,0x3A,0x64,
                           0x28,0x02,0x01,0x3D,0x06,0x3E,0x35,0x6D,
                           0x06,0x14,0x3E,0x35,0x6D,0x00,0xC5,0x3F,
                           0x64,0x90,0x33,0x8C,0x18,0x36,0x3E,0x13,
@@ -114,7 +116,7 @@ UShort HiTVSt2Timing[61]={0x32,0x65,0x2C,0x5F,0x08,0x31,0x3A,0x64,
                           0x60,0x14,0x3D,0x63,0x4F,
                           0x27,0xFFFC,0x6A};
 
-UShort HiTVTextTiming[61]={0x32,0x65,0x2C,0x5F,0x08,0x31,0x3A,0x65,
+static UShort HiTVTextTiming[61]={0x32,0x65,0x2C,0x5F,0x08,0x31,0x3A,0x65,
                            0x28,0x02,0x01,0x3D,0x06,0x3E,0x35,0x6D,
                            0x06,0x14,0x3E,0x35,0x6D,0x00,0xC5,0x3F,
                            0x65,0x90,0xE7,0xBC,0x03,0x0C,0x97,0x03,
@@ -124,7 +126,7 @@ UShort HiTVTextTiming[61]={0x32,0x65,0x2C,0x5F,0x08,0x31,0x3A,0x65,
                            0x60,0x04,0x96,0x72,0x5C,
                            0x11,0xFFFC,0x32};
 
-UShort HiTVGroup3Data[63]={0x00,0x1A,0x22,0x63,0x62,0x22,0x08,0x5F,
+static UShort HiTVGroup3Data[63]={0x00,0x1A,0x22,0x63,0x62,0x22,0x08,0x5F,
                            0x05,0x21,0xB2,0xB2,0x55,0x77,0x2A,0xA6,
                            0x25,0x2F,0x47,0xFA,0xC8,0xFF,0x8E,0x20,
                            0x8C,0x6E,0x60,0x2E,0x58,0x48,0x72,0x44,
@@ -133,7 +135,7 @@ UShort HiTVGroup3Data[63]={0x00,0x1A,0x22,0x63,0x62,0x22,0x08,0x5F,
                            0x14,0x05,0x03,0x7E,0x64,0x31,0x14,0x75,
                            0x18,0x05,0x18,0x05,0x4C,0xA8,0x01};
 
-UShort HiTVGroup3Simu[63]={0x00,0x1A,0x22,0x63,0x62,0x22,0x08,0x95,
+static UShort HiTVGroup3Simu[63]={0x00,0x1A,0x22,0x63,0x62,0x22,0x08,0x95,
                            0xDB,0x20,0xB8,0xB8,0x55,0x47,0x2A,0xA6,
                            0x25,0x2F,0x47,0xFA,0xC8,0xFF,0x8E,0x20,
                            0x8C,0x6E,0x60,0x15,0x26,0xD3,0xE4,0x11,
@@ -142,7 +144,7 @@ UShort HiTVGroup3Simu[63]={0x00,0x1A,0x22,0x63,0x62,0x22,0x08,0x95,
                            0x01,0x05,0x03,0x7E,0x65,0x31,0x14,0x75,
                            0x18,0x05,0x18,0x05,0x4C,0xA8,0x01};
 
-UShort HiTVGroup3Text[63]={0x00,0x1A,0x22,0x63,0x62,0x22,0x08,0xA7,
+static UShort HiTVGroup3Text[63]={0x00,0x1A,0x22,0x63,0x62,0x22,0x08,0xA7,
                            0xF5,0x20,0xCE,0xCE,0x55,0x47,0x2A,0xA6,
                            0x25,0x2F,0x47,0xFA,0xC8,0xFF,0x8E,0x20,
                            0x8C,0x6E,0x60,0x18,0x2C,0x0C,0x20,0x22,
@@ -152,7 +154,7 @@ UShort HiTVGroup3Text[63]={0x00,0x1A,0x22,0x63,0x62,0x22,0x08,0xA7,
                            0x18,0x05,0x18,0x05,0x4C,0xA8,0x01};
 
 
-UShort NTSCTiming[61]={0x017,0x01D,0x003,0x009,0x005,0x006,0x00C,0x00C,
+static UShort NTSCTiming[61]={0x017,0x01D,0x003,0x009,0x005,0x006,0x00C,0x00C,
                     0x094,0x049,0x001,0x00A,0x006,0x00D,0x004,0x00A,
                     0x006,0x014,0x00D,0x004,0x00A,0x000,0x085,0x01B,
                     0x00C,0x050,0x000,0x099,0x000,0x0EC,0x04A,0x017,
@@ -162,7 +164,7 @@ UShort NTSCTiming[61]={0x017,0x01D,0x003,0x009,0x005,0x006,0x00C,0x00C,
                     0x060,0x014,0x050,0x000,0x040,
                     0x00044,0x002DB,0x0003B};    /* Ajust xxx */
 
-UShort PALTiming[61]={ 0x019,0x052,0x035,0x06E,0x004,0x038,0x03D,0x070,
+static UShort PALTiming[61]={ 0x019,0x052,0x035,0x06E,0x004,0x038,0x03D,0x070,
                     0x094,0x049,0x001,0x012,0x006,0x03E,0x035,0x06D,
                     0x006,0x014,0x03E,0x035,0x06D,0x000,0x045,0x02B,
                     0x070,0x050,0x000,0x097,0x000,0x0D7,0x05D,0x017,
@@ -172,7 +174,8 @@ UShort PALTiming[61]={ 0x019,0x052,0x035,0x06E,0x004,0x038,0x03D,0x070,
                     0x060,0x014,0x063,0x000,0x040,
                     0x0003E,0x002E1,0x00028};    /* Ajust xxx */
 
-UShort NTSCGroup3Data[63]= {0x000,0x014,0x015,0x025,0x055,0x015,0x00B,0x089,
+#if 0
+static UShort NTSCGroup3Data[63]= {0x000,0x014,0x015,0x025,0x055,0x015,0x00B,0x089,
                          0x0D7,0x040,0x0B0,0x0B0,0x0FF,0x0C4,0x045,0x0A6,
                          0x025,0x02F,0x067,0x0F6,0x0BF,0x0FF,0x08E,0x020,
                          0x08C,0x0DA,0x060,0x092,0x0C8,0x055,0x08B,0x000,
@@ -181,7 +184,7 @@ UShort NTSCGroup3Data[63]= {0x000,0x014,0x015,0x025,0x055,0x015,0x00B,0x089,
                          0x000,0x051,0x00F,0x00F,0x008,0x00F,0x008,0x06F,
                          0x018,0x005,0x005,0x005,0x04C,0x0AA,0x001};
 
-UShort PALGroup3Data[63]={0x000,0x01A,0x022,0x063,0x062,0x022,0x008,0x085,
+static UShort PALGroup3Data[63]={0x000,0x01A,0x022,0x063,0x062,0x022,0x008,0x085,
                        0x0C3,0x020,0x0A4,0x0A4,0x055,0x047,0x02A,0x0A6,
                        0x025,0x02F,0x047,0x0FA,0x0C8,0x0FF,0x08E,0x020,
                        0x08C,0x0DC,0x060,0x092,0x0C8,0x04F,0x085,0x000,
@@ -189,33 +192,43 @@ UShort PALGroup3Data[63]={0x000,0x01A,0x022,0x063,0x062,0x022,0x008,0x085,
                        0x030,0x030,0x000,0x0F3,0x0F3,0x000,0x0A2,0x0A2,
                        0x000,0x048,0x0FE,0x07E,0x008,0x040,0x008,0x091,
                        0x018,0x005,0x018,0x005,0x04C,0x0A8,0x001};
-UShort Part1[41]={0x30, 0x16, 0x0b, 0x00, 0x00, 0x00, 0x00, 0x00, 
+static UShort Part1[41]={0x30, 0x16, 0x0b, 0x00, 0x00, 0x00, 0x00, 0x00, 
                   0x3f, 0x30, 0x8c, 0xbc, 0x22, 0x1c, 0x05, 0xdf,
                   0xf3, 0x16, 0x0a, 0x20, 0x89, 0x93, 0x00, 0x80,
                   0x14, 0xf7, 0x58, 0x00, 0x00, 0x18, 0x28, 0x32,
                   0x15, 0xff, 0xa0, 0x00, 0x01, 0x03, 0x2c, 0x11, 
                   0x92};
+#endif
 
-UShort   P3c4,P3d4,P3c0,P3ce,P3c2,P3ca,P3c6,P3c7,P3c8,P3c9,P3da;
-UShort   CRT1VCLKLen;      /*VCLKData table length of bytes of each entry*/
-UShort   flag_clearbuffer; /*0: no clear frame buffer 1:clear frame buffer*/
-int      RAMType;
-int      ModeIDOffset,StandTable,CRT1Table,ScreenOffset,VCLKData,MCLKData, ECLKData;
-int      REFIndex,ModeType;
-UShort   IF_DEF_LVDS;
-UShort   IF_DEF_HiVision;
-UShort   IF_DEF_CH7005;
-UShort VBInfo, SetFlag,RVBHCFACT,RVBHCMAX,VGAVT,VGAHT,VT,HT,VGAVDE,VGAHDE;
-UShort VDE,HDE,RVBHRS,NewFlickerMode,RY1COE,RY2COE,RY3COE,RY4COE;                
-UShort LCDResInfo,LCDTypeInfo,LCDInfo,VCLKLen;
-UShort LCDHDES,LCDVDES;
-UShort DDC_Port;
-UShort DDC_Index;
-UShort DDC_DataShift;
-UShort DDC_DeviceAddr;
-UShort DDC_Flag;
-UShort DDC_ReadAddr;
-UShort DDC_Buffer;
+static UShort   P3c4,P3d4,P3c0,P3ce,P3c2,P3ca,P3c6,P3c7,P3c8,P3c9,P3da;
+static UShort   CRT1VCLKLen;      /*VCLKData table length of bytes of each entry*/
+#if 0
+static UShort   flag_clearbuffer; /*0: no clear frame buffer 1:clear frame buffer*/
+static int      RAMType;
+#endif
+static int      ModeIDOffset,StandTable,CRT1Table,ScreenOffset,VCLKData;
+#if 0
+static int	MCLKData, ECLKData;
+#endif
+static int      REFIndex,ModeType;
+static UShort   IF_DEF_LVDS;
+static UShort   IF_DEF_HiVision;
+static UShort   IF_DEF_CH7005;
+static UShort VBInfo, SetFlag,RVBHCFACT,RVBHCMAX,VGAVT,VGAHT,VT,HT,VGAVDE,VGAHDE;
+static UShort VDE,HDE,RVBHRS,NewFlickerMode,RY1COE,RY2COE,RY3COE,RY4COE;                
+static UShort LCDResInfo,LCDTypeInfo,LCDInfo,VCLKLen;
+static UShort LCDHDES,LCDVDES;
+static UShort DDC_Port;
+static UShort DDC_Index;
+static UShort DDC_DataShift;
+static UShort DDC_DeviceAddr;
+#if 0
+static UShort DDC_Flag;
+#endif
+static UShort DDC_ReadAddr;
+#if 0
+static UShort DDC_Buffer;
+#endif
 
 static Bool SearchModeID(ULong ROMAddr, UShort ModeNo);
 static Bool CheckMemorySize(ULong ROMAddr);
@@ -349,19 +362,19 @@ Bool SiSBIOSSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
    P3c9=BaseAddr+0x19;
    P3da=BaseAddr+0x2A;
 
-   ModeNo = CalcModeIndex(pScrn, mode);
+   ModeNo = SiSCalcModeIndex(pScrn, mode);
    if (!ModeNo) return FALSE;
    xf86DrvMsg(pScrn->scrnIndex,X_INFO,"Mode # 0x%2.2x\n",ModeNo);
 
    PDEBUG(scrnidx = pScrn->scrnIndex);
    
    Rate = CalcRefreshRate(pScrn, mode);
-   SetReg1(P3d4, 0x33, Rate);
+   SiSSetReg1(P3d4, 0x33, Rate);
 
    /* TW: Enable PCI adressing (0x80) & MMIO enable (0x1) & ? (0x40) */
-   SetReg1(P3c4, 0x20, 0xa1);
+   SiSSetReg1(P3c4, 0x20, 0xa1);
    /* TW: Enable 2D (0x40) & 3D accelerator & ? */
-   SetReg1(P3c4, 0x1E, 0x5A);
+   SiSSetReg1(P3c4, 0x1E, 0x5A);
 
    if(pSiS->VBFlags & VB_LVDS)
       IF_DEF_LVDS = 1;
@@ -381,7 +394,7 @@ Bool SiSBIOSSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
    /* replace GetSenseStatus,SetTVSystem,SetDisplayInfo */
 
    DisplayOff();
-   SetReg1(P3c4,0x05,0x86);                     /* 1.Openkey */
+   SiSSetReg1(P3c4,0x05,0x86);                     /* 1.Openkey */
    temp=SearchModeID(ROMAddr,ModeNo);           /* 2.Get ModeID Table */
    if(temp==0)  return(0);
 
@@ -398,7 +411,7 @@ Bool SiSBIOSSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
    cr30flag=(UChar)GetReg1(P3d4,0x30);
    if(((cr30flag&0x01)==1)||((cr30flag&0x02)==0)){
      /* if cr30 d[0]=1 or d[1]=0 set crt1 */
-     SetReg1(P3d4,0x34,ModeNo);
+     SiSSetReg1(P3d4,0x34,ModeNo);
      /* set CR34->CRT1 ModeNofor CRT2 FIFO */
      GetModePtr(ROMAddr,ModeNo);                  /* 4.GetModePtr */
      SetSeqRegs(ROMAddr);                         /* 5.SetSeqRegs */
@@ -503,7 +516,7 @@ static void SetSeqRegs(ULong ROMAddr)
    UChar SRdata;
    UShort i;
 
-   SetReg1(P3c4,0x00,0x03);                        /* Set SR0               */
+   SiSSetReg1(P3c4,0x00,0x03);                        /* Set SR0               */
    StandTable=StandTable+0x05;
    SRdata=*((UChar *)(ROMAddr+StandTable));        /* Get SR01 from file    */
    if(IF_DEF_LVDS==1){
@@ -523,13 +536,13 @@ static void SetSeqRegs(ULong ROMAddr)
      }
    }
    SRdata=SRdata|0x20;
-   SetReg1(P3c4,0x01,SRdata);                      /* Set SR1               */
+   SiSSetReg1(P3c4,0x01,SRdata);                      /* Set SR1               */
    PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "SeqReg 1 -> 0x%x\n", SRdata));
    for(i=02;i<=04;i++) {
      StandTable++;
      SRdata=*((UChar *)(ROMAddr+StandTable));      /* Get SR2,3,4 from file */
      PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "SeqReg %x -> 0x%x\n", i, SRdata));
-     SetReg1(P3c4,i,SRdata);                       /* Set SR2 3 4           */
+     SiSSetReg1(P3c4,i,SRdata);                       /* Set SR2 3 4           */
    }
 }
 
@@ -550,12 +563,12 @@ static void SetCRTCRegs(ULong ROMAddr)
 
   CRTCdata=(UChar)GetReg1(P3d4,0x11);
   CRTCdata=CRTCdata&0x7f;
-  SetReg1(P3d4,0x11,CRTCdata);                     /* Unlock CRTC        */
+  SiSSetReg1(P3d4,0x11,CRTCdata);                     /* Unlock CRTC        */
 
   for(i=0;i<=0x18;i++) {
      StandTable++;
      CRTCdata=*((UChar *)(ROMAddr+StandTable));    /* Get CRTC from file */
-     SetReg1(P3d4,i,CRTCdata);                     /* Set CRTC(3d4)      */
+     SiSSetReg1(P3d4,i,CRTCdata);                     /* Set CRTC(3d4)      */
      PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "CRTReg %x -> 0x%x\n", i, CRTCdata));
   }
 }
@@ -603,13 +616,13 @@ static void SetGRCRegs(ULong ROMAddr)
    for(i=0;i<=0x08;i++) {
      StandTable++;
      GRdata=*((UChar *)(ROMAddr+StandTable));    /* Get GR from file */
-     SetReg1(P3ce,i,GRdata);                     /* Set GR(3ce)      */
+     SiSSetReg1(P3ce,i,GRdata);                     /* Set GR(3ce)      */
      PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "GRCReg %x -> 0x%x\n", i, GRdata));
    }
    if(ModeType>ModeVGA){
      GRdata=(UChar)GetReg1(P3ce,0x05);
      GRdata=GRdata&0xBF;
-     SetReg1(P3ce,0x05,GRdata);
+     SiSSetReg1(P3ce,0x05,GRdata);
    }
 }
 
@@ -617,7 +630,7 @@ static void ClearExt1Regs()
 {
   UShort i;
 
-  for(i=0x0A;i<=0x0E;i++) SetReg1(P3c4,i,0x00);      /* Clear SR0A-SR0E */
+  for(i=0x0A;i<=0x0E;i++) SiSSetReg1(P3c4,i,0x00);      /* Clear SR0A-SR0E */
 }
 
 
@@ -677,39 +690,39 @@ static void SetCRT1CRTC(ULong ROMAddr)
 
   data=(UChar)GetReg1(P3d4,0x11);
   data=data&0x7F;
-  SetReg1(P3d4,0x11,data);                            /* Unlock CRTC */
+  SiSSetReg1(P3d4,0x11,data);                            /* Unlock CRTC */
 
   CRT1Table--;
   for(i=0;i<=0x05;i++) {
     CRT1Table++;
     data=*((UChar *)(ROMAddr+CRT1Table));
-    SetReg1(P3d4,i,data);
+    SiSSetReg1(P3d4,i,data);
   }
   for(i=0x06;i<=0x07;i++) {
     CRT1Table++;
     data=*((UChar *)(ROMAddr+CRT1Table));
-    SetReg1(P3d4,i,data);
+    SiSSetReg1(P3d4,i,data);
   }
   for(i=0x10;i<=0x12;i++) {
     CRT1Table++;
     data=*((UChar *)(ROMAddr+CRT1Table));
-    SetReg1(P3d4,i,data);
+    SiSSetReg1(P3d4,i,data);
   }
   for(i=0x15;i<=0x16;i++) {
     CRT1Table++;
     data=*((UChar *)(ROMAddr+CRT1Table));
-    SetReg1(P3d4,i,data);
+    SiSSetReg1(P3d4,i,data);
   }
   for(i=0x0A;i<=0x0C;i++) {
     CRT1Table++;
     data=*((UChar *)(ROMAddr+CRT1Table));
-    SetReg1(P3c4,i,data);
+    SiSSetReg1(P3c4,i,data);
   }
 
   CRT1Table++;
   data=*((UChar *)(ROMAddr+CRT1Table));
   data=data&0xE0;
-  SetReg1(P3c4,0x0E,data);
+  SiSSetReg1(P3c4,0x0E,data);
 
   data=(UChar)GetReg1(P3d4,0x09);
   data=data&0xDF;
@@ -720,9 +733,9 @@ static void SetCRT1CRTC(ULong ROMAddr)
   i=*((UShort *)(ROMAddr+ModeIDOffset+0x01));
   i=i&DoubleScanMode;
   if(i) data=data|0x80;
-  SetReg1(P3d4,0x09,data);
+  SiSSetReg1(P3d4,0x09,data);
 
-  if(ModeType>0x03) SetReg1(P3d4,0x14,0x4F);
+  if(ModeType>0x03) SiSSetReg1(P3d4,0x14,0x4F);
 }
 
 static void SetCRT1Offset(ULong ROMAddr)
@@ -760,12 +773,12 @@ static void SetCRT1Offset(ULong ROMAddr)
    i=i&0xF0;
    i=i|temp;
    PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(CRT1Offset) 0e = 0x%x\n", i));
-   SetReg1(P3c4,0x0E,i);
+   SiSSetReg1(P3c4,0x0E,i);
 
    temp=(UChar)temp2;
    temp=temp&0xFF;                                        /* al */
    PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(CRT1Offset) 13 = 0x%x\n", temp));
-   SetReg1(P3d4,0x13,temp);
+   SiSSetReg1(P3d4,0x13,temp);
 
    temp2=*((UShort *)(ROMAddr+REFIndex+0x00));
    temp2=temp2&InterlaceMode;
@@ -777,7 +790,7 @@ static void SetCRT1Offset(ULong ROMAddr)
    if(al==0) ah=ah+1;
    else ah=ah+2;
    PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(CRT1Offset) 10 = 0x%x\n", ah));
-   SetReg1(P3c4,0x10,ah);
+   SiSSetReg1(P3c4,0x10,ah);
 }
 
 static void SetCRT1VCLK(ULong ROMAddr)
@@ -793,14 +806,14 @@ static void SetCRT1VCLK(ULong ROMAddr)
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "VCLKData %x CRT1VCLKLen %x index %x data %x SiS_BIOS_REFIndex %x\n",
 			VCLKData, CRT1VCLKLen, index, data, REFIndex));
 
-  SetReg1(P3c4,0x31,0);
+  SiSSetReg1(P3c4,0x31,0);
   for(i=0x2B;i<=0x2C;i++) {
      data=*((UChar *)(ROMAddr+VCLKData));
-     SetReg1(P3c4,i,data);
+     SiSSetReg1(P3c4,i,data);
      PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(CRT1VCLK) Reg %x -> 0x%x\n", i, data));
      VCLKData++;
   }
-  SetReg1(P3c4,0x2D,0x80);
+  SiSSetReg1(P3c4,0x2D,0x80);
 }
 
 
@@ -822,21 +835,21 @@ static void SetCRT1ModeRegs(ULong ROMAddr, UShort ModeNo)
    data=data&InterlaceMode;
    if(data) data2=data2|0x20;
    PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(CRT1ModeRegs) 06 -> 0x%x\n", data2));
-   SetReg1(P3c4,0x06,data2);
+   SiSSetReg1(P3c4,0x06,data2);
 
    data=GetReg1(P3c4,0x01);
    data=data&0xF7;
    data2=*((UShort *)(ROMAddr+ModeIDOffset+0x01));
    data2=data2&HalfDCLK;
    if(data2) data=data|0x08;
-   SetReg1(P3c4,0x01,data);
+   SiSSetReg1(P3c4,0x01,data);
 
    data=GetReg1(P3c4,0x0F);
    data=data&0xF7;
    data2=*((UShort *)(ROMAddr+ModeIDOffset+0x01));
    data2=data2&LineCompareOff;
    if(data2) data=data|0x08;
-   SetReg1(P3c4,0x0F,data);
+   SiSSetReg1(P3c4,0x0F,data);
 
    data=GetReg1(P3c4,0x21);
    data=data&0x1F;
@@ -844,7 +857,7 @@ static void SetCRT1ModeRegs(ULong ROMAddr, UShort ModeNo)
    else if(ModeType<=0x02) data=data|0x00;           /* EGA Mode  */
    else data=data|0xA0;                              /* VGA Mode  */
    PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(CRT1ModeRegs) 21 -> 0x%x\n", data));
-   SetReg1(P3c4,0x21,data);
+   SiSSetReg1(P3c4,0x21,data);
 }
 
 /* TW: values identical to sisfb */
@@ -866,12 +879,12 @@ static void SetVCLKState(ULong ROMAddr, UShort ModeNo)
   data=GetReg1(P3c4,0x07);
   data=data&0x7B;
   if(VCLK>150) data=data|0x80;                      /* VCLK > 150; TW: was >= */
-  SetReg1(P3c4,0x07,data);
+  SiSSetReg1(P3c4,0x07,data);
 
   data=GetReg1(P3c4,0x32);
   data=data&0xD7;
   if(VCLK>=150) data=data|0x08;                     /* VCLK > 150 */
-  SetReg1(P3c4,0x32,data);
+  SiSSetReg1(P3c4,0x32,data);
 
   data2=0x03;
   if(VCLK>=135) data2=0x02;	/* TW: was > */
@@ -881,7 +894,7 @@ static void SetVCLKState(ULong ROMAddr, UShort ModeNo)
   data=GetReg1(P3c4,0x07);
   data=data&0xFC;
   data=data|data2;
-  SetReg1(P3c4,0x07,data);
+  SiSSetReg1(P3c4,0x07,data);
 }
 
 static void LoadDAC(ULong ROMAddr)
@@ -986,7 +999,7 @@ static void DisplayOn(void)
 
    data=GetReg1(P3c4,0x01);
    data=data&0xDF;
-   SetReg1(P3c4,0x01,data);
+   SiSSetReg1(P3c4,0x01,data);
 }
 
 static void DisplayOff(void)
@@ -995,10 +1008,10 @@ static void DisplayOff(void)
 
    data=GetReg1(P3c4,0x01);
    data=data|0x20;
-   SetReg1(P3c4,0x01,data);
+   SiSSetReg1(P3c4,0x01,data);
 }
 
-void SetReg1(UShort port, UShort index, UShort  data)
+void SiSSetReg1(UShort port, UShort index, UShort  data)
 {
     outb(port ,(UChar)(index & 0xff));
     port++;
@@ -1093,16 +1106,16 @@ static void SetInterlace(ULong ROMAddr, UShort ModeNo)
   Temp2 &= InterlaceMode;
   if(Temp2 == 0) data=0x0000;
 
-  SetReg1(P3d4,0x19,data);
+  SiSSetReg1(P3d4,0x19,data);
 
   Temp = (ULong)GetReg1(P3d4, 0x1A);
   Temp2= (UShort)(Temp & 0xFC);
-  SetReg1(P3d4,0x1A,(UShort)Temp);
+  SiSSetReg1(P3d4,0x1A,(UShort)Temp);
 
   Temp = (ULong)GetReg1(P3c4, 0x0f);
   Temp2= (UShort)Temp & 0xBF;
   if(ModeNo==0x37) Temp2=Temp2|0x40;
-  SetReg1(P3d4,0x1A,(UShort)Temp2);
+  SiSSetReg1(P3d4,0x1A,(UShort)Temp2);
 }
 
 static void SetCRT1FIFO(ULong ROMAddr)
@@ -1158,7 +1171,7 @@ static void SetCRT1FIFO(ULong ROMAddr)
           data=data<<6;
           data2=GetReg1(P3c4,0x16);
           data2=(data2&0x3f)|data;
-          SetReg1(P3c4,0x16,data2);
+          SiSSetReg1(P3c4,0x16,data2);
         }
         else bl=0x13;
      }
@@ -1168,7 +1181,7 @@ static void SetCRT1FIFO(ULong ROMAddr)
   ah=bl;
   ah=ah<<4;
   ah=ah|0x0f;
-  SetReg1(P3c4,0x08,ah);
+  SiSSetReg1(P3c4,0x08,ah);
 
   data=bl;
   data=data&0x10;
@@ -1176,15 +1189,15 @@ static void SetCRT1FIFO(ULong ROMAddr)
   data2=GetReg1(P3c4,0x0F);
   data2=data2&0x9f;
   data2=data2|data;
-  SetReg1(P3c4,0x0F,data2);
+  SiSSetReg1(P3c4,0x0F,data2);
 
   data=bl+3;
   if(data>0x0f) data=0x0f;
-  SetReg1(P3c4,0x3b,0x00);
+  SiSSetReg1(P3c4,0x3b,0x00);
   data2=GetReg1(P3c4,0x09);
   data2=data2&0xF0;
   data2=data2|data;
-  SetReg1(P3c4,0x09,data2);
+  SiSSetReg1(P3c4,0x09,data2);
 }
 
 static UShort CalcDelay(ULong ROMAddr,UShort key)
@@ -1278,7 +1291,7 @@ static void SetCRT1FIFO2(ULong ROMAddr)
 
           data2=GetReg1(P3c4,0x15);
           data2=(data2&0x0f)|data;
-          SetReg1(P3c4,0x15,data2);
+          SiSSetReg1(P3c4,0x15,data2);
         }
         else bl=0x13;
      }
@@ -1304,7 +1317,7 @@ static void SetCRT1FIFO2(ULong ROMAddr)
   ah=ah<<4;
   ah=ah|0x0f;
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED,"(CRT1FIFO2) 08 -> 0x%x\n", ah));
-  SetReg1(P3c4,0x08,ah);
+  SiSSetReg1(P3c4,0x08,ah);
 
   data=bl;
   data=data&0x10;
@@ -1312,16 +1325,16 @@ static void SetCRT1FIFO2(ULong ROMAddr)
   data2=GetReg1(P3c4,0x0F);
   data2=data2&0xdf;   /* TW: was 0x9f !!! 2*/
   data2=data2|data;
-  SetReg1(P3c4,0x0F,data2);
+  SiSSetReg1(P3c4,0x0F,data2);
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED,"(CRT1FIFO2) 0f -> | 0x%x\n", data));
 
   data=bl+3;
   if(data>0x0f) data=0x0f;
-  SetReg1(P3c4,0x3b,0x00);
+  SiSSetReg1(P3c4,0x3b,0x00);
   data2=GetReg1(P3c4,0x09);
   data2=data2&0x80;  /* TW: was 0xF0 !!! 2*/
   data2=data2|data;
-  SetReg1(P3c4,0x09,data2);
+  SiSSetReg1(P3c4,0x09,data2);
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED,"(CRT1FIFO2) 09 -> | 0x%x\n", data)); 
 
 }
@@ -1370,19 +1383,19 @@ static void SetPitch(ScrnInfoPtr pScrn, UShort BaseAddr)
     UShort Port = BaseAddr + IND_SIS_CRT2_PORT_04;
 
     HDisplay = pSiS->scrnOffset / 8;
-    SetReg1(P3d4, 0x13, HDisplay);
+    SiSSetReg1(P3d4, 0x13, HDisplay);
     temp = (GetReg1(P3c4, 0x0E) & 0xF0) | (HDisplay>>8);
-    SetReg1(P3c4, 0x0E, temp);
+    SiSSetReg1(P3c4, 0x0E, temp);
     
-    SetReg1(Port, 0x24, 1);
-    SetReg1(Port, 0x07, HDisplay); 
+    SiSSetReg1(Port, 0x24, 1);
+    SiSSetReg1(Port, 0x07, HDisplay); 
     temp = (GetReg1(Port, 0x09) & 0xF0) | (HDisplay>>8);
-    SetReg1(Port, 0x09, temp);
+    SiSSetReg1(Port, 0x09, temp);
 
 
 }
 
-UShort CalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode)
+UShort SiSCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
    UShort i = (pScrn->bitsPerPixel+7)/8 - 1;
    UShort ModeIndex = 0;
@@ -1493,13 +1506,13 @@ static Bool SetCRT2Group(UShort BaseAddr,ULong ROMAddr,UShort ModeNo, ScrnInfoPt
    if(((temp&0x02)==0) && ((VBInfo&CRT2DisplayFlag)==0))
      return(FALSE);
    SaveCRT2Info(ModeNo);
-   DisableBridge(BaseAddr);   
-   UnLockCRT2(BaseAddr);
+   SiSDisableBridge(BaseAddr);   
+   SiSUnLockCRT2(BaseAddr);
    SetDefCRT2ExtRegs(BaseAddr);
    SetCRT2ModeRegs(BaseAddr,ModeNo);   
    if(IF_DEF_LVDS==0) {
     if(VBInfo&CRT2DisplayFlag){
-      LockCRT2(BaseAddr);
+      SiSLockCRT2(BaseAddr);
       return 0;
     }
    }
@@ -1520,11 +1533,11 @@ static Bool SetCRT2Group(UShort BaseAddr,ULong ROMAddr,UShort ModeNo, ScrnInfoPt
      SetCRT2ECLK(ROMAddr,ModeNo);
    }
    EnableCRT2();
-   EnableBridge(BaseAddr);
+   SiSEnableBridge(BaseAddr);
    if(IF_DEF_LVDS==0) {
   /*   SetLockRegs();  */
    }
-   LockCRT2(BaseAddr);
+   SiSLockCRT2(BaseAddr);
    return 1;
 }
 
@@ -1536,17 +1549,17 @@ static void SetDefCRT2ExtRegs(UShort BaseAddr)
   Part2Port=BaseAddr+IND_SIS_CRT2_PORT_10;
   Part4Port=BaseAddr+IND_SIS_CRT2_PORT_14;
   if(IF_DEF_LVDS==0) {
-    SetReg1(Part1Port,0x02,0x40);
-    SetReg1(Part4Port,0x10,0x80);
+    SiSSetReg1(Part1Port,0x02,0x40);
+    SiSSetReg1(Part4Port,0x10,0x80);
     temp=(UChar)GetReg1(P3c4,0x16);
     temp=temp&0xC3;
-    SetReg1(P3d4,0x35,temp);
+    SiSSetReg1(P3d4,0x35,temp);
   }
   else {
     /* TW: Set VB to SVIDEO and clear eg. CRT1 and LCD ?! */
     /*     Why touch this? CR32 should be read only */
-    /* SetReg1(P3d4,0x32,0x02); */
-    SetReg1(Part1Port,0x02,0x00);
+    /* SiSSetReg1(P3d4,0x32,0x02); */
+    SiSSetReg1(Part1Port,0x02,0x00);
   }
 }
 
@@ -1717,10 +1730,10 @@ static void SaveCRT2Info(UShort ModeNo)
   temp2=~(SetInSlaveMode>>8);
   temp3=(UChar)GetReg1(P3d4,0x31);
   temp3=((temp3&temp2)|temp1);
-  SetReg1(P3d4,0x31,(UShort)temp3);
+  SiSSetReg1(P3d4,0x31,(UShort)temp3);
   temp3=(UChar)GetReg1(P3d4,0x35);
   temp3=temp3&0xF3;
-  SetReg1(P3d4,0x35,(UShort)temp3);
+  SiSSetReg1(P3d4,0x35,(UShort)temp3);
 }
 
 static void DisableLockRegs(void)
@@ -1728,7 +1741,7 @@ static void DisableLockRegs(void)
   UChar temp3;
   temp3=(UChar)GetReg1(P3c4,0x32);
   temp3=temp3&0xDF;
-  SetReg1(P3c4,0x32,(UShort)temp3);
+  SiSSetReg1(P3c4,0x32,(UShort)temp3);
 }
 
 static void DisableCRT2(void)
@@ -1736,10 +1749,10 @@ static void DisableCRT2(void)
   UChar temp3;
   temp3=(UChar)GetReg1(P3c4,0x1E);
   temp3=temp3&0xDF;
-  SetReg1(P3c4,0x1E,(UShort)temp3);
+  SiSSetReg1(P3c4,0x1E,(UShort)temp3);
 }
 
-void DisableBridge(UShort  BaseAddr)
+void SiSDisableBridge(UShort  BaseAddr)
 {
   UChar   temp3,part2_02,part2_05;
   UShort  Part2Port,Part1Port=0;
@@ -1753,31 +1766,31 @@ void DisableBridge(UShort  BaseAddr)
       LongWait();
       DisableLockRegs();
     }
-    SetReg1(Part2Port,0x02,0x38);
-    SetReg1(Part2Port,0x05,0xFF);
+    SiSSetReg1(Part2Port,0x02,0x38);
+    SiSSetReg1(Part2Port,0x05,0xFF);
     temp3=(UChar)GetReg1(Part2Port,0x00);
     temp3=temp3&0xDF;
-    SetReg1(Part2Port,0x00,(UShort)temp3);
-    SetReg1(Part2Port,0x02,part2_02);
-    SetReg1(Part2Port,0x05,part2_05);
+    SiSSetReg1(Part2Port,0x00,(UShort)temp3);
+    SiSSetReg1(Part2Port,0x02,part2_02);
+    SiSSetReg1(Part2Port,0x05,part2_05);
     DisableCRT2();
   }
   else {
     DisableLockRegs();
     DisableCRT2();
-    UnLockCRT2(BaseAddr);
+    SiSUnLockCRT2(BaseAddr);
     SetRegANDOR(Part1Port,0x02,0xFF,0x40); /*et Part1Port ,index 2, D6=1,  */
   }
 }
 
-void DisableBridgeLVDS(UShort  BaseAddr)	/* needed for external X driver using VESA */
+void SiSDisableBridgeLVDS(UShort  BaseAddr)	/* needed for external X driver using VESA */
 {
   UShort  Part2Port,Part1Port=0;
   Part2Port=BaseAddr+IND_SIS_CRT2_PORT_10;
 
     DisableLockRegs();
     DisableCRT2();
-    UnLockCRT2(BaseAddr);
+    SiSUnLockCRT2(BaseAddr);
     SetRegANDOR(Part1Port,0x02,0xFF,0x40); /*et Part1Port ,index 2, D6=1,  */
 }
 
@@ -2158,14 +2171,14 @@ static void GetCRT2Ptr(ULong ROMAddr,UShort ModeNo)
   }
 }
 
-void UnLockCRT2(UShort BaseAddr)
+void SiSUnLockCRT2(UShort BaseAddr)
 {
   UChar temp3;
   UShort  Part1Port;
   Part1Port=BaseAddr+IND_SIS_CRT2_PORT_04;
   temp3=(UChar)GetReg1(Part1Port,0x24);
   temp3=temp3|0x01;
-  SetReg1(Part1Port,0x24,(UShort)temp3);
+  SiSSetReg1(Part1Port,0x24,(UShort)temp3);
 }
 
 static void SetCRT2ModeRegs(UShort BaseAddr,UShort ModeNo)
@@ -2177,7 +2190,7 @@ static void SetCRT2ModeRegs(UShort BaseAddr,UShort ModeNo)
   Part4Port=BaseAddr+IND_SIS_CRT2_PORT_14;
   Part1Port=BaseAddr+IND_SIS_CRT2_PORT_04;
   for(i=0,j=4;i<3;i++,j++){
-     SetReg1(Part1Port,j,0);
+     SiSSetReg1(Part1Port,j,0);
   }
 
   tempcl=ModeType;
@@ -2196,7 +2209,7 @@ static void SetCRT2ModeRegs(UShort BaseAddr,UShort ModeNo)
   if(VBInfo&CRT2DisplayFlag){
     tempah=0;
   }
-  SetReg1(Part1Port,0,tempah);
+  SiSSetReg1(Part1Port,0,tempah);
 
 
   if(IF_DEF_LVDS==0) {   /* (TW) 301 */
@@ -2214,7 +2227,7 @@ static void SetCRT2ModeRegs(UShort BaseAddr,UShort ModeNo)
     if(VBInfo&CRT2DisplayFlag){
       tempah=0;
     }
-    SetReg1(Part1Port,0x01,tempah);
+    SiSSetReg1(Part1Port,0x01,tempah);
 
     tempah=tempah>>5;
     if((ModeType==ModeVGA)&&(!(VBInfo&SetInSlaveMode))){
@@ -2232,7 +2245,7 @@ static void SetCRT2ModeRegs(UShort BaseAddr,UShort ModeNo)
     temp3=(UChar)GetReg1(Part4Port,0x0D);
     temp3=temp3&(~0x0BF);
     temp3=temp3|tempah;
-    SetReg1(Part4Port,0x0D,(UShort)temp3);
+    SiSSetReg1(Part4Port,0x0D,(UShort)temp3);
 
 /* ynlai begin */
     tempah=0;
@@ -2252,7 +2265,7 @@ static void SetCRT2ModeRegs(UShort BaseAddr,UShort ModeNo)
     }
     if(LCDResInfo==Panel1280x1024) tempah=tempah|0x80;
     if(LCDResInfo==Panel1280x960) tempah=tempah|0x80;
-    SetReg1(Part4Port,0x0C,(UShort)temp3);
+    SiSSetReg1(Part4Port,0x0C,(UShort)temp3);
 /* ynlai end */
   }
   else {   /* (TW) - LVDS */
@@ -2272,7 +2285,7 @@ static void SetCRT2ModeRegs(UShort BaseAddr,UShort ModeNo)
      * this register.
      */
 #if 0
-    SetReg1(Part1Port,0x01,tempah);
+    SiSSetReg1(Part1Port,0x01,tempah);
 #endif
 
 /* TW start */
@@ -2310,15 +2323,15 @@ static void SetGroup1_LVDS(UShort  BaseAddr,ULong ROMAddr,UShort ModeNo,
   SetCRT2Sync(BaseAddr,ROMAddr,ModeNo);
 
   temp1=(VGAHT-1)&0x0FF;            /*BTVGA2HT 0x08,0x09  */
-  SetReg1(Part1Port,0x08,temp1);
+  SiSSetReg1(Part1Port,0x08,temp1);
   temp1=(((VGAHT-1)&0xFF00)>>8)<<4;
   SetRegANDOR(Part1Port,0x09,~0x0F0,temp1);
 
 
   temp1=(VGAHDE+12)&0x0FF;              /*BTVGA2HDEE 0x0A,0x0C  */
-  SetReg1(Part1Port,0x0A,temp1);
+  SiSSetReg1(Part1Port,0x0A,temp1);
   /*temp1=((VGAHDE+12)&0xFF00)>>8;    Wrong              */
-  /*SetReg1(Part1Port,0x0C,temp1);  */
+  /*SiSSetReg1(Part1Port,0x0C,temp1);  */
 
   temp1=VGAHDE+12;      /*bx  BTVGA@HRS 0x0B,0x0C  */
   temp2=(VGAHT-VGAHDE)>>2;      /* */
@@ -2326,44 +2339,44 @@ static void SetGroup1_LVDS(UShort  BaseAddr,ULong ROMAddr,UShort ModeNo,
   temp2=(temp2<<1)+temp1;
   tempcl=temp2&0x0FF;
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(grp1) 0b -> 0x%x\n", temp1)); 
-  SetReg1(Part1Port,0x0B,(UShort)(temp1&0x0FF));
+  SiSSetReg1(Part1Port,0x0B,(UShort)(temp1&0x0FF));
 
   tempah=(temp1&0xFF00)>>8;
   tempbh=((((VGAHDE+12)&0xFF00)>>8)<<4)&0x0FF;
   tempah=tempah|tempbh;
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(grp1) 0c -> 0x%x\n", tempah));
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(grp1) 0d -> 0x%x\n", tempcl));
-  SetReg1(Part1Port,0x0C,tempah);
-  SetReg1(Part1Port,0x0D,tempcl);       /*BTVGA2HRE 0x0D  */
+  SiSSetReg1(Part1Port,0x0C,tempah);
+  SiSSetReg1(Part1Port,0x0D,tempcl);       /*BTVGA2HRE 0x0D  */
   tempcx=(VGAVT-1);
   tempah=tempcx&0x0FF;
   if(IF_DEF_CH7005==1) {
     if(VBInfo&0x0C)  tempah=tempah-1;
   }
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(grp1) 0e -> 0x%x\n", tempah));
-  SetReg1(Part1Port,0x0E,tempah);        /*BTVGA2TV 0x0E,0x12 */
+  SiSSetReg1(Part1Port,0x0E,tempah);        /*BTVGA2TV 0x0E,0x12 */
   tempbx=VGAVDE-1;
   tempah=tempbx&0x0FF;
   if(IF_DEF_CH7005==1) {
     if(VBInfo&0x0C)  tempah=tempah-1;
   }
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(grp1) 0f -> 0x%x\n", tempah));
-  SetReg1(Part1Port,0x0F,tempah);       /*BTVGA2VDEE 0x0F,0x12  */
+  SiSSetReg1(Part1Port,0x0F,tempah);       /*BTVGA2VDEE 0x0F,0x12  */
   tempah=((tempbx&0xFF00)<<3)>>8;
   tempah=tempah|((tempcx&0xFF00)>>8);
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(grp1) 12 -> 0x%x\n", tempah));
-  SetReg1(Part1Port,0x12,tempah);
+  SiSSetReg1(Part1Port,0x12,tempah);
 
   tempbx=(VGAVT+VGAVDE)>>1;             /*BTVGA2VRS     0x10,0x11 */
   tempcx=((VGAVT-VGAVDE)>>4)+tempbx+1;  /*BTVGA2VRE     0x11  */
 
   tempah=tempbx&0x0FF;
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(grp1) 10 -> 0x%x\n", tempah));
-  SetReg1(Part1Port,0x10,tempah);
+  SiSSetReg1(Part1Port,0x10,tempah);
   tempbh=(tempbx&0xFF00)>>8;
   tempah=((tempbh<<4)&0x0FF)|(tempcx&0x0F);
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(grp1) 11 -> 0x%x\n", tempah));
-  SetReg1(Part1Port,0x11,tempah);
+  SiSSetReg1(Part1Port,0x11,tempah);
 
 #if 0 /* @@@ This can't be right! For now we just leave it as it is */
       /* TW: This should possibly be done if IF_DEV_LVDS == 0 */
@@ -2393,7 +2406,7 @@ static void SetGroup1_LVDS(UShort  BaseAddr,ULong ROMAddr,UShort ModeNo,
   tempax=tempax>>3; /*BPLHRS */
   tempah=tempax&0x0FF;
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(grp1) 14 -> 0x%x\n", tempah));
-  SetReg1(Part1Port,0x14,tempah); /*Part1_14h  */
+  SiSSetReg1(Part1Port,0x14,tempah); /*Part1_14h  */
   tempah=tempah+2;
   tempah=tempah+0x01F;
   tempcl=tempcx&0x0FF;
@@ -2401,23 +2414,23 @@ static void SetGroup1_LVDS(UShort  BaseAddr,ULong ROMAddr,UShort ModeNo,
   tempcl=(tempcl<<5)&0xFF; /* PHLHSKEW */
   tempah=tempah|tempcl;
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(grp1) 15 -> 0x%x\n", tempah));
-  SetReg1(Part1Port,0x15,tempah); /*Part1_15h  */
+  SiSSetReg1(Part1Port,0x15,tempah); /*Part1_15h  */
   tempbx=lcdhdee;       /*lcdhdee  */
   tempcx=LCDHDES;       /*lcdhdes  */
   tempah=(tempcx&0xFF);
   tempah=tempah&0x07;   /*BPLHDESKEW  */
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(grp1) 1a -> 0x%x\n", tempah));
-  SetReg1(Part1Port,0x1A,tempah); /*Part1_1Ah  */
+  SiSSetReg1(Part1Port,0x1A,tempah); /*Part1_1Ah  */
   tempcx=tempcx>>3;     /*BPLHDES */
   tempah=(tempcx&0xFF);
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(grp1) 16 -> 0x%x\n", tempah));
-  SetReg1(Part1Port,0x16,tempah); /*Part1_16h  */
+  SiSSetReg1(Part1Port,0x16,tempah); /*Part1_16h  */
   if (tempbx&0x07)
        tempbx=tempbx+8;
   tempbx=tempbx>>3;     /*BPLHDEE  */
   tempah=tempbx&0xFF;
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(grp1) 17 -> 0x%x\n", tempah));
-  SetReg1(Part1Port,0x17,tempah); /*Part1_17h  */
+  SiSSetReg1(Part1Port,0x17,tempah); /*Part1_17h  */
 
   tempcx=VGAVT;
   tempbx=VGAVDE;
@@ -2446,7 +2459,7 @@ static void SetGroup1_LVDS(UShort  BaseAddr,ULong ROMAddr,UShort ModeNo,
   }
   tempah=tempbx&0xFF;
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(grp1) 18 -> 0x%x\n", tempah));
-  SetReg1(Part1Port,0x18,tempah); /*Part1_18h  */
+  SiSSetReg1(Part1Port,0x18,tempah); /*Part1_18h  */
   tempcx=tempcx>>3;
   tempcx=tempcx+tempbx;
   tempcx++;             /*BPLVRE  */
@@ -2482,7 +2495,7 @@ static void SetGroup1_LVDS(UShort  BaseAddr,ULong ROMAddr,UShort ModeNo,
   }
   tempah=(UShort)(tempebx&0x0FF);
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(grp1) 1e -> 0x%x\n", tempah));
-  SetReg1(Part1Port,0x1E,tempah); /*Part1_1Eh */
+  SiSSetReg1(Part1Port,0x1E,tempah); /*Part1_1Eh */
 
   tempbx=temppush2;     /* p bx temppush2 BPLVDEE  */
   tempcx=temppush1;     /*pop cx temppush1 NPLVDES */
@@ -2494,13 +2507,13 @@ static void SetGroup1_LVDS(UShort  BaseAddr,ULong ROMAddr,UShort ModeNo,
   tempch=tempch&0x07;
   tempah=tempah|tempch;
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(grp1) 1d -> 0x%x\n", tempah));
-  SetReg1(Part1Port,0x1D,tempah); /*Part1_1Dh */
+  SiSSetReg1(Part1Port,0x1D,tempah); /*Part1_1Dh */
   tempah=tempbx&0xFF;
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(grp1) 1c -> 0x%x\n", tempah));
-  SetReg1(Part1Port,0x1C,tempah); /*Part1_1Ch  */
+  SiSSetReg1(Part1Port,0x1C,tempah); /*Part1_1Ch  */
   tempah=tempcx&0xFF;
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(grp1) 1b -> 0x%x\n", tempah));
-  SetReg1(Part1Port,0x1B,tempah); /*Part1_1Bh  */
+  SiSSetReg1(Part1Port,0x1B,tempah); /*Part1_1Bh  */
   
   tempecx=VGAHDE;
   tempebx=HDE;
@@ -2522,7 +2535,7 @@ static void SetGroup1_LVDS(UShort  BaseAddr,ULong ROMAddr,UShort ModeNo,
   tempcx=tempax;
   tempah=tempcx&0x0FF;
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(grp1) 1f -> 0x%x\n", tempah));
-  SetReg1(Part1Port,0x1F,tempah); /*Part1_1Fh  */
+  SiSSetReg1(Part1Port,0x1F,tempah); /*Part1_1Fh  */
   tempbx=VDE;
   tempbx--;             /*BENPLACCEND */
   if(SetFlag&EnableLVDSDDA){
@@ -2534,10 +2547,10 @@ static void SetGroup1_LVDS(UShort  BaseAddr,ULong ROMAddr,UShort ModeNo,
   tempch=tempch&0x07;
   tempah=tempah|tempch;
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(grp1) 20 -> 0x%x\n", tempah));
-  SetReg1(Part1Port,0x20,tempah); /*Part1_20h */
+  SiSSetReg1(Part1Port,0x20,tempah); /*Part1_20h */
   tempah=tempbx&0xFF;
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(grp1) 21 -> 0x%x\n", tempah));
-  SetReg1(Part1Port,0x21,tempah); /*Part1_21h */
+  SiSSetReg1(Part1Port,0x21,tempah); /*Part1_21h */
   tempecx=tempecx>>16;          /*BPLHCFACT  */
   temp1=*((UShort *)(ROMAddr+ModeIDOffset+0x01));   /* si+St_ModeFlag  */
   if(temp1&HalfDCLK){
@@ -2546,10 +2559,10 @@ static void SetGroup1_LVDS(UShort  BaseAddr,ULong ROMAddr,UShort ModeNo,
   tempcx=(UShort)(tempecx&0x0FFFF);
   tempah=(tempcx&0xFF00)>>8;
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(grp1) 22 -> 0x%x\n", tempah));
-  SetReg1(Part1Port,0x22,tempah); /*Part1_22h */
+  SiSSetReg1(Part1Port,0x22,tempah); /*Part1_22h */
   tempah=tempcx&0x0FF;
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(grp1) 23 -> 0x%x\n", tempah));
-  SetReg1(Part1Port,0x23,tempah); /*Part1_23h */
+  SiSSetReg1(Part1Port,0x23,tempah); /*Part1_23h */
   if(IF_DEF_TRUMPION==1){
     tempal=(UShort)*((UChar *)(ROMAddr+ModeIDOffset+0x05));   /* si+St_ResInfo */
     if(ModeNo>0x13){
@@ -2592,12 +2605,12 @@ static void SetGroup1_301(UShort BaseAddr,ULong ROMAddr,UShort ModeNo,ScrnInfoPt
   GetCRT1Ptr(ROMAddr);
 
   temp1=(VGAHT-1)&0x0FF;            /* BTVGA2HT 0x08,0x09 */
-  SetReg1(Part1Port,0x08,temp1);
+  SiSSetReg1(Part1Port,0x08,temp1);
   temp1=(((VGAHT-1)&0xFF00)>>8)<<4;
   SetRegANDOR(Part1Port,0x09,~0x0F0,temp1);
 
   temp1=(VGAHDE+12)&0x0FF;              /* BTVGA2HDEE 0x0A,0x0C */
-  SetReg1(Part1Port,0x0A,temp1);
+  SiSSetReg1(Part1Port,0x0A,temp1);
 
   temp1=VGAHDE+12;      /* bx  BTVGA@HRS 0x0B,0x0C */
   temp2=(VGAHT-VGAHDE)>>2;      /* cx */
@@ -2615,21 +2628,21 @@ static void SetGroup1_301(UShort BaseAddr,ULong ROMAddr,UShort ModeNo,ScrnInfoPt
     tempch=(tempch&0x04)<<(6-2);
     tempcl=((tempcl|tempch)-1)<<3;
   }
-  SetReg1(Part1Port,0x0B,(UShort)(temp1&0x0FF));
+  SiSSetReg1(Part1Port,0x0B,(UShort)(temp1&0x0FF));
   tempah=(temp1&0xFF00)>>8;
   tempbh=((((VGAHDE+12)&0xFF00)>>8)<<4)&0x0FF;
   tempah=tempah|tempbh;
-  SetReg1(Part1Port,0x0C,tempah);
-  SetReg1(Part1Port,0x0D,tempcl);       /* BTVGA2HRE 0x0D */
+  SiSSetReg1(Part1Port,0x0C,tempah);
+  SiSSetReg1(Part1Port,0x0D,tempcl);       /* BTVGA2HRE 0x0D */
   tempcx=(VGAVT-1);
   tempah=tempcx&0x0FF;
-  SetReg1(Part1Port,0x0E,tempah);       /* BTVGA2TV 0x0E,0x12 */
+  SiSSetReg1(Part1Port,0x0E,tempah);       /* BTVGA2TV 0x0E,0x12 */
   tempbx=VGAVDE-1;
   tempah=tempbx&0x0FF;
-  SetReg1(Part1Port,0x0F,tempah);       /* BTVGA2VDEE 0x0F,0x12 */
+  SiSSetReg1(Part1Port,0x0F,tempah);       /* BTVGA2VDEE 0x0F,0x12 */
   tempah=((tempbx&0xFF00)<<3)>>8;
   tempah=tempah|((tempcx&0xFF00)>>8);
-  SetReg1(Part1Port,0x12,tempah);
+  SiSSetReg1(Part1Port,0x12,tempah);
 
   tempbx=(VGAVT+VGAVDE)>>1;             /* BTVGA2VRS     0x10,0x11 */
   tempcx=((VGAVT-VGAVDE)>>4)+tempbx+1;  /* BTVGA2VRE     0x11      */
@@ -2650,10 +2663,10 @@ static void SetGroup1_301(UShort BaseAddr,ULong ROMAddr,UShort ModeNo,ScrnInfoPt
     tempcx=(tempcx&0xFF00)|(tempcl&0x00FF);
   }
   tempah=tempbx&0x0FF;
-  SetReg1(Part1Port,0x10,tempah);
+  SiSSetReg1(Part1Port,0x10,tempah);
   tempbh=(tempbx&0xFF00)>>8;
   tempah=((tempbh<<4)&0x0FF)|(tempcx&0x0F);
-  SetReg1(Part1Port,0x11,tempah);
+  SiSSetReg1(Part1Port,0x11,tempah);
 
   if( pSiS->Chipset == PCI_CHIP_SIS300 ){
     tempah=0x10;
@@ -2692,7 +2705,7 @@ static void SetGroup1_301(UShort BaseAddr,ULong ROMAddr,UShort ModeNo,ScrnInfoPt
   tempax=(tempax/tempcl)-5;
   tempbl=tempax;
   tempah=0xFF;          /* set MAX HT */
-  SetReg1(Part1Port,0x03,tempah);
+  SiSSetReg1(Part1Port,0x03,tempah);
 
   tempax=VGAHDE;                /* 0x04 Horizontal Display End */
   if(temp1&HalfDCLK){
@@ -2700,7 +2713,7 @@ static void SetGroup1_301(UShort BaseAddr,ULong ROMAddr,UShort ModeNo,ScrnInfoPt
   }
   tempax=(tempax/tempcl)-1;
   tempbh=tempax;
-  SetReg1(Part1Port,0x04,tempax);
+  SiSSetReg1(Part1Port,0x04,tempax);
 
   tempah=tempbh;
   if(VBInfo&SetCRT2ToTV){
@@ -2712,8 +2725,8 @@ static void SetGroup1_301(UShort BaseAddr,ULong ROMAddr,UShort ModeNo,ScrnInfoPt
     if(resinfo==7) tempah=tempah-2;
   }
 /* ynlai end */
-  SetReg1(Part1Port,0x05,tempah); /* 0x05 Horizontal Display Start */
-  SetReg1(Part1Port,0x06,0x03);   /* 0x06 Horizontal Blank end     */
+  SiSSetReg1(Part1Port,0x05,tempah); /* 0x05 Horizontal Display Start */
+  SiSSetReg1(Part1Port,0x06,0x03);   /* 0x06 Horizontal Blank end     */
                                   /* 0x07 horizontal Retrace Start */
 /* ynlai begin */
   if(IF_DEF_HiVision==1) {
@@ -2762,12 +2775,12 @@ static void SetGroup1_301(UShort BaseAddr,ULong ROMAddr,UShort ModeNo,ScrnInfoPt
        }
     }
   }
-  SetReg1(Part1Port,0x07,tempah); /* 0x07 Horizontal Retrace Start */
+  SiSSetReg1(Part1Port,0x07,tempah); /* 0x07 Horizontal Retrace Start */
 
-  SetReg1(Part1Port,0x08,0);      /* 0x08 Horizontal Retrace End   */
-  SetReg1(Part1Port,0x18,0x03);   /* 0x18 SR08                     */
-  SetReg1(Part1Port,0x19,0);      /* 0x19 SR0C                     */
-  SetReg1(Part1Port,0x09,0xFF);   /* 0x09 Set Max VT               */
+  SiSSetReg1(Part1Port,0x08,0);      /* 0x08 Horizontal Retrace End   */
+  SiSSetReg1(Part1Port,0x18,0x03);   /* 0x18 SR08                     */
+  SiSSetReg1(Part1Port,0x19,0);      /* 0x19 SR0C                     */
+  SiSSetReg1(Part1Port,0x09,0xFF);   /* 0x09 Set Max VT               */
 
   tempcx=0x121;
   tempcl=0x21;
@@ -2778,8 +2791,8 @@ static void SetGroup1_301(UShort BaseAddr,ULong ROMAddr,UShort ModeNo,ScrnInfoPt
   if(tempbx==405) tempbx=400;
   tempbx--;
   tempah=tempbx&0x0FF;
-  SetReg1(Part1Port,0x0E,tempah);
-  SetReg1(Part1Port,0x10,tempah); /* 0x10 vertical Blank Start */
+  SiSSetReg1(Part1Port,0x0E,tempah);
+  SiSSetReg1(Part1Port,0x10,tempah); /* 0x10 vertical Blank Start */
   tempbh=(tempbx&0xFF00)>>8;
   if(tempbh&0x01){
     tempcl=tempcl|0x0A;
@@ -2792,12 +2805,12 @@ static void SetGroup1_301(UShort BaseAddr,ULong ROMAddr,UShort ModeNo,ScrnInfoPt
     tempcl=tempcl|0x040;
     tempah=tempah|0x020;
   }
-  SetReg1(Part1Port,0x0B,tempah);
+  SiSSetReg1(Part1Port,0x0B,tempah);
   if(tempbh&0x04){
     tempch=tempch|0x06;
   }
 
-  SetReg1(Part1Port,0x11,0);  /* 0x11 Vertival Blank End */
+  SiSSetReg1(Part1Port,0x11,0);  /* 0x11 Vertival Blank End */
 
   tempax=VGAVT-tempbx;          /* 0x0C Vertical Retrace Start */
   tempax=tempax>>2;
@@ -2810,7 +2823,7 @@ static void SetGroup1_301(UShort BaseAddr,ULong ROMAddr,UShort ModeNo,ScrnInfoPt
     tempbx=tempbx+40;
   }
   tempah=(tempbx&0x0FF);
-  SetReg1(Part1Port,0x0C,tempah);
+  SiSSetReg1(Part1Port,0x0C,tempah);
   tempbh=(tempbx&0xFF00)>>8;
   if(tempbh&0x01){
     tempcl=tempcl|0x04;
@@ -2826,23 +2839,23 @@ static void SetGroup1_301(UShort BaseAddr,ULong ROMAddr,UShort ModeNo,ScrnInfoPt
   tempax=(tempax>>2)+1;
   tempbx=tempbx+tempax;
   tempah=(tempbx&0x0FF)&0x0F;
-  SetReg1(Part1Port,0x0D,tempah);  /* 0x0D vertical Retrace End */
+  SiSSetReg1(Part1Port,0x0D,tempah);  /* 0x0D vertical Retrace End */
   tempbl=tempbx&0x0FF;
   if(tempbl&0x10){
     tempch=tempch|0x020;
   }
 
   tempah=tempcl;
-  SetReg1(Part1Port,0x0A,tempah); /* 0x0A CR07 */
+  SiSSetReg1(Part1Port,0x0A,tempah); /* 0x0A CR07 */
   tempah=tempch;
-  SetReg1(Part1Port,0x17,tempah); /* 0x17 SR0A */
+  SiSSetReg1(Part1Port,0x17,tempah); /* 0x17 SR0A */
   tempax=*((UShort *)(ROMAddr+ModeIDOffset+0x01));   /* si+St_ModeFlag */
   tempah=(tempax&0xFF00)>>8;
   tempah=(tempah>>1)&0x09;
-  SetReg1(Part1Port,0x16,tempah); /* 0x16 SR01 */
-  SetReg1(Part1Port,0x0F,0);      /* 0x0F CR14 */
-  SetReg1(Part1Port,0x12,0);      /* 0x12 CR17 */
-  SetReg1(Part1Port,0x1A,0);      /* 0x1A SR0E */
+  SiSSetReg1(Part1Port,0x16,tempah); /* 0x16 SR01 */
+  SiSSetReg1(Part1Port,0x0F,0);      /* 0x0F CR14 */
+  SiSSetReg1(Part1Port,0x12,0);      /* 0x12 CR17 */
+  SiSSetReg1(Part1Port,0x1A,0);      /* 0x1A SR0E */
 
   REFIndex=OldREFIndex;           /* pop di */
 }
@@ -2855,9 +2868,9 @@ static void SetCRT2Offset(UShort Part1Port,ULong ROMAddr)
   }
   offset=GetOffset(ROMAddr);
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(CRT2Offset) offset %x\n", offset)); 
-  SetReg1(Part1Port,0x07,(UShort)(offset&0xFF));
-  SetReg1(Part1Port,0x09,(UShort)((offset&0xFF00)>>8));
-  SetReg1(Part1Port,0x03,(UShort)(((offset>>3)&0xFF)+1));
+  SiSSetReg1(Part1Port,0x07,(UShort)(offset&0xFF));
+  SiSSetReg1(Part1Port,0x09,(UShort)((offset&0xFF00)>>8));
+  SiSSetReg1(Part1Port,0x03,(UShort)(((offset>>3)&0xFF)+1));
 }
 
 static UShort GetOffset(ULong ROMAddr)
@@ -2992,7 +3005,7 @@ static void SetCRT2FIFO(UShort  Part1Port,ULong ROMAddr,UShort ModeNo,ScrnInfoPt
 
   temp1=(UChar)GetReg1(Part1Port,0x01);         /* part1port index 01 */
   temp1=(temp1&(~0x1F))|0x16;
-  SetReg1(Part1Port,0x01,temp1);
+  SiSSetReg1(Part1Port,0x01,temp1);
 
 /* ynlai begin */
   if(IF_DEF_HiVision==1) { if(temp2<=10) temp2=10; }
@@ -3001,7 +3014,7 @@ static void SetCRT2FIFO(UShort  Part1Port,ULong ROMAddr,UShort ModeNo,ScrnInfoPt
   if(temp2>0x14) temp2=0x14;
   temp1=(UChar)GetReg1(Part1Port,0x02);         /* part1port index 02 */
   temp1=(temp1&(~0x1F))|temp2;
-  SetReg1(Part1Port,0x02,temp1);
+  SiSSetReg1(Part1Port,0x02,temp1);
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(FIFO) 02 -> | 0x%x\n", temp2));
 }
 
@@ -3268,7 +3281,7 @@ static void SetCRT2Sync(UShort BaseAddr,ULong ROMAddr,UShort ModeNo)
   }
   temp1=(UChar)GetReg1(Part1Port,0x19);    /* part1port index 02 */
   temp1=(temp1&(~0x0C0))|tempah;
-  SetReg1(Part1Port,0x19,temp1);
+  SiSSetReg1(Part1Port,0x19,temp1);
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "(CRT2Sync) 19 -> | %x\n", tempah));
 }
 
@@ -3287,7 +3300,7 @@ static void SetRegANDOR(UShort Port,UShort Index,UShort DataAND,UShort DataOR)
   UShort temp1;
   temp1=GetReg1(Port,Index);     /* part1port index 02 */
   temp1=(temp1&(DataAND))|DataOR;
-  SetReg1(Port,Index,temp1);
+  SiSSetReg1(Port,Index,temp1);
 }
 
 static UShort GetVGAHT2(void)
@@ -3350,25 +3363,25 @@ static void SetGroup2(UShort  BaseAddr,ULong ROMAddr, UShort ModeNo)
       temp2=NTSCTiming;
     }
   }
-  SetReg1(Part2Port,0x0,tempah);
+  SiSSetReg1(Part2Port,0x0,tempah);
   for(i=0x31;i<=0x34;i++,temp1++){
-     SetReg1(Part2Port,i,*(UChar *)temp1);
+     SiSSetReg1(Part2Port,i,*(UChar *)temp1);
   }
   for(i=0x01,j=0;i<=0x2D;i++,j++){
-     SetReg1(Part2Port,i,temp2[j]);
+     SiSSetReg1(Part2Port,i,temp2[j]);
   }
   for(i=0x39;i<=0x45;i++,j++){
-     SetReg1(Part2Port,i,temp2[j]);   /* di->temp2[j] */
+     SiSSetReg1(Part2Port,i,temp2[j]);   /* di->temp2[j] */
   }
 
   tempah=GetReg1(Part2Port,0x0A);
   tempah=tempah|NewFlickerMode;
-  SetReg1(Part2Port,0x0A,tempah);
+  SiSSetReg1(Part2Port,0x0A,tempah);
 
-  SetReg1(Part2Port,0x35,RY1COE);
-  SetReg1(Part2Port,0x36,RY2COE);
-  SetReg1(Part2Port,0x37,RY3COE);
-  SetReg1(Part2Port,0x38,RY4COE);
+  SiSSetReg1(Part2Port,0x35,RY1COE);
+  SiSSetReg1(Part2Port,0x36,RY2COE);
+  SiSSetReg1(Part2Port,0x37,RY3COE);
+  SiSSetReg1(Part2Port,0x38,RY4COE);
 
 /* ynlai begin */
   if(IF_DEF_HiVision==1) tempax=950;
@@ -3381,16 +3394,16 @@ static void SetGroup2(UShort  BaseAddr,ULong ROMAddr, UShort ModeNo)
     tempax=tempax>>2;
     tempah=(tempax&0xFF00)>>8;
     tempah=tempah+temp2[0];
-    SetReg1(Part2Port,0x01,tempah);
+    SiSSetReg1(Part2Port,0x01,tempah);
     tempah=tempax&0x00FF;
     tempah=tempah+temp2[1];
-    SetReg1(Part2Port,0x02,tempah);
+    SiSSetReg1(Part2Port,0x02,tempah);
   }
 /* begin end */
 
   tempcx=HT-1;
   tempah=tempcx&0xFF;
-  SetReg1(Part2Port,0x1B,tempah);
+  SiSSetReg1(Part2Port,0x1B,tempah);
   tempah=(tempcx&0xFF00)>>8;
   SetRegANDOR(Part2Port,0x1D,~0x0F,(UChar)tempah);
 
@@ -3409,7 +3422,7 @@ static void SetGroup2(UShort  BaseAddr,ULong ROMAddr, UShort ModeNo)
   tempbx=temp2[j];
   tempbx=tempbx+tempcx;
   tempah=tempbx&0xFF;
-  SetReg1(Part2Port,0x24,tempah);
+  SiSSetReg1(Part2Port,0x24,tempah);
   tempah=(tempbx&0xFF00)>>8;
   tempah=(tempah<<4)&0xFF;
   SetRegANDOR(Part2Port,0x25,~0x0F0,tempah);
@@ -3426,7 +3439,7 @@ static void SetGroup2(UShort  BaseAddr,ULong ROMAddr, UShort ModeNo)
 
   tempcx=tempcx+temp2[++j];
   tempah=tempcx&0xFF;
-  SetReg1(Part2Port,0x27,tempah);
+  SiSSetReg1(Part2Port,0x27,tempah);
   tempah=(((tempcx&0xFF00)>>8)<<4)&0xFF;
   SetRegANDOR(Part2Port,0x28,~0x0F0,tempah);
 
@@ -3450,7 +3463,7 @@ static void SetGroup2(UShort  BaseAddr,ULong ROMAddr, UShort ModeNo)
     tempcx=tempax-1;
   }
   tempah=tempcx&0xFF;
-  SetReg1(Part2Port,0x2E,tempah);
+  SiSSetReg1(Part2Port,0x2E,tempah);
 
   tempbx=VDE;
   if(VGAVDE==360){
@@ -3474,7 +3487,7 @@ static void SetGroup2(UShort  BaseAddr,ULong ROMAddr, UShort ModeNo)
     if(VBInfo&SetInSlaveMode)
       if(ModeNo==0x2f) tempah=tempah+1;
 /* ynlai end   */
-  SetReg1(Part2Port,0x2F,tempah);
+  SiSSetReg1(Part2Port,0x2F,tempah);
 
   tempah=(tempcx&0xFF00)>>8;
   tempbh=(tempbx&0xFF00)>>8;
@@ -3489,7 +3502,7 @@ static void SetGroup2(UShort  BaseAddr,ULong ROMAddr, UShort ModeNo)
     }
   }
 /* ynlai end   */
-  SetReg1(Part2Port,0x30,tempah);
+  SiSSetReg1(Part2Port,0x30,tempah);
 
   tempbh=0;
   tempbx=tempbx&0xFF;
@@ -3537,13 +3550,13 @@ static void SetGroup2(UShort  BaseAddr,ULong ROMAddr, UShort ModeNo)
     tempah=tempax&0xFF;
   }
 
-  SetReg1(Part2Port,0x44,tempah);
+  SiSSetReg1(Part2Port,0x44,tempah);
   tempah=tempbh;
   SetRegANDOR(Part2Port,0x45,~0x03F,tempah);
 
   if(IF_DEF_HiVision==1) {
     if(!(VBInfo&SetInSlaveMode)) {
-      SetReg1(Part2Port,0x0B,0x00);
+      SiSSetReg1(Part2Port,0x0B,0x00);
     }
   }
 
@@ -3558,30 +3571,30 @@ static void SetGroup2(UShort  BaseAddr,ULong ROMAddr, UShort ModeNo)
       }
     }
   }
-  SetReg1(Part2Port,0x0B,tempah);
+  SiSSetReg1(Part2Port,0x0B,tempah);
 
   tempbx=HDE-1;         /* RHACTE=HDE-1 */
   tempah=tempbx&0xFF;
-  SetReg1(Part2Port,0x2C,tempah);
+  SiSSetReg1(Part2Port,0x2C,tempah);
   tempah=(tempbx&0xFF00)>>8;
   tempah=(tempah<<4)&0xFF;
   SetRegANDOR(Part2Port,0x2B,~0x0F0,tempah);
 
   tempbx=VDE-1;         /* RTVACTEO=(VDE-1)&0xFF */
   tempah=tempbx&0xFF;
-  SetReg1(Part2Port,0x03,tempah);
+  SiSSetReg1(Part2Port,0x03,tempah);
   tempah=((tempbx&0xFF00)>>8)&0x07;
   SetRegANDOR(Part2Port,0x0C,~0x07,tempah);
 
   tempcx=VT-1;
   tempah=tempcx&0xFF;   /* RVTVT=VT-1 */
-  SetReg1(Part2Port,0x19,tempah);
+  SiSSetReg1(Part2Port,0x19,tempah);
   tempah=(tempcx&0xFF00)>>8;
   tempah=(tempah<<5)&0xFF;
   if(LCDInfo&LCDRGB18Bit){
     tempah=tempah|0x10;
   }
-  SetReg1(Part2Port,0x1A,tempah);
+  SiSSetReg1(Part2Port,0x1A,tempah);
 
   tempcx++;
   if(LCDResInfo==Panel1024x768){
@@ -3600,65 +3613,65 @@ static void SetGroup2(UShort  BaseAddr,ULong ROMAddr, UShort ModeNo)
   tempbx=tempbx-tempax; /* lcdvdee */
 
   tempah=tempcx&0xFF;   /* RVEQ1EQ=lcdvdes */
-  SetReg1(Part2Port,0x05,tempah);
+  SiSSetReg1(Part2Port,0x05,tempah);
   tempah=tempbx&0xFF;   /* RVEQ2EQ=lcdvdee */
-  SetReg1(Part2Port,0x06,tempah);
+  SiSSetReg1(Part2Port,0x06,tempah);
 
   tempah=(tempbx&0xFF00)>>8;
   tempah=(tempah<<3)&0xFF;
   tempah=tempah|((tempcx&0xFF00)>>8);
-  SetReg1(Part2Port,0x02,tempah);
+  SiSSetReg1(Part2Port,0x02,tempah);
 
   tempcx=(VT-VDE)>>4;   /* (VT-VDE)>>4 */
   tempbx=(VT+VDE)>>1;
   tempah=tempbx&0xFF;   /* RTVACTEE=lcdvrs */
-  SetReg1(Part2Port,0x04,tempah);
+  SiSSetReg1(Part2Port,0x04,tempah);
 
  tempah=(tempbx&0xFF00)>>8;
  tempah=(tempah<<4)&0xFF;
  tempbx=tempbx+tempcx+1;
  tempbl=(tempbx&0x0F);
  tempah=tempah|tempbl;  /* RTVACTSO=lcdvrs&0x700>>4+lcdvre */
- SetReg1(Part2Port,0x01,tempah);
+ SiSSetReg1(Part2Port,0x01,tempah);
 
  tempah=GetReg1(Part2Port,0x09);
  tempah=tempah&0xF0;
- SetReg1(Part2Port,0x09,tempah);
+ SiSSetReg1(Part2Port,0x09,tempah);
 
  tempah=GetReg1(Part2Port,0x0A);
  tempah=tempah&0xF0;
- SetReg1(Part2Port,0x0A,tempah);
+ SiSSetReg1(Part2Port,0x0A,tempah);
 
  tempcx=(HT-HDE)>>2;    /* (HT-HDE)>>2     */
  tempbx=(HDE+7);        /* lcdhdee         */
  tempah=tempbx&0xFF;    /* RHEQPLE=lcdhdee */
- SetReg1(Part2Port,0x23,tempah);
+ SiSSetReg1(Part2Port,0x23,tempah);
  tempah=(tempbx&0xFF00)>>8;
  SetRegANDOR(Part2Port,0x25,~0x0F,tempah);
 
- SetReg1(Part2Port,0x1F,0x07);  /* RHBLKE=lcdhdes */
+ SiSSetReg1(Part2Port,0x1F,0x07);  /* RHBLKE=lcdhdes */
  tempah=GetReg1(Part2Port,0x20);
  tempah=tempah&0x0F;
- SetReg1(Part2Port,0x20,tempah);
+ SiSSetReg1(Part2Port,0x20,tempah);
 
  tempbx=tempbx+tempcx;
  tempah=tempbx&0xFF;            /* RHBURSTS=lcdhrs */
- SetReg1(Part2Port,0x1C,tempah);
+ SiSSetReg1(Part2Port,0x1C,tempah);
  tempah=(tempbx&0xFF00)>>8;
  tempah=(tempah<<4)&0xFF;
  SetRegANDOR(Part2Port,0x1D,~0x0F0,tempah);
 
  tempbx=tempbx+tempcx;
  tempah=tempbx&0xFF;            /* RHSYEXP2S=lcdhre */
- SetReg1(Part2Port,0x21,tempah);
+ SiSSetReg1(Part2Port,0x21,tempah);
 
  tempah=GetReg1(Part2Port,0x17);
  tempah=tempah&0xFB;
- SetReg1(Part2Port,0x17,tempah);
+ SiSSetReg1(Part2Port,0x17,tempah);
 
  tempah=GetReg1(Part2Port,0x18);
  tempah=tempah&0xDF;
- SetReg1(Part2Port,0x18,tempah);
+ SiSSetReg1(Part2Port,0x18,tempah);
  return;
 }
 
@@ -3670,14 +3683,14 @@ static void SetGroup3(UShort  BaseAddr,ULong ROMAddr)
   UShort  modeflag;
   Part3Port=BaseAddr+IND_SIS_CRT2_PORT_12;
 /* ynlai begin */
-  SetReg1(Part3Port,0x00,0x00);
+  SiSSetReg1(Part3Port,0x00,0x00);
   if(VBInfo&SetPALTV){
-    SetReg1(Part3Port,0x13,0xFA);
-    SetReg1(Part3Port,0x14,0xC8);
+    SiSSetReg1(Part3Port,0x13,0xFA);
+    SiSSetReg1(Part3Port,0x14,0xC8);
   }
   else {
-    SetReg1(Part3Port,0x13,0xF6);
-    SetReg1(Part3Port,0x14,0xBF);
+    SiSSetReg1(Part3Port,0x13,0xF6);
+    SiSSetReg1(Part3Port,0x14,0xBF);
   }
   if(IF_DEF_HiVision==1) {
     tempdi=HiTVGroup3Data;
@@ -3689,7 +3702,7 @@ static void SetGroup3(UShort  BaseAddr,ULong ROMAddr)
       }
     }
     for(i=0;i<=0x3E;i++){
-       SetReg1(Part3Port,i,tempdi[i]);
+       SiSSetReg1(Part3Port,i,tempdi[i]);
     }
   }
 /* ynlai end   */
@@ -3720,19 +3733,19 @@ static void SetGroup4(UShort  BaseAddr,ULong ROMAddr,UShort ModeNo)
     tempax=tempax|0x08000;
   }
   tempah=(tempax&0xFF00)>>8;
-  SetReg1(Part4Port,0x0C,tempah);
+  SiSSetReg1(Part4Port,0x0C,tempah);
 
   tempah=RVBHCFACT;
-  SetReg1(Part4Port,0x13,tempah);
+  SiSSetReg1(Part4Port,0x13,tempah);
 
   tempbx=RVBHCMAX;
   tempah=tempbx&0xFF;
-  SetReg1(Part4Port,0x14,tempah);
+  SiSSetReg1(Part4Port,0x14,tempah);
   tempbh=(((tempbx&0xFF00)>>8)<<7)&0xFF;
 
   tempcx=VGAHT-1;
   tempah=tempcx&0xFF;
-  SetReg1(Part4Port,0x16,tempah);
+  SiSSetReg1(Part4Port,0x16,tempah);
   tempch=(((tempcx&0xFF00)>>8)<<3)&0xFF;
   tempbh=tempbh|tempch;
 
@@ -3741,10 +3754,10 @@ static void SetGroup4(UShort  BaseAddr,ULong ROMAddr,UShort ModeNo)
     tempcx=tempcx-5;
   }
   tempah=tempcx&0xFF;
-  SetReg1(Part4Port,0x17,tempah);
+  SiSSetReg1(Part4Port,0x17,tempah);
   tempbh=tempbh|((tempcx&0xFF00)>>8);
   tempah=tempbh;
-  SetReg1(Part4Port,0x15,tempah);
+  SiSSetReg1(Part4Port,0x15,tempah);
 
   tempcx=VBInfo;
   tempbx=VGAHDE;
@@ -3788,7 +3801,7 @@ static void SetGroup4(UShort  BaseAddr,ULong ROMAddr,UShort ModeNo)
 
   tempcx=RVBHRS;
   tempah=tempcx&0xFF;
-  SetReg1(Part4Port,0x18,tempah);
+  SiSSetReg1(Part4Port,0x18,tempah);
 
   tempeax=VGAVDE;
   tempcx=tempcx|0x04000;
@@ -3807,14 +3820,14 @@ static void SetGroup4(UShort  BaseAddr,ULong ROMAddr,UShort ModeNo)
 
 
   tempah=tempebx&0xFF;
-  SetReg1(Part4Port,0x1B,tempah);
+  SiSSetReg1(Part4Port,0x1B,tempah);
   tempah=(tempebx&0xFF00)>>8;
-  SetReg1(Part4Port,0x1A,tempah);
+  SiSSetReg1(Part4Port,0x1A,tempah);
   tempebx=tempebx>>16;
   tempah=tempebx&0xFF;
   tempah=(tempah<<4)&0xFF;
   tempah=tempah|((tempcx&0xFF00)>>8);
-  SetReg1(Part4Port,0x19,tempah);
+  SiSSetReg1(Part4Port,0x19,tempah);
 
   SetCRT2VCLK(BaseAddr,ROMAddr,ModeNo); 
 }
@@ -3827,19 +3840,19 @@ static void SetCRT2VCLK(UShort BaseAddr,ULong ROMAddr,UShort ModeNo)
 
   Part4Port=BaseAddr+IND_SIS_CRT2_PORT_14;
   vclk2ptr=GetVCLK2Ptr(ROMAddr,ModeNo);
-  SetReg1(Part4Port,0x0A,0x01);
+  SiSSetReg1(Part4Port,0x0A,0x01);
   tempah=*((UChar *)(ROMAddr+vclk2ptr+0x01));   /* di+1 */
-  SetReg1(Part4Port,0x0B,tempah);
+  SiSSetReg1(Part4Port,0x0B,tempah);
   tempah=*((UChar *)(ROMAddr+vclk2ptr+0x00));   /* di */
-  SetReg1(Part4Port,0x0A,tempah);
-  SetReg1(Part4Port,0x12,0x00);
+  SiSSetReg1(Part4Port,0x0A,tempah);
+  SiSSetReg1(Part4Port,0x12,0x00);
   tempah=0x08;
   if(VBInfo&SetCRT2ToRAMDAC){
     tempah=tempah|0x020;
   }
   temp1=GetReg1(Part4Port,0x12);
   tempah=tempah|temp1;
-  SetReg1(Part4Port,0x12,tempah);
+  SiSSetReg1(Part4Port,0x12,tempah);
 }
 
 static void SetGroup5(UShort  BaseAddr,ULong ROMAddr)
@@ -3863,7 +3876,7 @@ static void EnableCRT2(void)
   UShort temp1;
   temp1=GetReg1(P3c4,0x1E);
   temp1=temp1|0x20;
-  SetReg1(P3c4,0x1E,temp1);     /* SR 1E */
+  SiSSetReg1(P3c4,0x1E,temp1);     /* SR 1E */
 }
 
 static void LoadDAC2(ULong ROMAddr,UShort Part5Port)
@@ -3963,7 +3976,7 @@ static void WriteDAC2(UShort Pdata,UShort dl, UShort ah, UShort al, UShort dh)
   SetReg3(Pdata,(UShort)bl);
 }
 
-void LockCRT2(UShort BaseAddr)
+void SiSLockCRT2(UShort BaseAddr)
 {
   UShort  Part1Port;
   UShort  Part4Port;
@@ -3972,7 +3985,7 @@ void LockCRT2(UShort BaseAddr)
   Part4Port=BaseAddr+IND_SIS_CRT2_PORT_14;
   temp1=GetReg1(Part1Port,0x24);
   temp1=temp1&0xFE;
-  SetReg1(Part1Port,0x24,temp1);
+  SiSSetReg1(Part1Port,0x24,temp1);
 }
 
 #if 0
@@ -3984,13 +3997,13 @@ static void SetLockRegs(void)
     VBLongWait();
     temp1=GetReg1(P3c4,0x32);
     temp1=temp1|0x20;
-    SetReg1(P3c4,0x32,temp1);
+    SiSSetReg1(P3c4,0x32,temp1);
     VBLongWait();
   }
 }
 #endif
 
-void EnableBridge(UShort BaseAddr)
+void SiSEnableBridge(UShort BaseAddr)
 {
   UShort part2_02,part2_05;
   UShort Part2Port, Part1Port;
@@ -4001,17 +4014,17 @@ void EnableBridge(UShort BaseAddr)
   if(IF_DEF_LVDS==0) {
     part2_02=(UChar)GetReg1(Part2Port,0x02);
     part2_05=(UChar)GetReg1(Part2Port,0x05);
-    SetReg1(Part2Port,0x02,0x38);
-    SetReg1(Part2Port,0x05,0xFF);
+    SiSSetReg1(Part2Port,0x02,0x38);
+    SiSSetReg1(Part2Port,0x05,0xFF);
     LongWait();
     SetRegANDOR(Part2Port,0x00,~0x0E0,0x020);
  /*   WaitVBRetrace(BaseAddr);  */
-    SetReg1(Part2Port,0x02,part2_02);
-    SetReg1(Part2Port,0x05,part2_05);
+    SiSSetReg1(Part2Port,0x02,part2_02);
+    SiSSetReg1(Part2Port,0x05,part2_05);
   }
   else {
     EnableCRT2();
-    UnLockCRT2(BaseAddr);
+    SiSUnLockCRT2(BaseAddr);
     /* TW: new: */
     SetRegANDOR(Part1Port,0x02,~0x040,0x0);
     if (BridgeInSlave ()) {
@@ -4023,13 +4036,13 @@ void EnableBridge(UShort BaseAddr)
   }
 }
 
-void EnableBridgeLVDS(UShort BaseAddr)
+void SiSEnableBridgeLVDS(UShort BaseAddr)
 {
   UShort Part2Port;
   Part2Port=BaseAddr+IND_SIS_CRT2_PORT_10;
 
     EnableCRT2();
-    UnLockCRT2(BaseAddr);
+    SiSUnLockCRT2(BaseAddr);
 /*       SetRegANDOR(Part1Port,0x02,~0x040,0x0);   */
 }
 
@@ -4238,7 +4251,7 @@ static Bool GetLCDResInfo(ULong ROMAddr,UShort P3d4Reg)
 
 static void PresetScratchregister(UShort P3d4Reg)
 {
-  SetReg1(P3d4Reg,0x37,0x00);
+  SiSSetReg1(P3d4Reg,0x37,0x00);
 }
 
 #if 0
@@ -4247,7 +4260,7 @@ static Bool GetLCDDDCInfo(ScrnInfoPtr pScrn)
   UShort tempah;
 /*tempah=(HwDeviceExtension->usLCDType);// set in sisv.c                                                 */
   tempah=1;
-  SetReg1(P3d4,0x36,tempah);  /* cr 36 0:no LCD 1:1024x768 2:1280x1024 */
+  SiSSetReg1(P3d4,0x36,tempah);  /* cr 36 0:no LCD 1:1024x768 2:1280x1024 */
   if(tempah>0) return 1;
   else return 0;
 }
@@ -4289,7 +4302,7 @@ static void VBLongWait(void)
 
   regsr1f=GetReg1(P3c4,0x1F);
   tempah=regsr1f&(~0xC0);
-  SetReg1(P3c4,0x1F,tempah);
+  SiSSetReg1(P3c4,0x1F,tempah);
 
   for(temp=1;temp>0;){
      temp=GetReg2(P3da);
@@ -4300,7 +4313,7 @@ static void VBLongWait(void)
      temp=temp&0x08;
   }
 
-  SetReg1(P3c4,0x1F,regsr1f);
+  SiSSetReg1(P3c4,0x1F,regsr1f);
   return;
 }
 #endif
@@ -4340,41 +4353,41 @@ static void ModCRT1CRTC(ULong ROMAddr,UShort ModeNo)
   }
   tempah=(UChar)GetReg1(P3d4,0x11);/*unlock cr0-7  */
   tempah=tempah&0x7F;
-  SetReg1(P3d4,0x11,tempah);
+  SiSSetReg1(P3d4,0x11,tempah);
   tempah=*((UChar *)(ROMAddr+REFIndex));
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "LVDS Data 0: %x\n", tempah));
-  SetReg1(P3d4,0x0,tempah);
+  SiSSetReg1(P3d4,0x0,tempah);
   REFIndex++;
   for(i=0x02;i<=0x05;REFIndex++,i++){
     tempah=*((UChar *)(ROMAddr+REFIndex));
     PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "LVDS Data: %x\n", tempah));
-    SetReg1(P3d4,i,tempah); 
+    SiSSetReg1(P3d4,i,tempah); 
   }
   for(i=0x06;i<=0x07;REFIndex++,i++){
     tempah=*((UChar *)(ROMAddr+REFIndex));
     PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "LVDS Data: %x\n", tempah));
-    SetReg1(P3d4,i,tempah); 
+    SiSSetReg1(P3d4,i,tempah); 
   }
   for(i=0x10;i<=0x11;REFIndex++,i++){
     tempah=*((UChar *)(ROMAddr+REFIndex));
     PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "LVDS Data: %x\n", tempah));
-    SetReg1(P3d4,i,tempah); 
+    SiSSetReg1(P3d4,i,tempah); 
   }
   for(i=0x15;i<=0x16;REFIndex++,i++){
     tempah=*((UChar *)(ROMAddr+REFIndex));
     PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "LVDS Data: %x\n", tempah));
-    SetReg1(P3d4,i,tempah);
+    SiSSetReg1(P3d4,i,tempah);
   }
 
   for(i=0x0A;i<=0x0C;REFIndex++,i++){
     tempah=*((UChar *)(ROMAddr+REFIndex));
     PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "LVDS Data: %x\n", tempah));
-    SetReg1(P3c4,i,tempah); 
+    SiSSetReg1(P3c4,i,tempah); 
   }
   tempah=*((UChar *)(ROMAddr+REFIndex));
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "LVDS Data: %x\n", tempah));
   tempah=tempah&0x0E0;
-  SetReg1(P3c4,0x0E,tempah);
+  SiSSetReg1(P3c4,0x0E,tempah);
 
   tempah=*((UChar *)(ROMAddr+REFIndex));
   tempah=tempah&0x01;
@@ -4412,16 +4425,16 @@ static void SetCRT2ECLK(ULong ROMAddr, UShort ModeNo)
   if(!(VBInfo&SetInSlaveMode)){
     tempal=tempal+3;
   }
-  SetReg1(P3c4,0x05,0x86);
+  SiSSetReg1(P3c4,0x05,0x86);
   tempah=*((UChar *)(ROMAddr+REFIndex));
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "SetCRT2ECLK: Reg %x -> 0x%x\n", tempal, tempah));
-  SetReg1(P3c4,tempal,tempah);
+  SiSSetReg1(P3c4,tempal,tempah);
   tempah=*((UChar *)(ROMAddr+REFIndex+1));
   tempal++;
   PDEBUG(xf86DrvMsg(scrnidx, X_PROBED, "SetCRT2ECLK: Reg %x -> 0x%x\n", tempal, tempah));
-  SetReg1(P3c4,tempal,tempah);
+  SiSSetReg1(P3c4,tempal,tempah);
   tempal++;
-  SetReg1(P3c4,tempal,0x80);
+  SiSSetReg1(P3c4,tempal,0x80);
   REFIndex=OldREFIndex;
   return;
 }
@@ -4506,33 +4519,33 @@ static void SetCHTVReg(ULong ROMAddr,UShort ModeNo)
   GetCHTVRegPtr(ROMAddr,ModeNo);
 
   if(VBInfo&SetPALTV) {
-    SetCH7005(0x4304);
-    SetCH7005(0x6909);
+    SiSSetCH7005(0x4304);
+    SiSSetCH7005(0x6909);
   }
   else {
-    SetCH7005(0x0304);
-    SetCH7005(0x7109);
+    SiSSetCH7005(0x0304);
+    SiSSetCH7005(0x7109);
   }
 
   temp=*((UShort *)(ROMAddr+REFIndex+0x00));
   tempbx=((temp&0x00FF)<<8)|0x00;
-  SetCH7005(tempbx);
+  SiSSetCH7005(tempbx);
   temp=*((UShort *)(ROMAddr+REFIndex+0x01));
   tempbx=((temp&0x00FF)<<8)|0x07;
-  SetCH7005(tempbx);
+  SiSSetCH7005(tempbx);
   temp=*((UShort *)(ROMAddr+REFIndex+0x02));
   tempbx=((temp&0x00FF)<<8)|0x08;
-  SetCH7005(tempbx);
+  SiSSetCH7005(tempbx);
   temp=*((UShort *)(ROMAddr+REFIndex+0x03));
   tempbx=((temp&0x00FF)<<8)|0x0A;
-  SetCH7005(tempbx);
+  SiSSetCH7005(tempbx);
   temp=*((UShort *)(ROMAddr+REFIndex+0x04));
   tempbx=((temp&0x00FF)<<8)|0x0B;
-  SetCH7005(tempbx);
+  SiSSetCH7005(tempbx);
 
-  SetCH7005(0x2801);
-  SetCH7005(0x3103);
-  SetCH7005(0x003D);
+  SiSSetCH7005(0x2801);
+  SiSSetCH7005(0x3103);
+  SiSSetCH7005(0x003D);
   SetCHTVRegANDOR(0x0010,0x1F);
   SetCHTVRegANDOR(0x0211,0xF8);
   SetCHTVRegANDOR(0x001C,0xEF);
@@ -4592,9 +4605,9 @@ static void SetCHTVRegANDOR(UShort tempax,UShort tempbh)
 
   tempal=tempax&0x00FF;
   tempah=(tempax>>8)&0x00FF;
-  tempbl=GetCH7005(tempal);
+  tempbl=SiSGetCH7005(tempal);
   tempbl=(((tempbl&tempbh)|tempah)<<8|tempal);
-  SetCH7005(tempbl);
+  SiSSetCH7005(tempbl);
 }
 
 static void GetCHTVRegPtr(ULong ROMAddr,UShort ModeNo)
@@ -4620,7 +4633,7 @@ static void GetCHTVRegPtr(ULong ROMAddr,UShort ModeNo)
   }
 }
 
-void SetCH7005(UShort tempbx)
+void SiSSetCH7005(UShort tempbx)
 {
   UShort tempah,temp;
 
@@ -4640,7 +4653,7 @@ void SetCH7005(UShort tempbx)
   SetStop();
 }
 
-UShort GetCH7005(UShort tempbx)
+UShort SiSGetCH7005(UShort tempbx)
 {
   UShort tempah;
 

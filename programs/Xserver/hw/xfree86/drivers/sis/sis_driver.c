@@ -27,7 +27,7 @@
  *
  *  Fixes for 630 chipsets: Thomas Winischhofer.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.74 2002/01/10 19:05:45 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.75 2002/01/10 20:56:39 tsi Exp $ */
 
 #include "fb.h"
 #include "xf1bpp.h"
@@ -104,7 +104,7 @@ static void SISModifyModeInfo(DisplayModePtr mode);
 static void SiSPreSetMode(ScrnInfoPtr pScrn, int LockAfterwards);
 static Bool SiSSetVESAMode(ScrnInfoPtr pScrn, DisplayModePtr pMode);
 static void SiSBuildVesaModeList(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe);
-UShort CalcVESAModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode);
+static UShort CalcVESAModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static void SISVESASaveRestore(ScrnInfoPtr pScrn, vbeSaveRestoreFunction function);
 
 void SiSOptions(ScrnInfoPtr pScrn);
@@ -195,13 +195,13 @@ int sis2Reg32MMIO[]={0x8200,0x8204,0x8208,0x820C,0x8210,0x8214,0x8218,0x821C,
 				/*     8      16     24    32   */
 /* TW: VBE 3.0 on SiS630 does not support 24 fpp modes (only 32fpp when depth = 24);
  */
-UShort  VESAModeIndex_640x480[]   = {0x100, 0x111, 0x112, 0x13a};
-UShort  VESAModeIndex_720x480[]   = {0x000, 0x000, 0x000, 0x000};
-UShort  VESAModeIndex_720x576[]   = {0x000, 0x000, 0x000, 0x000};
-UShort  VESAModeIndex_800x600[]   = {0x103, 0x114, 0x115, 0x13b};
-UShort  VESAModeIndex_1024x768[]  = {0x105, 0x117, 0x118, 0x13c};
-UShort  VESAModeIndex_1280x1024[] = {0x107, 0x11a, 0x11b, 0x000};
-UShort  VESAModeIndex_1600x1200[] = {0x11c, 0x11e, 0x000, 0x000};
+static UShort  VESAModeIndex_640x480[]   = {0x100, 0x111, 0x112, 0x13a};
+static UShort  VESAModeIndex_720x480[]   = {0x000, 0x000, 0x000, 0x000};
+static UShort  VESAModeIndex_720x576[]   = {0x000, 0x000, 0x000, 0x000};
+static UShort  VESAModeIndex_800x600[]   = {0x103, 0x114, 0x115, 0x13b};
+static UShort  VESAModeIndex_1024x768[]  = {0x105, 0x117, 0x118, 0x13c};
+static UShort  VESAModeIndex_1280x1024[] = {0x107, 0x11a, 0x11b, 0x000};
+static UShort  VESAModeIndex_1600x1200[] = {0x11c, 0x11e, 0x000, 0x000};
 
 sisModeInfoPtr SISVesaModeList = NULL;
 
@@ -1833,13 +1833,13 @@ SISAdjustFrame(int scrnIndex, int x, int y, int flags)
                     "3C5/0Dh set to hex %2X, base 0x%x\n", temp, base));
             outb(VGA_SEQ_DATA, temp);
             if (pSiS->VBFlags)  {
-/*              UnLockCRT2(pSiS->RelIO); */
-                UnLockCRT2(pSiS->RelIO+0x30);
+/*              SiSUnLockCRT2(pSiS->RelIO); */
+                SiSUnLockCRT2(pSiS->RelIO+0x30);
                 outSISIDXREG(pSiS->RelIO+4, 6, GETVAR8(base));
                 outSISIDXREG(pSiS->RelIO+4, 5, GETBITS(base, 15:8));
                 outSISIDXREG(pSiS->RelIO+4, 4, GETBITS(base, 23:16));
-/*              LockCRT2(pSiS->RelIO); */
-                LockCRT2(pSiS->RelIO+0x30);
+/*              SiSLockCRT2(pSiS->RelIO); */
+                SiSLockCRT2(pSiS->RelIO+0x30);
             }
             break;
         default:
@@ -1992,7 +1992,7 @@ SISValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
     if ((pSiS->Chipset == PCI_CHIP_SIS300) ||
             (pSiS->Chipset == PCI_CHIP_SIS630) ||
             (pSiS->Chipset == PCI_CHIP_SIS540)) {
-	if (CalcModeIndex(pScrn, mode) < 0x14)
+	if (SiSCalcModeIndex(pScrn, mode) < 0x14)
 	    return (MODE_BAD);
     }
     
@@ -2158,8 +2158,8 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, int LockAfterwards)
      if (pSiS->UseVESA) usScratchCR31 &= ~0x40;
      else usScratchCR31 |= 0x40;   /* 40=drivermode */
 
-     SetReg1(SISCR, 0x30, usScratchCR30);
-     SetReg1(SISCR, 0x31, usScratchCR31);
+     SiSSetReg1(SISCR, 0x30, usScratchCR30);
+     SiSSetReg1(SISCR, 0x31, usScratchCR31);
 
      xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 		"Bridge registers set to 30=0x%02x, 31=0x%02x\n",
@@ -2174,8 +2174,8 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, int LockAfterwards)
            temp = (pScrn->videoRam/64) - 8;
            SR26 = temp & 0xFF;
            SR27 = ((temp >> 8) & 3) | 0xF0;
-           SetReg1(SISSR, 0x26, SR26);
-           SetReg1(SISSR, 0x27, SR27);
+           SiSSetReg1(SISSR, 0x26, SR26);
+           SiSSetReg1(SISSR, 0x27, SR27);
         }
      }
      if (LockAfterwards)
@@ -2218,7 +2218,7 @@ SiSBuildVesaModeList(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe)
     }
 }
 
-UShort CalcVESAModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode)
+static UShort CalcVESAModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
     sisModeInfoPtr m = SISVesaModeList;
     UShort i = (pScrn->bitsPerPixel+7)/8 - 1;	/* bitsperpixel was depth */
