@@ -34,7 +34,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/texteroids/texteroids.c,v 1.1 2001/03/01 01:23:59 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
@@ -186,7 +186,7 @@ XtActionsRec actions[] = {
      {"NewSize", NewSize}
 };
 
-void main(argc, argv)
+int main(argc, argv)
     int argc;
     char **argv;
 {
@@ -360,7 +360,7 @@ EXPLODE: if (n == 1) exit(0);
 	}
 	start_angle = 0;
     }
-
+    return 0;
 }
 
 float *llx, *lly, *urx, *ury, *altwidths;
