@@ -1,3 +1,43 @@
+XFree86 3.2v (20 January 1997)
+ 330. Added rules to use FreeBSD's sgmlfmt tool to format Linuxdoc/sgml
+      docs -- but this needs more work.
+ 329. Blank the screen before setting a DPMS mode (Leonard N. Zubkoff).
+ 328. Fix sync disabling for DPMS for the S3 (and S3V) server (Robert Wilhelm).
+ 327. Change the .name paramter of the S3V server to "S3V" (Kevin Brosius).
+ 326. Improve S3V 24bpp mode switching (still has some problems)
+      (Kevin Brosius).
+ 325. Disable 32bpp for the S3V server (not supported) (Kevin Brosius).
+ 324. Fix S3V aspect ratio problem at 24bpp (Kevin Brosius).
+ 323. Fix rotation direction of 8x8 mono patterns in XAA (David Bateman).
+ 322. XAA updates (see xaa/NOTES for details) (Harm Hanemaayer).
+ 321. Another fix for 5446 clocks higher than 85 MHz (Harm Hanemaayer).
+ 320. When a clocks line is specified in the XF86Config file for the
+      cirrus driver, ignore it rather that insisting on its removal
+      (Harm Hanemaayer).
+ 319. Remove artificial limit for LCD dot clock for Cirrus 754x chips
+      (Harm Hanemaayer).
+ 318. Fix a problem with default cirrus MMIO operation (Harm Hanemaayer)
+ 317. Improved acceleration support at 24bpp for the Ark driver
+      (Harm Hanemaayer).
+ 316. Ark documentation updates (Harm Hanemaayer).
+ 315. Enable "slow_dram" in the tseng driver for cards below W32i
+      (Koen Gadeyne).
+ 314. Fix a tseng driver typo (missing braces) which was causing linear
+      mode to incorrectly disable acceleration for the ET6000 (Dejan Ilic)
+ 313. Fix a tseng driver bug which was causing a system hang because
+      "fast_dram" wasn't completely disabled (Dejan Ilic).
+ 312. Fix a tseng driver bug which causes a server crash when the chipset
+      "et6000" is specified for the SVGA server (Koen Gadeyne).
+ 311. Some more W32i accel code, but disabled because it doesn't yet
+      work (Koen Gadeyne).
+ 310. Fix for ET6000 24bpp MULBPP optimisation (Harald Nordgard Hansen).
+ 309. Tseng documentation updates (Koen Gadeyne).
+ 308. Cirrus documentation updates (Corin Anderson).
+ 307. Updates for TGUI96xx hw cursor (8bpp, 16bpp), and PC98 TGUI card
+      list (Akio Morita).
+ 306. Fix build TGA compile problem and xdm build problem on Linux/Alpha
+      (Robin Cutshaw).
+
 XFree86 3.2u (19 January 1997)
  305. Only show the "extension not loaded" messages for the first
       server generation.
