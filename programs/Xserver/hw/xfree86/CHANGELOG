@@ -1,4 +1,6 @@
 XFree86 3.9Pf (21 March 1999)
+2410. Fix building of Xprt, Xnest and Xvfb when doing a loader build
+      (David Dawes).
 2409. Updates to s3virge driver to get it working under Linux/Alpha
       (#2586, Matt Grossman).
 2408. Fix getline() clash (#2585, Alan Hourihane).
@@ -38,7 +40,7 @@ XFree86 3.9Pf (21 March 1999)
       other minor C&T driver fixes (#2569, David Bateman).
 2391. Fix an buffer overflow in os/connection.c (#2568, Gerd Knorr).
 2390. Add support for Modes sections and the UseModes keyword for Monitor
-      sections to the parser (the data isn't used yet) (#2564, Dirk Hohndel).
+      sections to the parser (#2567, Dirk Hohndel).
 2389. Fix xfree86.cf for Alpha (#2567, Dirk Hohndel).
 2388. Fix XAAFillPolygonStippled to obey the flag NO_TRANSPARENCY in
       Mono8x8PatternFill (#2566, Xavier Ducoin).
@@ -7560,4 +7562,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.709 1999/03/21 01:45:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.710 1999/03/21 07:34:45 dawes Exp $

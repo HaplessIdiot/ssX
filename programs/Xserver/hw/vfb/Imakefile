@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/13 1998/03/24 13:27:03 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/hw/vfb/Imakefile,v 3.17 1998/08/13 14:45:40 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/vfb/Imakefile,v 3.18 1998/10/04 09:38:50 dawes Exp $
 #include <Server.tmpl>
 
 #if HasShm
@@ -24,8 +24,7 @@ INCLUDES = -I. -I$(XBUILDINCDIR) -I$(FONTINCSRC) \
 	   -I../../cfb -I../../mfb -I../../mi -I../../include -I../../os  \
            -I$(EXTINCSRC) -I$(XINCLUDESRC)
 
-DEFINES = ServerOSDefines $(SHMDEF) $(MMAPDEF)
-DEPEND_DEFINES = -UXFree86LOADER
+DEFINES = ServerOSDefines $(SHMDEF) $(MMAPDEF) -UXFree86LOADER
 
 
 #if BuildXinerama

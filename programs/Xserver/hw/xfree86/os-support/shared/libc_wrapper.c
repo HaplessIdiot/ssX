@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.36tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.37 1999/03/14 03:22:16 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -58,14 +58,17 @@
 #define DONT_DEFINE_WRAPPERS
 #include "xf86_ansic.h"
 
+#ifndef SELF_CONTAINED_WRAPPER
 #include "xf86.h"
 #include "xf86Priv.h"
 #define NO_OSLIB_PROTOTYPES
 #define XF86_OS_PRIVS
 #define HAVE_WRAPPER_DECLS
 #include "xf86_OSlib.h"
+#else
+void xf86WrapperInit(void);
+#endif
 
-extern void xf86DisableIO(void);
 
 #ifndef X_NOT_POSIX
 #include <dirent.h>
@@ -113,6 +116,10 @@ typedef struct dirent DIRENTRY;
 #endif
 
 double xf86HUGE_VAL;
+
+#ifndef SELF_CONTAINED_WRAPPERS
+extern void xf86DisableIO(void);
+#endif
 
 /*
  * This file contains the XFree86 wrappers for libc functions that can be
@@ -1009,9 +1016,11 @@ xf86execl(const char *pathname, const char *arg, ...)
 	 * of a clock program than to give I/O permissions to a bogus program
 	 * in someone's XF86Config file
 	 */
+#ifndef SELF_CONTAINED_WRAPPER
 	xf86DisableIO();
+#endif
         setuid(getuid());
-#if !defined(AMOEBA) && !defined(MINIX)
+#if !defined(SELF_CONTAINED_WRAPPER) && !defined(AMOEBA) && !defined(MINIX)
         /* set stdin, stdout to the consoleFD, and leave stderr alone */
         for (i = 0; i < 2; i++)
         {
@@ -1070,6 +1079,8 @@ xf86execl(const char *pathname, const char *arg, ...)
 #endif /* __EMX__ Disable this crazy business for now */
 }
 
+/* XXX What uses this? */
+#if 0
 Bool
 xf86setexternclock(pathname, clock_arg, clock_index)
     char *pathname;
@@ -1108,6 +1119,7 @@ xf86setexternclock(pathname, clock_arg, clock_index)
     return FALSE;
 #endif /* __EMX__ Disable this for now*/
 }
+#endif
 
 void
 xf86abort(void)
@@ -1527,3 +1539,8 @@ xf86GetErrno ()
 }
 
 #undef mapnum
+
+/* This is a temporary hack */
+#ifdef SELF_CONTAINED_WRAPPER
+Bool (*GlxInitVisualsPtr)(void) = NULL;
+#endif
