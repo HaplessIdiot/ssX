@@ -45,7 +45,8 @@ XFree86 4.1.99.1 (xx July 2001)
       explicit error message for users trying to run in Quartz modes without
       Quartz support. Remove unneeded info.nib files (Torrey T. Lyons).
  128. Added XDarwin menu bar hiding/showing in rootless mode (Gregory Parker).
- 127. -
+ 127. Fix DDC from reporting misleading information.
+      (#4806 Andrew C Aitchison)
  126. Patch to make VBE DDC honour the NoDDC option.
       Before this, NoDDC disabled only 2 of the 3 ways the server might
       ask the monitor for DDC infomation.
@@ -13585,4 +13586,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1886 2001/07/25 15:05:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1887 2001/07/26 10:14:24 alanh Exp $
