@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/int10/pci.c,v 1.3 1999/12/03 19:17:41 eich Exp $ */
 
 /*
  *                   XFree86 int10 module
@@ -29,7 +29,7 @@ mapPciRom(xf86Int10InfoPtr pInt, unsigned char * address)
     
     tag = pciTag(pvp->bus,pvp->device,pvp->func);
     
-    mem = ptr = xnfalloc(0x10000);
+    mem = ptr = xnfcalloc(0x10000, 1);
     if (! xf86ReadPciBIOS(0,tag,offset,mem,0xFFFF)) {
 	xfree(mem);
 	return 0;

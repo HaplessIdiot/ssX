@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/12/16 12:31:46 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.59 1999/07/19 13:36:10 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.60 1999/08/14 10:49:30 dawes Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -59,6 +59,10 @@ RAMDACDIR = ramdac
 RACDIR = rac
 #endif
 
+#if XF86Int10
+INT10DIR = int10
+#endif
+
 #if !defined(OsfArchitecture) && !defined(AmoebaArchitecture) && \
     !defined(ArcArchitecture) && !defined(Arm32Architecture) && \
     !defined(PpcArchitecture)
@@ -84,7 +88,7 @@ DRIVERSDK = sdk
 SUBDIRS = os-support common $(XAADIR) $(XF1BPPDIR) $(XF4BPPDIR) \
           $(XF8_32BPPDIR) $(XF8_16BPPDIR) $(XF24_32BPPDIR) $(SHADOWFBDIR) \
 	  drivers $(LOADERDIR) $(VGAHWDIR) $(FBDEVHWDIR) $(RAMDACDIR) \
-	  $(RACDIR) $(I2CDIR) $(DDCDIR) $(INPUTDIR) parser \
+	  $(RACDIR) $(I2CDIR) $(DDCDIR) $(INPUTDIR) $(INT10DIR) parser \
           scanpci doc xf86config $(XF86SETUPDIR) etc \
           $(SUPERPROBE) $(DRIVERSDK)
 

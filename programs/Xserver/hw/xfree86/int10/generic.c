@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/int10/generic.c,v 1.3 1999/12/03 19:17:41 eich Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -12,7 +12,7 @@
 #include "compiler.h"
 #define _INT10_PRIVATE
 #include "xf86int10.h"
-#include "defines.h"
+#include "int10Defines.h"
 
 static CARD8 read_b(xf86Int10InfoPtr pInt,int addr);
 static CARD16 read_w(xf86Int10InfoPtr pInt,int addr);
@@ -110,7 +110,7 @@ xf86InitInt10(int entityIndex)
 	xf86Msg(X_INFO,"Primary V_BIOS segmant is: 0x%x\n",cs);
 	if (xf86ReadBIOS(cs << 4,0,(unsigned char *)vbiosMem,
 			 0x10) < 0) {
-	    xf86Msg(X_ERROR,"Cannot read V_BIOS\n");
+	    xf86Msg(X_ERROR,"Cannot read V_BIOS (1)\n");
 	    goto error1;
 	}
 	if (!((*(CARD8*)vbiosMem == 0x55)
@@ -121,7 +121,7 @@ xf86InitInt10(int entityIndex)
 	
 	size = *((CARD8*)vbiosMem + 2) * 512;
 	if (xf86ReadBIOS(cs << 4,0,vbiosMem, size) < 0) {
-	    xf86Msg(X_ERROR,"Cannot read V_BIOS\n");
+	    xf86Msg(X_ERROR,"Cannot read V_BIOS (2)\n");
 	    goto error1;
 	}
 	if (bios_checksum(vbiosMem,size)) {
@@ -136,7 +136,7 @@ xf86InitInt10(int entityIndex)
 	reset_int_vect(pInt);
 	set_return_trap(pInt);
 	if (!mapPciRom(pInt,(unsigned char *)(vbiosMem))) {
-	    xf86Msg(X_ERROR,"Cannot read V_BIOS\n");
+	    xf86Msg(X_ERROR,"Cannot read V_BIOS (3)\n");
 	    goto error1;
 	}
 	setupTable(pInt,(memType)vbiosMem,V_BIOS,V_BIOS_SIZE);
@@ -155,7 +155,7 @@ xf86InitInt10(int entityIndex)
     setup_int_vect(pInt);
     set_return_trap(pInt);
     if (!mapPciRom(pInt,(unsigned char *)(vbiosMem))) {
-	xf86Msg(X_ERROR,"Cannot read V_BIOS\n");
+	xf86Msg(X_ERROR,"Cannot read V_BIOS (4)\n");
 	goto error1;
     }
     setupTable(pInt,(memType)vbiosMem,V_BIOS,V_BIOS_SIZE);
