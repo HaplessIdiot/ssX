@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_pci.c,v 3.7 2001/06/01 20:03:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_pci.c,v 3.8 2002/04/09 15:59:37 tsi Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -25,7 +25,7 @@ xf86GetPciSizeFromOS(PCITAG tag, int index, int* bits)
     FILE *file;
     char c[0x200];
     char *res;
-    int bus, devfn, dev, fn;
+    unsigned int bus, devfn, dev, fn;
     unsigned PCIADDR_TYPE size[7];
     unsigned int num;
     signed PCIADDR_TYPE Size;
