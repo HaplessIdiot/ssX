@@ -154,58 +154,6 @@ NVRefreshArea16(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 }
 
 
-/* this one could be faster */
-void
-NVRefreshArea24(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
-{
-    NVPtr pNv = NVPTR(pScrn);
-    int count, width, height, y1, y2, dstPitch, srcPitch;
-    CARD8 *dstPtr, *srcPtr, *src;
-    CARD32 *dst;
-
-    dstPitch = BitmapBytePad(pScrn->displayWidth * 24);
-    srcPitch = -pNv->Rotate * pNv->ShadowPitch;
-
-    while(num--) {
-        width = pbox->x2 - pbox->x1;
-        y1 = pbox->y1 & ~3;
-        y2 = (pbox->y2 + 3) & ~3;
-        height = (y2 - y1) >> 2;  /* blocks of 3 dwords */
-
-	if(pNv->Rotate == 1) {
-	    dstPtr = pNv->FbStart + 
-			(pbox->x1 * dstPitch) + ((pScrn->virtualX - y2) * 3);
-	    srcPtr = pNv->ShadowPtr + ((1 - y2) * srcPitch) + (pbox->x1 * 3);
-	} else {
-	    dstPtr = pNv->FbStart + 
-			((pScrn->virtualY - pbox->x2) * dstPitch) + (y1 * 3);
-	    srcPtr = pNv->ShadowPtr + (y1 * srcPitch) + (pbox->x2 * 3) - 3;
-	}
-
-	while(width--) {
-	    src = srcPtr;
-	    dst = (CARD32*)dstPtr;
-	    count = height;
-	    while(count--) {
-		dst[0] = src[0] | (src[1] << 8) | (src[2] << 16) |
-				(src[srcPitch] << 24);		
-		dst[1] = src[srcPitch + 1] | (src[srcPitch + 2] << 8) |
-				(src[srcPitch * 2] << 16) |
-				(src[(srcPitch * 2) + 1] << 24);		
-		dst[2] = src[(srcPitch * 2) + 2] | (src[srcPitch * 3] << 8) |
-				(src[(srcPitch * 3) + 1] << 16) |
-				(src[(srcPitch * 3) + 2] << 24);	
-		dst += 3;
-		src += srcPitch * 4;
-	    }
-	    srcPtr += pNv->Rotate * 3;
-	    dstPtr += dstPitch; 
-	}
-
-	pbox++;
-    }
-}
-
 void
 NVRefreshArea32(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 {
