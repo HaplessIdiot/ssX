@@ -15,6 +15,7 @@ This server supports the following 3DLabs chipsets:
 <item>GLINT MX plus Gamma with IBM RGB526 and IBM RGB640 RAMDAC
 <item>Permedia with IBM RGB526 RAMDAC
 <item>Permedia 2 (classic, 2a, 2v)
+<item>Permedia 3 (unaccelerated)
 </itemize>
 
 <sect>Features <p>
@@ -27,6 +28,7 @@ This server supports the following 3DLabs chipsets:
 <item>GLINT MX/500TX: 8/16/32 bpp
 <item>Permedia: 8/16/32 bpp
 <item>Permedia 2: 8/16/24/32 bpp
+<item>Permedia 3: depth 8 (bpp 8), 15, 16 (bpp 16) and 24 (bpp 32)
 </itemize>
 </itemize>
 
@@ -68,16 +70,19 @@ the 3.3.x branch. XFree86-4.0 will include a significantly faster server.
 <item>Dirk Hohndel <it>&lt;hohndel@XFree86.org&gt;</it>
 <item>Stefan Dirsch <it>&lt;sndirsch@suse.de&gt;</it>
 <item>Helmut Fahrion <it>&lt;hf@suse.de&gt;</it>
+<item>Sven Luther <it>&lt;luther@dpt-info.u-strasbg.fr&gt;</it>
 <item>Special thanks to Elsa AG, Aachen for making it possible for us to
 develop this server and furnishing us with plenty of boards and information
 to help us on the way
 <item>Very special thanks to SuSE GmbH, Nuernberg for allowing some of us to
 work on this server on paid time, thereby financing development of this
 server.
+<item>Special thanks for Appian Graphics for having provided board and
+documentation for the Permedia3 chip.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/3Dlabs.sgml,v 1.1 1999/08/23 06:24:54 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/3Dlabs.sgml,v 1.2 1999/08/24 02:01:07 dawes Exp $
 </verb>
 
 </article>
