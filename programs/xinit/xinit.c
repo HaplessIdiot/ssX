@@ -1,5 +1,5 @@
 /* $XConsortium: xinit.c,v 11.58 94/04/17 20:24:30 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xinit/xinit.c,v 3.0 1994/04/28 12:45:48 dawes Exp $ */
 
 /*
 
@@ -170,7 +170,7 @@ SIGVAL sigCatch(sig)
 SIGVAL sigAlarm(sig)
 	int sig;
 {
-#if defined(SYSV) || defined(linux)
+#if defined(SYSV) || defined(SVR4) || defined(linux)
 	signal (sig, sigAlarm);
 #endif
 }
@@ -179,7 +179,7 @@ SIGVAL
 sigUsr1(sig)
 	int sig;
 {
-#if defined(SYSV) || defined(linux)
+#if defined(SYSV) || defined(SVR4) || defined(linux)
 	signal (sig, sigUsr1);
 #endif
 }
