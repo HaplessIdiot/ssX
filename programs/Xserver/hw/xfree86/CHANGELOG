@@ -1,3 +1,8 @@
+1217. 3DFX driver changes (Mark Vojkovich).
+      - fix some DGA issues.
+      - 2D and 3D now share offscreen memory (much faster 2D now).
+      - rewrite Xv support to use the video overlay.
+      - add new Options "VideoKey" and "ShowCache".
 1216. Change xterm from simple face name to full Xft font name so
       that options can be provide (like minspace) (Keith Packard)
 1215. Add UTF-8 support to Xft (Keith Packard)
@@ -12123,4 +12128,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1489 2000/12/20 00:28:35 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1490 2000/12/20 00:31:14 keithp Exp $
