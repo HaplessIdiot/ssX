@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.391 2002/02/22 21:32:33 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.392 2002/02/26 23:28:00 alanh Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -856,11 +856,21 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
  * If more than one are defined, the compilation will fail with multiply
  * defined references of GLX and OpenGL functions.
  */
+
+/*
+ * The first is a built-in driver that does software rendering client-side
+ * and renders to the X server via Xlib.
+ */
+
+#  ifndef GlxBuiltInXMesa
+#    define GlxBuiltInXMesa         NO
+#  endif
+
+/*
+ * The rest are hardware-specific DRI drivers.
+ */
 #  ifndef GlxBuiltInGamma
 #    define GlxBuiltInGamma        NO
-#  endif
-#  ifndef GlxBuiltInMesa
-#    define GlxBuiltInMesa         NO
 #  endif
 #  ifndef GlxBuiltInTdfx
 #    define GlxBuiltInTdfx         NO
@@ -906,8 +916,7 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
       GlxBuiltInR128 || \
       GlxBuiltInRadeon || \
       GlxBuiltInFfb || \
-      GlxBuiltInSIS || \
-      GlxBuiltInMesa
+      GlxBuiltInSIS
 #    define GlxUseBuiltInDRIDriver YES
 #    define DRIDynLoadDefines /**/
 #  else
