@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftrender.c,v 1.11 2002/05/28 16:15:08 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftrender.c,v 1.12 2002/08/12 22:16:08 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -421,10 +421,10 @@ XftGlyphFontSpecRender (Display		    *dpy,
 	return;
     
     /*
-     * Load missing glyphs
+     * Load missing glyphs.  Have to load them
+     * one at a time in case the font changes
      */
     max = 0;
-    nmissing = 0;
     glyphs_loaded = FcFalse;
     g = glyphs[0].glyph;
     for (i = 0; i < nglyphs; i++)
@@ -434,6 +434,7 @@ XftGlyphFontSpecRender (Display		    *dpy,
 	g = glyphs[i].glyph;
 	if (g > max)
 	    max = g;
+	nmissing = 0;
 	if (XftFontCheckGlyph (dpy, public, FcTrue, g, missing, &nmissing))
 	    glyphs_loaded = FcTrue;
 	if (nmissing)

@@ -629,6 +629,51 @@ XftDrawStringUtf8 (XftDraw	*draw,
 }
 
 void
+XftDrawStringUtf16 (XftDraw	*draw,
+		    XftColor	*color,
+		    XftFont	*public,
+		    int		x,
+		    int		y,
+		    FcChar8	*string,
+		    FcEndian	endian,
+		    int		len)
+{
+    FT_UInt	    *glyphs, *glyphs_new, glyphs_local[NUM_LOCAL];
+    FcChar32	    ucs4;
+    int		    i;
+    int		    l;
+    int		    size;
+
+    i = 0;
+    glyphs = glyphs_local;
+    size = NUM_LOCAL;
+    while (len && (l = FcUtf16ToUcs4 (string, endian, &ucs4, len)) > 0)
+    {
+	if (i == size)
+	{
+	    glyphs_new = malloc (size * 2 * sizeof (FT_UInt));
+	    if (!glyphs_new)
+	    {
+		if (glyphs != glyphs_local)
+		    free (glyphs);
+		return;
+	    }
+	    memcpy (glyphs_new, glyphs, size * sizeof (FT_UInt));
+	    size *= 2;
+	    if (glyphs != glyphs_local)
+		free (glyphs);
+	    glyphs = glyphs_new;
+	}
+	glyphs[i++] = XftCharIndex (draw->dpy, public, ucs4);
+	string += l;
+	len -= l;
+    }
+    XftDrawGlyphs (draw, color, public, x, y, glyphs, i);
+    if (glyphs != glyphs_local)
+	free (glyphs);
+}
+
+void
 XftDrawGlyphSpec (XftDraw	*draw,
 		  XftColor	*color,
 		  XftFont	*public,

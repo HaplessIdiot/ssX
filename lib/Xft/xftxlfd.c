@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftxlfd.c,v 1.7 2000/12/22 05:05:16 tsi Exp $
+ * $XFree86: xc/lib/Xft/xftxlfd.c,v 1.8 2002/02/15 07:36:11 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -170,13 +170,6 @@ XftXlfdParse (const char *xlfd_orig, FcBool ignore_scalable, FcBool complete)
     if (dpixel > 0)
 	if (!FcPatternAddDouble (pat, FC_PIXEL_SIZE, dpixel)) goto bail;
     
-    strcpy ((char *) registry, save);
-    if (registry[0] && !strchr (registry, '*'))
-    {
-	;
-	/* XXX map registry to charset */
-    }
-
     free (save);
     return pat;
     
