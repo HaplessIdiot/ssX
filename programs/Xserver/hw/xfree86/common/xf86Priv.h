@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.39 1999/04/24 07:36:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.40 1999/04/28 05:36:14 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -65,10 +65,13 @@ extern int xf86NumMouseTypes;
 
 #ifdef XFree86LOADER
 extern DriverPtr *xf86DriverList;
+extern InputDriverPtr *xf86InputDriverList;
 #else
 extern DriverPtr xf86DriverList[];
+extern InputDriverPtr xf86InputDriverList[];
 #endif
 extern int xf86NumDrivers;
+extern int xf86NumInputDrivers;
 extern Bool xf86Exiting;
 extern Bool xf86Resetting;
 extern Bool xf86Initialising;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.171 1999/04/27 12:05:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.172 1999/04/29 05:12:55 dawes Exp $ */
 
 
 /*
@@ -253,6 +253,76 @@ xf86DriverlistFromConfig()
 	modulearray[count] = slp->screen->device->driver;
 	count++;
 	slp++;
+    }
+    modulearray[count] = NULL;
+
+    /* Remove duplicates */
+    for (count = 0; modulearray[count] != NULL; count++) {
+	int i;
+
+	for (i = 0; i < count; i++)
+	    if (xf86NameCmp(modulearray[i], modulearray[count]) == 0) {
+		modulearray[count] = "";
+		break;
+	    }
+    }
+    return modulearray;
+}
+
+
+Bool
+xf86BuiltinInputDriver(const char *name)
+{
+    if (xf86NameCmp(name, "keyboard") == 0 || xf86NameCmp(name, "mouse") == 0)
+	return TRUE;
+    else
+	return FALSE;
+}
+
+
+char **
+xf86InputDriverlistFromConfig()
+{
+    int count = 0;
+    char **modulearray;
+    IDevPtr idp;
+    
+    /*
+     * make sure the config file has been parsed and that we have a
+     * ModulePath set; if no ModulePath was given, use the default
+     * ModulePath
+     */
+    if (xf86configptr == NULL) {
+        xf86Msg(X_ERROR, "Cannot access global config data structure\n");
+        return NULL;
+    }
+    
+    /*
+     * Walk the list of driver lines in active "InputDevice" sections to
+     * determine now many implicitly loaded modules there are.
+     */
+    idp = xf86ConfigLayout.inputs;
+    while (idp->identifier) {
+	if (!xf86BuiltinInputDriver(idp->driver))
+	    count++;
+	idp++;
+    }
+
+    if (count == 0)
+	return NULL;
+
+    /*
+     * allocate the memory and walk the list again to fill in the pointers
+     */
+    modulearray = xnfalloc((count + 1) * sizeof(char*));
+    count = 0;
+    idp = xf86ConfigLayout.inputs;
+    while (idp->identifier) {
+	if (!xf86BuiltinInputDriver(idp->driver)) {
+	    modulearray[count] = idp->driver;
+	    count++;
+	}
+	idp++;
     }
     modulearray[count] = NULL;
 
@@ -582,14 +652,14 @@ configKeyboard(XF86ConfKeyboardPtr keybconf)
   xf86Info.xkbrules      = "xfree86";
   xf86Info.xkbmodel      = "pc101";
   xf86Info.xkblayout     = "us";
-  xf86Info.xkbvariant    = "";
-  xf86Info.xkboptions    = "";
+  xf86Info.xkbvariant    = NULL;
+  xf86Info.xkboptions    = NULL;
 #else
   xf86Info.xkbrules      = "xfree98";
   xf86Info.xkbmodel      = "pc98";
   xf86Info.xkblayout     = "nec/jp";
-  xf86Info.xkbvariant    = "";
-  xf86Info.xkboptions    = "";
+  xf86Info.xkbvariant    = NULL;
+  xf86Info.xkboptions    = NULL;
 #endif
   xf86Info.xkbcomponents_specified = FALSE;
   /* Should discourage the use of these. */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.12 1999/04/28 05:36:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.13 1999/04/29 05:12:57 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -142,6 +142,8 @@ Bool xf86ProbeFailed = FALSE;
 #ifdef XFree86LOADER
 DriverPtr *xf86DriverList = NULL;
 int xf86NumDrivers = 0;
+InputDriverPtr *xf86InputDriverList = NULL;
+int xf86NumInputDrivers = 0;
 #endif
 int xf86NumScreens = 0;
 

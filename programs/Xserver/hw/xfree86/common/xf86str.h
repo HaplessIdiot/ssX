@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.31 1999/04/27 12:05:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.32 1999/04/29 05:12:59 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -360,6 +360,18 @@ typedef struct _DriverRec {
     pointer		module;
     int			refCount;
 } DriverRec, *DriverPtr;
+
+typedef struct _InputDriverRec {
+    int			driverVersion;
+    char *		driverName;
+    void		(*Identify)(int flags);
+    pointer		(*Setup)(struct _InputDriverRec *drv, IDevPtr dev,
+				 int flags);
+    void		(*TearDown)(struct _InputDriverRec *drv, pointer arg,
+				    int flags);
+    pointer		module;
+    int			refCount;
+} InputDriverRec, *InputDriverPtr;
 
 /*
  * The IO access enabler struct. This contains the address for 

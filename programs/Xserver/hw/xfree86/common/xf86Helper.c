@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.38 1999/04/28 05:36:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.39 1999/04/29 09:13:43 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -61,6 +61,37 @@ xf86DeleteDriver(int drvIndex)
     if (xf86DriverList[drvIndex] && xf86DriverList[drvIndex]->module)
 	UnloadModule(xf86DriverList[drvIndex]->module);
     xf86DriverList[drvIndex] = NULL;
+}
+
+
+/* Add a pointer to a new InputDriverRec to xf86InputDriverList */
+
+void
+xf86AddInputDriver(InputDriverPtr driver, pointer module, int flags)
+{
+    /* Don't add null entries */
+    if (!driver)
+	return;
+
+    if (xf86InputDriverList == NULL)
+	xf86NumInputDrivers = 0;
+
+    xf86NumInputDrivers++;
+    xf86InputDriverList = xnfrealloc(xf86InputDriverList,
+				xf86NumInputDrivers * sizeof(InputDriverPtr));
+    xf86InputDriverList[xf86NumInputDrivers - 1] =
+				xnfalloc(sizeof(InputDriverRec));
+    *xf86InputDriverList[xf86NumInputDrivers - 1] = *driver;
+    xf86InputDriverList[xf86NumInputDrivers - 1]->module = module;
+    xf86InputDriverList[xf86NumInputDrivers - 1]->refCount = 0;
+}
+
+void
+xf86DeleteInputDriver(int drvIndex)
+{
+    if (xf86InputDriverList[drvIndex] && xf86InputDriverList[drvIndex]->module)
+	UnloadModule(xf86InputDriverList[drvIndex]->module);
+    xf86InputDriverList[drvIndex] = NULL;
 }
 #endif
 

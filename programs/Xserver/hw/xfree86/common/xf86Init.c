@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.111 1999/04/28 05:36:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.112 1999/04/28 15:04:57 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -93,6 +93,28 @@ static PixmapFormatRec formats[MAXFORMATS] = {
 };
 static int numFormats = 6;
 static Bool formatsDone = FALSE;
+
+#ifdef XFree86LOADER
+/* XXX this is here temporarily */
+InputDriverRec xf86KEYBOARD = {
+	1,
+	"keyboard",
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	0
+};
+InputDriverRec xf86MOUSE = {
+	1,
+	"mouse",
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	0
+};
+#endif
 
 /*
  * InitOutput --
@@ -229,10 +251,18 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     if ((modulelist = xf86DriverlistFromConfig()))
       xf86LoadModules(modulelist, NULL);
 
+    /* Setup the builtin input drivers */
+    xf86AddInputDriver(&xf86KEYBOARD, NULL, 0);
+    xf86AddInputDriver(&xf86MOUSE, NULL, 0);
+    /* Load all input driver modules specified in the config file. */
+    if ((modulelist = xf86InputDriverlistFromConfig()))
+      xf86LoadModules(modulelist, NULL);
+
     /*
-     * It is expected that xf86AddDriver() will be called for each driver
-     * as it is loaded.  xf86AddDriver() saves the module pointers for
-     * drivers.  XXX Nothing keeps track of them for other modules.
+     * It is expected that xf86AddDriver()/xf86AddInputDriver will be
+     * called for each driver as it is loaded.  Those functions save the
+     * module pointers for drivers.
+     * XXX Nothing keeps track of them for other modules.
      */
     /* XXX What do we do if all of these couldn't be loaded? */
 #endif
@@ -258,10 +288,11 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
       /* The Identify function is mandatory, but if it isn't there continue */
       if (xf86DriverList[i]->Identify != NULL)
 	xf86DriverList[i]->Identify(0);
-      else
-        xf86Msg(X_WARNING, "driver `%s' has no Identify function\n",
+      else {
+        xf86Msg(X_WARNING, "Driver `%s' has no Identify function\n",
 	       xf86DriverList[i]->driverName ? xf86DriverList[i]->driverName
 					     : "noname");
+      }
 
     /*
      * Locate bus slot that had register IO enabled at server startup
@@ -276,13 +307,16 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
      * instance of the hardware found.
      */
 
-    for (i = 0; i < xf86NumDrivers; i++)
+    for (i = 0; i < xf86NumDrivers; i++) {
       if (xf86DriverList[i]->Probe != NULL)
 	xf86DriverList[i]->Probe(xf86DriverList[i], 0);
-      else
-        ErrorF("Warning: driver `%s' has no Probe function (ignoring)\n",
-	       xf86DriverList[i]->driverName ? xf86DriverList[i]->driverName
+      else {
+        xf86MsgVerb(X_WARNING, 0,
+		"Driver `%s' has no Probe function (ignoring)\n",
+		xf86DriverList[i]->driverName ? xf86DriverList[i]->driverName
 					     : "noname");
+      }
+    }
 
     /*
      * If nothing was detected, return now.
@@ -651,6 +685,20 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 }
 
 
+static InputDriverPtr
+MatchInput(IDevPtr pDev)
+{
+    int i;
+
+    for (i = 0; i < xf86NumInputDrivers; i++) {
+	if (xf86InputDriverList[i]->driverName &&
+	    xf86NameCmp(pDev->driver, xf86InputDriverList[i]->driverName) == 0)
+	    return xf86InputDriverList[i];
+    }
+    return NULL;
+}
+
+
 /*
  * InitInput --
  *      Initialize all supported input devices...what else is there
@@ -663,12 +711,32 @@ InitInput(argc, argv)
      int     	  argc;
      char    	  **argv;
 {
-  xf86Info.vtRequestsPending = FALSE;
-  xf86Info.inputPending = FALSE;
+    IDevPtr pDev;
+    InputDriverPtr pDrv;
+
+    xf86Info.vtRequestsPending = FALSE;
+    xf86Info.inputPending = FALSE;
 #ifdef XTESTEXT1
-  xtest_command_key = KEY_Begin + MIN_KEYCODE;
+    xtest_command_key = KEY_Begin + MIN_KEYCODE;
 #endif /* XTESTEXT1 */
 
+    /* Call the Setup function for each input device instance. */
+    pDev = xf86ConfigLayout.inputs;
+    while (pDev && pDev->identifier) {
+	if ((pDrv = MatchInput(pDev)) == NULL) {
+	    xf86Msg(X_ERROR, "No Input driver matching `%s'\n", pDev->driver);
+	    /* XXX for now, just continue */
+	    continue;
+	}
+	if (!pDrv->Setup) {
+	    xf86MsgVerb(X_WARNING, 0,
+		"Input driver `%s' has no Setup function (ignoring)\n",
+		pDrv->driverName);
+	    continue;
+	}
+	pDrv->Setup(pDrv, pDev, 0);
+    }
+    
   xf86Info.pKeyboard = AddInputDevice(xf86Info.kbdProc, TRUE); 
   xf86Info.pMouse =  AddInputDevice(xf86Info.mouseDev->mseProc, TRUE);
   RegisterKeyboardDevice(xf86Info.pKeyboard); 
