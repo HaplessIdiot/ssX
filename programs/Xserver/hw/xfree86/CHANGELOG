@@ -1,4 +1,6 @@
 XFree86 4.5.99.1 (xx March 2005)
+  10. Move test suite documentation from xc/doc to test/xsuite/doc
+      (Marc La France).
    9. Modify the handling of preferred EDID modes to allow user-specified
       modes that are larger than the preferred mode (David Dawes).
    8. Build and warning cleanups and fixes (David Dawes).
@@ -19478,7 +19480,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3478 2005/03/23 03:11:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3479 2005/03/27 20:04:34 dawes Exp $
 
 
 
