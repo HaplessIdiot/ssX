@@ -177,6 +177,22 @@ Section "Monitor"
     ModeLine "1024x768" 80 1024 1088 1152 1280 768 770 772 778
 EndSection
  
+#Date: Sat, 30 Sep 1995 17:25:00 EDT
+#From: David E. Wexelblat <dwex@xfree86.org>
+Section "Monitor"
+    Identifier "EIZO/Nanao FlexScan 9070u"
+    VendorName "EIZO/Nanao"
+    ModelName "FlexScan 9070u"
+    BandWidth 50.0
+    HorizSync 20.0-50.0
+    VertRefresh 50.0-105.0  #Out of spec, but it works
+    ModeLine "640x480" 25 640 664 760 800 480 491 493 525
+    ModeLine "640x480" 36 640 672 768 800 480 490 492 525
+    ModeLine "800x600" 45 800 848 960 1008 600 603 620 640
+    ModeLine "1024x768" 65 1024 1088 1224 1304 768 772 788 824
+    ModeLine "1152x900i" 75 1152 1224 1384 1504 900 905 923 965 interlace
+EndSection
+
 #Date: Mon, 26 Sep 1994 23:30:00 -1000 (EST)
 #From: dawes@XFree86.org (David Dawes)
 Section "Monitor"
@@ -940,6 +956,25 @@ Section "Monitor"
     Modeline "1024x768a"  65    1024 1032 1208 1288    768  768  773  798
     Modeline "1024x768b"  65    1024 1080 1224 1344    768  776  778  808
 EndSection
+
+#Date: Sat, 30 Sep 1995 17:25:00 EDT
+#From: David E. Wexelblat <dwex@xfree86.org>
+Section "Monitor"
+    Identifier "ViewSonic17"
+    VendorName "ViewSonic"
+    ModelName "17"
+    BandWidth 135.0
+    HorizSync 30.0-82.0
+    VertRefresh 50-160
+    ModeLine   "640x480@62Hz"  25.175   640  664  760  800   480  491  493  525
+    ModeLine   "640x480@76Hz"  31.500   640  660  684  812   480  485  488  508
+    ModeLine   "800x600@65Hz"  40.000   800  804  932  980   600  605  609  624
+    ModeLine   "800x600@77Hz"  50.000   800  820  940 1024   600  605  611  634
+    ModeLine  "1024x768@62Hz"  65.000  1024 1042 1180 1308   768  775  781  798
+    ModeLine  "1024x768@72Hz"  75.000  1024 1044 1180 1292   768  771  777  806
+    ModeLine  "1152x900@79Hz" 110.000  1152 1180 1468 1484   900  902  905  941
+    ModeLine "1280x1024@76Hz" 135.000  1280 1328 1472 1648  1024 1031 1034 1076
+EndSection
  
 #Date: Wed, 21 Sep 1994 22:47:06 -0700
 #From: "Brett J. Vickers" <bvickers@rumba.ICS.UCI.EDU>
@@ -1011,5 +1046,5 @@ Section "Monitor"
     ModeLine "640x480"  28  640  664  728  792 480 484 490 505
 EndSection
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Monitors,v 3.9 1995/02/12 02:39:04 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Monitors,v 3.10 1995/07/13 14:14:42 dawes Exp $
 # $XConsortium: Monitors,v 1.7 95/01/27 15:58:08 kaleb Exp $

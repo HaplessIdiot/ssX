@@ -1,5 +1,5 @@
-/* $XConsortium: genauth.c,v 1.18.1.1 94/11/21 19:57:04 kaleb Exp $ */
-/* $XFree86: xc/programs/xdm/genauth.c,v 3.1 1994/11/26 12:49:28 dawes Exp $ */
+/* $XConsortium: genauth.c,v 1.23 95/07/10 21:18:07 gildea Exp $ */
+/* $XFree86: xc/programs/xdm/genauth.c,v 3.2 1995/01/28 16:16:53 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -38,9 +38,13 @@ from the X Consortium.
 # include   <X11/Xauth.h>
 # include   <X11/Xos.h>
 # include   "dm.h"
+
+#include <errno.h>
+
 #ifdef X_NOT_STDC_ENV
 #define Time_t long
 extern Time_t time ();
+extern int errno;
 #else
 #include <time.h>
 #define Time_t time_t
@@ -81,10 +85,13 @@ long	sum[2];
     int	    loops;
     int	    reads;
     int	    i;
+    int     ret_status = 0;
 
     fd = open (name, 0);
-    if (fd < 0)
+    if (fd < 0) {
+	LogError("Cannot open randomFile \"%s\", errno = %d\n", name, errno);
 	return 0;
+    }
 #ifdef FRAGILE_DEV_MEM
     if (strcmp(name, "/dev/mem") == 0) lseek (fd, (off_t) 0x100000, SEEK_SET);
 #endif
@@ -96,10 +103,13 @@ long	sum[2];
 	for (i = 0; i < loops; i+= 2) {
 	    sum[0] += buf[i];
 	    sum[1] += buf[i+1];
+	    ret_status = 1;
 	}
     }
+    if (cnt < 0)
+	LogError("Cannot read randomFile \"%s\", errno = %d\n", name, errno);
     close (fd);
-    return 1;
+    return ret_status;
 }
 
 static
@@ -120,6 +130,28 @@ InitXdmcpWrapper ()
 
 #endif
 
+#ifndef HASXDMAUTH
+/* A random number generator that is more unpredictable
+   than that shipped with some systems.
+   This code is taken from the C standard. */
+
+static unsigned long int next = 1;
+
+static int
+xdm_rand()
+{
+    next = next * 1103515245 + 12345;
+    return (unsigned int)(next/65536) % 32768;
+}
+
+static void
+xdm_srand(seed)
+    unsigned int seed;
+{
+    next = seed;
+}
+#endif /* no HASXDMAUTH */
+
 GenerateAuthData (auth, len)
 char	*auth;
 int	len;
@@ -131,8 +163,8 @@ int	len;
 	struct timeval  now;
 
 	X_GETTIMEOFDAY (&now);
-	ldata[0] = now.tv_sec;
-	ldata[1] = now.tv_usec;
+	ldata[0] = now.tv_usec;
+	ldata[1] = now.tv_sec;
     }
 #else
     {
@@ -174,11 +206,11 @@ int	len;
     	int	    i;
     
     	seed = (ldata[0]) + (ldata[1] << 16);
-    	srand (seed);
+    	xdm_srand (seed);
     	for (i = 0; i < len; i++)
     	{
-	    value = rand ();
-	    auth[i] = value & 0xff;
+	    value = xdm_rand ();
+	    auth[i] = (value & 0xff00) >> 8;
     	}
 	value = len;
 	if (value > sizeof (key))

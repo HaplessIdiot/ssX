@@ -1,3 +1,14 @@
+XFree86 3.1.2c (25 October 1995)
+ 43. Merge in the X Consortium's public patch 13.
+ 42. Define X_LOCALE for LynxOS for compatibility with Metrolink's
+     Motif package (Thomas Mueller).
+ 41. Update SuperProbe to recognise the Cirrus CL-GD7543.
+ 40. The Trident driver now automatically selects the "tgui" clockchip
+     when it detects a TGUI9440 (Alan Hourihane).
+ 39. Remove the dependency on -lthread for UnixWare 2.x, while still
+     allowing full MT support.  This is done by adding a threads stub
+     library with weak symbols (David Wexelblat).
+
 XFree86 3.1.2b (22 October 1995)
  38. Updated Japanese docs, including SGML versions suitable for formatting
      with jlinuxdoc-sgml.  These docs use EUC encoding (Kazuyuki Okamoto).

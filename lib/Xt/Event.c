@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.172 95/06/08 23:20:39 gildea Exp $ */
+/* $XConsortium: Event.c /main/150 1995/09/22 15:27:40 converse $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -143,7 +143,8 @@ static void CallExtensionSelector(widget, rec, forceCall)
     int i, count = 0;
 
     for (p = widget->core.event_table; p != NULL; p = p->next)
-	if (EXT_TYPE(p) >= rec->min && EXT_TYPE(p) <= rec->max)
+	if (p->has_type_specifier &&
+	    EXT_TYPE(p) >= rec->min && EXT_TYPE(p) <= rec->max)
 	    count += p->mask;
 
     if (count == 0 && !forceCall) return;
@@ -153,7 +154,8 @@ static void CallExtensionSelector(widget, rec, forceCall)
     count = 0;
 
     for (p = widget->core.event_table; p != NULL; p = p->next)
-	if (EXT_TYPE(p) >= rec->min && EXT_TYPE(p) <= rec->max)
+	if (p->has_type_specifier &&
+	    EXT_TYPE(p) >= rec->min && EXT_TYPE(p) <= rec->max)
 	    for (i =0; i < p->mask; i++) {
 		types[count] = EXT_TYPE(p);
 		data[count++] = EXT_SELECT_DATA(p, i);

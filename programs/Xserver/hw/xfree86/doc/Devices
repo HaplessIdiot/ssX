@@ -278,6 +278,17 @@ Section "Device"
     Videoram 1024
 EndSection
 
+#From: dwex@xfree86.org (David E. Wexelblat)
+#Date: Sat, 30 Sep 1995 17:21:45 EDT
+Section "Device"
+    Identifier "Hercules Graphite Terminator DRAM"
+    VendorName "Hercules"
+    BoardName "Graphite Terminator DRAM"
+    #
+    # Uses S3 Trio64 - don't need anything else
+    #
+EndSection
+
 #From: haw30@eng.amdahl.com (Henry A Worth )
 #Date: Tue, 27 Sep 94 22:10:01 PDT
 Section "Device"
@@ -736,5 +747,5 @@ Section "Device"
 EndSection
 
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Devices,v 3.10 1995/06/14 09:45:31 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Devices,v 3.11 1995/06/18 13:52:58 dawes Exp $
 $XConsortium: Devices,v 1.6 95/01/23 15:34:12 kaleb Exp $

@@ -1,5 +1,5 @@
-/* $XConsortium: Intrinsic.c,v 1.197 95/04/07 19:51:22 kaleb Exp $ */
-/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.3 1995/01/28 15:44:00 dawes Exp $ */
+/* $XConsortium: Intrinsic.c /main/146 1995/10/30 15:56:56 converse $ */
+/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.4 1995/06/14 07:12:08 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -461,7 +461,8 @@ void XtUnrealizeWidget (widget)
 	UNLOCK_APP(app);
 	return;
     }
-    if (widget->core.parent != NULL) XtUnmanageChild(widget);
+    if (widget->core.managed && widget->core.parent != NULL)
+	XtUnmanageChild(widget);
     UnrealizeWidget(widget);
     if (window != None) 
 	XDestroyWindow(XtDisplay(widget), window);

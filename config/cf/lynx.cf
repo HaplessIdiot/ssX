@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.1 1995/07/15 14:53:06 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.2 1995/08/05 11:48:46 dawes Exp $
 
 #define OSName			LynxOS AT
 #define OSVendor		(LYNX Real-Time Systems, Inc)
@@ -104,7 +104,7 @@ XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.1 1995/07/15 14:53:06 dawes 
 #if OSMajorVersion == 2 && OSMinorVersion <= 2
 #define StandardDefines		-DLynx -DLynx_22 -DX_NOT_POSIX
 #else
-#define StandardDefines		-DLynx
+#define StandardDefines		-DLynx -DX_LOCALE
 #endif
 #define StandardCppDefines	-traditional StandardDefines
 #define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME -DPART_NET

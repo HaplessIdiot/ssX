@@ -1,5 +1,5 @@
 /* $XConsortium: t89_driver.c,v 1.4 95/01/16 13:18:25 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.9 1995/05/27 03:17:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.10 1995/10/22 01:49:21 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -574,18 +574,38 @@ TVGA8900Probe()
 	if (vga256InfoRec.videoRam < 1024) 
 		TVGA8900.ChipRounding = 16;
 
-	/* Notify user - must specify ClockChip 'tgui' if a TGUI9440 detected */
-	if ((TVGAchipset == TGUI9440AGi) &&
-	    (!OFLG_ISSET(CLOCK_OPTION_TRIDENT, &vga256InfoRec.clockOptions)))
-	{
-		TVGA8900EnterLeave(LEAVE);
-		FatalError("You must specify 'ClockChip \"tgui\" in your XF86Config file.");
+	if (TVGAchipset == TGUI9440AGi) {
+		if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE,
+			 &vga256InfoRec.clockOptions))
+		{
+			OFLG_SET(CLOCK_OPTION_PROGRAMABLE,
+				 &vga256InfoRec.clockOptions);
+			OFLG_SET(CLOCK_OPTION_TRIDENT,
+				 &vga256InfoRec.clockOptions);
+			ErrorF("%s %s: Using Trident programmable clocks\n",
+			       XCONFIG_PROBED, vga256InfoRec.name);
+		}
+		else if (OFLG_ISSET(CLOCK_OPTION_TRIDENT,
+			 &vga256InfoRec.clockOptions))
+		{
+			ErrorF("%s %s: Using Trident programmable clocks\n",
+			       XCONFIG_GIVEN, vga256InfoRec.name);	
+		}
+		else
+		{
+			ErrorF("%s %s: Ignoring unrecognised ClockChip\n",
+			   XCONFIG_GIVEN, vga256InfoRec.name);
+			OFLG_SET(CLOCK_OPTION_TRIDENT,
+				 &vga256InfoRec.clockOptions);
+			ErrorF("%s %s: Using Trident programmable clocks\n",
+			       XCONFIG_PROBED, vga256InfoRec.name);
+		}
 	}
 
 	/*
 	 * If clocks are not specified in XF86Config file, probe for them
 	 */
-    	if (!vga256InfoRec.clocks) 
+    	if ((!vga256InfoRec.clocks) && (TVGAchipset != TGUI9440AGi)) 
 	{
 		switch (TVGAchipset)
 		{
@@ -603,15 +623,11 @@ TVGA8900Probe()
 				numClocks = 8;
 			}
 			break;
-		case TGUI9440AGi:
-			ErrorF("%s Using Trident programmable clocks\n",XCONFIG_GIVEN);
-			break;
 		default:
 			numClocks = 16;
 			break;
 		}
-		if (TVGAchipset != TGUI9440AGi) 
-			vgaGetClocks(numClocks, TVGA8900ClockSelect);
+		vgaGetClocks(numClocks, TVGA8900ClockSelect);
 	}
 
 	/*
@@ -705,8 +721,8 @@ TVGA8900Probe()
 		/* Enable extra IO ports for the TGUI */
 		xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_TGUI_ExtPorts,
 			       TGUI_ExtPorts);
-		TVGAEnterLeave(LEAVE); /* force update of IO ports enabled */
-		TVGAEnterLeave(ENTER);
+		TVGA8900EnterLeave(LEAVE); /* force update of IO ports */
+		TVGA8900EnterLeave(ENTER);
 	}
     	return(TRUE);
 }

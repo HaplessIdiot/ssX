@@ -1,5 +1,5 @@
-/* $XConsortium: auth.c,v 1.56.1.1 95/01/27 14:42:23 kaleb Exp $ */
-/* $XFree86: xc/programs/xdm/auth.c,v 3.9 1995/01/30 03:28:54 dawes Exp $ */
+/* $XConsortium: auth.c /main/1.56.1/2 1995/10/26 17:35:48 gildea $ */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.10 1995/05/07 12:27:00 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -43,6 +43,12 @@ from the X Consortium.
 #include <X11/X.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#include <errno.h>
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif
+
 #ifndef MINIX
 #include <sys/socket.h>
 #endif
@@ -115,7 +121,7 @@ extern Xauth	*MitGetAuth ();
 extern int	XdmInitAuth ();
 extern Xauth	*XdmGetAuth ();
 #ifdef XDMCP
-extern int	XdmGetXdmcpAuth ();
+extern void	XdmGetXdmcpAuth ();
 #else
 #define XdmGetXdmcpAuth NULL
 #endif
@@ -136,7 +142,7 @@ struct AuthProtocol {
     char	    *name;
     int		    (*InitAuth)();
     Xauth	    *(*GetAuth)();
-    int		    (*GetXdmcpAuth)();
+    void	    (*GetXdmcpAuth)();
     int		    inited;
 };
 
@@ -293,6 +299,9 @@ CleanUpFileName (src, dst, len)
     *dst = '\0';
 }
 
+static char authdir1[] = "authdir";
+static char authdir2[] = "authfiles";
+
 static
 MakeServerAuthFile (d)
     struct display  *d;
@@ -304,13 +313,16 @@ MakeServerAuthFile (d)
 #define NAMELEN	255
 #endif
     char    cleanname[NAMELEN];
+    int r;
+    struct stat	statb;
 
     if (d->clientAuthFile && *d->clientAuthFile)
 	len = strlen (d->clientAuthFile) + 1;
     else
     {
     	CleanUpFileName (d->name, cleanname, NAMELEN - 8);
-    	len = strlen (authDir) + strlen (cleanname) + 12;
+    	len = strlen (authDir) + strlen (authdir1) + strlen (authdir2)
+	    + strlen (cleanname) + 14;
     }
     if (d->authFile)
 	free (d->authFile);
@@ -321,7 +333,31 @@ MakeServerAuthFile (d)
 	strcpy (d->authFile, d->clientAuthFile);
     else
     {
-    	sprintf (d->authFile, "%s/A%s-XXXXXX", authDir, cleanname);
+	sprintf (d->authFile, "%s/%s", authDir, authdir1);
+	r = stat(d->authFile, &statb);
+	if (r == 0) {
+	    if (statb.st_uid != 0)
+		(void) chown(d->authFile, 0, statb.st_gid);
+	    if ((statb.st_mode & 0077) != 0)
+		(void) chmod(d->authFile, statb.st_mode & 0700);
+	} else {
+	    if (errno == ENOENT)
+		r = mkdir(d->authFile, 0700);
+	    if (r < 0) {
+		free (d->authFile);
+		d->authFile = NULL;
+		return FALSE;
+	    }
+	}
+	sprintf (d->authFile, "%s/%s/%s", authDir, authdir1, authdir2);
+	r = mkdir(d->authFile, 0700);
+	if (r < 0  &&  errno != EEXIST) {
+	    free (d->authFile);
+	    d->authFile = NULL;
+	    return FALSE;
+	}
+    	sprintf (d->authFile, "%s/%s/%s/A%s-XXXXXX",
+		 authDir, authdir1, authdir2, cleanname);
     	(void) mktemp (d->authFile);
     }
     return TRUE;
@@ -628,10 +664,10 @@ writeAuth (file, auth)
     FILE	*file;
     Xauth	*auth;
 {
-#if 0 /* too verbose */
+    if (debugLevel >= 15) {	/* normally too verbose */
         Debug ("writeAuth: doWrite = %d\n", doWrite);
 	dumpAuth (auth);	/* does Debug only */
-#endif
+    }
 	if (doWrite)
 	    XauWriteAuth (file, auth);
 }
@@ -855,7 +891,8 @@ DefineSelf (fd, file, auth)
 	if (IA_SIN(&ifaddr)->sin_addr.s_addr == htonl(0x7f000001) )
 		continue;
 
-	writeAddr (FamilyInternet, 4, &(IA_SIN(&ifaddr)->sin_addr), file, auth);
+	writeAddr (FamilyInternet, 4, (char *)&(IA_SIN(&ifaddr)->sin_addr), file, auth);
+ 
     }
     close(ipfd);
 }
