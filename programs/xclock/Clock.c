@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/xclock/Clock.c,v 3.19 2002/06/14 22:34:57 keithp Exp $ */
+/* $XFree86: xc/programs/xclock/Clock.c,v 3.20 2002/06/14 22:41:04 keithp Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/StringDefs.h>
@@ -507,6 +507,7 @@ Initialize (Widget request, Widget new, ArgList args, Cardinal *num_args)
     w->clock.show_second_hand = (w->clock.update <= SECOND_HAND_TIME);
     w->clock.numseg = 0;
     w->clock.interval_id = 0;
+    memset (&w->clock.otm, '\0', sizeof (w->clock.otm));
 #ifdef XRENDER
     {
 	int major, minor;
