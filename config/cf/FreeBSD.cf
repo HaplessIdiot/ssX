@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf,v 1.1 94/03/29 15:34:45 gildea Exp $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.3 1994/05/22 08:50:32 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.4 1994/05/23 09:42:51 dawes Exp $
 
 #define OSName            FreeBSD 1.1
 #define OSVendor          /**/
@@ -39,7 +39,6 @@ XCOMM operating system:  OSName
 #define PreProcessCmd		CppCmd
 #define StandardCppDefines	-traditional
 #define DefaultCCOptions	/**/
-#define ExtensionOSDefines	/* -DXTESTEXT1 */
 #define ExtraLibraries		-lgnumalloc
 #define InstUidFlags		-s -m 4755
 
@@ -73,6 +72,64 @@ XCOMM operating system:  OSName
 
 #ifndef ExtraFilesToClean
 # define ExtraFilesToClean *.core
+#endif
+
+#define DefaultUserPath		/bin:/usr/bin:/sbin:/usr/sbin:$(BINDIR):/usr/gnu/bin:/usr/local/bin
+#define DefaultSystemPath	/bin:/usr/bin:/sbin:/usr/sbin:$(BINDIR)
+
+/*
+ * Compress manual pages
+ */
+/* Off for now since the man(1) in 1.1 doesn't understand .gz man pages */
+#ifndef CompressManPages
+# define CompressManPages        NO
+#endif
+
+#if CompressManPages
+
+#ifndef CompressManCmd
+# define CompressManCmd		gzip -9n
+#endif
+   COMPRESSMANCMD = CompressManCmd
+
+#ifndef InstallManPageLong
+#define InstallManPageLong(file,destdir,dest)                           @@\
+install.man:: file.man                                                  @@\
+	MakeDir($(DESTDIR)destdir)                                      @@\
+	$(RM) $(DESTDIR)destdir/dest.$(MANSUFFIX)*                      @@\
+	$(INSTALL) -c $(INSTMANFLAGS) file.man \                        @@\
+          $(DESTDIR)destdir/dest.$(MANSUFFIX)                           @@\
+	-$(COMPRESSMANCMD) $(DESTDIR)destdir/dest.$(MANSUFFIX)
+#endif
+
+#ifndef InstallMultipleMan
+#define InstallMultipleMan(list,dest)                                   @@\
+install.man:: list                                                      @@\
+	MakeDir($(DESTDIR)dest)						@@\
+	@case '${MFLAGS}' in *[i]*) set +e;; esac; \                    @@\
+	for i in list; do \                                             @@\
+	        (set -x; \                                              @@\
+	        MNAME=`echo $$i | cut -f1 -d.`; \			@@\
+	        $(RM) $(DESTDIR)dest/$${MNAME}*; \                      @@\
+	        $(INSTALL) -c $(INSTMANFLAGS) $$i \                     @@\
+		  $(DESTDIR)dest/$${MNAME}.$(MANSUFFIX); \              @@\
+	        $(COMPRESSMANCMD) $(DESTDIR)dest/$${MNAME}.$(MANSUFFIX)); \  @@\
+	done
+#endif
+
+/*
+ * InstallManPageAliases - install soft links for aliases.
+ */
+#ifndef InstallManPageAliases
+#define InstallManPageAliases(file,destdir,aliases)                     @@\
+install.man::                                                           @@\
+	@(SUFFIX=`echo $(DESTDIR)destdir/file.* | cut -f2,3 -d.`; \     @@\
+	for i in aliases; do (set -x; \                                 @@\
+	$(RM) $(DESTDIR)destdir/$$i.*; \                                @@\
+	(cd $(DESTDIR)destdir; $(LN) file.$${SUFFIX} \                  @@\
+	$$i.$${SUFFIX})); \                                             @@\
+	done)
+#endif
 #endif
 
 #include <bsdLib.rules>

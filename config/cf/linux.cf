@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf,v 1.4 94/04/07 15:46:42 rws Exp $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.2 1994/05/21 23:39:28 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.3 1994/05/22 01:45:16 dawes Exp $
 
 #define OSName			Linux
 #define OSVendor		/**/
@@ -48,10 +48,9 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.2 1994/05/21 23:39:28 dawes
 #define StandardDefines		OSDefines
 #define StandardCppDefines	-traditional StandardDefines
 #define ServerOSDefines		-DDDXTIME
-#define ExtensionOSDefines	-DXTESTEXT1
 #define ServerExtraDefines	-DGCCUSESGAS
 #ifndef NeedCbrt
-#define NeedCbrt		YES
+#define NeedCbrt		NO
 #endif
 #if NeedCbrt
 #define ServerExtraSysLibs	$(CBRT) -lm

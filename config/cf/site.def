@@ -1,5 +1,5 @@
 XCOMM site:  $XConsortium: site.sample,v 1.9 94/04/08 17:02:06 rws Exp $
-XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.2 1994/05/05 07:50:34 dawes Exp $
+XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.3 1994/05/21 23:39:30 dawes Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -37,6 +37,9 @@ XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.2 1994/05/05 07:50:34 dawes Exp
 /*
  * Include this for easy XFree86 customisations
  */
+#ifndef SiteIConfigFiles
+#define SiteIConfigFiles $(IRULESRC)/xf86site.def
+#endif
 #include <xf86site.def>
 
 /*

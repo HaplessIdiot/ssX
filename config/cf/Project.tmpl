@@ -1,6 +1,7 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
 XCOMM $XConsortium: Project.tmpl,v 1.242 94/04/13 14:58:40 rws Exp $
+XCOMM $XFree86$
 
 /****************************************************************************
  *                                                                          *
@@ -101,6 +102,9 @@ XCOMM $XConsortium: Project.tmpl,v 1.242 94/04/13 14:58:40 rws Exp $
 #endif
 #ifndef InstallAppDefFiles
 #define InstallAppDefFiles	YES	/* install application defaults */
+#endif
+#ifndef CompressAllFonts
+#define CompressAllFonts	NO
 #endif
 #ifndef ThreadedX
 #if HasPosixThreads || HasCThreads
@@ -1010,7 +1014,7 @@ FontBaseObj(basename).Z:  FontSrc(basename)				@@\
 	$(FONTC) $(FONTCFLAGS) $? | $(COMPRESS) > $@
 #endif /* CompressedFontTarget */
 
-#ifdef CompressAllFonts
+#if CompressAllFonts
 #define FontTarget(basename) CompressedFontTarget(basename)
 #define FontObj(basename) FontBaseObj(basename).Z
 #else
