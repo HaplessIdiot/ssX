@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.27 2001/10/01 20:28:23 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.28 2001/10/30 19:38:29 mvojkovi Exp $ */
 
 #ifndef __NV_STRUCT_H__
 #define __NV_STRUCT_H__
@@ -98,10 +98,6 @@ typedef struct {
     CARD32		BgColor;
     int			Rotate;
     NVFBLayout		CurrentLayout;
-    GCPtr		CurrentGC;
-#ifdef NV_USE_FB
-    DrawablePtr		CurrentDrawable;
-#endif    
     /* Cursor */
     unsigned short      curFg, curBg;
     unsigned int        curImage[MAX_CURS*2];

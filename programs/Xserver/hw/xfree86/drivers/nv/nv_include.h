@@ -35,20 +35,7 @@
 #include "dixstruct.h"
 #include "scrnintstr.h"
 
-#ifndef NV_USE_FB
-/*
- * If using cfb, cfb.h is required.  Select the others for the bpp values
- * the driver supports.
- */
-#define PSZ 8   /* needed for cfb.h */
-#include "cfb.h"
-#undef PSZ
-#include "cfb16.h"
-#include "cfb24.h"
-#include "cfb32.h"
-#else
 #include "fb.h"
-#endif
 
 #include "xaa.h"
 #include "xf86cmap.h"
