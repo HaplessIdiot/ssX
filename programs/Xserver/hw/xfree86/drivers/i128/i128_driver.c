@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.8 2000/10/25 00:09:17 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.9 2000/10/27 22:30:29 robin Exp $ */
 
 
 /* All drivers should typically include these */
@@ -793,8 +793,7 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
     if (!pI128->Primary)
         I128SoftReset(pScrn);
 
-    if ((pI128->Chipset == PCI_CHIP_I128_T2R) ||
-        (pI128->Chipset == PCI_CHIP_I128_T2R4)) {
+    if (pI128->Chipset != PCI_CHIP_I128) {
 	pI128->ddc1Read = NULL /*I128DDC1Read*/;
 	pI128->i2cInit = I128I2CInit;
     }
