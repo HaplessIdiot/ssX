@@ -1,4 +1,11 @@
 XFree86 4.3.99.16 (xx November 2003)
+ 581. In rootless XDarwin, don't send ButtonPress events when clicking in
+      non-X11 windows (Torrey T. Lyons, John Harper).
+ 580. AppleWM compatibility fixes:
+       - Disable XDarwin handling cut and paste if AppleWM-aware cut and
+         paste manager is available.
+       - Set _NATIVE_SCREEN_ORIGIN property on root window.
+      (John Harper, Torrey T. Lyons).
  579. Change ProjectRoot from /XFree86 to /usr/X11R6 on OS/2 (Bugzilla #865,
       Frank Giessler).
  578. Fix building of new Mesa on OS/2 (Bugzilla #865, Frank Giessler).
@@ -18163,7 +18170,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2952 2003/11/11 21:02:25 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2953 2003/11/12 00:10:26 dawes Exp $
 
 
 
