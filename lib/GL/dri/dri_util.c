@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/dri_util.c,v 1.5 2003/02/11 03:30:20 dawes Exp $ */
+/* $XFree86: xc/lib/GL/dri/dri_util.c,v 1.6 2003/02/15 22:12:29 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -921,7 +921,7 @@ __driUtilCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
     int directCapable;
     __DRIscreenPrivate *psp;
     drmHandle hFB, hSAREA;
-    char *BusID, *driverName;
+    char *BusID, *driverName = NULL;
     drmMagic magic;
 
     if (!XF86DRIQueryDirectRenderingCapable(dpy, scrn, &directCapable)) {
@@ -1010,6 +1010,8 @@ __driUtilCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
 	(void)XF86DRICloseConnection(dpy, scrn);
 	return NULL;
     }
+    if (driverName)
+	Xfree(driverName);
 
     /* install driver's callback functions */
     memcpy(&psp->DriverAPI, driverAPI, sizeof(struct __DriverAPIRec));
