@@ -1,5 +1,5 @@
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/lib/Xft/Xft.man,v 1.1 2000/10/05 18:05:26 keithp Exp $
 .\"
 .\" Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
 .\"
@@ -39,107 +39,138 @@ library.
 
 .SH DATATYPES
 
+.B XftPattern
+holds a set of names with associated value lists; each name refers to a
+property of a font.  XftPatterns are used as inputs to the matching code as
+well as holding information about specific fonts.
+
 .B XftFont
-is an opaque pointer to a font object containing references to both the X
-server GlyphSet and the FreeType outline data.
+contains general font metrics and a pointer to either the core XFontStruct
+data or a structure holding FreeType and X Render Extension data.
 
-.B XftFontName
-contains matching information for accessing fonts.  Each field is matched
-with a bit in the mask indicating whether that field has valid data.
+.B XftFontStruct
+contains information about FreeType fonts used with the X Render Extension.
 
-.Ds 0
-.TA .5i 3i
-.ta .5i 3i
-typedef struct _XftFontName {
-	unsigned long	mask;
-	char	*face;
-	char	*encoding;
-	char	*file;
-	int	size;
-	int	rotation;
-	int	spacing;
-} XftFontName;
+.B XftFontSet
+contains a list of XftPatterns.  Internally Xft uses this data structure to
+hold sets of fonts.  Externally, Xft returns the results of listing fonts in
+this format.
 
-#define XftFontNameFace	    0x1
-#define XftFontNameEncoding 0x2
-#define XftFontNameFile	    0x4
-#define XftFontNameSize	    0x8
-#define XftFontNameRotation 0x10
-#define XftFontNameSpacing  0x20
+.B XftObjectSet
+holds a set of names and is used to specify which fields from fonts are
+placed in the the list of returned patterns when listing fonts.
 
-#define XftFontSpacingAny   0
-#define XftFontSpacingMono  1
-#define XftFontSpacingCell  2
+.B XftDraw
+is an opaque object which holds information used to render to an X drawable
+using either core protocol or the X Rendering extension.
 
 .SH FUNCTIONS
-XftFont	*
-XftLoadFont (Display *dpy, XftFontName *name);
-
+.nf
+XftFont *
+XftFontOpen (Display *dpy, int screen, ...);
+.fi
+.B XftFontOpen
+takes a list of pattern elements of the form (field, type, value) terminated
+with a 0, matches that pattern against the available fonts and opens the
+matching font.
+.PP
+Example:
+.br
+	font = XftFontOpen (dpy, scr,
+			    XFT_FAMILY, XftTypeString, "charter",
+			    XFT_SIZE, XftTypeDouble, 12.0);
+.PP
+This opens the charter font at 12 points.  The point size is automatically
+converted to the correct pixel size based on the resolution of the monitor.
+.PP
+.nf
 void
-XftFreeFont (Display *dpy, XftFont *font);
-
-int
-XftFontAscent(Display *dpy, XftFont *font);
-
-int
-XftFontDescent(Display *dpy, XftFont *font);
-
-int
-XftFontHeight(Display *dpy, XftFont *font);
-
-int
-XftFontMaxAdvanceWidth (Display *dpy, XftFont *font);
-    
+XftTextExtents8 (Display	*dpy,
+		 XftFont	*font,
+		 unsigned char  *string, 
+		 int		len,
+		 XGlyphInfo	*extents);
+.fi
+.B XftTextExtents8
+computes the pixel extents of "string" when drawn with "font".
+.PP
+.nf
+XftDraw *
+XftDrawCreate (Display   *dpy,
+	       Drawable  drawable,
+	       Visual    *visual,
+	       Colormap  colormap);
+.fi
+.B XtDrawCreate
+creates a structure that can be used to render text and rectangles
+to the screen.
+.PP
+.nf
 void
-XftExtentsString (Display	*dpy,
-		  XftFont	*font,
-		  unsigned char	*string, 
-		  int		len,
-		  XGlyphInfo	*extents);
-
+XftDrawString8 (XftDraw		*d,
+		XRenderColor	*color,
+		XftFont		*font,
+		int		x, 
+		int		y,
+		unsigned char	*string,
+		int		len);
+.fi
+.B XftDrawString8
+draws "string" using "font" in "color" at "x, y".
+.PP
+.nf
 void
-XftDrawString (Display	*dpy,
-	       Picture	 src,
-	       XftFont	*font,
-	       Picture	dst,
-	       int	srcx,
-	       int	srcy,
-	       int	x,
-	       int	y,
-	       char	*string,
-	       int	len);
-
+XftDrawRect (XftDraw	    *d,
+	     XRenderColor   *color,
+	     int	    x, 
+	     int	    y,
+	     unsigned int   width,
+	     unsigned int   height);
+.fi
+.B XftDrawRect
+fills a solid rectangle in the specified color.
 .SH XftConfig
 The 
 .B XftConfig
-file contains instructions for converting an XftFontName structure into
-a usable set of glyphs.  XftFontNames are refined through a series of
-matching and editing steps.
-
-ents	:	ents ent
-	|
+file contains configuration information for the Xft library consisting of
+directories to look at for font information as well as instructions on
+editing program specified font patterns before attempting to match the
+available fonts.
+.PP
+.nf
+config	:   "dir" STRING
+	|   "include" STRING
+	|   "includeif" STRING
+	|   "match" tests "edit" edits
 	;
-ent	:	edit
-	|	path
-	|	dir
+test	:   qual FIELD-NAME COMPARE CONSTANT
 	;
-edit	:	MATCH patterns EDIT patterns
+qual	:   "any"
+	|   "all"
 	;
-patterns:	pattern patterns
-	|
+edit	:   FIELD-NAME ASSIGN expr SEMI
 	;
-pattern	:	FACE EQUAL STRING
-	|	ENCODING EQUAL STRING
-	|	FILE EQUAL STRING
-	|	SIZE EQUAL NUMBER
-	|	ROTATION EQUAL NUMBER
-	|	SPACING EQUAL NUMBER
-	;
-path	:	PATH STRING
-	;
-dir	:	DIR STRING
-	;
-
+.fi
+.PP
+STRINGs are double-quote delimited.  FIELD-NAMEs are identifiers,
+ASSIGN is one of "=", "+=" or "=+".  expr can contain the usual
+arithmetic operators and can include FIELD-NAMEs.
+.PP
+"dir" adds a directory to the list of places Xft will look for fonts.
+There is no particular order implied by the list; Xft treats all fonts about
+the same.
+.PP
+"include" and "includeif" cause Xft to load more configuration parameters
+from the indicated file.  "includeif" doesn't elicit a complaint if the file
+doesn't exist.  If the file name begins with a '~' character, it refers to a
+path relative to the home directory of the user.
+.PP
+If the tests in a "match" statement all match a user-specified pattern, the
+pattern will be edited with the specified instructions.
+.PP
+Where ASSIGN is "=", the matching value in the pattern will be replaced by
+the given expression.  "+="/"=+" will prepend/append a new value to the list
+of values for the indicated field.
 
 .SH RESTRICTIONS
 .B Xft

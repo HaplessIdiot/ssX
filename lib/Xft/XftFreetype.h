@@ -50,6 +50,20 @@ struct _XftFontStruct {
     int			nrealized;
 };
 
+/* xftglyphs.c */
+void
+XftGlyphLoad (Display		*dpy,
+	      XftFontStruct	*font,
+	      unsigned long	*glyphs,
+	      int		nglyph);
+
+void
+XftGlyphCheck (Display		*dpy,
+	       XftFontStruct	*font,
+	       unsigned long	glyph,
+	       unsigned long	*missing,
+	       int		*nmissing);
+
 /* xftrender.c */
 
 void

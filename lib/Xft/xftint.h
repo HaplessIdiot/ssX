@@ -152,7 +152,9 @@ Bool
 XftConfigAddEdit (XftTest *test, XftEdit *edit);
 
 Bool
-XftConfigSubstitute (XftPattern *p);
+_XftConfigCompareValue (XftValue    m,
+			XftOp	    op,
+			XftValue    v);
 
 /* xftcore.c */
 
@@ -210,12 +212,6 @@ Bool
 XftDirScan (XftFontSet *set, const char *dir);
 
 /* xftdpy.c */
-Bool
-XftDefaultHasRender (Display *dpy);
-
-Bool
-XftDefaultSet (Display *dpy, XftPattern *defaults);
-
 int
 XftDefaultParseBool (char *v);
 
@@ -231,9 +227,6 @@ XftDefaultGetDouble (Display *dpy, const char *object, int screen, double def);
 XftFontSet *
 XftDisplayGetFontSet (Display *dpy);
 
-void
-XftDefaultSubstitute (Display *dpy, int screen, XftPattern *pattern);
-    
 /* xftdraw.c */
 Bool
 XftDrawRenderPrepare (XftDraw	    *draw,
@@ -258,28 +251,7 @@ void
 XftFreeTypeClose (Display *dpy, XftFontStruct *font);
     
 /* xftfs.c */
-XftFontSet *
-XftFontSetCreate (void);
-
-void
-XftFontSetDestroy (XftFontSet *s);
-
-Bool
-XftFontSetAdd (XftFontSet *s, XftPattern *font);
-
 /* xftglyphs.c */
-void
-XftGlyphLoad (Display		*dpy,
-	      XftFontStruct	*font,
-	      unsigned long	*glyphs,
-	      int		nglyph);
-
-void
-XftGlyphCheck (Display		*dpy,
-	       XftFontStruct	*font,
-	       unsigned long	glyph,
-	       unsigned long	*missing,
-	       int		*nmissing);
 /* xftgram.y */
 int
 XftConfigparse (void);
@@ -330,9 +302,6 @@ XftEditDestroy (XftEdit *e);
 Bool
 XftInitFtLibrary (void);
 
-Bool
-XftInit (char *config);
-
 /* xftlex.l */
 extern int	XftConfigLineno;
 extern char	*XftConfigFile;
@@ -346,30 +315,45 @@ XftConfigLexFile(char *s);
 Bool
 XftConfigPushInput (char *s, Bool complain);
 
+/* xftlist.c */
+XftObjectSet *
+_XftObjectSetVapBuild (const char *first, va_list *vap);
+
+Bool
+XftListValueCompare (XftValue	v1,
+		     XftValue	v2);
+
+Bool
+XftListValueListCompare (XftValueList	*v1orig,
+			 XftValueList	*v2orig,
+			 XftQual	qual);
+
+Bool
+XftListMatch (XftPattern    *p,
+	      XftPattern    *font,
+	      XftQual	    qual);
+
+Bool
+XftListAppend (XftFontSet   *s,
+	       XftPattern   *font,
+	       XftObjectSet *os);
+
+XftFontSet *
+XftListFontSets (XftFontSet	**sets,
+		 int		nsets,
+		 XftPattern	*p,
+		 XftObjectSet	*os);
+
+
 /* xftmatch.c */
-XftPattern *
-XftFontSetMatch (XftFontSet	**sets, 
-		 int		nsets, 
-		 XftPattern	*p, 
-		 XftResult	*result);
 
 /* xftname.c */
 Bool
 XftNameConstant (char *string, int *result);
 
-XftPattern *
-XftNameParse (const char *name);
-
 /* xftpat.c */
-
-void
-XftValueDestroy (XftValue v);
-
-void
-XftValueListDestroy (XftValueList *l);
-
-XftPatternElt *
-XftPatternFind (XftPattern *p, const char *object, Bool insert);
+XftPattern *
+_XftPatternVapBuild (XftPattern *orig, va_list *vap);
 
 /* xftrender.c */
 
@@ -396,13 +380,7 @@ int
 _XftMatchSymbolic (XftSymbolic *s, int n, const char *name, int def);
 
 /* xftxlfd.c */
-XftPattern *
-XftXlfdParse (const char *xlfd_orig, Bool ignore_scalable);
-
 Bool
 XftCoreAddFonts (XftFontSet *set, Display *dpy, Bool ignore_scalable);
-
-XFontStruct *
-XftCoreOpen (Display *dpy, XftPattern *pattern);
 
 #endif /* _XFT_INT_H_ */

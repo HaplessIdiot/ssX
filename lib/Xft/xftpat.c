@@ -339,8 +339,9 @@ bail0:
 }
 
 XftPattern *
-XftPatternVaBuild (XftPattern *orig, va_list va)
+_XftPatternVapBuild (XftPattern *orig, va_list *vap)
 {
+    va_list	va = *vap;
     const char	*object;
     XftValue	v;
     XftPattern	*p;
@@ -377,6 +378,7 @@ XftPatternVaBuild (XftPattern *orig, va_list va)
 	if (!XftPatternAdd (p, object, v, True))
 	    goto bail;
     }
+    *vap = va;
     return p;
 bail:
     if (!orig)
@@ -385,12 +387,18 @@ bail:
 }
 
 XftPattern *
+XftPatternVaBuild (XftPattern *orig, va_list va)
+{
+    return _XftPatternVapBuild (orig, &va);
+}
+
+XftPattern *
 XftPatternBuild (XftPattern *orig, ...)
 {
     va_list	va;
     
     va_start (va, orig);
-    orig = XftPatternVaBuild (orig, va);
+    orig = _XftPatternVapBuild (orig, &va);
     va_end (va);
     return orig;
 }
