@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.167 2002/04/20 12:27:35 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.168 2002/05/15 20:53:35 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -1925,8 +1925,6 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    pTrident->frequency = NTSC;
 	    break;
     }
-    xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
-		pTrident->HWCursor ? "HW" : "SW");
 
     if (!pScrn->progClock) {
 	pScrn->numClocks = NoClocks;
@@ -1962,10 +1960,20 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     /* HW bpp matches reported bpp */
     pTrident->HwBpp = pScrn->bitsPerPixel;
 
+    /* Due to bugs in the chip, turn it off */
+    if (pTrident->Chipset >= CYBERBLADEI7 && pTrident->Chipset < CYBERBLADEAI1D)
+	pTrident->HWCursor = FALSE;
+
     from = X_PROBED;
     if (pTrident->pEnt->device->videoRam != 0) {
 	pScrn->videoRam = pTrident->pEnt->device->videoRam;
 	from = X_CONFIG;
+
+	/* Due to only 12bits of cursor location, if user has overriden
+	 * disable the cursor automatically */
+	if (pTrident->Chipset >= CYBER9397 && pTrident->Chipset < BLADE3D)
+		if (pTrident->pEnt->device->videoRam > 4096)
+			pTrident->HWCursor = FALSE;
     } else {
       if (pTrident->Chipset == CYBER9525DVD) {
 	pScrn->videoRam = 2560;
@@ -2046,6 +2054,9 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	}
       }
     }
+
+    xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
+		pTrident->HWCursor ? "HW" : "SW");
 
     xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n",
                pScrn->videoRam);
