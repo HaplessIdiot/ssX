@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/drm/Imakefile.inc,v 1.1 2005/01/31 18:20:34 dawes Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -58,8 +58,7 @@ step::									@@\
 	MakeDir(subdir)							@@\
 	@MakeFlagsToShellFlags(i,set +e); \				@@\
 	UP="`$(REVPATH) subdir`"; export UP; \				@@\
-	echo Subdir is subdir, up is $${UP}; \				@@\
-	for i in list; do (echo UP is $${UP}; set -x; $(RM) subdir/$$i; \			@@\
+	for i in list; do ( set -x; $(RM) subdir/$$i; \			@@\
 			   $(LN) $${UP}srcdir/$$i subdir/$$i); done
 #endif
 
