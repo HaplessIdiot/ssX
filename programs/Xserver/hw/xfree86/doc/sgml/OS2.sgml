@@ -186,7 +186,7 @@ not work, because it cannot unpack long file names and extended attributes.
 
 At this moment, the distribution covers only the ``core'' distribution
 which somewhat reduces the usability. Refer to WWW sites and archives listed 
-in the XFree86/OS2 FAQ and elsewhere to obtain prebuilt X clients which
+in the XFree86/OS2 FAQ and elsewhere to obtain pre-built X clients which
 were ported to XFree86.
 
     The contents of the packages are:
@@ -294,17 +294,17 @@ DEVICE=Y:\XFree86\lib\xf86sup.sys
 </verb></tscreen>
 
 <item>SuperProbe can identify many more video cards than are supported by
-       XFree86. In some cases, Superprobe unfortunately detects a wrong
+       XFree86. In some cases, SuperProbe unfortunately detects a wrong
        card, often it claims to have seen a MCGA card which is some sort of
        a fallback. Generally, if it is approximately right, there are only
        few reasons for doubts; if it is totally off (e.g. saying it has
        seen a ET4000, and you have a Cirrus card), you should report a
-       misdetection as a bug to the given address. In all cases, please
+       mis-detection as a bug to the given address. In all cases, please
        take the few minutes and check the accompanying README.* files to
        check for special precautions, options, or features of the card.
-       Note that Superprobe still does not know about the Matrox Millenium,
+       Note that SuperProbe still does not know about the Matrox Millennium,
        and reports it incorrectly as an OAK chipset. This is okay, the SVGA
-       X server knows about the Matrox despite of this misdetection.
+       X server knows about the Matrox despite of this mis-detection.
 
 <item>If the README files tell you that your hardware is supported, please
        obtain the rest of the software.
@@ -580,7 +580,7 @@ port heavily relies on
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2.sgml,v 3.7 1997/01/25 03:22:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2.sgml,v 3.8 1997/01/27 06:57:49 dawes Exp $
 
 
 

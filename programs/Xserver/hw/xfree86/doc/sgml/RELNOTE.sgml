@@ -667,7 +667,7 @@ X32Aprt.tgz    X Print server
 X32Aps.tgz     PostScript version of the documentation
 X32Ahtml.tgz   HTML version of the documentation
 X32Ajdoc.tgz   Documentation in Japanese (for version 3.2)
-X32Ajhtm.tgz   HTML version of the documentation in Japenese (3.2)
+X32Ajhtm.tgz   HTML version of the documentation in Japanese (3.2)
 </verb>
 </quote>
 
@@ -744,7 +744,7 @@ run at boot time.
 
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.57 1997/01/26 04:46:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.58 1997/01/27 06:57:51 dawes Exp $
 </verb>
 
 </article>
