@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/glx/glxext.c,v 1.4 1999/06/14 07:31:26 dawes Exp $
+/* $XFree86: xc/programs/Xserver/GL/glx/glxext.c,v 1.6 2001/02/16 13:24:05 eich Exp $
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
 ** License. You may obtain a copy of the License at Silicon Graphics, Inc.,
@@ -16,7 +16,6 @@
 ** Those portions of the Subject Software created by Silicon Graphics, Inc.
 ** are Copyright (c) 1991-9 Silicon Graphics, Inc. All Rights Reserved.
 **
-** $SGI$
 */
 
 #define NEED_REPLIES
@@ -217,7 +216,7 @@ GLboolean __glXErrorOccured(void)
 */
 void GlxExtensionInit(void)
 {
-    ExtensionEntry *extEntry, *AddExtension();
+    ExtensionEntry *extEntry;
     int i;
     
 #ifdef X11R5
