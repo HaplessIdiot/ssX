@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.50 2001/12/10 23:13:39 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.51 2001/12/17 20:52:31 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -902,8 +902,9 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 	case PCI_CHIP_RAGE128TL:
 	case PCI_CHIP_RAGE128TR: info->isPro2 = TRUE; 
 	case PCI_CHIP_RAGE128PD:
-	case PCI_CHIP_RAGE128PR:
-	case PCI_CHIP_RAGE128PF: info->isDFP = TRUE; break;
+	case PCI_CHIP_RAGE128PF:
+	case PCI_CHIP_RAGE128PP:
+	case PCI_CHIP_RAGE128PR: info->isDFP = TRUE; break;
 
 	case PCI_CHIP_RAGE128LE:
 	case PCI_CHIP_RAGE128LF:
@@ -1048,6 +1049,7 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 	case PCI_CHIP_RAGE128LE:
 	case PCI_CHIP_RAGE128RE:
 	case PCI_CHIP_RAGE128RK:
+	case PCI_CHIP_RAGE128PP:
 	case PCI_CHIP_RAGE128PR:
 	case PCI_CHIP_RAGE128PD: info->IsPCI = TRUE;  break;
 	case PCI_CHIP_RAGE128LF:
