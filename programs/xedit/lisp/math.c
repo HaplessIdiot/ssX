@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.12 2002/08/05 03:56:24 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.13 2002/08/25 02:48:31 paulo Exp $ */
 
 #include "math.h"
 #include "private.h"
@@ -101,10 +101,11 @@ Lisp_Mul(LispMac *mac, LispBuiltin *builtin)
     if (CONS_P(numbers)) {
 	number = CAR(numbers);
 
-	CHECK_OPERAND(number);
 	numbers = CDR(numbers);
-	if (!CONS_P(numbers))
+	if (!CONS_P(numbers)) {
+	    ERROR_CHECK_NUMBER(number);
 	    return (number);
+	}
     }
     else
 	return (SMALLINT(1));
@@ -112,8 +113,6 @@ Lisp_Mul(LispMac *mac, LispBuiltin *builtin)
     result = copy_number(mac, builtin, number);
     for (; CONS_P(numbers); numbers = CDR(numbers)) {
 	number = CAR(numbers);
-
-	CHECK_OPERAND(number);
 	mul_accumulator(mac, builtin, result, number);
     }
 
@@ -133,10 +132,11 @@ Lisp_Plus(LispMac *mac, LispBuiltin *builtin)
     if (CONS_P(numbers)) {
 	number = CAR(numbers);
 
-	CHECK_OPERAND(number);
 	numbers = CDR(numbers);
-	if (!CONS_P(numbers))
+	if (!CONS_P(numbers)) {
+	    ERROR_CHECK_NUMBER(number);
 	    return (number);
+	}
     }
     else
 	return (SMALLINT(0));
@@ -144,8 +144,6 @@ Lisp_Plus(LispMac *mac, LispBuiltin *builtin)
     result = copy_number(mac, builtin, number);
     for (; CONS_P(numbers); numbers = CDR(numbers)) {
 	number = CAR(numbers);
-
-	CHECK_OPERAND(number);
 	add_accumulator(mac, builtin, result, number);
     }
 
@@ -171,8 +169,6 @@ Lisp_Minus(LispMac *mac, LispBuiltin *builtin)
     }
     for (; CONS_P(more_numbers); more_numbers = CDR(more_numbers)) {
 	number = CAR(more_numbers);
-
-	CHECK_OPERAND(number);
 	sub_accumulator(mac, builtin, result, number);
     }
 
@@ -203,7 +199,6 @@ Lisp_Div(LispMac *mac, LispBuiltin *builtin)
 	more_numbers = CDR(more_numbers);
 
 div_one_argument:
-	CHECK_OPERAND(number);
 	div_accumulator(mac, builtin, result, number);
 	if (!CONS_P(more_numbers))
 	    break;
@@ -221,8 +216,6 @@ Lisp_OnePlus(LispMac *mac, LispBuiltin *builtin)
     LispObj *result, *number;
 
     number = ARGUMENT(0);
-
-    CHECK_OPERAND(number);
     result = INTEGER(1);
     add_accumulator(mac, builtin, result, number);
 
@@ -238,8 +231,6 @@ Lisp_OneMinus(LispMac *mac, LispBuiltin *builtin)
     LispObj *result, *number;
 
     number = ARGUMENT(0);
-
-    CHECK_OPERAND(number);
     result = INTEGER(-1);
     add_accumulator(mac, builtin, result, number);
 
@@ -260,8 +251,6 @@ Lisp_Less(LispMac *mac, LispBuiltin *builtin)
     ERROR_CHECK_REAL(compare);
     for (; CONS_P(more_numbers); more_numbers = CDR(more_numbers)) {
 	number = CAR(more_numbers);
-
-	ERROR_CHECK_REAL(number);
 	if (math_compare(mac, builtin, compare, number) >= 0)
 	    return (NIL);
 	compare = number;
@@ -284,8 +273,6 @@ Lisp_LessEqual(LispMac *mac, LispBuiltin *builtin)
     ERROR_CHECK_REAL(compare);
     for (; CONS_P(more_numbers); more_numbers = CDR(more_numbers)) {
 	number = CAR(more_numbers);
-
-	ERROR_CHECK_REAL(number);
 	if (math_compare(mac, builtin, compare, number) > 0)
 	    return (NIL);
 	compare = number;
@@ -305,9 +292,9 @@ Lisp_Equal_(LispMac *mac, LispBuiltin *builtin)
     more_numbers = ARGUMENT(1);
     compare = ARGUMENT(0);
 
+    ERROR_CHECK_REAL(compare);
     for (; CONS_P(more_numbers); more_numbers = CDR(more_numbers)) {
 	number = CAR(more_numbers);
-
 	if (math_compare(mac, builtin, compare, number) != 0)
 	    return (NIL);
 	compare = number;
@@ -330,8 +317,6 @@ Lisp_Greater(LispMac *mac, LispBuiltin *builtin)
     ERROR_CHECK_REAL(compare);
     for (; CONS_P(more_numbers); more_numbers = CDR(more_numbers)) {
 	number = CAR(more_numbers);
-
-	ERROR_CHECK_REAL(number);
 	if (math_compare(mac, builtin, compare, number) <= 0)
 	    return (NIL);
 	compare = number;
@@ -354,8 +339,6 @@ Lisp_GreaterEqual(LispMac *mac, LispBuiltin *builtin)
     ERROR_CHECK_REAL(compare);
     for (; CONS_P(more_numbers); more_numbers = CDR(more_numbers)) {
 	number = CAR(more_numbers);
-
-	ERROR_CHECK_REAL(number);
 	if (math_compare(mac, builtin, compare, number) < 0)
 	    return (NIL);
 	compare = number;
@@ -374,6 +357,8 @@ Lisp_NotEqual(LispMac *mac, LispBuiltin *builtin)
 
     more_numbers = ARGUMENT(1);
     number = ARGUMENT(0);
+
+    ERROR_CHECK_REAL(number);
 
     /* compare all numbers */
     while (1) {
@@ -409,8 +394,6 @@ Lisp_Min(LispMac *mac, LispBuiltin *builtin)
     ERROR_CHECK_REAL(result);
     for (; CONS_P(more_numbers); more_numbers = CDR(more_numbers)) {
 	number = CAR(more_numbers);
-
-	ERROR_CHECK_REAL(number);
 	if (math_compare(mac, builtin, result, number) > 0)
 	    result = number;
     }
@@ -432,8 +415,6 @@ Lisp_Max(LispMac *mac, LispBuiltin *builtin)
     ERROR_CHECK_REAL(result);
     for (; CONS_P(more_numbers); more_numbers = CDR(more_numbers)) {
 	number = CAR(more_numbers);
-
-	ERROR_CHECK_REAL(number);
 	if (math_compare(mac, builtin, result, number) < 0)
 	    result = number;
     }
@@ -467,8 +448,7 @@ Lisp_Abs(LispMac *mac, LispBuiltin *builtin)
 	    abs_accumulator(mac, builtin, result);
 	    break;
 	default:
-	    LispDestroy(mac, "%s: %s is not a number",
-			STRFUN(builtin), STROBJ(number));
+	    NOT_A_NUMBER(number);
 	    break;
     }
 
@@ -557,8 +537,6 @@ Lisp_Decf(LispMac *mac, LispBuiltin *builtin)
     }
     else
 	number = EVAL(place);
-
-    CHECK_OPERAND(number);
 
     if (delta != NIL) {
 	LispObj *operand;
@@ -649,8 +627,7 @@ Lisp_Evenp(LispMac *mac, LispBuiltin *builtin)
 	    result = mpi_modi(XBI(integer), 2) ? NIL : T;
 	    break;
 	default:
-	    LispDestroy(mac, "%s: %s is not an integer",
-			STRFUN(builtin), STROBJ(integer));
+	    NOT_AN_INTEGER(integer);
 	    /*NOTREACHED*/
 	    result = NIL;
     }
@@ -786,8 +763,6 @@ Lisp_Incf(LispMac *mac, LispBuiltin *builtin)
     }
     else
 	number = EVAL(place);
-
-    CHECK_OPERAND(number);
 
     if (delta != NIL) {
 	LispObj *operand;
@@ -931,7 +906,6 @@ Lisp_Logand(LispMac *mac, LispBuiltin *builtin)
 
     for (; CONS_P(integers); integers = CDR(integers)) {
 	operand = CAR(integers);
-	CHECK_OPERAND(operand);
 	switch (XTYPE(integer)) {
 	    case FI:
 		switch (XTYPE(operand)) {
@@ -948,6 +922,7 @@ Lisp_Logand(LispMac *mac, LispBuiltin *builtin)
 			XMEM(bigi);
 			break;
 		    default:
+			NOT_AN_INTEGER(operand);
 			break;
 		}
 		break;
@@ -965,10 +940,12 @@ Lisp_Logand(LispMac *mac, LispBuiltin *builtin)
 			mpi_and(XBI(integer), XBI(integer), XBI(operand));
 			break;
 		    default:
+			NOT_AN_INTEGER(operand);
 			break;
 		}
 		break;
 	    default:
+		NOT_AN_INTEGER(integer);
 		break;
 	}
     }
@@ -1001,7 +978,6 @@ Lisp_Logeqv(LispMac *mac, LispBuiltin *builtin)
 
     for (; CONS_P(integers); integers = CDR(integers)) {
 	operand = CAR(integers);
-	CHECK_OPERAND(operand);
 	switch (XTYPE(integer)) {
 	    case FI:
 		switch (XTYPE(operand)) {
@@ -1021,7 +997,9 @@ Lisp_Logeqv(LispMac *mac, LispBuiltin *builtin)
 			XTYPE(integer) = BI;
 			XMEM(bigi);
 			break;
-		    default:	break;
+		    default:
+			NOT_AN_INTEGER(operand);
+			break;
 		}
 		break;
 	    case BI:
@@ -1040,10 +1018,13 @@ Lisp_Logeqv(LispMac *mac, LispBuiltin *builtin)
 			mpi_com(iop, iop);
 			mpi_xor(XBI(integer), XBI(integer), iop);
 			break;
-		    default:	break;
+		    default:
+			NOT_AN_INTEGER(operand);
+			break;
 		}
 		break;
 	    default:
+		NOT_AN_INTEGER(integer);
 		break;
 	}
     }
@@ -1076,7 +1057,6 @@ Lisp_Logior(LispMac *mac, LispBuiltin *builtin)
 
     for (; CONS_P(integers); integers = CDR(integers)) {
 	operand = CAR(integers);
-	CHECK_OPERAND(operand);
 	switch (XTYPE(integer)) {
 	    case FI:
 		switch (XTYPE(operand)) {
@@ -1092,7 +1072,9 @@ Lisp_Logior(LispMac *mac, LispBuiltin *builtin)
 			XTYPE(integer) = BI;
 			XMEM(bigi);
 			break;
-		    default:	break;
+		    default:
+			NOT_AN_INTEGER(operand);
+			break;
 		}
 		break;
 	    case BI:
@@ -1108,10 +1090,13 @@ Lisp_Logior(LispMac *mac, LispBuiltin *builtin)
 		    case BI:
 			mpi_ior(XBI(integer), XBI(integer), XBI(operand));
 			break;
-		    default:	break;
+		    default:
+			NOT_AN_INTEGER(operand);
+			break;
 		}
 		break;
 	    default:
+		NOT_AN_INTEGER(integer);
 		break;
 	}
     }
@@ -1153,8 +1138,8 @@ Lisp_Lognot(LispMac *mac, LispBuiltin *builtin)
 	    XMEM(bigi);
 	}   break;
 	default:
-	    LispDestroy(mac, "%s: %s is not a integer",
-			STRFUN(builtin), STROBJ(integer));
+	    NOT_AN_INTEGER(integer);
+	    break;
     }
 
     return (integer);
@@ -1175,7 +1160,6 @@ Lisp_Logxor(LispMac *mac, LispBuiltin *builtin)
 
     for (; CONS_P(integers); integers = CDR(integers)) {
 	operand = CAR(integers);
-	CHECK_OPERAND(operand);
 	switch (XTYPE(integer)) {
 	    case FI:
 		switch (XTYPE(operand)) {
@@ -1191,7 +1175,9 @@ Lisp_Logxor(LispMac *mac, LispBuiltin *builtin)
 			XTYPE(integer) = BI;
 			XMEM(bigi);
 			break;
-		    default:	break;
+		    default:
+			NOT_AN_INTEGER(operand);
+			break;
 		}
 		break;
 	    case BI:
@@ -1207,10 +1193,13 @@ Lisp_Logxor(LispMac *mac, LispBuiltin *builtin)
 		    case BI:
 			mpi_xor(XBI(integer), XBI(integer), XBI(operand));
 			break;
-		    default:	break;
+		    default:
+			NOT_AN_INTEGER(operand);
+			break;
 		}
 		break;
 	    default:
+		NOT_AN_INTEGER(integer);
 		break;
 	}
     }
@@ -1329,8 +1318,7 @@ Lisp_Oddp(LispMac *mac, LispBuiltin *builtin)
 	    result = mpi_modi(XBI(integer), 2) ? T : NIL;
 	    break;
 	default:
-	    LispDestroy(mac, "%s: %s is not an integer",
-			STRFUN(builtin), STROBJ(integer));
+	    NOT_AN_INTEGER(integer);
 	    /*NOTREACHED*/
 	    result = NIL;
     }
@@ -1465,8 +1453,7 @@ Lisp_Zerop(LispMac *mac, LispBuiltin *builtin)
 	    result = NIL;
 	    break;
 	default:
-	    LispDestroy(mac, "%s: %s is not a number",
-			STRFUN(builtin), STROBJ(number));
+	    NOT_A_NUMBER(number);
 	    /*NOTREACHED*/
 	    result = NIL;
     }

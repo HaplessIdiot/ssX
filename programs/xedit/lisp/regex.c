@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/regex.c,v 1.3 2002/08/05 03:56:24 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/regex.c,v 1.4 2002/09/08 02:29:49 paulo Exp $ */
 
 #include "regex.h"
 #include "private.h"
@@ -187,17 +187,17 @@ Lisp_Reexec(LispMac *mac, LispBuiltin *builtin)
 	if (nmatch && match[0].rm_eo >= match[0].rm_so) {
 	    result = CONS(CONS(NIL, NIL), NIL);
 	    GC_PROTECT(result);
-	    CAAR(result) = SMALLINT(match[0].rm_so);
-	    CDAR(result) = SMALLINT(match[0].rm_eo);
+	    RPLACA(CAR(result), SMALLINT(match[0].rm_so));
+	    RPLACD(CAR(result), SMALLINT(match[0].rm_eo));
 	    if (nmatch > 1 && match[1].rm_eo >= match[1].rm_so) {
 		int i;
 		LispObj *cons = result;
 
 		for (i = 1; i < nmatch && match[i].rm_eo > match[i].rm_so; i++) {
-		    CDR(cons) = CONS(CONS(NIL, NIL), NIL);
+		    RPLACD(cons, CONS(CONS(NIL, NIL), NIL));
 		    cons = CDR(cons);
-		    CAAR(cons) = SMALLINT(match[i].rm_so);
-		    CDAR(cons) = SMALLINT(match[i].rm_eo);
+		    RPLACA(CAR(cons), SMALLINT(match[i].rm_so));
+		    RPLACD(CAR(cons), SMALLINT(match[i].rm_eo));
 		}
 	    }
 	}

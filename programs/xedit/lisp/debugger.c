@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.18 2002/06/03 21:39:23 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.19 2002/08/05 03:56:23 paulo Exp $ */
 
 #include <ctype.h>
 #include "io.h"
@@ -240,7 +240,7 @@ watch_again:
 			goto watch_again;
 		    }
 		    else
-			CDR(prev) = CDR(obj);
+			RPLACD(prev, CDR(obj));
 		    obj = prev;
 		}
 		else {
@@ -544,7 +544,7 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		    if (BRK == NIL)
 			BRK = CONS(obj, NIL);
 		    else
-			CDR(frm) = CONS(obj, NIL);
+			RPLACD(frm, CONS(obj, NIL));
 		    GCUProtect();
 		}
 		break;
@@ -619,7 +619,7 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		if (BRK == NIL)
 		    BRK = CONS(obj, NIL);
 		else
-		    CDR(frm) = CONS(obj, NIL);
+		    RPLACD(frm, CONS(obj, NIL));
 		GCUProtect();
 	    }	break;
 	    case DebuggerDelete:
@@ -670,7 +670,7 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 			if (obj == frm)
 			    BRK = CDR(BRK);
 			else
-			    CDR(obj) = CDR(frm);
+			    RPLACD(obj, CDR(frm));
 			while (*ptr && isspace(*ptr))
 			    ++ptr;
 			arg = ptr;

@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/syntax.lsp,v 1.4 2002/08/25 02:48:32 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/syntax.lsp,v 1.5 2002/09/08 02:29:49 paulo Exp $
 ;;
 
 (provide "syntax")
@@ -794,7 +794,7 @@ is used.
 	;;  Property flag when changing the current syntax table.
 	contained
 
-	;;  The new syntax table if changing
+	;;  Flag to know if syntax table has changed.
 	change
 
 	;;  Variables used when removing invalid elements from the
@@ -817,15 +817,8 @@ is used.
 	    (read-line stream NIL NIL)
 
 	    (setq
-		line			text
-		length			(length text)
-		notbol			(> start 0)
-		noteol			eos
-		token-list		(syntable-tokens syntax-table)
-		current-token-list	token-list
-		token-list-stack	()
-		nomatch			()
-		cache			()
+		line	text
+		noteol	eos
 	    )
 	)
 
@@ -842,6 +835,17 @@ is used.
 	    )
 	    (return)
 	)
+
+	(setq
+	    length		(length line)
+	    notbol		(> start 0)
+	    token-list		(syntable-tokens syntax-table)
+	    current-token-list	token-list
+	    token-list-stack	()
+	    nomatch		()
+	    cache		()
+	)
+
 
 	;;  If empty line, and current table does not have matches for
 	;; the empty string at start or end of a text line.
@@ -865,8 +869,7 @@ is used.
 	    (length cache)
 	)
 
-	;;  For every regex token in the current syntax table
-	;; that may match.
+	;;  For every token that may match.
 	(dolist
 	    (token
 		(setq
@@ -887,7 +890,11 @@ is used.
 		    ;; matches list, as a match from another syntax
 		    ;; table may be also in the cache, but before
 		    ;; the match for the current token.
-		    (setq matches (cons (car match) matches))
+#+debug-verbose	    (format T "Cached: {~A:~S} ~A~%"
+			(cdar match)
+			(subseq line (cadar match) (cddar match))
+			(syntoken-regex token)
+		    )
 
 		    ;;	Remove the match from the cache.
 		    (if (eq match cache)
@@ -897,15 +904,37 @@ is used.
 			;; but is unsafe, because other tokens may
 			;; be added to "matches", and will end up
 			;; before when joining "matches" and "cache".
-			(setq cache (cdr cache))
+			(progn
+			    (setq cache (cdr cache))
+			    (rplacd match matches)
+			    (setq matches match)
+			)
 
-			(if (= (length match) 1)
-			    (rplacd (last cache 2) NIL)
-			    (progn
-				(rplaca match (cadr match))
-				(rplacd match (cddr match))
+			(progn
+			    (if (= (length match) 1)
+				(progn
+				    (rplacd (last cache 2) NIL)
+				    (rplacd match matches)
+				    (setq matches match)
+				)
+				(progn
+				    (setq matches (cons (car match) matches))
+				    (rplaca match (cadr match))
+				    (rplacd match (cddr match))
+				)
 			    )
 			)
+		    )
+
+		    ;;	Exit loop if the all the remaining
+		    ;; input was matched.
+		    (when
+			(and
+			    (= start (cadar match))
+			    (= length (cddar match))
+			)
+#+debug-verbose 	(format T "Rest of line match~%")
+			(return)
 		    )
 		)
 
@@ -941,10 +970,10 @@ is used.
 				    (null matches)
 				    ;;	No overlap and after most
 				    ;; recent match.
-				    (> (car match) (cddar matches))
+				    (>= (car match) (cddar matches))
 				    ;; No overlap and before most
 				    ;; recent match.
-				    (< (cdr match) (cadar matches))
+				    (<= (cdr match) (cadar matches))
 				)
 				(setq
 				    matches
@@ -1001,21 +1030,16 @@ is used.
 :IGNORED
 	)
 
-	;;  Matches was created in reversed order of precedence.
-	(when (nreverse matches)
+	;;  Add matches to the beginning of the cache list.
+	(setq
+	    ;;	Put matches with smaller offset first.
+	    cache
+	    (stable-sort (nconc (nreverse matches) cache) #'< :KEY #'cadr)
 
-	    ;;	Add matches to the beginning of the cache list.
-	    ;;	There may be matches from another syntable table in the cache.
-	    (setq
-		;;  Put matches with smaller offset first.
-		cache
-		(stable-sort (nconc matches cache) #'< :KEY #'cadr)
-
-		;;  Make sure that when the match loop is reentered, this
-		;; variable is NIL.
-		matches
-		()
-	    )
+	    ;;	Make sure that when the match loop is reentered, this
+	    ;; variable is NIL.
+	    matches
+	    ()
 	)
 
 	;;  While the first entry in the cache is not from the current table.
@@ -1051,8 +1075,6 @@ is used.
 		    (rplaca (cdar result) length)
 		)
 	    )
-	    ;;  Let the code know the input line is finished.
-	    (setq start length)
 
 #+debug-verbose
 	    (format T "No match until end of line~%")
@@ -1074,11 +1096,12 @@ is used.
 	    match	(car cache)
 	    left	(cadr match)
 	    right	(cddr match)
+	    cache	(cdr cache)
 	)
 
 	;;  First element can be safely removed now.
 	;;  If there is only one, skip loop below.
-	(or (setq cache (cdr cache)) (go :PARSE))
+	(or cache (go :PARSE))
 
 	;;  Remove elements of cache that must be discarded.
 	(setq
@@ -1107,6 +1130,8 @@ is used.
 
 		;;  And if this match is longer than the current one.
 		(> to right)
+
+		(member (car item) token-list :TEST #'eq)
 
 		(setq
 		    match   item
@@ -1264,6 +1289,10 @@ is used.
 			    (car (syntax-labels *SYNTAX*))
 			)
 		    )
+
+		    (if (null token-list)
+			(setq token-list (syntable-tokens change))
+		    )
 		)
 
 		;;  Else, it is a begin.
@@ -1286,15 +1315,11 @@ is used.
 		start
 	    )
 
-	    (if (null token-list)
-		(setq token-list (syntable-tokens change))
-	    )
-
 	    ;;	Change current syntax table.
 	    (setq
 		syntax-table	    change
 		default-property    (syntable-property change)
-		current-token-list  token-list
+		current-token-list  (syntable-tokens change)
 	    )
 
 	    ;; If processing of text was deferred.
@@ -1341,13 +1366,11 @@ is used.
 
 
 ;-----------------------------------------------------------------------
-:PROCESS
 	;;  Wait for the end of the line to process, so that 
 	;; it is possible to join sequential matches with the
 	;; same text property.
-	(if (< start length)
-	    (go :LOOP)
-	)
+	(and (< start length) (go :LOOP))
+:PROCESS
 
 #+debug-verbose
 	(format T "** Entering :PROCESS~%")
@@ -1375,6 +1398,7 @@ is used.
 		)
 	    )
 	)
+
 
 :UPDATE
 	;; Prepare for new matches.

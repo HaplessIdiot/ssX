@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.21 2002/08/05 03:56:23 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.22 2002/08/25 02:48:30 paulo Exp $ */
 
 #include "io.h"
 #include "write.h"
@@ -1536,7 +1536,7 @@ format_justify(LispMac *mac, LispObj *stream, FmtInfo *info)
 	for (i = 1; i < num_formats; i++) {
 	    string = LSTRINGSTREAM((unsigned char*)"",
 				   STREAM_READ | STREAM_WRITE, 1);
-	    CDR(cons) = CONS(string, NIL);
+	    RPLACD(cons, CONS(string, NIL));
 	    cons = CDR(cons);
 	}
     }
@@ -1556,11 +1556,11 @@ format_justify(LispMac *mac, LispObj *stream, FmtInfo *info)
 
 	/* if format was aborted, it is discarded */
 	if (justify_info.upandout)
-	    CAR(cons) = NIL;
+	    RPLACA(cons, NIL);
 	/* check if the entire "main" iteration must be aborted */
 	if (justify_info.upandout & UPANDOUT_COLLON) {
 	    for (cons = CDR(cons); i < num_formats; i++, cons = CDR(cons))
-		CAR(cons) = NIL;
+		RPLACA(cons, NIL);
 	    break;
 	}
     }
@@ -1582,7 +1582,7 @@ format_justify(LispMac *mac, LispObj *stream, FmtInfo *info)
     cons = strings;
     while (CONS_P(cons)) {
 	if (CONS_P(CDR(cons)) && CAR(CDR(cons)) == NIL) {
-	    CDR(cons) = CDR(CDR(cons));
+	    RPLACD(cons, CDR(CDR(cons)));
 	    --num_formats;
 	}
 	else

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.1 2002/08/25 02:48:30 paulo Exp $ */
 
 
 /*
@@ -383,7 +383,7 @@ Lisp_Compile(LispMac *mac, LispBuiltin *builtin)
 	    LispObj *lambda, *form, *arguments;
 
 	    lambda = atom->property->fun.function;
-	    if (definition != NIL || lambda->data.lambda.type != LispFunction)
+	    if (definition != NIL || lambda->funtype != LispFunction)
 		/* XXX TODO replace definition etc. */
 		goto finished_compilation;
 	    alist = atom->property->alist;
@@ -403,15 +403,14 @@ Lisp_Compile(LispMac *mac, LispBuiltin *builtin)
 		arguments = form = CONS(NIL, NIL);
 		GC_PROTECT(arguments);
 		for (--base; base > 0; base--) {
-		    CDR(form) = CONS(NIL, NIL);
+		    RPLACD(form, CONS(NIL, NIL));
 		    form = CDR(form);
 		}
 	    }
 	    else
 		arguments = NIL;
 
-	    lambda = CDR(lambda->data.lambda.code);
-	    form = CONS(lambda, NIL);
+	    form = CONS(lambda->data.lambda.code, NIL);
 	    GC_PROTECT(form);
 	    com.form = form;
 
@@ -421,14 +420,14 @@ Lisp_Compile(LispMac *mac, LispBuiltin *builtin)
 
 	    /* Generate code tree */
 	    mac->env.lex = base;
-	    ComProgn(&com, lambda);
+	    ComProgn(&com, CAR(form));
 
 	    /* Restore interpreter state */
 	    mac->env.lex = lex;
 	    mac->env.head = mac->env.length = base;
 
 	    failure_p = NIL;
-	    result = MakeBytecodeObject(mac, &com, CAR(form));
+	    result = MakeBytecodeObject(mac, &com, lambda->data.lambda.data);
 	    LispSetAtomCompiledProperty(mac, atom, result);
 	    result = name;
 	    if (com.warnings)
@@ -488,7 +487,7 @@ Lisp_Disassemble(LispMac *mac, LispBuiltin *builtin)
 		bytecode = atom->property->fun.function;
 	    else if (atom->a_function) {
 		lambda = atom->property->fun.function;
-		macro = lambda->data.lambda.type == LispMacro;
+		macro = lambda->funtype == LispMacro;
 	    }
 	    else if (atom->a_defstruct &&
 		     atom->property->structure.function != STRUCT_NAME) {
@@ -652,7 +651,7 @@ Lisp_Disassemble(LispMac *mac, LispBuiltin *builtin)
 	}
 	for (i = 0; i < num_builtins; i++) {
 	    sprintf(buffer, "Builtin %d = %s\n",
-		    i, STROBJ(CAR(builtins[i]->description)));
+		    i, STROBJ(builtins[i]->symbol));
 	    LispWriteStr(mac, NIL, buffer, strlen(buffer));
 	}
 
@@ -1055,7 +1054,7 @@ integer:
 		/* Builtin */
 		if (bui0 >= 0) {
 		    strcpy(ptr, "  ");	ptr += 2;
-		    strcpy(ptr, STROBJ(CAR(builtins[bui0]->description)));
+		    strcpy(ptr, STROBJ(builtins[bui0]->symbol));
 		    ptr += strlen(ptr);
 		}
 
@@ -1114,7 +1113,7 @@ LispCompileForm(LispMac *mac, LispObj *form)
 	ComEval(&com, CAR(form));
     }
 
-    return (MakeBytecodeObject(mac, &com, form));
+    return (MakeBytecodeObject(mac, &com, NIL));
 }
 
 LispObj *
@@ -1127,10 +1126,15 @@ LispExecuteBytecode(LispMac *mac, LispObj *object)
 }
 
 static LispObj *
-MakeBytecodeObject(LispMac *mac, LispCom *com, LispObj *code)
+MakeBytecodeObject(LispMac *mac, LispCom *com, LispObj *plist)
 {
     LispObj *object;
     LispBytecode *bytecode;
+
+    GC_ENTER();
+    unsigned char *stream;
+    short i, num_constants;
+    LispObj **constants, *code, *cons, *prev;
 
     /* Resolve dependencies, optimize and create byte stream */
     LinkBytecode(com);
@@ -1139,9 +1143,62 @@ MakeBytecodeObject(LispMac *mac, LispCom *com, LispObj *code)
     CompileFreeState(com);
 
     object = LispNew(mac, NIL, NIL);
+    GC_PROTECT(object);
     bytecode = LispMalloc(mac, sizeof(LispBytecode));
     bytecode->code = com->bytecode;
     bytecode->length = com->length;
+
+
+    stream = bytecode->code;
+
+    /* Skip stack information */
+    stream += sizeof(short) * 3;
+
+    /* Get number of constants used by the bytecode */
+    num_constants = *(short*)stream;
+
+    /* Adjust to point to start of constants */
+    stream += sizeof(short) * 3;
+
+    constants = (LispObj**)stream;
+
+    GC_PROTECT(plist);
+    code = cons = prev = NIL;
+    for (i = 0; i < num_constants; i++) {
+	switch (constants[i]->type) {
+	    case LispNil_t:
+	    case LispTrue_t:
+	    case LispAtom_t:
+	    case LispCharacter_t:
+		break;
+	    default:
+		if (code == NIL) {
+		    code = cons = prev = CONS(constants[i], NIL);
+		    GC_PROTECT(code);
+		}
+		else {
+		    RPLACD(cons, CONS(constants[i], NIL));
+		    prev = cons;
+		    cons = CDR(cons);
+		}
+		break;
+	}
+    }
+    /* Allocate the minimum required number of cons cells to protect objects */
+    if (!CONS_P(code))
+	code = plist;
+    else if (CONS_P(plist)) {
+	if (code == cons)
+	    RPLACD(code, plist);
+	else
+	    RPLACD(cons, plist);
+    }
+    else {
+	if (code == cons)
+	    code = CAR(code);
+	else
+	    CDR(prev) = CAR(cons);
+    }
 
     object->data.bytecode.bytecode = bytecode;
     /* Byte code references this object, so it cannot be garbage collected */
@@ -1150,6 +1207,7 @@ MakeBytecodeObject(LispMac *mac, LispCom *com, LispObj *code)
 
     LispMused(mac, bytecode);
     LispMused(mac, bytecode->code);
+    GC_LEAVE();
 
     return (object);
 }
@@ -2903,14 +2961,14 @@ cdr:
 		reg1 = mac->stack.values[--mac->stack.length];
 		if (!CONS_P(reg1))
 		    LispDestroy(mac, "RPLACA: %s is not a cons", STROBJ(reg1));
-		CAR(reg1) = reg0;
+		RPLACA(reg1, reg0);
 		reg0 = reg1;
 		goto next_opcode;
 	    case XBC_RPLACD:
 		reg1 = mac->stack.values[--mac->stack.length];
 		if (!CONS_P(reg1))
 		    LispDestroy(mac, "RPLACD: %s is not a cons", STROBJ(reg1));
-		CDR(reg1) = reg0;
+		RPLACD(reg1, reg0);
 		reg0 = reg1;
 		goto next_opcode;
 
@@ -3272,7 +3330,7 @@ set_local_variable:
 			if (atom->watch)
 			    LispSetAtomObjectProperty(mac, atom, reg0);
 			else
-			    atom->property->value = reg0;
+			    SETVALUE(atom, reg0);
 		    }
 		}
 		else if (atom->a_object) {
@@ -3282,7 +3340,7 @@ set_local_variable:
 		    else if (atom->watch)
 			LispSetAtomObjectProperty(mac, atom, reg0);
 		    else
-			atom->property->value = reg0;
+			SETVALUE(atom, reg0);
 		}
 		else {
 		    /* Create new global variable */
@@ -3425,7 +3483,7 @@ load_symbol:
 	    /* Add to list */
 	    case XBC_LCONS:
 		reg1 = mac->protect.objects[phead - 2];
-		CDR(reg1) = CONS(reg0, NIL);
+		RPLACD(reg1, CONS(reg0, NIL));
 		 mac->protect.objects[phead - 2] = CDR(reg1);
 		goto next_opcode;
 	    /* Finish list */

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.29 2002/08/25 02:48:30 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.30 2002/09/08 02:29:49 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -43,6 +43,10 @@
  */
 #define STREAM_READ		1
 #define STREAM_WRITE		2
+
+#define RPLACA(cons, object)	(CAR(cons) = object)
+#define RPLACD(cons, object)	(CDR(cons) = object)
+#define SETVALUE(atom, object)	((atom)->property->value = object)
 
 #define	CAR(list)		((list)->data.cons.car)
 #define	CAAR(list)		((list)->data.cons.car->data.cons.car)
@@ -193,7 +197,7 @@
 
 #define LispFileno(file)	((file)->descriptor)
 
-#define STRFUN(builtin)		STRPTR(CAR(builtin->description))
+#define STRFUN(builtin)		STRPTR(builtin->symbol)
 #define STROBJ(obj)		LispStrObj(mac, obj)
 
 #define CONSTANT_P(obj)					\
@@ -399,6 +403,7 @@ struct _LispObj {
     LispType type : 6;
     unsigned int mark : 1;	/* gc protected */
     unsigned int prot: 1;	/* protection for constant/unamed variables */
+    LispFunType funtype : 4;	/* this is subject to change in the future */
     union {
 	LispAtom *atom;
 	struct {
@@ -429,7 +434,7 @@ struct _LispObj {
 	struct {
 	    LispObj *name;
 	    LispObj *code;
-	    LispFunType type;
+	    LispObj *data;		/* extra data to protect */
 	} lambda;
 	struct {
 	    LispObj *list;		/* stored as a linear list */
@@ -500,7 +505,10 @@ struct _LispBuiltin {
     LispComPtr compile;
 
     /* this field is set at runtime */
-    LispObj *description;
+    LispObj *symbol;
+
+    /* if the builtin function has default values, it is protected here */
+    LispObj *data;
 };
 
 typedef int (*LispLoadModule)(LispMac*);

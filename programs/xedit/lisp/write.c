@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.9 2002/08/25 02:48:31 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.10 2002/09/08 02:29:49 paulo Exp $ */
 
 #include "write.h"
 #include <math.h>
@@ -332,7 +332,7 @@ write_again:
 	    length += LispWriteStruct(mac, stream, object);
 	    break;
 	case LispLambda_t:
-	    switch (object->data.lambda.type) {
+	    switch (object->funtype) {
 		case LispLambda:
 		    length += LispWriteStr(mac, stream, "#<LAMBDA ", 9);
 		    break;
@@ -346,7 +346,7 @@ write_again:
 		    length += LispWriteStr(mac, stream, "#<SETF ", 7);
 		    break;
 	    }
-	    if (object->data.lambda.type != LispLambda) {
+	    if (object->funtype != LispLambda) {
 		char *desc = STRPTR(object->data.lambda.name);
 
 		length += LispWriteStr(mac, stream, desc, strlen(desc));

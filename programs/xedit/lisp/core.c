@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.48 2002/08/25 02:48:30 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.49 2002/09/11 19:54:51 tsi Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -236,14 +236,14 @@ Lisp_Append(LispMac *mac, LispBuiltin *builtin)
 		LispObj *obj = CDR(cons);
 
 		while (CONS_P(CDR(obj))) {
-		    CDR(cons) = CONS(CAR(obj), CDR(obj));
+		    RPLACD(cons, CONS(CAR(obj), CDR(obj)));
 		    cons = CDR(cons);
 		    obj = CDR(obj);
 		}
-		CDR(cons) = CONS(CADR(cons), list);
+		RPLACD(cons, CONS(CADR(cons), list));
 	    }
 	    else
-		CDR(cons) = list;
+		RPLACD(cons, list);
 	    cons = CDR(cons);
 	}
     }
@@ -301,8 +301,8 @@ Lisp_Aref(LispMac *mac, LispBuiltin *builtin)
 	     obj = CDR(obj), ++idx)
 	    ;
 	for (c = 1, obj = CDR(obj); obj != NIL; obj = CDR(obj))
-	    c *= FIXNUM_VALUE(CAR(obj));
-	count += c * FIXNUM_VALUE(CAR(dim));
+	    c *= CAR(obj)->data.integer;
+	count += c * CAR(dim)->data.integer;
     }
 
     for (array = array->data.array.list; count > 0; array = CDR(array), count--)
@@ -476,11 +476,11 @@ Lisp_Apply(LispMac *mac, LispBuiltin *builtin)
 
 	for (;; more_args = CDR(more_args)) {
 	    if (CONS_P(CDR(more_args))) {
-		CDR(cons) = CONS(CAR(more_args), NIL);
+		RPLACD(cons, CONS(CAR(more_args), NIL));
 		cons = CDR(cons);
 	    }
 	    else {
-		arg = CDR(cons) = CAR(more_args);
+		arg = RPLACD(cons, CAR(more_args));
 		if (CONS_P(arg))
 		    for (; CONS_P(arg); arg = CDR(arg))
 			;
@@ -602,7 +602,7 @@ Lisp_Butlast(LispMac *mac, LispBuiltin *builtin)
     result = cons = CONS(CAR(list), NIL);
     GC_PROTECT(result);
     for (list = CDR(list); length > 0; list = CDR(list), length--) {
-	CDR(cons) = CONS(CAR(list), NIL);
+	RPLACD(cons, CONS(CAR(list), NIL));
 	cons = CDR(cons);
     }
     GC_LEAVE();
@@ -811,7 +811,7 @@ Lisp_CopyList(LispMac *mac, LispBuiltin *builtin)
     result = cons = CONS(CAR(list), CDR(list));
     GC_PROTECT(result);
     for (list = CDR(list); CONS_P(list); list = CDR(list)) {
-	CDR(cons) = CONS(CAR(list), CDR(list));
+	RPLACD(cons, CONS(CAR(list), CDR(list)));
 	cons = CDR(cons);
     }
     GC_LEAVE();
@@ -892,9 +892,8 @@ Lisp_Defmacro(LispMac *mac, LispBuiltin *builtin)
 	body = CDR(body);
     }
 
-    GCProtect();
-    lambda = LispNewLambda(mac, name, lambda_list, body, LispMacro);
-    GCUProtect();
+    lambda_list = LispListProtectedArguments(mac, alist);
+    lambda = LispNewLambda(mac, name, body, lambda_list, LispMacro);
 
     if (name->data.atom->a_builtin) {
 	ERROR_CHECK_SPECIAL_FORM(name->data.atom);
@@ -936,9 +935,8 @@ Lisp_Defun(LispMac *mac, LispBuiltin *builtin)
 	body = CDR(body);
     }
 
-    GCProtect();
-    lambda = LispNewLambda(mac, name, lambda_list, body, LispFunction);
-    GCUProtect();
+    lambda_list = LispListProtectedArguments(mac, alist);
+    lambda = LispNewLambda(mac, name, body, lambda_list, LispFunction);
 
     if (name->data.atom->a_builtin) {
 	ERROR_CHECK_SPECIAL_FORM(name->data.atom);
@@ -995,16 +993,13 @@ Lisp_Defsetf(LispMac *mac, LispBuiltin *builtin)
 	    LispDestroy(mac, "%s: %s cannot be a variable name",
 			STRFUN(builtin), STROBJ(CAR(obj)));
 
-    lambda_list = CONS(lambda_list, store);
     body = CDR(body);
     if (CONS_P(body) && STRING_P(CAR(body))) {
 	LispAddDocumentation(mac, function, CAR(body), LispDocSetf);
 	body = CDR(body);
     }
 
-    GCProtect();
-    lambda = LispNewLambda(mac, function, lambda_list, body, LispSetf);
-    GCUProtect();
+    lambda = LispNewLambda(mac, function, body, store, LispSetf);
     LispSetAtomSetfProperty(mac, function->data.atom, lambda, alist);
     LispUseArgList(mac, alist);
 
@@ -1348,7 +1343,7 @@ Lisp_Fill(LispMac *mac, LispBuiltin *builtin)
 	for (i = 0; i < start; i++, list = CDR(list))
 	    ;
 	for (; i < end; i++, list = CDR(list))
-	    CAR(list) = item;
+	    RPLACA(list, item);
     }
 
     return (sequence);
@@ -1552,9 +1547,10 @@ Lisp_Lambda(LispMac *mac, LispBuiltin *builtin)
 
     alist = LispCheckArguments(mac, LispLambda, lambda_list, STRPTR(Olambda));
 
+    lambda_list = LispListProtectedArguments(mac, alist);
     GCProtect();
     lambda = LispNewLambda(mac, OPAQUE(alist, LispArgList_t),
-			   lambda_list, body, LispLambda);
+			   body, lambda_list, LispLambda);
     GCUProtect();
     LispUseArgList(mac, alist);
 
@@ -1654,7 +1650,7 @@ Lisp_Let(LispMac *mac, LispBuiltin *builtin)
 	    GC_PROTECT(list);
 	}
 	else {
-	    CDR(cons) = CONS(pair, NIL);
+	    RPLACD(cons, CONS(pair, NIL));
 	    cons = CDR(cons);
 	}
     }
@@ -1766,7 +1762,7 @@ Lisp_ListP(LispMac *mac, LispBuiltin *builtin)
     for (more_objects = CDR(more_objects); CONS_P(more_objects);
 	 more_objects = CDR(more_objects)) {
 	object = CAR(more_objects);
-	CDR(cons) = CONS(CDR(cons), object);
+	RPLACD(cons, CONS(CDR(cons), object));
 	cons = CDR(cons);
     }
     GC_LEAVE();
@@ -1857,7 +1853,7 @@ LispListSet(LispMac *mac, LispBuiltin *builtin, int function)
 	GC_PROTECT(result);
 	for (cmp2 = CDR(list2); CONS_P(cmp2); cmp2 = CDR(cmp2)) {
 	    item = APPLY1(key, CAR(cmp2));
-	    CDR(cons) = CONS(APPLY1(key, CAR(cmp2)), NIL);
+	    RPLACD(cons, CONS(APPLY1(key, CAR(cmp2)), NIL));
 	    cons = CDR(cons);
 	}
 	clist2 = result;
@@ -1897,7 +1893,7 @@ LispListSet(LispMac *mac, LispBuiltin *builtin, int function)
 		    GC_PROTECT(clist1);
 		}
 		else {
-		    CDR(cdr) = CONS(cmp, NIL);
+		    RPLACD(cdr, CONS(cmp, NIL));
 		    cdr = CDR(cdr);
 		}
 	    }
@@ -1930,12 +1926,12 @@ LispListSet(LispMac *mac, LispBuiltin *builtin, int function)
 	    (function == INTERSECTION && value == expect)) {
 	    if (inplace) {
 		if (result == NIL) {
-		    CAR(list1) = CAR(cmp1);
-		    CDR(list1) = CDR(cmp1);
+		    RPLACA(list1, CAR(cmp1));
+		    RPLACD(list1, CDR(cmp1));
 		    result = cons = cmp1;
 		}
 		else {
-		    CDR(cons) = cmp1;
+		    RPLACD(cons, cmp1);
 		    cons = cmp1;
 		}
 	    }
@@ -1945,7 +1941,7 @@ LispListSet(LispMac *mac, LispBuiltin *builtin, int function)
 		    GC_PROTECT(result);
 		}
 		else {
-		    CDR(cons) = CONS(item, NIL);
+		    RPLACD(cons, CONS(item, NIL));
 		    cons = CDR(cons);
 		}
 	    }
@@ -1962,7 +1958,7 @@ LispListSet(LispMac *mac, LispBuiltin *builtin, int function)
 	if (result == NIL)
 	    result = list2;
 	else
-	    CDR(cons) = list2;
+	    RPLACD(cons, list2);
     }
     else if (function == SETEXCLUSIVEOR) {
 	for (cmp2 = list2; CONS_P(cmp2); cmp2 = CDR(cmp2)) {
@@ -1996,14 +1992,14 @@ LispListSet(LispMac *mac, LispBuiltin *builtin, int function)
 		    GC_PROTECT(result);
 		}
 		else {
-		    CDR(cons) = CONS(item, NIL);
+		    RPLACD(cons, CONS(item, NIL));
 		    cons = CDR(cons);
 		}
 	    }
 	}
     }
     else if (function == NSETDIFFERENCE && CONS_P(cons))
-	CDR(cons) = NIL;
+	RPLACD(cons, NIL);
 
     GC_LEAVE();
 
@@ -2245,8 +2241,8 @@ make_array_error:
 		    if (array == NIL)
 			array = CONS(CAR(obj), NIL);
 		    else {
-			CDR(array) = CONS(CAR(array), CDR(array));
-			CAR(array) = CAR(obj);
+			RPLACD(array, CONS(CAR(array), CDR(array)));
+			RPLACA(array, CAR(obj));
 		    }
 		}
 	    }
@@ -2263,8 +2259,8 @@ make_array_error:
 	    --count;
 	    array = CONS(initial_element, NIL);
 	    while (count) {
-		CDR(array) = CONS(CAR(array), CDR(array));
-		CAR(array) = initial_element;
+		RPLACD(array, CONS(CAR(array), CDR(array)));
+		RPLACA(array, initial_element);
 		count--;
 	    }
 	}
@@ -2308,7 +2304,7 @@ Lisp_MakeList(LispMac *mac, LispBuiltin *builtin)
     result = cons = CONS(initial_element, NIL);
     GC_PROTECT(result);
     for (; count > 1; count--) {
-	CDR(cons) = CONS(initial_element, NIL);
+	RPLACD(cons, CONS(initial_element, NIL));
 	cons = CDR(cons);
     }
     GC_LEAVE();
@@ -2387,7 +2383,7 @@ Lisp_Mapcar(LispMac *mac, LispBuiltin *builtin)
 
     /* Allocate space for extra arguments */
     for (; count > 0; count--) {
-	CDR(acons) = CONS(NIL, NIL);
+	RPLACD(acons, CONS(NIL, NIL));
 	acons = CDR(acons);
     }
 
@@ -2396,7 +2392,7 @@ Lisp_Mapcar(LispMac *mac, LispBuiltin *builtin)
 	acons = arguments;
 
 	/* Add first argument */
-	CAR(acons) = CAR(list);
+	RPLACA(acons, CAR(list));
 	acons = CDR(acons);
 
 	/* For every extra list argument */
@@ -2409,16 +2405,16 @@ Lisp_Mapcar(LispMac *mac, LispBuiltin *builtin)
 		;
 
 	    /* Add element to argument list */
-	    CAR(acons) = CAR(alist);
+	    RPLACA(acons, CAR(alist));
 	    acons = CDR(acons);
 	}
 
 	/* Store result */
-	CAR(cons) = APPLY(function, arguments);
+	RPLACA(cons, APPLY(function, arguments));
 
 	/* Allocate new result cell if required */
 	if (++offset < length) {
-	    CDR(cons) = CONS(NIL, NIL);
+	    RPLACD(cons, CONS(NIL, NIL));
 	    cons = CDR(cons);
 	}
 	else
@@ -2468,7 +2464,7 @@ Lisp_Maplist(LispMac *mac, LispBuiltin *builtin)
 		if (!CONS_P(arglist = CDR(arglist)))
 		    goto maplist_done;
 	    }
-	    CDR(cons) = CONS(QUOTE(arglist), NIL);
+	    RPLACD(cons, CONS(QUOTE(arglist), NIL));
 	}
 	cons = EVAL(code);
 	if (result == NIL) {
@@ -2476,7 +2472,7 @@ Lisp_Maplist(LispMac *mac, LispBuiltin *builtin)
 	    mac->protect.objects[length + 1] = result;
 	}
 	else {
-	    CDR(acons) = CONS(cons, NIL);
+	    RPLACD(acons, CONS(cons, NIL));
 	    acons = CDR(acons);
 	}
     }
@@ -2570,7 +2566,7 @@ Lisp_MultipleValueList(LispMac *mac, LispBuiltin *builtin)
     result = cons = CONS(result, NIL);
     GC_PROTECT(result);
     for (i = 0; i < RETURN_COUNT; i++) {
-	CDR(cons) = CONS(RETURN(i), NIL);
+	RPLACD(cons, CONS(RETURN(i), NIL));
 	cons = CDR(cons);
     }
     GC_LEAVE();
@@ -2608,13 +2604,13 @@ Lisp_Nconc(LispMac *mac, LispBuiltin *builtin)
 	for (tail = list; CONS_P(CDR(tail)); tail = CDR(tail))
 	    ;
 	for (lists = CDR(lists); CONS_P(lists); lists = CDR(lists)) {
-	    CDR(tail) = CAR(lists);
+	    RPLACD(tail, CAR(lists));
 	    for (; CONS_P(CDR(tail)); tail = CDR(tail))
 		;
 	}
 	/* if last argument is not a list */
 	if (lists != NIL)
-	    CDR(tail) = lists;
+	    RPLACD(tail, lists);
     }
 
     return (list);
@@ -3143,7 +3139,7 @@ Lisp_Progv(LispMac *mac, LispBuiltin *builtin)
 	    GC_PROTECT(valist);
 	}
 	else {
-	    CDR(cons) = CONS(CONS(CAR(symbols), CAR(values)), NIL);
+	    RPLACD(cons, CONS(CONS(CAR(symbols), CAR(values)), NIL));
 	    cons = CDR(cons);
 	}
 	values = CDR(values);
@@ -3186,8 +3182,8 @@ Lisp_Provide(LispMac *mac, LispBuiltin *builtin)
     if (MOD == NIL)
 	MOD = CONS(module, NIL);
     else {
-	CDR(MOD) = CONS(CAR(MOD), CDR(MOD));
-	CAR(MOD) = module;
+	RPLACD(MOD, CONS(CAR(MOD), CDR(MOD)));
+	RPLACA(MOD, module);
     }
 
     LispSetVar(mac, mac->modules, MOD);
@@ -3388,7 +3384,7 @@ Lisp_Replace(LispMac *mac, LispBuiltin *builtin)
 
 	/* copy data */
 	for (i = 0; i < length; i++, from = CDR(from), to = CDR(to))
-	    CAR(to) = CAR(from);
+	    RPLACA(to, CAR(from));
     }
 
     return (sequence1);
@@ -3480,7 +3476,7 @@ LispDeleteOrRemoveDuplicates(LispMac *mac, LispBuiltin *builtin, int function)
 	    value = CHAR(string[i]);
 	    if (key != NIL)
 		value = APPLY1(key, value);
-	    CDR(cons) = CONS(value, NIL);
+	    RPLACD(cons, CONS(value, NIL));
 	    cons = CDR(cons);
 	}
 
@@ -3592,7 +3588,7 @@ LispDeleteOrRemoveDuplicates(LispMac *mac, LispBuiltin *builtin, int function)
 		    for (i = 1, object = CDR(object);
 			 i < start;
 			 i++, object = CDR(object)) {
-			CDR(cons) = CONS(CAR(object), NIL);
+			RPLACD(cons, CONS(CAR(object), NIL));
 			cons = CDR(cons);
 		    }
 		}
@@ -3635,7 +3631,7 @@ LispDeleteOrRemoveDuplicates(LispMac *mac, LispBuiltin *builtin, int function)
 				GC_PROTECT(result);
 			    }
 			    else {
-				CDR(cons) = CONS(objects[i], NIL);
+				RPLACD(cons, CONS(objects[i], NIL));
 				cons = CDR(cons);
 			    }
 			}
@@ -3647,19 +3643,19 @@ LispDeleteOrRemoveDuplicates(LispMac *mac, LispBuiltin *builtin, int function)
 			if (objects[i] == NULL) {
 			    if (cons == NIL) {
 				if (CONS_P(CDR(result))) {
-				    CAR(result) = CADR(result);
-				    CDR(result) = CDDR(result);
+				    RPLACA(result, CADR(result));
+				    RPLACD(result, CDDR(result));
 				}
 				else {
-				    CAR(result) = CDR(result);
-				    CDR(result) = NIL;
+				    RPLACA(result, CDR(result));
+				    RPLACD(result, NIL);
 				}
 			    }
 			    else {
 				if (CONS_P(CDR(cons)))
-				    CDR(cons) = CDDR(cons);
+				    RPLACD(cons, CDDR(cons));
 				else
-				    CDR(cons) = NIL;
+				    RPLACD(cons, NIL);
 			    }
 			}
 			else {
@@ -3681,7 +3677,7 @@ LispDeleteOrRemoveDuplicates(LispMac *mac, LispBuiltin *builtin, int function)
 		    object = CDR(object);
 		}
 		for (; i < length; i++, object = CDR(object)) {
-		    CDR(cons) = CONS(CAR(object), NIL);
+		    RPLACD(cons, CONS(CAR(object), NIL));
 		    cons = CDR(cons);
 		}
 	    }
@@ -3999,7 +3995,7 @@ LispDeleteRemoveXSubstitute(LispMac *mac, LispBuiltin *builtin,
 		    for (++i, object = CDR(list);
 			 i < start;
 			 i++, object = CDR(object)) {
-			CDR(cons) = CONS(CAR(object), NIL);
+			RPLACD(cons, CONS(CAR(object), NIL));
 		 	cons = CDR(cons);
 		    }
 		}
@@ -4015,11 +4011,11 @@ LispDeleteRemoveXSubstitute(LispMac *mac, LispBuiltin *builtin,
 			if (result == NIL)
 			    result = cons = object;
 			else {
-			    CDR(cons) = object;
+			    RPLACD(cons, object);
 			    cons = CDR(cons);
 			}
 			if (function == NSUBSTITUTE)
-			    CAR(cons) = objects[i];
+			    RPLACA(cons, objects[i]);
 		    }
 		    else {
 			if (result == NIL) {
@@ -4027,7 +4023,7 @@ LispDeleteRemoveXSubstitute(LispMac *mac, LispBuiltin *builtin,
 			    GC_PROTECT(result);
 			}
 			else {
-			    CDR(cons) = CONS(objects[i], NIL);
+			    RPLACD(cons, CONS(objects[i], NIL));
 			    cons = CDR(cons);
 			}
 		    }
@@ -4038,7 +4034,7 @@ LispDeleteRemoveXSubstitute(LispMac *mac, LispBuiltin *builtin,
 		if (result == NIL)
 		    result = object;
 		else
-		    CDR(cons) = object;
+		    RPLACD(cons, object);
 
 		if (!CONS_P(sequence)) {
 		    result = sequence;
@@ -4056,7 +4052,7 @@ LispDeleteRemoveXSubstitute(LispMac *mac, LispBuiltin *builtin,
 		    i++;
 		}
 		for (; i < length; i++, object = CDR(object)) {
-		    CDR(cons) = CONS(CAR(object), NIL);
+		    RPLACD(cons, CONS(CAR(object), NIL));
 		    cons = CDR(cons);
 		}
 	    }
@@ -4245,8 +4241,8 @@ LispXReverse(LispMac *mac, LispBuiltin *builtin, int inplace)
 			 j--, result = CDR(result))
 			;
 		    temp = CAR(list);
-		    CAR(list) = CAR(result);
-		    CAR(result) = temp;
+		    RPLACA(list, CAR(result));
+		    RPLACA(result, temp);
 		}
 		return (sequence);
 	    }
@@ -4271,7 +4267,7 @@ LispXReverse(LispMac *mac, LispBuiltin *builtin, int inplace)
 	result = cons = CONS(CAR(list), NIL);
 	GC_PROTECT(result);
 	for (list = CDR(list); CONS_P(list); list = CDR(list)) {
-	    CDR(cons) = CONS(CAR(list), NIL);
+	    RPLACD(cons, CONS(CAR(list), NIL));
 	    cons = CDR(cons);
 	}
 	result = LispReverse(result);
@@ -4315,7 +4311,7 @@ Lisp_Rplaca(LispMac *mac, LispBuiltin *builtin)
     place = ARGUMENT(0);
 
     ERROR_CHECK_CONS(place);
-    CAR(place) = value;
+    RPLACA(place, value);
 
     return (place);
 }
@@ -4332,7 +4328,7 @@ Lisp_Rplacd(LispMac *mac, LispBuiltin *builtin)
     place = ARGUMENT(0);
 
     ERROR_CHECK_CONS(place);
-    CDR(place) = value;
+    RPLACD(place, value);
 
     return (place);
 }
@@ -4344,12 +4340,11 @@ Lisp_Search(LispMac *mac, LispBuiltin *builtin)
  */
 {
     GC_ENTER();
-    int istring;
+    int istring, code = 0;
     long start1, start2, end1, end2, length1, length2, offset = -1;
     char *string1 = NULL, *string2 = NULL;
-    LispObj cleft, cright, karg1, karg2;
     LispObj *list1 = NIL, *list2 = NIL;
-    LispObj *arguments, *kargs1, *kargs2, *lambda, *value, *expect;
+    LispObj *cmp1, *cmp2, *lambda, *value, *expect;
 
     LispObj *sequence1, *sequence2, *from_end, *test, *test_not,
 	    *key, *ostart1, *ostart2, *oend1, *oend2;
@@ -4385,10 +4380,6 @@ Lisp_Search(LispMac *mac, LispBuiltin *builtin)
     else if (start2 == end2)
 	return (start1 == end1 ? SMALLINT(start2) : NIL);
 
-    /* Allocate argument list to comparison function */
-    arguments = CONS(NIL, CONS(NIL, NIL));
-    GC_PROTECT(arguments);
-
     /* Resolve comparison function, and expected result of comparison */
     if (test_not == NIL) {
 	if (test == NIL)
@@ -4401,15 +4392,7 @@ Lisp_Search(LispMac *mac, LispBuiltin *builtin)
 	lambda = test_not;
 	expect = NIL;
     }
-
-    if (key != NIL) {
-	kargs1 = CONS(NIL, NIL);
-	GC_PROTECT(kargs1);
-	kargs2 = CONS(NIL, NIL);
-	GC_PROTECT(kargs2);
-    }
-    else
-	kargs1 = kargs2 = NULL;
+    code = FCODE(lambda);
 
     /* Searching a substring? */
     istring = STRING_P(sequence1);
@@ -4417,18 +4400,6 @@ Lisp_Search(LispMac *mac, LispBuiltin *builtin)
     if (istring) {
 	string1 = THESTR(sequence1);
 	string2 = THESTR(sequence2);
-	cleft.type = cright.type = LispCharacter_t;
-
-	/* If no :KEY predicate */
-	if (kargs1 == NULL) {
-	    CAR(arguments) = &cleft;
-	    CADR(arguments) = &cright;
-	}
-	else {
-	    karg1.type = karg2.type = LispCharacter_t;
-	    CAR(kargs1) = &karg1;
-	    CAR(kargs2) = &karg2;
-	}
     }
     else {
 	list1 = sequence1;
@@ -4452,30 +4423,22 @@ Lisp_Search(LispMac *mac, LispBuiltin *builtin)
 	    list1 = slist1;
 	    cstart1 = start1;
 	    while (cstart1 < end1) {
-		/* Apply :key predicate if required */
-		if (kargs1 != NULL) {
-		    if (istring)
-			karg1.data.integer = string1[cstart1];
-		    else
-			CAR(kargs1) = CAR(list1);
-		    CAR(arguments) = APPLY(key, kargs1);
-		    if (istring)
-			karg2.data.integer = string2[cstart2];
-		    else
-			CAR(kargs2) = CAR(list2);
-		    CADR(arguments) = APPLY(key, kargs2);
-		}
-		else if (istring) {
-		    cleft.data.integer = string1[cstart1];
-		    cright.data.integer = string2[cstart2];
+		if (istring) {
+		    cmp1 = CHAR(string1[cstart1]);
+		    cmp2 = CHAR(string2[cstart2]);
 		}
 		else {
-		    CAR(arguments) = CAR(list1);
-		    CADR(arguments) = CAR(list2);
+		    cmp1 = CAR(list1);
+		    cmp2 = CAR(list2);
+		}
+		if (key != NIL) {
+		    cmp1 = APPLY1(key, cmp1);
+		    cmp2 = APPLY1(key, cmp2);
 		}
 
 		/* Compare elements */
-		value = APPLY(lambda, arguments);
+		if ((value = FCOMPARE(lambda, cmp1, cmp2, code)) != NIL)
+		    value = T;
 		if (value != expect)
 		    break;
 
@@ -4520,30 +4483,22 @@ Lisp_Search(LispMac *mac, LispBuiltin *builtin)
 	while (coff2 >= start2) {
 	    coff1 = end1 - 1;
 	    while (coff1 >= start1) {
-		/* Apply :key predicate if required */
-		if (kargs1 != NULL) {
-		    if (istring)
-			karg1.data.integer = string1[coff1];
-		    else
-			CAR(kargs1) = plist1[coff1 - start1];
-		    CAR(arguments) = APPLY(key, kargs1);
-		    if (istring)
-			karg2.data.integer = string2[coff2];
-		    else
-			CAR(kargs2) = plist2[coff2 - start2];
-		    CADR(arguments) = APPLY(key, kargs2);
-		}
-		else if (istring) {
-		    cleft.data.integer = string1[coff1];
-		    cright.data.integer = string2[coff2];
+		if (istring) {
+		    cmp1 = CHAR(string1[coff1]);
+		    cmp2 = CHAR(string2[coff2]);
 		}
 		else {
-		    CAR(arguments) = plist1[coff1 - start1];
-		    CADR(arguments) = plist2[coff2 - start2];
+		    cmp1 = plist1[coff1 - start1];
+		    cmp2 = plist2[coff2 - start2];
+		}
+		if (key != NIL) {
+		    cmp1 = APPLY1(key, cmp1);
+		    cmp2 = APPLY1(key, cmp2);
 		}
 
 		/* Compare elements */
-		value = APPLY(lambda, arguments);
+		if ((value = FCOMPARE(lambda, cmp1, cmp2, code)) != NIL)
+		    value = T;
 		if (value != expect)
 		    break;
 
@@ -4728,15 +4683,15 @@ Lisp_Setf(LispMac *mac, LispBuiltin *builtin)
 
 		if (struc_access) {
 		    /* using builtin setf method for structure field */
-		    CDR(cdr) = CONS(QUOTE(CAR(place)), NIL);
+		    RPLACD(cdr, CONS(QUOTE(CAR(place)), NIL));
 		    cdr = CDR(cdr);
 		}
 
 		for (obj = CDR(place); obj != NIL; obj = CDR(obj)) {
-		    CDR(cdr) = CONS(CAR(obj), NIL);
+		    RPLACD(cdr, CONS(CAR(obj), NIL));
 		    cdr = CDR(cdr);
 		}
-		CDR(cdr) = CONS(result, NIL);
+		RPLACD(cdr, CONS(result, NIL));
 		result = EVAL(cod);
 		GC_LEAVE();
 	    }
@@ -4811,7 +4766,7 @@ LispMergeSort(LispMac *mac, LispObj *list, LispObj *predicate,
 	list2 = CDR(list2);
     cons = list2;
     list2 = CDR(list2);
-    CDR(cons) = NIL;
+    RPLACD(cons, NIL);
 
     protect = 0;
     if (mac->protect.length + 2 >= mac->protect.space)
@@ -4838,11 +4793,11 @@ LispMergeSort(LispMac *mac, LispObj *list, LispObj *predicate,
 	    if (result == NIL)
 		result = list2;
 	    else
-		CDR(cons) = list2;
+		RPLACD(cons, list2);
 	    cons = list2;
 	    list2 = CDR(list2);
 	    if (!CONS_P(list2)) {
-		CDR(cons) = list1;
+		RPLACD(cons, list1);
 		break;
 	    }
 	    right = CAR(list2);
@@ -4856,11 +4811,11 @@ LispMergeSort(LispMac *mac, LispObj *list, LispObj *predicate,
 	    if (result == NIL)
 		result = list1;
 	    else
-		CDR(cons) = list1;
+		RPLACD(cons, list1);
 	    cons = list1;
 	    list1 = CDR(list1);
 	    if (!CONS_P(list1)) {
-		CDR(cons) = list2;
+		RPLACD(cons, list2);
 		break;
 	    }
 	    left = CAR(list1);
@@ -4913,7 +4868,7 @@ Lisp_Sort(LispMac *mac, LispBuiltin *builtin)
 	work = cons = CONS(CHAR(string[0]), NIL);
 	GC_PROTECT(work);
 	for (++string; *string; ++string) {
-	    CDR(cons) = CONS(CHAR(*string), NIL);
+	    RPLACD(cons, CONS(CHAR(*string), NIL));
 	    cons = CDR(cons);
 	}
     }
@@ -4987,7 +4942,7 @@ Lisp_Subseq(LispMac *mac, LispBuiltin *builtin)
 	    result = cons = CONS(CAR(object), NIL);
 	    for (++count, object = CDR(object); count < end; count++,
 		 object = CDR(object)) {
-		CDR(cons) = CONS(CAR(object), NIL);
+		RPLACD(cons, CONS(CAR(object), NIL));
 		cons = CDR(cons);
 	    }
 	}
@@ -5134,14 +5089,14 @@ Lisp_Tagbody(LispMac *mac, LispBuiltin *builtin)
 		    GC_PROTECT(labels);
 		}
 		else {
-		    CDR(map) = CONS(tag, CONS(NIL, NIL));
+		    RPLACD(map, CONS(tag, CONS(NIL, NIL)));
 		    map = CDDR(map);
 		}
 		break;
 	    case LispCons_t:
 		/* Restart point for tag */
 		if (map != NIL && CAR(map) == NIL)
-		    CAR(map) = ptr;
+		    RPLACA(map, ptr);
 		break;
 	    default:
 		break;
@@ -5152,7 +5107,7 @@ Lisp_Tagbody(LispMac *mac, LispBuiltin *builtin)
 	if (CADR(ptr) == NIL) {
 	    for (map = CDDR(ptr); CONS_P(map); map = CDDR(map)) {
 		if (CADR(map) != NIL) {
-		    CADR(ptr) = CADR(map);
+		    RPLACA(CDR(ptr), CADR(map));
 		    break;
 		}
 	    }
@@ -5583,7 +5538,7 @@ Lisp_XeditEltStore(LispMac *mac, LispBuiltin *builtin)
 
 	for (; offset > 0; offset--, sequence = CDR(sequence))
 	    ;
-	CAR(sequence) = value;
+	RPLACA(sequence, value);
     }
 
     return (value);
@@ -5682,7 +5637,7 @@ Lisp_XeditVectorStore(LispMac *mac, LispBuiltin *builtin)
     for (array = array->data.array.list; count > 0; array = CDR(array), count--)
 	;
 
-    CAR(array) = value;
+    RPLACA(array, value);
 
     return (value);
 }

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.27 2002/08/05 03:56:24 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.28 2002/08/25 02:48:31 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -61,7 +61,6 @@
 #define PACKAGE	mac->package->data.atom->property->value
 #define MOD	mac->modlist
 #define COD	mac->codlist
-#define FRM	mac->frmlist
 #define RUN	mac->runlist
 #define RES	mac->reslist
 #define DBG	mac->dbglist
@@ -333,6 +332,7 @@ struct _LispMac {
 					 * free cells */
 	unsigned int immutablebits : 1;	/* need to reset immutable bits */
 	unsigned int timebits : 1;	/* update gctime counter */
+	unsigned int count;
 	long gctime;
 	int average;			/* of cells freed after gc calls */
     } gc;
@@ -366,7 +366,6 @@ struct _LispMac {
     LispObj *modlist;		/* module list */
     LispObj *packlist;		/* list of packages */
     LispObj *codlist;		/* current code */
-    LispObj *frmlist;		/* input data */
     LispObj *runlist[3];	/* +, ++, and +++ */
     LispObj *reslist[3];	/* *, **, and *** */
 #ifdef DEBUGGER
@@ -410,6 +409,7 @@ struct _LispCharInfo {
 void LispUseArgList(LispMac*, LispArgList*);
 void LispFreeArgList(LispMac*, LispArgList*);
 LispArgList *LispCheckArguments(LispMac*, LispFunType, LispObj*, char*);
+LispObj *LispListProtectedArguments(LispMac*, LispArgList*);
 
 LispObj *LispGetDoc(LispMac*, LispObj*);
 LispObj *LispGetVar(LispMac*, LispObj*);
