@@ -55,10 +55,6 @@ XVLIBDIR = Xv
 XINERAMADIR=Xinerama
 #endif
 
-#if BuildXantiLibrary
-XANTILIBDIR = Xanti
-#endif
-
 #if BuildGLXLibrary
 GLXLIBDIR = GL
 #endif
