@@ -1,4 +1,5 @@
 XFree86 4.3.99.903 (xx December 2003)
+ 724. Update rman by merging XFree86 changes to rman 3.2 (Thomas Dickey).
  723. Create fonts.scale and fonts.dir files in the target directories at
       'make install' time.  This fixes several problems where some font
       entries get left out (David Dawes).
@@ -18464,7 +18465,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3070 2003/12/31 17:12:21 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3071 2003/12/31 19:30:41 dawes Exp $
 
 
 
