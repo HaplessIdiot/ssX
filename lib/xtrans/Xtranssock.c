@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranssock.c,v 1.29 94/06/02 10:51:53 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.1 1994/05/22 06:45:51 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.2 1994/06/09 10:46:00 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -68,7 +68,9 @@ from the X Consortium.
 #endif
 
 #ifdef UNIXCONN
+#ifndef X_NO_SYS_UN
 #include <sys/un.h>
+#endif
 #include <sys/stat.h>
 #endif
 

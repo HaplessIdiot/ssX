@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranslcl.c,v 1.18 94/04/17 20:23:03 mor Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.0 1994/05/21 23:53:00 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -98,7 +98,9 @@ from the X Consortium.
  */
 
 #include <sys/socket.h>
+#ifndef X_NO_SYS_UN
 #include <sys/un.h>
+#endif
 
 
 /*

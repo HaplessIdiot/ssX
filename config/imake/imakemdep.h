@@ -1,5 +1,5 @@
 /* $XConsortium: imakemdep.h,v 1.76 94/04/17 20:10:31 gildea Exp $ */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.1 1994/05/21 23:39:53 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.2 1994/06/05 05:53:09 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -411,8 +411,17 @@ char *cpp_argv[ARGUMENTS] = {
 #endif
 #ifdef AMOEBA
 	"-DAMOEBA",
-# ifdef CROSSCOMPILE
+# ifdef CROSS_COMPILE
 	"-DCROSS_COMPILE",
+#  ifdef CROSS_i80386
+	"-Di80386",
+#  endif
+#  ifdef CROSS_sparc
+	"-Dsparc",
+#  endif
+#  ifdef CROSS_mc68000
+	"-Dmc68000",
+#  endif
 # else
 #  ifdef i80386
 	"-Di80386",
