@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.229 2004/08/27 16:28:05 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.230tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -748,7 +748,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #  define OSXInputDrivers1	/**/
 # endif
 # if HasLinuxInput
-#  define OSXInputDrivers2	aiptek
+#  define OSXInputDrivers2	aiptek eloinput
 # else
 #  define OSXInputDrivers2	/**/
 # endif
