@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.35 2002/09/18 18:14:50 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.36 2002/10/30 12:52:02 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -431,33 +431,33 @@ DRICloseScreen(ScreenPtr pScreen)
         pDRIInfo = pDRIPriv->pDriverInfo;
 
 	/* Unwrap DRI Functions */
-	if (pDRIInfo->wrap.ValidateTree) {
+	if (pDRIPriv->wrap.ValidateTree) {
     	    pScreen->ValidateTree           = pDRIPriv->wrap.ValidateTree;
     	    pDRIPriv->wrap.ValidateTree     = NULL;
        	}
-	if (pDRIInfo->wrap.PostValidateTree) {
+	if (pDRIPriv->wrap.PostValidateTree) {
 	    pScreen->PostValidateTree       = pDRIPriv->wrap.PostValidateTree;
 	    pDRIPriv->wrap.PostValidateTree = NULL;
 	}
-	if (pDRIInfo->wrap.WindowExposures) {
+	if (pDRIPriv->wrap.WindowExposures) {
 	    pScreen->WindowExposures        = pDRIPriv->wrap.WindowExposures;
 	    pDRIPriv->wrap.WindowExposures  = NULL;
 	}
-	if (pDRIInfo->wrap.CopyWindow) {
+	if (pDRIPriv->wrap.CopyWindow) {
 	    pScreen->CopyWindow             = pDRIPriv->wrap.CopyWindow;
 	    pDRIPriv->wrap.CopyWindow       = NULL;
 	}
-	if (pDRIInfo->wrap.ClipNotify) {
+	if (pDRIPriv->wrap.ClipNotify) {
 	    pScreen->ClipNotify             = pDRIPriv->wrap.ClipNotify;
 	    pDRIPriv->wrap.ClipNotify       = NULL;
 	}
-	if (pDRIInfo->wrap.AdjustFrame) {
+	if (pDRIPriv->wrap.AdjustFrame) {
 	    ScrnInfoPtr pScrn               = xf86Screens[pScreen->myNum];
 	    pScrn->AdjustFrame              = pDRIPriv->wrap.AdjustFrame;
 	    pDRIPriv->wrap.AdjustFrame      = NULL;
 	}
 
-	if (pDRIInfo->driverSwapMethod != DRI_KERNEL_SWAP) {
+	if (pDRIPriv->drmSIGIOHandlerInstalled) {
 	    if (!drmRemoveSIGIOHandler(pDRIPriv->drmFD)) {
 		DRIDrvMsg(pScreen->myNum, X_ERROR,
 			  "[drm] failed to remove DRM signal handler\n");
