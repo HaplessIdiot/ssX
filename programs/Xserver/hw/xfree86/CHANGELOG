@@ -1,3 +1,24 @@
+XFree86 3.0Ce (24 July 1994)
+144. Alternate "SlowBcopy()" which avoids I/O (which causes problems on
+     some cards) (Glenn Lai).
+143. Restore original mouse baud rate when exiting and VT switching (Harald
+     Koenig).
+142. pvga1 driver updates.  Includes 90C33 support for 2MB, and accel code
+     updates (Bill Conn and Bill Morgart).
+141. Major updates to the SVGA ATI vgawonder driver.  Includes support for
+     4MB, probe code to detect Mach8, Mach32 and Mach64 boards, RAMDAC
+     detection, clock probe update to handle the clock chip used on Mach64
+     boards, and fixes for V3, V4 and V5 boards (Marc Aurele La France).
+140. Support for BuildServersOnly option to build only the servers using
+     a cut-down source tree (Gertjan Akkerman).
+139. Preliminary P9000 accelerated support (currently incomplete and
+     disabled by default) (Chris Mason and Erik Nygren).
+138. Preliminary Viper PCI, Orchid P9000 support (currently disabled by
+     default) (Erik Nygren).
+137. Replace the cfb.banked code with fb code which relies more on the
+     standard cfb code.  For further details see the file "Design" in
+     xfree86/vga256/vga/ (Stuart Anderson).
+
 XFree86 3.0Cd (22 July 1994)
 136. Add dacspeed Xconfig keyword, and modify the S3 server to use it.
 135. Update contrib source to the XC's full release version.
