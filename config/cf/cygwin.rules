@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.5 2001/04/27 12:32:42 alanh Exp $
+XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.6 2001/06/04 13:04:40 alanh Exp $
 
 #define CPPOnlyAsm(basename,options) RemoveFile(basename.i)		@@\
 	$(CPP) AsmDefines $(DEFINES) $(INCLUDES) options  basename.S | grep -v '^\#' > basename.i
@@ -119,7 +119,7 @@ CppFileTarget(libname.def,libname-def.cpp,-DLIBRARY_VERSION=rev,$(ICONFIGFILES))
                                                                         @@\
 junk.c:                                                                                 @@\
 	echo "#include <cygwin/cygwin_dll.h>"		>junk.c		@@\
-	echo "DECLARE_CYGWIN_DLL(dll_main);"		>>junk.c	@@\
+	echo "DECLARE_CYGWIN_DLL(dll_main)"		>>junk.c	@@\
 	echo "int WINAPI dll_main(HINSTANCE a, DWORD reason, void *q)" >>junk.c  @@\
 	echo "{ return 1; }"				>>junk.c	@@\
 Concat3(lib,libname,.dll): solist junk.o libname.def			@@\
