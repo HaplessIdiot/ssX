@@ -11433,11 +11433,14 @@ SetDelayComp(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT B
 	}
      }
 
-     if(SiS_Pr->SiS_CustomT == CUT_CLEVO10242) {
+     if((SiS_Pr->SiS_CustomT == CUT_CLEVO1024) ||
+        (SiS_Pr->SiS_CustomT == CUT_CLEVO10242)) {
         if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1024x768) {
 	   gotitfrompci = TRUE;
 	   dochiptest = FALSE;
-	   delay = 0x03;
+	   delay = 0x33;
+	   SiS_SetReg1(SiS_Pr->SiS_Part1Port,0x2D,delay);
+	   delay &= 0x0f;
 	}
      }
 
@@ -11522,13 +11525,17 @@ SetDelayComp(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT B
 #endif		
 	  }
        } else {
-          if(SiS_Pr->SiS_CustomT == CUT_COMPAQ1280) {
+          switch(SiS_Pr->SiS_CustomT) {
+	  case CUT_COMPAQ1280:
 	     delay = 0x02;
 	     dochiptest = FALSE;
-	  } else if(SiS_Pr->SiS_CustomT == CUT_CLEVO10242) {
+	     break;
+	  case CUT_CLEVO1024:
+	  case CUT_CLEVO10242:
 	     delay = 0x03;
 	     dochiptest = FALSE;
-	  } else {
+   	     break;
+	  default:
              delay = SiS310_TVDelayCompensation_651301LV[index];
 	     if(SiS_Pr->SiS_VBType & VB_SIS302LV)
 	        delay = SiS310_TVDelayCompensation_651302LV[index];
@@ -11542,7 +11549,7 @@ SetDelayComp(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT B
        } else {
 	    delay = SiS310_TVDelayCompensation_301[index];
             if(SiS_Pr->SiS_VBType & VB_SIS301BLV302BLV) {
-	       if(IS_SIS740) 
+	       if(IS_SIS740)
 	          delay = SiS310_TVDelayCompensation_740301B[index];
 	       else 
                   delay = SiS310_TVDelayCompensation_301B[index];
@@ -11568,18 +11575,17 @@ SetDelayComp(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT B
   } else {
      if(dochiptest && IS_SIS650 && (SiS_Pr->SiS_VBType & VB_SIS301LV302LV)) {
         temp = (SiS_GetReg1(SiS_Pr->SiS_P3d4,0x36) & 0xf0) >> 4;
-        if(temp == 8) {		/* 1400x1050 BIOS */
+        if(temp == 8) {		/* 1400x1050 BIOS (ECS) */
 	   delay &= 0x0f;
 	   delay |= 0xb0;
         } else if(temp == 6) {
            delay &= 0x0f;
 	   delay |= 0xc0;
-        } else if(temp > 7) {	/* 1280x1024 BIOS */
+        } else if(temp > 7) {	/* 1280x1024 BIOS (which one?) */
 	   delay = 0x35;
         }
         SiS_SetReg1(SiS_Pr->SiS_Part1Port,0x2D,delay);
      } else {
-        delay &= 0x0f;
         SiS_SetRegANDOR(SiS_Pr->SiS_Part1Port,0x2D,0xF0,delay);
      }
   }

@@ -4066,6 +4066,12 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	      	  "Detected LCD PanelDelayCompensation %d\n",
 		  pSiS->sishw_ext.pdc);
 	  }
+	  if(pSiS->PDC != -1) {
+	     pSiS->sishw_ext.pdc = pSiS->PDC & 0xff;
+	     xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+	      	  "Using LCD PanelDelayCompensation %d\n",
+		  pSiS->sishw_ext.pdc);
+	  }
        }
     }
 

@@ -166,7 +166,7 @@ const customttable mycustomttable[] = {
 	  { 0, 0, 0, 0, 0 },
 	  { 0, 0, 0, 0, 0 },
 	  0x0e11, 0x083c,
-	  "Compaq", "Presario 3045US", CUT_COMPAQ12802, "COMPAQ1280"
+	  "Compaq", "Presario 3017cl/3045US", CUT_COMPAQ12802, "COMPAQ1280"
 	},
 	{ SIS_650, "", "",
 	  0,
