@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessAquaImp.m,v 1.4 2002/12/10 00:00:39 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessAquaImp.m,v 1.5 2003/01/20 05:42:52 torrey Exp $ */
 
 #include "rootlessAquaImp.h"
 #include "fakeBoxRec.h"
@@ -161,7 +161,6 @@ void AquaScreenInit(int index, int *x, int *y, int *width, int *height,
  *    Event thread - autodisplay: locks view hierarchy, then window
  *    X Server thread - window resize: locks window, then view hierarchy
  *  Deadlock occurs if each thread gets one lock and waits for the other.
- *  Autodisplay can also cause NSCarbonWindows to lose their contents.
 */
 void *AquaNewWindow(void *upperw, int x, int y, int w, int h, int isRoot)
 {
@@ -258,7 +257,7 @@ void AquaMoveWindow(void *rw, int x, int y)
 
 /*
  * AquaStartResizeWindow
- *  Undo any shape and resize the on screen window.
+ *  Resize the on screen window.
  */
 void AquaStartResizeWindow(void *rw, int x, int y, int w, int h)
 {
@@ -346,6 +345,14 @@ void AquaReshapeWindow(void *rw, fakeBoxRec *fakeRects, int count)
     NSRect frame = [winRec->view frame];
     int winHeight = NSHeight(frame);
 
+    [winRec->view lockFocus];
+
+    // If window is currently shaped we need to undo the previous shape
+    if (![winRec->window isOpaque]) {
+        [[NSColor whiteColor] set];
+        NSRectFillUsingOperation(frame, NSCompositeDestinationAtop);
+    }
+
     if (count > 0) {
         fakeBoxRec *rects, *end;
 
@@ -353,7 +360,6 @@ void AquaReshapeWindow(void *rw, fakeBoxRec *fakeRects, int count)
         [winRec->window setOpaque:NO];
 
         // Clear the areas outside the window shape
-        [winRec->view lockFocus];
         [[NSColor clearColor] set];
         for (rects = fakeRects, end = fakeRects+count; rects < end; rects++) {
             int rectHeight = rects->y2 - rects->y1;
@@ -362,7 +368,6 @@ void AquaReshapeWindow(void *rw, fakeBoxRec *fakeRects, int count)
                                    rects->x2 - rects->x1, rectHeight) );
         }
         [[NSGraphicsContext currentContext] flushGraphics];
-        [winRec->view unlockFocus];
 
         // force update of window shadow
         [winRec->window setHasShadow:NO];
@@ -374,6 +379,8 @@ void AquaReshapeWindow(void *rw, fakeBoxRec *fakeRects, int count)
         [winRec->window setOpaque:YES];
         AquaUpdateRects(rw, &bounds, 1);
     }
+
+    [winRec->view unlockFocus];
 }
 
 
