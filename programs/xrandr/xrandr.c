@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xrandr/xrandr.c,v 1.1 2001/05/26 01:27:00 keithp Exp $
+ * $XFree86: xc/programs/xrandr/xrandr.c,v 1.2 2001/05/29 04:54:56 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -64,7 +64,8 @@ main (int argc, char **argv)
 	scanf ("%d", &rotation);
 	if (0 <= n && n < nsize)
 	{
-	    nt = XRRSetScreenConfig (dpy, DefaultRootWindow (dpy), n, 0, rotation, t);
+	    nt = XRRSetScreenConfig (dpy, DefaultRootWindow (dpy), 
+				     (SizeID) n, 0, rotation, CurrentTime, t);
 	    if (nt == t)
 		break;
 	}

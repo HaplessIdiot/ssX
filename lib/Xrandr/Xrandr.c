@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrandr/Xrandr.c,v 1.1 2001/05/23 03:29:44 keithp Exp $
+ * $XFree86: xc/lib/Xrandr/Xrandr.c,v 1.2 2001/05/26 01:25:42 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  *
@@ -170,7 +170,7 @@ Time XRRGetScreenInfo (Display		*dpy,
 	(*sizes)[n].mheight = psize[n].heightInMillimeters;
 	(*sizes)[n].set = 0;
     }
-    return (rep.timestamp);
+    return (rep.configTimestamp);
 }
     
 void XRRFreeScreenInfo (XRRScreenSize	*sizes)
@@ -179,10 +179,11 @@ void XRRFreeScreenInfo (XRRScreenSize	*sizes)
 
 Time XRRSetScreenConfig (Display *dpy,
 			 Drawable draw,
-			 int size_set_index,
-			 int visual_set_index,
-			 int rotation,
-			 Time timestamp) /* returns new timestamp */
+			 SizeID size_id,
+			 VisualGroupID visual_group_id,
+			 Rotation rotation,
+			 Time timestamp,
+			 Time configTimestamp) /* returns new timestamp */
 {
     XExtDisplayInfo *info = XRRFindDisplay (dpy);
     xRRSetScreenConfigReply rep;
@@ -195,13 +196,14 @@ Time XRRSetScreenConfig (Display *dpy,
     req->reqType = info->codes->major_opcode;
     req->randrReqType = X_RRSetScreenConfig;
     req->drawable = draw;
-    req->sizeSetIndex = size_set_index;
-    req->visualSetIndex = visual_set_index;
+    req->sizeID = size_id;
+    req->visualGroupID = visual_group_id;
     req->rotation = rotation;
     req->timestamp = timestamp;
+    req->configTimestamp = configTimestamp;
     if (!_XReply (dpy, (xReply *) &rep, 0, xTrue)) 
-      rep.newtimestamp = CurrentTime;
+      rep.newTimestamp = CurrentTime;
     UnlockDisplay (dpy);
     SyncHandle ();
-    return(rep.newtimestamp);
+    return(rep.newConfigTimestamp);
 }

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrandr/Xrandr.h,v 1.1 2001/05/23 03:29:44 keithp Exp $
+ * $XFree86: xc/lib/Xrandr/Xrandr.h,v 1.2 2001/05/26 01:25:42 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  *
@@ -26,7 +26,8 @@
 #ifndef _XRANDR_H_
 #define _XRANDR_H_
 
-#include "randr.h"
+#include <X11/Xmd.h>
+#include <X11/extensions/randr.h>
 
 typedef struct {
     int	    nvisual;
@@ -59,10 +60,11 @@ void XRRFreeScreenInfo (XRRScreenSize	*sizes);
 
 Time XRRSetScreenConfig (Display *dpy,
 			 Drawable draw,
-			 int size_set_index,
-			 int visual_set_index,
-			 int rotation,
-			 Time timestamp); /* returns new timestamp */
+			 SizeID size_id,
+			 VisualGroupID visual_group_id,
+			 Rotation rotation,
+			 Time timestamp,
+			 Time configTimestamp); /* returns new timestamp */
 
 
 #endif /* _XRANDR_H_ */

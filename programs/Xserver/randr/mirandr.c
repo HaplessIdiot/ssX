@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/randr/mirandr.c,v 1.2 2001/05/23 04:15:06 keithp Exp $
+ * $XFree86: xc/programs/Xserver/randr/mirandr.c,v 1.3 2001/05/26 01:25:42 keithp Exp $
  *
  * Copyright © 2001 Compaq Computer Corporation
  *
@@ -39,43 +39,43 @@
  */
 
 Bool
-miRRGetInfo (ScreenPtr pScreen, int *rotations, int *swaps)
+miRRGetInfo (ScreenPtr pScreen, Rotation *rotations)
 {
     int	i;
     Bool setConfig = FALSE;
-    *rotations = RR_ROTATE_0;
-    *swaps = 0;
+    
+    *rotations = RR_Rotate_0;
     for (i = 0; i < pScreen->numDepths; i++)
     {
 	if (pScreen->allowedDepths[i].numVids)
 	{
-	    RRVisualSetPtr  pVisualSet;
+	    RRVisualGroupPtr  pVisualGroup;
 
-	    pVisualSet = RRCreateVisualSet (pScreen);
-	    if (pVisualSet)
+	    pVisualGroup = RRCreateVisualGroup (pScreen);
+	    if (pVisualGroup)
 	    {
-		RRSetOfVisualSetPtr pSetOfVisualSet;
-		RRSizeInfoPtr	    pSize;
+		RRGroupOfVisualGroupPtr pGroupOfVisualGroup;
+		RRScreenSizePtr		pSize;
 
-		if (!RRAddDepthToVisualSet (pScreen,
-					    pVisualSet,
-					    &pScreen->allowedDepths[i]))
+		if (!RRAddDepthToVisualGroup (pScreen,
+					      pVisualGroup,
+					      &pScreen->allowedDepths[i]))
 		{
-		    RRDestroyVisualSet (pScreen, pVisualSet);
+		    RRDestroyVisualGroup (pScreen, pVisualGroup);
 		    return FALSE;
 		}
-		pVisualSet = RRRegisterVisualSet (pScreen, pVisualSet);
-		if (!pVisualSet)
+		pVisualGroup = RRRegisterVisualGroup (pScreen, pVisualGroup);
+		if (!pVisualGroup)
 		    return FALSE;
 
-		pSetOfVisualSet = RRCreateSetOfVisualSet (pScreen);
+		pGroupOfVisualGroup = RRCreateGroupOfVisualGroup (pScreen);
 		
-		if (!RRAddVisualSetToSetOfVisualSet (pScreen,
-						     pSetOfVisualSet,
-						     pVisualSet))
+		if (!RRAddVisualGroupToGroupOfVisualGroup (pScreen,
+						     pGroupOfVisualGroup,
+						     pVisualGroup))
 		{
-		    RRDestroySetOfVisualSet (pScreen, pSetOfVisualSet);
-		    /* pVisualSet left until screen closed */
+		    RRDestroyGroupOfVisualGroup (pScreen, pGroupOfVisualGroup);
+		    /* pVisualGroup left until screen closed */
 		    return FALSE;
 		}
 
@@ -84,12 +84,12 @@ miRRGetInfo (ScreenPtr pScreen, int *rotations, int *swaps)
 					pScreen->height,
 					pScreen->mmWidth,
 					pScreen->mmHeight,
-					pSetOfVisualSet);
+					pGroupOfVisualGroup);
 		if (!pSize)
 		    return FALSE;
 		if (!setConfig)
 		{
-		    RRSetCurrentConfig (pScreen, RR_ROTATE_0, 0, pSize, pVisualSet);
+		    RRSetCurrentConfig (pScreen, RR_Rotate_0, pSize, pVisualGroup);
 		    setConfig = TRUE;
 		}
 	    }
@@ -103,10 +103,9 @@ miRRGetInfo (ScreenPtr pScreen, int *rotations, int *swaps)
  */
 Bool
 miRRSetConfig (ScreenPtr	pScreen,
-	       int		rotation,
-	       int		swap,
-	       RRSizeInfoPtr	pSize,
-	       RRVisualSetPtr	pVisualSet)
+	       Rotation		rotation,
+	       RRScreenSizePtr	pSize,
+	       RRVisualGroupPtr	pVisualGroup)
 {
     return TRUE;
 }
