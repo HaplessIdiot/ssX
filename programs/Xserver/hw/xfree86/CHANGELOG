@@ -1,4 +1,6 @@
 XFree86 4.1.99.4 (xx December 2001)
+ 623. Add functions completing text control for Render.  Bump XRender library
+      minor version (Keith Packard).
  622. Add XKB layout info for a newer Logitech iTouch keyboard (#A.727,
       Dimitromanolakis Apostolos).
  621. Fix a problem that shows up with the summa tablet driver when using
@@ -14425,4 +14427,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2104 2001/12/24 23:21:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2105 2001/12/26 22:28:25 dawes Exp $

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Xrender.h,v 1.7 2000/12/05 03:13:30 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Xrender.h,v 1.9 2001/12/16 18:27:55 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -123,6 +123,30 @@ typedef struct _XGlyphInfo {
     short	    xOff;
     short	    yOff;
 } XGlyphInfo;
+
+typedef struct _XGlyphElt8 {
+    GlyphSet		    glyphset;
+    _Xconst char	    *chars;
+    int			    nchars;
+    int			    xOff;
+    int			    yOff;
+} XGlyphElt8;
+
+typedef struct _XGlyphElt16 {
+    GlyphSet		    glyphset;
+    _Xconst unsigned short  *chars;
+    int			    nchars;
+    int			    xOff;
+    int			    yOff;
+} XGlyphElt16;
+
+typedef struct _XGlyphElt32 {
+    GlyphSet		    glyphset;
+    _Xconst unsigned int    *chars;
+    int			    nchars;
+    int			    xOff;
+    int			    yOff;
+} XGlyphElt32;
 
 _XFUNCPROTOBEGIN
 
@@ -253,6 +277,45 @@ XRenderCompositeString32 (Display		    *dpy,
 			  int			    yDst,
 			  _Xconst unsigned int	    *string,
 			  int			    nchar);
+
+void
+XRenderCompositeText8 (Display			    *dpy,
+		       int			    op,
+		       Picture			    src,
+		       Picture			    dst,
+		       _Xconst XRenderPictFormat    *maskFormat,
+		       int			    xSrc,
+		       int			    ySrc,
+		       int			    xDst,
+		       int			    yDst,
+		       _Xconst XGlyphElt8	    *elts,
+		       int			    nelt);
+
+void
+XRenderCompositeText16 (Display			    *dpy,
+			int			    op,
+			Picture			    src,
+			Picture			    dst,
+			_Xconst XRenderPictFormat   *maskFormat,
+			int			    xSrc,
+			int			    ySrc,
+			int			    xDst,
+			int			    yDst,
+			_Xconst XGlyphElt16	    *elts,
+			int			    nelt);
+
+void
+XRenderCompositeText32 (Display			    *dpy,
+			int			    op,
+			Picture			    src,
+			Picture			    dst,
+			_Xconst XRenderPictFormat   *maskFormat,
+			int			    xSrc,
+			int			    ySrc,
+			int			    xDst,
+			int			    yDst,
+			_Xconst XGlyphElt32	    *elts,
+			int			    nelt);
 
 void
 XRenderFillRectangle (Display		    *dpy,
