@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.52 2000/12/08 19:17:50 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.53 2000/12/08 20:13:36 eich Exp $ */
 
 /*
  * Authors:
@@ -1758,7 +1758,15 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   } else
 #endif
   {
-    pTDFX->pixmapCacheLines = PIXMAP_CACHE_LINES_NODRI;
+      int offscreen_lines = ((((pScrn->videoRam<<10) - 1) &~ 0xFFF)
+			     - 4096+16*1024
+			     - 16*1024
+			     - ((pScrn->virtualY * pTDFX->stride) &~ 0xFFF))
+	                     / pScrn->displayWidth;
+      ErrorF("TDFX offscreen lines: %i\n",offscreen_lines);
+      pTDFX->pixmapCacheLines = offscreen_lines < PIXMAP_CACHE_LINES_NODRI
+	                      ? offscreen_lines :
+	                      PIXMAP_CACHE_LINES_NODRI;
   }
 
   allocateMemory(pScrn);
@@ -1791,28 +1799,6 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   pTDFX->sync=TDFXSync;
 #endif
 
-<<<<<<< tdfx_driver.c
-#ifdef XF86DRI
-  pTDFX->NoAccel=xf86ReturnOptValBool(TDFXOptions, OPTION_NOACCEL, FALSE);
-  if (!pTDFX->NoAccel 
-      && ((pTDFX->backOffset == -1) || (pTDFX->depthOffset == -1) )) {
-      doDR = TRUE;
-      pTDFX->pixmapCacheLines = PIXMAP_CACHE_LINES;
-  } else 
-#endif
-    {
-      int offscreen_lines = ((((pScrn->videoRam<<10) - 1) &~ 0xFFF)
-			     - 4096+16*1024
-			     - 16*1024
-			     - ((pScrn->virtualY * pTDFX->stride) &~ 0xFFF))
-	                     / pScrn->displayWidth;
-      ErrorF("TDFX offscreen lines: %i\n",offscreen_lines);
-      pTDFX->pixmapCacheLines = offscreen_lines < PIXMAP_CACHE_LINES_NODRI
-	                      ? offscreen_lines :
-	                      PIXMAP_CACHE_LINES_NODRI;
-    }
-=======
->>>>>>> 1.52
   maxy=pScrn->virtualY+pTDFX->pixmapCacheLines;
   MemBox.y1 = pScrn->virtualY;
   MemBox.x1 = 0;
