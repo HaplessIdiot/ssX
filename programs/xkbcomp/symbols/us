@@ -6,6 +6,8 @@
 // uses the punctuation keys configurations common on PC 
 // keyboards (e.g. key <ABO9> is { [ period greater ] })
 
+// $XFree86$
+
 partial hidden alphanumeric_keys modifier_keys 
 xkb_symbols "basic" {
 

@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifndef MGA_WRAP_H
 #define MGA_WRAP_H
 
