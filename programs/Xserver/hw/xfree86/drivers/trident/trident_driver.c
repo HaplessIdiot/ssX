@@ -46,9 +46,7 @@
 #include "xf86cmap.h"
 #include "vgaHW.h"
 #include "xf86RAC.h"
-#ifdef linux
 #include "xf86int10.h"
-#endif
 
 #include "mipointer.h"
 
@@ -1028,13 +1026,10 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
-
-#ifdef linux
     if (xf86LoadSubModule(pScrn, "int10")) {
 	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"Initializing int10\n");
 	pTrident->Int10 = xf86InitInt10(pTrident->pEnt->index);
     }
-#endif
 
     xf86SetOperatingState(RES_SHARED_VGA, pTrident->pEnt->index, ResUnusedOpr);
 
