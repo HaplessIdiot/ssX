@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.45 2002/04/10 16:20:08 tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.46 2002/04/16 17:12:04 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -3636,13 +3636,15 @@ optional_label:
 	}
 	else {
 	    if (eval && NCONSTANT_P(defaults[i])) {
-		int head = mac->env.head;
+		int head = mac->env.head,
+		    lex = mac->env.lex;
 
 		mac->env.lex = base;
 		mac->env.head = mac->env.length;
 		LispDoAddVar(mac, symbols[i],
 			     FEVAL(defaults[i]));
 		mac->env.head = head;
+		mac->env.lex = lex;
 	    }
 	    else
 		LispDoAddVar(mac, symbols[i], defaults[i]);
@@ -3753,12 +3755,14 @@ key_label:
 	    }
 	    else {
 		if (eval && NCONSTANT_P(val)) {
-		    int head = mac->env.head;
+		    int head = mac->env.head,
+			lex = mac->env.lex;
 
 		    mac->env.lex = base;
 		    mac->env.head = mac->env.length;
 		    LispDoAddVar(mac, symbols[i], FEVAL(val));
 		    mac->env.head = head;
+		    mac->env.lex = lex;
 		}
 		else
 		    LispDoAddVar(mac, symbols[i], val);
