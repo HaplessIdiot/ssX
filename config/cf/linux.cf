@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.224 2004/06/09 18:30:56 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.225 2004/06/11 00:02:16 alanh Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -461,6 +461,27 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 
 #ifndef LinuxFBDevSupport
 # define LinuxFBDevSupport	YES
+#endif
+
+/*
+ * Defaults for the TinyX servers on Linux.
+ */
+#ifndef HaveTinyXSupport
+# if defined(i386Architecture)
+#  define HaveTinyXSupport	YES
+# else
+#  define HaveTinyXSupport	NO
+# endif
+#endif
+#ifndef HaveTinyXVBESupport
+# if defined(i386Architecture)
+#  define HaveTinyXVBESupport	YES
+# else
+#  define HaveTinyXVBESupport	NO
+# endif
+#endif
+#ifndef HaveTinyXFbdevSupport
+# define HaveTinyXFbdevSupport	LinuxFBDevSupport
 #endif
 
 /* For compatibility */

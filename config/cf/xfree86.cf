@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.476 2004/06/11 08:44:21 alanh Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.477 2004/06/11 17:00:20 alanh Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -2037,41 +2037,54 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 
 /* Defaults for the TinyX servers. */
 
+#ifndef HaveTinyXSupport
+#define HaveTinyXSupport	NO
+#endif
+#ifndef HaveTinyXVBESupport
+#define HaveTinyXVBESupport	NO
+#endif
+#ifndef HaveTinyXFbdevSupport
+#define HaveTinyXFbdevSupport	NO
+#endif
+
+#ifndef XchipsServer
+#define XchipsServer		HaveTinyXVBESupport
+#endif
 #ifndef XfbdevServer
-#define XfbdevServer 	NO
+#define XfbdevServer 		HaveTinyXFbdevSupport
 #endif
 #ifndef Xi810Server
-#define Xi810Server 	NO
+#define Xi810Server 		HaveTinyXSupport
 #endif
 #ifndef XIgsServer
-#define XIgsServer 	NO
+#define XIgsServer 		HaveTinyXSupport
 #endif
 #ifndef XipaqServer
-#define XipaqServer 	NO
+#define XipaqServer 		HaveTinyXSupport
 #endif
 #ifndef XItsyServer
-#define XItsyServer	NO
+#define XItsyServer		HaveTinyXSupport
 #endif
 #ifndef Xmach64Server
-#define Xmach64Server	NO
+#define Xmach64Server		HaveTinyXVBESupport
 #endif
 #ifndef XSavageServer
-#define XSavageServer	NO
+#define XSavageServer		HaveTinyXSupport
 #endif
 #ifndef XSis530Server
-#define XSis530Server	NO
+#define XSis530Server		HaveTinyXSupport
 #endif
 #ifndef XTridentServer
-#define XTridentServer	NO
+#define XTridentServer		HaveTinyXVBESupport
 #endif
 #ifndef XTrioServer
-#define XTrioServer	NO
+#define XTrioServer		HaveTinyXSupport
 #endif
 #ifndef XTS300Server
-#define XTS300Server 	NO
+#define XTS300Server 		HaveTinyXSupport
 #endif
 #ifndef XvesaServer
-#define XvesaServer	NO
+#define XvesaServer		HaveTinyXVBESupport
 #endif
 
 #ifndef TinyXServer
