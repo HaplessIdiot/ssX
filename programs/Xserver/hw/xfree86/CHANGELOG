@@ -1,4 +1,6 @@
 XFree86 4.2.99.2 (xx September 2002)
+ 340. Change makedepend to recognise invocations of parameter'ed macros
+      (Marc La France).
  339. Major redesign in the Xedit syntax highlight code. Now there isn't
       anymore the builtin C mode, but a new version using the xedit lisp
       interpreter, as well as several new modes, including Lisp/Scheme,
@@ -15205,4 +15207,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2305 2002/09/21 02:56:06 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2306 2002/09/22 07:09:03 paulo Exp $
