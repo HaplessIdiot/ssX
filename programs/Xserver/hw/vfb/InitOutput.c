@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.17 2001/05/01 17:03:36 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.18 2001/05/16 08:01:09 alanh Exp $ */
 
 #if defined(WIN32)
 #include <X11/Xwinsock.h>
@@ -102,6 +102,9 @@ typedef struct
 static int vfbNumScreens;
 static vfbScreenInfo vfbScreens[MAXSCREENS];
 static Bool vfbPixmapDepths[33];
+#ifdef HAS_MMAP
+static char *pfbdir = NULL;
+#endif
 typedef enum { NORMAL_MEMORY_FB, SHARED_MEMORY_FB, MMAPPED_FILE_FB } fbMemType;
 static fbMemType fbmemtype = NORMAL_MEMORY_FB;
 static char needswap = 0;
