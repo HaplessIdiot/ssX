@@ -1,5 +1,5 @@
 /* $XConsortium: std_mouse.c,v 1.1 94/03/28 21:31:56 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/std_mouse.c,v 3.0 1994/07/24 11:53:53 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -39,7 +39,9 @@
 int xf86MouseOff(doclose)
 Bool doclose;
 {
-	if (xf86Info.mseFd >= 0)
+	int oldfd;
+
+	if ((oldfd = xf86Info.mseFd) >= 0)
 	{
 		if (xf86Info.mseType == P_LOGI)
 		{
@@ -51,6 +53,8 @@ Bool doclose;
 				  	  xf86MouseCflags[xf86Info.mseType]);
 		}
 		close(xf86Info.mseFd);
+		oldfd = xf86Info.mseFd;
+		xf86Info.mseFd = -1;
 	}
-	return(xf86Info.mseFd);
+	return(oldfd);
 }

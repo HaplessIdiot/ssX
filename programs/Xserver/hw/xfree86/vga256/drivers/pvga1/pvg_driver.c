@@ -1,6 +1,6 @@
 /*
  * $XConsortium: pvg_driver.c,v 1.2 94/03/28 21:52:30 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.8 1994/09/07 15:55:45 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.9 1994/09/11 00:53:04 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -391,7 +391,7 @@ PVGA1Probe()
 		    return(FALSE);
 		}
 		else {
-		    ErrorF("%s %s: WD: Unsupported chipset detected.\n"
+		    ErrorF("%s %s: WD: Unsupported chipset detected.\n",
 			   XCONFIG_PROBED, vga256InfoRec.name);
 		    wrinx(vgaIOBase+0x04, 0x34, tmp1);
         	    PVGA1EnterLeave(LEAVE);
