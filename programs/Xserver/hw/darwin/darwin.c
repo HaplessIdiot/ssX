@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.36 2001/09/23 23:02:37 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.37 2001/09/24 06:56:51 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -73,9 +73,6 @@ int                     darwinFakeMouse3Mask = NX_ALTERNATEMASK;
 
 static DeviceIntPtr     darwinPointer;
 static DeviceIntPtr     darwinKeyboard;
-
-// button number of pressed fake button, or 0 if no fake button is pressed
-static int              darwinFakeMouseButtonDown = 0;
 
 // Common pixmap formats
 static PixmapFormatRec formats[] = {
@@ -557,8 +554,9 @@ static int DarwinParseModifierList(
  *  Send a mouse click to X when multiple mouse buttons are simulated
  *  with modifier-clicks, such as command-click for button 2. The dix
  *  layer is told that the previously pressed modifier key(s) are
- *  released, the simulated click event is sent, and the modifier keys
- *  are reverted to their actual (pressed) state. This is usually
+ *  released, the simulated click event is sent. After the mouse button
+ *  is released, the modifier keys are reverted to their actual state,
+ *  which may or may not be pressed at that point. This is usually
  *  closest to what the user wants. Ie. the user typically wants to
  *  simulate a button 2 press instead of Command-button 2.
  */
@@ -577,9 +575,6 @@ static void DarwinSimulateMouseClick(
     xe.u.u.detail = whichButton;
     (darwinPointer->public.processInputProc)
         ( &xe, darwinPointer, 1 );
-
-    // reset the keys
-    DarwinUpdateModifiers(xe, KeyPress, modifierMask);
 }
 
 
@@ -602,7 +597,12 @@ void ProcessInputEvents(void)
     int r;
     struct timeval tv;
     struct timezone tz;
+
+    // last known modifier state
     static int old_state = 0;
+    // button number and modifier mask of currently pressed fake button
+    static int darwinFakeMouseButtonDown = 0;
+    static int darwinFakeMouseButtonMask = 0;
 
 #if defined(DARWIN_WITH_QUARTZ) && defined(QUARTZ_SAFETY_DELAY)
     static Bool gotread = false;
@@ -683,6 +683,7 @@ void ProcessInputEvents(void)
                     DarwinSimulateMouseClick(xe, 2, ButtonPress,
                                              darwinFakeMouse2Mask);
                     darwinFakeMouseButtonDown = 2;
+                    darwinFakeMouseButtonMask = darwinFakeMouse2Mask;
                 }
                 else if (darwinFakeButtons  &&
                     (ev.flags & darwinFakeMouse3Mask) == darwinFakeMouse3Mask)
@@ -690,6 +691,7 @@ void ProcessInputEvents(void)
                     DarwinSimulateMouseClick(xe, 3, ButtonPress,
                                              darwinFakeMouse3Mask);
                     darwinFakeMouseButtonDown = 3;
+                    darwinFakeMouseButtonMask = darwinFakeMouse3Mask;
                 }
                 else {
                     xe.u.u.detail = 1;
@@ -707,15 +709,22 @@ void ProcessInputEvents(void)
                 // If last mousedown was a fake click, don't check for
                 // mouse modifiers here. The user may have released the
                 // modifiers before the mouse button.
+                xe.u.u.type = ButtonRelease;
                 if (darwinFakeMouseButtonDown) {
                     xe.u.u.detail = darwinFakeMouseButtonDown;
                     darwinFakeMouseButtonDown = 0;
+                    (darwinPointer->public.processInputProc)
+                            ( &xe, darwinPointer, 1 );
+
+                    // Bring modifiers back up to date
+                    DarwinUpdateModifiers(xe, KeyPress,
+                            darwinFakeMouseButtonMask & old_state);
+                    darwinFakeMouseButtonMask = 0;
                 } else {
                     xe.u.u.detail = 1;
+                    (darwinPointer->public.processInputProc)
+                            ( &xe, darwinPointer, 1 );
                 }
-                xe.u.u.type = ButtonRelease;
-                (darwinPointer->public.processInputProc)
-                        ( &xe, darwinPointer, 1 );
                 break;
 
             // Button 2 isn't handled correctly by older kernels anyway.
@@ -755,7 +764,7 @@ void ProcessInputEvents(void)
                 old_state = ev.flags;
 
                 // Alphalock is toggled rather than held on,
-                // so we have to press and releasae it every time.
+                // so we have to press and release it every time.
                 if (new_on_flags  ||  new_off_flags & NX_ALPHASHIFTMASK) {
                     DarwinPressKeycode(xe, KeyPress, ev.data.key.keyCode);
                 }
