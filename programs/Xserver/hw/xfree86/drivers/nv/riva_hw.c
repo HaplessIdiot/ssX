@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.25 2002/02/10 04:36:36 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.26 2002/02/15 21:21:00 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -1084,6 +1084,66 @@ static void nv10UpdateArbitrationSettings
     }
 }
 
+static void nForceUpdateArbitrationSettings
+(
+    unsigned      VClk,
+    unsigned      pixelDepth,
+    unsigned     *burst,
+    unsigned     *lwm,
+    RIVA_HW_INST *chip
+)
+{
+    nv10_fifo_info fifo_data;
+    nv10_sim_state sim_data;
+    unsigned int M, N, P, pll, MClk, NVClk;
+    unsigned int uMClkPostDiv, memctrl;
+
+    uMClkPostDiv = (pciReadLong(pciTag(0, 0, 3), 0x6C) >> 8) & 0xf;
+    if(!uMClkPostDiv) uMClkPostDiv = 4; 
+    MClk = 400000 / uMClkPostDiv;
+
+    pll = chip->PRAMDAC0[0x00000500/4];
+    M = (pll >> 0)  & 0xFF; N = (pll >> 8)  & 0xFF; P = (pll >> 16) & 0x0F;
+    NVClk  = (N * chip->CrystalFreqKHz / M) >> P;
+    sim_data.pix_bpp        = (char)pixelDepth;
+    sim_data.enable_video   = 0;
+    sim_data.enable_mp      = 0;
+    sim_data.memory_type    = (pciReadLong(pciTag(0, 0, 1), 0x7C) >> 12) & 1;
+    sim_data.memory_width   = 64;
+
+    memctrl = pciReadLong(pciTag(0, 0, 3), 0x00) >> 16;
+
+    if((memctrl == 0x1A9) || (memctrl == 0x1AB)) {
+        int dimm[3];
+
+        dimm[0] = (pciReadLong(pciTag(0, 0, 2), 0x40) >> 8) & 0x4F;
+        dimm[1] = (pciReadLong(pciTag(0, 0, 2), 0x44) >> 8) & 0x4F;
+        dimm[2] = (pciReadLong(pciTag(0, 0, 2), 0x48) >> 8) & 0x4F;
+
+        if((dimm[0] + dimm[1]) != dimm[2]) {
+             ErrorF("WARNING: "
+              "your nForce DIMMs are not arranged in optimal banks!\n");
+        } 
+    }
+
+    sim_data.mem_latency    = 3;
+    sim_data.mem_aligned    = 1;
+    sim_data.mem_page_miss  = 10;
+    sim_data.gr_during_vid  = 0;
+    sim_data.pclk_khz       = VClk;
+    sim_data.mclk_khz       = MClk;
+    sim_data.nvclk_khz      = NVClk;
+    nv10CalcArbitration(&fifo_data, &sim_data);
+    if (fifo_data.valid)
+    {
+        int  b = fifo_data.graphics_burst_size >> 4;
+        *burst = 0;
+        while (b >>= 1) (*burst)++;
+        *lwm   = fifo_data.graphics_lwm >> 3;
+    }
+}
+
+
 /****************************************************************************\
 *                                                                            *
 *                          RIVA Mode State Routines                          *
@@ -1217,11 +1277,19 @@ static void CalcStateExt
             break;
         case NV_ARCH_10:
         case NV_ARCH_20:
-            nv10UpdateArbitrationSettings(VClk, 
+            if(chip->Chipset == NV_CHIP_IGEFORCE2) {
+                nForceUpdateArbitrationSettings(VClk,
+                                          pixelDepth * 8,
+                                         &(state->arbitration0),
+                                         &(state->arbitration1),
+                                          chip);
+            } else {
+                nv10UpdateArbitrationSettings(VClk, 
                                           pixelDepth * 8, 
                                          &(state->arbitration0),
                                          &(state->arbitration1),
                                           chip);
+            }
             state->cursor0  = 0x80 | (chip->CursorStart >> 17);
             state->cursor1  = (chip->CursorStart >> 11) << 2;
 	    state->cursor2  = chip->CursorStart >> 24;
@@ -1971,6 +2039,7 @@ int RivaGetConfig
             return (-1);
     }
     chip->flatPanel = pNv->FlatPanel;
+    chip->Chipset = pNv->Chipset;
     /*
      * Fill in FIFO pointers.
      */
