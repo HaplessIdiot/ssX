@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128init.c,v 1.2 2000/10/23 14:11:39 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128init.c,v 1.3 2000/10/24 00:01:45 robin Exp $ */
 /*
  * Copyright 1995-2000 by Robin Cutshaw <robin@XFree86.Org>
  * Copyright 1998 by Number Nine Visual Technology, Inc.
@@ -170,7 +170,7 @@ I128SaveState(ScrnInfoPtr pScrn)
 		   (pI128->RamdacType == SILVER_HAMMER_DAC)) {
 		CARD32 i;
 
-		for (i=0; i<0x100; i++) {
+		for (i=0; i<0x94; i++) {
 			pI128->mem.rbase_g[IDXL_I] = i;			MB;
 			iR->IBMRGB[i] = pI128->mem.rbase_g[DATA_I];
 		}
@@ -281,7 +281,7 @@ I128RestoreState(ScrnInfoPtr pScrn)
 			I128DumpActiveRegisters(pScrn);
 		}
 
-		for (i=0; i<0x100; i++) {
+		for (i=0; i<0x94; i++) {
 			if ((i == IBMRGB_sysclk_vco_div) ||
 			    (i == IBMRGB_sysclk_ref_div))
 				continue;
@@ -296,11 +296,6 @@ I128RestoreState(ScrnInfoPtr pScrn)
    		pI128->mem.rbase_g[DATA_I] =
 			iR->IBMRGB[IBMRGB_sysclk_vco_div];		MB;
 		usleep(50000);
-	}
-
-	if (pI128->MemoryType == I128_MEMORY_SGRAM) {
-		outl(iR->iobase + 0x24, iR->sgram & 0x7FFFFFFF);
-		outl(iR->iobase + 0x24, iR->sgram | 0x80000000);
 	}
 
 	/* iobase is filled in during the device probe (as well as config 1&2)*/
@@ -352,6 +347,12 @@ I128RestoreState(ScrnInfoPtr pScrn)
         	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "I128RestoreState resetting config1/2 from 0x%x/0x%x to 0x%x/0x%x\n", tmp1, tmp2, iR->config1, iR->config2);
 		I128DumpActiveRegisters(pScrn);
 	}
+
+	if (pI128->MemoryType == I128_MEMORY_SGRAM) {
+		outl(iR->iobase + 0x24, iR->sgram & 0x7FFFFFFF);
+		outl(iR->iobase + 0x24, iR->sgram | 0x80000000);
+	}
+
 	outl(iR->iobase + 0x20, iR->config2);
 	outl(iR->iobase + 0x1C, iR->config1);
 
@@ -386,6 +387,12 @@ I128Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 	outl(iR->iobase + 0x1C, pI128->io.config1);
 	outl(iR->iobase + 0x20, pI128->io.config2);
+
+	if (pI128->MemoryType == I128_MEMORY_SGRAM) {
+		outl(iR->iobase + 0x24, pI128->io.sgram & 0x7FFFFFFF);
+		outl(iR->iobase + 0x24, pI128->io.sgram | 0x80000000);
+	}
+
 
 	if (pI128->bitsPerPixel == 32)		pitch_multiplier = 4;
 	else if (pI128->bitsPerPixel == 16)	pitch_multiplier = 2;
