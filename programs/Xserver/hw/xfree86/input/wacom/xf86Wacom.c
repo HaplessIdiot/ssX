@@ -84,6 +84,8 @@ static const char identification[] = "$Identification: 4 $";
 #define read(a,b,c) xf86ReadSerial((a),(b),(c))
 #undef write
 #define write(a,b,c) xf86WriteSerial((a),(char*)(b),(c))
+#undef close
+#define close(a) xf86CloseSerial((a))
 #define XCONFIG_PROBED "(==)"
 #define XCONFIG_GIVEN "(**)"
 #define xf86Verbose 1
@@ -102,7 +104,8 @@ static const char *default_options[] =
 	"Parity", "None",
 	"Vmin", "1",
 	"Vtime", "10",
-	"FlowControl", "None"
+	"FlowControl", "None",
+	NULL
 };
 
 static InputDriverPtr wcmDrv;
@@ -1130,12 +1133,12 @@ xf86WcmSendEvents(LocalDevicePtr	local,
 	((common->wcmProtocolLevel == 5) &&
 	 priv->serial && (serial != priv->serial))) {
 	DBG(7,
-	    if (common->wcmProtocolLevel == 5)
+	    {if (common->wcmProtocolLevel == 5) {
 	    ErrorF("xf86WcmSendEvents not the same device id (%u,%u)\n",
 		   serial, priv->serial);
-	    else
+	    } else {
             ErrorF("xf86WcmSendEvents not the same device type (%u,%u)\n",
-		   DEVICE_ID(priv->flags), type));
+		   DEVICE_ID(priv->flags), type);}});
 	return;
     }
     
@@ -1974,7 +1977,7 @@ xf86WcmOpen(LocalDevicePtr	local)
 	 * config header don't use buffer+xx because the header size
 	 * varies on different tablets
 	 */
-	if (sscanf(buffer, "%[^,],%d,%d,%d,%d", &header, &a, &b, &common->wcmResolX, &common->wcmResolY) == 5) {
+	if (sscanf(buffer, "%[^,],%d,%d,%d,%d", header, &a, &b, &common->wcmResolX, &common->wcmResolY) == 5) {
 	    DBG(6, ErrorF("WC_CONFIG Header = %s\n", header));
 	}
 	else {
@@ -2368,8 +2371,10 @@ xf86WcmProc(DeviceIntPtr       pWcm,
 	case DEVICE_OFF:
 	    DBG(1, ErrorF("xf86WcmProc  pWcm=0x%x what=%s\n", pWcm,
 			  (what == DEVICE_CLOSE) ? "CLOSE" : "OFF"));
-	    if (local->fd >= 0)
+	    if (local->fd >= 0) {
 		RemoveEnabledDevice(local->fd);
+		xf86WcmClose(local);
+	    }
 	    pWcm->public.on = FALSE;
 	    break;
       
@@ -2680,10 +2685,8 @@ xf86WcmUninit(InputDriverPtr	drv,
     
     xf86WcmProc(local->dev, DEVICE_OFF);
     
-    xf86RemoveLocalDevice(local);
-    
     xfree (priv);
-    xfree (local);
+    xf86DeleteInput(local, 0);    
 }
 
 /*
@@ -2705,7 +2708,7 @@ xf86WcmInit(InputDriverPtr	drv,
 
     wcmDrv = drv;
 
-    fakeLocal = (LocalDevicePtr) xalloc(sizeof(LocalDeviceRec));
+    fakeLocal = (LocalDevicePtr) xcalloc(1, sizeof(LocalDeviceRec));
     fakeLocal->conf_idev = dev;
 
     /* Force default serial port options to exist because the serial init
@@ -2726,8 +2729,9 @@ xf86WcmInit(InputDriverPtr	drv,
 	local = xf86WcmAllocateEraser();
     }
     else {
-	xf86Msg(X_ERROR, "WACOM: No type or invalid type specified.\n"
-		"Must be one of stylus, cursor or eraser\n");
+	xf86Msg(X_ERROR, "%s: No type or invalid type specified.\n"
+		"Must be one of stylus, cursor or eraser\n",
+		dev->identifier);
 	goto SetupProc_fail;
     }
     
@@ -2739,16 +2743,17 @@ xf86WcmInit(InputDriverPtr	drv,
     if (!local || !priv || !common) {
 	goto SetupProc_fail;
     }
-
+    
     local->options = fakeLocal->options;
     local->conf_idev = fakeLocal->conf_idev;
+    local->name = dev->identifier;
     xfree(fakeLocal);
     
     /* Serial Device is mandatory */
     common->wcmDevice = xf86FindOptionValue(local->options, "Device");
 
     if (!common->wcmDevice) {
-	xf86Msg (X_ERROR, "WACOM: No Device specified.\n");
+	xf86Msg (X_ERROR, "%s: No Device specified.\n", dev->identifier);
 	goto SetupProc_fail;
     }
 
@@ -2756,9 +2761,10 @@ xf86WcmInit(InputDriverPtr	drv,
      * the same serial line.
      */
     localDevices = xf86FirstLocalDevice();
-
+    
     while(localDevices) {
-	if ((localDevices->read_input == xf86WcmReadInput) &&
+	if ((local != localDevices) &&
+	    (localDevices->read_input == xf86WcmReadInput) &&
 	    (strcmp(((WacomDevicePtr)localDevices->private)->common->wcmDevice,
 		    common->wcmDevice) == 0)) {
 		DBG(2, ErrorF("xf86WcmConfig wacom port share between"
@@ -2782,12 +2788,8 @@ xf86WcmInit(InputDriverPtr	drv,
 
     /* Optional configuration */
 
-    s = xf86SetStrOption(local->options, "DeviceName", NULL);
-    if (s != NULL)
-	local->name = s;
-    
-    xf86Msg(X_CONFIG, "%s name is %s\n", local->type_name, local->name);
-    xf86Msg(X_CONFIG, "WACOM serial device is %s\n", common->wcmDevice);
+    xf86Msg(X_CONFIG, "%s serial device is %s\n", dev->identifier,
+	    common->wcmDevice);
 
     debug_level = xf86SetIntOption(local->options, "DebugLevel", 0);
     if (debug_level > 0) {
@@ -2803,7 +2805,8 @@ xf86WcmInit(InputDriverPtr	drv,
 	priv->flags = priv->flags & ~ABSOLUTE_FLAG;
     }
     else if (s) {
-	xf86Msg(X_ERROR, "WACOM: invalid Mode (should be absolute or relative). Using default.\n");
+	xf86Msg(X_ERROR, "%s: invalid Mode (should be absolute or relative). Using default.\n",
+		dev->identifier);
     }
     xf86Msg(X_CONFIG, "%s is in %s mode\n", local->name,
 	    (priv->flags & ABSOLUTE_FLAG) ? "absolute" : "relative");	    
@@ -2820,32 +2823,35 @@ xf86WcmInit(InputDriverPtr	drv,
 
     if (xf86SetBoolOption(local->options, "KeepShape", 0)) {
 	priv->flags |= KEEP_SHAPE_FLAG;
-	xf86Msg(X_CONFIG, "WACOM: keeps shape\n");
+	xf86Msg(X_CONFIG, "%s: keeps shape\n", dev->identifier);
     }
 
     priv->topX = xf86SetIntOption(local->options, "TopX", 0);
     if (priv->topX != 0) {
-	xf86Msg(X_CONFIG, "WACOM: top x = %d\n", priv->topX);
+	xf86Msg(X_CONFIG, "%s: top x = %d\n", dev->identifier, priv->topX);
     }
     priv->topY = xf86SetIntOption(local->options, "TopY", 0);
     if (priv->topY != 0) {
-	xf86Msg(X_CONFIG, "WACOM: top x = %d\n", priv->topY);
+	xf86Msg(X_CONFIG, "%s: top x = %d\n", dev->identifier, priv->topY);
     }
     priv->bottomX = xf86SetIntOption(local->options, "BottomX", 0);
     if (priv->bottomX != 0) {
-	xf86Msg(X_CONFIG, "WACOM: bottom x = %d\n", priv->bottomX);
+	xf86Msg(X_CONFIG, "%s: bottom x = %d\n", dev->identifier,
+		priv->bottomX);
     }
     priv->bottomY = xf86SetIntOption(local->options, "BottomY", 0);
     if (priv->bottomY != 0) {
-	xf86Msg(X_CONFIG, "WACOM: bottom x = %d\n", priv->bottomY);
+	xf86Msg(X_CONFIG, "%s: bottom x = %d\n", dev->identifier,
+		priv->bottomY);
     }
     priv->serial = xf86SetIntOption(local->options, "Serial", 0);
     if (priv->bottomY != 0) {
-	xf86Msg(X_CONFIG, "WACOM: serial number = %u\n", priv->serial);
+	xf86Msg(X_CONFIG, "%s: serial number = %u\n", dev->identifier,
+		priv->serial);
     }
 	    
-    /* Register the device into XFree86 XInput layer */
-    xf86AddLocalDevice(local, local->options);
+    /* mark the device configured */
+    local->flags |= XI86_CONFIGURED;
 
     /* return the LocalDevice */
     return (local);
@@ -2889,7 +2895,7 @@ InputDriverRec WACOM = {
 static void
 xf86WcmUnplug(pointer	p)
 {
-    ErrorF("xf86WcmUnplug\n");
+    DBG(1, ErrorF("xf86WcmUnplug\n"));
 }
 
 /*
@@ -2903,6 +2909,8 @@ xf86WcmPlug(pointer	module,
 	    int		*errmaj,
 	    int		*errmin)
 {
+    DBG(1, ErrorF("xf86WcmPlug\n"));
+	
     xf86AddInputDriver(&WACOM, module, 0);
 
     return module;

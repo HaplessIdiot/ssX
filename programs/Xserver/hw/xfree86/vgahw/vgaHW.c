@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.22 1999/04/25 10:02:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.23 1999/06/12 07:19:06 dawes Exp $ */
 
 /*
  *
@@ -854,11 +854,11 @@ vgaHWRestoreColormap(ScrnInfoPtr scrninfp, vgaRegPtr restore)
 void
 vgaHWRestore(ScrnInfoPtr scrninfp, vgaRegPtr restore, int flags)
 {
-    if (flags & VGA_SR_FONTS)
-	vgaHWRestoreFonts(scrninfp, restore);
-
     if (flags & VGA_SR_MODE)
 	vgaHWRestoreMode(scrninfp, restore);
+
+    if (flags & VGA_SR_FONTS)
+	vgaHWRestoreFonts(scrninfp, restore);
 
     if (flags & VGA_SR_CMAP)
 	vgaHWRestoreColormap(scrninfp, restore);

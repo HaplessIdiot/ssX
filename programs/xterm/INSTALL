@@ -1,4 +1,4 @@
--- $XFree86: xc/programs/xterm/INSTALL,v 3.10 1999/03/14 03:22:31 dawes Exp $
+-- $XFree86: xc/programs/xterm/INSTALL,v 3.11 1999/04/11 13:11:26 dawes Exp $
 -- Thomas E. Dickey <dickey@clark.net>
 
 Xterm is normally built as part of the X Windows source tree, using
@@ -208,7 +208,8 @@ The options (in alphabetic order):
 
   --enable-wide-chars     enable wide-character support
 
-  	Compile-in code that supports 16-bit characters.
+  	Compile-in code that supports 16-bit characters.  Includes support
+	for UTF-8.
 
   --enable-xmc-glitch     test: enable xmc magic-cookie emulation
 

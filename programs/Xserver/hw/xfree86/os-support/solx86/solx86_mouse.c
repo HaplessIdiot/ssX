@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_mouse.c,v 1.1 1999/05/17 13:17:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_mouse.c,v 1.1 1999/05/22 08:40:16 dawes Exp $ */
 
 /*
  * Copyright 1999 by The XFree86 Project, Inc.
@@ -13,7 +13,7 @@ static int
 SupportedInterfaces(void)
 {
     /* XXX This needs to be checked. */
-    return MSE_SERIAL | MSE_BUS | MSE_PS2 | MSE_AUTO;
+    return MSE_SERIAL | MSE_BUS | MSE_PS2 | MSE_AUTO | MSE_XPS2;
 }
 
 OSMouseInfoPtr

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/input/confdrv.sh,v 1.3 1999/05/09 12:49:49 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/input/confdrv.sh,v 1.4 1999/05/17 13:17:16 dawes Exp $
 #
 # This script generates drvConf.c
 #
@@ -33,15 +33,11 @@ cat >> $DRVCONF <<EOF
 
 InputDriverPtr xf86InputDriverList[] =
 {
-#ifdef NEW_INPUT
 EOF
 for i in $Args; do
   echo "	&$i," >> $DRVCONF
 done
 cat >> $DRVCONF <<EOF
-#else
-	NULL
-#endif
 };
 
 int xf86NumInputDrivers = sizeof(xf86InputDriverList) / sizeof(xf86InputDriverList[0]);

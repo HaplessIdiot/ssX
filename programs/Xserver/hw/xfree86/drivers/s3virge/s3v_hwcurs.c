@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_hwcurs.c,v 1.1 1999/03/29 12:17:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_hwcurs.c,v 1.2 1999/04/04 08:46:17 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -80,10 +80,6 @@ static void
 S3VShowCursor(ScrnInfoPtr pScrn)
 {
   char tmp;
-
-  tmp = inCRReg(EXT_RAMDAC_CNTL_CR55);
-  /* Enable X11 decoding */
-  outCRReg(EXT_RAMDAC_CNTL_CR55, tmp | 0x10 );
 
   tmp = inCRReg(HWCURSOR_MODE_CR45);
     /* Enable cursor */

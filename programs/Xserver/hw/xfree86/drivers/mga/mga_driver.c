@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.98 1999/06/12 07:18:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.99 1999/06/12 14:15:35 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1689,12 +1689,13 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
      * line 1023, if more than 4MB is to be displayed, YDSTORG must be set
      * appropriately to align memory bank switching, and this requires a
      * corresponding offset on linear frame buffer access.
+     * This is only needed for WRAM.
      */
 
     pMga->YDstOrg = 0;
-    /* Actually, I'm not sure any need this other than the TVP3026 ones */
-    if ((pMga->Chipset != PCI_CHIP_MGAG400) && 
-	(pMga->Chipset != PCI_CHIP_MGAG200) &&
+    if (((pMga->Chipset == PCI_CHIP_MGA2064) || 
+	 (pMga->Chipset == PCI_CHIP_MGA2164) ||
+	 (pMga->Chipset == PCI_CHIP_MGA2164_AGP)) &&
 	(pScrn->virtualX * pScrn->virtualY * bytesPerPixel > 4*1024*1024)) 
     {
 	int offset, offset_modulo, ydstorg_modulo;
@@ -1747,7 +1748,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
         } else {
             pMga->HWCursor = FALSE;
             xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-                "Too less offscreen memory for HW cursor; using SW cursor\n");
+                "Too little offscreen memory for HW cursor; using SW cursor\n");
         }
     }
 

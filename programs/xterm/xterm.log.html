@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.27 1999/05/30 14:41:09 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.28 1999/06/06 08:49:18 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_106">Patch #106 - 1999/6/9 - XFree86 3.9Pq</A>
 <LI><A HREF="#xterm_105">Patch #105 - 1999/6/5 - XFree86 3.9Pp</A>
 <LI><A HREF="#xterm_104">Patch #104 - 1999/5/30 - XFree86 3.9Pn</A>
 <LI><A HREF="#xterm_103">Patch #103 - 1999/5/14 - XFree86 3.9Pm</A>
@@ -149,6 +150,20 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
 
+<H1><A NAME="xterm_106">Patch #106 - 1999/6/9 - XFree86 3.9Pq</A></H1>
+<ul>
+	<li>remove duplicate fix for OpenBSD in resize.c
+
+	<li>correct logic in ScreenWrite, which did not reset the high bytes
+	  of 16-bit characters when overwriting them with a 8-bit character
+	  string (reported by Thomas Wolff).
+
+	<li>integrate patch by Markus Kuhn to provide limited support for
+	  input of UTF-8 16-bit data by a lookup table.
+
+	<li>correct check in non_blank_line to ensure we're in wide-character
+	  mode before looking at the high bytes, for InsertChar.
+</ul>
 <H1><A NAME="xterm_105">Patch #105 - 1999/6/5 - XFree86 3.9Pp</A></H1>
 <ul>
 	<li>implement new resource <em>trimSelection</em>, which allows xterm
@@ -171,7 +186,8 @@ xc/programs/Xserver/hw/xfree86).
 This is a resync patch against XFree86 3.9Pn, reflecting changes which were
 submitted by Branden Robinson, who worked with 
 Wichert Akkerman &lt;wichert@cs.leidenuniv.nl&gt;
-to set up ifdef's to handle GNU libc 2.1
+to set up ifdef's to handle GNU libc 2.1,
+and use getpt() which lets xterm avoid having to know the actual PTY name.
 <p>
 I have also added a few fixes for signed/unsigned mismatches, and corrected
 a problem in the configure script (the UTF-8 code was always configured since
