@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: miinitext.c /main/38 1995/12/08 13:41:44 dpw $ */
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.7 1995/12/09 11:41:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.8 1996/01/05 13:19:51 dawes Exp $ */
 
 #include "misc.h"
 
@@ -200,7 +200,6 @@ InitExtensions(argc, argv)
 #ifdef DBE
     DbeExtensionInit();
 #endif
-}
 #ifdef XFREE86
 #ifdef XF86VIDMODE
     XFree86VidModeExtensionInit();
@@ -209,3 +208,4 @@ InitExtensions(argc, argv)
     XFree86DGAExtensionInit();
 #endif
 #endif
+}

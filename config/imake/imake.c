@@ -1,5 +1,5 @@
 /* $XConsortium: imake.c /main/88 1995/12/08 16:33:13 gildea $ */
-/* $XFree86: xc/config/imake/imake.c,v 3.8 1995/01/28 15:40:56 dawes Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.9 1996/01/05 13:07:09 dawes Exp $ */
 
 /***************************************************************************
  *                                                                         *
@@ -208,7 +208,7 @@ extern int	errno;
  * This define of strerror is copied from (and should be identical to)
  * Xos.h, which we don't want to include here for bootstrapping reasons.
  */
-#ifdef USE_STRERROR
+#ifndef USE_STRERROR
 #ifndef strerror
 extern char *sys_errlist[];
 extern int sys_nerr;

@@ -45,9 +45,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-<<<<<<< osdep.h
-/* $XConsortium: osdep.h,v 1.40 94/04/17 20:27:05 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/os/osdep.h,v 3.1 1995/03/11 14:19:56 dawes Exp $ */
+/* $XConsortium: osdep.h,v 1.41 95/04/05 19:58:36 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osdep.h,v 3.2 1996/01/05 13:20:05 dawes Exp $ */
 
 #ifdef AMOEBA
 #include <stddef.h>
@@ -64,7 +63,6 @@ SOFTWARE.
 #include <server/x11/Xamoeba.h>
 #undef  port
 #endif
-/* $XConsortium: osdep.h,v 1.41 95/04/05 19:58:36 kaleb Exp $ */
 
 #define BOTIMEOUT 200 /* in milliseconds */
 #define BUFSIZE 4096

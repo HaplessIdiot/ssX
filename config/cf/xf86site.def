@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.59 1995/12/26 08:34:46 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.60 1996/01/06 00:47:34 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -262,15 +262,6 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.59 1995/12/26 08:34:46 dawes Exp $
  * uncomment this line.  This option is only relevant when XIE is built.
  *
 #define BuildDIS		YES
- */
-
-/*
- * If you want to build Fresco, uncomment this line.  Note: a suitable
- * C++ compiler is required.  If using GCC, version 2.6.0 or later is
- * required.  Make sure HasGcc2ForCplusplus is set to YES when using
- * GCC to build Fresco (see above).
- *
-#define BuildFresco		YES
  */
 
 /*

@@ -1,7 +1,7 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
 XCOMM rules:  $XConsortium: Imake.rules /main/206 1995/12/14 14:57:37 matt $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.19 1995/08/05 11:48:41 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.20 1996/01/05 13:06:25 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -2148,7 +2148,6 @@ target::								@@\
 			if [ "$$executeit" != "no" ]; then \		@@\
 				$(MV) $$i/Makefile $$i/Makefile.bak; \	@@\
 			fi; \						@@\
-		    fi; \						@@\
 		fi; \							@@\
 		$(MAKE) $(MFLAGS) $(MAKE_OPTS) ONESUBDIR=$$i ONECURDIR=$$curdir IMAKETOP=$$imaketop IMAKEPREFIX=$$imakeprefix $$i/Makefile; \	@@\
 		cd $$i;	\						@@\

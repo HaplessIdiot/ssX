@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c /main/239 1995/12/10 17:21:49 gildea $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.23 1995/12/16 08:24:07 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.24 1996/01/05 13:23:09 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -1307,6 +1307,7 @@ char **argv;
 #ifdef __sgi
 	    if (resource.useLocale)
 	        setlocale(LC_ALL,"");
+#endif
 
 #ifdef HAS_POSIX_SAVED_IDS
 	    if (seteuid(euid) == -1)

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/etc/Imakefile,v 3.0 1995/12/17 10:05:49 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/etc/Imakefile,v 3.1 1995/12/26 07:19:44 dawes Exp $
 #include <Server.tmpl>
 
 #if SystemV
@@ -119,7 +119,6 @@ LinkSourceFile(BM-Lynx.shar,$(XF86SRC)/etc)
 LinkSourceFile(XdmConf.svr4,$(XF86SRC)/etc)
 LinkSourceFile(apSolx86.shar,$(XF86SRC)/etc)
 LinkSourceFile(ati.test.c,$(XF86SRC)/etc)
-LinkSourceFile(console.h,$(XF86SRC)/etc)
 LinkSourceFile(dmmap.shar,$(XF86SRC)/etc)
 LinkSourceFile(et4000clock.c,$(XF86SRC)/etc)
 LinkSourceFile(install.sv3,$(XF86SRC)/etc)

@@ -1,5 +1,5 @@
 /* $XConsortium: connection.c /main/141 1995/12/08 14:09:46 kaleb $ */
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.16 1995/08/06 02:11:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.17 1996/01/05 13:20:03 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -834,6 +834,7 @@ XtransConnInfo trans_conn;
     FD_ZERO(&mask);
     FD_SET(fd, &mask);
     (void)Select(fd + 1, &mask, NULL, NULL, &waittime);
+#endif
     /* try to read the byte-order of the connection */
     (void)_XSERVTransRead(trans_conn, &byteOrder, 1);
     if ((byteOrder == 'l') || (byteOrder == 'B'))

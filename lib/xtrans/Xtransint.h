@@ -1,5 +1,5 @@
 /* $XConsortium: Xtransint.h /main/25 1995/12/05 16:51:28 mor $ */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.7 1995/03/18 10:51:09 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.8 1996/01/05 13:14:34 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -53,6 +53,9 @@ from the X Consortium.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifndef _XTRANSINT_H_
+#define _XTRANSINT_H_
+
 /*
  * XTRANSDEBUG will enable the PRMSG() macros used in the X Transport 
  * Interface code. Each use of the PRMSG macro has a level associated with 
@@ -67,14 +70,12 @@ from the X Consortium.
  *	XTRANSDEBUG=5 really detailed stuff
 #define XTRANSDEBUG 2
  */
+
 #ifndef __EMX__
 #define XTRANSDEBUG 1
 #else
 #define XTRANSDEBUG 5
 #endif
-
-#ifndef _XTRANSINT_H_
-#define _XTRANSINT_H_
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -130,6 +131,7 @@ extern int  errno;		/* Internal system error number. */
 #define OPEN_MAX NOFILES_MAX
 #else
 #define OPEN_MAX 256
+#endif
 #endif
 #endif
 #endif

@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
 XCOMM $XConsortium: Project.tmpl /main/r61_main/3 1995/12/18 17:35:53 gildea $
-XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.21 1996/01/05 13:06:31 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.22 1996/01/06 00:47:33 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -290,6 +290,7 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.21 1996/01/05 13:06:31 dawes Exp $
 #else
 #define VidTuneExtensionDefines /**/
 #endif
+#endif
 
 #ifndef RECORDDefines
 #if BuildRECORD
@@ -313,6 +314,7 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.21 1996/01/05 13:06:31 dawes Exp $
 #endif
 #define ExtensionDefines BaseExtensionDefines ExtensionOSDefines
 #endif
+
 #ifndef ServerXdmcpDefines
 #define ServerXdmcpDefines -DXDMCP
 #endif
