@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.192 95/01/25 20:37:15 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.34 1995/05/27 02:59:32 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.35 1995/06/02 10:06:25 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -752,7 +752,7 @@ CFB8DIR  = cfb
 CFB16DIR = cfb16
 CFB32DIR = cfb32
 DDXDIR1  = hw/xfree86
-XF86AGXSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
+XF86AGXSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(DDXDIR1) $(DEPDIRS)
 XF86AGXOBJS = $(XF86COMSRC)/XF86_AGX.o
 XF86AGXLIBS = $(XF86ACCELSRC)/agx/LibraryTargetName(agx) $(XF86LIBS) CFBLibs
 XF86AGXSYSLIBS = $(SYSLIBS)

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.27 94/04/07 15:01:48 rws Exp $
-XCOMM $XFree86: xc/lib/Imakefile,v 3.0 1994/06/28 12:18:53 dawes Exp $
+XCOMM $XFree86: xc/lib/Imakefile,v 3.1 1994/07/24 11:40:22 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags
 
@@ -15,14 +15,22 @@ BERKDIR = Xbsd
 EXEXTLIB = XExExt
 #endif
 
-#if BuildServersOnly
-LINTSUBDIRS = Xau Xdmcp
-#else
+#if !BuildLBXProxyOnly
+#if !BuildServersOnly
 LINTSUBDIRS = Xau Xdmcp X11 oldX ICE SM Xext $(EXEXTLIB) Xt Xmu Xaw XIE Xi \
 	      Xtst FS PEX5
+#else
+/* For ServersOnly */
+LINTSUBDIRS = Xau Xdmcp
+#endif
+TRANSDIR = xtrans
+FONTSUBDIR = font
+#else
+/* For LBXProxyOnly */
+LINTSUBDIRS = Xdmcp X11 Xext $(EXEXTLIB)
 #endif
 
-SUBDIRS = $(BERKDIR) xtrans $(LINTSUBDIRS) font
+SUBDIRS = $(BERKDIR) $(TRANSDIR) $(LINTSUBDIRS) $(FONTSUBDIR)
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
