@@ -1,9 +1,16 @@
-XFree86 3.1.0d (19 November 1994)
+XFree86 3.1.0d (22 November 1994)
+ 90. Updates to NetBSD aperture driver (Matthieu Herrb).
+ 89. Bring back 'gccmakedep' from 2.x.  Currently only use it when
+     UseInstalled is true.
+ 88. Support for additional keys on Microsoft ergonomic keyboard (may
+     require support in the OS's console driver) (Kaleb Keithly).
  87. Updates for SCO (David McCullough).
  86. Don't require the Virtual size to be specifed for the Mach32 server.
  85. Allow virtual widths < 1024 for Mach32 server (currently untested).
  84. Some preliminary support for ISC (SVR3) 4.x (Michael Rohleder).
- 83. ET4000/W32 server updates (Glenn Lai).
+ 83. ET4000/W32 server updates.  Includes accelerated 32-bit opaque and
+     transparent stipple, acceleration for cases where the planemask != 0xFF,
+     and ramdac code changed to accomodate more ramdac types (Glenn Lai).
  82. NetBSD support in hw/sun (Dennis Ferguson, Matthew Green, Matthieu
      Herrb).
  81. Fix xterm hang-on-exit problem on SolX86 2.4 (David Holland).

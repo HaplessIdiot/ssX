@@ -1,17 +1,25 @@
 XCOMM $XConsortium: Imakefile,v 1.8 94/03/29 15:54:11 gildea Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/config/util/Imakefile,v 3.0 1994/10/20 06:00:59 dawes Exp $
 #if UseCCMakeDepend
 MDEP_PROG = makedepend
 #endif
-         PROGRAMS = xmkmf $(MDEP_PROG) mergelib
+GCCMDEP_PROG = gccmakedep
+         PROGRAMS = xmkmf $(MDEP_PROG) $(GCCMDEP_PROG) mergelib
           DEPLIBS =
   EXTRA_LIBRARIES =
 
 all:: $(PROGRAMS)
 
+#if HasGcc
+GCCCMD = $(CC)
+#else
+GCCCMD = gcc
+#endif
+
 CppScriptTarget(xmkmf,xmkmf.cpp,-DCONFIGDIRSPEC='"'"-I$(CONFIGDIR)"'"',$(ICONFIGFILES))
 CppScriptTarget(makedepend,mdepend.cpp,-DPREPROC='"'"$(PREPROCESSCMD)"'"',$(ICONFIGFILES))
 CppScriptTarget(mergelib,mergelib.cpp,"-DARCMD=$(AR)" "-DRANLIB=$(RANLIB)",$(ICONFIGFILES))
+CppScriptTarget(gccmakedep,gccmdep.cpp,-DCCCMD='"'"$(GCCCMD)"'"' -DRMCMD='"'"$(RM)"'"' -DLNCMD='"'"$(LN)"'"' -DMVCMD='"'"$(MV)"'"',$(ICONFIGFILES))
 
 #if HasSymLinks
 #if CrossCompiling
