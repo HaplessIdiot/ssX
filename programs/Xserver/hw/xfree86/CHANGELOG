@@ -1,3 +1,6 @@
+ 218. Have the Xv DDX send clients exposure events when windows containing
+      overlaid data, which isn't actually in the framebuffer, are moved
+      (Mark Vojkovich).
  217. Fix ordering of calling DDC probe in VBE to respect NoDDC options
       (Alan Hourihane).
  216. Fix VBE initialization in trident driver for DDC (Alan Hourihane).
@@ -10411,4 +10414,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1166 2000/05/28 17:12:13 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1167 2000/05/29 13:45:41 alanh Exp $
