@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.16 2001/07/25 14:30:08 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.17 2001/08/06 11:02:30 alanh Exp $ */
 
 #include "win.h"
 
@@ -36,7 +36,8 @@ int		g_iGCPrivateIndex = -1;
 int		g_iPixmapPrivateIndex = -1;
 unsigned long	g_ulServerGeneration = 0;
 HBITMAP		g_hbmpGarbage = NULL;
-static Bool	g_fScreenInfoInitialized = FALSE;
+
+extern void OsVendorVErrorF (const char *pszFormat, va_list va_args);
 
 static PixmapFormatRec g_PixmapFormats[] = {
         { 1,    1,      BITMAP_SCANLINE_PAD },
@@ -122,6 +123,11 @@ AbortDDX (void)
 void
 OsVendorInit (void)
 {
+#ifdef DDXOSVERRORF
+    if (!OsVendorVErrorFProc)
+	OsVendorVErrorFProc = OsVendorVErrorF;
+#endif
+
 #if CYGDEBUG
   ErrorF ("OsVendorInit ()\n");
 #endif
@@ -129,8 +135,7 @@ OsVendorInit (void)
   /* Add a default screen if no screens were specified */
   if (g_iNumScreens == 0)
     {
-      if (!g_fScreenInfoInitialized)
-	winInitializeDefaultScreens ();
+      winInitializeDefaultScreens ();
 
       g_iNumScreens = 1;
       g_iLastScreen = 0;
@@ -189,14 +194,21 @@ ddxUseMsg (void)
 int
 ddxProcessArgument (int argc, char *argv[], int i)
 {
-  ErrorF ("ddxProcessArgument ()\n");
+#ifdef DDXOSVERRORF
+  static Bool beenHere = FALSE;
 
-  /* Run some initialization procedures the first time through */
-  if (!g_fScreenInfoInitialized)
+  if (!beenHere)
     {
-      winInitializeDefaultScreens ();
-      g_fScreenInfoInitialized = TRUE;
-    }
+      /*
+       * This initialises our hook into VErrorF() for catching log messages
+       * that are generated before OsInit() is called.
+       */
+      OsVendorVErrorFProc = OsVendorVErrorF;
+      beenHere = TRUE;
+  }
+#endif
+
+  ErrorF ("ddxProcessArgument ()\n");
   
   /* Set a default DPI */
   if (monitorResolution == 0)
