@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.5 2000/12/01 08:56:03 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.6 2000/12/07 15:43:44 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -225,6 +225,8 @@ typedef struct {
     RADEONSaveRec       SavedReg;         /* Original (text) mode                    */
     RADEONSaveRec       ModeReg;          /* Current mode                            */
     Bool              (*CloseScreen)(int, ScreenPtr);
+
+    void              (*BlockHandler)(int, pointer, pointer, pointer);
 
     Bool              PaletteSavedOnVT; /* Palette saved on last VT switch   */
 

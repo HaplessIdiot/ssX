@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.6 2000/11/09 10:30:53 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.7 2000/11/18 19:37:12 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -87,6 +87,7 @@
 
 				/* colormap initialization */
 #include "micmap.h"
+#include "dixstruct.h"
 
 				/* X and server generic header files */
 #include "xf86.h"
@@ -1441,6 +1442,22 @@ static void RADEONLoadPalette(ScrnInfoPtr pScrn, int numColors,
     }
 }
 
+static void
+RADEONBlockHandler(int i, pointer blockData, pointer pTimeout, pointer pReadmask)
+{
+    ScreenPtr   pScreen = screenInfo.screens[i]; 
+    ScrnInfoPtr pScrn   = xf86Screens[i];
+    RADEONInfoPtr info    = RADEONPTR(pScrn);
+    
+    pScreen->BlockHandler = info->BlockHandler;
+    (*pScreen->BlockHandler) (i, blockData, pTimeout, pReadmask);
+    pScreen->BlockHandler = RADEONBlockHandler;
+    
+    if(info->VideoTimerCallback) {
+        (*info->VideoTimerCallback)(pScrn, currentTime.milliseconds);
+    }
+}
+
 /* Called at the start of each server generation. */
 Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 {
@@ -1834,6 +1851,9 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Direct rendering disabled\n");
     }
 #endif
+
+    info->BlockHandler = pScreen->BlockHandler;
+    pScreen->BlockHandler = RADEONBlockHandler;
 
     return TRUE;
 }
@@ -2912,6 +2932,7 @@ static Bool RADEONCloseScreen(int scrnIndex, ScreenPtr pScreen)
 
     pScrn->vtSema = FALSE;
 
+    pScreen->BlockHandler = info->BlockHandler;
     pScreen->CloseScreen = info->CloseScreen;
     return (*pScreen->CloseScreen)(scrnIndex, pScreen);
 }
