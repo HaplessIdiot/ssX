@@ -5,6 +5,7 @@
 # Public domain
 
 # Id: mkinstalldirs,v 1.2 1998/09/01 16:52:17 werner Exp $
+# $XFree86$
 
 errstatus=0
 

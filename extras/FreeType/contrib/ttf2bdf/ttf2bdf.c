@@ -20,6 +20,8 @@
  * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
  * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+/* $XFree86$ */
+
 #ifndef lint
 #ifdef __GNUC__
 static char rcsid[] __attribute__ ((unused)) = "Id: ttf2bdf.c,v 1.25 1999/10/21 16:31:54 mleisher Exp $";

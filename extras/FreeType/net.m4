@@ -2,6 +2,7 @@ dnl
 dnl The following was written by jhawk@mit.edu
 dnl
 dnl AC_LIBRARY_NET: Id: net.m4,v 1.4 1997/10/25 20:49:53 jhawk Exp 
+dnl $XFree86$
 dnl
 dnl This test is for network applications that need socket() and
 dnl gethostbyname() -ish functions.  Under Solaris, those applications need to

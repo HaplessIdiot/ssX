@@ -26,6 +26,7 @@
 
 /*
  * Id: remap.h,v 1.4 1999/05/03 17:07:04 mleisher Exp $
+ * $XFree86$
  */
 
 #ifdef __cplusplus
