@@ -1,5 +1,5 @@
 XCOMM $XConsortium: sunLib.tmpl,v 1.38 95/07/06 14:06:11 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/sunLib.tmpl,v 3.3 1995/07/08 10:21:56 dawes Exp $
+XCOMM $XFree86: xc/config/cf/sunLib.tmpl,v 3.4 1995/07/16 14:49:12 dawes Exp $
 
 /*
  * SunOS shared library template
@@ -8,7 +8,7 @@ XCOMM $XFree86: xc/config/cf/sunLib.tmpl,v 3.3 1995/07/08 10:21:56 dawes Exp $
 #if OSMajorVersion <= 4
 
 #if SunPost411FCSLd
-#define SharedXmuReqs $(LDPRELIB) $(XTOOLLIB) $(XLIB)
+#define SharedXmuReqs $(LDPRELIB) $(XTOOLLIB) $(XEXTLIB) $(XONLYLIB)
 #endif
 
 #ifndef SharedX11Rev
