@@ -32,7 +32,7 @@
  * Modifier:  Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/omGeneric.c,v 3.21 2002/10/21 13:32:51 alanh Exp $ */
+/* $XFree86: xc/lib/X11/omGeneric.c,v 3.23 2002/11/25 14:04:53 eich Exp $ */
 
 /*
  * Fixed the algorithms in parse_fontname() and parse_fontdata()
@@ -1073,6 +1073,7 @@ parse_vw(oc, font_set, name_list, count)
     int		count;
 {
     FontData	vmap = font_set->vmap;
+    FontDataRec font_data_return;
     VRotate	vrotate = font_set->vrotate;
     int		vmap_num = font_set->vmap_num;
     int		vrotate_num = font_set->vrotate_num;
