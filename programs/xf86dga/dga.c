@@ -49,6 +49,7 @@ main(int argc, char *argv[])
     XEvent event;
     Colormap cmap;
     Visual *vis;
+    int flags;
 
     if (geteuid()) {
 	fprintf(stderr, "Must be suid root\n");
@@ -85,14 +86,10 @@ main(int argc, char *argv[])
         exit(2);
     }
 
-    if (MajorVersion < 1) {
-	int flags;
-
-	XF86DGAQueryDirectVideo(dis, DefaultScreen(dis), &flags);
-	if (!(flags & XF86DGADirectPresent)) {
-	    fprintf(stderr, "Xserver driver doesn't support DirectVideo\n");
-	    exit(2);
-	}
+    XF86DGAQueryDirectVideo(dis, DefaultScreen(dis), &flags);
+    if (!(flags & XF86DGADirectPresent)) {
+      fprintf(stderr, "Xserver driver doesn't support DirectVideo on screen %d\n", DefaultScreen(dis) );
+      exit(2);
     }
 	
    XGrabKeyboard(dis, DefaultRootWindow(dis), True, GrabModeAsync,

@@ -1,4 +1,6 @@
 XFree86 4.0b (?? May 2000)
+ 168. Make xdpyinfo and xf86dga fail gracefully when DGA is not enabled
+      in the driver, but the extension is enabled (#3870, Andrew Aitchison).
  167. Fix too many xfree calls in lbxproxy (#3907, Matthieu Herrb).
  166. Fix uninitialized fd_set mask in lbxproxy (#3906, Matthieu Herrb).
  165. Fix typo when printing HSync frequency when not a range

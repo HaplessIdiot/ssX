@@ -63,6 +63,7 @@ in this Software without prior written authorization from The Open Group.
 #endif
 #include <X11/Xos.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 char *ProgramName;
 Bool queryExtensions = False;
@@ -571,11 +572,18 @@ print_shape_info(Display *dpy, char *extname)
 static int
 print_dga_info(Display *dpy, char *extname)
 {
-    int majorrev, minorrev, width, bank, ram, offset;
+    int majorrev, minorrev, width, bank, ram, offset, flags;
 
     if (!XF86DGAQueryVersion(dpy, &majorrev, &minorrev))
 	return 0;
     print_standard_extension_info(dpy, extname, majorrev, minorrev);
+
+    if (!XF86DGAQueryDirectVideo(dpy, DefaultScreen(dpy), &flags) 
+	|| ! (flags & XF86DGADirectPresent) )
+    {
+	printf("  DGA not available on screen %d.\n", DefaultScreen(dpy));
+	return 1;
+    }
 
     if (!XF86DGAGetVideoLL(dpy, DefaultScreen(dpy), &offset,
 			    &width, &bank, &ram))
