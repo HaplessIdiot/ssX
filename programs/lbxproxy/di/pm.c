@@ -25,7 +25,7 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86: xc/programs/lbxproxy/di/pm.c,v 1.7 2001/10/18 21:01:25 herrb Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/pm.c,v 1.9 2002/09/16 18:06:20 eich Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -190,7 +190,7 @@ _ConnectToProxyManager (pmAddr, errorString)
     if ((PM_iceConn = IceOpenConnection (
 	pmAddr,	NULL, 0, 0, sizeof(iceError), iceError)) == NULL)
     {
-	snprintf (errorString, sizeof(errorString),
+	snprintf (errorString, ERROR_STRING_SIZE,
 	    "Could not open ICE connection to proxy manager: %s", iceError);
 	return 0;
     }
@@ -203,7 +203,7 @@ _ConnectToProxyManager (pmAddr, errorString)
     if (setupstat != IceProtocolSetupSuccess)
     {
 	IceCloseConnection (PM_iceConn);
-	snprintf (errorString,sizeof(errorString),
+	snprintf (errorString, ERROR_STRING_SIZE,
 	    "Could not initialize proxy management protocol: %s",
 	    iceError);
 	return 0;
