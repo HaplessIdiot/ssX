@@ -1,6 +1,7 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/lib/dmx/Imakefile,v 1.1tsi Exp $
 
 #define DoNormalLib NormalLibDmx
+#define DoExtraLib ExtraLibDmx
 #define DoSharedLib SharedLibDmx
 #define DoDebugLib DebugLibDmx
 #define DoProfileLib ProfileLibDmx

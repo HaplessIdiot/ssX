@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/glxvendor.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/glxvendor.c,v 1.2tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -386,6 +386,7 @@ int __glXVForwardSingleReqSwap( __GLXclientState *cl, GLbyte *pc )
 int __glXVForwardPipe0WithReplySwap( __GLXclientState *cl, GLbyte *pc )
 {
    xGLXVendorPrivateReq *req = (xGLXVendorPrivateReq *)pc;
+   __GLX_DECLARE_SWAP_VARIABLES;
    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
    __GLX_SWAP_SHORT(&req->length);
@@ -410,6 +411,7 @@ int __glXVForwardPipe0WithReplySwap( __GLXclientState *cl, GLbyte *pc )
 int __glXVForwardPipe0WithReplySwapsv( __GLXclientState *cl, GLbyte *pc )
 {
    xGLXVendorPrivateReq *req = (xGLXVendorPrivateReq *)pc;
+   __GLX_DECLARE_SWAP_VARIABLES;
    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
    __GLX_SWAP_SHORT(&req->length);
@@ -434,6 +436,7 @@ int __glXVForwardPipe0WithReplySwapsv( __GLXclientState *cl, GLbyte *pc )
 int __glXVForwardPipe0WithReplySwapiv( __GLXclientState *cl, GLbyte *pc )
 {
    xGLXVendorPrivateReq *req = (xGLXVendorPrivateReq *)pc;
+   __GLX_DECLARE_SWAP_VARIABLES;
    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
    __GLX_SWAP_SHORT(&req->length);
@@ -458,6 +461,7 @@ int __glXVForwardPipe0WithReplySwapiv( __GLXclientState *cl, GLbyte *pc )
 int __glXVForwardPipe0WithReplySwapdv( __GLXclientState *cl, GLbyte *pc )
 {
    xGLXVendorPrivateReq *req = (xGLXVendorPrivateReq *)pc;
+   __GLX_DECLARE_SWAP_VARIABLES;
    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
    __GLX_SWAP_SHORT(&req->length);
@@ -482,6 +486,7 @@ int __glXVForwardPipe0WithReplySwapdv( __GLXclientState *cl, GLbyte *pc )
 int __glXVForwardAllWithReplySwap( __GLXclientState *cl, GLbyte *pc )
 {
    xGLXVendorPrivateReq *req = (xGLXVendorPrivateReq *)pc;
+   __GLX_DECLARE_SWAP_VARIABLES;
    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
    __GLX_SWAP_SHORT(&req->length);
@@ -506,6 +511,7 @@ int __glXVForwardAllWithReplySwap( __GLXclientState *cl, GLbyte *pc )
 int __glXVForwardAllWithReplySwapsv( __GLXclientState *cl, GLbyte *pc )
 {
    xGLXVendorPrivateReq *req = (xGLXVendorPrivateReq *)pc;
+   __GLX_DECLARE_SWAP_VARIABLES;
    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
    __GLX_SWAP_SHORT(&req->length);
@@ -530,6 +536,7 @@ int __glXVForwardAllWithReplySwapsv( __GLXclientState *cl, GLbyte *pc )
 int __glXVForwardAllWithReplySwapiv( __GLXclientState *cl, GLbyte *pc )
 {
    xGLXVendorPrivateReq *req = (xGLXVendorPrivateReq *)pc;
+   __GLX_DECLARE_SWAP_VARIABLES;
    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
    __GLX_SWAP_SHORT(&req->length);
@@ -554,6 +561,7 @@ int __glXVForwardAllWithReplySwapiv( __GLXclientState *cl, GLbyte *pc )
 int __glXVForwardAllWithReplySwapdv( __GLXclientState *cl, GLbyte *pc )
 {
    xGLXVendorPrivateReq *req = (xGLXVendorPrivateReq *)pc;
+   __GLX_DECLARE_SWAP_VARIABLES;
    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
    __GLX_SWAP_SHORT(&req->length);

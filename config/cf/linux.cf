@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.230tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.231tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -998,10 +998,6 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 # ifndef TkLibDir
 #  define TkLibDir		/usr/lib64
 # endif
-#endif
-
-#ifndef BuildDmx
-#define BuildDmx	NO
 #endif
 
 #include <lnxLib.rules>

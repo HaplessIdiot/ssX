@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.483tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.484tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1408,6 +1408,10 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 
 #  ifndef GlxExtraDefines
 #    define GlxExtraDefines DRIDefines GlxCoreLibDefines GlxArchDefines
+#  endif
+
+#  ifndef BuildGlxInDmx
+#    define BuildGlxInDmx	NO
 #  endif
 
 #else

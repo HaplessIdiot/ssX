@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -147,12 +148,14 @@ __GLXvisualConfig *GetGLXVisualConfigs(Display *dpy, int screen, int *nconfigs)
 	    int value = *p++;
 
 	    switch (property) {
+#if 0
 	      case GLX_SAMPLES_SGIS:
 		config->multiSampleSize = value;
 		break;
 	      case GLX_SAMPLE_BUFFERS_SGIS:
 		config->nMultiSampleBuffers = value;
 		break;
+#endif
 
 	      case GLX_TRANSPARENT_TYPE_EXT:
 		config->transparentPixel = value;
@@ -177,10 +180,12 @@ __GLXvisualConfig *GetGLXVisualConfigs(Display *dpy, int screen, int *nconfigs)
 		config->visualRating = value;
 		break;
 
+#if 0
 	      /* visualSelectGroup is an internal used property */
 	      case GLX_VISUAL_SELECT_GROUP_SGIX:
 		config->visualSelectGroup = value;
 		break;
+#endif
 
 	      default :
 		/* Ignore properties we don't recognize */
@@ -591,9 +596,11 @@ GetGLXVisualConfigsFromFBConfigs(__GLXFBConfig *fbconfigs, int nfbconfigs,
 	  cfg->transparentBlue = fbcfg->transparentBlue;
 	  cfg->transparentAlpha = fbcfg->transparentAlpha;
 	  cfg->transparentIndex = fbcfg->transparentIndex;
+#if 0
 	  cfg->multiSampleSize = fbcfg->multiSampleSize;
 	  cfg->nMultiSampleBuffers = fbcfg->nMultiSampleBuffers;
 	  cfg->visualSelectGroup = fbcfg->visualSelectGroup;
+#endif
        }
     }
 
