@@ -1,4 +1,5 @@
 XFree86 4.4.99.23 (xx January 2005)
+ 314. Xterm patch #200 (Thomas Dickey).
  313. Darwin build fixes (David Dawes).
  312. Fix another buglet in atimisc's decoding of a panel's mode on server
       entry (Marc La France).
@@ -19359,7 +19360,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3422 2005/02/04 15:03:28 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3423 2005/02/05 02:01:40 dawes Exp $
 
 
 

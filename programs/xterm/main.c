@@ -1,4 +1,4 @@
-/* $XTermId: main.c,v 1.424 2005/01/29 22:04:21 tom Exp $ */
+/* $XTermId: main.c,v 1.430 2005/02/06 16:29:47 tom Exp $ */
 
 #if !defined(lint) && 0
 static char *rid = "$Xorg: main.c,v 1.7 2001/02/09 02:06:02 xorgcvs Exp $";
@@ -91,7 +91,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.189 2005/01/24 17:00:02 tsi Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.190 2005/01/29 22:17:32 dickey Exp $ */
 
 /* main.c */
 
@@ -553,6 +553,7 @@ static char **command_to_exec_with_luit = NULL;
 ** contents.
 */
 static struct termio d_tio;
+
 #ifdef HAS_LTCHARS
 static struct ltchars d_ltc;
 #endif /* HAS_LTCHARS */
@@ -563,6 +564,15 @@ static unsigned int d_lmode;
 
 #elif defined(USE_POSIX_TERMIOS)
 static struct termios d_tio;
+
+#ifdef HAS_LTCHARS
+static struct ltchars d_ltc;
+#endif /* HAS_LTCHARS */
+
+#ifdef TIOCLSET
+static unsigned int d_lmode;
+#endif /* TIOCLSET */
+
 #else /* !USE_ANY_SYSV_TERMIO && !USE_POSIX_TERMIOS */
 static struct sgttyb d_sg =
 {
@@ -2707,11 +2717,19 @@ static struct UTMP_STR *
 find_utmp(struct UTMP_STR *tofind)
 {
     struct UTMP_STR *result;
+    struct UTMP_STR working;
 
-    while ((result = getutid(tofind)) != 0) {
-	if (!strcmp(result->ut_line, tofind->ut_line)) {
+    for (;;) {
+	memset(&working, 0, sizeof(working));
+	working.ut_type = tofind->ut_type;
+	memcpy(working.ut_id, tofind->ut_id, sizeof(tofind->ut_id));
+#if defined(__digital__) && defined(__unix__) && (defined(OSMAJORVERSION) && OSMAJORVERSION < 5)
+	working.ut_type = 0;
+#endif
+	if ((result = getutid(&working)) == 0)
 	    break;
-	}
+	if (!strcmp(result->ut_line, tofind->ut_line))
+	    break;
     }
     return result;
 }
@@ -2737,6 +2755,7 @@ spawn(void)
 #endif
     int rc = 0;
     int ttyfd = -1;
+
 #ifdef USE_ANY_SYSV_TERMIO
     struct termio tio;
 #ifdef TIOCLSET
@@ -2747,6 +2766,12 @@ spawn(void)
 #endif /* HAS_LTCHARS */
 #elif defined(USE_POSIX_TERMIOS)
     struct termios tio;
+#ifdef TIOCLSET
+    unsigned lmode;
+#endif /* TIOCLSET */
+#ifdef HAS_LTCHARS
+    struct ltchars ltc;
+#endif /* HAS_LTCHARS */
 #else /* !USE_ANY_SYSV_TERMIO && !USE_POSIX_TERMIOS */
     int ldisc = 0;
     int discipline;
@@ -3775,7 +3800,7 @@ spawn(void)
 		    if (pw2 != 0) {
 			uid_t uid2 = pw2->pw_uid;
 			pw = getpwuid(screen->uid);
-			if (pw->pw_uid != uid2)
+			if ((uid_t) pw->pw_uid != uid2)
 			    login_name = NULL;
 		    } else {
 			pw = getpwuid(screen->uid);
