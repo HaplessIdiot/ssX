@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.41 1998/09/05 06:36:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.42 1998/09/05 06:49:20 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -492,13 +492,21 @@ MGAReadBios(ScrnInfoPtr pScrn)
 	MGAPtr pMga;
 	MGABiosInfo *pBios;
 	MGABios2Info *pBios2;
+	Bool pciBIOS;
 	
 	pMga = MGAPTR(pScrn);
 	pBios = &pMga->Bios;
 	pBios2 = &pMga->Bios2;
 
-	/* Make sure the BIOS is present */
-	xf86ReadBIOS(pMga->BiosAddress, 0, tmp, sizeof( tmp ));
+	/* XXX A reasonable guess? */
+	pciBIOS = (pMga->BiosAddress > 0x100000);
+
+#define MGADoBIOSRead(offset, buf, len) \
+    (pciBIOS ? \
+      xf86ReadPciBIOS(pMga->BiosAddress, offset, pMga->PciTag, buf, len) : \
+      xf86ReadBIOS(pMga->BiosAddress, offset, buf, len))
+	
+	MGADoBIOSRead(0, tmp, sizeof( tmp ));
 	if (
 		tmp[ 0 ] != 0x55
 		|| tmp[ 1 ] != 0xaa
@@ -510,8 +518,7 @@ MGAReadBios(ScrnInfoPtr pScrn)
 	}
 
 	/* Get the info block offset */
-	xf86ReadBIOS( pMga->BiosAddress, 0x7ffc,
-		( CARD8 * ) & offset, sizeof( offset ));
+	MGADoBIOSRead(0x7ffc, ( CARD8 * ) & offset, sizeof( offset ));
 
 
 	/* Let the world know what we are up to */
@@ -522,11 +529,11 @@ MGAReadBios(ScrnInfoPtr pScrn)
 	/* Copy the info block */
 	switch (pMga->Chipset){
 	   case PCI_CHIP_MGA2064:
-		xf86ReadBIOS( pMga->BiosAddress, offset,
+		MGADoBIOSRead(offset,
 			( CARD8 * ) & pBios->StructLen, sizeof( MGABiosInfo ));
 		break;
 	   default:
-		xf86ReadBIOS( pMga->BiosAddress, offset,
+		MGADoBIOSRead(offset,
 			( CARD8 * ) & pBios2->PinID, sizeof( MGABios2Info ));
 	}
 

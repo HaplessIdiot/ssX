@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.1.2.5 1998/07/18 17:53:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.2 1998/07/25 16:56:42 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -247,6 +247,11 @@
 #define PCI_MAP_IO_ADDRESS_MASK         0xfffffffc
 
 #define PCIGETIO(b) ((b) & PCI_MAP_IO_ADDRESS_MASK)
+
+#define PCI_MAP_ROM_DECODE_ENABLE	0x00000001
+#define PCI_MAP_ROM_ADDRESS_MASK	0xfffff800
+
+#define PCIGETROM(b) ((b) & PCI_MAP_ROM_ADDRESS_MASK)
 
 /* PCI-PCI bridge mapping registers */
 #define PCI_PCI_BRIDGE_BUS_REG          0x18
