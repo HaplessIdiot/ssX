@@ -131,7 +131,7 @@ tory.  The patches should be applied by running:
 To format the XFree86 documentation use the latest version of our doctools
 package available from the XFree86 CVS repository's "doctools" module, and
 from our ftp site <URL:ftp://ftp.xfree86.org/pub/XFree86/misc/doc-
-tools-1.3.tgz>.
+tools-1.3.1.tgz>.
 
 The XFree86 source code for this and all releases/snapshots as well as devel-
 opment versions can also be accessed via the XFree86 CVS repository.  Infor-
