@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftdpy.c,v 1.9 2002/02/15 07:36:11 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftdpy.c,v 1.11 2002/05/22 17:15:02 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -40,6 +40,13 @@ _XftCloseDisplay (Display *dpy, XExtCodes *codes)
 	    break;
     if (!info)
 	return 0;
+    
+    /*
+     * Get rid of any dangling unreferenced fonts
+     */
+    info->max_unref_fonts = 0;
+    XftFontManageMemory (dpy);
+    
     *prev = info->next;
     if (info->defaults)
 	FcPatternDestroy (info->defaults);
@@ -149,6 +156,16 @@ _XftDisplayInfoGet (Display *dpy)
 						   XFT_DPY_MAX_GLYPH_MEMORY);
     if (XftDebug () & XFT_DBG_CACHE)
 	printf ("global max cache memory %ld\n", info->max_glyph_memory);
+
+    
+    info->num_unref_fonts = 0;
+    info->max_unref_fonts = XftDefaultGetInteger (dpy,
+						  XFT_MAX_UNREF_FONTS, 0,
+						  XFT_DPY_MAX_UNREF_FONTS);
+    if (XftDebug() & XFT_DBG_CACHE)
+	printf ("global max unref fonts %d\n", info->max_unref_fonts);
+
+    memset (info->fontHash, '\0', sizeof (XftFont *) * XFT_NUM_FONT_HASH);
     return info;
     
 bail1:
@@ -246,6 +263,11 @@ XftDefaultSet (Display *dpy, FcPattern *defaults)
     info->max_glyph_memory = XftDefaultGetInteger (dpy,
 						   XFT_MAX_GLYPH_MEMORY, 0,
 						   info->max_glyph_memory);
+    if (!info->max_unref_fonts)
+	info->max_unref_fonts = XFT_DPY_MAX_UNREF_FONTS;
+    info->max_unref_fonts = XftDefaultGetInteger (dpy,
+						  XFT_MAX_UNREF_FONTS, 0,
+						  info->max_unref_fonts);
     return True;
 }
 

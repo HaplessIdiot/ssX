@@ -22,6 +22,18 @@ XCOMM $XFree86: Imakefile,v 1.18 2002/05/23 23:01:56 keithp Exp $
 #define XftType1Dir $(LIBDIR)/fonts/Type1
 #endif
 
+#if UseInstalled
+/* when using xmkmf, make sure the needed definitions for the fontconfig
+ * library are available
+ */
+
+#ifndef SharedFontconfigRev
+#define SharedFontconfigRev 1.0
+SharedLibReferences(FONTCONFIG,fontconfig,$(FONTCONFIGLIBSRC),SOFONTCONFIGREV,SharedFontconfigRev)
+#endif
+
+#endif
+
 XFTLIBDIR=XftLibDir
 
 TYPE1DIR=XftType1Dir

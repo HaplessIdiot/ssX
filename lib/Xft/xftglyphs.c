@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.15 2002/02/15 07:36:11 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.16 2002/05/22 17:15:02 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -109,7 +109,7 @@ XftFontLoadGlyphs (Display	*dpy,
 
     face = XftLockFace (&font->public);
     
-    if (!_XftSetFace (font->file, font->size, &font->matrix))
+    if (!_XftSetFace (font->info.file, font->info.size, &font->info.matrix))
     {
 	XftUnlockFace (&font->public);
 	return;
@@ -118,9 +118,9 @@ XftFontLoadGlyphs (Display	*dpy,
     matrix.xx = matrix.yy = 0x10000L;
     matrix.xy = matrix.yx = 0;
 
-    if (font->antialias)
+    if (font->info.antialias)
     {
-	switch (font->rgba) {
+	switch (font->info.rgba) {
 	case FC_RGBA_RGB:
 	case FC_RGBA_BGR:
 	    matrix.xx *= 3;
@@ -153,7 +153,7 @@ XftFontLoadGlyphs (Display	*dpy,
 	if (xftg->glyph_memory)
 	    continue;
 	
-	error = FT_Load_Glyph (face, glyphindex, font->load_flags);
+	error = FT_Load_Glyph (face, glyphindex, font->info.load_flags);
 	if (error)
 	{
 	    /*
@@ -162,9 +162,9 @@ XftFontLoadGlyphs (Display	*dpy,
 	     * bitmap and let things look bad instead of
 	     * missing the glyph
 	     */
-	    if (font->load_flags & FT_LOAD_NO_BITMAP)
+	    if (font->info.load_flags & FT_LOAD_NO_BITMAP)
 		error = FT_Load_Glyph (face, glyphindex,
-				       font->load_flags & ~FT_LOAD_NO_BITMAP);
+				       font->info.load_flags & ~FT_LOAD_NO_BITMAP);
 	    if (error)
 		continue;
 	}
@@ -179,7 +179,7 @@ XftFontLoadGlyphs (Display	*dpy,
 	/*
 	 * Compute glyph metrics from FreeType information
 	 */
-	if(font->transform && glyphslot->format != ft_glyph_format_bitmap) 
+	if(font->info.transform && glyphslot->format != ft_glyph_format_bitmap) 
 	{
 	    /*
 	     * calculate the true width by transforming all four corners.
@@ -190,7 +190,7 @@ XftFontLoadGlyphs (Display	*dpy,
 		for(yc = 0; yc <= 1; yc++) {
 		    vector.x = glyphslot->metrics.horiBearingX + xc * glyphslot->metrics.width;
 		    vector.y = glyphslot->metrics.horiBearingY - yc * glyphslot->metrics.height;
-		    FT_Vector_Transform(&vector, &font->matrix);   
+		    FT_Vector_Transform(&vector, &font->info.matrix);   
 		    if (XftDebug() & XFT_DBG_GLYPH)
 			printf("Trans %d %d: %d %d\n", (int) xc, (int) yc, 
 			       (int) vector.x, (int) vector.y);
@@ -226,9 +226,9 @@ XftFontLoadGlyphs (Display	*dpy,
 	 * Try to keep monospace fonts ink-inside
 	 * XXX transformed?
 	 */
-	if (font->spacing != FC_PROPORTIONAL && !font->transform)
+	if (font->info.spacing != FC_PROPORTIONAL && !font->info.transform)
 	{
-	    if (font->load_flags & FT_LOAD_VERTICAL_LAYOUT)
+	    if (font->info.load_flags & FT_LOAD_VERTICAL_LAYOUT)
 	    {
 		if (TRUNC(bottom) > font->public.max_advance_width)
 		{
@@ -258,7 +258,7 @@ XftFontLoadGlyphs (Display	*dpy,
 	    }
 	}
 
-	if (font->antialias)
+	if (font->info.antialias)
 	    pitch = (width * hmul + 3) & ~3;
 	else
 	    pitch = ((width + 31) & ~31) >> 3;
@@ -270,11 +270,11 @@ XftFontLoadGlyphs (Display	*dpy,
 	xftg->metrics.x = -TRUNC(left);
 	xftg->metrics.y = TRUNC(top);
 
-	if (font->spacing != FC_PROPORTIONAL)
+	if (font->info.spacing != FC_PROPORTIONAL)
 	{
-	    if (font->transform)
+	    if (font->info.transform)
 	    {
-		if (font->load_flags & FT_LOAD_VERTICAL_LAYOUT)
+		if (font->info.load_flags & FT_LOAD_VERTICAL_LAYOUT)
 		{
 		    vector.x = 0;
 		    vector.y = -font->public.max_advance_width;
@@ -284,13 +284,13 @@ XftFontLoadGlyphs (Display	*dpy,
 		    vector.x = font->public.max_advance_width;
 		    vector.y = 0;
 		}
-		FT_Vector_Transform (&vector, &font->matrix);
+		FT_Vector_Transform (&vector, &font->info.matrix);
 		xftg->metrics.xOff = vector.x;
 		xftg->metrics.yOff = -vector.y;
 	    }
 	    else
 	    {
-		if (font->load_flags & FT_LOAD_VERTICAL_LAYOUT)
+		if (font->info.load_flags & FT_LOAD_VERTICAL_LAYOUT)
 		{
 		    xftg->metrics.xOff = 0;
 		    xftg->metrics.yOff = -font->public.max_advance_width;
@@ -337,7 +337,7 @@ XftFontLoadGlyphs (Display	*dpy,
 	    ftbit.width      = width * hmul;
 	    ftbit.rows       = height * vmul;
 	    ftbit.pitch      = pitch;
-	    if (font->antialias)
+	    if (font->info.antialias)
 		ftbit.pixel_mode = ft_pixel_mode_grays;
 	    else
 		ftbit.pixel_mode = ft_pixel_mode_mono;
@@ -352,7 +352,7 @@ XftFontLoadGlyphs (Display	*dpy,
 	    FT_Outline_Get_Bitmap( _XftFTlibrary, &glyphslot->outline, &ftbit );
 	    break;
 	case ft_glyph_format_bitmap:
-	    if (font->antialias)
+	    if (font->info.antialias)
 	    {
 		unsigned char	*srcLine, *dstLine;
 		int		height;
@@ -423,7 +423,7 @@ XftFontLoadGlyphs (Display	*dpy,
 		line = bufBitmap;
 		for (y = 0; y < height * vmul; y++)
 		{
-		    if (font->antialias) 
+		    if (font->info.antialias) 
 		    {
 			static char    den[] = { " .:;=+*#" };
 			for (x = 0; x < pitch; x++)
@@ -470,7 +470,7 @@ XftFontLoadGlyphs (Display	*dpy,
 	    sizergba = pitchrgba * height;
 
 	    os = 1;
-	    switch (font->rgba) {
+	    switch (font->info.rgba) {
 	    case FC_RGBA_VRGB:
 		os = pitch;
 	    case FC_RGBA_RGB:
@@ -549,7 +549,7 @@ XftFontLoadGlyphs (Display	*dpy,
 		/*
 		 * swap bit order around; FreeType is always MSBFirst
 		 */
-		if (!font->antialias)
+		if (!font->info.antialias)
 		{
 		    if (BitmapBitOrder (dpy) != MSBFirst)
 		    {
