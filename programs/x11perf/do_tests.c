@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************************/
-/* $XFree86: xc/programs/x11perf/do_tests.c,v 1.8 2002/02/15 07:36:23 keithp Exp $ */
+/* $XFree86: xc/programs/x11perf/do_tests.c,v 1.9 2002/05/13 05:27:37 keithp Exp $ */
 
 #include "x11perf.h"
 
@@ -803,6 +803,26 @@ Test test[] = {
 		InitFixedTrapezoids, DoFixedTrapezoids, NullProc, EndFixedTrapezoids,
 		V1_5FEATURE, NONROP, 0,
 		{POLY, 100 }},
+  {"-aatrap300", "Fill 300x300 aa trapezoid", NULL,
+		InitFixedTrapezoids, DoFixedTrapezoids, NullProc, EndFixedTrapezoids,
+		V1_5FEATURE, NONROP, 0,
+		{POLY, 300 }},
+  {"-addaatrap1", "Fill 1x1 aa pre-added trapezoid", NULL,
+		InitFixedTrapezoids, DoFixedTrapezoids, NullProc, EndFixedTrapezoids,
+		V1_5FEATURE, NONROP, 0,
+		{POLY, 1, "add" }},
+  {"-addaatrap10", "Fill 10x10 aa pre-added trapezoid", NULL,
+		InitFixedTrapezoids, DoFixedTrapezoids, NullProc, EndFixedTrapezoids,
+		V1_5FEATURE, NONROP, 0,
+		{POLY, 10, "add" }},
+  {"-addaatrap100", "Fill 100x100 aa pre-added trapezoid", NULL,
+		InitFixedTrapezoids, DoFixedTrapezoids, NullProc, EndFixedTrapezoids,
+		V1_5FEATURE, NONROP, 0,
+		{POLY, 100, "add" }},
+  {"-addaatrap300", "Fill 300x300 aa pre-added trapezoid", NULL,
+		InitFixedTrapezoids, DoFixedTrapezoids, NullProc, EndFixedTrapezoids,
+		V1_5FEATURE, NONROP, 0,
+		{POLY, 300, "add" }},
 #endif
   {"-complex10", "Fill 10-pixel/side complex polygon", NULL,
 		InitComplexPoly, DoComplexPoly, NullProc, EndComplexPoly,

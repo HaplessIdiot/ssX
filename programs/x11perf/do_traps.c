@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************************/
-/* $XFree86: xc/programs/x11perf/do_traps.c,v 1.5 2001/01/17 23:45:12 dawes Exp $ */
+/* $XFree86: xc/programs/x11perf/do_traps.c,v 1.6 2002/05/13 05:27:37 keithp Exp $ */
 
 #include "x11perf.h"
 #include "bitmaps.h"
@@ -113,6 +113,7 @@ EndTrapezoids(XParms xp, Parms p)
 static XTrapezoid	*traps;
 static XftDraw		*aadraw;
 static XftColor		aablack, aawhite;
+static XRenderPictFormat    *maskFormat;
 
 int
 InitFixedTrapezoids(XParms xp, Parms p, int reps)
@@ -137,6 +138,23 @@ InitFixedTrapezoids(XParms xp, Parms p, int reps)
     aadraw = XftDrawCreate (xp->d, xp->w, 
 			    DefaultVisual (xp->d, DefaultScreen (xp->d)), 
 			    DefaultColormap (xp->d, DefaultScreen (xp->d)));
+    if (!strcmp (p->font, "add"))
+    {
+	XRenderPictFormat   templ;
+	templ.type = PictTypeDirect;
+	templ.depth = 8;
+	templ.direct.alpha = 0;
+	templ.direct.alphaMask = 0xff;
+	maskFormat = XRenderFindFormat (xp->d, 
+					PictFormatType |
+					PictFormatDepth |
+					PictFormatAlpha |
+					PictFormatAlphaMask,
+					&templ,
+					0);
+    }
+    else
+	maskFormat = 0;
     color.red = 0;
     color.green = 0;
     color.blue = 0;
@@ -211,7 +229,7 @@ DoFixedTrapezoids(XParms xp, Parms p, int reps)
     src = black;
     for (i = 0; i != reps; i++) {
         curTrap = traps;
-	XRenderCompositeTrapezoids (xp->d, PictOpOver, src, dst, 0,
+	XRenderCompositeTrapezoids (xp->d, PictOpOver, src, dst, maskFormat,
 				    0, 0, traps, p->objects);
         if (src == black)
 	    src = white;
