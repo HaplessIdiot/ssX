@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.43tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.44 2002/09/19 13:22:02 tsi Exp $ */
 
 /*
  *
@@ -23,6 +23,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 #include <sys/types.h>
+#include <sys/mman.h>
 #include <unistd.h>
 #include <stdlib.h>
 #ifdef __QNX__
@@ -866,7 +867,7 @@ int		maxalign;
 	    ErrorF( "ELFCreateGOT() Unable to reallocate memory!!!!\n" );
 	    return FALSE;
 	}
-#if defined(linux) && defined(__ia64__)
+#if defined(linux) && defined(__ia64__) || defined(__OpenBSD__)
 	{
 	    unsigned long page_size = getpagesize();
 	    unsigned long round;
@@ -2467,6 +2468,12 @@ int		*maxalign;
 	elffile->lsection[j].size=SecSize(i);
 	elffile->lsection[j].flags=flags;
 	switch (SecType(i)) {
+#ifdef __OpenBSD__
+	case SHT_PROGBITS:
+	    mprotect(elffile->lsection[j].saddr, SecSize(i), 
+		     PROT_READ|PROT_WRITE|PROT_EXEC);
+	    break;
+#endif
 	case SHT_SYMTAB:
 	    elffile->symtab = (Elf_Sym *)elffile->saddr[i];
 	    elffile->symndx = i;
@@ -2656,7 +2663,7 @@ LOOKUP **ppLookup;
 	ErrorF( "Unable to allocate ELF sections\n" );
 	return NULL;
     }
-#if defined(linux) && defined(__ia64__)
+#if defined(linux) && defined(__ia64__) || defined(__OpenBSD__)
     {
 	unsigned long page_size = getpagesize();
 	unsigned long round;
