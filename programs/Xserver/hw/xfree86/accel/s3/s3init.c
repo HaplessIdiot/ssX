@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.103 1996/10/21 05:27:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.104 1996/12/17 21:00:00 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -55,9 +55,9 @@ typedef struct {
 }
 vgaS3Rec, *vgaS3Ptr;
 
-int   vgaIOBase = 0x3d0; /* These defaults are overriden in s3Probe() */
-int   vgaCRIndex = 0x3d4;
-int   vgaCRReg = 0x3d5;
+extern int   vgaIOBase;
+extern int   vgaCRIndex;
+extern int   vgaCRReg;
 int   s3InitCursorFlag = TRUE;
 int   s3HDisplay;
 extern xf86InfoRec xf86Info;

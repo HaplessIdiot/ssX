@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.25 1996/02/04 08:58:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.26 1996/08/10 13:05:06 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -72,9 +72,9 @@ static LUTENTRY oldlut[256];
 static Bool LUTInited = FALSE;
 agxSaveBlock *agxSavedState = NULL; 
 
-int   vgaIOBase = 0x3d0; /* These defaults are overriden in s3Probe() */
-int   vgaCRIndex = 0x3d4;
-int   vgaCRReg = 0x3d5;
+extern int   vgaIOBase; /* These defaults are overriden in s3Probe() */
+extern int   vgaCRIndex;
+extern int   vgaCRReg;
 
 Bool agxInited = FALSE;
 

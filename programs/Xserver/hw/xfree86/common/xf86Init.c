@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.60 1996/11/24 09:55:00 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.61 1996/12/20 06:44:56 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -97,6 +97,15 @@ unsigned char xf86rGammaMap[256], xf86gGammaMap[256], xf86bGammaMap[256];
 char *xf86ServerName = NULL;
 Bool xf86BestRefresh = FALSE;
 
+int   vgaIOBase = 0x3d0;
+int   vgaCRIndex = 0x3d4;
+int   vgaCRReg = 0x3d5;
+
+static void xf86PrintBanner(
+#if NeedFunctionPrototypes
+	void
+#endif
+	);
 static void xf86PrintConfig(
 #if NeedFunctionPrototypes
 	void
@@ -159,6 +168,8 @@ InitOutput(pScreenInfo, argc, argv)
 #ifdef DO_CHECK_BETA
     xf86CheckBeta(extraDays, expKey);
 #endif
+
+    xf86PrintBanner();
 
     xf86PrintConfig();
 
@@ -500,14 +511,12 @@ AbortDDX()
   ddxGiveUp();
 }
 
-
 void
 OsVendorFatalError()
 {
   ErrorF("When reporting a problem related to a server crash, please send\n"
 	 "the full server output, not just the last messages\n");
 }
-
 
 /*
  * ddxProcessArgument --
@@ -597,6 +606,7 @@ ddxProcessArgument (argc, argv, i)
   }
   if (!strcmp(argv[i],"-showconfig") || !strcmp(argv[i],"-version"))
   {
+    xf86PrintBanner();
     xf86PrintConfig();
     exit(0);
   }
@@ -729,10 +739,8 @@ ddxUseMsg()
 #endif
 
 static void
-xf86PrintConfig()
+xf86PrintBanner()
 {
-  int i;
-
   ErrorF("\nXFree86 Version%s/ X Window System\n",XF86_VERSION);
   ErrorF("(protocol Version %d, revision %d, vendor release %d)\n",
          X_PROTOCOL, X_PROTOCOL_REVISION, VENDOR_RELEASE );
@@ -743,6 +751,13 @@ xf86PrintConfig()
 	 "reporting\n"
 	 "\tproblems.  (see http://www.XFree86.Org/FAQ)\n");
   ErrorF("Operating System: %s %s\n", OSNAME, OSVENDOR);
+}
+
+static void
+xf86PrintConfig()
+{
+  int i;
+
   ErrorF("Configured drivers:\n");
   for (i = 0; i < xf86MaxScreens; i++)
     if (xf86Screens[i])

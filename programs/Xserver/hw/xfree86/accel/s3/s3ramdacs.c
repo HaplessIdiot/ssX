@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ramdacs.c,v 3.2 1996/12/12 09:15:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ramdacs.c,v 3.3 1996/12/17 21:00:02 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -73,6 +73,8 @@ extern int maxRawClock;
 extern int numClocks;
 extern int s3MaxClock;
 extern unsigned char *find_bios_string(int, char *, char *);
+extern void (* dacOutTi3026IndReg)(unsigned char,unsigned char,unsigned char);
+extern unsigned char (* dacInTi3026IndReg)(unsigned char);
 
 
 static Bool NORMAL_Probe();
@@ -703,7 +705,8 @@ static int TI3020_3025_PreInit()
 	clock sanity checks when we return */
    clockDoublingPossible = TRUE;
    s3InfoRec.maxClock = s3InfoRec.dacSpeed;
-
+   dacOutTi3026IndReg = s3OutTi3026IndReg;
+   dacInTi3026IndReg = s3InTi3026IndReg;
    return 1;
 }
 

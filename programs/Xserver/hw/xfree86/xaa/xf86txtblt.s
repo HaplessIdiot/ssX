@@ -22,7 +22,7 @@
  * Written by Harm Hanemaayer (H.Hanemaayer@inter.nl.net).
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86txtblt.s,v 3.0 1996/12/18 03:13:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86txtblt.s,v 3.1 1996/12/18 04:11:29 dawes Exp $ */
 
 /*
  * Intel Pentium-optimized versions of "terminal emulator font" text
@@ -62,8 +62,13 @@
 
 	ALIGNTEXT4
 
+#ifdef MSBFIRST
+	GLOBL GLNAME(xf86DrawTextScanlinePMSBFirst)
+GLNAME(xf86DrawTextScanlinePMSBFirst):
+#else
 	GLOBL GLNAME(xf86DrawTextScanlineP)
 GLNAME(xf86DrawTextScanlineP):
+#endif
 
 	SUB_L	(CONST(16),ESP)
 	MOV_L	(EBP,REGOFF(12,ESP))	/* PUSH EBP */
@@ -155,8 +160,13 @@ GLNAME(xf86DrawTextScanlineP):
 
 	ALIGNTEXT4
 
+#ifdef MSBFIRST
+	GLOBL GLNAME(DrawTextScanlineWidth6PMSBFirst)
+GLNAME(DrawTextScanlineWidth6PMSBFirst):
+#else
 	GLOBL GLNAME(DrawTextScanlineWidth6P)
 GLNAME(DrawTextScanlineWidth6P):
+#endif
 
 /* Definition of stack frame function arguments. */
 
@@ -339,8 +349,13 @@ GLNAME(DrawTextScanlineWidth6P):
 
 	ALIGNTEXT4
 
+#ifdef MSBFIRST
+	GLOBL GLNAME(DrawTextScanlineWidth8PMSBFirst)
+GLNAME(DrawTextScanlineWidth8PMSBFirst):
+#else
 	GLOBL GLNAME(DrawTextScanlineWidth8P)
 GLNAME(DrawTextScanlineWidth8P):
+#endif
 
 	SUB_L	(CONST(16),ESP)
 	MOV_L	(EBP,REGOFF(12,ESP))	/* PUSH EBP */
