@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.32 2002/04/04 14:05:54 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.33 2002/04/06 16:03:10 tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -587,7 +587,7 @@ typedef struct pci_cfg_regs {
     } bm;
     union {    /* Offset 0x40 - 0xff */
 	CARD32 dwords[48];
-	CARD32 bytes[192];
+	CARD8  bytes[192];
     } devspf;
 } pciCfgRegs;
 
