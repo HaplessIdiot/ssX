@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.29 1999/06/20 08:41:09 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.30 1999/07/06 11:38:04 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -4126,7 +4126,7 @@ CaseProc(Widget w, XEvent *event, int cmd)
     XawTextPosition left, right;
     XawTextBlock block;
     Bool changed = False;
-    char ch, mb[sizeof(wchar_t)];
+    unsigned char ch, mb[sizeof(wchar_t)];
     int i, count;
 
     if (mul > 0)
@@ -4161,7 +4161,7 @@ CaseProc(Widget w, XEvent *event, int cmd)
 	}
     else
 	for (i = 0; i < block.length; i++) {
-	    wctomb(mb, ((wchar_t*)block.ptr)[i]);
+	    wctomb((char *)mb, ((wchar_t*)block.ptr)[i]);
 	    if (!isalnum(*mb))
 		count = 0;
 	    else if (++count == 1 || cmd != CAPITALIZE) {

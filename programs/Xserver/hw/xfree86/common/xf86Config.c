@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.187 1999/07/11 10:27:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.188 1999/07/17 05:30:55 dawes Exp $ */
 
 
 /*
@@ -501,7 +501,7 @@ typedef enum {
     FLAG_DPMS_SUSPENDTIME,
     FLAG_DPMS_OFFTIME,
     FLAG_PIXMAP,
-    FLAG_PC98,
+    FLAG_PC98
 } FlagValues;
    
 static OptionInfoRec FlagOptions[] = {

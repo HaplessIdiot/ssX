@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mouse.c,v 1.13 1999/05/07 02:56:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mouse.c,v 1.14 1999/06/13 05:18:47 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -597,15 +597,13 @@ MouseDevPtr mouse;
 	{
 	  unsigned char c[2];
 
-	  c[0] = 246;		/* default settings */
-	  write(mouse->mseFd, c, 1);
 	  c[0] = 230;		/* 1:1 scaling */
 	  write(mouse->mseFd, c, 1);
 	  c[0] = 244;		/* enable mouse */
 	  write(mouse->mseFd, c, 1);
+	  c[0] = 243;		/* set sampling rate */
 	  if (mouse->sampleRate > 0) 
 	    {
-	      c[0] = 243;	/* set sampling rate */
  	      if (mouse->sampleRate >= 200)
  		c[1] = 200;
  	      else if (mouse->sampleRate >= 100)
@@ -616,11 +614,15 @@ MouseDevPtr mouse;
  		c[1] = 40;
  	      else
  		c[1] = 20;
-	      write(mouse->mseFd, c, 2);
 	    }
+	  else
+	    {
+ 	      c[1] = 100;
+	    }
+	  write(mouse->mseFd, c, 2);
+	  c[0] = 232;		/* set device resolution */
 	  if (mouse->resolution > 0) 
 	    {
-	      c[0] = 232;	/* set device resolution */
 	      if (mouse->resolution >= 200)
 		c[1] = 3;
 	      else if (mouse->resolution >= 100)
@@ -629,8 +631,12 @@ MouseDevPtr mouse;
 		c[1] = 1;
 	      else
 		c[1] = 0;
-	      write(mouse->mseFd, c, 2);
 	    }
+	  else
+	    {
+	      c[1] = 2;
+	    }
+	  write(mouse->mseFd, c, 2);
 	  usleep(30000);
 	  xf86FlushInput(mouse->mseFd);
 	}
@@ -935,21 +941,34 @@ xf86MouseProtocol(device, rBuf, nBytes)
       break;
 
     case PROT_MMANPLUSPS2:     /* MouseMan+ PS/2 */
-      if ((pBuf[0] & ~0x07) == 0xc8) {
+      buttons = (pBuf[0] & 0x04) >> 1 |       /* Middle */
+		(pBuf[0] & 0x02) >> 1 |       /* Right */
+		(pBuf[0] & 0x01) << 2;        /* Left */
+      dx = (pBuf[0] & 0x10) ? pBuf[1] - 256 : pBuf[1];
+      if (((pBuf[0] & 0x48) == 0x48) &&
+	  (abs(dx) > 191) &&
+	  ((((pBuf[2] & 0x03) << 2) | 0x02) == (pBuf[1] & 0x0f))) {
 	/* extended data packet */
-        buttons = (pBuf[0] & 0x04) >> 1 |       /* Middle */
-	          (pBuf[0] & 0x02) >> 1 |       /* Right */
-		  (pBuf[0] & 0x01) << 2 |       /* Left */
-		  ((pBuf[2] & 0x10) ? 0x08 : 0);/* fourth button */
-	dx = dy = 0;
-	dz = (pBuf[1] & 0x08) ? (pBuf[2] & 0x0f) - 16 : (pBuf[2] & 0x0f);
+	switch ((((pBuf[0] & 0x30) >> 2) | ((pBuf[1] & 0x30) >> 4))) {
+	case 1:		/* wheel data packet */
+	  buttons |= ((pBuf[2] & 0x10) ? 0x08 : 0) |	/* fourth button */
+		     ((pBuf[2] & 0x20) ? 0x10 : 0);	/* fifth button */
+	  dx = dy = 0;
+	  dz = (pBuf[2] & 0x08) ? (pBuf[2] & 0x0f) - 16 :
+				  (pBuf[2] & 0x0f);
+	  break;
+	case 0:		/* device type packet - shouldn't happen */
+	case 2:		/* reserved packet - shouldn't happen */
+	default:
+	  buttons |= (mouse->lastButtons & ~0x07);
+	  dx = dy = 0;
+	  dz = 0;
+	  break;
+	}
       } else {
-        buttons = (pBuf[0] & 0x04) >> 1 |     /* Middle */
-	          (pBuf[0] & 0x02) >> 1 |     /* Right */
-		  (pBuf[0] & 0x01) << 2 |     /* Left */
-		  (mouse->lastButtons & ~0x07);
-        dx = (pBuf[0] & 0x10) ?    pBuf[1]-256  :  pBuf[1];
-        dy = (pBuf[0] & 0x20) ?  -(pBuf[2]-256) : -pBuf[2];
+	buttons |= (mouse->lastButtons & ~0x07);
+	dx = (pBuf[0] & 0x10) ?    pBuf[1]-256  :  pBuf[1];
+	dy = (pBuf[0] & 0x20) ?  -(pBuf[2]-256) : -pBuf[2];
       }
       break;
 
@@ -978,8 +997,8 @@ xf86MouseProtocol(device, rBuf, nBytes)
 		(pBuf[0] & 0x01) << 2 |       /* Left */
 		((pBuf[0] & 0x08) ? 0x08 : 0);/* fourth button */
       pBuf[1] |= (pBuf[0] & 0x40) ? 0x80 : 0x00;
-      dx = (pBuf[0] & 0x10) ?   (pBuf[1] & 0x7f)-128 :  pBuf[1];
-      dy = (pBuf[0] & 0x20) ?  -(pBuf[2]-256)        : -pBuf[2];
+      dx = (pBuf[0] & 0x10) ?    pBuf[1]-256  :  pBuf[1];
+      dy = (pBuf[0] & 0x20) ?  -(pBuf[2]-256) : -pBuf[2];
       break;
 
 #endif /* !__NetBSD__ */
@@ -1234,7 +1253,6 @@ xf86MouseAllocate()
 {
     LocalDevicePtr	local = xalloc(sizeof(LocalDeviceRec));
     MouseDevPtr		mouse = xalloc(sizeof(MouseDevRec));
-    int			i;
 
     local->name = "MOUSE";
     local->type_name = XI_MOUSE;

@@ -1,9 +1,11 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.16 1999/07/10 12:17:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.17 1999/07/10 14:42:54 dawes Exp $ */
 
 
 #include "apm.h"
 #include "xf86cmap.h"
 #include "xf86Resources.h"
+
+#include "compiler.h"
 
 #ifdef DPMSExtension
 #include "opaque.h"
@@ -1348,6 +1350,9 @@ ApmModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     /* ICICICICI */
     ApmRestore(pScrn, &hwp->ModeReg, ApmReg);
 
+    if (xf86IsPc98())
+	outb(0xfac, 0xff);
+
     return TRUE;
 }
 
@@ -1779,6 +1784,9 @@ ApmLeaveVT(int scrnIndex, int flags)
 	WRXB_IOP(0xD9, pApm->d9);
 	WRXB_IOP(0xDB, pApm->db);
     }
+
+    if (xf86IsPc98())
+	outb(0xfac, 0xfe);
 }
 
 /*
@@ -1812,6 +1820,9 @@ ApmCloseScreen(int scrnIndex, ScreenPtr pScreen)
     pApm->I2CPtr = NULL;
 
     pScrn->vtSema = FALSE;
+
+    if (xf86IsPc98())
+	outb(0xfac, 0xfe);
 
     pScreen->CloseScreen = pApm->CloseScreen;
     return (*pScreen->CloseScreen)(scrnIndex, pScreen);
