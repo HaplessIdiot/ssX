@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Manage.c,v 3.8 2001/12/14 19:56:26 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Manage.c,v 3.9tsi Exp $ */
 
 /*
 
@@ -150,7 +150,9 @@ void XtUnmanageChildren (children, num_children)
 {
     Widget parent, hookobj;
     Cardinal ii;
+#ifdef XTHREADS
     XtAppContext app;
+#endif
 
     if (num_children == 0) return;
     if (children[0] == NULL) {
@@ -159,7 +161,9 @@ void XtUnmanageChildren (children, num_children)
 		     (String *)NULL, (Cardinal *)NULL);
 	return;
     }
+#ifdef XTHREADS
     app = XtWidgetToApplicationContext(children[0]);
+#endif
     LOCK_APP(app);
     parent = children[0]->core.parent;
     if (parent->core.being_destroyed) {
@@ -302,7 +306,9 @@ void XtManageChildren(children, num_children)
     Cardinal num_children;
 {
     Widget parent, hookobj;
+#ifdef XTHREADS
     XtAppContext app;
+#endif
 
     if (num_children == 0) return;
     if (children[0] == NULL) {
