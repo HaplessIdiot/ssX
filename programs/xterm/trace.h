@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/xterm/trace.h,v 3.1 1997/05/23 09:19:56 dawes Exp $
  */
 
 /************************************************************
@@ -41,5 +41,8 @@ extern	void	Trace PROTO(( char *, ... ))
 #endif
 	;
 #define TRACE(p) Trace p;
+
+extern	char	*trace_who;
+#define TRACE_CHILD trace_who = "child"
 
 #endif	/* included_trace_h */

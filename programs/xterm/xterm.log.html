@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.3 1998/04/05 00:46:13 robin Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.4 1998/04/18 18:42:03 robin Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_73">Patch #73 - 1998/4/25 - XFree86 3.9Ag and 3.3.2</A>
 <LI><A HREF="#xterm_72">Patch #72 - 1998/4/17 - XFree86 3.9Ag and 3.3.2</A>
 <LI><A HREF="#xterm_71">Patch #71 - 1998/4/12 - XFree86 3.9Ag and 3.3.2</A>
 <LI><A HREF="#xterm_70">Patch #70 - 1998/3/29 - XFree86 3.9Af and 3.3.2</A>
@@ -114,6 +115,41 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_73">Patch #73 - 1998/4/25 - XFree86 3.9Ag and 3.3.2</A></H1>
+
+This patch does the following:
+<ul>
+	<li>implements a print-window facility for xterm.  Though useful in
+	  itself, I added it as part of some debugging which I am doing.
+	  (Occasionally during an exposure event xterm fails to restore the
+	  proper colors for highlighted text, and printing the screen will
+	  show the internal states nicely).
+<p>
+	  The print facility now also displays the color information.
+	  (I will probably make this a resource).
+
+	<li>modified the xterm-16color terminfo description to use the setaf and
+	  setab strings, which is a little more efficient (requested by Stephen
+	  Marley).
+
+	<li>reduced some clutter of the ifdef/includes (e.g., stdlib.h, unistd.h,
+	  errno) making the configure script test for these.
+<p>
+	  I removed the symbols Size_t and Time_t, since they no longer serve
+	  a useful purpose.
+
+	<li>added some debugging traces to show the initial screen size,
+	  and the success/failure of the ioctl calls pass handle window
+	  resizing events to the application (for Clint Olsen).
+<p>
+	  I also modified the trace code to produce two files since some
+	  of the information is produced by the child process.  So now
+	  they are Trace-parent.out and Trace-child.out
+
+	<li>updated configure test for ANSI compiler options to handle a
+	  special case for HP-UX 10.x (reported by Clint Olsen).
+</ul>
 
 <H1><A NAME="xterm_72">Patch #72 - 1998/4/17 - XFree86 3.9Ag and 3.3.2</A></H1>
 

@@ -25,7 +25,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
 .\"
-.\" $XFree86: xc/programs/xterm/xterm.man,v 3.25 1998/04/05 02:29:21 dawes Exp $
+.\" $XFree86: xc/programs/xterm/xterm.man,v 3.26 1998/04/18 18:42:03 robin Exp $
 .\"
 .\" updated by Thomas Dickey <dickey@clark.net> for XFree86, July 1996.
 .TH XTERM 1 "Release 6.3" "X Version 11"
@@ -1144,6 +1144,9 @@ This entry invokes the \fBallow-send-events(toggle)\fP action.
 .B "logging (\fPclass\fB SmeBSB)"
 This entry invokes the \fBlogging(toggle)\fP action.
 .TP 8
+.B "print (\fPclass\fB SmeBSB)"
+This entry invokes the \fBprint()\fP action.
+.TP 8
 .B "redraw (\fPclass\fB SmeBSB)"
 This entry invokes the \fBredraw()\fP action.
 .TP 8
@@ -1697,6 +1700,10 @@ The name \fINone\fP restores the original translation table.
 This action displays the specified popup menu.  Valid names (case is 
 significant) include:  \fImainMenu\fP, \fIvtMenu\fP, \fIfontMenu\fP, 
 and \fItekMenu\fP.
+.TP 8
+.B "print()"
+This action prints the window and is also invoked by the
+\fIprint\fP entry in \fImainMenu\fP.
 .TP 8
 .B "quit()"
 This action sends a SIGHUP to the subprogram and exits.  It is also invoked

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: data.h /main/13 1996/11/24 17:35:40 rws $
- *	$XFree86: xc/programs/xterm/data.h,v 3.9 1998/03/20 21:08:36 hohndel Exp $
+ *	$XFree86: xc/programs/xterm/data.h,v 3.10 1998/04/18 18:42:00 robin Exp $
  */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -24,6 +24,9 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
+
+#ifndef included_data_h
+#define included_data_h 1
 
 #if XtSpecificationRelease >= 6 && !defined(NO_XPOLL_H)
 #include <X11/Xpoll.h>
@@ -114,3 +117,5 @@ extern XtermWidget term;
 #define	XkbBI_MarginBell		10
 #define	XkbBI_CursorStuck		11
 #endif
+
+#endif /* included_data_h */

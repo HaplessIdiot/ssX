@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/testxmc.c,v 3.1 1997/07/06 05:31:09 dawes Exp $
+ * $XFree86: xc/programs/xterm/testxmc.c,v 3.2 1997/07/29 13:26:06 hohndel Exp $
  */
 
 /************************************************************
@@ -89,12 +89,6 @@ authorization.
 #endif
 
 #include <X11/Xos.h>
-
-#ifndef X_NOT_STDC_ENV
-#include <stdlib.h>
-#else
-extern char *malloc();
-#endif
 
 #include "ptyx.h"
 #include "data.h"

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Tekproc.c /main/120 1996/11/29 10:33:20 swick $
- * $XFree86: xc/programs/xterm/Tekproc.c,v 3.17 1997/12/05 22:01:54 hohndel Exp $
+ * $XFree86: xc/programs/xterm/Tekproc.c,v 3.18 1998/03/20 21:08:33 hohndel Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -71,7 +71,6 @@ in this Software without prior written authorization from the X Consortium.
 
 #include <stdio.h>
 #include <ctype.h>
-#include <errno.h>
 #include <setjmp.h>
 #include <signal.h>
 
@@ -83,12 +82,9 @@ in this Software without prior written authorization from the X Consortium.
 #include "menu.h"
 
 #ifdef X_NOT_STDC_ENV
-extern int errno;
-#define Time_t long
-extern Time_t time ();
+extern time_t time ();
 #else
 #include <time.h>
-#define Time_t time_t
 #endif
 
 #ifdef MINIX
@@ -115,13 +111,6 @@ extern Time_t time ();
 #endif
 
 extern jmp_buf Tekend;
-
-#ifndef X_NOT_STDC_ENV
-#include <stdlib.h>
-#else
-extern char *malloc();
-extern long time();		/* included in <time.h> by Xos.h */
-#endif
 
 #define DefaultGCID XGContextFromGC(DefaultGC(screen->display, DefaultScreen(screen->display)))
 
@@ -1728,7 +1717,7 @@ TekCopy()
 {
 	register TScreen *screen = &term->screen;
 	register struct tm *tp;
-	Time_t l;
+	time_t l;
 	char buf[32];
 	int pid;
 #ifndef HAVE_WAITPID

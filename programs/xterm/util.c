@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: util.c /main/33 1996/12/01 23:47:10 swick $
- *	$XFree86: xc/programs/xterm/util.c,v 3.25 1998/03/20 21:08:39 hohndel Exp $
+ *	$XFree86: xc/programs/xterm/util.c,v 3.26 1998/03/27 23:24:03 hohndel Exp $
  */
 
 /*
@@ -33,12 +33,6 @@
 #endif
 
 #include <stdio.h>
-
-#ifndef X_NOT_STDC_ENV
-#include <stdlib.h>
-#else
-extern char *malloc();
-#endif
 
 #include "ptyx.h"
 #include "data.h"

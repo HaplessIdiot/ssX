@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: mibitblt.c /main/55 1996/08/01 19:25:20 dpw $ */
-/* $XFree86: xc/programs/Xserver/mi/mibitblt.c,v 3.3 1997/03/18 10:06:35 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mibitblt.c,v 3.4 1997/04/12 13:47:12 hohndel Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -793,6 +793,7 @@ miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
 	gcv[1] = (XID)oldFg;
 	gcv[2] = (XID)oldBg;
 	DoChangeGC(pGC, GCPlaneMask | GCForeground | GCBackground, gcv, 0);
+	ValidateGC(pDraw, pGC);
 	break;
 
       case ZPixmap:

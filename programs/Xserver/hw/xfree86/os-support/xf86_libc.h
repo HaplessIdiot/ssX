@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.17 1998/03/20 21:07:05 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.18 1998/04/05 16:42:19 robin Exp $ */
 
 
 
@@ -24,7 +24,6 @@
 
 #if defined(XFree86LOADER) || defined(NEED_XF86_TYPES)
 
-#include "misc.h" /* pointer */
 /*
  * First, the new data types
  *
@@ -33,16 +32,16 @@
  * structure, even if some source file might reveal the existence of
  * such a structure.
  */
-typedef void XF86FILE;	/* opaque FILE replacement */
+typedef void XF86FILE;		/* opaque FILE replacement */
 extern  XF86FILE* xf86stdin;
 extern  XF86FILE* xf86stdout;
 extern  XF86FILE* xf86stderr;
 
-typedef pointer XF86fpos_t;	/* opaque fpos_t* replacement */
+typedef void XF86fpos_t;	/* opaque fpos_t replacement */
 
 #define _XF86NAMELEN	263	/* enough for a larger filename */
 				/* (divisble by 8) */
-typedef pointer XF86DIR;	/* opaque DIR* replacement */
+typedef void XF86DIR;		/* opaque DIR replacement */
 
 /* Note: the following is POSIX! POSIX only requires the d_name member. 
  * Normal Unix has often a number of other members, but don't rely on that
