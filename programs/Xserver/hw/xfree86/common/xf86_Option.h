@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.6 95/01/23 15:34:06 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.30 1995/07/07 16:03:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.31 1995/07/21 14:40:18 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -157,6 +157,8 @@ typedef struct {
 #define CLOCK_OPTION_IBMRGB     12 /* use IBM RGB52x programmable clocks */
 #define CLOCK_OPTION_STG1703    13 /* use STG1703 programmable clocks */
 
+#define CLOCK_OPTION_ICS5341    11 /* use ICS 5341 programmable clocks (ET4000W32p) */
+
 /*
  * Table to map option strings to tokens.
  */
@@ -287,6 +289,7 @@ OptFlagRec xf86_ClockOptionTab [] = {
   { "cirrus",		CLOCK_OPTION_CIRRUS }, 	  /* Cirrus built-in */
   { "ch8391",		CLOCK_OPTION_CH8391 }, 	  /* Chrontel 8391  */
   { "stg1703",		CLOCK_OPTION_STG1703 },   /* STG1703 */
+  { "ics5341",		CLOCK_OPTION_ICS5341 },   /* ET4000 W32p version of S3 SDAC/ICS5340 */
   { "",			-1 },
 };
 

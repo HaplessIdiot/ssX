@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/hercules/hercules.c,v 3.2 1994/09/23 10:18:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/hercules/hercules.c,v 3.3 1995/07/07 15:40:50 dawes Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -239,6 +239,9 @@ HGA6845Probe()
 	monoInfoRec.videoRam=32;
     }
 
+    /* Set the chipset here so we don't ErrorF() a NULL string below. */
+    monoInfoRec.chipset = HGA6845Ident(0);
+
     /* We do 'virtual' handling here as it is highly chipset specific */
     if (!(monoInfoRec.virtualX < 0)) {
 	/* virtual set in XF86Config */
@@ -246,7 +249,6 @@ HGA6845Probe()
 		XCONFIG_PROBED, monoInfoRec.name, monoInfoRec.chipset);
     }
 
-    monoInfoRec.chipset = HGA6845Ident(0);
     monoInfoRec.virtualX = HGA6845HDisplay;
     monoInfoRec.virtualY = HGA6845VDisplay;
 

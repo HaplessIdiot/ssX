@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.6 1995/05/27 03:10:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.7 1995/07/01 10:49:02 dawes Exp $ */
 /*
  * Progaming of the S3 gendac programable clocks, from the S3 Gendac
  * programing documentation by S3 Inc. 
@@ -11,9 +11,15 @@
 #include "xf86_OSlib.h"
 #include <math.h>
 
+
+#define PLL_S3GENDAC      1
+#define PLL_S3TRIO        2
+#define PLL_ET4000GENDAC  3
+
+
 extern int vgaIOBase;
 
-static void setdacpll(
+static void setS3gendacpll(
 #if NeedFunctionPrototypes
 int reg, unsigned char data1, unsigned char data2
 #endif
@@ -25,10 +31,17 @@ int reg, unsigned char data1, unsigned char data2
 #endif
 );
 
+static void setET4000gendacpll(
+#if NeedFunctionPrototypes
+int reg, unsigned char data1, unsigned char data2
+#endif
+);
+
+
 static int commonSetClock( 
 #if NeedFunctionPrototypes
    long freq, int clock,
-   int min_n2, int trio_pll,
+   int min_n2, int pll_type,
    long freq_min, long freq_max
 #endif
 );     
@@ -38,7 +51,23 @@ S3gendacSetClock(freq, clk)
 long freq;
 int clk;
 {
-   return commonSetClock(freq, clk, 0, 0, 100000, 250000);
+   return commonSetClock(freq, clk, 0, PLL_S3GENDAC, 100000, 250000);
+}
+
+int
+ET4000gendacSetClock(freq, clk)
+long freq;
+int clk;
+{
+   return commonSetClock(freq, clk, 0, PLL_ET4000GENDAC, 100000, 270000);
+}
+
+int
+ET4000gendacSetpixmuxClock(freq, clk)
+long freq;
+int clk;
+{
+   return commonSetClock(freq, clk, 2, PLL_ET4000GENDAC, 100000, 270000);
 }
 
 int
@@ -46,7 +75,7 @@ ICS5342SetClock(freq, clk)
 long freq;
 int clk;
 {
-   return commonSetClock(freq, clk, 1, 0, 100000, 250000);
+   return commonSetClock(freq, clk, 1, PLL_S3GENDAC, 100000, 250000);
 }
 
 int
@@ -54,15 +83,20 @@ S3TrioSetClock(freq, clk)
 long freq;
 int clk;
 {
-   return commonSetClock(freq, clk, 0, 1, 135000, 270000);
+   return commonSetClock(freq, clk, 0, PLL_S3TRIO, 135000, 270000);
 }
 
-static int
-commonSetClock(freq, clk, min_n2, trio_pll, freq_min, freq_max)
+int
+#if NeedFunctionPrototypes
+commonCalcClock(long freq, int min_n2, long freq_min, long freq_max, 
+		unsigned char * mdiv, unsigned char * ndiv)
+#else
+commonCalcClock(freq, min_n2, freq_min, freq_max, mdiv, ndiv)
 long freq;
-int clk;
-int min_n2, trio_pll;
+int min_n2;
 long freq_min, freq_max;
+unsigned char *mdiv, *ndiv;
+#endif
 {
    double ffreq, ffreq_min, ffreq_max;
    double div, diff, best_diff;
@@ -116,24 +150,51 @@ long freq_min, freq_max;
 	  ,best_m-2 ,best_n1-2 ,best_n2
 	  );
 #endif
+  
+   *ndiv = (best_n1 - 2) | (best_n2 << 5);
+   *mdiv = best_m - 2;
+}
+  
+static int
+#if NeedFunctionPrototypes
+commonSetClock(long freq, int clk, int min_n2, int pll_type, 
+		long freq_min, long freq_max)
+#else
+commonSetClock(freq, clk, min_n2, pll_type, freq_min, freq_max)
+long freq;
+int clk;
+int min_n2, pll_type;
+long freq_min, freq_max;
+#endif
+{
+   unsigned char m, n;
 
-   n = (best_n1 - 2) | (best_n2 << 5);
-   m = best_m - 2;
+   commonCalcClock(freq, min_n2, freq_min, freq_max, &m, &n);
 
-   if (trio_pll)
-      settriopll(clk, m, n);
-   else
-      setdacpll(clk, m, n);
-
+   switch(pll_type)
+   {
+     case PLL_S3GENDAC:
+         setS3gendacpll(clk, m, n);
+         break;
+     case PLL_S3TRIO:
+         settriopll(clk, m, n);
+         break;
+     case PLL_ET4000GENDAC:
+         setET4000gendacpll(clk, m, n);
+         break;
+     default: 
+         ErrorF("Internal error: unknown pll_type in S3gendac.c");
+         return -1;
+    }
    return 0;
 }	   
 
 
 static void
 #if NeedFunctionPrototypes
-setdacpll(int reg, unsigned char data1, unsigned char data2)
+setS3gendacpll(int reg, unsigned char data1, unsigned char data2)
 #else
-setdacpll(reg, data1, data2)
+setS3gendacpll(reg, data1, data2)
 int reg;
 unsigned char data1;
 unsigned char data2;
@@ -147,6 +208,36 @@ unsigned char data2;
    outb(vgaCRIndex, 0x55);
    tmp = inb(vgaCRReg) & 0xFC;
    outb(vgaCRReg, tmp | 0x01);  
+   tmp1 = inb(GENDAC_INDEX);
+
+   outb(GENDAC_INDEX, reg);
+   outb(GENDAC_DATA, data1);
+   outb(GENDAC_DATA, data2);
+
+   /* Now clean up our mess */
+   outb(GENDAC_INDEX, tmp1);  
+   outb(vgaCRReg, tmp);
+}
+
+
+static void
+#if NeedFunctionPrototypes
+setET4000gendacpll(int reg, unsigned char data1, unsigned char data2)
+#else
+setET4000gendacpll(reg, data1, data2)
+int reg;
+unsigned char data1;
+unsigned char data2;
+#endif
+{
+   unsigned char tmp, tmp1;
+   int vgaCRIndex = vgaIOBase + 4;
+   int vgaCRReg = vgaIOBase + 5;
+		
+   /* set RS2 via CR31 */
+   outb(vgaCRIndex, 0x31);
+   tmp = inb(vgaCRReg) & 0xBF;
+   outb(vgaCRReg, tmp | 0x40);  
    tmp1 = inb(GENDAC_INDEX);
 
    outb(GENDAC_INDEX, reg);
@@ -216,4 +307,21 @@ settriopll(clk, m, n)
       outb(0x3c5, 0x00);  /* lock extended CR9-CR18 */
       
    }
+}
+
+
+int
+#if NeedFunctionPrototypes
+gendacMNToClock(unsigned char m,unsigned char n)
+#else
+gendacMNToClockValue(m,n)
+     unsigned char m;
+     unsigned char n;
+#endif
+{
+	int rtn;
+
+	rtn = 14318 * (m + 2) / ((n & 0x1f)+2) / (1 << ((n & 0x60) >> 5)) ;
+
+	return rtn;
 }

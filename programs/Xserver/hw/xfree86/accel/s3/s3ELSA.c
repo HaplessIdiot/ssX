@@ -1,5 +1,5 @@
 /* $XConsortium: s3ELSA.c,v 1.2 94/11/21 22:50:12 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.8 1995/05/27 03:10:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.9 1995/06/24 10:28:00 dawes Exp $ */
 /* 
  * s3ELSA.c 
  * 
@@ -12,6 +12,11 @@
  * 
  */
 
+#include "s3.h"
+#include "s3ELSA.h"
+#include "xf86_OSlib.h"
+
+
 #ifdef ELSA_MAIN
 #include <stdio.h>
 #ifdef linux
@@ -20,15 +25,20 @@
 #ifndef SVR4
 #include <getopt.h>
 #endif /* SVR4 */
-#include <malloc.h>
+#ifdef xalloc
+#undef xalloc
+#endif
 #define xalloc(_p) malloc(_p)
-#define xrealloc(_o,_s,_p) realloc(_o,_s,_p)
+#ifdef xrealloc
+#undef xrealloc
+#endif
+#define xrealloc(_o,_s) realloc(_o,_s)
+#ifdef xfree
+#undef xfree
+#endif
 #define xfree(_p) free(_p)
 #endif /* ELSA_MAIN */
 
-#include "s3.h"
-#include "s3ELSA.h"
-#include "xf86_OSlib.h"
 
 #define BIOS_BSIZE 512
 #define BIOS_BASE  0xc0000
@@ -49,6 +59,7 @@ elsa_board_types_t elsa_board_types[] = {
    ELSA_WINNER_2000PRO,		"ELSA Winner 2000PRO",		0,
    ELSA_WINNER_2000PRO_X,	"ELSA Winner 2000PRO/X",	0,
    ELSA_WINNER_2000AVI,		"ELSA Winner 2000AVI",		0,
+   ELSA_WINNER_2000PRO_X8,	"ELSA Winner 2000PRO/X-8",	0,
    0, 0, 0
 };
 

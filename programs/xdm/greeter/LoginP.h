@@ -1,4 +1,4 @@
-/* $XConsortium: LoginP.h,v 1.7 94/04/17 20:03:54 jim Exp $ */
+/* $XConsortium: LoginP.h,v 1.7 94/04/17 20:03:54 jim Mod $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -75,6 +75,7 @@ typedef struct {
 	XtIntervalId	interval_id;	/* drop fail message note */
 	Boolean		secure_session;	/* session is secured */
 	Boolean		allow_access;	/* disable access control on login */
+	Boolean		allow_null_passwd; /* allow null password on login */
    } LoginPart;
 
 /* Full instance record declaration */

@@ -25,7 +25,7 @@ dealings in this Software without prior written authorization from
 Pascal Haible.
 */
 
-/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.1 1995/07/12 15:42:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.2 1995/07/19 12:44:54 dawes Exp $ */
 
 #if defined(__STDC__) || defined(AMOEBA)
 #ifndef NOSTDHDRS
@@ -544,6 +544,7 @@ OsInitAllocator ()
 	return;
     beenhere = TRUE;
 
+#if defined(HAS_MMAP_ANON) || defined (MMAP_DEV_ZERO)
 #if defined(_SC_PAGESIZE) /* || defined(linux) */
     pagesize = sysconf(_SC_PAGESIZE);
 #else
@@ -551,6 +552,7 @@ OsInitAllocator ()
     pagesize = getpagesize();
 #else
     pagesize = PAGE_SIZE;
+#endif
 #endif
 #endif
 

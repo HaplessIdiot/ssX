@@ -4,8 +4,9 @@
  
 <!-- added this title -->
 <title> Information for W32 Chipset Users
-<author> Glenn G. Lai <it>glenn@cs.utexas.edu</it>
-<date>July 7, 1995
+<author> Glenn G. Lai <it>&lt;glenn@cs.utexas.edu&gt;</it>,
+Dirk H. Hohndel <it>&lt;hohndel@XFree86.Org&gt;</it>
+<date>October 20, 1995
 <toc>
  
 <!-- added this section name -->
@@ -33,8 +34,11 @@ The current maximum clock is set to 86 MHz according to the Tseng
 databooks.  For a non-interlaced 1280x1024x(256 colors) at say
 135-MHz, you need a w32p (with its 16-bit RAMDAC bus) with a
 multiplexing RAMDAC so that the w32p sees only (135/2 = 67.5) MHz,
-not 135 MHz.  This requires special code that is not currently
-provided.
+not 135 MHz.  This requires special code only provided for
+cards using the ICS5341 GENDAC. Unfortunately most cards seem to
+have problems with that code. If you don't get a stable picture for
+modes using more than 86MHz stick to lower dot clocks and contact
+me (DHH). For details on using this code see below.
 
 If you have problems with the server.  Try the following:
 <itemize>
@@ -51,20 +55,44 @@ If you have problems with the server.  Try the following:
 <item>
      Try XF86_SVGA.  If it works, put the following in your XF86Config:
 
-		Ramdac "generic"
+<tscreen><verb>
+Ramdac "generic"
+</verb></tscreen>
+
 </itemize>
 Note that the built-in power saver (for a "green" monitor) has not been
 tested.  Also do not expect it to work on a board without a w32p_rev_c or
 later chip.
 
+<sect> Using XF86_W32 on a board with an ICS5341 GENDAC <p>
+Even though the GENDAC provides a set of standard clocks that can be found
+with the normal clock probing procedure, it is mandatory to put a
+<tscreen><verb>
+ClockChip  "ics5341"
+</verb></tscreen>
+line into the Device Section to be able to use the programmable clocks that
+the ICS5341 can produce. You can also add a
+<tscreen><verb>
+Ramdac     "ics5341"
+</verb></tscreen>
+line, but the RAMDAC should be auto-probed correctly.  Even though the
+server currently accepts dot clocks up to 135MHz with the ICS5341 GENDAC,
+most boards won't work for clocks higher than 86MHz, where pixel multiplexing
+is required. I'm working on it. (DHH)
+
 <sect> Acknowledgments <p>
-Jerry J. Shekhel (<it>jerry@msi.com</it>) gave me the 1-M Mirage
+Jerry J. Shekhel (<it>jerry@msi.com</it>) gave me (GGL) the 1-M Mirage
 ET4000/W32 VLB board on which the initial development (X_W32) was done.
 
-X11R6 and the XFree86 Project provide the base code for XF86_W32. 
+X11R6 and The XFree86 Project provide the base code for XF86_W32. 
 
-Hercules Computer Technology Inc. lent me a 2-M Hercules Dynamite Pro VLB
-board for the development that led to <tt>XF86_W32</tt>. 
+Hercules Computer Technology Inc. lent me (GGL) a 2-M Hercules Dynamite Pro VLB
+board for the development that led to <tt>XF86_W32</tt>.   They donated a
+Dynamite Power PCI to The XFree86 Project, that was used by DHH to extend
+the server.
+
+Koen Gadeyne (<it>kmg@barco.be</it>) wrote a patchkit for XFree86-3.1.1 that
+was partly integrated in this server.
 
 Numerous testers have given me feedback for <tt>X_W32</tt> and later
 <tt>XF86_W32</tt>.  I
@@ -98,7 +126,7 @@ listed below:
 
 <verb>
 $XConsortium: W32.sgml,v 1.2 95/01/23 15:34:55 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.4 1995/07/19 12:43:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.5 1995/07/19 13:03:59 dawes Exp $
 </verb>
 
 </article>

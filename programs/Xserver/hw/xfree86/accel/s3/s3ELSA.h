@@ -1,5 +1,5 @@
 /* $XConsortium: s3ELSA.h,v 1.2 94/11/21 22:50:12 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.h,v 3.3 1995/04/24 05:20:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.h,v 3.4 1995/05/27 03:10:04 dawes Exp $ */
 
 #ifndef _S3ELSA_H_
 #define _S3ELSA_H_
@@ -18,6 +18,7 @@
 #define  ELSA_WINNER_2000PRO	0x940   
 #define  ELSA_WINNER_2000PRO_X	0x942
 #define  ELSA_WINNER_2000AVI	0x943
+#define  ELSA_WINNER_2000PRO_X8	0x94a
 
 typedef struct {
    unsigned short code;

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.99 1995/08/13 09:43:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.100 1995/09/17 06:31:30 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -519,6 +519,7 @@ s3Probe()
    int idx = 0;
    struct pci_config_reg *pcrp;
 
+#if 0
    /* check for PCI devices first */
    while (pcrp = pci_devp[idx]) {
       if (pcrp->_vendor != 0x5333)
@@ -551,6 +552,7 @@ s3Probe()
       }
       break;
    }
+#endif
 
    xf86ClearIOPortList(s3InfoRec.scrnIndex);
    xf86AddIOPorts(s3InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
@@ -871,7 +873,8 @@ s3Probe()
    }
 
    if (!s3InfoRec.videoRam) {
-      if ((config & 0x20) != 0) {	/* if bit 5 is a 1, then 512k RAM */
+      if (((config & 0x20) != 0) 	/* if bit 5 is a 1, then 512k RAM */
+          && (!S3_964_SERIES(s3ChipId))) {
 	 s3InfoRec.videoRam = 512;
       } else {			/* must have more than 512k */
 	 if (S3_911_SERIES(s3ChipId)) {
@@ -1299,9 +1302,22 @@ s3Probe()
 	       s3RamdacType = IBMRGB525_DAC;
 	       break;
 	    case 2:
-	       ErrorF("%s %s: Detected an IBM RGB524 ramdac rev. %x\n",
+	       if ( (ibm_id & 0xff) == 0xf0) {
+	          ErrorF("%s %s: Detected an IBM RGB528 ramdac rev. %x\n",
 		      XCONFIG_PROBED, s3InfoRec.name, ibm_id&0xff);
-	       s3RamdacType = IBMRGB524_DAC;
+	          s3RamdacType = IBMRGB528_DAC;
+	       }
+	       
+	       else if ( (ibm_id & 0xff) == 0xe0) {
+	          ErrorF("%s %s: Detected an IBM RGB528A ramdac rev. %x\n",
+		      XCONFIG_PROBED, s3InfoRec.name, ibm_id&0xff);
+	          s3RamdacType = IBMRGB528_DAC;
+	       }
+	       else {
+	          ErrorF("%s %s: Detected an IBM RGB524 ramdac rev. %x\n",
+		      XCONFIG_PROBED, s3InfoRec.name, ibm_id&0xff);
+	          s3RamdacType = IBMRGB524_DAC;
+	       }
 	       break;
 	    case 0x102:
 	       ErrorF("%s %s: Detected an IBM RGB528 ramdac rev. %x\n",

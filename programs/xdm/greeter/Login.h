@@ -1,4 +1,4 @@
-/* $XConsortium: Login.h,v 1.9 94/04/17 20:03:53 keith Exp $ */
+/* $XConsortium: Login.h,v 1.9 94/04/17 20:03:53 keith Mod $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -76,6 +76,7 @@ from the X Consortium.
 # define XtNsessionArgument	"sessionArgument"
 # define XtNsecureSession	"secureSession"
 # define XtNallowAccess		"allowAccess"
+# define XtNallowNullPasswd	"allowNullPasswd"
 
 # define XtCGreeting		"Greeting"
 # define XtCNamePrompt		"NamePrompt"
@@ -85,6 +86,7 @@ from the X Consortium.
 # define XtCSessionArgument	"SessionArgument"
 # define XtCSecureSession	"SecureSession"
 # define XtCAllowAccess		"AllowAccess"
+# define XtCAllowNullPasswd	"AllowNullPasswd"
 
 /* notifyDone interface definition */
 

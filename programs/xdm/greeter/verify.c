@@ -1,5 +1,5 @@
-/* $XConsortium: verify.c,v 1.32 94/04/17 20:03:55 gildea Exp $ */
-/* $XFree86$ */
+/* $XConsortium: verify.c,v 1.32 94/04/17 20:03:55 gildea Mod $ */
+/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.0 1994/06/26 13:12:06 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -189,9 +189,11 @@ struct verify_info	*verify;
 	if (strcmp (crypt (greet->password, p->pw_passwd), p->pw_passwd))
 #endif
 	{
-		Debug ("password verify failed\n");
-		bzero(greet->password, strlen(greet->password));
-		return 0;
+		if(!greet->allow_null_passwd || strlen(p->pw_passwd) > 0) {
+			Debug ("password verify failed\n");
+			bzero(greet->password, strlen(greet->password));
+			return 0;
+		} /* else: null passwd okay */
 	}
 	Debug ("verify succeeded\n");
 /*	bzero(greet->password, strlen(greet->password)); */

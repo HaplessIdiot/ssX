@@ -1,6 +1,6 @@
 /*
  * $XConsortium: et4_driver.c,v 1.6 95/01/16 13:18:14 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.12 1995/06/21 11:55:07 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.13 1995/06/27 08:35:21 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -41,12 +41,27 @@
 #include "xf86_Config.h"
 #include "vga.h"
 
+#ifdef W32_ACCEL_SUPPORT
+#include "w32.h"
+#endif
+
 #ifdef XF86VGA16
 #define MONOVGA
 #endif
 
 #ifndef MONOVGA
 #include "vga256.h"
+#endif
+
+#ifdef W32_ACCEL_SUPPORT
+typedef struct {
+  unsigned char cmd_reg;
+  unsigned char PLL_f2_M;
+  unsigned char PLL_f2_N;
+  unsigned char PLL_ctrl;
+  unsigned char PLL_w_idx;
+  unsigned char PLL_r_idx;
+  } ICS5341state;
 #endif
 
 typedef struct {
@@ -58,6 +73,10 @@ typedef struct {
   unsigned char AuxillaryMode;
   unsigned char Misc;           /* ATC 0x16 */
   unsigned char SegSel;
+#ifdef W32_ACCEL_SUPPORT
+  unsigned char VSConf2;        /* CRTC 0x37 */
+  ICS5341state gendac;
+#endif
 #ifndef MONOVGA
   unsigned char RCConf;       /* CRTC 0x32 */
 #endif
@@ -73,6 +92,9 @@ static Bool     ET4000Probe();
 static char *   ET4000Ident();
 static Bool     ET4000ClockSelect();
 static Bool     LegendClockSelect();
+#ifdef W32_ACCEL_SUPPORT
+static Bool     ICS5341ClockSelect();
+#endif
 static void     ET4000EnterLeave();
 static Bool     ET4000Init();
 static Bool     ET4000ValidMode();
@@ -90,6 +112,11 @@ extern void     ET4000W32SetReadWrite();
 static unsigned char 	save_divide = 0;
 #ifndef MONOVGA
 static unsigned char    initialRCConf = 0x70;
+#ifdef W32_ACCEL_SUPPORT
+/* these should be taken from the "Saved" register set instead of this way */
+static unsigned char    initialCompatibility = 0x18;
+static unsigned char    initialVSConf2 = 0x0b;
+#endif
 #endif
 static int et4000_type;
 
@@ -257,6 +284,34 @@ LegendClockSelect(no)
   return(TRUE);
 }
 
+#ifdef W32_ACCEL_SUPPORT
+/*
+ * ICS5341ClockSelect --
+ *      programmable clock chip
+ */
+
+static Bool
+ICS5341ClockSelect(freq)
+     int freq;
+{
+   Bool result = TRUE;
+
+   switch(freq)
+   {
+   case CLK_REG_SAVE:
+   case CLK_REG_RESTORE:
+      result = ET4000ClockSelect(freq);
+      break;
+   default:
+      {
+        ET4000gendacSetClock(freq, 2); /* can't fail */
+        result = ET4000ClockSelect(2);
+        usleep(150000);
+      }
+   }
+   return(result);
+}
+#endif
 
 
 /*
@@ -333,13 +388,14 @@ ET4000Probe()
               et4000_type = TYPE_ET4000W32;
               break;
           case 1 : /* ET4000/W32i */
+          case 3 : /* ET4000/W32i rev b */ 
+          case 11: /* ET4000/W32i rev c */
               et4000_type = TYPE_ET4000W32I;
               break;
-          case 2 : /* ET4000/W32p */
-          case 3 :
-          case 4 :
-          case 5 :
-          case 6 : /* Latest revision of ET4000/W32p */
+          case 2 : /* ET4000/W32p rev a */
+          case 5 : /* ET4000/W32p rev b */
+          case 6 : /* ET4000/W32p rev d */
+          case 7 : /* ET4000/W32p rev c */
               et4000_type = TYPE_ET4000W32P;
               break;
           default :
@@ -392,16 +448,42 @@ ET4000Probe()
   }
 #endif
 
-  if (OFLG_ISSET(OPTION_LEGEND, &vga256InfoRec.options))
+  /* Initialize option flags allowed for this driver */
+  OFLG_SET(OPTION_LEGEND, &ET4000.ChipOptionFlags);
+  OFLG_SET(OPTION_HIBIT_HIGH, &ET4000.ChipOptionFlags);
+  OFLG_SET(OPTION_HIBIT_LOW, &ET4000.ChipOptionFlags);
+#ifndef MONOVGA
+  OFLG_SET(OPTION_FAST_DRAM, &ET4000.ChipOptionFlags);
+#endif
+
+#ifdef W32_ACCEL_SUPPORT
+  if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions))
+  {
+    if (OFLG_ISSET(CLOCK_OPTION_ICS5341, &vga256InfoRec.clockOptions))
     {
-      ClockSelect = LegendClockSelect;
-      numClocks   = 32;
+      ClockSelect = ICS5341ClockSelect;
+      numClocks = 3;
     }
+    else
+    {
+      ErrorF("Unsuported programmable Clock chip.\n");
+      return(FALSE);
+    }
+  }
   else
-    {
-      ClockSelect = ET4000ClockSelect;
-      numClocks   = 16;
-    }
+#endif
+  {
+    if (OFLG_ISSET(OPTION_LEGEND, &vga256InfoRec.options))
+      {
+        ClockSelect = LegendClockSelect;
+        numClocks   = 32;
+      }
+    else
+      {
+        ClockSelect = ET4000ClockSelect;
+        numClocks   = 16;
+      }
+  }   
   
   if (OFLG_ISSET(OPTION_HIBIT_HIGH, &vga256InfoRec.options))
     {
@@ -427,20 +509,20 @@ ET4000Probe()
 #ifndef MONOVGA
     /* Save initial RCConf value */
     outb(vgaIOBase + 4, 0x32); initialRCConf = inb(vgaIOBase + 5);
+#ifdef W32_ACCEL_SUPPORT
+    /* Save initial Auxctrl (CRTC 0x34) value */
+    outb(vgaIOBase + 4, 0x34); initialCompatibility = inb(vgaIOBase + 5);
+    /* Save initial VSConf2 (CRTC 0x37) value */
+    outb(vgaIOBase + 4, 0x37); initialVSConf2 = inb(vgaIOBase + 5);
+#endif
 #endif
 
-  if (!vga256InfoRec.clocks) vgaGetClocks(numClocks, ClockSelect);
-
+  if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) {
+    if (!vga256InfoRec.clocks) vgaGetClocks(numClocks, ClockSelect);
+  }
+  
   vga256InfoRec.chipset = xf86TokenToString(chipsets, et4000_type);
   vga256InfoRec.bankedMono = TRUE;
-
-  /* Initialize option flags allowed for this driver */
-  OFLG_SET(OPTION_LEGEND, &ET4000.ChipOptionFlags);
-  OFLG_SET(OPTION_HIBIT_HIGH, &ET4000.ChipOptionFlags);
-  OFLG_SET(OPTION_HIBIT_LOW, &ET4000.ChipOptionFlags);
-#ifndef MONOVGA
-  OFLG_SET(OPTION_FAST_DRAM, &ET4000.ChipOptionFlags);
-#endif
 
   return(TRUE);
 }
@@ -544,9 +626,65 @@ ET4000Restore(restore)
   vgaET4000Ptr restore;
 {
   unsigned char i;
+  unsigned char m,n;
+  unsigned char pllctr;
 
   outb(0x3CD, 0x00); /* segment select */
 
+#ifdef W32_ACCEL_SUPPORT
+  /* Restore ICS 5341 GenDAC Command and PLL registers */
+  if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions))
+  {
+    if (OFLG_ISSET(CLOCK_OPTION_ICS5341, &vga256InfoRec.clockOptions))
+    {
+       outb(vgaIOBase + 4, 0x31);
+       i = inb(vgaIOBase + 5);
+       outb(vgaIOBase + 4, 0x31);
+       outb(vgaIOBase + 5, i | 0x40);
+
+#if EXTENDED_DEBUG
+       outb(0x3c7,2);				/* clock f2 */
+       m = inb(0x3c9);
+       n = inb(0x3c9);
+       ErrorF("--------  Old Clock f2: %9d\n",
+              14318 * (m + 2) / ((n & 0x1f)+2) / (1 << ((n & 0x60) >> 5)) );
+       outb(0x3c7,0x0e);			/* pll ctrl */
+       pllctr = inb(0x3c9);
+       ErrorF("--------  Old PLL Ctrl: 0x%2x\n",pllctr);
+       pllctr = inb(0x3c6);
+       ErrorF("--------  New Cmd Reg: 0x%2x\n",pllctr);
+#endif
+       outb(0x3c8, 0x0e);                         /* index to PLL control */
+       outb(0x3c9, 0x22);     		    	  /* select f2 */
+       outb(0x3c6, restore->gendac.cmd_reg);      /* Enhanced command register */
+       outb(0x3c8, 2);                            /* index to f2 reg */
+       outb(0x3c9, restore->gendac.PLL_f2_M);     /* f2 PLL M divider */
+       outb(0x3c9, restore->gendac.PLL_f2_N);     /* f2 PLL N1/N2 divider */
+#if NOT_NEEDED
+       outb(0x3c8, 0x0e);                         /* index to PLL control */
+       outb(0x3c9, restore->gendac.PLL_ctrl);     /* PLL control */
+       outb(0x3c8, restore->gendac.PLL_w_idx);    /* PLL write index */
+       outb(0x3c7, restore->gendac.PLL_r_idx);    /* PLL read index */
+#endif
+
+#if EXTENDED_DEBUG
+       outb(0x3c7,2);				/* clock f2 */
+       m = inb(0x3c9);
+       n = inb(0x3c9);
+       ErrorF("--------  New Clock f2: %9d\n",
+              (14318 * m + 2) / ((n & 0x1f)+2) / (1 << ((n & 0x60) >> 5)) );
+       outb(0x3c7,0x0e);			/* pll ctrl */
+       pllctr = inb(0x3c9);
+       ErrorF("--------  New PLL Ctrl: 0x%2x\n",pllctr);
+       pllctr = inb(0x3c6);
+       ErrorF("--------  New Cmd Reg: 0x%2x\n",pllctr);
+#endif
+       outb(vgaIOBase + 4, 0x31);
+       outb(vgaIOBase + 5, i & ~0x40);
+    }
+  }
+#endif
+ 
   vgaHWRestore((vgaHWPtr)restore);
 
   outw(0x3C4, (restore->StateControl << 8)  | 0x06);
@@ -557,6 +695,9 @@ ET4000Restore(restore)
   if (restore->std.NoClock >= 0)
     outw(vgaIOBase + 4, (restore->Compatibility << 8) | 0x34);
   outw(vgaIOBase + 4, (restore->OverflowHigh << 8)  | 0x35);
+#ifdef W32_ACCEL_SUPPORT  
+  outw(vgaIOBase + 4, (restore->VSConf2 << 8)  | 0x37);
+#endif
 #ifndef MONOVGA
   if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options))
     outw(vgaIOBase + 4, (restore->RCConf << 8)  | 0x32);
@@ -595,7 +736,7 @@ ET4000Save(save)
    * we need this here , cause we MUST disable the ROM SYNC feature
    */
   outb(vgaIOBase + 4, 0x34); temp1 = inb(vgaIOBase + 5);
-  outb(vgaIOBase + 5, temp1 & 0x0F);
+  outb(vgaIOBase + 5, temp1 & 0x1F);
   temp2 = inb(0x3CD); outb(0x3CD, 0x00); /* segment select */
 
   save = (vgaET4000Ptr)vgaHWSave((vgaHWPtr)save, sizeof(vgaET4000Rec));
@@ -604,6 +745,9 @@ ET4000Save(save)
 
   outb(vgaIOBase + 4, 0x33); save->ExtStart     = inb(vgaIOBase + 5);
   outb(vgaIOBase + 4, 0x35); save->OverflowHigh = inb(vgaIOBase + 5);
+#ifdef W32_ACCEL_SUPPORT  
+  outb(vgaIOBase + 4, 0x37); save->VSConf2 = inb(vgaIOBase + 5);
+#endif
 #ifndef MONOVGA
   if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options))
     outb(vgaIOBase + 4, 0x32); save->RCConf = inb(vgaIOBase + 5);
@@ -613,6 +757,29 @@ ET4000Save(save)
   save->AuxillaryMode |= 0x14;
   i = inb(vgaIOBase + 0x0A); /* reset flip-flop */
   outb(0x3C0,0x36); save->Misc = inb(0x3C1); outb(0x3C0, save->Misc);
+#ifdef W32_ACCEL_SUPPORT
+  /* Restore ICS 5341 GenDAC Command and PLL registers */
+  if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions))
+  {
+    if (OFLG_ISSET(CLOCK_OPTION_ICS5341, &vga256InfoRec.clockOptions))
+    {
+      outb(vgaIOBase + 4, 0x31);
+      i = inb(vgaIOBase + 5);
+      outb(vgaIOBase + 5, i | 0x40);
+
+      save->gendac.cmd_reg = inb(0x3c6);      /* Enhanced command register */
+      save->gendac.PLL_w_idx = inb(0x3c8);    /* PLL write index */
+      save->gendac.PLL_r_idx = inb(0x3c7);    /* PLL read index */
+      outb(0x3c7, 2);                         /* index to f2 reg */
+      save ->gendac.PLL_f2_M = inb(0x3c9);    /* f2 PLL M divider */
+      save ->gendac.PLL_f2_N = inb(0x3c9);    /* f2 PLL N1/N2 divider */
+      outb(0x3c7, 0x0e);                      /* index to PLL control */
+      save ->gendac.PLL_ctrl = inb(0x3c9);    /* PLL control */
+
+      outb(vgaIOBase + 5, i & ~0x40);
+    }
+  }
+#endif
 
   return ((void *) save);
 }
@@ -628,8 +795,47 @@ static Bool
 ET4000Init(mode)
      DisplayModePtr mode;
 {
+
+#ifdef W32_ACCEL_SUPPORT
+  int pixMuxShift = 0;
+
+  /* define pixMuxShift depending on mode, pixel multiplexing and ramdac type */
+
+  if (mode->Flags & V_PIXMUX)
+  {
+     if ((OFLG_ISSET(CLOCK_OPTION_ICS5341, &vga256InfoRec.clockOptions)) 
+          && (W32RamdacType==ICS5341_DAC))
+     {
+#if 1
+        pixMuxShift =  mode->Flags & V_DBLCLK ? 1 : 0;
+#endif
+     }  
+  }
+
+  if (!mode->CrtcHAdjusted) {
+     if (pixMuxShift > 0) {
+        /* now divide the horizontal timing parameters as required */
+        mode->CrtcHTotal     >>= pixMuxShift;
+        mode->CrtcHDisplay   >>= pixMuxShift;
+        mode->CrtcHSyncStart >>= pixMuxShift;
+        mode->CrtcHSyncEnd   >>= pixMuxShift;
+     }
+     else if (pixMuxShift < 0) {
+        /* now multiply the horizontal timing parameters as required */
+        mode->CrtcHTotal     <<= -pixMuxShift;
+        mode->CrtcHDisplay   <<= -pixMuxShift;
+        mode->CrtcHSyncStart <<= -pixMuxShift;
+        mode->CrtcHSyncEnd   <<= -pixMuxShift;
+     }
+     mode->CrtcHAdjusted = TRUE;
+  }
+#endif
+
+
   if (!vgaHWInit(mode,sizeof(vgaET4000Rec)))
     return(FALSE);
+
+
 
 #ifndef MONOVGA
   new->std.Attribute[16] = 0x01;  /* use the FAST 256 Color Mode */
@@ -674,10 +880,84 @@ ET4000Init(mode)
     /* Trcd */
     new->RCConf &= ~0x20;
   }
+#ifdef W32_ACCEL_SUPPORT
+  /*
+   * Here we make sure that CRTC regs 0x34 and 0x37 are untouched, except for some bits we want
+   * to change. Notably bit 7 of CRTC 0x34, which changes RAS setup time from 4 to 0 ns (performance),
+   * and bit 7 of CRTC 0x37, which changes the CRTC FIFO low treshold control.
+   * At really high pixel clocks, this will avoid lots of garble on the screen when
+   * something is being drawn. This only happens WAY beyond 80 MHz (those 135 MHz ramdac's...)
+   */
+   new->Compatibility = (initialCompatibility & 0x7F) | 0x80;
+   new->VSConf2 = initialVSConf2;
+   if (vga256InfoRec.clock[mode->Clock] > 80000)
+     new->VSConf2 = (new->VSConf2 & 0x7f) | 0x80;
+#endif
 #endif
     
-  /* Set clock-related registers when not Legend */
-  if (!OFLG_ISSET(OPTION_LEGEND, &vga256InfoRec.options))
+  /* Set clock-related registers when not Legend
+   * cannot really SET the clock here yet, since the ET4000Save()
+   * is called LATER, so it would save the wrong state...
+   * and since they use the ET4000Restore() to actually SET vga regs,
+   * we can only set the clock there (that's why we copy Synthclock into
+   * the other struct.
+   */
+
+#ifdef W32_ACCEL_SUPPORT
+    if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions))
+    { 
+      /* for pixmux: must use post-div of at least 4!
+       * note: maybe we could use MCLK/2 bit (hibit) 
+       * for pixmux, without changing clocks? 
+       *
+       * even though the ICS docs state that the post divide must be at 
+       * least for, the clk0 value is half the programmed value for
+       * color mode 8 (i.e., clock doubling), so we need to program the
+       * full value here which is not possible for clocks > 67.5MHz.
+       * Therefore we ignore this restriction.
+       */
+
+#if EXTENDED_DEBUG
+       ErrorF("--------  Requested Clock %9d\n",mode->SynthClock);
+#endif
+       new->gendac.cmd_reg = 0;
+       if (mode->Flags & V_PIXMUX)
+       {
+         commonCalcClock(mode->SynthClock * 2, 1, 100000, vga256InfoRec.dacSpeed*2+1, 
+         		 &(new->gendac.PLL_f2_M), &(new->gendac.PLL_f2_N));
+         new->gendac.cmd_reg = 0x10;                 /* set DAC to 16 -bit interface mode */
+         new->Misc = (new->Misc & 0xCF) | 0x30;   /* bits 5 and 4 set 8/16 bit DAC mode, 
+                                                     at the W32 side (DAC needs to be set, too)
+                                                     here we set it to 16-bit mode */
+
+         /* set doubleword adressing -- seems to be needed for <1280 modes to get correct screen */
+#if THIS_SHOULD_BE_NEEDED_BUT_FAILS
+         new->std.CRTC[0x14] = (new->std.CRTC[0x14] & 0x9F) | 0x40;
+#endif
+         new->std.CRTC[0x17] = (new->std.CRTC[0x17] & 0xFB);
+         
+         /* to avoid blurred vertical line during flyback, disable H-blanking (better solution needed !!!) */
+         new->std.CRTC[0x02] = 0xff;
+       }
+       else
+       {
+         commonCalcClock(mode->SynthClock, 0, 100000, vga256InfoRec.dacSpeed*2+1, 
+         		 &(new->gendac.PLL_f2_M), &(new->gendac.PLL_f2_N));
+         new->gendac.cmd_reg = 0x00;       /* set DAC to 8-bit interface mode */
+         new->Misc = (new->Misc & 0xCF);   /* 8 bit DAC mode */
+       }
+       new->gendac.PLL_ctrl = 0;
+       new->gendac.PLL_w_idx = 0;
+       new->gendac.PLL_r_idx = 0;
+       
+       /* the programmed clock will be on clock undex 2 */
+       new->AuxillaryMode = (new->AuxillaryMode & 0xBE);   /* disable MCLK/2 and MCLK/4 */
+       new->std.MiscOutReg = (new->std.MiscOutReg & 0xF3) | 0x08; 
+       new->std.NoClock = 2;
+    }
+    else
+#endif
+
     if (new->std.NoClock >= 0)
     {
       new->AuxillaryMode = (save_divide ^ ((new->std.NoClock & 8) << 3)) |

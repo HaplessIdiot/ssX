@@ -1,4 +1,4 @@
-/* $XConsortium: greet.c,v 1.40 94/04/17 20:03:54 gildea Exp $ */
+/* $XConsortium: greet.c,v 1.41 94/09/12 21:32:49 converse Mod $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -211,23 +211,24 @@ CloseGreet (d)
 {
     Boolean	    allow;
     Arg	    arglist[1];
+    Display *dpy = XtDisplay(toplevel);
 
     if (pingTimeout)
     {
 	XtRemoveTimeOut (pingTimeout);
 	pingTimeout = 0;
     }
-    UnsecureDisplay (d, XtDisplay (toplevel));
+    UnsecureDisplay (d, dpy);
     XtSetArg (arglist[0], XtNallowAccess, (char *) &allow);
     XtGetValues (login, arglist, 1);
     if (allow)
     {
 	Debug ("Disabling access control\n");
-	XSetAccessControl (XtDisplay (toplevel), DisableAccess);
+	XSetAccessControl (dpy, DisableAccess);
     }
     XtDestroyWidget (toplevel);
-    ClearCloseOnFork (XConnectionNumber (XtDisplay (toplevel)));
-    XCloseDisplay (XtDisplay (toplevel));
+    ClearCloseOnFork (XConnectionNumber (dpy));
+    XCloseDisplay (dpy);
     Debug ("Greet connection closed\n");
 }
 
@@ -237,7 +238,7 @@ Greet (d, greet)
     struct greet_info *greet;
 {
     XEvent		event;
-    Arg		arglist[1];
+    Arg		arglist[2];
 
     XtSetArg (arglist[0], XtNallowAccess, False);
     XtSetValues (login, arglist, 1);
@@ -255,7 +256,8 @@ Greet (d, greet)
 	greet->name = name;
 	greet->password = password;
 	XtSetArg (arglist[0], XtNsessionArgument, (char *) &(greet->string));
-	XtGetValues (login, arglist, 1);
+	XtSetArg (arglist[1], XtNallowNullPasswd, (char *) &(greet->allow_null_passwd));
+	XtGetValues (login, arglist, 2);
 	Debug ("sessionArgument: %s\n", greet->string ? greet->string : "<NULL>");
     }
     return code;

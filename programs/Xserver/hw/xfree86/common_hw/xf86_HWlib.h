@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_HWlib.h,v 1.5 95/01/23 15:34:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.13 1995/06/29 13:32:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.14 1995/07/01 10:49:08 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -151,6 +151,22 @@ extern int S3gendacSetClock(
 #endif
 );
 
+extern int ET4000gendacSetClock( 
+#if NeedFunctionPrototypes
+        long,
+        int
+#endif
+);     
+
+
+extern int ET4000gendacSetpixmuxClock( 
+#if NeedFunctionPrototypes
+        long,
+        int
+#endif
+);     
+
+
 extern int ICS5342SetClock(
 #if NeedFunctionPrototypes
 	long,
@@ -263,6 +279,21 @@ extern void s3IBMRGB_Init(
 	void
 #endif
 );
+
+/*
+ * Gendac clock calculator: needed for those that want to get
+ * clock params without actually programming them (e.g. W32 driver)
+ */
+extern int commonCalcClock(
+#if NeedFunctionPrototypes
+   long,
+   int,
+   long, long,
+   unsigned char *,
+   unsigned char *
+#endif
+);
+
 
 _XFUNCPROTOEND
 
