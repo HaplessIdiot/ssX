@@ -1,5 +1,5 @@
 /* $XConsortium: utils.c,v 1.146 94/04/17 20:27:07 erik Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.0 1994/04/28 12:42:47 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -342,6 +342,7 @@ void UseMsg()
 #endif
     ErrorF("-p #                   screen-saver pattern duration (minutes)\n");
     ErrorF("-pn                    accept failure to listen on all ports\n");
+    ErrorF("-nopn                  reject failure to listen on all ports\n");
     ErrorF("-r                     turns off auto-repeat\n");
     ErrorF("r                      turns on auto-repeat \n");
     ErrorF("-s #                   screen-saver timeout (minutes)\n");
@@ -383,6 +384,10 @@ char	*argv[];
 #endif
 
     defaultKeyboardControl.autoRepeat = TRUE;
+
+#ifdef PART_NET
+	PartialNetwork = TRUE;
+#endif
 
 #ifdef AIXV3
     OpenDebug();
@@ -599,6 +604,8 @@ char	*argv[];
 	}
 	else if ( strcmp( argv[i], "-pn") == 0)
 	    PartialNetwork = TRUE;
+	else if ( strcmp( argv[i], "-nopn") == 0)
+	    PartialNetwork = FALSE;
 	else if ( strcmp( argv[i], "r") == 0)
 	    defaultKeyboardControl.autoRepeat = TRUE;
 	else if ( strcmp( argv[i], "-r") == 0)

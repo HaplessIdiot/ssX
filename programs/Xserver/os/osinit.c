@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: osinit.c,v 1.48 94/04/17 20:27:05 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.0 1994/04/28 12:42:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.1 1994/05/08 05:25:31 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -93,7 +93,7 @@ OsInit()
 #endif
 
     if (!been_here) {
-#ifndef MINIX
+#if !defined(MINIX) && !defined(SCO)
 	fclose(stdin);
 	fclose(stdout);
 #endif

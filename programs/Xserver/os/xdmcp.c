@@ -1,5 +1,5 @@
 /* $XConsortium: xdmcp.c,v 1.30 94/03/31 13:56:50 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.0 1994/05/08 05:25:34 dawes Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -38,6 +38,10 @@
 #include "input.h"
 #include "dixstruct.h"
 #include "opaque.h"
+
+#ifdef STREAMSCONN
+#include <tiuser.h>
+#endif
 
 #ifdef XDMCP
 #undef REQUEST
@@ -909,10 +913,17 @@ XdmcpAddAuthorization (name, data)
 static
 get_xdmcp_sock()
 {
+#ifdef STREAMSCONN
+    if ((xdmcpSocket = t_open("/dev/udp", O_RDWR, 0)) < 0)
+	XdmcpWarning("t_open() of /dev/udp failed");
+    if( t_bind(xdmcpSocket,NULL,NULL) < 0 )
+	t_error("t_bind(xdmcpSocket) failed" );
+#else
 #ifndef _MINIX
     int soopts = 1;
 
     if ((xdmcpSocket = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+	XdmcpWarning("UDP socket creation failed");
 #else /* MINIX */
     char *udp_device;
     int r, s_errno;
@@ -960,6 +971,7 @@ get_xdmcp_sock()
 	sizeof(soopts)) < 0)
 	    XdmcpWarning("UDP set broadcast socket-option failed");
 #endif /* SO_BROADCAST */
+#endif /* STREAMSCONN */
 }
 
 static void
