@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.76 2000/02/13 07:39:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.77 2000/03/15 16:52:36 tsi Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -206,7 +206,7 @@ identify_card(pciConfigPtr pcr, int verbose)
     
     for (i = 0;  pvnd[i].name;  i++) {
 	if (pvnd[i].token == pcr->pci_vendor) {
-	    printf(" %s ", pvnd[i-1].name);
+	    printf(" %s ", pvnd[i].name);
 	    break;
 	}
     }
