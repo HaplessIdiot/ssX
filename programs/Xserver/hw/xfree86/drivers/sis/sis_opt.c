@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_opt.c,v 1.8 2001/08/01 00:44:54 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_opt.c,v 1.9 2002/01/10 19:05:45 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86PciInfo.h"
@@ -151,6 +151,8 @@ SiSOptions(ScrnInfoPtr pScrn)
             pSiS->ForceCRT2Type = CRT2_LCD;
         if (!strcmp(strptr,"VGA"))
             pSiS->ForceCRT2Type = CRT2_VGA;
+        if (!strcmp(strptr,"NONE"))
+            pSiS->ForceCRT2Type = 0;
 
         if (pSiS->ForceCRT2Type != CRT2_DEFAULT)
             xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,

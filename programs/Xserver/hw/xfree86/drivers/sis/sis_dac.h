@@ -11,4 +11,5 @@ void SiSCalcClock(ScrnInfoPtr pScrn, int clock, int max_VLD,
 void SiSIODump(ScrnInfoPtr pScrn);
 int SiSMemBandWidth(ScrnInfoPtr pScrn);
 int SiSMclk(SISPtr pSiS);
+void SiSRestoreBridge(ScrnInfoPtr pScrn, SISRegPtr sisReg);
 
