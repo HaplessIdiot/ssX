@@ -95,7 +95,7 @@ _XtMakeGeometryRequest (widget, request, reply, clear_rect_obj)
     Boolean * clear_rect_obj;
 {
     XtWidgetGeometry    junk;
-    XtGeometryHandler manager;
+    XtGeometryHandler manager = (XtGeometryHandler) NULL;
     XtGeometryResult returnCode;
     Widget parent = widget->core.parent;
     Boolean managed, parentRealized, rgm = False;
@@ -152,31 +152,39 @@ _XtMakeGeometryRequest (widget, request, reply, clear_rect_obj)
 			  "non-shell has no parent in XtMakeGeometryRequest",
 			  (String *)NULL, (Cardinal *)NULL);
 
-	/* 
-	 * This shouldn't ever happen, we only test for this to pass VSW5.
-	 * Normally managing the widget will catch this, but VSW5 does
-	 * some really screwy stuff to get here.
-	 */
+	managed = XtIsManaged(widget);
+	parentRealized = XtIsRealized(parent);
+	if (XtIsComposite(parent))
+	{
+	    LOCK_PROCESS;
+	    manager = ((CompositeWidgetClass) (parent->core.widget_class))
+		      ->composite_class.geometry_manager;
+	    UNLOCK_PROCESS;
+	}
+    }
+
+    if (parentRealized && managed) {
 	if (!XtIsComposite(parent))
+	{
+	    /*
+	     * This shouldn't ever happen, we only test for this to pass
+	     * VSW5.  Normally managing the widget will catch this, but VSW5
+	     * does some really screwy stuff to get here.
+	     */
 	    XtAppErrorMsg(XtWidgetToApplicationContext(widget),
 			  "invalidParent", "xtMakeGeometryRequest",
 			  XtCXtToolkitError,
 			  "XtMakeGeometryRequest - parent not composite",
 			  (String *)NULL, (Cardinal *)NULL);
-
-	managed = XtIsManaged(widget);
-	parentRealized = XtIsRealized(parent);
-	LOCK_PROCESS;
-	manager = ((CompositeWidgetClass) (parent->core.widget_class))
-		    ->composite_class.geometry_manager;
-	UNLOCK_PROCESS;
-    }
-
-    if (managed && manager == (XtGeometryHandler) NULL) {
-	XtErrorMsg("invalidGeometryManager","xtMakeGeometryRequest",
-                 XtCXtToolkitError,
-                 "XtMakeGeometryRequest - parent has no geometry manager",
-                  (String *)NULL, (Cardinal *)NULL);
+	}
+	else if (manager == (XtGeometryHandler) NULL)
+	{
+	    XtAppErrorMsg(XtWidgetToApplicationContext(widget),
+			  "invalidGeometryManager","xtMakeGeometryRequest",
+			  XtCXtToolkitError,
+			  "XtMakeGeometryRequest - parent has no geometry manager",
+			  (String *)NULL, (Cardinal *)NULL);
+	}
     }
 
     if (widget->core.being_destroyed) {

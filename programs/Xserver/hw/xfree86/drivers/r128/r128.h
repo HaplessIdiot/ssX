@@ -36,6 +36,8 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _R128_H_
 #define _R128_H_
 
+#include "xf86int10.h"
+
 #define R128_DEBUG    0		/* Turn off debugging output                */
 #define R128_TIMEOUT  2000000	/* Fall out of wait loops after this count */
 #define R128_MMIOSIZE 0x80000
@@ -247,6 +249,7 @@ typedef struct {
     int               DGAViewportStatus;
 
     R128FBLayout      CurrentLayout;
+    xf86Int10InfoPtr  pInt;
 #ifdef XF86DRI
     Bool              directRenderingEnabled;
     DRIInfoPtr        pDRIInfo;

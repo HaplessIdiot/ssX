@@ -134,7 +134,7 @@ CARD32 x_inl(CARD16 port);
 void x_outl(CARD16 port, CARD32 val);
 
 #ifndef _INT10_NO_INOUT_MACROS
-#if defined(PRINT_PORT) || !defined(_PC)
+#if defined(PRINT_PORT) || (!defined(_PC) && !defined(_PC_IO))
 # define p_inb x_inb
 # define p_inw x_inw
 # define p_outb x_outb

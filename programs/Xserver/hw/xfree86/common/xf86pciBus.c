@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.18 2000/06/20 05:08:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.21 2000/09/19 12:46:13 eich Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -116,6 +116,8 @@ pciVendorDeviceInfo * xf86PCIVendorInfo;
 
 static void
 getPciClassFlags(pciConfigPtr *pcrpp);
+static void
+pciConvertListToHost(int bus, int dev, int func, resPtr list);
 
 static void
 FindPCIVideoInfo(void)
@@ -1090,8 +1092,7 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, long type)
     }
     
     /* convert bus based entries in avoid list to host base */
-    xf86ConvertListToHost(
-	xf86GetPciEntity(pvp->bus,pvp->device,pvp->func), avoid);
+    pciConvertListToHost(pvp->bus,pvp->device,pvp->func, avoid);
     
     if (!w)
 	w = xf86DupResList(ResRange);
@@ -1384,8 +1385,7 @@ getValidBIOSBase(PCITAG tag, int num)
 	}	
 	pbp = pbp->next;
     }	
-    xf86ConvertListToHost(
-	xf86GetPciEntity(pvp->bus,pvp->device,pvp->func), avoid);
+    pciConvertListToHost(pvp->bus,pvp->device,pvp->func, avoid);
 
     if (pvp->biosBase) { /* try biosBase first */
 	P_M_RANGE(range, TAG(pvp),pvp->biosBase,biosSize,ResExcMemBlock);
@@ -1864,8 +1864,7 @@ ValidatePci(void)
 	if (res_m_io == NULL)
 	   res_m_io = xf86DupResList(ResRange);
 
-	xf86ConvertListToHost(
-	    xf86GetPciEntity(pvp->bus,pvp->device,pvp->func), avoid);
+	pciConvertListToHost(pvp->bus,pvp->device,pvp->func, avoid);
 
 #ifdef DEBUG
 	xf86MsgVerb(X_INFO, 3,"avoid:\n");
@@ -2790,11 +2789,9 @@ pciTestMultiDeviceCard(int bus, int dev, int func, PCITAG** pTag)
   return j;
 }
 
-void
-pciConvertRange2Host(int entityIndex, resRange *pRange)
+static void
+pciTagConvertRange2Host(PCITAG tag, resRange *pRange)
 {
-    PCITAG tag = TAG(xf86GetPciInfoForEntity(entityIndex));
-    
     switch(pRange->type & ResPhysMask) {
     case ResMem:
 	switch(pRange->type & ResExtMask) {
@@ -2825,5 +2822,23 @@ pciConvertRange2Host(int entityIndex, resRange *pRange)
 	}
 	break;
     }
+}
+
+static void
+pciConvertListToHost(int bus, int dev, int func, resPtr list)
+{
+    PCITAG tag = pciTag(bus,dev,func);
+    while (list) {
+	pciTagConvertRange2Host(tag, &list->val);
+	list = list->next;
+    }
+}
+
+
+void
+pciConvertRange2Host(int entityIndex, resRange *pRange)
+{
+    PCITAG tag = TAG(xf86GetPciInfoForEntity(entityIndex));
+    pciTagConvertRange2Host(tag, pRange);
 }
 

@@ -1,4 +1,19 @@
 XFree86 4.0.1d (xx September 2000)
+ 733. Added support for softbooting BIOSes on ia64 (Egbert Eich).
+ 732. Fixed handling of XtMakeGeometryRequest() to test for parent
+      belonging to subclass of composite class only if the widget
+      itself is managed. This follows the specs more closely.
+      (Keith Packard).
+ 731. Changed handling of DDC read in r128 driver. Driver does not
+      fail any more if vbe DDC reads don't succeed (Egbert Eich).
+ 730. Fixed infinite loop when referencing the same mnitor section
+      twice when using a Mode Section (Egbert Eich).
+ 729. Fixed problem that caused SIGV in xf86GetValidBiosBase() (Egbert Eich).
+ 728. Fixed macintosh us keyboard (Olaf Hering).
+ 727. Added missing symbols to mga driver (Stefan Dirsch).
+ 726. Fixed a ia64 loader problem that caused SIGV when PLT was present
+      (Andreas Schwab).
+ 725. Fixed ia64 build rules (Andreas Schwab).     
  724. Fix DGA library to only swap events for DGA 2.0 X servers
  723. Fix locale parsing code in Xlib and Xt (Matthieu Herrb)
  722. Fix X Test Suite to work on 800x600 screens (Keith Packard)
@@ -11185,4 +11200,8 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1326 2000/09/28 20:17:06 tsi Exp $
+<<<<<<< CHANGELOG
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1322 2000/09/26 00:04:56 mvojkovi Exp $
+=======
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1327 2000/09/29 00:53:58 keithp Exp $
+>>>>>>> 3.1327

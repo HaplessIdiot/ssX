@@ -60,18 +60,13 @@
 /* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/AsmMacros.h,v 3.14 1999/09/25 14:36:58 dawes Exp $ */
 
 #if defined(__GNUC__)
-#if defined(linux) && defined(__alpha__)
+#if defined(linux) && (defined(__alpha__) || defined(__ia64__))
 #define inb _inb
 #define inw _inw
 #define inl _inl
 #define outb(p,v) _outb((v),(p))
 #define outw(p,v) _outw((v),(p))
 #define outl(p,v) _outl((v),(p))
-#elif defined(linux) && defined(__ia64__)
-#include <stdlib.h>
-#include <asm/types.h>
-#include <asm/system.h>
-#include <asm/io.h>
 #else
 #if defined(__sparc__)
 #ifndef ASI_PL

@@ -3,7 +3,7 @@ XCOMM
 XCOMM
 XCOMM $XFree86$
 
-     DATAFILES = us
+     DATAFILES = de de_CH dk es fi fr fr_CH gb it nl no pt se txt us
 
 all::
 

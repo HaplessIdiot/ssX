@@ -19,7 +19,7 @@
 
 #define M            _X86EMU_env
 
-#if defined(PRINT_PORT) || !defined(_PC)
+#if defined(PRINT_PORT) || (!defined(_PC) && !defined(_PC_IO))
 # define p_inb x_inb
 # define p_inw x_inw
 # define p_outb x_outb

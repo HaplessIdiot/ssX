@@ -474,6 +474,10 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 # define LinuxMachineDefines   -D__ia64__
 # define ServerOSDefines       XFree86ServerOSDefines -DDDXTIME -DPART_NET
 # define ServerExtraDefines    -DGCCUSESGAS XFree86ServerDefines -D_XSERVER64
+#if UseElfFormat
+#define HasPlugin              YES
+#define VendorHasX11R6_3libXext        YES     /* XC or XFree86 >= 3.3.1 */
+#endif
 #endif /* ia64Architecture */
 
 #ifdef Mc68020Architecture

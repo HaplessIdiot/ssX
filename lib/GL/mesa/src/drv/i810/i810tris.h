@@ -53,7 +53,7 @@ static void __inline__ i810_draw_triangle( i810ContextPtr imesa,
    GLuint *vb = i810AllocDwordsInline( imesa, 3 * vertsize );
     int j;
 
-#ifdef __i386__
+#if defined(USE_X86_ASM)
     __asm__ __volatile__( "rep ; movsl"
 			  : "=%c" (j)
 			  : "0" (vertsize), "D" ((long)vb), "S" ((long)v0)

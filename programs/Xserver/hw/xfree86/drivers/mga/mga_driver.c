@@ -283,6 +283,9 @@ static const char *xaaSymbols[] = {
     "XAAOverlayFBfuncs",
     "XAACachePlanarMonoStipple",
     "XAAScreenIndex",
+    "XAAFallbackOps",
+    "XAAFillSolidRects",
+    "XAAMoveDWORDS",
     NULL
 };
 

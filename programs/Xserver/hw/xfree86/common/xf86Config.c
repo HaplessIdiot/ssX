@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.228 2000/08/11 19:51:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.230 2000/09/19 12:46:12 eich Exp $ */
 
 
 /*
@@ -1660,16 +1660,21 @@ configMonitor(MonPtr monitorp, XF86ConfMonitorPtr conf_monitor)
      */
     while(modeslnk)
     {
-	modes = xf86FindModes (modeslnk->ml_modes_str, 
-			       xf86configptr->conf_modes_lst);
-	modeslnk->ml_modes = modes;
+	/* We may want to reuse the monitor section */
+	if (!modeslnk->ml_modes) {
+	    modes = xf86FindModes (modeslnk->ml_modes_str, 
+				   xf86configptr->conf_modes_lst);
+	    modeslnk->ml_modes = modes;
+	
 	    
-	/* now add the modes found in the modes
-	   section to the list of modes for this
-	   monitor */
-	conf_monitor->mon_modeline_lst = (XF86ConfModeLinePtr)
+	    /* now add the modes found in the modes
+	       section to the list of modes for this
+	       monitor */
+	    
+	    conf_monitor->mon_modeline_lst = (XF86ConfModeLinePtr)
 	    addListItem((GenericListPtr)conf_monitor->mon_modeline_lst,
 			(GenericListPtr)modes->mon_modeline_lst);
+	}
 	modeslnk = modeslnk->list.next;
     }
 
