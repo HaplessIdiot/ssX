@@ -1,4 +1,7 @@
 XFree86 4.0.1a (XX XXXX 2000)
+ 419. Convert MGA driver to use fb instead of cfb (Mark Vojkovich).
+ 418. Rewrite MGA color expansion routines so that pci retries never occur
+      (Mark Vojkovich).
  417. Make ATI driver tolerate relocation of conflicting resources
       (Marc La France).
  416. Make Mach64 FIFO handling available to GATOS (Marc La France).
@@ -10833,4 +10836,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1231 2000/07/05 13:41:35 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1232 2000/07/07 20:06:57 tsi Exp $
