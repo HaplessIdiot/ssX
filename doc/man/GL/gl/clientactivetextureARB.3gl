@@ -46,9 +46,9 @@ string returned by \%\f3glGetString\fP when called with the argument
 \%\f3GL_TEXTURE\fP$i$\f3_ARB\fP, where
 0 \(<= $ i $ < \%\f3GL_MAX_TEXTURE_UNITS_ARB\fP.
 .SH SEE ALSO
-\%\f3glActiveTextureARB\fP,
-\%\f3glDisableClientState\fP,
-\%\f3glEnableClientState\fP,
-\%\f3glMultiTexCoordARB\fP,
-\%\f3glTexCoordPointer\fP
+\%\f3glActiveTextureARB(3G)\fP,
+\%\f3glDisableClientState(3G)\fP,
+\%\f3glEnableClientState(3G)\fP,
+\%\f3glMultiTexCoordARB(3G)\fP,
+\%\f3glTexCoordPointer(3G)\fP
 

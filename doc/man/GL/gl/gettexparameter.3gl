@@ -137,6 +137,6 @@ accepted value.
 is executed between the execution of \%\f3glBegin\fP
 and the corresponding execution of \%\f3glEnd\fP.
 .SH SEE ALSO
-\%\f3glAreTexturesResident\fP,
-\%\f3glPrioritizeTextures\fP,
-\%\f3glTexParameter\fP
+\%\f3glAreTexturesResident(3G)\fP,
+\%\f3glPrioritizeTextures(3G)\fP,
+\%\f3glTexParameter(3G)\fP

@@ -43,4 +43,4 @@ issued GL commands is complete.
 is executed between the execution of \%\f3glBegin\fP
 and the corresponding execution of \%\f3glEnd\fP.
 .SH SEE ALSO
-\%\f3glFinish\fP
+\%\f3glFinish(3G)\fP

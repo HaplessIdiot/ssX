@@ -65,5 +65,5 @@ and the corresponding execution of \%\f3glEnd\fP.
 .br
 \%\f3glIsEnabled\fP with argument \%\f3GL_SCISSOR_TEST\fP
 .SH SEE ALSO
-\%\f3glEnable\fP,
-\%\f3glViewport\fP
+\%\f3glEnable(3G)\fP,
+\%\f3glViewport(3G)\fP

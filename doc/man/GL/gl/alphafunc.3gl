@@ -107,8 +107,8 @@ and the corresponding execution of \%\f3glEnd\fP.
 .br
 \%\f3glIsEnabled\fP with argument \%\f3GL_ALPHA_TEST\fP
 .SH SEE ALSO
-\%\f3glBlendFunc\fP,
-\%\f3glClear\fP,
-\%\f3glDepthFunc\fP,
-\%\f3glEnable\fP,
-\%\f3glStencilFunc\fP
+\%\f3glBlendFunc(3G)\fP,
+\%\f3glClear(3G)\fP,
+\%\f3glDepthFunc(3G)\fP,
+\%\f3glEnable(3G)\fP,
+\%\f3glStencilFunc(3G)\fP

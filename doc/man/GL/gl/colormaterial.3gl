@@ -83,12 +83,12 @@ the execution of \%\f3glBegin\fP and the corresponding execution of \%\f3glEnd\f
 .br
 \%\f3glGet\fP with argument \%\f3GL_COLOR_MATERIAL_FACE\fP
 .SH SEE ALSO
-\%\f3glColor\fP,
-\%\f3glColorPointer\fP,
-\%\f3glDrawArrays\fP,
-\%\f3glDrawElements\fP,
-\%\f3glDrawRangeElements\fP,
-\%\f3glEnable\fP,
-\%\f3glLight\fP,
-\%\f3glLightModel\fP,
-\%\f3glMaterial\fP
+\%\f3glColor(3G)\fP,
+\%\f3glColorPointer(3G)\fP,
+\%\f3glDrawArrays(3G)\fP,
+\%\f3glDrawElements(3G)\fP,
+\%\f3glDrawRangeElements(3G)\fP,
+\%\f3glEnable(3G)\fP,
+\%\f3glLight(3G)\fP,
+\%\f3glLightModel(3G)\fP,
+\%\f3glMaterial(3G)\fP

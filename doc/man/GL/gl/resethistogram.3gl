@@ -35,4 +35,4 @@ is called with an argument of \%\f3GL_EXTENSIONS\fP.
 between the execution of \%\f3glBegin\fP and the corresponding
 execution of \%\f3glEnd\fP.
 .SH SEE ALSO
-\%\f3glHistogram\fP
+\%\f3glHistogram(3G)\fP

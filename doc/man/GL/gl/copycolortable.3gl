@@ -155,6 +155,6 @@ execution of \%\f3glEnd\fP.
 \%\f3glGetColorTable\fP,
 \%\f3glGetColorTableParameter\fP
 .SH SEE ALSO
-\%\f3glColorTable\fP,
-\%\f3glColorTableParameter\fP,
-\%\f3glReadPixels\fP
+\%\f3glColorTable(3G)\fP,
+\%\f3glColorTableParameter(3G)\fP,
+\%\f3glReadPixels(3G)\fP

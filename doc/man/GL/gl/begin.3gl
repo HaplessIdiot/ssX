@@ -200,18 +200,18 @@ Execution of
 the corresponding call to \%\f3glEnd\fP,
 but an error may or may not be generated.
 .SH SEE ALSO
-\%\f3glArrayElement\fP,
-\%\f3glCallList\fP,
-\%\f3glCallLists\fP,
-\%\f3glColor\fP,
-\%\f3glEdgeFlag\fP,
-\%\f3glEvalCoord\fP,
+\%\f3glArrayElement(3G)\fP,
+\%\f3glCallList(3G)\fP,
+\%\f3glCallLists(3G)\fP,
+\%\f3glColor(3G)\fP,
+\%\f3glEdgeFlag(3G)\fP,
+\%\f3glEvalCoord(3G)\fP,
 .br
-\%\f3glEvalPoint\fP,
-\%\f3glIndex\fP,
-\%\f3glMaterial\fP,
-\%\f3glNormal\fP,
-\%\f3glTexCoord\fP,
-\%\f3glVertex\fP
+\%\f3glEvalPoint(3G)\fP,
+\%\f3glIndex(3G)\fP,
+\%\f3glMaterial(3G)\fP,
+\%\f3glNormal(3G)\fP,
+\%\f3glTexCoord(3G)\fP,
+\%\f3glVertex(3G)\fP
 
 

@@ -103,5 +103,5 @@ accepted value.
 is executed between the execution of \%\f3glBegin\fP
 and the corresponding execution of \%\f3glEnd\fP.
 .SH SEE ALSO
-\%\f3glActiveTextureARB\fP,
-\%\f3glTexGen\fP
+\%\f3glActiveTextureARB(3G)\fP,
+\%\f3glTexGen(3G)\fP

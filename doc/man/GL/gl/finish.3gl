@@ -30,5 +30,5 @@ and all changes to the frame buffer contents.
 the execution of \%\f3glBegin\fP
 and the corresponding execution of \%\f3glEnd\fP.
 .SH SEE ALSO
-\%\f3glFlush\fP
+\%\f3glFlush(3G)\fP
 

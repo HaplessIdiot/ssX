@@ -530,16 +530,16 @@ and \f2format\fP is neither \%\f3GL_RGBA\fP nor \%\f3GL_BGRA\fP.
 .br
 \%\f3glGet\fP with argument \%\f3GL_CURRENT_RASTER_POSITION_VALID\fP
 .SH SEE ALSO
-\%\f3glAlphaFunc\fP,
-\%\f3glBlendFunc\fP,
-\%\f3glCopyPixels\fP,
-\%\f3glDepthFunc\fP,
-\%\f3glLogicOp\fP,
-\%\f3glPixelMap\fP,
-\%\f3glPixelStore\fP,
-\%\f3glPixelTransfer\fP,
-\%\f3glPixelZoom\fP,
-\%\f3glRasterPos\fP,
-\%\f3glReadPixels\fP,
-\%\f3glScissor\fP,
-\%\f3glStencilFunc\fP
+\%\f3glAlphaFunc(3G)\fP,
+\%\f3glBlendFunc(3G)\fP,
+\%\f3glCopyPixels(3G)\fP,
+\%\f3glDepthFunc(3G)\fP,
+\%\f3glLogicOp(3G)\fP,
+\%\f3glPixelMap(3G)\fP,
+\%\f3glPixelStore(3G)\fP,
+\%\f3glPixelTransfer(3G)\fP,
+\%\f3glPixelZoom(3G)\fP,
+\%\f3glRasterPos(3G)\fP,
+\%\f3glReadPixels(3G)\fP,
+\%\f3glScissor(3G)\fP,
+\%\f3glStencilFunc(3G)\fP

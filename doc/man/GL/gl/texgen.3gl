@@ -254,17 +254,17 @@ and the corresponding execution of \%\f3glEnd\fP.
 .br
 \%\f3glIsEnabled\fP with argument \%\f3GL_TEXTURE_GEN_Q\fP
 .SH SEE ALSO
-\%\f3glActiveTextureARB\fP,
-\%\f3glCopyPixels\fP,
-\%\f3glCopyTexImage2D\fP,
-\%\f3glCopyTexSubImage1D\fP,
-\%\f3glCopyTexSubImage2D\fP,
-\%\f3glCopyTexSubImage3D\fP,
-\%\f3glTexEnv\fP,
-\%\f3glTexImage1D\fP,
-\%\f3glTexImage2D\fP,
-\%\f3glTexImage3D\fP,
-\%\f3glTexParameter\fP,
-\%\f3glTexSubImage1D\fP,
-\%\f3glTexSubImage2D\fP,
-\%\f3glTexSubImage3D\fP
+\%\f3glActiveTextureARB(3G)\fP,
+\%\f3glCopyPixels(3G)\fP,
+\%\f3glCopyTexImage2D(3G)\fP,
+\%\f3glCopyTexSubImage1D(3G)\fP,
+\%\f3glCopyTexSubImage2D(3G)\fP,
+\%\f3glCopyTexSubImage3D(3G)\fP,
+\%\f3glTexEnv(3G)\fP,
+\%\f3glTexImage1D(3G)\fP,
+\%\f3glTexImage2D(3G)\fP,
+\%\f3glTexImage3D(3G)\fP,
+\%\f3glTexParameter(3G)\fP,
+\%\f3glTexSubImage1D(3G)\fP,
+\%\f3glTexSubImage2D(3G)\fP,
+\%\f3glTexSubImage3D(3G)\fP

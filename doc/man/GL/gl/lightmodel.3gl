@@ -175,5 +175,5 @@ the execution of \%\f3glBegin\fP and the corresponding execution of \%\f3glEnd\f
 .br
 \%\f3glIsEnabled\fP with argument \%\f3GL_LIGHTING\fP
 .SH SEE ALSO
-\%\f3glLight\fP,
-\%\f3glMaterial\fP
+\%\f3glLight(3G)\fP,
+\%\f3glMaterial(3G)\fP

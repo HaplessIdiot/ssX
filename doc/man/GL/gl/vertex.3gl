@@ -175,15 +175,15 @@ When \f2x, y,\fP and \f2z\fP are specified,
 Invoking \%\f3glVertex\fP outside of a \%\f3glBegin\fP/\%\f3glEnd\fP pair
 results in undefined behavior.
 .SH SEE ALSO
-\%\f3glBegin\fP,
-\%\f3glCallList\fP,
-\%\f3glColor\fP,
-\%\f3glEdgeFlag\fP,
-\%\f3glEvalCoord\fP,
-\%\f3glIndex\fP,
-\%\f3glMaterial\fP,
+\%\f3glBegin(3G)\fP,
+\%\f3glCallList(3G)\fP,
+\%\f3glColor(3G)\fP,
+\%\f3glEdgeFlag(3G)\fP,
+\%\f3glEvalCoord(3G)\fP,
+\%\f3glIndex(3G)\fP,
+\%\f3glMaterial(3G)\fP,
 .br
-\%\f3glNormal\fP,
-\%\f3glRect\fP,
-\%\f3glTexCoord\fP,
-\%\f3glVertexPointer\fP
+\%\f3glNormal(3G)\fP,
+\%\f3glRect(3G)\fP,
+\%\f3glTexCoord(3G)\fP,
+\%\f3glVertexPointer(3G)\fP

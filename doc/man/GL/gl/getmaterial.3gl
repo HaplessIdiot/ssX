@@ -130,4 +130,4 @@ accepted value.
 is executed between the execution of \%\f3glBegin\fP
 and the corresponding execution of \%\f3glEnd\fP.
 .SH SEE ALSO
-\%\f3glMaterial\fP
+\%\f3glMaterial(3G)\fP

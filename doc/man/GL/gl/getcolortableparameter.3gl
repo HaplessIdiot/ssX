@@ -111,6 +111,6 @@ an acceptable value.
 between the execution of \%\f3glBegin\fP and the corresponding
 execution of \%\f3glEnd\fP.
 .SH SEE ALSO
-\%\f3glColorTable\fP,
-\%\f3glTexParameter\fP,
-\%\f3glColorTableParameter\fP
+\%\f3glColorTable(3G)\fP,
+\%\f3glTexParameter(3G)\fP,
+\%\f3glColorTableParameter(3G)\fP

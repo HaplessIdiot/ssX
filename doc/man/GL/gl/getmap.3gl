@@ -129,6 +129,6 @@ an accepted value.
 is executed between the execution of \%\f3glBegin\fP
 and the corresponding execution of \%\f3glEnd\fP.
 .SH SEE ALSO
-\%\f3glEvalCoord\fP,
-\%\f3glMap1\fP,
-\%\f3glMap2\fP
+\%\f3glEvalCoord(3G)\fP,
+\%\f3glMap1(3G)\fP,
+\%\f3glMap2(3G)\fP

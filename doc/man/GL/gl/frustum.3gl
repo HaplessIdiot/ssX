@@ -126,8 +126,8 @@ and the corresponding execution of \%\f3glEnd\fP.
 .br
 \%\f3glGet\fP with argument \%\f3GL_COLOR_MATRIX\fP
 .SH SEE ALSO
-\%\f3glOrtho\fP,
-\%\f3glMatrixMode\fP,
-\%\f3glMultMatrix\fP, 
-\%\f3glPushMatrix\fP,
-\%\f3glViewport\fP
+\%\f3glOrtho(3G)\fP,
+\%\f3glMatrixMode(3G)\fP,
+\%\f3glMultMatrix(3G)\fP, 
+\%\f3glPushMatrix(3G)\fP,
+\%\f3glViewport(3G)\fP

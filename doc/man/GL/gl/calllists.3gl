@@ -155,11 +155,11 @@ in this interval.
 .br
 \%\f3glIsList\fP
 .SH SEE ALSO
-\%\f3glCallList\fP,
-\%\f3glDeleteLists\fP,
-\%\f3glGenLists\fP,
-\%\f3glListBase\fP,
-\%\f3glNewList\fP,
-\%\f3glPushAttrib\fP, 
+\%\f3glCallList(3G)\fP,
+\%\f3glDeleteLists(3G)\fP,
+\%\f3glGenLists(3G)\fP,
+\%\f3glListBase(3G)\fP,
+\%\f3glNewList(3G)\fP,
+\%\f3glPushAttrib(3G)\fP, 
 .br
-\%\f3glPushMatrix\fP
+\%\f3glPushMatrix(3G)\fP

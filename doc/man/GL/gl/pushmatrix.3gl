@@ -80,13 +80,13 @@ and the corresponding execution of \%\f3glEnd\fP.
 .br
 \%\f3glGet\fP with argument \%\f3GL_MAX_TEXTURE_STACK_DEPTH\fP
 .SH SEE ALSO
-\%\f3glFrustum\fP, 
-\%\f3glLoadIdentity\fP,
-\%\f3glLoadMatrix\fP,
-\%\f3glMatrixMode\fP,
-\%\f3glMultMatrix\fP,
-\%\f3glOrtho\fP,
-\%\f3glRotate\fP,
-\%\f3glScale\fP,
-\%\f3glTranslate\fP,
-\%\f3glViewport\fP
+\%\f3glFrustum(3G)\fP, 
+\%\f3glLoadIdentity(3G)\fP,
+\%\f3glLoadMatrix(3G)\fP,
+\%\f3glMatrixMode(3G)\fP,
+\%\f3glMultMatrix(3G)\fP,
+\%\f3glOrtho(3G)\fP,
+\%\f3glRotate(3G)\fP,
+\%\f3glScale(3G)\fP,
+\%\f3glTranslate(3G)\fP,
+\%\f3glViewport(3G)\fP

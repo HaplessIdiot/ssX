@@ -82,5 +82,5 @@ and the corresponding execution of \%\f3glEnd\fP.
 .br
 \%\f3glIsEnabled\fP with argument \%\f3GL_LINE_STIPPLE\fP
 .SH SEE ALSO
-\%\f3glLineWidth\fP,
-\%\f3glPolygonStipple\fP
+\%\f3glLineWidth(3G)\fP,
+\%\f3glPolygonStipple(3G)\fP

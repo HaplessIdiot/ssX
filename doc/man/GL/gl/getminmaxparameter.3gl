@@ -72,5 +72,5 @@ values.
 between the execution of \%\f3glBegin\fP and the corresponding
 execution of \%\f3glEnd\fP.
 .SH SEE ALSO
-\%\f3glMinmax\fP,
-\%\f3glGetMinmax\fP
+\%\f3glMinmax(3G)\fP,
+\%\f3glGetMinmax(3G)\fP

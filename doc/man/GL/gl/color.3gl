@@ -266,4 +266,4 @@ call to \%\f3glEnd\fP.
 .br
 \%\f3glGet\fP with argument \%\f3GL_RGBA_MODE\fP
 .SH SEE ALSO
-\%\f3glIndex\fP
+\%\f3glIndex(3G)\fP

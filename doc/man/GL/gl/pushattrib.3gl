@@ -248,20 +248,20 @@ and the corresponding execution of \%\f3glEnd\fP.
 .br
 \%\f3glGet\fP with argument \%\f3GL_MAX_ATTRIB_STACK_DEPTH\fP
 .SH SEE ALSO
-\%\f3glGet\fP,
-\%\f3glGetClipPlane\fP,
-\%\f3glGetError\fP,
-\%\f3glGetLight\fP,
-\%\f3glGetMap\fP,
-\%\f3glGetMaterial\fP,
+\%\f3glGet(3G)\fP,
+\%\f3glGetClipPlane(3G)\fP,
+\%\f3glGetError(3G)\fP,
+\%\f3glGetLight(3G)\fP,
+\%\f3glGetMap(3G)\fP,
+\%\f3glGetMaterial(3G)\fP,
 .br
-\%\f3glGetPixelMap\fP,
-\%\f3glGetPolygonStipple\fP,
-\%\f3glGetString\fP,
-\%\f3glGetTexEnv\fP,
-\%\f3glGetTexGen\fP,
-\%\f3glGetTexImage\fP,
-\%\f3glGetTexLevelParameter\fP,
-\%\f3glGetTexParameter\fP,
-\%\f3glIsEnabled\fP,
-\%\f3glPushClientAttrib\fP
+\%\f3glGetPixelMap(3G)\fP,
+\%\f3glGetPolygonStipple(3G)\fP,
+\%\f3glGetString(3G)\fP,
+\%\f3glGetTexEnv(3G)\fP,
+\%\f3glGetTexGen(3G)\fP,
+\%\f3glGetTexImage(3G)\fP,
+\%\f3glGetTexLevelParameter(3G)\fP,
+\%\f3glGetTexParameter(3G)\fP,
+\%\f3glIsEnabled(3G)\fP,
+\%\f3glPushClientAttrib(3G)\fP

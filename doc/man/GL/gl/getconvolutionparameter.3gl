@@ -109,6 +109,6 @@ and \f2pname\fP is \%\f3GL_CONVOLUTION_HEIGHT\fP or
 between the execution of \%\f3glBegin\fP and the corresponding
 execution of \%\f3glEnd\fP.
 .SH SEE ALSO
-\%\f3glGetConvolutionFilter\fP,
-\%\f3glGetSeparableFilter2D\fP,
-\%\f3glConvolutionParameter\fP
+\%\f3glGetConvolutionFilter(3G)\fP,
+\%\f3glGetSeparableFilter2D(3G)\fP,
+\%\f3glConvolutionParameter(3G)\fP

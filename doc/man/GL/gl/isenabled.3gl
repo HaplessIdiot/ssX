@@ -154,7 +154,7 @@ active client texture unit:
 is executed between the execution of \%\f3glBegin\fP
 and the corresponding execution of \%\f3glEnd\fP.
 .SH SEE ALSO
-\%\f3glEnable\fP,
-\%\f3glEnableClientState\fP,
-\%\f3glGet\fP
+\%\f3glEnable(3G)\fP,
+\%\f3glEnableClientState(3G)\fP,
+\%\f3glGet(3G)\fP
 

@@ -99,9 +99,9 @@ and the corresponding execution of \%\f3glEnd\fP.
 .SH ASSOCIATED GETS
 \%\f3glGet\fP with argument \%\f3GL_RENDER_MODE\fP
 .SH SEE ALSO
-\%\f3glFeedbackBuffer\fP,
-\%\f3glInitNames\fP,
-\%\f3glLoadName\fP,
-\%\f3glPassThrough\fP,
-\%\f3glPushName\fP,
-\%\f3glSelectBuffer\fP
+\%\f3glFeedbackBuffer(3G)\fP,
+\%\f3glInitNames(3G)\fP,
+\%\f3glLoadName(3G)\fP,
+\%\f3glPassThrough(3G)\fP,
+\%\f3glPushName(3G)\fP,
+\%\f3glSelectBuffer(3G)\fP

@@ -85,16 +85,16 @@ the attribute stack is empty.
 .br
 \%\f3glGet\fP with argument \%\f3GL_MAX_CLIENT_ATTRIB_STACK_DEPTH\fP 
 .SH SEE ALSO
-\%\f3glColorPointer\fP,
-\%\f3glDisableClientState\fP,
-\%\f3glEdgeFlagPointer\fP,
-\%\f3glEnableClientState\fP,
-\%\f3glGet\fP,
-\%\f3glGetError\fP,
-\%\f3glIndexPointer\fP,
-\%\f3glNormalPointer\fP,
-\%\f3glNewList\fP,
-\%\f3glPixelStore\fP,
-\%\f3glPushAttrib\fP,
-\%\f3glTexCoordPointer\fP,
-\%\f3glVertexPointer\fP
+\%\f3glColorPointer(3G)\fP,
+\%\f3glDisableClientState(3G)\fP,
+\%\f3glEdgeFlagPointer(3G)\fP,
+\%\f3glEnableClientState(3G)\fP,
+\%\f3glGet(3G)\fP,
+\%\f3glGetError(3G)\fP,
+\%\f3glIndexPointer(3G)\fP,
+\%\f3glNormalPointer(3G)\fP,
+\%\f3glNewList(3G)\fP,
+\%\f3glPixelStore(3G)\fP,
+\%\f3glPushAttrib(3G)\fP,
+\%\f3glTexCoordPointer(3G)\fP,
+\%\f3glVertexPointer(3G)\fP

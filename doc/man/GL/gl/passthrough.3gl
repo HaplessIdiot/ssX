@@ -51,5 +51,5 @@ the execution of \%\f3glBegin\fP and the corresponding execution of \%\f3glEnd\f
 .SH ASSOCIATED GETS
 \%\f3glGet\fP with argument \%\f3GL_RENDER_MODE\fP
 .SH SEE ALSO
-\%\f3glFeedbackBuffer\fP,
-\%\f3glRenderMode\fP
+\%\f3glFeedbackBuffer(3G)\fP,
+\%\f3glRenderMode(3G)\fP

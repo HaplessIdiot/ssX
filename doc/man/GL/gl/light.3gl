@@ -248,6 +248,6 @@ the execution of
 .br
 \%\f3glIsEnabled\fP with argument \%\f3GL_LIGHTING\fP
 .SH SEE ALSO
-\%\f3glColorMaterial\fP,
-\%\f3glLightModel\fP,
-\%\f3glMaterial\fP
+\%\f3glColorMaterial(3G)\fP,
+\%\f3glLightModel(3G)\fP,
+\%\f3glMaterial(3G)\fP

@@ -294,8 +294,8 @@ It is always the case that \%\f3GL_TEXTURE\fP$i$\f3_ARB\fP = \%\f3GL_TEXTURE0_AR
 \%\f3glGet\fP with argument \%\f3GL_CURRENT_TEXTURE_COORDS\fP with appropriate 
 texture unit selected.
 .SH SEE ALSO
-\%\f3glActiveTextureARB\fP,
-\%\f3glClientActiveTextureARB\fP,
-\%\f3glTexCoord\fP,
-\%\f3glTexCoordPointer\fP,
-\%\f3glVertex\fP
+\%\f3glActiveTextureARB(3G)\fP,
+\%\f3glClientActiveTextureARB(3G)\fP,
+\%\f3glTexCoord(3G)\fP,
+\%\f3glTexCoordPointer(3G)\fP,
+\%\f3glVertex(3G)\fP

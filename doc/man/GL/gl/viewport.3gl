@@ -69,4 +69,4 @@ and the corresponding execution of \%\f3glEnd\fP.
 .br
 \%\f3glGet\fP with argument \%\f3GL_MAX_VIEWPORT_DIMS\fP
 .SH SEE ALSO
-\%\f3glDepthRange\fP
+\%\f3glDepthRange(3G)\fP

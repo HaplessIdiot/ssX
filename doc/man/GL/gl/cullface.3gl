@@ -54,5 +54,5 @@ and the corresponding execution of \%\f3glEnd\fP.
 .br
 \%\f3glGet\fP with argument \%\f3GL_CULL_FACE_MODE\fP
 .SH SEE ALSO
-\%\f3glEnable\fP,
-\%\f3glFrontFace\fP
+\%\f3glEnable(3G)\fP,
+\%\f3glFrontFace(3G)\fP

@@ -116,5 +116,5 @@ execution of \%\f3glEnd\fP.
 .SH ASSOCIATED GETS
 \%\f3glGetMinmaxParameter\fP
 .SH SEE ALSO
-\%\f3glGetMinmax\fP,
-\%\f3glResetMinmax\fP
+\%\f3glGetMinmax(3G)\fP,
+\%\f3glResetMinmax(3G)\fP

@@ -147,7 +147,7 @@ had been made to create the new display list.)
 .br
 \%\f3glGet\fP with argument \%\f3GL_LIST_MODE\fP
 .SH SEE ALSO
-\%\f3glCallList\fP,
-\%\f3glCallLists\fP,
-\%\f3glDeleteLists\fP, 
-\%\f3glGenLists\fP
+\%\f3glCallList(3G)\fP,
+\%\f3glCallLists(3G)\fP,
+\%\f3glDeleteLists(3G)\fP, 
+\%\f3glGenLists(3G)\fP

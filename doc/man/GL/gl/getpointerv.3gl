@@ -58,15 +58,15 @@ client texture unit.
 .SH ERRORS
 \%\f3GL_INVALID_ENUM\fP is generated if \f2pname\fP is not an accepted value.
 .SH SEE ALSO 
-\%\f3glArrayElement\fP,
-\%\f3glClientActiveTextureARB\fP,
-\%\f3glColorPointer\fP,
-\%\f3glDrawArrays\fP,
-\%\f3glEdgeFlagPointer\fP,
-\%\f3glFeedbackBuffer\fP,
-\%\f3glIndexPointer\fP,
-\%\f3glInterleavedArrays\fP,
-\%\f3glNormalPointer\fP,
-\%\f3glSelectBuffer\fP,
-\%\f3glTexCoordPointer\fP,
-\%\f3glVertexPointer\fP
+\%\f3glArrayElement(3G)\fP,
+\%\f3glClientActiveTextureARB(3G)\fP,
+\%\f3glColorPointer(3G)\fP,
+\%\f3glDrawArrays(3G)\fP,
+\%\f3glEdgeFlagPointer(3G)\fP,
+\%\f3glFeedbackBuffer(3G)\fP,
+\%\f3glIndexPointer(3G)\fP,
+\%\f3glInterleavedArrays(3G)\fP,
+\%\f3glNormalPointer(3G)\fP,
+\%\f3glSelectBuffer(3G)\fP,
+\%\f3glTexCoordPointer(3G)\fP,
+\%\f3glVertexPointer(3G)\fP

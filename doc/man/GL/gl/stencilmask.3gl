@@ -46,8 +46,8 @@ and the corresponding execution of \%\f3glEnd\fP.
 .br
 \%\f3glGet\fP with argument \%\f3GL_STENCIL_BITS\fP
 .SH SEE ALSO
-\%\f3glColorMask\fP,
-\%\f3glDepthMask\fP,
-\%\f3glIndexMask\fP,
-\%\f3glStencilFunc\fP,
-\%\f3glStencilOp\fP
+\%\f3glColorMask(3G)\fP,
+\%\f3glDepthMask(3G)\fP,
+\%\f3glIndexMask(3G)\fP,
+\%\f3glStencilFunc(3G)\fP,
+\%\f3glStencilOp(3G)\fP

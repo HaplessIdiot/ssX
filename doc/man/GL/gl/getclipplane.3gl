@@ -50,4 +50,4 @@ no change is made to the contents of \f2equation\fP.
 is executed between the execution of \%\f3glBegin\fP
 and the corresponding execution of \%\f3glEnd\fP.
 .SH SEE ALSO
-\%\f3glClipPlane\fP
+\%\f3glClipPlane(3G)\fP

@@ -119,14 +119,14 @@ the execution of \%\f3glBegin\fP and the corresponding \%\f3glEnd\fP.
 .P
 \%\f3glGet\fP with argument \%\f3GL_MAX_ELEMENTS_INDICES\fP
 .SH SEE ALSO 
-\%\f3glArrayElement\fP,
-\%\f3glColorPointer\fP,
-\%\f3glDrawArrays\fP,
-\%\f3glDrawElements\fP,
-\%\f3glEdgeFlagPointer\fP,
-\%\f3glGetPointerv\fP,
-\%\f3glIndexPointer\fP,
-\%\f3glInterleavedArrays\fP,
-\%\f3glNormalPointer\fP,
-\%\f3glTexCoordPointer\fP,
-\%\f3glVertexPointer\fP
+\%\f3glArrayElement(3G)\fP,
+\%\f3glColorPointer(3G)\fP,
+\%\f3glDrawArrays(3G)\fP,
+\%\f3glDrawElements(3G)\fP,
+\%\f3glEdgeFlagPointer(3G)\fP,
+\%\f3glGetPointerv(3G)\fP,
+\%\f3glIndexPointer(3G)\fP,
+\%\f3glInterleavedArrays(3G)\fP,
+\%\f3glNormalPointer(3G)\fP,
+\%\f3glTexCoordPointer(3G)\fP,
+\%\f3glVertexPointer(3G)\fP

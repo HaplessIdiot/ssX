@@ -74,7 +74,7 @@ and the corresponding execution of \%\f3glEnd\fP.
 .br
 \%\f3glIsEnabled\fP with argument \%\f3GL_POLYGON_STIPPLE\fP
 .SH SEE ALSO
-\%\f3glDrawPixels\fP,
-\%\f3glLineStipple\fP,
-\%\f3glPixelStore\fP,
-\%\f3glPixelTransfer\fP
+\%\f3glDrawPixels(3G)\fP,
+\%\f3glLineStipple(3G)\fP,
+\%\f3glPixelStore(3G)\fP,
+\%\f3glPixelTransfer(3G)\fP

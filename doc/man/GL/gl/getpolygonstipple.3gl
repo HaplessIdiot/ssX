@@ -46,7 +46,7 @@ no change is made to the contents of \f2mask\fP.
 is executed between the execution of \%\f3glBegin\fP
 and the corresponding execution of \%\f3glEnd\fP.
 .SH SEE ALSO
-\%\f3glPixelStore\fP,
-\%\f3glPixelTransfer\fP,
-\%\f3glPolygonStipple\fP,
-\%\f3glReadPixels\fP
+\%\f3glPixelStore(3G)\fP,
+\%\f3glPixelTransfer(3G)\fP,
+\%\f3glPolygonStipple(3G)\fP,
+\%\f3glReadPixels(3G)\fP

@@ -41,4 +41,4 @@ and the corresponding execution of \%\f3glEnd\fP.
 .SH ASSOCIATED GETS
 \%\f3glGet\fP with argument \%\f3GL_COLOR_CLEAR_VALUE\fP
 .SH SEE ALSO
-\%\f3glClear\fP
+\%\f3glClear(3G)\fP

@@ -232,18 +232,18 @@ and the corresponding execution of \%\f3glEnd\fP.
 .br
 \%\f3glGet\fP with argument \%\f3GL_CURRENT_RASTER_POSITION_VALID\fP
 .SH SEE ALSO
-\%\f3glColorTable\fP,
-\%\f3glConvolutionFilter1D\fP,
-\%\f3glConvolutionFilter2D\fP,
-\%\f3glDepthFunc\fP,
-\%\f3glDrawBuffer\fP,
-\%\f3glDrawPixels\fP,
-\%\f3glMatrixMode\fP,
-\%\f3glPixelMap\fP,
-\%\f3glPixelTransfer\fP,
-\%\f3glPixelZoom\fP,
-\%\f3glRasterPos\fP,
-\%\f3glReadBuffer\fP,
-\%\f3glReadPixels\fP,
-\%\f3glSeparableFilter2D\fP,
-\%\f3glStencilFunc\fP
+\%\f3glColorTable(3G)\fP,
+\%\f3glConvolutionFilter1D(3G)\fP,
+\%\f3glConvolutionFilter2D(3G)\fP,
+\%\f3glDepthFunc(3G)\fP,
+\%\f3glDrawBuffer(3G)\fP,
+\%\f3glDrawPixels(3G)\fP,
+\%\f3glMatrixMode(3G)\fP,
+\%\f3glPixelMap(3G)\fP,
+\%\f3glPixelTransfer(3G)\fP,
+\%\f3glPixelZoom(3G)\fP,
+\%\f3glRasterPos(3G)\fP,
+\%\f3glReadBuffer(3G)\fP,
+\%\f3glReadPixels(3G)\fP,
+\%\f3glSeparableFilter2D(3G)\fP,
+\%\f3glStencilFunc(3G)\fP

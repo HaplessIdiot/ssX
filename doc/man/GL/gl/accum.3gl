@@ -145,12 +145,12 @@ is executed between the execution of
 .br
 \%\f3glGet\fP with argument \%\f3GL_ACCUM_ALPHA_BITS\fP
 .SH SEE ALSO
-\%\f3glClear\fP,
-\%\f3glClearAccum\fP,
-\%\f3glCopyPixels\fP,
-\%\f3glDrawBuffer\fP,
-\%\f3glGet\fP,
-\%\f3glReadBuffer\fP, 
-\%\f3glReadPixels\fP,
-\%\f3glScissor\fP,
-\%\f3glStencilOp\fP
+\%\f3glClear(3G)\fP,
+\%\f3glClearAccum(3G)\fP,
+\%\f3glCopyPixels(3G)\fP,
+\%\f3glDrawBuffer(3G)\fP,
+\%\f3glGet(3G)\fP,
+\%\f3glReadBuffer(3G)\fP, 
+\%\f3glReadPixels(3G)\fP,
+\%\f3glScissor(3G)\fP,
+\%\f3glStencilOp(3G)\fP

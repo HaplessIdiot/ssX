@@ -43,8 +43,8 @@ If \f2range\fP is 0, nothing happens.
 is executed between the execution of \%\f3glBegin\fP
 and the corresponding execution of \%\f3glEnd\fP.
 .SH SEE ALSO
-\%\f3glCallList\fP,
-\%\f3glCallLists\fP,
-\%\f3glGenLists\fP,
-\%\f3glIsList\fP,
-\%\f3glNewList\fP
+\%\f3glCallList(3G)\fP,
+\%\f3glCallLists(3G)\fP,
+\%\f3glGenLists(3G)\fP,
+\%\f3glIsList(3G)\fP,
+\%\f3glNewList(3G)\fP

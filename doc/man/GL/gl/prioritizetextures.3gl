@@ -73,11 +73,11 @@ execution of \%\f3glEnd\fP.
 \%\f3glGetTexParameter\fP with parameter name \%\f3GL_TEXTURE_PRIORITY\fP
 retrieves the priority of a currently bound texture.
 .SH SEE ALSO
-\%\f3glAreTexturesResident\fP,
-\%\f3glBindTexture\fP,
-\%\f3glCopyTexImage1D\fP,
-\%\f3glCopyTexImage2D\fP,
-\%\f3glTexImage1D\fP,
-\%\f3glTexImage2D\fP,
-\%\f3glTexImage3D\fP,
-\%\f3glTexParameter\fP
+\%\f3glAreTexturesResident(3G)\fP,
+\%\f3glBindTexture(3G)\fP,
+\%\f3glCopyTexImage1D(3G)\fP,
+\%\f3glCopyTexImage2D(3G)\fP,
+\%\f3glTexImage1D(3G)\fP,
+\%\f3glTexImage2D(3G)\fP,
+\%\f3glTexImage3D(3G)\fP,
+\%\f3glTexParameter(3G)\fP
