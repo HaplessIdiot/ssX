@@ -72,6 +72,7 @@ LOWMEMFTPT	False	False	False	False
 #include "mistruct.h"
 #include "mibstore.h"
 #include "migc.h"
+#include "mioverlay.h"
 
 #include "cfb8_32.h"
 #include "cfbmskbits.h"
@@ -337,14 +338,6 @@ cfb8_32ValidateGC32(
 	index = lowbit (mask);
 	mask &= ~index;
 
-	/*
-	 * this switch acculmulates a list of which procedures might have
-	 * to change due to changes in the GC.  in some cases (e.g.
-	 * changing one 16 bit tile for another) we might not really need
-	 * a change, but the code is being paranoid. this sort of batching
-	 * wins if, for example, the alu and the font have been changed,
-	 * or any other pair of items that both change the same thing. 
-	 */
 	switch (index) {
 	case GCFunction:
 	case GCForeground:

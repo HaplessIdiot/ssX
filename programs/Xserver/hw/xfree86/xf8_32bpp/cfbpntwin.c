@@ -75,14 +75,12 @@ cfb8_32PaintWindow(
     case PW_BORDER:
 	if (pWin->borderIsPixel) {
 	    if(pWin->drawable.depth == 24) {
-	       pScreenPriv = CFB8_32_GET_SCREEN_PRIVATE(pWin->drawable.pScreen);
-	       cfb32FillBoxSolid ((DrawablePtr)pWin,
+		cfb8_32FillBoxSolid32 ((DrawablePtr)pWin,
 			     (int)REGION_NUM_RECTS(pRegion),
 			     REGION_RECTS(pRegion),
-			     (pScreenPriv->key << 24) | 
-			     (pWin->border.pixel & 0x00ffffff));
+			     pWin->border.pixel);
 	    } else
-	       cfb8_32FillBoxSolid8 ((DrawablePtr)pWin,
+		cfb8_32FillBoxSolid8 ((DrawablePtr)pWin,
 			     (int)REGION_NUM_RECTS(pRegion),
 			     REGION_RECTS(pRegion),
 			     pWin->border.pixel);
@@ -107,14 +105,6 @@ cfb8_32PaintWindow(
 			(int)REGION_NUM_RECTS(pRegion), REGION_RECTS(pRegion),
 			pWin->border.pixmap, xorg, yorg, GXcopy, 
 			(pWin->drawable.depth == 24) ? 0x00ffffff : 0xff000000);
-
-	    if(pWin->drawable.depth == 24) {
-	       pScreenPriv = CFB8_32_GET_SCREEN_PRIVATE(pWin->drawable.pScreen);
-	       cfb8_32FillBoxSolid8 ((DrawablePtr)pWin,
-			     (int)REGION_NUM_RECTS(pRegion),
-			     REGION_RECTS(pRegion),
-			     pScreenPriv->key);
-	    }
 	}
 	break;
     }
@@ -186,11 +176,3 @@ cfb8_32FillBoxSolid32(
     }
 }
 
-
-unsigned char
-cfb8_32GetKey(ScreenPtr pScreen)
-{
-    cfb8_32ScreenPtr pScreenPriv = CFB8_32_GET_SCREEN_PRIVATE(pScreen);
-
-    return pScreenPriv->key;
-}

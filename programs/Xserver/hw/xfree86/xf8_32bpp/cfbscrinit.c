@@ -20,8 +20,10 @@
 #include "mistruct.h"
 #include "dix.h"
 #include "mibstore.h"
+#include "mioverlay.h"
 #include "xf86.h"
 #include "xf86str.h"
+#include "globals.h"
 
 /* CAUTION:  We require that cfb8 and cfb32 were NOT 
 	compiled with CFB_NEED_SCREEN_PRIVATE */
@@ -37,7 +39,6 @@ static BSFuncRec cfb8_32BSFuncRec = {
 
 int cfb8_32GCPrivateIndex;
 int cfb8_32ScreenPrivateIndex;
-
 static unsigned long cfb8_32Generation = 0;
 
 static Bool
@@ -157,6 +158,16 @@ cfb8_32CloseScreen (int i, ScreenPtr pScreen)
     return(cfb32CloseScreen(i, pScreen));
 }
 
+static void
+cfb8_32TransFunction(
+    ScreenPtr pScreen,
+    int nbox,
+    BoxPtr pbox
+){
+    cfb8_32FillBoxSolid8(&(WindowTable[pScreen->myNum]->drawable), 
+			nbox, pbox, xf86Screens[pScreen->myNum]->colorKey);
+}
+
 static Bool
 cfb8_32FinishScreenInit(
     ScreenPtr pScreen,
@@ -186,7 +197,9 @@ cfb8_32FinishScreenInit(
     pScreen->CloseScreen = cfb8_32CloseScreen;
     pScreen->GetScreenPixmap = cfb32GetScreenPixmap; 	/* OK */
     pScreen->SetScreenPixmap = cfb32SetScreenPixmap;	/* OK */
-    pScreen->WindowExposures = cfb8_32WindowExposures;
+
+    if (! miInitOverlay(pScreen, 8, cfb8_32TransFunction))
+	return FALSE;
 
     return TRUE;
 }
