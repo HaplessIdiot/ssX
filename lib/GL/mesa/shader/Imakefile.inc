@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/shader/Imakefile.inc,v 1.2 2004/04/22 13:58:41 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/shader/Imakefile.inc,v 1.1 2004/12/10 16:06:58 alanh Exp $
 
 #ifndef MesaShaderBuildDir
 #define MesaShaderBuildDir $(GLXLIBSRC)/mesa/shader/
@@ -10,7 +10,6 @@ MESASHADERBUILDDIR = MesaShaderBuildDir
 		     $(MESASHADERBUILDDIR)arbprogparse.c \
 		     $(MESASHADERBUILDDIR)arbprogram.c \
 		     $(MESASHADERBUILDDIR)arbvertparse.c \
-		     $(MESASHADERBUILDDIR)grammar.c \
 		     $(MESASHADERBUILDDIR)grammar_mesa.c \
 		     $(MESASHADERBUILDDIR)nvfragparse.c \
 		     $(MESASHADERBUILDDIR)nvprogram.c \
@@ -49,7 +48,6 @@ LinkSourceFile(program.h, $(MESASRCDIR)/src/mesa/shader)
 		     $(MESASHADERBUILDDIR)arbprogparse.o \
 		     $(MESASHADERBUILDDIR)arbprogram.o \
 		     $(MESASHADERBUILDDIR)arbvertparse.o \
-		     $(MESASHADERBUILDDIR)grammar.o \
 		     $(MESASHADERBUILDDIR)grammar_mesa.o \
 		     $(MESASHADERBUILDDIR)nvfragparse.o \
 		     $(MESASHADERBUILDDIR)nvprogram.o \
@@ -60,7 +58,6 @@ LinkSourceFile(program.h, $(MESASRCDIR)/src/mesa/shader)
 		     $(MESASHADERBUILDDIR)$(EXTRASUBDIR)/arbprogparse.o \
 		     $(MESASHADERBUILDDIR)$(EXTRASUBDIR)/arbprogram.o \
 		     $(MESASHADERBUILDDIR)$(EXTRASUBDIR)/arbvertparse.o \
-		     $(MESASHADERBUILDDIR)$(EXTRASUBDIR)/grammar.o \
 		     $(MESASHADERBUILDDIR)$(EXTRASUBDIR)/grammar_mesa.o \
 		     $(MESASHADERBUILDDIR)$(EXTRASUBDIR)/nvfragparse.o \
 		     $(MESASHADERBUILDDIR)$(EXTRASUBDIR)/nvprogram.o \
@@ -72,7 +69,6 @@ LinkSourceFile(program.h, $(MESASRCDIR)/src/mesa/shader)
 		     $(MESASHADERBUILDDIR)unshared/arbprogparse.o \
 		     $(MESASHADERBUILDDIR)unshared/arbprogram.o \
 		     $(MESASHADERBUILDDIR)unshared/arbvertparse.o \
-		     $(MESASHADERBUILDDIR)unshared/grammar.o \
 		     $(MESASHADERBUILDDIR)unshared/grammar_mesa.o \
 		     $(MESASHADERBUILDDIR)unshared/nvfragparse.o \
 		     $(MESASHADERBUILDDIR)unshared/nvprogram.o \
@@ -86,7 +82,6 @@ LinkSourceFile(program.h, $(MESASRCDIR)/src/mesa/shader)
 		     $(MESASHADERBUILDDIR)debugger/arbprogparse.o \
 		     $(MESASHADERBUILDDIR)debugger/arbprogram.o \
 		     $(MESASHADERBUILDDIR)debugger/arbvertparse.o \
-		     $(MESASHADERBUILDDIR)debugger/grammar.o \
 		     $(MESASHADERBUILDDIR)debugger/grammar_mesa.o \
 		     $(MESASHADERBUILDDIR)debugger/nvfragparse.o \
 		     $(MESASHADERBUILDDIR)debugger/nvprogram.o \
@@ -97,7 +92,6 @@ LinkSourceFile(program.h, $(MESASRCDIR)/src/mesa/shader)
 		     $(MESASHADERBUILDDIR)profiled/arbprogparse.o \
 		     $(MESASHADERBUILDDIR)profiled/arbprogram.o \
 		     $(MESASHADERBUILDDIR)profiled/arbvertparse.o \
-		     $(MESASHADERBUILDDIR)profiled/grammar.o \
 		     $(MESASHADERBUILDDIR)profiled/grammar_mesa.o \
 		     $(MESASHADERBUILDDIR)profiled/nvfragparse.o \
 		     $(MESASHADERBUILDDIR)profiled/nvprogram.o \
