@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_xmesa.c,v 1.9 2001/08/18 02:51:05 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_xmesa.c,v 1.10 2001/10/02 11:44:13 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -296,9 +296,9 @@ XMesaOpenFullScreen( __DRIcontextPrivate *driContextPriv )
 GLboolean
 XMesaCloseFullScreen( __DRIcontextPrivate *driContextPriv )
 {
+#if 0
    r128ContextPtr rmesa = (r128ContextPtr)driContextPriv->driverPrivate;
 
-#if 0
    LOCK_HARDWARE( rmesa );
    r128WaitForIdleLocked( rmesa );
 

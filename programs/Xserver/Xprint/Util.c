@@ -30,21 +30,21 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/Util.c,v 1.11 2001/01/17 22:36:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/Util.c,v 1.12 2001/08/01 00:44:45 tsi Exp $ */
 
 /* To get the tempnam() prototype in <stdio.h> */
 #if defined(linux) && defined(__STRICT_ANSI__)
 #undef __STRICT_ANSI__
 #endif
 
-#include "Xos.h"	/* for unistd.h and string.h */
+#include <X11/Xos.h>	/* for unistd.h and string.h */
 #include <stdio.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include "misc.h"
 #include "dixstruct.h"
 
-#include "extensions/Print.h"
+#include <X11/extensions/Print.h>
 
 #include "attributes.h"
 
@@ -323,6 +323,7 @@ XpFinishDocData(
     return Success;
 }
 
+#ifndef HAS_MKSTEMP
 static
 char *XpDirName(char *fname)
 {
@@ -341,6 +342,7 @@ char *XpDirName(char *fname)
     }
     return fn;
 }
+#endif
 
 Bool
 XpOpenTmpFile(

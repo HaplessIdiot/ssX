@@ -1,4 +1,4 @@
-
+/* $XFree86$ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.4
@@ -117,7 +117,7 @@ points_func xmesa_get_points_func( GLcontext *ctx )
 /**********************************************************************/
 /***                      Line rendering                            ***/
 /**********************************************************************/
-
+#if 0
 /*
  * Render a line into a pixmap, any pixel format.
  */
@@ -147,7 +147,7 @@ static void flat_pixmap_line( GLcontext *ctx,
    XMesaDrawLine( xmesa->display, xmesa->xm_buffer->buffer, gc,
 		  x0, y0, x1, y1 );
 }
-
+#endif
 
 
 /*
@@ -575,7 +575,7 @@ static void flat_HPCR_z_line( GLcontext *ctx,
 #include "linetemp.h"
 }
 
-
+#if 0
 /*
  * Examine ctx->Line attributes and set xmesa->xm_buffer->gc1
  * and xmesa->xm_buffer->gc2 appropriately.
@@ -655,7 +655,7 @@ fprintf (stderr, "\n");
    XMesaSetFillStyle( xmesa->display, xmesa->xm_buffer->gc1, FillSolid );
    XMesaSetFillStyle( xmesa->display, xmesa->xm_buffer->gc2, FillSolid );
 }
-
+#endif
 
 
 /*

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/GL/glx/singlepixswap.c,v 1.5 2001/03/21 16:29:37 dawes Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -108,7 +108,7 @@ int __glXDispSwap_GetTexImage(__GLXclientState *cl, GLbyte *pc)
 {
     GLint level, compsize;
     GLenum format, type, target;
-    GLboolean swapBytes, lsbFirst;
+    GLboolean swapBytes;
     __GLX_DECLARE_SWAP_VARIABLES;
     __GLXcontext *cx;
     ClientPtr client = cl->client;

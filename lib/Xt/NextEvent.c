@@ -54,7 +54,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.20 2001/07/25 15:04:52 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.21 2001/10/28 03:32:40 tsi Exp $ */
 
 #include "IntrinsicI.h"
 #include <stdio.h>
@@ -161,7 +161,7 @@ typedef struct {
 
 static struct timeval  zero_time = { 0 , 0};
 #ifndef USE_POLL
-static fd_set zero_fd = { 0 };
+static fd_set zero_fd;
 #else
 #define X_BLOCK -1
 #define X_DONT_BLOCK 0

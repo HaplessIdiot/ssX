@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.8 2001/03/01 00:56:52 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.9 2001/10/28 03:32:34 tsi Exp $ */
 
 /*
 **++ 
@@ -462,7 +462,6 @@ Output parameters:
         *out_ch = '\0';
     }
 }
-#endif
 
 Private int 
 #if NeedFunctionPrototypes
@@ -497,7 +496,7 @@ Output parameters:
     }
     return position;
 }
-
+#endif
 
 Private int 
 #if NeedFunctionPrototypes

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.24 2001/04/06 18:16:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.26 2001/10/01 13:44:12 eich Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -302,9 +302,7 @@ fbdev_open_pci(pciVideoPtr pPci, char **namep)
 static int
 fbdev_open(char *dev, char** namep)
 {
-	struct fb_con2fbmap c2m;
 	struct	fb_fix_screeninfo fix;
-	char   fbdev[16];
 	int    fd;
 
 	/* try argument (from XF86Config) first */
@@ -810,6 +808,8 @@ fbdevHWDPMSSet(ScrnInfoPtr pScrn, int mode, int flags)
 		case DPMSModeOff:
 			fbmode = 4;
 			break;
+		default:
+			return;
 	}
 
 	if (-1 == ioctl(fPtr->fd, FBIOBLANK, (void *)fbmode))
@@ -824,7 +824,7 @@ fbdevHWSaveScreen(ScreenPtr pScreen, int mode)
 	unsigned long unblank;
 
 	if (!pScrn->vtSema)
-		return;
+		return TRUE;
 
 	unblank = xf86IsUnblank(mode);
 

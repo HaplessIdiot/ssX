@@ -2,7 +2,7 @@
  *  video4linux Xv Driver 
  *  based on Michael Schimek's permedia 2 driver.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.27 2001/08/03 08:34:00 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.28 2001/09/14 13:54:02 alanh Exp $ */
 
 #include "videodev.h"
 #include "xf86.h"
@@ -466,7 +466,9 @@ V4lPutStill(ScrnInfoPtr pScrn,
     short vid_w, short vid_h, short drw_w, short drw_h,
     RegionPtr clipBoxes, pointer data)
 {
+#if 0
     PortPrivPtr pPPriv = (PortPrivPtr) data;  
+#endif
 
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/PS\n"));
 

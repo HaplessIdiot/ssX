@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/include/fntfilio.h,v 1.4 2001/01/17 19:43:32 dawes Exp $ */
+/* $XFree86: xc/lib/font/include/fntfilio.h,v 1.5 2001/08/01 00:44:43 tsi Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -30,7 +30,7 @@ in this Software without prior written authorization from The Open Group.
 #ifndef _FNTFILIO_H_
 #define _FNTFILIO_H_
 
-#include <bufio.h>
+#include "bufio.h"
 
 typedef BufFilePtr  FontFilePtr;
 
