@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fc/fserve.c,v 3.7 1997/12/14 02:55:34 dawes Exp $ */
+/* $XFree86: xc/lib/font/fc/fserve.c,v 3.8 1998/10/03 09:07:24 dawes Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices
@@ -969,12 +969,12 @@ fs_read_extent_info(fpe, blockrec)
 	return StillWorking;
     }
     fsd->glyphs_to_get = 0;
-    fscip = (pointer) fsci;
+    fscip = fsci;
     ci = fsfont->inkMetrics;
     for (i = 0; i < rep.num_extents; i++) {
 	memcpy(&fscilocal, fscip, SIZEOF(fsXCharInfo)); /* align it */
 	_fs_convert_char_info(&fscilocal, &ci->metrics);
-	fscip += SIZEOF(fsXCharInfo);
+	fscip = (char *)fscip + SIZEOF(fsXCharInfo);
 	/* Initialize the bits field for later glyph-caching use */
 	if (NONZEROMETRICS(&ci->metrics))
 	{
@@ -1846,7 +1846,7 @@ fs_read_glyphs(fpe, blockrec)
 		    err = AllocError;
 		    goto bail;
 		}
-		memcpy(bits, pbitmaps + local_off.position,
+		memcpy(bits, (char *)pbitmaps + local_off.position,
 		       local_off.length);
 	    }
 	    else if (NONZEROMETRICS(&fsdata->encoding[minchar].metrics))

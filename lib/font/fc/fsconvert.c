@@ -1,4 +1,4 @@
-/* $XConsortium: fsconvert.c,v 1.17 94/02/14 17:47:35 gildea Exp $ */
+/* $TOG: fsconvert.c /main/20 1998/05/07 14:52:42 kaleb $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -22,6 +22,7 @@
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  */
+/* $XFree86$ */
 /*
  * FS data conversion
  */
@@ -70,7 +71,7 @@ _fs_init_fontinfo(conn, pfi)
 	pfi->lastCol = pfi->lastRow;
 	pfi->lastRow = n;
 	pfi->defaultCh = (pfi->defaultCh >> 8) & 0xff
-	                   + (pfi->defaultCh & 0xff) << 8;
+	                   + ((pfi->defaultCh & 0xff) << 8);
     }
 
     if (FontCouldBeTerminal (pfi))
@@ -99,6 +100,7 @@ _fs_convert_props(pi, po, pd, pfi)
     char       *is_str;
     fsPropOffset local_off;
     char *off_adr;
+    char *pdc = pd;
 
 /* stolen from server/include/resource.h */
 #define BAD_RESOURCE 0xe0000000
@@ -118,14 +120,14 @@ _fs_convert_props(pi, po, pd, pfi)
     off_adr = (char *)po;
     for (i = 0; i < nprops; i++, dprop++, is_str++) {
 	memcpy(&local_off, off_adr, SIZEOF(fsPropOffset));
-	dprop->name = MakeAtom(&pd[local_off.name.position],
+	dprop->name = MakeAtom(&pdc[local_off.name.position],
 			       local_off.name.length, 1);
 	if (local_off.type != PropTypeString) {
 	    *is_str = FALSE;
 	    dprop->value = local_off.value.position;
 	} else {
 	    *is_str = TRUE;
-	    dprop->value = (INT32) MakeAtom(&pd[local_off.value.position],
+	    dprop->value = (INT32) MakeAtom(&pdc[local_off.value.position],
 					    local_off.value.length, 1);
 	    if (dprop->value == BAD_RESOURCE)
 	    {
@@ -310,7 +312,7 @@ fs_build_range(pfont, range_flag, count, item_size, data, nranges, ranges)
 		    {
 			if (row1 == row2 &&
 			    ((col1 & 0xf) && col1 > firstcol ||
-			     (col2 & 0xf) != 0xf) && col2 < lastcol)
+			     (col2 & 0xf) != 0xf) && (col2 < lastcol))
 			{
 			    /* If we're loading from a single row, expand
 			       range of glyphs loaded to a multiple of
@@ -347,6 +349,7 @@ fs_build_range(pfont, range_flag, count, item_size, data, nranges, ranges)
    performed by fs_build_range(); for use if the associated LoadGlyphs
    requests needs to be cancelled. */
 
+void
 _fs_clean_aborted_loadglyphs(pfont, num_expected_ranges, expected_ranges)
     FontPtr pfont;
     int num_expected_ranges;
@@ -579,9 +582,7 @@ _fs_get_metrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
     unsigned int r;
     CharInfoPtr encoding;
     CharInfoPtr pDefault;
-    FSFontDataPtr fsd = (FSFontDataPtr) pFont->fpePrivate;
     int         itemSize;
-    int         err = Successful;
 
     fsdata = (FSFontPtr) pFont->fontPrivate;
     encoding = fsdata->inkMetrics;
