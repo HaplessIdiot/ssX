@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/fontscale.c,v 3.5 1998/10/03 09:07:28 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontscale.c,v 3.6 1999/07/17 05:30:42 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -358,7 +358,7 @@ MatchScalable (FontScalablePtr a, FontScalablePtr b)
 
     if (!(a->x == b->x &&
 	  a->y == b->y &&
-	  (a->width == b->width || a->width == 0 || b->width == 0) &&
+	  (a->width == b->width || a->width == 0 || b->width == 0 || b->width == -1) &&
 	  (!(b->values_supplied & PIXELSIZE_MASK) ||
 	    (a->values_supplied & PIXELSIZE_MASK) ==
 	    (b->values_supplied & PIXELSIZE_MASK) &&

@@ -1,4 +1,6 @@
 XFree86 3.9.16f (xx December 1999)
+3369. Fix problem where font library fails to match bitmap instances
+      (#3448, Keith Packard).
 3368. Change font client code to recover from font server hangs/crashes
       and reduce memory fragmentation (#3446, Keith Packard).
 3367. Allow MAXCLIENT to be any of 64, 128, 256, or 512 and adjust the
@@ -9143,4 +9145,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.864 1999/12/13 02:42:12 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.865 1999/12/13 02:52:56 robin Exp $
