@@ -37,7 +37,7 @@
 |*                                                                           *|
  \***************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.34 2003/07/31 20:24:29 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.35 2003/09/01 20:54:26 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -86,6 +86,8 @@ NVDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
        horizStart = horizTotal - 3;
        horizEnd = horizTotal - 2;   
        horizBlankEnd = horizTotal + 4;    
+       if(pNv->Architecture == NV_ARCH_30)
+          horizTotal += 2;
     }
 
     pVga->CRTC[0x0]  = Set8Bits(horizTotal);
