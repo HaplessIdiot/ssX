@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.24 2001/06/04 21:38:24 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.25 2001/06/06 18:17:38 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -560,7 +560,7 @@ FindDistName()
 			1.[4-9]*)	# Check this
 				case "$OsObjFormat" in
 				a.out)
-					DistName="NetBSD-1.4.1"
+					DistName="NetBSD-1.4.x"
 					;;
 				*)
 					DistName="NetBSD-1.5"
