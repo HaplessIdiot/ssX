@@ -1,4 +1,5 @@
 /* $XConsortium: s3linear.h,v 1.1 94/03/28 21:16:04 dpw Exp $ */
+/* $XFree86$ */
 /*
  * s3EnableLinear() and s3DisableLinear() are wrappers to surround
  * any function call that is going to access the video ram through
@@ -42,6 +43,7 @@ extern unsigned char s3Port51;
       int   i;\
 \
     /* begin 801 sequence for going in to linear mode */\
+    /* x64: CR40 changed a lot for 864/964; wait and see if this still works */\
       outb (vgaCRIndex, 0x40);\
       i = (s3Port40 & 0xf6) | 0x0a;/* enable fast write buffer and disable\
 				 * 8514/a mode */\
@@ -65,6 +67,7 @@ extern unsigned char s3Port51;
       int   i;\
 \
     /* begin 801 sequence for going in to linear mode */\
+    /* x64: CR40 changed a lot for 864/964; wait and see if this still works */\
       outb (vgaCRIndex, 0x40);\
       i = (s3Port40 & 0xf6) | 0x0a;/* enable fast write buffer and disable\
 				 * 8514/a mode */\

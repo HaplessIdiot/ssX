@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.0 1994/04/29 14:07:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.1 1994/05/06 08:51:20 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -797,6 +797,8 @@ s3Init(mode)
       s3Port31 = 0x8f;
    else
       s3Port31 = 0x8d;
+   if (S3_x64_SERIES(s3ChipId)) 
+     s3Port31 &= 0x7f; /* x64: bit 7 is reserved */
 
    outb(vgaCRIndex, 0x31);
    outb(vgaCRReg, s3Port31);
@@ -810,12 +812,21 @@ s3Init(mode)
    outb(vgaCRReg, 0x00);
    cebank();
    outb(vgaCRIndex, 0x3a);
+#if 0  /* x64: set to 1 if PCI read bursts should be enabled
+          NOTE: there are known problems with PCI burst mode in SATURN chipset rev. 2 
+                so this is commented out, maybe a new Xconfig option should be used */
+   if (S3_x64_SERIES(s3ChipId))
+     outb(vgaCRReg, 0xb5 & 0x7f);
+   else
+#endif
    outb(vgaCRReg, 0xb5);		/* was 95 */
+   
    outb(vgaCRIndex, 0x3b);
    outb(vgaCRReg, (new->CRTC[0] + new->CRTC[4] + 1) / 2);
    outb(vgaCRIndex, 0x3c);
    outb(vgaCRReg, new->CRTC[0]/2);	/* Interlace mode frame offset */
 
+   /* x64: CR40 changed a lot for 864/964; wait and see if this still works */
    outb(vgaCRIndex, 0x40);
    if (S3_911_SERIES (s3ChipId)) {
       i = (inb(vgaCRReg) & 0xf2);
@@ -989,6 +1000,8 @@ s3Init(mode)
 	    tmp = 0xff;
 	 }
       }
+      if (S3_x64_SERIES(s3ChipId)) 
+	tmp = 0x07;  /* x64: power on default for 864/964 */
       outb(vgaCRIndex, 0x60);
       outb(vgaCRReg, tmp);
 
@@ -1223,6 +1236,7 @@ s3Init(mode)
    new->s3reg[0x0C] = new->std.CRTC[0] / 2;
 
    /* XXXX Should really save these values during the Probe() */
+   /* x64: CR40 changed a lot for 864/964; wait and see if this still works */
    outb(vgaCRIndex, 0x40);
    if (S3_911_SERIES (s3ChipId)) {
       s3Port40 = (inb(vgaCRReg) & 0xF2) | 0x09;

@@ -1,5 +1,5 @@
 /* $XConsortium: regs3.h,v 1.1 94/03/28 21:13:30 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.0 1994/04/29 14:07:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.1 1994/05/14 06:52:27 dawes Exp $ */
 /*
  * regs3.h
  * 
@@ -319,9 +319,14 @@ LUTENTRY;
 /* Wait until "v" queue entries are free */
 #define	WaitQueue(v)	{ while (inb(GP_STAT) & (0x0100 >> (v))); }
 
+/* x64: Wait until "v" queue entries are free, v>8 for 864/964 */
+#define	WaitQueue16(v)	{ while (inb(GP_STAT) & (0x8000 >> (v-9))); }
+
 /* Wait until GP is idle and queue is empty */
+/* x64: bits 15-11 are reserved in 928 and should be zero,
+        for 864/964 these are FIFO-STATUS bits 9-13 */
 #define	WaitIdleEmpty() \
-   { while (inw(GP_STAT) & (GPBUSY | 1)); }
+   { while (inw(GP_STAT) & (GPBUSY | 1 | 0xF800)); }
 
 /* Wait until GP is idle */
 #define WaitIdle() { while (inw(GP_STAT) & GPBUSY) ; }

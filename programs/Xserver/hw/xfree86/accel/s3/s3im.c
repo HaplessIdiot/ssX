@@ -1,4 +1,5 @@
 /* $XConsortium: s3im.c,v 1.1 94/03/28 21:15:39 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -747,8 +748,14 @@ s3ImageReadNoMem (x, y, w, h, psrc, pwidth, px, py, planemask)
 	  PCDATA);
 
    WaitQueue (8);
+
  /* wait for data to be ready */
-   while ((inw (GP_STAT) & 0x100) == 0) ;
+   if (!S3_x64_SERIES(s3ChipId)) {
+     while ((inw (GP_STAT) & 0x100) == 0) ;
+   }
+   else {
+     /* x64: GP_STAT bit 8 is reserved for 864/964 */
+   }
 
    w += px;
    psrc += pwidth * py;
