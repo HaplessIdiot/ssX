@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.1.2.6 1998/06/22 13:53:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.2 1998/07/25 16:57:12 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -207,6 +207,7 @@ OptionListDup (XF86OptionPtr opt)
 	while (opt)
 	{
 		newopt = addNewOption(newopt, opt->opt_name, opt->opt_val);
+		newopt->opt_used = opt->opt_used;
 		opt = opt->list.next;
 	}
 	return newopt;

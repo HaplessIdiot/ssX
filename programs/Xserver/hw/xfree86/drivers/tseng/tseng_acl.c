@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.17 1998/07/25 16:56:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.18 1998/08/13 14:45:59 dawes Exp $ */
 
 
 
@@ -218,7 +218,7 @@ tseng_init_acl(ScreenPtr pScreen)
     TsengPtr pTseng = TsengPTR(pScrn);
     long scratchMemBase;
 
-    ErrorF("	tseng_init_acl\n");
+    PDEBUG("	tseng_init_acl\n");
     /*
      * prepare some shortcuts for faster access to memory mapped registers
      */

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.32 1998/08/13 14:46:03 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.33 1998/08/14 13:35:49 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -87,7 +87,7 @@ static ModeStatus TsengValidMode(int scrnIndex, DisplayModePtr mode,
 /* If driver-specific config file entries are needed, this must be defined */
 /*static Bool   TsengParseConfig(ParseInfoPtr raw); */
 
-/* Internally used functions */
+/* Internally used functions (some are defined in tseng.h) */
 static Bool TsengMapMem(ScrnInfoPtr pScrn);
 static Bool TsengUnmapMem(ScrnInfoPtr pScrn);
 static void TsengSave(ScrnInfoPtr pScrn);
@@ -164,6 +164,7 @@ typedef enum {
     OPTION_FAST_DRAM,
     OPTION_W32_INTERLEAVE,
     OPTION_NOACCEL,
+    OPTION_NOCLOCKCHIP,
     OPTION_LINEAR,
     OPTION_SHOWCACHE,
     OPTION_LEGEND,
@@ -191,6 +192,8 @@ static OptionInfoRec TsengOptions[] =
     {OPTION_W32_INTERLEAVE, "w32_interleave", OPTV_TRI,
 	{0}, FALSE},
     {OPTION_NOACCEL, "NoAccel", OPTV_BOOLEAN,
+	{0}, FALSE},
+    {OPTION_NOCLOCKCHIP, "NoClockchip", OPTV_BOOLEAN,
 	{0}, FALSE},
     {OPTION_LINEAR, "Linear", OPTV_TRI,
 	{0}, FALSE},
@@ -267,7 +270,7 @@ tsengSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 static Bool
 TsengGetRec(ScrnInfoPtr pScrn)
 {
-    ErrorF("	TsengGetRec\n");
+    PDEBUG("	TsengGetRec\n");
     /*
      * Allocate an TsengRec, and hook it into pScrn->driverPrivate.
      * pScrn->driverPrivate is initialised to NULL, so we can check if
@@ -285,7 +288,7 @@ TsengGetRec(ScrnInfoPtr pScrn)
 static void
 TsengFreeRec(ScrnInfoPtr pScrn)
 {
-    ErrorF("	TsengFreeRec\n");
+    PDEBUG("	TsengFreeRec\n");
     if (pScrn->driverPrivate == NULL)
 	return;
     xfree(pScrn->driverPrivate);
@@ -330,7 +333,7 @@ TsengPCI2Type(ScrnInfoPtr pScrn, int ChipID)
 static void
 TsengIdentify(int flags)
 {
-    ErrorF("	TsengIdentify\n");
+    PDEBUG("	TsengIdentify\n");
     xf86PrintChipsets(TSENG_NAME, "driver for Tseng Labs chipsets",
 	TsengChipsets);
 }
@@ -359,7 +362,7 @@ TsengUnlock(void)
     unsigned char temp;
     int iobase = VGAHW_GET_IOBASE();
 
-    ErrorF("	TsengUnlock\n");
+    PDEBUG("	TsengUnlock\n");
     outb(0x3BF, 0x03);
     outb(iobase + 8, 0xA0);
     outb(iobase + 4, 0x11);
@@ -374,7 +377,7 @@ TsengLock(void)
     unsigned char temp;
     int iobase = VGAHW_GET_IOBASE();
 
-    ErrorF("	TsengLock\n");
+    PDEBUG("	TsengLock\n");
     outb(iobase + 4, 0x11);
     temp = inb(iobase + 5);
     outb(iobase + 5, temp | 0x80);
@@ -395,7 +398,7 @@ ET4000MinimalProbe(void)
     unsigned char temp, origVal, newVal;
     int iobase;
 
-    ErrorF("	ET4000MinimalProbe\n");
+    PDEBUG("	ET4000MinimalProbe\n");
     /*
      * Note, the vgaHW module cannot be used here, but there are
      * some macros in vgaHW.h that can be used.
@@ -440,7 +443,7 @@ TsengProbe(DriverPtr drv, int flags)
     int numUsed;
     Bool foundScreen = FALSE;
 
-    ErrorF("	TsengProbe\n");
+    PDEBUG("	TsengProbe\n");
     /*
      * The aim here is to find all cards that this driver can handle,
      * and for the ones not already claimed by another driver, claim the
@@ -567,7 +570,7 @@ TsengPreInitPCI(ScrnInfoPtr pScrn)
     MessageType from;
     TsengPtr pTseng = TsengPTR(pScrn);
 
-    ErrorF("	TsengPreInitPCI\n");
+    PDEBUG("	TsengPreInitPCI\n");
     /*
      * * Set the ChipType and ChipRev, allowing config file entries to
      * * override.
@@ -608,7 +611,7 @@ TsengPreInitPCI(ScrnInfoPtr pScrn)
 	} else {
 	    /*
 	     * on W32p cards, the PCI ChipRev field is always 0 (it is not
-	     * implmemented).  We will use the ChipRev field to distinguish
+	     * implemented).  We will use the ChipRev field to distinguish
 	     * between revisions A through D, so we set it up with the
 	     * standard register-probing "Detailed Probe" instead.
 	     */
@@ -678,7 +681,7 @@ ET4000DetailedProbe(t_tseng_type * chiptype, t_w32_revid * rev)
 {
     unsigned char temp, origVal, newVal;
 
-    ErrorF("	ET4000DetailedProbe\n");
+    PDEBUG("	ET4000DetailedProbe\n");
 
     /*
      * We know it's an ET4000, now check for an ET4000/W32.
@@ -751,7 +754,7 @@ TsengFindNonPciBusType(ScrnInfoPtr pScrn)
     unsigned char bus;
     TsengPtr pTseng = TsengPTR(pScrn);
 
-    ErrorF("	TsengFindNonPciBusType\n");
+    PDEBUG("	TsengFindNonPciBusType\n");
     pTseng->Bustype = BUS_ISA;
     pTseng->Linmem_1meg = FALSE;
     pTseng->LinFbAddressMask = 0;
@@ -844,7 +847,7 @@ TsengPreInitNoPCI(ScrnInfoPtr pScrn)
     t_w32_revid rev = TSENGNOREV;
     TsengPtr pTseng = TsengPTR(pScrn);
 
-    ErrorF("	TsengPreInitNoPCI\n");
+    PDEBUG("	TsengPreInitNoPCI\n");
     /*
      * Set the ChipType and ChipRev, allowing config file entries to
      * override.
@@ -915,7 +918,7 @@ et6000_check_videoram(ScrnInfoPtr pScrn, int ram)
     Bool fooled = FALSE;
     int save_vidmem;
 
-    ErrorF("	et6000_check_videoram(%d)\n", ram);
+    PDEBUG("	et6000_check_videoram\n");
     if (ram > 4096) {
 	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 	    "Detected more than 4096 kb of video RAM. Clipped to 4096kb\n");
@@ -1104,7 +1107,7 @@ TsengDetectMem(ScrnInfoPtr pScrn)
     int ram = 0;
     TsengPtr pTseng = TsengPTR(pScrn);
 
-    ErrorF("	TsengDetectMem\n");
+    PDEBUG("	TsengDetectMem\n");
     if (Is_ET6K) {
 	ramtype = inb(0x3C2) & 0x03;
 	switch (ramtype) {
@@ -1168,7 +1171,7 @@ TsengProcessHibit(ScrnInfoPtr pScrn)
     int iobase;
     TsengPtr pTseng = TsengPTR(pScrn);
 
-    ErrorF("	TsengProcessHibit\n");
+    PDEBUG("	TsengProcessHibit\n");
     if (xf86IsOptionSet(TsengOptions, OPTION_HIBIT_HIGH)) {
 	if (xf86IsOptionSet(TsengOptions, OPTION_HIBIT_LOW)) {
 	    xf86Msg(X_ERROR, "\nOptions \"hibit_high\" and \"hibit_low\" are incompatible;\n");
@@ -1205,6 +1208,7 @@ TsengProcessOptions(ScrnInfoPtr pScrn)
     MessageType from;
     TsengPtr pTseng = TsengPTR(pScrn);
 
+    PDEBUG("	TsengProcessOptions\n");
     /* Collect all of the relevant option flags (fill in pScrn->options) */
     xf86CollectOptions(pScrn, NULL);
 
@@ -1296,6 +1300,18 @@ TsengProcessOptions(ScrnInfoPtr pScrn)
 	pTseng->Legend = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using Legend pixel clock selection.\n");
     }
+    pTseng->NoClockchip = FALSE;
+    if (xf86IsOptionSet(TsengOptions, OPTION_NOCLOCKCHIP)) {
+	pTseng->NoClockchip = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Disabling clockchip programming.\n");
+    }
+    /*
+     * Check_Tseng_ramdac() already set pScrn->progClock according to probed
+     * values. Override it if requested.
+     */
+    if (pTseng->NoClockchip)
+	pScrn->progClock = FALSE;
+
     pTseng->UsePCIRetry = FALSE;
     if (xf86IsOptionSet(TsengOptions, OPTION_PCI_RETRY)) {
 	pTseng->UsePCIRetry = TRUE;
@@ -1310,7 +1326,7 @@ TsengGetLinFbAddress(ScrnInfoPtr pScrn)
     MessageType from;
     TsengPtr pTseng = TsengPTR(pScrn);
 
-    ErrorF("	TsengGetLinFbAddress\n");
+    PDEBUG("	TsengGetLinFbAddress\n");
 
     from = X_PROBED;
 
@@ -1422,12 +1438,11 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
 {
     TsengPtr pTseng;
     MessageType from;
-    ClockRangePtr clockRanges;
     pciVideoPtr *pciList = NULL;
     int i;
     char *mod = NULL;
 
-    ErrorF("	TsengPreInit\n");
+    PDEBUG("	TsengPreInit\n");
     /*
      * Note: This function is only called once at server startup, and
      * not at the start of each server generation.  This means that
@@ -1496,10 +1511,10 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     /*
-     * Find RAMDAC type and fill Tsengdac struct
+     * Find RAMDAC and CLOCKCHIP type and fill Tsengdac struct
      */
-    Check_Tseng_Ramdac(pScrn);
-    tseng_init_clockscale(pTseng);
+    if (!Check_Tseng_Ramdac(pScrn))
+	return FALSE;
 
     /* check for clockchip */
     if (!Tseng_check_clockchip(pScrn)) {
@@ -1627,9 +1642,6 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
      * here. But None of the Tseng devices does.
      */
 
-    /* We use a programmable clock */
-    pScrn->progClock = TRUE;	       /* FIXME */
-
     /* Set the bits per RGB for 8bpp mode */
     if (pScrn->depth == 8) {
 	/* Default to 6, because most Tseng chips/RAMDACs don't support it */
@@ -1664,42 +1676,11 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte.\n",
 	pScrn->videoRam);
 
-    /* set and report min and max pixel clocks */
-    tseng_set_dacspeed(pScrn);
-
-    /*
-     * Setup the ClockRanges, which describe what clock ranges are available,
-     * and what sort of modes they can be used for.
-     */
-    clockRanges = (ClockRangePtr) xnfalloc(sizeof(ClockRange));
-    clockRanges->next = NULL;
-    clockRanges->minClock = pTseng->MinClock;
-    clockRanges->maxClock = pTseng->MaxClock;
-    clockRanges->clockIndex = -1;      /* programmable */
-    clockRanges->interlaceAllowed = TRUE;
-    clockRanges->doubleScanAllowed = TRUE;
-
-    pTseng->MClkInfo.Set = FALSE;
-    /* Only set MemClk if appropriate for the ramdac */
-    if (pTseng->MClkInfo.Programmable) {
-	from = X_PROBED;
-	if (pScrn->device->MemClk > 0) {
-	    if ((pScrn->device->MemClk < pTseng->MClkInfo.min)
-		|| (pScrn->device->MemClk > pTseng->MClkInfo.max)) {
-		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		    "MCLK %d MHz out of range (=%d..%d); not changed!\n",
-		    pScrn->device->MemClk / 1000,
-		    pTseng->MClkInfo.min / 1000,
-		    pTseng->MClkInfo.max / 1000);
-	    } else {
-		pTseng->MClkInfo.MemClk = pScrn->device->MemClk;
-		pTseng->MClkInfo.Set = TRUE;
-		from = X_CONFIG;
-	    }
-	}
-	xf86DrvMsg(pScrn->scrnIndex, from, "MCLK used is %d MHz\n",
-	    pTseng->MClkInfo.MemClk / 1000);
-    }
+    /* do all clock-related setup */
+    pTseng->clockRange[0] = (ClockRangePtr) xnfalloc(sizeof(ClockRange));
+    pTseng->clockRange[1] = (ClockRangePtr) xnfalloc(sizeof(ClockRange));
+    tseng_clock_setup(pScrn);
+    
     /*
      * xf86ValidateModes will check that the mode HTotal and VTotal values
      * don't exceed the chipset's limit if pScrn->maxHValue and
@@ -1709,8 +1690,8 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Select valid modes from those available */
     i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
-	pScrn->display->modes, clockRanges,
-	NULL, 32, pScrn->maxHValue, 8, /* H limits */
+	pScrn->display->modes, pTseng->clockRange[0],
+	NULL, 32, pScrn->maxHValue, 8*pTseng->Bytesperpixel, /* H limits */
 	0, pScrn->maxVValue,	       /* V limits */
 	pScrn->display->virtualX,
 	pScrn->display->virtualY,
@@ -1737,7 +1718,7 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
      * driver and if the driver doesn't provide code to set them.  They
      * are not pre-initialised at all.
      */
-    xf86SetCrtcForModes(pScrn, INTERLACE_HALVE_V);
+    xf86SetCrtcForModes(pScrn, 0);
 
     /* Set the current mode to the first in the list */
     pScrn->currentMode = pScrn->modes;
@@ -1794,7 +1775,7 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     int savedDefaultVisualClass;
     int offscreen_videoram, videoram_end, req_videoram;
 
-    ErrorF("	TsengScreenInit\n");
+    PDEBUG("	TsengScreenInit\n");
 
     /* 
      * First get the ScrnInfoRec
@@ -2083,7 +2064,6 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     case 4:
 	if (!xf4bppCreateDefColormap(pScreen))
 	    return FALSE;
-ErrorF("HERE!\n");
 	break;
     default:
 	if (!cfbCreateDefColormap(pScreen))
@@ -2121,7 +2101,7 @@ TsengEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
 
-    ErrorF("	TsengEnterVT\n");
+    PDEBUG("	TsengEnterVT\n");
 
     vgaHWUnlock(VGAHWPTR(pScrn));
     TsengUnlock();
@@ -2147,7 +2127,7 @@ TsengLeaveVT(int scrnIndex, int flags)
 #endif
 #endif
 
-    ErrorF("	TsengLeaveVT\n");
+    PDEBUG("	TsengLeaveVT\n");
     TsengRestore(pScrn, &(VGAHWPTR(pScrn)->SavedReg), &pTseng->SavedReg);
 
     TsengLock();
@@ -2160,7 +2140,7 @@ TsengCloseScreen(int scrnIndex, ScreenPtr pScreen)
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     TsengPtr pTseng = TsengPTR(pScrn);
 
-    ErrorF("	TsengCloseScreen\n");
+    PDEBUG("	TsengCloseScreen\n");
 
     TsengRestore(pScrn, &(VGAHWPTR(pScrn)->SavedReg), &(pTseng->SavedReg));
     TsengUnmapMem(pScrn);
@@ -2199,9 +2179,8 @@ TsengSaveScreen(ScreenPtr pScreen, Bool unblank)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     TsengPtr pTseng = TsengPTR(pScrn);
-    unsigned char scrn;
 
-    ErrorF("	TsengSaveScreen (unblank=%s)\n", unblank ? "TRUE" : "FALSE");
+    PDEBUG("	TsengSaveScreen\n");
 
     if (Is_ET6K || !pTseng->UseLinMem) {
 	return vgaHWSaveScreen(pScreen, unblank);
@@ -2210,19 +2189,7 @@ TsengSaveScreen(ScreenPtr pScreen, Bool unblank)
 	  SetTimeSinceLastInputEvent();
 
        if (pScrn->vtSema) {
-	   /* replacement of vgaHWBlankScreen(pScrn, unblank) without seq reset */
-	    outb(0x3C4,1);
-	    scrn = inb(0x3C5);
-
-	    if(unblank) {
-	      scrn &= 0xDF;			/* enable screen */
-	    }else {
-	      scrn |= 0x20;			/* blank screen */
-	    }
-
-    /*        vgaHWSeqReset(hwp, TRUE);*/
-	    outw(0x3C4, (scrn << 8) | 0x01); /* change mode */
-    /*        vgaHWSeqReset(hwp, FALSE);*/
+           TsengBlankScreen(pScrn, unblank);
        }
        return (TRUE);
     }
@@ -2233,7 +2200,7 @@ TsengMapMem(ScrnInfoPtr pScrn)
 {
     TsengPtr pTseng = TsengPTR(pScrn);
 
-    ErrorF("	TsengMapMem\n");
+    PDEBUG("	TsengMapMem\n");
 
     /* Map the VGA memory */
 
@@ -2260,7 +2227,7 @@ TsengUnmapMem(ScrnInfoPtr pScrn)
 {
     TsengPtr pTseng = TsengPTR(pScrn);
 
-    ErrorF("	TsengUnmapMem\n");
+    PDEBUG("	TsengUnmapMem\n");
 
     if (pTseng->UseLinMem) {
 	xf86UnMapVidMem(pScrn->scrnIndex, (pointer) pTseng->FbBase, pScrn->videoRam);
@@ -2275,74 +2242,9 @@ TsengUnmapMem(ScrnInfoPtr pScrn)
 static void
 TsengFreeScreen(int scrnIndex, int flags)
 {
-    ErrorF("	TsengFreeScreen\n");
+    PDEBUG("	TsengFreeScreen\n");
     vgaHWFreeHWRec(xf86Screens[scrnIndex]);
     TsengFreeRec(xf86Screens[scrnIndex]);
-}
-
-#define BASE_FREQ         14.31818     /* MHz */
-static void
-commonCalcClock(long freq, int min_m, int min_n1, int max_n1, int min_n2, int max_n2,
-    long freq_min, long freq_max,
-    unsigned char *mdiv, unsigned char *ndiv)
-{
-    double ffreq, ffreq_min, ffreq_max;
-    double div, diff, best_diff;
-    unsigned int m;
-    unsigned char n1, n2;
-    unsigned char best_n1 = 16 + 2, best_n2 = 2, best_m = 125 + 2;
-
-    ErrorF("	commonCalcClock %d kHz\n", freq);
-    ffreq = freq / 1000.0 / BASE_FREQ;
-    ffreq_min = freq_min / 1000.0 / BASE_FREQ;
-    ffreq_max = freq_max / 1000.0 / BASE_FREQ;
-
-    if (ffreq < ffreq_min / (1 << max_n2)) {
-	ErrorF("invalid frequency %1.3f MHz  [freq >= %1.3f MHz]\n",
-	    ffreq * BASE_FREQ, ffreq_min * BASE_FREQ / (1 << max_n2));
-	ffreq = ffreq_min / (1 << max_n2);
-    }
-    if (ffreq > ffreq_max / (1 << min_n2)) {
-	ErrorF("invalid frequency %1.3f MHz  [freq <= %1.3f MHz]\n",
-	    ffreq * BASE_FREQ, ffreq_max * BASE_FREQ / (1 << min_n2));
-	ffreq = ffreq_max / (1 << min_n2);
-    }
-    /* work out suitable timings */
-
-    best_diff = ffreq;
-
-    for (n2 = min_n2; n2 <= max_n2; n2++) {
-	for (n1 = min_n1 + 2; n1 <= max_n1 + 2; n1++) {
-	    m = (int)(ffreq * n1 * (1 << n2) + 0.5);
-	    if (m < min_m + 2 || m > 127 + 2)
-		continue;
-	    div = (double)(m) / (double)(n1);
-	    if ((div >= ffreq_min) &&
-		(div <= ffreq_max)) {
-		diff = ffreq - div / (1 << n2);
-		if (diff < 0.0)
-		    diff = -diff;
-		if (diff < best_diff) {
-		    best_diff = diff;
-		    best_m = m;
-		    best_n1 = n1;
-		    best_n2 = n2;
-		}
-	    }
-	}
-    }
-
-#if EXTENDED_DEBUG
-    ErrorF("Clock parameters for %1.6f MHz: m=%d, n1=%d, n2=%d\n",
-	((double)(best_m) / (double)(best_n1) / (1 << best_n2)) * BASE_FREQ,
-	best_m - 2, best_n1 - 2, best_n2);
-#endif
-
-    if (max_n1 == 63)
-	*ndiv = (best_n1 - 2) | (best_n2 << 6);
-    else
-	*ndiv = (best_n1 - 2) | (best_n2 << 5);
-    *mdiv = best_m - 2;
 }
 
 static Bool
@@ -2357,26 +2259,18 @@ TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     int min_n2;
     int hdiv = 1, hmul = 1;
 
-    ErrorF("	TsengModeInit\n");
+    PDEBUG("	TsengModeInit\n");
 
-    /*
-     * Calculate the data transport clock (transport from vga core to
-     * RAMDAC). This will be the clock that actually needs to be programmed
-     * or selected. We store that clock in the "SynthClock" field. This
-     * allows all the other code to check the "original" mode->Clock field
-     * for the real pixel clock (e.g.  to check clock limits etc), while the
-     * register setup code can use SynthClock for the actual programming.
-     */
-    mode->SynthClock =
-	(mode->Clock * pTseng->DacInfo.ClockMulFactor) / pTseng->DacInfo.ClockDivFactor;
-
-    if (mode->Flags & V_PIXMUX) {
-	hdiv *= 2;
-	mode->SynthClock /= 2;
+    switch (mode->PrivFlags) {
+	case TSENG_MODE_PIXMUX:
+	case TSENG_MODE_DACBUS16:
+	    hdiv = pTseng->clockRange[1]->ClockDivFactor;
+	    hmul = pTseng->clockRange[1]->ClockMulFactor;
+	    break;
+	default:
+	    hdiv = pTseng->clockRange[0]->ClockDivFactor;
+	    hmul = pTseng->clockRange[0]->ClockMulFactor;
     }
-
-    hmul *= pTseng->DacInfo.ClockMulFactor;
-    hdiv *= pTseng->DacInfo.ClockDivFactor;
 
     /*
      * Modify mode timings accordingly
@@ -2407,6 +2301,10 @@ TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	}
 	mode->CrtcHAdjusted = TRUE;
     }
+    
+    /* set clockIndex to "2" for programmable clocks */
+    if (pScrn->progClock)
+	mode->ClockIndex = 2;
 
     /* prepare standard VGA register contents */
     hwp = VGAHWPTR(pScrn);
@@ -2463,7 +2361,7 @@ TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	     */
 	    /* Tcsw, Tcsp, Trsp */
 	    new->ExtCRTC[0x32] &= ~0x1F;
-	    if (initial->ExtCRTC[0x32] & 0x18)
+	    if (new->ExtCRTC[0x32] & 0x18)
 		new->ExtCRTC[0x32] |= 0x08;
 	    /* Trcd */
 	    new->ExtCRTC[0x32] &= ~0x20;
@@ -2481,7 +2379,7 @@ TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
      */
     if (Is_W32i || Is_W32p) {
 	if (!pTseng->SlowDram)
-	    new->ExtCRTC[0x34] = (initial->ExtCRTC[0x34] & 0x7F) | 0x80;
+	    new->ExtCRTC[0x34] = (new->ExtCRTC[0x34] & 0x7F) | 0x80;
 	if ((mode->Clock * pTseng->Bytesperpixel) > 80000)
 	    new->ExtCRTC[0x37] = (new->ExtCRTC[0x37] & 0x7f) | 0x80;
 	/*
@@ -2496,8 +2394,7 @@ TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     }
     if (Is_W32p) {
 	/*
-	 * next, we check the PCI Burst option and turn that on or off
-	 * which is done with bit 4 in CR34
+	 * CR34 bit 4 controls the PCI Burst option
 	 */
 	if (pTseng->SetPCIBurst) {
 	    if (pTseng->PCIBurst)
@@ -2514,94 +2411,60 @@ TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
      */
 
     if (STG170x_programmable_clock || Gendac_programmable_clock) {
-	/* for pixmux: must use post-div of 4 on ICS GenDAC clock generator!
-	 */
-
-	if (mode->Flags & V_PIXMUX)
+	if (mode->PrivFlags == TSENG_MODE_PIXMUX)
+	    /* pixmux requires a post-div of 4 on ICS GenDAC clock generator */
 	    min_n2 = 2;
 	else
 	    min_n2 = 0;
-	commonCalcClock(mode->SynthClock, 1, 1, 31, min_n2, 3,
+	TsengcommonCalcClock(mode->SynthClock, 1, 1, 31, min_n2, 3,
 	    100000, pTseng->MaxClock * 2 + 1,
 	    &(new->pll.f2_M), &(new->pll.f2_N));
 
 	new->pll.w_idx = 0;
 	new->pll.r_idx = 0;
 
-	/* the programmed clock will be on clock index 2 */
-	/* disable MCLK/2 and MCLK/4 */
-	new->ExtTS[7] = (new->ExtTS[7] & 0xBE);
-	/* clear CS2: we need clock #2 */
-	new->ExtCRTC[0x34] = (new->ExtCRTC[0x34] & 0xFD);
-	hwp->ModeReg.MiscOutReg = (hwp->ModeReg.MiscOutReg & 0xF3) | 0x08;
-	mode->ClockIndex = 2;
-
 	/* memory clock */
 	if (Gendac_programmable_clock && pTseng->MClkInfo.Set) {
-	    commonCalcClock(pTseng->MClkInfo.MemClk, 1, 1, 31, 1, 3, 100000, pTseng->MaxClock * 2 + 1,
+	    TsengcommonCalcClock(pTseng->MClkInfo.MemClk, 1, 1, 31, 1, 3, 100000, pTseng->MaxClock * 2 + 1,
 		&(new->pll.MClkM), &(new->pll.MClkN));
 	}
     } else if (ICD2061a_programmable_clock) {
-#if 0
-	/* the programmed clock will be on clock index 2 */
-	/* disable MCLK/2 and MCLK/4 */
-	new->ExtTS[7] = (new->ExtTS[7] & 0xBE);
-	/* clear CS2: we need clock #2 */
-	new->ExtCRTC[0x34] = (new->ExtCRTC[0x34] & 0xFD);
-	hwp->ModeReg.MiscOutReg = (hwp->ModeReg.MiscOutReg & 0xF3) | 0x08;
-	mode->ClockIndex = 2;
+#ifdef TODO
 	/* FIXME: icd2061_dwv not used anywhere ... */
-	pTseng->icd2061_dwv = AltICD2061CalcClock(mode->Clock * 1000);
-	/* Tseng_ICD2061AClockSelect(mode->Clock); */
+	pTseng->icd2061_dwv = AltICD2061CalcClock(mode->SynthClock * 1000);
+	/* Tseng_ICD2061AClockSelect(mode->SynthClock); */
 #endif
     } else if (CH8398_programmable_clock) {
-#if 0
-	/* Let's call common_hw/Ch8391clk.c ! */
-	if (mode->Flags & V_PIXMUX)
-	    Chrontel8391CalcClock(mode->Clock / 2, &temp1, &temp2, &temp3);
-	else
-	    Chrontel8391CalcClock(mode->Clock, &temp1, &temp2, &temp3);
+#ifdef TODO
+	Chrontel8391CalcClock(mode->SynthClock, &temp1, &temp2, &temp3);
 	new->pll.f2_N = (unsigned char)(temp2);
 	new->pll.f2_M = (unsigned char)(temp1 | (temp3 << 6));
-	if (xf86GetVerbosity())
-	    ErrorF("CH8398 or CH8398A PLL set to %fMhz\n",
-		14.31818 * (temp2 + 8.0) / (temp1 + 2.0) / (1 << temp3));
 	/* ok LSB=f2_N and MSB=f2_M            */
 	/* now set the Clock Select Register(CSR)      */
 	new->pll.ctrl = (new->pll.ctrl | 0x90) & 0xF0;
 	new->pll.timingctrl &= 0x1F;
 	new->pll.r_idx = 0;
 	new->pll.w_idx = 0;
-	mode->ClockIndex = 2;
-	new->ExtCRTC[0x31] &= 0x3F;
-	/* clear CS2: we need clock #2 */
-	new->ExtCRTC[0x34] = (new->ExtCRTC[0x34] & 0xFD);
-	hwp->ModeReg.MiscOutReg = (hwp->ModeReg.MiscOutReg & 0xF3) | 0x08;
-	/* disable MCLK/2 and MCLK/4, they don't seem to work in 24bpp 
-	 * anyway */
-	new->ExtTS[7] = (new->ExtTS[7] & 0xBE);
 #endif
     } else if (Is_ET6K) {
 	/* setting min_n2 to "1" will ensure a more stable clock ("0" is allowed though) */
-	commonCalcClock(mode->SynthClock, 1, 1, 31, 1, 3, 100000,
+	TsengcommonCalcClock(mode->SynthClock, 1, 1, 31, 1, 3, 100000,
 	    pTseng->MaxClock * 2,
 	    &(new->pll.f2_M), &(new->pll.f2_N));
-
-	/* ErrorF("M=0x%x ; N=0x%x\n",new->pll.f2_M, new->pll.f2_N); */
 	/* above 130MB/sec, we enable the "LOW FIFO threshold" */
 	if (mode->Clock * pTseng->Bytesperpixel > 130000) {
-	    new->ExtET6K[0x41] = initial->ExtET6K[0x41] | 0x10;
+	    new->ExtET6K[0x41] |= 0x10;
 	    if (Is_ET6100)
-		new->ExtET6K[0x46] = initial->ExtET6K[0x46] | 0x04;
+		new->ExtET6K[0x46] |= 0x04;
 	} else {
-	    new->ExtET6K[0x41] = initial->ExtET6K[0x41] & ~0x10;
+	    new->ExtET6K[0x41] &= ~0x10;
 	    if (Is_ET6100)
-		new->ExtET6K[0x46] = initial->ExtET6K[0x46] & ~0x04;
+		new->ExtET6K[0x46] &= ~0x04;
 	}
 
 	if (pTseng->MClkInfo.Set) {
 	    /* according to Tseng Labs, N1 must be <= 4, and N2 should always be 1 for MClk */
-	    commonCalcClock(pTseng->MClkInfo.MemClk, 1, 1, 4, 1, 1,
+	    TsengcommonCalcClock(pTseng->MClkInfo.MemClk, 1, 1, 4, 1, 1,
 		100000, pTseng->MaxClock * 2,
 		&(new->pll.MClkM), &(new->pll.MClkN));
 	}
@@ -2619,26 +2482,36 @@ TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	else if (pTseng->SlowDram)
 	    new->ExtET6K[0x44] = 0x35; /* Slow speed */
 	else
-	    new->ExtET6K[0x44] = initial->ExtET6K[0x44];	/* keep current value */
-
-	/* force clock #2 */
-	new->ExtCRTC[0x34] = (new->ExtCRTC[0x34] & 0xFD);
-	hwp->ModeReg.MiscOutReg = (hwp->ModeReg.MiscOutReg & 0xF3) | 0x08;
-	mode->ClockIndex = 2;
-    } else if (mode->ClockIndex >= 0) {
-	/* CS2 */
+	    ;		               /* keep current value */
+    }
+    /*
+     * Set the clock selection bits. Because of the odd mapping between
+     * Tseng clock select bits and what XFree86 does, "CSx" refers to a
+     * register bit with the same name in the Tseng data books.
+     *
+     * XFree86 uses the following mapping:
+     *
+     *  Tseng register bit name		XFree86 clock select bit
+     *	    CS0				    0
+     *      CS1				    1
+     *      CS2				    2
+     *      MCLK/2			    3
+     *      CS3				    4
+     *      CS4				    not used
+     */
+    if (mode->ClockIndex >= 0) {
+	/* CS0 and CS1 are set by standard VGA code (vgaHW) */
+	/* CS2 = CRTC 0x34 bit 1 */
 	new->ExtCRTC[0x34] = (new->ExtCRTC[0x34] & 0xFD) |
 	    ((mode->ClockIndex & 0x04) >> 1);
-#ifndef OLD_CLOCK_SCHEME
-	/* clock select bit 3 = divide-by-2 disable/enable */
-	new->ExtTS[7] = (pTseng->save_divide ^ ((mode->ClockIndex & 0x08) << 3)) |
-	    (new->ExtTS[7] & 0xBF);
-	/* clock select bit 4 = CS3 */
+	/* for programmable clocks: disable MCLK/2 and MCLK/4 independent of hibit */
+	new->ExtTS[7] = (new->ExtTS[7] & 0xBE);
+	if (!pScrn->progClock) {
+	    /* clock select bit 3 = MCLK/2 disable/enable */
+	    new->ExtTS[7] |= (pTseng->save_divide ^ ((mode->ClockIndex & 0x08) << 3));
+	}
+	/* clock select bit 4 = CS3 , clear CS4 */
 	new->ExtCRTC[0x31] = ((mode->ClockIndex & 0x10) << 2) | (new->ExtCRTC[0x31] & 0x3F);
-#else
-	new->ExtTS[7] = (pTseng->save_divide ^ ((mode->ClockIndex & 0x10) << 2)) |
-	    (new->ExtTS[7] & 0xBF);
-#endif
     }
     /*
      * linear mode handling
@@ -2650,7 +2523,6 @@ TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    new->ExtET6K[0x40] |= 0x09;
 	} else {
 	    new->ExtET6K[0x40] &= ~0x09;
-	    new->ExtET6K[0x13] = initial->ExtET6K[0x13];
 	}
     } else {			       /* et4000 style linear memory */
 	if (pTseng->UseLinMem) {
@@ -2713,7 +2585,7 @@ TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 static Bool
 TsengSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 {
-    ErrorF("	TsengSwitchMode\n");
+    PDEBUG("	TsengSwitchMode\n");
     return TsengModeInit(xf86Screens[scrnIndex], mode);
 }
 
@@ -2728,7 +2600,7 @@ TsengAdjustFrame(int scrnIndex, int x, int y, int flags)
     int iobase = VGAHWPTR(pScrn)->IOBase;
     int Base;
 
-    ErrorF("	TsengAdjustFrame\n");
+    PDEBUG("	TsengAdjustFrame\n");
 
     if (pTseng->ShowCache) {
 	if (y)
@@ -2765,32 +2637,19 @@ TsengValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     TsengPtr pTseng = TsengPTR(pScrn);
 
-    ErrorF("	TsengValidMode\n");
+    PDEBUG("	TsengValidMode\n");
 
+#ifdef FIXME
+  is this needed? xf86ValidMode gets HMAX and VMAX variables, so it could deal with this.
+  need to recheck hsize with mode->Htotal*mulFactor/divFactor
     /* Check for CRTC timing bits overflow. */
-    if (mode->HTotal > Tseng_HMAX) {
+    if (mode->HTotal * pTseng->Bytesperpixel > Tseng_HMAX) {
 	return MODE_BAD_HVALUE;
     }
     if (mode->VTotal > Tseng_VMAX) {
 	return MODE_BAD_VVALUE;
     }
-
-    /*
-     * Check for pixmux modes.
-     *
-     * 1bpp or 4bpp don't support pixmux.
-     */
-    if (pTseng->Bytesperpixel < 1)
-	return MODE_OK;
-
-    if ((pTseng->DacInfo.pixMuxPossible) &&
-	(mode->Clock > pTseng->DacInfo.nonMuxMaxClock)
-	) {
-	mode->Flags |= V_PIXMUX;
-	mode->Flags |= V_DBLCLK;
-	if (verbose)
-	    xf86Msg(X_PROBED, "Mode \"%s\" will use pixel multiplexing.\n", mode->name);
-    }
+#endif
 
     return MODE_OK;
 }
@@ -2809,7 +2668,7 @@ TsengSave(ScrnInfoPtr pScrn)
     TsengRegPtr tsengReg;
     int iobase = VGAHWPTR(pScrn)->IOBase;
 
-    ErrorF("	TsengSave\n");
+    PDEBUG("	TsengSave\n");
 
     vgaReg = &VGAHWPTR(pScrn)->SavedReg;
     tsengReg = &pTseng->SavedReg;
@@ -2826,10 +2685,15 @@ TsengSave(ScrnInfoPtr pScrn)
      */
     outb(iobase + 4, 0x34);
     temp = inb(iobase + 5);
-    if (Is_stdET4K || Is_W32_W32i || Is_W32p_ab) {
-	outb(iobase + 5, temp & 0x1F);
-    }
     tsengReg->ExtCRTC[0x34] = temp;
+    if (Is_stdET4K || Is_W32_W32i || Is_W32p_ab) {
+#ifdef OLD_CODE
+	outb(iobase + 5, temp & 0x1F);
+#else
+	/* data books say translation ROM is controlled by bits 4 and 5 */
+	outb(iobase + 5, temp & 0xCF);
+#endif
+    }
 
     saveseg1 = inb(0x3CD);
     outb(0x3CD, 0x00);		       /* segment select 1 */
@@ -2872,26 +2736,26 @@ TsengSave(ScrnInfoPtr pScrn)
 	outb(iobase + 5, temp | 0x40);
 
 	tsengReg->pll.cmd_reg = inb(0x3c6);	/* Enhanced command register */
+	tsengReg->pll.w_idx = inb(0x3c8);	/* PLL write index */
+	tsengReg->pll.r_idx = inb(0x3c7);	/* PLL read index */
 	if (Gendac_programmable_clock) {
-	    tsengReg->pll.w_idx = inb(0x3c8);	/* PLL write index */
-	    tsengReg->pll.r_idx = inb(0x3c7);	/* PLL read index */
 	    outb(0x3c7, 2);	       /* index to f2 reg */
 	    tsengReg->pll.f2_M = inb(0x3c9);	/* f2 PLL M divider */
 	    tsengReg->pll.f2_N = inb(0x3c9);	/* f2 PLL N1/N2 divider */
 	    outb(0x3c7, 10);	       /* index to Mclk reg */
-#if TODO
+#ifdef TODO
 	    tsengReg->MClkInfo.MClkM = inb(0x3c9);	/* MClk PLL M divider */
 	    tsengReg->MClkInfo.MClkN = inb(0x3c9);	/* MClk PLL N1/N2 divider */
 #endif
-	    outb(0x3c7, 0x0e);	       /* index to PLL control */
-	    tsengReg->pll.ctrl = inb(0x3c9);	/* PLL control */
 	}
+	outb(0x3c7, 0x0e);	       /* index to PLL control */
+	tsengReg->pll.ctrl = inb(0x3c9);	/* PLL control */
 	outb(iobase + 4, 0x31);
 	outb(iobase + 5, temp & ~0x40);
     }
     if ((pTseng->DacInfo.DacType == STG1702_DAC) || (pTseng->DacInfo.DacType == STG1703_DAC)
 	|| (pTseng->DacInfo.DacType == STG1700_DAC)) {
-#if 0
+#ifdef TODO
 	/* Save STG 1703 GenDAC Command and PLL registers 
 	 * unfortunately we reuse the gendac data structure, so the 
 	 * field names are not really good.
@@ -2907,36 +2771,36 @@ TsengSave(ScrnInfoPtr pScrn)
 	tsengReg->pll.timingctrl = STG1703getIndex(0x05);	/* pll timing control */
 #endif
     }
-    if (pTseng->DacInfo.DacType == CH8398_DAC) {
+    if (DAC_IS_CHRONTEL) {
 	tseng_dactopel();
 	tsengReg->pll.cmd_reg = tseng_getdaccomm();
-    }
-    if (CH8398_programmable_clock) {
-	inb(0x3c8);
-	inb(0x3c6);
-	inb(0x3c6);
-	inb(0x3c6);
-	inb(0x3c6);
-	inb(0x3c6);
-	tsengReg->pll.timingctrl = inb(0x3c6);
-	/* Save PLL */
-	outb(iobase + 4, 0x31);
-	temp = inb(iobase + 5);
-	outb(iobase + 5, temp | (1 << 6));	/* set RS2 through CS3 */
-	/* We are in ClockRAM mode 0x3c7 = CRA, 0x3c8 = CWA, 0x3c9 = CDR */
-	tsengReg->pll.r_idx = inb(0x3c7);
-	tsengReg->pll.w_idx = inb(0x3c8);
-	outb(0x3c7, 10);
-	tsengReg->pll.f2_N = inb(0x3c9);
-	tsengReg->pll.f2_M = inb(0x3c9);
-	outb(0x3c7, tsengReg->pll.r_idx);
-	inb(0x3c8);		       /* loop to Clock Select Register */
-	inb(0x3c8);
-	inb(0x3c8);
-	inb(0x3c8);
-	tsengReg->pll.ctrl = inb(0x3c8);
-	outb(iobase + 4, 0x31);
-	outb(iobase + 5, temp);
+	if (CH8398_programmable_clock) {
+	    inb(0x3c8);
+	    inb(0x3c6);
+	    inb(0x3c6);
+	    inb(0x3c6);
+	    inb(0x3c6);
+	    inb(0x3c6);
+	    tsengReg->pll.timingctrl = inb(0x3c6);
+	    /* Save PLL */
+	    outb(iobase + 4, 0x31);
+	    temp = inb(iobase + 5);
+	    outb(iobase + 5, temp | (1 << 6));	/* set RS2 through CS3 */
+	    /* We are in ClockRAM mode 0x3c7 = CRA, 0x3c8 = CWA, 0x3c9 = CDR */
+	    tsengReg->pll.r_idx = inb(0x3c7);
+	    tsengReg->pll.w_idx = inb(0x3c8);
+	    outb(0x3c7, 10);
+	    tsengReg->pll.f2_N = inb(0x3c9);
+	    tsengReg->pll.f2_M = inb(0x3c9);
+	    outb(0x3c7, tsengReg->pll.r_idx);
+	    inb(0x3c8);		       /* loop to Clock Select Register */
+	    inb(0x3c8);
+	    inb(0x3c8);
+	    inb(0x3c8);
+	    tsengReg->pll.ctrl = inb(0x3c8);
+	    outb(iobase + 4, 0x31);
+	    outb(iobase + 5, temp);
+	}
     }
     if (ET6000_programmable_clock) {
 	/* Save ET6000 CLKDAC PLL registers */
@@ -2983,12 +2847,12 @@ TsengRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TsengRegPtr tsengReg)
     unsigned char tmp;
     int iobase = VGAHWPTR(pScrn)->IOBase;
 
-    ErrorF("	TsengRestore\n");
+    PDEBUG("	TsengRestore\n");
 
     hwp = VGAHWPTR(pScrn);
     pTseng = TsengPTR(pScrn);
 
-    vgaHWProtect(pScrn, TRUE);
+    TsengProtect(pScrn, TRUE);
 
     outb(0x3CD, 0x00);		       /* segment select bits 0..3 */
     if (!Is_stdET4K)
@@ -3006,24 +2870,24 @@ TsengRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TsengRegPtr tsengReg)
 	    outb(0x3c8, 2);	       /* index to f2 reg */
 	    outb(0x3c9, tsengReg->pll.f2_M);	/* f2 PLL M divider */
 	    outb(0x3c9, tsengReg->pll.f2_N);	/* f2 PLL N1/N2 divider */
-
 #ifdef TODO
 	    if (pTseng->MClkInfo.Set) {
-		outb(0x3c7, 10);       /* index to Mclk reg */
+		outb(0x3c7, 10);                /* index to Mclk reg */
 		outb(0x3c9, tsengReg->MClkM);	/* MClk PLL M divider */
 		outb(0x3c9, tsengReg->MClkN);	/* MClk PLL N1/N2 divider */
 	    }
 #endif
-	    outb(0x3c8, 0x0e);	       /* index to PLL control */
-	    outb(0x3c9, tsengReg->pll.ctrl);	/* PLL control */
-	    outb(0x3c8, tsengReg->pll.w_idx);	/* PLL write index */
-	    outb(0x3c7, tsengReg->pll.r_idx);	/* PLL read index */
 	}
+	outb(0x3c8, 0x0e);                      /* index to PLL control */
+	outb(0x3c9, tsengReg->pll.ctrl);	/* PLL control */
+	outb(0x3c8, tsengReg->pll.w_idx);	/* PLL write index */
+	outb(0x3c7, tsengReg->pll.r_idx);	/* PLL read index */
+
 	outb(iobase + 4, 0x31);
 	outb(iobase + 5, tmp & ~0x40);
     }
     if (DAC_is_STG170x) {
-#if 0
+#ifdef TODO
 	/* Restore STG 170x GenDAC Command and PLL registers 
 	 * we share one data structure with the gendac code, so the names
 	 * are not too good.
@@ -3043,11 +2907,9 @@ TsengRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TsengRegPtr tsengReg)
 	tseng_setdaccomm(tsengReg->pll.cmd_reg);	/* write enh command reg */
 #endif
     }
-    if (pTseng->DacInfo.DacType == CH8398_DAC) {
+    if (DAC_IS_CHRONTEL) {
 	tseng_dactopel();
 	tseng_setdaccomm(tsengReg->pll.cmd_reg);
-    }
-    if (CH8398_programmable_clock) {
 	inb(0x3c8);
 	inb(0x3c6);
 	inb(0x3c6);
@@ -3055,25 +2917,26 @@ TsengRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TsengRegPtr tsengReg)
 	inb(0x3c6);
 	inb(0x3c6);
 	outb(0x3c6, tsengReg->pll.timingctrl);
-	outb(iobase + 4, 0x31);
-	tmp = inb(iobase + 5);
-	outb(iobase + 5, tmp | (1 << 6));		/* Set RS2 through CS3 */
-	/* We are in ClockRAM mode 0x3c7 = CRA, 0x3c8 = CWA, 0x3c9 = CDR */
-	outb(0x3c7, tsengReg->pll.r_idx);
-	outb(0x3c8, 10);
-	outb(0x3c9, tsengReg->pll.f2_N);
-	outb(0x3c9, tsengReg->pll.f2_M);
-	outb(0x3c8, tsengReg->pll.w_idx);
-	usleep(500);
-	inb(0x3c7);		       /* reset sequence */
-	inb(0x3c8);		       /* loop to Clock Select Register */
-	inb(0x3c8);
-	inb(0x3c8);
-	inb(0x3c8);
-	outb(0x3c8, tsengReg->pll.ctrl);
-	outb(iobase + 4, 0x31);
-	outb(iobase + 5, (tmp & 0x3F));
-	/* Make sure CS3 isn't set */
+	if (CH8398_programmable_clock) {
+	    outb(iobase + 4, 0x31);
+	    tmp = inb(iobase + 5);
+	    outb(iobase + 5, tmp | (1 << 6));		/* Set RS2 through CS3 */
+	    /* We are in ClockRAM mode 0x3c7 = CRA, 0x3c8 = CWA, 0x3c9 = CDR */
+	    outb(0x3c7, tsengReg->pll.r_idx);
+	    outb(0x3c8, 10);
+	    outb(0x3c9, tsengReg->pll.f2_N);
+	    outb(0x3c9, tsengReg->pll.f2_M);
+	    outb(0x3c8, tsengReg->pll.w_idx);
+	    usleep(500);
+	    inb(0x3c7);		       /* reset sequence */
+	    inb(0x3c8);		       /* loop to Clock Select Register */
+	    inb(0x3c8);
+	    inb(0x3c8);
+	    inb(0x3c8);
+	    outb(0x3c8, tsengReg->pll.ctrl);
+	    outb(iobase + 4, 0x31);
+	    outb(iobase + 5, (tmp & 0x3F));
+	}
     }
     if (ET6000_programmable_clock) {
 	/* Restore ET6000 CLKDAC PLL registers */
@@ -3123,10 +2986,7 @@ TsengRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TsengRegPtr tsengReg)
     outb(0x3C0, 0x36);
     outb(0x3C0, tsengReg->ExtATC);
     outw(iobase + 4, (tsengReg->ExtCRTC[0x33] << 8) | 0x33);
-#ifdef TODO
-    if (tsengReg->std.ClockIndex >= 0)
-	outw(iobase + 4, (tsengReg->ExtCRTC[0x34] << 8) | 0x34);
-#endif
+    outw(iobase + 4, (tsengReg->ExtCRTC[0x34] << 8) | 0x34);
     outw(iobase + 4, (tsengReg->ExtCRTC[0x35] << 8) | 0x35);
     if (Is_W32_any) {
 	outw(iobase + 4, (tsengReg->ExtCRTC[0x37] << 8) | 0x37);
@@ -3145,24 +3005,54 @@ TsengRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TsengRegPtr tsengReg)
      * should not be used for the "normal" case because the high order
      * bits are not set in ClockIndex when returning to text mode.
      */
-    if (OFLG_ISSET(OPTION_LEGEND, &vga256InfoRec.options))
-	if (tsengReg->std.ClockIndex >= 0) {
+    if (pTseng->Legend) {
+	if (tsengReg->ClockIndex >= 0) {
 	    vgaProtect(TRUE);
-	    (ClockSelect) (tsengReg->std.ClockIndex);
+	    (ClockSelect) (tsengReg->ClockIndex);
 	}
 #endif
 
-    vgaHWProtect(pScrn, FALSE);
+    TsengProtect(pScrn, FALSE);
 
     /* 
-     * We must change CRTC 0x36 only OUTSIDE the vgaHWProtect(pScrn,
-     * TRUE)/vgaHWProtect(pScrn, FALSE) pair, because the sequencer reset
+     * We must change CRTC 0x36 only OUTSIDE the TsengProtect(pScrn,
+     * TRUE)/TsengProtect(pScrn, FALSE) pair, because the sequencer reset
      * also resets the linear mode bits in CRTC 0x36.
      */
     if (Is_W32_any) {
 	outw(iobase + 4, (tsengReg->ExtCRTC[0x36] << 8) | 0x36);
     }
 }
+
+/* replacement of vgaHWBlankScreen(pScrn, unblank) without seq reset */
+void
+TsengBlankScreen(ScrnInfoPtr pScrn, Bool unblank)
+{
+    unsigned char scrn;
+    PDEBUG("	TsengBlankScreen\n");
+
+    outb(0x3C4,1);
+    scrn = inb(0x3C5);
+
+    if(unblank) {
+      scrn &= 0xDF;			/* enable screen */
+    }else {
+      scrn |= 0x20;			/* blank screen */
+    }
+
+/*    vgaHWSeqReset(hwp, TRUE);*/
+    outw(0x3C4, (scrn << 8) | 0x01); /* change mode */
+/*    vgaHWSeqReset(hwp, FALSE);*/
+}
+
+
+void
+TsengProtect(ScrnInfoPtr pScrn, Bool on)
+{
+    PDEBUG("	TsengProtect\n");
+    vgaHWProtect(pScrn, on);
+}
+
 
 /* 
  * The rest below is stuff from the old driver, which still needs to be
@@ -3257,83 +3147,9 @@ ET4000Probe()
 		XCONFIG_PROBED, vga256InfoRec.name);
 	    OFLG_SET(OPTION_SLOW_DRAM, &vga256InfoRec.options);
 	}
-	if (pScrn->progClock) {
-	    if (Gendac_programmable_clock) {
-		ClockSelect = Tseng_GenDACClockSelect;
-		numClocks = 3;
-	    } else if (STG170x_programmable_clock) {
-		ClockSelect = Tseng_STG1703ClockSelect;
-		numClocks = 3;
-	    } else if (ICD2061a_programmable_clock) {
-		ClockSelect = Tseng_ICD2061AClockSelect;
-		numClocks = 3;
-	    } else if (CH8398_programmable_clock) {
-		ClockSelect = Tseng_ET4000ClockSelect;
-		numClocks = 3;
-	    } else {
-		ErrorF("Unsuported programmable Clock chip.\n");
-		ET4000EnterLeave(LEAVE);
-		return (FALSE);
-	    }
-	} else {
-	    if (OFLG_ISSET(OPTION_LEGEND, &vga256InfoRec.options)) {
-		ClockSelect = Tseng_LegendClockSelect;
-		numClocks = 32;
-	    } else {
-		ClockSelect = Tseng_ET4000ClockSelect;
-		/*
-		 * The CH8398 RAMDAC uses CS3 for register selection (RS2), not for clock selection.
-		 * The GenDAC family only has 8 clocks. Together with MCLK/2, that's 16 clocks.
-		 */
-		if ((pTseng->ChipType > TYPE_ET4000)
-		    && (!DAC_is_GenDAC) && (pTseng->DacInfo.DacType != CH8398_DAC))
-		    numClocks = 32;
-		else
-		    numClocks = 16;
-	    }
-	}
-
-	/* Save initial ExtCRTC[0x32] value */
-	outb(iobase + 4, 0x32);
-	initialExtCRTC[0x32] = inb(iobase + 5);
-    }				       /* pTseng->ChipType < ET6000 */
-    if (pTseng->ChipType > TYPE_ET4000) {
-	/* Save initial Auxctrl (CRTC 0x34) value */
-	outb(iobase + 4, 0x34);
-	initialExtCRTC[0x34] = inb(iobase + 5);
-	if (!Is_ET6K) {
-	    /* Save initial ExtCRTC[0x36] (CRTC 0x36) value */
-	    outb(iobase + 4, 0x36);
-	    initialExtCRTC[0x36] = inb(iobase + 5);
-	    /* Save initial ExtCRTC[0x37] (CRTC 0x37) value */
-	    outb(iobase + 4, 0x37);
-	    initialExtCRTC[0x37] = inb(iobase + 5);
-	    /* Save initial ExtIMACtrl value */
-	    outb(0x217a, 0xF7);
-	    initialExtIMACtrl = inb(0x217b);
-	}
-    }
-    if (Is_ET6K) {
-	int tmp = inb(pTseng->IOAddress + 0x67);
-
+	
 	...
-
-	    outb(pTseng->IOAddress + 0x67, 10);
-	initialET6KMclkM = inb(pTseng->IOAddress + 0x69);
-	initialET6KMclkN = inb(pTseng->IOAddress + 0x69);
-	outb(pTseng->IOAddress + 0x67, tmp);
-	ErrorF("%s %s: %s: MClk: %3.2f MHz, R/C: 0x%x\n", XCONFIG_PROBED,
-	    vga256InfoRec.name, vga256InfoRec.chipset,
-	    gendacMNToClock(initialET6KMclkM, initialET6KMclkN) / 1000.0,
-	    initialExtET6K[0x44]);
-	OFLG_SET(OPTION_SLOW_DRAM, &TSENG.ChipOptionFlags);
-	OFLG_SET(OPTION_MED_DRAM, &TSENG.ChipOptionFlags);
-	OFLG_SET(OPTION_FAST_DRAM, &TSENG.ChipOptionFlags);
-    }
-    if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) {
-	if (!vga256InfoRec.clocks)
-	    vgaGetClocks(numClocks, ClockSelect);
-    }
+	
     vga256InfoRec.bankedMono = TRUE;
 #ifdef XFreeXDGA
     if (pScrn->bitsPerPixel >= 8)

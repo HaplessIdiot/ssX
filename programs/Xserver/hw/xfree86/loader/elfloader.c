@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.8.2.5 1998/07/04 13:32:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.13 1998/07/25 16:56:14 dawes Exp $ */
 
 /*
  *
@@ -303,6 +303,11 @@ ELFModulePtr	elffile;
 	return 0;
     }
 
+    if (DebuggerPresent)
+    {
+	ldrCommons = (LDRCommonPtr)xf86loadermalloc(numsyms*sizeof(LDRCommon));
+	nCommons = numsyms;
+    }
     /* Traverse the common list and create a lookup table with all the
      * common symbols.  Destroy the common list in the process.
      * See also ResolveSymbols.
@@ -317,6 +322,14 @@ ELFModulePtr	elffile;
 #ifdef ELFDEBUG
 	ELFDEBUG("Adding common %lx %s\n", lookup[l].offset, lookup[l].symName );
 #endif
+	
+	/* Record the symbol address for gdb */
+	if (DebuggerPresent && ldrCommons)
+	{
+	     ldrCommons[l].addr = (void *)lookup[l].offset;
+	     ldrCommons[l].name = lookup[l].symName;
+	     ldrCommons[l].namelen = strlen(lookup[l].symName);
+	}
 	listCOMMON=common->next;
 	offset+=common->sym->st_size;
 #if defined(__alpha__)
@@ -1818,6 +1831,10 @@ LOOKUP **ppLookup;
     Elf_Ehdr   *header;
     ELFRelocPtr  elf_reloc, tail;
     void	*v;
+    LDRModulePtr elfmod;
+
+    ldrCommons = 0;
+    nCommons = 0;
 
     if ((elffile = (ELFModulePtr) xf86loadercalloc(1, sizeof(ELFModuleRec))) == NULL) {
 	ErrorF( "Unable to allocate ELFModuleRec\n" );
@@ -1935,6 +1952,26 @@ LOOKUP **ppLookup;
     ELFCreateGOT(elffile);
 #endif
 
+    /* Record info for gdb - if we can't allocate the loader record fail
+       silently (the user will find out soon enough that there's no VM left */
+    if ((elfmod = 
+	 (LDRModulePtr) xf86loadercalloc(1, sizeof(LDRModuleRec))) != NULL) {
+	elfmod->name = strdup(modrec->name);
+	elfmod->namelen = strlen(modrec->name);
+	elfmod->version = 1;
+	elfmod->text = elffile->text;
+	elfmod->data = elffile->data;
+	elfmod->rodata = elffile->rodata;
+	elfmod->bss = elffile->bss;
+	elfmod->next = ModList;
+	elfmod->commons = ldrCommons;
+	elfmod->commonslen = nCommons;
+
+	ModList = elfmod;
+
+	/* Tell GDB something interesting happened */
+	_loader_debug_state();
+    }
     return (void *)elffile;
 }
 
@@ -2074,3 +2111,4 @@ ELFAddressToSection(void *modptr, unsigned long address)
 	}
 return NULL;
 }
+

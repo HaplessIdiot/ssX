@@ -64,7 +64,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.74 1998/07/17 12:05:23 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.75 1998/08/16 10:26:00 dawes Exp $ */
 
 
 /* main.c */
@@ -648,6 +648,8 @@ struct _xttymodes {
 #define XTTYMODE_weras 14
 { "lnext", 5, 0, '\0' },		/* ltchars.t_lnextc ; VLNEXT */
 #define XTTYMODE_lnext 15
+{ "status", 6, 0, '\0' },		/* VSTATUS */
+#define XTTYMODE_status 16
 { NULL, 0, 0, '\0' },			/* end of data */
 };
 
@@ -1337,6 +1339,9 @@ main (int argc, char *argv[])
 #ifdef VDSUSP
 	d_tio.c_cc[VDSUSP] = CDSUSP;
 #endif
+#ifdef VSTATUS
+	d_tio.c_cc[VSTATUS] = CSTATUS;
+#endif
 	/* now, try to inherit tty settings */
 	{
 	    int i;
@@ -1392,6 +1397,9 @@ main (int argc, char *argv[])
 #ifdef VDSUSP
 		    d_tio.c_cc[VDSUSP] = deftio.c_cc[VDSUSP];
 #endif
+#ifdef VSTATUS
+		    d_tio.c_cc[VSTATUS] = deftio.c_cc[VSTATUS];
+#endif
 		    break;
 		}
 	    }
@@ -1408,6 +1416,9 @@ main (int argc, char *argv[])
 	d_tio.c_cc[VSUSP] = CSUSP;
 #ifdef VDSUSP
 	d_tio.c_cc[VDSUSP] = '\000';
+#endif
+#ifdef VSTATUS
+	d_tio.c_cc[VSTATUS] = '\377';
 #endif
 	d_tio.c_cc[VREPRINT] = '\377';
 	d_tio.c_cc[VDISCARD] = '\377';
@@ -2805,6 +2816,9 @@ spawn (void)
 #endif
 #ifdef VSTOP
 			TMODE (XTTYMODE_stop, tio.c_cc[VSTOP]);
+#endif
+#ifdef VSTATUS
+			TMODE (XTTYMODE_status, tio.c_cc[VSTATUS]);
 #endif
 #ifdef HAS_LTCHARS
 			/* both SYSV and BSD have ltchars */

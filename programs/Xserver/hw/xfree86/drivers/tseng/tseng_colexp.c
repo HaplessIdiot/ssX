@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_colexp.c,v 1.4 1998/07/25 16:56:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_colexp.c,v 1.5 1998/08/13 14:46:00 dawes Exp $ */
 
 
 
@@ -61,7 +61,7 @@ TsengXAAInit_Colexp(ScrnInfoPtr pScrn)
     TsengPtr pTseng = TsengPTR(pScrn);
     XAAInfoRecPtr pXAAInfo = pTseng->AccelInfoRec;
 
-    ErrorF("	TsengXAAInit_Colexp\n");
+    PDEBUG("	TsengXAAInit_Colexp\n");
 
 #ifdef TODO
     if (OFLG_ISSET(OPTION_XAA_NO_COL_EXP, &vga256InfoRec.options))

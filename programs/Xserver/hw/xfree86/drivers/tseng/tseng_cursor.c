@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_cursor.c,v 1.11 1998/07/25 16:56:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_cursor.c,v 1.12 1998/08/13 14:46:00 dawes Exp $ */
 
 
 
@@ -23,7 +23,7 @@ TsengHWCursorInit(ScreenPtr pScreen)
     int iobase = VGAHW_GET_IOBASE();
     unsigned char tmp;
 
-    ErrorF("	TsengHWCursorInit\n");
+    PDEBUG("	TsengHWCursorInit\n");
 
     if (!pTseng->HWCursor)
 	return FALSE;

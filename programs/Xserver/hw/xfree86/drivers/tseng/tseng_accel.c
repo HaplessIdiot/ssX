@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.22 1998/08/02 05:17:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.23 1998/08/13 14:45:58 dawes Exp $ */
 
 
 
@@ -102,7 +102,7 @@ TsengXAAInit(ScreenPtr pScreen)
     BoxRec AvailFBArea;
     int i;
 
-    ErrorF("	TsengXAAInit\n");
+    PDEBUG("	TsengXAAInit\n");
     pTseng->AccelInfoRec = pXAAinfo = XAACreateInfoRec();
     if (!pXAAinfo)
 	return FALSE;
