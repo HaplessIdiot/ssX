@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tridenthelper.c,v 1.1 1998/09/06 13:48:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tridenthelper.c,v 1.2 1998/09/13 05:23:43 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -14,6 +14,8 @@
 
 #define NTSC 14.31818
 #define PAL  17.73448
+
+static void IsClearTV(ScrnInfoPtr pScrn);
 
 void
 TGUISetClock(ScrnInfoPtr pScrn, int clock, unsigned char *a, unsigned char *b)
@@ -106,7 +108,7 @@ TGUISetClock(ScrnInfoPtr pScrn, int clock, unsigned char *a, unsigned char *b)
 	}
 }
 
-void
+static void
 IsClearTV(ScrnInfoPtr pScrn)
 {	
     int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
