@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.222 94/04/17 20:23:28 gildea Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.7 1994/11/30 20:47:19 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.8 1994/12/10 02:19:21 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -266,9 +266,11 @@ static Bool IsPts = False;
 
 #ifdef _POSIX_SOURCE
 #define USE_POSIX_WAIT
+#define HAS_POSIX_SAVED_IDS
 #endif
 #ifdef SVR4
 #define USE_POSIX_WAIT
+#define HAS_POSIX_SAVED_IDS
 #endif
 
 #if !defined(MINIX) && !defined(WIN32)
@@ -279,6 +281,7 @@ static Bool IsPts = False;
 #define USE_POSIX_WAIT
 #define LASTLOG
 #define WTMP
+#define HAS_POSIX_SAVED_IDS
 #endif
 
 #include <stdio.h>
@@ -1081,14 +1084,44 @@ char **argv;
 #endif  /* AMOEBA */
 
 	/* Init the Toolkit. */
-	XtSetErrorHandler(xt_error);
-	toplevel = XtAppInitialize (&app_con, "XTerm", 
-				    optionDescList, XtNumber(optionDescList), 
-				    &argc, argv, fallback_resources, NULL, 0);
+	{
+#ifdef HAS_POSIX_SAVED_IDS
+	    uid_t euid = geteuid();
+	    gid_t egid = getegid();
+	    uid_t ruid = getuid();
+	    gid_t rgid = getgid();
 
-	XtGetApplicationResources(toplevel, (XtPointer) &resource,
-				  application_resources,
-				  XtNumber(application_resources), NULL, 0);
+	    if (setegid(ruid) == -1)
+		(void) fprintf(stderr, "setegid(%d): %s\n",
+			       rgid, strerror(errno));
+
+	    if (seteuid(ruid) == -1)
+		(void) fprintf(stderr, "seteuid(%d): %s\n",
+			       ruid, strerror(errno));
+#endif
+
+	    XtSetErrorHandler(xt_error);
+	    toplevel = XtAppInitialize (&app_con, "XTerm", 
+					optionDescList,
+					XtNumber(optionDescList), 
+					&argc, argv, fallback_resources,
+					NULL, 0);
+
+	    XtGetApplicationResources(toplevel, (XtPointer) &resource,
+				      application_resources,
+				      XtNumber(application_resources), NULL, 0);
+
+#ifdef HAS_POSIX_SAVED_IDS
+	    if (seteuid(euid) == -1)
+		(void) fprintf(stderr, "seteuid(%d): %s\n",
+			       euid, strerror(errno));
+
+	    if (setegid(egid) == -1)
+		(void) fprintf(stderr, "setegid(%d): %s\n",
+			       egid, strerror(errno));
+#endif
+	}
+
 
 	waiting_for_initial_map = resource.wait_for_map;
 
@@ -1285,10 +1318,10 @@ char **argv;
 #endif
 		_bufend(stderr) = old_bufend;
 #else	/* USE_SYSV_TERMIO */
-#ifdef linux
-		setfileno(stderr, i);
-#else
+#ifndef linux
 		stderr->_file = i;
+#else
+		setfileno(stderr, i);
 #endif
 #endif	/* USE_SYSV_TERMIO */
 
@@ -1789,8 +1822,8 @@ spawn ()
 
 #ifdef linux
 	/* clear these entries to avoid garbage */
-	memset(termcap, 0, sizeof(termcap));
-	memset(newtc, 0, sizeof(newtc));
+	bzero(termcap, sizeof(termcap));
+	bzero(newtc, sizeof(newtc));
 #endif
 
 #ifdef SIGTTOU

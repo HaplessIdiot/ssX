@@ -7,3 +7,8 @@ SRCS = mkfontdir.c
 OBJS = mkfontdir.o
 
 ComplexProgramTarget(mkfontdir)
+
+#ifdef OS2Architecture
+all:: mkfontdir.exe
+	$(CP) mkfontdir.exe /
+#endif

@@ -2,6 +2,7 @@
  * xrdb - X resource manager database utility
  *
  * $XConsortium: xrdb.c,v 11.75 94/03/27 14:42:02 rws Exp $
+ * $XFree86$
  */
 
 /*
@@ -46,8 +47,9 @@
 #include <X11/Xos.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <errno.h>	/* hv: for OS/2, shouldn't declare errno explicitly */
 
-#ifdef X_NOT_STDC_ENV
+#if !defined(X_NOT_STDC_ENV) && !defined(__EMX__)
 extern int errno;
 #endif
 
@@ -59,7 +61,12 @@ extern int errno;
 #define SCREEN_RESOURCES "SCREEN_RESOURCES"
 
 #ifndef CPP
+#ifdef __EMX__
+/* expected to be in path */
+#define CPP "cpp"
+#else
 #define CPP "/usr/lib/cpp"
+#endif /* __EMX__ */
 #endif /* CPP */
 
 #define INIT_BUFFER_SIZE 10000
@@ -1255,12 +1262,11 @@ fatal(msg, x1, x2, x3, x4, x5, x6)
     int x1, x2, x3, x4, x5, x6;
 #endif
 {
-    extern int errno;
 #if NeedVarargsPrototypes
     va_list args;
 #endif
 
-    if (errno)
+    if (errno != 0)
 	perror(ProgramName);
 #if NeedVarargsPrototypes
     va_start(args, msg);

@@ -6,3 +6,7 @@ SRCS = bdftopcf.c
 OBJS = bdftopcf.o
 
 ComplexProgramTarget(bdftopcf)
+#ifdef OS2Architecture
+all:: bdftopcf.exe
+	$(CP) bdftopcf.exe /
+#endif
