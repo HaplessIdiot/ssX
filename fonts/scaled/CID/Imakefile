@@ -1,0 +1,10 @@
+XCOMM $XFree86$
+
+#if BuildCID
+FONTINSTDIR = $(FONTDIR)/CID
+
+MakeFontsDir(fonts.scale)
+
+InstallFonts($(FONTINSTDIR))
+InstallFontScale($(FONTINSTDIR))
+#endif
