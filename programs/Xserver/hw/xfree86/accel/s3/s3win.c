@@ -122,6 +122,9 @@ s3CopyWindow(pWin, ptOldOrg, prgnSrc)
    S3_OUTW(FRGD_MIX, FSS_BITBLT | MIX_SRC);
    S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
    S3_OUTW(WRT_MASK, 0xffff);
+#ifdef S3_32BPP
+   S3_OUTW(WRT_MASK, 0xffff));
+#endif
 
    if (direction == (INC_X | INC_Y)) {
       for (i = 0; i < nbox; i++) {

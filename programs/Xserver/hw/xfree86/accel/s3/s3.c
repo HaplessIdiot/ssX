@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.13 1994/07/21 13:56:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.14 1994/08/01 12:12:05 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -130,11 +130,15 @@ short s3alu[16] =
    MIX_1
 };
 
-static unsigned S3_IOPorts[] = {
-	0x42E8, 0x4AE8, 0x82E8, 0x86E8, 0x8AE8, 0x8EE8, 0x92E8, 0x96E8,
-	0x9AE8, 0x9EE8, 0xA2E8, 0xA6E8, 0xAAE8, 0xAEE8, 0xB2E8, 0xB6E8,
-	0xBAE8, 0xBEE8, 0xE2E8, 0xE2EA,
+static unsigned S3_IOPorts[] = { DISP_STAT, H_TOTAL, H_DISP, H_SYNC_STRT,
+  H_SYNC_WID, V_TOTAL, V_DISP, V_SYNC_STRT, V_SYNC_WID, DISP_CNTL,
+  ADVFUNC_CNTL, SUBSYS_STAT, SUBSYS_CNTL, ROM_PAGE_SEL, CUR_Y, CUR_X,
+  DESTY_AXSTP, DESTX_DIASTP, ERR_TERM, MAJ_AXIS_PCNT, GP_STAT, CMD,
+  SHORT_STROKE, BKGD_COLOR, FRGD_COLOR, WRT_MASK, RD_MASK, COLOR_CMP,
+  BKGD_MIX, FRGD_MIX, MULTIFUNC_CNTL, PIX_TRANS,
 };
+
+
 static int Num_S3_IOPorts = (sizeof(S3_IOPorts)/sizeof(S3_IOPorts[0]));
 
 static SymTabRec s3DacTable[] = {

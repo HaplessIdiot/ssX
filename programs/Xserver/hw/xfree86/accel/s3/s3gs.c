@@ -98,13 +98,21 @@ s3GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
    }
 
    if (pDrawable->type != DRAWABLE_WINDOW) {
-      switch (pDrawable->depth) {
+      switch (pDrawable->bitsPerPixel) {
 	case 1:
 	   mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
 	   break;
 	case 8:
 	   cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
 	   break;
+	case 16:
+	   cfb16GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
+	   break;
+#ifdef S3_32BPP
+        case 32:
+	   cfb32GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
+	   break;
+#endif
 	default:
 	   ErrorF("Unsupported pixmap depth\n");
 	   break;
@@ -116,7 +124,8 @@ s3GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
 
    for (; nspans--; ppt++, pwidth++) {
       (s3ImageReadFunc) (ppt->x, ppt->y, j = *pwidth, 1, pdst, 
-			 pixmapStride, 0, 0, 0xFF);
+			 pixmapStride, 0, 0, ~0);
+      j *= s3Bpp;
       pdst += j;		/* width is in 32 bit words */
       j = (-j) & 3;
       while (j--)		/* Pad out to 32-bit boundary */

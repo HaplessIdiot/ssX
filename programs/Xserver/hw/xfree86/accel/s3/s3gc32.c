@@ -1,5 +1,5 @@
 /* $XConsortium: s3gc.c,v 1.2 94/04/17 20:31:11 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gc.c,v 3.1 1994/08/01 13:19:42 dawes Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -63,6 +63,7 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 #include "Xmd.h"
 #include "Xproto.h"
 #include "cfb.h"
+#include "cfb32.h"
 #include "fontstruct.h"
 #include "dixfontstr.h"
 #include "gcstruct.h"
@@ -75,6 +76,7 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 #include "mibstore.h"
 #include "migc.h"
 
+
 #include "cfbmskbits.h"
 #include "cfb8bit.h"
 
@@ -84,8 +86,8 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 
 #include "s3.h"
 
-static void s3ValidateGC(), cfbChangeGC(), cfbCopyGC(), cfbDestroyGC();
-static void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
+static void s3ValidateGC(); 
+
 
 static GCFuncs cfbFuncs =
 {
@@ -102,7 +104,7 @@ static GCOps s3Ops =
 {
    s3SolidFSpans,
    s3SetSpans,
-   cfbPutImage,
+   cfb32PutImage,
    s3CopyArea,
    s3CopyPlane,
    s3PolyPoint,
@@ -125,117 +127,101 @@ static GCOps s3Ops =
 
 static GCOps cfbTEOps1Rect =
 {
-   cfbSolidSpansCopy,
-   cfbSetSpans,
-   cfbPutImage,
+   cfb32SolidSpansCopy,
+   cfb32SetSpans,
+   cfb32PutImage,
    s3CopyArea,
    s3CopyPlane,
-   cfbPolyPoint,
-   cfb8LineSS1Rect,
-   cfb8SegmentSS1Rect,
+   cfb32PolyPoint,
+   cfb32LineSS1Rect,
+   cfb32SegmentSS1Rect,
    miPolyRectangle,
-#if PPW == 4
-   cfbZeroPolyArcSS8Copy,
-#else
-   miZeroPolyArc,
-#endif
-   cfbFillPoly1RectCopy,
-   cfbPolyFillRect,
-   cfbPolyFillArcSolidCopy,
+   cfb32ZeroPolyArcSSCopy,
+   cfb32FillPoly1RectCopy,
+   cfb32PolyFillRect,
+   cfb32PolyFillArcSolidCopy,
    miPolyText8,
    miPolyText16,
    miImageText8,
    miImageText16,
-   cfbTEGlyphBlt8,
-   cfbPolyGlyphBlt8,
-   cfbPushPixels8,
+   cfb32ImageGlyphBlt8,
+   cfb32PolyGlyphBlt8,
+   mfbPushPixels,
    NULL,
 };
 
 static GCOps cfbTEOps =
 {
-   cfbSolidSpansCopy,
-   cfbSetSpans,
-   cfbPutImage,
+   cfb32SolidSpansCopy,
+   cfb32SetSpans,
+   cfb32PutImage,
    s3CopyArea,
    s3CopyPlane,
-   cfbPolyPoint,
-   cfbLineSS,
-   cfbSegmentSS,
+   cfb32PolyPoint,
+   cfb32LineSS,
+   cfb32SegmentSS,
    miPolyRectangle,
-#if PPW == 4
-   cfbZeroPolyArcSS8Copy,
-#else
-   miZeroPolyArc,
-#endif
+   cfb32ZeroPolyArcSSCopy,
    miFillPolygon,
-   cfbPolyFillRect,
-   cfbPolyFillArcSolidCopy,
+   cfb32PolyFillRect,
+   cfb32PolyFillArcSolidCopy,
    miPolyText8,
    miPolyText16,
    miImageText8,
    miImageText16,
-   cfbTEGlyphBlt8,
-   cfbPolyGlyphBlt8,
-   cfbPushPixels8,
+   cfb32ImageGlyphBlt8,
+   cfb32PolyGlyphBlt8,
+   mfbPushPixels,
    NULL,
 };
 
 static GCOps cfbNonTEOps1Rect =
 {
-   cfbSolidSpansCopy,
-   cfbSetSpans,
-   cfbPutImage,
+   cfb32SolidSpansCopy,
+   cfb32SetSpans,
+   cfb32PutImage,
    s3CopyArea,
    s3CopyPlane,
-   cfbPolyPoint,
-   cfbLineSS,
-   cfbSegmentSS,
+   cfb32PolyPoint,
+   cfb32LineSS1Rect,
+   cfb32SegmentSS1Rect,
    miPolyRectangle,
-#if PPW == 4
-   cfbZeroPolyArcSS8Copy,
-#else
-   miZeroPolyArc,
-#endif
-   cfbFillPoly1RectCopy,
-   cfbPolyFillRect,
-   cfbPolyFillArcSolidCopy,
+   cfb32ZeroPolyArcSSCopy,
+   cfb32FillPoly1RectCopy,
+   cfb32PolyFillRect,
+   cfb32PolyFillArcSolidCopy,
    miPolyText8,
    miPolyText16,
    miImageText8,
    miImageText16,
-   cfbImageGlyphBlt8,
-   cfbPolyGlyphBlt8,
-   cfbPushPixels8,
+   cfb32ImageGlyphBlt8,
+   cfb32PolyGlyphBlt8,
+   mfbPushPixels,
    NULL,
 };
 
 static GCOps cfbNonTEOps =
 {
-   cfbSolidSpansCopy,
-   cfbSetSpans,
-   cfbPutImage,
+   cfb32SolidSpansCopy,
+   cfb32SetSpans,
+   cfb32PutImage,
    s3CopyArea,
    s3CopyPlane,
-   cfbPolyPoint,
-   cfbLineSS,
-   cfbSegmentSS,
+   cfb32PolyPoint,
+   cfb32LineSS,
+   cfb32SegmentSS,
    miPolyRectangle,
-#if PPW == 4
-   cfbZeroPolyArcSS8Copy,
-#else
-   miZeroPolyArc,
-#endif
+   cfb32ZeroPolyArcSSCopy,
    miFillPolygon,
-   cfbPolyFillRect,
-   cfbPolyFillArcSolidCopy,
+   cfb32PolyFillRect,
+   cfb32PolyFillArcSolidCopy,
    miPolyText8,
    miPolyText16,
    miImageText8,
    miImageText16,
-   cfbImageGlyphBlt8,
-   cfbPolyGlyphBlt8,
-   cfbPushPixels8,
+   cfb32ImageGlyphBlt8,
+   cfb32PolyGlyphBlt8,
+   mfbPushPixels,
    NULL,
 };
 
@@ -256,38 +242,27 @@ matchCommon(pGC, devPriv)
        FONTMAXBOUNDS(pGC->font, rightSideBearing) -
        FONTMINBOUNDS(pGC->font, leftSideBearing) <= 32 &&
        FONTMINBOUNDS(pGC->font, characterWidth) >= 0) {
-      if (TERMINALFONT(pGC->font)
-#if PPW == 4
-	  && FONTMAXBOUNDS(pGC->font, characterWidth) >= 4
-#endif
-	 )
 	 if (devPriv->oneRect)
 	    return &cfbTEOps1Rect;
 	 else
 	    return &cfbTEOps;
-      else if (devPriv->oneRect)
-	 return &cfbNonTEOps1Rect;
-      else
-	 return &cfbNonTEOps;
    }
-   return 0;
+   return (GCOps *) 0;
 }
 
 Bool
-s3CreateGC(pGC)
+s3CreateGC32(pGC)
      register GCPtr pGC;
 {
    cfbPrivGC *pPriv;
 
-   switch (pGC->depth) {
-     case 1:
-	return (mfbCreateGC(pGC));
-     case PSZ:
-	break;
-     default:
-	ErrorF("cfbCreateGC: unsupported depth: %d\n", pGC->depth);
-	return FALSE;
+   if (PixmapWidthPaddingInfo[pGC->depth].padPixelsLog2 == LOG2_BITMAP_PAD)
+       return (mfbCreateGC(pGC));
+   if (pGC->depth != s3InfoRec.depth) {
+        ErrorF("s3CreateGC: unsupported depth: %d\n", pGC->depth);
+        return FALSE;
    }
+
    pGC->clientClip = NULL;
    pGC->clientClipType = CT_NONE;
 
@@ -360,6 +335,11 @@ s3ValidateGC(pGC, changes, pDrawable)
  /* flags for changing the proc vector */
    cfbPrivGCPtr devPriv;
    int   oneRect;
+
+#ifdef PIXPRIV
+   if (pDrawable->type == DRAWABLE_PIXMAP)
+      s3CacheFreeSlot(pDrawable);
+#endif
 
    new_rotate = pGC->lastWinOrg.x != pDrawable->x ||
       pGC->lastWinOrg.y != pDrawable->y;
@@ -535,9 +515,9 @@ s3ValidateGC(pGC, changes, pDrawable)
 	      PixmapPtr nstipple;
 
 	      if ((width <= 32) && !(width & (width - 1)) &&
-		  (nstipple = cfbCopyPixmap(pGC->stipple))) {
-		 cfbPadPixmap(nstipple);
-		 cfbDestroyPixmap(pGC->stipple);
+		  (nstipple = cfb32CopyPixmap(pGC->stipple))) {
+		 cfb32PadPixmap(nstipple);
+		 cfb32DestroyPixmap(pGC->stipple);
 		 pGC->stipple = nstipple;
 	      }
 	   }
@@ -592,24 +572,24 @@ s3ValidateGC(pGC, changes, pDrawable)
 
       switch (pGC->fillStyle) {
 	case FillTiled:
-	   if (!pGC->tileIsPixel) {
-	      int   width = pGC->tile.pixmap->drawable.width * PSZ;
+	   if (!pGC->tileIsPixel) { /* XXX: check constants */
+	      int   width = pGC->tile.pixmap->drawable.width * 16;
 
-	      if ((width <= 32) && !(width & (width - 1))) {
-		 cfbCopyRotatePixmap(pGC->tile.pixmap,
+	      if ((width <= 64) && !(width & (width - 1))) {
+		 cfb32CopyRotatePixmap(pGC->tile.pixmap,
 				     &devPriv->pRotatedPixmap,
 				     xrot, yrot);
 		 new_pix = TRUE;
 	      }
 	   }
 	   break;
-#if (PPW == 4)
+#if 0 /* XXX: why nothing? */
 	case FillStippled:
 	case FillOpaqueStippled:
 	   {
 	      int   width = pGC->stipple->drawable.width;
 
-	      if ((width <= 32) && !(width & (width - 1))) {
+	      if ((width <= 64) && !(width & (width - 1))) {
 		 mfbCopyRotatePixmap(pGC->stipple,
 				     &devPriv->pRotatedPixmap, xrot, yrot);
 		 new_pix = TRUE;
@@ -619,7 +599,7 @@ s3ValidateGC(pGC, changes, pDrawable)
 #endif
       }
       if (!new_pix && devPriv->pRotatedPixmap) {
-	 cfbDestroyPixmap(devPriv->pRotatedPixmap);
+	 cfb32DestroyPixmap(devPriv->pRotatedPixmap);
 	 devPriv->pRotatedPixmap = (PixmapPtr) NULL;
       }
    }
@@ -627,16 +607,12 @@ s3ValidateGC(pGC, changes, pDrawable)
       int   old_rrop;
 
       old_rrop = devPriv->rop;
-      devPriv->rop = cfbReduceRasterOp(pGC->alu, pGC->fgPixel,
+      devPriv->rop = cfb32ReduceRasterOp(pGC->alu, pGC->fgPixel,
 				       pGC->planemask,
 				       &devPriv->and, &devPriv->xor);
       if (old_rrop == devPriv->rop)
 	 new_rrop = FALSE;
       else {
-#if PPW ==  4
-	 new_line = TRUE;
-	 new_text = TRUE;
-#endif
 	 new_fillspans = TRUE;
 	 new_fillarea = TRUE;
       }
@@ -645,7 +621,7 @@ s3ValidateGC(pGC, changes, pDrawable)
       if (pGC->ops->devPrivate.val == 1)
 	 miDestroyGCOps(pGC->ops);
 
-      pGC->ops = cfbCreateOps(&s3Ops);
+      pGC->ops = miCreateGCOps(&s3Ops);
       pGC->ops->devPrivate.val = 2;
 
     /*
@@ -663,11 +639,11 @@ s3ValidateGC(pGC, changes, pDrawable)
 	 new_rrop = new_line = new_fillspans = new_text = new_fillarea = 0;
       } else {
 	 if (!pGC->ops->devPrivate.val) {
-	    pGC->ops = cfbCreateOps(pGC->ops);
+	    pGC->ops = miCreateGCOps(pGC->ops);
 	    pGC->ops->devPrivate.val = 1;
 	 } else if (pGC->ops->devPrivate.val != 1) {
 	    miDestroyGCOps(pGC->ops);
-	    pGC->ops = cfbCreateOps(&cfbNonTEOps);
+	    pGC->ops = miCreateGCOps(&cfbNonTEOps);
 	    pGC->ops->devPrivate.val = 1;
 	    new_rrop = new_line = new_text = new_fillspans = new_fillarea = TRUE;
 	 }
@@ -694,8 +670,6 @@ s3ValidateGC(pGC, changes, pDrawable)
 	      break;
 	   case LineOnOffDash:
 	   case LineDoubleDash:
-#define USES3DLINE	   
-#if defined(USES3DLINE)
 	      if (pGC->lineWidth == 0) {
 		 if (pGC->fillStyle == FillSolid) {
 		    pGC->ops->Polylines = s3Dline;
@@ -704,9 +678,6 @@ s3ValidateGC(pGC, changes, pDrawable)
 		    pGC->ops->Polylines = miWideDash;
 	      } else
 		 pGC->ops->Polylines = miWideDash;
-#else
-	      pGC->ops->Polylines = miWideDash;
-#endif
 	      break;
 	 }
       } else {
@@ -714,29 +685,27 @@ s3ValidateGC(pGC, changes, pDrawable)
 	 if (devPriv->oneRect && pGC->fillStyle == FillSolid) {
 	    switch (devPriv->rop) {
 	      case GXcopy:
-		 pGC->ops->FillPolygon = cfbFillPoly1RectCopy;
+		 pGC->ops->FillPolygon = cfb32FillPoly1RectCopy;
 		 break;
 	      default:
-		 pGC->ops->FillPolygon = cfbFillPoly1RectGeneral;
+		 pGC->ops->FillPolygon = cfb32FillPoly1RectGeneral;
 		 break;
 	    }
 	 }
 	 if (pGC->lineWidth == 0) {
-#if PPW == 4
 	    if ((pGC->lineStyle == LineSolid) && (pGC->fillStyle == FillSolid)) {
 	       switch (devPriv->rop) {
 		 case GXxor:
-		    pGC->ops->PolyArc = cfbZeroPolyArcSS8Xor;
+		    pGC->ops->PolyArc = cfb32ZeroPolyArcSSXor;
 		    break;
 		 case GXcopy:
-		    pGC->ops->PolyArc = cfbZeroPolyArcSS8Copy;
+		    pGC->ops->PolyArc = cfb32ZeroPolyArcSSCopy;
 		    break;
 		 default:
-		    pGC->ops->PolyArc = cfbZeroPolyArcSS8General;
+		    pGC->ops->PolyArc = cfb32ZeroPolyArcSSGeneral;
 		    break;
 	       }
 	    } else
-#endif
 	       pGC->ops->PolyArc = miZeroPolyArc;
 	 } else
 	    pGC->ops->PolyArc = miPolyArc;
@@ -745,8 +714,8 @@ s3ValidateGC(pGC, changes, pDrawable)
 	   case LineSolid:
 	      if (pGC->lineWidth == 0) {
 		 if (pGC->fillStyle == FillSolid) {
-		    pGC->ops->Polylines = cfbLineSS;
-		    pGC->ops->PolySegment = cfbSegmentSS;
+		    pGC->ops->Polylines = cfb32LineSS;
+		    pGC->ops->PolySegment = cfb32SegmentSS;
 		 } else
 		    pGC->ops->Polylines = miZeroLine;
 	      } else
@@ -755,8 +724,8 @@ s3ValidateGC(pGC, changes, pDrawable)
 	   case LineOnOffDash:
 	   case LineDoubleDash:
 	      if (pGC->lineWidth == 0 && pGC->fillStyle == FillSolid) {
-		 pGC->ops->Polylines = cfbLineSD;
-		 pGC->ops->PolySegment = cfbSegmentSD;
+		 pGC->ops->Polylines = cfb32LineSD;
+		 pGC->ops->PolySegment = cfb32SegmentSD;
 	      } else
 		 pGC->ops->Polylines = miWideDash;
 	      break;
@@ -774,33 +743,17 @@ s3ValidateGC(pGC, changes, pDrawable)
 	    pGC->ops->PolyGlyphBlt = miPolyGlyphBlt;
 	    pGC->ops->ImageGlyphBlt = miImageGlyphBlt;
 	 } else {
-#if PPW == 4
 	    if (pGC->fillStyle == FillSolid) {
 	       if (devPriv->rop == GXcopy)
-		  pGC->ops->PolyGlyphBlt = cfbPolyGlyphBlt8;
+		  pGC->ops->PolyGlyphBlt = cfb32PolyGlyphBlt8;
 	       else
-		  pGC->ops->PolyGlyphBlt = cfbPolyGlyphRop8;
-	    } else
-#endif
+		  pGC->ops->PolyGlyphBlt = miPolyGlyphBlt;
+	    } else {
 	       pGC->ops->PolyGlyphBlt = miPolyGlyphBlt;
 	  /* special case ImageGlyphBlt for terminal emulator fonts */
-	    if (TERMINALFONT(pGC->font) &&
-		(pGC->planemask & PMSK) == PMSK
-#if PPW == 4
-		&& FONTMAXBOUNDS(pGC->font, characterWidth) >= 4
-#endif
-	       ) {
-#if PPW == 4
-	       pGC->ops->ImageGlyphBlt = cfbTEGlyphBlt8;
-#else
-	       pGC->ops->ImageGlyphBlt = cfbTEGlyphBlt;
-#endif
-	    } else {
-#if PPW == 4
-	       pGC->ops->ImageGlyphBlt = cfbImageGlyphBlt8;
-#else
+           /* XXX: This needs sorting out */
 	       pGC->ops->ImageGlyphBlt = miImageGlyphBlt;
-#endif
+
 	    }
 	 }
       }
@@ -828,13 +781,13 @@ s3ValidateGC(pGC, changes, pDrawable)
 	   case FillSolid:
 	      switch (devPriv->rop) {
 		case GXcopy:
-		   pGC->ops->FillSpans = cfbSolidSpansCopy;
+		   pGC->ops->FillSpans = cfb32SolidSpansCopy;
 		   break;
 		case GXxor:
-		   pGC->ops->FillSpans = cfbSolidSpansXor;
+		   pGC->ops->FillSpans = cfb32SolidSpansXor;
 		   break;
 		default:
-		   pGC->ops->FillSpans = cfbSolidSpansGeneral;
+		   pGC->ops->FillSpans = cfb32SolidSpansGeneral;
 		   break;
 	      }
 	      break;
@@ -842,28 +795,18 @@ s3ValidateGC(pGC, changes, pDrawable)
 	   case FillTiled:
 	      if (devPriv->pRotatedPixmap) {
 		 if (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK)
-		    pGC->ops->FillSpans = cfbTile32FSCopy;
+		    pGC->ops->FillSpans = cfb32Tile32FSCopy;
 		 else
-		    pGC->ops->FillSpans = cfbTile32FSGeneral;
+		    pGC->ops->FillSpans = cfb32Tile32FSGeneral;
 	      } else
-		 pGC->ops->FillSpans = cfbUnnaturalTileFS;
+		 pGC->ops->FillSpans = cfb32UnnaturalTileFS;
 	      break;
 	   case FillStippled:
 
-#if PPW == 4
-	      if (devPriv->pRotatedPixmap)
-		 pGC->ops->FillSpans = cfb8Stipple32FS;
-	      else
-#endif
-		 pGC->ops->FillSpans = cfbUnnaturalStippleFS;
+		 pGC->ops->FillSpans = cfb32UnnaturalStippleFS;
 	      break;
 	   case FillOpaqueStippled:
-#if PPW == 4
-	      if (devPriv->pRotatedPixmap)
-		 pGC->ops->FillSpans = cfb8OpaqueStipple32FS;
-	      else
-#endif
-		 pGC->ops->FillSpans = cfbUnnaturalStippleFS;
+		 pGC->ops->FillSpans = cfb32UnnaturalStippleFS;
 	      break;
 	   default:
 	      FatalError("s3ValidateGC: illegal fillStyle\n");
@@ -876,25 +819,14 @@ s3ValidateGC(pGC, changes, pDrawable)
 	 pGC->ops->PolyFillArc = miPolyFillArc;
 	 pGC->ops->PushPixels = miPushPixels;
       } else {
-#if PPW != 4
-	 pGC->ops->PolyFillRect = miPolyFillRect;
-	 if (pGC->fillStyle == FillSolid || pGC->fillStyle == FillTiled) {
-	    pGC->ops->PolyFillRect = cfbPolyFillRect;
-	 }
-#endif
-#if PPW == 4
-	 pGC->ops->PushPixels = mfbPushPixels;
-	 if (pGC->fillStyle == FillSolid && devPriv->rop == GXcopy)
-	    pGC->ops->PushPixels = cfbPushPixels8;
-#endif
 	 pGC->ops->PolyFillArc = miPolyFillArc;
 	 if (pGC->fillStyle == FillSolid) {
 	    switch (devPriv->rop) {
 	      case GXcopy:
-		 pGC->ops->PolyFillArc = cfbPolyFillArcSolidCopy;
+		 pGC->ops->PolyFillArc = cfb32PolyFillArcSolidCopy;
 		 break;
 	      default:
-		 pGC->ops->PolyFillArc = cfbPolyFillArcSolidGeneral;
+		 pGC->ops->PolyFillArc = cfb32PolyFillArcSolidGeneral;
 		 break;
 	    }
 	 }

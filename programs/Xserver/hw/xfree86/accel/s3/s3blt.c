@@ -1,5 +1,5 @@
 /* $XConsortium: s3blt.c,v 1.2 94/04/17 20:31:05 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.2 1994/06/18 16:24:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.3 1994/08/01 12:12:13 dawes Exp $ */
 /*
 
 Copyright (c) 1998  X Consortium
@@ -288,8 +288,11 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
 	 WaitQueue(3); PCI_HACK();
 	 S3_OUTW(FRGD_MIX, FSS_BITBLT | s3alu[pGC->alu]);
 	 S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
-	 S3_OUTW(WRT_MASK, pGC->planemask);
-
+	 S3_OUTW(WRT_MASK, (short)pGC->planemask);
+#ifdef S3_32BPP
+ 	 if (s3InfoRec.bitsPerPixel == 32)
+	    S3_OUTW(WRT_MASK, (short)(pGC->planemask>>16));
+#endif
 	 if (direction == (INC_X | INC_Y)) {
 	    for (i = 0; i < numRects; i++) {
 	       prect = &pbox[ordering[i]];
@@ -348,6 +351,10 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
 	 S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
 	 S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
 	 S3_OUTW(WRT_MASK, 0xffff);
+#ifdef S3_32BPP
+ 	 if (s3InfoRec.bitsPerPixel == 32)
+	    S3_OUTW(WRT_MASK, 0xffff);
+#endif
 	 UNBLOCK_CURSOR;
 	 DEALLOCATE_LOCAL(ordering);
       } else if (pSrcDrawable->type == DRAWABLE_WINDOW &&
@@ -785,10 +792,27 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 	 BLOCK_CURSOR;
 	 WaitQueue(6);
 	 S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
-	 S3_OUTW(RD_MASK, (unsigned short)bitPlane);
-	 S3_OUTW(WRT_MASK, pGC->planemask);
+	 S3_OUTW(RD_MASK, (short)bitPlane);
+#ifdef S3_32BPP
+ 	 if (s3InfoRec.bitsPerPixel == 32)
+	    S3_OUTW(RD_MASK, (short)(bitPlane>>16));
+#endif
+	 S3_OUTW(WRT_MASK, (short)pGC->planemask);
+#ifdef S3_32BPP
+ 	 if (s3InfoRec.bitsPerPixel == 32)
+	    S3_OUTW(WRT_MASK, (short)(pGC->planemask>>16));
+#endif
 	 S3_OUTW(FRGD_COLOR, (short)pGC->fgPixel);
+#ifdef S3_32BPP
+ 	 if (s3InfoRec.bitsPerPixel == 32)
+	    S3_OUTW(FRGD_COLOR, (short)(pGC->fgPixel)>>16));
+#endif
 	 S3_OUTW(BKGD_COLOR, (short)pGC->bgPixel);
+#ifdef S3_32BPP
+ 	 if (s3InfoRec.bitsPerPixel == 32)
+	    S3_OUTW(BKGD_COLOR, (short)(pGC->bgPixel)>>16));
+#endif
+
 	 S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL|MIXSEL_EXPBLT);
 
 	 if (direction == (INC_X | INC_Y)) {
@@ -852,7 +876,15 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 	 WaitQueue(4);
 	 S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
 	 S3_OUTW(RD_MASK, 0xffff);
+#ifdef S3_32BPP
+ 	 if (s3InfoRec.bitsPerPixel == 32)
+	    S3_OUTW(RD_MASK, 0xffff);
+#endif
 	 S3_OUTW(WRT_MASK, 0xffff);
+#ifdef S3_32BPP
+ 	 if (s3InfoRec.bitsPerPixel == 32)
+	    S3_OUTW(WRT_MASK, 0xffff);
+#endif
 	 S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
 	 UNBLOCK_CURSOR;
 	 DEALLOCATE_LOCAL(ordering);

@@ -1,5 +1,5 @@
 /* $XConsortium: s3text.c,v 1.1 94/03/28 21:16:59 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3text.c,v 3.0 1994/04/29 14:07:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3text.c,v 3.1 1994/08/01 12:12:26 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -364,11 +364,17 @@ s3NoCImageText(pDraw, pGC, x, y, count, chars, is8bit)
 
    BLOCK_CURSOR;
    WaitQueue (5);
-   S3_OUTW (WRT_MASK, pGC->planemask);   
+   S3_OUTW (WRT_MASK, pGC->planemask);
+#ifdef S3_32BPP
+         S3_OUTW(WRT_MASK, (short)(pGC->planemask>>16));
+#endif
    S3_OUTW (FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
    S3_OUTW (BKGD_MIX, BSS_BKGDCOL | MIX_DST);
    S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPPC | COLCMPOP_F);
    S3_OUTW (FRGD_COLOR, (short) pGC->fgPixel);
+#ifdef S3_32BPP
+   S3_OUTW(FRGD_COLOR, (short)(pGC->fgPixel)>>16));
+#endif
 
    for (; --numRects >= 0; ++pBox) {
       WaitQueue(4);

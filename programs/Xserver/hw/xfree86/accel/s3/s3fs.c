@@ -1,5 +1,5 @@
 /* $XConsortium: s3fs.c,v 1.3 94/04/17 20:31:10 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fs.c,v 3.1 1994/08/01 13:19:39 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -109,11 +109,12 @@ s3SolidFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    }
 
    if (pDrawable->type != DRAWABLE_WINDOW) {
-      switch (pDrawable->depth) {
+      switch (pDrawable->bitsPerPixel) {
 	case 1:
 	   ErrorF("should call mfbSolidFillSpans\n");
 	   break;
 	case 8:
+        case 16:
 	   ErrorF("should call cfbSolidFillSpans\n");
 	   break;
 	default:
@@ -142,9 +143,17 @@ s3SolidFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
    BLOCK_CURSOR;
    WaitQueue(3);
-   S3_OUTW(FRGD_COLOR, (pGC->fgPixel));
+   S3_OUTW(FRGD_COLOR, (short)(pGC->fgPixel));
+#ifdef S3_32BPP
+   if (s3InfoRec.bitsPerPixel == 32)
+      S3_OUTW(FRGD_COLOR, (short)(pGC->fgPixel)>>16));
+#endif
    S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
-   S3_OUTW(WRT_MASK, pGC->planemask);
+   S3_OUTW(WRT_MASK, (short)pGC->planemask);
+#ifdef S3_32BPP
+   if (s3InfoRec.bitsPerPixel == 32)
+      S3_OUTW(WRT_MASK, (short)(pGC->planemask>>16));
+#endif
 
    while (n--) {
       WaitQueue(5);
@@ -191,11 +200,12 @@ s3TiledFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    }
 
    if (pDrawable->type != DRAWABLE_WINDOW) {
-      switch (pDrawable->depth) {
+      switch (pDrawable->bitsPerPixel) {
 	case 1:
 	   ErrorF("should call mfbTiledFillSpans\n");
 	   break;
 	case 8:
+	case 16:
 	   ErrorF("should call cfbTiledFillSpans\n");
 	   break;
 	default:
@@ -271,11 +281,13 @@ s3StipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    }
 
    if (pDrawable->type != DRAWABLE_WINDOW) {
-      switch (pDrawable->depth) {
+      switch (pDrawable->bitsPerPixel) {
 	case 1:
 	   ErrorF("should call mfbStippleFillSpans\n");
 	   break;
 	case 8:
+	case 16:
+	case 32:
 	   ErrorF("should call cfbStippleFillSpans\n");
 	   break;
 	default:
@@ -351,11 +363,13 @@ s3OStipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    }
 
    if (pDrawable->type != DRAWABLE_WINDOW) {
-      switch (pDrawable->depth) {
+      switch (pDrawable->bitsPerPixel) {
 	case 1:
 	   ErrorF("should call mfbOpStippleFillSpans\n");
 	   break;
 	case 8:
+	case 16:
+	case 32:
 	   ErrorF("should call cfbOpStippleFillSpans\n");
 	   break;
 	default:

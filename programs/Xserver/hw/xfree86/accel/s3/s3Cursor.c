@@ -1,6 +1,6 @@
 /*
  * $XConsortium: s3Cursor.c,v 1.2 94/03/28 21:14:00 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.1 1994/06/26 13:06:22 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.2 1994/08/01 12:12:10 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -28,7 +28,6 @@
  * 
  * Id: s3Cursor.c,v 2.5 1993/08/09 06:17:57 jon Exp jon
  */
-
 
 /*
  * Device independent (?) part of HW cursor support
@@ -286,7 +285,7 @@ s3LoadCursor(pScr, pCurs, x, y)
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (s3DisplayWidth-1));
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | s3ScissB);
 #ifdef DONT_USE_IMAGE_WRITE
-   S3_OUTW(WRT_MASK, 0x0ff);
+   S3_OUTW(WRT_MASK, 0xffff);
    S3_OUTW(FRGD_MIX, FSS_PCDATA | MIX_SRC);
    S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | 0);
 #endif
@@ -310,7 +309,7 @@ s3LoadCursor(pScr, pCurs, x, y)
 
 #ifndef DONT_USE_IMAGE_WRITE
       (*s3ImageWriteFunc)(xpos, ypos, n, 1, (char *)(ram + ram_loc), n, 0, 0,
-			  MIX_SRC, 0xff);
+			  MIX_SRC, ~0);
 #else
       WaitQueue(5);
 

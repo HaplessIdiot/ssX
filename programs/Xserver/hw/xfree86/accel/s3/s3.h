@@ -1,5 +1,5 @@
 /* $XConsortium: s3.h,v 1.1 94/03/28 21:13:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.5 1994/08/01 12:12:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.6 1994/08/02 04:23:48 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -108,6 +108,7 @@ extern void (*s3ImageFillFunc)();
 
 extern int s3DisplayWidth;
 extern int s3ScissB;
+extern int s3Bpp;    /* Bytes per pixel */
 extern short s3alu[];
 extern pointer s3VideoMem;
 extern pointer vgaBase;
@@ -245,6 +246,12 @@ Bool s3CreateGC(
     GCPtr 
 #endif
 );
+/* s3gc16.c */
+Bool s3CreateGC16(
+#if NeedFunctionPrototypes
+    GCPtr 
+#endif
+);
 /* s3fs.c */
 void s3SolidFSpans(
 #if NeedFunctionPrototypes
@@ -355,7 +362,7 @@ void s3ImageWriteNoMem(
     int,
     int,
     int,
-    int 
+    Pixel
 #endif
 );
 void s3ImageStipple(
@@ -370,9 +377,9 @@ void s3ImageStipple(
     int,
     int,
     int,
+    Pixel,
     int,
-    int,
-    int 
+    Pixel
 #endif
 );
 void s3ImageOpStipple(
@@ -387,10 +394,10 @@ void s3ImageOpStipple(
     int,
     int,
     int,
-    int,
-    int,
+    Pixel,
+    Pixel,
     short,
-    short 
+    Pixel 
 #endif
 );
 /* s3bstor.c */
@@ -432,10 +439,10 @@ RegionPtr s3CopyArea(
     GC *,
     int,
     int,
+    Pixel,
+    Pixel,
     int,
-    int,
-    int,
-    int 
+    Pixel
 #endif
 );
 void s3FindOrdering(

@@ -28,26 +28,25 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 
-KEVIN E. MARTIN DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
-INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
-EVENT SHALL KEVIN E. MARTIN BE LIABLE FOR ANY SPECIAL, INDIRECT OR
-CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
-USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+KEVIN E. MARTIN AND RICKARD E. FAITH DISCLAIM ALL WARRANTIES WITH REGARD TO
+THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+FITNESS, IN NO EVENT SHALL KEVIN E. MARTIN BE LIABLE FOR ANY SPECIAL,
+INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 /* $XConsortium: s3scrin.c,v 1.2 94/04/17 20:31:14 dpw Exp $ */
-
 /*
- * Modified by Amancio Hasty and Jon Tombs
- * 
- * Id: s3scrin.c,v 2.2 1993/06/22 20:54:09 jon Exp jon
- */
-
+Modified for the Mach-8 by Rickard E. Faith (faith@cs.unc.edu)
+Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
+Modified for the S3 by Jon N. Tombs (jon@esix2.us.es)
+*/
 
 #include "X.h"
 #include "Xmd.h"
+#include "Xproto.h"
 #include "servermd.h"
 #include "scrnintstr.h"
 #include "pixmapstr.h"
@@ -55,143 +54,164 @@ PERFORMANCE OF THIS SOFTWARE.
 #include "colormap.h"
 #include "colormapst.h"
 #include "cfb.h"
+#include "cfb16.h"
 #include "mi.h"
 #include "mistruct.h"
 #include "dix.h"
 #include "cfbmskbits.h"
 #include "mibstore.h"
 #include "s3.h"
+#include "regs3.h"
 
 extern RegionPtr mfbPixmapToRegion();
-extern Bool mfbAllocatePrivates();
+extern Bool cfbAllocatePrivates();
+extern Bool cfb16AllocatePrivates();
+extern Bool cfbInitVisuals();
+extern Bool miScreenInit();
+extern Bool mfbRegisterCopyPlaneProc();
 
 extern int defaultColorVisualClass;
-#define _BP 6			/**** VGA ****/
-#define _RZ ((PSZ + 2) / 3)
-#define _RS 0
-#define _RM ((1 << _RZ) - 1)
-#define _GZ ((PSZ - _RZ + 1) / 2)
-#define _GS _RZ
-#define _GM (((1 << _GZ) - 1) << _GS)
-#define _BZ (PSZ - _RZ - _GZ)
-#define _BS (_RZ + _GZ)
-#define _BM (((1 << _BZ) - 1) << _BS)
-#define _CE (1 << _RZ)
+extern xrgb xf86weight;
 
-static VisualRec visuals[] =
-{
-/* vid  class        bpRGB cmpE nplan rMask gMask bMask oRed oGreen oBlue */
-#ifndef STATIC_COLOR
-   0, PseudoColor, _BP, 1 << PSZ, PSZ, 0, 0, 0, 0, 0, 0,
-   0, DirectColor, _BP, _CE, PSZ, _RM, _GM, _BM, _RS, _GS, _BS,
-   0, GrayScale, _BP, 1 << PSZ, PSZ, 0, 0, 0, 0, 0, 0,
-   0, StaticGray, _BP, 1 << PSZ, PSZ, 0, 0, 0, 0, 0, 0,
-#endif
-   0, StaticColor, _BP, 1 << PSZ, PSZ, _RM, _GM, _BM, _RS, _GS, _BS,
-   0, TrueColor, _BP, _CE, PSZ, _RM, _GM, _BM, _RS, _GS, _BS
-};
+extern RegionPtr miCopyPlane();
 
-#define	NUMVISUALS	((sizeof visuals)/(sizeof visuals[0]))
-
-static VisualID VIDs[NUMVISUALS];
-
-static DepthRec depths[] =
-{
-/* depth	numVid		vids */
-   1, 0, NULL,
-   8, NUMVISUALS, VIDs
-};
-
-#define NUMDEPTHS	((sizeof depths)/(sizeof depths[0]))
 
 static unsigned long cfbGeneration = 0;
 
-miBSFuncRec s3BSFuncRec =
-{
-   s3SaveAreas,
-   s3RestoreAreas,
-   (void (*)())0,
-   (PixmapPtr(*)())0,
-   (PixmapPtr(*)())0,
+miBSFuncRec s3BSFuncRec = {
+    s3SaveAreas,
+    s3RestoreAreas,
+    (void (*)()) 0,
+    (PixmapPtr (*)()) 0,
+    (PixmapPtr (*)()) 0,
 };
 
 /* dts * (inch/dot) * (25.4 mm / inch) = mm */
 Bool
 s3ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
-     register ScreenPtr pScreen;
-     pointer pbits;		/* pointer to screen bitmap */
-     int   xsize, ysize;	/* in pixels */
-     int   dpix, dpiy;		/* dots per inch */
-     int   width;		/* pixel width of frame buffer */
+    register ScreenPtr pScreen;
+    pointer pbits;		/* pointer to screen bitmap */
+    int xsize; int ysize;	/* in pixels */
+    int dpix; int dpiy;		/* dots per inch */
+    int width;			/* pixel width of frame buffer */
 {
-   int   i;
+    VisualPtr visuals;
+    DepthPtr depths;
+    int nvisuals;
+    int ndepths;
+    int rootdepth;
+    VisualID defaultVisual;
+    int bitsPerRGB;
+    int	i;
+    Bool Rstatus;
+    VisualPtr visual;
+    pointer oldDevPrivate;
 
-   if (cfbGeneration != serverGeneration) {
-    /* Set up the visual IDs */
-      for (i = 0; i < NUMVISUALS; i++) {
-	 visuals[i].vid = FakeClientID(0);
-	 VIDs[i] = visuals[i].vid;
-	 if (s3DAC8Bit) {
-	    visuals[i].bitsPerRGBValue = 8;
-	 }
-      }
-      cfbGeneration = serverGeneration;
-   }
-   if (!mfbAllocatePrivates(pScreen,
-			    &cfbWindowPrivateIndex, &cfbGCPrivateIndex))
-      return FALSE;
-   if (!AllocateWindowPrivate(pScreen, cfbWindowPrivateIndex,
-			      sizeof(cfbPrivWin)) ||
-       !AllocateGCPrivate(pScreen, cfbGCPrivateIndex, sizeof(cfbPrivGC)))
-      return FALSE;
-   if (defaultColorVisualClass < 0) {
-      i = 0;
-   } else {
-      for (i = 0;
-	   (i < NUMVISUALS) && (visuals[i].class != defaultColorVisualClass);
-	   i++) ;
-      if (i >= NUMVISUALS)
-	 i = 0;
-   }
-   pScreen->defColormap = FakeClientID(0);
- /* let CreateDefColormap do whatever it wants for pixels */
-   pScreen->blackPixel = pScreen->whitePixel = (Pixel) 0;
-   pScreen->QueryBestSize = mfbQueryBestSize;
- /* SaveScreen */
-   pScreen->GetImage = s3GetImage;
-   pScreen->GetSpans = s3GetSpans;
-   pScreen->CreateWindow = cfbCreateWindow;
-   pScreen->DestroyWindow = cfbDestroyWindow;
-   pScreen->PositionWindow = cfbPositionWindow;
-   pScreen->ChangeWindowAttributes = cfbChangeWindowAttributes;
-   pScreen->RealizeWindow = cfbMapWindow;
-   pScreen->UnrealizeWindow = cfbUnmapWindow;
-   pScreen->PaintWindowBackground = miPaintWindow;
-   pScreen->PaintWindowBorder = miPaintWindow;
-   pScreen->CopyWindow = s3CopyWindow;
-   pScreen->CreatePixmap = cfbCreatePixmap;
-   pScreen->DestroyPixmap = cfbDestroyPixmap;
-   pScreen->RealizeFont = s3RealizeFont;
-   pScreen->UnrealizeFont = s3UnrealizeFont;
-   pScreen->CreateGC = s3CreateGC;
-   pScreen->CreateColormap = cfbInitializeColormap;
-   pScreen->DestroyColormap = (void (*)())NoopDDA;
-#ifdef	STATIC_COLOR
-   pScreen->InstallColormap = cfbInstallColormap;
-   pScreen->UninstallColormap = cfbUninstallColormap;
-   pScreen->ListInstalledColormaps = cfbListInstalledColormaps;
-   pScreen->StoreColors = (void (*)())NoopDDA;
-#else
-   pScreen->InstallColormap = s3InstallColormap;
-   pScreen->UninstallColormap = s3UninstallColormap;
-   pScreen->ListInstalledColormaps = s3ListInstalledColormaps;
-   pScreen->StoreColors = s3StoreColors;
-#endif
-   pScreen->ResolveColor = cfbResolveColor;
-   pScreen->BitmapToRegion = mfbPixmapToRegion;
-   mfbRegisterCopyPlaneProc(pScreen, s3CopyPlane);   
-   return miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
-		       8, NUMDEPTHS, depths,
-		       visuals[i].vid, NUMVISUALS, visuals,
-		       &s3BSFuncRec);
+    rootdepth = 0;
+    bitsPerRGB = 6;
+    switch (s3InfoRec.bitsPerPixel) {
+    case 8:
+	if (s3DAC8Bit)
+	    bitsPerRGB = 8;
+	break;
+    case 16:
+	if (xf86weight.red == 5 && xf86weight.green == 5
+	    && xf86weight.blue == 5)
+	    bitsPerRGB = 5;
+	break;
+    }
+	
+    if (cfbGeneration != serverGeneration) {
+	if (!cfbInitVisuals(&visuals, &depths, &nvisuals, &ndepths, &rootdepth,
+	    &defaultVisual, 1<<(s3InfoRec.bitsPerPixel - 1), bitsPerRGB))
+	    return FALSE;
+	cfbGeneration = serverGeneration;
+    }
+
+    if (rootdepth == 15 || rootdepth == 16) {
+    /*
+     * There are several possible color weightings at 16bpp.
+     * Set them up here.
+     */
+        for (i = 0, visual = visuals; i < nvisuals; i++, visual++)
+	    if (visual->class == DirectColor || visual->class == TrueColor) {
+	        visual->offsetRed = xf86weight.green + xf86weight.blue;
+	        visual->offsetGreen = xf86weight.blue;
+	        visual->offsetBlue = 0;
+	        visual->redMask = ((1 << xf86weight.red) - 1)
+			<< visual->offsetRed;
+	        visual->greenMask = ((1 << xf86weight.green) - 1)
+			<< visual->offsetGreen;
+	        visual->blueMask = (1 << xf86weight.blue) - 1;
+	    }
+    }
+
+    cfbWindowPrivateIndex = cfbGCPrivateIndex = -1;
+    pScreen->defColormap = FakeClientID(0);
+    /* let CreateDefColormap do whatever it wants for pixels */ 
+    pScreen->blackPixel = pScreen->whitePixel = (Pixel) 0;
+    pScreen->QueryBestSize = mfbQueryBestSize;
+    /* SaveScreen */
+    pScreen->GetImage = s3GetImage;
+    pScreen->GetSpans = s3GetSpans;
+    pScreen->PaintWindowBackground = miPaintWindow;
+    pScreen->PaintWindowBorder = miPaintWindow;
+    pScreen->CopyWindow = s3CopyWindow;
+    pScreen->RealizeFont = s3RealizeFont;
+    pScreen->UnrealizeFont = s3UnrealizeFont;
+    switch (rootdepth) {
+    case 8:
+	pScreen->CreateGC = s3CreateGC;
+        if (!cfbAllocatePrivates(pScreen, &cfbWindowPrivateIndex,
+	    &cfbGCPrivateIndex))
+	    return FALSE;
+	pScreen->CreateWindow = cfbCreateWindow;
+	pScreen->DestroyWindow = cfbDestroyWindow;
+	pScreen->PositionWindow = cfbPositionWindow;
+	pScreen->ChangeWindowAttributes = cfbChangeWindowAttributes;
+	pScreen->RealizeWindow = cfbMapWindow;
+	pScreen->UnrealizeWindow = cfbUnmapWindow;
+	pScreen->CreatePixmap = cfbCreatePixmap;
+	pScreen->DestroyPixmap = cfbDestroyPixmap;
+	mfbRegisterCopyPlaneProc (pScreen, s3CopyPlane);
+	break;
+    case 15:
+    case 16:
+	pScreen->CreateGC = s3CreateGC16;
+        if (!cfb16AllocatePrivates(pScreen, &cfbWindowPrivateIndex,
+	    &cfbGCPrivateIndex))
+	    return FALSE;
+	pScreen->CreateWindow = cfb16CreateWindow;
+	pScreen->DestroyWindow = cfb16DestroyWindow;
+	pScreen->PositionWindow = cfb16PositionWindow;
+	pScreen->ChangeWindowAttributes = cfb16ChangeWindowAttributes;
+	pScreen->RealizeWindow = cfb16MapWindow;
+	pScreen->UnrealizeWindow = cfb16UnmapWindow;
+	pScreen->CreatePixmap = cfb16CreatePixmap;
+	pScreen->DestroyPixmap = cfb16DestroyPixmap;
+	mfbRegisterCopyPlaneProc (pScreen, s3CopyPlane);	
+	break;
+	default:
+	    FatalError("root depth %d not (yet?) supported\n", rootdepth);
+    }
+    pScreen->CreateColormap = cfbInitializeColormap;
+    pScreen->DestroyColormap = (DestroyColormapProcPtr)NoopDDA;
+    pScreen->ResolveColor = cfbResolveColor;
+    pScreen->BitmapToRegion = mfbPixmapToRegion;
+/* XXX: new cache   pScreen->BlockHandler = s3BlockHandler;*/
+
+    if (rootdepth != 8) {
+	oldDevPrivate = pScreen->devPrivate;
+    }
+    Rstatus = miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
+			rootdepth, ndepths, depths,
+			defaultVisual, nvisuals, visuals,
+			&s3BSFuncRec);
+    if (rootdepth != 8) {
+	pScreen->CreateScreenResources = cfb16CreateScreenResources;
+	pScreen->devPrivates[cfb16ScreenPrivateIndex].ptr = pScreen->devPrivate;
+	pScreen->devPrivate = oldDevPrivate;
+    }
+    return Rstatus;
+
 }

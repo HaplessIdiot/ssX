@@ -1,5 +1,5 @@
 /* $XConsortium: s3misc.c,v 1.1 94/03/28 21:16:11 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.4 1994/07/24 11:48:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.5 1994/08/01 12:12:23 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -125,7 +125,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 
 	    s3InitEnvironment();
 	    s3ImageWriteNoMem(0, 0, 4, 1, (char *) &pVal, 4, 0, 0,
-			      (short) s3alu[GXcopy], (short) 0xffff);	 
+			      (short) s3alu[GXcopy], ~0);	 
 
 	    if (S3_801_928_SERIES (s3ChipId)) {
 	       int j;
@@ -390,7 +390,7 @@ s3EnterLeaveVT(enter, screen_idx)
 			        ppix->devPrivate.ptr,
 			        PixmapBytePad(s3DisplayWidth, 
 					      pScreen->rootDepth),
-			        0, 0, s3alu[GXcopy], 0xFF);
+			        0, 0, s3alu[GXcopy], ~0);
 	 }
       }
       if (ppix) {
@@ -411,7 +411,7 @@ s3EnterLeaveVT(enter, screen_idx)
 			       ppix->devPrivate.ptr,
 			       PixmapBytePad(s3DisplayWidth, 
 					     pScreen->rootDepth),
-			       0, 0, 0xFF);
+			       0, 0, ~0);
 	    pspix->devPrivate.ptr = ppix->devPrivate.ptr;
 	 }
       }

@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.9 1994/07/19 11:52:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.10 1994/07/21 13:56:25 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -980,7 +980,7 @@ s3Init(mode)
    }
 
    outb(vgaCRIndex, 0x43);
-   outb(vgaCRReg, 0x00);
+   outb(vgaCRReg, 0x10); /* enable XOR addresses */
 
    outb(vgaCRIndex, 0x44);
    outb(vgaCRReg, 0x00);

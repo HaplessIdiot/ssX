@@ -1,0 +1,31 @@
+s3.c
+s3BtCursor.c
+s3Conf.c        - N/A
+s3Cursor.c      - planemasks done
+s3TiCursor.c
+s3bcach.c       - Done
+s3blt.c         - Done
+s3bstor.c       - Done
+s3cmap.c        - Nothing to do?
+s3dline.c       - Done
+s3dseg.c        - Done
+s3fcach.c       - Done
+s3font.c        - N/A
+s3frect.c       - Done
+s3fs.c          - Done
+s3gc.c          - should be ok
+s3gc16.c        - New file, might work - compiles :-)
+s3gc32.c	- "exists"
+s3gs.c          - Done
+s3gtimg.c       - Done
+s3im.c          - Done, NoMem versions should be debugged.
+s3init.c
+s3line.c        - Done
+s3misc.c     
+s3pcach.c       - Done (but unused?)
+s3plypt.c       - Done
+s3scrin.c       - Based on mach32scrin.c.
+s3seg.c         - Done
+s3ss.c          - Done
+s3text.c        - Done
+s3win.c	        - N/A

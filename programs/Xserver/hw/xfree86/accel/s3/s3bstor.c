@@ -67,7 +67,7 @@ s3SaveAreas(pPixmap, prgnSave, xorg, yorg, pWin)
       (s3ImageReadFunc) (pBox->x1 + xorg, pBox->y1 + yorg,
 			 pBox->x2 - pBox->x1, pBox->y2 - pBox->y1,
 			 pPixmap->devPrivate.ptr, pixWidth,
-			 pBox->x1, pBox->y1, 0xFF);
+			 pBox->x1, pBox->y1, ~0);
       pBox++;
    }
 }
@@ -100,7 +100,7 @@ s3RestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin)
 			  pBox->x2 - pBox->x1, pBox->y2 - pBox->y1,
 			  pPixmap->devPrivate.ptr, pixWidth,
 			  pBox->x1 - xorg, pBox->y1 - yorg,
-			  s3alu[GXcopy], 0xffffffff);
+			  s3alu[GXcopy], ~0);
       pBox++;
    }
 }

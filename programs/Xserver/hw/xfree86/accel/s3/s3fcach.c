@@ -1,5 +1,5 @@
 /* $XConsortium: s3fcach.c,v 1.1 94/03/28 21:17:12 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.0 1994/04/29 14:07:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.1 1994/08/01 12:12:15 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -133,7 +133,7 @@ Dos3CPolyText8(x, y, count, chars, fentry, pGC, pBox)
    int blocki = 255;
    unsigned short height = 0;
    unsigned short width = 0;
-   unsigned short pmsk = 0;
+   Pixel pmsk = 0;
 
    BLOCK_CURSOR;
    for (;count > 0; count--, chars++) {
@@ -162,7 +162,11 @@ Dos3CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 		  S3_OUTW(MULTIFUNC_CNTL, SCISSORS_L | 0);
 		  S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (s3DisplayWidth-1));
 		  S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | s3ScissB);
-		  S3_OUTW(RD_MASK, 0xFF);
+		  S3_OUTW(RD_MASK, 0xFFFF);
+#ifdef S3_32BPP
+		  if (s3InfoRec.bitsPerPixel == 32)
+		     S3_OUTW(RD_MASK, 0xFFFF);
+#endif
 		  S3_OUTW(MULTIFUNC_CNTL, 
 			PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
 		  S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
@@ -181,11 +185,19 @@ Dos3CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 		  S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | (short)(pBox->y2 - 1));
 		  WaitQueue(5);
 		  S3_OUTW(FRGD_COLOR, (short)pGC->fgPixel);
+#ifdef S3_32BPP
+		  if (s3InfoRec.bitsPerPixel == 32)
+		     S3_OUTW(FRGD_COLOR, (short)(pGC->fgPixel)>>16));
+#endif
 		  S3_OUTW(MULTIFUNC_CNTL, 
 			PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
 		  S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
 		  S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
 		  S3_OUTW(WRT_MASK, pGC->planemask);
+#ifdef S3_32BPP
+		  if (s3InfoRec.bitsPerPixel == 32)
+		     S3_OUTW(WRT_MASK, (short)(pGC->planemask>>16));
+#endif
 		  height = width = pmsk = 0;
 	       }
 	       WaitQueue(2);
@@ -196,7 +208,11 @@ Dos3CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 		*/
 	       if (!pmsk || pmsk != (1 << block->id)) {
 		  pmsk = 1 << block->id;
-	       	  S3_OUTW(RD_MASK, pmsk);		  	       
+	       	  S3_OUTW(RD_MASK, (unsigned short)pmsk);		  	       
+#ifdef S3_32BPP
+		  if (s3InfoRec.bitsPerPixel == 32)
+		     S3_OUTW(RD_MASK, (unsigned short)(pmsk>>16));
+#endif
 	       }
 	       xoff = block->x;
 	       block->lru = NEXT_FONT_AGE;
@@ -241,10 +257,18 @@ s3GlyphWrite(x, y, count, chars, fentry, pGC, pBox, numRects)
    BLOCK_CURSOR;
    WaitQueue(5);
    S3_OUTW(FRGD_COLOR, (short)pGC->fgPixel);
+#ifdef S3_32BPP
+   if (s3InfoRec.bitsPerPixel == 32)
+      S3_OUTW(FRGD_COLOR, (short)(pGC->fgPixel)>>16));
+#endif        
    S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
    S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
    S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
    S3_OUTW(WRT_MASK, pGC->planemask);
+#ifdef S3_32BPP 
+   if (s3InfoRec.bitsPerPixel == 32)
+      S3_OUTW(WRT_MASK, (short)(pGC->planemask>>16));
+#endif
 
    for (; --numRects >= 0; ++pBox) {
       WaitQueue(4);
@@ -261,7 +285,11 @@ s3GlyphWrite(x, y, count, chars, fentry, pGC, pBox, numRects)
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_L | 0);
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (s3DisplayWidth-1));
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | s3ScissB);
-   S3_OUTW(RD_MASK, 0xFF);
+   S3_OUTW(RD_MASK, 0xFFFF);
+#ifdef S3_32BPP
+   if (s3InfoRec.bitsPerPixel == 32)
+      S3_OUTW(RD_MASK, 0xFFFF);
+#endif
    S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
    S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
    S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);

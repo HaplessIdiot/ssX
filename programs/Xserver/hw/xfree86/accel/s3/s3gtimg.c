@@ -36,7 +36,7 @@ s3GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
      DrawablePtr pDrawable;
      int         sx, sy, w, h;
      unsigned int format;
-     unsigned long planeMask;
+     Pixel planeMask;
      char *pdstLine;
 {
    int width;

@@ -159,11 +159,23 @@ s3Dsegment (pDrawable, pGC, nseg, pSeg)
    S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
    if (pGC->lineStyle == LineDoubleDash) {
       S3_OUTW(BKGD_COLOR, (short)pGC->bgPixel);
+#ifdef S3_32BPP
+      if (s3InfoRec.bitsPerPixel == 32)
+         S3_OUTW(BKGD_COLOR, (short)(pGC->bgPixel)>>16));
+#endif
       S3_OUTW(BKGD_MIX, BSS_BKGDCOL | s3alu[pGC->alu]);      
    } else
       S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
    S3_OUTW(WRT_MASK, (short)pGC->planemask);
+#ifdef S3_32BPP
+   if (s3InfoRec.bitsPerPixel == 32)
+      S3_OUTW(WRT_MASK, (short)(pGC->planemask>>16));
+#endif
    S3_OUTW(FRGD_COLOR, (short)pGC->fgPixel);
+#ifdef S3_32BPP
+   if (s3InfoRec.bitsPerPixel == 32)
+      S3_OUTW(FRGD_COLOR, (short)(pGC->fgPixel)>>16));
+#endif
    S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPPC | COLCMPOP_F);
    
    xorg = pDrawable->x;
