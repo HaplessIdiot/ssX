@@ -757,7 +757,8 @@ XFree86 Project has been provided from its proceeds.
 	       name="Vixie Enterprises">, La Honda, CA
   <item>  <url url="http://www.cdrom.com/"  
 	name="Walnut Creek CDROM">, Concord, CA
-  <item>  Xtreme s.a.s., Livorno, Italy
+  <item>  <url url="http://www.xfree86.org/xtreme"
+	name="Xtreme s.a.s.">, Livorno, Italy
 </itemize>
 The XFree86 Project, Inc, welcomes the additional contribution of funding
 and/or equipment.  Such contributions should be tax-deductible; we will
@@ -781,9 +782,11 @@ and the following mirror sites:
 <itemize>
 <item>       North America:  
 <itemize>
+<!--
 <item>   <url url="ftp://ftp.bsdi.com/contrib/X11/XFree86" 
 	name="ftp.bsdi.com:/contrib/X11/XFree86">
 	(source and BSD/OS binaries)
+-->
 <item>   <url url="ftp://XFree86.cdrom.com/pub/XFree86" 
 	name="XFree86.cdrom.com:/pub/XFree86">
 	(source and binaries)
@@ -800,12 +803,14 @@ and the following mirror sites:
 <item>   <url url="ftp://ftp.eecs.umich.edu/BSD/XFree86/current" 
 	name="ftp.eecs.umich.edu:/BSD/XFree86/current">
 	(source and binaries)
+<!--
 <item>   <url url="ftp://sunsite.unc.edu/pub/X11/XFree86" 
 	name="sunsite.unc.edu:/pub/X11/XFree86">
 	(source patches and binaries)
 <item>   <url url="ftp://abode.ccd.bnl.gov/pub/XFree86" 
 	name="abode.ccd.bnl.gov:/pub/XFree86">
 	(Solaris, SVR4, SCO binaries)
+-->
 </itemize> 
 
 <item>      Europe:  
@@ -813,14 +818,16 @@ and the following mirror sites:
 <item>   <url url="ftp://fvkma.tu-graz.ac.at/pub/XFree86/3.1.2" 
 	name="fvkma.tu-graz.ac.at:/pub/X11/XFree86/3.1.2">
 	(source and binaries)
+<!--
 <item>   <url url="ftp://ftp.switch.ch/mirror/XFree86" 
 	name="ftp.switch.ch:/mirror/XFree86">
 	(source and binaries)
-<item>   <url url="ftp://ftp.fee.vutbr.cz/pub/XFree86" 
+-->
+<item>   <url url="ftp://ftp.fee.vutbr.cz/pub/XFree86"
 	name="ftp.fee.vutbr.cz:/pub/XFree86/3.1.2">
 	(source patches and binaries)
-<item>   <url url="ftp://ftp.gwdg.de/pub/xfree86" 
-	name="ftp.gwdg.de:/pub/xfree86">
+<item>   <url url="ftp://ftp.gwdg.de/pub/xfree86/XFree86/3.1.2"
+	name="ftp.gwdg.de:/pub/xfree86/XFree86/3.1.2">
 	(source and binaries)
 <item>   <url url="ftp://ftp.uni-erlangen.de/pub/Linux/MIRROR.xfree86/3.1.2" 
 	name="ftp.uni-erlangen.de:/pub/Linux/MIRROR.xfree86/3.1.2">
@@ -828,11 +835,11 @@ and the following mirror sites:
 <item>   <url url="ftp://ftp.uni-stuttgart.de/pub/X11/Xfree86/3.1.2" 
 	name="ftp.uni-stuttgart.de:/pub/X11/Xfree86/3.1.2">
 	(source and binaries)
-<item>   <url url="ftp://ftp.funet.fi/pub/X11/XFree86/3.1.2" 
-	name="ftp.funet.fi:/pub/X11/XFree86/3.1.2">
+<item>   <url url="ftp://ftp.funet.fi/pub/X11/XFree86" 
+	name="ftp.funet.fi:/pub/X11/XFree86">
 	(source and binaries)
-<item>   <url url="ftp://anasgard.calvacom.fr/pub/unix/X/XFree86" 
-	name="anasgard.calvacom.fr:/pub/unix/X/XFree86">
+<item>   <url url="ftp://ftp.calvacom.fr/pub/unix/X/XFree86" 
+	name="ftp.calvacom.fr:/pub/unix/X/XFree86">
 	(source and binaries)
 <item>   <url url="ftp://ftp.ibp.fr/pub/X11/XFree86" 
 	name="ftp.ibp.fr:/pub/X11/XFree86">
@@ -840,9 +847,11 @@ and the following mirror sites:
 <item>   <url url="ftp://ftp.laas.fr/pub/NetBSD/XFree86-3.1.2" 
 	name="ftp.laas.fr:/pub/netbsd/XFree86-3.1.2">
 	(NetBSD binaries only)
+<!--
 <item>   <url url="ftp://ftp.unipi.it/pub/mirrors/XFree86-3.1.2"
 	name="ftp.unipi.it:/pub/mirrors/XFree86-3.1.2">
 	(source and binaries)
+-->
 <item>   <url url="ftp://ftp.pvv.unit.no/pub/XFree86/current" 
 	name="ftp.pvv.unit.no:/pub/XFree86/current">
 	(source and binaries)
@@ -868,20 +877,25 @@ and the following mirror sites:
 <item>   <url url="ftp://x.physics.usyd.edu.au/pub/XFree86/3.1.2" 
 	name="x.physics.usyd.edu.au:/pub/XFree86/3.1.2">
 	(source and binaries)
-<!--
 <item>   <url url="ftp://ftp.iij.ad.jp/pub/X/XFree86" 
 	name="ftp.iij.ad.jp:/pub/X/XFree86">
 	(source and binaries)
--->
+<item>   <url url="ftp://ftp.sf.co.kr/pub/XFree86/3.1.2" 
+	name="ftp.sf.co.kr:/pub/XFree86/3.1.2">
+	(source and binaries)
+<!--
 <item>   <url url="ftp://ftp.hk.super.net/mirror/XFree86" 
 	name="ftp.hk.super.net:/mirror/XFree86">
 	(source and binaries)
-<item>   <url url="ftp://ftp.nectec.or.th/pub/mirrors/XFree86/3.1.2" 
-	name="ftp.nectec.or.th:/pub/mirrors/XFree86/3.1.2">
+-->
+<item>   <url url="ftp://ftp.nectec.or.th/pub/mirrors/XFree86" 
+	name="ftp.nectec.or.th:/pub/mirrors/XFree86">
 	(source patches and binaries)
+<!--
 <item>   <url url="ftp://ftp.edu.tw/X/XFree86/3.1.2" 
 	name="ftp.edu.tw:/X/XFree86/3.1.2">
 	(source and binaries)
+-->
 </itemize>
 
 </itemize>
@@ -898,7 +912,7 @@ compile-time option selections were made when building the distribution.
 
 <verb>
 $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.27 1995/07/24 05:56:20 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.28 1995/07/30 04:15:54 dawes Exp $
 </verb>
 
 </article>
