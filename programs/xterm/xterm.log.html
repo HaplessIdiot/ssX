@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.60 2000/11/01 01:12:44 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.62 2000/12/28 00:51:52 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -42,6 +42,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_150">Patch #150 - 2000/12/29 - XFree86 4.0.2</A>
 <LI><A HREF="#xterm_149">Patch #149 - 2000/12/6 - XFree86 4.0.1h</A>
 <LI><A HREF="#xterm_148">Patch #148 - 2000/10/31 - XFree86 4.0.1d</A>
 <LI><A HREF="#xterm_147">Patch #147 - 2000/10/26 - XFree86 4.0.1c</A>
@@ -194,6 +195,68 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
 
+<H1><A NAME="xterm_150">Patch #150 - 2000/12/29 - XFree86 4.0.2</A></H1>
+<ul>
+	<li>move the binding for shifted keypad plus/minus, which invokes the
+	  <code>larger-vt-font()</code> and <code>smaller-vt-font()</code>
+	  actions, respectively, into the translations resource (suggested by
+	  Marius Gedminas &lt;mgedmin@puni.osf.lt&gt;).
+
+	<li>modify configure script to support the
+	  <code>--program-prefix</code>, <code>--program-suffix</code> and
+	  <code>--program-transform-name</code> options (request by Alison
+	  Winters &lt;alison@mirrabooka.com&gt;).
+
+	<li>patch from Robert Brady
+	<ul>
+	   <li>fix a scrolling / combining characters display anomaly
+
+	   <li>fix a problem with double-width characters where if the primary
+	       font had no box-drawing characters, the right hand half of
+	       double-width characters was erased (reported by Yao Zhang
+	       &lt;yzhang@sharemedia.com&gt;).
+
+	   <li>fix special case of null byte for key handling in UTF-8 locales.
+	</ul>
+
+	<li>modify logic that compares sizes of normal and bold fonts to be
+	  more forgiving of the font server's choice of bold font which must
+	  match the normal font's size.  Now <code>same_font_size()</code>
+	  compares the height of the fonts rather than individually ascent and
+	  descent, and allows the bold font to be one pixel smaller than the
+	  normal font (addresses a report by Alan Citterman
+	  &lt;alan@mticket.com&gt;, who says that something in patches #146 to
+	  #148 made xterm more likely to overstrike bold fonts, and indirectly
+	  Debian bug report #76404, which reports the opposite).
+
+	<li>make configure script use $CFLAGS and $CPPFLAGS consistently,
+	  including removing a chunk from configure.in which attempted to
+	  save/restore $CPPFLAGS while processing value set by the --x-includes
+	  option, but lost values set in an intervening AC_CHECK_HEADERS.  This
+	  change modifies macros CF_ADD_CFLAGS, CF_ANSI_CC_CHECK and
+	  CF_X_TOOLKIT, as well as removing variables IMAKE_CFLAGS and X_CFLAGS
+	  from the generated makefile (the AC_CHECK_HEADERS problem was
+	  reported by Albert Chin-A-Young &lt;china@thewrittenword.com&lt;).
+
+	<li>correct a comparison in SELECTWORD case of ComputeSelect(), which
+	  resulted in a word-selection wrapping past the first column without
+	  checking the first column's character class (reported by Christian
+	  Lacunza &lt;celacunza@netscape.net&gt;
+
+	<li>correct a logic in UTF-8 mode for selecting double-width characters;
+	  a combining character was omitted (patch by Markus Kuhn).
+
+	<li>add feature to pop (raise) window when a bell is received
+	  (patch by Gael Roualland &lt;gael.roualland@dial.oleane.com&gt;).
+
+	<li>add __NetBSD__ and __OpenBSD__ to special-case in xterm_io.h
+	  for USE_POSIX_TERMIOS definition (patch by Christian Weisgerber).
+
+	<li>move special-case HPUX include for &lt;sys/bsdtty.h&gt; to
+	  xterm_io.h to define TIOCSLTC, making HAS_LTCHARS defined for HPUX
+	  10.20 (report by Bruno Betro).
+</ul>
+
 <H1><A NAME="xterm_149">Patch #149 - 2000/12/6 - XFree86 4.0.1h</A></H1>
 <ul>
 	<li>restructured includes for <code>termios.h</code>,
@@ -210,6 +273,9 @@ xc/programs/Xserver/hw/xfree86).
 
 	<li>correct a few compiler warnings in TRACE() macros for
 	  signed/unsigned variable differences (reported by Clint Olsen).
+
+	<li>make configure script use $CFLAGS and $CPPFLAGS more consistently,
+	  i.e., by using CF_ADD_CFLAGS in CF_ANSI_CC macro.
 
 	<li>expanded description of environment variables in manual-page.
 
