@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3text.c,v 3.13 1996/09/01 04:15:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3text.c,v 3.14 1996/09/22 05:03:25 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -105,8 +105,6 @@ s3PolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase, pBox)
     int gWidth, gHeight;		/* width and height of glyph */
     register int nbyGlyphWidth;		/* bytes per scanline of glyph */
     int nbyPadGlyph;			/* server padded line of glyph */
-    
-
 
     pfont = pGC->font;
     width = FONTMAXBOUNDS(pfont,rightSideBearing) - 

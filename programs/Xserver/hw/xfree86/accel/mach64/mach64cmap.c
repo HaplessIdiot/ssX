@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64cmap.c,v 3.4 1996/03/29 22:15:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64cmap.c,v 3.5 1996/09/15 11:17:27 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -106,7 +106,7 @@ mach64StoreColors(pmap, ndef, pdefs)
 	}
 	if (xf86VTSema
 #ifdef XFreeXDGA
-	    || (mach64InfoRec.directMode & XF86DGADirectGraphics)
+	    || (mach64InfoRec.directMode & XF86DGAHasColormap)
 #endif
 	   ) {
             /* WaitQueue(4); */
@@ -151,11 +151,8 @@ mach64InstallColormap(pmap)
   prgb = (xrgb *)ALLOCATE_LOCAL( entries * sizeof(xrgb));
   defs = (xColorItem *)ALLOCATE_LOCAL(entries * sizeof(xColorItem));
 
-#ifdef XFreeXDGA
-  if (xf86VTSema || !(mach64InfoRec.directMode & XF86DGAHasColormap))
-#endif
-    if ( oldmap != NOMAPYET)
-      WalkTree( pmap->pScreen, TellLostMap, &oldmap->mid);
+  if ( oldmap != NOMAPYET)
+    WalkTree( pmap->pScreen, TellLostMap, &oldmap->mid);
 
   InstalledMaps[pmap->pScreen->myNum] = pmap;
 

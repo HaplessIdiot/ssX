@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3cmap.c,v 3.11 1996/09/15 11:18:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3cmap.c,v 3.12 1996/09/22 05:03:16 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -141,7 +141,7 @@ s3StoreColors(pmap, ndef, pdefs)
       }
       if (xf86VTSema 
 #ifdef XFreeXDGA
-	  || (s3InfoRec.directMode & XF86DGADirectGraphics)
+	  || (s3InfoRec.directMode & XF86DGAHasColormap)
 #endif
          ) {
 	 outb(DAC_W_INDEX, pdefs[i].pixel);
@@ -167,7 +167,7 @@ s3StoreColors(pmap, ndef, pdefs)
       currents3dac_border = ilow;
       if (xf86VTSema 
 #ifdef XFreeXDGA
-	  || (s3InfoRec.directMode & XF86DGADirectGraphics)
+	  || (s3InfoRec.directMode & XF86DGAHasColormap)
 #endif
          ) {
          i = inb(vgaIOBase + 0x0A);   /* reset flip-flop */
@@ -208,11 +208,8 @@ s3InstallColormap(pmap)
    prgb = (xrgb *) ALLOCATE_LOCAL(entries * sizeof(xrgb));
    defs = (xColorItem *) ALLOCATE_LOCAL(entries * sizeof(xColorItem));
 
-#ifdef XFreeXDGA
-   if (xf86VTSema || !(s3InfoRec.directMode & XF86DGAHasColormap))
-#endif
-      if (oldmap != NOMAPYET)
-         WalkTree(pmap->pScreen, TellLostMap, &oldmap->mid);
+   if (oldmap != NOMAPYET)
+      WalkTree(pmap->pScreen, TellLostMap, &oldmap->mid);
 
    InstalledMaps[pmap->pScreen->myNum] = pmap;
 

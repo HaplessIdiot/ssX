@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000cmap.c,v 3.6 1996/05/10 06:57:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000cmap.c,v 3.7 1996/09/15 11:17:58 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -158,7 +158,7 @@ p9000StoreColors(pmap, ndef, pdefs)
         currentp9000dac[pdefs[i].pixel].b = pdefs[i].blue >> 8;
 	if (xf86VTSema
 #ifdef XFreeXDGA
-	    || (p9000InfoRec.directMode & XF86DGADirectGraphics)
+	    || (p9000InfoRec.directMode & XF86DGAHasColormap)
 #endif
 	    ) {
 	    outb(BT_WRITE_ADDR, pdefs[i].pixel);
@@ -197,11 +197,8 @@ p9000InstallColormap(pmap)
   prgb = (xrgb *)ALLOCATE_LOCAL( entries * sizeof(xrgb));
   defs = (xColorItem *)ALLOCATE_LOCAL(entries * sizeof(xColorItem));
 
-#ifdef XFreeXDGA
-  if (xf86VTSema || !(p9000InfoRec.directMode & XF86DGAHasColormap))
-#endif
-    if ( oldmap != NOMAPYET)
-      WalkTree( pmap->pScreen, TellLostMap, &oldmap->mid);
+  if ( oldmap != NOMAPYET)
+    WalkTree( pmap->pScreen, TellLostMap, &oldmap->mid);
 
   InstalledMaps[pmap->pScreen->myNum] = pmap;
 
