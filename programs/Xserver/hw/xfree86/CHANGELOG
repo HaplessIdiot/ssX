@@ -1,4 +1,5 @@
 XFree86 4.3.99.16 (xx November 2003)
+ 551. Mesa X86 asm build fix for Solaris (David Dawes).
  550. Fix building libOSMesa on Darwin (Torrey T. Lyons).
  549. Get backlight working on Apple's GeForce4 powerbooks (Guido Guenther).
 
@@ -18097,7 +18098,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2931 2003/11/02 22:25:04 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2932 2003/11/04 00:24:30 torrey Exp $
 
 
 
