@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.82 2002/12/06 03:25:27 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.83 2002/12/20 04:32:46 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -95,7 +95,7 @@ typedef struct {
  * Prototypes
  */
 static void Lisp__GC(LispObj*, LispObj*);
-LispObj *Lisp__New(LispObj*, LispObj*);
+static LispObj *Lisp__New(LispObj*, LispObj*);
 
 /* run a user function, to be called only by LispEval */
 static LispObj *LispRunFunMac(LispObj*, LispObj*, int, int);
@@ -1159,15 +1159,17 @@ LispMused(void *pointer)
 	if (lisp__data.mem.mem[i] == pointer) {
 	    lisp__data.mem.mem[i] = NULL;
 	    lisp__data.mem.index = i;
-	    ENABLE_INTERRUPTS();
-	    return;
+	    goto mused_done;
 	}
 
     for (i = lisp__data.mem.level - 1; i > lisp__data.mem.index; i--)
 	if (lisp__data.mem.mem[i] == pointer) {
 	    lisp__data.mem.mem[i] = NULL;
 	    lisp__data.mem.index = i;
+	    break;
 	}
+
+mused_done:
     ENABLE_INTERRUPTS();
 }
 
@@ -1212,19 +1214,20 @@ LispRealloc(void *pointer, size_t size)
     int i;
 
     DISABLE_INTERRUPTS();
-    if (pointer == NULL)
-	i = lisp__data.mem.level;
-    else {
-	for (i = 0; i < lisp__data.mem.level; i++)
+    if (pointer != NULL) {
+	for (i = lisp__data.mem.index; i >= 0; i--)
 	    if (lisp__data.mem.mem[i] == pointer)
-		break;
-    }
-    if (i == lisp__data.mem.level) {
-	/* XXX Realloc on a pointer not from LispXXXalloc */
-	LispCheckMemLevel();
-	i = lisp__data.mem.index;
-    }
+		goto index_found;
 
+	for (i = lisp__data.mem.index + 1; i < lisp__data.mem.level; i++)
+	    if (lisp__data.mem.mem[i] == pointer)
+		goto index_found;
+
+    }
+    LispCheckMemLevel();
+    i = lisp__data.mem.index;
+
+index_found:
     if ((ptr = realloc(pointer, size)) == NULL)
 	LispDestroy("out of memory, couldn't realloc");
 
@@ -1254,17 +1257,17 @@ LispFree(void *pointer)
 	if (lisp__data.mem.mem[i] == pointer) {
 	    lisp__data.mem.mem[i] = NULL;
 	    lisp__data.mem.index = i;
-	    free(pointer);
-	    ENABLE_INTERRUPTS();
-	    return;
+	    goto free_done;
 	}
 
     for (i = lisp__data.mem.level - 1; i > lisp__data.mem.index; i--)
 	if (lisp__data.mem.mem[i] == pointer) {
 	    lisp__data.mem.mem[i] = NULL;
 	    lisp__data.mem.index = i;
+	    break;
 	}
 
+free_done:
     free(pointer);
     ENABLE_INTERRUPTS();
 }
@@ -2594,7 +2597,7 @@ LispUProtect(LispObj *key, LispObj *list)
     LispDestroy("no match for %s, at UPROTECT", STROBJ(key));
 }
 
-LispObj *
+static LispObj *
 Lisp__New(LispObj *car, LispObj *cdr)
 {
     int cellcount;
