@@ -1,4 +1,8 @@
 XFree86 3.2Am (11 March 1997)
+ 567. First attempt to get a universal SVGA server that statically links
+      in all drivers except those from the accel directory. Links ok and
+      seems to work at >=8bpp, but has bit ordering problems for 1,4bpp.
+      (David Dawes, Dirk Hohndel).
  566. Fixes for Trident Cyber chipsets (#154,155, Alan Hourihane).
  565. Fixes for OS/2 (more IHaveModules and drive letters in ModulePath),
       get Mach64 to work again (#153, Holger Veit).
@@ -4161,4 +4165,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.427 1997/03/11 11:09:12 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.428 1997/03/11 13:05:11 hohndel Exp $
