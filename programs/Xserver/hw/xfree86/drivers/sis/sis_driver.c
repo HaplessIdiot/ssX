@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.104 2003/08/23 15:03:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.83 2002/12/01 02:11:17 tsi Exp $ */
 /*
  * Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria.
  *
@@ -94,7 +94,7 @@
 #define DPMS_SERVER
 #include "extensions/dpms.h"
 
-#if (XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(4,3,99,0,0)) || (defined(XvExtension))
+ || (defined(XvExtension))
 #include "xf86xv.h"
 #include "Xv.h"
 #endif
@@ -296,7 +296,7 @@ static const char *vgahwSymbols[] = {
     NULL
 };
 
-#ifdef XFree86LOADER
+#if defined(XFree86LOADER) || (XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,10,0))
 static const char *miscfbSymbols[] = {
     "xf1bppScreenInit",
     "xf4bppScreenInit",
@@ -333,7 +333,7 @@ static const char *ddcSymbols[] = {
     NULL
 };
 
-#ifdef XFree86LOADER
+#if defined(XFree86LOADER) || (XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,10,0))
 static const char *i2cSymbols[] = {
     "xf86I2CBusInit",
     "xf86CreateI2CBusRec",
@@ -2695,7 +2695,12 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        }
     }
 
+
+#if (XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(4,3,99,11,0))
     if(!xf86SetDepthBpp(pScrn, 0, 0, 0, pix24flags)) {
+#else
+    if(!xf86SetDepthBpp(pScrn, 8, 8, 8, pix24flags)) {
+#endif
         xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 	    	"xf86SetDepthBpp() error\n");
 #ifdef SISDUALHEAD
@@ -7353,7 +7358,6 @@ SISCloseScreen(int scrnIndex, ScreenPtr pScreen)
        pSiS->directRenderingEnabled = FALSE;
     }
 #endif
-
 
     if(pScrn->vtSema) {
 

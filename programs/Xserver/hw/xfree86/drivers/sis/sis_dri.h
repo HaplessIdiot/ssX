@@ -12,11 +12,13 @@
 
 typedef struct {
   int CtxOwner;
-  unsigned long QueueLength;
+  int QueueLength;
   unsigned int AGPCmdBufNext;
   unsigned int FrameCount;
+#ifdef SIS315DRI
   /* For 315 series */
   unsigned long sharedWPoffset;
+#endif
 #if 0
   unsigned char *AGPCmdBufBase;
   unsigned long AGPCmdBufAddr;

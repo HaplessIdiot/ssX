@@ -1,10 +1,11 @@
 /* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.19 2001/10/31 22:50:29 tsi Exp $ */
 /*
- *  DRI wrapper for 300, 540, 630, 730
+ *  DRI wrapper for 300 and 315 series
  *
- *  Preliminary SiS 315 series support by Thomas Winischhofer
+ *  Preliminary 315/330 support by Thomas Winischhofer
  *
  *  Taken and modified from tdfx_dri.c, mga_dri.c
+ *
  */
 
 #include "xf86.h"
@@ -31,7 +32,7 @@
   while((MMIO_IN16(pSiS->IOBase, BR(16)+2) & 0xE000) != 0xE000){}; \
   MMIO_IN16(pSiS->IOBase, 0x8240);
 
-/* Idle function for 315 series */
+/* Idle function for 315/330 series */
 #define Q_STATUS 0x85CC
 #define SiS315Idle \
   { \
@@ -52,7 +53,7 @@ extern void GlxSetVisualConfigs(
 #define AGP_CMDBUF_PAGES 256
 #define AGP_CMDBUF_SIZE (AGP_PAGE_SIZE * AGP_CMDBUF_PAGES)
 
-/* 315 */
+/* 315/330 */
 #define AGP_VTXBUF_PAGES 512
 #define AGP_VTXBUF_SIZE (AGP_PAGE_SIZE * AGP_VTXBUF_PAGES)
 
@@ -90,8 +91,8 @@ SISInitVisualConfigs(ScreenPtr pScreen)
   int i, db, z_stencil, accum;
   Bool useZ16 = FALSE;
   
-  if(getenv("SIS_FORCE_Z16")){
-    useZ16 = TRUE;
+  if(getenv("SIS_FORCE_Z16")) {
+     useZ16 = TRUE;
   }
 
   switch (pScrn->bitsPerPixel) {
@@ -100,30 +101,29 @@ SISInitVisualConfigs(ScreenPtr pScreen)
     break;
   case 16:
   case 32:
-    numConfigs = (useZ16)? 8 : 16;
+    numConfigs = (useZ16) ? 8 : 16;
 
-    if (!(pConfigs = (__GLXvisualConfig*)xcalloc(sizeof(__GLXvisualConfig),
+    if(!(pConfigs = (__GLXvisualConfig*)xcalloc(sizeof(__GLXvisualConfig),
 						   numConfigs))) {
-      return FALSE;
+       return FALSE;
     }
-    if (!(pSISConfigs = (SISConfigPrivPtr)xcalloc(sizeof(SISConfigPrivRec),
+    if(!(pSISConfigs = (SISConfigPrivPtr)xcalloc(sizeof(SISConfigPrivRec),
 						    numConfigs))) {
-      xfree(pConfigs);
-      return FALSE;
+       xfree(pConfigs);
+       return FALSE;
     }
-    if (!(pSISConfigPtrs = (SISConfigPrivPtr*)xcalloc(sizeof(SISConfigPrivPtr),
+    if(!(pSISConfigPtrs = (SISConfigPrivPtr*)xcalloc(sizeof(SISConfigPrivPtr),
 							  numConfigs))) {
-      xfree(pConfigs);
-      xfree(pSISConfigs);
-      return FALSE;
+       xfree(pConfigs);
+       xfree(pSISConfigs);
+       return FALSE;
     }
-    for (i=0; i<numConfigs; i++) 
-      pSISConfigPtrs[i] = &pSISConfigs[i];
+    for(i=0; i<numConfigs; i++)  pSISConfigPtrs[i] = &pSISConfigs[i];
 
     i = 0;
-    for (accum = 0; accum <= 1; accum++) {
-      for (z_stencil=0; z_stencil<(useZ16?2:4); z_stencil++) {
-        for (db = 0; db <= 1; db++) {
+    for(accum = 0; accum <= 1; accum++) {
+      for(z_stencil=0; z_stencil<(useZ16?2:4); z_stencil++) {
+        for(db = 0; db <= 1; db++) {
           pConfigs[i].vid = -1;
           pConfigs[i].class = -1;
           pConfigs[i].rgba = TRUE;
@@ -134,7 +134,7 @@ SISInitVisualConfigs(ScreenPtr pScreen)
           pConfigs[i].greenMask = -1;
           pConfigs[i].blueMask = -1;
           pConfigs[i].alphaMask = 0;
-          if (accum) {
+          if(accum) {
             pConfigs[i].accumRedSize = 16;
             pConfigs[i].accumGreenSize = 16;
             pConfigs[i].accumBlueSize = 16;
@@ -145,13 +145,11 @@ SISInitVisualConfigs(ScreenPtr pScreen)
             pConfigs[i].accumBlueSize = 0;
             pConfigs[i].accumAlphaSize = 0;
           }
-          if (db)
-            pConfigs[i].doubleBuffer = TRUE;
-          else
-            pConfigs[i].doubleBuffer = FALSE;
+          if(db) pConfigs[i].doubleBuffer = TRUE;
+          else   pConfigs[i].doubleBuffer = FALSE;
           pConfigs[i].stereo = FALSE;
           pConfigs[i].bufferSize = -1;
-          switch (z_stencil){
+          switch(z_stencil) {
             case 0:
               pConfigs[i].depthSize = 0;
               pConfigs[i].stencilSize = 0;
@@ -182,10 +180,10 @@ SISInitVisualConfigs(ScreenPtr pScreen)
         }
       }
     }
-    if (i != numConfigs) {
-      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+    if(i != numConfigs) {
+       xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
                  "[dri] Incorrect initialization of visuals.  Disabling DRI.\n");
-      return FALSE;
+       return FALSE;
     }
     break;
   }
@@ -204,18 +202,23 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
   SISPtr pSIS = SISPTR(pScrn);
   DRIInfoPtr pDRIInfo;
   SISDRIPtr pSISDRI;
-#if 000
+#if 0
   drmVersionPtr version;
+#endif
+
+   pSIS->cmdQueueLenPtrBackup = NULL;
+#ifdef SIS315DRI
+   pSIS->cmdQ_SharedWritePortBackup = NULL;
 #endif
 
    /* Check that the GLX, DRI, and DRM modules have been loaded by testing
     * for canonical symbols in each module. */
-   if (!xf86LoaderCheckSymbol("GlxSetVisualConfigs")) return FALSE;
-   if (!xf86LoaderCheckSymbol("DRIScreenInit"))       return FALSE;
-   if (!xf86LoaderCheckSymbol("drmAvailable"))        return FALSE;
-   if (!xf86LoaderCheckSymbol("DRIQueryVersion")) {
+   if(!xf86LoaderCheckSymbol("GlxSetVisualConfigs")) return FALSE;
+   if(!xf86LoaderCheckSymbol("DRIScreenInit"))       return FALSE;
+   if(!xf86LoaderCheckSymbol("drmAvailable"))        return FALSE;
+   if(!xf86LoaderCheckSymbol("DRIQueryVersion")) {
       xf86DrvMsg(pScreen->myNum, X_ERROR,
-                 "[dri] SISDRIScreenInit failed (libdri.a too old)\n");
+                "[dri] SISDRIScreenInit failed (libdri.a too old)\n");
       return FALSE;
    }
      
@@ -223,7 +226,7 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
    {
       int major, minor, patch;
       DRIQueryVersion(&major, &minor, &patch);
-      if (major != 4 || minor < 0) {
+      if(major != 4 || minor < 0) {
          xf86DrvMsg(pScreen->myNum, X_ERROR,
                     "[dri] SISDRIScreenInit failed because of a version mismatch.\n"
                     "[dri] libDRI version is %d.%d.%d but version 4.0.x is needed.\n"
@@ -241,9 +244,9 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
   pDRIInfo->clientDriverName = SISClientDriverName;
   pDRIInfo->busIdString = xalloc(64);
   sprintf(pDRIInfo->busIdString, "PCI:%d:%d:%d",
-      ((pciConfigPtr)pSIS->PciInfo->thisCard)->busnum,
-      ((pciConfigPtr)pSIS->PciInfo->thisCard)->devnum,
-      ((pciConfigPtr)pSIS->PciInfo->thisCard)->funcnum);
+      	((pciConfigPtr)pSIS->PciInfo->thisCard)->busnum,
+      	((pciConfigPtr)pSIS->PciInfo->thisCard)->devnum,
+      	((pciConfigPtr)pSIS->PciInfo->thisCard)->funcnum);
   pDRIInfo->ddxDriverMajorVersion = 0;
   pDRIInfo->ddxDriverMinorVersion = 1;
   pDRIInfo->ddxDriverPatchVersion = 0;
@@ -265,10 +268,10 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
   
   pDRIInfo->ddxDrawableTableEntry = SIS_MAX_DRAWABLES;
 
-  if (SAREA_MAX_DRAWABLES < SIS_MAX_DRAWABLES)
-    pDRIInfo->maxDrawableTableEntry = SAREA_MAX_DRAWABLES;
+  if(SAREA_MAX_DRAWABLES < SIS_MAX_DRAWABLES)
+     pDRIInfo->maxDrawableTableEntry = SAREA_MAX_DRAWABLES;
   else
-    pDRIInfo->maxDrawableTableEntry = SIS_MAX_DRAWABLES;
+     pDRIInfo->maxDrawableTableEntry = SIS_MAX_DRAWABLES;
 
 #ifdef NOT_DONE
   /* FIXME need to extend DRI protocol to pass this size back to client
@@ -282,17 +285,17 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
   /* For now the mapping works by using a fixed size defined
    * in the SAREA header
    */
-  if (sizeof(XF86DRISAREARec)+sizeof(SISSAREAPriv) > SAREA_MAX) {
-    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-			"Data does not fit in SAREA\n");
-    return FALSE;
+  if(sizeof(XF86DRISAREARec)+sizeof(SISSAREAPriv) > SAREA_MAX) {
+     xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		"Data does not fit in SAREA\n");
+     return FALSE;
   }
   pDRIInfo->SAREASize = SAREA_MAX;
 #endif
 
   if(!(pSISDRI = (SISDRIPtr)xcalloc(sizeof(SISDRIRec),1))) {
      DRIDestroyInfoRec(pSIS->pDRIInfo);
-     pSIS->pDRIInfo=0;
+     pSIS->pDRIInfo = 0;
      return FALSE;
   }
   pDRIInfo->devPrivate = pSISDRI;
@@ -308,11 +311,11 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
 
   if(!DRIScreenInit(pScreen, pDRIInfo, &pSIS->drmSubFD)) {
      xf86DrvMsg(pScreen->myNum, X_ERROR,
-                   "[dri] DRIScreenInit failed.  Disabling DRI.\n");
+               "[dri] DRIScreenInit failed.  Disabling DRI.\n");
      xfree(pDRIInfo->devPrivate);
-     pDRIInfo->devPrivate=0;
+     pDRIInfo->devPrivate = 0;
      DRIDestroyInfoRec(pSIS->pDRIInfo);
-     pSIS->pDRIInfo=0;
+     pSIS->pDRIInfo = 0;
      pSIS->drmSubFD = -1;
      return FALSE;
   }
@@ -356,18 +359,20 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
     pSIS->agpSize = 0;
     pSIS->agpCmdBufSize = 0;
     pSISDRI->AGPCmdBufSize = 0;
-
+    
     if(drmAgpAcquire(pSIS->drmSubFD) < 0) {
-      xf86DrvMsg(pScreen->myNum, X_ERROR, "[drm] drmAgpAcquire failed\n");
-      break;
+       xf86DrvMsg(pScreen->myNum, X_ERROR, "[drm] drmAgpAcquire failed\n");
+       break;
     }
-   
+
     if(pSIS->VGAEngine == SIS_315_VGA) {
+#ifdef SIS315DRI
        /* Default to 1X agp mode in SIS315 */
        if(drmAgpEnable(pSIS->drmSubFD, drmAgpGetMode(pSIS->drmSubFD)&~0x00000002) < 0) {
           xf86DrvMsg(pScreen->myNum, X_ERROR, "[drm] drmAgpEnable failed\n");
           break;
        }
+#endif
     } else {
        /* TODO: default value is 2x? */
        if(drmAgpEnable(pSIS->drmSubFD, drmAgpGetMode(pSIS->drmSubFD)&~0x0) < 0) {
@@ -375,22 +380,20 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
           break;
        }
     }
+
     xf86DrvMsg(pScreen->myNum, X_INFO, "[drm] drmAgpEnabled succeeded\n");
 
-    if (drmAgpAlloc(pSIS->drmSubFD, AGP_SIZE, 0, NULL, &pSIS->agpHandle) < 0) {
-      xf86DrvMsg(pScreen->myNum, X_ERROR,
-                 "[drm] drmAgpAlloc failed\n");
-      drmAgpRelease(pSIS->drmSubFD);
-      break;
+    if(drmAgpAlloc(pSIS->drmSubFD, AGP_SIZE, 0, NULL, &pSIS->agpHandle) < 0) {
+       xf86DrvMsg(pScreen->myNum, X_ERROR, "[drm] drmAgpAlloc failed\n");
+       drmAgpRelease(pSIS->drmSubFD);
+       break;
     }
    
-    if (drmAgpBind(pSIS->drmSubFD, pSIS->agpHandle, 0) < 0) {
-      xf86DrvMsg(pScreen->myNum, X_ERROR,
-                 "[drm] drmAgpBind failed\n");
-      drmAgpFree(pSIS->drmSubFD, pSIS->agpHandle);
-      drmAgpRelease(pSIS->drmSubFD);
-
-      break;
+    if(drmAgpBind(pSIS->drmSubFD, pSIS->agpHandle, 0) < 0) {
+       xf86DrvMsg(pScreen->myNum, X_ERROR, "[drm] drmAgpBind failed\n");
+       drmAgpFree(pSIS->drmSubFD, pSIS->agpHandle);
+       drmAgpRelease(pSIS->drmSubFD);
+       break;
     }
 
     pSIS->agpSize = AGP_SIZE;
@@ -408,33 +411,29 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
     }
 
     if(pSIS->VGAEngine == SIS_315_VGA) {
-
+#ifdef SIS315DRI
        pSIS->agpVtxBufSize = AGP_VTXBUF_SIZE; /* = 2MB */
        pSIS->agpVtxBufAddr = pSIS->agpAddr;
-       pSIS->agpVtxBufBase = pSIS->agpVtxBufAddr - pSIS->agpAddr +
-                          	pSIS->agpBase;
+       pSIS->agpVtxBufBase = pSIS->agpVtxBufAddr - pSIS->agpAddr + pSIS->agpBase;
        pSIS->agpVtxBufFree = 0;
 
        pSISDRI->AGPVtxBufOffset = pSIS->agpVtxBufAddr - pSIS->agpAddr;
        pSISDRI->AGPVtxBufSize = pSIS->agpVtxBufSize;
 
        drmSiSAgpInit(pSIS->drmSubFD, AGP_VTXBUF_SIZE,(AGP_SIZE - AGP_VTXBUF_SIZE));
-
+#endif
     } else {
 
        pSIS->agpCmdBufSize = AGP_CMDBUF_SIZE;
        pSIS->agpCmdBufAddr = pSIS->agpAddr;
-       pSIS->agpCmdBufBase = pSIS->agpCmdBufAddr - pSIS->agpAddr +
-                          	pSIS->agpBase;
+       pSIS->agpCmdBufBase = pSIS->agpCmdBufAddr - pSIS->agpAddr + pSIS->agpBase;
        pSIS->agpCmdBufFree = 0;
-
+         
        pSISDRI->AGPCmdBufOffset = pSIS->agpCmdBufAddr - pSIS->agpAddr;
        pSISDRI->AGPCmdBufSize = pSIS->agpCmdBufSize;
 
        drmSiSAgpInit(pSIS->drmSubFD, AGP_CMDBUF_SIZE,(AGP_SIZE - AGP_CMDBUF_SIZE));
-
     }
-
   }
   while(0);
     
@@ -445,12 +444,12 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
            ((pciConfigPtr)pSIS->PciInfo->thisCard)->funcnum);
 
   if((drmCtlInstHandler(pSIS->drmSubFD, pSIS->irq)) != 0) {
-      xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
          "[drm] failure adding irq %d handler, stereo disabled\n",
          pSIS->irq);
-      pSIS->irqEnabled = FALSE;
+     pSIS->irqEnabled = FALSE;
   } else {
-      pSIS->irqEnabled = TRUE;
+     pSIS->irqEnabled = TRUE;
   }
   
   pSISDRI->irqEnabled = pSIS->irqEnabled;
@@ -459,6 +458,7 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
      SISDRICloseScreen(pScreen);
      return FALSE;
   }
+
   xf86DrvMsg(pScrn->scrnIndex, X_INFO, "[dri] visual configs initialized.\n" );
 
   return TRUE;
@@ -469,6 +469,19 @@ SISDRICloseScreen(ScreenPtr pScreen)
 {
   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
   SISPtr pSIS = SISPTR(pScrn);
+
+  if(pSIS->VGAEngine == SIS_315_VGA) {
+#ifdef SIS315DRI
+     if(pSIS->cmdQ_SharedWritePortBackup) {
+        pSIS->cmdQ_SharedWritePort = pSIS->cmdQ_SharedWritePortBackup;
+     }
+#endif
+  } else {
+     if(pSIS->cmdQueueLenPtrBackup) {
+        pSIS->cmdQueueLenPtr = pSIS->cmdQueueLenPtrBackup;
+        *(pSIS->cmdQueueLenPtr) = 0;
+     }
+  }
 
   DRICloseScreen(pScreen);
 
@@ -483,7 +496,7 @@ SISDRICloseScreen(ScreenPtr pScreen)
   if(pSIS->pVisualConfigs) xfree(pSIS->pVisualConfigs);
   if(pSIS->pVisualConfigsPriv) xfree(pSIS->pVisualConfigsPriv);
 
-  if(pSIS->agpSize) {
+  if(pSIS->agpSize){
      xf86DrvMsg(pScreen->myNum, X_INFO, "[drm] Freeing agp memory\n");
      drmAgpFree(pSIS->drmSubFD, pSIS->agpHandle);
      xf86DrvMsg(pScreen->myNum, X_INFO, "[drm] Releasing agp module\n");
@@ -518,16 +531,16 @@ SISDRIFinishScreenInit(ScreenPtr pScreen)
   pSiS->pDRIInfo->driverSwapMethod = DRI_HIDE_X_CONTEXT;
   /* pSiS->pDRIInfo->driverSwapMethod = DRI_SERVER_SWAP; */
 
-  pSISDRI = (SISDRIPtr)pSiS->pDRIInfo->devPrivate;
-  pSISDRI->deviceID = pSiS->Chipset;
-  pSISDRI->width = pScrn->virtualX;
-  pSISDRI->height = pScrn->virtualY;
-  pSISDRI->mem = pScrn->videoRam*1024;
-  pSISDRI->bytesPerPixel = (pScrn->bitsPerPixel+7) / 8;
+  pSISDRI=(SISDRIPtr)pSiS->pDRIInfo->devPrivate;
+  pSISDRI->deviceID=pSiS->Chipset;  
+  pSISDRI->width=pScrn->virtualX;
+  pSISDRI->height=pScrn->virtualY;
+  pSISDRI->mem=pScrn->videoRam*1024;
+  pSISDRI->bytesPerPixel= (pScrn->bitsPerPixel+7) / 8; 
   /* TODO */
-  pSISDRI->scrnX = pSISDRI->width;
-  pSISDRI->scrnY = pSISDRI->height;
-
+  pSISDRI->scrnX=pSISDRI->width;
+  pSISDRI->scrnY=pSISDRI->height;
+  
 /*
   pSISDRI->textureOffset=pSiS->texOffset;
   pSISDRI->textureSize=pSiS->texSize;
@@ -540,18 +553,22 @@ SISDRIFinishScreenInit(ScreenPtr pScreen)
   {
     SISSAREAPriv *saPriv;
 
-    saPriv=(SISSAREAPriv*)DRIGetSAREAPrivate(pScreen);
+    saPriv = (SISSAREAPriv*)DRIGetSAREAPrivate(pScreen);
     
     assert(saPriv);
           
     saPriv->CtxOwner = -1;
-    saPriv->QueueLength = 0;    
+    saPriv->QueueLength = *(pSiS->cmdQueueLenPtr);
+    pSiS->cmdQueueLenPtrBackup = pSiS->cmdQueueLenPtr;
     pSiS->cmdQueueLenPtr = &(saPriv->QueueLength);
 
     if(pSiS->VGAEngine == SIS_315_VGA) {
+#ifdef SIS315DRI
        saPriv->AGPVtxBufNext = 0;
        saPriv->sharedWPoffset = pSiS->cmdQ_SharedWritePort_2D;
+       pSiS->cmdQ_SharedWritePortBackup = pSiS->cmdQ_SharedWritePort;
        pSiS->cmdQ_SharedWritePort = &(saPriv->sharedWPoffset);
+#endif
     } else {
        saPriv->AGPCmdBufNext = 0;
 
@@ -561,7 +578,7 @@ SISDRIFinishScreenInit(ScreenPtr pScreen)
        SiSIdle
     }
   }
-  
+
   return DRIFinishScreenInit(pScreen);
 }
 
@@ -586,11 +603,13 @@ SISDRISwapContext(ScreenPtr pScreen, DRISyncType syncType,
   
   /* mEndPrimitive */
   /* 
-   * TODO: do this only if X-Server gets lock. If kernel supports delayed
-   *       signal, it's needless to do this
+   * TODO: do this only if X-Server get lock. If kernel supports delayed
+   * signal, needless to do this
    */
   if(pSiS->VGAEngine == SIS_315_VGA) {
+#ifdef SIS315DRI
      /* ? */
+#endif
   } else {
      *(pSiS->IOBase + 0x8B50) = 0xff;
      *(unsigned int *)(pSiS->IOBase + 0x8B60) = -1;
@@ -605,9 +624,11 @@ SISDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index)
   SISPtr pSiS = SISPTR(pScrn);
 
   if(pSiS->VGAEngine == SIS_315_VGA) {
-  	SiS315Idle		/* 315 series */
+#ifdef SIS315DRI
+     SiS315Idle		/* 315 series */
+#endif
   } else {
-    	SiSIdle			/* 300 series */
+     SiSIdle		/* 300 series */
   }
 }
 
@@ -620,9 +641,11 @@ SISDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
   SISPtr pSiS = SISPTR(pScrn);
 
   if(pSiS->VGAEngine == SIS_315_VGA) {
-  	SiS315Idle		/* 315 series */
+#ifdef SIS315DRI
+     SiS315Idle		/* 315 series */
+#endif
   } else {
-  	SiSIdle			/* 300 series and below */
+     SiSIdle		/* 300 series */
   }
 }
 

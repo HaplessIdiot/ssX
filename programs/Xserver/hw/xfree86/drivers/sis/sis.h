@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.43 2003/08/23 10:25:18 twini Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.23 2001/11/30 12:12:00 eich Exp $ */
 /*
  * Main global data and definitions
  *
@@ -118,6 +118,8 @@ typedef unsigned long IOADDRESS;
 #if 1
 #define SISVRAMQ		/* Use VRAM queue mode on 315 series */
 #endif
+
+#undef SIS315DRI		/* define this if dri is adapted for 315/330 series */
 
 /* For SiS315/550/650/740/330/660 - these should be moved elsewhere! */
 #ifndef PCI_CHIP_SIS315H
@@ -612,16 +614,18 @@ typedef struct {
     void        	(*LoadCRT2Palette)(ScrnInfoPtr pScrn, int numColors,
                 		int *indicies, LOCO *colors, VisualPtr pVisual);
 
-    unsigned long       cmdQueueLen;		/* Current cmdQueueLength (for 2D and 3D) */
+    int       cmdQueueLen;			/* Current cmdQueueLength (for 2D and 3D) */
     unsigned long	cmdQueueLenMax;
     unsigned long	cmdQueueLenMin;
     unsigned long	*cmdQueueBase;
-    unsigned long	*cmdQueueLenPtr;	/* Ptr to variable holding the current queue length */
+    int			*cmdQueueLenPtr;	/* Ptr to variable holding the current queue length */
+    int			*cmdQueueLenPtrBackup;	/* Backup for DRI init/restore */
     unsigned int        cmdQueueOffset;
     unsigned int        cmdQueueSize;
     unsigned long       cmdQueueSizeMask;
     unsigned long	cmdQ_SharedWritePort_2D;
     unsigned long	*cmdQ_SharedWritePort;
+    unsigned long	*cmdQ_SharedWritePortBackup;
     unsigned int        cmdQueueSize_div2;
     unsigned int        cmdQueueSize_div4;
     unsigned int        cmdQueueSize_4_3;
