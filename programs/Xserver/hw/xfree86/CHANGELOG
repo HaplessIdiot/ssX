@@ -1,4 +1,10 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 286. Resync with DRI CVS trunk (VA Linux Systems).
+ 285. Make extension headers available when the extension is enabled but the
+      extension's client library is disabled (David Dawes).
+ 284. Make it possible to enable building selected extension libraries
+      when BuildServersOnly is set, and allow independent control of
+      building docs and clients (David Dawes).
  283. Import latest Mesa 3.4.x branch.
  282. Lower the default fifo threshold for PM3 chips (Alan Hourihane,
       Rafael Barbalho, 3DLabs).
@@ -12727,4 +12733,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1637 2001/03/20 19:08:56 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1638 2001/03/21 03:29:58 dawes Exp $

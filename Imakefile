@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.5 2000/08/17 19:41:44 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/Imakefile,v 3.23 2001/01/24 17:28:53 tsi Exp $
+XCOMM $XFree86: xc/Imakefile,v 3.24 2001/02/07 18:53:11 dawes Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
@@ -18,7 +18,9 @@ RELEASE = XOrgReleaseString
         FONTSDIR = fonts
 #endif
 #ifndef Win32Architecture
+#if BuildDocs
         DOCSDIR = doc
+#endif
         NLSSUBDIR = nls
 #endif
 #endif

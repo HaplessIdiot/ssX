@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.101 2001/03/15 19:02:30 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.102 2001/03/18 14:50:31 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -78,6 +78,12 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #ifndef BuildServersOnly
 #define BuildServersOnly	NO
+#endif
+#ifndef BuildClients
+#define BuildClients		!BuildServersOnly
+#endif
+#ifndef BuildDocs
+#define BuildDocs		!BuildServersOnly
 #endif
 #ifndef BuildFontServer
 #define BuildFontServer		YES
@@ -188,7 +194,7 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildFontCache		YES
 #endif
 #ifndef BuildFontCacheLib
-#define BuildFontCacheLib	BuildFontCache
+#define BuildFontCacheLib	(BuildFontCache && !BuildServersOnly)
 #endif
 #ifndef BuildLowMem
 #define BuildLowMem		NO
@@ -214,10 +220,10 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildXKB		YES
 #endif
 #ifndef BuildXKBlib
-#define BuildXKBlib		BuildXKB
+#define BuildXKBlib		(BuildXKB && !BuildServersOnly)
 #endif
 #ifndef BuildXKBuilib
-#define BuildXKBuilib		BuildXKB
+#define BuildXKBuilib		(BuildXKB && !BuildServersOnly)
 #endif
 	/*
 	 * WARNING: Setting UseXKBInClients to YES cause incompatibilities
@@ -240,7 +246,7 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildXinerama		NO
 #endif
 #ifndef BuildXineramaLibrary
-#define BuildXineramaLibrary	BuildXinerama
+#define BuildXineramaLibrary	(BuildXinerama && !BuildServersOnly)
 #endif
 #ifndef BuildXCSecurity
 #define BuildXCSecurity		YES
@@ -284,13 +290,13 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildXF86VidModeExt	NO
 #endif
 #ifndef BuildXF86VidModeLibrary
-#define BuildXF86VidModeLibrary BuildXF86VidModeExt
+#define BuildXF86VidModeLibrary (BuildXF86VidModeExt && !BuildServersOnly)
 #endif
 #ifndef BuildXF86MiscExt
 #define BuildXF86MiscExt	NO
 #endif
 #ifndef BuildXF86MiscLibrary
-#define BuildXF86MiscLibrary	BuildXF86MiscExt
+#define BuildXF86MiscLibrary	(BuildXF86MiscExt && !BuildServersOnly)
 #endif
 #ifndef BuildXF86BigfontExt
 #define BuildXF86BigfontExt	NO
@@ -299,31 +305,31 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildXF86DGA		NO
 #endif
 #ifndef BuildXF86DGALibrary
-#define BuildXF86DGALibrary	BuildXF86DGA
+#define BuildXF86DGALibrary	(BuildXF86DGA && !BuildServersOnly)
 #endif
 #ifndef BuildXvExt
 #define BuildXvExt		NO
 #endif
 #ifndef BuildXvLibrary
-#define BuildXvLibrary		BuildXvExt
-#endif
-#ifndef BuildGLULibrary
-#define BuildGLULibrary		NO
+#define BuildXvLibrary		(BuildXvExt && !BuildServersOnly)
 #endif
 #ifndef BuildGlxExt
 #define BuildGlxExt		NO
 #endif
 #ifndef BuildGLXLibrary
-#define BuildGLXLibrary		BuildGlxExt
+#define BuildGLXLibrary		(BuildGlxExt && !BuildServersOnly)
+#endif
+#ifndef BuildGLULibrary
+#define BuildGLULibrary		(BuildGLXLibrary && HasCplusplus)
 #endif
 #ifndef BuildXF86RushExt
 #define BuildXF86RushExt	NO
 #endif
 #ifndef BuildXF86RushLibrary
-#define BuildXF86RushLibrary	BuildXF86RushExt
+#define BuildXF86RushLibrary	(BuildXF86RushExt && !BuildServersOnly)
 #endif
 #ifndef BuildDPSLibraries
-#define BuildDPSLibraries	YES
+#define BuildDPSLibraries	!BuildServersOnly
 #endif
 #ifndef BuildDPSLibrary
 #define BuildDPSLibrary		BuildDPSLibraries
@@ -341,7 +347,7 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildRender		NO
 #endif
 #ifndef BuildRenderLibrary
-#define BuildRenderLibrary	YES
+#define BuildRenderLibrary	!BuildServersOnly
 #endif
 #ifndef BuildXftLibrary
 #define BuildXftLibrary		BuildRenderLibrary
