@@ -13,7 +13,7 @@
  * without express or implied warranty.
  *
  */
-/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.23tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.24 2003/07/18 15:39:51 tsi Exp $ */
 
 #ifdef WIN32
 /* avoid conflicting definitions */
@@ -101,7 +101,7 @@ static struct addrinfo *mgrAddr;
 static struct addrinfo *mgrAddrFirst;
 
 #define SOCKADDR_TYPE		struct sockaddr_storage
-#define SOCKLEN_TYPE 		socklen_t
+#define SOCKLEN_TYPE 		unsigned int
 #define SOCKADDR_FAMILY(s)	((struct sockaddr *)&(s))->sa_family
 
 #ifdef BSD44SOCKETS
