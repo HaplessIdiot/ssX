@@ -1,6 +1,4 @@
-XCOMM $XFree86$
-
-#include "../../Xi18nLib.conf"
+XCOMM $XFree86: xc/lib/X11/xlibi18n/im/ximcp/Imakefile,v 1.3 2003/10/24 15:34:01 tsi Exp $
 
  EXTRA_INCLUDES = -I../../..
            SRCS = imCallbk.c imDefFlt.c imDefIc.c \
@@ -44,10 +42,14 @@ LinkSourceFile(imTrX.c, ../../..)
 LinkSourceFile(imTransR.c, ../../..)
 LinkSourceFile(imTrans.c, ../../..)
 
+#define LibName ximcp
+
+#include "../../Xi18nLib.conf"
+
 SpecialCLibObjectRule(imTransR,$(ICONFIGFILES),$(CONN_DEFINES) $(XTRANS_XIM_DEFINES))
 SpecialCLibObjectRule(imTrans,$(ICONFIGFILES),$(CONN_DEFINES) $(XTRANS_XIM_DEFINES))
 #if BuildXKBlib
 SpecialCLibObjectRule(imConv,$(ICONFIGFILES),$(XKB_DEFINES))
 #endif
 
-Xi18nLibraryTarget(ximcp)
+
