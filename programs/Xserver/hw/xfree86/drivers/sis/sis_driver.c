@@ -763,6 +763,65 @@ SIS1bppColorMap(ScrnInfoPtr pScrn)
    outSISREG(SISCOLDATA, 0x3f);
 }
 
+#if 0
+/* This won't work as long as noone added the symbols to the symlist */
+static void
+SISCalculateGammaRamp(ScrnInfoPtr pScrn)
+{
+   SISPtr pSiS = SISPTR(pScrn);
+   int i, j, nramp;
+   unsigned short *ramp[3];
+   float gamma_max[3], gamma_prescale[3], framp;
+
+   gamma_max[0] = (float)pSiS->GammaBriR / 1000;
+   gamma_max[1] = (float)pSiS->GammaBriG / 1000;
+   gamma_max[2] = (float)pSiS->GammaBriB / 1000;
+   gamma_prescale[0] = (float)pSiS->GammaPBriR / 1000;
+   gamma_prescale[1] = (float)pSiS->GammaPBriG / 1000;
+   gamma_prescale[2] = (float)pSiS->GammaPBriB / 1000;
+
+   if(!(nramp = xf86GetGammaRampSize(pScrn->pScreen))) return;
+
+   for(i=0; i<3; i++) {
+      ramp[i] = (unsigned short *)xalloc(nramp * sizeof(unsigned short));
+      if(!ramp[i]) {
+         if(ramp[0]) { xfree(ramp[0]); ramp[0] = NULL; }
+	 if(ramp[1]) { xfree(ramp[1]); ramp[1] = NULL; }
+         return;
+      }
+   }
+
+   for(i = 0; i < 3; i++) {
+      int fullscale = 65535 * gamma_max[i];
+      float dramp = 1. / (nramp - 1);
+      float invgamma=0.0, v;
+
+      switch(i) {
+      case 0: invgamma = 1. / pScrn->gamma.red; break;
+      case 1: invgamma = 1. / pScrn->gamma.green; break;
+      case 2: invgamma = 1. / pScrn->gamma.blue; break;
+      }
+
+      for(j = 0; j < nramp; j++) {
+         framp = pow(gamma_prescale[i] * j * dramp, invgamma);
+
+         v = (fullscale < 0) ? (65535 + fullscale * framp) :
+	 		       fullscale * framp;
+	 if(v < 0) v = 0;
+	 else if(v > 65535) v = 65535;
+	 ramp[i][j] = (unsigned short)v;
+      }
+   }
+
+   xf86ChangeGammaRamp(pScrn->pScreen, nramp, ramp[0], ramp[1], ramp[2]);
+
+   xfree(ramp[0]);
+   xfree(ramp[1]);
+   xfree(ramp[2]);
+   ramp[0] = ramp[1] = ramp[2] = NULL;
+}
+#endif
+
 /* Mandatory */
 static Bool
 SISProbe(DriverPtr drv, int flags)
@@ -6328,6 +6387,14 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    	"xf86HandleColormaps() failed\n");
         return FALSE;
     }
+
+#if 0
+    if((pSiS->GammaBriR != 1000) || (pSiS->GammaBriG != 1000) ||
+       (pSiS->GammaBriB != 1000) || (pSiS->GammaPBriR != 1000) ||
+       (pSiS->GammaPBriG != 1000) || (pSiS->GammaPBriB != 1000)) {
+       SISCalculateGammaRamp(pScrn);
+    }
+#endif
 
     if(pSiS->ShadowFB) {
        RefreshAreaFuncPtr refreshArea = SISRefreshArea;
