@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_context.c,v 1.6 2002/12/16 16:18:57 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_context.c,v 1.7 2003/02/08 21:26:45 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -382,6 +382,7 @@ radeonCreateContext( Display *dpy, const __GLcontextModes *glVisual,
     */
    _tnl_destroy_pipeline( ctx );
    _tnl_install_pipeline( ctx, radeon_pipeline );
+   ctx->Driver.FlushVertices = radeonFlushVertices;
 
    /* Try and keep materials and vertices separate:
     */

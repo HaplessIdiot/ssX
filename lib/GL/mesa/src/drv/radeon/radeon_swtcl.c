@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_swtcl.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_swtcl.c,v 1.5 2003/03/26 20:43:51 tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -45,6 +45,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "math/m_translate.h"
 #include "tnl/tnl.h"
 #include "tnl/t_context.h"
+#include "tnl/t_imm_exec.h"
 #include "tnl/t_pipeline.h"
 
 #include "radeon_context.h"
@@ -1133,6 +1134,14 @@ void radeonFallback( GLcontext *ctx, GLuint bit, GLboolean mode )
    }
 }
 
+
+void radeonFlushVertices( GLcontext *ctx, GLuint flags )
+{
+   _tnl_flush_vertices( ctx, flags );
+
+   if (flags & FLUSH_STORED_VERTICES) 
+      RADEON_FIREVERTICES( RADEON_CONTEXT( ctx ) );
+}
 
 /**********************************************************************/
 /*                            Initialization.                         */
