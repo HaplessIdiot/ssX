@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Poly.c,v 1.3 2002/05/15 06:39:52 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Poly.c,v 1.4 2002/05/16 15:28:22 tsi Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -91,7 +91,7 @@ XRenderComputeTrapezoids (Edge		*edges,
     int		ntraps = 0;
     int		inactive;
     Edge	*active;
-    Edge	*e, *en, *next, *prev;
+    Edge	*e, *en, *next;
     XFixed	y, next_y, intersect;
     
     qsort (edges, nedges, sizeof (Edge), CompareEdge);
@@ -123,33 +123,50 @@ XRenderComputeTrapezoids (Edge		*edges,
 	for (e = active; e; e = next)
 	{
 	    next = e->next;
-	    prev = 0;
+	    /*
+	     * Find one later in the list that belongs before the
+	     * current one
+	     */
 	    for (en = next; en; en = en->next)
 	    {
-		if (e->current_x < en->current_x ||
-		    (e->current_x == en->current_x && 
-		     e->edge.p2.x <= en->edge.p2.x))
+		if (en->current_x < e->current_x ||
+		    (en->current_x == e->current_x &&
+		     en->edge.p2.x < e->edge.p2.x))
+		{
+		    /*
+		     * insert en before e
+		     *
+		     * extract en
+		     */
+		    en->prev->next = en->next;
+		    if (en->next)
+			en->next->prev = en->prev;
+		    /*
+		     * insert en
+		     */
+		    if (e->prev)
+			e->prev->next = en;
+		    else
+			active = en;
+		    en->prev = e->prev;
+		    e->prev = en;
+		    en->next = e;
+		    /*
+		     * start over at en
+		     */
+		    next = en;
 		    break;
-		prev = en;
-	    }
-	    if (prev)
-	    {
-		/* extract e */
-		if (e->prev)
-		    e->prev->next = e->next;
-		else
-		    active = e->next;
-		if (e->next)
-		    e->next->prev = e->prev;
-		
-		/* insert e */
-		e->next = prev->next;
-		if (prev->next)
-		    prev->next->prev = e;
-		e->prev = prev;
-		prev->next = e;
+		}
 	    }
 	}
+#if 0
+	printf ("y: %6.3g:", y / 65536.0);
+	for (e = active; e; e = e->next)
+	{
+	    printf (" %6.3g", e->current_x / 65536.0);
+	}
+	printf ("\n");
+#endif
 	/* find next inflection point */
 	next_y = active->edge.p2.y;
 	for (e = active; e; e = en)
@@ -223,7 +240,7 @@ XRenderCompositeDoublePoly (Display		    *dpy,
     XFixed	    top = 0, bottom = 0;	/* GCCism */
 
     edges = (Edge *) Xmalloc (npoints * sizeof (Edge) +
-			      (npoints * 2 * sizeof (XTrapezoid)));
+			      (npoints * npoints * sizeof (XTrapezoid)));
     if (!edges)
 	return;
     traps = (XTrapezoid *) (edges + npoints);
