@@ -324,6 +324,7 @@ typedef struct {
         CARD32  delay_time B32; /* how long to delay (in ms)   */
 } XTestDelayInfo;
 
+#ifndef XTestSERVER_SIDE
 _XFUNCPROTOBEGIN
 
 int XTestFakeInput(Display *dpy, char *action_list_addr, int action_list_size,
@@ -341,3 +342,4 @@ int XTestMovePointer(Display *display, int device_id, unsigned long *delay,
 int XTestFlush(Display *display);
 
 _XFUNCPROTOEND
+#endif
