@@ -27,15 +27,22 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.40tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.41 2003/05/27 22:27:04 tsi Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
 
+#include <X11/Xos.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if defined(X_POSIX_C_SOURCE)
+#define _POSIX_C_SOURCE X_POSIX_C_SOURCE
 #include <setjmp.h>
+#undef _POSIX_C_SOURCE
+#else
+#include <setjmp.h>
+#endif
 #include <unistd.h>
 #include <sys/time.h>
 #include "lisp/internal.h"

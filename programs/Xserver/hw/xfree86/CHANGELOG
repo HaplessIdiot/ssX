@@ -1,4 +1,5 @@
 XFree86 4.3.99.902 (xx December 2003)
+ 663. Fix setjmp-related build issues on Solaris 2.5.1/x86 (Lindsay Haigh).
  662. Xdm, xf86cfg, mkfontscale and fonttosfnt fixes for platforms without
       snprintf() (Lindsay Haigh).
  661. Update Brazilian keyboard map (Ricardo Y. Igarashi).
@@ -18357,7 +18358,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3031 2003/12/10 02:57:59 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3032 2003/12/12 03:23:25 dawes Exp $
 
 
 
