@@ -1,3 +1,32 @@
+XFree86 3.1.2Gj (6 October 1996)
+936. Build PEX, XIE as dynamically loaded modules by default where it is
+     supported.
+935. Fix some S3gendac interface changes (Koen Gadeyne).
+934. Fix a lex warning for reconfig (Koen Gadeyne).
+933. Fix a ROP problem in the W32 solid fill code (Koen Gadeyne).
+932. Dynamic PEX, XIE extension support for Linux/ELF.
+931. 24bpp packed support for the MGA driver (Ansgar Hockmann).
+930. Fix the way the list of clocks is derived for the Cirrus driver
+     (Harm Hanemaayer).
+929. Fix problems with 16bpp for a 1MB Cirrus 5434 (Harm Hanemaayer).
+928. Fix for xdm indirect query for ISC (Michael Rohleder).
+927. Remove virtual size check in the mach32ValidMode (Michael Rohleder).
+926. Fix a typo in lib/Xbsd (Michael Rohleder).
+925. Fix "nolinear" mode in the MGA driver (Radoslaw Kapitan).
+924. Add memory detection to the MGA driver (Radoslaw Kapitan).
+923. Update NetBSD/OpenBSD docs (Matthieu Herrb).
+922. Add OpenBSD/mips config support (Per Fogelstrom, Matthieu Herrb).
+921. Update OpenBSD version to 2.0 (Matthieu Herrb).
+920. Updates to the S3 ViRGE line code (Harald Koenig).
+919. Updated ViRGE/VX support (Harald Koenig).
+918. TGA server shouldn't report DGA support (Alan Hourihane).
+917. Alpha-related config updates (Harald Koenig).
+916. Updates to Cirrus probing in SuperProbe (Harm Hanemaayer).
+915. Fix a Cirrus bitmap overrun problem (Harm Hanemaayer).
+914. Fix Cirrus FIFO settings for 5436/5446 (Harm Hanemaayer).
+913. Fix Cirrus HW cursor colours at 32bpp (Harm Hanemaayer).
+912. Fix 24bpp support for Cirrus 54xx (Harm Hanemaayer).
+
 XFree86 3.1.2Gi (3 October 1996)
 911. SCO updates.  SCO5 is now the only supported version (there are
      still problems to be resolved though) (J. Kean Johnston).

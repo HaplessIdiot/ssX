@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.54 1996/09/14 13:08:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.55 1996/10/03 08:32:44 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -1304,17 +1304,6 @@ mach32ValidMode(pMode, verbose)
 DisplayModePtr pMode;
 Bool verbose;
 {
-    if (pMode->HDisplay > mach32VirtX ||
-        pMode->VDisplay > mach32VirtY)
-    {
-	if (verbose)
-	{
-	    ErrorF("%s %s: Resolution %dx%d too large for virtual %dx%d\n",
-		   XCONFIG_PROBED, mach32InfoRec.name,
-		   pMode->HDisplay, pMode->VDisplay, mach32VirtX, mach32VirtY);
-	}
-	return MODE_BAD;
-    }
     return MODE_OK;
 }
 

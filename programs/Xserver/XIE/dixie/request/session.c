@@ -1,5 +1,5 @@
 /* $XConsortium: session.c,v 1.6 94/04/17 20:33:58 rws Exp $ */
-/* $XFree86: xc/programs/Xserver/XIE/dixie/request/session.c,v 3.0 1996/03/29 22:11:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/session.c,v 3.1 1996/10/03 08:30:57 dawes Exp $ */
 /**** session.c ****/
 /****************************************************************************
 
@@ -361,6 +361,9 @@ unsigned long server_version;
 {
 
   XieInitPtr = XieInit;
+#ifdef DEBUG
+  ErrorF("Init module XIE %p\n", XieInit);
+#endif
   return 1;
 }
 #endif /* DYNAMIC_MODULE */
