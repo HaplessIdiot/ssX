@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/gfx/disp_gu2.c,v 1.1 2002/12/10 15:12:25 alanh Exp $ */
 /*
  * $Workfile: disp_gu2.c $
  *
@@ -130,8 +130,6 @@
 
 void gu2_enable_compression(void);	/* private routine definition */
 void gu2_disable_compression(void);	/* private routine definition */
-int gfx_set_display_control(int sync_polarities);	/* private routine definition */
-void gfx_reset_video(void);
 int gu2_set_display_bpp(unsigned short bpp);
 int gu2_is_display_mode_supported(int xres, int yres, int bpp, int hz);
 int gu2_set_display_mode(int xres, int yres, int bpp, int hz);
@@ -242,14 +240,11 @@ int gu2_get_valid_bit(int line);
 int gu2_set_specified_mode(DISPLAYMODE * pMode, int bpp);
 void gu2_set_display_video_size(unsigned short width, unsigned short height);
 void gu2_set_display_video_offset(unsigned long offset);
-int gu2_set_fixed_timings(int panelResX, int panelResY, unsigned short width,
-			  unsigned short height, unsigned short bpp);
 unsigned long gu2_get_display_video_offset(void);
 unsigned long gu2_get_display_video_size(void);
 void gu2_get_display_video_yuv_pitch(unsigned long *ypitch,
 				     unsigned long *uvpitch);
 int gu2_get_display_video_downscale_enable(void);
-unsigned long gu2_get_display_video_size(void);
 void gu2_set_display_video_format(unsigned long format);
 void gu2_set_display_video_enable(int enable);
 void gu2_set_display_video_yuv_offsets(unsigned long yoffset,

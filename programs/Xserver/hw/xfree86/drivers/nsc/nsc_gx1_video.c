@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_video.c,v 1.1 2002/12/10 15:12:24 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_video.c,v 1.2 2002/12/12 21:27:34 dawes Exp $ */
 /*
  * $Workfile: nsc_gx1_video.c $
- * $Revision: 1.2 $
- * $Author: dawes $
+ * $Revision: 1.3 $
+ * $Author: alanh $
  *
  * File Contents: This file consists of main Xfree video supported routines.
  *
@@ -379,7 +379,9 @@ GX1SetColorkey(ScrnInfoPtr pScrn, GeodePortPrivPtr pPriv)
       break;
    default:
       red = (pPriv->colorKey & pScrn->mask.red) >> pScrn->offset.red << (8 -
-									 pScrn->weight.red);
+									 pScrn->
+									 weight.
+									 red);
       green =
 	    (pPriv->colorKey & pScrn->mask.green) >> pScrn->offset.
 	    green << (8 - pScrn->weight.green);
@@ -782,6 +784,7 @@ GX1CopyMungedData(unsigned char *src1,
    CARD32 *dstNext = (CARD32 *) dst1;
    int i, j, k, m, n;
    CARD32 crcb;
+
 #if XV_PROFILE
    long oldtime, newtime;
 #endif
@@ -986,6 +989,7 @@ GX1PutImage(ScrnInfoPtr pScrn,
    GeodePortPrivPtr pPriv = (GeodePortPrivPtr) data;
    GeodePtr pGeode = GEODEPTR(pScrn);
    int pitch, new_h;
+
 #if XV_PROFILE
    long oldtime, newtime;
    BOOL ReInitVideo = FALSE;

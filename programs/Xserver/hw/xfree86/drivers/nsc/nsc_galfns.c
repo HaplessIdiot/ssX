@@ -1,7 +1,7 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_galfns.c,v 1.1 2002/12/10 15:12:23 alanh Exp $ */
 /*
  * $Workfile: nsc_galfns.c $
- * $Revision: 1.1 $
+ * $Revision: 1.2 $
  * $Author: alanh $
  *
  * File Contents: This file contains the main functions of the Geode 
@@ -3726,6 +3726,7 @@ Gal_set_vbi_direct(unsigned long even_lines, unsigned long odd_lines)
       return 1;
    }
 }
+
 BOOLEAN
 Gal2_set_destination_stride(unsigned short stride)
 {

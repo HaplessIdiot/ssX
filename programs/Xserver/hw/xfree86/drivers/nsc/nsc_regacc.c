@@ -1,7 +1,7 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_regacc.c,v 1.1 2002/12/10 15:12:25 alanh Exp $ */
 /*
  * $Workfile: nsc_regacc.c $
- * $Revision: 1.1 $
+ * $Revision: 1.2 $
  * $Author: alanh $
  *
  * This is the main file used to add Durango graphics support to a software 
@@ -151,10 +151,13 @@ void gfx_write_vid32(unsigned long offset, unsigned long value);
 unsigned long gfx_read_vid32(unsigned long offset);
 unsigned long gfx_read_vip32(unsigned long offset);
 void gfx_write_vip32(unsigned long offset, unsigned long value);
-void gfx_mono_bitmap_to_screen_blt_swp(unsigned short srcx, unsigned short srcy,
-				  unsigned short dstx, unsigned short dsty,
-				  unsigned short width, unsigned short height,
-				  unsigned char *data, short pitch);
+void gfx_mono_bitmap_to_screen_blt_swp(unsigned short srcx,
+				       unsigned short srcy,
+				       unsigned short dstx,
+				       unsigned short dsty,
+				       unsigned short width,
+				       unsigned short height,
+				       unsigned char *data, short pitch);
 unsigned int GetVideoMemSize(void);
 
 /* ROUTINES added accessing hardware reg */

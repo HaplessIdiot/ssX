@@ -1,7 +1,7 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_accel.c,v 1.1 2002/12/10 15:12:23 alanh Exp $ */
 /*
  * $Workfile: nsc_gx1_accel.c $
- * $Revision: 1.1 $
+ * $Revision: 1.2 $
  * $Author: alanh $
  *
  * File Contents: This file is consists of main Xfree
@@ -227,86 +227,85 @@ static XAAInfoRecPtr localRecPtr;
 Bool GX1AccelInit(ScreenPtr pScreen);
 void GX1AccelSync(ScrnInfoPtr pScreenInfo);
 void GX1SetupForFillRectSolid(ScrnInfoPtr pScreenInfo, int color, int rop,
-			unsigned int planemask);
+			      unsigned int planemask);
 void GX1SubsequentFillRectSolid(ScrnInfoPtr pScreenInfo, int x, int y,
-			  int w, int h);
+				int w, int h);
 void GX1SetupFor8x8PatternColorExpand(ScrnInfoPtr pScreenInfo,
-				 int patternx, int patterny,
-				 int rop, unsigned int planemask,
-				 int trans_color);
+				      int patternx, int patterny,
+				      int rop, unsigned int planemask,
+				      int trans_color);
 void GX1Subsequent8x8PatternColorExpand(ScrnInfoPtr pScreenInfo,
-				   int patternx, int patterny, int x, int y,
-				   int w, int h);
-void GX1SetupFor8x8PatternMonoExpand(ScrnInfoPtr pScreenInfo,
-			       int patternx, int patterny, int fg,
-			       int bg, int rop,
-			       unsigned int planemask);
-void GX1Subsequent8x8PatternMonoExpand(ScrnInfoPtr pScreenInfo,
-				 int patternx, int patterny, int x,
-				 int y, int w, int h);
+					int patternx, int patterny, int x,
+					int y, int w, int h);
+void GX1SetupFor8x8PatternMonoExpand(ScrnInfoPtr pScreenInfo, int patternx,
+				     int patterny, int fg, int bg, int rop,
+				     unsigned int planemask);
+void GX1Subsequent8x8PatternMonoExpand(ScrnInfoPtr pScreenInfo, int patternx,
+				       int patterny, int x, int y, int w,
+				       int h);
 void GX1SetupForScreenToScreenCopy(ScrnInfoPtr pScreenInfo, int xdir,
-			     int ydir, int rop,
-			     unsigned int planemask,
-			     int transparency_color);
-void GX1SubsequentScreenToScreenCopy(ScrnInfoPtr pScreenInfo, int x1,
-			       int y1, int x2, int y2, int w, int h);
+				   int ydir, int rop, unsigned int planemask,
+				   int transparency_color);
+void GX1SubsequentScreenToScreenCopy(ScrnInfoPtr pScreenInfo, int x1, int y1,
+				     int x2, int y2, int w, int h);
 void GX1SetupForSolidLine(ScrnInfoPtr pScreenInfo, int color, int rop,
-		    unsigned int planemask);
+			  unsigned int planemask);
 void GX1SetupForDashedLine(ScrnInfoPtr pScrn, int fg, int bg, int rop,
-		     unsigned int planemask, int length,
-		     unsigned char *pattern);
+			   unsigned int planemask, int length,
+			   unsigned char *pattern);
 void GX1SubsequentBresenhamLine(ScrnInfoPtr pScreenInfo, int x1, int y1,
-			  int absmaj, int absmin, int err, int len,
-			  int octant);
-void GX1SubsequentSolidTwoPointLine(ScrnInfoPtr pScreenInfo,
-			       int x0, int y0, int x1, int y1, int flags);
-void GX1SubsequentHorVertLine(ScrnInfoPtr pScreenInfo, int x, int y,
-			int len, int dir);
+				int absmaj, int absmin, int err, int len,
+				int octant);
+void GX1SubsequentSolidTwoPointLine(ScrnInfoPtr pScreenInfo, int x0, int y0,
+				    int x1, int y1, int flags);
+void GX1SubsequentHorVertLine(ScrnInfoPtr pScreenInfo, int x, int y, int len,
+			      int dir);
 
 void GX1SetupForScanlineImageWrite(ScrnInfoPtr pScreenInfo,
-			     int rop, unsigned int planemask,
-			     int transparency_color, int bpp,
-			     int depth);
+				   int rop, unsigned int planemask,
+				   int transparency_color, int bpp,
+				   int depth);
 
 void GX1SubsequentScanlineImageWriteRect(ScrnInfoPtr pScreenInfo,
-				   int x, int y, int w, int h,
-				   int skipleft);
+					 int x, int y, int w, int h,
+					 int skipleft);
 
 void GX1SubsequentImageWriteScanline(ScrnInfoPtr pScreenInfo, int bufno);
 void GX1FillCacheBltRects(ScrnInfoPtr pScrn, int rop, unsigned int planemask,
-		     int nBox, BoxPtr pBox, int xorg, int yorg,
-		     XAACacheInfoPtr pCache);
+			  int nBox, BoxPtr pBox, int xorg, int yorg,
+			  XAACacheInfoPtr pCache);
 void OPTGX1SetupForFillRectSolid(ScrnInfoPtr pScreenInfo, int color, int rop,
-			unsigned int planemask);
+				 unsigned int planemask);
 void OPTGX1SubsequentFillRectSolid(ScrnInfoPtr pScreenInfo, int x, int y,
-			  int w, int h);
+				   int w, int h);
 void OPTGX1SetupForScreenToScreenCopy(ScrnInfoPtr pScreenInfo, int xdir,
-			     int ydir, int rop,
-			     unsigned int planemask,
-			     int transparency_color);
+				      int ydir, int rop,
+				      unsigned int planemask,
+				      int transparency_color);
 void OPTGX1SubsequentScreenToScreenCopy(ScrnInfoPtr pScreenInfo, int x1,
-			       int y1, int x2, int y2, int w, int h);
+					int y1, int x2, int y2, int w, int h);
 void OPTGX1SetupForSolidLine(ScrnInfoPtr pScreenInfo, int color, int rop,
-		    unsigned int planemask);
+			     unsigned int planemask);
 void OPTGX1SetupForDashedLine(ScrnInfoPtr pScrn, int fg, int bg, int rop,
-		     unsigned int planemask, int length,
-		     unsigned char *pattern);
+			      unsigned int planemask, int length,
+			      unsigned char *pattern);
 void OPTGX1SubsequentBresenhamLine(ScrnInfoPtr pScreenInfo, int x1, int y1,
-			  int absmaj, int absmin, int err, int len,
-			  int octant);
+				   int absmaj, int absmin, int err, int len,
+				   int octant);
 void OPTGX1SubsequentSolidTwoPointLine(ScrnInfoPtr pScreenInfo,
-			       int x0, int y0, int x1, int y1, int flags);
+				       int x0, int y0, int x1, int y1,
+				       int flags);
 void OPTGX1SubsequentHorVertLine(ScrnInfoPtr pScreenInfo, int x, int y,
-			int len, int dir);
+				 int len, int dir);
 
 void OPTGX1SetupForScanlineImageWrite(ScrnInfoPtr pScreenInfo,
-			     int rop, unsigned int planemask,
-			     int transparency_color, int bpp,
-			     int depth);
+				      int rop, unsigned int planemask,
+				      int transparency_color, int bpp,
+				      int depth);
 
 void OPTGX1SubsequentScanlineImageWriteRect(ScrnInfoPtr pScreenInfo,
-				   int x, int y, int w, int h,
-				   int skipleft);
+					    int x, int y, int w, int h,
+					    int skipleft);
 
 void OPTGX1SubsequentImageWriteScanline(ScrnInfoPtr pScreenInfo, int bufno);
 
@@ -483,8 +482,8 @@ GX1Subsequent8x8PatternColorExpand(ScrnInfoPtr pScreenInfo,
    GFX(color_pattern_fill((unsigned short)x, (unsigned short)y,
 			  (unsigned short)w, (unsigned short)h,
 			  ((unsigned long *)((pGeode->FBBase +
-					    (patterny << gu1_yshift)) +
-			  patternx))));
+					      (patterny << gu1_yshift)) +
+					     patternx))));
 }
 
 /*----------------------------------------------------------------------------
@@ -1041,8 +1040,8 @@ OPTGX1SetupForFillRectSolid(ScrnInfoPtr pScreenInfo,
 
    if (planemask == 0xFFFFFFFF) {
       if (gu1_bpp == 8) {
-	     planemask &= 0x00FF;
-	     planemask |= (planemask << 8);
+	 planemask &= 0x00FF;
+	 planemask |= (planemask << 8);
       }
 
       rop16 = windowsROPpat[rop & 0x0F];
@@ -1054,7 +1053,7 @@ OPTGX1SetupForFillRectSolid(ScrnInfoPtr pScreenInfo,
    } else {
       rop16 = windowsROPsrcMask[rop & 0x0F];
    }
-   
+
    Geode_blt_mode = 0;
 
    /* POLL UNTIL ABLE TO WRITE THE PATTERN COLOR */
@@ -1243,8 +1242,8 @@ OPTGX1SubsequentScreenToScreenCopy(ScrnInfoPtr pScreenInfo,
    }
    if (GeodeTransparent) {
       if (gu1_bpp == 8) {
-	     GeodeTransColor &= 0x00FF;
-	     GeodeTransColor |= (GeodeTransColor << 8);
+	 GeodeTransColor &= 0x00FF;
+	 GeodeTransColor |= (GeodeTransColor << 8);
       }
       GeodeTransColor =
 	    (GeodeTransColor & 0x0000FFFF) | (GeodeTransColor << 16);
@@ -1487,20 +1486,20 @@ OPTGX1SetupForSolidLine(ScrnInfoPtr pScreenInfo,
       color &= 0x00FF;
       color |= (color << 8);
    }
-  
+
    GeodeROP = windowsROPpat[rop & 0x0F];
 
    /* POLL UNTIL ABLE TO WRITE THE PATTERN COLOR */
    GFX_WAIT_PENDING;
    WRITE_REG16(GP_PAT_COLOR_0, (unsigned short)color);
    WRITE_REG16(GP_RASTER_MODE, GeodeROP);
-   
+
    if ((GeodeROP & 0x55) ^ ((GeodeROP >> 1) & 0x55)) {
       Geode_vector_mode = VM_READ_DST_FB;
-	  Geode_blt_mode = BM_READ_DST_FB1 | BM_READ_SRC_FB;
+      Geode_blt_mode = BM_READ_DST_FB1 | BM_READ_SRC_FB;
    } else {
       Geode_vector_mode = 0;
-	  Geode_blt_mode = BM_READ_SRC_FB;
+      Geode_blt_mode = BM_READ_SRC_FB;
    }
 }
 

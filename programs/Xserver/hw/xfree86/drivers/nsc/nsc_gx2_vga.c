@@ -1,7 +1,7 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_vga.c,v 1.1 2002/12/10 15:12:25 alanh Exp $ */
 /*
  * $Workfile: nsc_gx2_vga.c $
- * $Revision: 1.1 $
+ * $Revision: 1.2 $
  * $Author: alanh $
  *
  * This file contains routines to set modes using the VGA registers.  

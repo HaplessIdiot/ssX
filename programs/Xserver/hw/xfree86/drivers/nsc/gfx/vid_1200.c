@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/gfx/vid_1200.c,v 1.1 2002/12/10 15:12:27 alanh Exp $ */
 /*
  * $Workfile: vid_1200.c $
  *
@@ -258,7 +258,6 @@ int sc1200_set_macrovision_enable(int enable);
 void sc1200_reset_video(void);
 int sc1200_set_display_control(int sync_polarities);
 void sc1200_set_clock_frequency(unsigned long frequency);
-void cs5530_set_clock_frequency(unsigned long frequency);
 int sc1200_set_screen_enable(int enable);
 int sc1200_set_crt_enable(int enable);
 
@@ -321,7 +320,6 @@ void sc1200_get_alpha_value(unsigned char *alpha, char *delta);
 void sc1200_get_alpha_priority(int *priority);
 void sc1200_get_alpha_color(unsigned long *color);
 unsigned long sc1200_get_clock_frequency(void);
-int cs5530_get_sync_polarities(void);
 int sc1200_get_vsa2_softvga_enable(void);
 int sc1200_get_sync_polarities(void);
 

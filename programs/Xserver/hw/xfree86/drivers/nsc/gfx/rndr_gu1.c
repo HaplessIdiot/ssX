@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/gfx/rndr_gu1.c,v 1.1 2002/12/10 15:12:27 alanh Exp $ */
 /*
  * $Workfile: rndr_gu1.c $
  *
@@ -196,7 +196,6 @@ void gu1_bresenham_line(unsigned short x, unsigned short y,
 			unsigned short axialerr, unsigned short diagerr,
 			unsigned short flags);
 void gu1_wait_until_idle(void);
-int gfx_test_blt_pending(void);
 
 #if GFX_NO_IO_IN_WAIT_MACROS
 #define GFX_WAIT_PENDING while(READ_REG16(GP_BLIT_STATUS) & BS_BLIT_PENDING) { ; }

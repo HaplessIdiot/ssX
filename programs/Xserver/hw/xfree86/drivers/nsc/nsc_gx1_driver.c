@@ -1,7 +1,7 @@
 /* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_driver.c,v 1.2 2002/12/11 22:50:59 dawes Exp $ */
 /*
  * $Workfile: nsc_gx1_driver.c $
- * $Revision: 1.3 $
+ * $Revision: 1.4 $
  * $Author: alanh $
  *
  * File Contents: This is the main module configures the interfacing 
@@ -477,6 +477,7 @@ GX1PreInit(ScrnInfoPtr pScreenInfo, int flags)
    int i = 0;
    GeodePtr pGeode;
    char *mod = NULL;
+
 #if CFB
    char *reqSymbol = NULL;
 #endif
@@ -484,7 +485,8 @@ GX1PreInit(ScrnInfoPtr pScreenInfo, int flags)
 #if defined(STB_X)
    GAL_ADAPTERINFO sAdapterInfo;
 #endif /* STB_X */
-   unsigned int PitchInc, minPitch, maxPitch;
+   unsigned int PitchInc = 0, minPitch = 0, maxPitch = 0;
+   unsigned int minHeight = 0, maxHeight = 0;
    const char *s;
    char **modes;
    char **tvmodes_defa;
@@ -662,6 +664,10 @@ GX1PreInit(ScrnInfoPtr pScreenInfo, int flags)
 		pGeode->NoOfImgBuffers));
 
    pGeode->TVSupport = FALSE;
+
+   pGeode->FBTVActive = 0;
+   GFX(get_tv_enable(&(pGeode->FBTVActive)));
+   DEBUGMSG(1, (1, X_PROBED, "FB TV %d \n", pGeode->FBTVActive));
 
    if ((s = xf86GetOptValString(GeodeOptions, OPTION_TV_SUPPORT))) {
 
@@ -928,6 +934,8 @@ GX1PreInit(ScrnInfoPtr pScreenInfo, int flags)
     */
    minPitch = 1024;
    maxPitch = 2048;
+   minHeight = 480;
+   maxHeight = 1024;			/* Can support upto 1280x1024 16Bpp */
    if (pScreenInfo->depth == 16) {
       PitchInc = 2048;
    } else {
@@ -958,7 +966,7 @@ GX1PreInit(ScrnInfoPtr pScreenInfo, int flags)
 			 modes,
 			 &GeodeClockRange,
 			 NULL, minPitch, maxPitch,
-			 PitchInc, 480, 1024,
+			 PitchInc, minHeight, maxHeight,
 			 pScreenInfo->display->virtualX,
 			 pScreenInfo->display->virtualY,
 #if defined(STB_X)
@@ -1118,18 +1126,18 @@ GX1RestoreEx(ScrnInfoPtr pScreenInfo, DisplayModePtr pMode)
 *----------------------------------------------------------------------------
 */
 static int
-GX1CalculatePitchBytes(ScrnInfoPtr pScreenInfo)
+GX1CalculatePitchBytes(unsigned int width, unsigned int bpp)
 {
-   GeodePtr pGeode;
-   int lineDelta = pScreenInfo->virtualX * (pScreenInfo->bitsPerPixel >> 3);
+   int lineDelta = width * (bpp >> 3);
 
-   pGeode = GEODEPTR(pScreenInfo);
-
+   if (width < 640) {
+      /* low resolutions have both pixel and line doubling */
+      DEBUGMSG(1, (0, X_PROBED, "lower resolution %d %d\n",
+		   width, lineDelta));
+      lineDelta <<= 1;
+   }
    /* needed in Rotate mode when in accel is turned off */
    if (1) {				/*!pGeode->NoAccel */
-      /* Force to 1K or 2K if acceleration is enabled
-       * we should check for pyramid here!!
-       */
       if (lineDelta > 2048)
 	 lineDelta = 4096;
       else if (lineDelta > 1024)
@@ -1138,8 +1146,7 @@ GX1CalculatePitchBytes(ScrnInfoPtr pScreenInfo)
 	 lineDelta = 1024;
    }
 
-   DEBUGMSG(1,
-	    (0, X_PROBED, "pitch %d %d\n", pScreenInfo->virtualX, lineDelta));
+   DEBUGMSG(1, (0, X_PROBED, "pitch %d %d\n", width, lineDelta));
 
    return lineDelta;
 }
@@ -1169,6 +1176,12 @@ GX1GetRefreshRate(DisplayModePtr pMode)
 
    dotClock = pMode->SynthClock * 1000;
    refreshRate = dotClock / pMode->CrtcHTotal / pMode->CrtcVTotal;
+
+   if ((pMode->CrtcHTotal < 640) && (pMode->CrtcVTotal < 480))
+      refreshRate >>= 2;		/* double pixel and double scan */
+
+   DEBUGMSG(1, (0, X_PROBED, "dotclock %d %d\n", dotClock, refreshRate));
+
    selectedRate = validRates[0];
    for (i = 0; i < (sizeof(validRates) / sizeof(validRates[0])); i++) {
       if (validRates[i] < (refreshRate + THRESHOLD)) {
@@ -1501,6 +1514,9 @@ GX1LeaveGraphics(ScrnInfoPtr pScreenInfo)
    GeodeDebug(("GX1LeaveGraphics!\n"));
    pGeode = GEODEPTR(pScreenInfo);
 
+   if (!pGeode->FBTVActive) {
+      GFX(set_tv_enable(0));
+   }
    /* clear the frame buffer, when leaving X */
    gx1_clear_screen(pScreenInfo->virtualX, pScreenInfo->virtualY);
 
@@ -1819,7 +1835,8 @@ GX1ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
    vgaHWGetIOBase(VGAHWPTR(pScreenInfo));
 #endif
 
-   pGeode->Pitch = GX1CalculatePitchBytes(pScreenInfo);
+   pGeode->Pitch = GX1CalculatePitchBytes(pScreenInfo->virtualX,
+					  pScreenInfo->bitsPerPixel);
 
    /* find the index to our operating mode the offsets are located */
    for (i = 0; i < (int)((sizeof(GeodeMemOffset) / sizeof(MemOffset))); i++) {
@@ -2081,7 +2098,7 @@ GX1ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
    if (pGeode->HWCursor) {
       if (!GX1HWCursorInit(pScreen))
 	 xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
-		      "Hardware cursor initialization failed\n");
+		    "Hardware cursor initialization failed\n");
    }
    GeodeDebug(("GX1ScreenInit(9)!\n"));
 
@@ -2304,17 +2321,16 @@ GX1ValidMode(int scrnIndex, DisplayModePtr pMode, Bool Verbose, int flags)
    ScrnInfoPtr pScreenInfo = xf86Screens[scrnIndex];
    unsigned int total_memory_required;
    int ret = -1;
-   GeodePtr pGeode;
+   GeodePtr pGeode = GX1GetRec(pScreenInfo);
 
-   pGeode = GX1GetRec(pScreenInfo);
-
-   DEBUGMSG(0, (0, X_NONE, "GeodeValidateMode: %dx%d %d %d\n",
+   DEBUGMSG(1, (0, X_NONE, "GeodeValidateMode: %dx%d %d %d\n",
 		pMode->CrtcHDisplay, pMode->CrtcVDisplay,
 		pScreenInfo->bitsPerPixel, GX1GetRefreshRate(pMode)));
+
    if (pGeode->TVSupport == TRUE) {
       if ((pGeode->TvParam.wWidth == pMode->CrtcHDisplay) &&
 	  (pGeode->TvParam.wHeight == pMode->CrtcVDisplay)) {
-	 DEBUGMSG(0, (0, X_NONE, "TV mode"));
+	 DEBUGMSG(1, (0, X_NONE, "TV mode\n"));
 
 #if defined(STB_X)
 	 Gal_is_tv_mode_supported(0, &(pGeode->TvParam), &ret);
@@ -2325,7 +2341,8 @@ GX1ValidMode(int scrnIndex, DisplayModePtr pMode, Bool Verbose, int flags)
 #endif
       }
    } else {
-      DEBUGMSG(0, (0, X_NONE, "CRT mode"));
+      DEBUGMSG(1, (0, X_NONE, "CRT mode\n"));
+
       if (pMode->Flags & V_INTERLACE)
 	 return MODE_NO_INTERLACE;
 
@@ -2341,18 +2358,18 @@ GX1ValidMode(int scrnIndex, DisplayModePtr pMode, Bool Verbose, int flags)
 #endif /* STB_X */
    }
 
-   total_memory_required =
-	 (GX1CalculatePitchBytes(pScreenInfo) * (pMode->CrtcVDisplay));
-   DEBUGMSG(0,
-	    (0, X_NONE, "Total Mem %X %X", total_memory_required,
-	     pGeode->FBSize));
-   if (total_memory_required > pGeode->FBSize)
-      ret = -1;
+   if (ret < 0)
+      return MODE_NOMODE;
 
-   DEBUGMSG(0, (0, X_NONE, "ret = %d\n", ret));
-   if (ret == -1) {			/* mode not supported */
-      return MODE_NO_INTERLACE;
-   }
+   total_memory_required = GX1CalculatePitchBytes(pMode->CrtcHDisplay,
+						  pScreenInfo->bitsPerPixel) *
+	 pMode->CrtcVDisplay;
+
+   DEBUGMSG(0, (0, X_NONE, "Total Mem %X %X",
+		total_memory_required, pGeode->FBSize));
+
+   if (total_memory_required > pGeode->FBSize)
+      return MODE_MEM;
 
    return MODE_OK;
 }

@@ -1,7 +1,7 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_accel.c,v 1.1 2002/12/10 15:12:24 alanh Exp $ */
 /*
  * $Workfile: nsc_gx2_accel.c $
- * $Revision: 1.1 $
+ * $Revision: 1.2 $
  * $Author: alanh $
  *
  * File Contents: This file is consists of main Xfree
@@ -234,110 +234,109 @@ static XAAInfoRecPtr localRecPtr;
 Bool GX2AccelInit(ScreenPtr pScreen);
 void GX2AccelSync(ScrnInfoPtr pScreenInfo);
 void GX2SetupForFillRectSolid(ScrnInfoPtr pScreenInfo, int color, int rop,
-			unsigned int planemask);
+			      unsigned int planemask);
 void GX2SubsequentFillRectSolid(ScrnInfoPtr pScreenInfo, int x, int y,
-			  int w, int h);
+				int w, int h);
 void GX2SetupFor8x8PatternColorExpand(ScrnInfoPtr pScreenInfo,
-				 int patternx, int patterny,
-				 int rop, unsigned int planemask,
-				 int trans_color);
+				      int patternx, int patterny,
+				      int rop, unsigned int planemask,
+				      int trans_color);
 void GX2Subsequent8x8PatternColorExpand(ScrnInfoPtr pScreenInfo,
-				   int patternx, int patterny, int x, int y,
-				   int w, int h);
-void GX2SetupFor8x8PatternMonoExpand(ScrnInfoPtr pScreenInfo,
-			       int patternx, int patterny, int fg,
-			       int bg, int rop,
-			       unsigned int planemask);
-void GX2Subsequent8x8PatternMonoExpand(ScrnInfoPtr pScreenInfo,
-				 int patternx, int patterny, int x,
-				 int y, int w, int h);
+					int patternx, int patterny, int x,
+					int y, int w, int h);
+void GX2SetupFor8x8PatternMonoExpand(ScrnInfoPtr pScreenInfo, int patternx,
+				     int patterny, int fg, int bg, int rop,
+				     unsigned int planemask);
+void GX2Subsequent8x8PatternMonoExpand(ScrnInfoPtr pScreenInfo, int patternx,
+				       int patterny, int x, int y, int w,
+				       int h);
 void GX2SetupForScreenToScreenCopy(ScrnInfoPtr pScreenInfo, int xdir,
-			     int ydir, int rop,
-			     unsigned int planemask,
-			     int transparency_color);
-void GX2SubsequentScreenToScreenCopy(ScrnInfoPtr pScreenInfo, int x1,
-			       int y1, int x2, int y2, int w, int h);
+				   int ydir, int rop, unsigned int planemask,
+				   int transparency_color);
+void GX2SubsequentScreenToScreenCopy(ScrnInfoPtr pScreenInfo, int x1, int y1,
+				     int x2, int y2, int w, int h);
 void GX2SetupForSolidLine(ScrnInfoPtr pScreenInfo, int color, int rop,
-		    unsigned int planemask);
+			  unsigned int planemask);
 void GX2SetupForDashedLine(ScrnInfoPtr pScrn, int fg, int bg, int rop,
-		     unsigned int planemask, int length,
-		     unsigned char *pattern);
+			   unsigned int planemask, int length,
+			   unsigned char *pattern);
 void GX2SubsequentBresenhamLine(ScrnInfoPtr pScreenInfo, int x1, int y1,
-			  int absmaj, int absmin, int err, int len,
-			  int octant);
-void GX2SubsequentSolidTwoPointLine(ScrnInfoPtr pScreenInfo,
-			       int x0, int y0, int x1, int y1, int flags);
-void GX2SubsequentHorVertLine(ScrnInfoPtr pScreenInfo, int x, int y,
-			int len, int dir);
+				int absmaj, int absmin, int err, int len,
+				int octant);
+void GX2SubsequentSolidTwoPointLine(ScrnInfoPtr pScreenInfo, int x0, int y0,
+				    int x1, int y1, int flags);
+void GX2SubsequentHorVertLine(ScrnInfoPtr pScreenInfo, int x, int y, int len,
+			      int dir);
 
 void GX2SetupForScanlineImageWrite(ScrnInfoPtr pScreenInfo,
-			     int rop, unsigned int planemask,
-			     int transparency_color, int bpp,
-			     int depth);
+				   int rop, unsigned int planemask,
+				   int transparency_color, int bpp,
+				   int depth);
 
 void GX2SubsequentScanlineImageWriteRect(ScrnInfoPtr pScreenInfo,
-				   int x, int y, int w, int h,
-				   int skipleft);
+					 int x, int y, int w, int h,
+					 int skipleft);
 
 void GX2SubsequentImageWriteScanline(ScrnInfoPtr pScreenInfo, int bufno);
 void GX2FillCacheBltRects(ScrnInfoPtr pScrn, int rop, unsigned int planemask,
-		     int nBox, BoxPtr pBox, int xorg, int yorg,
-		     XAACacheInfoPtr pCache);
+			  int nBox, BoxPtr pBox, int xorg, int yorg,
+			  XAACacheInfoPtr pCache);
 void GX2SetupForImageWrite(ScrnInfoPtr pScreenInfo,
-		      int rop, unsigned int planemask,
-		      int transparency_color, int bpp, int depth);
+			   int rop, unsigned int planemask,
+			   int transparency_color, int bpp, int depth);
 void GX2SubsequentImageWriteRect(ScrnInfoPtr pScreenInfo,
-			    int x, int y, int w, int h, int skipleft);
+				 int x, int y, int w, int h, int skipleft);
 void GX2SetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScreenInfo,
-				      int fg, int bg, int rop,
-				      unsigned int planemask);
+					   int fg, int bg, int rop,
+					   unsigned int planemask);
 void GX2SubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScreenInfo,
-					int x, int y, int w, int h,
-					int skipleft);
+					     int x, int y, int w, int h,
+					     int skipleft);
 void OPTGX2SetupForFillRectSolid(ScrnInfoPtr pScreenInfo, int color, int rop,
-			unsigned int planemask);
+				 unsigned int planemask);
 void OPTGX2SubsequentFillRectSolid(ScrnInfoPtr pScreenInfo, int x, int y,
-			  int w, int h);
+				   int w, int h);
 void OPTGX2SetupForScreenToScreenCopy(ScrnInfoPtr pScreenInfo, int xdir,
-			     int ydir, int rop,
-			     unsigned int planemask,
-			     int transparency_color);
+				      int ydir, int rop,
+				      unsigned int planemask,
+				      int transparency_color);
 void OPTGX2SubsequentScreenToScreenCopy(ScrnInfoPtr pScreenInfo, int x1,
-			       int y1, int x2, int y2, int w, int h);
+					int y1, int x2, int y2, int w, int h);
 void OPTGX2SetupForSolidLine(ScrnInfoPtr pScreenInfo, int color, int rop,
-		    unsigned int planemask);
+			     unsigned int planemask);
 void OPTGX2SetupForDashedLine(ScrnInfoPtr pScrn, int fg, int bg, int rop,
-		     unsigned int planemask, int length,
-		     unsigned char *pattern);
+			      unsigned int planemask, int length,
+			      unsigned char *pattern);
 void OPTGX2SubsequentBresenhamLine(ScrnInfoPtr pScreenInfo, int x1, int y1,
-			  int absmaj, int absmin, int err, int len,
-			  int octant);
+				   int absmaj, int absmin, int err, int len,
+				   int octant);
 void OPTGX2SubsequentSolidTwoPointLine(ScrnInfoPtr pScreenInfo,
-			       int x0, int y0, int x1, int y1, int flags);
+				       int x0, int y0, int x1, int y1,
+				       int flags);
 void OPTGX2SubsequentHorVertLine(ScrnInfoPtr pScreenInfo, int x, int y,
-			int len, int dir);
+				 int len, int dir);
 
 void OPTGX2SetupForScanlineImageWrite(ScrnInfoPtr pScreenInfo,
-			     int rop, unsigned int planemask,
-			     int transparency_color, int bpp,
-			     int depth);
+				      int rop, unsigned int planemask,
+				      int transparency_color, int bpp,
+				      int depth);
 
 void OPTGX2SubsequentScanlineImageWriteRect(ScrnInfoPtr pScreenInfo,
-				   int x, int y, int w, int h,
-				   int skipleft);
+					    int x, int y, int w, int h,
+					    int skipleft);
 
 void OPTGX2SubsequentImageWriteScanline(ScrnInfoPtr pScreenInfo, int bufno);
 void OPTGX2SetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScreenInfo,
-					 int fg, int bg, int rop,
-					 unsigned int planemask);
+					      int fg, int bg, int rop,
+					      unsigned int planemask);
 void OPTGX2SubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScreenInfo,
-					   int x, int y, int w, int h,
-					   int skipleft);
+						int x, int y, int w, int h,
+						int skipleft);
 void OPTGX2SetupForImageWrite(ScrnInfoPtr pScreenInfo,
-			 int rop, unsigned int planemask,
-			 int transparency_color, int bpp, int depth);
+			      int rop, unsigned int planemask,
+			      int transparency_color, int bpp, int depth);
 void OPTGX2SubsequentImageWriteRect(ScrnInfoPtr pScreenInfo,
-			       int x, int y, int w, int h, int skipleft);
+				    int x, int y, int w, int h, int skipleft);
 
 /*----------------------------------------------------------------------------
  * GX2AccelSync.
@@ -552,8 +551,8 @@ GX2Subsequent8x8PatternColorExpand(ScrnInfoPtr pScreenInfo,
    GFX(color_pattern_fill((unsigned short)x, (unsigned short)y,
 			  (unsigned short)w, (unsigned short)h,
 			  ((unsigned long *)((pGeode->FBBase +
-					    (patterny << gu2_yshift)) +
-			  patternx))));
+					      (patterny << gu2_yshift)) +
+					     patternx))));
 }
 
 /*----------------------------------------------------------------------------

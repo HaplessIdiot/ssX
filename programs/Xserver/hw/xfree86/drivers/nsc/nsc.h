@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc.h,v 1.1 2002/12/10 15:12:23 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc.h,v 1.2 2002/12/11 22:50:59 dawes Exp $ */
 /*
  * $Workfile: nsc.h $
- * $Revision: 1.2 $
- * $Author: dawes $
+ * $Revision: 1.3 $
+ * $Author: alanh $
  *
  * File Contents: This file contains the data structures Geode driver.
  *
@@ -142,9 +142,6 @@
 #ifndef _NSC_GEODE_H_
 #define _NSC_GEODE_H_
 
-#undef READ
-#undef WRITE
-
 #include "xaa.h"
 #include "xf86Cursor.h"
 #if !defined(STB_X)
@@ -217,7 +214,7 @@ extern unsigned char gfx_inb(unsigned short port);
 extern void gfx_outb(unsigned short port, unsigned char data);
 extern unsigned short gfx_inw(unsigned short port);
 extern void gfx_outw(unsigned short port, unsigned short data);
-extern long gfx_ind(unsigned short port);
+extern unsigned long gfx_ind(unsigned short port);
 extern void gfx_outd(unsigned short port, unsigned long data);
 
 #include "gfx_rtns.h"
@@ -367,6 +364,7 @@ typedef struct
    TVTIMING FBtvtiming;
 #endif					/* STB_X */
    int FBVGAActive;
+   unsigned int FBTVActive;
    unsigned int FBTVEnabled;
    unsigned long FBDisplayOffset;
 

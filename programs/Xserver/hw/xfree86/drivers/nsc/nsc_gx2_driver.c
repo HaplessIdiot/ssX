@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_driver.c,v 1.1 2002/12/10 15:12:24 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_driver.c,v 1.2 2002/12/11 22:50:59 dawes Exp $ */
 /*
  * $Workfile: nsc_gx2_driver.c $
- * $Revision: 1.2 $
- * $Author: dawes $
+ * $Revision: 1.3 $
+ * $Author: alanh $
  *
  * File Contents: This is the main module configures the interfacing 
  *                with the X server. The individual modules will be 
@@ -146,7 +146,6 @@
 #define DEBUG(x)
 #define GEODE_TRACE 0
 #define CFB 0
-#define HWVGA 1
 
 /* Includes that are used by all drivers */
 #include "xf86.h"
@@ -283,7 +282,7 @@ extern const char *nscShadowSymbols[];
 void GX2SetupChipsetFPtr(ScrnInfoPtr pScrn);
 GeodePtr GX2GetRec(ScrnInfoPtr pScreenInfo);
 void get_flatpanel_info(const char *options, int *W, int *H,
-		   int *D, int *C, int *T);
+			int *D, int *C, int *T);
 void gx2_clear_screen(int width, int height);
 void EnableDACPower(void);
 void redcloud_gfx_2_vga_fix(void);
@@ -484,7 +483,8 @@ GX2PreInit(ScrnInfoPtr pScreenInfo, int flags)
 #if defined(STB_X)
    GAL_ADAPTERINFO sAdapterInfo;
 #endif /* STB_X */
-   unsigned int PitchInc, minPitch, maxPitch, minHeight, maxHeight;
+   unsigned int PitchInc = 0, minPitch = 0, maxPitch = 0;
+   unsigned int minHeight = 0, maxHeight = 0;
    unsigned int SupportFlags;
    const char *s;
    char **modes;
@@ -763,12 +763,12 @@ GX2PreInit(ScrnInfoPtr pScreenInfo, int flags)
    }
 
    /* Force the Panel on if on a GX2 TFT part, no crt support */
-   if (pGeode->DetectedChipSet & GX2_TFT) {
+   if (pGeode->DetectedChipSet == GX2_TFT) {
       pGeode->Panel = TRUE;
    }
 
    /* If on a CRT and Panel flag set, disable Panel */
-   if ((pGeode->DetectedChipSet & GX2_CRT) && (pGeode->Panel))
+   if ((pGeode->DetectedChipSet == GX2_CRT) && (pGeode->Panel))
       pGeode->Panel = FALSE;
 
    DEBUGMSG(1, (pScreenInfo->scrnIndex, X_CONFIG,
@@ -907,10 +907,9 @@ GX2PreInit(ScrnInfoPtr pScreenInfo, int flags)
     * * min height 480, max 1024 (Pixel count)
     */
    minPitch = 1024;
-   maxPitch = 4096;			/* Can support upto 1600x1200 16Bpp */
+   maxPitch = 4096;			/* Can support upto 1600x1200 32Bpp */
    minHeight = 480;
-   maxHeight = 1200;			/* Can support upto 1600x1200 16Bpp */
-
+   maxHeight = 1200;			/* Can support upto 1600x1200 32Bpp */
    if (pScreenInfo->depth > 16) {
       PitchInc = 4096;
    } else if (pScreenInfo->depth == 16) {
@@ -1075,23 +1074,11 @@ GX2Restore(ScrnInfoPtr pScreenInfo)
    if (!(pGeode = GX2GetRec(pScreenInfo)))
       return;
    if (pGeode->FBVGAActive) {
-#if HWVGA
       vgaHWPtr pvgaHW = VGAHWPTR(pScreenInfo);
 
       vgaHWProtect(pScreenInfo, TRUE);
       vgaHWRestore(pScreenInfo, &pvgaHW->SavedReg, VGA_SR_ALL);
       vgaHWProtect(pScreenInfo, FALSE);
-#else /* HWVGA */
-      /* Restore the extended registers */
-      gu2_vga_restore(&(pGeode->FBgfxVgaRegs),
-		      GU2_VGA_FLAG_MISC_OUTPUT |
-		      GU2_VGA_FLAG_STD_CRTC |
-		      GU2_VGA_FLAG_GDC |
-		      GU2_VGA_FLAG_SEQ |
-		      GU2_VGA_FLAG_ATTR |
-		      GU2_VGA_FLAG_PALETTE | GU2_VGA_FLAG_EXT_CRTC);
-
-#endif /* HWVGA */
    }
 }
 
@@ -1110,18 +1097,18 @@ GX2Restore(ScrnInfoPtr pScreenInfo)
 *----------------------------------------------------------------------------
 */
 static int
-GX2CalculatePitchBytes(ScrnInfoPtr pScreenInfo)
+GX2CalculatePitchBytes(unsigned int width, unsigned int bpp)
 {
-   GeodePtr pGeode;
-   int lineDelta = pScreenInfo->virtualX * (pScreenInfo->bitsPerPixel >> 3);
+   int lineDelta = width * (bpp >> 3);
 
-   pGeode = GEODEPTR(pScreenInfo);
-
+   if (width < 640) {
+      /* low resolutions have both pixel and line doubling */
+      DEBUGMSG(1, (0, X_PROBED, "lower resolution %d %d\n",
+		   width, lineDelta));
+      lineDelta <<= 1;
+   }
    /* needed in Rotate mode when in accel is turned off */
    if (1) {				/*!pGeode->NoAccel */
-      /* Force to 1K or 2K if acceleration is enabled
-       * we should check for pyramid here!!
-       */
       if (lineDelta > 4096)
 	 lineDelta = 8192;
       else if (lineDelta > 2048)
@@ -1132,8 +1119,7 @@ GX2CalculatePitchBytes(ScrnInfoPtr pScreenInfo)
 	 lineDelta = 1024;
    }
 
-   DEBUGMSG(1,
-	    (0, X_PROBED, "pitch %d %d\n", pScreenInfo->virtualX, lineDelta));
+   DEBUGMSG(1, (0, X_PROBED, "pitch %d %d\n", width, lineDelta));
 
    return lineDelta;
 }
@@ -1163,6 +1149,12 @@ GX2GetRefreshRate(DisplayModePtr pMode)
 
    dotClock = pMode->SynthClock * 1000;
    refreshRate = dotClock / pMode->CrtcHTotal / pMode->CrtcVTotal;
+
+   if ((pMode->CrtcHTotal < 640) && (pMode->CrtcVTotal < 480))
+      refreshRate >>= 2;		/* double pixel and double scan */
+
+   DEBUGMSG(1, (0, X_PROBED, "dotclock %d %d\n", dotClock, refreshRate));
+
    selectedRate = validRates[0];
 
    for (i = 0; i < (sizeof(validRates) / sizeof(validRates[0])); i++) {
@@ -1333,7 +1325,6 @@ GX2SetMode(ScrnInfoPtr pScreenInfo, DisplayModePtr pMode)
 static Bool
 GX2EnterGraphics(ScreenPtr pScreen, ScrnInfoPtr pScreenInfo)
 {
-#if HWVGA
    GeodePtr pGeode = GX2GetRec(pScreenInfo);
 
 #if defined(STB_X)
@@ -1401,17 +1392,12 @@ GX2EnterGraphics(ScreenPtr pScreen, ScrnInfoPtr pScreenInfo)
       if (!vgaHWMapMem(pScreenInfo))
 	 return FALSE;
 
-      gu2_vga_font_data(0);
-
       /* Unlock VGA registers */
       vgaHWUnlock(pvgaHW);
 
       /* Save the current state and setup the current mode */
       vgaHWSave(pScreenInfo, &VGAHWPTR(pScreenInfo)->SavedReg, VGA_SR_ALL);
 
-#if 0
-      gu2_vga_to_gfx();
-#else
       /* DISABLE VGA SEQUENCER */
       /* This allows the VGA state machine to terminate. We must delay */
       /* such that there are no pending MBUS requests.  */
@@ -1430,139 +1416,12 @@ GX2EnterGraphics(ScreenPtr pScreen, ScrnInfoPtr pScreenInfo)
       gfx_outb(MDC_SEQUENCER_DATA, sequencer);
 
       gfx_delay_milliseconds(1);
-      gu2_set_vga(0);
-#endif
    }
 #endif /* STB */
 
    if (!GX2SetMode(pScreenInfo, pScreenInfo->currentMode)) {
       return FALSE;
    }
-#else /* HWVGA */
-   GeodePtr pGeode;
-   unsigned char sequencer;
-
-#if !defined(STB_X)
-   vgaHWPtr hwp = VGAHWPTR(pScreenInfo);
-
-   vgaHWUnlock(hwp);
-#endif /* STB_X */
-
-   GeodeDebug(("GX2EnterGraphics!\n"));
-   DEBUGMSG(1, (0, X_NONE, "EnterGraphics\n"));
-   /* Should we re-save the text mode on each VT enter? */
-   pGeode = GX2GetRec(pScreenInfo);
-
-#if 0
-   print_gxm_gfx_reg(pGeode, 0x4C);
-   print_gxm_vga_reg();
-#endif
-
-#if !defined(STB_X)
-
-   if (pGeode->FBVGAActive) {
-      /* DISABLE VGA SEQUENCER */
-      /* This allows the VGA state machine to terminate. We must delay, such that */
-      /* no there are no pending MBUS requests.  */
-
-      gfx_outb(MDC_SEQUENCER_INDEX, MDC_SEQUENCER_CLK_MODE);
-      sequencer = gfx_inb(MDC_SEQUENCER_DATA);
-      sequencer |= MDC_CLK_MODE_SCREEN_OFF;
-      gfx_outb(MDC_SEQUENCER_DATA, sequencer);
-
-      gfx_delay_milliseconds(1);
-
-      /* BLANK THE VGA DISPLAY */
-
-      gfx_outw(MDC_SEQUENCER_INDEX, MDC_SEQUENCER_RESET);
-      sequencer = gfx_inb(MDC_SEQUENCER_DATA);
-      sequencer &= ~MDC_RESET_VGA_DISP_ENABLE;
-      gfx_outb(MDC_SEQUENCER_DATA, sequencer);
-
-      if (pGeode->FBVGAActive) {
-	 gfx_delay_milliseconds(1);
-	 gu2_set_vga(0);
-      }
-
-      gu2_vga_save(&(pGeode->FBgfxVgaRegs),
-		   GU2_VGA_FLAG_MISC_OUTPUT |
-		   GU2_VGA_FLAG_STD_CRTC |
-		   GU2_VGA_FLAG_GDC |
-		   GU2_VGA_FLAG_SEQ |
-		   GU2_VGA_FLAG_ATTR |
-		   GU2_VGA_FLAG_PALETTE | GU2_VGA_FLAG_EXT_CRTC);
-   }
-   vgaHWSave(pScreenInfo, &VGAHWPTR(pScreenInfo)->SavedReg, VGA_SR_ALL);
-#endif /* STB_X */
-   DEBUGMSG(1, (0, X_PROBED, "VGA = %d\n", pGeode->FBVGAActive));
-
-#if defined(STB_X)
-   Gal_get_display_timing(&pGeode->FBgfxdisplaytiming);
-
-   /* Save Display offset */
-   Gal_get_display_offset(&(pGeode->FBDisplayOffset));
-
-   /* Save the current Compression state */
-   Gal_get_compression_enable(&(pGeode->FBCompressionEnable));
-   Gal_get_compression_parameters(GAL_COMPRESSION_ALL,
-				  &(pGeode->FBCompressionOffset),
-				  &(pGeode->FBCompressionPitch),
-				  &(pGeode->FBCompressionSize));
-
-   /* Save Cursor offset */
-   {
-      unsigned short x, y, xhot, yhot;
-
-      Gal_get_cursor_position(&(pGeode->FBCursorOffset),
-			      &x, &y, &xhot, &yhot);
-   }
-   /* Save the Panel state */
-   Gal_pnl_save();
-
-#else /* STB_X */
-   /* Save CRT State */
-   pGeode->FBgfxdisplaytiming.dwDotClock = gfx_get_clock_frequency();
-   pGeode->FBgfxdisplaytiming.wPitch = gfx_get_display_pitch();
-   pGeode->FBgfxdisplaytiming.wBpp = gfx_get_display_bpp();
-   pGeode->FBgfxdisplaytiming.wHTotal = gfx_get_htotal();
-   pGeode->FBgfxdisplaytiming.wHActive = gfx_get_hactive();
-   pGeode->FBgfxdisplaytiming.wHSyncStart = gfx_get_hsync_start();
-   pGeode->FBgfxdisplaytiming.wHSyncEnd = gfx_get_hsync_end();
-   pGeode->FBgfxdisplaytiming.wHBlankStart = gfx_get_hblank_start();
-   pGeode->FBgfxdisplaytiming.wHBlankEnd = gfx_get_hblank_end();
-   pGeode->FBgfxdisplaytiming.wVTotal = gfx_get_vtotal();
-   pGeode->FBgfxdisplaytiming.wVActive = gfx_get_vactive();
-   pGeode->FBgfxdisplaytiming.wVSyncStart = gfx_get_vsync_start();
-   pGeode->FBgfxdisplaytiming.wVSyncEnd = gfx_get_vsync_end();
-   pGeode->FBgfxdisplaytiming.wVBlankStart = gfx_get_vblank_start();
-   pGeode->FBgfxdisplaytiming.wVBlankEnd = gfx_get_vblank_end();
-   pGeode->FBgfxdisplaytiming.wPolarity = gfx_get_sync_polarities();
-
-   /* Save Display offset */
-   pGeode->FBDisplayOffset = gfx_get_display_offset();
-
-   /* Save the current Compression state */
-   pGeode->FBCompressionEnable = gfx_get_compression_enable();
-   pGeode->FBCompressionOffset = gfx_get_compression_offset();
-   pGeode->FBCompressionPitch = gfx_get_compression_pitch();
-   pGeode->FBCompressionSize = gfx_get_compression_size();
-
-   /* Save Cursor offset */
-   pGeode->FBCursorOffset = gfx_get_cursor_offset();
-
-   /* Save the Panel state */
-   Pnl_SavePanelState();
-
-   if (pGeode->FBVGAActive) {
-      gfx_delay_milliseconds(1);
-      gu2_set_vga(0);
-   }
-#endif /* STB_X */
-
-   if (!GX2SetMode(pScreenInfo, pScreenInfo->currentMode)) {
-      return FALSE;
-   }
-#endif /* HWVGA */
 
    /* clear the frame buffer, for annoying noise during mode switch */
    gx2_clear_screen(pScreenInfo->currentMode->CrtcHDisplay,
@@ -1587,6 +1446,7 @@ redcloud_gfx_2_vga_fix(void)
    EnableDACPower();
 #if 0
    int i;
+
    /* set the character width to 9 */
    gfx_outb(0x3C4, 0x1);
    gfx_outb(0x3C5, 0x2);
@@ -1646,7 +1506,6 @@ redcloud_gfx_2_vga_fix(void)
 static void
 GX2LeaveGraphics(ScrnInfoPtr pScreenInfo)
 {
-#if HWVGA
    GeodePtr pGeode = GX2GetRec(pScreenInfo);
 
    /* Restore VG registers */
@@ -1703,110 +1562,14 @@ GX2LeaveGraphics(ScrnInfoPtr pScreenInfo)
 
    GeodeDebug(("FBVGAActive %d\n", pGeode->FBVGAActive));
    if (pGeode->FBVGAActive) {
-#if INT10_SUPPORT
       pGeode->vesa->pInt->num = 0x10;
       pGeode->vesa->pInt->ax = 0x3;
       pGeode->vesa->pInt->bx = 0;
       xf86ExecX86int10(pGeode->vesa->pInt);
       gfx_delay_milliseconds(3);
       EnableDACPower();
-#else
-      gu2_vga_font_data(1);
-
-      GX2Restore(pScreenInfo);
-
-      /* FIX for the Redcloud, GFX -> VGA */
-      redcloud_gfx_2_vga_fix();
-
-      vgaHWLock(VGAHWPTR(pScreenInfo));
-      vgaHWUnmapMem(pScreenInfo);
-      gu2_gfx_to_vga(3);
-#endif
    }
 #endif /* STB_X */
-#else /* HWVGA */
-   GeodePtr pGeode;
-   unsigned short sequencer;
-
-   GeodeDebug(("GX2LeaveGraphics!\n"));
-   pGeode = GEODEPTR(pScreenInfo);
-
-   /* clear the frame buffer, when leaving X */
-   gx2_clear_screen(pScreenInfo->virtualX, pScreenInfo->virtualY);
-
-#if defined(STB_X)
-   Gal_set_display_timing(&pGeode->FBgfxdisplaytiming);
-
-   Gal_set_display_offset(pGeode->FBDisplayOffset);
-
-   /* Restore Cursor */
-   Gal_set_cursor_position(pGeode->FBCursorOffset, 0, 0, 0, 0);
-
-   /* Restore the previous Compression state */
-   if (pGeode->FBCompressionEnable) {
-      Gal_set_compression_parameters(GAL_COMPRESSION_ALL,
-				     pGeode->FBCompressionOffset,
-				     pGeode->FBCompressionPitch,
-				     pGeode->FBCompressionSize);
-
-      Gal_set_compression_enable(GAL_COMPRESSION_ENABLE);
-   }
-#else /* STB_X */
-
-   /* Restore CRT */
-   gfx_set_display_timings(pGeode->FBgfxdisplaytiming.wBpp,
-			   pGeode->FBgfxdisplaytiming.wPolarity,
-			   pGeode->FBgfxdisplaytiming.wHActive,
-			   pGeode->FBgfxdisplaytiming.wHBlankStart,
-			   pGeode->FBgfxdisplaytiming.wHSyncStart,
-			   pGeode->FBgfxdisplaytiming.wHSyncEnd,
-			   pGeode->FBgfxdisplaytiming.wHBlankEnd,
-			   pGeode->FBgfxdisplaytiming.wHTotal,
-			   pGeode->FBgfxdisplaytiming.wVActive,
-			   pGeode->FBgfxdisplaytiming.wVBlankStart,
-			   pGeode->FBgfxdisplaytiming.wVSyncStart,
-			   pGeode->FBgfxdisplaytiming.wVSyncEnd,
-			   pGeode->FBgfxdisplaytiming.wVBlankEnd,
-			   pGeode->FBgfxdisplaytiming.wVTotal,
-			   pGeode->FBgfxdisplaytiming.dwDotClock);
-
-   gfx_set_display_pitch(pGeode->FBgfxdisplaytiming.wPitch);
-
-   gfx_set_display_offset(pGeode->FBDisplayOffset);
-
-   /* Restore Cursor */
-   gfx_set_cursor_position(pGeode->FBCursorOffset, 0, 0, 0, 0);
-
-   /* Restore the previous Compression state */
-   if (pGeode->FBCompressionEnable) {
-      gfx_set_compression_offset(pGeode->FBCompressionOffset);
-      gfx_set_compression_pitch(pGeode->FBCompressionPitch);
-      gfx_set_compression_size(pGeode->FBCompressionSize);
-      gfx_set_compression_enable(1);
-   }
-#endif /* STB_X */
-
-   if (pGeode->FBVGAActive) {
-      DEBUGMSG(1, (0, X_PROBED, "LG 1\n"));
-      vgaHWRestore(pScreenInfo, &VGAHWPTR(pScreenInfo)->SavedReg, VGA_SR_ALL);
-      DEBUGMSG(1, (0, X_PROBED, "LG 2\n"));
-      gu2_vga_to_gfx();
-      DEBUGMSG(1, (0, X_PROBED, "LG 3\n"));
-      gu2_vga_restore(&(pGeode->FBgfxVgaRegs),
-		      GU2_VGA_FLAG_MISC_OUTPUT |
-		      GU2_VGA_FLAG_STD_CRTC |
-		      GU2_VGA_FLAG_GDC |
-		      GU2_VGA_FLAG_SEQ |
-		      GU2_VGA_FLAG_ATTR |
-		      GU2_VGA_FLAG_PALETTE | GU2_VGA_FLAG_EXT_CRTC);
-      vgaHWRestore(pScreenInfo, &VGAHWPTR(pScreenInfo)->SavedReg, VGA_SR_ALL);
-
-      DEBUGMSG(1, (0, X_PROBED, "LG 6\n"));
-      gu2_set_vga(1);
-      gu2_gfx_to_vga(&pGeode->FBgfxVgaRegs);
-      DEBUGMSG(1, (0, X_PROBED, "LG 7\n"));
-   }
-#endif /* HWVGA */
 }
 
 /*----------------------------------------------------------------------------
@@ -1828,7 +1591,6 @@ GX2LeaveGraphics(ScrnInfoPtr pScreenInfo)
 static Bool
 GX2CloseScreen(int scrnIndex, ScreenPtr pScreen)
 {
-#if HWVGA
    ScrnInfoPtr pScreenInfo = xf86Screens[scrnIndex];
    GeodePtr pGeode = GEODEPTR(pScreenInfo);
 
@@ -1854,40 +1616,7 @@ GX2CloseScreen(int scrnIndex, ScreenPtr pScreen)
    pScreenInfo->vtSema = FALSE;
 
    GX2UnmapMem(pScreenInfo);
-#else /* HWVGA */
-   ScrnInfoPtr pScreenInfo = xf86Screens[scrnIndex];
-   GeodePtr pGeode = GEODEPTR(pScreenInfo);
-
-   DEBUGMSG(1, (scrnIndex, X_PROBED, "GX2CloseScreen\n"));
-   GeodeDebug(("GX2CloseScreen!\n"));
-
-   if (pScreenInfo->vtSema)
-      GX2LeaveGraphics(pScreenInfo);
-
-   if (pGeode->AccelInfoRec)
-      XAADestroyInfoRec(pGeode->AccelInfoRec);
-
-   pScreenInfo->vtSema = FALSE;
-
-   if (pGeode->DGAModes)
-      xfree(pGeode->DGAModes);
-
-   pGeode->DGAModes = 0;
-
-   if (pGeode->ShadowPtr)
-      xfree(pGeode->ShadowPtr);
-
-   if (pGeode->AccelImageWriteBufferOffsets) {
-      xfree(pGeode->AccelImageWriteBufferOffsets);
-      pGeode->AccelImageWriteBufferOffsets = 0x0;
-   }
-   /* free the allocated off screen area */
-   xf86FreeOffscreenArea(pGeode->AccelImgArea);
-   xf86FreeOffscreenArea(pGeode->CompressionArea);
-
-   GX2UnmapMem(pScreenInfo);
-#endif /* HWVGA */
-	 if (pGeode && (pScreen->CloseScreen = pGeode->CloseScreen)) {
+   if (pGeode && (pScreen->CloseScreen = pGeode->CloseScreen)) {
       pGeode->CloseScreen = NULL;
       return ((*pScreen->CloseScreen) (scrnIndex, pScreen));
    }
@@ -2025,7 +1754,8 @@ GX2ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
    if (!GX2MapMem(pScreenInfo))
       return FALSE;
 
-   pGeode->Pitch = GX2CalculatePitchBytes(pScreenInfo);
+   pGeode->Pitch = GX2CalculatePitchBytes(pScreenInfo->virtualX,
+					  pScreenInfo->bitsPerPixel);
 
    /* SET UP GRAPHICS MEMORY AVAILABLE FOR PIXMAP CACHE */
    MemBox.x1 = 0;
@@ -2264,7 +1994,7 @@ GX2ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
    if (pGeode->HWCursor) {
       if (!GX2HWCursorInit(pScreen))
 	 xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
-		      "Hardware cursor initialization failed\n");
+		    "Hardware cursor initialization failed\n");
    }
    GeodeDebug(("GX2ScreenInit(9)!\n"));
    /* Setup default colourmap */
@@ -2478,13 +2208,14 @@ GX2ValidMode(int scrnIndex, DisplayModePtr pMode, Bool Verbose, int flags)
    int ret = -1;
    GeodePtr pGeode = GX2GetRec(pScreenInfo);
 
-   DEBUGMSG(0, (0, X_NONE, "GeodeValidateMode: %dx%d %d %d\n",
+   DEBUGMSG(1, (0, X_NONE, "GeodeValidateMode: %dx%d %d %d\n",
 		pMode->CrtcHDisplay, pMode->CrtcVDisplay,
 		pScreenInfo->bitsPerPixel, GX2GetRefreshRate(pMode)));
    {
-      DEBUGMSG(0, (0, X_NONE, "CRT mode"));
+      DEBUGMSG(1, (0, X_NONE, "CRT mode\n"));
       if (pMode->Flags & V_INTERLACE)
 	 return MODE_NO_INTERLACE;
+
 #if defined(STB_X)
       Gal_is_display_mode_supported(pMode->CrtcHDisplay, pMode->CrtcVDisplay,
 				    pScreenInfo->bitsPerPixel,
@@ -2496,19 +2227,18 @@ GX2ValidMode(int scrnIndex, DisplayModePtr pMode, Bool Verbose, int flags)
 					  GX2GetRefreshRate(pMode));
 #endif /* STB_X */
    }
+   if (ret < 0)
+      return MODE_NOMODE;
 
-   total_memory_required =
-	 (GX2CalculatePitchBytes(pScreenInfo) * (pMode->CrtcVDisplay));
-   DEBUGMSG(0,
-	    (0, X_NONE, "Total Mem %X %X", total_memory_required,
-	     pGeode->FBSize));
+   total_memory_required = GX2CalculatePitchBytes(pMode->CrtcHDisplay,
+						  pScreenInfo->bitsPerPixel) *
+	 pMode->CrtcVDisplay;
+
+   DEBUGMSG(1, (0, X_NONE, "Total Mem %X %X\n",
+		total_memory_required, pGeode->FBSize));
+
    if (total_memory_required > pGeode->FBSize)
-      ret = -1;
-
-   DEBUGMSG(0, (0, X_NONE, "ret = %d\n", ret));
-   if (ret == -1) {			/* mode not supported */
-      return MODE_NO_INTERLACE;
-   }
+      return MODE_MEM;
 
    return MODE_OK;
 }

@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/durango.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/durango.c,v 1.3 2003/01/13 20:50:46 tsi Exp $ */
 /*
  * $Workfile: durango.c $
- * $Revision: 1.3 $
- * $Author: tsi $
+ * $Revision: 1.4 $
+ * $Author: alanh $
  *
  * This is the main file used to add Durango graphics support to a software 
  * project.  The main reason to have a single file include the other files
