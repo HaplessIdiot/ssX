@@ -18,7 +18,7 @@
 ** are Copyright (c) 1991-9 Silicon Graphics, Inc. All Rights Reserved.
 **
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/glx/glxclient.h,v 1.9 2000/09/26 15:56:46 tsi Exp $ */
 
 /*
  * Direct rendering support added by Precision Insight, Inc.
@@ -126,7 +126,8 @@ struct __DRIscreenRec {
     /*
     ** Method to return a pointer to the DRI drawable data.
     */
-    __DRIdrawable *(*getDrawable)(Display *dpy, GLXDrawable draw);
+    __DRIdrawable *(*getDrawable)(Display *dpy, GLXDrawable draw,
+				  void *private);
 
     /*
     ** Opaque pointer to private per screen direct rendering data.  NULL

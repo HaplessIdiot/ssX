@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_fastpath.c,v 1.1 2000/06/17 00:03:05 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_fastpath.c,v 1.2 2000/08/25 13:42:28 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -68,7 +68,7 @@ typedef struct r128_fast_table {
 #define RENDER_POINTS(start, count)                                       \
 do {                                                                      \
     GLuint e;                                                             \
-    for (e = start; e <= count; e++)                                      \
+    for (e = start; e < count; e++)                                      \
 	POINT(elt[e]);                                                    \
 } while (0)
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.11 2000/07/01 15:23:10 martin Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.12 2000/09/24 13:51:00 alanh Exp $ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -551,7 +551,8 @@ void glXSwapBuffers(Display *dpy, GLXDrawable drawable)
 	    ** getDrawable returning NULL implies that the drawable is
 	    ** not bound to a direct rendering context.
 	    */
-	    pdraw = (*psc->driScreen.getDrawable)(dpy, drawable);
+	    pdraw = (*psc->driScreen.getDrawable)(dpy, drawable,
+						  psc->driScreen.private);
 	    if (pdraw) {
 		(*pdraw->swapBuffers)(dpy, pdraw->private);
 #if defined(XTHREADS)

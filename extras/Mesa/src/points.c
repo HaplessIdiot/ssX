@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -160,7 +160,7 @@ size1_ci_points( GLcontext *ctx, GLuint first, GLuint last )
    GLuint i;
 
    win = &VB->Win.data[first][0];
-   for (i = first; i <= last; i++) {
+   for (i = first; i < last; i++) {
       if (VB->ClipMask[i] == 0) {
          pbx[pbcount] = (GLint)  win[0];
          pby[pbcount] = (GLint)  win[1];
@@ -186,7 +186,7 @@ size1_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
    struct pixel_buffer *PB = ctx->PB;
    GLuint i;
 
-   for (i = first; i <= last; i++) {
+   for (i = first; i < last; i++) {
       if (VB->ClipMask[i] == 0) {
          GLint x, y, z;
          GLint red, green, blue, alpha;
@@ -220,7 +220,7 @@ general_ci_points( GLcontext *ctx, GLuint first, GLuint last )
    GLint radius = isize >> 1;
    GLuint i;
 
-   for (i = first; i <= last; i++) {
+   for (i = first; i < last; i++) {
       if (VB->ClipMask[i] == 0) {
          GLint x0, x1, y0, y1;
          GLint ix, iy;
@@ -269,7 +269,7 @@ general_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
    GLint radius = isize >> 1;
    GLuint i;
 
-   for (i = first; i <= last; i++) {
+   for (i = first; i < last; i++) {
       if (VB->ClipMask[i] == 0) {
          GLint x0, x1, y0, y1;
          GLint ix, iy;
@@ -322,7 +322,7 @@ textured_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
    struct pixel_buffer *PB = ctx->PB;
    GLuint i;
 
-   for (i = first; i <= last; i++) {
+   for (i = first; i < last; i++) {
       if (VB->ClipMask[i] == 0) {
          GLint x0, x1, y0, y1;
          GLint ix, iy, radius;
@@ -409,7 +409,7 @@ multitextured_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
    struct pixel_buffer *PB = ctx->PB;
    GLuint i;
 
-   for (i = first; i <= last; i++) {
+   for (i = first; i < last; i++) {
       if (VB->ClipMask[i] == 0) {
          GLint x0, x1, y0, y1;
          GLint ix, iy;
@@ -550,7 +550,7 @@ antialiased_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
    GLuint i;
 
    if (ctx->Texture.ReallyEnabled) {
-      for (i = first; i <= last; i++) {
+      for (i = first; i < last; i++) {
          if (VB->ClipMask[i] == 0) {
             GLint x, y;
             GLint red, green, blue, alpha;
@@ -666,7 +666,7 @@ antialiased_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
    }
    else {
       /* Not texture mapped */
-      for (i=first;i<=last;i++) {
+      for (i=first;i<last;i++) {
          if (VB->ClipMask[i]==0) {
             GLint xmin, ymin, xmax, ymax;
             GLint x, y, z;
@@ -737,7 +737,7 @@ dist3(GLfloat *out, GLuint first, GLuint last,
    const GLfloat *p = VEC_ELT(v, GLfloat, first);
    GLuint i;
 
-   for (i = first ; i <= last ; i++, STRIDE_F(p, stride) ) {
+   for (i = first ; i < last ; i++, STRIDE_F(p, stride) ) {
       GLfloat dist = GL_SQRT(p[0]*p[0]+p[1]*p[1]+p[2]*p[2]);
       out[i] = 1.0F / (ctx->Point.Params[0] +
                        dist * (ctx->Point.Params[1] +
@@ -754,7 +754,7 @@ dist2(GLfloat *out, GLuint first, GLuint last,
    const GLfloat *p = VEC_ELT(v, GLfloat, first);
    GLuint i;
 
-   for (i = first ; i <= last ; i++, STRIDE_F(p, stride) ) {
+   for (i = first ; i < last ; i++, STRIDE_F(p, stride) ) {
       GLfloat dist = GL_SQRT(p[0]*p[0]+p[1]*p[1]);
       out[i] = 1.0F / (ctx->Point.Params[0] +
                        dist * (ctx->Point.Params[1] +
@@ -794,7 +794,7 @@ clip_dist(GLfloat *out, GLuint first, GLuint last,
    const GLfloat *from = (GLfloat *)clip_vec->start;
    const GLuint stride = clip_vec->stride;
 
-   for (i = first ; i <= last ; i++ )
+   for (i = first ; i < last ; i++ )
    {
       GLfloat dist = win[i][2];
       out[i] = 1/(ctx->Point.Params[0]+ 
@@ -823,7 +823,7 @@ dist_atten_general_ci_points( GLcontext *ctx, GLuint first, GLuint last )
    else 
       clip_dist( dist, first, last, ctx, VB->ClipPtr );
 
-   for (i=first;i<=last;i++) {
+   for (i=first;i<last;i++) {
       if (VB->ClipMask[i]==0) {
          GLint x0, x1, y0, y1;
          GLint ix, iy;
@@ -885,7 +885,7 @@ dist_atten_general_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
    else 
       clip_dist( dist, first, last, ctx, VB->ClipPtr );
 
-   for (i=first;i<=last;i++) {
+   for (i=first;i<last;i++) {
       if (VB->ClipMask[i]==0) {
          GLint x0, x1, y0, y1;
          GLint ix, iy;
@@ -955,7 +955,7 @@ dist_atten_textured_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
    else 
       clip_dist( dist, first, last, ctx, VB->ClipPtr );
 
-   for (i=first;i<=last;i++) {
+   for (i=first;i<last;i++) {
       if (VB->ClipMask[i]==0) {
          GLint x0, x1, y0, y1;
          GLint ix, iy;
@@ -1103,7 +1103,7 @@ dist_atten_antialiased_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
       clip_dist( dist, first, last, ctx, VB->ClipPtr );
 
    if (ctx->Texture.ReallyEnabled) {
-      for (i=first;i<=last;i++) {
+      for (i=first;i<last;i++) {
          if (VB->ClipMask[i]==0) {
             GLfloat radius, rmin, rmax, rmin2, rmax2, cscale, alphaf;
             GLint xmin, ymin, xmax, ymax;
@@ -1231,7 +1231,7 @@ dist_atten_antialiased_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
    }
    else {
       /* Not texture mapped */
-      for (i = first; i <= last; i++) {
+      for (i = first; i < last; i++) {
          if (VB->ClipMask[i] == 0) {
             GLfloat radius, rmin, rmax, rmin2, rmax2, cscale, alphaf;
             GLint xmin, ymin, xmax, ymax;

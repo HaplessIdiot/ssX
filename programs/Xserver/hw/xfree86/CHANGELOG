@@ -1,4 +1,6 @@
 XFree86 4.0.1f (xx November 2000)
+ 919. Make module ABI compatibility mismatches fatal by default, and
+      add a command line option for making them non-fatal (David Dawes).
  918. Changed SiS driver to use fb instead of cfb (Alan Hourihane).
  917. Fix r128 and radeon driver source code formatting that was munged
       during ATI merge (Kevin Martin).
@@ -11509,4 +11511,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1387 2000/11/09 03:24:31 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1388 2000/11/09 11:32:17 alanh Exp $

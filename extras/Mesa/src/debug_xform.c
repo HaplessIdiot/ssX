@@ -22,7 +22,6 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/debug_xform.c,v 1.5 2000/09/26 15:56:30 tsi Exp $ */
 
 /*
  * Updated for P6 architecture by Gareth Hughes.
@@ -397,7 +396,7 @@ static void ref_transform( GLvector4f *dst,
                            const GLubyte *clipmask,
                            const GLubyte flag )
 {
-   int i;
+   GLuint i;
    GLfloat *s = (GLfloat *)src->start;
    GLfloat (*d)[4] = (GLfloat (*)[4])dst->start;
    const GLfloat *m = mat->m;
@@ -422,7 +421,7 @@ static void ref_norm_transform_rescale( const GLmatrix *mat,
 					const GLubyte mask[],
 					GLvector3f *dest )
 {
-   int i;
+   GLuint i;
    const GLfloat *s = in->start;
    const GLfloat *m = mat->inv;
    GLfloat (*out)[3] = (GLfloat (*)[3])dest->start;
@@ -451,7 +450,7 @@ static void ref_norm_transform_normalize( const GLmatrix *mat,
 					  const GLubyte mask[],
 					  GLvector3f *dest )
 {
-   int i;
+   GLuint i;
    const GLfloat *s = in->start;
    const GLfloat *m = mat->inv;
    GLfloat (*out)[3] = (GLfloat (*)[3])dest->start;
@@ -697,86 +696,6 @@ void gl_test_all_transform_functions( char *description )
       if ( mesa_profile )
          printf( "\n" );
 #endif
-   }
-}
-
-
-
-
-
-
-
-
-static void ref_norm_transform_rescale ( const GLmatrix *mat,
-                                    GLfloat scale,
-                                    const GLvector3f *in,
-                                    const GLfloat *lengths,
-                                    const GLubyte mask[],
-                                    GLvector3f *dest )
-{
-   int i;
-   const GLfloat *s = in->start;
-   const GLfloat *m = mat->inv;
-   GLfloat (*out)[3] = (GLfloat (*)[3])dest->start;
-
-   (void) mask;
-   (void) lengths;
-
-   for (i = 0; i < in->count; ++i) {
-      GLfloat x = s[0], y = s[1], z = s[2] ;
-      GLfloat tx = m[0]*x + m[1]*y + m[ 2]*z ;
-      GLfloat ty = m[4]*x + m[5]*y + m[ 6]*z ;
-      GLfloat tz = m[8]*x + m[9]*y + m[10]*z ;
-
-      out[i][0] = tx * scale;
-      out[i][1] = ty * scale;
-      out[i][2] = tz * scale;
-
-      s = (GLfloat *)((char *)s + in->stride);
-   }
-}
-
-
-static void ref_norm_transform_normalize ( const GLmatrix *mat,
-                                      GLfloat scale,
-                                      const GLvector3f *in,
-                                      const GLfloat *lengths,
-                                      const GLubyte mask[],
-                                      GLvector3f *dest )
-{
-   int i;
-   const GLfloat *s = in->start;
-   const GLfloat *m = mat->inv;
-   GLfloat (*out)[3] = (GLfloat (*)[3])dest->start;
-
-   (void) mask;
-
-   for (i = 0; i < in->count; ++i) {
-      GLfloat x = s[0], y = s[1], z = s[2] ;
-      GLfloat tx = m[0]*x + m[1]*y + m[ 2]*z ;
-      GLfloat ty = m[4]*x + m[5]*y + m[ 6]*z ;
-      GLfloat tz = m[8]*x + m[9]*y + m[10]*z ;
-
-      if (!lengths) {
-         GLfloat len = tx*tx + ty*ty + tz*tz;
-         if (len > 1e-20) {
-            scale = 1.0 / sqrt (len);           /*  hmmm, don't know how we   */
-                                                /*  could test the precalcu-  */
-                                                /*  lated length case ...     */
-            out[i][0] = tx * scale;
-            out[i][1] = ty * scale;
-            out[i][2] = tz * scale;
-         } else {
-            out[i][0] = out[i][1] = out[i][2] = 0;
-         }
-      } else {
-         scale = lengths [i];;
-         out[i][0] = tx * scale;
-         out[i][1] = ty * scale;
-         out[i][2] = tz * scale;
-      }
-
-      s = (GLfloat *)((char *)s + in->stride);
    }
 }
 

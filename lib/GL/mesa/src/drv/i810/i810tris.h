@@ -22,7 +22,7 @@
  *
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810tris.h,v 1.4 2000/08/28 02:43:11 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810tris.h,v 1.6 2000/09/29 08:59:42 eich Exp $ */
 
 #ifndef I810TRIS_INC
 #define I810TRIS_INC
@@ -133,6 +133,7 @@ static __inline__ void i810_draw_line( i810ContextPtr imesa,
 {
    GLuint vertsize = imesa->vertsize;
    GLuint *vb = i810AllocDwordsInline( imesa, 2 * vertsize );
+   int j;
 
 #if defined(USE_X86_ASM)
     __asm__ __volatile__( "rep ; movsl"
@@ -144,8 +145,6 @@ static __inline__ void i810_draw_line( i810ContextPtr imesa,
 			  : "0" (vertsize), "S" ((long)v1)
 			  : "memory" );
 #else
-    int j;
-
     for (j = 0 ; j < vertsize ; j++)
         vb[j] = v0->ui[j];
 

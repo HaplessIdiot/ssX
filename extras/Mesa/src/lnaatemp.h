@@ -22,7 +22,6 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/lnaatemp.h,v 1.10 2000/06/21 20:18:13 tsi Exp $ */
 
 /*
  * Antialiased Line Rasterizer Template
@@ -107,8 +106,8 @@
       z1 = FloatToFixed(VB->Win.data[vert1][2] + ctx->LineZoffset);
    }
    else {
-      z0 = (int) VB->Win.data[vert0][2] + ctx->LineZoffset;
-      z1 = (int) VB->Win.data[vert1][2] + ctx->LineZoffset;
+      z0 = (GLint) (VB->Win.data[vert0][2] + ctx->LineZoffset);
+      z1 = (GLint) (VB->Win.data[vert1][2] + ctx->LineZoffset);
    }
 
 #ifdef INTERP_STUV0

@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/state.c,v 1.5 2000/09/26 15:56:33 tsi Exp $ */
+
 
 /*
  * This file initializes the immediate-mode dispatch table (which may
@@ -774,7 +774,7 @@ static void update_pixel_masking( GLcontext *ctx )
 
 static void update_fog_mode( GLcontext *ctx )
 {
-   int old_mode = ctx->FogMode;
+   const GLuint old_mode = ctx->FogMode;
 
    if (ctx->Fog.Enabled) {
       if (ctx->Texture.ReallyEnabled)

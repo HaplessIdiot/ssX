@@ -38,7 +38,7 @@ static GLuint TAG(gl_cull_triangles)( struct vertex_buffer *VB,
    const GLubyte face_bit = ctx->Polygon.FrontBit;
    const GLubyte cull_faces = ctx->Polygon.CullBits;
    GLubyte *cullmask = VB->CullMask;
-   GLint i,cullcount = 0;
+   GLint i, cullcount = 0;
    GLint last = count - 3;
    
    (void) parity;
@@ -46,7 +46,7 @@ static GLuint TAG(gl_cull_triangles)( struct vertex_buffer *VB,
       CULL_TRI(DO_CLIP, DO_AREA, i, i+1, i+2, face_bit, 3);
    }
 
-   if (i != count)
+   if (i != (GLint) count)
       cullcount += count - i;
 
    return cullcount;
@@ -77,7 +77,7 @@ static GLuint TAG(gl_cull_triangle_fan)( struct vertex_buffer *VB,
       CULL_TRI(DO_CLIP, DO_AREA, start, i+1, i+2, face_bit, nr);
    }
 
-   if (i != last + 1)
+   if (i != (GLint) (last + 1))
       cullcount += count - i;
 
    return cullcount;
@@ -135,7 +135,7 @@ static GLuint TAG(gl_cull_quads)( struct vertex_buffer *VB,
       CULL_QUAD(DO_CLIP, DO_AREA, i, i+1, i+2, i+3, 4);
    }
 
-   if (i != count)
+   if (i != (GLint) count)
       cullcount += count - i;
 
    return cullcount;
@@ -162,7 +162,7 @@ static GLuint TAG(gl_cull_quad_strip)( struct vertex_buffer *VB,
       CULL_QUAD(DO_CLIP, DO_AREA, i, i+1, i+3, i+2, nr);
    }
 
-   if (i != last + 2)
+   if (i != ((GLint) last + 2))
       cullcount += count - i;
 
    return cullcount;

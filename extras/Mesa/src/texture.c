@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/texture.c,v 1.7 2000/09/26 15:56:34 tsi Exp $ */
+
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -2005,8 +2005,8 @@ _mesa_set_texture_sampler( struct gl_texture_object *t )
 #define PROD(A,B)   ( (GLuint)(A) * ((GLuint)(B)+1) )
 
 static INLINE void
-_mesa_texture_combine(CONST GLcontext *ctx,
-                      CONST struct gl_texture_unit *textureUnit,
+_mesa_texture_combine(const GLcontext *ctx,
+                      const struct gl_texture_unit *textureUnit,
                       GLuint n,
                       GLubyte (*primary_rgba)[4],
                       GLubyte (*texel)[4],
@@ -2307,7 +2307,7 @@ _mesa_texture_combine(CONST GLcontext *ctx,
  *                according to the texture environment mode.
  */
 static void apply_texture( CONST GLcontext *ctx,
-                           CONST struct gl_texture_unit *texUnit,
+                           const struct gl_texture_unit *texUnit,
                            GLuint n,
                            GLubyte primary_rgba[][4], GLubyte texel[][4],
                            GLubyte rgba[][4] )

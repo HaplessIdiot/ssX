@@ -1,4 +1,3 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
@@ -23,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/texutil.c,v 1.3 2000/09/26 15:56:34 tsi Exp $ */
+
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -127,8 +126,9 @@ _mesa_convert_teximage(MesaIntTexFormat dstFormat,
             /* store as 8-bit texels */
             if (wScale == 1 && hScale == 1) {
                /* no scaling needed - fast case */
-               const GLubyte *src = _mesa_image_address(packing, srcImage,
-                             srcWidth, srcHeight, srcFormat, srcType, 0, 0, 0);
+               const GLubyte *src = (const GLubyte *)
+                  _mesa_image_address(packing, srcImage, srcWidth, srcHeight,
+                                      srcFormat, srcType, 0, 0, 0);
                const GLint srcStride = _mesa_image_row_stride(packing,
                                                  srcWidth, srcFormat, srcType);
                GLubyte *dst = (GLubyte *) dstImage;
@@ -145,8 +145,9 @@ _mesa_convert_teximage(MesaIntTexFormat dstFormat,
                GLint row;
                for (row = 0; row < dstHeight; row++) {
                   GLint srcRow = row / hScale;
-                  const GLubyte *src = _mesa_image_address(packing, srcImage,
-                        srcWidth, srcHeight, srcFormat, srcType, 0, srcRow, 0);
+                  const GLubyte *src = (const GLubyte *)
+                     _mesa_image_address(packing, srcImage, srcWidth,
+                             srcHeight, srcFormat, srcType, 0, srcRow, 0);
                   GLint col;
                   for (col = 0; col < dstWidth; col++) {
                      dst[col] = src[col / wScale];
@@ -164,8 +165,9 @@ _mesa_convert_teximage(MesaIntTexFormat dstFormat,
          else {
             /* store as 16-bit texels */
             if (wScale == 1 && hScale == 1) {
-               const GLubyte *src = _mesa_image_address(packing, srcImage,
-                             srcWidth, srcHeight, srcFormat, srcType, 0, 0, 0);
+               const GLubyte *src = (const GLubyte *)
+                  _mesa_image_address(packing, srcImage, srcWidth, srcHeight,
+                                      srcFormat, srcType, 0, 0, 0);
                const GLint srcStride = _mesa_image_row_stride(packing,
                                                  srcWidth, srcFormat, srcType);
                GLushort *dst = (GLushort *) dstImage;
@@ -186,8 +188,9 @@ _mesa_convert_teximage(MesaIntTexFormat dstFormat,
                GLint row, col;
                for (row = 0; row < dstHeight; row++) {
                   GLint srcRow = row / hScale;
-                  const GLubyte *src = _mesa_image_address(packing, srcImage,
-                        srcWidth, srcHeight, srcFormat, srcType, 0, srcRow, 0);
+                  const GLubyte *src = (const GLubyte *)
+                     _mesa_image_address(packing, srcImage, srcWidth,
+                                  srcHeight, srcFormat, srcType, 0, srcRow, 0);
                   const GLint srcStride = _mesa_image_row_stride(packing,
                                                  srcWidth, srcFormat, srcType);
                   for (col = 0; col < dstWidth; col++) {
@@ -207,8 +210,9 @@ _mesa_convert_teximage(MesaIntTexFormat dstFormat,
          if (srcFormat == GL_RGB && srcType == GL_UNSIGNED_SHORT_5_6_5) {
             /* special, optimized case */
             if (wScale == 1 && hScale == 1) {
-               const GLubyte *src = _mesa_image_address(packing, srcImage,
-                             srcWidth, srcHeight, srcFormat, srcType, 0, 0, 0);
+               const GLubyte *src = (const GLubyte *)
+                  _mesa_image_address(packing, srcImage, srcWidth, srcHeight,
+                                      srcFormat, srcType, 0, 0, 0);
                const GLint srcStride = _mesa_image_row_stride(packing,
                                                  srcWidth, srcFormat, srcType);
                GLushort *dst = (GLushort *) dstImage;
@@ -225,8 +229,9 @@ _mesa_convert_teximage(MesaIntTexFormat dstFormat,
                GLint row;
                for (row = 0; row < dstHeight; row++) {
                   GLint srcRow = row / hScale;
-                  const GLushort *src = _mesa_image_address(packing, srcImage,
-                        srcWidth, srcHeight, srcFormat, srcType, 0, srcRow, 0);
+                  const GLushort *src = (const GLushort *)
+                     _mesa_image_address(packing, srcImage, srcWidth,
+                                  srcHeight, srcFormat, srcType, 0, srcRow, 0);
                   GLint col;
                   for (col = 0; col < dstWidth; col++) {
                      dst[col] = src[col / wScale];
@@ -238,8 +243,9 @@ _mesa_convert_teximage(MesaIntTexFormat dstFormat,
          else if (srcFormat == GL_RGB && srcType == GL_UNSIGNED_BYTE) {
             /* general case */
             if (wScale == 1 && hScale == 1) {
-               const GLubyte *src = _mesa_image_address(packing, srcImage,
-                             srcWidth, srcHeight, srcFormat, srcType, 0, 0, 0);
+               const GLubyte *src = (const GLubyte *)
+                  _mesa_image_address(packing, srcImage, srcWidth, srcHeight,
+                                      srcFormat, srcType, 0, 0, 0);
                const GLint srcStride = _mesa_image_row_stride(packing,
                                                  srcWidth, srcFormat, srcType);
 #ifdef DO_32BIT_STORES
@@ -290,8 +296,9 @@ _mesa_convert_teximage(MesaIntTexFormat dstFormat,
                GLint row;
                for (row = 0; row < dstHeight; row++) {
                   GLint srcRow = row / hScale;
-                  const GLubyte *src = _mesa_image_address(packing, srcImage,
-                        srcWidth, srcHeight, srcFormat, srcType, 0, srcRow, 0);
+                  const GLubyte *src = (const GLubyte *)
+                     _mesa_image_address(packing, srcImage, srcWidth,
+                                  srcHeight, srcFormat, srcType, 0, srcRow, 0);
                   GLint col;
                   for (col = 0; col < dstWidth; col++) {
                      GLint col3 = (col / wScale) * 3;
@@ -309,8 +316,9 @@ _mesa_convert_teximage(MesaIntTexFormat dstFormat,
          else if (srcFormat == GL_RGBA && srcType == GL_UNSIGNED_BYTE) {
             /* general case (used by Quake3) */
             if (wScale == 1 && hScale == 1) {
-               const GLubyte *src = _mesa_image_address(packing, srcImage,
-                             srcWidth, srcHeight, srcFormat, srcType, 0, 0, 0);
+               const GLubyte *src = (const GLubyte *)
+                  _mesa_image_address(packing, srcImage, srcWidth, srcHeight,
+                                      srcFormat, srcType, 0, 0, 0);
                const GLint srcStride = _mesa_image_row_stride(packing,
                                                  srcWidth, srcFormat, srcType);
 #ifdef DO_32BIT_STORES
@@ -361,8 +369,9 @@ _mesa_convert_teximage(MesaIntTexFormat dstFormat,
                GLint row;
                for (row = 0; row < dstHeight; row++) {
                   GLint srcRow = row / hScale;
-                  const GLubyte *src = _mesa_image_address(packing, srcImage,
-                        srcWidth, srcHeight, srcFormat, srcType, 0, srcRow, 0);
+                  const GLubyte *src = (const GLubyte *)
+                     _mesa_image_address(packing, srcImage, srcWidth,
+                                  srcHeight, srcFormat, srcType, 0, srcRow, 0);
                   GLint col;
                   for (col = 0; col < dstWidth; col++) {
                      GLint col4 = (col / wScale) * 4;
@@ -388,8 +397,9 @@ _mesa_convert_teximage(MesaIntTexFormat dstFormat,
          if (srcFormat == GL_BGRA && srcType == GL_UNSIGNED_SHORT_4_4_4_4_REV){
             /* special, optimized case */
             if (wScale == 1 && hScale == 1) {
-               const GLubyte *src = _mesa_image_address(packing, srcImage,
-                             srcWidth, srcHeight, srcFormat, srcType, 0, 0, 0);
+               const GLubyte *src = (const GLubyte *)
+                  _mesa_image_address(packing, srcImage, srcWidth, srcHeight,
+                                      srcFormat, srcType, 0, 0, 0);
                const GLint srcStride = _mesa_image_row_stride(packing,
                                                  srcWidth, srcFormat, srcType);
                GLushort *dst = (GLushort *) dstImage;
@@ -406,8 +416,9 @@ _mesa_convert_teximage(MesaIntTexFormat dstFormat,
                GLint row;
                for (row = 0; row < dstHeight; row++) {
                   GLint srcRow = row / hScale;
-                  const GLushort *src = _mesa_image_address(packing, srcImage,
-                        srcWidth, srcHeight, srcFormat, srcType, 0, srcRow, 0);
+                  const GLushort *src = (const GLushort *)
+                     _mesa_image_address(packing, srcImage, srcWidth,
+                                  srcHeight, srcFormat, srcType, 0, srcRow, 0);
                   GLint col;
                   for (col = 0; col < dstWidth; col++) {
                      dst[col] = src[col / wScale];
@@ -419,8 +430,9 @@ _mesa_convert_teximage(MesaIntTexFormat dstFormat,
          else if (srcFormat == GL_RGBA && srcType == GL_UNSIGNED_BYTE) {
             /* general case */
             if (wScale == 1 && hScale == 1) {
-               const GLubyte *src = _mesa_image_address(packing, srcImage,
-                             srcWidth, srcHeight, srcFormat, srcType, 0, 0, 0);
+               const GLubyte *src = (const GLubyte *)
+                  _mesa_image_address(packing, srcImage, srcWidth, srcHeight,
+                                      srcFormat, srcType, 0, 0, 0);
                const GLint srcStride = _mesa_image_row_stride(packing,
                                                  srcWidth, srcFormat, srcType);
 #ifdef DO_32BIT_STORES
@@ -477,8 +489,9 @@ _mesa_convert_teximage(MesaIntTexFormat dstFormat,
                GLint row;
                for (row = 0; row < dstHeight; row++) {
                   GLint srcRow = row / hScale;
-                  const GLubyte *src = _mesa_image_address(packing, srcImage,
-                        srcWidth, srcHeight, srcFormat, srcType, 0, srcRow, 0);
+                  const GLubyte *src = (const GLubyte *)
+                     _mesa_image_address(packing, srcImage, srcWidth,
+                                  srcHeight, srcFormat, srcType, 0, srcRow, 0);
                   GLint col;
                   for (col = 0; col < dstWidth; col++) {
                      GLint col4 = (col / wScale) * 4;
@@ -506,8 +519,9 @@ _mesa_convert_teximage(MesaIntTexFormat dstFormat,
          if (srcFormat == GL_BGRA && srcType == GL_UNSIGNED_SHORT_1_5_5_5_REV){
             /* special, optimized case */
             if (wScale == 1 && hScale == 1) {
-               const GLubyte *src = _mesa_image_address(packing, srcImage,
-                             srcWidth, srcHeight, srcFormat, srcType, 0, 0, 0);
+               const GLubyte *src = (const GLubyte *)
+                  _mesa_image_address(packing, srcImage, srcWidth, srcHeight,
+                                      srcFormat, srcType, 0, 0, 0);
                const GLint srcStride = _mesa_image_row_stride(packing,
                                                  srcWidth, srcFormat, srcType);
                GLushort *dst = (GLushort *) dstImage;
@@ -524,8 +538,9 @@ _mesa_convert_teximage(MesaIntTexFormat dstFormat,
                GLint row;
                for (row = 0; row < dstHeight; row++) {
                   GLint srcRow = row / hScale;
-                  const GLushort *src = _mesa_image_address(packing, srcImage,
-                        srcWidth, srcHeight, srcFormat, srcType, 0, srcRow, 0);
+                  const GLushort *src = (const GLushort *)
+                     _mesa_image_address(packing, srcImage, srcWidth,
+                                  srcHeight, srcFormat, srcType, 0, srcRow, 0);
                   GLint col;
                   for (col = 0; col < dstWidth; col++) {
                      dst[col] = src[col / wScale];
@@ -537,8 +552,9 @@ _mesa_convert_teximage(MesaIntTexFormat dstFormat,
          else if (srcFormat == GL_RGBA && srcType == GL_UNSIGNED_BYTE) {
             /* general case */
             if (wScale == 1 && hScale == 1) {
-               const GLubyte *src = _mesa_image_address(packing, srcImage,
-                             srcWidth, srcHeight, srcFormat, srcType, 0, 0, 0);
+               const GLubyte *src = (const GLubyte *)
+                  _mesa_image_address(packing, srcImage, srcWidth, srcHeight,
+                                      srcFormat, srcType, 0, 0, 0);
                const GLint srcStride = _mesa_image_row_stride(packing,
                                                  srcWidth, srcFormat, srcType);
                GLushort *dst = (GLushort *) dstImage;
@@ -565,8 +581,9 @@ _mesa_convert_teximage(MesaIntTexFormat dstFormat,
                GLint row;
                for (row = 0; row < dstHeight; row++) {
                   GLint srcRow = row / hScale;
-                  const GLubyte *src = _mesa_image_address(packing, srcImage,
-                        srcWidth, srcHeight, srcFormat, srcType, 0, srcRow, 0);
+                  const GLubyte *src = (const GLubyte *)
+                     _mesa_image_address(packing, srcImage, srcWidth,
+                                  srcHeight, srcFormat, srcType, 0, srcRow, 0);
                   GLint col;
                   for (col = 0; col < dstWidth; col++) {
                      GLint col4 = (col / wScale) * 4;
@@ -595,11 +612,12 @@ _mesa_convert_teximage(MesaIntTexFormat dstFormat,
          if (srcFormat == GL_BGRA && srcType == GL_UNSIGNED_INT_8_8_8_8_REV){
             /* special, optimized case */
             if (wScale == 1 && hScale == 1) {
-               const GLubyte *src = _mesa_image_address(packing, srcImage,
-                             srcWidth, srcHeight, srcFormat, srcType, 0, 0, 0);
+               const GLubyte *src = (const GLubyte *)
+                  _mesa_image_address(packing, srcImage, srcWidth, srcHeight,
+                                      srcFormat, srcType, 0, 0, 0);
                const GLint srcStride = _mesa_image_row_stride(packing,
                                                  srcWidth, srcFormat, srcType);
-               GLuint *dst = dstImage;
+               GLuint *dst = (GLuint *) dstImage;
                GLint row;
                for (row = 0; row < dstHeight; row++) {
                   MEMCPY(dst, src, dstWidth * sizeof(GLuint));
@@ -609,12 +627,13 @@ _mesa_convert_teximage(MesaIntTexFormat dstFormat,
             }
             else {
                /* must rescale image */
-               GLuint *dst = dstImage;
+               GLuint *dst = (GLuint *) dstImage;
                GLint row;
                for (row = 0; row < dstHeight; row++) {
                   GLint srcRow = row / hScale;
-                  const GLuint *src = _mesa_image_address(packing, srcImage,
-                        srcWidth, srcHeight, srcFormat, srcType, 0, srcRow, 0);
+                  const GLuint *src = (const GLuint *)
+                     _mesa_image_address(packing, srcImage, srcWidth,
+                                  srcHeight, srcFormat, srcType, 0, srcRow, 0);
                   GLint col;
                   for (col = 0; col < dstWidth; col++) {
                      dst[col] = src[col / wScale];
@@ -626,11 +645,12 @@ _mesa_convert_teximage(MesaIntTexFormat dstFormat,
          else if (srcFormat == GL_RGBA && srcType == GL_UNSIGNED_BYTE) {
             /* general case */
             if (wScale == 1 && hScale == 1) {
-               const GLubyte *src = _mesa_image_address(packing, srcImage,
-                             srcWidth, srcHeight, srcFormat, srcType, 0, 0, 0);
+               const GLubyte *src = (const GLubyte *)
+                  _mesa_image_address(packing, srcImage, srcWidth, srcHeight,
+                                      srcFormat, srcType, 0, 0, 0);
                const GLint srcStride = _mesa_image_row_stride(packing,
                                                  srcWidth, srcFormat, srcType);
-               GLuint *dst = dstImage;
+               GLuint *dst = (GLuint *) dstImage;
                GLint row;
                for (row = 0; row < dstHeight; row++) {
                   GLint col, col4;
@@ -647,12 +667,13 @@ _mesa_convert_teximage(MesaIntTexFormat dstFormat,
             }
             else {
                /* must rescale image */
-               GLuint *dst = dstImage;
+               GLuint *dst = (GLuint *) dstImage;
                GLint row;
                for (row = 0; row < dstHeight; row++) {
                   GLint srcRow = row / hScale;
-                  const GLubyte *src = _mesa_image_address(packing, srcImage,
-                        srcWidth, srcHeight, srcFormat, srcType, 0, srcRow, 0);
+                  const GLubyte *src = (const GLubyte *)
+                     _mesa_image_address(packing, srcImage, srcWidth,
+                                  srcHeight, srcFormat, srcType, 0, srcRow, 0);
                   GLint col;
                   for (col = 0; col < dstWidth; col++) {
                      GLint col4 = (col / wScale) * 4;
@@ -669,11 +690,12 @@ _mesa_convert_teximage(MesaIntTexFormat dstFormat,
          else if (srcFormat == GL_RGB && srcType == GL_UNSIGNED_BYTE) {
             /* general case */
             if (wScale == 1 && hScale == 1) {
-               const GLubyte *src = _mesa_image_address(packing, srcImage,
-                             srcWidth, srcHeight, srcFormat, srcType, 0, 0, 0);
+               const GLubyte *src = (const GLubyte *)
+                  _mesa_image_address(packing, srcImage, srcWidth, srcHeight,
+                                      srcFormat, srcType, 0, 0, 0);
                const GLint srcStride = _mesa_image_row_stride(packing,
                                                  srcWidth, srcFormat, srcType);
-               GLuint *dst = dstImage;
+               GLuint *dst = (GLuint *) dstImage;
                GLint row;
                for (row = 0; row < dstHeight; row++) {
                   GLint col, col3;
@@ -690,12 +712,13 @@ _mesa_convert_teximage(MesaIntTexFormat dstFormat,
             }
             else {
                /* must rescale image */
-               GLuint *dst = dstImage;
+               GLuint *dst = (GLuint *) dstImage;
                GLint row;
                for (row = 0; row < dstHeight; row++) {
                   GLint srcRow = row / hScale;
-                  const GLubyte *src = _mesa_image_address(packing, srcImage,
-                        srcWidth, srcHeight, srcFormat, srcType, 0, srcRow, 0);
+                  const GLubyte *src = (const GLubyte *)
+                     _mesa_image_address(packing, srcImage, srcWidth,
+                                  srcHeight, srcFormat, srcType, 0, srcRow, 0);
                   GLint col;
                   for (col = 0; col < dstWidth; col++) {
                      GLint col3 = (col / wScale) * 3;
@@ -715,7 +738,7 @@ _mesa_convert_teximage(MesaIntTexFormat dstFormat,
          }
          if (dstFormat == MESA_FF_R8_G8_B8) {
             /* set alpha bytes to 0xff */
-            GLuint i;
+            GLint i;
             GLubyte *dst = (GLubyte *) dstImage;
             for (i = 0; i < dstWidth * dstHeight; i++) {
                dst[i * 4 + 3] = 0xff;
@@ -736,11 +759,11 @@ _mesa_convert_teximage(MesaIntTexFormat dstFormat,
  * Replace a subregion of a texture image with new data.
  * Input:
  *   dstFormat - destination image format
- *   dstXoffset, dstYoffset - destination for new subregion
- *   dstWidth, dstHeight - total size of dest image
+ *   dstXoffset, dstYoffset - destination for new subregion (in texels)
+ *   dstWidth, dstHeight - total size of dest image (in texels)
  *   dstImage - pointer to dest image
- *   dstRowStride - bytes to jump between image rows
- *   width, height - size of region to copy/replace
+ *   dstRowStride - bytes to jump between image rows (in bytes)
+ *   width, height - size of region to copy/replace (in texels)
  *   srcWidth, srcHeight - size of the corresponding gl_texture_image
  *   srcFormat, srcType - source image format and datatype
  *   srcImage - source image
@@ -796,8 +819,9 @@ _mesa_convert_texsubimage(MesaIntTexFormat dstFormat,
             /* store as 8-bit texels */
             if (wScale == 1 && hScale == 1) {
                /* no scaling needed - fast case */
-               const GLubyte *src = _mesa_image_address(packing, srcImage,
-                             srcWidth, srcHeight, srcFormat, srcType, 0, 0, 0);
+               const GLubyte *src = (const GLubyte *)
+                  _mesa_image_address(packing, srcImage, srcWidth, srcHeight,
+                                      srcFormat, srcType, 0, 0, 0);
                const GLint srcStride = _mesa_image_row_stride(packing,
                                                   width, srcFormat, srcType);
                GLubyte *dst = (GLubyte *) dstImage
@@ -816,8 +840,9 @@ _mesa_convert_texsubimage(MesaIntTexFormat dstFormat,
                GLint row;
                for (row = 0; row < height; row++) {
                   GLint srcRow = row / hScale;
-                  const GLubyte *src = _mesa_image_address(packing, srcImage,
-                        srcWidth, srcHeight, srcFormat, srcType, 0, srcRow, 0);
+                  const GLubyte *src = (const GLubyte *)
+                     _mesa_image_address(packing, srcImage, srcWidth,
+                                  srcHeight, srcFormat, srcType, 0, srcRow, 0);
                   GLint col;
                   for (col = 0; col < width; col++) {
                      dst[col] = src[col / wScale];
@@ -835,8 +860,9 @@ _mesa_convert_texsubimage(MesaIntTexFormat dstFormat,
          else {
             /* store as 16-bit texels */
             if (wScale == 1 && hScale == 1) {
-               const GLubyte *src = _mesa_image_address(packing, srcImage,
-                             srcWidth, srcHeight, srcFormat, srcType, 0, 0, 0);
+               const GLubyte *src = (const GLubyte *)
+                  _mesa_image_address(packing, srcImage, srcWidth, srcHeight,
+                                      srcFormat, srcType, 0, 0, 0);
                const GLint srcStride = _mesa_image_row_stride(packing,
                                                  width, srcFormat, srcType);
                GLushort *dst = (GLushort *) ((GLubyte *) dstImage
@@ -859,8 +885,9 @@ _mesa_convert_texsubimage(MesaIntTexFormat dstFormat,
                GLint row, col;
                for (row = 0; row < height; row++) {
                   GLint srcRow = row / hScale;
-                  const GLubyte *src = _mesa_image_address(packing, srcImage,
-                        srcWidth, srcHeight, srcFormat, srcType, 0, srcRow, 0);
+                  const GLubyte *src = (const GLubyte *)
+                     _mesa_image_address(packing, srcImage, srcWidth,
+                                  srcHeight, srcFormat, srcType, 0, srcRow, 0);
                   const GLint srcStride = _mesa_image_row_stride(packing,
                                                  width, srcFormat, srcType);
                   for (col = 0; col < width; col++) {
@@ -880,8 +907,9 @@ _mesa_convert_texsubimage(MesaIntTexFormat dstFormat,
          if (srcFormat == GL_RGB && srcType == GL_UNSIGNED_SHORT_5_6_5) {
             /* special, optimized case */
             if (wScale == 1 && hScale == 1) {
-               const GLubyte *src = _mesa_image_address(packing, srcImage,
-                             srcWidth, srcHeight, srcFormat, srcType, 0, 0, 0);
+               const GLubyte *src = (const GLubyte *)
+                  _mesa_image_address(packing, srcImage, srcWidth, srcHeight,
+                                      srcFormat, srcType, 0, 0, 0);
                const GLint srcStride = _mesa_image_row_stride(packing,
                                                  width, srcFormat, srcType);
                GLushort *dst = (GLushort *) ((GLubyte *) dstImage
@@ -900,8 +928,9 @@ _mesa_convert_texsubimage(MesaIntTexFormat dstFormat,
                GLint row;
                for (row = 0; row < height; row++) {
                   GLint srcRow = row / hScale;
-                  const GLushort *src = _mesa_image_address(packing, srcImage,
-                        srcWidth, srcHeight, srcFormat, srcType, 0, srcRow, 0);
+                  const GLushort *src = (const GLushort *)
+                     _mesa_image_address(packing, srcImage, srcWidth,
+                                  srcHeight, srcFormat, srcType, 0, srcRow, 0);
                   GLint col;
                   for (col = 0; col < width; col++) {
                      dst[col] = src[col / wScale];
@@ -913,8 +942,9 @@ _mesa_convert_texsubimage(MesaIntTexFormat dstFormat,
          else if (srcFormat == GL_RGB && srcType == GL_UNSIGNED_BYTE) {
             /* general case */
             if (wScale == 1 && hScale == 1) {
-               const GLubyte *src = _mesa_image_address(packing, srcImage,
-                             srcWidth, srcHeight, srcFormat, srcType, 0, 0, 0);
+               const GLubyte *src = (const GLubyte *)
+                  _mesa_image_address(packing, srcImage, srcWidth, srcHeight,
+                                      srcFormat, srcType, 0, 0, 0);
                const GLint srcStride = _mesa_image_row_stride(packing,
                                                  width, srcFormat, srcType);
                GLushort *dst = (GLushort *) ((GLubyte *) dstImage
@@ -941,8 +971,9 @@ _mesa_convert_texsubimage(MesaIntTexFormat dstFormat,
                GLint row;
                for (row = 0; row < height; row++) {
                   GLint srcRow = row / hScale;
-                  const GLubyte *src = _mesa_image_address(packing, srcImage,
-                        srcWidth, srcHeight, srcFormat, srcType, 0, srcRow, 0);
+                  const GLubyte *src = (const GLubyte *)
+                     _mesa_image_address(packing, srcImage, srcWidth,
+                                  srcHeight, srcFormat, srcType, 0, srcRow, 0);
                   GLint col;
                   for (col = 0; col < width; col++) {
                      GLint col3 = (col / wScale) * 3;
@@ -960,8 +991,9 @@ _mesa_convert_texsubimage(MesaIntTexFormat dstFormat,
          else if (srcFormat == GL_RGBA && srcType == GL_UNSIGNED_BYTE) {
             /* general case (used by Quake3) */
             if (wScale == 1 && hScale == 1) {
-               const GLubyte *src = _mesa_image_address(packing, srcImage,
-                             srcWidth, srcHeight, srcFormat, srcType, 0, 0, 0);
+               const GLubyte *src = (const GLubyte *)
+                  _mesa_image_address(packing, srcImage, srcWidth, srcHeight,
+                                      srcFormat, srcType, 0, 0, 0);
                const GLint srcStride = _mesa_image_row_stride(packing,
                                                  width, srcFormat, srcType);
                GLushort *dst = (GLushort *) ((GLubyte *) dstImage
@@ -988,8 +1020,9 @@ _mesa_convert_texsubimage(MesaIntTexFormat dstFormat,
                GLint row;
                for (row = 0; row < height; row++) {
                   GLint srcRow = row / hScale;
-                  const GLubyte *src = _mesa_image_address(packing, srcImage,
-                        srcWidth, srcHeight, srcFormat, srcType, 0, srcRow, 0);
+                  const GLubyte *src = (const GLubyte *)
+                     _mesa_image_address(packing, srcImage, srcWidth,
+                                  srcHeight, srcFormat, srcType, 0, srcRow, 0);
                   GLint col;
                   for (col = 0; col < width; col++) {
                      GLint col4 = (col / wScale) * 4;
@@ -1015,8 +1048,9 @@ _mesa_convert_texsubimage(MesaIntTexFormat dstFormat,
          if (srcFormat == GL_BGRA && srcType == GL_UNSIGNED_SHORT_4_4_4_4_REV){
             /* special, optimized case */
             if (wScale == 1 && hScale == 1) {
-               const GLubyte *src = _mesa_image_address(packing, srcImage,
-                             srcWidth, srcHeight, srcFormat, srcType, 0, 0, 0);
+               const GLubyte *src = (const GLubyte *)
+                  _mesa_image_address(packing, srcImage, srcWidth, srcHeight,
+                                      srcFormat, srcType, 0, 0, 0);
                const GLint srcStride = _mesa_image_row_stride(packing,
                                                  width, srcFormat, srcType);
                GLushort *dst = (GLushort *) ((GLubyte *) dstImage
@@ -1035,8 +1069,9 @@ _mesa_convert_texsubimage(MesaIntTexFormat dstFormat,
                GLint row;
                for (row = 0; row < height; row++) {
                   GLint srcRow = row / hScale;
-                  const GLushort *src = _mesa_image_address(packing, srcImage,
-                        srcWidth, srcHeight, srcFormat, srcType, 0, srcRow, 0);
+                  const GLushort *src = (const GLushort *)
+                     _mesa_image_address(packing, srcImage, srcWidth,
+                                  srcHeight, srcFormat, srcType, 0, srcRow, 0);
                   GLint col;
                   for (col = 0; col < width; col++) {
                      dst[col] = src[col / wScale];
@@ -1048,8 +1083,9 @@ _mesa_convert_texsubimage(MesaIntTexFormat dstFormat,
          else if (srcFormat == GL_RGBA && srcType == GL_UNSIGNED_BYTE) {
             /* general case */
             if (wScale == 1 && hScale == 1) {
-               const GLubyte *src = _mesa_image_address(packing, srcImage,
-                             srcWidth, srcHeight, srcFormat, srcType, 0, 0, 0);
+               const GLubyte *src = (const GLubyte *)
+                  _mesa_image_address(packing, srcImage, srcWidth, srcHeight,
+                                      srcFormat, srcType, 0, 0, 0);
                const GLint srcStride = _mesa_image_row_stride(packing,
                                                  width, srcFormat, srcType);
                GLushort *dst = (GLushort *) ((GLubyte *) dstImage
@@ -1078,8 +1114,9 @@ _mesa_convert_texsubimage(MesaIntTexFormat dstFormat,
                GLint row;
                for (row = 0; row < height; row++) {
                   GLint srcRow = row / hScale;
-                  const GLubyte *src = _mesa_image_address(packing, srcImage,
-                        srcWidth, srcHeight, srcFormat, srcType, 0, srcRow, 0);
+                  const GLubyte *src = (const GLubyte *)
+                     _mesa_image_address(packing, srcImage, srcWidth,
+                                  srcHeight, srcFormat, srcType, 0, srcRow, 0);
                   GLint col;
                   for (col = 0; col < width; col++) {
                      GLint col4 = (col / wScale) * 4;
@@ -1107,8 +1144,9 @@ _mesa_convert_texsubimage(MesaIntTexFormat dstFormat,
          if (srcFormat == GL_BGRA && srcType == GL_UNSIGNED_SHORT_1_5_5_5_REV){
             /* special, optimized case */
             if (wScale == 1 && hScale == 1) {
-               const GLubyte *src = _mesa_image_address(packing, srcImage,
-                             srcWidth, srcHeight, srcFormat, srcType, 0, 0, 0);
+               const GLubyte *src = (const GLubyte *)
+                  _mesa_image_address(packing, srcImage, srcWidth, srcHeight,
+                                      srcFormat, srcType, 0, 0, 0);
                const GLint srcStride = _mesa_image_row_stride(packing,
                                                  width, srcFormat, srcType);
                GLushort *dst = (GLushort *) ((GLubyte *) dstImage
@@ -1127,8 +1165,9 @@ _mesa_convert_texsubimage(MesaIntTexFormat dstFormat,
                GLint row;
                for (row = 0; row < height; row++) {
                   GLint srcRow = row / hScale;
-                  const GLushort *src = _mesa_image_address(packing, srcImage,
-                        srcWidth, srcHeight, srcFormat, srcType, 0, srcRow, 0);
+                  const GLushort *src = (const GLushort *)
+                     _mesa_image_address(packing, srcImage, srcWidth,
+                                  srcHeight, srcFormat, srcType, 0, srcRow, 0);
                   GLint col;
                   for (col = 0; col < width; col++) {
                      dst[col] = src[col / wScale];
@@ -1140,8 +1179,9 @@ _mesa_convert_texsubimage(MesaIntTexFormat dstFormat,
          else if (srcFormat == GL_RGBA && srcType == GL_UNSIGNED_BYTE) {
             /* general case */
             if (wScale == 1 && hScale == 1) {
-               const GLubyte *src = _mesa_image_address(packing, srcImage,
-                             srcWidth, srcHeight, srcFormat, srcType, 0, 0, 0);
+               const GLubyte *src = (const GLubyte *)
+                  _mesa_image_address(packing, srcImage, srcWidth, srcHeight,
+                                      srcFormat, srcType, 0, 0, 0);
                const GLint srcStride = _mesa_image_row_stride(packing,
                                                  width, srcFormat, srcType);
                GLushort *dst = (GLushort *) ((GLubyte *) dstImage
@@ -1170,8 +1210,9 @@ _mesa_convert_texsubimage(MesaIntTexFormat dstFormat,
                GLint row;
                for (row = 0; row < height; row++) {
                   GLint srcRow = row / hScale;
-                  const GLubyte *src = _mesa_image_address(packing, srcImage,
-                        srcWidth, srcHeight, srcFormat, srcType, 0, srcRow, 0);
+                  const GLubyte *src = (const GLubyte *)
+                     _mesa_image_address(packing, srcImage, srcWidth,
+                                  srcHeight, srcFormat, srcType, 0, srcRow, 0);
                   GLint col;
                   for (col = 0; col < width; col++) {
                      GLint col4 = (col / wScale) * 4;
@@ -1197,11 +1238,12 @@ _mesa_convert_texsubimage(MesaIntTexFormat dstFormat,
       case MESA_A8_R8_G8_B8:
       case MESA_FF_R8_G8_B8:
          /* 32-bit texels */
-         if (srcFormat == GL_BGRA && srcType == GL_UNSIGNED_INT_8_8_8_8_REV){
+         if (srcFormat == GL_BGRA && srcType == GL_UNSIGNED_INT_8_8_8_8_REV) {
             /* special, optimized case */
             if (wScale == 1 && hScale == 1) {
-               const GLubyte *src = _mesa_image_address(packing, srcImage,
-                             srcWidth, srcHeight, srcFormat, srcType, 0, 0, 0);
+               const GLubyte *src = (const GLubyte *)
+                  _mesa_image_address(packing, srcImage, srcWidth, srcHeight,
+                                      srcFormat, srcType, 0, 0, 0);
                const GLint srcStride = _mesa_image_row_stride(packing,
                                                  width, srcFormat, srcType);
                GLuint *dst = (GLuint *) ((GLubyte *) dstImage
@@ -1220,8 +1262,9 @@ _mesa_convert_texsubimage(MesaIntTexFormat dstFormat,
                GLint row;
                for (row = 0; row < height; row++) {
                   GLint srcRow = row / hScale;
-                  const GLuint *src = _mesa_image_address(packing, srcImage,
-                        srcWidth, srcHeight, srcFormat, srcType, 0, srcRow, 0);
+                  const GLuint *src = (const GLuint *)
+                     _mesa_image_address(packing, srcImage, srcWidth,
+                                  srcHeight, srcFormat, srcType, 0, srcRow, 0);
                   GLint col;
                   for (col = 0; col < width; col++) {
                      dst[col] = src[col / wScale];
@@ -1229,12 +1272,27 @@ _mesa_convert_texsubimage(MesaIntTexFormat dstFormat,
                   dst = (GLuint *) ((GLubyte *) dst + dstRowStride);
                }
             }
+            if (dstFormat == MESA_FF_R8_G8_B8) {
+               /* set alpha bytes to 0xff */
+               GLint row, col;
+               GLubyte *dst = (GLubyte *) dstImage
+                              + dstYoffset * dstRowStride + dstXoffset * 4;
+               assert(wScale == 1 && hScale == 1); /* XXX not done */
+               for (row = 0; row < height; row++) {
+                  for (col = 0; col < width; col++) {
+                     dst[col * 4 + 3] = 0xff;
+                  }
+                  dst = dst + dstRowStride;
+               }
+            }
          }
          else if (srcFormat == GL_RGBA && srcType == GL_UNSIGNED_BYTE) {
             /* general case */
+            const GLubyte aMask = (dstFormat==MESA_FF_R8_G8_B8) ? 0xff : 0x00;
             if (wScale == 1 && hScale == 1) {
-               const GLubyte *src = _mesa_image_address(packing, srcImage,
-                             srcWidth, srcHeight, srcFormat, srcType, 0, 0, 0);
+               const GLubyte *src = (const GLubyte *)
+                  _mesa_image_address(packing, srcImage, srcWidth, srcHeight,
+                                      srcFormat, srcType, 0, 0, 0);
                const GLint srcStride = _mesa_image_row_stride(packing,
                                                  width, srcFormat, srcType);
                GLuint *dst = (GLuint *) ((GLubyte *) dstImage
@@ -1246,7 +1304,7 @@ _mesa_convert_texsubimage(MesaIntTexFormat dstFormat,
                      GLubyte r = src[col4 + 0];
                      GLubyte g = src[col4 + 1];
                      GLubyte b = src[col4 + 2];
-                     GLubyte a = src[col4 + 3];
+                     GLubyte a = src[col4 + 3] | aMask;
                      dst[col] = (a << 24) | (r << 16) | (g << 8) | b;
                   }
                   src += srcStride;
@@ -1260,15 +1318,16 @@ _mesa_convert_texsubimage(MesaIntTexFormat dstFormat,
                GLint row;
                for (row = 0; row < height; row++) {
                   GLint srcRow = row / hScale;
-                  const GLubyte *src = _mesa_image_address(packing, srcImage,
-                        srcWidth, srcHeight, srcFormat, srcType, 0, srcRow, 0);
+                  const GLubyte *src = (const GLubyte *)
+                     _mesa_image_address(packing, srcImage, srcWidth,
+                                  srcHeight, srcFormat, srcType, 0, srcRow, 0);
                   GLint col;
                   for (col = 0; col < width; col++) {
                      GLint col4 = (col / wScale) * 4;
                      GLubyte r = src[col4 + 0];
                      GLubyte g = src[col4 + 1];
                      GLubyte b = src[col4 + 2];
-                     GLubyte a = src[col4 + 3];
+                     GLubyte a = src[col4 + 3] | aMask;
                      dst[col] = (a << 24) | (r << 16) | (g << 8) | b;
                   }
                   dst = (GLuint *) ((GLubyte *) dst + dstRowStride);
@@ -1278,18 +1337,6 @@ _mesa_convert_texsubimage(MesaIntTexFormat dstFormat,
          else {
             /* can't handle this source format/type combination */
             return GL_FALSE;
-         }
-         if (dstFormat == MESA_FF_R8_G8_B8) {
-            /* set alpha bytes to 0xff */
-            GLint row, col;
-            GLubyte *dst = (GLubyte *) dstImage
-                           + dstYoffset * dstRowStride + dstXoffset;
-            for (row = 0; row < height; row++) {
-               for (col = 0; col < width; col++) {
-                  dst[col * 4 + 3] = 0xff;
-               }
-               dst = dst + dstRowStride;
-            }
          }
          break;
 

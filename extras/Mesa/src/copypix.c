@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/copypix.c,v 1.6 2000/09/26 15:56:30 tsi Exp $ */
+
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -208,7 +208,7 @@ static void copy_rgba_pixels( GLcontext *ctx,
       if (applyTransferOps) {
          const GLfloat scale = (1.0F / 255.0F);
          GLfloat rgbaFloat[MAX_WIDTH][4];
-         GLuint k;
+         GLint k;
          /* convert ubyte to float */
          for (k = 0; k < width; k++) {
             rgbaFloat[k][RCOMP] = (GLfloat) rgba[k][RCOMP] * scale;
@@ -272,7 +272,7 @@ static void copy_rgba_pixels( GLcontext *ctx,
          MEMCPY(primary_rgba, rgba, 4 * width * sizeof(GLubyte));
 
          for (unit = 0; unit < MAX_TEXTURE_UNITS; unit++) {
-            _mesa_pixeltexgen(ctx, width, (const GLubyte (*)[4]) rgba,
+            _mesa_pixeltexgen(ctx, width, (CONST GLubyte (*)[4]) rgba,
                               s, t, r, q);
             gl_texture_pixels(ctx, unit, width, s, t, r, NULL,
                               primary_rgba, rgba);
@@ -281,11 +281,11 @@ static void copy_rgba_pixels( GLcontext *ctx,
 
       if (quick_draw && dy >= 0 && dy < ctx->DrawBuffer->Height) {
          (*ctx->Driver.WriteRGBASpan)( ctx, width, destx, dy, 
-				       (const GLubyte (*)[4])rgba, NULL );
+				       (CONST GLubyte (*)[4])rgba, NULL );
       }
       else if (zoom) {
          gl_write_zoomed_rgba_span( ctx, width, destx, dy, zspan, 
-				    (const GLubyte (*)[4])rgba, desty);
+				    (CONST GLubyte (*)[4])rgba, desty);
       }
       else {
          gl_write_rgba_span( ctx, width, destx, dy, zspan, rgba, GL_BITMAP );
@@ -503,7 +503,7 @@ static void copy_depth_pixels( GLcontext *ctx, GLint srcx, GLint srcy,
       if (ctx->Visual->RGBAflag) {
          if (zoom) {
             gl_write_zoomed_rgba_span( ctx, width, destx, dy, zspan, 
-				       (const GLubyte (*)[4])rgba, desty );
+				       (CONST GLubyte (*)[4])rgba, desty );
          }
          else {
             gl_write_rgba_span( ctx, width, destx, dy, zspan, rgba, GL_BITMAP);

@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+
 
 /*
  * eval.c was written by
@@ -109,8 +109,8 @@ static void
 horner_bezier_curve(const GLfloat *cp, GLfloat *out, GLfloat t,
                     GLuint dim, GLuint order)
 {
-  GLfloat s, powert;
-  GLuint i, k, bincoeff;
+  GLfloat s, powert, bincoeff;
+  GLuint i, k;
 
   if(order >= 2)
   { 
@@ -161,8 +161,8 @@ horner_bezier_surf(GLfloat *cn, GLfloat *out, GLfloat u, GLfloat v,
   {
     if(uorder >= 2)
     { 
-      GLfloat s, poweru;
-      GLuint j, k, bincoeff;
+      GLfloat s, poweru, bincoeff;
+      GLuint j, k;
 
       /* Compute the control polygon for the surface-curve in u-direction */
       for(j=0; j<vorder; j++)

@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+
 
 /*
  * pixel span rasterization:
@@ -407,10 +407,10 @@ static void multi_write_rgba_span( GLcontext *ctx, GLuint n,
          }
 
          (*ctx->Driver.WriteRGBASpan)( ctx, n, x, y, 
-				       (const GLubyte (*)[4]) rgbaTmp, mask );
+				       (CONST GLubyte (*)[4]) rgbaTmp, mask );
          if (ctx->RasterMask & ALPHABUF_BIT) {
             _mesa_write_alpha_span( ctx, n, x, y, 
-                                    (const GLubyte (*)[4])rgbaTmp, mask );
+                                    (CONST GLubyte (*)[4])rgbaTmp, mask );
          }
       }
    }
@@ -475,7 +475,7 @@ void gl_write_rgba_span( GLcontext *ctx,
 
    /* Do the alpha test */
    if (ctx->Color.AlphaEnabled) {
-      if (_mesa_alpha_test( ctx, n, (const GLubyte (*)[4]) rgba, mask )==0) {
+      if (_mesa_alpha_test( ctx, n, (CONST GLubyte (*)[4]) rgba, mask )==0) {
 	 return;
       }
       write_all = GL_FALSE;
@@ -503,7 +503,7 @@ void gl_write_rgba_span( GLcontext *ctx,
    ctx->OcclusionResult = GL_TRUE;
 
    if (ctx->RasterMask & MULTI_DRAW_BIT) {
-      multi_write_rgba_span( ctx, n, x, y, (const GLubyte (*)[4]) rgba, mask );
+      multi_write_rgba_span( ctx, n, x, y, (CONST GLubyte (*)[4]) rgba, mask );
    }
    else {
       /* normal: write to exactly one buffer */
@@ -524,12 +524,12 @@ void gl_write_rgba_span( GLcontext *ctx,
 
       /* write pixels */
       (*ctx->Driver.WriteRGBASpan)( ctx, n, x, y, 
-				    (const GLubyte (*)[4]) rgba, 
+				    (CONST GLubyte (*)[4]) rgba, 
 				    write_all ? Null : mask );
 
       if (ctx->RasterMask & ALPHABUF_BIT) {
          _mesa_write_alpha_span( ctx, n, x, y, 
-                                 (const GLubyte (*)[4]) rgba, 
+                                 (CONST GLubyte (*)[4]) rgba, 
                                  write_all ? Null : mask );
       }
 
@@ -588,7 +588,7 @@ void gl_write_monocolor_span( GLcontext *ctx,
       for (i=0;i<n;i++) {
          rgba[i][ACOMP] = color[ACOMP];
       }
-      if (_mesa_alpha_test( ctx, n, (const GLubyte (*)[4])rgba, mask )==0) {
+      if (_mesa_alpha_test( ctx, n, (CONST GLubyte (*)[4])rgba, mask )==0) {
 	 return;
       }
       write_all = GL_FALSE;
@@ -637,7 +637,7 @@ void gl_write_monocolor_span( GLcontext *ctx,
 
       if (ctx->RasterMask & MULTI_DRAW_BIT) {
          multi_write_rgba_span( ctx, n, x, y,
-                                (const GLubyte (*)[4]) rgba, mask );
+                                (CONST GLubyte (*)[4]) rgba, mask );
       }
       else {
          /* normal: write to exactly one buffer */
@@ -657,11 +657,11 @@ void gl_write_monocolor_span( GLcontext *ctx,
 
          /* write pixels */
          (*ctx->Driver.WriteRGBASpan)( ctx, n, x, y, 
-				       (const GLubyte (*)[4]) rgba, 
+				       (CONST GLubyte (*)[4]) rgba, 
 				       write_all ? Null : mask );
          if (ctx->RasterMask & ALPHABUF_BIT) {
             _mesa_write_alpha_span( ctx, n, x, y, 
-                                    (const GLubyte (*)[4]) rgba, 
+                                    (CONST GLubyte (*)[4]) rgba, 
                                     write_all ? Null : mask );
          }
       }
@@ -679,7 +679,7 @@ void gl_write_monocolor_span( GLcontext *ctx,
             }
          }
          multi_write_rgba_span( ctx, n, x, y, 
-				(const GLubyte (*)[4]) rgba, mask );
+				(CONST GLubyte (*)[4]) rgba, mask );
       }
       else {
          (*ctx->Driver.WriteMonoRGBASpan)( ctx, n, x, y, mask );
@@ -787,7 +787,7 @@ void gl_write_texture_span( GLcontext *ctx,
 
    /* Do the alpha test */
    if (ctx->Color.AlphaEnabled) {
-      if (_mesa_alpha_test( ctx, n, (const GLubyte (*)[4]) rgba, mask )==0) {
+      if (_mesa_alpha_test( ctx, n, (CONST GLubyte (*)[4]) rgba, mask )==0) {
 	 return;
       }
       write_all = GL_FALSE;
@@ -815,7 +815,7 @@ void gl_write_texture_span( GLcontext *ctx,
    ctx->OcclusionResult = GL_TRUE;
 
    if (ctx->RasterMask & MULTI_DRAW_BIT) {
-      multi_write_rgba_span( ctx, n, x, y, (const GLubyte (*)[4]) rgba, mask );
+      multi_write_rgba_span( ctx, n, x, y, (CONST GLubyte (*)[4]) rgba, mask );
    }
    else {
       /* normal: write to exactly one buffer */
@@ -831,10 +831,10 @@ void gl_write_texture_span( GLcontext *ctx,
          _mesa_mask_rgba_span( ctx, n, x, y, rgba );
       }
 
-      (*ctx->Driver.WriteRGBASpan)( ctx, n, x, y, (const GLubyte (*)[4])rgba,
+      (*ctx->Driver.WriteRGBASpan)( ctx, n, x, y, (CONST GLubyte (*)[4])rgba,
 				    write_all ? Null : mask );
       if (ctx->RasterMask & ALPHABUF_BIT) {
-         _mesa_write_alpha_span( ctx, n, x, y, (const GLubyte (*)[4]) rgba, 
+         _mesa_write_alpha_span( ctx, n, x, y, (CONST GLubyte (*)[4]) rgba, 
                                  write_all ? Null : mask );
       }
    }
@@ -918,7 +918,7 @@ gl_write_multitexture_span( GLcontext *ctx, GLuint texUnits,
 
    /* Do the alpha test */
    if (ctx->Color.AlphaEnabled) {
-      if (_mesa_alpha_test( ctx, n, (const GLubyte (*)[4])rgba, mask )==0) {
+      if (_mesa_alpha_test( ctx, n, (CONST GLubyte (*)[4])rgba, mask )==0) {
 	 return;
       }
       write_all = GL_FALSE;
@@ -946,7 +946,7 @@ gl_write_multitexture_span( GLcontext *ctx, GLuint texUnits,
    ctx->OcclusionResult = GL_TRUE;
 
    if (ctx->RasterMask & MULTI_DRAW_BIT) {
-      multi_write_rgba_span( ctx, n, x, y, (const GLubyte (*)[4]) rgba, mask );
+      multi_write_rgba_span( ctx, n, x, y, (CONST GLubyte (*)[4]) rgba, mask );
    }
    else {
       /* normal: write to exactly one buffer */
@@ -963,9 +963,9 @@ gl_write_multitexture_span( GLcontext *ctx, GLuint texUnits,
          _mesa_mask_rgba_span( ctx, n, x, y, rgba );
       }
 
-      (*ctx->Driver.WriteRGBASpan)( ctx, n, x, y, (const GLubyte (*)[4])rgba, write_all ? Null : mask );
+      (*ctx->Driver.WriteRGBASpan)( ctx, n, x, y, (CONST GLubyte (*)[4])rgba, write_all ? Null : mask );
       if (ctx->RasterMask & ALPHABUF_BIT) {
-         _mesa_write_alpha_span( ctx, n, x, y, (const GLubyte (*)[4])rgba,
+         _mesa_write_alpha_span( ctx, n, x, y, (CONST GLubyte (*)[4])rgba,
                                  write_all ? Null : mask );
       }
    }

@@ -1,3 +1,4 @@
+
 /*
  * Mesa 3-D graphics library
  * Version:  3.4
@@ -21,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/dd.h,v 1.7 2000/09/26 15:56:30 tsi Exp $ */
+
 
 
 #ifndef DD_INCLUDED

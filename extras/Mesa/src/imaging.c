@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+
 
 /*
  * Histogram, Min/max and convolution for GL_ARB_imaging subset
@@ -210,7 +210,7 @@ pack_minmax( GLcontext *ctx, CONST GLfloat minmax[2][4],
              const struct gl_pixelstore_attrib *packing )
 {
    const GLint comps = _mesa_components_in_format(format);
-   GLuint luminance[2];
+   GLfloat luminance[2];
 
    if (format == GL_LUMINANCE || format == GL_LUMINANCE_ALPHA) {
       luminance[0] = minmax[0][RCOMP] + minmax[0][GCOMP] + minmax[0][BCOMP];

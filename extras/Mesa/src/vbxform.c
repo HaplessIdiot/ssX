@@ -680,7 +680,7 @@ void gl_fixup_cassette( GLcontext *ctx, struct immediate *IM )
 	 IM->NormalLengths = (GLfloat *)MALLOC(sizeof(GLfloat) * VB_SIZE);
 
       calc_normal_lengths( IM->NormalLengths + start, 
-			   (const GLfloat (*)[3])(IM->Normal + start), 
+			   (CONST GLfloat (*)[3])(IM->Normal + start), 
 			   IM->Flag + start, 
 			   IM->Count - start);
       

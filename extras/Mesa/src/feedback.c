@@ -238,7 +238,7 @@ void gl_feedback_points( GLcontext *ctx, GLuint first, GLuint last )
    const struct vertex_buffer *VB = ctx->VB;
    GLuint i;
 
-   for (i=first;i<=last;i++) {
+   for (i=first;i<last;i++) {
       if (VB->ClipMask[i]==0) {
          FEEDBACK_TOKEN( ctx, (GLfloat) (GLint) GL_POINT_TOKEN );
 	 feedback_vertex( ctx, i, i );

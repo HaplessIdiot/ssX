@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.31 2000/08/28 16:04:47 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.32 2000/09/24 13:50:59 alanh Exp $
 
 #include <Threads.tmpl>
 
@@ -31,37 +31,43 @@ NormalLintTarget($(PROFSRC))
 #endif
 
 #if BuildXF86DRI && defined(i386Architecture)
-   GLAPI_OBJ = glx/glapi_x86.o
+    GLAPI_OBJ = glx/glapi_x86.o
 #endif
 
-     GLXOBJS = glx/?*.o
-    GLXUOBJS = glx/unshared/?*.o $(GLAPI_OBJ)
-    GLXDOBJS = glx/debugger/?*.o $(GLAPI_OBJ)
-    GLXPOBJS = glx/profiled/?*.o $(GLAPI_OBJ)
-    GLXDONES = glx/DONE
+      GLXOBJS = glx/?*.o
+     GLXUOBJS = glx/unshared/?*.o $(GLAPI_OBJ)
+     GLXDOBJS = glx/debugger/?*.o $(GLAPI_OBJ)
+     GLXPOBJS = glx/profiled/?*.o $(GLAPI_OBJ)
+     GLXDONES = glx/DONE
 
 #if BuildXF86DRI
-     DRIOBJS = dri/XF86dri.o dri/dri_glx.o
-    DRIUOBJS = dri/unshared/XF86dri.o dri/unshared/dri_glx.o
-    DRIDOBJS = dri/debugger/XF86dri.o dri/debugger/dri_glx.o
-    DRIPOBJS = dri/profiled/XF86dri.o dri/profiled/dri_glx.o
-    DRIDONES = dri/DONE
+      DRIOBJS = dri/XF86dri.o dri/dri_glx.o
+     DRIUOBJS = dri/unshared/XF86dri.o dri/unshared/dri_glx.o
+     DRIDOBJS = dri/debugger/XF86dri.o dri/debugger/dri_glx.o
+     DRIPOBJS = dri/profiled/XF86dri.o dri/profiled/dri_glx.o
+     DRIDONES = dri/DONE
 
-     DRMOBJS = dri/drm/?*.o
-    DRMUOBJS = dri/drm/unshared/?*.o
-    DRMDOBJS = dri/drm/debugger/?*.o
-    DRMPOBJS = dri/drm/profiled/?*.o
-    DRMDONES = dri/drm/DONE
+      DRMOBJS = dri/drm/?*.o
+     DRMUOBJS = dri/drm/unshared/?*.o
+     DRMDOBJS = dri/drm/debugger/?*.o
+     DRMPOBJS = dri/drm/profiled/?*.o
+     DRMDONES = dri/drm/DONE
 
-    MESAOBJS = mesa/src/?*.o
+     MESAOBJS = mesa/src/?*.o
 #ifdef i386Architecture
-    ASM_OBJS =  mesa/src/X86/common_x86asm.o \
-		mesa/src/X86/mmx_blend.o \
-		mesa/src/X86/vertex.o \
-		mesa/src/X86/x86a.o
+     ASM_OBJS = mesa/src/X86/common_x86_asm.o \
+		mesa/src/X86/x86_cliptest.o \
+		mesa/src/X86/x86_vertex.o \
+		mesa/src/X86/x86_xform_masked2.o \
+		mesa/src/X86/x86_xform_masked3.o \
+		mesa/src/X86/x86_xform_masked4.o \
+		mesa/src/X86/x86_xform_raw2.o \
+		mesa/src/X86/x86_xform_raw3.o \
+		mesa/src/X86/x86_xform_raw4.o \
+		mesa/src/X86/mmx_blend.o
 #ifdef MesaUse3DNow
-    ASM_OBJS += mesa/src/X86/3dnow_norm.o \
-		mesa/src/X86/3dnow_norm_raw.o \
+    ASM_OBJS += mesa/src/X86/3dnow_norm_raw.o \
+		mesa/src/X86/3dnow_vertex.o \
 		mesa/src/X86/3dnow_xform_masked1.o \
 		mesa/src/X86/3dnow_xform_masked2.o \
 		mesa/src/X86/3dnow_xform_masked3.o \
@@ -69,12 +75,11 @@ NormalLintTarget($(PROFSRC))
 		mesa/src/X86/3dnow_xform_raw1.o \
 		mesa/src/X86/3dnow_xform_raw2.o \
 		mesa/src/X86/3dnow_xform_raw3.o \
-		mesa/src/X86/3dnow_xform_raw4.o \
-		mesa/src/X86/vertex_3dnow.o
+		mesa/src/X86/3dnow_xform_raw4.o
 #endif
 #ifdef MesaUseKatmai
-    ASM_OBJS += mesa/src/X86/katmai_norm.o \
-		mesa/src/X86/katmai_norm_raw.o \
+    ASM_OBJS += mesa/src/X86/katmai_norm_raw.o \
+		mesa/src/X86/katmai_vertex.o \
 		mesa/src/X86/katmai_xform_masked1.o \
 		mesa/src/X86/katmai_xform_masked2.o \
 		mesa/src/X86/katmai_xform_masked3.o \
@@ -82,8 +87,7 @@ NormalLintTarget($(PROFSRC))
 		mesa/src/X86/katmai_xform_raw1.o \
 		mesa/src/X86/katmai_xform_raw2.o \
 		mesa/src/X86/katmai_xform_raw3.o \
-		mesa/src/X86/katmai_xform_raw4.o \
-		mesa/src/X86/vertex_katmai.o
+		mesa/src/X86/katmai_xform_raw4.o
 #endif
 
     MESAOBJS = mesa/src/?*.o mesa/src/X86/?*.o

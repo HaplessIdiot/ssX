@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/vbrender.c,v 1.6 2000/08/28 02:43:10 tsi Exp $ */
+
 
 /*
  * Render points, lines, and polygons.  The only entry point to this
@@ -151,7 +151,7 @@ static void unfilled_polygon( GLcontext *ctx,
          j = vlist[i];
          if (edge_ptr[j] & 0x3) {
 	    edge_ptr[j] &= ~0x3;
-            (*ctx->Driver.PointsFunc)( ctx, j, j );
+            (*ctx->Driver.PointsFunc)( ctx, j, j+1 );
          }
       }
    }
@@ -447,7 +447,7 @@ do {						\
  */
 #define RENDER_POINTS( start, count )			\
    (void) cullmask;					\
-   (*ctx->Driver.PointsFunc)( ctx, start, count-1 );
+   (*ctx->Driver.PointsFunc)( ctx, start, count );
 
 
 #define RENDER_LINE( i1, i )			\
@@ -531,7 +531,7 @@ do {							\
 /* Direct, no clipping or culling.
  */
 #define RENDER_POINTS( start, count ) \
-   (*ctx->Driver.PointsFunc)( ctx, start, count-1 )
+   (*ctx->Driver.PointsFunc)( ctx, start, count )
 
 #define RENDER_LINE( i1, i ) \
    (*ctx->Driver.LineFunc)( ctx, i1, i, i )
@@ -566,7 +566,7 @@ do {						\
 /* Direct, with the possibility of clipping.
  */ 
 #define RENDER_POINTS( start, count )			\
-   (*ctx->Driver.PointsFunc)( ctx, start, count-1 )
+   (*ctx->Driver.PointsFunc)( ctx, start, count )
 
 #define RENDER_LINE( i1, i )			\
    gl_render_clipped_line2( ctx, i1, i )

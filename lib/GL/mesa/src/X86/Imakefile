@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile,v 1.11 2000/09/24 13:51:02 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile,v 1.12 2000/11/08 05:02:41 dawes Exp $
 
 #define DoNormalLib NormalLibGlx
 #define DoSharedLib SharedLibGlx
@@ -8,14 +8,24 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile,v 1.11 2000/09/24 13:51:02 alan
 
 LinkSourceFile(assyntax.h, $(MESASRCDIR)/src/X86)
 LinkSourceFile(common_x86.c, $(MESASRCDIR)/src/X86)
-LinkSourceFile(common_x86asm.S, $(MESASRCDIR)/src/X86)
-LinkSourceFile(common_x86asm.h, $(MESASRCDIR)/src/X86)
+LinkSourceFile(common_x86_asm.S, $(MESASRCDIR)/src/X86)
+LinkSourceFile(common_x86_asm.h, $(MESASRCDIR)/src/X86)
+LinkSourceFile(common_x86_features.h, $(MESASRCDIR)/src/X86)
 LinkSourceFile(glapi_x86.S, $(MESASRCDIR)/src/X86)
+
+LinkSourceFile(xform_args.h, $(MESASRCDIR)/src/X86)
+LinkSourceFile(clip_args.h, $(MESASRCDIR)/src/X86)
+
 LinkSourceFile(x86.c, $(MESASRCDIR)/src/X86)
 LinkSourceFile(x86.h, $(MESASRCDIR)/src/X86)
-LinkSourceFile(x86a.S, $(MESASRCDIR)/src/X86)
-LinkSourceFile(vertex.S, $(MESASRCDIR)/src/X86)
-LinkSourceFile(x86flatregs.m4, $(MESASRCDIR)/src/X86)
+LinkSourceFile(x86_cliptest.S, $(MESASRCDIR)/src/X86)
+LinkSourceFile(x86_vertex.S, $(MESASRCDIR)/src/X86)
+LinkSourceFile(x86_xform_masked2.S, $(MESASRCDIR)/src/X86)
+LinkSourceFile(x86_xform_masked3.S, $(MESASRCDIR)/src/X86)
+LinkSourceFile(x86_xform_masked4.S, $(MESASRCDIR)/src/X86)
+LinkSourceFile(x86_xform_raw2.S, $(MESASRCDIR)/src/X86)
+LinkSourceFile(x86_xform_raw3.S, $(MESASRCDIR)/src/X86)
+LinkSourceFile(x86_xform_raw4.S, $(MESASRCDIR)/src/X86)
 
 LinkSourceFile(mmx.h, $(MESASRCDIR)/src/X86)
 LinkSourceFile(mmx_blend.S, $(MESASRCDIR)/src/X86)
@@ -23,6 +33,7 @@ LinkSourceFile(mmx_blend.S, $(MESASRCDIR)/src/X86)
 LinkSourceFile(3dnow.c, $(MESASRCDIR)/src/X86)
 LinkSourceFile(3dnow.h, $(MESASRCDIR)/src/X86)
 LinkSourceFile(3dnow_norm_raw.S, $(MESASRCDIR)/src/X86)
+LinkSourceFile(3dnow_vertex.S, $(MESASRCDIR)/src/X86)
 LinkSourceFile(3dnow_xform_masked1.S, $(MESASRCDIR)/src/X86)
 LinkSourceFile(3dnow_xform_masked2.S, $(MESASRCDIR)/src/X86)
 LinkSourceFile(3dnow_xform_masked3.S, $(MESASRCDIR)/src/X86)
@@ -31,11 +42,11 @@ LinkSourceFile(3dnow_xform_raw1.S, $(MESASRCDIR)/src/X86)
 LinkSourceFile(3dnow_xform_raw2.S, $(MESASRCDIR)/src/X86)
 LinkSourceFile(3dnow_xform_raw3.S, $(MESASRCDIR)/src/X86)
 LinkSourceFile(3dnow_xform_raw4.S, $(MESASRCDIR)/src/X86)
-LinkSourceFile(vertex_3dnow.S, $(MESASRCDIR)/src/X86)
 
 LinkSourceFile(katmai.c, $(MESASRCDIR)/src/X86)
 LinkSourceFile(katmai.h, $(MESASRCDIR)/src/X86)
 LinkSourceFile(katmai_norm_raw.S, $(MESASRCDIR)/src/X86)
+LinkSourceFile(katmai_vertex.S, $(MESASRCDIR)/src/X86)
 LinkSourceFile(katmai_xform_masked1.S, $(MESASRCDIR)/src/X86)
 LinkSourceFile(katmai_xform_masked2.S, $(MESASRCDIR)/src/X86)
 LinkSourceFile(katmai_xform_masked3.S, $(MESASRCDIR)/src/X86)
@@ -44,7 +55,6 @@ LinkSourceFile(katmai_xform_raw1.S, $(MESASRCDIR)/src/X86)
 LinkSourceFile(katmai_xform_raw2.S, $(MESASRCDIR)/src/X86)
 LinkSourceFile(katmai_xform_raw3.S, $(MESASRCDIR)/src/X86)
 LinkSourceFile(katmai_xform_raw4.S, $(MESASRCDIR)/src/X86)
-LinkSourceFile(vertex_katmai.S, $(MESASRCDIR)/src/X86)
 
 LinkSourceFile(glapioffsets.h, $(MESASRCDIR)/src)
 
@@ -53,50 +63,95 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 
 #ifdef i386Architecture
-XCOMM Determine at runtime whether 3dNow, Katmai, MMX, etc are really present.
-      X86_SRCS = x86a.S common_x86.c common_x86asm.S glapi_x86.S x86.c vertex.S
+XCOMM Determine at runtime whether 3DNow!, Katmai, MMX, etc are really present.
+     X86_SRCS = common_x86.c \
+		common_x86_asm.S \
+		glapi_x86.S \
+		x86.c \
+		x86_cliptest.S \
+		x86_vertex.S \
+		x86_xform_masked2.S \
+		x86_xform_masked3.S \
+		x86_xform_masked4.S \
+		x86_xform_raw2.S \
+		x86_xform_raw3.S \
+		x86_xform_raw4.S
 
-      X86_OBJS = x86a.o common_x86.o common_x86asm.o x86.o vertex.o
+     X86_OBJS = common_x86.o \
+		common_x86_asm.o \
+		x86.o \
+		x86_cliptest.o \
+		x86_vertex.o \
+		x86_xform_masked2.o \
+		x86_xform_masked3.o \
+		x86_xform_masked4.o \
+		x86_xform_raw2.o \
+		x86_xform_raw3.o \
+		x86_xform_raw4.o
 
-      X86_DEFS = -DUSE_X86_ASM
+     X86_DEFS = -DUSE_X86_ASM
 
 
-      MMX_SRCS = mmx_blend.S
+     MMX_SRCS = mmx_blend.S
 
-      MMX_OBJS = mmx_blend.o
+     MMX_OBJS = mmx_blend.o
 
-      MMX_DEFS = -DUSE_MMX_ASM
+     MMX_DEFS = -DUSE_MMX_ASM
 
 #ifdef MesaUse3DNow
-    3DNOW_SRCS = 3dnow.c 3dnow_norm_raw.S 3dnow_xform_masked1.S \
-		 3dnow_xform_masked2.S 3dnow_xform_masked3.S \
-		 3dnow_xform_masked4.S 3dnow_xform_raw1.S \
-		 3dnow_xform_raw2.S 3dnow_xform_raw3.S 3dnow_xform_raw4.S \
-		 vertex_3dnow.S
+   3DNOW_SRCS = 3dnow.c \
+		3dnow_norm_raw.S \
+		3dnow_vertex.S \
+		3dnow_xform_masked1.S \
+		3dnow_xform_masked2.S \
+		3dnow_xform_masked3.S \
+		3dnow_xform_masked4.S \
+		3dnow_xform_raw1.S \
+		3dnow_xform_raw2.S \
+		3dnow_xform_raw3.S \
+		3dnow_xform_raw4.S \
 
-    3DNOW_OBJS = 3dnow.o 3dnow_norm_raw.o 3dnow_xform_masked1.o \
-		 3dnow_xform_masked2.o 3dnow_xform_masked3.o \
-		 3dnow_xform_masked4.o 3dnow_xform_raw1.o \
-		 3dnow_xform_raw2.o 3dnow_xform_raw3.o 3dnow_xform_raw4.o \
-		 vertex_3dnow.o
+   3DNOW_OBJS = 3dnow.o \
+		3dnow_norm_raw.o \
+		3dnow_vertex.o \
+		3dnow_xform_masked1.o \
+		3dnow_xform_masked2.o \
+		3dnow_xform_masked3.o \
+		3dnow_xform_masked4.o \
+		3dnow_xform_raw1.o \
+		3dnow_xform_raw2.o \
+		3dnow_xform_raw3.o \
+		3dnow_xform_raw4.o
 
-    3DNOW_DEFS = -DUSE_3DNOW_ASM
+   3DNOW_DEFS = -DUSE_3DNOW_ASM
 #endif
 
 #ifdef MesaUseKatmai
-    KATMAI_SRCS = katmai.c katmai_norm_raw.S katmai_xform_masked1.S \
-		 katmai_xform_masked2.S katmai_xform_masked3.S \
-		 katmai_xform_masked4.S katmai_xform_raw1.S \
-		 katmai_xform_raw2.S katmai_xform_raw3.S katmai_xform_raw4.S \
-		 vertex_katmai.S
+  KATMAI_SRCS = katmai.c \
+		katmai_norm_raw.S \
+		katmai_vertex.S \
+		katmai_xform_masked1.S \
+		katmai_xform_masked2.S \
+		katmai_xform_masked3.S \
+		katmai_xform_masked4.S \
+		katmai_xform_raw1.S \
+		katmai_xform_raw2.S \
+		katmai_xform_raw3.S \
+		katmai_xform_raw4.S \
 
-    KATMAI_OBJS = katmai.o katmai_norm_raw.o katmai_xform_masked1.o \
-		 katmai_xform_masked2.o katmai_xform_masked3.o \
-		 katmai_xform_masked4.o katmai_xform_raw1.o \
-		 katmai_xform_raw2.o katmai_xform_raw3.o katmai_xform_raw4.o \
-		 vertex_katmai.o
+  KATMAI_OBJS = katmai.o \
+		katmai_norm_raw.o \
+		katmai_vertex.o \
+		katmai_xform_masked1.o \
+		katmai_xform_masked2.o \
+		katmai_xform_masked3.o \
+		katmai_xform_masked4.o \
+		katmai_xform_raw1.o \
+		katmai_xform_raw2.o \
+		katmai_xform_raw3.o \
+		katmai_xform_raw4.o
 
-    KATMAI_DEFS = -DUSE_KATMAI_ASM
+  KATMAI_DEFS = -DUSE_KATMAI_ASM
 #endif
 
 #endif
@@ -122,8 +177,22 @@ STD_CPP_DEFINES = StandardDefines $(PROJECT_DEFINES)
 SubdirLibraryRule($(OBJS))
 NormalLintTarget($(SRCS))
 
+ObjectFromAsmSource(common_x86_asm, NullParameter)
+
+ObjectFromAsmSource(x86_cliptest, NullParameter)
+ObjectFromAsmSource(x86_vertex, NullParameter)
+ObjectFromAsmSource(x86_xform_masked2, NullParameter)
+ObjectFromAsmSource(x86_xform_masked3, NullParameter)
+ObjectFromAsmSource(x86_xform_masked4, NullParameter)
+ObjectFromAsmSource(x86_xform_raw2, NullParameter)
+ObjectFromAsmSource(x86_xform_raw3, NullParameter)
+ObjectFromAsmSource(x86_xform_raw4, NullParameter)
+
+ObjectFromAsmSource(mmx_blend, NullParameter)
+
 #ifdef MesaUse3DNow
 ObjectFromAsmSource(3dnow_norm_raw, NullParameter)
+ObjectFromAsmSource(3dnow_vertex, NullParameter)
 ObjectFromAsmSource(3dnow_xform_masked1, NullParameter)
 ObjectFromAsmSource(3dnow_xform_masked2, NullParameter)
 ObjectFromAsmSource(3dnow_xform_masked3, NullParameter)
@@ -132,11 +201,11 @@ ObjectFromAsmSource(3dnow_xform_raw1, NullParameter)
 ObjectFromAsmSource(3dnow_xform_raw2, NullParameter)
 ObjectFromAsmSource(3dnow_xform_raw3, NullParameter)
 ObjectFromAsmSource(3dnow_xform_raw4, NullParameter)
-ObjectFromAsmSource(vertex_3dnow, NullParameter)
 #endif
 
 #ifdef MesaUseKatmai
 ObjectFromAsmSource(katmai_norm_raw, NullParameter)
+ObjectFromAsmSource(katmai_vertex, NullParameter)
 ObjectFromAsmSource(katmai_xform_masked1, NullParameter)
 ObjectFromAsmSource(katmai_xform_masked2, NullParameter)
 ObjectFromAsmSource(katmai_xform_masked3, NullParameter)
@@ -145,14 +214,6 @@ ObjectFromAsmSource(katmai_xform_raw1, NullParameter)
 ObjectFromAsmSource(katmai_xform_raw2, NullParameter)
 ObjectFromAsmSource(katmai_xform_raw3, NullParameter)
 ObjectFromAsmSource(katmai_xform_raw4, NullParameter)
-ObjectFromAsmSource(vertex_katmai, NullParameter)
 #endif
 
-ObjectFromAsmSource(mmx_blend, NullParameter)
-
-ObjectFromAsmSource(common_x86asm, NullParameter)
-ObjectFromAsmSource(vertex, NullParameter)
-ObjectFromAsmSource(x86a, NullParameter)
-
 DependTarget()
-

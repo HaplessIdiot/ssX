@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxrender.c,v 1.1 2000/09/24 13:51:16 alanh Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -220,7 +220,7 @@ fxSafeClippedTriangle3(struct vertex_buffer *VB,
 #define RENDER_POINTS( start, count )				\
    (void) gWin;							\
    (void) VB;							\
-   (VB->ctx->Driver.PointsFunc)( VB->ctx, start, count-1 )
+   (VB->ctx->Driver.PointsFunc)( VB->ctx, start, count )
 
 #define RENDER_LINE( i1, i )			\
   do {						\
@@ -283,7 +283,7 @@ fxSafeClippedTriangle3(struct vertex_buffer *VB,
 #define RENDER_POINTS( start, count )				\
    (void) gWin;							\
    (void) cullmask;						\
-   (VB->ctx->Driver.PointsFunc)( VB->ctx, start, count-1 )
+   (VB->ctx->Driver.PointsFunc)( VB->ctx, start, count )
 
 
 #define RENDER_LINE( i1, i )						\
@@ -381,7 +381,7 @@ fxSafeClippedTriangle3(struct vertex_buffer *VB,
     fxVertex *gWin = FX_DRIVER_DATA(VB)->verts;	\
     GLubyte *clipmask = VB->ClipMask;		\
     GLuint i;					\
-    for (i = start ; i <= count ; i++)		\
+    for (i = start ; i < count ; i++)		\
       if (clipmask[i] == 0) {			\
         RVB_COLOR(i);				\
         FX_grDrawPoint( fxMesa, (GrVertex *)gWin[i].f );\
@@ -440,7 +440,7 @@ fxSafeClippedTriangle3(struct vertex_buffer *VB,
     fxVertex *gWin = FX_DRIVER_DATA(VB)->verts;		\
     GLuint e;						\
     GLubyte *clipmask = VB->ClipMask;			\
-    for(e=start;e<=count;e++)				\
+    for(e=start;e<count;e++)				\
       if(clipmask[elt[e]]==0) {				\
         FX_grDrawPoint(fxMesa, (GrVertex *)gWin[elt[e]].f);	\
       }							\
@@ -487,7 +487,7 @@ fxSafeClippedTriangle3(struct vertex_buffer *VB,
     fxVertex *gWin = FX_DRIVER_DATA(VB)->verts;		\
     GLuint e;						\
     GLubyte *clipmask = VB->ClipMask;			\
-    for(e=start;e<=count;e++)				\
+    for(e=start;e<count;e++)				\
       if(clipmask[elt[e]]==0) {				\
         FX_grDrawPoint(fxMesa, (GrVertex *)gWin[elt[e]].f);	\
       }							\
@@ -537,7 +537,7 @@ fxSafeClippedTriangle3(struct vertex_buffer *VB,
 #define RENDER_POINTS( start, count )			\
   do {							\
     GLuint e;						\
-    for(e=start;e<=count;e++) {				\
+    for(e=start;e<count;e++) {				\
       FX_grDrawPoint_NoLock((GrVertex *)gWin[elt[e]].f);\
     }							\
   } while (0)
