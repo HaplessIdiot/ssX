@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvmain.c,v 1.7 1999/12/11 19:26:32 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvmain.c,v 1.9 2000/03/30 18:20:36 mvojkovi Exp $ */
 
 /*
 ** File: 
@@ -610,7 +610,7 @@ XvdiPutVideo(
   DrawablePtr pOldDraw;
 
   if(!drw_w || !drw_h || !vid_w || !vid_h)
-	return BadValue;
+	return Success;
 
   /* UPDATE TIME VARIABLES FOR USE IN EVENTS */
 
@@ -664,7 +664,7 @@ XvdiPutStill(
   int status;
 
   if(!drw_w || !drw_h || !vid_w || !vid_h)
-	return BadValue;
+	return Success; 
 
   /* UPDATE TIME VARIABLES FOR USE IN EVENTS */
 
@@ -705,7 +705,7 @@ XvdiPutImage(
    CARD16 width, CARD16 height
 ){
   if(!drw_w || !drw_h || !src_w || !src_h)
-	return BadValue;
+	return Success;
 
   /* UPDATE TIME VARIABLES FOR USE IN EVENTS */
 
@@ -744,7 +744,7 @@ XvdiGetVideo(
   DrawablePtr pOldDraw;
 
   if(!drw_w || !drw_h || !vid_w || !vid_h)
-	return BadValue;
+	return Success; 
 
   /* UPDATE TIME VARIABLES FOR USE IN EVENTS */
 
@@ -798,7 +798,7 @@ XvdiGetStill(
   int status;
 
   if(!drw_w || !drw_h || !vid_w || !vid_h)
-	return BadValue;
+	return Success;
 
   /* UPDATE TIME VARIABLES FOR USE IN EVENTS */
 
