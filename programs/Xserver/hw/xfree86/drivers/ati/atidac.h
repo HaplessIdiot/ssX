@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.h,v 1.11 2002/01/16 16:22:26 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.h,v 1.12tsi Exp $ */
 /*
  * Copyright 1997 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -79,11 +79,11 @@ extern const SymTabRec ATIDACDescriptors[];
 
 #else /* AVOID_CPIO */
 
-#   define DACDelay                               \
-        do                                        \
-        {                                         \
-            (void)inb(GENS1(pATI->CPIO_VGABase)); \
-            (void)inb(GENS1(pATI->CPIO_VGABase)); \
+#   define DACDelay                         \
+        do                                  \
+        {                                   \
+            (void)inb(pATI->CPIO_DAC_WAIT); \
+            (void)inb(pATI->CPIO_DAC_WAIT); \
         } while (0)
 
     extern void ATISetDACIOPorts FunctionPrototype((ATIPtr, ATICRTCType));

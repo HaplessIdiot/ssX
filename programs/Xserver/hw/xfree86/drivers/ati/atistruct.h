@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.33 2002/04/06 19:06:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.34tsi Exp $ */
 /*
  * Copyright 1999 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -201,7 +201,8 @@ typedef struct _ATIRec
 
 #ifndef AVOID_CPIO
 
-    IOADDRESS CPIO_DAC_MASK, CPIO_DAC_DATA, CPIO_DAC_READ, CPIO_DAC_WRITE;
+    IOADDRESS CPIO_DAC_MASK, CPIO_DAC_DATA, CPIO_DAC_READ, CPIO_DAC_WRITE,
+              CPIO_DAC_WAIT;
 
 #endif /* AVOID_CPIO */
 
