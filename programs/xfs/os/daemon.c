@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xfs/os/daemon.c,v 1.10 2002/06/03 22:16:17 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/daemon.c,v 1.11tsi Exp $ */
 
 #include <X11/Xos.h>
 #include <sys/types.h>
@@ -35,8 +35,11 @@ from the X Consortium.
 #include <stdlib.h>
 
 #ifndef __GLIBC__
-# if defined(__osf__) || defined(__GNU__) || defined(__CYGWIN__)
-# define setpgrp setpgid
+# if defined(__osf__) || \
+     defined(__GNU__) || \
+     defined(__CYGWIN__) || \
+     defined(linux)
+#  define setpgrp setpgid
 # endif
 #endif
 
@@ -61,7 +64,6 @@ void
 BecomeOrphan ()
 {
     Pid_t child_id;
-    int stat;
 
     chdir("/");
     /*
@@ -86,19 +88,28 @@ BecomeOrphan ()
     default:
 	/* parent */
 
-#if defined(CSRG_BASED) || defined(SYSV) || defined(SVR4) || defined(__QNXNTO__) || defined(__GLIBC__)
-#if defined(SVR4) || defined(__QNXNTO__)
-        stat = setpgid (child_id, child_id); /* This gets error EPERM.  Why? */
-#elif defined(SYSV)
-	stat = 0;	/* don't know how to set child's process group */
-#elif defined(__GLIBC__)
-        stat = setpgrp ();
-#else
-        stat = setpgrp (child_id, child_id);
-#endif
-        if (stat != 0)
-	     FatalError ("setting process group for daemon failed: %s\n",
-                         strerror (errno));
+#if defined(CSRG_BASED) || \
+    defined(SYSV) || \
+    defined(SVR4) || \
+    defined(__QNXNTO__) || \
+    defined(__GLIBC__) || \
+    defined(linux)
+	{
+	    int stat;
+# if defined(SVR4) || defined(__QNXNTO__)
+	    /* This gets error EPERM.  Why? */
+	    stat = setpgid (child_id, child_id);
+# elif defined(SYSV)
+	    stat = 0;	/* don't know how to set child's process group */
+# elif defined(__GLIBC__)
+	    stat = setpgrp ();
+# else
+	    stat = setpgrp (child_id, child_id);
+# endif
+	    if (stat != 0)
+		FatalError("setting process group for daemon failed: %s\n",
+			   strerror(errno));
+	}
 #endif /* ! (CSRG_BASED || SYSV || SVR4 || __QNXNTO__ || __GLIBC__) */
 	exit (0);
     }
