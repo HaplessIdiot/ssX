@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.488 2005/02/01 00:44:26 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.489 2005/02/02 21:53:58 dawes Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -198,6 +198,7 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.488 2005/02/01 00:44:26 dawes Exp $
 #define BuildLibrariesForConfigTools	BuildXFree86ConfigTools
 #endif
 
+#ifndef BuildServer || BuildServer
 #if BuildXFree86ConfigTools && BuildLibrariesForConfigTools
 #define BuildLibraries		YES
 #define BuildXF86MiscLibrary	YES
@@ -205,6 +206,7 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.488 2005/02/01 00:44:26 dawes Exp $
 #define BuildXKBlib		YES
 #define BuildXKBfilelib		YES
 #define BuildXKBuilib		YES
+#endif
 #endif
 
 #ifndef MakeDllModules
