@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.9 1996/02/04 09:09:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.10 1996/03/29 22:17:16 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -180,7 +180,8 @@ unsigned long Size;
 			   DEV_MEM, strerror(errno));
 	    }
 	    base = (pointer)mmap((caddr_t)0, Size, PROT_READ|PROT_WRITE,
-				 MAP_FILE, devMemFd, (off_t)Base);
+				 MAP_FILE, devMemFd,
+				 (off_t)(unsigned long) Base);
 	    if (base == (pointer)-1)
 	    {
 		FatalError("%s: could not mmap %s [s=%x,a=%x] (%s)\n",

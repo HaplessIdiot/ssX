@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_ClkPr.c,v 3.5 1995/01/28 17:03:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_ClkPr.c,v 3.6 1996/02/04 09:06:58 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -52,14 +52,20 @@
  *      get the dot-clocks via a BIG BAD hack ...
  */
 void
-xf86GetClocks(num, ClockFunc, ProtectRegs, SaveScreen, vertsyncreg, maskval, 
-		knownclkindex, knownclkvalue, InfoRec)
-int num;
-Bool (*ClockFunc)();
-void (*ProtectRegs)();
-void (*SaveScreen)();
-int vertsyncreg, maskval, knownclkindex, knownclkvalue;
-ScrnInfoRec *InfoRec;
+xf86GetClocks(int num,
+#if NeedNestedPrototypes
+		Bool (*ClockFunc)(int),
+		void (*ProtectRegs)(Bool),
+#else
+		Bool (*ClockFunc)(),
+		void (*ProtectRegs)(),
+#endif
+		SaveScreenProcPtr SaveScreen,
+		int vertsyncreg,
+		int maskval, 
+		int knownclkindex,
+		int knownclkvalue,
+		ScrnInfoRec *InfoRec)
 {
     register int status = vertsyncreg;
     unsigned long i, cnt, rcnt, sync;

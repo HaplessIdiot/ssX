@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c /main/239 1995/12/10 17:21:49 gildea $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.36 1996/05/11 11:07:50 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.37 1996/05/12 13:03:03 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -185,10 +185,8 @@ static Bool IsPts = False;
 #undef CAPS_LOCK
 #endif
 
-#ifndef NO_POSIX_TERMIOS
 #ifdef CSRG_BASED
 #define USE_POSIX_TERMIOS
-#endif
 #endif
 
 #include <sys/ioctl.h>
@@ -1169,6 +1167,8 @@ char **argv;
 	d_tio.c_cc[VDISCARD] = CFLUSH;
 	d_tio.c_cc[VWERASE] = CWERASE;
 	d_tio.c_cc[VLNEXT] = CLNEXT;
+	d_tio.c_cc[VMIN] = 1;
+	d_tio.c_cc[VTIME] = 0;
 #endif /* } */
 #ifdef TIOCSLTC /* { */
         d_ltc.t_suspc = CSUSP;		/* t_suspc */
@@ -1217,6 +1217,8 @@ char **argv;
 	d_tio.c_cc[VQUIT] = CQUIT;		/* '^\'	*/
     	d_tio.c_cc[VEOF] = CEOF;		/* '^D'	*/
 	d_tio.c_cc[VEOL] = CEOL;		/* '^@'	*/
+	d_tio.c_cc[VMIN] = 1;
+	d_tio.c_cc[VTIME] = 0;
 #ifdef VSWTCH
 	d_tio.c_cc[VSWTCH] = CSWTCH;            /* usually '^Z' */
 #endif

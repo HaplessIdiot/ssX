@@ -1,4 +1,5 @@
 // $XConsortium: ca /main/2 1995/12/07 21:41:09 kaleb $
+// $XFree86$
 partial default xkb_symbols "basic" {
      
      // Describes the differences between a very simple en_US
@@ -35,7 +36,7 @@ partial default xkb_symbols "basic" {
     key <AE10> {
 		type[Group1]="THREE_LEVEL",
 		symbols[Group1]= [ 0,	parenright,	bracketright	],
-		symbols[Group2]= [ 0,	parenright,	bracketright	],
+		symbols[Group2]= [ 0,	parenright,	bracketright	]
     };
     key <AE11> {	
 		symbols[Group1]= [ minus,	underscore		],	
@@ -73,12 +74,12 @@ partial default xkb_symbols "basic" {
 			[    ugrave,	brokenbar	]	};
     key <AB01> {
 		type="THREE_LEVEL",
-		symbols[Group1]= [ z, Z, guillemotleft ]
+		symbols[Group1]= [ z, Z, guillemotleft ],
 		symbols[Group2]= [ z, Z, guillemotleft ]
     };
     key <AB02> {
 		type="THREE_LEVEL",
-		symbols[Group1]= [ x, X, guillemotright ]
+		symbols[Group1]= [ x, X, guillemotright ],
 		symbols[Group2]= [ x, X, guillemotright ]
     };
     key <AB04> {	[	  v,	V		],	
@@ -165,7 +166,7 @@ partial default xkb_symbols "basic" {
 		};
     key <SPCE> {
 		type[Group1]="THREE_LEVEL",
-		symbols[Group1]=[space,space,nobreakspace],
+		symbols[Group1]=[space,space,nobreakspace]
 		};
     // End alphanumeric section
 

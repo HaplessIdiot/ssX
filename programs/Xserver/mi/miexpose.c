@@ -47,6 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: miexpose.c,v 5.20 94/04/17 20:27:32 dpw Exp $ */
+/* $XFree86$ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -673,8 +674,8 @@ int what;
 	    box.y2 = pScreen->height;
 	    REGION_INIT(pScreen, &pWin->clipList, &box, 1);
 	    pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
-	    newValues[ABSX] = (pointer)pBgWin->drawable.x;
-	    newValues[ABSY] = (pointer)pBgWin->drawable.y;
+	    newValues[ABSX] = (pointer)(unsigned long) pBgWin->drawable.x;
+	    newValues[ABSY] = (pointer)(unsigned long) pBgWin->drawable.y;
 	}
 	else
 	{
@@ -700,8 +701,8 @@ int what;
 	}
 	pGC = screenContext[i];
 	newValues[SUBWINDOW] = (pointer)IncludeInferiors;
-	newValues[ABSX] = (pointer)pBgWin->drawable.x;
-	newValues[ABSY] = (pointer)pBgWin->drawable.y;
+	newValues[ABSX] = (pointer)(unsigned long) pBgWin->drawable.x;
+	newValues[ABSY] = (pointer)(unsigned long) pBgWin->drawable.y;
 	gcmask |= GCSubwindowMode;
 	pWin = pRoot;
     }
@@ -717,19 +718,19 @@ int what;
 	mask &= ~index;
 	switch (index) {
 	case GCFunction:
-	    if ((pointer) pGC->alu != newValues[FUNCTION]) {
+	    if ((pointer) (unsigned long) pGC->alu != newValues[FUNCTION]) {
 		gcmask |= index;
 		gcval[i++] = newValues[FUNCTION];
 	    }
 	    break;
 	case GCTileStipXOrigin:
-	    if ((pointer) pGC->patOrg.x != newValues[ABSX]) {
+	    if ((pointer) (unsigned long) pGC->patOrg.x != newValues[ABSX]) {
 		gcmask |= index;
 		gcval[i++] = newValues[ABSX];
 	    }
 	    break;
 	case GCTileStipYOrigin:
-	    if ((pointer) pGC->patOrg.y != newValues[ABSY]) {
+	    if ((pointer) (unsigned long) pGC->patOrg.y != newValues[ABSY]) {
 		gcmask |= index;
 		gcval[i++] = newValues[ABSY];
 	    }

@@ -1,11 +1,19 @@
 XCOMM $XConsortium: Imakefile /main/17 1995/12/19 16:35:21 mor $
+XCOMM $XFree86$
 #undef ServerDefines
 #include <Server.tmpl>
 
+#ifdef OS2Architecture
+SRCS1 = os2_stubs.c
+OBJS1 = os2_stubs.o
+LinkSourceFile(os2_stubs.c,../../Xserver/hw/xfree86/os-support/os2)
+SpecialCObjectRule(os2_stubs,$(ICONFIGFILES),-DOS2NULLSELECT -I../../../X11)
+#endif
+
 SRCS =	connection.c waitfor.c io.c utils.c osinit.c \
-	config.c access.c osglue.c error.c
+	config.c access.c osglue.c error.c $(SRCS1)
 OBJS =  connection.o waitfor.o io.o utils.o osinit.o \
-	config.o access.o osglue.o error.o
+	config.o access.o osglue.o error.o $(OBJS1)
 
 INCLUDES = -I../include -I$(FONTINCSRC)
 

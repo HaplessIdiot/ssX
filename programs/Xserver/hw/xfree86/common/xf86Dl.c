@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Dl.c,v 3.3 1996/03/11 12:37:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Dl.c,v 3.4 1996/03/29 22:16:12 dawes Exp $ */
 
 /*    
  * Copyright 1995 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>
@@ -69,7 +69,7 @@ xf86LoadModule(const char *	file,
 
     /* absolute path */
     if (file[0] == '/') {
-	module = dlopen(path, DLOPEN_FLAGS);
+	module = dlopen(file, DLOPEN_FLAGS);
     } else { /* look for file in path */
 	struct stat	stat_buf;
 
@@ -117,11 +117,17 @@ xf86LoadModule(const char *	file,
 	    }
 	   else {
 	       if (xf86Verbose)
-		   ErrorF("%s module %s successfully loaded from %s\n",
-			  XCONFIG_GIVEN, file, dir_elem);
+		   if (file[0] == '/')
+		       ErrorF("%s module %s successfully loaded\n",
+			      XCONFIG_GIVEN, file);
+		   else
+		       ErrorF("%s module %s successfully loaded from %s\n",
+			      XCONFIG_GIVEN, file, dir_elem);
 	   }
 	} else {
-	    ErrorF("Unable to find init hook in module %s", path);
+	    ErrorF("Unable to find init hook in module %s\n", file);
+	    xfree(keep);
+	    return NULL;
 	}
     }
     

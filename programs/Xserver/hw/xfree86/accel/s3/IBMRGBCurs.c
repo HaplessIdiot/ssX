@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/IBMRGBCurs.c,v 3.3 1996/02/04 09:04:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/IBMRGBCurs.c,v 3.4 1996/02/05 11:21:21 dawes Exp $ */
 /*
  *
  * Copyright 1995 The XFree86 Project, Inc.
@@ -347,8 +347,8 @@ s3IBMRGBLoadCursor(pScr, pCurs, x, y)
    tmp2 = inb(IBMRGB_INDEX_CONTROL) & 0xfe;
    outb(IBMRGB_INDEX_CONTROL, tmp2 | 1);  /* enable auto-increment */
    
-   outb(IBMRGB_INDEX_HIGH, IBMRGB_curs_array >> 8);
-   outb(IBMRGB_INDEX_LOW,  IBMRGB_curs_array);
+   outb(IBMRGB_INDEX_HIGH, (unsigned char) (IBMRGB_curs_array >> 8));
+   outb(IBMRGB_INDEX_LOW,  (unsigned char) IBMRGB_curs_array);
 
    p = ram;
    for (i = 0; i < 1024; i++,p++)

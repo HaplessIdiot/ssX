@@ -1,7 +1,7 @@
   Release Notes for XFree86[TM] 3.1.2E (beta version)
   The XFree86 Project, Inc
 
-  13 May 1996
+  15 May 1996
 
   This document describes the rationale and conditions of this beta
   release, what is new in the XFree86 beta versions 3.1.2E, 3.1.2D,
@@ -78,6 +78,10 @@
 
      o  Many updates have been made to the OS/2 port.
 
+     o  3.1.2E also includes a first full distribution for Linux/AXP
+        (Linux on DEC Alpha/AXP architecture) with tested servers for S3
+        and Mach64 cards.
+
   3.2.  General X server changes
 
 
@@ -116,6 +120,16 @@
      o  Support for the ELSA Winner 2000PRO/X rev G and ELSA Gloria-8
         (except the GLint 300SX 3D chip) has been added.
 
+     o  S3 dashed lines are finally fixed.
+
+     o  Fixed some problems with the S3 Trio64V+.
+
+     o  Added options "slow_dram" and "slow_edodram" to avoid pixel
+        errors on the display for some broken cards.
+
+
+
+
   3.6.  Mach64 server
 
 
@@ -127,8 +141,6 @@
 
      o  A problem that caused the server to incorrectly use block I/O
         mode on some cards has been fixed.
-
-
 
      o  A problem with olvwm icons has been fixed.
 
@@ -180,6 +192,10 @@
 
   4.  New Features in 3.1.2D
 
+
+
+
+
   4.1.  General
 
 
@@ -195,7 +211,6 @@
      o  The DGA extension has been implemented now for all servers that
         can support it, and some bugs in the previous version have been
         fixed.  Connections are now only allowed from clients using a
-
         local connection type (e.g., DISPLAY=":0").
 
      o  The VidMode extension (as used by xvidtune) now by default only
@@ -246,6 +261,7 @@
      o  Initial release of the PC98 PEGC-480 server. This server is
         based on the PC-AT SVGA(generic) server.
 
+
   4.4.  S3 server
 
 
@@ -259,8 +275,6 @@
 
      o  Framebuffer address problems with some 1MB Trio64 VLB cards
         should be fixed.
-
-
 
      o  The low ICS5342 clock limit has been removed.
 
@@ -326,8 +340,6 @@
      o  Known problems with TGUI9440 cards have been fixed (including
         interlaced modes).
 
-
-
      o  Support for TGUI9660/9680 cards has been improved.
 
   4.9.  ARK driver (SVGA server)
@@ -391,9 +403,6 @@
 
      o  Added detection of SiS cards.
 
-
-
-
   4.16.  Client/Library Changes
 
 
@@ -447,6 +456,9 @@
 
      o  The RepeatMiddle keyword that was added in 3.1.2A has been
         removed because it didn't work properly.
+
+
+
 
   5.2.  PC98 support
 
@@ -513,6 +525,7 @@
 
      o  Support for S3 and Bt485 HW cursor in doublescan modes.
 
+
      o  Fix positioning of IBM RGB Ramdac HW cursor in interlace and
         doublescan modes (the cursor shape still isn't correct).
 
@@ -577,6 +590,8 @@
         +  VT switching does not work for cards with the CH8398 and
            AT&T20C409 RAMDACs.
 
+
+
         +  The background colour of the cursor in xterms for the CH8398
            and AT&T20C409 RAMDACs is blue instead of black in 16bpp and
            32bpp modes.
@@ -591,6 +606,7 @@
      o  Support for the STG1703 RAMDAC/clock has been added.  Clocks up
         to 135MHz should be OK.  To use the programmable clock add the
         following line to the Device section of the XF86Config:
+
 
                   ClockChip "stg1703"
 
@@ -657,7 +673,6 @@
 
      o  Preliminary support is included for the TGUI 9440.
 
-
   6.3.  Cirrus driver (SVGA server)
 
 
@@ -707,6 +722,8 @@
         20C499 RAMDACs with 868 cards.  8bpp pixel multiplexing
         currently does not work.
 
+
+
      o  The IBM RGB526 RAMDAC used on the newer Diamond Stealth64 Video
         3240/3400 cards isn't yet auto-detected, but it will work if the
         following line is added to the Device section of your XF86Config
@@ -720,8 +737,6 @@
 
 
   6.7.  Mach32 server
-
-
 
 
      o  Hardware cursor mask problem has been fixed.
@@ -773,6 +788,8 @@
   6.13.  SuperProbe
 
 
+
+
      o  Added detection for C&T 65548, Cirrus CL-GD7543/1, AT&T 20C409,
         AT&T20C499, and fixed an incorrect ET4000/W32 probe problem.
 
@@ -788,7 +805,6 @@
      o  XNLS support has been added for KOI8-R.
 
      o  xrdb dynamically allocates string space to avoid overruns.
-
 
      o  A memory overrun problem in xterm has been fixed.
 
@@ -813,6 +829,15 @@
 
 
 
+  and for Linux a.out also:
+
+
+       X312Eprog.tgz      programming libraries and include files
+                          which have changed since 3.1.2D
+
+
+
+
   The following X servers are for PC/AT hardware.  Choose at least one
   which matches your hardware.
 
@@ -829,8 +854,6 @@
        X312ESVGA.tgz      SVGA server
        X312EVG16.tgz      16 colour VGA server
        X312EW32.tgz       ET4000/W32 server
-
-
 
 
   The following X servers are for PC98 hardware.  If you have a PC98
@@ -856,8 +879,8 @@
   The following servers are optional:
 
 
-  X312Enest.tgz     Nested X server
-  X312Evfb.tgz      Virtual framebuffer X server
+       X312Enest.tgz     Nested X server
+       X312Evfb.tgz      Virtual framebuffer X server
 
 
 
@@ -897,7 +920,9 @@
 
 
 
-               /usr/X11R6/bin/mkfontdir /usr/X11R6/lib/X11/fonts/misc
+
+
+          /usr/X11R6/bin/mkfontdir /usr/X11R6/lib/X11/fonts/misc
 
 
 
@@ -914,10 +939,6 @@
 
 
                tic /usr/X11R6/lib/X11/etc/xterm.terminfo
-
-
-
-
 
 
 
@@ -966,6 +987,7 @@
 
   If you have a previous version of XFree86 installed, you can upgrade
   to the new version by first running the script preinst.sh, and then
+
   extracting the required .tgz files over the previous version in
   /usr/X11R6.  The preinst.sh script must be run before removing any
   previous beta versions you have installed.  It removes symbolic links
@@ -988,7 +1010,7 @@
   /usr/X11R6, and run the following as root for each file you need:
 
 
-          gzip -d < X312Dfile.tgz | tar vxf -
+               gzip -d < X312Dfile.tgz | tar vxf -
 
 
 
@@ -1019,29 +1041,7 @@
   line.  Check /etc/rc to see how ldconfig gets run at boot time.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.30 1996/05/13 06:55:00 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.32 1996/05/15 03:34:30 dawes Exp $
 
 
 

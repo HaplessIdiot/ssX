@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000gc32.c,v 3.1 1995/06/08 06:26:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000gc32.c,v 3.2 1996/02/04 09:04:19 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -53,6 +53,7 @@ Modified for P9000 32 bit GC by Henrik Harmsen <harmsen@eritel.se>
 ******************************************************************/
 /* $XConsortium: p9000gc32.c /main/3 1995/11/12 18:19:04 kaleb $ */
 
+#undef PSZ
 #define PSZ 32
 
 #include "X.h"

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xconsole.c /main/22 1995/12/07 13:52:50 kaleb $
- * $XFree86: xc/programs/xconsole/xconsole.c,v 3.11 1996/01/14 13:42:03 dawes Exp $
+ * $XFree86: xc/programs/xconsole/xconsole.c,v 3.12 1996/01/24 22:04:33 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -336,7 +336,11 @@ IOError(dpy)
 }
 #endif
 
+#ifdef X_NOT_STDC_ENV
 extern char *malloc ();
+#else
+#include <stdlib.h>
+#endif
 
 static void
 Notify ()

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.14 1996/05/10 06:58:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.15 1996/05/11 11:04:06 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV protocol.
@@ -46,6 +46,7 @@
 #include <termio.h>
 #include <fcntl.h>
 #include <ctype.h>
+#include <stdio.h>
 
 #include "extio.h"
 #else
@@ -60,11 +61,13 @@
 #include "xf86Version.h"
 #endif
 
+#if !defined(sun) || defined(i386)
 #include "osdep.h"
 #include "exevents.h"
 
 #include "extnsionst.h"
 #include "extinit.h"
+#endif
 
 /******************************************************************************
  * debugging macro
@@ -261,7 +264,7 @@ xf86WcmConfig(LocalDevicePtr    *array,
               int               max,
 	      LexPtr            val)
 {
-    LocalDevicePtr        dev = array[inx];
+    LocalDevicePtr      dev = array[inx];
     WacomDevicePtr	priv = (WacomDevicePtr)(dev->private);
     int			token;
     int			mtoken;
@@ -291,11 +294,14 @@ xf86WcmConfig(LocalDevicePtr    *array,
 			continue;
 		    if ((array[loop]->device_config == xf86WcmConfig) &&
 			(strcmp(((WacomDevicePtr)array[loop]->private)->wcmDevice, val->str) == 0)) {
+		        WacomDevicePtr	share = (WacomDevicePtr) array[loop]->private;
+			
 			DBG(2, ErrorF("xf86WcmConfig wacom port share between"
 				      " %s and %s\n",
 				      dev->name, array[loop]->name));
+
 			xfree(priv);
-			dev->private = array[loop]->private;
+			priv = dev->private = array[loop]->private;
 			break;
 		    }
 		}
@@ -436,7 +442,7 @@ send_request(int	fd,
   
   /* send request string */
   SYSCALL(len = write(fd, request, strlen(request)));
-  if (len == -1) Error("write");
+  if (len == -1) Error("Wacom write");
 
   do {
     struct timeval	timeout;
@@ -455,21 +461,21 @@ send_request(int	fd,
       Error("select");
       break;
     case 0:
-      ErrorF("Timeout while reading tablet. No tablet connected ???\n");
+      ErrorF("Timeout while reading Wacom tablet. No tablet connected ???\n");
       return NULL;
       break;
     }
 
     do {    
       SYSCALL(nr = read(fd, answer, 1));
-      if ((nr == -1) && (errno != EAGAIN)) Error("read");
+      if ((nr == -1) && (errno != EAGAIN)) Error("Wacom read");
       maxtry--;
       
     } while ((answer[0] != request[0]) && maxtry);
 
     do {    
       SYSCALL(nr = read(fd, answer+1, 1));
-      if ((nr == -1) && (errno != EAGAIN)) Error("read");
+      if ((nr == -1) && (errno != EAGAIN)) Error("Wacom read");
 
       if (answer[1] != request[1])
 	answer[0] = answer[1];
@@ -524,11 +530,12 @@ xf86WcmReadInput(LocalDevicePtr         local)
 
   SYSCALL(len = read(local->fd, buffer, sizeof(buffer)));
 
-  if (len <= 0)
-    {
-      Error("error reading wacom device");
-      return;
-    }
+  if (len <= 0) {
+    Error("error reading wacom device");
+    return;
+  } else {
+    DBG(10, ErrorF("xf86WcmReadInput read %d bytes\n", len));
+  }
 
   for(loop=0; loop<len; loop++) {
 
@@ -614,6 +621,9 @@ xf86WcmReadInput(LocalDevicePtr         local)
     if (priv->wcmIndex == priv->wcmPktLength) {
       /* the packet is OK */
 
+      /* reset char count for next read */
+      priv->wcmIndex = 0;
+
       x = (((priv->wcmData[0] & 0x3) << 14) + (priv->wcmData[1] << 7)
 	   + priv->wcmData[2]);
       y = (((priv->wcmData[3] & 0x3) << 14) + (priv->wcmData[4] << 7)
@@ -668,16 +678,18 @@ xf86WcmReadInput(LocalDevicePtr         local)
 	pprox = &priv->wcmOldCursorProximity;
 	local = priv->wcmCursor;
       }
+      /* we can have one device */
+      if (!local) {
+	DBG(6, ErrorF("not the right device...\n"));
+	continue;
+      }
+      
       device = local->dev;
       
       DBG(6, ErrorF("[%s] prox=%s\tx=%d\ty=%d\tz=%d\tbutton=%s\tbuttons=%d\n",
 		    is_stylus ? "stylus" : "cursor", prox ? "true" : "false",
 		    x, y, z,
 		    is_button ? "true" : "false", buttons));
-
-      /* we can have only one device */
-      if (!device)
-	return;
 
       is_absolute = (local->private_flags & ABSOLUTE_FLAG);
       is_core_pointer = xf86IsCorePointer(device);
@@ -696,7 +708,7 @@ xf86WcmReadInput(LocalDevicePtr         local)
 	  ry = y - *py;
       }
 
-      /* coordonates are reary we can send events */
+      /* coordonates are ready we can send events */
       if (is_proximity) {
 
 	if (!*pprox) {
@@ -799,14 +811,10 @@ xf86WcmReadInput(LocalDevicePtr         local)
 	  }
 	  *pprox = 0;
       }
-  
-      DBG(7, ErrorF("xf86WcmEvents END   device=0x%x priv=0x%x",
-		    local->dev, priv));
-      
-      /* reset char count for next read */
-      priv->wcmIndex = 0;
     }
   }
+  DBG(7, ErrorF("xf86WcmEvents END   local=0x%x priv=0x%x",
+		local, priv));
 }
 
 /*
@@ -841,14 +849,6 @@ xf86WcmOpen(LocalDevicePtr	local)
   int			a, b;
   int			loop, idx;
   float			version = 0.0;
-#if defined(sun) && !defined(i386)
-  char			*name = getenv("WACOM_DEV");
-  
-  if (name) {
-    priv->wcmDevice = strdup(name);
-    ErrorF("xf86WcmOpen port changed to '%s'\n", priv->wcmDevice);
-  }
-#endif
   
   DBG(1, ErrorF("opening %s\n", priv->wcmDevice));
 
@@ -1212,8 +1212,6 @@ xf86WcmProc(DeviceIntPtr       pWcm,
 	  xf86MotionHistoryAllocate(local);
 
 	  AssignTypeAndName(pWcm, local->atom, local->name);
-	  /* open the device to gather informations */
-	  xf86WcmOpenDevice(pWcm);
       }
       
       switch (DEVICE_ID(local->private_flags)) {
@@ -1229,6 +1227,9 @@ xf86WcmProc(DeviceIntPtr       pWcm,
 	priv->wcmEraser = local;
 	break;
       }
+      /* open the device to gather informations */
+      xf86WcmOpenDevice(pWcm);
+
       break; 
       
     case DEVICE_ON:
@@ -1356,6 +1357,9 @@ xf86WcmAllocate(char *  name,
 {
   LocalDevicePtr        local = (LocalDevicePtr) xalloc(sizeof(LocalDeviceRec));
   WacomDevicePtr        priv = (WacomDevicePtr) xalloc(sizeof(WacomDeviceRec));
+#if defined(sun) && !defined(i386)
+  char			*dev_name = getenv("WACOM_DEV");  
+#endif
   
   local->name = name;
   local->flags = 0; /*XI86_NO_OPEN_ON_INIT;*/
@@ -1374,7 +1378,15 @@ xf86WcmAllocate(char *  name,
   local->private_flags = flag;
   local->history_size  = 0;
   
+#if defined(sun) && !defined(i386)
+  if (dev_name) {
+    priv->wcmDevice = (char*) xalloc(strlen(dev_name)+1);
+    strcpy(priv->wcmDevice, dev_name);
+    ErrorF("xf86WcmOpen port changed to '%s'\n", priv->wcmDevice);
+  }
+#else
   priv->wcmDevice = "";         /* device file name */
+#endif
   priv->wcmSuppress = 20;       /* transmit position if increment is superior */
   priv->wcmOldX = -1;           /* previous X position */
   priv->wcmOldY = -1;           /* previous Y position */
@@ -1403,7 +1415,6 @@ xf86WcmAllocate(char *  name,
 
   return local;
 }
-
 
 /*
  ***************************************************************************

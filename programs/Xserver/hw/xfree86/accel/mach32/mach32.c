@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.49 1996/03/29 22:15:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.50 1996/05/10 06:57:15 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -573,7 +573,7 @@ mach32Probe()
         /* 2-oct-93 TCG : detect clocks with dif4 fix */
         mach32clkprobedif4fix = TRUE;
         xf86GetClocks(16, mach32ClockSelect, (void (*)())NoopDDA,
-			(void (*)())NoopDDA, DISP_STAT, 2, 7, 44900,
+			(SaveScreenProcPtr)NoopDDA, DISP_STAT, 2, 7, 44900,
 			&mach32InfoRec);
         outw(CLOCK_SEL, 0); /* reset pass-through */
         mach32clkprobedif4fix = FALSE;

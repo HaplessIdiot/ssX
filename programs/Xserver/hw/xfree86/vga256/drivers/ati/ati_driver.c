@@ -1,5 +1,5 @@
 /* $XConsortium: ati_driver.c /main/9 1996/01/12 12:16:31 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.30tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.31tsi Exp $ */
 /*
  * Copyright 1994 through 1996 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -511,7 +511,7 @@ static void
 ATIAccessMach64PLLReg(const unsigned char Index, const Bool Write)
 {
         unsigned char clock_cntl1;
-        clock_cntl1 = inb(CLOCK_CNTL_IOPort + 1) & 
+        clock_cntl1 = inb(CLOCK_CNTL_IOPort + 1) &
                 ~GetBits(PLL_WR_EN | PLL_ADDR, 0xFFU << (1 * 8));
         /* Set PLL register to be read or written */
         outb(CLOCK_CNTL_IOPort + 1, clock_cntl1 |
@@ -601,22 +601,24 @@ static const char *ChipNames[] =
  */
 #define ATI_ADAPTER_NONE        0
 #define ATI_ADAPTER_EGA         1
-#define ATI_ADAPTER_BASIC       2
-#define ATI_ADAPTER_V3          3
-#define ATI_ADAPTER_V4          4
-#define ATI_ADAPTER_V5          5
-#define ATI_ADAPTER_PLUS        6
-#define ATI_ADAPTER_XL          7
-#define ATI_ADAPTER_NONISA      8
-#define ATI_ADAPTER_8514A       9
-#define ATI_ADAPTER_MACH8      10
-#define ATI_ADAPTER_MACH32     11
-#define ATI_ADAPTER_MACH64     12
+#define ATI_ADAPTER_EGA_PLUS    2
+#define ATI_ADAPTER_BASIC       3
+#define ATI_ADAPTER_V3          4
+#define ATI_ADAPTER_V4          5
+#define ATI_ADAPTER_V5          6
+#define ATI_ADAPTER_PLUS        7
+#define ATI_ADAPTER_XL          8
+#define ATI_ADAPTER_NONISA      9
+#define ATI_ADAPTER_8514A      10
+#define ATI_ADAPTER_MACH8      11
+#define ATI_ADAPTER_MACH32     12
+#define ATI_ADAPTER_MACH64     13
 static unsigned char ATIAdapter = ATI_ADAPTER_NONE;
 static unsigned char ATIVGAAdapter = ATI_ADAPTER_NONE;
 static const char *AdapterNames[] =
 {
         "Unknown",
+        "ATI EGA Wonder800",
         "ATI EGA Wonder800+",
         "ATI VGA Basic16",
         "ATI VGA Wonder V3",
@@ -1041,7 +1043,7 @@ ATIPrintRegisters(void)
                         xf86ProbeOnly ? 0x80U : ATIVGAOffset, 0xC0U,
                         "ATI Extended VGA", 0);
 
-        if (ATIChip >= ATI_CHIP_88800)
+        if (ATIChip >= ATI_CHIP_88800GXC)
         {
                 ErrorF("\n\n Mach64 %s registers:",
                        (ATIIODecoding == SPARSE_IO) ? "sparse" : "block");
@@ -1456,7 +1458,7 @@ probe_clocks:
                  * passing it slightly different parameters.
                  */
                 xf86GetClocks(Number_Of_Clocks, ATIClockSelect,
-                        vgaProtect, (void (*)())vgaSaveScreen,
+                        vgaProtect, vgaSaveScreen,
                         GENS1(vgaIOBase), 0x08,
                         Calibration_Clock_Number, Calibration_Clock_Value,
                         &vga256InfoRec);
@@ -2027,7 +2029,7 @@ ATIMach64Probe(const unsigned short int IO_Base,
         GEN_TEST_CNTL_IOPort = ATIIOPort(GEN_TEST_CNTL);
         IO_Value = inl(GEN_TEST_CNTL_IOPort) &
                 (GEN_OVR_OUTPUT_EN | GEN_OVR_POLARITY |
-                 GEN_CUR_EN | GEN_BLOCK_WR_EN);       
+                 GEN_CUR_EN | GEN_BLOCK_WR_EN);
         outl(GEN_TEST_CNTL_IOPort, IO_Value | GEN_GUI_EN);
         outl(GEN_TEST_CNTL_IOPort, IO_Value);
         outl(GEN_TEST_CNTL_IOPort, IO_Value | GEN_GUI_EN);
@@ -2485,7 +2487,7 @@ ATIProbe(void)
 
                         case '2':
                                 ATIVGAOffset = 0xB0U;   /* Presumably */
-                                ATIVGAAdapter = ATI_ADAPTER_EGA;
+                                ATIVGAAdapter = ATI_ADAPTER_EGA_PLUS;
                                 break;
 
                         case '3':
@@ -2525,7 +2527,7 @@ ATIProbe(void)
          * For Mach64 adapters, pick up, from the BIOS, the type of
          * programmable clock chip (if any), and various information about it.
          */
-        if (ATIChip >= ATI_CHIP_88800)
+        if (ATIChip >= ATI_CHIP_88800GXC)
         {
                 ROMTable = BIOSWord(0x48U);
                 if ((ROMTable + 0x12U) > BIOS_SIZE)
@@ -2664,7 +2666,7 @@ ATIProbe(void)
                  */
                 if (ATIChip <= ATI_CHIP_88800GXD)
                 {
-                        if ((ATIChip < ATI_CHIP_88800) &&
+                        if ((ATIChip < ATI_CHIP_88800GXC) &&
                             (Signature == BIOS_Signature) &&
                             (BIOSWord(0x10U)) &&
                             (!(BIOSWord(0x10U) &
@@ -3040,7 +3042,7 @@ ATIProbe(void)
                         ErrorF("\nThe ATI extended VGA registers are being"
                                " accessed at I/O port 0x%04X.\n", ATIVGAPort);
 
-                if ((ATIChip < ATI_CHIP_88800) &&
+                if ((ATIChip < ATI_CHIP_88800GXC) &&
                     (Signature == BIOS_Signature))
                 {
                         ErrorF("\n   Signature code:                \"%c%c\"",
@@ -3185,7 +3187,7 @@ ATIEnterLeave(const Bool enter)
                         /* Wait for all activity to die down */
                         ProbeWaitIdleEmpty();
                 }
-                else if (ATIChip >= ATI_CHIP_88800)
+                else if (ATIChip >= ATI_CHIP_88800GXC)
                 {
                         unsigned int config_cntl;
 
@@ -3372,7 +3374,7 @@ ATIEnterLeave(const Bool enter)
                         /* Wait for all activity to die down */
                         ProbeWaitIdleEmpty();
                 }
-                else if (ATIChip >= ATI_CHIP_88800)
+                else if (ATIChip >= ATI_CHIP_88800GXC)
                 {
                         /* Reset everything */
                         tmp = inl(BUS_CNTL_IOPort);
@@ -3894,7 +3896,10 @@ ATIInit(DisplayModePtr mode)
                 int Frequency, Multiple;        /* Used as temporaries */
 
                 /* Use units of 1kHz throughout */
-                UndividedClock = vga256InfoRec.clock[mode->Clock];
+                if (mode == ATI.ChipBuiltinModes)
+                        UndividedClock = mode->SynthClock;
+                else
+                        UndividedClock = vga256InfoRec.clock[mode->Clock];
 
                 /* Start with the maximum divider */
                 for (D = 0;
@@ -4107,6 +4112,7 @@ ATIInit(DisplayModePtr mode)
                          * between 4.2 and 4.7 MHz.
                          */
 #                       define Display_Enable_Skew_Threshold 4500
+
                         /*
                          * Set a reasonable default Display Enable Skew.
                          */
@@ -4114,6 +4120,7 @@ ATIInit(DisplayModePtr mode)
                                 vga256InfoRec.clock[mode->Clock] /
                                         Display_Enable_Skew_Threshold;
                 }
+
                 if (mode->CrtcHSkew > 0)
                 if (mode->CrtcHSkew <= 3)
                         new->b5 |= 0x01U;

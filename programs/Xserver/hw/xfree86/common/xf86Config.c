@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.89 1996/05/10 06:58:11 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.90 1996/05/11 11:04:00 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2668,9 +2668,11 @@ configScreenSection()
       if (xf86bpp < 0) { 
         /* no -bpp option given, so take depth if only one Display subsection */
         if (numDisps == 1) {
+#ifndef XF86SETUP
           if (dispList[0].depth > 0) {
             xf86bpp = dispList[0].depth;
           }
+#endif
           dispIndex = 0;
         } else {
           /* Look for a section which matches the driver's default depth */

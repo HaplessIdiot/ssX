@@ -4,7 +4,7 @@
  *
  *
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.7 1996/02/04 09:12:33 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.8 1996/03/29 22:17:30 dawes Exp $
  */
 
 #include "X.h"
@@ -145,7 +145,7 @@ vgaVideoChipRec ALI = {
 	 * If the chipset requires vertical timing numbers to be divided
 	 * by two for interlaced modes, set this to VGA_DIVIDE_VERT.
 	 */
-	VGA_NO_DIVIDE_VERT,
+	VGA_DIVIDE_VERT,
 	/*
 	 * This is a dummy initialization for the set of vendor/option flags
 	 * that this driver supports.  It gets filled in properly in the
@@ -541,7 +541,8 @@ ALIInit(mode)
   outb(vgaIOBase+4, 0x1C);	/* get 3x5.1C */
   if (!(inb(vgaIOBase+5) & 1))  temp <<= 1;	/* support 512K DRAM? */
   outb(vgaIOBase+4, 0x19);	/* interlaced mode? */
-  if (!(inb(vgaIOBase+5) & 1))  temp >>= 1;	/* non-interlaced? */
+  if (!(inb(vgaIOBase+5) & 1) && !(mode->Flags & V_INTERLACE))
+                                temp >>= 1;	/* non-interlaced? */
   outb(vgaIOBase+4, temp1);	/* restore 3x4 index */
 
   new->std.CRTC[19] = temp; 	/* 3x5.13 = Offset Register */

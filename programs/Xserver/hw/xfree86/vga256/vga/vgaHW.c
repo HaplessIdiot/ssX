@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.31 1996/03/29 22:18:24 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.32tsi Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -367,7 +367,6 @@ vgaSuspendMode(timer, now, arg)
      CARD32 now;
      pointer arg;
 {
-   unsigned char extsync;
    Bool on = (Bool)arg;
 
    if (!vgaPowerSaver) return(0);
@@ -1279,10 +1278,13 @@ vgaHWInit(mode, size)
  */
 
 void
-vgaGetClocks(num, ClockFunc)
-     int num;
-     Bool (*ClockFunc)();
+vgaGetClocks(int num,
+#if NeedNestedPrototypes
+     Bool (*ClockFunc)(int))
+#else
+     Bool (*ClockFunc)())
+#endif
 {
-  xf86GetClocks(num, ClockFunc, vgaProtect, (void (*)())vgaSaveScreen,
+  xf86GetClocks(num, ClockFunc, vgaProtect, vgaSaveScreen,
 		(vgaIOBase + 0x0A), 0x08, 1, 28322, &vga256InfoRec);
 }

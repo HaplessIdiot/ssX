@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.11 1996/05/11 11:04:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.12 1996/05/12 11:57:59 dawes Exp $ */
 
 #include "Xmd.h"
 #include "XI.h"
@@ -820,6 +820,13 @@ xf86PostMotionEvent(DeviceIntPtr	device,
 		    if (is_absolute) {
 			miPointerAbsoluteCursor(xv->valuator0, xv->valuator1, xf86Info.lastEventTime); 
 		    } else {
+			if (device->ptrfeed) {
+			    /* modeled from xf86Events.c */
+			    if ((abs(xv->valuator0) + abs(xv->valuator1)) >= device->ptrfeed->ctrl.threshold) {
+				xv->valuator0 = (xv->valuator0 * device->ptrfeed->ctrl.num) / device->ptrfeed->ctrl.den;
+				xv->valuator1 = (xv->valuator1 * device->ptrfeed->ctrl.num) / device->ptrfeed->ctrl.den;
+			    }
+			}
 			miPointerDeltaCursor(xv->valuator0, xv->valuator1, xf86Info.lastEventTime);
 		    }
 		}

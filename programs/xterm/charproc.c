@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/191 1996/01/23 11:34:26 kaleb $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.25 1996/03/17 11:44:03 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.26 1996/05/06 06:01:23 dawes Exp $
  */
 
 /*
@@ -194,6 +194,7 @@ static void update_font_info PROTO((TScreen *screen, Bool doresize));
 #define XtNtiteInhibit "titeInhibit"
 #define XtNvisualBell "visualBell"
 #define XtNallowSendEvents "allowSendEvents"
+#define XtNawaitInput "awaitInput"
 #define XtNcolor0 "color0"
 #define XtNcolor1 "color1"
 #define XtNcolor2 "color2"
@@ -258,6 +259,7 @@ static void update_font_info PROTO((TScreen *screen, Bool doresize));
 #define XtCTiteInhibit "TiteInhibit"
 #define XtCVisualBell "VisualBell"
 #define XtCAllowSendEvents "AllowSendEvents"
+#define XtCAwaitInput "AwaitInput"
 #define XtCColorMode "ColorMode"
 #define XtCDynamicColors "DynamicColors"
 #define XtCUnderLine "UnderLine"
@@ -548,6 +550,9 @@ static XtResource resources[] = {
 	XtRBoolean, (XtPointer) &defaultFALSE},
 {XtNallowSendEvents, XtCAllowSendEvents, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, screen.allowSendEvents),
+	XtRBoolean, (XtPointer) &defaultFALSE},
+{XtNawaitInput, XtCAwaitInput, XtRBoolean, sizeof(Boolean),
+	XtOffsetOf(XtermWidgetRec, screen.awaitInput),
 	XtRBoolean, (XtPointer) &defaultFALSE},
 {"font1", "Font1", XtRString, sizeof(String),
 	XtOffsetOf(XtermWidgetRec, screen.menu_font_names[fontMenu_font1]),
@@ -1683,13 +1688,17 @@ in_put()
 	 * a quick peek, i.e. timeout from the select() immediately.  If
 	 * there's nothing pending, let select() block a little while, but
 	 * for a shorter interval than the arrow-style scrollbar timeout.
+	 * The blocking is optional, because it tends to increase the load
+	 * on the host.
 	 */
 	if (XtAppPending(app_con))
-	select_timeout.tv_usec = 0;
+		select_timeout.tv_usec = 0;
 	else
 		select_timeout.tv_usec = 50000;
 	i = select(max_plus1, &select_mask, &write_mask, NULL,
-		   &select_timeout);
+			(select_timeout.tv_usec == 0) || screen->awaitInput
+			? &select_timeout
+			: NULL);
 	if (i < 0) {
 	    if (errno != EINTR)
 		SysError(ERROR_SELECT);

@@ -1,4 +1,5 @@
 /* $XConsortium: bmtoa.c,v 1.6 94/04/17 20:23:49 rws Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1988, 1993  X Consortium
@@ -41,7 +42,11 @@ from the X Consortium.
 
 #include <X11/Xmu/Drawing.h>
 
+#ifdef X_NOT_STDC_ENV
 extern char *malloc();
+#else
+#include <stdlib.h>
+#endif
 extern char *mktemp();
 
 char *ProgramName;

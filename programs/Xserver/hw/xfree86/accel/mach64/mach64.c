@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.45 1996/05/11 11:03:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.46 1996/05/13 06:38:46 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -1865,6 +1865,8 @@ mach64SaveScreen (pScreen, on)
 	    if (mach64InfoRec.bitsPerPixel > 8 &&
 		mach64RamdacSubType == DAC_INTERNAL) {
 		int temp;
+	ErrorF("mach64SaveScreen: zeroing all colourmap entries, bpp=%d\n",
+		mach64InfoRec.bitsPerPixel);
 		outb(ioDAC_REGS, 0);
 		for (temp = 0; temp < 256; temp++) {
 		    outb(ioDAC_REGS + 1, 0);

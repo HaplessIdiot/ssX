@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.20 1996/03/29 22:16:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.21 1996/04/15 11:30:40 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -111,12 +111,7 @@ extern void xf86GetClocks(
 		Bool
 #endif
 		),
-	void (*)(
-#if NeedNestedPrototypes
-		ScreenPtr,
-		Bool
-#endif
-		),
+	SaveScreenProcPtr,
 	int,
 	int,
 	int,

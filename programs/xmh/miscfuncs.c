@@ -1,5 +1,5 @@
 /* $XConsortium: miscfuncs.c,v 1.7 94/12/01 17:15:05 kaleb Exp $ */
-/* $XFree86: xc/programs/xmh/miscfuncs.c,v 3.0 1994/06/28 12:33:32 dawes Exp $ */
+/* $XFree86: xc/programs/xmh/miscfuncs.c,v 3.1 1995/01/28 16:17:33 dawes Exp $ */
 
 #include <X11/Xos.h>
 
@@ -20,8 +20,12 @@
 #endif
 #endif
 
+#ifdef X_NOT_STDC_ENV
 char *malloc();
 char *realloc();
+#else
+#include <stdlib.h>
+#endif
 
 
 

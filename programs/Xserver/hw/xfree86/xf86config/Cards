@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 # 
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.30 1996/02/24 06:00:48 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.31 1996/03/04 05:17:01 dawes Exp $
 
 # Cirrus Logic
 
@@ -465,6 +465,12 @@ LINE    #s3RefClk  24
 LINE    #DACspeed 220
 SEE S3-968 (generic)
 
+NAME STB Powergraph 64 Video
+SEE S3-Trio64V+ (generic)
+
+NAME STB Powergraph 64
+SEE S3-Trio64 (generic)
+
 NAME Hercules Graphics Terminator 64
 LINE     Option "slow_vram"
 LINE    #s3RefClk  50
@@ -535,6 +541,7 @@ CHIPSET S3-928
 SERVER S3
 CLOCKCHIP icd2061a
 LINE     #Ramdac "att20c490" # The Diamond RAMDAC is reportedly compatible for 15bpp
+LINE     #Option "no_linear" # Some VLB machines may require this
 
 NAME Elsa Winner 1000 VL
 CHIPSET S3-928
@@ -596,7 +603,9 @@ CHIPSET S3-911/924
 SERVER S3
 
 NAME Diamond Stealth VRAM
-SEE S3-911/924 (generic)
+CHIPSET S3-911/924
+SERVER S3
+CLOCKCHIP icd2061a
 
 NAME Orchid Fahrenheit 1280
 SEE S3-911/924 (generic)

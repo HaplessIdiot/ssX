@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.11 1996/04/15 11:30:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.12 1996/05/06 05:58:11 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -86,8 +86,8 @@
 #include <sys/param.h>
 #include <sys/file.h>
 #include <machine/sysarch.h>
-#ifndef GCCUSEGAS
-#define GCCUSEGAS
+#ifndef GCCUSESGAS
+#define GCCUSESGAS
 #endif
 #endif
 #if defined(__bsdi__)
@@ -986,6 +986,13 @@ enable_os_io()
         exit(1);
     }
 #endif
+#if defined(__bsdi__)
+    if (ioctl(io_fd, PCCONENABIOPL, 0) < 0) {
+        perror("ioctl(PCCONENABIOPL)");
+        exit(1);
+    }
+#endif
+#endif
 #if defined(__NetBSD__)
 #if !defined(NetBSD1_1)
     if ((io_fd = open("/dev/io", O_RDWR, 0)) < 0) {
@@ -998,14 +1005,7 @@ enable_os_io()
 	exit(1);
     }
 #endif /* NetBSD1_1 */
-#endif /* __NerBSD__ */
-#if defined(__bsdi__)
-    if (ioctl(io_fd, PCCONENABIOPL, 0) < 0) {
-        perror("ioctl(PCCONENABIOPL)");
-        exit(1);
-    }
-#endif
-#endif
+#endif /* __NetBSD__ */
 #if defined(MACH386)
     if ((io_fd = open("/dev/iopl", O_RDWR, 0)) < 0) {
         perror("/dev/iopl");

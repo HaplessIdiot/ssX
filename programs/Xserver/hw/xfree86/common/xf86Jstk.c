@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.11 1996/05/11 11:04:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.12 1996/05/12 11:57:58 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -99,6 +99,7 @@ typedef struct
 #define DELTA 9
 #define PORT 10
 #define DEBUG_LEVEL 11
+#define HISTORY_SIZE 12
 
 static SymTabRec JstkTab[] = {
   { ENDSUBSECTION,	"endsubsection" },
@@ -113,6 +114,7 @@ static SymTabRec JstkTab[] = {
   { DELTA,		"delta" },
   { PORT,		"port" },
   { DEBUG_LEVEL,	"debuglevel" },
+  { HISTORY_SIZE,	"historysize" },
   { -1,			"" },
 };
 
@@ -262,6 +264,15 @@ xf86JstkConfig(LocalDevicePtr    *array,
 	}
         break;
 
+    case HISTORY_SIZE:
+      if (xf86GetToken(NULL) != NUMBER)
+	xf86ConfigError("Option number expected");
+      dev->history_size = val->num;
+      if (xf86Verbose)
+	ErrorF("%s Joystick Motion history size is %d\n", XCONFIG_GIVEN,
+	       dev->history_size);      
+      break;
+	    
     case EOF:
       FatalError("Unexpected EOF (missing EndSubSection)");
       break; /* :-) */
@@ -407,8 +418,8 @@ xf86JstkProc(pJstk, what)
           
       if (InitValuatorClassDeviceStruct(pJstk, 
                                     nbaxes,
-                                    GetMotionEvents, 
-                                    0, /* numMotionEvents */
+                                    xf86GetMotionEvents, 
+                                    local->history_size,
                                     Relative) /* relatif ou absolute */
           == FALSE) 
         {
@@ -424,6 +435,8 @@ xf86JstkProc(pJstk, what)
                                    1000, /* max val */
                                    9600); /* resolution */
           }
+	  /* allocate the motion history buffer if needed */
+	  xf86MotionHistoryAllocate(local);
 
           xf86JoystickInit();
           AssignTypeAndName(pJstk, local->atom, local->name);
@@ -495,6 +508,7 @@ xf86JstkAllocate()
   local->dev = NULL;
   local->private = priv;
   local->type_name = "Joystick";
+  local->history_size  = 0;
   
   priv->jstkFd = -1;
   priv->jstkTimer = NULL;

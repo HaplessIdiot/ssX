@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/7 1996/01/26 10:50:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.14 1996/03/29 22:18:40 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.15 1996/05/11 12:01:44 dawes Exp $
 #include <Server.tmpl>
 
 #ifdef i386MachArchitecture
@@ -136,9 +136,7 @@ OFILES = \
    OSVENDOR = OSVendor
   OSNAMEDEF = -DOSNAME='"$(OSNAME)"' -DOSVENDOR='"$(OSVENDOR)"'
 CONSDEFINES = XFree86ConsoleDefines
-/* 828316800 is Mon Apr  1 00:00:00 1996 GMT */
-/* 833587200 is Sat Jun  1 00:00:00 1996 GMT */
-EXP_DEFINES = -DEXPIRY_TIME=833587200
+EXP_DEFINES = -DEXPIRY_TIME=XF86ServerExpiry
 
     DEFINES = $(XCONFIGDEFINES) $(CONSDEFINES) -DPC98
 

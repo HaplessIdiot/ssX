@@ -56,9 +56,21 @@ although only the 9440 and 9660 have been tested with the hardware cursor.
 <tag>Option &dquot;hw_cursor&dquot;</tag>
 	Turn on hardware cursor (NOTE: it is off by default)
 <tag>Option &dquot;pci_burst_on&dquot;</tag>
-	Turn on PCI burst mode (NOTE: it is off by default)
+	Turn on PCI burst read/write mode.
+<tag>Option &dquot;pci_burst_off&dquot;</tag>
+	Turn off PCI burst read/write mode.
+	NOTE: PCI modes. By default the read burst and write burst
+	are independant of each other. By not specifying one of the
+	above - the PCI registers are untouched. If you suffer from
+	screen corruption then turn it off. By turning it on
+	explicitly may benefit from improved performance, but it
+	may also give strange results. USE WITH CAUTION.
 <tag>ClockChip &dquot;tgui&dquot;</tag>
 	Turn on programmable clocks.  This is the default for TGUIs.
+<tag>Option &dquot;no_program_clocks&dquot;</tag>
+	Turn off programmable clock. Use fixed VGA clocks only.
+	Useful for fixed frequency monitors - usually used for VGA
+	monitors - not SVGA.
 </descrip>
 <item>No acceleration features of the newer chipsets have been taken
 advantage of yet!
@@ -126,7 +138,7 @@ in the <tt>XF86Config</tt> file, these lockups are overcome. But it may
 be worth checking wait states etc. on the card and in the BIOS setup.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.9 1996/02/18 03:43:06 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.10 1996/02/20 14:34:35 dawes Exp $
 
 
 

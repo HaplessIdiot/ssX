@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_386BSD.c,v 3.5 1996/02/04 08:56:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_386BSD.c,v 3.6 1996/03/29 22:15:28 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Dawes <dawes@xfree86.org>
  *
@@ -300,6 +300,7 @@ int Len;
 {
 	Word tmp;
 	Byte *Base = Bios_Base + Offset;
+	unsigned long bs = (unsigned long) Base;
 
 	if (BIOS_fd == -1)
 	{
@@ -309,22 +310,22 @@ int Len;
 			return(-1);
 		}
 	}
-	if ((off_t)((off_t)Base & 0x7FFF) != (off_t)0)
+	if ((off_t)(bs & 0x7FFF) != (off_t)0)
 	{
 		/*
 	 	 * Sanity check...
 	 	 */
-		(void)lseek(BIOS_fd, (off_t)((off_t)Base & 0xF8000), SEEK_SET);
+		(void)lseek(BIOS_fd, (off_t)(bs & 0xF8000), SEEK_SET);
 		(void)read(BIOS_fd, &tmp, 2);
 		if (tmp != (Word)0xAA55)
 		{
 			fprintf(stderr, 
-				"%s: BIOS sanity check failed, addr=%x\n",
-				MyName, (int)Base);
+				"%s: BIOS sanity check failed, addr=%lx\n",
+				MyName, bs);
 			return(-1);
 		}
 	}
-	if (lseek(BIOS_fd, (off_t)Base, SEEK_SET) < 0)
+	if (lseek(BIOS_fd, (off_t)bs, SEEK_SET) < 0)
 	{
 		fprintf(stderr, "%s: BIOS seek failed\n", MyName);
 		return(-1);

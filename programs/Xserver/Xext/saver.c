@@ -1,6 +1,6 @@
 /*
  * $XConsortium: saver.c,v 1.12 94/04/17 20:59:36 dpw Exp $
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/Xext/saver.c,v 3.1 1996/05/06 05:55:30 dawes Exp $
  *
 Copyright (c) 1992  X Consortium
 
@@ -1173,7 +1173,7 @@ ProcScreenSaverSetAttributes (client)
 	pVlist++;
     }
     if (pPriv->attr)
-	FreeScreenAttr (pScreen);
+	FreeScreenAttr (pPriv->attr);
     pPriv->attr = pAttr;
     pAttr->resource = FakeClientID (client->index);
     if (!AddResource (pAttr->resource, AttrType, (pointer) pAttr))

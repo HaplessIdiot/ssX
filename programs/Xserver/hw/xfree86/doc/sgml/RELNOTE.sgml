@@ -4,7 +4,7 @@
 
  <title>Release Notes for XFree86&tm; 3.1.2E (beta version)
  <author>The XFree86 Project, Inc
- <date>15 May 1996
+ <date>25 May 1996
 
 
 <abstract>
@@ -773,6 +773,15 @@ terminfo, the new entries can be installed by running:
 	tic /usr/X11R6/lib/X11/etc/xterm.terminfo
 </verb></tscreen>
 
+Note: on some systems (including Linux), you may first need to remove
+some existing terminfo entries if <tt>tic</tt> complains about duplicates.
+For example:
+
+<tscreen><verb>
+	rm /usr/lib/terminfo/x/xterms
+	rm /usr/lib/terminfo/v/vs100
+</verb></tscreen>
+
 <sect>Installing the XFree86 3.1.2D Beta Release
 <p>
 The XFree86 3.1.2D binary beta release is distributed as a full release,
@@ -927,7 +936,7 @@ instructions, the files for that version will still be in the
 -->
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.31 1996/05/15 03:33:53 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.32 1996/05/15 03:34:30 dawes Exp $
 </verb>
 
 </article>

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.34 1996/03/29 22:18:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.35 1996/04/15 11:32:02 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -595,9 +595,6 @@ TVGA8900Probe()
 		tridentLinearOK = TRUE;
 		tridentDACtype = TKD8001;
 		TVGA8900.ChipHas16bpp = TRUE;
-#if 0
-		TVGA8900.ChipHas32bpp = TRUE;		/* ??? */
-#endif
 		break;
 	case TGUI9320LCD:
 		tridentIsTGUI = TRUE;			/* Reports of this works */
@@ -612,9 +609,6 @@ TVGA8900Probe()
 		tridentTGUIProgrammableClocks = FALSE;	/* Not programmable */
 		tridentDACtype = TKD8001;
 		TVGA8900.ChipHas16bpp = TRUE;
-#if 0
-		TVGA8900.ChipHas32bpp = TRUE;
-#endif
 		break;
 	case TGUI9430DGi:
 		tridentHWCursorType = 2;		/* HW cursor */
@@ -636,9 +630,6 @@ TVGA8900Probe()
 		tridentHWCursorType = 1;
 		tridentDACtype = TGUIDAC;
 		TVGA8900.ChipHas16bpp = TRUE;
-#if 0
-		TVGA8900.ChipHas32bpp = TRUE;
-#endif
 		break;
       	}
 	
@@ -696,6 +687,8 @@ TVGA8900Probe()
 
 	if (tridentTGUIProgrammableClocks) 
 	{
+		OFLG_SET(OPTION_NO_PROGRAM_CLOCKS, &TVGA8900.ChipOptionFlags);
+
 		/* Do some sanity checking first ! */
 		if (vga256InfoRec.clocks)
 		{
@@ -730,6 +723,13 @@ TVGA8900Probe()
 			ErrorF("%s %s: Using Trident programmable clocks\n",
 		       		XCONFIG_PROBED, vga256InfoRec.name);
 		}
+		if (OFLG_ISSET(OPTION_NO_PROGRAM_CLOCKS,
+			&vga256InfoRec.options))
+		{
+			ErrorF("%s %s: Turning off programmable clock.\n",
+				XCONFIG_GIVEN, vga256InfoRec.name);
+			tridentTGUIProgrammableClocks = FALSE;
+		}
 	}
 
 	/*
@@ -750,7 +750,15 @@ TVGA8900Probe()
 				numClocks = 8;
 			break;
 		default:
-			numClocks = 16;
+			if (OFLG_ISSET(OPTION_NO_PROGRAM_CLOCKS,
+				&vga256InfoRec.options))
+			{
+				numClocks = 4;
+			} 
+			else
+			{
+				numClocks = 16;
+			}
 			break;
 		}
 		vgaGetClocks(numClocks, TVGA8900ClockSelect);
@@ -829,9 +837,14 @@ TVGA8900Probe()
 
 		OFLG_SET(OPTION_MMIO, &TVGA8900.ChipOptionFlags);
 #endif
-		if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TRIDENT)
-			OFLG_SET(OPTION_PCI_BURST_ON, 
-				&TVGA8900.ChipOptionFlags);
+	}
+
+	if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TRIDENT)
+	{
+		OFLG_SET(OPTION_PCI_BURST_ON, 
+			&TVGA8900.ChipOptionFlags);
+		OFLG_SET(OPTION_PCI_BURST_OFF,
+			&TVGA8900.ChipOptionFlags);
 	}
 
 	if ( (OFLG_ISSET(OPTION_NOLINEAR_MODE, &vga256InfoRec.options)) &&
@@ -1232,14 +1245,13 @@ TVGA8900Restore(restore)
 			if (vgaBitsPerPixel > 8)
 				outw(vgaIOBase + 4, 
 					((restore->PixelBusReg) << 8) | 0x38);
-#if 0
 			outw(vgaIOBase + 4, ((restore->GraphEngReg) << 8) | 0x36);
-#endif
-			outw(vgaIOBase + 4, ((restore->PCIReg) << 8) | 0x39);
 			outw(0x3CE, ((restore->MiscIntContReg) << 8) | 0x2F);
 		}
 #endif
 	}
+
+	outw(vgaIOBase + 4, ((restore->PCIReg) << 8) | 0x39);
 
 	outw(0x3C4, ((restore->NewMode1 ^ 0x02) << 8) | 0x0E);
 }
@@ -1377,16 +1389,15 @@ TVGA8900Save(save)
 				outb(vgaIOBase + 4, 0x38); 
 				save->PixelBusReg = inb(vgaIOBase + 5);
 			}
-#if 0
 			outb(vgaIOBase + 4, 0x36); 
 			save->GraphEngReg = inb(vgaIOBase + 5);
-#endif
-			outb(vgaIOBase + 4, 0x39);
-			save->PCIReg = inb(vgaIOBase + 5);
 			outb(0x3CE, 0x2F);
 			save->MiscIntContReg = inb(0x3CF);
 		}
 #endif
+	outb(vgaIOBase + 4, 0x39);
+	save->PCIReg = inb(vgaIOBase + 5);
+
 	}
 
 #ifndef MONOVGA
@@ -1530,7 +1541,7 @@ TVGA8900Init(mode)
 	if (tridentIsTGUI)
 	{
 		outb(0x3CE, 0x0F);
-		new->MiscExtFunc = inb(0x3CF) | 0x02;
+		new->MiscExtFunc = inb(0x3CF) | 0x03;
 	}
 	new->CommandReg = 0x00;		/* DAC Standard colourmap */
 
@@ -1567,23 +1578,32 @@ TVGA8900Init(mode)
 	}
 #endif
 
+	if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TRIDENT)
+	{
+		outb(vgaIOBase + 4, 0x39);
+		if ( (OFLG_ISSET(OPTION_PCI_BURST_ON,
+					&vga256InfoRec.options)) &&
+		     (OFLG_ISSET(OPTION_PCI_BURST_OFF,
+					&vga256InfoRec.options)) )
+		{
+			ErrorF("%s %s: PCI Burst mode - not touched "
+			       "- specified both - remove one.\n",
+			       XCONFIG_GIVEN, vga256InfoRec.name);
+		}
+			
+		if (OFLG_ISSET(OPTION_PCI_BURST_ON, 
+					&vga256InfoRec.options))
+			new->PCIReg = inb(vgaIOBase + 5) | 0x06;
+		if (OFLG_ISSET(OPTION_PCI_BURST_OFF,
+					&vga256InfoRec.options))
+			new->PCIReg = inb(vgaIOBase + 5) & 0xF9;
+	}
 
 	if (TVGAchipset >= TGUI9440AGi)
 	{
 		if (TVGAchipset >= TGUI9660XGi)
 			new->AddColReg |= (offset & 0x200) >> 4;
-		if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TRIDENT)
-		{
-			outb(vgaIOBase + 4, 0x39);
-			if (OFLG_ISSET(OPTION_PCI_BURST_ON, 
-						&vga256InfoRec.options))
-				new->PCIReg = inb(vgaIOBase + 5) | 0x06;
-			else
-				new->PCIReg = inb(vgaIOBase + 5) & 0xF9;
-		}
-		outb(vgaIOBase + 4, 0x2A);
 #ifndef MONOVGA
-#if 0
 		if (OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options))
 		{
 			new->GraphEngReg = 0x82; /* Enable MMIO, GER */
@@ -1591,7 +1611,6 @@ TVGA8900Init(mode)
 		}
 		else
 			new->GraphEngReg = 0x80; /* Enable 0x21XX, GER */
-#endif
 		outb(0x3CE, 0x2F);
 		new->MiscIntContReg = inb(0x3CF) | 0x04; /* double line width */
 		if (vgaBitsPerPixel == 16)
@@ -1652,10 +1671,14 @@ TVGA8900Adjust(x, y)
 	if (tridentIsTGUI)
 		base = (y * vga256InfoRec.displayWidth + x) >> (2 - shift);
 	else
-	if (vga256InfoRec.videoRam < 1024) 
-		base = (y * vga256InfoRec.displayWidth + x + 1) >> (2 - shift);
-	else
-		base = (y * vga256InfoRec.displayWidth + x + 3) >> (3 - shift);
+	{
+		if (vga256InfoRec.videoRam < 1024) 
+			base = (y * vga256InfoRec.displayWidth + x + 1) 
+								>> (2 - shift);
+		else
+			base = (y * vga256InfoRec.displayWidth + x + 3) 
+								>> (3 - shift);
+	}
 #else
 	base = (y * vga256InfoRec.displayWidth + x + 3) >> 3;
 #endif
@@ -1664,14 +1687,15 @@ TVGA8900Adjust(x, y)
 	outw(vgaIOBase + 4, ((base & 0x00FF) << 8) | 0x0D);
 
 	/* CRT bit 16 */
-	outb(vgaIOBase + 4, 0x1E); temp = inb(vgaIOBase + 5) & 0xDF;
-	if (base & 0x10000)
-		temp |= 0x20;
+	outb(vgaIOBase + 4, 0x1E); 
+	temp = inb(vgaIOBase + 5) & 0xDF;
+	temp |= (base & 0x10000) >> 11;
 	outb(vgaIOBase + 5, temp);
 
 	/* CRT bits 17-19 */
-	outb(vgaIOBase + 4, 0x27); temp = inb(vgaIOBase + 5) & 0xF8;
-	temp |= ((base & 0xE0000) >> 17);
+	outb(vgaIOBase + 4, 0x27); 
+	temp = inb(vgaIOBase + 5) & 0xF8;
+	temp |= (base & 0xE0000) >> 17;
 	outb(vgaIOBase + 5, temp);
 }
 
