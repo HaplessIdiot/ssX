@@ -235,6 +235,85 @@ GridLastChar (Widget w)
 }
 
 /*
+ * CI_GET_CHAR_INFO_1D - return the charinfo struct for the indicated 8bit
+ * character.  If the character is in the column and exists, then return the
+ * appropriate metrics (note that fonts with common per-character metrics will
+ * return min_bounds).
+ */
+
+#define CI_NONEXISTCHAR(cs) (((cs)->width == 0) && \
+			     (((cs)->rbearing|(cs)->lbearing| \
+			       (cs)->ascent|(cs)->descent) == 0))
+
+#define CI_GET_CHAR_INFO_1D(fs,col,cs) \
+{ \
+    cs = 0; \
+    if (col >= fs->min_char_or_byte2 && col <= fs->max_char_or_byte2) { \
+	if (fs->per_char == NULL) { \
+	    cs = &fs->min_bounds; \
+	} else { \
+	    cs = &fs->per_char[(col - fs->min_char_or_byte2)]; \
+	} \
+	if (CI_NONEXISTCHAR(cs)) \
+	    cs = 0; \
+    } \
+}
+
+/*
+ * CI_GET_CHAR_INFO_2D - return the charinfo struct for the indicated row and 
+ * column.  This is used for fonts that have more than row zero.
+ */
+#define CI_GET_CHAR_INFO_2D(fs,row,col,cs) \
+{ \
+    cs = 0; \
+    if (row >= fs->min_byte1 && row <= fs->max_byte1 && \
+	col >= fs->min_char_or_byte2 && col <= fs->max_char_or_byte2) { \
+	if (fs->per_char == NULL) { \
+	    cs = &fs->min_bounds; \
+	} else { \
+	    cs = &fs->per_char[((row - fs->min_byte1) * \
+			        (fs->max_char_or_byte2 - \
+				 fs->min_char_or_byte2 + 1)) + \
+			       (col - fs->min_char_or_byte2)]; \
+        } \
+	if (CI_NONEXISTCHAR(cs)) \
+	    cs = 0; \
+    } \
+}
+
+static Boolean
+GridHasChar (Widget w, long ch)
+{
+    FontGridWidget	fgw = (FontGridWidget) w;
+#ifdef XRENDER
+    XftFont		*xft = fgw->fontgrid.text_face;
+    if (xft)
+    {
+	return FcCharSetHasChar (xft->charset, (FcChar32) ch);
+    }
+    else
+#endif
+    {
+	XFontStruct	*fs = fgw->fontgrid.text_font;
+	XCharStruct	*cs;
+	
+	if (!fs)
+	    return False;
+	if (fs->max_byte1 == 0)
+	{
+	    CI_GET_CHAR_INFO_1D (fs, ch, cs);
+	}
+	else
+	{
+	    unsigned int	r = (ch >> 8);
+	    unsigned int	c = (ch & 0xff);
+	    CI_GET_CHAR_INFO_2D (fs, r, c, cs);
+	}
+	return cs != 0;
+    }
+}
+
+/*
  * public routines
  */
 
@@ -789,6 +868,18 @@ paint_grid(FontGridWidget fgw, 		/* widget in which to draw */
     return;
 }
 
+static Boolean
+PageBlank (Widget w, long first, long last)
+{
+    while (first <= last)
+    {
+	if (GridHasChar (w, first))
+	    return False;
+	first++;
+    }
+    return True;
+}
+
 /*ARGSUSED*/
 static Boolean 
 SetValues(Widget current, Widget request, Widget new, 
@@ -823,11 +914,28 @@ SetValues(Widget current, Widget request, Widget new,
 
     if (curfg->fontgrid.start_char != newfg->fontgrid.start_char) {
 	long maxn = GridLastChar (new);
+	long page = newfg->fontgrid.cell_cols * newfg->fontgrid.cell_rows;
+	long dir = page;
+	long start = newfg->fontgrid.start_char;
 
-	if (newfg->fontgrid.start_char > maxn) 
-	  newfg->fontgrid.start_char = (maxn + 1 - 
-					(newfg->fontgrid.cell_cols * 
-					 newfg->fontgrid.cell_rows));
+	if (start < curfg->fontgrid.start_char)
+	    dir = -page;
+
+	if (start < 0)
+	    start = 0;
+	if (start > maxn) 
+	  start = (maxn / page) * page;
+	
+	while (PageBlank (new, start, start + page - 1))
+	{
+	    long    next = start + dir;
+
+	    if (next < 0 || maxn < next)
+		break;
+	    start = next;
+	}
+
+	newfg->fontgrid.start_char = start;
 	redisplay = (curfg->fontgrid.start_char != newfg->fontgrid.start_char);
     }
 
