@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.474 2004/06/10 18:12:58 alanh Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.475 2004/06/11 00:02:16 alanh Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1246,7 +1246,7 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #endif
 
 #ifndef BuildXF86OldDRMCompat
-#  define BuildXF86OldDRMCompat	YES
+#  define BuildXF86OldDRMCompat	NO
 #endif
 
 /*
