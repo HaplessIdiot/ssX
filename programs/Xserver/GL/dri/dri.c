@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.27 2000/12/20 19:48:42 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.28 2000/12/20 20:16:19 mvojkovi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -1577,7 +1577,6 @@ DRIPostValidateTree(WindowPtr pParent, WindowPtr pChild, VTKind kind)
     }
 
     if (DRIWindowsTouched) {
-        ErrorF("DRIPostValidateTree: release\n");
 	/* Release spin lock */
 	DRM_SPINUNLOCK(&pDRIPriv->pSAREA->drawable_lock, 1);
         DRIWindowsTouched = FALSE;
