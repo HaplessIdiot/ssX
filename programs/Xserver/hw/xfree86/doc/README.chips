@@ -372,7 +372,7 @@
   from the modeline values using the "fix_panel_size" option. Two
   machines that are know to need this option are the HP OmniBook 5000CTS
   and the NEC Versa 4080 800x600 TFT machines. A modeline that is known
-  to work with the Onmibook in conjunction with the "use_modeline" and
+  to work with the OmniBook in conjunction with the "use_modeline" and
   "fix_panel_size" options is
 
 
@@ -475,7 +475,7 @@
         possible that the VGA palette can be affected by a
         suspend/resume.  Using an 8bpp, the colour will then be
         displayed incorrectly. This shouldn't affect higher depths, and
-        is fixable with a swicth to the virtual console and back.
+        is fixable with a switch to the virtual console and back.
 
       The right hand edge of the mode isn't visible on the LCD
         This is usually due to a problem with the "lcd-center" option.
@@ -555,7 +555,7 @@
      o  David Bateman
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.7 1996/10/17 15:19:21 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.8 1996/10/20 13:33:25 dawes Exp $
 
 
 

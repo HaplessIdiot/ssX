@@ -1,10 +1,10 @@
   Information for Linux Users
   Orest Zborowski, Dirk Hohndel
-  24 August, 1996
+  20 October, 1996
 
   1.  Linux versions on which XFree86 has been tested
 
-  XFree86 has been tested with Linux version 2.0.13. It should work with
+  XFree86 has been tested with Linux version 2.0.19. It should work with
   any version since 1.0 without change. The binaries and libraries are
   based on the 5.2.18 Elf C libraries, and the 1.7.14 dynamic linker
   ld.so.
@@ -130,12 +130,89 @@
 
 
 
-  5.  Compiling XFree86
+  5.  Installing Xdm, the display manager
+
+  Since xdm is dynamically linked, there's no issue on export
+  restriction outside US for this binary distribution of xdm: it does
+  not contain the DES encryption code. So it's now included in the bin
+  package.
+
+  However the file xc/lib/Xdmcp/WrapHelp.c is not included in the
+  XFree86-3.2 source, so support for XDM-AUTHORIZATION-1 is not included
+  here. You'll have to get WrapHelp.c and rebuild xdm after having set
+  HasXdmAuth in xf86site.def.
+
+  The file is available within the US; for details see
+  ftp.x.org:/pub/R6/xdm-auth/README.
+
+  To start the display manager, log in as root on the console and type:
+  ``xdm -nodaemon''.
+
+  You can start xdm automatically on bootup by disabling the console
+  getty and modifying /etc/inittab. Details about this setup depend on
+  the Linux distribution that you use, so check the documentation
+  provided there.
+
+  The xdm binary provided should run with both shadow- and non-shadow
+  password systems.
+
+  6.  xterm
+
+  The XFree86-3.2 binary release contains an xterm binary that has been
+  linked statically against libtermcap. This was done to make sure that
+  it will correctly work with all distributions, regardless whether they
+  rely on libtermcap or libncurses. Contrary to the xterm binaries in
+  some beta version following XFree86-3.1.2, this binary does not rely
+  on a recent libncurses being installed on your system.
+
+  7.  Input devices
+
+  XFree86 now support the dynamic loading of drivers for external input
+  devices using the XInput extension. Currently supported devices are:
+
+     o  Joystick (xf86Jstk.so)
+
+     o  Wacom tablets (Wacom IV protocol only, xf86Wacom.so)
+
+     o  SummaSketch tablets (xf86Summa.so)
+
+     o  Elographics touchscreen (xf86Elo.so)
+
+  To use a specific device, add the line
+
+       load "module"
+
+
+  in the Module section of XF86Config, where module is the name of the
+  .so file corresponding to your device.  You also need to set up a XIn-
+  put section in XF86Config.  Refer to the XF86Config(5) man page for
+  detailed configuration instructions.
+
+  You can then change the device used to drive the X pointer with the
+  xsetpointer(1) command.
+
+  For joystick support, you'll need to install the joystick device
+  driver in the kernel.
+
+
+
+  7.1.  Configuring PEX and XIE extensions
+
+  The PEX and XIE extensions are now supported as external modules.  If
+  you want to have access to these extensions, add the following lines
+  to the Module section of XF86Config:
+
+
+          load    "pex5.so"
+          load    "xie.so"
+
+
+
+
+  8.  Compiling XFree86
 
   Only the sources for full releases of XFree86 are freely available.
-  The last full release of XFree86 was 3.1.2 which is still based on
-  X11R6. So the following is only adequate if you want to build this
-  release.
+  The last full release of XFree86 is 3.2.
 
   There are no special instructions required for compiling XFree86.
   This version was compiled with gcc-2.7.2, the 5.2.18 Elf libraries and
@@ -146,7 +223,8 @@
 
   All extensions and clients have been ported and tested. By default,
   the servers are compiled without any extra extensions (PEX, XIE, etc),
-  but libraries for those extensions are always generated. By modifying
+  but libraries for those extensions are always generated. They can be
+  loaded at runtime, see the XFree86 man page for details. By modifying
   site.def, extra extensions can be compiled into the server.
   Alternately, the link kit can be used to craft modified servers.
 
@@ -174,20 +252,74 @@
   DLL libs, on which the current method (developed by Orest Zborowski
   (orestz@eskimo.com)) is based.
 
-  6.  Bug Notification
+  9.  Bug Notification
 
   Bug reports should be sent to XFree86@XFree86.org or posted to the
-  comp.windows.x.i386unix newsgroup. Questions or comments about Linux
-  support or the Linux distribution should be made to orestz@eskimo.com.
+  comp.windows.x.i386unix newsgroup.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.8 1996/08/26 14:08:42 dawes Exp $
+
+
+
+
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.9 1996/10/20 13:33:12 dawes Exp $
 
 
 
 
 
   $XConsortium: Linux.sgml /main/3 1995/11/12 19:59:39 kaleb $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

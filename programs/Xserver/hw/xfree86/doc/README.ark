@@ -186,9 +186,9 @@
         This may also apply to other cards with the ICS5342, such as the
         Diamond Stealth 64 Graphics 2001. Use RAMDAC "ics5342".
         Programmable clockchip (don't specify any Clocks lines).
-        Supported at 8pp, 16pp and 32bpp. 32bpp has been reported not to
-        work. At 16bpp, screen corruption has been reported which might
-        be related to BITBLT operations.
+        Supported at 8bpp, 16bpp and 32bpp. 32bpp has been reported not
+        to work. At 16bpp, screen corruption has been reported which
+        might be related to BITBLT operations.
 
   If are having driver-related problems that are not addressed by this
   document, you can try contacting the XFree86 team (the current driver
@@ -202,7 +202,7 @@
   eye on forthcoming beta releases at www.xfree86.org.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ark.sgml,v 3.3 1996/10/10 14:04:00 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ark.sgml,v 3.4 1996/10/20 13:33:23 dawes Exp $
 
 
 

@@ -1,149 +1,46 @@
-  README for XFree86[TM] 3.1.2
+  README for XFree86[TM] 3.2
   The XFree86 Project, Inc
 
-  31 January 1996
+  31 October 1996
 
-  XFree86 is a port of X11R6 that supports several versions of Intel-
-  based Unix and Unix-like operating systems.  This release consists of
-  new features and performance improvements as well as many bug fixes.
-  The release is available as source patches against the X Consortium
-  X11R6 code, as well as binary distributions for many architectures.
+  XFree86 is a port of X11R6.1 that supports several Unix and Unix-like
+  operating systems on Intel and other platforms.  This release consists
+  of new features and performance improvements as well as many bug
+  fixes.  The release is available as source patches against the X Con-
+  sortium X11R6.1 code, as well as binary distributions for many archi-
+  tectures.
 
-  1.  What's new in XFree86 3.1.2
+  1.  What's new in XFree86 3.2
 
-  The following items have been added since XFree86 3.1.1 was released
-  in January 1995:
+  The following items have been added since XFree86 3.1.2 was released
+  in August 1995:
 
-     1. XFree86 3.1.2 includes the X Consortium's recently released
-        public patch (fix-12).
+     1. XFree86 3.2 includes the X Consortium's X11R6.1.
 
-     2. Support for the S3 968 and 868 chipsets.
+     2. Support for the S3 Trio64V+.
 
-     3. Support in the S3 server for the IBM RGB 5xx series RAMDACs.
+     3. new server (XF86_S3V) for the S3 ViRGE and ViRGE/VX.
 
-     4. Support in the S3 server for the STG1703 RAMDAC.
+     4. Support in the S3 server for the AT&T 20C409 and 20C499 RAMDACs.
 
-     5. Support in the S3 server for the SC1148{2,3,4,5,7,9} RAMDACs at
-        15bpp.
+     5. Support in the S3 server for chipset driver "newmmio" for S3
+        868, 968 and Trio64V+ chips.
 
-     6. XGA-2 support for the AGX server.
+     6. Lots of other stuff.
 
-     7. 16bpp support for the AGX server.
+     7. Support for DEC 21030 (aka DEC TGA;  Linux/AXP only).
 
-     8. Bug fixes and enhancements to the Mach64 server.
-
-     9. Bug fixes for the Mach32 server.
-
-     10.
-        Improved performance for the P9000 server.
-
-     11.
-        Bug fixes for the VGA16 and Mono servers.
-
-     12.
-        A new Xserver extension (and client) to allow interactive video
-        mode tuning.
-
-     13.
-        Improved VESA DPMS screensaver support for some servers.
-
-     14.
-        New chipset support for the SVGA server.  This includes the ARK
-        Logic ARK1000PV and ARK2000PV and RealTek RTG3106.
-
-     15.
-        Support for the WD90C24 series of laptop chipsets.
-
-     16.
-        Updates to the SVGA vgawonder driver.
-
-     17.
-        Improved 3 Button mouse emulation.
-
-     18.
-        Support for LynxOS AT versions 2.2.1 and 2.3.
-
-
-     19.
-        Support for Unixware 2.0.
-
-     20.
-        Support for BSD/OS 2.0.
-
-     21.
-        Support for Linux/ELF.
-
-     22.
-        Workarounds for some NumLock problems.
-
-     23.
-        Cyrillic fonts (using KOI8-R encoding) from Cronyx Ltd.
-
+     8. Support for Linux/AXP on DEC Alpha/AXP (both ECOFF and ELF).
 
   Plus a lots of other small items.  Refer to the CHANGELOG file in the
   source distribution for full details.
 
-  2.  What's new in XFree86 3.1.1
+  Further information can be found in the RELNOTES file.
 
-  The following items have been added since XFree86 3.1 was released in
-  October 1994:
+  2.  Systems XFree86 has been tested on
 
-     1. XFree86 3.1.1 includes the X Consortium's recently released
-        public patches (up to fix-11).  The XFree86 Project, Inc has
-        worked with the X Consortium to have much of XFree86 3.1.1
-        included in the X Consortium's fix-11.
-
-     2. A new accelerated server for Mach64 boards.
-
-     3. Support for the S3 Trio32 and Trio64 chipsets.
-
-     4. Support in the S3 server for the Chrontel 8391 clock chip.
-
-     5. Support for SPEA Mercury P64 and MIRO Crystal 40SV.
-
-     6. Bug fixes and some performance improvements for most of the
-        accelerated servers.
-
-     7. Support for `double scan' video modes (most servers).
-
-     8. New chipset support for the SVGA server.  This includes the
-        Avance Logic 2228/2301, Chips & Technology 655xx, Cirrus Logic
-        6440, and Oak OTI-087.  Accelerated support is included for the
-        OTI-087.
-
-     9. Support for FreeBSD 2.0.
-
-     10.
-        Preliminary support for OS/2 (client-only at this stage; this is
-        still under development).
-
-     11.
-        Linear aperture access when running on BSD/386.
-
-     12.
-        16bpp and 32bpp support for more S3 boards (refer to README.S3
-        for details).
-
-     13.
-        Support for ISC's SVR3 (only tested for 3.x and 4.x).
-
-     14.
-        The `xf86config' utility for generating XF86Config files has
-
-        been improved and now uses a database of video cards.
-
-     15.
-        The X server LinkKit has been updated to include support for
-        LBX.
-
-     16.
-        The slow X server startup time on machines without hardware
-        floating point has been improved.
-
-  Plus a number of other small items.  Refer to the CHANGELOG file in
-  the source distribution for full details.
-
-  3.  Systems XFree86 has been tested on
+  Note: Not all systems listed here have been tested with the current
+  release.
 
 
      SVR4.0:
@@ -166,7 +63,8 @@
 
         o  NCR: MP-RAS
 
-        o  SunSoft: Solaris x86 2.1, 2.4
+
+        o  SunSoft: Solaris x86 2.1, 2.4, 2.5
 
         o  PANIX for PC-AT
 
@@ -191,14 +89,13 @@
 
         o  OpenBSD 2.0
 
-        o  FreeBSD 1.1.5.1, 2.0, 2.0.5
+        o  FreeBSD 1.1.5.1, 2.0.5, 2.1, 2.1.5, 2.2-current
 
         o  BSD/386 1.1, BSD/OS 2.0
 
-
         o  Mach 386
 
-        o  Linux
+        o  Linux (Intel x86, DEC Alpha/AXP and m68k)
 
         o  Amoeba
 
@@ -215,10 +112,9 @@
 
         o  NetBSD/pc98 (based on NetBSD 1.2)
 
-  4.  Supported video-card chip-sets
+  3.  Supported video-card chip-sets
 
-  At this time, XFree86 3.1.2 supports the following accelerated
-  chipsets:
+  At this time, XFree86 3.2 supports the following accelerated chipsets:
 
 
      8514/A
@@ -229,10 +125,13 @@
 
      Cirrus
         CLGD5420, CLGD5422, CLGD5424, CLGD5426, CLGD5428, CLGD5429,
-        CLGD5430, CLGD5434
+        CLGD5430, CLGD5434 CLGD5436, CLGD5440, CLGD5446, CLGD5462,
+        CLGD5464
+
+
 
      S3 86C911, 86C924, 86C801, 86C805, 86C805i, 86C928, 86C864, 86C964,
-        86C732, 86C764, 86C868, 86C968
+        86C732, 86C764, 86C765, 86C868, 86C968, 86C325, 86C988
 
      Western Digital
         WD90C31, WD90C33, WD90C24A
@@ -252,15 +151,20 @@
      Oak Technologies Inc
         OTI087
 
-  The Cirrus, Western Digital and Oak accelerators are supported in the
-  SVGA server; the other chipsets each have their own server.  A list of
-  some cards which the accelerated servers have been tested is included
-  in the files AccelCards, Devices, the xf86config utility's Cards
-  database, and some of the chipset-specific README files.  They may
-  well work on other cards, but we cannot guarantee it.
+     Ark Logic
+        ARK1000PV, ARK1000VL, ARK2000PV, ARK2000MT
+
+     Matrox
+        MGA2064W
+
+     Number Nine
+        I128 (not accelerated yet)
+
+  The Cirrus, Western Digital, Oak, ARK, and Matrox accelerators are
+  supported in the SVGA server; the other chipsets each have their own
+  server.
 
   In addition, the following SVGA chipsets are supported:
-
 
      Tseng
         ET3000, ET4000AX, ET4000/W32, ET6000
@@ -277,7 +181,9 @@
 
      Trident
         TVGA8800CS, TVGA8900B, TVGA8900C, TVGA8900CL, TVGA9000,
-        TVGA9000i, TVGA9100B, TVGA9200CX, TVGA9320, TVGA9400CX, TVGA9420
+        TVGA9000i, TVGA9100B, TVGA9200CX, TVGA9320, TVGA9400CX,
+        TVGA9420, TGUI9420DGi, TGUI9430DGi, TGUI9440AGi, TGUI9660XGi,
+        TGUI9680
 
      ATI
         18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6, 68800-3,
@@ -289,11 +195,10 @@
 
      Cirrus Logic
         CLGD5420, CLGD5422, CLGD5424, CLGD5426, CLGD5428, CLGD5429,
-        CLGD5430, CLGD5434, CLGD6205, CLGD6215, CLGD6225, CLGD6235,
-        CLGD6410, CLGD6412, CLGD6420, CLGD6440
 
-     Compaq
-        AVGA
+        CLGD5430, CLGD5434, CLGD5436, CLGD5440, CLGD5446, CLGD5462,
+        CLGD5464, CLGD6205, CLGD6215, CLGD6225, CLGD6235, CLGD6410,
+        CLGD6412, CLGD6420, CLGD6440
 
      OAK
         OTI067, OTI077, OTI087
@@ -302,35 +207,43 @@
         ALG2101, ALG2228, ALG2301, ALG2302, ALG2308, ALG2401
 
      Chips & Technology
-        65520, 65530, 65540, 65545
+        65520, 65530, 65540, 65545, 65520, 65530, 65540, 65545, 65546,
+        65548, 65550, 65554
 
      MX MX68000, MX680010
 
-      Video 7/Headland Technologies
+     Video 7/Headland Technologies
         HT216-32
 
+     SiS
+        86C201, 86C202, 86C205
+
      ARK Logic
-        ARK1000PV, ARK2000PV
+        ARK1000PV, ARK1000VL, ARK2000PV, ARK2000MT
 
      RealTek
         RTG3106
 
+     Alliance
+        AP6422
 
-  All of the above are supported in both 256 color and monochrome modes,
-  with the exception of the Advance Logic, MX, Chips & Technology, Video
-  7, ARK, RealTek chipsets, which are only supported in 256 color mode.
+     Matrox
+        MGA2064W
+
+     NVidia/SGS Thomson
+        NV1, STG2000
+
+
+  All of the above are supported in both 256 color, and some are
+  supported in mono and 16 color modes.
 
   Refer to the chipset-specific README files (currently for Cirrus,
-  Tseng, Western Digital, ATI, ARK, Trident, Oak and Video 7) for more
-  information about using those chipsets.
+  Tseng, Western Digital, ATI, ARK, Trident, Oak, Matrox and Video 7)
+  for more information about using those chipsets.
 
   The monochrome server also supports generic VGA cards, using 64k of
-  video memory in a single bank, the Hercules monochrome card, the
-  Hyundai HGC1280, Sigma LaserView, Visa and Apollo monochrome cards.
-
-  On the Compaq AVGA, only 64k of video memory is supported for the
-  monochrome server, and the GVGA has not been tested with more than
-  64k.
+  video memory in a single bank, the Hyundai HGC1280, Sigma LaserView,
+  Visa and Apollo monochrome cards.
 
   The VGA16 server supports memory banking with the ET4000, Trident,
   ATI, NCR, OAK and Cirrus 6420 chipsets allowing virtual display sizes
@@ -338,70 +251,30 @@
   the display size is limited to approximately 800x600.
 
   Note: The Diamond SpeedStar 24 (and possibly recent SpeedStar+) boards
-  are NOT supported, even though they use the ET4000. The Stealth 32
-  which uses the ET4000/W32p is also not fully supported by the SVGA
-  server, but it is supported by the accelerated server, XF86_W32 (using
-  the icd2061a clockchip).
+  are NOT supported, even though they use the ET4000.
 
   The Weitek 9100 and 9130 chipsets are not supported (these are used on
   the Diamond Viper Pro and Viper SE boards). Most other Diamond boards
   will work with this release of XFree86. Diamond is now actively
   supporting The XFree86 Project, Inc.
 
-  The Trident TGUI9440 series of chips is not yet supported, but we are
-  working on this.
 
-  Some types of the Mach64 cards are not fully supported.  Refer to
-  README.Mach64 for details.
 
-  5.  Important Changes between version 2.1.1 and 3.1
 
-  There are a number of important user-visible changes between XFree86
-  2.1.1 and XFree86 3.1.  The first is the default install location.
-  The XFree86 distribution is now installed by default under /usr/X11R6
-  instead of /usr/X386.  This moves away from the now out-dated "X386"
-  name, and it also makes it possible for both versions to co-exist.
 
-  The next major change is related to the server configuration file.
-  The old Xconfig file has been replaced in XFree86 3.1 by an XF86Config
-  file.  This is more than just a name change.  The new XF86Config file
-  uses a format that is quite different from the old Xconfig file.  The
-  new format is more structured, logical, and extensible than the old
-  format.  We realise that the transition to this new format won't be
-  without problems.  To help in this transition we have provided a
-  program (`reconfig') to convert the old Xconfig format into the new
-  XF86Config format.  This doesn't provide a perfect conversion mostly
-  because the new format contains more information than the old format.
-  Some manual editing will always be required.  One of the new types of
-  information the XF86Config contains is a description of the monitor(s)
-  you are using.  This addition allows the servers to check that the
-  video modes are within the specifications of the monitor.
-
-  For information about the new config file format and how to use it,
-  refer to the XF86Config(4/5) and  reconfig(1) manual pages, and the
-  README.Config file which can be found in /usr/X11R6/lib/X11/doc.
-
-  Another change related to the config file is the locations the servers
-  look for it in.  In previous releases the servers would look in places
-  which could be specified by the user.  This raised a number of
-  security concerns.  To address these, the server now only looks in
-  places which are normally under the control of the system
-  administrator.  For further details, refer to the XFree86(1) manual
-  page.
-
-  6.  Where to get more information
+  4.  Where to get more information
 
   Additional documentation is available in the XFree86(1),
   XF86Config(4/5), XF86_SVGA(1), XF86_Mono(1), XF86_VGA16(1),
+  XF86_Accel(1) XF86Setup(1) and xvidtune(1) manual pages.  In addition,
+  several README files and tutorial documents are provided.  These are
+  available in /usr/X11R6/lib/X11/doc in the binary distributions, and
+  in  xc/programs/Xserver/hw/xfree86/doc in the source distribution.
 
-  XF86_Accel(1) and xvidtune(1) manual pages.  In addition, several
-  README files and tutorial documents are provided.  These are available
-  in /usr/X11R6/lib/X11/doc in the binary distributions, and in
-  xc/programs/Xserver/hw/xfree86/doc in the source distribution.
-
-  The files README.Config and VideoModes.doc should be consulted for
+  The files QuickStart.doc and README.Config should be consulted for
   information on how to set up the XFree86 servers.  All supplied
-  documents and manual pages should be read before contacting the
+  documents, manual pages, and the XFree86 FAQ
+  <http://www.XFree86.org/FAQ> should be read before contacting the
   XFree86 team for assistance.
 
   Documentation on SVGA driver development can be found in the directory
@@ -416,10 +289,9 @@
 
   There is a Usenet news group comp.windows.x.i386unix that contains
   mostly discussions about XFree86 and related topics. Many questions
-  can be answered there. The answers to common questions are found in
-  the corresponding FAQ.
+  can be answered there.
 
-  7.  Credits
+  5.  Credits
 
   XFree86 was originally put together by:
 
@@ -455,10 +327,10 @@
 
      o  David Holland <davidh@use.com>
 
+
      o  Alan Hourihane <alanh@fairlite.demon.co.uk>
 
      o  Jeffrey Hsu <hsu@soda.berkeley.edu>
-
 
      o  Glenn Lai <glenn@cs.utexas.edu>
 
@@ -521,10 +393,10 @@
 
      Minix-386 support by:
 
+
         o  Philip Homburg <philip@cs.vu.nl>
 
      OSF/1 support by:
-
 
         o  Marc Evans <Marc@XFree86.org>
 
@@ -586,11 +458,11 @@
 
         o  Shin'ichi Yairo <QZR00522@niftyserve.or.jp>,
 
+
+
         o  Kazuo Ito <ft4k-itu@asahi-net.or.jp>,
 
         o  Jun Sakuma <i931361@jks.is.tsukuba.ac.jp>,
-
-
 
         o  Shuichi Ueno <uenos@ppp.bekkoame.or.jp>,
 
@@ -648,6 +520,12 @@
 
         o  Joe Moss <joe@morton.rain.com>
 
+     S3V accelerated code by:
+
+        o  Harald Koenig <koenig@tat.physik.uni-tuebingen.de>,
+
+
+
      Mach32 accelerated code by:
 
         o  Kevin Martin <martin@cs.unc.edu>,
@@ -655,8 +533,6 @@
         o  Rik Faith <faith@cs.unc.edu>,
 
         o  Mike Bernson <mike@mbsun.mlb.org>,
-
-
 
         o  Mark Weaver <Mark_Weaver@brown.edu>,
 
@@ -714,6 +590,8 @@
 
         o  Glenn Lai <glenn@cs.utexas.edu>,
 
+
+
      ET6000 SVGA and accelerated support (both based on the existing W32
         code) by:
 
@@ -722,7 +600,6 @@
      Oak Technologies Inc. accelerated code by:
 
         o  Jorge Delgado <ernar@dit.upm.es>,
-
 
      16 color VGA server by:
 
@@ -780,6 +657,7 @@
 
         o  Manfred Brands <mb@oceonics.nl>
 
+
         o  Randy Hendry <randy@sgi.com>
 
         o  Jeff Kirk <jeff@bambam.dsd.ES.COM>
@@ -787,8 +665,6 @@
      Compaq SVGA driver by:
 
         o  Hans Oey <hans@mo.hobby.nl>
-
-
 
      Oak SVGA driver by:
 
@@ -844,6 +720,19 @@
 
         o  Joe Moss <joe@morton.rain.com>
 
+     XInput integration, devices and clients by:
+
+
+
+        o  Frederic Lepied <lepied@XFree86.Org> (XInput integration,
+           Wacom tablet, Joystick and extended mouse devices,
+           xsetpointer and xsetmode clients)
+
+        o  Patrick Lecoanet <lecoanet@cena.dgac.fr> (Elographics
+           touchscreen device)
+
+        o  Steven Lang <tiger@ecis.com> (Summagraphics tablet device)
+
      Other contributors:
 
         o  Joerg Wunsch <joerg_wunsch@uriah.sax.de> (ET3000 banked
@@ -854,9 +743,7 @@
 
         o  and an entire horde of beta-testers around the world!
 
-
-
-  8.  Contact information
+  6.  Contact information
 
   Ongoing development planning and support is coordinated by the XFree86
   Core Team.  At this time the Core Team consists of (in alphabetical
@@ -870,6 +757,8 @@
 
      o  Dirk Hohndel <hohndel@XFree86.org>
 
+     o  Harald Koenig <koenig@XFree86.org>
+
      o  Rich Murphey <rich@XFree86.org>
 
      o  Jon Tombs <tombs@XFree86.org>
@@ -879,7 +768,7 @@
   Mail sent to <Core@XFree86.org> will reach the core team.  Please note
   that support questions should be sent to <XFree86@XFree86.org>.
 
-  9.  The XFree86 Project, Inc.
+  7.  The XFree86 Project, Inc.
 
   The XFree86 Project, Inc, has been founded to accomplish two major
   goals:
@@ -919,8 +808,6 @@
   Project, Inc, are:
 
      o  David Dawes, President and Secretary
-
-
 
      o  Dirk Hohndel, Vice-President
 
@@ -987,7 +874,6 @@
 
      o  Caldera, Inc. <http://www.caldera.com/>
 
-
      o  Delix Computer GmbH <http://www.delix.de/>, Stuttgart, Germany
 
      o  The Destek Group, Inc. <http://www.destek.net/Destek/>, Nashua,
@@ -1035,6 +921,7 @@
 
      o  Prime Time Freeware <http://www.ptf.com/>, San Bruno, CA
 
+
      o  Red Hat Software <http://www.redhat.com/>, Chapel Hill, NC
 
      o  Norbert Reithinger
@@ -1051,8 +938,6 @@
 
      o  Tekelec Airtronic GmbH <http://www.tekelec.com>, Muenchen,
         Germany
-
-
 
      o  Jim Tsillas
 
@@ -1072,7 +957,7 @@
   with the papers.  For more information, contact The XFree86 Project,
   Inc, at <BOD@XFree86.org>
 
-  10.  Source and binary archive sites
+  8.  Source and binary archive sites
 
   Source patches are available to upgrade X11R6 PL12 from the X
   Consortium to XFree86 3.1.2.  They and binaries for many OSs are
@@ -1101,6 +986,8 @@
         +  ftp://tsx-11.mit.edu/pub/linux/packages/X11/XFree86-3.1.2
            (Linux binaries and source)
 
+
+
         +  ftp://ftp.eecs.umich.edu/BSD/XFree86 (source and binaries)
 
         +  ftp://ftp.cs.umn.edu/pub/XFree86 (source and binaries)
@@ -1117,8 +1004,6 @@
 
         +  ftp://ftp.fee.vutbr.cz/pub/XFree86 (source patches and
            binaries)
-
-
 
         +  ftp://ftp.gwdg.de/pub/xfree86/XFree86 (source and binaries)
 
@@ -1168,17 +1053,66 @@
   Ensure that you are getting XFree86 3.1.2 - some of these sites may
   archive older releases as well.  Each binary distribution will contain
   a README file that describes what files you need to take from the
+
   archive, and which compile-time option selections were made when
   building the distribution.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.60 1996/10/19 15:15:45 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.61 1996/10/20 13:33:18 dawes Exp $
 
 
 
 
 
   $XConsortium: README.sgml /main/15 1996/01/30 15:13:03 kaleb $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,4 +1,4 @@
-  Information for Matrox Millenium Users
+  Information for Matrox Millennium Users
   The XFree86 Project Inc.
   19 October 1996
 
@@ -11,9 +11,9 @@
   NOTE: This driver is pretty new, and not everything works like you
   expect it to. It shouldn't crash your machine, but you may have video
   artifacts or missing lines. Please report any and all problems to
-  XFree86@Xfree86.org using the appropiate bug report sheet.
+  XFree86@Xfree86.org using the appropriate bug report sheet.
 
-  There will be updated drivers in the comming XFree86 beta releases.
+  There will be updated drivers in the coming XFree86 beta releases.
 
   2.  Features:
 
@@ -22,7 +22,7 @@
 
      o  uses linear frame buffer
 
-     o  it should be possible to reach resolutions upto 1920x1024
+     o  it should be possible to reach resolutions up to 1920x1024
 
      o  it should be possible to use pixel depths of 8, 16, 24, and 32
         bits per pixel (256 pseudo colour, "high colour", "packed true
@@ -65,14 +65,14 @@
   exist.
 
   We will eventually provide support for the other Matrox chipsets (once
-  the Millenium driver is at a far enough stage and more people with
+  the Millennium driver is at a far enough stage and more people with
   other cards join the effort), including the Impression, Mystique, etc.
 
   At the moment, however, only the Millennium is supported.
 
   5.  Configuration:
 
-  The server autodetects WRAM size and RAMDAC speed. Do not bother
+  The server auto-detects WRAM size and RAMDAC speed. Do not bother
   putting these in your "Device" section, as they will be overridden.
   The TVP3026 has a programmable clock generator, so probing and setting
   clocks is unnecessary as well.
@@ -106,7 +106,7 @@
   with the latest news, new sources, etc.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/MGA.sgml,v 3.0 1996/10/19 15:15:43 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/MGA.sgml,v 3.1 1996/10/20 13:33:15 dawes Exp $
 
 
 

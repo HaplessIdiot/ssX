@@ -60,7 +60,7 @@
         the Mach32 itself.
 
      Option "intel_gx"
-        This option sets the memory apeture address to the hardwired
+        This option sets the memory aperture address to the hardwired
         value for the Intel GX Pro.  It is equivalent to setting Membase
         to 0x78000000.
 
@@ -161,7 +161,7 @@
   comp.windows.x.i386unix newsgroup.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach32.sgml,v 3.1 1996/10/18 15:03:26 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach32.sgml,v 3.2 1996/10/20 13:33:15 dawes Exp $
 
 
 

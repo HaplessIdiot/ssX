@@ -506,8 +506,8 @@
   5.3.  Configuring PEX and XIE extensions
 
   The PEX and XIE extensions are now supported as external modules.  If
-  you want to have access to these exensions, add the following lines to
-  the Module section of XF86Config:
+  you want to have access to these extensions, add the following lines
+  to the Module section of XF86Config:
 
 
           load    "pex5.so"
@@ -753,8 +753,8 @@
 
   8.2.  pcvt_ioctl.h file:
 
-  XFree86 default's config includes support for the PCVT console driver.
-  Unfortunatly, NetBSD doesn't install the pcvt_ioctl.h file in
+  XFree86's defaults config includes support for the PCVT console
+  driver. Unfortunately, NetBSD doesn't install the pcvt_ioctl.h file in
   /usr/include/machine. If you want to build XFree86 with PCVT support,
   execute the following command as root before starting make World:
 
@@ -891,7 +891,7 @@
         machines in preparing the FreeBSD binary release.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.37 1996/10/18 15:03:28 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.38 1996/10/20 13:33:17 dawes Exp $
 
 
 

@@ -522,7 +522,7 @@
 
 
   Finally, for 546X cards, you are in luck:  there are no "issues" to
-  worry about.  The '6X will always use linear addressing and memmory-
+  worry about.  The '6X will always use linear addressing and memory-
   mapped I/O, and will use the memory addresses up near 4GB.  Yay for
   PCI!
 
@@ -785,8 +785,8 @@
 
      CL-GD6440 on ISA bus
 
-     Some configurations for which no up-to-date testing data is
-     available:
+
+  Some configurations for which no up-to-date testing data is available:
 
 
 
@@ -831,7 +831,7 @@
         with 1MB memory).
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.15 1996/10/13 11:19:48 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.16 1996/10/20 13:33:26 dawes Exp $
 
 
 
