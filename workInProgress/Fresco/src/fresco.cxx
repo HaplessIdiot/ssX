@@ -1,5 +1,6 @@
 /*
- * $XConsortium: fresco.cxx,v 1.5 94/04/07 11:29:33 matt Exp $
+ * $XConsortium: fresco.cxx,v 1.6 94/06/03 21:38:54 matt Exp $
+ * $XFree86$
  */
 
 /*
@@ -43,6 +44,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 
 #if defined(sgi)
@@ -298,8 +300,8 @@ Boolean Fresco::delay(Float seconds) {
 #include <sys/select.h>
 #endif
 
-#if defined(sony)
-/* Sony has select in libsocket, but no prototype in /usr/include */
+#if defined(sony) || defined(__DECCXX)
+/* Sony and DEC OSF/1 have select, but no prototype in /usr/include */
 extern "C" int select(int, fd_set*, fd_set*, fd_set*, struct timeval*);
 #endif
 

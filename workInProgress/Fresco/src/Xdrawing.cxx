@@ -1,5 +1,6 @@
 /*
  * $XConsortium: Xdrawing.cxx,v 1.4 94/04/07 11:29:29 matt Exp $
+ * $XFree86$
  */
 
 /*
@@ -2199,8 +2200,9 @@ const char* FontSpec::full_spec() const {
 
 Boolean FontSpec::is_scalable() {
     return (
-	atoi(fields_[pixels]) == 0 ||
-	atoi(fields_[points]) == 0 || atoi(fields_[width]) == 0
+	(fields_[pixels] && atoi(fields_[pixels]) == 0) ||
+	(fields_[points] && atoi(fields_[points]) == 0) ||
+	(fields_[width] && atoi(fields_[width]) == 0)
     );
 }
 
