@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPict.c,v 1.14 2001/06/03 19:47:59 mvojkovi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPict.c,v 1.15 2002/09/26 02:56:49 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -237,7 +237,7 @@ XAADoComposite (
 	       (op == PictOpOver) && infoRec->WriteBitmap && !pMask->repeat &&
 	       !(infoRec->WriteBitmapFlags & NO_TRANSPARENCY) &&
 	       (!(infoRec->WriteBitmapFlags & RGB_EQUAL) || 
-	         (red == green == blue)))
+	         ((red == green) && (green == blue))))
 	   {
 	        PixmapPtr pPix = (PixmapPtr)(pMask->pDrawable);
 		int skipleft;
@@ -501,7 +501,7 @@ XAADoGlyphs (CARD8         op,
 
 	XAAGetPixelFromRGBA(&pixel, red, green, blue, 0, pDst->format);
 
-	if((infoRec->WriteBitmapFlags & RGB_EQUAL) && !(red == green == blue))
+	if((infoRec->WriteBitmapFlags & RGB_EQUAL) && !((red == green) && (green == blue)))
 	   return FALSE;
 
 	x = pDst->pDrawable->x;
