@@ -21,7 +21,7 @@
   THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftutil.c,v 1.11 2000/08/11 21:12:42 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/fttools.c,v 1.3 2002/10/01 00:02:10 alanh Exp $ */
 
 #include "fontmisc.h"
 #ifndef FONTMODULE
@@ -152,7 +152,7 @@ FTcheckForTTCName(char *fileName, char **realFileName, int *faceNumber)
     if(length < 4)
         return 0;
 
-    if(strcasecmp(fileName + (length-4), ".ttc") != 0 ||
+    if(strcasecmp(fileName + (length-4), ".ttc") != 0 &&
        strcasecmp(fileName + (length-4), ".otc") != 0)
         return 0;
 
