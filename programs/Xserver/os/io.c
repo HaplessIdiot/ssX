@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: io.c,v 1.91 95/01/25 11:14:28 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/os/io.c,v 3.5 1995/01/25 10:56:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/io.c,v 3.6 1995/01/28 16:16:03 dawes Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -329,7 +329,7 @@ ReadRequestFromClient(client)
 	    if ((result < 0) && ETEST(errno))
 	    {
 #if defined(SVR4) && defined(i386) && !defined(sun)
-#ifdef LBX && 0
+#if defined(LBX) && 0
 		/*
 		 * For LBX connections, we can get a valid EWOULDBLOCK
 		 * There is probably a better way of distinguishing LBX
