@@ -1,4 +1,4 @@
-/* $XConsortium: xprint.c /main/4 1996/12/30 16:23:25 kaleb $ */
+/* $XConsortium: xprint.c /main/3 1996/11/23 17:11:55 rws $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -64,7 +64,7 @@ copyright holders.
 **    *********************************************************
 **
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xprint.c,v 1.2 1996/12/26 01:38:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xprint.c,v 1.3 1996/12/31 07:04:53 dawes Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS

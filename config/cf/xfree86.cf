@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.121 1996/12/23 05:50:40 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.122 1996/12/24 08:45:55 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -22,22 +22,109 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 /*
  * Default settings for which X Servers to build.
  */
-#ifndef Mc68020Architecture
-# ifndef XF86SVGAServer
-#  define XF86SVGAServer	YES
-# endif
-# ifndef XF68FBDevServer
-#  define XF68FBDevServer	NO
-# endif
-#else
-# ifndef XF86SVGAServer
-#  define XF86SVGAServer	NO
-# endif
-# ifndef XF68FBDevServer
-#  define XF68FBDevServer	YES
-# endif
+
+/*
+ * For Intel x86 platforms, the default is to build all X servers which
+ * are supported on this platform.
+ */
+#ifdef i386Architecture
+#ifndef XF86SVGAServer
+#define XF86SVGAServer          YES
+#endif
+#ifndef XF86VGA16Server
+#define XF86VGA16Server         YES
+#endif
+#ifndef XF86VGA16DualServer
+#define XF86VGA16DualServer	YES
+#endif
+#ifndef XF86MonoServer
+#define XF86MonoServer          YES
+#endif
+#ifndef XF86MonoDualServer
+#define XF86MonoDualServer	YES
+#endif
+#ifndef XF86S3Server
+#define XF86S3Server            YES
+#endif
+#ifndef XF86S3VServer
+#define XF86S3VServer		YES
+#endif
+#ifndef XF86I8514Server
+#define XF86I8514Server         YES
+#endif
+#ifndef XF86Mach8Server
+#define XF86Mach8Server         YES
+#endif
+#ifndef XF86Mach32Server
+#define XF86Mach32Server        YES
+#endif
+#ifndef XF86Mach64Server
+#define XF86Mach64Server        YES
+#endif
+#ifndef XF86P9000Server
+#define XF86P9000Server		YES
+#endif
+#ifndef XF86AGXServer
+#define XF86AGXServer		YES
+#endif
+#ifndef XF86W32Server
+#define XF86W32Server		YES
+#endif
+#ifndef XF86I128Server
+#define XF86I128Server		YES
+#endif
 #endif
 
+/*
+ * For Digital Alpha platforms, the default is to build all X servers which
+ * are supported on this platform.
+ */
+#ifdef AlphaArchitecture
+#ifndef XF86S3Server
+#define XF86S3Server		YES
+#endif
+#ifndef XF86S3VServer
+#define XF86S3VServer		YES
+#endif
+#ifndef XF86Mach64Server
+#define XF86Mach64Server	YES
+#endif
+#ifndef XF86P9000Server
+#define XF86P9000Server		YES
+#endif
+#ifndef XF86I128Server
+#define XF86I128Server		YES
+#endif
+#ifndef XF86TGAServer
+#define XF86TGAServer		YES
+#endif
+#ifndef XF86SVGAServer
+#define XF86SVGAServer		YES
+#endif
+#ifndef XF86MonoServer
+#define XF86MonoServer		YES
+#endif
+#ifndef XF86SvgaDrivers
+#define XF86SvgaDrivers		mga
+#endif
+#ifndef XF86Vga2Drivers
+#define XF86Vga2Drivers		generic
+#endif
+#endif
+
+/*
+ * For Motorola 68k platforms, the default is to build all X servers which
+ * are supported on this platform.
+ */
+#ifdef Mc68020Architecture
+#ifndef XF68FBDevServer
+#define XF68FBDevServer		YES
+#endif
+#endif
+
+/*
+ * The following disables all X servers not already enabled above
+ */
 #ifndef XF86VGA16Server
 # define XF86VGA16Server	NO
 # ifndef XF86VGA16DualServer
@@ -263,10 +350,14 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
  * Driver list for several of the X Servers.
  */
 #ifndef XF86SvgaDrivers
-# define XF86SvgaDrivers	nv et4000 et3000 pvga1 gvga ati sis tvga8900 \
+# ifdef AlphaArchitecture
+#  define XF86SvgaDrivers	mga
+# else
+#  define XF86SvgaDrivers	nv et4000 et3000 pvga1 gvga ati sis tvga8900 \
 				cirrus ncr77c22 /*compaq*/ mga oak al2101 \
 				ali cl64xx video7 chips ark mx realtek apm \
 				generic
+# endif
 #endif
 
 #ifndef XF98SvgaDrivers
@@ -283,8 +374,12 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #endif
 
 #ifndef XF86Vga2Drivers
-# define XF86Vga2Drivers	et4000 et3000 pvga1 gvga ati sis tvga8900 \
+# ifdef AlphaArchitecture
+#  define XF86Vga2Drivers	generic
+# else
+#  define XF86Vga2Drivers	et4000 et3000 pvga1 gvga ati sis tvga8900 \
 				cirrus ncr77c22 /*compaq*/ oak cl64xx generic
+# endif
 #endif
 
 #ifndef XF86Vga2Banked
@@ -365,6 +460,16 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #endif
 
 /*
+ * The default is to install the X servers setuid-root on most OSs.
+ * It the servers are only started by xdm, they should not be setuid-root.
+ */
+#if !defined(i386MachArchitecture) && !defined(OS2Architecture)
+#ifndef InstallXserverSetUID
+#define InstallXserverSetUID	YES
+#endif
+#endif
+
+/*
  * The server-side of PEX is not 64-bit clean.
  */
 #ifndef BuildPextExt
@@ -415,6 +520,33 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 
 #ifndef BuildXKBlib
 #define BuildXKBlib	YES
+#endif
+
+#ifndef BuildScreenSaverExt
+#define BuildScreenSaverExt	YES
+#endif
+
+/*
+ * Build XInput support
+ */
+#ifndef BuildXInputExt
+#define BuildXInputExt		YES
+#endif
+
+/*
+ * Include support for these XInput devices
+ */
+#ifndef WacomSupport
+#define WacomSupport		YES
+#endif
+#ifndef ElographicsSupport
+#define ElographicsSupport	YES 
+#endif
+#ifndef SummaSketchSupport
+#define SummaSketchSupport	YES
+#endif
+#ifndef JoystickSupport
+#define JoystickSupport		NO
 #endif
 
 /*
@@ -497,6 +629,13 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
  */
 #ifndef XF86ServerExpiry
 #define XF86ServerExpiry 853286400
+#endif
+
+/*
+ * Build the font server
+ */
+#ifndef BuildFontServer
+#define BuildFontServer		YES
 #endif
 
 /*
@@ -801,6 +940,10 @@ XFREE86JAPANESEDOCDIR = $(XFREE86DOCDIR)/Japanese
 #ifndef DefaultGcc2i386Opt
 #define DefaultGcc2i386Opt -O2 -fno-strength-reduce
 #endif
+#endif
+
+#ifndef DontDefineXF86Contrib
+#define XF86Contrib
 #endif
 
 #include <xf86.rules>

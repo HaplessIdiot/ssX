@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf /main/27 1996/12/26 08:52:44 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.54 1996/12/28 08:03:14 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.55 1996/12/31 04:14:40 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -45,6 +45,16 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  */
 #ifndef BinUtilsMajorVersion
 #define BinUtilsMajorVersion	25
+#endif
+
+/*
+ * The Linux libc major/minor versions.  Slackware 3.0 has libc.5.0.9
+ */
+#ifndef LinuxCLibMajorVersion
+#define LinuxCLibMajorVersion	5
+#endif
+#ifndef LinuxClibMinorVersion
+#define LinuxClibMinorVersion	0
 #endif
 
 #if LinuxCLibMajorVersion >= 6

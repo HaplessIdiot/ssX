@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imake.cf /main/27 1996/12/27 16:30:58 kaleb $
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.31 1996/12/29 13:36:52 dawes Exp $
+XCOMM $XConsortium: Imake.cf /main/26 1996/09/28 16:05:09 rws $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.32 1996/12/31 04:14:28 dawes Exp $
 /*
  * To add support for another platform:
  * 
@@ -560,7 +560,6 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.31 1996/12/29 13:36:52 dawes Exp $
 # define FujitsuArchitecture
 # undef __uxp__
 # define UXPArchitecture
-# define SVR4Architecture
 # ifdef sparc
 #  undef sparc
 #  define SparcArchitecture
