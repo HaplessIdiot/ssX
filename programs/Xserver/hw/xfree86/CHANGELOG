@@ -1,4 +1,21 @@
 XFree86 3.2f (18 December 1996)
+ 108. Enable the XAA driver for cirrus chips with a BitBLT engine and
+      the driver for Laguna family chips (Harm Hanemaayer).
+ 107. Modify the support for dot clocks > 85 MHz on the 5436/46
+      (Harm Hanemaayer).
+ 106. Fix 24bpp support for the CL-GD5430 (Harm Hanemaayer).
+ 105. Add optimized support for the CL-GD5446 to the XAA driver
+      (Harm Hanemaayer).
+ 104. When a PCI cirrus chip is detected, enable linear addressing by default
+      (Harm Hanemaayer).
+ 103. Better LCD control settings for CL-GD754x for different LCD sizes,
+      and improve 754x LCD type detection (Harm Hanemaayer).
+ 102. Modify CRT FIFO threshold setting for the CL-GD7548 (Harm Hanemaayer).
+ 101. Don't treat the CL-GD7543 as an Alpine-family chip (Harm Hanemaayer).
+ 100. XAA updates (see the NOTES file in the xaa directory for details)
+      (Harm Hanemaayer).
+  99. Support for sharing the core pointer between multiple XInput devices
+      (Frederic Lepied).
   98. XAA support for the ET6000 (Koen Gadeyne).
   97. Fix an S3 server crash caused by an off-by-one access when displaying
       images (Harald Koenig).
