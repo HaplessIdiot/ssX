@@ -1,4 +1,4 @@
-                   README for XFree86 4.2.99.901 on NetBSD
+                   README for XFree86 4.2.99.902 on NetBSD
 
 Rich  Murphey, David Dawes, Marc  Wandschneider, Mark  Weaver, Matthieu Herrb
 
@@ -6,9 +6,10 @@ Rich  Murphey, David Dawes, Marc  Wandschneider, Mark  Weaver, Matthieu Herrb
 
 1.  What and Where is XFree86?
 
-XFree86 is the Open Source port of X.Org's X11R6.6 release that supports sev-
-eral UNIX(R) and UNIX-like (such as Linux, the BSDs and Solaris x86) operat-
-ing systems on Intel and other platforms.
+XFree86 is an Open Source version of the X Window System that supports sev-
+eral UNIX(R) and UNIX-like operating systems (such as Linux, the BSDs and
+Solaris x86) on Intel and other platforms.  This version is compatible with
+X11R6.6.
 
 See the Copyright Notice.
 
@@ -100,7 +101,7 @@ the xvidtune utility.
 
 5.1  About mouse configuration
 
-XFree86 4.2.99.901 has support for the mouse driver included in the wscons
+XFree86 4.2.99.902 has support for the mouse driver included in the wscons
 console driver introduced by NetBSD 1.4. Specify ``wsmouse'' as the protocol
 and ``/dev/wsmouse0'' as the device in /etc/X11/XF86Config if you're using
 NetBSD 1.4 or later with a PS/2 mouse.
@@ -218,14 +219,14 @@ By default NetBSD include the BSD 4.4 kernel security feature that disable
 access to the /dev/mem device when in multi-users mode. But XFree86 servers
 can take advantage (or require) linear access to the display memory.
 
-Most XFree86 4.2.99.901 card drivers require linear memory access.  There are
+Most XFree86 4.2.99.902 card drivers require linear memory access.  There are
 two ways to allow XFree86 to access linear memory:
 
 The first way is to disable the kernel security feature by adding ``option
 INSECURE'' in the kernel configuration file and build a new kernel.
 
 The second way is to install the aperture driver, included in source form in
-xc/programs/Xserver/hw/xfree86/etc/apNetBSD.shar in the XFree86 4.2.99.901
+xc/programs/Xserver/hw/xfree86/etc/apNetBSD.shar in the XFree86 4.2.99.902
 source distribution. Unpack it in a new directory of your choice by running:
 
        sh apNetBSD.shar
@@ -367,7 +368,7 @@ particular: David Dawes, Todd Fries, Rod Grimes, Charles Hannum, Amancio
 Hasty, Christoph Robitschko, Matthias Scheler, Michael Smith, Ignatios Sou-
 vatzis, Jack Velte, Nate Williams and Pace Willison.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.66 2003/01/20 17:06:53 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.68 2003/02/16 17:21:11 dawes Exp $
 
 
 $XFree86: $

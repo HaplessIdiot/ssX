@@ -1,4 +1,4 @@
-               Installation Details for XFree86[tm] 4.2.99.901
+               Installation Details for XFree86[tm] 4.2.99.902
 
                           The XFree86 Project, Inc
 
@@ -23,12 +23,12 @@ ries.
 Note: for snapshot releases like this one, binaries are only available for a
 small number of platforms.
 
-2.  Downloading the XFree86 4.2.99.901 binaries
+2.  Downloading the XFree86 4.2.99.902 binaries
 
-We provide XFree86 4.2.99.901 binaries for a range of operating systems at
+We provide XFree86 4.2.99.902 binaries for a range of operating systems at
 our ftp site <URL:ftp://ftp.xfree86.org/pub/XFree86/snap-
-shots/4.2.99.901/binaries/> and our web site
-<URL:http://ftp.xfree86.org/pub/XFree86/snapshots/4.2.99.901/binaries/>.
+shots/4.2.99.902/binaries/> and our web site
+<URL:http://ftp.xfree86.org/pub/XFree86/snapshots/4.2.99.902/binaries/>.
 Often during releases our site is heavily loaded.  Instead of downloading
 directly from us we recommend that instead you use one of our mirror sites.
 
@@ -75,9 +75,9 @@ NOTES:
      looking soon after the release date.  The second possibility is that we
      won't have it available at all for this release.  This is likely if it's
      still not there about two weeks after the release date.  Check here
-     <URL:http://www.xfree86.org/4.2.99.901/UPDATES.html> for information
+     <URL:http://www.xfree86.org/4.2.99.902/UPDATES.html> for information
      about updates to our binary distributions, and here
-     <URL:http://www.xfree86.org/4.2.99.901/ERRATA.html> for errata related
+     <URL:http://www.xfree86.org/4.2.99.902/ERRATA.html> for errata related
      to this release.
 
 Once you're run the Xinstall.sh script and found which binary distribution is
@@ -137,9 +137,9 @@ NOTES:
 If you miss some and want to install them later, go to the Manual Installa-
 tion (section 4., page 1) section.
 
-3.  Installing XFree86 4.2.99.901 using the Xinstall.sh script
+3.  Installing XFree86 4.2.99.902 using the Xinstall.sh script
 
-We strongly recommend that our XFree86 4.2.99.901 binaries be installed using
+We strongly recommend that our XFree86 4.2.99.902 binaries be installed using
 the Xinstall.sh script that we provide.  There are a lot of steps in the man-
 ual installation process, and those steps can vary according to the platform
 and hardware setup.  There is a description of the manual installation pro-
@@ -256,7 +256,7 @@ later that you need it, you can create it easily by running:
 
 The next step is to configure the X server.  That is covered in detail in an
 as-yet unwritten document :-(.  In the meantime, there are three ways to cre-
-ate a basic X server configuration file for XFree86 4.2.99.901.  One is to
+ate a basic X server configuration file for XFree86 4.2.99.902.  One is to
 run the xf86config utility.  Another is to run the xf86cfg utility.  The
 third option is to use the new -configure X server option:
 
@@ -275,10 +275,10 @@ old XF86_* and/or XF98_* X server binaries from /usr/X11R6/bin.
 After the X server configuration is done, it may be advisable to reboot,
 especially if you run xdm (or equivalent) or the font server (xfs).
 
-4.  Installing XFree86 4.2.99.901 manually
+4.  Installing XFree86 4.2.99.902 manually
 
 This section contains information about manually installing the XFree86
-4.2.99.901 binary distributions.  You should only use this method if you know
+4.2.99.902 binary distributions.  You should only use this method if you know
 what you're doing.  The information here covers some common cases, but not
 every possible case.  It also may not be complete or up to date.  Use at your
 own risk.

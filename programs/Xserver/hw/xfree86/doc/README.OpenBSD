@@ -1,4 +1,4 @@
-                  README for XFree86 4.2.99.901 on OpenBSD
+                  README for XFree86 4.2.99.902 on OpenBSD
 
                                Matthieu Herrb
 
@@ -6,9 +6,10 @@
 
 1.  What and Where is XFree86?
 
-XFree86 is the Open Source port of X.Org's X11R6.6 release that supports sev-
-eral UNIX(R) and UNIX-like (such as Linux, the BSDs and Solaris x86) operat-
-ing systems on Intel and other platforms.
+XFree86 is an Open Source version of the X Window System that supports sev-
+eral UNIX(R) and UNIX-like operating systems (such as Linux, the BSDs and
+Solaris x86) on Intel and other platforms.  This version is compatible with
+X11R6.6.
 
 See the Copyright Notice.
 
@@ -23,7 +24,7 @@ if you have comments or suggestions about this file and we'll revise it.
 3.  New OS dependent features
 
 See the Release Notes for non-OS dependent new features in XFree86
-4.2.99.901.
+4.2.99.902.
 
 3.1  New OS dependant features in 4.3
 
@@ -123,7 +124,7 @@ the xvidtune utility.
 
 5.1  About mouse configuration
 
-XFree86 4.2.99.901 has support for the mouse driver included in the new
+XFree86 4.2.99.902 has support for the mouse driver included in the new
 wscons console driver introduced by OpenBSD-2.9.  Specify ``wsmouse'' as the
 protocol and ``/dev/wsmouse0'' as the  device in /etc/X11/XF86Config if
 you're using OpenBSD-2.9 or later with a PS/2 or USB mouse.
@@ -288,7 +289,7 @@ particular: David Dawes, Todd Fries, Rod Grimes, Charles Hannum, Amancio
 Hasty, Christoph Robitschko, Matthias Scheler, Michael Smith, Ignatios Sou-
 vatzis, Jack Velte, Nate Williams and Pace Willison.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.27 2003/01/20 17:06:53 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.29 2003/02/16 17:21:11 dawes Exp $
 
 
 $XFree86: $

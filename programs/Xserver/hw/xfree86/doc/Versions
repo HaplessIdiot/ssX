@@ -42,7 +42,7 @@ releases will not be full releases, and will consist of source code patches,
 plus binary updates to be layered on top of the previous full release.
 
 The next full release will be version 4.3.0, tentatively scheduled for late
-mid February 2003.  There is no scheduled update release.  If there is one,
+late February 2003.  There is no scheduled update release.  If there is one,
 the version will be 4.2.2.
 
 Aside from actual releases, snapshots of the active release branches are
