@@ -31,7 +31,7 @@
  * Modifier: Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/lcCT.c,v 3.8 1998/06/28 08:41:37 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcCT.c,v 3.9 1998/10/03 08:41:37 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"
@@ -94,7 +94,7 @@ static CTDataRec default_ct_data[] =
     { "ISO10646-1", "\033%B"},
     /* Non-Standard Character Set Encodings */
     { "KOI8-R:GR", "\033%/1\200\210koi8-r\002"},
-    { "FCD8859-15:GR", "\033%/1\200\213fcd8859-15\002"},
+    { "ISO8859-15:GR", "\033%/1\200\213iso8859-15\002"},
 } ; 
 
 #define XctC0		0x0000

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.5 1998/09/05 06:49:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.6 1998/10/05 13:23:02 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -31,6 +31,7 @@
 #define PCI_VENDOR_TI		0x104C
 #define PCI_VENDOR_NUMNINE	0x105D
 #define PCI_VENDOR_UMC		0x1060
+#define PCI_VENDOR_BROOKTREE	0x109E
 #define PCI_VENDOR_NEOMAGIC	0x10C8
 #define PCI_VENDOR_NVIDIA	0x10DE
 #define PCI_VENDOR_ALLIANCE	0x1142
@@ -146,6 +147,10 @@
 /* Number Nine */
 #define PCI_CHIP_I128		0x2309
 #define PCI_CHIP_I128_2		0x2339
+
+/* BrookTree */
+#define PCI_CHIP_BT848		0x0350
+#define PCI_CHIP_BT849		0x0351
 
 /* NVIDIA */
 #define PCI_CHIP_NV1		0x0008
@@ -335,6 +340,10 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_I128_2,	"Imagine 128 II"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_UMC,	"UMC",	{
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_BROOKTREE,	"BrookTree",	{
+				{PCI_CHIP_BT848,	"848"},
+				{PCI_CHIP_BT849,	"849"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_NVIDIA,	"NVidia",	{
 				{PCI_CHIP_NV1,		"NV1"},

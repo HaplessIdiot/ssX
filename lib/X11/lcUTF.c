@@ -25,7 +25,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
   Author: Hiromu Inukai (inukai@Japan.Sun.COM) SunSoft, inc.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/lcUTF.c,v 3.7 1997/11/22 12:50:11 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcUTF.c,v 3.8 1998/10/03 08:41:43 dawes Exp $ */
 
 
 #ifdef X_LOCALE
@@ -207,8 +207,8 @@ static XlcUTFDataRec default_utf_data[] =
     {"ISO8859-9", XlcGR, init_latin5tab, latin2rune, N11n_none, 0x20},
     {"ISO8859-10", XlcGL, init_latin6tab, latin2rune, N11n_none, 0x20},
     {"ISO8859-10", XlcGR, init_latin6tab, latin2rune, N11n_none, 0x20},
-    {"FCD8859-15", XlcGL, init_latin9tab, latin2rune, N11n_none, 0x20},
-    {"FCD8859-15", XlcGR, init_latin9tab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-15", XlcGL, init_latin9tab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-15", XlcGR, init_latin9tab, latin2rune, N11n_none, 0x20},
     {"JISX0201.1976-0", XlcGL, init_jis0201tab, jis02012rune, N11n_none, 0x20},
     {"JISX0201.1976-0", XlcGR, init_jis0201tab, jis02012rune, N11n_none, 0x20},
     {"JISX0208.1983-0", XlcGL, init_jis0208tab, jis02082rune, N11n_ja, 0x2222},

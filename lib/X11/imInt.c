@@ -26,7 +26,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imInt.c,v 3.3 1998/06/28 08:41:35 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imInt.c,v 3.4 1998/10/03 08:41:34 dawes Exp $ */
 
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
@@ -195,12 +195,19 @@ _XimMakeImName(lcd)
 	    end = begin += strlen(ximmodifier);
 	    while (*end && *end != '@')
 		end++;
+	    ret = Xmalloc(end - begin + 2);
+	    if (ret != NULL) {
+		(void)strncpy(ret, begin, end - begin + 1);
+		ret[end - begin + 1] = '\0';
+	    }
+	    return ret;
 	}
     }
-    ret = Xmalloc(end - begin + 2);
+
+    /* else return an empty string */
+    ret = Xmalloc(1);
     if (ret != NULL) {
-    	(void)strncpy(ret, begin, end - begin + 1);
-	ret[end - begin + 1] = '\0';
+	ret[0] = '\0';
     }
     return ret;
 }
