@@ -1,6 +1,6 @@
 XCOMM
 XCOMM $XConsortium: Imakefile /main/8 1996/09/28 16:55:19 rws $
-XCOMM $XFree86: xc/programs/Xserver/PEX5/ospex/Imakefile,v 3.6 1997/02/25 14:19:14 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/PEX5/ospex/Imakefile,v 3.7.2.1 1998/06/03 15:49:30 dawes Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -66,15 +66,11 @@ OBJS = osPexFont.o
 
 PEX_OS_LIBNAME = libospex.a
 
-#define DoSharedLib	BuildDynamicLoading && PexModule
+ModuleObjectRule()
 
-#include <ServerLib.tmpl>
+SubdirLibraryRule($(OBJS))
 
-#if DoSharedLib
-SubdirLibraryRule($(OBJS))
-UnsharedLibraryTarget(ospex,$(OBJS),unshared,..)
-#else
-SubdirLibraryRule($(OBJS))
+#if !PexModule
 NormalLibraryTarget(ospex,$(OBJS))
 #endif
 

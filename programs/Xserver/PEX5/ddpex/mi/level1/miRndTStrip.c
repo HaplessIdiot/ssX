@@ -1,5 +1,5 @@
 /* $XConsortium: miRndTStrip.c,v 5.3 94/04/17 20:36:56 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level1/miRndTStrip.c,v 3.1 1997/02/18 17:48:07 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level1/miRndTStrip.c,v 3.2.2.1 1998/05/20 15:51:05 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -61,10 +61,10 @@ SOFTWARE.
 #include "gcstruct.h"
 #include "ddpex2.h"
 
-#include <stdio.h>
-
 #ifdef XFree86LOADER
-#include "xf86_libc.h"
+#include "xf86_ansic.h"
+#else
+#include <stdio.h>
 #endif
 
 /*++

@@ -1,5 +1,5 @@
 /* $XConsortium: miPick.c,v 5.8 94/04/17 20:37:32 hersh Exp $ */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level4/miPick.c,v 1.4.2.1 1998/05/20 15:51:25 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -59,7 +59,7 @@ SOFTWARE.
 #include "pexExtract.h"
 
 #ifdef XFree86LOADER
-#include "xf86_libc.h"
+#include "xf86_ansic.h"
 #endif
 
 extern ddpex4rtn    UpdateStructRefs();

@@ -1,5 +1,5 @@
 /* $XConsortium: miTextLUT.c,v 5.2 94/04/17 20:37:46 rws Exp $ */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/shared/miTextLUT.c,v 1.4.2.1 1998/05/20 15:51:33 dawes Exp $ */
 
 /*
 
@@ -58,7 +58,7 @@ SOFTWARE.
 #include "PEXprotost.h"
 
 #ifdef XFree86LOADER
-#include "xf86_libc.h"
+#include "xf86_ansic.h"
 #endif
 
 /*  Level 4 Shared Resources  */

@@ -1,5 +1,5 @@
 /* $XConsortium: dipexExt.c,v 5.11 94/04/17 20:36:04 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.11 1997/04/08 10:09:41 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.12.2.5 1998/07/04 13:32:18 dawes Exp $ */
 
 /***********************************************************
 
@@ -68,10 +68,8 @@ SOFTWARE.
 #undef LOCAL_FLAG
 
 #ifdef XFree86LOADER
-#define	MAGIC_DONE		0
-#define	MAGIC_LOAD_EXTENSION	8
-#include "xf86_libc.h"
-#include "xf86_ldext.h"
+#include "xf86_ansic.h"
+#include "xf86Module.h"
 #endif
 
 unsigned long add_pad_of[] = {0, 3, 2, 1};
@@ -187,12 +185,7 @@ PexExtensionInit()
 				     * 1 byte for null */
 				 );
         if (errmsg) {
-#ifdef XFree86LOADER
-          xf86sprintf(errmsg, "%s %s", static_message, DEFAULT_PEX_FONT_NAME);
-#else
           sprintf(errmsg, "%s %s", static_message, DEFAULT_PEX_FONT_NAME);
-#endif
-
 	  ErrorF(errmsg);
           xfree(errmsg);
         }
@@ -335,56 +328,45 @@ pexContext *cntxtPtr;
 pexReq *strmPtr;
 { }
 
-#ifdef DYNAMIC_MODULE
-/*
- * Entry point of dynamic loading for dlopen type of loading
- */
-extern void (*PexExtensionInitPtr)(void);
-
-int
-#ifndef DLSYM_BUG
-init_module(server_version)
-#else
-init_pex5(server_version)
-#endif
-unsigned long server_version;
-{
-
-  PexExtensionInitPtr = PexExtensionInit;
-#ifdef DEBUG
-  ErrorF("Init module PEX %p\n", PexExtensionInitPtr);
-#endif
-  return 1;
-}
-#endif /* DYNAMIC_MODULE */
-
-
 #ifdef XFree86LOADER
 
-ExtensionModule pex5Ext = {
+MODULEINITPROTO(pex5ModuleInit);
+static MODULESETUPPROTO(pex5Setup);
+
+static ExtensionModule pex5Ext = {
     PexExtensionInit,
     PEX_NAME_STRING,
     NULL};
-/*
- * Entry point for the new loading code that can load .a files
- */
+
+static XF86ModuleVersionInfo VersRec =
+{
+	"pex5",
+	MODULEVENDORSTRING,
+	MODINFOSTRING1,
+	MODINFOSTRING2,
+	XF86_VERSION_CURRENT,
+	0x00010001,				/* 1.1 */
+	ABI_CLASS_EXTENSION,
+	ABI_EXTENSION_VERSION,
+	{0,0,0,0}
+};
+
 
 void
-libpex5ModuleInit(data,magic)
-    pointer	* data;
-    INT32	* magic;
+pex5ModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
+	       ModuleTearDownProc *teardown)
 {
-    static int cnt = 0;
+    *vers = &VersRec;
+    *setup = pex5Setup;
+    *teardown = NULL;
+}
 
-    switch(cnt++)
-    {
-    case 0:
-	*magic = MAGIC_LOAD_EXTENSION;
-        * data = (pointer) &pex5Ext;
-	break;
-    default:
-        * magic= MAGIC_DONE;
-    }
-    return;
+static pointer
+pex5Setup(pointer module, pointer opts, int *errmaj, int *errmin)
+{
+    LoadExtension(&pex5Ext);
+
+    /* Need a non-NULL return value to indicate success */
+    return (pointer)1;
 }
 #endif /* XFree86LOADER */

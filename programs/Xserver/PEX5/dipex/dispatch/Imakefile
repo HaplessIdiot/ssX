@@ -1,6 +1,6 @@
 XCOMM
 XCOMM $XConsortium: Imakefile /main/8 1996/09/28 16:54:48 rws $
-XCOMM $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/Imakefile,v 3.7 1997/02/25 14:19:07 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/Imakefile,v 3.8.2.1 1998/06/03 15:49:28 dawes Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -34,18 +34,9 @@ XCOMM PERFORMANCE OF THIS SOFTWARE.
 RDR_STUBS = -DRENDER_CMDS
 ST_STUBS = -DSTORE_CMDS
 DIPEXDEFINES = PexDipexDefines
-#if BuildDynamicLoading && PexModule
-#if HasDlsymBug
-MODULEDEFINES =  -DDLSYM_BUG
-#endif
-#define SharedServerLibraryDef -DDYNAMIC_MODULE
-#endif
-#if DoLoadableServer
-EXTRAINCLUDES = $(XF86COMSRC)
-#endif
 
  CDEBUGFLAGS = PexDipexCDebugFlags
-     DEFINES = $(DIPEXDEFINES) $(MODULEDEFINES)
+     DEFINES = $(DIPEXDEFINES)
 
     LINTLIBS = ../../../dix/llib-ldix.ln \
 		../../../os/llib-los.ln \
@@ -55,8 +46,7 @@ EXTRAINCLUDES = $(XF86COMSRC)
 		../objects/llib-lobj.ln
 
    PEXSRVINC = ../../include
-    INCLUDES = -I$(PEXSRVINC) -I$(XINCLUDESRC) -I$(SERVERSRC)/include \
-               -I$(EXTRAINCLUDES)
+    INCLUDES = -I$(PEXSRVINC) -I$(XINCLUDESRC) -I$(SERVERSRC)/include
 
 
 SRCS = dipexParse.c dipexExt.c pexDump.c pexError.c dipexBuf.c pexUtils.c
@@ -65,15 +55,14 @@ OBJS = dipexParse.o dipexExt.o pexDump.o pexError.o dipexBuf.o pexUtils.o
 
 PEX_DI_LIBNAME = libdidipex.a
 
-#define DoSharedLib	BuildDynamicLoading && PexModule
-#include <ServerLib.tmpl>
-#if DoSharedLib
+ModuleObjectRule()
+
 SubdirLibraryRule($(OBJS))
-UnsharedLibraryTarget(didipex,$(OBJS),unshared,..)
-#else
-SubdirLibraryRule($(OBJS))
+
+#if !PexModule
 NormalLibraryTarget(didipex,$(OBJS))
 #endif
+
 LintLibraryTarget(dsp,$(SRCS))
 NormalLintTarget($(SRCS))
 

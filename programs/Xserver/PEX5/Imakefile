@@ -1,7 +1,6 @@
 XCOMM $XConsortium: Imakefile /main/11 1996/12/02 10:18:28 lehors $
-XCOMM $XFree86: xc/programs/Xserver/PEX5/Imakefile,v 3.8 1998/01/01 14:51:32 robin Exp $
+XCOMM $XFree86: xc/programs/Xserver/PEX5/Imakefile,v 3.7.2.1 1998/06/03 15:49:23 dawes Exp $
 
-#define IHaveModules
 #include <Server.tmpl>
 
 #define IHaveSubdirs
@@ -44,30 +43,18 @@ DONES = \
 	ddpex/mi/shared/DONE \
 	ospex/DONE
 
-dipex/dispatch/DONE:	dipex/dispatch
-dipex/swap/DONE:	dipex/swap
-dipex/objects/DONE:	dipex/objects
-ddpex/mi/level1/DONE:	ddpex/mi/level1
-ddpex/mi/level2/DONE:	ddpex/mi/level2
-ddpex/mi/level3/DONE:	ddpex/mi/level3
-ddpex/mi/level4/DONE:	ddpex/mi/level4
-ddpex/mi/shared/DONE:	ddpex/mi/shared
-ospex/DONE:		ospex
-
-#if DoLoadableServer
-NormalLibraryObjectRule()
-NormalDepLibraryTarget(pex5,$(SUBDIRS) $(DONES),$(OBJS))
-InstallDynamicModule(LibraryTargetName(pex5),$(MODULEDIR))
-#else
-SharedDepModuleTarget(pex5.so,$(SUBDIRS) $(DONES),$(OBJS))
-InstallDynamicModule(pex5.so,$(MODULEDIR))
+#if HasParallelMake
+MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
 #endif
 
+DepLibraryModuleTarget(pex5,$(SUBDIRS) $(DONES),$(OBJS))
+InstallLibraryModule(pex5,$(MODULEDIR))
 ForceSubdirs($(SUBDIRS))
 
 #else
 MakeSubdirs($(SUBDIRS)) 
 #endif
+
 
 DependSubdirs($(SUBDIRS))
 MakeLintLibSubdirs($(SUBDIRS))

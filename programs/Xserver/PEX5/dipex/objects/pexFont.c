@@ -1,5 +1,4 @@
 /* $XConsortium: pexFont.c /main/8 1996/12/02 10:19:08 lehors $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexFont.c,v 3.3 1997/02/24 17:45:43 hohndel Exp $ */
 
 /***********************************************************
 
@@ -47,6 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexFont.c,v 3.4 1998/07/25 03:10:20 dawes Exp $ */
 
 
 /*++    pexFont.c
@@ -89,7 +89,7 @@ SOFTWARE.
 #endif /* PATH_MAX */
 
 #ifdef XFree86LOADER
-#include "xf86_libc.h"
+#include "xf86_ansic.h"
 #endif
 
 #ifdef min

@@ -1,5 +1,5 @@
 /* $XConsortium: miListUtil.c,v 5.3 94/04/17 20:36:52 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level1/miListUtil.c,v 3.1 1997/02/18 17:48:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level1/miListUtil.c,v 3.2.2.1 1998/05/20 15:51:04 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -58,7 +58,7 @@ SOFTWARE.
 #include "gcstruct.h"
 
 #ifdef XFree86LOADER
-#include "xf86_libc.h"
+#include "xf86_ansic.h"
 #endif
 
 /*++

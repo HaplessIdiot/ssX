@@ -1,6 +1,6 @@
 XCOMM
 XCOMM $XConsortium: Imakefile /main/11 1996/09/28 16:54:25 rws $
-XCOMM $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level4/Imakefile,v 3.6 1997/02/25 14:19:03 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level4/Imakefile,v 3.7.2.1 1998/06/03 15:49:26 dawes Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -68,20 +68,19 @@ OBJS = miPick.o \
 	css_ex_str.o \
 	css_tbls.o
 
-#define DoSharedLib	BuildDynamicLoading && PexModule
-#include <ServerLib.tmpl>
-#if DoSharedLib
+ModuleObjectRule()
+
 SubdirLibraryRule($(OBJS))
-UnsharedLibraryTarget(ddpex4,$(OBJS),unshared,..)
-#else
-SubdirLibraryRule($(OBJS))
+
+#if !PexModule
 NormalLibraryTarget(ddpex4,$(OBJS))
 #endif
+
 LintLibraryTarget(dp4,$(SRCS))
 NormalLintTarget($(SRCS))
 
 InstallLinkKitLibrary(ddpex4,$(LINKKITDIR)/lib)
 
-SpecialCLibObjectRule(miWks,$(ICONFIGFILES),$(EXT_DEFINES))
+SpecialObjectRule(miWks,$(ICONFIGFILES),$(EXT_DEFINES))
 
 DependTarget()

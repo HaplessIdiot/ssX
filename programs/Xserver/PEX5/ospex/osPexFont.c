@@ -1,5 +1,5 @@
 /* $XConsortium: osPexFont.c /main/10 1996/12/06 11:02:43 lehors $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ospex/osPexFont.c,v 3.9 1997/11/16 11:51:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ospex/osPexFont.c,v 3.10 1998/07/25 03:10:21 dawes Exp $ */
 
 /*
 
@@ -49,6 +49,7 @@ SOFTWARE.
 
 */
 
+#ifndef XFree86LOADER
 #ifdef WIN32
 #define _WILLWINSOCK_
 #endif
@@ -60,6 +61,7 @@ extern char *getenv();
 #endif
 
 #include <stdio.h>
+#endif
 #include "mipex.h"
 #include "miFont.h"
 #include "PEXErr.h"
@@ -70,6 +72,7 @@ extern char *getenv();
 #define PEX_DEFAULT_FONTPATH "/usr/lib/X11/fonts/PEX"
 #endif
 
+#ifndef XFree86LOADER
 #ifndef X_NOT_POSIX
 #ifdef _POSIX_SOURCE
 #include <limits.h>
@@ -112,15 +115,16 @@ extern char *getenv();
 #endif
 #endif
 #endif
+#endif
 
 #ifdef XFree86LOADER
-#include "xf86_libc.h"
 #include "xf86_ansic.h"
 #endif
 /* A convenient shorthand. */
 #ifndef XFree86LOADER
 typedef struct dirent	 ENTRY;
 #else
+/* XXX This should be taken care of elsewhere */
 typedef struct _xf86dirent ENTRY;
 #endif
 #define FileName(file) file->d_name

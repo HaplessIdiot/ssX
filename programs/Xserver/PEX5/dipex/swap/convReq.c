@@ -1,5 +1,5 @@
 /* $XConsortium: convReq.c,v 5.17 94/04/17 20:36:29 mor Exp $ */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/swap/convReq.c,v 1.4.2.1 1998/05/20 15:51:46 dawes Exp $ */
 
 /***********************************************************
 
@@ -64,7 +64,7 @@ SOFTWARE.
 #include "convertStr.h"
 
 #ifdef XFree86LOADER
-#include "xf86_libc.h"
+#include "xf86_ansic.h"
 #endif
 
 #undef LOCAL_FLAG

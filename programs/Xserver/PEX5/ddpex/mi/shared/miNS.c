@@ -1,5 +1,5 @@
 /* $XConsortium: miNS.c,v 5.3 94/04/17 20:37:45 hersh Exp $ */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/shared/miNS.c,v 1.4.2.1 1998/05/20 15:51:32 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -57,7 +57,7 @@ SOFTWARE.
 #include	"pexUtils.h"
 
 #ifdef XFree86LOADER
-#include "xf86_libc.h"
+#include "xf86_ansic.h"
 #endif
 
 /*  Level 4 Shared Resources  */

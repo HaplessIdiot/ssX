@@ -1,5 +1,5 @@
 /* $XConsortium: miDynamics.c,v 5.3 94/04/17 20:37:31 hersh Exp $ */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level4/miDynamics.c,v 1.4.2.1 1998/05/20 15:51:25 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -58,7 +58,7 @@ SOFTWARE.
 #include "miNS.h"
 
 #ifdef XFree86LOADER
-#include "xf86_libc.h"
+#include "xf86_ansic.h"
 #endif
 
 /*++
