@@ -147,4 +147,4 @@ XftDirScan
 XftDirSave
 
 
-/* $XFree86: xc/lib/Xft1/Xft-def.cpp,v 1.1.1.1 2002/02/15 01:26:16 keithp Exp $ */
+/* $XFree86: xc/lib/Xft1/Xft1-def.cpp,v 1.1 2002/05/27 16:41:59 alanh Exp $ */
