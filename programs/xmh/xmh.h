@@ -139,6 +139,7 @@ typedef struct {
    MsgList	mlist;		/* Messages in this sequence. */
 } SequenceRec, *Sequence;
 
+#define XMH_CB_ARGS Widget, XtPointer, XtPointer
 
 #include "globals.h"
 #include "externs.h"

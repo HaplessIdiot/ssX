@@ -69,7 +69,8 @@ extern WidgetClass tocSourceWidgetClass;
 typedef struct _TocSourceClassRec *TocSourceWidgetClass;
 typedef struct _TocSourceRec      *TocSourceWidget;
 
-extern void TSourceInvalid();
+extern Msg MsgFromPosition(Toc, XawTextPosition, XawTextScanDirection);
+extern void TSourceInvalid(Toc, XawTextPosition, int);
 
 #endif /* _XawTextSrc_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

@@ -1,4 +1,4 @@
-/* $XConsortium: popup.c,v 2.37 93/09/20 17:52:11 hersh Exp $
+/* $XConsortium: popup.c,v 2.38 94/08/26 18:04:22 swick Exp $
  *
  *
  *			  COPYRIGHT 1989
@@ -27,6 +27,8 @@
 /* popup.c -- Handle pop-up widgets. */
 
 #include "xmh.h"
+#include "actions.h"
+
 #include <X11/Xaw/Cardinals.h>
 
 typedef struct _PopupStatus {
@@ -50,11 +52,12 @@ static String XmhNvalue = "value";
  * which remains the toplevel widget.
  */
 
-static void DeterminePopupPosition(x_ptr, y_ptr, transFor_return)
-    Position	*x_ptr, *y_ptr;
-    Widget	*transFor_return; /* return a suitable top level shell */
+static void DeterminePopupPosition(
+    Position	*x_ptr,
+    Position	*y_ptr,
+    Widget	*transFor_return) /* return a suitable top level shell */
 {
-    if (lastInput.win != -1) {
+    if (lastInput.win != (Window) -1) {
 	if (transFor_return) {
 	    Widget	source;
 	    source = XtWindowToWidget(XtDisplay(toplevel), lastInput.win);
@@ -85,9 +88,10 @@ static void DeterminePopupPosition(x_ptr, y_ptr, transFor_return)
     }
 }
 
-static Boolean PositionThePopup(popup, x, y)
-    Widget	popup;
-    Position	x, y;
+static Boolean PositionThePopup(
+    Widget	popup,
+    Position	x,
+    Position	y)
 {
     /* Hack.  Fix up the position of the popup.  The xmh app defaults file
      * contains an Xmh*Geometry specification; the effects of that on 
@@ -119,10 +123,11 @@ static Boolean PositionThePopup(popup, x, y)
 }
 
 
-static void CenterPopupPosition(widget, popup, px, py)
-    Widget	widget;
-    Widget	popup;
-    Position	px, py;
+static void CenterPopupPosition(
+    Widget	widget,
+    Widget	popup,
+    Position	px,
+    Position	py)
 {
     Position	x, y;
     Position	nx, ny;
@@ -154,10 +159,13 @@ static void CenterPopupPosition(widget, popup, px, py)
    on current position.
  */
 
-static void InsureVisibility(popup, popup_child, x, y, centerX, centerY)
-    Widget	popup, popup_child;
-    Position	x, y;		/* assert: current position = (x,y) */
-    Boolean	centerX, centerY;
+static void InsureVisibility(
+    Widget	popup,
+    Widget	popup_child,
+    Position	x,		/* assert: current position = (x,y) */
+    Position	y,
+    Boolean	centerX,
+    Boolean	centerY)
 {
     Position	root_x, root_y;
     Dimension	width, height, border;
@@ -192,19 +200,19 @@ static void InsureVisibility(popup, popup_child, x, y, centerX, centerY)
 
 
 /*ARGSUSED*/
-void DestroyPopup(widget, client_data, call_data)
-    Widget		widget;		/* unused */
-    XtPointer		client_data;
-    XtPointer		call_data;	/* unused */
+void DestroyPopup(
+    Widget		widget,		/* unused */
+    XtPointer		client_data,
+    XtPointer		call_data)	/* unused */
 {
     Widget		popup = (Widget) client_data;
     XtPopdown(popup);
     XtDestroyWidget(popup);
 }
 
-void WMDeletePopup(popup, event)
-    Widget	popup;	/* transient shell */
-    XEvent*	event;
+void WMDeletePopup(
+    Widget	popup,	/* transient shell */
+    XEvent*	event)
 {
     String	shellName;
     String	buttonName;
@@ -229,8 +237,8 @@ void WMDeletePopup(popup, event)
     XtCallActionProc(button, "unset", event, (String*)NULL, ZERO);
 }
 
-static void TheUsual(popup)
-    Widget	popup;	/* shell */
+static void TheUsual(
+    Widget	popup)	/* shell */
 {
     XtInstallAllAccelerators(popup, popup);
     XtAugmentTranslations(popup, app_resources.wm_protocols_translations);
@@ -242,21 +250,21 @@ static void TheUsual(popup)
 
 
 /*ARGSUSED*/
-void XmhPromptOkayAction(w, event, params, num_params)
-    Widget	w;		/* the "value" widget in the Dialog box */
-    XEvent	*event;		/* unused */
-    String	*params;	/* unused */
-    Cardinal	*num_params;	/* unused */
+void XmhPromptOkayAction(
+    Widget	w,		/* the "value" widget in the Dialog box */
+    XEvent	*event,		/* unused */
+    String	*params,	/* unused */
+    Cardinal	*num_params)	/* unused */
 {
     XtCallCallbacks(XtNameToWidget(XtParent(w), XmhNokay), XtNcallback,
 		    (XtPointer)XtParent(w));
 }
 
 
-void PopupPrompt(transientFor, question, okayCallback)
-    Widget		transientFor;	/* required to be a top-level shell */
-    String		question;		/* the prompting string */
-    XtCallbackProc	okayCallback;		/* CreateFolder() */
+void PopupPrompt(
+    Widget		transientFor,	/* required to be a top-level shell */
+    String		question,		/* the prompting string */
+    XtCallbackProc	okayCallback)		/* CreateFolder() */
 {
     Widget		popup;
     Widget		dialog;
@@ -298,10 +306,10 @@ void PopupPrompt(transientFor, question, okayCallback)
 
 
 /* ARGSUSED */
-static void FreePopupStatus( w, closure, call_data )
-    Widget w;			/* unused */
-    XtPointer closure;
-    XtPointer call_data;	/* unused */
+static void FreePopupStatus(
+    Widget w,			/* unused */
+    XtPointer closure,
+    XtPointer call_data)	/* unused */
 {
     PopupStatus popup = (PopupStatus)closure;
     XtPopdown(popup->popup);
@@ -312,10 +320,10 @@ static void FreePopupStatus( w, closure, call_data )
 }
 
 
-void PopupNotice(message, callback, closure)
-    String		message;
-    XtCallbackProc	callback;
-    XtPointer		closure;
+void PopupNotice(
+    String		message,
+    XtCallbackProc	callback,
+    XtPointer		closure)
 {
     PopupStatus popup_status = (PopupStatus)closure;
     Widget transientFor;
@@ -380,11 +388,11 @@ void PopupNotice(message, callback, closure)
 }
 
 
-void PopupConfirm(center_widget, question, affirm_callbacks, negate_callbacks)
-    Widget		center_widget;	/* where to center; may be NULL */
-    String		question;
-    XtCallbackList	affirm_callbacks;
-    XtCallbackList	negate_callbacks;
+void PopupConfirm(
+    Widget		center_widget,	/* where to center; may be NULL */
+    String		question,
+    XtCallbackList	affirm_callbacks,
+    XtCallbackList	negate_callbacks)
 {
     Widget	popup;
     Widget	dialog;
@@ -423,15 +431,16 @@ void PopupConfirm(center_widget, question, affirm_callbacks, negate_callbacks)
 	XtAddCallbacks(button, XtNcallback, negate_callbacks);
 
     TheUsual(popup);
-    CenterPopupPosition(center_widget, popup, x, y);
+    CenterPopupPosition(center_widget ? center_widget : transientFor,
+			popup, x, y);
     InsureVisibility(popup, dialog, x, y, False, False);
     XtPopup(popup, XtGrabNone);
 }
 
 
-void PopupError(widget, message)
-    Widget	widget;	/* transient for this top-level shell, or NULL */
-    String	message;
+void PopupError(
+    Widget	widget,	/* transient for this top-level shell, or NULL */
+    String	message)
 {
     Widget	transFor, error_popup, dialog;
     Position	x, y;
@@ -464,13 +473,13 @@ void PopupError(widget, message)
 }
 
 /*ARGSUSED*/
-void PopupWarningHandler(name, type, class, msg, params, num)
-    String name;
-    String type;
-    String class;
-    String msg;
-    String *params;
-    Cardinal *num;
+void PopupWarningHandler(
+    String name,
+    String type,
+    String class,
+    String msg,
+    String *params,
+    Cardinal *num)
 {
     char *ptr;
     int i;
