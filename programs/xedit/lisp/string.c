@@ -27,12 +27,12 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.22 2002/12/04 05:27:58 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.23tsi Exp $ */
 
-#include "helper.h"
-#include "read.h"
-#include "string.h"
-#include "private.h"
+#include "lisp/helper.h"
+#include "lisp/read.h"
+#include "lisp/string.h"
+#include "lisp/private.h"
 #include <ctype.h>
 
 #define CHAR_LESS		1

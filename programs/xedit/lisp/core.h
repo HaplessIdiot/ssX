@@ -27,12 +27,12 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.34 2002/12/04 05:27:57 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.35tsi Exp $ */
 
 #ifndef Lisp_core_h
 #define Lisp_core_h
 
-#include "internal.h"
+#include "lisp/internal.h"
 
 void LispCoreInit(void);
 

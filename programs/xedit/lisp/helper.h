@@ -27,12 +27,12 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.h,v 1.14 2002/11/15 07:01:29 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.h,v 1.15tsi Exp $ */
 
 #ifndef Lisp_helper_h
 #define Lisp_helper_h
 
-#include "private.h"
+#include "lisp/private.h"
 
 /*
  * Prototypes

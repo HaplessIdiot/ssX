@@ -27,9 +27,9 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/require.c,v 1.16 2002/11/23 08:26:50 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/require.c,v 1.17tsi Exp $ */
 
-#include "require.h"
+#include "lisp/require.h"
 
 /*
  * Implementation

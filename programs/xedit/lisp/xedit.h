@@ -27,16 +27,16 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/xedit.h,v 1.4 2002/11/08 08:00:58 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/xedit.h,v 1.5tsi Exp $ */
 
 #ifndef Lisp_xedit_h
 #define Lisp_xedit_h
 
 #ifdef XEDIT_LISP_PRIVATE
-#include "private.h"
-#include "io.h"
-#include "read.h"
-#include "write.h"
+#include "lisp/private.h"
+#include "lisp/io.h"
+#include "lisp/read.h"
+#include "lisp/write.h"
 
 LispObj *Xedit_AddEntity(LispBuiltin*);
 LispObj *Xedit_AutoFill(LispBuiltin*);

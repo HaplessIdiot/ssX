@@ -27,10 +27,10 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.22 2002/11/23 21:41:52 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.23tsi Exp $ */
 
-#include "math.h"
-#include "private.h"
+#include "lisp/math.h"
+#include "lisp/private.h"
 
 #ifdef __UNIXOS2__
 # define finite(x) isfinite(x)
@@ -54,7 +54,7 @@ Atom_id Sdefault_float_format;
 /*
  * Implementation
  */
-#include "mathimp.c"
+#include "lisp/mathimp.c"
 
 void
 LispMathInit(void)

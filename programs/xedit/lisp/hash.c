@@ -27,9 +27,9 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/hash.c,v 1.3 2002/11/10 16:29:04 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/hash.c,v 1.4tsi Exp $ */
 
-#include "hash.h"
+#include "lisp/hash.h"
 
 /* A simple hash-table implementation
  * TODO: implement SXHASH and WITH-HASH-TABLE-ITERATOR

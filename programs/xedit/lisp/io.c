@@ -27,9 +27,9 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.15 2002/12/06 03:25:27 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.16tsi Exp $ */
 
-#include "io.h"
+#include "lisp/io.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <stdarg.h>

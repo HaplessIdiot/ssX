@@ -27,15 +27,15 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.69 2002/12/20 04:32:45 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.70tsi Exp $ */
 
-#include "io.h"
-#include "core.h"
-#include "format.h"
-#include "helper.h"
-#include "package.h"
-#include "private.h"
-#include "write.h"
+#include "lisp/io.h"
+#include "lisp/core.h"
+#include "lisp/format.h"
+#include "lisp/helper.h"
+#include "lisp/package.h"
+#include "lisp/private.h"
+#include "lisp/write.h"
 
 /*
  * Types

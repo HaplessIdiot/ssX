@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.38 2002/11/30 23:13:12 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.39tsi Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -38,15 +38,15 @@
 #include <setjmp.h>
 #include <unistd.h>
 #include <sys/time.h>
-#include "internal.h"
+#include "lisp/internal.h"
 
-#include "core.h"
+#include "lisp/core.h"
 #ifdef DEBUGGER
-#include "debugger.h"
+#include "lisp/debugger.h"
 #endif
-#include "helper.h"
-#include "string.h"
-#include "struct.h"
+#include "lisp/helper.h"
+#include "lisp/string.h"
+#include "lisp/struct.h"
 
 /*
  * Defines

@@ -27,12 +27,12 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/x11.c,v 1.10 2002/11/23 08:26:52 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/x11.c,v 1.11tsi Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
-#include "internal.h"
-#include "private.h"
+#include "lisp/internal.h"
+#include "lisp/private.h"
 #include <X11/Xlib.h>
 
 /*

@@ -27,11 +27,11 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lsp.c,v 1.6 2002/11/08 08:00:57 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lsp.c,v 1.7tsi Exp $ */
 
 #include <stdio.h>
 #include <string.h>
-#include "lisp.h"
+#include "lisp/lisp.h"
 
 #ifdef NEED_STRCASECMP
 int strcasecmp(const char *s1, const char *s2);

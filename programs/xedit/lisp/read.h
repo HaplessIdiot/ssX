@@ -27,12 +27,12 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.h,v 1.2 2002/11/08 08:00:57 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.h,v 1.3tsi Exp $ */
 
 #ifndef Lisp_read_h
 #define Lisp_read_h
 
-#include "io.h"
+#include "lisp/io.h"
 
 /*
  * Prototypes

@@ -27,11 +27,11 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.27 2002/11/21 07:25:09 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.28tsi Exp $ */
 
-#include "io.h"
-#include "write.h"
-#include "format.h"
+#include "lisp/io.h"
+#include "lisp/write.h"
+#include "lisp/format.h"
 #include <ctype.h>
 
 #define MAXFMT			8
