@@ -1,4 +1,14 @@
+XFree86 3.0C (22 June 1994)
+111. Recognise 864/964 PCI as capable of linear memory access.
+110. Fix ramdac access and clock probe problems with AGX server (Henry Worth).
+109. Support for Stealth 64 (S3 964 + Bt485) (Steven Parker).
+108. Fix for 4-pixel border problem with S3 864 pixmux (Harald Koenig).
+107. Allow the S3 SVGA driver to recognise the 864 and 964 (Harald Koenig).
+106. Improved 5434 support, and accelerated copyPlane1to8 for cirrus
+     (Harm Hannemaayer).
+
 XFree86 3.0Bc (19 June 1994)
+105. Fix VT switch problem in 16bpp Mach32 when sharing cfb.
 104. Add framework for a ramdac Xconfig setting (like chipset).
 103. Reorganise mode/clock matching code (Marc Aurele La France).
 102. Fix server's client count problem after authorisation failure.
