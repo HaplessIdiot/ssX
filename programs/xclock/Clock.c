@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/xclock/Clock.c,v 3.15 2002/05/20 07:17:50 keithp Exp $ */
+/* $XFree86: xc/programs/xclock/Clock.c,v 3.16 2002/05/20 17:55:37 keithp Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/StringDefs.h>
@@ -530,6 +530,105 @@ RenderPrepare (ClockWidget  w, XftColor *color)
 	w->clock.fill_picture = XftDrawSrcPicture (w->clock.draw, color);
 }
 
+static void
+RenderClip (ClockWidget w)
+{
+    Region	r;
+    XClearArea (XtDisplay (w),
+		XtWindow (w), 
+		w->clock.damage.x,
+		w->clock.damage.y,
+		w->clock.damage.width,
+		w->clock.damage.height, False);
+    RenderPrepare (w, 0);
+    r = XCreateRegion ();
+    XUnionRectWithRegion (&w->clock.damage,
+			  r, r);
+    XftDrawSetClip (w->clock.draw, r);
+    XDestroyRegion (r);
+}
+
+static void
+RenderTextBounds (ClockWidget w, char *str, int off, int len, 
+		  XRectangle *bounds, int *xp, int *yp)
+{
+    XGlyphInfo  head, tail;
+    int	    x, y;
+
+    XftTextExtents8 (XtDisplay (w), w->clock.face, (FcChar8 *) str, 
+		     off, &head);
+    XftTextExtents8 (XtDisplay (w), w->clock.face, (FcChar8 *) str + off, 
+		     len - off, &tail);
+    /*
+     * Compute position of tail
+     */
+    x = w->clock.padding + head.xOff;
+    y = w->clock.face->ascent + w->clock.padding + head.yOff;
+    /*
+     * Compute bounds of tail, pad a bit as the bounds aren't exact
+     */
+    bounds->x = x - tail.x - 1;
+    bounds->y = y - tail.y - 1;
+    bounds->width = tail.width + 2;
+    bounds->height = tail.height + 2;
+    if (xp) *xp = x;
+    if (yp) *yp = y;
+}
+
+static void
+RenderUpdateRectBounds (XRectangle *damage, XRectangle *bounds)
+{
+    int	    x1 = bounds->x;
+    int	    y1 = bounds->y;
+    int	    x2 = bounds->x + bounds->width; 
+    int	    y2 = bounds->y + bounds->height; 
+    int	    d_x1 = damage->x;
+    int	    d_y1 = damage->y;
+    int	    d_x2 = damage->x + damage->width; 
+    int	    d_y2 = damage->y + damage->height; 
+
+    if (x1 == x2) 
+    { 
+	x1 = d_x1; 
+	x2 = d_x2; 
+    }
+    else
+    {
+	if (d_x1 < x1) x1 = d_x1;
+	if (d_x2 > x2) x2 = d_x2;
+    }
+    if (y1 == y2)
+    {
+	y1 = d_y1;
+	y2 = d_y2;
+    }
+    else
+    {
+	if (d_y1 < y1) y1 = d_y1;
+	if (d_y2 > y2) y2 = d_y2;
+    }
+
+    bounds->x = x1;
+    bounds->y = y1;
+    bounds->width = x2 - x1;
+    bounds->height = y2 - y1;
+}
+
+static Boolean
+RenderRectIn (XRectangle *rect, XRectangle *bounds)
+{
+    int	    x1 = bounds->x;
+    int	    y1 = bounds->y;
+    int	    x2 = bounds->x + bounds->width; 
+    int	    y2 = bounds->y + bounds->height; 
+    int	    r_x1 = rect->x;
+    int	    r_y1 = rect->y;
+    int	    r_x2 = rect->x + rect->width; 
+    int	    r_y2 = rect->y + rect->height; 
+    
+    return r_x1 < x2 && x1 < r_x2 && r_y1 < y2 && y1 < r_y2;
+}
+
 #define LINE_WIDTH  0.01
 #include <math.h>
 
@@ -891,28 +990,32 @@ clock_tic(XtPointer client_data, XtIntervalId *id)
 #ifdef XRENDER
 	    if (w->clock.render)
 	    {
-		XGlyphInfo  before, after;
+		XRectangle  old_tail, new_tail, head;
 		int	    x, y;
 
-		XftTextExtents8 (XtDisplay (w), w->clock.face,
-				 (FcChar8 *) time_ptr, i, &before);
-		XftTextExtents8 (XtDisplay (w), w->clock.face,
-				 (FcChar8 *) time_ptr + i, len - i, &after);
-		x = 1 + w->clock.padding;
-		y = w->clock.face->ascent + w->clock.padding;
-		XClearArea (dpy, win, 
-			    x + before.xOff, 
-			    y - after.y,
-			    after.width - after.x,
-			    after.height, False);
+		RenderTextBounds (w, w->clock.prev_time_string, i, prev_len,
+				  &old_tail, 0, 0);
+		RenderUpdateRectBounds (&old_tail, &w->clock.damage);
+		RenderTextBounds (w, time_ptr, i, len,
+				  &new_tail, 0, 0);
+		RenderUpdateRectBounds (&new_tail, &w->clock.damage);
+		
+		while (i)
+		{
+		    RenderTextBounds (w, time_ptr, 0, i, &head, 0, 0);
+		    if (!RenderRectIn (&head, &w->clock.damage))
+			break;
+		    i--;
+		}
+		RenderTextBounds (w, time_ptr, i, len, &new_tail, &x, &y);
+		RenderClip (w);
 		RenderPrepare (w, 0);
-		XftDrawSetClip (w->clock.draw, 0);
 		XftDrawString8 (w->clock.draw,
 				&w->clock.hour_color,
 				w->clock.face,
-				x + before.xOff,
-				y,
+				x, y,
 				(FcChar8 *) time_ptr + i, len - i);
+		RenderResetBounds (&w->clock.damage);
 	    }
 	    else
 #endif
@@ -967,19 +1070,7 @@ clock_tic(XtPointer client_data, XtIntervalId *id)
 			    if (w->clock.damage.width && 
 				w->clock.damage.height)
 			    {
-				Region	r;
-				XClearArea (XtDisplay (w),
-					    XtWindow (w), 
-					    w->clock.damage.x,
-					    w->clock.damage.y,
-					    w->clock.damage.width,
-					    w->clock.damage.height, False);
-				RenderPrepare (w, 0);
-				r = XCreateRegion ();
-				XUnionRectWithRegion (&w->clock.damage,
-						      r, r);
-				XftDrawSetClip (w->clock.draw, r);
-				XDestroyRegion (r);
+				RenderClip (w);
 				DrawClockFace (w);
 				RenderHands (w, &tm, True);
 				if (w->clock.show_second_hand == TRUE)
