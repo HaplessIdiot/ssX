@@ -38,8 +38,10 @@
 
 static Bool KeepTty = FALSE;
 static int devConsoleFd = -1;
+#if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
 static int VTnum = -1;
 static int initialVT = -1;
+#endif
 
 #ifdef PCCONS_SUPPORT
 /* Stock 0.1 386bsd pccons console driver interface */
@@ -146,10 +148,10 @@ void
 xf86OpenConsole()
 {
     int i, fd = -1;
-    int result;
-    struct utsname uts;
     xf86ConsOpen_t *driver;
 #if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
+    int result;
+    struct utsname uts;
     vtmode_t vtmode;
 #endif
     

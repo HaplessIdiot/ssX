@@ -19,7 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.5 2003/04/20 19:04:44 herrb Exp $ */
+/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.7 2003/06/20 15:49:52 eich Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -189,7 +189,11 @@ main(int argc, char **argv)
             }
             bigEncodingFuzz = atof(argv[argn + 1]) / 100.0;
             argn += 2;
-        } else {
+        } else if (strcmp(argv[argn], "-r") == 0) { /* ignore for now */
+	    argn++;
+	} else if (strcmp(argv[argn], "-n") == 0) {
+	    argn++;
+	} else {
             usage();
             exit(1);
         }

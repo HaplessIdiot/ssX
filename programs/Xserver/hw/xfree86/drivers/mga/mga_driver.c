@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.232tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.233 2003/04/23 21:51:39 tsi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -3500,9 +3500,14 @@ MGASwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 #ifdef USEMGAHAL
      MGA_HAL(
 	fdIn = fopen("/tmp/mgaDriverIn", "rt");
+#ifdef MATROX_WRITEBACK
 	fdOut = fopen("/tmp/mgaDriverOut", "wt");
- 
-	if(fdIn && fdOut)
+#endif
+	if(fdIn
+#ifdef MATROX_WRITEBACK
+	   && fdOut
+#endif
+	    )
 	{
  
 	    fgets(sCmdIn, 255, fdIn);
@@ -3515,11 +3520,11 @@ MGASwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 		/* Remove file and close file descriptor */
 		remove("/tmp/mgaDriverIn");
 		fclose(fdIn);
- 
+#ifdef MATROX_WRITEBACK
 		/* Write output data to output file for calling application */
 		fputs(sCmdOut, fdOut);
 		fclose(fdOut);
- 
+#endif
 		mode->Flags &= 0x7FFFFFFF;
 		return TRUE;
 	    }

@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.92tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.94 2003/06/18 16:17:40 eich Exp $ */
 
 /*
  * Authors:
@@ -743,32 +743,19 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
    * not sure if they are disabled.
    */
   xf86SetOperatingState(resVgaIo, pTDFX->pEnt->index, ResDisableOpr);
-#if 0
-  pScrn->racIoFlags = RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
-  pScrn->racMemFlags = RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
-#endif
-#if 0
-#if 1
 
   /* Is VGA memory disabled during OPERATING state? */
-
-  xf86SetOperatingState(resVgaMem, pTDFX->pEnt->index, ResDisableOpr);
-#else
-  pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
-#endif
-#endif
-
-#if 1
+  xf86SetOperatingState(resVgaMem, pTDFX->pEnt->index, ResUnusedOpr);
     /* 
      * I'm sure we don't need to set these. All resources 
      * for these operations are exclusive.
      */
   if (pTDFX->usePIO) {
-      pScrn->racMemFlags = RAC_FB;
+      ErrorF("FOOBAR\n");
+      pScrn->racMemFlags = 0;
       pScrn->racIoFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
   } else
-      pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
-#endif
+      pScrn->racMemFlags = 0;
 
   /* Set pScrn->monitor */
   pScrn->monitor = pScrn->confScreen->monitor;
