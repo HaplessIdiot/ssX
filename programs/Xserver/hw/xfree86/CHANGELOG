@@ -1,4 +1,6 @@
 XFree86 4.2.99.3 (xx November 2002)
+ 502. Fix i18n problem in xmessage due to use of the useStringInPlace
+      resource (A.1381, Chisato Yamauchi).
  501. Fix xnest build on file systems that are not case sensitive
       (Torrey T. Lyons).
  500. Use unique local Imake define for fonts.conf dir (#5482, Mike A. Harris)
@@ -15536,4 +15538,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2399 2002/11/21 16:53:00 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2400 2002/11/22 01:13:43 torrey Exp $
