@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.22 2002/03/12 17:34:36 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.23 2002/04/16 17:12:04 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -213,6 +213,17 @@
 	    LispMoreReturns(mac);			\
 	while (mac->returns.space < (count));		\
     }
+
+#define GC_ENTER()					\
+    int gc__protect = mac->protect.length
+
+#define GC_PROTECT(object)				\
+    if (mac->protect.length >= mac->protect.space)	\
+	LispMoreProtects(mac);				\
+    mac->protect.objects[mac->protect.length++] = object
+
+#define GC_LEAVE()					\
+    mac->protect.length = gc__protect
 
 /* unbound builtin macro arguments, but keep objects gc protected,
  * avoid name clashes
