@@ -1,13 +1,15 @@
 
 /*
- * A simple program to make it possible to print the XFree86 version as
- * defined in xf86Version.h very early in the build process.
+ * A simple program to make it possible to print the XFree86 version and
+ * date info as defined in xf86Version.h and xf86Date.h very early in the
+ * build process.
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/config/util/printver.c,v 1.1 2003/01/21 04:56:23 dawes Exp $ */
 
 #include <stdio.h>
 #include "xf86Version.h"
+#include "xf86Date.h"
 
 main()
 {

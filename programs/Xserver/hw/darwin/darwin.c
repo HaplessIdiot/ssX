@@ -29,7 +29,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.48 2002/12/10 00:00:38 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.49 2002/12/15 06:10:15 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -44,6 +44,7 @@
 #include "site.h"
 #include "globals.h"
 #include "xf86Version.h"
+#include "xf86Date.h"
 #include "dix.h"
 
 #include <sys/types.h>

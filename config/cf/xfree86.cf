@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.436 2003/02/17 17:07:32 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.437 2003/02/19 15:28:44 tsi Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -12,6 +12,7 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 /* Get and set version information. */
 
 #include "version.def"
+#include "date.def"
 /*
  * As of the development trunk after 4.0.2, XFree86 versions are
  * M.m.P.s, and XFree86Version is:
