@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.73tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.74 2003/04/28 15:02:42 tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -376,7 +376,7 @@ pciSetBitsLong(PCITAG tag, int offset, CARD32 mask, CARD32 val)
     pciInit();
 
     if ((bus >= 0) && (bus < pciNumBuses) && pciBusInfo[bus] &&
-	pciBusInfo[bus]->funcs->pciReadLong) {
+	pciBusInfo[bus]->funcs->pciSetBitsLong) {
 	(*pciBusInfo[bus]->funcs->pciSetBitsLong)(tag, offset, mask, val);
     }
 }
