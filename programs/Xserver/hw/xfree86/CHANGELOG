@@ -1,8 +1,21 @@
 XFree86 4.3.99.16 (xx November 2003)
+ 567. Make the vesa driver blank the screen during initialisation for
+      cosmetic reasons (David Dawes).
+ 566. Make the cirrus driver blank the screen during initialisation for
+      cosmetic reaons (most other drivers do this) (Bugzilla #781,
+      Nicholas Miell).
+ 565. The vesa driver wasn't setting the viewport correctly either at
+      ScreenInit or EnterVT (David Dawes).
+ 564. Fix the viewport initialisation.  The ViewPort parameters from the
+      XF86Config file were being ignored, and the default was a 0,0 viewport
+      rather than centred on the virtual screen as documented.  When RandR
+      is enabled, it undoes all of this though... (David Dawes).
+ 563. Fix an off-by-one bug in libXcursor that can result in segfaulting
+      applications (David Dawes, reported by Agustin Gianni).
  562. Fix RandR initialization problem when default screen resolution is
       different from the virtual resolution. (Bugzilla #853, Bob Paauwe).
  561. Fix an Xv problem with the via driver where updating a portion of the
-      overlay causes excessive CPU usage (#Bugzilla #821, Neil Terry).
+      overlay causes excessive CPU usage (Bugzilla #821, Neil Terry).
  560. Fix an Xnest hang on OS/2 (Bugzilla #852, Frank Giessler).
  559. OS/2 update for the recent move to building most libraries shared,
       and add some functions to the export lists for freetype and Xt for
@@ -18122,7 +18135,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2942 2003/11/06 03:34:24 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2943 2003/11/06 13:03:08 alanh Exp $
 
 
 
