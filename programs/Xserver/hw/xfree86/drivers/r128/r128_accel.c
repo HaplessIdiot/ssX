@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_accel.c,v 1.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_accel.c,v 1.14 2000/08/24 22:20:17 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -94,19 +94,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 				/* DDC support */
 #include "xf86DDC.h"
-
-				/* DRI support */
-#ifdef XF86DRI
-#include "GL/glxint.h"
-#include "xf86drm.h"
-#include "sarea.h"
-#define _XF86DRI_SERVER_
-#include "xf86dri.h"
-#include "dri.h"
-#include "r128_dri.h"
-#include "r128_dripriv.h"
-#include "r128_sarea.h"
-#endif
 
 				/* Driver data structures */
 #include "r128.h"

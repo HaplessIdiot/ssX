@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.50 2000/10/06 12:31:04 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.51 2000/10/10 14:05:49 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -106,19 +106,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 				/* VESA support */
 #include "vbe.h"
-
-				/* DRI support */
-#ifdef XF86DRI
-#include "GL/glxint.h"
-#include "xf86drm.h"
-#include "sarea.h"
-#define _XF86DRI_SERVER_
-#include "xf86dri.h"
-#include "dri.h"
-#include "r128_dri.h"
-#include "r128_dripriv.h"
-#include "r128_sarea.h"
-#endif
 
 #ifdef RENDER
 #include "picturestr.h"
@@ -2014,16 +2001,7 @@ static Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen,
 	xf86DPMSInit(pScreen, R128DisplayPowerManagementSet, 0);
 #endif
 
-				/* Xv setup */
-#ifdef XvExtension
-    {
-	XF86VideoAdaptorPtr *ptr;
-	int                 n;
-
-	if ((n = xf86XVListGenericAdaptors(pScrn, &ptr)))
-	    xf86XVScreenInit(pScreen, ptr, n);
-    }
-#endif
+	R128InitVideo(pScreen);
 
 				/* Provide SaveScreen */
     pScreen->SaveScreen  = R128SaveScreen;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128.h,v 1.11 2000/08/04 16:13:32 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128.h,v 1.13 2000/09/29 08:59:46 eich Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -36,7 +36,22 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _R128_H_
 #define _R128_H_
 
+#include "xf86Cursor.h"
 #include "xf86int10.h"
+#include "xf86i2c.h"
+#include "xf86xv.h"
+
+#ifdef XF86DRI
+#include "xf86drm.h"
+#include "r128_sarea.h"
+#define _XF86DRI_SERVER_
+#include "xf86dri.h"
+#include "dri.h"
+#include "GL/glxint.h"
+#include "r128_dri.h"
+#include "r128_dripriv.h"
+#include "r128_sarea.h"
+#endif   
 
 #define R128_DEBUG    0		/* Turn off debugging output                */
 #define R128_TIMEOUT  2000000	/* Fall out of wait loops after this count */
@@ -328,6 +343,7 @@ typedef struct {
     int               textureSize;
     int               log2TexGran;
 #endif
+    XF86VideoAdaptorPtr adaptor;
 } R128InfoRec, *R128InfoPtr;
 
 #define R128WaitForFifo(pScrn, entries)                                      \

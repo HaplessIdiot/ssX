@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_dga.c,v 1.1 2000/06/14 00:16:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_dga.c,v 1.2 2000/06/17 00:03:22 martin Exp $ */
 /*
  * Authors:
  *   Ove Kåven <ovek@transgaming.com>,
@@ -21,19 +21,6 @@
 #include "xaa.h"
 #include "xaalocal.h"
 #include "xf86Cursor.h"
-
-				/* DRI support */
-#ifdef XF86DRI
-#include "GL/glxint.h"
-#include "xf86drm.h"
-#include "sarea.h"
-#define _XF86DRI_SERVER_
-#include "xf86dri.h"
-#include "dri.h"
-#include "r128_dri.h"
-#include "r128_dripriv.h"
-#include "r128_sarea.h"
-#endif
 
 				/* Driver data structures */
 #include "r128.h"
