@@ -4,7 +4,7 @@
  * ported from s3virge, ported from mga
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_dga.c,v 1.1 1999/07/10 12:17:27 dawes Exp $ */
 
 
 #include "xf86.h"
@@ -185,7 +185,7 @@ SECOND_PASS:
     pApm->DGAModes = modes;
 
     if (pApm->AccelInfoRec)
-	ApmDGAFuncs.Flush = pApm->AccelInfoRec->Sync;
+	ApmDGAFuncs.Sync = pApm->AccelInfoRec->Sync;
     return DGAInit(pScreen, &ApmDGAFuncs, modes, num);  
 }
 

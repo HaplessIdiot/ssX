@@ -1,4 +1,6 @@
 XFree86 3.9.15c (22 August 1999)
+2979. Add pre-R6.4 compatible entries to the NLS .dir and .alias files.  This
+      should make it possible for them to be used with older versions of Xlib.
 2978. Fix a typo in the MGA arc code that broke some arcs (#3149,
       Mark Vojkovich).
 2977. Fix a problem with cfb allocating too much space on the stack when
@@ -8607,4 +8609,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.814 1999/08/21 13:48:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.815 1999/08/22 05:57:25 dawes Exp $

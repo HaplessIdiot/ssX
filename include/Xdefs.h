@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/include/Xdefs.h,v 1.1 1999/08/21 13:47:33 dawes Exp $ */
 
 /***********************************************************
 
@@ -43,9 +43,11 @@ typedef CARD32 Atom;
 #  endif
 #endif
 
-#ifndef _XTYPEDEF_BOOL
-#  define _XTYPEDEF_BOOL
+#ifndef Bool
+#  ifndef _XTYPEDEF_BOOL
+#   define _XTYPEDEF_BOOL
 typedef int Bool;
+#  endif
 #endif
 
 #ifndef _XTYPEDEF_POINTER
