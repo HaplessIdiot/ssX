@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: misc.c /main/112 1996/11/29 10:34:07 swick $
- *	$XFree86: xc/programs/xterm/misc.c,v 3.58 2000/11/02 16:33:29 tsi Exp $
+ *	$XFree86: xc/programs/xterm/misc.c,v 3.59 2000/12/07 10:12:33 dickey Exp $
  */
 
 /*
@@ -504,6 +504,9 @@ Bell(int which GCC_UNUSED, int percent)
 #else
 	XBell(screen->display, percent);
 #endif
+	
+    if (screen->poponbell)
+        XRaiseWindow(screen->display, VShellWindow);
 
     if(screen->bellSuppressTime) {
 	/* now we change a property and wait for the notify event to come

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: util.c /main/33 1996/12/01 23:47:10 swick $
- *	$XFree86: xc/programs/xterm/util.c,v 3.59 2000/11/01 01:12:42 dawes Exp $
+ *	$XFree86: xc/programs/xterm/util.c,v 3.61 2000/12/01 03:27:58 keithp Exp $
  */
 
 /*
@@ -1779,10 +1779,11 @@ drawXtermText(
 #if OPT_WIDE_CHARS
 			if (text2 != 0)
 				ch |= (text2[last] << 8);
-			isMissing = xtermMissingChar(ch,
+			isMissing = (ch != HIDDEN_CHAR)
+				&& (xtermMissingChar(ch,
 					((on_wide || iswide(ch)) && screen->fnt_dwd)
 					? screen->fnt_dwd
-					: font);
+					: font));
 #else
 			isMissing = xtermMissingChar(ch, font);
 #endif
