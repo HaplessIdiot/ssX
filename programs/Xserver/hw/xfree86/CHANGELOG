@@ -1,3 +1,15 @@
+XFree86 3.1.0Be (12 January 1995)
+197. Include Japanese translations of some XFree86 3.1 docs (Kazuyuki Okamoto).
+196. Updates to SPEA detection code (Norbert Distler).
+195. Fix for ICS2595 initialisation problem (Norbert Distler).
+194. Some vgawonder driver fixes (Marc Aurele La France).
+193. Prevent xf86config from crashing when some fields are missing in
+     the Cards database (Matthieu Herrb).
+192. Fix S3 cursor X position when the display address is not changed to
+     avoid display errors.
+191. Set S3 M/N paramters depending on the MCLK value (which can be probed
+     or set in XF86Config) (Harald Koenig).
+
 XFree86 3.1.0Bd (12 January 1995)
 190. Update cl64xx driver for modeRec changes.
 189. Merge in XC public fix-06.

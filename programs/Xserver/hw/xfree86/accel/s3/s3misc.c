@@ -1,6 +1,6 @@
 
 /* $XConsortium: s3misc.c,v 1.1 94/03/28 21:16:11 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.19 1994/12/17 10:05:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.20 1994/12/29 10:07:01 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -591,8 +591,9 @@ s3SwitchMode(mode)
 void
 s3AdjustFrame(int x, int y)
 {
-   int   Base;
+   int   Base, origBase;
    unsigned char tmp;
+   extern int s3AdjustCursorXPos;  /* for s3Cursor.c */
 
    if (OFLG_ISSET(OPTION_SHOWCACHE, &s3InfoRec.options)) {
       if ( debugcache & 1)
@@ -603,7 +604,8 @@ s3AdjustFrame(int x, int y)
     * to catch them all only even base values will be used.
     */
 
-   Base = (((y * s3DisplayWidth + x) * s3Bpp) >> 2) & ~1;
+   origBase = (y * s3DisplayWidth + x) * s3Bpp;
+   Base = (origBase >> 2) & ~1;
 
    if (S3_964_SERIES(s3ChipId) && DAC_IS_BT485_SERIES) {
       if ((Base & 0x3f) >= 0x3c) 
@@ -625,6 +627,8 @@ s3AdjustFrame(int x, int y)
 
    outw(vgaCRIndex, (Base & 0x00FF00) | 0x0C);
    outw(vgaCRIndex, ((Base & 0x00FF) << 8) | 0x0D);
+
+   s3AdjustCursorXPos = (origBase - (Base << 2)) / s3Bpp;
 
    if (s3ModeSwitched) {
       s3ModeSwitched = FALSE;

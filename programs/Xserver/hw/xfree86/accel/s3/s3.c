@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.58 1995/01/10 10:54:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.59 1995/01/11 03:47:19 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -232,6 +232,7 @@ Bool s3Bt485PixMux = FALSE;
 Bool s3ATT498PixMux = FALSE;
 static int maxRawClock = 0;
 static Bool clockDoublingPossible = FALSE;
+int s3AdjustCursorXPos = 0;
 
 /*
  * s3PrintIdent -- print identification message
@@ -312,7 +313,7 @@ static int check_SPEA_bios(int BIOSbase)
    long addr = BIOSbase>0 ? BIOSbase : BIOS_BASE;
 
    unsigned char bios[BIOS_BSIZE];
-   char *match = "SPEA";
+   char *match = " SPEA/Video";
    int i,l;
 
    if (xf86ReadBIOS(BIOSbase, 0, bios, BIOS_BSIZE) != BIOS_BSIZE)
@@ -1046,7 +1047,9 @@ s3Probe()
    }
   
    if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions) &&
-       !OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)) {
+       !OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) &&
+       (s3InfoRec.ramdac == NULL)) { /* ensure that autodetection can be */
+                                     /* overwritten 			 */	
      card_id = check_SPEA_bios(s3InfoRec.BIOSbase); 
      if (card_id > 0) {
         
@@ -1076,8 +1079,8 @@ s3Probe()
           break;
        case ATT20C498_DAC: 
           if (S3_864_SERIES(s3ChipId)) { 
-            /* SPEA MirageP64 Bios < 4.00 */
-            ErrorF("%s %s: SPEA Mirage P64 with BIOS 3.x detected.\n",
+            /* SPEA MirageP64 Bios 3.xx */
+            ErrorF("%s %s: SPEA Mirage P64 detected.\n",
             XCONFIG_PROBED, s3InfoRec.name);
             OFLG_SET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions);
             OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
@@ -1089,7 +1092,7 @@ s3Probe()
        case S3_SDAC_DAC:
           if (S3_864_SERIES(s3ChipId)) 
             /* SPEA Mirage P64 Bios 4.xx */
-            ErrorF("%s %s: SPEA Mirage P64 with BIOS 4.x detected.\n",
+            ErrorF("%s %s: SPEA Mirage P64 detected.\n",
             XCONFIG_PROBED, s3InfoRec.name);
           break;
        case S3_GENDAC_DAC:
@@ -2274,20 +2277,20 @@ icd2061ClockSelect(freq)
 	 } else if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions)) {
 	    result = ICS2595SetClock((long)freq/1000);
 	    result = ICS2595SetClock((long)freq/1000);
-	    result = ICS2595SetClock((long)freq/1000);
 #endif
 	 } else { /* Should never get here */
 	    result = FALSE;
 	    break;
 	 }
+
 	 if (!OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions)) {
 	    outb(vgaCRIndex, 0x42);/* select the clock */
 	    if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) &&
-                S3_964_SERIES(s3ChipId)) /* for the SPEA Mercury P64 */
-                 outb(vgaCRReg, 0x0a);   /* for some unknown reason  */
+                S3_964_SERIES(s3ChipId)) /* SPEA Mercury P64 uses bit3  */
+                 outb(vgaCRReg, 0x0a);   /* for synchronizing reasons   */
             else outb(vgaCRReg, 0x02); 
+            usleep(150000);
 	 }
-	 usleep(150000);
 	 /* Do the clock doubler selection in s3Init() */
       }
    }

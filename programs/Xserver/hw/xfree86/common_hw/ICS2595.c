@@ -1,12 +1,13 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ICS2595.c,v 3.3 1994/09/23 10:49:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ICS2595.c,v 3.4 1994/09/23 13:39:42 dawes Exp $ */
 
-/* Norbert Distler ndistler@physik.tu-muenchen.de  94/09/23 */
+/* Norbert Distler ndistler@physik.tu-muenchen.de  95/01/11 */
 
 #include "ICS2595.h" 
 #include "compiler.h"
 #define NO_OSLIB_PROTOTYPES
 #include "xf86_OSlib.h"
 
+#define WRITEDELAY(x) for(i=0; i<(x); i++) GlennsIODelay();
 extern int vgaIOBase;
 #ifdef __STDC__
 static void wrtICS2595bit(int);
@@ -23,23 +24,7 @@ ICS2595SetClock(frequency)
   int vgaCRIndex = vgaIOBase + 4;
   int vgaCRReg = vgaIOBase + 5; 
   unsigned int i, FeedDiv, BigD, Location=17;
-#if 0
-  unsigned int VCLK_preprog[16]={100, 126, 92,  38, 50, 56, 28,
-                                 45, 135, 32, 110, 80, 40, 45, 75, 65};
-#else
-  unsigned int VCLK_preprog[16]={0, 0, 0,  0, 0, 0, 28,
-                                 0, 0, 0, 0, 0, 0, 0, 0, 0};
-#endif
-  for(i=0;i<16;i++)
-    if ((frequency<(VCLK_preprog[i]+0.5)*1000) && 
-        (frequency>(VCLK_preprog[i]-0.5)*1000))
-      {
-        Location=i;
-        break;
-      }        /* check whether one of preprogrammed VCLKs fits */
   
-  if (Location==17)
-    {
           /* programm ICS2595 clocks */
       if (frequency>MAX_ICS2595_FREQ)
         return FALSE;        /* Frequency too high! */
@@ -67,30 +52,15 @@ ICS2595SetClock(frequency)
       Location = 0x0d; 		/* what clock to reprogram */    		
       
       SetICS2595( FeedDiv, BigD, Location);
-    }
-  if (Location!=0x06)
     
-    {
       outb(vgaCRIndex,  0x42);       /* set VCLK */
       outb(vgaCRReg,    Location);
+      WRITEDELAY(20);
       outb(vgaCRIndex,  0x5c);
-      outb(vgaCRReg,    0x20);
+      outb(vgaCRReg,    0x20);       /* STROBE   */
+      WRITEDELAY(20);
       outb(vgaCRReg,    0x00);
-      GlennsIODelay();                /* this is unclear perhaps only 30*/
-      outb(vgaCRIndex,  0x5c);        
-      outb(vgaCRReg,    0x04);
-      outb(vgaCRIndex,  0x42);
-      outb(vgaCRReg,    0x04);      /* perhaps here usleep(10000)      */
-      GlennsIODelay();                /* this is unclear perhaps only 30*/
-    }
-  else
-    {
-      outb(vgaCRIndex, 0x42);      /* Swen check out different combi- */ 
-      outb(vgaCRReg,   0x01);      /* nations of both  :-?            */
-      outb(vgaCRIndex, 0x5c);
-      outb(vgaCRReg,   0x20);
-      outb(vgaCRReg,   0x00);
-    } 
+      usleep(80000);                
   
   return TRUE;
   
@@ -109,33 +79,36 @@ SetICS2595(N, D, L)
   int vgaCRReg = vgaIOBase + 5;
   unsigned int i;
   
-  
+  (void)xf86DisableInterrupts(); 
+
   outb(vgaCRIndex, 0x42); /* Start programming sequence for ICS2595-02 */
   outb(vgaCRReg,   0x00);
   outb(vgaCRIndex, 0x5c);
   outb(vgaCRReg,   0x00);
-  GlennsIODelay();
-  outb(vgaCRIndex, 0x42);
+  usleep(50000);
+  outb(vgaCRIndex, 0x42); 	/* 'rubble bits' */ 				
   outb(vgaCRReg,   0x00);
   outb(vgaCRIndex, 0x5c);
   outb(vgaCRReg,   0x20);
+  WRITEDELAY(30);
   outb(vgaCRReg,   0x00);
-  GlennsIODelay();
+  WRITEDELAY(30);
   outb(vgaCRIndex, 0x42);
   outb(vgaCRReg,   0x01);
   outb(vgaCRIndex, 0x5c);
   outb(vgaCRReg,   0x20);
+  WRITEDELAY(30);
   outb(vgaCRReg,   0x00);
-  GlennsIODelay();
+  WRITEDELAY(30); 
   
       /* enable programming of ICS2595 */
   
-  wrtICS2595bit(0);              /* start bit must be 0           */
-  wrtICS2595bit(0);              /* R/W control -> Write		*/
+  wrtICS2595bit(0);              /* start bit must be 0         */
+  wrtICS2595bit(0);              /* R/W control -> Write	*/
   
   for(i=1; i<6; i++)
     {
-      wrtICS2595bit(L&1);    /* Location control		*/
+      wrtICS2595bit(L&1);    	 /* Location control		*/
       L>>=1;
     }
   
@@ -154,7 +127,12 @@ SetICS2595(N, D, L)
   
   wrtICS2595bit(1);		/* STOP1			*/
   wrtICS2595bit(1);		/* STOP2			*/
-  
+
+  outb(vgaCRIndex, 0x42);
+  outb(vgaCRReg, 0x00);  	/* End State 			*/
+   
+  (void)xf86EnableInterrupts();
+  usleep(10000); 
   return TRUE;         
 }		
 
@@ -163,35 +141,45 @@ static void wrtICS2595bit(bool)
 { 
   int vgaCRIndex = vgaIOBase + 4;
   int vgaCRReg = vgaIOBase + 5;
+  int i,ti=10;
+
   if (bool==1)
     {
       outb(vgaCRIndex, 0x42);
       outb(vgaCRReg,   0x04);
+      WRITEDELAY(ti); 
       outb(vgaCRIndex, 0x5c);
       outb(vgaCRReg,   0x20);
+      WRITEDELAY(ti); 
       outb(vgaCRReg,   0x00);
-      GlennsIODelay();   
+      WRITEDELAY(ti); 
       outb(vgaCRIndex, 0x42);
       outb(vgaCRReg,   0x0c);
+      WRITEDELAY(ti); 
       outb(vgaCRIndex, 0x5c);
       outb(vgaCRReg,   0x20);
+      WRITEDELAY(ti); 
       outb(vgaCRReg,   0x00);
-      GlennsIODelay();   
+      WRITEDELAY(ti); 
     }
   else
     {
       outb(vgaCRIndex, 0x42);
       outb(vgaCRReg,   0x00);
+      WRITEDELAY(ti);
       outb(vgaCRIndex, 0x5c);
       outb(vgaCRReg,   0x20);
+      WRITEDELAY(ti);
       outb(vgaCRReg,   0x00);
-      GlennsIODelay();   
+      WRITEDELAY(ti);
       outb(vgaCRIndex, 0x42);
       outb(vgaCRReg,   0x08);
+      WRITEDELAY(ti);
       outb(vgaCRIndex, 0x5c);
       outb(vgaCRReg,   0x20);
+      WRITEDELAY(ti);
       outb(vgaCRReg,   0x00);
-      GlennsIODelay();   
+      WRITEDELAY(ti);
     }
 }         
 

@@ -1,5 +1,5 @@
 /* $XConsortium: s3TiCursor.c,v 1.1 94/03/28 21:17:18 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3TiCursor.c,v 3.2 1994/09/08 14:26:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3TiCursor.c,v 3.3 1995/01/10 10:23:02 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@paros.com>
  *
@@ -310,6 +310,7 @@ s3TiMoveCursor(pScr, x, y)
      ScreenPtr pScr;
      int   x, y;
 {
+   extern int s3AdjustCursorXPos;
 
    if (!xf86VTSema)
       return;
@@ -317,7 +318,7 @@ s3TiMoveCursor(pScr, x, y)
    if (s3BlockCursor)
       return;
    
-   x -= s3InfoRec.frameX0;
+   x -= s3InfoRec.frameX0 - s3AdjustCursorXPos;
    if (x < 0)
       return;
 

@@ -636,6 +636,7 @@ involvement in X11R6.
   <item>  Rich &amp; Amy Murphey
   <item>  Brett Neumeier
   <item>  Number Nine, Lexington, MA
+  <item>  Kazuyuki Okamoto, Japan
   <item>  Prime Time Freeware, San Bruno, CA
   <item>  Red Hat Software, Chapel Hill, NC
   <item>  Clifford M Stein
@@ -741,7 +742,7 @@ file that describes what files you need to take from the archive, and which
 compile-time option selections were made when building the distribution.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.4 1995/01/08 07:00:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.5 1995/01/11 03:50:57 dawes Exp $
 </verb>
 
 </article>

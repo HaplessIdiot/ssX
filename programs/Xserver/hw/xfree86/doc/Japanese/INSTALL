@@ -1,0 +1,295 @@
+このファイルは xc/programs/Xserver/hw/xfree86/doc/INSTALL,v 3.3 1994/09/28 
+16:24:59 を、岡本 一幸 <KFR01166@niftyserve.or.jp>, 
+<ikko-@pacific.rim.or.jp> が 
+XFree86 3.1 を日本でインストールする人向けに翻訳したものです。ここがおかしい
+とか、ここはこうしたほうがいいといったご意見がありましたら、電子メールでお知
+らせ下さい。
+原文の著作権は XFree86 プロジェクト社にあります。この和訳の著作権は XFree86 
+プロジェクト社、岡本　一幸にありますが、和訳の不具合は私に、電子メールで送っ
+て下さい。
+----------------------------------------------------------------------------
+
+                  XFree86 3.1 インストールガイド
+                  ------------------------------
+
+目次
+----
+        1 - XFree86 の作成
+        2 - XFree86 の使用法と構築
+        3 - ソース配付物からのサーバーの再構築
+        4 - バイナリ配付物からのサーバーの再構築
+
+1 - XFree86 の作成
+------------------
+注意 -  XFree86 を作成しようとする前に特定のOS固有のREADMEファイルを参照して
+        下さい。これらのファイルにはあなたの OS の環境の下でうまく XFree86 
+        を作成するのに必要な追加情報が含まれています。
+
+ 0. GCC-2 を使って XFree86 を作成する事を強くお勧めします。バージョン 2.6.0 
+    又は2.4.x 等 2.4.5 以前の物はバグのため作成や実行が失敗するので使用しな
+    いで下さい。殆どの XFree86 2.1.1 バイナリキットは GCC 2.4.5 又は 2.5.8 
+    を使用して作成されています。GCC の -m486 オプションを使えば、486 で約５
+    ％性能を向上させることができるでしょう。より大きなバイナリは別として、
+    386 でも性能は悪くはなりません。（ gcc-2 は prep.ai.mit.edu と他の GNU 
+    ソースを置いているサイトにあります。）
+
+ 1. 次の物が必要です:
+
+    - fixes 01 から 05 のパッチを当てた X コンソーシアム X11R6 の配付物。
+
+    - XFree86-3.1.tar.gz        (xc/programs/Xserver/hw/xfree86/ の tar 
+                                 ファイル)
+
+    - XFree86-3.1.diff.gz       (xc/programs/Xserver/hw/xfree86/ 以外の全て
+                                 のパッチ)
+
+    - XFree86-contrib-3.1.diff.gz   (いくつかの X コンソーシアムの"寄贈"配付
+                                     物への追加パッチ)
+
+    - 全ての XFree86 ソースから作成すると約100MB の空きディスク容量が必要で
+      す。全部作成するには 110MB（ OS の共用ライブラリを使用しない時）追加容
+      量が必要です。全ての配付物を導入するには約 45 から 55MB（共用ライブラ
+      リを使用した場合）の空きディスク容量が必要です。作成作業に重要でない部
+      分を削除することで、それぞれ以下のディスク容量を削減出来ます。:
+
+          xc/test                      13MB
+          xc/doc/hardcopy               8MB
+          xc/doc/specs                 11MB
+
+      フォントを作成する必要がない時は、xc/fonts を削除することで30MB節約で
+      きます。PEX 又は XIE を作成したくない時は、それらを削除することで、そ
+      れぞれ以下のディスク容量を削減出来ます。:
+
+          xc/programs/Xserver/XIE       3MB
+          xc/programs/Xserver/PEX5      2MB
+
+      xc/programs/Xserver/hw/以下の不必要なディレクトリを削除すれば、もう数
+      MB 開放出来ます。
+
+    - XFree86 サーバーの作成に限った場合、切り詰めたソースツリーを構成する
+      ことが出来ます。このソースツリーを作成するには 40 から 45MB のディス
+      クに空きが必要です。切り詰める為のファイルやディレクトリは 
+      ServersOnly ファイルに一覧になっています（このファイルと同じディレクト
+      リに見つかるでしょう）。
+    - XFree86-3.1-contrib.diff.gzのパッチファイルは X コンソーシアムの寄贈配
+      付物のごく一部へのパッチを提供します。これは X11R5 のコア配付物のクラ
+      イアントの殆どに適用しますが、X11R6 の寄贈配付物へ移動するもの
+      ではありません。このパッチファイルを適用すると、次の X コンソーシアム
+      の寄贈版の(初版の contrib-0 バージョンではなく)最終版のファイル/ディレ
+      クトリが必要になります。:
+
+          contrib/Imakefile
+          contrib/programs/Imakefile
+          contrib/programs/ico/
+          contrib/programs/listres/
+          contrib/programs/showfont/
+          contrib/programs/viewres/
+          contrib/programs/xbiff/
+          contrib/programs/xcalc/
+          contrib/programs/xditview/
+          contrib/programs/xedit/
+          contrib/programs/xev/
+          contrib/programs/xeyes/
+          contrib/programs/xfontsel/
+          contrib/programs/xgc/
+          contrib/programs/xload/
+          contrib/programs/xman/
+          contrib/programs/xmessage/
+        
+2.  標準的な X コンソーシアムのパッチレベル 5 配付物から始める場合は、 
+    'xc'ディレクトリに移動して次のコマンドを実行して下さい。:
+      rm -fr xc/programs/Xserver/hw/xfree86
+      gzip -d < XFree86-3.1.tar.gz | tar vxf -
+      gzip -d < XFree86-3.1.diff.gz | patch -p -E
+
+    変更していないソースからインストールする場合は、問題は何もないでしょう。
+    パッチを当てる前に、提供されたソースを取っておきましょう。パッチの後にパ
+    ッチが却下された結果（ rejection ）とパッチの分析結果（ resolve ）を調べ
+    ましょう。いくつかのファイル（例えば xf86site.cf や site.def ）を変更し
+    た場合は、それらのファイル名を変えて、パッチする前に提供された状態に戻し
+    ましょう。元のバックアップを持っていない場合は、個々のファイルは 
+    ftp.x.org の /pub/R6untarred ディレクトリから容易に手に入れられるでしょ
+    う。
+
+    もし以前に使用していたソースにパッチを当てる場合は、差分ファイルを適用す
+    る前に 'xc' ディレクトリから 'make clean' を忘れずに実行してください。
+
+    寄贈部分にパッチするならば、あなたの 'contrib' ディレクトリへ移動して、
+    次の操作を実行しましょう:
+
+      gzip -d < XFree86-3.1-contrib-diff.gz | patch -p -E
+
+3. config/cf/xf86site.def を通読してください。あなたの構成に合わせて様々なパ
+   ラメータを設定しましょう。初めての作成の場合は、BuildFonts 、
+   InstallXdmConfig 、InstallXinitConfig を YES に設定しましょう。（フォント
+   サーバーを作成する場合は、同様に InstallFSConfig を YES にしましょう） 
+
+   サーバーだけを作成するために切り詰めたソースツリーを使うときは
+   BuildServersOnly を YES に設定しましょう。
+
+   作成したいサーバーを指定するには、次の定義を設定しましょう:
+
+       Colour SVGA server (XF86_SVGA):           XF86SVGAServer
+       16 colour (S)VGA server (XF86_VGA16):     XF86VGA16Server
+       ET4000/W32 accelerated server (XF86_W32): XF86W32Server
+       Monochrome server  (XF86_Mono):           XF86MonoServer
+       S3 accelerated server (XF86_S3):          XF86S3Server
+       8514/A accelerated server (XF86_8514):    XF86I8514Server
+       Mach8 accelerated server (XF86_Mach8):    XF86Mach8Server
+       Mach32 accelerated server (XF86_Mach32):  XF86Mach32Server
+       P9000 accelerated server (XF86_P9000):    XF86P9000Server
+       AGX accelerated server (XF86_AGX):        XF86AGXServer
+       
+   双頭の Mono+VGA2 サーバーを作成するには,  XF86MonoDualServer を YES にし
+   ましょう。
+   双頭の  Mono+VGA16 サーバーを作成するには,  XF86VGA16DualServer を YES に
+   しましょう。
+
+   "X" にリンクを張りたいサーバーを ServerToInstall に設定して下さい。これが
+   指定されないと上記、サーバーの一覧の最初の物が初期値になって作成されます。
+   サーバーに含めたいと希望しているドライバーもxf86site.def の中で選択しま
+   す。SVGA サーバー対応のドライバーは XF86SvgaDrivers パラメタで指定しま
+   す。これはドライバディレクトリの一覧表形式で、小文字で書きます。パラメタ
+   の指定順序で起動時に探査を行います。全ての提供されてるドライバは初期値で
+   設定されます。あとに続く、パラメタが指定するドライバも同様です:
+
+     XF86Vga16Drivers            XF86_VGA16
+     XF86Vga2Drivers             XF86_Mono (vga2 drivers)
+     XF86MonoDrivers             XF86_Mono, XF86_VGA16 (other mono drivers)
+
+   SVGA, VGA16 and VGA2 画面はそれぞれ、汎用(`generic')ドライバーに含まれ、
+   これらはどんな VGA カードでも探査に成功するので、常に一覧の最後に置くよう
+   にします。
+
+4. 配付物から生成する前に、xc/programs/Xserver/hw/xfree86/doc にあるあなたの
+   環境に関連した OS 固有の READMEファイルを良く読むことが大切です。これまで
+   も、これらの OS 固有の詳細マニュアルの手入れをしてきました。'xc' ディレク
+   トリへ行って、そして OS 固有の READMEファイルに記述してあるように設定した
+   BOOTSTRAPCFLAGS を付けて 'make World' を実行して下さい。
+
+5. CPU / メモリ / OS / コンパイラ / ディスクによりますが、全て順調に行われた
+   場合に、生成は２時間から１２時間位掛かるでしょう。何か問題が無かったか
+   World.log をチェックしてください。何もなければ、'make install' と 'make 
+   install.man'を実行することができます。インストールができるだけの十分な空
+   きディスク容量が、/usr/X11R6 にあることを確認しましょう。/usr 以外の場所
+   に組み込みたい場合は、組み込む前に /usr/X11R6 にシンボリックリンクを張り
+   ましょう。
+
+   バイナリリンクキットを（ /usr/X11R6/lib/Server に）組み込む時は、次を実行
+   しましょう。:
+
+    make install.linkkit
+
+6. XFree86 でサポートしている寄贈版のサブセットを作成するときは、最初に作成
+   して導入したコア配付物を確認して下さい。そして、 'contrib' ディレクトリへ
+   移動して、 'xmkmf -a; make' を実行して下さい。その時、 'make install' と 
+   'make install.man' が実行できれば導入は完了します。
+
+
+2 - XFree86 の使用法と構築
+--------------------------
+1. PATH 環境変数 に /usr/X11R6/bin を、MANPATH 環境変数に /usr/X11R6/man を
+    追加しましょう。
+
+2. XF86Config ファイルを設定しましょう。このファイルの初期位置は
+   /etc/XF86Config, /usr/X11R6/lib/X11/XF86Config.<ホスト名>, と
+   /usr/X11R6/lib/X11/XF86Config にあります。サンプルファイルが
+   /usr/X11R6/lib/X11/XF86Config.eg に組み込まれていますので、これから始める
+   のが良いでしょう。
+
+   XF86Config の書式について詳しくは、XF86Config のオンラインマニュアル(4章
+   /5章)を参照しましょう。
+
+3. xinit で ${HOME}/.xserverrc ファイルを使う場合は、サーバーを実行している
+   スクリプトを確認しましょう（例えば 単に '/usr/X11R6/bin/XF86_SVGA' を実行
+   するよりも'exec /usr/X11R6/bin/XF86_SVGA' を実行するのがよいでしょう）。
+   これをしない場合は、最後のクライアントが終了する時にサーバーを終了しない
+   ようにしましょう。
+
+
+3 - ソース配付物からのサーバーの再構築
+--------------------------------------
+   異なるサーバー又は異なるドライバーの組み合わせのサーバーを作成する場合は:
+
+1. 新しいドライバー対応のソースが正しい場所に有ることを確認して下さい（例え
+   ば、SVGA サーバー対応ソースは 
+   xc/programs/Xserver/hw/xfree86/vga256/drivers と言うサブディレクトリに有
+   ります）。
+
+2. サーバーの定義（例えば、上記で述べた XF86SVGAServer ）は、xf86site.def を
+   使って作成したいサーバーを指定して設定しましょう。また、ドライバー一覧を
+   あなたの必要に応じて変更しましょう。
+
+3. xc/programs/Xserver から次のコマンドを実行しましょう:
+
+     make Makefile
+     make Makefiles
+     make depend
+     make
+
+
+4 - バイナリ配付物からのサーバーの再構築
+----------------------------------------
+サーバーのバイナリリンクキットを組み込むと、サーバー内のドライバとサーバーの
+機能拡張の再構築が可能になります。再構築を行なうには、構築するディレクトリ
+(/usr/X11R6/lib/Server) に行って次の作業を行ないましょう。:
+
+0. gcc-2 を使わないシステムでは、バイナリ配付物は gcc-2 を使って作成をする
+   ので libgcc.a を組み込む必要があります。
+
+1. 作成するサーバーと組み込むドライバを定義するために、xf86site.def ファイル
+   を編集しましょう。
+
+    - site.def の初期値が自分の条件設定に会わなければ、使用するコンパイラに
+      合うように HasGcc と HasGcc2 を設定しましょう。
+    - リンクキットが gcc-2.x で作成されており、他のコンパイラを使う場合は、
+      libgcc.a を組み込みこんで、NeedLibGcc を YES に設定する必要がありま
+      す。
+    - 256 色サーバーを作成するには:     XF86SVGAServer を YES にしましょう。
+    - 16 色サーバーを作成するには:      XF86VGA16Server を YES にしましょう。
+    - 白黒サーバーを作成するには:       XF86MonoServer を YES にしましょう。
+    - S3 サーバーを作成するには:        XF86S3Server を YES にしましょう。
+    - Mach8 サーバーを作成するには:     XF86Mach8Server を YES にしましょう。
+    - Mach32 サーバーを作成するには:    XF86Mach32Server を YES にしましょ
+    - P9000 サーバーを作成するには:     XF86P9000Server を YES にしましょう。
+    - AGX サーバーを作成するには:       XF86AGXServer を YES にしましょう。
+    - ET4000/W32 サーバーを作成するには:XF86W32Server を YES にしましょう。
+    - IBM 8514/A サーバーを作成するには:XF86I8514Server を YES にしましょう。
+    - SVGA サーバーに含めたいドライバの一覧を、XF86SVga256Drivers へ設定しま
+      しょう。
+    - 16 色サーバーに含めたいドライバの一覧を、XF86Vga16Drivers へ設定しまし
+      ょう。
+    - 白黒 vga サーバーに含めたいドライバの一覧を、XF86Vga2Drivers へ設定し
+      ましょう。
+    - 白黒とVGA16 サーバーに含めたい非 vga 白黒ドライバの一覧を、
+      XF86Mono2Drivers へ設定しましょう(双頭のサーバーを組み込むとき)。
+
+   注意: ドライバの設定順序は探査する順番とみなされます。'generic'ドライバ
+         はどんな条件下でも探査が可能ですので、白黒と VGA16 色と SVGA サーバ
+         ーの最後に設定するのがよいでしょう。
+
+2. もし、標準的な配付物に含まれていないドライバを組み込む場合は、
+   drivers/vga256 の中にディレクトリを作って、ソース若しくは .o （オブジェ
+   クト）ファイルと適切な Imakefile を、そのディレクトリにコピーしましょ
+   う。（ drivers/vga2 は白黒サーバーの VGA2 部分用、drivers/vga16 は16 色サ
+   ーバー用、drivers/mono は 白黒とVGA16 色サーバーの 白黒部分用です。）ディ
+   レクトリの名前はドライバと同じ名前にしてください（詳細は VGADriverDoc デ
+   ィレクトリの中の文書を参照の事）。
+
+3. Makefile を作成するには次のコマンドを実行しましょう。
+
+    ./mkmf
+
+4. サーバーを構築しリンクするには 'make' コマンドを実行しましょう。
+
+5. 新しいサーバーを組み込むには 'make install' コマンドを実行しましょう。
+
+6. この手順で作られたファイルを取り除くには 'make clean' コマンドを実行しま
+   しょう。
+
+7. フルパス指定のサーバーに '-showconfig' フラグを付けて実行すれば、サーバー
+   の中にどんなドライバが含まれているかを見る事が出来ます。
+
+
+
+$XFree86$

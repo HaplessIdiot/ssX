@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.16 1995/01/07 04:11:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.17 1995/01/10 10:30:30 dawes Exp $ */
 /*
  * Copyright 1994 and 1995 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -1971,7 +1971,7 @@ Bool enter;
 
         if (enter == entered)
                 return;
-        entered == enter;
+        entered = enter;
 
         if (enter == ENTER)
         {
@@ -2145,7 +2145,7 @@ Bool enter;
                 tmp = ATIGetExtReg(0xB6);
                 ATIPutExtReg(0xB6, (saved_b6 & 0x22) | (tmp & 0xDD));
                 tmp = ATIGetExtReg(0xB8);
-                ATIPutExtReg(0xB8, (saved_b8 & 0x3F) | (tmp & 0xC0));
+                ATIPutExtReg(0xB8, (saved_b8 & 0x03) | (tmp & 0xC0));
                 tmp = ATIGetExtReg(0xB9);
                 ATIPutExtReg(0xB9, (saved_b9 & 0x80) | (tmp & 0x7F));
                 if (ATIChip != ATI_CHIP_18800)
@@ -2771,10 +2771,11 @@ DisplayModePtr mode;
 /*
  * ATIValidMode --
  *
+ * This is only a dummy place-holder for now.
  */
 static Bool
 ATIValidMode(mode)
 DisplayModePtr mode;
 {
-return TRUE;
+        return (TRUE);
 }

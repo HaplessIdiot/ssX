@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.28 1994/12/26 10:40:55 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.29 1995/01/04 04:36:02 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -277,6 +277,14 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.28 1994/12/26 10:40:55 dawes Exp $
 #define HasDvips		YES
 #define BuildLinuxDocHtml	YES
 #define BuildAllDocs		YES
+ */
+
+/*
+ * To install Japanese versions of the documentation uncomment this.
+ * Note: The Japanese documentation consists of a subset of the
+ * XFree86 3.1 docs.
+ *
+#define InstallJapaneseDocs	YES
  */
 
 /*

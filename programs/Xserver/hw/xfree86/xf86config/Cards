@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 # 
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.0 1995/01/02 05:02:55 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.1 1995/01/07 04:13:58 dawes Exp $
 
 # Cirrus Logic
 
@@ -515,6 +515,7 @@ LINE     #Clocks 89.0  119.8 79.9  31.5 110.0  64.9  74.9  94.9
 
 NAME Hercules Graphite HG210
 CHIPSET AGX-014
+SERVER AGX
 RAMDAC bt482
 DACSPEED 85
 LINE     Chipset "AGX-014"

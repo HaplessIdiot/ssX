@@ -1,0 +1,16 @@
+XCOMM $XFree86$
+
+#include <Server.tmpl>
+
+#ifdef LinuxArchitecture
+OSREADME = README.Linux
+#endif
+
+MAINDOCS = /* COPYRIGHT */ README README.Config INSTALL
+
+FILES = $(MAINDOCS) $(OSREADME)
+
+all::
+
+InstallMultipleDest(install,$(FILES),$(XFREE86JAPANESEDOCDIR))
+

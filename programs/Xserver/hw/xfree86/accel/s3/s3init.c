@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.43 1995/01/10 10:23:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.44 1995/01/11 03:47:24 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -355,7 +355,7 @@ Bool
 s3Init(mode)
      DisplayModePtr mode;
 {
-   short i, m;
+   short i, m, n;
    int   interlacedived = mode->Flags & V_INTERLACE ? 2 : 1;
    unsigned char tmp, tmp1, tmp2, CR5C;
    unsigned int itmp;
@@ -1844,16 +1844,24 @@ s3Init(mode)
       }
       outb(vgaCRReg, tmp);
 
+      n = 255;
       outb(vgaCRIndex, 0x54);
       if (S3_x64_SERIES(s3ChipId)) {
-	 int clock;
+	 int clock,mclk;
 	 clock = s3InfoRec.clock[mode->Clock] * s3Bpp;
+	 if (s3InfoRec.s3MClk > 0) 
+	    mclk = s3InfoRec.s3MClk;
+	 else
+	    mclk = 60000;  /* 60 MHz, limit for 864 */
 	 if (s3InfoRec.videoRam < 2048) clock *= 2;
-	 if (clock > 230*1000) m = 0;
-	 else m = (int)(5384.18/(clock/1000.0+39)-21.1543);
+	 m = (int)((mclk/1000.0*.72+16.867)*89.736/(clock/1000.0+39)-21.1543);
 	 if (s3InfoRec.videoRam < 2048) m /= 2;
-	 if (m < 0) m = 0;
-	 else if (m > 31) m = 31;
+	 m -= s3InfoRec.s3Madjust;
+	 if (m > 31) m = 31;
+	 else if (m < 0) {
+	    m = 0;
+	    n = 16;
+	 }
       }
       else if (s3InfoRec.videoRam == 512 || mode->HDisplay > 1200) /* XXXX */
 	 m = 0;
@@ -1861,19 +1869,17 @@ s3Init(mode)
          m = 2;
       else
 	 m = 20;
-      if (s3InfoRec.s3Madjust != 0) {
-	 int old_m = m;
-	 m -= s3InfoRec.s3Madjust;
-	 if (m < 0) m = 0;
-	 else if (m > 31) m = 31;
-	 ErrorF("%s %s: adjusting M from %d to %d\n", XCONFIG_GIVEN,
-		s3InfoRec.name, old_m, m);
-      }
       if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options))
 	s3Port54 = 0x7F;
       else s3Port54 = m << 3;
       outb(vgaCRReg, s3Port54);
       
+      n -= s3InfoRec.s3Nadjust;
+      if (n < 0) n = 0;
+      else if (n > 255) n = 255;
+      outb(vgaCRIndex, 0x60);
+      outb(vgaCRReg, n);
+
       outb(vgaCRIndex, 0x55);
       tmp = inb(vgaCRReg) & 0x08;       /* save the external serial bit  */
       outb(vgaCRReg, tmp | 0x40);	/* remove mysterious dot at 60Hz */
@@ -1925,18 +1931,6 @@ s3Init(mode)
       outb(vgaCRIndex, 0x5d);
       tmp = inb(vgaCRReg);
       outb(vgaCRReg, (tmp & 0x80) | i);
-
-      i = 255;
-      if (s3InfoRec.s3Nadjust != 0) {
-	 int old_n = i;
-	 i -= s3InfoRec.s3Nadjust;
-	 if (i < 0) i = 0;
-	 else if (i > 255) i = 255;
-	 ErrorF("%s %s: adjusting N from %d to %d\n", XCONFIG_GIVEN,
-		s3InfoRec.name, old_n, i);
-      }
-      outb(vgaCRIndex, 0x60);
-      outb(vgaCRReg, i);
 
       if (s3InfoRec.videoRam > 1024 && S3_x64_SERIES(s3ChipId)) 
 	 i = mode->HDisplay * s3Bpp / 8 + 1;
@@ -2027,6 +2021,10 @@ s3Init(mode)
 #endif
       }
    }
+
+   if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions))
+         (void) (s3ClockSelectFunc)(mode->SynthClock);
+         /* fixes the ICS2595 initialisation problems */
 
 #ifdef REG_DEBUG
    for (i=0; i<10; i++) {

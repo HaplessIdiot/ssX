@@ -1,13 +1,21 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.10 1994/12/20 11:32:50 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.11 1994/12/25 12:27:01 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
 
-#if HasLinuxDoc
+#if HasLinuxDoc || InstallJapaneseDocs
 #define IHaveSubdirs
-
-SUBDIRS = sgml
 #endif
+
+#if HasLinuxDoc
+SGMLDIR = sgml
+#endif
+
+#if InstallJapaneseDocs
+JAPANESEDIR = Japanese
+#endif
+
+SUBDIRS = $(SGMLDIR) $(JAPANESEDIR)
 
 #if !BuildLinuxDocText
 /* FreeBSD's README is handled separately because of name length limits */
@@ -73,7 +81,7 @@ InstallMultipleDest(install,$(FILES),$(XFREE86DOCDIR))
 InstallNamedNonExec(READ.FreeBSD,README.FreeBSD,$(XFREE86DOCDIR))
 #endif
 
-#if HasLinuxDoc
+#ifdef IHaveSubdirs
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
 #endif
