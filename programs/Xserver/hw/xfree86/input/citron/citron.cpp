@@ -1,6 +1,6 @@
 .\" Copyright (c) 2000 Peter Kunzmann <support@@citron.de>
 .\"
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.cpp,v 1.2 2000/12/11 20:18:47 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.cpp,v 1.3 2000/12/12 18:35:42 dawes Exp $
 .\"
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
@@ -8,17 +8,14 @@
 .SH NAME
 citron \- Citron Infrared Touch Driver (CiTouch)
 .SH SYNOPSIS
+.nf
 .B "Section \*qInputDevice\*q"
-.br
 .BI "  Identifier \*q" idevname \*q
-.br
 .B  "  Driver \*qcitron\*q"
-.br
 .BI "  Option \*qDevice\*q   \*q" devpath \*q
-.br
 \ \ ...
-.br
 .B EndSection
+.fi
 .SH DESCRIPTION
 .B citron 
 is a XFree86 input driver for 
