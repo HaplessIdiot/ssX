@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# $XFree86$
+# $XFree86: xc/programs/xedit/lisp/fake-gperf.sh,v 1.2 2001/10/04 04:38:41 paulo Exp $
 # This file is mean't to be used when building xedit on a operating system
 # that does not have gperf.
 # If you have gperf installed, add the lines:
@@ -12,7 +12,7 @@
 # xc/config/cf/<your-operating-system>.cf
 
 GPERF=`which gperf`
-if [ X$GPERF != X ]; then
+if [ X$GPERF != X -a -x $GPERF ]; then
     # gperf is available, use it.
     exec $GPERF $@
 fi

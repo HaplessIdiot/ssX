@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.6 2001/10/02 06:38:38 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.8 2001/10/04 04:38:41 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -175,6 +175,7 @@ struct _LispMac {
     int debugging;		/* debugger enabled? */
     int debug_level;		/* almost always the same as mac->level */
     int debug_step;		/* control for stoping and printing output */
+    int debug_break;		/* next breakpoint number */
     LispDebugState debug;
 };
 
