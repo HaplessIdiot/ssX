@@ -21,7 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/OSmesa/osmesa.c,v 1.15 2003/10/22 15:27:43 tsi Exp $ */
 
 /*
  * Off-Screen Mesa rendering / Rendering into client memory space
@@ -113,8 +113,9 @@ static void osmesa_register_swrast_functions( GLcontext *ctx );
 GLAPI OSMesaContext GLAPIENTRY
 OSMesaCreateContext( GLenum format, OSMesaContext sharelist )
 {
+   const GLint accumBits = (format == OSMESA_COLOR_INDEX) ? 0 : 16;
    return OSMesaCreateContextExt(format, DEFAULT_SOFTWARE_DEPTH_BITS,
-                                 8, 16, sharelist);
+                                 8, accumBits, sharelist);
 }
 
 
