@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.0 1994/04/29 14:07:44 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -373,7 +373,15 @@ s3Probe()
    }
 
    if (xf86Verbose) {
-      if (S3_801_928_SERIES(s3ChipId)) {
+      if (S3_x64_SERIES(s3ChipId)) {
+	if (S3_864_SERIES(s3ChipId)) {
+	    ErrorF("%s %s: chipset:   864 rev. %d\n",
+                   XCONFIG_PROBED, s3InfoRec.name, s3ChipId & 0x0f);
+	 } else if (S3_964_SERIES(s3ChipId)) {
+	    ErrorF("%s %s: chipset:   964 rev. %d\n",
+                   XCONFIG_PROBED, s3InfoRec.name, s3ChipId & 0x0f);
+	 }
+      } else if (S3_801_928_SERIES(s3ChipId)) {
 	 if (S3_801_SERIES(s3ChipId)) {
 	    if (!((config & 0x03) == 3))
 	       ErrorF("%s %s: chipset:   805",
