@@ -26,7 +26,7 @@
  * 
  * Permedia 3 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.3 2000/09/11 16:58:56 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.4 2000/10/17 09:07:04 alanh Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -95,33 +95,6 @@ static void Permedia3SetupForImageWrite(ScrnInfoPtr pScrn, int rop,
 				int bpp, int depth);
 static void Permedia3SubsequentImageWriteRect(ScrnInfoPtr pScrn, 
 				int x, int y, int w, int h, int skipleft);
-/* SolidLines */
-/*
-static void Permedia3PolylinesThinSolidWrapper(DrawablePtr pDraw, GCPtr pGC,
-   				int mode, int npt, DDXPointPtr pPts);
-static void Permedia3PolySegmentThinSolidWrapper(DrawablePtr pDraw, GCPtr pGC,
- 				int nseg, xSegment *pSeg);
-static void Permedia3SetupForSolidLine(ScrnInfoPtr pScrn, int color,
-				int rop, unsigned int planemask);
-static void Permedia3SubsequentSolidHorVertLine(ScrnInfoPtr pScrn,
-				int x, int y, int len, int dir);
-static void Permedia3SubsequentSolidBresenhamLine(ScrnInfoPtr pScrn,
-        			int x, int y, int dmaj, int dmin, int e, 
-				int len, int octant);
-*/
-/* DashedLines */
-/*
-static void Permedia3PolylinesThinDashedWrapper(DrawablePtr pDraw, GCPtr pGC,
-   				int mode, int npt, DDXPointPtr pPts);
-static void Permedia3PolySegmentThinDashedWrapper(DrawablePtr pDraw, GCPtr pGC,
- 				int nseg, xSegment *pSeg);
-static void Permedia3SetupForDashedLine(ScrnInfoPtr pScrn, int fg, int bg,
-				int rop, unsigned int planemask,
-				int length, unsigned char *pattern);
-static void Permedia3SubsequentDashedBresenhamLine(ScrnInfoPtr pScrn,
-        			int x, int y, int dmaj, int dmin, int e, 
-				int len, int octant, int phase);
-*/
 
 #define MAX_FIFO_ENTRIES 256
 
@@ -401,9 +374,14 @@ Permedia3AccelInit(ScreenPtr pScreen)
     infoPtr->Sync = Permedia3Sync;
 
     /* Clipping Setup */
-    infoPtr->ClippingFlags =
+    infoPtr->ClippingFlags = 0;
+    /* This does not work correctly, i don't know why, but i guess it is
+     * because the clipping stuff is not ok ...
+     * Let's disable it for now (also in the respective functions, we 
+     * clear the UserScissorEnable bit in Render2D.
 	HARDWARE_CLIP_MONO_8x8_FILL |
 	HARDWARE_CLIP_SOLID_FILL;
+	*/
     infoPtr->SetClippingRectangle = Permedia3SetClippingRectangle;
     infoPtr->DisableClipping = Permedia3DisableClipping;
 
@@ -460,39 +438,6 @@ Permedia3AccelInit(ScreenPtr pScreen)
     infoPtr->SubsequentImageWriteRect =
 	    Permedia3SubsequentImageWriteRect;
     
-    /* SolidLines */
-    /*
-    infoPtr->SolidLineFlags = 0;
-    infoPtr->PolySegmentThinSolidFlags = 0;
-    infoPtr->PolylinesThinSolidFlags = 0;
-    infoPtr->PolySegmentThinSolid = Permedia3PolySegmentThinSolidWrapper;
-    infoPtr->PolylinesThinSolid = Permedia3PolylinesThinSolidWrapper;
-    infoPtr->SetupForSolidLine = Permedia3SetupForSolidLine;
-    infoPtr->SubsequentSolidHorVertLine = Permedia3SubsequentSolidHorVertLine;
-    infoPtr->SubsequentSolidBresenhamLine =
-	Permedia3SubsequentSolidBresenhamLine;
-    */
-
-    /* DashedLines */
-#if 0
-    infoPtr->DashedLineFlags =
-	/* TRANSPARENCY_ONLY could be dropped if we manage 
-	 * to do the background color also ... :((( */
-	TRANSPARENCY_ONLY |
-	LINE_PATTERN_POWER_OF_2_ONLY |
-	LINE_PATTERN_LSBFIRST_LSBJUSTIFIED;
-    infoPtr-> DashPatternMaxLength = 16;
-    infoPtr->PolySegmentThinDashedFlags = 0;
-    infoPtr->PolylinesThinDashedFlags = 0;
-    /* This needs to be set so as to use the Dashed lines instead
-     * of full ones. */
-    infoPtr->PolySegmentThinDashed = Permedia3PolySegmentThinDashedWrapper;
-    infoPtr->PolylinesThinDashed = Permedia3PolylinesThinDashedWrapper;
-    infoPtr->SetupForDashedLine = Permedia3SetupForDashedLine;
-    infoPtr->SubsequentDashedBresenhamLine =
-	Permedia3SubsequentDashedBresenhamLine;
-#endif
-
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
     AvailFBArea.x2 = pScrn->displayWidth;
@@ -547,7 +492,6 @@ Permedia3SetClippingRectangle(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2)
     GLINT_WRITE_REG(1, ScissorMode);
     pGlint->ClippingOn = TRUE;
 }
-
 static void
 Permedia3DisableClipping(ScrnInfoPtr pScrn)
 {
@@ -585,7 +529,6 @@ Permedia3SetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
     GLINT_WRITE_REG(pGlint->PM3_Config2D, PM3Config2D);
     TRACE_EXIT("Permedia3SetupForScreenToScreenCopy");
 }
-
 static void
 Permedia3SubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
 					int x2, int y2, int w, int h)
@@ -633,6 +576,10 @@ Permedia3SetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
 	PM3Config2D_FBWriteEnable;
     if ((rop!=GXclear)&&(rop!=GXset)&&(rop!=GXcopy)&&(rop!=GXcopyInverted))
 	pGlint->PM3_Config2D |= PM3Config2D_FBDestReadEnable;
+    /* Clipping is not working ok yet, let's disable it.
+    if (pGlint->ClippingOn)
+	pGlint->PM3_Config2D |= PM3Config2D_UserScissorEnable;
+    */
     GLINT_WAIT(3);
     /* Using FBClockColor (have to disable SpanOperation) will fill only the
      * first 32 pixels of the 64 pixels of a span. Lets use ForegroundColor 
@@ -644,7 +591,6 @@ Permedia3SetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
     GLINT_WRITE_REG(pGlint->PM3_Config2D, PM3Config2D);
     TRACE_EXIT("Permedia3SetupForFillRectSolid");
 }
-
 static void
 Permedia3SubsequentFillRectSolid(ScrnInfoPtr pScrn, int x, int y, int w, int h)
 {
@@ -680,11 +626,13 @@ Permedia3SetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
 	PM3Config2D_UseConstantSource |
 	PM3Config2D_ForegroundROPEnable |
 	PM3Config2D_ForegroundROP(rop) |
-	PM3Config2D_BackgroundROPEnable |
-	PM3Config2D_BackgroundROP(rop) |
 	PM3Config2D_FBWriteEnable;
     if ((rop!=GXclear)&&(rop!=GXset)&&(rop!=GXcopy)&&(rop!=GXcopyInverted))
 	pGlint->PM3_Config2D |= PM3Config2D_FBDestReadEnable;
+    /* Clipping is not working correctly yet ...
+    if (pGlint->ClippingOn)
+	pGlint->PM3_Config2D |= PM3Config2D_UserScissorEnable;
+    */
     pGlint->PM3_AreaStippleMode = 1;
     pGlint->PM3_AreaStippleMode |= (2<<1);
     pGlint->PM3_AreaStippleMode |= (2<<4);
@@ -709,7 +657,6 @@ Permedia3SetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
     GLINT_WRITE_REG(pGlint->PM3_Config2D, PM3Config2D);
     TRACE_EXIT("Permedia3SetupForMono8x8PatternFill");
 }
-
 static void 
 Permedia3SubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, 
 			   int x_offset, int y_offset,
@@ -749,8 +696,6 @@ static void Permedia3SetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 	PM3Config2D_UseConstantSource |
 	PM3Config2D_ForegroundROPEnable |
 	PM3Config2D_ForegroundROP(rop) |
-	PM3Config2D_BackgroundROPEnable |
-	PM3Config2D_BackgroundROP(rop) |
 	PM3Config2D_FBWriteEnable;
     if ((rop!=GXclear)&&(rop!=GXset)&&(rop!=GXcopy)&&(rop!=GXcopyInverted))
 	pGlint->PM3_Config2D |= PM3Config2D_FBDestReadEnable;
@@ -765,7 +710,6 @@ static void Permedia3SetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
     DO_PLANEMASK(planemask);
     GLINT_WRITE_REG(pGlint->PM3_Config2D, PM3Config2D);
     TRACE_EXIT("Permedia3SetupForCPUToScreenColorExpandFill");
-
 }
 static void Permedia3SubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, 
 	int x, int y, int w, int h, int skipleft)
@@ -773,17 +717,18 @@ static void Permedia3SubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
     GLINTPtr pGlint = GLINTPTR(pScrn);
     TRACE_ENTER("Permedia3SubsequentCPUToScreenColorExpandFill");
     GLINT_WAIT(4);
-    GLINT_WRITE_REG(((y&0x0fff)<<16)|(x&0x0fff), ScissorMinXY);
+    GLINT_WRITE_REG(((y&0x0fff)<<16)|((x+skipleft)&0x0fff), ScissorMinXY);
     GLINT_WRITE_REG((((y+h)&0x0fff)<<16)|((x+w)&0x0fff), ScissorMaxXY);
     GLINT_WRITE_REG(
-	PM3RectanglePosition_XOffset(x-skipleft) |
+	PM3RectanglePosition_XOffset(x) |
 	PM3RectanglePosition_YOffset(y),
 	PM3RectanglePosition);
     GLINT_WRITE_REG(pGlint->PM3_Render2D |
-	PM3Render2D_Width(w+skipleft) | PM3Render2D_Height(h),
+	PM3Render2D_Width(w) | PM3Render2D_Height(h),
 	PM3Render2D);
     TRACE_EXIT("Permedia3SubsequentCPUToScreenColorExpandFill");
 }
+
 /* Images Writes */
 static void Permedia3SetupForImageWrite(ScrnInfoPtr pScrn, int rop,
 	unsigned int planemask, int trans_color, int bpp, int depth)
@@ -806,7 +751,6 @@ static void Permedia3SetupForImageWrite(ScrnInfoPtr pScrn, int rop,
     DO_PLANEMASK(planemask);
     GLINT_WRITE_REG(pGlint->PM3_Config2D, PM3Config2D);
     TRACE_EXIT("Permedia3SetupForImageWrite");
-
 }
 static void Permedia3SubsequentImageWriteRect(ScrnInfoPtr pScrn, 
 	int x, int y, int w, int h, int skipleft)
@@ -814,263 +758,15 @@ static void Permedia3SubsequentImageWriteRect(ScrnInfoPtr pScrn,
     GLINTPtr pGlint = GLINTPTR(pScrn);
     TRACE_ENTER("Permedia3SubsequentImageWrite");
     GLINT_WAIT(4);
-    GLINT_WRITE_REG(((y&0x0fff)<<16)|(x&0x0fff), ScissorMinXY);
+    GLINT_WRITE_REG(((y&0x0fff)<<16)|((x+skipleft)&0x0fff), ScissorMinXY);
     GLINT_WRITE_REG((((y+h)&0x0fff)<<16)|((x+w)&0x0fff), ScissorMaxXY);
     GLINT_WRITE_REG(
-	PM3RectanglePosition_XOffset(x-skipleft) |
+	PM3RectanglePosition_XOffset(x) |
 	PM3RectanglePosition_YOffset(y),
 	PM3RectanglePosition);
     GLINT_WRITE_REG(pGlint->PM3_Render2D |
-	PM3Render2D_Width(w+skipleft) | PM3Render2D_Height(h),
+	PM3Render2D_Width(w) | PM3Render2D_Height(h),
 	PM3Render2D);
     TRACE_EXIT("Permedia3SubsequentImageWrite");
 }
 
-/* Solid Lines */
-#if 0
-static void 
-Permedia3PolylinesThinSolidWrapper(
-   DrawablePtr     pDraw,
-   GCPtr           pGC,
-   int             mode,
-   int             npt,
-   DDXPointPtr     pPts
-){
-    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
-    GLINTPtr pGlint = GLINTPTR(infoRec->pScrn);
-    pGlint->CurrentGC = pGC;
-    pGlint->CurrentDrawable = pDraw;
-    if(infoRec->NeedToSync) (*infoRec->Sync)(infoRec->pScrn);
-    XAAPolyLines(pDraw, pGC, mode, npt, pPts);
-}
-
-static void 
-Permedia3PolySegmentThinSolidWrapper(
-   DrawablePtr     pDraw,
-   GCPtr           pGC,
-   int             nseg,
-   xSegment        *pSeg
-){
-    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
-    GLINTPtr pGlint = GLINTPTR(infoRec->pScrn);
-    pGlint->CurrentGC = pGC;
-    pGlint->CurrentDrawable = pDraw;
-    if(infoRec->NeedToSync) (*infoRec->Sync)(infoRec->pScrn);
-    XAAPolySegment(pDraw, pGC, nseg, pSeg);
-}
-static void
-Permedia3SetupForSolidLine(ScrnInfoPtr pScrn, int color,
-					 int rop, unsigned int planemask)
-{
-    GLINTPtr pGlint = GLINTPTR(pScrn);
-    TRACE_ENTER("Permedia3SetupForSolidLine");
-    REPLICATE(color);
-    pGlint->PM3_Render2D =
-	PM3Render2D_SpanOperation |
-	PM3Render2D_XPositive |
-	PM3Render2D_YPositive |
-	PM3Render2D_Operation_Normal;
-    pGlint->PM3_Config2D =
-	PM3Config2D_UseConstantSource |
-	PM3Config2D_ForegroundROPEnable |
-	PM3Config2D_ForegroundROP(rop) |
-	PM3Config2D_FBWriteEnable;
-    /*
-    if (pGlint->ClippingOn)
-	pGlint->PM3_Config2D |= PM3Config2D_UserScissorEnable;
-    */
-    GLINT_WAIT(6);
-    GLINT_WRITE_REG(pGlint->PM3_Config2D, PM3Config2D);
-    GLINT_WRITE_REG(rop<<1|UNIT_ENABLE|1<<11, LogicalOpMode);
-    if ((rop!=GXclear)&&(rop!=GXset)&&(rop!=GXcopy)&&(rop!=GXcopyInverted)) {
-	pGlint->PM3_Config2D |= PM3Config2D_FBDestReadEnable;
-	GLINT_WRITE_REG(
-	    PM3FBDestReadMode_ReadEnable,
-	    PM3FBDestReadMode);
-    }
-    DO_PLANEMASK(planemask);
-    GLINT_WRITE_REG(color, PM3ForegroundColor);
-    GLINT_WRITE_REG(UNIT_DISABLE, ScissorMode);
-    TRACE_EXIT("Permedia3SetupForSolidLine");
-}
-
-static void 
-Permedia3SubsequentSolidHorVertLine( ScrnInfoPtr pScrn,
-        int x, int y, int len, int dir)
-{
-    GLINTPtr pGlint = GLINTPTR(pScrn);
-    TRACE_ENTER("Permedia3SubsequentSolidHorVertLine");
-    /* Set the Rectangle Position */
-    if ((y != pGlint->y) || (x != pGlint->x)) {
-	pGlint->x = x;
-	pGlint->y = y;
-	GLINT_WAIT(2);
-	GLINT_WRITE_REG(
-	    PM3RectanglePosition_XOffset(x)|PM3RectanglePosition_YOffset(y),
-	    PM3RectanglePosition);
-    }
-    else GLINT_WAIT(1);
-    if (dir == DEGREES_0) GLINT_WRITE_REG(pGlint->PM3_Render2D |
-	PM3Render2D_Width(len) | PM3Render2D_Height(1),
-	PM3Render2D);
-    else GLINT_WRITE_REG(pGlint->PM3_Render2D |
-	PM3Render2D_Width(1) | PM3Render2D_Height(len),
-	PM3Render2D);
-    TRACE_EXIT("Permedia3SubsequentSolidHorVertLine");
-}
-
-static void 
-Permedia3SubsequentSolidBresenhamLine( ScrnInfoPtr pScrn,
-        int x, int y, int dmaj, int dmin, int e, int len, int octant)
-{
-    GLINTPtr pGlint = GLINTPTR(pScrn);
-    TRACE_ENTER("Permedia3SubsequentSolidBresenhamLine");
-    GLINT_WAIT(6);
-    if (octant & YMAJOR) {
-	GLINT_WRITE_REG(y<<16, StartY);
-	GLINT_WRITE_REG((x<<16) + ((e<<16) / dmaj), StartXDom);
-	GLINT_WRITE_REG(((octant & YDECREASING) ? -1 : 1)<<16, dY);
-	GLINT_WRITE_REG(
-	    ((((octant & XDECREASING) ? -1 : 1) * dmin)<<16) / dmaj,
-	    dXDom);
-    }
-    else {
-	GLINT_WRITE_REG(x<<16, StartXDom);
-	GLINT_WRITE_REG((y<<16) + ((e<<16) / dmaj), StartY);
-	GLINT_WRITE_REG(((octant & XDECREASING) ? -1 : 1)<<16, dXDom);
-	GLINT_WRITE_REG(
-	    ((((octant & YDECREASING) ? -1 : 1) * dmin)<<16) / dmaj,
-	    dY);
-    }
-    GLINT_WRITE_REG(len,GLINTCount);
-    GLINT_WRITE_REG(0, Render);
-    TRACE_EXIT("Permedia3SubsequentSolidBresenhamLine");
-}
-#endif
-
-/* Dashed Lines */
-#if 0
-static void 
-Permedia3PolylinesThinDashedWrapper(
-   DrawablePtr     pDraw,
-   GCPtr           pGC,
-   int             mode,
-   int             npt,
-   DDXPointPtr     pPts
-){
-    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
-    GLINTPtr pGlint = GLINTPTR(infoRec->pScrn);
-    pGlint->CurrentGC = pGC;
-    pGlint->CurrentDrawable = pDraw;
-    if(infoRec->NeedToSync) (*infoRec->Sync)(infoRec->pScrn);
-    XAAPolyLines(pDraw, pGC, mode, npt, pPts);
-}
-
-static void 
-Permedia3PolySegmentThinDashedWrapper(
-   DrawablePtr     pDraw,
-   GCPtr           pGC,
-   int             nseg,
-   xSegment        *pSeg
-){
-    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
-    GLINTPtr pGlint = GLINTPTR(infoRec->pScrn);
-    pGlint->CurrentGC = pGC;
-    pGlint->CurrentDrawable = pDraw;
-    if(infoRec->NeedToSync) (*infoRec->Sync)(infoRec->pScrn);
-    XAAPolySegment(pDraw, pGC, nseg, pSeg);
-}
-
-static void
-Permedia3SetupForDashedLine(ScrnInfoPtr pScrn,
-	int fg, int bg, int rop, unsigned int planemask,
-	int length, unsigned char *pattern)
-{
-    int p = 0;
-    GLINTPtr pGlint = GLINTPTR(pScrn);
-    TRACE_ENTER("Permedia3SetupForDashedLine");
-
-    switch (length) {
-	case 16:
-	    p = pattern[0] | (pattern[1]<<8);
-	    break;
-	case 8:
-	    p = (pattern[0]<<8) | (pattern[0]);
-	    break;
-	case 4:
-	    p &= 0x0f;
-	    p |= (p<<4);
-	    p |= (p<<8);
-	    break;
-	case 2:
-	    p &= 0x03;
-	    p |= (p<<2);
-	    p |= (p<<4);
-	    p |= (p<<8);
-	    break;
-	case 1:
-	    if (pattern[0]&0x01) p = -1;
-	    else p = 0;
-	    break;
-    }
-    REPLICATE(fg);
-    if (bg != -1) {
-	REPLICATE(bg);
-	GLINT_WAIT(9);
-    	GLINT_WRITE_REG(bg, BackgroundColor);
-	GLINT_WRITE_REG(
-	    PM3FBWriteMode_WriteEnable|
-	    PM3FBWriteMode_OpaqueSpan|
-	    PM3FBWriteMode_Enable0,
-	    PM3FBWriteMode);
-	GLINT_WRITE_REG(1<<24, RasterizerMode);
-    }
-    else GLINT_WAIT(6);
-    GLINT_WRITE_REG(rop<<1|UNIT_ENABLE|1<<11, LogicalOpMode);
-    if ((rop!=GXclear)&&(rop!=GXset)&&(rop!=GXcopy)&&(rop!=GXcopyInverted))
-	GLINT_WRITE_REG(
-	    PM3FBDestReadMode_ReadEnable,
-	    PM3FBDestReadMode);
-    DO_PLANEMASK(planemask);
-    GLINT_WRITE_REG( 1<<0|(p&0xffff)<<10, LineStippleMode);
-    GLINT_WRITE_REG(fg, PM3ForegroundColor);
-    /*
-    GLINT_WRITE_REG(UNIT_DISABLE, ScissorMode);
-    */
-    TRACE_EXIT("Permedia3SetupForDashedLine");
-}
-
-static void 
-Permedia3SubsequentDashedBresenhamLine( ScrnInfoPtr pScrn, int x, int y,
-	int dmaj, int dmin, int e, int len, int octant, int phase)
-{
-    GLINTPtr pGlint = GLINTPTR(pScrn);
-    TRACE_ENTER("Permedia3SubsequentDashedBresenhamLine");
-    ErrorF ("SVEN SVEN : Doing Bresenham Line from %d,%d, len = %d"
-	" major = %d, minor %d, octant = %d, e = %d.\n",
-	x, y, len, dmaj, dmin, len, e);
-    GLINT_WAIT(7);
-    if (octant & YMAJOR) {
-	GLINT_WRITE_REG(y<<16, StartY);
-	GLINT_WRITE_REG((x<<16) + ((e<<16) / dmaj), StartXDom);
-	GLINT_WRITE_REG(((octant & YDECREASING) ? -1 : 1)<<16, dY);
-	GLINT_WRITE_REG(
-	    ((((octant & XDECREASING) ? -1 : 1) * dmin)<<16) / dmaj,
-	    dXDom);
-    }
-    else {
-	GLINT_WRITE_REG(x<<16, StartXDom);
-	GLINT_WRITE_REG((y<<16) + ((e<<16) / dmaj), StartY);
-	GLINT_WRITE_REG(((octant & XDECREASING) ? -1 : 1)<<16, dXDom);
-	GLINT_WRITE_REG(
-	    ((((octant & YDECREASING) ? -1 : 1) * dmin)<<16) / dmaj,
-	    dY);
-    }
-    GLINT_WRITE_REG(len,GLINTCount);
-    /* I am not satisfied by this, 3<<1 in the Render Command
-     * will reset the phase to 0 always, ... */
-    GLINT_WRITE_REG((phase&0xf)<<0|(phase&0xf)<<13, PM3LoadLineStippleCounters);
-    GLINT_WRITE_REG(3<<1, Render);
-    TRACE_EXIT("Permedia3SubsequentDashedBresenhamLine");
-}
-#endif

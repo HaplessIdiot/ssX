@@ -43,7 +43,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xaw/Form.c,v 1.16 1999/11/19 13:53:26 hohndel Exp $ */
+/* $XFree86: xc/lib/Xaw/Form.c,v 1.17 2000/08/25 21:51:00 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -877,6 +877,10 @@ XawFormGeometryManager(Widget w, XtWidgetGeometry *request,
     else {
 	if ((*((FormWidgetClass)fw->core.widget_class)->form_class.layout)
 		(fw, XtWidth(w), XtHeight(w), False)) {
+	    Widget *childP;
+	    int num_children = fw->composite.num_children;
+	    WidgetList children = fw->composite.children;
+
 	    if (fw->form.no_refigure) {
 		/*
 		 * I am changing the widget wrapper w/o modifing the window.
@@ -887,53 +891,39 @@ XawFormGeometryManager(Widget w, XtWidgetGeometry *request,
 		 * The window will be updated when no_refigure is set back
 		 * to False
 		 */
+		form->form.virtual_width = XtWidth(w);
+		form->form.virtual_height = XtHeight(w);
 		form->form.deferred_resize = True;
 		ret_val = XtGeometryDone;
 	    }
 	    else
 		ret_val = XtGeometryYes;
+
+	    /*
+	     * Resets everything.
+	     */
+	    for (childP = children; childP - children < num_children; childP++) {
+		Widget nw = *childP;
+
+		if (XtIsManaged(nw)) {
+		    FormConstraints nform = (FormConstraints)nw->core.constraints;
+
+#ifndef OLDXAW
+		    nform->form.virtual_x = XtX(nw);
+		    nform->form.virtual_y = XtY(nw);
+#endif
+		    nform->form.virtual_width = XtWidth(nw);
+		    nform->form.virtual_height = XtHeight(nw);
+		}
+	    }
+	    fw->form.old_width = XtWidth(fw);
+	    fw->form.old_height = XtHeight(fw);
 	}
 	else {
 	    XtWidth(w) = old_width;
 	    XtHeight(w) = old_height;
 	    ret_val = XtGeometryNo;
 	}
-    }
-
-    if (ret_val == XtGeometryDone) {
-#ifndef OLDXAW
-	int x, y, width, height;
-
-	if (fw->form.old_width && fw->form.old_height) {
-	    x = TransformCoord(XtX(w), XtWidth(fw), fw->form.old_width,
-			      form->form.left);
-	    y = TransformCoord(XtY(w), XtHeight(fw), fw->form.old_height,
-			       form->form.top);
-	    width = TransformCoord(XtX(w) + XtWidth(w) +
-				   (XtBorderWidth(w) << 1),
-				   XtWidth(fw), fw->form.old_width,
-				   form->form.right) -
-				   (x + (XtBorderWidth(w) << 1));
-	    height = TransformCoord(XtY(w) + XtHeight(w) +
-				    (XtBorderWidth(w) << 1),
-				    XtHeight(fw), fw->form.old_height,
-				    form->form.bottom) -
-				    (y + (XtBorderWidth(w) << 1));
-	}
-	else {
-	    x = XtX(w);
-	    y = XtY(w);
-	    width = XtWidth(w);
-	    height = XtHeight(w);
-	}
-	form->form.virtual_x = x;
-	form->form.virtual_y = y;
-	form->form.virtual_width = width;
-	form->form.virtual_height = height;
-#else
-	form->form.virtual_width = XtWidth(w);
-	form->form.virtual_height = XtHeight(w);
-#endif /* OLDXAW */
     }
 
     return (ret_val);

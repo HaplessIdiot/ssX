@@ -1,4 +1,8 @@
 XFree86 4.0.1d (27 October 2000)
+ 819. Improve Xaw 7 compatibility with version 6 in the form widget geometry
+      management code.  This should fix some problems seen with ghostview
+      (#4194, Paulo Cesar Pereira de Andrade).
+ 818. Build fixes for XFree86 on Cygwin (#4193, Suhaib Siddiqi).
  817. Fix for missing symbol messages in int10 and cirrus driver
       (Marc La France).
  816. Detect null windows of PCI-to-PCI bridges (Marc La France).
@@ -109,7 +113,7 @@ XFree86 4.0.1d (27 October 2000)
       Jakub Jelinek).
  755. Remove a dependency on word size in the determination of PCI resource
       sizes on Linux (Marc La France).
- 754. Permedia3 updates (#4177, #4183 Sven Luther).
+ 754. Permedia3 updates (#4177, 4183, 4192, Sven Luther).
  753. Add Xv support to the r128 driver (Stuart Anderson/Vladmir Dergacheb)
  752. Make VBE module log a message when the BIOS doesn't support any VESA
       extensions (Marc La France).
@@ -11327,4 +11331,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1356 2000/10/25 22:55:02 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1357 2000/10/26 11:47:42 tsi Exp $
