@@ -1,4 +1,5 @@
 XFree86 4.4.99.8 (xx June 2004)
+ 136. Make XDarwin not default to StaticColor on ix86 (Shantonu Sen).
 
 XFree86 4.4.99.7 (12 June 2004)
  135. Import latest DRM kernel modules from DRI tree (DRI Project)
@@ -18994,7 +18995,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3278 2004/06/10 18:34:59 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3279 2004/06/12 11:02:32 dawes Exp $
 
 
 
