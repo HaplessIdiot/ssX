@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.12 2000/06/17 00:02:51 martin Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.13 2000/06/19 17:34:40 alanh Exp $
 
 #include <Threads.tmpl>
 
@@ -379,12 +379,17 @@ LibraryObjectRule()
 
 SubdirLibraryRule($(OBJS))
 NormalLintTarget($(SRCS))
+
+#else
+
+AllTarget($(OBJS))
+
 #endif
 
 #define IHaveSubdirs
 #define PassCDebugFlags
 
-SUBDIRS = $(MESASUBDIRS) $(ASMSUBDIRS) drv OSmesa
+SUBDIRS = $(MESASUBDIRS) $(ASMSUBDIRS) OSmesa
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
