@@ -1,4 +1,5 @@
 XFree86 3.9.18Za (5 March 2000)
+3796. Rage 128 documentation update (Kevin Martin).
 3795. Static library objects don't use THREADS_CFLAGS (#3790, Matthieu Herrb).
 3934. Fix a fatal error related to shared memory pixmaps in Xinerama (#3788,
       Mark Vojkovich).
@@ -9971,4 +9972,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1064 2000/03/04 03:57:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1065 2000/03/05 16:59:03 dawes Exp $
