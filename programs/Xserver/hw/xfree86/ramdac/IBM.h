@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/IBM.h,v 1.7 1999/02/12 22:52:11 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/IBM.h,v 1.8tsi Exp $ */
 
 #include <xf86RamDac.h>
 
@@ -287,7 +287,7 @@ void IBMramdac640HWCursorInit(xf86CursorInfoPtr infoPtr);
 #define UPDT_CNTL_DELAYED               0x0
 #define UPDT_CNTL_IMMEDIATE             0x08
 #define CURSOR_SIZE_32                  0x0
-#define CURSOR_SIZE_64                  0x40
+#define CURSOR_SIZE_64                  0x04
 #define CURSOR_MODE_OFF                 0x0
 #define CURSOR_MODE_3_COLOR             0x01
 #define CURSOR_MODE_2_COLOR_HL          0x02
