@@ -24,6 +24,9 @@ cfb8_32GetImage (
 ){
     if(!w || !h) return;
 
+    if (!cfbDrawableEnabled (pDraw))
+	    return;
+
     if(pDraw->depth == 24){
 	cfb32GetImage(pDraw, sx, sy, w, h, format, planemask, pdstLine);
 	return;
@@ -129,6 +132,9 @@ cfb8_32GetSpans(
 ){
    int pitch, i;
    CARD8 *ptr, *ptrBase;
+
+   if (!cfbDrawableEnabled (pDraw))
+        return;
 
    if(pDraw->bitsPerPixel == 1) {
 	mfbGetSpans(pDraw, wMax, ppt, pwidth, nspans, pDst);
