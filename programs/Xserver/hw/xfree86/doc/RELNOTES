@@ -1,12 +1,12 @@
-  Release Notes for XFree86[TM] 3.1.2A (beta version)
+  Release Notes for XFree86[TM] 3.1.2B (beta version)
   The XFree86 Project, Inc
 
-  19 November 1995
+  16 December 1995
 
   This document describes the rationale and conditions of this beta
-  release, what is new in the XFree86 beta version 3.1.2A compared with
-  the current release version 3.1.2, and how to install this beta
-  release.
+  release, what is new in the XFree86 beta versions 3.1.2B and 3.1.2A
+  compared with the current release version 3.1.2, and how to install
+  this beta release.
 
   1.  General Information about Beta Releases
 
@@ -21,8 +21,8 @@
 
   The X servers included in beta releases have a built-in expiry date.
   The reason for this is to try to prevent them from persisting beyond
-  the date of the next release.  The expiry date for 3.1.2A is 1
-  February 1996.
+  the date of the next release.  The expiry date for 3.1.2B is 1 April
+  1996.
 
   The XFree86 binary beta releases may be freely redistributed providing
   that they are not modified in any way, and providing that an
@@ -43,9 +43,55 @@
   report@XFree86.org.  Please do not send these reports to our usual
   support address.
 
-  2.  New Features in 3.1.2A
+  2.  New Features in 3.1.2B
 
   2.1.  General X server changes
+
+
+     o  ADD SOMETHING HERE ??
+
+  2.2.  Trident driver (SVGA server)
+
+
+     o  ADD SOMETHING HERE
+
+  2.3.  ARK driver (SVGA server)
+
+
+     o  No changes -- say something about it the ics5342 not working.
+
+
+
+
+
+  2.4.  S3 server
+
+
+     o  ADD SOMETHING HERE
+
+  2.5.  Mach64 server
+
+
+     o  ADD SOMETHING HERE
+
+  2.6.  ET4000/W32 server
+
+
+     o  ADD SOMETHING HERE
+
+  2.7.  SuperProbe
+
+
+     o  ADD SOMETHING HERE
+
+  2.8.  Client/Library changes
+
+
+     o  ADD SOMETHING HERE ??
+
+  3.  New Features in 3.1.2A
+
+  3.1.  General X server changes
 
 
      o  Underscore characters are now ignored in Options and keywords in
@@ -62,18 +108,16 @@
         mode.  If you've had problems getting the middle button working
         on your mouse, try this.
 
-
-
      o  Bitmap fontpath elements can have ":unscaled" appended to
         prevent the fonts from being treated as scalable.  This works
         with the fontserver (xfs) too.
 
-  2.2.  Trident driver (SVGA server)
+  3.2.  Trident driver (SVGA server)
 
 
      o  Preliminary support is included for the TGUI 9440.
 
-  2.3.  Cirrus driver (SVGA server)
+  3.3.  Cirrus driver (SVGA server)
 
 
      o  Support has been added for the CL-GD7543.
@@ -81,7 +125,9 @@
      o  The programmable clock code has been improved to avoid unstable
         settings.
 
-  2.4.  ARK driver (SVGA server)
+  3.4.  ARK driver (SVGA server)
+
+
 
 
      o  Preliminary support has been added for the ICS5342
@@ -103,12 +149,12 @@
      o  Panning has been fixed for ARK2000PV cards with 2MB of video
         memory.
 
-  2.5.  WD90C24 driver (SVGA server)
+  3.5.  WD90C24 driver (SVGA server)
 
 
      o  A problem with snow at high clocks has been fixed.
 
-  2.6.  S3 server
+  3.6.  S3 server
 
 
      o  The default InvertVCLK settings have been changed for #9 Motion
@@ -128,20 +174,18 @@
         file:
 
 
-
-
-             Ramdac "ibm_rgb526"
+                  Ramdac "ibm_rgb526"
 
 
 
 
 
-  2.7.  Mach32 server
+  3.7.  Mach32 server
 
 
      o  Hardware cursor mask problem has been fixed.
 
-  2.8.  Mach64 server
+  3.8.  Mach64 server
 
 
      o  Hardware cursor mask problem has been fixed.
@@ -151,7 +195,8 @@
      o  Arbitrary clocks can be used on most boards with supported clock
         chips.  This is enabled with the "program_clocks" option.
 
-  2.9.  ET4000/W32 server
+
+  3.9.  ET4000/W32 server
 
 
      o  Support has been added for the ICS5341 programmable clock.  To
@@ -169,31 +214,29 @@
      o  Problems that could cause the W32 server to crash at startup or
         get stuck in a loop at exit have been fixed.
 
-  2.10.  AGX server
+  3.10.  AGX server
 
 
      o  Fix for clock probing with AGX-010 chips.
 
-  2.11.  VGA16 server
+  3.11.  VGA16 server
 
 
      o  A problem preventing the StaticGray visual from working has been
         fixed.
 
-  2.12.  xf86config utility
+  3.12.  xf86config utility
 
 
      o  Incorrect handling of IBM RGB Ramdacs has been fixed.
 
-  2.13.  SuperProbe
+  3.13.  SuperProbe
 
 
      o  Added detection for C&T 65548, Cirrus CL-GD7543/1, AT&T 20C409,
         AT&T20C499, and fixed an incorrect ET4000/W32 probe problem.
 
-  2.14.  Client/Library changes
-
-
+  3.14.  Client/Library changes
 
 
      o  The xdm security fix from the X Consortium's fix-13 is included.
@@ -212,45 +255,48 @@
 
      o  libXt bug fix from the X Consortium's fix-13.
 
-  3.  Installing an XFree86 Beta Release
+  4.  Installing an XFree86 Beta Release
 
-  The XFree86 3.1.2A binary beta release is distributed as a upgrade to
+  The XFree86 3.1.2B binary beta release is distributed as a upgrade to
   3.1.2.  It consists of the following files:
 
 
-       BetaReport         Beta test report template form
-       X312A8514.tgz      8514/A server
-       X312AAGX.tgz       AGX server
-       X312AMa32.tgz      Mach 32 server
-       X312AMa64.tgz      Mach 64 server
-       X312AMa8.tgz       Mach 8 server
-       X312AMono.tgz      Mono server
-       X312AP9K.tgz       P9000 server
-       X312ASVGA.tgz      SVGA server
-       X312AVG16.tgz      16 colour VGA server
-       X312AW32.tgz       ET4000/W32 server
-       X312Aupd.tgz       clients/libraries that have changed since 3.1.2
-       postinst.sh        script to run after installing the 3.1.2A binaries
+
+  BetaReport         Beta test report template form
+  X312B8514.tgz      8514/A server
+  X312BAGX.tgz       AGX server
+  X312BMa32.tgz      Mach 32 server
+  X312BMa64.tgz      Mach 64 server
+  X312BMa8.tgz       Mach 8 server
+  X312BMono.tgz      Mono server
+  X312BP9K.tgz       P9000 server
+  X312BSVGA.tgz      SVGA server
+  X312BVG16.tgz      16 colour VGA server
+  X312BW32.tgz       ET4000/W32 server
+  X312Bupd.tgz       clients/libraries that have changed since 3.1.2
+  postinst.sh        script to run after installing the 3.1.2B binaries
 
 
 
 
   If you don't already have XFree86 3.1.2 installed, first install that.
-  Then, you will need to get at least one of the XFree86 3.1.2A X
-  servers plus the update set (X312Aupd.tgz), the post-install script,
-  and the BetaReport file.  It is recommended that this release be
-  installed in the directory /usr/XFree86-3.1.2A.  You will need to be
-  `root' to do the installation.  The following example is for
-  installing the S3 and Mono servers, and it assumes that the above
-  files are located in /var/tmp:
+  If you have already installed 3.1.2A, that's fine.  Then, you will
+  need to get at least one of the XFree86 3.1.2B X servers plus the
+  update set (X312Bupd.tgz), the post-install script (make sure you have
+  the correct version of this script -- check that the BETAVERSION
+  matches the version you are installing), and the BetaReport file.  It
+  is recommended that this release be installed in the directory
+  /usr/XFree86-3.1.2B.  You will need to be `root' to do the
+  installation.  The following example is for installing the S3 and Mono
+  servers, and it assumes that the above files are located in /var/tmp:
 
 
 
-               mkdir /usr/XFree86-3.1.2A
-               cd /usr/XFree86-3.1.2A
-               gzip -d < /var/tmp/X312AS3.tgz | tar vxf -
-               gzip -d < /var/tmp/X312AMono.tgz | tar vxf -
-               gzip -d < /var/tmp/X312Aupd.tgz | tar vxf -
+               mkdir /usr/XFree86-3.1.2B
+               cd /usr/XFree86-3.1.2B
+               gzip -d < /var/tmp/X312BS3.tgz | tar vxf -
+               gzip -d < /var/tmp/X312BMono.tgz | tar vxf -
+               gzip -d < /var/tmp/X312Bupd.tgz | tar vxf -
                sh /var/tmp/postinst.sh
 
 
@@ -258,59 +304,13 @@
 
   The postinst.sh script makes a backup copy of the 3.1.2 versions you
   already had installed in /usr/X11R6.  It puts the backups into the
-  /usr/XFree86-3.1.2 directory.  It then links the 3.1.2A versions into
-  /usr/X11R6.
+  /usr/XFree86-3.1.2 directory.  It then links the 3.1.2B versions into
+  /usr/X11R6.  If you had installed 3.1.2A previously according to the
+  instructions, the files for that version will still be in the
+  /usr/XFree86-3.1.2A directory.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.6 1995/11/30 13:04:42 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.7 1995/12/16 08:20:33 dawes Exp $
 
 
 

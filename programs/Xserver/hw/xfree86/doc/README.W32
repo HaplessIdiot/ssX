@@ -21,18 +21,20 @@
   If you have 1 M, XF86_W32 claims you have 1023 K; you get to specify
   the virtual world as 1152x900, but not 1152x910.
 
-  The current maximum clock is set to 86 MHz according to the Tseng
-  databooks.  For a non-interlaced 1280x1024x(256 colors) at say
+  For most cards the maximum clock is set to 86 MHz according to the
+  Tseng databooks.  For a non-interlaced 1280x1024x(256 colors) at say
   135-MHz, you need a w32p (with its 16-bit RAMDAC bus) with a
   multiplexing RAMDAC so that the w32p sees only (135/2 = 67.5) MHz, not
   135 MHz.  This requires special code only provided for cards using the
-  ICS5341 GENDAC. This code seems to work fine for most people, except
-  for a small band of frequencies around 90MHz.  Similar code is being
-  developed for the STG1703 RAMDAC.
+  ICS5341 GENDAC or the STG1703. This code seems to work fine for most
+  people, except, with the ICS5341, for a small band of frequencies
+  around 90MHz.
 
   If you have problems with the server.  Try the following:
 
      o  Put Option "pci_burst_off" in the Device Section.
+
+     o  Put Option "w32_interleave_off" in the Device Section.
 
      o  Take out the Hercules monochrome adapter, if you have one.  Many
         configurations of the ET4000/W32 series do not allow one in the
@@ -61,8 +63,6 @@
   Note that the built-in power saver (for a "green" monitor) has not
   been tested.  Also do not expect it to work on a board without a
   w32p_rev_c or later chip.
-
-
 
   2.  Using XF86_W32 on a board with an ICS5341 GENDAC
 
@@ -94,9 +94,26 @@
 
   3.  Using XF86_W32 on a board with an STG1703 GENDAC
 
-  Only preliminary support for this chips is implemented. The server is
-  still limited to 86MHz and cannot program the STG1703 clock chip. More
-  support will be added soon (DHH).
+  Even though the STG1703 provides a set of standard clocks that can be
+  found with the normal clock probing procedure, it is mandatory to put
+  a
+
+
+       ClockChip  "stg1703"
+
+
+
+
+  line into the Device Section to be able to use the programmable clocks
+  that the STG1703 can produce. You can also add a
+
+
+       Ramdac     "stg1703"
+
+
+
+
+  line, but the RAMDAC should be auto-probed correctly.
 
   4.  Acknowledgments
 
@@ -112,6 +129,7 @@
   used by DHH to extend the server.
 
   Koen Gadeyne (kmg@barco.be) wrote a patchkit for XFree86-3.1.1 that
+
   was partly integrated in this server and he continues to help develop
   it.
 
@@ -128,7 +146,6 @@
         peterc@a3.ph.man.ac.uk (Peter Chang)
 
         dmm0t@rincewind.mech.virginia.edu (David Meyer)
-
 
         nrh@philabs.Philips.COM (Nikolaus R. Haus)
 
@@ -157,24 +174,7 @@
 
 
   $XConsortium: W32.sgml,v 1.2 95/01/23 15:34:55 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.8 1995/12/09 11:07:52 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.9 1995/12/16 08:20:34 dawes Exp $
 
 
 
