@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.79 2001/08/17 22:08:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.80 2001/08/29 11:55:52 alanh Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -1532,6 +1532,12 @@ double
 xf86fabs(double x)
 {
         return(fabs(x));
+}
+
+int 
+xf86finite(double x)
+{
+	return(finite(x));
 }
 
 double

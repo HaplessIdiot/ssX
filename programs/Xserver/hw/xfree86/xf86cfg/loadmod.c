@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loadmod.c,v 1.6 2001/07/19 02:22:52 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loadmod.c,v 1.7 2001/08/01 00:44:57 tsi Exp $
  */
 
 #ifdef USE_MODULES
@@ -127,6 +127,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86fgetc)
    SYMFUNC(xf86fgetpos)
    SYMFUNC(xf86fgets)
+   SYMFUNC(xf86finite)
    SYMFUNC(xf86floor)
    SYMFUNC(xf86fmod)
    SYMFUNC(xf86fopen)
