@@ -541,7 +541,8 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 	 GCPtr pGC1;
 
 	 pBitmap=(*pSrcDrawable->pScreen->CreatePixmap)(pSrcDrawable->pScreen, 
-						        width, height, 1);
+                                                        pSrcDrawable->width,
+                                                        pSrcDrawable->height, 1);
 	 if (!pBitmap)
 	    return(NULL);
 	 pGC1 = GetScratchGC(1, pSrcDrawable->pScreen);
@@ -551,7 +552,8 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 	 }
 	 ValidateGC((DrawablePtr)pBitmap, pGC1);
 	 (void) cfbBitBlt(pSrcDrawable, (DrawablePtr)pBitmap, pGC1, srcx, srcy,
-			  width, height, 0, 0, cfbCopyPlane8to1, bitPlane);
+			  width, height, srcx, srcy, cfbCopyPlane8to1, bitPlane);
+         FreeScratchGC(pGC1);
 	 pSrcDrawable = (DrawablePtr)pBitmap;
       }
       else if ((pSrcDrawable->type == DRAWABLE_WINDOW) &&
@@ -578,6 +580,7 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 			width, height, 0, 0);
 	 retval = cfbCopyPlane((DrawablePtr)pPixmap, pDstDrawable, pGC,
                              0, 0, width, height, dstx, dsty, bitPlane);
+         FreeScratchGC(pGC1);
 	 (*pSrcDrawable->pScreen->DestroyPixmap)(pPixmap);
 	 return(retval);
       }
@@ -685,6 +688,8 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 	    (*pGC->pScreen->RegionUninit) (&rgnDst);
 	 if (freeSrcClip)
 	    (*pGC->pScreen->RegionDestroy) (prgnSrcClip);
+         if (pBitmap)
+            (*pSrcDrawable->pScreen->DestroyPixmap)(pBitmap);
 	 return NULL;
       }
    }
