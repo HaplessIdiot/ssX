@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/fonttosfnt/read.c,v 1.4 2003/11/21 05:22:09 dawes Exp $ */
+/* $XFree86: xc/programs/fonttosfnt/read.c,v 1.5 2003/12/19 02:05:39 dawes Exp $ */
 
 #include <stdio.h>
 
@@ -39,7 +39,7 @@ static int ft_inited = 0;
 static FT_Library ft_library;
 
 static int
-FT_Ensure_Inited()
+FT_Ensure_Inited(void)
 {
     int rc;
     if(ft_inited)
