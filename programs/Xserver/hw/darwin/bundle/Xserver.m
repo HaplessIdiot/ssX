@@ -6,11 +6,13 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.17 2001/05/09 07:16:19 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.18 2001/05/16 06:10:08 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
 #import "quartzShared.h"
+
+#import "XWindow.h"
 
 // Macros to build the path name
 #ifndef XBINDIR
@@ -31,7 +33,8 @@ static NSPortMessage *signalMessage;
 
 @implementation Xserver
 
-- (id)init {
+- (id)init
+{
     self=[super init];
 
     serverLock = [[NSLock alloc] init];
@@ -43,17 +46,21 @@ static NSPortMessage *signalMessage;
 
     // set up a port to safely send messages to main thread from server thread
     signalPort = [[NSPort port] retain];
-    signalMessage = [[NSPortMessage alloc] initWithSendPort:signalPort receivePort:signalPort components:nil];
+    signalMessage = [[NSPortMessage alloc] initWithSendPort:signalPort
+                    receivePort:signalPort components:nil];
 
     // set up receiving end
     [signalPort setDelegate:self];
-    [[NSRunLoop currentRunLoop] addPort:signalPort forMode:NSDefaultRunLoopMode];
-    [[NSRunLoop currentRunLoop] addPort:signalPort forMode:NSModalPanelRunLoopMode];
+    [[NSRunLoop currentRunLoop] addPort:signalPort
+                                forMode:NSDefaultRunLoopMode];
+    [[NSRunLoop currentRunLoop] addPort:signalPort
+                                forMode:NSModalPanelRunLoopMode];
 
     return self;
 }
 
-- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
+{
     // Quit if the X server is not running
     if ([serverLock tryLock])
         return NSTerminateNow;
@@ -84,8 +91,10 @@ static NSPortMessage *signalMessage;
 }
 
 // returns YES when event was handled
-- (BOOL)translateEvent:(NSEvent *)anEvent {
+- (BOOL)translateEvent:(NSEvent *)anEvent
+{
     NXEvent ev;
+    static BOOL mouse1Pressed = NO;
 
     if(([anEvent type]==NSKeyDown) && (![anEvent isARepeat]) &&
        ([anEvent keyCode]==[Preferences keyCode]) &&
@@ -94,15 +103,28 @@ static NSPortMessage *signalMessage;
         return YES;
     }
 
-    if(!serverVisible)
+    if(!serverVisible && !quartzRootless)
         return NO;
 
     [self getNXMouse:&ev];
     ev.type=[anEvent type];
     ev.flags=[anEvent modifierFlags];
     switch(ev.type) {
-        case NSLeftMouseDown:
         case NSLeftMouseUp:
+            if (quartzRootless && !mouse1Pressed) {
+                // MouseUp after MouseDown in menu - ignore
+                return NO;
+            }
+            mouse1Pressed = NO;
+            break;
+        case NSLeftMouseDown:
+            if (quartzRootless &&
+                ! ([anEvent window] &&
+                   [[anEvent window] isKindOfClass:[XWindow class]])) {
+                // Click in non X window - ignore
+                return NO;
+            }
+            mouse1Pressed = YES;
         case NSMouseMoved:
             break;
         case NSLeftMouseDragged:
@@ -142,13 +164,29 @@ static NSPortMessage *signalMessage;
 
     [self sendNXEvent:&ev];
 
+    // Rootless: Send first NSLeftMouseDown to windows and views so window
+    // ordering can be suppressed.
+    // Don't pass further events - they (incorrectly?) bring the window
+    // forward no matter what.
+    if (quartzRootless  &&
+        ([anEvent type]==NSLeftMouseDown || [anEvent type]==NSLeftMouseUp) &&
+        [anEvent clickCount] == 1 &&
+        [anEvent window] &&
+        [[anEvent window] isKindOfClass:[XWindow class]])
+    {
+        return NO;
+    }
+
     return YES;
 }
 
-- (void)getNXMouse:(NXEvent*)ev {
+// Fill in NXEvent with mouse coordinates, inverting y coordinate
+- (void)getNXMouse:(NXEvent*)ev
+{
     NSPoint pt=[NSEvent mouseLocation];
+
     ev->location.x=(int)(pt.x);
-    ev->location.y=[[NSScreen mainScreen] frame].size.height-(int)(pt.y); // invert mouse
+    ev->location.y=[[NSScreen mainScreen] frame].size.height - (int)(pt.y);
 }
 
 // Append a string to the given enviroment variable
@@ -158,11 +196,28 @@ static NSPortMessage *signalMessage;
             stringByAppendingString:value] cString],1);
 }
 
-- (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
-    // Start the X server thread
-    [NSThread detachNewThreadSelector:@selector(run) toTarget:self withObject:nil];
+- (void)applicationDidFinishLaunching:(NSNotification *)aNotification
+{
+    // GrP block SIGPIPE
+    // SIGPIPE repeatably killed the (rootless) server when closing a
+    // dozen xterms in rapid succession. Those SIGPIPEs should have been
+    // sent to the X server thread, which ignores them, but somehow they
+    // ended up in this thread instead.
+    {
+        sigset_t set;
+        sigemptyset(&set);
+        sigaddset(&set, SIGPIPE);
+        // pthread_sigmask not implemented yet
+        // pthread_sigmask(SIG_BLOCK, &set, NULL);
+        sigprocmask(SIG_BLOCK, &set, NULL);
+    }
 
-    // If we are going to display a splash screen, hide the X11 screen immediately
+    // Start the X server thread
+    [NSThread detachNewThreadSelector:@selector(run) toTarget:self
+              withObject:nil];
+
+    // If we are going to display a splash screen,
+    // hide the X11 screen immediately
     if ([Preferences startupHelp])
         [self sendShowHide:NO];
 
@@ -177,9 +232,9 @@ static NSPortMessage *signalMessage;
         NSArray *args;
 
         // Register to receive notification when the client task finishes
-        [[NSNotificationCenter defaultCenter] addObserver:self 
-                selector:@selector(clientTaskDone:) 
-                name:NSTaskDidTerminateNotification 
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                selector:@selector(clientTaskDone:)
+                name:NSTaskDidTerminateNotification
                 object:nil];
 
         // Change to user's home directory (so xterms etc. start there)
@@ -221,7 +276,7 @@ static NSPortMessage *signalMessage;
     [NSApp setWindowsNeedUpdate:YES];
 
     // Show the X switch window if not using dock icon switching
-    if (![Preferences dockSwitch])
+    if (![Preferences dockSwitch] && !quartzRootless)
         [switchWindow orderFront:nil];
 
     // Display the help splash screen or show the X server
@@ -234,7 +289,8 @@ static NSPortMessage *signalMessage;
 }
 
 // Run the X server thread
-- (void)run {
+- (void)run
+{
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
     [serverLock lock];
@@ -246,7 +302,8 @@ static NSPortMessage *signalMessage;
 }
 
 // Close the help splash screen and show the X server
-- (IBAction)closeHelpAndShow:(id)sender {
+- (IBAction)closeHelpAndShow:(id)sender
+{
     int helpVal;
 
     helpVal = [startupHelpButton intValue];
@@ -261,12 +318,14 @@ static NSPortMessage *signalMessage;
 }
 
 // Show the X server when sent message from GUI
-- (IBAction)showAction:(id)sender {
+- (IBAction)showAction:(id)sender
+{
     [self sendShowHide:YES];
 }
 
 // Show or hide the X server
-- (void)toggle {
+- (void)toggle
+{
     if (serverVisible)
         [self hide];
     else
@@ -274,21 +333,24 @@ static NSPortMessage *signalMessage;
 }
 
 // Show the X server on screen
-- (void)show {
+- (void)show
+{
     if (!serverVisible) {
         [self sendShowHide:YES];
     }
 }
 
 // Hide the X server from the screen
-- (void)hide {
+- (void)hide
+{
     if (serverVisible) {
         [self sendShowHide:NO];
     }
 }
 
 // Kill the Xserver thread
-- (void)killServer {
+- (void)killServer
+{
     NXEvent ev;
 
     if (serverVisible)
@@ -301,7 +363,8 @@ static NSPortMessage *signalMessage;
 
 // Tell the X server to show or hide itself.
 // This ignores the current X server visible state.
-- (void)sendShowHide:(BOOL)show {
+- (void)sendShowHide:(BOOL)show
+{
     NXEvent ev;
 
     [self getNXMouse:&ev];
@@ -309,7 +372,8 @@ static NSPortMessage *signalMessage;
 
     if (show) {
         QuartzCapture();
-        HideMenuBar();
+        if (!quartzRootless)
+            HideMenuBar();
         ev.data.compound.subType = kXDarwinShow;
         [self sendNXEvent:&ev];
 
@@ -326,14 +390,15 @@ static NSPortMessage *signalMessage;
 
         ev.data.compound.subType = kXDarwinHide;
         [self sendNXEvent:&ev];
-        ShowMenuBar();
+        if (!quartzRootless)
+            ShowMenuBar();
     }
 
     serverVisible = show;
 }
 
 // Tell the X server to read from the pasteboard into the X cut buffer
-- (void)readPasteboard 
+- (void)readPasteboard
 {
     NXEvent ev;
 
@@ -343,7 +408,7 @@ static NSPortMessage *signalMessage;
 }
 
 // Tell the X server to write the X cut buffer into the pasteboard
-- (void)writePasteboard 
+- (void)writePasteboard
 {
     NXEvent ev;
 
@@ -352,15 +417,32 @@ static NSPortMessage *signalMessage;
     [self sendNXEvent:&ev];
 }
 
-- (void)sendNXEvent:(NXEvent*)ev {
-    if (write(eventWriteFD, ev, sizeof(*ev)) == sizeof(*ev))
+- (void)sendNXEvent:(NXEvent*)ev
+{
+    int bytesWritten;
+
+    if (quartzRootless  &&
+        (ev->type == NSLeftMouseDown  ||  ev->type == NSLeftMouseUp  ||
+        (ev->type == NSSystemDefined && ev->data.compound.subType == 7)))
+    {
+        // mouse button event - send mouseMoved to this position too
+        // X gets confused if it gets a click that isn't at the last
+        // reported mouse position.
+        NXEvent moveEvent = *ev;
+        moveEvent.type = NSMouseMoved;
+        [self sendNXEvent:&moveEvent];
+    }
+
+    bytesWritten = write(eventWriteFD, ev, sizeof(*ev));
+    if (bytesWritten == sizeof(*ev))
         return;
     NSLog(@"Bad write to event pipe.");
     // FIXME: handle bad writes better?
 }
 
 // Handle messages from the X server thread
-- (void)handlePortMessage:(NSPortMessage *)portMessage {
+- (void)handlePortMessage:(NSPortMessage *)portMessage
+{
     unsigned msg = [portMessage msgid];
 
     switch(msg) {
@@ -386,7 +468,8 @@ static NSPortMessage *signalMessage;
 }
 
 // Quit the X server when the X client task finishes
-- (void)clientTaskDone:(NSNotification *)aNotification {
+- (void)clientTaskDone:(NSNotification *)aNotification
+{
     // Make sure it was the client task that finished
     if (![clientTask isRunning]) {
         int status = [[aNotification object] terminationStatus];
@@ -399,20 +482,27 @@ static NSPortMessage *signalMessage;
     }
 }
 
-// Called when the user clicks the application icon, but not when Cmd-Tab is used
-- (BOOL)applicationShouldHandleReopen:(NSApplication *)theApplication hasVisibleWindows:(BOOL)flag {
-    if ([Preferences dockSwitch]) {
+// Called when the user clicks the application icon,
+// but not when Cmd-Tab is used.
+// Rootless: Don't switch until applicationWillBecomeActive.
+- (BOOL)applicationShouldHandleReopen:(NSApplication *)theApplication
+            hasVisibleWindows:(BOOL)flag
+{
+    if ([Preferences dockSwitch] && !quartzRootless) {
         [self show];
     }
     return NO;
 }
 
-- (void)applicationWillResignActive:(NSNotification *)aNotification {
+- (void)applicationWillResignActive:(NSNotification *)aNotification
+{
     [self hide];
 }
 
-- (void)applicationWillBecomeActive:(NSNotification *)aNotification {
-    [self readPasteboard];
+- (void)applicationWillBecomeActive:(NSNotification *)aNotification
+{
+    if (quartzRootless)
+        [self show];
 }
 
 @end
@@ -420,7 +510,8 @@ static NSPortMessage *signalMessage;
 // Send a message to the main thread, which calls handlePortMessage in
 // response. Must only be called from the X server thread because
 // NSPort is not thread safe.
-void QuartzMessageMainThread(unsigned msg) {
+void QuartzMessageMainThread(unsigned msg)
+{
     [signalMessage setMsgid:msg];
     [signalMessage sendBeforeDate:[NSDate distantPast]];
 }

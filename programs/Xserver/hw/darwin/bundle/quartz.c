@@ -5,7 +5,7 @@
  * By Gregory Robert Parker
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.9 2001/05/16 06:10:08 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.10 2001/06/26 23:29:12 torrey Exp $ */
 
 // X headers
 #include "scrnintstr.h"
@@ -124,7 +124,7 @@ Bool QuartzAddScreen(ScreenPtr pScreen)
  */
 void QuartzCapture(void)
 {
-    if (! CGDisplayIsCaptured(kCGDirectMainDisplay)) {
+    if (!CGDisplayIsCaptured(kCGDirectMainDisplay) && !quartzRootless) {
         CGDisplayCapture(kCGDirectMainDisplay);
     }
 }
@@ -136,7 +136,7 @@ void QuartzCapture(void)
  */
 static void QuartzRelease(void)
 {
-    if (CGDisplayIsCaptured(kCGDirectMainDisplay)) {
+    if (CGDisplayIsCaptured(kCGDirectMainDisplay) && !quartzRootless) {
         CGDisplayRelease(kCGDirectMainDisplay);
     }
     QuartzMessageMainThread(kQuartzServerHidden);
@@ -206,7 +206,8 @@ void QuartzShow(
     if (xhidden) {
         for (i = 0; i < darwinNumScreens; i++) {
             if (darwinScreens[i]) {
-                xf86SetRootClip(darwinScreens[i], true);
+	        if (!quartzRootless)
+                    xf86SetRootClip(darwinScreens[i], true);
                 QuartzResumeXCursor(darwinScreens[i], x, y);
             }
         }
@@ -217,9 +218,9 @@ void QuartzShow(
 
 /* 
  * QuartzHide
- *  Remove the X server display from the screen. Does nothing if already hidden.
- *  Release the screen, set X clip regions to prevent drawing, and restore the
- *  Aqua cursor.
+ *  Remove the X server display from the screen. Does nothing if already
+ *  hidden. Release the screen, set X clip regions to prevent drawing, and
+ *  restore the Aqua cursor.
  */
 void QuartzHide(void)
 {
@@ -229,7 +230,8 @@ void QuartzHide(void)
         for (i = 0; i < darwinNumScreens; i++) {
             if (darwinScreens[i]) {
                 QuartzSuspendXCursor(darwinScreens[i]);
-                xf86SetRootClip(darwinScreens[i], false);
+                if (!quartzRootless)
+                    xf86SetRootClip(darwinScreens[i], false);
             }
         }
     } 

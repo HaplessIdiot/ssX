@@ -7,7 +7,7 @@
  * 
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessAquaGlue.c,v 1.1 2001/06/26 23:29:12 torrey Exp $ */
 
 #include "regionstr.h"
 #include "scrnintstr.h"
@@ -29,13 +29,12 @@ AquaGlueCreateFrame(ScreenPtr pScreen, RootlessFramePtr pFrame,
     // fixme won't work for multi-screen
     // fixme hardcoded monitor stuff
 
-    pFrame->devPrivate = AquaNewWindow(pUpper ? pUpper->devPrivate : NULL, 
+    pFrame->devPrivate = AquaNewWindow(pUpper ? pUpper->devPrivate : NULL,
 				       pFrame->x,pFrame->y,pFrame->w,pFrame->h,
 				       pFrame->isRoot);
-    pFrame->pixelData = NULL;
-    pFrame->depth = 21000;
-    pFrame->bitsPerPixel = 10000;
-    pFrame->bytesPerRow = 10000;
+    AquaGetPixmap(pFrame->devPrivate, &pFrame->pixelData,
+                  &pFrame->bytesPerRow, &pFrame->depth,
+                  &pFrame->bitsPerPixel);
 }
 
 
@@ -60,6 +59,9 @@ AquaGlueStartResizeFrame(ScreenPtr pScreen, RootlessFramePtr pFrame,
 {
     AquaStartResizeWindow(pFrame->devPrivate, 
 			  pFrame->x, pFrame->y, pFrame->w, pFrame->h);
+    AquaGetPixmap(pFrame->devPrivate, &pFrame->pixelData, 
+                  &pFrame->bytesPerRow, &pFrame->depth, 
+                  &pFrame->bitsPerPixel);
 }
 
 static void 
@@ -82,7 +84,7 @@ AquaGlueRestackFrame(ScreenPtr pScreen, RootlessFramePtr pFrame,
 }
 
 static void
-AquaGlueReshapeFrame(ScreenPtr pScreen, RootlessFramePtr pFrame, 
+AquaGlueReshapeFrame(ScreenPtr pScreen, RootlessFramePtr pFrame,
 		     RegionPtr pNewShape)
 {
     if (pFrame->isRoot) return; // shouldn't happen; mi or dix covers this
@@ -92,15 +94,15 @@ AquaGlueReshapeFrame(ScreenPtr pScreen, RootlessFramePtr pFrame,
 }
 
 static void 
-AquaGlueUpdateRegion(ScreenPtr pScreen, RootlessFramePtr pFrame, 
+AquaGlueUpdateRegion(ScreenPtr pScreen, RootlessFramePtr pFrame,
 		     RegionPtr pDamage)
 {
-    AquaUpdateRects(pFrame->devPrivate, 
-		    (fakeBoxRec *) REGION_RECTS(pDamage),
+    AquaUpdateRects(pFrame->devPrivate,
+                    (fakeBoxRec *) REGION_RECTS(pDamage),
                     REGION_NUM_RECTS(pDamage));
 }
 
-
+#if 0
 static void
 AquaGlueStartDrawing(ScreenPtr pScreen, RootlessFramePtr pFrame)
 {
@@ -114,7 +116,7 @@ AquaGlueStopDrawing(ScreenPtr pScreen, RootlessFramePtr pFrame)
 {
     AquaStopDrawing(pFrame->devPrivate);
 }
-
+#endif
 
 static RootlessFrameProcs aquaRootlessProcs = {
     AquaGlueCreateFrame, 
@@ -124,9 +126,7 @@ static RootlessFrameProcs aquaRootlessProcs = {
     AquaGlueFinishResizeFrame, 
     AquaGlueRestackFrame, 
     AquaGlueReshapeFrame,
-    AquaGlueUpdateRegion, 
-    AquaGlueStartDrawing, 
-    AquaGlueStopDrawing
+    AquaGlueUpdateRegion
 };
 
 
@@ -142,14 +142,13 @@ void
 AquaGlueDisplayInit(void) 
 {
     dfb.pixelInfo.pixelType = kIORGBDirectPixels;
-    AquaDisplayInit(&dfb.width, &dfb.height, &dfb.pitch, 
-                    &dfb.pixelInfo.bitsPerComponent, 
+    AquaDisplayInit(&dfb.width, &dfb.height, &dfb.pitch,
+                    &dfb.pixelInfo.bitsPerComponent,
                     &dfb.pixelInfo.componentCount, &dfb.bitsPerPixel);
     dfb.colorBitsPerPixel = 
         dfb.pixelInfo.bitsPerComponent * dfb.pixelInfo.componentCount;
 
     // No frame buffer - it's all in window pixmaps.
-    // yes! it works!
     dfb.framebuffer = NULL; // malloc(dfb.pitch * dfb.height); 
 }
 
@@ -161,4 +160,3 @@ AquaAddScreen(ScreenPtr pScreen)
 
     return TRUE;
 }
-
