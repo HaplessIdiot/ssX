@@ -2,7 +2,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.13 2000/11/01 21:55:09 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.14 2000/11/08 05:03:04 dawes Exp $ */
 
 
 
@@ -22,7 +22,7 @@
  *			g.desbief@aix.pacwan.net
  *		MGA1064SG Mystique register file
  */
-  
+
 
 #ifndef _MGA_REG_H_
 #define _MGA_REG_H_
@@ -170,7 +170,7 @@
 /* z drawing mode. use MGADWG_NOZCMP for always */
 
 #define MGADWG_NOZCMP		( 0x00 << 8 )
-#define MGADWG_ZE		( 0x02 << 8 ) 
+#define MGADWG_ZE		( 0x02 << 8 )
 #define MGADWG_ZNE		( 0x03 << 8 )
 #define MGADWG_ZLT		( 0x04 << 8 )
 #define MGADWG_ZLTE		( 0x05 << 8 )
@@ -219,7 +219,7 @@
 #define MGAREG_MISC_CLK_SEL_MGA_MSK	(0x3 << 2)
 #define MGAREG_MISC_VIDEO_DIS	(0x1 << 4)
 #define MGAREG_MISC_HIGH_PG_SEL	(0x1 << 5)
- 
+
 /* MMIO VGA registers */
 #define MGAREG_CRTC_INDEX	0x1fd4
 #define MGAREG_CRTC_DATA	0x1fd5
@@ -431,9 +431,8 @@
 #define MGAREG_ALPHACTRL	0x2c7c
 #define MGAREG_DWGSYNC		0x2c4c
 
-#define MGAREG_AGP_PLL			0x1e4c
-#define AGP_PLL_agp2xpllen_enable	0x1
-#define AGP_PLL_agp2xpllen_disable	0x0
+#define MGAREG_AGP_PLL		0x1e4c
+#define MGA_AGP2XPLL_ENABLE		0x1
+#define MGA_AGP2XPLL_DISABLE		0x0
 
 #endif
-

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.h,v 1.4 2000/12/04 19:21:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.h,v 1.5 2001/01/08 01:07:34 martin Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -45,7 +45,7 @@
 /* DRI Driver defaults */
 #define R128_DEFAULT_CCE_PIO_MODE R128_PM4_64PIO_64VCBM_64INDBM
 #define R128_DEFAULT_CCE_BM_MODE  R128_PM4_64BM_64VCBM_64INDBM
-#define R128_DEFAULT_AGP_MODE     2
+#define R128_DEFAULT_AGP_MODE     1
 #define R128_DEFAULT_AGP_SIZE     8 /* MB (must be a power of 2 and > 4MB) */
 #define R128_DEFAULT_RING_SIZE    1 /* MB (must be page aligned) */
 #define R128_DEFAULT_BUFFER_SIZE  2 /* MB (must be page aligned) */
@@ -96,6 +96,7 @@ typedef struct {
     drmSize       agpTexMapSize;
     int           log2AGPTexGran;
     int           agpTexOffset;
+    unsigned int  sarea_priv_offset;
 } R128DRIRec, *R128DRIPtr;
 
 #endif

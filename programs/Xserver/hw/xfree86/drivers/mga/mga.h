@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.70 2000/12/06 15:35:19 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.71 2001/02/13 19:19:15 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -22,15 +22,30 @@
 #include "xf86DDC.h"
 #include "xf86xv.h"
 
+
+
 #ifdef XF86DRI
 #include "xf86drm.h"
-#include "sarea.h"
+
+
 #define _XF86DRI_SERVER_
+#include "mga_dripriv.h"
+#include "dri.h"
+#include "GL/glxint.h"
+
+
+
+
 #include "xf86dri.h"
 #include "dri.h"
+
+
+
 #include "GL/glxint.h"
 #include "mga_dri.h"
 #endif
+
+
 
 #ifdef USEMGAHAL
 #include "client.h"
@@ -261,7 +276,6 @@ typedef struct {
     int			MaxBlitDWORDS;
     Bool		TexturedVideo;
     MGAPortPrivPtr	portPrivate;
-    int 		numXAALines;
     unsigned char	*ScratchBuffer;
     unsigned char	*ColorExpandBase;
     int			expandRows;
@@ -270,18 +284,21 @@ typedef struct {
     int			expandHeight;
     int			expandY;
 #ifdef XF86DRI
-    int 		agp_mode;
-    Bool		ReallyUseIrqZero;
-    Bool		have_quiescense;
     Bool 		directRenderingEnabled;
     DRIInfoPtr 		pDRIInfo;
-    int 		drmSubFD;
+    int 		drmFD;
     int 		numVisualConfigs;
     __GLXvisualConfig*	pVisualConfigs;
     MGAConfigPrivPtr 	pVisualConfigsPriv;
+    MGADRIServerPrivatePtr DRIServerInfo;
+
     MGARegRec		DRContextRegs;
-    MGADRIServerPrivatePtr  DRIServerInfo;
+
+    Bool		haveQuiescense;
     void		(*GetQuiescence)(ScrnInfoPtr pScrn);
+
+    int 		agpMode;
+
 #endif
     XF86VideoAdaptorPtr adaptor;
     Bool		SecondCrtc;
@@ -307,12 +324,6 @@ typedef struct {
 #endif
 } MGARec, *MGAPtr;
 
-#ifdef XF86DRI
-extern void GlxSetVisualConfigs(int nconfigs, __GLXvisualConfig *configs,
-				void **configprivs);
-#endif
-
-
 extern CARD32 MGAAtype[16];
 extern CARD32 MGAAtypeNoBLK[16];
 
@@ -332,10 +343,6 @@ extern CARD32 MGAAtypeNoBLK[16];
 
 #define TRANSPARENCY_KEY	255
 #define KEY_COLOR		0
-
-#define MGA_FRONT	0x1
-#define MGA_BACK	0x2
-#define MGA_DEPTH	0x4
 
 
 /* Prototypes */
@@ -365,22 +372,6 @@ void MGAPolyArcThinSolid(DrawablePtr, GCPtr, int, xArc*);
 
 Bool MGADGAInit(ScreenPtr pScreen);
 
-Bool MGADRIScreenInit(ScreenPtr pScreen);
-void MGADRICloseScreen(ScreenPtr pScreen);
-Bool MGADRIFinishScreenInit(ScreenPtr pScreen);
-void MGASwapContext(ScreenPtr pScreen);
-void MGASwapContext_shared(ScreenPtr pScreen);
-Bool mgaConfigureWarp(ScrnInfoPtr pScrn);
-unsigned int mgaInstallMicrocode(ScreenPtr pScreen, int agp_offset);
-unsigned int mgaGetMicrocodeSize(ScreenPtr pScreen);
-void MGASelectBuffer(ScrnInfoPtr pScrn, int which);
-Bool MgaCleanupDma(ScrnInfoPtr pScrn);
-Bool MgaInitDma(ScrnInfoPtr pScrn, int prim_size);
-#ifdef XF86DRI
-Bool MgaLockUpdate(ScrnInfoPtr pScrn, drmLockFlags flags);
-void mgaGetQuiescence(ScrnInfoPtr pScrn);
-void mgaGetQuiescence_shared(ScrnInfoPtr pScrn);
-#endif
 void MGARefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void MGARefreshArea8(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void MGARefreshArea16(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
@@ -412,7 +403,34 @@ void Mga32SetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
 void MGAPointerMoved(int index, int x, int y);
 
 void MGAInitVideo(ScreenPtr pScreen);
-void MGAResetVideo(ScrnInfoPtr pScrn); 
+void MGAResetVideo(ScrnInfoPtr pScrn);
+
+
+#ifdef XF86DRI
+
+#define MGA_FRONT	0x1
+#define MGA_BACK	0x2
+#define MGA_DEPTH	0x4
+
+Bool MGADRIScreenInit( ScreenPtr pScreen );
+void MGADRICloseScreen( ScreenPtr pScreen );
+Bool MGADRIFinishScreenInit( ScreenPtr pScreen );
+
+Bool MGALockUpdate( ScrnInfoPtr pScrn, drmLockFlags flags );
+
+void MGAGetQuiescence( ScrnInfoPtr pScrn );
+void MGAGetQuiescenceShared( ScrnInfoPtr pScrn );
+
+void MGASelectBuffer(ScrnInfoPtr pScrn, int which);
+Bool MgaCleanupDma(ScrnInfoPtr pScrn);
+Bool MgaInitDma(ScrnInfoPtr pScrn, int prim_size);
+
+#define MGA_AGP_1X_MODE		0x01
+#define MGA_AGP_2X_MODE		0x02
+#define MGA_AGP_4X_MODE		0x04
+#define MGA_AGP_MODE_MASK	0x07
+
+#endif
 
 double G450SetPLLFreq(ScrnInfoPtr pScrn, long f_out);
 #endif

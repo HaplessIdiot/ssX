@@ -43,7 +43,7 @@
 /* DRI Driver defaults */
 #define RADEON_DEFAULT_CP_PIO_MODE  RADEON_CSQ_PRIPIO_INDPIO
 #define RADEON_DEFAULT_CP_BM_MODE   RADEON_CSQ_PRIBM_INDBM
-#define RADEON_DEFAULT_AGP_MODE     2
+#define RADEON_DEFAULT_AGP_MODE     1
 #define RADEON_DEFAULT_AGP_SIZE     8 /* MB (must be a power of 2 and > 4MB) */
 #define RADEON_DEFAULT_RING_SIZE    1 /* MB (must be page aligned) */
 #define RADEON_DEFAULT_BUFFER_SIZE  2 /* MB (must be page aligned) */
@@ -96,6 +96,11 @@ typedef struct {
     drmSize       agpTexMapSize;
     int           log2AGPTexGran;
     int           agpTexOffset;
+    unsigned int  sarea_priv_offset;
+
+#ifdef PER_CONTEXT_SAREA
+    drmSize	  perctx_sarea_size;
+#endif
 } RADEONDRIRec, *RADEONDRIPtr;
 
 #endif

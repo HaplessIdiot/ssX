@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.16 2000/12/20 19:54:45 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.18 2001/03/08 17:12:12 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -16,20 +16,20 @@
 static char TDFXKernelDriverName[] = "tdfx";
 static char TDFXClientDriverName[] = "tdfx";
 
-static Bool TDFXCreateContext(ScreenPtr pScreen, VisualPtr visual, 
+static Bool TDFXCreateContext(ScreenPtr pScreen, VisualPtr visual,
 			      drmContext hwContext, void *pVisualConfigPriv,
 			      DRIContextType contextStore);
 static void TDFXDestroyContext(ScreenPtr pScreen, drmContext hwContext,
 			       DRIContextType contextStore);
-static void TDFXDRISwapContext(ScreenPtr pScreen, DRISyncType syncType, 
-			       DRIContextType readContextType, 
+static void TDFXDRISwapContext(ScreenPtr pScreen, DRISyncType syncType,
+			       DRIContextType readContextType,
 			       void *readContextStore,
-			       DRIContextType writeContextType, 
+			       DRIContextType writeContextType,
 			       void *writeContextStore);
 static Bool TDFXDRIOpenFullScreen(ScreenPtr pScreen);
 static Bool TDFXDRICloseFullScreen(ScreenPtr pScreen);
 static void TDFXDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index);
-static void TDFXDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg, 
+static void TDFXDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
 			       RegionPtr prgnSrc, CARD32 index);
 static void TDFXDRITransitionTo2d(ScreenPtr pScreen);
 static void TDFXDRITransitionTo3d(ScreenPtr pScreen);
@@ -65,7 +65,7 @@ TDFXInitVisualConfigs(ScreenPtr pScreen)
       xfree(pTDFXConfigs);
       return FALSE;
     }
-    for (i=0; i<numConfigs; i++) 
+    for (i=0; i<numConfigs; i++)
       pTDFXConfigPtrs[i] = &pTDFXConfigs[i];
 
     i=0;
@@ -104,7 +104,7 @@ TDFXInitVisualConfigs(ScreenPtr pScreen)
 	    if (depth) {
 	      if (pTDFX->cpp>2)
 		pConfigs[i].depthSize = 24;
-	      else 
+	      else
 		pConfigs[i].depthSize = 16;
 	    } else {
 	      pConfigs[i].depthSize = 0;
@@ -158,7 +158,7 @@ TDFXInitVisualConfigs(ScreenPtr pScreen)
       return FALSE;
     }
 
-    for (i = 0; i < numConfigs; i++) 
+    for (i = 0; i < numConfigs; i++)
       pTDFXConfigPtrs[i] = &pTDFXConfigs[i];
 
     i=0;
@@ -199,7 +199,7 @@ TDFXInitVisualConfigs(ScreenPtr pScreen)
 	    if (depth) {
 	      if (pTDFX->cpp > 2)
 		pConfigs[i].depthSize = 24;
-	      else 
+	      else
 		pConfigs[i].depthSize = 16;
 	    } else {
 	      pConfigs[i].depthSize = 0;
@@ -249,7 +249,7 @@ TDFXDoWakeupHandler(int screenNum, pointer wakeupData, unsigned long result,
   TDFXNeedSync(pScrn);
 }
 
-static void 
+static void
 TDFXDoBlockHandler(int screenNum, pointer blockData, pointer pTimeout,
 		  pointer pReadmask)
 {
@@ -302,9 +302,9 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
   {
     int major, minor, patch;
     DRIQueryVersion(&major, &minor, &patch);
-    if (major != 3 || minor != 1 || patch < 0) {
+    if (major != 4 || minor < 0) {
       xf86DrvMsg(pScreen->myNum, X_ERROR,
-                 "TDFXDRIScreenInit failed (DRI version = %d.%d.%d, expected 3.1.x).  Disabling DRI.\n",
+                 "TDFXDRIScreenInit failed (DRI version = %d.%d.%d, expected 4.0.x).  Disabling DRI.\n",
                  major, minor, patch);
       return FALSE;
     }
@@ -345,10 +345,10 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
     pDRIInfo->maxDrawableTableEntry = TDFX_MAX_DRAWABLES;
 
 #ifdef NOT_DONE
-  /* FIXME need to extend DRI protocol to pass this size back to client 
+  /* FIXME need to extend DRI protocol to pass this size back to client
    * for SAREA mapping that includes a device private record
    */
-  pDRIInfo->SAREASize = 
+  pDRIInfo->SAREASize =
     ((sizeof(XF86DRISAREARec) + 0xfff) & 0x1000); /* round to page */
   /* + shared memory device private rec */
 #else
@@ -383,6 +383,9 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
   pDRIInfo->TransitionTo3d = TDFXDRITransitionTo3d;
   pDRIInfo->bufferRequests = DRI_ALL_WINDOWS;
 
+  pDRIInfo->createDummyCtx = FALSE;
+  pDRIInfo->createDummyCtxPriv = FALSE;
+
   if (!DRIScreenInit(pScreen, pDRIInfo, &pTDFX->drmSubFD)) {
     xfree(pDRIInfo->devPrivate);
     pDRIInfo->devPrivate=0;
@@ -398,8 +401,7 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
      drmVersionPtr version = drmGetVersion(pTDFX->drmSubFD);
      if (version) {
         if (version->version_major != 1 ||
-            version->version_minor != 0 ||
-            version->version_patchlevel < 0) {
+            version->version_minor < 0) {
            /* incompatible drm version */
            xf86DrvMsg(pScreen->myNum, X_ERROR,
                       "TDFXDRIScreenInit failed (DRM version = %d.%d.%d, expected 1.0.x).  Disabling DRI.\n",
@@ -415,7 +417,7 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
   }
 
   pTDFXDRI->regsSize=TDFXIOMAPSIZE;
-  if (drmAddMap(pTDFX->drmSubFD, (drmHandle)pTDFX->MMIOAddr[0], 
+  if (drmAddMap(pTDFX->drmSubFD, (drmHandle)pTDFX->MMIOAddr[0],
 		pTDFXDRI->regsSize, DRM_REGISTERS, 0, &pTDFXDRI->regs)<0) {
     TDFXDRICloseScreen(pScreen);
     xf86DrvMsg(pScreen->myNum, X_ERROR, "drmAddMap failed, disabling DRI.\n");
@@ -455,7 +457,7 @@ TDFXDRICloseScreen(ScreenPtr pScreen)
 }
 
 static Bool
-TDFXCreateContext(ScreenPtr pScreen, VisualPtr visual, 
+TDFXCreateContext(ScreenPtr pScreen, VisualPtr visual,
 		  drmContext hwContext, void *pVisualConfigPriv,
 		  DRIContextType contextStore)
 {
@@ -463,7 +465,7 @@ TDFXCreateContext(ScreenPtr pScreen, VisualPtr visual,
 }
 
 static void
-TDFXDestroyContext(ScreenPtr pScreen, drmContext hwContext, 
+TDFXDestroyContext(ScreenPtr pScreen, drmContext hwContext,
 		   DRIContextType contextStore)
 {
 }
@@ -491,11 +493,12 @@ TDFXDRIFinishScreenInit(ScreenPtr pScreen)
   pTDFXDRI->fbOffset=pTDFX->fbOffset;
   pTDFXDRI->backOffset=pTDFX->backOffset;
   pTDFXDRI->depthOffset=pTDFX->depthOffset;
+  pTDFXDRI->sarea_priv_offset = sizeof(XF86DRISAREARec);
   return DRIFinishScreenInit(pScreen);
 }
 
 static void
-TDFXDRISwapContext(ScreenPtr pScreen, DRISyncType syncType, 
+TDFXDRISwapContext(ScreenPtr pScreen, DRISyncType syncType,
 		   DRIContextType oldContextType, void *oldContext,
 		   DRIContextType newContextType, void *newContext)
 {
@@ -517,10 +520,10 @@ TDFXDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index)
   TDFXSetupForSolidFill(pScrn, 0, GXcopy, -1);
   while (nbox--) {
     TDFXSelectBuffer(pTDFX, TDFX_BACK);
-    TDFXSubsequentSolidFillRect(pScrn, pbox->x1, pbox->y1, 
+    TDFXSubsequentSolidFillRect(pScrn, pbox->x1, pbox->y1,
 				pbox->x2-pbox->x1, pbox->y2-pbox->y1);
     TDFXSelectBuffer(pTDFX, TDFX_DEPTH);
-    TDFXSubsequentSolidFillRect(pScrn, pbox->x1, pbox->y1, 
+    TDFXSubsequentSolidFillRect(pScrn, pbox->x1, pbox->y1,
 				pbox->x2-pbox->x1, pbox->y2-pbox->y1);
     pbox++;
   }
@@ -530,7 +533,7 @@ TDFXDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index)
 }
 
 static void
-TDFXDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg, 
+TDFXDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
 		   RegionPtr prgnSrc, CARD32 index)
 {
   ScreenPtr pScreen = pParent->drawable.pScreen;
@@ -573,11 +576,11 @@ TDFXDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
 static Bool
 TDFXDRIOpenFullScreen(ScreenPtr pScreen)
 {
+#if 0
   ScrnInfoPtr pScrn;
   TDFXPtr pTDFX;
 
   xf86DrvMsg(pScreen->myNum, X_INFO, "OpenFullScreen\n");
-#if 0
   pScrn = xf86Screens[pScreen->myNum];
   pTDFX=TDFXPTR(pScrn);
   if (pTDFX->numChips>1) {
@@ -590,10 +593,10 @@ TDFXDRIOpenFullScreen(ScreenPtr pScreen)
 static Bool
 TDFXDRICloseFullScreen(ScreenPtr pScreen)
 {
+#if 0
   ScrnInfoPtr pScrn;
 
   xf86DrvMsg(pScreen->myNum, X_INFO, "CloseFullScreen\n");
-#if 0
   pScrn = xf86Screens[pScreen->myNum];
   TDFXDisableSLI(pScrn);
 #endif

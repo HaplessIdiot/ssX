@@ -81,7 +81,7 @@
 
 /* Vertex/indirect buffer size
  */
-#define RADEON_BUFFER_SIZE		16384
+#define RADEON_BUFFER_SIZE		65536
 
 /* Byte offsets for indirect buffer data
  */

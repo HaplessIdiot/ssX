@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.h,v 1.3 2000/06/17 00:03:18 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.h,v 1.4 2001/03/03 22:26:12 tsi Exp $ */
 
 #ifndef _I810_DRI_
 #define _I810_DRI_
@@ -50,6 +50,7 @@ typedef struct {
 
    drmBufMapPtr drmBufs;
    int irq;
+   unsigned int sarea_priv_offset;
 
 } I810DRIRec, *I810DRIPtr;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dga.c,v 1.4 2000/12/20 01:30:46 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dga.c,v 1.5 2001/01/13 00:06:29 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -170,10 +170,8 @@ TDFX_BlitRect(ScrnInfoPtr pScrn, int srcx, int srcy, int w, int h,
     int xdir = ((srcx < dstx) && (srcy == dsty)) ? -1 : 1;
     int ydir = (srcy < dsty) ? -1 : 1;
 
-    (*pTDFX->AccelInfoRec->SetupForScreenToScreenCopy)(pScrn, xdir, ydir, 
-						       GXcopy, ~0, -1);
-    (*pTDFX->AccelInfoRec->SubsequentScreenToScreenCopy)(pScrn, srcx, srcy, 
-							 dstx, dsty, w, h);
+    (*pTDFX->AccelInfoRec->SetupForScreenToScreenCopy)(pScrn, xdir, ydir, GXcopy, ~0, -1);
+    (*pTDFX->AccelInfoRec->SubsequentScreenToScreenCopy)(pScrn, srcx, srcy, dstx, dsty, w, h);
   }
 }
 

@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.190 2001/03/02 19:39:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.191 2001/03/06 18:20:30 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -94,7 +94,7 @@
 #include "shadowfb.h"
 #include "fbdevhw.h"
 
-#ifdef XF86DRI 
+#ifdef XF86DRI
 #include "dri.h"
 #endif
 
@@ -142,7 +142,7 @@ static void     MGAG100BlackMagic(MGAPtr pMga);
 
 static int MGAEntityIndex = -1;
 
-/* 
+/*
  * This contains the functions needed by the server after loading the
  * driver module.  It must be supplied, and gets added the driver list by
  * the Module Setup funtion in the dynamic case.  In the static case a
@@ -204,12 +204,10 @@ typedef enum {
     OPTION_VIDEO_KEY,
     OPTION_ROTATE,
     OPTION_TEXTURED_VIDEO,
-    OPTION_XAALINES,
     OPTION_CRTC2HALF,
     OPTION_CRTC2RAM,
     OPTION_INT10,
-    OPTION_AGP_MODE_2X,
-    OPTION_AGP_MODE_4X,
+    OPTION_AGP_MODE,
     OPTION_DIGITAL,
     OPTION_TV,
     OPTION_TVSTANDARD,
@@ -236,17 +234,14 @@ static OptionInfoRec MGAOptions[] = {
     { OPTION_VIDEO_KEY,		"VideoKey",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_ROTATE,		"Rotate",	OPTV_ANYSTR,	{0}, FALSE },
     { OPTION_TEXTURED_VIDEO,	"TexturedVideo",OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_XAALINES,		"XAALines",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_CRTC2HALF,		"Crtc2Half",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_CRTC2RAM,		"Crtc2Ram",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_INT10,		"Int10",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_AGP_MODE_2X,	"AGPMode2x",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_AGP_MODE_4X,	"AGPMode4x",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_AGP_MODE,		"AGPMode",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_DIGITAL,		"DigitalScreen",OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_TV,		"TV",		OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_TVSTANDARD,	"TVStandard",	OPTV_ANYSTR,	{0}, FALSE },
     { OPTION_CABLETYPE,		"CableType",	OPTV_ANYSTR,	{0}, FALSE },
-    { OPTION_USEIRQZERO,	"UseIrqZero",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NOHAL,		"NoHal",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SWAPPED_HEAD,      "SwappedHead",  OPTV_BOOLEAN,   {0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
@@ -313,7 +308,7 @@ static const char *ramdacSymbols[] = {
     NULL
 };
 
-#ifdef XF86DRI 
+#ifdef XF86DRI
 static const char *drmSymbols[] = {
     "drmAvailable",
     "drmAddBufs",
@@ -329,9 +324,9 @@ static const char *drmSymbols[] = {
     "drmAgpGetMode",
     "drmAgpBase",
     "drmAgpSize",
-    "drmMgaCleanupDma",
-    "drmMgaLockUpdate",
-    "drmMgaInitDma",
+    "drmMGAInitDMA",
+    "drmMGACleanupDMA",
+    "drmMGAFlushDMA",
     "drmFreeVersion",
     "drmGetVersion",
     NULL
@@ -417,7 +412,7 @@ static const char *fbdevHWSymbols[] = {
 	"fbdevHWUnmapVidmem",
 	"fbdevHWMapMMIO",
 	"fbdevHWMapVidmem",
-	
+
 	NULL
 };
 
@@ -433,7 +428,7 @@ static const char *halSymbols[] = {
   "MGAGetBOARDHANDLESize",
   "MGAGetHardwareInfo",
   "MGAOpenLibrary",
-        NULL 
+        NULL
 };
 #endif
 #ifdef XFree86LOADER
@@ -481,7 +476,7 @@ mgaSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 			  ddcSymbols, i2cSymbols, shadowSymbols,
 			  fbdevHWSymbols, vbeSymbols,
 			  fbSymbols, int10Symbols,
-#ifdef XF86DRI 
+#ifdef XF86DRI
 			  drmSymbols, driSymbols,
 #endif
 #ifdef USEMGAHAL
@@ -503,14 +498,14 @@ mgaSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 
 #endif /* XFree86LOADER */
 
-/* 
+/*
  * ramdac info structure initialization
  */
 static MGARamdacRec DacInit = {
 	FALSE, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL,
 	90000, /* maxPixelClock */
 	0, X_DEFAULT, X_DEFAULT, FALSE
-}; 
+};
 
 static Bool
 MGAGetRec(ScrnInfoPtr pScrn)
@@ -627,14 +622,14 @@ MGAProbe(DriverPtr drv, int flags)
 #ifdef DISABLE_VGA_IO
 	MgaSavePtr smga;
 #endif
-	
+
 	/* Allocate a ScrnInfoRec and claim the slot */
 	pScrn = NULL;
-	
+
 #ifndef DISABLE_VGA_IO
 	if ((pScrn = xf86ConfigPciEntity(pScrn, 0,usedChips[i],
 					       MGAPciChipsets, NULL, NULL,
-					       NULL, NULL, NULL))) 
+					       NULL, NULL, NULL)))
 #else
 	    smga = xnfalloc(sizeof(MgaSave));
 	    smga->pvp = xf86GetPciInfoForEntity(usedChips[i]);
@@ -643,7 +638,7 @@ MGAProbe(DriverPtr drv, int flags)
 					       VgaIOSave, VgaIORestore,smga)))
 #endif
 	    {
-		
+
 	/* Fill in what we can of the ScrnInfoRec */
 		pScrn->driverVersion	= MGA_VERSION;
 		pScrn->driverName	= MGA_DRIVER_NAME;
@@ -659,7 +654,7 @@ MGAProbe(DriverPtr drv, int flags)
 		pScrn->ValidMode	= MGAValidMode;
 		foundScreen = TRUE;
 	    }
-	
+
 	/*
 	 * For cards that can do dual head per entity, mark the entity
 	 * as sharable.
@@ -693,7 +688,7 @@ MGAProbe(DriverPtr drv, int flags)
     }
 
     xfree(usedChips);
-    
+
     return foundScreen;
 }
 
@@ -718,13 +713,13 @@ MGAProbe(DriverPtr drv, int flags)
  * HISTORY
  *   August  31, 1997 - [ajv] Andrew van der Stock
  *   Fixed to understand Mystique and Millennium II
- * 
+ *
  *   January 11, 1997 - [aem] Andrew E. Mileski
  *   Set default values for GCLK (= MCLK / pre-scale ).
  *
  *   October 7, 1996 - [aem] Andrew E. Mileski
  *   Written and tested.
- */ 
+ */
 
 static void
 MGAReadBios(ScrnInfoPtr pScrn)
@@ -732,12 +727,12 @@ MGAReadBios(ScrnInfoPtr pScrn)
 	CARD8 tmp[ 64 ];
 	CARD16 offset;
 	CARD8	chksum;
-	CARD8	*pPINSInfo; 
+	CARD8	*pPINSInfo;
 	MGAPtr pMga;
 	MGABiosInfo *pBios;
 	MGABios2Info *pBios2;
 	Bool pciBIOS = TRUE;
-	
+
 	pMga = MGAPTR(pScrn);
 	pBios = &pMga->Bios;
 	pBios2 = &pMga->Bios2;
@@ -756,7 +751,7 @@ MGAReadBios(ScrnInfoPtr pScrn)
     (pciBIOS ? \
       xf86ReadPciBIOS(offset, pMga->PciTag, pMga->FbBaseReg, buf, len) : \
       xf86ReadBIOS(pMga->BiosAddress, offset, buf, len))
-	
+
 	MGADoBIOSRead(0, tmp, sizeof( tmp ));
 	if (
 		tmp[ 0 ] != 0x55
@@ -788,9 +783,9 @@ MGAReadBios(ScrnInfoPtr pScrn)
 			( CARD8 * ) & pBios2->PinID, sizeof( MGABios2Info ));
 	}
 
-	
+
 	/* matrox millennium-2 and mystique pins info */
-	if ( pBios2->PinID == 0x412e ) {	
+	if ( pBios2->PinID == 0x412e ) {
 	    int i;
 	    /* check that the pins info is correct */
 	    if ( pBios2->StructLen != 0x40 ) {
@@ -881,8 +876,8 @@ MGASoftReset(ScrnInfoPtr pScrn)
 	/* wait until drawing engine is ready */
 	while ( MGAISBUSY() )
 	    usleep(1000);
-		
-	/* flush FIFO */	
+
+	/* flush FIFO */
 	i = 32;
 	WAITFIFO(i);
 	while ( i-- )
@@ -895,7 +890,7 @@ MGASoftReset(ScrnInfoPtr pScrn)
 /*
  * MGACountRAM --
  *
- * Counts amount of installed RAM 
+ * Counts amount of installed RAM
  */
 static int
 MGACountRam(ScrnInfoPtr pScrn)
@@ -908,7 +903,7 @@ MGACountRam(ScrnInfoPtr pScrn)
 #if 0
     /* This isn't correct. It looks like this can have arbitrary
 	data for the memconfig even when the bios has initialized
-	it.  At least, my cards don't advertise the documented 
+	it.  At least, my cards don't advertise the documented
 	values (my 8 and 16 Meg G200s have the same values) */
     if(pMga->Primary) /* can only trust this for primary cards */
 	biosInfo = pciReadLong(pMga->PciTag, PCI_OPTION_REG);
@@ -917,7 +912,7 @@ MGACountRam(ScrnInfoPtr pScrn)
     switch(pMga->Chipset) {
     case PCI_CHIP_MGA2164:
     case PCI_CHIP_MGA2164_AGP:
-	xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
+	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 		"Unable to probe memory amount due to hardware bug.  "
 		"Assuming 4096 KB\n");
 	return 4096;
@@ -927,12 +922,12 @@ MGACountRam(ScrnInfoPtr pScrn)
 	    case 0:
 		return (biosInfo & (1 << 14)) ? 32768 : 16384;
 	    case 1:
-	    case 2:	    
+	    case 2:
 		return 16384;
-	    case 3:	    
-	    case 5:	    
+	    case 3:
+	    case 5:
 		return 65536;
-	    case 4:	   
+	    case 4:
 		return 32768;
 	    }
 	}
@@ -966,11 +961,11 @@ MGACountRam(ScrnInfoPtr pScrn)
 	volatile unsigned char* base;
 	unsigned char tmp;
 	int i;
-	
+
 	pMga->FbMapSize = ProbeSize * 1024;
 	MGAMapMem(pScrn);
 	base = pMga->FbBase;
-	
+
 	/* turn MGA mode on - enable linear frame buffer (CRTCEXT3) */
 	OUTREG8(0x1FDE, 3);
 	tmp = INREG8(0x1FDF);
@@ -986,7 +981,7 @@ MGACountRam(ScrnInfoPtr pScrn)
 		break;
 	    }
 	}
-		
+
 	/* restore CRTCEXT3 state */
 	OUTREG8(0x1FDE, 3);
 	OUTREG8(0x1FDF, tmp);
@@ -1028,7 +1023,7 @@ MGAdoDDC(ScrnInfoPtr pScrn)
       xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2,
 		     "DDC1 disabled - chip not in VGA mode\n");
     }
-  } 
+  }
 
   /* Save the current state */
   MGASave(pScrn);
@@ -1082,7 +1077,7 @@ VgaIOSave(int i, void *arg)
 
 #ifdef DEBUG
     ErrorF("mga: VgaIOSave: %d:%d:%d\n", sMga->pvp->bus, sMga->pvp->device,
-	   sMga->pvp->func);    
+	   sMga->pvp->func);
 #endif
     sMga->enable = (pciReadLong(tag, PCI_OPTION_REG) & 0x100) != 0;
 }
@@ -1168,7 +1163,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
      * not at the start of each server generation.  This means that
      * only things that are persistent across server generations can
      * be initialised here.  xf86Screens[] is (pScrn is a pointer to one
-     * of these).  Privates allocated using xf86AllocateScrnInfoPrivateIndex()  
+     * of these).  Privates allocated using xf86AllocateScrnInfoPrivateIndex()
      * are too, and should be used for data that must persist across
      * server generations.
      *
@@ -1188,7 +1183,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     pMga = MGAPTR(pScrn);
     /* Set here until dri is enabled */
 #ifdef XF86DRI
-    pMga->have_quiescense = 1;
+    pMga->haveQuiescense = 1;
 #endif
     /* Get the entity, and make sure it is PCI. */
     pMga->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
@@ -1258,7 +1253,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     xf86SetAccessFuncs(pMga->pEnt, &pMga->Access, &pMga->Access,
 			&pMga->Access, NULL);
 #endif
-  
+
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
 
@@ -1269,7 +1264,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
      * unexpected behaviour when the config file marks the primary CRTC
      * as the second screen.
      */
-    if(xf86IsEntityShared(pScrn->entityList[0]) && 
+    if(xf86IsEntityShared(pScrn->entityList[0]) &&
        xf86IsPrimInitDone(pScrn->entityList[0])) {
         /* This is the second crtc */
         pMga->SecondCrtc = TRUE;
@@ -1277,7 +1272,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
        	pScrn->AdjustFrame = MGAAdjustFrameCrtc2;
         pMgaEnt->pScrn_2 = pScrn;
 #ifdef XF86DRI
-        pMga->GetQuiescence = mgaGetQuiescence_shared;
+        pMga->GetQuiescence = MGAGetQuiescenceShared;
 #endif
     } else {
         pMga->SecondCrtc = FALSE;
@@ -1285,11 +1280,11 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
         if (xf86IsEntityShared(pScrn->entityList[0])) {
 	    pMgaEnt->pScrn_1 = pScrn;
 #ifdef XF86DRI
-	    pMga->GetQuiescence = mgaGetQuiescence_shared;
+	    pMga->GetQuiescence = MGAGetQuiescenceShared;
 #endif
 	} else {
 #ifdef XF86DRI
-	    pMga->GetQuiescence = mgaGetQuiescence;
+	    pMga->GetQuiescence = MGAGetQuiescence;
 #endif
 	}
     }
@@ -1387,7 +1382,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     /* Set the bits per RGB for 8bpp mode */
-    if (pScrn->depth == 8) 
+    if (pScrn->depth == 8)
 	pScrn->rgbBits = 8;
 
     /*
@@ -1446,60 +1441,23 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 
     xf86DrvMsg(pScrn->scrnIndex, from, "Chipset: \"%s\"\n", pScrn->chipset);
 
-
-    if(xf86GetOptValInteger(MGAOptions, OPTION_XAALINES, 
-			    &(pMga->numXAALines))) {
-        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Will Use %d lines for "
-		   "offscreen memory if the DRI is enabled.\n",
-		   pMga->numXAALines);
-    } else {
-        /* The default is to use 512 lines on a G400, 128 on a G200 */
-        switch (pMga->Chipset) {
-	  case PCI_CHIP_MGAG200:
-	  case PCI_CHIP_MGAG200_PCI:
-	    pMga->numXAALines = 128;
-            break;
-	  default:
-	    pMga->numXAALines = 512;
-            break;
-	}
-        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Offscreen memory usage "
-                   "will be limited to %d lines if the DRI is enabled.\n",
-		   pMga->numXAALines);
-    }
-
 #ifdef XF86DRI
-    {
-        Bool temp;
+    from = X_DEFAULT;
+    pMga->agpMode = MGA_DEFAULT_AGP_MODE;
 
-        from = X_DEFAULT;
-
-        pMga->agp_mode = 1;
-        if (xf86GetOptValBool(MGAOptions, OPTION_AGP_MODE_2X,
-			      &temp)) {
-	    pMga->agp_mode = 2;
-	    from = X_CONFIG;
-	}
-
-        if (xf86GetOptValBool(MGAOptions, OPTION_AGP_MODE_4X,
-			      &temp)) {
-	    pMga->agp_mode = 4;
-	    from = X_CONFIG;
-	}
-        xf86DrvMsg(pScrn->scrnIndex, from, "Using AGP Mode %dx\n",
-		   pMga->agp_mode);
-
-        pMga->ReallyUseIrqZero = 0;
-
-        if (xf86GetOptValBool(MGAOptions, OPTION_USEIRQZERO,
-			      &temp)) {
-	    pMga->ReallyUseIrqZero = 1;
-	    from = X_CONFIG;
-	    xf86DrvMsg(pScrn->scrnIndex, from, "Enabling use of IRQ "
-		       "Zero (Dangerous)\n");
-	}
-
+    if (xf86GetOptValInteger(MGAOptions,
+			     OPTION_AGP_MODE, &(pMga->agpMode))) {
+       if (pMga->agpMode < 1) {
+	  pMga->agpMode = 1;
+       }
+       if (pMga->agpMode > MGA_MAX_AGP_MODE) {
+	  pMga->agpMode = MGA_MAX_AGP_MODE;
+       }
+       from = X_CONFIG;
     }
+
+    xf86DrvMsg(pScrn->scrnIndex, from, "Using AGP %dx mode\n",
+	       pMga->agpMode);
 #endif
 
     from = X_DEFAULT;
@@ -1554,38 +1512,38 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	    if(!xf86GetOptValInteger(
 			MGAOptions, OPTION_COLOR_KEY,&(pMga->colorKey)))
 		pMga->colorKey = TRANSPARENCY_KEY;
-	    pScrn->colorKey = pMga->colorKey;	    
+	    pScrn->colorKey = pMga->colorKey;
 	    pScrn->overlayFlags = OVERLAY_8_32_PLANAR;
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 				"PseudoColor overlay enabled\n");
 	} else {
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 	         "Option \"Overlay\" is only supported in 32 bits per pixel on"
 		 "the first CRTC\n");
 	}
       } else {
-	  xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+	  xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		"\"%s\" is not a valid value for Option \"Overlay\"\n", s);
       }
     }
-      
+
     if(xf86GetOptValInteger(MGAOptions, OPTION_VIDEO_KEY, &(pMga->videoKey))) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "video key set to 0x%x\n",
 				pMga->videoKey);
     } else {
-	pMga->videoKey =  (1 << pScrn->offset.red) | 
+	pMga->videoKey =  (1 << pScrn->offset.red) |
 			  (1 << pScrn->offset.green) |
-        (((pScrn->mask.blue >> pScrn->offset.blue) - 1) << pScrn->offset.blue); 
+        (((pScrn->mask.blue >> pScrn->offset.blue) - 1) << pScrn->offset.blue);
     }
     if (xf86ReturnOptValBool(MGAOptions, OPTION_SHADOW_FB, FALSE)) {
 	pMga->ShadowFB = TRUE;
 	pMga->NoAccel = TRUE;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		"Using \"Shadow Framebuffer\" - acceleration disabled\n");
     }
     if (xf86ReturnOptValBool(MGAOptions, OPTION_FBDEV, FALSE)) {
 	pMga->FBDev = TRUE;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		"Using framebuffer device\n");
     }
     if (xf86ReturnOptValBool(MGAOptions, OPTION_OVERCLOCK_MEM, FALSE)) {
@@ -1615,7 +1573,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	pMga->NoAccel = TRUE;
 	pMga->HWCursor = FALSE;
 	pMga->Rotate = 1;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		"Rotating screen clockwise - acceleration disabled\n");
       } else
       if(!xf86NameCmp(s, "CCW")) {
@@ -1623,12 +1581,12 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	pMga->NoAccel = TRUE;
 	pMga->HWCursor = FALSE;
 	pMga->Rotate = -1;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		"Rotating screen counter clockwise - acceleration disabled\n");
       } else {
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		"\"%s\" is not a valid value for Option \"Rotate\"\n", s);
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		"Valid options are \"CW\" or \"CCW\"\n");
       }
     }
@@ -1714,15 +1672,15 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, from, "MMIO registers at 0x%lX\n",
 	       (unsigned long)pMga->IOAddress);
 
-     
+
     pMga->ILOADAddress = 0;
     if ( pMga->Chipset != PCI_CHIP_MGA2064 ) {
 	    if (pMga->PciInfo->memBase[2] != 0) {
 	    	pMga->ILOADAddress = pMga->PciInfo->memBase[2] & 0xffffc000;
-	        xf86DrvMsg(pScrn->scrnIndex, X_PROBED, 
+	        xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 			"Pseudo-DMA transfer window at 0x%lX\n",
 	       		(unsigned long)pMga->ILOADAddress);
-	    } 
+	    }
     }
 
 
@@ -1764,7 +1722,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 
     MGAReadBios(pScrn);
 
-    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, 
+    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2,
 		   "MGABios.RamdacType = 0x%x\n", pMga->Bios.RamdacType);
 
     /* HW bpp matches reported bpp */
@@ -1796,7 +1754,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
         if(pMga->SecondCrtc == FALSE) {
 	    Bool UseHalf = FALSE;
 	    int adjust;
-	  
+
 	    xf86GetOptValBool(MGAOptions, OPTION_CRTC2HALF, &UseHalf);
 	    adjust = pScrn->videoRam / 2;
 
@@ -1804,7 +1762,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
 			   "Crtc2 will use %dK of VideoRam\n",
 			   adjust);
-	    } else { 
+	    } else {
 	        adjust = min(adjust, 8192);
 	        xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 			   "Crtc2 will use %dK of VideoRam\n",
@@ -1814,9 +1772,9 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	    pScrn->videoRam = pMgaEnt->mastervideoRam;
 	    pMgaEnt->slavevideoRam = adjust;
 	    pMgaEnt->masterFbAddress = pMga->FbAddress;
-	    pMga->FbMapSize = 
+	    pMga->FbMapSize =
 	       pMgaEnt->masterFbMapSize = pScrn->videoRam * 1024;
-	    pMgaEnt->slaveFbAddress = pMga->FbAddress + 
+	    pMgaEnt->slaveFbAddress = pMga->FbAddress +
 	       pMgaEnt->masterFbMapSize;
 	    pMgaEnt->slaveFbMapSize = pMgaEnt->slavevideoRam * 1024;
 	    pMga->realSrcOrg = pMga->SrcOrg = 0;
@@ -1825,8 +1783,8 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	    pMga->FbAddress = pMgaEnt->slaveFbAddress;
 	    pMga->FbMapSize = pMgaEnt->slaveFbMapSize;
 	    pScrn->videoRam = pMgaEnt->slavevideoRam;
-	    pMga->DstOrg = pMga->realSrcOrg = 
-	      pMgaEnt->slaveFbAddress - pMgaEnt->masterFbAddress; 
+	    pMga->DstOrg = pMga->realSrcOrg =
+	      pMgaEnt->slaveFbAddress - pMgaEnt->masterFbAddress;
 	    pMga->SrcOrg = 0; /* This is not stored in hw format!! */
 	}
         pMgaEnt->refCount++;
@@ -1846,7 +1804,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n",
                pScrn->videoRam);
-   
+
    /* Set the bpp shift value */
     pMga->BppShifts[0] = 0;
     pMga->BppShifts[1] = 1;
@@ -1872,7 +1830,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	  pMga->i2cInit = NULL;
 	}
     }
-#if MGAuseI2C    
+#if MGAuseI2C
     /* - DDC can use I2C bus */
     /* Load I2C if we have the code to use it */
     if (pMga->i2cInit) {
@@ -1970,7 +1928,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 
     clockRanges->ClockMulFactor = 1;
     clockRanges->ClockDivFactor = 1;
-    
+
     /* Only set MemClk if appropriate for the ramdac */
     if (pMga->Dac.SetMemClk) {
 	if (pMga->MemClk == 0) {
@@ -1989,15 +1947,15 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
      * care of this, we don't worry about setting them here.
      */
     {
-	int Pitches1[] = 
+	int Pitches1[] =
 	  {640, 768, 800, 960, 1024, 1152, 1280, 1600, 1920, 2048, 0};
-	int Pitches2[] = 
-	  {512, 640, 768, 800, 832, 960, 1024, 1152, 1280, 1600, 1664, 
+	int Pitches2[] =
+	  {512, 640, 768, 800, 832, 960, 1024, 1152, 1280, 1600, 1664,
 		1920, 2048, 0};
 	int *linePitches = NULL;
 	int minPitch = 256;
-	int maxPitch = 2048;	
-        
+	int maxPitch = 2048;
+
         switch(pMga->Chipset) {
 	case PCI_CHIP_MGA2064:
 	   if (!pMga->NoAccel) {
@@ -2029,7 +1987,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
 			      pScrn->display->modes, clockRanges,
 			      linePitches, minPitch, maxPitch,
-			      pMga->Roundings[(pScrn->bitsPerPixel >> 3) - 1] * 
+			      pMga->Roundings[(pScrn->bitsPerPixel >> 3) - 1] *
 					pScrn->bitsPerPixel, 128, 2048,
 			      pScrn->display->virtualX,
 			      pScrn->display->virtualY,
@@ -2070,9 +2028,9 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
         pMga->pClientStruct = (LPCLIENTDATA) xalloc (sizeof(CLIENTDATA));
         pMga->pClientStruct->pMga = (MGAPtr) pMga;
 
-        MGAMapMem(pScrn);    
+        MGAMapMem(pScrn);
         MGAOpenLibrary(pMga->pBoard,pMga->pClientStruct,sizeof(CLIENTDATA));
-        MGAUnmapMem(pScrn);    
+        MGAUnmapMem(pScrn);
         pMga->pMgaHwInfo = (LPMGAHWINFO) xalloc (sizeof(MGAHWINFO));
         MGAGetHardwareInfo(pMga->pBoard,pMga->pMgaHwInfo);
 
@@ -2093,7 +2051,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
         mgaModeInfo.ulDispHeight = pScrn->virtualY;
         mgaModeInfo.ulDeskWidth = pScrn->virtualX;
         mgaModeInfo.ulDeskHeight = pScrn->virtualY;
-        mgaModeInfo.ulBpp = pScrn->bitsPerPixel;    
+        mgaModeInfo.ulBpp = pScrn->bitsPerPixel;
         mgaModeInfo.ulZoom = 1;
     } else { /* Second CRTC && entity is shared */
         if (digital == TRUE) {
@@ -2115,7 +2073,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
         mgaModeInfo.ulDispHeight = pScrn->virtualY;
         mgaModeInfo.ulDeskWidth = pScrn->virtualX;
         mgaModeInfo.ulDeskHeight = pScrn->virtualY;
-        mgaModeInfo.ulBpp = pScrn->bitsPerPixel;    
+        mgaModeInfo.ulBpp = pScrn->bitsPerPixel;
         mgaModeInfo.ulZoom = 1;
         pMga->pBoard = pMgaEnt->pBoard;
         pMga->pClientStruct = pMgaEnt->pClientStruct;
@@ -2137,9 +2095,9 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	(pMga->PciInfo->subsysCard == PCI_CARD_PROD_G100_SD)) {
         pMga->HasSDRAM = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Has SDRAM\n");
-    } 
-    /* 
-     * Can we trust HALlib to set the memory configuration 
+    }
+    /*
+     * Can we trust HALlib to set the memory configuration
      * registers correctly?
      */
     else if ((pMga->softbooted || pMga->Primary /*|| pMga->HALLoaded*/ ) && 
@@ -2185,10 +2143,10 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
      */
 
     pMga->YDstOrg = 0;
-    if (((pMga->Chipset == PCI_CHIP_MGA2064) || 
+    if (((pMga->Chipset == PCI_CHIP_MGA2064) ||
 	 (pMga->Chipset == PCI_CHIP_MGA2164) ||
 	 (pMga->Chipset == PCI_CHIP_MGA2164_AGP)) &&
-	(pScrn->virtualX * pScrn->virtualY * bytesPerPixel > 4*1024*1024)) 
+	(pScrn->virtualX * pScrn->virtualY * bytesPerPixel > 4*1024*1024))
     {
 	int offset, offset_modulo, ydstorg_modulo;
 
@@ -2229,12 +2187,12 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	    pMga->FbUsableSize = pMgaEnt->masterFbMapSize;
             /* Allocate HW cursor buffer at the end of video ram */
 	    if( pMga->HWCursor && pMga->Dac.CursorOffscreenMemSize ) {
-	        if( pScrn->virtualY * pScrn->displayWidth * 
+	        if( pScrn->virtualY * pScrn->displayWidth *
 		    pScrn->bitsPerPixel / 8 <=
 		    pMga->FbUsableSize - pMga->Dac.CursorOffscreenMemSize ) {
 		    pMga->FbUsableSize -= pMga->Dac.CursorOffscreenMemSize;
 		    pMga->FbCursorOffset =
-		      pMgaEnt->masterFbMapSize - 
+		      pMgaEnt->masterFbMapSize -
 		      pMga->Dac.CursorOffscreenMemSize;
 		} else {
 		    pMga->HWCursor = FALSE;
@@ -2251,7 +2209,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
         pMga->FbUsableSize = pMga->FbMapSize - pMga->YDstOrg * bytesPerPixel;
            /* Allocate HW cursor buffer at the end of video ram */
         if( pMga->HWCursor && pMga->Dac.CursorOffscreenMemSize ) {
-	    if( pScrn->virtualY * pScrn->displayWidth * 
+	    if( pScrn->virtualY * pScrn->displayWidth *
 	        pScrn->bitsPerPixel / 8 <=
         	pMga->FbUsableSize - pMga->Dac.CursorOffscreenMemSize ) {
 	        pMga->FbUsableSize -= pMga->Dac.CursorOffscreenMemSize;
@@ -2336,7 +2294,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	  if(pMgaEnt->refCount == 2) {
 	      /* Both boards have done there initialization */
 	      MGACloseLibrary(pMga->pBoard);
-	     
+
 	      if (pMga->pBoard)
 	        xfree(pMga->pBoard);
 	      if (pMga->pClientStruct)
@@ -2349,7 +2307,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	  }
       } else {
 	  MGACloseLibrary(pMga->pBoard);
-	 
+
 	  if (pMga->pBoard)
 	    xfree(pMga->pBoard);
 	  if (pMga->pClientStruct)
@@ -2380,7 +2338,7 @@ MGAMapMem(ScrnInfoPtr pScrn)
 
     /*
      * Map IO registers to virtual address space
-     */ 
+     */
     /*
      * For Alpha, we need to map SPARSE memory, since we need
      * byte/short access.  This is taken care of automatically by the
@@ -2414,7 +2372,7 @@ MGAMapMem(ScrnInfoPtr pScrn)
     if (pMga->ILOADAddress) {
 	pMga->ILOADBase = xf86MapPciMem(pScrn->scrnIndex,
 				VIDMEM_MMIO | VIDMEM_MMIO_32BIT |
-				    VIDMEM_READSIDEEFFECT, 
+				    VIDMEM_READSIDEEFFECT,
 				pMga->PciTag, pMga->ILOADAddress, 0x800000);
     } else
 	pMga->ILOADBase = NULL;
@@ -2444,7 +2402,7 @@ MGAMapMemFBDev(ScrnInfoPtr pScrn)
     /* Map the ILOAD transfer window if there is one.  We only make
 	DWORD access on DWORD boundaries to this window */
     if(pMga->ILOADAddress)
-	pMga->ILOADBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, 
+	pMga->ILOADBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
 				pMga->PciTag, pMga->ILOADAddress, 0x800000);
     else  pMga->ILOADBase = NULL;
 #endif
@@ -2466,7 +2424,7 @@ MGAUnmapMem(ScrnInfoPtr pScrn)
 
     /*
      * Unmap IO registers to virtual address space
-     */ 
+     */
     xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pMga->IOBase, 0x4000);
     pMga->IOBase = NULL;
 
@@ -2532,7 +2490,7 @@ static void FillModeInfoStruct(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pMga->pMgaModeInfo->ulDeskWidth = pScrn->virtualX;
     pMga->pMgaModeInfo->ulDeskHeight = pScrn->virtualY;
     pMga->pMgaModeInfo->ulFBPitch = 0;
-    pMga->pMgaModeInfo->ulBpp = pScrn->bitsPerPixel;    
+    pMga->pMgaModeInfo->ulBpp = pScrn->bitsPerPixel;
     pMga->pMgaModeInfo->ulZoom = 1;
     pMga->pMgaModeInfo->flSignalMode = 0x10;
 
@@ -2718,7 +2676,7 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     }
 
     pMga->CurrentLayout.mode = mode;
-   
+
 #ifdef XF86DRI
    if (pMga->directRenderingEnabled)
      DRIUnlock(screenInfo.screens[pScrn->scrnIndex]);
@@ -2730,7 +2688,7 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 /*
  * Restore the initial (text) mode.
  */
-static void 
+static void
 MGARestore(ScrnInfoPtr pScrn)
 {
     vgaHWPtr hwp = VGAHWPTR(pScrn);
@@ -2802,7 +2760,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     MGAEntPtr pMgaEnt = NULL;
     int f;
 
-    /* 
+    /*
      * First get the ScrnInfoRec
      */
     pScrn = xf86Screens[pScreen->myNum];
@@ -2810,7 +2768,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     hwp = VGAHWPTR(pScrn);
     pMga = MGAPTR(pScrn);
     MGAdac = &pMga->Dac;
-   
+
     /* Map the MGA memory and MMIO areas */
     if (pMga->FBDev) {
 	if (!MGAMapMemFBDev(pScrn))
@@ -3000,14 +2958,14 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
       * The DRI does not work when textured video is enabled at this time.
       */
 
-    if (!pMga->NoAccel && pMga->TexturedVideo != TRUE && 
+    if (!pMga->NoAccel && pMga->TexturedVideo != TRUE &&
 	pMga->SecondCrtc == FALSE)
        pMga->directRenderingEnabled = MGADRIScreenInit(pScreen);
     else
        pMga->directRenderingEnabled = FALSE;
 #endif
-     
-   
+
+
     if (pMga->Overlay8Plus24) {
 	ret = cfb8_32ScreenInit(pScreen, FBStart,
 			width, height,
@@ -3055,15 +3013,15 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     xf86SetBackingStore(pScreen);
     xf86SetSilkenMouse(pScreen);
 
-    /* Initialize software cursor.  
+    /* Initialize software cursor.
 	Must precede creation of the default colormap */
     miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
-    /* Initialize HW cursor layer. 
+    /* Initialize HW cursor layer.
 	Must follow software cursor initialization*/
-    if (pMga->HWCursor) { 
+    if (pMga->HWCursor) {
 	if(!MGAHWCursorInit(pScreen))
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		"Hardware cursor initialization failed\n");
     }
 
@@ -3071,13 +3029,13 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!miCreateDefColormap(pScreen))
 	return FALSE;
 
-    /* Initialize colormap layer.  
+    /* Initialize colormap layer.
 	Must follow initialization of the default colormap */
     if (!pMga->SecondCrtc)
 	f = CMAP_PALETTED_TRUECOLOR | CMAP_RELOAD_ON_MODE_SWITCH;
     else
 	f = CMAP_RELOAD_ON_MODE_SWITCH;
-    if(!xf86HandleColormaps(pScreen, 256, 8, 
+    if(!xf86HandleColormaps(pScreen, 256, 8,
 	(pMga->FBDev ? fbdevHWLoadPalette : MGAdac->LoadPalette), NULL, f))
 	return FALSE;
 
@@ -3094,7 +3052,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    pMga->PointerMoved = pScrn->PointerMoved;
 	    pScrn->PointerMoved = MGAPointerMoved;
 	    }
-	    
+
 	   switch(pScrn->bitsPerPixel) {
 	   case 8:	refreshArea = MGARefreshArea8;	break;
 	   case 16:	refreshArea = MGARefreshArea16;	break;
@@ -3119,26 +3077,22 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     MGAInitVideo(pScreen);
 
 #ifdef XF86DRI
-    /* Initialize the Warp engine */
     if (pMga->directRenderingEnabled) {
-        pMga->directRenderingEnabled = mgaConfigureWarp(pScrn);
-    }
-    if (pMga->directRenderingEnabled) {
-       /* Now that mi, cfb, drm and others have done their thing, 
+       /* Now that mi, cfb, drm and others have done their thing,
 	* complete the DRI setup.
 	*/
         pMga->directRenderingEnabled = MGADRIFinishScreenInit(pScreen);
     }
     if (pMga->directRenderingEnabled) {
-        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "direct rendering enabled\n");
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Direct rendering enabled\n");
     } else {
-        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "direct rendering disabled\n");
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Direct rendering disabled\n");
     }
     if (xf86IsEntityShared(pScrn->entityList[0]) && pMga->SecondCrtc == FALSE)
 	pMgaEnt->directRenderingEnabled = pMga->directRenderingEnabled;
-    pMga->have_quiescense = 1;
+    pMga->haveQuiescense = 1;
 #endif
-     
+
     /* Wrap the current CloseScreen function */
     pMga->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = MGACloseScreen;
@@ -3171,7 +3125,7 @@ MGASwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
  * displayed location in the video memory.
  */
 /* Usually mandatory */
-void 
+void
 MGAAdjustFrame(int scrnIndex, int x, int y, int flags)
 {
     ScrnInfoPtr pScrn;
@@ -3198,11 +3152,11 @@ MGAAdjustFrame(int scrnIndex, int x, int y, int flags)
 
     /* find start of retrace */
     while (INREG8(0x1FDA) & 0x08);
-    while (!(INREG8(0x1FDA) & 0x08)); 
+    while (!(INREG8(0x1FDA) & 0x08));
     /* wait until we're past the start (fixseg.c in the DDK) */
     count = INREG(MGAREG_VCOUNT) + 2;
     while(INREG(MGAREG_VCOUNT) < count);
-    
+
     OUTREG16(MGAREG_CRTC_INDEX, (Base & 0x00FF00) | 0x0C);
     OUTREG16(MGAREG_CRTC_INDEX, ((Base & 0x0000FF) << 8) | 0x0D);
     OUTREG8(MGAREG_CRTCEXT_INDEX, 0x00);
@@ -3232,7 +3186,7 @@ MGAAdjustFrameCrtc2(int scrnIndex, int x, int y, int flags)
     * 3-93 c2startadd0
     * 3-96 c2vcount
     */
-   
+
    Base = (y * pLayout->displayWidth + x) * pLayout->bitsPerPixel >> 3;
    Base += pMga->DstOrg;
    Base &= 0x01ffffc0;
@@ -3252,7 +3206,7 @@ MGAEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     MGAPtr pMga;
-#ifdef XF86DRI 
+#ifdef XF86DRI
     ScreenPtr pScreen;
 #endif
 
@@ -3264,7 +3218,7 @@ MGAEnterVT(int scrnIndex, int flags)
         DRIUnlock(pScreen);
     }
 #endif
-     
+
     if (!MGAModeInit(pScrn, pScrn->currentMode))
 	return FALSE;
     MGAAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
@@ -3281,12 +3235,12 @@ static Bool
 MGAEnterVTFBDev(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-#ifdef XF86DRI 
+#ifdef XF86DRI
     ScreenPtr pScreen;
-    MGAPtr pMGA;
+    MGAPtr pMga;
 
-    pMGA = MGAPTR(pScrn);
-    if (pMGA->directRenderingEnabled) {
+    pMga = MGAPTR(pScrn);
+    if (pMga->directRenderingEnabled) {
         pScreen = screenInfo.screens[scrnIndex];
         DRIUnlock(pScreen);
     }
@@ -3312,7 +3266,7 @@ MGALeaveVT(int scrnIndex, int flags)
     vgaHWPtr hwp = VGAHWPTR(pScrn);
 #ifdef XF86DRI
     ScreenPtr pScreen;
-    MGAPtr pMGA;
+    MGAPtr pMga;
 #endif
 
     MGARestore(pScrn);
@@ -3321,13 +3275,13 @@ MGALeaveVT(int scrnIndex, int flags)
     if (xf86IsPc98())
 	outb(0xfac, 0x00);
 #ifdef XF86DRI
-    pMGA = MGAPTR(pScrn);
-    if (pMGA->directRenderingEnabled) {
+    pMga = MGAPTR(pScrn);
+    if (pMga->directRenderingEnabled) {
         pScreen = screenInfo.screens[scrnIndex];
         DRILock(pScreen, 0);
     }
 #endif
-     
+
 }
 
 
@@ -3346,7 +3300,7 @@ MGACloseScreen(int scrnIndex, ScreenPtr pScreen)
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     MGAPtr pMga = MGAPTR(pScrn);
     MGAEntPtr pMgaEnt = NULL;
-   
+
     if (pScrn->vtSema) {
 	if (pMga->FBDev) {
 	    fbdevHWRestore(pScrn);
@@ -3358,7 +3312,7 @@ MGACloseScreen(int scrnIndex, ScreenPtr pScreen)
 	    vgaHWUnmapMem(pScrn);
 	}
     }
-#ifdef XF86DRI 
+#ifdef XF86DRI
    if (pMga->directRenderingEnabled) {
        MGADRICloseScreen(pScreen);
        pMga->directRenderingEnabled=FALSE;
@@ -3378,7 +3332,7 @@ MGACloseScreen(int scrnIndex, ScreenPtr pScreen)
       if(pMgaEnt->refCount == 0) {
 	 /* Both boards have closed there screen */
 	 MGACloseLibrary(pMga->pBoard);
-	 
+
 	 if (pMga->pBoard)
 	   xfree(pMga->pBoard);
 	 if (pMga->pClientStruct)
@@ -3390,7 +3344,7 @@ MGACloseScreen(int scrnIndex, ScreenPtr pScreen)
       }
    } else {
       MGACloseLibrary(pMga->pBoard);
-      
+
       if (pMga->pBoard)
 	xfree(pMga->pBoard);
       if (pMga->pClientStruct)
@@ -3399,7 +3353,7 @@ MGACloseScreen(int scrnIndex, ScreenPtr pScreen)
 	xfree(pMga->pMgaModeInfo);
       if (pMga->pMgaHwInfo)
 	xfree(pMga->pMgaHwInfo);
-   }   
+   }
    );	/* MGA_HAL */
 #endif
 
@@ -3462,8 +3416,8 @@ MGAValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
     lace = 1 + ((mode->Flags & V_INTERLACE) != 0);
 
     if ((mode->CrtcHDisplay <= 2048) &&
-	(mode->CrtcHSyncStart <= 4096) && 
-	(mode->CrtcHSyncEnd <= 4096) && 
+	(mode->CrtcHSyncStart <= 4096) &&
+	(mode->CrtcHSyncEnd <= 4096) &&
 	(mode->CrtcHTotal <= 4096) &&
 	(mode->CrtcVDisplay <= 2048 * lace) &&
 	(mode->CrtcVSyncStart <= 4096 * lace) &&
@@ -3499,24 +3453,24 @@ MGASaveScreenCrtc2(ScreenPtr pScreen, int mode)
     MGAPtr pMga = NULL;
     Bool on;
     CARD32 tmp;
-   
+
     on = xf86IsUnblank(mode);
-   
+
     if (on)
        SetTimeSinceLastInputEvent();
     if (pScreen != NULL)
        pScrn = xf86Screens[pScreen->myNum];
-   
+
     if (pScrn != NULL)
        pMga = MGAPTR(pScrn);
-   
+
     if(pMga != NULL && pScrn->vtSema) {
         tmp = INREG(MGAREG_C2CTL);
         tmp &= ~0x00000008;
         if (!on) tmp |= 0x0000008;
         OUTREG(MGAREG_C2CTL, tmp);
     }
-   
+
     return TRUE;
 }
 
@@ -3583,7 +3537,7 @@ MGABlockHandler (
     ScrnInfoPtr    pScrn = xf86Screens[i];
     MGAPtr         pMga = MGAPTR(pScrn);
 
-    if(pMga->PaletteLoadCallback) 
+    if(pMga->PaletteLoadCallback)
 	(*pMga->PaletteLoadCallback)(pScrn);
 
     pScreen->BlockHandler = pMga->BlockHandler;
@@ -3595,7 +3549,7 @@ MGABlockHandler (
 	(*pMga->VideoTimerCallback)(pScrn, currentTime.milliseconds);
     }
 
-    if(pMga->RenderCallback) 
+    if(pMga->RenderCallback)
 	(*pMga->RenderCallback)(pScrn);
 }
 
@@ -3686,7 +3640,7 @@ dbg_outreg32(ScrnInfoPtr pScrn,int addr,int val)
     MGAPtr pMga;
     CARD32 ret;
 
-    if (((addr & 0xff00) == 0x1c00) 
+    if (((addr & 0xff00) == 0x1c00)
     	&& (addr != 0x1c04)
 /*    	&& (addr != 0x1c1c) */
     	&& (addr != 0x1c20)

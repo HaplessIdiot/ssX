@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_dri.c,v 1.4 2000/06/23 23:43:44 alanh Exp $
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_dri.c,v 1.5 2000/12/21 12:22:57 alanh Exp $
  * Acceleration for the Creator and Creator3D framebuffer - DRI/DRM support.
  *
  * Copyright (C) 2000 David S. Miller (davem@redhat.com)
@@ -272,6 +272,9 @@ FFBDRIScreenInit(ScreenPtr pScreen)
 
 	/* Our InitBuffers depends heavily on this setting. */
 	pDRIInfo->bufferRequests	= DRI_3D_WINDOWS_ONLY;
+
+	pDRIInfo->createDummyCtx	= TRUE;
+	pDRIInfo->createDummyCtxPriv	= FALSE;
 
 	if (!DRIScreenInit(pScreen, pDRIInfo, &(pFfb->drmSubFD))) {
 		DRIDestroyInfoRec(pFfb->pDRIInfo);

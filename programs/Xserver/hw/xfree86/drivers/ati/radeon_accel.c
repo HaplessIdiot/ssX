@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.9 2001/01/21 21:19:20 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.10 2001/03/03 22:26:10 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -997,8 +997,8 @@ static void RADEONCPSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
 
 /* Subsequent XAA screen-to-screen copy. */
 static void RADEONCPSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
-						 int xa, int ya,
-						 int xb, int yb,
+						 int x1, int y1,
+						 int x2, int y2,
 						 int w, int h)
 {
     RADEONInfoPtr info = RADEONPTR(pScrn);
@@ -1006,13 +1006,13 @@ static void RADEONCPSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
 
     RADEONCP_REFRESH( pScrn, info );
 
-    if (info->xdir < 0) xa += w - 1, xb += w - 1;
-    if (info->ydir < 0) ya += h - 1, yb += h - 1;
+    if (info->xdir < 0) x1 += w - 1, x2 += w - 1;
+    if (info->ydir < 0) y1 += h - 1, y2 += h - 1;
 
     BEGIN_RING( 6 );
 
-    OUT_RING_REG( RADEON_SRC_Y_X,          (ya << 16) | xa );
-    OUT_RING_REG( RADEON_DST_Y_X,          (yb << 16) | xb );
+    OUT_RING_REG( RADEON_SRC_Y_X,          (y1 << 16) | x1 );
+    OUT_RING_REG( RADEON_DST_Y_X,          (y2 << 16) | x2 );
     OUT_RING_REG( RADEON_DST_HEIGHT_WIDTH, (h << 16) | w );
 
     ADVANCE_RING();
@@ -1054,7 +1054,7 @@ drmBufPtr RADEONCPGetBuffer( ScrnInfoPtr pScrn )
     RADEONInfoPtr info = RADEONPTR(pScrn);
     drmDMAReq dma;
     drmBufPtr buf = NULL;
-    int indx = 0;
+    int index = 0;
     int size = 0;
     int ret, i = 0;
 
@@ -1073,7 +1073,7 @@ drmBufPtr RADEONCPGetBuffer( ScrnInfoPtr pScrn )
     dma.flags = 0;
     dma.request_count = 1;
     dma.request_size = RADEON_BUFFER_SIZE;
-    dma.request_list = &indx;
+    dma.request_list = &index;
     dma.request_sizes = &size;
     dma.granted_count = 0;
 
@@ -1087,7 +1087,7 @@ drmBufPtr RADEONCPGetBuffer( ScrnInfoPtr pScrn )
 	} while ( ( ret == -EBUSY ) && ( i++ < RADEON_TIMEOUT ) );
 
 	if ( ret == 0 ) {
-	    buf = &info->buffers->list[indx];
+	    buf = &info->buffers->list[index];
 	    buf->used = 0;
 	    if ( RADEON_VERBOSE ) {
 		xf86DrvMsg( pScrn->scrnIndex, X_INFO,
