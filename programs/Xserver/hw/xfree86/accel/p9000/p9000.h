@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.15 1996/05/06 05:57:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.16 1996/12/23 06:40:30 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>.
@@ -184,6 +184,14 @@ extern Bool p9000SaveScreen(
 #endif
 );
 
+#ifdef DPMSExtension
+extern void p9000DPMSSet(
+#if NeedFunctionPrototypes
+   int PowerManagementMode
+#endif
+);
+#endif
+
 extern Bool p9000CloseScreen(
 #if NeedFunctionPrototypes
    int, ScreenPtr
@@ -308,18 +316,6 @@ extern void p9000InstallColormap(
 extern void p9000UninstallColormap(
 #if NeedFunctionPrototypes
    ColormapPtr
-#endif
-);
-
-extern void p9000BlankScreen(
-#if NeedFunctionPrototypes
-   ScreenPtr
-#endif
-);
-
-extern void p9000UnblankScreen(
-#if NeedFunctionPrototypes
-   ScreenPtr
 #endif
 );
 

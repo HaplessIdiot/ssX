@@ -4,11 +4,20 @@
  
 <title>XFree86 3.2 P9000 Server Release Notes
 <author>Erik Nygren (<it>nygren@mit.edu</it>)
-<date>1996 March 31
+<date>1997 February 18
 <toc>
  
 <sect>Change Log <p>
 <descrip>
+<tag/1997.01.30:/
+	<itemize>
+	<item>
+	  Added probing for MemBase and IOBase on Diamond Viper PCI cards
+          (Karl Anders &Oslash;ygard)
+	<item>
+	  Added support for DPMS screen saving -- off mode only (Karl
+	  Anders &Oslash;ygard)
+	</itemize>
 <tag/1996.03.31:/
 	<itemize>
 	<item>
@@ -203,36 +212,11 @@ have a Viper VLB.  If this happens, put <tt>chipset "vipervlb"</tt>
 into your <tt>XF86Config</tt> file.
 
 <sect1>Diamond Viper PCI <p>
-
-For Diamond Viper PCI owners, you'll need to use <tt>scanpci</tt>
-to find the values to fill in for <tt>MemBase</tt> and <tt>IOBase</tt> in the
-<tt>Device</tt> section of <tt>XF86Config</tt>.  These values will change
-whenever you move cards around or add cards.
-This should now work, thanks to help from Bob Hollinger and Matt Thomas.
 You may need to specify the chipset <tt>"viperpci"</tt> in your 
 <tt>XF86Config</tt> file.
-You'll also need to specify an <tt>IOBase</tt> and a <tt>memBase</tt>.
-These values may be obtained by running the <tt>scanpci</tt>
-program available
-via anonymous ftp from <url name="ftp.xfree86.org:/pub/XFree86/3.1.1/ScanPCI"
-url="ftp://ftp.xfree86.org/pub/XFree86/3.1.1/ScanPCI">
-Part of the output of this program will look like:
 
-<verb>
-pci slot at 0xce00, vendor 0x100e device 0x9001
- Diamond Viper/PCI
-  STATUS    0x0400  COMMAND 0x0003
-  CLASS     0x03 0x00 0x00  REVISION 0x03
-  BASE0     0xa0000000  addr 0xa0000000  MEM
-  BASE1     0x0000e001  addr 0x0000e000  I/O
-  BASEROM   0xff800000  addr 0xff800000  not-decode-enabled
-</verb>
-
-In this case, you would specify <tt>0xe000</tt> as the <tt>IOBase</tt>
-and <tt>0xa0000000</tt> as the <tt>memBase</tt>.
-
-Eventually we would like to autodetect the <tt>IOBase</tt> and
-<tt>memBase</tt>, but this doesn't yet work.
+Previously you had to find out the values for <tt>MemBase</tt> and
+<tt>IOBase</tt> by yourself.  These are now autodetected.
   
 <sect>Orchid P9000 and random clones <p>
 The Orchid P9000 and other cards based on the Weitek board design
@@ -248,8 +232,7 @@ different interface than the P9000.  As a result, they may need an
 entirely new server.  If you need support for one of these cards, you
 should look into XInside's AcceleratedX.  It's a commercial product
 that costs about &dollar;99.  Send email to <it>info@xinside.com</it>
-for more information.  Their P9000 server is also much faster than
-ours at present (but then this server is free :-)
+for more information.
 
 <sect>Acceleration <p>
 Some of the acceleration code is working, but
@@ -474,7 +457,7 @@ During the course of the next few months, people will be working on
 acceleration, etc.  Please send any patches to me (<it>nygren@mit.edu</it>).
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.18 1997/01/25 03:22:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.19 1997/02/12 08:56:02 hohndel Exp $
 
 
 

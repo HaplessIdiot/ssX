@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000cmap.c,v 3.11 1996/12/23 06:40:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000cmap.c,v 3.12 1997/02/12 08:55:42 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -274,31 +274,4 @@ p9000UnblankScreen(pScreen)
 #endif
     }
 }
-  
-/* Blanks a screen temporarily for a screen saver */
-void
-p9000BlankScreen(pScreen)
-     ScreenPtr pScreen;
-{
-  if (xf86VTSema)
-    {
-#if 0
-      if (p9000InfoRec.bitsPerPixel == 8)
-	{
-	  outb(BT_WRITE_ADDR, 0);
-	  outb(BT_RAMDAC_DATA, 0);
-	  outb(BT_RAMDAC_DATA, 0);
-	  outb(BT_RAMDAC_DATA, 0);
-	  outw(BT_PIXEL_MASK, 0x00);
-	}
-#else
-      /* Power down the RAMDAC output to blank the screen.  No data
-       * will be lost and MPU reads and writes should continue to work.
-       * Will this cause powersaving monitors to do the right thing? */
-      p9000OutBtReg(BT_COMMAND_REG_0, 0xFE, BT_CR0_POWERDOWN);	  
-#endif
-    }
-}
-
-
 

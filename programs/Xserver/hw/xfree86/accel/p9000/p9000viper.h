@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000viper.h,v 3.7 1996/12/23 06:40:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000viper.h,v 3.8 1997/02/12 08:55:44 hohndel Exp $ */
 /*
  * Written by Erik Nygren
  *
@@ -37,12 +37,18 @@
 /* The version isn't relavant */
 #define VPR_VLB_BIOS_SIGNATURE        "VIPER VLB  Vers."  
 
+#if 0
 /* The location and text of the Viper PCI signature for autodetection
  * Warning: the Viper PCI also the Viper VLB sig! */
 #define VPR_PCI_BIOS_OFFSET           0x77
 #define VPR_PCI_BIOS_LENGTH           56
 /* The version isn't relavant */
 #define VPR_PCI_BIOS_SIGNATURE        "VIPER PCI  Vers."  
+#else
+/* Viper PCI ids */
+#define PCI_WEITEK_VENDOR_ID		0x100e
+#define PCI_P9000_DEVICE_ID		0x9001
+#endif
 
 extern p9000VendorRec p9000ViperVlbVendor;
 extern p9000VendorRec p9000ViperPciVendor;

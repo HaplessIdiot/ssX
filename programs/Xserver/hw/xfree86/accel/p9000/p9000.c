@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.44 1997/01/18 06:54:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.45 1997/02/11 10:02:21 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -43,6 +43,7 @@
 #include "scrnintstr.h"
 #include "mipointer.h"
 #include "cursorstr.h"
+#include "opaque.h"
 
 #include "compiler.h"
 
@@ -65,6 +66,10 @@
 #include "servermd.h"
 #define _XF86DGA_SERVER_
 #include "extensions/xf86dgastr.h"
+#endif
+
+#ifdef DPMSExtension
+#include "extensions/dpms.h"
 #endif
 
 #define XCONFIG_FLAGS_ONLY
@@ -96,7 +101,7 @@ ScrnInfoRec p9000InfoRec = {
     (void (*)())NoopDDA,/* void (* EnterLeaveCursor)() */
     p9000AdjustFrame,   /* void (* AdjustFrame)() */
     p9000SwitchMode,	/* Bool (* SwitchMode)() */
-    (void (*)())NoopDDA,/* void (* DPMSSet)() */
+    p9000DPMSSet,	/* void (* DPMSSet)() */
     p9000PrintIdent,	/* void (* PrintIdent)() */
     8,			/* int depth */
     {5, 6, 5},		/* xrgb weight */
@@ -319,6 +324,7 @@ p9000Probe()
     OFLG_SET(OPTION_SW_CURSOR, &validOptions);
     OFLG_SET(OPTION_NOACCEL, &validOptions);
     OFLG_SET(OPTION_SYNC_ON_GREEN, &validOptions);
+    OFLG_SET(OPTION_POWER_SAVER, &validOptions);
     OFLG_SET(OPTION_VRAM_128, &validOptions);
     OFLG_SET(OPTION_VRAM_256, &validOptions);
     xf86VerifyOptions(&validOptions, &p9000InfoRec);
@@ -418,14 +424,13 @@ p9000Probe()
 
     if (xf86Verbose)
     {
-        ErrorF("%s %s: (mem: %dk numclocks: %d vendor: %s membase: 0x%lx)\n",
+        ErrorF("%s %s: (mem: %dk numclocks: %d vendor: %s)\n",
                OFLG_ISSET(XCONFIG_VIDEORAM,&p9000InfoRec.xconfigFlag) ?
                XCONFIG_GIVEN : XCONFIG_PROBED,
                p9000InfoRec.name,
                p9000InfoRec.videoRam,
                p9000InfoRec.clocks,
-	       p9000VendorPtr->Vendor,
-	       p9000InfoRec.MemBase);
+	       p9000VendorPtr->Vendor);
       }
 
     /* All modes must have the same width and height as the first valid mode.
@@ -556,6 +561,11 @@ p9000Probe()
 	  ErrorF("%s %s: Putting RAMDAC into sync-on-green mode\n",
 		 XCONFIG_GIVEN, p9000InfoRec.name);
       }
+
+#ifdef DPMSExtension
+    if (OFLG_ISSET(OPTION_POWER_SAVER, &p9000InfoRec.options))
+	DPMSEnabled = TRUE;
+#endif
 
     if (OFLG_ISSET(OPTION_NOACCEL, &p9000InfoRec.options))
       {
@@ -954,22 +964,49 @@ p9000SaveScreen (pScreen, on)
   if (on) 
     {
       SetTimeSinceLastInputEvent();
-#if 0  /* This shouldn't be needed because we turn off the RAMDAC to blank */
-      if (xf86VTSema && !p9000SWCursor)
-	p9000BtCursorOn();
-#endif
-      p9000UnblankScreen(pScreen);
+      /* Power the RAMDAC back up. */
+      p9000OutBtReg(BT_COMMAND_REG_0, 0xFE, 0x0 /* ~BT_CR0_POWERDOWN */);
     }
   else
     {
-#if 0  /* This shouldn't be needed because we turn off the RAMDAC to blank */
-      if (xf86VTSema && !p9000SWCursor)
-	p9000BtCursorOff();
-#endif
-      p9000BlankScreen(pScreen);
+      /* Power down the RAMDAC output to blank the screen.  No data
+       * will be lost and MPU reads and writes should continue to work. */
+      p9000OutBtReg(BT_COMMAND_REG_0, 0xFE, BT_CR0_POWERDOWN);
     }
   return(TRUE);
 }
+
+/*
+ * p9000DPMSSet -- Sets VESA Display Power Management Signaling (DPMS) Mode
+ */
+
+#ifdef DPMSExtension
+void
+p9000DPMSSet(PowerManagementMode)
+     int PowerManagementMode;
+{
+    if (!xf86VTSema) return;
+
+    switch (PowerManagementMode) {
+    case DPMSModeOn:
+    case DPMSModeStandby:
+    case DPMSModeSuspend:
+	/* enable video (1e5, 1e4, or 1c4) */
+	p9000Store(SRTCTL,CtlBase, p9000MiscReg.srtctl);
+	/* Power the RAMDAC back up. */
+	p9000OutBtReg(BT_COMMAND_REG_0, 0xFE, 0x0 /* ~BT_CR0_POWERDOWN */);
+	break;
+    case DPMSModeOff:
+	/* Power down the RAMDAC output to blank the screen.  No data
+	 * will be lost and MPU reads and writes should continue to work. */
+	p9000OutBtReg(BT_COMMAND_REG_0, 0xFE, BT_CR0_POWERDOWN);
+	usleep(10000);
+	/* disable video in the video controller */
+	p9000Store(SRTCTL,CtlBase,0x01C4L);
+	break;
+    }
+}
+#endif
 
 /*
  * p9000SwitchMode --
