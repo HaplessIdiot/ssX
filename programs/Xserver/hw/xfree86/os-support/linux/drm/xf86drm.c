@@ -27,7 +27,7 @@
  * Authors: Rickard E. (Rik) Faith <faith@valinux.com>
  *	    Kevin E. Martin <martin@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.11 2000/04/04 19:25:20 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.12 2000/06/17 00:03:34 martin Exp $
  * 
  */
 
@@ -66,6 +66,13 @@ extern int xf86RemoveSIGIOHandler(int fd);
 #  define _DRM_MALLOC Xmalloc
 #  define _DRM_FREE   Xfree
 # endif
+#endif
+
+#ifdef __alpha__
+extern unsigned long _bus_base(void);
+#define BUS_BASE _bus_base();
+#else
+#define BUS_BASE (0)
 #endif
 
 /* Not all systems have MAP_FAILED defined */
@@ -495,7 +502,7 @@ int drmAddMap(int fd,
 {
     drm_map_t map;
 
-    map.offset  = offset;
+    map.offset  = offset + BUS_BASE;
     map.size    = size;
     map.handle  = 0;
     map.type    = type;
