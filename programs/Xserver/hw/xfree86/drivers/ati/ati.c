@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati.c,v 1.12 2000/05/11 18:14:29 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati.c,v 1.13 2000/08/04 21:07:12 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -65,6 +65,7 @@
  * Jakub Jelinek, jakub@redhat.com
  * David S. Miller, davem@redhat.com
  * A E Lawrence, adrian.lawrence@computing-services.oxford.ac.uk
+ * Linus Torvalds, torvalds@transmeta.com
  *
  * ... and, many, many others from around the world.
  *
