@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.h,v 1.1 1998/08/13 14:45:48 dawes Exp $ */
 
 #ifndef _XVDIX_H_
 #define _XVDIX_H_
@@ -10,19 +10,19 @@
 #define VIDEO_INVERT_CLIPLIST			0x00000002
 
 
-typedef  void (* PutVideoFuncPtr)( ScrnInfoPtr pScrn, 
+typedef  int (* PutVideoFuncPtr)( ScrnInfoPtr pScrn, 
 	short vid_x, short vid_y, short drw_x, short drw_y,
 	short vid_w, short vid_h, short drw_w, short drw_h,
 	pointer data );
-typedef  void (* PutStillFuncPtr)( ScrnInfoPtr pScrn, 
+typedef  int (* PutStillFuncPtr)( ScrnInfoPtr pScrn, 
 	short vid_x, short vid_y, short drw_x, short drw_y,
 	short vid_w, short vid_h, short drw_w, short drw_h,
 	pointer data );
-typedef void (* GetVideoFuncPtr)( ScrnInfoPtr pScrn, 
+typedef int (* GetVideoFuncPtr)( ScrnInfoPtr pScrn, 
 	short vid_x, short vid_y, short drw_x, short drw_y,
 	short vid_w, short vid_h, short drw_w, short drw_h,
 	pointer data );
-typedef void (* GetStillFuncPtr)( ScrnInfoPtr pScrn, 
+typedef int (* GetStillFuncPtr)( ScrnInfoPtr pScrn, 
 	short vid_x, short vid_y, short drw_x, short drw_y,
 	short vid_w, short vid_h, short drw_w, short drw_h,
 	pointer data );

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.4 1998/08/19 07:49:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.5 1998/08/29 05:43:04 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -154,21 +154,32 @@ typedef struct x_ClockRange {
 } ClockRange, *ClockRangePtr;
 
 /* Public bus-related types */
-
-/* A crude attempt to characterise ISA/VLB types */
 typedef enum {
-    ISA_COLOR,
-    ISA_MONO,
-    ISA_OTHER
-} IsaBusType;
+    NONE,
+    IO,
+    MEM_IO,
+    MEM
+} resType;
 
-/* Different PCI video cards */
 typedef enum {
-    PCI_ONLY,
-    PCI_VGA,
-    PCI_SHARED_VGA
-} PciBusType;
+    RES_NONE,
+    RES_VGA,
+    RES_SHARED_VGA,
+    RES_8514,
+    RES_SHARED_8514,
+    RES_MONO
+} BusResource;
 
+typedef struct {
+    int numChipset;
+    BusResource Resource;
+} IsaChipsets;
+
+typedef struct { 
+    int numChipset;
+    int PCIid;
+    BusResource Resource;
+} PciChipsets;
 
 #define MAXCLOCKS   128
 typedef enum {
@@ -288,6 +299,28 @@ typedef struct _DriverRec {
 } DriverRec, *DriverPtr;
 
 /*
+ * The IO access enabler struct. This contains the address for 
+ * the IOEnable/IODisable funcs for their specific bus along
+ * with a pointer to data needed by them
+ */
+typedef struct _AccessRec {
+    void (*AccessDisable)(void *arg);
+    void (*AccessEnable)(void *arg);
+    void *arg;
+} xf86AccessRec, *xf86AccessPtr;
+
+typedef struct _CurrAccRec {
+    xf86AccessPtr pMemAccess;
+    xf86AccessPtr pIoAccess;
+} xf86CurrentAccessRec, *xf86CurrentAccessPtr;
+
+typedef struct _ScrnAccessRec {
+    xf86AccessPtr pAccess;
+    xf86CurrentAccessPtr CurrentAccess;
+    resType rt;
+} xf86ScrnAccessRec, *xf86ScrnAccessPtr;
+
+/*
  * ScrnInfoRec
  *
  * There is one of these for each screen, and it holds all the screen-specific
@@ -385,7 +418,7 @@ typedef struct _ScrnInfoRec {
 
     int			chipID;
     int			chipRev;
-
+    xf86ScrnAccessRec   Access;
     /* Allow screens to be enabled/disabled individually */
     Bool		vtSema;
 

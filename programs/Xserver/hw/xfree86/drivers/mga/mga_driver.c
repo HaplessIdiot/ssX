@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.42 1998/09/05 06:49:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.43 1998/09/13 00:51:31 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -169,6 +169,7 @@ static SymTabRec MGAChipsets[] = {
     { PCI_CHIP_MGA1064,		"mga1064sg" },
     { PCI_CHIP_MGA2164,		"mga2164w" },
     { PCI_CHIP_MGA2164_AGP,	"mga2164w AGP" },
+    { PCI_CHIP_MGAG100,		"mgag100" },
     { PCI_CHIP_MGAG200,		"mgag200" },
     { PCI_CHIP_MGAG200_PCI,	"mgag200 PCI" },
     {-1,			NULL }
@@ -180,6 +181,7 @@ static char *MGAPciNames[] = {
     "mga1064sg",
     "mga2164w",
     "mga2164w AGP",
+    "mgag100",
     "mgag200",
     "mgag200 PCI",
     NULL
@@ -191,6 +193,7 @@ static unsigned int MGAPciIds[] = {
     PCI_CHIP_MGA1064,
     PCI_CHIP_MGA2164,
     PCI_CHIP_MGA2164_AGP,
+    PCI_CHIP_MGAG100,
     PCI_CHIP_MGAG200,
     PCI_CHIP_MGAG200_PCI,
     ~0
@@ -207,9 +210,7 @@ typedef enum {
 } MGAOpts;
 
 static OptionInfoRec MGAOptions[] = {
-#if 0
     { OPTION_SW_CURSOR,		"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
-#endif
     { OPTION_HW_CURSOR,		"HWcursor",	OPTV_TRI,	{0}, FALSE },
     { OPTION_PCI_RETRY,		"PciRetry",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_RGB_BITS,		"RGBbits",	OPTV_INTEGER,	{0}, FALSE },
@@ -574,7 +575,6 @@ MGAReadBios(ScrnInfoPtr pScrn)
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 		"Found and verified enhanced Video BIOS info block\n");
 
-
 	   /* Set default MCLK values (scaled by 100 kHz) */
 	   if ( pBios2->ClkMem == 0 )
 		pBios2->ClkMem = 50;
@@ -603,7 +603,6 @@ MGAReadBios(ScrnInfoPtr pScrn)
  * Counts amount of installed RAM 
  */
 
-/* XXX We need to get rid of this PIO (MArk) */
 static int
 MGACountRam(ScrnInfoPtr pScrn)
 {
@@ -737,6 +736,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	/* Check that the returned depth is one we support */
 	switch (pScrn->depth) {
 	case 8:
+	case 15:
 	case 16:
 	case 24:
 	    /* OK */
@@ -822,16 +822,19 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
     from = X_DEFAULT;
-    pMga->HWCursor = FALSE;
+    pMga->HWCursor = TRUE;
+    /*
+     * The preferred method is to use the "hw cursor" option as a tri-state
+     * option, with the default set above.
+     */
     if (xf86GetOptValBool(MGAOptions, OPTION_HW_CURSOR, &pMga->HWCursor)) {
 	from = X_CONFIG;
     }
-#if 0
+    /* For compatibility, accept this too (as an override) */
     if (xf86IsOptionSet(MGAOptions, OPTION_SW_CURSOR)) {
 	from = X_CONFIG;
 	pMga->HWCursor = FALSE;
     }
-#endif
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 		pMga->HWCursor ? "HW" : "SW");
     if (xf86IsOptionSet(MGAOptions, OPTION_NOACCEL)) {
@@ -915,6 +918,21 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     pMga->PciTag = pciTag(pMga->PciInfo->bus, pMga->PciInfo->device,
 			  pMga->PciInfo->func);
     
+
+    switch (pMga->Chipset) {
+    case PCI_CHIP_MGA2064:
+    case PCI_CHIP_MGA2164:
+    case PCI_CHIP_MGA2164_AGP:
+	MGA2064SetupFuncs(pScrn);
+	break;
+    case PCI_CHIP_MGA1064:
+    case PCI_CHIP_MGAG100:
+    case PCI_CHIP_MGAG200:
+    case PCI_CHIP_MGAG200_PCI:
+	MGAGSetupFuncs(pScrn);
+	break;
+    }
+
     /* ajv changes to reflect actual values. see sdk pp 3-2. */
     /* these masks just get rid of the crap in the lower bits */
 
@@ -964,15 +982,16 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 
      
     pMga->ILOADAddress = 0;
-    if ( (pMga->Chipset == PCI_CHIP_MGA1064 && pMga->ChipRev >= 3) ||
+    if ( 	pMga->Chipset == PCI_CHIP_MGA1064 ||
 		pMga->Chipset == PCI_CHIP_MGA2164 ||
-		pMga->Chipset == PCI_CHIP_MGA2164_AGP) {
+		pMga->Chipset == PCI_CHIP_MGA2164_AGP ||
+		pMga->Chipset == PCI_CHIP_MGAG200 ||
+		pMga->Chipset == PCI_CHIP_MGAG200_PCI ) {
 	    if (pMga->PciInfo->memBase[2] != 0) {
 	    	pMga->ILOADAddress = pMga->PciInfo->memBase[2] & 0xffffc000;
 	        xf86DrvMsg(pScrn->scrnIndex, X_PROBED, 
-			"ILOAD transfer window at 0x%lX\n",
+			"Pseudo-DMA transfer window at 0x%lX\n",
 	       		(unsigned long)pMga->ILOADAddress);
-
 	    } 
     }
 
@@ -1018,6 +1037,12 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     if (pScrn->device->videoRam != 0) {
 	pScrn->videoRam = pScrn->device->videoRam;
 	from = X_CONFIG;
+    } else if((pMga->Chipset == PCI_CHIP_MGA2164) ||
+	(pMga->Chipset == PCI_CHIP_MGA2164_AGP)){
+	pScrn->videoRam = 4096;
+	from = X_DEFAULT;
+	xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
+	 "Skipping memory probe due to hardware bug.  Assuming 4096 kBytes\n");
     } else {
 	pScrn->videoRam = MGACountRam(pScrn);
 	from = X_PROBED;
@@ -1027,31 +1052,13 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	
     pMga->FbMapSize = pScrn->videoRam * 1024;
 	
-#if 0
-/* XXX HACK */
-MGAMapMem(pScrn);
-#endif
 
     /*
      * fill MGAdac struct
      * Warning: currently, it should be after RAM counting
      */
-    switch (pMga->Chipset) {
-    case PCI_CHIP_MGA2064:
-    case PCI_CHIP_MGA2164:
-    case PCI_CHIP_MGA2164_AGP:
-	MGA3026RamdacInit(pScrn);
-	break;
-    case PCI_CHIP_MGA1064:
-    case PCI_CHIP_MGAG200:
-    case PCI_CHIP_MGAG200_PCI:
-	MGAGRamdacInit(pScrn);
-	break;
-    }
-#if 0
-/* XXX HACK */
-MGAUnmapMem(pScrn);
-#endif
+    (*pMga->PreInit)(pScrn);
+
 
     /* XXX Set HW cursor use */
 
@@ -1284,6 +1291,7 @@ MGAUnmapMem(pScrn);
 
     /* Set Fast bitblt flag */
     if (pMga->Chipset == PCI_CHIP_MGA1064 ||
+    	    pMga->Chipset == PCI_CHIP_MGAG100 ||
     	    pMga->Chipset == PCI_CHIP_MGAG200 ||
 	    pMga->Chipset == PCI_CHIP_MGAG200_PCI) {
 	pMga->HasFBitBlt = FALSE;
@@ -1466,27 +1474,12 @@ MGAUnmapMem(ScrnInfoPtr pScrn)
 static void
 MGASave(ScrnInfoPtr pScrn)
 {
-    MGAPtr pMga;
-    vgaRegPtr vgaReg;
-    MGARegPtr mgaReg;
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
+    vgaRegPtr vgaReg = &hwp->SavedReg;
+    MGAPtr pMga = MGAPTR(pScrn);
+    MGARegPtr mgaReg = &pMga->SavedReg;
 
-    pMga = MGAPTR(pScrn);
-    vgaReg = &VGAHWPTR(pScrn)->SavedReg;
-    mgaReg = &pMga->SavedReg;
-
-    switch (pMga->Chipset)
-    {
-    case PCI_CHIP_MGA2064:
-    case PCI_CHIP_MGA2164:
-    case PCI_CHIP_MGA2164_AGP:
-	MGA3026Save(pScrn, vgaReg, mgaReg, TRUE);
-	break;
-    case PCI_CHIP_MGA1064:
-    case PCI_CHIP_MGAG200:
-    case PCI_CHIP_MGAG200_PCI:
-	MGAGSave(pScrn, vgaReg, mgaReg, TRUE);
-	break;
-    }
+    (*pMga->Save)(pScrn, vgaReg, mgaReg, TRUE);
 }
 
 
@@ -1499,13 +1492,11 @@ MGASave(ScrnInfoPtr pScrn)
 static Bool
 MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
-    int ret;
-    vgaHWPtr hwp;
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
     vgaRegPtr vgaReg;
-    MGAPtr pMga;
+    MGAPtr pMga = MGAPTR(pScrn);
     MGARegPtr mgaReg;
 
-    hwp = VGAHWPTR(pScrn);
     vgaHWUnlockMMIO(hwp);
 
     /* Initialise the ModeReg values */
@@ -1513,40 +1504,17 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	return FALSE;
     pScrn->vtSema = TRUE;
 
-    pMga = MGAPTR(pScrn);
-    switch (pMga->Chipset) {
-    case PCI_CHIP_MGA2064:
-    case PCI_CHIP_MGA2164:
-    case PCI_CHIP_MGA2164_AGP:
-	ret = MGA3026Init(pScrn, mode);
-	break;
-    case PCI_CHIP_MGA1064:                               
-    case PCI_CHIP_MGAG200:                               
-    case PCI_CHIP_MGAG200_PCI:                               
-	ret = MGAGInit(pScrn, mode);
-	break;
-    }
-    if (!ret)
+    if (!(*pMga->ModeInit)(pScrn, mode))
 	return FALSE;
 
     /* Program the registers */
     vgaHWProtectMMIO(pScrn, TRUE);
     vgaReg = &hwp->ModeReg;
     mgaReg = &pMga->ModeReg;
-    switch (pMga->Chipset) {
-    case PCI_CHIP_MGA2064:
-    case PCI_CHIP_MGA2164:
-    case PCI_CHIP_MGA2164_AGP:
-	MGA3026Restore(pScrn, vgaReg, mgaReg, FALSE);
-	break;
-    case PCI_CHIP_MGA1064:                               
-    case PCI_CHIP_MGAG200:                               
-    case PCI_CHIP_MGAG200_PCI:                               
-	MGAGRestore(pScrn, vgaReg, mgaReg, FALSE);
-	break;
-    }
+
+    (*pMga->Restore)(pScrn, vgaReg, mgaReg, FALSE);
+
     MGAStormSync(pScrn);
-    /* XXX Does this belong here? */
     MGAStormEngineInit(pScrn);
     vgaHWProtectMMIO(pScrn, FALSE);
 
@@ -1559,31 +1527,15 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 static void 
 MGARestore(ScrnInfoPtr pScrn)
 {
-    vgaHWPtr hwp;
-    vgaRegPtr vgaReg;
-    MGAPtr pMga;
-    MGARegPtr mgaReg;
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
+    vgaRegPtr vgaReg = &hwp->SavedReg;
+    MGAPtr pMga = MGAPTR(pScrn);
+    MGARegPtr mgaReg = &pMga->SavedReg;
 
-    hwp = VGAHWPTR(pScrn);
-    pMga = MGAPTR(pScrn);
-    vgaReg = &hwp->SavedReg;
-    mgaReg = &pMga->SavedReg;
+    MGAStormSync(pScrn);
 
     vgaHWProtectMMIO(pScrn, TRUE);
-    switch (pMga->Chipset) {
-    case PCI_CHIP_MGA2064:
-    case PCI_CHIP_MGA2164:
-    case PCI_CHIP_MGA2164_AGP:
-	MGA3026Restore(pScrn, vgaReg, mgaReg, TRUE);
-	break;
-    case PCI_CHIP_MGA1064:                               
-    case PCI_CHIP_MGAG200:                               
-    case PCI_CHIP_MGAG200_PCI:
-	MGAGRestore(pScrn, vgaReg, mgaReg, TRUE);
-	break;
-    }
-    MGAStormSync(pScrn);
-    MGAStormEngineInit(pScrn);
+    (*pMga->Restore)(pScrn, vgaReg, mgaReg, TRUE);    
     vgaHWProtectMMIO(pScrn, FALSE);
 }
 
@@ -1595,7 +1547,6 @@ MGARestore(ScrnInfoPtr pScrn)
 static Bool
 MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 {
-    /* The vgaHW references will disappear one day */
     ScrnInfoPtr pScrn;
     vgaHWPtr hwp;
     MGAPtr pMga;
@@ -1620,7 +1571,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     hwp->MapSize = 0x10000;
     if (!vgaHWMapMem(pScrn))
 	return FALSE;
-    hwp->MemBase = pMga->IOBase + PORT_OFFSET;
+    hwp->MemBase = (long)pMga->IOBase + PORT_OFFSET;
     vgaHWGetIOBaseMMIO(hwp);
 
     /* Save the current state */
@@ -1633,10 +1584,6 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Darken the screen for aesthetic reasons and set the viewport */
     MGASaveScreen(pScreen, FALSE);
     MGAAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
-    /* XXX Fill the screen with black */
-#if 0
-    MGASaveScreen(pScreen, TRUE);
-#endif
 
     /*
      * The next step is to setup the screen's visuals, and initialise the
@@ -1843,7 +1790,6 @@ MGAEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
 
-    /* Should we re-save the text mode on each VT enter? */
     return MGAModeInit(pScrn, pScrn->currentMode);
 }
 

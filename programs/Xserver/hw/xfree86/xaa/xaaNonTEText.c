@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaNonTEText.c,v 1.2 1998/07/25 16:58:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaNonTEText.c,v 1.3 1998/08/13 14:46:12 dawes Exp $ */
 
 /********************************************************************
 
@@ -268,11 +268,6 @@ CollectCharacterInfo(
 }
 
 
-/* Since the backing rectangle and text boundaries do not necessarily
-   coincide, we send the dimensions of the backing rectangle and
-   the text separately to the NonTEGlyphRender which can draw them
-   separately or try to draw them in one pass when possible */
-
 static void
 ImageGlyphBltNonTEColorExpansion(
    ScrnInfoPtr pScrn,
@@ -283,75 +278,78 @@ ImageGlyphBltNonTEColorExpansion(
    RegionPtr cclip,
    int nglyph,
    unsigned char* gBase,
-   CharInfoPtr *ppci )
-{
+   CharInfoPtr *ppci 
+){
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
-    int width, skippix, skipglyph;
-    int Left, Right, Top, Bottom;
-    int LeftBack, RightBack, LeftText, RightText;
-    int LeftEdge, RightEdge, ytop, ybot;
-    int Lback, Ltext, Rback, Rtext, Wback, Wtext;
+    int skippix, skipglyph, width;
+    int LeftText, RightText, TopText, BottomText;
+    int LeftBox, RightBox, TopBox, BottomBox;
+    int Left, Right, Top, Bottom, ytop, ybot;
     int nbox = REGION_NUM_RECTS(cclip);
     BoxPtr pbox = REGION_RECTS(cclip);
 
-    for(skippix = 0, width = 0; skippix < nglyph; skippix++) 
-	width += ppci[skippix]->metrics.characterWidth;
+    width = CollectCharacterInfo(
+		Glyphs, nglyph, ppci, FONTMAXBOUNDS(font, ascent));
 
+    /* find our text dimensions */
     LeftText = xInit + (*ppci)->metrics.leftSideBearing;
-    RightText = LeftText + 
-	CollectCharacterInfo(Glyphs, nglyph, ppci, FONTMAXBOUNDS(font,ascent));
-    LeftBack = xInit;
-    RightBack = LeftBack + width;
-    Top = yInit - FONTMAXBOUNDS(font,ascent);
-    Bottom = yInit + FONTMAXBOUNDS(font,descent);
-    Left = min(LeftText, LeftBack);
-    Right = max(RightText, RightBack);
+    RightText = LeftText + width;
+    TopText = yInit - FONTMAXBOUNDS(font,ascent);
+    BottomText = yInit + FONTMAXBOUNDS(font,descent);
 
+    /* find our backing rectangle dimensions */
+    LeftBox = xInit;
+    RightBox = LeftBox + width;
+    TopBox = yInit - FONTASCENT(font);
+    BottomBox = yInit + FONTDESCENT(font);
+
+    Top = min(TopText, TopBox);
+    Bottom = max(BottomText, BottomBox);
+ 
     /* get into the first band that may contain part of our string */
     while(nbox && (Top >= pbox->y2)) {
 	pbox++; nbox--;
     }
 
-
     /* stop when the lower edge of the box is beyond our string */
     while(nbox && (Bottom >= pbox->y1)) {
-	LeftEdge = max(Left, pbox->x1);
-	RightEdge = min(Right, pbox->x2);
 
-	if(RightEdge > LeftEdge) {	/* we're drawing something */
-	    ytop = max(Top, pbox->y1);
-	    ybot = min(Bottom, pbox->y2);
+	/* handle backing rect first */
+	Left = max(LeftBox, pbox->x1);
+	Right = min(RightBox, pbox->x2);
+	if(Right > Left) {	    
+	    ytop = max(TopBox, pbox->y1);
+	    ybot = min(BottomBox, pbox->y2);
 
-	    Lback = max(LeftEdge, LeftBack);
-	    Rback = min(RightEdge, RightBack);    
-	    Ltext = max(LeftEdge, LeftText);
-	    Rtext = min(RightEdge, RightText);
+	    if(ybot > ytop) {
+		(*infoRec->SetupForSolidFill)(pScrn, bg, rop, planemask);
+		(*infoRec->SubsequentSolidFillRect)(pScrn, 
+			Left, ytop, Right - Left, ybot - ytop);
+	    }
+	}
 
-	    Wback = Rback - Lback;
-	    if(Wback < 0) Wback = 0;	/* don't draw backing rect */
+	/* now handle the glyphs */
+	Left = max(LeftText, pbox->x1);
+	Right = min(RightText, pbox->x2);
+	if(Right > Left) {	    
+	    ytop = max(TopText, pbox->y1);
+	    ybot = min(BottomText, pbox->y2);
 
-	    Wtext = Rtext - Ltext;
-	    if(Wtext <= 0) {
-		Wtext = skippix = skipglyph = 0; /* don't draw the text */
-	    } else {	/* find out how many characters we skipped */
-		skippix = Ltext - LeftText;
+	    if(ybot > ytop) {
+		skippix = Left - LeftText;
 
 		skipglyph = 0;
 		while( skippix >= GlyphWidths[skipglyph])
 		    skipglyph++;
 
 		if(skipglyph)
-		    skippix -= GlyphWidths[skipglyph - 1];
+		   skippix -= GlyphWidths[skipglyph - 1];
+	    
+		(*infoRec->NonTEGlyphRenderer)(pScrn,
+			Left, Right - Left, ytop, ybot - ytop, 
+			skippix, ytop - TopText, Glyphs + skipglyph,
+			fg, rop, planemask); 
 	    }
-	    
-	    
-	/* xBack, wBack, xText, wText, y, h, skipleft, skiptop, glyphp, 
-		fg, bg, rop, planemask 	*/
-
-	    (*infoRec->NonTEGlyphRenderer)(
-		pScrn, Lback, Wback, Ltext, Wtext,
-		ytop, ybot - ytop, skippix, ytop - Top, Glyphs + skipglyph,
-		fg, bg, rop, planemask); 
 	}
 
 	nbox--; pbox++;
@@ -408,13 +406,10 @@ PolyGlyphBltNonTEColorExpansion(
 	    if(skipglyph)
 		skippix -= GlyphWidths[skipglyph - 1];
 	    
-	/* xBack, wBack, xText, wText, y, h, skipleft, skiptop, glyphp, 
-		fg, bg, rop, planemask 	*/
-
-	    (*infoRec->NonTEGlyphRenderer)(pScrn, 0, 0, 
+	    (*infoRec->NonTEGlyphRenderer)(pScrn,
 		LeftEdge, RightEdge - LeftEdge, ytop, ybot - ytop, 
 		skippix, ytop - Top, Glyphs + skipglyph,
-		fg, -1, rop, planemask); 
+		fg, rop, planemask); 
 	}
 
 	nbox--; pbox++;

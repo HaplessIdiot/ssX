@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.1.2.21 1998/07/19 13:21:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.2 1998/07/25 16:54:57 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -17,8 +17,8 @@
 
 /* Bus-specific headers */
 
-#include "xf86Bus.h"
 #include "xf86Pci.h"
+#include "xf86Bus.h"
 #define INIT_PCI_VENDOR_INFO
 #include "xf86PciInfo.h"
 
@@ -26,11 +26,35 @@
 
 pciConfigPtr *xf86PciInfo = NULL;		/* Full PCI probe info */
 pciVideoPtr *xf86PciVideoInfo = NULL;		/* PCI probe for video hw */
-
+pciAccPtr * xf86PciAccInfo = NULL;              /* PCI access related */
 /* Local bus data */
 
 static BusPtr *xf86BusSlots = NULL;	/* Bus slots claimed by drivers */
 static int xf86NumBusSlots = 0;
+
+static xf86AccessRec AccessNULL = {NULL,NULL,NULL};
+
+static xf86CurrentAccessRec xf86CurrentAccessVga = {&AccessNULL,&AccessNULL};
+static xf86CurrentAccessRec xf86CurrentAccess8514 = {&AccessNULL,&AccessNULL};
+static xf86ScrnAccessRec xf86PrimaryAccess = {NULL,NULL,MEM_IO};
+
+static xf86AccessPtr primaryPciAccess = NULL;
+static struct {
+    int bus;
+    int dev;
+    int func;
+} primaryPciDev = {0x7fff, 0x7fff, 0x7fff}; /*if invalid primary dev not PCI*/
+
+static Bool ResAccessEnter = FALSE;
+
+struct {
+    unsigned int exclusive_Vga :1,
+	exclusive_Vga_taken :1,
+	exclusive_8514 :1,
+	exclusive_8514_taken :1,
+	exclusive_mono :1,
+	exclusive_mono_taken :1;
+} Resources = {0,0,0,0,0,0};
 
 /* Bus-specific probe/sorting functions */
 
@@ -279,7 +303,7 @@ xf86FreeBusSlot(int slot)
  */
 
 Bool
-xf86CheckPciSlot(int bus, int device, int func, PciBusType type)
+xf86CheckPciSlot(int bus, int device, int func, BusResource res)
 {
     int i;
     BusPtr p;
@@ -290,21 +314,30 @@ xf86CheckPciSlot(int bus, int device, int func, PciBusType type)
 	if (p->busType == BUS_PCI && p->pciBusId.bus == bus &&
 	    p->pciBusId.device == device && p->pciBusId.func == func)
 	    return FALSE;
+    }
 	/* If VGA access is requested, check if that is alreay taken */
-	if (type == PCI_VGA) {
-	    if (p->busType == BUS_ISA && p->isaBusId == ISA_COLOR)
-		return FALSE;
-	    if (p->busType == BUS_PCI &&
-		(p->pciBusId.type == PCI_VGA ||
-		 p->pciBusId.type == PCI_SHARED_VGA))
-		return FALSE;
-	} else if (type == PCI_SHARED_VGA) {
-	    if (p->busType == BUS_ISA && p->isaBusId == ISA_COLOR)
-		return FALSE;
-	    if (p->busType == BUS_PCI && p->pciBusId.type == PCI_VGA)
-		return FALSE;
-	}
-
+    switch(res) {
+    RES_SHARED_VGA:
+	if(Resources.exclusive_Vga) return FALSE;
+	break;
+    RES_SHARED_8514:
+	if(Resources.exclusive_8514) return FALSE;
+	break;
+    RES_VGA:
+	if(!Resources.exclusive_Vga || Resources.exclusive_Vga_taken) 
+	    return FALSE;
+	Resources.exclusive_Vga_taken = 1;
+	break;
+    RES_8514:
+	if(!Resources.exclusive_8514 || Resources.exclusive_8514_taken) 
+	    return FALSE;
+	Resources.exclusive_8514_taken = 1;
+	break;
+    RES_MONO:
+	xf86Msg(X_WARNING,"Resource Mono is not supported for PCI devices\n");
+	return FALSE;
+    default:
+	return TRUE;
     }
     return TRUE;
 }
@@ -315,18 +348,21 @@ xf86CheckPciSlot(int bus, int device, int func, PciBusType type)
  */
 
 Bool
-xf86ClaimPciSlot(int bus, int device, int func, PciBusType type, int scrnIndex)
+xf86ClaimPciSlot(int bus, int device, int func, BusResource res, 
+		 DriverPtr drvp, int chipset, int scrnIndex)
 {
     BusPtr p;
 
-    if (xf86CheckPciSlot(bus, device, func, type)) {
+    if (xf86CheckPciSlot(bus, device, func, res)) {
 	p = xf86AllocateBusSlot();
+	p->driver = drvp;
+	p->chipset = chipset;
 	p->busType = BUS_PCI;
 	p->scrnIndex = scrnIndex;
 	p->pciBusId.bus = bus;
 	p->pciBusId.device = device;
 	p->pciBusId.func = func;
-	p->pciBusId.type = type;
+	p->resource = res;
 	return TRUE;
     } else
 	return FALSE;
@@ -366,7 +402,7 @@ xf86GetPciVideoInfo()
  */
 int
 xf86GetPciInfoForScreen(int scrnIndex, pciVideoPtr **pPciList,
-			PciBusType **pType)
+			BusResource **pRes)
 {
     int num = 0;
     int i;
@@ -378,8 +414,8 @@ xf86GetPciInfoForScreen(int scrnIndex, pciVideoPtr **pPciList,
 
     if (pPciList != NULL)
 	*pPciList = NULL;
-    if (pType != NULL)
-	*pType = NULL;
+    if (pRes != NULL)
+	*pRes = NULL;
     for (i = 0; i < xf86NumBusSlots; i++) {
 	p = xf86BusSlots[i];
 	if (p->scrnIndex == scrnIndex && p->busType == BUS_PCI) {
@@ -397,10 +433,10 @@ xf86GetPciInfoForScreen(int scrnIndex, pciVideoPtr **pPciList,
 						num * sizeof(pciVideoPtr));
 		    (*pPciList)[num - 1] = *ppPci;
 		}
-		if (pType != NULL) {
-		    *pType = (PciBusType *)xnfrealloc(*pType,
-						num * sizeof(PciBusType));
-		    (*pType)[num - 1] = p->pciBusId.type;
+		if (pRes != NULL) {
+		    *pRes = (BusResource *)xnfrealloc(*pRes,
+						num * sizeof(BusResource));
+		    (*pRes)[num - 1] = p->resource;
 		}
 	    } else {
 		/* This shouldn't happen */
@@ -439,9 +475,9 @@ StringToBusType(const char* busID, const char **retID)
 	xfree(s);
 	return BUS_NONE;
     }
-    if (xf86NameCmp(p, "pci") || xf86NameCmp(p, "agp"))
-	ret = BUS_PCI;
-    if (xf86NameCmp(p, "isa"))
+    if (!xf86NameCmp(p, "pci") || !xf86NameCmp(p, "agp"))
+	ret = BUS_PCI; 
+    if (!xf86NameCmp(p, "isa"))
 	ret = BUS_ISA;
     if (ret != BUS_NONE)
 	if (retID)
@@ -535,18 +571,29 @@ xf86ComparePciBusString(const char *busID, int bus, int device, int func)
  */
 
 Bool
-xf86CheckIsaSlot(IsaBusType type)
+xf86CheckIsaSlot(BusResource res)
 {
-    int i;
-    BusPtr p;
-
-    for (i = 0; i < xf86NumBusSlots; i++) {
-	p = xf86BusSlots[i];
-	if (type == ISA_COLOR && p->busType == BUS_PCI &&
-	    (p->pciBusId.type == PCI_VGA || p->pciBusId.type == PCI_SHARED_VGA))
+    switch(res){
+    RES_SHARED_VGA:
+    RES_SHARED_8514:
+	return FALSE;
+    RES_VGA:
+	if(!Resources.exclusive_Vga || Resources.exclusive_Vga_taken) 
 	    return FALSE;
-	if (p->busType == BUS_ISA && type == p->isaBusId)
+	Resources.exclusive_Vga_taken = 1;
+	break;
+    RES_8514:
+	if(!Resources.exclusive_8514 || Resources.exclusive_8514_taken) 
 	    return FALSE;
+	Resources.exclusive_8514_taken = 1;
+	break;
+    RES_MONO:
+	if(!Resources.exclusive_mono || Resources.exclusive_mono_taken) 
+	    return FALSE;
+	Resources.exclusive_mono_taken = 1;
+	break;
+    default:
+	return TRUE;
     }
     return TRUE;
 }
@@ -557,15 +604,17 @@ xf86CheckIsaSlot(IsaBusType type)
  */
 
 Bool
-xf86ClaimIsaSlot(IsaBusType type, int scrnIndex)
+xf86ClaimIsaSlot(BusResource res, DriverPtr drvp, int chipset, int scrnIndex)
 {
     BusPtr p;
 
-    if (xf86CheckIsaSlot(type)) {
+    if (xf86CheckIsaSlot(res)) {
 	p = xf86AllocateBusSlot();
+	p->driver = drvp;
+	p->chipset = chipset;
 	p->busType = BUS_ISA;
 	p->scrnIndex = scrnIndex;
-	p->isaBusId = type;
+	p->resource = res;
 	return TRUE;
     } else
 	return FALSE;
@@ -576,14 +625,14 @@ xf86ClaimIsaSlot(IsaBusType type, int scrnIndex)
  */
 
 void
-xf86ReleaseIsaSlot(IsaBusType type)
+xf86ReleaseIsaSlot(BusResource res)
 {
     int i;
     BusPtr p;
 
     for (i = 0; i < xf86NumBusSlots; i++) {
 	p = xf86BusSlots[i];
-	if (p->busType == BUS_ISA && p->isaBusId == type) {
+	if (p->busType == BUS_ISA && p->resource == res) {
 	    xf86FreeBusSlot(i);
 	    return;
 	}
@@ -598,26 +647,39 @@ xf86ReleaseIsaSlot(IsaBusType type)
  * 0 or 1 isn't useful.
  */
 int
-xf86GetIsaInfoForScreen(int scrnIndex, IsaBusType **pType)
+xf86GetIsaInfoForScreen(int scrnIndex, BusResource **pRes)
 {
     int num = 0;
     int i;
     BusPtr p;
 
-    if (pType != NULL)
-	*pType = NULL;
+    if (pRes != NULL)
+	*pRes = NULL;
     for (i = 0; i < xf86NumBusSlots; i++) {
 	p = xf86BusSlots[i];
 	if (p->scrnIndex == scrnIndex && p->busType == BUS_ISA) {
 	    num++;
-	    if (pType != NULL) {
-		*pType = (IsaBusType *)xnfrealloc(*pType,
-						num * sizeof(IsaBusType));
-		(*pType)[num - 1] = p->isaBusId;
+	    if (pRes != NULL) {
+		*pRes = (BusResource *)xnfrealloc(*pRes,
+						  num * sizeof(BusResource));
+		(*pRes)[num - 1] = p->resource;
 	    }
 	}
     }
     return num;
+}
+
+/*
+ * Parse a BUS ID string, and return True if it is a ISA bus id.
+ */
+
+Bool
+xf86ParseIsaBusString(const char *busID)
+{
+    /*
+     * The format assumed to be "isa" or "isa:"
+     */
+    return(StringToBusType(busID,NULL) == BUS_ISA);
 }
 
 /*
@@ -650,4 +712,637 @@ xf86ChangeBusIndex(int oldIndex, int newIndex)
 	    xf86BusSlots[i]->scrnIndex = newIndex;
     }
 }
+
+/*
+ * xf86DeleteBusSlotsForScreen() -- deletes all bus slots 
+ * assigned to a specific screen.
+ */
+void
+xf86DeleteBusSlotsForScreen(int scrnIndex)
+{
+    int i;
+    
+    for (i = 0; i < xf86NumBusSlots; i++) {
+	if (xf86BusSlots[i]->scrnIndex == scrnIndex){
+	    xf86FreeBusSlot(i);
+	    i--;
+	}
+    }
+}
+
+static Bool
+CompBusTypeForScreen(int scrnIndex, BusType bt)
+{
+    int i;
+    BusPtr p;
+
+    for (i = 0; i < xf86NumBusSlots; i++) {
+	p = xf86BusSlots[i];
+	if(p->scrnIndex == scrnIndex && p->busType == bt)
+	    return TRUE;
+	}
+    return FALSE;
+}
+
+Bool
+xf86IsPciBus(int scrnIndex)
+{
+    return CompBusTypeForScreen(scrnIndex,BUS_PCI);
+}
+
+Bool
+xf86IsIsaBus(int scrnIndex)
+{
+    return CompBusTypeForScreen(scrnIndex,BUS_ISA);
+}
+
+int
+xf86FindChipsetsForScreen(int scrnIndex, DriverPtr drv, int **chipsets)
+{
+    int num = 0;
+    int i;
+    BusPtr p;
+    
+    *chipsets = NULL;
+    for (i = 0; i < xf86NumBusSlots; i++) {
+	p = xf86BusSlots[i];
+	if (p->scrnIndex == scrnIndex && p->driver == drv){
+	    num++;
+	    *chipsets = (int *)xnfrealloc(*chipsets,num * sizeof(int));
+	    (*chipsets)[num - 1] = p->chipset;
+	}
+    }
+    return num;
+}
+	
+/*
+ * IO enable/disable related routines for PCI
+ */
+#define SETBITS PCI_CMD_IO_ENABLE
+static void
+pciIoAccessEnable(void* arg)
+{
+    pciSetBitsLong((*(PCITAG *)arg), PCI_CMD_STAT_REG,SETBITS,
+		   SETBITS);
+}
+
+static void
+pciIoAccessDisable(void* arg)
+{
+    pciSetBitsLong((*(PCITAG *)arg), PCI_CMD_STAT_REG,SETBITS,
+		   0);
+}
+
+#undef SETBITS
+#define SETBITS (PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE)
+static void
+pciIo_MemAccessEnable(void* arg)
+{
+    pciSetBitsLong((*(PCITAG *)arg), PCI_CMD_STAT_REG, SETBITS,
+		   SETBITS);
+}
+
+static void
+pciIo_MemAccessDisable(void* arg)
+{
+    pciSetBitsLong((*(PCITAG *)arg), PCI_CMD_STAT_REG,SETBITS,
+		   0);
+}
+
+#undef SETBITS
+#define SETBITS (PCI_CMD_MEM_ENABLE)
+static void
+pciMemAccessEnable(void* arg)
+{
+    pciSetBitsLong((*(PCITAG *)arg), PCI_CMD_STAT_REG, SETBITS,
+		   SETBITS);
+}
+
+static void
+pciMemAccessDisable(void* arg)
+{
+    pciSetBitsLong((*(PCITAG *)arg), PCI_CMD_STAT_REG,SETBITS,
+		   0);
+}
+#undef SETBITS
+
+static void
+savePciAccess(PCITAG tag, CARD32 *ptr)
+{
+    *ptr = pciReadLong(tag,PCI_CMD_STAT_REG);
+}
+
+static void
+restorePciAccess(PCITAG tag, CARD32 *ptr)
+{
+    pciWriteLong(tag,PCI_CMD_STAT_REG,*ptr);
+}
+
+#define PCISHAREDIOCLASSES(b,s)					      \
+    (((b) == PCI_CLASS_PREHISTORIC && (s) == PCI_SUBCLASS_PREHISTORIC_VGA) || \
+     ((b) == PCI_CLASS_DISPLAY && (s) == PCI_SUBCLASS_DISPLAY_VGA))
+
+static void
+setupPciAccess()
+{
+    int i = 0;
+    int j = 0;
+    pciConfigPtr pcp; 
+    pciAccPtr pcaccp;
+
+    if (xf86PciAccInfo)
+	return;
+  
+    if(xf86PciInfo == NULL)
+	return;
+
+    while (pcp = xf86PciInfo[i]) {
+	i++;
+	if(PCISHAREDIOCLASSES(pcp->_base_class, pcp->_sub_class)){
+	    j++;
+	    xf86PciAccInfo = (pciAccPtr *)xnfrealloc(xf86PciAccInfo,
+						     sizeof(pciAccPtr) * (j + 1));
+	    xf86PciAccInfo[j] = NULL;
+	    pcaccp = xf86PciAccInfo[j - 1] = (pciAccPtr)xalloc(sizeof(pciAccRec));
+	    pcaccp->busnum = pcp->busnum; 
+	    pcaccp->devnum = pcp->devnum; 
+	    pcaccp->funcnum = pcp->funcnum;
+	    pcaccp->tag = pciTag(pcp->busnum,pcp->devnum,pcp->funcnum);
+	    pcaccp->ioAccess.AccessDisable = pciIoAccessDisable;
+	    pcaccp->ioAccess.AccessEnable = pciIoAccessEnable;
+	    pcaccp->ioAccess.arg = &pcaccp->tag;
+	    pcaccp->io_memAccess.AccessDisable = pciIo_MemAccessDisable;
+	    pcaccp->io_memAccess.AccessEnable = pciIo_MemAccessEnable;
+	    pcaccp->io_memAccess.arg = &pcaccp->tag;
+	    pcaccp->memAccess.AccessDisable = pciMemAccessDisable;
+	    pcaccp->memAccess.AccessEnable = pciMemAccessEnable;
+	    pcaccp->memAccess.arg = &pcaccp->tag;
+	    savePciAccess(pcaccp->tag,&pcaccp->saveio);
+	}
+    }
+}
+
+
+static void 
+EnterPciAccess()
+{
+    pciAccPtr paccp;
+    int i = 0;
+
+    if(xf86PciAccInfo == NULL) 
+	return;
+
+    while(paccp = xf86PciAccInfo[i])
+    {
+	i++;
+	savePciAccess(paccp->tag,&paccp->saveio);
+	restorePciAccess(paccp->tag,&paccp->restoreio);
+    }
+}
+
+static void 
+LeavePciAccess()
+{
+    pciAccPtr paccp;
+    int i = 0;
+
+    if(xf86PciAccInfo == NULL) 
+	return;
+
+    while(paccp = xf86PciAccInfo[i])
+    {
+	i++;
+	savePciAccess(paccp->tag,&paccp->restoreio);
+	restorePciAccess(paccp->tag,&paccp->saveio);
+    }
+}
+
+static void 
+DisablePciAccess()
+{
+    int i = 0;
+    pciAccPtr paccp;
+    if(xf86PciAccInfo == NULL)
+	return;
+
+    while(paccp = xf86PciAccInfo[i])
+    {
+	i++;
+	pciIo_MemAccessDisable(paccp->io_memAccess.arg);
+    }
+}
+static devType
+FindPciPrimaryDevice()
+{  
+    int i = 0;
+    int j;
+    pciConfigPtr pcp;
+    pciAccPtr paccp;
+    devType DevType = DEV_NONE;
+  
+    if(!xf86PciInfo) return DevType;
+
+    while(pcp = xf86PciInfo[i]){
+	if(pcp->_command & PCI_CMD_IO_ENABLE){
+	    j = 0;
+	    while(paccp = xf86PciAccInfo[j]){
+		if(paccp->busnum == pcp->busnum && paccp->devnum == pcp->devnum
+		   && paccp->funcnum == pcp->funcnum){
+		    if(PCISHAREDIOCLASSES(pcp->_base_class,pcp->_sub_class))
+			if(pcp->_prog_if == 0){
+			    primaryPciAccess = &paccp->io_memAccess;
+			    primaryPciDev.bus = pcp->busnum;
+			    primaryPciDev.dev = pcp->devnum;
+			    primaryPciDev.func = pcp->funcnum;
+			    /* prefer VGA */
+			    return DEV_VGA;
+			} else if (pcp->_prog_if == 1){
+			    primaryPciAccess = &paccp->ioAccess;
+			    primaryPciDev.bus = pcp->busnum;
+			    primaryPciDev.dev = pcp->devnum;
+			    primaryPciDev.func = pcp->funcnum;
+			    DevType = DEV_8514;
+			}
+		}
+		j++;
+	    }
+	}
+	i++;
+    }
+    return DevType;
+}
+
+/*
+ * xf86IsPrimaryPci() -- return TRUE if primary device
+ * is PCI and bus, dev and func numbers match.
+ */
+ 
+Bool
+xf86IsPrimaryPci(int bus, int dev, int func)
+{
+    /* if invalid bus primary device is not PCI */
+    if(primaryPciDev.bus == 0x7FFF) return FALSE;
+    return (bus == primaryPciDev.bus &&
+	    dev == primaryPciDev.dev &&
+	    func == primaryPciDev.func);
+}
+
+/*
+ * Generic VGA IO part - add other buses here
+ */
+
+/*
+ * xf86AccessEnter() -- gets called to save the text mode VGA IO 
+ * resources when reentering the server after a VT switch.
+ */ 
+
+void
+xf86AccessEnter()
+{
+    if(ResAccessEnter) 
+	return;
+    EnterPciAccess();
+    ResAccessEnter = TRUE;
+}
+
+/*
+ * xf86AccessLeave() -- gets called to restore the access to the 
+ * VGA IO resources when switching VT or on server exit.
+ */
+
+void
+xf86AccessLeave()
+{
+    if(!ResAccessEnter)
+	return;
+    LeavePciAccess();
+    ResAccessEnter = FALSE;
+}
+
+/*
+ * xf86AccessSetup() - set up everything needed for access control
+ * called only once on first server generation.
+ */
+
+void
+xf86AccessSetup()
+{
+    setupPciAccess();
+    ResAccessEnter = TRUE;
+}
+
+/*
+ * xf86AddControlledResource() -- Find and add pointer 
+ * to Access structure to ScreenRec.
+ */
+static int
+GetRBTypesForScreen(int scrnIndex, BusType **ppBt, BusResource **ppRes)
+{
+    int num = 0;
+    int i;
+    BusPtr p;
+
+    *ppRes = NULL;
+    *ppBt  = NULL;
+    for (i = 0; i < xf86NumBusSlots; i++) {
+	p = xf86BusSlots[i];
+	if (p->scrnIndex == scrnIndex) {
+	    num++;
+	    *ppRes = (BusResource *)xnfrealloc(*ppRes,
+					       num * sizeof(BusResource));
+	    (*ppRes)[num - 1] = p->resource;
+	    *ppBt = (BusType *)xnfrealloc(*ppBt,
+					       num * sizeof(BusType));
+	    (*ppBt)[num - 1] = p->busType;
+	}
+    }
+    return num;
+}
+
+#define RETURN xfree(bt);\
+               xfree(br);\
+	       return
+void
+xf86AddControlledResource(ScrnInfoPtr pScreen, resType rt)
+{
+    int num,i,j;
+    int k = 0;
+    pciVideoPtr *ppvp;
+    pciAccPtr paccp;
+    BusType *bt;
+    BusResource *br;
+    if(pScreen->Access.pAccess)
+	xf86DelControlledResource(&pScreen->Access,FALSE);
+    pScreen->Access.rt = rt;
+    num = GetRBTypesForScreen(pScreen->scrnIndex,&bt,&br);
+    for(i = 0; i < num; i++){
+	switch(br[i])
+	{
+	case RES_VGA:
+	    pScreen->Access.CurrentAccess = &xf86CurrentAccessVga;
+	    pScreen->Access.pAccess = &AccessNULL;
+	    RETURN;
+	case RES_8514:
+	    pScreen->Access.CurrentAccess = &xf86CurrentAccess8514;
+	    pScreen->Access.pAccess = &AccessNULL;
+	    RETURN;
+	case RES_SHARED_VGA:
+	    pScreen->Access.CurrentAccess = &xf86CurrentAccessVga;
+	    break;
+	case RES_SHARED_8514:
+	    pScreen->Access.CurrentAccess = &xf86CurrentAccess8514;
+	    break;
+	default:
+	    continue;
+	}
+	break;
+    }
+    if (i < num){
+	switch(bt[i]){
+	case BUS_ISA:
+	case BUS_NONE:
+	    pScreen->Access.pAccess = &AccessNULL;
+	    RETURN;
+	case BUS_PCI:
+	    num = xf86GetPciInfoForScreen(pScreen->scrnIndex, &ppvp,NULL);
+	    for (j=0;j<num;i++){
+		k = 0;
+		while(paccp = xf86PciAccInfo[j]){
+		    if(paccp->busnum == ppvp[j]->bus
+		       && paccp->devnum == ppvp[j]->device
+		       && paccp->funcnum == ppvp[j]->func){
+			switch(rt){
+			case IO:
+			    pScreen->Access.pAccess = &paccp->ioAccess;
+			    (*paccp->io_memAccess.AccessEnable)
+				(paccp->io_memAccess.arg);
+			    (*paccp->ioAccess.AccessDisable)
+				(paccp->ioAccess.arg);
+			    break;
+			case MEM_IO:
+			    pScreen->Access.pAccess = &paccp->io_memAccess;
+			    (*paccp->io_memAccess.AccessDisable)
+				(paccp->io_memAccess.arg);
+			    break;
+			case MEM:
+			    pScreen->Access.pAccess = &paccp->memAccess;
+			    (*paccp->memAccess.AccessDisable)
+				(paccp->memAccess.arg);
+			    break;
+			case NONE:
+			    pScreen->Access.pAccess = NULL;
+			    (*paccp->io_memAccess.AccessEnable)
+				(paccp->io_memAccess.arg);
+			    break;
+			default:
+			    break;
+			}
+			RETURN;
+		    }
+		    k++;
+		}
+	    }
+	    pScreen->Access.pAccess = NULL;
+	    RETURN;
+	default:
+	    pScreen->Access.pAccess = NULL;
+	    RETURN;
+	}
+    } else {
+	pScreen->Access.CurrentAccess = NULL;
+	pScreen->Access.pAccess = NULL;
+    }
+    RETURN;
+}
+#undef RETURN
+
+/* 
+ * xf86DelControlledResource() -- remove device from access 
+ * control, enable access to resources if second argument is 
+ * true otherwise disable it.
+ */
+
+void
+xf86DelControlledResource(xf86ScrnAccessPtr pScAcc, Bool enable)
+{
+    xf86AccessPtr pAcc = pScAcc->pAccess;
+    if(pAcc) {
+	if(enable)
+	    if(*pAcc->AccessEnable)
+		(*pAcc->AccessEnable)(pAcc->arg);
+	    else
+		if(*pAcc->AccessDisable)
+		    (*pAcc->AccessDisable)(pAcc->arg);
+	switch(pScAcc->rt){
+	case IO:
+	    pScAcc->CurrentAccess->pIoAccess = NULL;
+	    break;
+	case MEM:
+	    pScAcc->CurrentAccess->pMemAccess = NULL;
+	    break;
+	case MEM_IO:
+	    pScAcc->CurrentAccess->pIoAccess =
+		pScAcc->CurrentAccess->pMemAccess = NULL;
+	    break;
+	}
+	pScAcc->pAccess = NULL;
+    }
+    pScAcc->CurrentAccess = NULL;
+    pScAcc->rt = RES_NONE;
+}
+
+/*
+ * xf86EnableAccess() -- enable access to controlled resources.
+ */
+void
+xf86EnableAccess(xf86ScrnAccessPtr pScAcc)
+{
+    register xf86AccessPtr pAcc;
+    /* Screen is not under access control or currently enabled */
+    if(!pScAcc->pAccess) return;
+    switch(pScAcc->rt){
+    case IO:
+	pAcc = pScAcc->CurrentAccess->pIoAccess;
+	if(pScAcc->pAccess == pAcc)  return;
+	if(pAcc && pAcc->AccessDisable) 
+	    (*pAcc->AccessDisable)(pAcc->arg);
+	if(pScAcc->CurrentAccess->pMemAccess == pAcc)
+	    pScAcc->CurrentAccess->pMemAccess = NULL;
+	pAcc = pScAcc->pAccess;
+	if(pAcc && pAcc->AccessEnable) 
+	    (*pAcc->AccessEnable)(pAcc->arg);
+	pScAcc->CurrentAccess->pIoAccess = pAcc;
+	return;
+	
+    case MEM_IO:
+	pAcc = pScAcc->CurrentAccess->pIoAccess;
+	if(pScAcc->pAccess == pAcc)  return;
+	if(pAcc && pAcc->AccessDisable) 
+	    (*pAcc->AccessDisable)(pAcc->arg);
+	pAcc = pScAcc->CurrentAccess->pIoAccess;
+	if(pAcc && pAcc->AccessDisable) 
+	    (*pAcc->AccessDisable)(pAcc->arg);
+	pAcc = pScAcc->pAccess;
+	if(pAcc && pAcc->AccessEnable) 
+	    (*pAcc->AccessEnable)(pAcc->arg);
+	pScAcc->CurrentAccess->pIoAccess = pAcc;
+	pScAcc->CurrentAccess->pMemAccess = pAcc;
+	return;
+	
+    case MEM:
+	pAcc = pScAcc->CurrentAccess->pMemAccess;
+	if(pScAcc->pAccess == pAcc)  return;
+	if(pAcc && pAcc->AccessDisable) 
+	    (*pAcc->AccessDisable)(pAcc->arg);
+	if(pScAcc->CurrentAccess->pIoAccess == pAcc)
+	    pScAcc->CurrentAccess->pIoAccess = NULL;
+	pAcc = pScAcc->pAccess;
+	if(pAcc && pAcc->AccessEnable) 
+	    (*pAcc->AccessEnable)(pAcc->arg);
+	pScAcc->CurrentAccess->pMemAccess = pAcc;
+	return;
+    }
+}
+
+/*
+ * xf86EnablePrimaryDevice() - enable the device which
+ * was active when the server was started.
+ */
+void
+xf86EnablePrimaryDevice()
+{
+    xf86EnableAccess(&xf86PrimaryAccess);
+    
+}
+
+/*
+ * xf86DisableAccess() -- Disable access to VGA resources of _all_
+ * video devices on buses which allow this.
+ */
+static void 
+xf86DisableAccess()
+{
+    DisablePciAccess();
+}
+
+/*
+ * xf86FindPrimaryDevice() - Find the display device which
+ * was active when the server was started. Side effects:
+ * - disable IO access to all VGA/8514 display adaptors 
+ *   if possible.
+ * - fill out Resources structure
+ */
+static devType CheckGenericVga();
+void
+xf86FindPrimaryDevice()
+{
+    devType isaDevType, pciDevType, defaultDevType;
+    Bool found = FALSE;
+
+    xf86DisableAccess();
+
+    /* if no VGA device is found check for primary PCI device */
+    isaDevType = CheckGenericVga();
+    pciDevType = FindPciPrimaryDevice();
+    if(isaDevType == DEV_VGA){  /* we prefer VGA */
+	xf86Msg(X_PROBED, "Found active ISA/VL VGA device\n");
+	xf86PrimaryAccess.pAccess = &AccessNULL;
+	xf86PrimaryAccess.CurrentAccess = &xf86CurrentAccessVga;
+    } else if (pciDevType != DEV_NONE){
+	xf86Msg(X_PROBED, "Found active PCI device\n");
+	xf86PrimaryAccess.pAccess = primaryPciAccess;
+	switch(pciDevType){
+	case DEV_VGA:
+	    xf86PrimaryAccess.CurrentAccess = &xf86CurrentAccessVga;
+	    break;
+	case DEV_8514:
+	    xf86PrimaryAccess.CurrentAccess = &xf86CurrentAccess8514;
+	    xf86PrimaryAccess.rt = MEM;
+	    break;
+	}
+    } else if (isaDevType == DEV_8514){
+	xf86Msg(X_PROBED, "Found active ISA/VL 8514 device\n");
+	xf86PrimaryAccess.rt = MEM;
+	xf86PrimaryAccess.pAccess = &AccessNULL;
+	xf86PrimaryAccess.CurrentAccess = &xf86CurrentAccess8514;
+    } 
+}
+
+#include "vgaHW.h"
+
+/*
+ * xf86CheckGenericVga() - Check for presence of a VGA device.
+ */
+static devType
+CheckGenericVga()
+{
+    CARD16 GenericIOBase = VGAHW_GET_IOBASE();
+    CARD8 CurrentValue, TestValue;
+
+    /* Unlock VGA registers */
+    VGAHW_UNLOCK(GenericIOBase);
+
+    /* VGA has one more read/write attribute register than EGA */
+    (void) inb(GenericIOBase + 0x0AU);  /* Reset flip-flop */
+    outb(0x3C0, 0x14 | 0x20);
+    CurrentValue = inb(0x3C1);
+    outb(0x3C0, CurrentValue ^ 0x0F);
+    outb(0x3C0, 0x14 | 0x20);
+    TestValue = inb(0x3C1);
+    outb(0x3C0, CurrentValue);
+
+    /* XXX:  This should restore lock state, rather than relock */
+    VGAHW_LOCK(GenericIOBase);
+
+    /* return DEV_NONE if no VGA is present -- we don't have a test for
+     * generic 8514 yet */
+    if ((CurrentValue ^ 0x0F) == TestValue){
+	Resources.exclusive_Vga = 1;
+	return DEV_VGA;
+    } else 
+	/* if non is found return previous type */
+	return DEV_NONE;
+}
+
+
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.76 1998/07/25 16:54:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.77 1998/08/19 07:49:08 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -43,21 +43,35 @@ extern const unsigned char byte_reversed[256];
 
 /* xf86Bus.c */
 
-Bool xf86CheckPciSlot(int bus, int device, int func, PciBusType type);
-Bool xf86ClaimPciSlot(int bus, int device, int func, PciBusType type,
-		      int scrnIndex);
+Bool xf86CheckPciSlot(int bus, int device, int func, BusResource res);
+Bool xf86ClaimPciSlot(int bus, int device, int func, BusResource res,
+		      DriverPtr drvp, int chipset, int scrnIndex);
 void xf86ReleasePciSlot(int bus, int device, int func);
 pciVideoPtr *xf86GetPciVideoInfo(void);
 int xf86GetPciInfoForScreen(int scrnIndex, pciVideoPtr **pPciList,
-			    PciBusType **pType);
-Bool xf86CheckIsaSlot(IsaBusType type);
-Bool xf86ClaimIsaSlot(IsaBusType type, int scrnIndex);
-void xf86ReleaseIsaSlot(IsaBusType type);
-int xf86GetIsaInfoForScreen(int scrnIndex, IsaBusType **pType);
+			    BusResource **pRes);
+Bool xf86CheckIsaSlot(BusResource res);
+Bool xf86ClaimIsaSlot(BusResource res, DriverPtr drvp, int chipset, 
+		      int scrnIndex);
+void xf86ReleaseIsaSlot(BusResource res);
+int xf86GetIsaInfoForScreen(int scrnIndex, BusResource **pRes);
 void xf86FreeBusSlots(int scrnIndex);
 Bool xf86ParsePciBusString(const char *busID, int *bus, int *device,
 			   int *func);
+Bool xf86ParseIsaBusString(const char *busID);
 Bool xf86ComparePciBusString(const char *busID, int bus, int device, int func);
+void xf86DeleteBusSlotsForScreen(int scrnIndex);
+Bool xf86IsPciBus(int scrnIndex);
+Bool xf86IsIsaBus(int scrnIndex);
+int xf86FindChipsetsForScreen(int scrnIndex, DriverPtr drv, int **chipsets);
+void xf86AccessEnter();
+void xf86AccessLeave();
+void xf86AccessSetup();
+void xf86AddControlledResource(ScrnInfoPtr pScreen, resType rt);
+void xf86DelControlledResource(xf86ScrnAccessPtr pScAcc, Bool enable);
+void xf86EnableAccess(xf86ScrnAccessPtr pScAcc);
+void xf86FindPrimaryDevice();
+void xf86EnablePrimaryDevice();
 
 /* xf86Config.c */
 
@@ -118,10 +132,16 @@ void xf86ShowClocks(ScrnInfoPtr scrp, MessageType from);
 void xf86PrintChipsets(const char *drvname, const char *drvmsg,
 		       SymTabPtr chips);
 int xf86MatchDevice(const char *drivername, GDevPtr **driversectlist);
-int xf86MatchPciInstances(const char *driverName, int vendorID,
-			  unsigned int *devIDs, char **chipsets,
+int xf86MatchPciInstances(const char *driverName, int vendorID, 
+			  SymTabRec *chipsets, PciChipsets *PCIchipsets,
 			  GDevPtr *devList, int numDevs,
-			  GDevPtr **foundDevs, pciVideoPtr **foundPCI);
+			  GDevPtr **foundDevs, pciVideoPtr **foundPCI, 
+			  int **foundChips);
+BusResource xf86FindPciResource(int numChipset, PciChipsets *PCIchipsets);
+int xf86MatchIsaInstances(const char *driverName, SymTabRec *chipsets,
+			  IsaChipsets *ISAchipsets, int (*FindIsaDevice)(),
+			  GDevPtr *devList, int numDevs, GDevPtr *foundDev);
+BusResource xf86FindIsaResource(int numChipset, IsaChipsets *ISAchipsets);
 void xf86GetClocks(ScrnInfoPtr pScrn, int num,
 		   Bool (*ClockFunc)(ScrnInfoPtr, int),
 		   void (*ProtectRegs)(ScrnInfoPtr, Bool),
@@ -141,6 +161,9 @@ Bool xf86ServerIsExiting(void);
 Bool xf86ServerIsResetting(void);
 Bool xf86CaughtSignal(void);
 pointer xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name);
+void xf86Break1();
+void xf86Break2();
+void xf86Break3();
 
 /* xf86Mode.c */
 

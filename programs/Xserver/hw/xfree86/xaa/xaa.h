@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.7 1998/08/29 05:44:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.8 1998/09/05 06:37:03 dawes Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -635,10 +635,10 @@ typedef struct _XAAInfoRec {
 
    void (*NonTEGlyphRenderer)(
 	ScrnInfoPtr pScrn,
-	int xback, int wback, int xtext, int wtext, 
+	int xtext, int wtext, 
 	int w, int h, int skipleft, int startline, 
 	NonTEGlyphInfo *glyphs,
-	int fg, int bg, int rop, unsigned planemask
+	int fg, int rop, unsigned planemask
    );
    int NonTEGlyphRendererFlags;
 

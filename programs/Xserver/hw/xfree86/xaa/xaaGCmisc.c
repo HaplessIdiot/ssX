@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGCmisc.c,v 1.6 1998/08/29 05:44:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGCmisc.c,v 1.7 1998/09/05 06:37:04 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -274,37 +274,42 @@ XAAValidateImageGlyphBlt(
 	return;
 
    /* Do I need to check that this font is 4 bytes wide?  Or is
-	that guaranteed? */
+	that guaranteed since the font is no wider than 32 pixels? */
 
 
    /* Check for TE Fonts */
    if(!TERMINALFONT(pGC->font)) {
-
 	if(infoRec->ImageGlyphBltNonTE &&
-		CHECK_PLANEMASK(pGC,infoRec->ImageGlyphBltNonTEFlags)
-	) {
-	    if ((!(infoRec->ImageGlyphBltMask & GCBackground) && 
-		  CHECK_FG(pGC,infoRec->ImageGlyphBltNonTEFlags)) ||
-		  CHECK_COLORS(pGC,infoRec->ImageGlyphBltNonTEFlags)) {
+		CHECK_PLANEMASK(pGC,infoRec->ImageGlyphBltNonTEFlags) &&
+		CHECK_FG(pGC,infoRec->ImageGlyphBltNonTEFlags) &&
+	   infoRec->SetupForSolidFill && infoRec->SubsequentSolidFillRect &&
+		CHECK_PLANEMASK(pGC,infoRec->SolidFillFlags) &&
+		CHECK_BG(pGC,infoRec->SolidFillFlags))
+	{
 		pGC->ops->ImageText8 = infoRec->ImageText8NonTE;
 		pGC->ops->ImageText16 = infoRec->ImageText16NonTE;
 		pGC->ops->ImageGlyphBlt = infoRec->ImageGlyphBltNonTE;
-	    }
 	}
-   } else {
-	if(infoRec->ImageGlyphBltTE &&
-		CHECK_PLANEMASK(pGC,infoRec->ImageGlyphBltTEFlags)
-	) {
-	    if ((!(infoRec->ImageGlyphBltMask & GCBackground) && 
-		  CHECK_FG(pGC,infoRec->ImageGlyphBltTEFlags)) ||
-		  CHECK_COLORS(pGC,infoRec->ImageGlyphBltTEFlags)) {
-		  
+   } else if(infoRec->ImageGlyphBltTE &&
+	     CHECK_PLANEMASK(pGC,infoRec->ImageGlyphBltTEFlags)){
+	if(!(infoRec->ImageGlyphBltTEFlags & TRANSPARENCY_ONLY) &&  
+		CHECK_COLORS(pGC,infoRec->ImageGlyphBltTEFlags))
+	{
 		pGC->ops->ImageText8 = infoRec->ImageText8TE;
 		pGC->ops->ImageText16 = infoRec->ImageText16TE;
 		pGC->ops->ImageGlyphBlt = infoRec->ImageGlyphBltTE;
-	    }
+	} else {
+	   if(CHECK_FG(pGC,infoRec->ImageGlyphBltTEFlags) &&
+	      infoRec->SetupForSolidFill && infoRec->SubsequentSolidFillRect &&
+	      CHECK_PLANEMASK(pGC,infoRec->SolidFillFlags) &&
+	      CHECK_BG(pGC,infoRec->SolidFillFlags)) 
+	   {
+		pGC->ops->ImageText8 = infoRec->ImageText8TE;
+		pGC->ops->ImageText16 = infoRec->ImageText16TE;
+		pGC->ops->ImageGlyphBlt = infoRec->ImageGlyphBltTE;
+	   }
 	}
-   }
+    }
 }
 
 

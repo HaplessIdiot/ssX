@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.2 1998/07/25 16:56:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.3 1998/09/13 00:51:32 dawes Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -198,6 +198,7 @@ PCITAG pciDeviceTag;        /* Tag for current device */
 pciBusFuncs_t pciNOOPFuncs = {
 	pciReadLongNULL,
 	pciWriteLongNULL,
+	pciSetBitsLongNULL,
 	pciAddrNOOP,
 	pciAddrNOOP
 };
@@ -369,6 +370,26 @@ pciWriteByte(PCITAG tag, int offset, CARD8 val)
   pciWriteLong(tag, offset, tmp);
 } 
   
+void
+pciSetBitsLong(PCITAG tag, int offset, CARD32 mask, CARD32 val)
+{
+    int bus = PCI_BUS_FROM_TAG(tag);
+    int dev = PCI_DEV_FROM_TAG(tag);
+    int func = PCI_FUNC_FROM_TAG(tag);
+
+#ifdef DEBUGPCI
+    ErrorF("pciReadLong(0x%lx, %d)\n", tag, offset);
+#endif
+    if (!pciInitialized)
+	pciInit();
+
+    if (bus < pciNumBuses && pciBusInfo[bus] &&
+	pciBusInfo[bus]->funcs.pciReadLong) {
+	(*pciBusInfo[bus]->funcs.pciSetBitsLong)(tag, offset, mask, val);
+
+    }
+}
+
 ADDRESS
 pciBusAddrToHostAddr(PCITAG tag, ADDRESS addr)
 {
@@ -655,6 +676,25 @@ pciCfgMech1Write(PCITAG tag, int offset, CARD32 val)
 }
 
 CARD32
+pciCfgMech1SetBits(PCITAG tag, int offset, CARD32 mask, CARD32 val)
+{
+    unsigned long rv = 0xffffffff;
+
+#if defined(__powerpc__)
+    signal(SIGBUS, buserr);
+#endif
+
+    outl(0xCF8, PCI_EN | tag | (offset & 0xfc));
+    rv = inl(0xCFC);
+    rv = (rv & ~mask) | val;
+    outl(0xCFC, rv);
+
+#if defined(__powerpc__)
+    signal(SIGBUS,SIG_DFL);
+#endif
+}
+
+CARD32
 pciByteSwap(CARD32 u)
 {
 #if BYTE_ORDER == BIG_ENDIAN
@@ -689,6 +729,11 @@ pciReadLongNULL(PCITAG tag, int offset)
 
 void
 pciWriteLongNULL(PCITAG tag, int offset, CARD32 val)
+{
+}
+
+void
+pciSetBitsLongNULL(PCITAG tag, int offset, CARD32 mask, CARD32 val)
 {
 }
 
@@ -845,4 +890,5 @@ xf86ReadPciBIOS(unsigned long Base, unsigned long Offset, PCITAG Tag,
 }
 
 #endif /* INCLUDE_XF86_MAP_PCI_MEM */
+
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ChipsTech.c,v 3.14 1998/08/19 07:49:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ChipsTech.c,v 3.15 1998/09/05 06:36:26 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -140,6 +140,7 @@ int *Chipset;
 	 */
 	if ((rdinx(0x3D6, 0x00) == 0x2C) && (rdinx(0x3D6, 0x01) == 0x10))
 	{
+		result = TRUE;
 		*Chipset = CHIP_CT_UNKNOWN;
 		if (*Chipset == CHIP_CT_UNKNOWN)
 		{

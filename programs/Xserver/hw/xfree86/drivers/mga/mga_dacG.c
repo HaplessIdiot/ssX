@@ -1,8 +1,8 @@
 /*
- * Millennium G200 RAMDAC driver
+ * MGA-1064, MGA-G100, MGA-G200 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.1 1998/09/05 06:36:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.2 1998/09/05 06:49:19 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -62,6 +62,11 @@
 	} while (0)
 
 
+static void MGAGRamdacInit(ScrnInfoPtr);
+static void MGAGSave(ScrnInfoPtr, vgaRegPtr, MGARegPtr, Bool);
+static void MGAGRestore(ScrnInfoPtr, vgaRegPtr, MGARegPtr, Bool);
+static Bool MGAGInit(ScrnInfoPtr, DisplayModePtr);
+
 /*
  * MGAGCalcClock - Calculate the PLL settings (m, n, p, s).
  *
@@ -89,16 +94,15 @@
  */
 
 /* The following values are in kHz */
-/* they came from guess, need to be checked with doc !!!!!!!! */
 #define MGA_MIN_VCO_FREQ    120000
 #define MGA_MAX_VCO_FREQ    250000
 
 static double
 MGAGCalcClock ( ScrnInfoPtr pScrn, long f_out, long f_max,
-		int *m, int *n, int *p, int *s )
+		int *best_m, int *best_n, int *best_p, int *s )
 {
 	MGAPtr pMga = MGAPTR(pScrn);
-	int best_m=0, best_n=0;
+	int m, n, p;
 	double f_pll, f_vco;
 	double m_err, calc_f, base_freq;
 
@@ -117,14 +121,15 @@ MGAGCalcClock ( ScrnInfoPtr pScrn, long f_out, long f_max,
 		in_div_max   = 31;
 		post_div_max = 3;
 		break;
+	case PCI_CHIP_MGAG100:
 	case PCI_CHIP_MGAG200:
 	case PCI_CHIP_MGAG200_PCI:
 	default:
 		ref_freq     = 27050.5;
-		feed_div_min = 1;
+		feed_div_min = 7;
 		feed_div_max = 127;
 		in_div_min   = 1;
-		in_div_max   = 15;
+		in_div_max   = 6;
 		post_div_max = 3;
 		break;
 	}
@@ -143,38 +148,38 @@ MGAGCalcClock ( ScrnInfoPtr pScrn, long f_out, long f_max,
 	 * we don't have to bother checking for this maximum limit.
 	 */
 	f_vco = ( double ) f_out;
-	for ( *p = 0; *p < post_div_max && f_vco < MGA_MIN_VCO_FREQ; (*p)++ )
+	for ( p = 0; p < post_div_max && f_vco < MGA_MIN_VCO_FREQ; p++ )
 		f_vco *= 2.0;
 
 	/* Initial value of calc_f for the loop */
 	calc_f = 0;
 
-	base_freq = ref_freq / ( 1 << *p );
+	base_freq = ref_freq / ( 1 << p );
 
 	/* Initial amount of error for frequency maximum */
 	m_err = f_out;
 
-	/* Search for the different values of ( *m ) */
-	for ( *m = in_div_min ; *m < in_div_max ; ( *m )++ )
+	/* Search for the different values of ( m ) */
+	for ( m = in_div_min ; m < in_div_max ; m++ )
 	{
-		/* see values of ( *n ) which we can't use */
-		for ( *n = feed_div_min; *n <= feed_div_max; ( *n )++ )
+		/* see values of ( n ) which we can't use */
+		for ( n = feed_div_min; n <= feed_div_max; n++ )
 		{ 
-			calc_f = (base_freq * (*n)) / *m ;
+			calc_f = base_freq * (n + 1) / (m + 1) ;
 
 			/*
 			 * Pick the closest frequency.
 			 */
 			if (abs( calc_f - f_out ) < m_err ) {
 				m_err = abs(calc_f - f_out);
-				best_m = *m;
-				best_n = *n;
+				*best_m = m;
+				*best_n = n;
 			}
 		}
 	}
 	
 	/* Now all the calculations can be completed */
-	f_vco = ref_freq * best_n / best_m;
+	f_vco = ref_freq * (*best_n + 1) / (*best_m + 1);
 
 	/* Adjustments for filtering pll feed back */
 	if ( (50000.0 <= f_vco)
@@ -190,15 +195,13 @@ MGAGCalcClock ( ScrnInfoPtr pScrn, long f_out, long f_max,
 	&& (f_vco < 250000.0) )
 		*s = 3;	
 
-	f_pll = f_vco / ( 1 << *p );
+	f_pll = f_vco / ( 1 << p );
 
-	*m = best_m - 1;
-	*n = best_n - 1;
-	*p = ( 1 << *p ) - 1 ; 
+	*best_p = ( 1 << p ) - 1 ; 
 
 #ifdef DEBUG
 	ErrorF( "f_out_requ =%ld f_pll_real=%.1f f_vco=%.1f n=0x%x m=0x%x p=0x%x s=0x%x\n",
-		f_out, f_pll, f_vco, *n, *m, *p, *s );
+		f_out, f_pll, f_vco, *best_n, *best_m, *best_p, *s );
 #endif
 
 	return f_pll;
@@ -237,7 +240,7 @@ MGAGSetPCLK( ScrnInfoPtr pScrn, long f_out )
 /*
  * MGAGInit 
  */
-Bool
+static Bool
 MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
 	/*
@@ -292,6 +295,13 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		initDAC = initDAC1064;
 		pReg->Option = 0x5F094E21;
 		break;
+	case PCI_CHIP_MGAG100:
+		initDAC = initDACG200;
+		initDAC[ MGA1064_SYS_PLL_M ] = 0x04;
+		initDAC[ MGA1064_SYS_PLL_N ] = 0x16;
+		initDAC[ MGA1064_SYS_PLL_P ] = 0x08;
+		pReg->Option = 0x4007D121;
+		break;
 	case PCI_CHIP_MGAG200:
 	case PCI_CHIP_MGAG200_PCI:
 	default:
@@ -300,6 +310,11 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		break;
 	}
 	
+	if(pMga->UsePCIRetry)
+		pReg->Option &= ~0x20000000;
+	else
+		pReg->Option |= 0x20000000;
+
 	switch(pScrn->bitsPerPixel)
 	{
 	case 8:
@@ -517,7 +532,7 @@ MGAGSavePalette(ScrnInfoPtr pScrn, unsigned char* pntr)
  * This function restores a video mode.	 It basically writes out all of
  * the registers that have previously been saved.
  */
-void 
+static void 
 MGAGRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	       Bool restoreFonts)
 {
@@ -572,7 +587,7 @@ MGAGRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
  *
  * This function saves the video state.
  */
-void
+static void
 MGAGSave(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	    Bool saveFonts)
 {
@@ -687,7 +702,7 @@ MGAGUseHWCursor(ScreenPtr pScrn, CursorPtr pCurs)
 /*
  * MGAGRamdacInit
  */
-void
+static void
 MGAGRamdacInit(ScrnInfoPtr pScrn)
 {
     MGAPtr pMga = MGAPTR(pScrn);
@@ -731,3 +746,14 @@ MGAGRamdacInit(ScrnInfoPtr pScrn)
 	MGAdac->ClockFrom = X_DEFAULT;
     }
 }
+
+void MGAGSetupFuncs(ScrnInfoPtr pScrn)
+{
+    MGAPtr pMga = MGAPTR(pScrn);
+
+    pMga->PreInit = MGAGRamdacInit;
+    pMga->Save = MGAGSave;
+    pMga->Restore = MGAGRestore;
+    pMga->ModeInit = MGAGInit;
+}
+

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaNonTEGlyph.c,v 1.2 1998/07/25 16:58:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaNonTEGlyph.c,v 1.3 1998/08/02 05:17:07 dawes Exp $ */
 
 
 #include "xaa.h"
@@ -41,42 +41,22 @@ EXPNAME(XAANonTEGlyphRenderer3)(
 EXPNAME(XAANonTEGlyphRenderer)(
 #endif
     ScrnInfoPtr pScrn,
-    int xBack, int wBack, int xText, int wText, 
+    int xText, int wText, 
     int y, int h, int skipleft, int startline, 
     NonTEGlyphInfo *glyphp,
-    int fg, int bg, int rop,
+    int fg, int rop,
     unsigned int planemask )
 {
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
     CARD32* base = (CARD32*)infoRec->ColorExpandBase;
-    int dwords = 0;
-
 #ifdef TRIPLE_BITS
-    if(wBack && ((xText != xBack) || (wBack != wText) || 
-	(infoRec->CPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY) ||
-	((infoRec->CPUToScreenColorExpandFillFlags & RGB_EQUAL) && 
-	(!CHECK_RGB_EQUAL(bg))))) {
+    int dwords = ((3 * wText + 31) >> 5) * h;
 #else
-    if(wBack && ((infoRec->CPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY) 
-	|| (xText != xBack) || (wBack != wText))) {
-#endif
-    	(*infoRec->SetupForSolidFill)(pScrn, bg, rop, planemask);
-        (*infoRec->SubsequentSolidFillRect)(pScrn, xBack, y, wBack, h);
-	bg = -1;
-    }
-
-    if(!wText) {
-	SET_SYNC_FLAG(infoRec);
-	return;
-    }
-#ifdef TRIPLE_BITS
-    dwords = ((3 * wText + 31) >> 5) * h;
-#else
-    dwords = ((wText + 31) >> 5) * h;
+    int dwords = ((wText + 31) >> 5) * h;
 #endif
 
     (*infoRec->SetupForCPUToScreenColorExpandFill)(
-					pScrn, fg, bg, rop, planemask);
+					pScrn, fg, -1, rop, planemask);
     (*infoRec->SubsequentCPUToScreenColorExpandFill)(
 					pScrn, xText, y, wText, h, 0);
 
@@ -114,38 +94,18 @@ EXPNAME(XAANonTEGlyphRendererScanline3)(
 EXPNAME(XAANonTEGlyphRendererScanline)(
 #endif
     ScrnInfoPtr pScrn,
-    int xBack, int wBack, int xText, int wText, 
+    int xText, int wText, 
     int y, int h, int skipleft, int startline, 
     NonTEGlyphInfo *glyphp,
-    int fg, int bg, int rop,
+    int fg, int rop,
     unsigned int planemask )
 {
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
     int bufferNo = 0;
     CARD32* base = (CARD32*)infoRec->ScanlineColorExpandBuffers[0];
 
-#ifdef TRIPLE_BITS
-    if(wBack && ((xText != xBack) || (wBack != wText) || 
-	(infoRec->ScanlineCPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY) 
-	|| ((infoRec->ScanlineCPUToScreenColorExpandFillFlags & RGB_EQUAL) && 
-	(!CHECK_RGB_EQUAL(bg))))) {
-#else
-    if(wBack && 
-	((infoRec->ScanlineCPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY) 
-	|| (xText != xBack) || (wBack != wText))) {
-#endif
-    	(*infoRec->SetupForSolidFill)(pScrn, bg, rop, planemask);
-        (*infoRec->SubsequentSolidFillRect)(pScrn, xBack, y, wBack, h);
-	bg = -1;
-    }
-
-    if(!wText) {
-	SET_SYNC_FLAG(infoRec);
-	return;
-    }
-
     (*infoRec->SetupForScanlineCPUToScreenColorExpandFill)(
-				pScrn, fg, bg, rop, planemask);
+				pScrn, fg, -1, rop, planemask);
     (*infoRec->SubsequentScanlineCPUToScreenColorExpandFill)(
 				pScrn, xText, y, wText, h, 0);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.h,v 1.1.2.2 1997/07/18 09:20:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.h,v 1.2 1998/07/25 16:54:57 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -29,9 +29,12 @@ typedef struct {
     int		bus;
     int		device;
     int		func;
-    PciBusType	type;
 } PciBusId;
     
+typedef struct {
+    unsigned int dummy;
+} IsaBusId;
+
 /*
  * The general Bus description record.  As new types are added, new fields
  * should be added to the x_busId field.
@@ -40,11 +43,32 @@ typedef struct {
 typedef struct {
     BusType			busType;
     int				scrnIndex;
+    DriverPtr                   driver;
+    int                         chipset;
+    BusResource                 resource;
     union {
 	PciBusId x_pciBusId;
-	IsaBusType x_isaBusId;
+	IsaBusId x_isaBusId;
     }				x_busId;
 } BusRec, *BusPtr;
+
+typedef struct pci_io {
+    int    busnum;
+    int    devnum;
+    int    funcnum;
+    PCITAG tag;
+    xf86AccessRec ioAccess;
+    xf86AccessRec io_memAccess;
+    xf86AccessRec memAccess;
+    CARD32 saveio;
+    CARD32 restoreio;
+} pciAccRec, *pciAccPtr;
+
+typedef enum {
+    DEV_NONE,
+    DEV_VGA,
+    DEV_8514
+} devType;
 
 #define pciBusId        x_busId.x_pciBusId
 #define isaBusId        x_busId.x_isaBusId

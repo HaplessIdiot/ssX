@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.8 1998/08/30 03:31:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.9 1998/09/05 06:37:04 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -813,7 +813,8 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 
     if(infoRec->NonTEGlyphRenderer) {
 	xf86ErrorF("\tDriver provided NonTEGlyphRenderer replacement\n");
-    } else if(HaveColorExpansion) {
+    } else if(HaveColorExpansion && 
+	!(infoRec->CPUToScreenColorExpandFillFlags & NO_TRANSPARENCY)) {
 	if (infoRec->CPUToScreenColorExpandFillFlags & TRIPLE_BITS_24BPP) {
 	    if(infoRec->CPUToScreenColorExpandFillFlags & 
 					BIT_ORDER_IN_BYTE_MSBFIRST) {
@@ -856,10 +857,8 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	infoRec->NonTEGlyphRendererFlags = 
 		infoRec->CPUToScreenColorExpandFillFlags;
 
-	if(HaveSolidFillRect)
-	   infoRec->NonTEGlyphRendererFlags &= ~TRANSPARENCY_ONLY;
-
-    } else if(HaveScanlineColorExpansion) {
+    } else if(HaveScanlineColorExpansion &&
+	!(infoRec->ScanlineCPUToScreenColorExpandFillFlags & NO_TRANSPARENCY)) {
 	if (infoRec->CPUToScreenColorExpandFillFlags & TRIPLE_BITS_24BPP) {
 	    if(infoRec->ScanlineCPUToScreenColorExpandFillFlags & 
 					BIT_ORDER_IN_BYTE_MSBFIRST)
@@ -881,9 +880,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 
 	infoRec->NonTEGlyphRendererFlags = 
 			infoRec->ScanlineCPUToScreenColorExpandFillFlags;
-	
-	if(HaveSolidFillRect)
-	   infoRec->NonTEGlyphRendererFlags &= ~TRANSPARENCY_ONLY;
     }
     
 
@@ -1058,7 +1054,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	    infoRec->PolyGlyphBltTE = XAAPolyGlyphBltTEColorExpansion;
 	    infoRec->PolyGlyphBltTEFlags = infoRec->TEGlyphRendererFlags;
 	}
-
     }
 
     if(infoRec->TEGlyphRenderer &&
@@ -1078,12 +1073,9 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	    infoRec->ImageGlyphBltTE = XAAImageGlyphBltTEColorExpansion;
 	    infoRec->ImageGlyphBltTEFlags = infoRec->TEGlyphRendererFlags;
 	}
-
     }
 
-    if(infoRec->NonTEGlyphRenderer &&
-	!(infoRec->NonTEGlyphRendererFlags & NO_TRANSPARENCY)) {
-
+    if(infoRec->NonTEGlyphRenderer) {
 	if(!infoRec->PolyText8NonTE) {
 	    infoRec->PolyText8NonTE = XAAPolyText8NonTEColorExpansion;
 	    infoRec->PolyText8NonTEFlags = infoRec->NonTEGlyphRendererFlags;
@@ -1097,14 +1089,10 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	    infoRec->PolyGlyphBltNonTE = XAAPolyGlyphBltNonTEColorExpansion;
 	    infoRec->PolyGlyphBltNonTEFlags = infoRec->NonTEGlyphRendererFlags;
 	}
-
     }
 
 
-    if(infoRec->NonTEGlyphRenderer &&
-	!(infoRec->NonTEGlyphRendererFlags & TRANSPARENCY_ONLY) &&
-	!(infoRec->NonTEGlyphRendererFlags & NO_TRANSPARENCY)) {
-
+    if(infoRec->NonTEGlyphRenderer && HaveSolidFillRect) {
 	if(!infoRec->ImageText8NonTE) {
 	    infoRec->ImageText8NonTE = XAAImageText8NonTEColorExpansion;
 	    infoRec->ImageText8NonTEFlags = infoRec->NonTEGlyphRendererFlags;
@@ -1119,7 +1107,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	    infoRec->ImageGlyphBltNonTE = XAAImageGlyphBltNonTEColorExpansion;
 	    infoRec->ImageGlyphBltNonTEFlags = infoRec->NonTEGlyphRendererFlags;
 	}
-
     }
 
     if(!infoRec->PolyRectangleThinSolid && HaveSolidHorVertLine) {
@@ -1308,14 +1295,14 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
         int compositeFlags = 	infoRec->ImageGlyphBltTEFlags |	
 				infoRec->ImageGlyphBltNonTEFlags;
 
+        if(infoRec->ImageGlyphBltNonTE)
+	    compositeFlags |= infoRec->SolidFillFlags;
+
 	infoRec->ImageGlyphBltMask = GCFont;
 	if(compositeFlags & NO_PLANEMASK)
 	    infoRec->ImageGlyphBltMask |= GCPlaneMask;
-	if(compositeFlags & RGB_EQUAL) {
-	    infoRec->ImageGlyphBltMask |= GCForeground;
-	    if (!HaveSolidFillRect || (infoRec->FillSolidRectsFlags & RGB_EQUAL))
-		infoRec->ImageGlyphBltMask |= GCBackground;
-	}
+	if(compositeFlags & RGB_EQUAL)
+	    infoRec->ImageGlyphBltMask |= GCForeground | GCBackground;
 	infoRec->ValidateImageGlyphBlt = XAAValidateImageGlyphBlt;
     }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.55 1998/08/16 10:25:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.56 1998/08/19 13:13:09 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1341,6 +1341,7 @@ ErrorF("xf86VTSwitch: Leave failed\n");
     } else {
       for (i = 0; i < xf86NumScreens; i++)
 	xf86Screens[i]->vtSema = FALSE;
+      xf86AccessLeave();
       xf86DisableIO();
     }
   } else {
@@ -1348,6 +1349,7 @@ ErrorF("xf86VTSwitch: Entering\n");
     if (!xf86VTSwitchTo()) return;
       
     xf86EnableIO();
+    xf86AccessEnter();
     for (i = 0; i < xf86NumScreens; i++) {
       xf86Screens[i]->vtSema = TRUE;
       if (!xf86Screens[i]->EnterVT(i, 0))

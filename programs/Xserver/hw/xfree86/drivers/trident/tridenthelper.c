@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tridenthelper.c,v 1.1 1998/09/06 13:48:00 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -10,6 +10,7 @@
 #include "vgaHW.h"
 
 #include "trident.h"
+#include "trident_regs.h"
 
 #define NTSC 14.31818
 #define PAL  17.73448
@@ -28,6 +29,8 @@ TGUISetClock(ScrnInfoPtr pScrn, int clock, unsigned char *a, unsigned char *b)
 	unsigned char temp;
 
 	p = q = r = s = 0;
+
+        IsClearTV(pScrn);
 
 	if (pTrident->NewClockCode)
 	{
@@ -116,4 +119,35 @@ IsClearTV(ScrnInfoPtr pScrn)
 	pTrident->frequency = PAL;
     else
 	pTrident->frequency = NTSC;
+}
+
+float
+CalculateMCLK(ScrnInfoPtr pScrn)
+{
+    int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+	int a,b;
+	int m,n,k;
+	float freq;
+	int powerup[4] = { 1,2,4,8 };
+	unsigned char temp;
+
+	a = inb(0x43C6);
+	b = inb(0x43C7);
+
+        IsClearTV(pScrn);
+
+	if (pTrident->NewClockCode) {
+		m = b & 0x3F;
+		k = (b & 0xC0) >> 6;
+		n = a;
+	} else {
+		m = (a & 0x0F);
+		k = (b & 0xF0) >> 4;
+		n = a;
+	}
+
+	freq = ((n+8)*pTrident->frequency)/((m+2)*powerup[k]);
+
+	return (freq);
 }

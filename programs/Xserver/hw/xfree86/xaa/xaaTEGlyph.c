@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaTEGlyph.c,v 1.2 1998/07/25 16:58:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaTEGlyph.c,v 1.3 1998/08/02 05:17:08 dawes Exp $ */
 
 
 #include "xaa.h"
@@ -148,17 +148,16 @@ EXPNAME(XAATEGlyphRenderer)(
 	    }
     
 	    w -= width;
-	    if(!w) goto THE_END;
-	    glyphs++;
-            x += width;
-	    skipleft = 0;	/* nicely aligned again */
 	    base = (CARD32*)infoRec->ColorExpandBase;
-
 	    if((infoRec->CPUToScreenColorExpandFillFlags & 
 						CPU_TRANSFER_PAD_QWORD) &&
 			((((width + 31) >> 5) * h) & 1)) {
 		base[0] = 0x00000000;
 	    }
+	    if(!w) goto THE_END;
+	    glyphs++;
+            x += width;
+	    skipleft = 0;	/* nicely aligned again */
     } 
 
     w += skipleft;
@@ -179,13 +178,13 @@ EXPNAME(XAATEGlyphRenderer)(
 	    (*GlyphFunc)(base, glyphs, startline++, w, glyphWidth);
 	}
 
-THE_END:
-
     if((infoRec->CPUToScreenColorExpandFillFlags & CPU_TRANSFER_PAD_QWORD) &&
 			(dwords & 1)) {
 	base = (CARD32*)infoRec->ColorExpandBase;
 	base[0] = 0x00000000;
     }
+
+THE_END:
 
     if(infoRec->CPUToScreenColorExpandFillFlags & SYNC_AFTER_COLOR_EXPAND) 
 	(*infoRec->Sync)(pScrn);
@@ -248,17 +247,16 @@ EXPNAME(XAATEGlyphRenderer3)(
 	    }
 
 	    w -= width;
-	    if(!w) goto THE_END;
-	    glyphs++;
-            x += width;
-	    skipleft = 0;	/* nicely aligned again */
 	    base = (CARD32*)infoRec->ColorExpandBase;
-
 	    if((infoRec->CPUToScreenColorExpandFillFlags & 
 						CPU_TRANSFER_PAD_QWORD) &&
 			((((3 * width + 31) >> 5) * h) & 1)) {
 		base[0] = 0x00000000;
 	    }
+	    if(!w) goto THE_END;
+	    glyphs++;
+            x += width;
+	    skipleft = 0;	/* nicely aligned again */
     } 
 
     dwords = ((3 * w + 31) >> 5) * h;
@@ -282,13 +280,13 @@ EXPNAME(XAATEGlyphRenderer3)(
 
     DEALLOCATE_LOCAL(mem);
 
-THE_END:
-
     if((infoRec->CPUToScreenColorExpandFillFlags & CPU_TRANSFER_PAD_QWORD) &&
 			(dwords & 1)) {
 	base = (CARD32*)infoRec->ColorExpandBase;
 	base[0] = 0x00000000;
     }
+
+THE_END:
 
     if(infoRec->CPUToScreenColorExpandFillFlags & SYNC_AFTER_COLOR_EXPAND) 
 	(*infoRec->Sync)(pScrn);

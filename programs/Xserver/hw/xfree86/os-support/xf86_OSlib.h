@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.54 1998/08/16 12:28:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.55 1998/08/29 05:43:57 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -622,6 +622,10 @@ double RInt(
 	double x
 #endif
 );
+#endif
+
+#ifndef DEV_MEM
+#define DEV_MEM "/dev/mem"
 #endif
 
 #ifndef VT_SYSREQ_DEFAULT

@@ -4,7 +4,7 @@
 
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.1 1998/08/13 14:45:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.2 1998/08/29 05:43:04 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -516,13 +516,14 @@ xf86XVCopyClip(
     portPriv->FreeCompositeClip = FALSE;
 }
 
-static void
+static int
 xf86XVRegetVideo(XvPortRecPrivatePtr portPriv)
 {
   RegionRec WinRegion;
   RegionRec ClipRegion;
   BoxRec WinBox;
   ScreenPtr pScreen = portPriv->pDraw->pScreen;
+  int ret = Success;
 
   /* translate the video region to the screen */
   WinBox.x1 = portPriv->pDraw->x + portPriv->drw_x;
@@ -571,28 +572,32 @@ xf86XVRegetVideo(XvPortRecPrivatePtr portPriv)
 	(*portPriv->AdaptorRec->ReclipVideo)( portPriv->pScrn, 
 				&ClipRegion, portPriv->DevPriv.ptr);
  
-  (*portPriv->AdaptorRec->GetVideo)(portPriv->pScrn, 
+  ret = (*portPriv->AdaptorRec->GetVideo)(portPriv->pScrn, 
 			portPriv->vid_x, portPriv->vid_y, 
 			portPriv->pDraw->x + portPriv->drw_x, 
 			portPriv->pDraw->y + portPriv->drw_y, 
 			portPriv->vid_w, portPriv->vid_h, 
 			portPriv->drw_w, portPriv->drw_h, 
 			portPriv->DevPriv.ptr);
-  portPriv->isOn = TRUE;
+  if(ret == Success)
+	portPriv->isOn = TRUE;
 
 CLIP_VIDEO_BAILOUT:
 
   REGION_UNINIT(pScreen, &WinRegion);
   REGION_UNINIT(pScreen, &ClipRegion);
+  
+  return ret;
 }
 
-static void
+static int
 xf86XVReputVideo(XvPortRecPrivatePtr portPriv)
 {
   RegionRec WinRegion;
   RegionRec ClipRegion;
   BoxRec WinBox;
   ScreenPtr pScreen = portPriv->pDraw->pScreen;
+  int ret = Success;
 
   /* translate the video region to the screen */
   WinBox.x1 = portPriv->pDraw->x + portPriv->drw_x;
@@ -635,19 +640,22 @@ xf86XVReputVideo(XvPortRecPrivatePtr portPriv)
 	(*portPriv->AdaptorRec->ReclipVideo)( portPriv->pScrn, 
 				&ClipRegion, portPriv->DevPriv.ptr);
  
-  (*portPriv->AdaptorRec->PutVideo)(portPriv->pScrn, 
+  ret = (*portPriv->AdaptorRec->PutVideo)(portPriv->pScrn, 
 			portPriv->vid_x, portPriv->vid_y, 
 			portPriv->pDraw->x + portPriv->drw_x, 
 			portPriv->pDraw->y + portPriv->drw_y, 
 			portPriv->vid_w, portPriv->vid_h, 
 			portPriv->drw_w, portPriv->drw_h, 
 			portPriv->DevPriv.ptr);
-  portPriv->isOn = TRUE;
+  if(ret == Success)
+	portPriv->isOn = TRUE;
 
 CLIP_VIDEO_BAILOUT:
 
   REGION_UNINIT(pScreen, &WinRegion);
   REGION_UNINIT(pScreen, &ClipRegion);
+
+  return ret;
 }
 
 static int
@@ -1001,9 +1009,7 @@ xf86XVPutVideo(
   
   if(!portPriv->pScrn->vtSema) return Success; /* Success ? */
 
-  xf86XVReputVideo(portPriv);
-
-  return Success;
+  return(xf86XVReputVideo(portPriv));
 }
 
 static int
@@ -1023,6 +1029,7 @@ xf86XVPutStill(
   RegionRec ClipRegion;
   BoxRec WinBox;
   Bool WasOn = FALSE;
+  int ret = Success;
 
   if (pDraw->type != DRAWABLE_WINDOW)
       return BadAlloc;
@@ -1065,7 +1072,7 @@ xf86XVPutStill(
 	(*portPriv->AdaptorRec->ReclipVideo)(
 			portPriv->pScrn, &ClipRegion, portPriv->DevPriv.ptr);
  
-  (*portPriv->AdaptorRec->PutStill)(portPriv->pScrn, vid_x, vid_y, 
+  ret = (*portPriv->AdaptorRec->PutStill)(portPriv->pScrn, vid_x, vid_y, 
 		pDraw->x  + drw_x, pDraw->y + drw_y,
 		vid_w, vid_h, drw_w, drw_h, portPriv->DevPriv.ptr);
 
@@ -1082,7 +1089,7 @@ PUT_STILL_BAILOUT:
 	    xf86XVRegetVideo(portPriv);
   }	
 
-  return Success;
+  return ret;
 }
 
 static int
@@ -1132,9 +1139,7 @@ xf86XVGetVideo(
   
   if(!portPriv->pScrn->vtSema) return Success; /* Success ? */
 
-  xf86XVRegetVideo(portPriv);
-
-  return Success;
+  return(xf86XVRegetVideo(portPriv));
 }
 
 static int
@@ -1154,6 +1159,7 @@ xf86XVGetStill(
   RegionRec ClipRegion;
   BoxRec WinBox;
   Bool WasOn = FALSE;
+  int ret = Success;
 
   if (pDraw->type != DRAWABLE_WINDOW)
       return BadAlloc;
@@ -1203,7 +1209,7 @@ xf86XVGetStill(
 	(*portPriv->AdaptorRec->ReclipVideo)(
 			portPriv->pScrn, &ClipRegion, portPriv->DevPriv.ptr);
  
-  (*portPriv->AdaptorRec->GetStill)(portPriv->pScrn, vid_x, vid_y, 
+  ret = (*portPriv->AdaptorRec->GetStill)(portPriv->pScrn, vid_x, vid_y, 
 		pDraw->x  + drw_x, pDraw->y + drw_y,
 		vid_w, vid_h, drw_w, drw_h, portPriv->DevPriv.ptr);
 
@@ -1220,7 +1226,7 @@ GET_STILL_BAILOUT:
 	    xf86XVRegetVideo(portPriv);
   }	
 
-  return Success;
+  return ret;
 }
 
 

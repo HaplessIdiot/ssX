@@ -45,9 +45,10 @@ void SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 
 void SetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 
-    Set the cursor foreground and background colors.  The colors are
-    specified in 8-8-8 RGB format unless in 8bpp and the 
-    HARDWARE_CURSOR_TRUECOLOR_AT_8BPP flag is set.
+    Set the cursor foreground and background colors.  In 8bpp, fg and
+    bg are indicies into the current colormap unless the 
+    HARDWARE_CURSOR_TRUECOLOR_AT_8BPP flag is set.  In that case
+    and in all other bpps the fg and bg are in 8-8-8 RGB format.
     
 void LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *bits)
 
@@ -138,7 +139,7 @@ Flags
 
    /* Source-Mask interleaving flags */
 
-   By default is to inline the source and mask data (source first unless
+   By default the source and mask data are inlined (source first unless
    the HARDWARE_CURSOR_SWAP_SOURCE_AND_MASK flag is set).  Some hardware
    will require the source and mask to be interleaved, that is, X number
    of source bits should packed and then X number of mask bits repeating
@@ -149,7 +150,7 @@ Flags
 
    This one is the default.
  
-   The following are for interleaved cursors (not implemented yet).
+   The following are for interleaved cursors.
     
    HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_1        
    HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_8        
@@ -163,4 +164,4 @@ Flags
 
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/ramdac/CURSOR.NOTES,v 1.1 1998/08/30 05:07:18 dawes Exp $

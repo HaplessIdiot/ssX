@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/10/27 11:06:35 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.17.2.3 1998/06/09 14:40:58 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.19 1998/07/25 16:56:32 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -37,11 +37,11 @@ IOPERM_SRC = ioperm_noop.c
 IOPERM_OBJ = ioperm_noop.o
 #endif
 
-SRCS = bsd_init.c bsd_video.c bsd_io.c bsd_VTsw.c bios_devmem.c \
+SRCS = bsd_init.c bsd_video.c bsd_io.c bsd_VTsw.c bios_mmap.c \
        libc_wrapper.c $(IOPERM_SRC) std_kbdEv.c posix_tty.c std_mouse.c \
        std_mseEv.c $(JOYSTICK_SRC)
 
-OBJS = bsd_init.o bsd_video.o bsd_io.o bsd_VTsw.o bios_devmem.o \
+OBJS = bsd_init.o bsd_video.o bsd_io.o bsd_VTsw.o bios_mmap.o \
        libc_wrapper.o $(IOPERM_OBJ) std_kbdEv.o posix_tty.o std_mouse.o \
        std_mseEv.o $(JOYSTICK_OBJ)
 
@@ -68,7 +68,7 @@ InstallDynamicModule(bsd_jstk.o,$(MODULEDIR))
 # endif
 #endif
 
-LinkSourceFile(bios_devmem.c,../shared)
+LinkSourceFile(bios_mmap.c,../shared)
 LinkSourceFile(ioperm_noop.c,../shared)
 LinkSourceFile(std_kbdEv.c,../shared)
 LinkSourceFile(posix_tty.c,../shared)

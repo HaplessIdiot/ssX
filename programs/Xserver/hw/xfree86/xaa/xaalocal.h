@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.7 1998/08/29 14:34:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.8 1998/09/05 06:37:05 dawes Exp $ */
 
 #ifndef _XAALOCAL_H
 #define _XAALOCAL_H
@@ -998,128 +998,128 @@ XAAPolyGlyphBltNonTEColorExpansion(
 void
 XAANonTEGlyphRendererMSBFirstFixedBase (
     ScrnInfoPtr pScrn,
-    int xback, int wback, int xtext, int wtext, 
+    int xtext, int wtext, 
     int w, int h, int skipleft, int startline, 
     NonTEGlyphInfo *glyphs,
-    int fg, int bg, int rop, unsigned planemask
+    int fg, int rop, unsigned planemask
 );
 
 void
 XAANonTEGlyphRenderer3MSBFirstFixedBase (
     ScrnInfoPtr pScrn,
-    int xback, int wback, int xtext, int wtext, 
+    int xtext, int wtext, 
     int w, int h, int skipleft, int startline, 
     NonTEGlyphInfo *glyphs,
-    int fg, int bg, int rop, unsigned planemask
+    int fg, int rop, unsigned planemask
 );
 
 void
 XAANonTEGlyphRendererMSBFirst (
     ScrnInfoPtr pScrn,
-    int xback, int wback, int xtext, int wtext, 
+    int xtext, int wtext, 
     int w, int h, int skipleft, int startline, 
     NonTEGlyphInfo *glyphs,
-    int fg, int bg, int rop, unsigned planemask
+    int fg, int rop, unsigned planemask
 );
 
 void
 XAANonTEGlyphRenderer3MSBFirst (
     ScrnInfoPtr pScrn,
-    int xback, int wback, int xtext, int wtext, 
+    int xtext, int wtext, 
     int w, int h, int skipleft, int startline, 
     NonTEGlyphInfo *glyphs,
-    int fg, int bg, int rop, unsigned planemask
+    int fg, int rop, unsigned planemask
 );
 
 void
 XAANonTEGlyphRendererLSBFirstFixedBase (
     ScrnInfoPtr pScrn,
-    int xback, int wback, int xtext, int wtext, 
+    int xtext, int wtext, 
     int w, int h, int skipleft, int startline, 
     NonTEGlyphInfo *glyphs,
-    int fg, int bg, int rop, unsigned planemask
+    int fg, int rop, unsigned planemask
 );
 
 void
 XAANonTEGlyphRenderer3LSBFirstFixedBase (
     ScrnInfoPtr pScrn,
-    int xback, int wback, int xtext, int wtext, 
+    int xtext, int wtext, 
     int w, int h, int skipleft, int startline, 
     NonTEGlyphInfo *glyphs,
-    int fg, int bg, int rop, unsigned planemask
+    int fg, int rop, unsigned planemask
 );
 
 void
 XAANonTEGlyphRendererLSBFirst (
     ScrnInfoPtr pScrn,
-    int xback, int wback, int xtext, int wtext, 
+    int xtext, int wtext, 
     int w, int h, int skipleft, int startline, 
     NonTEGlyphInfo *glyphs,
-    int fg, int bg, int rop, unsigned planemask
+    int fg, int rop, unsigned planemask
 );
 
 void
 XAANonTEGlyphRenderer3LSBFirst (
     ScrnInfoPtr pScrn,
-    int xback, int wback, int xtext, int wtext, 
+    int xtext, int wtext, 
     int w, int h, int skipleft, int startline, 
     NonTEGlyphInfo *glyphs,
-    int fg, int bg, int rop, unsigned planemask
+    int fg, int rop, unsigned planemask
 );
 
 
 void
 XAANonTEGlyphRendererScanlineMSBFirstFixedBase (
     ScrnInfoPtr pScrn,
-    int xback, int wback, int xtext, int wtext, 
+    int xtext, int wtext, 
     int w, int h, int skipleft, int startline, 
     NonTEGlyphInfo *glyphs,
-    int fg, int bg, int rop, unsigned planemask
+    int fg, int rop, unsigned planemask
 );
 
 void
 XAANonTEGlyphRendererScanlineMSBFirst (
     ScrnInfoPtr pScrn,
-    int xback, int wback, int xtext, int wtext, 
+    int xtext, int wtext, 
     int w, int h, int skipleft, int startline, 
     NonTEGlyphInfo *glyphs,
-    int fg, int bg, int rop, unsigned planemask
+    int fg, int rop, unsigned planemask
 );
 
 void
 XAANonTEGlyphRendererScanline3MSBFirst (
     ScrnInfoPtr pScrn,
-    int xback, int wback, int xtext, int wtext, 
+    int xtext, int wtext, 
     int w, int h, int skipleft, int startline, 
     NonTEGlyphInfo *glyphs,
-    int fg, int bg, int rop, unsigned planemask
+    int fg, int rop, unsigned planemask
 );
 
 void
 XAANonTEGlyphRendererScanlineLSBFirstFixedBase (
     ScrnInfoPtr pScrn,
-    int xback, int wback, int xtext, int wtext, 
+    int xtext, int wtext, 
     int w, int h, int skipleft, int startline, 
     NonTEGlyphInfo *glyphs,
-    int fg, int bg, int rop, unsigned planemask
+    int fg, int rop, unsigned planemask
 );
 
 void
 XAANonTEGlyphRendererScanlineLSBFirst (
     ScrnInfoPtr pScrn,
-    int xback, int wback, int xtext, int wtext, 
+    int xtext, int wtext, 
     int w, int h, int skipleft, int startline, 
     NonTEGlyphInfo *glyphs,
-    int fg, int bg, int rop, unsigned planemask
+    int fg, int rop, unsigned planemask
 );
 
 void
 XAANonTEGlyphRendererScanline3LSBFirst (
     ScrnInfoPtr pScrn,
-    int xback, int wback, int xtext, int wtext, 
+    int xtext, int wtext, 
     int w, int h, int skipleft, int startline, 
     NonTEGlyphInfo *glyphs,
-    int fg, int bg, int rop, unsigned planemask
+    int fg, int rop, unsigned planemask
 );
 
 
@@ -1596,6 +1596,9 @@ CARD32 XAAReverseBitOrder(CARD32 data);
 
 #define CHECK_FG(pGC, flags) \
 	(!(flags & RGB_EQUAL) || CHECK_RGB_EQUAL(pGC->fgPixel))
+
+#define CHECK_BG(pGC, flags) \
+	(!(flags & RGB_EQUAL) || CHECK_RGB_EQUAL(pGC->bgPixel))
 
 #define CHECK_ROP(pGC, flags) \
 	(!(flags & GXCOPY_ONLY) || (pGC->alu == GXcopy))

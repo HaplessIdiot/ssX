@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.78 1998/07/26 09:56:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.79 1998/08/02 07:54:04 dawes Exp $ */
 
 /*
  * Copyright 1991-1998 by The XFree86 Project, Inc.
@@ -96,8 +96,8 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
   char                   **modulelist;
   pointer                *optionlist;
 #endif
-  screenLayoutPtr	layout;
-  
+  screenLayoutPtr	 layout;
+
 #ifdef __EMX__
   os2ServerVideoAccess();  /* See if we have access to the screen before doing anything */
 #endif
@@ -216,6 +216,13 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
         ErrorF("Warning: driver `%s' has no Identify function\n",
 	       xf86DriverList[i]->driverName ? xf86DriverList[i]->driverName
 					     : "noname");
+
+    /*
+     * Locate bus slot that had register IO enabled at server startup
+     */
+
+    xf86AccessSetup();
+    xf86FindPrimaryDevice();
 
     /*
      * Now call each of the Probe functions.  Each successful probe will
@@ -620,15 +627,16 @@ OsVendorInit()
 void
 ddxGiveUp()
 {
+    xf86AccessLeave();
 #ifdef USE_XF86_SERVERLOCK
-  xf86UnlockServer();
+    xf86UnlockServer();
 #endif
 
-  xf86CloseConsole();
+    xf86CloseConsole();
 
-  /* If an unexpected signal was caught, dump a core for debugging */
-  if (xf86Info.caughtSignal)
-    abort();
+    /* If an unexpected signal was caught, dump a core for debugging */
+    if (xf86Info.caughtSignal)
+	abort();
 }
 
 
