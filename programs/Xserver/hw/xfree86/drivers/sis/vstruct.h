@@ -221,9 +221,10 @@ typedef UCHAR DRAM4Type[4];
 #define CUT_CLEVO1024    7
 #define CUT_CLEVO10242   8
 #define CUT_CLEVO1400    9
-#define CUT_CLEVO14002  10
-#define CUT_UNIWILL1024 11
-#define CUT_ASUSL3000D  12
+#define CUT_CLEVO14002   10
+#define CUT_UNIWILL1024  11
+#define CUT_ASUSL3000D   12
+#define CUT_UNIWILL10242 13
 
 typedef struct _SiS_Private
 {
@@ -386,6 +387,7 @@ typedef struct _SiS_Private
 	const UCHAR *SiS_PALNPhase2;
 	const UCHAR *SiS_SpecialPhase;
 	const UCHAR *SiS_SpecialPhaseM;
+	const UCHAR *SiS_SpecialPhaseJ;
 	const SiS_LCDDataStruct  *SiS_StLCD1024x768Data;
 	const SiS_LCDDataStruct  *SiS_ExtLCD1024x768Data;
 	const SiS_LCDDataStruct  *SiS_St2LCD1024x768Data;

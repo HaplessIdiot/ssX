@@ -341,7 +341,9 @@ void SISLCDPreInit(ScrnInfoPtr pScrn)
 	     xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 			"Detected LCD/Plasma panel (%dx%d, type %d, %sexpanding, RGB%d)\n",
 			pSiS->LCDwidth, pSiS->LCDheight,
-			(pSiS->VGAEngine == SIS_315_VGA) ? ((CR36 & 0x0f) - 1) : ((CR36 & 0xf0) >> 4),
+			((pSiS->VGAEngine == SIS_315_VGA) &&
+			 (pSiS->Chipset != PCI_CHIP_SIS660)) ?
+			 	((CR36 & 0x0f) - 1) : ((CR36 & 0xf0) >> 4),
 			(CR37 & 0x10) ? "" : "non-",
 			(CR37 & 0x01) ? 18 : 24);
 	  }
@@ -467,11 +469,11 @@ void SISCRT2PreInit(ScrnInfoPtr pScrn)
     unsigned char CR32; 
 
     if(!(pSiS->VBFlags & VB_VIDEOBRIDGE))
-        return;
+       return;
 
     /* CRT2-VGA not supported on LVDS and 30xLV */
     if(pSiS->VBFlags & (VB_LVDS|VB_301LV|VB_302LV))
-        return;
+       return;
 
     inSISIDXREG(SISCR, 0x32, CR32);
     

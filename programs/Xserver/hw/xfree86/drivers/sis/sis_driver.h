@@ -152,65 +152,72 @@ const customttable mycustomttable[] = {
 	  { 0x220, 0x227, 0x228, 0x229, 0x0ee },
 	  {  0x01,  0xe3,  0x9a,  0x6a,  0xef },
 	  0x1039, 0x6300,
-	  "Barco", "iQ R200L/300/400", CUT_BARCO1366, "BARCO1366"
+	  "Barco", "iQ R200L/300/400", CUT_BARCO1366, "BARCO_1366"
 	},
 	{ SIS_630, "2.00.07", "09/27/2002-13:38:25",
 	  0x323FBD,
 	  { 0x220, 0x227, 0x228, 0x229, 0x0ee },
 	  {  0x00,  0x5a,  0x64,  0x41,  0xef },
 	  0x1039, 0x6300,
-	  "Barco", "iQ G200L/300/400/500", CUT_BARCO1024, "BARCO1024"
+	  "Barco", "iQ G200L/300/400/500", CUT_BARCO1024, "BARCO_1024"
 	},
 	{ SIS_650, "", "",
 	  0,
 	  { 0, 0, 0, 0, 0 },
 	  { 0, 0, 0, 0, 0 },
 	  0x0e11, 0x083c,
-	  "Inventec (Compaq)", "3017cl/3045US", CUT_COMPAQ12802, "COMPAQ1280"
+	  "Inventec (Compaq)", "3017cl/3045US", CUT_COMPAQ12802, "COMPAQ_1280"
 	},
 	{ SIS_650, "", "",
 	  0,
 	  { 0x00c, 0, 0, 0, 0 },
 	  { 'e'  , 0, 0, 0, 0 },
 	  0x1558, 0x0287,
-	  "Clevo", "L285/L287 (Version 1)", CUT_CLEVO1024, "CLEVO1024"
+	  "Clevo", "L285/L287 (Version 1)", CUT_CLEVO1024, "CLEVO_L28X_1"
 	},
 	{ SIS_650, "", "",
 	  0,
 	  { 0x00c, 0, 0, 0, 0 },
 	  { 'y'  , 0, 0, 0, 0 },
 	  0x1558, 0x0287,
-	  "Clevo", "L285/L287 (Version 2)", CUT_CLEVO10242, "CLEVO10242"
+	  "Clevo", "L285/L287 (Version 2)", CUT_CLEVO10242, "CLEVO_L28X_2"
 	},
 	{ SIS_650, "", "",
 	  0,
 	  { 0, 0, 0, 0, 0 },
 	  { 0, 0, 0, 0, 0 },
 	  0x1558, 0x0400,  /* possibly 401 and 402 as well; not panelsize specific (?) */
-	  "Clevo", "D400S/D410S/D400H/D410H", CUT_CLEVO1400, "CLEVO400"
+	  "Clevo", "D400S/D410S/D400H/D410H", CUT_CLEVO1400, "CLEVO_D4X0"
 	},
 	{ SIS_650, "", "",
 	  0,	/* Shift LCD in LCD-via-CRT1 mode */
 	  { 0, 0, 0, 0, 0 },
 	  { 0, 0, 0, 0, 0 },
 	  0x1734, 0x101f,
-	  "Uniwill", "N243S9", CUT_UNIWILL1024, "UNIWILL1024"
+	  "Uniwill", "N243S9", CUT_UNIWILL1024, "UNIWILL_N243S9"
+	},
+	{ SIS_650, "", "",
+	  0,	/* Shift LCD in LCD-via-CRT1 mode */
+	  { 0, 0, 0, 0, 0 },
+	  { 0, 0, 0, 0, 0 },
+	  0x1584, 0x5103,
+	  "Uniwill", "N35BS1", CUT_UNIWILL10242, "UNIWILL_N35BS1"
 	},
 	{ SIS_650, "1.09.2c", "",  /* Other versions, too? */
 	  0,	/* Shift LCD in LCD-via-CRT1 mode */
 	  { 0, 0, 0, 0, 0 },
 	  { 0, 0, 0, 0, 0 },
 	  0x1019, 0x0f05,
-	  "ECS", "A928", CUT_UNIWILL1024, "ECS1024"
+	  "ECS", "A928", CUT_UNIWILL1024, "ECS_A928"
 	},
 	{ SIS_740, "1.11.27a", "",
 	  0,
 	  { 0, 0, 0, 0, 0 },
 	  { 0, 0, 0, 0, 0 },
 	  0x1043, 0x1612,
-	  "Asus", "L3000D/L3500D", CUT_ASUSL3000D, "ASUSLVDS1024"
+	  "Asus", "L3000D/L3500D", CUT_ASUSL3000D, "ASUS_L3X00"
 	},
-	{ 4321, "", "",			/* This is hopefully NEVER autodetected */
+	{ 4321, "", "",			/* never autodetected */
 	  0,
 	  { 0, 0, 0, 0, 0 },
 	  { 0, 0, 0, 0, 0 },

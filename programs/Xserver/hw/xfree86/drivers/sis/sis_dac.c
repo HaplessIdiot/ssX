@@ -1239,6 +1239,7 @@ SiSRestoreBridge(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 #endif
 
    for(i = 0x30; i <= 0x39; i++) {
+      if(i == 0x34) continue;
       outSISIDXREG(SISCR, i, sisReg->sisRegs3D4[i]);
    }
 

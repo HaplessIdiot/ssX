@@ -2547,6 +2547,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     /* Determine chipset and VGA engine type */
     pSiS->ChipFlags = 0;
     pSiS->SiS_SD_Flags = 0;
+
     switch(pSiS->Chipset) {
 	case PCI_CHIP_SIS300:
 		pSiS->sishw_ext.jChipType = SIS_300;
@@ -3828,19 +3829,24 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     /* Backup detected CRT2 devices */
     pSiS->detectedCRT2Devices = pSiS->VBFlags & (CRT2_LCD | CRT2_TV | CRT2_VGA | TV_AVIDEO | TV_SVIDEO | TV_SCART);
 
+    pSiS->SiS_SD_Flags |= SiS_SD_ADDLSUPFLAG;
+
     if((pSiS->VBFlags & VB_SISBRIDGE) ||
        ((pSiS->VBFlags & VB_CHRONTEL) && (pSiS->ChrontelType == CHRONTEL_701x))) {
-       pSiS->SiS_SD_Flags |= SiS_SD_SUPPORTPALMN;
-    }
-    if(pSiS->VBFlags & VB_SISBRIDGE) {
-       pSiS->SiS_SD_Flags |= SiS_SD_SUPPORTNTSCJ;
+       pSiS->SiS_SD_Flags |= (SiS_SD_SUPPORTPALMN | SiS_SD_SUPPORTNTSCJ);
     }
     if((pSiS->VBFlags & VB_SISBRIDGE) ||
        ((pSiS->VBFlags & VB_CHRONTEL) && (pSiS->ChrontelType == CHRONTEL_700x))) {
        pSiS->SiS_SD_Flags |= SiS_SD_SUPPORTTVPOS;
     }
-    if((pSiS->VBFlags & VB_CHRONTEL) && (pSiS->ChrontelType == CHRONTEL_700x)) {
-       pSiS->SiS_SD_Flags |= SiS_SD_SUPPORTSOVER;
+    if(pSiS->VBFlags & (VB_301|VB_301B|VB_301C|VB_302B)) {
+       pSiS->SiS_SD_Flags |= (SiS_SD_SUPPORTSCART | SiS_SD_SUPPORTVGA2);
+    }
+    if(pSiS->VBFlags & VB_CHRONTEL) {
+       pSiS->SiS_SD_Flags |= SiS_SD_SUPPORTOVERSCAN;
+       if(pSiS->ChrontelType == CHRONTEL_700x) {
+          pSiS->SiS_SD_Flags |= SiS_SD_SUPPORTSOVER;
+       }
     }
 
     if( (pSiS->sishw_ext.jChipType == SIS_650)            &&
@@ -4019,26 +4025,15 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     if(pSiS->VBFlags & CRT1_LCDA) pSiS->CRT1off = 0;
 
     /* Handle TVStandard option */
-    if(pSiS->NonDefaultPAL != -1) {
+    if((pSiS->NonDefaultPAL != -1) || (pSiS->NonDefaultNTSC != -1)) {
        if( ( (!(pSiS->VBFlags & VB_SISBRIDGE)) &&
 	     (!((pSiS->VBFlags & VB_CHRONTEL)) && (pSiS->ChrontelType == CHRONTEL_701x)) ) ||
  	   ((pSiS->Chipset == PCI_CHIP_SIS300) || (pSiS->Chipset == PCI_CHIP_SIS540)) ) {
 	  xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	   	"PALM and PALN not supported on this hardware\n");
- 	  pSiS->NonDefaultPAL = -1;
-	  pSiS->VBFlags &= ~(TV_PALN | TV_PALM);
-	  pSiS->SiS_SD_Flags &= ~SiS_SD_SUPPORTPALMN;
-       }
-    }
-    if(pSiS->NonDefaultNTSC != -1) {
-       if( (!(pSiS->VBFlags & VB_SISBRIDGE)) ||
-           (pSiS->Chipset == PCI_CHIP_SIS300) ||
-	   (pSiS->Chipset == PCI_CHIP_SIS540) ) {
-	   xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	   	"NTSCJ not supported on this hardware\n");
- 	  pSiS->NonDefaultNTSC = -1;
-	  pSiS->VBFlags &= ~(TV_NTSCJ);
-	  pSiS->SiS_SD_Flags &= ~SiS_SD_SUPPORTNTSCJ;
+	   	"PALM, PALN and NTSCJ not supported on this hardware\n");
+ 	  pSiS->NonDefaultPAL = pSiS->NonDefaultNTSC = -1;
+	  pSiS->VBFlags &= ~(TV_PALN | TV_PALM | TV_NTSCJ);
+	  pSiS->SiS_SD_Flags &= ~(SiS_SD_SUPPORTPALMN | SiS_SD_SUPPORTNTSCJ);
        }
     }
     if(pSiS->OptTVStand != -1) {
@@ -8462,9 +8457,11 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode, int viewmode)
        switch(vbflag & (CRT2_TV|CRT2_LCD|CRT2_VGA)) {
 
        case CRT2_TV:
+
+          CR38 &= ~0xC0;
+
           if(vbflag & TV_CHSCART) {
 	     CR30 |= 0x10;
-	     CR38 &= ~0xC0;
 	     CR38 |= 0x04;
 	     CR31 |= 0x01;
 	  } else if(vbflag & TV_CHHDTV) {
@@ -8485,7 +8482,6 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode, int viewmode)
 	     if(vbflag & TV_PAL) {
 		CR31 |= 0x01;
 		CR35 |= 0x01;
-		CR38 &= ~0xC0;
 		if( (vbflag & VB_SISBRIDGE) ||
 		    ((vbflag & VB_CHRONTEL) && (pSiS->ChrontelType == CHRONTEL_701x)) )  {
 		   if(vbflag & TV_PALM) {
@@ -8500,6 +8496,7 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode, int viewmode)
 		CR31 &= ~0x01;
 		CR35 &= ~0x01;
 		if(vbflag & TV_NTSCJ) {
+		   CR38 |= 0x40;  /* TW, not BIOS */
 		   CR35 |= 0x02;
 	 	}
 	     }

@@ -36,7 +36,7 @@
 
 #define SISDRIVERVERSIONYEAR    3
 #define SISDRIVERVERSIONMONTH   10
-#define SISDRIVERVERSIONDAY     23
+#define SISDRIVERVERSIONDAY     26
 #define SISDRIVERREVISION       1
 
 #define SISDRIVERIVERSION (SISDRIVERVERSIONYEAR << 16) | (SISDRIVERVERSIONMONTH << 8) \
@@ -319,23 +319,27 @@ typedef unsigned char UChar;
 #define SiSCF_Integrated    0x80000000
 
 /* SiS Direct Xv-API */
-#define SiS_SD_IS300SERIES    0x00000001
-#define SiS_SD_IS315SERIES    0x00000002
-#define SiS_SD_IS330SERIES    0x00000004
-#define SiS_SD_SUPPORTPALMN   0x00000008   /* tv chip supports pal-m, pal-n */
-#define SiS_SD_SUPPORT2OVL    0x00000010   /* set = 2 overlays, 1 = support SWITCHCRT xv prop */
-#define SiS_SD_SUPPORTTVPOS   0x00000020   /* supports changing tv position */
-#define SiS_SD_ISDUALHEAD     0x00000040   /* Driver is in dual head mode */
-#define SiS_SD_ISMERGEDFB     0x00000080   /* Driver is in merged fb mode */
-#define SiS_SD_ISDHSECONDHEAD 0x00000100   /* Dual head: This is CRT1 (=second head) */
-#define SiS_SD_ISDHXINERAMA   0x00000200   /* Dual head: We are running Xinerama */
-#define SiS_SD_VBHASSCART     0x00000400   /* videobridge has SCART instead of VGA2 */
-#define SiS_SD_ISDEPTH8       0x00000800   /* Depth is 8, no independent gamma correction */
-#define SiS_SD_SUPPORTSOVER   0x00001000   /* Support for Chrontel Super Overscan */
-#define SiS_SD_ENABLED        0x00002000   /* sisctrl is enabled (by option) */
-#define SiS_SD_PSEUDOXINERAMA 0x00004000   /* pseudo xinerama is active */
-#define SiS_SD_SUPPORTLCDA    0x00008000   /* Support LCD Channel A */
-#define SiS_SD_SUPPORTNTSCJ   0x00010000   /* tv chip supports ntsc-j */
+#define SiS_SD_IS300SERIES     0x00000001
+#define SiS_SD_IS315SERIES     0x00000002
+#define SiS_SD_IS330SERIES     0x00000004
+#define SiS_SD_SUPPORTPALMN    0x00000008   /* tv chip supports pal-m, pal-n */
+#define SiS_SD_SUPPORT2OVL     0x00000010   /* set = 2 overlays, 1 = support SWITCHCRT xv prop */
+#define SiS_SD_SUPPORTTVPOS    0x00000020   /* supports changing tv position */
+#define SiS_SD_ISDUALHEAD      0x00000040   /* Driver is in dual head mode */
+#define SiS_SD_ISMERGEDFB      0x00000080   /* Driver is in merged fb mode */
+#define SiS_SD_ISDHSECONDHEAD  0x00000100   /* Dual head: This is CRT1 (=second head) */
+#define SiS_SD_ISDHXINERAMA    0x00000200   /* Dual head: We are running Xinerama */
+#define SiS_SD_VBHASSCART      0x00000400   /* videobridge has SCART instead of VGA2 */
+#define SiS_SD_ISDEPTH8        0x00000800   /* Depth is 8, no independent gamma correction */
+#define SiS_SD_SUPPORTSOVER    0x00001000   /* Support for Chrontel Super Overscan */
+#define SiS_SD_ENABLED         0x00002000   /* sisctrl is enabled (by option) */
+#define SiS_SD_PSEUDOXINERAMA  0x00004000   /* pseudo xinerama is active */
+#define SiS_SD_SUPPORTLCDA     0x00008000   /* Support LCD Channel A */
+#define SiS_SD_SUPPORTNTSCJ    0x00010000   /* tv chip supports ntsc-j */
+#define SiS_SD_ADDLSUPFLAG     0x00020000   /* 1 = the following flags are valid */
+#define SiS_SD_SUPPORTVGA2     0x00040000   /* CRT2=VGA supported */
+#define SiS_SD_SUPPORTSCART    0x00080000   /* CRT2=SCART supported */
+#define SiS_SD_SUPPORTOVERSCAN 0x00100000   /* Overscan flag supported */
 
 #define SIS_DIRECTKEY         0x03145792
 
