@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.28 2002/08/16 23:32:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.29 2002/08/27 22:07:07 tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -134,6 +134,21 @@
     (((x) & ~PCI_SECONDARY_BUS_MASK  ) | (((y) & 0xffu) <<  8))
 #define PCI_SUBORDINATE_BUS_INSERT(x, y) \
     (((x) & ~PCI_SUBORDINATE_BUS_MASK) | (((y) & 0xffu) << 16))
+
+/* Ditto for CardBus bridges */
+#define PCI_CB_PRIMARY_BUS_EXTRACT(x, tag)     \
+    PCI_PRIMARY_BUS_EXTRACT(x, tag)
+#define PCI_CB_CARDBUS_BUS_EXTRACT(x, tag)     \
+    PCI_SECONDARY_BUS_EXTRACT(x, tag)
+#define PCI_CB_SUBORDINATE_BUS_EXTRACT(x, tag) \
+    PCI_SUBORDINATE_BUS_EXTRACT(x, tag)
+
+#define PCI_CB_PRIMARY_BUS_INSERT(x, tag)     \
+    PCI_PRIMARY_BUS_INSERT(x, tag)
+#define PCI_CB_CARDBUS_BUS_INSERT(x, tag)     \
+    PCI_SECONDARY_BUS_INSERT(x, tag)
+#define PCI_CB_SUBORDINATE_BUS_INSERT(x, tag) \
+    PCI_SUBORDINATE_BUS_INSERT(x, tag)
 
 #if X_BYTE_ORDER == X_BIG_ENDIAN
 #define PCI_CPU(val)	(((val >> 24) & 0x000000ff) |	\
@@ -271,6 +286,7 @@
 #  define INCLUDE_XF86_MAP_PCI_MEM
 #  define INCLUDE_XF86_NO_DOMAIN
 # endif
+# define ARCH_PCI_PCI_BRIDGE sparcPciPciBridge
 #elif defined(__x86_64__)
 # define ARCH_PCI_INIT ix86PciInit
 # define INCLUDE_XF86_MAP_PCI_MEM
@@ -290,7 +306,19 @@ extern void ARCH_PCI_OS_INIT(void);
 #endif
 
 #if defined(ARCH_PCI_HOST_BRIDGE)
-extern void ARCH_PCI_HOST_BRIDGE(CARD32 devid);
+extern void ARCH_PCI_HOST_BRIDGE(pciConfigPtr pPCI);
+#endif
+
+#if defined(ARCH_PCI_PCI_BRIDGE)
+extern void ARCH_PCI_PCI_BRIDGE(pciConfigPtr pPCI);
+#endif
+
+#if defined(XF86SCANPCI_WRAPPER)
+typedef enum {
+    SCANPCI_INIT,
+    SCANPCI_TERM
+} scanpciWrapperOpt;
+extern void XF86SCANPCI_WRAPPER(scanpciWrapperOpt flags);
 #endif
 
 /*
@@ -303,6 +331,14 @@ typedef struct pci_bus_funcs {
 	void    (*pciSetBitsLong)(PCITAG, int, CARD32, CARD32);
 	ADDRESS (*pciAddrHostToBus)(PCITAG, PciAddrType, ADDRESS);
 	ADDRESS (*pciAddrBusToHost)(PCITAG, PciAddrType, ADDRESS);
+	/*
+	 * The next three are optional.  If NULL, the corresponding function is
+	 * to be performed generically.
+	 */
+	CARD16  (*pciControlBridge)(int, CARD16, CARD16);
+	void    (*pciGetBridgeBusses)(int, int *, int *, int *);
+	/* Use pointer's to avoid #include recursion */
+	void    (*pciGetBridgeResources)(int, pointer *, pointer *, pointer *);
 } pciBusFuncs_t, *pciBusFuncs_p;
 
 /*

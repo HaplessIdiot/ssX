@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.12 2002/07/25 13:58:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.13 2002/08/27 22:07:07 tsi Exp $ */
 /*
  * ix86Pci.c - x86 PCI driver
  *
@@ -677,12 +677,12 @@ static struct {
     { PCI_NOT_FOUND,				MAX_PCI_BUSES}
 };
 
-void ARCH_PCI_HOST_BRIDGE(CARD32 devid)
+void ARCH_PCI_HOST_BRIDGE(pciConfigPtr pPCI)
 {
     int i;
 
-    for (i = 0;  devid > host_bridges[i].devid;  i++);
-    if (devid == host_bridges[i].devid)
+    for (i = 0;  pPCI->pci_device_vendor > host_bridges[i].devid;  i++);
+    if (pPCI->pci_device_vendor == host_bridges[i].devid)
 	pciMaxBusNum = host_bridges[i].maxpcibus;
 }
 

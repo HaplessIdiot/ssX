@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.33 2002/04/06 16:03:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.34 2002/07/29 21:06:01 tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -54,18 +54,18 @@
  * the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of the above listed copyright holder(s)
- * not be used in advertising or publicity pertaining to distribution of 
+ * not be used in advertising or publicity pertaining to distribution of
  * the software without specific, written prior permission.  The above listed
- * copyright holder(s) make(s) no representations about the suitability of this 
- * software for any purpose.  It is provided "as is" without express or 
+ * copyright holder(s) make(s) no representations about the suitability of this
+ * software for any purpose.  It is provided "as is" without express or
  * implied warranty.
  *
- * THE ABOVE LISTED COPYRIGHT HOLDER(S) DISCLAIM(S) ALL WARRANTIES WITH REGARD 
- * TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY 
- * AND FITNESS, IN NO EVENT SHALL THE ABOVE LISTED COPYRIGHT HOLDER(S) BE 
- * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY 
- * DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER 
- * IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING 
+ * THE ABOVE LISTED COPYRIGHT HOLDER(S) DISCLAIM(S) ALL WARRANTIES WITH REGARD
+ * TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS, IN NO EVENT SHALL THE ABOVE LISTED COPYRIGHT HOLDER(S) BE
+ * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY
+ * DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER
+ * IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
@@ -82,33 +82,35 @@
 #include "misc.h"
 
 /*
- * PCI cfg space definitions (e.g. stuff right out of the PCI spec
+ * PCI cfg space definitions (e.g. stuff right out of the PCI spec)
  */
+
 /* Device identification register */
 #define PCI_ID_REG			0x00
 
 /* Command and status register */
-#define	PCI_CMD_STAT_REG		0x04
-#define PCI_CMD_BASE_REG                0x10
-#define PCI_CMD_BIOS_REG                0x30
-#define	PCI_CMD_MASK			0xffff
-#define	PCI_CMD_IO_ENABLE		0x01
-#define	PCI_CMD_MEM_ENABLE		0x02
-#define	PCI_CMD_MASTER_ENABLE		0x04
+#define PCI_CMD_STAT_REG		0x04
+#define PCI_CMD_BASE_REG		0x10
+#define PCI_CMD_BIOS_REG		0x30
+#define PCI_CMD_MASK			0xffff
+#define PCI_CMD_IO_ENABLE		0x01
+#define PCI_CMD_MEM_ENABLE		0x02
+#define PCI_CMD_MASTER_ENABLE		0x04
 #define PCI_CMD_SPECIAL_ENABLE		0x08
-#define PCI_CMD_INVALIDATE_ENABLE 	0x10
-#define PCI_CMD_PALETTE_ENABLE 		0x20
-#define	PCI_CMD_PARITY_ENABLE		0x40
-#define	PCI_CMD_STEPPING_ENABLE		0x80
-#define	PCI_CMD_SERR_ENABLE		0x100
-#define	PCI_CMD_BACKTOBACK_ENABLE	0x200
-#define	PCI_CMD_BIOS_ENABLE             0x01
+#define PCI_CMD_INVALIDATE_ENABLE	0x10
+#define PCI_CMD_PALETTE_ENABLE		0x20
+#define PCI_CMD_PARITY_ENABLE		0x40
+#define PCI_CMD_STEPPING_ENABLE		0x80
+#define PCI_CMD_SERR_ENABLE		0x100
+#define PCI_CMD_BACKTOBACK_ENABLE	0x200
+#define PCI_CMD_BIOS_ENABLE		0x01
 
 /* base class */
-#define PCI_CLASS_REG			0x08
-#define PCI_CLASS_MASK			0xff000000
-#define PCI_CLASS_SHIFT			24
-#define PCI_CLASS_EXTRACT(x)		(((x) & PCI_CLASS_MASK) >> PCI_CLASS_SHIFT)
+#define PCI_CLASS_REG		0x08
+#define PCI_CLASS_MASK		0xff000000
+#define PCI_CLASS_SHIFT		24
+#define PCI_CLASS_EXTRACT(x)	\
+	(((x) & PCI_CLASS_MASK) >> PCI_CLASS_SHIFT)
 
 /* base class values */
 #define PCI_CLASS_PREHISTORIC		0x00
@@ -134,7 +136,8 @@
 /* sub class */
 #define PCI_SUBCLASS_MASK	0x00ff0000
 #define PCI_SUBCLASS_SHIFT	16
-#define PCI_SUBCLASS_EXTRACT(x)	(((x) & PCI_SUBCLASS_MASK) >> PCI_SUBCLASS_SHIFT)
+#define PCI_SUBCLASS_EXTRACT(x)	\
+	(((x) & PCI_SUBCLASS_MASK) >> PCI_SUBCLASS_SHIFT)
 
 /* Sub class values */
 /* 0x00 prehistoric subclasses */
@@ -180,7 +183,7 @@
 #define PCI_SUBCLASS_BRIDGE_CARDBUS	0x07
 #define PCI_SUBCLASS_BRIDGE_RACEWAY	0x08
 #define PCI_SUBCLASS_BRIDGE_MISC	0x80
-#define PCI_IF_BRIDGE_PCI_SUBTRACTIVE   0x01
+#define PCI_IF_BRIDGE_PCI_SUBTRACTIVE	0x01
 
 /* 0x07 communications controller subclasses */
 #define PCI_SUBCLASS_COMMUNICATIONS_SERIAL	0x00
@@ -257,127 +260,126 @@
 
 /* Interrupt configration register */
 #define PCI_INTERRUPT_REG		0x3c
-#define PCI_INTERRUPT_PIN_MASK          0x0000ff00
-#define PCI_INTERRUPT_PIN_EXTRACT(x)    ((((x) & PCI_INTERRUPT_PIN_MASK) >> 8) & 0xff)
-#define PCI_INTERRUPT_PIN_NONE          0x00
-#define PCI_INTERRUPT_PIN_A             0x01
-#define PCI_INTERRUPT_PIN_B             0x02
-#define PCI_INTERRUPT_PIN_C             0x03
-#define PCI_INTERRUPT_PIN_D             0x04
+#define PCI_INTERRUPT_PIN_MASK		0x0000ff00
+#define PCI_INTERRUPT_PIN_EXTRACT(x)	\
+	((((x) & PCI_INTERRUPT_PIN_MASK) >> 8) & 0xff)
+#define PCI_INTERRUPT_PIN_NONE		0x00
+#define PCI_INTERRUPT_PIN_A		0x01
+#define PCI_INTERRUPT_PIN_B		0x02
+#define PCI_INTERRUPT_PIN_C		0x03
+#define PCI_INTERRUPT_PIN_D		0x04
 
-#define PCI_INTERRUPT_LINE_MASK         0x000000ff
-#define PCI_INTERRUPT_LINE_EXTRACT(x)   ((((x) & PCI_INTERRUPT_LINE_MASK) >> 0) & 0xff) 
-#define PCI_INTERRUPT_LINE_INSERT(x,v)  (((x) & ~PCI_INTERRUPT_LINE_MASK) | ((v) << 0))
+#define PCI_INTERRUPT_LINE_MASK		0x000000ff
+#define PCI_INTERRUPT_LINE_EXTRACT(x)	\
+	((((x) & PCI_INTERRUPT_LINE_MASK) >> 0) & 0xff)
+#define PCI_INTERRUPT_LINE_INSERT(x,v)	\
+	(((x) & ~PCI_INTERRUPT_LINE_MASK) | ((v) << 0))
 
 /* Base registers */
-#define PCI_MAP_REG_START               0x10
-#define PCI_MAP_REG_END                 0x28
+#define PCI_MAP_REG_START		0x10
+#define PCI_MAP_REG_END			0x28
 #define PCI_MAP_ROM_REG			0x30
 
-#define PCI_MAP_MEMORY                  0x00000000
-#define PCI_MAP_IO                      0x00000001  
+#define PCI_MAP_MEMORY			0x00000000
+#define PCI_MAP_IO			0x00000001
 
-#define PCI_MAP_MEMORY_TYPE             0x00000007
-#define PCI_MAP_IO_TYPE                 0x00000003
+#define PCI_MAP_MEMORY_TYPE		0x00000007
+#define PCI_MAP_IO_TYPE			0x00000003
 
-#define PCI_MAP_MEMORY_TYPE_32BIT       0x00000000
-#define PCI_MAP_MEMORY_TYPE_32BIT_1M    0x00000002
-#define PCI_MAP_MEMORY_TYPE_64BIT       0x00000004
-#define PCI_MAP_MEMORY_TYPE_MASK        0x00000006
-#define PCI_MAP_MEMORY_CACHABLE         0x00000008
+#define PCI_MAP_MEMORY_TYPE_32BIT	0x00000000
+#define PCI_MAP_MEMORY_TYPE_32BIT_1M	0x00000002
+#define PCI_MAP_MEMORY_TYPE_64BIT	0x00000004
+#define PCI_MAP_MEMORY_TYPE_MASK	0x00000006
+#define PCI_MAP_MEMORY_CACHABLE		0x00000008
 #define PCI_MAP_MEMORY_ATTR_MASK	0x0000000e
-#define PCI_MAP_MEMORY_ADDRESS_MASK     0xfffffff0
+#define PCI_MAP_MEMORY_ADDRESS_MASK	0xfffffff0
 
 #define PCI_MAP_IO_ATTR_MASK		0x00000003
 
-#define PCI_MAP_IS_IO(b) ((b) & PCI_MAP_IO)
-#define PCI_MAP_IS_MEM(b) (!PCI_MAP_IS_IO(b))
+#define PCI_MAP_IS_IO(b)	((b) & PCI_MAP_IO)
+#define PCI_MAP_IS_MEM(b)	(!PCI_MAP_IS_IO(b))
 
-#define PCI_MAP_IS64BITMEM(b) \
+#define PCI_MAP_IS64BITMEM(b)	\
 	(((b) & PCI_MAP_MEMORY_TYPE_MASK) == PCI_MAP_MEMORY_TYPE_64BIT)
 
-#define PCIGETMEMORY(b) ((b) & PCI_MAP_MEMORY_ADDRESS_MASK)
-#define PCIGETMEMORY64HIGH(b)  (*((CARD32*)&b + 1))
-#define PCIGETMEMORY64(b) (PCIGETMEMORY(b) | ((CARD64)PCIGETMEMORY64HIGH(b) << 32))
+#define PCIGETMEMORY(b)		((b) & PCI_MAP_MEMORY_ADDRESS_MASK)
+#define PCIGETMEMORY64HIGH(b)	(*((CARD32*)&b + 1))
+#define PCIGETMEMORY64(b)	\
+	(PCIGETMEMORY(b) | ((CARD64)PCIGETMEMORY64HIGH(b) << 32))
 
-#define PCI_MAP_IO_ADDRESS_MASK         0xfffffffc
+#define PCI_MAP_IO_ADDRESS_MASK		0xfffffffc
 
-#define PCIGETIO(b) ((b) & PCI_MAP_IO_ADDRESS_MASK)
+#define PCIGETIO(b)		((b) & PCI_MAP_IO_ADDRESS_MASK)
 
 #define PCI_MAP_ROM_DECODE_ENABLE	0x00000001
 #define PCI_MAP_ROM_ADDRESS_MASK	0xfffff800
 
-#define PCIGETROM(b) ((b) & PCI_MAP_ROM_ADDRESS_MASK)
+#define PCIGETROM(b)		((b) & PCI_MAP_ROM_ADDRESS_MASK)
 
 /* PCI-PCI bridge mapping registers */
-#define PCI_PCI_BRIDGE_BUS_REG          0x18
-#define PCI_SUBORDINATE_BUS_MASK        0x00ff0000
-#define PCI_SECONDARY_BUS_MASK          0x0000ff00
-#define PCI_PRIMARY_BUS_MASK            0x000000ff
+#define PCI_PCI_BRIDGE_BUS_REG		0x18
+#define PCI_SUBORDINATE_BUS_MASK	0x00ff0000
+#define PCI_SECONDARY_BUS_MASK		0x0000ff00
+#define PCI_PRIMARY_BUS_MASK		0x000000ff
 
-#define PCI_PCI_BRIDGE_IO_REG           0x1c
-#define PCI_PCI_BRIDGE_MEM_REG          0x20
-#define PCI_PCI_BRIDGE_PMEM_REG         0x24
+#define PCI_PCI_BRIDGE_IO_REG		0x1c
+#define PCI_PCI_BRIDGE_MEM_REG		0x20
+#define PCI_PCI_BRIDGE_PMEM_REG		0x24
 
-#define PCI_PPB_IOBASE_EXTRACT(x)       (((x) << 8) & 0xFF00)
-#define PCI_PPB_IOLIMIT_EXTRACT(x)      (((x) << 0) & 0xFF00)
+#define PCI_PPB_IOBASE_EXTRACT(x)	(((x) << 8) & 0xFF00)
+#define PCI_PPB_IOLIMIT_EXTRACT(x)	(((x) << 0) & 0xFF00)
 
-#define PCI_PPB_MEMBASE_EXTRACT(x)      (((x) << 16) & 0xFFFF0000)
-#define PCI_PPB_MEMLIMIT_EXTRACT(x)     (((x) <<  0) & 0xFFFF0000)
+#define PCI_PPB_MEMBASE_EXTRACT(x)	(((x) << 16) & 0xFFFF0000)
+#define PCI_PPB_MEMLIMIT_EXTRACT(x)	(((x) <<  0) & 0xFFFF0000)
 
-#define PCI_PCI_BRIDGE_CONTROL_REG         0x3E
-#define PCI_PCI_BRIDGE_PARITY_EN           0x01
-#define PCI_PCI_BRIDGE_SERR_EN             0x02
-#define PCI_PCI_BRIDGE_ISA_EN              0x04
-#define PCI_PCI_BRIDGE_VGA_EN              0x08
-#define PCI_PCI_BRIDGE_MASTER_ABORT_EN     0x20
-#define PCI_PCI_BRIDGE_SECONDARY_RESET     0x40
-#define PCI_PCI_BRIDGE_FAST_B2B_EN         0x80
+#define PCI_PCI_BRIDGE_CONTROL_REG	0x3E
+#define PCI_PCI_BRIDGE_PARITY_EN	0x01
+#define PCI_PCI_BRIDGE_SERR_EN		0x02
+#define PCI_PCI_BRIDGE_ISA_EN		0x04
+#define PCI_PCI_BRIDGE_VGA_EN		0x08
+#define PCI_PCI_BRIDGE_MASTER_ABORT_EN	0x20
+#define PCI_PCI_BRIDGE_SECONDARY_RESET	0x40
+#define PCI_PCI_BRIDGE_FAST_B2B_EN	0x80
 /* header type 2 extensions */
-#define  PCI_CB_BRIDGE_CTL_CB_RESET	   0x40	/* CardBus reset */
-#define  PCI_CB_BRIDGE_CTL_16BIT_INT	   0x80	/* Enable interrupt for 16-bit cards */
-#define  PCI_CB_BRIDGE_CTL_PREFETCH_MEM0  0x100	
-#define  PCI_CB_BRIDGE_CTL_PREFETCH_MEM1  0x200
-#define  PCI_CB_BRIDGE_CTL_POST_WRITES	  0x400
+#define PCI_CB_BRIDGE_CTL_CB_RESET	0x40	/* CardBus reset */
+#define PCI_CB_BRIDGE_CTL_16BIT_INT	0x80	/* Enable interrupt for 16-bit cards */
+#define PCI_CB_BRIDGE_CTL_PREFETCH_MEM0	0x100
+#define PCI_CB_BRIDGE_CTL_PREFETCH_MEM1	0x200
+#define PCI_CB_BRIDGE_CTL_POST_WRITES	0x400
 
-#define PCI_CB_SEC_STATUS_REG		   0x16	/* Secondary status */
-#define PCI_CB_PRIMARY_BUS_REG		   0x18	/* PCI bus number */
-#define PCI_CB_CARD_BUS_REG		   0x19	/* CardBus bus number */
-#define PCI_CB_SUBORDINATE_BUS_REG	   0x1a	/* Subordinate bus number */
-#define PCI_CB_LATENCY_TIMER_REG	   0x1b	/* CardBus latency timer */
-#define PCI_CB_MEM_BASE_0_REG		   0x1c
-#define PCI_CB_MEM_LIMIT_0_REG		   0x20
-#define PCI_CB_MEM_BASE_1_REG		   0x24
-#define PCI_CB_MEM_LIMIT_1_REG		   0x28
-#define PCI_CB_IO_BASE_0_REG		   0x2c
-#define PCI_CB_IO_LIMIT_0_REG		   0x30
-#define PCI_CB_IO_BASE_1_REG		   0x34
-#define PCI_CB_IO_LIMIT_1_REG		   0x38
-#define PCI_CB_BRIDGE_CONTROL_REG          0x3E
+#define PCI_CB_SEC_STATUS_REG		0x16	/* Secondary status */
+#define PCI_CB_PRIMARY_BUS_REG		0x18	/* PCI bus number */
+#define PCI_CB_CARD_BUS_REG		0x19	/* CardBus bus number */
+#define PCI_CB_SUBORDINATE_BUS_REG	0x1a	/* Subordinate bus number */
+#define PCI_CB_LATENCY_TIMER_REG	0x1b	/* CardBus latency timer */
+#define PCI_CB_MEM_BASE_0_REG		0x1c
+#define PCI_CB_MEM_LIMIT_0_REG		0x20
+#define PCI_CB_MEM_BASE_1_REG		0x24
+#define PCI_CB_MEM_LIMIT_1_REG		0x28
+#define PCI_CB_IO_BASE_0_REG		0x2c
+#define PCI_CB_IO_LIMIT_0_REG		0x30
+#define PCI_CB_IO_BASE_1_REG		0x34
+#define PCI_CB_IO_LIMIT_1_REG		0x38
+#define PCI_CB_BRIDGE_CONTROL_REG	0x3E
 
-#define PCI_CB_SEC_STATUS_EXTRACT(x)      ((x >> 16) & 0xff)
-#define PCI_CB_PRIMARY_BUS_EXTRACT(x)     ((x >> 0 ) & 0xff)
-#define PCI_CB_CARDBUS_BUS_EXTRACT(x)     ((x >> 8 ) & 0xff)
-#define PCI_CB_SUBORDINATE_BUS_EXTRACT(x) ((x >> 16) & 0xff)
-#define PCI_CB_LATENCY_TIMER_EXTRACT(x)	  ((x >> 24) & 0xff)
-#define PCI_CB_IO_RANGE_MASK	~0x03
-#define PCI_CB_IOBASE(x)  (x & PCI_CB_IO_RANGE_MASK)
-#define PCI_CB_IOLIMIT(x) ((x & PCI_CB_IO_RANGE_MASK) + 3)
+#define PCI_CB_IO_RANGE_MASK		~0x03
+#define PCI_CB_IOBASE(x)		(x & PCI_CB_IO_RANGE_MASK)
+#define PCI_CB_IOLIMIT(x)		((x & PCI_CB_IO_RANGE_MASK) + 3)
 
 /* Subsystem identification register */
 #define PCI_SUBSYSTEM_ID_REG		0x2c
 
 /* User defined cfg space regs */
-#define PCI_REG_USERCONFIG 		0x40
-#define PCI_OPTION_REG	 		0x40
+#define PCI_REG_USERCONFIG		0x40
+#define PCI_OPTION_REG			0x40
 
 /*
  * Typedefs, etc...
  */
 
 /* Primitive Types */
-typedef unsigned long ADDRESS;    /* Memory/PCI address */
-typedef unsigned long IOADDRESS;  /* Must be large enough for a pointer */
+typedef unsigned long ADDRESS;		/* Memory/PCI address */
+typedef unsigned long IOADDRESS;	/* Must be large enough for a pointer */
 typedef unsigned long PCITAG;
 
 /*
@@ -385,36 +387,36 @@ typedef unsigned long PCITAG;
  */
 typedef struct pci_cfg_regs {
     /* start of official PCI config space header */
-    union { 	/* Offset 0x0 - 0x3 */
+    union {				/* Offset 0x0 - 0x3 */
 	CARD32 device_vendor;
 	struct {
-#if X_BYTE_ORDER == X_BIG_ENDIAN		
+#if X_BYTE_ORDER == X_BIG_ENDIAN
 	    CARD16 device;
 	    CARD16 vendor;
-#else	    
+#else
 	    CARD16 vendor;
 	    CARD16 device;
-#endif	    
+#endif
 	} dv;
     } dv_id;
-    
-    union {    /* Offset 0x4 - 0x8 */
-        CARD32 status_command;
+
+    union {				/* Offset 0x4 - 0x8 */
+	CARD32 status_command;
 	struct {
 #if X_BYTE_ORDER == X_BIG_ENDIAN
-	CARD16 status;
-	CARD16 command;
+	    CARD16 status;
+	    CARD16 command;
 #else
-	CARD16 command;
-	CARD16 status;
-#endif		
+	    CARD16 command;
+	    CARD16 status;
+#endif
 	} sc;
     } stat_cmd;
-    
-    union {   /* Offset 0x8 - 0xb */
-        CARD32 class_revision;
+
+    union {				/* Offset 0x8 - 0xb */
+	CARD32 class_revision;
 	struct {
-#if X_BYTE_ORDER == X_BIG_ENDIAN		
+#if X_BYTE_ORDER == X_BIG_ENDIAN
 	    CARD8 base_class;
 	    CARD8 sub_class;
 	    CARD8 prog_if;
@@ -424,14 +426,14 @@ typedef struct pci_cfg_regs {
 	    CARD8 prog_if;
 	    CARD8 sub_class;
 	    CARD8 base_class;
-#endif	    
+#endif
 	} cr;
     } class_rev;
-    
-    union {	/* Offset 0xc - 0xf */
-        CARD32 bist_header_latency_cache;
+
+    union {				/* Offset 0xc - 0xf */
+	CARD32 bist_header_latency_cache;
 	struct {
-#if X_BYTE_ORDER == X_BIG_ENDIAN		
+#if X_BYTE_ORDER == X_BIG_ENDIAN
 	    CARD8 bist;
 	    CARD8 header_type;
 	    CARD8 latency_timer;
@@ -441,42 +443,51 @@ typedef struct pci_cfg_regs {
 	    CARD8 latency_timer;
 	    CARD8 header_type;
 	    CARD8 bist;
-#endif	    
+#endif
 	} bhlc;
     } bhlc;
-    union {     /* Offset 0x10 - 0x3b */
-	struct {  /* header type 2 */
-	    CARD32 cg_rsrvd1;    /* 0x10 */
+    union {				/* Offset 0x10 - 0x3b */
+	struct {				/* header type 2 */
+	    CARD32 cg_rsrvd1;			/* 0x10 */
 #if X_BYTE_ORDER == X_BIG_ENDIAN
+	    CARD16 secondary_status;		/* 0x16 */
+	    CARD16 cg_rsrvd2;			/* 0x14 */
 
-	    CARD16 secondary_status;  /* 0x16 */
-	    CARD16 cg_rsrvd2;    /* 0x14 */
-
-	    CARD8  latency_timer;    /* 0x1b */	
-	    CARD8  subordinate_bus_number;   /* 0x1a */
-	    CARD8  cardbus_bus_number;  /* 0x19 */
-	    CARD8  primary_bus_number;  /* 0x18 */
+	    union {
+		CARD32 cg_bus_reg;
+		struct {
+		    CARD8 latency_timer;		/* 0x1b */
+		    CARD8 subordinate_bus_number;	/* 0x1a */
+		    CARD8 cardbus_bus_number;		/* 0x19 */
+		    CARD8 primary_bus_number;		/* 0x18 */
+		} cgbr;
+	    } cgbr;
 #else
-	    CARD16 cg_rsrvd2;    /* 0x14 */
-	    CARD16 secondary_status;  /* 0x16 */
+	    CARD16 cg_rsrvd2;			/* 0x14 */
+	    CARD16 secondary_status;		/* 0x16 */
 
-	    CARD8  primary_bus_number;  /* 0x18 */
-	    CARD8  cardbus_bus_number;  /* 0x19 */
-	    CARD8  subordinate_bus_number;   /* 0x1a */
-	    CARD8  latency_timer;    /* 0x1b */
+	    union {
+		CARD32 cg_bus_reg;
+		struct {
+		    CARD8  primary_bus_number;		/* 0x18 */
+		    CARD8  cardbus_bus_number;		/* 0x19 */
+		    CARD8  subordinate_bus_number;	/* 0x1a */
+		    CARD8  latency_timer;		/* 0x1b */
+		} cgbr;
+	    } cgbr;
 #endif
-	    CARD32 mem_base0;  /* 0x1c */
-	    CARD32 mem_limit0; /* 0x20 */
-	    CARD32 mem_base1;  /* 0x24 */
-	    CARD32 mem_limit1; /* 0x28 */
-	    CARD32 io_base0;   /* 0x2c */
-	    CARD32 io_limit0;  /* 0x30 */
-	    CARD32 io_base1;   /* 0x34 */
-	    CARD32 io_limit1;  /* 0x38 */
+	    CARD32 mem_base0;			/* 0x1c */
+	    CARD32 mem_limit0;			/* 0x20 */
+	    CARD32 mem_base1;			/* 0x24 */
+	    CARD32 mem_limit1;			/* 0x28 */
+	    CARD32 io_base0;			/* 0x2c */
+	    CARD32 io_limit0;			/* 0x30 */
+	    CARD32 io_base1;			/* 0x34 */
+	    CARD32 io_limit1;			/* 0x38 */
 	} cg;
 	struct {
-	    union {	/* Offset 0x10 - 0x27 */
-		struct {	/* header type 0 */
+	    union {			/* Offset 0x10 - 0x27 */
+		struct {			/* header type 0 */
 		    CARD32 dv_base0;
 		    CARD32 dv_base1;
 		    CARD32 dv_base2;
@@ -484,62 +495,72 @@ typedef struct pci_cfg_regs {
 		    CARD32 dv_base4;
 		    CARD32 dv_base5;
 		} dv;
-		struct {	/* header type 1 */
+		struct {			/* header type 1 */
 		    CARD32 bg_rsrvd[2];
-#if X_BYTE_ORDER == X_BIG_ENDIAN	    
-		    CARD8 secondary_latency_timer;
-		    CARD8 subordinate_bus_number;
-		    CARD8 secondary_bus_number;
-		    CARD8 primary_bus_number;
-		    
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+		    union {
+			CARD32 pp_bus_reg;
+			struct {
+			    CARD8  secondary_latency_timer;
+			    CARD8  subordinate_bus_number;
+			    CARD8  secondary_bus_number;
+			    CARD8  primary_bus_number;
+			} ppbr;
+		    } ppbr;
+
 		    CARD16 secondary_status;
-		    CARD8 io_limit;
-		    CARD8 io_base;
-		    
+		    CARD8  io_limit;
+		    CARD8  io_base;
+
 		    CARD16 mem_limit;
 		    CARD16 mem_base;
-		    
+
 		    CARD16 prefetch_mem_limit;
 		    CARD16 prefetch_mem_base;
 #else
-		    CARD8 primary_bus_number;
-		    CARD8 secondary_bus_number;
-		    CARD8 subordinate_bus_number;
-		    CARD8 secondary_latency_timer;
-		    
-		    CARD8 io_base;
-		    CARD8 io_limit;
+		    union {
+			CARD32 pp_bus_reg;
+			struct {
+			    CARD8  primary_bus_number;
+			    CARD8  secondary_bus_number;
+			    CARD8  subordinate_bus_number;
+			    CARD8  secondary_latency_timer;
+			} ppbr;
+		    } ppbr;
+
+		    CARD8  io_base;
+		    CARD8  io_limit;
 		    CARD16 secondary_status;
-		    
+
 		    CARD16 mem_base;
 		    CARD16 mem_limit;
-		    
+
 		    CARD16 prefetch_mem_base;
 		    CARD16 prefetch_mem_limit;
-#endif	    
+#endif
 		} bg;
 	    } bc;
-	    union {	/* Offset 0x28 - 0x2b */
+	    union {			/* Offset 0x28 - 0x2b */
 		CARD32 rsvd1;
 		CARD32 pftch_umem_base;
 		CARD32 cardbus_cis_ptr;
 	    } um_c_cis;
-	    union { 	/* Offset 0x2c - 0x2f */
+	    union {			/* Offset 0x2c - 0x2f */
 		CARD32 subsys_card_vendor;
 		CARD32 pftch_umem_limit;
 		CARD32 rsvd2;
 		struct {
-#if X_BYTE_ORDER == X_BIG_ENDIAN		
+#if X_BYTE_ORDER == X_BIG_ENDIAN
 		    CARD16 subsys_card;
 		    CARD16 subsys_vendor;
-#else	    
+#else
 		    CARD16 subsys_vendor;
 		    CARD16 subsys_card;
-#endif	    
+#endif
 		} ssys;
 	    } um_ssys_id;
-	    union {             /* Offset 0x30 - 0x33 */
-		CARD32 baserom;	
+	    union {			/* Offset 0x30 - 0x33 */
+		CARD32 baserom;
 		struct {
 #if X_BYTE_ORDER == X_BIG_ENDIAN
 		    CARD16 io_ulimit;
@@ -551,16 +572,16 @@ typedef struct pci_cfg_regs {
 		} b_u_io;
 	    } uio_rom;
 	    struct {
-		CARD32 rsvd3;	/* Offset 0x34 - 0x37 */
-		CARD32 rsvd4;	/* Offset 0x38 - 0x3b */
+		CARD32 rsvd3;		/* Offset 0x34 - 0x37 */
+		CARD32 rsvd4;		/* Offset 0x38 - 0x3b */
 	    } rsvd;
 	} cd;
     } cx;
-    union {	/* Offset 0x3c - 0x3f */
-	union {	/* header type 0 */
+    union {				/* Offset 0x3c - 0x3f */
+	union {					/* header type 0 */
 	    CARD32 max_min_ipin_iline;
 	    struct {
-#if X_BYTE_ORDER == X_BIG_ENDIAN		
+#if X_BYTE_ORDER == X_BIG_ENDIAN
 		CARD8 max_lat;
 		CARD8 min_gnt;
 		CARD8 int_pin;
@@ -568,33 +589,33 @@ typedef struct pci_cfg_regs {
 #else
 		CARD8 int_line;
 		CARD8 int_pin;
-		    CARD8 min_gnt;
+		CARD8 min_gnt;
 		CARD8 max_lat;
-#endif	    
+#endif
 	    } mmii;
 	} mmii;
-	struct {	/* header type 1 */
+	struct {				/* header type 1 */
 #if X_BYTE_ORDER == X_BIG_ENDIAN
-	    CARD16 bridge_control; /* header type 1: upper 8 bits reserved */
-	    CARD8 rsvd2;
-	    CARD8 rsvd1;
+	    CARD16 bridge_control;	/* upper 8 bits reserved */
+	    CARD8  rsvd2;
+	    CARD8  rsvd1;
 #else
-	    CARD8 rsvd1;
-	    CARD8 rsvd2;
-	    CARD16 bridge_control; /* header type 1: upper 8 bits reserved */
+	    CARD8  rsvd1;
+	    CARD8  rsvd2;
+	    CARD16 bridge_control;	/* upper 8 bits reserved */
 #endif
 	} bctrl;
     } bm;
-    union {    /* Offset 0x40 - 0xff */
+    union {				/* Offset 0x40 - 0xff */
 	CARD32 dwords[48];
 	CARD8  bytes[192];
     } devspf;
 } pciCfgRegs;
 
 typedef union pci_cfg_spc {
-	pciCfgRegs regs;
-	CARD32     dwords[256/sizeof(CARD32)];  
-	CARD8      bytes[256/sizeof(CARD8)];
+    pciCfgRegs regs;
+    CARD32     dwords[256/sizeof(CARD32)];
+    CARD8      bytes[256/sizeof(CARD8)];
 } pciCfgSpc;
 
 /*
@@ -603,13 +624,14 @@ typedef union pci_cfg_spc {
  */
 typedef struct pci_device {
     PCITAG    tag;
-    int       busnum;
-    int       devnum;
-    int       funcnum;
+    int	      busnum;
+    int	      devnum;
+    int	      funcnum;
     pciCfgSpc cfgspc;
-    int       basesize[7];	/* number of bits in base addr allocations */
+    int	      basesize[7];	/* number of bits in base addr allocations */
     Bool      minBasesize;
     CARD32    listed_class;
+    pointer   businfo;		/* pointer to secondary's bus info structure */
 } pciDevice, *pciConfigPtr;
 
 typedef enum {
@@ -646,10 +668,11 @@ typedef enum {
 #define pci_header_type		      cfgspc.regs.bhlc.bhlc.header_type
 #define pci_bist		      cfgspc.regs.bhlc.bhlc.bist
 #define pci_cb_secondary_status	      cfgspc.regs.cx.cg.secondary_status
-#define pci_cb_primary_bus_number     cfgspc.regs.cx.cg.primary_bus_number
-#define pci_cb_cardbus_bus_number     cfgspc.regs.cx.cg.cardbus_bus_number
-#define pci_cb_subordinate_bus_number cfgspc.regs.cx.cg.subordinate_bus_number
-#define pci_cb_latency_timer	      cfgspc.regs.cx.cg.latency_timer
+#define pci_cb_bus_register           cfgspc.regs.cx.cg.cgbr.cg_bus_reg
+#define pci_cb_primary_bus_number     cfgspc.regs.cx.cg.cgbr.cgbr.primary_bus_number
+#define pci_cb_cardbus_bus_number     cfgspc.regs.cx.cg.cgbr.cgbr.cardbus_bus_number
+#define pci_cb_subordinate_bus_number cfgspc.regs.cx.cg.cgbr.cgbr.subordinate_bus_number
+#define pci_cb_latency_timer	      cfgspc.regs.cx.cg.cgbr.cgbr.latency_timer
 #define pci_cb_membase0		      cfgspc.regs.cx.cg.mem_base0
 #define pci_cb_memlimit0	      cfgspc.regs.cx.cg.mem_limit0
 #define pci_cb_membase1		      cfgspc.regs.cx.cg.mem_base1
@@ -669,10 +692,11 @@ typedef enum {
 #define pci_subsys_vendor	      cfgspc.regs.cx.cd.um_ssys_id.ssys.subsys_vendor
 #define pci_subsys_card		      cfgspc.regs.cx.cd.um_ssys_id.ssys.subsys_card
 #define pci_baserom		      cfgspc.regs.cx.cd.uio_rom.baserom
-#define pci_primary_bus_number	      cfgspc.regs.cx.cd.bc.bg.primary_bus_number
-#define pci_secondary_bus_number      cfgspc.regs.cx.cd.bc.bg.secondary_bus_number
-#define pci_subordinate_bus_number    cfgspc.regs.cx.cd.bc.bg.subordinate_bus_number
-#define pci_secondary_latency_timer   cfgspc.regs.cx.cd.bc.bg.secondary_latency_timer
+#define pci_pp_bus_register           cfgspc.regs.cx.cd.bc.bg.ppbr.pp_bus_reg
+#define pci_primary_bus_number	      cfgspc.regs.cx.cd.bc.bg.ppbr.ppbr.primary_bus_number
+#define pci_secondary_bus_number      cfgspc.regs.cx.cd.bc.bg.ppbr.ppbr.secondary_bus_number
+#define pci_subordinate_bus_number    cfgspc.regs.cx.cd.bc.bg.ppbr.ppbr.subordinate_bus_number
+#define pci_secondary_latency_timer   cfgspc.regs.cx.cd.bc.bg.ppbr.ppbr.secondary_latency_timer
 #define pci_io_base		      cfgspc.regs.cx.cd.bc.bg.io_base
 #define pci_io_limit		      cfgspc.regs.cx.cd.bc.bg.io_limit
 #define pci_secondary_status	      cfgspc.regs.cx.cd.bc.bg.secondary_status
@@ -684,8 +708,8 @@ typedef enum {
 #define pci_rsvd2		      cfgspc.regs.cx.cd.um_ssys_id.rsvd2
 #define pci_prefetch_upper_mem_base   cfgspc.regs.cx.cd.um_c_cis.pftch_umem_base
 #define pci_prefetch_upper_mem_limit  cfgspc.regs.cx.cd.um_ssys_id.pftch_umem_limit
-#define pci_upper_io_base             cfgspc.regs.cx.cd.uio_rom.b_u_io.io_ubase
-#define pci_upper_io_limit            cfgspc.regs.cx.cd.uio_rom.b_u_io.io_ulimit
+#define pci_upper_io_base	      cfgspc.regs.cx.cd.uio_rom.b_u_io.io_ubase
+#define pci_upper_io_limit	      cfgspc.regs.cx.cd.uio_rom.b_u_io.io_ulimit
 #define pci_int_line		      cfgspc.regs.bm.mmii.mmii.int_line
 #define pci_int_pin		      cfgspc.regs.bm.mmii.mmii.int_pin
 #define pci_min_gnt		      cfgspc.regs.bm.mmii.mmii.min_gnt
@@ -706,43 +730,43 @@ typedef enum {
 } PciBiosType;
 
 /* Public PCI access functions */
-void          pciInit(void);
-PCITAG        pciFindFirst(CARD32 id, CARD32 mask);
-PCITAG        pciFindNext(void);
-CARD32        pciReadLong(PCITAG tag, int offset);
-CARD16        pciReadWord(PCITAG tag, int offset);
-CARD8         pciReadByte(PCITAG tag, int offset);
-void          pciWriteLong(PCITAG tag, int offset, CARD32 val);
-void          pciWriteWord(PCITAG tag, int offset, CARD16 val);
-void          pciWriteByte(PCITAG tag, int offset, CARD8 val);
-void          pciSetBitsLong(PCITAG tag, int offset, CARD32 mask, CARD32 val);
-void          pciSetBitsByte(PCITAG tag, int offset, CARD8 mask, CARD8 val);
-pointer       pciLongFunc(PCITAG tag, pciFunc func);
-ADDRESS       pciBusAddrToHostAddr(PCITAG tag, PciAddrType type, ADDRESS addr);
-ADDRESS       pciHostAddrToBusAddr(PCITAG tag, PciAddrType type, ADDRESS addr);
-PCITAG        pciTag(int busnum, int devnum, int funcnum);
-int           pciGetBaseSize(PCITAG tag, int indx, Bool destructive, Bool *min);
-CARD32        pciCheckForBrokenBase(PCITAG tag,int basereg);
-pointer       xf86MapPciMem(int ScreenNum, int Flags, PCITAG Tag,
+void	      pciInit(void);
+PCITAG	      pciFindFirst(CARD32 id, CARD32 mask);
+PCITAG	      pciFindNext(void);
+CARD32	      pciReadLong(PCITAG tag, int offset);
+CARD16	      pciReadWord(PCITAG tag, int offset);
+CARD8	      pciReadByte(PCITAG tag, int offset);
+void	      pciWriteLong(PCITAG tag, int offset, CARD32 val);
+void	      pciWriteWord(PCITAG tag, int offset, CARD16 val);
+void	      pciWriteByte(PCITAG tag, int offset, CARD8 val);
+void	      pciSetBitsLong(PCITAG tag, int offset, CARD32 mask, CARD32 val);
+void	      pciSetBitsByte(PCITAG tag, int offset, CARD8 mask, CARD8 val);
+pointer	      pciLongFunc(PCITAG tag, pciFunc func);
+ADDRESS	      pciBusAddrToHostAddr(PCITAG tag, PciAddrType type, ADDRESS addr);
+ADDRESS	      pciHostAddrToBusAddr(PCITAG tag, PciAddrType type, ADDRESS addr);
+PCITAG	      pciTag(int busnum, int devnum, int funcnum);
+int	      pciGetBaseSize(PCITAG tag, int indx, Bool destructive, Bool *min);
+CARD32	      pciCheckForBrokenBase(PCITAG tag,int basereg);
+pointer	      xf86MapPciMem(int ScreenNum, int Flags, PCITAG Tag,
 				ADDRESS Base, unsigned long Size);
-int           xf86ReadPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
+int	      xf86ReadPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
 				unsigned char *Buf, int Len);
-int           xf86ReadPciBIOSByType(unsigned long Offset, PCITAG Tag, 
-				    int basereg, unsigned char *Buf, 
+int	      xf86ReadPciBIOSByType(unsigned long Offset, PCITAG Tag,
+				    int basereg, unsigned char *Buf,
 				    int Len, PciBiosType Type);
-int           xf86GetAvailablePciBIOSTypes(PCITAG Tag, int basereg, 
+int	      xf86GetAvailablePciBIOSTypes(PCITAG Tag, int basereg,
 					   PciBiosType *Buf);
 pciConfigPtr *xf86scanpci(int flags);
 
 extern int pciNumBuses;
 
 /* Domain access functions.  Some of these probably shouldn't be public */
-int           xf86GetPciDomain(PCITAG tag);
-pointer       xf86MapDomainMemory(int ScreenNum, int Flags, PCITAG Tag,
+int	      xf86GetPciDomain(PCITAG tag);
+pointer	      xf86MapDomainMemory(int ScreenNum, int Flags, PCITAG Tag,
 				  ADDRESS Base, unsigned long Size);
 IOADDRESS     xf86MapDomainIO(int ScreenNum, int Flags, PCITAG Tag,
 			      IOADDRESS Base, unsigned long Size);
-int           xf86ReadDomainMemory(PCITAG Tag, ADDRESS Base, int Len,
+int	      xf86ReadDomainMemory(PCITAG Tag, ADDRESS Base, int Len,
 				   unsigned char *Buf);
 
 typedef enum {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.6 2002/01/25 21:56:18 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.7 2002/08/27 22:07:08 tsi Exp $ */
 /*
  * Copyright (C) 2001 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -30,6 +30,8 @@
 #include "xf86_OSlib.h"
 #include "Pci.h"
 #include "xf86sbusBus.h"
+
+#if defined(sun)
 
 extern char *apertureDevName;
 static int  apertureFd = -1;
@@ -752,3 +754,181 @@ xf86AccResFromOS(resPtr pRes)
 }
 
 #endif /* !INCLUDE_XF86_NO_DOMAIN */
+
+#endif /* defined(sun) */
+
+#if defined(ARCH_PCI_PCI_BRIDGE)
+
+/* Definition specific to Sun's APB P2P bridge (a.k.a. Simba) */
+#define APB_IO_ADDRESS_MAP	0xDE
+#define APB_MEM_ADDRESS_MAP	0xDF
+
+/*
+ * Simba's can only occur on bus 0.  Furthermore, Simba's must have a non-zero
+ * device/function number because the Sabre interface they must connect to
+ * occupies the 0:0:0 slot.  Also, there can be only one Sabre interface in the
+ * system, and therefore, only one Simba function can route any particular
+ * resource.  Thus, it is appropriate to use a single set of static variables
+ * to hold the tag of the Simba function routing a VGA resource range at any
+ * one time, and to test these variables for non-zero to determine whether or
+ * not the Sabre would master-abort a VGA access (and kill the system).
+ *
+ * The trick is to determine when it is safe to re-route VGA, because doing so
+ * re-routes much more.  More on this in a later episode of this code...
+ */
+static PCITAG simbavgaIOTag = 0, simbavgaMemTag = 0;
+static Bool simbavgaRoutingDisallow = TRUE;	/* XXX  For now */
+
+static pciConfigPtr
+simbaVerifyBus(int bus)
+{
+    pciConfigPtr pPCI;
+    if ((bus < 0) || (bus >= pciNumBuses) ||
+	!pciBusInfo[bus] || !(pPCI = pciBusInfo[bus]->bridge) ||
+	(pPCI->pci_device_vendor != DEVID(SUN, SIMBA)))
+	return NULL;
+
+    return pPCI;
+}
+
+static CARD16
+simbaControlBridge(int bus, CARD16 mask, CARD16 value)
+{
+    pciConfigPtr pPCI;
+    CARD16 current = 0, tmp;
+    CARD8 iomap, memmap;
+
+    if ((pPCI = simbaVerifyBus(bus))) {
+	/*
+	 * The Simba does not implement VGA enablement as described in the P2P
+	 * spec.  It does however route I/O and memory in large enough chunks
+	 * so that we can determine were VGA resources would be routed
+	 * (including ISA VGA I/O aliases).  We can allow changes to that
+	 * routing only under certain circumstances.
+	 */
+	iomap = pciReadByte(pPCI->tag, APB_IO_ADDRESS_MAP);
+	memmap = pciReadByte(pPCI->tag, APB_MEM_ADDRESS_MAP);
+	if ((iomap & 0x01) && (memmap & 0x01)) {
+	    current |= PCI_PCI_BRIDGE_VGA_EN;
+	    if ((mask & PCI_PCI_BRIDGE_VGA_EN) &&
+		!(value & PCI_PCI_BRIDGE_VGA_EN)) {
+		if (simbavgaRoutingDisallow) {
+		    xf86MsgVerb(X_WARNING, 3, "Attempt to disable VGA routing"
+				" through Simba at %x:%x:%x disallowed.\n",
+				pPCI->busnum, pPCI->devnum, pPCI->funcnum);
+		    value |= PCI_PCI_BRIDGE_VGA_EN;
+		} else {
+		    /* XXX  Under construction */
+		    pciWriteByte(pPCI->tag, APB_IO_ADDRESS_MAP,
+				 iomap & ~0x01);
+		    pciWriteByte(pPCI->tag, APB_MEM_ADDRESS_MAP,
+				 memmap & ~0x01);
+		    simbavgaIOTag = simbavgaMemTag = 0;
+		}
+	    }
+	} else {
+	    if (mask & value & PCI_PCI_BRIDGE_VGA_EN) {
+		if (simbavgaRoutingDisallow) {
+		    xf86MsgVerb(X_WARNING, 3, "Attempt to enable VGA routing"
+				" through Simba at %x:%x:%x disallowed.\n",
+				pPCI->busnum, pPCI->devnum, pPCI->funcnum);
+		    value &= ~PCI_PCI_BRIDGE_VGA_EN;
+		} else {
+		    /* XXX  Under construction */
+		    pciWriteByte(pPCI->tag, APB_IO_ADDRESS_MAP,
+				 iomap | 0x01);
+		    pciWriteByte(pPCI->tag, APB_MEM_ADDRESS_MAP,
+				 memmap | 0x01);
+		    simbavgaIOTag = simbavgaMemTag = pPCI->tag;
+		}
+	    }
+	}
+
+	/* Move on to master abort failure enablement (as per P2P spec) */
+	tmp = pciReadWord(pPCI->tag, PCI_PCI_BRIDGE_CONTROL_REG);
+	current |= tmp;
+	if (tmp & PCI_PCI_BRIDGE_MASTER_ABORT_EN) {
+	    if ((mask & PCI_PCI_BRIDGE_MASTER_ABORT_EN) &&
+		!(value & PCI_PCI_BRIDGE_MASTER_ABORT_EN))
+		pciWriteWord(pPCI->tag, PCI_PCI_BRIDGE_CONTROL_REG,
+			     tmp & ~PCI_PCI_BRIDGE_MASTER_ABORT_EN);
+	} else {
+	    if (mask & value & PCI_PCI_BRIDGE_MASTER_ABORT_EN)
+		pciWriteWord(pPCI->tag, PCI_PCI_BRIDGE_CONTROL_REG,
+			     tmp | PCI_PCI_BRIDGE_MASTER_ABORT_EN);
+	}
+
+	/* Insert emultion of other P2P controls here */
+    }
+
+    return (current & ~mask) | (value & mask);
+}
+
+static void
+simbaGetBridgeResources(int bus,
+			pointer *ppIoRes,
+			pointer *ppMemRes,
+			pointer *ppPmemRes)
+{
+    pciConfigPtr pPCI = simbaVerifyBus(bus);
+    resRange range;
+    int i;
+
+    if (!pPCI)
+	return;
+
+    if (ppIoRes) {
+	xf86FreeResList(*ppIoRes);
+	*ppIoRes = NULL;
+
+	if (pPCI->pci_command & PCI_CMD_IO_ENABLE) {
+	    unsigned char iomap = pciReadByte(pPCI->tag, APB_IO_ADDRESS_MAP);
+	    for (i = 0;  i < 8;  i++) {
+		if (iomap & (1 << i)) {
+		    RANGE(range, i << 21, ((i + 1) << 21) - 1,
+			  RANGE_TYPE(ResExcIoBlock,
+				     xf86GetPciDomain(pPCI->tag)));
+		    *ppIoRes = xf86AddResToList(*ppIoRes, &range, -1);
+		}
+	    }
+	}
+    }
+
+    if (ppMemRes) {
+	xf86FreeResList(*ppMemRes);
+	*ppMemRes = NULL;
+
+	if (pPCI->pci_command & PCI_CMD_MEM_ENABLE) {
+	    unsigned char memmap = pciReadByte(pPCI->tag, APB_MEM_ADDRESS_MAP);
+	    for (i = 0;  i < 8;  i++) {
+		if (memmap & (1 << i)) {
+		    RANGE(range, i << 29, ((i + 1) << 29) - 1,
+			  RANGE_TYPE(ResExcMemBlock,
+				     xf86GetPciDomain(pPCI->tag)));
+		    *ppMemRes = xf86AddResToList(*ppMemRes, &range, -1);
+		}
+	    }
+	}
+    }
+
+    if (ppPmemRes) {
+	xf86FreeResList(*ppPmemRes);
+	*ppPmemRes = NULL;
+    }
+}
+
+void ARCH_PCI_PCI_BRIDGE(pciConfigPtr pPCI)
+{
+    static pciBusFuncs_t simbaBusFuncs;
+
+    if (pPCI->pci_device_vendor != DEVID(SUN, SIMBA))
+	return;
+
+    simbaBusFuncs = *(((pciBusInfo_t *)(pPCI->businfo))->funcs);
+    simbaBusFuncs.pciControlBridge = simbaControlBridge;
+    simbaBusFuncs.pciGetBridgeResources = simbaGetBridgeResources;
+
+    ((pciBusInfo_t *)(pPCI->businfo))->funcs = &simbaBusFuncs;
+}
+
+#endif /* defined(ARCH_PCI_PCI_BRIDGE) */
