@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.42 2003/10/16 01:33:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.44 2004/02/17 15:30:26 eich Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -403,22 +403,6 @@ WaitForSomething(int *pClientsReady)
     }
     return nready;
 }
-
-#if 0
-/*
- * This is not always a macro.
- */
-ANYSET(FdMask *src)
-{
-    int i;
-
-    for (i=0; i<mskcnt; i++)
-	if (src[ i ])
-	    return (TRUE);
-    return (FALSE);
-}
-#endif
-
 
 static void
 DoTimer(OsTimerPtr timer, CARD32 now, OsTimerPtr *prev)
