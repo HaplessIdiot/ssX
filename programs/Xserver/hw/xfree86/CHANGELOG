@@ -1,4 +1,6 @@
 XFree86 4.2.99.3 (xx October 2002)
+ 473. Add a utility (called gtf) for calculating VESA GTF mode lines
+      (Andy Ritger).
  472. Add an input driver for KB-Gear's Jamstudio pentablet (A.1328, 
       Brian Goines).
  471. Add a Tektronix 4957 input driver (#A.1211, Olivier Danet).
@@ -15483,4 +15485,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2384 2002/11/09 14:19:41 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2385 2002/11/11 01:18:04 alanh Exp $
