@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/gamma/Imakefile,v 1.16 2000/12/12 23:24:27 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/gamma/Imakefile,v 1.17 2001/02/07 13:26:15 alanh Exp $
 
 #include <Threads.tmpl>
 
@@ -346,7 +346,7 @@ NormalLintTarget($(SRCS))
 LIBNAME = gamma_dri.so
 ALL_OBJS = $(OBJS)
 ALL_DEPS = DONE
-SharedDepModuleTarget($(LIBNAME),$(ALL_DEPS),$(ALL_OBJS))
+SharedDriModuleTarget($(LIBNAME),$(ALL_DEPS),$(ALL_OBJS))
 InstallDynamicModule($(LIBNAME),$(MODULEDIR),dri)
 
 #ifdef GlxSoProf

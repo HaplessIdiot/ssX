@@ -1,4 +1,6 @@
 XFree86 4.0.99.1 (16 February 2001)
+ 195. Add a new rule for building DRI (client) modules, so that only the
+      relevant symbols are exported (#4454, Red Hat).
  194. Fixed several memleaks in PCI bus code (Egbert Eich).
  193. Added code to disable SIGIO when entering SETUP state and reenable
       it when leaving SETUP state (Egbert Eich).
@@ -16,7 +18,7 @@ XFree86 4.0.99.1 (16 February 2001)
  187. Fixed memleaks in parser code as well as several referenced freed 
       pointers which pollute output of memory debugger and obsucre debugging
       (Egbert Eich).
- 186.  Fixed ChangeWindowAttributes() in cfb8_16 code (Egbert Eich).
+ 186. Fixed ChangeWindowAttributes() in cfb8_16 code (Egbert Eich).
  185. Moved Linux specific typedef from shared/xf86AXP.h to linux-specific
       os-level code (Egbert Eich).
  184. Added option to int10 softbooter to POST even primary device.
@@ -12544,4 +12546,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1580 2001/02/15 18:20:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1581 2001/02/15 20:52:45 eich Exp $
