@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/xrdb.lsp,v 1.1 2002/09/22 07:09:09 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/xrdb.lsp,v 1.2 2002/10/06 17:11:48 paulo Exp $
 ;;
 
 (require "syntax")
@@ -35,13 +35,13 @@
 
 (defsynprop *prop-xrdb-comment*
     "xrdb-comment"
-    :font	"*courier-medium-o*12*"
+    :font	"*courier-medium-o*-12-*"
     :foreground	"sienna"
 )
 
 (defsynprop *prop-xrdb-special*
     "format"
-    :font	"*lucidatypewriter-medium-r*12*"
+    :font	"*lucidatypewriter-medium-r*-12-*"
     :foreground	"RoyalBlue4"
 )
 

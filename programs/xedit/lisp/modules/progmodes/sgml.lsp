@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/sgml.lsp,v 1.1 2002/09/22 07:09:09 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/sgml.lsp,v 1.2 2002/10/06 17:11:48 paulo Exp $
 ;;
 
 (require "syntax")
@@ -100,7 +100,7 @@
 
 (defsynprop *prop-sgml-maybe-entity*
     "maybe-entity"
-    :font	"*lucidatypewriter-medium-r*12*"
+    :font	"*lucidatypewriter-medium-r*-12-*"
     :foreground	"VioletRed4"
     :background	"LightYellow"
 )

@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/rpm.lsp,v 1.1 2003/01/16 03:50:46 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/xlog.lsp,v 1.1 2003/01/16 06:25:51 paulo Exp $
 ;;
 
 (require "syntax")
@@ -35,29 +35,29 @@
 
 (defsynprop *prop-xlog-probe*
     "xlog-probe"
-    :font	"*courier-medium-r*12*"
+    :font	"*courier-medium-r*-12-*"
     :background	"rgb:c/f/c")
 
 (defsynprop *prop-xlog-config*
     "xlog-config"
-    :font	"*courier-medium-r*12*"
+    :font	"*courier-medium-r*-12-*"
     :background	"rgb:c/e/f")
 
 (defsynprop *prop-xlog-default*
     "xlog-default"
-    :font	"*courier-medium-r*12*"
+    :font	"*courier-medium-r*-12-*"
     :background	"rgb:e/c/f")
 
 (defsynprop *prop-xlog-warning*
     "xlog-warning"
-    :font	"*courier-bold-r*12*"
+    :font	"*courier-bold-r*-12-*"
     :foreground	"Red4"
     :background	"Yellow1"
 )
 
 (defsynprop *prop-xlog-error*
     "xlog-error"
-    :font	"*courier-bold-r*12*"
+    :font	"*courier-bold-r*-12-*"
     :foreground	"Yellow2"
     :background	"Red3"
 )
