@@ -1,4 +1,7 @@
 XFree86 3.9Aj (28 June 1998)
+1696. Lots of Xaw work.  See xc/lib/Xaw/Changelog for details
+      (#1660, 1673, 1678, 1686, 1701, 1738, 1752,
+      Paulo Cesar Pereira de Andrade).
 1695. Add the library security fixes (#1722).
 1694. Fix rendering errors in the generic bit expansion code (#1746,
       Jens Owen).
@@ -6179,4 +6182,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.596 1998/06/28 03:52:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.597 1998/06/28 09:00:08 dawes Exp $
