@@ -1,5 +1,8 @@
 XFree86 3.9Pv (4 July 1999)
-2816. Add some imake rules to allow easy compilation of .c files to assembler.
+2818. Add a "defs.ent" file for defining entities that can be shared by
+      other docs.
+2817. Import the mouse.sgml doc from 3.3.x, and update it for 4.0.
+2816. Remove support for the very old LinuxDoc tools.
 2815. Use SpecialCObjectRule() in favour of SpecialObjectRule().
 2814. Fix lots of 64-bit problems in XAA (#2967, Mark Vojkovich).
 2813. Add a new DGA request to allow switching the DGA pixmap from one the
@@ -8307,4 +8310,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.786 1999/06/27 17:00:59 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.787 1999/07/04 06:38:43 dawes Exp $

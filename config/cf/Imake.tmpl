@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.60 1999/06/12 07:18:28 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.61 1999/07/04 06:38:21 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -30,7 +30,7 @@ XCOMM ----------------------------------------------------------------------
 /* Ensure that "all" is the default target in the Makefile. */
 all::
 
-.SUFFIXES: .i .s
+.SUFFIXES: .i
 
 #include <Imake.cf>
 
@@ -1553,8 +1553,12 @@ XCOMM common rules for all Makefiles - do not edit
 .c.i:
 	CPPOnlyCompile($*.c,$(_NOOP_))
 
+#if 0
+.SUFFIXES: .s
+
 .c.s:
 	CompileCToAsm($(_NOOP_))
+#endif
 
 /*
  * These need to be here so that rules in Imakefile occur first;  the blank
