@@ -3,6 +3,7 @@
  */
 
 
+/* $XFree86: $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
