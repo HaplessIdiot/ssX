@@ -1,4 +1,4 @@
-/* $Id: context.c,v 1.11 2002/02/22 19:25:25 dawes Exp $ */
+/* $Id: context.c,v 1.12 2002/06/06 13:56:14 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -1302,7 +1302,10 @@ init_attrib_groups( GLcontext *ctx )
    ctx->NoDither = getenv("MESA_NO_DITHER") ? GL_TRUE : GL_FALSE;
    if (ctx->NoDither) {
       if (getenv("MESA_DEBUG")) {
+	/* XXX This causes an OSMesa build problem on Solaris 2.6 */
+#ifndef SVR4
          fprintf(stderr, "MESA_NO_DITHER set - dithering disabled\n");
+#endif
       }
       ctx->Color.DitherFlag = GL_FALSE;
    }
