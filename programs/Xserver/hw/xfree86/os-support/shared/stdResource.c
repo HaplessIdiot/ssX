@@ -11,9 +11,9 @@
 #include "xf86_OSlib.h"
 
 #ifdef USESTDRES
-#define xf86AccWindowsFromOS xf86StdAccWindowsFromOS
-#define xf86AccResFromOS xf86StdAccResFromOS
-#define xf86InitOSPciAllocator xf86StdInitOSPciAllocator
+#define xf86StdAccWindowsFromOS xf86AccWindowsFromOS
+#define xf86StdAccResFromOS xf86AccResFromOS
+#define xf86StdInitOSPciAllocator xf86InitOSPciAllocator
 #endif
 
 resPtr
