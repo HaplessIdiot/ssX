@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.114 1999/05/09 06:06:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.115 1999/05/09 10:51:54 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -691,7 +691,7 @@ MatchInput(IDevPtr pDev)
     int i;
 
     for (i = 0; i < xf86NumInputDrivers; i++) {
-	if (xf86InputDriverList[i]->driverName &&
+	if (xf86InputDriverList[i] && xf86InputDriverList[i]->driverName &&
 	    xf86NameCmp(pDev->driver, xf86InputDriverList[i]->driverName) == 0)
 	    return xf86InputDriverList[i];
     }
