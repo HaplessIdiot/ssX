@@ -46,7 +46,7 @@
  * Author: David Dawes <dawes@x-oz.com>.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86AutoConfig.c,v 1.6 2005/02/09 20:55:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86AutoConfig.c,v 1.7 2005/02/18 01:52:59 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86Parser.h"
@@ -381,7 +381,7 @@ xf86AutoConfig(void)
 	while (fgets(buf + 1, sizeof(buf) - 2, gp)) {
 	    AppendToConfig(buf);
 	    xf86MsgVerb(X_INFO, 3, "AutoConfig: Extra line: '%.*s'.\n",
-			strlen(buf) - 2, buf + 1);
+			(int)strlen(buf) - 2, buf + 1);
 	}
 	AppendToConfig(BUILTIN_DEVICE_SECTION_POST);
 	snprintf(buf, sizeof(buf), BUILTIN_SCREEN_SECTION,
