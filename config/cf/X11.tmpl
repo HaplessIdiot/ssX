@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: X11.tmpl,v 1.140 2002/01/15 21:22:32 keithp Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.141 2002/01/15 22:55:26 herrb Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -241,6 +241,7 @@ VENDORMANVERSION = XVendorManVersionString
 #ifndef BuildX11Lib
 #define BuildX11Lib		(BuildLibraries || (BuildLibrariesForXServers && XnestServer))
 #endif
+
 #ifndef BuildLoadableXlibI18n
 #define BuildLoadableXlibI18n	(HasDlopen && SharedLibX11)
 #endif
@@ -250,9 +251,11 @@ VENDORMANVERSION = XVendorManVersionString
 #ifndef BuildXauLib
 #define BuildXauLib		(BuildLibraries || BuildLibrariesForXServers)
 #endif
+#define UseInstalledXauLib	(UseInstalled || !BuildXauLib)
 #ifndef BuildXdmcpLib
 #define BuildXdmcpLib		(BuildLibraries || BuildLibrariesForXServers)
 #endif
+#define UseInstalledXdmcpLib	(UseInstalled || !BuildXdmcpLib)
 #ifndef BuildMITMiscExt
 #define BuildMITMiscExt		YES
 #endif
@@ -2087,7 +2090,11 @@ ProjectUnsharedLibReferences(XFONTCACHE,Xfontcache,$(XFONTCACHELIBSRC),XBuildLib
 #endif
 SharedLibReferences(XAUTH,Xau,$(XAUTHSRC),SOXAUTHREV,SharedXauRev)
 #else
+#if !UseInstalledXauLib
 ProjectUnsharedLibReferences(XAUTH,Xau,$(XAUTHSRC),XBuildLibDir)
+#else
+ProjectUnsharedLibReferences(XAUTH,Xau,$(XAUTHSRC),$(USRLIBDIR))
+#endif
 #endif
 
 #ifndef SharedLibXdmcp
@@ -2109,7 +2116,11 @@ ProjectUnsharedLibReferences(XAUTH,Xau,$(XAUTHSRC),XBuildLibDir)
 #endif
 SharedLibReferences(XDMCP,Xdmcp,$(XDMCPLIBSRC),SOXDMCPREV,SharedXdmcpRev)
 #else
+#if !UseInstalledXdmcpLib
 ProjectUnsharedLibReferences(XDMCP,Xdmcp,$(XDMCPLIBSRC),XBuildLibDir)
+#else
+ProjectUnsharedLibReferences(XDMCP,Xdmcp,$(XDMCPLIBSRC),$(USRLIBDIR))
+#endif
 #endif
 
 #ifndef SharedLibXmu
