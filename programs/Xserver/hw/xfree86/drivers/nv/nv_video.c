@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.7 2002/04/18 22:47:21 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.8 2002/04/26 19:57:14 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -51,6 +51,7 @@ typedef struct _NVPortPrivRec {
    int		currentBuffer;
    Time         videoTime;
    Bool		grabbedByV4L;
+   Bool         iturbt_709;
    FBLinearPtr  linear;
    int pitch;
    int offset;
@@ -96,7 +97,8 @@ static void NVInitOffscreenImages (ScreenPtr pScreen);
 #define MAKE_ATOM(a) MakeAtom(a, sizeof(a) - 1, TRUE)
 
 static Atom xvBrightness, xvContrast, xvColorKey, xvSaturation, 
-            xvHue, xvAutopaintColorKey, xvSetDefaults, xvDoubleBuffer;
+            xvHue, xvAutopaintColorKey, xvSetDefaults, xvDoubleBuffer,
+            xvITURBT709;
 
 /* client libraries expect an encoding */
 static XF86VideoEncodingRec DummyEncoding =
@@ -115,7 +117,7 @@ XF86VideoFormatRec NVFormats[NUM_FORMATS_ALL] =
    {15, DirectColor}, {16, DirectColor}, {24, DirectColor}
 };
 
-#define NUM_ATTRIBUTES 8
+#define NUM_ATTRIBUTES 9
 
 XF86AttributeRec NVAttributes[NUM_ATTRIBUTES] =
 {
@@ -126,7 +128,8 @@ XF86AttributeRec NVAttributes[NUM_ATTRIBUTES] =
    {XvSettable | XvGettable, -512, 511, "XV_BRIGHTNESS"},
    {XvSettable | XvGettable, 0, 8191, "XV_CONTRAST"},
    {XvSettable | XvGettable, 0, 8191, "XV_SATURATION"},
-   {XvSettable | XvGettable, 0, 360, "XV_HUE"}
+   {XvSettable | XvGettable, 0, 360, "XV_HUE"},
+   {XvSettable | XvGettable, 0, 1, "XV_ITURBT_709"}
 };
 
 #define NUM_IMAGES_ALL 4
@@ -151,6 +154,7 @@ NVSetPortDefaults (ScrnInfoPtr pScrnInfo, NVPortPrivPtr pPriv)
     pPriv->colorKey             = pNv->videoKey;
     pPriv->autopaintColorKey    = TRUE;
     pPriv->doubleBuffer		= TRUE;
+    pPriv->iturbt_709           = FALSE;
 }
 
 
@@ -345,6 +349,7 @@ NVSetupImageVideo (ScreenPtr pScreen)
     xvHue               = MAKE_ATOM("XV_HUE");
     xvAutopaintColorKey = MAKE_ATOM("XV_AUTOPAINT_COLORKEY");
     xvSetDefaults       = MAKE_ATOM("XV_SET_DEFAULTS");
+    xvITURBT709         = MAKE_ATOM("XV_ITURBT_709");
 
     NVResetVideo(pScrnInfo);
 
@@ -434,6 +439,8 @@ NVPutOverlayImage (
 
     if(id != FOURCC_UYVY)
 	dstPitch |= 1 << 16;
+    if(pPriv->iturbt_709)
+        dstPitch |= 1 << 24;
 
     pRiva->PMC[(0x8958/4) + buffer] = dstPitch;
     pRiva->PMC[0x00008704/4] = 0;
@@ -534,6 +541,12 @@ static int NVSetPortAttribute
             return BadValue;
         pPriv->autopaintColorKey = value;
     }
+    else if (attribute == xvITURBT709)
+    {
+        if ((value < 0) || (value > 1))
+            return BadValue;
+        pPriv->iturbt_709 = value;
+    }
     else if (attribute == xvSetDefaults)
     {
         NVSetPortDefaults(pScrnInfo, pPriv);
@@ -572,6 +585,8 @@ static int NVGetPortAttribute
         *value = pPriv->colorKey;
     else if (attribute == xvAutopaintColorKey)
         *value = (pPriv->autopaintColorKey) ? 1 : 0;
+    else if (attribute == xvITURBT709)
+        *value = (pPriv->iturbt_709) ? 1 : 0;
     else
         return BadMatch;
     
