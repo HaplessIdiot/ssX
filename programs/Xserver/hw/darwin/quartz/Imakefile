@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.9 2003/08/12 23:47:10 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.10 2003/09/16 00:36:11 torrey Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -7,10 +7,12 @@ SRCS =  Preferences.m \
         XApplication.m \
         XServer.m \
         applewm.c \
+        keysym2ucs.c \
         quartz.c \
         quartzAudio.c \
         quartzCocoa.m \
         quartzPasteboard.c \
+        quartzKeyboard.c \
         quartzStartup.c \
         pseudoramiX.c
 
@@ -18,10 +20,12 @@ OBJS =  Preferences.o \
         XApplication.o \
         XServer.o \
         applewm.o \
+        keysym2ucs.o \
         quartz.o \
         quartzAudio.o \
         quartzCocoa.o \
         quartzPasteboard.o \
+        quartzKeyboard.o \
         quartzStartup.o \
         pseudoramiX.o
 
@@ -49,8 +53,12 @@ PBXBUILDSTYLE = -buildstyle Deployment
 XPRDEFINES = -DBUILD_XPR
 #endif
 
+#if OSMajorVersion >= 6
+KLDEFINES = -DHAS_KL_API
+#endif
+
 DEFINES = $(CUSTOMVERDEF) -DXBINDIR=$(BINDIR) -DXINITDIR=$(XINITDIR) \
-          $(QUARTZDEFINES) $(DEBUGDEFINES) $(XPRDEFINES)
+          $(QUARTZDEFINES) $(DEBUGDEFINES) $(XPRDEFINES) $(KLDEFINES)
 EXTRAMANDEFS = -D__XBinDir__=$(BINDIR)
 #if NothingOutsideProjectRoot
 XDARWINROOT = $(BINDIR)
