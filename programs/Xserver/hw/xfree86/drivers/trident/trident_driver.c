@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.18 1997/10/13 17:16:46 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.19 1997/11/08 16:24:31 hohndel Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -1413,7 +1413,7 @@ TVGA8900Probe()
 				tridentClockLimit24bpp[TVGAchipset];
 			if (!tridentTGUIProgrammableClocks)
 			{
-				TRIDENT..ChipClockMulFactor = 3;
+				TRIDENT.ChipClockMulFactor = 3;
 				vga256InfoRec.maxClock *= 3;
 			}
 			break;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.13 1997/11/08 16:24:24 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.14 1997/11/08 17:07:25 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane, Wigan, England.
  *
@@ -1135,10 +1135,9 @@ glintInitialize (int scr_index, ScreenPtr pScreen, int argc, char **argv)
 				break;
 		}
 	} else {
-  		if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
+  		if (IS_3DLABS_TX_MX_CLASS(coprotype)) 
 			GLINTAccelInit();
-		else
-  		if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
+		else if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) 
 			PermediaAccelInit();
 		switch (glintInfoRec.depth) {
 			case 8:
