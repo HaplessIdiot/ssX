@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/196 1996/12/03 16:52:46 swick $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.53 1997/10/13 17:16:55 hohndel Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.54 1997/10/25 13:51:20 hohndel Exp $
  */
 
 /*
@@ -3324,13 +3324,11 @@ void
 SwitchBufPtrs(screen)
     register TScreen *screen;
 {
-    register int rows = screen->max_row + 1;
-    char *save [4 /* MAX_PTRS */ * MAX_ROWS];
-    Size_t len = MAX_PTRS * sizeof(char *) * rows;
+    Size_t len = ScrnPointers(screen, screen->max_row + 1);
 
-    memcpy ( (char *)save,           (char *)screen->buf,    len);
-    memcpy ( (char *)screen->buf,    (char *)screen->altbuf, len);
-    memcpy ( (char *)screen->altbuf, (char *)save,           len);
+    memcpy ( (char *)screen->save_ptr, (char *)screen->buf,      len);
+    memcpy ( (char *)screen->buf,      (char *)screen->altbuf,   len);
+    memcpy ( (char *)screen->altbuf,   (char *)screen->save_ptr, len);
 }
 
 void

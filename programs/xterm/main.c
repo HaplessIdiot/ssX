@@ -64,7 +64,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.60 1997/10/26 13:25:48 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.61 1997/11/01 15:05:15 hohndel Exp $ */
 
 
 /* main.c */
@@ -1025,9 +1025,6 @@ ConvertConsoleSelection(w, selection, target, type, value, length, format)
     return False;
 }
 #endif /* TIOCCONS */
-
-
-extern WidgetClass xtermWidgetClass;
 
 Arg ourTopLevelShellArgs[] = {
 	{ XtNallowShellResize, (XtArgVal) TRUE },	

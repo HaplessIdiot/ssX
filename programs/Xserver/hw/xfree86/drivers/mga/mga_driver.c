@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.21 1997/10/25 13:50:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.22 1997/11/08 16:24:26 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -1163,6 +1163,8 @@ static void MGAInstallColormap(ColormapPtr pmap)
       
     switch (MGAchipset) {
     case PCI_CHIP_MGA2064:
+    case PCI_CHIP_MGA2164:
+    case PCI_CHIP_MGA2164_AGP:
       MGATi3026InstallColormap(pmap, entries, ppix, prgb);
       break;
     default:
@@ -1190,6 +1192,8 @@ MGAScreenInit(ScreenPtr pScreen, pointer pbits,
     if (vgaBitsPerPixel > 8) {
       switch (MGAchipset) {
       case PCI_CHIP_MGA2064:
+      case PCI_CHIP_MGA2164:
+      case PCI_CHIP_MGA2164_AGP:
 	privateInstallColormap = MGAInstallColormap;
 	break;
       default:
@@ -1236,6 +1240,8 @@ MGAFbInit()
 	/* DirectColor InstallColormap gets set in ScreenInit ... */
 	switch (MGAchipset) {
 	case PCI_CHIP_MGA2064:
+	case PCI_CHIP_MGA2164:
+	case PCI_CHIP_MGA2164_AGP:
 	  vga256InfoRec.hasDirectColor = TRUE;
 	  /* DirectColor InstallColormap gets set in ScreenInit ... */
 	  vgaSetScreenInitHook(MGAScreenInit);
@@ -1386,7 +1392,7 @@ Bool enter;
 #ifdef XFreeXDGA
       	if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter) {
        		if (MGAdac.isHwCursor) {
-       			MGAdac.CursorOff();
+       			MGAdac.HideCursor();
        		}
        		return;
    	}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.13 1997/09/19 09:01:16 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.14 1997/10/13 17:16:41 hohndel Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -33,6 +33,7 @@
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
+#include "xf86cursor.h"
 #include "vga.h"
 #include "vgaPCI.h"
 
@@ -516,17 +517,73 @@ MGATi3026SetMCLK( f_out )
 	while (( inTi3026( TVP3026_MEM_CLK_DATA ) & 0x40 ) == 0 ) {
 		;
 	}
-	
+
 	/* Set the WRAM refresh divider */
-	rfhcnt = ( 332.0 * f_pll / 1280000.0 );
-	if ( rfhcnt > 15 )
+	/* these formulas assume nogscale=1; RTFM if gscale=0, esp. if
+	 *   you are slowing the clocks for power-saving
+	 * Also note that the 1064SG seems to treat rfhcnt differently,
+	 *   but it doesn't use this dac.
+	 */
+	if (MGAchipset == PCI_CHIP_MGA2064 )
+	  {
+	    /* this one is from the 2064W manual. */
+	    /* rfhcnt = (( (33.2 * f_pll) / 1000.0 ) / 128) - 1; */
+	    /* changing to -.5 to get round-to-nearest approximation */
+	    rfhcnt = (((33.2 * f_pll) / 1000.0 ) / 128.0) - .5;
+	    if ( rfhcnt > 15 )
+	      {
+#ifdef DEBUG
+		ErrorF( "error: rfhcnt=%d, setting to 0\n", rfhcnt );
+#endif
+		/* the 2064W manual implies that zero is OK (?)
+		 * "minimum frequency" is supposedly set to 4MHz
+		 * when rfhcnt=0 and nogscale=1
+		 */
+		
 		rfhcnt = 0;
+	      }
+	  }
+	else /* 2164W PCI or AGP and default */
+	  {
+	    /* this is calculated from the 2164W manual. It seems OK with
+	     * both the 2164W-AGP and a PCI 2064W. Barring algebra errors,
+	     * with expected rounding, this should be guaranteed to conform
+	     * to the formula from p.3-18 of the 2164W manual.
+	     */
+	    rfhcnt = (( (33.2 * f_pll) / 1000.0 ) - 1) / 256;
+	    if ( rfhcnt > 15 )
+	      {
+#ifdef DEBUG
+		ErrorF( "error: rfhcnt=%d, setting to 15\n", rfhcnt );
+#endif
+		rfhcnt = 15;
+	      }
+#ifdef DEBUG  /* paranoia check, neither should ever happen */
+	    /* check formula from p. 3-18 of MGA-2164W manual
+	     * 33.2 >= (rfhcnt<3:1>*512 + rfhcnt<0>*64 + 1) *
+	     *     gclk_period * gscaling_factor
+	     */
+	    {
+	      double refresh_period = ((rfhcnt & 0xE)*256 +
+			       (rfhcnt & 1)*64 + 1) * ( 1000.0 / f_pll);      
+	      if (! ( 33.2 >= refresh_period ))
+		{
+		  ErrorF( "warning: rfhcnt=%d -> %lf usec > 33.2 usec\n",
+			  rfhcnt, refresh_period );
+		}
+	    }
+	    if ( rfhcnt == 0 )
+	      ErrorF( "warning: 2164W memory refresh disabled!\n");
+#endif
+	  } /* MGAchipset choice */
+	
 	pciWriteLong( MGAPciTag, PCI_OPTION_REG, ( rfhcnt << 16 ) |
 		( pciReadLong( MGAPciTag, PCI_OPTION_REG ) & ~0xf0000 ));
 
 #ifdef DEBUG
 	ErrorF( "rfhcnt=%d\n", rfhcnt );
 #endif
+
 
 	/* Output MCLK PLL on MCLK pin */
 	outTi3026( TVP3026_MCLK_CTL, 0, ( mclk_ctl & 0xe7 ) | 0x10 );
@@ -915,6 +972,11 @@ vgaMGAPtr restore;
 	 * goes here. 
 	 */
 
+	/*
+	 * this is needed to properly restore start address for 2164W-AGP
+	 */
+	outw(0x3DE, (restore->ExtVga[0] << 8) | 0);
+
 	/* program pixel clock PLL */
 	outTi3026(TVP3026_PLL_ADDR, 0, 0x00);
 	for (i = 0; i < 3; i++)
@@ -1024,106 +1086,52 @@ vgaMGAPtr save;
  *                                   (plane 0) maps to cursor colors 0 and 1
  */
 
-#define MAX_CURS_HEIGHT 64   /* 64 scan lines */
-#define MAX_CURS_WIDTH  64   /* 64 pixels     */
 
-static pointer
-MGA3026RealizeCursor(pSource, pMask, w, h)
-    unsigned char *pSource, *pMask;
-    int w, h;
-{
-    register int i, j;
-    unsigned char *ram, *plane0, *plane1;
-    
-    ram = (unsigned char *)xalloc(1024);
-    plane0 = ram;
-    plane1 = ram+512;
-    
-    if (!ram)
-        return NULL;
-
-    for (i = 0; i < MAX_CURS_HEIGHT; i++) {
-        for (j = 0; j < MAX_CURS_WIDTH / 8; j++) {
-            unsigned char mask, source;
-            
-            if (i < h && j < w) {
-                source = byte_reversed[*pSource++];
-                mask = byte_reversed[*pMask++];
-                *plane0++ = source & mask;
-                *plane1++ = mask;
-            } else {
-                *plane0++ = 0x00;
-                *plane1++ = 0x00;
-            }
-        }
-        /*
-         * if we still have more bytes on this line (j < w),
-         * we have to ignore the rest of the line.
-         */
-        while (j++ < w) pSource++,pMask++;
-    }
-    return ram;
-}
-
-/*
- * LoadCursor(src)
- * src - pointer returned by RealizeCursor
- */
 static void
-MGA3026LoadCursor(src)
-    unsigned char *src;
+MGA3026LoadCursorImage(src, xorigin, yorigin)
+    register unsigned char *src;
+    int xorigin, yorigin;
 {
     register int i;
+    register unsigned char *mask = src + 1;
+   
+    /* Disable cursor */
+    outTi3026(TVP3026_CURSOR_CTL, 0xfc, 0x00);
     
     outTi3026(TVP3026_CURSOR_CTL, 0xf3, 0x00); /* reset A9,A8 */
     /* reset cursor RAM load address A7..A0 */
     outTi3026dreg(TVP3026_WADR_PAL, 0x00); 
 
-    /* 
-     * Output the cursor data.  The realize function has put the planes into
-     * their correct order, so we can just blast this out.
-     */
-    for (i = 0; i < 1024; i++) 
-        outTi3026dreg(TVP3026_CUR_RAM, (*src++));    
-}
-
-static void
-MGA3026QueryCursorSize(pwidth, pheight)
-    unsigned short *pwidth, *pheight;
-{
-    *pwidth = MAX_CURS_WIDTH;
-    *pheight = MAX_CURS_HEIGHT;
-}
-
-static Bool
-MGA3026CursorState()
-{
-    return (inTi3026(TVP3026_CURSOR_CTL) & 0x03);
+    for (i = 0; i < 512; i++, mask+=2) 
+        outTi3026dreg(TVP3026_CUR_RAM, *mask);    
+    for (i = 0; i < 512; i++, src+=2) 
+        outTi3026dreg(TVP3026_CUR_RAM, *src);   
+ 
+    /* Enable cursor - X11 mode */
+    outTi3026(TVP3026_CURSOR_CTL, 0x6c, 0x13);
 }
 
 static void 
-MGA3026CursorOn()
+MGA3026ShowCursor()
 {
     /* Enable cursor - X11 mode */
     outTi3026(TVP3026_CURSOR_CTL, 0x6c, 0x13);
 }
 
 static void
-MGA3026CursorOff()
+MGA3026HideCursor()
 {
     /* Disable cursor */
     outTi3026(TVP3026_CURSOR_CTL, 0xfc, 0x00);
 }
 
 static void
-MGA3026MoveCursor(x, y)
+MGA3026SetCursorPosition(x, y, xorigin, yorigin)
     int x, y;
 {
-    x += 64;
-    y += 64;
-    if (x < 0 || y < 0)
-        return;
-        
+    x += 64 - xorigin;
+    y += 64 - yorigin;
+
     /* Output position - "only" 12 bits of location documented */
    
     outTi3026dreg(TVP3026_CUR_XLOW, x & 0xFF);
@@ -1133,36 +1141,56 @@ MGA3026MoveCursor(x, y)
 }
 
 static void
-MGA3026RecolorCursor(red0, green0, blue0, red1, green1, blue1)
-    int red0, green0, blue0, red1, green1, blue1;
+MGA3026SetCursorColors(bg, fg)
+   int bg, fg;
 {
     /* The TI 3026 cursor is always 8 bits so shift 8, not 10 */
 
     /* Background color */
     outTi3026dreg(TVP3026_CUR_COL_ADDR, 1);
-    outTi3026dreg(TVP3026_CUR_COL_DATA, (red0 >> 8) & 0xFF);
-    outTi3026dreg(TVP3026_CUR_COL_DATA, (green0 >> 8) &0xFF);
-    outTi3026dreg(TVP3026_CUR_COL_DATA, (blue0 >> 8) & 0xFF);
+    outTi3026dreg(TVP3026_CUR_COL_DATA, (bg & 0x00FF0000) >> 16);
+    outTi3026dreg(TVP3026_CUR_COL_DATA, (bg & 0x0000FF00) >> 8);
+    outTi3026dreg(TVP3026_CUR_COL_DATA, (bg & 0x000000FF));
 
     /* Foreground color */
     outTi3026dreg(TVP3026_CUR_COL_ADDR, 2);
-    outTi3026dreg(TVP3026_CUR_COL_DATA, (red1 >> 8) & 0xFF);
-    outTi3026dreg(TVP3026_CUR_COL_DATA, (green1 >> 8) &0xFF);
-    outTi3026dreg(TVP3026_CUR_COL_DATA, (blue1 >> 8) & 0xFF);
+    outTi3026dreg(TVP3026_CUR_COL_DATA, (fg & 0x00FF0000) >> 16);
+    outTi3026dreg(TVP3026_CUR_COL_DATA, (fg & 0x0000FF00) >> 8);
+    outTi3026dreg(TVP3026_CUR_COL_DATA, (fg & 0x000000FF));
 }
+
+static Bool 
+MGA3026UseHWCursor(ScreenPtr pScr)
+{
+    int flags = XF86SCRNINFO(pScr)->modes->Flags;
+
+    if(/* flags & (V_DBLSCAN | V_INTERLACE) */  0)
+	return FALSE; 
+    else
+	return TRUE;
+}
+
 
 void
 MGA3026RamdacInit()
 {
-    MGAdac.isHwCursor      = TRUE;
-    MGAdac.RealizeCursor   = MGA3026RealizeCursor;
-    MGAdac.LoadCursor      = MGA3026LoadCursor;
-    MGAdac.QueryCursorSize = MGA3026QueryCursorSize;
-    MGAdac.CursorState     = MGA3026CursorState;
-    MGAdac.CursorOn        = MGA3026CursorOn;
-    MGAdac.CursorOff       = MGA3026CursorOff;
-    MGAdac.MoveCursor      = MGA3026MoveCursor;
-    MGAdac.RecolorCursor   = MGA3026RecolorCursor;
+    MGAdac.isHwCursor		= TRUE;
+    MGAdac.CursorMaxWidth	= 64;
+    MGAdac.CursorMaxHeight	= 64;
+    MGAdac.SetCursorColors	= MGA3026SetCursorColors;
+    MGAdac.SetCursorPosition	= MGA3026SetCursorPosition;
+    MGAdac.LoadCursorImage	= MGA3026LoadCursorImage;
+    MGAdac.HideCursor		= MGA3026HideCursor;
+    MGAdac.ShowCursor		= MGA3026ShowCursor;
+    MGAdac.UseHWCursor		= MGA3026UseHWCursor;
+    MGAdac.CursorFlags		= USE_HARDWARE_CURSOR |
+				HARDWARE_CURSOR_BIT_ORDER_MSBFIRST |
+				HARDWARE_CURSOR_TRUECOLOR_AT_8BPP |
+				HARDWARE_CURSOR_PROGRAMMED_ORIGIN |
+				HARDWARE_CURSOR_AND_SOURCE_WITH_MASK | 	 
+				HARDWARE_CURSOR_CHAR_BIT_FORMAT |
+				HARDWARE_CURSOR_PROGRAMMED_BITS;
+
 
     if ( MGAchipset == PCI_CHIP_MGA2064 && MGABios2.PinID == 0 )
     {

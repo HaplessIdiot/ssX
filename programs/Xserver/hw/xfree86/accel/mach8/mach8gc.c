@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8gc.c,v 3.4 1996/12/23 06:39:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8gc.c,v 3.5tsi Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -77,12 +77,13 @@ Modified for the Mach-8 by Rickard E. Faith (faith@cs.unc.edu)
 #include "xf86text.h"
 #include "mach8.h"
 
+static void mach8ValidateGC();
 static void cfbChangeGC(), cfbCopyGC(), cfbDestroyGC();
 static void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
 static void cfbDestroyOps();
 
 static GCFuncs cfbFuncs = {
-    cfbValidateGC,
+    mach8ValidateGC,
     cfbChangeGC,
     cfbCopyGC,
     cfbDestroyGC,
@@ -366,7 +367,7 @@ cfbDestroyOps (ops)
 */
 
 static void
-cfbValidateGC(pGC, changes, pDrawable)
+mach8ValidateGC(pGC, changes, pDrawable)
     register GCPtr  pGC;
     Mask	    changes;
     DrawablePtr	    pDrawable;
@@ -904,7 +905,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    pGC->ops->FillSpans = mach8OStipFSpans;
 	    break;
 	default:
-	    FatalError("cfbValidateGC: illegal fillStyle\n");
+	    FatalError("mach8ValidateGC: illegal fillStyle\n");
 	}
       } else {
 	switch (pGC->fillStyle) {
@@ -949,7 +950,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 		pGC->ops->FillSpans = cfbUnnaturalStippleFS;
 	    break;
 	default:
-	    FatalError("cfbValidateGC: illegal fillStyle\n");
+	    FatalError("mach8ValidateGC: illegal fillStyle\n");
 	}
       }
     } /* end of new_fillspans */

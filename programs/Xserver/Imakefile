@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/revisionist/2 1997/11/17 14:35:40 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.123 1997/11/22 10:43:53 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.124 1997/11/22 11:10:18 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -516,9 +516,6 @@ XCOMM
 #if XF86SVGAServer
 XF86SVGA = XF86_SVGA
 #endif
-#if XF86W32Server
-XF86W32 = XF86_W32
-#endif
 #if XF86S3Server
 XF86S3 = XF86_S3
 #endif
@@ -608,8 +605,7 @@ XVFB = Xvfb
     defined(XF98WABSServer) || defined(XF98WABEPServer) || \
     defined(XF98WSNAServer) || defined(XF98TGUIServer) || \
     defined(XF98MGAServer)  || defined(XF98SVGAServer) || \
-    defined(XF98EGCServer) || \
-    defined(XF86W32Server) || defined(XF86S3Server) || \
+    defined(XF98EGCServer) || defined(XF86S3Server) || \
     defined(XF86S3VServer) || defined(XF98NECS3Server) || \
     defined(XF98PWSKBServer) || defined(XF98PWLBServer) || \
     defined(XF98GA968Server) || defined(XF86I8514Server) || \
@@ -621,8 +617,7 @@ XVFB = Xvfb
     defined(XVirtualFramebufferServer)
 MakeMutex($(XF86SVGA) $(XF98GANBWAP) $(XF98PEGC) $(XF98NKVNEC) $(XF98WABS) \
 	  $(XF98WABEP) $(XF98WSNA) $(XF98TGUI) $(XF98MGA) $(XF98SVGA) \
-	  $(XF98EGC) \
-	  $(XF86W32) $(XF86S3) $(XF86S3V) $(XF98NECS3) \
+	  $(XF98EGC) $(XF86S3) $(XF86S3V) $(XF98NECS3) \
 	  $(XF98PWSKB) $(XF98PWLB) $(XF98GA968) $(XF868514) $(XF86MACH8) \
 	  $(XF86MACH32) $(XF86MACH64) $(XF86P9000) $(XF86AGX) $(XF86I128) \
 	  $(XF86TGA) $(XF86GLINT) $(XF68FBDEV) $(XNEST) $(XVFB))
@@ -671,39 +666,6 @@ LinkFile(XF86_SVGA.def,SVGA.def)
 InstallLinkKitNonExecFile(SVGA.def,$(LINKKITDIR))
 #endif
 #endif	/* XF86SVGAServer */
-
-
-#if XF86W32Server
-XCOMM
-XCOMM XFree86 W32 Server
-XCOMM
-MFBDIR  = mfb
-CFB8DIR = cfb
-DDXDIR1 = hw/xfree86
-XF86W32SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
-XF86W32OBJS = $(XF86COMSRC)/XF86_W32.o $(XF86ACCELSRC)/et4000w32/w32Conf.o
-XF86W32LIBS = $(XF86ACCELSRC)/et4000w32/w32/LibraryTargetName(w32) \
-              $(XF86ACCELSRC)/et4000w32/cfb.w32/LibraryTargetName(cfb) \
-              $(XF86ACCELSRC)/et4000w32/w32/LibraryTargetName(w32) \
-              $(XF86ACCELSRC)/et4000w32/asm/LibraryTargetName(asm) \
-              $(XF86LIBS) CFB8Libs
-XF86W32SYSLIBS = $(SYSLIBS)
-#if HasParallelMake
-MakeMutex($(XF86W32SUBDIRS) $(XF86W32OBJS) $(XF86W32LIBS) $(XF86W32SYSLIBS))
-#endif
-#if HasGnuMake
-$(XF86W32OBJS) $(XF86W32LIBS) $(XF86W32SYSLIBS):: $(XF86W32SUBDIRS)
-	@if [ -f $@ ]; then touch $@; fi
-#endif
-SetUIDServerTarget(XF86_W32,$(XF86W32SUBDIRS),$(XF86W32OBJS),$(XF86W32LIBS),$(XF86W32SYSLIBS))
-#ifndef ServerToInstall
-#define ServerToInstall XF86_W32
-#endif
-#ifdef OS2Architecture
-LinkFile(XF86_W32.def,W32.def)
-InstallLinkKitNonExecFile(W32.def,$(LINKKITDIR))
-#endif
-#endif
 
 
 #if XF86S3Server

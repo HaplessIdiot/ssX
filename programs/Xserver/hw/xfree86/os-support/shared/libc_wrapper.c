@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.23 1997/07/10 08:17:38 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.24 1997/08/26 10:01:39 hohndel Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -814,13 +814,8 @@ void
 xf86usleep(usec)
     unsigned long usec;
 {
-#if defined(SYSV) || defined(SVR4)
-#if defined (sun) && defined (i386) && defined (SVR4)
-    extern int xf86_solx86usleep(unsigned long);
-    xf86_solx86usleep(usec);
-#else
+#if (defined(SYSV) || defined(SVR4)) && !defined(sun)
     syscall(3112, (usec) / 1000 + 1);
-#endif
 #else
     usleep(usec);
 #endif

@@ -1,4 +1,33 @@
-XFree86 3.9y (21 November 1997)
+XFree86 3.9y (6 December 1997)
+1283. Fix loader to resolve symbols properly in Xext (#1250, Robin Cutshaw).
+1482. Fix loader on Solaris and enable it for SVR4 (#1248,1249, Robin Cutshaw).
+1481. Fix some problems with T2R support (#1245, Robin Cutshaw).
+1480. Fix rfhcnt calculation and VT swithcing in mga driver. Allow DirectColor
+      on Millennium II cards (#1241,1242,1243,1244, Mark Montague).
+1479. Potential fix for s3/svga cursor support for Ti ramdacs. Remove a
+       mistake from the s3/svga acceleration code (#1237, Mark Vojkovich).
+1478. Switch the MGA driver over to XAA Hardware Cursor. Only support for
+      TVP3026 is included (#1236,1239, Mark Vojkovich).
+1477. Add delayed syncing abd faster arcs ub 8bpp to mga driver (#1235, 
+      Mark Vojkovich).
+1476. Fix another SIGSEGV in xterm, where wrong assumptions about the type of
+      widget passed to an action handler were made (#1234, Thomas Dickey,
+      Arfst Ludwig).
+1475. Fix the wraparound problem with the Mach32 cursor and add another seven
+      pixels to the possible width of the cursor (#1232, Bryan Feir).
+1474. Remove vga256/vgainit (#1231, Mark La France).
+1473. Fix a namespace collision in Mach8 server (#1230, Mark La France).
+1472. Fix SIGSEGV when some internal xterm buffers overflowed (#1228, 
+      Thomas Dickey).
+1471. Fix HiQV version of ImageWrite in the C&T driver (#1222,1223,
+      David Bateman).
+1470. Yet another attempt to fix packing order for dashed lines (#1217,
+      Mark Vojkovich).
+1469. Build fixes for Xext (#1216,1238 Takaaki Nomura).
+1468. Remove all references to the W32 server (but not the actual server code)
+      (#1215, Koen Gadeyne).
+1467. Complete initial support for Permedia 2 and add some acceleration for it
+      (Alan Hourihane).
 1466. Some more code for supporting the IBM RGB640 in the glint server 
       (Dirk Hohndel).
 
@@ -5688,4 +5717,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.550 1997/11/23 05:46:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.552 1997/12/05 06:39:01 hohndel Exp $

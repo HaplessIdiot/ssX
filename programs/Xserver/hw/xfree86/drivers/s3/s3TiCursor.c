@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3TiCursor.c,v 1.2 1997/08/26 10:01:23 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3TiCursor.c,v 1.3 1997/09/25 16:13:55 hohndel Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -42,11 +42,6 @@
 #include "Ti302X.h"
 #include "mipointer.h"
 
-extern Bool tmp_useSWCursor;
-
-#ifndef __GNUC__
-# define __inline__ /**/
-#endif
 
 /*
  * TI ViewPoint 3020/3025 support - Robin Cutshaw
@@ -280,6 +275,7 @@ s3TiLoadCursorImage(bits, xorigin, yorigin)
 {
    register int   i;
    unsigned char tmp, tmp1, tmpcurs;
+   register unsigned char *mask = bits + 1;
 
    /* turn the cursor off */
    if ((tmpcurs = s3InTiIndReg(TI_CURS_CONTROL)) & TI_CURS_SPRITE_ENABLE)
@@ -301,8 +297,10 @@ s3TiLoadCursorImage(bits, xorigin, yorigin)
    outb(TI_DATA_REG, 0x00);
    outb(TI_INDEX_REG, TI_CURS_RAM_DATA);
 
-   for (i = 0; i < 1024; i++)
-      outb(TI_DATA_REG, *bits++);
+   for (i = 0; i < 512; i++, mask+=2)
+      outb(TI_DATA_REG, *mask);
+   for (i = 0; i < 512; i++, bits+=2)
+      outb(TI_DATA_REG, *bits);
 
    outb(TI_INDEX_REG, tmp1);
 

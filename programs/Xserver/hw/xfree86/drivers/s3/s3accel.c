@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3accel.c,v 1.14 1997/09/25 16:13:55 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3accel.c,v 1.15 1997/11/08 17:07:29 hohndel Exp $ */
 
 /*
  *
@@ -1037,28 +1037,6 @@ stipplewidth, stippleheight, srcx, srcy)
     SET_CMD(CMD_RECT | BYTSEQ | _32BIT | PCDATA | DRAW | PLANAR |
 					INC_Y | INC_X | WRTDATA);
 
-    if((dwords == 1) && ((srcx + w) <= stipplewidth)) {
-	register unsigned char* srcptr;
-	unsigned char* lastline = src + (srcwidth * stippleheight);
-#ifdef S3_NEWMMIO
-	register CARD32* destptr = (CARD32*)&IMG_TRANS;
-#endif
-
-	srcp += srcx >> 3;
-	srcx &= 0x07;
-	srcptr = srcp;
-
-	while(h--) {
-#ifdef S3_NEWMMIO
-	   *(destptr++) = reverse_bitorder(*((CARD32*)srcptr) >> srcx);
-#else
-	   SET_PIX_TRANS_L(reverse_bitorder(*((CARD32*)srcptr) >> srcx));
-#endif
-	   srcptr += srcwidth;
-	   if(srcptr >= lastline) srcptr -= (lastline - src);
-        }
-	return;
-    }
 
     if(!((stipplewidth > 32) || (stipplewidth & (stipplewidth - 1)))) { 
     	CARD32 pattern;
