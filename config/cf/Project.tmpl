@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
 XCOMM $XConsortium: Project.tmpl,v 1.249 95/05/23 21:36:40 matt Exp $
-XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.18 1995/07/22 04:11:42 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.19 1995/10/21 11:25:59 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -570,6 +570,30 @@ UnsharedLibReferences(XONLY,X11,$(XLIBSRC))
 #endif
 #endif
          XLIBONLY = $(XONLYLIB)
+
+#if BuildThreadStubLibrary
+#ifndef SharedLibXThrStub
+#define SharedLibXThrStub YES
+#endif
+#ifndef NormalLibXThrStub
+#define NormalLibXThrStub NO
+#endif
+#ifndef DebugLibXThrStub
+#define DebugLibXThrStub NO
+#endif
+#ifndef ProfileLibXThrStub
+#define ProfileLibXThrStub NO
+#endif
+   XTHRSTUBLIBSRC = $(LIBSRC)/XThrStub
+#if SharedLibXThrStub
+#ifndef SharedXThrStubRev
+#define SharedXThrStubRev 6.0
+#endif
+SharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBLIBSRC),SOXTHRSTUBREV,SharedXThrStubRev)
+#else
+UnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC))
+#endif
+#endif
 
 #if BuildExtraExtensionLibrary
 #ifndef SharedLibXExExt

@@ -1,5 +1,5 @@
-.\" $XConsortium: xdm.man,v 1.34 94/04/17 20:03:49 gildea Exp $
-.\" $XFree86$
+.\" $XConsortium: xdm.man,v 1.40 95/07/10 21:18:07 gildea Exp $
+.\" $XFree86: xc/programs/xdm/xdm.man,v 3.2 1995/10/21 13:14:21 dawes Exp $
 .\" Copyright (c) 1988, 1994  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -291,10 +291,12 @@ uses file locking to keep multiple display managers from running amok.
 On System V, this
 uses the \fIlockf\fP library call, while on BSD it uses \fIflock.\fP
 .IP "\fBDisplayManager.authDir\fP"
-This names a directory in which
+This names a directory under which
 .I xdm
 stores authorization files while initializing the session.  The
 default value is \fI<XRoot>/lib/X11/xdm.\fP
+Can be overridden for specific displays by
+DisplayManager.\fIDISPLAY\fP.authFile.
 .IP \fBDisplayManager.autoRescan\fP
 This boolean controls whether
 .I xdm
@@ -393,7 +395,7 @@ See the section
 .B "Session Program."
 .IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.reset\fP"
 This specifies a program which is run (as root) after the session terminates.
-Again, by default no program is run.
+By default, no program is run.
 The conventional name is \fIXreset\fP.
 See the section
 .B "Reset Program."
@@ -514,6 +516,8 @@ to the server, using the \fB\-auth\fP server command line option.
 It should be
 kept in a directory which is not world-writable as it could easily be
 removed, disabling the authorization mechanism in the server.
+If not specified, a name is generated from DisplayManager.authDir and
+the name of the display.
 .IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.authComplain\fP"
 If set to ``false,'' disables the use of the \fBunsecureGreeting\fP
 in the login window.
@@ -947,13 +951,15 @@ it might be better to disconnect the machine from the network
 before doing this.
 .SH "STARTUP PROGRAM"
 .PP
-The \fIXstartup\fP file is typically a shell script.
-It is run as root and should be
+The \fIXstartup\fP program is run as
+root when the user logs in.
+It is typically a shell script.
+Since it is run as root, \fIXstartup\fP should be
 very careful about security.  This is the place to put commands which add
 entries to \fI/etc/utmp\fP
 (the \fIsessreg\fP program may be useful here),
 mount users' home directories from file servers,
-display the message of the day, or abort the session if logins are not
+or abort the session if logins are not
 allowed.
 .PP
 In addition to any specified by \fBDisplayManager.exportList\fP,
@@ -995,7 +1001,7 @@ Here is a sample \fIXstartup\fP script:
 	# This program is run as root after the user is verified
 	#
 	if [ \-f /etc/nologin ]; then
-		xmessage\0\-file /etc/nologin
+		xmessage\0\-file /etc/nologin\0\-timeout 30\0\-center
 		exit 1
 	fi
 	sessreg\0\-a\0\-l $DISPLAY\0\-x /usr/X11R6/lib/xdm/Xservers $USER
@@ -1019,7 +1025,7 @@ the following environment variables are passed:
 	PATH	the value of \fBDisplayManager.\fP\fIDISPLAY\fP\fB.userPath\fP
 	SHELL	the user's default shell (from \fIgetpwnam\fP)
 	XAUTHORITY	may be set to a non-standard authority file
-	KRB5CCNAME	may be set to a Kerberos credentials cache file
+	KRB5CCNAME	may be set to a Kerberos credentials cache name
 
 .fi
 .PP
@@ -1213,13 +1219,13 @@ user authorization file where \fIxdm\fP stores keys for clients to read
 .I <XRoot>/lib/X11/xdm/chooser
 the default chooser
 .TP 20
-.I <XRoot>/bin/X11/xrdb
+.I <XRoot>/bin/xrdb
 the default resource database loader
 .TP 20
-.I <XRoot>/bin/X11/X
+.I <XRoot>/bin/X
 the default server
 .TP 20
-.I <XRoot>/bin/X11/xterm
+.I <XRoot>/bin/xterm
 the default session program and failsafe client
 .TP 20
 .I <XRoot>/lib/X11/xdm/A<display>\-<suffix>

@@ -1,4 +1,5 @@
 XCOMM $XConsortium: Threads.tmpl,v 1.3 94/03/30 12:04:19 gildea Exp $
+XCOMM $XFree86$
 
 /*
  * For a multi-threaded application or library,
@@ -34,20 +35,32 @@ XCOMM $XConsortium: Threads.tmpl,v 1.3 94/03/30 12:04:19 gildea Exp $
 #define SystemMTDefines /**/
 #endif
 #ifndef CplusplusSystemMTDefines
-#define CplusplusSystemMTDefines /**/
+# ifdef SystemMTDefines
+#  define CplusplusSystemMTDefines SystemMTDefines
+# else
+#  define CplusplusSystemMTDefines /**/
+# endif
 #endif
 #ifndef ThreadsCompileFlags
 #define ThreadsCompileFlags /**/
 #endif
 #ifndef ThreadsCplusplusCompileFlags
-#define ThreadsCplusplusCompileFlags /**/
+# ifdef ThreadsCompileFlags
+#  define ThreadsCplusplusCompileFlags ThreadsCompileFlags
+# else
+#  define ThreadsCplusplusCompileFlags /**/
+# endif
 #endif
 
 #ifndef ThreadsLibraries
 #define ThreadsLibraries /**/
 #endif
 #ifndef ThreadsCplusplusLibraries
-#define ThreadsCplusplusLibraries /**/
+# ifdef ThreadsLibraries
+#  define ThreadsCplusplusLibraries ThreadsLibraries
+# else
+#  define ThreadsCplusplusLibraries /**/
+# endif
 #endif
 #ifndef ThreadsLoadFlags
 #define ThreadsLoadFlags ThreadsCompileFlags

@@ -1,5 +1,5 @@
-/* $XConsortium: dm.c,v 1.70 94/04/17 20:03:36 gildea Exp $ */
-/* $XFree86: xc/programs/xdm/dm.c,v 3.0 1994/06/28 12:32:33 dawes Exp $ */
+/* $XConsortium: dm.c,v 1.71 95/07/10 21:18:07 gildea Exp $ */
+/* $XFree86: xc/programs/xdm/dm.c,v 3.1 1994/10/20 06:15:09 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -152,13 +152,15 @@ char	**argv;
     if (debugLevel == 0)
 	InitErrorLog ();
 
-    /* Clean up any old Authorization files */
-#ifdef MINIX
-    sprintf(cmdbuf, "/usr/bin/rm -f %s/A*", authDir);
+    if (nofork_session == 0) {
+	/* Clean up any old Authorization files */
+#ifndef MINIX
+	sprintf(cmdbuf, "/bin/rm -f %s/authdir/authfiles/A*", authDir);
 #else
-    sprintf(cmdbuf, "/bin/rm -f %s/A*", authDir);
+	sprintf(cmdbuf, "/usr/bin/rm -f %s/authdir/authfiles/A*", authDir);
 #endif
-    system(cmdbuf);
+	system(cmdbuf);
+    }
 
 #ifdef XDMCP
     init_session_id ();
