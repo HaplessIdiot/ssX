@@ -190,8 +190,8 @@ modules.
 
 XFree86 4.0.1 added automatic kernel module loading to the X server.  On
 Linux, the X server uses modprobe to load kernel modules.  In Linux 2.4.x the
-DRM kernel modules should be kept in /lib/modules/2.4.x/ker-
-nel/drivers/char/drm/ for automatic loading to work.
+DRM kernel modules should be kept in /lib/modules/2.4.x/kernel/driv-
+ers/char/drm/ for automatic loading to work.
 
 Optionally, DRM kernel modules can be loaded manually with insmod prior to
 starting the X server.

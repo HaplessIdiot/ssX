@@ -13,11 +13,8 @@
 
 XFree86 4.0 was the first official release of the new XFree86 4 series.  The
 current release (4.4.0) is the latest in that series.  XFree86 4 represents a
-significant redesign of the XFree86 X server.  Not all of the hardware
-drivers from 3.3.x have been ported to 4.x yet, but conversely, 4.x has sup-
-port for a lot of hardware that is not supported in 3.3.x.  Our Driver Status
-document summarizes how the hardware driver support compares between 3.3.6
-and 4.4.0.
+significant redesign of the XFree86 X server, with a strong focus on modular-
+ity and clean interfaces compared with the previous XFree86 3.x series.
 
 XFree86 4.4 introduces an automatic configuration mechanism for the XFree86
 server which makes it now possible to start XFree86 without first creating a
@@ -465,8 +462,8 @@ Drivers marked with (*) are available for Linux only.
 
 XFree86 4.x has a single X server binary called XFree86.  This binary can
 either have one or more video and input drivers linked in statically, or more
-usually, dynamically, and in that manner load the video drivers, input
-drivers, and other modules that are needed.
+usually, dynamically, and in that manner load the video drivers, input driv-
+ers, and other modules that are needed.
 
 XFree86 4.4.0 has X server support for most UNIX® and UNIX-like operating
 systems on Intel/x86 platforms, plus support for Linux and some BSD OSs on
@@ -996,7 +993,7 @@ its contributors
 This product includes software developed by X-Oz Technologies (http://www.x-
 oz.com/).
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.117 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.118 dawes Exp $
 
 
 $XFree86: $

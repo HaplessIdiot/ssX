@@ -206,8 +206,8 @@ before installing.
 
 5.  Reconfiguring the server (source distribution)
 
-To build a different set of servers or servers with a different set of
-drivers installed:
+To build a different set of servers or servers with a different set of driv-
+ers installed:
 
   1.  Make sure the source for any new drivers is in the correct place (e.g.,
       driver source should be in a subdirectory of xc/pro-

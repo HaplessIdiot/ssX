@@ -296,8 +296,8 @@ Please add the following at the bottom of math.h, before the last #endif
                           *blinkRate:             0
                           *cursorPositionVisible: false
 
-          This bug seems to be fixed since 3.1.2, and therefore the
-          workaround is not needed anymore.
+          This bug seems to be fixed since 3.1.2, and therefore the work-
+          around is not needed anymore.
 
         o ELSA Winner 2000PRO/X Revision G
 

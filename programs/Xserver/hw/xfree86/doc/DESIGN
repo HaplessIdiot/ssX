@@ -1231,8 +1231,8 @@ foRec through it's privates field.
 Once it has stabilised, the data structures and variables accessible to video
 drivers will be documented here.  In the meantime, those things defined in
 the xf86.h and xf86str.h files are visible to video drivers.  Things defined
-in xf86Priv.h and xf86Privstr.h are NOT intended to be visible to video
-drivers, and it is an error for a driver to include those files.
+in xf86Priv.h and xf86Privstr.h are NOT intended to be visible to video driv-
+ers, and it is an error for a driver to include those files.
 
 8.3  Accessing global data
 
@@ -6367,4 +6367,4 @@ eScreen() function.
      Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.55 tsi Exp $
 
 
-$XFree86$
+$XFree86: $

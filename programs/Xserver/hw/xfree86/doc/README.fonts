@@ -270,9 +270,9 @@ structure should be as follows:
 
 After creating this directory structure and copying the relevant files, you
 should create a `fonts.scale' file.  This file has the same format as in the
-case of (non-CID) scalable fonts, except that its first column contains
-PostScript font names with the extension `.cid' appended rather than actual
-filenames:
+case of (non-CID) scalable fonts, except that its first column contains Post-
+Script font names with the extension `.cid' appended rather than actual file-
+names:
 
      1
      Adobe-Korea1/Munhwa-Regular--UniKS-UCS2-H.cid \
@@ -702,9 +702,9 @@ as the font file used or in a system-wide location
 (`/usr/X11R6/lib/X11/fonts/encodings/' by default).
 
 The `encodings.dir' file has a similar format to `fonts.dir'.  Its first line
-specifies the number of encodings, while every successive line has two
-columns, the name of the encoding, and the name of the encoding file; this
-can be relative to the current directory, or absolute.  Every encoding name
+specifies the number of encodings, while every successive line has two col-
+umns, the name of the encoding, and the name of the encoding file; this can
+be relative to the current directory, or absolute.  Every encoding name
 should agree with the encoding name defined in the encoding file.  For exam-
 ple,
 

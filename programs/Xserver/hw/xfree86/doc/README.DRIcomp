@@ -374,8 +374,8 @@ a 2.4.x kernel, you should add the following:
 
                  #define MesaUseSSE YES
 
-If you want to build the DRM kernel modules as part of the full build pro-
-cess, add the following:
+If you want to build the DRM kernel modules as part of the full build
+process, add the following:
 
                  #define BuildXF86DRM YES
 
