@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.80 1999/03/06 13:12:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.81 1999/03/07 11:40:36 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -303,7 +303,7 @@ static const char *fbdevHWSymbols[] = {
 	"fbdevHWGetVidmem",
 
 	/* colormap */
-	"fbdevHWLoadpalette",
+	"fbdevHWLoadPalette",
 
 	/* ScrnInfo hooks */
 	"fbdevHWSwitchMode",
@@ -311,6 +311,15 @@ static const char *fbdevHWSymbols[] = {
 	"fbdevHWEnterVT",
 	"fbdevHWLeaveVT",
 	"fbdevHWValidMode",
+	"fbdevHWRestore",
+	"fbdevHWModeInit",
+	"fbdevHWSave",
+
+	"fbdevHWUnmapMMIO",
+	"fbdevHWUnmapVidmem",
+	"fbdevHWMapMMIO",
+	"fbdevHWMapVidmem",
+	
 	NULL
 };
 
