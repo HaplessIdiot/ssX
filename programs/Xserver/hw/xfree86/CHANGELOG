@@ -34,8 +34,9 @@ XFree86 4.0a (xx March 2000)
   19. Improve memory probing reliability in the Matrox driver (Mark Vojkovich).
   18. Fix DESIGN doc and XF86Config man page information about the Screen
       entry format in the ServerLayout sections (David Dawes).
-  17. Attempt to add support for Matrox SDRAM G400s (Mark Vojkovich).
-  16. Improve memory probing reliability in the Matrox driver (Mark Vojkovich).
+  17. Add missing file permission flags to xf86shmget (Mark Vojkovich).
+  16. Workaround in 8+32 for applications that assume changes to window
+      background pixmaps go into effect immediately (Mark Vojkovich).
   15. Change loader search order to look in more specific subdirectories first,
       thereby avoiding loading 3.3.* module versions (Marc La France).
   14. Remove the var-* bindist files for platforms that don't use Xvar.tgz
