@@ -18,6 +18,8 @@ lib/libXext.so.6.4
 lib/libXext.so
 lib/libXfont.so.1.3
 lib/libXfont.so
+lib/libXft.so.1.0
+lib/libXft.so
 lib/libXi.so.6.0
 lib/libXi.so
 lib/libXmu.so.6.2
@@ -26,6 +28,8 @@ lib/libXp.so.6.2
 lib/libXp.so
 lib/libXpm.so.4.11
 lib/libXpm.so
+lib/libXrender.so.1.0
+lib/libXrender.so
 lib/libXt.so.6.0
 lib/libXt.so
 lib/libXtst.so.6.1
