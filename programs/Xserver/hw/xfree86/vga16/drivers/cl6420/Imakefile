@@ -1,0 +1,27 @@
+XCOMM $XFree86$
+#include <Server.tmpl>
+
+SRCS = cl_driver.c cl_bank.s
+
+OBJS = cl_driver.o cl_bank.o
+
+#if XF86LinkKit
+VGA256DIR = ../../vga256
+INCLUDES = -I. -I../../../include -I../..
+#else
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
+           -I../../../vga256/vga -I$(SERVERSRC)/include -I$(INCLUDESRC)
+VGA256DIR = ../../../vga256/drivers
+#endif
+
+DEFINES = -DXF86VGA16
+
+NormalLibraryObjectRule()
+NormalAsmObjectRule()
+
+NormalRelocatableTarget(cl6420_drv, $(OBJS))
+
+LinkSourceFile(cl_driver.c,$(VGA256DIR)/cl6420)
+LinkSourceFile(cl_bank.s,$(VGA256DIR)/cl6420)
+
+DependTarget()
