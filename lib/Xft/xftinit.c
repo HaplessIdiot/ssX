@@ -22,16 +22,59 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
+#include <stdlib.h>
 #include "xftint.h"
 
+#ifdef FREETYPE2
+FT_Library  _XftFTlibrary;
+#endif
+XftFontSet  *_XftFontSet;
+Bool	    _XftConfigInitialized;
+
+/* #define XFT_DEBUG_FONTSET */
+
 Bool
-XftMatch (XftFontName *pattern, XftFontName *result)
+XftInitFtLibrary (void)
 {
-    char    *path;
-    path = getenv ("XFT_PATH");
-    if (!path)
-	path = XFT_DEFAULT_PATH;
-    *result = *pattern;
-    return _XftParsePathList (path, 0, result);
+#ifdef FREETYPE2
+    char    **d;
+    
+    if (_XftFTlibrary)
+	return True;
+    if (FT_Init_FreeType (&_XftFTlibrary))
+	return False;
+    _XftFontSet = XftFontSetCreate ();
+    if (!_XftFontSet)
+	return False;
+    for (d = XftConfigDirs; d && *d; d++)
+    {
+#ifdef XFT_DEBUG_FONTSET
+	printf ("scan dir %s\n", *d);
+#endif
+	XftDirScan (_XftFontSet, *d);
+    }
+#ifdef XFT_DEBUG_FONTSET
+    XftPrintFontSet (_XftFontSet);
+#endif
+#endif
+    return True;
+}
+
+Bool
+XftInit (char *config)
+{
+    if (_XftConfigInitialized)
+	return True;
+    _XftConfigInitialized = True;
+    if (!config)
+    {
+	config = getenv ("XFT_CONFIG");
+	if (!config)
+	    config = XFT_DEFAULT_PATH;
+    }
+    if (XftConfigLexFile (config))
+    {
+	XftConfigparse ();
+    }
+    return True;
 }

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.2 2000/10/06 00:01:54 keithp Exp $
+XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.3 2000/10/13 13:41:17 keithp Exp $
 
 #define DoNormalLib NormalLibXft
 #define DoSharedLib SharedLibXft
@@ -13,8 +13,8 @@ XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.2 2000/10/06 00:01:54 keithp Exp $
 
 #include <Threads.tmpl>
 
-INCLUDES=$(FREETYPE2INCLUDES)
-DEFINES=$(FREETYPE2DEFINES)
+YFLAGS = -d -p XftConfig
+LFLAGS = -PXftConfig -s
 
 #ifndef XftLibDir
 #define XftLibDir $(LIBDIR)
@@ -28,14 +28,26 @@ XFTCONFIG=$(XFTLIBDIR)/XftConfig
 
 TYPE1DIR=XftType1Dir
 CONFIG_DEFS=-DXFT_TYPE1_DIR=\"$(TYPE1DIR)\"
-DEFINES=-DXFT_DEFAULT_PATH=\"$(XFTCONFIG)\"
+INCLUDES=$(FREETYPE2INCLUDES)
+DEFINES=-DXFT_DEFAULT_PATH=\"$(XFTCONFIG)\" $(FREETYPE2DEFINES)
 REQUIREDLIBS=$(LDPRELIBS) $(XRENDER) $(XLIB) $(FREETYPE2LIB)
 
-HEADERS = Xft.h
-   SRCS = drawstr.c extents.c glyphs.c lex.c load.c match.c metrics.c parse.c
-   OBJS = drawstr.o extents.o glyphs.o lex.o load.o match.o metrics.o parse.o
+HEADERS = Xft.h XftFreetype.h
+
+   SRCS = xftcfg.c xftcore.c xftdbg.c xftdir.c xftdpy.c xftdraw.c \
+	  xftextent.c xftfont.c xftfreetype.c xftfs.c xftglyphs.c \
+	  xftgram.c xftinit.c xftlex.c xftmatch.c xftname.c xftpat.c \
+	  xftrender.c xftstr.c xftxlfd.c
+	  
+   OBJS = xftcfg.o xftcore.o xftdbg.o xftdir.o xftdpy.o xftdraw.o \
+	  xftextent.o xftfont.o xftfreetype.o xftfs.o xftglyphs.o \
+	  xftgram.o xftinit.o xftlex.o xftmatch.o xftname.o xftpat.o \
+	  xftrender.o xftstr.o xftxlfd.o
 
 #include <Library.tmpl>
+
+LexFile(xftlex)
+YaccFile(xftgram,$(YFLAGS))
 
 #if DoSharedLib && SharedDataSeparation
 SpecialCObjectRule(sharedlib,NullParameter,$(SHLIBDEF))

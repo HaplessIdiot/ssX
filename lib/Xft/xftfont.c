@@ -1,0 +1,178 @@
+/*
+ * $XFree86$
+ *
+ * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Keith Packard not be used in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific, written prior permission.  Keith Packard makes no
+ * representations about the suitability of this software for any purpose.  It
+ * is provided "as is" without express or implied warranty.
+ *
+ * KEITH PACKARD DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ * EVENT SHALL KEITH PACKARD BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */
+
+#include <stdlib.h>
+#include "xftint.h"
+
+XftPattern *
+XftFontMatch (Display *dpy, int screen, XftPattern *pattern, XftResult *result)
+{
+    XftPattern	*new;
+    XftPattern	*match;
+    XftFontSet	*sets[2];
+    int		nsets;
+#ifdef FREETYPE2
+    Bool	render, core;
+#endif
+
+    if (!XftInit (0))
+	return 0;
+    
+    new = XftPatternDuplicate (pattern);
+    if (!new)
+	return 0;
+    XftConfigSubstitute (new);
+    XftDefaultSubstitute (dpy, screen, new);
+    nsets = 0;
+    
+#ifdef FREETYPE2
+    render = False;
+    core = True;
+    (void) XftPatternGetBool (new, XFT_RENDER, 0, &render);
+    (void) XftPatternGetBool (new, XFT_CORE, 0, &core);
+
+    if (render)
+    {
+	if (XftInitFtLibrary ())
+	{
+	    sets[nsets] = _XftFontSet;
+	    if (sets[nsets])
+		nsets++;
+	}
+    }
+    if (core)
+#endif
+    {
+	sets[nsets] = XftDisplayGetFontSet (dpy);
+	if (sets[nsets])
+	    nsets++;
+    }
+    
+    match = XftFontSetMatch (sets, nsets, new, result);
+    XftPatternDestroy (new);
+    return match;
+}
+
+XftFont *
+XftFontOpenPattern (Display *dpy, XftPattern *pattern)
+{
+    Bool	    core;
+    XFontStruct	    *xfs = 0;
+    XftFontStruct   *fs = 0;
+    XftFont	    *font;
+
+    if (XftPatternGetBool (pattern, XFT_CORE, 0, &core) != XftResultMatch)
+	return 0;
+    if (core)
+    {
+	xfs = XftCoreOpen (dpy, pattern);
+	if (!xfs) return 0;
+    }
+    else
+    {
+	fs = XftFreeTypeOpen (dpy, pattern);
+	if (!fs) return 0;
+    }
+    font = (XftFont *) malloc (sizeof (XftFont));
+    font->core = core;
+    font->pattern = pattern;
+    if (core)
+    {
+	font->u.core.font = xfs;
+	font->ascent = xfs->ascent;
+	font->descent = xfs->descent;
+	font->height = xfs->ascent + xfs->descent;
+	font->max_advance_width = xfs->max_bounds.width;
+    }
+    else
+    {
+	font->u.ft.font = fs;
+	font->ascent = fs->ascent;
+	font->descent = fs->descent;
+	font->height = fs->height;
+	font->max_advance_width = fs->max_advance_width;
+    }
+    return font;
+}
+
+XftFont *
+XftFontOpen (Display *dpy, int screen, ...)
+{
+    va_list	    va;
+    XftPattern	    *pat;
+    XftPattern	    *match;
+    XftResult	    result;
+    XftFont	    *font;
+
+    va_start (va, screen);
+    pat = XftPatternVaBuild (0, va);
+    va_end (va);
+    if (!pat)
+	return 0;
+    match = XftFontMatch (dpy, screen, pat, &result);
+    XftPatternDestroy (pat);
+    if (!match)
+	return 0;
+    
+    font = XftFontOpenPattern (dpy, match);
+    if (!font)
+	XftPatternDestroy (match);
+
+    return font;
+}
+
+XftFont *
+XftFontOpenName (Display *dpy, int screen, const char *name)
+{
+    XftPattern	    *pat;
+    XftPattern	    *match;
+    XftResult	    result;
+    XftFont   *font;
+
+    pat = XftNameParse (name);
+    if (!pat)
+	return 0;
+    match = XftFontMatch (dpy, screen, pat, &result);
+    XftPatternDestroy (pat);
+    if (!match)
+	return 0;
+    
+    font = XftFontOpenPattern (dpy, match);
+    if (!font)
+	XftPatternDestroy (match);
+    
+    return font;
+}
+
+void
+XftFontClose (Display *dpy, XftFont *font)
+{
+    if (font->core)
+	XFreeFont (dpy, font->u.core.font);
+    else
+	XftFreeTypeClose (dpy, font->u.ft.font);
+    if (font->pattern)
+	XftPatternDestroy (font->pattern);
+    free (font);
+}

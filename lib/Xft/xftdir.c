@@ -22,59 +22,57 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <sys/types.h>
+#include <dirent.h>
+#include <stdlib.h>
+#include <string.h>
 #include "xftint.h"
 
-void
-XftExtentsString (Display	*dpy,
-		  XftFont	*font,
-		  unsigned char	*string, 
-		  int		len,
-		  XGlyphInfo	*extents)
+Bool
+XftDirScan (XftFontSet *set, const char *dir)
 {
-    unsigned long   missing[XFT_NMISSING];
-    int		    nmissing;
-    unsigned char   *s;
-    int		    l;
-    XGlyphInfo	    *gi;
-    int		    x, y;
+    DIR		    *d;
+    struct dirent   *e;
+    char	    *file;
+    char	    *base;
+    XftPattern	    *font;
+    int		    count;
+    Bool	    ret = True;
+    int		    id;
 
-    s = string;
-    l = len;
-    nmissing = 0;
-    while (l--)
-	_XftCheckGlyph (dpy, font, (unsigned long) *s++, missing, &nmissing);
-    if (nmissing)
-	_XftLoadGlyphs (dpy, font, missing, nmissing);
-    
-    if (!len)
+    d = opendir (dir);
+    if (!d)
+	return False;
+    file = (char *) malloc (strlen (dir) + 1 + 256 + 1);
+    if (!file)
     {
-	extents->width = 0;
-	extents->height = 0;
-	extents->x = 0;
-	extents->y = 0;
-	extents->yOff = 0;
-	extents->xOff = 0;
-	return;
+	closedir (d);
+	return False;
     }
-    len--;
-    gi = font->realized[*string++];
-    *extents = *gi;
-    x = gi->xOff;
-    y = gi->yOff;
-    while (len--)
+    strcpy (file, dir);
+    strcat (file, "/");
+    base = file + strlen (file);
+    while (ret && (e = readdir (d)))
     {
-	gi = font->realized[*string++];
-	if (gi->x + x < extents->x)
-	    extents->x = gi->x + x;
-	if (gi->y + y < extents->y)
-	    extents->y = gi->y + y;
-	if (gi->width + x > extents->width)
-	    extents->width = gi->width + x;
-	if (gi->height + y > extents->height)
-	    extents->height = gi->height + y;
-	x += gi->xOff;
-	y += gi->yOff;
+	if (e->d_name[0] != '.')
+	{
+	    strcpy (base, e->d_name);
+	    id = 0;
+	    do
+	    {
+		font = XftFreeTypeQuery (file, id, &count);
+		if (font)
+		{
+		    if (!XftFontSetAdd (set, font))
+			ret = False;
+		}
+		id++;
+	    } while (font && ret && id < count);
+	}
     }
-    extents->xOff = x;
-    extents->yOff = y;
+    free (file);
+    closedir (d);
+    return ret;
 }
+
+	    
