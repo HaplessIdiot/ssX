@@ -1,4 +1,5 @@
 XFree86 4.3.99.903 (xx December 2003)
+ 703. Disable Xv in the via driver when acceleration is disabled (Alan Cox).
  702. Fix bugs caused by empty PCI buses on ZX1-based systems (Marc La France).
  701. Fix optional save/restore of BIOS area data in int10 module
       (Marc La France).
@@ -18405,7 +18406,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3050 2003/12/23 22:21:51 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3051 2003/12/23 22:46:38 tsi Exp $
 
 
 
