@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.19 2001/04/10 16:07:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.20 2001/04/16 15:02:11 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -500,11 +500,6 @@ static Bool RADEONGetBIOSParameters(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
     int           i;
     int           FPHeader = 0;
 #endif
-
-#define RADEONReadBIOS(offset, buffer, length)                          \
-     (info->BIOSFromPCI ?                                               \
-      xf86ReadPciBIOS(offset, info->PciTag, 0, buffer, length) :        \
-      xf86ReadBIOS(info->BIOSAddr, offset, buffer, length))
 
 #define RADEON_BIOS8(v)  (info->VBIOS[v])
 #define RADEON_BIOS16(v) (info->VBIOS[v] | \
