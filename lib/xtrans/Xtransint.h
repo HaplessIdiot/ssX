@@ -1,5 +1,5 @@
 /* $XConsortium: Xtransint.h,v 1.21 94/05/10 11:08:46 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.1 1994/05/22 06:45:50 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.2 1994/10/20 06:06:51 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -64,8 +64,8 @@ from the X Consortium.
  *	DEBUG=3 All Function Tracing
  *	DEBUG=4 printing of intermediate values
  *	DEBUG=5 really detailed stuff
-#define DEBUG 2
  */
+#define DEBUG 1
 
 #ifndef _XTRANSINT_H_
 #define _XTRANSINT_H_
@@ -427,6 +427,21 @@ static int is_numeric (
 /* add hack to the format string to avoid warnings about extra arguments
  * to fprintf.
  */
+#if defined(XSERV_t) && defined(TRANS_SERVER)
+/* Use ErrorF() for the X server */
+#ifndef __EMX__
+#define PRMSG(lvl,x,a,b,c)	if (lvl <= DEBUG){ \
+			int hack= 0, saveerrno=errno; \
+			ErrorF(x+hack,a,b,c); \
+			errno=saveerrno; \
+			} else ((void)0)
+#else
+#define PRMSG(lvl,x,a,b,c)	if (lvl <= DEBUG){ \
+			int hack= 0; \
+			ErrorF(x+hack,a,b,c); \
+			} else ((void)0)
+#endif /* __EMX__ */
+#else
 #ifndef __EMX__
 #define PRMSG(lvl,x,a,b,c)	if (lvl <= DEBUG){ \
 			int hack= 0, saveerrno=errno; \
@@ -439,6 +454,7 @@ static int is_numeric (
 			fprintf(stdout, x+hack,a,b,c); fflush(stdout); \
 			} else ((void)0)
 #endif /* __EMX__ */
+#endif /* XSERV_t && TRANS_SERVER */
 #else
 #define PRMSG(lvl,x,a,b,c)	((void)0)
 #endif /* DEBUG */

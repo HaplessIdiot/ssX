@@ -1,5 +1,5 @@
 /* $XConsortium: bsd_init.c,v 1.1 94/03/28 21:28:00 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_init.c,v 3.0 1994/09/23 10:23:58 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -491,8 +491,8 @@ void xf86CloseConsole()
         }
         if (ioctl(xf86Info.consoleFd, KDDISABIO, 0) < 0)
         {
-            FatalError("xf86OpenConsole: KDDISABIO failed (%s)\n",
-	               strerror(errno));
+            xf86FatalError("xf86OpenConsole: KDDISABIO failed (%s)\n",
+	                   strerror(errno));
         }
 	if (initialVT != -1)
 		ioctl(xf86Info.consoleFd, VT_ACTIVATE, initialVT);
@@ -506,7 +506,8 @@ void xf86CloseConsole()
 	close(xf86Info.consoleFd);
 	if ((xf86Info.consoleFd = open("/dev/console",O_RDONLY,0)) <0)
 	{
-	    FatalError("xf86CloseConsole: Cannot open /dev/console\n");
+	    xf86FatalError("xf86CloseConsole: Cannot open /dev/console (%s)\n",
+			   strerror(errno));
 	}
     }
     close(xf86Info.consoleFd);

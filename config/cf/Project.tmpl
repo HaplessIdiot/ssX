@@ -1,7 +1,7 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
 XCOMM $XConsortium: Project.tmpl,v 1.244 94/08/17 18:57:34 matt Exp $
-XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.4 1994/07/24 11:38:46 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.5 1994/09/17 13:38:29 dawes Exp $
 
 /****************************************************************************
  *                                                                          *
@@ -143,6 +143,12 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.4 1994/07/24 11:38:46 dawes Exp $
 #endif
 #ifndef UseRgbTxt
 #define UseRgbTxt		NO	/* default is to compile with dbm */
+#endif
+#ifndef PartialNetDefault
+#define PartialNetDefault	NO	/* don't default to '-pn' */
+#endif
+#ifndef UseServerLock
+#define UseServerLock		NO
 #endif
 #ifndef FontCompilerFlags
 #define FontCompilerFlags -t

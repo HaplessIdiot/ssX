@@ -1,3 +1,25 @@
+XFree86 3.1.0b (23 October 1994)
+ 44. Some Linux xterm fixes (Orest Zborowski).
+ 43. Fix Linux xdm groups setting problem (Orest Zborowski).
+ 42. Allow Mach8 server to delete unsuitable modes (Hans Nasten).
+ 41. Attempt at fixing FatalError() re-entrancy problems when aborting.
+ 40. Add X server lock file code.
+ 39. Modify PTS code in xtrans to remove an existing node at server startup
+     (as happens with UNIXCONN).
+ 38. Set debug level to 1 in xtrans (this should allow error messages to
+     finally be seen).
+ 37. Modify xtrans to use ErrorF() for debug/error messages within the
+     X server.
+ 36. Updates to the S3MNAdjust option -- including no longer using global
+     variables (Harald Koenig).
+ 35. Fix horizontal stripes when panning with an S3 805i (Harald Koenig).
+ 34. Fix SDAC + pixmux patch (Harald Koenig).
+ 33. Fix line-related crash problem when using linear addressing with
+     the SVGA server (Harm Hanemaayer).
+ 32. Fix Cirrus 5434 linear addressing text blt bug (Harm Hanemaayer).
+ 31. Fix Cirrus 14-pixel font bug (Harm Hanemaayer).
+ 30. Improve Cirrus probing (Harm Hanemaayer).
+
 XFree86 3.1.0a (21 October 1994)
  29. Fix some missing globals in Linux libX11 (Orest Zborowski).
  28. Fix for TCPCONN code's checking for an existing server.
