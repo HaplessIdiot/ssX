@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.8 2000/09/24 13:51:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.9 2000/10/24 22:45:07 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -101,12 +101,10 @@ Bool MgaInitDma(ScrnInfoPtr pScrn, int prim_size)
       init.chipset = MGA_CARD_TYPE_G400;
       break;
    case PCI_CHIP_MGAG200:
+   case PCI_CHIP_MGAG200_PCI:
       init.chipset = MGA_CARD_TYPE_G200;
       break;
-   case PCI_CHIP_MGAG200_PCI:
    default:
-      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-                 "[drm] Direct rendering not supported on this card/chipset\n");
       return FALSE;
    }
 
@@ -350,6 +348,18 @@ Bool MGADRIScreenInit(ScreenPtr pScreen)
    int init_offset;
    int i;
 
+   switch(pMGA->Chipset) {
+   case PCI_CHIP_MGAG400:
+   case PCI_CHIP_MGAG200:
+#if 0
+   case PCI_CHIP_MGAG200_PCI:
+#endif
+      break;
+   default:
+      xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "[drm] Direct rendering only supported with G200/G400 AGP\n");
+      return FALSE;
+   }
+
    /* Check that the GLX, DRI, and DRM modules have been loaded by testing
     * for canonical symbols in each module. */
    if (!xf86LoaderCheckSymbol("GlxSetVisualConfigs")) return FALSE;
@@ -373,15 +383,12 @@ Bool MGADRIScreenInit(ScreenPtr pScreen)
       }
    }
 
-      xf86DrvMsg(pScreen->myNum, X_INFO,
-                 "[drm] bpp: %d depth: %d\n", pScrn->bitsPerPixel, 
-		 pScrn->depth);
-   
+   xf86DrvMsg(pScreen->myNum, X_INFO, "[drm] bpp: %d depth: %d\n", pScrn->bitsPerPixel, pScrn->depth);
 
    if ((pScrn->bitsPerPixel / 8) != 2 &&
        (pScrn->bitsPerPixel / 8) != 4) {
       xf86DrvMsg(pScreen->myNum, X_INFO,
-                 "[drm] Direct Rendering only supported in 16 and 32 bpp modes\n");
+                 "[drm] Direct rendering only supported in 16 and 32 bpp modes\n");
       return FALSE;
    }
    
@@ -607,12 +614,10 @@ Bool MGADRIScreenInit(ScreenPtr pScreen)
       pMGADRI->chipset = MGA_CARD_TYPE_G400;
       break;
    case PCI_CHIP_MGAG200:
+   case PCI_CHIP_MGAG200_PCI:
       pMGADRI->chipset = MGA_CARD_TYPE_G200;
       break;
-   case PCI_CHIP_MGAG200_PCI:
    default:
-      xf86DrvMsg(pScreen->myNum, X_ERROR,
-                "[drm] Direct rendering not supported on this card/chipset\n");
       return FALSE;
    }
    

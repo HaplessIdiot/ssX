@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.17 2000/09/08 02:22:00 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.18 2000/10/24 22:45:07 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -74,11 +74,11 @@ void MGAInitVideo(ScreenPtr pScreen)
     int num_adaptors;
 
     if((pScrn->bitsPerPixel != 8) && !pMga->NoAccel &&
+       (pMga->SecondCrtc == FALSE) &&
        ((pMga->Chipset == PCI_CHIP_MGAG200) ||
         (pMga->Chipset == PCI_CHIP_MGAG200_PCI) ||
         (pMga->Chipset == PCI_CHIP_MGAG400))) 
     {
-
 	if((pMga->Overlay8Plus24 || pMga->TexturedVideo) &&
 	   (pScrn->bitsPerPixel != 24))
         {
@@ -90,11 +90,9 @@ void MGAInitVideo(ScreenPtr pScreen)
 	    newAdaptor = MGASetupImageVideoOverlay(pScreen);
 	    pMga->TexturedVideo = FALSE;
 	}
-
 	if(!pMga->Overlay8Plus24)
 	    MGAInitOffscreenImages(pScreen);
     }
-    
 
     num_adaptors = xf86XVListGenericAdaptors(pScrn, &adaptors);
 

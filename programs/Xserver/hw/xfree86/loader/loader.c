@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.43 2000/09/29 08:59:49 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.44 2000/10/02 02:32:15 tsi Exp $ */
 
 /*
  *
@@ -85,11 +85,75 @@ static char freeHandles[MAX_HANDLE] ;
 static int refCount[MAX_HANDLE] ;
 #endif
 
-#ifdef __sparc__
-extern LOOKUP SparcLookupTab[];
+#if defined(__sparc__) && defined(__GNUC__)
+# define SYMFUNCDOT(func) { "." #func, (funcptr)&__sparc_dot_ ## func },
+# define SYMFUNCDOT89(func) { "." #func, (funcptr)&func ## _sparcv89 },
+# define DEFFUNCDOT(func) 					\
+extern void __sparc_dot_ ## func (void) __asm__ ("." #func);	\
+extern void func ## _sparcv89 (void);
+DEFFUNCDOT(rem)
+DEFFUNCDOT(urem)
+DEFFUNCDOT(mul)
+DEFFUNCDOT(umul)
+DEFFUNCDOT(div)
+DEFFUNCDOT(udiv)
+static LOOKUP SparcV89LookupTab[] = {
+   SYMFUNCDOT89(rem)
+   SYMFUNCDOT89(urem)
+   SYMFUNCDOT89(mul)
+   SYMFUNCDOT89(umul)
+   SYMFUNCDOT89(div)
+   SYMFUNCDOT89(udiv)
+   { 0, 0 }
+};
+static LOOKUP SparcLookupTab[] = {
+   SYMFUNCDOT(rem)
+   SYMFUNCDOT(urem)
+   SYMFUNCDOT(mul)
+   SYMFUNCDOT(umul)
+   SYMFUNCDOT(div)
+   SYMFUNCDOT(udiv)
+   { 0, 0 }
+};
 #ifdef linux
-extern int sparcUseHWMulDiv(void);
-extern LOOKUP SparcV89LookupTab[];
+#if defined(__GNUC__) && defined(__GLIBC__)
+#define HWCAP_SPARC_MULDIV	8
+extern unsigned long int _dl_hwcap;
+#endif
+
+static int
+sparcUseHWMulDiv(void)
+{
+    FILE *f;
+    char buffer[1024];
+    char *p;
+#if defined(__GNUC__) && defined(__GLIBC__)
+    unsigned long *hwcap;
+    __asm(".weak _dl_hwcap");
+    
+    hwcap = &_dl_hwcap;
+    __asm("" : "=r" (hwcap) : "0" (hwcap));
+    if (hwcap) {
+        if (*hwcap & HWCAP_SPARC_MULDIV)
+    	    return 1;
+    	else
+    	    return 0;
+    }
+#endif
+    f = fopen("/proc/cpuinfo","r");
+    if (!f) return 0;
+    while (fgets(buffer, 1024, f) != NULL) {
+        if (!strncmp (buffer, "type", 4)) {
+            p = strstr (buffer, "sun4");
+            if (p && (p[4] == 'u' || p[4] == 'd' || p[4] == 'm')) {
+                fclose(f);
+                return 1;
+            }
+        }
+    }
+    fclose(f);
+    return 0;
+}
 #endif
 #endif
 

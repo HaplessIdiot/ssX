@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/read.c,v 1.12 2000/04/04 22:36:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/read.c,v 1.13 2000/10/20 14:59:03 alanh Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -41,7 +41,7 @@ static xf86ConfigSymTabRec TopLevelTab[] =
 	{-1, ""},
 };
 
-#define CLEANUP XF86freeConfig
+#define CLEANUP xf86freeConfig
 
 XF86ConfigPtr
 xf86readConfigFile (void)
@@ -201,7 +201,7 @@ xf86addListItem (GenericListPtr head, GenericListPtr new)
 }
 
 void
-XF86freeConfig (XF86ConfigPtr p)
+xf86freeConfig (XF86ConfigPtr p)
 {
 	if (p == NULL)
 		return;

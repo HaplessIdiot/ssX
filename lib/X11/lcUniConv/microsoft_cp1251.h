@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/lcUniConv/microsoft_cp1251.h,v 1.1 2000/10/27 20:26:08 dawes Exp $ */
 
 /*
  * MICROSOFT-CP1251
@@ -35,10 +35,10 @@ static int
 microsoft_cp1251_mbtowc (conv_t conv, wchar_t *pwc, const unsigned char *s, int n)
 {
   unsigned char c = *s;
-  if (c < 0xa0)
+  if (c < 0x80)
     *pwc = (wchar_t) c;
   else
-    *pwc = (wchar_t) microsoft_cp1251_2uni[c-0xa0];
+    *pwc = (wchar_t) microsoft_cp1251_2uni[c-0x80];
   return 1;
 }
 

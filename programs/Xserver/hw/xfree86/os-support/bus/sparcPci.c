@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.1 1999/03/28 15:32:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.2 2000/04/04 19:25:19 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -134,46 +134,5 @@ sparcPciCfgSetBits(PCITAG tag, int off, CARD32 mask, CARD32 bits)
     syscall(__NR_pciconfig_read, bus, dfn, off, 4, &val);
     val = (val & ~mask) | (bits & mask);
     syscall(__NR_pciconfig_write, bus, dfn, off, 4, &val);
-}
-
-int sparcUseHWMulDiv(void);
-
-#if defined(__GNUC__) && defined(__GLIBC__)
-#define HWCAP_SPARC_MULDIV	8
-extern unsigned long int _dl_hwcap;
-#endif
-
-int
-sparcUseHWMulDiv(void)
-{
-    FILE *f;
-    char buffer[1024];
-    char *p;
-#if defined(__GNUC__) && defined(__GLIBC__)
-    unsigned long *hwcap;
-    __asm(".weak _dl_hwcap");
-    
-    hwcap = &_dl_hwcap;
-    __asm("" : "=r" (hwcap) : "0" (hwcap));
-    if (hwcap) {
-        if (*hwcap & HWCAP_SPARC_MULDIV)
-    	    return 1;
-    	else
-    	    return 0;
-    }
-#endif
-    f = fopen("/proc/cpuinfo","r");
-    if (!f) return 0;
-    while (fgets(buffer, 1024, f) != NULL) {
-        if (!strncmp (buffer, "type", 4)) {
-            p = strstr (buffer, "sun4");
-            if (p && (p[4] == 'u' || p[4] == 'd' || p[4] == 'm')) {
-                fclose(f);
-                return 1;
-            }
-        }
-    }
-    fclose(f);
-    return 0;
 }
 #endif /* Linux */

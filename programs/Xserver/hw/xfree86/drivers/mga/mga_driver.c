@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.175 2000/11/02 02:51:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.176 2000/11/02 16:01:47 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -3019,8 +3019,8 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	pScreen->SaveScreen = MGASaveScreenCrtc2;
     } else {
 	pScreen->SaveScreen = MGASaveScreen;
-	MGAInitVideo(pScreen);
     }
+    MGAInitVideo(pScreen);
 
     /* Wrap the current CloseScreen function */
     pMga->CloseScreen = pScreen->CloseScreen;

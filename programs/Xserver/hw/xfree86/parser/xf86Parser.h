@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.22 2000/10/20 14:59:04 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.23 2000/10/24 22:45:10 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -396,7 +396,7 @@ extern const char *xf86openConfigFile (const char *, const char *,
 					const char *);
 extern XF86ConfigPtr xf86readConfigFile (void);
 extern void xf86closeConfigFile (void);
-extern void XF86freeConfig (XF86ConfigPtr p);
+extern void xf86freeConfig (XF86ConfigPtr p);
 extern int xf86writeConfigFile (const char *, XF86ConfigPtr);
 XF86ConfDevicePtr xf86findDevice(const char *ident, XF86ConfDevicePtr p);
 XF86ConfLayoutPtr xf86findLayout(const char *name, XF86ConfLayoutPtr list);

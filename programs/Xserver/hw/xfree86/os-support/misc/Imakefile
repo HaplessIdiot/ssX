@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/Imakefile,v 3.8 2000/08/04 16:13:41 eich Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/Imakefile,v 3.9 2000/08/10 17:40:36 dawes Exp $
 
 
 
@@ -12,8 +12,8 @@ XCOMM $XConsortium: Imakefile /main/4 1996/09/28 17:24:12 rws $
 XSRCS = BUSmemcpy.S IODelay.S SlowBcopy.S
 XOBJS = BUSmemcpy.o IODelay.o SlowBcopy.o
 #elif defined(SparcArchitecture)
-XSRCS = BUSmemcpy.c IODelay.c SlowBcopy.c SparcMulDiv.S
-XOBJS = BUSmemcpy.o IODelay.o SlowBcopy.o SparcMulDiv.o
+XSRCS = BUSmemcpy.c IODelay.c SlowBcopy.c
+XOBJS = BUSmemcpy.o IODelay.o SlowBcopy.o
 #else
 XSRCS = BUSmemcpy.c IODelay.c SlowBcopy.c
 XOBJS = BUSmemcpy.o IODelay.o SlowBcopy.o
@@ -38,9 +38,6 @@ NormalLibraryObjectRule()
 ObjectFromAsmSource(BUSmemcpy,NullParameter)
 ObjectFromAsmSource(IODelay,NullParameter)
 ObjectFromAsmSource(SlowBcopy,NullParameter)
-#endif
-#if defined(SparcArchitecture)
-ObjectFromAsmSource(SparcMulDiv,NullParameter)
 #endif
 
 DependTarget()
