@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.208 2002/05/22 21:38:28 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.209 2002/06/11 13:50:59 alanh Exp $ */
 
 /*
  *
@@ -33,8 +33,6 @@
 #include "xf86.h"
 #include "xf86Resources.h"
 #include "xf86_OSproc.h"
-#define DECLARE_CARD_DATASTRUCTURES
-#include "xf86PciInfo.h"
 #include "xf86Parser.h"
 #include "xf86Config.h"
 #ifdef XINPUT
@@ -1035,10 +1033,6 @@ LOOKUP xfree86LookupTab[] = {
    SYMVAR(xf86DummyVar3)
 #endif
 
-   /* variables for PCI devices and cards from xf86Bus.c */
-   SYMVAR(xf86PCICardInfo)
-   SYMVAR(xf86PCIVendorInfo)
-   SYMVAR(xf86PCIVendorNameInfo)
 #ifdef async
    SYMVAR(xf86CurrentScreen)
 #endif

@@ -1,4 +1,6 @@
 XFree86 4.2.99.2 (xx July 2002)
+ 204. Change the X server (and scanpci) to use the pci.ids file (from
+      pciids.sf.net) for vendor/device descriptions (David Dawes).
  203. Change XDarwin to use NSQuickDrawView instead of Carbon windows to
       get a QuickDraw graphics port for rootless windows (Torrey T. Lyons).
  202. Add support for some missing 32-bit address modes to x86emu.  Some
@@ -14945,4 +14947,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2262 2002/07/15 16:49:07 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2263 2002/07/15 19:58:28 torrey Exp $
