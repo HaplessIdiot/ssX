@@ -1,4 +1,6 @@
 XFree86 4.4.99.2 (xx March 2004)
+  39. Fix a crash that can happen with apps using the zh_CN.UTF-8 locale
+      (Bugzilla #991, Yu Shao).
   38. Remove dependencies from install targets so that from-tree installations
       can be done without attempting to rebuild anything (David Dawes, based on
       a patch and report from Lee Olsen).
@@ -18757,7 +18759,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3192 2004/03/23 16:25:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3193 2004/03/25 03:36:22 dawes Exp $
 
 
 
