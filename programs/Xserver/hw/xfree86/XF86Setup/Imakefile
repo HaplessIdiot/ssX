@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/Imakefile,v 3.8 1996/08/24 12:50:37 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/Imakefile,v 3.9 1996/09/14 13:06:34 dawes Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
@@ -47,8 +47,8 @@ includes::
 #define XawClientDepLibs /**/
 #endif
 
-#if defined(SVR4Architecture) && defined(SunArchitecture)
-/* Solaris needs this */
+#if defined(SVR4Architecture) || defined(LinuxArchitecture)
+/* Some OSs need this, and it should(?) be harmless when not needed */
     EXTRASYSLIBS = -ldl
 #endif
 
