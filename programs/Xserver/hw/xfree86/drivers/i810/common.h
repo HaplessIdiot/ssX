@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/common.h,v 1.4 2002/12/11 17:01:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/common.h,v 1.5 2003/01/28 22:47:09 dawes Exp $ */
 
 /*
  * Authors:
@@ -287,6 +287,10 @@ extern int I810_DEBUG;
 #define PCI_CHIP_I855_GM_BRIDGE	   0x3580
 #endif
 
+#ifndef PCI_CHIP_I865_G
+#define PCI_CHIP_I865_G		   0x2572
+#define PCI_CHIP_I865_G_BRIDGE	   0x2570
+#endif
 
 #define IS_I810(pI810) (pI810->PciInfo->chipType == PCI_CHIP_I810 ||	\
 			pI810->PciInfo->chipType == PCI_CHIP_I810_DC100 || \
@@ -295,6 +299,7 @@ extern int I810_DEBUG;
 #define IS_I830(pI810) (pI810->PciInfo->chipType == PCI_CHIP_I830_M)
 #define IS_845G(pI810) (pI810->PciInfo->chipType == PCI_CHIP_845_G)
 #define IS_I85X(pI810)  (pI810->PciInfo->chipType == PCI_CHIP_I855_GM)
+#define IS_I865G(pI810) (pI810->PciInfo->chipType == PCI_CHIP_I865_G)
 
 #define IS_MOBILE(pI810) (IS_I830(pI810) || IS_I85X(pI810))
 

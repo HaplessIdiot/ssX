@@ -1,4 +1,6 @@
 XFree86 4.2.99.902 (XX February 2003)
+ 848. Update the i810/i830 driver to recognise the 865G integrated graphics
+      chipset (David Dawes).
  847. Updates for the nsc driver (Sarma Kolluru, NSC).
  846. Fixed dual head for 1400x1050 displays (Thomas Winischhofer).
  845. Initializing clock ranges in several drivers to get rid of the
@@ -16264,4 +16266,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2526 2003/02/05 18:29:07 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2527 2003/02/05 18:38:39 alanh Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.24 2002/12/21 17:14:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.25 2003/01/28 22:47:09 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -131,6 +131,10 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  *    08/2002 Alan Hourihane and David Dawes
  *        - Add XVideo support.
  */
+/*
+ *    10/2002 David Dawes
+ *        - Add Intel(R) 865G support.
+ */
 
 
 #ifndef PRINT_MODE_INFO
@@ -171,6 +175,7 @@ static SymTabRec I830BIOSChipsets[] = {
    {PCI_CHIP_I830_M,		"i830"},
    {PCI_CHIP_845_G,		"845G"},
    {PCI_CHIP_I855_GM,		"855GM"},
+   {PCI_CHIP_I865_G,		"865G"},
    {-1,				NULL}
 };
 
@@ -178,6 +183,7 @@ static PciChipsets I830BIOSPciChipsets[] = {
    {PCI_CHIP_I830_M,		PCI_CHIP_I830_M,	RES_SHARED_VGA},
    {PCI_CHIP_845_G,		PCI_CHIP_845_G,		RES_SHARED_VGA},
    {PCI_CHIP_I855_GM,		PCI_CHIP_I855_GM,	RES_SHARED_VGA},
+   {PCI_CHIP_I865_G,		PCI_CHIP_I865_G,	RES_SHARED_VGA},
    {-1,				-1,			RES_UNDEFINED}
 };
 
@@ -843,7 +849,7 @@ I830DetectMemory(ScrnInfoPtr pScrn)
    bridge = pciTag(0, 0, 0);		/* This is always the host bridge */
    gmch_ctrl = pciReadWord(bridge, I830_GMCH_CTRL);
 
-   if (IS_I85X(pI830))
+   if (IS_I85X(pI830) || IS_I865G(pI830))
    {
       switch (gmch_ctrl & I830_GMCH_GMS_MASK) {
       case I855_GMCH_GMS_STOLEN_1M:
@@ -956,7 +962,50 @@ I830UnmapMem(ScrnInfoPtr pScrn)
 }
 
 #ifndef HAVE_GET_PUT_BIOSMEMSIZE
-#define HAVE_GET_PUT_BIOSMEMSIZE 0
+#define HAVE_GET_PUT_BIOSMEMSIZE 1
+#endif
+
+#if HAVE_GET_PUT_BIOSMEMSIZE
+/*
+ * Tell the BIOS how much video memory is available.  The BIOS call used
+ * here won't always be available.
+ */
+static Bool
+PutBIOSMemSize(ScrnInfoPtr pScrn, int memSize)
+{
+   vbeInfoPtr pVbe = I830PTR(pScrn)->pVbe;
+
+   DPRINTF(PFX, "PutBIOSMemSize: %d kB\n", memSize / 1024);
+
+   pVbe->pInt10->num = 0x10;
+   pVbe->pInt10->ax = 0x5f11;
+   pVbe->pInt10->bx = 0;
+   pVbe->pInt10->cx = memSize / GTT_PAGE_SIZE;
+
+   xf86ExecX86int10_wrapper(pVbe->pInt10, pScrn);
+   return Check5fStatus(pScrn, 0x5f11, pVbe->pInt10->ax);
+}
+
+/*
+ * This reports what the previous VBEGetVBEInfo() found.  Be sure to call
+ * VBEGetVBEInfo() after changing the BIOS memory size view.  If
+ * a separate BIOS call is added for this, it can be put here.  Only
+ * return a valid value if the funtionality for PutBIOSMemSize()
+ * is available.
+ */
+static int
+GetBIOSMemSize(ScrnInfoPtr pScrn)
+{
+   I830Ptr pI830 = I830PTR(pScrn);
+   int memSize = KB(pI830->vbeInfo->TotalMemory * 64);
+
+   DPRINTF(PFX, "GetBIOSMemSize\n");
+
+   if (PutBIOSMemSize(pScrn, memSize))
+      return memSize;
+   else
+      return -1;
+}
 #endif
 
 /*
@@ -1290,6 +1339,9 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
 	 chipname = "852GM/855GM (unknown variant)";
 	 break;
       }
+      break;
+   case PCI_CHIP_I865_G:
+      chipname = "865G";
       break;
    default:
       chipname = "unknown chipset";

@@ -24,7 +24,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_video.c,v 1.4 2002/12/16 19:38:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_video.c,v 1.5 2003/01/28 22:47:09 dawes Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -552,6 +552,7 @@ I830ResetVideo(ScrnInfoPtr pScrn)
 #define I845_OVERLAY_RATE	120	/* 1280x1024@85, 1600x1200@60 */
 #define I852_OVERLAY_RATE	 79	/* 1024x768@85, 1280x1024@60 */
 #define I855_OVERLAY_RATE	120	/* 1280x1024@85, 1600x1200@60 */
+#define I865_OVERLAY_RATE	170	/* 1600x1200@85, 1920x1440@60 */
 #define DEFAULT_OVERLAY_RATE	120
 
 static XF86VideoAdaptorPtr
@@ -570,7 +571,7 @@ I830SetupImageVideo(ScreenPtr pScreen)
 
    adapt->type = XvWindowMask | XvInputMask | XvImageMask;
    adapt->flags = VIDEO_OVERLAID_IMAGES | VIDEO_CLIP_TO_VIEWPORT;
-   adapt->name = "Intel(R) 830M/845G/852GM/855GM Video Overlay";
+   adapt->name = "Intel(R) 830M/845G/852GM/855GM/865G Video Overlay";
    adapt->nEncodings = 1;
    adapt->pEncodings = DummyEncoding;
    adapt->nFormats = NUM_FORMATS;
@@ -620,6 +621,9 @@ I830SetupImageVideo(ScreenPtr pScreen)
 	 pPriv->maxRate = I855_OVERLAY_RATE;
 	 break;
       }
+      break;
+   case PCI_CHIP_I865_G:
+      pPriv->maxRate = I865_OVERLAY_RATE;
       break;
    default:
       pPriv->maxRate = DEFAULT_OVERLAY_RATE;
