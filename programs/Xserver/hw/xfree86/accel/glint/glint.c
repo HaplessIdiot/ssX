@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.26 1998/03/28 00:04:57 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.27 1998/03/28 00:08:47 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane, Wigan, England.
  *
@@ -36,7 +36,6 @@
 
 #include "xf86Procs.h"
 #include "xf86Priv.h"
-#include "xf86_ansic.h"
 #include "xf86_HWlib.h"
 #include "xf86_PCI.h"
 #include "xf86Version.h"
@@ -80,13 +79,6 @@ static int glintValidMode(
 #define GLINT_MAX_CLOCK	220000
 
 int glintMaxClock = GLINT_MAX_CLOCK;
-
-ScrnInfoPtr xf86Screens[] = 
-{
-  &glintInfoRec,
-};
-
-int  xf86MaxScreens = sizeof(xf86Screens) / sizeof(ScrnInfoPtr);
 
 int glintValidTokens[] =
 {
@@ -223,31 +215,13 @@ ModuleInit(data,magic)
 			* magic= MAGIC_ADD_VIDEO_CHIP_REC;
 			break;
 		case 2:
-			* data = (pointer) "libmfb.a";
-			* magic= MAGIC_LOAD;
-			break;
-		case 3:
-			* data = (pointer) "xaa8.o";
-			* magic= MAGIC_LOAD;
-			break;
-		case 4:
-			* data = (pointer) "xaa16.o";
-			* magic= MAGIC_LOAD;
-			break;
-		case 5:
-			* data = (pointer) "xaa24.o";
-			* magic= MAGIC_LOAD;
-			break;
-		case 6:
-			* data = (pointer) "xaa32.o";
-			* magic= MAGIC_LOAD;
-			break;
-		case 7:
 			* data = (pointer) "libxaa.a";
 			* magic= MAGIC_LOAD;
+			xf86xaaloaded = TRUE;
 			break;
 		default:
 			* magic= MAGIC_DONE;
+			xf86issvgatype = FALSE;
 			break;
 	}
 	return;
@@ -268,6 +242,8 @@ extern void glintIBMSetCursorColors();
 extern void glintIBMLoadCursorImage();
 extern int glintIBMRGB_Probe();
 
+extern Bool xf86xaaloaded;
+extern Bool xf86issvgatype;
 extern int Shiftbpp();
 Bool glintDoubleBufferMode = FALSE;
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
@@ -905,7 +881,6 @@ glintProbe()
 			glintInfoRec.defaultVisual = TrueColor;
 		if (defaultColorVisualClass < 0)
 			defaultColorVisualClass = glintInfoRec.defaultVisual;
-		OFLG_SET(OPTION_NOACCEL, &glintInfoRec.options);
 		break;
 	case 32:
 		glintInfoRec.bitsPerPixel = 32;

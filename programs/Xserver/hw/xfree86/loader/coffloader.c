@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.c,v 1.3 1997/03/04 10:39:47 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.c,v 1.5 1998/03/20 21:07:00 hohndel Exp $ */
 
 
 
@@ -1132,8 +1132,8 @@ COFFModulePtr	cofffile;
 	    continue;
 	}
 	/* .comment */
-	if( strcmp(cofffile->sections[i].s_name,
-		   ".comment" ) == 0 ) {
+	if( strncmp(cofffile->sections[i].s_name,
+		   ".comment",strlen(".comment") ) == 0 ) {
 	    continue;
 	}
 	/* .stab */

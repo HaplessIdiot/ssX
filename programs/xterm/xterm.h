@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.23 1998/03/20 21:08:40 hohndel Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.24 1998/03/27 23:24:03 hohndel Exp $ */
 /*
  * Common/useful definitions for XTERM application.
  *
@@ -106,6 +106,9 @@ extern void unparseseq PROTO((ANSI *ap, int fd));
 extern void SGR_Background PROTO((int color));
 extern void SGR_Foreground PROTO((int color));
 #endif
+
+/* charsets.c */
+extern int xtermCharSets (Char *buf, Char *ptr, char charset);
 
 /* cursor.c */
 extern void CarriageReturn PROTO((TScreen *screen));

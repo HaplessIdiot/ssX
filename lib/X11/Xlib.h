@@ -1,5 +1,5 @@
 /* $TOG: Xlib.h /main/120 1997/08/18 16:05:18 kaleb $ */
-/* $XFree86: xc/lib/X11/Xlib.h,v 3.10 1996/12/23 05:59:47 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlib.h,v 3.11 1997/08/26 10:00:46 hohndel Exp $ */
 /* 
 
 Copyright (c) 1985, 1986, 1987, 1991  X Consortium
@@ -77,6 +77,14 @@ in this Software without prior written authorization from the X Consortium.
 #else
 /* replace this with #include or typedef appropriate for your system */
 typedef unsigned long wchar_t;
+#endif
+#endif
+
+#if defined(ISC) && defined(USE_XMBTOWC)
+#define wctomb(a,b)	_Xwctomb(a,b)
+#define mblen(a,b)	_Xmblen(a,b) 
+#ifndef USE_XWCHAR_STRING
+#define mbtowc(a,b,c)	_Xmbtowc(a,b,c)
 #endif
 #endif
 

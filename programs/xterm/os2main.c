@@ -5,7 +5,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.14 1998/03/20 21:08:37 hohndel Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.15 1998/03/27 23:24:02 hohndel Exp $ */
 
 /***********************************************************
 
@@ -517,6 +517,12 @@ static char *message[] = {
 "will be started.  Options that start with a plus sign (+) restore the default.",
 NULL};
 
+static int abbrev (char *tst, char *cmp)
+{
+	size_t len = strlen(tst);
+	return ((len >= 2) && (!strncmp(tst, cmp, len)));
+}
+
 static void Syntax (badOption)
     char *badOption;
 {
@@ -772,9 +778,9 @@ char **envp;
 	/* Do these first, since we may not be able to open the display */
 	ProgramName = argv[0];
 	if (argc > 1) {
-		if (!strncmp(argv[1], "-v", 2))
+		if (abbrev(argv[1], "-version"))
 			Version();
-		if (!strncmp(argv[1], "-h", 2) && strncmp(argv[1], "-hc", 3))
+		if (abbrev(argv[1], "-help"))
 			Help();
 	}
 
