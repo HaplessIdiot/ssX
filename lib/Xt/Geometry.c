@@ -164,7 +164,7 @@ _XtMakeGeometryRequest (widget, request, reply, clear_rect_obj)
     }
 
     if (parentRealized && managed) {
-	if (!XtIsComposite(parent))
+	if (parent && !XtIsComposite(parent))
 	{
 	    /*
 	     * This shouldn't ever happen, we only test for this to pass
