@@ -18,7 +18,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/include/Xos_r.h,v 1.9 2001/03/02 23:01:28 dawes Exp $ */
+/* $XFree86: xc/include/Xos_r.h,v 1.10 2001/03/03 09:53:00 herrb Exp $ */
 
 /* 
  * Various and sundry Thread-Safe functions used by X11, Motif, and CDE.
@@ -146,7 +146,9 @@ extern void (*_XUnlockMutex_fn)(
 #   endif
 #  endif
 # elif defined(XOS_USE_XT_LOCKING)
+#  ifndef _XtThreadsI_h
 extern void (*_XtProcessLock)(void);
+#  endif
 #  ifndef _XtintrinsicP_h
 #   include <X11/Xfuncproto.h>	/* for NeedFunctionPrototypes */
 extern void XtProcessLock(
