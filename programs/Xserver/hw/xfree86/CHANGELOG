@@ -1,4 +1,6 @@
 XFree86 4.3.99.11 (xx August 2003)
+ 375. Fix for the Brazilian ABNT2 keyboard extra key that now translates to
+      a different keycode value. Patch suggested by Ivan Pascal.
  374. Fixed XDarwin fullscreen crash in some screen sizes (Torrey T. Lyons).
  373. Be a little more precise about differentiating between active and
       inactive non-video PCI resources (Marc La France).
@@ -17529,7 +17531,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2806 2003/08/13 19:12:04 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2807 2003/08/13 19:37:09 torrey Exp $
 
 
 
