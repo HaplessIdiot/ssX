@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/charsets.c,v 1.9 2000/06/13 02:28:38 dawes Exp $
+ * $XFree86: xc/programs/xterm/charsets.c,v 1.10 2003/10/13 00:58:21 dickey Exp $
  */
 
 /************************************************************
@@ -264,7 +264,7 @@ int xtermCharSetOut(IChar *buf, IChar *ptr, char leftset)
 		switch (cs) {
 		case 'A':	/* United Kingdom set (or Latin 1)	*/
 			if ((term->flags & NATIONAL)
-			 || (screen->ansi_level <= 1)) {
+			 || (screen->vtXX_level <= 1)) {
 				if (chr == 0x23)
 					chr = XPOUND;	/* UK pound sign*/
 			} else {

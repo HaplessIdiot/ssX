@@ -2,7 +2,7 @@
  *	$Xorg: misc.c,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/misc.c,v 3.80 2003/10/24 20:38:24 tsi Exp $ */
+/* $XFree86: xc/programs/xterm/misc.c,v 3.81 2003/10/27 01:07:57 dickey Exp $ */
 
 /*
  *
@@ -1613,9 +1613,9 @@ do_dcs(Char * dcsbuf, size_t dcslen)
 			cp);
 	    } else if (!strcmp(cp, "\"p")) {	/* DECSCL */
 		sprintf(reply, "%d%s%s",
-			(screen->ansi_level ?
-			 screen->ansi_level : 1) + 60,
-			(screen->ansi_level >= 2)
+			(screen->vtXX_level ?
+			 screen->vtXX_level : 1) + 60,
+			(screen->vtXX_level >= 2)
 			? (screen->control_eight_bits
 			   ? ";0" : ";1")
 			: "",

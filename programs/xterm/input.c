@@ -468,7 +468,7 @@ Input(TKeyboard * keyboard,
 	&& keyboard->type != keyboardIsVT220
 #endif
 #if OPT_VT52_MODE
-	&& screen->ansi_level != 0
+	&& screen->vtXX_level != 0
 #endif
 	) {
 /*
@@ -569,7 +569,7 @@ Input(TKeyboard * keyboard,
 	key = TRUE;
 #if 0				/* OPT_SUNPC_KBD should suppress - but only for vt220 compatibility */
     } else if (keyboard->type == keyboardIsVT220
-	       && screen->ansi_level <= 1
+	       && screen->vtXX_level <= 1
 	       && IsEditFunctionKey(keysym)) {
 	key = FALSE;		/* ignore editing-keypad in vt100 mode */
 #endif

@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.111 2003/12/24 19:08:11 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.112 2003/12/25 22:04:04 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -43,7 +43,8 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
-<LI><A HREF="#xterm_dev">Development - 2003/12/25 - XFree86 4.3.99.903</A>
+<LI><A HREF="#xterm_184">Patch #184 - 2003/12/31 - XFree86 4.3.99.903</A>
+<LI><A HREF="#xterm_183">Patch #183 - 2003/12/26 - XFree86 4.3.99.903</A>
 <LI><A HREF="#xterm_182">Patch #182 - 2003/12/2 - XFree86 4.3.99.901</A>
 <LI><A HREF="#xterm_181">Patch #181 - 2003/10/26 - XFree86 4.3.99.15</A>
 <LI><A HREF="#xterm_180">Patch #180 - 2003/10/12 - XFree86 4.3.99.15</A>
@@ -229,7 +230,20 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
 
-<H1><A NAME="xterm_dev">Development - 2003/12/25 - XFree86 4.3.99.903</A></H1>
+<H1><A NAME="xterm_184">Development - 2003/12/31 - XFree86 4.3.99.903</A></H1>
+<ul>
+	<li>improve configure-script checks for FreeType and related libraries,
+	    using <code>xft-config</code> or <code>freetype-config</code>
+	    scripts when available.
+
+	<li>fix configure-script check for <code>SYSV</code> definition by
+	    ensuring whether <code>sys_errlist[]</code> is declared, and by
+	    modifying the test program to include <code>X11/Intrinsic.h</code>
+	    to check that <code>wchar_t</code> is declared consistently (report
+	    by H Merijn Brand).
+</ul>
+
+<H1><A NAME="xterm_183">Development - 2003/12/26 - XFree86 4.3.99.903</A></H1>
 <ul>
 	<li>correct logic for configurations that may attempt to open both
 	    old/new-style pseudoterminals.  In this case, the old-style are
@@ -245,6 +259,26 @@ xc/programs/Xserver/hw/xfree86).
 	    requests this information (Debian #223926).
 
 	<li>add a limit check to ScrnTstWrapped() (XFree86 Bugzilla #981).
+
+	<li>modify DECSCL to perform a hard reset (RIS) as per DEC manuals.
+	    Extended DECSCL to accept parameters for vt4XX and vt5xx terminals.
+
+	<li>correct logic for ANSI conformance level escape sequences, which
+	    were confused with DEC conformance level escape sequences.
+
+	<li>correct state for vt52 shift-in/shift-out, which was not reset
+	    properly after <a href="#xterm_171">patch #171</a>.
+
+	<li>correct handling of graphics characters for vt52 mode, which did
+	    not display line-drawing characters after G1 fix from
+	    <a href="#xterm_182">patch #182</a>.
+
+	<li>fixes for configure script to work with current Cygwin headers
+	    and libraries.
+
+	<li>modify <code>Imakefile</code> to put the current directory at the
+	    beginning of the include searchpath (David Dawes).
+</ul>
 
 <H1><A NAME="xterm_182">Patch #182 - 2003/12/2 - XFree86 4.3.99.901</A></H1>
 <ul>
@@ -459,7 +493,7 @@ xc/programs/Xserver/hw/xfree86).
 	    <code>PreeditPosition()</code> only when the cursor's position has
 	    changed.  This addresses report by Stefan Baums of high CPU usage
 	    while xterm with chinput are running in the background (patch by
-	    Yong Li &lt;rigel863@yahoo.com&gt;).
+	    Yong Li).
 
 	<li>improved explanation of <code>-ls</code> conflict with
 	    <code>-e</code> option in xterm manpage (adapted from comments by
@@ -472,7 +506,7 @@ xc/programs/Xserver/hw/xfree86).
 	    (report by Henning Makholm).
 
 	<li>correct keypad-mapping table in input.c so <code>XK_KP_Equal</code> 
-	    works (report by Henning Makholm &lt;henning@makholm.net&gt;).
+	    works (report by Henning Makholm).
 
 	<li>modified to work with CJK double-width (bi-width/monospace) fonts. 
 	    They're similar to Roman Czbora and David Starner's gnuunifonts in
@@ -490,14 +524,14 @@ xc/programs/Xserver/hw/xfree86).
 	    <code>brokenStringTerm</code> to allow
 	    user to revert one part of the parsing table corrections from
 	    <a href="#xterm_171">patch #171</a>.  (reports by
-	    Matthias Scheler &lt;tron@zhadum.de&gt;
-	    Kirill Ponomarew &lt;ponomarew@oberon.net&gt; indicate that someone's
+	    Matthias Scheler and
+	    Kirill Ponomarew indicate that someone's
 	    network firmware sends an <code>&lt;escape&gt;X</code>).
 
 	<li>modify configure <code>--disable-imake</code> to provide values
 	    for <code>OSMAJORVERSION</code>, <code>OSMINORVERSION</code>,
 	    <code>FUNCPROTO</code> and <code>NARROWPROTO</code> (report by
-	    Heiko Schlichting &lt;heiko@FU-Berlin.DE&gt;).
+	    Heiko Schlichting).
 
 	<li>correct <code>vttests/16colors.sh</code>, which omitted the
 	    <code>$SUF</code> variable in output strings (patch by Paul
@@ -567,7 +601,7 @@ xc/programs/Xserver/hw/xfree86).
 	    server, and the XIM server is destroyed (patch by Nam SungHyun).
 
 	<li>modify to use built-in line-drawing characters for Xft fonts
-	    (patch by Andrew Tipton &lt;andrew@cadre5.com&gt;).
+	    (patch by Andrew Tipton).
 
 	<li>make menu reflect the state of the <code>tekInhibit</code>
 	    resource.
