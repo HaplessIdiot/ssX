@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: util.c /main/33 1996/12/01 23:47:10 swick $
- *	$XFree86: xc/programs/xterm/util.c,v 3.10 1996/08/21 08:43:35 dawes Exp $
+ *	$XFree86: xc/programs/xterm/util.c,v 3.11 1996/12/23 07:14:41 dawes Exp $
  */
 
 /*
@@ -124,7 +124,7 @@ register TScreen *screen;
 	if(refreshheight > 0) {
 		ClearCurBackground(screen,
 		    (int) refreshtop * FontHeight(screen) + screen->border,
-		    (int) screen->border + screen->scrollbar,
+		    (int) screen->border + Scrollbar(screen),
 		    (unsigned) refreshheight * FontHeight(screen),
 		    (unsigned) Width(screen));
 		ScrnRefresh(screen, refreshtop, 0, refreshheight,
@@ -243,7 +243,7 @@ register int amount;
 	if(refreshheight > 0) {
 		ClearCurBackground(screen,
 		    (int) refreshtop * FontHeight(screen) + screen->border,
-		    (int) screen->border + screen->scrollbar,
+		    (int) screen->border + Scrollbar(screen),
 		    (unsigned) refreshheight * FontHeight(screen),
 		    (unsigned) Width(screen));
 		if(refreshheight > shift)
@@ -321,7 +321,7 @@ register int amount;
 	if(refreshheight > 0) {
 		ClearCurBackground(screen,
 		    (int) refreshtop * FontHeight(screen) + screen->border,
-		    (int) screen->border + screen->scrollbar,
+		    (int) screen->border + Scrollbar(screen),
 		    (unsigned) refreshheight * FontHeight(screen),
 		    (unsigned) Width(screen));
 	}
@@ -381,7 +381,7 @@ register int n;
 	if(refreshheight > 0) {
 		ClearCurBackground(screen,
 		    (int) refreshtop * FontHeight(screen) + screen->border,
-		    (int) screen->border + screen->scrollbar,
+		    (int) screen->border + Scrollbar(screen),
 		    (unsigned) refreshheight * FontHeight(screen),
 		    (unsigned) Width(screen));
 	}
@@ -457,7 +457,7 @@ register int n;
 	if(refreshheight > 0) {
 		ClearCurBackground(screen,
 		    (int) refreshtop * FontHeight(screen) + screen->border,
-		    (int) screen->border + screen->scrollbar,
+		    (int) screen->border + Scrollbar(screen),
 		    (unsigned) refreshheight * FontHeight(screen),
 		    (unsigned) Width(screen));
 	}
@@ -570,7 +570,7 @@ register TScreen *screen;
 			if((height -= top) > 0) {
 				ClearCurBackground(screen,
 				    top * FontHeight(screen) + screen->border,
-				    screen->border + screen->scrollbar,
+				    screen->border + Scrollbar(screen),
 				    height * FontHeight(screen),
 				    Width(screen));
 			}
@@ -604,7 +604,7 @@ register TScreen *screen;
 			if(++top <= screen->max_row) {
 				ClearCurBackground(screen,
 				    top * FontHeight(screen) + screen->border,
-				    screen->border + screen->scrollbar,
+				    screen->border + Scrollbar(screen),
 				    (screen->max_row - top + 1) * FontHeight(screen),
 				    Width(screen));
 			}
@@ -765,7 +765,7 @@ register TScreen *screen;
 			FlushScroll(screen);
 		ClearCurBackground(screen,
 		    top * FontHeight(screen) + screen->border,	
-		    screen->border + screen->scrollbar, 
+		    screen->border + Scrollbar(screen), 
 		    (screen->max_row - top + 1) * FontHeight(screen),
 		    Width(screen));
 	}
@@ -1136,19 +1136,19 @@ ChangeColors(tw,pNew)
 	if (COLOR_DEFINED(pNew,TEXT_FG)) {
 	    Pixel	fg=	COLOR_VALUE(pNew,TEXT_FG);
 	    screen->foreground=	fg;
-	    XSetForeground(screen->display,screen->normalGC,fg);
-	    XSetBackground(screen->display,screen->reverseGC,fg);
-	    XSetForeground(screen->display,screen->normalboldGC,fg);
-	    XSetBackground(screen->display,screen->reverseboldGC,fg);
+	    XSetForeground(screen->display,NormalGC(screen),fg);
+	    XSetBackground(screen->display,ReverseGC(screen),fg);
+	    XSetForeground(screen->display,NormalBoldGC(screen),fg);
+	    XSetBackground(screen->display,ReverseBoldGC(screen),fg);
 	}
 
 	if (COLOR_DEFINED(pNew,TEXT_BG)) {
 	    Pixel	bg=	COLOR_VALUE(pNew,TEXT_BG);
 	    tw->core.background_pixel=	bg;
-	    XSetBackground(screen->display,screen->normalGC,bg);
-	    XSetForeground(screen->display,screen->reverseGC,bg);
-	    XSetBackground(screen->display,screen->normalboldGC,bg);
-	    XSetForeground(screen->display,screen->reverseboldGC,bg);
+	    XSetBackground(screen->display,NormalGC(screen),bg);
+	    XSetForeground(screen->display,ReverseGC(screen),bg);
+	    XSetBackground(screen->display,NormalBoldGC(screen),bg);
+	    XSetForeground(screen->display,ReverseBoldGC(screen),bg);
 	    XSetWindowBackground(screen->display, TextWindow(screen),
 						  tw->core.background_pixel);
 	}
@@ -1216,8 +1216,8 @@ ReverseVideo (termw)
 	screen->foreground = tmp;
 
 	EXCHANGE( screen->mousecolor,    screen->mousecolorback, tmp )
-	EXCHANGE( screen->normalGC,      screen->reverseGC,      tmpGC )
-	EXCHANGE( screen->normalboldGC,  screen->reverseboldGC,  tmpGC )
+	EXCHANGE( NormalGC(screen),      ReverseGC(screen),      tmpGC )
+	EXCHANGE( NormalBoldGC(screen),  ReverseBoldGC(screen),  tmpGC )
 
 #ifndef NO_ACTIVE_ICON
 	tmpGC = screen->iconVwin.normalGC;
@@ -1324,18 +1324,18 @@ updatedXtermGC(screen, flags, fg, bg, hilite)
 	if ( (!hilite && (flags & INVERSE) != 0)
 	  ||  (hilite && (flags & INVERSE) == 0) ) {
 		if (flags & BOLD)
-			gc = screen->reverseboldGC;
+			gc = ReverseBoldGC(screen);
 		else
-			gc = screen->reverseGC;
+			gc = ReverseGC(screen);
 
 		XSetForeground(screen->display, gc, bg_pix);
 		XSetBackground(screen->display, gc, fg_pix);
 
 	} else {
 		if (flags & BOLD)
-			gc = screen->normalboldGC;
+			gc = NormalBoldGC(screen);
 		else
-			gc = screen->normalGC;
+			gc = NormalGC(screen);
 
 		XSetForeground(screen->display, gc, fg_pix);
 		XSetBackground(screen->display, gc, bg_pix);
@@ -1361,18 +1361,18 @@ resetXtermGC(screen, flags, hilite)
 	if ( (!hilite && (flags & INVERSE) != 0)
 	  ||  (hilite && (flags & INVERSE) == 0) ) {
 		if (flags & BOLD)
-			gc = screen->reverseboldGC;
+			gc = ReverseBoldGC(screen);
 		else
-			gc = screen->reverseGC;
+			gc = ReverseGC(screen);
 
 		XSetForeground(screen->display, gc, bg_pix);
 		XSetBackground(screen->display, gc, fg_pix);
 
 	} else {
 		if (flags & BOLD)
-			gc = screen->normalboldGC;
+			gc = NormalBoldGC(screen);
 		else
-			gc = screen->normalGC;
+			gc = NormalGC(screen);
 
 		XSetForeground(screen->display, gc, fg_pix);
 		XSetBackground(screen->display, gc, bg_pix);

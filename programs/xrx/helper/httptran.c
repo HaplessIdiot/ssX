@@ -29,10 +29,13 @@ the X Consortium.
 
 */
 
+/* $XFree86$ */
+
 #if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define TRANS(func) _HttpTrans##func
 #else
 #define TRANS(func) _HttpTrans/**/func
 #endif
+static char* __xtransname = "_HttpTrans";
 
 #include "transport.c"

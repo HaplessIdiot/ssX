@@ -1,5 +1,5 @@
 /* $XConsortium: utils.c /main/127 1996/12/02 10:23:20 lehors $ */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.22 1996/11/24 09:58:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.23 1996/12/23 07:10:00 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -1251,6 +1251,7 @@ OsInitAllocator ()
 	been_here = 1;
 #endif
 }
+#endif
 
 void
 AuditPrefix(f)

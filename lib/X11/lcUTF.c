@@ -1,5 +1,5 @@
 /* $XConsortium: lcUTF.c /main/12 1996/12/04 10:12:29 swick $ */
-/* $XFree86: xc/lib/X11/lcUTF.c,v 3.1 1996/08/26 06:19:09 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcUTF.c,v 3.2 1996/12/23 06:00:08 dawes Exp $ */
 /******************************************************************
 
               Copyright 1993 by SunSoft, Inc.
@@ -27,7 +27,6 @@ OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
 #include "XlcUTF.h"
-#include "snprintf.h"
 
 static long	getutfrune();
 static void our_wctomb(

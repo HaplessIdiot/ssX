@@ -1,5 +1,5 @@
 /* $XConsortium: lcInit.c /main/4 1996/12/05 10:40:35 swick $ */
-/* $XFree86: xc/lib/X11/lcInit.c,v 3.0 1994/06/28 12:21:04 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcInit.c,v 3.1 1996/12/23 06:00:05 dawes Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -36,7 +36,6 @@
 #include "Xlibint.h"
 #include "Xlcint.h"
 
-#ifndef X11_TINY_LC
 #define USE_GENERIC_LOADER
 #define USE_DEFAULT_LOADER
 /*** #define USE_EUC_LOADER ***/

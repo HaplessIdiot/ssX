@@ -1,5 +1,5 @@
 /* $XConsortium: Initialize.c /main/209 1996/12/04 10:22:31 lehors $ */
-/* $XFree86: xc/lib/Xt/Initialize.c,v 3.9 1996/05/13 06:37:25 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Initialize.c,v 3.10 1996/12/23 06:01:16 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -338,7 +338,6 @@ static void CombineUserDefaults(dpy, pdb)
 {
     char *slashDotXdefaults = "/.Xdefaults";
     char *dpy_defaults = XResourceManagerString(dpy);
-    static char slashDotXdefaults[] = "/.Xdefaults";
 
     if (dpy_defaults) {
 	XrmCombineDatabase(XrmGetStringDatabase(dpy_defaults), pdb, False);

@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: dix.h /main/44 1996/12/15 21:24:57 rws $ */
-/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.4 1996/05/06 06:00:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.5 1996/12/23 07:09:24 dawes Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -847,7 +847,7 @@ extern int SetInputFocus(
     ClientPtr /* client */,
     DeviceIntPtr /* dev */,
     Window /* focusID */,
-    int /* revertTo */,
+    CARD8 /* revertTo */,
     Time /* ctime */,
     Bool /* followOK */
 #endif

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/drivers/s3_generic/Imakefile,v 3.0 1996/09/22 13:26:24 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/drivers/s3_virge/Imakefile,v 3.1 1996/10/08 12:23:03 dawes Exp $
 
 
 
@@ -18,7 +18,7 @@ INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
 #else
 INCLUDES = -I. -I../.. -I$(XF86COMSRC) -I$(XF86HWSRC) \
 	   -I$(XF86OSSRC) -I$(SERVERSRC)/mi \
-           -I$(XF86SRC)/vga256/vga -I$(SERVERSRC)/include -I$(INCLUDESRC) \
+           -I$(XF86SRC)/vga256/vga -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
 	   -I$(XF86SRC)/accel/cache
 #endif
 
@@ -27,8 +27,8 @@ NormalAsmObjectRule()
 
 all:: s3_virge.o
 
-InstallLinkKitNonExecFile(s3_virge.c,$(LINKKITDIR)/drivers/s3/s3_virge)
-InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/s3/s3_virge)
+InstallLinkKitNonExecFile(s3_virge.c,$(LINKKITDIR)/drivers/s3_virge/s3_virge)
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/s3_virge/s3_virge)
 
 DependTarget()
 

@@ -21,7 +21,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: dixstruct.h /main/43 1996/12/15 21:25:06 rws $ */
-/* $XFree86: xc/programs/Xserver/include/dixstruct.h,v 3.6 1996/05/06 06:00:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dixstruct.h,v 3.7 1996/12/23 07:09:26 dawes Exp $ */
 
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H
@@ -49,6 +49,22 @@ typedef struct {
     xConnSetupPrefix 	*prefix; 
     xConnSetup  	*setup;
 } NewClientInfoRec;
+
+typedef void (*ReplySwapPtr) (
+#if NeedNestedPrototypes
+		ClientPtr	/* pClient */,
+		int		/* size */,
+		void *		/* pbuf */
+#endif
+);
+
+extern void ReplyNotSwappd (
+#if NeedNestedPrototypes
+		ClientPtr	/* pClient */,
+		int		/* size */,
+		void *		/* pbuf */
+#endif
+);
 
 typedef enum {ClientStateInitial,
 	      ClientStateAuthenticating,
@@ -132,6 +148,12 @@ typedef struct _Client {
 );
 }           ClientRec;
 
+/* This prototype is used pervasively in Xext, dix */
+#if NeedFunctionPrototypes
+#define DISPATCH_PROC(func) int func(ClientPtr /* client */)
+#else
+#define DISPATCH_PROC(func) int func(/* ClientPtr client */)
+#endif
 
 typedef struct _WorkQueue {
     struct _WorkQueue *next;

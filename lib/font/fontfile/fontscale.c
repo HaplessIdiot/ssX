@@ -1,5 +1,5 @@
 /* $XConsortium: fontscale.c /main/15 1996/09/28 16:49:13 rws $ */
-/* $XFree86: xc/lib/font/fontfile/fontscale.c,v 3.2 1996/08/25 14:04:02 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontscale.c,v 3.3 1996/12/23 06:02:23 dawes Exp $ */
 
 /*
 
@@ -40,8 +40,6 @@ in this Software without prior written authorization from the X Consortium.
 #include <math.h>
 #undef _XOPEN_SOURCE
 #endif
-
-extern fsResolution *GetClientResolutions();
 
 Bool
 FontFileAddScaledInstance (entry, vals, pFont, bitmapName)

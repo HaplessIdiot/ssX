@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xaa/Imakefile.BPP,v 3.1 1996/12/12 09:42:05 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xaa/Imakefile.BPP,v 3.2 1996/12/17 21:01:07 dawes Exp $
 
 XCOMM This is the Imakefile for the depth-specific subdirectories
 XCOMM (xaavga256, xaa16, xaa24, xaa32). It is included from the Imakefiles
@@ -10,7 +10,7 @@ XCOMM be correctly defined for a specific depth.
 INCLUDES = -I.. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) \
            -I../../vga256/vga \
            -I$(SERVERSRC)/cfb -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
-	   -I$(SERVERSRC)/include -I$(INCLUDESRC) -I$(FONTINCSRC)
+	   -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(FONTINCSRC)
 
 DEFINES = BPPDEFINES
 

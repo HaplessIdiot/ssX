@@ -1,5 +1,5 @@
 /* $XConsortium: lcFile.c /main/6 1996/09/28 16:37:56 rws $ */
-/* $XFree86: xc/lib/X11/lcFile.c,v 3.4 1996/08/26 06:19:07 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcFile.c,v 3.5 1996/12/23 06:00:01 dawes Exp $ */
 /*
  *
  * Copyright IBM Corporation 1993
@@ -29,7 +29,6 @@
 #include "Xlibint.h"
 #include "XlcPubI.h"
 #include <X11/Xos.h>
-#include "snprintf.h"
 #ifdef X_NOT_STDC_ENV
 extern char *getenv();
 #endif

@@ -1,5 +1,5 @@
 /* $XConsortium: maprules.c /main/11 1996/12/05 10:21:52 kaleb $ */
-/* $XFree86: xc/lib/xkbfile/maprules.c,v 3.5 1996/10/13 11:18:11 dawes Exp $ */
+/* $XFree86: xc/lib/xkbfile/maprules.c,v 3.6 1996/12/23 06:04:02 dawes Exp $ */
 /************************************************************
  Copyright (c) 1996 by Silicon Graphics Computer Systems, Inc.
 
@@ -286,6 +286,7 @@ _Xstrtokparams	strtok_buf;
    str= &line->line[1];
    bzero((char *)remap,sizeof(RemapSpec));
    while ((tok=_XStrtok(str," ",strtok_buf))!=NULL) {
+#ifdef DEBUG
 	found= False;
 #endif
 	str= NULL;

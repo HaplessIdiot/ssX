@@ -48,7 +48,7 @@ SOFTWARE.
 
 
 /* $XConsortium: events.c /main/187 1996/09/25 00:47:41 dpw $ */
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.9 1996/05/06 05:56:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.10 1996/12/23 06:29:43 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -67,6 +67,11 @@ SOFTWARE.
 #include "XKBsrv.h"
 #endif
 
+#ifdef XCSECURITY
+#define _SECURITY_SERVER
+#include "extensions/security.h"
+#endif
+
 #include "XIproto.h"
 #include "exevents.h"
 #include "extnsionst.h"
@@ -74,12 +79,6 @@ SOFTWARE.
 #include "dixevents.h"
 #include "dixgrabs.h"
 #include "dispatch.h"
-#endif
-
-#ifdef XCSECURITY
-#define _SECURITY_SERVER
-#include "extensions/security.h"
-#endif
 
 extern WindowPtr *WindowTable;
 

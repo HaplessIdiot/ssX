@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
 XCOMM $XConsortium: X11.tmpl /main/289 1996/12/09 16:34:08 kaleb $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.2 1996/12/23 05:50:14 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -300,6 +300,7 @@ XCOMM $XFree86$
 #ifndef ExtensionOSDefines
 #define ExtensionOSDefines /**/
 #endif
+
 #ifndef ExtensionDefines
 #ifndef MITMiscDefines
 #if BuildMITMiscExt
@@ -409,7 +410,6 @@ XCOMM $XFree86$
 #define BigReqDefines /**/
 #endif
 #endif
-#endif
 
 #ifndef DBEDefines
 #if BuildDBE
@@ -477,18 +477,6 @@ XCOMM $XFree86$
 #endif
 #endif
 
-#ifndef HasStrcasecmp
-#define HasStrcasecmp YES
-#endif
-
-#ifndef StrcasecmpDefines
-# if HasStrcasecmp
-#  define StrcasecmpDefines /**/
-# else
-#  define StrcasecmpDefines -DNEED_STRCASECMP
-# endif
-#endif
-
 #ifndef SitePervasiveExtensionDefines
 #define SitePervasiveExtensionDefines /**/
 #endif
@@ -511,6 +499,19 @@ XCOMM $XFree86$
 #endif
 #define ExtensionDefines BaseExtensionDefines ExtensionOSDefines
 #endif
+
+#ifndef HasStrcasecmp
+#define HasStrcasecmp YES
+#endif
+
+#ifndef StrcasecmpDefines
+# if HasStrcasecmp
+#  define StrcasecmpDefines /**/
+# else
+#  define StrcasecmpDefines -DNEED_STRCASECMP
+# endif
+#endif
+
 #ifndef ServerXdmcpDefines
 #define ServerXdmcpDefines -DXDMCP
 #endif
@@ -976,7 +977,7 @@ LINTEXTENSIONLIB = $(LINTEXTENSION)
 #endif
 SharedLibReferences(XSS,Xss,$(XSSLIBSRC),SOXSSREV,SharedXssRev)
 #else
-ProjectUnsharedLibReferences(XSS,Xss,$(XSSLIBSRC))
+ProjectUnsharedLibReferences(XSS,Xss,$(XSSLIBSRC),XBuildLibDir)
 #endif
 #endif
 
@@ -988,7 +989,7 @@ ProjectUnsharedLibReferences(XSS,Xss,$(XSSLIBSRC))
 #endif
 SharedLibReferences(XXF86MISC,Xxf86misc,$(XXF86MISCLIBSRC),SOXXF86MISCREV,SharedXxf86miscRev)
 #else
-ProjectUnsharedLibReferences(XXF86MISC,Xxf86misc,$(XXF86MISCLIBSRC))
+ProjectUnsharedLibReferences(XXF86MISC,Xxf86misc,$(XXF86MISCLIBSRC),XBuildLibDir)
 #endif
 #endif
 
@@ -1000,7 +1001,7 @@ ProjectUnsharedLibReferences(XXF86MISC,Xxf86misc,$(XXF86MISCLIBSRC))
 #endif
 SharedLibReferences(XXF86VM,Xxf86vm,$(XXF86VMLIBSRC),SOXXF86VMREV,SharedXxf86vmRev)
 #else
-ProjectUnsharedLibReferences(XXF86VM,Xxf86vm,$(XXF86VMLIBSRC))
+ProjectUnsharedLibReferences(XXF86VM,Xxf86vm,$(XXF86VMLIBSRC),XBuildLibDir)
 #endif
 #endif
 
@@ -1012,7 +1013,7 @@ ProjectUnsharedLibReferences(XXF86VM,Xxf86vm,$(XXF86VMLIBSRC))
 #endif
 SharedLibReferences(XXF86DGA,Xxf86dga,$(XXF86DGALIBSRC),SOXXF86DGAREV,SharedXxf86dgaRev)
 #else
-ProjectUnsharedLibReferences(XXF86DGA,Xxf86dga,$(XXF86DGALIBSRC))
+ProjectUnsharedLibReferences(XXF86DGA,Xxf86dga,$(XXF86DGALIBSRC),XBuildLibDir)
 #endif
 #endif
 
@@ -1400,7 +1401,7 @@ ProjectUnsharedLibReferences(FONT,font,$(FONTLIBSRC),XBuildLibDir)
 #endif
 SharedLibReferences(XPM,Xpm,$(XPMLIBSRC),SOXPMREV,SharedXpmRev)
 #else
-ProjectUnsharedLibReferences(XPM,Xpm,$(XPMLIBSRC))
+ProjectUnsharedLibReferences(XPM,Xpm,$(XPMLIBSRC),XBuildLibDir)
 #endif
 
 #ifndef LdLibraryPath
@@ -1612,7 +1613,7 @@ FontBaseObj(basename).Z:  FontSrc(basename)				@@\
 #endif
 #endif /* CompressedFontTarget */
 
-if !defined(FontTarget) && !defined(FontObj)
+#if !defined(FontTarget) && !defined(FontObj)
 #ifdef CompressAllFonts
 #define FontTarget(basename) CompressedFontTarget(basename)
 #if GzipFontCompression
