@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xf86dga/dga.c,v 3.2 1995/12/16 08:22:37 dawes Exp $ */
+/* $XFree86: xc/programs/xf86dga/dga.c,v 3.3 1995/12/17 05:04:35 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/Shell.h>
@@ -146,6 +146,24 @@ main(int argc, char *argv[])
 	 n_chars = XLookupString(&event.xkey, buf, 20, &ks, NULL);
          buf[n_chars] = '\0';
 	 fprintf(stderr,"KeyPress [%d]: %s\n", event.xkey.keycode, buf);
+
+	 if (buf[0] == 'b') {
+	    int start_clock,finish_clock,diff_clock;
+	    int cycle;
+	    int numcycles = 500;
+
+	    start_clock = clock();
+
+	    XF86DGASetVidPage(dis, DefaultScreen(dis), i);
+	    for (cycle = 0; cycle < numcycles; cycle++)
+	       memset(addr, (char) (cycle % 255), 65536);
+
+	    finish_clock = clock();
+	    diff_clock = finish_clock - start_clock;
+	    fprintf(stderr, "Timing: %3d.%1ds, %dK/s\n",
+		    diff_clock / 100,(diff_clock % 100) / 10,
+		    3200000 / diff_clock);
+	 }
 
          for (i = 0; i < banks; i++) {
 		XF86DGASetVidPage(dis, DefaultScreen(dis), i);

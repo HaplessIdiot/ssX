@@ -1,5 +1,31 @@
-XCOMM $XConsortium: Imakefile,v 1.5 91/07/17 16:07:10 gildea Exp $
-        DEPLIBS = $(DEPXLIB)
-LOCAL_LIBRARIES = $(XLIB)
+XCOMM $XConsortium: Imakefile,v 1.6 94/07/12 18:15:34 dpw Exp $
+  SYS_LIBRARIES = MathLibrary
+
+#if HasShm
+        SHMDEFINES = -DMITSHM
+#endif
+
+#if BuildXF86VidModeExt
+    VIDMODEDEFINES = -DXF86VIDMODE
+#endif
+
+#if BuildLBX
+        LBXDEFINES = -DLBX
+       LBXINCLUDES = -I$(TOP)/workInProgress/lbx/include/extensions
+        LBXXEXTLIB = -llbxXext
+     DEPLBXXEXTLIB =
+#else
+        LBXXEXTLIB =
+#endif
+
+#if BuildXF86DGA
+        DGADEFINES = -DXFreeXDGA
+#endif
+
+        DEFINES = $(SHMDEFINES) $(LBXDEFINES) $(LBXINCLUDES) \
+			$(VIDMODEDEFINES) $(DGADEFINES)
+        DEPLIBS = $(DEPXTESTLIB) $(DEPXIELIB) $(DEPXMULIB) $(DEPXLIB) \
+			$(DEPLBXXEXTLIB)
+LOCAL_LIBRARIES = $(XTESTLIB) $(XIELIB) $(XMULIB) $(LBXXEXTLIB) $(XLIB)
 
 SimpleProgramTarget(xdpyinfo)

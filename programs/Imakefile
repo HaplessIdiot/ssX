@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.69 94/07/06 16:26:01 mor Exp $
-XCOMM $XFree86: xc/programs/Imakefile,v 3.9 1995/07/24 05:54:14 dawes Exp $
+XCOMM $XFree86: xc/programs/Imakefile,v 3.10 1995/12/02 05:03:34 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -42,7 +42,8 @@ SUBDIRS = \
 	twm x11perf xauth xclipboard xclock \
 	xcmsdb xconsole xdm xdpyinfo $(XF86DGA) xfd $(XFSDIR) xhost xieperf \
 	$(XINIDIR) $(XKBCOMP) xkill xlogo xlsatoms xlsclients xlsfonts \
-	xmag xmh xmodmap xprop xrdb xrefresh xset xsetroot xstdcmap xterm \
+	xmag xmh xmodmap xprop xrdb xrefresh xset \
+	xsetmode xsetpointer xsetroot xstdcmap xterm \
 	$(XVIDTUNE) \
 	xwd xwininfo xwud $(XSDIR) scripts
 
@@ -53,7 +54,8 @@ SUBDIRS = \
 	twm $(XVIDTUNE) x11perf xauth xclipboard xclock \
 	xcmsdb xconsole xdpyinfo xfd xhost \
 	xieperf $(XINIDIR) xkill xlogo xlsatoms xlsclients xlsfonts \
-	xmag xmodmap xprop xrdb xrefresh xset xsetroot xstdcmap xterm \
+	xmag xmodmap xprop xrdb xrefresh xset \
+	xsetmode xsetpointer xsetroot xstdcmap xterm \
 	xwd xwininfo xwud $(XSDIR) scripts
 #endif
 #endif /* BuildServersOnly */

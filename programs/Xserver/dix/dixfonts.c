@@ -22,6 +22,7 @@ SOFTWARE.
 ************************************************************************/
 
 /* $XConsortium: dixfonts.c,v 1.50 94/04/17 20:26:30 gildea Exp $ */
+/* $XFree86$ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -559,7 +560,7 @@ doListFontsAndAliases(client, c)
     FontPathElementPtr fpe;
     int         err = Successful;
     FontNamesPtr names = NULL;
-    char       *name, *resolved;
+    char       *name, *resolved=NULL;
     int         namelen, resolvedlen;
     int		nnames;
     int         numFonts;
@@ -636,9 +637,10 @@ doListFontsAndAliases(client, c)
 		    c->current.list_started = TRUE;
 	    }
 	    if (err == Successful) {
+		char    *tmpname;
 		name = 0;
 		err = (*fpe_functions[fpe->type].list_next_font_or_alias)
-		    ((pointer) c->client, fpe, &name, &namelen, &resolved,
+		    ((pointer) c->client, fpe, &name, &namelen, &tmpname,
 		     &resolvedlen, c->current.private);
 		if (err == Suspended) {
 		    if (!c->slept) {
@@ -647,6 +649,12 @@ doListFontsAndAliases(client, c)
 			c->slept = TRUE;
 		    }
 		    return TRUE;
+		}
+		if (err == FontNameAlias) {
+		    if (resolved) xfree(resolved);
+		    resolved = (char *) xalloc(resolvedlen + 1);
+		    if (resolved)
+			memmove(resolved, tmpname, resolvedlen + 1);
 		}
 	    }
 
@@ -809,6 +817,7 @@ bail:
     FreeFontNames(names);
     xfree(c->current.pattern);
     xfree(c);
+    if (resolved) xfree(resolved);
     return TRUE;
 }
 

@@ -1,5 +1,5 @@
 /* $XConsortium: scrin.c,v 1.1 95/01/26 15:29:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/scrin.c,v 3.1 1994/12/10 03:00:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/scrin.c,v 3.2 1995/01/28 15:51:50 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -57,6 +57,7 @@ PERFORMANCE OF THIS SOFTWARE.
 #include "cfbmskbits.h"
 #include "mibstore.h"
 #include "ibm8514.h"
+#include "xf86Priv.h"
 
 extern RegionPtr mfbPixmapToRegion();
 extern Bool mfbAllocatePrivates();
@@ -150,8 +151,9 @@ ibm8514ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	    i = 0;
     }
     pScreen->defColormap = FakeClientID(0);
-    /* let CreateDefColormap do whatever it wants for pixels */ 
-    pScreen->blackPixel = pScreen->whitePixel = (Pixel) 0;
+    pScreen->whitePixel = (Pixel) 1;
+    pScreen->blackPixel = (Pixel) 0;
+    XF86FLIP_PIXELS();
     pScreen->QueryBestSize = mfbQueryBestSize;
     /* SaveScreen */
     pScreen->GetImage = ibm8514GetImage;

@@ -1,3 +1,32 @@
+XFree86 3.1.2Ae (23 December 1995)
+159. Add a PCI probe to the S3 server, and use the membase value reported
+     when it is non-zero.  This should help for some TrioV64+ cards.
+158. Move the DGA client-side helper functions into libXExExt.
+157. XInput support for XFree86.  This includes device support for two
+     Joysticks (Linux-only so far), Wacom tablet (Wacom IV protocol only),
+     and Elographics touchscreen.  Two utility programs are included.
+     xsetpointer can be used to make an extended device the core pointer
+     or to list the extended devices.  xsetmode can be used to set a device
+     in absolute or relative mode  (Frederic Lepied and Patrick Lecoanet).
+156. Workaround for a hardware bug in some S3 Trio32 revisions which causes
+     font corruption when using the font cache.  This is currently enabled
+     with the "trio32_fc_bug" Option (Harald Koenig).
+155. Logging support for the internal xalloc code (Pascal Haible).
+154. Fix the S3 server's detection of the Trio64V+.
+153. Fix problems building the PC98 code (Takefumi Tsukada).
+152. LynxOS support for the DGA extension (Thomas Mueller).
+151. Fix a problem were XListFonts() can return fewer font names than
+     XListFontsWithInfo() (Manabe Takashi).
+150. Add knowledge of the XFree86-VidModeExtension, XFree86-DGA and LBX
+     extensions to xdpyinfo (Joe Moss).
+149. Add a benchmark function to the dga test program.  It is actived with
+     the 'b' key (Koen Gadeyne).
+148. Change all servers to default to blackPixel = 0 and whitePixel = 1,
+     and allow this default to be swapped with the -flipPixels server
+     command line flag (Michael Rohleder).
+147. Restore the "no_ti3026_curs" option to the S3 server (Harald Koenig).
+146. Trident driver and documentation updates (Alan Hourihane).
+
 XFree86 3.1.2Ad (21 December 1995)
 145. Fix for incorrect usage of S3 PIX_TRANS writing (Takefumi Tsukada).
 144. PC98 support integrated into the main XFree86 source tree.  The PC98
