@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3pwskb/drivers/s3_generic/Imakefile,v 3.0 1995/12/17 10:05:22 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3pwskb/drivers/s3_generic/Imakefile,v 3.1 1995/12/23 09:40:27 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = s3_generic.c
@@ -11,7 +11,7 @@ INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
 INCLUDES = -I. -I../.. -I$(XF98COMSRC) -I$(XF98HWPWSKBSRC) \
 	   -I$(XF98OSSRC) -I$(SERVERSRC)/mi \
            -I$(XF86SRC)/vga256/vga -I$(SERVERSRC)/include -I$(INCLUDESRC) \
-	   -I$(XF98SRC)/accel/cache
+	   -I$(XF86SRC)/accel/cache
 #endif
 
 NormalLibraryObjectRule()

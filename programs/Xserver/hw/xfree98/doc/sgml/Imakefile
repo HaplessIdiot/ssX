@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.2 95/01/23 15:34:43 kaleb Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/doc/sgml/Imakefile,v 3.1 1995/12/26 07:19:41 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -92,6 +92,7 @@ LinkSourceFile(NetBSD.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(Oak.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(P9000.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(README.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(RELNOTE.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(S3.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(SCO.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(SOLX86.sgml,$(XF86SRC)/doc/sgml)
@@ -110,6 +111,8 @@ LinkSourceFile(isc.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(trident.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(tseng.sgml,$(XF86SRC)/doc/sgml)
 
+#ifndef DontInstallPC98Version
 InstallLinkKitNamedNonExec(README.LinkKit,README,$(LINKKITDIR))
 InstallLinkKitNonExecFile(VGADriver.Doc,$(LINKKITDIR)/VGADriverDoc)
+#endif
 

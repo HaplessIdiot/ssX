@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.2 94/11/21 21:55:13 kaleb Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/reconfig/Imakefile,v 3.1 1995/12/26 07:19:51 dawes Exp $
 
           YFLAGS = -d
             SRCS = reconfig.c lex.c copyright.c
@@ -13,8 +13,6 @@ LexFile(lex)
 
 YaccFile(reconfig,$(YFLAGS))
 
-ComplexProgramTarget(reconfig)
-
 LinkSourceFile(README,$(XF86SRC)/reconfig)
 LinkSourceFile(copyright.c,$(XF86SRC)/reconfig)
 LinkSourceFile(keyword.i,$(XF86SRC)/reconfig)
@@ -23,4 +21,6 @@ LinkSourceFile(os.h,$(XF86SRC)/reconfig)
 LinkSourceFile(reconfig.man,$(XF86SRC)/reconfig)
 LinkSourceFile(reconfig.y,$(XF86SRC)/reconfig)
 LinkSourceFile(strlist.h,$(XF86SRC)/reconfig)
+
+ComplexProgramTarget(reconfig)
 

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.6 95/01/23 15:34:15 kaleb Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/doc/Imakefile,v 3.0 1995/12/17 10:05:43 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -87,10 +87,12 @@ DATABASE = modeDB.txt AccelCards Monitors Devices
 
 FILES = $(MAINDOCS) $(OSREADME) $(HWREADME) $(OTHERDOCS) $(MISCDOCS) $(DATABASE)
 
+#ifndef DontInstallPC98Version
 InstallMultipleDest(install,$(FILES),$(XFREE86DOCDIR))
 
 #if defined(FreeBSDArchitecture) && !BuildLinuxDocText
 InstallNamedNonExec(READ.FreeBSD,README.FreeBSD,$(XFREE86DOCDIR))
+#endif
 #endif
 
 LinkSourceFile(AccelCards,$(XF86SRC)/doc)

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.1 95/01/16 12:30:46 kaleb Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/doc/Japanese/Imakefile,v 3.0 1995/12/17 10:05:45 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -14,7 +14,9 @@ FILES = $(MAINDOCS) $(OSREADME)
 
 all::
 
+#ifndef DontInstallPC98Version
 InstallMultipleDest(install,$(FILES),$(XFREE86JAPANESEDOCDIR))
+#endif
 
 LinkSourceFile(AccelCards,$(XF86SRC)/doc/Japanese)
 LinkSourceFile(COPYRIGHT,$(XF86SRC)/doc/Japanese)

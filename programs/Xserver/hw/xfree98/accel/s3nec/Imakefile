@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3nec/Imakefile,v 3.0 1995/12/17 10:04:52 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3nec/Imakefile,v 3.1 1995/12/23 09:40:05 dawes Exp $
 #include <Server.tmpl>
 
 #define IHaveSubdirs
@@ -25,7 +25,7 @@ INCLUDES = -I$(XF98SRC) -I. -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
 	   -I$(SERVERSRC)/include -I$(SERVERSRC)/cfb -I$(INCLUDESRC) \
 	   -I$(FONTSRC)/include -I$(XF86SRC)/vga256/vga -I$(XF98COMSRC) \
 	   -I$(XF98HWNECSRC) -I$(FONTINCSRC) -I$(XF98OSSRC) \
-	   -I$(XF98SRC)/accel/cache
+	   -I$(XF86SRC)/accel/cache
 
 DEFINES = -DS3_SERVER -DPSZ=8 -DPC98 -DPC98_NEC
 
@@ -60,7 +60,6 @@ LinkSourceFile(s3Cursor.c,$(XF86SRC)/accel/s3)
 LinkSourceFile(s3Cursor.h,$(XF86SRC)/accel/s3)
 LinkSourceFile(s3ELSA.c,$(XF86SRC)/accel/s3)
 LinkSourceFile(s3ELSA.h,$(XF86SRC)/accel/s3)
-LinkSourceFile(s3Ti3020.h,$(XF86SRC)/accel/s3)
 LinkSourceFile(s3TiCursor.c,$(XF86SRC)/accel/s3)
 LinkSourceFile(s3bcach.c,$(XF86SRC)/accel/s3)
 LinkSourceFile(s3blt.c,$(XF86SRC)/accel/s3)
@@ -91,10 +90,10 @@ LinkSourceFile(s3ss.c,$(XF86SRC)/accel/s3)
 LinkSourceFile(s3text.c,$(XF86SRC)/accel/s3)
 LinkSourceFile(s3win.c,$(XF86SRC)/accel/s3)
 
-InstallLinkKitLibrary(s3,$(LINKKITDIR)/drivers)
-InstallLinkKitNonExecFile(confS3.SHsuf,$(LINKKITDIR))
-InstallLinkKitNonExecFile(s3.h,$(LINKKITDIR)/drivers)
-InstallLinkKitNonExecFile(regs3.h,$(LINKKITDIR)/drivers)
+InstallLinkKitLibrary(s3,$(XF98LINKKITDIR)/drivers)
+InstallLinkKitNonExecFile(confS3.SHsuf,$(XF98LINKKITDIR))
+InstallLinkKitNonExecFile(s3.h,$(XF98LINKKITDIR)/drivers)
+InstallLinkKitNonExecFile(regs3.h,$(XF98LINKKITDIR)/drivers)
 
 #ifndef OS2Architecture
 DependTarget()
