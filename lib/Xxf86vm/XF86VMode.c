@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/XExExt/XF86VMode.c,v 3.3 1995/06/08 06:20:47 dawes Exp $ */
+/* $XFree86: xc/lib/XExExt/XF86VMode.c,v 3.4 1995/06/14 09:40:01 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -229,6 +229,59 @@ Bool XF86VidModeLockModeSwitch(dpy, screen, lock)
     return True;
 }
     
+Bool XF86VidModeSetSaver(dpy, screen, suspendTime, offTime)
+    Display* dpy;
+    int screen;
+    int suspendTime, offTime;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xXF86VidModeSetSaverReq *req;
+
+    XF86VidModeCheckExtension (dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(XF86VidModeSetSaver, req);
+    req->reqType = info->codes->major_opcode;
+    req->vgahelpReqType = X_XF86VidModeSetSaver;
+    req->screen = screen;
+    req->suspendTime = suspendTime;
+    req->offTime = offTime;
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return True;
+}
+    
+Bool XF86VidModeGetSaver(dpy, screen, suspendTime, offTime)
+    Display* dpy;
+    int screen;
+    int *suspendTime, *offTime;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xXF86VidModeGetSaverReply rep;
+    xXF86VidModeGetSaverReq *req;
+    int i;
+
+    XF86VidModeCheckExtension (dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(XF86VidModeGetSaver, req);
+    req->reqType = info->codes->major_opcode;
+    req->vgahelpReqType = X_XF86VidModeGetSaver;
+    req->screen = screen;
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return False;
+    }
+
+    *suspendTime = rep.suspendTime;
+    *offTime = rep.offTime;
+	
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return True;
+}
+
 Bool XF86VidModeGetMonitor(dpy, screen, monitor)
     Display* dpy;
     int screen;

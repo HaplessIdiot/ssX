@@ -1,3 +1,8 @@
+XFree86 3.1.1Bi (2 July 1995)
+177. Improved "power_saver" for the S3 server, and modified XFree86-VidMode
+     extension to allow its parameters to be set from a client.
+176. Fixes for AGX copyplane (Henry Worth).
+
 XFree86 3.1.1Bh (1 July 1995)
 175. Updates to AGX server.  Includes reversing previous copyplane change,
      restoring the setting of membase for AGX chips, cleanup setting

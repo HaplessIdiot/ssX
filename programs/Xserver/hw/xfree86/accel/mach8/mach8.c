@@ -1,5 +1,5 @@
 /* $XConsortium: mach8.c,v 1.7 95/01/16 13:16:36 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.19 1995/06/14 09:43:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.20 1995/06/29 13:30:18 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -123,6 +123,8 @@ ScrnInfoRec mach8InfoRec = {
     0,			/* int s3MClk */
     0,			/* unsigned long VGAbase */
     0,			/* int s3RefClk */
+    0,			/* int suspendTime */
+    0,			/* int offTime */
 };
 
 short mach8alu[16] = {
