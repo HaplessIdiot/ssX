@@ -19,7 +19,7 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.15 1999/09/25 14:36:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.16 1999/09/27 06:29:15 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -1250,7 +1250,7 @@ int PanoramiXCopyArea(ClientPtr client)
     if((pDst->type == DRAWABLE_PIXMAP) && (pSrc->type == DRAWABLE_WINDOW)) {
 	DrawablePtr drawables[MAXSCREENS];
 	GCPtr pGC;
-	unsigned char *data;
+	char *data;
 	int pitch = PixmapBytePad(stuff->width, pDst->depth);
 	
 	if(!(data = xcalloc(stuff->height, pitch)))

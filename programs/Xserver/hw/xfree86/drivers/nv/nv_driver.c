@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.15 1999/10/13 16:49:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.21 1999/11/12 02:12:40 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -253,7 +253,7 @@ static int pix24bpp = 0;
  */
 static NVRamdacRec DacInit = {
         FALSE, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL,
-        0, 0, X_DEFAULT, X_DEFAULT, FALSE
+        0, NULL, NULL, NULL, NULL, NULL
 }; 
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dga.c,v 1.12 1999/08/22 05:57:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dga.c,v 1.7 1999/11/12 02:12:40 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -9,6 +9,7 @@
 #include "xaalocal.h"
 #include "nv_type.h"
 #include "nv_proto.h"
+#include "nv_include.h"
 #include "dgaproc.h"
 
 

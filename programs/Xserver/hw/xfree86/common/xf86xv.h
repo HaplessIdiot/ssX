@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.h,v 1.5 1999/05/23 06:33:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.h,v 1.6 1999/09/06 11:27:29 dawes Exp $ */
 
 #ifndef _XVDIX_H_
 #define _XVDIX_H_
@@ -60,7 +60,7 @@ typedef struct {
 } XF86AttributeListRec, *XF86AttributeListPtr;
 
 typedef struct {
-  unsigned char type; 
+  unsigned int type; 
   int flags;
   char *name;
   int nEncodings;
