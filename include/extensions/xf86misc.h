@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86misc.h,v 3.5 1996/03/10 11:51:22 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86misc.h,v 3.6 1997/01/18 06:51:26 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -44,6 +44,7 @@
 #define MTYPE_XQUEUE		10
 #define MTYPE_OSMOUSE		11
 
+#define KTYPE_UNKNOWN		0
 #define KTYPE_84KEY		1
 #define KTYPE_101KEY		2
 #define KTYPE_OTHER		3

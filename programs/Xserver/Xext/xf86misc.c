@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.20 1996/12/24 08:47:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.21 1997/01/18 06:53:02 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -428,7 +428,7 @@ ProcXF86MiscSetKbdSettings(client)
 	return BadValue;
     if (stuff->delay < 0)
 	return BadValue;
-    if (stuff->kbdtype < KTYPE_84KEY || stuff->kbdtype > KTYPE_XQUEUE)
+    if (stuff->kbdtype < KTYPE_UNKNOWN || stuff->kbdtype > KTYPE_XQUEUE)
 	return miscErrorBase + XF86MiscBadKbdType;
 
     if (xf86Info.kbdRate!=stuff->rate || xf86Info.kbdDelay!=stuff->delay) {
