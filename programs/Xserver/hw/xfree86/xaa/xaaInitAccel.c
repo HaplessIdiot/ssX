@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.26 2000/09/28 20:48:00 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.27 2000/10/21 22:26:20 mvojkovi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -36,6 +36,8 @@ typedef enum {
     XAAOPT_SCREEN_TO_SCREEN_COL_EXP_FILL,
     XAAOPT_IMAGE_WRITE_RECT,
     XAAOPT_SCANLINE_IMAGE_WRITE_RECT,
+    XAAOPT_WRITE_BITMAP,
+    XAAOPT_WRITE_PIXMAP,
     XAAOPT_PIXMAP_CACHE,
     XAAOPT_OFFSCREEN_PIXMAPS
 } XAAOpts;
@@ -74,6 +76,10 @@ static OptionInfoRec XAAOptions[] = {
     {XAAOPT_IMAGE_WRITE_RECT,		"XaaNoImageWriteRect",
 				OPTV_BOOLEAN,	{0}, FALSE },
     {XAAOPT_SCANLINE_IMAGE_WRITE_RECT,	"XaaNoScanlineImageWriteRect",
+				OPTV_BOOLEAN,	{0}, FALSE },
+    {XAAOPT_WRITE_BITMAP,		"XaaNoWriteBitmap",
+				OPTV_BOOLEAN,	{0}, FALSE },
+    {XAAOPT_WRITE_PIXMAP,		"XaaNoWritePixmap",
 				OPTV_BOOLEAN,	{0}, FALSE },
     {XAAOPT_PIXMAP_CACHE,		"XaaNoPixmapCache",
 				OPTV_BOOLEAN,	{0}, FALSE },
@@ -767,7 +773,8 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 
     /**** WriteBitmap ****/
 
-    if(infoRec->WriteBitmap) {
+    if(infoRec->WriteBitmap && 
+      !xf86IsOptionSet(options, XAAOPT_WRITE_BITMAP)) {
 	XAAMSG("\tDriver provided WriteBitmap replacement\n");
     } else if(HaveColorExpansion) {
 	if (infoRec->CPUToScreenColorExpandFillFlags & TRIPLE_BITS_24BPP) {
@@ -924,7 +931,8 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 
     /**** WritePixmap ****/
 
-    if(infoRec->WritePixmap) {
+    if(infoRec->WritePixmap &&
+      !xf86IsOptionSet(options, XAAOPT_WRITE_PIXMAP)) {
 	XAAMSG("\tDriver provided WritePixmap replacement\n");
     } else if(HaveImageWriteRect) {
 	infoRec->WritePixmap = XAAWritePixmap;
