@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.90 2001/05/10 21:43:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.91 2001/05/10 21:53:48 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -582,6 +582,9 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     pMga->AccelInfoRec = infoPtr = XAACreateInfoRec();
     if(!infoPtr) return FALSE;
 
+    pMga->RenderTime = 0;
+    pMga->LinearScratch = 0;
+    
     pMga->MaxFastBlitY = 0;
     pMga->MaxBlitDWORDS = 0x40000 >> 5;
 
