@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.5 2001/06/16 22:00:30 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.6 2001/12/14 01:20:44 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -103,7 +103,7 @@ static XF86VideoEncodingRec DummyEncoding =
 { 
    0,
    "XV_IMAGE",
-   2046, 2047,
+   2046, 2046,
    {1, 1}
 };
 
@@ -863,8 +863,8 @@ static int NVQueryImageAttributes
     
     if(*w > 2046)
         *w = 2046;
-    if(*h > 2047)
-        *h = 2047;
+    if(*h > 2046)
+        *h = 2046;
     
     *w = (*w + 1) & ~1;
     if (offsets)
@@ -960,7 +960,7 @@ NVAllocSurface (
 
     if(pPriv->grabbedByV4L) return BadAlloc;
 
-    if((w > 2046) || (h > 2047)) return BadValue;
+    if((w > 2046) || (h > 2046)) return BadValue;
 
     w = (w + 1) & ~1;
     pPriv->pitch = ((w << 1) + 63) & ~63;
@@ -1109,7 +1109,7 @@ XF86OffscreenImageRec NVOffscreenImages[2] =
    NVStopSurface,
    NVGetSurfaceAttribute,
    NVSetSurfaceAttribute,
-   2046, 2047,
+   2046, 2046,
    NUM_ATTRIBUTES - 1,
    &NVAttributes[1]
   },
@@ -1122,7 +1122,7 @@ XF86OffscreenImageRec NVOffscreenImages[2] =
    NVStopSurface,
    NVGetSurfaceAttribute,
    NVSetSurfaceAttribute,
-   2046, 2047,
+   2046, 2046,
    NUM_ATTRIBUTES - 1,
    &NVAttributes[1]
   },
