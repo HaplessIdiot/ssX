@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.12 2000/06/06 18:07:37 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.13 2000/08/04 16:13:35 eich Exp $ */
 
 #define DEBUG 1
 
@@ -53,6 +53,7 @@
 #define FIFOControl 0x20
 #define LinearAddReg 0x21
 #define DRAMTiming 0x23
+#define New32 0x23
 #define RAMDACTiming 0x25
 #define CRTHiOrd 0x27
 #define AddColReg 0x29
