@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.26 2001/01/17 19:42:25 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.27 2001/01/26 22:35:23 herrb Exp $ */
 
 /*
  * AsciiSrc.c - AsciiSrc object. (For use with the text widget).
@@ -1484,7 +1484,7 @@ InitStringOrFile(AsciiSrcObject src, Bool newString)
     }
 
     if (!src->ascii_src.is_tempfile) {
-	if ((fd = open(src->ascii_src.string, open_mode, 0666))) {
+	if ((fd = open(src->ascii_src.string, open_mode, 0666)) != -1) {
 	    if ((file = fdopen(fd, fdopen_mode))) {
 		(void)fseek(file, 0, SEEK_END);
 		src->ascii_src.length = (XawTextPosition)ftell(file);
