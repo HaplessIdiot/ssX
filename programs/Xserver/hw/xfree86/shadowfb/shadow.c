@@ -6,7 +6,7 @@
    Pre-fb-write callbacks and RENDER support - Nolan Leake (nolan@vmware.com)
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadow.c,v 1.15 2003/01/12 03:55:51 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadow.c,v 1.16 2003/02/18 02:38:20 mvojkovi Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -62,7 +62,6 @@ static Bool ShadowModifyPixmapHeader(
 
 static Bool ShadowEnterVT(int index, int flags);
 static void ShadowLeaveVT(int index, int flags);
-static void ShadowEnableDisableFBAccess(int index, Bool enable);
 
 #ifdef RENDER
 static void ShadowComposite(
@@ -98,7 +97,6 @@ typedef struct {
 #endif /* RENDER */
   Bool				(*EnterVT)(int, int);
   void				(*LeaveVT)(int, int);
-  void				(*EnableDisableFBAccess)(int, Bool);
   Bool				vtSema;
 } ShadowScreenRec, *ShadowScreenPtr;
 
@@ -176,8 +174,7 @@ Bool
 ShadowFBInit2 (
     ScreenPtr		pScreen,
     RefreshAreaFuncPtr  preRefreshArea,
-    RefreshAreaFuncPtr  postRefreshArea,
-    Bool                fbIsVirtual
+    RefreshAreaFuncPtr  postRefreshArea
 ){
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     ShadowScreenPtr pPriv;
@@ -217,7 +214,6 @@ ShadowFBInit2 (
 
     pPriv->EnterVT = pScrn->EnterVT;
     pPriv->LeaveVT = pScrn->LeaveVT;
-    pPriv->EnableDisableFBAccess = pScrn->EnableDisableFBAccess;
 
     pScreen->CloseScreen = ShadowCloseScreen;
     pScreen->PaintWindowBackground = ShadowPaintWindow;
@@ -229,8 +225,6 @@ ShadowFBInit2 (
 
     pScrn->EnterVT = ShadowEnterVT;
     pScrn->LeaveVT = ShadowLeaveVT;
-    if(fbIsVirtual)
-        pScrn->EnableDisableFBAccess = ShadowEnableDisableFBAccess;
 
 #ifdef RENDER
     if(ps) {
@@ -247,7 +241,7 @@ ShadowFBInit (
     ScreenPtr		pScreen,
     RefreshAreaFuncPtr  refreshArea
 ){
-    return ShadowFBInit2(pScreen, NULL, refreshArea, FALSE);
+    return ShadowFBInit2(pScreen, NULL, refreshArea);
 }
 
 /**********************************************************/
@@ -276,16 +270,6 @@ ShadowLeaveVT(int index, int flags)
     (*pPriv->LeaveVT)(index, flags);
 }
 
-static void
-ShadowEnableDisableFBAccess(int index, Bool enable)
-{
-    /*
-     * if fbIsVirtual == TRUE was passed to ShadowFBInit2, then
-     * this wrapper is installed, and eats any calls.
-     */
-}
-
-
 /**********************************************************/
 
 
@@ -308,7 +292,6 @@ ShadowCloseScreen (int i, ScreenPtr pScreen)
 
     pScrn->EnterVT = pPriv->EnterVT;
     pScrn->LeaveVT = pPriv->LeaveVT;
-    pScrn->EnableDisableFBAccess = pPriv->EnableDisableFBAccess;
 
 #ifdef RENDER
     if(ps) {

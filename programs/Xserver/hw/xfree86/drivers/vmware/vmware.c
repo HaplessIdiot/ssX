@@ -6,7 +6,7 @@
 char rcsId_vmware[] =
     "Id: vmware.c,v 1.11 2001/02/23 02:10:39 yoel Exp $";
 #endif
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.15 2002/12/11 17:07:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.16 2002/12/12 04:52:27 dawes Exp $ */
 
 /*
  * TODO: support the vmware linux kernel fb driver (Option "UseFBDev").
@@ -1195,7 +1195,7 @@ VMWAREScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      */
     if (!ShadowFBInit2(pScreen, 
                        pVMWARE->hwCursor ? VMWAREPreDirtyBBUpdate : NULL,
-                       VMWAREPostDirtyBBUpdate, FALSE)) {
+                       VMWAREPostDirtyBBUpdate)) {
         xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
                    "ShadowFB initialization failed\n");
         return FALSE;
