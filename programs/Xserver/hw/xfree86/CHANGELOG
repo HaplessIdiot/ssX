@@ -1,4 +1,6 @@
 XFree86 3.9Nq (13 December 1998)
+2072. Change the modversion field in the XF86ModuleVersionInfo struct into
+      separate major, minor and patchlevel fields.
 2071. Initial DG/ux support (#2299, Takis Psarogiannakopoulos).
 2070. DDC1 support for TVP3026 based Matrox cards (#2309, Andrew Aitchison).
 2069. More rewrites of the way spans and rects are handles in XAA so that
@@ -6947,4 +6949,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.650 1998/12/13 05:32:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.651 1998/12/13 07:37:38 dawes Exp $
