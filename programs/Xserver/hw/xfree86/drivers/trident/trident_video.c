@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.23 2002/01/28 14:33:39 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.25 2002/04/04 14:05:49 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -163,7 +163,11 @@ static XF86VideoFormatRec Formats[NUM_FORMATS] =
   {8, PseudoColor},  {15, TrueColor}, {16, TrueColor}, {24, TrueColor}
 };
 
+#ifdef TRIDENT_XV_GAMMA
 #define NUM_ATTRIBUTES 6
+#else
+#define NUM_ATTRIBUTES 5
+#endif
 
 static XF86AttributeRec Attributes[NUM_ATTRIBUTES] =
 {
