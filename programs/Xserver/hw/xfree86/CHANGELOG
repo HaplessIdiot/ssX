@@ -1,4 +1,5 @@
 XFree86 4.2.99.3 (xx November 2002)
+ 499. Fix xc/lib/Imakefile to not break HasFontconfig (#5481, Mike A. Harris)
  498. Refresh screen after wake from sleep in XDarwin full screen mode
       (Torrey T. Lyons).
  497. Fixes and updates for the SCO OpenServer port (#5459, J. Kean Johnston).
@@ -15532,4 +15533,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2396 2002/11/20 23:00:37 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2397 2002/11/20 23:51:56 torrey Exp $
