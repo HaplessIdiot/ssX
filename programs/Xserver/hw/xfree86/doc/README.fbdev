@@ -414,7 +414,7 @@ Neumann.
 
 The frame buffer device abstraction was designed by Martin Schaller.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree68/doc/sgml/fbdev.sgml,v 3.2 1997/05/28 13:24:17 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fbdev.sgml,v 1.1 1999/04/15 03:35:19 dawes Exp $
 
 
 $XFree86$

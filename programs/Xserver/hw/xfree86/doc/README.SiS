@@ -1,13 +1,16 @@
                           Information for SiS Users
 
-                     Xavier Ducoin (xavier@rd.lectra.fr)
+                    Juanjo Santamarta (santamarta@ctv.es)
 
-                               16 January 1997
+                                17 April 1999
 
 1.  Introduction
 
-The driver was primarily written for the SiS86c201.  The driver has almost
-been completed, with many additional features.  These include
+This driver was primarily written for the SiS6326 and SiS530 by Alan Houri-
+hane.  It also works on 5597/5598 chips, and probably on older SiS862XX fam-
+ily.
+
+The driver supports :
 
    o Linear Addressing
 
@@ -15,19 +18,14 @@ been completed, with many additional features.  These include
 
    o Fully programmable clocks are supported
 
-   o H/W cursor support
-
-   o BitBLT acceleration of many operations
+   o H/W acceleration and cursor support
 
    o XAA support (XFree86 Acceleration Architecture)
 
 2.  Supported chips
 
-      SiS 86c201
-            (External hardware clock)
-
-      SiS 86c202, SiS 86c205
-            (Internal clock synthesizer)
+     SiS 530, SiS 86c201, SiS 86c202, SiS 86c2x5, SiS 5597/5598, SiS
+     6326
 
 Color expansion is not supported by the engine in 16M-color graphic mode.
 
@@ -38,35 +36,36 @@ them must be specified in the `svga' driver section of the XF86Config file,
 within the Screen subsections of the depths to which they are applicable (you
 can enable options for all depths by specifying them in the Device section).
 
-      Option "noaccel"
-            By default the XAA (XFree86 Acceleration Architecture) is used.
-            This option will disable the use of the XAA and will enable the
-            old BitBlt acceleration operations. (see below).
+      Option "SetMclk"
+            This option lets you to modify the memory clocking of your card.
+            (only for 5597 and 6326) Modifying the memory timings can destroy
+            the device, but usually the only ill effects of overclocking is
+            to have some noise an drawing errors, but BE CAREFUL. Usually a
+            little increment can improve the drawing speed, and allows also
+            higher dotclocks.  The server reports default memclock on start-
+            ing messages, so take it as a base. Units are in KHZ.
 
-      Option "hw_clocks"
-            On chips 86c202 and later, the default is to use the programmable
-            clock for all clocks. It is possible to use the fixed clocks sup-
-            ported by the chip instead of using this option (manufacturer
-            dependent).
+      Option "DacSpeed"
+            This option lets you to modify the maximum allowed dotclock).
 
       Option "sw_cursor", "hw_cursor"
             The default is for using the hardware cursor.
 
-      Option "no_linear"
-            By default linear addressing is used on all chips.  However this
-            might be broken in some implementations. It is possible to turn
-            the linear addressing off with this option.  Note that H/W accel-
-            eration and 16/24bpp are only supported with linear addressing.
+      Option "Turboqueue"
+            5597/8 and 6326 have the option to extend the engine command
+            queue on VRAM. With extended queue length, the driver only checks
+            queue status on some color-expansion commands. This gives some
+            performance improvement, but is possible to lose some commands,
+            corrupting screen output. As the size of extended command queue
+            is 16-32K, the probability is very low, but exists. The perfor-
+            mance gain observed is around 8-10%. Currently, using this option
+            will occasionally freeze the acceleration engine, causing weird
+            image display.
 
-      Option "no_bitblt"
-            This option will disable the use of all the BitBLT engine.  It is
-            useful for problems related to acceleration problems.  In general
-            this will result in a reduced performance.
-
-      Option "no_imageblt"
-            It is useful for problems related to image writing, and possible
-            stipple acceleration problems. In general this will result in a
-            reduced performance.
+      Option "FastVram"
+            Enables 1 cycle memory access. Try it. Increased memory bandwidth
+            reduces the possibility of glitches and noise on high resolution
+            modes.
 
 4.  Modelines
 
@@ -75,23 +74,44 @@ sider several points:
 
    o H/W Acceleration.  The H/W cursor, and fill operations currently allo-
      cate memory of the video ram for there own use.  If this is not avail-
-     able these functions will automatically be disabled.
+     able these functions will automatically be disabled. Also, Turboqueue
+     allocate 32k of Vram.
 
-   o Dot Clock
+   o Dot Clock. SiS documents the following video modes to work with 6326.
+     The max dot clock allowable for your 6326 based board depends also on
+     the memory installed on it. Option FastVram can be needed for high dot
+     clocks to work. Of course, the memory installed must allow 1 cycle R/W.
+
+     SiS recommended video modes for 6326:
+
+           640x480 :
+                 4, 8, 15, 16, 24 bpp at 85Hz Non-interlaced
+
+           800x600 :
+                 4, 8, 15, 16, 24 bpp at 85Hz Non-interlaced
+
+           1024x768 :
+                 4, 8, 15, 16, 24 bpp at 85Hz Non-interlaced
+
+           1280x1024 :
+                 4, 8, 15, 16, 24 bpp at 75Hz Non-interlaced
+
+           1600x1200 :
+                 4, 8  bpp at 65Hz Non-interlaced
 
 5.  Troubleshooting
 
-With intensive generation there is a snow phenomenon on the screen.  Can't
-remove it even if I used the fifo low/high water mark dumped from W95.
+6326 based cards with more than 4Mb of RAM probably don't work.
 
-With intensive generation in 1024x768 65 Mhz sometimes some points (rubbish,
-fuzz... hard to explain) appear in memory, like memory violations or memory
-corruption.  It looks like an electronic refresh not well done or VClk too
-near the MClk.  I use the default Mclk set by BIOS.  It is hard to reproduce
-this problem (It can take one hour, two or more).  I can't reproduce this
-problem in 1024x768 75 MHz or 1280x1024 110 MHz or 1152x900 95 MHz.
+The generic VGA driver don't work with 6326, so XF86Setup can't be used for
+this card. Please use xf86config instead.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SiS.sgml,v 3.3 1997/01/25 03:22:15 dawes Exp $
+Some video modes with high dot-clocks don't work at all, resulting on black
+screen. Lowering dotclock in that case could solve the problem.
+
+     Document based on 3.3 version written by Xavier Ducoin.
+
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SiS.sgml,v 3.3.2.6 1999/04/12 07:54:30 hohndel Exp $
 
 
 $XFree86$
