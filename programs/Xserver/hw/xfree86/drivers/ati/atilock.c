@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atilock.c,v 1.14 2002/02/14 22:08:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atilock.c,v 1.15 2002/04/06 19:06:04 tsi Exp $ */
 /*
  * Copyright 1999 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -176,6 +176,15 @@ ATIUnlock
             pATI->LockData.mpp_config = inr(MPP_CONFIG);
             pATI->LockData.mpp_strobe_seq = inr(MPP_STROBE_SEQ);
             pATI->LockData.tvo_cntl = inr(TVO_CNTL);
+
+            /* Save hardware-assisted I2C control registers */
+            if (pATI->Chip >= ATI_CHIP_264GTPRO)
+            {
+                pATI->LockData.i2c_cntl_0 =
+                    inr(I2C_CNTL_0) | (I2C_CNTL_STAT | I2C_CNTL_HPTR_RST);
+                outr(I2C_CNTL_0, pATI->LockData.i2c_cntl_0 & ~I2C_CNTL_INT_EN);
+                pATI->LockData.i2c_cntl_1 = inr(I2C_CNTL_1);
+            }
         }
 
 #ifndef AVOID_CPIO
@@ -547,6 +556,11 @@ ATILock
             outr(MPP_CONFIG, pATI->LockData.mpp_config);
             outr(MPP_STROBE_SEQ, pATI->LockData.mpp_strobe_seq);
             outr(TVO_CNTL, pATI->LockData.tvo_cntl);
+            if (pATI->Chip >= ATI_CHIP_264GTPRO)
+            {
+                outr(I2C_CNTL_0, pATI->LockData.i2c_cntl_0);
+                outr(I2C_CNTL_1, pATI->LockData.i2c_cntl_1);
+            }
         }
     }
 }
