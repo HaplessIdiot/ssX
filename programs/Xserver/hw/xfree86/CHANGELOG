@@ -1,5 +1,5 @@
 XFree86 3.9h (22 June 1997)
-1038. Some minor Xlib fixes (#687, 688, Kaleb Keithley).
+1038. Some minor Xlib fixes (#687-690, Kaleb Keithley).
 1037. XKB updates (#674, 675, Kaleb Keithley).
 1036. Config updates to make use of change 1033 (#673, Kaleb Keithley).
 1035. Fix a typo in the XKB symbols/hu file and add an entry for it in
@@ -4983,4 +4983,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.494 1997/06/20 11:46:36 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.495 1997/06/22 10:16:55 dawes Exp $
