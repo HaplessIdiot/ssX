@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.52 1996/06/29 12:20:35 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.53 1996/06/29 14:11:07 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -553,12 +553,12 @@ ddxProcessArgument (argc, argv, i)
     return 1;
   }
 #endif
-#ifdef DO_BETA_CHECK
+#ifdef DO_CHECK_BETA
   if (!strcmp(argv[i],"-extendExpiry"))
   {
     extraDays = atoi(argv[i + 1]);
     expKey = argv[i + 2];
-    return 2;
+    return 3;
   }
 #endif
   if (!strcmp(argv[i],"-verbose"))

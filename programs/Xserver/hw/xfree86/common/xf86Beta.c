@@ -1,6 +1,6 @@
 /* Copyright 1996, The XFree86 Project, Inc */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Beta.c,v 3.0 1996/06/29 14:11:06 dawes Exp $ */
 
 /*
  * This is for publicly released beta server binaries.
@@ -57,6 +57,8 @@
 #ifdef X_NOT_STDC_ENV
 extern char *getenv();
 #endif
+
+extern char *xf86ServerName;
 
 void
 xf86CheckBeta(int extraDays, char *key)
@@ -126,14 +128,15 @@ xf86CheckBeta(int extraDays, char *key)
       char tmp[9];
       
       strncpy(tmp, key, 8);
-      tmp[8] = '\0'
+      tmp[8] = '\0';
       key1 = strtoul(tmp, NULL, 16);
       key2 = strtoul(key + 8, NULL, 16);
       newExpiry = expirytime + extraDays * DAY_IN_SECONDS;
-      if ((newExpiry ^ key1 == XOR_VALUE_1) &&
-	   newExpiry ^ key2 == XOR_VALUE_2)) {
-	expirytime = newExpiryTime;
+      if ((newExpiry ^ key1) == XOR_VALUE_1 &&
+	  (newExpiry ^ key2) == XOR_VALUE_2) {
+	expirytime = newExpiry;
         expiryextended = extraDays;
+      }
     }
     if (time(NULL) > expirytime) {
       showmessage = TRUE;

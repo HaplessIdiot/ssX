@@ -22,8 +22,16 @@
 proc tkerror err {
     global errorInfo
     set info $errorInfo
+    set fd [open /tmp/XS[pid].err w]
+    puts $fd $errorInfo
+    close $fd
     set button [tk_dialog .tkerrorDialog "Error in Tcl Script" \
-	    "Error: $err" error 0 OK "Skip Messages" "Stack Trace"]
+	    "Error: $err\n\nA copy of the stack trace has been saved\
+	    in the file /tmp/XS[pid].err\n\n\
+	    If you think this error has not been reported before,\
+	    please send a copy of that file, along with details of\
+	    the problem you encountered, to joe@XFree86.org" \
+	    error 0 OK "Skip Messages" "Stack Trace"]
     if {$button == 0} {
 	return
     } elseif {$button == 1} {
