@@ -344,14 +344,14 @@ want to omit those sub-directories, or copy selected files over by hand.
 
 Once that's done, the main part of the installation can be done:
 
-     ./extract -C /usr/X11R6 X[a-df-uw-z]*.tgz
+     ./extract -C /usr/X11R6 `pwd`/X[a-df-uw-z]*.tgz
      ./extract -C /usr/X11R6 Xvfb.tgz    # If you are installing Xvfb
      ./extract -C /var Xvar.tgz
      /sbin/ldconfig /usr/X11R6/lib       # For Linux
      /sbin/ldconfig -m /usr/X11R6/lib    # For FreeBSD, NetBSD, OpenBSD
      /usr/X11R6/bin/mkfontdir /usr/X11R6/lib/X11/fonts/misc
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.8 2000/12/14 01:06:01 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.9 2000/12/14 22:15:47 dawes Exp $
 
 
 $XFree86$
