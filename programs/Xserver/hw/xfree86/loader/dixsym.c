@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.57 2003/07/19 17:18:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.58 2003/08/24 17:37:01 dawes Exp $ */
 
 /*
  * Copyright 1995-1998 by Metro Link, Inc.
@@ -310,14 +310,23 @@ LOOKUP dixLookupTab[] = {
   /*os/ */
   /* access.c */
   SYMFUNC(LocalClient)
-  /* util.c */
-  SYMFUNC(Error)
-  SYMFUNC(VErrorF)
-  SYMFUNC(ErrorF)
-  SYMFUNC(FatalError)
+  /* utils.c */
   SYMFUNC(Xstrdup)
   SYMFUNC(XNFstrdup)
   SYMVAR(Must_have_memory)
+  SYMFUNC(AdjustWaitForDelay)
+  SYMVAR(noTestExtensions)
+  SYMFUNC(GiveUp)
+  /* log.c */
+  SYMFUNC(LogVWrite)
+  SYMFUNC(LogWrite)
+  SYMFUNC(LogVMessageVerb)
+  SYMFUNC(LogMessageVerb)
+  SYMFUNC(LogMessage)
+  SYMFUNC(FatalError)
+  SYMFUNC(VErrorF)
+  SYMFUNC(ErrorF)
+  SYMFUNC(Error)
   /* xalloc.c */
   SYMFUNC(XNFalloc)
   SYMFUNC(XNFcalloc)
@@ -346,9 +355,6 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(MakeClientGrabPervious)
   SYMFUNC(MakeClientGrabImpervious)
   SYMVAR(GrabInProgress)
-  /* utils.c */
-  SYMFUNC(AdjustWaitForDelay)
-  SYMVAR(noTestExtensions)
 
   /* devices.c */
   SYMFUNC(InitPointerDeviceStruct)
@@ -389,9 +395,6 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(PictureGetSubpixelOrder)
   SYMFUNC(PictureSetSubpixelOrder)
 #endif
-
-  /* os/utils.c */
-  SYMFUNC(GiveUp)
 
   { 0, 0 },
 

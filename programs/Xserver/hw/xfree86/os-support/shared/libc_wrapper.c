@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.94 2003/06/12 14:12:37 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.95 2003/08/24 17:37:05 dawes Exp $ */
 /*
  * Copyright 1997-2003 by The XFree86 Project, Inc.
  *
@@ -1865,10 +1865,6 @@ xf86GetErrno ()
 #undef mapnum
 
 
-
-#ifdef NEED_SNPRINTF
-#include "snprintf.c"
-#endif
 
 #ifdef HAVE_SYSV_IPC
 

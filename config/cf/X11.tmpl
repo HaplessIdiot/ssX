@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.216 2003/09/03 20:30:07 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.218 2003/09/08 14:25:22 eich Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1179,8 +1179,15 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #ifndef ServerAssertDefines
 #define ServerAssertDefines -DNDEBUG
 #endif
+#ifndef ServerSnprintfDefines
+#if !HasSnprintf
+#define ServerSnprintfDefines -DNEED_SNPRINTF
+#else
+#define ServerSnprintfDefines /**/
+#endif
+#endif
 #ifndef ServerDefines
-#define ServerDefines StandardDefines PervasiveExtensionDefines ServerExtraDefines ServerAssertDefines
+#define ServerDefines StandardDefines PervasiveExtensionDefines ServerExtraDefines ServerAssertDefines ServerSnprintfDefines
 #endif
 
 #ifndef MesaUseX86Asm
