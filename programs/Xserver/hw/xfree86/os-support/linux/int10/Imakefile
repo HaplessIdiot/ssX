@@ -79,6 +79,11 @@ LibraryModuleTarget(int10, $(OBJS))
 
 InstallLibraryModule(int10,$(MODULEDIR),linux)
 
+all::
+	(set -x; cd ../..; \
+	RemoveFile(LibraryTargetName(int10)); \
+	$(LN) linux/int10/LibraryTargetName(int10) . )
+
 DependTarget()
 
 InstallDriverSDKLibraryModule(int10,$(DRIVERSDKMODULEDIR),.)

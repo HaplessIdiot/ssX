@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/pnp.c,v 1.6 1999/07/10 12:17:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/pnp.c,v 1.7 1999/09/25 14:37:36 dawes Exp $ */
 
 /*
  * Copyright 1998 by Kazutaka YOKOTA <yokota@zodiac.mech.utsunomiya-u.ac.jp>
@@ -31,7 +31,9 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86Xinput.h"
+#include "xf86_OSproc.h"
 #include "xf86OSmouse.h"
+#include "xf86_ansic.h"
 #include "mouse.h"
 
 /* serial PnP ID string */

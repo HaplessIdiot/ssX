@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.167 1999/07/05 04:23:14 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.168 1999/08/14 10:49:21 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -589,11 +589,16 @@ XF86DDCLIB = $(XF86SRC)/ddc/LibraryTargetName(ddc)
 #if XF86RAC
 XF86RACLIB = $(XF86SRC)/rac/LibraryTargetName(rac)
 #endif
+#if XF86INT10
+XF86INT10LIB = $(XF86OSSRC)/LibraryTargetName(int10)
+#else
+XF86INT10LIB = $(XF86OSSRC)/int10/stub.o
+#endif
 XF86IDRIVERLIB = $(XF86SRC)/input/LibraryTargetName(idriver)
 #if !DoLoadableServer
 XF86DRVOBJS = $(XF86SRC)/drivers/drvConf.o
 XF86DRVLIBS = $(XF86DRIVERLIB) $(XF86RAMDACLIB) $(XF86DDCLIB) $(XF86I2CLIB) \
-              $(XF86XAALIB) $(XF86VGAHWLIB) $(XF86FBDEVHWLIB) \
+              $(XF86INT10LIB) $(XF86XAALIB) $(XF86VGAHWLIB) $(XF86FBDEVHWLIB) \
               $(XF8_32BPPLIB) $(XF8_16BPPLIB) $(XF24_32BPPLIB) \
 	      $(XF4BPPLIB) $(XF1BPPLIB) $(XFSHADOWFBLIB) $(AFBLIB)
 XF86IDRVOBJS = $(XF86SRC)/input/drvConf.o

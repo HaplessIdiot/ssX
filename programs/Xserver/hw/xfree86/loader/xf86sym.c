@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.110 1999/09/04 13:04:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.111 1999/09/25 14:37:40 dawes Exp $ */
 
 /*
  *
@@ -268,7 +268,6 @@ LOOKUP xfree86LookupTab[] = {
 	   
    /* xf86Cursor.c  XXX not all of these should be exported */
    SYMFUNC(xf86LockZoom)
-   SYMFUNC(xf86SetScreenLayout)
    SYMFUNC(xf86SetViewport)
    SYMFUNC(xf86ZoomLocked)
    SYMFUNC(xf86ZoomViewport)
