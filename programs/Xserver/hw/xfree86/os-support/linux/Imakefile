@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/10 1996/10/19 18:06:19 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/Imakefile,v 3.28 2000/01/19 22:37:35 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/Imakefile,v 3.29 2000/01/21 02:30:04 dawes Exp $
 XCOMM $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/Imakefile,v 1.9 1999/06/07 13:01:42 faith Exp $
 
 #include <Server.tmpl>
@@ -57,7 +57,7 @@ NormalLibraryObjectRule()
 DRISUBDIR = drm
 #endif
 
-#if XF86INT10
+#if XF86INT10 > X86EMU_GENERIC
 INT10SUBDIR = int10
 #endif 
 

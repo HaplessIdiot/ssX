@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/int10/xf86int10.c,v 1.3 1999/12/03 19:17:41 eich Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -11,7 +11,7 @@
 #include "xf86Pci.h"
 #define _INT10_PRIVATE
 #include "xf86int10.h"
-#include "defines.h"
+#include "int10Defines.h"
 
 xf86Int10InfoPtr Int10Current = NULL;
 

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.4 1999/12/03 19:17:43 eich Exp $ */
 /*
  * linux specific part of the int10 module
  * Copyright 1999 Egbert Eich
@@ -11,7 +11,7 @@
 #include "compiler.h"
 #define _INT10_PRIVATE
 #include "xf86int10.h"
-#include "defines.h"
+#include "int10Defines.h"
 #define DEV_MEM "/dev/mem"
 #ifndef XFree86LOADER
 #include <sys/mman.h>
