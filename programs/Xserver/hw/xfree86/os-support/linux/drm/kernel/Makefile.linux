@@ -148,9 +148,11 @@ DRMTEMPLATES += drm_agpsupport.h
 MODS += mga.o
 ifeq ($(MACHINE),i386)
 MODS += i810.o
+MODS += i830.o
 endif
 ifeq ($(MACHINE),i686)
 MODS += i810.o
+MODS += i830.o
 endif
 
 MGAOBJS =	mga_drv.o mga_dma.o mga_state.o mga_warp.o
@@ -158,6 +160,9 @@ MGAHEADERS =	mga.h mga_drv.h mga_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
 
 I810OBJS =	i810_drv.o i810_dma.o
 I810HEADERS =	i810.h i810_drv.h i810_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
+
+I830OBJS =	i830_drv.o i830_dma.o
+I830HEADERS =	i830.h i830_drv.h i830_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
 
 endif
 
@@ -252,6 +257,11 @@ i810_drv.o: i810_drv.c
 i810.o: $(I810OBJS) $(LIBS)
 	$(LD) -r $^ -o $@
 
+i830_drv.o: i830_drv.c
+	$(CC) $(MODCFLAGS) -DEXPORT_SYMTAB -I$(TREE) -c $< -o $@
+i830.o: $(I830OBJS) $(LIBS)
+	$(LD) -r $^ -o $@
+
 endif
 
 .PHONY: ChangeLog
@@ -272,6 +282,7 @@ $(TDFXOBJS): $(TDFXHEADERS)
 ifeq ($(AGP),1)
 $(MGAOBJS): $(MGAHEADERS)
 $(I810OBJS): $(I810HEADERS)
+$(I830OBJS): $(I830HEADERS)
 $(R128OBJS): $(R128HEADERS)
 $(RADEONOBJS): $(RADEONHEADERS)
 endif

@@ -107,6 +107,7 @@ typedef struct drm_tex_region {
 #ifdef CONFIG_DRM_SIS
 #include "sis_drm.h"
 #endif
+#include "i830_drm.h"
 
 typedef struct drm_version {
 	int    version_major;	  /* Major version			    */
@@ -500,5 +501,16 @@ typedef struct drm_scatter_gather {
 #define SIS_IOCTL_FLIP_INIT		DRM_IO(  0x49)
 #define SIS_IOCTL_FLIP_FINAL		DRM_IO(  0x50)
 #endif
+
+/* I830 specific ioctls */
+#define DRM_IOCTL_I830_INIT		DRM_IOW( 0x40, drm_i830_init_t)
+#define DRM_IOCTL_I830_VERTEX		DRM_IOW( 0x41, drm_i830_vertex_t)
+#define DRM_IOCTL_I830_CLEAR		DRM_IOW( 0x42, drm_i830_clear_t)
+#define DRM_IOCTL_I830_FLUSH		DRM_IO ( 0x43)
+#define DRM_IOCTL_I830_GETAGE		DRM_IO ( 0x44)
+#define DRM_IOCTL_I830_GETBUF		DRM_IOWR(0x45, drm_i830_dma_t)
+#define DRM_IOCTL_I830_SWAP		DRM_IO ( 0x46)
+#define DRM_IOCTL_I830_COPY		DRM_IOW( 0x47, drm_i830_copy_t)
+#define DRM_IOCTL_I830_DOCOPY		DRM_IO ( 0x48)
 
 #endif
