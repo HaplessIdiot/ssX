@@ -12,7 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Screen.c,v 3.9 2001/03/23 01:27:09 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Screen.c,v 3.11 2003/01/10 13:29:40 eich Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -20,6 +20,7 @@ is" without express or implied warranty.
 #include "dix.h"
 #include "mi.h"
 #include "mibstore.h"
+#include "micmap.h"
 #include "colormapst.h"
 #include "resource.h"
 
@@ -43,6 +44,10 @@ extern Window xnestParentWindow;
 
 Window xnestDefaultWindows[MAXSCREENS];
 Window xnestScreenSaverWindows[MAXSCREENS];
+
+#ifdef GLXEXT
+extern void GlxWrapInitVisuals(miInitVisualsProcPtr *);
+#endif
 
 #ifdef PIXPRIV
 int xnestScreenGeneration = -1;
@@ -140,6 +145,8 @@ Bool xnestOpenScreen(index, pScreen, argc, argv)
   XSetWindowAttributes attributes;
   XWindowAttributes gattributes;
   XSizeHints sizeHints;
+  VisualID defaultVisual;
+  int rootDepth;
 
   if (!(AllocateWindowPrivate(pScreen, xnestWindowPrivateIndex,
 			    sizeof(xnestPrivWin))  &&
@@ -168,7 +175,6 @@ Bool xnestOpenScreen(index, pScreen, argc, argv)
   numDepths = 1;
 
   for (i = 0; i < xnestNumVisuals; i++) {
-    visuals[numVisuals].vid = FakeClientID(0);
     visuals[numVisuals].class = xnestVisuals[i].class;
     visuals[numVisuals].bitsPerRGBValue = xnestVisuals[i].bits_per_rgb;
     visuals[numVisuals].ColormapEntries = xnestVisuals[i].colormap_size;
@@ -179,7 +185,26 @@ Bool xnestOpenScreen(index, pScreen, argc, argv)
     visuals[numVisuals].offsetRed = offset(xnestVisuals[i].red_mask);
     visuals[numVisuals].offsetGreen = offset(xnestVisuals[i].green_mask);
     visuals[numVisuals].offsetBlue = offset(xnestVisuals[i].blue_mask);
-    
+
+    /* Check for and remove duplicates. */
+    for (j = 0; j < numVisuals; j++) {
+      if (visuals[numVisuals].class           == visuals[j].class           &&
+	  visuals[numVisuals].bitsPerRGBValue == visuals[j].bitsPerRGBValue &&
+	  visuals[numVisuals].ColormapEntries == visuals[j].ColormapEntries &&
+	  visuals[numVisuals].nplanes         == visuals[j].nplanes         &&
+	  visuals[numVisuals].redMask         == visuals[j].redMask         &&
+	  visuals[numVisuals].greenMask       == visuals[j].greenMask       &&
+	  visuals[numVisuals].blueMask        == visuals[j].blueMask        &&
+	  visuals[numVisuals].offsetRed       == visuals[j].offsetRed       &&
+	  visuals[numVisuals].offsetGreen     == visuals[j].offsetGreen     &&
+	  visuals[numVisuals].offsetBlue      == visuals[j].offsetBlue)
+	break;
+    }
+    if (j < numVisuals)
+      break;
+
+    visuals[numVisuals].vid = FakeClientID(0);
+
     depthIndex = UNDEFINED;
     for (j = 0; j < numDepths; j++)
       if (depths[j].depth == xnestVisuals[i].depth) {
@@ -204,6 +229,21 @@ Bool xnestOpenScreen(index, pScreen, argc, argv)
     
     numVisuals++;
   }
+  visuals = (VisualPtr)xrealloc(visuals, numVisuals * sizeof(VisualRec));
+
+  defaultVisual = visuals[xnestDefaultVisualIndex].vid;
+  rootDepth = visuals[xnestDefaultVisualIndex].nplanes;
+
+#ifdef GLXEXT
+  {
+    miInitVisualsProcPtr proc = NULL;
+
+    GlxWrapInitVisuals(&proc);
+    /* GlxInitVisuals ignores the last three arguments. */
+    proc(&visuals, &depths, &numVisuals, &numDepths,
+	 &rootDepth, &defaultVisual, 0, 0, 0);
+  }
+#endif
 
   if (xnestParentWindow != 0) {
     XGetWindowAttributes(xnestDisplay, xnestParentWindow, &gattributes);
@@ -214,9 +254,9 @@ Bool xnestOpenScreen(index, pScreen, argc, argv)
   /* myNum */
   /* id */
   miScreenInit(pScreen, NULL, xnestWidth, xnestHeight, 1, 1, xnestWidth,
-	       visuals[xnestDefaultVisualIndex].nplanes, /* rootDepth */
+	       rootDepth,
 	       numDepths, depths,
-	       visuals[xnestDefaultVisualIndex].vid, /* root visual */
+	       defaultVisual, /* root visual */
 	       numVisuals, visuals);
 
   miInitializeBackingStore(pScreen);
