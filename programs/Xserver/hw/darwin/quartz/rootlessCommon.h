@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessCommon.h,v 1.2 2002/04/03 00:06:32 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessCommon.h,v 1.3 2002/04/05 02:05:10 torrey Exp $ */
 
 #ifndef _ROOTLESSCOMMON_H
 #define _ROOTLESSCOMMON_H
@@ -193,7 +193,7 @@ extern RegionRec rootlessHugeRoot;
 #define SetPixmapBaseToScreen(pix, x, y) { \
     PixmapPtr   _pPix = (PixmapPtr) (pix); \
     _pPix->devPrivate.ptr = (char *) (_pPix->devPrivate.ptr) - \
-        ((x) * _pPix->drawable.bitsPerPixel/8 + (y) * _pPix->devKind); \
+        ((int)(x) * _pPix->drawable.bitsPerPixel/8 + (int)(y) * _pPix->devKind); \
 }
 
 

@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessWindow.c,v 1.4 2002/04/05 00:03:18 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessWindow.c,v 1.5 2002/04/05 02:05:10 torrey Exp $ */
 
 #include "rootlessCommon.h"
 #include "rootlessWindow.h"
@@ -435,8 +435,7 @@ StartFrameResize(WindowPtr pWin, Bool gravity,
         GetScratchPixmapHeader(pScreen, winRec->frame.w, winRec->frame.h,
                                winRec->frame.depth, winRec->frame.bitsPerPixel,
                                winRec->frame.bytesPerRow, gResizeDeathBits);
-    SetPixmapBaseToScreen(gResizeDeathPix, pWin->drawable.x - oldBW,
-                          pWin->drawable.y - oldBW);
+    SetPixmapBaseToScreen(gResizeDeathPix, oldX, oldY);
     RootlessStopDrawing(pWin);
 
     winRec->frame.x = newX;
@@ -461,31 +460,29 @@ StartFrameResize(WindowPtr pWin, Bool gravity,
     // Copy pixels in intersection from src to dst.
     // ResizeWindow assumes these pixels are already present when
     // making gravity adjustments.
-    // pWin currently has new-sized pixmap but is in old position
+    // pWin currently has new-sized pixmap but is in old position.
     // fixme border width change!
     {
-        RegionRec r;
         BoxRec rect;
         DrawablePtr src = &gResizeDeathPix->drawable;
         DrawablePtr dst = &pScreen->GetWindowPixmap(pWin)->drawable;
-       // These vars are needed because implicit unsigned->signed fails
-       int oldX2 = (int)(oldX + oldW), newX2 = (int)(newX + newW);
-       int oldY2 = (int)(oldY + oldH), newY2 = (int)(newY + newH);
+        // These vars are needed because implicit unsigned->signed fails
+        int oldX2 = (int)(oldX + oldW), newX2 = (int)(newX + newW);
+        int oldY2 = (int)(oldY + oldH), newY2 = (int)(newY + newH);
 
         rect.x1 = max(oldX, newX);
         rect.y1 = max(oldY, newY);
         rect.x2 = min(oldX2, newX2);
         rect.y2 = min(oldY2, newY2);
-        REGION_INIT(pScreen, &r, &rect, 1);
 
         RL_DEBUG_MSG("Resize copy rect %d %d %d %d  ",
                      rect.x1, rect.y1, rect.x2, rect.y2);
 
-        // r is now intersection of of old location and new location
+        // rect is the intersection of the old location and new location
         if (BOX_NOT_EMPTY(rect)) {
-            fbCopyRegion(src, dst, NULL, &r, 0, 0, fbCopyWindowProc, 0, 0);
+            fbCopyWindowProc(src, dst, NULL, &rect, 1, 0, 0,
+                             FALSE, FALSE, 0, 0);
         }
-        REGION_UNINIT(pScreen, &r);
     }
 }
 
