@@ -17,7 +17,7 @@ XCOMM $Xorg: Imake.cf,v 1.4 2000/08/17 19:41:45 cpqbld Exp $
  *
  *     4.  Create a .cf file with the name given by MacroFile.
  */
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.70 2001/08/14 21:53:53 tsi Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.71 2001/10/10 19:06:35 herrb Exp $
 
 #if defined(__APPLE__)
 # undef __APPLE__
@@ -105,6 +105,7 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.70 2001/08/14 21:53:53 tsi Exp $
 #  define i386BsdArchitecture
 #  define i386Architecture
 #  undef i386
+# endif
 # if defined(__sparc__) || defined(sparc)
 #  if !defined(__arch64__)
 #   define SparcArchitecture
