@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:42:50 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/doc/specs/programs/Imakefile,v 1.19 2003/04/07 22:09:48 herrb Exp $
+XCOMM $XFree86: xc/doc/specs/programs/Imakefile,v 1.20 2003/04/15 06:07:18 herrb Exp $
 
 /* does not include manual pages under util (not X programs)
    or any of the library function manual pages under doc/man */
@@ -106,10 +106,10 @@ MANUALS = \
   $(TOP)/programs/dpsexec/dpsexec.man \
   $(TOP)/programs/dpsinfo/dpsinfo.man \
   $(TOP)/programs/editres/editres.man \
-  $(TOP)/lib/fontconfig/fc-cache/fc-cache.man \
-  $(TOP)/lib/fontconfig/fc-lang/fc-lang.man \
-  $(TOP)/lib/fontconfig/fc-list/fc-list.man \
-  $(TOP)/lib/fontconfig/src/fontconfig.man \
+  $(TOP)/extras/fontconfig/fc-cache/fc-cache.man \
+  $(TOP)/extras/fontconfig/fc-lang/fc-lang.man \
+  $(TOP)/extras/fontconfig/fc-list/fc-list.man \
+  $(TOP)/extras/fontconfig/src/fontconfig.man \
   $(TOP)/programs/fslsfonts/fslsfonts.man \
   $(TOP)/programs/fstobdf/fstobdf.man \
   $(TOP)/config/util/gccmakedep.man \
