@@ -30,13 +30,13 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winpfbdd.c,v 1.2 2001/04/18 17:14:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winpfbdd.c,v 1.3 2001/05/01 22:57:15 alanh Exp $ */
 
 #include "win.h"
 
 /*
-  Create a DirectDraw primary surface 
-*/
+ * Create a DirectDraw primary surface 
+ */
 Bool
 winAllocateFBPrimaryDD (ScreenPtr pScreen)
 {
@@ -122,13 +122,14 @@ winAllocateFBPrimaryDD (ScreenPtr pScreen)
   pddsdPrimary->dwSize = sizeof (*pddsdPrimary);
 
   /* Describe the offscreen surface to be created */
-  /* NOTE: Do not use a DDSCAPS_VIDEOMEMORY surface,
-     as drawing, locking, and unlocking take forever
-     with video memory surfaces.  In addition,
-     video memory is a somewhat scarce resource,
-     so you shouldn't be allocating video memory when
-     you could use system memory instead.
-  */
+  /*
+   * NOTE: Do not use a DDSCAPS_VIDEOMEMORY surface,
+   * as drawing, locking, and unlocking take forever
+   * with video memory surfaces.  In addition,
+   * video memory is a somewhat scarce resource,
+   * so you shouldn't be allocating video memory when
+   * you have the option of using system memory instead.
+   */
   ZeroMemory (&ddsd, sizeof (ddsd));
   ddsd.dwSize = sizeof (ddsd);
   ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
@@ -192,10 +193,10 @@ winAllocateFBPrimaryDD (ScreenPtr pScreen)
 }
 
 /*
-  Call the wrapped CloseScreen function.
-
-  Free our resources and private structures.
-*/
+ * Call the wrapped CloseScreen function.
+ * 
+ * Free our resources and private structures.
+ */
 Bool
 winCloseScreenPrimaryDD (int nIndex, ScreenPtr pScreen)
 {
@@ -264,12 +265,12 @@ winCloseScreenPrimaryDD (int nIndex, ScreenPtr pScreen)
 }
 
 /*
-  Tell mi what sort of visuals we need.
-
-  Generally we only need one visual, as our screen can only
-  handle one format at a time, I believe.  You may want
-  to verify that last sentence.
-*/
+ * Tell mi what sort of visuals we need.
+ * 
+ * Generally we only need one visual, as our screen can only
+ * handle one format at a time, I believe.  You may want
+ * to verify that last sentence.
+ */
 Bool
 winInitVisualsPrimaryDD (ScreenPtr pScreen)
 {
@@ -311,12 +312,16 @@ winInitVisualsPrimaryDD (ScreenPtr pScreen)
 				     pScreenPriv->dwGreenMask,
 				     pScreenPriv->dwBlueMask))
 	{
-	  FatalError ("winInitVisualsPrimaryDD () - miSetVisualTypesAndMasks failed\n");
+	  ErrorF ("winInitVisualsPrimaryDD () - " \
+		  "miSetVisualTypesAndMasks failed\n");
+	  return FALSE;
 	}
       break;
 
     case 8:
+#if CYGDEBUG
       ErrorF ("winInitVisuals () - Calling miSetVisualTypesAndMasks\n");
+#endif /* CYGDEBUG */
       if (!miSetVisualTypesAndMasks (pScreenInfo->dwDepth,
 				     PseudoColorMask,
 				     pScreenPriv->dwBitsPerRGB,
@@ -325,13 +330,19 @@ winInitVisualsPrimaryDD (ScreenPtr pScreen)
 				     pScreenPriv->dwGreenMask,
 				     pScreenPriv->dwBlueMask))
 	{
-	  FatalError ("winInitVisualsPrimaryDD () - miSetVisualTypesAndMasks failed\n");
+	  ErrorF ("winInitVisualsPrimaryDD () - "\
+		  "miSetVisualTypesAndMasks failed\n");
+	  return FALSE;
 	}
-      ErrorF ("winInitVisualsPrimaryDD () - Returned from miSetVisualTypesAndMasks\n");
+#if CYGDEBUG
+      ErrorF ("winInitVisualsPrimaryDD () - Returned from "\
+	      "miSetVisualTypesAndMasks\n");
+#endif /* CYGDEBUG */
       break;
 
     default:
-      break;
+      ErrorF ("winInitVisualsPrimaryDD () - Unknown screen depth\n");
+      return FALSE;
     }
 
   /* Set DPI info */
@@ -383,6 +394,87 @@ winAdjustVideoModePrimaryDD (ScreenPtr pScreen)
   return TRUE;
 }
 
+Bool
+winActivateAppPrimaryDD (ScreenPtr pScreen)
+{
+  winScreenPriv(pScreen);
+  winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
+  RECT			rcSrc, rcClient;
+  HRESULT		ddrval = DD_OK;
+
+  /*
+   * We need to blit our offscreen fb to
+   * the screen when we are activated, and we need to point
+   * the fb code back to the primary surface memory.
+   */
+  if (pScreenPriv != NULL
+      && pScreenPriv->pddsPrimary != NULL
+      && pScreenPriv->pddsOffscreen != NULL
+      && pScreenPriv->fActive)
+    {
+      /* We are activating */
+      ddrval = IDirectDrawSurface_IsLost (pScreenPriv->pddsOffscreen);
+      if (ddrval == DD_OK)
+	{
+	  IDirectDrawSurface_Unlock (pScreenPriv->pddsOffscreen,
+				     NULL);
+	  /*
+	   * We don't check for an error from Unlock, because it
+	   * doesn't matter if the Unlock failed.
+	   */
+	}
+	      
+      /* Restore both surfaces, just cause I like it that way */
+      IDirectDrawSurface_Restore (pScreenPriv->pddsOffscreen);
+      IDirectDrawSurface_Restore (pScreenPriv->pddsPrimary);
+			      
+      /* Get client area in screen coords */
+      GetClientRect (pScreenPriv->hwndScreen, &rcClient);
+      MapWindowPoints (pScreenPriv->hwndScreen,
+		       HWND_DESKTOP,
+		       (LPPOINT)&rcClient, 2);
+	      
+      /* Setup a source rectangle */
+      rcSrc.left = 0;
+      rcSrc.top = 0;
+      rcSrc.right = pScreenInfo->dwWidth;
+      rcSrc.bottom = pScreenInfo->dwHeight;
+
+      ddrval = IDirectDrawSurface_Blt (pScreenPriv->pddsPrimary,
+				       &rcClient,
+				       pScreenPriv->pddsOffscreen,
+				       &rcSrc,
+				       DDBLT_WAIT,
+				       NULL);
+      if (FAILED (ddrval))
+	FatalError ("winWindowProc () - Failed blitting offscreen "\
+		    "surface to primary surface %08x\n", ddrval);
+
+      /* Lock the primary surface */
+      ddrval = IDirectDrawSurface_Lock (pScreenPriv->pddsPrimary,
+					&rcClient,
+					pScreenPriv->pddsdPrimary,
+					DDLOCK_WAIT,
+					NULL);
+      if (ddrval != DD_OK
+	  || pScreenPriv->pddsdPrimary->lpSurface == NULL)
+	FatalError ("winWindowProc () - Could not lock "\
+		    "primary surface\n");
+
+      /* Notify FB of the new memory pointer */
+      winUpdateFBPointer (pScreen,
+			  pScreenPriv->pddsdPrimary->lpSurface);
+
+      /*
+       * Register the Alt-Tab combo as a hotkey so we can copy
+       * the primary framebuffer before the display mode changes
+       */
+      RegisterHotKey (pScreenPriv->hwndScreen, 1, MOD_ALT, 9);
+    }
+
+  return TRUE;
+}
+
 /* Set engine specific functions */
 Bool
 winSetEngineFunctionsPrimaryDD (ScreenPtr pScreen)
@@ -404,6 +496,9 @@ winSetEngineFunctionsPrimaryDD (ScreenPtr pScreen)
   else
     pScreenPriv->pwinCreateBoundingWindow = winCreateBoundingWindowWindowed;
   pScreenPriv->pwinFinishScreenInit = winFinishScreenInitFB;
+  pScreenPriv->pwinBltExposedRegions
+    = (winBltExposedRegionsProcPtr) (void (*)())NoopDDA;
+  pScreenPriv->pwinActivateApp = winActivateAppPrimaryDD;
 
   return TRUE;
 }

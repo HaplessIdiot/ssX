@@ -30,12 +30,9 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.3 2001/04/22 19:52:36 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.4 2001/05/01 22:57:15 alanh Exp $ */
 
 #include "win.h"
-#ifdef RENDER
-#include "mipict.h"
-#endif
 
 /*
  * Create a full screen window
@@ -68,18 +65,18 @@ winCreateBoundingWindowFullScreen (ScreenPtr pScreen)
   RegisterClass (&wc);
 
   /* Create the window */
-  *phwnd = CreateWindowExA (WS_EX_TOPMOST,	// Extended styles
-			    WINDOW_CLASS,	// Class name
-			    WINDOW_TITLE,	// Window name
+  *phwnd = CreateWindowExA (WS_EX_TOPMOST,	/* Extended styles */
+			    WINDOW_CLASS,	/* Class name */
+			    WINDOW_TITLE,	/* Window name */
 			    WS_POPUP,
-			    0,			// Horizontal position
-			    0,			// Vertical position
-			    iWidth,		// Right edge
-			    iHeight,		// Bottom edge
-			    (HWND) NULL,	// No parent or owner window
-			    (HMENU) NULL,	// No menu
-			    GetModuleHandle (NULL),// Instance handle
-			    pScreenPriv);	// ScreenPrivates
+			    0,			/* Horizontal position */
+			    0,			/* Vertical position */
+			    iWidth,		/* Right edge */ 
+			    iHeight,		/* Bottom edge */
+			    (HWND) NULL,	/* No parent or owner window */
+			    (HMENU) NULL,	/* No menu */
+			    GetModuleHandle (NULL),/* Instance handle */
+			    pScreenPriv);	/* ScreenPrivates */
 
   /* Branch on the server engine */
   switch (pScreenInfo->dwEngine)
@@ -154,13 +151,14 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
   /* Trim window height to fit work area */
   if (iHeight >= (rcWorkArea.bottom - rcWorkArea.top))
     {
-      /* FIXME: Currently chopping 1 off the maximum height
-	 to allow hidden start bars to pop up when the mouse
-	 reaches the bottom of the screen.
-	 
-	 This only works if the start menu is at the bottom
-	 of the screen.
-      */
+      /*
+       * FIXME: Currently chopping 1 off the maximum height
+       * to allow hidden start bars to pop up when the mouse
+       * reaches the bottom of the screen.
+       * 
+       * This only works if the start menu is at the bottom
+       * of the screen.
+       */
       iHeight = rcWorkArea.bottom - rcWorkArea.top - 1;
       pScreenInfo->dwHeight = iHeight
 	- 2 * GetSystemMetrics (SM_CYFIXEDFRAME)
@@ -207,10 +205,10 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
 }
 
 /*
-  Determine what type of screen we are initializing
-  and call the appropriate procedure to intiailize
-  that type of screen.
-*/
+ * Determine what type of screen we are initializing
+ * and call the appropriate procedure to intiailize
+ * that type of screen.
+ */
 Bool
 winScreenInit (int index,
 	       ScreenPtr pScreen,
@@ -296,7 +294,8 @@ winFinishScreenInitFB (int index,
 
   /* Setup a local variable to point to the framebuffer */
   pbits = pScreenInfo->pfb;
-
+  
+  /* Apparently we need this for the render extension */
   miSetPixmapDepths ();
 
   /* Initialize the fb code */
@@ -340,11 +339,12 @@ winFinishScreenInitFB (int index,
 		  pScreenPriv->pwinShadowWindow);
     }
 
-  /* Register our block and wakeup handlers; these procedures
-     process messages in our Windows message queue; specifically,
-     they process mouse and keyboard input.
-  */
-  RegisterBlockAndWakeupHandlers ((BlockHandlerProcPtr)NoopDDA,
+  /*
+   * Register our block and wakeup handlers; these procedures
+   * process messages in our Windows message queue; specifically,
+   * they process mouse and keyboard input.
+   */
+  RegisterBlockAndWakeupHandlers (winBlockHandler,
 				  winWakeupHandler,
 				  pScreen);
 
@@ -363,9 +363,10 @@ winFinishScreenInitFB (int index,
   return fReturn;
 }
 
-/* Detect engines supported by current Windows version
-   DirectDraw version and hardware
-*/
+/*
+ * Detect engines supported by current Windows version
+ * DirectDraw version and hardware
+ */
 Bool
 winDetectSupportedEngines (ScreenPtr pScreen)
 {
@@ -472,10 +473,11 @@ winDetectSupportedEngines (ScreenPtr pScreen)
   return TRUE;
 }
 
-/* Set the engine type, depending on the engines
-   supported for this screen, and whether the user
-   suggested an engine type
-*/
+/*
+ * Set the engine type, depending on the engines
+ * supported for this screen, and whether the user
+ * suggested an engine type
+ */
 Bool
 winSetEngine (ScreenPtr pScreen)
 {
@@ -581,11 +583,11 @@ winFinishScreenInitNativeGDI (int index,
   char                  *pbits = NULL;
   VisualPtr		pVisuals = NULL;
   DepthPtr		pDepths = NULL;
-  VisualID		rootVisual = NULL;
+  VisualID		rootVisual = 0;
   int			nVisuals = 0, nDepths = 0, nRootDepth = 0;
   winPrivScreenPtr	pScreenPriv = NULL;
   
-  fprintf (stderr, "winScreenInit ()\n");
+  ErrorF ("winScreenInit ()\n");
 
   if (!winAllocatePrivates (pScreen))
     return FALSE;
@@ -731,9 +733,10 @@ winFinishScreenInitNativeGDI (int index,
   pScreen->MarkUnrealizedWindow = miMarkUnrealizedWindow;
 
   /* GC Handling Routines */
-  /* All other GC handling routines are pointed to through
-     pScreen->gcfuncs
-  */
+  /*
+   * All other GC handling routines are pointed to through
+   * pScreen->gcfuncs
+   */
   /* See Porting Layer Definition pp. 43-46 */
   pScreen->CreateGC = winCreateGCNativeGDI;
 
@@ -774,7 +777,7 @@ winFinishScreenInitNativeGDI (int index,
 
   miPointerSetNewScreen (pScreenInfo->dwScreen, 0, 0);
 
-  fprintf (stderr, "winScreenInit () - calling miDCInitialize()\n");
+  ErrorF ("winScreenInit () - calling miDCInitialize()\n");
   if (!miDCInitialize (pScreen, &g_winPointerCursorFuncs))
     {
       ErrorF ("winScreenInit () - miDCInitialize failed\n");

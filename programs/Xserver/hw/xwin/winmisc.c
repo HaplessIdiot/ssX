@@ -27,23 +27,25 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winmisc.c,v 1.1 2001/04/05 20:13:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winmisc.c,v 1.2 2001/04/18 17:14:06 dawes Exp $ */
 
 #include "win.h"
 
 /* See Porting Layer Definition - p. 33 */
-/* Called by clients, returns the best size for a cursor, tile, or
-   stipple, specified by class (sometimes called kind) */
+/*
+ * Called by clients, returns the best size for a cursor, tile, or
+ * stipple, specified by class (sometimes called kind)
+ */
 void
 winQueryBestSizeNativeGDI (int class, unsigned short *pWidth,
 			   unsigned short *pHeight, ScreenPtr pScreen)
 {
-  fprintf (stderr, "winQueryBestSize()\n");
+  ErrorF ("winQueryBestSize()\n");
 }
 
 /*
-  Count the number of one bits in a color mask.
-*/
+ * Count the number of one bits in a color mask.
+ */
 CARD8
 winCountBits (DWORD dw)
 {

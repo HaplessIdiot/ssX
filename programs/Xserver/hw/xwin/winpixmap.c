@@ -28,7 +28,7 @@
  * Authors:	drewry, september 1986
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winpixmap.c,v 1.1 2001/04/05 20:13:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winpixmap.c,v 1.2 2001/05/01 22:57:15 alanh Exp $ */
 
 #include "win.h"
 
@@ -116,7 +116,7 @@ winDestroyPixmapNativeGDI (PixmapPtr pPixmap)
   HBITMAP		hBitmap;
 
   fprintf (stderr, "winDestroyPixmap - pPixmap->devPrivate.ptr: %08x\n",
-	   (unsigned int)pPixmap->devPrivate.ptr);
+	   (UINT) pPixmap->devPrivate.ptr);
 
   /* Decrement reference count, and, if zero, free the pixmap */
   --(pPixmap->refcnt);

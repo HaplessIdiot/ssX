@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.2 2001/04/18 17:14:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.3 2001/04/19 12:56:03 alanh Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -72,9 +72,6 @@
 #define DEBUGPROC_MSG
 #endif
 
-/* We use xor this macro for detecting toggle key state changes */
-#define WIN_XOR(a,b) ((!(a) && (b)) || ((a) && !(b)))
-
 /* Constant strings */
 #define WINDOW_CLASS		"cygwin/xfree86"
 #define WINDOW_TITLE		"Cygwin/XFree86"
@@ -103,6 +100,10 @@
 #define AltLangMapIndex		Mod3MapIndex
 #define KanaMapIndex		Mod4MapIndex
 #define ScrollLockMapIndex	Mod5MapIndex
+
+#define WIN_24BPP_MASK_RED	0x00FF0000
+#define WIN_24BPP_MASK_GREEN	0x0000FF00
+#define WIN_24BPP_MASK_BLUE	0x000000FF
 
 /*
  * We need symbols for the scan codes of keys.
@@ -153,6 +154,7 @@
 #include "miline.h"
 #include "shadow.h"
 #include "fb.h"
+#include "mipict.h"
 
 #ifdef RENDER
 #include "picturestr.h"
@@ -192,6 +194,10 @@ typedef Bool (*winAdjustVideoModeProcPtr)(ScreenPtr);
 typedef void (*winCreateBoundingWindowProcPtr)(ScreenPtr);
 
 typedef Bool (*winFinishScreenInitProcPtr)(int, ScreenPtr, int, char **);
+
+typedef Bool (*winBltExposedRegionsProcPtr)(ScreenPtr);
+
+typedef Bool (*winActivateAppProcPtr)(ScreenPtr);
 
 /*
  * Privates structures
@@ -286,6 +292,8 @@ typedef struct
   winAdjustVideoModeProcPtr		pwinAdjustVideoMode;
   winCreateBoundingWindowProcPtr	pwinCreateBoundingWindow;
   winFinishScreenInitProcPtr		pwinFinishScreenInit;
+  winBltExposedRegionsProcPtr		pwinBltExposedRegions;
+  winActivateAppProcPtr			pwinActivateApp;
 } winPrivScreenRec, *winPrivScreenPtr;
 
 extern ColormapPtr		g_cmInstalledMaps[];
@@ -296,6 +304,7 @@ extern DWORD			g_dwEvents;
 extern int			g_fdMessageQueue;
 extern int			g_winScreenPrivateIndex;
 extern unsigned long		g_winGeneration;
+extern CARD32			g_c32LastInputEventTime;
 
 /*
  * Screen privates macros
@@ -315,13 +324,17 @@ extern unsigned long		g_winGeneration;
 	(_pWin)->devPrivates[winWindowPrivateIndex].ptr)
 
 /*
-  FIXME: Windows mouse wheel macro; should be in Cygwin w32api headers
-*/
+ * FIXME: Windows mouse wheel macro; should be in Cygwin w32api headers.
+ * Has been fixed after May 05, 2001.  Remove this section after the
+ * fixed headers are in distribution.
+ */
 #ifndef GET_WHEEL_DELTA_WPARAM
 #define GET_WHEEL_DELTA_WPARAM(wparam)		((short)HIWORD (wparam))
 #endif /* GET_WHEEL_DELTA_WPARAM */
 
-/* BEGIN DDX and DIX Function Prototypes */
+/*
+ * BEGIN DDX and DIX Function Prototypes
+ */
 
 /*
  * InitOutput.c
@@ -474,6 +487,7 @@ winGetSpansNativeGDI (DrawablePtr	pDrawable,
 /*
  * winkeybd.c
  */
+
 void
 winTranslateKey (WPARAM wParam, LPARAM lParam, int *piScanCode);
 
@@ -499,6 +513,9 @@ winStoreModeKeyStates (ScreenPtr pScreen);
 void
 winRestoreModeKeyStates (ScreenPtr pScreen);
 
+Bool
+winIsFakeCtrl_L (UINT message, WPARAM wParam, LPARAM lParam);
+
 /*
  * winmisc.c
  */
@@ -523,6 +540,9 @@ winMouseCtrl (DeviceIntPtr pDevice, PtrCtrl *pCtrl);
 int
 winMouseProc (DeviceIntPtr pDeviceInt, int iState);
 
+int
+winMouseWheel (ScreenPtr pScreen, int iDeltaZ);
+
 /*
  * winpfbddd.c
  */
@@ -538,6 +558,9 @@ winInitVisualsPrimaryDD (ScreenPtr pScreen);
 
 Bool
 winAdjustVideoModePrimaryDD (ScreenPtr pScreen);
+
+Bool
+winActivateAppPrimaryDD (ScreenPtr pScreen);
 
 Bool
 winSetEngineFunctionsPrimaryDD (ScreenPtr pScreen);
@@ -669,6 +692,12 @@ Bool
 winAdjustVideoModeShadowDD (ScreenPtr pScreen);
 
 Bool
+winBltExposedRegionsShadowDD (ScreenPtr pScreen);
+
+Bool
+winActivateAppShadowDD (ScreenPtr pScreen);
+
+Bool
 winSetEngineFunctionsShadowDD (ScreenPtr pScreen);
 
 /*
@@ -707,6 +736,12 @@ Bool
 winAdjustVideoModeShadowDDNL (ScreenPtr pScreen);
 
 Bool
+winBltExposedRegionsShadowDDNL (ScreenPtr pScreen);
+
+Bool
+winActivateAppShadowDDNL (ScreenPtr pScreen);
+
+Bool
 winSetEngineFunctionsShadowDDNL (ScreenPtr pScreen);
 
 /*
@@ -743,6 +778,9 @@ winInitVisualsShadowGDI (ScreenPtr pScreen);
 
 Bool
 winAdjustVideoModeShadowGDI (ScreenPtr pScreen);
+
+Bool
+winActivateAppShadowGDI (ScreenPtr pScreen);
 
 Bool
 winSetEngineFunctionsShadowGDI (ScreenPtr pScreen);
@@ -794,7 +832,9 @@ winWindowProc (HWND hWnd, UINT message,
 void
 winRestoreModeKeyStates (ScreenPtr pScreen);
 
-/* END DDX and DIX Function Prototypes */
+/*
+ * END DDX and DIX Function Prototypes
+ */
 
 #endif /* _WIN_H_ */
 

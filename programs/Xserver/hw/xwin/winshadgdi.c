@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.2 2001/04/18 17:14:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.3 2001/05/01 22:57:15 alanh Exp $ */
 
 #include "win.h"
 
@@ -37,7 +37,9 @@ winQueryScreenDIBFormat (ScreenPtr pScreen, BITMAPINFOHEADER *pbmih)
 {
   winScreenPriv(pScreen);
   HBITMAP		hbmp;
-  Bool			fReturn = TRUE;
+#if CYGDEBUG
+  LPDWORD		pdw = NULL;
+#endif
   
   /* Create a memory bitmap compatible with the screen */
   hbmp = CreateCompatibleBitmap (pScreenPriv->hdcScreen, 1, 1);
@@ -49,26 +51,44 @@ winQueryScreenDIBFormat (ScreenPtr pScreen, BITMAPINFOHEADER *pbmih)
   pbmih->biSize = sizeof (BITMAPINFOHEADER);
 
   /* Get the biBitCount */
-  fReturn = GetDIBits (pScreenPriv->hdcScreen,
-		       hbmp,
-		       0, 1,
-		       NULL,
-		       (BITMAPINFO*) pbmih,
-		       DIB_RGB_COLORS);
+  if (!GetDIBits (pScreenPriv->hdcScreen,
+		  hbmp,
+		  0, 1,
+		  NULL,
+		  (BITMAPINFO*) pbmih,
+		  DIB_RGB_COLORS))
+    {
+      ErrorF ("winQueryScreenDIBFormat () - First call to GetDIBits failed\n");
+      DeleteObject (hbmp);
+      return FALSE;
+    }
+
+#if CYGDEBUG
+  /* Get a pointer to bitfields */
+  pdw = (DWORD*) ((CARD8*)pbmih + sizeof (BITMAPINFOHEADER));
+
+  ErrorF ("winQueryScreenDIBFormat () - First call masks: %08x %08x %08x\n",
+	  pdw[0], pdw[1], pdw[2]);
+#endif
 
   /* Get optimal color table, or the optimal bitfields */
-  if (fReturn)
-    fReturn = GetDIBits (pScreenPriv->hdcScreen,
-			 hbmp,
-			 0, 1,
-			 NULL,
-			 (BITMAPINFO*)pbmih,
-			 DIB_RGB_COLORS);
+  if (!GetDIBits (pScreenPriv->hdcScreen,
+		  hbmp,
+		  0, 1,
+		  NULL,
+		  (BITMAPINFO*)pbmih,
+		  DIB_RGB_COLORS))
+    {
+      ErrorF ("winQueryScreenDIBFormat () - Second call to GetDIBits "\
+	      "failed\n");
+      DeleteObject (hbmp);
+      return FALSE;
+    }
 
   /* Free memory */
   DeleteObject (hbmp);
   
-  return fReturn;
+  return TRUE;
 }
 
 static
@@ -79,19 +99,33 @@ winQueryRGBBitsAndMasks (ScreenPtr pScreen)
   BITMAPINFOHEADER	*pbmih = NULL;
   Bool			fReturn = TRUE;
   LPDWORD		pdw = NULL;
+  DWORD			dwRedBits, dwGreenBits, dwBlueBits;
 
   /* RGB BPP for 8 bit palletes is always 8 bits per pixel */
   if (GetDeviceCaps (pScreenPriv->hdcScreen, RASTERCAPS) & RC_PALETTE)
     {
+      /*
+       * FIXME: 8bpp doesn't work.
+       */
       pScreenPriv->dwBitsPerRGB = 8;
+      pScreenPriv->dwRedMask = 0x0L;
+      pScreenPriv->dwGreenMask = 0x0L;
+      pScreenPriv->dwBlueMask = 0x0L;
       return TRUE;
     }
 
-  /* 24bpp is easy */
+  /* Color masks for 24 bpp are standardized */
   if (GetDeviceCaps (pScreenPriv->hdcScreen, PLANES)
       * GetDeviceCaps (pScreenPriv->hdcScreen, BITSPIXEL) == 24)
     {
+      /* 8 bits per primary color */
       pScreenPriv->dwBitsPerRGB = 8;
+
+      /* Set screen privates masks */
+      pScreenPriv->dwRedMask = WIN_24BPP_MASK_RED;
+      pScreenPriv->dwGreenMask = WIN_24BPP_MASK_GREEN;
+      pScreenPriv->dwBlueMask = WIN_24BPP_MASK_BLUE;
+      
       return TRUE;
     }
 
@@ -104,11 +138,14 @@ winQueryRGBBitsAndMasks (ScreenPtr pScreen)
   /* Get screen description */
   if (winQueryScreenDIBFormat (pScreen, pbmih))
     {
-      DWORD	dwRedBits, dwGreenBits, dwBlueBits;
-
       /* Get a pointer to bitfields */
       pdw = (DWORD*) ((CARD8*)pbmih + sizeof (BITMAPINFOHEADER));
       
+#if CYGDEBUG
+      ErrorF ("winQueryRGBBitsAndMasks () - Masks: %08x %08x %08x\n",
+	      pdw[0], pdw[1], pdw[2]);
+#endif
+
       /* Count the number of bits in each mask */
       dwRedBits = winCountBits (pdw[0]);
       dwGreenBits = winCountBits (pdw[1]);
@@ -129,6 +166,8 @@ winQueryRGBBitsAndMasks (ScreenPtr pScreen)
     }
   else
     {
+      ErrorF ("winQueryRGBBitsAndMasks () - winQueryScreenDIBFormat failed\n");
+      xfree (pbmih);
       fReturn = FALSE;
     }
 
@@ -267,7 +306,8 @@ winShadowSetWindowLinearGDI (ScreenPtr	pScreen,
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
 
   *pdwSize = pScreenInfo->dwPaddedWidth;
-  return (CARD8 *) pScreenInfo->pfb + dwRow * pScreenInfo->dwPaddedWidth + dwOffset;
+  return (CARD8 *) pScreenInfo->pfb 
+    + dwRow * pScreenInfo->dwPaddedWidth + dwOffset;
 }
 
 void *
@@ -380,7 +420,9 @@ winInitVisualsShadowGDI (ScreenPtr pScreen)
       break;
 
     case 8:
+#if CYGDEBUG
       ErrorF ("winInitVisualsGDI () - Calling miSetVisualTypesAndMasks\n");
+#endif CYGDEBUG /* CYGDEBUG */
       if (!miSetVisualTypesAndMasks (pScreenInfo->dwDepth,
 				     PseudoColorMask,
 				     pScreenPriv->dwBitsPerRGB,
@@ -443,7 +485,72 @@ winAdjustVideoModeShadowGDI (ScreenPtr pScreen)
   
   /* Release our DC */
   ReleaseDC (NULL, hdc);
-     
+
+  return TRUE;
+}
+
+/* Blt exposed regions to the screen */
+Bool
+winBltExposedRegionsShadowGDI (ScreenPtr pScreen)
+{
+  winScreenPriv(pScreen);
+  winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
+  HDC			hdcUpdate;
+  PAINTSTRUCT		ps;
+
+  /* BeginPaint gives us an hdc that clips to the invalidated region */
+  hdcUpdate = BeginPaint (pScreenPriv->hwndScreen, &ps);
+
+  /* Our BitBlt will be clipped to the invalidated region */
+  BitBlt (hdcUpdate,
+	  0, 0,
+	  pScreenInfo->dwWidth, pScreenInfo->dwHeight,
+	  pScreenPriv->hdcShadow,
+	  0, 0,
+	  SRCCOPY);
+
+  /* EndPaint frees the DC */
+  EndPaint (pScreenPriv->hwndScreen, &ps);
+
+  return TRUE;
+}
+
+Bool
+winActivateAppShadowGDI (ScreenPtr pScreen)
+{
+  winScreenPriv(pScreen);
+  winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
+
+  /*
+   * Are we active?
+   * Are we fullscreen?
+   */
+  if (pScreenPriv != NULL
+      && pScreenPriv->fActive
+      && pScreenInfo->fFullScreen)
+    {
+      /*
+       * Activating, attempt to bring our window 
+       * to the top of the display
+       */
+      ShowWindow (pScreenPriv->hwndScreen, SW_RESTORE);
+    }
+	  
+  /*
+   * Are we inactive?
+   * Are we fullscreen?
+   */
+  if (pScreenPriv != NULL
+      && !pScreenPriv->fActive
+      && pScreenInfo->fFullScreen)
+    {
+      /*
+       * Deactivating, stuff our window onto the
+       * task bar.
+       */
+      ShowWindow (pScreenPriv->hwndScreen, SW_MINIMIZE);
+    }
+
   return TRUE;
 }
 
@@ -466,6 +573,8 @@ winSetEngineFunctionsShadowGDI (ScreenPtr pScreen)
   else
     pScreenPriv->pwinCreateBoundingWindow = winCreateBoundingWindowWindowed;
   pScreenPriv->pwinFinishScreenInit = winFinishScreenInitFB;
+  pScreenPriv->pwinBltExposedRegions = winBltExposedRegionsShadowGDI;
+  pScreenPriv->pwinActivateApp = winActivateAppShadowGDI;
 
   return TRUE;
 }

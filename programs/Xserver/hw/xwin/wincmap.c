@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/wincmap.c,v 1.1 2001/04/05 20:13:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/wincmap.c,v 1.2 2001/04/18 17:14:06 dawes Exp $ */
 
 #include "win.h"
 
@@ -38,7 +38,8 @@
 int
 winListInstalledColormapsNativeGDI (ScreenPtr pScreen, Colormap *pmaps)
 {
-  /* By the time we are processing requests, we can guarantee that there
+  /* 
+   * By the time we are processing requests, we can guarantee that there
    * is always a colormap installed
    */
   
@@ -68,7 +69,9 @@ void
 winStoreColorsNativeGDI (ColormapPtr pmap, int ndef, xColorItem *pdefs)
 {
   ErrorF ("winStoreColors ()\n");
-  //miStoreColors (pmap, ndef, pdefs);
+#if 0
+  miStoreColors (pmap, ndef, pdefs);
+#endif
 }
 
 /* See Porting Layer Definition - p. 30 */
@@ -88,7 +91,10 @@ Bool
 winInitializeColormapNativeGDI (ColormapPtr pmap)
 {
   ErrorF ("\nwinInitializeColormap ()\n");
+#if 0
   return miInitializeColormap (pmap);
+#endif
+  return TRUE;
 }
 
 int
@@ -102,27 +108,27 @@ winExpandDirectColorsNativeGDI (ColormapPtr pmap, int ndef,
 Bool
 winCreateDefColormapNativeGDI (ScreenPtr pScreen)
 {
+  winScreenPriv(pScreen);
+  Bool			fReturn = TRUE;
   VisualPtr		pVisual;
   ColormapPtr		pcmap = NULL;
-  HBITMAP		hbmp;
-  HDC			hdc = GetDC (NULL);
-  BITMAPINFO		*pbmi = xalloc (sizeof (BITMAPINFOHEADER)
-					 + 256 * sizeof (RGBQUAD));
   int			i;
   Pixel			pixel;
   unsigned short	nRed, nGreen, nBlue;
-
-  ErrorF ("winCreateDefColormap () - sizeof (*pbmi): %d\n",
-	  sizeof (*pbmi));
+  UINT			uiSystemPaletteEntries;
+  PALETTEENTRY		*ppeColors = NULL;
 
   /* Find the root visual */
   for (pVisual = pScreen->visuals;
        pVisual->vid != pScreen->rootVisual;
        pVisual++);
 
-  hbmp = CreateCompatibleBitmap (hdc, 1, 1);
+  /*
+   *  AllocNone for Dynamic visual classes,
+   *  AllocAll for non-Dynamic visual classes.
+   */
 
-  /* Allocate a colormap */
+  /* Allocate an X colormap, owned by client 0 */
   if (CreateColormap(pScreen->defColormap, pScreen, pVisual, &pcmap,
 		     AllocNone, 0) != Success)
     return FALSE;
@@ -130,33 +136,34 @@ winCreateDefColormapNativeGDI (ScreenPtr pScreen)
     {
       FatalError ("winCreateDefColormap () - Colormap could not be created\n");
     }
-
   ErrorF ("winCreateDefColormap () - Created a colormap\n");
 
-  /* Intialize memory of bitmap info header */
-  ZeroMemory (pbmi, sizeof (*pbmi));
-  pbmi->bmiHeader.biSize = sizeof (BITMAPINFOHEADER);
+  /* Get the number of entries in the system palette */
+  uiSystemPaletteEntries = GetSystemPaletteEntries (pScreenPriv->hdcScreen,
+						    0, 0, NULL);
+  ErrorF ("winCreateDefColormap () - uiSystemPaletteEntries %d\n",
+	  uiSystemPaletteEntries);
+  
+  /* Allocate palette entries structure */
+  ppeColors = xalloc (uiSystemPaletteEntries * sizeof (PALETTEENTRY));
+  
+  /* Get system palette entries */
+  GetSystemPaletteEntries (pScreenPriv->hdcScreen,
+			   0, uiSystemPaletteEntries, ppeColors);
 
-  /* Get the screen bitmap format and colormap */
-  GetDIBits (hdc, hbmp,
-	     0, 0,
-	     NULL,
-	     pbmi,
-	     DIB_RGB_COLORS);
-
-  ErrorF ("winCreateDefColormap () - Got screen colormap %d %d\n",
-	  pbmi->bmiHeader.biClrUsed, pbmi->bmiHeader.biClrImportant);
-
-  /* Allocate an X colormap entry for each of Windows' colormap entries */
-  for (i = 0; i < 8; ++i)
+  /* Allocate an X colormap entry for every system palette entry */
+  for (i = 0; i < uiSystemPaletteEntries; ++i)
     {
       pixel = i;
 
-      nRed = pbmi->bmiColors[i].rgbRed;
-      nGreen = pbmi->bmiColors[i].rgbGreen;
-      nBlue = pbmi->bmiColors[i].rgbBlue;
+      /* Extract the color values for current palette entry */
+      nRed = ppeColors[i].peRed << 8;
+      nGreen = ppeColors[i].peGreen << 8;
+      nBlue = ppeColors[i].peBlue << 8;
 
-      ErrorF ("winCreateDefColormap () - Allocating a color: %d; %d %d %d\n",
+#if 0
+      ErrorF ("winCreateDefColormap () - Allocating a color: %d; "\
+	      "%d %d %d ",
 	      pixel, nRed, nGreen, nBlue);
       if (AllocColor (pcmap,
 		      &nRed,
@@ -165,16 +172,31 @@ winCreateDefColormapNativeGDI (ScreenPtr pScreen)
 		      &pixel,
 		      0) != Success)
 	break;
+#endif
+
+      pcmap->red[i].co.local.red = nRed;
+      pcmap->red[i].co.local.green = nGreen;
+      pcmap->red[i].co.local.blue = nBlue;
     }
 
-  /* Free memory */
-  ReleaseDC (NULL, hdc);
-  DeleteObject (hbmp);
-  xfree (pbmi);
+  if (uiSystemPaletteEntries == 0)
+    {
+      fbInitializeColormap (pcmap);
+    }
+  else
+    {
+      /* Set the black and white pixel indices */
+      pScreen->whitePixel = uiSystemPaletteEntries - 1;
+      pScreen->blackPixel = 0;
+    }
 
-  ErrorF ("winCreateDefColormap () - Returning\n");
+  /* Free colormap */
+  free (ppeColors);
 
-  return TRUE;
+  /* Install the created colormap */
+  (*pScreen->InstallColormap)(pcmap);
+
+  return fReturn;
 }
 
 void
@@ -221,10 +243,11 @@ winInitVisualsNativeGDI (ScreenPtr pScreen)
   pbmi->bmiHeader.biSize = sizeof (BITMAPINFOHEADER);
   
   /* Call GetDIBits for the first time; doesn't do much */
-  /* NOTE: This doesn't actually return the bits, because our
-     data pointer is NULL; therefore, we don't have to free
-     memory later.
-  */
+  /*
+   * NOTE: This doesn't actually return the bits, because our
+   * data pointer is NULL; therefore, we don't have to free
+   * memory later.
+   */
   GetDIBits (hdc, hbmp,
 	     0, 0,
 	     NULL,
