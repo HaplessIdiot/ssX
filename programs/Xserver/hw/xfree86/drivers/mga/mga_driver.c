@@ -76,8 +76,9 @@
 #include "micmap.h"
 
 #include "xf86DDC.h"
-
 #include "xf86RAC.h"
+#include "xf86int10.h"
+
 
 /*
  * If using cfb, cfb.h is required.  Select the others for the bpp values
@@ -1091,6 +1092,15 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     pMga->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
     if (pMga->pEnt->location.type != BUS_PCI)
 	return FALSE;
+
+    /* Initialize the card through int10 interface if needed */
+    if ( xf86LoadSubModule(pScrn, "int10")){
+        xf86Int10InfoPtr pInt;
+
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Initializing int10\n");
+        pInt = xf86InitInt10(pMga->pEnt->index);
+        xf86FreeInt10(pInt);
+    }
 
     /* Find the PCI info for this screen */
     pMga->PciInfo = xf86GetPciInfoForEntity(pMga->pEnt->index);
