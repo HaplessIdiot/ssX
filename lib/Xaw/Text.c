@@ -70,7 +70,7 @@ SOFTWARE.
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.25 1999/05/09 10:51:40 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.26 1999/05/16 10:12:49 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -927,9 +927,7 @@ XawTextInitialize(Widget request, Widget cnew,
   ctx->text.clear_to_eol = True;
   ctx->text.old_insert = -1;
   ctx->text.mult = 1;
-#ifndef NO_NUMERIC_HACK
-  ctx->text.doing_numeric_hack = False;
-#endif
+  ctx->text.numeric = False;
   ctx->text.salt2 = NULL;
   ctx->text.from_left = -1;
 
@@ -1452,11 +1450,9 @@ _XawTextSetScrollBars(TextWidget ctx)
 
   if (ctx->text.scroll_horiz)
     {
-      int width = (int)XtWidth(ctx) - RHMargins(ctx);
-
       denom = GetWidestLine(ctx);
-      if (denom < width)
-	denom = width;
+      if (denom <= 0)
+	denom = (int)XtWidth(ctx) - RHMargins(ctx);
       if (denom <= 0)
 	denom = 1;
       widest = ((int)XtWidth(ctx) - RHMargins(ctx)) / denom;
@@ -1511,7 +1507,7 @@ XawTextScroll(TextWidget ctx, int vlines, int hpixels)
   XawTextPosition top, tmp;
   XawTextLineTable *lt;
   Arg arglist[1];
-  int y0, y1, y2, count, dim;
+  int y0, y1, y2, count, dim, wwidth;
   int vwidth, vheight;		/* visible width and height */
   Bool scroll;
   XRectangle rect;
@@ -1524,6 +1520,8 @@ XawTextScroll(TextWidget ctx, int vlines, int hpixels)
     return;
 
   scroll = ctx->core.background_pixmap == XtUnspecifiedPixmap;
+
+  wwidth = GetMaxTextWidth(ctx);
 
   /*
    * Do the horizontall scrolling
@@ -1558,7 +1556,7 @@ XawTextScroll(TextWidget ctx, int vlines, int hpixels)
 	      tmp = top;
 	      XawTextSinkFindPosition(ctx->text.sink, top,
 				      ctx->text.left_margin,
-				      vwidth,ctx->text.wrap == XawtextWrapWord,
+				      wwidth,ctx->text.wrap == XawtextWrapWord,
 				      &top, &dim, &dim);
 	      if (tmp == top)
 		  ++top;
@@ -1589,7 +1587,7 @@ XawTextScroll(TextWidget ctx, int vlines, int hpixels)
 	    tmp = top;
 	    XawTextSinkFindPosition(ctx->text.sink, top,
 				    ctx->text.left_margin,
-				    vwidth, ctx->text.wrap == XawtextWrapWord,
+				    wwidth, ctx->text.wrap == XawtextWrapWord,
 				    &top, &dim, &dim);
 	    if (tmp == top)
 		++top;
@@ -3534,7 +3532,7 @@ XawTextSetValues(Widget current, Widget request, Widget cnew,
 
   if (oldtw->text.scroll_horiz != newtw->text.scroll_horiz)
     {
-      if (newtw->text.scroll_horiz && !newtw->text.wrap)
+      if (newtw->text.scroll_horiz)
 	CreateHScrollBar(newtw);
       else
 	DestroyHScrollBar(newtw);

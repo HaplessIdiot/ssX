@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextTr.c,v 3.9 1999/04/25 10:01:30 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextTr.c,v 3.10 1999/05/09 10:51:43 dawes Exp $ */
 
 /* INTERNATIONALIZATION:
 
@@ -58,11 +58,7 @@ char _XawDefaultTextTranslations[] =
 "c<Key>R:"		"search(backward)\n"
 "c<Key>S:"		"search(forward)\n"
 "c<Key>T:"		"transpose-characters()\n"
-#ifndef NO_NUMERIC_HACK
 "c<Key>U:"		"multiply(Start)\n"
-#else
-"c<Key>U:"		"multiply(4)\n"
-#endif
 "c<Key>V:"		"next-page()\n"
 "c<Key>W:"		"kill-selection()\n"
 "c<Key>Y:"		"insert-selection(SECONDARY)\n"
@@ -115,7 +111,6 @@ char _XawDefaultTextTranslations[] =
 ":<Key>KP_Enter:"	"newline()\n"
 "c<Key>backslash:"	"reconnect-im()\n"
 "<Key>Kanji:"		"reconnect-im()\n"
-#ifndef NO_NUMERIC_HACK
 ":<Key>0:"		"numeric(0)\n"
 ":<Key>1:"		"numeric(1)\n"
 ":<Key>2:"		"numeric(2)\n"
@@ -127,7 +122,6 @@ char _XawDefaultTextTranslations[] =
 ":<Key>8:"		"numeric(8)\n"
 ":<Key>9:"		"numeric(9)\n"
 ":<Key>-:"		"numeric(-)\n"
-#endif
 ":c<Key>_:"		"undo()\n"
 "~s <Key>Insert:"	"toggle-overwrite()\n"
 "s <Key>Insert:"	"insert-selection(PRIMARY, CUT_BUFFER0)\n"

@@ -21,6 +21,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XFree86$ */
+
 #ifndef XVPROTO_H
 #define XVPROTO_H
 /*
@@ -89,6 +91,13 @@ typedef struct {
 } xvFormat;
 #define sz_xvFormat 8
 
+typedef struct {
+  CARD32 flags B32;
+  CARD32 size  B32;
+} xvAttributeInfo;
+#define sz_xvAttributeInfo 8
+
+
 /* Requests */
 
 #define xv_QueryExtension                  0
@@ -106,7 +115,8 @@ typedef struct {
 #define xv_QueryBestSize                  12
 #define xv_SetPortAttribute               13
 #define xv_GetPortAttribute               14
-#define xv_LastRequest                    15
+#define xv_QueryPortAttributes            15
+#define xv_LastRequest                    16
 
 #define xvNumRequests                     (xv_LastRequest)
 
@@ -288,6 +298,16 @@ typedef struct {
 } xvQueryBestSizeReq;
 #define sz_xvQueryBestSizeReq 20
 
+
+typedef struct {
+  CARD8 reqType;
+  CARD8 xvReqType;
+  CARD16 length B16;
+  XvPortID port B32;
+} xvQueryPortAttributesReq;
+#define sz_xvQueryPortAttributesReq 8
+
+
 /* Replies */
 
 typedef struct _QueryExtensionReply {
@@ -377,6 +397,22 @@ typedef struct {
   CARD32 padl8 B32;
 } xvQueryBestSizeReply;
 #define sz_xvQueryBestSizeReply 32
+
+
+typedef struct {
+  BYTE type;  /* X_Reply */
+  BYTE padb1;
+  CARD16 sequenceNumber B16;
+  CARD32 length B32;  /* 0 */
+  CARD32 num_attributes B32; 
+  CARD32 text_size B32;
+  CARD32 padl5 B32;
+  CARD32 padl6 B32;
+  CARD32 padl7 B32;
+  CARD32 padl8 B32;
+} xvQueryPortAttributesReply;
+#define sz_xvQueryPortAttributesReply 32
+
 
 /* DEFINE EVENT STRUCTURE */
 

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.3 1998/08/13 14:45:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.4 1998/08/14 13:35:44 dawes Exp $ */
 
 /*
 ** File: 
@@ -83,6 +83,7 @@ static int ProcXvStopVideo(ClientPtr);
 static int ProcXvSetPortAttribute(ClientPtr);
 static int ProcXvGetPortAttribute(ClientPtr);
 static int ProcXvQueryBestSize(ClientPtr);
+static int ProcXvQueryPortAttributes(ClientPtr);
 
 static int SProcXvQueryExtension(ClientPtr);
 static int SProcXvQueryAdaptors(ClientPtr);
@@ -99,6 +100,7 @@ static int SProcXvStopVideo(ClientPtr);
 static int SProcXvSetPortAttribute(ClientPtr);
 static int SProcXvGetPortAttribute(ClientPtr);
 static int SProcXvQueryBestSize(ClientPtr);
+static int SProcXvQueryPortAttributes(ClientPtr);
 
 static int SWriteQueryAdaptorsReply(ClientPtr, xvQueryAdaptorsReply *);
 static int SWriteQueryExtensionReply(ClientPtr, xvQueryExtensionReply *);
@@ -106,9 +108,11 @@ static int SWriteQueryEncodingsReply(ClientPtr, xvQueryEncodingsReply *);
 static int SWriteAdaptorInfo(ClientPtr, xvAdaptorInfo *);
 static int SWriteEncodingInfo(ClientPtr, xvEncodingInfo *);
 static int SWriteFormat(ClientPtr, xvFormat *);
+static int SWriteAttributeInfo(ClientPtr, xvAttributeInfo *);
 static int SWriteGrabPortReply(ClientPtr, xvGrabPortReply *);
 static int SWriteGetPortAttributeReply(ClientPtr, xvGetPortAttributeReply *);
 static int SWriteQueryBestSizeReply(ClientPtr, xvQueryBestSizeReply *);
+static int SWriteQueryPortAttributesReply(ClientPtr, xvQueryPortAttributesReply *);
 
 #define _WriteQueryAdaptorsReply(_c,_d) \
   if ((_c)->swapped) SWriteQueryAdaptorsReply(_c, _d); \
@@ -125,6 +129,10 @@ static int SWriteQueryBestSizeReply(ClientPtr, xvQueryBestSizeReply *);
 #define _WriteAdaptorInfo(_c,_d) \
   if ((_c)->swapped) SWriteAdaptorInfo(_c, _d); \
   else WriteToClient(_c, sz_xvAdaptorInfo, (char*)_d)
+
+#define _WriteAttributeInfo(_c,_d) \
+  if ((_c)->swapped) SWriteAttributeInfo(_c, _d); \
+  else WriteToClient(_c, sz_xvAttributeInfo, (char*)_d)
 
 #define _WriteEncodingInfo(_c,_d) \
   if ((_c)->swapped) SWriteEncodingInfo(_c, _d); \
@@ -145,6 +153,10 @@ static int SWriteQueryBestSizeReply(ClientPtr, xvQueryBestSizeReply *);
 #define _WriteQueryBestSizeReply(_c,_d) \
   if ((_c)->swapped) SWriteQueryBestSizeReply(_c, _d); \
   else WriteToClient(_c, sz_xvQueryBestSizeReply,(char*) _d)
+
+#define _WriteQueryPortAttributesReply(_c,_d) \
+  if ((_c)->swapped) SWriteQueryPortAttributesReply(_c, _d); \
+  else WriteToClient(_c, sz_xvQueryPortAttributesReply,(char*) _d)
 
 #define _AllocatePort(_i,_p) \
   ((_p)->id != _i) ? (* (_p)->pAdaptor->ddAllocatePort)(_i,_p,&_p) : Success
@@ -180,6 +192,7 @@ ProcXvDispatch(ClientPtr client)
     case xv_SetPortAttribute: return(ProcXvSetPortAttribute(client));
     case xv_GetPortAttribute: return(ProcXvGetPortAttribute(client));
     case xv_QueryBestSize: return(ProcXvQueryBestSize(client));
+    case xv_QueryPortAttributes: return(ProcXvQueryPortAttributes(client));
     default:
       if (stuff->data < xvNumRequests)
 	{
@@ -219,6 +232,7 @@ SProcXvDispatch(ClientPtr client)
     case xv_SetPortAttribute: return(SProcXvSetPortAttribute(client));
     case xv_GetPortAttribute: return(SProcXvGetPortAttribute(client));
     case xv_QueryBestSize: return(SProcXvQueryBestSize(client));
+    case xv_QueryPortAttributes: return(SProcXvQueryPortAttributes(client));
     default:
       if (stuff->data < xvNumRequests)
 	{
@@ -853,6 +867,64 @@ ProcXvQueryBestSize(ClientPtr client)
   return Success;
 }
 
+
+static int
+ProcXvQueryPortAttributes(ClientPtr client)
+{
+  int status, size, i;
+  XvPortPtr pPort;
+  XvAttributePtr pAtt;
+  xvQueryPortAttributesReply rep;
+  xvAttributeInfo Info;
+  REQUEST(xvQueryPortAttributesReq);
+  REQUEST_SIZE_MATCH(xvQueryPortAttributesReq);
+
+  if(!(pPort = LOOKUP_PORT(stuff->port, client) ))
+    {
+      client->errorValue = stuff->port;
+      return (_XvBadPort);
+    }
+
+  if ((status = _AllocatePort(stuff->port, pPort)) != Success)
+    {
+      client->errorValue = stuff->port;
+      return (status);
+    }
+
+  rep.type = X_Reply;
+  rep.sequenceNumber = client->sequence;
+  rep.num_attributes = pPort->numAttributes;
+  rep.text_size = 0;
+
+  for(i = 0, pAtt = pPort->attributes; 
+      i < pPort->numAttributes; 
+      i++, pAtt++) {
+      
+      rep.text_size += (strlen(pAtt->name) + 1 + 3) & ~3L;
+  }
+
+  rep.length = (pPort->numAttributes * sz_xvAttributeInfo) + rep.text_size;
+  rep.length >>= 2;
+
+  _WriteQueryPortAttributesReply(client, &rep);
+
+  for(i = 0, pAtt = pPort->attributes; 
+      i < pPort->numAttributes; 
+      i++, pAtt++) {
+
+      size = strlen(pAtt->name) + 1;  /* pass the NULL */
+      Info.flags = pAtt->flags;
+      Info.size = (size + 3) & ~3L;
+
+      _WriteAttributeInfo(client, &Info);
+
+      WriteToClient(client, size, pAtt->name);
+  }
+
+  return Success;
+}
+
+
 /* Swapped Procs */
 
 static int
@@ -1054,6 +1126,17 @@ SProcXvQueryBestSize(ClientPtr client)
 }
 
 static int
+SProcXvQueryPortAttributes(ClientPtr client)
+{
+  register char n;
+  REQUEST(xvQueryPortAttributesReq);
+  swaps(&stuff->length, n);
+  swapl(&stuff->port, n);
+  return ProcXvQueryPortAttributes(client);
+}
+
+
+static int
 SWriteQueryExtensionReply(
    ClientPtr client,
    xvQueryExtensionReply *rep
@@ -1151,6 +1234,21 @@ SWriteFormat(
 }
 
 static int
+SWriteAttributeInfo(
+   ClientPtr client,
+   xvAttributeInfo *pAtt
+){
+  register char n;
+
+  swapl(&pAtt->flags, n);
+  swapl(&pAtt->size, n);
+  (void)WriteToClient(client, sz_xvAttributeInfo, (char *)pAtt);
+
+  return Success;
+}
+
+
+static int
 SWriteGrabPortReply(
    ClientPtr client,
    xvGrabPortReply *rep
@@ -1194,6 +1292,23 @@ SWriteQueryBestSizeReply(
   swaps(&rep->actual_height, n);
 
   (void)WriteToClient(client, sz_xvQueryBestSizeReply, (char *)&rep);
+
+  return Success;
+}
+
+static int
+SWriteQueryPortAttributesReply(
+   ClientPtr client,
+   xvQueryPortAttributesReply *rep
+){
+  register char n;
+
+  swaps(&rep->sequenceNumber, n);
+  swapl(&rep->length, n);
+  swapl(&rep->num_attributes, n);
+  swapl(&rep->text_size, n);
+
+  (void)WriteToClient(client, sz_xvQueryPortAttributesReply, (char *)&rep);
 
   return Success;
 }

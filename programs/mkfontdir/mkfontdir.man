@@ -19,7 +19,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/programs/mkfontdir/mkfontdir.man,v 1.7 1999/05/03 15:31:49 dawes Exp $
 .\"
 .TH MKFONTDIR 1 "Release 6.4" "X Version 11"
 .SH NAME
@@ -113,20 +113,23 @@ The following options are supported:
 Specify a directory containing encoding files.  The
 .B \-e
 option may be specified multiple times, and all the specified
-directories will be read.
+directories will be read.  The order of the entries is significant, as
+encodings found in earlier directories override those in later ones;
+encoding files in the same directory are discriminated by preferring
+compressed versions.
 .TP
 .B \-p
 Specify a prefix that is prepended to the encoding file path names
-when the are written to the "encodings.dir" file.  Note: the prefix is
-prepended as-is.  If a `/' is required between the prefix and the path names,
-it must be supplied explicitly as part of the prefix.
+when they are written to the "encodings.dir" file.  The prefix is
+prepended as-is.  If a `/' is required between the prefix and the path
+names, it must be supplied explicitly as part of the prefix.
 .TP
 .B \-r
-Keep non-absolute encoding directories in their relative form when writing
-the "encodings.dir" file.  The default is to convert relative encoding
-directories to absolute directories by prepending the current directory.
-Note: the positioning of this options is important, and it only applies
-to subsequent
+Keep non-absolute encoding directories in their relative form when
+writing the "encodings.dir" file.  The default is to convert relative
+encoding directories to absolute directories by prepending the current
+directory.  The positioning of this options is significant, as this
+option only applies to subsequent
 .B \-e
 options.
 .TP

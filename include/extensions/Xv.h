@@ -21,6 +21,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XFree86$ */
+
 #ifndef XV_H
 #define XV_H
 /*
@@ -60,6 +62,10 @@ typedef XID XvEncodingID;
 
 #define XvInputMask      (1L<<XvInput)
 #define XvOutputMask     (1L<<XvOutput)
+
+#define XvGettable	0x01
+#define XvSettable	0x02
+
 
 /* Events */
 

@@ -6,7 +6,7 @@
 
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.10 1999/03/28 15:32:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.11 1999/04/11 13:10:51 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -249,6 +249,7 @@ xf86XVInitAdaptors(
   XF86VideoAdaptorPtr adaptorPtr;
   XF86VideoEncodingPtr encodingPtr;
   XF86VideoFormatPtr formatPtr;
+  XF86AttributeListPtr attributePtr;
   XvAdaptorRecPrivatePtr adaptorPriv;
   XvPortRecPrivatePtr portPriv;
   XvAdaptorPtr pAdaptor, pa;
@@ -259,6 +260,8 @@ xf86XVInitAdaptors(
   int nf, numFormat, totFormat;
   XvPortPtr pPort, pp;
   int np, numPort;
+  XvAttributePtr pAttribute;
+  int nat, numAttribute;
 
   int numVisuals;
   VisualPtr pVisual;
@@ -412,6 +415,24 @@ xf86XVInitAdaptors(
       for(pp = pPort, np = 0, numPort = 0; 
 	  np < adaptorPtr->nPorts;
 	  np++) {
+	  
+	  pp->numAttributes = 0;
+	  pp->attributes = NULL;
+	  if(adaptorPtr->pAttributes) {
+	      if((numAttribute = adaptorPtr->pAttributes[np].number)) {
+	         attributePtr = &adaptorPtr->pAttributes[np];
+	         pp->attributes = xcalloc(numAttribute, sizeof(XvAttributeRec));
+	         if(!pp->attributes) continue;
+	
+	         pp->numAttributes = numAttribute;
+	         for(pAttribute = pp->attributes, nat = 0; 
+                     nat < numAttribute; 
+                     nat++, pAttribute++) {
+		   pAttribute->flags = attributePtr->flags[nat];
+		   pAttribute->name = attributePtr->names[nat];
+	        }
+	     }
+	  }
 
           if(!(pp->id = FakeClientID(0))) continue;
 	  if(!AddResource(pp->id, PortResource, pp)) continue;
@@ -422,6 +443,7 @@ xf86XVInitAdaptors(
           pp->client = (ClientPtr)NULL;
           pp->grab.client = (ClientPtr)NULL;
           pp->time = currentTime;
+
 
 	  portPriv = xcalloc(1, sizeof(XvPortRecPrivate));
           pp->devPriv.ptr = portPriv;

@@ -1022,7 +1022,32 @@ xedit.c:
    in text fields, instead of the default 'black'.
 
 
+#2811 22 May 1999
+-- Xaw --
+ + Removed the 'NO_NUMERIC_HACK' preprocessor definition, and renamed the
+   'doing_numeric_hack' field of the text widget to 'numeric'.
+ + Changed the code to always create the horizontal scrollbar, if requested.
+ + Small changes to TextPop.c, to automatically scroll horizontally the
+   text window when the text found in a search/replace action is not visible.
+ + Added a optimization when editting large files, to rebuild the line table
+   if the region containing the text being added/replaced overlaps the lt.top
+   field of the text widget.
+ + Changed the undo code to also merge text typed when overwrite mode is
+   active. The new behaviour is not like emacs (that generates a undo step
+   for every character), but uses less memory, making only one undo/redo step.
+
+-- xedit --
+ + Added a new file, hook.c that is intended to be used for the addition of
+   some new features to xedit, like auto indentation of program files. The
+   first feature added is the 'autoReplace' resource, described in the xedit
+   man page.
+ + Corrected a bug in ispell.c, that would make the code alocate lots of
+   memory unnecessarily, due to an uninitialized variable. Thanks to David
+   Dawes that found the bug. The bug was not in 3.9Pn, but the solution in
+   the later release was not completely correct.
 
 
 
-$XFree86: xc/lib/Xaw/Changelog,v 3.20 1999/05/09 10:51:37 dawes Exp $
+
+
+$XFree86: xc/lib/Xaw/Changelog,v 3.21 1999/05/16 10:12:47 dawes Exp $

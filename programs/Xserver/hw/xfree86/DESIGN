@@ -6,7 +6,7 @@
    are subject to change without notice.
 
 
-Last modified: 15 May 1999.
+Last modified: 23 May 1999.
 
 
 Preface
@@ -2141,6 +2141,7 @@ The XF86VideoAdaptorRec:
 	int nFormats;
 	XF86VideoFormatPtr pFormats;  
 	int nPorts;
+	XF86AttributeListPtr pAttributes;
 	DevUnion *pPortPrivates;
 	PutVideoFuncPtr PutVideo;
 	PutStillFuncPtr PutStill;
@@ -2222,6 +2223,10 @@ The XF86VideoAdaptorRec:
 	Most commonly, this will contain a pointer to the data structure
 	containing information about the port.
 
+     pAttributes
+
+	There is an array of XF86AttributeListRecs with an entry for
+	each port.
 
      PutVideo PutStill GetVideo GetStill StopVideo
      SetPortAttribute GetPortAttribute QueryBestSize
@@ -2390,6 +2395,27 @@ The XF86VideoFormatRec:
     such as TrueColor, DirectColor or PseudoColor.  Initialization of
     an adaptor will fail if none of the visuals on that screen are 
     supported.
+
+The XF86AttributeListRec:
+
+     typedef struct {
+	int   number;  
+	int   *flags;
+	char  **names;
+      } XF86AttributeListRec, *XF86AttributeListPtr;
+
+   Each port will have one of these indicating the "number" of
+   attributes for that port, an array of names of the attributes
+   and an array of flags associated with each attribute.  Both
+   arrays are "number" in size.  Currently defined flags are
+   XvGettable and XvSettable which may be OR'd together indicating
+   that attribute is "gettable" or "settable" by the client.
+   Both arrays can be nulled if number is zero.  While the Xv DDX
+   copies most data from these structures and stores it internally,
+   including adaptor and encoding names, the attribute names are
+   not copied, but only their pointers.  Because of this, the strings
+   pointed to by names[] must exist as long as Xv is initialized.
+
 
 
 Section 15: The Loader
@@ -4836,4 +4862,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.31 1999/05/03 12:16:00 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.32 1999/05/15 12:10:15 dawes Exp $

@@ -21,6 +21,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XFree86$ */
+
 #ifndef XVLIB_H
 #define XVLIB_H
 /*
@@ -57,6 +59,11 @@ typedef struct {
   int numerator;
   int denominator;
 } XvRational;
+
+typedef struct {
+  int flags;	/* XvGettable, XvSettable */
+  char *name;
+} XvAttribute;
 
 typedef struct {
   XvEncodingID encoding_id;
@@ -279,6 +286,15 @@ extern int XvQueryBestSize(
   unsigned int*           /* p_actual_width */
 #endif
 );
+
+extern XvAttribute* XvQueryPortAttributes(
+#if NeedFunctionPrototypes
+  Display*                /* display */,
+  XvPortID                /* port */,
+  int*                    /* number */
+#endif
+);
+
 
 extern void XvFreeAdaptorInfo(
 #if NeedFunctionPrototypes

@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.12 1999/05/03 12:15:46 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.13 1999/05/09 10:51:42 dawes Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -647,7 +647,7 @@ XawTextSourceReplace(Widget w, XawTextPosition left,
     XawTextUndoList *undo;
     Bool enable_undo;
     XawTextPosition start, end;
-    int error, lines = 0;
+    int i, error, lines = 0;
 
     if (src->textSrc.edit_mode == XawtextRead)
 	return (XawEditError);
@@ -666,7 +666,6 @@ XawTextSourceReplace(Widget w, XawTextPosition left,
 	l_state->position = left;
 	if (left < right) {
 	    Widget ctx = NULL;
-	    Cardinal i;
 
 	    for (i = 0; i < src->textSrc.num_text; i++)
 		if (XtIsSubclass(src->textSrc.text[i], textWidgetClass)) {
@@ -717,6 +716,22 @@ XawTextSourceReplace(Widget w, XawTextPosition left,
 	l_state = r_state = NULL;
     }
 
+#define	LARGE_VALUE	262144	/* 256 K */
+    /* optimization, to avoid long delays recalculating the line number
+     * when editing huge files
+     */
+    if (left > LARGE_VALUE) {
+	start = XawTextSourceScan(w, left, XawstEOL, XawsdLeft, 2, False);
+	for (i = 0; i < src->textSrc.num_text; i++) {
+	    TextWidget tw = (TextWidget)src->textSrc.text[i];
+
+	    if (left <= tw->text.lt.top &&
+		left + block->length - (right - left) > tw->text.lt.top)
+		_XawTextBuildLineTable(tw, start, False);
+	}
+    }
+#undef LARGE_VALUE
+
     start = left;
     end = right;
     while (start < end) {
@@ -751,10 +766,11 @@ XawTextSourceReplace(Widget w, XawTextPosition left,
 
 	/* Try to merge the undo buffers */
 	if (list
-	    && list->left->length == 0
-	    && undo->left->length == 0
+	    && ((list->left->length == 0 && undo->left->length == 0) ||
+		(list->left->length == list->right->length &&
+		 undo->left->length == 1))
 	    && undo->right->length == 1
-	    && src->textSrc.undo->pointer == src->textSrc.undo->list
+	    && src->textSrc.undo->pointer == list
 	    && list->right->position + list->right->length
 	    == undo->right->position
 	    && undo->right->format == list->right->format
@@ -779,6 +795,15 @@ XawTextSourceReplace(Widget w, XawTextPosition left,
 	    XtFree(r_state->buffer);
 	    src->textSrc.undo->r_save = r_state;
 	    src->textSrc.undo->u_save = undo;
+
+	    if (list->left->length) {
+		list->left->buffer = XtRealloc(list->left->buffer,
+					       (list->left->length + 1) * size);
+		memcpy(list->left->buffer + list->left->length * size,
+		       undo->left->buffer, size);
+		++list->left->length;
+		XtFree(l_state->buffer);
+	    }
 
 	    if (src->textSrc.undo->num_list >= UNDO_DEPTH)
 		UndoGC(src->textSrc.undo);

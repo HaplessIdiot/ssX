@@ -1,4 +1,26 @@
 XFree86 3.9Po (23 May 1999)
+2677. Modify mkfontdir to handle duplicate encodings in a reasonable way
+      when generating the encodings.dir file (#2812, Juliusz Chroboczek).
+2676. Xaw and xedit updates (see lib/Xaw/Changelog for details) (#2811,
+      Paulo Cesar Pereira de Andrade).
+2675. Fix xinerama problems with clipmasks and stipple/tile offsets
+      in GCs used on the root window (#2810, Mark Vojkovich).
+2674. Fix problems uploading to the pixmap cache in 8+32 mode when
+      ImageWrites aren't available (#2809, Mark Vojkovich).
+2673. Ansify the Xv client library (#2808, Mark Vojkovich).
+2672. Add a XvQueryPortAttributes request to the Xv API/protocol and
+      driver interface, with an example in the v4l driver, and update the
+      documentation (#2808, Mark Vojkovich).
+2671. Fix some compiler warnings in the oldX and ICE libraries (#2807,
+      Matt Grossman).
+2670. Fix a problem with the Type1 font handling that was introduced when the
+      CID support was added (#2805, Ivan Bach).
+2669. Wacom driver update, including a fix for initialization problems with
+      Wacom IV devices, and improved Wacom V device support (Lens cursor
+      support) (#2803, Frederic Lepied).
+2668. Fix for some 8+32 xinerama problems (#2802, Mark Vojkovich).
+2667. Xkb fixes for PC98 (#2800, Akio Morita).
+2666. Xkb data files for a Macintosh keyboard (#2798, Sven LUTHER).
 2665. Some preliminary support for the "new" mouse driver for most OSs
       (David Dawes).
 2664. Prevent xf86LogInit() being called for subsequent server generations.
@@ -8024,4 +8046,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.754 1999/05/17 13:17:07 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.755 1999/05/22 08:39:57 dawes Exp $

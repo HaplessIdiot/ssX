@@ -22,10 +22,12 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/lib/ICE/process.c,v 3.1 1994/09/17 13:43:45 dawes Exp $ */
+/* $XFree86: xc/lib/ICE/process.c,v 3.2 1998/10/03 08:41:11 dawes Exp $ */
 
 #include <X11/ICE/ICElib.h>
 #include "ICElibint.h"
+
+#include <stdio.h> /* sprintf */
 
 #ifdef MINIX
 #include <X11/Xtrans.h>
@@ -194,7 +196,7 @@ Bool		 *replyReadyRet;
 	    {
 		iceConn->swap =
 	            (((*(char *) &endian) && byteOrder == IceMSBfirst) ||
-	             !(*(char *) &endian) && byteOrder == IceLSBfirst);
+	             (!(*(char *) &endian) && byteOrder == IceLSBfirst));
 
 		iceConn->waiting_for_byteorder = 0;
 	    }
@@ -761,8 +763,8 @@ IceReplyWaitInfo *replyWait;
 	    if (iceConn->connect_to_you &&
 		iceConn->connect_to_you->auth_active)
 	    {
-		authProc = _IcePoAuthProcs[
-		    iceConn->connect_to_you->my_auth_index];
+		authProc = _IcePoAuthProcs[(int)
+		    (iceConn->connect_to_you->my_auth_index)];
 
 		(*authProc) (iceConn, &iceConn->connect_to_you->my_auth_state,
 		    True /* clean up */, False /* swap */,
@@ -774,8 +776,8 @@ IceReplyWaitInfo *replyWait;
 		_IcePoProtocol *protocol = _IceProtocols[
 		    iceConn->protosetup_to_you->my_opcode - 1].orig_client;
 
-		authProc = protocol->auth_procs[iceConn->
-		    protosetup_to_you->my_auth_index];
+		authProc = protocol->auth_procs[(int)(iceConn->
+		    protosetup_to_you->my_auth_index)];
 
 		(*authProc) (iceConn,
 		    &iceConn->protosetup_to_you->my_auth_state,
@@ -799,7 +801,7 @@ IceReplyWaitInfo *replyWait;
 
 
 
-static
+static int
 ProcessConnectionSetup (iceConn, length, swap)
 
 IceConn		iceConn;
@@ -1241,7 +1243,7 @@ IceReplyWaitInfo	*replyWait;
 
 
 
-static
+static int
 ProcessAuthReply (iceConn, length, swap)
 
 IceConn		iceConn;
@@ -1282,8 +1284,8 @@ Bool		swap;
 
     if (iceConn->connect_to_me)
     {
-	IcePaAuthProc authProc = _IcePaAuthProcs[
-	    iceConn->connect_to_me->my_auth_index];
+	IcePaAuthProc authProc = _IcePaAuthProcs[(int)
+	    (iceConn->connect_to_me->my_auth_index)];
 	IcePaAuthStatus status =
 	    (*authProc) (iceConn, &iceConn->connect_to_me->my_auth_state, swap,
 	    replyDataLen, replyData, &authDataLen, &authData, &errorString);
@@ -1354,8 +1356,8 @@ Bool		swap;
     {
 	_IcePaProtocol *myProtocol = _IceProtocols[iceConn->protosetup_to_me->
 	    my_opcode - 1].accept_client;
-	IcePaAuthProc authProc = myProtocol->auth_procs[
-	    iceConn->protosetup_to_me->my_auth_index];
+	IcePaAuthProc authProc = myProtocol->auth_procs[(int)
+	    (iceConn->protosetup_to_me->my_auth_index)];
 	IcePaAuthStatus status =
 	    (*authProc) (iceConn, &iceConn->protosetup_to_me->my_auth_state,
 	    swap, replyDataLen, replyData,
@@ -1580,8 +1582,8 @@ IceReplyWaitInfo	*replyWait;
 
     if (iceConn->connect_to_you)
     {
-	authProc = _IcePoAuthProcs[
-	    iceConn->connect_to_you->my_auth_index];
+	authProc = _IcePoAuthProcs[(int)
+	    (iceConn->connect_to_you->my_auth_index)];
 
 	authState = &iceConn->connect_to_you->my_auth_state;
     }
@@ -1590,8 +1592,8 @@ IceReplyWaitInfo	*replyWait;
 	_IcePoProtocol *myProtocol =
 	  _IceProtocols[iceConn->protosetup_to_you->my_opcode - 1].orig_client;
 
-	authProc = myProtocol->auth_procs[
-	    iceConn->protosetup_to_you->my_auth_index];
+	authProc = myProtocol->auth_procs[(int)
+	    (iceConn->protosetup_to_you->my_auth_index)];
 
 	authState = &iceConn->protosetup_to_you->my_auth_state;
     }
@@ -1714,8 +1716,8 @@ IceReplyWaitInfo 	*replyWait;
 	     * Tell the authentication procedure to clean up.
 	     */
 
-	    IcePoAuthProc authProc = _IcePoAuthProcs[
-		iceConn->connect_to_you->my_auth_index];
+	    IcePoAuthProc authProc = _IcePoAuthProcs[(int)
+		(iceConn->connect_to_you->my_auth_index)];
 
 	    (*authProc) (iceConn, &iceConn->connect_to_you->my_auth_state,
 		True /* clean up */, False /* swap */,
@@ -1766,7 +1768,7 @@ IceReplyWaitInfo 	*replyWait;
 
 
 
-static
+static int
 ProcessProtocolSetup (iceConn, length, swap)
 
 IceConn		iceConn;
@@ -2202,8 +2204,8 @@ IceReplyWaitInfo 	*replyWait;
 	    _IcePoProtocol *myProtocol = _IceProtocols[
 		iceConn->protosetup_to_you->my_opcode - 1].orig_client;
 
-	    IcePoAuthProc authProc = myProtocol->auth_procs[
-		iceConn->protosetup_to_you->my_auth_index];
+	    IcePoAuthProc authProc = myProtocol->auth_procs[(int)
+		(iceConn->protosetup_to_you->my_auth_index)];
 
 #ifdef SVR4
 
@@ -2263,7 +2265,7 @@ IceReplyWaitInfo 	*replyWait;
 
 
 
-static
+static int
 ProcessPing (iceConn, length)
 
 IceConn 	iceConn;
@@ -2280,7 +2282,7 @@ unsigned long	length;
 
 
 
-static
+static int
 ProcessPingReply (iceConn, length)
 
 IceConn 	iceConn;
@@ -2310,7 +2312,7 @@ unsigned long	length;
 
 
 
-static
+static int
 ProcessWantToClose (iceConn, length, connectionClosedRet)
 
 IceConn 	iceConn;
@@ -2370,7 +2372,7 @@ Bool		*connectionClosedRet;
 
 
 
-static
+static int
 ProcessNoClose (iceConn, length)
 
 IceConn 	iceConn;

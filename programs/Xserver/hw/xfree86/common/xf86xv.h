@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.h,v 1.3 1999/02/28 11:19:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.h,v 1.4 1999/03/28 15:32:31 dawes Exp $ */
 
 #ifndef _XVDIX_H_
 #define _XVDIX_H_
@@ -52,6 +52,11 @@ typedef struct {
   short class;
 } XF86VideoFormatRec, *XF86VideoFormatPtr;
 
+typedef struct {
+  int 	number;  
+  int   *flags;
+  char  **names;
+} XF86AttributeListRec, *XF86AttributeListPtr;
 
 typedef struct {
   unsigned char type; 
@@ -62,6 +67,7 @@ typedef struct {
   int nFormats;
   XF86VideoFormatPtr pFormats;  
   int nPorts;
+  XF86AttributeListPtr pAttributes;
   DevUnion *pPortPrivates;
   PutVideoFuncPtr PutVideo;
   PutStillFuncPtr PutStill;

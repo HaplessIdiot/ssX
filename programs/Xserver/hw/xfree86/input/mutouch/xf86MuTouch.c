@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mutouch/xf86MuTouch.c,v 1.2 1999/04/15 01:29:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mutouch/xf86MuTouch.c,v 1.3 1999/05/15 12:10:31 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -1488,10 +1488,10 @@ Plug(pointer	module,
     *errmaj = LDR_BADUSAGE;
     return NULL;
   }
-  if (strcasecmp(type, "finger") == 0) {
+  if (xf86NameCmp(type, "finger") == 0) {
     local = xf86MuTAllocateFinger();
   }
-  else if (strcasecmp(type, "stylus") == 0) {
+  else if (xf86NameCmp(type, "stylus") == 0) {
     local = xf86MuTAllocateStylus();
   }
   else {

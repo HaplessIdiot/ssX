@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/50 1997/11/24 16:47:55 kaleb $
-XCOMM $XFree86: xc/include/extensions/Imakefile,v 3.23 1999/03/28 16:16:13 dawes Exp $
+XCOMM $XFree86: xc/include/extensions/Imakefile,v 3.24 1999/04/17 09:08:10 dawes Exp $
 
 #if BuildScreenSaverLibrary
 SCREENSAVERHEADERS = saver.h saverproto.h scrnsaver.h
@@ -18,7 +18,7 @@ XF86DGAHEADERS = xf86dga.h xf86dgastr.h xf86dga1.h xf86dga1str.h
 LBXHEADERS = lbxbuf.h lbxbufstr.h lbxdeltastr.h lbximage.h lbxopts.h lbxstr.h lbxzlib.h
 #endif
 #if BuildXvLibrary
-XVHEADERS = Xv.h Xvproto.h
+XVHEADERS = Xv.h Xvlib.h Xvproto.h
 #endif
 
 EXTRAHEADERS = $(SCREENSAVERHEADERS) $(XF86VIDMODEHEADERS) $(XF86DGAHEADERS) \
