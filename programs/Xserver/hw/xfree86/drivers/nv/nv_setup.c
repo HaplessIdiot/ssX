@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.3 1999/11/12 02:12:40 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.4 2000/02/08 17:19:10 dawes Exp $ */
 
 #include "nv_include.h"
 
@@ -94,7 +94,9 @@ static void NVWriteAttr(vgaHWPtr pVga, CARD8 index, CARD8 value)
 {
     NVPtr pNv = (NVPtr)pVga->MMIOBase;
     volatile CARD8 tmp = VGA_RD08(pNv->riva.PCIO, pVga->IOBase + VGA_IN_STAT_1_OFFSET);
+#if 0
     (void)tmp;
+#endif
     if (pVga->paletteEnabled)
         index &= ~0x20;
     else
@@ -106,7 +108,9 @@ static CARD8 NVReadAttr(vgaHWPtr pVga, CARD8 index)
 {
     NVPtr pNv = (NVPtr)pVga->MMIOBase;
     volatile CARD8 tmp = VGA_RD08(pNv->riva.PCIO, pVga->IOBase + VGA_IN_STAT_1_OFFSET);
+#if 0
     (void)tmp;
+#endif
     if (pVga->paletteEnabled)
         index &= ~0x20;
     else
@@ -128,7 +132,9 @@ static void NVEnablePalette(vgaHWPtr pVga)
 {
     NVPtr pNv = (NVPtr)pVga->MMIOBase;
     volatile CARD8 tmp = VGA_RD08(pNv->riva.PCIO, pVga->IOBase + VGA_IN_STAT_1_OFFSET);
+#if 0
     (void)tmp;
+#endif
     VGA_WR08(pNv->riva.PCIO, VGA_ATTR_INDEX, 0x00);
     pVga->paletteEnabled = TRUE;
 }
@@ -136,7 +142,9 @@ static void NVDisablePalette(vgaHWPtr pVga)
 {
     NVPtr pNv = (NVPtr)pVga->MMIOBase;
     volatile CARD8 tmp = VGA_RD08(pNv->riva.PCIO, pVga->IOBase + VGA_IN_STAT_1_OFFSET);
+#if 0
     (void)tmp;
+#endif
     VGA_WR08(pNv->riva.PCIO, VGA_ATTR_INDEX, 0x20);
     pVga->paletteEnabled = FALSE;
 }
