@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/XF86dri.c,v 1.6 2000/06/17 00:02:48 martin Exp $ */
+/* $XFree86: xc/lib/GL/dri/XF86dri.c,v 1.7 2000/06/20 05:08:37 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -461,7 +461,7 @@ Bool XF86DRIGetDrawableInfo(dpy, screen, drawable,
 
        *pClipRects = (XF86DRIClipRectPtr)Xcalloc(len, 1);
        if (*pClipRects) 
-	  _XRead32(dpy, *pClipRects, len);
+	  _XRead(dpy, (char*)*pClipRects, len);
     } else {
         *pClipRects = NULL;
     }
@@ -471,7 +471,7 @@ Bool XF86DRIGetDrawableInfo(dpy, screen, drawable,
 
        *pBackClipRects = (XF86DRIClipRectPtr)Xcalloc(len, 1);
        if (*pBackClipRects) 
-	  _XRead32(dpy, *pBackClipRects, len);
+	  _XRead(dpy, (char*)*pBackClipRects, len);
     } else {
         *pBackClipRects = NULL;
     }
@@ -524,7 +524,7 @@ Bool XF86DRIGetDeviceInfo(dpy, screen, hFrameBuffer,
             _XEatData(dpy, ((rep.length+3) & ~3));
             return False;
         }
-	_XRead32(dpy, *pDevPrivate, rep.length);
+	_XRead(dpy, (char*)*pDevPrivate, rep.length);
     } else {
         *pDevPrivate = NULL;
     }
