@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_reg.h,v 1.2 2000/02/12 03:39:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_reg.h,v 1.3 2000/02/12 20:45:29 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -87,7 +87,10 @@ static inline unsigned short regr16(volatile unsigned long base_addr, unsigned l
 #define OUTREG16(addr, val) regw16(((unsigned long)R128MMIO), (addr), (val))
 #define ADDRREG(addr)       ((volatile CARD32 *)(R128MMIO + (addr)))
 
-#else
+#define R128MMIO_VARS()                                                     \
+    unsigned char *R128MMIO   = R128PTR(pScrn)->MMIO
+
+#elif defined (__alpha__)
 				/* Memory mapped register access macros */
 #define INREG8(addr)        MMIO_IN8(R128MMIO, addr)
 #define INREG16(addr)       MMIO_IN16(R128MMIO, addr)
@@ -97,6 +100,24 @@ static inline unsigned short regr16(volatile unsigned long base_addr, unsigned l
 #define OUTREG(addr, val)   *(volatile CARD32 *)(R128MMIO32 + (addr)) = (val)
 
 #define ADDRREG(addr)       ((volatile CARD32 *)(R128MMIO32 + (addr)))
+
+#define R128MMIO_VARS()                                                     \
+    unsigned char *R128MMIO   = R128PTR(pScrn)->MMIO;                       \
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32
+
+#else
+				/* Memory mapped register access macros */
+#define INREG8(addr)        MMIO_IN8(R128MMIO, addr)
+#define INREG16(addr)       MMIO_IN16(R128MMIO, addr)
+#define INREG(addr)         MMIO_IN32(R128MMIO, addr)
+#define OUTREG8(addr, val)  MMIO_OUT8(R128MMIO, addr, val)
+#define OUTREG16(addr, val) MMIO_OUT16(R128MMIO, addr, val)
+#define OUTREG(addr, val)   MMIO_OUT32(R128MMIO, addr, val)
+
+#define ADDRREG(addr)       ((volatile CARD32 *)(R128MMIO + (addr)))
+
+#define R128MMIO_VARS()                                                     \
+    unsigned char *R128MMIO   = R128PTR(pScrn)->MMIO
 
 #endif
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_cursor.c,v 1.2 2000/02/12 03:39:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_cursor.c,v 1.3 2000/02/12 20:45:28 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -77,8 +77,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 /* Set cursor foreground and background colors. */
 static void R128SetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 {
-    unsigned char *R128MMIO      = R128PTR(pScrn)->MMIO;
-    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
+    R128MMIO_VARS();
 
     OUTREG(R128_CUR_CLR0, bg);
     OUTREG(R128_CUR_CLR1, fg);
@@ -88,12 +87,11 @@ static void R128SetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
    (xorigin,yorigin). */
 static void R128SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 {
-    R128InfoPtr   info      = R128PTR(pScrn);
-    unsigned char *R128MMIO = info->MMIO;
-    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
-    int           xorigin   = 0;
-    int           yorigin   = 0;
-    int           total_y   = pScrn->frameY1 - pScrn->frameY0;
+    R128InfoPtr   info    = R128PTR(pScrn);
+    int           xorigin = 0;
+    int           yorigin = 0;
+    int           total_y = pScrn->frameY1 - pScrn->frameY0;
+    R128MMIO_VARS();
     
     if (x < 0)                   xorigin = -x;
     if (y < 0)                   yorigin = -y;
@@ -111,13 +109,12 @@ static void R128SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
    will be called after this, so we can ignore xorigin and yorigin. */
 static void R128LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *image)
 {
-    R128InfoPtr   info      = R128PTR(pScrn);
-    unsigned char *R128MMIO = info->MMIO;
-    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
-    CARD32        *s        = (CARD32 *)image;
-    CARD32        *d        = (CARD32 *)(info->FB + info->cursor_start);
+    R128InfoPtr   info = R128PTR(pScrn);
+    CARD32        *s   = (CARD32 *)image;
+    CARD32        *d   = (CARD32 *)(info->FB + info->cursor_start);
     int           y;
     CARD32        save;
+    R128MMIO_VARS();
 
     save = INREG(R128_CRTC_GEN_CNTL);
     OUTREG(R128_CRTC_GEN_CNTL, save & ~R128_CRTC_CUR_EN);
@@ -144,8 +141,7 @@ static void R128LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *image)
 /* Hide hardware cursor. */
 static void R128HideCursor(ScrnInfoPtr pScrn)
 {
-    unsigned char *R128MMIO      = R128PTR(pScrn)->MMIO;
-    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
+    R128MMIO_VARS();
     
     OUTREGP(R128_CRTC_GEN_CNTL, 0, ~R128_CRTC_CUR_EN);
 }
@@ -153,8 +149,7 @@ static void R128HideCursor(ScrnInfoPtr pScrn)
 /* Show hardware cursor. */
 static void R128ShowCursor(ScrnInfoPtr pScrn)
 {
-    unsigned char *R128MMIO      = R128PTR(pScrn)->MMIO;
-    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
+    R128MMIO_VARS();
     
     OUTREGP(R128_CRTC_GEN_CNTL, R128_CRTC_CUR_EN, ~R128_CRTC_CUR_EN);
 }
