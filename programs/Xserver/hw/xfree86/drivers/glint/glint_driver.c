@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.111 2001/02/01 10:04:47 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.112 2001/02/01 12:26:01 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -3169,15 +3169,12 @@ GLINTCloseScreen(int scrnIndex, ScreenPtr pScreen)
 static void
 GLINTFreeScreen(int scrnIndex, int flags)
 {
-    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-    GLINTPtr pGlint = GLINTPTR(pScrn);
-
     TRACE_ENTER("GLINTFreeScreen");
-    if ((pGlint->FBDev || FBDevProbed) && xf86LoaderCheckSymbol("fbdevHWFreeRec"))
+    if (xf86LoaderCheckSymbol("fbdevHWFreeRec"))
 	fbdevHWFreeRec(xf86Screens[scrnIndex]);
-    if (pGlint->VGAcore && xf86LoaderCheckSymbol("vgaHWFreeHWRec"))
+    if (xf86LoaderCheckSymbol("vgaHWFreeHWRec"))
     	vgaHWFreeHWRec(xf86Screens[scrnIndex]);
-    if (pGlint->RamDacRec && xf86LoaderCheckSymbol("RamDacFreeRec"))
+    if (xf86LoaderCheckSymbol("RamDacFreeRec"))
     	RamDacFreeRec(xf86Screens[scrnIndex]);
     GLINTFreeRec(xf86Screens[scrnIndex]);
     TRACE_EXIT("GLINTFreeScreen");
