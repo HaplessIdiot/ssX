@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/LocBitmap.c,v 3.6 2001/01/17 19:42:56 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/LocBitmap.c,v 3.7 2001/07/25 15:04:50 dawes Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -102,7 +102,9 @@ XmuLocatePixmapFile(Screen *screen, _Xconst char *name,
     XmuCvtCache *cache = _XmuCCLookupDisplay (dpy);
     char **file_paths = (char **) NULL;
     char filename[PATH_MAX];
+#if 0
     char* bitmapdir = BITMAPDIR;
+#endif
     unsigned int width, height;
     int xhot, yhot;
     int i;

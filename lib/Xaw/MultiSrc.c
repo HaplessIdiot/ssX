@@ -27,7 +27,7 @@
  *
  * Much code taken from X11R3 String and Disk Sources.
  */
-/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.21 2001/01/26 22:45:59 herrb Exp $ */
+/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.22 2001/07/25 15:04:49 dawes Exp $ */
 
 /*
 
@@ -1159,7 +1159,7 @@ StorePiecesInString(MultiSrcObject src)
 static FILE *
 InitStringOrFile(MultiSrcObject src, Bool newString)
 {
-    mode_t open_mode;
+    mode_t open_mode = 0;
     const char *fdopen_mode = NULL;
     int fd;
     FILE *file;

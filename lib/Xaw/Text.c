@@ -70,7 +70,7 @@ SOFTWARE.
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.42 2001/01/30 21:54:33 paulo Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.43 2001/05/25 21:43:15 paulo Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -232,7 +232,6 @@ void _XawTextSourceChanged(Widget, XawTextPosition, XawTextPosition,
 /* Not used by other modules, but were extern on previous versions
  * of the library
  */
-void _XawTextNeedsUpdating(TextWidget, XawTextPosition, XawTextPosition);
 void _XawTextShowPosition(TextWidget);
 
 /*

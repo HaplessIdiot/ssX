@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/Toggle.c,v 1.6 1999/06/06 08:48:19 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Toggle.c,v 1.7 2001/01/17 19:42:35 dawes Exp $ */
 
 /*
  * Author: Chris D. Peterson
@@ -498,11 +498,12 @@ XawToggleChangeRadioGroup(Widget w, Widget radio_group)
     if (tw->command.set && radio_group != NULL)
 	XawToggleUnsetCurrent(radio_group);
 
-    if (radio_group != NULL)
+    if (radio_group != NULL) {
 	if ((group = GetRadioGroup(radio_group)) == NULL)
 	    CreateRadioGroup(w, radio_group);
-    else
-	AddToRadioGroup(group, w);
+	else
+	    AddToRadioGroup(group, w);
+    }
 }
 
 /*

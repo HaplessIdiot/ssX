@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/AsciiSink.c,v 1.23 2001/01/17 19:42:24 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSink.c,v 1.24 2001/08/01 00:44:39 tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -207,7 +207,6 @@ XawAsciiSinkClassPartInitialize(WidgetClass wc)
 {
 #ifndef OLDXAW
     AsciiSinkObjectClass cclass = (AsciiSinkObjectClass)wc;
-    TextSinkObjectClass super = (TextSinkObjectClass)cclass->object_class.superclass;
     XrmQuark record_type = XrmPermStringToQuark("TextSink");
     TextSinkExt ext = cclass->text_sink_class.extension;
 
@@ -731,9 +730,12 @@ AsciiDoPaint(Widget w)
     XmuScanline *scan;
     XmuSegment *seg;
     XawTextPaintList *list = sink->text_sink.paint;
-    XawTextPaintStruct *base, *head, *paint = list->paint;
+#if 0
+    XawTextPaintStruct *base, *head;
+#endif
+    XawTextPaintStruct *paint = list->paint;
     XawTextProperty *property;
-    XFontStruct *font;
+    XFontStruct *font = NULL;
     XRectangle *rects;
     int n_rects, i_rects;
     GC gc;
@@ -757,7 +759,8 @@ AsciiDoPaint(Widget w)
     /* pass 2: optimize drawing list to avoid too much GC change requests */
     /* XXX this assumes there will not exist entities drawn over other
 	   entities. */
-    /*while (paint) {
+#if 0
+    while (paint) {
 	base = paint;
 	head = paint->next;
 	while (head) {
@@ -771,7 +774,8 @@ AsciiDoPaint(Widget w)
 	    head = head->next;
 	}
 	paint = paint->next;
-    }*/
+    }
+#endif
     if (paint && paint->next) {
 	XawTextPaintStruct **paints;
 	int i = 0, n_paints = 0;
@@ -1271,8 +1275,6 @@ InsertCursor(Widget w, int x, int y, XawTextInsertState state)
     TextWidget ctx = (TextWidget)XtParent(w);
     XawTextPosition position = XawTextGetInsertionPoint((Widget)ctx);
     Boolean overflow = (x & 0xffff8000) != 0;
-    GC gc;
-    int ascent;
 #ifndef OLDXAW
     XawTextAnchor *anchor;
     XawTextEntity *entity;
