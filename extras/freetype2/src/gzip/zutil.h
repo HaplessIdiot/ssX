@@ -8,13 +8,16 @@
    subject to change. Applications should only use zlib.h.
  */
 
-/* @(#) $Id: zutil.h,v 1.1 2003/05/29 02:01:52 dawes Exp $ */
+/* @(#) $Id: zutil.h,v 1.2 2003/05/29 14:53:28 dawes Exp $ */
+
+/* $XFree86$ */
 
 #ifndef _Z_UTIL_H
 #define _Z_UTIL_H
 
 #include "zlib.h"
 
+#if 0
 #ifdef STDC
 #  include <stddef.h>
 #  include <string.h>
@@ -24,6 +27,7 @@
     extern int errno;
 #else
 #   include <errno.h>
+#endif
 #endif
 
 #ifndef local

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/font/FreeType/Imakefile,v 1.24 2003/01/01 22:08:40 torrey Exp $
+XCOMM $XFree86: xc/lib/font/FreeType/Imakefile,v 1.25 2003/05/29 03:05:08 dawes Exp $
 
 #if BuildServer && DoLoadableServer
 #define IHaveSubdirs
@@ -18,6 +18,7 @@ FT2INCDIR = $(TOP)/extras/freetype2/include
 
 FT2INCS =  -I$(FT2INCDIR) \
            -I$(FT2SOURCEDIR)/base \
+           -I$(FT2SOURCEDIR)/gzip \
            -I$(FT2SOURCEDIR)/raster \
            -I$(FT2SOURCEDIR)/sfnt \
            -I$(FT2SOURCEDIR)/truetype \
@@ -29,11 +30,11 @@ FT2INCS =  -I$(FT2INCDIR) \
            -I$(FT2SOURCEDIR)/autohint
 
 FT2SRCS = ftbase.c ftinit.c ftglyph.c ftsystem.c fttype1.c ftxf86.c \
-          raster.c sfnt.c truetype.c cff.c type1.c \
+          ftgzip.c raster.c sfnt.c truetype.c cff.c type1.c \
           psaux.c psnames.c pshinter.c  autohint.c
 
 FT2OBJS = ftbase.o ftinit.o ftglyph.o ftsystem.o fttype1.o ftxf86.o \
-          raster.o sfnt.o truetype.o cff.o type1.o \
+          ftgzip.o raster.o sfnt.o truetype.o cff.o type1.o \
           psaux.o psnames.o pshinter.o autohint.o
 #endif
 
@@ -62,6 +63,7 @@ LinkSourceFile(ftglyph.c,$(FT2SOURCEDIR)/base)
 LinkSourceFile(ftutil.c,$(FT2SOURCEDIR)/base)
 LinkSourceFile(fttype1.c,$(FT2SOURCEDIR)/base)
 LinkSourceFile(ftxf86.c,$(FT2SOURCEDIR)/base)
+LinkSourceFile(ftgzip.c,$(FT2SOURCEDIR)/gzip)
 LinkSourceFile(raster.c,$(FT2SOURCEDIR)/raster)
 LinkSourceFile(sfnt.c,$(FT2SOURCEDIR)/sfnt)
 LinkSourceFile(truetype.c,$(FT2SOURCEDIR)/truetype)
