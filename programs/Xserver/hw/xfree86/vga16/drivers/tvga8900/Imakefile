@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/7 1996/09/28 17:25:38 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/drivers/tvga8900/Imakefile,v 3.7 1996/11/18 13:13:13 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/drivers/tvga8900/Imakefile,v 3.8 1996/12/23 06:52:29 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = t89_driver.c t89_bank.s
@@ -25,7 +25,7 @@ SubdirLibraryRule($(OBJS))
 #endif
 NormalLibraryObjectRule()
 
-NormalRelocatableTarget(t89_drv,$(OBJS))
+NormalRelocatableTarget(t89_4bpp,$(OBJS))
 
 LinkSourceFile(t89_driver.c,$(VGADRIVERSRC)/tvga8900)
 LinkSourceFile(t89_driver.h,$(VGADRIVERSRC)/tvga8900)
@@ -33,5 +33,9 @@ LinkSourceFile(tgui_ger.h,$(VGADRIVERSRC)/tvga8900)
 ObjectFromSpecialAsmSource(t89_bank,$(VGADRIVERSRC)/tvga8900/bank,NullParameter)
 
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga16/tvga8900)
+
+#if DoLoadableServer
+InstallDynamicModule(t89_4bpp.o,$(MODULEDIR))
+#endif
 
 DependTarget()

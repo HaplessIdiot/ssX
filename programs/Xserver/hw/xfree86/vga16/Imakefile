@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/13 1996/10/21 14:49:52 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/Imakefile,v 3.8 1996/12/23 06:51:50 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/Imakefile,v 3.10 1997/02/27 13:58:56 hohndel Exp $
 #include <Server.tmpl>
 
 #define IHaveSubdirs
@@ -50,5 +50,9 @@ ForceSubdirs($(SUBDIRS))
 
 InstallLinkKitLibrary(vga16,$(LINKKITDIR)/drivers)
 InstallLinkKitNonExecFile(cvga16.SHsuf,$(LINKKITDIR))
+
+#if DoLoadableServer
+InstallDynamicModule(LibraryTargetName(vga16),$(MODULEDIR))
+#endif
 
 DependSubdirs($(SUBDIRS))
