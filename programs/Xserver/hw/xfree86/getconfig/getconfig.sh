@@ -49,7 +49,7 @@
 # Author: David Dawes <dawes@XFree86.Org>.
 #
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/getconfig/getconfig.sh,v 1.1 2003/10/08 14:58:29 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/getconfig/getconfig.sh,v 1.2 2003/12/12 00:39:16 dawes Exp $
 
 # A simple wrapper to execute the real getconfig program.  So long as perl
 # is in $PATH, we don't need to know where it is this way.
@@ -58,4 +58,7 @@ if echo $0 | grep / >/dev/null 2>&1; then
 	DIR=`dirname $0`/
 fi
 
+# Avoid locale warnings from perl.
+LC_ALL=C
+export LC_ALL
 exec perl ${DIR}getconfig.pl "$@"
