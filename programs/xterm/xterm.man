@@ -54,9 +54,9 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\"
-.\" $XFree86: xc/programs/xterm/xterm.man,v 3.100 2004/03/04 02:21:57 dickey Exp $
+.\" $XFree86: xc/programs/xterm/xterm.man,v 3.101 2004/04/05 00:39:19 dickey Exp $
 .\"
-.\" updated by Thomas E. Dickey for XFree86, July 1996 - November 2003.
+.\" updated by Thomas E. Dickey for XFree86, July 1996 - April 2004.
 .TH XTERM 1 __vendorversion__
 .SH NAME
 xterm \- terminal emulator for X
