@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.11 2001/05/21 22:21:57 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.12 2001/07/06 02:04:10 paulo Exp $
  */
 
 #include <stdio.h>
@@ -653,7 +653,7 @@ KeyboardConfig(void)
 	refresh();
 	input->inp_identifier =
 	    DialogInput("Keyboard identifier",
-			"Enter an identifier for your mouse definition:",
+			"Enter an identifier for your keyboard definition:",
 			11, 40, label,
 			" Next >>", " Cancel ", 0);
 	if (input->inp_identifier == NULL) {
@@ -1230,6 +1230,7 @@ CardConfig(void)
 	    for (i = ncards; i > 0; i--)
 		cards[i] = cards[i - 1];
 	    cards[0] = "** Unlisted card **";
+	    ++ncards;
 	}
 	if (device->dev_card)
 	    entry = LookupCard(device->dev_card);
