@@ -27,7 +27,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 /* $XConsortium: cfbscrinit.c,v 5.32 94/04/17 20:29:00 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfbscrinit.c,v 1.8 1997/02/25 16:04:40 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbscrinit.c,v 1.9 1997/02/27 13:57:42 hohndel Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -64,6 +64,7 @@ miBSFuncRec cfbBSFuncRec = {
      * in generic parts of XFree86
      */
 #if PSZ == 8
+#define cfbVersRec cfbVersRec8
 XF86ModuleVersionInfo cfbVersRec =
 {
 	"libcfb.a",
@@ -78,6 +79,7 @@ XF86ModuleVersionInfo cfbVersRec =
 void libcfbModuleInit(data,magic)
 #endif 
 #if PSZ == 16 
+#define cfbVersRec cfbVersRec16
 XF86ModuleVersionInfo cfbVersRec =
 {
 	"libcfb16.a",
@@ -92,6 +94,7 @@ XF86ModuleVersionInfo cfbVersRec =
 void libcfb16ModuleInit(data,magic)
 #endif
 #if PSZ == 24
+#define cfbVersRec cfbVersRec24
 XF86ModuleVersionInfo cfbVersRec =
 {
 	"libcfb24.a",
@@ -106,6 +109,7 @@ XF86ModuleVersionInfo cfbVersRec =
 void libcfb24ModuleInit(data,magic)
 #endif
 #if PSZ == 32 
+#define cfbVersRec cfbVersRec32
 XF86ModuleVersionInfo cfbVersRec =
 {
 	"libcfb32.a",

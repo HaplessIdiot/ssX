@@ -30,7 +30,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/ddxInit.c,v 1.3 1996/12/26 01:38:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ddxInit.c,v 1.4 1997/01/12 10:40:21 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -42,6 +42,14 @@ copyright holders.
 #include "servermd.h"
 #include "Xos.h"
 
+#ifdef XFree86LOADER
+/*
+ * when building the loader, we add some code that tries to 
+ * switch bit ordering based on xf86bpp; since Xprt doesn't
+ * use that, we have to add this dummy here
+ */
+int xf86bpp = 8;
+#endif
 static void Exit();
 void _XpVoidNoop();
 
