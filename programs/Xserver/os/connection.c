@@ -910,7 +910,7 @@ EstablishNewConnections(clientUnused, closure)
 
 #ifndef WIN32
 	curconn = ffs (readyconnections.fds_bits[i]) - 1;
-	readyconnections.fds_bits[i] &= ~(1L << curconn);
+	readyconnections.fds_bits[i] &= ~((fd_mask)1 << curconn);
 	curconn += (i * (sizeof(fd_mask)*8));
 #else
 	curconn = XFD_FD(&readyconnections, i);
@@ -1047,7 +1047,7 @@ CloseDownFileDescriptor(oc)
 }
 
 /*****************
- * CheckConections
+ * CheckConnections
  *    Some connection has died, go find which one and shut it down 
  *    The file descriptor has been closed, but is still in AllClients.
  *    If would truly be wonderful if select() would put the bogus
@@ -1087,7 +1087,7 @@ CheckConnections()
             r = Select (curclient + 1, &tmask, NULL, NULL, &notime);
             if (r < 0)
 		CloseDownClient(clients[ConnectionTranslation[curclient]]);
-	    mask &= ~(1L << curoff);
+	    mask &= ~((fd_mask)1 << curoff);
 	}
     }	
 #else

@@ -147,6 +147,8 @@ BufFilePushCompressed (BufFilePtr f)
 	return 0;
     }
     code = BufFileGet (f);
+    if (code == BUFFILEEOF) return 0;
+    
     maxbits = code & BIT_MASK;
     if (maxbits > BITS || maxbits < 12)
 	return 0;
@@ -392,7 +394,7 @@ main (int argc, char *argv[])
     inputraw = BufFileOpenRead (0);
     input = BufFilePushCompressed (inputraw);
     output = BufFileOpenWrite (1);
-    while ((c = BufFileGet (input)) != -1)
+    while ((c = BufFileGet (input)) != BUFFILEEOF)
 	BufFilePut (c, output);
     BufFileClose (input, FALSE);
     BufFileClose (output, FALSE);

@@ -419,14 +419,18 @@ CHIPSStopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
 {
   CHIPSPortPrivPtr pPriv = (CHIPSPortPrivPtr)data;
   CHIPSPtr cPtr = CHIPSPTR(pScrn);
-  unsigned char mr3c;
+  unsigned char mr3c, tmp;
 
+  ErrorF("StopVideo\n");
   REGION_EMPTY(pScrn->pScreen, &pPriv->clip);   
   CHIPSHiQVSync(pScrn);
   if(exit) {
      if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
+	 ErrorF("StopVideo Exit\n");
 	mr3c = cPtr->readMR(cPtr, 0x3C);
 	cPtr->writeMR(cPtr, 0x3C, (mr3c & 0xFE));
+	tmp = cPtr->readXR(cPtr, 0xD0);
+	cPtr->writeXR(cPtr, 0xD0, (tmp & 0xf));
      }
      if(pPriv->area) {
 	xf86FreeOffscreenArea(pPriv->area);
@@ -637,6 +641,10 @@ CHIPSDisplayVideo(
 
     CHIPSHiQVSync(pScrn);
 
+    ErrorF("DisplayVideo\n");
+    tmp = cPtr->readXR(cPtr, 0xD0);
+    cPtr->writeXR(cPtr, 0xD0, (tmp | 0x10));
+    
     tmp = cPtr->readMR(cPtr, 0x1E);
     tmp &= 0xE0;		/* Set Zoom and Direction */
     if ((!(cPtr->PanelType & ChipsLCD)) && (mode->Flags & V_INTERLACE)) 
@@ -991,7 +999,9 @@ CHIPSStopSurface(
 
     if(pPriv->isOn) {
 	CHIPSPtr cPtr = CHIPSPTR(surface->pScrn);
-	unsigned char mr3c;
+	unsigned char mr3c, tmp;
+	tmp = cPtr->readXR(cPtr, 0xD0);
+	cPtr->writeXR(cPtr, 0xD0, (tmp & 0xf));
 	mr3c = cPtr->readMR(cPtr, 0x3C);
 	cPtr->writeMR(cPtr, 0x3C, (mr3c & 0xFE));
 	pPriv->isOn = FALSE;

@@ -4,7 +4,7 @@ XCOMM $XFree86: xc/lib/font/X-TrueType/Imakefile,v 1.4 1999/03/28 15:59:31 dawes
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
-#if DoLoadableServer
+#if BuildServer && DoLoadableServer
 MODULE_SUBDIRS = module
 #endif
 

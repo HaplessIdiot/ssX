@@ -564,6 +564,13 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"initializing int10\n");
 	pInt = xf86InitInt10(pCir->pEnt->index);
 	xf86FreeInt10(pInt);
+	/*
+	 * This is a hack: We restore the PCI base regs as some Colorgraphic
+	 * BIOSes tend to mess them up
+	 */
+	pciWriteLong(pCir->PciTag,0x10,pCir->PciInfo->memBase[0]);
+	pciWriteLong(pCir->PciTag,0x14,pCir->PciInfo->memBase[1]);
+	
 #endif
     }
 #endif

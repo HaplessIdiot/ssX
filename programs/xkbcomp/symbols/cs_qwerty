@@ -3,7 +3,7 @@ partial default alphanumeric_keys
 xkb_symbols "basic" {
 
     // Describes the differences between a very simple en_US
-    // keyboard and a very simple Czech 'qwertz' keyboard
+    // keyboard and a very simple Czech 'qwerty' keyboard
 
     name[Group1]= "Czech";
 
@@ -13,7 +13,7 @@ xkb_symbols "basic" {
 			[		q,		Q	]	};
     key <AE01> {	[	     plus,		1	],
 			[		1,	   exclam	]	};
-    key <AB01> {	[	        y,		Y	],
+    key <AB01> {	[	        z,		Z	],
 			[		z,	        Z	]	};
     key <AC02> {        [               s,              S       ],       
 			[		s,		S	]	};
@@ -49,7 +49,7 @@ xkb_symbols "basic" {
 			[		h,		H	]	};
     key <AC05> {        [               g,              G       ],       
 			[		g,		G	]	};
-    key <AD06> {	[	        z,		Z	],
+    key <AD06> {	[	        y,		Y	],
 			[		y,	        Y	]	};
     key <AE06> {	[	   zcaron,		6	],
 			[		6,    asciicircum	]	};

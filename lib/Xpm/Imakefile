@@ -22,8 +22,13 @@ REQUIREDLIBS = SharedXpmReqs
  * if your system doesn't provide pipe add -DNO_ZPIPE
  * if on your system sprintf doesn't return the number of bytes transmitted
  * add -DVOID_SPRINTF
+ * if you want xpm to try name.xpm.Z and name.xpm.gz when asked to read
+ * name.xpm , add -DSTAT_ZFILE
  */
 
+#if defined(LinuxArchitecture)
+ZFILEDEF = -DSTAT_ZFILE
+#endif
 #if defined(UltrixArchitecture) || \
     (defined(MipsArchitecture) && !defined(SGIArchitecture))
 STRDUPDEF = -DNEED_STRDUP
@@ -41,7 +46,7 @@ SPRINTFDEF = -DVOID_SPRINTF
 ZPIPEDEF = -DNO_ZPIPE
 #endif
 
-DEFINES = $(STRDUPDEF) $(STRCASECMPDEF) $(SPRINTFDEF) $(ZPIPEDEF)
+DEFINES = $(STRDUPDEF) $(STRCASECMPDEF) $(SPRINTFDEF) $(ZPIPEDEF) $(ZFILEDEF)
 
 HEADERS = xpm.h
 

@@ -43,7 +43,11 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 {
  	int fd;
 
-	if ((fd = open(DEV_MEM, O_RDONLY)) < 0)
+#ifdef __ia64__
+	if ((fd = open(DEV_MEM, O_RDONLY | O_SYNC)) < 0)
+#else
+ 	if ((fd = open(DEV_MEM, O_RDONLY)) < 0)
+#endif
 	{
 		xf86Msg(X_WARNING, "xf86ReadBIOS: Failed to open %s (%s)\n",
 			DEV_MEM, strerror(errno));

@@ -65,16 +65,17 @@ static void Neo2200SetupForSolidFillRect(ScrnInfoPtr pScrn, int color, int rop,
 				  unsigned int planemask);
 static void Neo2200SubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y,
 					   int w, int h);
-#ifdef colorexpandfill
-static void Neo2200SetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
+static void Neo2200SetupForScanlineCPUToScreenColorExpandFill(
+                                                      ScrnInfoPtr pScrn,
 						      int fg, int bg,
 						      int rop,
 						unsigned int planemask);
-static void Neo2200SubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
+static void Neo2200SubsequentScanlineCPUToScreenColorExpandFill(
+                                                        ScrnInfoPtr pScrn,
 							int x, int y,
 							int w, int h,
 							int skipleft);
-#endif
+static void Neo2200SubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno);
 static void Neo2200SetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
 					       int patternx,
 					       int patterny,
@@ -147,28 +148,32 @@ Neo2200AccelInit(ScreenPtr pScreen)
     infoPtr->SubsequentSolidFillRect = 
 	Neo2200SubsequentSolidFillRect;
 
-#ifdef colorexpandfill
-      /* We need byte scanline padding before we can use this
-       * or does anyone know how to switch the chip to dword
-       * padding? if we could do right edge clipping this would
-       * help also. Left edge clipping cannot be used since it
-       * allows only clipping of up to 8 pixels :-((
-       */ /*§§§*/
-
     /* cpu to screen color expansion */
-    infoPtr->CPUToScreenColorExpandFillFlags = ( NO_PLANEMASK |
-						 /* SCANLINE_PAD_BYTE | */
+    /*
+     * We do CPUToScreenColorExpand (ab)using the Scanline functions:
+     * the neo chipsets need byte padding however we can only do dword
+     * padding. Fortunately the graphics engine doesn't choke if we
+     * transfer up to 3 bytes more than it wants.
+     */
+
+
+    infoPtr->ScanlineCPUToScreenColorExpandFillFlags = ( NO_PLANEMASK |
+						  SCANLINE_PAD_DWORD |
 						 CPU_TRANSFER_PAD_DWORD |
 						 BIT_ORDER_IN_BYTE_MSBFIRST );
-    infoPtr->ColorExpandBase = 
+    infoPtr->ScanlineColorExpandBuffers =
+	(unsigned char **)xnfalloc(sizeof(char*));
+    infoPtr->ScanlineColorExpandBuffers[0] =
 	(unsigned char *)(nPtr->NeoMMIOBase + 0x100000);
-    infoPtr->ColorExpandRange = 0x100000;
+    infoPtr->NumScanlineColorExpandBuffers = 1;
+    infoPtr->SetupForScanlineCPUToScreenColorExpandFill = 
+	Neo2200SetupForScanlineCPUToScreenColorExpandFill;
+    infoPtr->SubsequentScanlineCPUToScreenColorExpandFill = 
+	Neo2200SubsequentScanlineCPUToScreenColorExpandFill;
+    infoPtr->SubsequentColorExpandScanline =
+	Neo2200SubsequentColorExpandScanline;
 
-    infoPtr->SetupForCPUToScreenColorExpandFill = 
-	Neo2200SetupForCPUToScreenColorExpandFill;
-    infoPtr->SubsequentCPUToScreenColorExpandFill = 
-	Neo2200SubsequentCPUToScreenColorExpandFill;
-#endif
+
     /* 8x8 pattern fills */
     infoPtr->Mono8x8PatternFillFlags = NO_PLANEMASK
 	| HARDWARE_PATTERN_PROGRAMMED_ORIGIN
@@ -431,10 +436,9 @@ Neo2200SubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y, int w, int h)
     OUTREG(NEOREG_XYEXT, (h<<16) | (w & 0xffff));
 }
 
-
-#ifdef colorexpandfill
 static void
-Neo2200SetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int fg, int bg,
+Neo2200SetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
+ 				      int fg, int bg,
 				      int rop,
 				      unsigned int planemask)
 {
@@ -475,21 +479,44 @@ Neo2200SetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int fg, int bg,
 
 
 static void
-Neo2200SubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
+Neo2200SubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 					int x, int y,
 					int w, int h,
 					int skipleft)
 {
     NEOPtr nPtr = NEOPTR(pScrn);
     NEOACLPtr nAcl = NEOACLPTR(pScrn);
+    nAcl->CPUToScreenColorExpandFill_x = x;
+    nAcl->CPUToScreenColorExpandFill_y = y;
+    nAcl->CPUToScreenColorExpandFill_w = w;
+    nAcl->CPUToScreenColorExpandFill_h = h;
+    nAcl->CPUToScreenColorExpandFill_skipleft = skipleft;
 
     OUTREG(NEOREG_BLTCNTL, nAcl->tmpBltCntlFlags 
 	   | ((skipleft << 2) & 0x1C));
     OUTREG(NEOREG_SRCSTARTOFF, 0);
     OUTREG(NEOREG_DSTSTARTOFF, (y<<16) | (x & 0xffff));
-    OUTREG(NEOREG_XYEXT, (h<<16) | (w & 0xffff));
+    OUTREG(NEOREG_XYEXT, (1<<16) | (w & 0xffff));
 }
-#endif
+
+static void
+Neo2200SubsequentColorExpandScanline(ScrnInfoPtr pScrn,	int bufno)
+{
+    NEOPtr nPtr = NEOPTR(pScrn);
+    NEOACLPtr nAcl = NEOACLPTR(pScrn);
+
+    if (!(--nAcl->CPUToScreenColorExpandFill_h))
+	return;
+
+    WAIT_ENGINE_IDLE();
+    OUTREG(NEOREG_BLTCNTL, nAcl->tmpBltCntlFlags 
+	   | ((nAcl->CPUToScreenColorExpandFill_skipleft << 2) & 0x1C));
+    OUTREG(NEOREG_SRCSTARTOFF, 0);
+    OUTREG(NEOREG_DSTSTARTOFF, ((++nAcl->CPUToScreenColorExpandFill_y)<<16)
+	   | (nAcl->CPUToScreenColorExpandFill_x & 0xffff));
+    OUTREG(NEOREG_XYEXT, (1<<16)
+	   | (nAcl->CPUToScreenColorExpandFill_w & 0xffff));
+}
 
 static void
 Neo2200SetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
@@ -558,3 +585,5 @@ Neo2200SubsequentMono8x8PatternFill(ScrnInfoPtr pScrn,
     OUTREG(NEOREG_DSTSTARTOFF, (y<<16) | (x & 0xffff));
     OUTREG(NEOREG_XYEXT, (h<<16) | (w & 0xffff));
 }
+
+

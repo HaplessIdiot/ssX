@@ -56,6 +56,7 @@ BufFileCreate (char *private,
     f->input = input;
     f->output = output;
     f->skip = skip;
+    f->eof  = 0;
     f->close = close;
     return f;
 }

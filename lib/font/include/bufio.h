@@ -46,6 +46,7 @@ typedef struct _buffile *BufFilePtr;
 typedef struct _buffile {
     BufChar *bufp;
     int	    left;
+    int     eof;
     BufChar buffer[BUFFILESIZE];
     int	    (*input)( BufFilePtr /* f */);
     int     (*output)( int /* c */, BufFilePtr /* f */);
@@ -72,9 +73,9 @@ extern int BufFileRead ( BufFilePtr, char*, int );
 extern int BufFileWrite ( BufFilePtr, char*, int );
 extern void BufFileFree ( BufFilePtr );
 
-#define BufFileGet(f)	((f)->left-- ? *(f)->bufp++ : (*(f)->input) (f))
+#define BufFileGet(f)	((f)->left-- ? *(f)->bufp++ : ((f)->eof = (*(f)->input) (f)))
 #define BufFilePut(c,f)	(--(f)->left ? *(f)->bufp++ = (c) : (*(f)->output) (c,f))
-#define BufFileSkip(f,c)    ((*(f)->skip) (f, c))
+#define BufFileSkip(f,c)    ((f)->eof = (*(f)->skip) (f, c))
 
 #ifndef TRUE
 #define TRUE 1
@@ -84,3 +85,4 @@ extern void BufFileFree ( BufFilePtr );
 #endif
 
 #endif /* ___BUFIO_H___ */
+

@@ -146,8 +146,10 @@ static void CTNAME(SubsequentImageWriteRect)(ScrnInfoPtr pScrn,
 static void  CTNAME(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 		unsigned char *src, int srcwidth, int rop,
 		unsigned int planemask, int trans, int bpp, int depth);
+#if 0
 static void  CTNAME(ReadPixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 		unsigned char *dst, int dstwidth, int bpp, int depth);
+#endif
 #endif
 
 
@@ -373,7 +375,6 @@ chips_imagewrite:
 	infoPtr->WritePixmapFlags |= NO_PLANEMASK;
 
     infoPtr->WritePixmap = CTNAME(WritePixmap);
-
 #if 0 /* Not used by XAA as yet, but coming soon */
     if (cPtr->Flags & ChipsImageReadSupport) {
 	infoPtr->ReadPixmapFlags = CPU_TRANSFER_PAD_QWORD | ROP_NEEDS_SOURCE;
@@ -803,6 +804,7 @@ CTNAME(SetupForScreenToScreenCopy)(ScrnInfoPtr pScrn, int xdir, int ydir,
 #endif
     ctBLTWAIT;
     switch (cAcl->BitsPerPixel) {
+#if 0
     case 8:
         if ((planemask & 0xFF) == 0xFF) {
 	    ctSETROP(cAcl->CommandFlags | ChipsAluConv[rop & 0xF]);
@@ -821,6 +823,7 @@ CTNAME(SetupForScreenToScreenCopy)(ScrnInfoPtr pScrn, int xdir, int ydir,
 	    ctWRITEPLANEMASK16(planemask, cAcl->ScratchAddress);
 	}
 	break;
+#endif
     default:
 	ctSETROP(cAcl->CommandFlags | ChipsAluConv[rop & 0xF]);
 	break;
@@ -1548,13 +1551,11 @@ CTNAME(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
     int dwords; 
     int skipleft;
     int destaddr;
-    int olddepth = -1;
     
     DEBUG_P("WritePixmap");
 #ifdef DEBUG
     ErrorF("WritePixmap x %d, y %d, w %d, h %d, src 0x%X, srcwidth %d, rop 0x%X, planemask 0x%X, trans 0x%X, bpp %d, depth %d\n", x, y, w, h, src, srcwidth, rop, planemask, trans, bpp, depth);
 #endif
-    
     bytesPerLine = w * (bpp >> 3);
     byteWidthSrc = ((srcwidth * (bpp >> 3) + 3L) & ~0x3L);
     cAcl->CommandFlags = ctSRCSYSTEM | ctLEFT2RIGHT | ctTOP2BOTTOM;
@@ -1668,6 +1669,7 @@ CTNAME(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
     cPtr->AccelInfoRec->NeedToSync = TRUE;
 }
 
+#if 0
 static void 
 CTNAME(ReadPixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 		unsigned char *dst, int dstwidth, int bpp, int depth)
@@ -1734,4 +1736,6 @@ CTNAME(ReadPixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 
     cPtr->AccelInfoRec->NeedToSync = TRUE;
 }
+#endif /* ReadPixmap */
+
 #endif

@@ -90,12 +90,12 @@ void main(void)
     shift = 3;
     if (isHiQV==1) {
 	outw(0x102,1);	/*global enable, VGA awake*/
-	printf("0x%2X\n",inb(0x3C3)&0xFF);
+	printf("0x%2.2X\n",inb(0x3C3)&0xFF);
 	outb(0x3C3,0);	/*disable VGA*/
 	outb(0x3C3,1);	/*enable VGA*/
 	for(i = 0;i < 0xFF;i++){
 	    outb(0x3D6,i);
-	    printf("XR 0x%2X\t0x%X\n",i,inb(0x3D7)&0xFF);
+	    printf("XR 0x%2.2X\t0x%2.2X\n",i,inb(0x3D7)&0xFF);
 	}
 	outb(0x3D6,0xE2);
 	bpp = inb(0x3D7)&0xF0;
@@ -105,7 +105,7 @@ void main(void)
 	outw(0x46E8,0x0016);	/*setup mode*/
 	outw(0x102,1);	/*global enable, VGA awake*/
 	outw(0x46E8,0x000E);	/*exit from setup mode*/
-	printf("0x%2X\n",inb(0x3C3)&0xFF);
+	printf("0x%2.2X\n",inb(0x3C3)&0xFF);
 	outb(0x3C3,0);	/*disable VGA*/
 	outw(0x46E8,0x0000);	/*exit from setup mode*/
 	outw(0x46E8,0x000E);	/*exit from setup mode*/
@@ -113,7 +113,7 @@ void main(void)
 	outw(0x46E8,0x0000);	/*exit from setup mode*/
 	for(i = 0;i < 0x80;i++){
 	    outb(0x3D6,i);
-	    printf("XR 0x%2X\t0x%X\n",i,inb(0x3D7)&0xFF);
+	    printf("XR 0x%2.2X\t0x%2.2X\n",i,inb(0x3D7)&0xFF);
 	}
 	outb(0x3D6,0x2B);
 	bpp = inb(0x3D7)&0xF0;
@@ -143,27 +143,27 @@ void main(void)
     if (isHiQV==1) {
 	for(i = 0;i < 0x7F;i++){
 	    outb(0x3D4,i);
-	    printf("CR 0x%2X\t0x%X\n",i,inb(0x3D5)&0xFF);
+	    printf("CR 0x%2.2X\t0x%2.2X\n",i,inb(0x3D5)&0xFF);
 	}
 	outb(0x3D4,storeReg);
 	printf("\nport 0x3D0 (Flat Panel)\n");
 	storeReg = inb(0x3D0);
 	for(i = 0;i < 0x7F;i++){
 	    outb(0x3D0,i);
-	    printf("FR 0x%2X\t0x%X\n",i,inb(0x3D1)&0xFF);
+	    printf("FR 0x%2.2X\t0x%2.2X\n",i,inb(0x3D1)&0xFF);
 	}
 	outb(0x3D1,storeReg);
 	printf("\nport 0x3D2 (Multimedia)\n");
 	storeReg = inb(0x3D2);
 	for(i = 0;i < 0x7F;i++){
 	    outb(0x3D2,i);
-	    printf("MR 0x%2X\t0x%X\n",i,inb(0x3D3)&0xFF);
+	    printf("MR 0x%2.2X\t0x%2.2X\n",i,inb(0x3D3)&0xFF);
 	}
 	outb(0x3D3,storeReg);
     } else {	
 	for(i = 0;i < 0x40;i++){
 	    outb(0x3D4,i);
-	    printf("CR 0x%2X\t0x%X\n",i,inb(0x3D5)&0xFF);
+	    printf("CR 0x%2.2X\t0x%2.2X\n",i,inb(0x3D5)&0xFF);
 	}
 	outb(0x3D4,storeReg);
     }
@@ -173,14 +173,14 @@ void main(void)
     storeReg = inb(0x3CE);
     for(i = 0;i < 0x10;i++){
 	outb(0x3CE,i);
-	printf("GC 0x%2X\t0x%X\n",i,inb(0x3CF)&0xFF);
+	printf("GC 0x%2.2X\t0x%X2.2\n",i,inb(0x3CF)&0xFF);
     }
     outb(0x3CE,storeReg);
     printf("port 0x3C4 (Sequencer)\n");
     storeReg = inb(0x3C4);
     for(i = 0;i < 0x10;i++){
 	outb(0x3C4,i);
-	printf("SQ 0x%2X\t0x%X\n",i,inb(0x3C5)&0xFF);
+	printf("SQ 0x%2.2X\t0x%X2.2\n",i,inb(0x3C5)&0xFF);
     }
     outb(0x3C4,storeReg);
 
@@ -191,7 +191,7 @@ void main(void)
     for(i = 0;i < 0xFF;i++){
 	inb(0x3DA);
 	outb(0x3C0,i);
-	printf("AT 0x%2X\t0x%X\n",i,inb(0x3C1)&0xFF);
+	printf("AT 0x%2.2X\t0x%2.2X\n",i,inb(0x3C1)&0xFF);
     }
     inb(0x3DA);
     outb(0x3C0,storeReg);
@@ -210,12 +210,12 @@ void main(void)
     if (isHiQV!=1) {
 	printf("\nBitBLT\nport\tvalue\n");
 	for(port = 0x83D0; port <= 0x9FD0;port+=0x400){
-	    printf("0x%4X\t0x%4X\n",port,inw(port));
+	    printf("0x%4.4X\t0x%4X\n",port,inw(port));
 	}
 
 	printf("\nH/W cursor\nport\tvalue\n");
 	for(port = 0xA3D0; port <= 0xB3D0;port+=0x400){
-	    printf("0x%4X\t0x%4X\n",port,inw(port));
+	    printf("0x%4.4X\t0x%4X\n",port,inw(port));
 	}
 
 

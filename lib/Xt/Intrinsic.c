@@ -1176,68 +1176,82 @@ static char *ExtractLocaleName(lang)
     String	lang;
 {
 
-#if defined(hpux) || defined(CSRG_BASED) || defined(sun) || defined(SVR4) || defined(sgi) || defined(__osf__) || defined(AIXV3) || defined(ultrix) || defined(WIN32) || defined(__EMX__)
-#ifdef hpux
+#if defined(hpux) || defined(CSRG_BASED) || defined(sun) || defined(SVR4) || defined(sgi) || defined(__osf__) || defined(AIXV3) || defined(ultrix) || defined(WIN32) || defined(__EMX__) || defined (linux)
+# ifdef hpux
 /* 
  * We need to discriminated between HPUX 9 and HPUX 10. The equivalent 
  * code in Xlib in SetLocale.c does include locale.h via X11/Xlocale.h. 
  */ 
-#include <locale.h>
-#ifndef _LastCategory
-/* HPUX 9 and earlier */
-#define SKIPCOUNT 2
-#define STARTCHAR ':'
-#define ENDCHAR ';'
-#else
-/* HPUX 10 */
-#define ENDCHAR ' '
-#endif
-#else
-#ifdef ultrix
-#define SKIPCOUNT 2
-#define STARTCHAR '\001'
-#define ENDCHAR '\001'
-#else
-#if defined(WIN32) || defined(__EMX__)
-#define SKIPCOUNT 1
-#define STARTCHAR '='
-#define ENDCHAR ';'
-#define WHITEFILL
-#else
-#if defined(__osf__) || (defined(AIXV3) && !defined(AIXV4))
-#define STARTCHAR ' '
-#define ENDCHAR ' '
-#else
-#if !defined(sun) || defined(SVR4)
-#define STARTCHAR '/'
-#endif
-#define ENDCHAR '/'
-#endif
-#endif
-#endif
-#endif
+#  include <locale.h>
+#  ifndef _LastCategory
+   /* HPUX 9 and earlier */
+#   define SKIPCOUNT 2
+#   define STARTCHAR ':'
+#   define ENDCHAR ';'
+#  else
+   /* HPUX 10 */
+    #define ENDCHAR ' '
+   #endif
+# else
+#  ifdef ultrix
+#   define SKIPCOUNT 2
+#   define STARTCHAR '\001'
+#   define ENDCHAR '\001'
+#  else
+#   if defined(WIN32) || defined(__EMX__)
+#    define SKIPCOUNT 1
+#    define STARTCHAR '='
+#    define ENDCHAR ';'
+#    define WHITEFILL
+#   else
+#    if defined(__osf__) || (defined(AIXV3) && !defined(AIXV4))
+#     define STARTCHAR ' '
+#     define ENDCHAR ' '
+#    else
+#     if defined(linux)
+#      define STARTSTR "LC_CTYPE="
+#      define ENDCHAR ';'
+#     else
+#      if !defined(sun) || defined(SVR4)
+#       define STARTCHAR '/'
+#       define ENDCHAR '/'
+#      endif
+#     endif
+#    endif
+#   endif
+#  endif
+# endif
 
     char           *start;
     char           *end;
     int             len;
-#ifdef SKIPCOUNT
+# ifdef SKIPCOUNT
     int		    n;
-#endif
+# endif
     static char*    buf = NULL;
 
     start = lang;
-#ifdef SKIPCOUNT
+# ifdef SKIPCOUNT
     for (n = SKIPCOUNT;
 	 --n >= 0 && start && (start = strchr (start, STARTCHAR));
 	 start++)
 	;
     if (!start)
 	start = lang;
-#endif
-#ifdef STARTCHAR
-    if (start && (start = strchr (start, STARTCHAR))) {
+# endif
+# ifdef STARTCHAR
+    if (start && (start = strchr (start, STARTCHAR))) 
         start++;
-#endif
+# elif  defined (STARTSTR)
+    if (start && (start = strstr (start,STARTSTR)))
+# endif
+    {
+# ifdef STARTCHAR
+	start++;
+# elif defined (STARTSTR)
+	start += strlen(STARTSTR);
+# endif
+
 	if (end = strchr (start, ENDCHAR)) {
 	    len = end - start;
 	    if (buf != NULL) XtFree (buf);
@@ -1245,16 +1259,15 @@ static char *ExtractLocaleName(lang)
 	    if (buf == NULL) return NULL;
 	    strncpy(buf, start, len);
 	    *(buf + len) = '\0';
-#ifdef WHITEFILL
+# ifdef WHITEFILL
 	    for (start = buf; start = strchr(start, ' '); )
 		*start++ = '-';
-#endif
+# endif
 	    return buf;
-	}
-#ifdef STARTCHAR
+	} else  /* if no ENDCHAR is found we are at the end of the line */
+	    return start;
     }
-#endif
-#ifdef WHITEFILL
+# ifdef WHITEFILL
     if (strchr(lang, ' ')) {
 	if (buf != NULL) XtFree (buf);
 	else buf = XtMalloc (strlen (lang) + 1);
@@ -1264,10 +1277,10 @@ static char *ExtractLocaleName(lang)
 	    *start++ = '-';
 	return buf;
     }
-#endif
-#undef STARTCHAR
-#undef ENDCHAR
-#undef WHITEFILL
+# endif
+# undef STARTCHAR
+# undef ENDCHAR
+# undef WHITEFILL
 #endif
 
     return lang;

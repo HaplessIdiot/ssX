@@ -112,6 +112,9 @@ void neoRefreshArea16(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void neoRefreshArea24(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void neoRefreshArea32(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 
+/* in neo_dga.c */
+Bool NEODGAInit(ScreenPtr pScreen);
+
 /* shadow regs */
 
 #define NEO_EXT_CR_MAX 0x85
@@ -131,6 +134,7 @@ typedef struct {
     unsigned char ExtColorModeSelect;
     unsigned char SingleAddrPage;
     unsigned char DualAddrPage;
+    unsigned char biosMode;
     unsigned char PanelDispCntlReg1;
     unsigned char PanelDispCntlReg2;
     unsigned char PanelDispCntlReg3;
@@ -168,6 +172,11 @@ typedef struct {
     unsigned int Pitch;
     unsigned int PixelWidth;
     unsigned int PlaneMask;
+    int CPUToScreenColorExpandFill_x;
+    int CPUToScreenColorExpandFill_y;
+    int CPUToScreenColorExpandFill_w;
+    int CPUToScreenColorExpandFill_h;
+    int CPUToScreenColorExpandFill_skipleft;
 } NEOACLRec, *NEOACLPtr;
 #define NEOACLPTR(p)	&((NEOPtr)((p)->driverPrivate))->Accel
 
@@ -233,6 +242,12 @@ typedef struct neoRec
     int rotate;
 } NEORec, *NEOPtr;
 
+typedef struct {
+    int x_res;
+    int y_res;
+    int mode;
+} biosMode;
+
 /* The privates of the NEO driver */
 #define NEOPTR(p)	((NEOPtr)((p)->driverPrivate))
 
@@ -246,12 +261,12 @@ typedef struct neoRec
 #define VGAwGR(index,val) hwp->writeGr(hwp,index,val)
 
 /* memory mapped register access macros */
-#define INREG8(addr) *(volatile CARD8 *)(nPtr->NeoMMIOBase + (addr))
-#define INREG16(addr) *(volatile CARD16 *)(nPtr->NeoMMIOBase + (addr))
-#define INREG(addr) *(volatile CARD32 *)(nPtr->NeoMMIOBase + (addr))
-#define OUTREG8(addr, val) *(volatile CARD8 *)(nPtr->NeoMMIOBase + (addr)) = (val)
-#define OUTREG16(addr, val) *(volatile CARD16 *)(nPtr->NeoMMIOBase + (addr)) = (val)
-#define OUTREG(addr, val) *(volatile CARD32 *)(nPtr->NeoMMIOBase + (addr)) = (val)
+#define INREG8(addr) MMIO_IN8(nPtr->NeoMMIOBase, (addr))
+#define INREG16(addr) MMIO_IN16(nPtr->NeoMMIOBase, (addr))
+#define INREG(addr) MMIO_IN32(nPtr->NeoMMIOBase, (addr))
+#define OUTREG8(addr, val) MMIO_OUT8(nPtr->NeoMMIOBase, (addr), (val))
+#define OUTREG16(addr, val) MMIO_OUT16(nPtr->NeoMMIOBase, (addr), (val))
+#define OUTREG(addr, val) MMIO_OUT32(nPtr->NeoMMIOBase, (addr), (val))
 
 /* This swizzle macro is to support the manipulation of cursor masks when
  * the sprite moves off the left edge of the display.  This code is

@@ -42,6 +42,11 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.119 2000/08/
      XKBDDXOBJ = xf86XKB.o
 #endif
 
+#if BuildDebug
+     DEBUGSRC = xf86Debug.c
+     DEBUGOBJ = xf86Debug.o
+#endif
+
 #if BuildXInputExt
  XF86_XINPUT_SRC = xf86Xinput.c xf86Switch.c xisb.c
  XF86_XINPUT_OBJ = xf86Xinput.o xf86Switch.o xisb.o
@@ -105,6 +110,7 @@ SRCS =	\
 	xf86xv.c \
 	xf86cmap.c\
 	xf86PM.c \
+	$(DEBUGSRC) \
 	$(KBD).c \
 	$(SBUSSRC) \
 	$(XF86_XINPUT_SRC) \
@@ -137,6 +143,7 @@ OBJS = \
 	xf86xv.o \
 	xf86cmap.o\
 	xf86PM.o \
+	$(DEBUGOBJ) \
 	$(SBUSOBJ) \
 	$(XF86_XINPUT_OBJ) \
 	$(XKBDDXOBJ) \

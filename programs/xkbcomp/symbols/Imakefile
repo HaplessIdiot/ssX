@@ -3,8 +3,8 @@ XCOMM $XFree86: xc/programs/xkbcomp/symbols/Imakefile,v 3.23 2000/08/15 16:51:32
 #define IHaveSubdirs
 
       TESTDATA = 
-     DATAFILES = be bg br ca ca_enhanced cs czsk ctrl de de_CH dk dvorak \
-		 ee en_US es fi fr fr_CH \
+     DATAFILES = be bg br ca ca_enhanced cs cs_qwerty czsk ctrl de de_CH dk \
+		 dvorak ee en_US es fi fr fr_CH \
 		 gb group hu hu_US iso9995-3 inet is it jp \
 		 keypad lock no pc104 \
 		 pl pt \

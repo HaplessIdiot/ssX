@@ -2723,8 +2723,6 @@ DisplayText(Widget w, XawTextPosition left, XawTextPosition right)
     TextWidget ctx = (TextWidget)w;
     int y, line;
     XawTextPosition from, to, lastPos;
-    XmuScanline *scan;
-    XmuSegment *seg;
     Bool cleol = ctx->text.clear_to_eol;
     Bool has_selection = ctx->text.s.right > ctx->text.s.left;
     XawTextPaintList *paint_list;

@@ -106,7 +106,7 @@ int ProcInitialConnection();
 #endif
 
 #define mskcnt ((MAXCLIENTS + 31) / 32)
-#define BITMASK(i) (1 << ((i) & 31))
+#define BITMASK(i) (1U << ((i) & 31))
 #define MASKIDX(i) ((i) >> 5)
 #define MASKWORD(buf, i) buf[MASKIDX(i)]
 #define BITSET(buf, i) MASKWORD(buf, i) |= BITMASK(i)
@@ -2162,12 +2162,12 @@ DoGetImage(client, format, drawable, x, y, width, height, planemask, im_return)
 	{
 	    /* we have to make sure intermediate buffers don't need padding */
 	    while ((linesPerBuf > 1) &&
-		   (length & ((1 << LOG2_BYTES_PER_SCANLINE_PAD)-1)))
+		   (length & ((1L << LOG2_BYTES_PER_SCANLINE_PAD)-1)))
 	    {
 		linesPerBuf--;
 		length -= widthBytesLine;
 	    }
-	    while (length & ((1 << LOG2_BYTES_PER_SCANLINE_PAD)-1))
+	    while (length & ((1L << LOG2_BYTES_PER_SCANLINE_PAD)-1))
 	    {
 		linesPerBuf++;
 		length += widthBytesLine;

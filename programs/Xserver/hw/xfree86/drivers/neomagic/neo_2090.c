@@ -40,6 +40,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
 #include "compiler.h"
+#include "xf86PciInfo.h"
 
 /* Drivers that use XAA need this */
 #include "xf86fbman.h"
@@ -81,16 +82,17 @@ static void Neo2090SetupForSolidFillRect(ScrnInfoPtr pScrn, int color, int rop,
 				  unsigned int planemask);
 static void Neo2090SubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y,
 					   int w, int h);
-#ifdef colorexpandfill
-static void Neo2090SetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
+static void Neo2093SetupForScanlineCPUToScreenColorExpandFill(
+                                                      ScrnInfoPtr pScrn,
 						      int fg, int bg,
 						      int rop,
 						unsigned int planemask);
-static void Neo2093SubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
+static void Neo2093SubsequentScanlineCPUToScreenColorExpandFill(
+                                                      ScrnInfoPtr pScrn,
 							int x, int y,
 							int w, int h,
 							int skipleft);
-#endif
+static void Neo2093SubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno);
 
 Bool 
 Neo2090AccelInit(ScreenPtr pScreen)
@@ -128,29 +130,34 @@ Neo2090AccelInit(ScreenPtr pScreen)
 	Neo2090SetupForSolidFillRect;
     infoPtr->SubsequentSolidFillRect = 
 	Neo2090SubsequentSolidFillRect;
-#ifdef colorexpandfill
-      /* We need byte scanline padding before we can use this
-       * or does anyone know how to switch the chip to dword
-       * padding? if we could do right edge clipping this would
-       * help also. Left edge clipping cannot be used since it
-       * allows only clipping of up to 8 pixels :-((
-       */ /*§§§*/
-    if (NeoChipset == PCI_CHIP_NM2093) {
-	/* cpu to screen color expansion */
-	infoPtr->CPUToScreenColorExpandFillFlags = ( NO_PLANEMASK |
-						     SCANLINE_PAD_BYTE |
-						     CPU_TRANSFER_PAD_DWORD |
-					     BIT_ORDER_IN_BYTE_MSBFIRST );
-	infoPtr->ColorExpandBase = 
-	    (unsigned char *)(nPtr->NeoMMIOBase + 0x100000);
-	infoPtr->ColorExpandRange = 0x100000;
 
-	infoPtr->SetupForCPUToScreenColorExpandFill = 
-	    Neo2093SetupForCPUToScreenColorExpandFill;
-	infoPtr->SubsequentCPUToScreenColorExpandFill = 
-	    Neo2093SubsequentCPUToScreenColorExpandFill;
+    if (nPtr->NeoChipset == PCI_CHIP_NM2093) {
+	/*
+	 * We do CPUToScreenColorExpand (ab)using the Scanline functions:
+	 * the neo chipsets need byte padding however we can only do dword
+	 * padding. Fortunately the graphics engine doesn't choke if we
+	 * transfer up to 3 bytes more than it wants.
+	 */
+
+	/* cpu to screen color expansion */
+	infoPtr->ScanlineColorExpandBuffers =
+	    (unsigned char **)xnfalloc(sizeof(char*));
+	infoPtr->ScanlineColorExpandBuffers[0] = 
+	    (unsigned char *)(nPtr->NeoMMIOBase + 0x100000);
+	infoPtr->NumScanlineColorExpandBuffers = 1;
+	infoPtr->ScanlineCPUToScreenColorExpandFillFlags = ( NO_PLANEMASK |
+						     SCANLINE_PAD_DWORD |
+						     CPU_TRANSFER_PAD_DWORD |
+						BIT_ORDER_IN_BYTE_MSBFIRST );
+
+	infoPtr->SetupForScanlineCPUToScreenColorExpandFill = 
+	    Neo2093SetupForScanlineCPUToScreenColorExpandFill;
+	infoPtr->SubsequentScanlineCPUToScreenColorExpandFill = 
+	    Neo2093SubsequentScanlineCPUToScreenColorExpandFill;
+	infoPtr->SubsequentColorExpandScanline =
+	    Neo2093SubsequentColorExpandScanline;
     }
-#endif
+
     /*
      * Setup some global variables
      */
@@ -289,9 +296,9 @@ Neo2090SubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y, int w, int h)
 
 }
 
-#ifdef colorexpandfill
 static void
-Neo2093SetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int fg, int bg,
+Neo2093SetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
+				      int fg, int bg,
 				      int rop,
 				      unsigned int planemask)
 {
@@ -325,19 +332,44 @@ Neo2093SetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int fg, int bg,
 }
 
 static void
-Neo2093SubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
+Neo2093SubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 					int x, int y,
 					int w, int h,
 					int skipleft)
 {
     NEOPtr nPtr = NEOPTR(pScrn);
+    NEOACLPtr nAcl = NEOACLPTR(pScrn);
+
+    nAcl->CPUToScreenColorExpandFill_x = x;
+    nAcl->CPUToScreenColorExpandFill_y = y;
+    nAcl->CPUToScreenColorExpandFill_w = w;
+    nAcl->CPUToScreenColorExpandFill_h = h;
+    nAcl->CPUToScreenColorExpandFill_skipleft = skipleft;
 
     WAIT_FIFO(4);
     OUTREG(NEOREG_SRCBITOFF, skipleft);
     OUTREG(NEOREG_SRCSTARTOFF, 0);
     OUTREG(NEOREG_DSTSTARTOFF, (y<<16) | (x & 0xffff));
-    OUTREG(NEOREG_XYEXT, (h<<16) | (w & 0xffff));
+    OUTREG(NEOREG_XYEXT, (1<<16) | (w & 0xffff));
 }
-#endif
+
+static void
+Neo2093SubsequentColorExpandScanline(ScrnInfoPtr pScrn,	int bufno)
+{
+    NEOPtr nPtr = NEOPTR(pScrn);
+    NEOACLPtr nAcl = NEOACLPTR(pScrn);
+
+    if (!(--nAcl->CPUToScreenColorExpandFill_h))
+	return;
+
+    WAIT_FIFO(4);
+    OUTREG(NEOREG_SRCBITOFF, nAcl->CPUToScreenColorExpandFill_skipleft);
+    OUTREG(NEOREG_SRCSTARTOFF, 0);
+    OUTREG(NEOREG_DSTSTARTOFF, ((++nAcl->CPUToScreenColorExpandFill_y)<<16)
+	   | (nAcl->CPUToScreenColorExpandFill_x & 0xffff));
+    OUTREG(NEOREG_XYEXT, (1<<16)
+	   | (nAcl->CPUToScreenColorExpandFill_w & 0xffff));
+}
+
 
 

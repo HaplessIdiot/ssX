@@ -336,8 +336,23 @@ char *cpp_argv[ARGUMENTS] = {
 # ifdef __i386__
 	"-D__i386__",
 # endif
+# ifdef __i486__
+	"-D__i486__",
+# endif
+# ifdef __i586__
+	"-D__i586__",
+# endif
+# ifdef __i686__
+	"-D__i686__",
+# endif
+# ifdef __k6__
+	"-D__k6__",
+# endif
 # ifdef __ia64__
 	"-D__ia64__",
+# endif
+# ifdef __s390__
+	"-D__s390__",
 # endif
 # ifdef __alpha__
 	"-D__alpha__",
@@ -1044,6 +1059,39 @@ struct symtab	predefs[] = {
 # endif
 # ifdef __ia64__
 	{"__ia64__", "1"},
+# endif
+# ifdef __i386__
+	{"__i386__", "1"},
+# endif
+# ifdef __i486__
+	{"__i486__", "1"},
+# endif
+# ifdef __i586__
+	{"__i586__", "1"},
+# endif
+# ifdef __i686__
+	{"__i686__", "1"},
+# endif
+# ifdef __k6__
+	{"__k6__", "1"},
+# endif
+# ifdef i386
+	{"i386", "1"},
+# endif
+# ifdef i486
+	{"i486", "1"},
+# endif
+# ifdef i586
+	{"i586", "1"},
+# endif
+# ifdef i686
+	{ "i686", "1"},
+# endif
+# ifdef k6
+	{"k6", "1"},
+# endif
+# ifdef __s390__
+	{"__s390__", "1"},
 # endif
 	/* add any additional symbols before this line */
 	{NULL, NULL}

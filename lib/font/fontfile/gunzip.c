@@ -102,7 +102,8 @@ BufZipFileFill (BufFilePtr f)
   case Z_STREAM_END:
   case Z_DATA_ERROR:
   case Z_ERRNO:
-    return BUFFILEEOF;
+      f->left = 0;
+      return BUFFILEEOF;
   default:
     return BUFFILEEOF;
   }

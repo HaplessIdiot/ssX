@@ -77,9 +77,9 @@ static char_type magic_header[] = { "\037\235" };	/* 1F 9D */
 #define INIT_BITS 9			/* initial number of bits/code */
 
 #ifdef COMPATIBLE		/* But wrong! */
-# define MAXCODE(n_bits)	(1 << (n_bits) - 1)
+# define MAXCODE(n_bits)	((code_int)1 << (n_bits) - 1)
 #else
-# define MAXCODE(n_bits)	((1 << (n_bits)) - 1)
+# define MAXCODE(n_bits)	(((code_int)1 << (n_bits)) - 1)
 #endif /* COMPATIBLE */
 
 static code_int getcode();
@@ -153,7 +153,7 @@ CompressedFontFileInit (f)
     file->file = f;
     file->maxbits = maxbits;
     file->block_compress = code & BLOCK_MASK;
-    file->maxmaxcode = 1 << file->maxbits;
+    file->maxmaxcode = (code_int)1 << file->maxbits;
     file->tab_suffix = (char_type *) &file[1];
     file->tab_prefix = (unsigned short *) (file->tab_suffix + file->maxmaxcode);
     /*

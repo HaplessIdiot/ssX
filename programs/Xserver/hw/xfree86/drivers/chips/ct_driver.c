@@ -180,8 +180,8 @@ static void     chipsRestoreStretching(ScrnInfoPtr pScrn,
 static Bool     chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static Bool     chipsModeInitWingine(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static Bool     chipsModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode);
-static int      chipsVideoMode(int vgaBitsPerPixel, int weightGreen,
-				int displayHSize, int displayVSize);
+static int      chipsVideoMode(int vgaBitsPerPixel,int displayHSize,
+			       int displayVSize);
 static void     chipsDisplayPowerManagementSet(ScrnInfoPtr pScrn,
 				int PowerManagementMode, int flags);
 static void     chipsHWCursorOn(CHIPSPtr cPtr);
@@ -1493,6 +1493,8 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, from,
 		   "base address is set at 0x%X.\n", cPtr->FbAddress);
 	cPtr->UseMMIO = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		   "Using MMIO\n");
 	cPtr->IOAddress = cPtr->FbAddress + 0x400000L;
     } else
 	xf86DrvMsg(pScrn->scrnIndex, from,
@@ -1674,7 +1676,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 		(cPtr->Flags & ChipsFullMMIOSupport) &&
 		cPtr->pEnt->location.type == BUS_PCI) {
 
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Enabling MMIO\n");
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Enabling full MMIO\n");
 	    cPtr->UseFullMMIO = TRUE;
 
 	    /* Map the linear framebuffer */
@@ -5033,8 +5035,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     /* software mode flag */
     ChipsNew->XR[0xE2] = chipsVideoMode(((cPtr->Flags & ChipsOverlay8plus16) ?
-	8 : pScrn->bitsPerPixel),
-	pScrn->weight.green, (cPtr->PanelType & ChipsLCD) ?
+	8 : pScrn->depth), (cPtr->PanelType & ChipsLCD) ?
 	min(mode->CrtcHDisplay, cPtr->PanelSize.HDisplay) :
 	mode->CrtcHDisplay, mode->CrtcVDisplay);
 #ifdef DEBUG
@@ -5183,6 +5184,9 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	}
     }
     
+    /* Turn off multimedia by default as it degrades performance */
+    ChipsNew->XR[0xD0] &= 0x0f;	 
+    
     /* Setup the video/overlay */
     if (cPtr->Flags & ChipsOverlay8plus16) {
 	ChipsNew->XR[0xD0] |= 0x10;	/* Force the Multimedia engine on */
@@ -5233,7 +5237,9 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	ChipsNew->MR[0x41] = 0xFF;
 	ChipsNew->MR[0x42] = 0x00;
     } else if (cPtr->Flags & ChipsVideoSupport) {
+#if 0
 	ChipsNew->XR[0xD0] |= 0x10;	/* Force the Multimedia engine on */
+#endif
 	ChipsNew->XR[0x4F] = 0x2A;	/* SAR04 >352 pixel overlay width */
 	ChipsNew->MR[0x3C] &= 0x18;	/* Ensure that the overlay is off */
 	cPtr->VideoZoomMax = 0x100;
@@ -5389,8 +5395,7 @@ chipsModeInitWingine(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	| (((mode->CrtcVBlankStart) & 0x400) >> 6 );
 
     /* set video mode */
-    ChipsNew->XR[0x2B] = chipsVideoMode(pScrn->bitsPerPixel,
-	pScrn->weight.green, mode->CrtcHDisplay, mode->CrtcVDisplay);
+    ChipsNew->XR[0x2B] = chipsVideoMode(pScrn->depth, mode->CrtcHDisplay, mode->CrtcVDisplay);
 #ifdef DEBUG
     ErrorF("VESA Mode: %Xh\n", ChipsNew->XR[0x2B]);
 #endif
@@ -5811,10 +5816,8 @@ chipsModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
     }
 
     /* set video mode */
-    ChipsNew->XR[0x2B] = chipsVideoMode(pScrn->bitsPerPixel,
-	pScrn->weight.green, (cPtr->PanelType & ChipsLCD) ?
-	min(HDisplay, cPtr->PanelSize.HDisplay) : HDisplay,
-	cPtr->PanelSize.VDisplay);
+    ChipsNew->XR[0x2B] = chipsVideoMode(pScrn->depth, (cPtr->PanelType & ChipsLCD) ?
+	min(HDisplay, cPtr->PanelSize.HDisplay) : HDisplay,cPtr->PanelSize.VDisplay);
 #ifdef DEBUG
     ErrorF("VESA Mode: %Xh\n", ChipsNew->XR[0x2B]);
 #endif
@@ -6197,7 +6200,7 @@ chipsRestoreStretching(ScrnInfoPtr pScrn, unsigned char ctHorizontalStretch,
 }
 
 static int
-chipsVideoMode(int vgaBitsPerPixel, int weightGreen, int displayHSize,
+chipsVideoMode(int depth, int displayHSize,
 	       int displayVSize)
 {
     /*     4 bpp  8 bpp  16 bpp  18 bpp  24 bpp  32 bpp */
@@ -6212,7 +6215,7 @@ chipsVideoMode(int vgaBitsPerPixel, int weightGreen, int displayHSize,
 
     int videoMode = 0;
 
-    switch (vgaBitsPerPixel) {
+    switch (depth) {
     case 1:
     case 4:
 	videoMode = 0x20;
@@ -6220,10 +6223,11 @@ chipsVideoMode(int vgaBitsPerPixel, int weightGreen, int displayHSize,
     case 8:
 	videoMode = 0x30;
 	break;
-    case 16:
+    case 15:
 	videoMode = 0x40;
-	if (weightGreen != 5)
-	    videoMode |= 0x01;
+	break;
+    case 16:
+	videoMode = 0x41;
 	break;
     default:
 	videoMode = 0x50;
@@ -6244,13 +6248,9 @@ chipsVideoMode(int vgaBitsPerPixel, int weightGreen, int displayHSize,
 	break;
     case 1280:
 	videoMode |= 0x08;
-	if (vgaBitsPerPixel == 16)
-	    videoMode |= 0x01;
 	break;
     case 1600:
-	videoMode |= 0x0C;
-	if (vgaBitsPerPixel == 16)
-	    videoMode |= 0x01;
+	videoMode |= 0x0C; /*0x0A??*/
 	break;
     }
 

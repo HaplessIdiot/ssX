@@ -144,78 +144,90 @@ _XlcMapOSLocaleName(osname, siname)
     char *osname;
     char *siname;
 {
-#if defined(hpux) || defined(CSRG_BASED) || defined(sun) || defined(SVR4) || defined(sgi) || defined(__osf__) || defined(AIXV3) || defined(ultrix) || defined(WIN32) || defined(__EMX__)
-#ifdef hpux
-#ifndef _LastCategory
-/* HPUX 9 and earlier */
-#define SKIPCOUNT 2
-#define STARTCHAR ':'
-#define ENDCHAR ';'
-#else
-/* HPUX 10 */
-#define ENDCHAR ' '
-#endif
-#else
-#ifdef ultrix
-#define SKIPCOUNT 2
-#define STARTCHAR '\001'
-#define ENDCHAR '\001'
-#else
-#if defined(WIN32) || defined(__EMX__)
-#define SKIPCOUNT 1
-#define STARTCHAR '='
-#define ENDCHAR ';'
-#define WHITEFILL
-#else
-#if defined(__osf__) || (defined(AIXV3) && !defined(AIXV4))
-#define STARTCHAR ' '
-#define ENDCHAR ' '
-#else
-#if !defined(sun) || defined(SVR4)
-#define STARTCHAR '/'
-#endif
-#define ENDCHAR '/'
-#endif
-#endif
-#endif
-#endif
+#if defined(hpux) || defined(CSRG_BASED) || defined(sun) || defined(SVR4) || defined(sgi) || defined(__osf__) || defined(AIXV3) || defined(ultrix) || defined(WIN32) || defined(__EMX__) || defined(linux)
+# ifdef hpux
+#  ifndef _LastCategory
+   /* HPUX 9 and earlier */
+#   define SKIPCOUNT 2
+#   define STARTCHAR ':'
+#   define ENDCHAR ';'
+#  else
+   /* HPUX 10 */
+#   define ENDCHAR ' '
+#  endif
+# else
+#  ifdef ultrix
+#   define SKIPCOUNT 2
+#   define STARTCHAR '\001'
+#   define ENDCHAR '\001'
+#  else
+#   if defined(WIN32) || defined(__EMX__)
+#    define SKIPCOUNT 1
+#    define STARTCHAR '='
+#    define ENDCHAR ';'
+#    define WHITEFILL
+#   else
+#    if defined(__osf__) || (defined(AIXV3) && !defined(AIXV4))
+#     define STARTCHAR ' '
+#     define ENDCHAR ' '
+#    else
+#     if defined(linux)
+#      define STARTSTR "LC_CTYPE="
+#      define ENDCHAR ';'
+#     else
+#      if !defined(sun) || defined(SVR4)
+#       define STARTCHAR '/'
+#       define ENDCHAR '/'
+#      endif
+#     endif
+#    endif
+#   endif
+#  endif
+# endif
 
     char           *start;
     char           *end;
     int             len;
-#ifdef SKIPCOUNT
+# ifdef SKIPCOUNT
     int		    n;
-#endif
+# endif
 
     start = osname;
-#ifdef SKIPCOUNT
+# ifdef SKIPCOUNT
     for (n = SKIPCOUNT;
 	 --n >= 0 && start && (start = strchr (start, STARTCHAR));
 	 start++)
 	;
     if (!start)
 	start = osname;
-#endif
-#ifdef STARTCHAR
-    if (start && (start = strchr (start, STARTCHAR))) {
+# endif
+# ifdef STARTCHAR
+    if (start && (start = strchr (start, STARTCHAR))) 
+        start++;
+# elif  defined (STARTSTR)
+    if (start && (start = strstr (start,STARTSTR)))
+# endif
+    {
+# ifdef STARTCHAR
 	start++;
-#endif
+# elif defined (STARTSTR)
+	start += strlen(STARTSTR);
+# endif
 	if (end = strchr (start, ENDCHAR)) {
 	    len = end - start;
 	    if (len >= MAXLOCALE)
 		len = MAXLOCALE - 1;
 	    strncpy(siname, start, len);
 	    *(siname + len) = '\0';
-#ifdef WHITEFILL
+# ifdef WHITEFILL
 	    for (start = siname; start = strchr(start, ' '); )
 		*start++ = '-';
-#endif
+# endif
 	    return siname;
-#ifdef STARTCHAR
-	}
-#endif
+	} else  /* if no ENDCHAR is found we are at the end of the line */
+	    return start;
     }
-#ifdef WHITEFILL
+# ifdef WHITEFILL
     if (strchr(osname, ' ')) {
 	len = strlen(osname);
 	if (len >= MAXLOCALE - 1)
@@ -226,10 +238,10 @@ _XlcMapOSLocaleName(osname, siname)
 	    *start++ = '-';
 	return siname;
     }
-#endif
-#undef STARTCHAR
-#undef ENDCHAR
-#undef WHITEFILL
+# endif
+# undef STARTCHAR
+# undef ENDCHAR
+# undef WHITEFILL
 #endif
     return osname;
 }
