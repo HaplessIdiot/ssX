@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_regs.h,v 1.7 1999/04/17 07:07:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_regs.h,v 1.8 1999/04/25 10:02:26 dawes Exp $ */
 
 /* TGA hardware description (minimal)
  *
@@ -152,6 +152,16 @@ do {\
 #define TGA_WIDTH_REG                   0x009c
 #define TGA_SPAN_REG			0x00bc
 #define	TGA_RAMDAC_SETUP_REG		0x00c0
+
+#define TGA_NOSLOPE7_REG                0x011C
+#define TGA_NOSLOPE6_REG                0x0118
+#define TGA_NOSLOPE5_REG                0x0114
+#define TGA_NOSLOPE4_REG                0x0110
+#define TGA_NOSLOPE3_REG                0x010C
+#define TGA_NOSLOPE2_REG                0x0108
+#define TGA_NOSLOPE1_REG                0x0104
+#define TGA_NOSLOPE0_REG                0x0100
+
 #define TGA_SLOPE0_REG                  0x0120
 #define TGA_SLOPE1_REG                  0x0124
 #define TGA_SLOPE2_REG                  0x0128
@@ -160,9 +170,9 @@ do {\
 #define TGA_SLOPE5_REG                  0x0134
 #define TGA_SLOPE6_REG                  0x0138
 #define TGA_SLOPE7_REG                  0x013C
-#define TGA_BRES3_REG                   0x0048;
-#define TGA_BRES2_REG                   0x0044;
-#define TGA_BRES1_REG                   0x0040;
+#define TGA_BRES3_REG                   0x0048
+#define TGA_BRES2_REG                   0x0044
+#define TGA_BRES1_REG                   0x0040
 
 #define	TGA_BLOCK_COLOR0_REG		0x0140
 #define	TGA_BLOCK_COLOR1_REG		0x0144
