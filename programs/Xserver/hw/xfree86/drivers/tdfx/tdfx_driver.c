@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.89 2002/01/25 21:56:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.90 2002/07/24 01:47:33 tsi Exp $ */
 
 /*
  * Authors:
@@ -2392,7 +2392,7 @@ TDFXFreeScreen(int scrnIndex, int flags) {
 static int
 TDFXValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags) {
   TDFXTRACE("TDFXValidMode start\n");
-  if ((mode->HDisplay>2046) || (mode->VDisplay>1536)) 
+  if ((mode->HDisplay>2048) || (mode->VDisplay>1536)) 
     return MODE_BAD;
   /* Banshee doesn't support interlace. Does V3? */
   if (mode->Flags&V_INTERLACE) 
