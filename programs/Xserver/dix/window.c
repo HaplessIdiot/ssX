@@ -70,7 +70,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.23 2001/10/28 03:33:07 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.24 2001/12/14 19:59:34 dawes Exp $ */
 
 #include "misc.h"
 #include "scrnintstr.h"
@@ -100,8 +100,6 @@ SOFTWARE.
 #include "security.h"
 #endif
 
-extern Bool permitOldBugs;
-
 #if defined(NEED_SCREEN_REGIONS)
 #define REGION_PTR(pScreen,pWin) \
     register ScreenPtr pScreen = pWin->drawable.pScreen;
@@ -126,15 +124,12 @@ int screenIsSaved = SCREEN_SAVER_OFF;
 
 ScreenSaverStuffRec savedScreenInfo[MAXSCREENS];
 
-extern WindowPtr *WindowTable;
-
 #if 0
 extern void DeleteWindowFromAnyEvents();
 extern Mask EventMaskForClient();
 extern void WindowHasNewCursor();
 extern void RecalculateDeliverableEvents();
 #endif
-extern int rand();
 
 static Bool TileScreenSaver(
 #if NeedFunctionPrototypes
@@ -3365,7 +3360,6 @@ SendVisibilityNotify(pWin)
 #define RANDOM_WIDTH 32
 
 #ifndef NOLOGOHACK
-extern int logoScreenSaver;
 static void DrawLogo(
 #if NeedFunctionPrototypes
     WindowPtr /*pWin*/

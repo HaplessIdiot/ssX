@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.37 2001/08/06 20:51:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.38 2001/12/14 19:59:32 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -105,8 +105,6 @@ SOFTWARE.
 #include "dpmsproc.h"
 #endif
 
-void ddxGiveUp();
-
 extern int InitClientPrivates(
 #if NeedFunctionPrototypes
     ClientPtr /*client*/
@@ -119,19 +117,14 @@ extern void Dispatch(
 #endif
 );
 
-extern char *display;
 char *ConnectionInfo;
 xConnSetupPrefix connSetupPrefix;
 
-extern WindowPtr *WindowTable;
 extern FontPtr defaultFont;
 extern int screenPrivateCount;
 
-extern void InitProcVectors();
-extern void InitEvents();
-extern void CloseDownEvents(void);
-extern void DefineInitialRootWindow();
-extern Bool CreateGCperDepthArray();
+extern void InitProcVectors(void);
+extern Bool CreateGCperDepthArray(void);
 
 #ifndef PANORAMIX
 static
@@ -146,17 +139,8 @@ int connBlockScreenStart;
 
 static int restart = 0;
 
-/*
- * Dummy entry for EventSwapVector[]
- */
-/*ARGSUSED*/
 void
-NotImplemented(
-#if NeedFunctionPrototypes
-	xEvent * from,
-	xEvent * to
-#endif
-	)
+NotImplemented(xEvent *from, xEvent *to)
 {
     FatalError("Not implemented");
 }
@@ -257,10 +241,7 @@ static int indexForScanlinePad[ 65 ] = {
 #endif
 
 int
-main(argc, argv, envp)
-    int		argc;
-    char	*argv[];
-    char	*envp[];
+main(int argc, char *argv[], char *envp[])
 {
     int		i, j, k, error;
     char	*xauthfile;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.21 2001/10/28 03:34:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.22 2001/12/14 19:59:54 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -569,6 +569,12 @@ extern void InitBlockAndWakeupHandlers(
 );
 
 extern void ProcessWorkQueue(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void ProcessWorkQueueZombies(
 #if NeedFunctionPrototypes
     void
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/colormap.c,v 3.7 2001/10/28 03:33:04 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/colormap.c,v 3.8 2001/12/14 19:59:29 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -63,6 +63,7 @@ SOFTWARE.
 #endif
 
 extern XID clientErrorValue;
+extern int colormapPrivateCount;
 
 static Pixel FindBestPixel(
 #if NeedFunctionPrototypes
@@ -284,7 +285,6 @@ CreateColormap (mid, pScreen, pVisual, ppcmap, alloc, client)
     register	EntryPtr	pent;
     int		i;
     register	Pixel	*ppix, **pptr;
-    extern int colormapPrivateCount;
 
     class = pVisual->class;
     if(!(class & DynamicClass) && (alloc != AllocNone) && (client != SERVER_ID))
