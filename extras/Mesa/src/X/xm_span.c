@@ -1,4 +1,4 @@
-/* $Id: xm_span.c,v 1.2 2002/02/26 23:37:32 tsi Exp $ */
+/* $Id: xm_span.c,v 1.3 2002/02/27 21:07:54 tsi Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -23,7 +23,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/X/xm_span.c,v 1.2 2002/02/26 23:37:32 tsi Exp $ */
 
 #include "glxheader.h"
 #include "context.h"
@@ -3744,9 +3744,9 @@ static void read_color_span( const GLcontext *ctx,
                const GLubyte *pixelToG = xmesa->xm_visual->PixelToG;
                const GLubyte *pixelToB = xmesa->xm_visual->PixelToB;
                const GLushort *ptr2 = PIXELADDR2( source, x, y );
-               const GLuint *ptr4 = (const GLuint *) ptr2;
                GLuint i;
 #if defined(__i386__) /* word stores don't have to be on 4-byte boundaries */
+               const GLuint *ptr4 = (const GLuint *) ptr2;
                GLuint extraPixel = (n & 1);
                n -= extraPixel;
                for (i = 0; i < n; i += 2) {

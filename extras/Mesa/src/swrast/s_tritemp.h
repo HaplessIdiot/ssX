@@ -1,4 +1,4 @@
-/* $Id: s_tritemp.h,v 1.1 2002/02/22 17:14:13 dawes Exp $ */
+/* $Id: s_tritemp.h,v 1.2 2002/02/27 21:07:54 tsi Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -23,7 +23,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
+/* $XFree86$ */
 
 /*
  * Triangle Rasterizer Template
@@ -126,6 +126,19 @@
    (void) fixedToDepthShift;
 #endif
 
+   /*
+   printf("%s()\n", __FUNCTION__);
+   printf("  %g, %g, %g\n", v0->win[0], v0->win[1], v0->win[2]);
+   printf("    %d, %d, %d, %d\n",
+          v0->color[0], v0->color[1], v0->color[2], v0->color[3]);
+   printf("  %g, %g, %g\n", v1->win[0], v1->win[1], v1->win[2]);
+   printf("    %d, %d, %d, %d\n",
+          v1->color[0], v1->color[1], v1->color[2], v1->color[3]);
+   printf("  %g, %g, %g\n", v2->win[0], v2->win[1], v2->win[2]);
+   printf("    %d, %d, %d, %d\n",
+          v2->color[0], v2->color[1], v2->color[2], v2->color[3]);
+   */
+
    /* Compute fixed point x,y coords w/ half-pixel offsets and snapping.
     * And find the order of the 3 vertices along the Y axis.
     */
@@ -199,7 +212,7 @@
       if (area * bf < 0.0)
          return;
 
-      if (area == 0.0F)
+      if (area == 0.0F || IS_INF_OR_NAN(area))
          return;
 
       oneOverArea = 1.0F / area;
@@ -718,34 +731,35 @@
       {
          int subTriangle;
          GLfixed fx;
-         GLfixed fxLeftEdge, fxRightEdge, fdxLeftEdge, fdxRightEdge;
+         GLfixed fxLeftEdge = 0, fxRightEdge = 0;
+         GLfixed fdxLeftEdge = 0, fdxRightEdge = 0;
          GLfixed fdxOuter;
          int idxOuter;
          float dxOuter;
-         GLfixed fError, fdError;
+         GLfixed fError = 0, fdError = 0;
          float adjx, adjy;
          GLfixed fy;
 #ifdef PIXEL_ADDRESS
-         PIXEL_TYPE *pRow;
-         int dPRowOuter, dPRowInner;  /* offset in bytes */
+         PIXEL_TYPE *pRow = NULL;
+         int dPRowOuter = 0, dPRowInner;  /* offset in bytes */
 #endif
 #ifdef INTERP_Z
 #  ifdef DEPTH_TYPE
-         DEPTH_TYPE *zRow;
-         int dZRowOuter, dZRowInner;  /* offset in bytes */
+         DEPTH_TYPE *zRow = NULL;
+         int dZRowOuter = 0, dZRowInner;  /* offset in bytes */
 #  endif
-         GLfixed fz, fdzOuter, fdzInner;
+         GLfixed fz = 0, fdzOuter = 0, fdzInner;
 #endif
 #ifdef INTERP_FOG
-         GLfloat fogLeft, dfogOuter, dfogInner;
+         GLfloat fogLeft = 0, dfogOuter = 0, dfogInner;
 #endif
 #ifdef INTERP_RGB
-         GLfixed fr, fdrOuter, fdrInner;
-         GLfixed fg, fdgOuter, fdgInner;
-         GLfixed fb, fdbOuter, fdbInner;
+         GLfixed fr = 0, fdrOuter = 0, fdrInner;
+         GLfixed fg = 0, fdgOuter = 0, fdgInner;
+         GLfixed fb = 0, fdbOuter = 0, fdbInner;
 #endif
 #ifdef INTERP_ALPHA
-         GLfixed fa, fdaOuter, fdaInner;
+         GLfixed fa = 0, fdaOuter = 0, fdaInner;
 #endif
 #ifdef INTERP_FLOAT_RGBA
          GLfloat fr, fdrOuter, fdrInner;
