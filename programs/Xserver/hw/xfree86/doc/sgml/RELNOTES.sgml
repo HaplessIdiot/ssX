@@ -9,7 +9,7 @@
 <date>18 December 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.93 2004/01/01 17:18:54 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.94 2004/01/02 06:07:14 dawes Exp $
 </ident>
 
 <abstract>
@@ -1211,6 +1211,7 @@ Stas Sergeev,
 JungShik Shin,
 Jungshik Shin,
 Nikola Smolenski,
+Andreas Stenglein,
 Paul Stewart,
 Alexander Stohr,
 Alan Strohm,
