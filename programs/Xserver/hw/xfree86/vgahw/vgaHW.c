@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.13 1998/11/29 10:50:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.14 1998/11/29 13:49:45 dawes Exp $ */
 
 /*
  *
@@ -1603,9 +1603,9 @@ vgaHWddc1SetSpeed(ScrnInfoPtr pScrn, int speed)
 	hwp->writeCrtc(hwp,0x09,(save->cr09 &0xDF));
 	save->cr07 = hwp->readCrtc(hwp, 0x07); 
 	hwp->writeCrtc(hwp,0x07,(save->cr07 &0x10));
-	/* vsync polarity negativ */
+	/* vsync polarity negativ & ensure a 25MHz clock */
 	save->msr = hwp->readMiscOut(hwp); 
-	hwp->writeMiscOut(hwp,(save->msr | 0x80));
+	hwp->writeMiscOut(hwp,((save->msr & 0xF3) | 0x80));
 	break;
     case DDC_SLOW:
         if (hwp->ddc == NULL) break;

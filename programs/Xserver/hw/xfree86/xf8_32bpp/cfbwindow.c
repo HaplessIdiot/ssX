@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbwindow.c,v 1.1 1999/01/03 03:58:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbwindow.c,v 1.2 1999/01/03 08:06:40 dawes Exp $ */
 
 
 #include "X.h"
@@ -55,6 +55,7 @@ cfb8_32CopyWindow(
     RegionRec rgnDst8, rgnDst32;
     BoxPtr pbox;
     int i, nbox, dx, dy;
+    unsigned long pm = (pWin->drawable.depth == 24) ? ~0 : 0xff000000;
     WindowPtr pRoot = WindowTable[pScreen->myNum];
 
     REGION_INIT(pScreen, &rgnDst8, NullBox, 0);
@@ -74,14 +75,18 @@ cfb8_32CopyWindow(
 	    ppt->x = pbox->x1 + dx;
 	    ppt->y = pbox->y1 + dy;
 	}
-
-	cfbDoBitblt8To8GXcopy((DrawablePtr)pRoot, (DrawablePtr)pRoot,
+	if(pm == ~0)
+	   cfb32DoBitbltCopy((DrawablePtr)pRoot, (DrawablePtr)pRoot,
+                		GXcopy, &rgnDst8, pptSrc, ~0L);
+	else
+	   cfbDoBitblt8To8GXcopy((DrawablePtr)pRoot, (DrawablePtr)pRoot,
 				GXcopy, &rgnDst8, pptSrc, ~0, 0);
 	DEALLOCATE_LOCAL(pptSrc);
     }
 
-    miSegregateChildren(pWin, &rgnDst32, 24);
-    if(REGION_NOTEMPTY(pScreen, &rgnDst32)) {
+    if(pm != ~0) {
+      miSegregateChildren(pWin, &rgnDst32, 24);
+      if(REGION_NOTEMPTY(pScreen, &rgnDst32)) {
 	REGION_INTERSECT(pScreen, &rgnDst32, &rgnDst32, prgnSrc);
 	nbox = REGION_NUM_RECTS(&rgnDst32);
 	if(nbox &&
@@ -97,6 +102,7 @@ cfb8_32CopyWindow(
 				GXcopy, &rgnDst32, pptSrc, ~0, 0);
 	    DEALLOCATE_LOCAL(pptSrc);
 	}
+      }
     }
 
     REGION_UNINIT(pScreen, &rgnDst8);

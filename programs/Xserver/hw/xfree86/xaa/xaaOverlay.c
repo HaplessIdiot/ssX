@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaOverlay.c,v 1.4 1999/01/03 03:58:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaOverlay.c,v 1.5 1999/01/03 08:06:39 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -29,6 +29,7 @@ XAACopyWindow8_32(
     BoxPtr pbox;
     int i, nbox, dx, dy;
     WindowPtr pRoot = WindowTable[pScreen->myNum];
+    unsigned long pm = (pWin->drawable.depth == 24) ? ~0 : 0xff000000;
     XAAInfoRecPtr infoRec = 
 	GET_XAAINFORECPTR_FROM_DRAWABLE((&pWin->drawable));
 
@@ -63,14 +64,15 @@ XAACopyWindow8_32(
 	    ppt->y = pbox->y1 + dy;
 	}
 
-	infoRec->ScratchGC.planemask = 0xff000000;
+	infoRec->ScratchGC.planemask = pm;
 	XAADoBitBlt((DrawablePtr)pRoot, (DrawablePtr)pRoot,
         		&(infoRec->ScratchGC), &rgnDst8, pptSrc);
 	DEALLOCATE_LOCAL(pptSrc);
     }
 
-    miSegregateChildren(pWin, &rgnDst32, 24);
-    if(REGION_NOTEMPTY(pScreen, &rgnDst32)) {
+    if(pm != ~0) {
+      miSegregateChildren(pWin, &rgnDst32, 24);
+      if(REGION_NOTEMPTY(pScreen, &rgnDst32)) {
 	REGION_INTERSECT(pScreen, &rgnDst32, &rgnDst32, prgnSrc);
 	nbox = REGION_NUM_RECTS(&rgnDst32);
 	if(nbox &&
@@ -88,6 +90,7 @@ XAACopyWindow8_32(
 
 	    DEALLOCATE_LOCAL(pptSrc);
 	}
+      }
     }
 
     REGION_UNINIT(pScreen, &rgnDst8);
