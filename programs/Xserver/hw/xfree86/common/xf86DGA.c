@@ -830,7 +830,7 @@ DGAStealMouseEvent(int index, xEvent *e, int dx, int dy)
    if(!pScreenPriv || !pScreenPriv->current) /* no direct mode */
 	return FALSE;
     
-    if (e->u.u.type)
+    if (!dx && !dy)
 	de.u.u.type = e->u.u.type + *XDGAEventBase;
     else
 	de.u.u.type = MotionNotify + *XDGAEventBase;
@@ -1116,7 +1116,8 @@ DGAGetOldDGAMode(int index)
   	      
 	if((mode->viewportWidth == w) && (mode->viewportHeight == h) &&
 		(mode->bytesPerScanline == p) && 
-		(mode->bitsPerPixel == pScrn->bitsPerPixel)) {
+		(mode->bitsPerPixel == pScrn->bitsPerPixel) &&
+		(mode->depth == pScrn->depth)) {
 
 		return mode->num;
 	}
