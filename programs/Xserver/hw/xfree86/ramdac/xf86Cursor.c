@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.c,v 1.9 2001/05/18 20:22:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.c,v 1.10 2001/05/25 02:44:37 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -149,8 +149,10 @@ xf86CursorQueryBestSize(
 	pScreen->devPrivates[xf86CursorScreenIndex].ptr;
 
     if (class == CursorShape) {
-	*width = ScreenPriv->CursorInfoPtr->MaxWidth;
-	*height = ScreenPriv->CursorInfoPtr->MaxHeight;
+	if(*width > ScreenPriv->CursorInfoPtr->MaxWidth)
+	   *width = ScreenPriv->CursorInfoPtr->MaxWidth;
+	if(*height > ScreenPriv->CursorInfoPtr->MaxHeight)
+	   *height = ScreenPriv->CursorInfoPtr->MaxHeight;
     } else
 	(*ScreenPriv->QueryBestSize)(class, width, height, pScreen);
 }
