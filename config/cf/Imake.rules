@@ -1,7 +1,7 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
 XCOMM rules:  $XConsortium: Imake.rules /main/217 1996/12/05 09:48:26 kaleb $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.34 1997/02/12 08:54:35 hohndel Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.35 1997/02/17 11:04:18 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -2604,7 +2604,7 @@ MutexDirective:	targets
 #define LinkBuildNamedModule(module,name) $(_NULLCMD_)
 #else
 #define LinkBuildNamedModule(module,name) MakeDir($(BUILDMODULEDIR))	@@\
-	RemoveFile($(BUILDMODULEDIR)/module)				@@\
+	RemoveFile($(BUILDMODULEDIR)/name)				@@\
 	cd $(BUILDMODULEDIR) && $(LN) $(BUILDMODULETOP)/$(CURRENT_DIR)/module name
 #endif
 #endif /* LinkBuildNamedModule */
