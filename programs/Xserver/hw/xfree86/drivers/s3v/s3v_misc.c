@@ -74,6 +74,9 @@ s3GetPCIInfo()
 	 case PCI_ViRGE_VX:
 	    info.ChipType = S3_ViRGE_VX;
 	    break;
+	 case PCI_ViRGE_DXGX:
+	    info.ChipType = S3_ViRGE_DXGX;
+	    break;
 	 default:
 	    info.ChipType = S3_UNKNOWN;
 	    info.DevID = pcrp->_device;
