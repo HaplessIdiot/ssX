@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/83 1997/10/05 20:42:43 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.36 2000/06/17 00:27:34 dawes Exp $
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.37 2000/11/14 21:59:25 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -70,7 +70,7 @@ XPM_DEFINES = -DXPM
 
 /* This is correct for Linux and FreeBSD */
 #if HasPam
-PAM_LIBRARIES = -lpam DlLibrary
+PAM_LIBRARIES = PamLibraries
 PAM_DEFINES = -DUSE_PAM
 #endif
 
