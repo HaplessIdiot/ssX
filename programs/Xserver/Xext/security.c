@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.13 2003/10/28 23:08:43 tsi Exp $ */
 
 #include "dixstruct.h"
 #include "extnsionst.h"
@@ -104,9 +104,8 @@ SecurityAudit(char *format, ...)
 
     if (auditTrailLevel < SECURITY_AUDIT_LEVEL)
 	return;
-    AuditPrefix(format);
     va_start(args, format);
-    VErrorF(format, args);
+    VAuditF(format, args);
     va_end(args);
 } /* SecurityAudit */
 

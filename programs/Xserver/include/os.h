@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.52 2003/10/18 17:09:30 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.53 2003/10/29 04:17:22 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -519,8 +519,9 @@ extern void LogMessageVerb(MessageType type, int verb, const char *format,
 			   ...) _printf_attribute(3,4);
 extern void LogMessage(MessageType type, const char *format, ...)
 			_printf_attribute(2,3);
-extern char *AuditPrefix(const char *f);
+extern void FreeAuditTimer(void);
 extern void AuditF(const char *f, ...) _printf_attribute(1,2);
+extern void VAuditF(const char *f, va_list args);
 extern void FatalError(const char *f, ...) _printf_attribute(1,2)
 #if defined(__GNUC__) && \
     ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ > 4)))

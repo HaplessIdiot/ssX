@@ -76,7 +76,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
  * authorization from the copyright holder(s) and author(s).
  */
 
-/* $XFree86: xc/programs/Xserver/os/log.c,v 1.3 2003/09/09 03:30:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/log.c,v 1.4 2003/10/29 04:17:22 dawes Exp $ */
 
 #include "Xos.h"
 #include <stdio.h>
@@ -157,7 +157,7 @@ LogInit(const char *fname, const char *backup)
 	if (!logFileName)
 	    FatalError("Cannot allocate space for the log file name\n");
 	sprintf(logFileName, fname, display);
-	
+
 	if (backup && *backup) {
 	    struct stat buf;
 
@@ -389,7 +389,7 @@ static void AbortServer(void) __attribute__((noreturn));
 #endif
 
 static void
-AbortServer(void) 
+AbortServer(void)
 {
     OsCleanup(TRUE);
     AbortDDX();
@@ -402,58 +402,106 @@ AbortServer(void)
 #ifndef AUDIT_PREFIX
 #define AUDIT_PREFIX "AUDIT: %s: %d %s: "
 #endif
+#ifndef AUDIT_TIMEOUT
+#define AUDIT_TIMEOUT ((CARD32)(120 * 1000)) /* 2 mn */
+#endif
 
-char *
-AuditPrefix(const char *f)
+static int nrepeat = 0;
+static int oldlen = -1;
+static OsTimerPtr auditTimer = NULL;
+
+void 
+FreeAuditTimer(void)
+{
+    if (auditTimer != NULL) {
+	/* Force output of pending messages */
+	TimerForce(auditTimer);
+	TimerFree(auditTimer);
+	auditTimer = NULL;
+    }
+}
+
+static char *
+AuditPrefix(void)
 {
     time_t tm;
     char *autime, *s;
     char *tmpBuf;
     int len;
 
-    if (*f != ' ')
-    {
-	time(&tm);
-	autime = ctime(&tm);
-	if ((s = strchr(autime, '\n')))
-	    *s = '\0';
-	if ((s = strrchr(argvGlobal[0], '/')))
-	    s++;
-	else
-	    s = argvGlobal[0];
-	len = strlen(AUDIT_PREFIX) + strlen(autime) + 10 + strlen(s) + 1;
-	tmpBuf = malloc(len);
-	if (!tmpBuf)
-	    return NULL;
-	snprintf(tmpBuf, len, AUDIT_PREFIX, autime, getpid(), s);
-	return tmpBuf;
-    }
-    return NULL;
+    time(&tm);
+    autime = ctime(&tm);
+    if ((s = strchr(autime, '\n')))
+	*s = '\0';
+    if ((s = strrchr(argvGlobal[0], '/')))
+	s++;
+    else
+	s = argvGlobal[0];
+    len = strlen(AUDIT_PREFIX) + strlen(autime) + 10 + strlen(s) + 1;
+    tmpBuf = malloc(len);
+    if (!tmpBuf)
+	return NULL;
+    snprintf(tmpBuf, len, AUDIT_PREFIX, autime, getpid(), s);
+    return tmpBuf;
 }
 
 void
 AuditF(const char * f, ...)
 {
     va_list args;
-    char *prefix;
-    char *tmpBuf;
 
     va_start(args, f);
 
-    prefix = AuditPrefix(f);
-    if (prefix) {
-	tmpBuf = realloc(prefix, strlen(f) + strlen(prefix) + 1);
-	if (!tmpBuf) {
-	    free(prefix);
-	    return;
-	}
-	strcat(tmpBuf, f);
-	VErrorF(tmpBuf, args);
-	free(tmpBuf);
-    } else
-	VErrorF(f, args);
-
+    VAuditF(f, args);
     va_end(args);
+}
+
+static CARD32
+AuditFlush(OsTimerPtr timer, CARD32 now, pointer arg)
+{
+    char *prefix;
+
+    if (nrepeat > 0) {
+	prefix = AuditPrefix();
+	ErrorF("%slast message repeated %d times\n",
+	       prefix != NULL ? prefix : "", nrepeat);
+	nrepeat = 0;
+	if (prefix != NULL)
+	    free(prefix);
+	return AUDIT_TIMEOUT;
+    } else {
+	/* if the timer expires without anything to print, flush the message */
+	oldlen = -1;
+	return 0;
+    }
+}
+
+void
+VAuditF(const char *f, va_list args)
+{
+    char *prefix;
+    char buf[1024];
+    int len;
+    static char oldbuf[1024];
+
+    prefix = AuditPrefix();
+    len = vsnprintf(buf, sizeof(buf), f, args);
+
+    if (len == oldlen && strcmp(buf, oldbuf) == 0) {
+	/* Message already seen */
+	nrepeat++;
+    } else {
+	/* new message */
+	if (auditTimer != NULL)
+	    TimerForce(auditTimer);
+	ErrorF("%s%s", prefix != NULL ? prefix : "", buf);
+	strlcpy(oldbuf, buf, sizeof(oldbuf));
+	oldlen = len;
+	nrepeat = 0;
+	auditTimer = TimerSet(auditTimer, 0, AUDIT_TIMEOUT, AuditFlush, NULL);
+    }
+    if (prefix != NULL)
+	free(prefix);
 }
 
 void
