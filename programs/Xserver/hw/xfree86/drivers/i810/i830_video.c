@@ -24,7 +24,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_video.c,v 1.18 2005/02/10 10:43:47 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_video.c,v 1.19 2005/02/10 13:17:39 alanh Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -1249,8 +1249,8 @@ I830DisplayVideo(ScrnInfoPtr pScrn, int id, short width, short height,
       /*
        * Y down-scale factor as a multiple of 4096.
        */
-      xscaleFract = (src_w << 12) / drw_w;
-      yscaleFract = (src_h << 12) / drw_h;
+      xscaleFract = ((src_w - 1) << 12) / drw_w;
+      yscaleFract = ((src_h - 1) << 12) / drw_h;
 
       /* Calculate the UV scaling factor. */
       xscaleFractUV = xscaleFract / uvratio;

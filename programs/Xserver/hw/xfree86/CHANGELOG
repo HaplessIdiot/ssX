@@ -1,4 +1,7 @@
 XFree86 4.4.99.903 (xx February 2005)
+ 348. Fix an off by one error when scaling which caused occasional
+      overlay color lines at the far right and bottom of the window for
+      i830 chips (Alan Hourihane).
  347. Fix for i810 DRI missing lodbias functionality and related segfault
       (David Dawes).
  346. Fix for radeon DRI lockup (Dave Airlie).
@@ -19422,7 +19425,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3453 2005/02/28 17:50:46 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3454 2005/03/01 03:48:51 dawes Exp $
 
 
 
