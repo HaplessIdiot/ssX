@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.24 2003/01/13 03:57:59 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.25 2003/01/13 05:04:35 paulo Exp $
 ;;
 
 (require "syntax")
@@ -826,7 +826,8 @@
 	(or (characterp char) (return-from c-offset-indent point))
     )
 
-    (if (char= char #\Newline) point (1+ point))
+    ;; don't include " or ' to avoid parsing strings "inverted"
+    (if (member char '(#\Newline #\" #\')) point (1+ point))
 )
 (compile 'c-offset-indent)
 
