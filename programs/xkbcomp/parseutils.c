@@ -1,4 +1,4 @@
-/* $XConsortium: parseutils.c /main/2 1995/12/07 21:25:50 kaleb $ */
+/* $TOG: parseutils.c /main/8 1997/06/13 05:59:21 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -26,16 +26,22 @@
  ********************************************************/
 #define DEBUG_VAR_NOT_LOCAL
 #define	DEBUG_VAR parseDebug
-#include "xkbparse.h"
+#include "parseutils.h"
+#include "xkbpath.h"
 #include <X11/keysym.h>
 #include <X11/extensions/XKBgeom.h>
+#include <X11/Xalloca.h>
 
 XkbFile	*rtrnValue;
 
 ParseCommon *
+#if NeedFunctionPrototypes
+AppendStmt(ParseCommon *to,ParseCommon *append)
+#else
 AppendStmt(to,append)
     ParseCommon *	to;
     ParseCommon *	append;
+#endif
 {
 ParseCommon	*start= to;
 
@@ -52,9 +58,13 @@ ParseCommon	*start= to;
 }
 
 ExprDef *
+#if NeedFunctionPrototypes
+ExprCreate(unsigned op,unsigned type)
+#else
 ExprCreate(op,type)
     unsigned	op;
     unsigned	type;
+#endif
 {
 ExprDef *expr;
     expr= uTypedAlloc(ExprDef);
@@ -65,17 +75,21 @@ ExprDef *expr;
 	expr->type= type;
     }
     else {
-	uFatalError("Couldn't allocate expression in parser\n");
+	FATAL("Couldn't allocate expression in parser\n");
 	/* NOTREACHED */
     }
     return expr;
 }
 
 ExprDef *
+#if NeedFunctionPrototypes
+ExprCreateUnary(unsigned op,unsigned type,ExprDef *child)
+#else
 ExprCreateUnary(op,type,child)
     unsigned	 op;
     unsigned	 type;
     ExprDef	*child;
+#endif
 {
 ExprDef *expr;
     expr= uTypedAlloc(ExprDef);
@@ -87,17 +101,21 @@ ExprDef *expr;
 	expr->value.child= child;
     }
     else {
-	uFatalError("Couldn't allocate expression in parser\n");
+	FATAL("Couldn't allocate expression in parser\n");
 	/* NOTREACHED */
     }
     return expr;
 }
 
 ExprDef *
+#if NeedFunctionPrototypes
+ExprCreateBinary(unsigned op,ExprDef *left,ExprDef *right)
+#else
 ExprCreateBinary(op,left,right)
     unsigned	 op;
     ExprDef	*left;
     ExprDef	*right;
+#endif
 {
 ExprDef *expr;
     expr= uTypedAlloc(ExprDef);
@@ -114,16 +132,20 @@ ExprDef *expr;
 	expr->value.binary.right= right;
     }
     else {
-	uFatalError("Couldn't allocate expression in parser\n");
+	FATAL("Couldn't allocate expression in parser\n");
 	/* NOTREACHED */
     }
     return expr;
 }
 
 KeycodeDef *
+#if NeedFunctionPrototypes
+KeycodeCreate(char *name,ExprDef *value)
+#else
 KeycodeCreate(name,value)
     char *	name;
     ExprDef *	value;
+#endif
 {
 KeycodeDef *def;
 
@@ -136,16 +158,20 @@ KeycodeDef *def;
 	def->value= value;
     }
     else {
-	uFatalError("Couldn't allocate key name definition in parser\n");
+	FATAL("Couldn't allocate key name definition in parser\n");
 	/* NOTREACHED */
     }
     return def;
 }
 
 KeyAliasDef *
+#if NeedFunctionPrototypes
+KeyAliasCreate(char *alias,char *real)
+#else
 KeyAliasCreate(alias,real)
     char *	alias;
     char *	real;
+#endif
 {
 KeyAliasDef *def;
 
@@ -159,16 +185,20 @@ KeyAliasDef *def;
 	def->real[XkbKeyNameLength]= '\0';
     }
     else {
-	uFatalError("Couldn't allocate key alias definition in parser\n");
+	FATAL("Couldn't allocate key alias definition in parser\n");
 	/* NOTREACHED */
     }
     return def;
 }
 
 VModDef *
+#if NeedFunctionPrototypes
+VModCreate(Atom name,ExprDef *value)
+#else
 VModCreate(name,value)
     Atom	name;
     ExprDef *	value;
+#endif
 {
 VModDef *def;
     def= uTypedAlloc(VModDef);
@@ -179,16 +209,20 @@ VModDef *def;
 	def->value= value;
     }
     else {
-	uFatalError("Couldn't allocate variable definition in parser\n");
+	FATAL("Couldn't allocate variable definition in parser\n");
 	/* NOTREACHED */
     }
     return def;
 }
 
 VarDef *
+#if NeedFunctionPrototypes
+VarCreate(ExprDef *name,ExprDef *value)
+#else
 VarCreate(name,value)
     ExprDef *	name;
     ExprDef *	value;
+#endif
 {
 VarDef *def;
     def= uTypedAlloc(VarDef);
@@ -199,16 +233,20 @@ VarDef *def;
 	def->value= value;
     }
     else {
-	uFatalError("Couldn't allocate variable definition in parser\n");
+	FATAL("Couldn't allocate variable definition in parser\n");
 	/* NOTREACHED */
     }
     return def;
 }
 
 VarDef *
+#if NeedFunctionPrototypes
+BoolVarCreate(Atom nameToken,unsigned set)
+#else
 BoolVarCreate(nameToken,set)
     Atom	nameToken;
     unsigned	set;
+#endif
 {
 ExprDef	*name,*value;
 
@@ -220,9 +258,13 @@ ExprDef	*name,*value;
 }
 
 InterpDef *
+#if NeedFunctionPrototypes
+InterpCreate(KeySym sym,ExprDef *match)
+#else
 InterpCreate(sym,match)
     KeySym	sym;
     ExprDef *	match;
+#endif
 {
 InterpDef *def;
 
@@ -234,16 +276,20 @@ InterpDef *def;
 	def->match= match;
     }
     else {
-	uFatalError("Couldn't allocate interp definition in parser\n");
+	FATAL("Couldn't allocate interp definition in parser\n");
 	/* NOTREACHED */
     }
     return def;
 }
 
 KeyTypeDef *
+#if NeedFunctionPrototypes
+KeyTypeCreate(Atom name,VarDef *body)
+#else
 KeyTypeCreate(name,body)
     Atom	name;
     VarDef *	body;
+#endif
 {
 KeyTypeDef *def;
 
@@ -256,16 +302,20 @@ KeyTypeDef *def;
 	def->body= body;
     }
     else {
-	uFatalError("Couldn't allocate key type definition in parser\n");
+	FATAL("Couldn't allocate key type definition in parser\n");
 	/* NOTREACHED */
     }
     return def;
 }
 
 SymbolsDef *
+#if NeedFunctionPrototypes
+SymbolsCreate(char *keyName,ExprDef *symbols)
+#else
 SymbolsCreate(keyName,symbols)
     char *	keyName;
     ExprDef *	symbols;
+#endif
 {
 SymbolsDef *def;
 
@@ -279,16 +329,20 @@ SymbolsDef *def;
 	def->symbols= symbols;
     }
     else {
-	uFatalError("Couldn't allocate symbols definition in parser\n");
+	FATAL("Couldn't allocate symbols definition in parser\n");
 	/* NOTREACHED */
     }
     return def;
 }
 
 GroupCompatDef *
+#if NeedFunctionPrototypes
+GroupCompatCreate(int group,ExprDef *val)
+#else
 GroupCompatCreate(group,val)
     int		group;
     ExprDef *	val;
+#endif
 {
 GroupCompatDef *def;
 
@@ -301,16 +355,20 @@ GroupCompatDef *def;
 	def->def= val;
     }
     else {
-	uFatalError("Couldn't allocate group compat definition in parser\n");
+	FATAL("Couldn't allocate group compat definition in parser\n");
 	/* NOTREACHED */
     }
     return def;
 }
 
 ModMapDef *
+#if NeedFunctionPrototypes
+ModMapCreate(Atom modifier,ExprDef *keys)
+#else
 ModMapCreate(modifier,keys)
     Atom	modifier;
     ExprDef *	keys;
+#endif
 {
 ModMapDef *def;
 
@@ -323,16 +381,20 @@ ModMapDef *def;
 	def->keys= keys;
     }
     else {
-	uFatalError("Couldn't allocate mod mask definition in parser\n");
+	FATAL("Couldn't allocate mod mask definition in parser\n");
 	/* NOTREACHED */
     }
     return def;
 }
 
 IndicatorMapDef *
+#if NeedFunctionPrototypes
+IndicatorMapCreate(Atom name,VarDef *body)
+#else
 IndicatorMapCreate(name,body)
     Atom	name;
     VarDef *	body;
+#endif
 {
 IndicatorMapDef *def;
 
@@ -345,17 +407,21 @@ IndicatorMapDef *def;
 	def->body= body;
     }
     else {
-	uFatalError("Couldn't allocate indicator map definition in parser\n");
+	FATAL("Couldn't allocate indicator map definition in parser\n");
 	/* NOTREACHED */
     }
     return def;
 }
 
 IndicatorNameDef *
+#if NeedFunctionPrototypes
+IndicatorNameCreate(int	ndx,ExprDef *name,Bool virtual)
+#else
 IndicatorNameCreate(ndx,name,virtual)
     int		ndx;
     ExprDef *	name;
     Bool	virtual;
+#endif
 {
 IndicatorNameDef *def;
 
@@ -369,16 +435,20 @@ IndicatorNameDef *def;
 	def->virtual= virtual;
     }
     else {
-	uFatalError("Couldn't allocate indicator index definition in parser\n");
+	FATAL("Couldn't allocate indicator index definition in parser\n");
 	/* NOTREACHED */
     }
     return def;
 }
 
 ExprDef *
+#if NeedFunctionPrototypes
+ActionCreate(Atom name,ExprDef *args)
+#else
 ActionCreate(name,args)
     Atom	 name;
     ExprDef	*args;
+#endif
 {
 ExprDef *act;
 
@@ -391,13 +461,17 @@ ExprDef *act;
         act->value.action.args= args;
 	return act;
     }
-    uFatalError("Couldn't allocate ActionDef in parser\n");
+    FATAL("Couldn't allocate ActionDef in parser\n");
     return NULL;
 }
 
 ExprDef *
+#if NeedFunctionPrototypes
+CreateKeysymList(KeySym sym)
+#else
 CreateKeysymList(sym)
     KeySym	sym;
+#endif
 {
 ExprDef	 *def;
 
@@ -411,14 +485,18 @@ ExprDef	 *def;
 	    return def;
 	}
     }
-    uFatalError("Couldn't allocate expression for keysym list in parser\n");
+    FATAL("Couldn't allocate expression for keysym list in parser\n");
     return NULL;
 }
 
 ShapeDef *
+#if NeedFunctionPrototypes
+ShapeDeclCreate(Atom name,OutlineDef *outlines)
+#else
 ShapeDeclCreate(name,outlines)
     Atom		name;
     OutlineDef *	outlines;
+#endif
 {
 ShapeDef *	shape;
 OutlineDef *	ol;
@@ -441,9 +519,13 @@ OutlineDef *	ol;
 }
 
 OutlineDef *
+#if NeedFunctionPrototypes
+OutlineCreate(Atom field,ExprDef *points)
+#else
 OutlineCreate(field,points)
     Atom		field;
     ExprDef *		points;
+#endif
 {
 OutlineDef *	outline;
 ExprDef *	pt;
@@ -466,9 +548,13 @@ ExprDef *	pt;
 }
 
 KeyDef *
+#if NeedFunctionPrototypes
+KeyDeclCreate(char *name,ExprDef *expr)
+#else
 KeyDeclCreate(name,expr)
     char *	name;
     ExprDef *	expr;
+#endif
 {
 KeyDef *	key;
 
@@ -484,9 +570,13 @@ KeyDef *	key;
 }
 
 KeyDef *
+#if NeedFunctionPrototypes
+KeyDeclMerge(KeyDef *into,KeyDef *from)
+#else
 KeyDeclMerge(into,from)
     KeyDef *	into;
     KeyDef *	from;
+#endif
 {
     into->expr= (ExprDef *)AppendStmt(&into->expr->common,&from->expr->common);
     from->expr= NULL;
@@ -495,8 +585,12 @@ KeyDeclMerge(into,from)
 }
 
 RowDef *
+#if NeedFunctionPrototypes
+RowDeclCreate(KeyDef *	keys)
+#else
 RowDeclCreate(keys)
     KeyDef *	keys;
+#endif
 {
 RowDef *	row;
 KeyDef *	key;
@@ -517,9 +611,13 @@ KeyDef *	key;
 }
 
 SectionDef *
+#if NeedFunctionPrototypes
+SectionDeclCreate(Atom name,RowDef *rows)
+#else
 SectionDeclCreate(name,rows)
     Atom	name;
     RowDef *	rows;
+#endif
 {
 SectionDef *	section;
 RowDef *	row;
@@ -541,9 +639,13 @@ RowDef *	row;
 }
 
 OverlayKeyDef *
+#if NeedFunctionPrototypes
+OverlayKeyCreate(char *	under,char *over)
+#else
 OverlayKeyCreate(under,over)
     char *	under;
     char *	over;
+#endif
 {
 OverlayKeyDef *	key;
 
@@ -560,9 +662,13 @@ OverlayKeyDef *	key;
 }
 
 OverlayDef *
+#if NeedFunctionPrototypes
+OverlayDeclCreate(Atom name,OverlayKeyDef *keys)
+#else
 OverlayDeclCreate(name,keys)
     Atom		name;
     OverlayKeyDef *	keys;
+#endif
 {
 OverlayDef *	ol;
 OverlayKeyDef *	key;
@@ -581,10 +687,14 @@ OverlayKeyDef *	key;
 }
 
 DoodadDef *
+#if NeedFunctionPrototypes
+DoodadCreate(unsigned type,Atom name,VarDef *body)
+#else
 DoodadCreate(type,name,body)
     unsigned	type;
     Atom	name;
     VarDef *	body;
+#endif
 {
 DoodadDef *	doodad;
 
@@ -601,9 +711,13 @@ DoodadDef *	doodad;
 }
 
 ExprDef *
+#if NeedFunctionPrototypes
+AppendKeysymList(ExprDef *list,KeySym sym)
+#else
 AppendKeysymList(list,sym)
     ExprDef *	list;
     KeySym	sym;
+#endif
 {
     if (list->value.list.nSyms>=list->value.list.szSyms) {
 	list->value.list.szSyms*=2;
@@ -612,7 +726,7 @@ AppendKeysymList(list,sym)
 						list->value.list.szSyms,
 						KeySym);
 	if (list->value.list.syms==NULL) {
-	    uFatalError("Couldn't resize list of symbols for append\n");
+	    FATAL("Couldn't resize list of symbols for append\n");
 	    return NULL;
 	}
     }
@@ -621,9 +735,13 @@ AppendKeysymList(list,sym)
 }
 
 int
+#if NeedFunctionPrototypes
+LookupKeysym(char *str,KeySym *sym_rtrn)
+#else
 LookupKeysym(str,sym_rtrn)
     char	*str;
     KeySym	*sym_rtrn;
+#endif
 {
 KeySym sym;
 
@@ -644,9 +762,13 @@ KeySym sym;
 }
 
 IncludeStmt *
+#if NeedFunctionPrototypes
+IncludeCreate(char *str,unsigned merge)
+#else
 IncludeCreate(str,merge)
     char *	str;
     unsigned	merge;
+#endif
 {
 IncludeStmt *	incl,*first;
 char *		file,*map,*stmt,*tmp;
@@ -682,8 +804,8 @@ Bool		haveSelf;
 		incl->next= NULL;
 	    }
 	    else {
-		uInternalError("Allocation failure in IncludeCreate\n");
-		uAction("Using only part of the include\n");
+		WSGO("Allocation failure in IncludeCreate\n");
+		ACTION("Using only part of the include\n");
 		break;
 	    }
 	    if (nextop=='|')	merge= MergeAugment;
@@ -697,8 +819,8 @@ Bool		haveSelf;
     else if (stmt)	uFree(stmt);
     return first;
 BAIL:
-    uError("Illegal include statement \"%s\"\n",stmt);
-    uAction("Ignored\n");
+    ERROR1("Illegal include statement \"%s\"\n",stmt);
+    ACTION("Ignored\n");
     while (first) {
 	incl= first->next;
 	if (first->file) uFree(first->file);
@@ -715,8 +837,12 @@ BAIL:
 
 #ifdef DEBUG
 void
+#if NeedFunctionPrototypes
+PrintStmtAddrs(ParseCommon *stmt)
+#else
 PrintStmtAddrs(stmt)
     ParseCommon *	stmt;
+#endif
 {
     fprintf(stderr,"0x%x",stmt);
     if (stmt) {
@@ -730,8 +856,12 @@ PrintStmtAddrs(stmt)
 #endif
 
 static void
+#if NeedFunctionPrototypes
+CheckDefaultMap(XkbFile	*maps)
+#else
 CheckDefaultMap(maps)
 XkbFile	*maps;
+#endif
 {
 XkbFile * dflt,*tmp;
 
@@ -742,9 +872,9 @@ XkbFile * dflt,*tmp;
 		dflt= tmp;
 	    else {
 		if (warningLevel>2) {
-		    uWarning("Multiple default componeents in %s\n",
+		    WARN1("Multiple default components in %s\n",
 					(scanFile?scanFile:"(unknown)"));
-		    uAction("Using %s, ignoring %s\n",
+		    ACTION2("Using %s, ignoring %s\n",
 					(dflt->name?dflt->name:"(first)"),
 					(tmp->name?tmp->name:"(subsequent)"));
 		}
@@ -755,12 +885,24 @@ XkbFile * dflt,*tmp;
     return;
 }
 
+_XFUNCPROTOBEGIN
+extern int yyparse(
+#if NeedFunctionPrototypes
+	void
+#endif
+);
+_XFUNCPROTOEND
+
 extern FILE *	yyin;
 
 int
+#if NeedFunctionPrototypes
+XKBParseFile(FILE *file,XkbFile	**pRtrn)
+#else
 XKBParseFile(file,pRtrn)
 FILE 		 *file;
 XkbFile		**pRtrn;
+#endif
 {
     if (file) {
 	yyin= file;
@@ -779,11 +921,15 @@ XkbFile		**pRtrn;
 }
 
 XkbFile *
+#if NeedFunctionPrototypes
+CreateXKBFile(int type,char *name,ParseCommon *defs,unsigned flags)
+#else
 CreateXKBFile(type,name,defs,flags)
 int		type;
 char *		name;
 ParseCommon *	defs;
 unsigned	flags;
+#endif
 {
 XkbFile *	file;
 static int	fileID;
@@ -801,4 +947,20 @@ static int	fileID;
 	file->flags= flags;
     }
     return file;
+}
+
+unsigned 
+#if NeedFunctionPrototypes
+StmtSetMerge(ParseCommon *stmt,unsigned	merge)
+#else
+StmtSetMerge(stmt,merge)
+    ParseCommon *	stmt;
+    unsigned		merge;
+#endif
+{
+    if ((merge==MergeAltForm) && (stmt->stmtType!=StmtKeycodeDef)) {
+	yyerror("illegal use of 'alternate' merge mode");
+	merge= MergeDefault;
+    }
+    return merge;
 }

@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Error.c,v 3.4 1997/05/17 12:52:09 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Error.c,v 3.5 1997/05/31 13:51:18 dawes Exp $ */
 
 /*
 
@@ -321,9 +321,10 @@ program as a non-root user or by removing the suid bit on the executable.");
 #endif
 	    (*fn)(message);
 	    XtFree(message);
-	} else
+	} else {
 	    XtWarning ("Memory allocation failed, arguments in the following message were lost");
 	    (*fn)(buffer);
+	}
     }
 }
 

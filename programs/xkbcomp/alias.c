@@ -1,4 +1,4 @@
-/* $XConsortium: alias.c /main/2 1995/12/07 21:24:47 kaleb $ */
+/* $TOG: alias.c /main/8 1997/06/10 06:53:55 kaleb $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -27,21 +27,27 @@
 
 #include "xkbcomp.h"
 #include "misc.h"
-
 #include "alias.h"
+#include "keycodes.h"
+
+#include <X11/extensions/XKBgeom.h>
 
 static void
+#if NeedFunctionPrototypes
+HandleCollision(AliasInfo *old,AliasInfo *new)
+#else
 HandleCollision(old,new)
     AliasInfo *		old;
     AliasInfo *		new;
+#endif
 {
     if (strncmp(new->real,old->real,XkbKeyNameLength)==0) {
 	if (((new->def.fileID==old->def.fileID)&&(warningLevel>0))||
 							(warningLevel>9)) {
-	    uWarning("Alias of %s for %s declared more than once\n",
+	    WARN2("Alias of %s for %s declared more than once\n",
 					XkbKeyNameText(new->alias,XkbMessage),
 					XkbKeyNameText(new->real,XkbMessage));
-	    uAction("First definition ignored\n");
+	    ACTION("First definition ignored\n");
 	}
     }
     else {
@@ -51,15 +57,14 @@ HandleCollision(old,new)
 	    ignore= new->real;
 	}
 	else {
-	    use= old->real;
-	    ignore= new->real;
+	    use= new->real;
+	    ignore= old->real;
 	}
 	if (((old->def.fileID==new->def.fileID)&&(warningLevel>0))||
 							(warningLevel>9)){
-	    uWarning("Multiple definitions for alias %s\n",
+	    WARN1("Multiple definitions for alias %s\n",
 					XkbKeyNameText(old->alias,XkbMessage));
-	    uWarning("Using %s, ignoring %s\n",
-					XkbKeyNameText(use,XkbMessage),
+	    ACTION2("Using %s, ignoring %s\n", XkbKeyNameText(use,XkbMessage),
 					XkbKeyNameText(ignore,XkbMessage));
 	}
 	if (use!=old->real)
@@ -95,11 +100,18 @@ InitAliasInfo(info,merge,file_id,alias,real)
 }
 
 int 
+#if NeedFunctionPrototypes
+HandleAliasDef(	KeyAliasDef *	def,
+		unsigned 	merge,
+		unsigned 	file_id,
+		AliasInfo **	info_in)
+#else
 HandleAliasDef(def,merge,file_id,info_in)
     KeyAliasDef *	def;
     unsigned		merge;
     unsigned		file_id;
     AliasInfo **	info_in;
+#endif
 {
 AliasInfo *	info;
 
@@ -113,7 +125,7 @@ AliasInfo *	info;
     }
     info= uTypedCalloc(1,AliasInfo);
     if (info==NULL) {
-	uInternalError("Allocation failure in HandleAliasDef\n");
+	WSGO("Allocation failure in HandleAliasDef\n");
 	return False;
     }
     info->def.fileID= file_id;
@@ -126,8 +138,12 @@ AliasInfo *	info;
 }
 
 void
+#if NeedFunctionPrototypes
+ClearAliases(AliasInfo **info_in)
+#else
 ClearAliases(info_in)
     AliasInfo **	info_in;
+#endif
 {
     if ((info_in)&&(*info_in))
 	ClearCommonInfo(&(*info_in)->def);
@@ -135,9 +151,14 @@ ClearAliases(info_in)
 }
 
 Bool
-MergeAliases(into,merge)
+#if NeedFunctionPrototypes
+MergeAliases(AliasInfo **into,AliasInfo **merge,unsigned how_merge)
+#else
+MergeAliases(into,merge,how_merge)
     AliasInfo **	into;
     AliasInfo **	merge;
+    unsigned		how_merge;
+#endif
 {
 AliasInfo *	tmp;
 KeyAliasDef 	def;
@@ -151,7 +172,9 @@ KeyAliasDef 	def;
     }	
     bzero((char *)&def,sizeof(KeyAliasDef));
     for (tmp= *merge;tmp!=NULL;tmp= (AliasInfo *)tmp->def.next) {
-	def.merge= tmp->def.merge;
+	if (how_merge==MergeDefault)
+	     def.merge= tmp->def.merge;
+	else def.merge= how_merge;
 	memcpy(def.alias,tmp->alias,XkbKeyNameLength);
 	memcpy(def.real,tmp->real,XkbKeyNameLength);
 	if (!HandleAliasDef(&def,def.merge,tmp->def.fileID,into))
@@ -161,24 +184,60 @@ KeyAliasDef 	def;
 }
 
 int
-ApplyAliases(xkb,info_in)
+#if NeedFunctionPrototypes
+ApplyAliases(XkbDescPtr	xkb,Bool toGeom,AliasInfo **info_in)
+#else
+ApplyAliases(xkb,toGeom,info_in)
     XkbDescPtr		xkb;
+    Bool		toGeom;
     AliasInfo **	info_in;
+#endif
 {
 register int 	i;
-XkbKeyAliasPtr	a;
-XkbNamesPtr	names;
+XkbKeyAliasPtr	old,a;
 AliasInfo *	info;
 int		nNew,nOld;
+Status		status;
 
     if (*info_in==NULL)
 	return True;
-    names= xkb->names;
-    nOld= ((names!=NULL)?names->num_key_aliases:0);
+    if (toGeom) {
+	nOld= (xkb->geom?xkb->geom->num_key_aliases:0);
+	old= (xkb->geom?xkb->geom->key_aliases:NULL);
+    }
+    else {
+	nOld= (xkb->names?xkb->names->num_key_aliases:0);
+	old= (xkb->names?xkb->names->key_aliases:NULL);
+    }
     for (nNew=0,info= *info_in;info!=NULL;info= (AliasInfo *)info->def.next) {
+	unsigned long lname;
+	unsigned int kc;
+
+	lname= KeyNameToLong(info->real);
+	if (!FindNamedKey(xkb,lname,&kc,False,CreateKeyNames(xkb),0)) {
+	    if (warningLevel>4) {
+		WARN2("Attempt to alias %s to non-existent key %s\n",
+					XkbKeyNameText(info->alias,XkbMessage),
+					XkbKeyNameText(info->real,XkbMessage));
+		ACTION("Ignored\n");
+	    }
+	    info->alias[0]= '\0';
+	    continue;
+	}
+	lname= KeyNameToLong(info->alias);
+	if (FindNamedKey(xkb,lname,&kc,False,False,0)) {
+	    if (warningLevel>4) {
+		WARN("Attempt to create alias with the name of a real key\n");
+		ACTION2("Alias \"%s = %s\" ignored\n",
+					XkbKeyNameText(info->alias,XkbMessage),
+					XkbKeyNameText(info->real,XkbMessage));
+	    }
+	    info->alias[0]= '\0';
+	    continue;
+	}
 	nNew++;
-	if ( names && names->key_aliases ) {
-	    for (i=0,a=names->key_aliases;i<names->num_key_aliases;i++,a++) {
+	if ( old ) {
+	    for (i=0,a=old;i<nOld;i++,a++) {
 		if (strncmp(a->alias,info->alias,XkbKeyNameLength)==0) {
 		    AliasInfo old;
 		    InitAliasInfo(&old,MergeAugment,0,a->alias,a->real);
@@ -186,20 +245,43 @@ int		nNew,nOld;
 		    memcpy(old.real,a->real,XkbKeyNameLength);
 		    info->alias[0]= '\0';
 		    nNew--;
+		    break;
 		}
 	    }
 	}
     }
     if (nNew==0) {
 	ClearCommonInfo(&(*info_in)->def);
+	*info_in= NULL;
 	return True;
     }
-    if (XkbAllocNames(xkb,XkbKeyAliasesMask,0,nOld+nNew)!=Success) {
-	uInternalError("Allocation failure in ApplyAliases\n");
+    status= Success;
+    if (toGeom) {
+	if (!xkb->geom) {
+	    XkbGeometrySizesRec	sizes;
+	    bzero((char *)&sizes,sizeof(XkbGeometrySizesRec));
+	    sizes.which= XkbGeomKeyAliasesMask;
+	    sizes.num_key_aliases= nOld+nNew;
+	    status= XkbAllocGeometry(xkb,&sizes);
+	}
+	else {
+	    status= XkbAllocGeomKeyAliases(xkb->geom,nOld+nNew);
+	}
+	if (xkb->geom)
+	    old= xkb->geom->key_aliases;
+    }
+    else {
+	status= XkbAllocNames(xkb,XkbKeyAliasesMask,0,nOld+nNew);
+	if (xkb->names)
+	    old= xkb->names->key_aliases;
+    }
+    if (status!=Success) {
+	WSGO("Allocation failure in ApplyAliases\n");
 	return False;
     }
-    names= xkb->names;
-    a= &names->key_aliases[nOld];
+    if (toGeom) 
+	 a= &xkb->geom->key_aliases[nOld];
+    else a= &xkb->names->key_aliases[nOld];
     for (info= *info_in;info!=NULL;info= (AliasInfo *)info->def.next) {
 	if (info->alias[0]!='\0') {
 	    strncpy(a->alias,info->alias,XkbKeyNameLength);
@@ -208,11 +290,12 @@ int		nNew,nOld;
 	}
     }
 #ifdef DEBUG
-    if ((a-names->key_aliases)!=(nOld+nNew)) {
-	uInternalError("Expected %d aliases total but created %d\n",nOld+nNew,
-							a-names->key_aliases);
+    if ((a-old)!=(nOld+nNew)) {
+	WSGO2("Expected %d aliases total but created %d\n",nOld+nNew,a-old);
     }
 #endif
+    if (toGeom)	
+	xkb->geom->num_key_aliases+= nNew;
     ClearCommonInfo(&(*info_in)->def);
     *info_in= NULL;
     return True;
