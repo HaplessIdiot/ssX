@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.4 2002/11/03 20:10:27 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.5 2002/11/04 04:15:53 paulo Exp $ */
 
 #include "../xedit.h"
 #include <X11/Xaw/TextSrcP.h>	/* Needs some private definitions */
@@ -100,6 +100,8 @@ static LispObj *XeditSearch(LispMac*, LispBuiltin*, XawTextScanDirection);
  * Initialization
  */
 extern LispMac *lisp_handler;		/* Hack... */
+
+static Bool ControlGPredicate(Display*, XEvent*, XPointer);
 #ifdef SIGNALRETURNSINT
 static int (*old_sigalrm)(int);
 #else
@@ -159,6 +161,18 @@ static LispBuiltin xeditbuiltins[] = {
 /*
  * Implementation
  */
+/*ARGUSED*/
+static Bool
+ControlGPredicate(Display *display, XEvent *event, XPointer arguments)
+{
+    char buffer[2];
+
+    return ((event->type == KeyPress || event->type == KeyRelease) &&
+	    (event->xkey.state & ControlMask) &&
+	    XLookupString(&(event->xkey), buffer, sizeof(buffer), NULL, NULL) &&
+	    buffer[0] == '\a');
+}
+
 /*ARGSUSED*/
 static
 #ifdef SIGNALRETURNSINT
@@ -169,15 +183,10 @@ void
 SigalrmHandler(int signum)
 {
     XEvent event;
-    char buffer[2];
 
     /* Check if user pressed C-g */
-    if (XCheckMaskEvent(XtDisplay(textwindow),
-			KeyPressMask | KeyReleaseMask,
-			&event) &&
-	(event.xkey.state & ControlMask) &&
-	XLookupString(&(event.xkey), buffer, sizeof(buffer), NULL, NULL) &&
-	buffer[0] == '\a') {
+    if (XCheckIfEvent(XtDisplay(textwindow), &event, ControlGPredicate, NULL)) {
+	XPutBackEvent(XtDisplay(textwindow), &event);
 	/* Tell a signal was received, print message for SIGINT */
 	LispSignal(lisp_handler, SIGINT);
 	alarm(0);
