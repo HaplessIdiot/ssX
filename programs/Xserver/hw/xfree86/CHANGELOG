@@ -1,4 +1,13 @@
 XFree86 3.9.18b (28 February 2000)
+3874. Fix a bug with unaccelerated pixmap cache uploads when virtualX
+      was larger than the displayWidth (Mark Vojkovich).
+3873. Xinerama changes (Mark Vojkovich).
+      - extend the Xinerama protocol and change the version number to 1.1.
+      - add a new client API in the "Xinerama" namespace with more
+        functionality than the previous "PanoramiX" functions.
+      - move Xinerama functions out of libXext and into libXinerama.a.
+      - some Xinerama bug fixes.
+3872. Add a flags field to the XF86OffscreenImageRec (Mark Vojkovich).
 3871. Fix a malloc/free problem in Xnest on 64-bit platforms (David Dawes).
 3870. Update bindist definition files (David Dawes).
 3869. More installer updates (David Dawes).
