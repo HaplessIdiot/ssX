@@ -13,7 +13,7 @@
       <date>6 March 2000
 
     <ident>
-    $XFree86$
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.1 2000/03/07 01:52:17 martin Exp $
     </ident>
 
     <toc>
@@ -387,7 +387,7 @@
             If you run <tt/xdpyinfo/ and look for the following line near
             the top:
         <verb>
-            vendor release number:    400
+            vendor release number:    4000
         </verb>
 
 	  <item>

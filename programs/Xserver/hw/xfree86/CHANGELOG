@@ -1,4 +1,5 @@
-XFree86 3.9.18Za (6 March 2000)
+XFree86 3.9.18Za (7 March 2000)
+3960. Fix uninitialized screen function (RestackWindow) (#3806, Keith Packard).
 3959. Added DRI users guide documentation (Brian Paul and Kevin Martin).
 3958. Update the -misc-fixed-* BDF fonts.  New glyphs have been added and
       some old ones fixed.  10x20.bdf and 9x15.bdf now also cover the
@@ -10018,4 +10019,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1071 2000/03/07 01:37:36 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1072 2000/03/07 01:52:10 martin Exp $
