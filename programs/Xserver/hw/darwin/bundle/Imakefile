@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/bundle/Imakefile,v 1.12 2001/06/26 23:29:12 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/bundle/Imakefile,v 1.13 2001/07/01 02:13:40 torrey Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -77,6 +77,9 @@ NormalProgramTarget(XDarwinStartup,XDarwinStartup.o,NullParameter, \
 InstallProgram(XDarwinStartup,$(BINDIR))
 install::
 	-(cd $(DESTDIR)$(BINDIR); $(RM) X; $(LN) XDarwinStartup X)
+
+AllTarget(startXClients)
+MakeScriptFromCpp(startXClients, -DXINITDIR=$(XINITDIR) -DXBINDIR=$(BINDIR))
 
 AllTarget(XDarwin)
 XDarwin:

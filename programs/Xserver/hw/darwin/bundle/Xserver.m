@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.28 2001/09/29 04:48:53 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.29 2001/10/06 07:08:03 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -21,14 +21,6 @@
 #include <pwd.h>
 #include <signal.h>
 #include <fcntl.h>
-
-// Macros to build the path name
-#ifndef XBINDIR
-#define XBINDIR /usr/X11R6/bin
-#endif
-#define STR(s) #s
-#define XSTRPATH(s) STR(s)
-#define XPATH(file) XSTRPATH(XBINDIR) "/" STR(file)
 
 // Types of shells
 enum {
@@ -349,123 +341,7 @@ static NSRect aquaMenuBarBox;
 
     // Start the X clients if started from GUI
     if (quartzStartClients) {
-        struct passwd *passwdUser;
-        NSString *shellPath, *dashShellName, *commandStr;
-        BOOL hasClient = YES;
-        char xinitrcbuf[PATH_MAX];
-        const char *shellPathStr, *newargv[3], *shellNameStr;
-        int fd[2], outFD, length, shellType, i;
-
-        // Register to catch the signal when the client processs finishes
-        signal(SIGCHLD, childDone);
-
-        // Get user's password database entry
-        passwdUser = getpwuid(getuid());
-
-        // Find the user's default shell
-        shellPath = [NSString stringWithCString:passwdUser->pw_shell];
-        dashShellName = [NSString stringWithFormat:@"-%@",
-                                [shellPath lastPathComponent]];
-        shellPathStr = [shellPath cString];
-        shellNameStr = [[shellPath lastPathComponent] cString];
-
-        // Find the type of shell
-        for (i = 0; shellList[i].name; i++) {
-            if (!strcmp(shellNameStr, shellList[i].name))
-                break;
-        }
-        shellType = shellList[i].type;
-
-        newargv[0] = [dashShellName cString];
-        if (shellType == shell_Bourne) {
-            // Bourne shells need to be told they are interactive to make
-            // sure they read all their initialization files.
-            newargv[1] = "-i";
-            newargv[2] = NULL;
-        } else {
-            newargv[1] = NULL;
-        }
-
-        // Create a pipe to communicate with the X client process
-        NSAssert(pipe(fd) == 0, @"Could not create new pipe.");
-
-        // Open a file descriptor for writing to stdout and stderr
-        outFD = open("/dev/console", O_WRONLY, 0);
-        if (outFD == -1) {
-            outFD = open("/dev/null", O_WRONLY, 0);
-            NSAssert(outFD != -1, @"Could not open shell output.");
-        }
-
-        // Fork process to start X clients in user's default shell
-        // Sadly we can't use NSTask because we need to start a login shell.
-        // Login shells are started by passing "-" as the first character of
-        // argument 0. NSTask forces argument 0 to be the shell's name.
-        clientPID = vfork();
-        if (clientPID == 0) {
-
-            // Inside the new process:
-            if (fd[0] != STDIN_FILENO) {
-                dup2(fd[0], STDIN_FILENO);	// Take stdin from pipe
-                close(fd[0]);
-            }
-            close(fd[1]);			// Close write end of pipe
-            if (outFD == STDOUT_FILENO) {	// Setup stdout and stderr
-                dup2(outFD, STDERR_FILENO);
-            } else if (outFD == STDERR_FILENO) {
-                dup2(outFD, STDOUT_FILENO);
-            } else {
-                dup2(outFD, STDERR_FILENO);
-                dup2(outFD, STDOUT_FILENO);
-                close(outFD);
-            }
-
-            // Setup environment
-            setenv("HOME", passwdUser->pw_dir, 1);
-            setenv("SHELL", passwdUser->pw_shell, 1);
-            setenv("LOGNAME", passwdUser->pw_name, 1);
-            setenv("USER", passwdUser->pw_name, 1);
-            setenv("TERM", "unknown", 1);
-            if (chdir(passwdUser->pw_dir))	// Change to user's home dir
-                NSLog(@"Could not change to user's home directory.");
-
-            execv(shellPathStr, newargv);	// Start user's shell
-
-            NSLog(@"Could not start X client process with errno = %i.", errno);
-            _exit(127);
-        }
-
-        // In parent process:
-        close(fd[0]);	// Close read end of pipe
-        close(outFD);	// Close output file descriptor
-
-        // Find the client init file to use
-        snprintf(xinitrcbuf, PATH_MAX, "%s/.xinitrc", passwdUser->pw_dir);
-        if (access(xinitrcbuf, F_OK)) {
-            snprintf(xinitrcbuf, PATH_MAX, XSTRPATH(XINITDIR) "/xinitrc");
-            if (access(xinitrcbuf, F_OK)) {
-                hasClient = NO;
-            }
-        }
-
-        // Form xinit command
-        if (hasClient) {
-            commandStr = [NSString stringWithFormat:
-                            @"xinit %s -- %s :%d -idle\n",
-                            xinitrcbuf, XPATH(XDarwinStartup),
-                            [Preferences display]];
-        } else {
-            commandStr = [NSString stringWithFormat:
-                            @"xinit -- %s :%d -idle\n",
-                            XPATH(XDarwinStartup),
-                            [Preferences display]];
-        }
-
-        length = [commandStr cStringLength];
-        if (write(fd[1], [commandStr cString], length) != length)
-            NSLog(@"Write to X client process failed.");
-
-        // Close the pipe so that shell will terminate when xinit quits
-        close(fd[1]);
+        [self startXClients];
     }
 
     if (quartzRootless) {
@@ -490,6 +366,134 @@ static NSRect aquaMenuBarBox;
             [self closeHelpAndShow:nil];
         }
     }
+}
+
+// Start the first X clients in a separate process
+- (BOOL)startXClients
+{
+    struct passwd *passwdUser;
+    NSString *shellPath, *dashShellName, *commandStr, *startXPath;
+    NSBundle *thisBundle;
+    const char *shellPathStr, *newargv[3], *shellNameStr;
+    int fd[2], outFD, length, shellType, i;
+
+    // Register to catch the signal when the client processs finishes
+    signal(SIGCHLD, childDone);
+
+    // Get user's password database entry
+    passwdUser = getpwuid(getuid());
+
+    // Find the shell to use
+    if ([Preferences useDefaultShell])
+        shellPath = [NSString stringWithCString:passwdUser->pw_shell];
+    else
+        shellPath = [Preferences shellString];
+
+    dashShellName = [NSString stringWithFormat:@"-%@",
+                            [shellPath lastPathComponent]];
+    shellPathStr = [shellPath cString];
+    shellNameStr = [[shellPath lastPathComponent] cString];
+
+    if (access(shellPathStr, X_OK)) {
+        NSLog(@"Shell %s is not valid!", shellPathStr);
+        return NO;
+    }
+
+    // Find the type of shell
+    for (i = 0; shellList[i].name; i++) {
+        if (!strcmp(shellNameStr, shellList[i].name))
+            break;
+    }
+    shellType = shellList[i].type;
+
+    newargv[0] = [dashShellName cString];
+    if (shellType == shell_Bourne) {
+        // Bourne shells need to be told they are interactive to make
+        // sure they read all their initialization files.
+        newargv[1] = "-i";
+        newargv[2] = NULL;
+    } else {
+        newargv[1] = NULL;
+    }
+
+    // Create a pipe to communicate with the X client process
+    NSAssert(pipe(fd) == 0, @"Could not create new pipe.");
+
+    // Open a file descriptor for writing to stdout and stderr
+    outFD = open("/dev/console", O_WRONLY, 0);
+    if (outFD == -1) {
+        outFD = open("/dev/null", O_WRONLY, 0);
+        NSAssert(outFD != -1, @"Could not open shell output.");
+    }
+
+    // Fork process to start X clients in user's default shell
+    // Sadly we can't use NSTask because we need to start a login shell.
+    // Login shells are started by passing "-" as the first character of
+    // argument 0. NSTask forces argument 0 to be the shell's name.
+    clientPID = vfork();
+    if (clientPID == 0) {
+
+        // Inside the new process:
+        if (fd[0] != STDIN_FILENO) {
+            dup2(fd[0], STDIN_FILENO);	// Take stdin from pipe
+            close(fd[0]);
+        }
+        close(fd[1]);			// Close write end of pipe
+        if (outFD == STDOUT_FILENO) {	// Setup stdout and stderr
+            dup2(outFD, STDERR_FILENO);
+        } else if (outFD == STDERR_FILENO) {
+            dup2(outFD, STDOUT_FILENO);
+        } else {
+            dup2(outFD, STDERR_FILENO);
+            dup2(outFD, STDOUT_FILENO);
+            close(outFD);
+        }
+
+        // Setup environment
+        setenv("HOME", passwdUser->pw_dir, 1);
+        setenv("SHELL", shellPathStr, 1);
+        setenv("LOGNAME", passwdUser->pw_name, 1);
+        setenv("USER", passwdUser->pw_name, 1);
+        setenv("TERM", "unknown", 1);
+        if (chdir(passwdUser->pw_dir))	// Change to user's home dir
+            NSLog(@"Could not change to user's home directory.");
+
+        execv(shellPathStr, newargv);	// Start user's shell
+
+        NSLog(@"Could not start X client process with errno = %i.", errno);
+        _exit(127);
+    }
+
+    // In parent process:
+    close(fd[0]);	// Close read end of pipe
+    close(outFD);	// Close output file descriptor
+
+    thisBundle = [NSBundle bundleForClass:[self class]];
+    startXPath = [thisBundle pathForResource:@"startXClients" ofType:nil];
+    if (!startXPath) {
+        NSLog(@"Could not find startXClients in application bundle!");
+        return NO;
+    }
+
+    if ([Preferences addToPath]) {
+        commandStr = [NSString stringWithFormat:@"%@ :%d %@\n",
+                        startXPath, [Preferences display],
+                        [Preferences addToPathString]];
+    } else {
+        commandStr = [NSString stringWithFormat:@"%@ :%d\n",
+                        startXPath, [Preferences display]];
+    }
+
+    length = [commandStr cStringLength];
+    if (write(fd[1], [commandStr cString], length) != length) {
+        NSLog(@"Write to X client process failed.");
+        return NO;
+    }
+
+    // Close the pipe so that shell will terminate when xinit quits
+    close(fd[1]);
+
+    return YES;
 }
 
 // Run the X server thread

@@ -502,6 +502,7 @@
 				0A79E1A900449EB2CE6F79C2,
 				0A79E1AA00449EB2CE6F79C2,
 				1220774500712D2D416877C2,
+				F54BF6ED017D506E01000001,
 			);
 			isa = PBXResourcesBuildPhase;
 			name = "Bundle Resources";
@@ -847,6 +848,8 @@
 				02E03CA000348209CE6F79C2,
 				1BD8DE4400B8A38E7F000001,
 				015698ED003DF345CE6F79C2,
+				F54BF6EA017D500901000001,
+				F54BF6EC017D506E01000001,
 			);
 			isa = PBXGroup;
 			name = Resources;
@@ -1098,6 +1101,22 @@
 //F52
 //F53
 //F54
+		F54BF6EA017D500901000001 = {
+			isa = PBXFileReference;
+			path = startXClients.cpp;
+			refType = 4;
+		};
+		F54BF6EC017D506E01000001 = {
+			isa = PBXFileReference;
+			path = startXClients;
+			refType = 4;
+		};
+		F54BF6ED017D506E01000001 = {
+			fileRef = F54BF6EC017D506E01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		F5582948015DAD3B01000001 = {
 			isa = PBXFileReference;
 			path = quartzCommon.h;
