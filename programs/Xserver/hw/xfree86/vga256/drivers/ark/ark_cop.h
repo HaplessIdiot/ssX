@@ -1,3 +1,4 @@
+/* $XFree86$ */
 
 /*
  * Definitions for ARK Logic coprocessor (COP).
