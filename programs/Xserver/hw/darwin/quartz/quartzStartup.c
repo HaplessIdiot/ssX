@@ -28,7 +28,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzStartup.c,v 1.7 2003/10/16 23:50:12 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzStartup.c,v 1.8 2003/11/05 00:15:00 torrey Exp $ */
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -88,10 +88,16 @@ void DarwinHandleGUI(
     argvGlobal = argv;
     envpGlobal = envp;
 
-    // Determine if we need to start X clients
-    // and what display mode to use
     quartzStartClients = 1;
     for (i = 1; i < argc; i++) {
+        // Display version info without starting Mac OS X UI if requested
+        if (!strcmp( argv[i], "-showconfig" ) || !strcmp( argv[i], "-version" )) {
+            DarwinPrintBanner();
+            exit(0);
+        }
+
+        // Determine if we need to start X clients
+        // and what display mode to use
         if (!strcmp(argv[i], "-nostartx")) {
             quartzStartClients = 0;    
         } else if (!strcmp( argv[i], "-fullscreen")) {
