@@ -21,7 +21,7 @@ DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
 OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/EVI.c,v 3.9 2001/10/28 03:32:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/EVI.c,v 3.10tsi Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -33,7 +33,9 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "EVIstruct.h"
 #include "modinit.h"
 
+#if 0
 static unsigned char XEVIReqCode = 0;
+#endif
 static EviPrivPtr eviPriv;
 
 static int
@@ -178,13 +180,19 @@ EVIResetProc(ExtensionEntry *extEntry)
 void
 EVIExtensionInit(INITARGS)
 {
+#if 0
     ExtensionEntry *extEntry;
+
     if ((extEntry = AddExtension(EVINAME, 0, 0,
 				ProcEVIDispatch,
 				SProcEVIDispatch,
-				EVIResetProc, StandardMinorOpcode)))
-    {
+				EVIResetProc, StandardMinorOpcode))) {
 	XEVIReqCode = (unsigned char)extEntry->base;
+#else
+    if (AddExtension(EVINAME, 0, 0,
+		     ProcEVIDispatch, SProcEVIDispatch,
+		     EVIResetProc, StandardMinorOpcode)) {
+#endif
 	eviPriv = eviDDXInit();
     }
 }

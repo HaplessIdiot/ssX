@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.38 2003/04/03 16:15:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.39tsi Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -104,7 +104,9 @@ static DISPATCH_PROC(SProcXF86MiscGetSaver);
 static DISPATCH_PROC(SProcXF86MiscSetSaver);
 #endif
 
+#if 0
 static unsigned char XF86MiscReqCode = 0;
+#endif
 
 #ifdef DEBUG
 # define DEBUG_P(x) ErrorF(x"\n");
@@ -150,7 +152,9 @@ XFree86MiscExtensionInit(void)
 				SProcXF86MiscDispatch,
 				XF86MiscResetProc,
 				StandardMinorOpcode))) {
+#if 0
 	XF86MiscReqCode = (unsigned char)extEntry->base;
+#endif
 	miscErrorBase = extEntry->errorBase;
     }
 }
@@ -363,7 +367,6 @@ ProcXF86MiscSetMouseSettings(client)
 		(int)stuff->resolution, (unsigned long)stuff->flags);
     }
 
-    
     if ((mouse = MiscExtCreateStruct(MISC_POINTER)) == (pointer) 0)
 	return BadAlloc;
 

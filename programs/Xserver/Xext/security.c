@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.11 2002/05/31 18:45:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.12tsi Exp $ */
 
 #include "dixstruct.h"
 #include "extnsionst.h"
@@ -143,6 +143,7 @@ SecurityDeleteAuthorization(
     assert(status);
     status = RemoveAuthorization(name_len, name, data_len, data);
     assert(status);
+    (void)status;
 
     /* free the auth timer if there is one */
 

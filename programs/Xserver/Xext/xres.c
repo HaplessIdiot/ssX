@@ -1,7 +1,7 @@
 /*
    Copyright (c) 2002  XFree86 Inc
 */
-/* $XFree86: xc/programs/Xserver/Xext/xres.c,v 1.6 2003/07/16 01:38:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xres.c,v 1.7tsi Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
@@ -27,6 +27,8 @@ ProcXResQueryVersion (ClientPtr client)
 
     client_major = stuff->client_major;
     client_minor = stuff->client_minor;
+    (void) client_major;
+    (void) client_minor;
 
     rep.type = X_Reply;
     rep.length = 0;
@@ -313,9 +315,7 @@ SProcResDispatch (ClientPtr client)
 void
 ResExtensionInit(INITARGS)
 {
-    ExtensionEntry *extEntry;
-
-    extEntry = AddExtension(XRES_NAME, 0, 0,
+    (void) AddExtension(XRES_NAME, 0, 0,
                             ProcResDispatch, SProcResDispatch,
                             ResResetProc, StandardMinorOpcode);
 

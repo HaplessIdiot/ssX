@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.55 2003/04/03 16:38:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.56tsi Exp $ */
 
 /*
 
@@ -112,8 +112,9 @@ static DISPATCH_PROC(SProcXF86VidModeGetGammaRamp);
 static DISPATCH_PROC(SProcXF86VidModeSetGammaRamp);
 static DISPATCH_PROC(SProcXF86VidModeGetGammaRampSize);
 
+#if 0
 static unsigned char XF86VidModeReqCode = 0;
-
+#endif
 
 /* The XF86VIDMODE_EVENTS code is far from complete */
 
@@ -217,7 +218,9 @@ XFree86VidModeExtensionInit(void)
 				SProcXF86VidModeDispatch,
 				XF86VidModeResetProc,
 				StandardMinorOpcode))) {
+#if 0
 	XF86VidModeReqCode = (unsigned char)extEntry->base;
+#endif
 	VidModeErrorBase = extEntry->errorBase;
 #ifdef XF86VIDMODE_EVENTS
 	XF86VidModeEventBase = extEntry->eventBase;

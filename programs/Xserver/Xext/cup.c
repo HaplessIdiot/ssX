@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/cup.c,v 1.10 2001/12/14 19:58:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/cup.c,v 1.11tsi Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -53,8 +53,10 @@ static int		ProcDispatch(ClientPtr client);
 static int              SProcDispatch(ClientPtr client);
 static void		ResetProc(ExtensionEntry* extEntry);
 
+#if 0
 static unsigned char	ReqCode = 0;
 static int		ErrorBase;
+#endif
 
 #if defined(WIN32) || defined(TESTWIN32)
 #define HAVE_SPECIAL_DESKTOP_COLORS
@@ -128,6 +130,7 @@ static xColorItem citems[] = {
 void
 XcupExtensionInit (INITARGS)
 {
+#if 0
     ExtensionEntry* extEntry;
 
     if ((extEntry = AddExtension (XCUPNAME,
@@ -140,6 +143,15 @@ XcupExtensionInit (INITARGS)
 	ReqCode = (unsigned char)extEntry->base;
 	ErrorBase = extEntry->errorBase;
     }
+#else
+    (void) AddExtension (XCUPNAME,
+			0,
+			XcupNumberErrors,
+			ProcDispatch,
+			SProcDispatch,
+			ResetProc,
+			StandardMinorOpcode);
+#endif
 
     /* PC servers initialize the desktop colors (citems) here! */
 }

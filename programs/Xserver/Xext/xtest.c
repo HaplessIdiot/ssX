@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/xtest.c,v 3.8 2003/07/11 18:09:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xtest.c,v 3.9tsi Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -55,7 +55,9 @@ from The Open Group.
 
 #include "modinit.h"
 
+#if 0
 static unsigned char XTestReqCode;
+#endif
 
 #ifdef XINPUT
 extern int DeviceValuator;
@@ -92,12 +94,18 @@ static DISPATCH_PROC(SProcXTestGrabControl);
 void
 XTestExtensionInit(INITARGS)
 {
+#if 0
     ExtensionEntry *extEntry;
 
     if ((extEntry = AddExtension(XTestExtensionName, 0, 0,
 				 ProcXTestDispatch, SProcXTestDispatch,
 				 XTestResetProc, StandardMinorOpcode)) != 0)
 	XTestReqCode = (unsigned char)extEntry->base;
+#else
+    (void) AddExtension(XTestExtensionName, 0, 0,
+			ProcXTestDispatch, SProcXTestDispatch,
+			XTestResetProc, StandardMinorOpcode);
+#endif
 }
 
 /*ARGSUSED*/
@@ -393,7 +401,7 @@ ProcXTestFakeInput(client)
 	    int       i;
 	    int       x = ev->u.keyButtonPointer.rootX + panoramiXdataPtr[0].x;
 	    int       y = ev->u.keyButtonPointer.rootY + panoramiXdataPtr[0].y;
-	    if (!POINT_IN_REGION(root, &XineramaScreenRegions[pScreen->myNum],
+	    if (!POINT_IN_REGION(pScreen, &XineramaScreenRegions[pScreen->myNum],
 				 x, y, &box)) {
 		FOR_NSCREENS(i) {
 		    if (i == pScreen->myNum) continue;

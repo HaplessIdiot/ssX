@@ -52,7 +52,7 @@ Telephone and Telegraph Company or of the Regents of the
 University of California.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/xtest1dd.c,v 3.4 2001/08/23 13:01:36 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xtest1dd.c,v 3.5tsi Exp $ */
 
 /***************************************************************
  * include files
@@ -158,11 +158,6 @@ static xTestInputActionEvent	input_action_packet;
  */
 static int 			packet_index;
 /*
- * set to 1 when the input action event is full and needs to be sent to the 
- * client
- */
-static int			input_action_event_full = 0;
-/*
  * logical x position of the mouse during input action gathering
  */
 short				xtest_mousex;
@@ -170,14 +165,6 @@ short				xtest_mousex;
  * logical y position of the mouse during input action gathering
  */
 short				xtest_mousey;
-/*
- * logical x position of the mouse during input action playback
- */
-static short			mx;
-/*
- * logical y position of the mouse during input action playback
- */
-static short			my;
 /*
  * logical x position of the mouse while we are reading fake input actions
  * from the client and putting them into the fake input action array
@@ -471,7 +458,6 @@ flush_input_actions()
 	/*
 	 * re-initialize the input action event
 	 */
-	input_action_event_full = 0;
 	input_action_packet.type = XTestInputActionType;
  	packet_index = 0;
 }	
@@ -690,7 +676,6 @@ int	actsize;
 {
 	if ((packet_index + actsize) > XTestACTIONS_SIZE)
 	{ 
-		input_action_event_full = 1;
 		return(0);
 	}
 	else
@@ -1316,8 +1301,6 @@ int mousex, mousey;
 					action_array[read_index].x, 
 					action_array[read_index].y, 
 					action_array[read_index].device);
-				mx = action_array[read_index].x;
-				my = action_array[read_index].y;
 			}
 			if (action_array[read_index].type == XTestKEY_ACTION)
 			    {

@@ -27,7 +27,7 @@ in this Software without prior written authorization from the X Consortium.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/Xserver/Xext/saver.c,v 3.5 2003/03/23 04:56:02 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/saver.c,v 3.6tsi Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -60,7 +60,9 @@ in this Software without prior written authorization from the X Consortium.
 
 #include "modinit.h"
 
+#if 0
 static unsigned char ScreenSaverReqCode = 0;
+#endif
 static int ScreenSaverEventBase = 0;
 
 extern DISPATCH_PROC(ProcScreenSaverQueryInfo);
@@ -269,7 +271,9 @@ ScreenSaverExtensionInit(INITARGS)
 				 ProcScreenSaverDispatch, SProcScreenSaverDispatch,
 				 ScreenSaverResetProc, StandardMinorOpcode)))
     {
+#if 0
 	ScreenSaverReqCode = (unsigned char)extEntry->base;
+#endif
 	ScreenSaverEventBase = extEntry->eventBase;
 	EventSwapVector[ScreenSaverEventBase] = (EventSwapPtr) SScreenSaverNotifyEvent;
     }
@@ -468,7 +472,6 @@ SendScreenSaverNotify (pScreen, state, forced)
     xScreenSaverNotifyEvent	ev;
     ClientPtr			client;
     int				kind;
-    ScreenSaverStuffPtr		pSaver;
 
     UpdateCurrentTimeIf ();
     mask = ScreenSaverNotifyMask;
@@ -478,7 +481,6 @@ SendScreenSaverNotify (pScreen, state, forced)
     pPriv = GetScreenPrivate(pScreen);
     if (!pPriv)
 	return;
-    pSaver = &savedScreenInfo[pScreen->myNum];
     if (pPriv->attr)
 	kind = ScreenSaverExternal;
     else if (ScreenSaverBlanking != DontPreferBlanking)
@@ -839,7 +841,6 @@ ScreenSaverSetAttributes (ClientPtr client)
     WindowOptPtr		ancwopt;
     unsigned long		*pVlist;
     unsigned long		*values = 0;
-    int				valuei;
     unsigned long		tmask, imask;
     unsigned long		val;
     Pixmap			pixID;
@@ -967,7 +968,6 @@ ScreenSaverSetAttributes (ClientPtr client)
 	ret = BadAlloc;
 	goto bail;
     }
-    valuei = 0;
     pAttr->screen = pScreen;
     pAttr->client = client;
     pAttr->x = stuff->x;

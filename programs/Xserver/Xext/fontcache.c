@@ -27,7 +27,7 @@
  *
  *	Id: fontcache.c,v 1.12 1999/01/31 13:47:45 akiyama Exp $
  */
-/* $XFree86: xc/programs/Xserver/Xext/fontcache.c,v 1.5 2000/02/23 20:29:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/fontcache.c,v 1.6tsi Exp $ */
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
@@ -68,8 +68,9 @@ static DISPATCH_PROC(SProcFontCacheGetCacheStatistics);
 static DISPATCH_PROC(SProcFontCacheQueryVersion);
 static DISPATCH_PROC(SProcFontCacheChangeCacheSettings);
 
+#if 0
 static unsigned char FontCacheReqCode = 0;
-
+#endif
 
 void
 FontCacheExtensionInit(INITARGS)
@@ -84,7 +85,9 @@ FontCacheExtensionInit(INITARGS)
 				SProcFontCacheDispatch,
 				FontCacheResetProc,
 				StandardMinorOpcode))) {
+#if 0
 	FontCacheReqCode = (unsigned char)extEntry->base;
+#endif
 	miscErrorBase = extEntry->errorBase;
     }
 }

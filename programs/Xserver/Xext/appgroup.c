@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/appgroup.c,v 1.9 2001/12/17 20:52:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/appgroup.c,v 1.10tsi Exp $ */
 /*
 Copyright 1996, 1998, 2001  The Open Group
 
@@ -73,8 +73,10 @@ static int		ProcXagDispatch(ClientPtr client);
 static int              SProcXagDispatch(ClientPtr client);
 static void		XagResetProc(ExtensionEntry* extEntry);
 
+#if 0
 static unsigned char	XagReqCode = 0;
 static int		XagErrorBase;
+#endif
 static int		XagCallbackRefCount = 0;
 
 static RESTYPE		RT_APPGROUP;
@@ -224,6 +226,7 @@ void XagClientStateChange(
 void
 XagExtensionInit(INITARGS)
 {
+#if 0
     ExtensionEntry* extEntry;
 
     if ((extEntry = AddExtension (XAGNAME,
@@ -235,6 +238,15 @@ XagExtensionInit(INITARGS)
 				StandardMinorOpcode))) {
 	XagReqCode = (unsigned char)extEntry->base;
 	XagErrorBase = extEntry->errorBase;
+#else
+    if (AddExtension (XAGNAME,
+		      0,
+		      XagNumberErrors,
+		      ProcXagDispatch,
+		      SProcXagDispatch,
+		      XagResetProc,
+		      StandardMinorOpcode)) {
+#endif
 	RT_APPGROUP = CreateNewResourceType (XagAppGroupFree);
     }
 }

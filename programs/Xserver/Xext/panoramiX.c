@@ -23,7 +23,7 @@ shall not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from Digital
 Equipment Corporation.
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.35 2003/07/16 01:38:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.36tsi Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -53,8 +53,9 @@ Equipment Corporation.
 #include "modinit.h"
 
 
+#if 0
 static unsigned char PanoramiXReqCode = 0;
-
+#endif
 /*
  *	PanoramiX data declarations
  */
@@ -450,7 +451,10 @@ void PanoramiXExtensionInit(int argc, char *argv[])
 	    ErrorF("PanoramiXExtensionInit(): failed to AddExtension\n");
 	    break;
  	}
+
+#if 0
 	PanoramiXReqCode = (unsigned char)extEntry->base;
+#endif
 
 	/*
 	 *	First make sure all the basic allocations succeed.  If not,
@@ -613,7 +617,6 @@ Bool PanoramiXCreateConnectionBlock(void)
     int old_width, old_height;
     float width_mult, height_mult;
     xWindowRoot *root;
-    xConnSetup *setup;
     xVisualType *visual;
     xDepth *depth;
     VisualPtr pVisual;
@@ -659,7 +662,6 @@ Bool PanoramiXCreateConnectionBlock(void)
 
     screenInfo.numScreens = i;
     
-    setup = (xConnSetup *) ConnectionInfo;
     root = (xWindowRoot *) (ConnectionInfo + connBlockScreenStart);
     length = connBlockScreenStart + sizeof(xWindowRoot);
 

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvmain.c,v 1.14 2003/07/16 01:38:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvmain.c,v 1.15tsi Exp $ */
 
 /*
 ** File: 
@@ -614,7 +614,6 @@ XvdiPutVideo(
    INT16 drw_x, INT16 drw_y,
    CARD16 drw_w, CARD16 drw_h
 ){
-  int status;
   DrawablePtr pOldDraw;
 
   CHECK_SIZE(drw_w, drw_h, vid_w, vid_h);
@@ -641,7 +640,7 @@ XvdiPutVideo(
       XvdiSendVideoNotify(pPort, pPort->pDraw, XvPreempted);
     }
 
-  status = (* pPort->pAdaptor->ddPutVideo)(client, pDraw, pPort, pGC, 
+  (void) (* pPort->pAdaptor->ddPutVideo)(client, pDraw, pPort, pGC,
 					   vid_x, vid_y, vid_w, vid_h, 
 					   drw_x, drw_y, drw_w, drw_h);
 
@@ -745,7 +744,6 @@ XvdiGetVideo(
    INT16 drw_x, INT16 drw_y,
    CARD16 drw_w, CARD16 drw_h
 ){
-  int status;
   DrawablePtr pOldDraw;
 
   CHECK_SIZE(drw_w, drw_h, vid_w, vid_h);
@@ -772,7 +770,7 @@ XvdiGetVideo(
       XvdiSendVideoNotify(pPort, pPort->pDraw, XvPreempted);
     }
 
-  status = (* pPort->pAdaptor->ddGetVideo)(client, pDraw, pPort, pGC,
+  (void) (* pPort->pAdaptor->ddGetVideo)(client, pDraw, pPort, pGC,
 					   vid_x, vid_y, vid_w, vid_h, 
 					   drw_x, drw_y, drw_w, drw_h);
 

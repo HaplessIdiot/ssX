@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/bigreq.c,v 3.6 2003/07/04 16:24:24 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/bigreq.c,v 3.7tsi Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -39,7 +39,9 @@ from The Open Group.
 #include "opaque.h"
 #include "modinit.h"
 
+#if 0
 static unsigned char XBigReqCode;
+#endif
 
 static void BigReqResetProc(
 #if NeedFunctionPrototypes
@@ -52,12 +54,19 @@ static DISPATCH_PROC(ProcBigReqDispatch);
 void
 BigReqExtensionInit(INITARGS)
 {
+#if 0
     ExtensionEntry *extEntry;
 
     if ((extEntry = AddExtension(XBigReqExtensionName, 0, 0,
 				 ProcBigReqDispatch, ProcBigReqDispatch,
 				 BigReqResetProc, StandardMinorOpcode)) != 0)
 	XBigReqCode = (unsigned char)extEntry->base;
+#else
+    (void) AddExtension(XBigReqExtensionName, 0, 0,
+			ProcBigReqDispatch, ProcBigReqDispatch,
+			BigReqResetProc, StandardMinorOpcode);
+#endif
+
     DeclareExtensionSecurity(XBigReqExtensionName, TRUE);
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shape.c,v 3.16 2001/12/14 19:58:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shape.c,v 3.17tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -135,7 +135,9 @@ static DISPATCH_PROC(SProcShapeSelectInput);
 #include "panoramiXsrv.h"
 #endif
 
+#if 0
 static unsigned char ShapeReqCode = 0;
+#endif
 static int ShapeEventBase = 0;
 static RESTYPE ClientType, EventType; /* resource types for event masks */
 
@@ -176,7 +178,9 @@ ShapeExtensionInit(INITARGS)
 				 ProcShapeDispatch, SProcShapeDispatch,
 				 ShapeResetProc, StandardMinorOpcode)))
     {
+#if 0
 	ShapeReqCode = (unsigned char)extEntry->base;
+#endif
 	ShapeEventBase = extEntry->eventBase;
 	EventSwapVector[ShapeEventBase] = (EventSwapPtr) SShapeNotifyEvent;
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/mitmisc.c,v 3.4 2001/12/14 19:58:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/mitmisc.c,v 3.5tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -42,7 +42,9 @@ in this Software without prior written authorization from The Open Group.
 
 extern Bool permitOldBugs;
 
+#if 0
 static unsigned char MITReqCode;
+#endif
 
 static void MITResetProc(
 #if NeedFunctionPrototypes
@@ -60,12 +62,18 @@ static DISPATCH_PROC(SProcMITSetBugMode);
 void
 MITMiscExtensionInit(INITARGS)
 {
+#if 0
     ExtensionEntry *extEntry;
 
     if ((extEntry = AddExtension(MITMISCNAME, 0, 0,
 				 ProcMITDispatch, SProcMITDispatch,
 				 MITResetProc, StandardMinorOpcode)) != 0)
 	MITReqCode = (unsigned char)extEntry->base;
+#else
+    (void) AddExtension(MITMISCNAME, 0, 0,
+			ProcMITDispatch, SProcMITDispatch,
+			MITResetProc, StandardMinorOpcode);
+#endif
 }
 
 /*ARGSUSED*/

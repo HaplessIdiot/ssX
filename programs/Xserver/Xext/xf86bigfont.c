@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86bigfont.c,v 1.15 2003/10/02 13:29:38 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86bigfont.c,v 1.16tsi Exp $ */
 /*
  * BIGFONT extension for sharing font metrics between clients (if possible)
  * and for transmitting font metrics to clients in a compressed form.
@@ -85,7 +85,9 @@ static DISPATCH_PROC(SProcXF86BigfontDispatch);
 static DISPATCH_PROC(SProcXF86BigfontQueryVersion);
 static DISPATCH_PROC(SProcXF86BigfontQueryFont);
 
+#if 0
 static unsigned char XF86BigfontReqCode;
+#endif
 
 #ifdef HAS_SHM
 
@@ -146,6 +148,7 @@ CheckForShmSyscall(void)
 void
 XFree86BigfontExtensionInit()
 {
+#if 0
     ExtensionEntry* extEntry;
 
     if ((extEntry = AddExtension(XF86BIGFONTNAME,
@@ -156,6 +159,15 @@ XFree86BigfontExtensionInit()
 				 XF86BigfontResetProc,
 				 StandardMinorOpcode))) {
 	XF86BigfontReqCode = (unsigned char) extEntry->base;
+#else
+    if (AddExtension(XF86BIGFONTNAME,
+		     XF86BigfontNumberEvents,
+		     XF86BigfontNumberErrors,
+		     ProcXF86BigfontDispatch,
+		     SProcXF86BigfontDispatch,
+		     XF86BigfontResetProc,
+		     StandardMinorOpcode)) {
+#endif
 #ifdef HAS_SHM
 #ifdef MUST_CHECK_FOR_SHM_SYSCALL
 	/*
