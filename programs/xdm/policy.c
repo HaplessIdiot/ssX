@@ -33,10 +33,12 @@ from The Open Group.
  *
  * policy.c.  Implement site-dependent policy for XDMCP connections
  */
-/* $XFree86: xc/programs/xdm/policy.c,v 3.5 2001/01/17 23:45:21 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/policy.c,v 3.6 2001/12/14 20:01:22 dawes Exp $ */
 
 # include "dm.h"
 # include "dm_auth.h"
+
+#include <errno.h>
 
 #ifdef XDMCP
 
@@ -134,10 +136,16 @@ Willing (
     else
     {
         if (*willing)
-	{   FILE *fd;
-	    if ((fd = popen(willing, "r")) && fgets(statusBuf, 256, fd))
+	{   FILE *fd = NULL;
+	    if ((fd = popen(willing, "r")))
 	    {
-	        statusBuf[strlen(statusBuf)-1] = 0; /* chop newline */
+		char *s = NULL;
+		while(!(s = fgets(statusBuf, 256, fd)) && errno == EINTR)
+			;
+		if(s)
+			statusBuf[strlen(statusBuf)-1] = 0; /* chop newline */
+		else
+			sprintf (statusBuf, "Willing, but %s failed",willing);
 	    }
 	    else
 	        sprintf (statusBuf, "Willing, but %s failed",willing);
