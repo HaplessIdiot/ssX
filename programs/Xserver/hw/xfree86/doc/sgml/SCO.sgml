@@ -192,7 +192,7 @@ for shared libraries and setup formatted man pages using compression. The
 most likely Parameters you will be interested in changing are:
 <enum>
 <item>  What Fonts etc get compiled.
-<item>  What gets installed (<tt>XdmConfig, FSConfig</tt>, ...)
+<item>  What gets installed (<tt>XdmConfig, FSConfig</tt>, &hellip)
 </enum>
 Use gcc, preferably 2.5.8 or later but an earlier version may still do the job.
 Configure it with "<tt>./configure i386-*-sco</tt>".<p>
@@ -582,6 +582,6 @@ for providing an
 ftp site for the binary distribution.
 
 <verb>  
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.3 1995/01/21 07:16:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.4 1995/01/21 10:44:32 dawes Exp $
 </verb>
 </article>

@@ -413,7 +413,7 @@ There are two ways to allow XFree86 to access linear memory:
       <item> find out what major device number will be allocated to you by
          modload. Modload allocates major numbers beginning at <bf/29/. So if
          ``<tt/ap/'' is your only device driver module, it will have major
-         number 29. If it's the third, it will be 31...
+         number 29. If it's the third, it will be 31&hellip;
 
        <item> goto the <tt>/dev</tt> directory and type: ``<tt/mknod
        xf86 c 29 0/'' (replace 29 by the appropriate value if you load
@@ -629,7 +629,7 @@ and many others.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.5 1995/01/21 07:16:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.6 1995/01/21 10:44:26 dawes Exp $
 </verb>
 
 </article>

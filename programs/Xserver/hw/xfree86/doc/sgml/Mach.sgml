@@ -68,7 +68,7 @@ minor.  The value you set the minor to is computed by the formula:<p>
 <quote>
 	&lt type &gt * 8 + &lt com port &gt
 </quote>
-&lt com port &gt is 0, or 1 or ... depending on which com port you plug your
+&lt com port &gt is 0, or 1 or &hellip; depending on which com port you plug your
 mouse into.  (Some architectures prefer to make com0 the modem line.)<p>
 <quote>
 &lt type &gt is:<p>
@@ -87,7 +87,7 @@ represents an up click for the mouse button.  Then the up down, right,
 left, arrow keys actually move the mouse AND if you have a standard
 pad with home, pageup, end, and pagedown filling in the square around
 the up, down, right, and left arrow keys then the former set do the
-obvious and move the mouse along the diagonals.  Try it ...
+obvious and move the mouse along the diagonals.  Try it &hellip;
 Note: whereas most notebooks these days do have an integral mouse, they
 typically provide only two buttons.  Thus this feature still is useful
 for just using F1, F2, and F3 for accessing three mouse buttons.<p>
@@ -131,7 +131,7 @@ the same set of binaries which were developed from the BSD4.3 Tahoe
 release.  (Note the Mt.Xinu system uses a later "generation" of
 application programs.  Lastly, the environment used internally at CMU 
 is still different from what is distributed externally.  This environment
-supports AFS and Kerberos and ...)  The CMU Tahoe environment uses a
+supports AFS and Kerberos and &hellip;)  The CMU Tahoe environment uses a
 gcc 1.36 compiler with a bsd derived cpp (not __STDC__); the Mt.Xinu
 system uses gcc 1.37.<p>
 
@@ -171,7 +171,7 @@ necessary for Mach is that the X servers be able to open <tt>/dev/iopl</tt>
 read/write.  There are many ways to achieve this effect.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach.sgml,v 3.1 1994/12/26 11:03:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach.sgml,v 3.2 1995/01/21 10:44:24 dawes Exp $
 </verb>
 
 </article>

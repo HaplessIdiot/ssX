@@ -173,7 +173,7 @@ Due to its untested nature, much of it is disabled.  A define at the top of
 <sect> Supported Cards <p> 
 
 <sect1> Diamond Viper VLB <p>
- All Viper VLB's should work with this server, hopefully....  :-) Due
+ All Viper VLB's should work with this server, hopefully&hellip;  :-) Due
 to Diamond's putting the same BIOS in some Viper VLB's as are used in
 Viper PCI's, the probe may detect you have a Viper PCI when you really
 have a Viper VLB.  If this happens, put <tt>chipset "vipervlb"</tt>
@@ -244,7 +244,7 @@ starting the server.  Examples:
 </verb>
 Note that many programs do not yet work properly with these modes.
 Don't tell me.  Tell the authors unless they've already fixed it.
-It's their fault...  :-)
+It's their fault&hellip  :-)
 
 Example problems:
 <descrip>
@@ -414,7 +414,7 @@ During the course of the next few months, people will be working on
 acceleration, etc.  Please send any patches to me (<it>nygren@mit.edu</it>).
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.5 1995/01/21 07:16:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.6 1995/01/21 10:44:27 dawes Exp $
 </verb>
 
 </article>

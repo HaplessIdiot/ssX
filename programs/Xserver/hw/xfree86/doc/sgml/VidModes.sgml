@@ -558,7 +558,7 @@ actually cause the image to roll like a TV with a mis-adjusted vertical hold
 (in fact, it's the same phenomenon at work).
 
 If you're lucky, your monitor's sync pulse widths will be documented on its
-specification page.  If not, here's where the real black magic starts...
+specification page.  If not, here's where the real black magic starts&hellip
 
 You'll have to do a little trial and error for this part.  But most of the
 time, we can safely assume that a sync pulse is about 3.5 to 4.0 microsecond
@@ -871,7 +871,7 @@ By rounding up (never down) to 6 lines/pulse we now have the vertical sync
 pulse width.
 
 To guess at the total number of lines per frame (illuminated lines plus
-nonilluminated lines in the border) we assume (from "Videotiming...") that the
+nonilluminated lines in the border) we assume (from "Videotiming&hellip") that the
 total number of lines will be 5&percnt more than the number of viewable lines.  So
 the total number of lines is
 
@@ -971,11 +971,11 @@ line is okay for starters.
 
 The numbers to enter on the Xconfig line so far are
 
-	"800x?"  40  800 (800+32) (800+32+160) (800+32+160+144)...
+	"800x?"  40  800 (800+32) (800+32+160) (800+32+160+144)&hellip
 
 				or
 
-	"800x?"  40  800 832 992 1136...
+	"800x?"  40  800 832 992 1136&hellip
 
 
 A line of 1136 dots at .025 microsecond/dot means that a line
@@ -1087,7 +1087,7 @@ Example:
 <p>
 
 OK, so you've got your X configuration numbers.  You put them in Xconfig with
-a test mode label.  You fire up X, hot-key to the new mode, ... and the image
+a test mode label.  You fire up X, hot-key to the new mode, &hellip and the image
 doesn't look right.  What do you do?  Here's a list of common problems and how
 to fix them.
 
@@ -1146,7 +1146,7 @@ Finally, remember that increasing either frame length will decrease your
 refresh rate, and vice-versa.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VidModes.sgml,v 3.2 1995/01/21 07:16:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VidModes.sgml,v 3.3 1995/01/21 10:44:37 dawes Exp $
 </verb>
 
 </article>
