@@ -70,6 +70,8 @@
 *
 ****************************************************************************/
 
+/* $XFree86$ */
+
 #include "x86emu/x86emui.h"
 
 /*----------------------------- Implementation ----------------------------*/
@@ -6552,9 +6554,11 @@ void x86emuOp_lea_word_R_M(u8 X86EMU_UNUSED(op1))
     u16 *srcreg;
     uint destoffset;
 
-// TODO: Need to handle address size prefix!
-//
-// lea  eax,[eax+ebx*2] ??
+/*
+ * TODO: Need to handle address size prefix!
+ *
+ * lea  eax,[eax+ebx*2] ??
+ */
 
     START_OF_INSTR();
     DECODE_PRINTF("LEA\t");

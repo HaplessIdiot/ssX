@@ -36,10 +36,14 @@
 *
 ****************************************************************************/
 
+/* $XFree86$ */
+
 #ifndef __X86EMU_TYPES_H
 #define __X86EMU_TYPES_H
 
+#ifndef IN_MODULE
 #include <sys/types.h>
+#endif
 
 /*---------------------- Macros and type definitions ----------------------*/
 
@@ -62,7 +66,7 @@ typedef long 				s32;
 typedef long long 			s64;
 #endif
 
-/*typedef unsigned int		uint;*/
+typedef unsigned int			uint;
 typedef int 				sint;
 
 typedef u16 X86EMU_pioAddr;
