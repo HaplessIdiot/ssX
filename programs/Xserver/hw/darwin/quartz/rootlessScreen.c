@@ -6,7 +6,7 @@
  * February 2001  Created
  * March 3, 2001  Restructured as generic rootless mode
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessScreen.c,v 1.5 2001/12/22 05:28:35 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessScreen.c,v 1.1 2002/03/28 02:21:19 torrey Exp $ */
 
 
 #include "mi.h"
@@ -285,57 +285,6 @@ RootlessMarkOverlappedWindows(WindowPtr pWin, WindowPtr pFirst,
     SCREEN_WRAP(pScreen, MarkOverlappedWindows);
     RL_DEBUG_MSG("MARKOVERLAPPEDWINDOWS end\n");
     return result;
-}
-
-
-static void
-RootlessPaintWindowBackground(WindowPtr pWin, RegionPtr pRegion, int what)
-{
-    int oldBackgroundState = 0;
-    PixUnion oldBackground;
-    ScreenPtr pScreen = pWin->drawable.pScreen;
-
-    SCREEN_UNWRAP(pScreen, PaintWindowBackground);
-    RL_DEBUG_MSG("paintwindowbackground start (win 0x%x) ", pWin);
-    if (IsFramedWindow(pWin)) {
-        if (IsRoot(pWin)) {
-            // set root background to magic transparent color
-            oldBackgroundState = pWin->backgroundState;
-            oldBackground = pWin->background;
-            pWin->backgroundState = BackgroundPixel;
-            pWin->background.pixel = 0x00fffffe;
-        }
-        RootlessStartDrawing(pWin);
-    }
-
-    pScreen->PaintWindowBackground(pWin, pRegion, what);
-
-    if (IsFramedWindow(pWin)) {
-        RootlessDamageRegion(pWin, pRegion);
-        if (IsRoot(pWin)) {
-            pWin->backgroundState = oldBackgroundState;
-            pWin->background = oldBackground;
-        }
-    }
-    SCREEN_WRAP(pScreen, PaintWindowBackground);
-    RL_DEBUG_MSG("paintwindowbackground end\n");
-}
-
-
-static void
-RootlessPaintWindowBorder(WindowPtr pWin, RegionPtr pRegion, int what)
-{
-    SCREEN_UNWRAP(pWin->drawable.pScreen, PaintWindowBorder);
-    RL_DEBUG_MSG("paintwindowborder start (win 0x%x) ", pWin);
-    if (IsFramedWindow(pWin)) {
-        RootlessStartDrawing(pWin);
-    }
-    pWin->drawable.pScreen->PaintWindowBorder(pWin, pRegion, what);
-    if (IsFramedWindow(pWin)) {
-        RootlessDamageRegion(pWin, pRegion);
-    }
-    SCREEN_WRAP(pWin->drawable.pScreen, PaintWindowBorder);
-    RL_DEBUG_MSG("paintwindowborder end\n");
 }
 
 

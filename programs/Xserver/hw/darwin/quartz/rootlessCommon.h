@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessCommon.h,v 1.5 2001/12/22 05:28:35 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessCommon.h,v 1.1 2002/03/28 02:21:19 torrey Exp $ */
 
 #ifndef _ROOTLESSCOMMON_H
 #define _ROOTLESSCOMMON_H
@@ -45,6 +45,7 @@ typedef struct RootlessWindowRec {
     RegionRec damage;
     unsigned int borderWidth; // needed for MoveWindow(VTOther) (%$#@!!!)
     PixmapPtr pixmap;
+    PixmapPtr oldPixmap;
     BOOL drawing;       // TRUE if currently drawing
 #ifdef SHAPE
     BOOL shapeDamage;   // TRUE if shape has changed
