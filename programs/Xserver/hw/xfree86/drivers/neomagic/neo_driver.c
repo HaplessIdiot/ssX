@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.32 2000/09/19 12:46:17 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.34 2000/10/06 15:50:30 eich Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -1447,6 +1447,7 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 	miInitializeBackingStore(pScreen);
 	xf86SetBackingStore(pScreen);
+        xf86SetSilkenMouse(pScreen);
 
 	/* Initialise cursor functions */
 	miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
@@ -1514,6 +1515,7 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     
 	miInitializeBackingStore(pScreen);
 	xf86SetBackingStore(pScreen);
+        xf86SetSilkenMouse(pScreen);
 	
 	/* Initialise cursor functions */
 	miDCInitialize (pScreen, xf86GetPointerScreenFuncs());

@@ -11,7 +11,7 @@
  *    Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.13 2000/09/19 12:46:16 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.14 2000/09/22 11:12:32 alanh Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -1659,6 +1659,8 @@ AlpScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	 * Set initial black & white colourmap indices.
 	 */
 	xf86SetBlackWhitePixels(pScreen);
+
+        xf86SetSilkenMouse(pScreen);
 
 	/* Initialise cursor functions */
 	miDCInitialize(pScreen, xf86GetPointerScreenFuncs());

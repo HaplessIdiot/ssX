@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.70 2000/08/08 08:58:07 eich Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.72 2000/09/19 12:46:20 eich Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2124,6 +2124,7 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
 
     miInitializeBackingStore(pScreen);
+    xf86SetSilkenMouse(pScreen);
     /* Initialise cursor functions */
     miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 

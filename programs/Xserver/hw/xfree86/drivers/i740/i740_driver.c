@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.23 2000/09/19 12:46:16 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.24 2000/09/26 15:57:11 tsi Exp $ */
 
 /*
  * Authors:
@@ -1521,6 +1521,7 @@ I740ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
   miInitializeBackingStore(pScreen);
   xf86SetBackingStore(pScreen);
+  xf86SetSilkenMouse(pScreen);
 
   miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 

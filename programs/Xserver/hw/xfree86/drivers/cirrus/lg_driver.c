@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.29 2000/05/18 23:46:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.31 2000/08/04 16:13:30 eich Exp $ */
 
 #define EXPERIMENTAL
 
@@ -1511,6 +1511,8 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		if (!LgXAAInit(pScreen))
 			xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Could not initialize XAA\n");
 	}
+
+        xf86SetSilkenMouse(pScreen);
 
 	/* Initialise cursor functions */
 	miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
