@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.42 1998/09/26 08:34:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.43 1998/10/05 13:23:15 dawes Exp $ */
 
 /*
  *
@@ -185,7 +185,6 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86AddControlledResource)
    SYMFUNC(xf86DelControlledResource)
    SYMFUNC(xf86EnableAccess)
-   SYMFUNC(xf86EnablePrimaryDevice)
    SYMFUNC(xf86IsPrimaryPci)
    SYMFUNC(xf86IsPrimaryIsa)
    SYMFUNC(xf86CheckPciGAType)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.10 1998/09/26 08:34:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.11 1998/10/05 13:23:13 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -504,7 +504,7 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
         return FALSE;
 
     if (!xf86LoadSubModule(pScreenInfo, "rac")){
-        CHIPSFreeRec(pScreenInfo);
+        GenericFreeRec(pScreenInfo);
 	return FALSE;
     }
 

@@ -1,6 +1,6 @@
 /* (c) Itai Nahshon */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_i2c.c,v 1.1 1998/09/05 06:36:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_i2c.c,v 1.2 1998/10/05 13:23:08 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -41,16 +41,15 @@ CIRI2CSwitchToBus(I2CBusPtr b) {
 
 static void
 CIRI2CPutBits(I2CBusPtr b, int clock,  int data) {
-    unsigned int reg = 0;
+    unsigned int reg = 0xfc;
     
     if(!CIRI2CSwitchToBus(b))
-        return /*FALSE*/;
+        return;
 
     if(clock) reg |= 1;
     if(data)  reg |= 2;
     outw(0x3C4, (reg << 8) | 0x08);
     /* ErrorF("CIRI2CPutBits: %d %d\n", clock, data); */
-    return /*TRUE*/;
 }
 
 static void
@@ -58,14 +57,13 @@ CIRI2CGetBits(I2CBusPtr b, int *clock, int *data) {
     unsigned int reg;
 
     if(!CIRI2CSwitchToBus(b))
-        return /*FALSE*/;
+        return;
 
     outb(0x3C4, 0x08);
     reg = inb(0x3C5);
     *clock = (reg & 0x04) != 0;
     *data  = (reg & 0x80) != 0;
     /* ErrorF("CIRI2CGetBits: %d %d\n", *clock, *data); */
-    return /*TRUE*/;
 }
 
 Bool 
@@ -85,6 +83,7 @@ CIRI2CInit(ScreenPtr pScreen)
     pCir->I2CPtr1 = I2CPtr;
 
     I2CPtr->BusName    = "I2C bus 1";
+    I2CPtr->scrnIndex  = pScrn->scrnIndex;
     I2CPtr->I2CPutBits = CIRI2CPutBits;
     I2CPtr->I2CPutBits = CIRI2CPutBits;
     I2CPtr->I2CGetBits = CIRI2CGetBits;
@@ -99,6 +98,7 @@ CIRI2CInit(ScreenPtr pScreen)
     pCir->I2CPtr2 = I2CPtr;
 
     I2CPtr->BusName    = "I2C bus 2";
+    I2CPtr->scrnIndex  = pScrn->scrnIndex;
     I2CPtr->I2CPutBits = CIRI2CPutBits;
     I2CPtr->I2CGetBits = CIRI2CGetBits;
     I2CPtr->DriverPrivate.ptr = pCir;

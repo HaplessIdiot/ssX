@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.7 1998/09/26 13:24:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.8 1998/10/05 13:23:10 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -567,7 +567,7 @@ MGAGRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	int i;
 	MGAPtr pMga = MGAPTR(pScrn);
 
-	MGAReset(pMga);
+	MGAGReset(pMga);
 
 	/*
 	 * Code is needed to get things back to bank zero.
