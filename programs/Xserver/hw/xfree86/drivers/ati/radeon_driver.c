@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.124 2004/07/25 20:49:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.125 2004/08/04 21:03:14 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1814,12 +1814,12 @@ static Bool RADEONGetPLLParameters(ScrnInfoPtr pScrn)
 		case PCI_CHIP_RV200_QW:
 		    pll->reference_freq = 2700;
 		    pll->reference_div  = 12;
+		    pll->xclk           = 23000;
+		    break;
 		case PCI_CHIP_RADEON_LW: /* Guess based on iBook OpenFirmware */
 		    pll->reference_freq = 2700;
 		    pll->reference_div  = 12;
 		    pll->xclk           = 36000;
-		    break;
-		    pll->xclk           = 23000;
 		    break;
 		default:
 		    pll->reference_freq = 2700;
