@@ -1,10 +1,15 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/dmx/Imakefile,v 1.1 2004/06/30 20:21:38 martin Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/dmx/Imakefile,v 1.2 2004/07/02 15:14:49 alanh Exp $
 
 #include <Server.tmpl>
 
+#if BuildXinerama
+PANORAMIX_SRCS = panoramiX.c
+PANORAMIX_OBJS = panoramiX.o
+#endif
+
 #if BuildGlxExt
-GLX_SRCS = dmx_glxvisuals.c panoramiX.c
-GLX_OBJS = dmx_glxvisuals.o panoramiX.o
+GLX_SRCS = dmx_glxvisuals.c $(PANORAMIX_SRCS)
+GLX_OBJS = dmx_glxvisuals.o $(PANORAMIX_OBJS)
 DMX_GLX_DEFINES = $(GLX_DEFINES) -DGLXPROXY
 GLXPROXY_SUBDIR = glxProxy
 #endif

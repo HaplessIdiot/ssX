@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/glx/glxcmds.c,v 1.8 2001/05/02 15:06:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/glxcmds.c,v 1.1 2004/06/30 20:21:44 martin Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -1133,11 +1133,13 @@ static int MakeCurrent(__GLXclientState *cl,
        else if (pGlxPbuffer) {
 	  be_draw = pGlxPbuffer->be_xids[s];
        }
+#ifdef PANORAMIX
        else if (pXinDraw) {
 	  pWin = (WindowPtr)SecurityLookupWindow(pXinDraw->info[s].id,
 		                                 client,
                                                  SecurityReadAccess);
        }
+#endif
        else if (pGlxWindow) {
 	  pWin = (WindowPtr)pGlxWindow->pDraw;
        }
@@ -1189,11 +1191,13 @@ static int MakeCurrent(__GLXclientState *cl,
 	  else if (pGlxReadPbuffer) {
 	     be_read_draw = pGlxReadPbuffer->be_xids[s];
 	  }
+#ifdef PANORAMIX
 	  else if (pXinReadDraw) {
    	     pReadWin = (WindowPtr)SecurityLookupWindow(pXinReadDraw->info[s].id,
 		   client,
 		   SecurityReadAccess);
    	  }
+#endif
 	  else if (pGlxReadWindow) {
 	     pReadWin = (WindowPtr)pGlxReadWindow->pDraw;
 	  }
@@ -1773,9 +1777,11 @@ static int CreateGLXPixmap(__GLXclientState *cl,
        Pixmap  be_pixmap;
        DrawablePtr pRealDraw = pDraw;
 
+#ifdef PANORAMIX
        if (pXinDraw) {
 	  pRealDraw = (DrawablePtr) LookupDrawable(pXinDraw->info[s].id,client);
        }
+#endif
 
        be_pixmap = (DMX_GET_PIXMAP_PRIV((PixmapPtr)pRealDraw))->pixmap;
 
@@ -1933,7 +1939,9 @@ int __glXDoSwapBuffers(__GLXclientState *cl, XID drawId, GLXContextTag tag)
     WindowPtr pWin = NULL;
     __GLXpixmap *pGlxPixmap = NULL;
     __GLXcontext *glxc = NULL;
+#ifdef PANORAMIX
     PanoramiXRes *pXinDraw = NULL;
+#endif
     __glXWindow *pGlxWindow = NULL;
     int from_screen = 0;
     int to_screen = 0;
@@ -2046,11 +2054,13 @@ int __glXDoSwapBuffers(__GLXclientState *cl, XID drawId, GLXContextTag tag)
        if (pGlxPixmap) {
 	  be_draw = (unsigned int)pGlxPixmap->be_xids[s];
        }
+#ifdef PANORAMIX
        else if (pXinDraw) {
 	  pWin = (WindowPtr)SecurityLookupWindow(pXinDraw->info[s].id,
 		                                 client,
                                                  SecurityReadAccess);
        }
+#endif
        else if (pGlxWindow) {
 	  pWin = (WindowPtr)pGlxWindow->pDraw;
        }

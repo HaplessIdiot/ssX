@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.189 2004/06/09 18:30:56 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.190 2004/06/30 20:21:35 martin Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -57,9 +57,9 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.189 2004/06/09 18:30:56 dawes Exp 
  */
 
 /*
- * To disable building Xdmx, uncomment this.
+ * To enable building Xdmx, uncomment this.
  *
-#define XdmxServer		NO
+#define XdmxServer		YES
  */
 
 /*
@@ -517,12 +517,6 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.189 2004/06/09 18:30:56 dawes Exp 
  * If you don't want to build Xinerama support, uncomment this.
  *
 #define BuildXinerama		NO
- */
-
-/*
- * If you don't want to build the dmx extension, uncomment this.
- *
-#define BuildDmxExt		NO
  */
 
 /*

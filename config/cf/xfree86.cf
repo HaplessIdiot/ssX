@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.480 2004/06/25 15:33:21 tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.481 2004/06/30 20:21:35 martin Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1472,11 +1472,6 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 # define BuildXinerama		YES
 #endif
 
-/* Build DMX extension */
-#ifndef BuildDmxExt
-# define BuildDmxExt		YES
-#endif
-
 /* Build Render extension */
 #ifndef BuildRender
 # define BuildRender		YES
@@ -1805,19 +1800,6 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #endif
 #ifndef XprtServer
 # define XprtServer			YES
-#endif
-
-#ifndef XdmxServer
-# define XdmxServer		YES
-#endif
-#ifndef BuildDmxDevelTools
-# define BuildDmxDevelTools	NO
-#endif
-#if BuildDmxDevelTools && BuildXResExt && !defined(BuildXResLibrary)
-# define BuildXResLibrary	YES
-#endif
-#if XdmxServer && BuildRender && !defined(BuildRenderLibrary)
-# define BuildRenderLibrary	YES
 #endif
 
 #ifndef ServerExtraDefines

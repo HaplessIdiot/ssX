@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxinit.c,v 1.1 2004/06/30 20:21:39 martin Exp $ */
 /*
  * Copyright 2001-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -668,11 +668,13 @@ void InitOutput(ScreenInfo *pScreenInfo, int argc, char *argv[])
     for (i = 0; i < dmxNumScreens; i++)
         dmxDisplayInit(&dmxScreens[i]);
 
+#if PANORAMIX
     /* Register a Xinerama callback which will run from within
      * PanoramiXCreateConnectionBlock.  We can use the callback to
      * determine if Xinerama is loaded and to check the visuals
      * determined by PanoramiXConsolidate. */
     XineramaRegisterConnectionBlockCallback(dmxConnectionBlockCallback);
+#endif
 
     /* Since we only have a single screen thus far, we only need to set
        the pixmap formats to match that screen.  FIXME: this isn't true.*/
