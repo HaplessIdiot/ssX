@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.27 2001/08/15 16:25:21 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.28 2001/09/29 20:40:31 herrb Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -59,7 +59,7 @@ typedef struct {
 #if defined(SVR4) && defined(i386)
     Bool		panix106;
 #endif  /* SVR4 && i386 */
-#if defined(__OpenBSD__)
+#if defined(__OpenBSD__) || defined(__NetBSD__)
     int                 wsKbdType;
 #endif
 

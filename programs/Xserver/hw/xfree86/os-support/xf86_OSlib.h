@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.84 2001/07/25 15:05:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.85 2001/08/29 11:55:52 alanh Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -470,10 +470,7 @@ extern int errno;
 #      include <machine/pcvt_ioctl.h>
 #     else
 #      if defined(__NetBSD__) || defined(__OpenBSD__)
-#       if defined(WSCONS_SUPPORT)
-         /* NetBSD's wscons has a PCVT-compatibility module. */
-#        include <dev/wscons/wsdisplay_usl_io.h>
-#       else
+#       if !defined(WSCONS_SUPPORT)
 #        include <machine/pcvt_ioctl.h>
 #       endif /* WSCONS_SUPPORT */
 #      else
@@ -490,6 +487,7 @@ extern int errno;
 #   endif /* PCVT_SUPPORT */
 #   ifdef WSCONS_SUPPORT
 #    include <dev/wscons/wsconsio.h>
+#    include <dev/wscons/wsdisplay_usl_io.h>
 #   endif /* WSCONS_SUPPORT */
 #   if defined(__FreeBSD__)
 #    include <osreldate.h>

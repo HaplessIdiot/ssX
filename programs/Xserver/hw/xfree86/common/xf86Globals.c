@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.33 2001/07/23 13:15:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.34 2001/08/13 17:46:04 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -91,6 +91,9 @@ xf86InfoRec xf86Info = {
 	FALSE,		/* vtSysreq */
 #if defined(SVR4) && defined(i386)
 	FALSE,		/* panix106 */
+#endif
+#if defined(__OpenBSD__) || defined(__NetBSD__)
+	0,		/* wskbdType */
 #endif
 	NULL,		/* pMouse */
 #ifdef XINPUT
