@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.139 2001/10/09 17:37:11 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.140 2001/11/20 00:09:13 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -325,7 +325,7 @@ static const char *fbdevHWSymbols[] = {
 	NULL
 };
 
-static const char *int10Symbols[] = {
+const char *GLINTint10Symbols[] = {
     "xf86FreeInt10",
     "xf86InitInt10",
     NULL
@@ -387,7 +387,7 @@ glintSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	xf86AddDriver(&GLINT, module, 0);
 	LoaderRefSymLists(fbSymbols, ddcSymbols, i2cSymbols,
 			  xaaSymbols, xf8_32bppSymbols,
-			  shadowSymbols, fbdevHWSymbols, int10Symbols,
+			  shadowSymbols, fbdevHWSymbols, GLINTint10Symbols,
 			  vbeSymbols, ramdacSymbols,
 #ifdef XF86DRI
 			  drmSymbols, driSymbols,
@@ -1415,11 +1415,16 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	/* We have to boot some multiple head type boards here */
         GLINTMapMem(pScrn);
 	switch (pGlint->Chipset) {
+            case PCI_VENDOR_3DLABS_CHIP_PERMEDIA4:
             case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
 		Permedia3PreInit(pScrn);
 		break;
             case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
 		Permedia2VPreInit(pScrn);
+		break;
+	    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
+	    case PCI_VENDOR_TI_CHIP_PERMEDIA2:
+		Permedia2PreInit(pScrn);
 		break;
 	    case PCI_VENDOR_3DLABS_CHIP_GAMMA:
 		switch (pGlint->MultiChip) {
@@ -1871,7 +1876,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     	if ( xf86LoadSubModule(pScrn, "int10")){
 	    xf86Int10InfoPtr pInt;
 
-	    xf86LoaderReqSymLists(int10Symbols, NULL);
+	    xf86LoaderReqSymLists(GLINTint10Symbols, NULL);
 	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Initializing int10\n");
 	    pInt = xf86InitInt10(pGlint->pEnt->index);
 	    xf86FreeInt10(pInt);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.51 2001/08/19 02:47:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.52 2001/11/20 00:09:13 alanh Exp $ */
 /*
  * Copyright 1997-2001 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -220,6 +220,7 @@ void Permedia2RestoreDACValues(ScrnInfoPtr pScrn);
 void Permedia2Restore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 void Permedia2Save(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 Bool Permedia2Init(ScrnInfoPtr pScrn, DisplayModePtr mode);
+void Permedia2PreInit(ScrnInfoPtr pScrn);
 Bool Permedia2AccelInit(ScreenPtr pScreen);
 void Permedia2Sync(ScrnInfoPtr pScrn);
 void Permedia2InitializeEngine(ScrnInfoPtr pScrn);
@@ -329,6 +330,7 @@ Bool GLINTSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
 void GLINTAdjustFrame(int scrnIndex, int x, int y, int flags);
 
 extern int partprodPermedia[];
+extern const char *GLINTint10Symbols[];
 
 Bool GLINTDGAInit(ScreenPtr pScreen);
 
