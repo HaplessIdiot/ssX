@@ -74,6 +74,7 @@
 			children = (
 				0157A37E002CF6D7CE6F79C2,
 				F58D65DF018F79B101000001,
+				F533213D0193CBE001000001,
 				43B962E200617B93416877C2,
 				F587E16401924C6901000001,
 			);
@@ -86,132 +87,6 @@
 			isa = PBXFileReference;
 			name = English;
 			path = English.lproj/Credits.rtf;
-			refType = 4;
-		};
-		015EDCC000420083CE6F79C2 = {
-			isa = PBXFileReference;
-			name = libdix.a;
-			path = dix/libdix.a;
-			refType = 4;
-		};
-		015EDCC20042012ACE6F79C2 = {
-			isa = PBXFileReference;
-			name = libos.a;
-			path = os/libos.a;
-			refType = 4;
-		};
-		015EDCC400420160CE6F79C2 = {
-			isa = PBXFileReference;
-			name = libXau.a;
-			path = ../../lib/Xau/libXau.a;
-			refType = 4;
-		};
-		015EDCC60042017CCE6F79C2 = {
-			isa = PBXFileReference;
-			name = libXdmcp.a;
-			path = ../../lib/Xdmcp/libXdmcp.a;
-			refType = 4;
-		};
-		015EDCC8004201A8CE6F79C2 = {
-			isa = PBXFileReference;
-			name = libdarwin.a;
-			path = hw/darwin/libdarwin.a;
-			refType = 4;
-		};
-		015EDCCA004201C1CE6F79C2 = {
-			isa = PBXFileReference;
-			name = libcfb.a;
-			path = cfb/libcfb.a;
-			refType = 4;
-		};
-		015EDCCC004201E4CE6F79C2 = {
-			isa = PBXFileReference;
-			name = libcfb16.a;
-			path = cfb16/libcfb16.a;
-			refType = 4;
-		};
-		015EDCCE004201F2CE6F79C2 = {
-			isa = PBXFileReference;
-			name = libcfb.a;
-			path = cfb/libcfb.a;
-			refType = 4;
-		};
-		015EDCD0004201FCCE6F79C2 = {
-			isa = PBXFileReference;
-			name = libcfb32.a;
-			path = cfb32/libcfb32.a;
-			refType = 4;
-		};
-		015EDCD20042020BCE6F79C2 = {
-			isa = PBXFileReference;
-			name = libcfb.a;
-			path = cfb/libcfb.a;
-			refType = 4;
-		};
-		015EDCD400420227CE6F79C2 = {
-			isa = PBXFileReference;
-			name = libmfb.a;
-			path = mfb/libmfb.a;
-			refType = 4;
-		};
-		015EDCD60042023DCE6F79C2 = {
-			isa = PBXFileReference;
-			name = libxpstubs.a;
-			path = dix/libxpstubs.a;
-			refType = 4;
-		};
-		015EDCD80042024ECE6F79C2 = {
-			isa = PBXFileReference;
-			name = libmi.a;
-			path = mi/libmi.a;
-			refType = 4;
-		};
-		015EDCDA00420266CE6F79C2 = {
-			isa = PBXFileReference;
-			name = libext.a;
-			path = Xext/libext.a;
-			refType = 4;
-		};
-		015EDCDC00420279CE6F79C2 = {
-			isa = PBXFileReference;
-			name = libxkb.a;
-			path = xkb/libxkb.a;
-			refType = 4;
-		};
-		015EDCDE00420295CE6F79C2 = {
-			isa = PBXFileReference;
-			name = liblbx.a;
-			path = lbx/liblbx.a;
-			refType = 4;
-		};
-		015EDCE0004202BACE6F79C2 = {
-			isa = PBXFileReference;
-			name = liblbxutil.a;
-			path = ../../lib/lbxutil/liblbxutil.a;
-			refType = 4;
-		};
-		015EDCE2004202DECE6F79C2 = {
-			isa = PBXFileReference;
-			name = libdbe.a;
-			path = dbe/libdbe.a;
-			refType = 4;
-		};
-		015EDCE4004202F2CE6F79C2 = {
-			isa = PBXFileReference;
-			name = librecord.a;
-			path = record/librecord.a;
-			refType = 4;
-		};
-		015EDCE600420319CE6F79C2 = {
-			isa = PBXFileReference;
-			name = libXfont.a;
-			path = ../../lib/font/libXfont.a;
-			refType = 4;
-		};
-		015EDCE800420346CE6F79C2 = {
-			isa = PBXFileReference;
-			name = libxpstubs.a;
-			path = dix/libxpstubs.a;
 			refType = 4;
 		};
 		015EDCEA004203A8CE6F79C2 = {
@@ -306,6 +181,7 @@
 			children = (
 				02E03CA100348209CE6F79C2,
 				F58D65E0018F79C001000001,
+				F533213E0193CBF401000001,
 				43B962E300617B93416877C2,
 				F587E16501924C7401000001,
 			);
@@ -401,6 +277,7 @@
 			children = (
 				089C165DFE840E0CC02AAC07,
 				F58D65DD018F798F01000001,
+				F533213A0193CBA201000001,
 				43B962E100617B49416877C2,
 				F587E16101924C2F01000001,
 			);
@@ -576,8 +453,10 @@
 //104
 		1058C7A0FEA54F0111CA2CBB = {
 			children = (
-				1058C7A1FEA54F0111CA2CBB,
+				F53321400193CCF001000001,
 				1BE4F84D0006C9890A000002,
+				1058C7A1FEA54F0111CA2CBB,
+				F53321410193CCF001000001,
 				015EDCEA004203A8CE6F79C2,
 			);
 			isa = PBXGroup;
@@ -613,6 +492,7 @@
 			children = (
 				1220774400712D2D416877C2,
 				F58D65DE018F79A001000001,
+				F533213C0193CBC901000001,
 				1220774600712D75416877C2,
 				F587E16301924C5E01000001,
 			);
@@ -698,6 +578,7 @@
 			children = (
 				1BD8DE4300B8A3567F000001,
 				F58D65DC018F794D01000001,
+				F533213B0193CBB401000001,
 				1BD8DE4700B8A3C77F000001,
 				F587E16201924C5301000001,
 			);
@@ -716,6 +597,7 @@
 			children = (
 				1BD8DE4500B8A38E7F000001,
 				F58D65E1018F79E001000001,
+				F533213F0193CC2501000001,
 				1BD8DE4800B8A4167F000001,
 				F587E16601924C9D01000001,
 			);
@@ -879,6 +761,7 @@
 			children = (
 				29B97319FDCFA39411CA2CEA,
 				F58D65DB018F793801000001,
+				F53321390193CB6A01000001,
 				43B962E000617B49416877C2,
 				F587E16001924C1D01000001,
 			);
@@ -1085,27 +968,6 @@
 //614
 		618092480041B0E4CE6F79C2 = {
 			children = (
-				015EDCC000420083CE6F79C2,
-				015EDCC20042012ACE6F79C2,
-				015EDCC400420160CE6F79C2,
-				015EDCC60042017CCE6F79C2,
-				015EDCC8004201A8CE6F79C2,
-				015EDCCA004201C1CE6F79C2,
-				015EDCCC004201E4CE6F79C2,
-				015EDCCE004201F2CE6F79C2,
-				015EDCD0004201FCCE6F79C2,
-				015EDCD20042020BCE6F79C2,
-				015EDCD400420227CE6F79C2,
-				015EDCD60042023DCE6F79C2,
-				015EDCD80042024ECE6F79C2,
-				015EDCDA00420266CE6F79C2,
-				015EDCDC00420279CE6F79C2,
-				015EDCDE00420295CE6F79C2,
-				015EDCE0004202BACE6F79C2,
-				015EDCE2004202DECE6F79C2,
-				015EDCE4004202F2CE6F79C2,
-				015EDCE600420319CE6F79C2,
-				015EDCE800420346CE6F79C2,
 			);
 			isa = PBXGroup;
 			name = Libraries;
@@ -1122,6 +984,60 @@
 //F52
 //F53
 //F54
+		F53321390193CB6A01000001 = {
+			isa = PBXFileReference;
+			name = German;
+			path = German.lproj/MainMenu.nib;
+			refType = 4;
+		};
+		F533213A0193CBA201000001 = {
+			isa = PBXFileReference;
+			name = German;
+			path = German.lproj/InfoPlist.strings;
+			refType = 4;
+		};
+		F533213B0193CBB401000001 = {
+			isa = PBXFileReference;
+			name = German;
+			path = German.lproj/InfoPlist.strings.cpp;
+			refType = 4;
+		};
+		F533213C0193CBC901000001 = {
+			isa = PBXFileReference;
+			name = German;
+			path = German.lproj/Localizable.strings;
+			refType = 4;
+		};
+		F533213D0193CBE001000001 = {
+			isa = PBXFileReference;
+			name = German;
+			path = German.lproj/Credits.rtf;
+			refType = 4;
+		};
+		F533213E0193CBF401000001 = {
+			isa = PBXFileReference;
+			name = German;
+			path = German.lproj/XDarwinHelp.html;
+			refType = 4;
+		};
+		F533213F0193CC2501000001 = {
+			isa = PBXFileReference;
+			name = German;
+			path = German.lproj/XDarwinHelp.html.cpp;
+			refType = 4;
+		};
+		F53321400193CCF001000001 = {
+			isa = PBXFrameworkReference;
+			name = ApplicationServices.framework;
+			path = /System/Library/Frameworks/ApplicationServices.framework;
+			refType = 0;
+		};
+		F53321410193CCF001000001 = {
+			isa = PBXFrameworkReference;
+			name = CoreAudio.framework;
+			path = /System/Library/Frameworks/CoreAudio.framework;
+			refType = 0;
+		};
 		F54BF6EA017D500901000001 = {
 			isa = PBXFileReference;
 			path = startXClients.cpp;
