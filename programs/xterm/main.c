@@ -89,7 +89,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.158 2002/09/30 00:39:06 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.159 2002/10/05 17:57:12 dickey Exp $ */
 
 /* main.c */
 
@@ -1477,6 +1477,8 @@ main(int argc, char *argv[]ENVP_ARG)
     char *my_class = DEFCLASS;
     Window winToEmbedInto = None;
 
+    ProgramName = argv[0];
+
     /* extra length in case longer tty name like /dev/ttyq255 */
     ttydev = (char *) malloc(sizeof(TTYDEV) + 80);
 #ifdef USE_PTY_DEVICE
@@ -1487,7 +1489,7 @@ main(int argc, char *argv[]ENVP_ARG)
 #endif
     {
 	fprintf(stderr,
-		"%s:  unable to allocate memory for ttydev or ptydev\n",
+		"%s: unable to allocate memory for ttydev or ptydev\n",
 		ProgramName);
 	exit(1);
     }
@@ -1503,7 +1505,6 @@ main(int argc, char *argv[]ENVP_ARG)
 #endif /* __OpenBSD__ */
 
     /* Do these first, since we may not be able to open the display */
-    ProgramName = argv[0];
     TRACE_OPTS(xtermOptions, optionDescList, XtNumber(optionDescList));
     TRACE_ARGV("Before XtOpenApplication", argv);
     if (argc > 1) {
