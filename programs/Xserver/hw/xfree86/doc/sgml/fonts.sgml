@@ -9,6 +9,10 @@ Time-stamp: <99/05/26 23:10:24 jec>
 <author>Juliusz Chroboczek, <tt/jec@dcs.ed.ac.uk/
 <date>26 May 1999</date>
 
+<ident>
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.1 1999/05/29 09:54:49 dawes Exp $
+</ident>
+
 <toc>
 
 <p>This version of XFree86 includes a number of improvements to the
@@ -122,7 +126,7 @@ fallbacks when a given glyph is not available in the current font.
 
 <p>The font file
 <tscreen>
-/usr/X11/lib/X11/fonts/misc/6x13.pcf.gz<
+/usr/X11/lib/X11/fonts/misc/6x13.pcf.gz
 </tscreen>
 with XLFD
 <tscreen>
@@ -739,9 +743,5 @@ the CMaps used for horizontal text (<it/e.g./ the CMap
 limitation is due to the fact that the core X11 protocol only provides
 support for horizontal writing.
 
-
-<verb>
-$XFree86$
-</verb>
 
 </article>

@@ -6,10 +6,10 @@
 
 <title>Release Notes for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>11 July 1999 (this document needs work!)
+<date>12 July 1999 (this document needs work!)
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.5 1999/07/10 12:17:25 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.6 1999/07/11 08:49:23 dawes Exp $
 </ident>
 
 <abstract>
@@ -22,7 +22,7 @@ in XFree86 &relvers; and their status.
 <toc>
 
 <p>
-<em>Most of the sections below are currently empty.</em>
+<em>Many of the sections below are currently empty.</em>
 
 <sect>X server
 <p>
@@ -57,6 +57,24 @@ PowerPC platforms.  It also has preliminary support for Sparc platforms.
 The X server makes use of modules for video drivers, X server extensions,
 font rasterisers, input device drivers, framebuffer layers (like mfb,
 cfb, etc), and internal components used by some drivers (like XAA),
+
+The module interfaces (API and ABI) used in the snapshot releases are
+subject to change without notice.  This means that there is no guarantee
+that modules built for one shapshot release will function with another
+snapshot release.  As of the 4.0 release we plan to make every effort
+to provide backward compatibility for the module interfaces (that means
+older modules working with newer core X server binaries).
+
+<bf>Note about module security</bf>
+<quote><p>
+	The XFree86 X server runs with root privileges, which means that the
+	X server loadable modules also run with these privileges.  For this
+	reason we recommend that all users be careful to only use loadable
+	modules from reliable sources.  By the time that XFree86 4.0 is
+	released, we hope to have implemented a method for signing/verifying
+	modules that we provide.
+
+</quote>
 
 <sect1>Configuration File
 <p>
@@ -157,16 +175,26 @@ set the monitor gamma (brightness) curve, and the screen size and
 pitch.
 <itemize>
   <item>The gamma is particularly noticeable; every monitor I have tried has
-a gamma setting > 2, which means that the picture is much lighter than
-under 3.3.x or without DDC. To revert to the previous behavior put
-<tt>Gamma 1.0 1.0 1.0</tt>
-in the appropriate "Monitor" section of the Config file.
+	a gamma setting >&nbsp;2, which means that the picture is much
+	lighter than under 3.3.x or without DDC. To revert to the previous
+	behavior put
+
+	<tscreen>
+Gamma 1.0 1.0 1.0
+	</tscreen>
+
+	in the appropriate "Monitor" section of the config file.
 
   <item>Similarly, you can override the DDC probed "dpi" value by explicitly
-resetting it to the 3.3.x and non-DDC default value 75 with the
-<tt>-dpi 75</tt> command line option for the X server. There may be a 
-way of doing this with the config file too.
+	resetting it to the 3.3.x and non-DDC default value 75 with the
+	<tt>-dpi 75</tt> command line option for the X server, or by
+	specifying appropriate screen dimensions with the "DisplaySize"
+	keyword in the "Monitor" section of the config file.
+
 </itemize>
+
+<sect1>GLX
+<p>
 
 <sect1>Other extensions
 <p>
@@ -286,11 +314,38 @@ Bug fixes/improvements:
 <sect>Fonts and Internationalisation
 <p>
 
+Details about the font support in this version of XFree86 can be found
+in the <htmlurl name="README.fonts" url="fonts.html"> document.
+
 <sect1>TrueType support
 <p>
 
+This version of XFree86 comes with two TrueType backends, known as
+`xfsft' (the <tt>"freetype"</tt> module) and `X-TrueType' (the
+<tt>"xtt"</tt> module).  Both of these backends are based on the FreeType
+library.
+
 <sect1>CID font support
 <p>
+
+Support for CID-keyed fonts is included in this version of XFree86.
+The CID-keyed font format was designed by <url name="Adobe Systems"
+url="http://www.adobe.com"> for fonts with large character sets.  The
+CID-keyed font support in XFree86 was donated by <url name="SGI"
+url="http://www.sgi.com">.  See the <htmlurl name="LICENSE"
+url="LICENSE.html"> document for a copy of the CID Font Code Public
+License.
+
+<sect1>Internationalisation of the scalable font backends
+<p>
+
+A new ``fontenc'' layer has been added to allow the scalable font backends
+to use a common method of font reencoding.  This reencoding makes it
+possible to uses fonts in encodings other than their their native
+encoding.  This layer is used by the Type1 and Speedo backends and the
+`xfsft' version of the TrueType backend.  The `X-TrueType' version of
+the TrueType backend uses a different reencoding method based on loadable
+encoding modules.
 
 <sect1>Unicode support
 <p>
