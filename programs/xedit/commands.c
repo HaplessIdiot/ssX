@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/commands.c,v 1.4 1998/11/15 04:30:44 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/commands.c,v 1.5 1998/12/06 06:08:52 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include "xedit.h"
@@ -53,6 +53,7 @@ static Boolean double_click = FALSE;
 #define DC_LOADED	2
 #define DC_CLOBBER	3
 #define DC_KILL		4
+#define DC_SAVE		5
 static int dc_state;
 
 /*	Function Name: AddDoubleClickCallback(w)
@@ -208,6 +209,19 @@ DoSave(Widget w, XtPointer client_data, XtPointer call_data)
 	Feep();
 	return;
     }
+    else {
+	struct stat st;
+
+	if (stat(filename, &st) == 0 && ((st.st_mode & S_IFMT) != S_IFREG)) {
+	    XmuSnprintf(buf, sizeof(buf),
+			"Save: file %s is not a regular file -- nothing saved.\n",
+			name);
+	    XeditPrintf(buf);
+	    Feep();
+	    return;
+	}
+    }
+
     item = FindTextSource(NULL, filename);
     if (item != NULL && item->source != source) {
 	if (!double_click || (dc_state && dc_state != DC_LOADED)) {
@@ -228,9 +242,17 @@ DoSave(Widget w, XtPointer client_data, XtPointer call_data)
 	dc_state = 0;
     }
     else if (item && !(item->flags & CHANGED_BIT)) {
-	XeditPrintf("Save: No changes need to be saved.\n");
-	Feep();
-	return; 
+	if (!double_click || (dc_state && dc_state != DC_SAVE)) {
+	    XeditPrintf("Save: No changes need to be saved, "
+			"Save again to override.\n");
+	    Feep();
+	    double_click = TRUE;
+	    dc_state = DC_SAVE;
+	    AddDoubleClickCallback(XawTextGetSource(textwindow), True);
+	    return; 
+	}
+	double_click = FALSE;
+	dc_state = 0;
     }
 
     file_access = CheckFilePermissions(filename, &exists);
@@ -299,8 +321,6 @@ DoSave(Widget w, XtPointer client_data, XtPointer call_data)
 	      item->flags = EXISTS_BIT;
 	  }
 	  else {
-	      Widget tmp = scratch;
-
 	      if (!item)
 		  item = flist.itens[0];
 	      XtRemoveCallback(item->source, XtNcallback, SourceChanged,
@@ -506,17 +526,20 @@ ResetSourceChanged(xedit_flist_item *item)
     XtSetArg(args[num_args], XtNleftBitmap, None);	++num_args;
     XtSetValues(item->sme, args, num_args);
 
-    for (i = 0; i < 3; i++)
+    dc_state = 0;
+    double_click = FALSE;
+    for (i = 0; i < 3; i++) {
 	if (XawTextGetSource(texts[i]) == item->source)
 	    XtSetValues(labels[i], args, num_args);
+	AddDoubleClickCallback(XawTextGetSource(texts[i]), False);
+    }
 
     num_args = 0;
     XtSetArg(args[num_args], XtNsourceChanged, False);	++num_args;
     XtSetValues(item->source, args, num_args);
 
     if (XtHasCallbacks(item->source, XtNcallback) != XtCallbackHasSome)
-	XtAddCallback(item->source, XtNcallback, SourceChanged,
-		      (XtPointer)item);
+	XtAddCallback(item->source, XtNcallback, SourceChanged, (XtPointer)item);
     item->flags &= ~CHANGED_BIT;
 }
 
@@ -566,8 +589,20 @@ LoadFile(Widget w, XEvent *event, String *params, Cardinal *num_params)
 void
 CancelFindFile(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
+    Arg args[1];
+    xedit_flist_item *item;
+
     Feep();
     XtSetKeyboardFocus(topwindow, textwindow);
+
+    item = FindTextSource(XawTextGetSource(textwindow), NULL);
+
+    if (item->source != scratch)
+	XtSetArg(args[0], XtNstring, item->name);
+    else
+	XtSetArg(args[0], XtNstring, NULL);
+
+    XtSetValues(filenamewindow, args, 1);
 }
 
 static Bool
@@ -614,15 +649,30 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
 #endif
 
     text = GetString(filenamewindow);
-    length = strlen(text);
 
     if (!text) {
 	Feep();
 	return;
     }
 
+    {
+	XawTextPosition pos = XawTextGetInsertionPoint(w);
+	char *cslash = strchr(&text[pos], '/'), *cdot = strchr(&text[pos], '.');
+
+	if (cslash != NULL || cdot != NULL) {
+	    if (cslash != NULL && (cdot == NULL || cdot > cslash)) {
+		length = cslash - text;
+		slash = True;
+	    }
+	    else
+		length = cdot - text;
+	}
+	else
+	    length = strlen(text);
+    }
+
 #ifdef SHOW_MATCHES
-    if (*num_params == 1) {
+    if (*num_params == 1 && length == strlen(text)) {
 	switch (params[0][0]) {
 	case 'n':		/* Never */
 	case 'N':
@@ -753,10 +803,12 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
 			isdir = (st.st_mode & S_IFDIR) == S_IFDIR;
 		}
 		else {
-		    while (*tmp && *tmp++ == *mat++)
-			;
-		    mlen = mat - match - (*tmp != '\0' || *mat == '\0');
-		    match[mlen] = '\0';
+		    while (*tmp && *mat && *tmp++ == *mat)
+			++mat;
+		    if (mlen > mat - match) {
+			mlen = mat - match;
+			match[mlen] = '\0';
+		    }
 		}
 #ifdef SHOW_MATCHES
 		if (show_matches != SM_NEVER) {
@@ -765,7 +817,7 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
 		    if ((st.st_mode & S_IFLNK) == S_IFLNK)
 			is_dir = IsDir(path, False);
 		    else
-			isdir = (st.st_mode & S_IFDIR) == S_IFDIR;
+			is_dir = (st.st_mode & S_IFDIR) == S_IFDIR;
 		    matches = (char **)XtRealloc((char*)matches, sizeof(char**)
 						 * (n_matches + 1));
 		    buflen += d_namlen + 1;
@@ -793,21 +845,31 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	if (n_matches) {
 	    Bool add_slash = n_matches == 1 && isdir && !slash;
 
+	    if (mlen >= 1 && match[mlen - 1] == '.' && text[length] == '.')
+		--mlen;
 	    if (mlen || add_slash) {
 		XawTextPosition pos;
 
-		/* XXX pos must be filenamewindow->text.lastPos */
-		XawTextSetInsertionPoint(filenamewindow, 1024);
-
-		pos = XawTextGetInsertionPoint(filenamewindow);
-		block.length = mlen + add_slash;
-		block.ptr = match;
-		if (add_slash)
-		    strcat(match, "/");
 		block.firstPos = 0;
 		block.format = FMT8BIT;
-		XawTextReplace(filenamewindow, pos, pos, &block);
-		XawTextSetInsertionPoint(filenamewindow, pos + block.length);
+		if (mlen) {
+		    pos = XawTextGetInsertionPoint(filenamewindow);
+		    block.length = mlen;
+		    block.ptr = match;
+		    XawTextReplace(filenamewindow, pos, pos, &block);
+		    XawTextSetInsertionPoint(filenamewindow, pos + block.length);
+		}
+		if (add_slash) {
+		    XawTextPosition actual = XawTextGetInsertionPoint(w);
+
+		    pos = XawTextSourceScan(XawTextGetSource(w), 0, XawstAll,
+					    XawsdRight, 1, True);
+		    block.length = 1;
+		    block.ptr = "/";
+		    XawTextReplace(filenamewindow, pos, pos, &block);
+		    if (actual == pos)
+			XawTextSetInsertionPoint(filenamewindow, pos + 1);
+		}
 	    }
 	    else if (n_matches != 1 || isdir) {
 #ifdef SHOW_MATCHES

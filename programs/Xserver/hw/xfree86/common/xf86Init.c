@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.83 1998/11/22 10:37:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.84 1999/01/03 03:58:28 dawes Exp $ */
 
 /*
  * Copyright 1991-1998 by The XFree86 Project, Inc.
@@ -285,7 +285,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
       }
       if (layout->screen == NULL) {
 	/* No match found */
-ErrorF("Screen deleted because of no matching config section\n");
+	ErrorF("Screen %d deleted because of no matching config section\n", i);
         xf86DeleteScreen(i--, 0);
       }
     }
@@ -878,7 +878,7 @@ ddxProcessArgument(int argc, char **argv, int i)
     }
     else
     {
-      ErrorF("Invalid bpp\n");
+      ErrorF("Invalid depth\n");
       return 0;
     }
   }

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/14 1996/11/03 19:58:41 kaleb $
-XCOMM $XFree86: xc/lib/font/fontfile/Imakefile,v 3.4.4.2 1998/07/05 14:36:03 dawes Exp $
+XCOMM $XFree86: xc/lib/font/fontfile/Imakefile,v 3.6 1998/07/25 06:57:07 dawes Exp $
 #include <Server.tmpl>
 
 #if DoLoadableServer
@@ -37,10 +37,16 @@ FREETYPE_DEFINES = -DBUILD_FREETYPE
               defaults.o bitsource.o register.o renderers.o bufio.o \
               decompress.o filewr.o printerfont.o ffcheck.o $(GUNZIP_OBJ)
 
-SpecialCObjectRule(fileio,$(ICONFIGFILES),$(GZIP_DEFS))
+#define DoNormalLib NormalLibFont
+#define DoSharedLib SharedLibFont
+#define DoDebugLib DebugLibFont
+#define DoProfileLib ProfileLibFont
+#include <Library.tmpl>
+LibraryObjectRule()
+
+SpecialCLibObjectRule(fileio,$(ICONFIGFILES),$(GZIP_DEFS))
 
 SubdirLibraryRule($(OBJS))
-NormalLibraryObjectRule()
 NormalLintTarget($(SRCS))
 
 #if DoLoadableServer

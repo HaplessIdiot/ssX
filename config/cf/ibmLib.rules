@@ -4,6 +4,8 @@ XCOMM $XConsortium: ibmLib.rules /main/15 1996/12/30 16:06:05 kaleb $
  * AIX shared library rules
  */
 
+XCOMM $XFree86$
+
 #ifndef HasSharedLibraries
 # define HasSharedLibraries YES
 #endif
@@ -193,6 +195,58 @@ Concat(lib,libname.a):  solist $(UNSHAREDOBJS) $(EXTRALIBRARYDEPS)	@@\
 clean::									@@\
 	$(RM) Concat(lib,libname.a)
 # endif /* SharedLibraryTarget */
+
+#endif
+
+/*
+ * SharedDepLibraryTarget - generate rules to create a shared library.
+ */
+#if OSMajorVersion < 4
+
+# ifndef SharedDepLibraryTarget
+#  define SharedDepLibraryTarget(libname,rev,deplist,solist,down,up)	@@\
+AllTarget(Concat(lib,libname.a))					@@\
+									@@\
+Concat(lib,libname.a):  deplist $(UNSHAREDOBJS) $(EXTRALIBRARYDEPS)	@@\
+	$(RM) $@~ shr.o shr4.o						@@\
+	(cd down; $(AR) up/$@~ solist)					@@\
+	dump -g $@~ | sed -n -e 's/^[ 	]*[0-9][0-9]*[	 ]*\([^	 .][^	 ]*\)$$/\1/p' > $@.syms	@@\
+	$(LD) -o shr.o $@~ -H512 -T512 -bM\:SRE -bE\:$@.syms $(REQUIREDLIBS) BaseShLibReqs SharedLibPostRef	@@\
+	$(LN) shr.o shr4.o						@@\
+	$(RM) $@~							@@\
+	case ,$(SHR4OBJLIBS), in *,libname,*) shr4obj=shr4.o;; esac &&\	@@\
+		$(AR) $@~ $${shr4obj} shr.o $(UNSHAREDOBJS)		@@\
+	$(RM) $@.syms $@ shr.o shr4.o					@@\
+	$(MV) $@~ $@							@@\
+	LinkBuildLibrary($@)						@@\
+									@@\
+clean::									@@\
+	$(RM) Concat(lib,libname.a)
+# endif /* SharedDepLibraryTarget */
+
+#else /* OSMajorVersion >= 4 */
+
+# ifndef SharedDepLibraryTarget
+#  define SharedDepLibraryTarget(libname,rev,deplist,solist,down,up)	@@\
+AllTarget(Concat(lib,libname.a))					@@\
+									@@\
+Concat(lib,libname.a):  deplist $(UNSHAREDOBJS) $(EXTRALIBRARYDEPS)	@@\
+	RemoveFiles($@~ shr.o shr4.o)					@@\
+	(cd down; $(AR) up/$@~ solist)					@@\
+	MakeExportList(libname,libname.imp)				@@\
+	$(LD) -o shr.o $@~ -H512 -T512 -bM\:SRE -bE\:libname.imp -bnoentry $(REQUIREDLIBS) BaseShLibReqs $(LDPOSTLIBS)	@@\
+	$(LN) shr.o shr4.o						@@\
+	RemoveFile($@~)							@@\
+	case ,$(SHR4OBJLIBS), in *,libname,*) shr4obj=shr4.o;; esac &&\	@@\
+		$(AR) $@~ $${shr4obj} shr.o $(UNSHAREDOBJS)		@@\
+	RemoveFile($@)							@@\
+	$(MV) $@~ $@							@@\
+	LinkBuildLibrary($@)						@@\
+	LinkBuildLibrary(libname.imp)					@@\
+									@@\
+clean::									@@\
+	$(RM) Concat(lib,libname.a)
+# endif /* SharedDepLibraryTarget */
 
 #endif
 

@@ -1,25 +1,46 @@
 XCOMM $TOG: Imakefile /main/14 1998/06/16 15:23:15 msr $
-XCOMM $XFree86: xc/lib/font/Imakefile,v 3.14 1998/09/06 04:46:54 dawes Exp $
+XCOMM $XFree86: xc/lib/font/Imakefile,v 3.15 1998/10/03 09:07:10 dawes Exp $
 #include <Server.tmpl>
 
 #define	IHaveSubdirs
 
-#if BuildFreeType
-FREETYPEDIRS  = FreeType
-FREETYPEOBJS  = FreeType/?*.o
-FREETYPEDONES = FreeType/DONE
+#ifndef SeparateSharedCompile
+#define SeparateSharedCompile YES
+#endif
+#if NormalLibFont && SharedLibFont && SeparateSharedCompile
+STATIC_OBJSDIR = unshared/
 #endif
 
-SUBDIRS = bitmap fontfile fc Speedo Type1 $(FREETYPEDIRS) util
-OBJS = bitmap/?*.o fontfile/?*.o fc/?*.o Speedo/?*.o Type1/?*.o \
-       $(FREETYPEOBJS) util/?*.o
-DONES = bitmap/DONE fontfile/DONE fc/DONE Speedo/DONE Type1/DONE\
-       $(FREETYPEDONES) util/DONE
+#if BuildFreeType
+       FREETYPEDIRS = FreeType
+ FREETYPESHAREDOBJS = FreeType/?*.o
+ FREETYPESTATICOBJS = FreeType/$(STATIC_OBJSDIR)?*.o
+  FREETYPEDEBUGOBJS = FreeType/debugger/?*.o
+FREETYPEPROFILEOBJS = FreeType/profiled/?*.o
+      FREETYPEDONES = FreeType/DONE
+#endif
+
+       SUBDIRS = bitmap fontfile fc Speedo Type1 $(FREETYPEDIRS) util stubs
+   SHARED_OBJS = bitmap/?*.o fontfile/?*.o fc/?*.o Speedo/?*.o Type1/?*.o \
+		 $(FREETYPESHAREDOBJS) util/?*.o
+   STATIC_OBJS = bitmap/$(STATIC_OBJSDIR)?*.o fontfile/$(STATIC_OBJSDIR)?*.o \
+		 fc/$(STATIC_OBJSDIR)?*.o Speedo/$(STATIC_OBJSDIR)?*.o \
+		 Type1/$(STATIC_OBJSDIR)?*.o $(FREETYPESTATICOBJS) \
+		 util/$(STATIC_OBJSDIR)?*.o
+    DEBUG_OBJS = bitmap/debugger/?*.o fontfile/debugger/?*.o fc/debugger/?*.o \
+		 Speedo/debugger/?*.o Type1/debugger/?*.o \
+		 $(FREETYPEDEBUGOBJS) \util/debugger/?*.o
+  PROFILE_OBJS = bitmap/profiled/?*.o fontfile/profiled/?*.o fc/profiled/?*.o \
+		 Speedo/profiled/?*.o Type1/profiled/?*.o \
+		 $(FREETYPEPROFILEOBJS) util/profiled/?*.o
+         DONES = bitmap/DONE fontfile/DONE fc/DONE Speedo/DONE Type1/DONE \
+		 $(FREETYPEDONES) util/DONE
 
 #if DoLoadableServer
-BASEDIRS = fontfile fc util
-BASEOBJS = fontfile/?*.o fc/?*.o util/?*.o
-BASEDONES = fontfile/DONE fc/DONE util/DONE
+      BASEDIRS = fontfile fc util
+      BASEOBJS = fontfile/$(STATIC_OBJSDIR)?*.o fc/$(STATIC_OBJSDIR)?*.o \
+		 util/$(STATIC_OBJSDIR)?*.o
+     BASEDONES = fontfile/DONE fc/DONE util/DONE
 #endif
 
 #if HasParallelMake
@@ -33,14 +54,54 @@ $(DONES): $(SUBDIRS)
 #undef _LinkBuildLibrary
 #define _LinkBuildLibrary(lib) LinkBuildLibrary(lib)
 
+#if NormalLibFont
 #ifndef OS2Architecture
-NormalDepLibraryTarget(font,$(SUBDIRS) $(DONES),$(OBJS))
+NormalDepLibraryTarget(Xfont,$(SUBDIRS) $(DONES),$(STATIC_OBJS))
 #else
 all:: DONE
-	cp $(OBJS) .
+	cp $(STATIC_OBJS) .
 
-NormalDepLibraryTarget(font,$(DONES),?*.o)
-#endif
+NormalDepLibraryTarget(Xfont,$(DONES),?*.o)
+#endif /* OS2Architecture */
+InstallLibrary(Xfont,$(USRLIBDIR))
+#if !SharedLibFont
+InstallLinkKitLibrary(Xfont,$(LINKKITDIR)/lib)
+#endif /* !SharedLibFont */
+#endif /* NormalLibFont */
+
+#if SharedLibFont
+SharedDepLibraryTarget(Xfont,$(SOFONTREV),$(SUBDIRS) $(DONES),$(SHARED_OBJS),.,.)
+InstallSharedLibrary(Xfont,$(SOFONTREV),$(SHLIBDIR))
+#endif /* SharedLibFont */
+
+
+#if DebugLibFont
+#ifndef OS2Architecture
+DebuggedDepLibraryTarget(Xfont,$(SUBDIRS) $(DONES),$(DEBUG_OBJS))
+#else
+all:: DONE
+	rm -rf debugged
+	mkdir debugged
+	cp $(DEBUG_OBJS) debugged
+
+DebuggedDepLibraryTarget(Xfont,$(DONES),?*.o)
+#endif /* OS2Architecture */
+InstallLibrary(Xfont_d,$(USRLIBDIR))
+#endif /* DebugLibFont */
+
+#if ProfileLibFont
+#ifndef OS2Architecture
+ProfiledDepLibraryTarget(Xfont,$(SUBDIRS) $(DONES),$(PROFILE_OBJS))
+#else
+all:: DONE
+	rm -rf profiled
+	mkdir profiled
+	cp $(PROFILE_OBJS) profiled
+
+ProfiledDepLibraryTarget(Xfont,$(DONES),?*.o)
+#endif /* OS2Architecture */
+InstallLibrary(Xfont_p,$(USRLIBDIR))
+#endif /* ProfileLibFont */
 
 #if DoLoadableServer
 #ifndef OS2Architecture
@@ -50,11 +111,10 @@ all:: DONE
 	mkdir baseobjs
 	cp $(BASEOBJS) baseobjs
 
-NormalDepLibraryTarget(fonts,$(BASEDONES),baseobjs/?*.o)
+NormalDepLibraryTarget(fontbase,$(BASEDONES),baseobjs/?*.o)
 #endif
 #endif
 
-InstallLinkKitLibrary(font,$(LINKKITDIR)/lib)
 
 ForceSubdirs($(SUBDIRS))
 

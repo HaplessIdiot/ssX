@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.3 1998/11/15 04:30:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.4 1999/01/03 03:58:38 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -49,13 +49,13 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    outb(0x3CE, MiscExtFunc);
 	    pReg->tridentRegs3CE[MiscExtFunc] = (inb(0x3CF) & 0xB7) | 0x02;
     	    offset = pScrn->displayWidth >> 2;
-	    if (pScrn->depth == 15) {
-    	    	pReg->tridentRegs3x4[PixelBusReg] |= 0x05;
+	    if (pScrn->depth == 15)
     	    	pReg->tridentRegsDAC[0x00] = 0x10;
-	    } else {
-    	    	pReg->tridentRegs3x4[PixelBusReg] |= 0x05;
+	    else
 	    	pReg->tridentRegsDAC[0x00] = 0x30;
-	    }
+    	    pReg->tridentRegs3x4[PixelBusReg] |= 0x04;
+	    if (pTrident->Chipset > CYBER9320) 
+		pReg->tridentRegs3x4[PixelBusReg] |= 0x01;
 	    break;
 	case 24:
 	    outb(0x3CE, MiscExtFunc);
@@ -89,12 +89,12 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pReg->tridentRegsClock[0x02] = b;
     }
 
-    pReg->tridentRegs3C4[NewMode1] = 0xC2;
+    pReg->tridentRegs3C4[NewMode1] = 0xC0;
 
     pReg->tridentRegs3x4[LinearAddReg] = ((pTrident->FbAddress >> 24) << 6)  |
 					 ((pTrident->FbAddress >> 20) & 0x0F)|
 					 0x20;
-    pReg->tridentRegs3x4[CRTHiOrd] = ((mode->CrtcVSyncStart & 0x400) >> 4) |
+    pReg->tridentRegs3x4[CRTHiOrd] = (((mode->CrtcVBlankStart-1)& 0x400) >> 4) |
  			(((mode->CrtcVTotal - 2) & 0x400) >> 3) |
  			((mode->CrtcVSyncStart & 0x400) >> 5) |
  			(((mode->CrtcVDisplay - 1) & 0x400) >> 6) |
@@ -117,16 +117,14 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     outb(vgaIOBase+ 4, PCIReg);
     pReg->tridentRegs3x4[PCIReg] = inb(vgaIOBase + 5) & 0xF9; 
     /* Enable PCI Bursting on capable chips */
-    if (pTrident->Chipset > TGUI9440AGi) pReg->tridentRegs3x4[PCIReg] |= 0x06;
+    if (pTrident->Chipset > CYBER9320) pReg->tridentRegs3x4[PCIReg] |= 0x06;
 
     outb(0x3CE, MiscIntContReg);
     pReg->tridentRegs3CE[MiscIntContReg] = inb(0x3CF) | 0x04;
 
-    outb(vgaIOBase + 4, PCIRetry);
-    pReg->tridentRegs3x4[PCIRetry] = inb(vgaIOBase + 5);
-
     if (pTrident->UsePCIRetry) {
-    	pReg->tridentRegs3x4[PCIRetry] |= 0xDF;
+        outb(vgaIOBase + 4, PCIRetry);
+        pReg->tridentRegs3x4[PCIRetry] = inb(vgaIOBase + 5) | 0xDF;
     	outb(vgaIOBase + 4, Enhancement0);
 	pReg->tridentRegs3x4[Enhancement0] = inb(vgaIOBase + 5) | 0x50;
     }
@@ -148,19 +146,11 @@ TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     inb(0x3C5);
 
     /* Unprotect registers */
-    outw(0x3C4, 0xC200 | NewMode1);
+    outw(0x3C4, ((0xC0 ^ 0x02) << 8) | NewMode1);
 
     outw(vgaIOBase + 4, (tridentReg->tridentRegs3x4[CRTCModuleTest] << 8) | CRTCModuleTest);
     outw(vgaIOBase + 4, (tridentReg->tridentRegs3x4[LinearAddReg] << 8) | 
 								LinearAddReg);
-
-    inb(0x3C8);
-    inb(0x3C6);
-    inb(0x3C6);
-    inb(0x3C6);
-    inb(0x3C6);
-    outb(0x3C6, tridentReg->tridentRegsDAC[0x00]);
-    inb(0x3C8);
 
     outb(0x3C2, tridentReg->tridentRegsClock[0x00]);
     if (Is3Dchip) {
@@ -192,7 +182,15 @@ TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     for (i=CursorXLow;i<=CursorControl;i++)
     	outw(vgaIOBase + 4, (tridentReg->tridentRegs3x4[i] << 8) | i);
 
-    outw(0x3C4, (tridentReg->tridentRegs3C4[NewMode1] << 8) | NewMode1);
+    inb(0x3C8);
+    inb(0x3C6);
+    inb(0x3C6);
+    inb(0x3C6);
+    inb(0x3C6);
+    outb(0x3C6, tridentReg->tridentRegsDAC[0x00]);
+    inb(0x3C8);
+
+    outw(0x3C4, ((tridentReg->tridentRegs3C4[NewMode1] ^ 0x02) << 8) | NewMode1);
 }
 
 void

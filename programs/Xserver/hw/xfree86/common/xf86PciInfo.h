@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.9 1998/11/15 04:30:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.10 1998/11/15 05:09:44 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -106,6 +106,7 @@
 #define PCI_CHIP_9320		0x9320
 #define PCI_CHIP_9388		0x9388
 #define PCI_CHIP_9397		0x9397
+#define PCI_CHIP_939A		0x939A
 #define PCI_CHIP_9420		0x9420
 #define PCI_CHIP_9440		0x9440
 #define PCI_CHIP_9520		0x9520
@@ -307,6 +308,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_9660,		"TGUI 96xx"},
 				{PCI_CHIP_9388,		"Cyber 9388"},
 				{PCI_CHIP_9397,		"Cyber 9397"},
+				{PCI_CHIP_939A,		"Cyber 939A/DVD"},
 				{PCI_CHIP_9520,		"Cyber 9520"},
 				{PCI_CHIP_9750,		"3DImage975"},
 				{PCI_CHIP_9850,		"3DImage985"},

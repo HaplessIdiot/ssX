@@ -1,5 +1,9 @@
-! $XFree86$
+! $XFree86: xc/programs/xedit/Xedit-sample,v 1.1 1998/12/06 06:08:52 dawes Exp $
 
+Xedit*insertFile*text.width:		150
+Xedit*search*searchText.width:		192
+Xedit*search*replaceText.width:		192
+Xedit*search*case.horizDistance:	14
 Xedit*Text.autoFill:			false
 Xedit*cursorColor:			red
 Xedit.geometry:				600x400

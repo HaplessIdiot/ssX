@@ -2,7 +2,7 @@ XCOMM $XConsortium: Imakefile /main/20 1995/12/13 18:07:57 kaleb $
 XCOMM
 XCOMM Make file for font handling routines
 XCOMM
-XCOMM $XFree86$
+XCOMM $XFree86: xc/lib/font/fc/Imakefile,v 1.2 1998/12/20 11:57:15 dawes Exp $
 #include <Server.tmpl>
 
         INCLUDES = -I$(FONTINCSRC) -I../include
@@ -16,10 +16,17 @@ XCOMM $XFree86$
 #endif
   DEPEND_DEFINES = $(TRANS_INCLUDES) $(CONN_DEFINES)
 
+
+#define DoNormalLib NormalLibFont
+#define DoSharedLib SharedLibFont
+#define DoDebugLib DebugLibFont
+#define DoProfileLib ProfileLibFont
+#include <Library.tmpl>
+LibraryObjectRule()
+
 SubdirLibraryRule($(OBJS))
-NormalLibraryObjectRule()
-SpecialCObjectRule(fsio,$(ICONFIGFILES),$(CONN_DEFINES) $(SOCK_DEFINES))
-SpecialCObjectRule(transport,$(ICONFIGFILES),$(TRANS_INCLUDES) $(CONN_DEFINES) $(SOCK_DEFINES))
+SpecialCLibObjectRule(fsio,$(ICONFIGFILES),$(CONN_DEFINES) $(SOCK_DEFINES))
+SpecialCLibObjectRule(transport,$(ICONFIGFILES),$(TRANS_INCLUDES) $(CONN_DEFINES) $(SOCK_DEFINES))
 LinkSourceFile(transport.c,$(TRANSCOMMSRC))
 
 NormalLintTarget($(SRCS))

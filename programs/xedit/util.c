@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/util.c,v 1.3 1998/11/15 11:11:18 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/util.c,v 1.4 1998/12/06 06:08:52 dawes Exp $ */
 
 #include <stdio.h>
 #include "xedit.h"
@@ -334,15 +334,30 @@ SwitchTextSource(xedit_flist_item *item)
 
     for (i = 0; i < 3; i++)
 	if (texts[i] != textwindow
-	    && XawTextGetSource(texts[i]) == old_item->source)
+	    && XawTextGetSource(texts[i]) == item->source
+	    && XtIsManaged(texts[i]))
 	    break;
 
-    num_args = 0;
-    XtSetArg(args[num_args], XtNdisplayPosition,
+    if (i <= 3) {
+	/* Text may have changed in the other window, before the
+	 * displayPosition or insertPosition, and it is not worth
+	 * the work to calculate the offset changes outside of Xaw.
+	 */
+	num_args = 0;
+	XtSetArg(args[num_args], XtNdisplayPosition,
+	     &(item->display_position));			++num_args;
+	XtSetArg(args[num_args], XtNinsertPosition,
+	     &(item->insert_position));				++num_args;
+	XtGetValues(texts[i], args, num_args);
+    }
+    if (old_item != item) {
+	num_args = 0;
+	XtSetArg(args[num_args], XtNdisplayPosition,
 	     &(old_item->display_position));			++num_args;
-    XtSetArg(args[num_args], XtNinsertPosition,
+	XtSetArg(args[num_args], XtNinsertPosition,
 	     &(old_item->insert_position));			++num_args;
-    XtGetValues(textwindow, args, num_args);
+	XtGetValues(textwindow, args, num_args);
+    }
 
     num_args = 0;
     XtSetArg(args[num_args], XtNtextSource, item->source);	++num_args;

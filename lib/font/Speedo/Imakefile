@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.10 93/09/04 16:42:59 rws Exp $
-XCOMM $XFree86: xc/lib/font/Speedo/Imakefile,v 1.1.1.1.14.2 1998/07/05 14:35:47 dawes Exp $
+XCOMM $XFree86: xc/lib/font/Speedo/Imakefile,v 1.4 1998/07/25 06:56:52 dawes Exp $
 
 #if DoLoadableServer
 #define IHaveSubdirs
@@ -21,8 +21,14 @@ SUBDIRS = module
 		spencode.o \
 		$(SPEEDOOBJS)
 
+#define DoNormalLib NormalLibFont
+#define DoSharedLib SharedLibFont
+#define DoDebugLib DebugLibFont
+#define DoProfileLib ProfileLibFont
+#include <Library.tmpl>
+LibraryObjectRule()
+
 SubdirLibraryRule($(OBJS))
-NormalLibraryObjectRule()
 NormalLintTarget($(SRCS))
 
 #if DoLoadableServer

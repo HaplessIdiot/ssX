@@ -1,8 +1,10 @@
-XCOMM $XConsortium: necLib.rules,v 1.2 94/04/11 21:17:09 rws Exp $
+XCOMM $XConsortium: necLib.rules /main/4 1996/09/28 16:11:42 rws $
 
 /*
  * NECOS shared library rules
  */
+
+XCOMM $XFree86$
 
 #ifndef HasSharedLibraries
 #define HasSharedLibraries YES
@@ -41,7 +43,7 @@ XCOMM $XConsortium: necLib.rules,v 1.2 94/04/11 21:17:09 rws Exp $
 install:: Concat(lib,libname.so.rev) 					@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) -c $(INSTLIBFLAGS) Concat(lib,libname.so.rev) $(DESTDIR)dest @@\
-	$(LN) $(DESTDIR)dest/Concat(lib,libname.so.rev) $(DESTDIR)dest/Concat(lib,libname.so)	@@\
+	cd $(DESTDIR)/dest; $(LN) Concat(lib,libname.so.rev) Concat(lib,libname.so)	@@\
 
 #endif /* InstallSharedLibrary */
 
@@ -58,15 +60,15 @@ install:: Concat(lib,libname.sa.rev)					@@\
 #endif /* InstallSharedLibraryData */
 
 /*
- * NormalSharedLibraryTarget - generate rules to create a shared library;
- * build it into a different name so that the we do not hose people by having
+ * SharedLibraryTarget - generate rules to create a shared library;
+ * build it into a different name so that we do not hose people by having
  * the library gone for long periods.
  */
 #ifndef SharedLibraryTarget
 #define SharedLibraryTarget(libname,rev,solist,down,up)			@@\
 AllTarget(Concat(lib,libname.so.rev))					@@\
 									@@\
-Concat(lib,libname.so.rev):  solist					@@\
+Concat(lib,libname.so.rev):  solist $(EXTRALIBRARYDEPS)			@@\
 	$(RM) $@~							@@\
 	$(CC) -G -o $@~ $(SHLIBLDFLAGS) solist				@@\
 	$(RM) $@ 							@@\
@@ -86,13 +88,39 @@ clean::									@@\
 #endif /* SharedLibraryTarget */
 
 /*
+ * SharedDepLibraryTarget - generate rules to create a shared library.
+ */
+#ifndef SharedDepLibraryTarget
+#define SharedDepLibraryTarget(libname,rev,deplist,solist,down,up)	@@\
+AllTarget(Concat(lib,libname.so.rev))					@@\
+									@@\
+Concat(lib,libname.so.rev):  deplist $(EXTRALIBRARYDEPS)		@@\
+	$(RM) $@~							@@\
+	$(CC) -G -o $@~ $(SHLIBLDFLAGS) solist				@@\
+	$(RM) $@ 							@@\
+	$(MV) $@~ $@							@@\
+									@@\
+AllTarget(Concat(lib,libname.so))					@@\
+									@@\
+Concat(lib,libname.so):  Concat(lib,libname.so.rev)			@@\
+	$(RM) $@ 							@@\
+	$(LN) $? $@							@@\
+	LinkBuildLibrary($@)						@@\
+	LinkBuildLibrary(Concat(lib,libname.so))			@@\
+									@@\
+clean::									@@\
+	$(RM) Concat(lib,libname.so.rev)
+
+#endif /* SharedDepLibraryTarget */
+
+/*
  * SharedLibraryDataTarget - generate rules to create shlib data file;
  */
 #ifndef SharedLibraryDataTarget
 #define SharedLibraryDataTarget(libname,rev,salist)			@@\
 AllTarget(Concat(lib,libname.sa.rev))					@@\
 									@@\
-Concat(lib,libname.sa.rev):  salist					@@\
+Concat(lib,libname.sa.rev):  salist $(EXTRALIBRARYDEPS)			@@\
 	$(RM) $@							@@\
 	$(AR) $@ salist							@@\
 	RanLibrary($@)							@@\

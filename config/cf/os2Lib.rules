@@ -2,7 +2,7 @@ XCOMM $XConsortium: os2Lib.rules /main/1 1996/10/31 14:47:29 kaleb $
 
 
 
-XCOMM $XFree86: xc/config/cf/os2Lib.rules,v 3.7 1997/01/27 06:12:49 dawes Exp $
+XCOMM $XFree86: xc/config/cf/os2Lib.rules,v 3.8 1998/12/20 11:56:25 dawes Exp $
 
 /*
  * OS2/EMX shared library rules (DLL version)
@@ -229,6 +229,21 @@ LibraryTargetNameSuffix(libname,_d): objlist $(EXTRALIBRARYDEPS)	@@\
 #endif /* DebuggedLibraryTarget */
 
 /*
+ * DebuggedDepLibraryTarget - generate rules to create a debuggable library.
+ */
+#ifndef DebuggedDepLibraryTarget
+#define	DebuggedDepLibraryTarget(libname,deplist,objlist)		@@\
+AllTarget(LibraryTargetNameSuffix(libname,_d))				@@\
+									@@\
+LibraryTargetNameSuffix(libname,_d): deplist $(EXTRALIBRARYDEPS)	@@\
+	RemoveFile($@)							@@\
+	ImakeIndir debugger MakeStaticLibrary(../$@)			@@\
+	RanLibrary($@)							@@\
+	_LinkBuildLibrary($@)
+
+#endif /* DebuggedDepLibraryTarget */
+
+/*
  * ProfiledLibraryTarget - generate rules to create a profiled library.
  */
 #ifndef ProfiledLibraryTarget
@@ -242,3 +257,18 @@ LibraryTargetNameSuffix(libname,_p): objlist $(EXTRALIBRARYDEPS)	@@\
 	_LinkBuildLibrary($@)
 
 #endif /* ProfiledLibraryTarget */
+
+/*
+ * ProfiledDepLibraryTarget - generate rules to create a profiled library.
+ */
+#ifndef ProfiledDepLibraryTarget
+#define	ProfiledDepLibraryTarget(libname,deplist,objlist)		@@\
+AllTarget(LibraryTargetNameSuffix(libname,_p))				@@\
+									@@\
+LibraryTargetNameSuffix(libname,_p): deplist $(EXTRALIBRARYDEPS)	@@\
+	RemoveFile($@)							@@\
+	ImakeIndir profiled MakeStaticLibrary(../$@)			@@\
+	RanLibrary($@)							@@\
+	_LinkBuildLibrary($@)
+
+#endif /* ProfiledDepLibraryTarget */

@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.14 1998/12/06 06:08:10 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.15 1998/12/06 10:44:33 dawes Exp $ */
 
 /*
  * AsciiSrc.c - AsciiSrc object. (For use with the text widget).
@@ -514,143 +514,181 @@ static XawTextPosition
 Scan(Widget w, register XawTextPosition position, XawTextScanType type,
      XawTextScanDirection dir, int count, Bool include)
 {
-  AsciiSrcObject src = (AsciiSrcObject)w;
-  Piece *piece;
-  XawTextPosition first, first_eol_position = position;
-  register char *ptr;
-  register char inc;
-  int cnt = count;
+    AsciiSrcObject src = (AsciiSrcObject)w;
+    Piece *piece;
+    XawTextPosition first, first_eol_position = position;
+    register char *ptr, *lim;
+    register int cnt = count;
+    register unsigned char c;
 
-  if (type == XawstAll)
-    {
-      if (dir == XawsdRight)
-	return (src->ascii_src.length);
-      return (0);
+    if (count < 0) {
+	dir = dir == XawsdLeft ? XawsdRight : XawsdLeft;
+	count = -count;
+	cnt = -cnt;
     }
+    position = XawMax(0, XawMin(position, src->ascii_src.length));
 
-  if (position > src->ascii_src.length)
-    position = src->ascii_src.length;
+    if (type == XawstAll)
+	return (dir == XawsdLeft ? 0 : src->ascii_src.length);
+    else if (type == XawstPositions) {
+	position += dir == XawsdRight ? count : -count;
 
-  if (dir == XawsdRight)
-    {
-      if (position == src->ascii_src.length)
-	return (src->ascii_src.length);
-      inc = 1;
+	return (XawMax(0, XawMin(position, src->ascii_src.length)));
     }
-  else
-    {
-      if (position == 0)
+    else if (dir == XawsdLeft) {
+	if (position <= 0)
+	    return (0);
+	--position;
+    }
+    else if (position >= src->ascii_src.length)
+	return (src->ascii_src.length);
+
+    piece = FindPiece(src, position, &first);
+    if (piece->used == 0)
 	return (0);
-      inc = -1;
-      position--;
-    }
 
-  piece = FindPiece(src, position, &first);
+    ptr = (position - first) + piece->text;
 
-  if (piece->used == 0)
-    return (0);
+    if (dir == XawsdRight) {
+	lim = piece->text + piece->used;
+	switch (type) {
+	    case XawstEOL:
+	    case XawstParagraph:
+	    case XawstWhiteSpace:
+	    case XawstAlphaNumeric:
+		for (; cnt > 0; cnt--) {
+		    Bool non_space = False, first_eol = True;
 
-  ptr = (position - first) + piece->text;
+		    /*CONSTCOND*/
+		    while (True) {
+			if (ptr >= lim) {
+			    piece = piece->next;
+			    if (piece == NULL)	/* End of text */
+				return (src->ascii_src.length);
+			    ptr = piece->text;
+			    lim = piece->text + piece->used;
+			}
 
-  switch (type)
-    {
-    case XawstEOL:
-    case XawstParagraph:
-    case XawstWhiteSpace:
-    case XawstAlphaNumeric:
-      for (; cnt > 0; cnt--)
-	{
-	  Bool non_space = False, first_eol = True;
+			c = *ptr++;
+			++position;
 
-	  /*CONSTCOND*/
-	  while (True)
-	    {
-	      register unsigned char c;
-
-	      if (ptr < piece->text)
-		{
-		  piece = piece->prev;
-		  if (piece == NULL)	/* Begining of text */
-		    return (0);
-		  ptr = piece->text + piece->used - 1;
-		}
-	      else if (ptr >= (piece->text + piece->used))
-		{
-		  piece = piece->next;
-		  if (piece == NULL)	/* End of text */
-		    return (src->ascii_src.length);
-		  ptr = piece->text;
-		}
-
-	      c = *ptr;
-	      ptr += inc;
-	      position += inc;
-
-	      if (type == XawstAlphaNumeric) {
-		  if (!isalnum(c)) {
-		      if (non_space)
-			  break;
-		  }
-		  else
-		      non_space = True;
-	      }
-	      else if (type == XawstWhiteSpace)
-		{
-		  if (isspace(c))
-		    {
-		      if (non_space)
-			break;
-		    }
-		  else
-		    non_space = True;
-		}
-	      else if (type == XawstEOL)
-		{
-		  if (c == '\n')
-		    break;
-		}
-	      else	/* XawstParagraph */
-		{
-		  if (first_eol)
-		    {
-		      if (c == '\n')
-			{
-			  first_eol_position = position;
-			  first_eol = False;
+			if (type == XawstEOL) {
+			    if (c == '\n')
+				break;
+			}
+			else if (type == XawstAlphaNumeric) {
+			    if (!isalnum(c)) {
+				if (non_space)
+				    break;
+			    }
+			    else
+				non_space = True;
+			}
+			else if (type == XawstWhiteSpace) {
+			    if (isspace(c)) {
+				if (non_space)
+				    break;
+			    }
+			    else
+				non_space = True;
+			}
+			else {	/* XawstParagraph */
+			    if (first_eol) {
+				if (c == '\n') {
+				    first_eol_position = position;
+				    first_eol = False;
+				}
+			    }
+			    else if (c == '\n')
+				break;
+			    else if (!isspace(c))
+				first_eol = True;
 			}
 		    }
-		  else if (c == '\n')
-		    break;
-		  else if (!isspace(c))
-		    first_eol = True;
 		}
-	    }
+
+		if (!include) {
+		    if (type == XawstParagraph)
+			position = first_eol_position;
+		    if (count)
+			--position;
+		}
+	    default:
+		break;
 	}
-      if (!include)
-	{
-	  if (type == XawstParagraph)
-	    position = first_eol_position;
-	  if (count)
-	    position -= inc;
+    }
+    else {
+	lim = piece->text;
+	switch (type) {
+	    case XawstEOL:
+	    case XawstParagraph:
+	    case XawstWhiteSpace:
+	    case XawstAlphaNumeric:
+		for (; cnt > 0; cnt--) {
+		    Bool non_space = False, first_eol = True;
+
+		    /*CONSTCOND*/
+		    while (True) {
+			if (ptr < lim) {
+			    piece = piece->prev;
+			    if (piece == NULL)	/* Begining of text */
+				return (0);
+			    ptr = piece->text + piece->used - 1;
+			    lim = piece->text;
+			}
+
+			c = *ptr--;
+			--position;
+
+			if (type == XawstEOL) {
+			    if (c == '\n')
+				break;
+			}
+			else if (type == XawstAlphaNumeric) {
+			    if (!isalnum(c)) {
+				if (non_space)
+				    break;
+			    }
+			    else
+				non_space = True;
+			}
+			else if (type == XawstWhiteSpace) {
+			    if (isspace(c)) {
+				if (non_space)
+				    break;
+			    }
+			    else
+				non_space = True;
+			}
+			else {	/* XawstParagraph */
+			    if (first_eol) {
+				if (c == '\n') {
+				    first_eol_position = position;
+				    first_eol = False;
+				}
+			    }
+			    else if (c == '\n')
+				break;
+			    else if (!isspace(c))
+				first_eol = True;
+			}
+		    }
+		}
+
+		if (!include) {
+		    if (type == XawstParagraph)
+			position = first_eol_position;
+		    if (count)
+			++position;
+		}
+	    default:
+		break;
 	}
-      break;
-    case XawstPositions: 
-      position += count * inc;
-      break;
-    default:
-      break;
+
+	position++;
     }
 
-  if (dir == XawsdLeft)
-    position++;
-
-  if (position >= src->ascii_src.length)
-    return (src->ascii_src.length);
-
-  if (position < 0)
-    return (0);
-
-  return (position);
+    return (XawMax(0, XawMin(position, src->ascii_src.length)));
 }
 
 /*
@@ -712,13 +750,25 @@ Search(Widget w, register XawTextPosition position, XawTextScanDirection dir,
 	      position -= count;
 	      count = 0;
 	      c = *str;
+
+	      if (ptr < piece->text) {
+		  do {
+		      cnt = piece->text - ptr;
+		      piece = piece->prev;
+		      if (piece == NULL) {
+			  XtFree(buf);
+			  return (XawTextSearchError);
+		      }
+		      ptr = piece->text + piece->used - cnt;
+		  } while (ptr < piece->text);
+	      }
 	  }
 	  position++;
 	  if (ptr >= (piece->text + piece->used)) {
 	      do {
 		  cnt = ptr - (piece->text + piece->used);
 		  piece = piece->next;
-		  if (piece == NULL) {		/* End of text */
+		  if (piece == NULL) {
 		      XtFree(buf);
 		      return (XawTextSearchError);
 		  }
@@ -726,6 +776,8 @@ Search(Widget w, register XawTextPosition position, XawTextScanDirection dir,
 	      } while (ptr >= (piece->text + piece->used));
 	  }
       }
+
+      position -= text->length - 1;
   }
   else {
       str = buf + text->length - 1;
@@ -745,13 +797,25 @@ Search(Widget w, register XawTextPosition position, XawTextScanDirection dir,
 	      position += count;
 	      count = 0;
 	      c = *str;
+
+	      if (ptr >= (piece->text + piece->used)) {
+		  do {
+		      cnt = ptr - (piece->text + piece->used);
+		      piece = piece->next;
+		      if (piece == NULL) {
+			  XtFree(buf);
+			  return (XawTextSearchError);
+		      }
+		      ptr = piece->text + cnt;
+		  } while (ptr >= (piece->text + piece->used));
+	      }
 	  }
 	  position--;
 	  if (ptr < piece->text) {
 	      do {
 		  cnt = piece->text - ptr;
 		  piece = piece->prev;
-		  if (piece == NULL) {		/* Begining of text */
+		  if (piece == NULL) {
 		      XtFree(buf);
 		      return (XawTextSearchError);
 		  }
@@ -762,10 +826,8 @@ Search(Widget w, register XawTextPosition position, XawTextScanDirection dir,
   }
 
   XtFree(buf);
-  if (dir == XawsdLeft)
-      return (position);
 
-  return (position - (text->length - 1));
+  return (position);
 }
 
 /*

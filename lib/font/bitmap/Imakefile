@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/9 1996/11/03 19:31:58 kaleb $
-XCOMM $XFree86: xc/lib/font/bitmap/Imakefile,v 1.1.1.2.4.2 1998/07/05 14:36:01 dawes Exp $
+XCOMM $XFree86: xc/lib/font/bitmap/Imakefile,v 1.4 1998/07/25 06:57:03 dawes Exp $
 
 #if DoLoadableServer
 #define IHaveSubdirs
@@ -24,10 +24,15 @@ SUBDIRS = module
 		   bitmapfunc.o pcfread.o pcfwrite.o snfread.o \
 		   fontink.o
 
-SpecialCObjectRule(bitmapfunc,$(ICONFIGFILES),$(GZIP_DEFS))
+#define DoNormalLib NormalLibFont
+#define DoSharedLib SharedLibFont
+#define DoDebugLib DebugLibFont
+#define DoProfileLib ProfileLibFont
+#include <Library.tmpl>
+LibraryObjectRule()
 
+SpecialCObjectRule(bitmapfunc,$(ICONFIGFILES),$(GZIP_DEFS))
 SubdirLibraryRule($(OBJS))
-NormalLibraryObjectRule()
 NormalLintTarget($(SRCS))
 
 #if DoLoadableServer

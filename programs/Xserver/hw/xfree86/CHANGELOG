@@ -1,5 +1,18 @@
+XFree86 3.9Nt (11 January 1999)
+2133. Add support for a shared font library (#2364, Takuya SHIOZAKI).
+2132. Add ProfiledDepLibraryTarget, DebuggedDepLibraryTarget and
+      SharedDepLibraryTarget rules to imake (#2364, Takuya SHIOZAKI).
+2131. Fix a typo in xf86Init.c (#2372, Nozomi Ytow).
+2130. Xaw and xedit updates (#2371, Paulo Cesar Pereira de Andrade).
+2129. Move the DDC call to before the mode initialisation in the mga driver
+      (#2367, Alan Hourihane).
+2128. Fix a problem with the xkb dvorak layout (#2362, Tabman)
+2127. Fix an xsm crash (NULL dereference) when a client sets an SM property
+      list to a length of zero (#2361, Robert Bihlmeyer).
+2126. Untested support for the Trident 939A/DVD (#2359, 2360, Alan Hourihane).
+
 XFree86 3.9Ns (3 January 1999)
-2125. Allow backing store to be controlled with a pre-screen config file
+2125. Allow backing store to be controlled with a per-screen config file
       option (#2357, Mark Vojkovich).
 2124. Fix XAA so that the offscreen pixmaps are compatible with backing store
       (#2354, Mark Vojkovich).
@@ -7034,4 +7047,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.654 1998/12/20 13:16:31 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.655 1999/01/03 03:58:22 dawes Exp $

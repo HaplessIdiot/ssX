@@ -2,7 +2,7 @@ XCOMM $XConsortium: sv3Lib.rules /main/1 1996/10/31 14:47:33 kaleb $
 
 
 
-XCOMM $XFree86: xc/config/cf/sv3Lib.rules,v 3.0 1994/05/21 23:39:31 dawes Exp $
+XCOMM $XFree86: xc/config/cf/sv3Lib.rules,v 3.1 1996/12/27 06:50:27 dawes Exp $
 /*
  * SVR3 shared library rules
  * Copyright (c) 1992, 1993 by Thomas Wolfram, Berlin, Germany
@@ -221,6 +221,30 @@ clean::									@@\
 	$(RM) Concat(lib,libname.rev) Concat3(lib,libname,_s.a)
 
 #endif /* SharedLibraryTarget */
+
+/*
+ * SharedDepLibraryTarget - generate rules to create a shared library.
+ */
+#ifndef SharedDepLibraryTarget
+#define SharedDepLibraryTarget(libname,rev,deplist,solist,down,up)	@@\
+AllTarget(Concat(lib,libname.rev))					@@\
+									@@\
+Concat(lib,libname.rev):  deplist					@@\
+	$(RM) $@ Concat3(lib,libname,_s.a)				@@\
+        $(CPP) -DDOWN=down ConnectionFlags ShlibDefines Concat(lib,libname.def) | \ @@\
+        sed -e '/^#  *[0-9][0-9]*  *.*$$/d; /^$$/d' >spec.cpp           @@\
+        sed -e '1,/#libraries/d; /#externals/,$$d' spec.cpp | \         @@\
+        nawk '{ system("ar x " $$1 " " $$2 )}'                          @@\
+        echo "#target " Concat($(LIBDIR)/shlib/lib,libname.rev) >spec   @@\
+        sed -e '/#libraries/,$$d' spec.cpp >>spec                             @@\
+        mkshlib -s spec -t $@ -h Concat3(lib,libname,_s.a) $(SHLIBLDFLAGS)    @@\
+        ar rulv Concat3(lib,libname,_s.a) `sed -e '1,/#externals/d' spec.cpp` @@\
+        $(RM) spec.cpp spec                                             @@\
+									@@\
+clean::									@@\
+	$(RM) Concat(lib,libname.rev) Concat3(lib,libname,_s.a)
+
+#endif /* SharedDepLibraryTarget */
 
 /*
  * SharedLibraryDataTarget - generate rules to create shlib data file;

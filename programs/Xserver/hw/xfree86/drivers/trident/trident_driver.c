@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.35 1998/12/29 13:00:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.36 1999/01/03 03:58:39 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -121,6 +121,7 @@ static SymTabRec TRIDENTChipsets[] = {
     { PCI_CHIP_9320,		"cyber9320" },
     { PCI_CHIP_9388,		"cyber9388" },
     { PCI_CHIP_9397,		"cyber9397" },
+    { PCI_CHIP_939A,		"cyber939a" },
     { PCI_CHIP_9520,		"cyber9520" },
     { PCI_CHIP_9420,		"tgui9420" },
     { PCI_CHIP_9440,		"tgui9440" },
@@ -137,6 +138,7 @@ static PciChipsets TRIDENTPciChipsets[] = {
     { PCI_CHIP_9320,	PCI_CHIP_9320,	RES_SHARED_VGA },
     { PCI_CHIP_9388,	PCI_CHIP_9388,	RES_SHARED_VGA },
     { PCI_CHIP_9397,	PCI_CHIP_9397,	RES_SHARED_VGA },
+    { PCI_CHIP_939A,	PCI_CHIP_939A,	RES_SHARED_VGA },
     { PCI_CHIP_9520,	PCI_CHIP_9520,	RES_SHARED_VGA },
     { PCI_CHIP_9420,	PCI_CHIP_9420,	RES_SHARED_VGA },
     { PCI_CHIP_9440,	PCI_CHIP_9440,	RES_SHARED_VGA },
@@ -968,16 +970,30 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 		case 0x22:
 		case 0x23:
 		    chipset = "Cyber 9397";
-    	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x04)
-		ramtype = "EDO Ram";
-    	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x08)
-		ramtype = "SDRAM";
-    	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x0C) {
-		pTrident->HasSGRAM = TRUE;
-		ramtype = "SGRAM";
-	    }
+    	    	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x04)
+			ramtype = "EDO Ram";
+    	    	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x08)
+			ramtype = "SDRAM";
+    	    	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x0C) {
+			pTrident->HasSGRAM = TRUE;
+			ramtype = "SGRAM";
+	    	    }
 		    pTrident->NewClockCode = TRUE;
 		    pTrident->Chipset = CYBER9397;
+		    pTrident->IsCyber = TRUE;
+		    break;
+		case 0x2a:
+		    chipset = "Cyber 939A/DVD";
+    	    	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x04)
+			ramtype = "EDO Ram";
+    	    	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x08)
+			ramtype = "SDRAM";
+    	    	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x0C) {
+			pTrident->HasSGRAM = TRUE;
+			ramtype = "SGRAM";
+	    	    }
+		    pTrident->NewClockCode = TRUE;
+		    pTrident->Chipset = CYBER939A;
 		    pTrident->IsCyber = TRUE;
 		    break;
 		case 0x30:
@@ -1516,7 +1532,7 @@ TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     vgaReg = &hwp->ModeReg;
     tridentReg = &pTrident->ModeReg;
 
-    vgaHWRestore(pScrn, vgaReg, VGA_SR_MODE | VGA_SR_CMAP);
+    vgaHWRestore(pScrn, vgaReg, VGA_SR_MODE);
 
     TridentRestore(pScrn, tridentReg);
 
@@ -1594,10 +1610,6 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Darken the screen for aesthetic reasons and set the viewport */
     TRIDENTSaveScreen(pScreen, FALSE);
     TRIDENTAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
-    /* XXX Fill the screen with black */
-#if 0
-    TRIDENTSaveScreen(pScreen, TRUE);
-#endif
 
     /*
      * The next step is to setup the screen's visuals, and initialise the
@@ -1770,7 +1782,9 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     TRIDENTI2CInit(pScreen);
 
-    /* Done */
+    /* Turn on the screen now */
+    TRIDENTSaveScreen(pScreen, TRUE);
+
     return TRUE;
 }
 
