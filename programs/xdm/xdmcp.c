@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/xdmcp.c,v 3.15 2001/07/23 13:15:52 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/xdmcp.c,v 3.16 2001/07/25 15:05:19 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -50,6 +50,13 @@ from The Open Group.
 #else
 #include	<un.h>
 #endif
+#endif
+#if defined(__SVR4) && defined(__sun)
+	/*
+	 * make sure we get the resolver's version of gethostbyname
+	 * otherwise we may not get all the addresses!
+	 */
+#define gethostbyname res_gethostbyname
 #endif
 #include	<netdb.h>
 
@@ -431,15 +438,7 @@ NetworkAddressToName(
 	    hostent = gethostbyaddr ((char *)data,
 				     connectionAddress->length, AF_INET);
 	    if (sourceAddress && hostent) {
-#if defined(__SVR4) && defined(__sun)
-		/*
-		 * make sure we get the resolver's version of gethostbyname
-		 * otherwise we may not get all the addresses!
-		 */
-		hostent = (struct hostent *) res_gethostbyname(hostent->h_name);
-#else
 		hostent = gethostbyname(hostent->h_name);
-#endif
 		if (hostent)
 			multiHomed = hostent->h_addr_list[1] != NULL;
 	    }

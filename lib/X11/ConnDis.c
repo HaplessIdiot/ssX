@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ConnDis.c,v 3.19 2001/07/23 13:15:41 dawes Exp $ */
+/* $XFree86: xc/lib/X11/ConnDis.c,v 3.20 2001/07/25 15:04:43 dawes Exp $ */
 
 /* 
  * This file contains operating system dependencies.
@@ -549,6 +549,13 @@ _XSendClientPrefix (dpy, client, auth_proto, auth_string, prefix)
 #endif
 
 #ifdef SECURE_RPC
+#if defined(sun) && defined(SVR4) /* && ????? */
+/*
+ * I'm aware this is backwards, but #define'ing PORTMAP, as suggested in the
+ * man pages, doesn't work either.
+ */
+#define authdes_seccreate authdes_create
+#endif
 #include <rpc/rpc.h>
 #ifdef ultrix
 #include <time.h>

@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlib.h,v 3.19 2001/01/17 19:41:50 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlib.h,v 3.20 2001/07/19 02:22:45 tsi Exp $ */
 
 
 /*
@@ -4811,6 +4811,26 @@ extern void XSetAuthorization(
     int				/* namelen */, 
     char *			/* data */,
     int				/* datalen */
+#endif
+);
+
+extern int _Xmbtowc(
+#if NeedFunctionPrototypes
+    wchar_t *			/* wstr */,
+#ifdef ISC
+    char const *		/* str */,
+    size_t			/* len */
+#else
+    char *			/* str */,
+    int				/* len */
+#endif
+#endif
+);
+
+extern int _Xwctomb(
+#if NeedFunctionPrototypes
+    char *			/* str */,
+    wchar_t			/* wc */
 #endif
 );
 

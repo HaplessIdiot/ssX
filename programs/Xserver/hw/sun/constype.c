@@ -17,7 +17,7 @@
  *
  * Author:  Doug Moran, SRI
  */
-/* $XFree86: xc/programs/Xserver/hw/sun/constype.c,v 3.4 1996/12/23 06:30:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/constype.c,v 3.5 2001/01/17 22:36:49 dawes Exp $ */
 
 /*
 SUN-SPOTS DIGEST         Thursday, 17 March 1988       Volume 6 : Issue 31
@@ -45,7 +45,11 @@ style.
 /* NetBSD seemingly still uses <strings.h> and naturally SunOS does */
 #include <strings.h>
 #endif
+#include <unistd.h>
 
+int wu_fbid(char *devname, char **fbname, int *fbtype);
+
+int
 main (argc, argv)
     int argc;
     char **argv;

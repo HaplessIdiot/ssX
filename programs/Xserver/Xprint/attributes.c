@@ -44,7 +44,7 @@ copyright holders.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/attributes.c,v 1.12 2001/01/17 22:36:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/attributes.c,v 1.13 2001/08/01 00:44:45 tsi Exp $ */
 
 #include <Xproto.h>
 #include <string.h>
@@ -52,6 +52,9 @@ copyright holders.
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <pwd.h>
+#if defined(sun) && defined(SVR4)
+#include <wchar.h>
+#endif
 
 #include <scrnintstr.h>
 
@@ -1204,7 +1207,16 @@ ReplaceAllKeywords(
 #define toascii( c ) ((unsigned)(c) & 0x007f)
 #endif
 
-#if defined(CSRG_BASED) || defined(linux) || defined(__CYGWIN__) || (defined(sun) && !defined(SVR4)) || (defined(SVR4) && !defined(sun) && !defined(USL)) || defined(__EMX__) || defined(ISC) || defined(Lynx) || defined(__QNX__) || defined(__DARWIN__)
+#if defined(CSRG_BASED) || \
+    defined(linux) || \
+    defined(__CYGWIN__) || \
+    (defined(sun) && !defined(SVR4)) || \
+    (defined(SVR4) && !defined(sun) && !defined(USL)) || \
+    defined(__EMX__) || \
+    defined(ISC) || \
+    defined(Lynx) || \
+    defined(__QNX__) || \
+    defined(__DARWIN__)
 #define iswspace(c) (isascii(c) && isspace(toascii(c)))
 #endif
 

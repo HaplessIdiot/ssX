@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_mouse.c,v 1.1 2001/05/28 02:42:31 tsi Exp $ */
 /*
  * Copyright 1999-2001 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -25,6 +25,7 @@
  * XFree86 Project.
  */
 
+#include "xf86.h"
 #include "xf86_OSlib.h"
 #include "xf86OSmouse.h"
 

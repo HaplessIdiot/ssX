@@ -23,7 +23,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/Xserver/hw/sun/sunGX.c,v 1.3 1998/10/04 09:38:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunGX.c,v 1.4 2001/01/17 22:36:50 dawes Exp $ */
 
 #include	"sun.h"
 
@@ -42,6 +42,7 @@ in this Software without prior written authorization from The Open Group.
 #include	"mergerop.h"
 #include	"sunGX.h"
 #include	"migc.h"
+#include	"mispans.h"
 
 #define sunGXFillSpan(gx,y,x1,x2,r) {\
     (gx)->apointy = (y); \
@@ -1783,6 +1784,7 @@ sunGXFillBoxStipple (pDrawable, nBox, pBox, stipple)
     GXWait(gx,r);
 }
 
+Bool
 sunGXCheckTile (pPixmap, stipple)
     PixmapPtr	    pPixmap;
     sunGXStipplePtr stipple;
@@ -1843,6 +1845,7 @@ sunGXCheckTile (pPixmap, stipple)
     return TRUE;
 }
 
+Bool
 sunGXCheckStipple (pPixmap, stipple)
     PixmapPtr	    pPixmap;
     sunGXStipplePtr stipple;
@@ -1880,6 +1883,7 @@ sunGXCheckStipple (pPixmap, stipple)
 
 static  sunGXStipplePtr tmpStipple;
 
+Bool
 sunGXCheckFill (pGC, pDrawable)
     GCPtr	pGC;
     DrawablePtr	pDrawable;
@@ -2528,6 +2532,7 @@ sunGXDestroyGC (pGC)
     miDestroyGC (pGC);
 }
 
+Bool
 sunGXCreateGC (pGC)
     GCPtr   pGC;
 {
@@ -2564,6 +2569,7 @@ sunGXDestroyWindow (pWin)
     return cfbDestroyWindow (pWin);
 }
 
+Bool
 sunGXChangeWindowAttributes (pWin, mask)
     WindowPtr	pWin;
     Mask	mask;
@@ -2842,6 +2848,7 @@ sunGXCopyWindow(pWin, ptOldOrg, prgnSrc)
     REGION_DESTROY(pWin->drawable.pScreen, prgnDst);
 }
 
+Bool
 #if NeedFunctionPrototypes
 sunGXInit (
     ScreenPtr	pScreen,

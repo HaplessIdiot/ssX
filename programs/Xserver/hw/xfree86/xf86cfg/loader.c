@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.c,v 1.13 2001/07/25 15:05:08 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.c,v 1.14 2001/08/01 00:44:56 tsi Exp $
  */
 
 #include "config.h"
@@ -41,7 +41,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <setjmp.h>
-#include <sys/signal.h>
+#include <signal.h>
 
 #include <stdarg.h>
 

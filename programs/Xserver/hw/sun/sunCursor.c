@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunCursor.c,v 3.1 1998/10/04 09:38:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunCursor.c,v 3.2 2001/01/17 22:36:50 dawes Exp $ */
 
 /*-
  * sunCursor.c --
@@ -33,6 +33,8 @@ from The Open Group.
 
 #define NEED_EVENTS
 #include    "sun.h"
+#include    "cfb.h"
+#include    "mfb.h"
 
 #ifdef FBIOGCURMAX  /* has hardware cursor kernel support */
 
@@ -78,11 +80,6 @@ sunCursorRepad (pScreen, bits, src_bits, dst_bits, ptSrc, w, h)
     PixmapPtr	src, dst;
     BoxRec	box;
     RegionRec	rgnDst;
-#ifndef LOWMEMFTPT
-    extern int mfbDoBitblt();
-#else
-    extern int cfbDoBitblt();
-#endif /* ifndef LOWMEMFTPT */
 
     if (!(src = GetScratchPixmapHeader(pScreen, bits->width, bits->height,
 				       /*bpp*/ 1, /*depth*/ 1,
@@ -100,9 +97,10 @@ sunCursorRepad (pScreen, bits, src_bits, dst_bits, ptSrc, w, h)
     box.y2 = h;
     REGION_INIT(pScreen, &rgnDst, &box, 1);
 #ifndef LOWMEMFTPT
-    mfbDoBitblt(src, dst, GXcopy, &rgnDst, ptSrc);
+    mfbDoBitblt(&src->drawable, &dst->drawable, GXcopy, &rgnDst, ptSrc);
 #else
-    cfbDoBitblt(src, dst, GXcopy, &rgnDst, ptSrc, 0xFFFFFFFF);
+    cfbDoBitblt(&src->drawable, &dst->drawable, GXcopy, &rgnDst, ptSrc,
+	0xFFFFFFFF);
 #endif /* ifndef LOWMEMFTPT */
     REGION_UNINIT(pScreen, &rgnDst);
     FreeScratchPixmapHeader(src);

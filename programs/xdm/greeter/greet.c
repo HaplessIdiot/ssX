@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/greet.c,v 3.12 2001/03/06 17:31:40 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/greet.c,v 3.13 2001/05/11 09:03:07 alanh Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -48,6 +48,11 @@ from The Open Group.
 
 #ifdef __OpenBSD__
 #include <syslog.h>
+#endif
+
+#if defined(SECURE_RPC) && defined(sun)
+/* Go figure, there's no getdomainname() prototype available */
+extern int getdomainname(char *name, size_t len);
 #endif
 
 #ifdef GREET_LIB

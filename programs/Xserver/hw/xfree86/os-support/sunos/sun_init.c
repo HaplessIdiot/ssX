@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_init.c,v 1.1 2001/05/28 02:42:31 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -23,6 +23,7 @@
  * OF THIS SOFTWARE.
  */
 
+#include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 

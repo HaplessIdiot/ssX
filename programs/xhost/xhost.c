@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xhost/xhost.c,v 3.15 2001/07/23 13:15:53 dawes Exp $ */
+/* $XFree86: xc/programs/xhost/xhost.c,v 3.16 2001/07/25 15:05:23 dawes Exp $ */
 
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(AMTCPCONN)
 #define NEEDSOCKETS
@@ -97,6 +97,10 @@ extern unsigned long inet_makeaddr();
 #ifndef NGROUPS_MAX
 #include <sys/param.h>
 #define NGROUPS_MAX NGROUPS
+#endif
+#ifdef sun
+/* Go figure, there's no getdomainname() prototype available */
+extern int getdomainname(char *name, size_t len);
 #endif
 #endif
 

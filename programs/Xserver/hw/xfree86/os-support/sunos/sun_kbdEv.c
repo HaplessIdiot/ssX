@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_kbdEv.c,v 1.1 2001/05/28 02:42:31 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by David Dawes <dawes@xfree86.org>
@@ -24,6 +24,7 @@
 
 /* [JCH-96/01/21] Extended std reverse map to four buttons. */
 
+#include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
@@ -33,6 +34,10 @@
 #include "xf86Xinput.h"
 #else
 #include "inputstr.h"
+#endif
+
+#ifdef XFreeXDGA
+#include "dgaproc.h"
 #endif
 
 #include <sys/vuid_event.h>

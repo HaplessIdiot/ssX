@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.8 2001/03/21 17:02:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.10 2001/07/25 08:04:43 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -141,7 +141,7 @@
     do {                                                                  \
 	if (!idx) {                                                       \
 	    OUTREG(RADEON_DAC_CNTL2, INREG(RADEON_DAC_CNTL2) &            \
-                   ~RADEON_DAC2_PALETTE_ACC_CTL);                         \
+                   (CARD32)~RADEON_DAC2_PALETTE_ACC_CTL);                 \
 	} else {                                                          \
 	    OUTREG(RADEON_DAC_CNTL2, INREG(RADEON_DAC_CNTL2) |            \
                    RADEON_DAC2_PALETTE_ACC_CTL);                          \

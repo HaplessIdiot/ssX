@@ -1,17 +1,11 @@
 /*
-$XConsortium: XRecord.c /main/3 1995/12/19 11:43:12 gildea $
+$Xorg: XRecord.c,v 1.3 2000/08/17 19:46:23 cpqbld Exp $
 
 XRecord.c - client-side library for RECORD extension
 
-Copyright (c) 1995  X Consortium
+Copyright 1995, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be
 included in all copies or substantial portions of the Software.
@@ -19,15 +13,15 @@ included in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
 /***************************************************************************
@@ -52,6 +46,7 @@ from the X Consortium.
 /*
  * By Stephen Gildea, X Consortium, and Martha Zimet, NCD.
  */
+/* $XFree86$ */
 
 #include <stdio.h>
 #include <assert.h>
@@ -288,7 +283,7 @@ XRecordQueryVersion (dpy, cmajor_return, cminor_return)
     *cmajor_return = rep.majorVersion;
     *cminor_return = rep.minorVersion;
     return ((rep.majorVersion == RECORD_MAJOR_VERSION) &&
-	    (rep.minorVersion >= RECORD_MINOR_VERSION));
+	    (rep.minorVersion >= RECORD_LOWEST_MINOR_VERSION));
 }
 
 XRecordContext
@@ -771,7 +766,7 @@ parse_reply_call_callback(dpy, info, rep, reply, callback, closure)
 	    case X_Reply: /* reply */
 		EXTRACT_CARD32(rep->clientSwapped,
 			       reply->buf+current_index+4, datum_bytes);
-		datum_bytes = datum_bytes+8 << 2;
+		datum_bytes = (datum_bytes+8) << 2;
 		break;
 	    default: /* error or event */
 		datum_bytes = 32;
@@ -804,7 +799,7 @@ parse_reply_call_callback(dpy, info, rep, reply, callback, closure)
 	case XRecordClientStarted:
 	    EXTRACT_CARD16(rep->clientSwapped,
 			   reply->buf+current_index+6, datum_bytes);
-	    datum_bytes = datum_bytes+2 << 2;
+	    datum_bytes = (datum_bytes+2) << 2;
 	    break;
 	case XRecordClientDied:
 	    if (rep->elementHeader&XRecordFromClientSequence) {
@@ -958,15 +953,16 @@ record_async_handler(dpy, rep, buf, len, adata)
 	    return False;
 	}
 	
-	_XGetAsyncData(dpy, reply->buf, buf, len,
+	_XGetAsyncData(dpy, (char *)reply->buf, buf, len,
 		       SIZEOF(xRecordEnableContextReply),
 		       rep->generic.length << 2, 0);
     } else {
 	reply = NULL;
     }
 
-    status = parse_reply_call_callback(dpy, state->info, rep, reply,
-				       state->callback, state->closure);
+    status = parse_reply_call_callback(dpy, state->info, 
+				       (xRecordEnableContextReply*) rep, 
+				       reply, state->callback, state->closure);
 
     if (status != Continue)
     {
