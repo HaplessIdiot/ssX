@@ -20,17 +20,17 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.69 2001/04/28 13:51:56 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.70 2001/06/18 19:09:28 dickey Exp $
   -->
 <HTML>
 <HEAD>
 <TITLE>XTERM - Change Log</TITLE>
-<LINK REV=MADE HREF="mailto:dickey@herndon4.his.com">
+<LINK REV=MADE HREF="mailto:dickey@invisible-island.net">
 </HEAD>
 <BODY>
 <HR>
 Copyright 1997,1998,1999,2000,2001 by <A
-HREF="mailto:dickey@herndon4.his.com">Thomas E. Dickey</A>
+HREF="mailto:dickey@invisible-island.net">Thomas E. Dickey</A>
 <HR>
 <H1>Contents</H1>
 This file contains a list of the changes that I have made for XFree86 xterm,
@@ -42,6 +42,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_158">Patch #158 - 2001/9/8 - XFree86 4.1.0</A>
 <LI><A HREF="#xterm_157">Patch #157 - 2001/6/18 - XFree86 4.1.0</A>
 <LI><A HREF="#xterm_156">Patch #156 - 2001/4/28 - XFree86 4.0.3</A>
 <LI><A HREF="#xterm_155">Patch #155 - 2001/4/20 - XFree86 4.0.3</A>
@@ -202,6 +203,96 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
 
+<H1><A NAME="xterm_158">Patch #158 - 2001/9/8 - XFree86 4.1.0</A></H1>
+<ul>
+	<li>augment key translations for scrollbar widget to ensure that
+	   keystrokes intended for the text area are not lost if the mouse
+	   pointer happens to fall on the scrollbar.  This can happen, for
+	   instance, if the user's <code>app-defaults</code> or
+	   <code>.Xdefaults</code> file contains a translations resource,
+	   though it may also happen through unrelated resource settings: 
+	   probably a bug in libXt (reported by Paul Fox
+	   &lt;pgf@foxharp.boston.ma.us&gt; and Dmitry Yu.  Bolkhovityanov
+	   &lt;D.Yu.Bolkhovityanov@inp.nsk.su&gt;).
+
+	<li>widen ifdef's in xterm.h to define <code>__EXTENSIONS__</code> on
+	   Solaris, for compilers other than gcc.  This was added along
+	   <code>_POSIX_C_SOURCE</code> with in <a href="#xterm_151">patch
+	   #151</a>, but is not sufficient since Sun's compiler does not define
+	   <code>__STDC__</code> by default (report by Matthias Scheler
+	   &lt;tron@zhadum.de&gt;).
+
+	<li>modify xterm to obtain the closest matching color if an exact color
+	   is not available, e.g., on 8-bit displays (patch by Steve Wall)
+
+	<li>patch by Tomohiro KUBOTA &lt;tkubota@riken.go.jp&gt; to implement
+	  "OverTheSpot" preedit type of XIM input:
+	  <ul>
+	  <li>This preedit type is a reasonable compromise between
+	    simpleness of implementation and usefulness.  "Root" preedit
+	    type is easy to implement but not useful; "OnTheSpot" preedit
+	    type is the best in the point of view of user interface but
+	    very complex.  And more, "OverTheSpot" is the preedit type
+	    which the most XIM servers support.  Thus, to achieve reasonable
+	    usability, support of "OverTheSpot" preedit type is needed.
+
+	  <li>In "OverTheSpot" preedit type, the preedit (preconversion)
+	    string is displayed at the position of the cursor.  On the
+	    other hand, it is XIM server's responsibility to display
+	    the preedit string.  Thus, it is needed for XIM client (here
+	    XTerm) to inform the XIM server of the cursor position.
+	    And more, to achieve good visual proportion, preedit string
+	    must be written using proper font.  Thus, it is XIM client's
+	    responsibility to inform the XIM server of the proper font.
+	    The font must be supplied by "fontset".  Fontset is a set of
+	    fonts with charsets which are specified by the current locale.
+	    Since XTerm uses ISO10646 fonts regardless of the current locale,
+	    the fonts for XIM must be prepared separately.  It is difficult
+	    to prepare fonts which are similar to XTerm font.  Thus, my
+	    patch uses a simple way - the default font is "*" which matches
+	    every fonts and X library will automatically choose fonts with
+	    proper charsets.  I added "-fx" command option and "ximFont"
+	    resource to override this default font setting.
+
+	  <li>changed the definition of "OverTheSpot" preedit type
+	    from XIMPreeditPosition|XIMStatusArea
+	    to XIMPreeditPosition|XIMStatusNothing.
+	    This matches the behavior of other programs such as
+	    Rxvt, Kterm, Gedit.
+
+	  <li>A tiny XIM bugfix is also included.  By calling XSetLocaleModifiers()
+	    with parameter of "", it can consier XMODIFIERS environmental
+	    variable which is a standard way for users to specify XIM server
+	    to be used.
+	  </ul>
+
+	<li>adjust configure script to accommodate repackaging of keysym2ucs.c
+	  as include-file for xutf8.c (patch by Tomohiro KUBOTA
+	  &lt;kubota@debian.org&gt;).
+
+	<li>add the <code>UXTerm</code> app-defaults file to makefile install
+	  rules (request by Juliusz Chroboczek).
+
+	<li>correct logic in <code>get_termcap()</code>, which returned false
+	  if the <code>tgetent()</code> call indicated that xterm was linked
+	  with terminfo.  Although the <code>$TERMCAP</code> variable cannot be
+	  adjusted in this case, xterm still needs information from this call
+	  to extract data to initialize the erase-mode when the
+	  <code>ptyInitialErase</code> resource is false.
+
+	<li>modify <code>ScrollbarReverseVideo()</code> function to cache the
+	  original border color, so it can restore that when an application
+	  flashes the screen (Bugzilla #38872).
+
+	<li>resync with XFree86 CVS:
+	<ul>
+	  <li>remove ifdef's for X_NOT_STDC_ENV (David Dawes).
+	  <li>add Cygwin to special errno handling case in ptydata.c (Alan Hourihane)
+	  <li>set screen size earlier in initialization, to address a race
+	    with window manager resizing its clients (Keith Packard).
+	</ul>
+</ul>
+
 <H1><A NAME="xterm_157">Patch #157 - 2001/6/18 - XFree86 4.1.0</A></H1>
 <ul>
 	<li>patch by Juliusz Chroboczek to clean up button.c and input.c.  The
@@ -315,7 +406,7 @@ xc/programs/Xserver/hw/xfree86).
 	<ul>
 	  <li>Use TermcapLibrary as -lncurses instead of -ltermcap, fixes
 	    problem building xterm/resize on Cygwin/XFree86 (Harold Hunt).
-	  <li> Install xterm.termcap and xterm.terminfo when installing xterm
+	  <li>Install xterm.termcap and xterm.terminfo when installing xterm
 	    (Torrey T. Lyons).
 	  <li>Fix some build issues on Cygwin/XFree86 (Suhaib Siddiqi).
 	  <li>Define CBAUD, when it's missing in xterm, on LynxOS

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.72 2001/06/18 19:09:27 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.73 2001/07/25 15:05:30 dawes Exp $ */
 
 /************************************************************
 
@@ -154,7 +154,7 @@ authorization.
 /***====================================================================***/
 
 /* if compiling with gcc -ansi -pedantic, we must fix POSIX definitions */
-#if defined(__GNUC__) && defined(SVR4) && defined(sun)
+#if defined(SVR4) && defined(sun)
 #ifndef __EXTENSIONS__
 #define __EXTENSIONS__ 1
 #endif
@@ -344,6 +344,7 @@ extern int errno;
 #define XtNwideBoldFont		"wideBoldFont"
 #define XtNwideChars		"wideChars"
 #define XtNwideFont		"wideFont"
+#define XtNximFont		"ximFont"
 #define XtNxmcAttributes	"xmcAttributes"
 #define XtNxmcGlitch		"xmcGlitch"
 #define XtNxmcInline		"xmcInline"
@@ -431,6 +432,7 @@ extern int errno;
 #define XtCWideBoldFont		"WideBoldFont"
 #define XtCWideChars		"WideChars"
 #define XtCWideFont		"WideFont"
+#define XtCXimFont		"XimFont"
 #define XtCXmcAttributes	"XmcAttributes"
 #define XtCXmcGlitch		"XmcGlitch"
 #define XtCXmcInline		"XmcInline"
@@ -563,6 +565,7 @@ extern GC xterm_DoubleGC(unsigned chrset, unsigned flags, GC old_gc);
 extern Boolean xtermDeleteIsDEL (void);
 extern void Input (TKeyboard *keyboard, TScreen *screen, XKeyEvent *event, Bool eightbit);
 extern void StringInput (TScreen *screen, Char *string, size_t nbytes);
+extern void xtermAddInput(Widget w);
 
 #if OPT_NUM_LOCK
 extern void VTInitModifiers(void);
