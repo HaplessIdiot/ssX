@@ -1,4 +1,6 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 742. Set the dependencies correctly for SCO shared libraries, and use gcc
+      for linking instead of ld (Bugzilla #1045, Kean Johnston).
  741. Some cleanups for the SCO support, and a few changes required for
       compilation on UnixWare (Bugzilla #1045, Kean Johnston).
  740. Make the X server lock file code treat the display string in the same
@@ -18509,7 +18511,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3084 2004/01/07 04:16:33 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3085 2004/01/07 04:28:02 dawes Exp $
 
 
 
