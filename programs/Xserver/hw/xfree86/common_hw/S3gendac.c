@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.21 1997/01/23 11:02:07 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.22 1997/01/24 01:02:49 dawes Exp $ */ 
 /*
  * Progaming of the S3 gendac programable clocks, from the S3 Gendac
  * programing documentation by S3 Inc. 
@@ -459,14 +459,15 @@ int
 #if NeedFunctionPrototypes
 gendacMNToClock(unsigned char m,unsigned char n)
 #else
-gendacMNToClockValue(m,n)
+gendacMNToClock(m,n)
      unsigned char m;
      unsigned char n;
 #endif
 {
 	int rtn;
 
-	rtn = 14318 * (m + 2) / ((n & 0x1f)+2) / (1 << ((n & 0x60) >> 5)) ;
+	rtn = (1431818 * (m + 2) / ((n & 0x1f)+2) /
+		(1 << ((n & 0x60) >> 5))) / 100;
 
 	return rtn;
 }

@@ -3,16 +3,17 @@
 <article>
  
 <title> Linux を使用している人のための情報
-<author> Orest Zborowski
-<date> 1994 年 11 月 13 日
+<author> Orest Zborowski, Dirk Hohndel
+<date> 1996 年 10 月 20 日
 <trans> 岡本　一幸 Kazuyuki Okamoto &lt;ikko-@pacific.rim.or.jp&gt;
 <toc>
 
 <sect> XFree86 がテストされた Linux のバージョン <p>
-XFree86 は Linux のバージョン 1.1.49 でテスト済みです。 1.0 以降のバージョ
+XFree86 は Linux のバージョン 2.0.19 でテスト済みです。 1.0 以降のバージョ
 ンでは、XFree86 に変更がなければ動くでしょう。バイナリとライブラリは 
-4.5.26 のDLL C ライブラリと 1.4.4 のダイナミック・リンカー <tt>ld.so</tt> を基にし
-ています(libc-4.5.26 かそれ以降の新しいものが*必須*です)。DLL X ライブラリ
+5.2.18 Elf C ライブラリと 1.7.14 のダイナミック・リンカー <tt>ld.so</tt> を基にし
+ています。
+DLL X ライブラリ
 は Eric Youngdale 氏によって 2.16 DLL-tools を使用して作成されました。
 
 <sect> 前のバージョンとの互換性 <p>
@@ -23,6 +24,13 @@ X11R6 は X11R5 から大きく更新したものとなっていますので、XFree86-3.1 以降
 へ移動すればいいのですが、<tt>/etc/ld.so.conf</tt> は更新しなければいけません。全て
 の X11R5 のアプリケーションは問題無く X11R6 のサーバーと一緒に動作するでし
 ょう。
+
+<!--X11R6.1 is yet another update to X11R6. While the minor number for some
+libraries has been increased to '1' it is believed to be fully
+compatible with X11R6 based applications.-->
+X11R6.1 はX11R6 のもう一つの最新版です。 いくつかのライブラリのマイナー番号が
+ '1'増加している時、そのライブラリは X11R6 で動作するアプリケーションと完全に
+互換性があると考えます。
 
 XFree86-1.2、XFree86-1.3 または XFree86-2.0 ライブラリと関連のある古いバイ
 ナリは引き続き動作しますが、<tt>/lib/libX{11,t,aw}.so.3</tt>
@@ -55,11 +63,21 @@ XFree86 を動作させるためには 4MB の仮想メモリが必要ですが、快適に動作させ
 tar ファイルを展開したら、<tt>/etc/ld.so.conf</tt> の中か（初期値によって既にそう定
 義されているはずです）、<tt>LD_LIBRARY_PATH</tt> 環境変数の中に <tt>/usr/X11R6/lib</tt> を定
 義する必要があります。また、構成定義ファイルである 
-<tt>/usr/X11R6/lib/X11/XF86Config</tt>を <tt>README.Config</tt> を指針とし、<tt>XF86Config.eg</tt> を
-出発点としてホストの構成を正確に記入し<em>なければ</em>なりません。間違った 
-<tt>XF86Config</tt> を使うとハードウェアを痛める場があるので、<em>良く文章を読んで</em>下さ
-い。特にオンラインマニュアルと <tt>/usr/X11R6/lib/X11/doc</tt> にあるその他の 
+<tt>README.Config</tt> を指針とし、<tt>XF86Config.eg</tt> を例題にして
+<tt>/etc/XF86Config</tt> または <tt>/usr/X11R6/lib/X11/XF86Config</tt>を 
+ホストの構成を正確に記入<em>しなければ</em>なりません。間違った 
+<tt>XF86Config</tt> を使うとハードウェアを痛める場合があるので、
+<em>良く文章を読んで</em>下さい。
+特にオンラインマニュアルと <tt>/usr/X11R6/lib/X11/doc</tt> にあるその他の 
 <tt>README</tt> ファイルを良く読んで下さい。
+
+<!--Starting with XFree86-3.1.2F a new interactive setup utility
+<tt>XF86Setup</tt> has been included in the distribution. We recommend
+using this tool to setup the <tt>XF86Config</tt> file. Please read the
+corresponding documentation.-->
+XFree86-3.1.2F からはじめるならば配布物に入っている新しい設定ユーティリティ
+である <tt>XF86Setup</tt> があります。<tt>XF86Config</tt> を設定する
+このツールを使用することをお勧めします。適切な文書をお読みください。
 
 XFree86 は、X サーバーとの間で双方向に仮想端末 (VT) 切り替え（サーバーから
 仮想端末へ、仮想端末からサーバーへ切り替える）をする機能があります。初めて
@@ -120,12 +138,154 @@ XFree86 からテキストモードに戻る時に、未だ画面の回復に問題があるのは、グラ
 要があります。<tt>xconsole</tt> は root の setuid 属性を付けて動作するようには設計
 されてないので、これは安全上、大きな問題が生じると思われます。
 
+<!--<sect> Installing Xdm, the display manager-->
+<sect> ディスプレイマネージャ Xdm の導入
+<p>
+
+<!--Since xdm is dynamically linked, there's no issue on
+export restriction outside US for this binary distribution of xdm: it
+does not contain the DES encryption code. So it's now included in the
+bin package.-->
+xdm は動的にリンクしているので、xdm のバイナリ配布物のアメリカ国外への
+輸出制限は問題はありません。これは DES 暗号化プログラムを含んでいない
+事からです。従って現在、バイナリパッケージに xdm が含まれています。
+
+<!--However the file <tt>xc/lib/Xdmcp/WrapHelp.c</tt> is not included in the
+XFree86-3.2 source, so support for
+XDM-AUTHORIZATION-1 is not included here. You'll have to get
+WrapHelp.c and rebuild xdm after having set <tt/HasXdmAuth/ in
+<tt/xf86site.def/.-->
+<tt>xc/lib/Xdmcp/WrapHelp.c</tt> というファイルが XFree86-3.2 のソースに
+含まれていないので、XDM-AUTHORIZATION-1 はサポートしません。WrapHelp.c を
+入手して <tt/xf86site.def/ の中に <tt/HasXdmAuth/ を設定した後で xdm を
+再構築する必要があります。
+
+<!--The file is available within the US; for
+details see <htmlurl name="ftp.x.org:/pub/R6/xdm-auth/README"
+url="ftp://ftp.x.org/pub/R6/xdm-auth/README">.-->
+WrapHelp.c はアメリカ国内にあります。詳細は
+<htmlurl name="ftp.x.org:/pub/R6/xdm-auth/README"
+url="ftp://ftp.x.org/pub/R6/xdm-auth/README">
+をご覧ください。
+
+<!--To start the display manager, log in as root on the console and type:
+``<tt/xdm -nodaemon/''.-->
+ディスプレイマネージャを起動する前に、ルート (root) でログインして
+コンソールから ``<tt/xdm -nodaemon/'' と入力して下さい。
+
+<!--You can start xdm automatically on bootup by disabling the console getty
+and modifying <tt>/etc/inittab</tt>. Details about this setup depend on the
+Linux distribution that you use, so check the documentation provided there.-->
+console getty を無効にして、 <tt>/etc/inittab</tt> を変更することにより
+ブート時に自動的に xdm を起動出来ます。詳細は使おうとする Linux 配布物の
+xdm の設定に依存しますのでここにある文書を確認して下さい。
+
+<!--The xdm binary provided should run with both shadow- and non-shadow password
+systems.-->
+xdm バイナリ配布物はシャドウパスワードと普通のパスワードのシステムの両方で
+動作するでしょう。
+
+<sect>xterm
+<p>
+<!--The XFree86-3.2 binary release contains an xterm binary that has been linked
+statically against libtermcap. This was done to make sure that it will
+correctly work with all distributions, regardless whether they rely on
+libtermcap or libncurses. Contrary to the xterm binaries in some beta version
+following XFree86-3.1.2, this binary does not rely on a recent libncurses
+being installed on your system.-->
+XFree86-3.2 バイナリ配布物は libtermcap と静的にリンクしている xterm バイナリ
+配布物を含んでいます。xterm は libtermcap と libncurses のどちらにでも関連の
+あるプログラムの全ての配布物で正しく動作する確認をしています。逆に XFree86-3.1.2
+に付属するいくつかのベータ版の xterm バイナリ配布物は導入した最新の libncurses
+とは関連がありません。
+
+<!--<sect>Input devices-->
+<sect>入力機器
+<p>
+<!--XFree86 now support the dynamic loading of drivers for external
+input devices using the <tt/XInput/ extension. Currently supported
+devices are:
+<itemize>
+<item> Joystick (<tt/xf86Jstk.so/)
+<item> Wacom tablets (Wacom IV protocol only, <tt/xf86Wacom.so/)
+<item> SummaSketch tablets (<tt/xf86Summa.so/)
+<item> Elographics touchscreen (<tt/xf86Elo.so/)
+</itemize>-->
+今回、<tt/XInput/ 機能拡張を使った外部入力機器ドライバのダイナミック
+ローディングをサポートしました。現在次の機器をサポートしています。
+<itemize>
+<item> ジョイスティック (<tt/xf86Jstk.so/)
+<item> Wacom タブレット (Wacom IV プロトコルに限定, <tt/xf86Wacom.so/)
+<item> SummaSketch タブレット (<tt/xf86Summa.so/)
+<item> Elographics タッチスクリーン (<tt/xf86Elo.so/)
+</itemize>
+
+<!--To use a specific device, add the line
+<tscreen>
+<tt/load/ <tt/"/<em/module/<tt/"/
+</tscreen>
+in the <bf/Module/ section of <tt/XF86Config/, where <em/module/ is
+the name of the <tt/.so/ file corresponding to your device.
+You also need to set up a <bf/XInput/ section in <tt/XF86Config/. 
+Refer to the <em>XF86Config(5)</em> man page for detailed
+configuration instructions.-->
+特定の機器を使用するには、次の行を <tt/XF86Config/ の <bf/Module/
+に追加してください。ここで <em/module/ は 機器に対応する<tt/.so/ 
+ファイルの名称です。
+<tscreen>
+<tt/load/ <tt/"/<em/module/<tt/"/
+</tscreen>
+また、<tt/XF86Config/ の <bf/XInput/ の部分を設定する必要があります。
+設定手順の詳細については <em>XF86Config(5)</em> のオンラインマニュアル
+を参照してください。
+<p>
+<!--You can then change the device used to drive the X pointer with the
+<em/xsetpointer(1)/ command.-->
+<em/xsetpointer(1)/ コマンドを使って X のカーソルを駆動する使用したい
+機器に変更出来ます。
+<p>
+<!--For joystick support, you'll need to install the joystick device
+driver in the kernel. -->
+ジョイスティックを使うにはカーネルにジョイスティックのデバイスドライバ
+を組み込む必要があります。
+
+<!--<sect1>Configuring PEX and XIE extensions-->
+<sect1>PEX と XIE 機能拡張の設定
+<p>
+<!--The PEX and XIE extensions are now supported as external modules.
+If you want to have access to these extensions, add the following
+lines to the <bf/Module/ section of <tt/XF86Config/:
+<tscreen><verb>
+   load    "pex5.so"
+   load    "xie.so"
+</verb></tscreen>-->
+現在、PEX と XIE 機能拡張は外部モジュールとしてサポートしました。
+この機能拡張を使いたい場合は、次の行を <tt/XF86Config/ の <bf/Module/
+に追加してください
+<tscreen><verb>
+   load    "pex5.so"
+   load    "xie.so"
+</verb></tscreen>
+
+<!--<sect> Compiling XFree86 <p>
+Only the sources for full releases of XFree86 are freely available. The
+last full release of XFree86 is 3.2.
+
+There are no special instructions required for compiling XFree86.
+This version was compiled with gcc-2.7.2, the 5.2.18 Elf libraries and the
+1.7.14 shared, dynamic linker ld.so. -->
+
 <sect> XFree86 をコンパイルするには <p>
+XFree86 の完全版のソースだけは無料で公開されています。最新の XFree86 の
+完全版は 3.2 です。
+
 XFree86 をコンパイルするためには特別な手順書は必要ありません。
-このバージョンの XFree86 は gcc-2.5.8 、DLL ライブラリの 4.5.26 と共用ライ
-ブラリの1.4.4 、ダイナミック・リンカ ld.so とでコンパイルしています。共有
+このバージョンの XFree86 は gcc-2.7.2 、Elf ライブラリの 5.2.18 と共用ライ
+ブラリの1.7.14 、ダイナミック・リンカ ld.so とでコンパイルしています。
+<!-- 共有
 ライブラリは DLL tools-2.16 パッケージで作成し、新しい場所 (<tt>/usr/bin</tt>) にあ
-るツールを使うようにサーバーのソースを更新しました。サーバーは 486 プロセ
+るツールを使うようにサーバーのソースを更新しました。 -->
+サーバーは 486 プロセ
 ッサ用に最適化する為に、<tt>-m486</tt> オプションを付けてコンパイルされていますが、
 バイナリは 386 プロセッサで動作するでしょう。（ -m486 を付けてコンパイルし
 たものは、<tt>-m386</tt> を付けてコンパイルしたものより少々ファイルサイズが大きくな
@@ -133,7 +293,12 @@ XFree86 をコンパイルするためには特別な手順書は必要ありません。
 
 全ての機能拡張とクライアントは移植とテストが終わっています。標準では、サー
 バーは外部機能拡張 (PEX, XIE 等) 無しでコンパイルしていますが、これらの外
-部機能拡張のライブラリは既に生成済みです。<tt>site.def</tt> を変更すれば、外部機能
+部機能拡張のライブラリは既に生成済みです。
+<!--They can be loaded 
+at runtime, see the XFree86 man page for details. -->
+外部機能拡張は実行時にローディングされます。詳細は XFree86 オンラインマニュアル
+を参照してください。
+<tt>site.def</tt> を変更すれば、外部機能
 拡張をコンパイルしてサーバーに組み込めます。若しくは、リンクキットがサーバ
 ーを変更できます。
 
@@ -144,6 +309,7 @@ XFree86 をコンパイルするためには特別な手順書は必要ありません。
 100MB の空きディスクがあれば、もっと容易に XFree86 をコンパイルできます。
 サーバー全てをコンパイルするには、約 10MB の仮想メモリが必要でしょう。
 
+XFree86 の aout 版を生成したり
 パッチがライブラリに重要な変更を行なう場合は、更新した jump_xxx が必要でし
 ょう。DLL tools パッケージに付属する手順でパッチが生成でき、XFree86 のパッ
 チを当てるのに必要でしょう。
@@ -159,27 +325,21 @@ Hohndel (<it>hohndel@aib.com</it>) 氏に感謝します。
 
 <sect> バグの告知について <p>
 バグ報告は <it>XFree86@XFree86.org</it> に送るか <it>comp.windows.x.i386unix</it> のニュース
-グループに投稿して下さい。Linux のサポートや Linux の配付物に関する質問や
-コメントは <it>orestz@eskimo.com.</it> で行なわれています。
+グループに投稿して下さい。
 
 <verb>
-$XConsortium: Linux.sgml,v 1.2 95/01/23 15:34:44 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.5 1995/01/28 16:01:43 dawes Exp $
+$XFree86$
 </verb>
 <hrule>
-このファイルは xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.5 1995/01/28
- 16:01:43 を、岡本  一幸 
+このファイルは xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.9 1996/10/20 13:33:12 を、岡本  一幸 
 ( Kazuyuki Okamoto <url url="mailto:ikko-@pacific.rim.or.jp"
-name="&lt;ikko-@pacific.rim.or.jp&gt;"> ) が XFree86 3.1.2 を
+name="&lt;ikko-@pacific.rim.or.jp&gt;"> ) が XFree86 3.2 を
 日本でインストールする人向けに和訳したものです。ここがおかしいとか、
 ここはこうしたほうがいいといったご意見がありましたら、電子メールで
 お知らせ下さい。
 原文の著作権は XFree86 プロジェクト社にあります。この和訳の著作権は 
 XFree86 プロジェクト社と岡本　一幸にありますが、この和訳の不具合は私に、
 電子メールで送って下さい。
-<verb>
-$XFree86$
-</verb>
 <hrule>
 &lsqb;EOF&rsqb;
 </article>

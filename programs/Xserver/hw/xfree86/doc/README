@@ -1,1081 +1,920 @@
-  README for XFree86[TM] 3.2A
-  The XFree86 Project, Inc
 
-  22 January 1997
 
-  XFree86 is a port of X11R6.3 that supports several Unix and Unix-like
-  operating systems on Intel and other platforms.
 
-  1.  What's new in XFree86 3.2A
+README for XFree86[tm] 3.2A
 
-  The following items are some of the features that have been added
-  since XFree86 3.2 was released in October 1996:
 
-     1. XFree86 3.2 includes the X Consortium's X11R6.3.
 
-  Further information can be found in the RELNOTES file.
 
-  2.  Systems XFree86 has been tested on
 
-  Note: Not all systems listed here have been tested with the current
-  release.
+			  README for XFree86[tm] 3.2A
 
 
-     SVR4.0:
+			   The XFree86 Project, Inc
 
-        o  Esix: 4.0.3A, 4.0.4, 4.0.4.1
 
-        o  Microport: 2.2, 3.1, 4.1, 4.2
+				22 January 1997
 
-        o  Dell: 2.1, 2.2, 2.2.1
 
-        o  UHC: 2.0, 3.6
 
-        o  Consensys: 1.2
+				   Abstract
 
-        o  MST: 4.0.3 (Load 2.07 and Load 3.02)
+     XFree86 is a port of X11R6.3 that supports several Unix and Unix-like
+     operating systems on Intel and other platforms.
 
-        o  ISC: 4.0.3
 
-        o  AT&T: 2.1, 4.0
 
-        o  NCR: MP-RAS
+1.  What's new in XFree86 3.2A
 
-        o  SunSoft: Solaris x86 2.1, 2.4, 2.5
+The following items are some of the features that have been added since XFree86
+3.2 was released in October 1996:
 
-        o  PANIX 5.0 for AT
+  1.  XFree86 3.2 includes the X Consortium's X11R6.3.
 
+Further information can be found in the RELNOTES file.
 
-     SVR4.2:
 
-        o  Consensys
+2.  Systems XFree86 has been tested on
 
-        o  Novell UnixWare
+Note: Not all systems listed here have been tested with the current release.
 
+      SVR4.0:
 
-     SVR3:
+	       o Esix: 4.0.3A, 4.0.4, 4.0.4.1
 
-        o  ISC: 3.0, 4.0, 4.1
+	       o Microport: 2.2, 3.1, 4.1, 4.2
 
+	       o Dell: 2.1, 2.2, 2.2.1
 
-     Others:
+	       o UHC: 2.0, 3.6
 
-        o  NetBSD 1.0, 1.1, 1.2
+	       o Consensys: 1.2
 
+	       o MST: 4.0.3 (Load 2.07 and Load 3.02)
 
+	       o ISC: 4.0.3
 
-        o  OpenBSD 2.0
+	       o AT&T: 2.1, 4.0
 
-        o  FreeBSD 1.1.5.1, 2.0.5, 2.1, 2.1.5, 2.2-current
+	       o NCR: MP-RAS
 
-        o  Linux (Intel x86, DEC Alpha/AXP and m68k)
 
-        o  LynxOS AT 2.2.1, 2.3.0, 2.4.0
 
-        o  LynxOS microSPARC 2.4.0
 
+README for XFree86[tm] 3.2A
 
-     PC98:
 
-        o  FreeBSD(98) 2.0.5, 2.1, 2.1.5, 2.2-current
 
-        o  NetBSD/pc98 (based on NetBSD 1.2)
 
-        o  PANIX 5.0 for 98
 
-  3.  Supported video-card chip-sets
+README for XFree86[tm] 3.2A
 
-  At this time, XFree86 3.2A supports the following accelerated
-  chipsets:
 
 
-     8514/A
-        (and true clones)
+	       o SunSoft: Solaris x86 2.1, 2.4, 2.5
 
-     ATI
-        Mach8, Mach32, Mach64
+	       o PANIX 5.0 for AT
 
-     Cirrus
-        CLGD5420, CLGD5422, CLGD5424, CLGD5426, CLGD5428, CLGD5429,
-        CLGD5430, CLGD5434, CLGD5436, CLGD5440, CLGD5446, CLGD5462,
-        CLGD5464, CLGD7541, CLGD7543, CLGD7548
 
-     S3 86C911, 86C924, 86C801, 86C805, 86C805i, 86C928, 86C864, 86C964,
-        86C732, 86C764, 86C765, 86C868, 86C968, 86C325, 86C988
+      SVR4.2:
 
-     Western Digital
-        WD90C31, WD90C33, WD90C24A
+	       o Consensys
 
-     Weitek
-        P9000
+	       o Novell UnixWare
 
-     IIT
-        AGX-014, AGX-015, AGX-016
 
-     IBM
-        XGA-2
+      SVR3:
 
-     Tseng
-        ET4000/W32, ET4000/W32i, ET4000/W32p, ET6000
+	       o ISC: 3.0, 4.0, 4.1
 
-     Oak Technologies Inc
-        OTI087
 
-     Ark Logic
-        ARK1000PV, ARK1000VL, ARK2000PV, ARK2000MT
+      Others:
 
-     Matrox
-        MGA2064W
+	       o NetBSD 1.0, 1.1, 1.2
 
-     Number Nine
-        I128
+	       o OpenBSD 2.0
 
-  The Cirrus, Western Digital, Oak, ARK, Chips & Technologies and Matrox
-  accelerators are supported in the SVGA server; the other chipsets each
-  have their own server.
+	       o FreeBSD 1.1.5.1, 2.0.5, 2.1, 2.1.5, 2.2-current
 
-  In addition, the following SVGA chipsets are supported:
+	       o Linux (Intel x86, DEC Alpha/AXP and m68k)
 
-     Tseng
-        ET3000, ET4000AX, ET4000/W32, ET6000
+	       o LynxOS AT 2.2.1, 2.3.0, 2.4.0
 
-     Western Digital/Paradise
-        PVGA1
+	       o LynxOS microSPARC 2.4.0
 
-     Western Digital
-        WD90C00, WD90C10, WD90C11, WD90C24, WD90C24A, WD90C30, WD90C31,
-        WD90C33
 
-     Genoa
-        GVGA
+      PC98:
 
-     Trident
-        TVGA8800CS, TVGA8900B, TVGA8900C, TVGA8900CL, TVGA9000,
-        TVGA9000i, TVGA9100B, TVGA9200CX, TVGA9320, TVGA9400CX,
-        TVGA9420, TGUI9420DGi, TGUI9430DGi, TGUI9440AGi, TGUI9660XGi,
-        TGUI9680
+	       o FreeBSD(98) 2.0.5, 2.1, 2.1.5, 2.2-current
 
-     ATI
-        18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6, 68800-3,
-        68800-6, 68800AX, 68800LX, 88800GX-C, 88800GX-D, 88800GX-E,
-        88800GX-F, 88800CX, 264CT, 264ET, 264VT, 264VT2, 264GT
+	       o NetBSD/pc98 (based on NetBSD 1.2)
 
-     NCR
-        77C22, 77C22E, 77C22E+
+	       o PANIX 5.0 for 98
 
-     Cirrus Logic
-        CLGD5420, CLGD5422, CLGD5424, CLGD5426, CLGD5428, CLGD5429,
-        CLGD5430, CLGD5434, CLGD5436, CLGD5440, CLGD5446, CLGD5462,
-        CLGD5464, CLGD6205, CLGD6215, CLGD6225, CLGD6235, CLGD6410,
-        CLGD6412, CLGD6420, CLGD6440, CLGD7541, CLGD7543, CLGD7548
 
-     OAK
-        OTI067, OTI077, OTI087
+3.  Supported video-card chip-sets
 
-     Avance Logic
-        ALG2101, ALG2228, ALG2301, ALG2302, ALG2308, ALG2401
+At this time, XFree86 3.2A supports the following accelerated chipsets:
 
-     Chips & Technologies
-        65520, 65530, 65540, 65545, 65520, 65530, 65540, 65545, 65546,
-        65548, 65550, 65554
+      8514/A
+	    (and true clones)
 
-     MX MX68000, MX680010
+      ATI
+	    Mach8, Mach32, Mach64
 
-     Video 7/Headland Technologies
-        HT216-32
+      Cirrus
+	    CLGD5420, CLGD5422, CLGD5424, CLGD5426, CLGD5428, CLGD5429,
+	    CLGD5430, CLGD5434, CLGD5436, CLGD5440, CLGD5446, CLGD5462,
 
-     SiS
-        86C201, 86C202, 86C205
 
-     ARK Logic
-        ARK1000PV, ARK1000VL, ARK2000PV, ARK2000MT
 
-     RealTek
-        RTG3106
 
-     Alliance
-        AP6422
 
-     Matrox
-        MGA2064W
 
-     NVidia/SGS Thomson
-        NV1, STG2000
 
 
-  All of the above are supported in both 256 color, and some are
-  supported in mono and 16 color modes.
+README for XFree86[tm] 3.2A
 
-  Refer to the chipset-specific README files (currently for Cirrus,
-  Tseng, Western Digital, ATI, ARK, Trident, Oak, Matrox, NVidia, and
-  Video 7) for more information about using those chipsets.
 
-  The monochrome server also supports generic VGA cards, using 64k of
-  video memory in a single bank, the Hercules monochrome card, the
-  Hyundai HGC1280, Sigma LaserView, Visa and Apollo monochrome cards.
 
-  The VGA16 server supports memory banking with the ET4000, Trident,
-  ATI, NCR, OAK and Cirrus 6420 chipsets allowing virtual display sizes
-  up to about 1600x1200 (with 1MB of video memory).  For other chipsets
-  the display size is limited to approximately 800x600.
+	    CLGD5464, CLGD7541, CLGD7543, CLGD7548
 
-  Note: The Diamond SpeedStar 24 (and possibly some SpeedStar+) boards
-  are NOT supported, even though they use the ET4000.
+      S3
+	    86C911, 86C924, 86C801, 86C805, 86C805i, 86C928, 86C864, 86C964,
+	    86C732, 86C764, 86C765, 86C868, 86C968, 86C325, 86C988
 
-  The Weitek 9100 and 9130 chipsets are not supported (these are used on
-  the Diamond Viper Pro and Viper SE boards). Most other Diamond boards
-  will work with this release of XFree86. Diamond is actively supporting
-  The XFree86 Project, Inc.
+      Western Digital
+	    WD90C31, WD90C33, WD90C24A
 
-  4.  Where to get more information
+      Weitek
+	    P9000
 
-  Additional documentation is available in the XFree86(1),
-  XF86Config(4/5), XF86_SVGA(1), XF86_Mono(1), XF86_VGA16(1),
-  XF86_Accel(1) XF86Setup(1) and xvidtune(1) manual pages.  In addition,
-  several README files and tutorial documents are provided.  These are
-  available in /usr/X11R6/lib/X11/doc in the binary distributions, and
-  in  xc/programs/Xserver/hw/xfree86/doc in the source distribution.
+      IIT
+	    AGX-014, AGX-015, AGX-016
 
-  The files QuickStart.doc and README.Config should be consulted for
-  information on how to set up the XFree86 servers.  All supplied
-  documents, manual pages, and the XFree86 FAQ
-  <http://www.XFree86.org/FAQ> should be read before contacting the
-  XFree86 team for assistance.
+      IBM
+	    XGA-2
 
-  Documentation on SVGA driver development can be found in the directory
-  /usr/X11R6/lib/Server/VGADriverDoc in the binary distribution, and in
-  the directory xc/programs/Xserver/hw/xfree86/VGADriverDoc in the
-  source distribution.
+      Tseng
+	    ET4000/W32, ET4000/W32i, ET4000/W32p, ET6000
 
-  If you are totally at a loss, you can contact the XFree86 Support Team
-  at <XFree86@XFree86.Org>.  Before doing so, please make sure that you
-  are using the latest release of XFree86.  Check the versions listed on
-  ftp://ftp.xfree86.org/pub/XFree86.
+      Oak Technologies Inc
+	    OTI087
 
-  There is a Usenet news group comp.windows.x.i386unix that contains
-  mostly discussions about XFree86 and related topics. Many questions
-  can be answered there.
+      Ark Logic
+	    ARK1000PV, ARK1000VL, ARK2000PV, ARK2000MT
 
-  5.  Credits
+      Matrox
+	    MGA2064W
 
-  XFree86 was originally put together by:
+      Number Nine
+	    I128
 
+The Cirrus, Western Digital, Oak, ARK, Chips & Technologies and Matrox acceler­
+ators are supported in the SVGA server; the other chipsets each have their own
+server.
 
+In addition, the following SVGA chipsets are supported:
 
-     o  David Dawes <dawes@XFree86.org>
+      Tseng
+	    ET3000, ET4000AX, ET4000/W32, ET6000
 
-     o  Glenn Lai <glenn@cs.utexas.edu>
+      Western Digital/Paradise
+	    PVGA1
 
-     o  Jim Tsillas <jtsilla@ccs.neu.edu>
+      Western Digital
+	    WD90C00, WD90C10, WD90C11, WD90C24, WD90C24A, WD90C30, WD90C31,
+	    WD90C33
 
-     o  David Wexelblat <dwex@XFree86.org>
+      Genoa
+	    GVGA
 
-  XFree86 support was integrated into the base X11R6 distribution by:
+      Trident
+	    TVGA8800CS, TVGA8900B, TVGA8900C, TVGA8900CL, TVGA9000, TVGA9000i,
 
-     o  Stuart Anderson <anderson@metrolink.com>
 
-     o  Doug Anson <danson@lgc.com>
 
-     o  Gertjan Akkerman <akkerman@dutiba.twi.tudelft.nl>
 
-     o  Mike Bernson <mike@mbsun.mlb.org>
 
-     o  Robin Cutshaw <robin@XFree86.org>
 
-     o  David Dawes <dawes@XFree86.org>
 
-     o  Marc Evans <marc@XFree86.org>
 
-     o  Pascal Haible <haible@izfm.uni-stuttgart.de>
+README for XFree86[tm] 3.2A
 
-     o  Matthieu Herrb <Matthieu.Herrb@laas.fr>
 
-     o  Dirk Hohndel <hohndel@XFree86.org>
 
-     o  David Holland <davidh@use.com>
+	    TVGA9100B, TVGA9200CX, TVGA9320, TVGA9400CX, TVGA9420, TGUI9420DGi,
+	    TGUI9430DGi, TGUI9440AGi, TGUI9660XGi, TGUI9680
 
-     o  Alan Hourihane <alanh@fairlite.demon.co.uk>
+      ATI
+	    18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6, 68800-3,
+	    68800-6, 68800AX, 68800LX, 88800GX-C, 88800GX-D, 88800GX-E,
+	    88800GX-F, 88800CX, 264CT, 264ET, 264VT, 264VT2, 264GT
 
-     o  Jeffrey Hsu <hsu@soda.berkeley.edu>
+      NCR
+	    77C22, 77C22E, 77C22E+
 
-     o  Glenn Lai <glenn@cs.utexas.edu>
+      Cirrus Logic
+	    CLGD5420, CLGD5422, CLGD5424, CLGD5426, CLGD5428, CLGD5429,
+	    CLGD5430, CLGD5434, CLGD5436, CLGD5440, CLGD5446, CLGD5462,
+	    CLGD5464, CLGD6205, CLGD6215, CLGD6225, CLGD6235, CLGD6410,
+	    CLGD6412, CLGD6420, CLGD6440, CLGD7541, CLGD7543, CLGD7548
 
-     o  Ted Lemon <mellon@ncd.com>
+      OAK
+	    OTI067, OTI077, OTI087
 
-     o  Rich Murphey <rich@XFree86.org>
+      Avance Logic
+	    ALG2101, ALG2228, ALG2301, ALG2302, ALG2308, ALG2401
 
-     o  Hans Nasten <nasten@everyware.se>
+      Chips & Technologies
+	    65520, 65530, 65540, 65545, 65520, 65530, 65540, 65545, 65546,
+	    65548, 65550, 65554
 
-     o  Mark Snitily <mark@sgcs.com>
+      MX
+	    MX68000, MX680010
 
-     o  Randy Terbush <randyt@cse.unl.edu>
+      Video 7/Headland Technologies
+	    HT216-32
 
-     o  Jon Tombs <tombs@XFree86.org>
+      SiS
+	    86C201, 86C202, 86C205
 
-     o  Kees Verstoep <versto@cs.vu.nl>
+      ARK Logic
+	    ARK1000PV, ARK1000VL, ARK2000PV, ARK2000MT
 
-     o  Paul Vixie <paul@vix.com>
+      RealTek
+	    RTG3106
 
-     o  Mark Weaver <Mark_Weaver@brown.edu>
+      Alliance
+	    AP6422
 
-     o  David Wexelblat <dwex@XFree86.org>
+      Matrox
+	    MGA2064W
 
-     o  Philip Wheatley <Philip.Wheatley@ColumbiaSC.NCR.COM>
+      NVidia/SGS Thomson
+	    NV1, STG2000
 
-     o  Thomas Wolfram <wolf@prz.tu-berlin.de>
 
-     o  Orest Zborowski <orestz@eskimo.com>
+All of the above are supported in both 256 color, and some are supported in
+mono and 16 color modes.
 
 
 
-     386BSD, FreeBSD, NetBSD  support by:
 
-        o  Rich Murphey <Rich@XFree86.org>
 
-     NetBSD, OpenBSD support by:
 
-        o  Matthieu Herrb <Matthieu.Herrb.@laas.fr>
 
-     Original 386BSD port by:
 
-        o  Pace Willison,
+README for XFree86[tm] 3.2A
 
-        o  Amancio Hasty Jr <hasty@netcom.com>
 
-     Mach 386 support by:
 
-        o  Robert Baron <Robert.Baron@ernst.mach.cs.cmu.edu>
+Refer to the chipset-specific README files (currently for Cirrus, Tseng, West­
+ern Digital, ATI, ARK, Trident, Oak, Matrox, NVidia, and Video 7) for more
+information about using those chipsets.
 
-     Linux support by:
+The monochrome server also supports generic VGA cards, using 64k of video mem­
+ory in a single bank, the Hercules monochrome card, the Hyundai HGC1280, Sigma
+LaserView, Visa and Apollo monochrome cards.
 
-        o  Orest Zborowski <orestz@eskimo.com>
+The VGA16 server supports memory banking with the ET4000, Trident, ATI, NCR,
+OAK and Cirrus 6420 chipsets allowing virtual display sizes up to about
+1600x1200 (with 1MB of video memory).  For other chipsets the display size is
+limited to approximately 800x600.
 
-     SCO Unix support by:
+Note: The Diamond SpeedStar 24 (and possibly some SpeedStar+) boards are NOT
+supported, even though they use the ET4000.
 
-        o  David McCullough <davidm@stallion.oz.au>
+The Weitek 9100 and 9130 chipsets are not supported (these are used on the Dia­
+mond Viper Pro and Viper SE boards). Most other Diamond boards will work with
+this release of XFree86. Diamond is actively supporting The XFree86 Project,
+Inc.
 
-     Amoeba support by:
 
-        o  Kees Verstoep <versto@cs.vu.nl>
+4.  Where to get more information
 
-     Minix-386 support by:
+Additional documentation is available in the XFree86(1), XF86Config(4/5),
+XF86_SVGA(1), XF86_Mono(1), XF86_VGA16(1), XF86_Accel(1) XF86Setup(1) and xvid­
+tune(1) manual pages.  In addition, several README files and tutorial documents
+are provided.  These are available in /usr/X11R6/lib/X11/doc in the binary dis­
+tributions, and in  xc/programs/Xserver/hw/xfree86/doc in the source distribu­
+tion.
 
-        o  Philip Homburg <philip@cs.vu.nl>
+The files QuickStart.doc and README.Config should be consulted for information
+on how to set up the XFree86 servers.  All supplied documents, manual pages,
+and the XFree86 FAQ <URL:http://www.XFree86.org/FAQ> should be read before con­
+tacting the XFree86 team for assistance.
 
-     OSF/1 support by:
+Documentation on SVGA driver development can be found in the directory
+/usr/X11R6/lib/Server/VGADriverDoc in the binary distribution, and in the
+directory xc/programs/Xserver/hw/xfree86/VGADriverDoc in the source distribu­
+tion.
 
-        o  Marc Evans <Marc@XFree86.org>
+If you are totally at a loss, you can contact the XFree86 Support Team at
+<XFree86@XFree86.Org>.	Before doing so, please make sure that you are using
+the latest release of XFree86.	Check the versions listed on
+ftp://ftp.xfree86.org/pub/XFree86.
 
-     BSD/OS support by:
+There is a Usenet news group comp.windows.x.i386unix that contains mostly dis­
+cussions about XFree86 and related topics. Many questions can be answered
+there.
 
-        o  Hans Nasten <nasten@everyware.se>,
 
-        o  Paul Vixie <paul@vix.com>
+5.  Credits
 
-     Solaris support by:
+XFree86 was originally put together by:
 
-        o  Doug Anson <danson@lgc.com>,
 
-        o  David Holland <davidh@use.com>
 
-     ISC SVR3 support by:
 
-        o  Michael Rohleder <michael.rohleder@stadt-frankfurt.de>
 
-     LynxOS support by:
 
-        o  Thomas Mueller <tm@systrix.de>
 
-     OS/2 support by:
 
-        o  Holger Veit <Holger.Veit@gmd.de>
+README for XFree86[tm] 3.2A
 
-        o  Sebastien Marineau <s521936@aix1.uottawa.ca>
 
 
+   o David Dawes <dawes@XFree86.org>
 
-     Linux shared libraries by:
+   o Glenn Lai <glenn@cs.utexas.edu>
 
-        o  Orest Zborowski <orestz@eskimo.com>,
+   o Jim Tsillas <jtsilla@ccs.neu.edu>
 
-        o  Dirk Hohndel <hohndel@XFree86.org>
+   o David Wexelblat <dwex@XFree86.org>
 
-     PC98 support by:
+XFree86 support was integrated into the base X11R6 distribution by:
 
-        o  Toyonori Fujiura <toyo@ibbsal.or.jp>,
+   o Stuart Anderson <anderson@metrolink.com>
 
-        o  Hiroyuki Aizu <aizu@jaist.ac.jp>,
+   o Doug Anson <danson@lgc.com>
 
-        o  Tetsuya Kakefuda <kakefuda@tag.iijnet.or.jp>,
+   o Gertjan Akkerman <akkerman@dutiba.twi.tudelft.nl>
 
-        o  Takefumi Tsukada <tsuka@linkt.imasy.or.jp>,
+   o Mike Bernson <mike@mbsun.mlb.org>
 
-        o  H.Komatsuzaki,
+   o Robin Cutshaw <robin@XFree86.org>
 
-        o  Naoki Katsurakawa <katsura@prc.tsukuba.ac.jp>,
+   o David Dawes <dawes@XFree86.org>
 
-        o  Shuichiro Urata <s-urata@nmit.tmg.nec.co.jp>,
+   o Marc Evans <marc@XFree86.org>
 
-        o  Yasuyuki Kato <yasuyuki@acaets0.anritsu.co.jp>,
+   o Pascal Haible <haible@izfm.uni-stuttgart.de>
 
-        o  Michio Jinbo <karl@pms.nagaokaut.ac.jp>,
+   o Matthieu Herrb <Matthieu.Herrb@laas.fr>
 
-        o  Tatsuya Koike <koiket@focus.rim.or.jp>,
+   o Dirk Hohndel <hohndel@XFree86.org>
 
-        o  Koichiro Suzuki <ksuzuki@cc.tuat.ac.jp>,
+   o David Holland <davidh@use.com>
 
-        o  Tsuyoshi Tamaki <tamaki@sail.t.u-tokyo.ac.jp>,
+   o Alan Hourihane <alanh@fairlite.demon.co.uk>
 
-        o  Isao Ohishi <ohishi@hf.rim.or.jp>,
+   o Jeffrey Hsu <hsu@soda.berkeley.edu>
 
-        o  Kohji Ohishi <atena@njk.co.jp>,
+   o Glenn Lai <glenn@cs.utexas.edu>
 
-        o  Shin'ichi Yairo <QZR00522@niftyserve.or.jp>,
+   o Ted Lemon <mellon@ncd.com>
 
-        o  Kazuo Ito <ft4k-itu@asahi-net.or.jp>,
+   o Rich Murphey <rich@XFree86.org>
 
-        o  Jun Sakuma <i931361@jks.is.tsukuba.ac.jp>,
+   o Hans Nasten <nasten@everyware.se>
 
-        o  Shuichi Ueno <uenos@ppp.bekkoame.or.jp>,
+   o Mark Snitily <mark@sgcs.com>
 
-        o  Ishida Kazuo <ishidakz@obp.cl.nec.co.jp>,
+   o Randy Terbush <randyt@cse.unl.edu>
 
-        o  Takaaki Nomura <tnomura@sfc.keio.ac.jp>,
+   o Jon Tombs <tombs@XFree86.org>
 
-        o  Tadaaki Nagao <nagao@cs.titech.ac.jp>,
+   o Kees Verstoep <versto@cs.vu.nl>
 
-        o  Minoru Noda <mnoda@cv.tottori-u.ac.jp>,
+   o Paul Vixie <paul@vix.com>
 
-        o  Naofumi Honda <honda@Kururu.math.hokudai.ac.jp>,
 
-        o  Akio Morita <amorita@bird.scphys.kyoto-u.ac.jp>,
 
-        o  Takashi Sakamoto <sakamoto@yajima.kuis.kyoto-u.ac.jp>,
 
-        o  Yasuhiro Ichikawa <cs94006@mbox.sist.ac.jp>,
 
-        o  Kazunori Ueno <g540012@komaba.ecc.u-tokyo.ac.jp>,
 
-        o  Yasushi Suzuki <suz@d2.bs1.fc.nec.co.jp>,
 
 
 
-        o  Masato Yoshida (Contributor of PW805i support)
+README for XFree86[tm] 3.2A
 
-     Original accelerated code by:
 
-        o  Kevin Martin <martin@cs.unc.edu>,
 
-        o  Rik Faith <faith@cs.unc.edu>,
+   o Mark Weaver <Mark_Weaver@brown.edu>
 
-        o  Jon Tombs <tombs@XFree86.org>
+   o David Wexelblat <dwex@XFree86.org>
 
-     XFree86 Acceleration Architecture (XAA) by:
+   o Philip Wheatley <Philip.Wheatley@ColumbiaSC.NCR.COM>
 
-        o  Harm Hanemaayer <H.Hanemaayer@inter.nl.net>,
+   o Thomas Wolfram <wolf@prz.tu-berlin.de>
 
-     S3 accelerated code by:
+   o Orest Zborowski <orestz@eskimo.com>
 
-        o  Jon Tombs <tombs@XFree86.org>,
+      386BSD, FreeBSD, NetBSD  support by:
 
-        o  Harald Koenig <koenig@tat.physik.uni-tuebingen.de>,
+	       o Rich Murphey <Rich@XFree86.org>
 
-        o  David Wexelblat <dwex@XFree86.org>,
+      NetBSD, OpenBSD support by:
 
-        o  David Dawes <dawes@XFree86.org>,
+	       o Matthieu Herrb <Matthieu.Herrb.@laas.fr>
 
-        o  Robin Cutshaw <robin@XFree86.org>,
+      Original 386BSD port by:
 
-        o  Amancio Hasty <hasty@netcom.com>,
+	       o Pace Willison,
 
-        o  Norbert Distler <Norbert.Distler@physik.tu-muenchen.de>,
+	       o Amancio Hasty Jr <hasty@netcom.com>
 
-        o  Leonard N. Zubkoff <lnz@dandelion.com>,
+      Mach 386 support by:
 
-        o  Bernhard Bender <br@elsa.mhs.compuserve.com>,
+	       o Robert Baron <Robert.Baron@ernst.mach.cs.cmu.edu>
 
-        o  Dirk Hohndel <hohndel@XFree86.org>,
+      Linux support by:
 
-        o  Joe Moss <joe@XFree86.org>
+	       o Orest Zborowski <orestz@eskimo.com>
 
-     S3V accelerated code by:
+      SCO Unix support by:
 
-        o  Harald Koenig <koenig@tat.physik.uni-tuebingen.de>,
+	       o David McCullough <davidm@stallion.oz.au>
 
-        o  Kevin Brosius <Cobra@compuserve.com>
+      Amoeba support by:
 
-     Mach32 accelerated code by:
+	       o Kees Verstoep <versto@cs.vu.nl>
 
-        o  Kevin Martin <martin@cs.unc.edu>,
+      Minix-386 support by:
 
-        o  Rik Faith <faith@cs.unc.edu>,
+	       o Philip Homburg <philip@cs.vu.nl>
 
-        o  Mike Bernson <mike@mbsun.mlb.org>,
+      OSF/1 support by:
 
-        o  Mark Weaver <Mark_Weaver@brown.edu>,
+	       o Marc Evans <Marc@XFree86.org>
 
-        o  Craig Groeschel <craig@metrolink.com>
+      BSD/OS support by:
 
-        o  Bryan Feir <jenora@istar.ca>
+	       o Hans Nasten <nasten@everyware.se>,
 
-     Mach64 accelerated code by:
+	       o Paul Vixie <paul@vix.com>
 
-        o  Kevin Martin <martin@cs.unc.edu>,
 
-     Mach8, 8514 accelerated code by:
 
 
 
-        o  Kevin Martin <martin@cs.unc.edu>,
 
-        o  Rik Faith <faith@cs.unc.edu>,
 
-        o  Tiago Gons <tiago@comosjn.hobby.nl>,
 
-        o  Hans Nasten <nasten@everyware.se>,
 
-        o  Scott Laird <scott@laird.com>
+README for XFree86[tm] 3.2A
 
-     Cirrus accelerated code by:
 
-        o  Simon Cooper <scooper@vizlab.rutgers.edu>,
 
-        o  Harm Hanemaayer <H.Hanemaayer@inter.nl.net>,
+      Solaris support by:
 
-        o  Bill Reynolds <bill@goshawk.lanl.gov>,
+	       o Doug Anson <danson@lgc.com>,
 
-        o  Corin Anderson <corina@bdc.cirrus.com>
+	       o David Holland <davidh@use.com>
 
-     Western Digital accelerated code by:
+      ISC SVR3 support by:
 
-        o  Mike Tierney <floyd@pepsi.eng.umd.edu>,
+	       o Michael Rohleder <michael.rohleder@stadt-frankfurt.de>
 
-        o  Bill Conn <conn@bnr.ca>
+      LynxOS support by:
 
-     P9000 accelerated code by:
+	       o Thomas Mueller <tm@systrix.de>
 
-        o  Erik Nygren <nygren@mit.edu>,
+      OS/2 support by:
 
-        o  Harry Langenbacher <harry@brain.jpl.nasa.gov>
+	       o Holger Veit <Holger.Veit@gmd.de>
 
-        o  Chris Mason <mason@mail.csh.rit.edu>
+	       o Sebastien Marineau <s521936@aix1.uottawa.ca>
 
-        o  Henrik Harmsen <harmsen@eritel.se>
+      Linux shared libraries by:
 
-     AGX accelerated code by:
+	       o Orest Zborowski <orestz@eskimo.com>,
 
-        o  Henry Worth <henry.worth@amail.amdahl.com>,
+	       o Dirk Hohndel <hohndel@XFree86.org>
 
-     Number Nine I128 driver by:
+      PC98 support by:
 
-        o  Robin Cutshaw <robin@XFree86.org>,
+	       o Toyonori Fujiura <toyo@ibbsal.or.jp>,
 
-     ET4000/W32 accelerated code by:
+	       o Hiroyuki Aizu <aizu@jaist.ac.jp>,
 
-        o  Glenn Lai <glenn@cs.utexas.edu>,
+	       o Tetsuya Kakefuda <kakefuda@tag.iijnet.or.jp>,
 
-     ET6000 SVGA and accelerated support (both based on the existing W32
-        code) by:
+	       o Takefumi Tsukada <tsuka@linkt.imasy.or.jp>,
 
-        o  Koen Gadeyne <koen.gadeyne@barco.com>,
+	       o H.Komatsuzaki,
 
-     Oak Technologies Inc. accelerated code by:
+	       o Naoki Katsurakawa <katsura@prc.tsukuba.ac.jp>,
 
-        o  Jorge Delgado <ernar@dit.upm.es>,
+	       o Shuichiro Urata <s-urata@nmit.tmg.nec.co.jp>,
 
-     16 color VGA server by:
+	       o Yasuyuki Kato <yasuyuki@acaets0.anritsu.co.jp>,
 
-        o  Gertjan Akkerman <akkerman@dutiba.twi.tudelft.nl>
+	       o Michio Jinbo <karl@pms.nagaokaut.ac.jp>,
 
-     2 color VGA and non-VGA mono servers by:
+	       o Tatsuya Koike <koiket@focus.rim.or.jp>,
 
-        o  Pascal Haible <haible@izfm.uni-stuttgart.de>
+	       o Koichiro Suzuki <ksuzuki@cc.tuat.ac.jp>,
 
+	       o Tsuyoshi Tamaki <tamaki@sail.t.u-tokyo.ac.jp>,
 
-     ATI SVGA driver by:
+	       o Isao Ohishi <ohishi@hf.rim.or.jp>,
 
-        o  Per Lindqvist <pgd@compuram.bbt.se> and Doug Evans
-           <dje@cygnus.com>.
 
-        o  Ported to X11R5 by Rik Faith <faith@cs.unc.edu>.
 
-        o  Rewritten by Marc La France <Marc.La-France@ualberta.ca>
 
-     WD90C24 support by:
 
-        o  Brad Bosch <brad@lachman.com>
 
-     Trident SVGA driver by:
 
-        o  Alan Hourihane <alanh@fairlite.demon.co.uk>
 
-     SiS SVGA driver by:
 
-        o  Alan Hourihane <alanh@fairlite.demon.co.uk>
+README for XFree86[tm] 3.2A
 
-        o  Xavier Ducoin <xavier@rd.lectra.fr>
 
-     DEC 21030 (TGA) server by:
 
-        o  Alan Hourihane <alanh@fairlite.demon.co.uk>
+	       o Kohji Ohishi <atena@njk.co.jp>,
 
-        o  Harald Koenig <koenig@tat.physik.uni-tuebingen.de>
+	       o Shin'ichi Yairo <QZR00522@niftyserve.or.jp>,
 
-     NCR SVGA driver by:
+	       o Kazuo Ito <ft4k-itu@asahi-net.or.jp>,
 
-        o  Stuart Anderson <anderson@metrolink.com> with the permission
-           of NCR Corporation
+	       o Jun Sakuma <i931361@jks.is.tsukuba.ac.jp>,
 
-     Cirrus SVGA driver by:
+	       o Shuichi Ueno <uenos@ppp.bekkoame.or.jp>,
 
-        o  Bill Reynolds <bill@goshawk.lanl.gov>,
+	       o Ishida Kazuo <ishidakz@obp.cl.nec.co.jp>,
 
-        o  Hank Dietz <hankd@ecn.purdue.edu>,
+	       o Takaaki Nomura <tnomura@sfc.keio.ac.jp>,
 
-        o  Simon Cooper <scooper@vizlab.rutgers.edu>,
+	       o Tadaaki Nagao <nagao@cs.titech.ac.jp>,
 
-        o  Harm Hanemaayer <H.Hanemaayer@inter.nl.net>,
+	       o Minoru Noda <mnoda@cv.tottori-u.ac.jp>,
 
-        o  Corin Anderson <corina@bdc.cirrus.com>
+	       o Naofumi Honda <honda@Kururu.math.hokudai.ac.jp>,
 
-     Cirrus CL64xx driver by:
+	       o Akio Morita <amorita@bird.scphys.kyoto-u.ac.jp>,
 
-        o  Manfred Brands <mb@oceonics.nl>
+	       o Takashi Sakamoto <sakamoto@yajima.kuis.kyoto-u.ac.jp>,
 
-        o  Randy Hendry <randy@sgi.com>
+	       o Yasuhiro Ichikawa <cs94006@mbox.sist.ac.jp>,
 
-        o  Jeff Kirk <jeff@bambam.dsd.ES.COM>
+	       o Kazunori Ueno <g540012@komaba.ecc.u-tokyo.ac.jp>,
 
-     Compaq SVGA driver by:
+	       o Yasushi Suzuki <suz@d2.bs1.fc.nec.co.jp>,
 
-        o  Hans Oey <hans@mo.hobby.nl>
+	       o Masato Yoshida (Contributor of PW805i support)
 
-     Oak SVGA driver by:
+      Original accelerated code by:
 
-        o  Steve Goldman <sgoldman@encore.com>
+	       o Kevin Martin <martin@cs.unc.edu>,
 
-        o  Jorge Delgado <ernar@dit.upm.es>
+	       o Rik Faith <faith@cs.unc.edu>,
 
+	       o Jon Tombs <tombs@XFree86.org>
 
+      XFree86 Acceleration Architecture (XAA) by:
 
-     ARK Logic SVGA driver by:
+	       o Harm Hanemaayer <H.Hanemaayer@inter.nl.net>,
 
-        o  Harm Hanemaayer <H.Hanemaayer@inter.nl.net>
+      S3 accelerated code by:
 
-        o  Leon Bottou <bottou@laforia.ibp.fr>
+	       o Jon Tombs <tombs@XFree86.org>,
 
-     AL2101 SVGA driver by:
+	       o Harald Koenig <koenig@tat.physik.uni-tuebingen.de>,
 
-        o  Paolo Severini <lendl@dist.dist.unige.it>
+	       o David Wexelblat <dwex@XFree86.org>,
 
-     Avance Logic ``ali'' SVGA driver by:
+	       o David Dawes <dawes@XFree86.org>,
 
-        o  Ching-Tai Chiu <cchiu@netcom.com>
 
-     Chips & Technologies SVGA driver by:
 
-        o  Regis Cridlig <cridlig@dmi.ens.fr>
 
-        o  Jon Block <block@frc.com>
 
-        o  Mike Hollick <hollick@graphics.cis.upenn.edu>
 
-        o  Nozomi Ytow
 
-        o  Egbert Eich <Egbert.Eich@Physik.TH-Darmstadt.DE>
 
-        o  David Bateman <dbateman@ee.uts.edu.au>
 
-        o  Xavier Ducoin <xavier@rd.lectra.fr>
+README for XFree86[tm] 3.2A
 
-     MX SVGA driver by:
 
-        o  Frank Dikker <dikker@cs.utwente.nl>
 
-     Video7 SVGA driver by:
+	       o Robin Cutshaw <robin@XFree86.org>,
 
-        o  Craig Struble <cstruble@acm.vt.edu>
+	       o Amancio Hasty <hasty@netcom.com>,
 
-     RealTek SVGA driver by:
+	       o Norbert Distler <Norbert.Distler@physik.tu-muenchen.de>,
 
-        o  Peter Trattler <peter@sbox.tu-graz.ac.at>
+	       o Leonard N. Zubkoff <lnz@dandelion.com>,
 
-     Apollo Mono driver by:
+	       o Bernhard Bender <br@elsa.mhs.compuserve.com>,
 
-        o  Hamish Coleman <hamish@zot.apana.org.au>
+	       o Dirk Hohndel <hohndel@XFree86.org>,
 
-     Matrox SVGA driver by:
+	       o Joe Moss <joe@XFree86.org>
 
-        o  Radoslaw Kapitan <kapitan@student.uci.agh.edu.pl>
+      S3V accelerated code by:
 
-        o  Andrew Vanderstock <vanderaj@mail2.svhm.org.au>
+	       o Harald Koenig <koenig@tat.physik.uni-tuebingen.de>,
 
-        o  Angsar Hockmann <Ansgar.Hockmann@hrz.uni-dortmund.de>
+	       o Kevin Brosius <Cobra@compuserve.com>
 
-        o  Michael Will <Michael.Will@student.uni-tuebingen.de>
+      Mach32 accelerated code by:
 
-        o  Andrew Mileski <aem@ott.hookup.net>
+	       o Kevin Martin <martin@cs.unc.edu>,
 
-        o  Stephen Pitts <pitts2@memphisonline.com>
+	       o Rik Faith <faith@cs.unc.edu>,
 
-        o  Dirk Hohndel <hohndel@XFree86.Org>
+	       o Mike Bernson <mike@mbsun.mlb.org>,
 
-        o  Leonard N. Zubkoff <lnz@dandelion.com>
+	       o Mark Weaver <Mark_Weaver@brown.edu>,
 
+	       o Craig Groeschel <craig@metrolink.com>
 
+	       o Bryan Feir <jenora@istar.ca>
 
-     XFree86-VidModeExtension and xvidtune client by:
+      Mach64 accelerated code by:
 
-        o  Kaleb S. Keithley <kaleb@x.org>
+	       o Kevin Martin <martin@cs.unc.edu>,
 
-        o  David Dawes <dawes@XFree86.org>
+      Mach8, 8514 accelerated code by:
 
-        o  Jon Tombs <tombs@XFree86.org>
+	       o Kevin Martin <martin@cs.unc.edu>,
 
-        o  Joe Moss <joe@XFree86.org>
+	       o Rik Faith <faith@cs.unc.edu>,
 
-     XFree86-Misc extension by:
+	       o Tiago Gons <tiago@comosjn.hobby.nl>,
 
-        o  Joe Moss <joe@XFree86.org>
+	       o Hans Nasten <nasten@everyware.se>,
 
-        o  David Dawes <dawes@XFree86.org>
+	       o Scott Laird <scott@laird.com>
 
-     XFree86-DGA extension by:
+      Cirrus accelerated code by:
 
-        o  Jon Tombs <tombs@XFree86.org>
+	       o Simon Cooper <scooper@vizlab.rutgers.edu>,
 
-        o  Mark Vojkovich <mvojkovi@ucsd.edu>
 
-        o  Harm Hanemaayer <H.Hanemaayer@inter.nl.net>,
 
-        o  David Dawes <dawes@XFree86.org>
 
-     XInput integration, devices and clients by:
 
-        o  Frederic Lepied <lepied@XFree86.Org> (XInput integration,
-           Wacom tablet, Joystick and extended mouse devices,
-           xsetpointer and xsetmode clients)
 
-        o  Patrick Lecoanet <lecoanet@cena.dgac.fr> (Elographics
-           touchscreen device)
 
-        o  Steven Lang <tiger@ecis.com> (Summagraphics tablet device)
 
-     Other contributors:
 
-        o  Joerg Wunsch <joerg_wunsch@uriah.sax.de> (ET3000 banked
-           mono),
+README for XFree86[tm] 3.2A
 
-        o  Eric Raymond <esr@snark.thyrsus.com> (new video mode
-           documentation),
 
-        o  and an entire horde of beta-testers around the world!
 
-  6.  Contact information
+	       o Harm Hanemaayer <H.Hanemaayer@inter.nl.net>,
 
-  Ongoing development planning and support is coordinated by the XFree86
-  Core Team.  At this time the Core Team consists of (in alphabetical
-  order):
+	       o Bill Reynolds <bill@goshawk.lanl.gov>,
 
-     o  Robin Cutshaw <robin@XFree86.org>
+	       o Corin Anderson <corina@bdc.cirrus.com>
 
-     o  David Dawes <dawes@XFree86.org>
+      Western Digital accelerated code by:
 
-     o  Marc Evans <marc@XFree86.org>
+	       o Mike Tierney <floyd@pepsi.eng.umd.edu>,
 
-     o  Harm Hanemaayer <H.Hanemaayer@inter.nl.net>
+	       o Bill Conn <conn@bnr.ca>
 
-     o  Dirk Hohndel <hohndel@XFree86.org>
+      P9000 accelerated code by:
 
-     o  Harald Koenig <koenig@XFree86.org>
+	       o Erik Nygren <nygren@mit.edu>,
 
+	       o Harry Langenbacher <harry@brain.jpl.nasa.gov>
 
-     o  Rich Murphey <rich@XFree86.org>
+	       o Chris Mason <mason@mail.csh.rit.edu>
 
-     o  Jon Tombs <tombs@XFree86.org>
+	       o Henrik Harmsen <harmsen@eritel.se>
 
-     o  David Wexelblat <dwex@XFree86.org>
+      AGX accelerated code by:
 
-  Mail sent to <Core@XFree86.org> will reach the core team.  Please note
-  that support questions should be sent to <XFree86@XFree86.org>.
+	       o Henry Worth <henry.worth@amail.amdahl.com>,
 
-  7.  The XFree86 Project, Inc.
+      Number Nine I128 driver by:
 
-  The XFree86 Project, Inc, was founded to accomplish two major goals:
+	       o Robin Cutshaw <robin@XFree86.org>,
 
-     1. To provide a vehicle by which XFree86 can be represented in X
-        Consortium, Inc, the organization responsible for the design,
-        development, and release of The X Window System.
+      ET4000/W32 accelerated code by:
 
-     2. To provide some basic funding for acquisition of facilities for
-        ongoing XFree86 development, largely to consist of new video
-        hardware and basic computing facilities.
+	       o Glenn Lai <glenn@cs.utexas.edu>,
 
-  The first of these was the primary motivation.  We have held discus-
-  sions with the X Consortium on and off for many months, attempting to
-  find an avenue by which our loosely-organized free software project
-  could be given a voice within the X Consortium.  The bylaws of the
-  Consortium would not recognize such an organization.  After an initial
-  investigation about funding, we decided to form our own corporation to
-  provide the avenue we needed to meet the requirements of the X Consor-
-  tium bylaws.
+      ET6000 SVGA and accelerated support (both based on the existing W32 code) by:
 
-  By doing this, we were able to be involved in the beta-test interval
-  for X11R6, and have contributed the majority of XFree86 to the X11R6
-  and X11R6.1 core release.  The version of XFree86 in the initial X11R6
-  core is 3.0.  The version of XFree86 in the current X11R6.3 release is
-  3.2.
+	       o Koen Gadeyne <koen.gadeyne@barco.com>,
 
-  An additional benefit of this incorporation is that The XFree86
-  Project, Inc has obtained outside financial support for our work.
-  This will hopefully give us the freedom to be more pro-active in
-  obtaining new video hardware, and enable us to release better products
-  more quickly, as we will be able to go and get what we need, and get
-  it into the hands of the people who can do the work.
+      Oak Technologies Inc. accelerated code by:
 
-  The current Board of Directors and Officers of the The XFree86
-  Project, Inc, are:
+	       o Jorge Delgado <ernar@dit.upm.es>,
 
-     o  David Dawes, President and Secretary
+      16 color VGA server by:
 
-     o  Dirk Hohndel, Vice-President
+	       o Gertjan Akkerman <akkerman@dutiba.twi.tudelft.nl>
 
-     o  Glenn Lai, Director
+      2 color VGA and non-VGA mono servers by:
 
-     o  Rich Murphey, Treasurer
+	       o Pascal Haible <haible@izfm.uni-stuttgart.de>
 
-     o  Jim Tsillas, Director
+      ATI SVGA driver by:
 
-     o  Jon Tombs, Director
+	       o Per Lindqvist <pgd@compuram.bbt.se> and Doug Evans
+		 <dje@cygnus.com>.
 
-     o  David Wexelblat, Director
 
-  Email to <BOD@XFree86.org> reaches the board of directors.
 
-  Our bylaws have been crafted in such a way to ensure that XFree86 is
-  and always will be a free software project.  There is no personal
-  financial benefit to any member of the Core Team or any other XFree86
 
-  participant.  All assets of the corporation remain with the
-  corporation, and, in the event of the dissolution of the corporation,
-  all assets will be turned over to the X Consortium, Inc.  It is hoped
-  that by doing this, our corporation will be merely a formalization of
-  what we have been doing in the past, rather than something entirely
-  new.
 
-  Here is a list of the organizations and individuals who have provided
-  sponsorship to The XFree86 Project, Inc, either by financial
-  contribution or by the donation of equipment and resources.  The
-  XFree86 Project, Inc gratefully acknowledges these contributions, and
-  hopes that we can do justice to them by continuing to release high-
-  quality free software for the betterment of the Internet community as
-  a whole.
 
-     o  UUNET Communications Services, Inc. <http://www.uu.net/>
 
-  UUNET Communications Services, Inc, deserves special mention.  This
-  organization stepped forward and contributed the entire 1994 X Consor-
-  tium membership fee on a moment's notice.  This single act ensured
-  XFree86's involvement in X11R6.
 
+README for XFree86[tm] 3.2A
 
-     o  GUUG -- 1st German Linux Congress
 
-  Also deserving of special mention are the organizers and attendees of
-  the 1st German Linux Congress in Heidelberg.  Significant funding to
-  The XFree86 Project has been provided from its proceeds.
 
+	       o Ported to X11R5 by Rik Faith <faith@cs.unc.edu>.
 
-     o  AIB Software Corporation <http://www.aib.com/>, Herndon, VA
+	       o Rewritten by Marc La France <Marc.La-France@ualberta.ca>
 
-     o  Roland Alder, Armin Fessler, Patrick Seemann, Martin Wunderli
+      WD90C24 support by:
 
-     o  American Micro Group
+	       o Brad Bosch <brad@lachman.com>
 
-     o  AT&T Global Information Services <http://www.attgis.com/>
-        (formerly NCR)
+      Trident SVGA driver by:
 
-     o  ATI Technologies Inc <http://www.atitech.ca/>
+	       o Alan Hourihane <alanh@fairlite.demon.co.uk>
 
-     o  Andrew Burgess
+      SiS SVGA driver by:
 
-     o  Berkeley Software Design, Inc <http://www.bsdi.com/>, Falls
-        Church, VA
+	       o Alan Hourihane <alanh@fairlite.demon.co.uk>
 
-     o  Caldera, Inc. <http://www.caldera.com/>
+	       o Xavier Ducoin <xavier@rd.lectra.fr>
 
-     o  Delix Computer GmbH <http://www.delix.de/>, Stuttgart, Germany
+      DEC 21030 (TGA) server by:
 
-     o  The Destek Group, Inc. <http://www.destek.net/Destek/>, Nashua,
-        NH (formerly Synergytics)
+	       o Alan Hourihane <alanh@fairlite.demon.co.uk>
 
-     o  Diamond Multimedia Systems, Inc. <http://www.diamondmm.com/>
+	       o Harald Koenig <koenig@tat.physik.uni-tuebingen.de>
 
-     o  Digital Equipment Corporation <http://www.digital.com/>
+      NCR SVGA driver by:
 
-     o  Elsa GmbH <http://www.elsa.de/>, Aachen, Germany
+	       o Stuart Anderson <anderson@metrolink.com> with the permission
+		 of NCR Corporation
 
-     o  Genoa Systems Corporation
+      Cirrus SVGA driver by:
 
-     o  Helius, Inc. <http://www.helius.com/>
+	       o Bill Reynolds <bill@goshawk.lanl.gov>,
 
-     o  Hercules Computer Technology, Inc. <http://www.hercules.com/>
+	       o Hank Dietz <hankd@ecn.purdue.edu>,
 
+	       o Simon Cooper <scooper@vizlab.rutgers.edu>,
 
-     o  Ralf Hockens
+	       o Harm Hanemaayer <H.Hanemaayer@inter.nl.net>,
 
-     o  Dirk Hohndel
+	       o Corin Anderson <corina@bdc.cirrus.com>
 
-     o  InfoMagic <http://www.infomagic.com/>, Flagstaff, AZ
+      Cirrus CL64xx driver by:
 
-     o  Daniel Kraemer
+	       o Manfred Brands <mb@oceonics.nl>
 
-     o  Frank & Paige McCormick
+	       o Randy Hendry <randy@sgi.com>
 
-     o  Linux International
+	       o Jeff Kirk <jeff@bambam.dsd.ES.COM>
 
-     o  Linux Support Team, Erlangen, Germany
+      Compaq SVGA driver by:
 
-     o  LunetIX Softfair <http://www.lunetix.de>, Berlin, Germany
+	       o Hans Oey <hans@mo.hobby.nl>
 
-     o  Morse Telecommunications <http://www.morse.net>, Long Beach, NY
 
-     o  MIRO Computer Products AG, Braunschweig, Germany
 
-     o  Rich & Amy Murphey
 
-     o  Brett Neumeier
 
-     o  Number Nine, Lexington, MA
 
-     o  Kazuyuki Okamoto, Japan
 
-     o  Prime Time Freeware <http://www.ptf.com/>, San Bruno, CA
 
-     o  Red Hat Software <http://www.redhat.com/>, Chapel Hill, NC
 
-     o  Norbert Reithinger
 
-     o  SPEA Software AG, Starnberg, Germany
+README for XFree86[tm] 3.2A
 
-     o  STB Systems
 
-     o  Clifford M Stein
 
-     o  Joel Storm
+      Oak SVGA driver by:
 
-     o  S.u.S.E. GmbH <http://www.suse.de>, Fuerth, Germany
+	       o Steve Goldman <sgoldman@encore.com>
 
-     o  Tekelec Airtronic GmbH <http://www.tekelec.com>, Muenchen,
-        Germany
+	       o Jorge Delgado <ernar@dit.upm.es>
 
-     o  Jim Tsillas
+      ARK Logic SVGA driver by:
 
-     o  Trans-Ameritech Enterprises, Inc., Santa Clara, CA
+	       o Harm Hanemaayer <H.Hanemaayer@inter.nl.net>
 
-     o  Unifix Software GmbH, Braunschweig, Germany
+	       o Leon Bottou <bottou@laforia.ibp.fr>
 
-     o  Vixie Enterprises <http://www.vix.com/>, La Honda, CA
+      AL2101 SVGA driver by:
 
-     o  Walnut Creek CDROM <http://www.cdrom.com/>, Concord, CA
+	       o Paolo Severini <lendl@dist.dist.unige.it>
 
-     o  Xtreme s.a.s. <http://www.xfree86.org/xtreme>, Livorno, Italy
+      Avance Logic ``ali'' SVGA driver by:
 
-  The XFree86 Project, Inc, welcomes the additional contribution of
-  funding and/or equipment.  Such contributions should be tax-
-  deductible; we will know for certain when the lawyers get finished
-  with the papers.  For more information, contact The XFree86 Project,
-  Inc, at <BOD@XFree86.org>
+	       o Ching-Tai Chiu <cchiu@netcom.com>
 
+      Chips & Technologies SVGA driver by:
 
-  8.  Archive sites
+	       o Regis Cridlig <cridlig@dmi.ens.fr>
 
-  Binaries for many OSs are available via anonymous FTP from:
+	       o Jon Block <block@frc.com>
 
+	       o Mike Hollick <hollick@graphics.cis.upenn.edu>
 
-     o  ftp://ftp.XFree86.org/pub/XFree86
+	       o Nozomi Ytow
 
-  and the following mirror sites:
+	       o Egbert Eich <Egbert.Eich@Physik.TH-Darmstadt.DE>
 
-     o  North America:
+	       o David Bateman <dbateman@ee.uts.edu.au>
 
-        +  ftp://ftp.rge.com/pub/X/XFree86 (source and binaries)
+	       o Xavier Ducoin <xavier@rd.lectra.fr>
 
-        +  ftp://ftp.gw.com/pub/unix/XFree86 (source and NetBSD
-           binaries)
+      MX SVGA driver by:
 
-        +  ftp://ftp.varesearch.com/pub/mirrors/xfree86 (source and
-           binaries)
+	       o Frank Dikker <dikker@cs.utwente.nl>
 
-        +  ftp://ftp.cs.umn.edu/pub/XFree86 (source and binaries)
+      Video7 SVGA driver by:
 
-        +  ftp://despair.capecod.net/pub/XFree86 (Linux, NetBSD and
-           FreeBSD binaries)
+	       o Craig Struble <cstruble@acm.vt.edu>
 
+      RealTek SVGA driver by:
 
-     o  Europe:
+	       o Peter Trattler <peter@sbox.tu-graz.ac.at>
 
-        +  ftp://ftp.fee.vutbr.cz/pub/XFree86 (source patches and
-           binaries)
+      Apollo Mono driver by:
 
-        +  ftp://ftp.gwdg.de/pub/xfree86/XFree86 (source and binaries)
+	       o Hamish Coleman <hamish@zot.apana.org.au>
 
-        +  ftp://ftp.funet.fi/pub/X11/XFree86 (source and binaries)
+      Matrox SVGA driver by:
 
-        +  ftp://ftp.ibp.fr/pub/X11/XFree86/XFree86 (source and
-           binaries)
 
-        +  ftp://ftp.laas.fr/pub/ii/NetBSD/XFree86 (NetBSD binaries
-           only)
 
-        +  ftp://ftp.pvv.unit.no/pub/XFree86 (source and binaries)
 
-        +  ftp://sunsite.doc.ic.ac.uk/packages/XFree86 (source and
-           binaries)
 
 
 
 
-     o  Asia/Australia:
 
-        +  ftp://x.physics.usyd.edu.au/pub/XFree86 (source and binaries)
+README for XFree86[tm] 3.2A
 
-        +  ftp://ftp.iij.ad.jp/pub/X/XFree86/XFree86 (source and
-           binaries)
 
-        +  ftp://ftp.hk.super.net/mirror/XFree86 (source and binaries)
 
-        +  ftp://ftp.nectec.or.th/pub/mirrors/XFree86 (source patches
-           and binaries)
+	       o Radoslaw Kapitan <kapitan@student.uci.agh.edu.pl>
 
+	       o Andrew Vanderstock <vanderaj@mail2.svhm.org.au>
 
-  Ensure that you are getting XFree86 3.2A - some of these sites may
-  archive older releases as well.  Check the RELNOTES to find which
-  files you need to take from the archive.
+	       o Angsar Hockmann <Ansgar.Hockmann@hrz.uni-dortmund.de>
 
+	       o Michael Will <Michael.Will@student.uni-tuebingen.de>
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.71 1997/01/23 11:02:25 dawes Exp $
+	       o Andrew Mileski <aem@ott.hookup.net>
 
+	       o Stephen Pitts <pitts2@memphisonline.com>
 
+	       o Dirk Hohndel <hohndel@XFree86.Org>
 
+	       o Leonard N. Zubkoff <lnz@dandelion.com>
 
+      XFree86-VidModeExtension and xvidtune client by:
 
-  $XConsortium: README.sgml /main/31 1996/10/28 05:43:24 kaleb $
+	       o Kaleb S. Keithley <kaleb@x.org>
 
+	       o David Dawes <dawes@XFree86.org>
 
+	       o Jon Tombs <tombs@XFree86.org>
 
+	       o Joe Moss <joe@XFree86.org>
 
+      XFree86-Misc extension by:
 
+	       o Joe Moss <joe@XFree86.org>
 
+	       o David Dawes <dawes@XFree86.org>
 
+      XFree86-DGA extension by:
 
+	       o Jon Tombs <tombs@XFree86.org>
 
+	       o Mark Vojkovich <mvojkovi@ucsd.edu>
 
+	       o Harm Hanemaayer <H.Hanemaayer@inter.nl.net>,
 
+	       o David Dawes <dawes@XFree86.org>
 
+      XInput integration, devices and clients by:
 
+	       o Frederic Lepied <lepied@XFree86.Org> (XInput integration,
+		 Wacom tablet, Joystick and extended mouse devices, xsetpointer
+		 and xsetmode clients)
 
+	       o Patrick Lecoanet <lecoanet@cena.dgac.fr> (Elographics touch­
+		 screen device)
 
+	       o Steven Lang <tiger@ecis.com> (Summagraphics tablet device)
 
 
 
@@ -1086,31 +925,64 @@
 
 
 
+README for XFree86[tm] 3.2A
 
 
 
+      Other contributors:
 
+	       o Joerg Wunsch <joerg_wunsch@uriah.sax.de> (ET3000 banked mono),
 
+	       o Eric Raymond <esr@snark.thyrsus.com> (new video mode documen­
+		 tation),
 
+	       o and an entire horde of beta-testers around the world!
 
 
+6.  Contact information
 
+Ongoing development planning and support is coordinated by the XFree86 Core
+Team.  At this time the Core Team consists of (in alphabetical order):
 
+   o Robin Cutshaw <robin@XFree86.org>
 
+   o David Dawes <dawes@XFree86.org>
 
+   o Marc Evans <marc@XFree86.org>
 
+   o Harm Hanemaayer <H.Hanemaayer@inter.nl.net>
 
+   o Dirk Hohndel <hohndel@XFree86.org>
 
+   o Harald Koenig <koenig@XFree86.org>
 
+   o Rich Murphey <rich@XFree86.org>
 
+   o Jon Tombs <tombs@XFree86.org>
 
+   o David Wexelblat <dwex@XFree86.org>
 
+Mail sent to <Core@XFree86.org> will reach the core team.  Please note that
+support questions should be sent to <XFree86@XFree86.org>.
 
 
+7.  The XFree86 Project, Inc.
 
+The XFree86 Project, Inc, was founded to accomplish two major goals:
 
+  1.  To provide a vehicle by which XFree86 can be represented in X Consortium,
+      Inc, the organization responsible for the design, development, and
+      release of The X Window System.
 
+  2.  To provide some basic funding for acquisition of facilities for ongoing
+      XFree86 development, largely to consist of new video hardware and basic
+      computing facilities.
 
+The first of these was the primary motivation.	We have held discussions with
+the X Consortium on and off for many months, attempting to find an avenue by
+which our loosely-organized free software project could be given a voice within
+the X Consortium.  The bylaws of the Consortium would not recognize such an
+organization.  After an initial investigation about funding, we decided to form
 
 
 
@@ -1118,6 +990,464 @@
 
 
 
+
+README for XFree86[tm] 3.2A
+
+
+
+our own corporation to provide the avenue we needed to meet the requirements of
+the X Consortium bylaws.
+
+By doing this, we were able to be involved in the beta-test interval for X11R6,
+and have contributed the majority of XFree86 to the X11R6 and X11R6.1 core
+release.  The version of XFree86 in the initial X11R6 core is 3.0.  The version
+of XFree86 in the current X11R6.3 release is 3.2.
+
+An additional benefit of this incorporation is that The XFree86 Project, Inc
+has obtained outside financial support for our work.  This will hopefully give
+us the freedom to be more pro-active in obtaining new video hardware, and
+enable us to release better products more quickly, as we will be able to go and
+get what we need, and get it into the hands of the people who can do the work.
+
+The current Board of Directors and Officers of the The XFree86 Project, Inc,
+are:
+
+   o David Dawes, President and Secretary
+
+   o Dirk Hohndel, Vice-President
+
+   o Glenn Lai, Director
+
+   o Rich Murphey, Treasurer
+
+   o Jim Tsillas, Director
+
+   o Jon Tombs, Director
+
+   o David Wexelblat, Director
+
+Email to <BOD@XFree86.org> reaches the board of directors.
+
+Our bylaws have been crafted in such a way to ensure that XFree86 is and always
+will be a free software project.  There is no personal financial benefit to any
+member of the Core Team or any other XFree86 participant.  All assets of the
+corporation remain with the corporation, and, in the event of the dissolution
+of the corporation, all assets will be turned over to the X Consortium, Inc.
+It is hoped that by doing this, our corporation will be merely a formalization
+of what we have been doing in the past, rather than something entirely new.
+
+Here is a list of the organizations and individuals who have provided sponsor­
+ship to The XFree86 Project, Inc, either by financial contribution or by the
+donation of equipment and resources.  The XFree86 Project, Inc gratefully
+acknowledges these contributions, and hopes that we can do justice to them by
+continuing to release high-quality free software for the betterment of the
+Internet community as a whole.
+
+   o UUNET Communications Services, Inc. <URL:http://www.uu.net/>
+
+UUNET Communications Services, Inc, deserves special mention.  This organiza­
+tion stepped forward and contributed the entire 1994 X Consortium membership
+fee on a moment's notice.  This single act ensured XFree86's involvement in
+X11R6.
+
+
+
+
+
+
+
+
+README for XFree86[tm] 3.2A
+
+
+
+   o GUUG -- 1st German Linux Congress
+
+Also deserving of special mention are the organizers and attendees of the 1st
+German Linux Congress in Heidelberg.  Significant funding to The XFree86 Pro­
+ject has been provided from its proceeds.
+
+   o AIB Software Corporation <URL:http://www.aib.com/>, Herndon, VA
+
+   o Roland Alder, Armin Fessler, Patrick Seemann, Martin Wunderli
+
+   o American Micro Group
+
+   o AT&T Global Information Services <URL:http://www.attgis.com/> (formerly
+     NCR)
+
+   o ATI Technologies Inc <URL:http://www.atitech.ca/>
+
+   o Andrew Burgess
+
+   o Berkeley Software Design, Inc <URL:http://www.bsdi.com/>, Falls Church, VA
+
+   o Caldera, Inc. <URL:http://www.caldera.com/>
+
+   o Delix Computer GmbH <URL:http://www.delix.de/>, Stuttgart, Germany
+
+   o The Destek Group, Inc. <URL:http://www.destek.net/Destek/>, Nashua, NH
+     (formerly Synergytics)
+
+   o Diamond Multimedia Systems, Inc. <URL:http://www.diamondmm.com/>
+
+   o Digital Equipment Corporation <URL:http://www.digital.com/>
+
+   o Elsa GmbH <URL:http://www.elsa.de/>, Aachen, Germany
+
+   o Genoa Systems Corporation
+
+   o Helius, Inc. <URL:http://www.helius.com/>
+
+   o Hercules Computer Technology, Inc. <URL:http://www.hercules.com/>
+
+   o Ralf Hockens
+
+   o Dirk Hohndel
+
+   o InfoMagic <URL:http://www.infomagic.com/>, Flagstaff, AZ
+
+   o Daniel Kraemer
+
+   o Frank & Paige McCormick
+
+   o Linux International
+
+   o Linux Support Team, Erlangen, Germany
+
+
+
+
+
+
+
+
+
+README for XFree86[tm] 3.2A
+
+
+
+   o LunetIX Softfair <URL:http://www.lunetix.de>, Berlin, Germany
+
+   o Morse Telecommunications <URL:http://www.morse.net>, Long Beach, NY
+
+   o MIRO Computer Products AG, Braunschweig, Germany
+
+   o Rich & Amy Murphey
+
+   o Brett Neumeier
+
+   o Number Nine, Lexington, MA
+
+   o Kazuyuki Okamoto, Japan
+
+   o Prime Time Freeware <URL:http://www.ptf.com/>, San Bruno, CA
+
+   o Red Hat Software <URL:http://www.redhat.com/>, Chapel Hill, NC
+
+   o Norbert Reithinger
+
+   o SPEA Software AG, Starnberg, Germany
+
+   o STB Systems
+
+   o Clifford M Stein
+
+   o Joel Storm
+
+   o S.u.S.E. GmbH <URL:http://www.suse.de>, Fuerth, Germany
+
+   o Tekelec Airtronic GmbH <URL:http://www.tekelec.com>, Muenchen, Germany
+
+   o Jim Tsillas
+
+   o Trans-Ameritech Enterprises, Inc., Santa Clara, CA
+
+   o Unifix Software GmbH, Braunschweig, Germany
+
+   o Vixie Enterprises <URL:http://www.vix.com/>, La Honda, CA
+
+   o Walnut Creek CDROM <URL:http://www.cdrom.com/>, Concord, CA
+
+   o Xtreme s.a.s. <URL:http://www.xfree86.org/xtreme>, Livorno, Italy
+
+The XFree86 Project, Inc, welcomes the additional contribution of funding
+and/or equipment.  Such contributions should be tax-deductible; we will know
+for certain when the lawyers get finished with the papers.  For more informa­
+tion, contact The XFree86 Project, Inc, at <BOD@XFree86.org>
+
+
+8.  Archive sites
+
+Binaries for many OSs are available via anonymous FTP from:
+
+
+
+
+
+
+
+
+
+README for XFree86[tm] 3.2A
+
+
+
+   o ftp://ftp.XFree86.org/pub/XFree86
+
+and the following mirror sites:
+
+   o North America:
+
+	o ftp://ftp.rge.com/pub/X/XFree86 (source and binaries)
+
+	o ftp://ftp.gw.com/pub/unix/XFree86 (source and NetBSD binaries)
+
+	o ftp://ftp.varesearch.com/pub/mirrors/xfree86 (source and binaries)
+
+	o ftp://ftp.cs.umn.edu/pub/XFree86 (source and binaries)
+
+	o ftp://despair.capecod.net/pub/XFree86 (Linux, NetBSD and FreeBSD
+	  binaries)
+
+
+   o Europe:
+
+	o ftp://ftp.fee.vutbr.cz/pub/XFree86 (source patches and binaries)
+
+	o ftp://ftp.gwdg.de/pub/xfree86/XFree86 (source and binaries)
+
+	o ftp://ftp.funet.fi/pub/X11/XFree86 (source and binaries)
+
+	o ftp://ftp.ibp.fr/pub/X11/XFree86/XFree86 (source and binaries)
+
+	o ftp://ftp.laas.fr/pub/ii/NetBSD/XFree86 (NetBSD binaries only)
+
+	o ftp://ftp.pvv.unit.no/pub/XFree86 (source and binaries)
+
+	o ftp://sunsite.doc.ic.ac.uk/packages/XFree86 (source and binaries)
+
+
+
+
+   o Asia/Australia:
+
+	o ftp://x.physics.usyd.edu.au/pub/XFree86 (source and binaries)
+
+	o ftp://ftp.iij.ad.jp/pub/X/XFree86/XFree86 (source and binaries)
+
+	o ftp://ftp.hk.super.net/mirror/XFree86 (source and binaries)
+
+	o ftp://ftp.nectec.or.th/pub/mirrors/XFree86 (source patches and bina­
+	  ries)
+
+
+Ensure that you are getting XFree86 3.2A - some of these sites may archive
+older releases as well.  Check the RELNOTES to find which files you need to
+take from the archive.
+
+
+
+
+
+
+
+
+
+
+README for XFree86[tm] 3.2A
+
+
+
+     $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.73 1997/01/25 03:22:05 dawes Exp $
+
+
+
+
+
+     $XConsortium: README.sgml /main/31 1996/10/28 05:43:24 kaleb $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+README for XFree86[tm] 3.2A
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+				   CONTENTS
+
+
+
+1. What's new in XFree86 3.2A ............................................... 1
+
+2. Systems XFree86 has been tested on ....................................... 1
+
+3. Supported video-card chip-sets ........................................... 2
+
+4. Where to get more information ............................................ 5
+
+5. Credits .................................................................. 5
+
+6. Contact information ..................................................... 15
+
+7. The XFree86 Project, Inc. ............................................... 15
+
+8. Archive sites ........................................................... 18
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+				       i
 
 
 

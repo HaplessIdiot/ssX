@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128accel.c,v 3.1 1997/01/24 01:02:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128accel.c,v 3.2 1997/01/25 04:17:19 dawes Exp $ */
 
 /*
  * Copyright 1997 by Robin Cutshaw <robin@XFree86.Org>
@@ -196,12 +196,6 @@ i128SubsequentScreenToScreenCopy(int x1, int y1, int x2, int y2, int w,int h)
 		int bppi;
 		static int first_time_through = 1;
 
-		if (first_time_through) {
-            		ErrorF("%s: Using I128-1 workarounds.\n",
-				i128InfoRec.name);
-			first_time_through = 0;
-		}
-
 		/* The I128-1 has a nasty bitblit bug
 		 * that occurs when dest is exactly 8 pages wide
 		 */
@@ -209,6 +203,12 @@ i128SubsequentScreenToScreenCopy(int x1, int y1, int x2, int y2, int w,int h)
 		bppi = (eng_a[BUF_CTRL] & BC_PSIZ_MSK) >> 24;
 
 		if ((w >= min_size[bppi]) && (w <= max_size[bppi])) {
+			if (first_time_through) {
+            			ErrorF("%s: Using I128-1 workarounds.\n",
+					i128InfoRec.name);
+				first_time_through = 0;
+			}
+
 			bppi = split_size[bppi];
 			eng_a[XY2_WH] = (bppi<<16) | h;
 			eng_a[XY0_SRC] = (x1<<16) | y1;
@@ -218,11 +218,11 @@ i128SubsequentScreenToScreenCopy(int x1, int y1, int x2, int y2, int w,int h)
 			if (i128blitdir & DIR_RL_TB) {
 				/* right to left blit */
 				x1 -= bppi;
-				y1 -= bppi;
+				x2 -= bppi;
 			} else {
 				/* left to right blit */
 				x1 += bppi;
-				y1 += bppi;
+				x2 += bppi;
 			}
 
 			i128EngineReady();

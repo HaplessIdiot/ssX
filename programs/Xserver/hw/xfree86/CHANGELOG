@@ -1,4 +1,7 @@
-XFree86 3.2A (25 January 1997)
+XFree86 3.2y (26 January 1997)
+ 375. I128 accel fix (Robin Cutshaw).
+ 374. Update Japanese version of documentation to 3.2 (Kazuyuki Okamoto).
+ 373. Fix 8x8 pattern acceleration for ET6000 (Koen Gadeyne).
  372. Fix an optimisation/volatile problem with the I128 accel code
       (Robin Cutshaw).
  371. Fix the clearing of video memory in the SVGA server when the linear
