@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************************/
-/* $XFree86: xc/programs/x11perf/do_complex.c,v 1.5 2000/11/29 08:58:19 keithp Exp $ */
+/* $XFree86: xc/programs/x11perf/do_complex.c,v 1.6 2001/01/17 23:45:11 dawes Exp $ */
 
 #include "x11perf.h"
 
@@ -32,7 +32,7 @@ static GC       pgc;
 
 #ifndef X_NOT_STDC_ENV
 #include <math.h>
-#ifdef QNX4
+#if defined(QNX4) || defined(__CYGWIN__)
 #define PI 3.14159265358979323846
 #else
 #define PI M_PI
