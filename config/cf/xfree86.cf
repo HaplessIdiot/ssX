@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.9 95/01/25 16:42:40 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.67 1995/08/05 13:39:00 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.68 1995/09/17 06:27:46 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -441,6 +441,12 @@ XFREE86JAPANESEDOCDIR = $(XFREE86DOCDIR)/Japanese
 #ifndef UseGccMakeDepend
 #define UseGccMakeDepend YES
 #endif
+#endif
+#endif
+
+#if HasGcc2 && defined(i386Architecture)
+#ifndef DefaultGcc2i386Opt
+#define DefaultGcc2i386Opt -O2 -fno-strength-reduce
 #endif
 #endif
 

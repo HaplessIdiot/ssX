@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: bsdi.cf,v 1.14 95/01/11 18:27:52 kaleb Exp $
-XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.16 1995/03/11 14:46:46 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.17 1995/07/12 15:27:29 dawes Exp $
 
 #define OSName            BSD/OS 2.0
 #define OSVendor          BSDI
@@ -32,7 +32,7 @@ XCOMM xf86site.def
 #  define HasGcc2ForCplusplus	YES
 # endif
 # define CcCmd			gcc2
-# define OptimizedCDebugFlags	-O2 -m486
+# define OptimizedCDebugFlags	DefaultGcc2i386Opt -m486
 #else
 # define CcCmd			cc
 # define OptimizedCDebugFlags	-O

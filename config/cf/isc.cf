@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.4 1995/05/07 11:34:15 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.5 1995/06/18 13:48:21 dawes Exp $
 
 #ifndef HasGcc2
 #define HasGcc2			YES
@@ -84,7 +84,7 @@ XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.4 1995/05/07 11:34:15 dawes E
 
 #ifndef DefaultCDebugFlags
 # if HasGcc2
-#  define DefaultCDebugFlags -O2
+#  define DefaultCDebugFlags DefaultGcc2i386Opt
 # else
 #  define DefaultCDebugFlags -O
 # endif

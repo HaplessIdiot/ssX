@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.47 1995/07/07 15:30:46 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.48 1995/07/22 04:11:45 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -22,7 +22,16 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.47 1995/07/07 15:30:46 dawes Exp $
  * If using GCC 2.x with C++ on a system where it isn't the default, uncomment
  * the following.
  *
-#define HasGcc2ForCplusplus		YES
+#define HasGcc2ForCplusplus	YES
+ */
+
+/*
+ * The default optimisation flags for GCC 2.x.  -fno-strength-reduce is
+ * here to work around a bug in -O2 for GCC 2.6.x and 2.7.x on i386
+ * platforms.  If you are using a version that doesn't have this bug, you
+ * can uncomment the following line, and remove '-fno-strength-reduce'
+ *
+#define DefaultGcc2i386Opt	-O2 -fno-strength-reduce
  */
 
 /*

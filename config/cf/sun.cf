@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: sun.cf,v 1.139.1.1 95/06/19 18:22:21 gildea Exp $
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.20 1995/07/08 10:21:54 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.21 1995/07/19 12:36:51 dawes Exp $
 
 #ifdef SVR4Architecture
 #ifdef i386Architecture
@@ -272,7 +272,11 @@ XCOMM operating system:  OSName
 #endif
 #if HasGcc2
 #ifdef UseInstalled
+#if defined(i386Architecture)
+#define OptimizedCDebugFlags DefaultGcc2i386Opt
+#else
 #define OptimizedCDebugFlags -O2
+#endif
 #else
 #define OptimizedCDebugFlags -O
 #endif

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.6 1994/12/11 10:48:18 dawes Exp $
+XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.7 1995/07/22 04:11:44 dawes Exp $
 
 #ifndef HasGcc
 #define HasGcc      YES
@@ -144,7 +144,11 @@ XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.6 1994/12/11 10:48:18 dawes Exp $
 
 #ifndef DefaultCDebugFlags
 # if HasGcc2
-#  define DefaultCDebugFlags -O2
+#  if defined(i386Architecture)
+#   define DefaultCDebugFlags DefaultGcc2i386Opt
+#  else
+#   define DefaultCDebugFlags -O2
+#  endif
 # else
 #  define DefaultCDebugFlags -O
 # endif
@@ -159,7 +163,11 @@ XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.6 1994/12/11 10:48:18 dawes Exp $
 #  define DefaultCCOptions Gcc2MOption -DNO_ASM -fpcc-struct-return \
 			   -fwritable-strings
 #  define LibraryCCOptions Gcc2MOption -DNO_ASM -fpcc-struct-return
-#  define OptimizedCDebugFlags -O2
+#  if defined(i386Architecture)
+#   define OptimizedCDebugFlags DefaultGcc2i386Opt
+#  else
+#   define OptimizedCDebugFlags -O2
+#  endif
 # else
 #  define DefaultCCOptions -DNO_ASM -fpcc-struct-return -fwritable-strings
 #  define LibraryCCOptions -DNO_ASM -fpcc-struct-return

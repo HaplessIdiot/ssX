@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/mach.cf,v 3.4 1994/11/19 07:32:25 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/mach.cf,v 3.5 1995/06/24 10:21:17 dawes Exp $
 
 #define OSName           Mach 2.5/3.0
 #define OSVendor          /**/
@@ -21,7 +21,11 @@ XCOMM operating system:  OSName
 #define PreProcessCmd		/usr/mach3/lib/gcc-lib/i386-mach/2.3.3/cpp
 #define DefaultCCOptions	/**/
 #define GccGasOption 		-DGCCUSESGAS
+#if HasGcc2 && defined(i386Architecture)
+#define OptimizedCDebugFlags	-m486 DefaultGcc2i386Opt
+#else
 #define OptimizedCDebugFlags	-m486 -O2
+#endif
 
 #define AsmDefines		-DUSE_GAS
 #define BootstrapCFlags		-DNOSTDHDRS
