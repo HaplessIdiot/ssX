@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/dmxinit.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxinit.c,v 1.4 2005/01/22 16:01:01 tsi Exp $ */
 /*
  * Copyright 2001-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -880,12 +880,14 @@ void OsVendorFatalError(void)
 {
 }
 
+#if 0
 /** This funciton is called by InitGlobals from Xserver/os/utils.c to
  * initialize any ddx specific globals at a very early point in the
  * server startup. */
 void ddxInitGlobals(void)
 {
 }
+#endif
 
 /** Process our command line arguments. */
 int ddxProcessArgument(int argc, char *argv[], int i)
