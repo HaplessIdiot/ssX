@@ -1,5 +1,5 @@
 /* $XConsortium: connection.c,v 1.188 94/06/02 11:36:56 mor Exp $ */
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.2 1994/06/09 10:51:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.3 1994/11/26 12:48:40 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -222,9 +222,11 @@ int fd;
 void XdmcpOpenDisplay(), XdmcpInit(), XdmcpReset(), XdmcpCloseDisplay();
 #endif
 
-#ifdef LBX
+#if defined(LBX) || defined(LBX_COMPAT)
 extern int  StandardReadRequestFromClient();
 extern int  StandardWriteToClient ();
+#endif
+#ifdef LBX
 extern unsigned long  StandardRequestLength ();
 extern int  StandardFlushClient ();
 #endif
@@ -759,6 +761,10 @@ EstablishNewConnections(clientUnused, closure)
 	    (client = NextAvailableClient((pointer)oc)))
 	{
 	    ConnectionTranslation[newconn] = client->index;
+#ifdef LBX_COMPAT
+	    client->public.readRequest = StandardReadRequestFromClient;
+	    client->public.writeToClient = StandardWriteToClient;
+#endif
 	}
 	else
 	{

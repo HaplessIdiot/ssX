@@ -1,0 +1,11 @@
+XCOMM $XFree86$
+
+#define LinkDirectory ../os
+
+#include "../os/Imakefile"
+
+LBX_EXT_DEFINES = -UBIGREQS
+EXTRA_DEFINES = -DLBX
+
+InstallLinkKitNamedLibrary(os,oslbx,$(LINKKITDIR)/lib)
+
