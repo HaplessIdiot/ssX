@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_gl.c,v 1.5 2000/05/10 18:55:27 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_gl.c,v 1.6 2000/06/17 00:02:55 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -30,7 +30,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *   Brian Paul <brian@precisioninsight.com>
- *   Alan Hourihane <Alan.Hourihane@btinternet.com>
+ *   Alan Hourihane <alanh@fairlite.demon.co.uk>
  */
 
 #ifdef GLX_DIRECT_RENDERING
