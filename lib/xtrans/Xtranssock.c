@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the copyright holders.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.56tsi Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.57 2003/07/09 15:27:29 tsi Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -2208,7 +2208,7 @@ Xtransport	TRANS(SocketINETFuncs) = {
 #if defined(IPv6) && defined(AF_INET6)
 Xtransport     TRANS(SocketINET6Funcs) = {
 	/* Socket Interface */
-	"inetv6",
+	"inet6",
 	0,
 #ifdef TRANS_CLIENT
 	TRANS(SocketOpenCOTSClient),
