@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: osinit.c /main/45 1996/12/02 10:23:13 lehors $ */
-/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.13 1997/05/06 09:46:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.14 1997/05/06 11:40:06 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -176,8 +176,10 @@ OsInit()
 		    rlim.rlim_cur = limitNoFile;
 		else
 		    rlim.rlim_cur = rlim.rlim_max;
+#if 0
 		if (rlim.rlim_cur > MAXSOCKS)
 		    rlim.rlim_cur = MAXSOCKS;
+#endif
 		(void)setrlimit(RLIMIT_NOFILE, &rlim);
 	    }
 	}

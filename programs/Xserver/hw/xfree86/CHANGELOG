@@ -1,4 +1,6 @@
 XFree86 3.9Na (14 August 1998)
+1739. Rework the way the maximum number of server client connections
+      is determined, and experimentally increase MAXCLIENTS to 256.
 1738. Enable mmap support in Xvfb for Linux (#1889, Douglas Ridgway).
 1737. Xv DDX layer for XFree86, and add documentation for it to the DESIGN
       doc (#1883, 1884, Mark Vojkovich).
@@ -6285,4 +6287,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.607 1998/08/02 05:16:52 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.608 1998/08/13 14:45:41 dawes Exp $

@@ -27,7 +27,7 @@ SOFTWARE.
 
 
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/os/lbxio.c,v 3.8 1997/01/18 07:18:31 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Xtrans.h>
@@ -66,19 +66,6 @@ extern int errno;
 #define ETEST(err) (err == EWOULDBLOCK)
 #endif
 #endif
-
-extern fd_set ClientsWithInput, IgnoredClientsWithInput;
-extern fd_set AllClients, AllSockets;
-extern fd_set ClientsWriteBlocked;
-extern fd_set OutputPending;
-extern int ConnectionTranslation[];
-extern Bool NewOutputPending;
-extern Bool AnyClientsWriteBlocked;
-extern Bool CriticalOutputPending;
-extern int timesThisConnection;
-extern ConnectionInputPtr FreeInputs;
-extern ConnectionOutputPtr FreeOutputs;
-extern OsCommPtr AvailableInput;
 
 #define get_req_len(req,cli) ((cli)->swapped ? \
 			      lswaps((req)->length) : (req)->length)

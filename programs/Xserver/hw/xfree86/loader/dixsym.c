@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.7.2.7 1998/06/27 14:47:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.11 1998/07/25 16:56:13 dawes Exp $ */
 
 
 /*
@@ -45,6 +45,9 @@
 #include "XIproto.h"
 #include "exevents.h"
 #include "extinit.h"
+#ifdef XV
+#include "xvmodproc.h"
+#endif
 
 /* These should be in a header somewhere */
 extern Bool     Must_have_memory;
@@ -140,6 +143,11 @@ LOOKUP dixLookupTab[] = {
   SYMVAR(DPMSPowerLevel)
   SYMVAR(DPMSStandbyTime)
   SYMVAR(DPMSSuspendTime)
+#endif
+#ifdef XV
+  SYMVAR(XvScreenInitProc)
+  SYMVAR(XvGetScreenIndexProc)
+  SYMVAR(XvGetRTPortProc)
 #endif
   SYMVAR(ScreenSaverBlanking)
   SYMVAR(WindowTable)

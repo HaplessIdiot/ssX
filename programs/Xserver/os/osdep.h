@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: osdep.h /main/42 1996/12/15 21:27:39 rws $ */
-/* $XFree86: xc/programs/Xserver/os/osdep.h,v 3.3 1996/01/06 05:25:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osdep.h,v 3.4 1996/12/23 07:09:58 dawes Exp $ */
 
 #ifdef AMOEBA
 #include <stddef.h>
@@ -110,10 +110,24 @@ SOFTWARE.
 #endif
 #endif
 
+#include <X11/Xpoll.h>
+
+/*
+ * MAXSOCKS is used only for initialising MaxClients when no other method
+ * like sysconf(_SC_OPEN_MAX) is not supported.
+ */
+
 #if OPEN_MAX <= 128
 #define MAXSOCKS (OPEN_MAX - 1)
 #else
 #define MAXSOCKS 128
+#endif
+
+/* MAXSELECT is the number of fds that select() can handle */
+#define MAXSELECT (sizeof(fd_set) * NBBY)
+
+#ifndef hpux
+#define HAS_GETDTABLESIZE
 #endif
 
 #ifndef NULL
@@ -187,38 +201,54 @@ typedef struct _osComm {
 #define FlushClient(who, oc, extraBuf, extraCount) \
     (*(oc)->Flush)(who, oc, extraBuf, extraCount)
 extern int StandardFlushClient(
-#if NeedFunctionPrototypes
     ClientPtr /*who*/,
     OsCommPtr /*oc*/,
     char* /*extraBuf*/,
     int /*extraCount*/
-#endif
 );
 #else
 extern int FlushClient(
-#if NeedFunctionPrototypes
     ClientPtr /*who*/,
     OsCommPtr /*oc*/,
     char* /*extraBuf*/,
     int /*extraCount*/
-#endif
 );
 #endif
 
 extern void FreeOsBuffers(
-#if NeedFunctionPrototypes
     OsCommPtr /*oc*/
-#endif
 );
 
-extern ConnectionInputPtr AllocateInputBuffer(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+#include "dix.h"
 
-extern ConnectionOutputPtr AllocateOutputBuffer(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern ConnectionInputPtr AllocateInputBuffer(void);
+
+extern ConnectionOutputPtr AllocateOutputBuffer(void);
+
+extern fd_set AllSockets;
+extern fd_set AllClients;
+extern fd_set LastSelectMask;
+extern fd_set WellKnownConnections;
+extern fd_set EnabledDevices;
+extern fd_set ClientsWithInput;
+extern fd_set ClientsWriteBlocked;
+extern fd_set OutputPending;
+extern fd_set IgnoredClientsWithInput;
+ 
+extern int *ConnectionTranslation;
+ 
+extern Bool NewOutputPending;
+extern Bool AnyClientsWriteBlocked;
+extern Bool CriticalOutputPending;
+
+extern int timesThisConnection;
+extern ConnectionInputPtr FreeInputs;
+extern ConnectionOutputPtr FreeOutputs;
+extern OsCommPtr AvailableInput;
+
+extern WorkQueuePtr workQueue;
+
+/* added by raphael */
+#define ffs mffs
+extern int mffs(long);
+

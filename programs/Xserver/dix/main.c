@@ -50,7 +50,7 @@ SOFTWARE.
 
 
 
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.18 1998/07/25 09:24:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.19 1998/08/13 14:45:38 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -262,12 +262,7 @@ main(argc, argv)
     ExpandCommandLine(&argc, &argv);
 #endif
 
-#ifdef _SC_OPEN_MAX
-    /* if sysconf(_SC_OPEN_MAX) is supported, at runtime MaxClients will be
-     * reassigned instead of using MAXSOCKS */
-    if (MaxClients == 0)
-        MaxClients = MIN(MAXCLIENTS, sysconf(_SC_OPEN_MAX));
-#endif
+    InitConnectionLimits();
 
     /* These are needed by some routines which are called from interrupt
      * handlers, thus have no direct calling path back to main and thus

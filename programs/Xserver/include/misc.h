@@ -67,7 +67,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: misc.h /main/28 1996/12/02 10:22:01 lehors $ */
-/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.7.2.2 1998/06/05 16:23:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.13 1998/07/26 02:33:02 dawes Exp $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*
@@ -94,7 +94,7 @@ extern unsigned long serverGeneration;
 #ifndef MAXSCREENS
 #define MAXSCREENS	4
 #endif
-#define MAXCLIENTS	128
+#define MAXCLIENTS	256
 #define MAXDITS		1
 #define MAXEXTENSIONS	128
 #define MAXFORMATS	8

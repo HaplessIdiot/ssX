@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvmain.c,v 1.2 1998/07/25 08:48:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvmain.c,v 1.3 1998/08/13 14:45:35 dawes Exp $ */
 
 /*
 ** File: 
@@ -93,6 +93,10 @@ SOFTWARE.
 #include "Xv.h"
 #include "Xvproto.h"
 #include "xvdix.h"
+
+#ifdef EXTMODULE
+#include "xf86_ansic.h"
+#endif
 
 int  XvScreenIndex = -1;
 unsigned long XvExtensionGeneration;
