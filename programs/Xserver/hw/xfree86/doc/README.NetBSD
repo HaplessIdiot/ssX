@@ -122,18 +122,18 @@ config, and one X server.
 
 	cd /usr/X11R6
 
-	cat xf86-3.0F-bin.tar.gz.* | tar xzf -
-	cat xf86-3.0F-fonts.tar.gz.* | tar xzf -
-	cat xf86-3.0F-linkkit.tar.gz.* | tar xzf -
-	cat xf86-3.0F-other-fonts.tar.gz.* | tar xzf -
+	cat xf86-3.1-bin.tar.gz.* | tar xzf -
+	cat xf86-3.1-fonts.tar.gz.* | tar xzf -
+	cat xf86-3.1-linkkit.tar.gz.* | tar xzf -
+	cat xf86-3.1-other-fonts.tar.gz.* | tar xzf -
 
-	tar xzf xf86-3.0F-config.tar.gz
-	tar xzf xf86-3.0F-doc.tar.gz
-	tar xzf xf86-3.0F-fs.tar.gz
-	tar xzf xf86-3.0F-lib.tar.gz 
-	tar xzf xf86-3.0F-man.tar.gz
-	tar xzf xf86-3.0F-man.tar.gz
-	tar xzf xf86-3.0F-prog.tar.gz
+	tar xzf xf86-3.1-config.tar.gz
+	tar xzf xf86-3.1-doc.tar.gz
+	tar xzf xf86-3.1-fs.tar.gz
+	tar xzf xf86-3.1-lib.tar.gz 
+	tar xzf xf86-3.1-man.tar.gz
+	tar xzf xf86-3.1-man.tar.gz
+	tar xzf xf86-3.1-prog.tar.gz
 
 	And unpack the server(s) you need:
 
@@ -480,4 +480,4 @@ Mark  Weaver
 Matthieu Herrb
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.NetBSD,v 3.5 1994/09/27 10:30:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.NetBSD,v 3.6 1994/10/03 03:14:26 dawes Exp $
