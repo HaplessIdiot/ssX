@@ -5,10 +5,11 @@
  * By Gregory Robert Parker
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.12 2001/08/01 05:34:06 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.13 2001/08/07 01:52:24 torrey Exp $ */
 
 // X headers
 #include "scrnintstr.h"
+#include "colormapst.h"
 
 // System headers
 #include <sys/types.h>
@@ -30,19 +31,49 @@
 
 BOOL serverVisible = TRUE;
 
+// Full screen specific per screen storage structure
+typedef struct {
+    CGDirectDisplayID   displayID;
+    CGDirectPaletteRef  xPalette;
+    CGDirectPaletteRef  aquaPalette;
+} QuartzFSScreenRec, *QuartzFSScreenPtr;
+
+#define FULLSCREEN_PRIV(pScreen) \
+    ((QuartzFSScreenPtr)pScreen->devPrivates[quartzFSScreenIndex].ptr)
+
+static int                  quartzFSScreenIndex;
 static CGDisplayCount       quartzDisplayCount = 0;
 static CGDirectDisplayID   *quartzDisplayList = NULL;
 
 
 /*
- * QuartzStoreColors
- *  FIXME: need to implement if Quartz supports PsuedoColor
+ * QuartzFSStoreColors
+ *  This is a callback from X to change the hardware colormap
+ *  when using PsuedoColor in full screen mode.
  */
-static void QuartzStoreColors(
-    ColormapPtr     pmap,
-    int             numEntries,
-    xColorItem      *pdefs)
+static void QuartzFSStoreColors(
+    ColormapPtr         pmap,
+    int                 numEntries,
+    xColorItem          *pdefs)
 {
+    ScreenPtr           pScreen = pmap->pScreen;
+    QuartzFSScreenPtr   fsDisplayInfo = FULLSCREEN_PRIV(pScreen);
+    CGDirectPaletteRef  palette = fsDisplayInfo->xPalette;
+    CGDeviceColor       color;
+    int                 i;
+
+    if (! palette)
+        return;
+
+    for (i = 0; i < numEntries; i++) {
+        color.red   = pdefs[i].red   / 65535.0;
+        color.green = pdefs[i].green / 65535.0;
+        color.blue  = pdefs[i].blue  / 65535.0;
+        CGPaletteSetColorAtIndex(palette, color, pdefs[i].pixel);
+    }
+
+    if (serverVisible)
+        CGDisplaySetPalette(fsDisplayInfo->displayID, palette);
 }
 
 /*
@@ -89,15 +120,23 @@ static void *QuartzPMThread(void *arg)
  * QuartzFSAddScreen
  *  Do initialization of each screen for Quartz in full screen mode.
  */
-Bool QuartzFSAddScreen(
+static Bool QuartzFSAddScreen(
     int index,
     ScreenPtr pScreen)
 {
     DarwinFramebufferPtr dfb = SCREEN_PRIV(pScreen);
     CGDirectDisplayID cgID = quartzDisplayList[index];
     CGRect bounds;
+    QuartzFSScreenPtr fsDisplayInfo;
 
-    dfb->pixelInfo.pixelType = kIORGBDirectPixels;	// FIXME
+    // allocate space for private per screen fullscreen specific storage
+    fsDisplayInfo = xalloc(sizeof(QuartzFSScreenRec));
+    FULLSCREEN_PRIV(pScreen) = fsDisplayInfo;
+
+    fsDisplayInfo->displayID = cgID;
+    fsDisplayInfo->xPalette = 0;
+    fsDisplayInfo->aquaPalette = 0;
+
     dfb->pixelInfo.bitsPerComponent = CGDisplayBitsPerSample(cgID);
     dfb->pixelInfo.componentCount = CGDisplaySamplesPerPixel(cgID);
 #if FALSE
@@ -116,15 +155,21 @@ Bool QuartzFSAddScreen(
     dfb->height = bounds.size.height;
     dfb->pitch = CGDisplayBytesPerRow(cgID);
     dfb->bitsPerPixel = CGDisplayBitsPerPixel(cgID);
-    dfb->colorBitsPerPixel = (dfb->pixelInfo.componentCount * 
-                              dfb->pixelInfo.bitsPerComponent);
+
+    if (dfb->bitsPerPixel == 8) {
+        if (CGDisplayCanSetPalette(cgID)) {
+            dfb->pixelInfo.pixelType = kIOCLUTPixels;
+        } else {
+            dfb->pixelInfo.pixelType = kIOFixedCLUTPixels;
+        }
+        dfb->colorBitsPerPixel = 8;
+    } else {
+        dfb->pixelInfo.pixelType = kIORGBDirectPixels;
+        dfb->colorBitsPerPixel = (dfb->pixelInfo.componentCount * 
+                                  dfb->pixelInfo.bitsPerComponent);
+    }
 
     dfb->framebuffer = CGDisplayBaseAddress(cgID);
-
-    // initialize colormap handling as needed
-    if (dfb->pixelInfo.pixelType == kIOCLUTPixels) {
-        pScreen->StoreColors = QuartzStoreColors;
-    }
 
     return TRUE;
 }
@@ -148,6 +193,32 @@ Bool QuartzAddScreen(
 
 
 /*
+ * QuartzFSSetupScreen
+ *  Finalize full screen specific setup of each screen.
+ */
+static Bool QuartzFSSetupScreen(
+    int index,
+    ScreenPtr pScreen)
+{
+    DarwinFramebufferPtr dfb = SCREEN_PRIV(pScreen);
+    QuartzFSScreenPtr fsDisplayInfo = FULLSCREEN_PRIV(pScreen);
+    CGDirectDisplayID cgID = fsDisplayInfo->displayID;
+
+    if (dfb->pixelInfo.pixelType == kIOCLUTPixels) {
+        // initialize colormap handling
+        fsDisplayInfo->aquaPalette = CGPaletteCreateWithDisplay(cgID);
+        fsDisplayInfo->xPalette = CGPaletteCreateDefaultColorPalette();
+        pScreen->StoreColors = QuartzFSStoreColors;
+    }
+
+    // capture full screen because X doesn't like read-only framebuffer
+    CGDisplayCapture(cgID);
+
+    return TRUE;
+}
+
+
+/*
  * QuartzSetupScreen
  *  Finalize mode specific setup of each screen.
  */
@@ -164,8 +235,8 @@ Bool QuartzSetupScreen(
         if (! AquaSetupScreen(index, pScreen))
             return FALSE;
     } else {
-        // capture full screen because X doesn't like read-only framebuffer
-        CGDisplayCapture(quartzDisplayList[index]); 
+        if (! QuartzFSSetupScreen(index, pScreen))
+            return FALSE;
     }
 
     return TRUE;
@@ -174,17 +245,22 @@ Bool QuartzSetupScreen(
 
 /*
  * QuartzCapture
- *  Capture the screen so we can draw.
+ *  Capture the screen so we can draw. Called directly from the main thread
+ *  to synchronize with hiding the menubar.
  */
 void QuartzCapture(void)
 {
     int i;
 
-    for (i = 0; i < quartzDisplayCount; i++) {
-        CGDirectDisplayID cgID = quartzDisplayList[i];
+    for (i = 0; i < screenInfo.numScreens; i++) {
+        QuartzFSScreenPtr fsDisplayInfo =
+                                 FULLSCREEN_PRIV(screenInfo.screens[i]);
+        CGDirectDisplayID cgID = fsDisplayInfo->displayID;
 
         if (!CGDisplayIsCaptured(cgID) && !quartzRootless) {
             CGDisplayCapture(cgID);
+            if (fsDisplayInfo->xPalette)
+                CGDisplaySetPalette(cgID, fsDisplayInfo->xPalette);
         }
     }
 }
@@ -198,10 +274,14 @@ static void QuartzRelease(void)
 {
     int i;
 
-    for (i = 0; i < quartzDisplayCount; i++) {
-        CGDirectDisplayID cgID = quartzDisplayList[i];
+    for (i = 0; i < screenInfo.numScreens; i++) {
+        QuartzFSScreenPtr fsDisplayInfo =
+                                 FULLSCREEN_PRIV(screenInfo.screens[i]);
+        CGDirectDisplayID cgID = fsDisplayInfo->displayID;
 
         if (CGDisplayIsCaptured(cgID) && !quartzRootless) {
+            if (fsDisplayInfo->aquaPalette)
+                CGDisplaySetPalette(cgID, fsDisplayInfo->aquaPalette);
             CGDisplayRelease(cgID);
         }
         QuartzMessageMainThread(kQuartzServerHidden);
@@ -211,10 +291,19 @@ static void QuartzRelease(void)
 
 /*
  * QuartzFSDisplayInit
- *  Find all the CoreGraphics displays.
+ *  Full screen specific initialization called from InitOutput.
  */
 static void QuartzFSDisplayInit(void) 
 {
+    static unsigned long generation = 0;
+
+    // Allocate private storage for each screen's mode specific info
+    if (generation != serverGeneration) {
+        quartzFSScreenIndex = AllocateScreenPrivateIndex();
+        generation = serverGeneration;
+    }
+
+    // Find all the CoreGraphics displays
     CGGetActiveDisplayList(0, NULL, &quartzDisplayCount);
     quartzDisplayList = xalloc(quartzDisplayCount * sizeof(CGDirectDisplayID));
     CGGetActiveDisplayList(quartzDisplayCount, quartzDisplayList, 

@@ -8,7 +8,7 @@
  * Significantly rewritten for XFree86 4.0.1 by Torrey Lyons
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.8 2001/04/30 16:26:01 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.9 2001/08/01 05:34:05 torrey Exp $ */
 
 #define NDEBUG 1
 
@@ -91,7 +91,7 @@ static void XFIOKitStoreColors(
 
 /*
  * XFIOKitBell
- * FIXME
+ *  FIXME
  */
 void XFIOKitBell(
     int             loud,
@@ -121,7 +121,7 @@ void XFIOKitGiveUp( void )
 
 /*
  * ClearEvent
- * Clear an event from the HID System event queue
+ *  Clear an event from the HID System event queue
  */
 static void ClearEvent(NXEvent * ep)
 {
@@ -134,7 +134,7 @@ static void ClearEvent(NXEvent * ep)
 
 /*
  * XFIOKitHIDThread
- * Read the HID System event queue and pass to pipe
+ *  Read the HID System event queue and pass to pipe
  */
 static void *XFIOKitHIDThread(void *arg)
 {
@@ -166,7 +166,7 @@ static void *XFIOKitHIDThread(void *arg)
 
 /*
  * XFIOKitPMThread
- * Handle power state notifications
+ *  Handle power state notifications
  */
 static void *XFIOKitPMThread(void *arg)
 {
@@ -194,6 +194,10 @@ static void *XFIOKitPMThread(void *arg)
     return NULL;
 }
 
+/*
+ * SetupFBandHID
+ *  Setup an IOFramebuffer service and connect the HID system to it.
+ */
 static Bool SetupFBandHID(
     int                    index,
     DarwinFramebufferPtr   dfb)
@@ -389,7 +393,6 @@ Bool XFIOKitAddScreen(
     ScreenPtr pScreen)
 {
     DarwinFramebufferPtr dfb = SCREEN_PRIV(pScreen);
-    pthread_t pmThread;
 
     // setup hardware framebuffer
     dfb->fbService = 0;
@@ -397,6 +400,25 @@ Bool XFIOKitAddScreen(
         if (dfb->fbService) {
             IOServiceClose(dfb->fbService);
         }
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+/*
+ * XFIOKitSetupScreen
+ *  Finalize IOKit specific initialization of each screen.
+ */
+Bool XFIOKitSetupScreen(
+    int index,
+    ScreenPtr pScreen)
+{
+    DarwinFramebufferPtr dfb = SCREEN_PRIV(pScreen);
+    pthread_t pmThread;
+
+    // initalize cursor support
+    if (! XFIOKitInitCursor(pScreen)) {
         return FALSE;
     }
 
