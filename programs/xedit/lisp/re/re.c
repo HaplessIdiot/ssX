@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/re/re.c,v 1.3 2002/09/18 17:11:55 tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/re/re.c,v 1.4 2002/09/22 07:09:09 paulo Exp $ */
 
 #include <stdio.h>
 #include "rep.h"
@@ -939,7 +939,8 @@ rangenot_match:
 		    REPETITION_SETUP();
 		}
 		else {
-		    if (eng.eo[eng.off] > eng.so[eng.off]) {
+		    if (eng.eo[eng.off] >= eng.so[eng.off] &&
+			eng.eo[eng.off] > eng.sv[eng.off]) {
 			/* Update offset of match */
 			eng.sv[eng.off] = eng.eo[eng.off];
 
@@ -977,7 +978,7 @@ rangenot_match:
 		    /* Matched or first iteration is done */
 		    len = eng.cod[2] | (eng.cod[3] << 8);
 		    eng.so[bas] = eng.ss[eng.off];
-		    if (eng.eo[eng.off] >= eng.so[eng.off]) {
+		    if (eng.eo[eng.off] > eng.so[eng.off]) {
 			/* Something matched earlier, update */
 			eng.eo[bas] = eng.eo[eng.off];
 			eng.str = eng.bas + eng.eo[bas];
@@ -1007,7 +1008,8 @@ rangenot_match:
 		    REPETITION_SETUP();
 		}
 		else {
-		    if (eng.eo[eng.off] > eng.so[eng.off]) {
+		    if (eng.eo[eng.off] >= eng.so[eng.off] &&
+			eng.eo[eng.off] > eng.sv[eng.off]) {
 			/* Update offset of match */
 			eng.sv[eng.off] = eng.eo[eng.off];
 
@@ -1078,7 +1080,8 @@ rangenot_match:
 		    COMPLEX_REPETITION_SETUP();
 		}
 		else {
-		    if (eng.eo[eng.off] > eng.so[eng.off]) {
+		    if (eng.eo[eng.off] >= eng.so[eng.off] &&
+			eng.eo[eng.off] > eng.sv[eng.off]) {
 			/* Update offset of match */
 			eng.sv[eng.off] = eng.eo[eng.off];
 
@@ -1121,7 +1124,8 @@ rangenot_match:
 		    COMPLEX_REPETITION_SETUP();
 		}
 		else {
-		    if (eng.eo[eng.off] > eng.so[eng.off]) {
+		    if (eng.eo[eng.off] >= eng.so[eng.off] &&
+			eng.eo[eng.off] > eng.sv[eng.off]) {
 			/* Update offset of match */
 			eng.sv[eng.off] = eng.eo[eng.off];
 
@@ -1164,7 +1168,8 @@ rangenot_match:
 		    COMPLEX_REPETITION_SETUP();
 		}
 		else {
-		    if (eng.eo[eng.off] > eng.so[eng.off]) {
+		    if (eng.eo[eng.off] >= eng.so[eng.off] &&
+			eng.eo[eng.off] > eng.sv[eng.off]) {
 			/* Update offset of match */
 			eng.sv[eng.off] = eng.eo[eng.off];
 
@@ -1218,7 +1223,8 @@ rangenot_match:
 		    COMPLEX_REPETITION_SETUP();
 		}
 		else {
-		    if (eng.eo[eng.off] > eng.so[eng.off]) {
+		    if (eng.eo[eng.off] >= eng.so[eng.off] &&
+			eng.eo[eng.off] > eng.sv[eng.off]) {
 			/* Update offset of match */
 			eng.sv[eng.off] = eng.eo[eng.off];
 

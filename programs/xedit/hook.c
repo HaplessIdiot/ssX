@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/hook.c,v 1.6 2002/09/08 02:29:48 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/hook.c,v 1.7 2002/09/08 03:59:01 paulo Exp $ */
 
 /*
  * This file is intended to be used to add all the necessary hooks to xedit
@@ -760,6 +760,7 @@ LineEdit(Widget w)
 
     /* Need to (re)compile regular expression pattern? */
     if ((!!(einfo.flags & RE_ICASE) ^ icase) ||
+	strlen(einfo.pattern) < length ||
 	strncmp(pstart, einfo.pattern, length)) {
 	compile = 1;
 	memcpy(einfo.pattern, pstart, length);
@@ -854,8 +855,12 @@ LineEdit(Widget w)
 	/* The backwards repetition currently is only backwards when
 	 * changing lines, so remember from where started, to also
 	 * search in the first line. */
-	if (direction == XawsdLeft && LSCAN(from, 1, False) == from)
-	    einfo.from = from;
+	if (LSCAN(from, 1, False) == from) {
+	    if (direction == XawsdLeft)
+		einfo.from = from;
+	}
+	else
+	    flags |= RE_NOTBOL;
     }
     to = RSCAN(from, 1, True);
 
@@ -1138,7 +1143,9 @@ fail:
 		ptr = "Bad line range";
 		break;
 	    case T_BACKREF:
-		ptr = "Internal error, bad backreference offsets";
+		/* This may be an internal re error, but most likely the
+		 * user asked for something like "s/re0(re1)re2/\2/" */
+		ptr = "Bad backreference";
 		break;
 	    case T_EDIT:
 		ptr = "Failed to replace text";

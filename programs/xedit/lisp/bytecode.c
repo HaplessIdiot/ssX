@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.2 2002/09/15 21:32:16 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.3 2002/09/22 07:09:06 paulo Exp $ */
 
 
 /*
@@ -2706,7 +2706,7 @@ ExecuteBytecode(register LispMac *mac, register unsigned char *stream)
      * stay more time in the bytecode, some functions not...). Timings
      * tested with GCC 2.95. Maybe newer versions can understand the
      * "code semantics", and automatically generate the equivalent
-     * code, in wich ALLOW_GOTO_ADDRESS can be undefined.
+     * code, in which case ALLOW_GOTO_ADDRESS can be undefined.
      * XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
      */
 
@@ -2850,7 +2850,6 @@ ExecuteBytecode(register LispMac *mac, register unsigned char *stream)
 	mac->protect.objects[mac->protect.length++] = NIL;
     phead = pbase;
 
-    for (;;) {
 #ifdef ALLOW_GOTO_ADDRESS
 #define OPCODE_LABEL(label)	label
 #define NEXT_OPCODE()		goto *opcode_labels[*stream++]
@@ -2859,7 +2858,7 @@ ExecuteBytecode(register LispMac *mac, register unsigned char *stream)
 #define OPCODE_LABEL(label)	case label
 #define NEXT_OPCODE()		goto next_opcode
 #define GOTO_PREDICATE()	goto predicate_label
-
+    for (;;) {
 next_opcode:
 	switch (*stream++) {
 #endif	/* ALLOW_GOTO_ADDRESS */
@@ -3495,8 +3494,8 @@ OPCODE_LABEL(XBP_NUMBERP):
 
 #ifndef ALLOW_GOTO_ADDRESS
 	}	/* end of switch */
-#endif
     }
+#endif
 
     /*NOTREACHED*/
     return (reg0);
