@@ -1,4 +1,4 @@
-/* $XConsortium: Quarks.c,v 1.40 94/04/17 20:20:41 rws Exp $ */
+/* $TOG: Quarks.c /main/43 1998/02/06 17:48:19 kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard,
@@ -24,15 +24,9 @@ SOFTWARE.
 ******************************************************************/
 /*
 
-Copyright (c) 1987, 1988, 1990  X Consortium
+Copyright 1987, 1988, 1990, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -40,17 +34,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include <X11/Xresource.h>
@@ -83,7 +78,7 @@ static XrmQuark nextUniq = -1;	/* next quark from XrmUniqueQuark */
 #define LARGEQUARK	((Entry)0x80000000L)
 #define QUARKSHIFT	18
 #define QUARKMASK	((LARGEQUARK - 1) >> QUARKSHIFT)
-#define SIGMASK		((1L << QUARKSHIFT) - 1)
+#define XSIGMASK	((1L << QUARKSHIFT) - 1)
 
 #define STRQUANTSIZE	(sizeof(XrmString) * (QUANTUMMASK + 1))
 #ifdef PERMQ
@@ -169,7 +164,7 @@ char *Xpermalloc(length)
 	    neverFreeTable += DALIGN - i;
 	} else
 #endif
-	    if (i = (NEVERFREETABLESIZE - neverFreeTableSize) & (WALIGN-1)) {
+	    if ((i = (NEVERFREETABLESIZE - neverFreeTableSize) & (WALIGN-1))) {
 		neverFreeTableSize -= WALIGN - i;
 		neverFreeTable += WALIGN - i;
 	    }
@@ -189,7 +184,7 @@ ExpandQuarkTable()
     XrmQuark q;
 
     oldentries = quarkTable;
-    if (oldmask = quarkMask)
+    if ((oldmask = quarkMask))
 	newmask = (oldmask << 1) + 1;
     else {
 	if (!stringTable) {
@@ -221,12 +216,12 @@ ExpandQuarkTable()
     quarkMask = newmask;
     quarkRehash = quarkMask - 2;
     for (oldidx = 0; oldidx <= oldmask; oldidx++) {
-	if (entry = oldentries[oldidx]) {
+	if ((entry = oldentries[oldidx])) {
 	    if (entry & LARGEQUARK)
 		q = entry & (LARGEQUARK-1);
 	    else
 		q = (entry >> QUARKSHIFT) & QUARKMASK;
-	    for (sig = 0, s = NAME(q); c = *s++; )
+	    for (sig = 0, s = NAME(q); (c = *s++); )
 		sig = (sig << 1) + c;
 	    newidx = HASH(sig);
 	    if (entries[newidx]) {
@@ -265,11 +260,11 @@ XrmQuark _XrmInternalStringToQuark(name, len, sig, permstring)
     rehash = 0;
     idx = HASH(sig);
     _XLockMutex(_Xglobal_lock);
-    while (entry = quarkTable[idx]) {
+    while ((entry = quarkTable[idx])) {
 	if (entry & LARGEQUARK)
 	    q = entry & (LARGEQUARK-1);
 	else {
-	    if ((entry - sig) & SIGMASK)
+	    if ((entry - sig) & XSIGMASK)
 		goto nomatch;
 	    q = (entry >> QUARKSHIFT) & QUARKMASK;
 	}
@@ -346,7 +341,7 @@ nomatch:    if (!rehash)
     }
     NAME(q) = (char *)name;
     if (q <= QUARKMASK)
-	entry = (q << QUARKSHIFT) | (sig & SIGMASK);
+	entry = (q << QUARKSHIFT) | (sig & XSIGMASK);
     else
 	entry = q | LARGEQUARK;
     quarkTable[idx] = entry;
@@ -372,7 +367,7 @@ XrmQuark XrmStringToQuark(name)
     if (!name)
 	return (NULLQUARK);
     
-    for (tname = (char *)name; c = *tname++; )
+    for (tname = (char *)name; (c = *tname++); )
 	sig = (sig << 1) + c;
 
     return _XrmInternalStringToQuark(name, tname-(char *)name-1, sig, False);
@@ -392,7 +387,7 @@ XrmQuark XrmPermStringToQuark(name)
     if (!name)
 	return (NULLQUARK);
 
-    for (tname = (char *)name; c = *tname++; )
+    for (tname = (char *)name; (c = *tname++); )
 	sig = (sig << 1) + c;
 
     return _XrmInternalStringToQuark(name, tname-(char *)name-1, sig, True);

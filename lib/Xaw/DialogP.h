@@ -43,7 +43,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/DialogP.h,v 1.3 1998/08/20 13:58:59 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/DialogP.h,v 1.4 1998/10/03 08:42:04 dawes Exp $ */
 
 #ifndef _DialogP_h
 #define _DialogP_h
@@ -67,7 +67,9 @@ extern DialogClassRec dialogClassRec;
 
 typedef struct _DialogPart {
     /* resources */
+#ifdef NO_BIN_COMPAT_HACK	/* 4 bytes from FormWidget */
     String	label;		/* description of the dialog	*/
+#endif
     String	value;		/* for the user response	*/
     Pixmap	icon;		/* icon bitmap			*/
 
@@ -75,6 +77,9 @@ typedef struct _DialogPart {
     Widget	iconW;		/* widget to display the icon	*/
   Widget labelW;		/* widget to display description */
     Widget	valueW;		/* user response TextWidget	*/
+#ifndef NO_BIN_COMPAT_HACK
+    String	label;		/* description of the dialog	*/
+#endif
 } DialogPart;
 
 typedef struct _DialogRec {

@@ -1,5 +1,4 @@
 /* $XConsortium: imCallbk.c /main/16 1996/09/28 16:37:06 rws $ */
-/* $XFree86: xc/lib/X11/imCallbk.c,v 3.2 1996/02/09 08:18:52 dawes Exp $ */
 /***********************************************************************
 Copyright 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 Copyright 1994 by FUJITSU LIMITED
@@ -33,6 +32,7 @@ PERFORMANCE OF THIS SOFTWARE.
 		 	     makoto@sm.sony.co.jp
 				
 ***********************************************************************/
+/* $XFree86: xc/lib/X11/imCallbk.c,v 3.3 1996/12/23 05:59:53 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -556,9 +556,9 @@ _read_text_from_packet(im, buf, text_ptr)
 	    if (s != XLookupNone) {
 #ifndef NO_DEC_I18N_FIX
                 /* Allow for NULL-terminated */
-                if (text->string.multi_byte =
+                if ((text->string.multi_byte =
                     (char*)Xmalloc(text->length *
-                      XLC_PUBLIC(im->core.lcd,mb_cur_max) + 1)) {
+                      XLC_PUBLIC(im->core.lcd,mb_cur_max) + 1))) {
 #else
 		if (text->string.multi_byte = (char*)Xmalloc(text->length+1)) {
 #endif

@@ -32,6 +32,7 @@
  *
  *
  */
+/* $XFree86$ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -45,6 +46,10 @@ extern void _XColor_to_XcmsRGB();
 extern void _XcmsRGB_to_XColor();
 extern void _XcmsResolveColor();
 extern void _XcmsUnresolveColor();
+
+/* cmsColNm.c */
+extern Status _XcmsResolveColorString();
+
 #ifdef X_NOT_STDC_ENV
 extern char *getenv();
 #endif

@@ -932,4 +932,51 @@ xedit.c:
    Close button.
 
 
-$XFree86: xc/lib/Xaw/Changelog,v 3.18 1999/04/25 10:01:22 dawes Exp $
+# 8 May 1999
+-- Xaw --
+ + Create two new private functions, to replace internally the public interfaces.
+   These two functions are XawTextSinkClearToBackground and
+   XawTextSinkDisplayText. These two functions use wide prototypes, and
+   are required to support text lines that are represented by more than
+   32767 pixels. This was done to make sure that the public interfaces remain
+   100% backwards compatible.
+ + Fixed the deferencing of a null pointer when the source object of a text
+   widget is not initialized. I noticed this problem when recompiling xcolorsel.
+ + Added a new type converter to Converters.c, that is Short -> String.
+ + Added a new compile time option, called NO_BIN_COMPAT_HACK. If defined,
+   it will break some programs that access private data. It only works with
+   programs that access private data structures, but don't subclassify any
+   widget. It fixed old binaries of chimera1, the Offix editor and xxgdb.
+   There is no way to fix old binaries of chimera2, xcolorsel and xmh, these
+   programs need to be recompiled. I would like to know of other programs that
+   became broken, to try to fix them with the NO_BIN_COMPAT_HACK option.
+ + Fixed some compile warnings, with shadowed, uninitialized and unused
+   variables.
+ + Fixed a inifite loop problem that could happen when the text widget window
+   was resized to a very small width.
+ + Reverted some of the text widget translations, to avoid conflicts when
+   setting the input focus and programs that do so.
+
+-- xedit --
+ + Fixed a problem in the file-completion code, that would insert the partial
+   match in the incorrect position, if the cursor was not at the end of the
+   string.
+ + Changed ispell.c to use only one hash for ignored and added words. Also
+   changed the IspellSend function to not call itself recursively, what is
+   a big problem when spell checking big files that are correct or have too
+   few errors.
+
+-- editres --
+ + Changed Editres.ad in several places, to try to avoid resource setting
+   problems. Most of them were changed to address more directly the resource,
+   and avoid confusion. Also, added some new resource settings to configure
+   the code I added to widgets.c.
+ + Changed widgets.c to make sure the resource setting dialog is allways
+   entirely in the screen, and if it does not fit, scrollbars will be created.
+
+
+
+
+
+
+$XFree86: xc/lib/Xaw/Changelog,v 3.19 1999/05/03 12:15:38 dawes Exp $

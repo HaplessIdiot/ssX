@@ -52,7 +52,7 @@ from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/X11/FSWrap.c,v 1.2 1998/06/28 08:41:29 dawes Exp $ */
+/* $XFree86: xc/lib/X11/FSWrap.c,v 1.3 1998/10/03 08:41:17 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -185,7 +185,7 @@ XCreateFontSet (dpy, base_font_name_list, missing_charset_list,
     if (om == NULL)
 	return (XFontSet) NULL;
     
-    if (oc = XCreateOC(om, XNBaseFontName, base_font_name_list, NULL)) {
+    if ((oc = XCreateOC(om, XNBaseFontName, base_font_name_list, NULL))) {
 	list = &oc->core.missing_list;
 	oc->core.om_automatic = True;
     } else

@@ -33,9 +33,16 @@
  *
  *
  */
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include "Xcmsint.h"
+
+/* EXTERNS */
+/* CvCols.c */
+extern Status _XcmsDDConvertColors();
+extern Status _XcmsDIConvertColors();
+
 
 
 /************************************************************************

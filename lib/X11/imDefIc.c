@@ -28,10 +28,16 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
 #include "Ximint.h"
+
+/* EXTERNS */
+
+/* imRm.c */
+extern Bool _XimCheckCreateICValues();
 
 Private Bool
 #if NeedFunctionPrototypes
@@ -718,10 +724,10 @@ _XimProtoSetICValues(xic, arg)
     arg_ret = arg;
     for (;;) {
 	data = &buf[buf_size];
-	if (name = _XimEncodeICATTRIBUTE(ic, ic->private.proto.ic_resources,
+	if ((name = _XimEncodeICATTRIBUTE(ic, ic->private.proto.ic_resources,
 			ic->private.proto.ic_num_resources, arg, &arg_ret,
 			data, data_len, &ret_len, (XPointer)&ic_values,
-			&flag, XIM_SETICVALUES)) {
+			&flag, XIM_SETICVALUES))) {
 	    break;
 	}
 
@@ -850,7 +856,9 @@ Private void
 _XimProtoICFree(ic)
     Xic		 ic;
 {
+#ifdef XIM_CONNECTABLE
     Xim		 im = (Xim)ic->core.im;
+#endif
 
     if (ic->private.proto.preedit_font) {
 	Xfree(ic->private.proto.preedit_font);

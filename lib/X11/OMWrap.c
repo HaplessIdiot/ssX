@@ -1,4 +1,4 @@
-/* $XConsortium: OMWrap.c,v 1.2 94/02/06 15:05:37 rws Exp $ */
+/* $XConsortium: OMWrap.c /main/3 1996/01/05 11:22:34 kaleb $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -23,6 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -44,9 +45,6 @@ XOpenOM(dpy, rdb, res_name, res_class)
     if (lcd == NULL)
 	return (XOM) NULL;
 
-    if (lcd->methods->open_om == NULL)
-	_XInitOM(lcd);
-
     if (lcd->methods->open_om)
 	return (*lcd->methods->open_om)(lcd, dpy, rdb, res_name, res_class);
 
@@ -62,7 +60,7 @@ XCloseOM(om)
 
     next = om->core.oc_list;
 
-    while (oc = next) {
+    while ((oc = next)) {
 	next = oc->core.next;
 	(*oc->methods->destroy)(oc);
     }

@@ -1,15 +1,10 @@
-/* $XConsortium: SetHints.c,v 11.39 94/04/17 20:20:57 gildea Exp $ */
+/* $TOG: SetHints.c /main/25 1998/02/06 17:52:15 kaleb $ */
 
 /***********************************************************
 
-Copyright (c) 1987  X Consortium
+Copyright 1987, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,13 +12,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -47,6 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XFree86$ */
 
 #include <X11/Xlibint.h>
 #include <X11/Xutil.h>
@@ -56,6 +52,7 @@ SOFTWARE.
 
 #define safestrlen(s) ((s) ? strlen(s) : 0)
 
+int
 XSetSizeHints(dpy, w, hints, property)		/* old routine */
 	Display *dpy;
 	Window w;
@@ -78,8 +75,9 @@ XSetSizeHints(dpy, w, hints, property)		/* old routine */
 	prop.minAspectY = hints->min_aspect.y;
 	prop.maxAspectX = hints->max_aspect.x;
 	prop.maxAspectY = hints->max_aspect.y;
-	XChangeProperty (dpy, w, property, XA_WM_SIZE_HINTS, 32,
-	     PropModeReplace, (unsigned char *) &prop, OldNumPropSizeElements);
+	return XChangeProperty (dpy, w, property, XA_WM_SIZE_HINTS, 32,
+				PropModeReplace, (unsigned char *) &prop, 
+				OldNumPropSizeElements);
 }
 
 /* 
@@ -87,6 +85,7 @@ XSetSizeHints(dpy, w, hints, property)		/* old routine */
  *	WM_HINTS 	type: WM_HINTS	format:32
  */
 
+int
 XSetWMHints (dpy, w, wmhints)
 	Display *dpy;
 	Window w;
@@ -102,8 +101,9 @@ XSetWMHints (dpy, w, wmhints)
 	prop.iconY = wmhints->icon_y;
 	prop.iconMask = wmhints->icon_mask;
 	prop.windowGroup = wmhints->window_group;
-	XChangeProperty (dpy, w, XA_WM_HINTS, XA_WM_HINTS, 32,
-	    PropModeReplace, (unsigned char *) &prop, NumPropWMHintsElements);
+	return XChangeProperty (dpy, w, XA_WM_HINTS, XA_WM_HINTS, 32,
+				PropModeReplace, (unsigned char *) &prop, 
+				NumPropWMHintsElements);
 }
 
 
@@ -113,12 +113,13 @@ XSetWMHints (dpy, w, wmhints)
  *	WM_ZOOM_HINTS 	type: WM_SIZE_HINTS format: 32
  */
 
+int
 XSetZoomHints (dpy, w, zhints)
 	Display *dpy;
 	Window w;
 	XSizeHints *zhints;
 {
-	XSetSizeHints (dpy, w, zhints, XA_WM_ZOOM_HINTS);
+	return XSetSizeHints (dpy, w, zhints, XA_WM_ZOOM_HINTS);
 }
 
 
@@ -127,12 +128,13 @@ XSetZoomHints (dpy, w, zhints)
  *	WM_NORMAL_HINTS 	type: WM_SIZE_HINTS format: 32
  */
 
+int
 XSetNormalHints (dpy, w, hints)			/* old routine */
 	Display *dpy;
 	Window w;
 	XSizeHints *hints;
 {
-	XSetSizeHints (dpy, w, hints, XA_WM_NORMAL_HINTS);
+	return XSetSizeHints (dpy, w, hints, XA_WM_NORMAL_HINTS);
 }
 
 
@@ -143,6 +145,7 @@ XSetNormalHints (dpy, w, hints)			/* old routine */
  * routine will take care of converting to host to network data structures.
  */
 
+int
 XSetIconSizes (dpy, w, list, count)
 	Display *dpy;
 	Window w;	/* typically, root */
@@ -154,7 +157,7 @@ XSetIconSizes (dpy, w, list, count)
 #define size_of_the_real_thing sizeof	/* avoid grepping screwups */
 	unsigned nbytes = count * size_of_the_real_thing(xPropIconSize);
 #undef size_of_the_real_thing
-	if (prop = pp = (xPropIconSize *) Xmalloc (nbytes)) {
+	if ((prop = pp = (xPropIconSize *) Xmalloc (nbytes))) {
 	    for (i = 0; i < count; i++) {
 		pp->minWidth  = list->min_width;
 		pp->minHeight = list->min_height;
@@ -170,8 +173,10 @@ XSetIconSizes (dpy, w, list, count)
 			     count * NumPropIconSizeElements);
 	    Xfree ((char *)prop);
 	}
+	return 1;
 }
 
+int
 XSetCommand (dpy, w, argv, argc)
 	Display *dpy;
 	Window w;
@@ -184,7 +189,7 @@ XSetCommand (dpy, w, argv, argc)
 	for (i = 0, nbytes = 0; i < argc; i++) {
 		nbytes += safestrlen(argv[i]) + 1;
 	}
-	if (bp = buf = Xmalloc((unsigned) nbytes)) { 
+	if ((bp = buf = Xmalloc((unsigned) nbytes))) { 
 	    /* copy arguments into single buffer */
 	    for (i = 0; i < argc; i++) {
 		if (argv[i]) { 
@@ -198,6 +203,7 @@ XSetCommand (dpy, w, argv, argc)
 			     PropModeReplace, (unsigned char *)buf, nbytes);
 	    Xfree(buf);		
 	}
+	return 1;
 }
 /* 
  * XSetStandardProperties sets the following properties:
@@ -207,7 +213,8 @@ XSetCommand (dpy, w, argv, argc)
  *	WM_COMMAND	  type: STRING
  *	WM_NORMAL_HINTS	  type: WM_SIZE_HINTS 	format: 32
  */
-	
+
+int
 #if NeedFunctionPrototypes
 XSetStandardProperties (
     	Display *dpy,
@@ -249,17 +256,21 @@ XSetStandardProperties (dpy, w, name, icon_string, icon_pixmap, argv, argc, hint
 	if (hints != NULL) XSetNormalHints(dpy, w, hints);
 
 	if (phints.flags != 0) XSetWMHints(dpy, w, &phints);
+
+	return 1;
 }
 
+int
 XSetTransientForHint(dpy, w, propWindow)
 	Display *dpy;
 	Window w;
 	Window propWindow;
 {
-	XChangeProperty(dpy, w, XA_WM_TRANSIENT_FOR, XA_WINDOW, 32,
-		PropModeReplace, (unsigned char *) &propWindow, 1);
+	return XChangeProperty(dpy, w, XA_WM_TRANSIENT_FOR, XA_WINDOW, 32,
+			       PropModeReplace, (unsigned char *) &propWindow, 1);
 }
 
+int
 XSetClassHint(dpy, w, classhint)
 	Display *dpy;
 	Window w;
@@ -271,7 +282,7 @@ XSetClassHint(dpy, w, classhint)
 
 	len_nm = safestrlen(classhint->res_name);
 	len_cl = safestrlen(classhint->res_class);
-	if (class_string = s = Xmalloc((unsigned) (len_nm + len_cl + 2))) { 
+	if ((class_string = s = Xmalloc((unsigned) (len_nm + len_cl + 2)))) { 
 	    if (len_nm) {
 		strcpy(s, classhint->res_name);
 		s += len_nm + 1;
@@ -287,4 +298,5 @@ XSetClassHint(dpy, w, classhint)
 			    len_nm+len_cl+2);
 	    Xfree(class_string);
 	}
+	return 1;
 }

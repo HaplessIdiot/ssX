@@ -23,6 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -75,7 +76,7 @@ XDestroyOC(oc)
     if (oc_list == oc)
 	oc->core.om->core.oc_list = oc_list->core.next;
     else {
-	while (oc_list = oc_list->core.next) {
+	while ((oc_list = oc_list->core.next)) {
 	    if (oc_list == oc) {
 		prev->core.next = oc_list->core.next;
 		break;

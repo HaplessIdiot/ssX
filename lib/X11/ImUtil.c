@@ -20,11 +20,14 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ImUtil.c,v 3.3 1997/01/18 07:17:37 dawes Exp $ */
+/* $XFree86: xc/lib/X11/ImUtil.c,v 3.4 1998/10/03 08:41:19 dawes Exp $ */
 
 #include <X11/Xlibint.h>
 #include <X11/Xutil.h>
 #include <stdio.h>
+
+/* PutImage.c */
+extern int _XReverse_Bytes();
 
 #ifdef __STDC__
 #define Const const
@@ -55,7 +58,8 @@ static unsigned char Const _himask[0x09] = { 0xff, 0xfe, 0xfc, 0xf8, 0xf0, 0xe0,
 	associated with a specific depth of ZPixmap format image for a 
 	display. */
 
- _XGetScanlinePad(dpy, depth)
+int
+_XGetScanlinePad(dpy, depth)
  Display *dpy;
  int depth;
  {
@@ -69,7 +73,8 @@ static unsigned char Const _himask[0x09] = { 0xff, 0xfe, 0xfc, 0xf8, 0xf0, 0xe0,
  	return(dpy->bitmap_pad);
  }
  
- _XGetBitsPerPixel(dpy, depth)
+int
+_XGetBitsPerPixel(dpy, depth)
  Display *dpy;
  int depth;
  {
@@ -958,7 +963,8 @@ int _XSetImage (srcimg, dstimg, x, y)
  *
  */
 
-static _XAddPixel (ximage, value)
+static int
+_XAddPixel (ximage, value)
     register XImage *ximage;
     register long value;
 {

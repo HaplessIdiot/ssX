@@ -1,14 +1,9 @@
-/* $XConsortium: KeyBind.c,v 11.79 94/04/17 20:20:03 erik Exp $ */
+/* $TOG: KeyBind.c /main/56 1998/02/06 17:38:19 kaleb $ */
 /* 
 
-Copyright (c) 1985, 1987,  X Consortium
+Copyright 1985, 1987, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -16,15 +11,16 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 */
+/* $XFree86$ */
 
 /* Beware, here be monsters (still under construction... - JG */
 
@@ -37,9 +33,17 @@ in this Software without prior written authorization from the X Consortium.
 #define XK_LATIN3
 #define XK_LATIN4
 #define XK_CYRILLIC
+#define XK_GREEK
 #define XK_XKB_KEYS
 #include <X11/keysymdef.h>
 #include <stdio.h>
+
+#include "XKBlib.h"
+
+#ifdef USE_OWN_COMPOSE
+#include "imComp.h"
+
+#endif
 
 #ifdef XKB
 #define	XKeycodeToKeysym	_XKeycodeToKeysym
@@ -47,6 +51,7 @@ in this Software without prior written authorization from the X Consortium.
 #define	XLookupKeysym		_XLookupKeysym
 #define	XRefreshKeyboardMapping	_XRefreshKeyboardMapping
 #define	XLookupString		_XLookupString
+/* XKBBind.c */
 #else
 #define	XkbKeysymToModifiers	_XKeysymToModifiers
 #endif
@@ -54,7 +59,8 @@ in this Software without prior written authorization from the X Consortium.
 #define AllMods (ShiftMask|LockMask|ControlMask| \
 		 Mod1Mask|Mod2Mask|Mod3Mask|Mod4Mask|Mod5Mask)
 
-static ComputeMaskFromKeytrans();
+static void ComputeMaskFromKeytrans();
+int _XKeyInitialize();
 
 struct _XKeytrans {
 	struct _XKeytrans *next;/* next on list */
@@ -67,10 +73,14 @@ struct _XKeytrans {
 };
 
 static KeySym
+#if NeedFunctionPrototypes
+KeyCodetoKeySym(register Display *dpy, KeyCode keycode, int col)
+#else
 KeyCodetoKeySym(dpy, keycode, col)
     register Display *dpy;
     KeyCode keycode;
     int col;
+#endif
 {
     register int per = dpy->keysyms_per_keycode;
     register KeySym *syms;
@@ -177,12 +187,10 @@ ResetModMap(dpy)
 	    } else if (sym == XK_Shift_Lock) {
 		dpy->lock_meaning = XK_Shift_Lock;
 	    }
-#ifdef	XK_ISO_Lock
 	    else if (sym == XK_ISO_Lock) {
 		dpy->lock_meaning = XK_Caps_Lock;
 		break;
 	    }
-#endif
 	}
     }
     /* Now find any Mod<n> modifier acting as the Group or Numlock modifier */
@@ -221,6 +229,7 @@ InitModMap(dpy)
     return 1;
 }
 
+int
 XRefreshKeyboardMapping(event)
     register XMappingEvent *event;
 {
@@ -247,6 +256,7 @@ XRefreshKeyboardMapping(event)
 	if (event->display->keysyms)
 	    (void) InitModMap(event->display);
     }
+    return 1;
 }
 
 int
@@ -289,7 +299,7 @@ XConvertCase(sym, lower, upper)
     *lower = sym;
     *upper = sym;
     switch(sym >> 8) {
-    case 0:
+    case 0: /* Latin 1 */
 	if ((sym >= XK_A) && (sym <= XK_Z))
 	    *lower += (XK_a - XK_A);
 	else if ((sym >= XK_a) && (sym <= XK_z))
@@ -303,8 +313,7 @@ XConvertCase(sym, lower, upper)
 	else if ((sym >= XK_oslash) && (sym <= XK_thorn))
 	    *upper -= (XK_oslash - XK_Ooblique);
 	break;
-#ifdef XK_LATIN2
-    case 1:
+    case 1: /* Latin 2 */
 	/* Assume the KeySym is a legal value (ignore discontinuities) */
 	if (sym == XK_Aogonek)
 	    *lower = XK_aogonek;
@@ -327,9 +336,7 @@ XConvertCase(sym, lower, upper)
 	else if (sym >= XK_racute && sym <= XK_tcedilla)
 	    *upper -= (XK_racute - XK_Racute);
 	break;
-#endif
-#ifdef XK_LATIN3
-    case 2:
+    case 2: /* Latin 3 */
 	/* Assume the KeySym is a legal value (ignore discontinuities) */
 	if (sym >= XK_Hstroke && sym <= XK_Hcircumflex)
 	    *lower += (XK_hstroke - XK_Hstroke);
@@ -344,9 +351,7 @@ XConvertCase(sym, lower, upper)
 	else if (sym >= XK_cabovedot && sym <= XK_scircumflex)
 	    *upper -= (XK_cabovedot - XK_Cabovedot);
 	break;
-#endif
-#ifdef XK_LATIN4
-    case 3:
+    case 3: /* Latin 4 */
 	/* Assume the KeySym is a legal value (ignore discontinuities) */
 	if (sym >= XK_Rcedilla && sym <= XK_Tslash)
 	    *lower += (XK_rcedilla - XK_Rcedilla);
@@ -361,9 +366,7 @@ XConvertCase(sym, lower, upper)
 	else if (sym >= XK_amacron && sym <= XK_umacron)
 	    *upper -= (XK_amacron - XK_Amacron);
 	break;
-#endif
-#ifdef XK_CYRILLIC
-    case 6:
+    case 6: /* Cyrillic */
 	/* Assume the KeySym is a legal value (ignore discontinuities) */
 	if (sym >= XK_Serbian_DJE && sym <= XK_Serbian_DZE)
 	    *lower -= (XK_Serbian_DJE - XK_Serbian_dje);
@@ -374,17 +377,38 @@ XConvertCase(sym, lower, upper)
 	else if (sym >= XK_Cyrillic_yu && sym <= XK_Cyrillic_hardsign)
 	    *upper += (XK_Cyrillic_YU - XK_Cyrillic_yu);
         break;
-#endif
+    case 7: /* Greek */
+	/* Assume the KeySym is a legal value (ignore discontinuities) */
+	if (sym >= XK_Greek_ALPHAaccent && sym <= XK_Greek_OMEGAaccent)
+	    *lower += (XK_Greek_alphaaccent - XK_Greek_ALPHAaccent);
+	else if (sym >= XK_Greek_alphaaccent && sym <= XK_Greek_omegaaccent &&
+		 sym != XK_Greek_iotaaccentdieresis &&
+		 sym != XK_Greek_upsilonaccentdieresis)
+	    *upper -= (XK_Greek_alphaaccent - XK_Greek_ALPHAaccent);
+	else if (sym >= XK_Greek_ALPHA && sym <= XK_Greek_OMEGA)
+	    *lower += (XK_Greek_alpha - XK_Greek_ALPHA);
+	else if (sym >= XK_Greek_alpha && sym <= XK_Greek_omega &&
+		 sym != XK_Greek_finalsmallsigma)
+	    *upper -= (XK_Greek_alpha - XK_Greek_ALPHA);
+        break;
     }
 }
 
 int
+#if NeedFunctionPrototypes
+_XTranslateKey(	register Display *dpy,
+		KeyCode keycode,
+		register unsigned int modifiers,
+		unsigned int *modifiers_return,
+		KeySym *keysym_return)
+#else
 _XTranslateKey(dpy, keycode, modifiers, modifiers_return, keysym_return)
     register Display *dpy;
     KeyCode keycode;
     register unsigned int modifiers;
     unsigned int *modifiers_return;
     KeySym *keysym_return;
+#endif
 {
     int per;
     register KeySym *syms;
@@ -514,6 +538,73 @@ XLookupString (event, buffer, nbytes, keysym, status)
 		  &modifiers, &symbol))
 	return 0;
 
+#ifdef USE_OWN_COMPOSE
+    if ( status ) {
+	static int been_here= 0;
+	if ( !been_here ) {
+	    XimCompInitTables();
+	    been_here = 1;
+	}
+	if ( !XimCompLegalStatus(status) ) {
+	    status->compose_ptr = NULL;
+	    status->chars_matched = 0;
+	}
+	if ( ((status->chars_matched>0)&&(status->compose_ptr!=NULL)) || 
+		XimCompIsComposeKey(symbol,event->keycode,status) ) {
+	    XimCompRtrn rtrn;
+	    switch (XimCompProcessSym(status,symbol,&rtrn)) {
+		case XIM_COMP_IGNORE:
+		    break;
+		case XIM_COMP_IN_PROGRESS:
+		    if ( keysym!=NULL )
+			*keysym = NoSymbol;
+		    return 0;
+		case XIM_COMP_FAIL:
+		{
+		    int n = 0, len= 0;
+		    for (n=len=0;rtrn.sym[n]!=XK_VoidSymbol;n++) {
+			if ( nbytes-len > 0 ) {
+			    len+= _XTranslateKeySym(event->display,rtrn.sym[n],
+							event->state,
+							buffer+len,nbytes-len);
+			}
+		    }
+		    if ( keysym!=NULL ) {
+			if ( n==1 )	*keysym = rtrn.sym[0];
+			else		*keysym = NoSymbol;
+		    }
+		    return len;
+		}
+		case XIM_COMP_SUCCEED:
+		{
+		    int len,n = 0;
+
+		    symbol = rtrn.matchSym;
+		    if ( keysym!=NULL )	*keysym = symbol;
+		    if ( rtrn.str[0]!='\0' ) {
+			strncpy(buffer,rtrn.str,nbytes-1);
+			buffer[nbytes-1]= '\0';
+			len = strlen(buffer);
+		    }
+		    else {
+			len = _XTranslateKeySym(event->display,symbol,
+							event->state,
+							buffer,nbytes);
+		    }
+		    for (n=0;rtrn.sym[n]!=XK_VoidSymbol;n++) {
+			if ( nbytes-len > 0 ) {
+			    len+= _XTranslateKeySym(event->display,rtrn.sym[n],
+							event->state,
+							buffer+len,nbytes-len);
+			}
+		    }
+		    return len;
+		}
+	    }
+	}
+    }
+#endif
+
     if (keysym)
 	*keysym = symbol;
     /* arguable whether to use (event->state & ~modifiers) here */
@@ -535,6 +626,7 @@ _XFreeKeyBindings (dpy)
     }   
 }
 
+int
 #if NeedFunctionPrototypes
 XRebindKeysym (
     Display *dpy,
@@ -628,7 +720,7 @@ _XKeysymToModifiers(dpy,ks)
  * what modifier it is bound to, if any.  Sets the AnyModifier bit if it
  * can't map some keysym to a modifier.
  */
-static
+static void
 ComputeMaskFromKeytrans(dpy, p)
     Display *dpy;
     register struct _XKeytrans *p;

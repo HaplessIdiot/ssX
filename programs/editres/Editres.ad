@@ -1,7 +1,8 @@
 ! $XConsortium: Editres.ad,v 1.16 93/04/28 14:26:57 dave Exp $
+! $XFree86$
 ! The App-defaults file for Editres.
 
-Editres.Geometry:			500x600
+Editres.Geometry:			500x568
 
 *ShapeStyle:				Oval
 *Tree*ShapeStyle:			Rectangle
@@ -14,37 +15,37 @@ Editres.Geometry:			500x600
 
 ! Menu Button Names
 
-*Box*commands.Label:			Commands
-*Box*treeCommands.Label:		Tree
+*Box.commands.Label:			Commands
+*Box.treeCommands.Label:		Tree
 
 *porthole.tree.width:			500
 *porthole.tree.height:			480
 
 ! Universal Menu Entry Names
-*sendTree.Label:		Get Tree
-*quit.Label:			Quit
+*xt.sendTree.Label:		Get Tree
+*xt.quit.Label:			Quit
 
-*selectAll.Label:		Select All
-*unselectAll.Label:		Unselect All
-*invertAll.Label:		Invert All
-*selectChildren.Label:		Select Children
-*selectParent.Label:		Select Parent
-*selectDescendants.Label:	Select Descendants
-*selectAncestors.Label:		Select Ancestors
+*xt.selectAll.Label:		Select All
+*xt.unselectAll.Label:		Unselect All
+*xt.invertAll.Label:		Invert All
+*xt.selectChildren.Label:		Select Children
+*xt.selectParent.Label:		Select Parent
+*xt.selectDescendants.Label:	Select Descendants
+*xt.selectAncestors.Label:		Select Ancestors
 
 ! Xt Menu Entry Names
 
-*xt*refreshTree.Label:		Refresh Current Widget Tree
-*xt*dumpTreeToFile.Label:	Dump Widget Tree to a File
-*xt*getResourceList.Label:	Show Resource Box
-*xt*setValues.Label:		Set Resource
+*xt.refreshTree.Label:		Refresh Current Widget Tree
+*xt.dumpTreeToFile.Label:	Dump Widget Tree to a File
+*xt.getResourceList.Label:	Show Resource Box
+*xt.setValues.Label:		Set Resource
 
-*xt*showClientWidget.Label:	Select Widget in Client
-*xt*showWidgetNames.Label:	Show Widget Names
-*xt*showClassNames.Label:	Show Class Names
-*xt*showWidgetIDs.Label:	Show Widget IDs
-*xt*showWidgetWindows.Label:	Show Widget Windows
-*xt*flashActiveWidgets.Label:	Flash Active Widgets
+*xt.showClientWidget.Label:	Select Widget in Client
+*xt.showWidgetNames.Label:	Show Widget Names
+*xt.showClassNames.Label:	Show Class Names
+*xt.showWidgetIDs.Label:	Show Widget IDs
+*xt.showWidgetWindows.Label:	Show Widget Windows
+*xt.flashActiveWidgets.Label:	Flash Active Widgets
 
 ! InterViews Menu Entry Names
 
@@ -137,8 +138,8 @@ Editres.Geometry:			500x600
 
 ! Universal Resources for the Resource Box.
 
-*resourceLabel.font:			\
--*-new century schoolbook-bold-r-*-*-20-*-*-*-*-*-*-*
+*mainViewport*resourceLabel.font:		\
+-*-new century schoolbook-bold-r-*-*-15-*-*-*-*-*-*-*
 *allowShellResize:				True
 *resourceLabel.allowResize:			True
 *List.verticalList:				True
@@ -146,11 +147,12 @@ Editres.Geometry:			500x600
 *star.Label:				*
 *dot.Label:					.
 *namesLabel.font:				\
--*-new century schoolbook-bold-r-*-*-17-*-*-*-*-*-*-*
+-*-new century schoolbook-bold-r-*-*-15-*-*-*-*-*-*-*
 *constraintLabel.font:			\
--*-new century schoolbook-bold-r-*-*-17-*-*-*-*-*-*-*
+-*-new century schoolbook-bold-r-*-*-15-*-*-*-*-*-*-*
 *valueLabel.BorderWidth:			0
-*valueForm*preferredPaneSize:		100
+*valueForm*preferredPaneSize:		40
+*valueForm*min:				28
 *valueText*editType:			edit
 *valueText.Scroll:				WhenNeeded
 *valueText.width:				300
@@ -159,6 +161,7 @@ Editres.Geometry:			500x600
 *apply.Label:				Apply
 *saveAndApply.Label:			Save and Apply
 *commandBox.show.Label:		        Show
+*commandBox.min:			28
 
 ! InterViews Resources for the Resource Box.
 
@@ -171,8 +174,8 @@ Editres.Geometry:			500x600
 
 ! Xt Resources for the Resource Box.
 
-*xt*single.Label:                              Any Widget
-*xt*any.Label:                                 Any Widget Chain
+*xt*single.Label:                              ?
+*xt*any.Label:                                 *
 *xt*namesLabel.Label:                          Normal Resources: mb2 gets a value
 *xt*constraintLabel.Label:                     Constraint Resources
 *xt*valueLabel.Label:                          Enter Resource Value:
@@ -226,29 +229,50 @@ Editres.Geometry:			500x600
 
 ! For the SetValues popup
 
-*setValuesPopup*resizable:		True
-*setValuesPopup*left:			ChainLeft
-*setValuesPopup*right:			ChainLeft
+*setValuesPopup.form.?.resizable:		True
+*setValuesPopup.form.?.left:			ChainLeft
+*setValuesPopup.form.?.right:			ChainLeft
 
-*setValuesPopup*label*Label:		Use <Tab> to Change Fields.
-*setValuesPopup*Label*BorderWidth:	0
+*setValuesPopup.form.label.Label:		Use <Tab> to Change Fields.
+*setValuesPopup.form.Label.BorderWidth:	0
 
-*setValuesPopup*resourceLabel.Label:	Resource Name:
-*setValuesPopup*valueLabel.Label:	Value:
-*SimpleMenu*setValuesPopup*setValues.Label:	Apply
-*setValuesPopup*cancel.Label:		Cancel
+*xt*setValuesPopup.form.resourceLabel.Label:	Resource Name:
+*xt*setValuesPopup.form.resourceLabel.width:	114
+*xt*setValuesPopup.form.resourceLabel.justify:	right
+*xt*setValuesPopup.form.valueLabel.Label:	Resource Value:
+*xt*setValuesPopup.form.valueLabel.width:	114
+*xt*setValuesPopup.form.setValues.Label:	Apply
+*xt*setValuesPopup.form.cancel.Label:		Cancel
 
-*setValuesPopup*Text*EditType:		Edit
-*setValuesPopup*Text*resize:		Width
+*setValuesPopup.form.Text.?.EditType:		Edit
+*setValuesPopup.form.Text.resize:		Width
 
-*setValuesPopup*resourceText.baseTranslations: #override \
+*setValuesPopup.form.resourceText.baseTranslations: #override \
   <Key>Return:     	   no-op(RingBell) \n\
    Ctrl<Key>q,<Key>Tab:    insert-char()    \n\
    <Btn1Down>:             select-start() SVActiveEntry(Resource) \n\
    <Key>Tab:               SVActiveEntry(Value)
 
-*setValuesPopup*valueText.baseTranslations: #override \
+*setValuesPopup.form.valueText.baseTranslations: #override \
    <Key>Return:     	   no-op(RingBell) \n\
    Ctrl<Key>q,<Key>Tab:    insert-char()     \n\
    <Btn1Down>:             select-start() SVActiveEntry(Value)\n\
    <Key>Tab:               SVActiveEntry(Resource)
+
+! New resource settings
+*normalViewport.min:					19
+*normalViewport.allowVert:				True
+*constraintViewport.min:				19
+*constraintViewport.allowVert:				True
+*mainViewport.allowHoriz:				True
+*mainViewport.pane.namesAndClasses.defaultDistance:	0
+*mainViewport.useBottom:				True
+*mainViewport.pane.Label.min:				22
+*mainViewport.pane.Label.max:				22
+*mainViewport.pane.Form.showGrip:			False
+*mainViewport.pane.Label.showGrip:			False
+*mainViewport.pane.Form.min:				66
+*mainViewport.pane.Form.max:				66
+*tree*TransientShell.translations: #override \
+<Map>:	get-values(1, $w, width) \
+	set-values(1, maxWidth, $w)

@@ -33,6 +33,7 @@
  *		querying routine.
  *
  */
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include "Xcmsint.h"
@@ -50,6 +51,9 @@
  *	EXTERNS
  */
 extern Status _XcmsCIELabQueryMaxLCRGB();
+
+/* CvColW.c */
+extern Status _XcmsConvertColorsWithWhitePt();
 
 
 /************************************************************************

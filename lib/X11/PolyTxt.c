@@ -20,10 +20,11 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/PolyTxt.c,v 3.1 1997/10/26 13:24:42 dawes Exp $ */
+/* $XFree86: xc/lib/X11/PolyTxt.c,v 3.2 1998/10/03 08:41:21 dawes Exp $ */
 
 #include "Xlibint.h"
 
+int
 XDrawText(dpy, d, gc, x, y, items, nitems)
     register Display *dpy;
     Drawable d;

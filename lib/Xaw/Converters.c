@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Converters.c,v 3.10 1998/09/05 06:36:06 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Converters.c,v 3.11 1998/11/15 04:29:59 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -103,6 +103,8 @@ static Boolean _XawCvtPixelToString(Display*, XrmValue*, Cardinal*,
 				    XrmValue*, XrmValue*, XtPointer*);
 static Boolean _XawCvtPixmapToString(Display*, XrmValue*, Cardinal*,
 				     XrmValue*, XrmValue*, XtPointer*);
+static Boolean _XawCvtShortToString(Display*, XrmValue*, Cardinal*,
+				    XrmValue*, XrmValue*, XtPointer*);
 static Boolean _XawCvtPositionToString(Display*, XrmValue*, Cardinal*,
 				       XrmValue*, XrmValue*, XtPointer*);
 static Boolean _XawCvtStringToDisplayList(Display*, XrmValue*, Cardinal*,
@@ -190,6 +192,8 @@ XawInitializeDefaultConverters(void)
   XtSetTypeConverter(XtRPixmap, XtRString, _XawCvtPixmapToString,
 		     &DLArgs[0], XtNumber(DLArgs), XtCacheNone, NULL);
   XtSetTypeConverter(XtRPosition, XtRString, _XawCvtPositionToString,
+		     NULL, 0, XtCacheNone,  NULL);
+  XtSetTypeConverter(XtRShort, XtRString, _XawCvtShortToString,
 		     NULL, 0, XtCacheNone,  NULL);
   XtSetTypeConverter(XtRString, XawRDisplayList, _XawCvtStringToDisplayList,
 		     &DLArgs[0], XtNumber(DLArgs), XtCacheAll, NULL);
@@ -285,6 +289,24 @@ _XawCvtPositionToString(Display *dpy, XrmValue *args, Cardinal *num_args,
     TypeToStringNoArgsWarning(dpy, XtRPosition);
 
   XmuSnprintf(buffer, sizeof(buffer), "%d", *(Position *)fromVal->addr);
+  size = strlen(buffer) + 1;
+
+  string_done(buffer);
+}
+
+/*ARGSUSED*/
+static Boolean
+_XawCvtShortToString(Display *dpy, XrmValue *args, Cardinal *num_args,
+		     XrmValue *fromVal, XrmValue *toVal,
+		     XtPointer *converter_data)
+{
+  static char buffer[7];
+  Cardinal size;
+
+  if (*num_args != 0)
+    TypeToStringNoArgsWarning(dpy, XtRShort);
+
+  XmuSnprintf(buffer, sizeof(buffer), "%d", *(short *)fromVal->addr);
   size = strlen(buffer) + 1;
 
   string_done(buffer);

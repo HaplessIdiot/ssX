@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.6 1999/03/21 07:35:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.7 1999/04/04 08:46:19 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -298,7 +298,7 @@ SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     pReg->sisRegs3C4[GraphEng] |=  0x40;
     pSiS->ValidWidth = TRUE;
-    pReg->sisRegs3C4[GraphEng] &= 0xCF;
+    pReg->sisRegs3C4[GraphEng] &= 0xCF; /* Clear logical width bits */
     if ((pScrn->depth != 8) | (pScrn->depth != 16) ) {
 	pReg->sisRegs3C4[GraphEng] |= 0x30; /* Invalid logical width */
 	pSiS->ValidWidth = FALSE;
@@ -356,7 +356,7 @@ SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
  	    pReg->sisRegs3C4[ClockBase] |= 0x80;
  	  };
 
-#if 0
+#if 0  /* Check programmed memory clock. Enable only to check the above code */
           mclk=14318*((pReg->sisRegs3C4[MemClock0] & 0x7f)+1);
           mclk=mclk/((pReg->sisRegs3C4[MemClock1] & 0x0f)+1);
           Base = pReg->sisRegs3C4[ClockBase];

@@ -34,6 +34,7 @@
  *
  *
  */
+/* $XFree86$ */
 
 /* #define NEED_EVENTS */
 #include <stdio.h>
@@ -49,6 +50,9 @@
  */
 extern XcmsColorSpace **_XcmsDIColorSpaces;
 extern XcmsFunctionSet **_XcmsSCCFuncSets;
+
+/* LRGB.c */
+extern int _XcmsLRGB_InitScrnDefault();
 
 static void _XcmsFreeDefaultCCCs();
 
@@ -90,7 +94,7 @@ _XcmsCopyPointerArray(pap)
     for (tmp = pap, n = 0; *tmp != NULL; tmp++, n++);
     n++; /* add 1 to include the NULL pointer */
 
-    if (newArray = (XPointer *)Xmalloc(n * sizeof(XPointer))) {
+    if ((newArray = (XPointer *)Xmalloc(n * sizeof(XPointer)))) {
 	memcpy((char *)newArray, (char *)pap,
 	       (unsigned)(n * sizeof(XPointer)));
     }
@@ -149,7 +153,7 @@ _XcmsPushPointerArray(pap, p, papNoFree)
     /* add 2: 1 for the new pointer and another for the NULL pointer */
     n += 2;
 
-    if (newArray = (XPointer *)Xmalloc(n * sizeof(XPointer))) {
+    if ((newArray = (XPointer *)Xmalloc(n * sizeof(XPointer)))) {
 	memcpy((char *)(newArray+1),(char *)pap,
 	       (unsigned)((n-1) * sizeof(XPointer)));
 	*newArray = p;

@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/util.c,v 1.9 1999/03/14 03:22:28 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/util.c,v 1.10 1999/04/25 10:02:52 dawes Exp $ */
 
 #include <stdio.h>
 #ifndef X_NOT_STDC_ENV
@@ -351,12 +351,31 @@ SwitchTextSource(xedit_flist_item *item)
 	XtGetValues(texts[i], args, num_args);
     }
     if (old_item != item) {
+	int count, idx;
+
 	num_args = 0;
 	XtSetArg(args[num_args], XtNdisplayPosition,
 	     &(old_item->display_position));			++num_args;
 	XtSetArg(args[num_args], XtNinsertPosition,
 	     &(old_item->insert_position));			++num_args;
 	XtGetValues(textwindow, args, num_args);
+
+	for (count = 0, i = 0; i < 3; i++)
+	    if (XawTextGetSource(texts[i]) == old_item->source
+		&& XtIsManaged(texts[i])) {
+		if (++count > 1)
+		    break;
+		idx = i;
+	    }
+
+	if (count == 1) {
+	    num_args = 0;
+	    XtSetArg(args[num_args], XtNdisplayPosition,
+		     &(old_item->display_position));		++num_args;
+		XtSetArg(args[num_args], XtNinsertPosition,
+		     &(old_item->insert_position));		++num_args;
+	    XtGetValues(texts[idx], args, num_args);
+	}
     }
 
     num_args = 0;

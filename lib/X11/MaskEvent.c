@@ -20,6 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
+/* $XFree86$ */
 
 #define NEED_EVENTS
 #include "Xlibint.h"
@@ -41,6 +42,7 @@ extern long Const _Xevent_to_mask[];
  * Events earlier in the queue are not discarded.
  */
 
+int
 XMaskEvent (dpy, mask, event)
 	register Display *dpy;
 	long mask;		/* Selected event mask. */

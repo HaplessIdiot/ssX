@@ -24,6 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
+/* $XFree86$ */
 
 #include <stdio.h>
 #define NEED_REPLIES
@@ -343,7 +344,8 @@ _XkbWriteVirtualMods(dpy,xkb,req,size)
     register int	 i,bit;
     CARD8		*vmods;
 
-    if ((req->present&XkbVirtualModsMask==0)||(size<1))
+    /* This was req->present&XkbVirtualModsMask==0, and '==' beats '&' */
+    if (((req->present & XkbVirtualModsMask) == 0) || (size < 1))
 	return;
     BufAlloc(CARD8 *,vmods,size);
     for (i=0,bit=1;i<XkbNumVirtualMods;i++,bit<<=1) {

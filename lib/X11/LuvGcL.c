@@ -30,6 +30,7 @@
  *		Source for XcmsCIELuvClipL() gamut compression routine.
  *
  */
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include "Xcmsint.h"
@@ -38,6 +39,9 @@
  *	EXTERNS
  */
 extern Status _XcmsCIELuvQueryMaxLCRGB();
+
+/* CvCols.c */
+extern Status _XcmsDIConvertColors();
 
 
 /************************************************************************

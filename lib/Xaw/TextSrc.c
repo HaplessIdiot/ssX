@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.11 1999/04/25 10:01:29 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.12 1999/05/03 12:15:46 dawes Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -558,6 +558,9 @@ _XawSourceRemoveText(Widget source, Widget text, Bool destroy)
     TextSrcObject src = (TextSrcObject)source;
     Bool found = False;
     Cardinal i;
+
+    if (src == NULL)
+	return;
 
     for (i = 0; i < src->textSrc.num_text; i++)
 	if (src->textSrc.text[i] == text) {

@@ -24,6 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
+/* $XFree86$ */
 
 #include <stdio.h>
 #define NEED_REPLIES
@@ -589,8 +590,10 @@ Bool		match;
 	match= ((class==devli->led_class)||(class==XkbAllXIClasses));
 	if (devli->led_class==KbdFeedbackClass)	dflt= stuff->dflt_kbd_fb;
 	else					dflt= stuff->dflt_led_fb;
-	match= match && (id==devli->led_id) || (id==XkbAllXIIds) ||
-					((id==XkbDfltXIId)&&(linfo==dflt));
+	match = (match && (id == devli->led_id)) ||
+	  (id == XkbAllXIIds) ||
+	  ((id == XkbDfltXIId) &&
+	   (linfo == dflt));
 	if (match) {
 	    if (!linfo->used) {
 		*sz_rtrn+= _XkbSizeLedInfo(stuff->wanted,devli);

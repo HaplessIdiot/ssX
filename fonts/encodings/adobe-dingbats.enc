@@ -1,7 +1,6 @@
 STARTENCODING adobe-dingbats
 # This file is derived from data provided by Adobe
 STARTMAPPING postscript
-UNDEFINE 0 31
 32 space
 33 a1
 34 a2
@@ -194,6 +193,7 @@ UNDEFINE 255
 ENDMAPPING
 
 STARTMAPPING unicode
+UNDEFINE 0 0xFF
 0x20 0x0020    # SPACE
 0x21 0x2701    # UPPER BLADE SCISSORS
 0x22 0x2702    # BLACK SCISSORS

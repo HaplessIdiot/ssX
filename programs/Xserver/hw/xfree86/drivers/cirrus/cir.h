@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir.h,v 1.8 1998/12/06 06:08:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir.h,v 1.9 1999/02/28 11:19:37 dawes Exp $ */
 
 /* (c) Itai Nahshon */
 
@@ -15,6 +15,7 @@
 /* CRTC >= 0x19; Sequencer >= 0x05; Graphics >= 0x09; Attribute >= 0x15 */
 enum {
     /* CR regs */
+    CR1A,
     CR1B,
     CR1D,
     /* SR regs */

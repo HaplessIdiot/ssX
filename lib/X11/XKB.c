@@ -24,6 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
+/* $XFree86$ */
 
 #include <stdio.h>
 #define NEED_REPLIES
@@ -853,7 +854,9 @@ XkbInfoPtr 			xkbi;
     UnlockDisplay(dpy);
     SyncHandle();
     if (ctrls)
-	*ctrls= (rep.value&XkbPCF_GrabsUseXKBStateMask|XkbPCF_LookupStateWhenGrabbed|XkbPCF_SendEventUsesXKBState);
+	*ctrls= ((rep.value & XkbPCF_GrabsUseXKBStateMask) |
+		 XkbPCF_LookupStateWhenGrabbed |
+		 XkbPCF_SendEventUsesXKBState);
     return (True);
 }
 

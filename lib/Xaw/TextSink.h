@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xaw/TextSink.h,v 1.5 1999/05/03 15:31:49 dawes Exp $ */
 
 #ifndef _XawTextSink_h
 #define _XawTextSink_h
@@ -102,11 +102,20 @@ _XFUNCPROTOBEGIN
  */
 void XawTextSinkDisplayText(
     Widget		/* w */,
+#if NeedWidePrototypes
     int			/* x */,
     int			/* y */,
+#else
+    Position		/* x */,
+    Position		/* y */,
+#endif
     XawTextPosition	/* pos1 */,
     XawTextPosition	/* pos2 */,
-    Bool		/* highlight */
+#if NeedWidePrototypes
+    int			/* highlight */
+#else
+    Boolean		/* highlight */
+#endif
 );
 
 /*	Function Name: XawTextSinkInsertCursor
@@ -144,10 +153,17 @@ void XawTextSinkInsertCursor(
  */
 void XawTextSinkClearToBackground(
     Widget		/* w */,
+#if NeedWidePrototypes
     int			/* x */,
     int			/* y */,
     unsigned int	/* width */,
     unsigned int	/* height */
+#else
+    Position		/* x */,
+    Position		/* y */,
+    Dimension		/* width */,
+    Dimension		/* height */
+#endif
 );
 
 /*	Function Name: XawTextSinkFindPosition

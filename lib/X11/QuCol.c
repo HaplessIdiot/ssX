@@ -32,10 +32,15 @@
  *
  *
  */
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include "Xcmsint.h"
 
+/* EXTERN */
+
+/* SetGetCols.c */
+extern Status _XcmsSetGetColors();
 
 
 /************************************************************************

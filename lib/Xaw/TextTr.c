@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextTr.c,v 3.8 1999/01/11 05:13:13 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextTr.c,v 3.9 1999/04/25 10:01:30 dawes Exp $ */
 
 /* INTERNATIONALIZATION:
 
@@ -133,9 +133,11 @@ char _XawDefaultTextTranslations[] =
 "s <Key>Insert:"	"insert-selection(PRIMARY, CUT_BUFFER0)\n"
 "<Ctrl>Q,<Key>:"	"insert-char()\n"
 "<Key>:"		"insert-char()\n"
+"<Enter>:"		"enter-window()\n"
+"<Leave>:"		"leave-window()\n"
 "<FocusIn>:"		"focus-in()\n"
 "<FocusOut>:"		"focus-out()\n"
-"<Btn1Down>:"		"set-keyboard-focus() select-start()\n"
+"<Btn1Down>:"		"select-start()\n"
 "<Btn1Motion>:"		"extend-adjust()\n"
 "<Btn1Up>:"		"extend-end(PRIMARY, CUT_BUFFER0)\n"
 "<Btn2Down>:"		"insert-selection(PRIMARY, CUT_BUFFER0)\n"

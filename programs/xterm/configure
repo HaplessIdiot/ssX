@@ -3874,7 +3874,7 @@ XTERM_MODE=755
 echo $ac_n "checking for presumed installation-mode""... $ac_c" 1>&6
 echo "configure:3876: checking for presumed installation-mode" >&5
 if test -f "$XTERM_PATH" ; then
-	ls -l $XTERM_PATH >conftest.out
+	ls -Ll $XTERM_PATH >conftest.out
 	read cf_mode cf_rest <conftest.out
 	case ".$cf_mode" in #(vi
 	.???s*)
@@ -4174,7 +4174,7 @@ elif test -d /usr/lib/terminfo ; then
 else
 	private_TERMINFO=
 fi
-
+test -n "$private_TERMINFO" && private_TERMINFO="TERMINFO=$private_TERMINFO"
 
 ###	checks for optional features
 echo $ac_n "checking if you want active-icons""... $ac_c" 1>&6

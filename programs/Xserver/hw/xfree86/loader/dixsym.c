@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.20 1999/03/23 05:00:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.21 1999/04/04 07:03:29 dawes Exp $ */
 
 
 /*
@@ -280,6 +280,11 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(InitProximityClassDeviceStruct)
   /* extinit.c */
   SYMFUNC(AssignTypeAndName)
+#endif
+
+#ifdef XFreeXDGA
+  /* xf86DGA.c */
+  SYMVAR(XDGAEventBase)
 #endif
 
   /* libfont.a */

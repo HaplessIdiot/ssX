@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.5 1999/03/21 07:35:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.6 1999/04/04 08:46:18 dawes Exp $ */
 
 #ifndef _SIS_H
 #define _SIS_H_
@@ -68,6 +68,7 @@ typedef struct {
     Bool		TurboQueue;
     Bool		ValidWidth;
     Bool		FastVram;
+    Bool		ClipEnabled;
     int			MemClock;
     int			MinClock;
     int			MaxClock;

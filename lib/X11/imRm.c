@@ -30,7 +30,7 @@ PERFORMANCE OF THIS SOFTWARE.
 			       makoto@sm.sony.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imRm.c,v 3.5 1998/10/03 08:41:35 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imRm.c,v 3.6 1999/04/28 15:04:48 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Xlib.h>
@@ -2798,17 +2798,17 @@ _XimSetICValueData(ic, top, res_list, list_num, values, mode, flag)
 	    return p->name;
 	}
 	if(res->xrm_name == pre_quark) {
-	    if(name = _XimSetICValueData(ic,
+	    if((name = _XimSetICValueData(ic,
 			(XPointer)(&((XimDefICValues *)top)->preedit_attr),
 			res_list, list_num, (XIMArg *)p->value,
-			(mode | XIM_PREEDIT_ATTR), flag)) {
+			(mode | XIM_PREEDIT_ATTR), flag))) {
 		return name;
 	    }
 	} else if(res->xrm_name == sts_quark) {
-	    if(name = _XimSetICValueData(ic,
+	    if((name = _XimSetICValueData(ic,
 			(XPointer)(&((XimDefICValues *)top)->status_attr),
 			res_list, list_num, (XIMArg *)p->value,
-			(mode | XIM_STATUS_ATTR), flag)) {
+			(mode | XIM_STATUS_ATTR), flag))) {
 		return name;
 	    }
 	} else {
@@ -2964,17 +2964,17 @@ _XimGetICValueData(ic, top, res_list, list_num, values, mode)
 	    return p->name;
 	}
 	if(res->xrm_name == pre_quark) {
-	    if(name = _XimGetICValueData(ic,
+	    if((name = _XimGetICValueData(ic,
 			(XPointer)(&((XimDefICValues *)top)->preedit_attr),
 			res_list, list_num, (XIMArg *)p->value,
-			(mode | XIM_PREEDIT_ATTR))) {
+			(mode | XIM_PREEDIT_ATTR)))) {
 		return name;
 	    }
 	} else if(res->xrm_name == sts_quark) {
-	    if(name = _XimGetICValueData(ic,
+	    if((name = _XimGetICValueData(ic,
 			(XPointer)(&((XimDefICValues *)top)->status_attr),
 			res_list, list_num, (XIMArg *)p->value,
-			(mode | XIM_STATUS_ATTR))) {
+			(mode | XIM_STATUS_ATTR)))) {
 		return name;
 	    }
 	} else {

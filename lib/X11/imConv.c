@@ -31,7 +31,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
                                 fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imConv.c,v 1.13 1998/12/06 06:08:09 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imConv.c,v 1.14 1999/04/11 13:10:29 dawes Exp $ */
 
 #define NEED_EVENTS
 #include <stdio.h>
@@ -497,8 +497,9 @@ typedef enum {
 typedef unsigned int UCS4; /* wchar_t, but on AIX, SunOS wchar_t is 16 bits */
 typedef unsigned char UTF8;
 
+#if 0
 static UCS4 offsetsFromUTF8[6] = {
-	0x00000000UL, 0x00003080UL, 0x000E2080UL, 
+	0x00000000UL, 0x00003080UL, 0x000E2080UL,
  	0x03C82080UL, 0xFA082080UL, 0x82082080UL
 };
 
@@ -512,6 +513,7 @@ static char bytesFromUTF8[256] = {
 	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 	2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, 3,3,3,3,3,3,3,3,4,4,4,4,5,5,5,5
 };
+#endif
 
 static UTF8 firstByteMark[7] = {
 	0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC
@@ -783,7 +785,6 @@ _XimLookupMBText(ic, event, buffer, nbytes, keysym, status)
     KeySym symbol;
     struct CodesetRec *cset;
     int i;
-    unsigned char c;
     Status	dummy;
     Xim	im = (Xim)ic->core.im;
     XLCd lcd = im->core.lcd;
@@ -802,7 +803,7 @@ _XimLookupMBText(ic, event, buffer, nbytes, keysym, status)
 	    break;
 	}
     }
-    if (count == 0 && cset != NULL || 
+    if ((count == 0 && cset != NULL) || 
 	(count == 1 && (symbol > 0x7f && symbol < 0xff00) && 
 	 cset != NULL && cset->locale_code != 0)) {
 	if ((count = _XGetCharCode(cset->locale_code, symbol,
@@ -848,7 +849,6 @@ _XimLookupWCText(ic, event, buffer, nbytes, keysym, status)
     KeySym symbol;
     struct CodesetRec *cset;
     int i;
-    unsigned char c;
     Status	dummy;
     Xim	im = (Xim)ic->core.im;
     XLCd lcd = im->core.lcd;
@@ -866,7 +866,7 @@ _XimLookupWCText(ic, event, buffer, nbytes, keysym, status)
 	    break;
 	}
     }
-    if (count == 0 && cset != NULL ||
+    if ((count == 0 && cset != NULL) ||
 	(count == 1 && (symbol > 0x7f && symbol < 0xff00) && 
 	 cset != NULL && cset->locale_code != 0)) {
 	if ((count = _XGetCharCode(cset->locale_code, symbol,

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/InitExt.c,v 1.3 1998/10/06 10:35:12 dawes Exp $ */
 
 #include <X11/Xlibint.h>
 #include <X11/Xos.h>
@@ -108,6 +108,7 @@ XExtData **XEHeadOfExtensionList(object)
     return *(XExtData ***)&object;
 }
 
+int
 XAddToExtensionList(structure, ext_data)
     XExtData **structure;
     XExtData *ext_data;

@@ -29,6 +29,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
+/* $XFree86$ */
 
 #include <stdio.h>
 #include <X11/Xatom.h>
@@ -156,7 +157,7 @@ _XimLocalWcLookupString(xic, ev, buffer, wlen, keysym, status)
 }
 
 #ifndef MAXINT
-#define MAXINT		(~((unsigned int)1 << (8 * sizeof(int)) - 1))
+#define MAXINT		(~((unsigned int)1 << ((8 * sizeof(int)) - 1)))
 #endif /* !MAXINT */
 
 Public int

@@ -66,7 +66,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/MultiSink.c,v 1.13 1999/03/21 07:34:27 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/MultiSink.c,v 1.14 1999/05/03 12:15:40 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -116,6 +116,11 @@ static void GetGC(MultiSinkObject);
 static int CharWidth(MultiSinkObject, XFontSet, int, wchar_t);
 static unsigned int PaintText(Widget w, GC gc, int x, int y,
 			      wchar_t *buf, int len, Bool);
+
+/*
+ * Defined in TextSink.c
+ */
+void _XawTextSinkClearToBackground(Widget, int, int, unsigned, unsigned);
 
 /*
  * Initialization
@@ -311,7 +316,7 @@ PaintText(Widget w, GC gc, int x, int y, wchar_t *buf, int len, Bool clear_bg)
   if (clear_bg) {
       XFontSetExtents *ext = XExtentsOfFontSet(fontset);
 
-      XawTextSinkClearToBackground(w, x, y - abs(ext->max_logical_extent.y),
+      _XawTextSinkClearToBackground(w, x, y - abs(ext->max_logical_extent.y),
 				   width, ext->max_logical_extent.height);
       XwcDrawString(XtDisplay(ctx), XtWindow(ctx), fontset, gc, x, y, buf, len);
     }
@@ -383,7 +388,7 @@ DisplayText(Widget w, int x, int y,
 
 	      width = CharWidth(sink, fontset, x, _Xaw_atowc(XawTAB));
 	      if (clear_bg)
-		XawTextSinkClearToBackground
+		_XawTextSinkClearToBackground
 		  (w,
 		   x, y - abs(ext->max_logical_extent.y),
 		   width, ext->max_logical_extent.height);
@@ -483,7 +488,7 @@ InsertCursor(Widget w, int x, int y, XawTextInsertState state)
 	    }
 
 	  if (!ochar)
-	    XawTextSinkClearToBackground(w,
+	    _XawTextSinkClearToBackground(w,
 					 sink->multi_sink.cursor_x,
 					 (sink->multi_sink.cursor_y - 1
 					  - fheight),
@@ -756,6 +761,9 @@ XawMultiSinkResize(Widget w)
   MultiSinkObject sink = (MultiSinkObject)w;
   XRectangle rect;
   int width, height;
+
+  if (w->core.widget_class != multiSinkObjectClass)
+    return;
 
   rect.x = ctx->text.r_margin.left;
   rect.y = ctx->text.r_margin.top;

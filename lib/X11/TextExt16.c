@@ -1,15 +1,9 @@
-/* $XConsortium: TextExt16.c,v 11.23 94/04/17 20:21:19 kaleb Exp $ */
+/* $TOG: TextExt16.c /main/17 1998/02/06 17:55:08 kaleb $ */
 /*
 
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,17 +11,23 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
+/* $XFree86$ */
+/*
+ * Copyright 1995 by FUJITSU LIMITED
+ * This is source code modified by FUJITSU LIMITED under the Joint
+ * Development Agreement for the CDE/Motif PST.
+ */
 
 
 #include "Xlibint.h"
@@ -39,6 +39,7 @@ from the X Consortium.
  * XTextExtents16 - compute the extents of string given as a sequence of 
  * XChar2bs.
  */
+int
 #if NeedFunctionPrototypes
 XTextExtents16 (
     XFontStruct *fs,
@@ -169,3 +170,57 @@ int XTextWidth16 (fs, string, count)
 
     return width;
 }
+
+
+/*
+ * _XTextHeight16 - compute the height of sequence of XChar2bs.
+ */
+#if NeedFunctionPrototypes
+int _XTextHeight16 (
+    XFontStruct *fs,
+    _Xconst XChar2b *string,
+    int count)
+#else
+int _XTextHeight16 (fs, string, count)
+    XFontStruct *fs;
+    XChar2b *string;
+    int count;
+#endif
+{
+    int i;				/* iterator */
+    Bool singlerow = (fs->max_byte1 == 0);  /* optimization */
+    XCharStruct *def;			/* info about default char */
+    int height = 0;			/* RETURN value */
+
+    if (singlerow) {
+	CI_GET_DEFAULT_INFO_1D (fs, def);
+    } else {
+	CI_GET_DEFAULT_INFO_2D (fs, def);
+    }
+
+    if (def && (fs->min_bounds.ascent == fs->max_bounds.ascent)
+	    && (fs->min_bounds.descent == fs->max_bounds.descent))
+	return ((fs->min_bounds.ascent + fs->min_bounds.descent) * count);
+
+    /*
+     * Iterate over all character in the input string; only consider characters
+     * that exist.
+     */
+    for (i = 0; i < count; i++, string++) {
+	register XCharStruct *cs;
+	unsigned int r = (unsigned int) string->byte1;	/* watch for macros */
+	unsigned int c = (unsigned int) string->byte2;	/* watch for macros */
+
+	if (singlerow) {
+	    unsigned int ind = ((r << 8) | c);		/* watch for macros */
+	    CI_GET_CHAR_INFO_1D (fs, ind, def, cs);
+	} else {
+	    CI_GET_CHAR_INFO_2D (fs, r, c, def, cs);
+	}
+
+	if (cs) height += (cs->ascent + cs->descent);
+    }
+
+    return height;
+}
+

@@ -27,9 +27,13 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/ispell.c,v 1.2 1999/04/25 10:02:49 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/ispell.c,v 1.3 1999/05/03 12:16:09 dawes Exp $ */
 
 #include "xedit.h"
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#include <unistd.h>
+#endif
 #include <fcntl.h>
 #include <signal.h>
 
@@ -84,13 +88,9 @@ typedef struct _ReplaceList {
 
 typedef struct _IgnoreList {
     char *word;
+    Bool add;
     struct _IgnoreList *next;
 } IgnoreList;
-
-typedef struct _AddList {
-    char *word;
-    struct _AddList *next;
-} AddList;
 
 /*
  * Prototypes
@@ -98,13 +98,12 @@ typedef struct _AddList {
 static void AddIspell(Widget, XtPointer, XtPointer);
 static void IgnoreIspell(Widget, XtPointer, XtPointer);
 static Bool InitIspell(void);
-static Bool IspellAddedWord(char*, Bool);
 static void IspellCheckUndo(void);
-static Bool IspellIgnoredWord(char*, int);
+static Bool IspellIgnoredWord(char*, int, Bool);
 static void IspellInputCallback(XtPointer, int*, XtInputId*);
 static Bool IspellReceive(void);
 static char *IspellReplacedWord(char*, char*);
-static Bool IspellSend(void);
+static int IspellSend(void);
 static void IspellSetSensitive(Bool);
 static void PopdownIspell(Widget, XtPointer, XtPointer);
 static void ReplaceIspell(Widget, XtPointer, XtPointer);
@@ -130,7 +129,6 @@ static struct _ispell ispell;
 #define STRTBLSZ	23
 static ReplaceList *replace_list[STRTBLSZ];
 static IgnoreList *ignore_list[STRTBLSZ];
-static AddList *add_list[STRTBLSZ];
 
 #define Offset(field) XtOffsetOf(struct _ispell, field)
 static XtResource resources[] = {
@@ -240,7 +238,7 @@ IspellReplacedWord(char *word, char *replace)
 }
 
 static Bool
-IspellIgnoredWord(char *word, int cmd)
+IspellIgnoredWord(char *word, int cmd, Bool add)
 {
     IgnoreList *list, *prev;
     int ii = 0;
@@ -269,44 +267,9 @@ IspellIgnoredWord(char *word, int cmd)
 
     list = XtNew(IgnoreList);
     list->word = XtNewString(word);
+    list->add = add;
     list->next = ignore_list[ii];
     ignore_list[ii] = list;
-
-    return (True);
-}
-
-static Bool
-IspellAddedWord(char *word, int cmd)
-{
-    AddList *list, *prev;
-    int ii = 0;
-    char *pp = word;
-
-    while (*pp)
-	ii = (ii << 1) ^ *pp++;
-    if (ii < 0)
-	ii = -ii;
-    ii %= STRTBLSZ;
-    for (prev = list = add_list[ii]; list; prev = list, list = list->next)
-	if (strcmp(list->word, word) == 0) {
-	    if (cmd == REMOVE) {
-		XtFree(list->word);
-		prev->next = list->next;
-		XtFree((char*)list);
-		if (prev == list)
-		    add_list[ii] = NULL;
-		return (True);
-	    }
-	    return (cmd == CHECK);
-	}
-
-    if (cmd != ADD)
-	return (False);
-
-    list = XtNew(AddList);
-    list->word = XtNewString(word);
-    list->next = add_list[ii];
-    add_list[ii] = list;
 
     return (True);
 }
@@ -358,7 +321,7 @@ IspellReceive(void)
 		for (j = 1; j < sizeof(word) && str[j]; j++) {
 		    if (str[j] == '+')
 			continue;
-		    else if (str[j] == '-') {
+		    else if (str[j] == '-' && str[j+1] != '-' && str[j-1] != '-') {
 			char *p, string[256];
 			int k, l;
 
@@ -482,14 +445,16 @@ IspellReceive(void)
     }
 
     ispell.stat = SEND;
-    if (!ispell.lock)
-	IspellSend();
+    if (!ispell.lock) {
+	while (IspellSend() == 0)
+	    ;
+    }
 
     return (True);
 }
 
 /*ARGSUSED*/
-static Bool
+static int
 IspellSend(void)
 {
     XawTextPosition position;
@@ -499,7 +464,7 @@ IspellSend(void)
     Bool nl;
 
     if (ispell.lock || ispell.stat != SEND)
-	return (False);
+	return (-1);
 
     len = 1;
     strcpy(buf, "^");	/* don't evaluate following characters as commands */
@@ -517,7 +482,7 @@ IspellSend(void)
 	    XawTextSetInsertionPoint(ispell.ascii, ispell.right);
 	    XawTextUnsetSelection(ispell.ascii);
 	    IspellSetSensitive(False);
-	    return (False);
+	    return (-1);
 	}
 	if (international) {
 	    wchar_t *wptr = (wchar_t*)block.ptr;
@@ -582,7 +547,7 @@ IspellSend(void)
 	    XawTextSetInsertionPoint(ispell.ascii, ispell.right);
 	    XawTextUnsetSelection(ispell.ascii);
 	    IspellSetSensitive(False);
-	    return (False);
+	    return (-1);
 	}
 	if (international) {
 	    wchar_t *wptr = (wchar_t*)block.ptr;
@@ -623,8 +588,8 @@ IspellSend(void)
     }
 
     buf[len] = '\0';
-    if (IspellIgnoredWord(&buf[1], CHECK) || IspellAddedWord(&buf[1], CHECK))
-	return (IspellSend());
+    if (IspellIgnoredWord(&buf[1], CHECK, False))
+	return (0);
 
     buf[len++] = '\n';
 
@@ -632,7 +597,7 @@ IspellSend(void)
 
     ispell.stat = RECEIVE;
 
-    return (True);
+    return (1);
 }
 
 /*ARGSUSED*/
@@ -656,7 +621,8 @@ IspellInputCallback(XtPointer closure, int *source, XtInputId *id)
 	}
 	else
 	    fprintf(stderr, "Error: is ispell talking with me?\n");
-	IspellSend();
+	while (IspellSend() == 0)
+	    ;
     }
 
     if (ispell.source)
@@ -786,7 +752,8 @@ IspellAction(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	ispell.right = XawTextGetInsertionPoint(ispell.ascii);
 	ispell.right = XawTextSourceScan(ispell.source, ispell.right,
 					      XawstEOL, XawsdLeft, 1, True);
-	IspellSend();
+	while (IspellSend() == 0)
+	    ;
     }
 
     XtSetArg(args[0], XtNlabel, "");
@@ -821,28 +788,35 @@ PopdownIspell(Widget w, XtPointer client_data, XtPointer call_data)
 
     if (ispell.pid) {
 	ispell_undo *undo, *pundo;
-	AddList *al, *pal;
+	IgnoreList *il, *pil, *nil;
 	int i;
 
 	/* insert added words in private dictionary */
 	for (i = 0; i < STRTBLSZ; i++) {
-	    pal = al = add_list[i];
-	    while (pal) {
-		al = al->next;
-		write(ispell.ofd[1], "*", 1);
-		write(ispell.ofd[1], pal->word, strlen(pal->word));
-		write(ispell.ofd[1], "\n", 1);
-		XtFree(pal->word);
-		XtFree((char*)pal);
-		pal = al;
+	    pil = il = ignore_list[i];
+	    while (il) {
+		if (il->add) {
+		    nil = il->next;
+		    if (il == pil)
+			ignore_list[i] = nil;
+		    else
+			pil->next = nil;
+		    write(ispell.ofd[1], "*", 1);
+		    write(ispell.ofd[1], il->word, strlen(il->word));
+		    write(ispell.ofd[1], "\n", 1);
+		    XtFree(il->word);
+		    XtFree((char*)il);
+		    il = nil;
+		}
+		else
+		    il = il->next;
+		pil = il;
 	    }
-	    add_list[i] = NULL;
 	}
 	write(ispell.ofd[1], "#\n", 2);		/* save dictionary */
 
 	if (client_data) {
 	    ReplaceList *rl, *prl;
-	    IgnoreList *il, *pil;
 
 	    XtRemoveInput(ispell.id);
 
@@ -986,7 +960,8 @@ ReplaceIspell(Widget w, XtPointer client_data, XtPointer call_data)
 
     ispell.lock = False;
     ispell.stat = SEND;
-    IspellSend();
+    while (IspellSend() == 0)
+	;
 }
 
 /*ARGSUSED*/
@@ -1007,7 +982,7 @@ IgnoreIspell(Widget w, XtPointer client_data, XtPointer call_data)
     ispell.undo_head->undo_count = 0;
 
     if (client_data) {
-	IspellIgnoredWord(text, ADD);
+	IspellIgnoredWord(text, ADD, False);
 	ispell.undo_head->undo_str = XtNewString(text);
     }
     else
@@ -1017,7 +992,8 @@ IgnoreIspell(Widget w, XtPointer client_data, XtPointer call_data)
 
     ispell.lock = False;
     ispell.stat = SEND;
-    IspellSend();
+    while (IspellSend() == 0)
+	;
 }
 
 /*ARGSUSED*/
@@ -1038,11 +1014,12 @@ AddIspell(Widget w, XtPointer client_data, XtPointer call_data)
     ispell.undo_head->undo_pos = XawTextGetInsertionPoint(ispell.ascii);
     ispell.undo_head->undo_count = -1;
 
-    (void)IspellAddedWord(text, ADD);
+    (void)IspellIgnoredWord(text, ADD, True);
 
     ispell.lock = False;
     ispell.stat = SEND;
-    IspellSend();
+    while (IspellSend() == 0)
+	;
 }
 
 /*ARGSUSED*/
@@ -1069,10 +1046,10 @@ UndoIspell(Widget w, XtPointer client_data, XtPointer call_data)
     }
     else if (undo->undo_count < 0) {
 	if (undo->undo_str)
-	    (void)IspellAddedWord(undo->undo_str, REMOVE);
+	    (void)IspellIgnoredWord(undo->undo_str, REMOVE, True);
     }
     else if (undo->undo_str)
-	IspellIgnoredWord(undo->undo_str, REMOVE);
+	IspellIgnoredWord(undo->undo_str, REMOVE, False);
     XawTextSetInsertionPoint(ispell.ascii,
 			     ispell.right = ispell.left = undo->undo_pos);
     if (enable_redisplay)
@@ -1095,7 +1072,8 @@ UndoIspell(Widget w, XtPointer client_data, XtPointer call_data)
 
     ispell.lock = False;
     ispell.stat = SEND;
-    IspellSend();
+    while (IspellSend() == 0)
+	;
 }
 
 static Bool

@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlibint.h,v 3.11 1998/10/05 13:21:59 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlibint.h,v 3.12 1999/02/07 06:18:13 dawes Exp $ */
 
 #ifndef _XLIBINT_H_
 #define _XLIBINT_H_ 1
@@ -637,6 +637,20 @@ extern void _XFlushGCCache(Display *dpy, GC gc);
 #define _XRead16(dpy, data, len) _XRead((dpy), (char *)(data), (len))
 #ifdef LONG64
 #define Data32(dpy, data, len) _XData32(dpy, (long *)data, len)
+extern int _XData32(
+#if NeedFunctionPrototypes
+	     Display *dpy,
+	     register long *data,
+	     unsigned len
+#endif
+);
+extern void _XRead32(
+#if NeedFunctionPrototypes
+	     Display *dpy,
+	     register long *data,
+	     long len
+#endif
+);
 #else
 #define Data32(dpy, data, len) Data((dpy), (char *)(data), (len))
 #define _XRead32(dpy, data, len) _XRead((dpy), (char *)(data), (len))

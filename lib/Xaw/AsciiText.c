@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $XFree86: xc/lib/Xaw/AsciiText.c,v 3.4 1998/11/15 04:29:58 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiText.c,v 3.5 1999/03/14 03:21:10 dawes Exp $ */
 
 /*
  * AsciiText.c - Source code for AsciiText Widget
@@ -338,5 +338,6 @@ XawAsciiDestroy(Widget w)
 	XtDestroyWidget(ascii->text.sink);
 
     _XawSourceRemoveText(ascii->text.source, w,
+			 ascii->text.source &&
 			 w == XtParent(ascii->text.source));
 }

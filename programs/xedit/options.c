@@ -27,9 +27,12 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/options.c,v 1.1 1999/04/25 10:02:50 dawes Exp $ */
 
 #include <stdio.h>
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#endif
 #include "xedit.h"
 
 #include <X11/Xaw/SmeBSB.h>

@@ -45,7 +45,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/MultiSrc.h,v 1.3 1998/08/20 13:59:03 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/MultiSrc.h,v 1.4 1998/10/03 08:42:12 dawes Exp $ */
 
 /*
  * This file was modified from AsciiSrc.h.
@@ -62,7 +62,6 @@ in this Software without prior written authorization from The Open Group.
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
- callback	     Callback		Callback	(none)
  dataCompression     DataCompression	Boolean		True
  length		     Length		int		(internal)
  pieceSize	     PieceSize		int		BUFSIZ

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.10 1999/03/28 15:32:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.11 1999/03/29 12:17:55 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -33,6 +33,7 @@ in this Software without prior written authorization from the XFree86 Project.
 #include "xaalocal.h"
 #include "xaarop.h"
 
+#include "servermd.h" /* LOG2_BYTES_PER_SCANLINE_PAD */
 
 static void S3VWriteMask(CARD32*, int);
 
@@ -122,7 +123,7 @@ S3VAccelInit(ScreenPtr pScreen)
 				BIT_ORDER_IN_BYTE_LSBFIRST;
 
 
-#ifndef __alpha__    
+#ifndef __alpha__
     /* CPU to screen color expansion */
     infoPtr->CPUToScreenColorExpandFillFlags =  ROP_NEEDS_SOURCE |
 					CPU_TRANSFER_PAD_DWORD |
@@ -144,10 +145,7 @@ S3VAccelInit(ScreenPtr pScreen)
     infoPtr->SubsequentCPUToScreenColorExpandFill =
                 S3VSubsequentCPUToScreenColorExpand;
 
-
-
-    /* this won't work as long as ImageWriteBase is in sparse mem,
-       need to map a dense base as well */
+    
     /* Image Writes */
     infoPtr->ImageWriteFlags =  	ROP_NEEDS_SOURCE |
 					NO_TRANSPARENCY |
@@ -164,7 +162,9 @@ S3VAccelInit(ScreenPtr pScreen)
     infoPtr->SetupForImageWrite = S3VSetupForImageWrite;
     infoPtr->SubsequentImageWriteRect = S3VSubsequentImageWriteRect;
     
-#endif /* !__alpha__ */
+    /* on alpha, I see corruption in the xscreensaver program "hypercube"
+       as the line acceleration is just stubs, it loses us nothing to
+       disable it on alphas */
     
     /* Lines */
     infoPtr->SetupForSolidLine = S3VSetupForSolidFill;
@@ -173,6 +173,8 @@ S3VAccelInit(ScreenPtr pScreen)
     infoPtr->PolySegmentThinSolid = S3VPolySegmentThinSolidWrapper;
     infoPtr->PolylinesThinSolid = S3VPolylinesThinSolidWrapper;
 
+#endif /* !__alpha__ */
+    
     /* And these are screen parameters used to setup the GE */
 
      ps3v->Width = pScrn->displayWidth;
@@ -196,7 +198,7 @@ S3VAccelInit(ScreenPtr pScreen)
     AvailFBArea.y1 = 0;
     AvailFBArea.x2 = pScrn->displayWidth;
     AvailFBArea.y2 = (pScrn->videoRam * 1024 - 1024) / 
-		     (pScrn->displayWidth * pScrn->bitsPerPixel/8);
+		     (pScrn->displayWidth * pScrn->bitsPerPixel / 8);
 
     xf86InitFBManager(pScreen, &AvailFBArea);
 
@@ -352,21 +354,15 @@ S3VWriteMask(
    CARD32 *dstBase,
    int dwords
 ){
+  /* on alphas, be sure to call this with MapBaseDense, not MapBase! */
    int numLeft;
    CARD32 *dst = dstBase;
 
    while(dwords >= 8192) {
 	numLeft = 8192;
 	while(numLeft) {
-#ifdef __alpha__
-	  xf86WriteSparse32(~0, dst, 0);
-	  xf86WriteSparse32(~0, dst, 1);
-	  xf86WriteSparse32(~0, dst, 2);
-	  xf86WriteSparse32(~0, dst, 3);
-#else
 	  dst[0] = ~0; dst[1] = ~0;
 	  dst[2] = ~0; dst[3] = ~0;
-#endif /* __alpha__ */
 	  dst += 4;
 	  numLeft -= 4;
 	}
@@ -374,36 +370,19 @@ S3VWriteMask(
 	dst = dstBase;
    }
    while(dwords >= 4) {
-#ifdef __alpha__
-     	  xf86WriteSparse32(~0, dst, 0);
-	  xf86WriteSparse32(~0, dst, 1);
-	  xf86WriteSparse32(~0, dst, 2);
-	  xf86WriteSparse32(~0, dst, 3);
-#else
 	dst[0] = ~0; dst[1] = ~0;
 	dst[2] = ~0; dst[3] = ~0;
-#endif /* __alpha__ */
 	dst += 4;
 	dwords -= 4;
    }
    if(!dwords) return;
-#ifdef __alpha__
-   xf86WriteSparse32(~0, dst, 0);
-#else
    dst[0] = ~0;
-#endif
    if(dwords == 1) return;
-#ifdef __alpha__
-   xf86WriteSparse32(~0, dst, 1);
-#else
    dst[1] = ~0;
-#endif
    if(dwords == 2) return;
-#ifdef __alpha__
-   xf86WriteSparse32(~0, dst, 2);
-#else
    dst[2] = ~0;
-#endif
+
+   return;
 }
 
 
@@ -484,8 +463,11 @@ S3VSubsequentSolidFillRectPlaneMask(
     WAITFIFO(2);
     OUTREG(RWIDTH_HEIGHT, ((w - 1) << 16) | h);
     OUTREG(RDEST_XY, (x << 16) | y);
-
+#ifndef __alpha__
     S3VWriteMask((CARD32*)ps3v->MapBase, dwords);
+#else
+    S3VWriteMask((CARD32*)ps3v->MapBaseDense, dwords);
+#endif
 }
 
 
@@ -627,7 +609,11 @@ S3VSubsequentMono8x8PatternFillRectPlaneMask(
     OUTREG(RWIDTH_HEIGHT, ((w - 1) << 16) | h);
     OUTREG(RDEST_XY, (x << 16) | y);
 
+#ifndef __alpha__
     S3VWriteMask((CARD32*)ps3v->MapBase, dwords);
+#else
+    S3VWriteMask((CARD32*)ps3v->MapBaseDense, dwords);
+#endif
 }
 
 	/*********************************\
@@ -817,7 +803,11 @@ S3VSubsequentSolidHorVertLinePlaneMask(
     OUTREG(RWIDTH_HEIGHT, ((w - 1) << 16) | h);
     OUTREG(RDEST_XY, (x << 16) | y);
 
+#ifndef __alpha__
     S3VWriteMask((CARD32*)ps3v->MapBase, dwords);
+#else
+    S3VWriteMask((CARD32*)ps3v->MapBaseDense, dwords);
+#endif
 }
 
 
@@ -841,20 +831,12 @@ S3VSubsequentSolidBresenhamLine(
 
     devPriv = cfbGetGCPrivate(ps3v->CurrentGC);
 
-    /* we need to know how far to shift over pScrn->displayWidth * Bpp to
-       get the width of the screen in machine words */
-#ifdef _XSERVER64
-#define S3V_SHIFT 3
-#else
-#define S3V_SHIFT 2
-#endif
-
     /* you could trap for lines you could do here and accelerate them */
 
     (*LineFuncs[Bpp - 1])
 		(devPriv->rop, devPriv->and, devPriv->xor, 
                 (unsigned long*)ps3v->FBBase,
-		 (pScrn->displayWidth * Bpp) >> S3V_SHIFT, 
+		 (pScrn->displayWidth * Bpp) >> LOG2_BYTES_PER_SCANLINE_PAD, 
                 (octant & XDECREASING) ? -1 : 1, 
                 (octant & YDECREASING) ? -1 : 1, 
                 (octant & YMAJOR) ? Y_AXIS : X_AXIS,

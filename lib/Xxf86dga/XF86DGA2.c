@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.3 1999/04/17 07:05:44 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.4 1999/05/03 12:15:53 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -47,8 +47,8 @@ unsigned char* XDGAGetMappedMemory(int);
  *****************************************************************************/
 
 static int xdga_close_display();
-static int xdga_wire_to_event();
-static int xdga_event_to_wire();
+static Bool xdga_wire_to_event();
+static Status xdga_event_to_wire();
 
 static XExtensionHooks xdga_extension_hooks = {
     NULL,				/* create_gc */
@@ -70,16 +70,15 @@ static XEXT_GENERATE_CLOSE_DISPLAY (xdga_close_display, xdga_info)
 XEXT_GENERATE_FIND_DISPLAY (xdga_find_display, xdga_info, 
 				   "XFree86-DGA", 
 				   &xdga_extension_hooks, 
-				   0, NULL)
+				   XF86DGANumberEvents, NULL)
 
 
-static Bool
+static Status
 xdga_event_to_wire(
   Display *dpy,
   XEvent *event,
   dgaEvent *wire
 ){
-fprintf(stderr, "xdga_wire_to_event!!!!!!!\n");
     return True;
 }
 
@@ -96,11 +95,8 @@ xdga_wire_to_event(
 
   XDGACheckExtension (dpy, info, False);
 
-fprintf(stderr, "type = %i, first_event = %i\n", wire->u.u.type, 
-		info->codes->first_event);
   switch((wire->u.u.type & 0x7f) - info->codes->first_event) {
   case MotionNotify:
-fprintf(stderr, "xdga_wire_to_event: MotionNotify\n");
 	mevent = (XDGAMotionEvent*)event;
 	mevent->type = wire->u.u.type & 0x7F;
 	mevent->serial = _XSetLastRequestRead(dpy, (xGenericReply *)wire);
@@ -113,7 +109,6 @@ fprintf(stderr, "xdga_wire_to_event: MotionNotify\n");
 	return True;
   case ButtonPress:
   case ButtonRelease:
-fprintf(stderr, "xdga_wire_to_event: ButtonPress\n");
 	bevent = (XDGAButtonEvent*)event;
 	bevent->type = wire->u.u.type & 0x7F;
 	bevent->serial = _XSetLastRequestRead(dpy, (xGenericReply *)wire);
@@ -125,7 +120,6 @@ fprintf(stderr, "xdga_wire_to_event: ButtonPress\n");
 	return True;
   case KeyPress:
   case KeyRelease:
-fprintf(stderr, "xdga_wire_to_event: KeyPress\n");
 	kevent = (XDGAKeyEvent*)event;
 	kevent->type = wire->u.u.type & 0x7F;
 	kevent->serial = _XSetLastRequestRead(dpy, (xGenericReply *)wire);

@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.0 1996/05/06 05:54:12 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.1 1998/10/03 08:41:36 dawes Exp $ */
 
 /*
 **++ 
@@ -69,6 +69,13 @@ SOFTWARE.
 #include "Xlcint.h"
 #include "Ximint.h"
 #include "XimThai.h"
+
+/* EXTERNS */
+/* KeyBind.c */
+extern int _XKeyInitialize();
+
+/* lcStd.c */
+extern int _Xlcmbstowcs();
 
 #define SPACE   32
 
@@ -579,9 +586,9 @@ Private Bool ThaiComposeConvert();
 
 #define IsISOControlKey(ks) ((ks) >= XK_2 && (ks) <= XK_8)
 
-#define IsValidControlKey(ks)   (((ks)>=XK_A && (ks)<=XK_asciitilde || \
+#define IsValidControlKey(ks)   (((((ks)>=XK_A && (ks)<=XK_asciitilde) || \
                 (ks)==XK_space || (ks)==XK_Delete) && \
-                ((ks)!=0))
+                ((ks)!=0)))
 
 #define COMPOSE_LED 2
 
@@ -1068,7 +1075,7 @@ int IsCancelComposeKey(symbol, event)
 #endif
 	IsPFKey (*symbol) ||
 	IsCursorKey (*symbol) ||
-	*symbol >= XK_Tab && *symbol < XK_Multi_key
+	(*symbol >= XK_Tab && *symbol < XK_Multi_key)
 		? True : False);	/* cancel compose sequence and pass */
 					/* cancelling key through	    */
 }
@@ -1186,7 +1193,7 @@ XPointer	client_data;
      *  Thai Input sequence check
      */
     isc_mode = IC_IscMode(ic);
-    if (IC_GetPreviousChar(ic, previous_char)) {
+    if ((IC_GetPreviousChar(ic, previous_char))) {
 	if (!THAI_isaccepted(buf[0],previous_char, isc_mode)) {
 	    /* reject character */
             XBell(ev->xkey.display, BellVolume);

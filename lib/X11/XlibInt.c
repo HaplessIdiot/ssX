@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.15tsi Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.16 1999/03/14 03:21:04 dawes Exp $ */
 
 /*
  *	XlibInt.c - Internal support routines for the C subroutine
@@ -751,7 +751,7 @@ _XEventsQueued (dpy, mode)
 #ifdef USE_POLL
 	    filedes.fd = dpy->fd;
 	    filedes.events = POLLIN;
-	    if (pend = poll(&filedes, 1, 0))
+	    if ((pend = poll(&filedes, 1, 0)))
 #else
 	    FD_ZERO(&r_mask);
 	    FD_SET(dpy->fd, &r_mask);
@@ -1806,7 +1806,7 @@ _XAsyncReply(dpy, rep, buf, lenp, discard)
 
     for (async = dpy->async_handlers; async; async = next) {
 	next = async->next;
-	if (consumed = (*async->handler)(dpy, rep, buf, *lenp, async->data))
+	if ((consumed = (*async->handler)(dpy, rep, buf, *lenp, async->data)))
 	    break;
     }
     if (!consumed) {
@@ -1947,7 +1947,8 @@ _XUnregisterInternalConnection(dpy, fd)
     struct _XConnWatchInfo *watch;
     XPointer *wd;
 
-    for (prev = &dpy->im_fd_info; info_list = *prev; prev = &info_list->next) {
+    for (prev = &dpy->im_fd_info; (info_list = *prev);
+	 prev = &info_list->next) {
 	if (info_list->fd == fd) {
 	    *prev = info_list->next;
 	    dpy->im_fd_length--;
@@ -2910,7 +2911,7 @@ char *_XAllocScratch (dpy, nbytes)
 {
 	if (nbytes > dpy->scratch_length) {
 	    if (dpy->scratch_buffer) Xfree (dpy->scratch_buffer);
-	    if (dpy->scratch_buffer = Xmalloc((unsigned) nbytes))
+	    if ((dpy->scratch_buffer = Xmalloc((unsigned) nbytes)))
 		dpy->scratch_length = nbytes;
 	    else dpy->scratch_length = 0;
 	}
@@ -2969,6 +2970,7 @@ Visual *_XVIDtoVisual (dpy, id)
 	return (NULL);
 }
 
+int
 #if NeedFunctionPrototypes
 XFree (void *data)
 #else
@@ -3014,6 +3016,7 @@ void Data (dpy, data, len)
 
 
 #ifdef LONG64
+int
 _XData32 (dpy, data, len)
     Display *dpy;
     register long *data;
@@ -3037,6 +3040,7 @@ _XData32 (dpy, data, len)
 	while (--i >= 0)
 	    *buf++ = *data++;
     }
+    return 0;
 }
 #endif /* LONG64 */
 

@@ -20,11 +20,13 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
+/* $XFree86$ */
 
 #include "Xlibint.h"
 
 #define safestrlen(s) ((s) ? strlen(s) : 0)
 
+int
 XSetFontPath (dpy, directories, ndirs)
 register Display *dpy;
 char **directories;
@@ -45,7 +47,7 @@ int ndirs;
 	}
 	nbytes = (n + 3) & ~3;
 	req->length += nbytes >> 2;
-	if (p = (char *) Xmalloc ((unsigned) nbytes)) {
+	if ((p = (char *) Xmalloc ((unsigned) nbytes))) {
 		/*
 	 	 * pack into counted strings.
 	 	 */

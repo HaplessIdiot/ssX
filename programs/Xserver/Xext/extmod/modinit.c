@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.c,v 1.9 1999/01/31 12:21:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.c,v 1.10 1999/05/03 14:22:42 dawes Exp $ */
 
 /*
  *
@@ -97,6 +97,7 @@ extern void XFree86MiscExtensionInit(INITARGS);
 
 #ifdef XFreeXDGA
 extern void XFree86DGAExtensionInit(INITARGS);
+extern void XFree86DGARegister(INITARGS);
 #define _XF86DGA_SERVER_
 #include "xf86dgastr.h"
 #endif
@@ -218,7 +219,7 @@ ExtensionModule extensionModules[] = {
 	XFree86DGAExtensionInit,
 	XF86DGANAME,
 	NULL,
-	NULL
+	XFree86DGARegister
     },
 #endif
 #ifdef DPMSExtension
