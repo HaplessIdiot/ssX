@@ -1,7 +1,7 @@
 .\"#! troff -ms $1		-*- Nroff -*-
 .\" "Xterm Control Sequences" document
 .\" $XConsortium: ctlseqs.ms,v 1.16 94/12/28 20:45:48 gildea Exp $
-.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.33 2000/02/08 17:16:52 dawes Exp $
+.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.34 2000/02/10 18:57:17 dawes Exp $
 .\"
 .\"
 .\" Copyright 1996,1997,1998,1999,2000 by Thomas E. Dickey <dickey@clark.net>
@@ -740,6 +740,7 @@ See the section \fBMouse Tracking\fP.
   \*(Ps = \*1\*0\*3\*5 \(-> Enable special modifiers for Alt and NumLock keys.
   \*(Ps = \*1\*0\*3\*6 \(-> Send ESC when Meta modifies a key
 (enables the \fBmetaSendsEscape\fP resource).
+  \*(Ps = \*1\*0\*3\*7 \(-> Send DEL from the editing-keypad Delete key
   \*(Ps = \*1\*0\*4\*7 \(-> Use Alternate Screen Buffer (unless
 disabled by the \fBtiteInhibit\fP resource)
   \*(Ps = \*1\*0\*4\*8 \(-> Save cursor as in DECSC (unless
@@ -810,6 +811,7 @@ See the section \fBMouse Tracking\fP.
   \*(Ps = \*1\*0\*3\*5 \(-> Disable special modifiers for Alt and NumLock keys.
   \*(Ps = \*1\*0\*3\*6 \(-> Don't send ESC when Meta modifies a key
 (disables the \fBmetaSendsEscape\fP resource).
+  \*(Ps = \*1\*0\*3\*7 \(-> Send VT220 Remove from the editing-keypad Delete key
   \*(Ps = \*1\*0\*4\*7 \(-> Use Normal Screen Buffer, clearing screen
 first if in the Alternate Screen (unless
 disabled by the \fBtiteInhibit\fP resource)
@@ -865,7 +867,7 @@ Then the \fIaixterm\fP colors are the bright versions of the ISO colors:
   \*(Ps = \*9\*3 \(-> Set foreground color to Yellow
   \*(Ps = \*9\*4 \(-> Set foreground color to Blue
   \*(Ps = \*9\*5 \(-> Set foreground color to Magenta
-  \*(Ps = \*9\*7 \(-> Set foreground color to Cyan
+  \*(Ps = \*9\*6 \(-> Set foreground color to Cyan
   \*(Ps = \*9\*7 \(-> Set foreground color to White
   \*(Ps = \*1\*0\*0 \(-> Set background color to Black
   \*(Ps = \*1\*0\*1 \(-> Set background color to Red

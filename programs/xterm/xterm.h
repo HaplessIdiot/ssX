@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.53 2000/02/08 17:19:45 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.54 2000/02/10 18:57:43 dawes Exp $ */
 
 /************************************************************
 
@@ -248,6 +248,7 @@ extern int errno;
 #define XtNcutNewline		"cutNewline"
 #define XtNcutToBeginningOfLine	"cutToBeginningOfLine"
 #define XtNdecTerminalID	"decTerminalID"
+#define XtNdeleteIsDEL		"deleteIsDEL"
 #define XtNdynamicColors	"dynamicColors"
 #define XtNeightBitControl	"eightBitControl"
 #define XtNeightBitInput	"eightBitInput"
@@ -330,6 +331,7 @@ extern int errno;
 #define XtCCutNewline		"CutNewline"
 #define XtCCutToBeginningOfLine	"CutToBeginningOfLine"
 #define XtCDecTerminalID	"DecTerminalID"
+#define XtCDeleteIsDEL		"DeleteIsDEL"
 #define XtCDynamicColors	"DynamicColors"
 #define XtCEightBitControl	"EightBitControl"
 #define XtCEightBitInput	"EightBitInput"
