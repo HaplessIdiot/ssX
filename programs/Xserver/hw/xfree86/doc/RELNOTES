@@ -289,6 +289,10 @@ Modified terminfo/termcap entries:
 
         o Native fonts can be used on MacOS X.
 
+   o Various GNU/Hurd support updates.
+
+   o Experimental support added for GNU/KFreeBSD and GNU/KNetBSD systems.
+
    o [OLD] Various Cygwin support updates, including an experimental rootless
      X server for Cygwin/XFree86.
 
@@ -352,12 +356,11 @@ XFree86 4.3.99.16 includes the following video drivers:
 |suntcx (+)    | Sun TCX                  |                                             |
 |tdfx          | 3Dfx                     | tdfx(4)                                     |
 |tga           | DEC TGA                  | README.DECtga                               |
-|TRIDEnt       | Trident                  | trident(4)
-| |tseng         | Tseng Labs               |
-| |vesa          | VESA                     | vesa(4)
-| |vga           | Generic VGA              | vga(4)
-| |vmware        | VMWare guest OS          | vmware(4)
-|
+|trident       | Trident                  | trident(4)                                  |
+|tseng         | Tseng Labs               |                                             |
+|vesa          | VESA                     | vesa(4)                                     |
+|vga           | Generic VGA              | vga(4)                                      |
+|vmware        | VMWare guest OS          | vmware(4)                                   |
 +--------------+--------------------------+---------------------------------------------+
 
 Drivers marked with (*) are present in a preliminary form in this release,
@@ -1036,7 +1039,7 @@ location pointing to the new location.  Some run-time generated files are now
 located under the appropriate subdirectories of /var, again with the relevant
 symbolic links in the old location.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.84 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.85 dawes Exp $
 
 
 $XFree86: $
