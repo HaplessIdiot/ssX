@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.112 95/06/16 17:47:39 gildea Exp $
-XCOMM $XFree86: xc/lib/Xt/Imakefile,v 3.1 1995/06/14 07:12:05 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/116 1995/11/30 19:05:17 kaleb $
+XCOMM $XFree86: xc/lib/Xt/Imakefile,v 3.2 1995/06/17 12:13:18 dawes Exp $
 #define DoNormalLib NormalLibXt
 #define DoSharedLib SharedLibXt
 #define DoDebugLib DebugLibXt
@@ -61,6 +61,9 @@ XTWARNINGPREFIX = XtWarningPrefix
 #if NoRConst
  RCONST_DEFINES = -DNORCONST
 #endif
+ LIB_MT_DEFINES = LibraryMTDefines
+
+ DEPEND_DEFINES = $(LIB_MT_DEFINES)
 
 STRINGSABIOPTIONS = ToolkitStringsABIOptions
 
@@ -210,6 +213,10 @@ SpecialCLibObjectRule(Alloc,$(_NOOP_),$(ALLOC_DEFINES))
 SpecialCLibObjectRule(Converters,$(ICONFIGFILES),$(BC_DEFINES))
 SpecialCLibObjectRule(Resources,$(ICONFIGFILES),$(GETVALUES_DEFINES))
 SpecialCLibObjectRule(TMaction,$(_NOOP_),$(RCONST_DEFINES))
+#if BuildXKBlib
+SpecialCLibObjectRule(TMkey,$(_NOOP_),-DXKB)
+#endif
+SpecialCLibObjectRule(Threads,$(ICONFIGFILES),$(LIB_MT_DEFINES))
 #if DoSharedLib
 SpecialCObjectRule(sharedlib,$(_NOOP_),$(SHLIBDEF))
 #endif

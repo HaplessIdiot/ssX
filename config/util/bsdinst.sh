@@ -1,10 +1,10 @@
 #!/bin/sh
 
-# $XFree86: xc/config/util/bsdinst.sh,v 3.0 1994/05/21 23:40:48 dawes Exp $
+# $XFree86: xc/config/util/bsdinst.sh,v 3.1 1994/06/05 05:53:32 dawes Exp $
 #
 # This accepts bsd-style install arguments and makes the appropriate calls
 # to the System V install.
-#
+# $XConsortium: bsdinst.sh,v 1.7 94/12/09 22:51:37 gildea Exp $
 
 flags=""
 dst=""
@@ -123,7 +123,7 @@ fi
 
 srcbase=`basename $src`
 
-if [ "$src" != "$srcbase" -a "$src" != "./$srcbase" ] 
+if [ "$src" != "$srcbase" ] && [ "$src" != "./$srcbase" ] 
 then
 	cp $src /tmp/$srcbase
 	src=$srcbase

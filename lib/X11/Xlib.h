@@ -1,5 +1,5 @@
-/* $XConsortium: Xlib.h,v 11.239 95/05/22 19:37:37 kaleb Exp $ */
-/* $XFree86: xc/lib/X11/Xlib.h,v 3.4 1995/03/11 14:07:33 dawes Exp $ */
+/* $XConsortium: Xlib.h /main/118 1995/09/19 10:00:22 kaleb $ */
+/* $XFree86: xc/lib/X11/Xlib.h,v 3.5 1995/06/14 07:07:08 dawes Exp $ */
 /* 
 
 Copyright (c) 1985, 1986, 1987, 1991  X Consortium
@@ -3170,12 +3170,6 @@ extern XKillClient(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     XID			/* resource */
-#endif
-);
-
-extern unsigned long XLastKnownRequestProcessed(
-#if NeedFunctionPrototypes
-    Display*		/* display */
 #endif
 );
 

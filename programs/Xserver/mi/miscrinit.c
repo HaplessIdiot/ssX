@@ -1,5 +1,5 @@
-/* $XConsortium: miscrinit.c,v 5.10 94/04/17 20:27:51 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: miscrinit.c,v 5.11 94/07/28 14:16:48 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miscrinit.c,v 3.0 1994/06/18 16:30:13 dawes Exp $ */
 /*
 
 Copyright (c) 1990  X Consortium
@@ -38,6 +38,7 @@ from the X Consortium.
 #include "pixmapstr.h"
 #include "mibstore.h"
 #include "dix.h"
+#include "miline.h"
 
 /* We use this structure to propogate some information from miScreenInit to
  * miCreateScreenResources.  miScreenInit allocates the structure, fills it
@@ -267,6 +268,8 @@ miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
 #endif
     pScreen->MarkUnrealizedWindow = miMarkUnrealizedWindow;
 
+    miSetZeroLineBias(pScreen, DEFAULTZEROLINEBIAS);
+
     return miScreenDevPrivateInit(pScreen, width, pbits);
 }
 
@@ -282,4 +285,20 @@ miAllocateGCPrivateIndex()
 	miGeneration = serverGeneration;
     }
     return privateIndex;
+}
+
+int miZeroLineScreenIndex;
+int miZeroLineGeneration;
+
+void
+miSetZeroLineBias(pScreen, bias)
+    ScreenPtr pScreen;
+    unsigned int bias;
+{
+    if (miZeroLineGeneration != serverGeneration)
+    {
+	miZeroLineScreenIndex = AllocateScreenPrivateIndex();
+	miZeroLineGeneration = serverGeneration;
+    }
+    pScreen->devPrivates[miZeroLineScreenIndex].uval = bias;
 }

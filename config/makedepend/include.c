@@ -1,4 +1,4 @@
-/* $XConsortium: include.c,v 1.17 94/12/05 19:33:08 gildea Exp $ */
+/* $XConsortium: include.c /main/18 1995/12/08 18:26:35 gildea $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -52,7 +52,8 @@ struct inclist *inc_path(file, include, dot)
 	 * has already been expanded.
 	 */
 	for (ip = inclist; ip->i_file; ip++)
-	    if ((strcmp(ip->i_incstring, include) == 0) && !ip->i_included_sym)
+	    if ((strcmp(ip->i_incstring, include) == 0) &&
+		!(ip->i_flags & INCLUDED_SYM))
 	    {
 		found = TRUE;
 		break;
@@ -72,10 +73,10 @@ struct inclist *inc_path(file, include, dot)
 	}
 
 	/*
-	 * See if this include file is in the directory of the
-	 * file being compiled.
+	 * If the path was surrounded by "" see if this include file is in the
+	 * directory of the file being parsed.
 	 */
-	if (!found) {
+	if (!found && dot) {
 		for (p=file+strlen(file); p>file; p--)
 			if (*p == '/')
 				break;
@@ -244,7 +245,7 @@ struct inclist *newinclude(newfile, incstring)
 	if (inclistp == inclist + MAXFILES - 1)
 		fatalerr("out of space: increase MAXFILES\n");
 	ip->i_file = copy(newfile);
-	ip->i_included_sym = FALSE;
+
 	if (incstring == NULL)
 		ip->i_incstring = ip->i_file;
 	else
@@ -266,14 +267,16 @@ included_by(ip, newfile)
 	 * file itself (i.e. was probably mentioned on the command line).
 	 * If it is already on the list, don't stick it on again.
 	 */
-	if (ip->i_list == NULL)
+	if (ip->i_list == NULL) {
 		ip->i_list = (struct inclist **)
 			malloc(sizeof(struct inclist *) * ++ip->i_listlen);
-	else {
+		ip->i_merged = (boolean *)
+		    malloc(sizeof(boolean) * ip->i_listlen);
+	} else {
 		for (i=0; i<ip->i_listlen; i++)
 			if (ip->i_list[ i ] == newfile) {
 			    i = strlen(newfile->i_file);
-			    if (!ip->i_included_sym &&
+			    if (!(ip->i_flags & INCLUDED_SYM) &&
 				!(i > 2 &&
 				  newfile->i_file[i-1] == 'c' &&
 				  newfile->i_file[i-2] == '.'))
@@ -294,8 +297,11 @@ included_by(ip, newfile)
 			}
 		ip->i_list = (struct inclist **) realloc(ip->i_list,
 			sizeof(struct inclist *) * ++ip->i_listlen);
+		ip->i_merged = (boolean *)
+		    realloc(ip->i_merged, sizeof(boolean) * ip->i_listlen);
 	}
 	ip->i_list[ ip->i_listlen-1 ] = newfile;
+	ip->i_merged[ ip->i_listlen-1 ] = FALSE;
 }
 
 inc_clean ()
@@ -303,6 +309,6 @@ inc_clean ()
 	register struct inclist *ip;
 
 	for (ip = inclist; ip < inclistp; ip++) {
-		ip->i_marked = FALSE;
+		ip->i_flags &= ~MARKED;
 	}
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: imDefLkup.c,v 1.14 95/06/07 22:41:51 kaleb Exp $ */
+/* $XConsortium: imDefLkup.c /main/16 1995/12/06 11:23:31 kaleb $ */
 /******************************************************************
 
            Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -153,10 +153,12 @@ _XimSync(im, ic)
     Xim		 im;
     Xic		 ic;
 {
-    CARD8	 buf[BUFSIZE];
+    CARD32	 buf32[BUFSIZE/4];
+    CARD8	*buf = (CARD8 *)buf32;
     CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     INT16	 len;
-    char	 reply[BUFSIZE];
+    CARD32	 reply32[BUFSIZE/4];
+    char	*reply = (char *)reply32;
     XPointer	 preply;
     int		 buf_size;
     int		 ret_code;
@@ -209,7 +211,8 @@ _XimProcSyncReply(im, ic)
     Xim		 im;
     Xic		 ic;
 {
-    CARD8	 buf[BUFSIZE];
+    CARD32	 buf32[BUFSIZE/4];
+    CARD8	*buf = (CARD8 *)buf32;
     CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     INT16	 len;
 
@@ -284,9 +287,11 @@ _XimForwardEventCore(ic, ev, sync)
     Bool	 sync;
 {
     Xim		 im = (Xim)ic->core.im;
-    CARD8	 buf[BUFSIZE];
+    CARD32	 buf32[BUFSIZE/4];
+    CARD8	*buf = (CARD8 *)buf32;
     CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
-    char	 reply[BUFSIZE];
+    CARD32	 reply32[BUFSIZE/4];
+    char	*reply = (char *)reply32;
     XPointer	 preply;
     int		 buf_size;
     int		 ret_code;
@@ -353,8 +358,6 @@ _XimForwardEvent(ic, ev, sync)
     XEvent	*ev;
     Bool	 sync;
 {
-    Xim		 im = (Xim)ic->core.im;
-
 #ifdef EXT_FORWARD
     if (((ev->type == KeyPress) || (ev->type == KeyRelease)))
 	if (_XimExtForwardKeyEvent(ic, (XKeyEvent *)ev, sync))
@@ -555,10 +558,12 @@ _XimTriggerNotify(im, ic, mode, idx)
     int		 mode;
     CARD32	 idx;
 {
-    CARD8	 buf[BUFSIZE];
+    CARD32	 buf32[BUFSIZE/4];
+    CARD8	*buf = (CARD8 *)buf32;
     CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     CARD32	*buf_l = (CARD32 *)&buf[XIM_HEADER_SIZE];
-    char	 reply[BUFSIZE];
+    CARD32	 reply32[BUFSIZE/4];
+    char	*reply = (char *)reply32;
     XPointer	 preply;
     int		 buf_size;
     int		 ret_code;
@@ -657,9 +662,6 @@ Public void
 _XimFreeCommitInfo(ic)
     Xic			ic;
 {
-    register int	i;
-    XimCommitInfo	info;
-
     while (ic->private.proto.commit_info)
 	_XimUnregCommitInfo(ic);
     return;
@@ -849,7 +851,8 @@ _XimError(im, ic, error_code, detail_length, type, detail)
     CARD16	 type;
     char	*detail;
 {
-    CARD8	 buf[BUFSIZE];
+    CARD32	 buf32[BUFSIZE/4];
+    CARD8	*buf = (CARD8 *)buf32;
     CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     INT16	 len = 0;
 

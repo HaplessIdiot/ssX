@@ -1,6 +1,6 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.8.1.1 94/11/21 19:38:34 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/PEX5/dipex/objects/Imakefile,v 3.1 1994/12/02 05:43:48 dawes Exp $
+XCOMM $XConsortium: Imakefile,v 5.11 94/12/11 12:22:07 kaleb Exp $
+XCOMM $XFree86: xc/programs/Xserver/PEX5/dipex/objects/Imakefile,v 3.2 1995/01/28 15:44:59 dawes Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -47,20 +47,22 @@ XCOMM PERFORMANCE OF THIS SOFTWARE.
 
 
 SRCS =  pexRndr.c pexFont.c pexLut.c pexNs.c pexStr.c \
-	pexPhigs.c pexInfo.c pexSc.c pexPick.c pexPc.c pexRndrPick.c
+	pexPhigs.c pexInfo.c pexSc.c pexPick.c pexPc.c pexRndrPick.c \
+	pexTM.c pexAccBuf.c
 
 OBJS =  pexRndr.o pexFont.o pexLut.o pexNs.o pexStr.o \
-	pexPhigs.o pexInfo.o pexSc.o pexPick.o pexPc.o pexRndrPick.o
+	pexPhigs.o pexInfo.o pexSc.o pexPick.o pexPc.o pexRndrPick.o \
+	pexTM.c pexAccBuf.c
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(diobpex,$(OBJS))
 LintLibraryTarget(obj,$(SRCS))
 NormalLintTarget($(SRCS))
 
-InstallLinkKitLibrary(diobpex,$(LINKKITDIR)/lib)
-
 #ifdef HPArchitecture
 SpecialObjectRule(hpext.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
 #endif
+
+InstallLinkKitLibrary(diobpex,$(LINKKITDIR)/lib)
 
 DependTarget()

@@ -1,5 +1,5 @@
-/* $XConsortium: t1funcs.c,v 1.20 94/07/25 13:50:03 kaleb Exp $ */
-/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.0 1994/08/01 12:05:23 dawes Exp $ */
+/* $XConsortium: t1funcs.c /main/21 1995/12/05 16:50:09 mor $ */
+/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.1 1994/08/20 07:29:43 dawes Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -92,7 +92,7 @@ from the X Consortium.
 #else
 #define _XOPEN_SOURCE	/* to get prototype for hypot on some systems */
 #include <math.h>
-#undef _X_OPEN_SOURCE
+#undef _XOPEN_SOURCE
 #endif
 #include "X11/Xfuncs.h"
 #include "fntfilst.h"

@@ -1,5 +1,5 @@
-/* $XConsortium: Window.c,v 1.5 94/02/16 11:53:17 rws Exp $ */
-/* $XFree86$ */
+/* $XConsortium: Window.c,v 1.6 95/07/10 17:42:22 ray Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Window.c,v 3.0 1995/03/11 14:19:00 dawes Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -27,11 +27,7 @@ is" without express or implied warranty.
 #include "scrnintstr.h"
 #include "region.h"
 
-#define GC XlibGC
-#include "Xlib.h"
-#include "Xutil.h"
-#include <X11/extensions/shape.h>
-#undef GC
+#include "Xnest.h"
 
 #include "Display.h"
 #include "Screen.h"

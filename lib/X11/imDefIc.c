@@ -1,4 +1,4 @@
-/* $XConsortium: imDefIc.c,v 1.12 95/02/22 22:13:59 kaleb Exp $ */
+/* $XConsortium: imDefIc.c /main/14 1995/12/06 11:23:22 kaleb $ */
 /******************************************************************
 
            Copyright 1991, 1992 by Sun Microsystems, Inc.
@@ -79,7 +79,8 @@ _XimReCreateIC(ic)
     INT16		 len;
     CARD16		*buf_s;
     char		*tmp;
-    char		 tmp_buf[BUFSIZE];
+    CARD32		 tmp_buf32[BUFSIZE/4];
+    char		*tmp_buf = (char *)tmp_buf32;
     char		*buf;
     int			 buf_size;
     char		*data;
@@ -87,7 +88,8 @@ _XimReCreateIC(ic)
     int			 ret_len;
     int			 total;
     int			 idx;
-    char		 reply[BUFSIZE];
+    CARD32		 reply32[BUFSIZE/4];
+    char		*reply = (char *)reply32;
     XPointer		 preply;
     int			 ret_code;
 
@@ -292,7 +294,8 @@ _XimProtoGetICValues(xic, arg)
     CARD8		*buf;
     CARD16		*buf_s;
     INT16		 len;
-    char		 reply[BUFSIZE];
+    CARD32		 reply32[BUFSIZE/4];
+    char		*reply = (char *)reply32;
     XPointer		 preply = NULL;
     int			 buf_size;
     int			 ret_code;
@@ -666,7 +669,8 @@ _XimProtoSetICValues(xic, arg)
     INT16		 len;
     CARD16		*buf_s;
     char		*tmp;
-    char		 tmp_buf[BUFSIZE];
+    CARD32		 tmp_buf32[BUFSIZE/4];
+    char		*tmp_buf = (char *)tmp_buf32;
     char		*buf;
     int			 buf_size;
     char		*data;
@@ -674,7 +678,8 @@ _XimProtoSetICValues(xic, arg)
     int			 ret_len;
     int			 total;
     XIMArg		*arg_ret;
-    char		 reply[BUFSIZE];
+    CARD32		 reply32[BUFSIZE/4];
+    char		*reply = (char *)reply32;
     XPointer		 preply = NULL;
     int			 ret_code;
     BITMASK32		 flag = 0L;
@@ -826,19 +831,21 @@ _XimDestroyICCheck(im, len, data, arg)
     CARD8	 minor_opcode = *((CARD8 *)data + 1);
     XIMID	 imid = buf_s[0];
     XICID	 icid = buf_s[1];
+    Bool	 ret = False;
 
     if ((major_opcode == XIM_DESTROY_IC_REPLY)
      && (minor_opcode == 0)
      && (imid == im->private.proto.imid)
      && (icid == ic->private.proto.icid))
-	return True;
+	ret = True;
     if ((major_opcode == XIM_ERROR)
      && (minor_opcode == 0)
      && (buf_s[2] & XIM_IMID_VALID)
      && (imid == im->private.proto.imid)
      && (buf_s[2] & XIM_ICID_VALID)
      && (icid == ic->private.proto.icid))
-    return False;
+    ret = False;
+    return ret;
 }
 
 Private void
@@ -892,10 +899,12 @@ _XimProtoDestroyIC(xic)
 {
     Xic		 ic = (Xic)xic;
     Xim	 	 im = (Xim)ic->core.im;
-    CARD8	 buf[BUFSIZE];
+    CARD32	 buf32[BUFSIZE/4];
+    CARD8	*buf = (CARD8 *)buf32;
     CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     INT16	 len;
-    char	 reply[BUFSIZE];
+    CARD32	 reply32[BUFSIZE/4];
+    char	*reply = (char *)reply32;
     XPointer	 preply;
     int		 buf_size;
     int		 ret_code;
@@ -933,7 +942,8 @@ _XimProtoSetFocus(xic)
 {
     Xic		 ic = (Xic)xic;
     Xim		 im = (Xim)ic->core.im;
-    CARD8	 buf[BUFSIZE];
+    CARD32	 buf32[BUFSIZE/4];
+    CARD8	*buf = (CARD8 *)buf32;
     CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     INT16	 len;
  
@@ -977,7 +987,8 @@ _XimProtoUnsetFocus(xic)
 {
     Xic		 ic = (Xic)xic;
     Xim		 im = (Xim)ic->core.im;
-    CARD8	 buf[BUFSIZE];
+    CARD32	 buf32[BUFSIZE/4];
+    CARD8	*buf = (CARD8 *)buf32;
     CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     INT16	 len;
 
@@ -1108,10 +1119,12 @@ _XimProtoMbReset(xic)
 {
     Xic		 ic = (Xic)xic;
     Xim	 	 im = (Xim)ic->core.im;
-    CARD8	 buf[BUFSIZE];
+    CARD32	 buf32[BUFSIZE/4];
+    CARD8	*buf = (CARD8 *)buf32;
     CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     INT16	 len;
-    char	 reply[BUFSIZE];
+    CARD32	 reply32[BUFSIZE/4];
+    char	*reply = (char *)reply32;
     XPointer	 preply;
     int		 buf_size;
     int		 ret_code;
@@ -1227,10 +1240,12 @@ _XimProtoWcReset(xic)
 {
     Xic		 ic = (Xic)xic;
     Xim	 	 im = (Xim)ic->core.im;
-    CARD8	 buf[BUFSIZE];
+    CARD32	 buf32[BUFSIZE/4];
+    CARD8	*buf = (CARD8 *)buf32;
     CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     INT16	 len;
-    char	 reply[BUFSIZE];
+    CARD32	 reply32[BUFSIZE/4];
+    char	*reply = (char *)reply32;
     XPointer	 preply;
     int		 buf_size;
     int		 ret_code;
@@ -1392,7 +1407,8 @@ _XimProtoCreateIC(xim, arg)
     INT16		 len;
     CARD16		*buf_s;
     char		*tmp;
-    char		 tmp_buf[BUFSIZE];
+    CARD32		 tmp_buf32[BUFSIZE/4];
+    char		*tmp_buf = (char *)tmp_buf32;
     char		*buf;
     int			 buf_size;
     char		*data;
@@ -1400,7 +1416,8 @@ _XimProtoCreateIC(xim, arg)
     int			 ret_len;
     int			 total;
     XIMArg		*arg_ret;
-    char		 reply[BUFSIZE];
+    CARD32		 reply32[BUFSIZE/4];
+    char		*reply = (char *)reply32;
     XPointer		 preply;
     int			 ret_code;
 

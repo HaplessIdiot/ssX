@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.76 95/01/05 20:57:42 kaleb Exp $
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.8 1995/01/28 17:38:24 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/78 1995/12/19 16:44:32 mor $
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.9 1995/06/19 14:39:16 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -167,7 +167,7 @@ InstallProgram(chooser,$(XDMDIR))
 InstallAppDefaults(Chooser)
 #endif
 
-SpecialCObjectRule(auth,$(ICONFIGFILES),$(_NOOP_))
+SpecialCObjectRule(auth,$(ICONFIGFILES),$(SOCK_DEFINES))
 SpecialCObjectRule(policy,$(ICONFIGFILES),$(_NOOP_))
 SpecialCObjectRule(resource,$(ICONFIGFILES),$(RES_DEFINES))
 SpecialCObjectRule(socket,$(ICONFIGFILES),$(SOCK_DEFINES))

@@ -1,6 +1,6 @@
 /*
- *	$XConsortium: misc.c,v 1.102 94/03/28 18:27:08 gildea Exp $
- *	$XFree86: xc/programs/xterm/misc.c,v 3.2 1995/01/21 07:21:03 dawes Exp $
+ *	$XConsortium: misc.c /main/104 1995/12/08 17:18:13 kaleb $
+ *	$XFree86: xc/programs/xterm/misc.c,v 3.3 1995/09/17 06:33:18 dawes Exp $
  */
 
 /*
@@ -280,10 +280,9 @@ register int flag;
 			TCursorToggle(TOGGLE);
 		return;
 	} else {
-#ifdef I18N
 		if (screen->xic)
 		    XSetICFocus(screen->xic);
-#endif
+
 		if(screen->cursor_state &&
 		   (screen->cursor_col != screen->cur_col ||
 		    screen->cursor_row != screen->cur_row))
@@ -306,10 +305,8 @@ register int flag;
 	screen->select &= ~flag;
 	if(!Ttoggled) TCursorToggle(TOGGLE);
     } else {
-#ifdef I18N
-		if (screen->xic)
-		    XUnsetICFocus(screen->xic);
-#endif
+	if (screen->xic)
+	    XUnsetICFocus(screen->xic);
 	screen->select &= ~flag;
 	if(screen->cursor_state &&
 	   (screen->cursor_col != screen->cur_col ||
@@ -968,14 +965,8 @@ int a;
 char *SysErrorMsg (n)
     int n;
 {
-#if __STDC__
-    return strerror(n);
-#else
-    extern char *sys_errlist[];
-    extern int sys_nerr;
-
-    return ((n >= 0 && n < sys_nerr) ? sys_errlist[n] : "unknown error");
-#endif /* __STDC__ */
+    register char *s = strerror(n);
+    return s ? s : "unknown error";
 }
 
 

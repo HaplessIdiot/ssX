@@ -1,4 +1,4 @@
-/* $XConsortium: imTransR.c,v 1.8 95/02/10 17:52:50 mor Exp $ */
+/* $XConsortium: imTransR.c /main/9 1995/12/06 11:23:40 kaleb $ */
 /******************************************************************
 
               Copyright 1992 by Sun Microsystems, Inc.
@@ -273,7 +273,8 @@ _XimFilterWaitEvent(im)
     Xim		 im;
 {
     INT16	 read_len;
-    char	 reply[BUFSIZE];
+    CARD32	 reply32[BUFSIZE/4];
+    char	*reply = (char *)reply32;
     XPointer	 preply;
     int		 buf_size;
     int		 ret_code;

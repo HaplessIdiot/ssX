@@ -1,5 +1,5 @@
-/* $XConsortium: sunInit.c,v 5.54 94/12/23 16:49:38 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunInit.c,v 3.0 1994/11/19 07:49:07 dawes Exp $ */
+/* $XConsortium: sunInit.c /main/77 1995/10/05 07:36:49 kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunInit.c,v 3.1 1995/01/28 15:46:04 dawes Exp $ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -86,7 +86,7 @@ extern Bool sunCG3Init(
 #endif
 );
 #define CG3I sunCG3Init
-#ifdef i386 /* { */
+#if defined(i386) || defined(__bsdi__) /* { */
 #define CG2I NULL
 #define CG4I NULL
 #else /* }{ */
@@ -376,7 +376,7 @@ static void SigIOHandler(sig)
  */
 void sunNonBlockConsoleOff(
 #if NeedFunctionPrototypes
-#if defined(SVR4) || defined(__NetBSD__)
+#if defined(SVR4) || defined(CSRG_BASED)
     void
 #else
     char* arg
@@ -458,13 +458,13 @@ static void getKbdType()
 	 * 3 keyboard but does exist on a type 4 keyboard.
 	 */
 	if (sunKbdPriv.type == KB_SUN3) {
-	    struct kiockey key;
+	    struct kiockeymap key;
 
 	    key.kio_tablemask = 0;
 	    key.kio_station = 118;
-	    if (ioctl(sunKbdPriv.fd, KIOCGETKEY, &key) == -1) {
-		Error( "ioctl KIOCGETKEY" );
-		FatalError("Can't KIOCGETKEY on fd %d\n", sunKbdPriv.fd);
+	    if (ioctl(sunKbdPriv.fd, KIOCGKEY, &key) == -1) {
+		Error( "ioctl KIOCGKEY" );
+		FatalError("Can't KIOCGKEY on fd %d\n", sunKbdPriv.fd);
 	    }
 	    if (key.kio_entry != HOLE)
 		sunKbdPriv.type = KB_SUN4;
@@ -563,7 +563,7 @@ void InitOutput(pScreenInfo, argc, argv)
      */
     if (nonBlockConsole) {
 	if (!setup_on_exit) {
-#if defined(SVR4) || defined(__NetBSD__)
+#if defined(SVR4) || defined(CSRG_BASED)
 	    if (atexit(sunNonBlockConsoleOff))
 #else
 	    if (on_exit(sunNonBlockConsoleOff, (char *)0))

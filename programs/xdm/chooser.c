@@ -1,6 +1,6 @@
 /*
- * $XConsortium: chooser.c,v 1.22 95/06/08 23:20:39 gildea Exp $
- * $XFree86: xc/programs/xdm/chooser.c,v 3.6 1995/05/07 12:27:03 dawes Exp $
+ * $XConsortium: chooser.c /main/25 1995/12/08 13:57:37 kaleb $
+ * $XFree86: xc/programs/xdm/chooser.c,v 3.7 1995/06/14 07:54:24 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -94,8 +94,8 @@ in this Software without prior written authorization from the X Consortium.
 #include <sys/nbio.h>
 #endif /* !MINIX */
 #include    <sys/ioctl.h>
-#if defined(STREAMSCONN)
-#if defined(WINTCP)
+#ifdef STREAMSCONN
+#ifdef WINTCP /* NCR with Wollongong TCP */
 #include    <netinet/ip.h>
 #endif
 #include    <stropts.h>
@@ -621,7 +621,7 @@ RegisterHostname (name)
 
     if (!strcmp (name, BROADCAST_HOSTNAME))
     {
-#if defined(STREAMSCONN) && defined(WINTCP)
+#ifdef WINTCP /* NCR with Wollongong TCP */
     int                 ipfd;
     struct ifconf       *ifcp;
     struct strioctl     ioc;
@@ -651,7 +651,7 @@ RegisterHostname (name)
 	for (ifr = ifcp->ifc_req, n = ifcp->ifc_len / sizeof (struct ifreq);
 	    --n >= 0;
 	    ifr++)
-#else
+#else /* WINTCP */
 	ifc.ifc_len = sizeof (buf);
 	ifc.ifc_buf = buf;
 	if (ifioctl (socketFD, (int) SIOCGIFCONF, (char *) &ifc) < 0)
@@ -666,7 +666,7 @@ RegisterHostname (name)
 	cplim = (char *) IFC_IFC_REQ + ifc.ifc_len;
 
 	for (cp = (char *) IFC_IFC_REQ; cp < cplim; cp += ifr_size (ifr))
-#endif /* STREAMSCONN && WINTCP */
+#endif /* WINTCP */
 	{
 #ifndef WINTCP
 	    ifr = (struct ifreq *) cp;
@@ -682,31 +682,31 @@ RegisterHostname (name)
 		struct ifreq    broad_req;
     
 		broad_req = *ifr;
-#if defined(STREAMSCONN) && defined(WINTCP)
+#ifdef WINTCP /* NCR with Wollongong TCP */
 		ioc.ic_cmd = IPIOC_GETIFFLAGS;
 		ioc.ic_timout = 0;
 		ioc.ic_len = sizeof( broad_req );
 		ioc.ic_dp = (char *)&broad_req;
 
 		if (ioctl (ipfd, I_STR, (char *) &ioc) != -1 &&
-#else
+#else /* WINTCP */
 		if (ifioctl (socketFD, SIOCGIFFLAGS, (char *) &broad_req) != -1 &&
-#endif
+#endif /* WINTCP */
 		    (broad_req.ifr_flags & IFF_BROADCAST) &&
 		    (broad_req.ifr_flags & IFF_UP)
 		    )
 		{
 		    broad_req = *ifr;
-#if defined(STREAMSCONN) && defined(WINTCP)
+#ifdef WINTCP /* NCR with Wollongong TCP */
 		    ioc.ic_cmd = IPIOC_GETIFBRDADDR;
 		    ioc.ic_timout = 0;
 		    ioc.ic_len = sizeof( broad_req );
 		    ioc.ic_dp = (char *)&broad_req;
 
 		    if (ioctl (ipfd, I_STR, (char *) &ioc) != -1)
-#else
+#else /* WINTCP */
 		    if (ifioctl (socketFD, SIOCGIFBRDADDR, &broad_req) != -1)
-#endif
+#endif /* WINTCP */
 			broad_addr = broad_req.ifr_addr;
 		    else
 			continue;

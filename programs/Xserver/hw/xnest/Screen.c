@@ -1,5 +1,5 @@
-/* $XConsortium: Screen.c,v 1.4 94/02/06 17:52:40 rws Exp $ */
-/* $XFree86$ */
+/* $XConsortium: Screen.c,v 1.5 95/07/10 17:42:22 ray Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Screen.c,v 3.0 1995/03/11 14:18:58 dawes Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -22,10 +22,7 @@ is" without express or implied warranty.
 #include "colormapst.h"
 #include "resource.h"
 
-#define GC XlibGC
-#include "Xlib.h"
-#include "Xutil.h"
-#undef GC
+#include "Xnest.h"
 
 #include "Display.h"
 #include "Screen.h"

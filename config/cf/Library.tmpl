@@ -9,8 +9,8 @@
  * LibName, SoRev, HasSharedData, and optionally HugeLibrary and IncSubdir
  */
 
-XCOMM $XConsortium: Library.tmpl,v 1.34 95/06/16 17:44:51 gildea Exp $
-XCOMM $XFree86: xc/config/cf/Library.tmpl,v 3.2 1995/06/18 13:48:19 dawes Exp $
+XCOMM $XConsortium: Library.tmpl /main/36 1995/12/05 16:41:16 mor $
+XCOMM $XFree86: xc/config/cf/Library.tmpl,v 3.3 1995/07/08 10:21:44 dawes Exp $
 
 #ifndef LibraryCplusplusOptions
 #if DoSharedLib && defined(SharedLibraryCplusplusOptions)
@@ -233,15 +233,26 @@ CenterLoadTarget(debug_src,basename.SRCsuf,NullParameter,$(ALLDEFINES) options)
  * Headers are generated and named according to data in the 'source'
  * file.
  */
+/*
+ * The NoCmpScript
+ * prevents clearmake from trying to remake makestrs if it exists.
+ * Including both $(MAKESTRS) and $(MAKESTRS).o as primary targets
+ * prevents clearmake from trying to recompile makestrs from here.
+ * We have includes, not files, depend on makestrs to try to get
+ * clearmake to wink in the files.  Bug in clearmake 2.0.2?
+ */
 
 #ifndef ToolkitMakeStrings
 #define ToolkitMakeStrings(files,source,options,depends,dest)		@@\
 MAKESTRS = $(CONFIGSRC)/util/makestrs					@@\
+NoCmpScript(ProgramTargetName($(MAKESTRS)) $(MAKESTRS).Osuf)		@@\
 									@@\
-$(MAKESTRS): $(MAKESTRS).c						@@\
-	cd $(CONFIGSRC)/util && make makestrs				@@\
+ProgramTargetName($(MAKESTRS)) $(MAKESTRS).Osuf:			@@\
+	cd $(CONFIGSRC)/util && $(MAKE) ProgramTargetName(makestrs)	@@\
 									@@\
-files: $(MAKESTRS) source depends					@@\
+includes:: ProgramTargetName($(MAKESTRS)) 				@@\
+									@@\
+files: source depends							@@\
 	RemoveFiles(files)						@@\
 	RunProgram(MAKESTRS,options < source > dest)			@@\
 									@@\
@@ -266,7 +277,11 @@ LibraryObjectRule()
 #define _LinkBuildLibrary(lib) LinkBuildLibrary(lib)
 
 #if DoSharedLib
+#if HugeLibrary && defined(SharedLibraryTarget3)
+SharedLibraryTarget3($(LIBNAME),$(SoRev),$(OBJS1),$(OBJS2),$(OBJS3),.,.)
+#else
 SharedLibraryTarget($(LIBNAME),$(SoRev),$(OBJS),.,.)
+#endif
 InstallSharedLibrary($(LIBNAME),$(SoRev),$(SHLIBDIR))
 #if HasSharedData
 SharedLibraryDataTarget($(LIBNAME),$(SoRev),$(UNSHAREDOBJS))

@@ -1,5 +1,5 @@
-/* $XConsortium: Xtransint.h,v 1.21 94/05/10 11:08:46 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.6 1995/03/11 14:10:21 dawes Exp $ */
+/* $XConsortium: Xtransint.h /main/25 1995/12/05 16:51:28 mor $ */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.7 1995/03/18 10:51:09 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -54,21 +54,23 @@ from the X Consortium.
  */
 
 /*
- * DEBUG will enable the PRMSG() macros used in the X Transport Interface code.
- * Each use of the PRMSG macro has a level associated with it. DEBUG is defined
- * to be a level. If the invocation level is =< the value of DEBUG, then the
- * message will be printed out to stderr. Recommended levels are:
+ * XTRANSDEBUG will enable the PRMSG() macros used in the X Transport 
+ * Interface code. Each use of the PRMSG macro has a level associated with 
+ * it. XTRANSDEBUG is defined to be a level. If the invocation level is =< 
+ * the value of XTRANSDEBUG, then the message will be printed out to stderr. 
+ * Recommended levels are:
  *
- *	DEBUG=1	Error messages
- *	DEBUG=2 API Function Tracing
- *	DEBUG=3 All Function Tracing
- *	DEBUG=4 printing of intermediate values
- *	DEBUG=5 really detailed stuff
+ *	XTRANSDEBUG=1	Error messages
+ *	XTRANSDEBUG=2 API Function Tracing
+ *	XTRANSDEBUG=3 All Function Tracing
+ *	XTRANSDEBUG=4 printing of intermediate values
+ *	XTRANSDEBUG=5 really detailed stuff
+#define XTRANSDEBUG 2
  */
 #ifndef __EMX__
-#define DEBUG 1
+#define XTRANSDEBUG 1
 #else
-#define DEBUG 5
+#define XTRANSDEBUG 5
 #endif
 
 #ifndef _XTRANSINT_H_
@@ -80,9 +82,9 @@ from the X Consortium.
 
 #include "Xtrans.h"
 
-#ifdef DEBUG
+#ifdef XTRANSDEBUG
 #include <stdio.h>
-#endif /* DEBUG */
+#endif /* XTRANSDEBUG */
 
 #include <errno.h>
 #ifdef X_NOT_STDC_ENV
@@ -118,6 +120,9 @@ extern int  errno;		/* Internal system error number. */
 #else
 #include <sys/param.h>
 #ifndef OPEN_MAX
+#ifdef __OSF1__
+#define OPEN_MAX 256
+#else
 #ifdef NOFILE
 #define OPEN_MAX NOFILE
 #else
@@ -383,7 +388,7 @@ typedef struct _Xtransport_table {
  * systems, so they may be emulated.
  */
 
-#if defined(CRAY) || (defined(SYSV) && defined(i386)) || defined(WIN32) || defined(__sxg__) || defined(SCO) || defined(__EMX__)
+#if defined(CRAY) || (defined(SYSV) && defined(i386)) || defined(WIN32) || defined(__sxg__) || defined(SCO) || defined(sco324) || defined(__EMX__)
 
 #define READV(ciptr, iov, iovcnt)	TRANS(ReadV)(ciptr, iov, iovcnt)
 
@@ -399,10 +404,10 @@ static	int TRANS(ReadV)(
 
 #define READV(ciptr, iov, iovcnt)	readv(ciptr->fd, iov, iovcnt)
 
-#endif /* CRAY || (SYSV && i386) || WIN32 || __sxg__ || SCO */
+#endif /* CRAY || (SYSV && i386) || WIN32 || __sxg__ || SCO || sco324 */
 
 
-#if defined(CRAY) || defined(WIN32) || defined(__sxg__) || defined(SCO) || defined(__EMX__)
+#if defined(CRAY) || defined(WIN32) || defined(__sxg__) || defined(SCO) || defined(sco324) || defined(__EMX__)
 
 #define WRITEV(ciptr, iov, iovcnt)	TRANS(WriteV)(ciptr, iov, iovcnt)
 
@@ -418,7 +423,7 @@ static int TRANS(WriteV)(
 
 #define WRITEV(ciptr, iov, iovcnt)	writev(ciptr->fd, iov, iovcnt)
 
-#endif /* CRAY || WIN32 || __sxg__ || SCO */
+#endif /* CRAY || WIN32 || __sxg__ || sco324 */
 
 
 static int is_numeric (
@@ -429,36 +434,36 @@ static int is_numeric (
 
 
 /*
- * Some DEBUG stuff
+ * Some XTRANSDEBUG stuff
  */
 
-#if defined(DEBUG)
+#if defined(XTRANSDEBUG)
 /* add hack to the format string to avoid warnings about extra arguments
  * to fprintf.
  */
 #if defined(XSERV_t) && defined(TRANS_SERVER)
 /* Use ErrorF() for the X server */
 #ifndef __EMX__
-#define PRMSG(lvl,x,a,b,c)	if (lvl <= DEBUG){ \
+#define PRMSG(lvl,x,a,b,c)	if (lvl <= XTRANSDEBUG){ \
 			int hack= 0, saveerrno=errno; \
 			ErrorF(x+hack,a,b,c); \
 			errno=saveerrno; \
 			} else ((void)0)
 #else
-#define PRMSG(lvl,x,a,b,c)	if (lvl <= DEBUG){ \
+#define PRMSG(lvl,x,a,b,c)	if (lvl <= XTRANSDEBUG){ \
 			int hack= 0; \
 			ErrorF(x+hack,a,b,c); \
 			} else ((void)0)
 #endif /* __EMX__ */
 #else
 #ifndef __EMX__
-#define PRMSG(lvl,x,a,b,c)	if (lvl <= DEBUG){ \
+#define PRMSG(lvl,x,a,b,c)	if (lvl <= XTRANSDEBUG){ \
 			int hack= 0, saveerrno=errno; \
 			fprintf(stderr, x+hack,a,b,c); fflush(stderr); \
 			errno=saveerrno; \
 			} else ((void)0)
 #else
-#define PRMSG(lvl,x,a,b,c)	if (lvl <= DEBUG){ \
+#define PRMSG(lvl,x,a,b,c)	if (lvl <= XTRANSDEBUG){ \
 			int hack= 0; \
 			fprintf(stdout, x+hack,a,b,c); fflush(stdout); \
 			} else ((void)0)
@@ -466,6 +471,6 @@ static int is_numeric (
 #endif /* XSERV_t && TRANS_SERVER */
 #else
 #define PRMSG(lvl,x,a,b,c)	((void)0)
-#endif /* DEBUG */
+#endif /* XTRANSDEBUG */
 
 #endif /* _XTRANSINT_H_ */

@@ -1,6 +1,6 @@
 /*
- * $XConsortium: gethost.c,v 1.22 94/11/30 16:29:52 kaleb Exp $
- * $XFree86: xc/programs/xauth/gethost.c,v 3.2 1994/12/02 05:49:52 dawes Exp $
+ * $XConsortium: gethost.c /main/23 1995/12/05 16:53:41 mor $
+ * $XFree86: xc/programs/xauth/gethost.c,v 3.3 1995/01/28 16:16:34 dawes Exp $
  *
  * 
 Copyright (c) 1989  X Consortium
@@ -56,9 +56,9 @@ in this Software without prior written authorization from the X Consortium.
 #include <netinet/in.h>
 #ifdef SYSV
 #ifdef i386
-#ifndef SCO
+#ifndef sco
 #include <net/errno.h>
-#endif /* !SCO */
+#endif /* !sco */
 #endif /* i386 */
 #endif /* SYSV */
 #else /* MINIX */

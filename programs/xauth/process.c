@@ -1,5 +1,5 @@
-/* $XConsortium: process.c,v 1.48 94/04/17 20:37:52 gildea Exp $ */
-/* $XFree86$ */
+/* $XConsortium: process.c,v 1.49 94/12/16 22:21:13 gildea Exp $ */
+/* $XFree86: xc/programs/xauth/process.c,v 3.0 1994/10/20 06:14:32 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -747,8 +747,8 @@ int auth_initialize (authfilename)
     return 0;
 }
 
-static int write_auth_file (tmpnam)
-    char *tmpnam;
+static int write_auth_file (tmp_nam)
+    char *tmp_nam;
 {
     FILE *fp;
     AuthList *list;
@@ -756,13 +756,13 @@ static int write_auth_file (tmpnam)
     /*
      * xdm and auth spec assumes auth file is 12 or fewer characters
      */
-    strcpy (tmpnam, xauth_filename);
-    strcat (tmpnam, "-n");		/* for new */
-    (void) unlink (tmpnam);
-    fp = fopen (tmpnam, "wb");		/* umask is still set to 0077 */
+    strcpy (tmp_nam, xauth_filename);
+    strcat (tmp_nam, "-n");		/* for new */
+    (void) unlink (tmp_nam);
+    fp = fopen (tmp_nam, "wb");		/* umask is still set to 0077 */
     if (!fp) {
 	fprintf (stderr, "%s:  unable to open tmp file \"%s\"\n",
-		 ProgramName, tmpnam);
+		 ProgramName, tmp_nam);
 	return -1;
     } 
 
@@ -791,7 +791,7 @@ static int write_auth_file (tmpnam)
 
 int auth_finalize ()
 {
-    char tmpnam[1024];			/* large filename size */
+    char temp_name[1024];	/* large filename size */
 
     if (xauth_modified) {
 	if (dieing) {
@@ -809,23 +809,24 @@ int auth_finalize ()
 			ignore_locks ? "Ignoring locks and writing" :
 			"Writing", xauth_filename);
 	    }
-	    tmpnam[0] = '\0';
-	    if (write_auth_file (tmpnam) == -1) {
+	    temp_name[0] = '\0';
+	    if (write_auth_file (temp_name) == -1) {
 		fprintf (stderr,
 			 "%s:  unable to write authority file %s\n",
-			 ProgramName, tmpnam);
+			 ProgramName, temp_name);
 	    } else {
 		(void) unlink (xauth_filename);
 #if defined(WIN32) || defined(__EMX__)
-		if (rename(tmpnam, xauth_filename) == -1) {
+		if (rename(temp_name, xauth_filename) == -1)
 #else
-		if (link (tmpnam, xauth_filename) == -1) {
+		if (link (temp_name, xauth_filename) == -1)
 #endif
+		{
 		    fprintf (stderr,
 		     "%s:  unable to link authority file %s, use %s\n",
-			     ProgramName, xauth_filename, tmpnam);
+			     ProgramName, xauth_filename, temp_name);
 		} else {
-		    (void) unlink (tmpnam);
+		    (void) unlink (temp_name);
 		}
 	    }
 	}
@@ -891,7 +892,7 @@ dump_numeric (fp, auth)
     fprintf (fp, " %04x ", auth->data_length);  /* short */
     fprintfhex (fp, auth->data_length, auth->data);
     putc ('\n', fp);
-    return;
+    return 1;
 }
 
 /* ARGSUSED */

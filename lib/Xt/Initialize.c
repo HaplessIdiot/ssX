@@ -1,5 +1,5 @@
-/* $XConsortium: Initialize.c,v 1.223 95/06/08 23:20:39 gildea Exp $ */
-/* $XFree86: xc/lib/Xt/Initialize.c,v 3.3 1995/01/28 15:43:57 dawes Exp $ */
+/* $XConsortium: Initialize.c /main/193 1995/11/10 12:07:30 kaleb $ */
+/* $XFree86: xc/lib/Xt/Initialize.c,v 3.4 1995/06/14 07:12:06 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -72,6 +72,9 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 #include <stdio.h>
 #include <X11/Xlocale.h>
+#ifdef XTHREADS
+#include <X11/Xthreads.h>
+#endif
 
 #ifdef __STDC__
 #define Const const
@@ -220,115 +223,118 @@ void XtToolkitInitialize()
 }
 
 
-String _XtGetUserName()
+String _XtGetUserName(dest)
+    String dest;
 {
 #ifdef WIN32
-    return getenv("USERNAME");
+    String ptr = NULL;
+
+    if ((ptr = getenv("USERNAME"))
+	(void) strcpy (dest, ptr);
+    else
+	*dest = '\0';
 #else
-#ifndef X_NOT_POSIX
-    uid_t uid;
-#else
-    int uid;
-    extern int getuid();
+#ifdef X_NOT_POSIX
 #ifndef i386
 # ifndef SYSV
     extern struct passwd *getpwuid(), *getpwnam();
 # endif
 #endif
 #endif
-#if defined(sun) && defined(SVR4) && defined(XTHREADS)
+#if defined(XTHREADS) && defined(XUSE_MTSAFE_API)
     struct passwd pws;
-    char pwbuf[512];	/* ought to use MAX_INPUT */
-#endif
+    char pwbuf[LINE_MAX];
+#define Getpwuid(u) getpwuid_r((u),&pws,pwbuf,sizeof pwbuf)
+#define PwName pws.pw_name
+#ifndef _POSIX_THREADS
+#define CallFailed NULL
     struct passwd *pw;
-    char *ptr = NULL;
-
-    LOCK_PROCESS;
-    if (! (ptr = getenv("USER"))) {
-	uid = getuid();
-#if defined(sun) && defined(SVR4) && defined(XTHREADS)
-	pw = getpwuid_r(uid, &pws, pwbuf, sizeof pwbuf);
 #else
-	pw = getpwuid(uid);
+#define CallFailed -1
+    int pw;
 #endif
-	if (pw) ptr = pw->pw_name;
+#else
+#define Getpwuid(u) getpwuid((u))
+#define PwName pw->pw_name
+#define CallFailed NULL
+    struct passwd *pw;
+#endif
+    char* ptr;
+    if ((ptr = getenv("USER")))
+	(void) strcpy (dest, ptr);
+    else {
+	if ((pw = Getpwuid(getuid())) != CallFailed)
+	    (void) strcpy (dest, PwName);
+	else
+	    *dest = '\0';
     }
-    UNLOCK_PROCESS;
-    return ptr;
 #endif
+    return dest;
 }
 
 
-static String XtGetRootDirName(buf, slash)
-     String buf;
+static String GetRootDirName(dest, slash)
+     String dest;
      Bool slash;
 {
 #ifdef WIN32
     register char *ptr;
 
     if (ptr = getenv("HOME"))
-	(void) strcpy(buf, ptr);
+	(void) strcpy(dest, ptr);
     else if (ptr = getenv("USERNAME")) {
-	(void) strcpy (buf, "/users/");
-	(void) strcat (buf, ptr);
+	(void) strcpy (dest, "/users/");
+	(void) strcat (dest, ptr);
     } else
-	*buf = '\0';
+	*dest = '\0';
 #else
-#ifndef X_NOT_POSIX
-     uid_t uid;
-#else
-     int uid;
-     extern int getuid();
+#ifdef X_NOT_POSIX
 #ifndef i386
 # ifndef SYSV
      extern struct passwd *getpwuid(), *getpwnam();
 # endif
 #endif
 #endif
-#if defined(sun) && defined(SVR4) && defined(XTHREADS)
-     struct passwd pws;
-     char pwbuf[512];	/* ought to use MAX_INPUT */
-#endif
-     struct passwd *pw;
-     static char *ptr = NULL;
-
-     LOCK_PROCESS;
-     if (ptr == NULL) {
-	if (!(ptr = getenv("HOME"))) {
-	    if (ptr = getenv("USER")) {
-#if defined(sun) && defined(SVR4) && defined(XTHREADS)
-		pw = getpwnam_r(ptr, &pws, pwbuf, sizeof pwbuf);
+#if defined(XTHREADS) && defined(XUSE_MTSAFE_API)
+    struct passwd pws;
+    char pwbuf[LINE_MAX];
+#define Getpwnam(u) getpwnam_r((u),&pws,pwbuf,sizeof pwbuf)
+#define PwDir pws.pw_dir
+#ifndef _POSIX_THREADS
+#define CallFailed NULL
+    struct passwd *pw;
 #else
-		pw = getpwnam(ptr);
+#define CallFailed -1
+    int pw;
 #endif
-	    } else {
-		uid = getuid();
-#if defined(sun) && defined(SVR4) && defined(XTHREADS)
-		pw = getpwuid_r(uid, &pws, pwbuf, sizeof pwbuf);
 #else
- 		pw = getpwuid(uid);
+#define Getpwnam(u) getpwnam((u))
+#define CallFailed NULL
+#define PwDir pw->pw_dir
+    struct passwd *pw;
 #endif
-	    }
-	    if (pw) ptr = pw->pw_dir;
-	    else {
-		ptr = NULL;
-		*buf = '\0';
-	    }
-	}
-     }
+    static char *ptr;
 
-     if (ptr)
- 	(void) strcpy(buf, ptr);
-     UNLOCK_PROCESS;
+    if ((ptr = getenv("HOME")))
+	(void) strcpy (dest, ptr);
+    else {
+	if (ptr = getenv("USER"))
+	    pw = Getpwnam(ptr);
+	else
+ 	    pw = Getpwuid(getuid());
+	if (pw != CallFailed)
+	    (void) strcpy (dest, PwDir);
+	else
+	    *dest = '\0';
+    }
 #endif
-
-     if (slash) {
-	 buf += strlen(buf);
-	 *buf = '/';
-	 buf++;
-	 *buf = '\0';
-     }
-     return buf;
+    if (slash) {
+	dest += strlen(dest);
+	*dest = '/';
+	dest++;
+	*dest = '\0';
+    }
+    return dest;
 }
 
 static void CombineAppUserDefaults(dpy, pdb)
@@ -342,7 +348,7 @@ static void CombineAppUserDefaults(dpy, pdb)
     if (!(path = getenv("XUSERFILESEARCHPATH"))) {
 	char *old_path;
 	char homedir[PATH_MAX];
-	XtGetRootDirName(homedir, False);
+	GetRootDirName(homedir, False);
 	if (!(old_path = getenv("XAPPLRESDIR"))) {
 	    char *path_default = "%s/%%L/%%N%%C:%s/%%l/%%N%%C:%s/%%N%%C:%s/%%L/%%N:%s/%%l/%%N:%s/%%N";
 	    if (!(path =
@@ -381,7 +387,7 @@ static void CombineUserDefaults(dpy, pdb)
 	XrmCombineDatabase(XrmGetStringDatabase(dpy_defaults), pdb, False);
     } else {
 	char filename[PATH_MAX];
-	(void) XtGetRootDirName(filename, True);
+	(void) GetRootDirName(filename, True);
 	(void) strcat(filename, ".Xdefaults");
 	(void)XrmCombineFileDatabase(filename, pdb, False);
     }
@@ -520,7 +526,7 @@ XrmDatabase XtScreenDatabase(screen)
 
 	if (!(filename = getenv("XENVIRONMENT"))) {
 	    int len;
-	    (void) XtGetRootDirName(filename = filenamebuf, True);
+	    (void) GetRootDirName(filename = filenamebuf, True);
 	    (void) strcat(filename, ".Xdefaults-");
 	    len = strlen(filename);
 	    (void) _XtGetHostname (filename+len, PATH_MAX-len);

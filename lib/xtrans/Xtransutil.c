@@ -1,5 +1,5 @@
-/* $XConsortium: Xtransutil.c,v 1.19 95/02/10 17:54:09 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.4 1995/06/20 14:24:50 dawes Exp $ */
+/* $XConsortium: Xtransutil.c /main/27 1995/11/10 12:08:45 kaleb $ */
+/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.5 1995/07/07 15:33:14 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -59,6 +59,10 @@ from the X Consortium.
  * only using the Transport Independant API, and have no knowledge of
  * the internal implementation.
  */
+
+#ifdef XTHREADS
+#include <X11/Xthreads.h>
+#endif
 
 #ifdef X11_t
 
@@ -340,7 +344,29 @@ XtransConnInfo  ciptr;
     case AF_INET:
     {
 	struct sockaddr_in *saddr = (struct sockaddr_in *) peer_addr;
-	struct hostent *hp = NULL;
+#if defined(XTHREADS) && defined(XUSE_MTSAFE_API)
+    struct hostent      hent;
+#ifndef _POSIX_THREADS
+#define Gethostbyaddr(a,l,t) gethostbyaddr_r((a),(l),(t),&hent,hbuf,sizeof hbuf,&herr)
+#define HostName hent.h_name
+#define CallFailed NULL
+    char                hbuf[LINE_MAX];
+    struct hostent      *hostp;
+    int                 herr;
+#else
+#define Gethostbyaddr(a,l,t) gethostbyaddr_r((a),(l),(t),&hent,&hdata)
+#define CallFailed -1
+#define HostName hent.h_name
+    struct hostent_data hdata;
+    int                 hostp;
+#endif
+#else /* !XTHREADS etc */
+#define Gethostbyaddr(a,l,t) gethostbyaddr((a),(l),(t))
+#define CallFailed NULL
+#define HostName hostp->h_name
+    struct hostent      *hostp;
+#endif
+
 #ifndef WIN32
  	char *inet_ntoa();
 #endif
@@ -359,14 +385,17 @@ XtransConnInfo  ciptr;
 	alarm (4);
 	if (setjmp(env) == 0) {
 #endif
-	    hp = gethostbyaddr ((char *) &saddr->sin_addr,
+#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREADS)
+	    bzero ((char*)&hdata, sizeof hdata);
+#endif
+	    hostp = Gethostbyaddr ((char *) &saddr->sin_addr,
 		sizeof (saddr->sin_addr), AF_INET);
 #ifdef SIGALRM
 	}
 	alarm (0);
 #endif
-	if (hp)
-	  addr = hp->h_name;
+	if (hostp != CallFailed)
+	  addr = HostName;
 	else
 	  addr = inet_ntoa (saddr->sin_addr);
 	break;

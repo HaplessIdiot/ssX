@@ -46,7 +46,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: swaprep.c,v 1.43 95/05/02 19:41:30 mor Exp $ */
+/* $XConsortium: swaprep.c /main/25 1995/12/08 13:39:45 dpw $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1295,23 +1295,17 @@ SKeymapNotifyEvent(from, to)
 }
 
 void
-WriteSConnectionInfo(pClient, size, pInfo)
-    ClientPtr		pClient;
-    unsigned long	size;
+SwapConnSetupInfo(pInfo, pInfoTBase)
     char 		*pInfo;
+    char 		*pInfoTBase;
 {
     int		i, j, k;
     ScreenPtr	pScreen;
     DepthPtr	pDepth;
-    char	*pInfoT, *pInfoTBase;
+    char	*pInfoT;
     xConnSetup	*pConnSetup = (xConnSetup *)pInfo;
 
-    pInfoT = pInfoTBase = (char *) ALLOCATE_LOCAL(size);
-    if (!pInfoTBase)
-    {
-	pClient->noClientException = -1;
-	return;
-    }
+    pInfoT = pInfoTBase;
     SwapConnSetup(pConnSetup, (xConnSetup *)pInfoT);
     pInfo += sizeof(xConnSetup);
     pInfoT += sizeof(xConnSetup);
@@ -1349,6 +1343,24 @@ WriteSConnectionInfo(pClient, size, pInfo)
 	    }
 	}
     }
+}
+
+
+void
+WriteSConnectionInfo(pClient, size, pInfo)
+    ClientPtr		pClient;
+    unsigned long	size;
+    char 		*pInfo;
+{
+    char	*pInfoTBase;
+
+    pInfoTBase = (char *) ALLOCATE_LOCAL(size);
+    if (!pInfoTBase)
+    {
+	pClient->noClientException = -1;
+	return;
+    }
+    SwapConnSetupInfo(pInfo, pInfoTBase);
     (void)WriteToClient(pClient, (int)size, (char *) pInfoTBase);
     DEALLOCATE_LOCAL(pInfoTBase);
 }
@@ -1409,17 +1421,24 @@ SwapVisual(pVis, pVisT)
 }
 
 void
+SwapConnSetupPrefix(pcspFrom, pcspTo)
+    xConnSetupPrefix	*pcspFrom;
+    xConnSetupPrefix	*pcspTo;
+{
+    pcspTo->success = pcspFrom->success;
+    pcspTo->lengthReason = pcspFrom->lengthReason;
+    cpswaps(pcspFrom->majorVersion, pcspTo->majorVersion);
+    cpswaps(pcspFrom->minorVersion, pcspTo->minorVersion);
+    cpswaps(pcspFrom->length, pcspTo->length);
+}
+
+void
 WriteSConnSetupPrefix(pClient, pcsp)
     ClientPtr		pClient;
     xConnSetupPrefix	*pcsp;
 {
     xConnSetupPrefix	cspT;
 
-    cspT.success = pcsp->success;
-    cspT.lengthReason = pcsp->lengthReason;
-    cpswaps(pcsp->majorVersion, cspT.majorVersion);
-    cpswaps(pcsp->minorVersion, cspT.minorVersion);
-    cpswaps(pcsp->length, cspT.length);
+    SwapConnSetupPrefix(pcsp, &cspT);
     (void)WriteToClient(pClient, sizeof(cspT), (char *) &cspT);
 }
-

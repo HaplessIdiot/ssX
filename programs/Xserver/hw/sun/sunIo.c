@@ -1,5 +1,5 @@
-/* $XConsortium: sunIo.c,v 5.26.1.3 95/01/25 23:02:33 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunIo.c,v 3.0 1994/11/19 07:49:09 dawes Exp $ */
+/* $XConsortium: sunIo.c /main/48 1995/10/05 07:36:52 kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunIo.c,v 3.1 1995/01/28 15:46:06 dawes Exp $ */
 /*-
  * sunIo.c --
  *	Functions to handle input from the keyboard and mouse.
@@ -122,11 +122,13 @@ void sunEnqueueEvents (
 	 * in pE and kE
 	 */
 	if ((numPtrEvents == 0) && PtrAgain) {
-	    ptrEvents = sunMouseGetEvents (ptrPriv->fd, &nPE, &PtrAgain);
+	    ptrEvents = sunMouseGetEvents (ptrPriv->fd, pPointer->public.on, 
+					   &nPE, &PtrAgain);
 	    numPtrEvents = nPE;
 	}
 	if ((numKbdEvents == 0) && KbdAgain) {
-	    kbdEvents = sunKbdGetEvents (kbdPriv->fd, &nKE, &KbdAgain);
+	    kbdEvents = sunKbdGetEvents (kbdPriv->fd, pKeyboard->public.on,
+					 &nKE, &KbdAgain);
 	    numKbdEvents = nKE;
 	}
 	if ((numPtrEvents == 0) && (numKbdEvents == 0))
@@ -170,7 +172,7 @@ void AbortDDX()
     devPtr = LookupKeyboardDevice();
     if (devPtr)
 	(void) sunChangeKbdTranslation (((sunKbdPrivPtr)(devPtr->devicePrivate))->fd, FALSE);
-#if defined(SVR4) || defined(__NetBSD__)
+#if defined(SVR4) || defined(CSRG_BASED)
     sunNonBlockConsoleOff ();
 #else
     sunNonBlockConsoleOff (NULL);

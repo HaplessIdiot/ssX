@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.69 94/07/06 16:26:01 mor Exp $
-XCOMM $XFree86: xc/programs/Imakefile,v 3.10 1995/12/02 05:03:34 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/71 1995/12/06 13:54:19 matt $
+XCOMM $XFree86: xc/programs/Imakefile,v 3.11 1995/12/23 09:37:16 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -16,7 +16,7 @@ XSDIR = Xserver
 XFSDIR = xfs
 #endif
 #if BuildXKBlib
-XKBCOMP = xkbcomp
+XKBDIRS = xkbcomp xkbevd xkbprint xkbutils
 #endif
 
 #if BuildScreenSaverExt
@@ -41,9 +41,9 @@ SUBDIRS = \
 	mkfontdir oclock $(RGBDIR) rstart smproxy \
 	twm x11perf xauth xclipboard xclock \
 	xcmsdb xconsole xdm xdpyinfo $(XF86DGA) xfd $(XFSDIR) xhost xieperf \
-	$(XINIDIR) $(XKBCOMP) xkill xlogo xlsatoms xlsclients xlsfonts \
+	$(XINIDIR) $(XKBDIRS) xkill xlogo xlsatoms xlsclients xlsfonts \
 	xmag xmh xmodmap xprop xrdb xrefresh xset \
-	xsetmode xsetpointer xsetroot xstdcmap xterm \
+	xsetmode xsetpointer xsetroot xsm xstdcmap xterm \
 	$(XVIDTUNE) \
 	xwd xwininfo xwud $(XSDIR) scripts
 

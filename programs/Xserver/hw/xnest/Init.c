@@ -1,5 +1,5 @@
-/* $XConsortium: Init.c,v 1.2 93/12/13 17:40:05 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: Init.c /main/4 1995/11/16 14:41:16 kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.0 1995/03/11 14:18:57 dawes Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -22,10 +22,7 @@ is" without express or implied warranty.
 #include "windowstr.h"
 #include "servermd.h"
 
-#define GC XlibGC
-#include "Xlib.h"
-#include "Xutil.h"
-#undef GC
+#include "Xnest.h"
 
 #include "Display.h"
 #include "Screen.h"
@@ -124,3 +121,29 @@ void OsVendorInit()
 {
     return;
 }
+
+#ifdef XF86VIDMODE
+int xf86ScreenIndex;
+
+int xf86CheckMode(scrp, dspmp, monp, verbose)
+    void* scrp;
+    void* dspmp;
+    void* monp;
+    int verbose;
+{
+    return 0;
+}
+
+void xf86ZoomViewport(pScreen, zoom)
+    ScreenPtr pScreen;
+    int zoom;
+{
+}
+
+void xf86LockZoom(pScreen, zoom)
+    ScreenPtr pScreen;
+    int zoom;
+{
+}
+#endif
+

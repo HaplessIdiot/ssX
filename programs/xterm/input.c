@@ -1,6 +1,6 @@
 /*
- *	$XConsortium: input.c,v 1.18 94/05/14 15:53:34 gildea Exp $
- *	$XFree86$
+ *	$XConsortium: input.c /main/19 1995/12/08 17:18:10 kaleb $
+ *	$XFree86: xc/programs/xterm/input.c,v 3.1 1995/01/21 13:19:18 dawes Exp $
  */
 
 /*
@@ -34,7 +34,6 @@
 #include <X11/Xutil.h>
 #include <stdio.h>
 
-static XComposeStatus compose_status = {NULL, 0};
 static char *kypd_num = " XXXXXXXX\tXXX\rXXXxxxxXXXXXXXXXXXXXXXXXXXXX*+,-./0123456789XXX=";
 static char *kypd_apl = " ABCDEFGHIJKLMNOPQRSTUVWXYZ??????abcdefghijklmnopqrstuvwxyzXXX";
 static char *cur = "DACB";
@@ -71,11 +70,7 @@ Input (keyboard, screen, event, eightbit)
     Bool eightbit;
 {
 
-#ifdef I18N
 #define STRBUFSIZE 500
-#else
-#define STRBUFSIZE 100
-#endif
 
 	char strbuf[STRBUFSIZE];
 	register char *string;
@@ -84,21 +79,10 @@ Input (keyboard, screen, event, eightbit)
 	int	nbytes;
 	KeySym  keysym = 0;
 	ANSI	reply;
-#ifdef I18N
 	Status	status_return;
-#endif
 
-#ifdef I18N
-	if (screen->xic)
-	    nbytes = XmbLookupString (screen->xic, event, strbuf, STRBUFSIZE,
-				      &keysym, &status_return);
-	else
-	    nbytes = XLookupString (event, strbuf, STRBUFSIZE,
-				    &keysym, &compose_status);
-#else
-	nbytes = XLookupString (event, strbuf, STRBUFSIZE,
-				&keysym, &compose_status);
-#endif
+	nbytes = XmbLookupString (screen->xic, event, strbuf, STRBUFSIZE,
+				&keysym, &status_return);
 
 	string = &strbuf[0];
 	reply.a_pintro = 0;

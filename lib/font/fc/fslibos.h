@@ -1,5 +1,5 @@
-/* $XConsortium: fslibos.h,v 1.14 94/04/17 20:17:41 mor Exp $ */
-/* $XFree86$ */
+/* $XConsortium: fslibos.h,v 1.15 94/07/20 10:37:01 mor Exp $ */
+/* $XFree86: xc/lib/font/fc/fslibos.h,v 3.0 1995/03/11 14:10:07 dawes Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation
@@ -64,10 +64,14 @@ from the X Consortium.
 #else
 #include <sys/param.h>
 #ifndef OPEN_MAX
+#ifdef __OSF1__
+#define OPEN_MAX 256
+#else
 #ifdef NOFILE
 #define OPEN_MAX NOFILE
 #else
 #define OPEN_MAX NOFILES_MAX
+#endif
 #endif
 #endif
 #endif

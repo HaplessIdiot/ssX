@@ -21,8 +21,8 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.50 94/04/17 20:26:30 gildea Exp $ */
-/* $XFree86$ */
+/* $XConsortium: dixfonts.c,v 1.55 95/05/19 19:35:35 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.1 1995/12/23 09:37:28 dawes Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -563,8 +563,6 @@ doListFontsAndAliases(client, c)
     char       *name, *resolved=NULL;
     int         namelen, resolvedlen;
     int		nnames;
-    int         numFonts;
-    int         length;
     int         stringLens;
     int         i;
     xListFontsReply reply;
@@ -677,6 +675,7 @@ doListFontsAndAliases(client, c)
 	     * old state
 	     */
 	    else if (err == FontNameAlias) {
+		char	tmp_pattern[256];
 		/*
 		 * when an alias recurses, we need to give
 		 * the last FPE a chance to clean up; so we call
@@ -684,6 +683,7 @@ doListFontsAndAliases(client, c)
 		 * is BadFontName, indicating the alias resolution
 		 * is complete.
 		 */
+		memmove(tmp_pattern, resolved, resolvedlen);
 		if (c->haveSaved)
 		{
 		    char    *tmpname;
@@ -711,7 +711,7 @@ doListFontsAndAliases(client, c)
 		    c->savedNameLen = namelen;
 		    aliascount = 20;
 		}
-		c->current.pattern = resolved;
+		memmove(c->current.pattern, tmp_pattern, resolvedlen);
 		c->current.patlen = resolvedlen;
 		c->current.max_names = c->names->nnames + 1;
 		c->current.current_fpe = -1;
@@ -815,7 +815,6 @@ bail:
     xfree(c->fpe_list);
     if (c->savedName) xfree(c->savedName);
     FreeFontNames(names);
-    xfree(c->current.pattern);
     xfree(c);
     if (resolved) xfree(resolved);
     return TRUE;
@@ -833,14 +832,9 @@ ListFonts(client, pattern, length, max_names)
 
     if (!(c = (LFclosurePtr) xalloc(sizeof *c)))
 	return BadAlloc;
-    if (!(c->current.pattern = (char *) xalloc(length)) && length) {
-	xfree(c);
-	return BadAlloc;
-    }
     c->fpe_list = (FontPathElementPtr *)
 	xalloc(sizeof(FontPathElementPtr) * num_fpes);
     if (!c->fpe_list) {
-	xfree(c->current.pattern);
 	xfree(c);
 	return BadAlloc;
     }
@@ -848,7 +842,6 @@ ListFonts(client, pattern, length, max_names)
     if (!c->names)
     {
 	xfree(c->fpe_list);
-	xfree(c->current.pattern);
 	xfree(c);
 	return BadAlloc;
     }
@@ -980,7 +973,7 @@ doListFontsWithInfo(client, c)
 		c->savedName = (char *) pFontInfo;
 		aliascount = 20;
 	    }
-	    c->current.pattern = name;
+	    memmove(c->current.pattern, name, namelen);
 	    c->current.patlen = namelen;
 	    c->current.max_names = 1;
 	    c->current.current_fpe = 0;
@@ -1009,7 +1002,7 @@ doListFontsWithInfo(client, c)
 		    c->current = c->saved;
 		}
 	    }
-	    if (c->current.max_names == 0)
+	    else if (c->current.max_names == 0)
 		break;
 	}
  	else if (err == Successful)
@@ -1084,7 +1077,6 @@ bail:
 	FreeFPE(c->fpe_list[i]);
     xfree(c->reply);
     xfree(c->fpe_list);
-    xfree(c->current.pattern);
     xfree(c);
     return TRUE;
 }
@@ -1101,16 +1093,10 @@ StartListFontsWithInfo(client, length, pattern, max_names)
 
     if (!(c = (LFWIclosurePtr) xalloc(sizeof *c)))
 	goto badAlloc;
-    if (!(c->current.pattern = (char *) xalloc(length)) && length)
-    {
-	xfree(c);
-	goto badAlloc;
-    }
     c->fpe_list = (FontPathElementPtr *)
 	xalloc(sizeof(FontPathElementPtr) * num_fpes);
     if (!c->fpe_list)
     {
-	xfree(c->current.pattern);
 	xfree(c);
 	goto badAlloc;
     }
@@ -1153,6 +1139,7 @@ doPolyText(client, c)
     int err = Success, lgerr;	/* err is in X error, not font error, space */
     enum { NEVER_SLEPT, START_SLEEP, SLEEPING } client_state;
     FontPathElementPtr fpe;
+    GC *origGC;
 
     if (client->clientGone)
     {
@@ -1340,6 +1327,7 @@ doPolyText(client, c)
 			err = BadAlloc;
 			goto bail;
 		    }
+		    origGC = c->pGC;
 		    c->pGC = pGC;
 		    ValidateGC(c->pDraw, c->pGC);
 		    
@@ -1372,10 +1360,10 @@ bail:
     if (client_state == START_SLEEP)
     {
 	/* Step 4 */
-	if (pFont != c->pGC->font)
+	if (pFont != origGC->font)
 	{
-	    ChangeGC(c->pGC, GCFont, &fid);
-	    ValidateGC(c->pDraw, c->pGC);
+	    ChangeGC(origGC, GCFont, &fid);
+	    ValidateGC(c->pDraw, origGC);
 	}
 
 	/* restore pElt pointer for execution of remainder of the request */
@@ -1656,7 +1644,7 @@ static      FontPathElementPtr
 find_existing_fpe(list, num, name, len)
     FontPathElementPtr *list;
     int         num;
-    char       *name;
+    unsigned char *name;
     int         len;
 {
     FontPathElementPtr fpe;

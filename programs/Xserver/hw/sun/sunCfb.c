@@ -1,6 +1,6 @@
 
-/* $XConsortium: sunCfb.c,v 1.15.1.2 95/01/12 18:54:42 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunCfb.c,v 3.1 1995/01/28 15:46:02 dawes Exp $ */
+/* $XConsortium: sunCfb.c /main/18 1995/10/05 07:36:45 kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunCfb.c,v 3.2 1995/02/12 02:36:22 dawes Exp $ */
 
 /*
 Copyright (c) 1990  X Consortium
@@ -87,6 +87,9 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include "sun.h"
 #include "cfb/cfb.h"
+#include "mi/miline.h"
+
+#define GXZEROLINEBIAS	(OCTANT1 | OCTANT3 | OCTANT4 | OCTANT6)
 
 static void CGUpdateColormap(pScreen, dex, count, rmap, gmap, bmap)
     ScreenPtr	pScreen;
@@ -251,6 +254,7 @@ static void checkMono (argc, argv)
  * systems may not have cg3var.h at all.  Since all cg3var.h is needed
  * for is this one #define, we'll just #define it here and let it go at that.
  */
+
 #define CG3_MMAP_OFFSET 0x04000000
 
 Bool sunCG3Init (screen, pScreen, argc, argv)
@@ -266,7 +270,7 @@ Bool sunCG3Init (screen, pScreen, argc, argv)
 	cfbCreateDefColormap, sunSaveScreen, 0);
 }
 
-#ifndef i386 /* { */
+#if !defined(i386) && !defined(__bsdi__) /* { */
 
 #ifdef SVR4
 #include <sys/cg2reg.h>
@@ -444,6 +448,9 @@ Bool sunCG6Init (screen, pScreen, argc, argv)
 	    sunFbs[screen].info.fb_width,
 	    sunFbs[screen].info.fb_depth))
 	return FALSE;
+    if (sunNoGX == FALSE) {
+	miSetZeroLineBias(pScreen, GXZEROLINEBIAS);
+    }
     CGScreenInit (pScreen);
     if (!sunScreenInit (pScreen))
 	return FALSE;

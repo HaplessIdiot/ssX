@@ -1,6 +1,6 @@
 /*
- *	$XConsortium: resize.c,v 1.31 94/11/30 23:51:18 kaleb Exp $
- *	$XFree86: xc/programs/xterm/resize.c,v 3.4 1995/01/28 16:17:47 dawes Exp $
+ *	$XConsortium: resize.c,v 1.34 95/05/24 22:12:04 gildea Exp $
+ *	$XFree86: xc/programs/xterm/resize.c,v 3.5 1995/03/11 14:21:37 dawes Exp $
  */
 
 /*
@@ -35,6 +35,11 @@
 
 #if defined(att) || (defined(SYSV) && defined(i386))
 #define ATT
+#endif
+
+#if defined(sgi) && defined(SVR4)
+#undef SVR4
+#define SYSV
 #endif
 
 #ifdef SVR4
@@ -97,7 +102,9 @@
 
 #ifdef USE_USG_PTYS
 #include <sys/stream.h>
+#ifndef SVR4
 #include <sys/ptem.h>
+#endif
 #endif
 
 #include <signal.h>
@@ -512,13 +519,13 @@ readstring(fp, buf, str)
     char *str;
 {
 	register int last, c;
-	SIGNAL_T timeout();
+	SIGNAL_T resize_timeout();
 #if !defined(USG) && !defined(AMOEBA) && !defined(MINIX) && !defined(SCO) && !(__EMX__)
 	/* What is the advantage of setitimer() over alarm()? */
 	struct itimerval it;
 #endif
 
-	signal(SIGALRM, timeout);
+	signal(SIGALRM, resize_timeout);
 #if defined(USG) || defined(AMOEBA) || defined(MINIX) || defined(SCO) || defined(__EMX__)
 	alarm (TIMEOUT);
 #else
@@ -556,10 +563,10 @@ Usage()
 }
 
 SIGNAL_T
-timeout(sig)
+resize_timeout(sig)
     int sig;
 {
-	fprintf(stderr, "%s: Time out occurred\r\n", myname);
+	fprintf(stderr, "\n%s: Time out occurred\r\n", myname);
 	onintr(sig);
 }
 

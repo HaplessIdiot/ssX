@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 1.197 95/06/14 15:07:27 kaleb Exp $ */
+/* $XConsortium: Text.c /main/198 1995/08/17 09:37:40 kaleb $ */
 
 /***********************************************************
 
@@ -2446,7 +2446,7 @@ Cardinal nelems;
     ctx->text.s.selections = sel;
   }
   for (n=nelems; --n >= 0; sel++, list++)
-    *sel = XInternAtom(dpy, *list, True);
+    *sel = XInternAtom(dpy, *list, False);
   ctx->text.s.atom_count = nelems;
   return ctx->text.s.selections;
 }

@@ -1,8 +1,8 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.75 94/03/27 14:42:02 rws Exp $
- * $XFree86: xc/programs/xrdb/xrdb.c,v 3.1 1995/07/15 15:15:10 dawes Exp $
+ * $XConsortium: xrdb.c,v 11.76 95/05/12 18:36:46 mor Exp $
+ * $XFree86: xc/programs/xrdb/xrdb.c,v 3.2 1995/10/21 11:53:22 dawes Exp $
  */
 
 /*
@@ -47,7 +47,7 @@
 #include <X11/Xos.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <errno.h>	/* hv: for OS/2, shouldn't declare errno explicitly */
+#include <errno.h>
 
 #if !defined(X_NOT_STDC_ENV) && !defined(__EMX__)
 extern int errno;

@@ -1,5 +1,5 @@
-/* $XConsortium: connection.c,v 1.30 95/03/04 12:41:51 kaleb Exp $ */
-/* $XFree86: xc/programs/xfs/os/connection.c,v 3.6 1995/04/09 13:55:45 dawes Exp $ */
+/* $XConsortium: connection.c,v 1.32 95/04/05 19:58:18 kaleb Exp $ */
+/* $XFree86: xc/programs/xfs/os/connection.c,v 3.7 1995/07/08 10:32:34 dawes Exp $ */
 /*
  * handles connections
  */
@@ -90,6 +90,7 @@ in this Software without prior written authorization from the X Consortium.
 #include	"FS.h"
 #include	"FSproto.h"
 #include	"clientstr.h"
+#include	"X11/Xpoll.h"
 #include	"osdep.h"
 #include	"globals.h"
 #include	"osstruct.h"
@@ -108,13 +109,13 @@ extern int errno;
 int         ListenPort = DEFAULT_FS_PORT;   /* port to listen on */
 int         lastfdesc;
 
-long        WellKnownConnections;
-long        AllSockets[mskcnt];
-long        AllClients[mskcnt];
-long        LastSelectMask[mskcnt];
-long        ClientsWithInput[mskcnt];
-long        ClientsWriteBlocked[mskcnt];
-long        OutputPending[mskcnt];
+fd_set      WellKnownConnections;
+fd_set      AllSockets;
+fd_set      AllClients;
+fd_set      LastSelectMask;
+fd_set      ClientsWithInput;
+fd_set      ClientsWriteBlocked;
+fd_set      OutputPending;
 extern long MaxClients;
 long        OutputBufferSize = BUFSIZE;
 
@@ -170,7 +171,7 @@ StopListening()
 
     for (i = 0; i < ListenTransCount; i++)
     {
-	BITCLEAR (AllSockets, ListenTransFds[i]);
+	FD_CLR (ListenTransFds[i], &AllSockets);
 	_FontTransCloseForCloning (ListenTransConns[i]);
     }
 
@@ -196,15 +197,16 @@ OldListenRec *old_listen;
     int         request,
                 i;
 
-    CLEARBITS(AllSockets);
-    CLEARBITS(AllClients);
-    CLEARBITS(LastSelectMask);
-    CLEARBITS(ClientsWithInput);
+    FD_ZERO(&AllSockets);
+    FD_ZERO(&AllClients);
+    FD_ZERO(&LastSelectMask);
+    FD_ZERO(&ClientsWithInput);
+    FD_ZERO(&WellKnownConnections);
 
     for (i = 0; i < MAXSOCKS; i++)
 	ConnectionTranslation[i] = 0;
 
-#ifdef XNO_SYSCONF
+#ifdef XNO_SYSCONF	/* should only be on FreeBSD 1.x and NetBSD 0.x */
 #undef _SC_OPEN_MAX
 #endif
 #ifdef _SC_OPEN_MAX
@@ -220,7 +222,6 @@ OldListenRec *old_listen;
     if (lastfdesc > MAXSOCKS) {
 	lastfdesc = MAXSOCKS;
     }
-    WellKnownConnections = 0;
 
     if (old_listen_count > 0) {
 
@@ -250,7 +251,7 @@ OldListenRec *old_listen;
 		old_listen[i].fd, portnum)) != NULL)
 	    {
 		ListenTransFds[ListenTransCount] = old_listen[i].fd;
-		WellKnownConnections |= (1L << old_listen[i].fd);
+		FD_SET (old_listen[i].fd, &WellKnownConnections);
 
 		NoticeF("Reusing existing file descriptor %d\n",
 		    old_listen[i].fd);
@@ -275,12 +276,12 @@ OldListenRec *old_listen;
 		int fd = _FontTransGetConnectionNumber (ListenTransConns[i]);
 
 		ListenTransFds[i] = fd;
-		WellKnownConnections |= (1L << fd);
+		FD_SET (fd, &WellKnownConnections);
 	    }
 	}
     }
 
-    if (WellKnownConnections == 0)
+    if (! XFD_ANYSET(&WellKnownConnections))
 	FatalError("Cannot establish any listening sockets\n");
 
 
@@ -293,7 +294,7 @@ OldListenRec *old_listen;
     signal(SIGUSR2, ServerCacheFlush);
     signal(SIGCHLD, CleanupChild);
 
-    AllSockets[0] = WellKnownConnections;
+    XFD_COPYSET (&WellKnownConnections, &AllSockets);
 }
 
 /*
@@ -309,15 +310,17 @@ ResetSockets()
 void
 MakeNewConnections()
 {
-    long        readyconnections;
+    fd_mask     readyconnections;
     int         curconn;
     int         newconn;
     long        connect_time;
     int         i;
     ClientPtr   client;
     OsCommPtr   oc;
+    fd_set	tmask;
 
-    readyconnections = (LastSelectMask[0] & WellKnownConnections);
+    XFD_ANDSET (&tmask, &LastSelectMask, &WellKnownConnections);
+    readyconnections = tmask.fds_bits[0];
     if (!readyconnections)
 	return;
     connect_time = GetTimeInMillis();
@@ -356,8 +359,8 @@ MakeNewConnections()
 	    _FontTransClose(new_trans_conn);
 	    continue;
 	}
-	BITSET(AllClients, newconn);
-	BITSET(AllSockets, newconn);
+	FD_SET(newconn, &AllClients);
+	FD_SET(newconn, &AllSockets);
 	oc->fd = newconn;
 	oc->trans_conn = new_trans_conn;
 	oc->input = (ConnectionInputPtr) NULL;
@@ -388,15 +391,15 @@ XtransConnInfo trans_conn;
     char        byteOrder = 0;
     int         whichbyte = 1;
     struct timeval waittime;
-    long        mask[mskcnt];
+    fd_set      mask;
 
 
     waittime.tv_usec = BOTIMEOUT / MILLI_PER_SECOND;
     waittime.tv_usec = (BOTIMEOUT % MILLI_PER_SECOND) *
 	(1000000 / MILLI_PER_SECOND);
-    CLEARBITS(mask);
-    BITSET(mask, fd);
-    (void) select(fd + 1, (int *) mask, (int *) NULL, (int *) NULL, &waittime);
+    FD_ZERO(&mask);
+    FD_SET(fd, &mask);
+    (void) Select(fd + 1, &mask, NULL, NULL, &waittime);
     /* try to read the byteorder of the connection */
     (void) _FontTransRead(trans_conn, &byteOrder, 1);
     if ((byteOrder == 'l') || (byteOrder == 'B')) {
@@ -454,20 +457,20 @@ close_fd(oc)
     if (oc->trans_conn)
 	_FontTransClose(oc->trans_conn);
     FreeOsBuffers(oc);
-    BITCLEAR(AllSockets, fd);
-    BITCLEAR(AllClients, fd);
-    BITCLEAR(ClientsWithInput, fd);
-    BITCLEAR(ClientsWriteBlocked, fd);
-    if (!ANYSET(ClientsWriteBlocked))
+    FD_CLR(fd, &AllSockets);
+    FD_CLR(fd, &AllClients);
+    FD_CLR(fd, &ClientsWithInput);
+    FD_CLR(fd, &ClientsWriteBlocked);
+    if (!XFD_ANYSET(&ClientsWriteBlocked))
 	AnyClientsWriteBlocked = FALSE;
-    BITCLEAR(OutputPending, fd);
+    FD_CLR(fd, &OutputPending);
     fsfree(oc);
 }
 
 CheckConnections()
 {
-    long        mask[mskcnt];
-    long        tmask[mskcnt];
+    fd_set      mask;
+    fd_set      tmask;
     int         curclient;
     int         i;
     struct timeval notime;
@@ -476,17 +479,16 @@ CheckConnections()
     notime.tv_sec = 0;
     notime.tv_usec = 0;
 
-    COPYBITS(AllClients, mask);
-    for (i = 0; i < mskcnt; i++) {
-	while (mask[i]) {
-	    curclient = ffs(mask[i]) - 1 + (i << 5);
-	    CLEARBITS(tmask);
-	    BITSET(tmask, curclient);
-	    r = select(curclient + 1, (int *) tmask, (int *) NULL,
-		       (int *) NULL, &notime);
+    XFD_COPYSET(&AllClients, &mask);
+    for (i = 0; i < howmany(XFD_SETSIZE, NFDBITS); i++) {
+	while (mask.fds_bits[i]) {
+	    curclient = ffs(mask.fds_bits[i]) - 1 + (i << 5);
+	    FD_ZERO(&tmask);
+	    FD_SET(curclient, &tmask);
+	    r = Select(curclient + 1, &tmask, NULL, NULL, &notime);
 	    if (r < 0)
 		CloseDownClient(clients[ConnectionTranslation[curclient]]);
-	    BITCLEAR(mask, curclient);
+	    FD_CLR(curclient, &mask);
 	}
     }
 }
@@ -510,7 +512,7 @@ CloseDownConnection(client)
  *    Must have cooresponding call to AttendClient.
  ****************/
 
-static long IgnoredClientsWithInput[mskcnt];
+static fd_set IgnoredClientsWithInput;
 
 IgnoreClient(client)
     ClientPtr   client;
@@ -518,14 +520,14 @@ IgnoreClient(client)
     OsCommPtr   oc = (OsCommPtr) client->osPrivate;
     int         connection = oc->fd;
 
-    if (GETBIT(ClientsWithInput, connection))
-	BITSET(IgnoredClientsWithInput, connection);
+    if (FD_ISSET(connection, &ClientsWithInput))
+	FD_SET(connection, &IgnoredClientsWithInput);
     else
-	BITCLEAR(IgnoredClientsWithInput, connection);
-    BITCLEAR(ClientsWithInput, connection);
-    BITCLEAR(AllSockets, connection);
-    BITCLEAR(AllClients, connection);
-    BITCLEAR(LastSelectMask, connection);
+	FD_CLR(connection, &IgnoredClientsWithInput);
+    FD_CLR(connection, &ClientsWithInput);
+    FD_CLR(connection, &AllSockets);
+    FD_CLR(connection, &AllClients);
+    FD_CLR(connection, &LastSelectMask);
     isItTimeToYield = TRUE;
 }
 
@@ -540,11 +542,11 @@ AttendClient(client)
     OsCommPtr   oc = (OsCommPtr) client->osPrivate;
     int         connection = oc->fd;
 
-    BITSET(AllClients, connection);
-    BITSET(AllSockets, connection);
-    BITSET(LastSelectMask, connection);
-    if (GETBIT(IgnoredClientsWithInput, connection))
-	BITSET(ClientsWithInput, connection);
+    FD_SET(connection, &AllClients);
+    FD_SET(connection, &AllSockets);
+    FD_SET(connection, &LastSelectMask);
+    if (FD_ISSET(connection, &IgnoredClientsWithInput))
+	FD_SET(connection, &ClientsWithInput);
 }
 
 /*

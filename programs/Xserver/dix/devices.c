@@ -47,8 +47,8 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.46 94/08/16 13:45:06 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: devices.c /main/50 1995/12/07 21:21:31 kaleb $ */
+/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.1 1995/07/08 02:39:15 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -67,6 +67,9 @@ SOFTWARE.
 #endif
 
 extern InputInfo inputInfo;
+#ifdef XKB
+extern Bool noXkbExtension;
+#endif
 extern void (* ReplySwapVector[256]) ();
 extern void CopySwap32Write(), SwapTimeCoordWrite();
 extern void ActivatePointerGrab(), DeactivatePointerGrab();
@@ -203,7 +206,7 @@ CloseDevice(dev)
     if (dev->key)
     {
 #ifdef XKB
-	if (!noXkbExtension && dev->key->xkbInfo)
+	if (dev->key->xkbInfo)
 	    XkbFreeInfo(dev->key->xkbInfo);
 #endif
 	xfree(dev->key->curKeySyms.map);
@@ -331,20 +334,38 @@ LookupPointerDevice()
     return &inputInfo.pointer->public;
 }
 
+DevicePtr
+LookupDevice(id)
+    int id;
+{
+    DeviceIntPtr dev;
+
+    for (dev=inputInfo.devices; dev; dev=dev->next) {
+        if (dev->id == (CARD8)id)
+            return (DevicePtr)dev;
+    }
+    for (dev=inputInfo.off_devices; dev; dev=dev->next) {
+        if (dev->id == (CARD8)id)
+            return (DevicePtr)dev;
+    }
+    return NULL;
+}
+
 void
 QueryMinMaxKeyCodes(minCode, maxCode)
     KeyCode *minCode, *maxCode;
 {
-    *minCode = inputInfo.keyboard->key->curKeySyms.minKeyCode;
-    *maxCode = inputInfo.keyboard->key->curKeySyms.maxKeyCode;
+    if (inputInfo.keyboard) {
+	*minCode = inputInfo.keyboard->key->curKeySyms.minKeyCode;
+	*maxCode = inputInfo.keyboard->key->curKeySyms.maxKeyCode;
+    }
 }
 
 Bool
 SetKeySymsMap(dst, src)
     register KeySymsPtr dst, src;
 {
-    unsigned int i;
-    int j;
+    int i, j;
     int rowDif = src->minKeyCode - dst->minKeyCode;
            /* if keysym map size changes, grow map first */
 
@@ -468,6 +489,7 @@ InitKeyClassDeviceStruct(dev, pKeySyms, pModifiers)
     }
     dev->key = keyc;
 #ifdef XKB
+    dev->key->xkbInfo= NULL;
     if (!noXkbExtension) XkbInitDevice(dev);
 #endif
     return TRUE;
@@ -557,24 +579,19 @@ InitKbdFeedbackClassDeviceStruct(dev, bellProc, controlProc)
 	return FALSE;
     feedc->BellProc = bellProc;
     feedc->CtrlProc = controlProc;
+#ifdef XKB
+    defaultKeyboardControl.autoRepeat = TRUE;
+#endif
     feedc->ctrl = defaultKeyboardControl;
     feedc->ctrl.id = 0;
-    if ( (feedc->next = dev->kbdfeed) )
+    if (feedc->next = dev->kbdfeed)
 	feedc->ctrl.id = dev->kbdfeed->ctrl.id + 1;
     dev->kbdfeed = feedc;
 #ifdef XKB
-    /* If XKB (AccessX) will handle the autorepeat in software we tell 
-     * the hardware to not autorepeat.
-     */
-    if (!noXkbExtension && XkbUpdateAutorepeat(dev))
-    {
-        feedc->ctrl.autoRepeat = FALSE;
-        (*controlProc)(dev, &feedc->ctrl);
-        feedc->ctrl.autoRepeat = TRUE;
-    }
-    else
+    if (!noXkbExtension)
+	XkbUpdateAutoRepeat(dev);
 #endif
-    (*controlProc)(dev, &feedc->ctrl);
+    (*dev->kbdfeed->CtrlProc)(dev,&dev->kbdfeed->ctrl);
     return TRUE;
 }
 
@@ -589,7 +606,13 @@ InitPtrFeedbackClassDeviceStruct(dev, controlProc)
     if (!feedc)
 	return FALSE;
     feedc->CtrlProc = controlProc;
+#ifdef sgi
+    feedc->ctrl.num = 1;
+    feedc->ctrl.den = 1;
+    feedc->ctrl.threshold = 1;
+#else
     feedc->ctrl = defaultPointerControl;
+#endif
     feedc->ctrl.id = 0;
     if ( (feedc->next = dev->ptrfeed) )
         feedc->ctrl.id = dev->ptrfeed->ctrl.id + 1;
@@ -770,39 +793,26 @@ SendMappingNotify(request, firstKeyCode, count)
         event.u.mappingNotify.count = count;
     }
 #ifdef XKB
-    if (!noXkbExtension)
-    {
-	if (request == MappingKeyboard || request == MappingModifier)
-	    XkbApplyMappingChange(inputInfo.keyboard, request, firstKeyCode,
-				  count);
-
-	/* 0 is the server client */
-	for (i=1; i<currentMaxClients; i++)
-	{
-            if (clients[i] && clients[i]->clientState == ClientStateRunning && 
-		clients[i]->xkbClientFlags == 0)
-	    {
-		if (request == MappingKeyboard && 
-		    (clients[i]->mapNotifyMask & XkbKeySymsMask))
-		    continue;
-
-		event.u.u.sequenceNumber = clients[i]->sequence;
-		WriteEventsToClient(clients[i], 1, &event);
-	    }
-	}
-    }
-    else
+    if (!noXkbExtension &&
+	((request == MappingKeyboard) || (request == MappingModifier)))
+	XkbApplyMappingChange(inputInfo.keyboard, request, firstKeyCode, count);
 #endif
+
+   /* 0 is the server client */
+    for (i=1; i<currentMaxClients; i++)
     {
-	/* 0 is the server client */
-	for (i = 1; i < currentMaxClients; i++)
+	if (clients[i] && clients[i]->clientState == ClientStateRunning)
 	{
-            if (clients[i] && clients[i]->clientState == ClientStateRunning)
-	    {
-		event.u.u.sequenceNumber = clients[i]->sequence;
-		WriteEventsToClient(clients[i], 1, &event);
-	    }
-  	}
+#ifdef XKB
+	    if (!noXkbExtension &&
+		(request == MappingKeyboard) &&
+		(clients[i]->xkbClientFlags != 0) &&
+		(clients[i]->mapNotifyMask&XkbKeySymsMask))
+		continue;
+#endif
+	    event.u.u.sequenceNumber = clients[i]->sequence;
+	    WriteEventsToClient(clients[i], 1, &event);
+	}
     }
 }
 
@@ -956,7 +966,7 @@ ProcSetModifierMapping(client)
 	{
 	    if (inputMap[i])
 		keyc->modifierMap[inputMap[i]] |=
-		    (1 << ( ((unsigned int)i)/keyc->maxKeysPerModifier));
+		    (1<<(((unsigned int)i)/keyc->maxKeysPerModifier));
 	}
     }
 #ifdef XKB
@@ -1267,11 +1277,10 @@ ProcChangeKeyboardControl (client)
 		return BadValue;
 	    }
 #ifdef XKB
-	    if (!noXkbExtension)
-	    {
+	    if (!noXkbExtension) {
 		keybd->kbdfeed->ctrl.leds = ctrl.leds;
 		XkbSetIndicators(keybd,((led == DO_ALL) ? ~0L : (1L<<(led-1))),
-				 ctrl.leds, NULL);
+				 			ctrl.leds, NULL, NULL);
 	    }
 #endif
 	    break;
@@ -1294,7 +1303,7 @@ ProcChangeKeyboardControl (client)
 	    vlist++;
 #ifdef XKB
 	    if (!noXkbExtension && key != DO_ALL)
-		XkbDisableComputedAutoRepeats();
+		XkbDisableComputedAutoRepeats(keybd,key);
 #endif
 	    if (t == AutoRepeatModeOff)
 	    {
@@ -1334,18 +1343,8 @@ ProcChangeKeyboardControl (client)
 #ifdef XKB
     /* The XKB RepeatKeys control and core protocol global autorepeat */
     /* value are linked	*/
-    if (!noXkbExtension)
-    {
-	XkbSetRepeatKeys(keybd,keybd->kbdfeed->ctrl.autoRepeat);
-    }
-    /* If XKB (AccessX) will handle the autorepeat in software we tell 
-     * the hardware to not autorepeat.
-     */
-    if (!noXkbExtension && XkbUsesSoftRepeat(keybd))
-    {
-        keybd->kbdfeed->ctrl.autoRepeat = FALSE;
-        (*keybd->kbdfeed->CtrlProc)(keybd, &keybd->kbdfeed->ctrl);
-        keybd->kbdfeed->ctrl.autoRepeat = TRUE;
+    if (!noXkbExtension) {
+	XkbSetRepeatKeys(keybd,key,keybd->kbdfeed->ctrl.autoRepeat);
     }
     else
 #endif
@@ -1400,11 +1399,9 @@ ProcBell(client)
     	newpercent = base - newpercent + stuff->percent;
 #ifdef XKB
     if (!noXkbExtension)
-    {
-	XkbHandleBell(FALSE, keybd, newpercent, &keybd->kbdfeed->ctrl, 0, 
+	XkbHandleBell(FALSE,FALSE, keybd, newpercent, &keybd->kbdfeed->ctrl, 0, 
 		      None, NULL, client);
-    }
-    else
+	else
 #endif
     (*keybd->kbdfeed->BellProc)(newpercent, keybd,
 				(pointer) &keybd->kbdfeed->ctrl, 0);
@@ -1589,3 +1586,4 @@ ProcQueryKeymap(client)
     WriteReplyToClient(client, sizeof(xQueryKeymapReply), &rep);
     return Success;
 }
+

@@ -1,5 +1,5 @@
-/* $XConsortium: events.c,v 1.11 94/04/17 20:39:17 rws Exp $ */
-/* $XFree86: xc/programs/xieperf/events.c,v 3.0 1994/04/28 12:45:38 dawes Exp $ */
+/* $XConsortium: events.c,v 1.12 95/04/05 19:59:08 kaleb Exp $ */
+/* $XFree86: xc/programs/xieperf/events.c,v 3.1 1994/05/08 05:26:29 dawes Exp $ */
 /**** module events.c ****/
 /******************************************************************************
 
@@ -77,23 +77,8 @@ terms and conditions:
 #endif
 #include <stdio.h>
 #include <ctype.h>
+#include <X11/Xpoll.h>
 #include "xieperf.h"
-#ifdef X_NOT_STDC_ENV
-#define Time_t long
-extern Time_t time ();
-#else
-#include <time.h>
-#define Time_t time_t
-#endif
-#ifdef WIN32
-#define BOOL wBOOL
-#undef Status
-#define Status wStatus
-#include <winsock.h>
-#undef Status
-#define Status int
-#undef BOOL
-#endif
 
 #ifdef MINIX
 #include <sys/nbio.h>
@@ -188,16 +173,10 @@ Bool	verbose;
 	XieImportObscuredEvent *ImportObscured = 
 		(XieImportObscuredEvent *) &event;
 	int retval, xie_event;
-	Time_t endtime, curtime, delta;
+	time_t endtime, curtime, delta;
 	struct timeval tv;
 	Bool done;
-#ifdef WIN32
 	fd_set rd;
-#define FDCAST fdset
-#else
-	unsigned int rd;
-#define FDCAST unsigned int
-#endif
 
 	retval = 1;
 	done = False;
@@ -205,7 +184,7 @@ Bool	verbose;
 	/* set up for the select */
 
 	Xsocket = ConnectionNumber(xp->d);	
-	endtime = time( ( Time_t * ) NULL ) + timeout;
+	endtime = time( ( time_t * ) NULL ) + timeout;
 	while ( done == False )
 	{
 		/* see if there is anything for us in the event queue... */	
@@ -213,7 +192,7 @@ Bool	verbose;
 		if ( XCheckTypedEvent( xp->d, xieInfo->first_event + which, 
 			&event ) == False )
 		{
-			curtime = time( ( Time_t * ) NULL );
+			curtime = time( ( time_t * ) NULL );
 			delta = endtime - curtime;
 			if ( delta <= 0 )
 			{
@@ -227,13 +206,9 @@ Bool	verbose;
 			tv.tv_usec = 0L;
 			XFlush( xp->d );
 #ifndef AMOEBA
-#ifdef WIN32
 			FD_ZERO(&rd);
 			FD_SET(Xsocket, &rd);
-#else
-			rd = 1 << Xsocket;
-#endif
-			select( Xsocket + 1, ( int * ) &rd, ( int * ) NULL, ( int * ) NULL, &tv );
+			Select( Xsocket + 1, &rd, NULL, NULL, &tv );
 #else  /* AMOEBA */
 			(void) _X11TransAmSelect(ConnectionNumber(xp->d),
 						 delta * 1000);

@@ -1,5 +1,5 @@
-/* $XConsortium: pexRndr.c,v 5.28 94/04/17 20:36:12 rws Exp $ */
-/* $XFree86$ */
+/* $XConsortium: pexRndr.c,v 5.29 94/09/09 20:32:50 hersh Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexRndr.c,v 3.0 1995/07/07 15:36:12 dawes Exp $ */
 
 /***********************************************************
 
@@ -55,13 +55,27 @@ SOFTWARE.
  *	PEXGetRendererAttributes
  *	PEXBeginRendering
  *	PEXEndRendering
+ *	PEXClearRenderer
+ *	PEXFlushRenderer
+ *	PEXInitRenderer
  *	PEXBeginStructure
  *	PEXEndStructure
  *	PEXRenderElements
  *	PEXAccumulateState
  *	PEXRenderNetwork
  *	PEXRenderOutputCommands
- --*/
+ *	PEXCopyAlphaToPixmap
+ *	PEXCopyPixmapToAlpha
+ *	PEXCopyPCToPipelineState
+ *	PEXCopyPipelineStateToPC
+ *	PEXCopyZBufferToPixmap
+ *	PEXCopyPixmapToZBuffer
+ *	PEXGetZBuffer
+ *	PEXPutZBuffer
+ *	PEXInitMultiPass
+ *	PEXNextPass
+ *	PEXNextPassWithoutReply
+--*/
 
 #ifdef min
 #undef min
@@ -76,6 +90,7 @@ SOFTWARE.
 #include "ddpex3.h"
 #include "ddpex4.h"
 #include "pexLookup.h"
+#include "dipex.h"
 #include "pexExtract.h"
 #include "pexUtils.h"
 #include "pex_site.h"
@@ -963,6 +978,60 @@ pexEndRenderingReq	*strmPtr;
 
 } /* end-PEXEndRendering() */
 
+/*++	PEXClearRenderer
+ --*/
+ErrorCode
+PEXClearRenderer( cntxtPtr, strmPtr )
+pexContext   	 	*cntxtPtr;
+pexClearRendererReq 	*strmPtr;
+{
+    ErrorCode err = Success;
+    ddRendererStr *prend = 0;
+
+    LU_RENDERER(strmPtr->rdr, prend);
+
+    err = ClearRenderer(prend, strmPtr->clearControl);
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+    return( err );
+
+} /* end-PEXClearRenderer() */
+
+/*++	PEXFlushRenderer
+ --*/
+ErrorCode
+PEXFlushRenderer( cntxtPtr, strmPtr )
+pexContext   	 	*cntxtPtr;
+pexFlushRendererReq 	*strmPtr;
+{
+    ErrorCode err = Success;
+    ddRendererStr *prend = 0;
+
+    LU_RENDERER(strmPtr->rdr, prend);
+
+    err = FlushRenderer(prend, strmPtr->flushFlag);
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+    return( err );
+
+} /* end-PEXFlushRenderer() */
+
+/*++	PEXInitRenderer
+ --*/
+ErrorCode
+PEXInitRenderer( cntxtPtr, strmPtr )
+pexContext   	 	*cntxtPtr;
+pexInitRendererReq 	*strmPtr;
+{
+    ErrorCode err = Success;
+    ddRendererStr *prend = 0;
+
+    LU_RENDERER(strmPtr->rdr, prend);
+
+    err = InitRenderer(prend);
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+    return( err );
+
+} /* end-PEXInitRenderer() */
+
 /*++	PEXBeginStructure
  --*/
 ErrorCode
@@ -1209,6 +1278,247 @@ unsigned long flag;
 {
 
 }
+
+/*++	PEXCopyAlphaToPixmap
+ --*/
+ErrorCode
+PEXCopyAlphaToPixmap( cntxtPtr, strmPtr )
+pexContext   	 	*cntxtPtr;
+pexCopyAlphaToPixmapReq 	*strmPtr;
+{
+    ErrorCode err = Success;
+    ddRendererStr *prend = 0;
+
+    LU_RENDERER(strmPtr->rdr, prend);
+    LU_DRAWABLE(strmPtr->pixmap, prend->pDrawable);
+
+    err = CopyAlphaToPixmap(prend, prend->pDrawable);
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+    return( err );
+
+} /* end-PEXCopyAlphaToPixmap() */
+
+/*++	PEXCopyPixmapToAlpha
+ --*/
+ErrorCode
+PEXCopyPixmapToAlpha( cntxtPtr, strmPtr )
+pexContext   	 	*cntxtPtr;
+pexCopyPixmapToAlphaReq 	*strmPtr;
+{
+    ErrorCode err = Success;
+    ddRendererStr *prend = 0;
+
+    LU_RENDERER(strmPtr->rdr, prend);
+    LU_DRAWABLE(strmPtr->pixmap, prend->pDrawable);
+
+    err = CopyPixmapToAlpha(prend, prend->pDrawable);
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+    return( err );
+
+} /* end-PEXCopyPixmapToAlpha() */
+
+/*++	PEXCopyZBufferToPixmap
+ --*/
+ErrorCode
+PEXCopyZBufferToPixmap( cntxtPtr, strmPtr )
+pexContext   	 	*cntxtPtr;
+pexCopyZBufferToPixmapReq 	*strmPtr;
+{
+    ErrorCode err = Success;
+    ddRendererStr *prend = 0;
+
+    LU_RENDERER(strmPtr->rdr, prend);
+    LU_DRAWABLE(strmPtr->pixmap, prend->pDrawable);
+
+    err = CopyZBufferToPixmap(prend, prend->pDrawable);
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+    return( err );
+
+} /* end-PEXCopyZBufferToPixmap() */
+
+/*++	PEXCopyPixmapToZBuffer
+ --*/
+ErrorCode
+PEXCopyPixmapToZBuffer( cntxtPtr, strmPtr )
+pexContext   	 	*cntxtPtr;
+pexCopyPixmapToZBufferReq 	*strmPtr;
+{
+    ErrorCode err = Success;
+    ddRendererStr *prend = 0;
+
+    LU_RENDERER(strmPtr->rdr, prend);
+    LU_DRAWABLE(strmPtr->pixmap, prend->pDrawable);
+
+    err = CopyPixmapToZBuffer(prend, prend->pDrawable);
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+    return( err );
+
+} /* end-PEXCopyPixmapToZBuffer() */
+
+/*++	PEXCopyPCToPipelineState
+ --*/
+ErrorCode
+PEXCopyPCToPipelineState( cntxtPtr, strmPtr )
+pexContext   	 	*cntxtPtr;
+pexCopyPCToPipelineStateReq 	*strmPtr;
+{
+    ErrorCode err = Success;
+    ddRendererStr *prend = 0;
+    ddPCStr *ppc = 0;
+
+    LU_RENDERER(strmPtr->rdr, prend);
+    LU_PIPELINECONTEXT(strmPtr->pc, ppc);
+
+    err = CopyPCToPipelineState(prend, ppc, strmPtr->itemMask);
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+    return( err );
+
+} /* end-PEXCopyPCToPipelineState() */
+
+/*++	PEXCopyPipelineStateToPC
+ --*/
+ErrorCode
+PEXCopyPipelineStateToPC( cntxtPtr, strmPtr )
+pexContext   	 	*cntxtPtr;
+pexCopyPipelineStateToPCReq 	*strmPtr;
+{
+    ErrorCode err = Success;
+    ddRendererStr *prend = 0;
+    ddPCStr *ppc = 0;
+
+    LU_RENDERER(strmPtr->rdr, prend);
+    LU_PIPELINECONTEXT(strmPtr->pc, ppc);
+
+    err = CopyPipelineStateToPC(prend, ppc, strmPtr->itemMask);
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+    return( err );
+
+} /* end-PEXCopyPipelineStateToPC() */
+
+/*++	PEXGetZBuffer
+ --*/
+ErrorCode
+PEXGetZBuffer( cntxtPtr, strmPtr )
+pexContext   	 	*cntxtPtr;
+pexGetZBufferReq 	*strmPtr;
+{
+    ErrorCode err = Success;
+    ddRendererStr *prend = 0;
+    extern ddBuffer *pPEXBuffer;
+    pexSwitch    undefinedValues = 0;
+    ddULONG 	numValues = 0;
+
+    LU_RENDERER(strmPtr->rdr, prend);
+    CHECK_FP_FORMAT(strmPtr->fpFormat);
+
+    SETUP_INQ(pexGetZBufferReply);
+
+    err = GetZBuffer(prend, strmPtr->x, strmPtr->y, strmPtr->width,
+strmPtr->height, strmPtr->normalizedValues, &numValues, &undefinedValues,
+pPEXBuffer);
+
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+
+    {
+	SETUP_VAR_REPLY(pexGetZBufferReply);
+	reply->numValues = numValues;
+	reply->undefinedValues = undefinedValues;
+	WritePEXBufferReply(pexGetZBufferReply);
+    }
+
+    return( err );
+
+} /* end-PEXGetZBuffer() */
+
+/*++	PEXPutZBuffer
+ --*/
+ErrorCode
+PEXPutZBuffer( cntxtPtr, strmPtr )
+pexContext   	 	*cntxtPtr;
+pexPutZBufferReq 	*strmPtr;
+{
+    ErrorCode err = Success;
+    ddRendererStr *prend = 0;
+    ddPointer	*Zbuffer;
+
+    LU_RENDERER(strmPtr->rdr, prend);
+    CHECK_FP_FORMAT(strmPtr->fpFormat);
+
+    Zbuffer = (ddPointer *)(strmPtr + 1);
+
+    err = PutZBuffer(prend, strmPtr->x, strmPtr->y, strmPtr->width,
+strmPtr->height, strmPtr->normalizedValues, strmPtr->numValues, Zbuffer); 
+
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+
+    return( err );
+
+} /* end-PEXGetZBuffer() */
+
+/*++	PEXInitMultipass
+ --*/
+ErrorCode
+PEXInitMultipass( cntxtPtr, strmPtr )
+pexContext   	 	*cntxtPtr;
+pexInitMultipassReq 	*strmPtr;
+{
+    ErrorCode err = Success;
+    ddRendererStr *prend = 0;
+
+    LU_RENDERER(strmPtr->rdr, prend);
+
+    err = InitMultipass(prend);
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+    return( err );
+
+} /* end-PEXInitMultipass() */
+
+/*++	PEXNextPass
+ --*/
+ErrorCode
+PEXNextPass( cntxtPtr, strmPtr )
+pexContext   	 	*cntxtPtr;
+pexNextPassReq 	*strmPtr;
+{
+    ErrorCode err = Success;
+    extern ddBuffer *pPEXBuffer;
+    pexNextPassReply *reply = (pexNextPassReply *)(pPEXBuffer->pHead);
+    ddRendererStr *prend = 0;
+    ddLONG count = 0;
+
+    LU_RENDERER(strmPtr->rdr, prend);
+    SETUP_INQ(pexNextPassReply);
+
+    err = NextPass(prend, strmPtr->multipass_control, &count);
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+    reply->length = 0;
+    reply->count  = count;
+    WritePEXReplyToClient(  cntxtPtr, strmPtr,
+                            sizeof(pexNextPassReply) + reply->length,
+                            reply);
+    return( err );
+
+} /* end-PEXNextPass() */
+
+/*++	PEXNextPassWoutReply
+ --*/
+ErrorCode
+PEXNextPassWoutReply( cntxtPtr, strmPtr )
+pexContext   	 	*cntxtPtr;
+pexNextPassReq 	*strmPtr;
+/* uses same structure as PEXNextPass*/
+{
+    ErrorCode err = Success;
+    ddRendererStr *prend = 0;
+
+    LU_RENDERER(strmPtr->rdr, prend);
+
+    err = NextPassWoutReply(prend, strmPtr->multipass_control );
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+    return( err );
+
+} /* end-PEXNextPassWoutReply() */
+
 /*++
  *
  *	End of File

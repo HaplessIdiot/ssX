@@ -1,5 +1,5 @@
-/* $XConsortium: fserve.c,v 1.43 94/04/17 20:17:39 mor Exp $ */
-/* $XFree86$ */
+/* $XConsortium: fserve.c,v 1.44 95/04/05 19:58:07 kaleb Exp $ */
+/* $XFree86: xc/lib/font/fc/fserve.c,v 3.0 1994/10/20 06:06:37 dawes Exp $ */
 /*
 
 Copyright (c) 1990  X Consortium
@@ -58,12 +58,12 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 #include	<X11/X.h>
 #include	<X11/Xos.h>
+#include	"X11/Xpoll.h"
 #include	"FS.h"
 #include	"FSproto.h"
 #include	"fontmisc.h"
 #include	"fontstruct.h"
 #include	"fservestr.h"
-#include	"fslibos.h"
 #include	<errno.h>
 #if defined(X_NOT_STDC_ENV) && !defined(__EMX__)
 extern int errno;
@@ -102,7 +102,7 @@ static int  fs_read_list();
 static int  fs_read_list_info();
 
 static int  fs_font_type;
-extern unsigned long _fs_fd_mask[];
+extern fd_set _fs_fd_mask;
 
 static void fs_block_handler();
 static int  fs_wakeup();
@@ -344,7 +344,7 @@ fs_close_conn(conn)
 
     (void) _FontTransClose (conn->trans_conn);
 
-    _fs_bit_clear(_fs_fd_mask, conn->fs_fd);
+    FD_CLR(conn->fs_fd, &_fs_fd_mask);
 
     for (client = conn->clients; client; client = nclient) 
     {
@@ -392,7 +392,7 @@ fs_init_fpe(fpe)
 	}
 	if (init_fs_handlers(fpe, fs_block_handler) != Successful)
 	    return AllocError;
-	_fs_set_bit(_fs_fd_mask, conn->fs_fd);
+	FD_SET(conn->fs_fd, &_fs_fd_mask);
 	conn->attemptReconnect = TRUE;
 
 #ifdef NCD
@@ -447,7 +447,7 @@ fs_free_fpe(fpe)
     fs_close_conn(conn);
 
     remove_fs_handlers(fpe, fs_block_handler,
-		       !_fs_any_bit_set(_fs_fd_mask) && !awaiting_reconnect);
+		       !XFD_ANYSET(&_fs_fd_mask) && !awaiting_reconnect);
 
     xfree(conn->alts);
     xfree(conn->servername);
@@ -1170,14 +1170,14 @@ static void
 fs_block_handler(data, wt, LastSelectMask)
     pointer     data;
     struct timeval **wt;
-    long       *LastSelectMask;
+    fd_set*      LastSelectMask;
 {
     static struct timeval recon_timeout;
     Time_t      now,
                 soonest;
     FSFpePtr    recon;
 
-    _fs_or_bits(LastSelectMask, LastSelectMask, _fs_fd_mask);
+    XFD_ORSET(LastSelectMask, LastSelectMask, &_fs_fd_mask);
     if (recon = awaiting_reconnect) {
 	now = time((Time_t *) 0);
 	soonest = recon->time_to_try;
@@ -1219,7 +1219,7 @@ fs_handle_unexpected(conn, rep)
 static int
 fs_wakeup(fpe, LastSelectMask)
     FontPathElementPtr fpe;
-    unsigned long *LastSelectMask;
+    fd_set* LastSelectMask;
 {
     FSBlockDataPtr blockrec,
                 br;
@@ -1228,7 +1228,7 @@ fs_wakeup(fpe, LastSelectMask)
     fsGenericReply rep;
 
     /* see if there's any data to be read */
-    if (_fs_is_bit_set(LastSelectMask, conn->fs_fd)) {
+    if (FD_ISSET(conn->fs_fd, LastSelectMask)) {
 
 #ifdef NOTDEF			/* bogus - doesn't deal with EOF very well,
 				 * now does it ... */
@@ -1320,7 +1320,7 @@ _fs_restart_connection(conn)
     FSBlockDataPtr block;
 
     conn->current_seq = 0;
-    _fs_set_bit(_fs_fd_mask, conn->fs_fd);
+    FD_SET(conn->fs_fd, &_fs_fd_mask);
     if (!fs_send_init_packets(conn))
 	return FALSE;
     while (block = (FSBlockDataPtr) conn->blocked_requests) {
@@ -1994,7 +1994,7 @@ fs_load_all_glyphs(pfont)
     while ((err = _fs_load_glyphs(serverClient, pfont, TRUE, 0, 0, NULL)) ==
 	   Suspended)
     {
-	FdSet TempSelectMask;
+	fd_set TempSelectMask;
 	if (_fs_wait_for_readable(conn) == -1)
 	{
 	    /* We lost our connection.  Don't wait to reestablish it;
@@ -2006,13 +2006,8 @@ fs_load_all_glyphs(pfont)
 
 	    return BadCharRange;	/* As good an error as any other */
 	}
-#ifdef WIN32
-	_fs_set_bit(&TempSelectMask, conn->fs_fd);
+	FD_SET(conn->fs_fd, &TempSelectMask);
 	fs_wakeup(pfont->fpe, &TempSelectMask);
-#else
-	_fs_set_bit(TempSelectMask, conn->fs_fd);
-	fs_wakeup(pfont->fpe, TempSelectMask);
-#endif
     }
 
     return err;
@@ -2431,7 +2426,7 @@ fs_read_list_info(fpe, blockrec)
     binfo->status = FS_LFWI_REPLY;
     binfo->errcode = Suspended;
     /* disable this font server until we've processed this response */
-    _fs_bit_clear(_fs_fd_mask, conn->fs_fd);
+    FD_CLR(conn->fs_fd, &_fs_fd_mask);
 
     return Successful;
 
@@ -2537,7 +2532,7 @@ fs_next_list_with_info(client, fpe, namep, namelenp, pFontInfo, numFonts,
     *namelenp = blockedinfo->namelen;
     *pFontInfo = blockedinfo->pfi;
     *numFonts = blockedinfo->remaining;
-    _fs_set_bit(_fs_fd_mask, conn->fs_fd);
+    FD_SET(conn->fs_fd, &_fs_fd_mask);
     if (blockedinfo->status == FS_LFWI_FINISHED) {
 	int         err = blockedinfo->errcode;
 
@@ -2594,7 +2589,7 @@ fs_client_died(client, fpe)
 	FSBlockedListInfoPtr binfo;
 	binfo = (FSBlockedListInfoPtr) blockrec->data;
 	if (binfo->status == FS_LFWI_REPLY)
-	    _fs_set_bit(_fs_fd_mask, conn->fs_fd);
+	    FD_SET(conn->fs_fd, &_fs_fd_mask);
     	if (binfo->name)
 	{
 	    xfree(binfo->name);

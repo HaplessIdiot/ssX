@@ -1,5 +1,5 @@
-/* $XConsortium: main.c,v 1.84 94/11/30 16:10:44 kaleb Exp $ */
-/* $XFree86: xc/config/makedepend/main.c,v 3.3 1995/01/28 15:41:03 dawes Exp $ */
+/* $XConsortium: main.c /main/82 1995/11/07 19:47:02 gildea $ */
+/* $XFree86: xc/config/makedepend/main.c,v 3.4 1995/07/15 14:53:49 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -588,8 +588,10 @@ redirect(line, makefile)
 	/*
 	 * if makefile is "-" then let it pour onto stdout.
 	 */
-	if (makefile && *makefile == '-' && *(makefile+1) == '\0')
+	if (makefile && *makefile == '-' && *(makefile+1) == '\0') {
+		puts(line);
 		return;
+	}
 
 	/*
 	 * use a default makefile is not specified.

@@ -1,5 +1,5 @@
-/* $XConsortium: dispatch.c,v 5.66 94/10/19 21:59:25 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.2 1994/06/19 10:58:54 dawes Exp $ */
+/* $XConsortium: dispatch.c /main/168 1995/12/08 13:37:16 dpw $ */
+/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.3 1995/01/12 05:56:45 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -88,8 +88,8 @@ extern void SwapConnClientPrefix(
 Selection *CurrentSelections;
 int NumCurrentSelections;
 
-extern long defaultScreenSaverTime;
-extern long defaultScreenSaverInterval;
+extern CARD32 defaultScreenSaverTime;
+extern CARD32 defaultScreenSaverInterval;
 extern int  defaultScreenSaverBlanking;
 extern int  defaultScreenSaverAllowExposures;
 static ClientPtr grabClient;
@@ -99,8 +99,12 @@ static ClientPtr grabClient;
 static int grabState = GrabNone;
 static long grabWaiters[mskcnt];
 CallbackListPtr ServerGrabCallback = NULL;
-long	*checkForInput[2];
+HWEventQueuePtr checkForInput[2];
 extern int connBlockScreenStart;
+
+#ifdef XKB
+extern Bool noXkbExtension;
+#endif
 
 extern int (* InitialVector[3]) ();
 extern int (* ProcVector[256]) ();
@@ -148,7 +152,7 @@ XID clientErrorValue;   /* XXX this is a kludge */
 
 void
 SetInputCheck(c0, c1)
-    long *c0, *c1;
+    HWEventQueuePtr c0, c1;
 {
     checkForInput[0] = c0;
     checkForInput[1] = c1;
@@ -233,7 +237,7 @@ Dispatch()
     register int	result;
     register ClientPtr	client;
     register int	nready;
-    register long	**icheck = checkForInput;
+    register HWEventQueuePtr* icheck = checkForInput;
 
     nextFreeClientID = 1;
     InitSelections();
@@ -305,6 +309,19 @@ Dispatch()
 		else
 		    result = (* client->requestVector[MAJOROP])(client);
 	    
+#ifdef LBX
+		if (client->largeReqBuf)
+		{
+		    /*
+		     * We just finished handling an LBX large request,
+		     * so free the large request buffer now.
+		     */
+
+		    xfree (client->largeReqBuf);
+		    client->largeReqBuf = NULL;
+		}
+#endif
+
 		if (result != Success) 
 		{
 		    if (client->noClientException != Success)
@@ -1562,6 +1579,9 @@ ProcCopyArea(client)
     }
     else
         pSrc = pDst;
+
+    SET_DBE_SRCBUF(pSrc, stuff->srcDrawable);
+
     pRgn = (*pGC->ops->CopyArea)(pSrc, pDst, pGC, stuff->srcX, stuff->srcY,
 				 stuff->width, stuff->height, 
 				 stuff->dstX, stuff->dstY);
@@ -1599,6 +1619,8 @@ ProcCopyPlane(client)
     }
     else
         psrcDraw = pdstDraw;
+
+    SET_DBE_SRCBUF(psrcDraw, stuff->srcDrawable);
 
     /* Check to see if stuff->bitPlane has exactly ONE good bit set */
     if(stuff->bitPlane == 0 || (stuff->bitPlane & (stuff->bitPlane - 1)) ||
@@ -1909,7 +1931,7 @@ ProcPutImage(client)
     lengthProto = length;
 #endif /* INTERNAL_VS_EXTERNAL_PADDING */
 	
-    if (((((lengthProto * stuff->height) + 3) >> 2) + 
+    if (((((lengthProto * stuff->height) + (unsigned)3) >> 2) + 
 	(sizeof(xPutImageReq) >> 2)) != client->req_len)
 	return BadLength;
 
@@ -1975,13 +1997,16 @@ ProcGetImage(client)
     else
     {
       if(stuff->x < 0 ||
-         stuff->x+(int)stuff->width > pDraw->width ||
+         stuff->x+(int)stuff->width > (int)pDraw->width ||
          stuff->y < 0 ||
-         stuff->y+height > pDraw->height
+         stuff->y+height > (int)pDraw->height
         )
 	    return(BadMatch);
 	xgi.visual = None;
     }
+
+    SET_DBE_SRCBUF(pDraw, stuff->drawable);
+
     xgi.type = X_Reply;
     xgi.sequenceNumber = client->sequence;
     xgi.depth = pDraw->depth;
@@ -3345,8 +3370,15 @@ CloseDownClient(client)
 	     */
 	    FreeClientNeverRetainResources(client);
 	    client->clientState = ClientStateRetained;
-	    if (ClientStateCallback)
-		CallCallbacks(&ClientStateCallback, (pointer)client);
+  	    if (ClientStateCallback)
+            {
+		NewClientInfoRec clientinfo;
+
+		clientinfo.client = client; 
+		clientinfo.prefix = (xConnSetupPrefix *)NULL;  
+		clientinfo.setup = (xConnSetup *) NULL;
+		CallCallbacks((&ClientStateCallback), (pointer)&clientinfo);
+            } 
 	}
 	client->clientGone = TRUE;  /* so events aren't sent to client */
 	CloseDownConnection(client);
@@ -3378,11 +3410,22 @@ CloseDownClient(client)
 	    }
 	    client->clientState = ClientStateGone;
 	    if (ClientStateCallback)
-		CallCallbacks(&ClientStateCallback, (pointer)client);
+            {
+		NewClientInfoRec clientinfo;
+
+		clientinfo.client = client; 
+		clientinfo.prefix = (xConnSetupPrefix *)NULL;  
+		clientinfo.setup = (xConnSetup *) NULL;
+		CallCallbacks((&ClientStateCallback), (pointer)&clientinfo);
+            } 	    
 	    FreeClientResources(client);
 	    if (client->index < nextFreeClientID)
 		nextFreeClientID = client->index;
 	    clients[client->index] = NullClient;
+#ifdef LBX
+	    if (client->largeReqBuf)
+		xfree (client->largeReqBuf);
+#endif
 	    xfree(client);
 
 	    while (!clients[currentMaxClients-1])
@@ -3429,6 +3472,7 @@ void InitClient(client, i, ospriv)
 {
 #ifdef LBX
     client->public.requestLength = StandardRequestLength;
+    client->largeReqBuf = NULL;
 #endif
     client->index = i;
     client->sequence = 0; 
@@ -3461,9 +3505,13 @@ void InitClient(client, i, ospriv)
     client->priority = 0;
     client->clientState = ClientStateInitial;
 #ifdef XKB
-    client->xkbClientFlags = 0;
-    client->mapNotifyMask = 0;
+    if (!noXkbExtension) {
+	client->xkbClientFlags = 0;
+	client->mapNotifyMask = 0;
+	QueryMinMaxKeyCodes(&client->minKC,&client->maxKC);
+    }
 #endif
+    client->replyBytesRemaining = 0;
 }
 
 extern int clientPrivateLen;
@@ -3547,7 +3595,14 @@ NextAvailableClient(ospriv)
     while ((nextFreeClientID < MAXCLIENTS) && clients[nextFreeClientID])
 	nextFreeClientID++;
     if (ClientStateCallback)
-	CallCallbacks(&ClientStateCallback, (pointer)client);
+    {
+	NewClientInfoRec clientinfo;
+
+        clientinfo.client = client; 
+        clientinfo.prefix = (xConnSetupPrefix *)NULL;  
+        clientinfo.setup = (xConnSetup *) NULL;
+	CallCallbacks((&ClientStateCallback), (pointer)&clientinfo);
+    } 	
     return(client);
 }
 
@@ -3569,8 +3624,8 @@ ProcInitialConnection(client)
 	SwapConnClientPrefix(prefix);
     }
     stuff->reqType = 2;
-    stuff->length += ((prefix->nbytesAuthProto + 3) >> 2) +
-		     ((prefix->nbytesAuthString + 3) >> 2);
+    stuff->length += ((prefix->nbytesAuthProto + (unsigned)3) >> 2) +
+		     ((prefix->nbytesAuthString + (unsigned)3) >> 2);
     if (client->swapped)
     {
 	swaps(&stuff->length, whichbyte);
@@ -3602,7 +3657,7 @@ SendConnSetup(client, reason)
 
 	csp.success = xFalse;
 	csp.lengthReason = strlen(reason);
-	csp.length = (csp.lengthReason + 3) >> 2;
+	csp.length = (csp.lengthReason + (unsigned)3) >> 2;
 	csp.majorVersion = X_PROTOCOL;
 	csp.minorVersion = X_PROTOCOL_REVISION;
 	if (client->swapped)
@@ -3631,7 +3686,7 @@ SendConnSetup(client, reason)
     root = (xWindowRoot *)(ConnectionInfo + connBlockScreenStart);
     for (i=0; i<screenInfo.numScreens; i++) 
     {
-	register int j;
+	register unsigned int j;
 	register xDepth *pDepth;
 
         root->currentInputMask = WindowTable[i]->eventMask |
@@ -3661,7 +3716,14 @@ SendConnSetup(client, reason)
     }
     client->clientState = ClientStateRunning;
     if (ClientStateCallback)
-	CallCallbacks(&ClientStateCallback, (pointer)client);
+    {
+	NewClientInfoRec clientinfo;
+
+        clientinfo.client = client; 
+        clientinfo.prefix = &connSetupPrefix;  
+        clientinfo.setup = (xConnSetup *)ConnectionInfo;
+	CallCallbacks((&ClientStateCallback), (pointer)&clientinfo);
+    } 	
     return (client->noClientException);
 }
 

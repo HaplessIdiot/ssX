@@ -1,6 +1,6 @@
 /*
- * $XConsortium: Tekproc.c,v 1.115 94/04/17 20:23:23 rws Exp $
- * $XFree86: xc/programs/xterm/Tekproc.c,v 3.4 1995/09/17 06:33:09 dawes Exp $
+ * $XConsortium: Tekproc.c /main/117 1995/08/28 14:32:16 kaleb $
+ * $XFree86: xc/programs/xterm/Tekproc.c,v 3.5 1995/09/23 07:09:22 dawes Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -57,10 +57,6 @@ in this Software without prior written authorization from the X Consortium.
 /* Tekproc.c */
 
 #include "ptyx.h"
-#include "Tekparse.h"
-#include "data.h"
-#include "error.h"
-#include "menu.h"
 #include <X11/Xos.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
@@ -68,10 +64,16 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
 #include <X11/Xmu/CharSet.h>
+#include <X11/Xpoll.h>
 #include <stdio.h>
 #include <errno.h>
 #include <setjmp.h>
 #include <signal.h>
+#include "Tekparse.h"
+#include "data.h"
+#include "error.h"
+#include "menu.h"
+
 #ifdef X_NOT_STDC_ENV
 extern int errno;
 #define Time_t long
@@ -113,6 +115,9 @@ extern char *malloc();
 extern void exit();
 extern long time();		/* included in <time.h> by Xos.h */
 #endif
+extern fd_set Select_mask;
+extern fd_set X_mask;
+extern fd_set pty_mask;
 
 #define TekColormap DefaultColormap( screen->display, \
 				    DefaultScreen(screen->display) )
@@ -204,8 +209,8 @@ extern void HandleGINInput();
 extern void HandleCreateMenu(), HandlePopupMenu();
 
 static char defaultTranslations[] = "\
-                ~Meta<KeyPress>: insert-seven-bit()	\n\
-                 Meta<KeyPress>: insert-eight-bit()\n\
+                ~Meta<KeyPress>: insert-seven-bit() \n\
+                 Meta<KeyPress>: insert-eight-bit() \n\
                !Ctrl <Btn1Down>: popup-menu(mainMenu) \n\
           !Lock Ctrl <Btn1Down>: popup-menu(mainMenu) \n\
 !Lock Ctrl @Num_Lock <Btn1Down>: popup-menu(mainMenu) \n\
@@ -682,7 +687,7 @@ static void Tekparse()
 
 static int rcnt;
 static char *rptr;
-static int Tselect_mask;
+static fd_set Tselect_mask;
 
 static int Tinput()
 {
@@ -709,17 +714,18 @@ again:
 	if(Tbcnt-- <= 0) {
 		if(nplot > 0)	/* flush line Tbuffer */
 			TekFlush();
-		Tselect_mask = pty_mask;	/* force a read */
+		XFD_COPYSET (&pty_mask, &Tselect_mask);
 		for( ; ; ) {
 #ifdef CRAY
 			struct timeval crocktimeout;
 			crocktimeout.tv_sec = 0;
 			crocktimeout.tv_usec = 0;
-			(void) select (max_plus1, &Tselect_mask, (int *) NULL,
-				       (int *) NULL, &crocktimeout);
+			(void) Select (max_plus1, 
+				       &Tselect_mask, NULL, NULL, 
+				       &crocktimeout);
 #endif
 #ifndef AMOEBA
-			if(Tselect_mask & pty_mask) {
+			if(FD_ISSET (screen->respond, &Tselect_mask)) {
 #else
 			/* XXX resolve polling since it wastes CPU cycles */
 			if ((Tbcnt = cb_full(screen->tty_outq)) > 0) {
@@ -767,14 +773,14 @@ again:
 				Ttoggled = FALSE;
 			}
 #ifndef AMOEBA
-			if(QLength(screen->display))
-				Tselect_mask = X_mask;
-			else {
+			if(QLength(screen->display)) {
+				XFD_COPYSET (&X_mask, &Tselect_mask);
+			} else {
 				XFlush(screen->display);
-				Tselect_mask = Select_mask;
-				if((i = select(max_plus1, &Tselect_mask,
-					(int *)NULL, (int *)NULL,
-					(struct timeval *)NULL)) < 0){
+				XFD_COPYSET (&Select_mask, &Tselect_mask);
+				if((i = Select(max_plus1, 
+					       &Tselect_mask, NULL, NULL, 
+					       NULL)) < 0){
 					if (errno != EINTR)
 						SysError(ERROR_TSELECT);
 					continue;
@@ -799,7 +805,7 @@ again:
 			if (cb_full(screen->tty_outq) <= 0)
 				SleepMainThread();
 #endif /* AMOEBA */
-			if(Tselect_mask & X_mask) {
+			if(FD_ISSET (ConnectionNumber (screen->display), &Tselect_mask)) {
 				xevents();
 				if(Tbcnt > 0)
 					goto again;

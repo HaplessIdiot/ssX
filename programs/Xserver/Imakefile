@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.192 95/01/25 20:37:15 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.40 1995/12/21 11:43:34 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/202 1995/12/11 15:15:14 dpw $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.41 1995/12/23 09:37:21 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -62,10 +62,13 @@ INSTPGMFLAGS =
         LBXDIRS = $(TOP)/workInProgress/lbx/programs/Xserver/lbx \
                   $(TOP)/workInProgress/lbx/lib/lbxutil
 #endif
-#if BuildLBXCompatible
-        LBXDIRS = dixlbx oslbx \
-                  $(TOP)/workInProgress/lbx/programs/Xserver/lbx \
-                  $(TOP)/workInProgress/lbx/lib/lbxutil
+#if BuildDBE
+         DBEEXT = dbe/libdbe.a
+         DBEDIR = dbe
+#endif
+#if BuildRECORD
+         RECORDEXT = record/librecord.a
+         RECORDDIR = record
 #endif
 #ifdef SiteExtensionLibs
      SITEEXTS = SiteExtensionLibs
@@ -74,10 +77,10 @@ INSTPGMFLAGS =
      SITEEXTDIRS = SiteExtensionDirs
 #endif
 
-      OTHEREXTS = Xext/LibraryTargetName(ext) $(XKBEXT) $(XINPUTEXT) $(XIEEXT) \
-                  $(LBXEXT) $(SITEEXTS)
+      OTHEREXTS = Xext/LibraryTargetName(ext) $(XKBEXT) $(XINPUTEXT) \
+                  $(XIEEXT) $(LBXEXT) $(DBEEXT) $(RECORDEXT) $(SITEEXTS)
         EXTDIRS = Xext $(XKBDIR) $(XIDIR) $(XIEDIR) $(PEXDIR) \
-                  $(LBXDIRS) $(SITEEXTDIRS)
+                  $(LBXDIRS) $(DBEDIR) $(RECORDDIR) $(SITEEXTDIRS)
      EXTENSIONS = $(OTHEREXTS) $(PEXLIBS)
          XAULIB = $(XAUTHSRC)/LibraryTargetName(Xau)
        XDMCPLIB = $(XDMCPLIBSRC)/LibraryTargetName(Xdmcp)
@@ -109,37 +112,29 @@ XCOMM just a hack because of the Sun version of make and nfs.
 XCOMM
 .c.o:
 
-XCOMM 		  Build rule blocks, add one for each server
-XCOMM 
-XCOMM The ALL definitions that used to be here have been folded into the
-XCOMM build blocks.
-XCOMM 
-XCOMM If a server needs mfb, its build block should have a line like:
-XCOMM MFBDIR = mfb
-XCOMM Similarly, its build block should have:
-XCOMM CFB8DIR  = cfb   (if the servr needs 8 bit cfb)
-XCOMM CFB16DIR = cfb16 (16 bit cfb)
-XCOMM CFB32DIR = cfb32 (32 bit cfb)
-XCOMM 
-XCOMM If a server does not need all of the above components, simply
-XCOMM omit the relevant lines from the build block.
-XCOMM 
-XCOMM Additional ddx directories can be split across three variables:
-XCOMM DDXDIR1, DDXDIR2, and DDXDIR3.  Most servers only use DDXDIR1,
-XCOMM but if two servers can be built on a platform then DDXDIR1 is
-XCOMM typically set to the ddx directories that are shared by both
-XCOMM servers, DDXDIR2 is the directories unique to one of the servers,
-XCOMM and DDXDIR3 is the directories unique to the other server.
-XCOMM 
-XCOMM If these guidelines are followed, a make at the top of the server
-XCOMM tree should result in each subdirectory being built only once,
-XCOMM even if multiple servers that share subdirectories are being built.
-XCOMM It was possible to get this result with the old SUBDIRSn scheme
-XCOMM (from which the current scheme is derived), but it became very
-XCOMM difficult to attain with the advent of the Virtual framebuffer server
-XCOMM (Xvfb), which can be built on any platform and thus interacted strongly
-XCOMM with SUBDIRSn.  The current scheme made accomodating Xvfb a snap,
-XCOMM and should in general be easier to maintain.
+/*  		  Build rule blocks, add one for each server
+ *  
+ *  If a server needs mfb, its build block should have a line like:
+ *  MFBDIR = mfb
+ *  Similarly, its build block should have:
+ *  CFB8DIR  = cfb   (if the servr needs 8 bit cfb)
+ *  CFB16DIR = cfb16 (16 bit cfb)
+ *  CFB32DIR = cfb32 (32 bit cfb)
+ *  
+ *  If a server does not need all of the above components, simply
+ *  omit the relevant lines from the build block.
+ *  
+ *  Additional ddx directories can be split across three variables:
+ *  DDXDIR1, DDXDIR2, and DDXDIR3.  Most servers only use DDXDIR1,
+ *  but if two servers can be built on a platform then DDXDIR1 is
+ *  typically set to the ddx directories that are shared by both
+ *  servers, DDXDIR2 is the directories unique to one of the servers,
+ *  and DDXDIR3 is the directories unique to the other server.
+ *  
+ *  If these guidelines are followed, a make at the top of the server
+ *  tree should result in each subdirectory being built only once,
+ *  even if multiple servers that share subdirectories are being built.
+ */
 
 #if XdecServer
 XCOMM
@@ -287,82 +282,6 @@ ServerTarget(Xibm,$(IBMDIRS),$(IBMOBJS),$(IBMLIBS),$(SYSLIBS))
 #define ServerToInstall Xibm
 #endif
 #endif /* XibmServer */
-
-
-#if XtekServer
-XCOMM
-XCOMM Tektronix server
-XCOMM
-MFBDIR  = mfb
-CFB8DIR = cfb
-DDXDIR1 = hw/tek
-TEKDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
-TEKOBJS = hw/tek/pegInit.o
-TEKLIBS = hw/tek/libtek.a CFB8Libs
-TEKSYSLIBS = $(CBRT) $(SYSLIBS)
-ServerTarget(Xtek,$(TEKDIRS),$(TEKOBJS),$(TEKLIBS),$(TEKSYSLIBS))
-#ifndef ServerToInstall
-#define ServerToInstall Xtek
-#endif
-#endif /* XtekServer */
-
-
-#if XmacIIServer
-XCOMM
-XCOMM Apple MacII server
-XCOMM
-MFBDIR  = mfb
-CFB8DIR = cfb
-CFB16DIR = cfb16
-CFB32DIR = cfb32
-DDXDIR1 = hw/macII
-MACIIDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
-MACIIOBJS = hw/macII/macIIInitS.o hw/macII/macIIColor.o
-MACIILIBS = hw/macII/libmacII.a CFBLibs
-MACIISYSLIBS = $(CBRT) $(SYSLIBS)
-ServerTarget(XmacII,$(MACIIDIRS),$(MACIIOBJS),$(MACIILIBS),$(MACIISYSLIBS))
-#ifndef ServerToInstall
-#define ServerToInstall XmacII
-#endif
-#endif /* XmacIIServer */
-
-
-#if XlunaServer
-XCOMM
-XCOMM OMRON Luna server
-XCOMM
-MFBDIR  = mfb
-DDXDIR1 = hw/omron
-LUNADIRS = $(STDDIRS) $(MFBDIR) $(DDXDIR1) $(DEPDIRS)
-LUNAOBJS = hw/omron/omronInit.o
-#ifdef uniosu
-LUNALIBS = hw/omron/libomron.a MFBLibs $(BSDEMUL)
-#else
-LUNALIBS = hw/omron/libomron.a MFBLibs
-#endif
-ServerTarget(Xluna,$(LUNADIRS),$(LUNAOBJS),$(LUNALIBS),$(SYSLIBS))
-#ifndef ServerToInstall
-#define ServerToInstall Xluna
-#endif
-#endif /* XlunaServer */
-
-
-#if XmipsServer
-XCOMM
-XCOMM MIPS server
-XCOMM
-MFBDIR  = mfb
-CFB8DIR = cfb
-DDXDIR1 = hw/mips
-MIPSDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
-MIPSOBJS = hw/mips/mipsInit.o
-MIPSLIBS = hw/mips/libmips.a CFB8Libs
-MIPSSYSLIBS = $(SYSLIBS) -lc /usr/lib/libc.a
-ServerTarget(Xmips,$(MIPSDIRS),$(MIPSOBJS),$(MIPSLIBS),$(MIPSSYSLIBS))
-#ifndef ServerToInstall
-#define ServerToInstall Xmips
-#endif
-#endif /* XmipsServer */
 
 
 #if XirisServer
@@ -535,9 +454,12 @@ CFB8DIR = cfb
 CFB16DIR = cfb16
 CFB32DIR = cfb32
 DDXDIR1 = hw/xfree86
-XF86SVGASUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
+XF86SVGASUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) \
+                  $(DDXDIR1) $(DEPDIRS)
 XF86SVGAOBJS = $(XF86COMSRC)/XF86_SVGA.o $(XF86SRC)/vga256/vga256Conf.o
-XF86SVGALIBS = $(VGADRIVERSRC)/LibraryTargetName(driver256) $(XF86SRC)/vga256/LibraryTargetName(vga256) $(XF86LIBS) CFBLibs $(XF86OSLIB)
+XF86SVGALIBS = $(VGADRIVERSRC)/LibraryTargetName(driver256) \
+               $(XF86SRC)/vga256/LibraryTargetName(vga256) $(XF86LIBS) \
+               CFBLibs $(XF86OSLIB)
 XF86SVGASYSLIBS = $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XF86SVGASUBDIRS) $(XF86SVGAOBJS) $(XF86SVGALIBS) $(XF86SVGASYSLIBS))
@@ -559,13 +481,16 @@ XCOMM
 DDXDIR1 = hw/xfree86
 #if XF86VGA16DualServer
 XF86VGA16MONOOBJS = $(XF86SRC)/mono/monoConf.o
-XF86VGA16MONOLIBS = $(MONODRIVERSRC)/LibraryTargetName(monodrv) $(XF86SRC)/mono/LibraryTargetName(mono)
+XF86VGA16MONOLIBS = $(MONODRIVERSRC)/LibraryTargetName(monodrv) \
+                    $(XF86SRC)/mono/LibraryTargetName(mono)
 #endif
 XF86VGA16SUBDIRS = $(STDDIRS) $(DDXDIR1) $(DEPDIRS)
 XF86VGA16OBJS = $(XF86COMSRC)/XF86_VGA16.o $(XF86SRC)/vga16/vga16Conf.o \
                 $(XF86SRC)/vga16/misc/vga16misc.o $(XF86VGA16MONOOBJS)
-XF86VGA16LIBS = $(VGA16DRIVERSRC)/LibraryTargetName(driver16) $(XF86SRC)/vga16/LibraryTargetName(vga16) \
-                $(XF86VGA16MONOLIBS) $(XF86MLIBS) NoMFBBareLibs $(OTHEREXTS) $(XF86OSLIB)
+XF86VGA16LIBS = $(VGA16DRIVERSRC)/LibraryTargetName(driver16) \
+                $(XF86SRC)/vga16/LibraryTargetName(vga16) \
+                $(XF86VGA16MONOLIBS) $(XF86MLIBS) \
+                NoMFBBareLibs $(OTHEREXTS) $(XF86OSLIB)
 XF86VGA16SYSLIBS = $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XF86VGA16SUBDIRS) $(XF86VGA16OBJS) $(XF86VGA16LIBS) $(XF86VGA16SYSLIBS))
@@ -588,7 +513,11 @@ CFB8DIR = cfb
 DDXDIR1 = hw/xfree86
 XF86W32SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
 XF86W32OBJS = $(XF86COMSRC)/XF86_W32.o $(XF86ACCELSRC)/et4000w32/w32Conf.o
-XF86W32LIBS = $(XF86ACCELSRC)/et4000w32/w32/LibraryTargetName(w32) $(XF86ACCELSRC)/et4000w32/cfb.w32/LibraryTargetName(cfb) $(XF86ACCELSRC)/et4000w32/w32/LibraryTargetName(w32) $(XF86ACCELSRC)/et4000w32/asm/LibraryTargetName(asm) $(XF86LIBS) CFB8Libs $(XF86OSLIB)
+XF86W32LIBS = $(XF86ACCELSRC)/et4000w32/w32/LibraryTargetName(w32) \
+              $(XF86ACCELSRC)/et4000w32/cfb.w32/LibraryTargetName(cfb) \
+              $(XF86ACCELSRC)/et4000w32/w32/LibraryTargetName(w32) \
+              $(XF86ACCELSRC)/et4000w32/asm/LibraryTargetName(asm) \
+              $(XF86LIBS) CFB8Libs $(XF86OSLIB)
 XF86W32SYSLIBS = $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XF86W32SUBDIRS) $(XF86W32OBJS) $(XF86W32LIBS) $(XF86W32SYSLIBS))
@@ -609,13 +538,16 @@ XCOMM
 DDXDIR1 = hw/xfree86
 #if XF86MonoDualServer
 XF86MONOMONOOBJS = $(XF86SRC)/mono/monoConf.o
-XF86MONOMONOLIBS = $(MONODRIVERSRC)/LibraryTargetName(monodrv) $(XF86SRC)/mono/LibraryTargetName(mono)
+XF86MONOMONOLIBS = $(MONODRIVERSRC)/LibraryTargetName(monodrv) \
+                   $(XF86SRC)/mono/LibraryTargetName(mono)
 #endif
 XF86MONOSUBDIRS = $(STDDIRS) $(MFBDIR) $(DDXDIR1) $(DEPDIRS)
 XF86MONOOBJS = $(XF86COMSRC)/XF86_Mono.o $(XF86SRC)/vga2/vga2Conf.o \
                $(XF86SRC)/vga2/misc/vga2misc.o $(XF86MONOMONOOBJS)
-XF86MONOLIBS = $(VGA2DRIVERSRC)/LibraryTargetName(driver2) $(XF86SRC)/vga2/LibraryTargetName(vga2) \
-	       $(XF86MONOMONOLIBS) $(XF86MLIBS) NoMFBBareLibs $(OTHEREXTS) $(XF86OSLIB)
+XF86MONOLIBS = $(VGA2DRIVERSRC)/LibraryTargetName(driver2) \
+               $(XF86SRC)/vga2/LibraryTargetName(vga2) \
+	       $(XF86MONOMONOLIBS) $(XF86MLIBS) \
+               NoMFBBareLibs $(OTHEREXTS) $(XF86OSLIB)
 XF86MONOSYSLIBS = $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XF86MONOSUBDIRS) $(XF86MONOOBJS) $(XF86MONOLIBS) $(XF86MONOSYSLIBS))
@@ -639,9 +571,15 @@ CFB8DIR  = cfb
 CFB16DIR = cfb16
 CFB32DIR = cfb32
 DDXDIR1 = hw/xfree86
-XF86S3SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
-XF86S3OBJS = $(XF86COMSRC)/XF86_S3.o $(XF86ACCELSRC)/s3/s3Conf.o $(S3DRIVERSRC)/mmio_928/mmio_928.o $(S3DRIVERSRC)/s3_generic/s3_generic.o
-XF86S3LIBS = $(XF86ACCELSRC)/s3/LibraryTargetName(s3) $(XF86ACCELSRC)/s3/s3mmio/LibraryTargetName(s3mmio) $(XF86LIBS) CFBLibs $(XF86ACCELSRC)/cache/LibraryTargetName(xf86cache) $(XF86OSLIB)
+XF86S3SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) \
+                $(DDXDIR1) $(DEPDIRS)
+XF86S3OBJS = $(XF86COMSRC)/XF86_S3.o $(XF86ACCELSRC)/s3/s3Conf.o \
+             $(S3DRIVERSRC)/mmio_928/mmio_928.o \
+             $(S3DRIVERSRC)/s3_generic/s3_generic.o
+XF86S3LIBS = $(XF86ACCELSRC)/s3/LibraryTargetName(s3) \
+             $(XF86ACCELSRC)/s3/s3mmio/LibraryTargetName(s3mmio) $(XF86LIBS) \
+             CFBLibs $(XF86ACCELSRC)/cache/LibraryTargetName(xf86cache) \
+             $(XF86OSLIB)
 XF86S3SYSLIBS = $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XF86S3SUBDIRS) $(XF86S3OBJS) $(XF86S3LIBS) $(XF86S3SYSLIBS))
@@ -665,7 +603,9 @@ CFB8DIR = cfb
 DDXDIR1 = hw/xfree86
 XF868514SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
 XF868514OBJS = $(XF86COMSRC)/XF86_8514.o
-XF868514LIBS = $(XF86ACCELSRC)/ibm8514/LibraryTargetName(8514) $(XF86LIBS) CFB8Libs $(XF86ACCELSRC)/cache/LibraryTargetName(xf86cache) $(XF86OSLIB)
+XF868514LIBS = $(XF86ACCELSRC)/ibm8514/LibraryTargetName(8514) $(XF86LIBS) \
+               CFB8Libs $(XF86ACCELSRC)/cache/LibraryTargetName(xf86cache) \
+               $(XF86OSLIB)
 XF868514SYSLIBS = $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XF868514SUBDIRS) $(XF868514OBJS) $(XF868514LIBS) $(XF868514SYSLIBS))
@@ -689,7 +629,9 @@ CFB8DIR = cfb
 DDXDIR1 = hw/xfree86
 XF86MACH8SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
 XF86MACH8OBJS = $(XF86COMSRC)/XF86_Mach8.o
-XF86MACH8LIBS = $(XF86ACCELSRC)/mach8/LibraryTargetName(mach8) $(XF86LIBS) CFB8Libs $(XF86ACCELSRC)/cache/LibraryTargetName(xf86cache) $(XF86OSLIB)
+XF86MACH8LIBS = $(XF86ACCELSRC)/mach8/LibraryTargetName(mach8) $(XF86LIBS) \
+                CFB8Libs $(XF86ACCELSRC)/cache/LibraryTargetName(xf86cache) \
+                $(XF86OSLIB)
 XF86MACH8SYSLIBS = $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XF86MACH8SUBDIRS) $(XF86MACH8OBJS) $(XF86MACH8LIBS) $(XF86MACH8SYSLIBS))
@@ -712,9 +654,12 @@ MFBDIR   = mfb
 CFB8DIR  = cfb
 CFB16DIR = cfb16
 DDXDIR1  = hw/xfree86
-XF86MACH32SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(DDXDIR1) $(DEPDIRS)
+XF86MACH32SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(DDXDIR1) \
+                    $(DEPDIRS)
 XF86MACH32OBJS = $(XF86COMSRC)/XF86_Mach32.o
-XF86MACH32LIBS = $(XF86ACCELSRC)/mach32/LibraryTargetName(mach32) $(XF86LIBS) CFB16Libs $(XF86ACCELSRC)/cache/LibraryTargetName(xf86cache) $(XF86OSLIB)
+XF86MACH32LIBS = $(XF86ACCELSRC)/mach32/LibraryTargetName(mach32) $(XF86LIBS) \
+                 CFB16Libs $(XF86ACCELSRC)/cache/LibraryTargetName(xf86cache) \
+                 $(XF86OSLIB)
 XF86MACH32SYSLIBS = $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XF86MACH32SUBDIRS) $(XF86MACH32OBJS) $(XF86MACH32LIBS) $(XF86MACH32SYSLIBS))
@@ -738,9 +683,11 @@ CFB8DIR  = cfb
 CFB16DIR = cfb16
 CFB32DIR = cfb32
 DDXDIR1  = hw/xfree86
-XF86MACH64SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
+XF86MACH64SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) \
+                    $(DDXDIR1) $(DEPDIRS)
 XF86MACH64OBJS = $(XF86COMSRC)/XF86_Mach64.o
-XF86MACH64LIBS = $(XF86ACCELSRC)/mach64/LibraryTargetName(mach64) $(XF86LIBS) CFBLibs $(XF86OSLIB)
+XF86MACH64LIBS = $(XF86ACCELSRC)/mach64/LibraryTargetName(mach64) \
+                 $(XF86LIBS) CFBLibs $(XF86OSLIB)
 XF86MACH64SYSLIBS = $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XF86MACH64SUBDIRS) $(XF86MACH64OBJS) $(XF86MACH64LIBS) $(XF86MACH64SYSLIBS))
@@ -764,9 +711,11 @@ CFB8DIR = cfb
 CFB16DIR = cfb16
 CFB32DIR = cfb32
 DDXDIR1 = hw/xfree86
-XF86P9000SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
+XF86P9000SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) \
+                   $(DDXDIR1) $(DEPDIRS)
 XF86P9000OBJS = $(XF86COMSRC)/XF86_P9000.o
-XF86P9000LIBS = $(XF86ACCELSRC)/p9000/LibraryTargetName(p9000) $(XF86LIBS) CFBLibs $(XF86OSLIB)
+XF86P9000LIBS = $(XF86ACCELSRC)/p9000/LibraryTargetName(p9000) \
+                $(XF86LIBS) CFBLibs $(XF86OSLIB)
 XF86P9000SYSLIBS = $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XF86P9000SUBDIRS) $(XF86P9000OBJS) $(XF86P9000LIBS) $(XF86P9000SYSLIBS))
@@ -790,9 +739,11 @@ CFB8DIR  = cfb
 CFB16DIR = cfb16
 CFB32DIR = cfb32
 DDXDIR1  = hw/xfree86
-XF86AGXSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(DDXDIR1) $(DEPDIRS)
+XF86AGXSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) \
+                 $(DDXDIR1) $(DEPDIRS)
 XF86AGXOBJS = $(XF86COMSRC)/XF86_AGX.o
-XF86AGXLIBS = $(XF86ACCELSRC)/agx/LibraryTargetName(agx) $(XF86LIBS) CFBLibs $(XF86OSLIB)
+XF86AGXLIBS = $(XF86ACCELSRC)/agx/LibraryTargetName(agx) $(XF86LIBS) \
+              CFBLibs $(XF86OSLIB)
 XF86AGXSYSLIBS = $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XF86AGXSUBDIRS) $(XF86AGXOBJS) $(XF86AGXLIBS) $(XF86AGXSYSLIBS))
@@ -816,9 +767,15 @@ CFB8DIR  = cfb
 CFB16DIR = cfb16
 CFB32DIR = cfb32
 DDXDIR2 = hw/xfree98
-XF98NECS3SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
-XF98NECS3OBJS = $(XF98COMSRC)/XF86_S3.o $(XF98ACCELSRC)/s3nec/s3Conf.o $(XF98NECDRIVERSRC)/mmio_928/mmio_928.o $(XF98NECDRIVERSRC)/s3_generic/s3_generic.o
-XF98NECS3LIBS = $(XF98ACCELSRC)/s3nec/LibraryTargetName(s3) $(XF98ACCELSRC)/s3nec/s3mmio/LibraryTargetName(s3mmio) $(XF98LIBSNEC) CFBLibs $(XF98ACCELSRC)/cache/LibraryTargetName(xf86cache) $(XF98OSLIB)
+XF98NECS3SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) \
+                   $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
+XF98NECS3OBJS = $(XF98COMSRC)/XF86_S3.o $(XF98ACCELSRC)/s3nec/s3Conf.o \
+                $(XF98NECDRIVERSRC)/mmio_928/mmio_928.o \
+                $(XF98NECDRIVERSRC)/s3_generic/s3_generic.o
+XF98NECS3LIBS = $(XF98ACCELSRC)/s3nec/LibraryTargetName(s3) \
+                $(XF98ACCELSRC)/s3nec/s3mmio/LibraryTargetName(s3mmio) \
+                $(XF98LIBSNEC) CFBLibs \
+                $(XF98ACCELSRC)/cache/LibraryTargetName(xf86cache) $(XF98OSLIB)
 XF98NECS3SYSLIBS = $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XF98NECS3SUBDIRS) $(XF98NECS3OBJS) $(XF98NECS3LIBS) $(XF98NECS3SYSLIBS))
@@ -841,9 +798,15 @@ CFB8DIR  = cfb
 CFB16DIR = cfb16
 CFB32DIR = cfb32
 DDXDIR2 = hw/xfree98
-XF98PWSKBSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
-XF98PWSKBOBJS = $(XF98COMSRC)/XF86_S3.o $(XF98ACCELSRC)/s3pwskb/s3Conf.o $(XF98PWSKBDRIVERSRC)/mmio_928/mmio_928.o $(XF98PWSKBDRIVERSRC)/s3_generic/s3_generic.o
-XF98PWSKBLIBS = $(XF98ACCELSRC)/s3pwskb/LibraryTargetName(s3) $(XF98ACCELSRC)/s3pwskb/s3mmio/LibraryTargetName(s3mmio) $(XF98LIBSPWSKB) CFBLibs $(XF98ACCELSRC)/cache/LibraryTargetName(xf86cache) $(XF98OSLIB)
+XF98PWSKBSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) \
+                   $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
+XF98PWSKBOBJS = $(XF98COMSRC)/XF86_S3.o $(XF98ACCELSRC)/s3pwskb/s3Conf.o \
+                $(XF98PWSKBDRIVERSRC)/mmio_928/mmio_928.o \
+                $(XF98PWSKBDRIVERSRC)/s3_generic/s3_generic.o
+XF98PWSKBLIBS = $(XF98ACCELSRC)/s3pwskb/LibraryTargetName(s3) \
+                $(XF98ACCELSRC)/s3pwskb/s3mmio/LibraryTargetName(s3mmio) \
+                $(XF98LIBSPWSKB) CFBLibs \
+                $(XF98ACCELSRC)/cache/LibraryTargetName(xf86cache) $(XF98OSLIB)
 XF98PWSKBSYSLIBS = $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XF98PWSKBSUBDIRS) $(XF98PWSKBOBJS) $(XF98PWSKBLIBS) $(XF98PWSKBSYSLIBS))
@@ -866,9 +829,15 @@ CFB8DIR  = cfb
 CFB16DIR = cfb16
 CFB32DIR = cfb32
 DDXDIR2 = hw/xfree98
-XF98PWLBSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
-XF98PWLBOBJS = $(XF98COMSRC)/XF86_S3.o $(XF98ACCELSRC)/s3pwlb/s3Conf.o $(XF98PWLBDRIVERSRC)/mmio_928/mmio_928.o $(XF98PWLBDRIVERSRC)/s3_generic/s3_generic.o
-XF98PWLBLIBS = $(XF98ACCELSRC)/s3pwlb/LibraryTargetName(s3) $(XF98ACCELSRC)/s3pwlb/s3mmio/LibraryTargetName(s3mmio) $(XF98LIBSPWLB) CFBLibs $(XF98ACCELSRC)/cache/LibraryTargetName(xf86cache) $(XF98OSLIB)
+XF98PWLBSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) \
+                  $(DDXDIR2) $(DEPDIRS)
+XF98PWLBOBJS = $(XF98COMSRC)/XF86_S3.o $(XF98ACCELSRC)/s3pwlb/s3Conf.o \
+               $(XF98PWLBDRIVERSRC)/mmio_928/mmio_928.o \
+               $(XF98PWLBDRIVERSRC)/s3_generic/s3_generic.o
+XF98PWLBLIBS = $(XF98ACCELSRC)/s3pwlb/LibraryTargetName(s3) \
+               $(XF98ACCELSRC)/s3pwlb/s3mmio/LibraryTargetName(s3mmio) \
+               $(XF98LIBSPWLB) CFBLibs \
+               $(XF98ACCELSRC)/cache/LibraryTargetName(xf86cache) $(XF98OSLIB)
 XF98PWLBSYSLIBS = $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XF98PWLBSUBDIRS) $(XF98PWLBOBJS) $(XF98PWLBLIBS) $(XF98PWLBSYSLIBS))
@@ -892,9 +861,12 @@ CFB8DIR  = cfb
 CFB16DIR = cfb16
 CFB32DIR = cfb32
 DDXDIR1  = hw/xfree86
-XF86I128SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(DDXDIR1) $(DEPDIRS)
+XF86I128SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) \
+                  $(DDXDIR1) $(DEPDIRS)
 XF86I128OBJS = $(XF86COMSRC)/XF86_I128.o
-XF86I128LIBS = $(XF86ACCELSRC)/i128/LibraryTargetName(i128) $(XF86LIBS) CFBLibs $(XF86ACCELSRC)/cache/LibraryTargetName(xf86cache) $(XF86OSLIB)
+XF86I128LIBS = $(XF86ACCELSRC)/i128/LibraryTargetName(i128) $(XF86LIBS) \
+               CFBLibs $(XF86ACCELSRC)/cache/LibraryTargetName(xf86cache) 
+               $(XF86OSLIB)
 XF86I128SYSLIBS = $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XF86I128SUBDIRS) $(XF86I128OBJS) $(XF86I128LIBS) $(XF86I128SYSLIBS))
@@ -926,6 +898,7 @@ XNESTSYSLIBS = $(LDPRELIB) $(XLIB) $(SYSLIBS)
 MakeMutex($(XNESTDIRS) $(XNESTOBJS) $(XNESTLIBS) $(XNESTSYSLIBS))
 #endif
 ServerTarget(Xnest,$(XNESTDIRS),$(XNESTOBJS),$(XNESTLIBS),$(XNESTSYSLIBS))
+InstallProgram(Xnest,$(BINDIR))
 #endif /* XnestServer */
 
 
@@ -962,6 +935,7 @@ XVFBSYSLIBS = $(SYSLIBS)
 MakeMutex($(XVFBDIRS) $(XVFBOBJS) $(XVFB) $(XVFBLIBS) $(XVFBSYSLIBS))
 #endif
 ServerTarget(Xvfb,$(XVFBDIRS),$(XVFBOBJS),$(XVFBLIBS),$(XVFBSYSLIBS))
+InstallProgram(Xvfb,$(BINDIR))
 #endif /* XVirtualFramebufferServer */
 
 

@@ -1,5 +1,5 @@
-/* $XConsortium: Xdmcp.h,v 1.8 91/07/23 22:28:07 keith Exp $ */
-/* $XFree86$ */
+/* $XConsortium: Xdmcp.h,v 1.9 95/06/07 18:30:59 gildea Exp $ */
+/* $XFree86: xc/lib/Xdmcp/Xdmcp.h,v 3.0 1995/07/07 15:32:22 dawes Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -133,10 +133,9 @@ extern void XdmcpUnwrap();
 #define FALSE	0
 #endif
 
-#ifndef Xalloc
-#ifndef xalloc
-extern unsigned long *Xalloc (), *Xrealloc ();
+#if !defined(Xalloc) && !defined(xalloc) && !defined(Xrealloc)
+extern long *Xalloc (), *Xrealloc ();
 extern void Xfree();
 #endif
-#endif
+
 #endif /* _XDMCP_H_ */

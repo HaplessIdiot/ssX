@@ -1,4 +1,4 @@
-/* $XConsortium: imCallbk.c,v 1.13 95/06/08 23:20:39 gildea Exp $ */
+/* $XConsortium: imCallbk.c /main/15 1995/12/06 11:23:10 kaleb $ */
 /***********************************************************************
 Copyright 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 Copyright 1994 by FUJITSU LIMITED
@@ -178,12 +178,10 @@ _XimProcessPendingCallbacks(ic)
 
     while (((pcbq = ic->private.proto.pend_cb_que) != (XimPendingCallback)NULL) 
 	   && _XimIsReadyForProcess(ic)) {
-	XimCbStatus s;
-
-	s = (*callback_table[pcbq->major_opcode])(pcbq->im, 
-						  pcbq->ic, 
-						  pcbq->proto, 
-						  pcbq->proto_len);
+	(void) (*callback_table[pcbq->major_opcode])(pcbq->im, 
+						     pcbq->ic, 
+						     pcbq->proto, 
+						     pcbq->proto_len);
 	ic->private.proto.pend_cb_que = pcbq->next;
 	Xfree(pcbq);		/* free memory of XimPendingCallback */
     }
@@ -239,13 +237,11 @@ _XimCbDispatch(xim, len, data, call_data)
     Xic ic = _XimICOfXICID(im, icid);
     char* proto;
     int proto_len;
-    XimCbStatus status;
 
     /* check validity of im/ic
      */
     if ((imid != im->private.proto.imid) || !ic) {
-	status = XimCbBadContextID;
-	goto quit;
+	return False; /* status = XimCbBadContextID; */
     }
 
     /* process pending callbacks
@@ -255,12 +251,10 @@ _XimCbDispatch(xim, len, data, call_data)
     /* check if the protocol should be processed here
      */
     if (major_opcode > 82) {
-	status = XimCbBadOpcode;
-	goto quit;
+	return False; /* status = XimCbBadOpcode; */
     }
     if (!callback_table[major_opcode]) {
-	status = XimCbBadOpcode;
-	goto quit;
+	return False; /* status = XimCbBadOpcode; */
     }
 
     /* move the pointer ahead by the IM Protocol packet header size
@@ -286,40 +280,19 @@ _XimCbDispatch(xim, len, data, call_data)
 	    pcb->proto_len = proto_len;
 	    pcb->next = (XimPendingCallback)NULL; /* queue is FIFO */
 	    _XimPutCbIntoQueue(ic, pcb);
-
-	    status = XimCbQueued;
-	}
-	else {
-	    status = XimCbError;
+	    /* status = XimCbQueued; */
+	} else {
+	    /* status = XimCbError; */
 	}
     }
     else {
-	
 	/* invoke each callback according to the major opcode.
 	 * `proto' points to the next address of IM-ID and IC-ID.
 	 * `proto_len' specifies the packet length.
 	 */
-	status = (*callback_table[major_opcode])(im, 
-						 ic, 
-						 proto, 
-						 proto_len);
+	(void) (*callback_table[major_opcode])(im, ic, proto, proto_len);
     }
-
-  quit:
-    /* wrap up
-     */
-    switch (status) {
-      case XimCbSuccess:
-      case XimCbNoCallback:
-      case XimCbError:
-      case XimCbQueued:
-	return(True);
-	break;
-      case XimCbBadContextID:
-      case XimCbBadOpcode:
-	return(False);
-	break;
-    }
+    return True;
 }
 
 Private XimCbStatus
@@ -347,10 +320,10 @@ _XimGeometryCallback(im, ic, proto, len)
 
 	/* no callback registered
 	 */
-	return(XimCbNoCallback);
+	return XimCbNoCallback;
     }
 
-    return(XimCbSuccess);
+    return XimCbSuccess;
 }
 
 Private XimCbStatus
@@ -394,7 +367,7 @@ _XimStrConversionCallback(im, ic, proto, len)
 		  (INT16)len, 
 		  (CARD16)XIM_STR_CONVERSION, 
 		  (char*)proto); /* send XIM_ERROR */
-	return(XimCbNoCallback);
+	return XimCbNoCallback;
     }
 
     /* send a reply
@@ -434,14 +407,14 @@ _XimStrConversionCallback(im, ic, proto, len)
 	}
 
 	if (!(_XimWriteData(im, buf_len, buf))) {
-	    return(XimCbError);
+	    return XimCbError;
 	}
 	_XimFlushData(im);
 
 	Xfree(buf);
     }
 
-    return(XimCbSuccess);
+    return XimCbSuccess;
 }
 
 Private XimCbStatus
@@ -481,13 +454,14 @@ _XimPreeditStartCallback(im, ic, proto, len)
 		  (INT16)len, 
 		  (CARD16)XIM_PREEDIT_START, 
 		  (char*)proto); /* send XIM_ERROR */
-	return(XimCbNoCallback);
+	return XimCbNoCallback;
     }
 
     /* send a reply
      */
     {
-	CARD8 buf[sz_ximPacketHeader + sz_ximPreeditStartReply];
+	CARD32 buf32[(sz_ximPacketHeader + sz_ximPreeditStartReply) / 4];
+	CARD8 *buf = (CARD8 *)buf32;
 	INT16 buf_len = sz_XIMID + sz_XICID + sz_ximPreeditStartReply;
 	int p;
 
@@ -498,12 +472,12 @@ _XimPreeditStartCallback(im, ic, proto, len)
 	*(INT32*)&buf[p]  = (INT32)ret;
 
 	if (!(_XimWriteData(im, buf_len, buf))) {
-	    return(XimCbError);
+	    return XimCbError;
 	}
 	_XimFlushData(im);
     }
 
-    return(XimCbSuccess);
+    return XimCbSuccess;
 }
 
 Private XimCbStatus
@@ -531,10 +505,10 @@ _XimPreeditDoneCallback(im, ic, proto, len)
 
 	/* no callback registered
 	 */
-	return(XimCbNoCallback);
+	return XimCbNoCallback;
     }
 
-    return(XimCbSuccess);
+    return XimCbSuccess;
 }
 
 Private void
@@ -690,10 +664,10 @@ _XimPreeditDrawCallback(im, ic, proto, len)
 
 	/* no callback registered
 	 */
-	return(XimCbNoCallback);
+	return XimCbNoCallback;
     }
 
-    return(XimCbSuccess);
+    return XimCbSuccess;
 }
 
 Private XimCbStatus
@@ -731,7 +705,7 @@ _XimPreeditCaretCallback(im, ic, proto, len)
 		  (INT16)len, 
 		  (CARD16)XIM_PREEDIT_CARET, 
 		  (char*)proto); /* send XIM_ERROR */
-	return(XimCbNoCallback);
+	return XimCbNoCallback;
     }
 
     /* Send a reply
@@ -748,12 +722,12 @@ _XimPreeditCaretCallback(im, ic, proto, len)
 	*(CARD32*)&buf[p] = (CARD32)cbs.position;
 
 	if (!(_XimWriteData(im, len, buf))) {
-	    return(XimCbError);
+	    return XimCbError;
 	}
 	_XimFlushData(im);
     }
 
-    return(XimCbSuccess);
+    return XimCbSuccess;
 }
 
 Private XimCbStatus
@@ -781,10 +755,10 @@ _XimStatusStartCallback(im, ic, proto, len)
 
 	/* no callback registered
 	 */
-	return(XimCbNoCallback);
+	return XimCbNoCallback;
     }
 
-    return(XimCbSuccess);
+    return XimCbSuccess;
 }
 
 Private XimCbStatus
@@ -812,10 +786,10 @@ _XimStatusDoneCallback(im, ic, proto, len)
 
 	/* no callback registered
 	 */
-	return(XimCbNoCallback);
+	return XimCbNoCallback;
     }
 
-    return(XimCbSuccess);
+    return XimCbSuccess;
 }
 
 Private XimCbStatus
@@ -854,10 +828,10 @@ _XimStatusDrawCallback(im, ic, proto, len)
 
 	/* no callback registered
 	 */
-	return(XimCbNoCallback);
+	return XimCbNoCallback;
     }
 
-    return(XimCbSuccess);
+    return XimCbSuccess;
 }
 
 Private XimCbStatus
@@ -884,9 +858,9 @@ _XimPreeditStateNotifyCallback( im, ic, proto, len )
     else {
 	/* no callback registered
 	 */
-	return( XimCbNoCallback );
+	return XimCbNoCallback;
     }
 
-    return( XimCbSuccess );
+    return XimCbSuccess;
 }
 

@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.9 95/05/05 17:42:43 kaleb Exp $
-XCOMM $XFree86: xc/config/util/Imakefile,v 3.5tsi Exp $
+XCOMM $XConsortium: Imakefile /main/10 1995/11/09 12:57:16 matt $
+XCOMM $XFree86: xc/config/util/Imakefile,v 3.6 1995/07/12 15:28:28 dawes Exp $
 #if UseCCMakeDepend
 MDEP_PROG = makedepend
 #endif
@@ -17,6 +17,8 @@ GCCCMD = $(CC)
 #else
 GCCCMD = gcc
 #endif
+
+includes:: makestrs
 
 CppScriptTarget(xmkmf,xmkmf.cpp,-DCONFIGDIRSPEC='"'"-I$(CONFIGDIR)"'"',$(ICONFIGFILES))
 CppScriptTarget(makedepend,mdepend.cpp,-DPREPROC='"'"$(PREPROCESSCMD)"'"',$(ICONFIGFILES))

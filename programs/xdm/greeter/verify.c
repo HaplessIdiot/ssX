@@ -1,5 +1,5 @@
-/* $XConsortium: verify.c,v 1.32 94/04/17 20:03:55 gildea Exp $ */
-/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.1 1995/10/21 11:51:38 dawes Exp $ */
+/* $XConsortium: verify.c,v 1.35 95/07/07 21:54:42 gildea Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.2 1995/10/21 12:52:37 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -41,11 +41,12 @@ from the X Consortium.
 
 # include	"dm.h"
 # include	<pwd.h>
-# ifdef NGROUPS_MAX
-# include	<grp.h>
-# endif
 #ifdef USESHADOW
 # include	<shadow.h>
+# include	<errno.h>
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif
 #endif
 
 # include	"greet.h"
@@ -102,56 +103,6 @@ char	*user, *home, *shell;
     return env;
 }
 
-#ifdef NGROUPS_MAX
-static int
-groupMember (name, members)
-    char *name;
-    char **members;
-{
-	while (*members) {
-		if (!strcmp (name, *members))
-			return 1;
-		++members;
-	}
-	return 0;
-}
-
-static void
-getGroups (name, verify, gid)
-    char		*name;
-    struct verify_info	*verify;
-    int			gid;
-{
-	int		ngroups;
-	struct group	*g;
-	int		i;
-
-	ngroups = 0;
-	verify->groups[ngroups++] = gid;
-	setgrent ();
-	/* SUPPRESS 560 */
-	while (g = getgrent()) {
-		/*
-		 * make the list unique
-		 */
-		for (i = 0; i < ngroups; i++)
-			if (verify->groups[i] == g->gr_gid)
-				break;
-		if (i != ngroups)
-			continue;
-		if (groupMember (name, g->gr_mem)) {
-			if (ngroups >= NGROUPS_MAX)
-				LogError ("%s belongs to more than %d groups, %s ignored\n",
-					name, NGROUPS_MAX, g->gr_name);
-			else
-				verify->groups[ngroups++] = g->gr_gid;
-		}
-	}
-	verify->ngroups = ngroups;
-	endgrent ();
-}
-#endif /* NGROUPS_MAX */
-
 Verify (d, greet, verify)
 struct display		*d;
 struct greet_info	*greet;
@@ -161,6 +112,7 @@ struct verify_info	*verify;
 #ifdef USESHADOW
 	struct spwd	*sp;
 #endif
+	char		*user_pass;
 #if !defined(SVR4) || !defined(GREET_LIB) /* shared lib decls handle this */
 	char		*crypt ();
 	char		**systemEnv (), **parseArgs ();
@@ -174,19 +126,23 @@ struct verify_info	*verify;
 		Debug ("getpwnam() failed.\n");
 		bzero(greet->password, strlen(greet->password));
 		return 0;
+	} else {
+	    user_pass = p->pw_passwd;
 	}
 #ifdef USESHADOW
+	errno = 0;
 	sp = getspnam(greet->name);
 	if (sp == NULL) {
-		Debug ("getspnam() failed.  Are you root?\n");
-		bzero(greet->password, strlen(greet->password));
-		return 0;
+	    Debug ("getspnam() failed, errno=%d.  Are you root?\n", errno);
+	} else {
+	    user_pass = sp->sp_pwdp;
 	}
 	endspent();
-
-	if (strcmp (crypt (greet->password, sp->sp_pwdp), sp->sp_pwdp))
+#endif
+#if defined(ultrix) || defined(__ultrix__)
+	if (authenticate_user(p, greet->password, NULL) < 0)
 #else
-	if (strcmp (crypt (greet->password, p->pw_passwd), p->pw_passwd))
+	if (strcmp (crypt (greet->password, user_pass), user_pass))
 #endif
 	{
 		if(!greet->allow_null_passwd || strlen(p->pw_passwd) > 0) {
@@ -196,13 +152,11 @@ struct verify_info	*verify;
 		} /* else: null passwd okay */
 	}
 	Debug ("verify succeeded\n");
-/*	bzero(greet->password, strlen(greet->password)); */
+	bzero(user_pass, strlen(user_pass)); /* in case shadow password */
+	/* The password is passed to StartClient() for use by user-based
+	   authorization schemes.  It is zeroed there. */
 	verify->uid = p->pw_uid;
-#ifdef NGROUPS_MAX
-	getGroups (greet->name, verify, p->pw_gid);
-#else
 	verify->gid = p->pw_gid;
-#endif
 	home = p->pw_dir;
 	shell = p->pw_shell;
 	argv = 0;

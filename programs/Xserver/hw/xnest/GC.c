@@ -1,5 +1,5 @@
-/* $XConsortium: GC.c,v 1.6 94/03/31 17:50:26 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: GC.c,v 1.7 95/07/10 17:42:22 ray Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/GC.c,v 3.0 1995/03/11 14:18:52 dawes Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -23,10 +23,7 @@ is" without express or implied warranty.
 #include "mistruct.h"
 #include "region.h"
 
-#define GC XlibGC
-#include "Xlib.h"
-#include "Xutil.h"
-#undef GC
+#include "Xnest.h"
 
 #include "Display.h"
 #ifdef __EMX__

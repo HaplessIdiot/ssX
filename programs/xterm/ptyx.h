@@ -1,6 +1,6 @@
 /*
- *	$XConsortium: ptyx.h,v 1.63 94/08/02 19:24:44 converse Exp $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.3 1995/05/07 12:28:07 dawes Exp $
+ *	$XConsortium: ptyx.h /main/66 1995/12/09 08:58:41 kaleb $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.4 1995/09/17 06:33:19 dawes Exp $
  */
 
 /*
@@ -79,7 +79,9 @@
 #ifdef hpux
 #define	PTYDEV		"/dev/ptym/ptyxx"
 #else	/* !hpux */
+#ifndef __osf__
 #define	PTYDEV		"/dev/ptyxx"
+#endif
 #endif	/* !hpux */
 #endif	/* !PTYDEV */
 
@@ -87,7 +89,11 @@
 #ifdef hpux
 #define TTYDEV		"/dev/pty/ttyxx"
 #else	/* !hpux */
+#ifdef __osf__
+#define TTYDEV		"/dev/ttydirs/xxx/xxxxxxxxxxxxxx"
+#else
 #define	TTYDEV		"/dev/ttyxx"
+#endif
 #endif	/* !hpux */
 #endif	/* !TTYDEV */
 
@@ -110,6 +116,30 @@
 #endif /* !__FreeBSD__ */
 #endif	/* !hpux */
 #endif	/* !PTYCHAR2 */
+
+#ifndef TTYFORMAT
+#ifdef CRAY
+#define TTYFORMAT "/dev/ttyp%03d"
+#else
+#define TTYFORMAT "/dev/ttyp%d"
+#endif
+#endif
+
+#ifndef PTYFORMAT
+#ifdef CRAY
+#define PTYFORMAT "/dev/pty/%03d"
+#else
+#define PTYFORMAT "/dev/ptyp%d"
+#endif
+#endif
+
+#ifndef MAXPTTYS
+#ifdef CRAY
+#define MAXPTTYS 256
+#else
+#define MAXPTTYS 2048
+#endif
+#endif
 
 /* Until the translation manager comes along, I have to do my own translation of
  * mouse events into the proper routines. */
@@ -438,9 +468,7 @@ typedef struct {
 	Widget		mainMenu, vtMenu, tekMenu, fontMenu;
 	char*		menu_font_names[NMENUFONTS];
 	int		menu_font_number;
-#ifdef I18N
 	XIC		xic;
-#endif
 } TScreen;
 
 typedef struct _TekPart {
@@ -484,13 +512,10 @@ typedef struct _Misc {
     Boolean tekSmall;	/* start tek window in small size */
     Boolean appcursorDefault;
     Boolean appkeypadDefault;
-#ifdef I18N
-    char *input_method;
-    char *preedit_type;
+    char* input_method;
+    char* preedit_type;
     Boolean open_im;
     Boolean shared_ic;
-#endif
-    Boolean dynamicColors;
 } Misc;
 
 typedef struct {int foo;} XtermClassPart, TekClassPart;

@@ -35,9 +35,9 @@
 .\" no representations about the
 .\" suitability of this software for any purpose.  It is provided "as is"
 .\" without express or implied warranty.
-.\" $XConsortium: xfs.man,v 1.10 94/04/17 19:55:50 dpw Exp $
-.\" $XFree86$
-.TH XFS 1 "Release 6" "X Version 11"
+.\" $XConsortium: xfs.man /main/12 1995/12/15 14:03:46 gildea $
+.\" $XFree86: xc/programs/xfs/xfs.man,v 3.0 1995/11/12 09:55:14 dawes Exp $
+.TH XFS 1 "Release 6.1" "X Version 11"
 .SH NAME
 xfs \- X font server
 .SH SYNOPSIS
@@ -198,7 +198,9 @@ with '+' as a separator.
 .PP
 Examples: \fIDECnet/SRVNOD::FONT$DEFAULT\fP, \fIdecnet/44.70::font$special/symbols\fP.
 .SH "SEE ALSO"
-X(1), \fIFont server implementation overview\fB
+X(1), \fIThe X Font Service Protocol\fP,
+.br
+\fIFont server implementation overview\fP
 .SH BUGS
 Multiple catalogues should be supported.
 .SH AUTHORS

@@ -46,8 +46,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: WaitFor.c,v 1.68 94/04/17 20:26:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.3 1994/06/13 14:54:29 dawes Exp $ */
+/* $XConsortium: WaitFor.c /main/52 1995/11/30 17:21:05 dpw $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.4 1994/09/03 02:53:23 dawes Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:
@@ -71,21 +71,20 @@ extern int errno;
 #ifdef MINIX
 #include <sys/nbio.h>
 #define select(n,r,w,x,t) nbio_select(n,r,w,x,t)
-#else
-#include <sys/param.h>
 #endif
+#include <X11/Xpoll.h>
 #include "osdep.h"
 #include "dixstruct.h"
 #include "opaque.h"
 
-extern FdSet AllSockets;
-extern FdSet AllClients;
-extern FdSet LastSelectMask;
-extern FdMask WellKnownConnections;
-extern FdSet EnabledDevices;
-extern FdSet ClientsWithInput;
-extern FdSet ClientsWriteBlocked;
-extern FdSet OutputPending;
+extern fd_set AllSockets;
+extern fd_set AllClients;
+extern fd_set LastSelectMask;
+extern fd_set WellKnownConnections;
+extern fd_set EnabledDevices;
+extern fd_set ClientsWithInput;
+extern fd_set ClientsWriteBlocked;
+extern fd_set OutputPending;
 
 extern int ConnectionTranslation[];
 
@@ -94,11 +93,6 @@ extern Bool AnyClientsWriteBlocked;
 
 extern WorkQueuePtr workQueue;
 
-#ifdef apollo
-extern FdSet apInputMask;
-
-static FdSet LastWriteMask;
-#endif
 
 #ifdef XTESTEXT1
 /*
@@ -145,15 +139,15 @@ WaitForSomething(pClientsReady)
     int i;
     struct timeval waittime, *wt;
     INT32 timeout;
-    FdSet clientsReadable;
-    FdSet clientsWritable;
+    fd_set clientsReadable;
+    fd_set clientsWritable;
     int curclient;
     int selecterr;
     int nready;
-    FdSet devicesReadable;
+    fd_set devicesReadable;
     CARD32 now;
 
-    CLEARBITS(clientsReadable);
+    FD_ZERO(&clientsReadable);
 
     /* We need a while loop here to handle 
        crashed connections and the screen saver timeout */
@@ -163,9 +157,9 @@ WaitForSomething(pClientsReady)
 	if (workQueue)
 	    ProcessWorkQueue();
 
-	if (ANYSET(ClientsWithInput))
+	if (XFD_ANYSET (&ClientsWithInput))
 	{
-	    COPYBITS(ClientsWithInput, clientsReadable);
+	    XFD_COPYSET (&ClientsWithInput, &clientsReadable);
 	    break;
 	}
 	if (ScreenSaverTime || timers)
@@ -221,11 +215,8 @@ WaitForSomething(pClientsReady)
 		wt = &waittime;
 	    }
 	}
-	COPYBITS(AllSockets, LastSelectMask);
-#ifdef apollo
-        COPYBITS(apInputMask, LastWriteMask);
-#endif
-	BlockHandler((pointer)&wt, (pointer)LastSelectMask);
+	XFD_COPYSET(&AllSockets, &LastSelectMask);
+	BlockHandler((pointer)&wt, (pointer)&LastSelectMask);
 	if (NewOutputPending)
 	    FlushAllOutput();
 #ifdef XTESTEXT1
@@ -240,20 +231,13 @@ WaitForSomething(pClientsReady)
 	    i = -1;
 	else if (AnyClientsWriteBlocked)
 	{
-	    COPYBITS(ClientsWriteBlocked, clientsWritable);
-	    i = select (MAXSOCKS, (int *)LastSelectMask,
-			(int *)clientsWritable, (int *) NULL, wt);
+	    XFD_COPYSET(&ClientsWriteBlocked, &clientsWritable);
+	    i = Select (MAXSOCKS, &LastSelectMask, &clientsWritable, NULL, wt);
 	}
 	else
-#ifdef apollo
-	    i = select (MAXSOCKS, (int *)LastSelectMask,
-			(int *)LastWriteMask, (int *) NULL, wt);
-#else
-	    i = select (MAXSOCKS, (int *)LastSelectMask,
-			(int *) NULL, (int *) NULL, wt);
-#endif
+	    i = Select (MAXSOCKS, &LastSelectMask, NULL, NULL, wt);
 	selecterr = errno;
-	WakeupHandler(i, (pointer)LastSelectMask);
+	WakeupHandler(i, (pointer)&LastSelectMask);
 #ifdef XTESTEXT1
 	if (playback_on) {
 	    i = XTestProcessInputAction (i, &waittime);
@@ -264,12 +248,12 @@ WaitForSomething(pClientsReady)
 
 	    if (dispatchException)
 		return 0;
-	    CLEARBITS(clientsWritable);
+	    FD_ZERO(&clientsWritable);
 	    if (i < 0) 
 		if (selecterr == EBADF)    /* Some client disconnected */
 		{
 		    CheckConnections ();
-		    if (! ANYSET (AllClients))
+		    if (! XFD_ANYSET (&AllClients))
 			return 0;
 		}
 		else if (selecterr != EINTR)
@@ -286,37 +270,37 @@ WaitForSomething(pClientsReady)
 	}
 	else
 	{
-	    if (AnyClientsWriteBlocked && ANYSET (clientsWritable))
+	    if (AnyClientsWriteBlocked && XFD_ANYSET (&clientsWritable))
 	    {
 		NewOutputPending = TRUE;
-		ORBITS(OutputPending, clientsWritable, OutputPending);
-		UNSETBITS(ClientsWriteBlocked, clientsWritable);
-		if (! ANYSET(ClientsWriteBlocked))
+		XFD_ORSET(&OutputPending, &clientsWritable, &OutputPending);
+		XFD_UNSET(&ClientsWriteBlocked, &clientsWritable);
+		if (! XFD_ANYSET(&ClientsWriteBlocked))
 		    AnyClientsWriteBlocked = FALSE;
 	    }
 
-	    MASKANDSETBITS(devicesReadable, LastSelectMask, EnabledDevices);
-	    MASKANDSETBITS(clientsReadable, LastSelectMask, AllClients); 
-	    if (LastSelectMask[0] & WellKnownConnections) 
+	    XFD_ANDSET(&devicesReadable, &LastSelectMask, &EnabledDevices);
+	    XFD_ANDSET(&clientsReadable, &LastSelectMask, &AllClients); 
+	    if (LastSelectMask.fds_bits[0] & WellKnownConnections.fds_bits[0]) 
 		QueueWorkProc(EstablishNewConnections, NULL,
-			      (pointer)LastSelectMask[0]);
-	    if (ANYSET (devicesReadable) || ANYSET (clientsReadable))
+			      (pointer)&LastSelectMask);
+	    if (XFD_ANYSET (&devicesReadable) || XFD_ANYSET (&clientsReadable))
 		break;
 	}
     }
 
     nready = 0;
-    if (ANYSET(clientsReadable))
+    if (XFD_ANYSET (&clientsReadable))
     {
-	for (i=0; i<mskcnt; i++)
+	for (i=0; i<howmany(XFD_SETSIZE, NFDBITS); i++)
 	{
 	    int highest_priority;
 
-	    while (clientsReadable[i])
+	    while (clientsReadable.fds_bits[i])
 	    {
 	        int client_priority, client_index;
 
-		curclient = ffs (clientsReadable[i]) - 1;
+		curclient = ffs (clientsReadable.fds_bits[i]) - 1;
 		client_index = ConnectionTranslation[curclient + (i << 5)];
 #ifdef XSYNC
 		/*  We implement "strict" priorities.
@@ -349,14 +333,14 @@ WaitForSomething(pClientsReady)
 		{
 		    pClientsReady[nready++] = client_index;
 		}
-		clientsReadable[i] &= ~(((FdMask)1) << curclient);
+		clientsReadable.fds_bits[i] &= ~(((FdMask)1) << curclient);
 	    }
 	}	
     }
     return nready;
 }
 
-#ifndef ANYSET
+#if 0
 /*
  * This is not always a macro.
  */

@@ -1,5 +1,5 @@
-/* $XConsortium: FSConnServ.c,v 1.26 94/04/17 20:15:10 dpw Exp $ */
-/* $XFree86: xc/lib/FS/FSConnServ.c,v 3.2 1994/05/08 05:14:40 dawes Exp $ */
+/* $XConsortium: FSConnServ.c,v 1.27 95/04/05 19:58:15 kaleb Exp $ */
+/* $XFree86: xc/lib/FS/FSConnServ.c,v 3.3 1994/08/06 05:57:28 dawes Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices;
@@ -55,6 +55,7 @@ in this Software without prior written authorization from the X Consortium.
 
 #include	<stdio.h>
 #include	"FSlibint.h"
+#include	"X11/Xpoll.h"
 #ifdef NCD
 #include	<fcntl.h>
 #endif
@@ -153,28 +154,20 @@ _FSDisconnectServer(trans_conn)
 _FSWaitForWritable(svr)
     FSServer     *svr;
 {
-    FdSet	r_mask;
-    FdSet	w_mask;
+    fd_set	r_mask;
+    fd_set	w_mask;
     int         nfound;
 
-    CLEARBITS(r_mask);
-    CLEARBITS(w_mask);
+    FD_ZERO(&r_mask);
+    FD_ZERO(&w_mask);
 
     while (1) {
-	BITSET(r_mask, svr->fd);
-	BITSET(w_mask, svr->fd);
+	FD_SET(svr->fd, &r_mask);
+	FD_SET(svr->fd, &w_mask);
 
 	do {
 #ifndef AMOEBA
-#ifdef WIN32
-	    nfound = select (0, &r_mask, &w_mask, NULL, NULL);
-#else
-#ifdef FD_ZERO
-	    nfound = select(svr->fd + 1, (fd_set *) r_mask, (fd_set *) w_mask, NULL, NULL);
-#else
-	    nfound = select(svr->fd + 1, r_mask, w_mask, NULL, NULL);
-#endif
-#endif
+	    nfound = Select(svr->fd + 1, &r_mask, &w_mask, NULL, NULL);
 #else /* AMOEBA */
 	    if (_FSTransAmSelect(svr->fd, 0) > 0) {
 		BITSET(r_mask, svr->fd);
@@ -191,7 +184,7 @@ _FSWaitForWritable(svr)
 		(*_FSIOErrorFunction) (svr);
 	} while (nfound <= 0);
 
-	if (_FSANYSET(r_mask)) {
+	if (XFD_ANYSET(&r_mask)) {
 	    char        buf[BUFSIZE];
 	    BytesReadable_t pend_not_register;
 	    register BytesReadable_t pend;
@@ -228,7 +221,7 @@ _FSWaitForWritable(svr)
 	    }
 	    ENDITERATE
 	}
-	if (_FSANYSET(w_mask))
+	if (XFD_ANYSET(&w_mask))
 	    return;
     }
 }
@@ -237,22 +230,14 @@ _FSWaitForWritable(svr)
 _FSWaitForReadable(svr)
     FSServer     *svr;
 {
-    FdSet	r_mask;
+    fd_set	r_mask;
     int         result;
 
-    CLEARBITS(r_mask);
+    FD_ZERO(&r_mask);
     do {
-	BITSET(r_mask, svr->fd);
+	FD_SET(svr->fd, &r_mask);
 #ifndef AMOEBA
-#ifdef WIN32
-	result = select (0, &r_mask, NULL, NULL, NULL);
-#else
-#ifdef FD_ZERO
-	result = select(svr->fd + 1, (fd_set *) r_mask, NULL, NULL, NULL);
-#else
-	result = select(svr->fd + 1, r_mask, NULL, NULL, NULL);
-#endif
-#endif
+	result = Select(svr->fd + 1, &r_mask, NULL, NULL, NULL);
 #else
 	if ((result = _FSTransAmSelect(svr->fd, 0)) > 0) {
 	    BITSET(r_mask, svr->fd);
