@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86RandR.c,v 1.5 2003/08/04 10:32:24 eich Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86RandR.c,v 1.6 2003/11/06 13:03:10 alanh Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -207,9 +207,11 @@ xf86RandRCreateScreenResources (ScreenPtr pScreen)
     if (!(*pScreen->CreateScreenResources) (pScreen))
 	return FALSE;
     
+#if 0
     mode = scrp->currentMode;
     if (mode)
 	xf86RandRSetMode (pScreen, mode, TRUE);
+#endif
     
     return TRUE;
 }

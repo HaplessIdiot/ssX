@@ -1,4 +1,7 @@
 XFree86 4.3.99.16 (xx November 2003)
+ 568. The call to xf86RandRSetMode() from xf86RandRCreateScreenResources()
+      doesn't appear to be necessary.  Removing it restores the documented
+      ViewPort behaviour when RandR is enabled (David Dawes).
  567. Make the vesa driver blank the screen during initialisation for
       cosmetic reasons (David Dawes).
  566. Make the cirrus driver blank the screen during initialisation for
@@ -18135,7 +18138,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2943 2003/11/06 13:03:08 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2944 2003/11/07 22:59:32 dawes Exp $
 
 
 
