@@ -1,7 +1,7 @@
 #ifndef __GLX_glx_h__
 #define __GLX_glx_h__
 
-/* $XFree86: xc/include/GL/glx.h,v 1.8 2001/03/21 15:51:38 dawes Exp $ */
+/* $XFree86: xc/include/GL/glx.h,v 1.9 2002/02/22 21:32:50 dawes Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -109,7 +109,7 @@ extern void glXSelectEvent (Display *dpy, GLXDrawable draw, unsigned long event_
 extern void glXGetSelectedEvent (Display *dpy, GLXDrawable draw, unsigned long *event_mask);
 
 /* GLX 1.4 and later */
-extern void (*glXGetProcAddress(const GLubyte *procname))();
+extern void (*glXGetProcAddress(const GLubyte *procname))(void);
 
 
 #ifndef GLX_GLXEXT_LEGACY
@@ -130,7 +130,43 @@ extern int glXQueryContextInfoEXT (Display *dpy, GLXContext ctx, int attribute, 
 extern Display * glXGetCurrentDisplayEXT (void);
 extern void (*glXGetProcAddressARB(const GLubyte *procName))( void );
 
+
+
 #endif /* GLX_GLXEXT_LEGACY */
+
+
+/**
+ ** The following aren't in glxext.h yet.
+ **/
+
+
+/*
+ * ???. GLX_NV_vertex_array_range
+ */
+#ifndef GLX_NV_vertex_array_range
+#define GLX_NV_vertex_array_range
+
+extern void *glXAllocateMemoryNV(GLsizei size, GLfloat readfreq, GLfloat writefreq, GLfloat priority);
+extern void glXFreeMemoryNV(GLvoid *pointer);
+typedef void * ( * PFNGLXALLOCATEMEMORYNVPROC) (GLsizei size, GLfloat readfreq, GLfloat writefreq, GLfloat priority);
+typedef void ( * PFNGLXFREEMEMORYNVPROC) (GLvoid *pointer);
+
+#endif /* GLX_NV_vertex_array_range */
+
+
+
+/*
+ * ???. GLX_MESA_agp_offset
+ */ 
+#ifndef GLX_MESA_agp_offset
+#define GLX_MESA_agp_offset 1
+
+extern GLuint glXGetAGPOffsetMESA(const GLvoid *pointer);
+typedef GLuint (* PFNGLXGETAGPOFFSETMESAPROC) (const GLvoid *pointer);
+
+#endif /* GLX_MESA_agp_offset */
+
+
 
 /*** Should these go here, or in another header? */
 /*
