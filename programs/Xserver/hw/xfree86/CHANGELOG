@@ -1,4 +1,10 @@
 XFree86 4.4.99.4 (xx April 2004)
+  77. Add an "AllowNoCntl" option to the elographics driver, which allows the
+      driver to be used with some other protocols (like the SmartSet 2500s)
+      which share the same default protocol (Bugzilla #1332,
+      Tristan Van Berkom).
+  76. Fix a problem where the elographics driver gets out of sync under heavy
+      loads (Bugzilla #1332, Tristan Van Berkom).
   75. Update freetype2 and the freetype XFree86 server module to eliminate
       the need to use private interfaces for embedded bitmap metrics
       (Chisato Yamauchi).
@@ -18859,7 +18865,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3226 2004/04/14 11:23:27 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3227 2004/04/14 15:32:43 dawes Exp $
 
 
 
