@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.148tsi Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria.
  *
@@ -3923,8 +3923,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     /* Eventually overrule TV Type (SVIDEO, COMPOSITE, SCART) */
-    if(pSiS->ForceTVType != -1) {
-       if(pSiS->VBFlags & VB_SISBRIDGE) {
+    if(pSiS->VBFlags & VB_SISBRIDGE) {
+       if(pSiS->ForceTVType != -1) {
     	  pSiS->VBFlags &= ~(TV_INTERFACE);
 	  pSiS->VBFlags |= pSiS->ForceTVType;
        }
@@ -5655,9 +5655,8 @@ SISVESASaveRestore(ScrnInfoPtr pScrn, vbeSaveRestoreFunction function)
 	     memcpy(pSiS->state, pSiS->pstate, pSiS->stateSize);
 	  }
 
-	  if(VBESaveRestore(pSiS->pVbe, function,
-				      (pointer)&pSiS->state,
-			    &pSiS->stateSize, &pSiS->statePage) &&
+	  if(VBESaveRestore(pSiS->pVbe,function,(pointer)&pSiS->state,
+			    &pSiS->stateSize,&pSiS->statePage) &&
 	     (function == MODE_SAVE)) {
 	     /* don't rely on the memory not being touched */
 	     if(!pSiS->pstate) {
@@ -8425,14 +8424,13 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode, int viewmode)
 	     CR31 &= ~0x01;
           } else if(vbflag & TV_HIVISION)
 	     CR30 |= 0x80;
-	  else if(vbflag & TV_SVIDEO)
-	     CR30 |= 0x08;
-	  else if(vbflag & TV_AVIDEO)
-	     CR30 |= 0x04;
 	  else if(vbflag & TV_SCART)
 	     CR30 |= 0x10;
-	  else
-	     CR30 |= 0x08;    /* default: SVIDEO */
+          else {
+	     if(vbflag & TV_SVIDEO) CR30 |= 0x08;
+	     if(vbflag & TV_AVIDEO) CR30 |= 0x04;
+	     if(!(CR30 & 0x0c))	    CR30 |= 0x08;    /* default: SVIDEO */
+	  }
 
 	  if(!(vbflag & (TV_CHSCART | TV_CHHDTV))) {
 	     if(vbflag & TV_PAL) {

@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init301.c,v 1.44tsi Exp $ */
+/* $XFree86$ */
 /*
  * Mode initializing code (CRT2 section)
  * for SiS 300/305/540/630/730 and
- *     SiS 315/550/650/M650/651/661FX/M661FX/740/741/330/660/M660/760/M760
+ *     SiS 315/550/650/M650/651/661FX/M661xX/740/741/330/660/M660/760/M760
  * (Universal module for Linux kernel framebuffer and XFree86 4.x)
  *
  * Copyright 2002, 2003 by Thomas Winischhofer <thomas@winischhofer.net>

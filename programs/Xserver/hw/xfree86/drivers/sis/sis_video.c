@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_video.c,v 1.34tsi Exp $ */
+/* $XFree86$ */
 /*
  * Xv driver for SiS 300, 315 and 330 series.
  *
@@ -1987,6 +1987,7 @@ calc_scale_factor(SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
      pOverlay->VUSF = (srcH << 16) / dstH;
      pOverlay->IntBit |= 0x08;
   } else {
+
      I = srcH / dstH;
      pOverlay->IntBit |= 0x02;
 
@@ -2113,6 +2114,7 @@ calc_scale_factor_2(SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
      pOverlay->VUSF2 = (srcH << 16) / dstH;
      pOverlay->IntBit2 |= 0x08;
   } else {
+
      I = srcH / dstH;
      pOverlay->IntBit2 |= 0x02;
 
@@ -4123,6 +4125,7 @@ set_subpict_scale_factor(SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
         pOverlay->SubPictVUSF = (srcH << 16) / dstH;
      /* pOverlay->SubPictIntBit |= 0x00; */
   } else {
+
         I = srcH / dstH;
         pOverlay->SubPictIntBit |= 0x02;
 
