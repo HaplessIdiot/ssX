@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.28 2003/04/03 16:26:03 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.29tsi Exp $ */
 
 #include "fontmisc.h"
 
@@ -1401,9 +1401,8 @@ FreeTypeLoadXFont(char *fileName,
     FTFacePtr face;
     int xrc, i;
     int charcell, constantWidth;
-    long rawWidth, rawAverageWidth, code, lastCode, firstCode;
+    long rawWidth = 0, rawAverageWidth = 0, code, lastCode, firstCode;
     int upm, minLsb, maxRsb, ascent, descent, width, averageWidth;
-    int ourvals = 0;
   
     xrc = FreeTypeOpenFace(&face, fileName);
     if(xrc != Successful) {
