@@ -31,7 +31,7 @@
  * authorization  from Martin Kroeker or Daveg GmbH.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/calcomp/xf86Calcomp.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/calcomp/xf86Calcomp.c,v 1.7 2003/01/12 03:55:50 tsi Exp $ */
 
 #define _CALCOMP_C_
 /*****************************************************************************
@@ -631,6 +631,7 @@ CalcompPreInit(       InputDriverPtr drv,
 	if ((!local) || (!priv))
 		goto SetupProc_fail;
 
+	local->conf_idev = dev;
 
         xf86CollectInputOptions(local, default_options, NULL);
         
