@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.2 1994/05/21 23:55:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.3 1994/05/31 08:09:11 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -158,7 +158,7 @@ s3CleanUp(void)
    /*
     * Restore AT&T 20C498 command register.
     */
-   if (OFLG_ISSET(OPTION_ATT498, &s3InfoRec.options)) {
+   if (DAC_IS_ATT498) {
       xf86setdaccomm(oldS3->ATT498);
    }
    
@@ -282,6 +282,7 @@ s3Init(mode)
    int   pixel_multiplexing;
    unsigned char tmp, tmp1, tmp2;
    extern Bool s3DAC8Bit, s3DACSyncOnGreen;
+   unsigned char pixMuxShift;
 
    UNLOCK_SYS_REGS;
 
@@ -310,6 +311,15 @@ s3Init(mode)
       oldS3 = vgaHWSave((vgaHWPtr)oldS3, sizeof(vgaS3Rec));
 
       /*
+       * Set up the Serial Access Mode 256 Words Control
+       *   (bit 6 in CR58)
+       */
+      if (OFLG_ISSET(OPTION_ELSA_W2000PRO,  &s3InfoRec.options)) 
+         s3SAM256 = 0x40;
+      else
+         s3SAM256 = 0x00;
+      
+      /*
        * Save AT&T 20C490/1 command register.
        */
       if (OFLG_ISSET(OPTION_ATT490_1, &s3InfoRec.options)) {
@@ -319,7 +329,7 @@ s3Init(mode)
       /*
        * Save AT&T 20C498 command register.
        */
-      if (OFLG_ISSET(OPTION_ATT498, &s3InfoRec.options)) {
+      if (DAC_IS_ATT498) {
          oldS3->ATT498 = xf86getdaccomm();
       }
 
@@ -420,13 +430,19 @@ s3Init(mode)
    else
       pixel_multiplexing = FALSE;
 
+   if (OFLG_ISSET(OPTION_ELSA_W2000PRO, &s3InfoRec.options))
+      pixMuxShift = 1;
+   else if (S3_x64_SERIES(s3ChipId)) /* XXXX Better to test the DAC type? */
+      pixMuxShift = 0;
+   else
+      pixMuxShift = 2;
 
    if (pixel_multiplexing) {
-      /* now divide the horizontal timing parameters by 4 for VCLK/4 */
-      mode->HTotal >>= 2;
-      mode->HDisplay >>= 2;
-      mode->HSyncStart >>= 2;
-      mode->HSyncEnd >>= 2;
+      /* now divide the horizontal timing parameters as required */
+      mode->HTotal >>= pixMuxShift;
+      mode->HDisplay >>= pixMuxShift;
+      mode->HSyncStart >>= pixMuxShift;
+      mode->HSyncEnd >>= pixMuxShift;
    }
 
    if (!vgaHWInit(mode, sizeof(vgaS3Rec)))
@@ -434,10 +450,10 @@ s3Init(mode)
 
    if (pixel_multiplexing) {
       /* put back the horizontal timing parameters */
-      mode->HTotal <<= 2;
-      mode->HDisplay <<= 2;
-      mode->HSyncStart <<= 2;
-      mode->HSyncEnd <<= 2;
+      mode->HTotal <<= pixMuxShift;
+      mode->HDisplay <<= pixMuxShift;
+      mode->HSyncStart <<= pixMuxShift;
+      mode->HSyncEnd <<= pixMuxShift;
    }
 
    new->MiscOutReg |= 0x0C;		/* enable CR42 clock selection */
@@ -507,7 +523,7 @@ s3Init(mode)
    /*
     * Set AT&T 20C498 command register to 8-bit mode if desired.
     */
-   if (OFLG_ISSET(OPTION_ATT498, &s3InfoRec.options)) {
+   if (DAC_IS_ATT498) {
       if (s3DAC8Bit) {
          xf86setdaccommbit(0x02);
       } else {
@@ -518,8 +534,8 @@ s3Init(mode)
    /*
     * Set Sierra SC 15025/6 command registers to 8-bit mode if desired.
     */
-   LOCK_SYS_REGS;
    if (OFLG_ISSET(OPTION_SC15025, &s3InfoRec.options)) {
+      LOCK_SYS_REGS;
       if (s3DAC8Bit) {
          tmp2=xf86getdaccomm();
          xf86setdaccomm(tmp2 | 0x10);
@@ -535,7 +551,7 @@ s3Init(mode)
          outb(0x3c8,0x00);
          xf86setdaccomm(tmp2);
       }
-   UNLOCK_SYS_REGS;
+      UNLOCK_SYS_REGS;
    }
 
 /* Looks like we don't need this -- at least not for the Bt485 cards */
@@ -593,10 +609,46 @@ s3Init(mode)
    }
 #endif /* PIXMUX_SWITCH_HACK */
 
-   if (s3ATT498PixMux) {
-      tmp = xf86getdaccomm();
-      xf86setdaccomm( (tmp&0x0f) | 0x20 );  /* set mode 2, pixel multiplexing on */
-      /* x64: don't know yet how to enable pixel_multiplexing on 864 (and 964) */
+   if (DAC_IS_ATT498) {
+      outb(0x3C4, 1);
+      tmp2 = inb(0x3C5);
+      outb(0x3C5, tmp2 | 0x20); /* blank the screen */
+
+      if (pixel_multiplexing) { /* x64:pixmux */
+	 tmp = xf86getdaccomm();
+	 xf86setdaccomm( (tmp&0x0f) | 0x20 );  /* set mode 2, pixel multiplexing on */
+
+	 outb(vgaCRIndex, 0x33);
+	 tmp = inb(vgaCRReg);
+	 outb(vgaCRReg, tmp | 0x08 );
+	 
+	 if (S3_x64_SERIES(s3ChipId)) {
+	    outb(vgaCRIndex, 0x67);
+	    outb(vgaCRReg, 0x11 );
+	 }
+	 else {
+	    /* don't know */
+	 }
+      }
+      else {
+	 tmp = xf86getdaccomm();
+	 xf86setdaccomm( (tmp&0x0f) );  /* set mode 0, pixel multiplexing off */
+
+	 outb(vgaCRIndex, 0x33);
+	 tmp = inb(vgaCRReg);
+	 outb(vgaCRReg, tmp &  ~0x08 );
+
+	 if (S3_x64_SERIES(s3ChipId)) {
+	    outb(vgaCRIndex, 0x67);
+	    outb(vgaCRReg, 0x00 );
+	 }
+	 else {
+	    /* don't know */
+	 }
+      }  /* end of pixel_multiplexing */
+
+      outb(0x3C4, 1);
+      outb(0x3C5, tmp2);        /* unblank the screen */
    }
 
    if (DAC_IS_BT485_SERIES) {
@@ -727,6 +779,11 @@ s3Init(mode)
       if (pixel_multiplexing) {
          /* fun timing mods for pixel-multiplexing!                     */
 
+       if(OFLG_ISSET(OPTION_ELSA_W2000PRO,&s3InfoRec.options)) {
+         /* set CR40 acording to Bernhard Bender */
+         outb(vgaCRIndex, 0x40);
+         outb(vgaCRReg, 0xd1);
+        } else {
          /* set s3 reg53 to parallel addressing by or'ing 0x20          */
          outb(vgaCRIndex, 0x53);
          tmp = inb(vgaCRReg);
@@ -736,7 +793,7 @@ s3Init(mode)
          outb(vgaCRIndex, 0x55);
          tmp = inb(vgaCRReg);
          outb(vgaCRReg, tmp | 0x08);
-
+        }
          /* the input clock is already set to clk1 or clk1double (s3.c) */
 
          /* set aux control to self clocked, window function complement */
@@ -750,7 +807,25 @@ s3Init(mode)
           * as SCLK but with no blanking.  SCLK is the actual pixel
           * shift clock for the pixel bus.
           */
-         s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00, TI_OCLK_S_V4_R8);
+       if(OFLG_ISSET(OPTION_ELSA_W2000PRO,&s3InfoRec.options)) {
+         /*
+          *  XXXX we need to calculate the correct value depending
+          *       on the clock frequency used
+          */
+         s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00, TI_OCLK_S_V2_R8);
+         outb(vgaCRIndex, 0x66);
+         tmp = inb(vgaCRReg);
+         outb(vgaCRReg, (tmp & 0xf8) | 0x02);
+        } else {
+         s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00, TI_OCLK_S_V8_R8);
+        }
+
+         /*
+          * set the serial access mode 256 words control
+          */
+         outb(vgaCRIndex, 0x58);
+         tmp = inb(vgaCRReg);
+         outb(vgaCRReg, (tmp & 0xbf) | s3SAM256);
 
          /* set mux control 1 and 2 to provide pseudocolor sub-mode 4   */
          /* this provides a 64-bit pixel bus with 8:1 multiplexing      */
@@ -759,10 +834,17 @@ s3Init(mode)
 
          /* change to 8-bit DAC and re-route the data path and clocking */
          s3OutTiIndReg(TI_GENERAL_IO_CONTROL, 0x00, TI_GIC_ALL_BITS);
-         if (s3DAC8Bit)
+         if (s3DAC8Bit) {
+          if(OFLG_ISSET(OPTION_ELSA_W2000PRO,&s3InfoRec.options)) 
+            s3OutTiIndReg( TI_GENERAL_IO_DATA , 0x00 , TI_GID_W2000_8BIT );
+          else
             s3OutTiIndReg(TI_GENERAL_IO_DATA, 0x00, TI_GID_TI_DAC_8BIT);
-         else
+         } else {
+          if(OFLG_ISSET(OPTION_ELSA_W2000PRO,&s3InfoRec.options))
+	    s3OutTiIndReg( TI_GENERAL_IO_DATA , 0x00 , TI_GID_W2000_6BIT );
+          else
             s3OutTiIndReg(TI_GENERAL_IO_DATA, 0x00, TI_GID_TI_DAC_6BIT);
+         }
       } else {
          /* set s3 reg53 to non-parallel addressing by and'ing 0xDF     */
          outb(vgaCRIndex, 0x53);
@@ -938,7 +1020,15 @@ s3Init(mode)
       outb(vgaCRReg, tmp);
 
       outb(vgaCRIndex, 0x54);
-      if (s3InfoRec.videoRam == 512 || mode->HDisplay > 1200) /* XXXX */
+      if (S3_x64_SERIES(s3ChipId)) {
+	 /* ELSA Winner 1000PRO Windows 3.1 driver uses the following values:
+	    Clock   25   33   40   52   65   85  110  135
+	    CR54   208  200  192  184  160  144  112   88
+	    CR54/8  26   25   24   23   20   18   14   11
+	    */
+	 s3Port54 = (232-s3InfoRec.clock[mode->Clock]/900) & ~8;
+      }
+      else if (s3InfoRec.videoRam == 512 || mode->HDisplay > 1200) /* XXXX */
 	 s3Port54 = 0x00;
       else
 	 s3Port54 = 0xa0;
@@ -949,7 +1039,7 @@ s3Init(mode)
       outb(vgaCRReg, tmp | 0x40);	/* remove mysterious dot at 60Hz */
 
       outb(vgaCRIndex, 0x58);
-      outb(vgaCRReg, 0x00);
+      outb(vgaCRReg, s3SAM256);
 
       outb(vgaCRIndex, 0x59);
       outb(vgaCRReg, s3Port59);
@@ -965,11 +1055,11 @@ s3Init(mode)
       outb(vgaCRReg, i);
 
       if (pixel_multiplexing) {
-         /* now divide the horizontal timing parameters by 4 for VCLK/4 */
-         mode->HTotal >>= 2;
-         mode->HDisplay >>= 2;
-         mode->HSyncStart >>= 2;
-         mode->HSyncEnd >>= 2;
+         /* now divide the horizontal timing parameters as required */
+         mode->HTotal >>= pixMuxShift;
+         mode->HDisplay >>= pixMuxShift;
+         mode->HSyncStart >>= pixMuxShift;
+         mode->HSyncEnd >>= pixMuxShift;
       }
 
       i = ((mode->HTotal & 0x800) >> 11) |
@@ -979,10 +1069,10 @@ s3Init(mode)
 
       if (pixel_multiplexing) {
          /* put back the horizontal timing parameters */
-         mode->HTotal <<= 2;
-         mode->HDisplay <<= 2;
-         mode->HSyncStart <<= 2;
-         mode->HSyncEnd <<= 2;
+         mode->HTotal <<= pixMuxShift;
+         mode->HDisplay <<= pixMuxShift;
+         mode->HSyncStart <<= pixMuxShift;
+         mode->HSyncEnd <<= pixMuxShift;
       }
 
       outb(vgaCRIndex, 0x5d);
@@ -1033,8 +1123,6 @@ s3Init(mode)
 	    tmp = 0xff;
 	 }
       }
-      if (S3_x64_SERIES(s3ChipId)) 
-	tmp = 0x07;  /* x64: power on default for 864/964 */
       outb(vgaCRIndex, 0x60);
       outb(vgaCRReg, tmp);
 
@@ -1049,6 +1137,21 @@ s3Init(mode)
       }
       outb(vgaCRIndex, 0x62);
       outb(vgaCRReg, tmp);
+
+      if (S3_x64_SERIES(s3ChipId)) {
+	 outb(vgaCRIndex, 0x60);
+	 outb(vgaCRReg, 20);
+	 
+	 if (s3InfoRec.videoRam < 2048) 
+	    tmp = s3DisplayWidth / 4;
+	 else
+	    tmp = s3DisplayWidth / 8;
+	 
+ 	 outb(vgaCRIndex, 0x61);
+	 outb(vgaCRReg, (tmp >> 8) | 0x80);
+	 outb(vgaCRIndex, 0x62);
+	 outb(vgaCRReg, tmp & 0xff);
+      }
    }
 
    if ((mode->Flags & V_INTERLACE) != 0) {
@@ -1312,13 +1415,19 @@ s3Init(mode)
 	   new->s3sysreg[0x10] = 0x00;
       }
       new->sysreg[0x18] = 0x00;
-      if (s3InfoRec.videoRam == 512)
+      if (S3_x64_SERIES(s3ChipId)) {
+	 /* ELSA Winner 1000PRO Windows 3.1 driver uses the following values:
+	    Clock   25   33   40   52   65   85  110  135
+	    CR54   208  200  192  184  160  144  112   88
+	    CR54/8  26   25   24   23   20   18   14   11
+	    */
+	 s3Port54 = (232-s3InfoRec.clock[mode->Clock]/900) & ~8;
+      } else if (s3InfoRec.videoRam == 512)
 	 s3Port54 = 0x00;
       else
 	 s3Port54 = 0xA0;
       new->sysreg[0x14] = s3Port54;
-      /* x64: check values for s3sysreg[0x20-0x22] (CR60-CR62) 
-	 in "S3 Video Bios and Utilities OEM Guide" */
+
       new->s3sysreg[0x21] = 0x81;
       if (s3DisplayWidth >= 1152) {
 	 new->s3sysreg[0x20] = 0x7F;
@@ -1333,6 +1442,21 @@ s3Init(mode)
       }
       if (mode->Flags & V_INTERLACE) {
 	 new->s3sysreg[0x02] = 0x20;
+      }
+
+      if (S3_864_SERIES(s3ChipId)) {
+	 /* ELSA Winner 1000PRO Windows 3.1 driver uses the following values:
+	    Clock   25   33   40   52   65   85  110  135
+	    CR60    20   20   20   22   26   29   37   43
+	    */
+	 new->s3sysreg[0x20] =  10 + s3InfoRec.clock[mode->Clock]/4000;
+	 if (new->s3sysreg[0x20] < 20) new->s3sysreg[0x20] = 20;
+	 new->s3sysreg[0x21] = 0x80;
+	 
+	 if (s3InfoRec.videoRam < 2048)
+	    new->s3sysreg[0x22] = s3DisplayWidth / 4;
+	 else
+	    new->s3sysreg[0x22] = s3DisplayWidth / 8;
       }
    }
       
@@ -1407,7 +1531,7 @@ s3Restore(restore)
    /*
     * Restore AT&T 20C498 command register.
     */
-   if (OFLG_ISSET(OPTION_ATT498, &s3InfoRec.options)) {
+   if (DAC_IS_ATT498) {
       xf86setdaccomm(oldS3->ATT498);
    }
 
@@ -1493,7 +1617,7 @@ s3Save(save)
    /*
     * Save AT&T 20C498 command register.
     */
-   if (OFLG_ISSET(OPTION_ATT498, &s3InfoRec.options)) {
+   if (DAC_IS_ATT498) {
       oldS3->ATT498 = xf86getdaccomm();
    }
 
@@ -1605,7 +1729,7 @@ S3Save(save)
    /*
     * Save AT&T 20C498 command register.
     */
-   if (OFLG_ISSET(OPTION_ATT498, &s3InfoRec.options)) {
+   if (DAC_IS_ATT498) {
       oldS3->ATT498 = xf86getdaccomm();
    }
 
@@ -1758,7 +1882,7 @@ S3Restore(restore)
    /*
     * Restore AT&T 20C498 command register.
     */
-   if (OFLG_ISSET(OPTION_ATT498, &s3InfoRec.options)) {
+   if (DAC_IS_ATT498) {
       xf86setdaccomm(oldS3->ATT498);
    }
 

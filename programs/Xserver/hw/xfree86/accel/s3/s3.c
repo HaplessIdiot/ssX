@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.1 1994/05/14 06:52:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.2 1994/05/31 08:09:06 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -50,7 +50,7 @@
 
 extern int s3MaxClock;
 extern int s3MaxBt485Clock, s3MaxBt485MuxClock;
-extern int s3MaxTi3020Clock, s3MaxTi3020ClockFast;
+extern int s3MaxTi3020Clock, s3MaxTi3020Clock175, s3MaxTi3020ClockFast;
 extern int s3MaxATT498Clock, s3MaxATT498MuxClock;
 char s3Mbanks;
 
@@ -141,6 +141,7 @@ Bool  s3Mmio928 = FALSE;
 Bool  s3DAC8Bit = FALSE;
 Bool  s3DACSyncOnGreen = FALSE;
 unsigned char s3LinApOpt;
+unsigned char s3SAM256 = 0x00;
 int s3BankSize;
 int s3DisplayWidth;
 pointer vgaBase = NULL;
@@ -344,6 +345,8 @@ s3Probe()
    OFLG_SET(OPTION_SPEA_MERCURY, &validOptions);
    OFLG_SET(OPTION_NUMBER_NINE, &validOptions);
    OFLG_SET(OPTION_STB_PEGASUS, &validOptions);
+   OFLG_SET(OPTION_ELSA_W1000PRO, &validOptions);
+   OFLG_SET(OPTION_ELSA_W2000PRO, &validOptions);
    xf86VerifyOptions(&validOptions, &s3InfoRec);
    if (OFLG_ISSET(OPTION_MEM_ACCESS, &s3InfoRec.options)) {
       ErrorF("%s: Warning: the \"memaccess\" option is now redundant\n",
@@ -371,9 +374,9 @@ s3Probe()
          ErrorF("%s %s: card type: ISA\n",
 		XCONFIG_PROBED, s3InfoRec.name);
 	 break;
-      default:
-	 ErrorF("%s %s: card type: unknown (%d)\n",
-		XCONFIG_PROBED, s3InfoRec.name, config & 0x03);
+      case 2:
+	 ErrorF("%s %s: card type: PCI\n",
+		XCONFIG_PROBED, s3InfoRec.name);
       }
    }
 
@@ -440,17 +443,23 @@ s3Probe()
 	 if (S3_911_SERIES(s3ChipId)) {
 	    s3InfoRec.videoRam = 1024;
 	 } else {
-	    switch ((config & 0xC0) >> 6) {	/* look at bits 6 and 7 */
+	    switch ((config & 0xE0) >> 5) {	/* look at bits 6 and 7 */
 	       case 0:
 	         s3InfoRec.videoRam = 4096;
 		 break;
-	       case 1:
+	       case 2:
 	         s3InfoRec.videoRam = 3072;
 		 break;
-	       case 2:
+	       case 3:
+	         s3InfoRec.videoRam = 8192;
+		 break;
+	       case 4:
 		 s3InfoRec.videoRam = 2048;
 	         break;
-	       case 3:
+	       case 5:
+		 s3InfoRec.videoRam = 6144;
+	         break;
+	       case 6:
 	         s3InfoRec.videoRam = 1024;
 		 break;
 	    }
@@ -517,8 +526,8 @@ s3Probe()
 	 ErrorF("%s %s: Only one RAMDAC Option may be specified.  %s\n",
 		s3InfoRec.name, XCONFIG_PROBED, "Ignoring \"ti3020\"");
       } else {
-	 if (!S3_928_SERIES(s3ChipId)) {
-            ErrorF("%s %s: Ti3020 is only supported on 928\n",
+	 if (!S3_928_SERIES(s3ChipId) && !S3_964_SERIES(s3ChipId)) {
+            ErrorF("%s %s: Ti3020 is only supported on 928 and 964\n",
 	           XCONFIG_PROBED, s3InfoRec.name);
 	    OFLG_CLR(OPTION_TI3020, &s3InfoRec.options);
 	 } else {
@@ -690,7 +699,10 @@ s3Probe()
       if (OFLG_ISSET(OPTION_TI3020_FAST, &s3InfoRec.options))
          s3InfoRec.maxClock = s3MaxTi3020ClockFast;
       else 
-         s3InfoRec.maxClock = s3MaxTi3020Clock;
+         if (OFLG_ISSET(OPTION_ELSA_W2000PRO, &s3InfoRec.options))
+           s3InfoRec.maxClock = s3MaxTi3020Clock175;
+         else
+           s3InfoRec.maxClock = s3MaxTi3020Clock;
       break;
    default:
       s3InfoRec.maxClock = s3MaxClock;
@@ -702,6 +714,9 @@ s3Probe()
       allowPixMuxInterlace = FALSE;
       allowPixMuxSwitching = FALSE;
       nonMuxMaxClock = 70000;
+      if (OFLG_ISSET(OPTION_ELSA_W2000PRO, &s3InfoRec.options)) 
+         nonMuxMaxClock = 0;  /* 964 kann only be in pixmux mode when 
+                               * working in enhanced mode */  
    } else if (s3ATT498PixMux) {
       if (OFLG_ISSET(OPTION_ELSA_W1000PRO, &s3InfoRec.options)) {
 	 pixMuxPossible = TRUE;
@@ -709,7 +724,7 @@ s3Probe()
 	 allowPixMuxInterlace = FALSE;
 	 allowPixMuxSwitching = TRUE;
 	 pixMuxLimitedWidths = FALSE;
-	 /* pixMuxMinWidth = 1024; */
+	 pixMuxMinWidth = 0;
       }
    } else if (s3Bt485PixMux) {
       /* XXXX Are the defaults for the other parameters correct? */
@@ -1206,28 +1221,23 @@ icd2061ClockSelect(no)
 	    } else {
 	       s3ClockDouble = FALSE;
 	    }
-#if 0
-	    /* Set the clock doubler here when not using pixmux */
-	    if (!s3Bt485PixMux) {
-	       ErrorF("Setting clock doubler in ClockSelect(), freq = %.3f\n",
-		      freq / 500.0);
-	       s3OutBtRegCom3(0xF7, s3ClockDouble ? 0x08 : 0x00);
-	    }
-#endif
 	 } else if (DAC_IS_TI3020) {
 	    if (freq > 100000) {
 	       s3ClockDouble = TRUE;
 	       /* Use Ti3020 clock doubler */
 	       freq /= 2;
-#if 0
-	       s3OutTiIndReg(TI_INPUT_CLOCK_SELECT, 0x00, TI_ICLK_CLK1_DOUBLE);
-#endif
 	    } else {
 	       s3ClockDouble = FALSE;
 	       /* No doubler */
-#if 0
-	       s3OutTiIndReg(TI_INPUT_CLOCK_SELECT, 0x00, TI_ICLK_CLK1);
-#endif
+	    }
+	 } else if (s3ATT498PixMux) {
+	    if (freq > 67500) {
+	       s3ClockDouble = TRUE;
+	       /* Use ATT498 pixel multiplexing */
+               freq /= 2;
+	    } else {
+	       s3ClockDouble = FALSE;
+	       /* No doubler */
 	    }
 	 }
 	 /* Convert freq to Hz */
@@ -1248,15 +1258,6 @@ icd2061ClockSelect(no)
          outb(vgaCRReg, 0x02);
 	 usleep(150000);
 	 /* Do the clock doubler selection in s3Init() */
-#if 0
-	 if (s3Bt485PixMux) {
-	    s3OutBtReg(BT_COMMAND_REG_0, 0xFE, 0x01); /* sleep mode */
-	    s3OutBtReg(BT_COMMAND_REG_2, 0xEF, 0x10); /* pclock 1   */
-	    /* Use Bt485 clock doubler - Bit 3 of Command Reg 3 */
-	    s3OutBtRegCom3(0xF7, (s3ClockDouble ? 0x08 : 0x00));
-	    s3OutBtReg(BT_COMMAND_REG_0, 0xFE, 0x00); /* wake up    */
-	 }
-#endif
       }
    }
    LOCK_SYS_REGS;

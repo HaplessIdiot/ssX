@@ -1,5 +1,5 @@
 /* $XConsortium: s3misc.c,v 1.1 94/03/28 21:16:11 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.0 1994/05/06 08:51:22 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -57,7 +57,6 @@ extern ScreenPtr s3savepScreen;
 static PixmapPtr ppix = NULL;
 extern Bool  s3Localbus;
 extern Bool  s3LinearAperture;
-extern unsigned char s3LinApOpt;
 extern int s3BankSize;
 extern int s3DisplayWidth;
 extern pointer vgaBase;
@@ -144,7 +143,10 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	       j = (s3Port40 & 0xf6) | 0x0a;
 	       outb (vgaCRReg, (unsigned char) j);
 	       outb(vgaCRIndex, 0x59);
-	       outb(vgaCRReg, 0x03);
+	       if (S3_x64_SERIES(s3ChipId)) 
+		  outb(vgaCRReg, 0x03 | 0xf0);
+	       else
+		  outb(vgaCRReg, 0x03);
 	       outb(vgaCRIndex, 0x5a);
 	       outb(vgaCRReg, 0x00);
 	       outb (vgaCRIndex, 0x58);
@@ -157,7 +159,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	       }
        	       s3BankSize = s3InfoRec.videoRam * 1024;
 	       /* go on to linear mode */
-	       outb (vgaCRReg, s3LinApOpt);
+	       outb (vgaCRReg, s3LinApOpt | s3SAM256);
 	       /* end  801 sequence to go into linear mode */
 	    }
 	 
@@ -250,7 +252,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	    if (S3_801_928_SERIES (s3ChipId)) {
 	       /* begin 801  sequence to go into enhanced mode */
 	       outb (vgaCRIndex, 0x58);
-	       outb (vgaCRReg, 0x00);
+	       outb (vgaCRReg, s3SAM256);
 	       outb (vgaCRIndex, 0x40);
 	       outb (vgaCRReg, s3Port40);
 	       /* end 801 sequence to go into enhanced mode */
@@ -512,7 +514,7 @@ s3AdjustFrame(int x, int y)
    outb(vgaCRIndex, 0x31);
    outb(vgaCRReg, ((Base & 0x030000) >> 12) | s3Port31);
    s3Port51 &= ~0x03;
-   s3Port51 |= ((Base & 0x040000) >> 18);
+   s3Port51 |= ((Base & 0x0c0000) >> 18);
    outb(vgaCRIndex, 0x51);
    /* Don't override current bank selection */
    tmp = (inb(vgaCRReg) & ~0x03) | ((Base & 0x040000) >> 18);

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.h,v 1.1 94/03/28 21:13:42 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.0 1994/05/31 08:09:09 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -117,6 +117,7 @@ extern pointer s3VideoMem;
 extern pointer vgaBase;
 extern ScreenPtr s3savepScreen;
 extern int s3CursorStartX, s3CursorStartY, s3CursorLines;
+extern unsigned char s3LinApOpt, s3SAM256;
 
 extern int vgaCRIndex;
 extern int vgaCRReg;

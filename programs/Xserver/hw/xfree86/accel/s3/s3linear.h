@@ -1,5 +1,5 @@
 /* $XConsortium: s3linear.h,v 1.1 94/03/28 21:16:04 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3linear.h,v 3.0 1994/05/21 23:55:38 dawes Exp $ */
 /*
  * s3EnableLinear() and s3DisableLinear() are wrappers to surround
  * any function call that is going to access the video ram through
@@ -14,7 +14,6 @@
 
 
 extern Bool s3LinearAperture;
-extern unsigned char s3LinApOpt;
 extern short s3ChipId;
 extern unsigned char s3Port40;
 extern unsigned char s3Port54;
@@ -50,7 +49,7 @@ extern unsigned char s3Port51;
       outb (vgaCRReg, (unsigned char) i);\
       DISABLE_MMIO; \
       outb (vgaCRIndex, 0x58);\
-      outb (vgaCRReg, s3LinApOpt);	/* go on to linear mode */\
+      outb (vgaCRReg, s3LinApOpt | s3SAM256);	/* go on to linear mode */\
       outb (vgaCRIndex, 0x54);\
       outb (vgaCRReg, (s3Port54 + 07));\
     /* end  801 sequence to go into linear mode, now lock the registers */\
@@ -74,7 +73,7 @@ extern unsigned char s3Port51;
       outb (vgaCRReg, (unsigned char) i);\
       DISABLE_MMIO; \
       outb (vgaCRIndex, 0x58);\
-      outb (vgaCRReg, s3LinApOpt & ~0x04);	/* go on to linear mode */\
+      outb (vgaCRReg, s3LinApOpt & ~0x04 | s3SAM256);	/* go on to linear mode */\
       outb (vgaCRIndex, 0x54);\
       outb (vgaCRReg, s3Port54);\
     /* end  801 sequence to go into linear mode */\
@@ -88,13 +87,14 @@ extern unsigned char s3Port51;
 
 #define s3DisableLinear() \
    if (S3_801_928_SERIES (s3ChipId)) {\
+\
       outb(vgaCRIndex, 0x39);\
       outb(vgaCRReg, 0xa5);\
     /* begin 801  sequence to go into enhanced mode */\
       outb (vgaCRIndex, 0x54);\
       outb (vgaCRReg, s3Port54);\
       outb (vgaCRIndex, 0x58);\
-      outb (vgaCRReg, 0x00);\
+      outb (vgaCRReg, s3SAM256);\
       outb (vgaCRIndex, 0x40);\
       outb (vgaCRReg, s3Port40);\
       ENABLE_MMIO; \

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.1 94/03/28 21:24:25 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.0 1994/04/29 14:08:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.1 1994/05/31 08:09:39 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -101,6 +101,7 @@ typedef struct {
 #define OPTION_NUMBER_NINE	46 /* Enable pixmux for #9 with Bt485 (S3) */
 #define OPTION_STB_PEGASUS	47 /* Enable pixmux for STB Pegasus (S3) */
 #define OPTION_ELSA_W1000PRO	48 /* Enable pixmux for ELSA Winner 1000PRO (S3) */
+#define OPTION_ELSA_W2000PRO	49 /* Enable pixmux for ELSA Winner 2000PRO (S3) */
 
 /* Debugging options */
 #define OPTION_SHOWCACHE	60 /* Allow cache to be seen (S3) */
@@ -169,6 +170,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "number_nine",	OPTION_NUMBER_NINE },
   { "stb_pegasus",	OPTION_STB_PEGASUS },
   { "elsa_w1000pro",	OPTION_ELSA_W1000PRO },
+  { "elsa_w2000pro",	OPTION_ELSA_W2000PRO },
 
   { "showcache",	OPTION_SHOWCACHE },
   { "fb_debug",		OPTION_FB_DEBUG },

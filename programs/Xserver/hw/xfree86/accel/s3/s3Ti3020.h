@@ -1,4 +1,5 @@
 /* $XConsortium: s3Ti3020.h,v 1.1 94/03/28 21:14:12 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@paros.com>
  *
@@ -75,7 +76,9 @@
 #define   TI_ICLK_CLK1_DOUBLE	0x11
 #define TI_OUTPUT_CLOCK_SELECT	0x1B
 #define   TI_OCLK_VGA		0x3E
+#define   TI_OCLK_S_V2_R8	0x4B
 #define   TI_OCLK_S_V4_R8	0x53
+#define   TI_OCLK_S_V8_R8	0x5B
 #define TI_PALETTE_PAGE		0x1C
 #define TI_GENERAL_CONTROL	0x1D
 #define TI_OVERSCAN_COLOR_RED	0x20
@@ -93,6 +96,8 @@
 #define TI_GENERAL_IO_CONTROL	0x2A
 #define   TI_GIC_ALL_BITS	0x1F
 #define TI_GENERAL_IO_DATA	0x2B
+#define   TI_GID_W2000_6BIT     0x00
+#define   TI_GID_W2000_8BIT     0x08
 #define   TI_GID_S3_DAC_6BIT	0x1C
 #define   TI_GID_S3_DAC_8BIT	0x1E
 #define   TI_GID_TI_DAC_6BIT	0x1D
