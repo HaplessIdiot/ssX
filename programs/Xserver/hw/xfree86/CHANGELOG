@@ -1,4 +1,6 @@
 XFree86 4.3.99.8 (xx June 2003)
+ 250. Added encoding files for Arabic (iso8859-6.16 and iso8859-6.8x)
+      (Bugzilla #420, Roland Mainz).
  249. Removed O_SYNC from open call for /dev/mem for all Linux platforms.
       This hopefully takes care of the speed problem 
       (Bugzilla #419, #414, Egbert Eich).
@@ -17163,7 +17165,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2750 2003/06/25 18:16:08 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2751 2003/06/25 18:27:04 eich Exp $
 
 
 
