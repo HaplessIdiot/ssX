@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.73 2004/11/07 04:33:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.74 2005/01/07 23:03:13 dawes Exp $ */
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -224,6 +224,10 @@ xf86ModeStatusToString(ModeStatus status)
         return "all modes must have the same height";
     case MODE_ONE_SIZE:
         return "all modes must have the same resolution";
+    case MODE_REFRESH_LOW:
+	return "refresh rate is below the target";
+    case MODE_TOO_BIG:
+	return "size is larger than the preferred mode";
     case MODE_BAD:
 	return "unknown reason";
     case MODE_ERROR:
@@ -231,6 +235,21 @@ xf86ModeStatusToString(ModeStatus status)
     default:
 	return "unknown";
     }
+}
+
+const char *
+xf86ModeTypeToString(int mType)
+{
+    if (mType & M_T_BUILTIN)
+	return "built-in mode";
+    else if (mType & M_T_EDID && mType & M_T_PREFER)
+	return "preferred EDID mode";
+    else if (mType & M_T_EDID)
+	return "EDID mode";
+    else if (mType & M_T_DEFAULT)
+	return "default mode";
+    else
+	return "mode";
 }
 
 /*
@@ -1803,18 +1822,10 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 		q->name = xnfstrdup(p->name);
 	        q->status = MODE_OK;
 	    } else {
-		if (p->type & M_T_BUILTIN)
-		    xf86DrvMsg(scrp->scrnIndex, X_INFO,
-			       "Not using built-in mode \"%s\" (%s)\n",
-			       p->name, xf86ModeStatusToString(status));
-		else if (p->type & M_T_DEFAULT)
-		    xf86DrvMsg(scrp->scrnIndex, X_INFO,
-			       "Not using default mode \"%s\" (%s)\n", p->name,
-			       xf86ModeStatusToString(status));
-		else
-		    xf86DrvMsg(scrp->scrnIndex, X_INFO,
-			       "Not using mode \"%s\" (%s)\n", p->name,
-			       xf86ModeStatusToString(status));
+		xf86DrvMsg(scrp->scrnIndex, X_INFO,
+			   "Not using %s \"%s\" (%s)\n",
+			   xf86ModeTypeToString(p->type),
+			   p->name, xf86ModeStatusToString(status));
 	    }
 	}
 
@@ -1938,6 +1949,36 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 		   preferredH, preferredV);
 
     /*
+     * Check the mode pool against a preferred refresh rate and preferred
+     * mode size.
+     */
+    for (q = scrp->modePool;  q != NULL;  q = q->next) {
+	if (q->status != MODE_OK)
+	    continue;
+
+	if (ModeVRefresh(q) < (1.0 - SYNC_TOLERANCE) * targetRefresh) {
+	    if (preferredH <= 0 || preferredV <= 0) {
+		xf86DrvMsg(scrp->scrnIndex, X_INFO,
+			   "Not using %s \"%s\" because its refresh (%.1f) "
+			   "is below the target (%.1f).\n",
+			   xf86ModeTypeToString(q->type),
+			   q->name, ModeVRefresh(q), targetRefresh);
+		q->status = MODE_REFRESH_LOW;
+	    }
+	}
+
+	if (preferredH > 0 && preferredV > 0 &&
+	    (q->HDisplay > preferredH || q->VDisplay > preferredV)) {
+	    xf86DrvMsg(scrp->scrnIndex, X_INFO,
+		       "Not using %s \"%s\" because it is "
+		       "larger than the preferred mode (%dx%d).\n",
+		       xf86ModeTypeToString(q->type), q->name,
+		       preferredH, preferredV);
+	    q->status = MODE_TOO_BIG;
+	}
+    }
+
+    /*
      * Allocate one entry in scrp->modes for each named mode.
      */
     while (scrp->modes)
@@ -2009,26 +2050,6 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 			    ((double)q->HTotal / (double)q->HDisplay) < 1.15)
 			    continue;
 
-			/*
-			 * If there is a target refresh rate, skip modes that
-			 * don't match up, unless there is a preferred
-			 * resolution set.
-			 */
-			if (ModeVRefresh(q) <
-			    (1.0 - SYNC_TOLERANCE) * targetRefresh) {
-			    if (preferredH <= 0 || preferredV <= 0)
-				continue;
-			}
-
-			/*
-			 * If the mode is larger than the preferred mode,
-			 * skip it.
-			 */
-			if (preferredH > 0 && preferredV > 0 &&
-			    (q->HDisplay > preferredH ||
-			     q->VDisplay > preferredV))
-			    continue;
-
 			if (modeSize < (q->HDisplay * q->VDisplay)) {
 			    r = q;
 			    modeSize = q->HDisplay * q->VDisplay;
@@ -2056,18 +2077,10 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	repeat = FALSE;
     lookupNext:
 	if (repeat && ((status = p->status) != MODE_OK)) {
-		if (p->type & M_T_BUILTIN)
-		    xf86DrvMsg(scrp->scrnIndex, X_INFO,
-			       "Not using built-in mode \"%s\" (%s)\n",
-			       p->name, xf86ModeStatusToString(status));
-		else if (p->type & M_T_DEFAULT)
-		    xf86DrvMsg(scrp->scrnIndex, X_INFO,
-			       "Not using default mode \"%s\" (%s)\n", p->name,
-			       xf86ModeStatusToString(status));
-		else
-		    xf86DrvMsg(scrp->scrnIndex, X_INFO,
-			       "Not using mode \"%s\" (%s)\n", p->name,
-			       xf86ModeStatusToString(status));
+	    xf86DrvMsg(scrp->scrnIndex, X_INFO,
+		       "Not using %s \"%s\" (%s)\n",
+		       xf86ModeTypeToString(p->type),
+		       p->name, xf86ModeStatusToString(status));
 	}
 	saveType = p->type;
 	status = xf86LookupMode(scrp, p, clockRanges, strategy);
@@ -2075,18 +2088,10 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	    continue;
 	}
 	if (status != MODE_OK) {
-		if (p->type & M_T_BUILTIN)
-		    xf86DrvMsg(scrp->scrnIndex, X_INFO,
-			       "Not using built-in mode \"%s\" (%s)\n",
-			       p->name, xf86ModeStatusToString(status));
-		else if (p->type & M_T_DEFAULT)
-		    xf86DrvMsg(scrp->scrnIndex, X_INFO,
-			       "Not using default mode \"%s\" (%s)\n", p->name,
-			       xf86ModeStatusToString(status));
-		else
-		    xf86DrvMsg(scrp->scrnIndex, X_INFO,
-			       "Not using mode \"%s\" (%s)\n", p->name,
-			       xf86ModeStatusToString(status));
+	    xf86DrvMsg(scrp->scrnIndex, X_INFO,
+		       "Not using %s \"%s\" (%s)\n",
+		       xf86ModeTypeToString(p->type),
+		       p->name, xf86ModeStatusToString(status));
 	}
 	if (status == MODE_ERROR) {
 	    ErrorF("xf86ValidateModes: "
@@ -2283,18 +2288,10 @@ xf86PruneDriverModes(ScrnInfoPtr scrp)
 	n = p->next;
 	if (p->status != MODE_OK) {
 #if 0
-	    if (p->type & M_T_BUILTIN)
-		xf86DrvMsg(scrp->scrnIndex, X_INFO,
-			   "Not using built-in mode \"%s\" (%s)\n", p->name,
-			   xf86ModeStatusToString(p->status));
-	    else if (p->type & M_T_DEFAULT)
-		xf86DrvMsg(scrp->scrnIndex, X_INFO,
-			   "Not using default mode \"%s\" (%s)\n", p->name,
-			   xf86ModeStatusToString(p->status));
-	    else
-	        xf86DrvMsg(scrp->scrnIndex, X_INFO,
-			   "Not using mode \"%s\" (%s)\n", p->name,
-			   xf86ModeStatusToString(p->status));
+	    xf86DrvMsg(scrp->scrnIndex, X_INFO,
+		       "Not using %s \"%s\" (%s)\n", p->name,
+		       xf86ModeTypeToString(p->type),
+		       xf86ModeStatusToString(p->status));
 #endif
 	    xf86DeleteMode(&(scrp->modes), p);
 	}
@@ -2433,16 +2430,11 @@ xf86PrintModes(ScrnInfoPtr scrp)
 	if (p->VScan > 1) {
 	    desc2 = " (VScan)";
 	}
-	if (p->type & M_T_BUILTIN)
-	    prefix = "Built-in mode";
-	else if (p->type & M_T_EDID && p->type & M_T_PREFER)
-	    prefix = "Preferred EDID mode";
-	else if (p->type & M_T_EDID)
-	    prefix = "EDID mode";
-	else if (p->type & M_T_DEFAULT)
-	    prefix = "Default mode";
-	else
-	    prefix = "Mode";
+	prefix = xstrdup(xf86ModeTypeToString(p->type));
+	if (!prefix)
+	    continue;
+	if (islower(prefix[0]))
+	    prefix[0] = toupper(prefix[0]);
 	if (p->type & M_T_USERDEF)
 	    uprefix = "*";
 	else
@@ -2467,6 +2459,7 @@ xf86PrintModes(ScrnInfoPtr scrp)
 			uprefix, prefix, p->name, p->Clock / 1000.0,
 			p->SynthClock / 1000.0, hsync, refresh, desc, desc2);
 	}
+	xfree(prefix);
 	if (hsync != 0 && refresh != 0)
 	    PrintModeline(scrp->scrnIndex,p);
 	p = p->next;

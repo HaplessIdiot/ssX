@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.181 2005/01/26 05:31:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.182 2005/01/28 02:11:18 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -606,6 +606,7 @@ int xf86GetBppFromDepth(ScrnInfoPtr pScrn, int depth);
 int xf86GetNearestClock(ScrnInfoPtr scrp, int freq, Bool allowDiv2,
 			int DivFactor, int MulFactor, int *divider);
 const char *xf86ModeStatusToString(ModeStatus status);
+const char *xf86ModeTypeToString(int mType);
 ModeStatus xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
 			  ClockRangePtr clockRanges, LookupModeFlags strategy);
 ModeStatus xf86CheckModeForMonitor(DisplayModePtr mode, MonPtr monitor);

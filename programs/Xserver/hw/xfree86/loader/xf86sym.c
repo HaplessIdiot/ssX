@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.249 2005/01/28 03:56:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.250 2005/01/28 19:56:37 dawes Exp $ */
 
 /*
  *
@@ -673,6 +673,7 @@ LOOKUP xfree86LookupTab[] = {
     /* xf86Mode.c */
     SYMFUNC(xf86GetNearestClock)
     SYMFUNC(xf86ModeStatusToString)
+    SYMFUNC(xf86ModeTypeToString)
     SYMFUNC(xf86LookupMode)
     SYMFUNC(xf86CheckModeForMonitor)
     SYMFUNC(xf86InitialCheckModeForDriver)
