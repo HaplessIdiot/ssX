@@ -9727,6 +9727,7 @@ void
 SiS_SiS30xBLOn(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 {
   /* Switch on LCD backlight on SiS30xLV */
+  SiS_DDC2Delay(SiS_Pr,0xff00);
   if(!(SiS_GetReg(SiS_Pr->SiS_Part4Port,0x26) & 0x02)) {
      SiS_SetRegOR(SiS_Pr->SiS_Part4Port,0x26,0x02);
      SiS_WaitVBRetrace(SiS_Pr,HwInfo);
@@ -9742,6 +9743,7 @@ SiS_SiS30xBLOff(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
   /* Switch off LCD backlight on SiS30xLV */
   SiS_SetRegAND(SiS_Pr->SiS_Part4Port,0x26,0xFE);
   SiS_SetRegAND(SiS_Pr->SiS_Part4Port,0x26,0xFD);
+  SiS_DDC2Delay(SiS_Pr,0xe000);
 }
 
 /*********************************************/
