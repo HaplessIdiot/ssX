@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.2 94/03/31 11:37:26 gildea Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.9 1994/06/11 06:07:56 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.10 1994/06/12 16:30:25 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -45,6 +45,10 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.9 1994/06/11 06:07:56 dawes Exp $
 # define XF86Mach32Server	NO
 #endif
 
+#ifndef XF86AGXServer
+# define XF86AGXServer		NO
+#endif
+
 #ifndef XF86P9000Server
 # define XF86P9000Server	NO
 #endif
@@ -79,12 +83,18 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.9 1994/06/11 06:07:56 dawes Exp $
 # define XF86P9000Dir		/**/
 #endif
 
+#if XF86AGXServer
+# define XF86AGXDir		agx
+#else
+# define XF86AGXDir		/**/
+#endif
+
 #undef XF86AccelServerDirs
-#define XF86AccelServerDirs   XF86S3Dir XF86I8514Dir XF86Mach8Dir XF86Mach32Dir XF86P9000Dir
+#define XF86AccelServerDirs   XF86S3Dir XF86I8514Dir XF86Mach8Dir XF86Mach32Dir XF86P9000Dir XF86AGXDir
 
 #undef XF86AccelServer
 #if XF86S3Server || XF86I8514Server || XF86Mach8Server || XF86Mach32Server || \
-	XF86P9000Server
+	XF86P9000Server || XF86AGXServer
 # define XF86AccelServer	YES
 #else
 # define XF86AccelServer	NO

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Config.h,v 1.1 94/03/28 21:23:53 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.1 1994/05/05 07:49:42 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -226,6 +226,13 @@ static SymTabRec MouseTab[] = {
 #define WHITE       24
 #define MEMBASE     25
 
+#define IOBASE      26
+#define DACBASE     27
+#define COPBASE     28
+#define POSBASE     29
+#define INSTANCE    30
+
+
 #ifdef INIT_CONFIG
 static SymTabRec GraphicsTab[] = {
   { STATICGRAY, "staticgray" },
@@ -250,7 +257,14 @@ static SymTabRec GraphicsTab[] = {
   { BIOSBASE,   "biosbase" },
   { BLACK,	"black" },
   { WHITE,	"white" },
+
   { MEMBASE,	"membase" },
+  { IOBASE,     "iobase" },
+  { DACBASE,    "dacbase" },
+  { COPBASE,    "copbase" },
+  { POSBASE,    "posbase" },
+  { INSTANCE,   "instance" },
+
   { -1,         "" },
 };
 #endif /* INIT_CONFIG */
@@ -290,6 +304,7 @@ static SymTabRec TimingTab[] = {
 #define XCONFIG_VIRTUAL         8       /* Xconfig or default/calculated */
 #define XCONFIG_SPEEDUP         9       /* Xconfig or default/calculated */
 #define XCONFIG_NOMEMACCESS     10      /* set if forced on */
+#define XCONFIG_INSTANCE        11      /* Xconfig or default */
 
 #define XCONFIG_GIVEN		"(**)"
 #define XCONFIG_PROBED		"(--)"

@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.c,v 1.1 94/03/28 21:06:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.3 1994/05/31 08:04:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.4 1994/06/05 13:43:00 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -105,6 +105,11 @@ ScrnInfoRec mach32InfoRec = {
     {0, },		/* RgbRec whiteColour */
     mach32ValidTokens,	/* int *validTokens */
     MACH32_PATCHLEVEL,	/* char *patchlevel */
+    0,			/* int IObase */
+    0,			/* int PALbase */
+    0,			/* int COPbase */
+    0,			/* int POSbase */
+    0,			/* int instance */
 };
 
 short mach32alu[16] = {

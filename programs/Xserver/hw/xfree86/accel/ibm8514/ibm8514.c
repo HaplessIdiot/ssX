@@ -1,5 +1,5 @@
 /* $XConsortium: ibm8514.c,v 1.1 94/03/28 21:02:54 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.0 1994/05/31 08:03:55 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -95,6 +95,11 @@ ScrnInfoRec ibm8514InfoRec = {
     {0, },		/* RgbRec whiteColour */
     ibm8514ValidTokens,	/* int *validTokens */
     IBM8514_PATCHLEVEL,	/* char *patchlevel */
+    0,			/* int IObase */
+    0,			/* int PALbase */
+    0,			/* int COPbase */
+    0,			/* int POSbase */
+    0,			/* int instance */
 };
 
 short ibm8514alu[16] = {

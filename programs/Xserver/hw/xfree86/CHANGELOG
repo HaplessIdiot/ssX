@@ -1,4 +1,6 @@
-XFree86 3.0Bb (14 June 1994)
+XFree86 3.0Bb (16 June 1994)
+ 92. AGX server (Henry Worth).
+ 91. Accelerated support for 90C33 (Bill Conn).
  90. Use s3ImageWriteFunc to load S3 cursor.
  89. Fix problems with SPEA Mercury for clocks > 120MHz (Norbert Distler).
  88. Code to program S3 GENDAC clock (Clocks "s3gendac") (Jon Tombs).

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.4 1994/06/12 16:35:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.5 1994/06/13 14:52:57 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -101,6 +101,11 @@ ScrnInfoRec s3InfoRec =
    {0, },			/* RgbRec whiteColour */
    s3ValidTokens,		/* int *validTokens */
    S3_PATCHLEVEL,		/* char *patchlevel */
+   0,				/* int IObase */
+   0,				/* int PALbase */
+   0,				/* int COPbase */
+   0,				/* int POSbase */
+   0,				/* int instance */
 };
 
 short s3alu[16] =

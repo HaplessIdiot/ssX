@@ -38,7 +38,7 @@ NormalLibraryTarget(s3,$(OBJS))
 
 MakeSubdirs($(SUBDIRS))
 
-ObjectFromSpecialSource(vgaHW,../../vga256/vga/vgaHW,/**/)
+LinkSourceFile(vgaHW.c,../../vga256/vga)
 
 InstallLinkKitLibrary(s3,$(LINKKITDIR)/drivers)
 InstallLinkKitNonExecFile(confS3.sh,$(LINKKITDIR))

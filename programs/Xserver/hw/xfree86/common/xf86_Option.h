@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.1 94/03/28 21:24:25 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.2 1994/06/11 06:11:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.3 1994/06/12 16:36:09 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -103,9 +103,30 @@ typedef struct {
 #define OPTION_ELSA_W1000PRO	48 /* Enable pixmux for ELSA Winner 1000PRO (S3) */
 #define OPTION_ELSA_W2000PRO	49 /* Enable pixmux for ELSA Winner 2000PRO (S3) */
 
+/* More RAMDAC options */
+#define OPTION_BT481            55 /* Has BrookTree Bt481 RAMDAC */
+#define OPTION_BT482            56 /* Has BrookTree Bt482 RAMDAC */
+#define OPTION_BT482_CURS       57 /* Use Bt482 RAMDAC cursor */
+#define OPTION_HERC_DUAL_DAC    58 /* Use Herc Dual DAC probe */
+#define OPTION_HERC_SMALL_DAC   59 /* Change Herc Dual DAC defualt to small */
+
 /* Debugging options */
-#define OPTION_SHOWCACHE	60 /* Allow cache to be seen (S3) */
-#define OPTION_FB_DEBUG		61 /* Linear fb debug for S3 */
+#define OPTION_SHOWCACHE	66 /* Allow cache to be seen (S3) */
+#define OPTION_FB_DEBUG		67 /* Linear fb debug for S3 */
+
+/* Some AGX Tuning/Debugging options -- several are for development testing */
+#define OPTION_8_BIT_BUS        70 /* Force 8-bit CPU interface - MR1:0 */
+#define OPTION_WAIT_STATE       71 /* Force 1 bus wait state - MR1:1<-1 */
+#define OPTION_NO_WAIT_STATE    72 /* Force no bus wait state - MR:1<-0 */
+#define OPTION_CRTC_DELAY       73 /* Select XGA Mode Delay - MR1:3 */
+#define OPTION_VRAM_128         74 /* VRAM shift every 128 cycles - MR2:0 */
+#define OPTION_VRAM_256         75 /* VRAM shift every 256 cycles - MR2:0 */
+#define OPTION_REFRESH_20       76 /* # clocks between scr refreshs - MR3:5 */
+#define OPTION_REFRESH_25       77 /* # clocks between scr refreshs - MR3:5 */
+#define OPTION_VLB_A            78 /* VESA VLB transaction type A   - MR7:2 */
+#define OPTION_VLB_B            79 /* VESA VLB transaction type B   - MR7:2 */
+#define OPTION_SPRITE_REFRESH   80 /* Sprite refresh every hsync    - MR8:4 */
+#define OPTION_SCREEN_REFRESH   81 /* Screen refresh during blank   - MR8:5 */
 
 #define CLOCK_OPTION_PROGRAMABLE 0 /* has a programable clock */
 #define CLOCK_OPTION_ICD2061A	 1 /* use ICD 2061A programable clocks      */
@@ -175,6 +196,25 @@ OptFlagRec xf86_OptionTab[] = {
 
   { "showcache",	OPTION_SHOWCACHE },
   { "fb_debug",		OPTION_FB_DEBUG },
+
+  { "bt481",          OPTION_BT481 },
+  { "bt482",          OPTION_BT482 },
+  { "bt482_curs",     OPTION_BT482_CURS },
+  { "herc_dual_dac",  OPTION_HERC_DUAL_DAC },
+  { "herc_small_dac", OPTION_HERC_SMALL_DAC },
+
+  { "8_bit_bus",        OPTION_8_BIT_BUS },
+  { "wait_state",       OPTION_WAIT_STATE },
+  { "no_wait_state",    OPTION_NO_WAIT_STATE },
+  { "crtc_delay",       OPTION_CRTC_DELAY },
+  { "vram_128",         OPTION_VRAM_128 },
+  { "vram_256",         OPTION_VRAM_256 },
+  { "refresh_20",       OPTION_REFRESH_20 },
+  { "refresh_25",       OPTION_REFRESH_25 },
+  { "vlb_a",            OPTION_VLB_A },
+  { "vlb_b",            OPTION_VLB_B },
+  { "sprite_refresh",   OPTION_SPRITE_REFRESH },
+  { "screen_refresh",   OPTION_SPRITE_REFRESH },
 
   { "",			-1 },
 };

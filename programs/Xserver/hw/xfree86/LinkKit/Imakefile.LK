@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.0 1994/05/30 08:22:47 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.1 1994/06/05 13:42:39 dawes Exp $
 /*
  * Server Makefile for LinkKit
  */
@@ -290,6 +290,20 @@ SetUIDServerTarget(XF86_P9000,$(XF86P9000SUBDIRS),$(XF86P9000OBJS),$(XF86P9000LI
 #define ServerToInstall XF86_P9000
 #endif
 #endif	/* XF86P9000Server */
+
+#if XF86AGXServer
+XCOMM
+XCOMM XFree86 AGX Server
+XCOMM
+XF86AGXOBJS = XF86_AGX.o
+XF86AGXLIBS = $(DRIVERSRC)/libagx.a $(DRIVERSRC)/libvga256.a $(XF86LIBS) MFBLibs
+XF86AGXSYSLIBS = $(SYSLIBS)
+XF86_AGX.o: XF86_AGX.c $(ICONFIGFILES)
+SetUIDServerTarget(XF86_AGX,$(XF86AGXSUBDIRS),$(XF86AGXOBJS),$(XF86AGXLIBS),$(XF86AGXSYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall XF86_AGX
+#endif
+#endif	/* XF86AGXServer */
 
 CFBDIRS = $(CFB8DIR) $(CFB16DIR) $(CFB32DIR)
 DDXDIRS = $(DDXDIR1) $(DDXDIR2) $(DDXDIR3) $(DDXDIR4) $(DDXDIR5) $(DDXDIR6)

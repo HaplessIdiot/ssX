@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.0 1994/05/04 14:59:42 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.1 1994/05/08 05:20:47 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -930,6 +930,50 @@ configGraphics(scr_index)
         }
       }
       break;
+
+     case IOBASE:
+       if (getToken(NULL) != NUMBER)
+         configError("Direct access register I/O base address expected");
+       screen->IObase = val.num;
+       if (!dummy && xf86Verbose)
+         ErrorF("%s %s: Direct Access Register I/O Base Address: %x\n",
+                XCONFIG_GIVEN, screen->name, val.num);
+       break;
+
+     case DACBASE:
+       if (getToken(NULL) != NUMBER)
+         configError("DAC base I/O address expected");
+       screen->DACbase = val.num;
+       if (!dummy && xf86Verbose)
+         ErrorF("%s %s: DAC Base I/O Address: %x\n",
+                XCONFIG_GIVEN, screen->name, val.num);
+       break;
+
+     case COPBASE:
+       if (getToken(NULL) != NUMBER)
+         configError("Coprocessor base memory address expected");
+       screen->COPbase = val.num;
+       if (!dummy && xf86Verbose)
+         ErrorF("%s %s: Coprocessor Base Memory Address: %x\n",
+                XCONFIG_GIVEN, screen->name, val.num);
+       break;
+
+     case POSBASE:
+       if (getToken(NULL) != NUMBER) configError("POS base address expected");
+       screen->POSbase = val.num;
+       if (!dummy && xf86Verbose)
+         ErrorF("%s %s: POS Base Address: %x\n", XCONFIG_GIVEN, screen->name,
+              val.num);
+       break;
+
+     case INSTANCE:
+       if (getToken(NULL) != NUMBER)
+         configError("Vidoe adapter instance number expected");
+       screen->instance = val.num;
+       if (!dummy && xf86Verbose)
+         ErrorF("%s %s: POS Base Address: %x\n", XCONFIG_GIVEN, screen->name,
+              val.num);
+       break;
 
     default:
       pushToken = token;

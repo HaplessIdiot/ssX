@@ -1,5 +1,5 @@
 /* $XConsortium: xf86.h,v 1.1 94/03/28 21:22:43 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.0 1994/04/29 14:08:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.1 1994/05/31 08:09:38 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -124,6 +124,11 @@ typedef struct {
   RgbRec         whiteColour;
   int            *validTokens;
   char           *patchLevel;
+  unsigned int   IObase;          /* AGX - video card I/O reg base    */
+  unsigned int   DACbase;         /* AGX - dac I/O reg base           */
+  unsigned int   COPbase;         /* AGX - coprocessor memory base    */
+  unsigned int   POSbase;         /* AGX - I/O address of POS regs    */
+  unsigned int   instance;        /* AGX - video card instance number */
 } ScrnInfoRec, *ScrnInfoPtr;
 
 #define VGA_DRIVER  1
