@@ -1,4 +1,4 @@
-/* $Xorg: snfread.c,v 1.3 2000/08/17 19:46:35 cpqbld Exp $ */
+/* $Xorg: snfread.c,v 1.4 2000/10/30 10:02:21 pookie Exp $ */
 /************************************************************************
 Copyright 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -45,7 +45,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/snfread.c,v 1.7 1999/08/01 07:56:56 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/snfread.c,v 1.8 2001/01/17 19:43:27 dawes Exp $ */
 
 #ifndef FONTMODULE
 #include <ctype.h>
@@ -55,6 +55,34 @@ from The Open Group.
 #include "bitmap.h"
 #include "snfstr.h"
 
+#if NeedVarargsPrototypes
+#include <stdarg.h>
+#else
+#include <varargs.h>
+#endif
+
+void
+#if NeedVarargsPrototypes
+snfError(char* message, ...)
+      #else
+      snfError (message, va_alist)
+          char* message;
+          va_dcl
+      #endif
+      {
+                  va_list args;
+              
+                  #if NeedVarargsPrototypes
+                          va_start (args, message);
+              #else
+                          va_start (args);
+              #endif
+                      
+                              fprintf(stderr, "SNF Error: ");
+                  vfprintf(stderr, message, args);
+                  va_end (args);
+              }
+              
 static void snfUnloadFont(FontPtr pFont);
 
 static int
@@ -129,8 +157,10 @@ snfReadProps(snfFontInfoPtr snfInfo, FontInfoPtr pFontInfo, FontFilePtr file)
     bytestoalloc = snfInfo->nProps * sizeof(snfFontPropRec) +
 	BYTESOFSTRINGINFO(snfInfo);
     propspace = (char *) xalloc(bytestoalloc);
-    if (!propspace)
+    if (!propspace) {
+      snfError("snfReadProps(): Couldn't allocate propspace (%d)\n", bytestoalloc);
 	return AllocError;
+    }
 
     if (FontFileRead(file, propspace, bytestoalloc) != bytestoalloc) {
 	xfree(propspace);
@@ -246,12 +276,14 @@ snfReadFont(FontPtr pFont, FontFilePtr file,
 	bytestoalloc += num_chars * sizeof(xCharInfo);	/* ink_metrics */
 
     fontspace = (char *) xalloc(bytestoalloc);
-    if (!fontspace)
+    if (!fontspace) {
+      snfError("snfReadFont(): Couldn't allocate fontspace (%d)\n", bytestoalloc);
 	return AllocError;
-
+    }
     bitmaps = (char *) xalloc (bitmapsSize);
     if (!bitmaps)
     {
+      snfError("snfReadFont(): Couldn't allocate bitmaps (%d)\n", bitmapsSize);
 	xfree (fontspace);
 	return AllocError;
     }
@@ -345,6 +377,7 @@ snfReadFont(FontPtr pFont, FontFilePtr file,
 	}
 	padbitmaps = (char *) xalloc(sizepadbitmaps);
 	if (!padbitmaps) {
+	    snfError("snfReadFont(): Couldn't allocate padbitmaps (%d)\n", sizepadbitmaps);
 	    xfree (bitmaps);
 	    xfree (fontspace);
 	    return AllocError;
@@ -432,10 +465,13 @@ snfReadFontInfo(FontInfoPtr pFontInfo, FontFilePtr file)
     snfCopyInfo(&fi, pFontInfo);
 
     pFontInfo->props = (FontPropPtr) xalloc(fi.nProps * sizeof(FontPropRec));
-    if (!pFontInfo->props)
+    if (!pFontInfo->props) {
+      snfError("snfReadFontInfo(): Couldn't allocate props (%d*%d)\n", fi.nProps, sizeof(FontPropRec));
 	return AllocError;
+    }
     pFontInfo->isStringProp = (char *) xalloc(fi.nProps * sizeof(char));
     if (!pFontInfo->isStringProp) {
+      snfError("snfReadFontInfo(): Couldn't allocate isStringProp (%d*%d)\n", fi.nProps, sizeof(char));
 	xfree(pFontInfo->props);
 	return AllocError;
     }

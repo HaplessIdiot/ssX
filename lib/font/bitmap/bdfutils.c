@@ -1,4 +1,4 @@
-/* $Xorg: bdfutils.c,v 1.3 2000/08/17 19:46:34 cpqbld Exp $ */
+/* $Xorg: bdfutils.c,v 1.4 2000/10/30 09:24:26 pookie Exp $ */
 /************************************************************************
 Copyright 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -45,7 +45,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bdfutils.c,v 1.7 2001/01/17 19:43:27 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bdfutils.c,v 1.8 2001/07/25 15:04:56 dawes Exp $ */
 
 #ifndef FONTMODULE
 #include <ctype.h>
@@ -126,10 +126,15 @@ Atom
 bdfForceMakeAtom(char *str, int *size)
 {
     register int len = strlen(str);
+    extern Atom   MakeAtom(); /* Added this line to be consistent with X.org code */
+    Atom the_atom;
 
     if (size != NULL)
 	*size += len + 1;
-    return MakeAtom(str, len, TRUE);
+    the_atom = MakeAtom(str, len, TRUE);
+    if (the_atom == None)
+      bdfError("Atom allocation failed\n");
+    return the_atom;
 }
 
 /***====================================================================***/
@@ -165,6 +170,10 @@ bdfGetPropertyValue(char *s)
     /* quoted string: strip outer quotes and undouble inner quotes */
     s++;
     pp = p = (char *) xalloc((unsigned) strlen(s) + 1);
+    if (pp == NULL) {
+  bdfError("Couldn't allocate property value string (%d)\n", strlen(s) + 1);
+  return None;
+    }
     while (*s) {
 	if (*s == '"') {
 	    if (*(s + 1) != '"') {

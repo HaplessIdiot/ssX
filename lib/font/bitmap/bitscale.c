@@ -1,4 +1,4 @@
-/* $Xorg: bitscale.c,v 1.3 2000/08/17 19:46:35 cpqbld Exp $ */
+/* $Xorg: bitscale.c,v 1.5 2001/02/09 02:04:02 xorgcvs Exp $ */
 
 /*
 
@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.18 2001/04/03 17:51:59 paulo Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.19 2001/04/05 17:42:27 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -735,12 +735,15 @@ ComputeScaledProperties(FontInfoPtr sourceFontInfo, /* the font to be scaled */
 			  sizeof(rawFontPropTable) / sizeof(fontProp);
     fp = (FontPropPtr) xalloc(sizeof(FontPropRec) * nProps);
     *pProps = fp;
-    if (!fp)
+    if (!fp) {
+ fprintf(stderr, "Error: Couldn't allocate font properties (%d*%d)\n", sizeof(FontPropRec), nProps);
 	return 1;
+    }
     isStringProp = (char *) xalloc (nProps);
     *pIsStringProp = isStringProp;
     if (!isStringProp)
     {
+ fprintf(stderr, "Error: Couldn't allocate isStringProp (%d)\n", nProps);
 	xfree (fp);
 	return 1;
     }
@@ -918,8 +921,10 @@ ScaleFont(FontPtr opf,            /* originating font */
     obitmapFont = (BitmapFontPtr) opf->fontPrivate;
 
     bitmapFont = 0;
-    if (!(pf = CreateFontRec()))
+    if (!(pf = CreateFontRec())) {
+ fprintf(stderr, "Error: Couldn't allocate FontRec (%d)\n", sizeof(FontRec));
 	goto bail;
+    }
     pf->refcnt = 0;
     pf->bit = opf->bit;
     pf->byte = opf->byte;
@@ -983,8 +988,10 @@ ScaleFont(FontPtr opf,            /* originating font */
     }
 
     bitmapFont = (BitmapFontPtr) xalloc(sizeof(BitmapFontRec));
-    if (!bitmapFont)
+    if (!bitmapFont) {
+ fprintf(stderr, "Error: Couldn't allocate bitmapFont (%d)\n", sizeof(BitmapFontRec));
 	goto bail;
+    }
     nchars = (lastRow - firstRow + 1) * (lastCol - firstCol + 1);
     pfi->firstRow = firstRow;
     pfi->lastRow = lastRow;
@@ -1001,13 +1008,17 @@ ScaleFont(FontPtr opf,            /* originating font */
     bitmapFont->bitmapExtra = 0;
     bitmapFont->pDefault = 0;
     bitmapFont->metrics = (CharInfoPtr) xalloc(nchars * sizeof(CharInfoRec));
-    if (!bitmapFont->metrics)
+    if (!bitmapFont->metrics) {
+ fprintf(stderr, "Error: Couldn't allocate metrics (%d*%d)\n", nchars, sizeof(CharInfoRec));
 	goto bail;
+    }
     bitmapFont->encoding = 
         (CharInfoPtr **) xcalloc(NUM_SEGMENTS(nchars),
                                  sizeof(CharInfoPtr*));
-    if (!bitmapFont->encoding)
+    if (!bitmapFont->encoding) {
+ fprintf(stderr, "Error: Couldn't allocate encoding (%d*%d)\n", nchars, sizeof(CharInfoPtr));
 	goto bail;
+    }
 
 #undef MAXSHORT
 #define MAXSHORT    32767
@@ -1322,6 +1333,7 @@ ScaleBitmap(FontPtr pFont, CharInfoPtr opci, CharInfoPtr pci,
 		    (INT32 *)xalloc((newWidth + 2) * 2 * sizeof(int));
 		if (!diffusion_workspace)
 		{
+		    fprintf(stderr, "Warning: Couldn't allocate diffusion workspace (%d)\n", (newWidth + 2) * 2 * sizeof(int));
 		    xfree(char_grayscale);
 		    char_grayscale = (unsigned char *)0;
 		}
@@ -1330,6 +1342,8 @@ ScaleBitmap(FontPtr pFont, CharInfoPtr opci, CharInfoPtr pci,
 		      (newWidth + 3) * sizeof(int));
 		thisrow = diffusion_workspace + 1;
 		nextrow = diffusion_workspace + newWidth + 3;
+     } else {
+  printf(stderr, "Warning: Couldn't allocate character grayscale (%d)\n", (width + 1) * (height + 1));
 	    }
 	}
     }
@@ -1628,8 +1642,10 @@ BitmapScaleBitmaps(FontPtr pf,          /* scaled font */
 
 
     bitmapFont->bitmaps = (char *) xalloc(bytestoalloc);
-    if (!bitmapFont->bitmaps)
+    if (!bitmapFont->bitmaps) {
+ fprintf(stderr, "Error: Couldn't allocate bitmaps (%d)\n", bytestoalloc);
 	goto bail;
+    }
     bzero(bitmapFont->bitmaps, bytestoalloc);
 
     glyphBytes = bitmapFont->bitmaps;
@@ -1709,8 +1725,10 @@ PrinterScaleBitmaps(FontPtr pf,         /* scaled font */
 
 
     bitmapFont->bitmaps = (char *) xalloc(bytestoalloc);
-    if (!bitmapFont->bitmaps)
+    if (!bitmapFont->bitmaps) {
+ fprintf(stderr, "Error: Couldn't allocate bitmaps (%d)\n", bytestoalloc);
 	goto bail;
+    }
     bzero(bitmapFont->bitmaps, bytestoalloc);
 
     glyphBytes = bitmapFont->bitmaps;

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ****************************************************************************/
-/* $XFree86: xc/programs/x11perf/x11perf.c,v 3.5 2001/07/25 15:05:16 dawes Exp $ */
+/* $XFree86: xc/programs/x11perf/x11perf.c,v 3.6 2001/11/03 21:59:20 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -817,6 +817,8 @@ ProcessTest(XParms xp, Test *test, int func, unsigned long pm, char *label)
 	for (j = 0; j != repeat; j++) {
 	    DisplayStatus(xp->d, "Testing", label, j+1);
 	    time = DoTest(xp, test, reps);
+	    if (abortTest)
+		AbortTest ();
 	    totalTime += time;
 	    ReportTimes (time, reps * test->parms.objects,
 		    label, False);

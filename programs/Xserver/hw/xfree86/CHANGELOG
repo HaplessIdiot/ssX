@@ -1,4 +1,12 @@
 XFree86 4.1.99.2 (xx October 2001)
+ 460. Fix use of gethostbyname and getservbyname to _XGethostbyname and
+      _XGetservbyname for portability (#5017, Mark W. Snitily, from X11R6.6).
+ 459. Fix buffer problems used by xrdb to build command line, noticed on
+      systems with a large amount of visuals (#5016, Alan Coopersmith).
+ 458. Fix bug regarding signal handling in x11perf by inserting an abort
+      test after each run (#5015, Mark W. Snitily, from X11R6.6). 
+ 457. Add improved diagnostic messages and error checking to libXfont
+      which is used by bdftopcf command (#5014, Chris Bare, from X11R6.6).
  456. Fix advertised surfaces for the i810 Motion Compensation driver and
       make use of new XVMC_INTRA_UNSIGNED surface flag (#5003, Matthew Sottek).
  455. Fix r128 driver to call wrapped screen functions when using the
@@ -14117,4 +14125,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2028 2001/11/05 23:37:48 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2029 2001/11/06 15:53:06 alanh Exp $

@@ -1,4 +1,4 @@
-/* $Xorg: access.c,v 1.3 2000/08/17 19:53:40 cpqbld Exp $ */
+/* $Xorg: access.c,v 1.4 2001/01/31 13:25:23 pookie Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.33 2001/07/23 13:15:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.34 2001/07/25 15:05:11 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -150,6 +150,9 @@ SOFTWARE.
 #endif
 #endif
 #endif 
+
+#define X_INCLUDE_NETDB_H
+#include <X11/Xos_r.h>
 
 #include "dixstruct.h"
 #include "osdep.h"
@@ -470,6 +473,7 @@ DefineSelf (int fd)
 	
     struct	sockaddr_in	*inetaddr;
     struct sockaddr_in broad_addr;
+    _Xgethostbynameparams hparams;
 
     /* Why not use gethostname()?  Well, at least on my system, I've had to
      * make an ugly kernel patch to get a name longer than 8 characters, and
@@ -477,7 +481,7 @@ DefineSelf (int fd)
      * see), whereas gethostname() kindly truncates it for me.
      */
     uname(&name);
-    hp = gethostbyname (name.nodename);
+    hp = _XGethostbyname(name.nodename, hparams);
     if (hp != NULL)
     {
 	saddr.sa.sa_family = hp->h_addrtype;
@@ -910,10 +914,12 @@ ResetHosts (char *display)
 #endif /* SECURE_RPC */
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(MNX_TCPCONN)
 	{
+	    _Xgethostbynameparams hparams;
+
     	    /* host name */
-    	    if ((family == FamilyInternet
-	     && ((hp = gethostbyname (hostname)) != 0))
-	     || ((hp = gethostbyname (hostname)) != 0))
+    	    if ((family == FamilyInternet &&
+		 ((hp = _XGethostbyname(hostname, hparams)) != 0)) ||
+		((hp = _XGethostbyname(hostname, hparams)) != 0))
 	    {
     		saddr.sa.sa_family = hp->h_addrtype;
 		len = sizeof(saddr.sa);
