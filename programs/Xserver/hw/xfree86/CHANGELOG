@@ -1,4 +1,6 @@
 XFree86 4.3.99.3 (xx April 2003)
+ 145. Workaround for broken devices that don't implement the header type field
+      in their PCI configuration space (Marc La France).
  144. Portability changes for older Sun compilers (Alan Coopersmith).
  143. Fix building of the dristat and drmstat utilities (David Dawes).
  142. From the DRI trunk...
@@ -16893,7 +16895,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2664 2003/04/25 00:57:20 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2665 2003/04/25 14:12:38 tsi Exp $
 
 
 
