@@ -1,20 +1,21 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 3.15 1999/05/22 08:40:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 3.16 1999/05/22 09:59:54 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
+ * Copyright 1993-1999 by The XFree86 Project, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
  * the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of Thomas Roell not be used in
+ * documentation, and that the name of the copyright holders not be used in
  * advertising or publicity pertaining to distribution of the software without
- * specific, written prior permission.  Thomas Roell makes no representations
- * about the suitability of this software for any purpose.  It is provided
- * "as is" without express or implied warranty.
+ * specific, written prior permission.  The copyright holders make no
+ * representations about the suitability of this software for any purpose.
+ * It is provided "as is" without express or implied warranty.
  *
- * THOMAS ROELL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * THE COPYRIGHT HOLDERS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
  * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
- * EVENT SHALL THOMAS ROELL BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
  * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
  * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
@@ -30,6 +31,8 @@
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 #ifdef NEW_INPUT
+#include "xf86Xinput.h"
+#include "xf86OSmouse.h"
 #include "xqueue.h"
 #endif
 
@@ -54,7 +57,7 @@ extern Bool noXkbExtension;
 
 #ifdef NEW_INPUT
 typedef struct {
-	int		xquePending;	/* XXX not needed? */
+	int		xquePending;
 	int		xqueSema;
 } XqInfoRec, *XqInfoPtr;
 
@@ -74,6 +77,8 @@ xf86XqueSignal(int signum)
 {
 #ifndef NEW_INPUT
   xf86Info.mouseDev->xquePending = 1;
+#else
+  ((XqInfoPtr)(((MouseDevPtr)(XqMouse->private))->mousePriv))->xquePending = 1;
 #endif
   /*
    * This is a hack, but it is the only reliable way I can find of letting
@@ -82,12 +87,12 @@ xf86XqueSignal(int signum)
    * dealing with events that come in between the end of processing the
    * last set and when select() gets called.
    *
-   * XXX Maybe the XqBlock() handler will take care of that.  If we remove
-   * the pipe, we need a Wakeup handler too (and need to put back xquePending).
-   *
    * Suggestions for better ways of dealing with this without going back to
    * asynchronous event processing are welcome.
    */
+#ifdef DEBUG
+  ErrorF("xf86XqueSignal\n");
+#endif
   write(xquePipe[1], "X", 1);
   signal(SIGUSR2, xf86XqueSignal);
 }
@@ -423,12 +428,18 @@ xf86XqueKbdProc(DeviceIntPtr pKeyboard, int what)
   case DEVICE_ON:
     pKeyboard->public.on = TRUE;
     xf86InitKBD(FALSE);
+#ifndef NEW_INPUT
     return(xf86XqueEnable());
+#endif
+    break;
     
   case DEVICE_CLOSE:
   case DEVICE_OFF:
     pKeyboard->public.on = FALSE;
+#ifndef NEW_INPUT
     return(xf86XqueDisable());
+#endif
+    break;
   }
   
   return (Success);
@@ -447,12 +458,15 @@ xf86XqueEvents()
 
 #ifdef NEW_INPUT
 
+#ifdef XQUEUE_ASYNC
 static void XqDoInput(int signum);
+#endif
 
 void
 XqReadInput(InputInfoPtr pInfo)
 {
     MouseDevPtr pMse;
+    XqInfoPtr pXq;
     xqEvent *XqueEvents;
     int XqueHead;
     char buf[100];
@@ -462,6 +476,7 @@ XqReadInput(InputInfoPtr pInfo)
 	return;
 
     pMse = pInfo->private;
+    pXq = pMse->mousePriv;
 
     XqueEvents = XqueQaddr->xq_events;
     XqueHead = XqueQaddr->xq_head;
@@ -471,6 +486,9 @@ XqReadInput(InputInfoPtr pInfo)
 	case XQ_BUTTON:
 	    pMse->PostEvent(pInfo, ~(XqueEvents[XqueHead].xq_code) & 0x07,
 			    0, 0, 0);
+#ifdef DEBUG
+	    ErrorF("xqueue: buttons: %d\n", ~(XqueEvents[XqueHead].xq_code) & 0x07);
+#endif
 	    break;
 
 	case XQ_MOTION:
@@ -478,10 +496,16 @@ XqReadInput(InputInfoPtr pInfo)
 	    dy = (signed char)XqueEvents[XqueHead].xq_y;
 	    pMse->PostEvent(pInfo, ~(XqueEvents[XqueHead].xq_code) & 0x07,
 			    (int)dx, (int)dy, 0);
+#ifdef DEBUG
+	    ErrorF("xqueue: Motion: (%d, %d) (buttons: %d)\n", dx, dy, ~(XqueEvents[XqueHead].xq_code) & 0x07);
+#endif
 	    break;
 
 	case XQ_KEY:
 	    /* XXX Need to deal with the keyboard part nicely. */
+#ifdef DEBUG
+	    ErrorF("xqueue: key: %d\n", XqueEvents[XqueHead].xq_code);
+#endif
 	    xf86PostKbdEvent(XqueEvents[XqueHead].xq_code);
 	    break;
 	default:
@@ -490,10 +514,10 @@ XqReadInput(InputInfoPtr pInfo)
 	}
       
 	if ((++XqueHead) == XqueQaddr->xq_size) XqueHead = 0;
+	xf86Info.inputPending = TRUE;
     }
 
     /* reenable the signal-processing */
-    xf86Info.inputPending = TRUE;
 #ifdef XQUEUE_ASYNC
     signal(SIGUSR2, XqDoInput);
 #endif
@@ -511,20 +535,29 @@ XqReadInput(InputInfoPtr pInfo)
     }
 #endif
 
+#ifdef DEBUG
+    ErrorF("Leaving XqReadInput()\n");
+#endif
+    pXq->xquePending = 0;
     XqueQaddr->xq_head = XqueQaddr->xq_tail;
     XqueQaddr->xq_sigenable = 1; /* UNLOCK */
 }
 
+#ifdef XQUEUE_ASYNC
 static void
 XqDoInput(int signum)
 {
     if (XqMouse)
 	XqReadInput(XqMouse);
 }
+#endif
 
 static void
 XqBlock(pointer blockData, OSTimePtr pTimeout, pointer pReadmask)
 {
+    InputInfoPtr pInfo;
+    MouseDevPtr pMse;
+    XqInfoPtr pXq;
     /*
      * On MP SVR4 boxes, a race condition exists because the XQUEUE does
      * not have anyway to lock it for exclusive access. This results in one
@@ -535,7 +568,35 @@ XqBlock(pointer blockData, OSTimePtr pTimeout, pointer pReadmask)
      * was ignored while processing the previous event.
      */
 
-    XqReadInput((InputInfoPtr)blockData);
+    pInfo = blockData;
+    pMse = pInfo->private;
+    pXq = pMse-> mousePriv;
+    if (!pXq->xquePending) {
+#ifdef DEBUG
+	ErrorF("XqBlock: calling XqReadInput()\n");
+#endif
+	XqReadInput((InputInfoPtr)blockData);
+    } else {
+#ifdef DEBUG
+	ErrorF("XqBlock: not calling XqReadInput()\n");
+#endif
+	;
+    }
+    /*
+     * Make sure that any events that come in here are passed on without.
+     * waiting for the next wakeup.
+     */
+    if (xf86Info.inputPending) {
+#ifdef DEBUG
+	ErrorF("XqBlock: calling ProcessInputEvents()\n");
+#endif
+	ProcessInputEvents();
+    } else {
+#ifdef DEBUG
+	ErrorF("XqBlock: not calling ProcessInputEvents()\n");
+#endif
+	;
+    }
 }
 
 /*
@@ -562,7 +623,8 @@ XqEnable(InputInfoPtr pInfo)
 		    pInfo->name, strerror(errno));
 		return Success;
 	    } else {
-		xf86Msg(X_ERROR, "%s: Cannot open /dev/mouse", pInfo->name);
+		xf86Msg(X_ERROR, "%s: Cannot open /dev/mouse (%s)\n",
+			pInfo->name, strerror(errno));
 		return !Success;
 	    }
 	}
@@ -620,10 +682,11 @@ XqDisable(InputInfoPtr pInfo)
 	if (ioctl(xf86Info.consoleFd, KDQUEMODE, NULL) < 0) {
 	    xf86Msg(X_ERROR, "%s: Cannot unset KDQUEMODE", pInfo->name);
 	    return !Success;
+	}
     }
 
     if (xqueFd >= 0) {
-	fclose(xqueFd);
+	close(xqueFd);
 	xqueFd = -1;
     }
 
@@ -662,11 +725,11 @@ XqMouseProc(DeviceIntPtr pPointer, int what)
 				pMse->Ctrl,
 				miPointerGetMotionBufferSize());
 	/* X valuator */
-	xf86InitValuatorAxisStruct(device, 0, 0, -1, 1, 0, 1);
-	xf86InitValuatorDefaults(device, 0);
+	xf86InitValuatorAxisStruct(pPointer, 0, 0, -1, 1, 0, 1);
+	xf86InitValuatorDefaults(pPointer, 0);
 	/* Y valuator */
-	xf86InitValuatorAxisStruct(device, 1, 0, -1, 1, 0, 1);
-	xf86InitValuatorDefaults(device, 1);
+	xf86InitValuatorAxisStruct(pPointer, 1, 0, -1, 1, 0, 1);
+	xf86InitValuatorDefaults(pPointer, 1);
 	xf86MotionHistoryAllocate(pInfo);
 	RegisterBlockAndWakeupHandlers(XqBlock, (WakeupHandlerProcPtr)NoopDDA,
 					pInfo);
@@ -707,7 +770,8 @@ XqueueMousePreInit(InputInfoPtr pInfo, const char *protocol, int flags)
     XqInfoPtr pXq;
 
     pMse->protocol = protocol;
-    pXq = pMse->mousePriv = xnfcalloc(sizeof(XqInfoRec));
+    xf86Msg(X_CONFIG, "%s: Protocol: %s\n", pInfo->name, protocol);
+    pXq = pMse->mousePriv = xnfcalloc(sizeof(XqInfoRec), 1);
 
     /* Collect the options, and process the common options. */
     xf86CollectInputOptions(pInfo, NULL, NULL);
@@ -721,7 +785,7 @@ XqueueMousePreInit(InputInfoPtr pInfo, const char *protocol, int flags)
 #ifdef XQUEUE_ASYNC
     pInfo->read_input = NULL;
 #else
-    pInfo->read_input = XqReadInput();
+    pInfo->read_input = XqReadInput;
 #endif
     pInfo->fd = -1;
 

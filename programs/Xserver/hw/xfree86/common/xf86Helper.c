@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.43 1999/05/14 14:11:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.44 1999/05/15 12:10:19 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1107,10 +1107,12 @@ xf86VDrvMsgVerb(int scrnIndex, MessageType type, int verb, const char *format,
 	if (scrnIndex >= 0 && scrnIndex < xf86NumScreens)
 	    Write(verb, "%s(%d): ", xf86Screens[scrnIndex]->name, scrnIndex);
 	VWrite(verb, format, args);
+#if 0
 	if (type == X_ERROR && xf86Verbose < xf86LogVerbose) {
 	    fprintf(stderr, X_ERROR_STRING " Please check the log file \"%s\""
 			" >before<\n\treporting a problem.\n", xf86LogFile);
 	}
+#endif
     }
 }
 

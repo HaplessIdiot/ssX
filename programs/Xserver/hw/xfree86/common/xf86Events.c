@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.68 1999/05/19 00:47:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.69 1999/05/22 08:40:01 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1252,10 +1252,12 @@ xf86Wakeup(pointer blockData, int err, pointer pReadmask)
 
 #endif  /* __EMX__ */
 
+#ifndef NEW_INPUT
 #if defined(XQUEUE) && !defined(XQUEUE_ASYNC)
   /* This could be done more cleanly */
     if (xf86Info.mouseDev->xqueSema && xf86Info.mouseDev->xquePending)
 	xf86XqueRequest();
+#endif
 #endif
 
     if (xf86VTSwitchPending()) xf86VTSwitch();

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/pnp.c,v 1.1 1999/05/09 06:06:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/pnp.c,v 1.2 1999/05/16 06:55:54 dawes Exp $ */
 
 /*
  * Copyright 1998 by Kazutaka YOKOTA <yokota@zodiac.mech.utsunomiya-u.ac.jp>
@@ -32,6 +32,7 @@
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 #include "xf86Xinput.h"
+#include "xf86OSmouse.h"
 #include "mouse.h"
 
 #ifdef ISC

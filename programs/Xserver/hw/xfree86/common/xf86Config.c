@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.178 1999/05/16 10:12:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.179 1999/05/17 13:17:13 dawes Exp $ */
 
 
 /*
@@ -692,7 +692,9 @@ configKeyboard(XF86ConfKeyboardPtr keybconf)
 #ifdef XQUEUE
     xf86Info.kbdProc = xf86XqueKbdProc;
     xf86Info.kbdEvents = xf86XqueEvents;
+#ifndef NEW_INPUT
     xf86Info.mouseDev->xqueSema  = 0;
+#endif
     xf86Msg(X_CONFIG, "Xqueue selected for keyboard input\n");
 #endif
   } else {

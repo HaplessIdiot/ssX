@@ -64,7 +64,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.23 1999/04/25 15:30:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.24 1999/05/09 06:06:28 dawes Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -183,13 +183,13 @@ extern void xf86MouseInit(MouseDevPtr);
 extern int xf86MouseOn(MouseDevPtr);
 extern int xf86MouseOff(MouseDevPtr, Bool);
 extern void xf86MouseEvents(MouseDevPtr);
-extern int  xf86XqueKbdProc(DeviceIntPtr, int);
 extern int  xf86XqueMseProc(DeviceIntPtr, int);
-extern void xf86XqueEvents(void);
 extern int  xf86OsMouseProc(DeviceIntPtr, int);
 extern void xf86OsMouseEvents(void);
 extern void xf86OsMouseOption(int, pointer);
 #endif
+extern int  xf86XqueKbdProc(DeviceIntPtr, int);
+extern void xf86XqueEvents(void);
 
 #ifdef NEED_OS_RAC_PROTOS
 /* RAC-related privs */
