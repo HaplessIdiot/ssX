@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xconsole/xconsole.c,v 3.18 1998/09/05 06:37:08 dawes Exp $ */
+/* $XFree86: xc/programs/xconsole/xconsole.c,v 3.19 1998/10/04 09:40:51 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
@@ -514,7 +514,8 @@ ConvertSelection (w, selection, target, type, value, length, format)
 	Atom* std_targets;
 	unsigned long std_length;
 	XmuConvertStandardSelection(w, req->time, selection, target, type,
-				  (caddr_t*)&std_targets, &std_length, format);
+				    (XtPointer *)&std_targets, &std_length,
+				    format);
 	*value = (XtPointer)XtMalloc(sizeof(Atom)*(std_length + 5));
 	targetP = *(Atom**)value;
 	*targetP++ = XA_STRING;
@@ -587,7 +588,7 @@ ConvertSelection (w, selection, target, type, value, length, format)
     }
     
     if (XmuConvertStandardSelection(w, req->time, selection, target, type,
-				    (caddr_t *)value, length, format))
+				    value, length, format))
 	return True;
 
     return False;

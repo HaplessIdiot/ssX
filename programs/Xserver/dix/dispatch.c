@@ -64,7 +64,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.11 1999/01/13 08:30:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.12 1999/01/26 10:40:05 dawes Exp $ */
 
 #ifdef PANORAMIX_DEBUG
 #include <stdio.h>
@@ -2786,7 +2786,7 @@ ProcAllocColorCells           (client)
 	    accr.nPixels = npixels;
 	    accr.nMasks = nmasks;
 	    WriteReplyToClient(client, sizeof (xAllocColorCellsReply), &accr);
-	    client->pSwapReplyFunc = Swap32Write;
+	    client->pSwapReplyFunc = (ReplySwapPtr) Swap32Write;
 	    WriteSwappedDataToClient(client, length, ppixels);
 	}
 	DEALLOCATE_LOCAL(ppixels);

@@ -49,7 +49,10 @@ static char const * const releaseID =
       written by Takuya SHIOZAKI.
 */
 
+#ifndef FONTMODULE
 #include <X11/Xos.h>
+#endif
+#include <X11/X.h>
 #include "fntfilst.h"
 #include "xttcommon.h"
 #include "xttcap.h"

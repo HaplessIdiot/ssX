@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xv/Xv.c,v 1.4 1998/08/30 05:11:31 dawes Exp $ */
+/* $XFree86: xc/lib/Xv/Xv.c,v 1.5 1998/11/15 06:20:56 dawes Exp $ */
 /*
 ** File: 
 **
@@ -72,12 +72,12 @@ static char *_XvErrorString();
   UnlockDisplay(dpy); \
   SyncHandle()
 
+int
 XvQueryExtension(dpy, p_version, p_revision, 
 		 p_requestBase, p_eventBase, p_errorBase)
-register Display *dpy;
-unsigned int *p_version, *p_revision;
-unsigned int *p_requestBase, *p_eventBase, *p_errorBase;
-
+     register Display *dpy;
+     unsigned int *p_version, *p_revision;
+     unsigned int *p_requestBase, *p_eventBase, *p_errorBase;
 {
   register xvQueryExtensionReq *req;
   xvQueryExtensionReply rep;
@@ -104,12 +104,12 @@ unsigned int *p_requestBase, *p_eventBase, *p_errorBase;
   return Success;
 }
 
+int
 XvQueryAdaptors(dpy, window, p_nAdaptors, p_pAdaptors)
-
-register Display *dpy;
-Window window;
-unsigned int *p_nAdaptors;
-XvAdaptorInfo **p_pAdaptors;
+     register Display *dpy;
+     Window window;
+     unsigned int *p_nAdaptors;
+     XvAdaptorInfo **p_pAdaptors;
 {
   register xvQueryAdaptorsReq *req;
   xvQueryAdaptorsReply rep;
@@ -242,9 +242,7 @@ XvAdaptorInfo **p_pAdaptors;
 
 void
 XvFreeAdaptorInfo(pAdaptors)
-
-XvAdaptorInfo *pAdaptors;
-
+     XvAdaptorInfo *pAdaptors;
 {
 
   XvEncodingInfo *pe;
@@ -268,16 +266,14 @@ XvAdaptorInfo *pAdaptors;
     } 
 
   Xfree(pAdaptors);
-
 }
 
-
+int
 XvQueryEncodings(dpy, port, p_nEncodings, p_pEncodings)
-
-register Display *dpy;
-XvPortID port;
-unsigned int *p_nEncodings;
-XvEncodingInfo **p_pEncodings;
+     register Display *dpy;
+     XvPortID port;
+     unsigned int *p_nEncodings;
+     XvEncodingInfo **p_pEncodings;
 {
   register xvQueryEncodingsReq *req;
   xvQueryEncodingsReply rep;
@@ -303,7 +299,7 @@ XvEncodingInfo **p_pEncodings;
     {
       UnlockDisplay(dpy);
       SyncHandle();
-      return(NULL);
+      return(XvBadReply);
     }
 
   size = rep.length << 2;
@@ -380,9 +376,7 @@ XvEncodingInfo **p_pEncodings;
 
 void
 XvFreeEncodingInfo(pEncodings)
-
-XvEncodingInfo *pEncodings;
-
+     XvEncodingInfo *pEncodings;
 {
 
   XvEncodingInfo *pe;
@@ -401,16 +395,15 @@ XvEncodingInfo *pEncodings;
 
 }
 
+int
 XvPutVideo(dpy, port, d, gc, vx, vy, vw, vh, dx, dy, dw, dh)
-
-register Display *dpy;
-XvPortID port;
-Drawable d;
-GC gc;
-int vx, vy, dx, dy;
-unsigned int vw, vh;
-unsigned int dw, dh;
-
+     register Display *dpy;
+     XvPortID port;
+     Drawable d;
+     GC gc;
+     int vx, vy, dx, dy;
+     unsigned int vw, vh;
+     unsigned int dw, dh;
 {
   int size;
   register xvPutVideoReq *req;
@@ -438,17 +431,15 @@ unsigned int dw, dh;
   return Success;
 }
 
-
+int
 XvPutStill(dpy, port, d, gc, vx, vy, vw, vh, dx, dy, dw, dh)
-
-register Display *dpy;
-XvPortID port;
-Drawable d;
-GC gc;
-int vx, vy, dx, dy;
-unsigned int vw, vh;
-unsigned int dw, dh;
-
+     register Display *dpy;
+     XvPortID port;
+     Drawable d;
+     GC gc;
+     int vx, vy, dx, dy;
+     unsigned int vw, vh;
+     unsigned int dw, dh;
 {
   int size;
   register xvPutStillReq *req;
@@ -475,16 +466,15 @@ unsigned int dw, dh;
   return Success;
 }
 
+int
 XvGetVideo(dpy, port, d, gc, vx, vy, vw, vh, dx, dy, dw, dh)
-
-register Display *dpy;
-XvPortID port;
-Drawable d;
-GC gc;
-int vx, vy, dx, dy;
-unsigned int vw, vh;
-unsigned int dw, dh;
-
+     register Display *dpy;
+     XvPortID port;
+     Drawable d;
+     GC gc;
+     int vx, vy, dx, dy;
+     unsigned int vw, vh;
+     unsigned int dw, dh;
 {
   int size;
   register xvGetVideoReq *req;
@@ -511,16 +501,15 @@ unsigned int dw, dh;
   return Success;
 }
 
+int
 XvGetStill(dpy, port, d, gc, vx, vy, vw, vh, dx, dy, dw, dh)
-
-register Display *dpy;
-XvPortID port;
-Drawable d;
-GC gc;
-int vx, vy, dx, dy;
-unsigned int vw, vh;
-unsigned int dw, dh;
-
+     register Display *dpy;
+     XvPortID port;
+     Drawable d;
+     GC gc;
+     int vx, vy, dx, dy;
+     unsigned int vw, vh;
+     unsigned int dw, dh;
 {
   int size;
   register xvGetStillReq *req;
@@ -547,13 +536,11 @@ unsigned int dw, dh;
   return Success;
 }
 
-
+int
 XvStopVideo(dpy, port, draw)
-
-register Display *dpy;
-XvPortID port;
-Drawable draw;
-
+     register Display *dpy;
+     XvPortID port;
+     Drawable draw;
 {
   register xvStopVideoReq *req;
 
@@ -568,11 +555,11 @@ Drawable draw;
   return Success;
 }
 
+int
 XvGrabPort(dpy, port, time)
      register Display *dpy;
      XvPortID port;
      Time time;
-
 {
   int result;
   xvGrabPortReply rep;
@@ -594,11 +581,11 @@ XvGrabPort(dpy, port, time)
   return result;
 }
 
+int
 XvUngrabPort(dpy, port, time)
      register Display *dpy;
      XvPortID port;
      Time time;
-
 {
   register xvUngrabPortReq *req;
 
@@ -613,12 +600,11 @@ XvUngrabPort(dpy, port, time)
   return Success;
 }
 
+int
 XvSelectVideoNotify(dpy, drawable, onoff)
-
-register Display *dpy;
-Drawable drawable;
-Bool onoff;
-
+     register Display *dpy;
+     Drawable drawable;
+     Bool onoff;
 {
   register xvSelectVideoNotifyReq *req;
 
@@ -633,12 +619,11 @@ Bool onoff;
   return Success;
 }
 
+int
 XvSelectPortNotify(dpy, port, onoff)
-
-register Display *dpy;
-XvPortID port;
-Bool onoff;
-
+     register Display *dpy;
+     XvPortID port;
+     Bool onoff;
 {
   register xvSelectPortNotifyReq *req;
 
@@ -653,7 +638,7 @@ Bool onoff;
   return Success;
 }
 
-
+int
 XvSetPortAttribute (dpy, port, attribute, value)
      register Display *dpy;
      XvPortID port;
@@ -674,6 +659,7 @@ XvSetPortAttribute (dpy, port, attribute, value)
   return (Success);
 }
 
+int
 XvGetPortAttribute (dpy, port, attribute, p_value)
      register Display *dpy;
      XvPortID port;
@@ -705,6 +691,7 @@ XvGetPortAttribute (dpy, port, attribute, p_value)
   return (Success);
 }
 
+int
 XvQueryBestSize(dpy, port, motion, vid_w, vid_h, drw_w, drw_h, 
 		p_actual_width, p_actual_height)
      register Display *dpy;
@@ -746,10 +733,9 @@ XvQueryBestSize(dpy, port, motion, vid_w, vid_h, drw_w, drw_h,
 
 static Bool
 _XvWireToEvent(dpy, re, event)
-register Display *dpy;	/* pointer to display structure */
-register XvEvent *re;	/* pointer to where event should be reformatted */
-register xvEvent *event;	/* protocol event */
-
+    register Display *dpy;	/* pointer to display structure */
+    register XvEvent *re;	/* pointer to where event should be reformatted */
+    register xvEvent *event;	/* protocol event */
 {
 
   if (event->u.u.type == _XvCodes->first_event+XvVideoNotify)
@@ -789,16 +775,12 @@ register xvEvent *event;	/* protocol event */
       return (False);
     }
 
-
   return (True);
-  
 }
 
 Bool
 _XvInitExtension(dpy)
-
-register Display *dpy;	/* pointer to display structure */
-
+     register Display *dpy;	/* pointer to display structure */
 {
   int num;
   Bool ss;
@@ -826,12 +808,11 @@ register Display *dpy;	/* pointer to display structure */
 
 static char *
 _XvErrorString(dpy, code, ecodes, buffer, size)
-
-register Display *dpy;	/* pointer to display structure */
-int code;
-XExtCodes *ecodes;
-char *buffer;
-int size;
+     register Display *dpy;	/* pointer to display structure */
+     int code;
+     XExtCodes *ecodes;
+     char *buffer;
+     int size;
 {
 
   if (size < strlen("Encoding") + 1)
@@ -855,5 +836,4 @@ int size;
     }
 
   return (char *)NULL;
-
 }

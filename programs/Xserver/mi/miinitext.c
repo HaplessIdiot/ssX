@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.36 1998/11/15 04:30:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.37 1998/11/15 05:03:19 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -203,7 +203,7 @@ InitExtensions(argc, argv)
 #ifdef MULTIBUFFER
     MultibufferExtensionInit();
 #endif
-#ifdef XINPUT
+#if defined(XINPUT) && !defined(NO_HW_ONLY_EXTS)
     XInputExtensionInit();
 #endif
 #ifdef XTEST
@@ -233,7 +233,7 @@ InitExtensions(argc, argv)
 #ifdef XSYNC
     SyncExtensionInit();
 #endif
-#if defined(XKB) && !defined(PRINT_ONLY_SERVER)
+#if defined(XKB) && !defined(PRINT_ONLY_SERVER) && !defined(NO_HW_ONLY_EXTS)
     if (!noXkbExtension) XkbExtensionInit();
 #endif
 #ifdef XCMISC
@@ -260,20 +260,22 @@ InitExtensions(argc, argv)
 #ifdef TOGCUP
     XcupExtensionInit();
 #endif
-#if defined(DPMSExtension)
+#if defined(DPMSExtension) && !defined(NO_HW_ONLY_EXTS)
     DPMSExtensionInit();
 #endif
 #ifdef XANTI
     XAntiExtensionInit();
 #endif
-#if defined(XF86VIDMODE) && !defined(PRINT_ONLY_SERVER)
+#if !defined(PRINT_ONLY_SERVER) && !defined(NO_HW_ONLY_EXTS)
+#if defined(XF86VIDMODE)
     XFree86VidModeExtensionInit();
 #endif
-#if defined(XF86MISC) && !defined(PRINT_ONLY_SERVER)
+#if defined(XF86MISC)
     XFree86MiscExtensionInit();
 #endif
-#if defined(XFreeXDGA) && !defined(PRINT_ONLY_SERVER)
+#if defined(XFreeXDGA)
     XFree86DGAExtensionInit();
+#endif
 #endif
 #ifdef GLXEXT
 #ifndef XPRINT	/* we don't want Glx in the Xprint server */

@@ -42,6 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
+/* $XFree86$ */
 
 
 #include "ddpex4.h"
@@ -49,6 +50,7 @@ SOFTWARE.
 #include "miStruct.h"
 #include "miStrMacro.h"
 #include "pexUtils.h"
+#include "pexos.h"
 
 
 /*  Level 4 Workstation Support */

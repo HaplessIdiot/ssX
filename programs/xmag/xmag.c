@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xmag/xmag.c,v 1.5 1998/12/20 11:58:26 dawes Exp $ */
 
 
 #ifndef X_NOT_STDC_ENV
@@ -114,7 +114,7 @@ static void SetupGC(void);
 static Window FindWindow(int, int);
 static void ResizeEH(Widget, XtPointer, XEvent *, Boolean *);
 static void DragEH(Widget, XtPointer, XEvent *, Boolean *);
-static void StartRootPtrGrab(Boolean, hlPtr);
+static void StartRootPtrGrab(int, hlPtr);
 static void CreateRoot(void);
 static void GetImageAndAttributes(Window, int, int, int, int, hlPtr);
 static int Get_XColors(XWindowAttributes *, XColor **);
@@ -753,7 +753,7 @@ DragEH(w, closure, event, continue_to_dispatch) /* ARGSUSED */
  */
 static void
 StartRootPtrGrab(new, data)
-     Boolean new;		/* do we cretate a new scale instance? */
+     int new;			/* do we cretate a new scale instance? */
      hlPtr data;		/* highligh data */
 {
   Window    rootR, childR;

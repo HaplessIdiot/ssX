@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.39 1999/01/26 05:54:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.40 1999/01/26 10:40:35 dawes Exp $ */
 
 /*
  *
@@ -38,7 +38,9 @@
 #include "misc.h"
 #include "xf86.h"
 #include "xf86Priv.h"
+#ifdef XINPUT
 #include "xf86Xinput.h"
+#endif
 #include "loader.h"
 #include "xf86Optrec.h"
 

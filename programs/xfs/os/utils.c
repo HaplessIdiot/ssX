@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/utils.c,v 3.6 1998/10/04 09:41:14 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/utils.c,v 3.7 1998/10/25 07:12:35 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<X11/Xos.h>
@@ -114,8 +114,9 @@ AutoResetServer(int n)
 #endif
 }
 
+/* ARGSUSED */
 SIGVAL
-GiveUp(void)
+GiveUp(int n)
 {
 
 #ifdef DEBUG

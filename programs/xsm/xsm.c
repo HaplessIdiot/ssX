@@ -19,7 +19,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/xsm/xsm.c,v 1.3 1998/12/20 22:19:02 dawes Exp $ */
 
 /*
  * X Session Manager.
@@ -231,6 +231,9 @@ char **argv;
 
     WaitForSaveDoneList = ListInit();
     if (!WaitForSaveDoneList) nomem();
+
+    InitialSaveList = ListInit();
+    if (!InitialSaveList) nomem();
 
     FailedSaveList = ListInit();
     if (!FailedSaveList) nomem();
@@ -782,6 +785,8 @@ char 		*previousId;
     {
 	SmsSaveYourself (smsConn, SmSaveLocal,
 	    False, SmInteractStyleNone, False);
+
+	ListAddLast (InitialSaveList, (char *) client);
     }
     else if (client_info_visible)
     {
@@ -995,7 +1000,11 @@ SaveYourselfDoneProc (smsConn, managerData, success)
     }
 
     if (!ListSearchAndFreeOne (WaitForSaveDoneList, (char *) client))
+    {
+	if (ListSearchAndFreeOne (InitialSaveList, (char *) client))
+	    SmsSaveComplete (client->smsConn);
 	return;
+    }
 
     if (!success)
     {

@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.70 1999/01/26 05:54:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.71 1999/01/26 10:40:27 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -271,19 +271,24 @@ static const char *ramdacSymbols[] = {
     NULL
 };
 
+#define MGAuseI2C 0
+
 static const char *ddcSymbols[] = {
     "xf86PrintEDID",
     "xf86DoEDID_DDC1",
+#if MGAuseI2C
+    "xf86DoEDID_DDC2",
+#endif
     NULL
 };
 
-/* Not used yet
+#if MGAuseI2C
 static const char *i2cSymbols[] = {
     "xf86CreateI2CBusRec",
     "xf86I2CBusInit",
     NULL
 };
-*/
+#endif
 
 #ifdef XFree86LOADER
 
@@ -326,7 +331,12 @@ mgaSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * might refer to.
 	 */
 	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols, 
-			  xf8_32bppSymbols, ramdacSymbols, ddcSymbols, NULL);
+			  xf8_32bppSymbols, ramdacSymbols,
+			  ddcSymbols, 
+#if MGAuseI2C
+			  i2cSymbols,
+#endif
+			  NULL);
 
 	/*
 	 * The return value must be non-NULL on success even though there
@@ -347,7 +357,7 @@ mgaSetup(pointer module, pointer opts, int *errmaj, int *errmin)
  * choice made in the first PreInit.
  */
 static int pix24bpp = 0;
- 
+
 /* 
  * ramdac info structure initialization
  */
@@ -776,6 +786,76 @@ GetAccelPitchValues(ScrnInfoPtr pScrn)
 }
 
 
+static xf86MonPtr
+MGAdoDDC(ScrnInfoPtr pScrn)
+{
+  vgaHWPtr hwp;
+  MGAPtr pMga;
+  MGARamdacPtr MGAdac;
+  xf86MonPtr MonInfo = NULL;
+
+  hwp = VGAHWPTR(pScrn);
+  pMga = MGAPTR(pScrn);
+  MGAdac = &pMga->Dac;
+
+  /* Map the MGA memory and MMIO areas */
+  if (!MGAMapMem(pScrn))
+    return NULL;
+
+  /* Initialise the MMIO vgahw functions */
+  vgaHWSetMmioFuncs(hwp, pMga->IOBase, PORT_OFFSET);
+  vgaHWGetIOBase(hwp);
+
+  /* Map the VGA memory when the primary video */
+  if (xf86IsPrimaryPci(pMga->PciInfo)) {
+    hwp->MapSize = 0x10000;
+    if (!vgaHWMapMem(pScrn))
+      return NULL;
+  }
+
+  /* Save the current state */
+  MGASave(pScrn);
+
+  /* It is now safe to talk to the card */
+
+#if MGAuseI2C
+  /* Initialize I2C bus - used by DDC if available */
+  if (pMga->i2cInit) {
+    pMga->i2cInit(pScrn);
+ErrorF("I2C initialized on %p\n",pMga->I2C);
+  }
+
+  /* Read and output monitor info using DDC2 over I2C bus */
+  if (pMga->I2C) {
+    MonInfo = xf86DoEDID_DDC2(pScrn->scrnIndex,pMga->I2C);
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "I2C Monitor info: %p\n", MonInfo);
+    xf86PrintEDID(MonInfo);
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of I2C Monitor info\n\n");
+  }
+
+  /* while experimenting, get DDC1 info even if I2C gave us DDC2 info */
+  /* else */
+#endif /* MGAuseI2C */  
+  /* Read and output monitor info using DDC1 */
+  if (pMga->ddc1Read) {
+    MonInfo = xf86DoEDID_DDC1(pScrn->scrnIndex,
+					 vgaHWddc1SetSpeed,
+					 pMga->ddc1Read ) ;
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "DDC Monitor info: %p\n", MonInfo);
+    xf86PrintEDID( MonInfo );
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of DDC Monitor info\n\n");
+  }
+
+
+  /* Restore previous state and unmap MGA memory and MMIO areas */
+  MGARestore(pScrn);
+  MGAUnmapMem(pScrn);
+  /* Should we call vgaHWUnmapMem - it isn't used elsewhere in the mga driver ?
+   */
+
+  return MonInfo;
+}
+
 /* Mandatory */
 static Bool
 MGAPreInit(ScrnInfoPtr pScrn, int flags)
@@ -1134,10 +1214,9 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 
     MGAReadBios(pScrn);
 
-#ifdef DEBUG
-    ErrorF("MGABios.RamdacType = 0x%x\n", pMga->Bios.RamdacType);
-#endif
-	
+    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, 
+		   "MGABios.RamdacType = 0x%x\n", pMga->Bios.RamdacType);
+
     /* HW bpp matches reported bpp */
     pMga->HwBpp = pScrn->bitsPerPixel;
 
@@ -1447,15 +1526,36 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	}
 	xf86LoaderReqSymLists(ramdacSymbols, NULL);
     }
-    /* Load DDC if needed */
-    /* This gives us DDC1 - we should be able to get DDC2B using i2c */
-    if (pMga->ddc1Read) {
-	if (!xf86LoadSubModule(pScrn, "ddc")) {
-	    MGAFreeRec(pScrn);
-	    return FALSE;
+
+    /* Load DDC if we have the code to use it */
+    /* This gives us DDC1 */
+    if (pMga->ddc1Read || pMga->i2cInit) {
+	if (xf86LoadSubModule(pScrn, "ddc")) {
+	  xf86LoaderReqSymLists(ddcSymbols, NULL);
+	} else {
+	  /* ddc module not found, we can do without it */
+	  pMga->ddc1Read = NULL;
+
+	  /* Without DDC, we have no use for the I2C bus */
+	  pMga->i2cInit = NULL;
 	}
-	xf86LoaderReqSymLists(ddcSymbols, NULL);
     }
+#if MGAuseI2C    
+    /* - DDC can use I2C bus */
+    /* Load I2C if we have the code to use it */
+    if (pMga->i2cInit) {
+      if ( xf86LoadSubModule(pScrn, "i2c") ) {
+	xf86LoaderReqSymLists(i2cSymbols,NULL);
+      } else {
+	/* i2c module not found, we can do without it */
+	pMga->i2cInit = NULL;
+	pMga->I2C = NULL;
+      }
+    }
+#endif /* MGAuseI2C */
+
+    /* Read and print the Monitor DDC info */
+    MGAdoDDC(pScrn);
 
     return TRUE;
 }
@@ -1739,13 +1839,6 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* Save the current state */
     MGASave(pScrn);
-
-    /* Initialize DDC and output Monitor info */
-    /* This gives us DDC1 - we should be able to get DDC2B using i2c */
-    /* Needs to be done before ModeInit as it changes some registers */
-    if (pMga->ddc1Read) {
-	xf86PrintEDID( xf86DoEDID_DDC1(pScrn->scrnIndex, vgaHWddc1SetSpeed, pMga->ddc1Read ) );
-    }
 
     /* Initialise the first mode */
     if (!MGAModeInit(pScrn, pScrn->currentMode))

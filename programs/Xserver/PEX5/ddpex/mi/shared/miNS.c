@@ -42,12 +42,14 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
+/* $XFree86$ */
 
 #include	"mipex.h"
 #include	"miNS.h"
 #include	"miWks.h"
 #include	"PEXErr.h"
 #include	"pexUtils.h"
+#include	"pexos.h"
 
 
 /*  Level 4 Shared Resources  */

@@ -23,7 +23,7 @@
  * 
  * Trident 3DImage' accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/image_accel.c,v 1.2 1998/11/15 05:53:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/image_accel.c,v 1.3 1999/01/23 09:55:57 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -524,7 +524,7 @@ ImageWritePixmap(
     if (w&1) w+=1;
     w /= 2;
     while (h--) {
-    	srcp = src;
+    	srcp = (CARD32 *)src;	/* Is *src really on a 4-byte boundary ?!?! */
 	while (w--) {
 	    IMAGE_OUT(0x56, *srcp++);
 	    IMAGE_OUT(0x60, *srcp++);

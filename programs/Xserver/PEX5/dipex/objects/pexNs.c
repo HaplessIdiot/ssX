@@ -43,6 +43,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
+/* $XFree86$ */
 
 
 #include "X.h"
@@ -51,6 +52,7 @@ SOFTWARE.
 #include "PEXproto.h"
 #include "dipex.h"
 #include "pexLookup.h"
+#include "pexos.h"
 
 #ifdef min
 #undef min

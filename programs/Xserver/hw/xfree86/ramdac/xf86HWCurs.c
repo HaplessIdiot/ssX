@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86HWCurs.c,v 1.2 1998/08/29 14:34:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86HWCurs.c,v 1.3 1999/01/14 13:05:21 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -198,6 +198,22 @@ RealizeCursorInterleave0(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
 	}
     }
 
+    if(infoPtr->Flags & HARDWARE_CURSOR_NIBBLE_SWAPPED) {
+	int count = size;
+	unsigned char* pntr1 = (unsigned char *)DstS;
+	unsigned char* pntr2 = (unsigned char *)DstM;
+	unsigned char a,b;
+	while(count) {
+
+	   a = *pntr1;
+	   b = *pntr2;
+	   *pntr1 = ((a & 0xF0) >> 4) | ((a & 0x0F) << 4);
+	   *pntr2 = ((b & 0xF0) >> 4) | ((b & 0x0F) << 4);
+	   pntr1++; pntr2++;
+	   count-=2;
+	}
+    }
+
     /*
      * Must be _after_ HARDWARE_CURSOR_AND_SOURCE_WITH_MASK to avoid wiping
      * out entire source mask.
@@ -267,7 +283,6 @@ RealizeCursorInterleave1(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
 
     return mem;
 }
-
 
 static unsigned char* 
 RealizeCursorInterleave8(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)

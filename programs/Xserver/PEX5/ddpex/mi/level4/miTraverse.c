@@ -42,6 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
+/* $XFree86$ */
 
 #include "miWks.h"
 #include "PEXproto.h"
@@ -50,6 +51,7 @@ SOFTWARE.
 #include "miPick.h"
 #include "miStruct.h"
 #include "miStrMacro.h"
+#include "pexos.h"
 
 
 extern void     InquirePickStatus();

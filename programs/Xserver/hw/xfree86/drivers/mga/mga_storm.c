@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.40 1999/01/03 08:06:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.41 1999/01/17 10:54:03 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -103,6 +103,7 @@ extern void MGAFillColorExpandRects(ScrnInfoPtr pScrn, int fg, int bg, int rop,
 				int xorg, int yorg, PixmapPtr pPix);
 extern void MGASetClippingRectangle(ScrnInfoPtr pScrn, int x1, int y1,
 				int x2, int y2);
+extern void MGADisableClipping(ScrnInfoPtr pScrn);
 extern void MGAFillSolidRectsDMA(ScrnInfoPtr pScrn, int fg, int rop, 
 				unsigned int planemask, int nBox, BoxPtr pBox);
 extern void MGAFillSolidSpansDMA(ScrnInfoPtr pScrn, int fg, int rop, 
@@ -201,17 +202,24 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     infoPtr->SubsequentSolidFillTrap = MGANAME(SubsequentSolidFillTrap);
 
     /* solid lines */
-    infoPtr->SolidLineFlags = HARDWARE_CLIP_LINE;
     infoPtr->SetupForSolidLine = infoPtr->SetupForSolidFill;
     infoPtr->SubsequentSolidHorVertLine =
 		MGANAME(SubsequentSolidHorVertLine);
     infoPtr->SubsequentSolidTwoPointLine = 
 		MGANAME(SubsequentSolidTwoPointLine);
+
+    /* clipping */
     infoPtr->SetClippingRectangle = MGASetClippingRectangle;
+    infoPtr->DisableClipping = MGADisableClipping;
+    infoPtr->ClippingFlags = 	HARDWARE_CLIP_SOLID_LINE |
+				HARDWARE_CLIP_DASHED_LINE |
+				HARDWARE_CLIP_SOLID_FILL |
+				HARDWARE_CLIP_MONO_8x8_FILL |
+				HARDWARE_CLIP_SCREEN_TO_SCREEN_COPY |
+				HARDWARE_CLIP_SCREEN_TO_SCREEN_COLOR_EXPAND;
 
     /* dashed lines */
-    infoPtr->DashedLineFlags = HARDWARE_CLIP_LINE |
-				LINE_PATTERN_MSBFIRST_LSBJUSTIFIED;
+    infoPtr->DashedLineFlags = LINE_PATTERN_MSBFIRST_LSBJUSTIFIED;
     infoPtr->SetupForDashedLine = MGANAME(SetupForDashedLine);
     infoPtr->SubsequentDashedTwoPointLine =  
 		MGANAME(SubsequentDashedTwoPointLine);
@@ -419,10 +427,11 @@ MGAStormSync(ScrnInfoPtr pScrn)
     
     if(pMga->AccelFlags & CLIPPER_ON) {
 	DISABLE_CLIP();
-    } else while(MGAISBUSY());
-
+    } else {
+	while(MGAISBUSY());
     /* flush cache before a read (mga-1064g 5.1.6) */
-    OUTREG8(MGAREG_CRTC_INDEX, 0); 
+	OUTREG8(MGAREG_CRTC_INDEX, 0); 
+    }
 }
 
 void MGAStormEngineInit(ScrnInfoPtr pScrn)
@@ -479,6 +488,17 @@ void MGASetClippingRectangle(
     OUTREG(MGAREG_YTOP, (y1 * pScrn->displayWidth) + pMga->YDstOrg); 
     OUTREG(MGAREG_YBOT, (y2 * pScrn->displayWidth) + pMga->YDstOrg); 
     pMga->AccelFlags |= CLIPPER_ON;
+}
+
+void MGADisableClipping(ScrnInfoPtr pScrn)
+{
+    MGAPtr pMga = MGAPTR(pScrn);
+
+    WAITFIFO(3);
+    OUTREG(MGAREG_CXBNDRY, 0xFFFF0000);     /* (maxX << 16) | minX */ 
+    OUTREG(MGAREG_YTOP, 0x00000000);        /* minPixelPointer */ 
+    OUTREG(MGAREG_YBOT, 0x007FFFFF);        /* maxPixelPointer */ 
+    pMga->AccelFlags &= ~CLIPPER_ON;
 }
 
 
@@ -763,14 +783,6 @@ MGANAME(SubsequentSolidTwoPointLine)(
     OUTREG(MGAREG_XYSTRT, (y1 << 16) | (x1 & 0xFFFF));
     OUTREG(MGAREG_XYEND + MGAREG_EXEC, (y2 << 16) | (x2 & 0xFFFF));
     OUTREG(MGAREG_DWGCTL, pMga->FilledRectCMD); 
-   
-    if(pMga->AccelFlags & CLIPPER_ON) {
-        WAITFIFO(3);
-        OUTREG(MGAREG_CXBNDRY, 0xFFFF0000);     /* (maxX << 16) | minX */ 
-        OUTREG(MGAREG_YTOP, 0x00000000);        /* minPixelPointer */ 
-        OUTREG(MGAREG_YBOT, 0x007FFFFF);        /* maxPixelPointer */ 
-        pMga->AccelFlags &= ~CLIPPER_ON;
-    }
 }
 
 
@@ -1125,14 +1137,6 @@ MGANAME(SubsequentDashedTwoPointLine)(
 			MGADWG_AUTOLINE_OPEN : MGADWG_AUTOLINE_CLOSE));
 	OUTREG(MGAREG_XYSTRT, (y1 << 16) | (x1 & 0xFFFF));
 	OUTREG(MGAREG_XYEND + MGAREG_EXEC, (y2 << 16) | (x2 & 0xFFFF));
-    }
-
-    if(pMga->AccelFlags & CLIPPER_ON) {
-        WAITFIFO(3);
-        OUTREG(MGAREG_CXBNDRY, 0xFFFF0000);     /* (maxX << 16) | minX */ 
-        OUTREG(MGAREG_YTOP, 0x00000000);        /* minPixelPointer */ 
-        OUTREG(MGAREG_YBOT, 0x007FFFFF);        /* maxPixelPointer */ 
-        pMga->AccelFlags &= ~CLIPPER_ON;
     }
 }
 

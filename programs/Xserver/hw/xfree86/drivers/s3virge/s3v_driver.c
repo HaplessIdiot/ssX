@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.11 1999/01/26 05:54:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.12 1999/01/26 10:40:28 dawes Exp $ */
 
 /*
  *
@@ -83,9 +83,9 @@ static int pix24bpp = 0;
 
 #define S3VIRGE_NAME "S3VIRGE"
 #define S3VIRGE_DRIVER_NAME "s3virge"
-#define S3VIRGE_VERSION_NAME "0.2"
+#define S3VIRGE_VERSION_NAME "0.3.0"
 #define S3VIRGE_VERSION_MAJOR   0
-#define S3VIRGE_VERSION_MINOR   2
+#define S3VIRGE_VERSION_MINOR   3
 #define S3VIRGE_PATCHLEVEL      0
 #define S3VIRGE_DRIVER_VERSION ((S3VIRGE_VERSION_MAJOR << 24) | \
 				(S3VIRGE_VERSION_MINOR << 16) | \
@@ -113,35 +113,36 @@ DriverRec S3VIRGE =
 /* Supported chipsets */
 static SymTabRec S3VChipsets[] = {
 				  	/* base (86C325) */
-  { PCI_ViRGE,		"ViRGE" },
-  { PCI_ViRGE,		"86C325" },
+  { PCI_CHIP_VIRGE,			"ViRGE" },
+  { PCI_CHIP_VIRGE,			"86C325" },
   					/* VX (86C988) */
-  { PCI_ViRGE_VX,	"ViRGE/VX" },
-  { PCI_ViRGE_VX,	"86C988" },
+  { PCI_CHIP_VIRGE_VX,		"ViRGE/VX" },
+  { PCI_CHIP_VIRGE_VX,		"86C988" },
   					/* DX (86C375) GX (86C385) */
-  { PCI_ViRGE_DXGX,	"ViRGE/DXGX" },
-  { PCI_ViRGE_DXGX,	"86C375" },
-  { PCI_ViRGE_DXGX,	"86C385" },
+  { PCI_CHIP_VIRGE_DXGX,	"ViRGE/DXGX" },
+  { PCI_CHIP_VIRGE_DXGX,	"86C375" },
+  { PCI_CHIP_VIRGE_DXGX,	"86C385" },
   					/* GX2 (86C357) */
-  { PCI_ViRGE_GX2,	"ViRGE/GX2" },
-  { PCI_ViRGE_GX2,	"86C357" },
+  { PCI_CHIP_VIRGE_GX2,		"ViRGE/GX2" },
+  { PCI_CHIP_VIRGE_GX2,		"86C357" },
   					/* MX (86C260) */
-  { PCI_ViRGE_MX,	"ViRGE/MX" },
-  { PCI_ViRGE_MX,	"86C260" },
+  { PCI_CHIP_VIRGE_MX,		"ViRGE/MX" },
+  { PCI_CHIP_VIRGE_MX,		"86C260" },
   					/* MX+ (86C280) */
-  { PCI_ViRGE_MXP,	"ViRGE/MX+" },
-  { PCI_ViRGE_MXP,	"86C280" },
+  { PCI_CHIP_VIRGE_MXP,		"ViRGE/MX+" },
+  { PCI_CHIP_VIRGE_MXP,		"86C280" },
   {-1,			NULL }
 };
 
 static PciChipsets S3VPciChipsets[] = {
-  { PCI_ViRGE,      PCI_ViRGE,      RES_SHARED_VGA },
-  { PCI_ViRGE_VX,   PCI_ViRGE_VX,   RES_SHARED_VGA },
-  { PCI_ViRGE_DXGX, PCI_ViRGE_DXGX, RES_SHARED_VGA },
-  { PCI_ViRGE_GX2,  PCI_ViRGE_GX2,  RES_SHARED_VGA },
-  { PCI_ViRGE_MX,   PCI_ViRGE_MX,   RES_SHARED_VGA },
-  { PCI_ViRGE_MXP,  PCI_ViRGE_MXP,  RES_SHARED_VGA },
-  { -1,                       -1,   RES_UNDEFINED }
+  /* numChipset,		PciID,			Resource */
+  { PCI_CHIP_VIRGE,      PCI_CHIP_VIRGE,     	RES_SHARED_VGA },
+  { PCI_CHIP_VIRGE_VX,   PCI_CHIP_VIRGE_VX,		RES_SHARED_VGA },
+  { PCI_CHIP_VIRGE_DXGX, PCI_CHIP_VIRGE_DXGX,	RES_SHARED_VGA },
+  { PCI_CHIP_VIRGE_GX2,  PCI_CHIP_VIRGE_GX2,  	RES_SHARED_VGA },
+  { PCI_CHIP_VIRGE_MX,   PCI_CHIP_VIRGE_MX,   	RES_SHARED_VGA },
+  { PCI_CHIP_VIRGE_MXP,  PCI_CHIP_VIRGE_MXP,  	RES_SHARED_VGA },
+  { -1,                       -1,   		RES_UNDEFINED }
 };
 
 typedef enum {		    

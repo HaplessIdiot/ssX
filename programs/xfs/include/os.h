@@ -43,7 +43,7 @@ in this Software without prior written authorization from The Open Group.
  * $NCDId: @(#)os.h,v 4.2 1991/05/10 07:59:16 lemke Exp $
  *
  */
-/* $XFree86: xc/programs/xfs/include/os.h,v 3.4 1998/10/04 09:41:11 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/include/os.h,v 3.5 1998/10/25 07:12:31 dawes Exp $ */
 
 #ifndef	_OS_H_
 #define	_OS_H_
@@ -112,7 +112,7 @@ extern	void	WriteToClientUnpadded(ClientPtr client, int count, char *buf);
 /* os/utils.c */
 extern	SIGVAL	AutoResetServer (int n);
 extern	SIGVAL	CleanupChild (int n);
-extern	SIGVAL	GiveUp (void);
+extern	SIGVAL	GiveUp (int n);
 extern	SIGVAL	ServerCacheFlush (int n);
 extern	SIGVAL	ServerReconfig (int n);
 extern	long	GetTimeInMillis (void);

@@ -42,12 +42,14 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
+/* $XFree86$ */
 
 #include "miLUT.h"
 #include "pexUtils.h"
 #include "PEX.h"
 #include "PEXErr.h"
 #include "PEXprotost.h"
+#include "pexos.h"
 
 
 /*  Level 4 Shared Resources  */

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.36 1999/01/31 02:24:36 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.37 1999/01/31 04:59:06 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1991,11 +1991,11 @@ FontBaseObj(basename).Z:  FontSrc(basename)				@@\
 #endif
 #endif
 
-#ifndef EncodingTarget(basename)
-#define EncodingTarget /**/
+#ifndef EncodingTarget
+#define EncodingTarget(basename) /**/
 #endif
 
-#ifndef CompEncodingTarget(basename)
+#ifndef CompEncodingTarget
 #if GzipFontCompression
 #define CompEncodingTarget(basename)					@@\
 EncObjComp(basename): EncObj(basename)					@@\

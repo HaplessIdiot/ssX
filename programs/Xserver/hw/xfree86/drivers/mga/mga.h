@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.28 1998/12/13 05:32:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.29 1998/12/13 07:37:43 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -18,6 +18,7 @@
 #include "xf86Cursor.h"
 #include "vgaHW.h"
 #include "colormapst.h"
+#include "xf86DDC.h"
 
 #if defined(__alpha__)
 #define INREG8(addr) xf86ReadSparse8(pMga->IOBase, (addr))
@@ -154,6 +155,8 @@ typedef struct {
     Bool		(*ModeInit)(ScrnInfoPtr, DisplayModePtr);
     CloseScreenProcPtr	CloseScreen;
     unsigned int	(*ddc1Read)(ScrnInfoPtr);
+    Bool		(*i2cInit)(ScrnInfoPtr);
+    I2CBusPtr		I2C;
 } MGARec, *MGAPtr;
 
 extern CARD32 MGAAtype[16];

@@ -67,7 +67,7 @@ terms and conditions:
 	Robert NC Shelley -- AGE Logic, Inc. April, 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/control/strip.c,v 3.3 1998/10/05 13:22:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/control/strip.c,v 3.4 1998/10/25 07:11:52 dawes Exp $ */
 
 /*
  *  Include files
@@ -187,9 +187,9 @@ static stripPtr  free_strip(floDefPtr flo, stripPtr strip);
 /* DDXIE client data manager entry points
  */
 static dataVecRec dataManagerVec = {
-  import_data,
-  export_data,
-  query_data
+  (xieIntProc)import_data,
+  (xieIntProc)export_data,
+  (xieIntProc)query_data
   };
 
 /* DDXIE photoflo manager entry points

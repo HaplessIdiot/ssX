@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.12 1999/01/26 05:54:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.13 1999/01/26 10:40:30 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -122,11 +122,23 @@ DriverRec SIS = {
 };
 
 static SymTabRec SISChipsets[] = {
+    { PCI_CHIP_SG86C201,	"SIS86c201" },
+    { PCI_CHIP_SG86C202,	"SIS86c202" },
+    { PCI_CHIP_SG86C205,	"SIS86c205" },
+    { PCI_CHIP_SG86C215,	"SIS86c215" },
+    { PCI_CHIP_SG86C225,	"SIS86c225" },
+    { PCI_CHIP_SIS5597, 	"SIS5597" },
+    { PCI_CHIP_SIS5597, 	"SIS5598" },
     { PCI_CHIP_SIS6326,		"sis6326" },
     { -1,				NULL }
 };
 
 static PciChipsets SISPciChipsets[] = {
+    { PCI_CHIP_SG86C201,	PCI_CHIP_SG86C201,	RES_SHARED_VGA },
+    { PCI_CHIP_SG86C202,	PCI_CHIP_SG86C202,	RES_SHARED_VGA },
+    { PCI_CHIP_SG86C205,	PCI_CHIP_SG86C205,	RES_SHARED_VGA },
+    { PCI_CHIP_SG86C205,	PCI_CHIP_SG86C205,	RES_SHARED_VGA },
+    { PCI_CHIP_SIS5597,		PCI_CHIP_SIS5597,	RES_SHARED_VGA },
     { PCI_CHIP_SIS6326,	PCI_CHIP_SIS6326,	RES_SHARED_VGA },
     { -1,		-1,		RES_UNDEFINED }
 };
@@ -275,8 +287,8 @@ static void
 SISDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
 {
 	unsigned char extDDC_PCR;
-	unsigned char crtc17;
-	unsigned char seq1;
+	unsigned char crtc17 = 0;
+	unsigned char seq1 = 0 ;
         int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
 #ifdef DEBUG
@@ -472,32 +484,10 @@ SISProbe(DriverPtr drv, int flags)
  * This function returns a list of display width (pitch) values that can
  * be used in accelerated mode.
  */
-static int *
+static int
 GetAccelPitchValues(ScrnInfoPtr pScrn)
 {
-#if 0
-    SISPtr pSiS = SISPTR(pScrn);
-#endif
-    int *linePitches = NULL;
-    int lines[4] = { 512, 1024, 2048, 4096 }; /* 9440AGi */
-#if 0
-    int lines[sizeof(AvailablePitches[pSiS->Chipset])] =
-		AvailablePitches[pSiS->Chipset];
-#endif
-    int i, n = 0;
-	
-    for (i = 0; i < 4; i++) {
-	n++;
-	linePitches = xnfrealloc(linePitches, n * sizeof(int));
-	linePitches[n - 1] = lines[i];
-    }
-
-    /* Mark the end of the list */
-    if (n > 0) {
-	linePitches = xnfrealloc(linePitches, (n + 1) * sizeof(int));
-	linePitches[n] = 0;
-    }
-    return linePitches;
+    return ((pScrn->displayWidth + 7) & ~7);
 }
 
 /* Mandatory */
@@ -509,9 +499,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     MessageType from;
     unsigned char videoram;
     char *ramtype = NULL, *mclk = NULL;
-    Bool Support24bpp;
     int vgaIOBase;
-    int i,j;
+    int i;
     unsigned char temp, unlock;
     ClockRangePtr clockRanges;
     char *mod = NULL;
@@ -565,7 +554,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
      * Our default depth is 8, so pass it to the helper function.
      * Our preference for depth 24 is 24bpp, so tell it that too.
      */
-    if (!xf86SetDepthBpp(pScrn, 8, 0, 0, Support24bppFb | Support32bppFb |
+    if (!xf86SetDepthBpp(pScrn, 8, 0, 0, Support24bppFb |
 				SupportConvert32to24 | PreferConvert32to24)) {
 	return FALSE;
     } else {
@@ -871,7 +860,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     xf86DrvMsg(pScrn->scrnIndex, from, "Installed RAM type is %s\n",ramtype);
-    xf86DrvMsg(pScrn->scrnIndex, from, "Memory Clock is %sMHz\n",mclk);
+    xf86DrvMsg(pScrn->scrnIndex, from, "Memory speed is %sMHz\n",mclk);
+    xf86DrvMsg(pScrn->scrnIndex, from, "Memory clock is %3.5fMHz\n",SiSMclk()/1000);
 
     pSiS->PciTag = pciTag(pSiS->PciInfo->bus, pSiS->PciInfo->device,
 			  pSiS->PciInfo->func);
@@ -903,6 +893,38 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	pScrn->videoRam = pScrn->device->videoRam;
 	from = X_CONFIG;
     } else {
+    switch (pSiS->Chipset) {
+
+        case PCI_CHIP_SG86C201:
+        case PCI_CHIP_SG86C202:
+        case PCI_CHIP_SG86C205:
+        case PCI_CHIP_SG86C215:
+        case PCI_CHIP_SG86C225:
+ 	    outb(0x3C4, RAMSize); /* Memory configuration register */
+  	    switch ((temp>>1) & 0x03) {
+	    case 0: 
+		pScrn->videoRam = 1024;
+		break;
+	    case 1:
+		pScrn->videoRam = 2048;
+		break;
+	    case 2: 
+		pScrn->videoRam = 4096;
+		break;
+	    case 3: 
+		pScrn->videoRam = 1024;
+		break;
+	    }
+	case PCI_CHIP_SIS5597:
+ 	        outb(0x3C4, FBSize);
+		/* The framebuffer size is configured in 256K increments
+		  (512 for 64 bits bus) */
+		pScrn->videoRam = (1+(inb(0x3C5) & 7))*256;
+ 	        outb(0x3C4, Mode64);
+		if ((inb(0x3C5) >> 1) & 3) { 
+		         pScrn->videoRam *= 2;
+		}
+	case PCI_CHIP_SIS6326:
 	outb(0x3C4, RAMSize); /* Get memory size */
 	videoram = (inb(0x3C5) >> 1);
 	switch (videoram & 0x0B) {
@@ -935,6 +957,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	    xf86DrvMsg(pScrn->scrnIndex, from, 
 			"Unable to determine VideoRam, defaulting to 1MB\n",
 				pScrn->videoRam);
+		break;
+	    }
 	    break;
 	}
     }
@@ -947,7 +971,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Set the min pixel clock */
     pSiS->MinClock = 16250;	/* XXX Guess, need to check this */
-    pSiS->MaxClock = 170000;	/* XXX Guess, need to check this */
+    pSiS->MaxClock = 175000;	/* XXX Guess, need to check this */
     xf86DrvMsg(pScrn->scrnIndex, X_DEFAULT, "Min pixel clock is %d MHz\n",
 	       pSiS->MinClock / 1000);
 
@@ -1001,14 +1025,11 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
      */
 
     /* Select valid modes from those available */
-#if 0
-    if (pSiS->NoAccel) {
-#endif
-	/*
-	 * XXX Assuming min pitch 256, max 4096
-	 * XXX Assuming min height 128, max 4096
-	 */
-	i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
+    /*
+     * XXX Assuming min pitch 256, max 4096
+     * XXX Assuming min height 128, max 4096
+     */
+    i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
 			      pScrn->display->modes, clockRanges,
 			      NULL, 256, 4096,
 			      pScrn->bitsPerPixel, 128, 4096,
@@ -1016,21 +1037,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 			      pScrn->display->virtualY,
 			      pSiS->FbMapSize,
 			      LOOKUP_BEST_REFRESH);
-#if 0
-    } else {
-	/*
-	 * XXX Assuming min height 128, max 2048
-	 */
-	j = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
-			      pScrn->display->modes, clockRanges,
-			      GetAccelPitchValues(pScrn), 0, 0,
-			      pScrn->bitsPerPixel, 128, 2048,
-			      pScrn->display->virtualX,
-			      pScrn->display->virtualY,
-			      pSiS->FbMapSize,
-			      LOOKUP_BEST_REFRESH);
-    }
-#endif
+
+    pScrn->displayWidth = GetAccelPitchValues(pScrn);
 
     if (i == -1) {
 	SISFreeRec(pScrn);
@@ -1318,6 +1326,8 @@ SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     sisReg = &pSiS->ModeReg;
 
     vgaReg->Attribute[0x10] = 0x01;
+    if (pScrn->bitsPerPixel > 8) 
+    	vgaReg->Graphics[0x05] = 0x00;
 
     vgaHWRestore(pScrn, vgaReg, VGA_SR_MODE);
 

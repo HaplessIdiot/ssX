@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbbstore.c,v 1.1 1999/01/03 03:58:55 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -27,7 +27,7 @@ cfb8_32SaveAreas(
     ScreenPtr	pScreen = pPixmap->drawable.pScreen;
     PixmapPtr	pScrPix;
 
-    if(pWin->drawable.depth == 24) {
+    if(pPixmap->drawable.bitsPerPixel == 32) {
 	cfb32SaveAreas(pPixmap, prgnSave, xorg, yorg, pWin);
 	return;
     }
@@ -86,9 +86,13 @@ cfb8_32RestoreAreas(
 
     pScrPix = (PixmapPtr) pScreen->devPrivate;
 
-    if(pWin->drawable.depth == 24) {
-	cfb32DoBitbltCopy((DrawablePtr)pPixmap, (DrawablePtr) pScrPix,
+    if(pPixmap->drawable.bitsPerPixel == 32) {
+	if(pWin->drawable.depth == 24)
+	    cfb32DoBitbltCopy((DrawablePtr)pPixmap, (DrawablePtr) pScrPix,
 		    GXcopy, prgnRestore, pPtsInit, 0x00ffffff);
+	else
+	    cfb32DoBitbltCopy((DrawablePtr)pPixmap, (DrawablePtr) pScrPix,
+		    GXcopy, prgnRestore, pPtsInit, ~0);
     } else {
 	cfbDoBitblt8To32((DrawablePtr)pPixmap, (DrawablePtr) pScrPix,
 		    GXcopy, prgnRestore, pPtsInit, ~0L, 0);

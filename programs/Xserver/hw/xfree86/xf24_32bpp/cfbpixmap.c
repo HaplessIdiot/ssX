@@ -1,10 +1,13 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfbpixmap.c,v 1.1 1999/01/23 09:56:14 dawes Exp $ */
 
 #include "Xmd.h"
 #include "servermd.h"
 #include "scrnintstr.h"
 #include "pixmapstr.h"
 #include "mi.h"
+#define PSZ 8
+#include "cfb.h"
+#undef PSZ
 #include "cfb24_32.h"
 
 

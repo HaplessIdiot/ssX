@@ -38,6 +38,7 @@ static char const * const releaseID =
 
 /* ***This file depend on XFree86 Loader architecture*** */
 
+#include "X.h"
 #include "xttcommon.h"
 #include "xttcconv.h"
 #include "xttcconvP.h"
@@ -93,6 +94,7 @@ static char const * const releaseID =
 
 # else
 /* for New Designed XFree86 */
+#   include "misc.h"
 #   include "fontmod.h"
 #   include "xf86Module.h"
 
@@ -436,7 +438,7 @@ codeconv_search_code_converter(char const *charsetName,
 				char **tryItFirst = NULL;
 
                 for (l=list; *l ; l++) {
-					if(!strcasecmp(*l,moduleArg.charSetHints->charsetStdName))
+					if(!mystrcasecmp(*l,moduleArg.charSetHints->charsetStdName))
 						tryItFirst = l;
 				}
 

@@ -38,7 +38,9 @@ static char const * const releaseID =
 
 #ifdef DUMP
 
+#ifndef FONTMODULE
 #include <X11/Xos.h>
+#endif
 #include "xttcommon.h"
 #include "fntfilst.h"
 

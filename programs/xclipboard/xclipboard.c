@@ -24,7 +24,7 @@ in this Software without prior written authorization from The Open Group.
  * Updated for R4:  Chris D. Peterson,  MIT X Consortium.
  * Reauthored by: Keith Packard, MIT X Consortium.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xclipboard/xclipboard.c,v 1.2 1998/12/20 11:58:12 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -536,7 +536,8 @@ static Boolean ConvertSelection(w, selection, target,
 	Atom* std_targets;
 	unsigned long std_length;
 	XmuConvertStandardSelection(w, req->time, selection, target, type,
-				  (XPointer*)&std_targets, &std_length, format);
+				    (XtPointer*)&std_targets, &std_length,
+				    format);
 	*value = XtMalloc(sizeof(Atom)*(std_length + 5));
 	targetP = *(Atom**)value;
 	*targetP++ = XA_STRING;
@@ -600,7 +601,7 @@ static Boolean ConvertSelection(w, selection, target,
     }
     
     if (XmuConvertStandardSelection(w, req->time, selection, target, type,
-				    (XPointer *)value, length, format))
+				    value, length, format))
 	return True;
 
     return False;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.12 1998/11/29 10:50:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.13 1999/01/13 08:31:08 dawes Exp $ */
 
 
 /*
@@ -21,6 +21,8 @@
 #include "colormapst.h"
 
 #include "xf86str.h"
+
+#include "xf86DDC.h"
 
 #ifdef DPMSExtension
 #include "globals.h"
@@ -194,7 +196,7 @@ void vgaHWLock(vgaHWPtr hwp);
 void vgaHWUnlock(vgaHWPtr hwp);
 void vgaHWDPMSSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags);
 Bool vgaHWHandleColormaps(ScreenPtr pScreen);
-void vgaHWddc1SetSpeed(ScrnInfoPtr pScrn, int speed);
+void vgaHWddc1SetSpeed(ScrnInfoPtr pScrn, xf86ddcSpeed speed);
     
 #if 0
 /* vgaCmap.c */

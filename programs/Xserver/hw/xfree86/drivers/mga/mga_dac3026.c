@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.36 1998/12/29 13:00:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.37 1999/01/14 13:04:26 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -70,6 +70,7 @@ static void MGA3026RamdacInit(ScrnInfoPtr);
 static void MGA3026Save(ScrnInfoPtr, vgaRegPtr, MGARegPtr, Bool);
 static void MGA3026Restore(ScrnInfoPtr, vgaRegPtr, MGARegPtr, Bool);
 static Bool MGA3026Init(ScrnInfoPtr, DisplayModePtr);
+static Bool MGA3026_i2cInit(ScrnInfoPtr pScrn);
 
 
 /*
@@ -886,6 +887,9 @@ MGA3026UseHWCursor(ScreenPtr pScrn, CursorPtr pCurs)
     return TRUE;
 }
 
+static const int DDC_SDA_MASK = 1 << 2;
+static const int DDC_SCL_MASK = 1 << 4;
+
 static unsigned int
 MGA3026_ddc1Read(ScrnInfoPtr pScrn)
 {
@@ -899,7 +903,74 @@ MGA3026_ddc1Read(ScrnInfoPtr pScrn)
   while( ! (INREG( MGAREG_Status ) & 0x08) );
 
   /* Get the result */
-  return (inTi3026(TVP3026_GEN_IO_DATA) & 0x04) >> 2 ;
+  return (inTi3026(TVP3026_GEN_IO_DATA) & DDC_SDA_MASK) >> 2 ;
+}
+
+static void
+MGA3026_I2CGetBits(I2CBusPtr b, int *clock, int *data) 
+{
+  MGAPtr pMga = MGAPTR(xf86Screens[b->scrnIndex]);
+  unsigned char val;
+
+  /* Define the SDA (Data) and SCL (clock) as inputs */
+  outTi3026(TVP3026_GEN_IO_CTL, ~(DDC_SDA_MASK | DDC_SCL_MASK), 0);
+
+  /* Get the result. */
+  val = inTi3026(TVP3026_GEN_IO_DATA); 
+  *clock = (val & DDC_SCL_MASK) != 0;
+  *data  = (val & DDC_SDA_MASK) != 0;
+
+#ifdef DEBUG
+	 ErrorF("MGA3026_I2CGetBits(%p,...) val=0x%x, returns clock %d, data %d\n", b, val, *clock, *data);
+#endif
+}
+
+static void
+MGA3026_I2CPutBits(I2CBusPtr b, int clock, int data)
+{
+  MGAPtr pMga = MGAPTR(xf86Screens[b->scrnIndex]);
+  unsigned char val;
+
+  /* Write the values */
+  val = (clock ? DDC_SCL_MASK : 0) | (data ? DDC_SDA_MASK : 0);
+  outTi3026(TVP3026_GEN_IO_DATA, ~(DDC_SDA_MASK | DDC_SCL_MASK), val); 
+
+#ifdef DEBUG
+  ErrorF("MGA3026_I2CPutBits(%p, %d, %d) val=0x%x\n", b, clock, data, val);
+#endif
+
+  /* Define the SDA (Data) and SCL (clock) as outputs */
+  outTi3026(TVP3026_GEN_IO_CTL,
+	    ~(DDC_SDA_MASK | DDC_SCL_MASK),
+	    (DDC_SDA_MASK & DDC_SCL_MASK));
+}
+
+
+Bool
+MGA3026_i2cInit(ScrnInfoPtr pScrn)
+{
+    MGAPtr pMga = MGAPTR(pScrn);
+    I2CBusPtr I2CPtr;
+
+    I2CPtr = xf86CreateI2CBusRec();
+    if(!I2CPtr) return FALSE;
+
+    pMga->I2C = I2CPtr;
+
+    I2CPtr->BusName    = "DDC";
+    I2CPtr->scrnIndex  = pScrn->scrnIndex;
+    I2CPtr->I2CPutBits = MGA3026_I2CPutBits;
+    I2CPtr->I2CGetBits = MGA3026_I2CGetBits;
+
+    /* I2CPutByte is timing out, experimenting with AcknTimeout 
+     * default is 2CPtr->AcknTimeout = 5; 
+     */
+    /* I2CPtr->AcknTimeout = 10; */
+
+    if (!xf86I2CBusInit(I2CPtr)) {
+	return FALSE;
+    }
+    return TRUE;
 }
 
 static void
@@ -1008,7 +1079,7 @@ MGA3026RamdacInit(ScrnInfoPtr pScrn)
         }
      } /* 2164 specific initialization */
 
-    /* saftey check */
+    /* safety check */
     if ( (MGAdac->MemoryClock < 40000) ||
          (MGAdac->MemoryClock > 70000) )
 	MGAdac->MemoryClock = 50000; 
@@ -1137,4 +1208,5 @@ void MGA2064SetupFuncs(ScrnInfoPtr pScrn)
     pMga->Restore = MGA3026Restore;
     pMga->ModeInit = MGA3026Init;
     pMga->ddc1Read = MGA3026_ddc1Read;
+    pMga->i2cInit = MGA3026_i2cInit;
 }

@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.2 1999/01/24 03:13:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.3 1999/01/26 10:40:30 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -242,6 +242,8 @@ SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pReg->sisRegs3C4[BankReg] |= 0x82;			/* Enable Linear */
     pReg->sisRegs3C4[CPUThreshold] = 0x0F;
     pReg->sisRegs3C4[CRTThreshold] = 0x0F;
+    outb(0x3C4, MMIOEnable);
+    pReg->sisRegs3C4[MMIOEnable] = inb(0x3C5);
 
     switch (pScrn->depth) {
 	case 8:
@@ -259,8 +261,9 @@ SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    break;
 	case 24:
 	    offset += (offset << 1);
-	    pReg->sisRegs3C4[BankReg] |= 0x80;
+	    pReg->sisRegs3C4[BankReg] |= 0x10;
     	    pReg->sisRegs3C4[CPUThreshold] |= 0xC0;
+	    pReg->sisRegs3C4[MMIOEnable] |= 0x90;
 	    break;
     }
 
@@ -294,6 +297,8 @@ SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
  	};
  	xr2b |= 0x80 ;   /* gain for high frequency */
  
+	outb(0x3C4, ClockReg); pReg->sisRegs3C4[ClockReg] = inb(0x3C5);
+	if (clock > 135000) pReg->sisRegs3C4[ClockReg] |= 0x02;
 	pReg->sisRegs3C4[XR2A] = xr2a;
 	pReg->sisRegs3C4[XR2B] = xr2b;
 	pReg->sisRegs3C2[0x00] = inb(0x3CC) | 0x0C;
@@ -314,11 +319,10 @@ SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    else
     	    	pReg->sisRegs3C4[TurboQueueBase] = (pScrn->videoRam/32) - 1;
 	}
-	outb(0x3C4, Mode64);
-    	pReg->sisRegs3C4[Mode64] = inb(0x3C5) | 0x80;
-	outb(0x3C4, MMIOEnable);
-    	pReg->sisRegs3C4[MMIOEnable] = inb(0x3C5) | 0x60; /* At PCI base */
+    	pReg->sisRegs3C4[MMIOEnable] |= 0x60; /* At PCI base */
     }
+    outb(0x3C4, Mode64);
+    pReg->sisRegs3C4[Mode64] = inb(0x3C5) | 0x80;
 
     outw(0x3C4, (temp << 8) | 0x05); /* Relock Registers */
     return(TRUE);
@@ -340,14 +344,14 @@ SiSRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 
     if (!pSiS->NoAccel) {
     	outw(0x3C4, (sisReg->sisRegs3C4[GraphEng] << 8) | GraphEng);
-    	outw(0x3C4, (sisReg->sisRegs3C4[Mode64] << 8) | Mode64);
-    	outw(0x3C4, (sisReg->sisRegs3C4[MMIOEnable] << 8) | MMIOEnable);
 	if (pSiS->TurboQueue) {
     	    outw(0x3C4, (sisReg->sisRegs3C4[ExtMiscCont9] << 8) | ExtMiscCont9);
     	    outw(0x3C4, (sisReg->sisRegs3C4[TurboQueueBase] << 8) | TurboQueueBase);
 	}
     }
 
+    outw(0x3C4, (sisReg->sisRegs3C4[Mode64] << 8) | Mode64);
+    outw(0x3C4, (sisReg->sisRegs3C4[MMIOEnable] << 8) | MMIOEnable);
     outw(0x3C4, (sisReg->sisRegs3C4[ExtMiscCont5] << 8) | ExtMiscCont5);
     outw(0x3C4, (sisReg->sisRegs3C4[BankReg] << 8) | BankReg);
     outw(0x3C4, (sisReg->sisRegs3C4[LinearAdd0] << 8) | LinearAdd0);
@@ -360,6 +364,7 @@ SiSRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     outw(0x3C4, (sisReg->sisRegs3C4[XR2A] << 8) | XR2A);
     outw(0x3C4, (sisReg->sisRegs3C4[XR2B] << 8) | XR2B);
     outw(0x3C4, (sisReg->sisRegs3C4[ClockBase] << 8) | ClockBase);
+    outw(0x3C4, (sisReg->sisRegs3C4[ClockReg] << 8) | ClockReg);
     outb(0x3C2, sisReg->sisRegs3C2[0x00]);
 
     outw(0x3C4, (temp << 8) | 0x05); /* Relock Registers */
@@ -402,14 +407,16 @@ SiSSave(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     sisReg->sisRegs3C4[XR2A] = inb(0x3C5);
     outb(0x3C4, XR2B);
     sisReg->sisRegs3C4[XR2B] = inb(0x3C5);
+    outb(0x3C4, ClockReg);
+    sisReg->sisRegs3C4[ClockReg] = inb(0x3C5);
+    outb(0x3C4, Mode64);
+    sisReg->sisRegs3C4[Mode64] = inb(0x3C5);
+    outb(0x3C4, MMIOEnable);
+    sisReg->sisRegs3C4[MMIOEnable] = inb(0x3C5);
 
     if (!pSiS->NoAccel) {
     	outb(0x3C4, GraphEng);
     	sisReg->sisRegs3C4[GraphEng] = inb(0x3C5);
-	outb(0x3C4, Mode64);
-    	sisReg->sisRegs3C4[Mode64] = inb(0x3C5);
-	outb(0x3C4, MMIOEnable);
-    	sisReg->sisRegs3C4[MMIOEnable] = inb(0x3C5);
 	if (pSiS->TurboQueue) {
     	    outb(0x3C4, ExtMiscCont9);
     	    sisReg->sisRegs3C4[ExtMiscCont9] = inb(0x3C5);
@@ -518,7 +525,7 @@ SiSLoadCursorImage(
 
     outb(0x3C4, 0x38); temp = inb(0x3C5);
     outb(0x3C5, (temp & 0x0F) | (cursoraddress << 4));
-    outb(0x3C4, 0x1E); temp = inb(0x3C5); outb(0x3C5, temp & 0xF7);
+    outb(0x3C4, 0x1E); temp = inb(0x3C5); outb(0x3C5, (temp & 0xF7) | 0x08);
 
     outw(0x3C4, (temp2 << 8) | 0x05);
 }
@@ -552,6 +559,7 @@ SiSHWCursorInit(ScreenPtr pScreen)
     infoPtr->Flags = 
 		HARDWARE_CURSOR_INVERT_MASK |
 		HARDWARE_CURSOR_BIT_ORDER_MSBFIRST |
+		HARDWARE_CURSOR_NIBBLE_SWAPPED |
 		HARDWARE_CURSOR_TRUECOLOR_AT_8BPP |
 		HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_1;
     infoPtr->SetCursorColors = SiSSetCursorColors;
@@ -586,3 +594,39 @@ SiSddc1Read(ScrnInfoPtr pScrn)
 
     return ((temp & 0x02)>>1);
 }
+
+/* Auxiliary function to find real memory clock (in Khz) */
+int
+SiSMclk()
+{ int mclk;
+  unsigned char Num, Denum, Base;
+    /* Numerator */
+    read_xr(MemClock0,Num);
+    mclk=14318*((Num & 0x7f)+1);
+    /* Denumerator */
+    read_xr(MemClock1,Denum);
+    mclk=mclk/((Denum & 0x0f)+1);
+
+#if 0 
+    /* Divider. Don't seems to work for mclk */
+    if ( (Num & 0x80)!=0 ) { 
+         mclk = mclk*2;
+    }
+#endif
+    /* Post-scaler. Values depends on SR13 bit 7  */
+    read_xr(ClockBase,Base);
+
+    if ( (Base & 0x80)==0 ) {
+      mclk = mclk / (((Denum & 0x60) >> 5)+1);
+    }
+    else {
+      /* Values 00 and 01 are reserved */
+      if ((Denum & 0x60) == 0x40) { mclk=mclk/6;
+      }
+      if ((Denum & 0x60) == 0x60) { mclk=mclk/8;
+      }
+    }
+
+    return(mclk);
+}
+

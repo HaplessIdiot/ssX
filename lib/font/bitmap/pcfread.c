@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/pcfread.c,v 1.4 1998/07/25 06:57:04 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/pcfread.c,v 1.5 1998/10/03 09:07:22 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -357,7 +357,7 @@ pcfReadFont(pFont, file, bit, byte, glyph, scan)
     int         nink_metrics;
     CharInfoPtr metrics = 0;
     xCharInfo  *ink_metrics = 0;
-    char       *bitmaps = 0;
+    unsigned char *bitmaps = 0;
     CharInfoPtr *encoding = 0;
     int         nencoding;
     int         encodingOffset;
@@ -428,23 +428,23 @@ pcfReadFont(pFont, file, bit, byte, glyph, scan)
 	bitmapSizes[i] = pcfGetINT32(file, format);
     sizebitmaps = bitmapSizes[PCF_GLYPH_PAD_INDEX(format)];
     /* guard against completely empty font */
-    bitmaps = (char *) xalloc(sizebitmaps ? sizebitmaps : 1);
+    bitmaps = xalloc(sizebitmaps ? sizebitmaps : 1);
     if (!bitmaps)
 	goto Bail;
     FontFileRead(file, bitmaps, sizebitmaps);
     position += sizebitmaps;
 
     if (PCF_BIT_ORDER(format) != bit)
-	BitOrderInvert(bitmaps, sizebitmaps);
+	BitOrderInvert((unsigned char *)bitmaps, sizebitmaps);
     if ((PCF_BYTE_ORDER(format) == PCF_BIT_ORDER(format)) != (bit == byte)) {
 	switch (bit == byte ? PCF_SCAN_UNIT(format) : scan) {
 	case 1:
 	    break;
 	case 2:
-	    TwoByteSwap(bitmaps, sizebitmaps);
+	    TwoByteSwap((unsigned char *)bitmaps, sizebitmaps);
 	    break;
 	case 4:
-	    FourByteSwap(bitmaps, sizebitmaps);
+	    FourByteSwap((unsigned char *)bitmaps, sizebitmaps);
 	    break;
 	}
     }

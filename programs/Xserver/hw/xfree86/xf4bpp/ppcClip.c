@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcClip.c,v 1.1.2.1 1998/06/27 14:48:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcClip.c,v 1.2 1998/07/25 16:59:32 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -79,6 +79,7 @@ SOFTWARE.
 #include "region.h"
 #include "pixmapstr.h"
 #include "ppc.h"
+#include "OScompiler.h"
 
 void
 xf4bppDestroyClip(pGC)

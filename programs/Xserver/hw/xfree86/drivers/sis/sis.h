@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.1 1999/01/23 09:55:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.2 1999/01/26 10:40:29 dawes Exp $ */
 
 #ifndef _SIS_H
 #define _SIS_H_
@@ -87,5 +87,6 @@ void SiSRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg);
 void SiSSave(ScrnInfoPtr pScrn, SISRegPtr sisReg);
 Bool SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 Bool SiSAccelInit(ScreenPtr pScreen);
+int  SiSMclk(void);
 
 #endif

@@ -91,7 +91,10 @@ from the X Consortium.
 
 */
 
+#ifndef FONTMODULE
 #include <X11/Xos.h>
+#endif
+#include <X11/X.h>
 #include "fntfilst.h"
 #include "xttcommon.h"
 

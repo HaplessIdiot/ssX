@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.60 1999/01/24 13:32:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.61 1999/01/26 10:40:35 dawes Exp $ */
 
 /*
  *
@@ -36,7 +36,9 @@
 #include "xf86Pci.h"
 #include "xf86Parser.h"
 #include "xf86Config.h"
+#ifdef XINPUT
 #include "xf86Xinput.h"
+#endif
 #include "xisb.h"
 #include "xf86xv.h"
 #include "xf86cmap.h"
@@ -174,6 +176,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86WaitForInput)
    SYMFUNC(xf86SerialSendBreak)
 
+#ifdef XINPUT
 /* XISB routines  (Merged from Metrolink tree) */
    SYMFUNC(XisbNew)
    SYMFUNC(XisbFree)
@@ -181,6 +184,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(XisbWrite)
    SYMFUNC(XisbTrace)
    SYMFUNC(XisbBlockDuration)
+#endif
 
    /* xf86Bus.c */
    SYMFUNC(xf86CheckPciSlot)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.15 1999/01/11 12:09:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.16 1999/01/14 13:05:23 dawes Exp $ */
 
 /*
  *
@@ -1547,8 +1547,6 @@ vgaHWHandleColormaps(ScreenPtr pScreen)
  * readback, enable access to cr00-cr07.
  */
 
-#include "xf86DDC.h"
-
 /* vertical timings */
 #define DISPLAY_END 0x04
 #define BLANK_START DISPLAY_END
@@ -1571,12 +1569,12 @@ struct _vgaDdcSave {
 };
 
 void
-vgaHWddc1SetSpeed(ScrnInfoPtr pScrn, int speed)
+vgaHWddc1SetSpeed(ScrnInfoPtr pScrn, xf86ddcSpeed speed)
 {
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     unsigned char tmp;
     struct _vgaDdcSave* save;
-    switch ((xf86ddcSpeed)speed) {
+    switch (speed) {
     case DDC_FAST:
         
         if (hwp->ddc != NULL) break;
