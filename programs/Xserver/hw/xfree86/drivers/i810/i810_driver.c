@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.22 2000/08/30 19:27:21 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.23 2000/09/01 19:26:41 mvojkovi Exp $ */
 
 /*
  * Authors:
@@ -1607,9 +1607,18 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
    miClearVisualTypes();
 
-   if (!miSetVisualTypes(pScrn->depth, miGetDefaultVisualMask(pScrn->depth),
+#if 1   /* disable DirectColor */
+   if(pScrn->depth > 8) {
+      if (!miSetVisualTypes(pScrn->depth, TrueColorMask,
+                         pScrn->rgbBits, pScrn->defaultVisual))
+           return FALSE;
+   } else 
+#endif
+   {
+       if (!miSetVisualTypes(pScrn->depth, miGetDefaultVisualMask(pScrn->depth),
 			 pScrn->rgbBits, pScrn->defaultVisual))
-      return FALSE;
+           return FALSE;
+   }
    
    {
       I810RegPtr i810Reg = &pI810->ModeReg;
@@ -1729,6 +1738,7 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
    if (!miCreateDefColormap(pScreen)) return FALSE;
 
+#if 0   /* palettes do not work at the moment */
    if (pScrn->bitsPerPixel==16) {
       if (!xf86HandleColormaps(pScreen, 256, 8, I810LoadPalette16, 0,
 			       CMAP_PALETTED_TRUECOLOR|
@@ -1740,6 +1750,10 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 			       CMAP_RELOAD_ON_MODE_SWITCH))
 	 return FALSE;
    }
+#else
+  if (!vgaHWHandleColormaps(pScreen))
+	return FALSE;
+#endif
 
 #ifdef DPMSExtension
    xf86DPMSInit(pScreen, I810DisplayPowerManagementSet, 0);

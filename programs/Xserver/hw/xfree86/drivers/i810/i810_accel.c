@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_accel.c,v 1.5 2000/06/17 18:23:23 dawes Exp $ */
 
 /*
  * Authors:
@@ -123,12 +123,7 @@ I810AccelInit( ScreenPtr pScreen )
 
    pI810->bufferOffset = 0;
    infoPtr->Flags = LINEAR_FRAMEBUFFER;
-		    
-   /* In 24bpp mode, XAA seems to want to manage offscreen pixmaps as
-    * 32bpp even though we've said we can't support that format.  
-    */
-   if (pScrn->depth != 24)
-      infoPtr->Flags |= (PIXMAP_CACHE | OFFSCREEN_PIXMAPS);
+   infoPtr->Flags |= (PIXMAP_CACHE | OFFSCREEN_PIXMAPS);
 
    /* Sync
     */
@@ -193,7 +188,6 @@ I810AccelInit( ScreenPtr pScreen )
 	 NO_PLANEMASK | 
 	 ROP_NEEDS_SOURCE |
 	 BIT_ORDER_IN_BYTE_MSBFIRST | 
-	 HARDWARE_PATTERN_SCREEN_ORIGIN | 
 	 0);
 
       infoPtr->ScanlineColorExpandBuffers = (unsigned char **) 
