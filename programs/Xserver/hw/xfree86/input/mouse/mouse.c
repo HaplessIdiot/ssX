@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.67 2003/02/04 07:13:54 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.68 2003/02/04 15:21:18 eich Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -2623,7 +2623,7 @@ initMouseHW(InputInfoPtr pInfo)
 		    usleep(30000);
 		    xf86FlushInput(pInfo->fd);
 		    if (!count--)
-			return FALSE;
+			return TRUE;
 		    goto REDO;
 		} 
 		usleep(30000);
@@ -2639,7 +2639,7 @@ initMouseHW(InputInfoPtr pInfo)
 		c = 0xE6;	/*230*/	/* 1:1 scaling */
 		if (!ps2SendPacket(pInfo,&c,1)) {
 		    if (!count--)
-			return FALSE;
+			return TRUE;
 		    goto REDO;
 		}
 		c2[0] = 0xF3; /*243*/ /* set sampling rate */
@@ -2661,7 +2661,7 @@ initMouseHW(InputInfoPtr pInfo)
 		}
 		if (!ps2SendPacket(pInfo,c2,2)) {
 		    if (!count--)
-			return FALSE;
+			return TRUE;
 		    goto REDO;
 		}
 		c2[0] = 0xE8; /*232*/	/* set device resolution */
@@ -2679,7 +2679,7 @@ initMouseHW(InputInfoPtr pInfo)
 		}
 		if (!ps2SendPacket(pInfo,c2,2)) {
 		    if (!count--)
-			return FALSE;
+			return TRUE;
 		    goto REDO;
 		}
 		usleep(30000);
@@ -2689,7 +2689,7 @@ initMouseHW(InputInfoPtr pInfo)
 			    pInfo->name);
 		    xf86FlushInput(pInfo->fd);
 		    if (!count--)
-			return FALSE;
+			return TRUE;
 		    goto REDO;
 		} else {
 		    xf86Msg(X_INFO, "%s: ps2EnableDataReporting: succeeded\n",
