@@ -1,4 +1,6 @@
 XFree86 4.2.99.2 (xx July 2002)
+ 215. On Darwin, fix imake to find Gcc and correct config for RawCppCmd
+      (Torrey T. Lyons).
  214. Add functions to allow modules to query the core X server version
       and the version of its sub modules (David Dawes).
  213. Fix scanpci's printing of 64-bit PCI bases (Marc La France).
@@ -14964,4 +14966,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2271 2002/07/26 16:22:20 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2272 2002/07/30 18:36:14 dawes Exp $
