@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/13 1996/10/21 14:49:26 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/Imakefile,v 3.13 1997/03/11 13:07:31 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/Imakefile,v 3.14 1997/03/12 06:21:34 hohndel Exp $
 
 
 #define IHaveModules
@@ -13,18 +13,18 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/Imakefile,v 3.13 1997/03/11 
 #define IHaveSubdirs
 
 #if XF86Vga2Banked
-MFBDIR = mfb.banked
+MFBDIR = vga mfb.banked
 #else
-MFBDIR = mfb
+MFBDIR = vga mfb
 #endif
 
-SUBDIRS = $(MFBDIR) misc
+SUBDIRS = vga $(MFBDIR) misc
 
-SRCS = $(MFBDIR)/?*.c
+SRCS = vga/?*.c $(MFBDIR)/?*.c
 
-OBJS = $(MFBDIR)/?*.o
+OBJS = vga/?*.o $(MFBDIR)/?*.o
 
-DONES = $(MFBDIR)/DONE
+DONES = vga/DONE $(MFBDIR)/DONE
 
 INCLUDES = -I../vga256/vga -I$(XF86COMSRC) -I$(XF86OSSRC) \
 	    -I$(SERVERSRC)/include -I$(XINCLUDESRC)

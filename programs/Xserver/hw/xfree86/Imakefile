@@ -3,16 +3,16 @@ XCOMM $XConsortium: Imakefile /main/12 1996/12/16 12:31:46 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.33 1997/03/07 00:28:46 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.34 1997/03/11 11:09:34 hohndel Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
 
-#if XF86MonoServer || XF86MonoModule
+#if XF86MonoServer || XF86MonoModule || XF86SVGAServer
 VGA2SCREEN = vga2
 #endif
 
-#if XF86MonoDualServer || XF86VGA16DualServer || XF86MonoModule
+#if XF86MonoDualServer || XF86VGA16DualServer || XF86MonoModule || XF86SVGAServer
 MONOSCREEN = mono
 #endif
 
@@ -20,7 +20,7 @@ MONOSCREEN = mono
 VGA256SCREEN = vga256
 #endif
 
-#if XF86VGA16Server || XF86VGA16Module
+#if XF86VGA16Server || XF86VGA16Module || XF86SVGAServer
 VGA16SCREEN = vga16
 #endif
 

@@ -4,22 +4,22 @@ XCOMM $XConsortium: Imakefile /main/7 1996/10/19 18:09:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/vga/Imakefile,v 3.8 1997/03/11 13:07:44 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/vga/Imakefile,v 3.9 1997/03/11 17:27:42 hohndel Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
 
 #ifdef i386Architecture
-VGABANKSRCS = vgaBank.s vgaLBank.s
-VGABANKOBJS = vgaBank.o vgaLBank.o
+VGABANKSRCS = vgaLBank.s
+VGABANKOBJS = vgaLBank.o
 #else
-VGABANKSRCS = vgaBankc.c vgaLBankc.c
-VGABANKOBJS = vgaBankc.o vgaLBankc.o
+VGABANKSRCS = vgaLBankc.c
+VGABANKOBJS = vgaLBankc.o
 #endif
 
-SRCS = 	vgaHW.c vga.c vgaPCI.c $(VGABANKSRCS)
+SRCS = 	$(VGABANKSRCS)
 
-OBJS = 	vgaHW.o vga.o vgaPCI.o $(VGABANKOBJS)
+OBJS = 	$(VGABANKOBJS)
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) -I../../vga256/vga \
            -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
@@ -38,14 +38,5 @@ STARTUPDEFINES = -DDIRTY_STARTUP
 BANKEDDEFINES = -DBANKEDMONOVGA -DPSZ=1
 #endif
 DEFINES = $(STARTUPDEFINES) -DMONOVGA -DXF86MONOVGA $(BANKEDDEFINES)
-
-LinkSourceFile(vga.c,../../vga256/vga)
-LinkSourceFile(vgaHW.c,../../vga256/vga)
-#ifdef i386Architecture
-LinkSourceFile(vgaBank.s,../../vga256/vga)
-#else
-LinkSourceFile(vgaBankc.c,../../vga256/vga)
-#endif
-LinkSourceFile(vgaPCI.c,../../vga256/vga)
 
 DependTarget()
