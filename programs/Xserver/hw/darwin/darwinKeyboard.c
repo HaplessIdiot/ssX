@@ -36,7 +36,7 @@
 //
 //=============================================================================
 
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.8 2001/08/06 04:14:36 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.9 2001/08/11 23:14:44 torrey Exp $ */
 
 /*
 ===========================================================================
@@ -64,6 +64,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <architecture/byte_order.h>  // For the NXSwap*
 #include "darwin.h"
 #include "xfIOKit.h"
 #include "bundle/quartzAudio.h"
@@ -373,9 +374,9 @@ Bool DarwinReadKeymapFile(
             km.charP = inBuffer;
             km.intP++;
             while (km.intP+3 < bufferEnd) {
-                map_interface = *(km.intP++);
-                map_handler_id = *(km.intP++);
-                map_size = *(km.intP++);
+                map_interface = NXSwapBigIntToHost(*(km.intP++));
+                map_handler_id = NXSwapBigIntToHost(*(km.intP++));
+                map_size = NXSwapBigIntToHost(*(km.intP++));
                 if (map_interface == interface) {
                     if (map_handler_id == handler_id || hasInterface) {
                         hasMatch = TRUE;
