@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranstli.c /main/26 1995/12/13 18:07:13 kaleb $ */
-/* $XFree86: xc/lib/xtrans/Xtranstli.c,v 3.2 1996/05/10 06:55:54 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranstli.c,v 3.3 1996/08/27 03:11:50 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -781,6 +781,7 @@ struct t_bind	*req;
      * that hasn't been allocated.
      */
     t_free((char *)req,T_BIND);
+#endif
     t_free((char *)ret, T_BIND);
     
     return 0;
