@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.8 2000/04/17 16:30:04 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.9 2000/05/11 18:14:34 tsi Exp $ */
 
 /*
  * Authors:
@@ -64,6 +64,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "cfb16.h"
 #include "cfb24.h"
 #include "cfb32.h"
+#include "cfb24_32.h"
 #include "i810.h"
 #include "miscstruct.h"
 #include "xf86xv.h"
@@ -204,6 +205,11 @@ static const char *ramdacSymbols[] = {
    NULL
 };
 
+/*
+ * This is intentionally screen-independent.  It indicates the binding
+ * choice made in the first PreInit.
+ */
+static int pix24bpp = 0;
 
 #ifdef XF86DRI
 static const char *drmSymbols[] = {
@@ -485,7 +491,7 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
 
    /* No support for 32bpp.
     */
-   flags24=Support24bppFb | PreferConvert32to24;
+   flags24=Support24bppFb | PreferConvert32to24 | SupportConvert32to24;
    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, flags24)) {
       return FALSE;
    } else {
@@ -503,6 +509,9 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
    }
    xf86PrintDepthBpp(pScrn);
 
+   /* Get the depth24 pixmap format */
+   if (pScrn->depth == 24 && pix24bpp == 0)
+        pix24bpp = xf86GetBppFromDepth(pScrn, 24);
 
    pScrn->rgbBits=8;
    if (xf86ReturnOptValBool(I810Options, OPTION_DAC_6BIT, FALSE))
@@ -734,8 +743,13 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
       reqSym = "cfb16ScreenInit";
       break;
    case 24:
-      mod = "cfb24";
-      reqSym = "cfb24ScreenInit";
+      if (pix24bpp == 24) {
+	mod = "cfb24";
+	reqSym = "cfb24ScreenInit";
+      } else {
+	mod = "xf24_32bpp";
+	reqSym = "cfb24_32ScreenInit";
+      }
       break;
    case 32:
       mod = "cfb32";
@@ -1648,11 +1662,19 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 	 return FALSE;
       break;
    case 24:
-      if (!cfb24ScreenInit(pScreen, pI810->FbBase + pScrn->fbOffset, 
-			   pScrn->virtualX, pScrn->virtualY,
-			   pScrn->xDpi, pScrn->yDpi,
-			   pScrn->displayWidth))
-	 return FALSE;
+      if (pix24bpp == 24) {
+            if (!cfb24ScreenInit(pScreen, pI810->FbBase + pScrn->fbOffset,
+                        pScrn->virtualX, pScrn->virtualY,
+                        pScrn->xDpi, pScrn->yDpi,
+                        pScrn->displayWidth))
+		return FALSE;
+      } else {
+            if (!cfb24_32ScreenInit(pScreen, pI810->FbBase + pScrn->fbOffset,
+                        pScrn->virtualX, pScrn->virtualY,
+                        pScrn->xDpi, pScrn->yDpi,
+                        pScrn->displayWidth))
+		return FALSE;
+      }
       break;
    case 32:
       if (!cfb32ScreenInit(pScreen, pI810->FbBase + pScrn->fbOffset, 
