@@ -1,4 +1,6 @@
 XFree86 4.2.99.903 (xx February 2003)
+ 916. Miscellaneous 64-bit and warning fixes to mfb, xf1bpp and xf4bpp
+      (Marc La France).
  915. Fix a bug in beforelight that was preventing it from being restarted 
       and could cause random X clients to be killed. (Matthieu Herrb)
  914. Add a means by which a motherboard chipset driver can prevent the common
@@ -16422,4 +16424,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2563 2003/02/18 15:42:04 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2564 2003/02/18 20:45:05 herrb Exp $

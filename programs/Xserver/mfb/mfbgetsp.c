@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbgetsp.c,v 1.2 2001/10/28 03:34:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbgetsp.c,v 1.3tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -77,7 +77,7 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart)
     int			nspans;		/* number of scanlines to copy */
     char		*pchardstStart;	/* where to put the bits */
 {
-    PixelType		*pdstStart = (PixelType *)pchardstStart;
+    PixelType		*pdstStart = (PixelType *)(pointer)pchardstStart;
     register PixelType	*pdst;	/* where to put the bits */
     register PixelType	*psrc;	/* where to get the bits */
     register PixelType	tmpSrc;	/* scratch buffer for bits */

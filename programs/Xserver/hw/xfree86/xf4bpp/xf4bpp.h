@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/xf4bpp.h,v 1.6 2001/03/08 17:12:17 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/xf4bpp.h,v 1.7tsi Exp $ */
 
 
 #ifndef __XF4BPP_H__
@@ -14,7 +14,7 @@
 #endif
 
 /* ppcArea.c */
-void xf4bppAreaFill(
+void xf4bppFillArea(
 #if NeedFunctionPrototypes
     WindowPtr,
     int,
@@ -627,7 +627,7 @@ void xf4bppImageGlyphBlt(
     int,
     unsigned int,
     CharInfoPtr *,
-    unsigned char *
+    pointer
 #endif
 );
 

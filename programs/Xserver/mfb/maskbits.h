@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/maskbits.h,v 3.7 2000/11/22 00:58:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/maskbits.h,v 3.8tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.1, 1/24/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -523,7 +523,7 @@ extern PixelType mask[];
 #endif
 
 #if GETLEFTBITS_ALIGNMENT == 1
-#define getleftbits(psrc, w, dst)	dst = *((CARD32 *) psrc)
+#define getleftbits(psrc, w, dst)	dst = *((CARD32 *)(pointer) psrc)
 #endif /* GETLEFTBITS_ALIGNMENT == 1 */
 
 #if GETLEFTBITS_ALIGNMENT == 2

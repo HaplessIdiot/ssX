@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcFillRct.c,v 1.3 1999/06/06 08:48:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcFillRct.c,v 1.4tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -84,7 +84,7 @@ xf4bppPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     int		    xorg, yorg;
     mfbPrivGC	*priv;
 /*    int alu; */
-    void (* pfn) ();
+/*    mfbFillAreaProcPtr pfn; */
 /*    PixmapPtr ppix; */
 
     if (!(pGC->planemask & 0x0F)) /* GJA */
@@ -92,7 +92,7 @@ xf4bppPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 
     priv = (mfbPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr;
 /*    alu = priv->ropFillArea; */
-    pfn = priv->FillArea;
+/*    pfn = priv->FillArea; */
 /*    ppix = pGC->pRotatedPixmap; */
     prgnClip = pGC->pCompositeClip;
 
@@ -214,7 +214,8 @@ xf4bppPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     	}
     }
     if (pboxClipped != pboxClippedBase)
-	(*pfn) (pDrawable,pboxClipped-pboxClippedBase, pboxClippedBase, pGC);
+	xf4bppFillArea((WindowPtr)pDrawable, pboxClipped-pboxClippedBase,
+		       pboxClippedBase, pGC);
     if (pboxClippedBase != stackRects)
     	DEALLOCATE_LOCAL(pboxClippedBase);
 }
