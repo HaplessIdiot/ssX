@@ -438,7 +438,17 @@ struct pci_config_reg {
 #define _prefetch_mem_base		bc.bg.prefetch_mem_base
 #define _prefetch_mem_limit		bc.bg.prefetch_mem_limit
     unsigned long rsvd1;
-    unsigned long rsvd2;
+    union {     /* Offset 0x2c - 0x2f */
+        unsigned long subsys_card_vendor;
+        unsigned long rsvd2;
+        struct {
+            unsigned short subsys_vendor;
+            unsigned short subsys_card;
+        } ssys;
+    } ssys_id;
+#define _subsys_card_vendor		ssys_id.subsys_card_vendor
+#define _subsys_vendor			ssys_id.ssys.subsys_vendor
+#define _subsys_card			ssys_id.ssys.subsys_card
     unsigned long _baserom;
     unsigned long rsvd3;
     unsigned long rsvd4;
@@ -580,7 +590,14 @@ struct pci_config_reg {
 #define _prefetch_mem_base		bc.bg.prefetch_mem_base
 #define _prefetch_mem_limit		bc.bg.prefetch_mem_limit
     unsigned long rsvd1;
-    unsigned long rsvd2;
+    union {     /* Offset 0x2c - 0x2f */
+        unsigned long subsys_card_vendor;
+        unsigned long rsvd2;
+        struct {
+            unsigned short subsys_card;
+            unsigned short subsys_vendor;
+        } ssys;
+    } ssys_id;
     unsigned long _baserom;
     unsigned long rsvd3;
     unsigned long rsvd4;
@@ -1321,6 +1338,8 @@ main(int argc, unsigned char *argv[])
 	    pcr._base4  = inl(PCI_MODE1_DATA_REG);
             outl(PCI_MODE1_ADDRESS_REG, config_cmd | 0x24);
 	    pcr._base5  = inl(PCI_MODE1_DATA_REG);
+            outl(PCI_MODE1_ADDRESS_REG, config_cmd | 0x2c);
+	    pcr._subsys_card_vendor = inl(PCI_MODE1_DATA_REG);
             outl(PCI_MODE1_ADDRESS_REG, config_cmd | 0x30);
 	    pcr._baserom = inl(PCI_MODE1_DATA_REG);
             outl(PCI_MODE1_ADDRESS_REG, config_cmd | 0x3C);
@@ -1346,6 +1365,8 @@ main(int argc, unsigned char *argv[])
 			PCI_MAP_REG_START + 0x10, 4, &pcr._base4);
 	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], pcr._cardnum<<3,
 			PCI_MAP_REG_START + 0x14, 4, &pcr._base5);
+	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], pcr._cardnum<<3,
+			PCI_MAP_REG_START + 0x1c, 4, &pcr._subsys_card_vendor);
 	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], pcr._cardnum<<3,
 			PCI_MAP_ROM_REG, 4, &pcr._baserom);
 	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], pcr._cardnum<<3,
@@ -1429,6 +1450,7 @@ main(int argc, unsigned char *argv[])
             pcr._base3 = inl(pcr._ioaddr + 0x1C);
             pcr._base4 = inl(pcr._ioaddr + 0x20);
             pcr._base5 = inl(pcr._ioaddr + 0x24);
+            pcr._subsys_card_vendor = inl(pcr._ioaddr + 0x2c);
             pcr._baserom = inl(pcr._ioaddr + 0x30);
             pcr._max_min_ipin_iline = inl(pcr._ioaddr + 0x3C);
             pcr._user_config = inl(pcr._ioaddr + 0x40);
@@ -1492,6 +1514,8 @@ identify_card(struct pci_config_reg *pcr, int verbose)
 	}
 
 	if (verbose) {
+	    printf(" CardVendor 0x%04x card 0x%04x\n",
+		pcr->_subsys_vendor, pcr->_subsys_card);
             if (pcr->_status_command)
                 printf("  STATUS    0x%04x  COMMAND 0x%04x\n",
                     pcr->_status, pcr->_command);

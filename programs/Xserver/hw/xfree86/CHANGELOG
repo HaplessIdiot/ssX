@@ -1,4 +1,5 @@
 XFree86 3.9Nw (17 January 1999)
+2160. Add printing of subsystem ids to scanpci (Dirk Hohndel).
 2159. Add functions for finding the pixmap format and pixmap bpp for a
       given depth, and fix a crash in xf86ValidateModes() caused by recent
       changes in this area.
@@ -7105,4 +7106,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.671 1999/01/17 10:53:51 dawes Exp $
+$XFree86: /home/ftp/pub/xf86/CVS/xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.672 1999/01/17 11:25:16 dawes Exp $
