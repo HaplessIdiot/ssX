@@ -9,7 +9,7 @@
 <date>18 December 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.99 2004/01/11 18:42:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.100 2004/01/15 01:43:49 dawes Exp $
 </ident>
 
 <abstract>
@@ -1083,6 +1083,7 @@ Kevin Brosius,
 Frederick Bruckman,
 Oswald Buddenhagen,
 Nilg&uuml;n Belma Bug&uuml;ner,
+Yukun Chen,
 Ping Cheng,
 Juliusz Chroboczek,
 Fred Clift,
@@ -1152,6 +1153,7 @@ Peter Kunzmann,
 Nick Kurshev,
 Mashrab Kuvatov,
 Marc La France,
+Radics Laszlo,
 maxim,
 Nolan Leake,
 Michel Lespinasse,
@@ -1172,11 +1174,13 @@ Luke Mewburn,
 Nicholas Miell,
 Robert Millan,
 Hisashi MIYASHITA,
+Gregory Mokhin,
 Patrik Montgomery,
 Joe Moss,
 Josselin Mouette,
 Frank Murphy,
 Reiko Nakajima,
+Paul Nasrat,
 Dan Nelson,
 Bastien Nocera,
 Alexandre Oliva,
@@ -1232,6 +1236,7 @@ Akira Taniguchi,
 Owen Taylor,
 Neil Terry,
 Jonathan Thambidurai,
+John Tillman,
 Adam Tlalka,
 Linus Torvalds,
 Christian Tosta,
