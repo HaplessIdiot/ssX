@@ -1,10 +1,12 @@
 XFree86 4.3.99.7 (xx June 2003)
- 230. Added eariy failure and warning message when not sufficient memory
+ 231. Fix regression of Xvideo not working with some videos on the
+      CyberBladeXP/Ai1 chips (Bugzilla #251, Stephane Voltz).
+ 230. Added early failure and warning message when not sufficient memory
       available for DRI in i8xx driver (Egbert Eich).
  229. Fix bug in original patch which added support for two new relocation
       types for IA64 (Bugzilla #195, John Dennis).
  228. Fix scaling calculus in savage driver (Bugzilla #274, Emmanuel).
- 227. Clearifying if conditions, fixing memory leaks in error path, removing
+ 227. Clarifying if conditions, fixing memory leaks in error path, removing
       useless code in savage driver (Bugzilla #278+279, Emmanuel).
  226. Adding message to R128 driver which informs about modified modes for LCD
       according to VBIOS (Bugzilla #23, Egbert Eich).
@@ -17111,7 +17113,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2739 2003/06/17 12:46:59 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2741 2003/06/18 16:17:35 eich Exp $
 
 
 

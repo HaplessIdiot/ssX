@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.34 2003/06/01 22:21:01 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.35 2003/06/01 23:02:09 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -773,7 +773,7 @@ TRIDENTDisplayVideo(
     	} else {
     	    OUTW(0x3C4, 0x0097); /* 1x line buffers */
     	}
-    	OUTW(vgaIOBase + 4, 0x8097); 
+    	OUTW(vgaIOBase + 4, 0x0097); 
     	OUTW(vgaIOBase + 4, 0x00BA);
     	OUTW(vgaIOBase + 4, 0x00BB);
     	OUTW(vgaIOBase + 4, 0xFFBC);
