@@ -48,7 +48,7 @@ SOFTWARE.
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
 /* $XConsortium: servermd.h,v 1.70 94/04/17 20:26:08 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.0 1994/05/04 15:05:32 dawes Exp $ */
 
 /*
  * Machine dependent values:
@@ -132,7 +132,7 @@ SOFTWARE.
 
 #endif /* vax */
 
-#ifdef sun
+#if defined(sun) && !(defined(i386) && defined(SVR4))
 
 #if defined(sun386) || defined(sun5)
 # define IMAGE_BYTE_ORDER	LSBFirst        /* Values for the SUN only */
@@ -156,7 +156,7 @@ SOFTWARE.
 #define	GLYPHPADBYTES		4
 #define GETLEFTBITS_ALIGNMENT	1
 
-#endif /* sun */
+#endif /* sun && !(i386 && SVR4) */
 
 #ifdef apollo
 
