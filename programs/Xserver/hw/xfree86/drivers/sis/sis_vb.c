@@ -34,6 +34,9 @@
 #include "sis.h"
 #include "sis_regs.h"
 #include "sis_vb.h"
+#include "sis_dac.h"
+
+extern void    SISWaitRetraceCRT1(ScrnInfoPtr pScrn);
 
 static const SiS_LCD_StStruct SiS300_LCD_Type[]=
 {
@@ -75,6 +78,71 @@ static const SiS_LCD_StStruct SiS315_LCD_Type[]=
 	{ VB_LCD_CUSTOM,      0,    0, LCD_CUSTOM,   }   /* f */
 };
 
+static Bool
+SISTestMonitorType(ScrnInfoPtr pScrn, int r, int g, int b)
+{
+    SISPtr  pSiS = SISPTR(pScrn);
+    unsigned short testval = (r * 77) + (g * 151) + (b * 28);
+
+    if((testval & 0xff) > 0x80) testval += 0x100;
+    testval >>= 8;
+
+    outSISREG(SISCOLIDX,0x00);
+    outSISREG(SISCOLDATA,testval);
+    outSISREG(SISCOLDATA,testval);
+    outSISREG(SISCOLDATA,testval);
+
+    while(!(inSISREG(SISINPSTAT) & 0x01)) {}
+    while(inSISREG(SISINPSTAT) & 0x01) {}
+
+    return((inSISREG(SISMISCW) & 0x10) ? TRUE : FALSE);
+}
+
+static int
+SISDetectCRT1(ScrnInfoPtr pScrn)
+{
+    SISPtr  pSiS = SISPTR(pScrn);
+    unsigned char SR1F,CR63=0,pel;
+    int i, ret=0;
+
+    inSISIDXREG(SISSR,0x1F,SR1F);
+    orSISIDXREG(SISSR,0x1F,0x04);
+
+    if(pSiS->VGAEngine == SIS_315_VGA) {
+       inSISIDXREG(SISCR,0x63,CR63);
+       CR63 &= 0x40;
+       andSISIDXREG(SISCR,0x63,0xBF);
+    }
+
+    pel = inSISREG(SISPEL);
+    outSISREG(SISPEL,0xff);
+
+    outSISREG(SISCOLIDX,0x00);
+    for(i = 0; i < (256 * 3); i++) {
+       outSISREG(SISCOLDATA,0x00);
+    }
+
+    SISWaitRetraceCRT1(pScrn);
+    SISWaitRetraceCRT1(pScrn);
+
+    if(SISTestMonitorType(pScrn, 0x0f, 0x0f, 0x0f)) ret |= 1;
+    if(SISTestMonitorType(pScrn, 0x0f, 0x0f, 0x0f)) ret |= 1;
+
+    SISTestMonitorType(pScrn, 0x00, 0x00, 0x00);
+
+    outSISREG(SISPEL,pel);
+
+    if(pSiS->VGAEngine == SIS_315_VGA) {
+       setSISIDXREG(SISCR,0x63,0xBF,CR63);
+    }
+
+    outSISIDXREG(SISSR,0x1F,SR1F);
+
+    if(ret) orSISIDXREG(SISCR,0x32,0x20);
+
+    return ret;
+}
+
 /* Detect CRT1 */
 void SISCRT1PreInit(ScrnInfoPtr pScrn)
 {
@@ -105,6 +173,8 @@ void SISCRT1PreInit(ScrnInfoPtr pScrn)
     inSISIDXREG(SISCR, 0x32, CR32);
 
     if(CR32 & 0x20)  CRT1Detected = 1;
+    else CRT1Detected = SISDetectCRT1(pScrn);
+
     if(CR32 & 0x5F)  OtherDevices = 1;
 
     if(pSiS->CRT1off == -1) {

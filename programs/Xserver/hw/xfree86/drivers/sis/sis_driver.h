@@ -166,7 +166,7 @@ const customttable mycustomttable[] = {
 	  { 0, 0, 0, 0, 0 },
 	  { 0, 0, 0, 0, 0 },
 	  0x0e11, 0x083c,
-	  "Compaq", "Presario 3017cl/3045US", CUT_COMPAQ12802, "COMPAQ1280"
+	  "Compaq (Inventec)", "Presario 3017cl/3045US", CUT_COMPAQ12802, "COMPAQ1280"
 	},
 	{ SIS_650, "", "",
 	  0,
@@ -181,6 +181,13 @@ const customttable mycustomttable[] = {
 	  { 'y'  , 0, 0, 0, 0 },
 	  0x1558, 0x0287,
 	  "Clevo", "L285/L287 (Version 2)", CUT_CLEVO10242, "CLEVO10242"
+	},
+	{ SIS_650, "", "",
+	  0,
+	  { 0, 0, 0, 0, 0 },
+	  { 0, 0, 0, 0, 0 },
+	  0x1558, 0x0400,  /* possibly 401 and 402 as well; not panelsize specific (?) */
+	  "Clevo", "D400S/D410S/D400H/D410H", CUT_CLEVO1400, "CLEVO400"
 	},
 	{ 4321, "", "",			/* This is hopefully NEVER autodetected */
 	  0,
