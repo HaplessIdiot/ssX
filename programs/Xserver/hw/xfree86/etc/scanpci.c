@@ -23,7 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.90tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.91tsi Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -463,9 +463,9 @@ print_bridge_pci_class(pciConfigPtr pcr)
 	if (((pcr->pci_prefetch_mem_base & 0x0f) == 0x01) ||
 	    ((pcr->pci_prefetch_mem_limit & 0x0f) == 0x01)) {
 	    printf("  PREFETCH_MEMBASE   0x%08x%08x  MEMLIM 0x%08x%08x\n",
-		   pcr->pci_prefetch_upper_mem_base,
+		   (int)pcr->pci_prefetch_upper_mem_base,
 		   (pcr->pci_prefetch_mem_base & 0x00fff0) << 16,
-		   pcr->pci_prefetch_upper_mem_limit,
+		   (int)pcr->pci_prefetch_upper_mem_limit,
 		   (pcr->pci_prefetch_mem_limit << 16) | 0x0fffff);
 	} else {
 	    printf("  PREFETCH_MEMBASE   0x%08x  MEMLIM 0x%08x\n",
