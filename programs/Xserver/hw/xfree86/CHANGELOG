@@ -1,4 +1,6 @@
 XFree86 4.0.99.x (xx April 2001)
+ 466. Improve interoperability between Aqua pasteboard and X cut buffer with
+      XDarwin (Gregory Parker).
  465. Updates for Cygwin/XFree86 (Harold Hunt).
  464. Provide more robust default preferences for XDarwin (Torrey Lyons).
  463. Remove map84 keyboard map from Cygwin/XFree86 build (#4621, Harold Hunt).
@@ -13129,4 +13131,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1736 2001/05/01 23:34:30 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1737 2001/05/02 00:45:23 alanh Exp $
