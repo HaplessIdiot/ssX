@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Layout.c,v 1.19 2002/03/04 16:11:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Layout.c,v 1.20 2002/09/17 18:54:16 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -141,6 +141,8 @@ xf86parseLayoutSection (void)
 				case EOF_TOKEN:
 					Error (UNEXPECTED_EOF_MSG, NULL);
 					break;
+				case EOL_TOKEN:
+					break;
 				default:
 					xf86unGetToken (token);
 					token = xf86getSubToken(&(ptr->lay_comment));
@@ -238,6 +240,8 @@ xf86parseLayoutSection (void)
 			break;
 		case EOF_TOKEN:
 			Error (UNEXPECTED_EOF_MSG, NULL);
+			break;
+		case EOL_TOKEN:
 			break;
 		default:
 			Error (INVALID_KEYWORD_MSG, xf86tokenString ());

@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/keyboard-cfg.c,v 1.19 2002/10/29 20:18:05 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/keyboard-cfg.c,v 1.21 2002/12/05 20:24:21 paulo Exp $
  */
 
 #include "xf86config.h"
@@ -295,6 +295,7 @@ KeyboardConfig(XtPointer config)
 		XtFree(option->opt_val);
 		option->opt_val = XtNewString(rules);
 		XtFree(option->opt_comment);
+		option->opt_comment = NULL;
 	    }
 	    else
 		keyboard->inp_option_lst =
@@ -306,6 +307,7 @@ KeyboardConfig(XtPointer config)
 		XtFree(option->opt_val);
 		option->opt_val = XtNewString(model);
 		XtFree(option->opt_comment);
+		option->opt_comment = NULL;
 	    }
 	    else
 		keyboard->inp_option_lst =
