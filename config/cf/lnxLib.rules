@@ -1,5 +1,5 @@
 XCOMM $XConsortium: lnxLib.rules,v 1.8 95/01/16 21:11:00 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.13 1995/05/27 01:56:48 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.14 1995/06/01 08:18:56 dawes Exp $
 
 /*
  * Linux shared library rules (DLL & ELF versions)
@@ -194,7 +194,11 @@ JUMP_ADDRESS_X11 = 0x60200000
 JUMP_JUMPTABLESIZE_X11 = 0x4000
 JUMP_GOTSIZE_X11 = 4096
 JUMP_STUBNAMES_X11 = libX11 libSM libICE
+#if LinuxElfDefault
+JUMP_STUBS_IMPORT_X11 = /usr/i486-linuxaout/lib/libc.sa
+#else
 JUMP_STUBS_IMPORT_X11 = /usr/lib/libc.sa
+#endif
 JUMP_SIBARS_X11 = jump/libSM.a~ jump/libICE.a~
 JUMP_LDLIBS_X11 = $(JUMP_SIBARS_X11) $(JUMP_LDLIBS_libc)
 
