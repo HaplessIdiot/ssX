@@ -2,7 +2,7 @@
  *	$Xorg: ptyx.h,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/ptyx.h,v 3.106 2003/07/07 15:34:30 eich Exp $ */
+/* $XFree86: xc/programs/xterm/ptyx.h,v 3.107 2003/09/21 17:12:48 dickey Exp $ */
 
 /*
  * Copyright 1999-2002,2003 by Thomas E. Dickey
@@ -1592,6 +1592,20 @@ typedef struct _TekWidgetRec {
 #define CHARDRAWN	0x80    /* a character has been drawn here on the
 				   screen.  Used to distinguish blanks from
 				   empty parts of the screen when selecting */
+
+/* The following attributes make sense in the argument of drawXtermText()  */
+#define NOBACKGROUND	0x100	/* Used for overstrike */
+#define NOTRANSLATION	0x200	/* No scan for chars missing in font */
+#define NATIVEENCODING	0x400	/* strings are in the font encoding */
+#define DOUBLEWFONT	0x800	/* The actual X-font is double-width */
+#define DOUBLEHFONT	0x1000	/* The actual X-font is double-height */
+#define CHARBYCHAR	0x2000	/* Draw chars one-by-one */
+
+/* The toplevel-call to drawXtermText() should have text-attributes guarded: */
+#define DRAWX_MASK	0xff	/* text flags should be bitand'ed */
+
+/* The following attribute makes sense in the argument of xtermSpecialFont etc */
+#define NORESOLUTION	0x800000	/* find the font without resolution */
 
 			/* mask: user-visible attributes */
 #define	ATTRIBUTES	(INVERSE|UNDERLINE|BOLD|BLINK|BG_COLOR|FG_COLOR|INVISIBLE|PROTECTED)

@@ -2,7 +2,7 @@
  * $Xorg: charproc.c,v 1.6 2001/02/09 02:06:02 xorgcvs Exp $
  */
 
-/* $XFree86: xc/programs/xterm/charproc.c,v 3.145 2003/07/07 15:34:30 eich Exp $ */
+/* $XFree86: xc/programs/xterm/charproc.c,v 3.146 2003/09/21 17:12:45 dickey Exp $ */
 
 /*
 
@@ -3098,7 +3098,7 @@ WriteText(TScreen * screen, PAIRED_CHARS(Char * str, Char * str2), Cardinal len)
 	    test = flags;
 	    checkVeryBoldColors(test, term->cur_foreground);
 
-	    drawXtermText(screen, test, currentGC,
+	    drawXtermText(screen, test & DRAWX_MASK, currentGC,
 			  CurCursorX(screen, screen->cur_row, screen->cur_col),
 			  CursorY(screen, screen->cur_row),
 			  curXtermChrSet(screen->cur_row),
@@ -5714,7 +5714,7 @@ ShowCursor(void)
     TRACE(("ShowCursor calling drawXtermText cur(%d,%d)\n",
 	   screen->cur_row, screen->cur_col));
 
-    drawXtermText(screen, flags, currentGC,
+    drawXtermText(screen, flags & DRAWX_MASK, currentGC,
 		  x = CurCursorX(screen, screen->cur_row, cursor_col),
 		  y = CursorY(screen, screen->cur_row),
 		  curXtermChrSet(screen->cur_row),
@@ -5722,14 +5722,14 @@ ShowCursor(void)
 
 #if OPT_WIDE_CHARS
     if (c1l || c1h) {
-	drawXtermText(screen, flags, currentGC,
-		      x, y,
+	drawXtermText(screen, (flags & DRAWX_MASK) | NOBACKGROUND,
+		      currentGC, x, y,
 		      curXtermChrSet(screen->cur_row),
 		      PAIRED_CHARS(&c1l, &c1h), 1, iswide(base));
 
 	if (c2l || c2h)
-	    drawXtermText(screen, flags, currentGC,
-			  x, y,
+	    drawXtermText(screen, (flags & DRAWX_MASK) | NOBACKGROUND,
+			  currentGC, x, y,
 			  curXtermChrSet(screen->cur_row),
 			  PAIRED_CHARS(&c2l, &c2h), 1, iswide(base));
     }
@@ -5840,7 +5840,7 @@ HideCursor(void)
 
     TRACE(("HideCursor calling drawXtermText cur(%d,%d)\n",
 	   screen->cursor_row, screen->cursor_col));
-    drawXtermText(screen, flags, currentGC,
+    drawXtermText(screen, flags & DRAWX_MASK, currentGC,
 		  x = CurCursorX(screen, screen->cursor_row, cursor_col),
 		  y = CursorY(screen, screen->cursor_row),
 		  curXtermChrSet(screen->cursor_row),
@@ -5848,14 +5848,14 @@ HideCursor(void)
 
 #if OPT_WIDE_CHARS
     if (c1l || c1h) {
-	drawXtermText(screen, flags, currentGC,
-		      x, y,
+	drawXtermText(screen, (flags & DRAWX_MASK) | NOBACKGROUND,
+		      currentGC, x, y,
 		      curXtermChrSet(screen->cur_row),
 		      PAIRED_CHARS(&c1l, &c1h), 1, iswide(base));
 
 	if (c2l || c2h)
-	    drawXtermText(screen, flags, currentGC,
-			  x, y,
+	    drawXtermText(screen, (flags & DRAWX_MASK) | NOBACKGROUND,
+			  currentGC, x, y,
 			  curXtermChrSet(screen->cur_row),
 			  PAIRED_CHARS(&c2l, &c2h), 1, iswide(base));
     }
