@@ -23,7 +23,7 @@
  *
  *    Wittawat Yamwong <Wittawat.Yamwong@stud.uni-hannover.de>
  */
-
+/* $XFree86$ */
 
 
 #include "types.h"
@@ -61,11 +61,11 @@ static const GLubyte *mgaDDGetString( GLcontext *ctx, GLenum name )
    mgaContextPtr mmesa = MGA_CONTEXT( ctx );
    switch (name) {
    case GL_VENDOR:
-      return "Precision Insight, Inc.";
+      return (GLubyte *)"Precision Insight, Inc.";
    case GL_RENDERER:
-      if (MGA_IS_G200(mmesa)) return "Mesa DRI G200 20000510";
-      if (MGA_IS_G400(mmesa)) return "Mesa DRI G400 20000510";
-      return "Mesa DRI MGA 20000510";
+      if (MGA_IS_G200(mmesa)) return (GLubyte *)"Mesa DRI G200 20000510";
+      if (MGA_IS_G400(mmesa)) return (GLubyte *)"Mesa DRI G400 20000510";
+      return (GLubyte *)"Mesa DRI MGA 20000510";
    default:
       return 0;
    }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.4 2000/06/19 15:01:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.5 2000/06/21 17:28:08 dawes Exp $ */
 
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
@@ -474,7 +474,7 @@ static Bool IMSTTPreInit(ScrnInfoPtr pScrn, int flags)
 		iptr->videoRam = 0x800000;
 	}
 
-	xf86Msg(pScrn->scrnIndex, X_PROBED, "using %s ramdac\n", iptr->ramdac == RAMDAC_TVP ? "TVP" : "IBM");
+	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "using %s ramdac\n", iptr->ramdac == RAMDAC_TVP ? "TVP" : "IBM");
 
 	if (!IMSTTMapMem(pScrn)) {
 		IMSTTFreeRec(pScrn);

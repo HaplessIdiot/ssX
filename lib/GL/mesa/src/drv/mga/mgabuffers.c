@@ -24,6 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
+/* $XFree86$ */
 
 /*
  * Authors:
@@ -292,24 +293,25 @@ GLboolean mgaDDSetDrawBuffer(GLcontext *ctx, GLenum mode )
    }
 }
 
-GLboolean mgaDDSetReadBuffer(GLcontext *ctx, GLenum mode )
+/* XXX I don't know whether this is correct, but it at least compiles properly now */
+void mgaDDSetReadBuffer(GLcontext *ctx, GLframebuffer *colorBuffer, GLenum mode)
 {
    mgaContextPtr mmesa = MGA_CONTEXT(ctx);
+
+   mmesa->Fallback &= ~MGA_FALLBACK_BUFFER;
 
    if (mode == GL_FRONT_LEFT) 
    {
       mmesa->readOffset = mmesa->mgaScreen->frontOffset;
       mmesa->read_buffer = MGA_FRONT;
-      return GL_TRUE;
    } 
    else if (mode == GL_BACK_LEFT) 
    {
       mmesa->readOffset = mmesa->mgaScreen->backOffset;
       mmesa->read_buffer = MGA_BACK;
-      return GL_TRUE;
    }
    else 
    {
-      return GL_FALSE;
+      mmesa->Fallback |= MGA_FALLBACK_BUFFER;
    }
 }

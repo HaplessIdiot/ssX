@@ -24,6 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
+/* $XFree86$ */
 
 /*
  * Authors:
@@ -453,7 +454,7 @@ void i810XMesaSetFrontClipRects( i810ContextPtr imesa )
    imesa->drawX = dPriv->x;
    imesa->drawY = dPriv->y;
 
-   imesa->drawMap = imesa->driScreen->pFB;
+   imesa->drawMap = (char *)imesa->driScreen->pFB;
    i810EmitDrawingRectangle( imesa );
 }
 

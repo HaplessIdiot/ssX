@@ -24,6 +24,7 @@
  *
  *    Wittawat Yamwong <Wittawat.Yamwong@stud.uni-hannover.de>
  */
+/* $XFree86$ */
  
 /* Usage:
  * - use mgaError for error messages. Always write to X error and log file.
@@ -32,6 +33,9 @@
  
 #ifndef HWLOG_INC
 #define HWLOG_INC
+
+
+#include <stdarg.h>
 #include <stdio.h>
 
 #define DBG_LEVEL_BASE          1
@@ -50,7 +54,6 @@ extern hwlog_t hwlog;
 
 
 #ifdef HW_LOG_ENABLED
-#include <stdarg.h>
 
 /* open and close log file. */
 int  hwOpenLog(const char *filename, char *prefix);
@@ -69,47 +72,30 @@ int  hwGetLogLevel();
 void hwLog(int level, const char *format, ...);
 void hwLogv(int level, const char *format, va_list ap);
 
-
 int usec( void );
 
-
 /* hwMsg writes a message to the log file or to the standard X error file. */
-#define hwMsg(level_,format, args...) if ( level_ <= hwlog.level ) {	\
-  if (hwIsLogReady()) {				\
-  	int __t=usec();hwLog(level_,"%6i:",__t-hwlog.timeTemp);hwlog.timeTemp=__t; \
-    hwLog(level_,format, ## args);		\
-  } else {					\
-    if (level_ <= hwGetLogLevel()) {		\
-      fprintf(stderr,hwlog.prefix);			\
-      fprintf(stderr,format, ## args);			\
-    } 						\
-  }						\
-}
+void hwMsg(int level, const char *format, ...);
 
-#define hwError(format, args...) do {		\
-  fprintf(stderr, hwlog.prefix);		\
-  fprintf(stderr, format, ## args);		\
-  hwLog(0,format, ## args);			\
-} while(0)
 
 #else
+
 
 static __inline__ int hwOpenLog(const char *f, char *prefix) { hwlog.prefix=prefix; return -1; }
 static __inline__ int hwIsLogReady( void ) { return 0; }
 static __inline__ int hwGetLogLevel( void ) { return -1; }
 static __inline__ int hwLogLevel(int level) { return 0; }
+static __inline__ void hwLog(int level, const char *format, ...) {}
+static __inline__ void hwMsg(int level, const char *format, ...) {}
 
 #define hwCloseLog()
 #define hwSetLogLevel(x)
-#define hwLog(l,f,a...)
 #define hwLogv(l,f,a)
-#define hwMsg(l,f,a...)
 
-#define hwError(format, args...) do {		\
-  fprintf(stderr, hwlog.prefix);				\
-  fprintf(stderr, format, ## args);			\
-} while(0)
 
 #endif
+
+void hwError(const char *format, ...);
+
 
 #endif
