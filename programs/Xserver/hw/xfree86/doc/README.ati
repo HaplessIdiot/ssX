@@ -2,7 +2,7 @@
 
                             Marc Aurele La France
 
-                              1999 September 8
+                               1999 October 25
 
                                   Abstract
 
@@ -449,11 +449,10 @@ driver.  They include:
      CRTC.
 
    o Interlaced modes are not supported on 18800-x and 28800-x adapters when
-     using a virtual resolution that is 2048 pixels or wider.  This is yet
-     another hardware limitation that cannot be circumvented.  For now, the
-     driver prevents the occurrence of this problem by restricting virtual
-     resolutions to be less than 2048 pixels wide, even when no interlaced
-     modes are specified.
+     using a virtual resolution that is 2048 pixels or wider.  When using a
+     18800-x with 256kB of video memory in 256-colour modes, this limit is
+     reduced to 1024.  This is yet another hardware limitation that cannot be
+     circumvented.
 
    o Video memory banking does not work in monochrome and 16-colour modes on
      18800-x adapters.  This appears to be another hardware limit, but this
@@ -563,7 +562,5 @@ tional colour depths, and so on.  This is the version found in XFree86 3.3.2,
 Version 5 is an almost complete restructuring of version 4 to fit in the new
 driver API of XFree86 4.0.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.27 1999/09/27 06:29:33 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.28 1999/10/26 15:58:15 tsi Exp $
 
-
-$XFree86$

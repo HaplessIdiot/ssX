@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                        Last modified 20 October 1999
+                        Last modified 25 October 1999
 
 NOTE: This is a DRAFT document, and the interfaces described here are subject
 to change without notice.
@@ -994,6 +994,18 @@ mode.  These have been stored in the mode's Crtc* and SynthClock elements,
 and have already been adjusted for interlacing, doublescanning, multiscanning
 and clock multipliers and dividers.  The function should not modify any other
 mode field.
+
+The function is called once for every mode in the XF86Config Monitor section
+assigned to the screen, with flags set to MODECHECK_INITIAL.  It is subse-
+quently called for every mode in the XF86Config Display subsection assigned
+to the screen, with flags set to MODECHECK_FINAL.  In the second case, each
+mode will have successfully passed all other tests.  In addition, the ScrnIn-
+foRec's virtualX, virtualY and displayWidthi fields will have been set as if
+the mode to be validated were to be the last mode accepted.
+
+In effect, calls with MODECHECK_INITIAL are intended for checks that do not
+depend on any mode other than the one being validated, while calls with MOD-
+ECHECK_FINAL are intended for checks that may involve more than one mode.
 
 6.2  Free screen data
 
@@ -2772,12 +2784,12 @@ DGAInit.
 
      void FillRect (pScrn, x, y, w, h, color)
 
-          This optional function should fill a rectangle w × h
+          This optional function should fill a rectangle w  h
           located at (x,y) in the given color.
 
      void BlitRect (pScrn, srcx, srcy, w, h, dstx, dsty)
 
-          This optional function should copy an area w × h located
+          This optional function should copy an area w  h located
           at (srcx,srcy) to location (dstx,dsty).  This function
           will need to handle copy directions as appropriate.
 
@@ -2970,8 +2982,8 @@ The XF86VideoAdaptorRec:
                RegionPtr clipBoxes, pointer data )
 
           This indicates that the driver should take a subsection
-          vid_w × vid_h at location (vid_x,vid_y) from the video
-          stream and direct it into the rectangle rw_w × drw_h at
+          vid_w  vid_h at location (vid_x,vid_y) from the video
+          stream and direct it into the rectangle rw_w  drw_h at
           location (drw_x,drw_y) on the screen, scaling as neces-
           sary.  Due to the large variations in capabilities of the
           various hardware expected to be used with this extension,
@@ -3074,8 +3086,8 @@ The XF86VideoAdaptorRec:
 
           QueryBestSize provides the client with a way to query
           what the destination dimensions would end up being if
-          they were to request that an area vid_w × vid_h from the
-          video stream be scaled to rectangle of drw_w × drw_h on
+          they were to request that an area vid_w  vid_h from the
+          video stream be scaled to rectangle of drw_w  drw_h on
           the screen.  Since it is not expected that all hardware
           will be able to get the target dimensions exactly, it is
           important that the driver provide this function.  The
@@ -4228,14 +4240,22 @@ the helpers.
           limits, and also the virtual width and height limits (if
           greater than zero).  For each mode removed an informa-
           tional message is printed at verbosity level 2.  If the
-          mode pool ends up being empty, an error message is
-          printed, and the return value is -1.
+          mode pool ends up being empty, a warning message is
+          printed, and the return value is 0.
 
-          The final stage is to lookup each mode, and fill in the
-          remaining parameters.  If an error condition is encoun-
-          tered, a message is printed, and the return value is -1.
-          Otherwise, the return value is the number of valid modes
-          found (0 if none are found).
+          The final stage is to lookup each mode name, and fill in
+          the remaining parameters.  If an error condition is
+          encountered, a message is printed, and the return value
+          is -1.  Otherwise, the return value is the number of
+          valid modes found (0 if none are found).
+
+          Even if the supplied mode names include duplicates, no
+          two names will ever match the same mode.  Furthermore, if
+          the supplied mode names do not yield a valid mode
+          (including the case where no names are passed at all),
+          the function will continue looking through the mode pool
+          until it finds a mode that survives all checks, or until
+          the mode pool is exhausted.
 
           A message is only printed by this function when a funda-
           mental problem is found.  It is intended that this func-
@@ -4274,7 +4294,8 @@ the helpers.
 
           doubleScanAllowed
 
-               TRUE if doublescan is allowed for this range
+               TRUE if doublescan or multiscan is allowed for
+               this range
 
           ClockMulFactor
 
@@ -4347,10 +4368,6 @@ the helpers.
 
           This function is normally called after calling
           xf86PruneDriverModes().
-
-          NOTE: The Crtc* fields are not initialised anywhere else,
-          so the driver must either call this function or ini-
-          tialise them itself.
 
      void xf86PrintModes(ScrnInfoPtr scrp)
 
@@ -5965,7 +5982,5 @@ eScreen() function.
          ZZZFreeRec(xf86Screens[scrnIndex]);
      }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.11 1999/09/27 06:29:32 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.13 1999/10/26 15:58:14 tsi Exp $
 
-
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/DESIGN,v 1.6 1999/10/14 03:31:23 dawes Exp $
