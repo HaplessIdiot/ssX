@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.61 2000/06/20 20:07:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.62 2000/06/21 00:45:10 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -481,6 +481,7 @@
 #define PCI_CHIP_VOODOO2	0x0002
 #define PCI_CHIP_BANSHEE	0x0003
 #define PCI_CHIP_VOODOO3	0x0005
+#define PCI_CHIP_VOODOO3	0x0009
 
 /* Rendition */
 #define PCI_CHIP_V1000		0x0001
@@ -1270,6 +1271,7 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_VOODOO2, 	"Voodoo2",0},
 				{PCI_CHIP_BANSHEE, 	"Banshee",0},
 				{PCI_CHIP_VOODOO3, 	"Voodoo3",0},
+				{PCI_CHIP_VOODOO5, 	"Voodoo5",0},
 				{0x0000,		NULL,0}}},
     {PCI_VENDOR_SIGMADESIGNS, {
                                 {0x6401, "REALmagic64/GX (SD 6425)",0 },
