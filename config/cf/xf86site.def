@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.41 1995/06/02 09:59:53 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.42 1995/06/24 10:21:19 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -158,7 +158,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.41 1995/06/02 09:59:53 dawes Exp $
 #define BuildLBXCompatible	YES
 
 /*
- * To build only the LBX proxy daemon using a cut-down source tree
+ * To build only the LBX proxy server using a cut-down source tree
  * designed specifically for this purpose, uncomment the following.
  *
 #define BuildLBXProxyOnly	YES
