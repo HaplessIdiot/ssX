@@ -1,0 +1,198 @@
+                         The XFIXES Extension
+			    Version 1.0
+			     2002-11-30
+			    Keith Packard
+			  keithp@xfree86.org
+
+1. Introduction
+
+X applications have often needed to work around various shortcomings in the
+core X window system.  This extension is designed to provide the minimal
+server-side support necessary to eliminate problems caused by these
+workarounds.
+
+2. Acknowledgements
+
+This extension is a direct result of requests made by application
+developers, in particular,
+
+ +	Owen Taylor for describing the issues raised with the XEMBED
+ 	mechanisms and SaveSet processing and his initial extension
+	to handle this issue.
+
+ +	Bill Haneman for the design for cursor image tracking.
+
+ +	Havoc Pennington 
+
+3. Basic Premise
+
+Requests in this extension may seem to wander all over the map of X server
+capabilities, but they are tied by a simple rule -- resolving issues raised
+by application interaction with core protocol mechanisms that cannot be
+adequately worked around on the client side of the wire.
+
+4. Extension initialization
+
+The client must negotiate the version of the extension before executing
+extension requests.  Behavior of the server is undefined otherwise.
+
+QueryVersion
+
+	client-major-version:		CARD32
+	client-minor-version:		CARD32
+
+	->
+
+	major-version:			CARD32
+	minor-version:			CARD32
+
+	The client sends the highest supported version to the server and
+	the server sends the highest version it supports, but no higher than
+	the requested version.  Major versions changes can introduce
+	incompatibilities in existing functionality, minor version
+	changes introduce only backward compatible changes.  It is
+	the clients responsibility to ensure that the server supports
+	a version which is compatible with its expectations.
+
+5. Save Set processing changes
+
+Embedding one application within another provides a way of unifying
+disparate documents and views within a single framework.  From the X
+protocol perspective, this appears similar to nested window managers; the
+embedding application "manages" the embedded windows much as a window
+manager does for top-level windows.  To protect the embedded application
+from embedding application failure, it is reasonable to use the core SaveSet
+mechanism so that embedding application failure causes embedded windows to
+be preserved instead of destroyed.
+
+The core save set mechanism defines the target for each save set member
+window as the nearest enclosing window not owned by the terminating client.
+For embedding applications, this nearest window is usually the window
+manager frame.  The problem here is that the window manager will not
+generally expect to receive and correctly manage new windows appearing within
+that window by the save set mechanism, and will instead destroy the frame
+window in response to the client window destruction.  This causes the
+embedded window to be destroyed.
+
+An easy fix for this problem is to change the target of the save set member
+to a window which won't be affected by the underlying window destruction.
+XFIXES chooses the root window as the target.
+
+Having embedded windows suddenly appear at the top level can confuse users,
+so XFIXES also permits these windows to remain unmapped instead of being
+remapped.
+
+ChangeSaveSet
+
+	window:				Window
+	mode:				{ Insert, Delete }
+	target:				{ Nearest, Root }
+	map:				{ Map, Unmap }
+
+ChangeSaveSet is an extension of the core protocol ChangeSaveSet
+request.  As in that request, mode specifies whether the indicated
+window is inserted or deleted from the save-set.  Target specifies
+whether the window is reparented to the nearest non-client window as in the
+core protocol, or reparented to the root window.  Map specifies
+whether the window is mapped as in the core protocol or unmapped.
+
+6. Selection Tracking
+
+Applications wishing to monitor the contents of current selections must
+poll for selection changes.  XFIXES improves this by providing an event
+delivered whenever the selection ownership changes.
+
+	SELECTIONEVENT			{ SetSelectionOwner,
+					  SelectionWindowDestroy,
+					  SelectionClientClose }
+
+SelectionNotify
+
+	subtype:			SELECTIONEVENT
+	window:				Window
+	owner:				Window
+	selection:			Atom
+	timestamp:			Timestamp
+	selection-timestamp:		Timestamp
+
+SelectSelectionInput
+
+	window:				Window
+	selection:			Atom
+	event-mask:			SETofSELECTIONEVENT
+
+Selects for events to be delivered to window when various causes of
+ownership of selection occur.  Subtype indicates the cause of the selection
+ownership change.  Owner is set to the current selection owner, or None.
+Timestamp indicates the time the event was generated while
+selection-timestamp indicates the timestamp used to own the selection.
+
+7. Cursor Image Monitoring
+
+Mirroring the screen contents is easily done with the core protocol or VNC
+addons, except for the current cursor image.  There is no way using the core
+protocol to discover which cursor image is currently displayed.  The
+cursor image often contains significant semantic content about the user
+interface.  XFIXES provides a simple mechanism to discover when the cursor
+image changes and to fetch the current cursor image.
+
+As the current cursor may or may not have any XID associated with it, there
+is no stable name available.  Instead, XFIXES returns only the image of the
+current cursor and provides a way to identify cursor images to avoid
+refetching the image each time it changes to a previously seen cursor.
+
+	CURSOREVENT			{ DisplayCursor }
+
+CursorNotify
+
+	subtype:		CURSOREVENT
+	window:			Window
+	cursor-serial:		CARD32
+	timestamp:		Timestamp
+
+SelectCursorInput
+
+	window:			Window
+	event-mask:		SETofCURSOREVENT
+
+This request directs cursor change events to the named window.  Events will
+be delivered irrespective of the screen on which they occur.  Subtype
+indicates the cause of the cursor image change (there is only one subtype at
+present).  Cursor-serial is a number assigned to the cursor image which
+identifies the image.  Cursors with different serial numbers may have
+different images.  Timestamp is the time of the cursor change.
+
+GetCursorImage
+
+	->
+
+	x:			INT16
+	y:			INT16
+	width:			CARD16
+	height:			CARD16
+	x-hot:			CARD16
+	y-hot:			CARD16
+	cursor-serial:		CARD32
+	cursor-image:		LISTofCARD32
+
+GetCursorImage returns the image of the current cursor.  X and y are the
+current cursor position.  Width and height are the size of the cursor image.
+X-hot and y-hot mark the hotspot within the cursor image.  Cursor-serial
+provides the number assigned to this cursor image, this same serial number
+will be reported in a CursorNotify event if this cursor image is redisplayed
+in the future.
+
+The cursor image itself is returned as a single image at 32 bits per pixel
+with 8 bits of alpha in the most significant 8 bits of the pixel followed by
+8 bits each of red, green and finally 8 bits of blue in the least significant
+8 bits.  The color components are pre-multiplied with the alpha component.
+
+8. Future compatibility
+
+This extension is not expected to remain fixed.  Future changes will
+strive to remain compatible if at all possible.  The X server will always
+support version 1 of the extension protocol if requested by a client.
+
+Additions to the protocol will always by marked by minor version number
+changes so that applications will be able to detect what requests are
+supported.
