@@ -25,6 +25,8 @@
  *
  */
 
+/* $XFree86$ */
+
 #include "Probe.h"
 
 static Word Ports[] = {0x000, 0x000, SEQ_IDX, SEQ_REG};

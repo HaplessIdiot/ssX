@@ -7,6 +7,8 @@
  *
  */
 
+/* $XFree86$ */
+
 #include "Probe.h"
 
 struct pci_config_reg *pci_devp[];
