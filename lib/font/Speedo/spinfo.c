@@ -45,7 +45,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/Speedo/spinfo.c,v 1.9 2000/02/25 18:28:00 dawes Exp $ */
+/* $XFree86: xc/lib/font/Speedo/spinfo.c,v 1.10 2001/01/17 19:43:20 dawes Exp $ */
 
 #include "fntfilst.h"
 #include "fontutil.h"
@@ -117,8 +117,6 @@ static fontProp extraProps[] = {
 #define NEXTRAPROPS (sizeof(extraProps) / sizeof(fontProp))
 
 #define	NPROPS	(NNAMEPROPS + NEXTRAPROPS)
-
-extern Atom MakeAtom();
 
 void
 sp_make_standard_props()
@@ -343,7 +341,7 @@ sp_compute_props(
                 nprops;
     fontProp   *fpt;
     char       *is_str;
-    char       *ptr1,
+    char       *ptr1 = NULL,
                *ptr2;
     char       *ptr3;
     char	tmpname[1024];
