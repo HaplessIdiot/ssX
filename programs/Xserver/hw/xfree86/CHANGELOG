@@ -1,4 +1,5 @@
 XFree86 4.0.1d (?? ?????? 2000)
+ 578. Update i810 driver for -configure to work (Alan Hourihane).
  577. Have Xv silently ignore client requests with zero sized primitives 
       (Mark Vojkovich).
  576. Disable gamma correction and DirectColor visuals on the I810 because
@@ -11103,4 +11104,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1294 2000/09/02 18:05:49 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1295 2000/09/04 00:24:59 mvojkovi Exp $

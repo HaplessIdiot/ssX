@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.23 2000/09/01 19:26:41 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.24 2000/09/01 21:25:23 mvojkovi Exp $ */
 
 /*
  * Authors:
@@ -78,6 +78,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /* Required Functions: */
 
 static void I810Identify(int flags);
+static OptionInfoPtr	I810AvailableOptions(int chipid, int busid);
 static Bool I810Probe(DriverPtr drv, int flags);
 static Bool I810PreInit(ScrnInfoPtr pScrn, int flags);
 static Bool I810ScreenInit(int Index, ScreenPtr pScreen, int argc, char **argv);
@@ -100,6 +101,7 @@ DriverRec I810 = {
    "Accelerated driver for Intel i810 cards",
    I810Identify,
    I810Probe,
+   I810AvailableOptions,
    NULL,
    0
 };
@@ -360,6 +362,12 @@ I810Identify(int flags) {
    xf86PrintChipsets(I810_NAME, "Driver for Intel i810 chipset", I810Chipsets);
 }
 
+static
+OptionInfoPtr
+I810AvailableOptions(int chipid, int busid)
+{
+    return I810Options;
+}
 /*
  * I810Probe --
  *
@@ -393,6 +401,9 @@ I810Probe(DriverPtr drv, int flags) {
 				   devSections, numDevSections,
 				   drv, &usedChips);
 
+   if (flags & PROBE_DETECT)
+	foundScreen = TRUE;
+   else
    for (i=0; i<numUsed; i++) {
        ScrnInfoPtr pScrn = NULL;
        /* Allocate new ScrnInfoRec and claim the slot */
@@ -418,6 +429,16 @@ I810Probe(DriverPtr drv, int flags) {
    xfree(devSections);
 
    return foundScreen;
+}
+
+static void
+I810ProbeDDC(ScrnInfoPtr pScrn, int index)
+{
+    vbeInfoPtr pVbe;
+    if (xf86LoadSubModule(pScrn, "vbe")) {
+	pVbe = VBEInit(NULL,index);
+	ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
+    }
 }
 
 /*
@@ -455,6 +476,11 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
 
    pI810->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
    if (pI810->pEnt->location.type != BUS_PCI) return FALSE;
+
+   if (flags & PROBE_DETECT) {
+	I810ProbeDDC(pScrn, info->pEnt->index);
+	return TRUE;
+   }
 
    pI810->PciInfo = xf86GetPciInfoForEntity(pI810->pEnt->index);
    pI810->PciTag = pciTag(pI810->PciInfo->bus, pI810->PciInfo->device,
