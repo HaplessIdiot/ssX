@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.9 1994/06/28 12:15:04 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.10 1994/07/15 06:52:24 dawes Exp $
 /******************************************************************************/
 /*
  * This file is provide a quick method for most people to change the
@@ -111,6 +111,13 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.9 1994/06/28 12:15:04 dawes Exp $
  * fonts)
  *
 #define BuildFonts		NO
+ */
+
+/*
+ * To build only the servers with a cut-down source tree, uncomment
+ * this.
+ *
+#define BuildServersOnly      YES
  */
 
 /*
