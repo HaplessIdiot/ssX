@@ -1,4 +1,6 @@
 XFree86 4.2.99.3 (xx December 2002)
+ 587. Fix 640x480 modes in neomagic driver (Egbert Eich).
+ 586. Fix reporting of G400/G450 in MGA driver (Andrew C. Aitchison).
  585. Don't change the authorization data (and in particular, don't
       enable local host access) if the X server's authority file
       is removed or becomes unreadable while the server is running
@@ -15696,4 +15698,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2433 2002/12/08 22:46:09 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2434 2002/12/09 02:55:59 dawes Exp $

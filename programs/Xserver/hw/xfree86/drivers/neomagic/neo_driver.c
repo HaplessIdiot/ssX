@@ -30,7 +30,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * Copyright 2002 Shigehiro Nomura
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.63 2002/09/16 18:05:57 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.65 2002/11/25 14:04:59 eich Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -2828,7 +2828,7 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		int HDisplay = mode->HDisplay
 		    << ((mode->VDisplay < 480) ? 1 : 0);
 		hoffset = ((nPtr->NeoPanelWidth - HDisplay) >> 4) - 1;
-		if (mode->VDisplay <= 480)
+		if (mode->VDisplay < 480)
 		    hoffset >>= 1;
 		doCenter = TRUE;
 	    } else {
@@ -2846,7 +2846,7 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    if (noLcdStretch) {
 		/* Calculate the vertical offsets. */
 		int VDisplay = mode->VDisplay
-		    << ((mode->Flags | V_DBLSCAN) ? 1 : 0);
+		    << ((mode->Flags & V_DBLSCAN) ? 1 : 0);
 		voffset = ((nPtr->NeoPanelHeight - VDisplay) >> 1) - 2;
 		doCenter = TRUE;
 	    } else {
@@ -2906,7 +2906,7 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     }
 #endif
 
-    if (mode->VDisplay <= 480) {
+    if (mode->VDisplay < 480) {
 	NeoStd->Sequencer[1] |= 0x8;
 	clockMul = 2;
     }

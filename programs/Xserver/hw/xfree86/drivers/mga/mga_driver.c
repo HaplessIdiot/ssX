@@ -1306,12 +1306,14 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     xf86DrvMsg(pScrn->scrnIndex, from, "Chipset: \"%s\"", pScrn->chipset);
-    if ((pMga->Chipset == PCI_CHIP_MGAG400) &&
-	(pMga->ChipRev >= 0x80))
-	xf86ErrorF(" (G450)\n");
-    else
-	xf86ErrorF(" (G400)\n");
-
+    if (pMga->Chipset == PCI_CHIP_MGAG400) {
+	if (pMga->ChipRev >= 0x80) 
+	    xf86ErrorF(" (G450)\n");
+	else
+	    xf86ErrorF(" (G400)\n");
+    } else {
+	xf86ErrorF("\n");
+    }
 #ifdef USEMGAHAL
     if (HAL_CHIPSETS) {
 	Bool loadHal = TRUE;
