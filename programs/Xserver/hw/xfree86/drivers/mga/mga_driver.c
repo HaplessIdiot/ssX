@@ -41,9 +41,11 @@
  *		Doug Merritt
  *			doug@netcom.com
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
+ *		Niels Gram Jeppesen
+ *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.189 2001/02/15 18:16:18 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.190 2001/03/02 19:39:01 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -2082,7 +2084,8 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	} 
 
         if (!swap_head) {
-          mgaModeInfo.flOutput = MGAMODEINFO_ANALOG1;
+          mgaModeInfo.flOutput = (digital == TRUE) ? MGAMODEINFO_DIGITAL2
+					: MGAMODEINFO_ANALOG1;
         } else {
           mgaModeInfo.flOutput = MGAMODEINFO_ANALOG2; 
         }
@@ -2651,8 +2654,9 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	}
     } else {
         if (!swap_head) {
-	  pMga->pMgaModeInfo->flOutput = MGAMODEINFO_ANALOG1 |
-					 MGAMODEINFO_FORCE_PITCH;
+	  pMga->pMgaModeInfo->flOutput = 
+	    ((digital == TRUE) ? MGAMODEINFO_DIGITAL2 : MGAMODEINFO_ANALOG1) |
+	    MGAMODEINFO_FORCE_PITCH;
         } else {
           pMga->pMgaModeInfo->flOutput = MGAMODEINFO_ANALOG2 |
                                          MGAMODEINFO_FORCE_PITCH;
@@ -2839,6 +2843,9 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	  /* Detecting for type of display */
 	  if (pMga->pMgaHwInfo->ulCapsSecondOutput & MGAHWINFOCAPS_OUTPUT_TV) {
 	  	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "TV detected\n");
+	  }
+	  if (pMga->pMgaHwInfo->ulCapsFirstOutput & MGAHWINFOCAPS_OUTPUT_DIGITAL) {
+	  	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Digital Screen detected\n");
 	  }
 	  if (pMga->pMgaHwInfo->ulCapsSecondOutput & MGAHWINFOCAPS_OUTPUT_DIGITAL) {
 	  	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Digital Screen detected\n");

@@ -1,4 +1,7 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 257. Fix core dump in XqueueMousePreInit (#A.317, Fiel Cabral).
+ 256. Allow the mga driver's "DigitalScreen" option to work for the first
+      head (#A.297, Niels Gram Jeppesen).
  255. Add zh_CN.GBK locale support (#A.293, Yong Li).
  254. Fix a problem with the ThinkingMousePS/2 protocol handling of left
       movement (#A.292, Ian Remmler).  (This has been in 3.3.x since 3.3.4.)
@@ -12677,4 +12680,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1618 2001/03/06 17:31:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1619 2001/03/06 18:03:18 dawes Exp $
