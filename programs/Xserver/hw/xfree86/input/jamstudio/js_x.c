@@ -20,13 +20,9 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/jamstudio/js_x.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/jamstudio/js_x.c,v 1.4 2003/11/03 05:11:47 tsi Exp $ */
 
 #include <sys/types.h>
-#include "xf86Version.h"
-#if XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(3,9,0,0,0)
-#define XFREE86_V4 1
-#endif
 #include "misc.h"
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -35,9 +31,7 @@
 #include "exevents.h"		/* Needed for InitValuator/Proximity stuff */
 #include "mipointer.h"
 
-#ifdef XFree86LOADER
 #include "xf86Module.h"
-#endif
 
 #define JSX_XCOORD	65584
 #define JSX_YCOORD	65585
@@ -45,8 +39,6 @@
 #define JSX_BTN		852034
 
 #define SYSCALL(call) while(((call) == -1) && (errno == EINTR))
-
-#ifdef XFREE86_V4
 
 struct hiddev_event
 {
@@ -357,5 +349,4 @@ XF86ModuleData js_xModuleData = { &xf86JS_XVersionRec,
    xf86JS_XPlug,
    xf86JS_XUnplug
 };
-#endif
 #endif

@@ -40,7 +40,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/fpit/xf86Fpit.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/fpit/xf86Fpit.c,v 1.4 2003/11/03 05:11:47 tsi Exp $ */
 
 #include <xf86Version.h>
 
@@ -58,9 +58,7 @@
 #  include <xf86Xinput.h>
 #  include <exevents.h>
 
-#  ifdef XFree86LOADER
-#    include <xf86Module.h>
-#  endif
+#  include <xf86Module.h>
 
 
 
