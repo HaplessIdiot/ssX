@@ -1,4 +1,6 @@
-XFree86 4.4.99.10 (xx July 2004)
+XFree86 4.4.99.11 (xx July 2004)
+
+XFree86 4.4.99.10 (27 July 2004)
  162. Install new pc/hu symbols file (#6576, Szilveszter Adam).
  161. Add an option for fixing flickering and blank screen problems for
       iBooks (#6527, Emmanuel Dreyfus).
@@ -19059,7 +19061,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3297 2004/07/25 20:17:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3298 2004/07/25 20:49:14 dawes Exp $
 
 
 
