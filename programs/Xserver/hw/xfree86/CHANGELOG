@@ -1,4 +1,5 @@
 XFree86 4.3.99.6 (xx May 2003)
+ 191. Fix makedepend for IRIX 6.5 (Marc La France).
  190. Make the handling of X_BYTE_ORDER in Imakefiles more portable
       (Marc La France).
  189. Allow building of a libXfont without font cache support (Marc La France).
@@ -17020,7 +17021,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2711 2003/05/27 16:31:20 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2712 2003/05/27 16:34:35 tsi Exp $
 
 
 
