@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.53 2000/06/14 00:16:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.54 2000/10/27 18:31:06 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -616,7 +616,7 @@ keyboard_configuration(void)
 	sprintf(config_xkblayout,"%s", rules->layouts.desc[number].name);
 
 	emptylines();
-	printf(xkbvarianttext);
+	printf(xkbvarianttext, config_xkblayout);
 	getstring(s);
 	if (strlen(s) != 0) {
 	    config_xkbvariant = Malloc(strlen(s) + 1);
