@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.74 2000/05/18 00:33:15 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.75 2000/06/13 02:28:26 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1135,6 +1135,17 @@ install:: LibraryTargetName(libname)					@@\
  */
 #ifndef InstallDriverSDKNamedLibrary
 #define InstallDriverSDKNamedLibrary(lib,dlib,dir)
+#endif
+
+
+/*
+ * InstallDriverSDKLibraryModule - rule to install Driver SDK library module.
+ *                           (only used for XFree86). This is a no-op
+ *                           rule so that Imakefiles on non-XFree86 systems
+ *                           continue to build Makefiles correctly.
+ */
+#ifndef InstallDriverSDKLibraryModule
+#define InstallDriverSDKLibraryModule(lib,dlib,dir)
 #endif
 
 

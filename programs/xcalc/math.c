@@ -1,5 +1,5 @@
 /* $XConsortium: math.c,v 1.17 91/07/25 17:51:34 rws Exp $ 
- * $XFree86: contrib/programs/xcalc/math.c,v 3.0 1994/06/05 07:59:43 dawes Exp $ 
+ * $XFree86: xc/programs/xcalc/math.c,v 1.1 2000/02/13 03:26:19 dawes Exp $ 
  *
  *  math.c  -  mathematics functions for a hand calculator under X
  *
@@ -26,6 +26,7 @@
 #include <setjmp.h>
 #include "xcalc.h"
 #include <errno.h>
+#include <X11/Xlocale.h>
 
 #ifdef _CRAY		/* kludge around Cray STDC compiler */
 double (*log_p)() = log;
@@ -402,7 +403,11 @@ decf()
       strcpy(dispstr,"0");
   }
   if (!Dpoint) {
-    strcat(dispstr,".");
+#ifndef X_LOCALE
+    strcat(dispstr, localeconv()->decimal_point);
+#else
+    strcat(dispstr, ".");
+#endif
     DrawDisplay();
     Dpoint++;
   }

@@ -25,7 +25,7 @@
  * IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/include/Xarch.h,v 1.8 1999/03/14 05:50:53 dawes Exp $ */
+/* $XFree86: xc/include/Xarch.h,v 1.9 1999/12/27 00:39:19 robin Exp $ */
 
 
 /*
@@ -44,7 +44,7 @@
 #if defined(NCR) || defined(Mips)
 #include <sys/endian.h>
 #else
-#if !defined(sun)
+#if !defined(sun) && !defined(__sgi)
 #include <sys/byteorder.h>
 #endif
 #endif

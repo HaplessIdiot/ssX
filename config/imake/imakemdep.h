@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.37 2000/05/18 00:33:17 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.38 2000/06/13 02:28:27 dawes Exp $ */
 
 
 /* 
@@ -215,7 +215,7 @@ in this Software without prior written authorization from The Open Group.
  *     all colons).  One way to tell if you need this is to see whether or not
  *     your Makefiles have no tabs in them and lots of @@ strings.
  */
-#if defined(sun) || defined(SYSV) || defined(SVR4) || defined(hcx) || defined(WIN32) || defined(sco) || (defined(AMOEBA) && defined(CROSS_COMPILE)) || defined(__QNX__)
+#if defined(sun) || defined(SYSV) || defined(SVR4) || defined(hcx) || defined(WIN32) || defined(sco) || (defined(AMOEBA) && defined(CROSS_COMPILE)) || defined(__QNX__) || defined(__sgi)
 #define FIXUP_CPP_WHITESPACE
 #endif
 #ifdef WIN32

@@ -1,5 +1,5 @@
 XCOMM $TOG: lnxLib.rules /main/14 1998/03/16 11:15:30 mgreess $
-XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.36 1999/01/11 05:13:06 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.37 1999/06/06 08:47:44 dawes Exp $
 
 /*
  * Linux shared library rules (DLL & ELF versions)
@@ -11,7 +11,9 @@ XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.36 1999/01/11 05:13:06 dawes Exp $
 #define ForceNormalLib NO
 #endif
 
+#ifndef SharedOldX
 #define SharedOldX NO
+#endif
 
 #if UseElfFormat
 

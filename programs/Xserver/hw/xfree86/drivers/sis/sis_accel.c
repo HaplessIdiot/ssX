@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.15 2000/02/18 12:19:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.16 2000/03/31 20:13:35 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -164,6 +164,7 @@ SiSSetupForFillRectSolid(ScrnInfoPtr pScrn, int color, int rop,
     SISPtr pSiS = SISPTR(pScrn);
 
     sisSETFGCOLOR(color);
+    sisSETBGCOLOR(color);
     sisSETROP(XAACopyROP[rop]);
     sisSETPITCH(pScrn->displayWidth * pScrn->bitsPerPixel / 8, 
 		pScrn->displayWidth * pScrn->bitsPerPixel / 8);
@@ -182,7 +183,7 @@ SiSSubsequentFillRectSolid(ScrnInfoPtr pScrn, int x, int y, int w, int h)
     int destaddr, op;
 
     destaddr = y * pScrn->displayWidth + x;
-    op = sisCMDBLT | sisSRCFG | sisTOP2BOTTOM | sisLEFT2RIGHT;
+    op = sisCMDBLT | sisSRCBG | sisTOP2BOTTOM | sisLEFT2RIGHT;
     if (pSiS->ClipEnabled) op |= sisCLIPINTRN | sisCLIPENABL;
     destaddr *= (pScrn->bitsPerPixel / 8);
 

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: sgiLib.rules /main/16 1996/09/28 18:11:04 rws $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/config/cf/sgiLib.rules,v 1.2 1999/01/11 05:13:08 dawes Exp $
 
 #ifndef HasSharedLibraries
 #define HasSharedLibraries YES
@@ -180,5 +180,25 @@ clean::									@@\
 #ifndef SharedLibraryDataTarget
 #define SharedLibraryDataTarget(libname,rev,salist)
 #endif /* SharedLibraryTarget */
+
+#ifndef SharedDepLibraryTarget
+#define SharedDepLibraryTarget(libname,rev,deplist,solist,down,up)           @@\
+AllTarget(Concat(lib,libname.so.rev))                                 @@\
+                                                                      @@\
+Concat(lib,libname.so.rev):  deplist $(EXTRALIBRARYDEPS)              @@\
+      $(RM) $@~                                                       @@\
+      (cd down; $(CCENVSETUP) $(LD) -o up/$@~ $(SHLIBLDFLAGS) -soname $@ solist $(REQUIREDLIBS))      @@\
+      $(RM) $@                                                        @@\
+      $(MV) $@~ $@                                                    @@\
+      $(RM) Concat(lib,libname.so)                                    @@\
+      $(LN) $@ Concat(lib,libname.so)                                 @@\
+      LinkBuildLibrary($@)                                            @@\
+      LinkBuildLibrary(Concat(lib,libname.so))                        @@\
+      sgiX11soHack(libname)                                           @@\
+                                                                      @@\
+clean::                                                                      @@\
+      $(RM) Concat(lib,libname.so.rev) Concat(lib,libname.so) so_locations
+
+#endif /* SharedDepLibraryTarget */
 
 #endif /* OsMajorVersion < 5 else */

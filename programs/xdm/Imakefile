@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/83 1997/10/05 20:42:43 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.33 2000/05/31 07:15:10 eich Exp $
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.34 2000/06/14 00:16:14 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -80,7 +80,7 @@ PAM_LIBRARIES = -lpam DlLibrary
 PAM_DEFINES = -DUSE_PAM
 #endif
 
-#if !defined(i386IscArchitecture) && !defined(i386ScoArchitecture) && !defined(LinuxArchitecture) && !defined(NTOArchitecture)
+#if !defined(i386IscArchitecture) && !defined(i386ScoArchitecture) && !defined(LinuxArchitecture) && !defined(NTOArchitecture) && !defined(SGIArchitecture)
 SYS_LIBRARIES3 = -lresolv
 #endif
 #if SystemV || defined(SequentArchitecture)

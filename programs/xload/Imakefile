@@ -1,31 +1,21 @@
 XCOMM $XConsortium: Imakefile /main/30 1996/03/09 09:37:57 kaleb $
-XCOMM $XFree86: xc/programs/xload/Imakefile,v 1.1 2000/02/13 03:26:31 dawes Exp $
+XCOMM $XFree86: xc/programs/xload/Imakefile,v 1.2 2000/04/05 18:14:08 dawes Exp $
         DEPLIBS = XawClientDepLibs
 LOCAL_LIBRARIES = XawClientLibs
+
 #ifdef i386MachArchitecture
   SYS_LIBRARIES = -lsys
-#endif
-#ifdef SVR4Architecture
-#ifdef SGIArchitecture
+#elif defined(SGIArchitecture) && !defined(MipsN32Architecture)
   SYS_LIBRARIES = -lmld
-#else
-#ifdef SonyArchitecture
+#elif defined(SonyArchitecture)
   SYS_LIBRARIES = -lmld
-#else
-  SYS_LIBRARIES = -lelf
-#endif
-#endif
-#endif
-#if defined(SunArchitecture) && SystemV4
+#elif defined(SunArchitecture) && SystemV4
   SYS_LIBRARIES = -lkvm -lelf
-#endif
-#ifdef SGIArchitecture
-  SYS_LIBRARIES = -lmld
-#endif
-#ifdef OsfArchitecture
+#elif defined(SVR4Architecture)
+  SYS_LIBRARIES = -lelf
+#elif defined(OsfArchitecture)
   SYS_LIBRARIES = -lld
-#endif
-#if defined(i386BsdArchitecture) && !defined(NetBSDArchitecture) && !defined(OpenBSDArchitecture)
+#elif defined(i386BsdArchitecture) && !defined(NetBSDArchitecture) && !defined(OpenBSDArchitecture)
   SYS_LIBRARIES = -lutil -lkvm
 #endif
            SRCS = xload.c get_load.c

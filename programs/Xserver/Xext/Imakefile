@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/63 1997/11/24 16:48:40 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.31 2000/02/08 17:18:53 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.32 2000/02/13 06:15:30 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -117,7 +117,10 @@ XF86BIGFOBJS = xf86bigfont.o
 	      xtest.o xtest1di.o xtest1dd.o sleepuntil.o $(PNRXOBJS) \
 	      $(XF86BIGFOBJS)
 
+#ifdef XFree86Version
+/* XXX Check if this can be eliminated */
 XF86INCLUDES = -I$(XF86COMSRC)
+#endif
     INCLUDES = -I. -I../include -I$(XINCLUDESRC) -I$(EXTINCSRC) \
 		$(PNRXINCLUDES) $(XF86INCLUDES) -I$(FONTINCSRC) \
  		$(FONTCACHEINCLUDES)

@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.45 2000/02/10 18:57:25 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.cpp,v 1.1 2000/03/07 01:37:42 dawes Exp $ 
 .TH XFree86 1 "Version 4.0"  "XFree86"
 .SH NAME
 XFree86 - X11R6 X server
@@ -559,13 +559,13 @@ Linux/m68k Frame Buffer Device driver
 Guenther Kelleter, \fIguenther@Pool.Informatik.RWTH-Aachen.de\fP
 Linux/m68k Frame Buffer Device driver
 .TP 8
-Frederic Lepied,   \fLepied@XFree86.Org\fP
+Frederic Lepied,   \fILepied@XFree86.Org\fP
 XInput extension integration. Wacom, joystick and extended mouse drivers.
 .TP 8
-Patrick Lecoanet,   \flecoanet@cena.dgac.fr\fP
+Patrick Lecoanet,   \fIlecoanet@cena.dgac.fr\fP
 Elographics touchscreen driver.
 .TP 8
-Steven Lang,        \ftiger@tyger.org\fP
+Steven Lang,        \fItiger@tyger.org\fP
 SummaSketch tablet driver.
 .PP
  ... and many more people out there on the net who helped with beta-testing
