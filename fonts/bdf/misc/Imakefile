@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/36 1998/05/20 15:10:33 kaleb $
-XCOMM $XFree86: xc/fonts/bdf/misc/Imakefile,v 1.7 1999/12/28 15:03:02 robin Exp $
+XCOMM $XFree86: xc/fonts/bdf/misc/Imakefile,v 1.8 2000/06/20 05:08:34 dawes Exp $
 
 ARABIC24OBJS = FontObj(arabic24)
 ARABIC24DIR = $(TOP)/extras/fonts/arabic24
@@ -27,17 +27,29 @@ OBJS = FontObj(5x7) FontObj(5x7-ISO8859-1) \
 	FontObj(6x13O-ISO8859-5) FontObj(6x13O-ISO8859-7) \
 	FontObj(6x13O-ISO8859-9) \
 	FontObj(6x13O-ISO8859-13) FontObj(6x13O-ISO8859-15) \
-	FontObj(7x13) FontObj(7x13-ISO8859-1) FontObj(7x13-ISO8859-15) \
-	FontObj(7x13B) FontObj(7x13B-ISO8859-1) FontObj(7x13B-ISO8859-15) \
+	FontObj(7x13) FontObj(7x13-ISO8859-1) FontObj(7x13-ISO8859-2) \
+	FontObj(7x13-ISO8859-3) FontObj(7x13-ISO8859-4) \
+	FontObj(7x13-ISO8859-5) FontObj(7x13-ISO8859-7) \
+	FontObj(7x13-ISO8859-8) FontObj(7x13-ISO8859-9) \
+	FontObj(7x13-ISO8859-10) FontObj(7x13-ISO8859-13) \
+	FontObj(7x13-ISO8859-15) FontObj(7x13-KOI8-R) \
+	FontObj(7x13B) FontObj(7x13B-ISO8859-1) FontObj(7x13B-ISO8859-2) \
+	FontObj(7x13B-ISO8859-5) FontObj(7x13B-ISO8859-7) \
+	FontObj(7x13B-ISO8859-9) \
+	FontObj(7x13B-ISO8859-13) FontObj(7x13B-ISO8859-15) \
+	FontObj(7x13O) FontObj(7x13O-ISO8859-1) FontObj(7x13O-ISO8859-2) \
+	FontObj(7x13O-ISO8859-5) FontObj(7x13O-ISO8859-7) \
+	FontObj(7x13O-ISO8859-9) \
+	FontObj(7x13O-ISO8859-13) FontObj(7x13O-ISO8859-15) \
 	FontObj(7x14) \
 	FontObj(7x14-ISO8859-1) FontObj(7x14-JISX0201.1976-0) \
 	FontObj(7x14B) FontObj(7x14B-ISO8859-1) \
 	FontObj(8x13) FontObj(8x13-ISO8859-1) FontObj(8x13-ISO8859-2) \
-	FontObj(8x13-ISO8859-4) FontObj(8x13-ISO8859-5) \
-	FontObj(8x13-ISO8859-7) FontObj(8x13-ISO8859-8) \
-	FontObj(8x13-ISO8859-9) FontObj(8x13-ISO8859-10) \
-	FontObj(8x13-ISO8859-13) FontObj(8x13-ISO8859-15) \
-	FontObj(8x13-KOI8-R) \
+	FontObj(8x13-ISO8859-3) FontObj(8x13-ISO8859-4) \
+	FontObj(8x13-ISO8859-5) FontObj(8x13-ISO8859-7) \
+	FontObj(8x13-ISO8859-8) FontObj(8x13-ISO8859-9) \
+	FontObj(8x13-ISO8859-10) FontObj(8x13-ISO8859-13) \
+	FontObj(8x13-ISO8859-15) FontObj(8x13-KOI8-R) \
 	FontObj(8x13B) FontObj(8x13B-ISO8859-1) FontObj(8x13B-ISO8859-2) \
 	FontObj(8x13B-ISO8859-5) FontObj(8x13B-ISO8859-7) \
 	FontObj(8x13B-ISO8859-9) FontObj(8x13B-ISO8859-13) \
@@ -115,10 +127,33 @@ FontTarget(6x13O-ISO8859-13)
 FontTarget(6x13O-ISO8859-15)
 FontTarget(7x13)
 FontTarget(7x13-ISO8859-1)
+FontTarget(7x13-ISO8859-2)
+FontTarget(7x13-ISO8859-3)
+FontTarget(7x13-ISO8859-4)
+FontTarget(7x13-ISO8859-5)
+FontTarget(7x13-ISO8859-7)
+FontTarget(7x13-ISO8859-8)
+FontTarget(7x13-ISO8859-9)
+FontTarget(7x13-ISO8859-10)
+FontTarget(7x13-ISO8859-13)
 FontTarget(7x13-ISO8859-15)
+FontTarget(7x13-KOI8-R)
 FontTarget(7x13B)
 FontTarget(7x13B-ISO8859-1)
+FontTarget(7x13B-ISO8859-2)
+FontTarget(7x13B-ISO8859-5)
+FontTarget(7x13B-ISO8859-7)
+FontTarget(7x13B-ISO8859-9)
+FontTarget(7x13B-ISO8859-13)
 FontTarget(7x13B-ISO8859-15)
+FontTarget(7x13O)
+FontTarget(7x13O-ISO8859-1)
+FontTarget(7x13O-ISO8859-2)
+FontTarget(7x13O-ISO8859-5)
+FontTarget(7x13O-ISO8859-7)
+FontTarget(7x13O-ISO8859-9)
+FontTarget(7x13O-ISO8859-13)
+FontTarget(7x13O-ISO8859-15)
 FontTarget(7x14)
 FontTarget(7x14-ISO8859-1)
 FontTarget(7x14-JISX0201.1976-0)
