@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.43 2000/06/30 18:27:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.44 2000/06/30 18:34:18 dawes Exp $ */
 
 
 #include "apm.h"
@@ -172,6 +172,12 @@ static const char *ramdacSymbols[] = {
     NULL
 };
 
+static const char *vbeSymbols[] = {
+    "VBEInit",
+    "vbeDoEDID",
+    NULL
+};
+
 static const char *ddcSymbols[] = {
     "xf86PrintEDID",
     "xf86DoEDID_DDC1",
@@ -235,7 +241,7 @@ apmSetup(pointer module, pointer opts, int *errmaj, int *errmain)
 	xf86AddDriver(&APM, module, 0);
 
 	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols, 
-			  /*xf8_32bppSymbols,*/ ramdacSymbols,
+			  /*xf8_32bppSymbols,*/ ramdacSymbols, vbeSymbols,
 			  ddcSymbols, i2cSymbols, shadowSymbols, NULL);
 
 	return (pointer)1;
