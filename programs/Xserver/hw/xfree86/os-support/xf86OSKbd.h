@@ -1,9 +1,11 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSKbd.h,v 1.1 2002/10/11 01:40:34 dawes Exp $ */
 
 /*
  * Copyright (c) 2002 by The XFree86 Project, Inc.
  * Author: Ivan Pascal.
  */
+
+#include "xf86Xinput.h"
 
 Bool ATScancode(InputInfoPtr pInfo, int *scanCode);
 
