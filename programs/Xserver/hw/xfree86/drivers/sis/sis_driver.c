@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.10 1999/01/23 09:55:54 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -129,7 +129,8 @@ typedef enum {
     OPTION_HW_CURSOR,
     OPTION_PCI_RETRY,
     OPTION_RGB_BITS,
-    OPTION_NOACCEL
+    OPTION_NOACCEL,
+    OPTION_NOTURBOQUEUE
 } SISOpts;
 
 static OptionInfoRec SISOptions[] = {
@@ -138,6 +139,7 @@ static OptionInfoRec SISOptions[] = {
     { OPTION_PCI_RETRY,		"PciRetry",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_RGB_BITS,		"rgbbits",	OPTV_INTEGER,	{0}, -1    },
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_NOTURBOQUEUE,	"NoTurboQueue",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -509,12 +511,11 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     SISPtr pSiS;
     MessageType from;
     unsigned char videoram;
-    char *ramtype = NULL, *chipset = NULL;
+    char *ramtype = NULL, *mclk = NULL;
     Bool Support24bpp;
     int vgaIOBase;
-    float mclk;
     int i,j;
-    unsigned char revision;
+    unsigned char temp, unlock;
     ClockRangePtr clockRanges;
     char *mod = NULL;
     const char *Sym;
@@ -732,6 +733,141 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
 
+    outb(0x3C4, 0x05); unlock = inb(0x3C5);
+    outw(0x3C4, 0x8605); /* Unlock registers */
+
+    switch (pSiS->Chipset) {
+	case PCI_CHIP_SIS6326:
+	    pSiS->TurboQueue = TRUE; /* Turn on for 6326 */
+    	    if (xf86IsOptionSet(SISOptions, OPTION_NOTURBOQUEUE)) {
+		pSiS->TurboQueue = FALSE;
+		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Disabling TurboQueue\n");
+    	    }
+	    outb(0x3C4, ExtConfStatus1); temp = inb(0x3C5);
+	    switch (temp & 0x03) {
+		case 0x00:
+		    ramtype = "SGRAM/SDRAM";
+		    switch ((temp & 0xE0)>>5) {
+			case 0x00:
+			    mclk = "66";
+			    break;
+			case 0x01:
+			    mclk = "75";
+			    break;
+			case 0x02:
+			    mclk = "83";
+			    break;
+			case 0x03:
+			    mclk = "90";
+			    break;
+			case 0x04:
+			    mclk = "100";
+			    break;
+			case 0x05:
+			    mclk = "115";
+			    break;
+			case 0x06:
+			    mclk = "134";
+			    break;
+			case 0x07:
+			    mclk = "50";
+			    break;
+		    }
+		    break;
+		case 0x01:
+		    ramtype = "2cycle EDO DRAM";
+		    switch ((temp & 0xE0)>>5) {
+			case 0x00:
+			    mclk = "65";
+			    break;
+			case 0x01:
+			    mclk = "70";
+			    break;
+			case 0x02:
+			    mclk = "75";
+			    break;
+			case 0x03:
+			    mclk = "80";
+			    break;
+			case 0x04:
+			    mclk = "85";
+			    break;
+			case 0x05:
+			    mclk = "90";
+			    break;
+			case 0x06:
+			    mclk = "55";
+			    break;
+			case 0x07:
+			    mclk = "60";
+			    break;
+		    }
+		    break;
+		case 0x02:
+		    ramtype = "1cycle EDO DRAM";
+		    switch ((temp & 0xE0)>>5) {
+			case 0x00:
+			    mclk = "50";
+			    break;
+			case 0x01:
+			    mclk = "55";
+			    break;
+			case 0x02:
+			    mclk = "60";
+			    break;
+			case 0x03:
+			    mclk = "65";
+			    break;
+			case 0x04:
+			    mclk = "70";
+			    break;
+			case 0x05:
+			    mclk = "75";
+			    break;
+			case 0x06:
+			    mclk = "80";
+			    break;
+			case 0x07:
+			    mclk = "45";
+			    break;
+		    }
+		    break;
+		case 0x03:
+		    ramtype = "Fast Page DRAM";
+		    switch ((temp & 0xE0)>>5) {
+			case 0x00:
+			    mclk = "55";
+			    break;
+			case 0x01:
+			    mclk = "60";
+			    break;
+			case 0x02:
+			    mclk = "65";
+			    break;
+			case 0x03:
+			    mclk = "70";
+			    break;
+			case 0x04:
+			    mclk = "75";
+			    break;
+			case 0x05:
+			    mclk = "80";
+			    break;
+			case 0x06:
+			    mclk = "45";
+			    break;
+			case 0x07:
+			    mclk = "50";
+			    break;
+		    }
+		    break;
+		break;
+	}
+    }
+
+    xf86DrvMsg(pScrn->scrnIndex, from, "Installed RAM type is %s\n",ramtype);
+    xf86DrvMsg(pScrn->scrnIndex, from, "Memory Clock is %sMHz\n",mclk);
+
     pSiS->PciTag = pciTag(pSiS->PciInfo->bus, pSiS->PciInfo->device,
 			  pSiS->PciInfo->func);
     
@@ -762,13 +898,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	pScrn->videoRam = pScrn->device->videoRam;
 	from = X_CONFIG;
     } else {
-	unsigned char temp;
-	outb(0x3C4, 0x05);
-	temp = inb(0x3C5);
-	outw(0x3C4, 0x8605); /* Unlock registers */
 	outb(0x3C4, RAMSize); /* Get memory size */
 	videoram = (inb(0x3C5) >> 1);
-	outw(0x3C4, (temp << 8) | 0x05); /* relock registers */
 	switch (videoram & 0x0B) {
 	case 0x00:
 	    pScrn->videoRam = 1024;
@@ -802,6 +933,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	    break;
 	}
     }
+    outw(0x3C4, (unlock << 8) | 0x05);
 
     xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n",
                pScrn->videoRam);

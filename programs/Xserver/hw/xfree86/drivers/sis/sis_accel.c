@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.3 1999/01/23 09:55:52 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -82,8 +82,13 @@ SiSAccelInit(ScreenPtr pScreen)
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
     AvailFBArea.x2 = pScrn->displayWidth;
-    AvailFBArea.y2 = (pSiS->FbMapSize - 4096) / (pScrn->displayWidth *
+    if (!pSiS->TurboQueue) {
+    	AvailFBArea.y2 = pSiS->FbMapSize / (pScrn->displayWidth *
 					    pScrn->bitsPerPixel / 8);
+    } else {
+    	AvailFBArea.y2 = (pSiS->FbMapSize - 32768) / (pScrn->displayWidth *
+					    pScrn->bitsPerPixel / 8);
+    }
 
     xf86InitFBManager(pScreen, &AvailFBArea);
 

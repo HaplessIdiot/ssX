@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.84 1998/12/05 14:40:04 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.85 1999/01/03 03:58:26 dawes Exp $
 
 
 
@@ -38,8 +38,9 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.84 1998/12/0
  XF86_XINPUT_OBJ = xf86Xinput.o xisb.o
 #endif
 
+MODPATHDEFINES = -DDEFAULT_MODULE_PATH=\"$(MODULEDIR)\"
+
 #if DoLoadableServer
-MODULEDEFINES = -DDEFAULT_MODULE_PATH=\"$(MODULEDIR)\"
 EXT_MODULES_DEFINES = $(GLX_DEFINES)
 #endif
 
@@ -142,14 +143,10 @@ EXP_DEFINES = -DEXPIRY_TIME=XF86ServerExpiry $(EXP_FORCE_DEFINES)
 
 AllTarget($(OFILES))
 
-SpecialObjectRule(xf86Config.o,xf86Config.c,$(MODULEDEFINES))
 SpecialObjectRule(xf86Bus.o,xf86Bus.c,$(VGAINCLUDES))
-#if BuildXInputExt
-SpecialObjectRule(xf86Xinput.o,xf86Xinput.c $(ICONFIGFILES),$(MODULEDEFINES))
-#endif
 SpecialObjectRule(xf86Init.o,xf86Init.c $(ICONFIGFILES),$(OSNAMEDEF) $(EXT_DEFINES) $(BETADEFS))
 SpecialCObjectRule(xf86Events,$(ICONFIGFILES),$(EXT_DEFINES))
-SpecialCObjectRule(xf86Globals,$(ICONFIGFILES),$(EXT_DEFINES))
+SpecialCObjectRule(xf86Globals,$(ICONFIGFILES),$(EXT_DEFINES) $(MODPATHDEFINES))
 
 #if NeedXF86Beta
 SpecialObjectRule($(BETAOBJ),$(BETASRC),$(EXP_DEFINES))
