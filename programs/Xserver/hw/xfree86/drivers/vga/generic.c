@@ -254,10 +254,14 @@ GenericProbe(DriverPtr drv, int flags)
 					GenericChipsets, GenericPCIchipsets, 
 					devSections,numDevSections,
 					drv, &usedChips);
-	if ((numUsed > 0) && (flags & PROBE_DETECTPCI))
-	    return TRUE;
-	if ((numUsed <= 0) && (flags & PROBE_DETECTPCI))
-	    return FALSE;
+  	if (numUsed<=0) return FALSE;
+
+  	if (flags & PROBE_DETECTPCI)
+    	    return TRUE;
+
+	if (flags & PROBE_DETECTISA)
+	    goto detectisa;
+
 	if (numUsed > 0) {
 	    for (i = 0; i < numUsed; i++) {
 		/* Allocate a ScrnInfoRec  */
@@ -280,6 +284,7 @@ GenericProbe(DriverPtr drv, int flags)
 	    }
 	}
     }
+detectisa:
     /* Isa Bus */
     numUsed = xf86MatchIsaInstances(VGA_NAME,GenericChipsets,
 				     GenericISAchipsets,drv,

@@ -566,8 +566,10 @@ static Bool R128Probe(DriverPtr drv, int flags)
 				    drv,
 				    &usedChips);
 
-    if (numUsed > 0 && (flags & PROBE_DETECTPCI))
-	return TRUE;
+    if (numUsed<=0) return FALSE;
+
+    if (flags & PROBE_DETECTPCI)
+    	return TRUE;
 
     for (i = 0; i < numUsed; i++) {
 	pEnt = xf86GetEntityInfo(usedChips[i]);
