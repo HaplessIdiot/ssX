@@ -44,13 +44,13 @@ in this Software without prior written authorization from The Open Group.
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/include/servermd.h,v 1.3 2001/07/29 22:08:16 tsi Exp $ */
+/* $XFree86: xc/programs/xfs/include/servermd.h,v 1.4 2001/12/14 20:01:38 dawes Exp $ */
 
 #ifndef _SERVERMD_H_
 #define _SERVERMD_H_
 
 #ifndef VENDOR_RELEASE
-#define VENDOR_RELEASE 6510
+#define VENDOR_RELEASE 6600
 #endif
 
 #ifndef VENDOR_STRING

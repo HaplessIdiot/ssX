@@ -23,7 +23,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
-/* $XFree86: xc/lib/Xaw/SmeP.h,v 1.7 2001/01/17 19:42:32 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SmeP.h,v 1.8 2001/12/14 19:54:43 dawes Exp $ */
 
 /*
  * This is the private header file for the Athena Sme object.
@@ -42,7 +42,11 @@ in this Software without prior written authorization from The Open Group.
 /*
  * Sme Widget Private Data
  */
+#include <X11/Xfuncproto.h>
+
 #include <X11/Xaw/Sme.h>
+
+_XFUNCPROTOBEGIN
 
 /* New fields for the Sme widget class */
 typedef struct _SmeClassPart {
@@ -80,5 +84,7 @@ typedef struct _SmeRec {
 #define XtInheritHighlight	((XtWidgetProc)_XtInherit)
 #define XtInheritUnhighlight XtInheritHighlight
 #define XtInheritNotify      XtInheritHighlight
+
+_XFUNCPROTOEND
 
 #endif /* _XawSmeP_h */

@@ -47,12 +47,17 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/SimpleP.h,v 1.11 2001/01/17 19:42:30 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SimpleP.h,v 1.12 2001/12/14 19:54:43 dawes Exp $ */
 
 #ifndef _SimpleP_h
 #define _SimpleP_h
 
+#include <X11/Xfuncproto.h>
+
 #include <X11/Xaw/Simple.h>
+
+_XFUNCPROTOBEGIN
+
 #include <X11/Xaw/XawInit.h>
 
 typedef struct {
@@ -91,5 +96,7 @@ typedef struct _SimpleRec {
     CorePart	core;
     SimplePart	simple;
 } SimpleRec;
+
+_XFUNCPROTOEND
 
 #endif /* _SimpleP_h */

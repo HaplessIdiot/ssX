@@ -30,8 +30,12 @@ Author: Ralph Mor, X Consortium
 #ifndef _ICEUTIL_H_
 #define _ICEUTIL_H_
 
+#include <X11/Xfuncproto.h>
+
 #include <stdio.h>
 #include <X11/Xlib.h>
+
+_XFUNCPROTOBEGIN
 
 /*
  * Data structure for entry in ICE authority file
@@ -134,5 +138,7 @@ extern void IceSetPaAuthData (
     IceAuthDataEntry *	/* entries */
 #endif
 );
+
+_XFUNCPROTOEND
 
 #endif /* _ICEUTIL_H_ */

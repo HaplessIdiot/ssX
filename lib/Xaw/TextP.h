@@ -49,13 +49,17 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextP.h,v 3.20 2001/08/01 00:44:39 tsi Exp $ */
+/* $XFree86: xc/lib/Xaw/TextP.h,v 3.21 2001/12/14 19:54:44 dawes Exp $ */
 
 #ifndef _XawTextP_h
 #define _XawTextP_h
 
+#include <X11/Xfuncproto.h>
+
 #include <X11/Xaw/Text.h>
 #include <X11/Xaw/SimpleP.h>
+
+_XFUNCPROTOBEGIN
 
 #define MAXCUT	30000	/* Maximum number of characters that can be cut */
 
@@ -311,5 +315,7 @@ void _XawTextNeedsUpdating
  XawTextPosition	left,
  XawTextPosition	right
  );
+
+_XFUNCPROTOEND
 
 #endif /* _XawTextP_h */

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.135 2001/11/18 21:13:25 herrb Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.136 2001/11/21 21:31:19 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -41,7 +41,7 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.135 2001/11/18 21:13:25 herrb Exp $
 
 /* X.Org release string */
 #ifndef XOrgReleaseString
-#define XOrgReleaseString	Release 6.5
+#define XOrgReleaseString	Release 6.6
 #endif
 
 #ifndef XOrgManNameString
@@ -242,7 +242,7 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildX11Lib		(BuildLibraries || (BuildLibrariesForXServers && XnestServer))
 #endif
 #ifndef BuildLoadableXlibI18n
-#define BuildLoadableXlibI18n	(HasDlopen && BuildX11Lib)
+#define BuildLoadableXlibI18n	(HasDlopen && SharedLibX11)
 #endif
 #ifndef BuildXextLib
 #define BuildXextLib		(BuildLibraries || (BuildLibrariesForXServers && XnestServer))
