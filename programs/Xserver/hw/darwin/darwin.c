@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.24 2001/05/19 02:45:31 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.25 2001/06/01 06:07:37 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -42,6 +42,7 @@ int                     darwinEventFD = -1;
 Bool                    quartz = FALSE;
 int                     quartzEventWriteFD = -1;
 int                     quartzStartClients = 1;
+int                     quartzRootless = 0;
 int                     quartzUseSysBeep = 0;
 int                     darwinFakeButtons = 0;
 UInt32                  darwinDesiredWidth = 0, darwinDesiredHeight = 0;
@@ -55,8 +56,8 @@ char                    *darwinKeymapFile = NULL;
 #undef QUARTZ_SAFETY_DELAY
 
 /* Fake button press/release for scroll wheel move. */
-#define	SCROLLWHEELUPFAKE	4
-#define	SCROLLWHEELDOWNFAKE	5
+#define SCROLLWHEELUPFAKE	4
+#define SCROLLWHEELDOWNFAKE	5
 
 static DeviceIntPtr     darwinPointer;
 static DeviceIntPtr     darwinKeyboard;
@@ -96,7 +97,7 @@ DarwinPrintBanner()
     "(http://www.XFree86.Org/cvs)\n");
 #endif
   ErrorF("\nXFree86 Version %d.%d.%d", XF86_VERSION_MAJOR, XF86_VERSION_MINOR,
-					XF86_VERSION_PATCH);
+                                    XF86_VERSION_PATCH);
 #if XF86_VERSION_SNAP > 0
   ErrorF(".%d", XF86_VERSION_SNAP);
 #endif
@@ -108,8 +109,8 @@ DarwinPrintBanner()
          X_PROTOCOL, X_PROTOCOL_REVISION, VENDOR_RELEASE );
   ErrorF("Release Date: %s\n", XF86_DATE);
   ErrorF("\tIf the server is older than 6-12 months, or if your hardware is\n"
-	 "\tnewer than the above date, look for a newer version before\n"
-	 "\treporting problems.  (See http://www.XFree86.Org/FAQ)\n");
+         "\tnewer than the above date, look for a newer version before\n"
+         "\treporting problems.  (See http://www.XFree86.Org/FAQ)\n");
   ErrorF("Operating System:%s%s\n", OSNAME, OSVENDOR);
 #if defined(BUILDERSTRING)
   ErrorF("%s \n",BUILDERSTRING);
@@ -472,32 +473,32 @@ static void DarwinSimulateMouseClick(
 static void DarwinUpdateModifiers(
     xEvent xe,          // event template with time, mouse position,
                         // and KeyPress or KeyRelease filled in
-    int flags )			// modifier flags that have changed
+    int flags )         // modifier flags that have changed
 {
     if (flags & NX_ALPHASHIFTMASK) {
         xe.u.u.detail = DarwinModifierKeycode(NX_MODIFIERKEY_ALPHALOCK, 0);
         (darwinKeyboard->public.processInputProc)
-        (&xe, darwinKeyboard, 1);		
+        (&xe, darwinKeyboard, 1);
     }
     if (flags & NX_COMMANDMASK) {
         xe.u.u.detail = DarwinModifierKeycode(NX_MODIFIERKEY_COMMAND, 0);
         (darwinKeyboard->public.processInputProc)
-        (&xe, darwinKeyboard, 1);		
+        (&xe, darwinKeyboard, 1);
     }
     if (flags & NX_CONTROLMASK) {
         xe.u.u.detail = DarwinModifierKeycode(NX_MODIFIERKEY_CONTROL, 0);
         (darwinKeyboard->public.processInputProc)
-        (&xe, darwinKeyboard, 1);		
+        (&xe, darwinKeyboard, 1);
     }
     if (flags & NX_ALTERNATEMASK) {
         xe.u.u.detail = DarwinModifierKeycode(NX_MODIFIERKEY_ALTERNATE, 0);
         (darwinKeyboard->public.processInputProc)
-        (&xe, darwinKeyboard, 1);		
+        (&xe, darwinKeyboard, 1);
     }
     if (flags & NX_SHIFTMASK) {
         xe.u.u.detail = DarwinModifierKeycode(NX_MODIFIERKEY_SHIFT, 0);
         (darwinKeyboard->public.processInputProc)
-        (&xe, darwinKeyboard, 1);		
+        (&xe, darwinKeyboard, 1);
     }
 }
 
@@ -515,9 +516,9 @@ static void DarwinUpdateModifiers(
  */
 void ProcessInputEvents(void)
 {
-    xEvent	xe;
-    NXEvent	ev;
-    int	r;
+    xEvent xe;
+    NXEvent ev;
+    int r;
     struct timeval tv;
     struct timezone tz;
     static int old_state = 0;
@@ -850,7 +851,7 @@ void InitInput( int  argc, char **argv )
 
 /*
  * InitOutput
- *	Initialize screenInfo for all actually accessible framebuffers.
+ *  Initialize screenInfo for all actually accessible framebuffers.
  */
 void InitOutput( ScreenInfo *pScreenInfo, int argc, char **argv )
 {
@@ -895,17 +896,17 @@ void OsVendorInit(void)
 
 /*
  * ddxProcessArgument --
- *	Process device-dependent command line args. Returns 0 if argument is
- *      not device dependent, otherwise Count of number of elements of argv
- *      that are part of a device dependent commandline option.
+ *  Process device-dependent command line args. Returns 0 if argument is
+ *  not device dependent, otherwise Count of number of elements of argv
+ *  hat are part of a device dependent commandline option.
  */
 int ddxProcessArgument( int argc, char *argv[], int i )
 {
     if ( !strcmp( argv[i], "-screen" ) ) {
-    	if ( i == argc-1 ) {
+        if ( i == argc-1 ) {
             FatalError( "-screen must be followed by a number\n" );
         }
-    	darwinScreenNumber = atoi( argv[i+1] );
+        darwinScreenNumber = atoi( argv[i+1] );
         ErrorF( "Attempting to use screen number %i\n", darwinScreenNumber );
         return 2;
     }
@@ -923,10 +924,10 @@ int ddxProcessArgument( int argc, char *argv[], int i )
     }
 
     if ( !strcmp( argv[i], "-keymap" ) ) {
-    	if ( i == argc-1 ) {
+        if ( i == argc-1 ) {
             FatalError( "-keymap must be followed by a filename\n" );
         }
-    	darwinKeymapFile = DarwinFindLibraryFile(argv[i+1], "Keyboards");
+        darwinKeymapFile = DarwinFindLibraryFile(argv[i+1], "Keyboards");
         if ( !darwinKeymapFile )
             FatalError( "Could not find keymapping file %s.\n", argv[i+1] );
         ErrorF( "Using keymapping provided in %s.\n", darwinKeymapFile );
@@ -944,6 +945,17 @@ int ddxProcessArgument( int argc, char *argv[], int i )
         return 1;
     }
 
+    if ( !strcmp( argv[i], "-rootless" ) ) {
+        quartz = TRUE;
+        quartzRootless = TRUE;
+        ErrorF( "Running rootless inside Mac OS X window server.\n" );
+#ifdef QUARTZ_SAFETY_DELAY
+        ErrorF( "Quitting in %d seconds if no controller is found.\n",
+                QUARTZ_SAFETY_DELAY );
+#endif
+        return 1;
+     }
+
     // The Mac OS X front end uses this argument, which we just ignore here.
     if ( !strcmp( argv[i], "-nostartx" ) ) {
         return 1;
@@ -956,13 +968,13 @@ int ddxProcessArgument( int argc, char *argv[], int i )
 #endif
 
     if ( !strcmp( argv[i], "-size" ) ) {
-    	if ( i >= argc-2 ) {
+        if ( i >= argc-2 ) {
             FatalError( "-size must be followed by two numbers\n" );
         }
 #ifdef OLD_POWERBOOK_G3
         ErrorF( "Ignoring unsupported -size option on old PowerBook G3\n" );
 #else
-    	darwinDesiredWidth = atoi( argv[i+1] );
+        darwinDesiredWidth = atoi( argv[i+1] );
         darwinDesiredHeight = atoi( argv[i+2] );
         ErrorF( "Attempting to use width x height = %i x %i\n",
                 darwinDesiredWidth, darwinDesiredHeight );
@@ -972,13 +984,14 @@ int ddxProcessArgument( int argc, char *argv[], int i )
 
     if ( !strcmp( argv[i], "-depth" ) ) {
         int     bitDepth;
-    	if ( i == argc-1 ) {
+
+        if ( i == argc-1 ) {
             FatalError( "-depth must be followed by a number\n" );
         }
 #ifdef OLD_POWERBOOK_G3
         ErrorF( "Ignoring unsupported -depth option on old PowerBook G3\n");
 #else
-    	bitDepth = atoi( argv[i+1] );
+        bitDepth = atoi( argv[i+1] );
         if (bitDepth == 8)
             darwinDesiredDepth = 0;
         else if (bitDepth == 15)
@@ -993,13 +1006,13 @@ int ddxProcessArgument( int argc, char *argv[], int i )
     }
 
     if ( !strcmp( argv[i], "-refresh" ) ) {
-    	if ( i == argc-1 ) {
+        if ( i == argc-1 ) {
             FatalError( "-refresh must be followed by a number\n" );
         }
 #ifdef OLD_POWERBOOK_G3
         ErrorF( "Ignoring unsupported -refresh option on old PowerBook G3\n");
 #else
-    	darwinDesiredRefresh = atoi( argv[i+1] );
+        darwinDesiredRefresh = atoi( argv[i+1] );
         ErrorF( "Attempting to use refresh rate of %i\n", darwinDesiredRefresh );
 #endif
         return 2;
@@ -1015,8 +1028,8 @@ int ddxProcessArgument( int argc, char *argv[], int i )
 
 /*
  * ddxUseMsg --
- *	Print out correct use of device dependent commandline options.
- *      Maybe the user now knows what really to do ...
+ *  Print out correct use of device dependent commandline options.
+ *  Maybe the user now knows what really to do ...
  */
 void ddxUseMsg( void )
 {
@@ -1072,11 +1085,13 @@ void AbortDDX( void )
 }
 
 Bool DPMSSupported(void)
-{	return 0;
+{
+    return 0;
 }
 
 void DPMSSet(void)
-{	return;
+{
+    return;
 }
 
 

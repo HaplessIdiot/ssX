@@ -5,7 +5,7 @@
  * By Gregory Robert Parker
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.8 2001/04/30 16:26:01 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.9 2001/05/16 06:10:08 torrey Exp $ */
 
 // X headers
 #include "scrnintstr.h"
@@ -22,10 +22,11 @@
 #define __PRINTCORE__
 #include <ApplicationServices/ApplicationServices.h>
 
-#include "../darwin.h"
+#include "darwin.h"
 #include "quartz.h"
 #include "quartzAudio.h"
 #include "quartzCursor.h"
+#include "rootlessAqua.h"
 
 #define kDarwinMaxScreens 100
 static ScreenPtr darwinScreens[kDarwinMaxScreens];
@@ -107,6 +108,12 @@ Bool QuartzAddScreen(ScreenPtr pScreen)
         pScreen->StoreColors = QuartzStoreColors;
     }
 
+    // do special rootless initialization if needed
+    if (quartzRootless) {
+        if (! AquaAddScreen(pScreen))
+            return FALSE;
+    }
+
     return TRUE;
 }
 
@@ -173,10 +180,15 @@ static void QuartzDisplayInit(void)
  */
 void QuartzOsVendorInit(void)
 {
-    ErrorF("Display mode: Quartz\n");
-
     QuartzAudioInit();
-    QuartzDisplayInit();
+
+    if (quartzRootless) {
+        ErrorF("Display mode: Rootless Quartz\n");
+        AquaGlueDisplayInit();
+    } else {
+        ErrorF("Display mode: Full screen Quartz\n");
+        QuartzDisplayInit();
+    }
 }
 
 
