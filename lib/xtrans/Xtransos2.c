@@ -1,6 +1,7 @@
 /* Copyright (c) 1995 by Holger Veit */
 /* Modified extensively by Sebastien Marineau, 1996 */
 
+/* $XFree86$ */
 
 #define INCL_DOSNMPIPES
 #define INCL_DOSPROCESS
