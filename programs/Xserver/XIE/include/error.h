@@ -100,24 +100,21 @@ extern	void	 ErrValue();
 /*
  * convenience macros for general flo errors
  */
+#define xieFloError(flo,tag,type,code) \
+	FloError(flo,(xieTypPhototag)tag,(CARD16)(long)type,(CARD8)code)
+
 #define	FloAccessError(flo,tag,type,xfer) \
-		{FloError(flo,(xieTypPhototag)tag,(CARD16)type,\
-			  (CARD8)xieErrNoFloAccess); xfer;}
+		{xieFloError(flo,tag,type,xieErrNoFloAccess); xfer;}
 #define	FloAllocError(flo,tag,type,xfer) \
-		{FloError(flo,(xieTypPhototag)tag,(CARD16)type,\
-			  (CARD8)xieErrNoFloAlloc); xfer;}
+		{xieFloError(flo,tag,type,xieErrNoFloAlloc); xfer;}
 #define	FloElementError(flo,tag,type,xfer) \
-		{FloError(flo,(xieTypPhototag)tag,(CARD16)type,\
-			  (CARD8)xieErrNoFloElement); xfer;}
+		{xieFloError(flo,tag,type,xieErrNoFloElement); xfer;}
 #define	FloImplementationError(flo,tag,type,xfer) \
-		{FloError(flo,(xieTypPhototag)tag,(CARD16)type,\
-			  (CARD8)xieErrNoFloImplementation); xfer;}
+		{xieFloError(flo,tag,type,xieErrNoFloImplementation); xfer;}
 #define	FloLengthError(flo,tag,type,xfer) \
-		{FloError(flo,(xieTypPhototag)tag,(CARD16)type,\
-			  (CARD8)xieErrNoFloLength); xfer;}
+		{xieFloError(flo,tag,type,xieErrNoFloLength); xfer;}
 #define	FloSourceError(flo,tag,type,xfer) \
-		{FloError(flo,(xieTypPhototag)tag,(CARD16)type,\
-			  (CARD8)xieErrNoFloSource); xfer;}
+		{xieFloError(flo,tag,type,xieErrNoFloSource); xfer;}
 
 /*
  * convenience macros for element-specific flo errors

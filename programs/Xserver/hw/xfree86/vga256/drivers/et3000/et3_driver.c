@@ -1,5 +1,5 @@
 /* $XConsortium: et3_driver.c /main/6 1996/01/12 12:17:02 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/et3_driver.c,v 3.15 1996/09/14 13:12:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/et3_driver.c,v 3.16 1996/09/29 14:02:13 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -461,6 +461,14 @@ ET3000Adjust(x, y)
   (void)inb(vgaIOBase + 0x0A);
   outb(0x3C0, 0x33);
   outb(0x3C0, wants_pan ? 3 : 0);
+#endif
+
+#ifdef XFreeXDGA
+  if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
+    /* Wait until vertical retrace is in progress. */
+    while (inb(vgaIOBase + 0xA) & 0x08);
+    while (!(inb(vgaIOBase + 0xA) & 0x08));
+  }
 #endif
 }
 

@@ -1,3 +1,42 @@
+XFree86 3.1.2Gn (16 October 1996)
+1003. Fix a problem with the ospex Imakefile regarding the building of
+      a non-shared library.
+1002. Increase the listen(2) backlog value in Xtranssock.c.
+1001. VidMode extensions updates (Joe Moss).
+1000. Add QueryDirectVideo and ViewPortChanged functions to the DGA
+      extension (Harm Hanemaayer and Mark Vojkovich).
+ 999. Fix a problem where parts of lines incorrectly appear black with the
+      S3V server (Berry Dijk).
+ 998. Fix some S3V problems that show up when running xtest (Harald Koenig).
+ 997. Change MGAAdjustPitch to choose a pitch for which acceleration is
+      possible (Ansgar Hockmann).
+ 996. Fix some server compile warnings (Thomas E. Dickey).
+ 995. Set HasPoll to YES for NetBSD 1.2 and OpenBSD.  This solves the
+      fundamental problem select has with the width of a fd_set
+      (Matthieu Herrb).
+ 994. Use modified ROPs and colour bit patterns to simulate the planemask
+      where possible in the S3V line code (Harald Koenig).
+ 993. Report the Wacom function/macro button as key events (Frederic Lepied).
+ 992. Initial DSP programming of Mach64 VT-B and GT-B implemented, but not
+      enabled yet (Kevin Martin).
+ 991. Mach64 CT, ET, VT, GT clock programming changed to be more accurate.
+      Previously it used integer arithmetic, now it uses floats (Kevin Martin).
+ 990. Mach64 VT-B and GT-B extra clock divisors (3,6,12) implemented
+      (Kevin Martin).
+ 989. Fix Mach64 VT-B and GT-B memory detection (Kevin Martin).
+ 988. Updates for LinkKit and SVR4 README files (Takaaki Nomura).
+ 987. Add a MGAWAITFIFOSLOTS macro for use with accel functions
+      (Andrew Vanderstock).
+ 986. Fix for MGA line colour that works at all depths (Andrew Vanderstock).
+ 985. Add a wait for retrace to the end of most Adjust functions when DGA
+      mode is active (Mark Vojkovich and Harm Hanemaayer).
+ 984. Fix a typo in XF86Setup, and change the vsync parameters of some
+      of the default monitor types (Harm Hanemaayer).
+ 983. ET6000 support for linear memory and 16/24/32bpp in the SVGA server
+      (Koen Gadeyne).
+ 982. OpenBSD no longer defines __NetBSD__ in their cpp (Matthieu Herrb).
+ 981. OpenBSD/NetBSD doc updates (Matthieu Herrb).
+
 XFree86 3.1.2Gm (13 October 1996)
 980. Set foreground colour for MGA line code (Ansgar Hockmann).
 979. Add weight 555 support for the Cirrus 5464 (Corin Anderson).

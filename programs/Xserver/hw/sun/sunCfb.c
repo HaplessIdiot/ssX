@@ -1,6 +1,6 @@
 
 /* $XConsortium: sunCfb.c /main/18 1995/10/05 07:36:45 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunCfb.c,v 3.2 1995/02/12 02:36:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunCfb.c,v 3.3 1996/01/05 13:18:44 dawes Exp $ */
 
 /*
 Copyright (c) 1990  X Consortium
@@ -275,7 +275,7 @@ Bool sunCG3Init (screen, pScreen, argc, argv)
 #ifdef SVR4
 #include <sys/cg2reg.h>
 #else
-#ifndef __NetBSD__
+#if !defined(__NetBSD__) && !defined(__OpenBSD__)
 #include <pixrect/cg2reg.h>
 #else
 #include <machine/cgtworeg.h>

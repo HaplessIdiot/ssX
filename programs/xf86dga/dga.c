@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xf86dga/dga.c,v 3.10 1996/09/15 11:37:48 dawes Exp $ */
+/* $XFree86: xc/programs/xf86dga/dga.c,v 3.11 1996/09/15 11:49:25 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Intrinsic.h>
@@ -58,22 +58,22 @@ main(int argc, char *argv[])
     }
 
     if ( (dis = XOpenDisplay(NULL)) == NULL )
-     {
+    {
         (void) fprintf( stderr, " cannot connect to X server %s\n",
                        XDisplayName(NULL));
         exit( -1 );
-     }
+    }
 
 
     if (!XF86DGAQueryVersion(dis, &MajorVersion, &MinorVersion))
- { 
+    { 
         fprintf(stderr, "Unable to query video extension version\n");
-        return 2;
- }
+        exit(2);
+    }
 
     if (!XF86DGAQueryExtension(dis, &EventBase, &ErrorBase)) {
         fprintf(stderr, "Unable to query video extension information\n");
-        return 2;
+        exit(2);
     }
 
     /* Fail if the extension version in the server is too old */
@@ -86,6 +86,17 @@ main(int argc, char *argv[])
                 MINMAJOR, MINMINOR);
         exit(2);
     }
+
+    if (MajorVersion < 1) {
+	int flags;
+
+	XF86DGAQueryDirectVideo(dis, DefaultScreen(dis), &flags);
+	if (!(flags & XF86DGADirectPresent)) {
+	    fprintf(stderr, "Xserver driver doesn't support DirectVideo\n");
+	    exit(2);
+	}
+    }
+	
    XGrabKeyboard(dis, DefaultRootWindow(dis), True, GrabModeAsync,
 		 GrabModeAsync,  CurrentTime);
 

@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranssock.c /main/52 1996/01/12 15:08:49 kaleb $ */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.19 1996/05/10 06:55:52 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.20 1996/10/03 08:29:50 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -89,9 +89,9 @@ from the X Consortium.
 #ifdef __osf__
 #include <sys/param.h>
 #endif /* osf */
-#if defined(__NetBSD__) || defined(__FreeBSD__)
+#if defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__) 
 #include <machine/endian.h>
-#endif /* __NetBSD__ || __FreeBSD__ */
+#endif /* __NetBSD__ || __OpenBSD__ || __FreeBSD__ */
 #include <netinet/tcp.h>
 #endif /* !NO_TCP_H */
 #include <sys/ioctl.h>
@@ -161,6 +161,15 @@ static int IBMsockInit = 0;
 #define SocketInitOnce() /**/
 #endif
 
+#define MIN_BACKLOG 128
+#ifdef SOMAXCONN
+#if SOMAXCONN > MIN_BACKLOG
+#define BACKLOG SOMAXCONN
+#endif
+#endif
+#ifndef BACKLOG
+#define BACKLOG MIN_BACKLOG
+#endif
 /*
  * This is the Socket implementation of the X Transport service layer
  *
@@ -788,7 +797,7 @@ int		socknamelen;
 #endif
 }
 
-    if (listen (fd, 5) < 0)
+    if (listen (fd, BACKLOG) < 0)
     {
 	PRMSG (1, "SocketCreateListener: listen() failed\n", 0, 0, 0);
 	close (fd);
@@ -1064,7 +1073,7 @@ XtransConnInfo ciptr;
 	    return TRANS_RESET_FAILURE;
 	}
 
-	if (listen (ciptr->fd, 5) < 0)
+	if (listen (ciptr->fd, BACKLOG) < 0)
 	{
 	    close (ciptr->fd);
 	    TRANS(FreeConnInfo) (ciptr);
