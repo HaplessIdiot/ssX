@@ -52,8 +52,9 @@ SOFTWARE.
 #include "scrnintstr.h"
 #include "pixmapstr.h"
 #include "miscstruct.h"
-#ifdef XFree86LOADER
+#if defined(XFree86LOADER)
 #define endtab (*LOADERVAR(endtab))
+extern int xf86bpp;
 #endif
 #include "../mfb/maskbits.h"
 
@@ -72,6 +73,11 @@ is the same as the format defined by the mfb code (i.e. 32-bit padding
 per scanline, scanline unit = 32 bits; later, this might mean
 bitsizeof(int) padding and sacnline unit == bitsizeof(int).)
 
+ */
+
+/*
+ * in order to have both (MSB_FIRST and LSB_FIRST) versions of this
+ * in the server, we need to rename one of them
  */
 void
 miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
@@ -141,7 +147,14 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 			fInBox = FALSE;
 		    }
 		}
+#ifdef XFree86LOADER
+	if( xf86bpp >= 8 ) /* LSBFirst */
+		LONG2CHARSSAMEORDER(LONG2CHARSSAMEORDER(msk) << (1));
+	else
+		LONG2CHARSDIFFORDER(LONG2CHARSDIFFORDER(msk) >> (1));
+#else
 		msk = SCRRIGHT(msk, 1);
+#endif
 	    }
 	    pw++;
 	}
@@ -179,7 +192,14 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 			fInBox = FALSE;
 		    }
 		}
-		msk = SCRRIGHT(msk, 1);
+#ifdef XFree86LOADER
+		if( xf86bpp >= 8 ) /* LSBFirst */
+			LONG2CHARSSAMEORDER(LONG2CHARSSAMEORDER(msk) << (1));
+		else
+			LONG2CHARSDIFFORDER(LONG2CHARSDIFFORDER(msk) >> (1));
+#else
+			msk = SCRRIGHT(msk, 1);
+#endif
 	    }
 	}
 	/* If scanline ended with last bit set, end the box */

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/tseng_cursor.c,v 1.4 1997/02/24 17:47:08 hohndel Exp $ */
 
 /*
  * Hardware cursor handling. Adapted mainly from apm/apm_cursor.c
@@ -196,7 +196,7 @@ static Bool TsengRealizeCursor(pScr, pCurs)
 
 	h = pCurs->bits->height;
 	if (h > tsengCursorHeight) h = tsengCursorHeight;
-	w = pCurs->bits->height;
+	w = pCurs->bits->width;
 	if (w > tsengCursorWidth) w = tsengCursorWidth;
 
 #if 0
@@ -232,9 +232,9 @@ static Bool TsengRealizeCursor(pScr, pCurs)
 #endif
 
    for (i = 0; i < h; i++, ram+=16) {
-     for (j = 0; j < (w/8); j++) {
+     for (j = 0; j < ((w+7)/8); j++) {
         unsigned char m, s;
-        int offset = i*(((w/8)+3)&~3) + j;
+        int offset = i*((((w+7)/8)+3)&~3) + j;
 
         m = pServMsk[offset];
         s = pServSrc[offset];

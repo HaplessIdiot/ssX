@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.8 1997/02/24 17:47:05 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.9 1997/02/25 14:21:18 hohndel Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -65,6 +65,23 @@ int xf86execl();
 #endif
 #endif
 typedef struct dirent DIRENTRY;
+
+#ifndef XFree86LOADER
+typedef pointer XF86FILE;	/* opaque FILE* replacement */
+typedef pointer XF86FPOS_T;	/* opaque fpos_t* replacement */
+
+#define _XF86NAMELEN	263	/* enough for a larger filename */
+				/* (divisble by 8) */
+typedef pointer XF86DIR;	/* opaque DIR* replacement */
+
+/* Note: the following is POSIX! POSIX only requires the d_name member. 
+ * Normal Unix has often a number of other members, but don't rely on that
+ */
+struct _xf86dirent {		/* types in struct dirent/direct: */
+	char	d_name[_XF86NAMELEN+1];	/* char [MAXNAMLEN]; might be smaller or unaligned */
+};
+typedef struct _xf86dirent *XF86DIRENT;
+#endif
 
 #ifdef __EMX__
 #define _POSIX_SOURCE
@@ -301,7 +318,6 @@ XF86FILE xf86fopen(const char* fn, const char* mode)
 	fp = (XF86FILE_priv*)xalloc(sizeof(XF86FILE_priv));
 	fp->magic = XF86FILE_magic;
 	fp->filehnd = f;
-	fp->magic = XF86FILE_magic;
 	fp->fileno = fileno(f);
 	fp->fname = xf86strdup(fn);
 #ifdef DEBUG
@@ -378,7 +394,7 @@ f, s, format, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) /* limit of ten args */
 }
 
 #if NeedVarargsPrototypes
-#if !defined(SYSV) && !defined(SVR4)
+#if !defined(SYSV) && !defined(SVR4) && !defined(Lynx)
 #define HAVE_VFSCANF
 #endif
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.64 1997/02/24 17:46:50 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.65 1997/02/25 14:20:15 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -54,6 +54,7 @@
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
+#include "xf86Version.h"
 #include "mach64.h"
 #ifdef PIXPRIV
 #include "mach64im.h"
@@ -147,6 +148,10 @@ int mach64ValidTokens[] =
   MEMBASE,
   -1
 };
+#else
+#define MAX_MACH64_CLOCK	80000
+
+int mach64MaxClock = MAX_MACH64_CLOCK;
 #endif
 
 ScrnInfoRec mach64InfoRec = {
@@ -224,6 +229,17 @@ ServerInit()
     return &mach64InfoRec;
 }
 
+XF86ModuleVersionInfo mach64VersRec =
+{
+	"mach64.o", 
+	"The XFree86 Project",
+	MODINFOSTRING1,
+	MODINFOSTRING2,
+	XF86_VERSION_CURRENT,
+	0x00010001,
+	{0,0,0,0}	/* signature, to be patched into the file by a tool */
+};
+
 void
 ModuleInit(data,magic)
     pointer   * data;
@@ -233,11 +249,16 @@ ModuleInit(data,magic)
 
     switch(cnt++)
     {
+	/* MAGIC_VERSION must be first in ModuleInit */
     case 0:
+	* data = (pointer) &mach64VersRec;
+	* magic= MAGIC_VERSION;
+	break;
+    case 1:
 	* data = (pointer) &mach64InfoRec;
 	* magic= MAGIC_ADD_VIDEO_CHIP_REC;
 	break;
-    case 1:
+    case 2:
 	* data = (pointer) "libmfb.a";
 	* magic= MAGIC_LOAD;
 	break;

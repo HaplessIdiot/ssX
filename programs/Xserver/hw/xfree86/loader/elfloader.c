@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.3 1997/02/16 12:54:13 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.4 1997/02/17 09:46:04 hohndel Exp $ */
 
 
 
@@ -72,12 +72,18 @@ typedef	struct {
 	unsigned char *data;	/* Start address of the .data section */
 	int	datndx;		/* index of the .data section */
 	int	datsize;	/* size of the .data section */
+	unsigned char *data1;	/* Start address of the .data section */
+	int	dat1ndx;		/* index of the .data section */
+	int	dat1size;	/* size of the .data section */
 	unsigned char *bss;	/* Start address of the .bss section */
 	int	bssndx;		/* index of the .bss section */
 	int	bsssize;	/* size of the .bss section */
 	unsigned char *rodata;	/* Start address of the .rodata section */
 	int	rodatndx;	/* index of the .rodata section */
 	int	rodatsize;	/* size of the .rodata section */
+	unsigned char *rodata1;	/* Start address of the .rodata section */
+	int	rodat1ndx;	/* index of the .rodata section */
+	int	rodat1size;	/* size of the .rodata section */
 	Elf32_Sym *symtab;	/* Start address of the .symtab section */
 	int	symndx;		/* index of the .symtab section */
 	int	symsize;	/* size of the .symtab section */
@@ -1166,6 +1172,18 @@ ELFDEBUG(".data starts at %x\n", elffile->data );
 #endif
 		continue;
 		}
+	if( strcmp(ElfGetSectionName(elffile, elffile->sections[i].sh_name),
+							".data1" ) == 0 ) {
+		elffile->data1=_LoaderFileToMem(elffile->fd,
+					SecOffset(i),SecSize(i),".data1");
+		elffile->saddr[i]=elffile->data1;
+		elffile->dat1ndx=i;
+		elffile->dat1size=SecSize(i);
+#ifdef ELFDEBUG
+ELFDEBUG(".data1 starts at %x\n", elffile->data1 );
+#endif
+		continue;
+		}
 	/* .bss */
 	if( strcmp(ElfGetSectionName(elffile, elffile->sections[i].sh_name),
 							".bss" ) == 0 ) {
@@ -1191,6 +1209,18 @@ ELFDEBUG(".bss starts at %x\n", elffile->bss );
 		elffile->rodatsize=SecSize(i);
 #ifdef ELFDEBUG
 ELFDEBUG(".rodata starts at %x\n", elffile->rodata );
+#endif
+		continue;
+		}
+	if( strcmp(ElfGetSectionName(elffile, elffile->sections[i].sh_name),
+							".rodata1" ) == 0 ) {
+		elffile->rodata1=_LoaderFileToMem(elffile->fd,
+					SecOffset(i),SecSize(i),".rodata1");
+		elffile->saddr[i]=elffile->rodata1;
+		elffile->rodat1ndx=i;
+		elffile->rodat1size=SecSize(i);
+#ifdef ELFDEBUG
+ELFDEBUG(".rodata1 starts at %x\n", elffile->rodata1 );
 #endif
 		continue;
 		}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.51 1997/02/23 09:25:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.52 1997/02/25 14:20:56 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -277,6 +277,24 @@ typedef enum {
 #define MAGIC_CCD_XAA_SCREEN_INIT	5	/* cur.col.depth specific init*/
 #define MAGIC_PEX_INIT			6	/* PEX init function */
 #define MAGIC_XIE_INIT			7	/* XIE init function */
+#define MAGIC_VERSION			8	/* retrieve version info */
+						/* must be returned as */
+						/* first item from ModuleInit */
+
+#define MODINFOSTRING1	0xef23fdc5
+#define MODINFOSTRING2	0x10dc023a
+
+/* this structure is expected to be returned by initfunc by MAGIC_VERSION */
+typedef struct {
+	char *modname;		/* name of module, e.g. "foo_drv.o" */
+	char *vendor;		/* vendor specific string */
+	INT32 _modinfo1_;	/* constanta MODINFOSTRING1/2 to find */
+	INT32 _modinfo2_;	/* infoarea with a binary editor or sign tool */
+	INT32 xf86version;	/* contains XF86_VERSION_CURRENT */
+	INT32 modversion;	/* contains a module specific version id */
+	INT32 checksum[4];	/* contains a digital signature of the */
+				/* version info structure */
+} XF86ModuleVersionInfo;
 
 extern int *xf86ccdScreenPrivateIndex;
 extern void (*xf86ccdDoBitblt)();

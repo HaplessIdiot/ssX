@@ -42,6 +42,7 @@ typedef struct {
   unsigned char ET6KVidCtrl1;    /* ET6000 -- used for 15/16 bpp modes */
   unsigned char ET6KMemBase;     /* ET6000 -- linear memory mapped address */
   unsigned char ET6KPerfContr;   /* ET6000 -- system performance control */
+  unsigned char ET6KDispFeat;    /* ET6000 -- display feature register (0x46) */
   unsigned char ET6KMclkM, ET6KMclkN; /* memory clock values */
 #ifdef W32_SUPPORT
   unsigned char SegMapComp;     /* CRTC 0x30 */
@@ -58,6 +59,7 @@ typedef struct {
 
 
 typedef enum {
+    TYPE_UNKNOWN = -1,
     TYPE_ET4000,
     TYPE_ET4000W32,
     TYPE_ET4000W32I,

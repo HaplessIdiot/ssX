@@ -627,8 +627,10 @@ xf86FillRectTileCached(pDrawable, pGC, nBoxInit, pBoxInit)
 	{
 	    int i, patternx, patterny;
 
+#if 0 /* this doesn't seem to be right */
 if( (pBoxInit->x2 - pBoxInit->x1) <= 100 )
 	goto no8x8;
+#endif
             adjLeftX = ((pGC->patOrg.x + drawableXOrg) & 0x07);
             adjTopY = ((pGC->patOrg.y + drawableYOrg) & 0x07);
 

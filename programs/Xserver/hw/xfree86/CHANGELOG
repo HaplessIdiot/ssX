@@ -1,4 +1,26 @@
-XFree86 3.2Ai (xx February 1997)
+XFree86 3.2Aj (xx February 1997)
+ 522. First stab at getting VGA16 as loadable module; doesn't work, yet
+      (Dirk Hohndel).
+ 521. Add Mystique register definitions (#98, Guy Desbief).
+ 520. Fix unresolved symbols with loadable ati driver (#96, Thomas Mueller).
+ 519. Add module versioning (#97, Holger Veit).
+ 518. LynxOS doesn't have vfscanf (#95, Thomas Mueller).
+ 517. Fix 499 was missing. It is now included.
+ 516. Remove bogus code in xf86frect.c (#93, Harm Hanemaayer, Harald Nordgard
+      Hansen).
+ 515. Build fixes for FreeBSD (#92, Takaaki Nomura).
+ 514. Restructure RAMDAC handlung in tseng driver and add 16/24bpp support
+      for STG1703 (#91, Koen Gadeyne).
+ 513. Tseng HW cursor state save/restore (#91, Dejan Ilic).
+ 512. Disable HW cursor on et4000 (#91, Koen Gadeyne).
+ 511. Fix et6000 memory probing (#91, Koen Gadeyne).
+ 510. Fix handling of PCI probe in the tseng driver (#91, Koen Gadeyne).
+ 509. Fix "double-magic" in libc_wrapper.c (#90, Holger Veit).
+ 508. Fix for ET6000 HW cursor (#89, Harald Nordgard Hansen).
+ 507. Fixes to MGA driver: remove "nolinear", allow overriding MMIO address
+      as IoBase in XF86Config, remove obsolete files (#88, Radoslaw Kapitan).
+
+XFree86 3.2Ai (25 February 1997)
  506. Fix libc_wrapper.c for LynxOS, where stdin/out/err isn't a valid
       initializer (#87, Thomas Mueller).
  505. Updates to SiS driver: fix setting MemBase, allos some XAA functions

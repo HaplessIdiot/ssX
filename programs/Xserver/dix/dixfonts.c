@@ -22,7 +22,7 @@ SOFTWARE.
 ************************************************************************/
 
 /* $XConsortium: dixfonts.c /main/58 1996/09/28 17:11:55 rws $ */
-/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.5 1996/05/06 05:56:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.6 1996/12/23 06:29:40 dawes Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -41,8 +41,16 @@ SOFTWARE.
 #include	<stdio.h>
 #endif
 
+#ifdef XFree86LOADER
+extern int xf86bpp;
+#endif
+
 #define QUERYCHARINFO(pci, pr)  *(pr) = (pci)->metrics
 
+#ifndef XFree86LOADER
+/*
+ * when building the loader, we decide at runtime which one to use
+ */
 static Mask FontFormat = 
 #if IMAGE_BYTE_ORDER == LSBFirst
     BitmapFormatByteOrderLSB |
@@ -75,6 +83,7 @@ static Mask FontFormat =
 #endif
 
     BitmapFormatScanlineUnit8;
+#endif /* XFree86LOADER */
 
 extern pointer fosNaturalParams;
 extern FontPtr defaultFont;
@@ -257,6 +266,39 @@ doOpenFont(client, c)
                *newname;
     int         newlen;
     int		aliascount = 20;
+#ifdef XFree86LOADER
+/*
+ * when building the loader, we decide at runtime which one to use
+ */
+    Mask FontFormat = 
+#if IMAGE_BYTE_ORDER == LSBFirst
+    BitmapFormatByteOrderLSB |
+#else
+    BitmapFormatByteOrderMSB |
+#endif
+
+    (xf86bpp < 8) ? BitmapFormatBitOrderMSB : BitmapFormatBitOrderLSB |
+
+    BitmapFormatImageRectMin |
+
+#if GLYPHPADBYTES == 1
+    BitmapFormatScanlinePad8 |
+#endif
+
+#if GLYPHPADBYTES == 2
+    BitmapFormatScanlinePad16 |
+#endif
+
+#if GLYPHPADBYTES == 4
+    BitmapFormatScanlinePad32 |
+#endif
+
+#if GLYPHPADBYTES == 8
+    BitmapFormatScanlinePad64 |
+#endif
+
+    BitmapFormatScanlineUnit8;
+#endif /* XFree86LOADER */
 
     if (client->clientGone)
     {

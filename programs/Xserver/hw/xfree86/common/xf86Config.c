@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.118 1997/02/18 04:33:38 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.119 1997/02/25 14:20:59 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2981,20 +2981,20 @@ configScreenSection()
      */
     ErrorF("%s %s: color depth: %dbpp\n",
                    XCONFIG_GIVEN, screen->name, screen->depth);
-    /*
-     * we always need libmfb, as far as I can tell, so let's just load it
-     * right here.
-     */
-    LoadModule("libmfb.a", modulePath);
     switch( screen->depth )
     {
+    case 4:
+	    /* right now this doesn't work */
+    	    break;
     case 8:
+	    LoadModule("libmfb.a", modulePath);
 	    LoadModule("libcfb.a", modulePath);
 	    if( xf86xaaloaded )
 	        LoadModule("xaavga256.o", modulePath);
 	    break;
     case 15:
     case 16:
+	    LoadModule("libmfb.a", modulePath);
 	    LoadModule("libcfb.a", modulePath);
 	    LoadModule("libcfb16.a", modulePath);
 	    if( xf86xaaloaded )
@@ -3004,6 +3004,7 @@ configScreenSection()
 	    }
 	    break;
     case 24:
+	    LoadModule("libmfb.a", modulePath);
 	    LoadModule("libcfb.a", modulePath);
 	    LoadModule("libcfb24.a", modulePath);
 	    if( xf86xaaloaded )
@@ -3013,6 +3014,7 @@ configScreenSection()
 	    }
 	    break;
     case 32:
+	    LoadModule("libmfb.a", modulePath);
 	    LoadModule("libcfb.a", modulePath);
 	    LoadModule("libcfb32.a", modulePath);
 	    if( xf86xaaloaded )

@@ -27,7 +27,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 /* $XConsortium: cfbscrinit.c,v 5.32 94/04/17 20:29:00 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfbscrinit.c,v 1.7 1997/02/25 14:19:50 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbscrinit.c,v 1.8 1997/02/25 16:04:40 hohndel Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -56,24 +56,68 @@ miBSFuncRec cfbBSFuncRec = {
 #ifdef XFree86LOADER
 
 #include <xf86.h>
+#include <xf86Version.h>
     /*
      * this is the module init function that is executed when loading
      * libcfb as a module. Its name has to be ModuleInit.
      * With this we initialize the function and variable pointers used
      * in generic parts of XFree86
      */
-void
 #if PSZ == 8
-libcfbModuleInit(data,magic)
+XF86ModuleVersionInfo cfbVersRec =
+{
+	"libcfb.a",
+	"The XFree86 Project",
+	MODINFOSTRING1,
+	MODINFOSTRING2,
+	XF86_VERSION_CURRENT,
+	0x00010001,
+	{0,0,0,0}       /* signature, to be patched into the file by a tool */
+};
+
+void libcfbModuleInit(data,magic)
 #endif 
 #if PSZ == 16 
-libcfb16ModuleInit(data,magic)
+XF86ModuleVersionInfo cfbVersRec =
+{
+	"libcfb16.a",
+	"The XFree86 Project",
+	MODINFOSTRING1,
+	MODINFOSTRING2,
+	XF86_VERSION_CURRENT,
+	0x00010001,
+	{0,0,0,0}       /* signature, to be patched into the file by a tool */
+};
+
+void libcfb16ModuleInit(data,magic)
 #endif
 #if PSZ == 24
-libcfb24ModuleInit(data,magic)
+XF86ModuleVersionInfo cfbVersRec =
+{
+	"libcfb24.a",
+	"The XFree86 Project",
+	MODINFOSTRING1,
+	MODINFOSTRING2,
+	XF86_VERSION_CURRENT,
+	0x00010001,
+	{0,0,0,0}       /* signature, to be patched into the file by a tool */
+};
+
+void libcfb24ModuleInit(data,magic)
 #endif
 #if PSZ == 32 
-libcfb32ModuleInit(data,magic)
+XF86ModuleVersionInfo cfbVersRec =
+{
+	"libcfb32.a",
+	"The XFree86 Project",
+	MODINFOSTRING1,
+	MODINFOSTRING2,
+	XF86_VERSION_CURRENT,
+	0x00010001,
+	{0,0,0,0}       /* signature, to be patched into the file by a tool */
+};
+
+void libcfb32ModuleInit(data,magic)
 #endif
     pointer *	data;
     INT32 *	magic;
@@ -83,11 +127,15 @@ libcfb32ModuleInit(data,magic)
     switch(cnt++)
     {
     case 0:
+	* magic = MAGIC_VERSION;
+	* data = (pointer) &cfbVersRec;
+	break;
+    case 1:
     	* magic = MAGIC_CCD_DO_BITBLT;
 	* data  = (pointer) &cfbDoBitblt;
 	break;
 #ifdef CFB_NEED_SCREEN_PRIVATE
-    case 1:
+    case 2:
     	* magic = MAGIC_CCD_SCREEN_PRIV_IDX;
 	* data  = (pointer) &cfbScreenPrivateIndex;
 	break;

@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.29 1997/02/23 09:25:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.30 1997/02/25 14:22:29 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -161,9 +161,9 @@ vgaVideoChipRec MGA = {
 	vgaHWSaveScreen,
 	(void (*)())NoopDDA,	/* MGAGetMode, */
 	MGAFbInit,
-	MGASetRead, 
-	MGASetWrite,
-	MGASetReadWrite,
+	(void (*)())NoopDDA,	/* MGASetRead, */
+	(void (*)())NoopDDA,	/* MGASetWrite, */
+	(void (*)())NoopDDA,	/* MGASetReadWrite, */
 	/*
 	 * This is the size of the mapped memory window, usually 64k.
 	 */
@@ -219,7 +219,7 @@ vgaVideoChipRec MGA = {
 	 * for the detected configuratio this should be set to TRUE in the
 	 * Probe or FbInit function. 
 	 */
-	FALSE,
+	TRUE,
 	/*
 	 * This is the physical base address of the linear-mapped frame
 	 * buffer (when used).	Set it to 0 when not in use.
@@ -394,19 +394,11 @@ MGAReadBios()
 static void outTi3026(reg, val)
 unsigned char reg, val;
 {
-	if(MGAMMIOBase)
-	{
-		OUTREG8(RAMDAC_OFFSET + TVP3026_INDEX, reg);
-		OUTREG8(RAMDAC_OFFSET + TVP3026_DATA, val);
-	}
-	else
-	{
-		outb(0x3C8, reg);    /* RK - PCI metod doesn't work - ??? */
-		
-                pciWriteWord(MGAPciTag, PCI_MGA_INDEX, 
-	                		RAMDAC_OFFSET + TVP3026_DATA);
-                pciWriteLong(MGAPciTag, PCI_MGA_DATA, val << 16);
-	}
+	if (!MGAMMIOBase)
+		FatalError("MGA: IO registers not mapped\n");
+
+	OUTREG8(RAMDAC_OFFSET + TVP3026_INDEX, reg);
+	OUTREG8(RAMDAC_OFFSET + TVP3026_DATA, val);
 }
 
 static unsigned char inTi3026(reg)
@@ -414,19 +406,12 @@ unsigned char reg;
 {
 	unsigned char val;
 	
-	if(MGAMMIOBase)
-	{
-		OUTREG8(RAMDAC_OFFSET + TVP3026_INDEX, reg);
-		val = INREG8(RAMDAC_OFFSET + TVP3026_DATA);
-	}
-	else
-	{
-		outb(0x3C8, reg);    /* RK - PCI metod doesn't work - ??? */
-		
-                pciWriteWord(MGAPciTag, PCI_MGA_INDEX, 
-	                		RAMDAC_OFFSET + TVP3026_DATA);
-                val = pciReadLong(MGAPciTag, PCI_MGA_DATA) >> 16;
-	}
+	if (!MGAMMIOBase)
+		FatalError("MGA: IO registers not mapped\n");
+
+	OUTREG8(RAMDAC_OFFSET + TVP3026_INDEX, reg);
+	val = INREG8(RAMDAC_OFFSET + TVP3026_DATA);
+
 	return val;
 }
 
@@ -857,9 +842,6 @@ MGAProbe()
 		return(FALSE);
 	}
 
-	if ((pcr->_device != 0x0519) && !vga256InfoRec.chipset)
-		return(FALSE);
-
 	/*
 	 *	OK. It's MGA Millennium (or something pretty close)
 	 */
@@ -889,7 +871,40 @@ MGAProbe()
 		else
 			vga256InfoRec.BIOSbase = 0xc0000;
 	}
+	if (vga256InfoRec.MemBase)
+		MGA.ChipLinearBase = vga256InfoRec.MemBase;
+	if (vga256InfoRec.IObase)
+		MGAMMIOAddr = vga256InfoRec.IObase;
+		
+	if (!MGA.ChipLinearBase)
+		FatalError("MGA: Can't detect linear framebuffer address\n");
+	if (!MGAMMIOAddr)
+		FatalError("MGA: Can't detect IO registers address\n");
+	 
+	MGAMMIOBase =
+#if defined(__alpha__)
+			/* for Alpha, we need to map SPARSE memory,
+	     		since we need byte/short access */
+			  xf86MapVidMemSparse(
+#else /* __alpha__ */
+			  xf86MapVidMem(
+#endif /* __alpha__ */
+			    vga256InfoRec.scrnIndex, MMIO_REGION,
+			    (pointer)(MGAMMIOAddr), 0x4000);
+#ifdef __alpha__
+	MGAMMIOBaseDENSE =
+	  /* for Alpha, we need to map DENSE memory
+	     as well, for setting CPUToScreenColorExpandBase
+	   */
+		  xf86MapVidMem(
+			    vga256InfoRec.scrnIndex,
+			    MMIO_REGION,
+			    (pointer)(MGAMMIOAddr), 0x4000);
+#endif /* __alpha__ */
 
+	if (!MGAMMIOBase)
+		FatalError("MGA: Can't map IO registers\n");
+	
 	/*
 	 * Read the BIOS data struct
 	 */
@@ -963,13 +978,11 @@ MGAProbe()
     	vga256InfoRec.directMode = XF86DGADirectPresent;
 #endif
  
-	OFLG_SET(OPTION_NOLINEAR_MODE, &MGA.ChipOptionFlags);
 	OFLG_SET(OPTION_NOACCEL, &MGA.ChipOptionFlags);
 	OFLG_SET(OPTION_SYNC_ON_GREEN, &MGA.ChipOptionFlags);
 	OFLG_SET(OPTION_DAC_8_BIT, &MGA.ChipOptionFlags);
 
 	OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
-       
 	OFLG_SET(OPTION_DAC_8_BIT, &vga256InfoRec.options);
 
 	/* Moved width checking because virtualX isn't set until after
@@ -1232,75 +1245,21 @@ static void
 MGAFbInit()
 {
 	if (xf86Verbose)
+	{
+		ErrorF("%s %s: Linear framebuffer at %lX\n", 
+			vga256InfoRec.MemBase? XCONFIG_GIVEN : XCONFIG_PROBED,
+			vga256InfoRec.name, MGA.ChipLinearBase);
+		ErrorF("%s %s: IO registers at %lX\n", 
+			vga256InfoRec.IObase? XCONFIG_GIVEN : XCONFIG_PROBED,
+			vga256InfoRec.name, MGAMMIOAddr);
+	}
+	
+	if (xf86Verbose)
 		ErrorF("%s %s: Using TI TVP3026 programmable clock\n",
 			XCONFIG_PROBED, vga256InfoRec.name);
  
-	if (OFLG_ISSET(OPTION_NOLINEAR_MODE, &vga256InfoRec.options))
-		OFLG_SET(OPTION_NOACCEL, &vga256InfoRec.options);
-	else
-	{
-		if (vga256InfoRec.MemBase)
-			MGA.ChipLinearBase = vga256InfoRec.MemBase;
-		if (MGA.ChipLinearBase)
-		{
-			MGA.ChipUseLinearAddressing = TRUE;
-			if (xf86Verbose)
-				ErrorF("%s %s: Linear frame buffer at %lX\n", 
-					vga256InfoRec.MemBase? XCONFIG_GIVEN : XCONFIG_PROBED,
-					vga256InfoRec.name, MGA.ChipLinearBase);
-			/* Probe found the MMIO base (or else!) */
-			/* I believe that this should map the registers!
-			 * therefore the base0 value that is in MGAMMIOBase
-			 * is needed...
-			 */
-			if (MGAMMIOAddr)
-			{
-				MGAMMIOBase =
-#if defined(__alpha__)
-				  /* for Alpha, we need to map SPARSE memory,
-				     since we need byte/short access */
-				  xf86MapVidMemSparse(
-#else /* __alpha__ */
-				  xf86MapVidMem(
-#endif /* __alpha__ */
-					    vga256InfoRec.scrnIndex,
-					    MMIO_REGION,
-					    (pointer)(MGAMMIOAddr), 0x4000);
-#ifdef __alpha__
-				MGAMMIOBaseDENSE =
-				  /* for Alpha, we need to map DENSE memory
-				     as well, for setting
-				     CPUToScreenColorExpandBase
-				   */
-				  xf86MapVidMem(
-					    vga256InfoRec.scrnIndex,
-					    MMIO_REGION,
-					    (pointer)(MGAMMIOAddr), 0x4000);
-#endif /* __alpha__ */
-			}
-			else
-				MGAMMIOBase = NULL;
-
-			if (!MGAMMIOBase)
-			{
-				ErrorF("%s %s: Can't map chip registers, "
-					"acceleration disabled\n", XCONFIG_PROBED,
-					vga256InfoRec.name);
-				OFLG_SET(OPTION_NOACCEL, &vga256InfoRec.options);
-			}
-		}
-		else
-		{
-			ErrorF("%s %s: Can't find PCI Base Address, "
-				"acceleration disabled\n",
-				XCONFIG_PROBED, vga256InfoRec.name);
-			OFLG_SET(OPTION_NOACCEL, &vga256InfoRec.options);
-		}
-	}
-	
 	if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
 	{
-
 #if 0
 		/*
 		 * Hardware cursor is not supported yet.
@@ -1317,36 +1276,9 @@ MGAFbInit()
 		MGAusefbitblt = !(MGABios.FeatFlag & 0x00000001);
 		MGAAccelInit();
 	}
-	
-	/*
-	 * Some functions (eg, line drawing) are initialised via the
-	 * cfbTEOps, cfbTEOps1Rect, cfbNonTEOps, cfbNonTEOps1Rect
-	 * structs as well as in cfbLowlevFuncs.	These are of type
-	 * 'struct GCFuncs' which is defined in mit/server/include/gcstruct.h.
-	 
-	cfbLowlevFuncs.lineSS = MGALineSS;
-	cfbTEOps1Rect.Polylines = MGALineSS;
-	cfbTEOps.Polylines = MGALineSS;
-	cfbNonTEOps1Rect.Polylines = MGALineSS;
-	cfbNonTEOps.Polylines = MGALineSS;
-	 */
 }
 
 /*
- * MGAScrnInit --
- *
- * Sets some accelerated functions
- */		
-static int
-MGAScrnInit(pScreen, LinearBase, virtualX, virtualY, res1, res2, width)
-ScreenPtr pScreen;
-char *LinearBase;
-int virtualX, virtualY, res1, res2, width;
-{
-	return(TRUE);
-}
-
- /*
  * MGAInit --
  *
  * The 'mode' parameter describes the video mode.	The 'mode' structure 
@@ -1540,9 +1472,11 @@ vgaMGAPtr restore;
 	for (i = 0; i < sizeof(MGADACregs); i++)
 		outTi3026(MGADACregs[i], restore->DACreg[i]);
 
+#ifdef DEBUG
 	ErrorF("PCI retry (0-enabled / 1-disabled): %d\n",
-		restore->DAClong & 0x20000000);
-		 
+		!!(restore->DAClong & 0x20000000));
+#endif		 
+
 	MGAWaitForBlitter();
 	MGAEngineInit();
 

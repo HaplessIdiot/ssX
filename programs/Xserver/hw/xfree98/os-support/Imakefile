@@ -85,6 +85,7 @@ LinkSourceFile(README.OS-lib,$(XF86SRC)/os-support)
 LinkSourceFile(assyntax.h,$(XF86SRC)/os-support)
 LinkSourceFile(xf86_OSlib.h,$(XF86SRC)/os-support)
 LinkSourceFile(xf86_OSproc.h,$(XF86SRC)/os-support)
+LinkSourceFile(xf86_libc.h,$(XF86SRC)/os-support)
 
 InstallLinkKitLibrary(xf86_os,$(XF98LINKKITDIR)/lib98)
 #ifndef DontInstallPC98Version

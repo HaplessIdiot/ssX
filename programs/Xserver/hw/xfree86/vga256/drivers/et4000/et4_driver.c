@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.52 1997/02/23 09:25:35 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.53 1997/02/25 14:22:17 hohndel Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -120,9 +120,14 @@ static unsigned char    initialET6KPerfContr = 0x3a;
 
 static unsigned char    save_VSConf1=0x03;
 
-int et4000_type;
+
+/* some exported variables */
+t_tseng_type et4000_type = TYPE_UNKNOWN;
 
 unsigned long ET6Kbase;  /* PCI config space base address for ET6000 */
+
+static pciConfigPtr tseng_pcr = NULL;
+
 
 vgaVideoChipRec ET4000 = {
   ET4000Probe,
@@ -141,7 +146,7 @@ vgaVideoChipRec ET4000 = {
   ET4000SetReadWrite,
   0x20000,			/* ChipMapSize (0x10000 for normal vga,
                                                 0x20000 for accelerator in banked mode */
-  0x10000,			/* ChipSegmentSize, 16k*/
+  0x10000,			/* ChipSegmentSize, 64k */
   16,				/* ChipSegmentShift */
   0xFFFF,			/* ChipSegmentMask */
   0x00000, 0x10000,		/* ChipReadBottom, ChipReadTop  */
@@ -260,39 +265,35 @@ ET4000LinMem(Bool autodetect)
   * ISA is out of the question (I think).
   */
   
-#define DEFAULT_LINEAR_BASE 0x80000000
+  unsigned long mask = 0;
 
-  long temp=0;
-  
   if (vga256InfoRec.MemBase != 0)   /* MemBase given from XF86Config */
   {
     switch(et4000_type)
     {
       case TYPE_ET4000W32I:   /* A26..A22 are decoded */
-        if (vga256InfoRec.MemBase & ~0x07C00000)
-          ErrorF("%s %s: MemBase out of range. Must be <= 0x07C00000 on 4MB boundary.\n",
-                 XCONFIG_PROBED, vga256InfoRec.name);
-        vga256InfoRec.MemBase &= ~0x07C00000;
-        break;
+          mask = 0x07C00000;
+          break;
       case TYPE_ET4000W32Pc: /* A31,A30 decoded from PCI config space */
-        temp |= vgaPCIInfo->MemBase & 0xC0000000;  /* get A31,30 from PCI config */
-      case TYPE_ET4000W32P: /* A31,A30 are decoded as 00 (=always mapped below 512 MB) */
-        temp |= 0x3FC00000; /* A29..A22 */
-        if (vga256InfoRec.MemBase & ~temp )
-          ErrorF("%s %s: MemBase out of range. Must be <= 0x%x on 16MB boundary.\n",
-                 XCONFIG_PROBED, vga256InfoRec.name, temp);
-        vga256InfoRec.MemBase &= ~temp;
-        break;
+          mask = 0xFFC00000; /* A31..A22 are decoded */
+          break;
+      case TYPE_ET4000W32P:  /* A31,A30 are decoded as 00 (=always mapped below 512 MB) */
+          mask = 0x3FC00000; /* A29..A22 */
+          break;
       case TYPE_ET6000:
-        if (vga256InfoRec.MemBase & 0xFF000000)
-          ErrorF("%s %s: MemBase out of range. Must be <= 0xFF000000 on 16MB boundary.\n",
-                 XCONFIG_PROBED, vga256InfoRec.name, temp);
-        vga256InfoRec.MemBase &= 0xFF000000;
-        break;
+          mask = 0xFF000000;
+          break;
       default:
         ErrorF("%s %s: This chipset does not support linear memory.\n",
                XCONFIG_PROBED, vga256InfoRec.name);
         return (FALSE); /* no can do */
+
+    }
+    /* check for possible errors in given linear base address */
+    if ((vga256InfoRec.MemBase & (~mask)) != 0) {
+        ErrorF("%s %s: MemBase out of range. Must be <= 0x%x on 0x%x boundary.\n",
+               XCONFIG_PROBED, vga256InfoRec.name, mask, ~(mask | 0xFF000000) + 1);
+        vga256InfoRec.MemBase &= ~mask;
     }
   }
   else     /* MemBase not given: find it */
@@ -304,30 +305,30 @@ ET4000LinMem(Bool autodetect)
         vga256InfoRec.MemBase = (inb(vgaIOBase+0x05) & 0x1F) << 22;
         break;
       case TYPE_ET4000W32Pc: /* A31,A30 decoded from PCI config space */
+        if (tseng_pcr) vga256InfoRec.MemBase = tseng_pcr->_base0;
+        break;
       case TYPE_ET4000W32P:  /* A31,A30 are decoded as 00 (=always mapped below 512 MB) */
-        vga256InfoRec.MemBase = vgaPCIInfo->MemBase;
+        if (tseng_pcr) vga256InfoRec.MemBase = tseng_pcr->_base0 & ~0xC0000000;
         break;
       case TYPE_ET6000:
-        if ( (vgaPCIInfo->MemBase !=0) && (autodetect) ) /* don't trust PCI when not autodetecting */
-          vga256InfoRec.MemBase = vgaPCIInfo->MemBase;
+        if (tseng_pcr && autodetect) /* don't trust PCI when not autodetecting */
+          vga256InfoRec.MemBase = tseng_pcr->_base0;
         else if (inb(ET6Kbase+0x13) != 0)
         {
           vga256InfoRec.MemBase = inb(ET6Kbase+0x13) << 24;
           ErrorF("%s %s: ET6000: port-probed linear memory base = 0x%x\n",
                   XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.MemBase);
         }
-        else /* Argghh... nobody set up the linear address base yet. Guess */
-        {
-          ErrorF("%s %s: ET6000: Could not determine linear memory base address."
-                 " Setting it to 0x%X\n",
-                 XCONFIG_PROBED, vga256InfoRec.name, DEFAULT_LINEAR_BASE);
-          vga256InfoRec.MemBase = DEFAULT_LINEAR_BASE;
-        }
         break;
       default:
         ErrorF("%s %s: This chipset does not support linear memory.\n",
                XCONFIG_PROBED, vga256InfoRec.name);
         return (FALSE); /* no can do */
+    }
+    if (vga256InfoRec.MemBase == 0) {
+        ErrorF("%s %s: Could not autodetect linear memory base address -- please specify it.\n",
+               XCONFIG_PROBED, vga256InfoRec.name);
+        return (FALSE);
     }
   }
   /*
@@ -385,16 +386,11 @@ ET6000InitVars(Bool autodetect)
     * in the system, XFree's PCI scanner might give us the wrong one).
     */
 
-   /* define used IO ports... Is this really necessary for PCI config space IO? */
-   for (i=0; i<Num_ET6000_PCIPorts; i++)
-     ET6000_PCIPorts[i] = ET6Kbase+i;
-   xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_ET6000_PCIPorts, ET6000_PCIPorts);
-   
    ET4000EnterLeave(ENTER);
 
-   if (autodetect)
+   if (autodetect && tseng_pcr)
    {
-     ET6Kbase = vgaPCIInfo->IOBase & ~0xFF;
+     ET6Kbase = tseng_pcr->_base1 & ~0xFF;
    }
    else
    {
@@ -406,6 +402,11 @@ ET6000InitVars(Bool autodetect)
              XCONFIG_PROBED, vga256InfoRec.name, ET6Kbase);
    }
 
+   /* define used IO ports... Is this really necessary for PCI config space IO? */
+   for (i=0; i<Num_ET6000_PCIPorts; i++)
+     ET6000_PCIPorts[i] = ET6Kbase+i;
+   xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_ET6000_PCIPorts, ET6000_PCIPorts);
+   
   /*
    * clock related stuff
    */
@@ -519,8 +520,129 @@ Bool ET4000AutoDetect()
 
 
 /*
+ * The 8*32kb ET6000 MDRAM granularity causes the more general probe to
+ * detect too much memory in some configurations, because that code has a
+ * 8-bank (=256k) granularity. E.g. it fails to recognize 2.25 MB of memory
+ * (detects 2.5 instead). This function goes to check if the RAM is actually
+ * there. MDRAM comes in multiples of 4 banks (16, 24, 32, 36, 40, 64, 72,
+ * 80, ...), so checking each 64k block should be enough granularity.
+ *
+ * The exact same code could be used on other Tseng chips, or even on ANY
+ * VGA board, but probably only in case of trouble.
+ *
+ */
+#define VIDMEM ((volatile unsigned int*)check_vgabase)
+#define SEGSIZE (ET4000.ChipSegmentSize / 1024)
+
+/* vgaSetVidPage() doesn't seem to work -- dunno why */
+static void Tseng_set_segment(int seg)
+{
+  int seg1, seg2;
+  seg1 = seg & 0x0F;
+  seg2 = (seg & 0x30) >> 4;
+  outb(0x3CB, seg2 | (seg2 << 4));
+  outb(0x3CD, seg1 | (seg1 << 4));
+}
+
+static int et6000_check_videoram(int ram)
+{
+  unsigned char oldSegSel1, oldSegSel2, oldGR5, oldGR6, oldSEQ2, oldSEQ4;
+  int segment, i;
+  int real_ram;
+  pointer check_vgabase;
+  Bool fooled = FALSE;
+  int save_vidmem;
+  
+  if (ram > 4096) {
+    ErrorF("%s %s: ET6000: Detected more than 4096 kb of video RAM. Clipped to 4096kb\n",
+            XCONFIG_PROBED, vga256InfoRec.name);
+    ram = 4096;
+  }
+  
+ /* vga256InfoRec.VGAbase is NULL at this point, because the VGA aperture
+  * hasn't been memory-mapped yet when we enter the probing code.
+  */
+  check_vgabase = xf86MapVidMem(vga256InfoRec.scrnIndex, VGA_REGION,
+                           (pointer)0xA0000, 0x10000);
+
+ /*
+  * We need to set the VGA controller in VGA graphics mode, or else we won't
+  * be able to access the full 4MB memory range. First, we save the
+  * registers we modify, of course.
+  */
+  oldSegSel1 = inb(0x3CD);
+  oldSegSel2 = inb(0x3CB);
+  outb(0x3CE, 5); oldGR5 = inb(0x3CF);
+  outb(0x3CE, 6); oldGR6 = inb(0x3CF);
+  outb(0x3C4, 2); oldSEQ2 = inb(0x3C5);
+  outb(0x3C4, 4); oldSEQ4 = inb(0x3C5);
+
+  /* set graphics mode */  
+  outb(0x3CE, 6); outb(0x3CF, 5);
+  outb(0x3CE, 5); outb(0x3CF, 0x40);
+  outb(0x3C4, 2); outb(0x3C5, 0x0f);
+  outb(0x3C4, 4); outb(0x3C5, 0x0e);
+
+ /*
+  * count down from presumed amount of memory in SEGSIZE steps, and
+  * look at each segment for real RAM.
+  */
+
+  for (segment = (ram / SEGSIZE) - 1; segment >= 0; segment--)
+  {
+      Tseng_set_segment(segment);
+
+      /* save contents of memory probing location */
+      save_vidmem = *(VIDMEM);
+
+      /* test with pattern */
+      *VIDMEM = 0xAAAA5555;
+      if (*VIDMEM != 0xAAAA5555) {
+          *VIDMEM = save_vidmem;
+          continue;
+      }
+      
+      /* test with inverted pattern */
+      *VIDMEM = 0x5555AAAA;
+      if (*VIDMEM != 0x5555AAAA) {
+          *VIDMEM = save_vidmem;
+          continue;
+      }
+      
+      /* check if we aren't fooled by address wrapping (mirroring) */
+      fooled = FALSE;
+      for (i = segment-1; i >=0; i--) {
+          Tseng_set_segment(i);
+          if (*VIDMEM == 0x5555AAAA) {
+               fooled = TRUE;
+               break;
+          }
+      }
+      if (!fooled) {
+          real_ram = (segment+1) * SEGSIZE;
+          break;
+      }
+      /* restore old contents again */
+      *VIDMEM = save_vidmem;
+  }
+
+  /* restore original register contents */  
+  outb(0x3CD, oldSegSel1);
+  outb(0x3CB, oldSegSel2);
+  outb(0x3CE, 5); outb(0x3CF, oldGR5);
+  outb(0x3CE, 6); outb(0x3CF, oldGR6);
+  outb(0x3C4, 2); outb(0x3C5, oldSEQ2);
+  outb(0x3C4, 4); outb(0x3C5, oldSEQ4);
+
+  xf86MapVidMem(vga256InfoRec.scrnIndex, VGA_REGION,
+                (pointer)0xA0000, 0x10000);
+
+  return real_ram;
+}
+
+/*
  * TsengDetectMem --
- *      try to find amount of video memory intalled.
+ *      try to find amount of video memory installed.
  */
 
 static void
@@ -536,12 +658,14 @@ TsengDetectMem()
     {
       case 0x03:  /* MDRAM */
         ramtype=0;
-        /* FIXME!!! 8*32kb granularity fails to recognize 2.25 MB of memory (detects 2.5 instead) */
         vga256InfoRec.videoRam = ((inb(ET6Kbase+0x47) & 0x07) + 1) * 8*32; /* number of 8 32kb banks  */
         if (inb(ET6Kbase+0x45) & 0x04)
         {
           vga256InfoRec.videoRam <<= 1;
         }
+        /* 8*32kb MDRAM refresh control granularity in the ET6000 fails to */
+        /* recognize 2.25 MB of memory (detects 2.5 instead) */
+        vga256InfoRec.videoRam = et6000_check_videoram(vga256InfoRec.videoRam);
         ErrorF("%s %s: ET6000: Detected %d kb of multi-bank DRAM\n",
             XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.videoRam);
         break;
@@ -605,8 +729,7 @@ ET4000Probe()
   xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
   xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_ET4000_ExtPorts, ET4000_ExtPorts);
  
-  /* Try to detect a Tseng video card */
-
+  /* Try to detect a Tseng video card -- first see if it is forced */
   if (vga256InfoRec.chipset)   /* no auto-detect: chipset is given */
   {
     et4000_type = xf86StringToToken(chipsets, vga256InfoRec.chipset);
@@ -614,29 +737,53 @@ ET4000Probe()
         return FALSE;
     autodetect = FALSE;
   }
-  else if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TSENG)
+
+  /* next step: try finding one on the PCI bus */
+  if ((et4000_type == TYPE_UNKNOWN) && vgaPCIInfo)
   {
-    switch(vgaPCIInfo->ChipType)
-      {
-        case PCI_CHIP_ET6000:
-          et4000_type = TYPE_ET6000;
-          break;
-        case PCI_CHIP_ET4000_W32P_A:
-        case PCI_CHIP_ET4000_W32P_B:
-          et4000_type = TYPE_ET4000W32P;
-          break;
-        case PCI_CHIP_ET4000_W32P_C:
-        case PCI_CHIP_ET4000_W32P_D:
-          et4000_type = TYPE_ET4000W32Pc;
-          break;
-        default: 
-          ErrorF("%s %s: Unknown Tseng Labs PCI device 0x%x -- please report.\n",
-                 XCONFIG_PROBED, vga256InfoRec.name, vgaPCIInfo->ChipType);
+    int i = 0;
+    /* find an active TSENG card in the list of PCI devices */
+    if (vgaPCIInfo->AllCards) {
+      while (tseng_pcr = vgaPCIInfo->AllCards[i++]) {
+            if ((tseng_pcr->_vendor == PCI_VENDOR_TSENG)
+                && (tseng_pcr->_command & PCI_CMD_IO_ENABLE)
+                && (tseng_pcr->_command & PCI_CMD_MEM_ENABLE)) {
+                  /*
+                   * At this moment, "tseng_pcr" holds a pointer to the PCI
+                   * structure of the active TSENG VGA card.
+                   *
+                   * This "searching" should not be necessary anymore once
+                   * the XFree PCI code gives us only the ACTIVE PCI VGA
+                   * card to begin with.
+                   */
+                  switch(tseng_pcr->_device)
+                    {
+                      case PCI_CHIP_ET6000:
+                        et4000_type = TYPE_ET6000;
+                        break;
+                      case PCI_CHIP_ET4000_W32P_A:
+                      case PCI_CHIP_ET4000_W32P_B:
+                        et4000_type = TYPE_ET4000W32P;
+                        break;
+                      case PCI_CHIP_ET4000_W32P_C:
+                      case PCI_CHIP_ET4000_W32P_D:
+                        et4000_type = TYPE_ET4000W32Pc;
+                        break;
+                      default: 
+                        ErrorF("%s %s: Unknown Tseng Labs PCI device 0x%x -- please report.\n",
+                               XCONFIG_PROBED, vga256InfoRec.name, tseng_pcr->_device);
+                    }
+                  vga256InfoRec.chipset = xf86TokenToString(chipsets, et4000_type);      
+                  break;
+            }
       }
-    vga256InfoRec.chipset = xf86TokenToString(chipsets, et4000_type);      
+    }
   }
-  else  /* all else failed -- try old-style autodetect */
-    if (ET4000AutoDetect()==FALSE) return(FALSE);
+
+  /* last resort -- try old-style autodetect (port probing) */
+  if (et4000_type == TYPE_UNKNOWN) {
+     if (ET4000AutoDetect()==FALSE) return(FALSE);
+  }
 
   if (et4000_type == TYPE_ET6000)
       ET6000InitVars(autodetect);
@@ -697,7 +844,7 @@ ET4000Probe()
              XCONFIG_PROBED, vga256InfoRec.name);
   }
 
-  if (et4000_type >= TYPE_ET6000)  /* currently only ET6000 has >8bpp */
+  if (et4000_type >= TYPE_ET6000)
   {
     ET4000.ChipHas16bpp = TRUE;
     ET4000.ChipHas24bpp = TRUE;
@@ -711,7 +858,7 @@ ET4000Probe()
     ET4000.ChipHas32bpp = TRUE;
   }
 
-  if (TsengRamdacType == CH8398_DAC)
+  if ( (TsengRamdacType == CH8398_DAC) || (TsengRamdacType == STG1703_DAC) )
   {
     ET4000.ChipHas16bpp = TRUE;
     ET4000.ChipHas24bpp = TRUE;
@@ -795,6 +942,8 @@ ET4000Probe()
                  XCONFIG_PROBED, vga256InfoRec.name);
           vga256InfoRec.videoRam -= 1; /* 1kb reserved for hardware cursor */
       }
+      else   /* clear illegal option */
+          OFLG_CLR(OPTION_HW_CURSOR, &vga256InfoRec.options);
   }
         
   OFLG_SET(OPTION_NOACCEL, &ET4000.ChipOptionFlags);
@@ -1161,6 +1310,7 @@ ET4000Restore(restore)
     outb(ET6Kbase+0x40, restore->ET6KMMAPCtrl);
     outb(ET6Kbase+0x58, restore->ET6KVidCtrl1);
     outb(ET6Kbase+0x41, restore->ET6KPerfContr);
+    outb(ET6Kbase+0x46, restore->ET6KDispFeat);
   }
   
   outw(vgaIOBase + 4, (restore->HorOverflow << 8)  | 0x3F);
@@ -1353,6 +1503,7 @@ ET4000Save(save)
     save->ET6KMMAPCtrl  = inb(ET6Kbase+0x40);
     save->ET6KVidCtrl1  = inb(ET6Kbase+0x58);
     save->ET6KPerfContr = inb(ET6Kbase+0x41);
+    save->ET6KDispFeat  = inb(ET6Kbase+0x46);
   }
   
   outb(vgaIOBase + 4, 0x30); save->SegMapComp = inb(vgaIOBase + 5);

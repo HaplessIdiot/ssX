@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.3 1997/01/18 06:57:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.4 1997/01/20 12:38:19 dawes Exp $ */
 
 
 #include "windowstr.h"
@@ -58,6 +58,7 @@ xf86AccelInfoRecType xf86AccelInfoRec = {
     NULL,	/* WriteBitmapFallBack() */
     NULL,	/* SetupForFillRectSolid() */
     NULL,	/* SubsequentFillRectSolid() */
+    NULL,	/* SubsequentFillTrapezoidSolid() */
     NULL,	/* SetupForScreenToScreenCopy() */
     NULL,	/* SubsequentScreenToScreenCopy() */
     NULL,	/* SubsequentBresenhamLine() */

@@ -70,13 +70,19 @@ section in your XF86Config file:
 
 or let xf86config or XF86Setup do this for you.
 
+But if you have problems with auto-detection, you can specify:
+
+    VideoRam  - in kilobytes
+    DacSpeed  - in MHz
+    MemBase   - physical address of the linear framebuffer 
+    IoBase    - physical address of the memory mapped IO registers
+    BiosBase  - physical address of BIOS
+
+
 Driver Options:
 ---------------
 
-DO NOT USE "nolinear" as it does not longer work, and will be removed
-by 3.2B.
-
-"noaccel", "no_bitblt"	- turns off BitBlt Engine
+"noaccel"	- turns off Drawing Engine
 
 Virtual Widths: (This may no longer apply)
 ---------------

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/Imakefile,v 3.8 1997/02/14 12:18:56 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/Imakefile,v 3.9 1997/02/23 09:25:39 dawes Exp $
 XCOMM
 XCOMM This is an Imakefile for the MGA driver.  
 XCOMM
@@ -6,17 +6,9 @@ XCOMM
 #define IHaveModules
 #include <Server.tmpl>
 
-#ifdef i386Architecture
-MGABANKSRCS = mgabank.s
-MGABANKOBJS = mgabank.o
-#else
-MGABANKSRCS = mgabankc.c
-MGABANKOBJS = mgabankc.o
-#endif
-
-SRCS = mgadriver.c $(MGABANKSRCS) mga_initacc.c \
+SRCS = mgadriver.c mga_initacc.c \
        mga_accel8.c mga_accel16.c mga_accel24.c mga_accel32.c
-OBJS = mgadriver.o $(MGABANKOBJS) mga_initacc.o \
+OBJS = mgadriver.o mga_initacc.o \
        mga_accel8.o mga_accel16.o mga_accel24.o mga_accel32.o
 
 #if XF86LinkKit
@@ -44,9 +36,6 @@ InstallLinkKitNonExecFile(mga.h,$(LINKKITDIR)/drivers/vga256/mga)
 InstallLinkKitNonExecFile(mgabios.h,$(LINKKITDIR)/drivers/vga256/mga)
 InstallLinkKitNonExecFile(mgareg.h,$(LINKKITDIR)/drivers/vga256/mga)
 InstallLinkKitNonExecFile(mgadriver.c,$(LINKKITDIR)/drivers/vga256/mga)
-InstallLinkKitNonExecFile(mgabank.s,$(LINKKITDIR)/drivers/vga256/mga)
-InstallLinkKitNonExecFile(mgabankc.c,$(LINKKITDIR)/drivers/vga256/mga)
-InstallLinkKitNonExecFile(mga_line.c,$(LINKKITDIR)/drivers/vga256/mga)
 InstallLinkKitNonExecFile(mga_initacc.c,$(LINKKITDIR)/drivers/vga256/mga)
 InstallLinkKitNonExecFile(mga_accel.c,$(LINKKITDIR)/drivers/vga256/mga)
 InstallLinkKitNonExecFile(mga_map.h,$(LINKKITDIR)/drivers/vga256/mga)

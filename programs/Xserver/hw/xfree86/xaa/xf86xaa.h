@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.6 1997/01/18 06:57:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.7 1997/01/20 12:38:27 dawes Exp $ */
 
 
 /* AccelInfoRec flags */
@@ -517,6 +517,20 @@ typedef struct {
         int y,
         int width,
         int height
+#endif
+    );
+    void (*SubsequentFillTrapezoidSolid)(
+#if NeedNestedPrototypes
+        int ytop,
+        int height,
+        int left,
+        int dxL,
+	int dyL,
+	int eL,
+	int right,
+	int dxR,
+	int dyR,
+	int eR
 #endif
     );
     void (*SetupForScreenToScreenCopy)(

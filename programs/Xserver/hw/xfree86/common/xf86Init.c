@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.67 1997/02/16 10:27:16 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.68 1997/02/25 14:21:02 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -314,9 +314,11 @@ InitOutput(pScreenInfo, argc, argv)
    * Use the previous collected parts to setup pScreenInfo
    */
   pScreenInfo->imageByteOrder = IMAGE_BYTE_ORDER;
-  pScreenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
   pScreenInfo->bitmapScanlinePad = BITMAP_SCANLINE_PAD;
+#ifndef XFree86LOADER
+  pScreenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
   pScreenInfo->bitmapBitOrder = BITMAP_BIT_ORDER;
+#endif
   pScreenInfo->numPixmapFormats = numFormats;
   for ( i=0; i < numFormats; i++ ) pScreenInfo->formats[i] = formats[i];
 
@@ -375,6 +377,23 @@ InitOutput(pScreenInfo, argc, argv)
        */
       if (!xf86Info.sharedMonitor) (xf86Screens[i]->EnterLeaveMonitor)(ENTER);
     }
+#ifdef XFree86LOADER
+    if( pScreenInfo->screens[0]->rootDepth < 8 )
+    {
+        pScreenInfo->bitmapScanlineUnit = 8;
+        pScreenInfo->bitmapBitOrder = MSBFirst;
+    }
+    else
+    {
+        pScreenInfo->bitmapScanlineUnit = 32;
+        pScreenInfo->bitmapBitOrder = LSBFirst;
+    }
+    if( xf86bpp == -1 )
+    {
+        xf86bpp = pScreenInfo->screens[0]->rootDepth;
+    }
+#endif
+
 
 #ifndef AMOEBA
   RegisterBlockAndWakeupHandlers(xf86Block, xf86Wakeup, (void *)0);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.75 1997/02/17 09:48:31 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.77 1997/02/25 16:05:04 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -225,6 +225,27 @@ int xf86ScreenNames[] =
   -1
 };
 
+#ifdef XF86VGA16
+int vga16ValidTokens[] =
+{
+  PSEUDOCOLOR,
+  STATICCOLOR,
+  STATICGRAY,
+  GRAYSCALE,
+  CHIPSET,
+  CLOCKS,
+  MODES,
+  SCREENNO,
+  OPTION,
+  VIDEORAM,
+  VIEWPORT,
+  VIRTUAL,
+  CLOCKPROG,
+  BIOSBASE,
+  -1
+};
+
+#else
 int vga256ValidTokens[] =
 {
   STATICGRAY,
@@ -247,6 +268,7 @@ int vga256ValidTokens[] =
   MEMBASE,
   -1
 };
+#endif
 
 ScrnInfoRec *
 ServerInit()
@@ -268,11 +290,13 @@ ModuleInit(data,magic)
 
     switch(cnt++)
     {
+#ifndef XF86VGA16
     case 0:
       * data = (int) "libxaa.a";
       * magic= MAGIC_LOAD;
       xf86xaaloaded = TRUE;
       break;
+#endif
     default:
       * magic= MAGIC_DONE;
       break;

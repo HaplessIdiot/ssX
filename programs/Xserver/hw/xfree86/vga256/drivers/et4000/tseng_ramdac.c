@@ -655,15 +655,43 @@ void tseng_validate_mode(DisplayModePtr mode, int bytesperpixel, Bool verbose)
 
 
 /*
+ * The following arrays hold command register values for all possible
+ * modes of the 16-bit DACs used on ET4000W32p cards (bpp/pixel_bus_width):
+ *
+ * { 8bpp/8, 15bpp/8, 16bpp/8, 24bpp/8, 32bpp/8,
+ *   8bpp/16, 15bpp/16, 16bpp/16, 24bpp/16, 32bpp/16
+ * } 
+ *
+ * "0xFF" is used as a "not-supported" flag. Assuming no RAMDAC uses this
+ * value for some real configuration...
+ */
+static unsigned char CMD_ICS5341[] = { 0x00, 0x20, 0x60, 0x40, 0xFF,
+                                       0x10, 0x30, 0x50, 0x90, 0x70 };
+
+static unsigned char CMD_STG1703[] = { 0x00, 0xFF, 0xFF, 0xFF, 0xFF,
+                                       0x05, 0x02, 0x03, 0x04, 0xFF };
+
+static unsigned char CMD_CH8398[]  = { 0x24, 0xC4, 0x64, 0x74, 0xFF,
+                                       0x04, 0x14, 0x34, 0xb4, 0xFF };
+
+/*
  * This sets up the RAMDAC registers for the correct BPP and pixmux values.
  * (also set VGA controller registers for pixmux and BPP)
  */
 void tseng_set_ramdac_bpp(DisplayModePtr mode, vgaET4000Ptr tseng_regs, int bytesperpixel)
 {
    Bool rgb555, rgb565, dac16bit;
-
+   unsigned char* cmd_array = NULL;
+   unsigned char* cmd_dest = NULL;
+   int index;
+   
    rgb555 = (xf86weight.red == 5 && xf86weight.green == 5 && xf86weight.blue == 5);
    rgb565 = (xf86weight.red == 5 && xf86weight.green == 6 && xf86weight.blue == 5);
+   
+  /* This is not the good way to find out if we're in 8- or 16-bit RAMDAC
+   * mode It should rather be passed on from the tseng_validate_mode() code.
+   * Right now it'd better agree with what tseng_validate_mode() proposed.
+   */ 
    dac16bit = (bytesperpixel > 1) || (mode->Flags & V_PIXMUX);
 
    tseng_regs->Misc &= 0xCF; /* ATC index 0x16 -- bits-per-PCLK */
@@ -676,78 +704,17 @@ void tseng_set_ramdac_bpp(DisplayModePtr mode, vgaET4000Ptr tseng_regs, int byte
    switch (TsengRamdacType) {
        case STG1703_DAC:
            tseng_regs->gendac.cmd_reg |= 8;
-           if (dac16bit)
-               tseng_regs->gendac.PLL_ctrl = 0x05;   /* set DAC to 2*8 mode */
-           else
-               tseng_regs->gendac.PLL_ctrl = 0x00;   /* set DAC to 1*8 mode */
+           cmd_array = CMD_CH8398;
+           cmd_dest = &(tseng_regs->gendac.PLL_ctrl);
            break;
        case ICS5341_DAC:
-           if (dac16bit) {
-               switch (bytesperpixel) {
-                   case 1:   /* set DAC to 2*8 (PIXMUX) mode */
-                       tseng_regs->gendac.cmd_reg = 0x10;
-                       break;
-                   case 2:
-                       if (rgb555) tseng_regs->gendac.cmd_reg = 0x30;
-                       if (rgb565) tseng_regs->gendac.cmd_reg = 0x50;
-                       break;
-                   case 3:
-                       tseng_regs->gendac.cmd_reg = 0x90;
-                       break;
-                   case 4:
-                       tseng_regs->gendac.cmd_reg = 0x70;
-                       break;
-               }
-           }
-           else {
-               switch (bytesperpixel) {
-                   case 1:   /* set DAC to 1*8 (standard 8bpp) mode */
-                       tseng_regs->gendac.cmd_reg = 0x00;
-                       break;
-                   case 2:
-                       if (rgb555) tseng_regs->gendac.cmd_reg = 0x20;
-                       if (rgb565) tseng_regs->gendac.cmd_reg = 0x60;
-                       break;
-                   case 3:
-                       tseng_regs->gendac.cmd_reg = 0x40;
-                       break;
-                   case 4: /* not supported */
-                       ErrorF("%s %s: 32bpp not supported in 8-bit DAC mode (ICS5341) -- Please report.\n",
-                             XCONFIG_PROBED, vga256InfoRec.name);
-                       tseng_regs->gendac.cmd_reg = 0x00;
-                       break;
-               }
-           }
-           
+           cmd_array = CMD_ICS5341;
            tseng_regs->gendac.PLL_ctrl = 0;
+           cmd_dest = &(tseng_regs->gendac.cmd_reg);
            break;
        case CH8398_DAC:
-           if (dac16bit) {
-               switch (bytesperpixel) {
-                   case 2:
-                       if (rgb555) tseng_regs->gendac.cmd_reg = 0x14;
-                       if (rgb565) tseng_regs->gendac.cmd_reg = 0x34;
-                       break;
-                   case 3:
-                       tseng_regs->gendac.cmd_reg = 0xb4;
-                       break;
-                   default:          
-                       tseng_regs->gendac.cmd_reg = 0x04;    /* set DAC to 2*8 mode */
-               }
-           }
-           else {
-               switch (bytesperpixel) {
-                   case 2:
-                       if (rgb555) tseng_regs->gendac.cmd_reg = 0xc4;
-                       if (rgb565) tseng_regs->gendac.cmd_reg = 0x64;
-                       break;
-                   case 3:
-                       tseng_regs->gendac.cmd_reg = 0x74;
-                       break;
-                   default:          
-                       tseng_regs->gendac.cmd_reg = 0x04;    /* set DAC to 1*8 mode */
-               }
-           }
+           cmd_array = CMD_CH8398;
+           cmd_dest = &(tseng_regs->gendac.cmd_reg);
            break;
        case ET6000_DAC:
            if (vga256InfoRec.bitsPerPixel == 16) {
@@ -757,6 +724,29 @@ void tseng_set_ramdac_bpp(DisplayModePtr mode, vgaET4000Ptr tseng_regs, int byte
                    tseng_regs->ET6KVidCtrl1 |=  0x02; /* 5-6-5 RGB mode */
            }
            break;
+   }
+
+   if (cmd_array != NULL) {
+       switch (bytesperpixel) {
+           case 1: index = 0; break;
+           case 2: index = rgb555 ? 1 : 2; break;
+           case 3: index = 3; break;
+           case 4: index = 4; break;
+       }
+       if (dac16bit) index += 5;
+       if (cmd_array[index] != 0xFF) {
+           if (cmd_dest != NULL) {
+               *cmd_dest = cmd_array[index];
+           }
+           else
+               ErrorF("%s %s: cmd_dest = NULL -- please report\n",
+                      XCONFIG_PROBED, vga256InfoRec.name);
+       }
+       else {
+           tseng_regs->gendac.cmd_reg = 0;
+           ErrorF("%s %s: %dbpp not supported in %d-bit DAC mode on this RAMDAC -- Please report.\n",
+                 XCONFIG_PROBED, vga256InfoRec.name, bytesperpixel*8, dac16bit ? 16 : 8);
+       }
    }
 
    if ( (mode->Flags & V_PIXMUX) && (et4000_type < TYPE_ET6000) ) {

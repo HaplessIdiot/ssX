@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.45 1997/02/16 12:13:13 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.46 1997/02/25 14:21:42 hohndel Exp $ */
 /*
  * Copyright 1994 through 1996 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -3596,7 +3596,7 @@ ATICopyVGAMemory(void **saveptr, void **from, void **to)
         for (Bank = 0;  Bank < Current_Banks;  Bank++)
         {
                 ATISelectBank(Bank);
-                (void) bcopy(*from, *to, ATI.ChipSegmentSize);
+                (void) xf86memmove(*to, *from, ATI.ChipSegmentSize);
                 *saveptr = (char *)(*saveptr) + ATI.ChipSegmentSize;
         }
 }

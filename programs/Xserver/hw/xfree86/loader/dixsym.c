@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.3 1997/02/18 10:54:16 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.4 1997/02/18 17:51:42 hohndel Exp $ */
 
 
 
@@ -88,6 +88,7 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(CreateGC)
   SYMFUNC(CreateScratchGC)
   SYMFUNC(ChangeGC)
+  SYMFUNC(dixChangeGC)
   SYMFUNC(DoChangeGC)
   SYMFUNC(FreeGC)
   SYMFUNC(FreeScratchGC)

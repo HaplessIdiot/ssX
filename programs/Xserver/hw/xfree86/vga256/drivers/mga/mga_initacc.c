@@ -1,10 +1,14 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_initacc.c,v 3.4 1997/02/14 12:18:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_initacc.c,v 3.5 1997/02/23 09:25:39 dawes Exp $ */
 
 #include "xf86.h"
 #include "vga.h"
 
 #include "mga.h"
 #include "mgareg.h"
+
+#ifndef XFree86LOADER
+typedef pointer XF86FILE;	/* opaque FILE* replacement */
+#endif
 
 void Mga8AccelInit();
 void Mga16AccelInit();

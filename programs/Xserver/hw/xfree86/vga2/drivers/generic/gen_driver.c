@@ -79,6 +79,36 @@ vgaVideoChipRec GENERIC = {
 
 #define new ((vgaGENERICPtr)vgaNewVideoState)
 
+/*
+ * this function returns the vgaVideoChipPtr for this driver
+ *
+ * its name has to be ModuleInit()
+ */
+void
+ModuleInit(data,magic)
+    pointer *   data;
+    INT32 *     magic;
+{
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+    case 0:
+        * data = (pointer)&GENERIC;
+        * magic= MAGIC_ADD_VIDEO_CHIP_REC;
+        break;
+    case 1:
+        * data = (pointer) "libvga16.a";
+        * magic= MAGIC_LOAD;
+        break;
+    default:
+        * magic= MAGIC_DONE;
+        break;
+    }
+
+    return;
+}
+
 
 /*
  * GENERICIdent
