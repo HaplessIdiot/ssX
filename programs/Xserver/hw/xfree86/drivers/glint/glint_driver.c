@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.62 2000/02/08 13:13:16 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.63 2000/02/10 18:57:33 dawes Exp $ */
 /* $PI: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.37 1999/07/02 18:38:31 faith Exp $ */
 
 #define PSZ 8
@@ -333,6 +333,12 @@ static const char *fbdevHWSymbols[] = {
 	NULL
 };
 
+static const char *int10Symbols[] = {
+    "xf86FreeInt10",
+    "xf86InitInt10",
+    NULL
+};
+
 #ifdef XF86DRI
 static const char *drmSymbols[] = {
     "drmAddBufs",
@@ -390,7 +396,7 @@ glintSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	xf86AddDriver(&GLINT, module, 0);
 	LoaderRefSymLists(vgahwSymbols, fbSymbols, ddcSymbols, i2cSymbols,
 			  xaaSymbols, xf8_32bppSymbols,
-			  shadowSymbols, fbdevHWSymbols,
+			  shadowSymbols, fbdevHWSymbols, int10Symbols,
 #ifdef XF86DRI
 			  drmSymbols, driSymbols,
 #endif
@@ -1004,6 +1010,8 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     /* Initialize the card through int10 interface if needed */
     if ( xf86LoadSubModule(pScrn, "int10")){
         xf86Int10InfoPtr pInt;
+
+        xf86LoaderReqSymLists(int10Symbols, NULL);
 
         xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Initializing int10\n");
         pInt = xf86InitInt10(pGlint->pEnt->index);
@@ -1828,6 +1836,20 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	}
 
 	pScrn->displayWidth = pScrn->virtualX;
+
+	
+	/* Ensure vsync and hsync are high when using HW cursor */
+	
+	if (pGlint->HWCursor) {
+
+		DisplayModePtr mode = pScrn->modes;
+
+		while (mode) {
+			mode->Flags |= V_PHSYNC | V_PVSYNC;
+			if (mode->next != mode) mode = mode->next;
+			else mode = NULL;
+		}
+	}
     }
 
     /* Prune the modes marked as invalid */
