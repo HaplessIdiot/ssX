@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.23 2000/06/21 20:57:14 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.24 2000/06/24 02:26:39 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -273,6 +273,12 @@ ProfiledDepLibraryTarget($(LIBNAME),$(GLXSUBDIRS) $(DONES),$(POBJS))
 InstallLibrary($(LIBNAME)_p,$(USRLIBDIR))
 #endif
 
+XCOMM libOSmesa needs libGL, so build it now
+
+#if !GlxUseSGISI && (!GlxBuiltInMesa || !defined(GlxDriverUsesMesa))
+OSMESASUBDIRS = mesa/src/OSmesa
+MakeSubdirs($(OSMESASUBDIRS))
+#endif
 
 
 XCOMM libGL has now been made, continue with building the drivers.
@@ -292,6 +298,6 @@ MakeSubdirs($(DRIVERSUBDIRS))
 
 #endif
 
-SUBDIRS = $(GLXSUBDIRS) $(DRIVERSUBDIRS)
+SUBDIRS = $(GLXSUBDIRS) $(OSMESASUBDIRS) $(DRIVERSUBDIRS)
 
 DependSubdirs($(SUBDIRS))
