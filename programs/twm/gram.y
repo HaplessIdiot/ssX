@@ -54,6 +54,7 @@ in this Software without prior written authorization from the X Consortium.
 /***********************************************************************
  *
  * $XConsortium: gram.y,v 1.93 94/04/17 20:38:11 dave Exp $
+ * $XFree86$
  *
  * .twmrc command grammer
  *
@@ -103,7 +104,8 @@ extern int yylineno;
     char *ptr;
 };
 
-%token <num> LB RB LP RP MENUS MENU BUTTON DEFAULT_FUNCTION PLUS MINUS
+%token LB RB LP RP
+%token <num> MENUS MENU BUTTON DEFAULT_FUNCTION PLUS MINUS
 %token <num> ALL OR CURSORS PIXMAPS ICONS COLOR SAVECOLOR MONOCHROME FUNCTION 
 %token <num> ICONMGR_SHOW ICONMGR WINDOW_FUNCTION ZOOM ICONMGRS
 %token <num> ICONMGR_GEOMETRY ICONMGR_NOSHOW MAKE_TITLE GRAYSCALE
@@ -120,6 +122,7 @@ extern int yylineno;
 
 %type <ptr> string
 %type <num> action button number signed_number full fullkey
+%type <num> stmt noarg error sarg narg squeeze
 
 %start twmrc 
 

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/18 1996/01/16 16:08:36 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.35 1996/05/11 11:03:56 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.36 1996/06/10 09:14:41 dawes Exp $
 
 
 
@@ -74,6 +74,15 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.35 1996/05/1
 MODULEDEFINES = -DDYNAMIC_MODULE -DDEFAULT_MODULE_PATH=\"$(MODULEDIR)\"
 #endif
 
+#if XFree86Version % 10
+      BETASRC = xf86Beta.c
+      BETAOBJ = xf86Beta.o
+     BETADEFS = -DDO_CHECK_BETA
+#ifndef NeedXF86Beta
+#define NeedXF86Beta YES
+#endif
+#endif
+
 SERVERSRCS = \
 	XF86_SVGA.c \
 	XF86_VGA16.c \
@@ -107,6 +116,7 @@ SRCS =	\
 	$(WACOM_SRC) \
 	$(ELOGRAPHICS_SRC) \
 	$(XKBDDXSRC) \
+	$(BETASRC) \
 	$(SERVERSRCS)
 
 OBJS = \
@@ -122,6 +132,7 @@ OBJS = \
 	$(WACOM_OBJ) \
 	$(ELOGRAPHICS_OBJ) \
 	$(XKBDDXOBJ) \
+	$(BETAOBJ) \
 	$(KBD).o
 
 OFILES = \
@@ -181,7 +192,7 @@ InstallDynamicModule(xf86Elo.so,$(MODULEDIR))
 # endif
 #endif
 SpecialObjectRule($(XCONFIGSRC).o,$(XCONFIGSRC).c,'-DSERVER_CONFIG_FILE="$(LIBDIR)/$(XCONFIGFILE)"' $(MODULEDEFINES) $(EXT_DEFINES))
-SpecialObjectRule(xf86Init.o,xf86Init.c $(ICONFIGFILES),$(OSNAMEDEF) $(EXT_DEFINES) $(EXP_DEFINES))
+SpecialObjectRule(xf86Init.o,xf86Init.c $(ICONFIGFILES),$(OSNAMEDEF) $(EXT_DEFINES) $(BETADEFS))
 SpecialCObjectRule(xf86Events,$(ICONFIGFILES),$(EXT_DEFINES))
 #if XF86SVGAServer
 SpecialObjectRule(XF86_SVGA.o,XF86_SVGA.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
@@ -232,7 +243,11 @@ SpecialObjectRule(XF86_I128.o,XF86_I128.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
 all:: XF86_I128.o
 #endif
 
-ObjectFromSpecialSource(xf86Init_m,xf86Init,$(OSNAMEDEF) $(EXT_DEFINES) $(EXP_DEFINES) -DXF86MONOVGA)
+#if NeedXF86Beta
+SpecialObjectRule($(BETAOBJ),$(BETASRC),$(EXP_DEFINES))
+#endif
+
+ObjectFromSpecialSource(xf86Init_m,xf86Init,$(OSNAMEDEF) $(EXT_DEFINES) $(BETADEFS) -DXF86MONOVGA)
 ObjectFromSpecialSource(xf86IniExt,$(SERVERSRC)/mi/miinitext,$(EXT_DEFINES))
 ObjectFromSpecialSource(xf86MIniExt,$(SERVERSRC)/mi/miinitext,$(EXT_DEFINES) -UPEXEXT -UXIE)
 

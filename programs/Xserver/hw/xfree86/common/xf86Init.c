@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.51 1996/05/06 05:57:37 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.52 1996/06/29 12:20:35 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -96,9 +96,12 @@ static void xf86PrintConfig(
 #ifdef DO_CHECK_BETA
 void xf86CheckBeta(
 #if NeedFunctionPrototypes
-	void
+	int,
+	char *
 #endif
 	);
+static int extraDays = 0;
+static char *expKey = NULL;
 #endif
 
 extern ScrnInfoPtr xf86Screens[];
@@ -145,7 +148,7 @@ InitOutput(pScreenInfo, argc, argv)
       xf86ServerName = argv[0];
 
 #ifdef DO_CHECK_BETA
-    xf86CheckBeta();
+    xf86CheckBeta(extraDays, expKey);
 #endif
 
     xf86PrintConfig();
@@ -548,6 +551,14 @@ ddxProcessArgument (argc, argv, i)
   {
     xf86AllowMouseOpenFail = TRUE;
     return 1;
+  }
+#endif
+#ifdef DO_BETA_CHECK
+  if (!strcmp(argv[i],"-extendExpiry"))
+  {
+    extraDays = atoi(argv[i + 1]);
+    expKey = argv[i + 2];
+    return 2;
   }
 #endif
   if (!strcmp(argv[i],"-verbose"))
