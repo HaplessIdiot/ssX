@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/24 1996/10/28 04:24:12 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.45tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.46 2002/11/08 17:41:08 tsi Exp $
 #include <Server.tmpl>
 
 #if SystemV
@@ -143,7 +143,7 @@ InstallProgram(mmapw,$(BINDIR))
        SRCS8 = ioport.c
 
 AllTarget(ProgramTargetName(ioport))
-NormalProgramTarget(ioport,ioport.o,$(XF86OSSRC)/libxf86_os.a ../dummylib/libdummy.a,-L../os-support -lxf86_os -L../dummylib -ldummy $(SERVEREXTRASYSLIBS),NullParameter)
+NormalProgramTarget(ioport,ioport.o,$(XF86OSSRC)/libxf86_os.a ../dummylib/libdummy.a,-L../os-support -lxf86_os -L../dummylib -ldummy $(SERVEREXTRASYSLIBS) MathLibrary,NullParameter)
 InstallProgram(ioport,$(BINDIR))
 
 IOPORT_NAMES = ProgramTargetName(inb) \
