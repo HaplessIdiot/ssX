@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.80 2001/08/29 11:55:52 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.81 2001/12/31 18:13:37 herrb Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -37,6 +37,9 @@
 #endif
 #include <sys/time.h>
 #include <math.h>
+#ifdef sun
+#include <ieeefp.h>
+#endif
 #include <stdarg.h>
 #include <fcntl.h>
 #include "Xfuncproto.h"
