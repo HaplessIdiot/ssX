@@ -23,6 +23,8 @@
  */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.7 1999/04/25 11:34:10 dawes Exp $ */
 
+#define DEBUG 1
+
 #define NTSC 14.31818
 #define PAL  17.73448
 
@@ -31,9 +33,10 @@
 
 /* 3C4 */
 #define RevisionID 0x09
-#define ConfPort 0x0C
+#define ConfPort1 0x0C
+#define ConfPort2 0x0C
 #define NewMode2 0x0D
-#define OldMode2 0x0D
+#define OldMode2 0x00 /* Should be 0x0D - dealt with in trident_dac.c */
 #define OldMode1 0x0E
 #define NewMode1 0x0E
 #define Protection 0x11
@@ -45,6 +48,7 @@
 /* 3x4 */
 #define Offset 0x13
 #define Underline 0x14
+#define CRTCMode 0x17
 #define CRTCModuleTest 0x1E
 #define FIFOControl 0x20
 #define LinearAddReg 0x21
@@ -212,17 +216,19 @@
 
 #define OUTB(addr, data) \
 { \
-	if (IsPciCard && UseMMIO) \
+	if (IsPciCard && UseMMIO) { \
 	    (*(volatile CARD8 *)(pTrident->IOBase + (addr)) = (data)); \
-	else \
+	} else { \
 	    outb(addr, data); \
+	} \
 }
 #define OUTW(addr, data) \
 { \
-	if (IsPciCard && UseMMIO) \
+	if (IsPciCard && UseMMIO) { \
 	    (*(volatile CARD16 *)(pTrident->IOBase + (addr)) = (data)); \
-	else \
+	} else { \
 	    outw(addr, data); \
+	} \
 }
 #define INB(addr) ((IsPciCard && UseMMIO) ? *(volatile CARD8 *)(pTrident->IOBase + addr) : inb(addr))
 

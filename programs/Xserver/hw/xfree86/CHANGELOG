@@ -1,3 +1,4 @@
+3270. Trident updates for ISA cards and DGA support (Alan Hourihane).
 3269. mibank bug fixes (Marc La France).
 3268. Add -withrevinfo flag to lndir to allow shadowing of RCS, SCCS, CVS and
       CVS.adm directories (Marc La France).

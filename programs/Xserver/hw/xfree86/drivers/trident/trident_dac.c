@@ -1,3 +1,26 @@
+/*
+ * Copyright 1992-1999 by Alan Hourihane, Wigan, England.
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Alan Hourihane not be used in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific, written prior permission.  Alan Hourihane makes no representations
+ * about the suitability of this software for any purpose.  It is provided
+ * "as is" without express or implied warranty.
+ *
+ * ALAN HOURIHANE DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ * EVENT SHALL ALAN HOURIHANE BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ *
+ * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
+ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.11 1999/07/04 06:39:06 dawes Exp $ */
 
 #include "xf86.h"
@@ -23,12 +46,13 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     vgaHWGetIOBase(VGAHWPTR(pScrn));
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
+    OUTB(0x3C4, 0x0B); INB(0x3C5); /* Ensure we are in New Mode */
+
     pReg->tridentRegs3x4[PixelBusReg] = 0x00;
     pReg->tridentRegsDAC[0x00] = 0x00;
-    OUTB(0x3C4, NewMode2);
     pReg->tridentRegs3C4[NewMode2] = 0x20;
     OUTB(0x3CE, MiscExtFunc);
-    pReg->tridentRegs3CE[MiscExtFunc] = INB(0x3CF);
+    pReg->tridentRegs3CE[MiscExtFunc] = INB(0x3CF) & 0xF0;
     pReg->tridentRegs3x4[GraphEngReg] = 0x00; 
 
     /* Enable Chipset specific options */
@@ -73,7 +97,6 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    	pReg->tridentRegs3C4[NewMode2] |= 0x02; /* half clock */
     		pReg->tridentRegsDAC[0x00] |= 0x20;	/* mux mode */
 	    }	
-	    break;
     }
 
     if (pTrident->IsCyber) {
@@ -96,7 +119,6 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     switch (pScrn->bitsPerPixel) {
 	case 1:
 	case 4:
-	    pReg->tridentRegs3CE[MiscExtFunc] |= 0x04;
     	    offset = pScrn->displayWidth >> 4;
 	    break;
 	case 8:
@@ -111,7 +133,8 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    else
 	    	pReg->tridentRegsDAC[0x00] = 0x30;
     	    pReg->tridentRegs3x4[PixelBusReg] = 0x04;
-	    if (pTrident->Chipset > CYBER9320) 
+	    /* Reload with any chipset specific stuff here */
+	    if (pTrident->Chipset >= TGUI9660) 
 		pReg->tridentRegs3x4[PixelBusReg] |= 0x01;
 	    if (pTrident->Chipset == TGUI9440AGi) {
     	        pReg->tridentRegs3CE[MiscExtFunc] |= 0x08;/*Clock Division / 2*/
@@ -151,14 +174,21 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     pReg->tridentRegs3C4[NewMode1] = 0xC0;
 
-    pReg->tridentRegs3x4[LinearAddReg] = ((pTrident->FbAddress >> 24) << 6)  |
+    if (pTrident->Linear)
+    	pReg->tridentRegs3x4[LinearAddReg] = ((pTrident->FbAddress >> 24) << 6)|
 					 ((pTrident->FbAddress >> 20) & 0x0F)|
 					 0x20;
-    pReg->tridentRegs3x4[CRTHiOrd] = (((mode->CrtcVBlankEnd-1) & 0x400) >> 4) |
+    else {
+	pReg->tridentRegs3CE[MiscExtFunc] |= 0x04;
+    	pReg->tridentRegs3x4[LinearAddReg] = 0;
+    }
+
+    pReg->tridentRegs3x4[CRTHiOrd] = (((mode->CrtcVBlankEnd-1) & 0x400)>>4) |
  				     (((mode->CrtcVTotal - 2) & 0x400) >> 3) |
  				     ((mode->CrtcVSyncStart & 0x400) >> 5) |
  				     (((mode->CrtcVDisplay - 1) & 0x400) >> 6) |
  				     0x08;
+
     pReg->tridentRegs3x4[CRTCModuleTest] = 
 				(mode->Flags & V_INTERLACE ? 0x84 : 0x80);
     OUTB(vgaIOBase+ 4, InterfaceSel);
@@ -217,22 +247,22 @@ TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     OUTB(0x3C6, tridentReg->tridentRegsDAC[0x00]);
     temp = INB(0x3C8);
 
-    OUTW_3x4(CursorControl);
     OUTW_3x4(CRTCModuleTest);
     OUTW_3x4(LinearAddReg);
     OUTW_3C4(NewMode2);
+    OUTW_3x4(CursorControl);
     OUTW_3x4(CRTHiOrd);
     OUTW_3x4(AddColReg);
     OUTW_3x4(GraphEngReg);
     OUTW_3x4(Performance);
-    OUTW_3CE(MiscExtFunc);
     OUTW_3x4(InterfaceSel);
     OUTW_3x4(DRAMControl);
     OUTW_3x4(PixelBusReg);
-    OUTW_3CE(MiscIntContReg);
-    OUTW_3x4(Offset);
     OUTW_3x4(PCIReg);
     OUTW_3x4(PCIRetry);
+    OUTW_3CE(MiscIntContReg);
+    OUTW_3CE(MiscExtFunc);
+    OUTW_3x4(Offset);
     if (pTrident->Chipset >= PROVIDIA9685) OUTW_3x4(Enhancement0);
     if (pTrident->Chipset >= BLADE3D) OUTW_3x4(RAMDACTiming);
     if (pTrident->IsCyber) {
@@ -269,10 +299,6 @@ TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     vgaHWGetIOBase(VGAHWPTR(pScrn));
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
-    OUTB(vgaIOBase + 4, Offset);
-
-    tridentReg->tridentRegs3x4[Offset] = INB(vgaIOBase + 5);
-
     /* Goto New Mode */
     OUTB(0x3C4, 0x0B);
     temp = INB(0x3C5);
@@ -283,6 +309,7 @@ TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     OUTW(0x3C4, ((0xC0 ^ 0x02) << 8) | NewMode1);
     OUTW(vgaIOBase + 4, (0x92 << 8) | NewMode1);
 
+    INB_3x4(Offset);
     INB_3x4(LinearAddReg);
     INB_3x4(CRTCModuleTest);
     INB_3x4(CRTHiOrd);
@@ -335,6 +362,7 @@ TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
 	    tridentReg->tridentRegsClock[0x04] = INB(0x43C7);
 	}
     }
+
     INB_3C4(NewMode2);
 
     /* Protect registers */
@@ -494,6 +522,21 @@ Tridentddc1Read(ScrnInfoPtr pScrn)
     return ( INB(vgaIOBase + 5) & 0x01 );
 }
 
+void TridentSetOverscan(
+    ScrnInfoPtr pScrn, 
+    int overscan
+){
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
+
+    if (overscan < 0 || overscan > 255)
+	return;
+
+    hwp->enablePalette(hwp);
+    hwp->writeAttr(hwp, OVERSCAN, overscan);
+    hwp->disablePalette(hwp);
+}
+
 void TridentLoadPalette(
     ScrnInfoPtr pScrn, 
     int numColors, 
@@ -505,9 +548,10 @@ void TridentLoadPalette(
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     int i, index;
 
-    OUTB(0x3C6, 0xFF);
     for(i = 0; i < numColors; i++) {
 	index = indicies[i];
+    	OUTB(0x3C6, 0xFF);
+	DACDelay(hwp);
         OUTB(0x3c8, index);
 	DACDelay(hwp);
         OUTB(0x3c9, colors[index].red);

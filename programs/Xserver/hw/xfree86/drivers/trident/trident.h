@@ -32,6 +32,7 @@
 #include "compiler.h"
 #include "vgaHW.h"
 #include "xf86i2c.h"
+#include "xf86int10.h"
 
 typedef struct {
 	unsigned char tridentRegs3x4[0x100];
@@ -77,11 +78,19 @@ typedef struct {
     Bool		CyberShadow;
     Bool		NoMMIO;
     Bool		ShadowFB;
+    Bool		Linear;
+    DGAModePtr		DGAModes;
+    int			numDGAModes;
+    Bool		DGAactive;
+    int			DGAViewportStatus;
     unsigned char *	ShadowPtr;
     int			ShadowPitch;
     float		frequency;
     unsigned char	REGPCIReg;
     unsigned char	REGNewMode1;
+    CARD8		SaveClock1;
+    CARD8		SaveClock2;
+    CARD8		SaveClock3;
     int			MinClock;
     int			MaxClock;
     int			MUXThreshold;
@@ -98,6 +107,7 @@ typedef struct {
     CARD16		LinePattern;
     RamDacRecPtr	RamDacRec;
     xf86CursorInfoPtr	CursorInfoRec;
+    xf86Int10InfoPtr	Int10;
     XAAInfoRecPtr	AccelInfoRec;
     CloseScreenProcPtr	CloseScreen;
     unsigned int	(*ddc1Read)(ScrnInfoPtr);
@@ -108,6 +118,9 @@ typedef struct {
 /* Prototypes */
 
 unsigned int Tridentddc1Read(ScrnInfoPtr pScrn);
+void TVGARestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg);
+void TVGASave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg);
+Bool TVGAInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 void TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg);
 void TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg);
 Bool TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
@@ -124,7 +137,8 @@ void TridentWriteAddress(ScrnInfoPtr pScrn, CARD32 index);
 void TridentReadAddress(ScrnInfoPtr pScrn, CARD32 index);
 void TridentWriteData(ScrnInfoPtr pScrn, unsigned char data);
 unsigned char TridentReadData(ScrnInfoPtr pScrn);
-void 	TridentLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indicies, LOCO *colors, VisualPtr pVisual);
+void TridentLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indicies, LOCO *colors, VisualPtr pVisual);
+void TridentSetOverscan(ScrnInfoPtr pScrn, int overscan);
 int TGUISetRead(ScreenPtr pScreen, int bank);
 int TGUISetWrite(ScreenPtr pScreen, int bank);
 int TGUISetReadWrite(ScreenPtr pScreen, int bank);
@@ -141,6 +155,7 @@ float CalculateMCLK(ScrnInfoPtr pScrn);
 /* Supported chipsets */
 typedef enum {
     TVGA8200LX,
+    TVGA8800BR,
     TVGA8800CS,
     TVGA8900B,
     TVGA8900C,
@@ -150,6 +165,7 @@ typedef enum {
     TVGA9000i,
     TVGA9100B,
     TVGA9200CXr,
+    TGUI9400CXi,
     TGUI9420DGi,
     TGUI9430DGi,
     TGUI9440AGi,
