@@ -27,9 +27,10 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/compile.c,v 1.2 2002/09/15 21:32:16 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/compile.c,v 1.3 2002/10/20 05:58:55 paulo Exp $ */
 
 #define VARIABLE_USED		0x0001
+#define VARIABLE_ARGUMENT	0x0002
 
 /*
  * Prototypes
@@ -40,7 +41,11 @@ static void ComReturnFrom(LispCom*, LispBuiltin*, int);
 static int ComConstantp(LispCom*, LispObj*);
 static void ComAddVariable(LispCom*, LispObj*, LispObj*);
 static int ComGetVariable(LispCom*, LispObj*);
-static void ComVariableUsed(LispCom*, LispAtom*);
+static void ComVariableSetFlag(LispCom*, LispAtom*, int);
+#define COM_VARIABLE_USED(atom)				\
+    ComVariableSetFlag(com, atom, VARIABLE_USED)
+#define COM_VARIABLE_ARGUMENT(atom)			\
+	ComVariableSetFlag(com, atom, VARIABLE_ARGUMENT)
 
 static int FindIndex(void*, void**, int);
 static int compare(const void*, const void*);
@@ -54,7 +59,9 @@ static void ComProgn(LispCom*, LispObj*);
 static void ComEval(LispCom*, LispObj*);
 
 static void ComRecursiveCall(LispCom*, LispArgList*, LispObj*, LispObj*);
+#if 0
 static void ComInlineCall(LispCom*, LispArgList*, LispObj*, LispObj*, LispObj*);
+#endif
 
 static void ComMacroBackquote(LispCom*, LispObj*);
 static void ComMacroCall(LispCom*, LispArgList*, LispObj*, LispObj*, LispObj*);
@@ -318,7 +325,7 @@ Com_Dolist(LispCom *com, LispBuiltin *builtin)
     mac->env.head += 2;
 
     /* Remember that iteration variable is used even if it not referenced */
-    ComVariableUsed(com, symbol->data.atom);
+    COM_VARIABLE_USED(symbol->data.atom);
 
     /* Initialize the TAGBODY */
     FORM_ENTER();
@@ -1239,17 +1246,17 @@ ComGetVariable(LispCom *com, LispObj *symbol)
     i = mac->env.head - 1;
 
     /* If variable is local */
-    if (offset <= i && offset >= base && mac->env.names[offset] == id) {
-	ComVariableUsed(com, name);
+    if (offset <= i && offset >= com->lex && mac->env.names[offset] == id) {
+	COM_VARIABLE_USED(name);
 	/* Relative offset */
 	return (offset - base);
     }
 
     /* name->offset may have been changed in a macro expansion */
-    for (; i >= base; i--)
+    for (; i >= com->lex; i--)
 	if (mac->env.names[i] == id) {
 	    name->offset = i;
-	    ComVariableUsed(com, name);
+	    COM_VARIABLE_USED(name);
 	    return (i - base);
 	}
 
@@ -1264,7 +1271,7 @@ ComGetVariable(LispCom *com, LispObj *symbol)
 }
 
 static void
-ComVariableUsed(LispCom *com, LispAtom *atom)
+ComVariableSetFlag(LispCom *com, LispAtom *atom, int flag)
 {
     int i;
     CodeBlock *block = com->block;
@@ -1273,7 +1280,7 @@ ComVariableUsed(LispCom *com, LispAtom *atom)
 	i = FindIndex(atom, (void**)block->variables.symbols,
 		      block->variables.length);
 	if (i >= 0) {
-	    block->variables.flags[i] |= VARIABLE_USED;
+	    block->variables.flags[i] |= flag;
 	    break;
 	}
 	block = block->prev;
@@ -1392,7 +1399,7 @@ ComPush(LispCom *com, LispObj *symbol, LispObj *value,
      * do this for now, just to remember variable is used, in case it
      * is only referenced as an argument to a builtin macro */
     if (SYMBOL_P(value))
-	ComVariableUsed(com, value->data.atom);
+	COM_VARIABLE_USED(value->data.atom);
 
     if (builtin) {
 	/* Load <value> as a constant in builtin stack */
@@ -1458,6 +1465,8 @@ normal_label:
     count = alist->normals.num_symbols;
     for (; i < count && CONS_P(values); i++, values = CDR(values)) {
 	ComPush(com, symbols[i], CAR(values), eval, builtin, compile);
+	if (!builtin && !com->macro)
+	    COM_VARIABLE_ARGUMENT(symbols[i]->data.atom);
     }
     if (i < count)
 	LispDestroy(mac, "%s: too few arguments", STROBJ(name));
@@ -1485,25 +1494,34 @@ optional_label:
     sforms = alist->optionals.sforms;
     for (; i < count && CONS_P(values); i++, values = CDR(values)) {
 	ComPush(com, symbols[i], CAR(values), eval, builtin, compile);
-	if (sforms[i])
+	if (!builtin && !com->macro)
+	    COM_VARIABLE_ARGUMENT(symbols[i]->data.atom);
+	if (sforms[i]) {
 	    ComPush(com, sforms[i], T, 0, builtin, compile);
+	    if (!builtin && !com->macro)
+		COM_VARIABLE_ARGUMENT(sforms[i]->data.atom);
+	}
     }
     for (; i < count; i++) {
 	if (!builtin) {
-	    /* Keep track of lexical environment */
+	    int lex = com->lex;
 	    int head = mac->env.head;
-	    int lex = mac->env.lex;
 
-	    mac->env.lex = base;
+	    com->lex = base;
 	    mac->env.head = mac->env.length;
 	    ComPush(com, symbols[i], defaults[i], eval, 0, compile);
+	    if (!com->macro)
+		COM_VARIABLE_ARGUMENT(symbols[i]->data.atom);
 	    mac->env.head = head;
-	    mac->env.lex = lex;
+	    com->lex = lex;
 	}
 	else
 	    ComPush(com, symbols[i], defaults[i], eval, 1, compile);
-	if (sforms[i])
+	if (sforms[i]) {
 	    ComPush(com, sforms[i], NIL, 0, builtin, compile);
+	    if (!builtin && !com->macro)
+		COM_VARIABLE_ARGUMENT(sforms[i]->data.atom);
+	}
     }
 
     switch (*desc++) {
@@ -1609,20 +1627,24 @@ key_label:
 	    }
 	    else {
 		if (eval && !builtin) {
-		    /* Keep track of lexical environment */
+		    int lex = com->lex;
 		    int head = mac->env.head;
-		    int lex = mac->env.lex;
 
-		    mac->env.lex = base;
+		    com->lex = base;
 		    mac->env.head = mac->env.length;
 		    ComPush(com, symbols[i], val, eval, 0, compile);
 		    mac->env.head = head;
-		    mac->env.lex = lex;
+		    com->lex = lex;
 		}
 		else
 		    ComPush(com, symbols[i], val, eval, builtin, compile);
 		if (sforms[i])
 		    ComPush(com, sforms[i], NIL, 0, builtin, compile);
+	    }
+	    if (!builtin && !com->macro) {
+		COM_VARIABLE_ARGUMENT(symbols[i]->data.atom);
+		if (sforms[i])
+		    COM_VARIABLE_ARGUMENT(sforms[i]->data.atom);
 	    }
 	}
     }
@@ -1715,6 +1737,8 @@ rest_label:
 	    com->stack.cpstack -= 2;
 	}
     }
+    if (!builtin && !com->macro)
+	COM_VARIABLE_ARGUMENT(alist->rest->data.atom);
     if (*desc != 'a')
 	goto finished_label;
 
@@ -1726,30 +1750,24 @@ aux_label:
     symbols = alist->auxs.symbols;
     defaults = alist->auxs.initials;
     if (!builtin && !compile && eval) {
-	/* Keep track of lexical environment */
-	int lex = mac->env.lex;
+	int lex = com->lex;
 
-	mac->env.lex = base;
+	com->lex = base;
 	mac->env.head = mac->env.length;
-
-	/* Make the variables added so far available in the bytecode */
-	com_Bind(com, mac->env.length - base);
-
 	for (; i < count; i++) {
-	    ComPush(com, symbols[i], defaults[i], 1, 0, compile);
-	    /* Make this variable available */
-	    com_Bind(com, 1);
+	    ComPush(com, symbols[i], defaults[i], 1, 0, 0);
+	    if (!com->macro)
+		COM_VARIABLE_ARGUMENT(symbols[i]->data.atom);
 	    ++mac->env.head;
 	}
-	mac->env.lex = lex;
-
-	/* XXX Do this to avoid confusing the interpreter. Should find a
-	 * way to avoid this... */
-	com_Unbind(com, mac->env.length - base);
+	com->lex = lex;
     }
     else {
-	for (; i < count; i++)
+	for (; i < count; i++) {
 	    ComPush(com, symbols[i], defaults[i], eval, builtin, compile);
+	    if (!builtin && !com->macro)
+		COM_VARIABLE_ARGUMENT(symbols[i]->data.atom);
+	}
     }
 
 done_label:
@@ -1851,6 +1869,18 @@ ComFuncall(LispCom *com, LispObj *function, LispObj *arguments, int eval)
 		else
 		    com_Struct(com,
 			       atom->property->structure.function, definition);
+	    }
+	    else if (atom->a_compiled) {
+		FORM_ENTER();
+		CompileStackEnter(com, alist->num_arguments, 0);
+
+		/* Build argument list in the interpreter stacks */
+		base = ComCall(com, alist, function, arguments, 1, 0, 0);
+		com_Bytecall(com, alist->num_arguments,
+			     atom->property->fun.function);
+		CompileStackLeave(com, alist->num_arguments, 0);
+		mac->env.head = mac->env.length = base;
+		FORM_LEAVE();
 	    }
 	    else {
 		/* Not yet defined function/macro. */
@@ -1995,6 +2025,7 @@ ComRecursiveCall(LispCom *com, LispArgList *alist,
     mac->env.head = mac->env.length = base;
 }
 
+#if 0	/* Will be used later */
 static void
 ComInlineCall(LispCom *com, LispArgList *alist,
 	      LispObj *name, LispObj *arguments, LispObj *lambda)
@@ -2037,6 +2068,7 @@ ComInlineCall(LispCom *com, LispArgList *alist,
     mac->env.lex = lex;
     mac->env.head = mac->env.length = base;
 }
+#endif
 
 /***********************************************************************
  * Macro expansion helper functions.

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.32 2002/09/22 07:09:07 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.33 2002/10/06 17:11:42 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -479,6 +479,7 @@ struct _LispObj {
 	struct {
 	    LispBytecode *bytecode;
 	    LispObj *code;		/* object used to generate bytecode */
+	    LispObj *name;		/* name of function, or NIL */
 	} bytecode;
 	struct {
 	    LispHashTable *table;

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/re/re.c,v 1.4 2002/09/22 07:09:09 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/re/re.c,v 1.5 2002/09/23 01:25:41 paulo Exp $ */
 
 #include <stdio.h>
 #include "rep.h"
@@ -385,7 +385,8 @@ reset:
 		goto fail;
 	    case Re_Eow:
 		if (eng.str == eng.bas ||
-		    re__alnum[eng.str[0]])
+		    (eng.str < eng.end &&
+		     re__alnum[eng.str[0]]))
 		    goto fail;
 		if (re__alnum[eng.str[-1]]) {
 		    si = 0;

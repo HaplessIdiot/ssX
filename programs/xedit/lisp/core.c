@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.51 2002/09/22 07:09:06 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.52 2002/10/06 17:11:40 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -54,6 +54,9 @@ extern void unsetenv(const char *name);
 #define ASSOC		1
 #define MEMBER		2
 
+#define FIND		1
+#define POSITION	2
+
 #define	IF		1
 #define	IFNOT		2
 
@@ -78,7 +81,7 @@ extern void unsetenv(const char *name);
 LispObj *LispAdjoin(LispMac*, LispBuiltin*,
 		    LispObj*, LispObj*, LispObj*, LispObj*, LispObj*);
 LispObj *LispAssocOrMember(LispMac*, LispBuiltin*, int, int);
-LispObj *LispPosition(LispMac*, LispBuiltin*, int);
+LispObj *LispFindOrPosition(LispMac*, LispBuiltin*, int, int);
 LispObj *LispDeleteOrRemoveDuplicates(LispMac*, LispBuiltin*, int);
 LispObj *LispDeleteRemoveXSubstitute(LispMac*, LispBuiltin*, int, int);
 LispObj *LispListSet(LispMac*, LispBuiltin*, int);
@@ -853,6 +856,24 @@ Lisp_Consp(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
+Lisp_Constantp(LispMac *mac, LispBuiltin *builtin)
+/*
+ constantp form &optional environment
+ */
+{
+    LispObj *form, *environment;
+
+    environment = ARGUMENT(1);
+    form = ARGUMENT(0);
+
+    if (CONSTANT_P(form) || (SYMBOL_P(form) && form->data.atom->constant) ||
+	form->type == LispQuote_t)
+	return (T);
+
+    return (NIL);
+}
+
+LispObj *
 Lisp_Defconstant(LispMac *mac, LispBuiltin *builtin)
 /*
  defconstant name initial-value &optional documentation
@@ -901,9 +922,12 @@ Lisp_Defmacro(LispMac *mac, LispBuiltin *builtin)
     lambda_list = LispListProtectedArguments(mac, alist);
     lambda = LispNewLambda(mac, name, body, lambda_list, LispMacro);
 
-    if (name->data.atom->a_builtin) {
-	ERROR_CHECK_SPECIAL_FORM(name->data.atom);
-	/* only warn when redefining builtin functions */
+    if (name->data.atom->a_builtin || name->data.atom->a_compiled) {
+	if (name->data.atom->a_builtin) {
+	    ERROR_CHECK_SPECIAL_FORM(name->data.atom);
+	}
+	/* redefining these may cause surprises if bytecode
+	 * compiled functions references them */
 	LispWarning(mac, "%s: %s is being redefined",
 		    STRFUN(builtin), STRPTR(name));
 
@@ -944,9 +968,12 @@ Lisp_Defun(LispMac *mac, LispBuiltin *builtin)
     lambda_list = LispListProtectedArguments(mac, alist);
     lambda = LispNewLambda(mac, name, body, lambda_list, LispFunction);
 
-    if (name->data.atom->a_builtin) {
-	ERROR_CHECK_SPECIAL_FORM(name->data.atom);
-	/* only warn when redefining builtin functions */
+    if (name->data.atom->a_builtin || name->data.atom->a_compiled) {
+	if (name->data.atom->a_builtin) {
+	    ERROR_CHECK_SPECIAL_FORM(name->data.atom);
+	}
+	/* redefining these may cause surprises if bytecode
+	 * compiled functions references them */
 	LispWarning(mac, "%s: %s is being redefined",
 		    STRFUN(builtin), STRPTR(name));
 
@@ -1084,7 +1111,7 @@ Lisp_Do(LispMac *mac, LispBuiltin *builtin)
 LispObj *
 Lisp_DoP(LispMac *mac, LispBuiltin *builtin)
 /*
- do init test &rest body
+ do* init test &rest body
  */
 {
     return (LispDo(mac, builtin, 1));
@@ -1174,15 +1201,6 @@ Lisp_Elt(LispMac *mac, LispBuiltin *builtin)
     return (result);
 }
 
-/*
-  The predicate endp is the recommended way to test for the end of a list.
-  It is false of conses, true of nil, and an error for all other arguments.
-
-  Implementation note: Implementations are encouraged to signal an error,
-  especially in the interpreter, for a non-list argument. The endp function
-  is defined so as to allow compiled code to perform simply an atom check or
-  a null check if speed is more important than safety.
- */
 LispObj *
 Lisp_Endp(LispMac *mac, LispBuiltin *builtin)
 /*
@@ -1309,6 +1327,33 @@ Lisp_Fboundp(LispMac *mac, LispBuiltin *builtin)
 	return (T);
 
     return (NIL);
+}
+
+LispObj *
+Lisp_Find(LispMac *mac, LispBuiltin *builtin)
+/*
+ find item sequence &key from-end test test-not start end key
+ */
+{
+    return (LispFindOrPosition(mac, builtin, FIND, NONE));
+}
+
+LispObj *
+Lisp_FindIf(LispMac *mac, LispBuiltin *builtin)
+/*
+ find-if predicate sequence &key from-end start end key
+ */
+{
+    return (LispFindOrPosition(mac, builtin, FIND, IF));
+}
+
+LispObj *
+Lisp_FindIfNot(LispMac *mac, LispBuiltin *builtin)
+/*
+ find-if-not predicate sequence &key from-end start end key
+ */
+{
+    return (LispFindOrPosition(mac, builtin, FIND, IFNOT));
 }
 
 LispObj *
@@ -2846,8 +2891,12 @@ Lisp_Or(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-LispPosition(LispMac *mac, LispBuiltin *builtin, int comparison)
+LispFindOrPosition(LispMac *mac, LispBuiltin *builtin,
+		   int function, int comparison)
 /*
+ find item sequence &key from-end test test-not start end key
+ find-if predicate sequence &key from-end start end key
+ find-if-not predicate sequence &key from-end start end key
  position item sequence &key from-end test test-not start end key
  position-if predicate sequence &key from-end start end key
  position-if-not predicate sequence &key from-end start end key
@@ -2857,7 +2906,7 @@ LispPosition(LispMac *mac, LispBuiltin *builtin, int comparison)
     int code = 0, istring;
     char *string = NULL;
     long offset = -1, start, end, length, i = comparison == NONE ? 7 : 5;
-    LispObj *arg1, *arg2, *result, **objects = NULL;
+    LispObj *cmp, *element, *result, **objects = NULL;
 
     LispObj *item, *predicate, *sequence, *from_end,
 	    *test, *test_not, *ostart, *oend, *key;
@@ -2898,7 +2947,7 @@ LispPosition(LispMac *mac, LispBuiltin *builtin, int comparison)
 	code = FCODE(predicate);
     }
 
-    arg1 = NIL;
+    cmp = element = NIL;
     istring = STRING_P(sequence);
     if (istring) {
 	if (comparison == NONE) {
@@ -2912,7 +2961,6 @@ LispPosition(LispMac *mac, LispBuiltin *builtin, int comparison)
 	for (i = 0; i < start; i++)
 	    sequence = CDR(sequence);
     }
-    arg2 = comparison == NONE ? item : NIL;
 
     if ((length = end - start) == 0)
 	return (NIL);
@@ -2925,29 +2973,27 @@ LispPosition(LispMac *mac, LispBuiltin *builtin, int comparison)
 
     for (i = 0; i < length; i++) {
 	if (istring)
-	    arg1 = CHAR(string[from_end == NIL ? i + start : end - i - 1]);
+	    element = CHAR(string[from_end == NIL ? i + start : end - i - 1]);
 	else
-	    arg1 = from_end == NIL ? CAR(sequence) : objects[i];
+	    element = from_end == NIL ? CAR(sequence) : objects[i];
 
 	if (key != NIL) {
-	    arg1 = APPLY1(key, arg1);
-	    GC_PROTECT(arg1);
-	    if (comparison == NONE) {
-		arg2 = APPLY1(key, item);
-		GC_PROTECT(arg2);
-	    }
+	    cmp = APPLY1(key, element);
+	    GC_PROTECT(cmp);
 	}
+	else
+	    cmp = element;
 
 	/* Update list */
 	if (!istring && from_end == NIL)
 	    sequence = CDR(sequence);
 
 	if (comparison == NONE)
-	    result = FCOMPARE(predicate, arg1, arg2, code);
+	    result = FCOMPARE(predicate, item, cmp, code);
 	else
-	    result = APPLY1(predicate, arg1);
+	    result = APPLY1(predicate, cmp);
 
-	/* Unprotect arg1 and arg2 */
+	/* Unprotect cmp */
 	GC_LEAVE();
 
 	if ((result == NIL &&
@@ -2964,7 +3010,7 @@ LispPosition(LispMac *mac, LispBuiltin *builtin, int comparison)
     if (from_end != NIL && !istring)
 	LispFree(mac, objects);
 
-    return (offset == -1 ? NIL : SMALLINT(offset));
+    return (offset == -1 ? NIL : function == FIND ? element : SMALLINT(offset));
 }
 
 LispObj *
@@ -3021,7 +3067,7 @@ Lisp_Position(LispMac *mac, LispBuiltin *builtin)
  position item sequence &key from-end test test-not start end key
  */
 {
-    return (LispPosition(mac, builtin, NONE));
+    return (LispFindOrPosition(mac, builtin, POSITION, NONE));
 }
 
 LispObj *
@@ -3030,7 +3076,7 @@ Lisp_PositionIf(LispMac *mac, LispBuiltin *builtin)
  position-if predicate sequence &key from-end start end key
  */
 {
-    return (LispPosition(mac, builtin, IF));
+    return (LispFindOrPosition(mac, builtin, POSITION, IF));
 }
 
 LispObj *
@@ -3039,7 +3085,7 @@ Lisp_PositionIfNot(LispMac *mac, LispBuiltin *builtin)
  position-if-not predicate sequence &key from-end start end key
  */
 {
-    return (LispPosition(mac, builtin, IFNOT));
+    return (LispFindOrPosition(mac, builtin, POSITION, IFNOT));
 }
 
 LispObj *
@@ -4436,7 +4482,6 @@ Lisp_Search(LispMac *mac, LispBuiltin *builtin)
  search sequence1 sequence2 &key from-end test test-not key start1 start2 end1 end2
  */
 {
-    GC_ENTER();
     int istring, code = 0;
     long start1, start2, end1, end2, length1, length2, offset = -1;
     char *string1 = NULL, *string2 = NULL;
@@ -4511,14 +4556,17 @@ Lisp_Search(LispMac *mac, LispBuiltin *builtin)
     length2 = end2 - start2;
 
     if (from_end == NIL) {
-	LispObj *slist1;
+	LispObj *slist1, *slist2;
 	long cstart1, cstart2;
 
 	slist1 = list1;
+	slist2 = list2;
 	cstart2 = start2;
-	while (cstart2 < end2) {
+	while (end2 - start2 >= length1) {
 	    list1 = slist1;
+	    list2 = slist2;
 	    cstart1 = start1;
+	    cstart2 = start2;
 	    while (cstart1 < end1) {
 		if (istring) {
 		    cmp1 = CHAR(string1[cstart1]);
@@ -4555,9 +4603,9 @@ Lisp_Search(LispMac *mac, LispBuiltin *builtin)
 	    }
 
 	    /* Update offset/sequence2 pointer */
-	    ++cstart2;
+	    ++start2;
 	    if (!istring)
-		list2 = CDR(list2);
+		slist2 = CDR(slist2);
 	}
     }
     else {
@@ -4576,9 +4624,9 @@ Lisp_Search(LispMac *mac, LispBuiltin *builtin)
 		plist2[i] = CAR(list2);
 	}
 
-	coff2 = end2 - 1;
-	while (coff2 >= start2) {
+	while (end2 - start2 > length1) {
 	    coff1 = end1 - 1;
+	    coff2 = end2 - 1;
 	    while (coff1 >= start1) {
 		if (istring) {
 		    cmp1 = CHAR(string1[coff1]);
@@ -4611,7 +4659,7 @@ Lisp_Search(LispMac *mac, LispBuiltin *builtin)
 	    }
 
 	    /* Update offset */
-	    --coff2;
+	    --end2;
 	}
 
 	if (!istring) {
@@ -4619,8 +4667,6 @@ Lisp_Search(LispMac *mac, LispBuiltin *builtin)
 	    LispFree(mac, plist2);
 	}
     }
-
-    GC_LEAVE();
 
     return (offset == -1 ? NIL : SMALLINT(offset));
 }

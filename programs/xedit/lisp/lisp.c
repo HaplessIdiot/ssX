@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.62 2002/09/29 02:55:00 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.63 2002/10/06 17:11:43 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -269,6 +269,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispMacro, Lisp_Cond, "cond &rest body", 0, 0, Com_Cond},
     {LispFunction, Lisp_Cons, "cons car cdr", 0, 0, Com_Cons},
     {LispFunction, Lisp_Consp, "consp object", 0, 0, Com_Consp},
+    {LispFunction, Lisp_Constantp, "constantp form &optional environment"},
     {LispFunction, Lisp_Conjugate, "conjugate number"},
     {LispFunction, Lisp_Complexp, "complexp object"},
     {LispFunction, Lisp_CopyList, "copy-list list"},
@@ -337,6 +338,9 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Export, "export symbols &optional package"},
     {LispFunction, Lisp_Eval, "eval form"},
     {LispFunction, Lisp_Fboundp, "fboundp symbol"},
+    {LispFunction, Lisp_Find, "find item sequence &key from-end test test-not start end key"},
+    {LispFunction, Lisp_FindIf, "find-if predicate sequence &key from-end start end key"},
+    {LispFunction, Lisp_FindIfNot, "find-if-not predicate sequence &key from-end start end key"},
     {LispFunction, Lisp_FileNamestring, "file-namestring pathname"},
     {LispFunction, Lisp_Fill, "fill sequence item &key start end"},
     {LispFunction, Lisp_FindAllSymbols, "find-all-symbols string-or-symbol"},
@@ -874,7 +878,7 @@ Lisp__GC(LispMac *mac, LispObj *car, LispObj *cdr)
 		    if (atom->a_property)
 			LispMark(atom->property->properties);
 		    if (mac->gc.immutablebits) {
-			if (atom->a_function)
+			if (atom->a_function || atom->a_compiled)
 			    LispImmutable(atom->property->fun.function);
 			if (atom->a_builtin)
 			    LispImmutable(atom->property->fun.builtin->data);
@@ -1437,8 +1441,8 @@ LispSetAtomFunctionProperty(LispMac *mac, LispAtom *atom, LispObj *function,
 	else {
 	    atom->a_compiled = 0;
 	    LispMutable(atom->property->fun.function);
-	    atom->a_function = 1;
 	}
+	atom->a_function = 1;
     }
 
     LispImmutable(function);
@@ -4512,6 +4516,7 @@ rest_label:
 	else {
 	    NORMAL_ARGUMENT(alist->rest, values);
 	}
+	values = NIL;
     }
     else {
 	LispObj *list;
@@ -4542,6 +4547,7 @@ rest_label:
 	else {
 	    NORMAL_ARGUMENT(alist->rest, values);
 	}
+	values = NIL;
     }
 rest_done:
     if (*desc != 'a')
@@ -4637,6 +4643,7 @@ LispFuncall(LispMac *mac, LispObj *function, LispObj *arguments, int eval)
 		base = LispMakeEnvironment(mac, alist, arguments,
 					   function, eval, 0);
 		multiple_values = 1;
+		mac->env.lex = base;
 		result = LispExecuteBytecode(mac, lambda);
 		mac->env.lex = lex;
 		mac->env.head = mac->env.length = base;
@@ -5251,13 +5258,13 @@ LispBegin(void)
     mac->nunget = 1;
 
     mac->standard_input = ATOM2("*STANDARD-INPUT*");
-    SINPUT = STANDARDSTREAM(Stdin, object, STREAM_READ);
+    SINPUT = STANDARDSTREAM(Stdin, mac->standard_input, STREAM_READ);
     mac->interactive = 1;
     LispProclaimSpecial(mac, mac->standard_input, mac->input_list = SINPUT, NIL);
     LispExportSymbol(mac, mac->standard_input);
 
     mac->standard_output = ATOM2("*STANDARD-OUTPUT*");
-    SOUTPUT = STANDARDSTREAM(Stdout, object, STREAM_WRITE);
+    SOUTPUT = STANDARDSTREAM(Stdout, mac->standard_output, STREAM_WRITE);
     LispProclaimSpecial(mac, mac->standard_output, mac->output_list = SOUTPUT, NIL);
     LispExportSymbol(mac, mac->standard_output);
 

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.23 2002/09/22 07:09:06 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.24 2002/10/06 17:11:41 paulo Exp $ */
 
 #ifndef Lisp_core_h
 #define Lisp_core_h
@@ -58,6 +58,7 @@ LispObj *Lisp_Coerce(LispMac*, LispBuiltin*);		/* coerce */
 LispObj *Lisp_Cond(LispMac*, LispBuiltin*);		/* cond */
 LispObj *Lisp_Cons(LispMac*, LispBuiltin*);		/* cons */
 LispObj *Lisp_Consp(LispMac*, LispBuiltin*);		/* consp */
+LispObj *Lisp_Constantp(LispMac*, LispBuiltin*);	/* constantp */
 LispObj *Lisp_CopyList(LispMac*, LispBuiltin*);		/* copy-list */
 LispObj *Lisp_Defconstant(LispMac*, LispBuiltin*);	/* defconstant */
 LispObj *Lisp_Defmacro(LispMac*, LispBuiltin*);		/* defmacro */
@@ -82,6 +83,9 @@ LispObj *Lisp_Equalp(LispMac*, LispBuiltin*);		/* equalp */
 LispObj *Lisp_Error(LispMac*, LispBuiltin*);		/* error */
 LispObj *Lisp_Eval(LispMac*, LispBuiltin*);		/* eval */
 LispObj *Lisp_Fboundp(LispMac*, LispBuiltin*);		/* fboundp */
+LispObj *Lisp_Find(LispMac*, LispBuiltin*);		/* find */
+LispObj *Lisp_FindIf(LispMac*, LispBuiltin*);		/* find-if */
+LispObj *Lisp_FindIfNot(LispMac*, LispBuiltin*);	/* find-if-not */
 LispObj *Lisp_Fill(LispMac*, LispBuiltin*);		/* fill */
 LispObj *Lisp_Fmakunbound(LispMac*, LispBuiltin*);	/* fmakunbound */
 LispObj *Lisp_Funcall(LispMac*, LispBuiltin*);		/* funcall */

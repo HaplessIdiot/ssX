@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.6 2002/10/06 17:11:40 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.7 2002/10/20 05:58:55 paulo Exp $ */
 
 
 /*
@@ -156,6 +156,10 @@ struct _CodeTree {
 	    LispObj *lambda;
 	} call;
 	struct {
+	    unsigned char num_arguments;
+	    LispObj *code;
+	} bytecall;
+	struct {
 	    short offset;
 	    LispAtom *name;
 	} let;
@@ -227,6 +231,8 @@ struct _LispCom {
     int level;			/* Nesting level */
     int macro;			/* Expanding a macro? */
 
+    int lex;
+
     int warnings;
 
     LispObj *form;
@@ -252,13 +258,16 @@ struct _LispCom {
 	/* Builtin table */
 	LispBuiltin **builtins;
 	int num_builtins;
+	/* Bytecode table */
+	LispObj **bytecodes;
+	int num_bytecodes;
     } table;
 };
 
 /*
  * Prototypes
  */
-static LispObj *MakeBytecodeObject(LispMac*, LispCom*, LispObj*);
+static LispObj *MakeBytecodeObject(LispMac*, LispCom*, LispObj*, LispObj*);
 
 static CodeTree *CompileNewTree(LispCom*, CodeTreeType);
 static void CompileFreeState(LispCom*);
@@ -301,6 +310,7 @@ static void com_Struct(LispCom*, short, LispObj*);
 static void com_Structp(LispCom*, LispObj*);
 
 static void com_Call(LispCom*, unsigned char, LispBuiltin*);
+static void com_Bytecall(LispCom*, unsigned char, LispObj*);
 static void com_Funcall(LispCom*, LispObj*, LispObj*);
 
 static void CompileStackEnter(LispCom*, int, int);
@@ -411,11 +421,54 @@ Lisp_Compile(LispMac *mac, LispBuiltin *builtin)
 	     * PROGN of the function body. */
 	    base = alist->num_arguments - alist->auxs.num_symbols;
 	    if (base) {
-		arguments = form = CONS(NIL, NIL);
-		GC_PROTECT(arguments);
-		for (--base; base > 0; base--) {
-		    RPLACD(form, CONS(NIL, NIL));
-		    form = CDR(form);
+		LispObj *argument;
+		int i, sforms;
+
+		for (i = sforms = 0; i < alist->optionals.num_symbols; i++)
+		    if (alist->optionals.sforms[i])
+			++sforms;
+
+		arguments = form = NIL;
+		i = sforms +
+		    alist->normals.num_symbols + alist->optionals.num_symbols;
+
+		if (i) {
+		    arguments = form = CONS(NIL, NIL);
+		    GC_PROTECT(arguments);
+		    for (--i; i > 0; i--) {
+			RPLACD(form, CONS(NIL, NIL));
+			form = CDR(form);
+		    }
+		}
+
+		for (i = 0; i < alist->keys.num_symbols; i++) {
+		    if (alist->keys.keys[i])
+			argument = alist->keys.keys[i];
+		    else
+			argument = alist->keys.symbols[i];
+		    if (arguments == NIL) {
+			arguments = form = CONS(argument, NIL);
+			GC_PROTECT(arguments);
+		    }
+		    else {
+			RPLACD(form, CONS(argument, NIL));
+			form = CDR(form);
+		    }
+		    if (alist->keys.sforms[i]) {
+			RPLACD(form, CONS(NIL, NIL));
+			form = CDR(form);
+		    }
+		}
+
+		if (alist->rest) {
+		    if (arguments == NIL) {
+			arguments = form = CONS(NIL, NIL);
+			GC_PROTECT(arguments);
+		    }
+		    else {
+			RPLACD(form, CONS(NIL, NIL));
+			form = CDR(form);
+		    }
 		}
 	    }
 	    else
@@ -436,7 +489,7 @@ Lisp_Compile(LispMac *mac, LispBuiltin *builtin)
 	    failed = 1;
 	    if (setjmp(com.jmp) == 0) {
 		/* Save interpreter state */
-		lex = mac->env.lex;
+		lex = com.lex = mac->env.lex;
 		base = ComCall(&com, alist, name, arguments, 1, 0, 1);
 
 		/* Generate code tree */
@@ -451,7 +504,8 @@ Lisp_Compile(LispMac *mac, LispBuiltin *builtin)
 
 	    if (!failed) {
 		failure_p = NIL;
-		result = MakeBytecodeObject(mac, &com, lambda->data.lambda.data);
+		result = MakeBytecodeObject(mac, &com, name,
+					    lambda->data.lambda.data);
 		LispSetAtomCompiledProperty(mac, atom, result);
 		result = name;
 	    }
@@ -616,11 +670,13 @@ Lisp_Disassemble(LispMac *mac, LispBuiltin *builtin)
     if (bytecode) {
 	char *ptr;
 	int *offsets[4];
-	int i, done, j, sym0, sym1, con0, con1, bui0, strd, strf;
+	int i, done, j, sym0, sym1, con0, con1, bui0, byt0, strd, strf;
 	LispObj **constants;
 	LispAtom **symbols;
 	LispBuiltin **builtins;
-	short stack, num_constants, num_symbols, num_builtins;
+	unsigned char **codes;
+	LispObj **names;
+	short stack, num_constants, num_symbols, num_builtins, num_bytecodes;
 	unsigned char *base, *stream = bytecode->data.bytecode.bytecode->code;
 
 	LispWriteStr(mac, NIL, "\nBytecode header:\n", 18);
@@ -648,6 +704,8 @@ Lisp_Disassemble(LispMac *mac, LispBuiltin *builtin)
 	stream += sizeof(short);
 	num_builtins = *(short*)stream;
 	stream += sizeof(short);
+	num_bytecodes = *(short*)stream;
+	stream += sizeof(short);
 
 	constants = (LispObj**)stream;
 	stream += num_constants * sizeof(LispObj*);
@@ -655,6 +713,10 @@ Lisp_Disassemble(LispMac *mac, LispBuiltin *builtin)
 	stream += num_symbols * sizeof(LispAtom*);
 	builtins = (LispBuiltin**)stream;
 	stream += num_builtins * sizeof(LispBuiltin*);
+	codes = (unsigned char**)stream;
+	stream += num_bytecodes * sizeof(unsigned char*);
+	names = (LispObj**)stream;
+	stream += num_bytecodes * sizeof(LispObj*);
 
 	for (i = 0; i < num_constants; i++) {
 	    sprintf(buffer, "Constant %d = %s\n", i, STROBJ(constants[i]));
@@ -676,6 +738,11 @@ Lisp_Disassemble(LispMac *mac, LispBuiltin *builtin)
 	for (i = 0; i < num_builtins; i++) {
 	    sprintf(buffer, "Builtin %d = %s\n",
 		    i, STROBJ(builtins[i]->symbol));
+	    LispWriteStr(mac, NIL, buffer, strlen(buffer));
+	}
+	for (i = 0; i < num_bytecodes; i++) {
+	    sprintf(buffer, "Bytecode %d = %s\n",
+		    i, STROBJ(names[i]));
 	    LispWriteStr(mac, NIL, buffer, strlen(buffer));
 	}
 
@@ -774,7 +841,7 @@ Lisp_Disassemble(LispMac *mac, LispBuiltin *builtin)
 
 	base = stream;
 	for (done = j = 0; !done; j = 0) {
-	    sym0 = sym1 = con0 = con1 = bui0 = strd = strf = -1;
+	    sym0 = sym1 = con0 = con1 = bui0 = byt0 = strd = strf = -1;
 	    sprintf(buffer, "%4ld  ", (long)(stream - base));
 	    ptr = buffer + strlen(buffer);
 	    switch (*stream++) {
@@ -976,6 +1043,12 @@ reference_reference:
 		    sprintf(ptr, " %d", (int)(*stream++));
 		    offsets[j++] = &bui0;
 		    goto offset_reference;
+		case XBC_BYTECALL:
+		    strcpy(ptr, "BYTECALL");
+		    ptr += strlen(ptr);
+		    sprintf(ptr, " %d", (int)(*stream++));
+		    offsets[j++] = &byt0;
+		    goto offset;
 		case XBC_FUNCALL:
 		    strcpy(ptr, "FUNCALL");
 constant_constant:
@@ -1067,6 +1140,13 @@ integer:
 		    ptr += strlen(ptr);
 		}
 
+		/* Bytecode */
+		if (byt0 >= 0) {
+		    strcpy(ptr, "  ");	ptr += 2;
+		    strcpy(ptr, STROBJ(names[byt0]));
+		    ptr += strlen(ptr);
+		}
+
 		/* Symbols */
 		if (sym0 >= 0) {
 		    strcpy(ptr, "  ");	ptr += 2;
@@ -1117,6 +1197,7 @@ LispCompileForm(LispMac *mac, LispObj *form)
     com.mac = mac;
     com.toplevel = com.block = LispCalloc(mac, 1, sizeof(CodeBlock));
     com.block->type = LispBlockNone;
+    com.lex = mac->env.lex;
 
     pfailed = &failed;
     pform = &form;
@@ -1129,7 +1210,7 @@ LispCompileForm(LispMac *mac, LispObj *form)
 	failed = 0;
     }
 
-    return (failed ? NIL : MakeBytecodeObject(mac, &com, NIL));
+    return (failed ? NIL : MakeBytecodeObject(mac, &com, NIL, NIL));
 }
 
 LispObj *
@@ -1142,7 +1223,7 @@ LispExecuteBytecode(LispMac *mac, LispObj *object)
 }
 
 static LispObj *
-MakeBytecodeObject(LispMac *mac, LispCom *com, LispObj *plist)
+MakeBytecodeObject(LispMac *mac, LispCom *com, LispObj *name, LispObj *plist)
 {
     LispObj *object;
     LispBytecode *bytecode;
@@ -1154,9 +1235,6 @@ MakeBytecodeObject(LispMac *mac, LispCom *com, LispObj *plist)
 
     /* Resolve dependencies, optimize and create byte stream */
     LinkBytecode(com);
-
-    /* Free everything, but the LispCom structure and the generated bytecode */
-    CompileFreeState(com);
 
     object = LispNew(mac, NIL, NIL);
     GC_PROTECT(object);
@@ -1170,12 +1248,9 @@ MakeBytecodeObject(LispMac *mac, LispCom *com, LispObj *plist)
     /* Skip stack information */
     stream += sizeof(short) * 3;
 
-    /* Get number of constants used by the bytecode */
+    /* Get information */
     num_constants = *(short*)stream;
-
-    /* Adjust to point to start of constants */
-    stream += sizeof(short) * 3;
-
+    stream += sizeof(short) * 4;
     constants = (LispObj**)stream;
 
     GC_PROTECT(plist);
@@ -1200,6 +1275,23 @@ MakeBytecodeObject(LispMac *mac, LispCom *com, LispObj *plist)
 		break;
 	}
     }
+
+    /* Protect this in case the function is redefined */
+    for (i = 0; i < com->table.num_bytecodes; i++) {	
+	if (code == NIL) {
+	    code = cons = prev = CONS(com->table.bytecodes[i], NIL);
+	    GC_PROTECT(code);
+	}
+	else {
+	    RPLACD(cons, CONS(com->table.bytecodes[i], NIL));
+	    prev = cons;
+	    cons = CDR(cons);
+	}
+    }
+
+    /* Free everything, but the LispCom structure and the generated bytecode */
+    CompileFreeState(com);
+    
     /* Allocate the minimum required number of cons cells to protect objects */
     if (!CONS_P(code))
 	code = plist;
@@ -1219,6 +1311,7 @@ MakeBytecodeObject(LispMac *mac, LispCom *com, LispObj *plist)
     object->data.bytecode.bytecode = bytecode;
     /* Byte code references this object, so it cannot be garbage collected */
     object->data.bytecode.code = code;
+    object->data.bytecode.name = name;
     object->type = LispBytecode_t;
 
     LispMused(mac, bytecode);
@@ -1262,6 +1355,7 @@ CompileFreeState(LispCom *com)
     LispFree(com->mac, com->table.constants);
     LispFree(com->mac, com->table.symbols);
     LispFree(com->mac, com->table.builtins);
+    LispFree(com->mac, com->table.bytecodes);
 }
 
 /* XXX Put a breakpoint here when changing the macro expansion code.
@@ -1503,6 +1597,16 @@ com_Call(LispCom *com, unsigned char num_arguments, LispBuiltin *builtin)
 }
 
 static void
+com_Bytecall(LispCom *com, unsigned char num_arguments, LispObj *code)
+{
+    CodeTree *tree = NEW_TREE(CodeTreeBytecode);
+
+    tree->code = XBC_BYTECALL;
+    tree->data.bytecall.num_arguments = num_arguments;
+    tree->data.bytecall.code = code;
+}
+
+static void
 com_Funcall(LispCom *com, LispObj *function, LispObj *arguments)
 {
     com_BytecodeCons(com, XBC_FUNCALL, function, arguments);
@@ -1548,7 +1652,7 @@ LinkWarnUnused(LispCom *com, CodeBlock *block)
     }
 
     for (i = 0; i < block->variables.length; i++)
-	if (!(block->variables.flags[i] & VARIABLE_USED)) {
+	if (!(block->variables.flags[i] & (VARIABLE_USED | VARIABLE_ARGUMENT))) {
 	    ++com->warnings;
 	    LispWarning(com->mac, "the variable %s is unused",
 			block->variables.symbols[i]->string);
@@ -1637,6 +1741,7 @@ LinkBuildOffsets(LispCom *com, CodeTree *tree, long offset)
 
 		    /* byte + byte + byte */
 		    case XBC_CALL:
+		    case XBC_BYTECALL:
 		    case XBC_LOAD_SET:
 		    case XBC_LOAD_CAR_SET:
 		    case XBC_LOAD_CDR_SET:
@@ -2301,6 +2406,15 @@ LinkBuildTableBuiltin(LispCom *com, LispBuiltin *builtin)
 }
 
 static void
+LinkBuildTableBytecode(LispCom *com, LispObj *bytecode)
+{
+    if (BuildTablePointer(com->mac, bytecode, (void***)&com->table.bytecodes,
+			  &com->table.num_bytecodes) > 0xff) {
+	COMPILE_FAILURE("more than 256 bytecode functions");
+    }
+}
+
+static void
 LinkBuildTables(LispCom *com, CodeBlock *block)
 {
     CodeTree *tree;
@@ -2329,6 +2443,9 @@ LinkBuildTables(LispCom *com, CodeBlock *block)
 		    case XBC_CALL:
 		    case XBC_CALL_SET:
 			LinkBuildTableBuiltin(com, tree->data.builtin.builtin);
+			break;
+		    case XBC_BYTECALL:
+			LinkBuildTableBytecode(com, tree->data.bytecall.code);
 			break;
 		    case XBC_LOAD_LET:
 		    case XBC_LOAD_LETX:
@@ -2502,6 +2619,15 @@ LinkEmmitBytecode(LispCom *com, CodeTree *tree,
 			bytecode[offset++] = i;
 			break;
 
+		    /* byte + byte + byte */
+		    case XBC_BYTECALL:
+			bytecode[offset++] = tree->data.bytecall.num_arguments;
+			i = FindIndex(tree->data.bytecall.code,
+				      (void**)com->table.bytecodes,
+				      com->table.num_bytecodes);
+			bytecode[offset++] = i;
+			break;
+
 		    /* byte + byte + byte + byte */
 		    case XBC_CALL_SET:
 			bytecode[offset++] = tree->data.builtin.num_arguments;
@@ -2601,6 +2727,8 @@ static void
 LinkBytecode(LispCom *com)
 {
     long offset, count;
+    unsigned char **codes;
+    LispObj **names;
 
     /* Close bytecode */
     com_Bytecode(com, XBC_RETURN);
@@ -2641,10 +2769,12 @@ LinkBytecode(LispCom *com)
     /* Stack info */
     com->length = sizeof(short) * 3;
     /* Tables info */
-    com->length += sizeof(short) * 3;
+    com->length += sizeof(short) * 4;
     com->length += com->table.num_constants * sizeof(LispObj*);
     com->length += com->table.num_symbols * sizeof(LispAtom*);
     com->length += com->table.num_builtins * sizeof(LispBuiltin*);
+    com->length += com->table.num_bytecodes * sizeof(unsigned char*);
+    com->length += com->table.num_bytecodes * sizeof(LispObj*);
 
     /* Allocate space for the bytecode stream */
     com->length += com->block->tail->offset + 1;
@@ -2665,6 +2795,8 @@ LinkBytecode(LispCom *com)
     offset += sizeof(short);
     *(short*)(com->bytecode + offset) = com->table.num_builtins;
     offset += sizeof(short);
+    *(short*)(com->bytecode + offset) = com->table.num_bytecodes;
+    offset += sizeof(short);
 
     count = sizeof(LispObj*) * com->table.num_constants;
     memcpy(com->bytecode + offset, com->table.constants, count);
@@ -2675,6 +2807,20 @@ LinkBytecode(LispCom *com)
     count = sizeof(LispBuiltin*) * com->table.num_builtins;
     memcpy(com->bytecode + offset, com->table.builtins, count);
     offset += count;
+
+    /* Store bytecode information */
+    for (count = 0, codes = (unsigned char**)(com->bytecode + offset);
+	 count < com->table.num_bytecodes; count++, codes++)
+	*codes = com->table.bytecodes[count]->data.bytecode.bytecode->code;
+    offset += com->table.num_bytecodes * sizeof(unsigned char*);
+    /* Store names, only useful for disassemble but may also be used
+     * to check if a function was redefined, and the bytecode is referencing
+     * the older version, the current version can be checked looking at
+     * <name>->data.atom */
+    for (count = 0, names = (LispObj**)(com->bytecode + offset);
+	 count < com->table.num_bytecodes; count++, names++)
+	*names = com->table.bytecodes[count]->data.bytecode.name;
+    offset += com->table.num_bytecodes * sizeof(LispObj*);
 
     /* Generate it */
     LinkEmmitBytecode(com, com->block->tree, com->bytecode + offset, 0);
@@ -2695,9 +2841,10 @@ ExecuteBytecode(register LispMac *mac, register unsigned char *stream)
     LispObj **constants;
     LispAtom **symbols;
     LispBuiltin **builtins;
-    short num_constants, num_symbols, num_builtins;
+    unsigned char **codes;
+    short num_constants, num_symbols, num_builtins, num_codes;
 
-    int lex;
+    int lex, len;
 
     /* To control gc protected slots */
     int phead, pbase;
@@ -2764,6 +2911,7 @@ ExecuteBytecode(register LispMac *mac, register unsigned char *stream)
 	JUMP_ADDRESS(XBC_SET_NIL),
 	JUMP_ADDRESS(XBC_CALL),
 	JUMP_ADDRESS(XBC_CALL_SET),
+	JUMP_ADDRESS(XBC_BYTECALL),
 	JUMP_ADDRESS(XBC_FUNCALL),
 	JUMP_ADDRESS(XBC_LETREC),
 	JUMP_ADDRESS(XBC_BCONS),
@@ -2830,6 +2978,8 @@ ExecuteBytecode(register LispMac *mac, register unsigned char *stream)
     stream += sizeof(short);
     num_builtins = *(short*)stream;
     stream += sizeof(short);
+    num_codes = *(short*)stream;
+    stream += sizeof(short);
 
     constants = (LispObj**)stream;
     stream += num_constants * sizeof(LispObj*);
@@ -2837,6 +2987,8 @@ ExecuteBytecode(register LispMac *mac, register unsigned char *stream)
     stream += num_symbols * sizeof(LispAtom*);
     builtins = (LispBuiltin**)stream;
     stream += num_builtins * sizeof(LispBuiltin*);
+    codes = (unsigned char**)stream;
+    stream += num_codes * (sizeof(unsigned char*) + sizeof(LispObj*));
 
     for (; phead > 0; phead--)
 	mac->protect.objects[mac->protect.length++] = NIL;
@@ -3363,6 +3515,17 @@ OPCODE_LABEL(XBC_CALL_SET):
 	mac->stack.length -= offset;
 	offset = *stream++;
 	mac->env.values[mac->env.lex + offset] = reg0;
+	NEXT_OPCODE();
+
+	/* Bytecode call */
+OPCODE_LABEL(XBC_BYTECALL):
+	lex = mac->env.lex;
+	offset = *stream++;
+	mac->env.head = mac->env.length;
+	len = mac->env.lex = mac->env.length - offset;
+	reg0 = ExecuteBytecode(mac, codes[*stream++]);
+	mac->env.length = mac->env.head = len;
+	mac->env.lex = lex;
 	NEXT_OPCODE();
 
 	/* Unimplemented function/macro call */

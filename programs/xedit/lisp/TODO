@@ -1,8 +1,29 @@
-$XFree86: xc/programs/xedit/lisp/TODO,v 1.3 2002/02/08 02:59:26 paulo Exp $
+$XFree86: xc/programs/xedit/lisp/TODO,v 1.5 2002/10/06 17:11:40 paulo Exp $
 
 LAST UPDATED:	$Date$
 
   Small todo list
+
+o Change function/macro body to know if a &key or &optional argument was not
+  provided, and initialize to the default value in the function, for
+  interpreted and builtin functions it is better done before the function is
+  called, but for bytecode it is better in the function.
+o Following the previous idea, change function definitions in the format:
+  (defun afun (a &aux b (c (some-code))) ...)
+  to
+  (defun afun (a) (let* ((b (c (some-code)))) ...))
+  This can significatively reduce bytecode size, and also simplify function
+  calls.
+o Optimize text redisplay in Xaw, instead of allocating a copy of the buffer
+  for the paint-list, should use the text in place, and only allocate small
+  buffers when required, i.e. displaying control characters, etc.
+o Add an interface to create new object types dinamically.
+o Add a special string object to simplify and avoid too many copies of
+  portions of the text buffers. This special string should be read-only
+  and not gc-collected.
+o Make the bytecode compiler smarter to detect some constructs like:
+  (builtin-or-bytecode-function-call arg1 arg2 (return))
+  this will not properly restore the internal stacks.
 
 o Forgive about the possibility of more than one instance of the lisp
   interpreter in the same application. Have just one instance of the
