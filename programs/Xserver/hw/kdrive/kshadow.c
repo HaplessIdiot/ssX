@@ -1,5 +1,5 @@
 /*
- * $Id: kshadow.c,v 1.1 2000/09/03 05:12:28 keithp Exp $
+ * $XFree86$
  *
  * Copyright © 1999 Keith Packard
  *
