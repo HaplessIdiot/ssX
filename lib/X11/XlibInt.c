@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.25 2001/01/25 16:21:44 keithp Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.26 2001/04/26 16:23:09 dawes Exp $ */
 
 /*
  *	XlibInt.c - Internal support routines for the C subroutine
@@ -197,8 +197,6 @@ _XWaitForWritable(dpy
     xcondition_t cv;		/* our reading condition variable */
 #endif
 {
-#if !defined(AMOEBA)
-
 #ifdef USE_POLL
     struct pollfd filedes;
 #else
@@ -331,11 +329,6 @@ _XWaitForWritable(dpy
 	    return;
 	}
     }
-#else  /* AMOEBA */
-    /* Should not happen under Amoeba */
-    printf("_XWaitForWritable called unexpectedly\n");
-    _XIOError(dpy);
-#endif /* AMOEBA */
 }
 
 
@@ -420,7 +413,6 @@ static int
 _XWaitForReadable(dpy)
   Display *dpy;
 {
-#if !defined(AMOEBA)
     int result;
     int fd = dpy->fd;
     struct _XConnectionInfo *ilist;  
@@ -523,13 +515,6 @@ _XWaitForReadable(dpy)
 #endif
 #endif
     return 0;
-#else  /* AMOEBA */
-    int nbytes;
-
-    /* wait max 100 msec (why?) for data to become available */
-    nbytes = _X11TransAmSelect(ConnectionNumber(dpy), 100);
-    return (nbytes > 0) ? 0 : -1;
-#endif /* AMOEBA */
 }
 
 static

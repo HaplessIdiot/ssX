@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/server.c,v 3.8 2000/05/11 18:14:42 tsi Exp $ */
+/* $XFree86: xc/programs/xdm/server.c,v 3.9 2001/01/17 23:45:22 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -41,13 +41,6 @@ from The Open Group.
 # include	<signal.h>
 # include	<errno.h>
 # include 	<sys/socket.h>
-
-#ifdef MINIX
-#include <sys/ioctl.h>
-#include <net/gen/in.h>
-#include <net/gen/tcp.h>
-#include <net/gen/tcp_io.h>
-#endif
 
 static int receivedUsr1;
 
@@ -263,9 +256,6 @@ GetRemoteAddress (struct display *d, int fd)
 #ifdef STREAMSCONN
     struct netbuf	netb;
 #endif
-#ifdef MINIX
-    nwio_tcpconf_t tcpconf;
-#endif
 
     if (d->peer)
 	free ((char *) d->peer);
@@ -276,25 +266,7 @@ GetRemoteAddress (struct display *d, int fd)
     len = 8;
     /* lucky for us, t_getname returns something that looks like a sockaddr */
 #else
-#ifdef MINIX
-    if (ioctl(fd, NWIOGTCPCONF, &tcpconf) == -1)
-    {
-    	LogError("NWIOGTCPCONF failed: %s\n", strerror(errno));
-    	len= 0;
-    }
-    else
-    {
-    	struct sockaddr_in *sinp;
-
-    	sinp= (struct sockaddr_in *)buf;
-    	len= sizeof(*sinp);
-    	sinp->sin_family= AF_INET;
-    	sinp->sin_port= tcpconf.nwtc_remport;
-    	sinp->sin_addr.s_addr= tcpconf.nwtc_remaddr;
-    }
-#else
     getpeername (fd, (struct sockaddr *) buf, (void *)&len);
-#endif
 #endif
     d->peerlen = 0;
     if (len)

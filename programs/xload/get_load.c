@@ -1,5 +1,5 @@
 /* $XConsortium: get_load.c /main/37 1996/03/09 09:38:04 kaleb $ */
-/* $XFree86: xc/programs/xload/get_load.c,v 1.7 2001/03/03 23:05:51 tsi Exp $ */
+/* $XFree86: xc/programs/xload/get_load.c,v 1.8 2001/04/08 05:00:09 torrey Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -52,9 +52,9 @@ from the X Consortium.
 #ifndef macII
 #ifndef apollo
 #ifndef LOADSTUB
-#if !defined(linux) && !defined(AMOEBA) && !defined(__EMX__) && !defined(__GNU__)
+#if !defined(linux) && !defined(__EMX__) && !defined(__GNU__)
 #include <nlist.h>
-#endif /* linux || AMOEBA */
+#endif /* !linux && ... */
 #endif /* LOADSTUB */
 #endif /* apollo */
 #endif /* macII */
@@ -353,57 +353,6 @@ XtPointer call_data;	/* pointer to (double) return value */
 }
 #else /* not KVM_ROUTINES */
 
-#ifdef AMOEBA
-#include <amoeba.h>
-#include <cmdreg.h>
-#include <stderr.h>
-#include <ampolicy.h>
-
-static capability pooldircap;
-extern char *getenv();
-
-void
-InitLoadPoint()
-{
-    register char *s;
-
-    if ((s = getenv("XLOAD_HOST")) != NULL) {
-      /* do an xload of a single host */
-      if (host_lookup(s, &pooldircap) != STD_OK)
-          xload_error("cannot lookup run server", s);
-      if (dir_lookup(&pooldircap, "proc", &pooldircap) != STD_OK)
-          xload_error("cannot lookup run server", s);
-    } else {
-      /* Else we do an xload of a pool.
-       * Environment variable RUN_SERVER overrides the default one.
-       */
-      if ((s = getenv("RUN_SERVER")) == NULL)
-          s = DEF_RUNSVR_POOL;
-      if (name_lookup(s, &pooldircap) != STD_OK)
-          xload_error("cannot lookup run server", s);
-    }
-}
-
-/* ARGSUSED */
-void GetLoadPoint( w, closure, call_data )
-    Widget   w;              /* unused */
-    caddr_t  closure;        /* unused */
-    caddr_t  call_data;      /* pointer to (double) return value */
-{
-    long ips, loadav, mfree;
-
-    if (pro_getload(&pooldircap, &ips, &loadav, &mfree) != STD_OK) {
-      /*
-       * No run server. We don't want to crash, though:
-       * it will probably come up again.
-       */
-      InitLoadPoint();
-      loadav = 0;
-    }
-    *(double *)call_data = (double)loadav / 1024.0;
-}
-#else /* AMOEBA */
-
 #ifdef linux
 
 void InitLoadPoint()
@@ -699,10 +648,6 @@ void GetLoadPoint(w, closure, call_data)
 #define KERNEL_FILE "/kernel/unix"
 #endif
 
-#ifdef MINIX
-#define KERNEL_FILE "/sys/kernel"
-#endif /* MINIX */
-
 #ifdef sgi
 #if (OSMAJORVERSION > 4)
 #define KERNEL_FILE "/unix"
@@ -792,10 +737,6 @@ void GetLoadPoint(w, closure, call_data)
 #        endif
 #    endif /* MOTOROLA */
 
-#    ifdef MINIX
-#      define KERNEL_LOAD_VARIABLE "_loadav"
-#    endif /* MINIX */
-
 #endif /* KERNEL_LOAD_VARIABLE */
 
 /*
@@ -883,7 +824,7 @@ InitLoadPoint()
     }
 #else /* sun svr4 5.5 or later */
 
-#if (!defined(SVR4) || !defined(__STDC__)) && !defined(sgi) && !defined(MOTOROLA) && !(BSD >= 199103) && !defined(MINIX)
+#if (!defined(SVR4) || !defined(__STDC__)) && !defined(sgi) && !defined(MOTOROLA) && !(BSD >= 199103)
     extern void nlist();
 #endif
 
@@ -1073,25 +1014,7 @@ void GetLoadPoint( w, closure, call_data )
 	}
 #      endif /* mips */
 #     else /* not sony NEWSOS4 */
-#      ifdef MINIX
-      {
-/* Indices in the loadav array */
-#define LDAV_CURR     0               /* run queue lenght at this moment */
-#define LDAV_6                1               /* av. run q len over 64 ticks (1s) */
-#define LDAV_12       2               /* av. run q len over 4096 ticks */
-#define LDAV_16               3               /* av. run q len over 65536 tick */
-#define LDAV_TOT      4               /* cummulative run q lenght */
-#define LDAV_NR               5               /* size of the loadav array */
-#define LDAV_SCALE_SHFT       8               /* values are scaled by 256 */
-
-              unsigned long loadav[LDAV_NR];  /* load avarage array */
-              
-              (void) read(kmem, (char *)loadav, sizeof(loadav));
-              *loadavg = (double)loadav[LDAV_12]/0x1000;
-      }
-#       else /* !MINIX */
 	(void) read(kmem, (char *)loadavg, sizeof(double));
-#       endif /* MINIX */
 #      endif /* sony NEWOS4 */
 #     endif /* MOTOROLA else */
 #    endif /* AIXV3 else */
@@ -1107,7 +1030,6 @@ void GetLoadPoint( w, closure, call_data )
 #endif /* __DARWIN__ else */
 #endif /* __GNU__ else */
 #endif /* linux else */
-#endif /* AMOEBA else */
 #endif /* KVM_ROUTINES else */
 #endif /* SYSV && i386 else */
 

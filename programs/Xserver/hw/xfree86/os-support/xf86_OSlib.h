@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.81 2001/05/18 16:03:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.82 2001/05/28 18:14:50 tsi Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -97,10 +97,6 @@ extern int snprintf(char *str, size_t size, const char *format, ...);
 extern int vsnprintf(char *str, size_t size, const char *format, va_list ap);
 #endif
 #endif
-
-#if defined(MACH386) || defined(__OSF__)
-# undef NULL
-#endif /* MACH386 || __OSF__ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -569,94 +565,6 @@ extern int errno;
 # endif
 
 #endif /* CSRG_BASED */
-
-/**************************************************************************/
-/* Mach and OSF/1                                                         */
-/**************************************************************************/
-#if defined(MACH386) || defined(__OSF__)
-# include <sys/ioctl.h>
-
-# include <signal.h>
-
-# include <errno.h>
-extern int errno;
-
-# if defined(__OSF__)
-#  include <sys/param.h>
-#  include <machine/kd.h>
-# else /* __OSF__ */
-#  if !defined(__STDC__)
-#   define __STDC__ 1
-#   include <i386at/kd.h>
-#   include <i386at/kd_queue.h>
-#   undef __STDC__
-#  else /* !__STDC__ */
-#   include <i386at/kd.h>
-#   include <i386at/kd_queue.h>
-#  endif /* !__STDC__ */
-#  include <sys/file.h>
-#  define SEEK_SET L_SET
-# endif /* __OSF__ */
-
-# ifdef MACH386
-#  define NEED_STRERROR
-# endif
-
-# include <sys/mman.h>
-# include <sys/stat.h>
-# define MOUSE_PROTOCOL_IN_KERNEL
-
-#endif /* MACH386 || __OSF__ */
-
-/**************************************************************************/
-/* Minix                                                                  */
-/**************************************************************************/
-#if defined(MINIX)
-# include <sys/ioctl.h>
-# include <signal.h>
-
-# include <termios.h>
-# define termio termios
-# define POSIX_TTY
-
-# include <errno.h>
-
-# include <assert.h>
-# include <limits.h>
-# include <sys/memio.h>
-# include <sys/kbdio.h>
-
-# include <sys/stat.h>
-
-#endif /* MINIX */
-
-/**************************************************************************/
-/* Amoeba                                                                 */
-/**************************************************************************/
-#if defined(AMOEBA)
-# define port am_port_t
-# include <amoeba.h>
-# include <cmdreg.h>
-# include <stderr.h>
-# include <ampolicy.h>
-# include <proc.h>
-# include <signal.h>
-# include <server/iop/iop.h>
-# include <errno.h>
-# undef port
-
-# undef _POSIX_SOURCE    /* to get the BSD-compatible symbols */
-# include <sys/stat.h>
-
-  /* keyboard types */
-# define KB_84                   1
-# define KB_101                  2
-# define KB_OTHER                3
-
-extern capability iopcap;
-# define MOUSE_PROTOCOL_IN_KERNEL
-
-#endif /* AMOEBA */
 
 /**************************************************************************/
 /* OS/2                                                                   */

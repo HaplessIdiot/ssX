@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/dm.h,v 3.21 2000/11/14 21:59:25 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/dm.h,v 3.23 2001/02/16 13:24:10 eich Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -35,12 +35,6 @@ from The Open Group.
 
 #ifndef _DM_H_
 #define _DM_H_ 1
-
-#ifdef MINIX
-#ifdef MNX_TCPCONN
-#define TCPCONN
-#endif
-#endif /* MINIX */
 
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
@@ -506,11 +500,5 @@ char *malloc(), *realloc();
 typedef SIGVAL (*SIGFUNC)(int);
 
 SIGVAL (*Signal(int, SIGFUNC Handler))(int);
-
-#ifdef MINIX
-#include <sys/nbio.h>
-void udp_read_cb(nbio_ref_t ref, int res, int err);
-void tcp_listen_cb(nbio_ref_t ref, int res, int err);
-#endif
 
 #endif /* _DM_H_ */

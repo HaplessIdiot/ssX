@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.27 1999/12/27 00:39:28 robin Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.28 2001/01/17 19:43:46 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -90,7 +90,6 @@ extern int  errno;		/* Internal system error number. */
 #endif
 
 #ifndef WIN32
-#ifndef MINIX
 #ifndef Lynx
 #include <sys/socket.h>
 #else
@@ -98,7 +97,6 @@ extern int  errno;		/* Internal system error number. */
 #endif
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#endif
 #ifdef __EMX__
 #include <sys/ioctl.h>
 #endif

@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.45 2001/04/01 14:00:16 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.46 2001/04/27 12:51:07 alanh Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -74,7 +74,7 @@ extern int errno;
 #include <stdio.h>
 
 #ifndef WIN32
-#if defined(MINIX) || defined(Lynx)
+#if defined(Lynx)
 #include <socket.h>
 #else
 #include <sys/socket.h>
@@ -99,12 +99,6 @@ extern int errno;
 
 #ifdef AIXV3
 #include <sys/ioctl.h>
-#endif
-
-#ifdef MINIX
-#include <sys/nbio.h>
-
-#define select(n,r,w,x,t) nbio_select(n,r,w,x,t)
 #endif
 
 #ifdef __EMX__
@@ -137,7 +131,7 @@ extern __const__ int _nfiles;
 #include <server/ip/gen/inet.h>
 #endif
 
-#if !defined(AMOEBA) && !defined(_MINIX) && !defined(__EMX__)
+#if !defined(__EMX__)
 #ifndef Lynx
 #include <sys/uio.h>
 #else
@@ -871,7 +865,6 @@ EstablishNewConnections(clientUnused, closure)
     register OsCommPtr oc;
     fd_set tmask;
 
-#ifndef AMOEBA
     XFD_ANDSET (&tmask, (fd_set*)closure, &WellKnownConnections);
     XFD_COPYSET(&tmask, &readyconnections);
     if (!XFD_ANYSET(&readyconnections))
@@ -889,12 +882,6 @@ EstablishNewConnections(clientUnused, closure)
 		CloseDownClient(client);     
 	}
     }
-#else /* AMOEBA */
-    /* EstablishNewConnections is only called when there is one new
-     * connection waiting on the first transport.
-     */
-    readyconnections = 1;
-#endif /* AMOEBA */
 #ifndef WIN32
     for (i = 0; i < howmany(XFD_SETSIZE, NFDBITS); i++)
     {
@@ -966,7 +953,6 @@ XtransConnInfo trans_conn;
     struct iovec iov[3];
     char byteOrder = 0;
     int whichbyte = 1;
-#ifndef AMOEBA
     struct timeval waittime;
     fd_set mask;
 
@@ -977,7 +963,6 @@ XtransConnInfo trans_conn;
     FD_ZERO(&mask);
     FD_SET(fd, &mask);
     (void)Select(fd + 1, &mask, NULL, NULL, &waittime);
-#endif
     /* try to read the byte-order of the connection */
     (void)_XSERVTransRead(trans_conn, &byteOrder, 1);
     if ((byteOrder == 'l') || (byteOrder == 'B'))
@@ -1076,7 +1061,6 @@ CheckConnections()
     fd_set savedAllClients;
 #endif
 
-#ifndef AMOEBA
     notime.tv_sec = 0;
     notime.tv_usec = 0;
 
@@ -1107,7 +1091,6 @@ CheckConnections()
 	if (r < 0)
 	    CloseDownClient(clients[ConnectionTranslation[curclient]]);
     }	
-#endif
 #endif
 }
 

@@ -1,6 +1,6 @@
 /*
 ** $XConsortium: tests.c,v 1.20 91/06/08 18:57:07 rws Exp $
-** $XFree86: xc/programs/xgc/tests.c,v 1.4 2000/08/10 17:40:41 dawes Exp $
+** $XFree86: xc/programs/xgc/tests.c,v 1.5 2000/11/14 18:20:39 dawes Exp $
 **
 */
 
@@ -15,7 +15,7 @@
 #ifdef SVR4
 #define SYSV
 #endif
-#if !defined(SYSV) && !defined(MINIX)
+#if !defined(SYSV)
 #include <sys/timeb.h>
 #include <sys/resource.h>
 #endif
@@ -53,7 +53,7 @@ static long
 timer(flag)
      int flag;
 {
-#if !defined(SYSV) && !defined(MINIX) && !defined(AMOEBA)
+#if !defined(SYSV)
   static struct timeval starttime;  /* starting time for gettimeofday() */
   struct timeval endtime;           /* ending time for gettimeofday() */
 #ifndef __EMX__

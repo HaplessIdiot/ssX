@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xf86dga/dga.c,v 3.15 1997/11/08 16:24:37 hohndel Exp $ */
+/* $XFree86: xc/programs/xf86dga/dga.c,v 3.17 2000/05/14 20:44:00 alanh Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Intrinsic.h>
@@ -26,7 +26,6 @@
 #define MINMINOR 0
 
 /* copied from xf86Io.c */
-#if !defined(AMOEBA) && !defined(MINIX)
 static int
 GetTimeInMillis(void)
 {
@@ -35,7 +34,6 @@ GetTimeInMillis(void)
     gettimeofday(&tp, 0);
     return(tp.tv_sec * 1000) + (tp.tv_usec / 1000);
 }
-#endif /* !AMOEBA && !MINIX */
 
 int
 main(int argc, char *argv[])

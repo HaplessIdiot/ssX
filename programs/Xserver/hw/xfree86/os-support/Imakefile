@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.44 2001/04/23 12:08:14 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.45 2001/05/28 02:42:30 tsi Exp $
 
 
 
@@ -63,20 +63,8 @@ OS_SUBDIR = bsd
 OS_SUBDIR = bsdi
 #endif
 
-#if defined(i386MachArchitecture) || defined(OsfArchitecture)
 #if defined(GNUMachArchitecture)
 OS_SUBDIR = hurd
-#else
-OS_SUBDIR = mach
-#endif
-#endif
-
-#if defined(AmoebaArchitecture)
-OS_SUBDIR = amoeba
-#endif
-
-#if defined(MinixArchitecture)
-OS_SUBDIR = minix
 #endif
 
 #if defined(OS2Architecture)

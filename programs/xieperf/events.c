@@ -66,7 +66,7 @@ terms and conditions:
 	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
-/* $XFree86: xc/programs/xieperf/events.c,v 3.6 1999/03/14 03:22:30 dawes Exp $ */
+/* $XFree86: xc/programs/xieperf/events.c,v 3.7 2001/01/17 23:45:37 dawes Exp $ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -75,11 +75,6 @@ terms and conditions:
 #include <ctype.h>
 #include <X11/Xpoll.h>
 #include "xieperf.h"
-
-#ifdef MINIX
-#include <sys/nbio.h>
-#define select(n,r,w,x,t) nbio_select(n,r,w,x,t)
-#endif
 
 static XieExtensionInfo *xieInfo=NULL;
 static int timeout = 60;        /* in seconds */
@@ -194,14 +189,9 @@ WaitForXIEEvent(XParms xp, int which, XiePhotoflo flo_id,
 			tv.tv_sec = delta;  
 			tv.tv_usec = 0L;
 			XFlush( xp->d );
-#ifndef AMOEBA
 			FD_ZERO(&rd);
 			FD_SET(Xsocket, &rd);
 			Select( Xsocket + 1, &rd, NULL, NULL, &tv );
-#else  /* AMOEBA */
-			(void) _X11TransAmSelect(ConnectionNumber(xp->d),
-						 delta * 1000);
-#endif /* AMOEBA */
 			continue;
 		}	
 		xie_event = event.type - xieInfo->first_event;

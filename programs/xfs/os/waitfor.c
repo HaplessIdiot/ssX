@@ -46,13 +46,13 @@ in this Software without prior written authorization from The Open Group.
  * $NCDXorg: @(#)waitfor.c,v 4.5 1991/06/24 11:59:20 lemke Exp $
  *
  */
-/* $XFree86: xc/programs/xfs/os/waitfor.c,v 3.11 2000/06/15 20:50:04 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/waitfor.c,v 3.12 2001/01/17 23:45:33 dawes Exp $ */
 
 #include	<X11/Xos.h>	/* strings, time, etc */
 
 #include	<stdio.h>
 #include	<errno.h>
-#if !defined(MINIX) && !defined(Lynx)
+#if !defined(Lynx)
 #include	<sys/param.h>
 #endif
 
@@ -61,11 +61,6 @@ in this Software without prior written authorization from The Open Group.
 #include	"X11/Xpoll.h"
 #include	"osdep.h"
 #include	"os.h"
-
-#ifdef MINIX
-#include <sys/nbio.h>
-#define select(n,r,w,x,t) nbio_select(n,r,w,x,t)
-#endif
 
 #ifdef __EMX__
 #define select(n,r,w,x,t) os2PseudoSelect(n,r,w,x,t)

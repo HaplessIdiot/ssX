@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:47:01 cpqbld Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.239 2001/06/09 16:37:39 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.240 2001/07/02 09:37:14 alanh Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -449,41 +449,6 @@ SetUIDServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS), \
 #define ServerToInstall XsunMono
 #endif
 #endif /* XsunMonoServer */
-
-
-#if XsunAmoebaServer
-XCOMM
-XCOMM Sun server for Amoeba
-XCOMM
-MFBDIR = mfb
-CFB8DIR = cfb
-AMOEBADDXDIR = hw/sunAmoeba
-SUNDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(AMOEBADDXDIR) $(DEPDIRS)
-SUNOBJS = hw/sunAmoeba/sunInitColor.o
-SUNLIBS = hw/sunAmoeba/LibraryTargetName(sun) CFB8Libs
-ServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS), \
-	$(SUNLIBS),$(FONTLIBS) $(SYSLIBS))
-#ifndef ServerToInstall
-#define ServerToInstall Xsun
-#endif
-#endif /* XsunAmoebaServer */
-
-
-#if XsunAmoebaMonoServer
-XCOMM
-XCOMM Sun monochrome server for Amoeba
-XCOMM
-MFBDIR = mfb
-AMOEBADDXDIR = hw/sunAmoeba
-SUNMDIRS = $(STDDIRS) $(MFBDIR) $(AMOEBADDXDIR) $(DEPDIRS)
-SUNMOBJS = hw/sunAmoeba/sunInitMono.o hw/sunAmoeba/sunInExMono.o
-SUNMLIBS = hw/sunAmoeba/LibraryTargetName(sun) MFBBareLibs $(OTHEREXTS)
-ServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS), \
-	$(SUNMLIBS),$(FONTLIBS) $(SYSLIBS))
-#ifndef ServerToInstall
-#define ServerToInstall XsunMono
-#endif
-#endif /* XsunAmoebaMonoServer */
 
 
 #if XsunLynxServer
@@ -1283,7 +1248,7 @@ install::
 CFBDIRS = $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR)
 MIEXTDIRS = $(SHADOWDIR) $(LAYERDIR)
 IPLANDIRS = $(IPLAN2P2DIR) $(IPLAN2P4DIR) $(IPLAN2P8DIR)
-DDXDIRS = $(DECWSDDXDIR) $(SUNDDXDIR) $(AMOEBADDXDIR) $(LYNXDDXDIR) \
+DDXDIRS = $(DECWSDDXDIR) $(SUNDDXDIR) $(LYNXDDXDIR) \
 	  $(HPDDXDIR) $(XFREE86DDXDIR) $(XWINDDXDIR) $(DARWINDDXDIR) \
 	  $(XVFBDDXDIR) $(XNESTDDXDIR)
 SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFBDIRS) $(IPLANDIRS) $(ILBMDIR) $(AFBDIR) \

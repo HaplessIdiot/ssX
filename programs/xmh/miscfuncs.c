@@ -1,5 +1,5 @@
 /* $XConsortium: miscfuncs.c,v 1.7 94/12/01 17:15:05 kaleb Exp $ */
-/* $XFree86: xc/programs/xmh/miscfuncs.c,v 3.2 1996/06/10 09:18:25 dawes Exp $ */
+/* $XFree86: xc/programs/xmh/miscfuncs.c,v 3.3 1996/12/26 01:41:01 dawes Exp $ */
 
 #include <X11/Xos.h>
 
@@ -29,7 +29,7 @@ char *realloc();
 
 
 
-#if defined(SYSV) && (defined(i386) || defined(MOTOROLA)) || defined(MINIX)
+#if defined(SYSV) && (defined(i386) || defined(MOTOROLA))
 
 /* These systems don't have the ftruncate() system call, so we emulate it.
  * This emulation can only shorten, not lengthen.

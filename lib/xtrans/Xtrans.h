@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtrans.h,v 3.14 1999/12/13 02:52:54 robin Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtrans.h,v 3.15 2001/01/17 19:43:45 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -183,7 +183,7 @@ typedef long BytesReadable_t;
 #endif
 
 
-#if defined(WIN32) || (defined(USG) && !defined(CRAY) && !defined(umips) && !defined(MOTOROLA) && !defined(uniosu) && !defined(__sxg__)) || defined(MINIX)
+#if defined(WIN32) || (defined(USG) && !defined(CRAY) && !defined(umips) && !defined(MOTOROLA) && !defined(uniosu) && !defined(__sxg__))
 
 /*
  *      TRANS(Readv) and TRANS(Writev) use struct iovec, normally found

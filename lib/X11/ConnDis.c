@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ConnDis.c,v 3.17 2000/01/29 18:58:08 dawes Exp $ */
+/* $XFree86: xc/lib/X11/ConnDis.c,v 3.18 2001/01/17 19:41:33 dawes Exp $ */
 
 /* 
  * This file contains operating system dependencies.
@@ -34,7 +34,7 @@ in this Software without prior written authorization from The Open Group.
 #include <stdio.h>
 #include <ctype.h>
 
-#if !defined(WIN32) && !defined(MINIX)
+#if !defined(WIN32)
 #ifndef Lynx
 #include <sys/socket.h>
 #else

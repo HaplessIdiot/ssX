@@ -22,16 +22,12 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/lib/ICE/process.c,v 3.4 2000/06/17 17:44:18 dawes Exp $ */
+/* $XFree86: xc/lib/ICE/process.c,v 3.5 2001/01/17 19:41:29 dawes Exp $ */
 
 #include <X11/ICE/ICElib.h>
 #include "ICElibint.h"
 
 #include <stdio.h> /* sprintf */
-
-#ifdef MINIX
-#include <X11/Xtrans.h>
-#endif
 
 /*
  * Check for bad length
@@ -2522,19 +2518,3 @@ Bool		 *connectionClosedRet;
 	*replyReadyRet = replyReady;
 }
 
-
-#ifdef MINIX
-int 
-MNX_IceMessagesAvailable(iceConn)
-
-IceConn          iceConn;
-{
-	BytesReadable_t bytes;
-
-	_IceTransSetOption(iceConn->trans_conn, TRANS_NONBLOCKING, 1);
-	if (_IceTransBytesReadable(iceConn->trans_conn, &bytes) < 0)
-		bytes= -1;
-	_IceTransSetOption(iceConn->trans_conn, TRANS_NONBLOCKING, 0);
-	return (bytes != 0);
-}
-#endif

@@ -55,7 +55,7 @@ in this Software without prior written authorization from The Open Group.
  * 27-Oct-87 Thomas E. LaStrange	File created
  * 10-Oct-90 David M. Sternlicht        Storing saved colors on root
  ***********************************************************************/
-/* $XFree86: xc/programs/twm/twm.c,v 3.6 2000/10/24 22:45:15 dawes Exp $ */
+/* $XFree86: xc/programs/twm/twm.c,v 3.7 2001/01/17 23:45:08 dawes Exp $ */
 
 #include <stdio.h>
 #include <signal.h>
@@ -258,32 +258,12 @@ main(int argc, char *argv[])
 	exit (1);
     }
 
-#ifdef MINIX
-    { int flags;
-    	if ((flags= fcntl(ConnectionNumber(dpy), F_GETFD)) == -1)
-    	{
-		fprintf (stderr, 
-		 "%s:  unable to mark display connection as close-on-exec\n",
-			 ProgramName);
-		exit (1);
-    	}
-	if (fcntl(ConnectionNumber(dpy), F_SETFD,
-					flags | FD_CLOEXEC) == -1)
-	{
-	    fprintf (stderr, 
-		"%s:  unable to mark display connection as close-on-exec\n",
-			 ProgramName);
-	    exit (1);
-	}
-    }
-#else
     if (fcntl(ConnectionNumber(dpy), F_SETFD, 1) == -1) {
 	fprintf (stderr, 
 		 "%s:  unable to mark display connection as close-on-exec\n",
 		 ProgramName);
 	exit (1);
     }
-#endif
 
     if (restore_filename)
 	ReadWinConfigFile (restore_filename);
