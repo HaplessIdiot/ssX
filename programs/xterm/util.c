@@ -1,5 +1,6 @@
 /*
  *	$XConsortium: util.c,v 1.31 91/06/20 18:34:47 gildea Exp $
+ *	$XFree86$
  */
 
 /*

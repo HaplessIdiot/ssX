@@ -1,5 +1,5 @@
 .\" $XConsortium: xterm.man,v 1.80 94/04/17 19:01:03 rws Exp $
-.\" $XFree86: xc/programs/xterm/xterm.man,v 3.1 1995/07/07 15:47:27 dawes Exp $
+.\" $XFree86: xc/programs/xterm/xterm.man,v 3.2 1995/09/17 06:33:26 dawes Exp $
 .\" Copyright (c) 1989  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -220,7 +220,7 @@ cursor motion package.
 .TP 8
 .B \+cu
 This option indicates that \fIxterm\fP should not work around the
-.IR more (3x)
+.IR more (1)
 bug mentioned above.
 .TP 8
 .B "\-dc"
@@ -1644,33 +1644,33 @@ The default bindings in the VT102 window are:
 .TA 2.5i
 .ta 2.5i
 .nf
-    Shift <KeyPress> Prior:	scroll-back(1,halfpage) \\n\\
-     Shift <KeyPress> Next:	scroll-forw(1,halfpage) \\n\\
-   Shift <KeyPress> Select:	select-cursor-start() \\
-	select-cursor-end(PRIMARY, CUT_BUFFER0) \\n\\
-   Shift <KeyPress> Insert:	insert-selection(PRIMARY, CUT_BUFFER0) \\n\\
-           ~Meta<KeyPress>:	insert-seven-bit() \\n\\
-            Meta<KeyPress>:	insert-eight-bit() \\n\\
-          !Ctrl <Btn1Down>:	popup-menu(mainMenu) \\n\\
-     !Lock Ctrl <Btn1Down>:	popup-menu(mainMenu) \\n\\
-     !Mod2 Ctrl <Btn1Down>:	popup-menu(mainMenu) \\n\\
-!Mod2 Lock Ctrl <Btn1Down>:	popup-menu(mainMenu) \\n\\
-          ~Meta <Btn1Down>:	select-start() \\n\\
-        ~Meta <Btn1Motion>:	select-extend() \\n\\
-          !Ctrl <Btn2Down>:	popup-menu(vtMenu) \\n\\
-     !Lock Ctrl <Btn2Down>:	popup-menu(vtMenu) \\n\\
-     !Mod2 Ctrl <Btn2Down>:	popup-menu(vtMenu) \\n\\
-!Mod2 Lock Ctrl <Btn2Down>:	popup-menu(vtMenu) \\n\\
-    ~Ctrl ~Meta <Btn2Down>:	ignore() \\n\\
-      ~Ctrl ~Meta <Btn2Up>:	insert-selection(PRIMARY, CUT_BUFFER0) \\n\\
-          !Ctrl <Btn3Down>:	popup-menu(fontMenu) \\n\\
-     !Lock Ctrl <Btn3Down>:	popup-menu(fontMenu) \\n\\
-     !Mod2 Ctrl <Btn3Down>:	popup-menu(fontMenu) \\n\\
-!Mod2 Lock Ctrl <Btn3Down>:	popup-menu(fontMenu) \\n\\
-    ~Ctrl ~Meta <Btn3Down>:	start-extend() \\n\\
-        ~Meta <Btn3Motion>:	select-extend() \\n\\
-                   <BtnUp>:	select-end(PRIMARY, CUT_BUFFER0) \\n\\
-                 <BtnDown>:	bell(0)
+          Shift <KeyPress> Prior:	scroll-back(1,halfpage) \\n\\
+           Shift <KeyPress> Next:	scroll-forw(1,halfpage) \\n\\
+         Shift <KeyPress> Select:	select-cursor-start() \\
+	                                select-cursor-end(PRIMARY, CUT_BUFFER0) \\n\\
+         Shift <KeyPress> Insert:	insert-selection(PRIMARY, CUT_BUFFER0) \\n\\
+                 ~Meta<KeyPress>:	insert-seven-bit() \\n\\
+                  Meta<KeyPress>:	insert-eight-bit() \\n\\
+                !Ctrl <Btn1Down>:	popup-menu(mainMenu) \\n\\
+           !Lock Ctrl <Btn1Down>:	popup-menu(mainMenu) \\n\\
+ !Lock Ctrl @Num_Lock <Btn1Down>:	popup-menu(mainMenu) \\n\\
+     ! @Num_Lock Ctrl <Btn1Down>:	popup-menu(mainMenu) \\n\\
+                ~Meta <Btn1Down>:	select-start() \\n\\
+              ~Meta <Btn1Motion>:	select-extend() \\n\\
+                !Ctrl <Btn2Down>:	popup-menu(vtMenu) \\n\\
+           !Lock Ctrl <Btn2Down>:	popup-menu(vtMenu) \\n\\
+ !Lock Ctrl @Num_Lock <Btn2Down>:	popup-menu(vtMenu) \\n\\
+     ! @Num_Lock Ctrl <Btn2Down>:	popup-menu(vtMenu) \\n\\
+          ~Ctrl ~Meta <Btn2Down>:	ignore() \\n\\
+            ~Ctrl ~Meta <Btn2Up>:	insert-selection(PRIMARY, CUT_BUFFER0) \\n\\
+                !Ctrl <Btn3Down>:	popup-menu(fontMenu) \\n\\
+           !Lock Ctrl <Btn3Down>:	popup-menu(fontMenu) \\n\\
+ !Lock Ctrl @Num_Lock <Btn3Down>:	popup-menu(fontMenu) \\n\\
+     ! @Num_Lock Ctrl <Btn3Down>:	popup-menu(fontMenu) \\n\\
+          ~Ctrl ~Meta <Btn3Down>:	start-extend() \\n\\
+              ~Meta <Btn3Motion>:	select-extend() \\n\\
+                         <BtnUp>:	select-end(PRIMARY, CUT_BUFFER0) \\n\\
+                       <BtnDown>:	bell(0)
 .fi
 .DE
 .sp
@@ -1683,22 +1683,22 @@ The default bindings in the Tektronix window are:
 .TA 2.5i
 .ta 2.5i
 .nf
-           ~Meta<KeyPress>: 	insert-seven-bit() \\n\\
-            Meta<KeyPress>: 	insert-eight-bit() \\n\\
-          !Ctrl <Btn1Down>: 	popup-menu(mainMenu) \\n\\
-     !Lock Ctrl <Btn1Down>: 	popup-menu(mainMenu) \\n\\
-     !Mod2 Ctrl <Btn1Down>: 	popup-menu(mainMenu) \\n\\
-!Mod2 Lock Ctrl <Btn1Down>: 	popup-menu(mainMenu) \\n\\
-          !Ctrl <Btn2Down>: 	popup-menu(tekMenu) \\n\\
-     !Lock Ctrl <Btn2Down>: 	popup-menu(tekMenu) \\n\\
-     !Mod2 Ctrl <Btn2Down>: 	popup-menu(tekMenu) \\n\\
-!Mod2 Lock Ctrl <Btn2Down>: 	popup-menu(tekMenu) \\n\\
-     Shift ~Meta<Btn1Down>:	gin-press(L) \\n\\
-           ~Meta<Btn1Down>:	gin-press(l) \\n\\
-     Shift ~Meta<Btn2Down>:	gin-press(M) \\n\\
-           ~Meta<Btn2Down>:	gin-press(m) \\n\\
-     Shift ~Meta<Btn3Down>:	gin-press(R) \\n\\
-           ~Meta<Btn3Down>:	gin-press(r)
+                ~Meta<KeyPress>: 	insert-seven-bit() \\n\\
+                 Meta<KeyPress>: 	insert-eight-bit() \\n\\
+               !Ctrl <Btn1Down>: 	popup-menu(mainMenu) \\n\\
+          !Lock Ctrl <Btn1Down>: 	popup-menu(mainMenu) \\n\\
+!Lock Ctrl @Num_Lock <Btn1Down>: 	popup-menu(mainMenu) \\n\\
+     !Ctrl @Num_Lock <Btn1Down>: 	popup-menu(mainMenu) \\n\\
+               !Ctrl <Btn2Down>: 	popup-menu(tekMenu) \\n\\
+          !Lock Ctrl <Btn2Down>: 	popup-menu(tekMenu) \\n\\
+!Lock Ctrl @Num_Lock <Btn2Down>: 	popup-menu(tekMenu) \\n\\
+     !Ctrl @Num_Lock <Btn2Down>: 	popup-menu(tekMenu) \\n\\
+          Shift ~Meta<Btn1Down>:	gin-press(L) \\n\\
+                ~Meta<Btn1Down>:	gin-press(l) \\n\\
+          Shift ~Meta<Btn2Down>:	gin-press(M) \\n\\
+                ~Meta<Btn2Down>:	gin-press(m) \\n\\
+          Shift ~Meta<Btn3Down>:	gin-press(R) \\n\\
+                ~Meta<Btn3Down>:	gin-press(r)
 .fi
 .DE
 .sp

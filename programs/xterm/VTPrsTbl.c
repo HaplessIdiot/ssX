@@ -1,5 +1,6 @@
 /*
  *	$XConsortium: VTPrsTbl.c,v 1.10 95/06/09 22:17:06 gildea Exp $
+ *	$XFree86$
  */
 
 /*

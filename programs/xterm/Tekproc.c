@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Tekproc.c,v 1.115 94/04/17 20:23:23 rws Exp $
- * $XFree86: xc/programs/xterm/Tekproc.c,v 3.3 1995/07/07 15:47:20 dawes Exp $
+ * $XFree86: xc/programs/xterm/Tekproc.c,v 3.4 1995/09/17 06:33:09 dawes Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -204,22 +204,22 @@ extern void HandleGINInput();
 extern void HandleCreateMenu(), HandlePopupMenu();
 
 static char defaultTranslations[] = "\
-       ~Meta<KeyPress>: 	insert-seven-bit()	\n\
-        Meta<KeyPress>: 	insert-eight-bit()\n\
-      !Ctrl <Btn1Down>:         popup-menu(mainMenu) \n\
- !Lock Ctrl <Btn1Down>:         popup-menu(mainMenu) \n\
- !Mod2 Ctrl <Btn1Down>:         popup-menu(mainMenu) \n\
-!Mod2 Lock Ctrl <Btn1Down>:     popup-menu(mainMenu) \n\
-      !Ctrl <Btn2Down>:         popup-menu(tekMenu) \n\
- !Lock Ctrl <Btn2Down>:         popup-menu(tekMenu) \n\
- !Mod2 Ctrl <Btn2Down>:         popup-menu(tekMenu) \n\
-!Mod2 Lock Ctrl <Btn2Down>:     popup-menu(tekMenu) \n\
- Shift ~Meta<Btn1Down>:         gin-press(L) \n\
-       ~Meta<Btn1Down>:         gin-press(l) \n\
- Shift ~Meta<Btn2Down>:         gin-press(M) \n\
-       ~Meta<Btn2Down>:         gin-press(m) \n\
- Shift ~Meta<Btn3Down>:         gin-press(R) \n\
-       ~Meta<Btn3Down>:         gin-press(r)";
+                ~Meta<KeyPress>: insert-seven-bit()	\n\
+                 Meta<KeyPress>: insert-eight-bit()\n\
+               !Ctrl <Btn1Down>: popup-menu(mainMenu) \n\
+          !Lock Ctrl <Btn1Down>: popup-menu(mainMenu) \n\
+!Lock Ctrl @Num_Lock <Btn1Down>: popup-menu(mainMenu) \n\
+     !Ctrl @Num_Lock <Btn1Down>: popup-menu(mainMenu) \n\
+               !Ctrl <Btn2Down>: popup-menu(tekMenu) \n\
+          !Lock Ctrl <Btn2Down>: popup-menu(tekMenu) \n\
+!Lock Ctrl @Num_Lock <Btn2Down>: popup-menu(tekMenu) \n\
+     !Ctrl @Num_Lock <Btn2Down>: popup-menu(tekMenu) \n\
+          Shift ~Meta<Btn1Down>: gin-press(L) \n\
+                ~Meta<Btn1Down>: gin-press(l) \n\
+          Shift ~Meta<Btn2Down>: gin-press(M) \n\
+                ~Meta<Btn2Down>: gin-press(m) \n\
+          Shift ~Meta<Btn3Down>: gin-press(R) \n\
+                ~Meta<Btn3Down>: gin-press(r)";
 
 
 static XtActionsRec actionsList[] = { 
