@@ -1,8 +1,9 @@
 XCOMM $XConsortium: Imakefile /main/9 1996/11/03 19:31:58 kaleb $
-XCOMM $XFree86: xc/lib/font/bitmap/Imakefile,v 1.5 1999/01/11 05:13:17 dawes Exp $
+XCOMM $XFree86: xc/lib/font/bitmap/Imakefile,v 1.6 1999/01/11 09:39:26 dawes Exp $
 
 #if DoLoadableServer
 #define IHaveSubdirs
+#define NoLibSubdirs
 #define PassCDebugFlags
 SUBDIRS = module
 #endif

@@ -1,9 +1,10 @@
 XCOMM $XConsortium: Imakefile /main/14 1996/11/03 19:58:41 kaleb $
-XCOMM $XFree86: xc/lib/font/fontfile/Imakefile,v 3.11 1999/02/07 10:38:32 dawes Exp $
+XCOMM $XFree86: xc/lib/font/fontfile/Imakefile,v 3.12 1999/02/07 10:48:26 dawes Exp $
 #include <Server.tmpl>
 
 #if DoLoadableServer
 #define IHaveSubdirs
+#define NoLibSubdirs
 SUBDIRS = module
 #endif
 

@@ -19,7 +19,7 @@ XCOMM $TOG: Library.tmpl /main/44 1997/04/28 11:47:53 kaleb $
 
 
 
-XCOMM $XFree86: xc/config/cf/Library.tmpl,v 3.7 1998/12/20 11:56:17 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Library.tmpl,v 3.8 1999/01/03 03:58:09 dawes Exp $
 
 #ifndef LibraryCplusplusOptions
 # if DoSharedLib && defined(SharedLibraryCplusplusOptions)
@@ -95,7 +95,7 @@ CXXDEBUGFLAGS = LibraryCplusplusDebugFlags
 
 LIB_MT_DEFINES = LibraryMTDefines
 
-#if defined(IHaveSubdirs) && HasSymLinks
+#if defined(IHaveSubdirs) && HasSymLinks && !defined(NoLibSubdirs)
 #define _LibMkdir LibMkdirLinkSubdirs
 #else
 #define _LibMkdir LibMkdir
