@@ -1,15 +1,9 @@
-/* $TOG: Main.c /main/18 1997/11/24 13:14:08 kaleb $ */
+/* $TOG: Main.c /main/20 1998/03/05 16:17:28 kaleb $ */
 /*
 
-Copyright (C) 1996 X Consortium
+Copyright 1996, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Soft-
-ware"), to deal in the Software without restriction, including without
-limitation the rights to use, copy, modify, merge, publish, distribute,
-sublicense, and/or sell copies of the Software, and to permit persons to
-whom the Software is furnished to do so, subject to the following condi-
-tions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,15 +11,15 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABIL-
 ITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT
-SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABIL-
+SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABIL-
 ITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization from
-the X Consortium.
+The Open Group.
 
 */
 
@@ -35,7 +29,7 @@ the X Consortium.
 
 /* -*- Mode: C; tab-width: 4; -*- */
 /******************************************************************************
- * Copyright (c) 1996 Netscape Communications. All rights reserved.
+ * Copyright 1996 Netscape Communications. All rights reserved.
  ******************************************************************************/
 /*
  * UnixShell.c
@@ -387,8 +381,8 @@ StartCB(Widget widget, XtPointer client_data, XtPointer call_data)
     StartApplication(This);
 }
 
-#if defined(linux)
-/* deficient linker semantics */
+#if defined(linux) || (defined(sun) && !defined(SVR4))
+/* deficient linux linker semantics  */
 static WidgetClass xmLabelGadgetClass;
 static WidgetClass xmPushButtonGadgetClass;
 #else
@@ -422,7 +416,7 @@ RxpSetStatusWidget(PluginInstance* This, PluginState state)
 	XrmPutStringResource (&db, "*Rx_Start.labelString", "Start");
 	XrmPutStringResource (&db, "RxPlugin_BeenHere", "YES");
     }
-#if defined(linux)
+#if defined(linux) || (defined(sun) && !defined(SVR4))
     /*
 	lame loader semantics mean we have to go fishing around to
 	come up with widget class records so we can create some widgets.

@@ -1,18 +1,12 @@
-/* $XConsortium: fonts.c,v 1.27 95/05/19 19:14:19 dpw Exp $ */
-/* $XFree86: xc/programs/xfs/difs/fonts.c,v 3.0 1995/06/02 10:32:42 dawes Exp $ */
+/* $TOG: fonts.c /main/30 1998/05/28 15:48:12 kaleb $ */
 /*
  * font control
  */
 /*
  
-Copyright (c) 1990, 1991  X Consortium
+Copyright 1990, 1991, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -20,13 +14,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation 
@@ -48,6 +42,7 @@ in this Software without prior written authorization from the X Consortium.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
+/* $XFree86: xc/programs/xfs/difs/fonts.c,v 3.1 1996/01/05 13:21:27 dawes Exp $ */
 
 #include        "FS.h"
 #include        "FSproto.h"
@@ -449,6 +444,10 @@ OpenFont(client, fid, format, format_mask, namelen, name)
                 ids;
     int         i;
 
+    if (namelen == 0 || namelen > XLFDMAXFONTNAMELEN) {
+	SendErrToClient(client, FSBadName, (pointer) 0);
+	return FSBadName;
+    }
     /*
     ** Check name cache.  If we find a cached version of this font that
     ** is cachable, immediately satisfy the request with it.  If we find
@@ -893,7 +892,7 @@ do_list_fonts_and_aliases(client, c)
 	     * old state
 	     */
 	    else if (err == FontNameAlias) {
-		char	tmp_pattern[256];
+		char	tmp_pattern[XLFDMAXFONTNAMELEN];
 		/*
 		 * when an alias recurses, we need to give
 		 * the last FPE a chance to clean up; so we call
@@ -1046,6 +1045,17 @@ ListFonts(client, length, pattern, maxNames)
 {
     int         i;
     LFclosurePtr c;
+
+    /*
+     * The right error to return here would be BadName, however the
+     * specification does not allow for a Name error on this request.
+     * Perhaps a better solution would be to return a nil list, i.e.
+     * a list containing zero fontnames.
+     */
+    if (length > XLFDMAXFONTNAMELEN) {
+	SendErrToClient(client, FSBadAlloc, (pointer) 0);
+	return TRUE;
+    }
 
     if (!(c = (LFclosurePtr) fsalloc(sizeof *c)))
 	goto badAlloc;
@@ -1321,6 +1331,17 @@ StartListFontsWithInfo(client, length, pattern, maxNames)
 {
     int         i;
     LFWXIclosurePtr c;
+
+    /*
+     * The right error to return here would be BadName, however the
+     * specification does not allow for a Name error on this request.
+     * Perhaps a better solution would be to return a nil list, i.e.
+     * a list containing zero fontnames.
+     */
+    if (length > XLFDMAXFONTNAMELEN) {
+	SendErrToClient(client, FSBadAlloc, (pointer) 0);
+	return TRUE;
+    }
 
     if (!(c = (LFWXIclosurePtr) fsalloc(sizeof *c)))
 	goto badAlloc;

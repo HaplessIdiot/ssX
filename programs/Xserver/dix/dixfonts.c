@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.14 1998/07/25 09:24:26 dawes Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -21,8 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c /main/58 1996/09/28 17:11:55 rws $ */
-/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.13 1998/07/25 03:10:21 dawes Exp $ */
+/* $TOG: dixfonts.c /main/61 1998/05/28 15:47:54 kaleb $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -831,8 +831,15 @@ ListFonts(client, pattern, length, max_names)
     int         i;
     LFclosurePtr c;
 
+    /* 
+     * The right error to return here would be BadName, however the
+     * specification does not allow for a Name error on this request.
+     * Perhaps a better solution would be to return a nil list, i.e.
+     * a list containing zero fontnames.
+     */
     if (length > XLFDMAXFONTNAMELEN)
 	return BadAlloc;
+
     if (!(c = (LFclosurePtr) xalloc(sizeof *c)))
 	return BadAlloc;
     c->fpe_list = (FontPathElementPtr *)
@@ -1096,8 +1103,15 @@ StartListFontsWithInfo(client, length, pattern, max_names)
     int		    i;
     LFWIclosurePtr  c;
 
+    /* 
+     * The right error to return here would be BadName, however the
+     * specification does not allow for a Name error on this request.
+     * Perhaps a better solution would be to return a nil list, i.e.
+     * a list containing zero fontnames.
+     */
     if (length > XLFDMAXFONTNAMELEN)
-	goto badAlloc;
+	return BadAlloc;
+
     if (!(c = (LFWIclosurePtr) xalloc(sizeof *c)))
 	goto badAlloc;
     c->fpe_list = (FontPathElementPtr *)

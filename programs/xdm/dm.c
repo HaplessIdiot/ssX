@@ -1,16 +1,9 @@
-/* $XConsortium: dm.c,v 1.71 95/07/10 21:18:07 gildea Exp $ */
-/* $XFree86: xc/programs/xdm/dm.c,v 3.4 1996/10/06 13:18:56 dawes Exp $ */
+/* $TOG: dm.c /main/73 1998/04/09 15:12:03 barstow $ */
 /*
 
-Copyright (c) 1988  X Consortium
+Copyright 1988, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -18,17 +11,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
+/* $XFree86: xc/programs/xdm/dm.c,v 3.5 1998/08/16 10:25:56 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -104,6 +98,8 @@ static int TitleLen;
 static SIGVAL ChildNotify ();
 #endif
 
+static int parent_pid = -1; 	/* PID of parent xdm process */
+
 main (argc, argv)
 int	argc;
 char	**argv;
@@ -168,6 +164,7 @@ char	**argv;
 #else
     Debug ("xdm: not compiled for XDMCP\n");
 #endif
+    parent_pid = getpid ();
     (void) Signal (SIGTERM, StopAll);
     (void) Signal (SIGINT, StopAll);
     /*
@@ -353,6 +350,20 @@ static SIGVAL
 StopAll (n)
     int n;
 {
+    if (parent_pid != getpid())
+    {
+	/* 
+	 * We are a child xdm process that was killed by the
+	 * master xdm before we were able to return from fork()
+	 * and remove this signal handler.
+	 *
+	 * See defect XWSog08655 for more information.
+	 */
+	Debug ("Child xdm caught SIGTERM before it remove that signal.\n");
+	(void) Signal (n, SIG_DFL);
+	TerminateProcess (getpid(), SIGTERM);
+	return;
+    }
     Debug ("Shutting down entire manager\n");
 #ifdef XDMCP
     DestroyWellKnownSockets ();

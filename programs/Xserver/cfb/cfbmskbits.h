@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.5 1997/07/10 08:17:13 hohndel Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -8,10 +9,10 @@ software  and  its documentation for any purpose and without
 fee is hereby granted, provided that the above copyright no-
 tice  appear  in all copies and that both that copyright no-
 tice and this permission notice appear in  supporting  docu-
-mentation,  and  that the names of Sun or X Consortium
+mentation,  and  that the names of Sun or The Open Group
 not be used in advertising or publicity pertaining to 
 distribution  of  the software  without specific prior 
-written permission. Sun and X Consortium make no 
+written permission. Sun and The Open Group make no 
 representations about the suitability of this software for 
 any purpose. It is provided "as is" without any express or 
 implied warranty.
@@ -27,8 +28,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: cfbmskbits.h,v 4.25 94/04/17 20:28:55 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.4 1997/05/27 06:30:51 dawes Exp $ */
+/* $TOG: cfbmskbits.h /main/28 1998/02/09 14:06:32 kaleb $ */
 /* Optimizations for PSZ == 32 added by Kyle Marvin (marvin@vitec.com) */
 
 #include	"X.h"

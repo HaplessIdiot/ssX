@@ -27,7 +27,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/mi/micmap.c,v 1.2 1998/07/26 02:33:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/micmap.c,v 1.3 1998/09/26 08:34:25 dawes Exp $ */
 
 /*
  * This is based on cfbcmap.c.  The functions here are useful independently
@@ -236,10 +236,45 @@ miExpandDirectColors(ColormapPtr pmap, int ndef, xColorItem *indefs,
 Bool
 miCreateDefColormap(ScreenPtr pScreen)
 {
+/* 
+ * In the following sources PC X server vendors may want to delete 
+ * "_not_tog" from "#ifdef WIN32_not_tog"
+ */
+#ifdef WIN32_not_tog
+    /*  
+     * these are the MS-Windows desktop colors, adjusted for X's 16-bit 
+     * color specifications.
+     */
+    static xColorItem citems[] = {
+	{   0,      0,      0,      0, 0, 0 },
+	{   1, 0x8000,      0,      0, 0, 0 },
+	{   2,      0, 0x8000,      0, 0, 0 },
+	{   3, 0x8000, 0x8000,      0, 0, 0 },
+	{   4,      0,      0, 0x8000, 0, 0 },
+	{   5, 0x8000,      0, 0x8000, 0, 0 },
+	{   6,      0, 0x8000, 0x8000, 0, 0 },
+	{   7, 0xc000, 0xc000, 0xc000, 0, 0 },
+	{   8, 0xc000, 0xdc00, 0xc000, 0, 0 },
+	{   9, 0xa600, 0xca00, 0xf000, 0, 0 },
+	{ 246, 0xff00, 0xfb00, 0xf000, 0, 0 },
+	{ 247, 0xa000, 0xa000, 0xa400, 0, 0 },
+	{ 248, 0x8000, 0x8000, 0x8000, 0, 0 },
+	{ 249, 0xff00,      0,      0, 0, 0 },
+	{ 250,      0, 0xff00,      0, 0, 0 },
+	{ 251, 0xff00, 0xff00,      0, 0, 0 },
+	{ 252,      0,      0, 0xff00, 0, 0 },
+	{ 253, 0xff00,      0, 0xff00, 0, 0 },
+	{ 254,      0, 0xff00, 0xff00, 0, 0 },
+	{ 255, 0xff00, 0xff00, 0xff00, 0, 0 }
+    };
+#define NUM_DESKTOP_COLORS sizeof citems / sizeof citems[0]
+    int i;
+#else
     unsigned short	zero = 0, ones = 0xFFFF;
+#endif
+    Pixel wp, bp;
     VisualPtr	pVisual;
     ColormapPtr	cmap;
-    Pixel wp, bp;
     
     for (pVisual = pScreen->visuals;
 	 pVisual->vid != pScreen->rootVisual;
@@ -255,6 +290,14 @@ miCreateDefColormap(ScreenPtr pScreen)
     if (pScreen->rootDepth > 1) {
 	wp = pScreen->whitePixel;
 	bp = pScreen->blackPixel;
+#ifdef WIN32_not_tog
+	for (i = 0; i < NUM_DESKTOP_COLORS; i++) {
+	    if (AllocColor (cmap,
+			    &citems[i].red, &citems[i].green, &citems[i].blue,
+			    &citems[i].pixel, 0) != Success)
+		return FALSE;
+	}
+#else
 	if ((AllocColor(cmap, &ones, &ones, &ones, &wp, 0) !=
        	       Success) ||
 	    (AllocColor(cmap, &zero, &zero, &zero, &bp, 0) !=
@@ -262,6 +305,7 @@ miCreateDefColormap(ScreenPtr pScreen)
     	    return FALSE;
 	pScreen->whitePixel = wp;
 	pScreen->blackPixel = bp;
+#endif
     }
 
     (*pScreen->InstallColormap)(cmap);

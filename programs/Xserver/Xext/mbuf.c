@@ -1,13 +1,9 @@
+/* $XFree86: xc/programs/Xserver/Xext/mbuf.c,v 3.3 1997/01/18 06:52:58 dawes Exp $ */
 /************************************************************
 
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -15,18 +11,17 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 ********************************************************/
 
-/* $XConsortium: mbuf.c /main/25 1996/12/02 10:19:23 lehors $ */
-/* $XFree86: xc/programs/Xserver/Xext/mbuf.c,v 3.2 1996/12/23 06:28:59 dawes Exp $ */
+/* $TOG: mbuf.c /main/27 1998/02/26 12:04:55 barstow $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -50,6 +45,10 @@ in this Software without prior written authorization from the X Consortium.
 #include <sys/time.h>
 #endif
 
+#ifdef PANORAMIX
+#include "panoramiX.h"
+#endif
+
 /* given an OtherClientPtr obj, get the ClientPtr */
 #define rClient(obj) (clients[CLIENT_ID((obj)->resource)])
 
@@ -57,6 +56,74 @@ in this Software without prior written authorization from the X Consortium.
 #define bClient(b)   (clients[CLIENT_ID(b->pPixmap->drawable.id)])
 
 #define ValidEventMasks (ExposureMask|MultibufferClobberNotifyMask|MultibufferUpdateNotifyMask)
+
+#ifdef PANORAMIX
+extern int PanoramiXNumScreens;
+extern Bool noPanoramiXExtension;
+extern PanoramiXWindow *PanoramiXWinRoot;
+extern PanoramiXPmap   *PanoramiXPmapRoot;
+extern PanoramiXData   *panoramiXdataPtr;
+#endif
+
+/* The _Multibuffer and _Multibuffers structures below refer to each other,
+ * so we need this forward declaration
+ */
+
+typedef struct _Multibuffers	*MultibuffersPtr;
+
+/*
+ * per-Multibuffer data
+ */
+ 
+typedef struct _Multibuffer {
+    MultibuffersPtr pMultibuffers;  /* associated window data */
+    Mask	    eventMask;	    /* MultibufferClobberNotifyMask|ExposureMask|MultibufferUpdateNotifyMask */
+    Mask	    otherEventMask; /* mask of all other clients event masks */
+    OtherClients    *otherClients;  /* other clients that want events */
+    int		    number;	    /* index of this buffer into array */
+    int		    side;	    /* always Mono */
+    int		    clobber;	    /* Unclobbered, PartiallyClobbered, FullClobbered */
+    PixmapPtr	    pPixmap;	    /* associated pixmap */
+} MultibufferRec, *MultibufferPtr;
+
+/*
+ * per-window data
+ */
+
+typedef struct _Multibuffers {
+    WindowPtr	pWindow;		/* associated window */
+    int		numMultibuffer;		/* count of buffers */
+    int		refcnt;			/* ref count for delete */
+    int		displayedMultibuffer;	/* currently active buffer */
+    int		updateAction;		/* Undefined, Background, Untouched, Copied */
+    int		updateHint;		/* Frequent, Intermittent, Static */
+    int		windowMode;		/* always Mono */
+
+    TimeStamp	lastUpdate;		/* time of last update */
+
+    unsigned short	width, height;	/* last known window size */
+    short		x, y;		/* for static gravity */
+
+    MultibufferPtr	buffers;        /* array of numMultibuffer buffers */
+} MultibuffersRec;
+
+/*
+ * per-screen data
+ */
+typedef struct _MultibufferScreen {
+    Bool	(*PositionWindow)();
+} MultibufferScreenRec, *MultibufferScreenPtr;
+
+/*
+ * per display-image-buffers request data.
+ */
+
+typedef struct _DisplayRequest {
+    struct _DisplayRequest	*next;
+    TimeStamp			activateTime;
+    ClientPtr			pClient;
+    XID				id;
+} DisplayRequestRec, *DisplayRequestPtr;
 
 static unsigned char	MultibufferReqCode;
 static int		MultibufferEventBase;
@@ -465,7 +532,80 @@ CreateImageBuffers (pWin, nbuf, ids, action, hint)
     return Success;
 }
 
+#ifdef PANORAMIX
 static int
+ProcPanoramiXCreateImageBuffers (client)
+    register ClientPtr	client;
+{
+    REQUEST(xMbufCreateImageBuffersReq);
+
+    register int        result;
+    int                 i, j, k, len;
+    PanoramiXWindow     *pPanoramiXWin = PanoramiXWinRoot;
+    PanoramiXWindow     *next;
+    PanoramiXWindow     *pPanoramiXids;
+    PanoramiXWindow     *pPanoramiXPrev_ids;
+    PanoramiXPmap	*local;
+    PanoramiXPmap       *pPanoramiXPmap = PanoramiXPmapRoot;
+    CARD32              *value, *orig_ids;
+    XID                 *ids;
+    XID 		ID;
+    DrawablePtr         pDrawable;
+
+    REQUEST_AT_LEAST_SIZE (xMbufCreateImageBuffersReq);
+    PANORAMIXFIND_ID(pPanoramiXWin,stuff->window);
+    IF_RETURN(!pPanoramiXWin, BadRequest);
+    len = stuff->length - (sizeof(xMbufCreateImageBuffersReq) >> 2);
+    ids = (XID *)ALLOCATE_LOCAL(sizeof(XID)*len);
+    orig_ids = (XID *)ALLOCATE_LOCAL(sizeof(XID)*len);
+    if (!ids)
+       return BadAlloc;
+    memcpy((char *)orig_ids, (char *) &stuff[1], len * sizeof(XID));
+    value = (CARD32 *)&stuff[1];
+    /* New resources are pixmaps */
+    FOR_NSCREENS_OR_ONCE(pPanoramiXWin , j) {
+        stuff->window = pPanoramiXWin->info[j].id;
+        for (i = 0; i < len; i++) {
+         ids[i] = (XID)orig_ids[i];
+	 /* These will be MultibufferDrawableResType & MultibufferResType */ 
+	 pPanoramiXPmap = PanoramiXPmapRoot;
+	 PANORAMIXFIND_ID(pPanoramiXPmap, ids[i]);
+	 if (!pPanoramiXPmap) {
+           local = (PanoramiXWindow *)Xcalloc(sizeof(PanoramiXWindow));
+	   for (k = 0; k <= PanoramiXNumScreens - 1; k++) {
+	      ID = k ? FakeClientID(client->index) : ids[i];
+	      local->info[k].id = ID;
+	   }
+	   local->FreeMe = FALSE;
+	   PANORAMIXFIND_LAST(pPanoramiXPmap, PanoramiXPmapRoot);
+	   pPanoramiXPmap->next = local;
+	   value[i] = local->info[j].id;
+	 }else
+	   value[i] = pPanoramiXPmap->info[j].id;
+	}
+	if (!j)
+           noPanoramiXExtension = TRUE; 
+        result = ProcCreateImageBuffers (client);
+        noPanoramiXExtension = FALSE;
+        BREAK_IF(result != Success);
+    }
+    if (result != Success) {
+      if (ids)
+        Xfree(ids);
+      if (orig_ids)
+        Xfree(orig_ids);
+      if (local)
+          Xfree(local);
+    }
+    return (result);
+}
+#endif
+
+#ifdef PANORAMIX
+int
+#else
+static int
+#endif
 ProcCreateImageBuffers (client)
     register ClientPtr	client;
 {
@@ -527,7 +667,10 @@ ProcCreateImageBuffers (client)
     	swapl(&rep.length, n);
 	swaps(&rep.numberBuffer, n);
     }
-    WriteToClient(client, sizeof (xMbufCreateImageBuffersReply), (char *)&rep);
+#ifdef PANORAMIX
+    if (noPanoramiXExtension)
+#endif
+        WriteToClient(client, sizeof (xMbufCreateImageBuffersReply), (char*)&rep);
     return (client->noClientException);
 }
 
@@ -544,12 +687,40 @@ ProcDisplayImageBuffers (client)
     CARD32	    minDelay;
     TimeStamp	    activateTime, bufferTime;
     
+#ifdef PANORAMIX
+    WindowPtr	    pWndw;
+    PanoramiXPmap   *pPanoramiXPmap = PanoramiXPmapRoot;
+    MultibufferPtr  *pScrn0Multibuffer;
+    MultibuffersPtr *ppScrn0Multibuffers;
+    int             k;
+    int             panoramiX_buf = 0;
+    Bool            FoundScreen;
+
+#endif
+
     REQUEST_AT_LEAST_SIZE (xMbufDisplayImageBuffersReq);
     nbuf = stuff->length - (sizeof (xMbufDisplayImageBuffersReq) >> 2);
     if (!nbuf)
 	return Success;
     minDelay = stuff->minDelay;
     ids = (XID *) &stuff[1];
+#ifdef PANORAMIX
+    if (!noPanoramiXExtension)
+      {
+       int maxbuf = 0;
+       maxbuf = nbuf * PanoramiXNumScreens; 
+       ppScrn0Multibuffers = (MultibuffersPtr *) xalloc(maxbuf * sizeof (MultibuffersPtr));
+       pScrn0Multibuffer = (MultibufferPtr *) xalloc (maxbuf * sizeof(MultibufferPtr));
+    if (!ppScrn0Multibuffers || !pScrn0Multibuffer)
+    {
+    	if ( sizeof (long) != sizeof(CARD32) ) DEALLOCATE_LOCAL(ids);
+	xfree (ppScrn0Multibuffers);
+	xfree (pScrn0Multibuffer);
+	client->errorValue = 0;
+	return BadAlloc;
+    }
+      }
+#endif
     ppMultibuffers = (MultibuffersPtr *) ALLOCATE_LOCAL(nbuf * sizeof (MultibuffersPtr));
     pMultibuffer = (MultibufferPtr *) ALLOCATE_LOCAL(nbuf * sizeof (MultibufferPtr));
     if (!ppMultibuffers || !pMultibuffer)
@@ -563,7 +734,83 @@ ProcDisplayImageBuffers (client)
     activateTime.milliseconds = 0;
     for (i = 0; i < nbuf; i++)
     {
-	pMultibuffer[i] = (MultibufferPtr) LookupIDByType (ids[i], MultibufferResType);
+#ifdef PANORAMIX
+     if (!noPanoramiXExtension) {
+        pPanoramiXPmap = PanoramiXPmapRoot;
+	PANORAMIXFIND_ID(pPanoramiXPmap, ids[i]);
+	if (!pPanoramiXPmap){
+    	    if ( sizeof (long) != sizeof(CARD32) ) DEALLOCATE_LOCAL(ids);
+	    xfree (ppMultibuffers);
+	    xfree (pMultibuffer);
+	    client->errorValue = ids[i];
+	    return MultibufferErrorBase + MultibufferBadBuffer;
+	}
+	FoundScreen = FALSE;
+	pScrn0Multibuffer[panoramiX_buf] = (MultibufferPtr) 
+	       LookupIDByType (ids[i], MultibufferResType);
+        ppScrn0Multibuffers[i] = pScrn0Multibuffer[i]->pMultibuffers;
+        pWndw = ppScrn0Multibuffers[i]->pWindow;
+	for (k = 0; (k < PanoramiXNumScreens && !FoundScreen); k++) {
+	  pMultibuffer[panoramiX_buf] = (MultibufferPtr)
+	       LookupIDByType (pPanoramiXPmap->info[k].id, MultibufferResType);
+	  if (!pMultibuffer[i])
+	  {
+    	    if ( sizeof (long) != sizeof(CARD32) ) DEALLOCATE_LOCAL(ids);
+	    xfree (ppMultibuffers);
+	    xfree (pMultibuffer);
+	    client->errorValue = ids[i];
+	    return MultibufferErrorBase + MultibufferBadBuffer;
+	  }
+	  ppMultibuffers[panoramiX_buf] = pMultibuffer[panoramiX_buf]->pMultibuffers;
+	  /* Figure out where the buffer resides, which screens */
+	  if ( ((pWndw->drawable.x < 0) && 
+	        (pWndw->drawable.x + pWndw->drawable.width < 0))
+	      || ( (pWndw->drawable.x > 
+		    panoramiXdataPtr[k].x + panoramiXdataPtr[k].width) &&
+		   (pWndw->drawable.x + pWndw->drawable.width >
+		       panoramiXdataPtr[k].x + panoramiXdataPtr[k].width)))   
+	      /* its not on screen - k -, try next screen */
+	      continue;
+	  if ( ((pWndw->drawable.y < 0) &&
+	        (pWndw->drawable.y + pWndw->drawable.height < 0))
+	      || ( (pWndw->drawable.y > 
+		    panoramiXdataPtr[k].y + panoramiXdataPtr[k].height) &&
+		   (pWndw->drawable.y + pWndw->drawable.height >
+		       panoramiXdataPtr[k].y + panoramiXdataPtr[k].height)))
+	      /* its not on screen - k -, try next screen */
+	      continue;
+
+	  /* The window resides on screen k, which means we need to 
+	     keep the buffer information for this screen */
+	  panoramiX_buf++;
+ 
+	  /* Is it only on this screen, or does it enter onto another
+	     screen */
+	  if ( ((pWndw->drawable.x + pWndw->drawable.width) <=
+	        (panoramiXdataPtr[k].x +  panoramiXdataPtr[k].width)) &&
+	       ((pWndw->drawable.y + pWndw->drawable.height) <=
+		                    (panoramiXdataPtr[k].y + 
+		                     panoramiXdataPtr[k].height )) )
+	    FoundScreen = TRUE; 
+	} /* for each screen k */ 
+	for (j = 0; j < i; j++)
+	{
+	    if (ppScrn0Multibuffers[i] == ppScrn0Multibuffers[j])
+	    {
+    	    	if ( sizeof (long) != sizeof(CARD32) ) DEALLOCATE_LOCAL(ids);
+		DEALLOCATE_LOCAL(ppScrn0Multibuffers);
+		DEALLOCATE_LOCAL(pScrn0Multibuffer);
+	    	DEALLOCATE_LOCAL(ppMultibuffers);
+	    	DEALLOCATE_LOCAL(pMultibuffer);
+		client->errorValue = ids[i];
+	    	return BadMatch;
+	    }
+	}
+        bufferTime = ppScrn0Multibuffers[i]->lastUpdate;
+     }else {
+#endif
+	pMultibuffer[i] = (MultibufferPtr) LookupIDByType (ids[i], 
+MultibufferResType);
 	if (!pMultibuffer[i])
 	{
 	    DEALLOCATE_LOCAL(ppMultibuffers);
@@ -583,6 +830,9 @@ ProcDisplayImageBuffers (client)
 	    }
 	}
 	bufferTime = ppMultibuffers[i]->lastUpdate;
+#ifdef PANORAMIX
+     }
+#endif
 	BumpTimeStamp (&bufferTime, minDelay);
 	if (CompareTimeStamps (bufferTime, activateTime) == LATER)
 	    activateTime = bufferTime;
@@ -594,13 +844,54 @@ ProcDisplayImageBuffers (client)
 	;
     }
     else
+#ifdef PANORAMIX
+      if (!noPanoramiXExtension){
+	PerformDisplayRequest (ppMultibuffers, pMultibuffer, panoramiX_buf);
+     }else
+#endif
 	PerformDisplayRequest (ppMultibuffers, pMultibuffer, nbuf);
+
+#ifdef PANORAMIX
+    if (!noPanoramiXExtension){
+       	 DEALLOCATE_LOCAL(ppScrn0Multibuffers);
+	 DEALLOCATE_LOCAL(pScrn0Multibuffer);
+    }
+#endif
+
     DEALLOCATE_LOCAL(ppMultibuffers);
     DEALLOCATE_LOCAL(pMultibuffer);
     return Success;
 }
 
+#ifdef PANORAMIX
 static int
+ProcPanoramiXDestroyImageBuffers (client)
+    ClientPtr	client;
+{
+    REQUEST (xMbufDestroyImageBuffersReq);
+    WindowPtr	pWin;
+
+    register int        result;
+    int                 j;
+    PanoramiXWindow     *pPanoramiXWin = PanoramiXWinRoot;
+
+    REQUEST_SIZE_MATCH (xMbufDestroyImageBuffersReq);
+    PANORAMIXFIND_ID(pPanoramiXWin,stuff->window);
+    IF_RETURN(!pPanoramiXWin, BadRequest);
+    FOR_NSCREENS_OR_ONCE(pPanoramiXWin , j) {
+        stuff->window = pPanoramiXWin->info[j].id;
+        result = ProcDestroyImageBuffers (client);
+        BREAK_IF(result != Success);
+    }
+    return (result);
+}
+#endif
+
+#ifdef PANORAMIX
+int
+#else
+static int
+#endif
 ProcDestroyImageBuffers (client)
     register ClientPtr	client;
 {
@@ -614,7 +905,34 @@ ProcDestroyImageBuffers (client)
     return Success;
 }
 
+#ifdef PANORAMIX
 static int
+ProcPanoramiXSetMBufferAttributes (client)
+    ClientPtr	client;
+{
+    REQUEST (xMbufSetMBufferAttributesReq);
+    WindowPtr	pWin;
+
+    register int        result;
+    int                 j;
+    PanoramiXWindow     *pPanoramiXWin = PanoramiXWinRoot;
+
+    REQUEST_SIZE_MATCH (xMbufSetMBufferAttributesReq);
+    PANORAMIXFIND_ID(pPanoramiXWin,stuff->window);
+    IF_RETURN(!pPanoramiXWin, BadRequest);
+    FOR_NSCREENS_OR_ONCE(pPanoramiXWin , j) {
+        stuff->window = pPanoramiXWin->info[j].id;
+        result = ProcSetMBufferAttributes (client);
+        BREAK_IF(result != Success);
+    }
+    return (result);
+}
+#endif
+#ifdef PANORAMIX
+int
+#else
+static int
+#endif
 ProcSetMBufferAttributes (client)
     register ClientPtr	client;
 {
@@ -935,13 +1253,34 @@ ProcMultibufferDispatch (client)
     case X_MbufGetBufferVersion:
 	return ProcGetBufferVersion (client);
     case X_MbufCreateImageBuffers:
+#ifdef PANORAMIX
+        if ( !noPanoramiXExtension )
+            return ProcPanoramiXCreateImageBuffers (client);
+	else
+	    return ProcCreateImageBuffers (client);
+#else
 	return ProcCreateImageBuffers (client);
+#endif
     case X_MbufDisplayImageBuffers:
 	return ProcDisplayImageBuffers (client);
     case X_MbufDestroyImageBuffers:
+#ifdef PANORAMIX
+        if ( !noPanoramiXExtension )
+	    return ProcPanoramiXDestroyImageBuffers (client);
+	else
+	    return ProcDestroyImageBuffers (client);
+#else
 	return ProcDestroyImageBuffers (client);
+#endif
     case X_MbufSetMBufferAttributes:
+#ifdef PANORAMIX
+        if ( !noPanoramiXExtension )
+	    return ProcPanoramiXSetMBufferAttributes (client);
+	else
+	    return ProcSetMBufferAttributes (client);
+#else
 	return ProcSetMBufferAttributes (client);
+#endif
     case X_MbufGetMBufferAttributes:
 	return ProcGetMBufferAttributes (client);
     case X_MbufSetBufferAttributes:

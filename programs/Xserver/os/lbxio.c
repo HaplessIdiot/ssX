@@ -1,7 +1,28 @@
+/* $XFree86: xc/programs/Xserver/os/lbxio.c,v 3.9 1998/08/14 13:35:52 dawes Exp $ */
+/*
+
+Copyright 1996, 1998  The Open Group
+
+All Rights Reserved.
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name of The Open Group shall not be
+used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization from The Open Group.
+
+*/
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
-Copyright 1996 X Consortium, Inc.
 
                         All Rights Reserved
 
@@ -22,12 +43,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: lbxio.c /main/10 1996/12/16 23:03:30 rws $ */
-
-
-
-
-/* $XFree86: xc/programs/Xserver/os/lbxio.c,v 3.8 1997/01/18 07:18:31 dawes Exp $ */
+/* $TOG: lbxio.c /main/11 1998/02/09 15:12:30 kaleb $ */
 
 #include <stdio.h>
 #include <X11/Xtrans.h>

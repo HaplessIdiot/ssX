@@ -1,13 +1,9 @@
+/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.15 1998/08/14 13:35:53 dawes Exp $ */
 /***********************************************************
 
-Copyright (c) 1987  X Consortium
+Copyright 1987, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -15,13 +11,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -45,8 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c /main/45 1996/12/02 10:23:13 lehors $ */
-/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.14 1997/05/06 11:40:06 dawes Exp $ */
+/* $TOG: osinit.c /main/47 1998/02/09 15:12:48 kaleb $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -88,6 +83,8 @@ OsInit()
 {
 #ifndef AMOEBA
     static Bool been_here = FALSE;
+    static char* admpath = ADMPATH;
+    static char* devnull = "/dev/null";
     char fname[PATH_MAX];
 
 #ifdef macII
@@ -99,18 +96,26 @@ OsInit()
 	fclose(stdin);
 	fclose(stdout);
 #endif
-	/* hack test to decide where to log errors */
-	if (write (2, fname, 0)) 
+	/* 
+	 * If a write of zero bytes to stderr returns non-zero, i.e. -1, 
+	 * then writing to stderr failed, and we'll write somewhere else 
+	 * instead. (Apparently this never happens in the Real World.)
+	 */
+	if (write (2, fname, 0) == -1) 
 	{
 	    FILE *err;
-	    sprintf (fname, ADMPATH, display);
+
+	    if (strlen (display) + strlen (admpath) + 1 < sizeof fname)
+		sprintf (fname, admpath, display);
+	    else
+		strcpy (fname, devnull);
 	    /*
 	     * uses stdio to avoid os dependencies here,
 	     * a real os would use
  	     *  open (fname, O_WRONLY|O_APPEND|O_CREAT, 0666)
 	     */
 	    if (!(err = fopen (fname, "a+")))
-		err = fopen ("/dev/null", "w");
+		err = fopen (devnull, "w");
 	    if (err && (fileno(err) != 2)) {
 		dup2 (fileno (err), 2);
 		fclose (err);

@@ -1,5 +1,5 @@
-.\" $XConsortium: xkbprint.man /main/4 1996/12/09 17:09:34 kaleb $
-.TH XKBPRINT 1 "Release 6.3" "X Version 11"
+.\" $TOG: xkbprint.man /main/7 1998/02/12 09:36:54 kaleb $
+.TH XKBPRINT 1 "Release 6.4" "X Version 11"
 .SH NAME
 xkbprint \- print an XKB keyboard description
 .SH SYNOPSIS
@@ -102,7 +102,8 @@ Sets warning level (0 for no warning, 10 for all warnings).
 .SH "SEE ALSO"
 X(1),xkbcomp(1)
 .SH COPYRIGHT
-Copyright 1995, Silicon Graphics Computer Systems and X Consortium, Inc.
+Copyright 1995, Silicon Graphics Computer Systems
+Copyright 1995, 1998  The Open Group
 .br
 See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR

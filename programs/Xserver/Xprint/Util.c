@@ -1,4 +1,4 @@
-/* $XConsortium: Util.c /main/3 1996/12/30 14:55:57 kaleb $ */
+/* $TOG: Util.c /main/4 1998/03/25 09:17:45 kaleb $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -30,25 +30,20 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/Util.c,v 1.5 1996/12/31 07:05:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/Util.c,v 1.6 1997/05/12 13:27:51 hohndel Exp $ */
 
 /* To get the tempnam() prototype in <stdio.h> */
 #if defined(linux) && defined(__STRICT_ANSI__)
 #undef __STRICT_ANSI__
 #endif
 
+#include "Xos.h"	/* for unistd.h and string.h */
 #include <stdio.h>
-#include <string.h>
-#ifndef X_NOT_STDC_ENV
-#include <stdlib.h>
-#endif
-#include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include "dixstruct.h"
 #include "scrnintstr.h"
 #include "misc.h"
-#include <unistd.h>
 
 #define _XP_PRINT_SERVER_
 #include "extensions/Print.h"

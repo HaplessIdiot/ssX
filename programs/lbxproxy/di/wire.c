@@ -1,4 +1,25 @@
-/* $TOG: wire.c /main/51 1997/10/16 13:00:17 barstow $ */
+/* $TOG: wire.c /main/52 1998/02/11 09:49:26 kaleb $ */
+/*
+
+Copyright 1998  The Open Group
+
+All Rights Reserved.
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name of The Open Group shall not be
+used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization from The Open Group.
+
+*/
 /*
  * Copyright 1992 Network Computing Devices
  *
@@ -20,7 +41,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/lbxproxy/di/wire.c,v 1.4 1997/10/26 13:25:16 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/wire.c,v 1.5 1997/11/16 06:42:31 dawes Exp $ */
 
 #include "lbx.h"
 #include <stdio.h>

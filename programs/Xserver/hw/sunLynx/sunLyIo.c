@@ -1,8 +1,8 @@
-/* $XConsortium: sunLyIo.c /main/1 1996/10/31 14:20:53 kaleb $ */
+/* $TOG: sunLyIo.c /main/2 1998/02/10 13:22:50 kaleb $ */
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyIo.c,v 3.1 1996/10/03 08:31:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyIo.c,v 3.2 1996/12/27 06:51:39 dawes Exp $ */
 
 /*-
  * This is sunIo.c modified for LynxOS
@@ -30,7 +30,7 @@
 
  /*
  *
- * Copyright (c) 1987 by the Regents of the University of California
+ * Copyright 1987 by the Regents of the University of California
  *
  * Permission to use, copy, modify, and distribute this
  * software and its documentation for any purpose and without
@@ -53,10 +53,10 @@ software  and  its documentation for any purpose and without
 fee is hereby granted, provided that the above copyright no-
 tice  appear  in all copies and that both that copyright no-
 tice and this permission notice appear in  supporting  docu-
-mentation,  and  that the names of Sun or X Consortium
+mentation,  and  that the names of Sun or The Open Group
 not be used in advertising or publicity pertaining to 
 distribution  of  the software  without specific prior 
-written permission. Sun and X Consortium make no 
+written permission. Sun and The Open Group make no 
 representations about the suitability of this software for 
 any purpose. It is provided "as is" without any express or 
 implied warranty.

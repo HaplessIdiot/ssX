@@ -1,15 +1,10 @@
 
-/* $TOG: sunCfb.c /main/21 1997/10/16 16:27:05 kaleb $ */
+/* $TOG: sunCfb.c /main/23 1998/02/10 13:16:19 kaleb $ */
 
 /*
-Copyright (c) 1990  X Consortium
+Copyright 1990, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,13 +12,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
  */
 
 /************************************************************
@@ -36,10 +31,10 @@ software  and  its documentation for any purpose and without
 fee is hereby granted, provided that the above copyright no-
 tice  appear  in all copies and that both that copyright no-
 tice and this permission notice appear in  supporting  docu-
-mentation,  and  that the names of Sun or X Consortium
+mentation,  and  that the names of Sun or The Open Group
 not be used in advertising or publicity pertaining to 
 distribution  of  the software  without specific prior 
-written permission. Sun and X Consortium make no 
+written permission. Sun and The Open Group make no 
 representations about the suitability of this software for 
 any purpose. It is provided "as is" without any express or 
 implied warranty.
@@ -55,11 +50,11 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/sun/sunCfb.c,v 3.8 1997/11/16 06:18:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunCfb.c,v 3.9 1998/06/27 12:53:52 hohndel Exp $ */
 
 /*
- * Copyright (c) 1987 by the Regents of the University of California
- * Copyright (c) 1987 by Adam de Boor, UC Berkeley
+ * Copyright 1987 by the Regents of the University of California
+ * Copyright 1987 by Adam de Boor, UC Berkeley
  *
  * Permission to use, copy, modify, and distribute this
  * software and its documentation for any purpose and without
@@ -403,6 +398,7 @@ Bool sunCG2Init (screen, pScreen, argc, argv)
 
     sunFbs[screen].EnterLeave = (void (*)())NoopDDA;
     pScreen->SaveScreen = CG2SaveScreen;
+#ifndef LOWMEMFTPT
     if (mono) {
 	pScreen->whitePixel = 0;
 	pScreen->blackPixel = 1;
@@ -411,12 +407,15 @@ Bool sunCG2Init (screen, pScreen, argc, argv)
 			mfbCreateDefColormap, CG2SaveScreen, 0);
 	((CG2Ptr) sunFbs[screen].fb)->regs.ppmask.reg = 1;
     } else {
+#endif /* ifndef LOWMEMFTPT */
 	ret = sunInitCommon (screen, pScreen, (off_t) 0,
 			sunCfbScreenInit, CG2ScreenInit,
 			cfbCreateDefColormap, CG2SaveScreen,
 			(int) &((struct cg2memfb *) 0)->pixplane);
 	((CG2Ptr) sunFbs[screen].fb)->regs.ppmask.reg = 0xFF;
+#ifndef LOWMEMFTPT
     }
+#endif /* ifndef LOWMEMFTPT */
     return ret;
 }
 
@@ -492,10 +491,12 @@ Bool sunCG6Init (screen, pScreen, argc, argv)
 	    sunFbs[screen].info.fb_width,
 	    sunFbs[screen].info.fb_depth))
 	return FALSE;
+#ifndef LOWMEMFTPT
     if (sunNoGX == FALSE) {
 	if (!sunGXInit (pScreen, &sunFbs[screen]))
 	    return FALSE;
     }
+#endif /* ifndef LOWMEMFTPT */
     if (!sunCfbFinishScreenInit(pScreen,
 	    sunFbs[screen].fb + CG6_IMAGE_OFFSET,
 	    sunFbs[screen].info.fb_width, 

@@ -1,8 +1,4 @@
 /* $TOG: ps2io.h /main/3 1997/09/08 13:19:15 kaleb $ */
-/*
- * @(#)ps2io.h: Revision: /main/3 Date: 1997/09/08 13:19:15
- * Locker:
- */
 
 #ifndef _SYS_PS2IO_INCLUDED /* allows multiple inclusion */
 #define _SYS_PS2IO_INCLUDED

@@ -1,11 +1,11 @@
-/* $TOG: sunAmInit.c /main/3 1997/11/12 14:38:31 kaleb $ */
+/* $TOG: sunAmInit.c /main/4 1998/02/10 13:17:32 kaleb $ */
 /*
  * sunAmInit.c --
  *	Amoeba implementation of initialization functions
  *      for screen/keyboard/mouse, etc.
  *
- * Copyright (c) 1987 by the Regents of the University of California
- * Copyright (c) 1994 by the Vrije Universiteit, Amsterdam.
+ * Copyright 1987 by the Regents of the University of California
+ * Copyright 1994 by the Vrije Universiteit, Amsterdam.
  *
  * Permission to use, copy, modify, and distribute this
  * software and its documentation for any purpose and without
@@ -18,7 +18,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/sunAmoeba/sunAmInit.c,v 1.3 1998/04/05 16:42:07 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sunAmoeba/sunAmInit.c,v 1.4 1998/06/27 12:53:55 hohndel Exp $ */
 
 /* This file was partly derived from sunInit.c (5.49 94/02/21 10:21:02) */
 
@@ -32,10 +32,10 @@ software  and  its documentation for any purpose and without
 fee is hereby granted, provided that the above copyright no-
 tice  appear  in all copies and that both that copyright no-
 tice and this permission notice appear in  supporting  docu-
-mentation,  and  that the names of Sun or X Consortium
+mentation,  and  that the names of Sun or The Open Group
 not be used in advertising or publicity pertaining to 
 distribution  of  the software  without specific prior 
-written permission. Sun and X Consortium make no 
+written permission. Sun and The Open Group make no 
 representations about the suitability of this software for 
 any purpose. It is provided "as is" without any express or 
 implied warranty.

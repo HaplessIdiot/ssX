@@ -1,7 +1,27 @@
-/* $XConsortium: lbxmain.c /main/73 1996/12/30 18:01:14 rws $ */
+/* $TOG: lbxmain.c /main/74 1998/02/09 14:32:18 kaleb $ */
+/*
+
+Copyright 1996, 1998  The Open Group
+
+All Rights Reserved.
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name of The Open Group shall not be
+used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization from The Open Group.
+
+*/
 /*
  * Copyright 1992 Network Computing Devices
- * Copyright 1996 X Consortium, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,7 +41,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/lbx/lbxmain.c,v 1.4 1997/01/02 04:42:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/lbx/lbxmain.c,v 1.5 1997/01/18 06:57:51 dawes Exp $ */
  
 #include <sys/types.h>
 #define NEED_REPLIES

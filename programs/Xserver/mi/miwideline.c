@@ -1,16 +1,9 @@
-/* $XConsortium: miwideline.c /main/58 1996/08/12 21:51:21 dpw $ */
-/* $XFree86: $ */
+/* $TOG: miwideline.c /main/60 1998/03/07 17:40:23 kaleb $ */
 /*
 
-Copyright (c) 1988  X Consortium
+Copyright 1988, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -18,17 +11,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
+/* $XFree86: xc/programs/Xserver/mi/miwideline.c,v 1.4 1997/08/26 12:32:48 hohndel Exp $ */
 
 /* Author:  Keith Packard, MIT X Consortium */
 
@@ -251,7 +245,7 @@ miFillRectPolyHelper (pDrawable, pGC, pixel, spanData, x, y, w, h)
     }
 }
 
-int
+/* static */ int
 miPolyBuildEdge (x0, y0, k, dx, dy, xi, yi, left, edge)
     double	x0, y0;
     double	k;  /* x0 * dy - y0 * dx */
@@ -310,7 +304,7 @@ miPolyBuildEdge (x0, y0, k, dx, dy, xi, yi, left, edge)
 
 #define StepAround(v, incr, max) (((v) + (incr) < 0) ? (max - 1) : ((v) + (incr) == max) ? 0 : ((v) + (incr)))
 
-int
+/* static */ int
 miPolyBuildPoly (vertices, slopes, count, xi, yi, left, right, pnleft, pnright, h)
     register PolyVertexPtr vertices;
     register PolySlopePtr  slopes;

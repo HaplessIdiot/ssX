@@ -1,14 +1,9 @@
-/* $XConsortium: mibstore.c,v 5.63 94/10/21 20:25:08 dpw Exp $ */
+/* $TOG: mibstore.c /main/95 1998/02/09 14:46:13 kaleb $ */
 /***********************************************************
 
-Copyright (c) 1987  X Consortium
+Copyright 1987, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -16,13 +11,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 
 Copyright 1987 by the Regents of the University of California
@@ -33,7 +28,7 @@ Permission to use, copy, modify, and distribute this software and its
 documentation for any purpose and without fee is hereby granted, provided
 that the above copyright notice appear in all copies and that both that
 copyright notice and this permission notice appear in supporting
-documentation, and that the name X Consortium not be used in advertising or publicity
+documentation, and that the name The Open Group not be used in advertising or publicity
 pertaining to distribution of the software without specific, written prior
 permission.  
 
@@ -43,7 +38,7 @@ implied warranty.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/Xserver/mi/mibstore.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mibstore.c,v 1.2 1998/04/05 16:42:28 robin Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"

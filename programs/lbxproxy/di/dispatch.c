@@ -1,4 +1,4 @@
-/* $TOG: dispatch.c /main/40 1997/10/16 13:00:11 barstow $ */
+/* $TOG: dispatch.c /main/42 1998/02/23 09:14:20 barstow $ */
 /*
  * Copyright 1992 Network Computing Devices
  * Copyright 1996 X Consortium, Inc.
@@ -135,7 +135,7 @@ Dispatch ()
 		client->requestLog[client->requestLogIndex] = MAJOROP;
 		client->requestLogIndex++;
 #endif
-                LBXSequenceNumber(client)++;
+                client->sequenceNumber++;
 		result = (* client->requestVector[MAJOROP])(client);
 	    
 		if (result != Success) 
@@ -325,7 +325,7 @@ ProcEstablishConnection(client)
     nClients++;
     client->requestVector = client->server->requestVector;
     client->sequence = 0;
-    LBXSequenceNumber(client) = 0;
+    client->sequenceNumber = 0;
     client->largeRequest = NULL;
 
     /* wait for X server to kill client */

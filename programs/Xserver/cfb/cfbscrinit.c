@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/cfb/cfbscrinit.c,v 1.14 1998/06/27 12:53:47 hohndel Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -8,10 +9,10 @@ software  and  its documentation for any purpose and without
 fee is hereby granted, provided that the above copyright no-
 tice  appear  in all copies and that both that copyright no-
 tice and this permission notice appear in  supporting  docu-
-mentation,  and  that the names of Sun or X Consortium
+mentation,  and  that the names of Sun or The Open Group
 not be used in advertising or publicity pertaining to 
 distribution  of  the software  without specific prior 
-written permission. Sun and X Consortium make no 
+written permission. Sun and The Open Group make no 
 representations about the suitability of this software for 
 any purpose. It is provided "as is" without any express or 
 implied warranty.
@@ -26,8 +27,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XConsortium: cfbscrinit.c,v 5.32 94/04/17 20:29:00 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfbscrinit.c,v 1.13 1998/04/05 16:42:04 robin Exp $ */
+/* $TOG: cfbscrinit.c /main/60 1998/02/09 14:07:30 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

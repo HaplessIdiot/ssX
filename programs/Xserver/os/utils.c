@@ -1,15 +1,9 @@
-/* $TOG: utils.c /main/129 1997/09/19 09:30:56 kaleb $ */
+/* $TOG: utils.c /main/138 1998/04/22 16:32:51 msr $ */
 /*
 
-Copyright (c) 1987  X Consortium
+Copyright 1987, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,15 +11,15 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -51,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.38 1998/07/26 02:33:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.39 1998/09/19 12:15:06 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -104,6 +98,12 @@ static mutex print_lock;
 #endif
 #endif
 
+#if defined(TCPCONN) || defined(STREAMSCONN)
+# ifndef WIN32
+#  include <netdb.h>
+# endif
+#endif
+
 #include <errno.h>
 extern int errno;
 
@@ -141,6 +141,14 @@ extern char* protNoListen;
 Bool CoreDump;
 Bool noTestExtensions;
 
+Bool noPanoramiXExtension = TRUE;
+#ifdef PANORAMIX
+Bool PanoramiXVisibilityNotifySent = FALSE;
+Bool PanoramiXMapped = FALSE;
+Bool PanoramiXWindowExposureSent = FALSE;
+Bool PanoramiXOneExposeRequest = FALSE;
+#endif
+
 int auditTrailLevel = 1;
 
 void ddxUseMsg();
@@ -151,7 +159,6 @@ void VErrorF(const char*, va_list);
 Bool Must_have_memory = FALSE;
 
 #ifdef AIXV3
-FILE *aixfd;
 int SyncOn  = 0;
 extern int SelectWaitTime;
 #endif
@@ -581,6 +588,9 @@ void UseMsg()
 #endif
     ErrorF("-su                    disable any save under support\n");
     ErrorF("-t #                   mouse threshold (pixels)\n");
+#ifdef AMOEBA
+    ErrorF("-tcp capability        specify TCP/IP server capability\n");
+#endif
     ErrorF("-terminate             terminate at server reset\n");
     ErrorF("-to #                  connection time out\n");
     ErrorF("-tst                   disable testing extensions\n");
@@ -589,8 +599,9 @@ void UseMsg()
     ErrorF("-v                     screen-saver without video blanking\n");
     ErrorF("-wm                    WhenMapped default backing-store\n");
     ErrorF("-x string              loads named extension at init time \n");
-#ifdef AMOEBA
-    ErrorF("-tcp capability        specify TCP/IP server capability\n");
+#ifdef PANORAMIX
+    ErrorF("+xinerama              Enable XINERAMA extension\n");
+    ErrorF("-xinerama              Disable XINERAMA extension\n");
 #endif
 #ifdef XDMCP
     XdmcpUseMsg();
@@ -625,9 +636,6 @@ char	*argv[];
 	PartialNetwork = TRUE;
 #endif
 
-#ifdef AIXV3
-    OpenDebug();
-#endif
     for ( i = 1; i < argc; i++ )
     {
 	/* call ddx first, so it can peek/override if it wants */
@@ -899,6 +907,14 @@ char	*argv[];
 	    defaultScreenSaverBlanking = DontPreferBlanking;
 	else if ( strcmp( argv[i], "-wm") == 0)
 	    defaultBackingStore = WhenMapped;
+#ifdef PANORAMIX
+	else if ( strcmp( argv[i], "+xinerama") == 0){
+	    noPanoramiXExtension = FALSE;
+	}
+	else if ( strcmp( argv[i], "-xinerama") == 0){
+	    noPanoramiXExtension = TRUE;
+	}
+#endif
 	else if ( strcmp( argv[i], "-x") == 0)
 	{
 	    if(++i >= argc)
@@ -1030,6 +1046,8 @@ InsertFileIntoCommandLine(resargc, resargv, prefix_argc, prefix_argv,
 
     *resargc = prefix_argc + insert_argc + suffix_argc;
     *resargv = (char **) xalloc((*resargc + 1) * sizeof(char *));
+    if (!*resargv)
+	FatalError("Out of Memory\n");
 
     memcpy(*resargv, prefix_argv, prefix_argc * sizeof(char *));
 
@@ -1071,12 +1089,6 @@ ExpandCommandLine(pargc, pargv)
 	}
     }
 } /* end ExpandCommandLine */
-#endif
-
-#if defined(TCPCONN) || defined(STREAMSCONN)
-#ifndef WIN32
-#include <netdb.h>
-#endif
 #endif
 
 /* Implement a simple-minded font authorization scheme.  The authorization
@@ -1425,8 +1437,6 @@ VErrorF(f, args)
     va_list args;
 {
 #ifdef AIXV3
-    vfprintf(aixfd, f, args);
-    fflush (aixfd);
     if (SyncOn)
         sync();
 #else
@@ -1465,8 +1475,6 @@ ErrorF(
     va_end(args);
 #else
 #ifdef AIXV3
-    fprintf(aixfd, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
-    fflush (aixfd);
     if (SyncOn)
         sync();
 #else /* not AIXV3 */
@@ -1480,29 +1488,6 @@ ErrorF(
 #endif /* AIXV3 */
 #endif
 }
-
-#ifdef AIXV3
-OpenDebug()
-{
-    char aixlogfile[100];
-    struct stat aixfilebuf;
-
-        sprintf(aixlogfile,"/tmp/xlogfile%d",getpid());
-
-        /* if the logfile already exists & is a symlink, fopen() overwrites
-         * it without unlinking the file. It is necessary to unlink the
-         * logfile to avoid a security breach & possible exploitation.
-         */
-        if (stat((const char *)aixlogfile,&aixfilebuf) == 0)
-                unlink(aixlogfile);
-        if((aixfd = fopen(aixlogfile,"w")) == NULL )
-        {
-                fprintf(stderr,"open %s failed\n",aixlogfile);
-                exit(-1);
-        }
-        chmod(aixlogfile,00644);
-}
-#endif
 
 #if !defined(WIN32) && !defined(__EMX__)
 /*

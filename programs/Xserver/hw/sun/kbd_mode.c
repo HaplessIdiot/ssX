@@ -1,5 +1,4 @@
-/* $XConsortium: kbd_mode.c /main/13 1996/10/31 14:23:46 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/sun/kbd_mode.c,v 3.4 1996/10/16 14:38:14 dawes Exp $ */
+/* $TOG: kbd_mode.c /main/14 1998/02/10 13:16:06 kaleb $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -10,10 +9,10 @@ software  and  its documentation for any purpose and without
 fee is hereby granted, provided that the above copyright no-
 tice  appear  in all copies and that both that copyright no-
 tice and this permission notice appear in  supporting  docu-
-mentation,  and  that the names of Sun or X Consortium
+mentation,  and  that the names of Sun or The Open Group
 not be used in advertising or publicity pertaining to 
 distribution  of  the software  without specific prior 
-written permission. Sun and X Consortium make no 
+written permission. Sun and The Open Group make no 
 representations about the suitability of this software for 
 any purpose. It is provided "as is" without any express or 
 implied warranty.
@@ -28,13 +27,14 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
+/* $XFree86: xc/programs/Xserver/hw/sun/kbd_mode.c,v 3.5 1996/12/23 06:30:12 dawes Exp $ */
 
 #ifndef lint
 static  char sccsid[] = "@(#)kbd_mode.c 7.1 87/04/13";
 #endif
 
 /*
- * Copyright (c) 1986 by Sun Microsystems, Inc.
+ * Copyright 1986 by Sun Microsystems, Inc.
  *
  *      kbd_mode:       set keyboard encoding mode
  */

@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.39 1998/03/20 21:04:48 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.40 1998/07/25 08:48:39 dawes Exp $ */
 
 /*
 
-Copyright (c) 1995  Kaleb S. KEITHLEY
+Copyright 1995  Kaleb S. KEITHLEY
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -29,8 +29,8 @@ or other dealings in this Software without prior written authorization
 from Kaleb S. KEITHLEY
 
 */
-/* $TOG: xf86vmode.c /main/26 1997/08/10 12:54:06 kaleb $ */
-/* THIS IS NOT AN X CONSORTIUM STANDARD */
+/* $TOG: xf86vmode.c /main/27 1998/02/09 15:25:44 kaleb $ */
+/* THIS IS NOT AN X CONSORTIUM STANDARD OR AN X PROJECT TEAM SPECIFICATION */
 
 #define NEED_REPLIES
 #define NEED_EVENTS

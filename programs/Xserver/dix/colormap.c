@@ -1,13 +1,9 @@
+/* $XFree86: xc/programs/Xserver/dix/colormap.c,v 3.2 1997/11/16 06:17:54 dawes Exp $ */
 /***********************************************************
 
-Copyright (c) 1987  X Consortium
+Copyright 1987, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -15,13 +11,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -46,12 +42,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $TOG: colormap.c /main/72 1997/10/16 16:26:49 kaleb $ */
-
-
-
-
-/* $XFree86: xc/programs/Xserver/dix/colormap.c,v 3.1 1996/12/23 06:29:34 dawes Exp $ */
+/* $TOG: colormap.c /main/74 1998/03/24 18:17:31 kaleb $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -1174,16 +1165,16 @@ FindBestPixel(pentFirst, size, prgb, channel)
 	switch(channel)
 	{
 	  case PSEUDOMAP:
-	      dg = pent->co.local.green - prgb->green;
-	      db = pent->co.local.blue - prgb->blue;
+	      dg = (long) pent->co.local.green - prgb->green;
+	      db = (long) pent->co.local.blue - prgb->blue;
 	  case REDMAP:
-	      dr = pent->co.local.red - prgb->red;
+	      dr = (long) pent->co.local.red - prgb->red;
 	      break;
 	  case GREENMAP:
-	      dg = pent->co.local.green - prgb->green;
+	      dg = (long) pent->co.local.green - prgb->green;
 	      break;
 	  case BLUEMAP:
-	      db = pent->co.local.blue - prgb->blue;
+	      db = (long) pent->co.local.blue - prgb->blue;
 	      break;
 	}
 	sq = dr * dr;

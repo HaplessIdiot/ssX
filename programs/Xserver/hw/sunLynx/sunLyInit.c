@@ -1,8 +1,4 @@
-/* $TOG: sunLyInit.c /main/2 1997/11/12 14:38:36 kaleb $ */
-
-
-
-/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyInit.c,v 3.4 1997/06/03 14:11:09 hohndel Exp $ */
+/* $TOG: sunLyInit.c /main/3 1998/02/10 13:22:44 kaleb $ */
 
 /*
  * This is sunInit.c modified for LynxOS
@@ -27,9 +23,10 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyInit.c,v 3.5 1997/11/22 06:50:25 dawes Exp $ */
 
 /*
- * Copyright (c) 1987 by the Regents of the University of California
+ * Copyright 1987 by the Regents of the University of California
  *
  * Permission to use, copy, modify, and distribute this
  * software and its documentation for any purpose and without
@@ -52,10 +49,10 @@ software  and  its documentation for any purpose and without
 fee is hereby granted, provided that the above copyright no-
 tice  appear  in all copies and that both that copyright no-
 tice and this permission notice appear in  supporting  docu-
-mentation,  and  that the names of Sun or X Consortium
+mentation,  and  that the names of Sun or The Open Group
 not be used in advertising or publicity pertaining to 
 distribution  of  the software  without specific prior 
-written permission. Sun and X Consortium make no 
+written permission. Sun and The Open Group make no 
 representations about the suitability of this software for 
 any purpose. It is provided "as is" without any express or 
 implied warranty.

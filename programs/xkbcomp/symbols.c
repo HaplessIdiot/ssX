@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/symbols.c,v 3.6 1997/06/22 10:17:03 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/symbols.c,v 3.7 1997/10/26 13:25:29 dawes Exp $ */
 
 #include "xkbcomp.h"
 #include "tokens.h"
@@ -1638,7 +1638,7 @@ FindAutomaticType(width,syms,typeNameRtrn)
     return ((width>=0)&&(width<=2));
 }
 
-Bool
+static Bool
 #if NeedFunctionPrototypes
 CopySymbolsDef(XkbFileInfo *result,KeyInfo *key,int start_from)
 #else

@@ -1,8 +1,5 @@
 // $TOG: xfree86 /main/5 1997/08/02 10:11:05 kaleb $
-
-
-
-// $XFree86: xc/programs/xkbcomp/keycodes/xfree86,v 3.3 1996/12/23 07:12:23 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/keycodes/xfree86,v 3.4 1997/10/26 13:25:35 dawes Exp $
 default xkb_keycodes "xfree86" {
 
     minimum= 8;

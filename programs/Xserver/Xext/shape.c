@@ -1,13 +1,9 @@
+/* $XFree86: xc/programs/Xserver/Xext/shape.c,v 3.6 1998/07/25 08:48:38 dawes Exp $ */
 /************************************************************
 
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -15,22 +11,17 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 ********************************************************/
 
-/* $TOG: shape.c /main/37 1997/05/22 10:11:40 kaleb $ */
-
-
-
-
-/* $XFree86: xc/programs/Xserver/Xext/shape.c,v 3.5 1998/04/05 02:28:28 dawes Exp $ */
+/* $TOG: shape.c /main/39 1998/02/09 15:25:16 kaleb $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include "X.h"
@@ -131,10 +122,20 @@ static DISPATCH_PROC(SProcShapeQueryVersion);
 static DISPATCH_PROC(SProcShapeRectangles);
 static DISPATCH_PROC(SProcShapeSelectInput);
 
+#ifdef PANORAMIX
+#include "panoramiX.h"
+#endif
+
 static unsigned char ShapeReqCode = 0;
 static int ShapeEventBase = 0;
 static RESTYPE ClientType, EventType; /* resource types for event masks */
 
+#ifdef PANORAMIX
+extern int PanoramiXNumScreens;
+extern Bool noPanoramiXExtension;
+extern PanoramiXWindow *PanoramiXWinRoot;
+extern PanoramiXPmap   *PanoramiXPmapRoot;
+#endif
 /*
  * each window has a list of clients requesting
  * ShapeNotify events.  Each client has a resource
@@ -213,11 +214,11 @@ RegionOperate (client, pWin, kind, destRgnp, srcRgn, op, xoff, yoff, create)
 	srcRgn = 0;
 	break;
     case ShapeUnion:
-	if (*destRgnp && srcRgn)
+	if (*destRgnp)
 	    REGION_UNION(pScreen, *destRgnp, *destRgnp, srcRgn);
 	break;
     case ShapeIntersect:
-	if (*destRgnp && srcRgn)
+	if (*destRgnp)
 	    REGION_INTERSECT(pScreen, *destRgnp, *destRgnp, srcRgn);
 	else {
 	    *destRgnp = srcRgn;
@@ -227,13 +228,12 @@ RegionOperate (client, pWin, kind, destRgnp, srcRgn, op, xoff, yoff, create)
     case ShapeSubtract:
 	if (!*destRgnp)
 	    *destRgnp = (*create)(pWin);
-	if (srcRgn)
-	    REGION_SUBTRACT(pScreen, *destRgnp, *destRgnp, srcRgn);
+	REGION_SUBTRACT(pScreen, *destRgnp, *destRgnp, srcRgn);
 	break;
     case ShapeInvert:
 	if (!*destRgnp)
 	    *destRgnp = REGION_CREATE(pScreen, (BoxPtr) 0, 0);
-	else if (srcRgn)
+	else
 	    REGION_SUBTRACT(pScreen, *destRgnp, srcRgn, *destRgnp);
 	break;
     default:
@@ -300,8 +300,42 @@ ProcShapeQueryVersion (client)
  * ProcShapeRectangles
  *
  *****************/
-
+#ifdef PANORAMIX
 static int
+ProcPanoramiXShapeRectangles (client)
+    register ClientPtr client;
+{
+    WindowPtr		pWin;
+    ScreenPtr		pScreen;
+    REQUEST(xShapeRectanglesReq);
+    xRectangle		*prects;
+    int		        nrects, ctype;
+    RegionPtr		srcRgn;
+    RegionPtr		*destRgn;
+    RegionPtr		(*createDefault)();
+    int			destBounding;
+
+    register int        result;
+    int			j;
+    PanoramiXWindow     *pPanoramiXWin = PanoramiXWinRoot;
+
+    REQUEST_AT_LEAST_SIZE (xShapeRectanglesReq);
+    PANORAMIXFIND_ID(pPanoramiXWin,stuff->dest); 
+    IF_RETURN(!pPanoramiXWin, BadRequest); 
+    FOR_NSCREENS_OR_ONCE(pPanoramiXWin , j) {
+	stuff->dest = pPanoramiXWin->info[j].id;
+	result = ProcShapeRectangles (client);
+	BREAK_IF(result != Success);
+    }
+    return (result);
+}
+#endif
+
+#ifdef PANORAMIX
+int 
+#else
+static int
+#endif
 ProcShapeRectangles (client)
     register ClientPtr client;
 {
@@ -366,7 +400,45 @@ ProcShapeRectangles (client)
  * ProcShapeMask
  **************/
 
+#ifdef PANORAMIX
 static int
+ProcPanoramiXShapeMask (client)
+    register ClientPtr client;
+{
+    WindowPtr		pWin;
+    ScreenPtr		pScreen;
+    REQUEST(xShapeMaskReq);
+    RegionPtr		srcRgn;
+    RegionPtr		*destRgn;
+    PixmapPtr		pPixmap;
+    RegionPtr		(*createDefault)();
+    int			destBounding;
+
+    register int        result;
+    int			j;
+    PanoramiXWindow     *pPanoramiXWin = PanoramiXWinRoot;
+    PanoramiXPmap       *pPmap = PanoramiXPmapRoot;
+
+    REQUEST_SIZE_MATCH (xShapeMaskReq);
+    PANORAMIXFIND_ID(pPanoramiXWin,stuff->dest); 
+    IF_RETURN(!pPanoramiXWin, BadRequest); 
+    PANORAMIXFIND_ID(pPmap, stuff->src);
+    IF_RETURN(!pPmap, BadRequest);
+    FOR_NSCREENS_OR_ONCE(pPanoramiXWin , j) {
+	stuff->dest = pPanoramiXWin->info[j].id;
+	stuff->src =  pPmap->info[j].id;
+	result = ProcShapeMask (client);
+	BREAK_IF(result != Success);
+    }
+    return (result);
+}
+#endif
+
+#ifdef PANORAMIX
+int 
+#else
+static int
+#endif
 ProcShapeMask (client)
     register ClientPtr client;
 {
@@ -428,8 +500,42 @@ ProcShapeMask (client)
 /************
  * ProcShapeCombine
  ************/
-
+#ifdef PANORAMIX
 static int
+ProcPanoramiXShapeCombine (client)
+    register ClientPtr client;
+{
+    WindowPtr		pSrcWin, pDestWin;
+    ScreenPtr		pScreen;
+    REQUEST(xShapeCombineReq);
+    RegionPtr		srcRgn;
+    RegionPtr		*destRgn;
+    RegionPtr		(*createDefault)();
+    RegionPtr		(*createSrc)();
+    RegionPtr		tmp;
+    int			destBounding;
+
+    register int        result;
+    int			j;
+    PanoramiXWindow     *pPanoramiXWin = PanoramiXWinRoot;
+
+    REQUEST_AT_LEAST_SIZE (xShapeCombineReq);
+    PANORAMIXFIND_ID(pPanoramiXWin,stuff->dest); 
+    IF_RETURN(!pPanoramiXWin, BadRequest); 
+    FOR_NSCREENS_OR_ONCE(pPanoramiXWin , j) {
+	stuff->dest = pPanoramiXWin->info[j].id;
+	result = ProcShapeCombine (client);
+	BREAK_IF(result != Success);
+    }
+    return (result);
+}
+#endif
+
+#ifdef PANORAMIX
+int 
+#else
+static int
+#endif
 ProcShapeCombine (client)
     register ClientPtr client;
 {
@@ -508,8 +614,37 @@ ProcShapeCombine (client)
 /*************
  * ProcShapeOffset
  *************/
-
+#ifdef PANORAMIX
 static int
+ProcPanoramiXShapeOffset (client)
+    register ClientPtr client;
+{
+    WindowPtr		pWin;
+    ScreenPtr		pScreen;
+    REQUEST(xShapeOffsetReq);
+    RegionPtr		srcRgn;
+
+    register int        result;
+    int			j;
+    PanoramiXWindow     *pPanoramiXWin = PanoramiXWinRoot;
+
+    REQUEST_AT_LEAST_SIZE (xShapeOffsetReq);
+    PANORAMIXFIND_ID(pPanoramiXWin,stuff->dest); 
+    IF_RETURN(!pPanoramiXWin, BadRequest); 
+    FOR_NSCREENS_OR_ONCE(pPanoramiXWin , j) {
+	stuff->dest = pPanoramiXWin->info[j].id;
+	result = ProcShapeOffset (client);
+	BREAK_IF(result != Success);
+    }
+    return (result);
+}
+#endif
+
+#ifdef PANORAMIX
+int 
+#else
+static int
+#endif
 ProcShapeOffset (client)
     register ClientPtr client;
 {
@@ -633,6 +768,7 @@ ShapeFreeClient (data, id)
 	}
     }
     xfree ((pointer) pShapeEvent);
+    return 1;
 }
 
 /*ARGSUSED*/
@@ -650,6 +786,7 @@ ShapeFreeEvents (data, id)
 	xfree ((pointer) pCur);
     }
     xfree ((pointer) pHead);
+    return 1;
 }
 
 static int
@@ -932,13 +1069,41 @@ ProcShapeDispatch (client)
     case X_ShapeQueryVersion:
 	return ProcShapeQueryVersion (client);
     case X_ShapeRectangles:
+#ifdef PANORAMIX
+        if ( !noPanoramiXExtension )
+	    return ProcPanoramiXShapeRectangles (client);
+        else 
+	    return ProcShapeRectangles (client);
+#else
 	return ProcShapeRectangles (client);
+#endif
     case X_ShapeMask:
+#ifdef PANORAMIX
+        if ( !noPanoramiXExtension )
+           return ProcPanoramiXShapeMask (client);
+	else
+	   return ProcShapeMask (client);
+#else
 	return ProcShapeMask (client);
+#endif
     case X_ShapeCombine:
+#ifdef PANORAMIX
+        if ( !noPanoramiXExtension )
+           return ProcPanoramiXShapeCombine (client);
+	else
+	   return ProcShapeCombine (client);
+#else
 	return ProcShapeCombine (client);
+#endif
     case X_ShapeOffset:
+#ifdef PANORAMIX
+        if ( !noPanoramiXExtension )
+           return ProcPanoramiXShapeOffset (client);
+	else
+	   return ProcShapeOffset (client);
+#else
 	return ProcShapeOffset (client);
+#endif
     case X_ShapeQueryExtents:
 	return ProcShapeQueryExtents (client);
     case X_ShapeSelectInput:

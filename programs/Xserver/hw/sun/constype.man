@@ -1,5 +1,5 @@
-.\" $XConsortium: constype.man /main/12 1996/12/09 17:32:45 kaleb $
-.TH CONSTYPE 1 "Release 6.3" "X Version 11"
+.\" $TOG: constype.man /main/13 1997/11/04 21:19:39 kaleb $
+.TH CONSTYPE 1 "Release 6.4" "X Version 11"
 .SH NAME
 constype \- print type of Sun console
 .SH SYNOPSIS

@@ -1,9 +1,9 @@
-XCOMM $TOG: Imakefile /main/3 1997/06/11 16:26:50 samborn $
+XCOMM $TOG: Imakefile /main/5 1997/11/14 11:11:40 kaleb $
 
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/Xprint/Imakefile,v 1.10 1997/11/22 06:50:20 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xprint/Imakefile,v 1.11 1998/04/05 02:28:29 dawes Exp $
 #include <Server.tmpl>
 
 #ifndef XpRasterDDX
@@ -40,8 +40,8 @@ XPEXT_DEFINES = PrintServerExtensions
 #else
 XPEXT_DEFINES = $(EXT_DEFINES)
 #endif
-SRCS3 = miinitext.c dpmsstubs.c
-OBJS3 = miinitext.o dpmsstubs.o
+SRCS3 = miinitext.c panoramiXstubs.c dpmsstubs.c
+OBJS3 = miinitext.o panoramiXstubs.o dpmsstubs.o
 #endif
 SRCS2 = ddxInit.c
 OBJS2 = ddxInit.o
@@ -105,6 +105,8 @@ SpecialCObjectRule(ddxInit,$(ICONFIGFILES),$(PO_DEFINES) $(OS_DEFINES) $(EXT_DEF
 LinkSourceFile(miinitext.c,$(SERVERSRC)/mi)
 SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(PO_DEFINES) $(OS_DEFINES) $(XPEXT_DEFINES) -DXPRINT -UGLXEXT)
 #if PrintOnlyServer
+LinkSourceFile(panoramiXstubs.c,$(SERVERSRC)/Xext)
+SpecialCObjectRule(panoramiXstubs,$(ICONFIGFILES),$(PO_DEFINES) $(OS_DEFINES) $(XPEXT_DEFINES) -DXPRINT)
 LinkSourceFile(dpmsstubs.c,$(SERVERSRC)/Xext)
 SpecialCObjectRule(dpmsstubs,$(ICONFIGFILES),$(PO_DEFINES) $(OS_DEFINES) $(XPEXT_DEFINES) -DXPRINT)
 #endif

@@ -1,4 +1,4 @@
-/* $XConsortium: nglescreen.c,v 1.3 95/01/24 02:15:14 dpw Exp $ */
+/* $TOG: nglescreen.c /main/4 1997/11/11 15:45:50 msr $ */
 /*************************************************************************
  * 
  * (c)Copyright 1992 Hewlett-Packard Co.,  All Rights Reserved.
@@ -23,7 +23,7 @@ performance, or use of this material.
  *
  *************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/hp/ngle/nglescreen.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/hp/ngle/nglescreen.c,v 1.2 1998/06/27 12:53:50 hohndel Exp $ */
 
 /******************************************************************************
  *
@@ -878,10 +878,12 @@ Bool ngleScreenInit(
     cfbTEOps.CopyArea		= ngleCopyArea8;
     cfbNonTEOps.CopyArea	= ngleCopyArea8;
 
+#ifndef LOWMEMFTPT
     cfb32TEOps1Rect.CopyArea	= ngleCopyArea24;
     cfb32NonTEOps1Rect.CopyArea	= ngleCopyArea24;
     cfb32TEOps.CopyArea		= ngleCopyArea24;
     cfb32NonTEOps.CopyArea	= ngleCopyArea24;
+#endif /* ifndef LOWMEMFTPT */
 #endif
 
 
@@ -950,7 +952,9 @@ Bool ngleScreenInit(
      **************************************************************************
      */
     
+#ifndef LOWMEMFTPT
     if (pScreenPriv->devDepth == 8)
+#endif /* ifndef LOWMEMFTPT */
              /* only support PseudoColor */
     {
         cfbSetVisualTypes (8, 1<<PseudoColor, 8);
@@ -960,6 +964,7 @@ Bool ngleScreenInit(
 		  pScreenPriv->devWidth);
     }
 
+#ifndef LOWMEMFTPT
     else  /* depth = 24 */
 	  /* only support Directcolor */
     {
@@ -969,6 +974,8 @@ Bool ngleScreenInit(
 		  pScreenPriv->screenHeight, dpi, dpi,
 		  pScreenPriv->devWidth);
     }
+
+#endif /* ifndef LOWMEMFTPT */
 
     miInitializeBackingStore(pScreen);
 
@@ -1007,23 +1014,35 @@ Bool ngleScreenInit(
 
     if (cfbDualHeadBug != serverGeneration)
     {
+#ifndef LOWMEMFTPT
 	if (pScreenPriv->devDepth == 8)
+#endif /* ifndef LOWMEMFTPT */
 	    cfbFirstIndex = cfbScreenPrivateIndex;
+#ifndef LOWMEMFTPT
 	else
 	    cfbFirstIndex = cfb32ScreenPrivateIndex;
+#endif /* ifndef LOWMEMFTPT */
 	
 	cfbDualHeadBug = serverGeneration;
     }
     else
     {
+#ifndef LOWMEMFTPT
 	if (pScreenPriv->devDepth == 8)
+#endif /* ifndef LOWMEMFTPT */
 	    pScreen->devPrivates[cfbFirstIndex].ptr = 
 	        pScreen->devPrivates[cfbScreenPrivateIndex].ptr;
+#ifndef LOWMEMFTPT
 	else
 	    pScreen->devPrivates[cfbFirstIndex].ptr = 
 	        pScreen->devPrivates[cfb32ScreenPrivateIndex].ptr;
+#endif /* ifndef LOWMEMFTPT */
 	
+#ifndef LOWMEMFTPT
 	cfbScreenPrivateIndex = cfb32ScreenPrivateIndex = cfbFirstIndex;
+#else
+	cfbScreenPrivateIndex = cfbFirstIndex;
+#endif /* ifndef LOWMEMFTPT */
     }
 
 

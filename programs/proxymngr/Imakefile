@@ -15,13 +15,21 @@ XCOMM $TOG: Imakefile /main/12 1997/08/05 09:00:09 kaleb $
 
         PROGRAMS = $(PROGS1)
 
+        LBXPROXY = $(BINDIR)/lbxproxy
+
+     SITE_CONFIG = -DLBXPROXY=$(LBXPROXY)
+
+all:: pmconfig proxymngr
+
+LinkVarDirectory(proxymngr,.,proxymngr,.)
+
+CppFileTarget(pmconfig,pmconfig.cpp,$(SITE_CONFIG),NullParameter)
+
 BuildIncludes($(HEADERS),X11/PM,../..)
 InstallMultipleFlags($(HEADERS),$(INCDIR)/X11/PM,$(INSTINCFLAGS))
 
 ComplexProgramTarget_1(proxymngr,$(LOCAL_LIBRARIES),NullParameter)
 SpecialCObjectRule(main,$(_NOOP_),'-DCONFIG_FILE="'$(PROXYMANAGERDIR)'/pmconfig"')
-
-LinkVarDirectory(proxymngr,.,proxymngr,.)
 
 InstallNonExecFile(pmconfig,$(PROXYMANAGERDIR))
 InstallManPage(proxymngr,$(MANDIR))

@@ -1,4 +1,4 @@
-/* $XConsortium: Raster.c /main/3 1996/11/16 15:26:23 rws $ */
+/* $TOG: Raster.c /main/4 1998/04/06 14:56:49 mgreess $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -31,7 +31,7 @@ dealings in this Software without prior written authorization from said
 copyright holders.
 */
 
-/* $XFree86: xc/programs/Xserver/Xprint/raster/Raster.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/raster/Raster.c,v 1.2 1998/06/27 12:53:46 hohndel Exp $ */
 
 /*******************************************************************
 **
@@ -380,7 +380,7 @@ EndJob(
         if(pConPriv->getDocClient != (ClientPtr)NULL) {
 	    XpFinishDocData(pConPriv->getDocClient);
 	    
-	    pConPriv->getDocClient == NULL;
+	    pConPriv->getDocClient = (ClientPtr)NULL;
 	    pConPriv->getDocBufSize = 0;
 	}
 	    
@@ -398,7 +398,7 @@ EndJob(
     {
         XpFinishDocData(pConPriv->getDocClient);
 	    
-	pConPriv->getDocClient == NULL;
+	pConPriv->getDocClient = (ClientPtr)NULL;
 	pConPriv->getDocBufSize = 0;
 
         return Success;

@@ -1,21 +1,26 @@
-/* $TOG: security.c /main/14 1997/12/05 11:51:53 msr $ */
+/* $TOG: security.c /main/15 1998/02/09 15:25:09 kaleb $ */
 /*
-Copyright (c) 1996 X Consortium, Inc.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OF
-OR OTHER DEALINGS IN THE SOFTWARE.
+Copyright 1996, 1998  The Open Group
 
-Except as contained in this notice, the name of the X Consortium shall
-not be used in advertising or otherwise to promote the sale, use or
-other dealings in this Software without prior written authorization
-from the X Consortium.
+All Rights Reserved.
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name of The Open Group shall not be
+used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization from The Open Group.
+
 */
-/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.2 1997/01/27 06:57:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.3 1997/12/14 02:55:38 dawes Exp $ */
 
 #include "dixstruct.h"
 #include "extnsionst.h"
