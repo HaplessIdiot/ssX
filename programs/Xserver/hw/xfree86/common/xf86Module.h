@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.17 1999/07/06 11:38:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.18 2000/01/25 18:37:47 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -152,7 +152,7 @@ typedef struct {
     const char *	name;
     Bool		*disablePtr;
     InitExtension	setupFunc;	
-    const char **	dependencies;
+    const char **	initDependencies;
 } ExtensionModule;
 
 extern ExtensionModule *ExtensionModuleList;

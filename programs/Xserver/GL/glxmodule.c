@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/GL/glxmodule.c,v 1.5 1999/06/14 07:31:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/glxmodule.c,v 1.6 2000/01/25 18:37:36 dawes Exp $ */
 
 /*
  * Authors:
@@ -44,13 +44,15 @@ extern void GlxExtensionInit(INITARGS);
 extern void GlxWrapInitVisuals(miInitVisualsProcPtr *);
 extern void InitGlxWrapInitVisuals(void (*f)(miInitVisualsProcPtr *));
 
+static const char *initdeps[] = { "DOUBLE-BUFFER", NULL };
+
 ExtensionModule GLXExt =
 {
     GlxExtensionInit,
     "GLX",
     NULL,
     NULL,
-    NULL
+    initdeps
 };
 
 

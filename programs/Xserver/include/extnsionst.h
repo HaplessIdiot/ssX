@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/include/extnsionst.h,v 3.2 1996/12/23 07:09:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/extnsionst.h,v 3.3 1998/10/04 09:38:56 dawes Exp $ */
 
 #ifndef EXTENSIONSTRUCT_H
 #define EXTENSIONSTRUCT_H 
@@ -155,6 +155,8 @@ extern Bool AddExtensionAlias(
     ExtensionEntry * /*extension*/
 #endif
 );
+
+extern ExtensionEntry *CheckExtension(const char *extname);
 
 extern ExtensionLookupProc LookupProc(
 #if NeedFunctionPrototypes
