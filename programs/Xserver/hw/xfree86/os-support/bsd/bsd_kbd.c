@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_kbd.c,v 1.1 2002/10/11 01:40:34 dawes Exp $ */
 
 /*
  * Copyright (c) 2002 by The XFree86 Project, Inc.
@@ -174,10 +174,14 @@ KbdOn(InputInfoPtr pInfo)
         switch (pKbd->consType) {
 	    case SYSCONS:
 	    case PCVT:
+#ifdef K_CODE
                  if (pKbd->CustomKeycodes)
 		     ioctl(pInfo->fd, KDSKBMODE, K_CODE);
 	         else
 	             ioctl(pInfo->fd, KDSKBMODE, K_RAW);
+#else
+		 ioctl(pInfo->fd, KDSKBMODE, K_RAW);
+#endif
 	         break;
 #endif
 #ifdef WSCONS_SUPPORT
@@ -217,7 +221,7 @@ KbdOff(InputInfoPtr pInfo)
             case WSCONS:
                  option = WSKBD_TRANSLATED;
                  ioctl(xf86Info.consoleFd, WSKBDIO_SETMODE, &option);
-                 tcsetattr(xf86Info.consoleFd, TCSANOW, &kbdtty);
+                 tcsetattr(xf86Info.consoleFd, TCSANOW, &(priv->kbdtty));
 	         break;
 #endif
         }
@@ -375,7 +379,7 @@ WSReadInput(InputInfoPtr pInfo)
         n /=  sizeof(struct wscons_event);
         for (i = 0; i < n; i++)
            pKbd->PostEvent(pInfo, events[i].value,
-	             (events[i].type == WSCONS_EVENT_KEY_DOWN ? TRUE : FALSE);
+	             events[i].type == WSCONS_EVENT_KEY_DOWN ? TRUE : FALSE);
 	}
 }
 #endif
@@ -455,7 +459,7 @@ OpenKeyboard(InputInfoPtr pInfo)
     if( prot == PROT_WSCONS) {
        pKbd->consType = WSCONS;
        /* Find out keyboard type */
-       if (ioctl(pInfo->fd, WSKBDIO_GTYPE, &(pKbd->wsKbdType) == -1) {
+       if (ioctl(pInfo->fd, WSKBDIO_GTYPE, &(pKbd->wsKbdType)) == -1) {
            xf86Msg(X_ERROR, "%s: cannot get keyboard type", pInfo->name);
            close(pInfo->fd);
            return FALSE;
