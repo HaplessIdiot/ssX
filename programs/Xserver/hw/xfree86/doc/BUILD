@@ -248,7 +248,7 @@ XFree86:
      shown do not match your system, you probably need to set them manually
      in host.def and report the problem to <XFree86@XFree86.org>.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.11 2003/02/27 01:17:36 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.11 dawes Exp $
 
 
 $XFree86: $

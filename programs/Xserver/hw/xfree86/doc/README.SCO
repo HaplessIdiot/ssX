@@ -137,7 +137,7 @@ server will also accept connections from XFree86 binaries. This means you may
 mix and match the two if you have ODT.  For example you may still use the
 Panning Motif window manager (pmwm) if you prefer.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.22 2003/02/17 18:58:07 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.22 dawes Exp $
 
 
 $XFree86: $

@@ -703,7 +703,7 @@ newer driver API of XFree86 4.0 and later.
 The introduction of version 6 is a first swipe at porting the driver to non-
 Intel architectures.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.43 2003/02/25 19:31:02 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.43 dawes Exp $
 
 
 $XFree86: $

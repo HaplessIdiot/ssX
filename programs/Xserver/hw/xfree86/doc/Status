@@ -663,7 +663,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
       Summary:
             No Weitek chips are supported in 4.3.0.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.43 2003/02/25 16:32:41 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.43 dawes Exp $
 
 
 $XFree86: $
