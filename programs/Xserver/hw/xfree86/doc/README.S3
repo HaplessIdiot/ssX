@@ -78,12 +78,13 @@ might work for you, too.
                         The "dac_8_bit" option is recommended.
 
 
-        S3 928, Bt485 RAMDAC, ICD2061A Clockchip
-                SPEA Mercury
+        S3 928, Bt485 RAMDAC, SC11412 Clockchip
+                SPEA Mercury 2MB VL
                         
                         8, 15/16 bpp only  
 
-                        Option "spea_mercury"
+                        Option "SPEA_Mercury"
+                        ClockChip "SC11412"
 
                         The "dac_8_bit" option is recommended.
 
@@ -117,6 +118,21 @@ might work for you, too.
                 Elsa Winner1000PRO PCI
 
                         8, 15/16 and 24(32) bpp
+
+
+        S3 864, 20C498 RAMDAC, ICS2595 Clockchip
+                SPEA MirageP64 2MB DRAM
+
+                        8 and 16bpp
+
+                        ClockChip "ICS2595"
+
+                        Clockchip support is only preliminary and
+                        on some machines problems with the first
+                        mode after startup of XF86_S3 or after 
+                        switching back from VT have been seen; 
+                        switching to next mode with CTRL+ALT+'+'
+                        and back seems to solve this problem
 
 
         S3 964, AT&T 20C505 RAMDAC, ICD2061A Clockchip
@@ -170,6 +186,33 @@ If you have a RAMDAC that is not listed here, be VERY careful not to
 overdrive it using XF86_S3. Better contact the XFree86 team first to
 verify that running XF86_S3 will not damage your board.
 
+If you feel adventerous you could also open up your computer and have
+a peek at your RAMDAC. The RAMDAC is usually ome the larger chips
+(second or third largest chip that is NOT an EPROM) on the board.  The
+markings on it are usually
+
+  <Company logo>
+
+      <company identifier><part number>-<speed grade>
+      <manufacturing week><manufacturing year>  
+      <lot number><other funny numbers>
+
+For example 
+
+          @@
+          @@ AT&T
+
+        ATT20C490-11
+         9339S ES
+          9869874
+
+This is a ATT 490 with a speed grade of 110 MHz. This would then mean that
+you put a "DacSpeed 110" line in your XF86Config file.  Be advised that
+some RAMDACs have different modes that have different limits. The
+manufacturer will always mark the chip naming the higher limits, so you
+should be careful.  The S3 server knows how to handle the limits for most
+of the RAMDACs it supports providing the DacSpeed is specified correctly.
+
 
 chips labeled "-80" or "-8"  should use DacSpeed 80 in the device section
 S3716-ME SDAC  ==>  DacSpeed 110
@@ -177,4 +220,4 @@ SC15025-8      ==>  DacSpeed  80
 ATT20C490-80   ==>  DacSpeed  80
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.S3,v 3.1 1994/09/26 15:56:46 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.S3,v 3.2 1994/09/27 10:30:36 dawes Exp $

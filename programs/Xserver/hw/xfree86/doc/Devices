@@ -12,17 +12,38 @@ Section "Device"
     Clocks	130.0 120.0  80.0  31.0 110.0  65.0  75.0  94.0
 EndSection
 
+#From: Hans Nasten <nasten@everyware.se>
+#Date: Tue, 27 Sep 1994 10:18:05 +0100 (MET)
+Section "Device"
+    Identifier "ATI GU"
+    VendorName "ATI"
+    BoardName "ATI Graphics Ultra"
+    Clocks 43 49 80 36 50 56 0 45 30 32 110 79 40 45 75 65
+    Clocks 22 25 46 18 25 28 0 22 15 16  55 40 20 22 38 32
+EndSection
+
 #From: Mark_Weaver@brown.edu (Mark_Weaver@brown.edu)
 #Date: Mon, 19 Sep 1994 14:59:09 -0400
 Section "Device"
     Identifier "ATI-GUP"
     VendorName "ATI"
-    BoardName "GUP"
+    BoardName "Graphics Ultra Pro"
     Clocks 100 126 92 36 51 57 0 44 135 32 110 80 39 
 	45 75 65 50 63 46 18 25 28 0 22 67 16 55 40 19 23 37 33
     Option "dac_8_bit"
 EndSection
  
+#From: Hans Nasten <nasten@everyware.se>
+#Date: Tue, 27 Sep 1994 10:18:05 +0100 (MET)
+Section "Device"
+    Identifier "ATI SVGA"
+    Chipset "vgawonder"
+    VendorName "ATI"
+    BoardName "ATI Graphics Ultra"
+    Clocks 30 32 11 80 42 48 92 36 40 45 75 65 50 56 0 0
+    Clocks 15 16 55 0  21 24 46 18 20 22 37 32 25 28 0 0
+EndSection
+
 #Date: Mon, 19 Sep 94 17:50:04 +0200
 #From: Didier Poirot <dp@chorus.fr>
 Section "Device"
@@ -309,10 +330,10 @@ EndSection
 #From: Bob Mende Pie <mende@piecomputer.rutgers.edu>
 #Date: Fri, 23 Sep 1994 22:51:51 -0400
 Section "Device"
-    Identifier "Number Nine GXE Pro VLB"
+    Identifier "Number Nine GXE64 Pro VLB"
     #Was: "GXEPRO"
     VendorName "#9"
-    BoardName "#9 GXE Pro VLB"
+    BoardName "#9 GXE64 Pro VLB"
     RamDac "ti3025"
     Option "dac_8_bit"
     Option "number_nine"
@@ -320,16 +341,6 @@ Section "Device"
     ClockChip "ti3025"
 EndSection
  
-#From: Bob Mende Pie <mende@piecomputer.rutgers.edu>
-#Date: Fri, 23 Sep 1994 22:51:51 -0400
-Section "Device"
-    Identifier "Number Nine GXE Pro VLB, SVGA"
-    # Was: "GXEPRO-SVGA"
-    VendorName "#9"
-    BoardName "#9 GXE Pro VLB"
-    Clocks      28
-EndSection
-
 #Date: Tue, 20 Sep 94 08:32:45 EDT
 #From: bremner@muff.cs.mcgill.ca (David BREMNER)
 Section "Device"
@@ -388,6 +399,19 @@ Section "Device"
 #    Membase     0x7c000000
     Clocks 25.20   28.32 40.00  0.00  50.10 77.00 36.10 45.00
     Clocks 130.00 120.20 80.00 31.50 110.30 65.00 75.00 94.60
+EndSection
+
+#From: matthieu@laas.fr (Matthieu Herrb)
+#Date: Tue, 27 Sep 1994 10:05:24 +0100
+Section        "Device"
+    Identifier "Orchid Farenheit-1280+"
+    VendorName "Orchid"
+    BoardName  "Farenheit 1280+ VLB"
+    Ramdac     "att20C490"
+    Dacspeed   110
+    Clocks     25.20 28.32 40.0 0.0 50.10 77.0 36.10 45.0 
+    Clocks     130.0 120.20 80.0 31.50 110.30 65.0 75.0 94.60
+    Option     "dac_8_bit"
 EndSection
 
 #Date: Sun, 18 Sep 1994 16:00:53 +1000
@@ -477,4 +501,4 @@ EndSection
 
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/Devices,v 3.0 1994/09/26 15:32:58 dawes Exp $

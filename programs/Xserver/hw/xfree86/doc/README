@@ -16,12 +16,10 @@ Contents
 1 - What is XFree86?
 --------------------
   XFree86 is a port of X11R6 that supports several versions of Intel-based
-Unix and Unix-like operating systems.  The XFree86 servers are derived from
-X386 1.2, which was the X server distributed with X11R5.  This release
-consists of many new features and performance improvements as well as many
-bug fixes.  The release is available as source patches against the X
-Consortium X11R6 code, as well as binary distributions for many
-architectures.
+Unix and Unix-like operating systems.  This release consists of many new
+features and performance improvements as well as many bug fixes.  The
+release is available as source patches against the X Consortium X11R6 code,
+as well as binary distributions for many architectures.
 
 
 2 - What's new in XFree86 3.1?
@@ -156,33 +154,9 @@ NCR, OAK and Cirrus 6420 chipsets allowing virtual display sizes up to
 about 1600x1200 (with 1MB of video memory).  For other chipsets the display
 size is limited to approximately 800x600.
 
-  Note
-  ----
-Some of the SVGA card manufacturers are using non-traditional mechanisms 
-for selecting pixel-clock frequencies.  To avoid having to modify the 
-server to accommodate these schemes XFree86 1.2 added support for using 
-an external program to select the pixel clock.  This allows programs to 
-be written as new mechanisms are discovered.  Refer to the README.clkprog 
-file for information on how these programs work, if you need to write one.
-If you do develop such a program, we would be interested in including it 
-with future XFree86 releases.
-
 NOTE: The Diamond SpeedStar 24 (and possibly recent SpeedStar+) boards are
-      NOT supported, even though they use the ET4000. The same is true
-      for all of Diamond's S3 boards. The reason for this is that
-      Diamond has changed the mechanism used to select pixel clock 
-      frequencies, and will only release programming information under
-      non-disclosure.  We are not willing to do this (as it would mean
-      that source cannot be provided).  We have had discussions with
-      Diamond over this, and they do not intend to change this policy.
-      Hence we will do nothing to support Diamond products going forward
-      (i.e. don't send us a program to run to set their clocks).  XFree86
-      DOES NOT SUPPORT DIAMOND HARDWARE.  It is possible to make some
-      of it work, but we will not assist in doing this.
-
-      Diamond's Cirrus-based boards should work with XFree86 because they
-      use the standard Cirrus clock synthesiser.  This includes the
-      SpeedStar Pro and possibly the SpeedStar 64.
+      NOT supported, even though they use the ET4000.  The Stealth 32 which
+      uses the ET4000/W32p is also not supported.
 
 5 - Where to get more information
 ---------------------------------
@@ -278,12 +252,12 @@ Linux shared libraries by:
 Original accelerated code by:
        Kevin Martin <martin@cs.unc.edu>
        Rik Faith <faith@cs.unc.edu>
-       Jon Tombs <jon@gtex02.us.es>
+       Jon Tombs <tombs@XFree86.org>
 S3 accelerated code by:
-       Jon Tombs <jon@gtex02.us.es>
-       David Wexelblat <dwex@goblin.org> <dwex@aib.com>
-       David Dawes <dawes@physics.su.oz.au>
-       Robin Cutshaw <robin@paros.com>
+       Jon Tombs <tombs@XFree86.org>
+       David Wexelblat <dwex@XFree86.org
+       David Dawes <dawes@XFree86.org>
+       Robin Cutshaw <robin@XFree86.org>
        Amancio Hasty <hasty@netcom.com>
        Norbert Distler <Norbert.Distler@physik.tu-muenchen.de>
        Leonard N. Zubkoff <lnz@dandelion.com>
@@ -434,22 +408,28 @@ organization stepped forward and contributed the entire 1994 X Consortium
 membership fee on a moment's notice.  This single act ensured XFree86's
 involvement in X11R6.
 
-	AIB Software Corporation, Dulles, VA
-	American Micro Group
-	AT&T Global Information Services (formerly NCR)
-	Andrew Burgess
-	BSDI, Falls Church, VA
-	Frank & Paige McCormick
-	InfoMagic, Rocky Hill, NJ
-	LunetIX Softfair, Berlin, Germany
-	Prime Time Freeware, San Bruno, CA
-	Red Hat Software, Chapel Hill, NC
+        AIB Software Corporation, Dulles, VA
+        American Micro Group
+        AT&T Global Information Services (formerly NCR)
+        Andrew Burgess
+        BSDI, Falls Church, VA
+        The Destek Group, Inc., Pelham, NH (formerly Synergytics)
+        Digital Equipment Corp
+        Elsa GmbH, Aachen, Germany
+        Frank & Paige McCormick
+        InfoMagic, Rocky Hill, NJ
+        LunetIX Softfair, Berlin, Germany
+        Number Nine, Lexington, MA
+        Prime Time Freeware, San Bruno, CA
+        Red Hat Software, Chapel Hill, NC
         Clifford M Stein
         Joel Storm 
         S.u.S.E, GmbH, Fuerth, Germany
-	Unifix Software GmbH, Braunschweig, Germany
+        Tekelec Airtronic GmbH, Muenchen, Germany
+        Unifix Software GmbH, Braunschweig, Germany
+        Paul Vixie, CA
         Walnut Creek CDROM, Concord, CA
-	Xtreme s.a.s., Livorno, Italy
+        Xtreme s.a.s., Livorno, Italy
 
 The XFree86 Project, Inc, welcomes the additional contribution of funding
 and/or equipment.  Such contributions should be tax-deductible; we will
@@ -462,9 +442,40 @@ information, contact The XFree86 Project, Inc, at <BOD@XFree86.org>
 to XFree86 3.1.  They and binaries for many OSs are available via anonymous
 FTP from:
 
-       ftp.XFree86.org (under /pub/XFree86/current)
+    ftp.XFree86.org (under /pub/XFree86/current)
 
-       and various mirror sites
+and the following mirror sites:
+
+    North America:
+    xfree86.cdrom.com:/pub/XFree86           (source and binaries)
+    ftp.bsdi.com:/contrib/X11/XFree86        (BSD/386 binaries only)
+    ftp.iastate.edu:/pub/netbsd/XFree86-3.1  (NetBSD binaries only)
+    tsx-11.mit.edu:/pub/linux/packages/X11   (Linux binaries only)
+    ftp.eecs.umich.edu:/BSD/Xfree86          (source and binaries)
+    sunsite.unc.edu:/pub/X11/XFree86         (source and binaries)
+    abode.ccd.bnl.gov:/pub/XFree86           (Solaris binaries)
+
+    Europe:
+    ftp.fee.vutbr.cz:/pub/XFree86            (source and binaries)
+    ftp.gwdg.de:/pub/xfree86                 (source and binaries)
+    ftp.uni-stuttgart.de:/pub/X11/Xfree86    (source and binaries)
+    ftp.funet.fi:/pub/X11/XFree86            (source diffs only)
+    ftp.laas.fr:/pub/NetBSD/XFree86-3.1      (NetBSD binaries only)
+    ftp.unipi.it:/pub/mirrors/XFree86        (source and binaries)
+    nova.pvv.unit.no:/pub/XFree86/current    (source and binaries)
+    sprocket.ict.pwr.wroc.pl:                (under consideration)
+    ftp.demon.co.uk:/pub/xwindows/XFree86    (source and binaries)
+
+    Middle East:
+    orgchem.weizmann.ac.il:/pub/XFree86      (sources and FreeBSD binaries)
+
+    Asia/Australia:
+    x.physics.su.oz.au:/pub/XFree86          (source and binaries)
+    ftp.iij.ad.jp:/pub/X/XFree86             (source and binaries)
+    ftp.nectec.or.th:/pub/mirrors/XFree86    (source and binaries)
+    nctuccca.edu.tw:/X/XFree86               (source and Linux binaries)
+
+Please use the closest mirror site where possible.
 
 Refer to the README file under the specified directory for information on
 which files you need to get to build your distribution.
