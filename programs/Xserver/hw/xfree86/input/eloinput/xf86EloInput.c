@@ -24,7 +24,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/eloinput/xf86EloInput.c,v 1.1 2005/01/21 14:03:49 tsi Exp $ */
 
 /*
  ******************************************************************************
@@ -530,7 +530,7 @@ xf86EloInputReadInput(LocalDevicePtr	local)
   DBG(4, ErrorF("Entering ReadInput\n"));
 
   SYSCALL(n = read(local->fd,(char *)(ievent),10*sizeof(struct input_event)));
-  DBG(4, ErrorF("Read %d input events\n",n/sizeof(struct input_event)));
+  DBG(4, ErrorF("Read %ld input events\n",(long)n/sizeof(struct input_event)));
   for(i=0;i<n/sizeof(struct input_event);i++) {
     switch(ievent[i].type) {
 	case EV_ABS:
