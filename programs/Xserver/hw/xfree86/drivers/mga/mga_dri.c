@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.10 2000/11/02 19:10:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.11 2000/11/08 05:03:04 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -179,6 +179,7 @@ MGAInitVisualConfigs(ScreenPtr pScreen)
                pConfigs[i].redSize = 5;
                pConfigs[i].greenSize = 6;
                pConfigs[i].blueSize = 5;
+               pConfigs[i].alphaSize = 0;
                pConfigs[i].redMask = 0x0000F800;
                pConfigs[i].greenMask = 0x000007E0;
                pConfigs[i].blueMask = 0x0000001F;
@@ -260,9 +261,10 @@ MGAInitVisualConfigs(ScreenPtr pScreen)
                pConfigs[i].vid = -1;
                pConfigs[i].class = -1;
                pConfigs[i].rgba = TRUE;
-               pConfigs[i].redSize = 5;
-               pConfigs[i].greenSize = 6;
-               pConfigs[i].blueSize = 5;
+               pConfigs[i].redSize = 8;
+               pConfigs[i].greenSize = 8;
+               pConfigs[i].blueSize = 8;
+               pConfigs[i].alphaSize = 0;
                pConfigs[i].redMask   = 0x00FF0000;
                pConfigs[i].greenMask = 0x0000FF00;
                pConfigs[i].blueMask  = 0x000000FF;

@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/blend.c,v 1.7 2000/09/26 15:56:29 tsi Exp $ */
+
 
 
 #ifdef PC_HEADER
@@ -889,7 +889,7 @@ _mesa_blend_span( GLcontext *ctx, GLuint n, GLint x, GLint y,
    if (!ctx->Color.BlendFunc)
       set_blend_function(ctx);
 
-   (*ctx->Color.BlendFunc)( ctx, n, mask, rgba, (const GLubyte (*)[4])dest );
+   (*ctx->Color.BlendFunc)( ctx, n, mask, rgba, (CONST GLubyte (*)[4])dest );
 }
 
 
@@ -924,5 +924,5 @@ _mesa_blend_pixels( GLcontext *ctx,
    if (!ctx->Color.BlendFunc)
       set_blend_function(ctx);
 
-   (*ctx->Color.BlendFunc)( ctx, n, mask, rgba, (const GLubyte (*)[4])dest );
+   (*ctx->Color.BlendFunc)( ctx, n, mask, rgba, (CONST GLubyte (*)[4])dest );
 }

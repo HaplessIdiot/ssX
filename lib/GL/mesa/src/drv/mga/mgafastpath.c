@@ -21,7 +21,7 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgafastpath.c,v 1.4 2000/08/28 02:43:12 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgafastpath.c,v 1.5 2000/09/24 13:51:06 alanh Exp $ */
 
 #include <stdio.h>
 
@@ -63,7 +63,7 @@ struct mga_fast_tab {
 #define RENDER_POINTS( start, count )		\
 do {						\
    GLuint e;					\
-   for(e=start;e<=count;e++)			\
+   for(e=start;e<count;e++)			\
      POINT(elt[e]);				\
 } while (0)
 

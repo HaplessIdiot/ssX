@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/dri/dri_mesa.c,v 1.10 2000/10/10 20:25:19 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/dri/dri_mesa.c,v 1.11 2000/10/11 17:27:32 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -56,7 +56,8 @@ static Bool driMesaUnbindContext(Display *dpy, int scrn,
 /* Drawable methods */
 static void *driMesaCreateDrawable(Display *dpy, int scrn, GLXDrawable draw,
 				   VisualID vid, __DRIdrawable *pdraw);
-static __DRIdrawable *driMesaGetDrawable(Display *dpy, GLXDrawable draw);
+static __DRIdrawable *driMesaGetDrawable(Display *dpy, GLXDrawable draw,
+					 void *private);
 static void driMesaSwapBuffers(Display *dpy, void *private);
 static void driMesaDestroyDrawable(Display *dpy, void *private);
 
@@ -88,14 +89,9 @@ __driMesaMessage(const char *msg)
 
 /* Maintain a list of drawables */
 
-void *drawHash = NULL; /* Hash table to hold DRI drawables */
-
-static Bool __driMesaAddDrawable(__DRIdrawable *pdraw)
+static Bool __driMesaAddDrawable(void *drawHash, __DRIdrawable *pdraw)
 {
     __DRIdrawablePrivate *pdp = (__DRIdrawablePrivate *)pdraw->private;
-
-    /* Create the hash table */
-    if (!drawHash) drawHash = drmHashCreate();
 
     if (drmHashInsert(drawHash, pdp->draw, pdraw))
 	return GL_FALSE;
@@ -103,13 +99,10 @@ static Bool __driMesaAddDrawable(__DRIdrawable *pdraw)
     return GL_TRUE;
 }
 
-static __DRIdrawable *__driMesaFindDrawable(GLXDrawable draw)
+static __DRIdrawable *__driMesaFindDrawable(void *drawHash, GLXDrawable draw)
 {
     int retcode;
     __DRIdrawable *pdraw;
-
-    /* Create the hash table */
-    if (!drawHash) drawHash = drmHashCreate();
 
     retcode = drmHashLookup(drawHash, draw, (void **)&pdraw);
     if (retcode)
@@ -118,13 +111,10 @@ static __DRIdrawable *__driMesaFindDrawable(GLXDrawable draw)
     return pdraw;
 }
 
-static void __driMesaRemoveDrawable(__DRIdrawable *pdraw)
+static void __driMesaRemoveDrawable(void *drawHash, __DRIdrawable *pdraw)
 {
     int retcode;
     __DRIdrawablePrivate *pdp = (__DRIdrawablePrivate *)pdraw->private;
-
-    /* Create the hash table */
-    if (!drawHash) drawHash = drmHashCreate();
 
     retcode = drmHashLookup(drawHash, pdp->draw, (void **)&pdraw);
     if (!retcode) { /* Found */
@@ -132,17 +122,48 @@ static void __driMesaRemoveDrawable(__DRIdrawable *pdraw)
     }
 }
 
-static __DRIdrawable *__driMesaFindUnboundDrawable(void)
+static Bool __driMesaWindowExistsFlag;
+
+static int __driMesaWindowExistsErrorHandler(Display *dpy, XErrorEvent *xerr)
+{
+    if (xerr->error_code == BadWindow) {
+	__driMesaWindowExistsFlag = GL_FALSE;
+    }
+    return 0;
+}
+
+static Bool __driMesaWindowExists(Display *dpy, GLXDrawable draw)
+{
+    XWindowAttributes xwa;
+    int (*oldXErrorHandler)(Display *, XErrorEvent *);
+
+    __driMesaWindowExistsFlag = GL_TRUE;
+    oldXErrorHandler = XSetErrorHandler(__driMesaWindowExistsErrorHandler);
+    XGetWindowAttributes(dpy, draw, &xwa); /* dummy request */
+    XSetErrorHandler(oldXErrorHandler);
+    return __driMesaWindowExistsFlag;
+}
+
+static void __driMesaGarbageCollectDrawables(void *drawHash)
 {
     GLXDrawable draw;
     __DRIdrawable *pdraw;
+    Display *dpy;
 
-    while (drmHashFirst(drawHash, &draw, (void **)&pdraw)) {
-	__DRIdrawablePrivate *pdp = (__DRIdrawablePrivate *)pdraw->private;
-	if (!pdp->refcount)
-	    return pdraw;
+    if (drmHashFirst(drawHash, &draw, (void **)&pdraw)) {
+	do {
+	    __DRIdrawablePrivate *pdp = (__DRIdrawablePrivate *)pdraw->private;
+	    dpy = pdp->driScreenPriv->display;
+	    XSync(dpy, GL_FALSE);
+	    if (!__driMesaWindowExists(dpy, draw)) {
+		/* Destroy the local drawable data in the hash table, if the
+		   drawable no longer exists in the Xserver */
+		__driMesaRemoveDrawable(drawHash, pdraw);
+		(*pdraw->destroyDrawable)(dpy, pdraw->private);
+		Xfree(pdraw);
+	    }
+	} while (drmHashNext(drawHash, &draw, (void **)&pdraw));
     }
-    return NULL;
 }
 
 /*****************************************************************/
@@ -166,6 +187,7 @@ static void driMesaInitAPI(__MesaAPI *MesaAPI)
 static Bool driMesaUnbindContext(Display *dpy, int scrn,
 				 GLXDrawable draw, GLXContext gc)
 {
+    __DRIscreen *pDRIScreen;
     __DRIdrawable *pdraw;
     __DRIcontextPrivate *pcp;
     __DRIscreenPrivate *psp;
@@ -181,19 +203,22 @@ static Bool driMesaUnbindContext(Display *dpy, int scrn,
 	return GL_FALSE;
     }
 
-    pdraw = __driMesaFindDrawable(draw);
-    if (!pdraw) {
+    if (!(pDRIScreen = __glXFindDRIScreen(dpy, scrn))) {
+	/* ERROR!!! */
+	return GL_FALSE;
+    } else if (!(psp = (__DRIscreenPrivate *)pDRIScreen->private)) {
 	/* ERROR!!! */
 	return GL_FALSE;
     }
 
     pcp = (__DRIcontextPrivate *)gc->driContext.private;
-    pdp = (__DRIdrawablePrivate *)pdraw->private;
-    psp = pdp->driScreenPriv;
-    if (!psp) {
+
+    pdraw = __driMesaFindDrawable(psp->drawHash, draw);
+    if (!pdraw) {
 	/* ERROR!!! */
 	return GL_FALSE;
     }
+    pdp = (__DRIdrawablePrivate *)pdraw->private;
 
     /* Unbind Mesa's drawable from Mesa's context */
     (*psp->MesaAPI.UnbindContext)(pcp);
@@ -211,13 +236,19 @@ static Bool driMesaUnbindContext(Display *dpy, int scrn,
 	** context.  This also causes conflicts with caching of the
 	** drawable stamp.
 	**
+	** In addition, we don't destroy the drawable here since Mesa
+	** keeps private data internally (e.g., software accumulation
+	** buffers) that should not be destroyed unless the client
+	** explicitly requests that the window be destroyed.
+	**
 	** When GLX 1.3 is integrated, the create and destroy drawable
 	** functions will have user level counterparts and the memory
 	** will be able to be recovered.
+	** 
+	** Below is an example of what needs to go into the destroy
+	** drawable routine to support GLX 1.3.
 	*/
-
-	/* Delete drawable if no longer referenced by any contexts */
-	__driMesaRemoveDrawable(pdraw);
+	__driMesaRemoveDrawable(psp->drawHash, pdraw);
 	(*pdraw->destroyDrawable)(dpy, pdraw->private);
 	Xfree(pdraw);
 #endif
@@ -233,6 +264,7 @@ static Bool driMesaUnbindContext(Display *dpy, int scrn,
 static Bool driMesaBindContext(Display *dpy, int scrn,
 			       GLXDrawable draw, GLXContext gc)
 {
+    __DRIscreen *pDRIScreen;
     __DRIdrawable *pdraw;
     __DRIdrawablePrivate *pdp;
     __DRIscreenPrivate *psp;
@@ -248,7 +280,15 @@ static Bool driMesaBindContext(Display *dpy, int scrn,
 	return GL_FALSE;
     }
 
-    pdraw = __driMesaFindDrawable(draw);
+    if (!(pDRIScreen = __glXFindDRIScreen(dpy, scrn))) {
+	/* ERROR!!! */
+	return GL_FALSE;
+    } else if (!(psp = (__DRIscreenPrivate *)pDRIScreen->private)) {
+	/* ERROR!!! */
+	return GL_FALSE;
+    }
+
+    pdraw = __driMesaFindDrawable(psp->drawHash, draw);
     if (!pdraw) {
 	/* Allocate a new drawable */
 	pdraw = (__DRIdrawable *)Xmalloc(sizeof(__DRIdrawable));
@@ -267,7 +307,7 @@ static Bool driMesaBindContext(Display *dpy, int scrn,
 	}
 
 	/* Add pdraw to drawable list */
-	if (!__driMesaAddDrawable(pdraw)) {
+	if (!__driMesaAddDrawable(psp->drawHash, pdraw)) {
 	    /* ERROR!!! */
 	    (*pdraw->destroyDrawable)(dpy, pdraw->private);
 	    Xfree(pdraw);
@@ -276,11 +316,6 @@ static Bool driMesaBindContext(Display *dpy, int scrn,
     }
 
     pdp = (__DRIdrawablePrivate *)pdraw->private;
-    psp = pdp->driScreenPriv;
-    if (!psp) {
-	/* ERROR!!! */
-	return GL_FALSE;
-    }
 
     /* Bind the drawable to the context */
     pcp = (__DRIcontextPrivate *)gc->driContext.private;
@@ -396,9 +431,16 @@ static void *driMesaCreateDrawable(Display *dpy, int scrn, GLXDrawable draw,
     pdp->pClipRects = NULL;
     pdp->pBackClipRects = NULL;
 
-    pDRIScreen = __glXFindDRIScreen(dpy, scrn);
-    pdp->driScreenPriv = psp = (__DRIscreenPrivate *)pDRIScreen->private;
-
+    if (!(pDRIScreen = __glXFindDRIScreen(dpy, scrn))) {
+	(void)XF86DRIDestroyDrawable(dpy, scrn, pdp->draw);
+	Xfree(pdp);
+	return NULL;
+    } else if (!(psp = (__DRIscreenPrivate *)pDRIScreen->private)) {
+	(void)XF86DRIDestroyDrawable(dpy, scrn, pdp->draw);
+	Xfree(pdp);
+	return NULL;
+    }
+    pdp->driScreenPriv = psp;
     pdp->driContextPriv = &psp->dummyContextPriv;
 
     for (i = 0; i < psp->numVisuals; i++) {
@@ -427,13 +469,16 @@ static void *driMesaCreateDrawable(Display *dpy, int scrn, GLXDrawable draw,
     return (void *)pdp;
 }
 
-static __DRIdrawable *driMesaGetDrawable(Display *dpy, GLXDrawable draw)
+static __DRIdrawable *driMesaGetDrawable(Display *dpy, GLXDrawable draw,
+					 void *private)
 {
+    __DRIscreenPrivate *psp = (__DRIscreenPrivate *)private;
+
     /*
     ** Make sure this routine returns NULL if the drawable is not bound
     ** to a direct rendering context!
     */
-    return __driMesaFindDrawable(draw);
+    return __driMesaFindDrawable(psp->drawHash, draw);
 }
 
 static void driMesaSwapBuffers(Display *dpy, void *private)
@@ -452,7 +497,8 @@ static void driMesaDestroyDrawable(Display *dpy, void *private)
 
     if (pdp) {
         gl_destroy_framebuffer(pdp->mesaBuffer);
-	(void)XF86DRIDestroyDrawable(dpy, scrn, pdp->draw);
+	if (__driMesaWindowExists(dpy, pdp->draw))
+	    (void)XF86DRIDestroyDrawable(dpy, scrn, pdp->draw);
 	if (pdp->pClipRects)
 	    Xfree(pdp->pClipRects);
 	Xfree(pdp);
@@ -464,14 +510,19 @@ static void driMesaDestroyDrawable(Display *dpy, void *private)
 static void *driMesaCreateContext(Display *dpy, XVisualInfo *vis, void *shared,
 				  __DRIcontext *pctx)
 {
+    __DRIscreen *pDRIScreen;
     __DRIcontextPrivate *pcp;
     __DRIcontextPrivate *pshare = (__DRIcontextPrivate *)shared;
     __DRIscreenPrivate *psp;
-    __DRIscreen *pDRIScreen;
     int i;
 
-    pDRIScreen = __glXFindDRIScreen(dpy, vis->screen);
-    psp = (__DRIscreenPrivate *)pDRIScreen->private;
+    if (!(pDRIScreen = __glXFindDRIScreen(dpy, vis->screen))) {
+	/* ERROR!!! */
+	return NULL;
+    } else if (!(psp = (__DRIscreenPrivate *)pDRIScreen->private)) {
+	/* ERROR!!! */
+	return NULL;
+    }
 
     if (!psp->dummyContextPriv.driScreenPriv) {
 	if (!XF86DRICreateContext(dpy, vis->screen, vis->visual,
@@ -484,6 +535,9 @@ static void *driMesaCreateContext(Display *dpy, XVisualInfo *vis, void *shared,
 	psp->dummyContextPriv.driDrawablePriv = NULL;
 	/* No other fields should be used! */
     }
+
+    /* Create the hash table */
+    if (!psp->drawHash) psp->drawHash = drmHashCreate();
 
     pcp = (__DRIcontextPrivate *)Xmalloc(sizeof(__DRIcontextPrivate));
     if (!pcp) {
@@ -532,34 +586,17 @@ static void *driMesaCreateContext(Display *dpy, XVisualInfo *vis, void *shared,
     pctx->bindContext    = driMesaBindContext;
     pctx->unbindContext  = driMesaUnbindContext;
 
+    __driMesaGarbageCollectDrawables(pcp->driScreenPriv->drawHash);
+
     return pcp;
 }
 
 static void driMesaDestroyContext(Display *dpy, int scrn, void *private)
 {
     __DRIcontextPrivate  *pcp   = (__DRIcontextPrivate *)private;
-    __DRIdrawablePrivate *pdp;
-    __DRIdrawable        *pdraw;
 
     if (pcp) {
-	pdp = pcp->driDrawablePriv;
-	if (pdp) {
-	    /* Unbind Mesa's drawable from Mesa's context */
-	    (*pcp->driScreenPriv->MesaAPI.UnbindContext)(pcp);
-
-	    if (pdp->refcount == 1) {
-		/* If refcount is 1, then this is the last context to
-                   reference this drawable, so we can destroy the
-                   drawable and remove it from the hash table */
-		pdraw = __driMesaFindDrawable(pdp->draw);
-		__driMesaRemoveDrawable(pdraw);
-		(*pdraw->destroyDrawable)(dpy, pdraw->private);
-		Xfree(pdraw);
-	    }
-	}
-	while ((pdraw = __driMesaFindUnboundDrawable()) != NULL)
-	    __driMesaRemoveDrawable(pdraw);
-
+	__driMesaGarbageCollectDrawables(pcp->driScreenPriv->drawHash);
 	(void)XF86DRIDestroyContext(dpy, scrn, pcp->contextID);
 	(*pcp->driScreenPriv->MesaAPI.DestroyContext)(pcp);
         gl_destroy_context(pcp->mesaContext);
@@ -762,6 +799,9 @@ static void *driMesaCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
     ** to NULL to let CreateContext routine that it needs to be inited.
     */
     psp->dummyContextPriv.driScreenPriv = NULL;
+
+    /* Initialize the drawHash when the first context is created */
+    psp->drawHash = NULL;
 
     psc->destroyScreen  = driMesaDestroyScreen;
     psc->createContext  = driMesaCreateContext;

@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxfastpath.c,v 1.1 2000/09/24 13:51:15 alanh Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -49,7 +49,7 @@
 #include "fxtexman.h"
 #include "vertices.h"
 #ifdef __i386__
-#include "X86/common_x86asm.h"
+#include "X86/common_x86_asm.h"
 #endif
 
 

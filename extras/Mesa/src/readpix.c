@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/readpix.c,v 1.6 2000/09/26 15:56:33 tsi Exp $ */
+
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -655,7 +655,7 @@ static void read_rgba_pixels( GLcontext *ctx,
          dest = _mesa_image_address( packing, pixels, width, height,
                                      format, type, 0, j, 0);
 
-         _mesa_pack_rgba_span( ctx, readWidth, (const GLubyte (*)[4]) rgba,
+         _mesa_pack_rgba_span( ctx, readWidth, (CONST GLubyte (*)[4]) rgba,
                                format, type, dest, packing, GL_TRUE );
       }
    }
@@ -678,7 +678,7 @@ static void read_rgba_pixels( GLcontext *ctx,
          dest = _mesa_image_address( packing, pixels, width, height,
                                      format, type, 0, j, 0);
 
-         _mesa_pack_rgba_span( ctx, readWidth, (const GLubyte (*)[4]) rgba,
+         _mesa_pack_rgba_span( ctx, readWidth, (CONST GLubyte (*)[4]) rgba,
                                format, type, dest, packing, GL_TRUE );
       }
    }

@@ -4,7 +4,7 @@ XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.140 2000/10/17 16:53:12 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.141 2000/10/20 12:57:21 alanh Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault		YES
@@ -223,6 +223,21 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #    define HasAgpGart              YES
 #  else
 #    define HasAgpGart              NO
+#  endif
+#endif
+
+/* Support for Intel's Katmai Native Instructions, also known as the
+ * Streaming SIMD Extensions, was introduced in the 2.4.x kernels.
+ */
+#ifndef HasKatmaiSupport
+#  ifdef i386Architecture
+#    if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 4)
+#      define HasKatmaiSupport		YES
+#    else
+#      define HasKatmaiSupport		NO
+#    endif
+#  else
+#    define HasKatmaiSupport		NO
 #  endif
 #endif
 

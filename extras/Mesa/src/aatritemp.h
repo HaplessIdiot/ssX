@@ -303,24 +303,24 @@
 #ifdef DO_STUV1
 #  ifdef DO_SPEC
          gl_write_multitexture_span(ctx, 2, n, startX, iy, z,
-                                    (const GLfloat (*)[MAX_WIDTH]) s,
-                                    (const GLfloat (*)[MAX_WIDTH]) t,
-                                    (const GLfloat (*)[MAX_WIDTH]) u,
+                                    (CONST GLfloat (*)[MAX_WIDTH]) s,
+                                    (CONST GLfloat (*)[MAX_WIDTH]) t,
+                                    (CONST GLfloat (*)[MAX_WIDTH]) u,
                                     (GLfloat (*)[MAX_WIDTH]) lambda,
-                                    rgba, (const GLubyte (*)[4]) spec,
+                                    rgba, (CONST GLubyte (*)[4]) spec,
                                     GL_POLYGON);
 #  else
          gl_write_multitexture_span(ctx, 2, n, startX, iy, z,
-                                    (const GLfloat (*)[MAX_WIDTH]) s,
-                                    (const GLfloat (*)[MAX_WIDTH]) t,
-                                    (const GLfloat (*)[MAX_WIDTH]) u,
+                                    (CONST GLfloat (*)[MAX_WIDTH]) s,
+                                    (CONST GLfloat (*)[MAX_WIDTH]) t,
+                                    (CONST GLfloat (*)[MAX_WIDTH]) u,
                                     lambda, rgba, NULL, GL_POLYGON);
 #  endif
 #elif defined(DO_STUV0)
 #  ifdef DO_SPEC
          gl_write_texture_span(ctx, n, startX, iy, z,
                                s[0], t[0], u[0], lambda[0], rgba,
-                               (const GLubyte (*)[4]) spec, GL_POLYGON);
+                               (CONST GLubyte (*)[4]) spec, GL_POLYGON);
 #  else
          gl_write_texture_span(ctx, n, startX, iy, z,
                                s[0], t[0], u[0], lambda[0],
@@ -408,7 +408,7 @@
          left = ix + 1;
 #ifdef DO_STUV1
          {
-            int j;
+            GLuint j;
             for (j = 0; j < n; j++) {
                s[0][j] = s[0][j + left];
                t[0][j] = t[0][j + left];
@@ -422,17 +422,17 @@
          }
 #  ifdef DO_SPEC
          gl_write_multitexture_span(ctx, 2, n, left, iy, z + left,
-                                    (const GLfloat (*)[MAX_WIDTH]) s,
-                                    (const GLfloat (*)[MAX_WIDTH]) t,
-                                    (const GLfloat (*)[MAX_WIDTH]) u,
+                                    (CONST GLfloat (*)[MAX_WIDTH]) s,
+                                    (CONST GLfloat (*)[MAX_WIDTH]) t,
+                                    (CONST GLfloat (*)[MAX_WIDTH]) u,
                                     lambda, rgba + left,
-                                    (const GLubyte (*)[4]) (spec + left),
+                                    (CONST GLubyte (*)[4]) (spec + left),
                                     GL_POLYGON);
 #  else
          gl_write_multitexture_span(ctx, 2, n, left, iy, z + left,
-                                    (const GLfloat (*)[MAX_WIDTH]) s,
-                                    (const GLfloat (*)[MAX_WIDTH]) t,
-                                    (const GLfloat (*)[MAX_WIDTH]) u,
+                                    (CONST GLfloat (*)[MAX_WIDTH]) s,
+                                    (CONST GLfloat (*)[MAX_WIDTH]) t,
+                                    (CONST GLfloat (*)[MAX_WIDTH]) u,
                                     lambda,
                                     rgba + left, NULL, GL_POLYGON);
 #  endif
@@ -441,7 +441,7 @@
          gl_write_texture_span(ctx, n, left, iy, z + left,
                                s[0] + left, t[0] + left, u[0] + left,
                                lambda[0] + left, rgba + left,
-                               (const GLubyte (*)[4]) (spec + left),
+                               (CONST GLubyte (*)[4]) (spec + left),
                                GL_POLYGON);
 #  else
          gl_write_texture_span(ctx, n, left, iy, z + left,

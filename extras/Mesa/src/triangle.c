@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/triangle.c,v 1.7 2000/09/26 15:56:34 tsi Exp $ */
+
 
 /*
  * Triangle rasterizers
@@ -269,7 +269,7 @@ static void simple_textured_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 		 fft += fdtdx;					\
 	      }							\
               (*ctx->Driver.WriteRGBSpan)( ctx, n, LEFT, Y,	\
-                           (const GLubyte (*)[3]) rgb, NULL );	\
+                           (CONST GLubyte (*)[3]) rgb, NULL );	\
 	   }							\
 	}
 
@@ -336,7 +336,7 @@ static void simple_z_textured_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 		 fft += fdtdx;					\
 	      }							\
               (*ctx->Driver.WriteRGBSpan)( ctx, n, LEFT, Y,	\
-                           (const GLubyte (*)[3]) rgb, mask );	\
+                           (CONST GLubyte (*)[3]) rgb, mask );	\
 	   }							\
 	}
 
@@ -1043,7 +1043,7 @@ static void general_textured_spec_triangle1( GLcontext *ctx, GLuint v0,
               }							\
 	      gl_write_texture_span( ctx, n, LEFT, Y, zspan,	\
                                    s, t, u, NULL, rgba,		\
-                                   (const GLubyte (*)[4]) spec,	\
+                                   (CONST GLubyte (*)[4]) spec,	\
 	                           GL_POLYGON );		\
 	   }							\
 	}
@@ -1269,7 +1269,7 @@ static void lambda_textured_spec_triangle1( GLcontext *ctx, GLuint v0,
               }								\
 	      gl_write_texture_span( ctx, n, LEFT, Y, zspan,		\
                                      s, t, u, lambda,	 		\
-	                             rgba, (const GLubyte (*)[4]) spec, \
+	                             rgba, (CONST GLubyte (*)[4]) spec, \
                                      GL_POLYGON );			\
 	   }								\
 	}
@@ -1397,9 +1397,9 @@ static void lambda_multitextured_triangle1( GLcontext *ctx, GLuint v0,
 		 }							\
               }								\
 	      gl_write_multitexture_span( ctx, 2, n, LEFT, Y, zspan,	\
-                                      (const GLfloat (*)[MAX_WIDTH]) s,	\
-                                      (const GLfloat (*)[MAX_WIDTH]) t,	\
-                                      (const GLfloat (*)[MAX_WIDTH]) u,	\
+                                      (CONST GLfloat (*)[MAX_WIDTH]) s,	\
+                                      (CONST GLfloat (*)[MAX_WIDTH]) t,	\
+                                      (CONST GLfloat (*)[MAX_WIDTH]) u,	\
                                       (GLfloat (*)[MAX_WIDTH]) lambda,	\
 	                              rgba, NULL, GL_POLYGON );		\
 	   }								\

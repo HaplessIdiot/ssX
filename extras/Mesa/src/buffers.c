@@ -1,4 +1,3 @@
-/* $Id: buffers.c,v 1.5 2000/11/13 21:55:32 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -23,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/buffers.c,v 1.4 2000/09/26 15:56:29 tsi Exp $ */
+
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -168,7 +167,7 @@ clear_color_buffer(GLcontext *ctx)
    }
    else {
       /* Color index mode */
-      ASSERT(ctx->Color.IndexMask == ~0);
+      ASSERT(ctx->Color.IndexMask == (GLuint) ~0);
       if (ctx->Visual->IndexBits == 8) {
          /* 8-bit clear */
          GLubyte span[MAX_WIDTH];

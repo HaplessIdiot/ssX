@@ -133,10 +133,10 @@ indexed_render_points( struct vertex_buffer *VB,
       const GLubyte *clip = VB->ClipMask;
       for (i = start ; i < count ; i++) 
 	 if (!clip[elt[i]]) 
-	    ctx->Driver.PointsFunc( ctx, elt[i], elt[i] );
+	    ctx->Driver.PointsFunc( ctx, elt[i], elt[i]+1 );
    } else {
       for (i = start ; i < count ; i++) 
-	 ctx->Driver.PointsFunc( ctx, elt[i], elt[i] );
+	 ctx->Driver.PointsFunc( ctx, elt[i], elt[i]+1 );
    }
 }
 

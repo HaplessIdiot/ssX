@@ -21,7 +21,6 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/X86/3dnow_norm_raw.S,v 1.4 2000/09/26 15:56:39 tsi Exp $ */
 
 /*
  * 3Dnow assembly code by Holger Waechtler

@@ -1,4 +1,3 @@
-/* $Id: 3dnow_xform_masked3.S,v 1.3 2000/11/13 21:55:40 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library

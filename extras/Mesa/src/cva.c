@@ -244,15 +244,16 @@ void gl_merge_cva( struct vertex_buffer *VB,
 	 translate_4f( VB->ClipPtr, cvaVB->ClipPtr, elt, count);
 
 	 if (VB->ClipOrMask & CLIP_USER_BIT) {
-	    GLubyte or = 0, and = ~0;
+	    GLubyte orMask = 0, andMask = ~0;
 
 	    copy_clipmask( VB->UserClipMask + VB->Start,
-			   &or, &and,
+			   &orMask, &andMask,
 			   cvaVB->UserClipMask,
 			   elt,
 			   VB->Count - VB->Start);
 	    
-	    if (and) VB->ClipAndMask |= CLIP_USER_BIT;
+	    if (andMask)
+               VB->ClipAndMask |= CLIP_USER_BIT;
 	 }
 
 	 if (VB->ClipOrMask) 
@@ -386,7 +387,7 @@ _mesa_LockArraysEXT(GLint first, GLsizei count)
     */
    if (first == 0 && 
        count > 0 && 
-       count <= ctx->Const.MaxArrayLockSize)
+       count <= (GLint) ctx->Const.MaxArrayLockSize)
    {   
       struct gl_cva *cva = &ctx->CVA;
 

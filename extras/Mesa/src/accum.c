@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/accum.c,v 1.7 2000/09/26 15:56:29 tsi Exp $ */
+
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -359,10 +359,11 @@ _mesa_Accum( GLenum op, GLfloat value )
             static GLchan multTable[32768];
             static GLfloat prevMult = 0.0;
             GLuint j;
-            const GLint max = MIN2((GLint) (256 / mult), 32767);
+            GLint k;
+            const GLint max = MIN2((GLuint) (256 / mult), 32767);
             if (mult != prevMult) {
-               for (j = 0; j < max; j++)
-                  multTable[j] = (GLint) ((GLfloat) j * mult + 0.5F);
+               for (k = 0; k < max; k++)
+                  multTable[k] = (GLint) ((GLfloat) k * mult + 0.5F);
                prevMult = mult;
             }
 
@@ -385,7 +386,7 @@ _mesa_Accum( GLenum op, GLfloat value )
                   _mesa_mask_rgba_span( ctx, width, xpos, ypos, rgba );
                }
                (*ctx->Driver.WriteRGBASpan)( ctx, width, xpos, ypos, 
-                                             (const GLubyte (*)[4])rgba, NULL );
+                                          (CONST GLubyte (*)[4]) rgba, NULL );
                ypos++;
             }
          }
@@ -412,7 +413,7 @@ _mesa_Accum( GLenum op, GLfloat value )
                   _mesa_mask_rgba_span( ctx, width, xpos, ypos, rgba );
                }
                (*ctx->Driver.WriteRGBASpan)( ctx, width, xpos, ypos, 
-                                             (const GLubyte (*)[4])rgba, NULL );
+                                          (CONST GLubyte (*)[4]) rgba, NULL );
                ypos++;
             }
 	 }

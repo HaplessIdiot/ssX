@@ -1,4 +1,3 @@
-/* $Id: x86_xform_masked3.S,v 1.1 2000/11/13 21:34:13 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library

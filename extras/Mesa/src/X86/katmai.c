@@ -1,4 +1,3 @@
-/* $Id: katmai.c,v 1.5 2000/11/13 21:55:43 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -23,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/X86/katmai.c,v 1.4 2000/09/26 15:56:39 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/X86/katmai.c,v 1.5 2000/11/13 21:55:43 dawes Exp $ */
 
 /*
  * PentiumIII-SIMD (SSE) optimizations contributed by

@@ -22,7 +22,6 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -1124,14 +1123,14 @@ _mesa_InterleavedArrays(GLenum format, GLsizei stride, const GLvoid *pointer)
          glTexCoordPointer( tcomps, GL_FLOAT, stride,
                              (GLubyte *) pointer + i * coffset );
       }
-      for (i = factor; i < ctx->Const.MaxTextureUnits; i++) {
+      for (i = factor; i < (GLint) ctx->Const.MaxTextureUnits; i++) {
          _mesa_ClientActiveTextureARB( (GLenum) (GL_TEXTURE0_ARB + i) );
          _mesa_DisableClientState( GL_TEXTURE_COORD_ARRAY );
       }
    }
    else {
       GLint i;
-      for (i = 0; i < ctx->Const.MaxTextureUnits; i++) {
+      for (i = 0; i < (GLint) ctx->Const.MaxTextureUnits; i++) {
          _mesa_ClientActiveTextureARB( (GLenum) (GL_TEXTURE0_ARB + i) );
          _mesa_DisableClientState( GL_TEXTURE_COORD_ARRAY );
       }

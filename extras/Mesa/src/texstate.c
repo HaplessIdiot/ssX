@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -1591,7 +1591,7 @@ void
 _mesa_ActiveTextureARB( GLenum target )
 {
    GET_CURRENT_CONTEXT(ctx);
-   GLint maxUnits = ctx->Const.MaxTextureUnits;
+   const GLuint maxUnits = ctx->Const.MaxTextureUnits;
 
    ASSERT_OUTSIDE_BEGIN_END( ctx, "glActiveTextureARB" );
 
@@ -1618,7 +1618,7 @@ void
 _mesa_ClientActiveTextureARB( GLenum target )
 {
    GET_CURRENT_CONTEXT(ctx);
-   GLint maxUnits = ctx->Const.MaxTextureUnits;
+   const GLuint maxUnits = ctx->Const.MaxTextureUnits;
 
    ASSERT_OUTSIDE_BEGIN_END( ctx, "glClientActiveTextureARB" );
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/dri/dri_mesaint.h,v 1.6 2000/02/23 04:46:38 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/dri/dri_mesaint.h,v 1.7 2000/06/17 00:02:51 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -262,6 +262,11 @@ struct __DRIscreenPrivateRec {
     ** first "real" context is created on this screen.
     */
     __DRIcontextPrivate dummyContextPriv;
+
+    /*
+    ** Hash table to hold the drawable information for this screen.
+    */
+    void *drawHash;
 
     /*
     ** Device-dependent private information (not stored in the SAREA).

@@ -1,4 +1,3 @@
-/* $Id: katmai.h,v 1.2 2000/11/13 21:55:43 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library

@@ -1,4 +1,3 @@
-/* $Id: convolve.c,v 1.1 2000/11/13 19:51:07 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library

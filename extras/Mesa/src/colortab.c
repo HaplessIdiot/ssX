@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -324,17 +324,14 @@ _mesa_ColorTable( GLenum target, GLenum internalFormat,
       return;
    }
 
-   if (width > ctx->Const.MaxColorTableSize) {
+   if (width > (GLsizei) ctx->Const.MaxColorTableSize) {
       if (proxy) {
          table->Size = 0;
          table->IntFormat = (GLenum) 0;
          table->Format = (GLenum) 0;
       }
       else {
-         if (width > ctx->Const.MaxColorTableSize)
-            gl_error(ctx, GL_TABLE_TOO_LARGE, "glColorTable(width)");
-         else
-            gl_error(ctx, GL_INVALID_VALUE, "glColorTable(width)");
+         gl_error(ctx, GL_TABLE_TOO_LARGE, "glColorTable(width)");
       }
       return;
    }
@@ -355,7 +352,7 @@ _mesa_ColorTable( GLenum target, GLenum internalFormat,
       if (floatTable) {
          GLfloat tempTab[MAX_COLOR_TABLE_SIZE * 4];
          GLfloat *tableF;
-         GLuint i;
+         GLint i;
 
          _mesa_unpack_float_color_span(ctx, width, table->Format,
                                        tempTab,  /* dest */
@@ -422,7 +419,7 @@ _mesa_ColorTable( GLenum target, GLenum internalFormat,
             return;
          }
          _mesa_unpack_ubyte_color_span(ctx, width, table->Format,
-                                       table->Table,  /* dest */
+                                       (GLubyte *) table->Table,  /* dest */
                                        format, type, data,
                                        &ctx->Unpack, GL_TRUE);
       } /* floatTable */
@@ -523,7 +520,7 @@ _mesa_ColorSubTable( GLenum target, GLsizei start,
    comps = _mesa_components_in_format(table->Format);
    assert(comps > 0);  /* error should have been caught sooner */
 
-   if (start + count > table->Size) {
+   if (start + count > (GLint) table->Size) {
       gl_error(ctx, GL_INVALID_VALUE, "glColorSubTable(count)");
       return;
    }
@@ -541,7 +538,7 @@ _mesa_ColorSubTable( GLenum target, GLsizei start,
    else {
       GLfloat tempTab[MAX_COLOR_TABLE_SIZE * 4];
       GLfloat *tableF;
-      GLuint i;
+      GLint i;
 
       ASSERT(table->TableType == GL_FLOAT);
 
@@ -676,7 +673,7 @@ _mesa_GetColorTable( GLenum target, GLenum format,
    struct gl_texture_unit *texUnit = &ctx->Texture.Unit[ctx->Texture.CurrentUnit];
    struct gl_color_table *table = NULL;
    GLubyte rgba[MAX_COLOR_TABLE_SIZE][4];
-   GLint i;
+   GLuint i;
 
    ASSERT_OUTSIDE_BEGIN_END(ctx, "glGetColorTable");
 
@@ -835,7 +832,7 @@ _mesa_GetColorTable( GLenum target, GLenum format,
          return;
    }
 
-   _mesa_pack_rgba_span(ctx, table->Size, (const GLubyte (*)[]) rgba,
+   _mesa_pack_rgba_span(ctx, table->Size, (CONST GLubyte (*)[4]) rgba,
                         format, type, data, &ctx->Pack, GL_FALSE);
 }
 

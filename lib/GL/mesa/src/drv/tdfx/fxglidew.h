@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxglidew.h,v 1.1 2000/09/24 13:51:16 alanh Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -115,7 +115,6 @@ extern txErrorSetCallback_t txErrorSetCallbackPtr;
 
 FX_ENTRY void FX_CALL grEnable(GrEnableMode_t mode);
 
-FX_ENTRY void FX_CALL grEnable(GrEnableMode_t mode);
 /* 
  * General context: 
  */

@@ -22,7 +22,6 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
 
 /*
  * New (3.1) transformation code written by Keith Whitwell.
@@ -834,7 +833,7 @@ GLuint gl_cull_vb( struct vertex_buffer *VB )
       first = i;
       next = VB->NextPrimitive[i];
       prim = in_prim[i];
-      n = cull_funcs[prim]( VB, i, next, parity, (const GLfloat (*)[4])proj );
+      n = cull_funcs[prim]( VB, i, next, parity, (CONST GLfloat (*)[4])proj );
 
       if (n == next - i)
 	 out_prim[i] = GL_POLYGON+1; 
@@ -850,7 +849,7 @@ GLuint gl_cull_vb( struct vertex_buffer *VB )
 					   first, 
 					   VB->Count, 
 					   VB->Ovf, 
-					   (const GLfloat (*)[4])proj );     
+					   (CONST GLfloat (*)[4])proj );     
    }
 
    VB->Primitive = out_prim;
@@ -904,7 +903,7 @@ void gl_dont_cull_vb( struct vertex_buffer *VB )
 				 first, 
 				 VB->Count, 
 				 VB->Ovf,
-				 (const GLfloat (*)[4])proj );
+				 (CONST GLfloat (*)[4])proj );
    }
 
    VB->CullDone = 1;

@@ -1,7 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/X86/katmai_xform_masked4.S,v 1.4 2000/09/26 15:56:40 tsi Exp $ */
-
 #include "assyntax.h"
-
 /** TODO:
   * - insert PREFETCH instructions to avoid cache-misses !
   * - some more optimizations are possible...

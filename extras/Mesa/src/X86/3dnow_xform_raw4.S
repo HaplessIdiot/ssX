@@ -1,4 +1,3 @@
-/* $Id: 3dnow_xform_raw4.S,v 1.4 2000/11/13 21:55:41 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library

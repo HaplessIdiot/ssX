@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -854,7 +854,7 @@ static int compar_nr( const enum_elt **a, const enum_elt **b )
 
 static void sort_enums( void )
 {
-   int i;
+   GLuint i;
    index1 = (enum_elt **)MALLOC( Elements(all_enums) * sizeof(enum_elt *) );
    sorted = 1;
 
