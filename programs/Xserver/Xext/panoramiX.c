@@ -23,7 +23,7 @@ shall not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from Digital
 Equipment Corporation.
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.28 2001/08/11 21:00:05 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.29 2001/08/23 13:01:36 alanh Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -632,7 +632,7 @@ Bool PanoramiXCreateConnectionBlock(void)
     Bool disableBackingStore = FALSE;
     Bool disableSaveUnders = FALSE;
     int old_width, old_height;
-    int width_mult, height_mult;
+    float width_mult, height_mult;
     xWindowRoot *root;
     xConnSetup *setup;
     xVisualType *visual;
@@ -729,8 +729,8 @@ Bool PanoramiXCreateConnectionBlock(void)
 
     root->pixWidth = PanoramiXPixWidth;
     root->pixHeight = PanoramiXPixHeight;
-    width_mult = root->pixWidth / old_width;
-    height_mult = root->pixHeight / old_height;
+    width_mult = (1.0 * root->pixWidth) / old_width;
+    height_mult = (1.0 * root->pixHeight) / old_height;
     root->mmWidth *= width_mult;
     root->mmHeight *= height_mult;
 
