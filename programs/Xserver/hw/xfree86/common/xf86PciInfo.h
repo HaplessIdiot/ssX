@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.95 2001/04/17 20:46:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.96 2001/05/02 15:06:07 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -831,6 +831,7 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_RADEON_QE,	"Radeon QE",0},
 				{PCI_CHIP_RADEON_QF,	"Radeon QF",0},
 				{PCI_CHIP_RADEON_QG,	"Radeon QG",0},
+				{PCI_CHIP_RADEON_VE,	"Radeon VE",0},
 				{PCI_CHIP_RAGE128RE,	"Rage 128 RE",0},
 				{PCI_CHIP_RAGE128RF,	"Rage 128 RF",0},
 				{PCI_CHIP_RAGE128RK,	"Rage 128 RK",0},

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.87 2001/04/05 21:29:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.88 2001/04/10 16:08:01 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -1068,7 +1068,7 @@ MGAStormSync(ScrnInfoPtr pScrn)
 
     CHECK_DMA_QUIESCENT(pMga, pScrn);
 
-    while(MGAISBUSY());
+    while(MGAISBUSY()) { usleep(10); }
     /* flush cache before a read (mga-1064g 5.1.6) */
     OUTREG8(MGAREG_CRTC_INDEX, 0);
     if(pMga->AccelFlags & CLIPPER_ON) {
@@ -1122,7 +1122,7 @@ MGAStormEngineInit(ScrnInfoPtr pScrn)
 
     pMga->fifoCount = 0;
 
-    while(MGAISBUSY());
+    while(MGAISBUSY()) { usleep(10); }
 
     if(!pMga->FifoSize) {
 	pMga->FifoSize = INREG8(MGAREG_FIFOSTATUS);
