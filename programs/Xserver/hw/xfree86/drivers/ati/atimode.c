@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimode.c,v 1.12 2002/02/26 05:10:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimode.c,v 1.13tsi Exp $ */
 /*
  * Copyright 2000 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -709,7 +709,7 @@ ATIModeCalculate
             pATIHW->horz_stretching = ATIGetMach64LCDReg(LCD_HORZ_STRETCHING);
             pATIHW->ext_vert_stretch =
                 ATIGetMach64LCDReg(LCD_EXT_VERT_STRETCH) &
-                ~(AUTO_VERT_RATIO | VERT_STRETCH_MODE);
+                ~(AUTO_VERT_RATIO | VERT_STRETCH_MODE | VERT_STRETCH_RATIO3);
 
             /*
              * Don't use vertical blending if the mode is too wide or not

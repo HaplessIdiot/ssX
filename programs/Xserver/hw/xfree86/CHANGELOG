@@ -1,4 +1,6 @@
 XFree86 4.2.99.3 (xx October 2002)
+ 465. Fix panel support bug for ATI LTPro, XL and Mobility M1 chips
+      (Marc La France).
  464. Fix mode validation to deal with video memory sizes 256MB or greater
       (Marc La France).
  463. Add ARGB cursors support to the vmware driver (#5442, Nolan Leake).
@@ -15467,4 +15469,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2377 2002/11/07 18:04:53 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2378 2002/11/07 20:55:15 tsi Exp $
