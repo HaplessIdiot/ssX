@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.102 2001/03/18 14:50:31 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.103 2001/03/21 17:36:43 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1772,7 +1772,7 @@ ProjectUnsharedLibReferences(PSRES,psres,$(PSRESLIBSRC),XBuildLibDir)
 #endif
 
 #if BuildGLULibrary
-    GLULIBSRC = $(LIBSRC)/GL/glu
+    GLULIBSRC = $(LIBSRC)/GLU
 #if SharedLibGlu
 #ifndef SharedGluRev
 #define SharedGluRev 1.3
