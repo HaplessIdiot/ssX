@@ -291,6 +291,7 @@ miDCRealize (
 	    xfree ((pointer) pPriv);
 	    return (miDCCursorPtr)NULL;
 	}
+	pCursor->bits->devPriv[pScreen->myNum] = (pointer) pPriv;
 	return pPriv;
     }
     pPriv->pPicture = 0;
@@ -357,8 +358,14 @@ miDCUnrealizeCursor (pScreen, pCursor)
     pPriv = (miDCCursorPtr) pCursor->bits->devPriv[pScreen->myNum];
     if (pPriv && (pCursor->bits->refcnt <= 1))
     {
-	(*pScreen->DestroyPixmap) (pPriv->sourceBits);
-	(*pScreen->DestroyPixmap) (pPriv->maskBits);
+	if (pPriv->sourceBits)
+	    (*pScreen->DestroyPixmap) (pPriv->sourceBits);
+	if (pPriv->maskBits)
+	    (*pScreen->DestroyPixmap) (pPriv->maskBits);
+#ifdef ARGB_CURSOR
+	if (pPriv->pPicture)
+	    FreePicture (pPriv->pPicture, 0);
+#endif
 	xfree ((pointer) pPriv);
 	pCursor->bits->devPriv[pScreen->myNum] = (pointer)NULL;
     }
