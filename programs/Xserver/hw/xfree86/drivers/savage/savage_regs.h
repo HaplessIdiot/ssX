@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_regs.h,v 1.9 2001/11/02 16:24:51 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_regs.h,v 1.11 2002/05/14 20:19:52 alanh Exp $ */
 
 #ifndef _SAVAGE_REGS_H
 #define _SAVAGE_REGS_H
@@ -193,27 +193,27 @@ enum S3CHIPTAGS {
  * If not present it will cause lockups on Savage4.
  * Ask S3, why.
  */
-#define VerticalRetraceWait() \
+#define VerticalRetraceWait(psav) \
 { \
-        VGAIN8(vgaCRIndex); \
-	VGAOUT8(vgaCRIndex, 0x17); \
-	if (VGAIN8(vgaCRReg) & 0x80) { \
-		while ((VGAIN8(vgaIOBase + 0x0a) & 0x08) == 0x08) ; \
-		while ((VGAIN8(vgaIOBase + 0x0a) & 0x08) == 0x00) ; \
+        VGAIN8(psav->vgaIOBase+4); \
+	VGAOUT8(psav->vgaIOBase+4, 0x17); \
+	if (VGAIN8(psav->vgaIOBase+5) & 0x80) { \
+		while ((VGAIN8(psav->vgaIOBase + 0x0a) & 0x08) == 0x08) ; \
+		while ((VGAIN8(psav->vgaIOBase + 0x0a) & 0x08) == 0x00) ; \
 	} \
 }
 
 #define	I2C_REG		0xa0
-#define InI2CREG(a)	\
+#define InI2CREG(psav,a)	\
 { \
-    VGAOUT8(vgaIOBase + 4, I2C_REG);	\
-    a = VGAIN8(vgaIOBase + 5);		\
+    VGAOUT8(psav->vgaIOBase + 4, I2C_REG);	\
+    a = VGAIN8(psav->vgaIOBase + 5);		\
 }
 
-#define OutI2CREG(a)	\
+#define OutI2CREG(psav,a)	\
 { \
-    VGAOUT8(vgaIOBase + 4, I2C_REG);	\
-    VGAOUT8(vgaIOBase + 5, a);		\
+    VGAOUT8(psav->vgaIOBase + 4, I2C_REG);	\
+    VGAOUT8(psav->vgaIOBase + 5, a);		\
 }
  
 #define HZEXP_FACTOR_IGA1	0x59

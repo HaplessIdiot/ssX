@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_cursor.c,v 1.5 2001/10/28 03:33:46 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_cursor.c,v 1.7 2002/05/14 20:19:51 alanh Exp $ */
 
 /*
  * Hardware cursor support for S3 Savage 4.0 driver. Taken with
@@ -22,6 +22,8 @@ static void SavageSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg);
 
 #define inCRReg(reg) (VGAHWPTR(pScrn))->readCrtc( VGAHWPTR(pScrn), reg )
 #define outCRReg(reg, val) (VGAHWPTR(pScrn))->writeCrtc( VGAHWPTR(pScrn), reg, val )
+#define inSRReg(reg) (VGAHWPTR(pScrn))->readSeq( VGAHWPTR(pScrn), reg )
+#define outSRReg(reg, val) (VGAHWPTR(pScrn))->writeSeq( VGAHWPTR(pScrn), reg, val )
 #define inStatus1() (VGAHWPTR(pScrn))->readST01( VGAHWPTR(pScrn) )
 
 /* 
@@ -67,7 +69,7 @@ SavageHWCursorInit(ScreenPtr pScreen)
 
     if(
         ((psav->Chipset != S3_SAVAGE4) 
-       && (inCRReg(0x18) & 0x80) && (inCRReg(0x15) & 0x50) )
+       && (inSRReg(0x18) & 0x80) && (inSRReg(0x15) & 0x50) )
 	||
 	S3_SAVAGE_MOBILE_SERIES(psav->Chipset)
       )
