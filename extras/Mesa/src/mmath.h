@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/mmath.h,v 1.4 2000/03/03 18:30:08 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mmath.h,v 1.5 2000/06/17 00:02:14 martin Exp $ */
 
 /*
  * Faster arithmetic functions.  If the FAST_MATH preprocessor symbol is
@@ -158,7 +158,7 @@ static __inline__ int FloatToInt(float f)
    __asm__ ("fistpl %0" : "=m" (r) : "t" (f) : "st");
    return r;
 }
-#elif  defined(__MSC__) && defined(__WIN32__)
+#elif  defined(__MSC__) && defined(__WIN32__) && !defined(__CYGWIN__)
 static __inline int FloatToInt(float f)
 {
    int r;

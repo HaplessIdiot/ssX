@@ -16,7 +16,7 @@ static char rcsid[] = "Header: /home/cs/phelps/spine/rman/RCS/rman.c,v 1.144 199
      source interpretation added September 24, 1996
 	renamed PolyglotMan due to lawsuit by Rosetta, Inc. August 8, 1997
 */
-/* $XFree86: xc/extras/rman/rman.c,v 1.9 2000/06/13 23:15:47 dawes Exp $ */
+/* $XFree86: xc/extras/rman/rman.c,v 1.10 2000/07/03 16:26:01 dawes Exp $ */
 
 
 /* TO DO ****
@@ -57,6 +57,9 @@ static char rcsid[] = "Header: /home/cs/phelps/spine/rman/RCS/rman.c,v 1.144 199
 #ifdef Lynx
 extern int optind;
 extern char *optarg;
+#endif
+#ifdef __CYGWIN__
+#include <getopt.h>
 #endif
 
 /*** make #define's into consts? => can't because compilers not smart enough ***/

@@ -22,6 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+/* $XFree86$ */
 
 
 #ifndef __gl_h_
@@ -43,11 +44,11 @@
 #define OPENSTEP
 #endif
 
-#if defined(_WIN32) && !defined(__WIN32__)
+#if defined(_WIN32) && !defined(__WIN32__) && !defined(__CYGWIN__)
 #define __WIN32__
 #endif
 
-#if !defined(OPENSTEP) && (defined(__WIN32__) || defined(__CYGWIN__))
+#if !defined(OPENSTEP) && (defined(__WIN32__) || !defined(__CYGWIN__))
 #  if defined(_MSC_VER) && defined(BUILD_GL32) /* tag specify we're building mesa as a DLL */
 #    define GLAPI __declspec(dllexport)
 #  elif defined(_MSC_VER) && defined(_DLL) /* tag specifying we're building for DLL runtime support */
@@ -62,7 +63,7 @@
 #  define GLAPIENTRY
 #endif /* WIN32 / CYGWIN bracket */
 
-#if defined(_WIN32) && !defined(_WINGDI_) && !defined(_GNU_H_WINDOWS32_DEFINES) && !defined(OPENSTEP)
+#if defined(_WIN32) && !defined(_WINGDI_) && !defined(__CYGWIN__) && !defined(_GNU_H_WINDOWS32_DEFINES) && !defined(OPENSTEP)
 #include <gl/mesa_wgl.h>
 #endif
 

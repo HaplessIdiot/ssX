@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/dri/drm/Imakefile,v 1.5 2000/06/17 00:02:49 martin Exp $
+XCOMM $XFree86: xc/lib/GL/dri/drm/Imakefile,v 1.6 2000/06/30 17:15:07 dawes Exp $
 
 #define DoNormalLib NormalLibGlx
 #define DoSharedLib SharedLibGlx
@@ -22,6 +22,9 @@ OS_SUBDIR = linux
 #endif
 #if defined(FreeBSDArchitecture) || defined(BSDOSArchitecture)
 OS_SUBDIR = bsd
+#endif
+#if defined(cygwinArchitecture)
+OS_SUBDIR = cygwin
 #endif
 
 LinkSourceFile(xf86drm.c,$(XF86OSSRC)/$(OS_SUBDIR)/drm)

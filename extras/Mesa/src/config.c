@@ -22,6 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+/* $XFree86$ */
 
 
 /* Mesa config file parse and execute code.
@@ -403,7 +404,7 @@ void gl_read_config_file( GLcontext *ctx )
 {
    const char *default_config = "mesa3.1beta1";
 
-#if defined(__WIN32__) || defined(__MSDOS__)
+#if (defined(__WIN32__) && !defined(__CYGWIN__)) || defined(__MSDOS__)
    const char *filename = "mesa.cnf";
 #else
    const char *filename = "/etc/mesa.conf"; 

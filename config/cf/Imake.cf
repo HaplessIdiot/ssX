@@ -17,7 +17,7 @@ XCOMM $TOG: Imake.cf /main/30 1998/04/28 13:55:25 barstow $
  *
  *     4.  Create a .cf file with the name given by MacroFile.
  */
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.57 2000/06/24 01:34:47 mvojkovi Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.58 2000/06/30 17:15:05 dawes Exp $
 
 #if defined(clipper) || defined(__clipper__)
 # undef clipper
@@ -25,6 +25,16 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.57 2000/06/24 01:34:47 mvojkovi Exp $
 # define MacroFile ingr.cf
 # define IngrArchitecture
 #endif /* clipper */
+
+#ifdef __CYGWIN__
+#define MacroIncludeFile <cygwin.cf>
+#define MacroFile cygwin.cf
+#define cygwinArchitecture
+#define i386Architecture
+#undef i386
+#undef __i386__
+#undef _X86_
+#endif /* CYGWIN */
 
 #ifdef ultrix
 # define MacroIncludeFile <ultrix.cf>

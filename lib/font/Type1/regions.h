@@ -26,7 +26,7 @@
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/regions.h,v 1.3 1999/05/09 15:36:15 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/regions.h,v 1.5 2000/04/28 18:19:20 eich Exp $ */
 /*SHARED*/
  
 #define   Interior(p,rule)        t1_Interior(p,rule)
@@ -43,6 +43,10 @@ struct region *t1_Union();   /* set union of paths or regions                */
 struct region *t1_Intersect();  /* set intersection of regions                */
 struct region *t1_Complement();  /* complement of a region                    */
 int t1_Overlap();             /* returns a Boolean; TRUE if regions overlap   */
+#endif
+
+#ifdef __CYGWIN__
+#define __STRICT_ANSI__
 #endif
 
 #define   TT_INFINITY    t1_Infinity

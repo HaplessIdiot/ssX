@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.38 2000/06/13 02:28:27 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.39 2000/06/15 20:49:57 dawes Exp $ */
 
 
 /* 
@@ -296,6 +296,10 @@ in this Software without prior written authorization from The Open Group.
 /* expects cpp in PATH */
 #define DEFAULT_CPP "cpp"
 #endif
+#ifdef __CYGWIN__
+#define USE_CC_E
+#define DEFAULT_CC "gcc"
+#endif
 #if defined(__GNU__)
 #define USE_CC_E
 #endif
@@ -536,6 +540,9 @@ char *cpp_argv[ARGUMENTS] = {
 #endif
 #ifdef linux
         "-Dlinux",
+#endif
+#if defined(__CYGWIN__)
+        "-traditional",
 #endif
 #if defined(Lynx) || defined(__Lynx__)
         "-traditional",
