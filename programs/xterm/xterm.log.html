@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.67 2001/04/12 01:02:51 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.68 2001/04/20 09:30:39 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -42,6 +42,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_156">Patch #156 - 2001/4/28 - XFree86 4.0.3</A>
 <LI><A HREF="#xterm_155">Patch #155 - 2001/4/20 - XFree86 4.0.3</A>
 <LI><A HREF="#xterm_154">Patch #154 - 2001/4/11 - XFree86 4.0.3</A>
 <LI><A HREF="#xterm_153">Patch #153 - 2001/3/29 - XFree86 4.0.3</A>
@@ -199,6 +200,23 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_156">Patch #156 - 2001/4/28 - XFree86 4.0.3</A></H1>
+<ul>
+	<li>change order of selection-target types to make 8-bit xterm prefer
+	  UTF8_STRING to COMPOUND_TEXT (patch by Juliusz Chroboczek).
+
+	<li>document <code>-fa</code>, <code>-fs</code> command-line options
+	  and <code>faceName</code>, <code>faceSize</code>
+	  resources which are used by the freetype library support.
+
+	<li>if configure script finds freetype libraries, but imake definitions
+	  do not have the XRENDERFONT definition, define it anyway.
+
+	<li>modify configure script check for freetype libraries to include
+	  <code>&lt;Xlib.h&gt;</code>, since an older version of the related
+	  headers relies on this (patch by Adam &lt;adam@cfar.umd.edu&gt;).
+</ul>
 
 <H1><A NAME="xterm_155">Patch #155 - 2001/4/20 - XFree86 4.0.3</A></H1>
 <ul>

@@ -1217,6 +1217,7 @@ cf_save_LIBS="$LIBS"
 LIBS="$cf_freetype_libs $LIBS"
 
 AC_TRY_LINK([
+#include <X11/Xlib.h>
 #include <X11/extensions/Xrender.h>
 #include <X11/Xft/Xft.h>],[
 	XftPattern  *pat = XftNameParse ("name");
@@ -1225,6 +1226,7 @@ AC_TRY_LINK([
 ])
 if test "$cf_cv_x_freetype" = yes ; then
 	LIBS="$cf_freetype_libs $LIBS"
+	AC_DEFINE(XRENDERFONT)
 else
 	CPPFLAGS=`echo "$CPPFLAGS" | sed -e s/-DXRENDERFONT//`
 fi
