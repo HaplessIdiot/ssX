@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_screen.c,v 1.1.1.2tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_screen.c,v 1.2 2004/04/22 13:58:36 tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -273,18 +273,6 @@ r200CreateScreen( __DRIscreenPrivate *sPriv )
 
    screen->cpp = dri_priv->bpp / 8;
    screen->AGPMode = dri_priv->AGPMode;
-
-   screen->fbLocation	= ( INREG( RADEON_MC_FB_LOCATION ) & 0xffff ) << 16;
-
-   if ( sPriv->drmMinor >= 10 ) {
-      drmRadeonSetParam sp;
-
-      sp.param = RADEON_SETPARAM_FB_LOCATION;
-      sp.value = screen->fbLocation;
-
-      drmCommandWrite( sPriv->fd, DRM_RADEON_SETPARAM,
-		       &sp, sizeof( sp ) );
-   }
 
    screen->fbLocation	= ( INREG( RADEON_MC_FB_LOCATION ) & 0xffff ) << 16;
 
