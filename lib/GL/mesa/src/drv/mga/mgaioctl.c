@@ -1,5 +1,6 @@
-#include <stdio.h>
+/* $XFree86$ */
 
+#include <stdio.h>
 
 #include "types.h"
 #include "pb.h"

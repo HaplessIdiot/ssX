@@ -23,7 +23,7 @@
  *
  *    Wittawat Yamwong <Wittawat.Yamwong@stud.uni-hannover.de>
  */
-
+/* $XFree86$ */
 
 #ifndef MGALIB_INC
 #define MGALIB_INC

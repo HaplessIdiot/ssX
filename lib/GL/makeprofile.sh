@@ -1,4 +1,5 @@
 #!/bin/sh
+# $XFree86$
 
 libname=$1
 

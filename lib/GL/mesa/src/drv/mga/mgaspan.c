@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include "types.h"
 #include "mgadd.h"
 #include "mgalib.h"

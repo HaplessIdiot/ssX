@@ -28,6 +28,7 @@
  *          Kevin E. Martin <martin@valinux.com>
  *
  */
+/* $XFree86$ */
 
 #ifndef _R128_DRV_H_
 #define _R128_DRV_H_

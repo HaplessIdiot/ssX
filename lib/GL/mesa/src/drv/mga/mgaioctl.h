@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifndef MGA_IOCTL_H
 #define MGA_IOCTL_H
 

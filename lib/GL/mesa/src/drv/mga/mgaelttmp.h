@@ -21,6 +21,7 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
+/* $XFree86$ */
 
 /* Buffers fill from high addresses down with vertices and from low
  * addresses up with elements.  

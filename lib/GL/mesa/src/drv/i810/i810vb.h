@@ -22,6 +22,7 @@
  *
  *
  */
+/* $XFree86$ */
 
 #ifndef I810VB_INC
 #define I810VB_INC

@@ -28,6 +28,7 @@
  *	    Jeff Hartmann <jhartmann@valinux.com>
  *
  */
+/* $XFree86$ */
 
 #include <linux/config.h>
 #include "drmP.h"

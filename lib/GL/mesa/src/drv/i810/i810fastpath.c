@@ -21,6 +21,7 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
+/* $XFree86$ */
 
 #include <stdio.h>
 
