@@ -668,6 +668,51 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     pScrn->monitor = pScrn->confScreen->monitor;
 
     /*
+     * Set the Chipset and ChipRev, allowing config file entries to
+     * override.
+     */
+    if (pNv->pEnt->device->chipset && *pNv->pEnt->device->chipset) {
+	pScrn->chipset = pNv->pEnt->device->chipset;
+        pNv->Chipset = xf86StringToToken(NVChipsets, pScrn->chipset);
+        from = X_CONFIG;
+    } else if (pNv->pEnt->device->chipID >= 0) {
+	pNv->Chipset = pNv->pEnt->device->chipID;
+	pScrn->chipset = (char *)xf86TokenToString(NVChipsets, pNv->Chipset);
+	from = X_CONFIG;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipID override: 0x%04X\n",
+		   pNv->Chipset);
+    } else {
+	from = X_PROBED;
+	pNv->Chipset = (pNv->PciInfo->vendor << 16) |pNv->PciInfo->chipType;
+	pScrn->chipset = (char *)xf86TokenToString(NVChipsets, pNv->Chipset);
+    }
+    if (pNv->pEnt->device->chipRev >= 0) {
+	pNv->ChipRev = pNv->pEnt->device->chipRev;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipRev override: %d\n",
+		   pNv->ChipRev);
+    } else {
+	pNv->ChipRev = pNv->PciInfo->chipRev;
+    }
+
+    /*
+     * This shouldn't happen because such problems should be caught in
+     * NVProbe(), but check it just in case.
+     */
+    if (pScrn->chipset == NULL) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		   "ChipID 0x%04X is not recognised\n", pNv->Chipset);
+	return FALSE;
+    }
+    if (pNv->Chipset < 0) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		   "Chipset \"%s\" is not recognised\n", pScrn->chipset);
+	return FALSE;
+    }
+
+    xf86DrvMsg(pScrn->scrnIndex, from, "Chipset: \"%s\"\n", pScrn->chipset);
+
+
+    /*
      * The first thing we should figure out is the depth, bpp, etc.
      * Our default depth is 8, so pass it to the helper function.
      */
@@ -679,9 +724,16 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 	switch (pScrn->depth) {
 	case 8:
 	case 15:
-	case 16:
 	case 24:
 	    /* OK */
+	    break;
+	case 16:
+	    if(pNv->Chipset == NV_CHIP_RIVA128) {
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			"The Riva 128 chipset does not support depth 16.  "
+			"Using depth 15 instead\n");
+		pScrn->depth = 15;
+	    }
 	    break;
 	default:
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -807,50 +859,6 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 		"Valid options are \"CW\" or \"CCW\"\n");
       }
     }
-
-    /*
-     * Set the Chipset and ChipRev, allowing config file entries to
-     * override.
-     */
-    if (pNv->pEnt->device->chipset && *pNv->pEnt->device->chipset) {
-	pScrn->chipset = pNv->pEnt->device->chipset;
-        pNv->Chipset = xf86StringToToken(NVChipsets, pScrn->chipset);
-        from = X_CONFIG;
-    } else if (pNv->pEnt->device->chipID >= 0) {
-	pNv->Chipset = pNv->pEnt->device->chipID;
-	pScrn->chipset = (char *)xf86TokenToString(NVChipsets, pNv->Chipset);
-	from = X_CONFIG;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipID override: 0x%04X\n",
-		   pNv->Chipset);
-    } else {
-	from = X_PROBED;
-	pNv->Chipset = (pNv->PciInfo->vendor << 16) |pNv->PciInfo->chipType;
-	pScrn->chipset = (char *)xf86TokenToString(NVChipsets, pNv->Chipset);
-    }
-    if (pNv->pEnt->device->chipRev >= 0) {
-	pNv->ChipRev = pNv->pEnt->device->chipRev;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipRev override: %d\n",
-		   pNv->ChipRev);
-    } else {
-	pNv->ChipRev = pNv->PciInfo->chipRev;
-    }
-
-    /*
-     * This shouldn't happen because such problems should be caught in
-     * NVProbe(), but check it just in case.
-     */
-    if (pScrn->chipset == NULL) {
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		   "ChipID 0x%04X is not recognised\n", pNv->Chipset);
-	return FALSE;
-    }
-    if (pNv->Chipset < 0) {
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		   "Chipset \"%s\" is not recognised\n", pScrn->chipset);
-	return FALSE;
-    }
-
-    xf86DrvMsg(pScrn->scrnIndex, from, "Chipset: \"%s\"\n", pScrn->chipset);
     
     if (pNv->pEnt->device->MemBase != 0) {
 	/* Require that the config file value matches one of the PCI values. */
