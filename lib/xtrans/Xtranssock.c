@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranssock.c /main/58 1996/12/04 10:22:50 lehors $ */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.25 1997/01/18 06:52:41 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.26 1997/07/06 05:30:39 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -295,7 +295,11 @@ XtransConnInfo ciptr;
 
 {
     struct sockaddr_in 	sockname;
+#ifndef SCO325
+    int namelen = sizeof sockname;
+#else
     unsigned int namelen = sizeof sockname;
+#endif
 
     PRMSG (3,"SocketINETGetAddr(%x)\n", ciptr, 0, 0);
 
@@ -338,7 +342,11 @@ XtransConnInfo ciptr;
 
 {
     struct sockaddr_in 	sockname;
-    unsigned int	namelen = sizeof(sockname);
+#ifndef SCO325
+    int namelen = sizeof sockname;
+#else
+    unsigned int namelen = sizeof sockname;
+#endif
 
     PRMSG (3,"SocketINETGetPeerAddr(%x)\n", ciptr, 0, 0);
 
