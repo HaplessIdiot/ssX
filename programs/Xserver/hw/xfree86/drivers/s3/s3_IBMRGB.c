@@ -24,7 +24,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_IBMRGB.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_IBMRGB.c,v 1.7tsi Exp $ */
 
 
 #include "xf86.h"
@@ -59,7 +59,8 @@ static void S3OutIBMRGBIndReg(ScrnInfoPtr pScrn, CARD32 reg,
 	tmp = inb(vgaCRReg) & 0xfc;
 	outb(vgaCRReg, tmp | 0x01);
 
-	outb(IBMRGB_INDEX_LOW, reg);
+	outb(IBMRGB_INDEX_LOW, (CARD8)reg);
+	outb(IBMRGB_INDEX_HIGH, (CARD8)(reg >> 8));
 
 	if (mask != 0x00)
 		tmp2 = inb(IBMRGB_INDEX_DATA) & mask;
@@ -80,7 +81,8 @@ static unsigned char S3InIBMRGBIndReg(ScrnInfoPtr pScrn, CARD32 reg)
 	tmp = inb(vgaCRReg) & 0xfc;
 	outb(vgaCRReg, tmp | 0x01);
 
-	outb(IBMRGB_INDEX_LOW, reg);
+	outb(IBMRGB_INDEX_LOW, (CARD8)reg);
+	outb(IBMRGB_INDEX_HIGH, (CARD8)(reg >> 8));
 	ret = inb(IBMRGB_INDEX_DATA);
 
 	outb(vgaCRIndex, 0x55);
@@ -92,7 +94,7 @@ static unsigned char S3InIBMRGBIndReg(ScrnInfoPtr pScrn, CARD32 reg)
 
 static void S3IBMWriteAddress(ScrnInfoPtr pScrn, CARD32 index)
 {
-	outb(IBMRGB_WRITE_ADDR, index);
+	outb(IBMRGB_WRITE_ADDR, (CARD8)index);
 }
 
 static void S3IBMWriteData(ScrnInfoPtr pScrn, unsigned char data)
@@ -102,7 +104,7 @@ static void S3IBMWriteData(ScrnInfoPtr pScrn, unsigned char data)
 
 static void S3IBMReadAddress(ScrnInfoPtr pScrn, CARD32 index)
 {
-	outb(IBMRGB_READ_ADDR, index);
+	outb(IBMRGB_READ_ADDR, (CARD8)index);
 }
 
 static unsigned char S3IBMReadData(ScrnInfoPtr pScrn)
@@ -277,6 +279,7 @@ void S3IBMRGB_PreInit(ScrnInfoPtr pScrn)
 	outb(vgaCRIndex, 0x55);
 	outb(vgaCRReg, cr55 & ~0x03);
 
+	if (pS3->RamDac->RamDacType != IBM525_RAMDAC)
 	{
 		int m, n, df, mclk=0;
 
@@ -346,6 +349,15 @@ void S3IBMRGB_Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	case 16:
 		S3OutIBMRGBIndReg(pScrn, IBMRGB_pix_fmt, 0xf8, 4);
 		S3OutIBMRGBIndReg(pScrn, IBMRGB_16bpp, 0, 0xc2);
+		break;
+	case 24:
+		if (pScrn->bitsPerPixel == 24) {
+			S3OutIBMRGBIndReg(pScrn, IBMRGB_pix_fmt, 0xf8, 5);
+			S3OutIBMRGBIndReg(pScrn, IBMRGB_24bpp, 0, 1);
+		} else {
+			S3OutIBMRGBIndReg(pScrn, IBMRGB_pix_fmt, 0xf8, 6);
+			S3OutIBMRGBIndReg(pScrn, IBMRGB_32bpp, 0, 3);
+		}
 		break;
 	}
 

@@ -34,7 +34,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.24tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.25tsi Exp $ */
 
 
 #include "xf86.h"
@@ -171,6 +171,7 @@ static OptionInfoRec S3Options[] = {
 RamDacSupportedInfoRec S3IBMRamdacs[] = {
 	{ IBM524_RAMDAC },
 	{ IBM524A_RAMDAC },
+	{ IBM525_RAMDAC },
 	{ -1 }
 };
 
@@ -1218,6 +1219,7 @@ static Bool S3ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	case 16:
 		if ((pS3->RamDac->RamDacType == IBM524_RAMDAC) ||
 		    (pS3->RamDac->RamDacType == IBM524A_RAMDAC) ||
+		    (pS3->RamDac->RamDacType == IBM525_RAMDAC) ||
 		    (pS3->RamDac->RamDacType == TI3025_RAMDAC))
 			new->cr43 = 0x10;
 		else if (pS3->RamDac->RamDacType == TRIO64_RAMDAC)
