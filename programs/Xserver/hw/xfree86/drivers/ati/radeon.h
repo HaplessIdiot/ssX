@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.18 2001/04/16 15:02:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.19 2001/05/04 19:05:33 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -235,6 +235,12 @@ typedef struct {
     unsigned long     cursor_start;
     unsigned long     cursor_end;
 
+    /*
+     * XAAForceTransBlit is used to change the behavior of the XAA
+     * SetupForScreenToScreenCopy function, to make it DGA-friendly.
+     */
+    Bool              XAAForceTransBlit;
+
     int               fifo_slots; /* Free slots in the FIFO (64 max)         */
     int               pix24bpp;   /* Depth of pixmap for 24bpp framebuffer   */
     Bool              dac6bits;   /* Use 6 bit DAC?                          */
@@ -263,6 +269,7 @@ typedef struct {
     int               numDGAModes;
     Bool              DGAactive;
     int               DGAViewportStatus;
+    DGAFunctionRec    DGAFuncs;
 
     RADEONFBLayout      CurrentLayout;
 #ifdef XF86DRI

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.35 2001/04/23 17:15:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.36 2001/05/09 03:12:02 tsi Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1119,7 +1119,6 @@ ATIMach64Sync
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
                 "CLR_CMP_CNTL write cache disabled!\n");
         }
-
     }
 
     /*
@@ -1128,6 +1127,7 @@ ATIMach64Sync
      * caching of framebuffer data I haven't found any way of disabling, or
      * otherwise circumventing.  Thanks to Mark Vojkovich for the suggestion.
      */
+    pATI->pXAAInfo->NeedToSync = FALSE;
     pATI = *(volatile ATIPtr *)pATI->pMemory;
 }
 
@@ -1156,7 +1156,7 @@ ATIMach64SetupForScreenToScreenCopy
         SetBits(SRC_BLIT, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
     outf(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX));
 
-    if (TransparencyColour == -1)
+    if (!pATI->XAAForceTransBlit && (TransparencyColour == -1))
         outf(CLR_CMP_CNTL, CLR_CMP_FN_FALSE);
     else
     {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.13 2001/03/28 20:08:22 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.14 2001/05/02 15:06:08 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -554,7 +554,7 @@ static void RADEONSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
 					  ? RADEON_DST_Y_TOP_TO_BOTTOM
 					  : 0)));
 
-    if (trans_color != -1) {
+    if ((trans_color != -1) || (info->XAAForceTransBlit == TRUE)) {
 				/* Set up for transparency */
 	RADEONWaitForFifo(pScrn, 3);
 	OUTREG(RADEON_CLR_CMP_CLR_SRC, trans_color);
@@ -999,7 +999,7 @@ static void RADEONCPSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
 
     ADVANCE_RING();
 
-    if ( trans_color != -1 ) {
+    if ((trans_color != -1) || (info->XAAForceTransBlit == TRUE)) {
 	BEGIN_RING( 6 );
 
 	OUT_RING_REG( RADEON_CLR_CMP_CLR_SRC, trans_color );
