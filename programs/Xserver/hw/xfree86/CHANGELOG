@@ -1,4 +1,5 @@
 XFree86 3.9.16Z (xx December 1999)
+3403. Fix XKB XlookupString usage (#3511, Ivan Pascal).
 3402. Use ForceLatin1Lookup mode after XmbLookupString/XwcLookupString
       (#3510, Ivan Pascal).
 3401. Export symbols for SGI driver (#3505, Terence Ripperda).
@@ -9196,4 +9197,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.898 1999/12/27 02:22:32 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.899 1999/12/27 02:27:35 robin Exp $

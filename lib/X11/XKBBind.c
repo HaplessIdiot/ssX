@@ -886,7 +886,7 @@ XLookupString (event, buffer, nbytes, keysym, status)
     /* We *should* use the new_mods (which does not contain any modifiers */
     /* that were used to compute the symbol here, but pre-XKB XLookupString */
     /* did not and we have to remain compatible.  Sigh. */
-    if ((dpy->xkb_info->flags&XkbLC_ConsumeLookupMods)==0)
+    if ((dpy->xkb_info->xlib_ctrls&XkbLC_ConsumeLookupMods)==0)
 	new_mods= event->state;
 
     rtrnLen= XkbLookupKeyBinding(dpy,*keysym,new_mods,buffer,nbytes,NULL);
