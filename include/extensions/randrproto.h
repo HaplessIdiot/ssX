@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/include/extensions/randrproto.h,v 1.5 2001/08/01 00:44:35 tsi Exp $
+ * $XFree86: xc/include/extensions/randrproto.h,v 1.6 2002/09/29 23:39:43 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation
  * Copyright © 2002 Hewlett-Packard Company
@@ -56,11 +56,8 @@ typedef struct {
     CARD16 heightInPixels B16;
     CARD16 widthInMillimeters B16;
     CARD16 heightInMillimeters B16;
-    CARD16 pad1 B16;
 } xScreenSizes;
-#define sz_xScreenSizes 12
-
-
+#define sz_xScreenSizes 8
 
 /* 
  * requests and replies
