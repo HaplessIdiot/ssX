@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.61 2003/10/08 14:55:08 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.62 2003/11/12 02:43:25 dawes Exp $
 .TH XFree86 1 __vendorversion__
 .SH NAME
 XFree86 - X11R6 X server
@@ -660,6 +660,17 @@ server \fI<http://www.xfree86.org/cvs/>\fP.  Documentation and other
 information can be found from the XFree86 web site
 \fI<http://www.xfree86.org/>\fP.
 
+.SH LEGAL
+.PP
+.B XFree86
+is copyright software, provided under licenses that permit modification
+and redistribution in source and binary form without fee.  Portions of
+.B XFree86
+are copyright by The XFree86 Project, Inc. and numerous authors and
+contributors from around the world.  Licensing information can be found
+at
+.IR <http://www.xfree86.org/current/LICENSE.html> .
+Refer to the source code for specific copyright notices.
 .PP
 .B XFree86(TM)
 is a trademark of The XFree86 Project, Inc.
