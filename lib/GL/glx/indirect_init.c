@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/indirect_init.c,v 1.8 2003/09/28 20:15:03 alanh Exp $ */
+/* $XFree86: xc/lib/GL/glx/indirect_init.c,v 1.9 2004/01/28 18:11:41 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -44,6 +44,53 @@ static int NoOp(void)
 {
     return 0;
 }
+
+/**
+ * \name Vertex array pointer bridge functions
+ *
+ * When EXT_vertex_array was moved into the core GL spec, the \c count
+ * parameter was lost.  This libGL really only wants to implement the GL 1.1
+ * version, but we need to support applications that were written to the old
+ * interface.  These bridge functions are part of the glue that makes this
+ * happen.
+ */
+/*@{*/
+static void ColorPointerEXT(GLint size, GLenum type, GLsizei stride,
+			    GLsizei count, const GLvoid * pointer )
+{
+    (void) count; __indirect_glColorPointer( size, type, stride, pointer );
+}
+
+static void EdgeFlagPointerEXT(GLsizei stride,
+			       GLsizei count, const GLboolean * pointer )
+{
+    (void) count; __indirect_glEdgeFlagPointer( stride, pointer );
+}
+
+static void IndexPointerEXT(GLenum type, GLsizei stride,
+			    GLsizei count, const GLvoid * pointer )
+{
+    (void) count; __indirect_glIndexPointer( type, stride, pointer );
+}
+
+static void NormalPointerEXT(GLenum type, GLsizei stride, GLsizei count,
+			     const GLvoid * pointer )
+{
+    (void) count; __indirect_glNormalPointer( type, stride, pointer );
+}
+
+static void TexCoordPointerEXT(GLint size, GLenum type, GLsizei stride,
+			       GLsizei count, const GLvoid * pointer )
+{
+    (void) count; __indirect_glTexCoordPointer( size, type, stride, pointer );
+}
+
+static void VertexPointerEXT(GLint size, GLenum type, GLsizei stride,
+			    GLsizei count, const GLvoid * pointer )
+{
+    (void) count; __indirect_glVertexPointer( size, type, stride, pointer );
+}
+/*@}*/
 
 
 __GLapi *__glXNewIndirectAPI(void)
@@ -519,6 +566,14 @@ __GLapi *__glXNewIndirectAPI(void)
     /* 25. GL_SGIS_multisample */
     glAPI->SampleMaskSGIS = __indirect_glSampleMaskSGIS;
     glAPI->SamplePatternSGIS = __indirect_glSamplePatternSGIS;
+
+    /* 30. GL_EXT_vertex_array */
+    glAPI->ColorPointerEXT    = ColorPointerEXT;
+    glAPI->EdgeFlagPointerEXT = EdgeFlagPointerEXT;
+    glAPI->IndexPointerEXT    = IndexPointerEXT;
+    glAPI->NormalPointerEXT   = NormalPointerEXT;
+    glAPI->TexCoordPointerEXT = TexCoordPointerEXT;
+    glAPI->VertexPointerEXT   = VertexPointerEXT;
 
     /* 145. GL_EXT_secondary_color / GL 1.4 */
     glAPI->SecondaryColor3bEXT       = __indirect_glSecondaryColor3b;
