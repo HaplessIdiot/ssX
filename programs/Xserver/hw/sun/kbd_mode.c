@@ -27,7 +27,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/hw/sun/kbd_mode.c,v 3.9 2001/08/17 22:08:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/kbd_mode.c,v 3.10tsi Exp $ */
 
 /*
 static  char sccsid[] = "@(#)kbd_mode.c 7.1 87/04/13";
@@ -62,6 +62,7 @@ static  char sccsid[] = "@(#)kbd_mode.c 7.1 87/04/13";
 #endif
 #endif
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 static void         die(), usage();
