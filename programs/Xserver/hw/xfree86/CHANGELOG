@@ -1,4 +1,5 @@
 XFree86 4.0.99.x (xx May 2001)
+ 484. Fix palette problem on NVIDIA Riva128 in DGA mode (Mark Vojkovich).
  483. setxkbmap patch that:
         - fixes bug in comand line parser
         - makes debug output more comprehensive
@@ -13163,4 +13164,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1749 2001/05/08 21:53:07 paulo Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1750 2001/05/08 22:22:32 paulo Exp $
