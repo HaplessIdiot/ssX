@@ -1,5 +1,21 @@
-XFree86 3.1.1Bc (18 June 1995)
-144. Fix sessreg for *BSD.
+XFree86 3.1.1Bc (19 June 1995)
+153. Fix for ET4000/W32p cards -- don't change the PCI burst setting.
+     This should fix mouse droppings and missing characters in text mode
+     for some cards (Glenn Lai).
+152. Fix AGX font corruption problem (Henry Worth).
+151. Disable 32bpp in AGX server by default -- it is too unstable
+     (Henry Worth).
+150. XGA clock updates in AGX server (Henry Worth).
+149. EISA XGA probing in AGX server (Henry Worth).
+148. Better scratchpad and font cache support for XGAs in AGX server
+     (Henry Worth).
+147. Font glyph blting for non-cached fonts with AGX server (Henry Worth).
+146. AGX font cache fixes (Henry Worth).
+145. pre-fix-12 fix-trackers, including:
+      - LBX fixes and additional functionality
+      - some xtrans and fontlib fixes
+      - smproxy and xsm fixes
+144. Fix sessreg (WTMP, LASTLOG, but no UTMP) for *BSD.
 143. Allow 'UseGnuMalloc' to work on all platforms.
 
 XFree86 3.1.1Bb (17 June 1995)
