@@ -23,6 +23,11 @@
  * Author:  Keith Packard, SuSE, Inc.
  */
 
+#ifdef XFree86LOADER
+#include "xf86.h"
+#include "xf86_ansic.h"
+#endif
+
 #include "fb.h"
 #include "fb24_32.h"
 
