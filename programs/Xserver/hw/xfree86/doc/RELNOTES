@@ -219,7 +219,7 @@ The following new X server command line options have been added:
           different from the ``bpp'' that was specified with previ-
           ous versions.  The depth is the number of bits in each
           pixel that are significant in determining the pixel's
-          value.  The bpp is total size occupied by each pixel,
+          value.  The bpp is the total size occupied by each pixel,
           including bits that are not used.  The old -bpp option is
           no longer recognised because it isn't a good way of spec-
           ifying the server behaviour.
@@ -290,24 +290,23 @@ The following new X server command line options have been added:
 
      -scanpci
 
-          This specifies the scanpci module should be loaded and
-          executed.  This does a scan of the PCI bus.  This option
-          is only available when the server is started by the root
-          user.
+          This specifies that the scanpci module should be loaded
+          and executed.  This does a scan of the PCI bus.  This
+          option is only available when the server is started by
+          the root user.
 
      -logverbose [n]
 
           This options specifies the verbosity level to use for the
           log file.  The default is 3.
 
-The following new X server command line options have been changed since
-3.3.x:
+The following X server command line options have been changed since 3.3.x:
 
      -verbose [n]
 
           This option specifies the verbosity level to use for the
           server messages that get written to stderr.  It may be
-          specified multiple time to increase the verbosity level
+          specified multiple times to increase the verbosity level
           (as with 3.3.x), or the verbosity level may be specified
           explicitly as a number.  The default verbosity level is
           1.
@@ -801,7 +800,7 @@ been implemented is a modified search path for the X server's XF86Config
 file.  The details of this can be found above in the Configuration File (sec-
 tion 1.2, page 1) section.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.11 1999/07/19 14:38:44 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.12 1999/07/20 04:27:03 dawes Exp $
 
 
 $XFree86$

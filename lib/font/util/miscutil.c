@@ -63,9 +63,9 @@ Xfree (void *n)
 }
 
 void *
-Xcalloc (unsigned long n, unsigned long m)
+Xcalloc (unsigned long n)
 {
-    return calloc (n, m);
+    return calloc (n, 1);
 }
 
 void

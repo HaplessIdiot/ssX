@@ -2,7 +2,7 @@
 
                             Marc Aurele La France
 
-                                1999 June 23
+                                 1999 July 8
 
                                   Abstract
 
@@ -80,11 +80,7 @@ The driver also supports 32K, 64K and 16M-colour modes on the 264xT and 3D
 Rage series of adapters using the accelerator CRTC (but not the VGA CRTC).
 This support is as yet unaccelerated.
 
-Only the CRT port of 3D Rage LT, 3D Rage LT Pro, 3D Rage XL and 3D Rage XC
-chips is supported, not the LCD panel.  LCD support will be included in a
-future release.
-
-The newer Rage 128 chips are also not yet supported.
+The newer Rage 128 chips are not yet supported.
 
 Adapters based on the above chips have been marketed under a rather large
 number of names over the years.  Among them are:
@@ -397,8 +393,8 @@ There are several known problems or limitations related to the XFree86 ATI
 driver.  They include:
 
    o A number of system lockups and blank screens have been reported when
-     using PCI Mach64 adapters.  The great majority of these problems have
-     been found to be due to system aspects that are unrelated to this
+     using PCI and AGP Mach64 adapters.  The great majority of these problems
+     have been found to be due to system aspects that are unrelated to this
      driver.  As of this writing, these problems can be divided into three
      general areas:
 
@@ -413,6 +409,11 @@ driver.  They include:
      utility that might or might not be supplied with the adapter.  This
      problem is still under investigation.  The only known workaround is to
      ensure no cable is connected to the adapter's TV connector on bootup.
+
+     A conflict with the RAC code means that the driver does not always
+     detect VGA; this can also cause system lockups and blank screens, but
+     unlike the 3 preceding problems, this can be fixed in a subsequent
+     driver.
 
    o When using a Mach64's accelerator CRTC, the virtual resolution must be
      less than 8192 pixels wide.  The VGA CRTC further limits the virtual
@@ -546,7 +547,7 @@ tional colour depths, and so on.  This is the version found in XFree86 3.3.2,
 Version 5 is an almost complete restructuring of version 4 to fit in the new
 driver API of XFree86 4.0.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.22 1999/07/19 13:36:22 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.24 1999/08/01 07:57:15 dawes Exp $
 
 
 $XFree86$

@@ -355,7 +355,8 @@ your ``mouse'' port later.
 The next step is to guess the appropriate protocol type for the mouse.  In
 FreeBSD 2.2.6 or later, the X server may be able to automatically determine
 the appropriate protocol type, unless your mouse is of a relatively old
-model.  Use the ``Auto'' protocol in these versions.
+model.  You should always try the ``Auto'' protocol first for any mouse,
+serial, bus, or PS/2, in these versions.
 
 In other versions of FreeBSD or if the ``Auto'' protocol doesn't work in
 2.2.6, you have to guess a protocol type and try.
@@ -528,7 +529,7 @@ Many thanks to:
    o Orest Zborowski, Simon Cooper and Dirk Hohndel for ideas from the Linux
      distribution.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.27 1998/03/27 23:23:36 hohndel Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.28 1999/08/01 07:57:15 dawes Exp $
 
      $XConsortium: FreeBSD.sgml /main/12 1996/10/28 05:43:08 kaleb $
 

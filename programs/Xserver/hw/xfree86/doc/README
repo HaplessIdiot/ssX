@@ -55,13 +55,16 @@ for some platforms may be made available at a later time.
 
 The source for version 3.9.15 is split into three tarballs: X3915src-1.tgz,
 X3915src-2.tgz, X3915src-3.tgz.  The first contains everything except the
-fonts and general X11 documentation.  It is sufficient to build XFree86 is
-you already have a set of fonts.  The second contains the fonts and the
+fonts and general X11 documentation.  It is sufficient for building XFree86
+is you already have a set of fonts.  The second contains the fonts and the
 source for the general X11 documentation.  The third contains the general X11
 documentation in hardcopy format.
 
 The contrib part of the distribution can be found in the following tarball:
 X3915contrib.tgz.
+
+To format the XFree86 documentation, the latest version of our doctools pack-
+age.  That is available as doctools-1.1.tgz.
 
 5.  Reporting Bugs
 
@@ -73,7 +76,7 @@ out what you think might not be important.  The information contained in the
 log file is there to make it easier for the developers to determine what is
 going wrong when there are problems.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.94 1999/07/19 14:38:43 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.95 1999/07/20 04:27:02 dawes Exp $
 
 
 $XFree86$

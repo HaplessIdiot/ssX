@@ -1,4 +1,6 @@
 XFree86 3.9.15a (1 August 1999)
+2935. Fix the RAC usage in the nv driver to allow multi-head to work
+      (#3093, Itai Nahshon).
 2934. Reduce memory consumption of the bitmap font backends when using
       sparse fonts, which is important when using Unicode-encoded fonts
       (#3092, Juliusz Chroboczek).
@@ -8534,4 +8536,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.809 1999/07/20 03:55:50 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.810 1999/08/01 07:57:01 dawes Exp $

@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.8 1998/01/24 16:58:08 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.10 1999/08/01 07:20:56 dawes Exp $ */
 
 #include "nv_include.h"
 
@@ -659,20 +659,17 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     pNv->Primary = xf86IsPrimaryPci(pNv->PciInfo);
 
     {
- 	resRange vgaio[] =	{ {ResShrIoBlock,0x3B0,0x3BB},
- 				  {ResShrIoBlock,0x3C0,0x3DF},
- 				  _END };
  	resRange vga1mem[] =	{ {ResShrMemBlock,0xA0000,0xAFFFF},
  				  {ResShrMemBlock,0xB8000,0xBFFFF},
  				  _END };
  	resRange vga2mem[] =	{ {ResShrMemBlock,0xB0000,0xB7FFF},
  				  _END };
- 	xf86SetOperatingState(vgaio, pNv->pEnt->index, ResUnusedOpr);
  	xf86SetOperatingState(vga1mem, pNv->pEnt->index, ResDisableOpr);
  	xf86SetOperatingState(vga2mem, pNv->pEnt->index, ResDisableOpr);
     }
 
     pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
+    pScrn->racIoFlags  = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
   
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
@@ -1317,7 +1314,7 @@ NVModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	return FALSE;
     pScrn->vtSema = TRUE;
 
-    if ( *pNv->ModeInit ) {
+    if ( pNv->ModeInit ) {
         if (!(*pNv->ModeInit)(pScrn, mode))
             return FALSE;
     }
@@ -1327,7 +1324,7 @@ NVModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     vgaReg = &hwp->ModeReg;
     nvReg = &pNv->ModeReg;
 
-    if ( *pNv->Restore )
+    if ( pNv->Restore )
         (*pNv->Restore)(pScrn, vgaReg, nvReg, FALSE);
 
     vgaHWProtect(pScrn, FALSE);
