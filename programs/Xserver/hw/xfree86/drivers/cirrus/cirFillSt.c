@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cirFillSt.c,v 1.1 1997/03/06 23:15:14 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cirFillSt.c,v 1.2 1997/04/10 11:34:23 hohndel Exp $ */
 /*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
@@ -211,19 +211,22 @@ void CirrusFillRectTile(pDrawable, pGC, nBox, pBox)
 		 * Always use BitBLT on the 543x.
 		 */
 		if (width == 16 && height == 16 && 
-		((!(HAVE543X() || HAVE75XX() || cirrusChip == CLGD5446) &&
+		((!(HAVE543X() || HAVE75XX() || cirrusChip == CLGD5446
+		    || cirrusChip == CLGD5480) &&
 		vga256InfoRec.displayWidth < 2048) ||
-		((HAVE543X() || HAVE75XX() || cirrusChip == CLGD5446) && 
+		((HAVE543X() || HAVE75XX() || cirrusChip == CLGD5446
+		  || cirrusChip == CLGD5480) && 
 		 vga256InfoRec.displayWidth < 4096)))
 			goto tile16x16;
 		if (width == 32 && height == 32 && 
-		(HAVE543X() || HAVE75XX() || cirrusChip == 5446) &&
+		(HAVE543X() || HAVE75XX() || cirrusChip == 5446
+		 || cirrusChip == CLGD5480) &&
 		vga256InfoRec.displayWidth < 2048 && cirrusUseMMIO)
 			goto tile32x32;
 #if 0	/* broken. */
 		if (width * height >= 500 && (width != 32 || height > 32 ||
-		cirrusBusType == CIRRUS_SLOWBUS || HAVE543X() || HAVE754X() ||
-		cirrusChip == CLGD5446))
+		cirrusBusType == CIRRUS_SLOWBUS || HAVE543X() || HAVE755X() ||
+		cirrusChip == CLGD5446 || cirrusChip == CLGD5480))
 			goto tileblit;
 #endif			
 	}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.23 1997/01/18 06:56:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_teblt8.c,v 1.1 1997/03/06 23:15:34 hohndel Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -299,7 +299,8 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	else
 #if 0
 		if (glyphWidth > 16 || HAVE543X() ||
-		    HAVE754X() || cirrusChip == CLGD5446)
+		    HAVE755X() || cirrusChip == CLGD5446 ||
+		    cirrusChip == CLGD5480)
 			CirrusTransferText32bit(nglyph, h, glyphp, glyphWidth,
 				CIRRUSBASE());
 		else
@@ -435,7 +436,7 @@ void CirrusPolyGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 		 * transparency in the BitBLT engine is 'fixed' to be
 		 * similar to write mode 4.
 		 * On the 5426/8, it turns out it can also work.
-		 * Same with a 5446.
+		 * Same with a 5446 or a 5480.
 		 */
 		int destaddr, blitwidth;
 		unsigned int color;
@@ -455,7 +456,7 @@ void CirrusPolyGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 		 * color registers must be loaded, and the background color
 		 * registers must be loaded with the bitwise complement of
 		 * the foreground color.
-		 * MMIO implies a 5429 or 543x or 5446.
+		 * MMIO implies a 5429 or 543x or 5446 or 5480.
 		 */
 		if (cirrusChip == CLGD5434) {
 			color = (~pGC->fgPixel) & 0xff;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/laguna_acl.c,v 1.1 1997/03/06 23:15:37 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/laguna_acl.c,v 1.2 1997/04/08 10:12:34 hohndel Exp $ */
 
 /*
  * New-style acceleration for the Laguna-family (CL-GD5462/5464).
@@ -228,6 +228,8 @@ void LagunaSetupForFillRectSolid(color, rop, planemask)
         break;
     }
 
+    LagunaWaitQAvail(4);
+
     /* Yes, solid color fills take their colors from the _background_
        color. */
     LgSETBACKGROUND(color);
@@ -256,7 +258,6 @@ void LagunaSetupForScreenToScreenCopy(xdir, ydir, rop, planemask,
     int transparency_color;
 {
     int bltmode;
-    LagunaSync();
 
     blittransparent = (transparency_color != -1);
     blitxdir = xdir;
@@ -269,6 +270,9 @@ void LagunaSetupForScreenToScreenCopy(xdir, ydir, rop, planemask,
       if (cirrusChip != CLGD5462)
 	bltmode |= PATeqSRC;
     }
+
+    LagunaWaitQAvail(3);
+
     LgSETROP(lgCirrusRop[rop]);
     LgSETMODE(SCR2SCR | COLORSRC | bltmode);
     LgSetBitmask(planemask);
@@ -331,8 +335,10 @@ void LagunaSetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
     }
 
     if (trans == TRANSNONE) {
-        LgSETBACKGROUND(bg);
+      LagunaWaitQAvail(1);
+      LgSETBACKGROUND(bg);
     }
+    LagunaWaitQAvail(5);
     LgSETFOREGROUND(fg);
 
     /* We can do transparency blits using the Pattern fetch unit. */
@@ -350,6 +356,7 @@ void LagunaSubsequentCPUToScreenColorExpand(x, y, w, h, skipleft)
    * a reasonable assumption since it transferred the CPU data.
    */
 
+  LagunaWaitQAvail(2);
 
   LgSETDSTXY(x, y);
   LgSETEXTENTS(w, h);
@@ -388,6 +395,7 @@ void LagunaSetupForScreenToScreenColorExpand(bg, fg, rop, planemask)
   }
 
   if (trans == TRANSNONE) {
+    LagunaWaitQAvail(1);
     LgSETBACKGROUND(bg);
   } else {
     bltmode |= COLORTRANS;
@@ -395,6 +403,7 @@ void LagunaSetupForScreenToScreenColorExpand(bg, fg, rop, planemask)
       bltmode |= PATeqSRC;
   }
 
+  LagunaWaitQAvail(4);
   LgSETFOREGROUND(fg);
   LgSETROP(lgCirrusRop[rop] | trans);
   LgSETMODE(SCR2SCR | MONOSRC | bltmode);
@@ -449,10 +458,12 @@ void LagunaSetupForFill8x8Pattern(patternx, patterny, rop, planemask,
     }
 
     /* Color transparency_color is transparent */
+    LagunaWaitQAvail(1);
     LgSETBACKGROUND(c);
     trans = TRANSEQ;
   }
     
+  LagunaWaitQAvail(4);
   LgSETROP(lgCirrusPatRop[rop] | trans);
   LgSETMODE(PAT2SCR | COLORPAT);
   LgSETPATXY(patternx, patterny);
@@ -500,8 +511,13 @@ void LagunaSetupFor8x8PatternColorExpand(patternx, patterny, bg, fg, rop,
     
   }
 
-  if (trans == TRANSNONE)
+  if (trans == TRANSNONE) {
+    LagunaWaitQAvail(1);
     LgSETBACKGROUND(bg);
+  }
+
+  LagunaWaitQAvail(5);
+
   LgSETFOREGROUND(fg);
 
   /* 'Monochrome' source coordinates */

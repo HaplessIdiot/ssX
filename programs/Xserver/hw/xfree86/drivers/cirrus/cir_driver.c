@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.3 1997/03/27 08:30:39 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.4 1997/04/08 13:16:16 hohndel Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -124,8 +124,6 @@
 #include "extensions/xf86dgastr.h"
 #endif
 
-static void cirrusHack1024Mode(void);
-
 /*
  * This driver supports 16-color (mono, vga16), and in the SVGA server
  * 8bpp, 16bpp, 24bpp and 32bpp depending on vgaBitsPerPixel.
@@ -150,6 +148,7 @@ Bool cirrus128KDevices = FALSE;
 int cirrusDRAMBandwidth;
 int cirrusDRAMBandwidthLimit;
 int cirrusReprogrammedMCLK = 0;
+unsigned char cirrusLgBCLK = 0; /* Used by 546X chips */
 int cirrusTilesPerLineIndex; /* Used by 546X chips */
 int cirrusMemoryInterleave; /* Used by 546X chips */
 int cirrusLgCursorXOffset;  /* Used by 546X chips */
@@ -175,6 +174,7 @@ int cirrusBufferSpaceSize;
 #define CLGD5436_ID 0x2B
 
 #define CLGD5446_ID 0x2E
+#define CLGD5480_ID 0x2F
 
 #define CLGD7541_ID 0x0a	/* guess */
 #define CLGD7542_ID 0x0b
@@ -197,7 +197,7 @@ int cirrusBufferSpaceSize;
 #define Has_HWCursor(x) (((x) >= CLGD5422 && (x) <= CLGD5429) || \
 			 ((x) == CLGD5430 || (x) == CLGD5434 || \
 			  (x) == CLGD5436) || \
-			 (x) == CLGD5446 || \
+			 (x) == CLGD5446 || (x) == CLGD5480 || \
 			 ((x) == CLGD5462 || (x) == CLGD5464) || \
 			 (x) == CLGD5465)
 
@@ -254,6 +254,7 @@ typedef struct {
   unsigned short TileCtrl;      /* Tiling control (5465) */
   unsigned char TILE;           /* Tile control (546X) */
   unsigned short CONTROL;       /* Control (546X) */
+  unsigned char BCLK;           /* Rambus clock (546X) */
   unsigned short cursorX;
   unsigned short cursorY;
 } vgacirrusRec, *vgacirrusPtr;
@@ -427,6 +428,12 @@ static cirrusClockRec cirrusClockTab[] = {
   { 0x58, 0x14 },		/* 125.998 */
   { 0x6D, 0x18 },		/* 130.055 */
   { 0x42, 0x0E },		/* 134.998 */
+ 
+  { 0x69, 0x14 },               /* 150.341 */
+  { 0x5E, 0x10 },               /* 168.239 */
+  { 0x5C, 0x0E },               /* 188.182 */
+  { 0x67, 0x0E },               /* 210.682 */
+  { 0x60, 0x0C },               /* 229.091 */
 };
 
 /* Doubled clocks for 16-bit clocking mode with pixel clock ~< 45 MHz. */
@@ -470,6 +477,12 @@ static cirrusClockRec cirrusDivide2ClockTab[] = {
   { 0x6E, 0x32 },		/* 62.999 =~ 125.998 / 2 */
   { 0x6D, 0x30 },		/* 65.027 =~ 130.055 / 2 */
   { 0x42, 0x1C },		/* 67.499 =~ 134.998 / 2 */
+ 
+  { 0x69, 0x28 },               /* 75.170 =~ 150.341 / 2 */
+  { 0x5E, 0x20 },               /* 84.119 =~ 168.239 / 2 */
+  { 0x5C, 0x1C },               /* 94.091 =~ 188.182 / 2 */
+  { 0x67, 0x1C },               /* 105.341 =~ 210.682 / 2 */
+  { 0x60, 0x18 },               /* 114.545 =~ 229.091 / 2 */
 };
 
 
@@ -502,6 +515,7 @@ static int cirrusClockLimit4bpp[] = {
   85500,	/* 5434 */
   135100,	/* 5436 */
   135100,       /* 5446 */
+  135100,       /* 5480 */
   170000,       /* 5462 */
   170000,       /* 5464 */
   170000,       /* 5465 */
@@ -531,9 +545,10 @@ static int cirrusClockLimit8bpp[] = {
   85500,	/* 5430 */
   135100,	/* 5436 */
   135100,       /* 5446 */
+  200000,       /* 5480 */
   170000,       /* 5462 */
-  300000,       /* 5464 */      /* This 300 figure was chosen pretty */
-  300000,       /* 5465 */      /* much arbitrarily.  --corey (3/24/97) */
+  250000,       /* 5464 */
+  250000,       /* 5465 */
   80100,	/* 7541 */
   80100,	/* 7542 */
   80100,	/* 7543 */
@@ -555,6 +570,7 @@ static int cirrusClockLimit16bpp[] = {
   50000,	/* 5430 */
   85500,	/* 5436 */
   85500,        /* 5446 */
+  100000,       /* 5480 */
   135100,       /* 5462 */
   170000,       /* 5464 */     /* Increased from 135.1MHz. */
   170000,       /* 5464 */     /* --corey (3/24/97) */
@@ -578,6 +594,7 @@ static int cirrusClockLimit24bpp[] = {
   85500 / 3,	/* 5430 */
   85500,	/* 5436 */
   85500,        /* 5446 */
+  100000,       /* 5480 */
   135100,      	/* 5462 */
   170000,       /* 5464 */  /* Used to be 135.1M --corey (3/24/97) */
   170000,       /* 5465 */
@@ -597,6 +614,7 @@ static int cirrusClockLimit32bpp[] = {
   0,		/* 5430 */
   0,		/* 5436 */  /* 32bpp support for 5436/46 is broken */
   0,		/* 5446 */  /* (not sure if it's hardware or driver) */
+  50000,	/* 5480 */
   85500,	/* 5462 */  /* Hmm... I wonder if this will break something */
   135100,       /* 5464 */
   135100,       /* 5465 */
@@ -620,6 +638,7 @@ static SymTabRec chipsets[] = {
   { CLGD5434,	"clgd5434" },
   { CLGD5436,	"clgd5436" },
   { CLGD5446,   "clgd5446" },
+  { CLGD5480,   "clgd5480" },
   { CLGD5462,   "clgd5462" },
   { CLGD5464,   "clgd5464" },
   { CLGD5465,   "clgd5465" },
@@ -652,8 +671,8 @@ cirrusTilesPerLine cirrusTilesPerLineTab[] = {
   {10, 1280, 0},
   {13, 1664, 0},
   {16, 2048, 0},
-  {10, 2560, 1},
   {20, 2560, 0},
+  {10, 2560, 1},
   {26, 3328, 0},
   {5, 1280, 1},
   {8, 2048, 1},
@@ -661,7 +680,7 @@ cirrusTilesPerLine cirrusTilesPerLineTab[] = {
   {16, 4096, 1},
   {20, 5120, 1},
   {26, 6656, 1},
-  {-1, -1, -1}     /* Sentinal to indicate end of table */
+  {-1, -1, -1}     /* Sentinel to indicate end of table */
 };
 int defaultTilesPerLineIndex = 5; /* 2048 byte, skinny tiles */
 
@@ -1114,6 +1133,10 @@ cirrusProbe()
 	       cirrusChip = CLGD5446;
 	       break;
 
+ 	     case CLGD5480_ID:
+ 	       cirrusChip = CLGD5480;
+ 	       break;
+	       
 	     default:
 	       /* The Laguna family (546x) doesn't respond to CR27 writes
 		  like all of its cousins.  So instead, query the PCI bus to 
@@ -1154,7 +1177,8 @@ cirrusProbe()
 	       }
 	  
 	  if (cirrusChip == CLGD5430 || cirrusChip == CLGD5434 ||
-	      cirrusChip == CLGD5436 || cirrusChip == CLGD5446) {
+	      cirrusChip == CLGD5436 || cirrusChip == CLGD5446 ||
+	      cirrusChip == CLGD5480) {
 	      /* Write sane value to Display Compression Control */
 	      /* Register, which may be corrupted by pvga1 driver */
 	      /* probe. */
@@ -1188,7 +1212,7 @@ cirrusProbe()
      }
 
     cirrusBusType = CIRRUS_BUS_FAST;
-    if (HAVE546X() || cirrusChip == CLGD5446)
+    if (HAVE546X() || cirrusChip == CLGD5446 || cirrusChip == CLGD5480)
         /* The Laguna has support for the VL bus, but I don't know of any
            VL boards out there with a 546X.  */
         cirrusBusType = CIRRUS_BUS_PCI;
@@ -1563,10 +1587,11 @@ cirrusProbe()
      if (vgaBitsPerPixel >= 8) {
      if (vgaBitsPerPixel == 32 &&
      ((cirrusChip != CLGD5434 && cirrusChip != CLGD5436 && 
-       cirrusChip != CLGD5446 && !HAVE546X()) ||
+       cirrusChip != CLGD5446 && cirrusChip != CLGD5480 && !HAVE546X()) ||
      vga256InfoRec.videoRam < 2048)) {
-         ErrorF("%s %s: %s: Only clgd5434, clgd5436, clgd5446, and clgd546X "
-		"with 2048K or more support 32bpp\n",
+         ErrorF("%s %s: %s: Only clgd5434, clgd5436, clgd5446, clgd5480, \n",
+             XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset);
+	 ErrorF("%s %s: %s: and clgd546X with 2048K or more support 32bpp\n",
              XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset);
          CIRRUS.ChipHas32bpp = FALSE;
      }
@@ -1586,11 +1611,7 @@ cirrusProbe()
 
 
      if (vgaBitsPerPixel >= 8) {
-     if (HAVE546X()) {
-       /* Should we do anything special about the RDRAM? */
-
-     } else
-     {
+     if (!HAVE546X()) {
      /*
       * Determine the MCLK that will be used (possibly reprogrammed).
       * Calculate the available DRAM bandwidth from the MCLK setting.
@@ -1602,7 +1623,8 @@ cirrusProbe()
              /* 5434 rev. E+ supports 60 MHz MCLK in packed-pixel mode. */
              cirrusReprogrammedMCLK = 0x22;
          if ((cirrusChip >= CLGD5424 && cirrusChip <= CLGD5429) ||
-         HAVE543X() || HAVE75XX() || cirrusChip == CLGD5446) {
+         HAVE543X() || HAVE75XX() || cirrusChip == CLGD5446 ||
+	     cirrusChip == CLGD5480) {
              outb(0x3c4, 0x1f);
              MCLK = inb(0x3c5) & 0x3f;
              if (OFLG_ISSET(OPTION_SLOW_DRAM, &vga256InfoRec.options))
@@ -1635,7 +1657,8 @@ cirrusProbe()
              /* At least 32-bit access. */
              cirrusDRAMBandwidth *= 2;
          if (((cirrusChip == CLGD5434 || cirrusChip == CLGD5436 ||
-	      cirrusChip == CLGD5446) && vga256InfoRec.videoRam >= 2048)
+	      cirrusChip == CLGD5446 || cirrusChip == CLGD5480) && 
+	      vga256InfoRec.videoRam >= 2048)
 	 || (cirrusChip == CLGD5446 && cirrus128KDevices)
 	 || cirrusChip == CLGD7555)
              /* 64-bit access. */
@@ -1663,7 +1686,7 @@ cirrusProbe()
              cirrusClockLimit8bpp[cirrusChip] = cirrusDRAMBandwidthLimit;
 #ifdef ALLOW_8BPP_MULTIPLEXING
          if ((cirrusChip == CLGD5434 || cirrusChip == CLGD5436 ||
-	      cirrusChip == CLGD5446)
+	      cirrusChip == CLGD5446 || cirrusChip == CLGD5480)
          && vga256InfoRec.videoRam <= 1024)
              /* DRAM bandwidth limited. This translates to allowing
               * 90 MHz with MCLK = 0x1c, 95 MHz with MCLK = 0x1f,
@@ -1687,7 +1710,8 @@ cirrusProbe()
          if ((cirrusChip >= CLGD5426 && cirrusChip <= CLGD5429) ||
 	      cirrusChip == CLGD5430 || HAVE75XX() ||
 	     ((cirrusChip == CLGD5434 || cirrusChip == CLGD5436 || 
-	       cirrusChip == CLGD5446) && vga256InfoRec.videoRam <= 1024))
+	       cirrusChip == CLGD5446 || cirrusChip == CLGD5480) && 
+	      vga256InfoRec.videoRam <= 1024))
                  /* Allow 45 MHz with MCLK = 0x1c, 50 MHz with 0x1f+. */
                  cirrusClockLimit8bpp[cirrusChip] = cirrusDRAMBandwidthLimit / 2;
      }
@@ -1697,9 +1721,10 @@ cirrusProbe()
              LASTCLGD * sizeof(int));
          if (vga256InfoRec.videoRam <= 512)
                  cirrusClockLimit8bpp[cirrusChip] = 0;
-         if (cirrusChip == CLGD5436 || cirrusChip == CLGD5446)
-		/* Only on the 5436/46, with packed-24 at pixel rate support,
-		 * is DRAM bandwidth the limiting factor. */
+         if (cirrusChip == CLGD5436 || cirrusChip == CLGD5446 ||
+	     cirrusChip == CLGD5480)
+		/* Only on the 5436/46/80, with packed-24 at pixel rate 
+		   support, is DRAM bandwidth the limiting factor. */
                 cirrusClockLimit8bpp[cirrusChip] = cirrusDRAMBandwidthLimit / 3;
      }
 
@@ -1794,12 +1819,15 @@ cirrusProbe()
      OFLG_SET(OPTION_LINEAR, &CIRRUS.ChipOptionFlags);
      OFLG_SET(OPTION_NOLINEAR_MODE, &CIRRUS.ChipOptionFlags);
      if ((cirrusChip >= CLGD5424 && cirrusChip <= CLGD5429) || HAVE543X() ||
-	 HAVE75XX() || cirrusChip == CLGD5446) {
+	 HAVE75XX() || cirrusChip == CLGD5446 || cirrusChip == CLGD5480 ||
+	 HAVE546X()) {
          OFLG_SET(OPTION_SLOW_DRAM, &CIRRUS.ChipOptionFlags);
          OFLG_SET(OPTION_MED_DRAM, &CIRRUS.ChipOptionFlags);
          OFLG_SET(OPTION_FAST_DRAM, &CIRRUS.ChipOptionFlags);
-         OFLG_SET(OPTION_FIFO_CONSERV, &CIRRUS.ChipOptionFlags);
-         OFLG_SET(OPTION_FIFO_AGGRESSIVE, &CIRRUS.ChipOptionFlags);
+	 if (!HAVE546X()) {
+	   OFLG_SET(OPTION_FIFO_CONSERV, &CIRRUS.ChipOptionFlags);
+	   OFLG_SET(OPTION_FIFO_AGGRESSIVE, &CIRRUS.ChipOptionFlags);
+	 }
 #ifdef PC98
 	 OFLG_SET(OPTION_EPSON_MEM_WIN,&CIRRUS.ChipOptionFlags);
 	 OFLG_SET(OPTION_NEC_CIRRUS,&CIRRUS.ChipOptionFlags);
@@ -1810,7 +1838,7 @@ cirrusProbe()
 #endif
      }
      if ((cirrusChip >= CLGD5426 && cirrusChip <= CLGD5429) || HAVE543X() ||
-	 HAVE75XX() || cirrusChip == CLGD5446) {
+	 HAVE75XX() || cirrusChip == CLGD5446 || cirrusChip == CLGD5480) {
          OFLG_SET(OPTION_NO_2MB_BANKSEL, &CIRRUS.ChipOptionFlags);
          OFLG_SET(OPTION_NO_BITBLT, &CIRRUS.ChipOptionFlags);
          OFLG_SET(OPTION_FAVOUR_BITBLT, &CIRRUS.ChipOptionFlags);
@@ -1848,118 +1876,9 @@ cirrusProbe()
 	  memory interleave, etc. are to properly allocate the cursor. */
        int screenPitch;    /* Padded screen pitch */
 
-       screenPitch = cirrusFindPitchPadding();
-
-       switch (vgaBitsPerPixel) {
-       default:
-	 ErrorF("****** DANGEROUS WARNING! ******\n");
-	 ErrorF("* Unknown pixel bit depth %2d  *\n", vgaBitsPerPixel);
-       case 8:
-	 /* The display pitch must be an even multiple of the tile size.
-	    In fact, it must be one of only a handful of tile sizes.  So
-	    round pitch up to the nearest acceptable tile pitch */
-	 for (i = 0; cirrusTilesPerLineTab[i].pitch > 0; i++)
-	   if (cirrusTilesPerLineTab[i].pitch == screenPitch)
-	     break;
-
-	 if (cirrusTilesPerLineTab[i].pitch < 0) {
-	   /* If we didn't find a correct tile pitch, warn the user and
-	      use a default.  It probably isn't correct, but what else 
-	      should we do? */
-	   ErrorF("%s: %s: Warning: virtual screen width not multiple "
-		  "of tile size\n", vga256InfoRec.name, 
-		  vga256InfoRec.chipset);
-	   ErrorF("%s: %s: Use one of the following sizes: \n",
-		  vga256InfoRec.name, vga256InfoRec.chipset);
-	   for (i = 0; cirrusTilesPerLineTab[i].pitch > 0; i++)
-	     ErrorF("%d ", cirrusTilesPerLineTab[i].pitch);
-	   ErrorF("\n");
-	   i = defaultTilesPerLineIndex;
-	 }
-
+       screenPitch = cirrusFindPitchPadding(&i);
+       if (screenPitch > 0)
 	 cirrusTilesPerLineIndex = i;
-
-       case 16:
-	 /* The display pitch must be an even multiple of the tile size.
-	    In fact, it must be one of only a handful of tile sizes.  So
-	    round pitch up to the nearest acceptable tile pitch */
-	 /* In 16bpp, there are two bytes per pixel */
-	 for (i = 0; cirrusTilesPerLineTab[i].pitch > 0; i++)
-	   if ((cirrusTilesPerLineTab[i].pitch>>1) == screenPitch)
-	     break;
-	 
-	 if (cirrusTilesPerLineTab[i].pitch < 0) {
-	   /* If we didn't find a correct tile pitch, warn the user and
-	      use a default.  It probably isn't correct, but what else 
-	      should we do? */
-	   ErrorF("%s: %s: Warning: virtual screen width not multiple "
-		  "of tile size\n", vga256InfoRec.name, 
-		  vga256InfoRec.chipset);
-	   ErrorF("%s: %s: Use one of the following sizes: \n",
-		  vga256InfoRec.name, vga256InfoRec.chipset);
-	   for (i = 0; cirrusTilesPerLineTab[i].pitch > 0; i++)
-	     ErrorF("%d ", cirrusTilesPerLineTab[i].pitch>>1);
-	   ErrorF("\n");
-	   i = defaultTilesPerLineIndex;
-	 }
-	 
-	 cirrusTilesPerLineIndex = i;
-	 break;
-
-       case 24:
-	 /* The display pitch must be an even multiple of the tile size.
-	    In fact, it must be one of only a handful of tile sizes.  So
-	    round pitch up to the nearest acceptable tile pitch */
-	 /* In 24bpp, there are three bytes per pixel */
-	 for (i = 0; cirrusTilesPerLineTab[i].pitch > 0; i++)
-	   if ((cirrusTilesPerLineTab[i].pitch/3) == screenPitch)
-	     break;
-	 
-	 if (cirrusTilesPerLineTab[i].pitch < 0) {
-	   /* If we didn't find a correct tile pitch, warn the user and
-	      use a default.  It probably isn't correct, but what else 
-	      should we do? */
-	   ErrorF("%s: %s: Warning: virtual screen width not multiple "
-		  "of tile size\n", vga256InfoRec.name, 
-		  vga256InfoRec.chipset);
-	   ErrorF("%s: %s: Use one of the following sizes: \n",
-		  vga256InfoRec.name, vga256InfoRec.chipset);
-	   for (i = 0; cirrusTilesPerLineTab[i].pitch > 0; i++)
-	     ErrorF("%d ", cirrusTilesPerLineTab[i].pitch/3);
-	   ErrorF("\n");
-	   i = defaultTilesPerLineIndex;
-	 }
-	 
-	 cirrusTilesPerLineIndex = i;
-	 break;
-
-       case 32:
-	 /* The display pitch must be an even multiple of the tile size.
-	    In fact, it must be one of only a handful of tile sizes.  So
-	    round pitch up to the nearest acceptable tile pitch */
-	 /* In 32bpp, there are four bytes per pixel */
-	 for (i = 0; cirrusTilesPerLineTab[i].pitch > 0; i++)
-	   if ((cirrusTilesPerLineTab[i].pitch>>2) == screenPitch)
-	     break;
-
-	 if (cirrusTilesPerLineTab[i].pitch < 0) {
-	   /* If we didn't find a correct tile pitch, warn the user and
-	      use a default.  It probably isn't correct, but what else 
-	      should we do? */
-	   ErrorF("%s: %s: Warning: virtual screen width not multiple "
-		  "of tile size\n", vga256InfoRec.name, 
-		  vga256InfoRec.chipset);
-	   ErrorF("%s: %s: Use one of the following sizes: \n",
-		  vga256InfoRec.name, vga256InfoRec.chipset);
-	   for (i = 0; cirrusTilesPerLineTab[i].pitch > 0; i++)
-	     ErrorF("%d ", cirrusTilesPerLineTab[i].pitch>>2);
-	   ErrorF("\n");
-	   i = defaultTilesPerLineIndex;
-	 }
-
-	 cirrusTilesPerLineIndex = i;
-	 break;
-       } /* vgaBitsPerPixel switch statement */
 
        /* Set up the proper memory interleave.  The interleave is dependent
 	  only upon how much memory there is installed. */
@@ -1985,10 +1904,6 @@ cirrusProbe()
 	 break;
        } /* memory size switch statement */
 
-       /* The 5465AA and AB are stuck with one-way memory interleaving.  
-	  I don't know about the AC yet... */
-       if (cirrusChip == CLGD5465)
-	 cirrusMemoryInterleave = 0x00;
      }
 
    
@@ -2003,7 +1918,7 @@ cirrusProbe()
 
 
 
-static int cirrusFindPitchPadding(void)
+static int cirrusFindPitchPadding(int *index)
 {
   /* Find the smallest tile-line-pitch such that the total byte pitch
      is greater than or equal to virtualX*Bpp. */
@@ -2023,6 +1938,9 @@ static int cirrusFindPitchPadding(void)
       break;
     }
 
+  if (index)
+    *index = i;
+
   return bestPitch;
 }
 
@@ -2038,7 +1956,7 @@ int cirrusPitchAdjust(void)
      three -- i.e., if the screen pitch is not an integer number
      of _pixels_. */
 
-  int bestPitch = cirrusFindPitchPadding();
+  int bestPitch = cirrusFindPitchPadding(NULL);
 
   ErrorF("%s %s: %s: Display width padded to %d bytes.\n",
 	 XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset,
@@ -2073,7 +1991,7 @@ cirrusFbInit()
   cirrusUseBLTEngine = FALSE;
   if (cirrusChip == CLGD5426 || cirrusChip == CLGD5428 ||
       cirrusChip == CLGD5429 || HAVE543X() || HAVE75XX() ||
-      cirrusChip == CLGD5446)
+      cirrusChip == CLGD5446 || cirrusChip == CLGD5480)
       {
       cirrusUseBLTEngine = TRUE;
       if (OFLG_ISSET(OPTION_NO_BITBLT, &vga256InfoRec.options))
@@ -2105,7 +2023,8 @@ cirrusFbInit()
    */
   if (cirrusChip == CLGD5424 || cirrusChip == CLGD5426 ||
       cirrusChip == CLGD5428 || cirrusChip == CLGD5429 ||
-      cirrusChip == CLGD5446 || HAVE543X() || HAVE75XX())
+      cirrusChip == CLGD5446 || cirrusChip == CLGD5480 ||
+      HAVE543X() || HAVE75XX())
       {
       unsigned char SRF, SR1F;
       outb(0x3c4, 0x0f);
@@ -2152,12 +2071,13 @@ cirrusFbInit()
 
     if (vgaBitsPerPixel >= 8) {
 
-    if (xf86Verbose && !HAVE546X())
+    if (xf86Verbose && !HAVE546X()) {
         ErrorF("%s %s: %s: Approximate DRAM bandwidth for drawing: %d of %d MB/s\n",
             XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset,
             (cirrusDRAMBandwidth - vga256InfoRec.clock[
             vga256InfoRec.modes->Clock] * vgaBitsPerPixel / 8) / 1000,
             cirrusDRAMBandwidth / 1000);
+      }
 
 #ifdef CIRRUS_SUPPORT_LINEAR
     /*
@@ -2230,13 +2150,13 @@ cirrusFbInit()
                     	 * 0x00A8	5434
                     	 * 0x00AC	5436
 			 * 0x00B8       5446
+ 			 * 0x00BC       5480
 			 * 0x00D0       5462
 			 * 0x00D4       5464
 			 * 0x00D5       5464BD
 			 * 0x00D6       5465
       			 */
                     	if (vgaPCIInfo->MemBase != 0) {
-			  /* Why the mask?  (CRA) */
 			  CIRRUS.ChipLinearBase =
 			    vgaPCIInfo->MemBase & 0xFF000000;
 			  cirrusUseLinear = TRUE;
@@ -2295,8 +2215,8 @@ nolinear:
     
   if (Has_HWCursor(cirrusChip) &&
       !OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options) &&
-      (vgaBitsPerPixel != 24 || cirrusChip == CLGD5436 || cirrusChip ==
-       CLGD5446))
+      (vgaBitsPerPixel != 24 || cirrusChip == CLGD5436 || 
+       cirrusChip == CLGD5446 || cirrusChip == CLGD5480))
     {
 #if 1
       if (HasLargeHWCursor(cirrusChip))
@@ -2464,6 +2384,84 @@ nolinear:
 		 XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
 	}
 
+ 	/* Should the Rambus memory clock be adjusted?  */
+ 	if (HAVE546X()) {
+ 	  /* By default, don't do anything to the BCLK register.  However,
+ 	     if the {slow,med,fast}_dram options have been set, respect that
+ 	     option. */
+ 	  if (cirrusChip == CLGD5465) {
+ 	    cirrusLgBCLK = *(unsigned char *)(cirrusMMIOBase + 0x2C0) & 0x1F;
+ 	  } else {
+ 	    cirrusLgBCLK = *(unsigned char *)(cirrusMMIOBase + 0x8C) & 0x1F;
+ 	  }
+ 
+ 	  /*** WARNING! WARNING! DANGER, WILL ROBINSON! DANGER! *****/
+ 	  /*
+ 	     Setting the Rambus BCLK too high for your video card is 
+ 	     _very_ bad.  Doing so will cause an undue amount of heat
+ 	     to be produced by the part, and may very likely boil it to 
+ 	     pieces, frying your video board, motherboard, and maybe 
+ 	     even your monitor.
+        
+ 	     I, Corin Anderson, take absolutely _no_ responsibility
+ 	     for any damages which might come from pushing the BCLK
+ 	     too high.
+ 	     */
+ 
+ 	  /* 
+ 	     That warning said, I honestly don't think anyone will
+ 	     be melting their Laguna chips very easily.  The 5462 and
+ 	     5464 are rated up to 300MHz, but the Rambus memory 
+ 	     sometimes is flaky at that point.  286MHz is usually a
+ 	     safe value.  For the 5465, the Rambus memory seems to be 
+ 	     more stable at the 300MHz value, which is I think the 
+ 	     BIOS default speed during power-on setup.
+        
+ 	     I include this warning only to future programmers who
+ 	     wonder what might happen if the BCLK values are
+ 	     pushed up a little.  You do so at your own risk.  8)
+ 	     */
+ 	  
+ 	  if (OFLG_ISSET(OPTION_SLOW_DRAM, &vga256InfoRec.options)) {
+ 	    /* Use a safe (maybe even default) BCLK:  258MHz */
+ 	    cirrusLgBCLK = 0x12;  /*  18*14.31818 = 257.727 */
+ 	  } else if (OFLG_ISSET(OPTION_MED_DRAM, &vga256InfoRec.options)) {
+ 	    /* Middle of the road speed.  Pretty safe: 272MHz */
+ 	    cirrusLgBCLK = 0x13;  /*  19*14.31818 = 272.046 */
+ 	  } else if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options)) {
+ 	    /* Fastest mode that I've tested without melting the
+ 	       chip. */
+ 	    if (cirrusChip == CLGD5465)
+ 	      cirrusLgBCLK = 0x15;  /*  21*14.31818 = 300.682 */
+ 	    else
+ 	      cirrusLgBCLK = 0x14;  /*  20*14.31818 = 286.364 */
+ 	  }
+ 
+ 	  /* Overload the cirrusDRAMBandwidth variable to record the 
+ 	     bandwidth available.  Rambus memory samples the clock at 
+ 	     both the rising and falling edges of the BCLK, to the bandwidth
+ 	     is twice BCLK * 14.31818MHz. */
+ 	  cirrusDRAMBandwidth = 14318 * cirrusLgBCLK * 2;
+ 	  
+ 
+ 	  if (xf86Verbose) {
+ 	    if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options) ||
+ 		OFLG_ISSET(OPTION_MED_DRAM, &vga256InfoRec.options) ||
+ 		OFLG_ISSET(OPTION_SLOW_DRAM, &vga256InfoRec.options))
+ 	      ErrorF("%s %s: %s: Memory clock overridden by option\n",
+ 		     XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
+ 	    ErrorF("%s %s: %s: Internal memory clock register set to 0x%02x\n",
+ 		   XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset,
+ 		   cirrusLgBCLK);
+ 	    ErrorF("%s %s: %s: Approximate DRAM bandwidth for drawing: "
+ 		   "%d of %d MB/s\n", XCONFIG_GIVEN, vga256InfoRec.name, 
+ 		   vga256InfoRec.chipset, (cirrusDRAMBandwidth - 
+ 		   vga256InfoRec.clock[vga256InfoRec.modes->Clock] * 
+ 		   vgaBitsPerPixel / 8) / 1000, cirrusDRAMBandwidth / 1000);
+ 	  }
+ 	} /* HAVE546X() */
+ 
+ 
 	/* Disable legacy acceleration using MMIO. */
 #if 0
         if (cirrusUseBLTEngine) {
@@ -2735,7 +2733,8 @@ cirrusRestore(restore)
   if (vgaBitsPerPixel >= 8) {
 #ifdef ALLOW_8BPP_MULTIPLEXING
   if (((cirrusChip == CLGD5434 || cirrusChip == CLGD5436 ||
-	cirrusChip == CLGD5446) || vgaBitsPerPixel != 8) && !HAVE546X()) {
+	cirrusChip == CLGD5446 || cirrusChip == CLGD5480) ||
+       vgaBitsPerPixel != 8) && !HAVE546X()) {
       outb(0x3c6, 0x00);
       outb(0x3c6, 0xff);
       inb(0x3c6); inb(0x3c6); inb(0x3c6); inb(0x3c6);
@@ -2801,6 +2800,7 @@ cirrusRestore(restore)
 /*  unsigned short DTTC;         Display Threshold and Tiling Control (546X) */
 /*  unsigned short TileCtrl;     Tiling control (5465) */
 /*  unsigned char TILE;          Tile control (546X) */
+/*  unsigned char BCLK;          Rambus clock (546X) */
 /*  unsigned short CONTROL;      Control (546X) */
 /*  unsigned short cursorX; */
 /*  unsigned short cursorY; */
@@ -2845,7 +2845,7 @@ cirrusRestore(restore)
     }
 
   if ((cirrusChip >= CLGD5424 && cirrusChip <= CLGD5429) || HAVE543X() ||
-      HAVE75XX() || cirrusChip == CLGD5446)
+      HAVE75XX() || cirrusChip == CLGD5446 || cirrusChip == CLGD5480)
        {
        /* Restore the Performance Tuning Register on these chips only. */
        outb(0x3C4,0x16);
@@ -2864,7 +2864,7 @@ cirrusRestore(restore)
        }
 
   if ((cirrusChip >= CLGD5424 && cirrusChip <= CLGD5429) || HAVE543X() ||
-      HAVE75XX() || cirrusChip == CLGD5446) {
+      HAVE75XX() || cirrusChip == CLGD5446 || cirrusChip == CLGD5480) {
       outb(0x3c4, 0x1f);	/* MCLK register */
       outb(0x3c5, restore->SR1F);
   }
@@ -2879,7 +2879,7 @@ cirrusRestore(restore)
   outb(vgaIOBase + 5,restore->CR1B);
 
   if (cirrusChip == CLGD5434 || cirrusChip == CLGD5436 ||
-      cirrusChip == CLGD5446 || HAVE546X()) {
+      cirrusChip == CLGD5446 || cirrusChip == CLGD5480 || HAVE546X()) {
       outb(vgaIOBase + 4, 0x1D);
       outb(vgaIOBase + 5, restore->CR1D);
   }
@@ -2898,7 +2898,7 @@ cirrusRestore(restore)
       return;
     }
     else {
-      unsigned char *pTILE;
+      unsigned char *pTILE, *pBCLK;
       unsigned short *pFORMAT, *pDTTC, *pCONTROL, *pTileCtrl;
       unsigned int *pVSC;
 
@@ -2913,12 +2913,19 @@ cirrusRestore(restore)
 
       if (cirrusChip == CLGD5465) {
 	pTileCtrl = (unsigned short *)(cirrusMMIOBase + 0x2C4);
-	*pTileCtrl = (*pTileCtrl & 0x003F) | (restore->TileCtrl & 0xFFC0);
+	*pTileCtrl = (*pTileCtrl & 0x003F) | (restore->TileCtrl & 0xFFC0) |
+	  (cirrusMemoryInterleave << 8);
       }
 
       pTILE = (unsigned char *)(cirrusMMIOBase + 0x407);
       *pTILE = (restore->TILE & 0x3F) | (cirrusMemoryInterleave);
 
+      if (cirrusChip == CLGD5465)
+ 	pBCLK = (unsigned char *)(cirrusMMIOBase + 0x2C0);
+      else
+ 	pBCLK = (unsigned char *)(cirrusMMIOBase + 0x8C);
+      *pBCLK = (*pBCLK & 0xE0) | (restore->BCLK & 0x1F);
+ 
       pCONTROL = (unsigned short *)(cirrusMMIOBase + 0x402);
       *pCONTROL = restore->CONTROL;
 
@@ -3038,6 +3045,7 @@ cirrusSave(save)
 /*  unsigned short TileCtrl;     Tiling control (5465) */
 /*  unsigned short DTTC;         Display Threshold and Tiling Control (546X) */
 /*  unsigned char TILE;          Tile control (546X) */
+/*  unsigned char BCLK;          Rambus memory clock (546X) */
 /*  unsigned short CONTROL;      Control (546X) */
 
   save->GR9 = temp1;
@@ -3080,7 +3088,7 @@ cirrusSave(save)
     }  
 
   if ((cirrusChip >= CLGD5424 && cirrusChip <= CLGD5429) || HAVE543X() ||
-      HAVE75XX() || cirrusChip == CLGD5446) 
+      HAVE75XX() || cirrusChip == CLGD5446 || cirrusChip == CLGD5480) 
        {
        /* Save the Performance Tuning Register on these chips only. */
         outb(0x3C4,0x16);
@@ -3097,7 +3105,7 @@ cirrusSave(save)
   save->SR1E = inb(0x3C5);
 
   if ((cirrusChip >= CLGD5424 && cirrusChip <= CLGD5429) || HAVE543X() ||
-      HAVE75XX() || cirrusChip == CLGD5446) {
+      HAVE75XX() || cirrusChip == CLGD5446 || cirrusChip == CLGD5480) {
       outb(0x3c4, 0x1f);		/* Save the MCLK register. */
       save->SR1F = inb(0x3c5);
   }
@@ -3112,7 +3120,7 @@ cirrusSave(save)
   save->CR1B = inb(vgaIOBase + 5);
 
   if (cirrusChip == CLGD5434 || cirrusChip == CLGD5436 ||
-      cirrusChip == CLGD5446 || HAVE546X()) {
+      cirrusChip == CLGD5446 || cirrusChip == CLGD5480 || HAVE546X()) {
       outb(vgaIOBase + 4, 0x1D);
       save->CR1D = inb(vgaIOBase + 5);
   }
@@ -3135,7 +3143,8 @@ cirrusSave(save)
   if (vgaBitsPerPixel >= 8) {
 #ifdef ALLOW_8BPP_MULTIPLEXING
   if ((cirrusChip == CLGD5434 || cirrusChip == CLGD5436 ||
-       cirrusChip == CLGD5446 || vgaBitsPerPixel != 8) && !HAVE546X()) {
+       cirrusChip == CLGD5446 || cirrusChip == CLGD5480 ||
+       vgaBitsPerPixel != 8) && !HAVE546X()) {
       outb(0x3c6, 0x00);
       outb(0x3c6, 0xff);
       inb(0x3c6); inb(0x3c6); inb(0x3c6); inb(0x3c6);
@@ -3182,6 +3191,12 @@ cirrusSave(save)
       pB = (unsigned char *)(cirrusMMIOBase + 0x407);
       save->TILE = *pB;
       
+      if (cirrusChip == CLGD5465)
+ 	pB = (unsigned char *)(cirrusMMIOBase + 0x2C0);
+      else
+ 	pB = (unsigned char *)(cirrusMMIOBase + 0x8C);
+      save->BCLK = *pB;
+ 
       pW = (unsigned short *)(cirrusMMIOBase + 0x402);
       save->CONTROL = *pW;
 
@@ -3248,7 +3263,7 @@ cirrusInit(mode)
   multiplexing = 0;
   if (vgaBitsPerPixel == 8 
       && (cirrusChip == CLGD5434 || cirrusChip == CLGD5436 ||
-	  cirrusChip == CLGD5446) && 
+	  cirrusChip == CLGD5446 || cirrusChip == CLGD5480) && 
       vga256InfoRec.clock[mode->Clock] > CLOCK_PALETTE_DOUBLING_5434) {
     /* On the 5434, enable palette doubling mode for clocks > 85.5 MHz. */
     multiplexing = 1;
@@ -3308,6 +3323,7 @@ cirrusInit(mode)
   /*  unsigned short DTTC;               Display Threshold and Tiling Ctrl */
   /*  unsigned short TileCtrl;           Tiling control (5465) */
   /*  unsigned char TILE;                Tile control (546X) */
+  /*  unsigned char BCLK;                Rambus memory clock (546X) */
   /*  unsigned short CONTROL;            Control (546X) */
   
 				/* Set the clock regs */
@@ -3330,7 +3346,9 @@ cirrusInit(mode)
       if (!cirrusCheckClock(cirrusChip, new->std.NoClock))
 	return (FALSE);
 
-      if (!HAVE546X()) {
+      if (HAVE546X()) {
+	new->BCLK = cirrusLgBCLK;
+      } else {
 	if (cirrusReprogrammedMCLK > 0)
 	  new->SR1F = cirrusReprogrammedMCLK;
 	else {
@@ -3366,7 +3384,8 @@ cirrusInit(mode)
 	}
 	if (usemclk && (cirrusChip == CLGD5428 || cirrusChip == CLGD5429
 			|| HAVE543X() || HAVE75XX()
-			|| cirrusChip == CLGD5446)) {
+			|| cirrusChip == CLGD5446 
+			|| cirrusChip == CLGD5480)) {
 	  new->SR1F |= 0x40;	/* Use MCLK as VLCK. */
 	  SR1E &= 0xfe;	        /* Clear bit 0 of SR1E. */
 	}
@@ -3425,21 +3444,16 @@ cirrusInit(mode)
 
 
      
-  if (vgaBitsPerPixel >= 8) {
-  if (((vgaBitsPerPixel == 16 || vgaBitsPerPixel == 32) && !HAVE546X()) ||
-      (vgaBitsPerPixel == 16 && HAVE546X())) {
-    /* This is for 16bpp and 32bpp. */
-    /* In 32bpp mode, the value is multiplied by two by the chip. */ 
-    new->std.CRTC[0x13] = vga256InfoRec.displayWidth >> 2;
-  } else if (HAVE546X() && vgaBitsPerPixel == 32) {
-    new->std.CRTC[0x13] = (vga256InfoRec.displayWidth>>1) & 0x0FF;
+  if (vgaBitsPerPixel == 16) {
+    new->std.CRTC[0x13] = (vga256InfoRec.displayWidth >> 2) & 0xFF;
+  } else if (vgaBitsPerPixel == 32) {
+    new->std.CRTC[0x13] = (vga256InfoRec.displayWidth >> 1) & 0xFF;
   } else if (vgaBitsPerPixel == 24 && !HAVE546X()) {
     new->std.CRTC[0x13] = (vga256InfoRec.displayWidth * 3) >> 3;
   } else if (vgaBitsPerPixel == 24 && HAVE546X()) {
     /* Round _up_ to pad the scanline out with extra bytes */
     new->std.CRTC[0x13] = (vga256InfoRec.displayWidth * 3 + 3) >> 3;
-  }    
-  else
+  } else if (vgaBitsPerPixel == 8) {
     new->std.CRTC[0x13] = vga256InfoRec.displayWidth >> 3;
   }
 
@@ -3477,14 +3491,15 @@ cirrusInit(mode)
   /* It is vital for correct operation at high dot clocks. */
  
   if ((cirrusChip >= CLGD5422 && cirrusChip <= CLGD5429)
-      || HAVE543X() || HAVE75XX() || cirrusChip == CLGD5446)
+      || HAVE543X() || HAVE75XX() || cirrusChip == CLGD5446
+      || cirrusChip == CLGD5480)
     {
       new->SRF |= 0x20;	/* Enable 64 byte FIFO. */
     }
 
   if (vgaBitsPerPixel >= 8) {
   if ((cirrusChip >= CLGD5424 && cirrusChip <= CLGD5429) || HAVE543X() ||
-      HAVE75XX() || cirrusChip == CLGD5446)
+      HAVE75XX() || cirrusChip == CLGD5446 || cirrusChip == CLGD5480)
     {
       int fifoshift_5430;
       int pixelrate, bandwidthleft, bandwidthused, percent;
@@ -3589,7 +3604,7 @@ cirrusInit(mode)
       } /* endif cirrusChip == CLGD5434 */
       else
       if (cirrusChip == CLGD5436 || cirrusChip == CLGD5446 ||
-      cirrusChip == CLGD7555) {
+	  cirrusChip == CLGD5480 || cirrusChip == CLGD7555) {
           int threshold;
           if (OFLG_ISSET(OPTION_FIFO_CONSERV, &vga256InfoRec.options)) {
               threshold = 8;
@@ -3683,7 +3698,8 @@ cirrusInit(mode)
     {
       new->GRB |= 0x20;	/* Set 16k bank granularity */
       if (cirrusChip != CLGD5434 && cirrusChip != CLGD5436 &&
-	  cirrusChip != CLGD5446 && !HAVE75XX()) {
+	  cirrusChip != CLGD5446 && cirrusChip != CLGD5480 &&
+	  !HAVE75XX()) {
 	if (vga256InfoRec.displayWidth * vga256InfoRec.virtualY / 2 > (1024*1024)
 		&& !OFLG_ISSET(OPTION_NO_2MB_BANKSEL, &vga256InfoRec.options)
 		&& (vgaBitsPerPixel < 8))
@@ -3720,7 +3736,7 @@ cirrusInit(mode)
        * nicely compatible).
        *
        * 24bpp uses a triple-clocking mode on all chips except the 5436
-       * and 5446, which do 24bpp with VCLK at pixel rate.
+       * and 5446 and 5480, which do 24bpp with VCLK at pixel rate.
        */
       if (vgaBitsPerPixel == 8) {
 	if (HAVE546X())
@@ -3796,6 +3812,28 @@ cirrusInit(mode)
 	| 0x22;
      } else {
 #if 1
+       if (HAVE546X()) {
+ 	 if (vgaBitsPerPixel == 8)
+ 	   new->CR1B = (((vga256InfoRec.displayWidth>>3) & 0x100) >> 4) | 0x22;
+ 	 else if (vgaBitsPerPixel == 16)
+ 	   new->CR1B = (((vga256InfoRec.displayWidth>>2) & 0x100) >> 4) | 0x22;
+ 	 else if (vgaBitsPerPixel == 24)
+ 	   new->CR1B = 
+ 	     (((vga256InfoRec.displayWidth * 3 + 3) & 0x800) >> 7) | 0x22;
+ 	 else if (vgaBitsPerPixel == 32)
+ 	   new->CR1B = (((vga256InfoRec.displayWidth>>1) & 0x100) >> 4) | 0x22;
+       } else {                           /* !HAVE546X() */
+ 	 if (vgaBitsPerPixel == 8)
+ 	   new->CR1B = (((vga256InfoRec.displayWidth>>3) & 0x100) >> 4) | 0x22;
+ 	 else if (vgaBitsPerPixel == 16)
+ 	   new->CR1B = (((vga256InfoRec.displayWidth>>2) & 0x100) >> 4) | 0x22;
+ 	 else if (vgaBitsPerPixel == 24)
+ 	   new->CR1B = 
+ 	     (((vga256InfoRec.displayWidth * 3) & 0x800) >> 7) | 0x22;
+ 	 else if (vgaBitsPerPixel == 32)       /* !!! Is this right ??? */
+ 	   new->CR1B = (((vga256InfoRec.displayWidth>>1) & 0x100) >> 4) | 0x22;
+       }
+#elif 1
       if ((vgaBitsPerPixel > 8 && vgaBitsPerPixel != 24 && !HAVE546X()) ||
 	  (vgaBitsPerPixel == 16 && HAVE546X()))
 	new->CR1B = (((vga256InfoRec.displayWidth>>2) & 0x100) >> 4) | 0x22;
@@ -3823,7 +3861,7 @@ cirrusInit(mode)
       }
 
       if (cirrusChip == CLGD5434 || cirrusChip == CLGD5436 ||
-	  cirrusChip == CLGD5446) {
+	  cirrusChip == CLGD5446 || cirrusChip == CLGD5480) {
 	outb(vgaIOBase + 4, 0x1D);
 	/* Set display start address bit 19 to 0. */
 	new->CR1D = inb(vgaIOBase + 5) & 0x7f;
@@ -3953,7 +3991,11 @@ cirrusInit(mode)
 	new->CR1E |= ((mode->CrtcVSyncStart & 0x0400)?1:0)<<1;
 	new->CR1E |= ((mode->CrtcVSyncStart & 0x0400)?1:0)<<0;
 	
-	/* For now, we'll always force a display width of 2048 pixels */
+ 	if (cirrusFindPitchPadding(&i) > 0)
+ 	  cirrusTilesPerLineIndex = i;
+ 	else
+ 	  cirrusTilesPerLineIndex = defaultTilesPerLineIndex;
+
 	switch (vgaBitsPerPixel) {
 	default:
 	  ErrorF("****** DANGEROUS WARNING! ******\n");
@@ -3961,34 +4003,12 @@ cirrusInit(mode)
 	case 8:
 	  new->FORMAT = 0x0000;
 
-	  /* The display pitch must be an even multiple of the tile size.
-	     In fact, it must be one of only a handful of tile sizes.  So
-	     round pitch up to the nearest acceptable tile pitch */
-	  for (i = 0; cirrusTilesPerLineTab[i].pitch > 0; i++)
-	    if (cirrusTilesPerLineTab[i].pitch == vga256InfoRec.displayWidth)
-	      break;
-
-	  if (cirrusTilesPerLineTab[i].pitch < 0) {
-	    /* If we didn't find a correct tile pitch, warn the user and
-	       use a default.  It probably isn't correct, but what else 
-	       should we do? */
-	    ErrorF("%s: %s: Warning: virtual screen width not multiple "
-		   "of tile size\n", vga256InfoRec.name, 
-		   vga256InfoRec.chipset);
-	    ErrorF("%s: %s: Use one of the following sizes: \n",
-		   vga256InfoRec.name, vga256InfoRec.chipset);
-	    for (i = 0; cirrusTilesPerLineTab[i].pitch > 0; i++)
-	      ErrorF("%d ", cirrusTilesPerLineTab[i].pitch);
-	    ErrorF("\n");
-	    i = defaultTilesPerLineIndex;
-	  }
-
-	  cirrusTilesPerLineIndex = i;
-	  new->TILE = cirrusTilesPerLineTab[i].tilesPerLine;
+ 	  new->TILE = cirrusTilesPerLineTab[cirrusTilesPerLineIndex].
+ 	    tilesPerLine;
 	  new->DTTC = (new->TILE << 8) | 0x0080 | 
-	    (cirrusTilesPerLineTab[i].width << 6);
+	    (cirrusTilesPerLineTab[cirrusTilesPerLineIndex].width << 6);
 	  new->CONTROL = 0x0000 | 
-	    (cirrusTilesPerLineTab[i].width << 11);
+	    (cirrusTilesPerLineTab[cirrusTilesPerLineIndex].width << 11);
 
 
 	  /* There is an optimal FIFO threshold value (lower 5 bits of DTTC)
@@ -4021,7 +4041,7 @@ cirrusInit(mode)
 	  break;
 
 	case 16:
-	  if (cirrusChip == CLGD5464 &&
+	  if (HAVE546X() && cirrusChip != CLGD5462 &&
 	      xf86weight.red == 5 && xf86weight.green == 5
 	      && xf86weight.blue == 5) {
 	    /* 5-5-5 RGB mode */
@@ -4031,37 +4051,12 @@ cirrusInit(mode)
 	    new->FORMAT = 0x1400;
 	  }
 
-	  /* The display pitch must be an even multiple of the tile size.
-	     In fact, it must be one of only a handful of tile sizes.  So
-	     round pitch up to the nearest acceptable tile pitch */
-	  /* In 16bpp, there are two bytes per pixel */
-	  for (i = 0; cirrusTilesPerLineTab[i].pitch > 0; i++)
-	    if ((cirrusTilesPerLineTab[i].pitch>>1) == 
-		vga256InfoRec.displayWidth)
-	      break;
-
-	  if (cirrusTilesPerLineTab[i].pitch < 0) {
-	    /* If we didn't find a correct tile pitch, warn the user and
-	       use a default.  It probably isn't correct, but what else 
-	       should we do? */
-	    ErrorF("%s: %s: Warning: virtual screen width not multiple "
-		   "of tile size\n", vga256InfoRec.name, 
-		   vga256InfoRec.chipset);
-	    ErrorF("%s: %s: Use one of the following sizes: \n",
-		   vga256InfoRec.name, vga256InfoRec.chipset);
-	    for (i = 0; cirrusTilesPerLineTab[i].pitch > 0; i++)
-	      ErrorF("%d ", cirrusTilesPerLineTab[i].pitch>>1);
-	    ErrorF("\n");
-	    i = defaultTilesPerLineIndex;
-	  }
-
-	  cirrusTilesPerLineIndex = i;
-	  new->TILE = cirrusTilesPerLineTab[i].tilesPerLine;
+	  new->TILE = cirrusTilesPerLineTab[cirrusTilesPerLineIndex].
+	    tilesPerLine;
 	  new->DTTC = (new->TILE << 8) | 0x0080 | 
-	    (cirrusTilesPerLineTab[i].width << 6);
+	    (cirrusTilesPerLineTab[cirrusTilesPerLineIndex].width << 6);
 	  new->CONTROL = 0x2000 | 
-	    (cirrusTilesPerLineTab[i].width << 11);
-
+	    (cirrusTilesPerLineTab[cirrusTilesPerLineIndex].width << 11);
 
 
 	  switch (mode->CrtcHDisplay) {
@@ -4093,36 +4088,12 @@ cirrusInit(mode)
 	case 24:
 	  new->FORMAT = 0x2400;
 
-	  /* The display pitch must be an even multiple of the tile size.
-	     In fact, it must be one of only a handful of tile sizes.  So
-	     round pitch up to the nearest acceptable tile pitch */
-	  /* In 24bpp, there are three bytes per pixel */
-	  for (i = 0; cirrusTilesPerLineTab[i].pitch > 0; i++)
-	    if ((cirrusTilesPerLineTab[i].pitch/3) == 
-		vga256InfoRec.displayWidth)
-	      break;
-
-	  if (cirrusTilesPerLineTab[i].pitch < 0) {
-	    /* If we didn't find a correct tile pitch, warn the user and
-	       use a default.  It probably isn't correct, but what else 
-	       should we do? */
-	    ErrorF("%s: %s: Warning: virtual screen width not multiple "
-		   "of tile size\n", vga256InfoRec.name, 
-		   vga256InfoRec.chipset);
-	    ErrorF("%s: %s: Use one of the following sizes: \n",
-		   vga256InfoRec.name, vga256InfoRec.chipset);
-	    for (i = 0; cirrusTilesPerLineTab[i].pitch > 0; i++)
-	      ErrorF("%d ", cirrusTilesPerLineTab[i].pitch/3);
-	    ErrorF("\n");
-	    i = defaultTilesPerLineIndex;
-	  }
-
-	  cirrusTilesPerLineIndex = i;
-	  new->TILE = cirrusTilesPerLineTab[i].tilesPerLine;
+ 	  new->TILE = cirrusTilesPerLineTab[cirrusTilesPerLineIndex].
+ 	    tilesPerLine;
 	  new->DTTC = (new->TILE << 8) | 0x0080 | 
-	    (cirrusTilesPerLineTab[i].width << 6);
+	    (cirrusTilesPerLineTab[cirrusTilesPerLineIndex].width << 6);
 	  new->CONTROL = 0x4000 | 
-	    (cirrusTilesPerLineTab[i].width << 11);
+	    (cirrusTilesPerLineTab[cirrusTilesPerLineIndex].width << 11);
 
 
 	  switch (mode->CrtcHDisplay) {
@@ -4155,36 +4126,12 @@ cirrusInit(mode)
 	case 32:
 	  new->FORMAT = 0x3400;
 
-	  /* The display pitch must be an even multiple of the tile size.
-	     In fact, it must be one of only a handful of tile sizes.  So
-	     round pitch up to the nearest acceptable tile pitch */
-	  /* In 32bpp, there are four bytes per pixel */
-	  for (i = 0; cirrusTilesPerLineTab[i].pitch > 0; i++)
-	    if ((cirrusTilesPerLineTab[i].pitch>>2) == 
-		vga256InfoRec.displayWidth)
-	      break;
-
-	  if (cirrusTilesPerLineTab[i].pitch < 0) {
-	    /* If we didn't find a correct tile pitch, warn the user and
-	       use a default.  It probably isn't correct, but what else 
-	       should we do? */
-	    ErrorF("%s: %s: Warning: virtual screen width not multiple "
-		   "of tile size\n", vga256InfoRec.name, 
-		   vga256InfoRec.chipset);
-	    ErrorF("%s: %s: Use one of the following sizes: \n",
-		   vga256InfoRec.name, vga256InfoRec.chipset);
-	    for (i = 0; cirrusTilesPerLineTab[i].pitch > 0; i++)
-	      ErrorF("%d ", cirrusTilesPerLineTab[i].pitch>>2);
-	    ErrorF("\n");
-	    i = defaultTilesPerLineIndex;
-	  }
-
-	  cirrusTilesPerLineIndex = i;
-	  new->TILE = cirrusTilesPerLineTab[i].tilesPerLine;
+ 	  new->TILE = cirrusTilesPerLineTab[cirrusTilesPerLineIndex].
+ 	    tilesPerLine;
 	  new->DTTC = (new->TILE << 8) | 0x0080 | 
-	    (cirrusTilesPerLineTab[i].width << 6);
+	    (cirrusTilesPerLineTab[cirrusTilesPerLineIndex].width << 6);
 	  new->CONTROL = 0x6000 | 
-	    (cirrusTilesPerLineTab[i].width << 11);
+	    (cirrusTilesPerLineTab[cirrusTilesPerLineIndex].width << 11);
 
 
 	  switch (mode->CrtcHDisplay) {
@@ -4237,36 +4184,6 @@ cirrusInit(mode)
 	}
 	  
 
-#if 0
-	/* Set up the proper memory interleave.  The interleave is dependent
-	   only upon how much memory there is installed. */
-	pDTTC = (unsigned short *)(cirrusMMIOBase + 0xEA);
-	pTILE = (unsigned char *)(cirrusMMIOBase + 0x407);
-	switch (vga256InfoRec.videoRam) {
-	case 1024:
-	case 3072:
-	case 5120:
-	case 6144:
-	case 7168:
-	  /* One-way interleaving */
-	  *pTILE = (*pTILE & 0x3F) | (0x00);
-	  *pDTTC = (*pDTTC & 0x3FFF) | (0x0000);
-	  break;
-
-	case 2048:
-	  /* Two-way interleaving */
-	  *pTILE = (*pTILE & 0x3F) | (0x40);
-	  *pDTTC = (*pDTTC & 0x3FFF) | (0x4000);
-	  break;
-
-	case 4096:
-	case 8192:
-	  /* Four-way interleaving */
-	  *pTILE = (*pTILE & 0x3F) | (0x80);
-	  *pDTTC = (*pDTTC & 0x3FFF) | (0x8000);
-	  break;
-	} /* memory size switch statement */
-#else
 	/* Set up the proper memory interleave.  The interleave is dependent
 	   only upon how much memory there is installed. */
 	switch (vga256InfoRec.videoRam) {
@@ -4290,12 +4207,7 @@ cirrusInit(mode)
 	  cirrusMemoryInterleave = 0x80;
 	  break;
 	} /* memory size switch statement */
-#endif
 
-	/* The 5465AA and AB are stuck with one-way memory interleaving.  
-	   I don't know about the AC yet... */
-	if (cirrusChip == CLGD5465)
-	  cirrusMemoryInterleave = 0x00;
 
 	if (cirrusChip == CLGD5465)
 	  new->TileCtrl = new->DTTC & 0xFFC0;
@@ -4383,7 +4295,11 @@ cirrusAdjust(x, y)
        /* If the screen isn't aligned to a tile boundry, the first tile
 	  is hosed.  Tiles on the 546X are either 128 or 256 bytes wide.
 	  The width can be determined by looking at cirrusTilesPerLineTab
-	  at index cirrusTilesPerLineIndex and examining the width field. */
+	  at index cirrusTilesPerLineIndex and examining the width field.
+ 
+ 	  NOTE:  This problem has been fixed in the CL-GD5465.
+	  */
+
        int pixelsPerTile;
        int wideTiles = cirrusTilesPerLineTab[cirrusTilesPerLineIndex].width;
        unsigned short *pX = (unsigned short *)(cirrusMMIOBase + 0xE0);
@@ -4399,27 +4315,30 @@ cirrusAdjust(x, y)
 	 pixelsPerTile = wideTiles?64:32;
 
        screenWidth = vga256InfoRec.frameX1 - vga256InfoRec.frameX0;
-       if (*pX < bumpThresh) {
-	 /* Bumping up against left edge.  Bias screen to left. */
-	 x = (x / pixelsPerTile) * pixelsPerTile;
-	 onLeftSide = 1;
-       } else if (*pX > screenWidth - bumpThresh) {
-	 /* Bumping up against right edge.  Bias screen to right. */
-	 x = ((x+pixelsPerTile-1) / pixelsPerTile) * pixelsPerTile;
-	 onLeftSide = 0;
-       } else if (onLeftSide) {
-	 /* Scrolling vertically, but screen is biased to left edge. */
-	 x = (x / pixelsPerTile) * pixelsPerTile;
-       } else /* !onLeftSide */ {
-	 /* Scrolling vertically, but screen is biased to right edge. */
-	 x = ((x+pixelsPerTile-1) / pixelsPerTile) * pixelsPerTile;
-       }
+       if (cirrusChip != CLGD5465 ||
+	   (cirrusChip == CLGD5465 && vgaBitsPerPixel == 24)) {
+	 if (*pX < bumpThresh) {
+	   /* Bumping up against left edge.  Bias screen to left. */
+	   x = (x / pixelsPerTile) * pixelsPerTile;
+	   onLeftSide = 1;
+	 } else if (*pX > screenWidth - bumpThresh) {
+	   /* Bumping up against right edge.  Bias screen to right. */
+	   x = ((x+pixelsPerTile-1) / pixelsPerTile) * pixelsPerTile;
+	   onLeftSide = 0;
+	 } else if (onLeftSide) {
+	   /* Scrolling vertically, but screen is biased to left edge. */
+	   x = (x / pixelsPerTile) * pixelsPerTile;
+	 } else /* !onLeftSide */ {
+	   /* Scrolling vertically, but screen is biased to right edge. */
+	   x = ((x+pixelsPerTile-1) / pixelsPerTile) * pixelsPerTile;
+	 }
 
-       /* Don't scroll the virtual desktop too far right.  If the desktop
-	  gets aligned with one tile too far right, then you see the screen
-	  wrapped horizontally on the far right of the display. */
-       if (x > vga256InfoRec.displayWidth - screenWidth)
-	 x -= pixelsPerTile;
+	 /* Don't scroll the virtual desktop too far right.  If the desktop
+	    gets aligned with one tile too far right, then you see the screen
+	    wrapped horizontally on the far right of the display. */
+	 if (x > vga256InfoRec.displayWidth - screenWidth)
+	   x -= pixelsPerTile;
+       }
 
        cirrusLgCursorXOffset = screenStartX - x;
      }
@@ -4438,7 +4357,11 @@ cirrusAdjust(x, y)
        /* If the screen isn't aligned to a tile boundry, the first tile
 	  is hosed.  Tiles on the 546X are either 128 or 256 bytes wide.
 	  The width can be determined by looking at cirrusTilesPerLineTab
-	  at index cirrusTilesPerLineIndex and examining the width field. */
+	  at index cirrusTilesPerLineIndex and examining the width field. 
+	  
+	  NOTE:  This problem has been fixed in the CL-GD5465.
+	  */
+
        int pixelsPerTile;
        int wideTiles = cirrusTilesPerLineTab[cirrusTilesPerLineIndex].width;
        unsigned short *pX = (unsigned short *)(cirrusMMIOBase + 0xE0);
@@ -4456,28 +4379,31 @@ cirrusAdjust(x, y)
 
        screenWidth = vga256InfoRec.frameX1 - vga256InfoRec.frameX0;
 
-       if (*pX < 2) {
-	 /* Bumping up against left edge.  Bias screen to left. */
-	 x = (x / pixelsPerTile) * pixelsPerTile;
-	 onLeftSide = 1;
-       } else if (*pX > screenWidth - 2) {
-	 /* Bumping up against right edge.  Bias screen to right. */
-	 x = ((x+pixelsPerTile-1) / pixelsPerTile) * pixelsPerTile;
-	 onLeftSide = 0;
-       } else if (onLeftSide) {
-	 /* Scrolling vertically, but screen is biased to left edge. */
-	 x = (x / pixelsPerTile) * pixelsPerTile;
-       } else /* !onLeftSide */ {
-	 /* Scrolling vertically, but screen is biased to right edge. */
-	 x = ((x+pixelsPerTile-1) / pixelsPerTile) * pixelsPerTile;
+       if (cirrusChip != CLGD5465 ||
+	   (cirrusChip == CLGD5465 && vgaBitsPerPixel == 24)) {
+	 if (*pX < 2) {
+	   /* Bumping up against left edge.  Bias screen to left. */
+	   x = (x / pixelsPerTile) * pixelsPerTile;
+	   onLeftSide = 1;
+	 } else if (*pX > screenWidth - 2) {
+	   /* Bumping up against right edge.  Bias screen to right. */
+	   x = ((x+pixelsPerTile-1) / pixelsPerTile) * pixelsPerTile;
+	   onLeftSide = 0;
+	 } else if (onLeftSide) {
+	   /* Scrolling vertically, but screen is biased to left edge. */
+	   x = (x / pixelsPerTile) * pixelsPerTile;
+	 } else /* !onLeftSide */ {
+	   /* Scrolling vertically, but screen is biased to right edge. */
+	   x = ((x+pixelsPerTile-1) / pixelsPerTile) * pixelsPerTile;
+	 }
+
+	 /* Don't scroll the virtual desktop too far right.  If the desktop
+	    gets aligned with one tile too far right, then you see the screen
+	    wrapped horizontally on the far right of the display. */
+	 if (x > vga256InfoRec.displayWidth - screenWidth)
+	   x -= pixelsPerTile;
        }
 
-       /* Don't scroll the virtual desktop too far right.  If the desktop
-	  gets aligned with one tile too far right, then you see the screen
-	  wrapped horizontally on the far right of the display. */
-       if (x > vga256InfoRec.displayWidth - screenWidth)
-	 x -= pixelsPerTile;
-       
        cirrusLgCursorXOffset = screenStartX - x;
      }
        
@@ -4508,7 +4434,7 @@ cirrusAdjust(x, y)
      outb(vgaIOBase + 5,(CR1B & 0xF2) | ((Base & 0x060000) >> 15)
 	  | ((Base & 0x010000) >> 16) );
      if (cirrusChip == CLGD5434 || cirrusChip == CLGD5436 ||
-	 cirrusChip == CLGD5446) {
+	 cirrusChip == CLGD5446 || cirrusChip == CLGD5480) {
          outb(vgaIOBase + 4, 0x1d); CR1D = inb(vgaIOBase + 5);
          outb(vgaIOBase + 5, (CR1D & 0x7f) | ((Base & 0x080000) >> 12));
      } else if (HAVE546X()) {
@@ -4552,15 +4478,6 @@ cirrusScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
      int dpix, dpiy;		/* dots per inch */
      int width;			/* pixel width of frame buffer */
 {
-#if 0
-  if (vgaBitsPerPixel >= 8) {
-  if (HAVE546X())
-    pScreen->CopyWindow = CirrusLgCopyWindow;
-  if (cirrusUseBLTEngine && vgaBitsPerPixel > 8)
-    pScreen->CopyWindow = CirrusCopyWindow;
-  }
-#endif
-
   return TRUE;
 }
 

@@ -1,4 +1,4 @@
-$XFree86: $
+$XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/CHANGES,v 1.2 1997/04/08 14:54:28 hohndel Exp $
 
 
 
@@ -42,6 +42,35 @@ Post-3.2A changes to the Cirrus driver.
     that BitBLT operations are finished when Setup function is called.
 
 11. Add preliminary support for the CL-GD7555 (not detected yet).
+
+**** Changes to 3.2As ****
+
+12. Fix HAVE_546X() macro for Laguna support. (corey)
+
+13. Add support for CL-GD5480. (corey)
+
+14. Disable Alpine XAA color expansion code enabled by (3).  Code was
+    locking machine.  THIS CODE SHOULD BE RE-ENABLED AND DEBUGGED!
+    (corey)
+
+15. Fix 32bpp Alpine mode bug. (corey)
+
+16. Overload {slow,med,fast}_dram options to set Rambus BCLK on Laguna
+    chips. (corey)
+
+17. Remove Sync()'s in laguna_acl.c, to take full advantage of XAA
+    delayed-sync mechanism. (corey)
+
+18. Removed unnecessary, dead, and/or dumb code in
+    cir_driver.c. (corey)
+
+19. Add clock values for 150MHz through 229MHz dot clocks. (corey)
+
+20. Set clock limits correctly for Laguna chips. (corey)
+
+21. Fix HW cursor location bug on CL-GD5465. (corey)
+
+    
 
 Testing goals:
 

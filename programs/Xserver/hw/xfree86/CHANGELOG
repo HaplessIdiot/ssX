@@ -1,4 +1,13 @@
-XFree86 3.2At (11 April 1997)
+XFree86 3.2At (14 April 1997)
+ 679. Various Cirrus fixes and additions. Fix HAVE_546X() macro for Laguna
+      support. Add support for CL-GD5480. Disable Alpine XAA color expansion
+      code. Fix 32bpp Alpine mode bug. Overload {slow,med,fast}_dram options
+      to set Rambus BCLK on Laguna chips. Remove Sync()'s in laguna_acl.c.
+      Removed unnecessary, dead, and/or dumb code in cir_driver.c. Add clock
+      values for 150MHz through 229MHz dot clocks. Set clock limits correctly
+      for Laguna chips. (#280, Corey Anderson).
+ 678. Fix problem in xf86gcmisc.c that could cause a segfault (#279,
+      Mark Voikovich).
  677. Fix problems with NonTE text in XAA (#278, David Bateman).
  676. Fix loader under SVR4.0.4 (lstat,fstat,mknod)(#277, Richard Coley).
  675. Speedups for dashed lines in SVGA/S3 (#276, Mark Vojkovich).
@@ -4341,4 +4350,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.445 1997/04/10 11:34:13 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.446 1997/04/12 13:44:02 hohndel Exp $
