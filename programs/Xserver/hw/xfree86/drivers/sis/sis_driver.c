@@ -5640,8 +5640,8 @@ SISVESASaveRestore(ScrnInfoPtr pScrn, vbeSaveRestoreFunction function)
        SiS_SaveFonts(pScrn);
 
        if(pSiS->vesamajor > 1) {
-	  if(!VBESaveRestore(pSiS->pVbe,function,(pointer)&pSiS->state,
-				&pSiS->stateSize,&pSiS->statePage)) {
+	  if(!VBESaveRestore(pSiS->pVbe, function, (pointer)&pSiS->state,
+				&pSiS->stateSize, &pSiS->statePage)) {
 	     return;
 	  }
        }
