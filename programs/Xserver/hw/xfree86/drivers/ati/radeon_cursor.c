@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.15 2002/10/12 01:38:07 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.16 2002/10/30 12:52:13 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -101,7 +101,11 @@ static void RADEONSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
     int                total_y    = pScrn->frameY1 - pScrn->frameY0;
     int                X2         = pScrn->frameX0 + x;
     int                Y2         = pScrn->frameY0 + y;
+    int		       stride     = 16;
 
+#ifdef ARGB_CURSOR
+    if (info->cursor_argb) stride = 256;
+#endif
     if (x < 0)                        xorigin = -x+1;
     if (y < 0)                        yorigin = -y+1;
     if (y > total_y)                  y       = total_y;
@@ -167,7 +171,7 @@ static void RADEONSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 	OUTREG(RADEON_CUR_HORZ_VERT_POSN, (RADEON_CUR_LOCK
 					   | ((xorigin ? 0 : x) << 16)
 					   | (yorigin ? 0 : y)));
-	OUTREG(RADEON_CUR_OFFSET, info->cursor_start + yorigin * 16);
+	OUTREG(RADEON_CUR_OFFSET, info->cursor_start + yorigin * stride);
     } else {
 	OUTREG(RADEON_CUR2_HORZ_VERT_OFF,  (RADEON_CUR2_LOCK
 					    | (xorigin << 16)
@@ -176,7 +180,7 @@ static void RADEONSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 					    | ((xorigin ? 0 : x) << 16)
 					    | (yorigin ? 0 : y)));
 	OUTREG(RADEON_CUR2_OFFSET,
-	       info->cursor_start + pScrn->fbOffset + yorigin * 16);
+	       info->cursor_start + pScrn->fbOffset + yorigin * stride);
     }
 
     if (info->Clone) {
@@ -194,7 +198,7 @@ static void RADEONSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 					    | ((xorigin ? 0 : X2) << 16)
 					    | (yorigin ? 0 : Y2)));
 	OUTREG(RADEON_CUR2_OFFSET,
-	       info->cursor_start + pScrn->fbOffset + yorigin * 16);
+	       info->cursor_start + pScrn->fbOffset + yorigin * stride);
     }
 }
 
@@ -212,15 +216,18 @@ static void RADEONLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *image)
     CARD32         save2      = 0;
 
     if (!info->IsSecondary) {
-	save1 = INREG(RADEON_CRTC_GEN_CNTL);
+	save1 = INREG(RADEON_CRTC_GEN_CNTL) & ~(CARD32) (3 << 20);
 	OUTREG(RADEON_CRTC_GEN_CNTL, save1 & (CARD32)~RADEON_CRTC_CUR_EN);
     }
 
     if (info->IsSecondary || info->Clone) {
-	save2 = INREG(RADEON_CRTC2_GEN_CNTL);
+	save2 = INREG(RADEON_CRTC2_GEN_CNTL) & ~(CARD32) (3 << 20);
 	OUTREG(RADEON_CRTC2_GEN_CNTL, save2 & (CARD32)~RADEON_CRTC2_CUR_EN);
     }
 
+#ifdef ARGB_CURSOR
+    info->cursor_argb = FALSE;
+#endif
 #if X_BYTE_ORDER == X_BIG_ENDIAN
     switch(info->CurrentLayout.pixel_bytes) {
     case 4:
@@ -318,6 +325,81 @@ static Bool RADEONUseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
     return info->cursor_start ? TRUE : FALSE;
 }
 
+#ifdef ARGB_CURSOR
+#include "cursorstr.h"
+
+static Bool RADEONUseHWCursorARGB (ScreenPtr pScreen, CursorPtr pCurs)
+{
+    ScrnInfoPtr    pScrn = xf86Screens[pScreen->myNum];
+    RADEONInfoPtr  info  = RADEONPTR(pScrn);
+
+    if (info->cursor_start &&
+	pCurs->bits->height <= 64 && pCurs->bits->width <= 64)
+	return TRUE;
+    return FALSE;
+}
+
+static void RADEONLoadCursorARGB (ScrnInfoPtr pScrn, CursorPtr pCurs)
+{
+    RADEONInfoPtr  info       = RADEONPTR(pScrn);
+    unsigned char *RADEONMMIO = info->MMIO;
+    CARD32        *d          = (CARD32 *)(pointer)(info->FB + info->cursor_start);
+    int            x, y, w, h;
+    CARD32         save1      = 0;
+    CARD32         save2      = 0;
+    CARD32	  *image = pCurs->bits->argb;
+    CARD32	  *i;
+
+    if (!image)
+	return;	/* XXX can't happen */
+    
+    if (!info->IsSecondary) {
+	save1 = INREG(RADEON_CRTC_GEN_CNTL) & ~(CARD32) (3 << 20);
+	save1 |= (CARD32) 2 << 20;
+	OUTREG(RADEON_CRTC_GEN_CNTL, save1 & (CARD32)~RADEON_CRTC_CUR_EN);
+    }
+
+    if (info->IsSecondary || info->Clone) {
+	save2 = INREG(RADEON_CRTC2_GEN_CNTL) & ~(CARD32) (3 << 20);
+	save2 |= (CARD32) 2 << 20;
+	OUTREG(RADEON_CRTC2_GEN_CNTL, save2 & (CARD32)~RADEON_CRTC2_CUR_EN);
+    }
+
+#ifdef ARGB_CURSOR
+    info->cursor_argb = TRUE;
+#endif
+    
+    w = pCurs->bits->width;
+    if (w > 64)
+	w = 64;
+    h = pCurs->bits->height;
+    if (h > 64)
+	h = 64;
+    for (y = 0; y < h; y++)
+    {
+	i = image;
+	image += pCurs->bits->width;
+	for (x = 0; x < w; x++)
+	    *d++ = *i++;
+	/* pad to the right with transparent */
+	for (; x < 64; x++)
+	    *d++ = 0;
+    }
+    /* pad below with transparent */
+    for (; y < 64; y++)
+	for (x = 0; x < 64; x++)
+	    *d++ = 0;
+    
+    if (!info->IsSecondary)
+	OUTREG(RADEON_CRTC_GEN_CNTL, save1);
+
+    if (info->IsSecondary || info->Clone)
+	OUTREG(RADEON_CRTC2_GEN_CNTL, save2);
+}
+
+#endif
+    
+
 /* Initialize hardware cursor support. */
 Bool RADEONCursorInit(ScreenPtr pScreen)
 {
@@ -328,7 +410,7 @@ Bool RADEONCursorInit(ScreenPtr pScreen)
     int                width;
     int                height;
     int                size;
-
+    int		       stride = 16;
 
     if (!(cursor = info->cursor = xf86CreateCursorInfoRec())) return FALSE;
 
@@ -352,12 +434,17 @@ Bool RADEONCursorInit(ScreenPtr pScreen)
     cursor->UseHWCursor       = RADEONUseHWCursor;
 
     size                      = (cursor->MaxWidth/4) * cursor->MaxHeight;
+#ifdef ARGB_CURSOR
+    cursor->UseHWCursorARGB   = RADEONUseHWCursorARGB;
+    cursor->LoadCursorARGB    = RADEONLoadCursorARGB;
+    size                      = (cursor->MaxWidth * 4) * cursor->MaxHeight;
+#endif
     width                     = pScrn->displayWidth;
     height                    = (size*2 + 1023) / pScrn->displayWidth;
     fbarea                    = xf86AllocateOffscreenArea(pScreen,
 							  width,
 							  height,
-							  16,
+							  stride,
 							  NULL,
 							  NULL,
 							  NULL);
@@ -371,7 +458,7 @@ Bool RADEONCursorInit(ScreenPtr pScreen)
 	info->cursor_start    = RADEON_ALIGN((fbarea->box.x1
 					      + width * fbarea->box.y1)
 					     * info->CurrentLayout.pixel_bytes,
-					     16);
+					     stride);
 	info->cursor_end      = info->cursor_start + size;
     }
 
