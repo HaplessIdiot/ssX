@@ -30,9 +30,12 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.2 2001/04/18 17:14:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.3 2001/04/22 19:52:36 alanh Exp $ */
 
 #include "win.h"
+#ifdef RENDER
+#include "mipict.h"
+#endif
 
 /*
  * Create a full screen window
@@ -578,8 +581,8 @@ winFinishScreenInitNativeGDI (int index,
   char                  *pbits = NULL;
   VisualPtr		pVisuals = NULL;
   DepthPtr		pDepths = NULL;
-  VisualID		rootVisual;
-  int			nVisuals, nDepths, nRootDepth = 0;
+  VisualID		rootVisual = NULL;
+  int			nVisuals = 0, nDepths = 0, nRootDepth = 0;
   winPrivScreenPtr	pScreenPriv = NULL;
   
   fprintf (stderr, "winScreenInit ()\n");

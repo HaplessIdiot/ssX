@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshaddd.c,v 1.1 2001/04/05 20:13:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshaddd.c,v 1.2 2001/04/18 17:14:06 dawes Exp $ */
 
 #include "win.h"
 
@@ -287,7 +287,7 @@ winShadowUpdateDD (ScreenPtr pScreen,
   if (FAILED (ddrval))
     {
       ErrorF ("winShadowUpdateProcDD () - Unlock failed\n");
-      return FALSE;
+      return;
     }
 
   /* Loop through all boxes in the damaged region */
@@ -326,7 +326,7 @@ winShadowUpdateDD (ScreenPtr pScreen,
   if (FAILED (ddrval))
     {
       ErrorF ("winShadowUpdateProcDD () - Lock failed\n");
-      return FALSE;
+      return;
     }
 
   /* Has our memory pointer changed? */
@@ -347,7 +347,7 @@ winShadowUpdateDD (ScreenPtr pScreen,
 	{
 	  ErrorF ("winShadowUpdateProcDD () - Bits changed, could not "\
 		  "notify fb.\n");
-	  return FALSE;
+	  return;
 	}
     }
 }
@@ -582,7 +582,7 @@ winAdjustVideoModeShadowDD (ScreenPtr pScreen)
     }
   
   /* Release our DC */
-  ReleaseDC ((HDC) hdc, NULL);
+  ReleaseDC (NULL, hdc);
   return TRUE;
 }
 
