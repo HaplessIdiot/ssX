@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.122 2003/10/09 22:06:36 herrb Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.123 2003/10/09 22:43:18 herrb Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -134,6 +134,8 @@ XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.122 2003/10/09 22:06:36 her
  * YaccFile			(file,flags)
  * YaccFileNoFlags		(file)
  * MakeLibrary			(libname,objlist)
+ * LinkBuildLibrary		(lib)
+ * LinkBuildSonameLibrary	(lib)
  * NormalLibraryTarget		(libname,objlist)
  * NormalLibraryTarget2		(libname,objlist1,objlist2)
  * NormalLibraryTarget3		(libname,objlist1,objlist2,objlist3)
@@ -2581,6 +2583,16 @@ clean::									@@\
 #ifndef _LinkBuildLibrary /* will get redefined elsewhere */
 #define _LinkBuildLibrary(lib) $(_NULLCMD_)
 #endif /* _LinkBuildLibrary */
+
+#ifndef LinkBuildSonameLibrary
+#ifdef UseInstalled  
+#define LinkBuildSonameLibrary(lib) true
+#else
+#define LinkBuildSonameLibrary(lib) MakeDirInline($(BUILDLIBDIR));\	@@\
+	RemoveFile($(BUILDLIBDIR)/lib);\	 			@@\
+	(cd $(BUILDLIBDIR) && $(LN) $(BUILDLIBTOP)/$(CURRENT_DIR)/lib .)
+#endif
+#endif /* LinkBuildSonameLibrary */
 
 /*
  * NormalLibraryTarget - generate rules to create a library.

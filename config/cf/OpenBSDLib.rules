@@ -7,7 +7,7 @@ XCOMM $OpenBSD: OpenBSDLib.rules,v 1.1 2000/10/09 20:43:58 matthieu Exp $
  * OpenBSD shared library rules
  */
 
-XCOMM $XFree86: xc/config/cf/OpenBSDLib.rules,v 1.7 2003/10/09 22:06:36 herrb Exp $
+XCOMM $XFree86: xc/config/cf/OpenBSDLib.rules,v 1.8 2003/10/09 22:43:12 herrb Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat NO
@@ -80,12 +80,6 @@ install:: Concat(lib,libname.so.rev) 					@@\
  * the library gone for long periods.
  */
 #ifndef SharedLibraryTarget
-#ifdef UseInstalled  
-#define LinkBuildSonameLibrary(lib) true
-#else
-#define LinkBuildSonameLibrary(lib) (RemoveFile($(BUILDLIBDIR)/lib); \
-	cd $(BUILDLIBDIR); $(LN) $(BUILDINCTOP)/$(CURRENT_DIR)/lib .)
-#endif
 
 #define SharedLibraryTarget(libname,rev,solist,down,up)			@@\
 AllTarget(Concat(lib,libname.so.rev))					@@\
