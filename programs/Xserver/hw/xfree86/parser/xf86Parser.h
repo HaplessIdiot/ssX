@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.9 1999/04/05 07:13:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.10 1999/04/25 10:02:41 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -251,7 +251,6 @@ typedef struct
 	int dev_dacSpeeds[CONF_MAXDACSPEEDS];
 	int dev_videoram;
 	int dev_textclockfreq;
-	int dev_memclk;
 	unsigned long dev_bios_base;
 	unsigned long dev_mem_base;
 	unsigned long dev_io_base;

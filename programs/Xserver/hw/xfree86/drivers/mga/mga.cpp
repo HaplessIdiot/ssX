@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.cpp,v 1.2 1999/03/21 07:35:12 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.cpp,v 1.3 1999/04/04 08:46:16 dawes Exp $ 
 .TH MGA __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 mga \- Matrox video driver
@@ -67,10 +67,6 @@ The following driver
 .B Options
 are supported:
 .TP
-.BI "Option ""8Plus24"" """ boolean """
-Enable or disable 8+24 overlay mode.  Only appropriate for depth 24.
-Default: off.
-.TP
 .BI "Option ""ColorKey"" """ integer """
 Set the colormap index used for the transparency key for the depth 8 plane
 when operating in 8+24 overlay mode.  The value must be in the range
@@ -86,6 +82,9 @@ be used to override that auto-detection.  Default: auto-detected.
 .TP
 .BI "Option ""NoAccel"" """ boolean """
 Disable or enable acceleration.  Default: acceleration is enabled.
+.TP
+.BI "Option ""Overlay""
+Enable 8+24 overlay mode.  Only appropriate for depth 24.  Default: off.
 .TP
 .BI "Option ""PciRetry"" """ boolean """
 Enable or disable PCI retries.  Default: off.

@@ -105,7 +105,7 @@ option names.  All names listed here are in their preferred user-visible
 form.  Some registered option names are:
 
 Types are:  B = boolean, O = set/unset (no value), I = integer, S = string,
-            A = optional string, F = floating point number
+            A = optional string, F = floating point number Q = frequency
 
 Scopes are: F = global flags, V = video driver, C = common (per screen),
             I = input drivers, X = XAA, Xv = Xv extension, M = misc.
@@ -178,10 +178,10 @@ FifoConservative          O     V    Conservative FIFO setting
 FifoModerate              O     V    Moderate FIFO setting
 FireGL3000                B     V    Card is Diamond FireGL3000
 FixPanelSize              B     V    ??
-FPClock8                  F     V    Flat panel clock for 8bpp fb (MHz)
-FPClock16                 F     V    Flat panel clock for 16bpp fb (MHz)
-FPClock24                 F     V    Flat panel clock for 24bpp fb (MHz)
-FPClock32                 F     V    Flat panel clock for 32bpp fb (MHz)
+FPClock8                  Q     V    Flat panel clock for 8bpp fb (MHz)
+FPClock16                 Q     V    Flat panel clock for 16bpp fb (MHz)
+FPClock24                 Q     V    Flat panel clock for 24bpp fb (MHz)
+FPClock32                 Q     V    Flat panel clock for 32bpp fb (MHz)
 FPMVRAM                   O     V    Fast page mode VRAM
 FramebufferWC             B     V    Enable/disable WC for the framebuffer
 GlideDevice               I     V    Selects which Voodoo board to use
@@ -193,11 +193,10 @@ LateRasPrecharge          O     V    Late RAS pre-charge
 Legend                    O     V    Card is Legend ET4000
 LCDCenter                 B     V    Enable/disable centering for LCD displays
 Linear                    B     V    Enable/disable linear framebuffer
-MCLK                      I     V    Set memory clock (kHz) (cf SetMclk)
+MCLK                      Q     V    Specify the current MCLK value (MHz)
 MedDRAM                   B     V    Medium speed DRAM
 MemCfg1                   I     V    ??
 MemCfg2                   I     V    ??
-MemClock                  I     V    Memory clock (MHz)  (cf SetMclk?)
 MGASDRAM                  B     V    Mga card has SDRAM
 MMIO                      B     V    Enable/disable memory mapped I/O
 MuxThreshold              I     V    Multiplexing threshold (kHz)
@@ -205,12 +204,14 @@ NoAccel                   B     V    Disable/enable acceleration
 NoClockChip               B     V    ??
 NoStretch                 B     V    Disable/enable stretching for LCD displays
 OnAtExit                  B     V    Leave video signal on when exiting server
-Overlay                   B     V    Enable/disable multi-depth/overlay
+Overlay                   A     V    Enable multi-depth/overlay.  An optional
+                                     string "M,N" may be specified, where
+                                     M, N are the depths.
 PciBurst                  B     V    Enable/disable PCI burst mode
 PciRetry                  B     V    Enable/disable PCI retries
 RGBbits                   I     V    Number of significant bits per rgb
-SetLCDClk                 I     V    Set LCD clock (kHz)
-SetMclk                   I     V    Set Memory Clock (kHz)
+SetLCDClk                 Q     V    Set LCD clock (MHz)
+SetMclk                   Q     V    Set Memory Clock (MHz)
 ShadowFB                  B     V    Enable shadow framebuffer layer
 ShowCache                 B     V    Enable viewing of offscreen memory
 ShowOverscan              O     V    Set the overscan area to a visible colour
@@ -302,4 +303,4 @@ and underscores removed.
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/Registry,v 1.9 1999/04/18 13:49:07 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/Registry,v 1.10 1999/04/25 10:01:52 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86tokens.h,v 1.7 1999/03/21 07:35:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86tokens.h,v 1.8 1999/04/05 07:13:18 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -150,7 +150,6 @@ typedef enum {
     CLOCKCHIP,
     CHIPID,
     CHIPREV,
-    MEMCLOCK,
     CARD,
     BUSID,
     TEXTCLOCKFRQ,

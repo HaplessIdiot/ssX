@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.22 1999/04/04 08:46:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.23 1999/04/18 04:08:39 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -507,6 +507,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     S3VPtr ps3v;
     MessageType from;
     int i;
+    double real;
     ClockRangePtr clockRanges;
     char *mod = NULL;
     const char *reqSym = NULL;
@@ -734,7 +735,8 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     } else
    	ps3v->LCDClk = 0;
 	
-    if (xf86GetOptValInteger(S3VOptions, OPTION_MCLK, &ps3v->MCLK)) {
+    if (xf86GetOptValFreq(S3VOptions, OPTION_MCLK, OPTUNITS_MHZ, &real)) {
+	ps3v->MCLK = (int)(real * 1000.0);
     	if (ps3v->MCLK <= 100000) {
 	  xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: set_mclk set to %1.3f Mhz\n",
 		ps3v->MCLK / 1000.0 );

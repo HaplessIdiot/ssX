@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.25 1999/04/25 11:34:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.26 1999/04/25 15:30:23 dawes Exp $ */
 
 #define DEBUG
 
@@ -514,6 +514,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     char *ramtype = NULL, *mclk = NULL;
     int vgaIOBase;
     int i;
+    double real;
     unsigned char temp, unlock;
     ClockRangePtr clockRanges;
     char *mod = NULL;
@@ -682,10 +683,11 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	pSiS->UsePCIRetry = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
     }
-    if (xf86GetOptValInteger(SISOptions, OPTION_SET_MEMCLOCK,
-	&pSiS->MemClock)) {
+    if (xf86GetOptValFreq(SISOptions, OPTION_SET_MEMCLOCK, OPTUNITS_MHZ,
+				&real)) {
+	pSiS->MemClock = (int)(real * 1000.0);
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Memory clock set to %.3f MHz\n",
-	pSiS->MemClock/1000.0);
+		pSiS->MemClock/1000.0);
     }
     if (xf86ReturnOptValBool(SISOptions, OPTION_FAST_VRAM, FALSE)) {
 	pSiS->FastVram = TRUE;

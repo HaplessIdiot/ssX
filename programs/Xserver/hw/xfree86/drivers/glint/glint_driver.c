@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.34 1999/04/25 10:02:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.35 1999/04/25 15:30:21 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -167,8 +167,8 @@ static OptionInfoRec GLINTOptions[] = {
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_BLOCK_WRITE,	"BlockWrite",	OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_FIREGL3000,	"FireGL3000",   OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_MEM_CLK,		"MemClock",	OPTV_INTEGER,	{0}, FALSE },
-    { OPTION_OVERLAY,		"Overlay",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_MEM_CLK,		"SetMClk",	OPTV_FREQ,	{0}, FALSE },
+    { OPTION_OVERLAY,		"Overlay",	OPTV_ANYSTR,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -748,10 +748,12 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     GLINTPtr pGlint;
     MessageType from;
     int i;
-    Bool Overlay;
+    double real;
+    Bool Overlay = FALSE;
     int maxwidth = 0, maxheight = 0;
     ClockRangePtr clockRanges;
     char *mod = NULL;
+    const char *s;
 
 
     /*
@@ -871,13 +873,11 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 		       pScrn->rgbBits);
     }
 
-    if (xf86IsOptionSet(GLINTOptions, OPTION_MEM_CLK)) {
-	if (xf86GetOptValInteger(GLINTOptions, OPTION_MEM_CLK, 
-				&pGlint->MemClock)) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+    if (xf86GetOptValFreq(GLINTOptions, OPTION_MEM_CLK, OPTUNITS_MHZ, &real)) {
+	pGlint->MemClock = (int)real;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
 		"Memory Clock override enabled, set to %dMHz\n",
 			pGlint->MemClock);
-	}
     }
     from = X_DEFAULT;
     pGlint->HWCursor = TRUE; /* ON by default */
@@ -901,13 +901,19 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, from, "PCI retry enabled\n");
     pScrn->overlayFlags = 0;
     from = X_DEFAULT;
-    if (xf86GetOptValBool(GLINTOptions, OPTION_OVERLAY, &Overlay))
-	from = X_CONFIG;
+    if ((s = xf86GetOptValString(GLINTOptions, OPTION_OVERLAY))) {
+	if (!*s || !xf86NameCmp(s, "8,24") || !xf86NameCmp(s, "24,8")) {
+	    Overlay = TRUE;
+	} else {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		"\"%s\" is not a valid value for Option \"Overlay\"\n", s);
+	}
+    }
     if (Overlay) {
 	if ((pScrn->depth == 24) && (pScrn->bitsPerPixel == 32)) {
 	    pScrn->colorKey = 255; /* we should let the user change this */
 	    pScrn->overlayFlags = OVERLAY_8_32_PLANAR;
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "32/8bpp overlay enabled\n");
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "24/8 overlay enabled\n");
 	}
     }
 
