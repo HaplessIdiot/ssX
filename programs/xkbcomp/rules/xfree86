@@ -5,7 +5,7 @@
 //  Copyright 1996 by Joseph Moss
 //
 //  2002 Modifier: Ivan Pascal      The XFree86 Project
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.81 2004/04/03 13:43:41 pascal Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.82 2004/05/08 07:26:53 pascal Exp $
 //
 
 // Layouts that still need be composed by old rules
@@ -25,7 +25,6 @@
   macintosh_old	=	macintosh
   powerpcps2	=	powerpcps2
   pc98		=	xfree98(pc98)
-  abnt2		=	xfree86(abnt2)
   jp106		=	xfree86(jp106)
   *		=	xfree86
 
@@ -68,7 +67,6 @@
 
 ! model		layout	=	symbols
   pc98		nec/jp	=	nec/jp(pc98)
-  abnt2		br	=	pc/pc(pc104)+pc/br
  $maclaptop	us	=	macintosh/us(extended)+apple(laptop_bad_switch)
  $maclaptop	en_US	=	macintosh/us(extended)+apple(laptop_bad_switch)
  $maclaptop	*	=	macintosh/us(extended)+apple(laptop_bad_switch)+macintosh/%l%(v)
@@ -107,7 +105,7 @@
               chicony chicony9885 \
               compaqeak8 compaqik7 compaqik13 compaqik18 armada presario ipaq \
               dell inspiron dtk2000 \
-              dexxa diamond genius geniuscomfy2 \
+              dexxa diamond genius geniuscomfy2 genius_kb12e \
               ennyah_dkb1008 \
               hpi6 hp2501 hp2505 hp5181 hpxe3gc hpxe3gf hpxe4xxx hpzt11xx \
               hp500fa hp5xx hp5185 \
