@@ -2,7 +2,7 @@ XCOMM $Xorg: os2Lib.tmpl,v 1.3 2000/08/17 19:41:48 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.16 2003/07/11 22:17:41 tsi Exp $
+XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.17 2003/11/06 03:25:40 dawes Exp $
 
 /*
  * OS2/EMX shared library template
@@ -12,11 +12,6 @@ XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.16 2003/07/11 22:17:41 tsi Exp $
 #endif */
 
 #define SharedLibFont NO
-/*
- * The following names are too long to be used for a DLL!!
- */
-#define SharedLibXfontcache NO
-#define SharedLibXxf86misc NO
 
 #define SharedX11Reqs $(LDPRELIB) -lshm
 #define SharedOldXReqs $(LDPRELIB) $(XONLYLIB)
@@ -49,6 +44,7 @@ XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.16 2003/07/11 22:17:41 tsi Exp $
 #define SharedXineramaReqs $(LDPRELIB) $(XLIB)
 #define SharedXvMCReqs $(LDPRELIB) $(XLIB)
 #define SharedXResReqs	$(LDPRELIB) $(XLIB)
+#define SharedXfontcacheReqs $(LDPRELIB) $(XLIB)
 
 /* library revisions, these are typically empty! */
 #define SharedX11Rev /**/

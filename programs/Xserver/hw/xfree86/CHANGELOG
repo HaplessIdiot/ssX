@@ -1,4 +1,9 @@
 XFree86 4.3.99.16 (xx November 2003)
+ 579. Change ProjectRoot from /XFree86 to /usr/X11R6 on OS/2 (Bugzilla #865,
+      Frank Giessler).
+ 578. Fix building of new Mesa on OS/2 (Bugzilla #865, Frank Giessler).
+ 577. Change the way how libraries with long file names are handed on
+      OS/2 (Bugzilla #865, Frank Giessler).
  576. Force screen blanking when entering DPMS states (Bugzilla #866,
       David Dawes, reported by Ed Fardos).
  575. XDarwin fixes/cleanups:
@@ -18158,7 +18163,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2951 2003/11/11 01:41:13 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2952 2003/11/11 21:02:25 dawes Exp $
 
 
 

@@ -1,5 +1,5 @@
 /* This is OS/2 REXX */
-/* $XFree86: xc/config/util/makedef.cmd,v 1.2 2003/03/25 04:18:06 dawes Exp $
+/* $XFree86: xc/config/util/makedef.cmd,v 1.3 2003/11/06 03:25:41 dawes Exp $
  *
  * This file was taken from Odin32 project and modified to suit
  * XFree86 4.x build process
@@ -609,5 +609,11 @@ UpdateDefFile: procedure expose ordHash.;
      */
     call stream outfile, 'c', 'close';
     call stream infile, 'c', 'close';
+    if sOrdinals = 1 then do
+        call SysFileDelete('dll.name');
+        call stream 'dll.name', 'c', 'open write';
+        call charout 'dll.name', sRealName".dll";
+        call stream 'dll.name', 'c'. 'close';
+    end
     return 0;
 

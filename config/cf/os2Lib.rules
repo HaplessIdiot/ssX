@@ -2,7 +2,7 @@ XCOMM $Xorg: os2Lib.rules,v 1.3 2000/08/17 19:41:48 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/config/cf/os2Lib.rules,v 3.18 2003/10/09 22:43:18 herrb Exp $
+XCOMM $XFree86: xc/config/cf/os2Lib.rules,v 3.19 2003/10/11 09:40:15 herrb Exp $
 
 /*
  * OS2/EMX shared library rules (DLL version)
@@ -27,7 +27,7 @@ XCOMM $XFree86: xc/config/cf/os2Lib.rules,v 3.18 2003/10/09 22:43:18 herrb Exp $
 #define InstallSharedLibrary(libname,rev,dest)				@@\
 install:: libname.dll LibraryTargetName(libname) libname.lib		@@\
 	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) -c $(INSTLIBFLAGS) libname.dll $(DESTDIR)dest 	@@\
+	$(INSTALL) -c $(INSTLIBFLAGS) $(DLLNAME) $(DESTDIR)dest 	@@\
 	$(INSTALL) -c $(INSTLIBFLAGS) LibraryTargetName(libname) $(DESTDIR)dest 		@@\
 	$(INSTALL) -c $(INSTLIBFLAGS) libname.a $(DESTDIR)dest		@@\
 	$(INSTALL) -c $(INSTLIBFLAGS) libname.lib $(DESTDIR)dest
@@ -44,11 +44,17 @@ install:: libname.dll LibraryTargetName(libname) libname.lib		@@\
 	RemoveFile($(BUILDLIBDIR)/Concat4(pre,slib,rev,ext))		@@\
 	(cd $(BUILDLIBDIR); $(LN) $(BUILDINCTOP)/$(CURRENT_DIR)/Concat4(pre,slib,rev,ext) .)
 
+#define LinkBuildLibrary5(slib,rev,ext) MakeDir($(BUILDLIBDIR))		@@\
+	RemoveFile($(BUILDLIBDIR)/$(DLLNAME))				@@\
+	(cd $(BUILDLIBDIR); $(LN) $(BUILDINCTOP)/$(CURRENT_DIR)/$(INSTDLLNAME) .)
+
         EMXIMP = emximp
         EMXOMF = emxomf -p 32
           SHLD = gcc -Zdll -Zmtd -Zmap -Zbin-files
         SHXXLD = g++ -Zdll -Zmtd -Zmap -Zbin-files
      SHADDLIBS = ExtraLibraries -lc_import
+       DLLNAME = `cat $(TOP)/$(CURRENT_DIR)/dll.name`
+   INSTDLLNAME = `cat $(BUILDINCTOP)/$(CURRENT_DIR)/dll.name`
 
 #define BuildDllSupportLibs3(slib,rev)					@@\
 	$(EMXIMP) -o Concat3(slib,rev,.imp) Concat3(slib,os2,.def)	@@\
@@ -75,12 +81,16 @@ Concat(libname,os2.def): Concat(libname,-def.cpp)			@@\
 	cmd /c $(subst /,\\,$(CONFIGSRC)/util/makedef.cmd) -O1 $(CONFIGSRC)/cf/os2def.db libname @@\
 									@@\
 Concat3(libname,rev,.dll):  solist Concat(libname,os2.def)		@@\
-	$(SHLD) -o $@ solist $(REQUIREDLIBS) $(SHADDLIBS) Concat(libname,o_os2.def)	@@\
+	RemoveFile($@)							@@\
+	$(SHLD) -o $(DLLNAME) solist $(REQUIREDLIBS) $(SHADDLIBS) Concat(libname,o_os2.def)	@@\
+	touch $@							@@\
 	BuildDllSupportLibs3(libname,rev)				@@\
-	LinkBuildLibrary3(libname,rev,.dll)				@@\
+	LinkBuildLibrary5(libname,rev,.dll)				@@\
 									@@\
 clean::									@@\
-	RemoveFiles(Concat3(libname,rev,.imp) Concat3(libname,rev,_o.imp) Concat(libname,os2.def) Concat(libname,o_os2.def))
+	RemoveFiles(Concat3(libname,rev,.imp) Concat3(libname,rev,_o.imp))	@@\
+	RemoveFiles(Concat(libname,os2.def) Concat(libname,o_os2.def))	@@\
+	RemoveFile(dll.name)
 
 #define	NormalLibraryTarget(libname,objlist)				@@\
 AllTarget(LibraryTargetName(libname))					@@\
@@ -98,12 +108,16 @@ Concat(libname,os2.def): deplist $(EXTRALIBRARYDEPS) Concat(libname,-def.cpp) @@
 	cmd /c $(subst /,\\,$(CONFIGSRC)/util/makedef.cmd) -O1 $(CONFIGSRC)/cf/os2def.db libname @@\
 									@@\
 Concat3(libname,rev,.dll):  Concat(libname,os2.def)		@@\
-	(cd down; $(SHLD) -o up/$@ solist $(REQUIREDLIBS) $(SHADDLIBS) Concat(libname,o_os2.def)) @@\
+	RemoveFile($@)							@@\
+	(cd down; $(SHLD) -o up/$(DLLNAME) solist $(REQUIREDLIBS) $(SHADDLIBS) Concat(libname,o_os2.def)) @@\
+	touch $@							@@\
 	BuildDllSupportLibs3(libname,rev)				@@\
-	LinkBuildLibrary3(libname,rev,.dll)				@@\
+	LinkBuildLibrary5(libname,rev,.dll)				@@\
 									@@\
 clean::									@@\
-	RemoveFiles(Concat3(libname,rev,.imp) Concat3(libname,rev,_o.imp) Concat(libname,os2.def) Concat(libname,o_os2.def))
+	RemoveFiles(Concat3(libname,rev,.imp) Concat3(libname,rev,_o.imp))	@@\
+	RemoveFiles(Concat(libname,os2.def) Concat(libname,o_os2.def))	@@\
+	RemoveFile(dll.name)
 
 #define SharedDepCplusplusLibraryTarget(libname,rev,deplist,solist,down,up)	@@\
 AllTarget(Concat3(libname,rev,.dll))					@@\
@@ -113,12 +127,16 @@ Concat(libname,os2.def): deplist $(EXTRALIBRARYDEPS) Concat(libname,-def.cpp) @@
 	cmd /c $(subst /,\\,$(CONFIGSRC)/util/makedef.cmd) -O1 $(CONFIGSRC)/cf/os2def.db libname @@\
 									@@\
 Concat3(libname,rev,.dll):  Concat(libname,os2.def)		@@\
-	(cd down; $(SHXXLD) -o up/$@ solist $(REQUIREDLIBS) $(SHADDLIBS) Concat(libname,o_os2.def)) @@\
+	RemoveFile($@)							@@\
+	(cd down; $(SHXXLD) -o up/$(DLLNAME) solist $(REQUIREDLIBS) $(SHADDLIBS) Concat(libname,o_os2.def)) @@\
+	touch $@							@@\
 	BuildDllSupportLibs3(libname,rev)				@@\
-	LinkBuildLibrary3(libname,rev,.dll)				@@\
+	LinkBuildLibrary5(libname,rev,.dll)				@@\
 									@@\
 clean::									@@\
-	RemoveFiles(Concat3(libname,rev,.imp) Concat3(libname,rev,_o.imp) Concat(libname,os2.def) Concat(libname,o_os2.def))
+	RemoveFiles(Concat3(libname,rev,.imp) Concat3(libname,rev,_o.imp))	@@\
+	RemoveFiles(Concat(libname,os2.def) Concat(libname,o_os2.def))	@@\
+	RemoveFile(dll.name)
 
 #define SharedDepModuleTarget(name,deps,solist)				@@\
 AllTarget(name)								@@\
@@ -134,7 +152,7 @@ clean::									@@\
 #define InstallSharedLibraryData(libname,rev,dest)
 
 #define	InstallLibrary(libname,dest)					@@\
-install:: LibraryTargetName(libname)					@@\
+install:: LibraryTargetName(libname) Concat(libname,.lib)		@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) $(INSTALLFLAGS) $(INSTLIBFLAGS) LibraryTargetName(libname) $(DESTDIR)dest @@\
 	$(INSTALL) $(INSTALLFLAGS) $(INSTLIBFLAGS) Concat(libname,.lib) $(DESTDIR)dest @@\

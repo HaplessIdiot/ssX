@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.22 2003/02/16 05:23:45 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.24 2003/09/11 10:08:38 eich Exp $
  */
 
 #include <stdio.h>
@@ -206,11 +206,10 @@ TextMode(void)
 		   "\n"
 #ifndef __UNIXOS2__
 		   "The XF86Config file usually resides in /usr/X11R6/etc/X11 "
-		   "or /etc/X11. A sample XF86Config file is supplied with "
 #else
-		   "The XF86Config file usually resides in /XFree86/lib/X11. "
-		   "A sample XF86Config file is supplied with "
+		   "The XF86Config file usually resides in "XF86CONFIGDIR" "
 #endif
+		   "or /etc/X11. A sample XF86Config file is supplied with "
 		   "XFree86; it is configured for a standard VGA card and "
 		   "monitor with 640x480 resolution. This program will ask for "
 		   "a pathname when it is ready to write the file.\n"

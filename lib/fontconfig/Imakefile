@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/fontconfig/Imakefile,v 1.13 2003/10/24 16:21:12 tsi Exp $
+XCOMM $XFree86: xc/lib/fontconfig/Imakefile,v 1.14 2003/10/31 20:49:04 herrb Exp $
 
 #define DoNormalLib NormalLibFontconfig
 #define DoSharedLib SharedLibFontconfig
@@ -6,11 +6,7 @@ XCOMM $XFree86: xc/lib/fontconfig/Imakefile,v 1.13 2003/10/24 16:21:12 tsi Exp $
 #define DoDebugLib DebugLibFontconfig
 #define DoProfileLib ProfileLibFontconfig
 #define HasSharedData YES
-#if !defined(OS2Architecture)
 #define LibName fontconfig
-#else
-#define LibName fontcfg
-#endif
 #define SoRev SOFONTCONFIGREV
 
 #define IncSubdir fontconfig
@@ -47,10 +43,6 @@ SpecialCObjectRule(sharedlib,NullParameter,$(SHLIBDEF))
 MANSUFFIX = $(LIBMANSUFFIX)
 InstallManPage(fontconfig,$(LIBMANDIR))
 DependTarget()
-
-#if defined(OS2Architecture)
-LinkFile(fontcfg-def.cpp,fontconfig-def.cpp)
-#endif
 
 FONTCONFIG_REVISION=1
 

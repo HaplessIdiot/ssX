@@ -488,6 +488,8 @@ EXPORTS
 	glPointParameterfEXT @ 538
 	glPointParameterfvEXT @ 539
 	glXMakeContextCurrent @ 540
+	_glapi_get_proc_address
+	_glapi_set_warning_func
 #endif
 
-/* $XFree86: xc/lib/GL/GL/GL-def.cpp,v 1.1 2001/03/22 21:47:56 dawes Exp $ */
+/* $XFree86: xc/lib/GL/GL/GL-def.cpp,v 1.2 2003/03/25 04:18:07 dawes Exp $ */

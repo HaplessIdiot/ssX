@@ -1,5 +1,5 @@
 /* OS/2 REXX */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.cmd,v 1.1 2000/04/05 18:14:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.cmd,v 1.2 2003/03/25 04:18:26 dawes Exp $ */
 
 '@echo off'
 call RxFuncAdd 'SysCls','RexxUtil','SysCls'
@@ -40,7 +40,7 @@ do until cmd=7
     call show_file
   end
   when cmd=2 then do
-    "xinit /XFree86/bin/xf86cfg.exe -xf86config "home"\XF86Config.new -- -xf86config "home"\XF86Config.new :0"
+    "xinit /usr/X11R6/bin/xf86cfg.exe -xf86config "home"\XF86Config.new -- -xf86config "home"\XF86Config.new :0"
   end
   when cmd=3 then do
     "xfree86 -xf86config "home"\XF86Config.new"
@@ -50,7 +50,7 @@ do until cmd=7
   end
   when cmd=5 then do
     say "Copying file to "x11root"\lib\X11\XF86Config"
-    "copy "home"\XF86Config.new "x11root"\XFree86\lib\X11\XF86Config"
+    "copy "home"\XF86Config.new "x11root"\usr\X11R6\lib\X11\XF86Config"
   end
   when cmd=6 then do
     call configx86
