@@ -217,8 +217,6 @@ typedef struct {
    MGADRIServerPrivatePtr  DRIServerInfo;
 #endif
 
-    Bool		timerIsOn;
-    Time		offTime;
     XF86VideoAdaptorPtr adaptor;
 } MGARec, *MGAPtr;
 

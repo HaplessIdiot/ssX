@@ -214,7 +214,7 @@ V4lPutVideo(ScrnInfoPtr pScrn,
     int one=1;
 
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/PV\n"));
-    /* FIXME: vid-* is ignored for now */
+    /* FIXME: vid-* is ignored for now, not supported by v4l */
 
     V4lQueryBestSize(pScrn, 0, vid_w, vid_h, drw_w, drw_h, &dw, &dh, data);
     /* if the window is too big, center the video */
@@ -535,29 +535,26 @@ V4LBuildEncodings(int fd, int *count)
 
 
 static XF86AttributeRec Attributes[8] = {
-   {XvSettable | XvGettable, 0, 255, XV_ENCODING},
-   {XvSettable | XvGettable, 0, 255, XV_BRIGHTNESS},
-   {XvSettable | XvGettable, 0, 255, XV_CONTRAST},
-   {XvSettable | XvGettable, 0, 255, XV_SATURATION},
-   {XvSettable | XvGettable, 0, 255, XV_HUE},
-   {XvSettable | XvGettable, 0, 255, XV_FREQ},
-   {XvSettable | XvGettable, 0, 255, XV_MUTE},
-   {XvSettable | XvGettable, 0, 255, XV_VOLUME}
+   {XvSettable | XvGettable, -1000,    1000, XV_ENCODING},
+   {XvSettable | XvGettable, -1000,    1000, XV_BRIGHTNESS},
+   {XvSettable | XvGettable, -1000,    1000, XV_CONTRAST},
+   {XvSettable | XvGettable, -1000,    1000, XV_SATURATION},
+   {XvSettable | XvGettable, -1000,    1000, XV_HUE},
+   {XvSettable | XvGettable, -1000,    1000, XV_VOLUME},
+   {XvSettable | XvGettable,     0,       1, XV_MUTE},
+   {XvSettable | XvGettable,     0, 16*1000, XV_FREQ},
 };
 
 
-static Bool
-V4LProbe(DriverPtr drv, int flags)
+static int
+V4LInit(ScrnInfoPtr pScrn, XF86VideoAdaptorPtr **adaptors)
 {
     PortPrivPtr pPPriv;
     DevUnion *Private;
-    XF86VideoAdaptorPtr  VAR[4];
+    XF86VideoAdaptorPtr *VAR = NULL;
     XF86VideoEncodingPtr enc;
     char dev[16];
     int  fd,i,nenc;
-
-    if (flags & PROBE_DETECT)
-	return FALSE;
 
     DEBUG(xf86Msg(X_INFO, "v4l: init start\n"));
 
@@ -583,6 +580,7 @@ V4LProbe(DriverPtr drv, int flags)
 	pPPriv->nenc = nenc;
 
 	/* alloc VideoAdaptorRec */
+	VAR = xrealloc(VAR,sizeof(XF86VideoAdaptorPtr)*(i+1));
 	VAR[i] = xalloc(sizeof(XF86VideoAdaptorRec));
 	if (!VAR[i])
 	    return FALSE;
@@ -633,9 +631,17 @@ V4LProbe(DriverPtr drv, int flags)
     xvVolume     = MAKE_ATOM(XV_VOLUME);
 
     DEBUG(xf86Msg(X_INFO, "v4l: init done, %d found\n",i));
-    if (i) {
-	xf86XVRegisterGenericAdaptor(VAR, i);
-	drv->refCount++;
-    }
-    return (VAR != NULL);
+
+    *adaptors = VAR;
+    return i;
+}
+
+static Bool
+V4LProbe(DriverPtr drv, int flags)
+{
+    if (flags & PROBE_DETECT)
+	return FALSE;
+
+    xf86XVRegisterGenericAdaptorDriver(V4LInit);
+    return TRUE;
 }
