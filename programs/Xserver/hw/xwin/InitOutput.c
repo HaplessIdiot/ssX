@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.24 2001/10/29 21:10:23 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.25 2001/11/11 22:45:57 alanh Exp $ */
 
 #include "win.h"
 
@@ -92,6 +92,7 @@ winInitializeDefaultScreens (void)
 	* 25.4;
       g_ScreenInfo[i].fUseWinKillKey = WIN_DEFAULT_WIN_KILL;
       g_ScreenInfo[i].fUseUnixKillKey = WIN_DEFAULT_UNIX_KILL;
+      g_ScreenInfo[i].fIgnoreInput = FALSE;
     }
 
   /* Signal that the default screens have been initialized */

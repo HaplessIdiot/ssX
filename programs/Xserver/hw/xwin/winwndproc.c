@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.17 2001/11/11 22:45:57 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.18 2001/11/12 08:47:53 alanh Exp $ */
 
 #include "win.h"
 
@@ -175,7 +175,7 @@ winWindowProc (HWND hwnd, UINT message,
 	  pScreenPrivLast = GetProp (hwndLastMouse, WIN_SCR_PROP);
 	  if (pScreenPrivLast == NULL)
 	    {
-	      ErrorF ("winWindowProc () - WM_NCMOUSEMOVE - Couldn't obtain "
+	      ErrorF ("winWindowProc () - WM_MOUSEMOVE - Couldn't obtain "
 		      "last screen privates\n");
 	      return 0;
 	    }
@@ -219,6 +219,10 @@ winWindowProc (HWND hwnd, UINT message,
       return 0;
 
     case WM_NCMOUSEMOVE:
+      /* We can't do anything without privates */
+      if (pScreenPriv == NULL || pScreenInfo->fIgnoreInput)
+	break;
+
       /* Non-client mouse movement, show Windows cursor */
       if (hwndLastMouse != NULL && hwndLastMouse != hwnd)
 	{
@@ -434,14 +438,14 @@ winWindowProc (HWND hwnd, UINT message,
 	  && pScreenPriv->fEnabled && pScreen != miPointerCurrentScreen ())
 	miPointerSetNewScreen (pScreenInfo->dwScreen, 0, 0);
 
-      /* Are we activating or deactivating? */
+      /* Handle showing or hiding the mouse */
       if (hwndLastMouse != NULL && hwndLastMouse != hwnd)
 	{
 	  /*
 	   * Activation has transferred between screens.
 	   * This section is processed by the screen receiving
 	   * focus, as it is the only one that notices the difference
-	   * between pScreen and pScreenLast.
+	   * between hwndLastMouse and hwnd.
 	   */
 	  pScreenPrivLast = GetProp (hwndLastMouse, WIN_SCR_PROP);
 	  if (pScreenPrivLast == NULL)
@@ -469,14 +473,12 @@ winWindowProc (HWND hwnd, UINT message,
 		|| LOWORD(wParam) == WA_CLICKACTIVE)
 	       && pScreenPriv->fCursor)
 	{
-	  /* Hide Windows cursor */
 	  pScreenPriv->fCursor = FALSE;
 	  ShowCursor (FALSE);
 	}
       else if (LOWORD(wParam) == WA_INACTIVE
 	       && !pScreenPriv->fCursor)
 	{
-	  /* Show Windows cursor */
 	  pScreenPriv->fCursor = TRUE;
 	  ShowCursor (TRUE);
 	}
@@ -499,14 +501,12 @@ winWindowProc (HWND hwnd, UINT message,
       if (pScreenPriv->fActive
 	  && pScreenPriv->fCursor)
 	{
-	  /* Hide Windows cursor */
 	  pScreenPriv->fCursor = FALSE;
 	  ShowCursor (FALSE);
 	}
       else if (!pScreenPriv->fActive
 	       && !pScreenPriv->fCursor)
 	{
-	  /* Show Windows cursor */
 	  pScreenPriv->fCursor = TRUE;
 	  ShowCursor (TRUE);
 	}

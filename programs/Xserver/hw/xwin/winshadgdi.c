@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.17 2001/10/22 15:21:12 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.18 2001/11/11 22:45:57 alanh Exp $ */
 
 #include "win.h"
 
@@ -365,10 +365,6 @@ winCloseScreenShadowGDI (int nIndex, ScreenPtr pScreen)
 
   /* Free the screen DC */
   ReleaseDC (pScreenPriv->hwndScreen, pScreenPriv->hdcScreen);
-
-  /* Redisplay the Windows cursor */
-  if (!pScreenPriv->fCursor)
-      ShowCursor (TRUE);
 
   /* Kill our window */
   if (pScreenPriv->hwndScreen)
