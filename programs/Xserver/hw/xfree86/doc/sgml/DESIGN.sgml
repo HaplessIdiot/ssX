@@ -36,7 +36,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.20 2000/01/24 19:38:26 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.21 2000/02/08 19:43:16 dawes Exp $
 </ident>
 
 
@@ -6273,6 +6273,7 @@ DriverRec ZZZ = {
     "unaccelerated driver for ZZZ Zzzzzy cards",
     ZZZIdentify,
     ZZZProbe,
+    ZZZAvailableOptions,
     NULL,
     0
 };
@@ -6597,6 +6598,14 @@ ZZZProbe(DriverPtr drv, int flags)
     xfree(devSections);
     return foundScreen;
     </code>
+
+<sect2>AvailableOptions
+<p>
+
+    Define the s.code;AvailableOptions()&e.code; function. The purpose
+    of this is to return the available driver options back to the
+    -configure option, so that an XF86Config file can be built and the
+    user can see which options are available for them to use.
 
 <sect2>PreInit
 <p>
