@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.35 2001/12/01 04:18:06 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.36 2001/12/05 06:21:46 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -64,7 +64,7 @@ static NSRect aquaMenuBarBox;
     self = [super init];
     oneXserver = self;
 
-    serverLock = [[NSLock alloc] init];
+    serverLock = [[NSRecursiveLock alloc] init];
     clientPID = 0;
     sendServerEvents = NO;
     serverVisible = NO;

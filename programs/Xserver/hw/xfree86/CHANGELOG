@@ -1,4 +1,6 @@
 XFree86 4.1.99.5 (xx December 2001)
+ 635. Fix hang when quitting XDarwin before starting X server
+      (Torrey T. Lyons).
  634. Don't add XDarwin's PseudoramiX extension with only one screen
       (Greg Parker).
  633. Add Spanish localization of XDarwin help file (Pablo Di Noto).
@@ -14447,4 +14449,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2108 2001/12/28 17:50:54 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2109 2001/12/30 04:02:41 torrey Exp $
