@@ -24,7 +24,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  * **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_context.c,v 1.9 2003/02/06 04:18:00 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_context.c,v 1.10 2003/09/28 20:15:13 alanh Exp $ */
 
 /*
  * Authors:
@@ -406,12 +406,12 @@ void i830DestroyContext(__DRIcontextPrivate *driContextPriv)
           */
          int i;
 
-	 assert( is_empty_list( & imesa->swapped ) );
-
          for ( i = 0 ; i < imesa->nr_heaps ; i++ ) {
 	    driDestroyTextureHeap( imesa->texture_heaps[ i ] );
 	    imesa->texture_heaps[ i ] = NULL;
          }
+
+	 assert( is_empty_list( & imesa->swapped ) );
       }
 
       Xfree (imesa);

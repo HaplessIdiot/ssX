@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.c,v 1.20 2003/09/28 20:15:16 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.c,v 1.21 2003/12/02 13:02:38 alanh Exp $ */
 /*
  * Copyright 2000-2001 VA Linux Systems, Inc.
  * All Rights Reserved.
@@ -536,12 +536,12 @@ mgaDestroyContext(__DRIcontextPrivate *driContextPriv)
           */
          int i;
 
-	 assert( is_empty_list( & mmesa->swapped ) );
-
          for ( i = 0 ; i < mmesa->nr_heaps ; i++ ) {
 	    driDestroyTextureHeap( mmesa->texture_heaps[ i ] );
 	    mmesa->texture_heaps[ i ] = NULL;
          }
+
+	 assert( is_empty_list( & mmesa->swapped ) );
       }
 
       FREE(mmesa);
