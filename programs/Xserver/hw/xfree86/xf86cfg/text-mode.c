@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.24 2003/09/11 10:08:38 eich Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.25 2003/11/12 00:10:30 dawes Exp $
  */
 
 #include <stdio.h>
@@ -317,7 +317,7 @@ WriteXF86Config(void)
 		XtCalloc(1, sizeof(XF86ConfModuleRec));
 
 	    XF86Config->conf_modules->mod_comment =
-		XtNewString("\t# Load \"freetype\"\n"
+		XtNewString("\tLoad \"freetype\"\n"
 			    "\t# Load \"xtt\"\n");
 
 	    for (i = 0; i < sizeof(modules) / sizeof(modules[0]); i++) {

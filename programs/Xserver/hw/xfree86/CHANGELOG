@@ -1,4 +1,6 @@
 XFree86 4.3.99.16 (xx November 2003)
+ 585. Modify xf86config and xf86cfg to enable loading the "freetype" module
+      (Chisato Yamauchi).
  584. Wrap ucs2any with ProgramTargetName in dependencies, as needed for
       OS/2, and note that OS/2 doesn't have basename(3) (Bugzilla #871,
       Frank Giessler).
@@ -18176,7 +18178,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2957 2003/11/13 21:21:30 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2958 2003/11/14 02:17:20 dawes Exp $
 
 
 
