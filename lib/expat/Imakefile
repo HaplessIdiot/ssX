@@ -32,6 +32,9 @@ OBJS = xmlparse.o xmltok.o xmlrole.o
 SpecialCObjectRule(sharedlib,NullParameter,$(SHLIBDEF))
 #endif
 
+cleandir::
+	$(RM) expat.h
+
 depend:: expat.h
 
 DependTarget()
