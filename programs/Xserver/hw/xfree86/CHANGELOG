@@ -1,4 +1,6 @@
 XFree86 3.9.17Z (14 February 2000)
+3780. Fix for dead keys in XKB Norwegian keyboards (#3702, 3703,
+      Preston Brown).
 3779. Cleanups for the contrib programs recently moved into the main xc/
       tree (#3701, Bruno Haible).
 3778. Small lynx.cf fix (#3700, Thomas Mueller).
@@ -9683,4 +9685,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1005 2000/02/14 18:11:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1006 2000/02/14 19:20:35 dawes Exp $
