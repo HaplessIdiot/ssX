@@ -1,4 +1,5 @@
 XFree86 4.1.99.1 (xx August 2001)
+ 252. Fix some Xrandr build issues on Cygwin/XFree86 (#4898, Suhaib Siddiqi).
  251. Fix some Cygwin/XFree86 dependencies in cygwin.rules (#4894, Harold Hunt).
  250. Add ATI Xpert2000 (Rage 128 SM) (#4896, Mike Harris).
  249. Fix '-configure' crash introduced recently (#4895, Andrew C Aitchison).
@@ -13758,4 +13759,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1920 2001/08/18 12:31:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1921 2001/08/18 17:25:49 alanh Exp $
