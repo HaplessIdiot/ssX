@@ -1,4 +1,5 @@
 XFree86 4.1.99.1 (xx June 2001)
+ 100. Update XvMC header files to match the spec (Matthew Sottek).
   95. Darwin build configuration changes:
        - Turn on building Xv and GLX extensions.
        - Make GLX and GLU build successfully.
@@ -13485,4 +13486,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1843 2001/06/09 16:37:41 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1844 2001/06/11 07:23:08 torrey Exp $
