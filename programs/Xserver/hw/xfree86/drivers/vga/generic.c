@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.47 2000/11/16 19:45:02 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.48 2000/12/02 15:31:00 tsi Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -33,7 +33,7 @@
  * The port of this driver to XFree86 4.0 was done by:
  * David Dawes <dawes@xfree86.org>
  * Dirk H. Hohndel <hohndel@xfree86.org>
- * Marc Aurele La France <tsi@ualberta.ca>
+ * Marc Aurele La France <tsi@xfree86.org>
  */
 
 #define DEBUG(x) 

@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati.c,v 1.13 2000/08/04 21:07:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati.c,v 1.14 2000/12/02 15:53:52 tsi Exp $ */
 /*
- * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -24,7 +24,7 @@
 /*************************************************************************/
 
 /*
- * Author:  Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Author:  Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
  * This is the ATI driver for XFree86.
  *
