@@ -58,8 +58,9 @@ void CHIPSInitVideo(ScreenPtr pScreen)
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     int num_adaptors;
 	
-    if(!(cPtr->Flags & ChipsOverlay8plus16) &&
-       (cPtr->Flags & ChipsVideoSupport)) {
+    if (!(cPtr->Flags & ChipsOverlay8plus16) &&
+       (cPtr->Flags & ChipsVideoSupport)
+       && (cPtr->Flags & ChipsAccelSupport)) {
 	newAdaptor = CHIPSSetupImageVideo(pScreen);
 	CHIPSInitOffscreenImages(pScreen);
     }
@@ -390,12 +391,10 @@ CHIPSStopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
   CHIPSPtr cPtr = CHIPSPTR(pScrn);
   unsigned char mr3c, tmp;
 
-  ErrorF("StopVideo\n");
   REGION_EMPTY(pScrn->pScreen, &pPriv->clip);   
   CHIPSHiQVSync(pScrn);
   if(exit) {
      if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
-	 ErrorF("StopVideo Exit\n");
 	mr3c = cPtr->readMR(cPtr, 0x3C);
 	cPtr->writeMR(cPtr, 0x3C, (mr3c & 0xFE));
 	tmp = cPtr->readXR(cPtr, 0xD0);
@@ -610,7 +609,6 @@ CHIPSDisplayVideo(
 
     CHIPSHiQVSync(pScrn);
 
-    ErrorF("DisplayVideo\n");
     tmp = cPtr->readXR(cPtr, 0xD0);
     cPtr->writeXR(cPtr, 0xD0, (tmp | 0x10));
     
@@ -629,7 +627,8 @@ CHIPSDisplayVideo(
 	tmp |= 0x08;
 	break;
     case FOURCC_YV12:		/* YV12 */
-	tmp |= 0x03; 
+      /* tmp |= 0x03 */
+	tmp |= 0x00; 
 	break;
     case FOURCC_YUY2:		/* YUY2 */
     default:
