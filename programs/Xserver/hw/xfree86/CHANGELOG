@@ -1,3 +1,7 @@
+XFree86 4.1.99.2 (xx August 2001)
+ 254. Make -configure generate the DisplaySize from the acquired DDC
+      information (#4897, Andrew C Aitchison).
+
 XFree86 4.1.99.1 (20 August 2001)
  253. Fix bad xalloc() in the new fontenc code (#4899, ISHIKAWA Mutsumi).
  252. Fix some Xrandr build issues on Cygwin/XFree86 (#4898, Suhaib Siddiqi).
@@ -13760,4 +13764,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1922 2001/08/19 15:25:58 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1923 2001/08/20 21:02:05 dawes Exp $
