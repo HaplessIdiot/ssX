@@ -27,7 +27,7 @@
  *
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.11 2001/02/15 20:00:09 eich Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.12 2001/02/16 01:45:45 dawes Exp $
  */
 
 #include "vesa.h"
@@ -594,8 +594,10 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 #endif
 
     pVesa->mapSize = vbe->TotalMemory * 65536;
-    if (pScrn->modePool == NULL)
+    if (pScrn->modePool == NULL) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No matching modes\n");
 	return (FALSE);
+    }
     for (i = 0; pScrn->modePool != NULL && pScrn->display->modes[i] != NULL; i++) {
 	pMode = pScrn->modePool;
 
@@ -1023,6 +1025,7 @@ VESAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	VESALoadPalette, NULL, flags))
 	return (FALSE);
 
+    pVesa->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = VESACloseScreen;
     pScreen->SaveScreen = VESASaveScreen;
 
@@ -1061,7 +1064,8 @@ VESACloseScreen(int scrnIndex, ScreenPtr pScreen)
 	xfree(pVesa->pDGAMode);
     pScrn->vtSema = FALSE;
 
-    return (TRUE);
+    pScreen->CloseScreen = pVesa->CloseScreen;
+    return pScreen->CloseScreen(scrnIndex, pScreen);
 }
 
 static Bool
