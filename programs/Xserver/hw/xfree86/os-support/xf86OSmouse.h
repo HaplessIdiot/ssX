@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSmouse.h,v 1.15 2001/07/06 08:02:39 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSmouse.h,v 1.18 2002/09/16 18:06:12 eich Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -161,6 +161,7 @@ typedef struct _MouseDevRec {
     autoProbeProc	autoProbeMouse;
     collectDataProc	collectData;
     dataGoodProc	dataGood;
+    int			angleOffset;
 } MouseDevRec, *MouseDevPtr;
 
 /* Z axis mapping */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.60 2002/11/05 02:07:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.62 2002/11/25 14:05:01 eich Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -129,6 +129,7 @@ typedef enum {
     OPTION_FLIP_XY,
     OPTION_INV_X,
     OPTION_INV_Y,
+    OPTION_ANGLE_OFFSET,
     OPTION_Z_AXIS_MAPPING,
     OPTION_SAMPLE_RATE,
     OPTION_RESOLUTION,
@@ -164,6 +165,7 @@ static const OptionInfoRec mouseOptions[] = {
     { OPTION_FLIP_XY,		"FlipXY",	  OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_INV_X,		"InvX",		  OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_INV_Y,		"InvY",		  OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_ANGLE_OFFSET,	"AngleOffset",	  OPTV_INTEGER,	{0}, FALSE },
     { OPTION_Z_AXIS_MAPPING,	"ZAxisMapping",	  OPTV_STRING,	{0}, FALSE },
     { OPTION_SAMPLE_RATE,	"SampleRate",	  OPTV_INTEGER,	{0}, FALSE },
     { OPTION_RESOLUTION,	"Resolution",	  OPTV_INTEGER,	{0}, FALSE },
@@ -355,6 +357,7 @@ MouseCommonOptions(InputInfoPtr pInfo)
 	xf86Msg(X_CONFIG, "%s: InvY\n", pInfo->name);
     } else
 	pMse->invY = 1;
+    pMse->angleOffset = xf86SetIntOption(pInfo->options, "AngleOffset", 0);
     
     s = xf86SetStrOption(pInfo->options, "ZAxisMapping", NULL);
     if (s) {
@@ -1873,7 +1876,6 @@ MousePostEvent(InputInfoPtr pInfo, int buttons, int dx, int dy, int dz, int dw)
     MouseDevPtr pMse;
     int zbutton = 0;
 
-
     pMse = pInfo->private;
 
     /* Map the Z axis movement. */
@@ -1908,6 +1910,15 @@ MousePostEvent(InputInfoPtr pInfo, int buttons, int dx, int dy, int dz, int dw)
 	dz = 0;
 	break;
     }
+
+    /* Apply angle offset */
+    if (pMse->angleOffset != 0) {
+	double rad = 3.141592653 * pMse->angleOffset / 180.0;
+	int ndx = dx;
+	dx = (int)((dx * cos(rad)) + (dy * sin(rad)) + 0.5);
+	dy = (int)((dy * cos(rad)) - (ndx * sin(rad)) + 0.5);
+    }
+
     dx = pMse->invX * dx;
     dy = pMse->invY * dy;
     if (pMse->flipXY) {
