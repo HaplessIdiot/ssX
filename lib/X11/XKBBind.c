@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XKBBind.c,v 3.15 2003/02/15 17:49:01 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBBind.c,v 3.16 2003/04/13 19:22:18 dawes Exp $ */
 
 	/* the new monsters ate the old ones */
 
@@ -544,6 +544,7 @@ XRefreshKeyboardMapping(event)
 	UnlockDisplay(dpy);
     }
     if (event->request==MappingModifier) {
+	LockDisplay(dpy);
 	if (xkbi->desc->map->modmap) {
 	    _XkbFree(xkbi->desc->map->modmap);
 	    xkbi->desc->map->modmap= NULL;
