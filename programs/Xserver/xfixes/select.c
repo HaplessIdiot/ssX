@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/programs/Xserver/xfixes/select.c,v 1.1 2002/11/30 06:21:47 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -129,7 +129,6 @@ XFixesSelectSelectionInput (ClientPtr	pClient,
 {
     SelectionEventPtr	*prev, e;
 
-    ErrorF("SelectSelection input mask 0x%x\n", eventMask);
     for (prev = &selectionEvents; (e = *prev); prev = &e->next)
     {
 	if (e->selection == selection &&
@@ -143,7 +142,6 @@ XFixesSelectSelectionInput (ClientPtr	pClient,
     {
 	if (e)
 	{
-	    ErrorF("Freeing existing event record 0x%x\n", e->clientResource);
 	    FreeResource (e->clientResource, 0);
 	}
 	return Success;
@@ -159,7 +157,6 @@ XFixesSelectSelectionInput (ClientPtr	pClient,
 	e->pClient = pClient;
 	e->pWindow = pWindow;
 	e->clientResource = FakeClientID(pClient->index);
-	ErrorF ("Adding new event record 0x%x\n", e->clientResource);
 
 	/*
 	 * Add a resource hanging from the window to
@@ -239,12 +236,10 @@ SelectionFreeClient (pointer data, XID id)
     SelectionEventPtr	old = (SelectionEventPtr) data;
     SelectionEventPtr	*prev, e;
     
-    ErrorF ("SelectionFreeClient xid 0x%x\n", id);
     for (prev = &selectionEvents; (e = *prev); prev = &e->next)
     {
 	if (e == old)
 	{
-	    ErrorF ("Found existing selection event record\n");
 	    *prev = e->next;
 	    xfree (e);
 	    CheckSelectionCallback ();
@@ -260,14 +255,11 @@ SelectionFreeWindow (pointer data, XID id)
     WindowPtr		pWindow = (WindowPtr) data;
     SelectionEventPtr	e, next;
 
-    ErrorF ("SelectionFreeWindow xid 0x%x\n", id);
     for (e = selectionEvents; e; e = next)
     {
 	next = e->next;
 	if (e->pWindow == pWindow)
 	{
-	    ErrorF ("Found matching selection event record id 0x%x\n",
-		    e->clientResource);
 	    FreeResource (e->clientResource, 0);
 	}
     }
