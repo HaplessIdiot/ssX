@@ -1,4 +1,8 @@
 XFree86 4.3.99.12 (xx August 2003)
+ 414. SiS driver update:
+      - Add 8x8 Color Pattern Fill (315/330 series)
+      - Add transparency support for 8x8 Mono Pattern (300/315/330 series)
+      - Fix Xv "insufficency" triggered by MPlayer (315 series)
  413. Add missing REQUEST_SIZE_MATCH() to xSyncSetCounter protocol request
       (noticed by Ruben Nunez Francisco).
  412. Allow building libOSMesa during non-XFree86 builds (Marc La France).
@@ -17643,7 +17647,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2836 2003/09/01 21:20:23 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2837 2003/09/02 18:19:04 tsi Exp $
 
 
 
