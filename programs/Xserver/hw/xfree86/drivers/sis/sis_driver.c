@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.183 2004/02/26 15:58:43 twini Exp $ */
+/* $XFree86$ */
 /*
  * SiS driver main code
  *
@@ -4532,8 +4532,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	        if((pSiS->sisfbpdc == 0xff) && (pSiS->sisfbpdca == 0xff)) {
 		   CARD16 tempa, tempb;
 		   inSISIDXREG(SISPART1,0x2d,tmp2);
-		   tempa = (tmp2 & 0x0f) << 1;
-		   tempb = (tmp2 & 0xf0) >> 3;
+		   tempa = (tmp2 & 0xf0) >> 3;
+		   tempb = (tmp2 & 0x0f) << 1;
 		   inSISIDXREG(SISPART1,0x20,tmp2);
 		   tempa |= ((tmp2 & 0x40) >> 6);
 		   inSISIDXREG(SISPART1,0x35,tmp2);
