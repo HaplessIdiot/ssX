@@ -34,7 +34,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.7 2001/12/26 22:24:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.9 2002/09/16 18:05:58 eich Exp $ */
 
 
 #include "xf86.h"
@@ -700,7 +700,7 @@ static Bool S3PreInit(ScrnInfoPtr pScrn, int flags)
         i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
                               pScrn->display->modes, clockRanges,
                               NULL, 256, 2048, pScrn->bitsPerPixel,
-                              128, 2048, pScrn->virtualX,
+                              128, 2048, pScrn->display->virtualX,
                               pScrn->display->virtualY, pScrn->videoRam * 1024,
                               LOOKUP_BEST_REFRESH);
 

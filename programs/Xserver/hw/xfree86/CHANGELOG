@@ -1,4 +1,6 @@
 XFree86 4.2.99.3 (xx October 2002)
+ 446. Fix a typo in the s3 driver which prevented virtual display sizes.
+      (#A.965, Stef Voltz).
  445. Fix a server crash that can happen when a DGA client frees its colormap
       before setting the mode back to the original mode (David Dawes).
  444. Modify Type1 font RAM allocation heuristics to allow for larger fonts.
@@ -15436,4 +15438,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2360 2002/10/30 21:57:31 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2361 2002/10/31 00:33:26 dawes Exp $
