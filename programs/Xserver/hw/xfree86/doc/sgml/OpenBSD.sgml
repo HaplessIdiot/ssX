@@ -9,7 +9,7 @@ Matthieu Herrb
 <Date>Last modified on: 9 November 2002
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.25 2002/11/09 18:01:53 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.26 2003/01/20 03:43:06 dawes Exp $
 </ident>
 
 <toc>
@@ -24,6 +24,7 @@ operating systems on Intel and other platforms.
 
 See the <htmlurl url="COPYRIGHT.html" name="Copyright Notice">.
 
+<![ %notsnapshot [
 The sources for XFree86 &relvers; are available by anonymous ftp from:
 
 <htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/&relvers;"
@@ -37,6 +38,7 @@ url="ftp://ftp.XFree86.org/pub/XFree86/&relvers;/binaries/OpenBSD">
 A list of mirror sites is provided by
 <htmlurl name="http://www.xfree86.org/MIRRORS.shtml"
 url="http://www.xfree86.org/MIRRORS.shtml">
+]]>
 
 <p>
 
