@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.115 2001/05/18 16:03:03 tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.116 2001/05/21 18:52:39 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -450,6 +450,13 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #ifndef BuildFreetype2Library
 #define BuildFreetype2Library	(UseFreetype2 && !HasFreetype2)
+#endif
+
+#ifndef BuildRandR
+#define BuildRandR		NO
+#endif
+#ifndef BuildRandRLibrary
+#define BuildRandRLibrary	!BuildServersOnly
 #endif
 
 #ifndef BuildMiscDocs
@@ -899,6 +906,14 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #endif
 #endif
 
+#ifndef RandRDefines
+#if BuildRandR
+#define RandRDefines -DRANDR
+#else
+#define RandRDefines /**/
+#endif
+#endif
+
 #ifndef FontCacheExtentionDefines
 #if BuildFontCache
 #define FontCacheExtensionDefines	-DFONTCACHE
@@ -916,7 +931,7 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 	XCSecurityDefines CupDefines PervasiveDBEDefines \
 	XF86BigfontExtensionDefines DPMSDefines \
 	LowMemDefines XprintDefines XineramaDefines \
-	SitePervasiveExtensionDefines RenderDefines
+	SitePervasiveExtensionDefines RenderDefines RandRDefines
 #endif
 #ifndef SiteExtensionDefines
 #define SiteExtensionDefines /**/
@@ -1647,6 +1662,21 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #endif
 #endif
 
+#if BuildRandRLibrary
+#ifndef SharedLibXandr
+#define SharedLibXrandr		HasSharedLibraries
+#endif
+#ifndef NormalLibXrandr
+#define NormalLibXrandr		YES
+#endif
+#ifndef DebugLibXrandr
+#define DebugLibXrandr		NO
+#endif
+#ifndef ProfileLibXrandr
+#define ProfileLibXrandr	NO
+#endif
+#endif
+
 #if BuildGLULibrary
 #ifndef SharedLibGlu
 #define SharedLibGlu		HasSharedLibraries
@@ -1917,6 +1947,18 @@ ProjectUnsharedLibReferences(GLW,GLw,$(GLWIDGETSRC),XBuildLibDir)
 SharedLibReferences(XRENDER,Xrender,$(XRENDERLIBSRC),SOXRENDERREV,SharedXrenderRev)
 #else
 ProjectUnsharedLibReferences(XRENDER,Xrender,$(XRENDERLIBSRC),XBuildLibDir)
+#endif
+#endif
+
+#if BuildRandRLibrary
+    XRANDRRLIBSRC = $(LIBSRC)/Xrandr
+#if SharedLibXrandr
+#ifndef SharedXrandrRev
+#define SharedXrandrRev 1.0
+#endif
+SharedLibReferences(XRANDR,Xrandr,$(XRANDRLIBSRC),SOXRANDRREV,SharedXrandrRev)
+#else
+ProjectUnsharedLibReferences(XRANDR,Xrandr,$(XRANDRLIBSRC),XBuildLibDir)
 #endif
 #endif
 

@@ -1,4 +1,5 @@
 XFree86 4.1.99.1 (xx June 2001)
+   6. Add RandR extension (Jim Gettys)
    5. Fix int10 option handling and DDC max clock reporting (Marc La France).
    4. Fix problems with assembler file dependencies when using gccmakedep
       with the build (Frederic Lepied).
@@ -13314,4 +13315,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1790 2001/05/22 13:29:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1791 2001/05/22 17:11:46 tsi Exp $
