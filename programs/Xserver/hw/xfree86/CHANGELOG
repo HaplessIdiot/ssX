@@ -1,4 +1,7 @@
 XFree86 4.3.99.903 (xx February 2004)
+ 790. Fix typo in bsd_mouse.c (Tyler Retzlaff).
+ 789. Fix off-by-one errors in the emulation of an ix86's BT, BTS, BTR and BTC
+      instructions (Marc La France).
  788. Fixing segfaults that may happen in some corner cases on VT switch
       and int10 initialization (Egbert Eich).
  787. Increase PCI I/O space size on Linux/PowerPC (Bugzilla #1143,
@@ -18616,7 +18619,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3129 2004/02/04 16:30:43 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3130 2004/02/05 18:24:54 eich Exp $
 
 
 
