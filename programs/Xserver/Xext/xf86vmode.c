@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.30 1997/01/18 06:53:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.32 1997/02/25 14:19:45 hohndel Exp $ */
 
 /*
 
@@ -60,8 +60,13 @@ from Kaleb S. KEITHLEY
 
 #include "swaprep.h"
 
+#ifdef XFree86LOADER
+#include "xf86_libc.h"
+#endif
+
 #include "../hw/xfree86/common/xf86.h"
 #include "../hw/xfree86/common/xf86Priv.h"
+
 
 extern int xf86ScreenIndex;
 extern Bool xf86VidModeEnabled;

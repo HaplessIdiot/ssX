@@ -1,5 +1,5 @@
 /* $XConsortium: sync.c /main/13 1996/12/16 16:51:55 rws $ */
-/* $XFree86: xc/programs/Xserver/Xext/sync.c,v 3.2 1996/12/23 06:29:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/sync.c,v 3.3 1997/01/18 06:53:00 dawes Exp $ */
 /*
 
 Copyright (c) 1991, 1993  X Consortium
@@ -69,6 +69,10 @@ PERFORMANCE OF THIS SOFTWARE.
 #define _SYNC_SERVER
 #include "sync.h"
 #include "syncstr.h"
+
+#ifdef XFree86LOADER
+#include "xf86_libc.h"
+#endif
 
 /*
  * Local Global Variables

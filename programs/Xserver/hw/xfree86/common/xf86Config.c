@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.125 1997/04/08 10:11:46 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.126 1997/04/12 13:45:00 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2508,7 +2508,7 @@ configDynamicModuleSection()
 #endif
 #else
 		ErrorF("Dynamic modules not supported. \"%s\" not loaded\n",
-		       xf86ModulePath);
+		       val.str);
 #endif
 	    }
 	    break;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.16 1997/04/17 09:16:12 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.17 1997/05/03 09:19:35 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -41,6 +41,41 @@
  * This is just for the messages.
  */
 #include "xf86_Config.h"
+
+#ifdef XFree86LOADER
+#include "xf86Version.h"
+
+XF86ModuleVersionInfo xf86XAAVersionRec =
+{
+	"libxaa.a",
+	"The XFree86 Project",
+	MODINFOSTRING1,
+	MODINFOSTRING2,
+	XF86_VERSION_CURRENT,
+	0x00010001,
+	{0,0,0,0} /* signature, to be patched into the file by a tool */
+};
+
+void
+ModuleInit(data,magic)
+    pointer *data;
+    INT32   *magic;
+{
+    static int cnt = 0;
+
+    switch (cnt++)
+    {
+    case 0: /* MAGIC_VERSION must be first in ModuleInit */
+        * data = (pointer)&xf86XAAVersionRec;
+        * magic= MAGIC_VERSION;
+        break;
+    default:
+        * magic= MAGIC_DONE;
+        break;
+    }
+    return;
+}
+#endif /* XFree86LOADER */
 
 #ifdef PIXPRIV
 /*

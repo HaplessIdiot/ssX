@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.18 1997/04/08 10:13:50 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.19 1997/04/12 13:45:36 hohndel Exp $ */
 
 
 
@@ -62,6 +62,9 @@ extern unsigned char *xf86rGammaMap,*xf86gGammaMap,*xf86bGammaMap;
 extern char *xf86ModulePath;
 extern LoadModule();
 extern int LoaderCheckUnresolved();
+#ifdef DPMSExtension
+extern void DPMSSet(CARD16);
+#endif
 
 /* XFree86 things */
 
@@ -89,6 +92,15 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(MemToBus)
    SYMFUNC(StrCaseCmp)
    SYMFUNC(SetTimeSinceLastInputEvent)
+   SYMFUNC(GetTimeInMillis)
+   SYMFUNC(xf86CheckMode)
+   SYMFUNC(xf86ZoomViewport)
+   SYMFUNC(xf86LockZoom)
+   SYMFUNC(xf86MouseInit)
+   SYMFUNC(xf86SetKbdRepeat)
+#ifdef DPMSExtension
+   SYMFUNC(DPMSSet)
+#endif
 
    SYMFUNC(xf86dactopel)
    SYMFUNC(xf86dactocomm)
@@ -222,6 +234,16 @@ LOOKUP xfree86LookupTab[] = {
 /*
  * and now some variables
  */
+#ifdef XF86MISC
+   SYMVAR(xf86AllowMouseOpenFail)
+   SYMVAR(xf86MiscModInDevAllowNonLocal)
+   SYMVAR(xf86MiscModInDevEnabled)
+#endif
+#ifdef XF86VIDMODE
+   SYMVAR(xf86VidModeEnabled)
+   SYMVAR(xf86VidModeAllowNonLocal)
+#endif
+   SYMVAR(xf86BestRefresh)
    SYMVAR(xf86bpp)
    SYMVAR(xf86weight)
    SYMVAR(xf86Verbose)

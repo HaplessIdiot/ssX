@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.114 1997/05/03 09:14:40 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.115 1997/05/04 05:26:12 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -8,10 +8,22 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.114 1997/05/03 09:14:40 dawes Exp 
  * These are the most common settings you would choose for compiling and
  * installing XFree86 on the systems supported by it.
  *
+ * A good way to use this file is to copy it to host.def, and make the
+ * changes there.  That way, future patches to this file won't fail.
+ * The host.def file will never be patched.
+ *
  * The distributed version of this file should contain no uncommented
  * definitions.  Such default definitions belong in xfree86.cf.
  */
 /******************************************************************************/
+
+/*
+ * If you have build-specific modifications in your host.def file, but
+ * want an empty host.def file installed when doing 'make install',
+ * uncomment the following
+ *
+#define InstallEmptyHostDef
+ */
 
 /*
  * If using GCC 2.x on a system where it isn't the default, uncomment

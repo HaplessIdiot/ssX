@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_ldext.h,v 3.2 1997/04/08 14:54:26 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_ldext.h,v 3.3 1997/05/03 09:17:22 dawes Exp $ */
 /*
  * Copyright (C) 1997 Matthieu Herrb
  *
@@ -23,6 +23,11 @@
  */
 #ifndef _XF86_LDEXT_H
 #define _XF86_LDEXT_H
+
+#ifndef MAGIC_DONE
+#  define MAGIC_DONE 0
+#  define MAGIC_LOAD_EXTENSION 8
+#endif
 
 #if NeedFunctionPrototypes
 #define INITARGS void

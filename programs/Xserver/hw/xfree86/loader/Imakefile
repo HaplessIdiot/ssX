@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.5 1997/04/08 10:13:46 hohndel Exp $ */
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.6 1997/05/03 12:53:12 dawes Exp $ */
 
 
 
@@ -11,8 +11,6 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.5 1997/04/08
 SYS_LIBRARIES=-ldbmalloc
 DBMALLOCDEFINE=-DDBMALLOC
 #endif
-
-EXT_DEFINES = ExtensionDefines
 
 MODULEDEFINES = -DDEFAULT_MODULE_PATH=\"$(MODULEDIR)\"
 
@@ -37,6 +35,8 @@ NormalLibraryObjectRule()
 NormalLibraryTarget(loader,$(OBJS))
 
 SpecialObjectRule(loadmod.o,loadmod.c,$(MODULEDEFINES) $(EXT_DEFINES))
+SpecialObjectRule(xf86sym.o,xf86sym.c,$(EXT_DEFINES))
+SpecialObjectRule(dixsym.o,dixsym.c,$(EXT_DEFINES))
 
 InstallLinkKitLibrary(loader,$(LINKKITDIR)/drivers)
 

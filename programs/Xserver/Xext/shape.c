@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 ********************************************************/
 
 /* $XConsortium: shape.c /main/36 1996/08/01 19:23:05 dpw $ */
-/* $XFree86: xc/programs/Xserver/Xext/shape.c,v 3.0 1996/05/06 05:55:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shape.c,v 3.1 1996/12/23 06:29:01 dawes Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -45,6 +45,10 @@ in this Software without prior written authorization from the X Consortium.
 #include "shapestr.h"
 #include "regionstr.h"
 #include "gcstruct.h"
+
+#ifdef XFree86LOADER
+#include "xf86_libc.h"
+#endif
 
 typedef	RegionPtr (*CreateDftPtr)(
 #if NeedNestedPrototypes

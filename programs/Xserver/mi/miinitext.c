@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: miinitext.c /main/41 1996/09/28 17:15:08 rws $ */
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.19 1997/04/08 14:56:22 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.20 1997/04/10 10:07:05 hohndel Exp $ */
 
 #include "misc.h"
 #include "extension.h"
@@ -402,9 +402,7 @@ InitExtensions(argc, argv)
 #ifdef LBX
     extension[19].initFunc = LbxExtensionInit;
 #endif
-#ifdef DBE
-    extension[20].initFunc = DbeExtensionInit;
-#endif
+    /* 20 - DBE */
 #ifdef XAPPGROUP
     extension[21].initFunc = XagExtensionInit;
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.2 1997/02/18 17:51:43 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.3 1997/02/27 13:58:46 hohndel Exp $ */
 
 
 
@@ -43,7 +43,6 @@ extern miPointerSpriteFuncRec miSpritePointerFuncs;
 
 LOOKUP miLookupTab[] = {
    SYMFUNC(miRectIn)
-   SYMFUNC(miZeroLineScreenIndex)
    SYMFUNC(miZeroClipLine)
    SYMFUNC(miZeroDashLine)
    SYMFUNC(miClearDrawable)
@@ -105,7 +104,9 @@ LOOKUP miLookupTab[] = {
    SYMFUNC(miPointerWarpCursor)
    SYMFUNC(miDCInitialize)
    SYMFUNC(miRectsToRegion)
-
+   SYMFUNC(miSubtract)
+   SYMFUNC(miUnion)
+   SYMVAR(miZeroLineScreenIndex)
    SYMVAR(miSpritePointerFuncs)
 
   { 0, 0 },

@@ -1,5 +1,4 @@
 /* $XConsortium: dbe.c /main/4 1996/08/01 19:24:47 dpw $ */
-/* $XFree86: xc/programs/Xserver/dbe/dbe.c,v 3.1 1996/03/29 22:14:31 dawes Exp $ */
 /******************************************************************************
  * 
  * Copyright (c) 1994, 1995  Hewlett-Packard Company
@@ -31,6 +30,7 @@
  *     DIX DBE code
  *
  *****************************************************************************/
+/* $XFree86: xc/programs/Xserver/dbe/dbe.c,v 3.2 1996/12/23 06:29:29 dawes Exp $ */
 
 
 /* INCLUDES */
@@ -46,6 +46,12 @@
 #include "dbestruct.h"
 #include "midbe.h"
 
+#ifdef XFree86LOADER
+#define MAGIC_DONE 0
+#define MAGIC_LOAD_EXTENSION 8
+#include "xf86_libc.h"
+#include "xf86_ldext.h"
+#endif
 
 /* GLOBALS */
 
@@ -1976,4 +1982,32 @@ DbeExtensionInit()
 
 } /* DbeExtensionInit() */
 
+#ifdef XFree86LOADER
 
+ExtensionModule dbeExt = {
+    DbeExtensionInit,
+    DBE_PROTOCOL_NAME,
+    NULL};
+
+/* 
+ * Entry point for the loader code
+ */
+void
+libdbeModuleInit(data, magic)
+    pointer *data;
+    INT32 *magic;
+{
+    static int cnt = 0;
+
+    switch (cnt++) {
+      case 0:
+	*magic = MAGIC_LOAD_EXTENSION;
+	*data = (pointer)&dbeExt;
+	break;
+      default:
+	*magic = MAGIC_DONE;
+    }
+}
+
+#endif /* XFree86LOADER */
+	    
