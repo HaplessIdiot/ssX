@@ -1,4 +1,4 @@
- // $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.25 2003/02/14 22:02:26 dawes Exp $
+ // $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.26 2003/02/14 22:59:10 dawes Exp $
 
 // EAK (Easy Access, Internet, Multimedia, PDA) keyboards
 // Copyright (C) 2002 Stanislav Brabec <sbrabec@suse.cz>
@@ -1038,8 +1038,8 @@ xkb_symbols "logicdn" {
     key <FK13>	{	[ XF86MailForward	]	};	// F3
     key <FK14>	{	[ XF86Send		]	};	// F4
     key <FK15>	{	[ Undo			]	};	// F5
-    key <FK15>	{	[ Redo			]	};	// F6
-    key <FK16>	{	[ Print			]	};	// F7
+    key <FK16>	{	[ Redo			]	};	// F6
+    key <FK17>	{	[ Print			]	};	// F7
     key <I42>	{	[ XF86Save		]	};	// F8
     key <I43>	{	[ XF86MyComputer	]	};	// F9
     key <I44>	{	[ XF86Documents		]	};	// F10
