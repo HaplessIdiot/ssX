@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xvmc.c,v 1.7 2001/11/18 23:55:48 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvmc.c,v 1.8 2003/07/16 01:38:31 dawes Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -17,7 +17,6 @@
 #include "Xvproto.h"
 #include "XvMCproto.h"
 #include "xvmcext.h"
-#include "xvmc.h"
 
 int XvMCScreenIndex = -1;
 

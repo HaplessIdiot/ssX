@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.26 2003/03/23 04:56:02 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.27 2003/07/16 01:38:31 dawes Exp $ */
 
 /*
 ** File: 
@@ -1209,7 +1209,7 @@ ProcXvShmPutImage(ClientPtr client)
 #endif
 
 #ifdef XvMCExtension
-#include "xvmc.h"
+#include "xvmcext.h"
 #endif
 
 static int 

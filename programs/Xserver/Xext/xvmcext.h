@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xvmc.h,v 1.2 2001/04/01 14:00:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvmcext.h,v 1.1 2001/04/07 11:04:21 alanh Exp $ */
 
 #ifndef _XVMC_H
 #define _XVMC_H
@@ -105,5 +105,7 @@ typedef struct {
 void XvMCExtensionInit(void);
 
 int XvMCScreenInit(ScreenPtr pScreen, int num, XvMCAdaptorPtr adapt);
+
+XvImagePtr XvMCFindXvImage(XvPortPtr pPort, CARD32 id);
 
 #endif /* _XVMC_H */
