@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/fontdir.c,v 3.15 2001/05/02 18:20:54 keithp Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontdir.c,v 3.16 2001/05/02 20:44:41 keithp Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -283,6 +283,7 @@ FontFileSortDir(FontDirectoryPtr dir)
 */
 
 #define isWild(c)   ((c) == XK_asterisk || (c) == XK_question)
+#define isDigit(c)  (XK_0 <= (c) && (c) <= XK_9)
 
 static int
 SetupWildMatch(FontTablePtr table, FontNamePtr pat, 
@@ -292,6 +293,7 @@ SetupWildMatch(FontTablePtr table, FontNamePtr pat,
     char        c;
     char       *t;
     char       *firstWild;
+    char       *firstDigit;
     int         first;
     int         center,
                 left,
@@ -302,11 +304,16 @@ SetupWildMatch(FontTablePtr table, FontNamePtr pat,
     name = pat->name;
     nDashes = pat->ndashes;
     firstWild = 0;
+    firstDigit = 0;
     t = name;
     while ((c = *t++)) {
 	if (isWild(c)) {
 	    if (!firstWild)
 		firstWild = t - 1;
+	}
+	if (isDigit(c)) {
+	    if (!firstDigit)
+		firstDigit = t - 1;
 	}
     }
     left = 0;
@@ -320,7 +327,10 @@ SetupWildMatch(FontTablePtr table, FontNamePtr pat,
 	*rightp = right;
 	return -1;
     } else if (firstWild) {
-	first = firstWild - name;
+	if (firstDigit && firstDigit < firstWild)
+	    first = firstDigit - name;
+	else
+	    first = firstWild - name;
 	while (left < right) {
 	    center = (left + right) / 2;
 	    result = strncmp(name, table->entries[center].name.name, first);
@@ -337,7 +347,7 @@ SetupWildMatch(FontTablePtr table, FontNamePtr pat,
     } else {
 	while (left < right) {
 	    center = (left + right) / 2;
-	    result = strcmp(name, table->entries[center].name.name);
+	    result = strcmpn(name, table->entries[center].name.name);
 	    if (result == 0)
 		return center;
 	    if (result < 0)
