@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/font/FreeType/Imakefile,v 1.16 2000/09/19 12:46:06 eich Exp $
+XCOMM $XFree86: xc/lib/font/FreeType/Imakefile,v 1.17 2001/08/27 17:40:58 dawes Exp $
 
 XCOMM Imakefile created for the Freetype TrueType renderer.
 XCOMM Mark Leisher <mleisher@crl.nmsu.edu>
@@ -30,7 +30,7 @@ DEFINES = ServerExtraDefines \
 /* Much of the source is simply #included by freetype.c */
 INCLUDES = -I. -I$(FONTINCSRC) -I../include -I$(SERVERSRC)/include \
            -I$(FTSOURCEDIR)/lib -I$(FTSOURCEDIR)/lib/extend \
-           -I$(FTSOURCEDIR)/lib/arch/unix -I$(XTOP)/include
+           -I$(FTSOURCEDIR)/lib/arch/unix -I$(INCLUDESRC)
 
 SRCS = ftfuncs.c ftenc.c ftutil.c freetype.c ftxcmap.c
 OBJS = ftfuncs.o ftenc.o ftutil.o freetype.o ftxcmap.o
