@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.26 2003/08/22 02:34:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.27 2003/08/24 17:36:54 dawes Exp $ */
 /*
  * Copyright (c) 1998-2003 by The XFree86 Project, Inc.
  *
@@ -40,7 +40,8 @@
 #include "xf86Xinput.h"
 #include "xf86Optrec.h"
 
-static Bool ParseOptionValue(int scrnIndex, pointer options, OptionInfoPtr p);
+static Bool ParseOptionValue(int scrnIndex, pointer options, OptionInfoPtr p,
+			     Bool markUsed);
 
 /*
  * xf86CollectOptions collects the options from each of the config file
@@ -163,42 +164,41 @@ xf86CollectInputOptions(InputInfoPtr pInfo, const char **defaultOpts,
 
 /* Created for new XInput stuff -- essentially extensions to the parser	*/
 
-/* These xf86Set* functions are intended for use by non-screen specific code */
-
-int
-xf86SetIntOption(pointer optlist, const char *name, int deflt)
+static int
+LookupIntOption(pointer optlist, const char *name, int deflt, Bool markUsed)
 {
     OptionInfoRec o;
 
     o.name = name;
     o.type = OPTV_INTEGER;
-    if (ParseOptionValue(-1, optlist, &o))
+    if (ParseOptionValue(-1, optlist, &o, markUsed))
 	deflt = o.value.num;
     return deflt;
 }
 
 
-double
-xf86SetRealOption(pointer optlist, const char *name, double deflt)
+static double
+LookupRealOption(pointer optlist, const char *name, double deflt,
+		 Bool markUsed)
 {
     OptionInfoRec o;
 
     o.name = name;
     o.type = OPTV_REAL;
-    if (ParseOptionValue(-1, optlist, &o))
+    if (ParseOptionValue(-1, optlist, &o, markUsed))
 	deflt = o.value.realnum;
     return deflt;
 }
 
 
-char *
-xf86SetStrOption(pointer optlist, const char *name, char *deflt)
+static char *
+LookupStrOption(pointer optlist, const char *name, char *deflt, Bool markUsed)
 {
     OptionInfoRec o;
 
     o.name = name;
     o.type = OPTV_STRING;
-    if (ParseOptionValue(-1, optlist, &o))
+    if (ParseOptionValue(-1, optlist, &o, markUsed))
         deflt = o.value.str;
     if (deflt)
 	return xstrdup(deflt);
@@ -207,21 +207,81 @@ xf86SetStrOption(pointer optlist, const char *name, char *deflt)
 }
 
 
-int
-xf86SetBoolOption(pointer optlist, const char *name, int deflt)
+static int
+LookupBoolOption(pointer optlist, const char *name, int deflt, Bool markUsed)
 {
     OptionInfoRec o;
 
     o.name = name;
     o.type = OPTV_BOOLEAN;
-    if (ParseOptionValue(-1, optlist, &o))
+    if (ParseOptionValue(-1, optlist, &o, markUsed))
 	deflt = o.value.bool;
     return deflt;
 }
 
+/* These xf86Set* functions are intended for use by non-screen specific code */
+
+int
+xf86SetIntOption(pointer optlist, const char *name, int deflt)
+{
+    return LookupIntOption(optlist, name, deflt, TRUE);
+}
+
+
+double
+xf86SetRealOption(pointer optlist, const char *name, double deflt)
+{
+    return LookupRealOption(optlist, name, deflt, TRUE);
+}
+
+
+char *
+xf86SetStrOption(pointer optlist, const char *name, char *deflt)
+{
+    return LookupStrOption(optlist, name, deflt, TRUE);
+}
+
+
+int
+xf86SetBoolOption(pointer optlist, const char *name, int deflt)
+{
+    return LookupBoolOption(optlist, name, deflt, TRUE);
+}
+
+/*
+ * These are like the Set*Option functions, but they don't mark the options
+ * as used.
+ */
+int
+xf86CheckIntOption(pointer optlist, const char *name, int deflt)
+{
+    return LookupIntOption(optlist, name, deflt, FALSE);
+}
+
+
+double
+xf86CheckRealOption(pointer optlist, const char *name, double deflt)
+{
+    return LookupRealOption(optlist, name, deflt, FALSE);
+}
+
+
+char *
+xf86CheckStrOption(pointer optlist, const char *name, char *deflt)
+{
+    return LookupStrOption(optlist, name, deflt, FALSE);
+}
+
+
+int
+xf86CheckBoolOption(pointer optlist, const char *name, int deflt)
+{
+    return LookupBoolOption(optlist, name, deflt, FALSE);
+}
+
 /*
  * addNewOption() has the required property of replacing the option value
- * it the option is alread present.
+ * if the option is already present.
  */
 pointer
 xf86ReplaceIntOption(pointer optlist, const char *name, const int val)
@@ -232,9 +292,17 @@ xf86ReplaceIntOption(pointer optlist, const char *name, const int val)
 }
 
 pointer
+xf86ReplaceRealOption(pointer optlist, const char *name, const double val)
+{
+    char *tmp = xnfalloc(32);
+    snprintf(tmp,32,"%f",val);
+    return xf86AddNewOption(optlist,name,tmp);
+}
+
+pointer
 xf86ReplaceBoolOption(pointer optlist, const char *name, const Bool val)
 {
-    return xf86AddNewOption(optlist,name,(Bool)val?"True":"False");
+    return xf86AddNewOption(optlist,name,val?"True":"False");
 }
 
 pointer
@@ -411,14 +479,17 @@ GetBoolValue(OptionInfoPtr p, const char *s)
 }
 
 static Bool
-ParseOptionValue(int scrnIndex, pointer options, OptionInfoPtr p)
+ParseOptionValue(int scrnIndex, pointer options, OptionInfoPtr p,
+		 Bool markUsed)
 {
     char *s, *end;
-    Bool wasUsed;
+    Bool wasUsed = FALSE;
 
     if ((s = xf86findOptionValue(options, p->name)) != NULL) {
-	wasUsed = xf86CheckIfOptionUsedByName(options, p->name);
-	xf86MarkOptionUsedByName(options, p->name);
+	if (markUsed) {
+	    wasUsed = xf86CheckIfOptionUsedByName(options, p->name);
+	    xf86MarkOptionUsedByName(options, p->name);
+	}
 	switch (p->type) {
 	case OPTV_INTEGER:
 	    if (*s == '\0') {
@@ -525,7 +596,7 @@ ParseOptionValue(int scrnIndex, pointer options, OptionInfoPtr p)
 	    p->found = FALSE;
 	    break;
 	}
-	if (p->found) {
+	if (p->found && markUsed) {
 	    int verb = 2;
 	    if (wasUsed)
 		verb = 4;
@@ -559,7 +630,8 @@ ParseOptionValue(int scrnIndex, pointer options, OptionInfoPtr p)
 	    newn = n;
 	}
 	if ((s = xf86findOptionValue(options, newn)) != NULL) {
-	    xf86MarkOptionUsedByName(options, newn);
+	    if (markUsed)
+		xf86MarkOptionUsedByName(options, newn);
 	    if (GetBoolValue(&opt, s)) {
 		p->value.bool = !opt.value.bool;
 		p->found = TRUE;
@@ -571,7 +643,7 @@ ParseOptionValue(int scrnIndex, pointer options, OptionInfoPtr p)
 	} else {
 	    p->found = FALSE;
 	}
-	if (p->found) {
+	if (p->found && markUsed) {
 	    xf86DrvMsgVerb(scrnIndex, X_CONFIG, 2, "Option \"%s\"", newn);
 	    if (*s != 0) {
 		xf86ErrorFVerb(2, " \"%s\"", s);
@@ -592,7 +664,7 @@ xf86ProcessOptions(int scrnIndex, pointer options, OptionInfoPtr optinfo)
     OptionInfoPtr p;
 
     for (p = optinfo; p->name != NULL; p++) {
-	ParseOptionValue(scrnIndex, options, p);
+	ParseOptionValue(scrnIndex, options, p, TRUE);
     }
 }
 

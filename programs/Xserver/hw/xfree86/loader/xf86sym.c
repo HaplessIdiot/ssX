@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.235 2003/08/24 19:58:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.236 2003/10/02 13:30:03 eich Exp $ */
 
 /*
  *
@@ -542,7 +542,6 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86CollectInputOptions)
    /* Merging of XInput stuff	*/
    SYMFUNC(xf86AddNewOption)
-   SYMFUNC(xf86SetBoolOption)
    SYMFUNC(xf86NewOption)
    SYMFUNC(xf86NextOption)
    SYMFUNC(xf86OptionListCreate)
@@ -554,7 +553,13 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86SetIntOption)
    SYMFUNC(xf86SetRealOption)
    SYMFUNC(xf86SetStrOption)
+   SYMFUNC(xf86SetBoolOption)
+   SYMFUNC(xf86CheckIntOption)
+   SYMFUNC(xf86CheckRealOption)
+   SYMFUNC(xf86CheckStrOption)
+   SYMFUNC(xf86CheckBoolOption)
    SYMFUNC(xf86ReplaceIntOption)
+   SYMFUNC(xf86ReplaceRealOption)
    SYMFUNC(xf86ReplaceStrOption)
    SYMFUNC(xf86ReplaceBoolOption)
    SYMFUNC(xf86FindOption)
