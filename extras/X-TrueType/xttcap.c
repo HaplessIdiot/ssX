@@ -2,6 +2,7 @@
 /* ===FileName: ===
    Copyright (c) 1998 Takuya SHIOZAKI, All Rights reserved.
    Copyright (c) 1998 X-TrueType Server Project, All rights reserved. 
+   Copyright (c) 2003 After X-TT Project, All rights reserved.
 
 ===Notice
    Redistribution and use in source and binary forms, with or without
@@ -25,7 +26,7 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
    SUCH DAMAGE.
 
-   Major Release ID: X-TrueType Server Version 1.2 [Aoi MATSUBARA Release 2]
+   Major Release ID: X-TrueType Server Version 1.4 [Charles's Wain Release 0]
 
 Notice===
  */
@@ -39,6 +40,7 @@ static char const * const releaseID =
 #include "fontmisc.h"
 #include "xttcap.h"
 
+#if 0
 /*
   Prototypes for obsoleted OS (e.g. SunOS4)
  */
@@ -46,6 +48,7 @@ static char const * const releaseID =
 #if (defined(sun) && !(defined(SVR4) || defined(__SVR4)))
 double strtod(char *str, char **ptr);
 double strtol(char *str, char **ptr, int base);
+#endif
 #endif
 
 
@@ -72,15 +75,19 @@ static SPropertyRecord const validRecords[] =
     { "FontFile",               eRecTypeString  },
     { "FaceNumber",             eRecTypeInteger },
     { "AutoItalic",             eRecTypeDouble  },
-    { "AutoBold",               eRecTypeBool    },
+    { "DoubleStrike",           eRecTypeString  },
     { "ForceProportional",      eRecTypeBool    },
     { "ForceSpacing",           eRecTypeString  },
-    { "ScaleBBoxWidth",         eRecTypeDouble  },
+    { "ScaleBBoxWidth",         eRecTypeString  },
     { "ScaleWidth",             eRecTypeDouble  },
     { "EncodingOptions",        eRecTypeString  },
     { "Hinting",                eRecTypeBool    },
     { "VeryLazyMetrics",        eRecTypeBool    },
     { "CodeRange",              eRecTypeString  },
+    { "EmbeddedBitmap",         eRecTypeString  },
+    { "VeryLazyBitmapWidthScale", eRecTypeDouble  },
+    { "ForceConstantSpacingCodeRange", eRecTypeString },
+    { "ForceConstantSpacingMetrics", eRecTypeString },
     { "Dummy",                  eRecTypeVoid    }
 };
 static int const
@@ -93,7 +100,10 @@ static struct {
 } const correspondRelations[] = {
     { "fn", "FaceNumber" },
     { "ai", "AutoItalic" },
-    { "ab", "AutoBold" },
+#if True /* obsoleted - pointed out by mrt ->->-> */
+    { "ab", "DoubleStrike" },
+#endif /* <-<-<- obsoleted */
+    { "ds", "DoubleStrike" },
 #if True /* obsoleted ->->-> */
     { "fp", "ForceProportional" },
 #endif /* <-<-<- obsoleted */
@@ -102,8 +112,12 @@ static struct {
     { "sw", "ScaleWidth" },
     { "eo", "EncodingOptions" },
     { "vl", "VeryLazyMetrics" },
+    { "bs", "VeryLazyBitmapWidthScale" },
     { "cr", "CodeRange" },
-    { "hi", "Hinting" }
+    { "eb", "EmbeddedBitmap" },
+    { "hi", "Hinting" },
+    { "fc", "ForceConstantSpacingCodeRange" },
+    { "fm", "ForceConstantSpacingMetrics" }
 };
 static int const
 numOfCorrespondRelations
@@ -628,6 +642,36 @@ SPropRecValList_add_by_font_cap(SDynPropRecValList *pThisList,
     if (NULL == (term = strrchr(strCapHead, ':')))
         goto abort;
 
+    {
+        /* for xfsft compatible */
+        char const *p;
+        for (p=term-1; p>=strCapHead; p--) {
+            if ( ':'==*p ) {
+                /*
+                 * :num:filename
+                 * ^p  ^term
+                 */
+                if ( p!=term ) {
+                    int len = term-p-1;
+                    char *value;
+
+                    len = term-p-1;
+                    value=(char *)xalloc(len+1);
+                    memcpy(value, p+1, len);
+                    value[len]='\0';
+                    SPropRecValList_add_record(pThisList,
+                                               "FaceNumber",
+                                               value);
+                    xfree(value);
+                    term=p;
+                }
+                break;
+            }
+            if ( !isdigit(*p) )
+                break;
+        }
+    }
+
     while (strCapHead<term) {
         int i;
         char const *nextColon = strchr(strCapHead, ':');
@@ -648,7 +692,7 @@ SPropRecValList_add_by_font_cap(SDynPropRecValList *pThisList,
                     if (!mystrcasecmp(correspondRelations[i].capVariable,
                                       duplicated)) {
                         if (SPropRecValList_add_record(pThisList,
-                                                       correspondRelations[i]
+                                                        correspondRelations[i]
                                                        .recordName,
                                                        value))
                             break;

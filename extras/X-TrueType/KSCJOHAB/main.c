@@ -25,7 +25,7 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
    SUCH DAMAGE.
 
-   Major Release ID: X-TrueType Server Version 1.2 [Aoi MATSUBARA Release 2]
+   Major Release ID: X-TrueType Server Version 1.3 [Aoi MATSUBARA Release 3]
 
 Notice===
  */
@@ -47,6 +47,8 @@ typedef enum
 } CharSetMagic;
 
 static CharSetRelation const charSetRelations[] = {
+    { "ksc5601",   NULL,  "3", KSCJOHAB, { 0x30, 0xff, 0x84, 0xf9, 0xd931 } },
+    { "ksx1001",   NULL,  "3", KSCJOHAB, { 0x30, 0xff, 0x84, 0xf9, 0xd931 } },
     { "kscjohab",  NULL, NULL, KSCJOHAB, { 0x30, 0xff, 0x84, 0xf9, 0xd931 } },
     { "ksc5601johab",  NULL, NULL, KSCJOHAB,
                                          { 0x30, 0xff, 0x84, 0xf9, 0xd931 } },

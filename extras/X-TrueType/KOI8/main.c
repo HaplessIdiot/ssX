@@ -25,7 +25,7 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
    SUCH DAMAGE.
 
-   Major Release ID: X-TrueType Server Version 1.2 [Aoi MATSUBARA Release 2]
+   Major Release ID: X-TrueType Server Version 1.3 [Aoi MATSUBARA Release 3]
 
 Notice===
  */
@@ -112,7 +112,7 @@ cc_koi8_u_to_ucs2(ft_char_code_t codeSrc)
     case 0xA6: codeDst = 0x0456; break;
     case 0xA7: codeDst = 0x0457; break;
     case 0xAD: codeDst = 0x0491; break;
-    case 0xB4: codeDst = 0x0403; break;
+    case 0xB4: codeDst = 0x0404; break;
     case 0xB6: codeDst = 0x0406; break;
     case 0xB7: codeDst = 0x0407; break;
     case 0xBD: codeDst = 0x0490; break;

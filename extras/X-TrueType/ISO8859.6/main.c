@@ -26,7 +26,7 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
    SUCH DAMAGE.
 
-   Major Release ID: X-TrueType Server Version 1.2 [Aoi MATSUBARA Release 2]
+   Major Release ID: X-TrueType Server Version 1.3 [Aoi MATSUBARA Release 3]
 
 Notice===
 
@@ -37,6 +37,8 @@ Notice===
 	I need input here. In the meanwhile I'll use *-iso8859-6_{8,16}
 	and *-iso8859-6_asmo
 				Pablo Saratxaga <srtxg@chanae.alphanet.ch>
+
+	NOTE: iso-8859-6-8 X11 name is *-iso8859-6.8x
 
  */
 
@@ -56,19 +58,25 @@ typedef enum
     ISO8859_6,
     ISO8859_6_8,
     ISO8859_6_16,
-    ASMO449	
+    ASMO449_PLUS	
 } CharSetMagic;
 
 static CharSetRelation const charSetRelations[] = {
     { "iso8859",  NULL, "6",	  ISO8859_6,
 		{ 0x20, 0xff,    0,     0,  0x20 } },
+    { "iso8859",  NULL, "6.8x",   ISO8859_6_8,
+                { 0x20, 0xff,    0,     0,  0x20 } },
     { "iso8859",  NULL, "6_8",    ISO8859_6_8,
                 { 0x20, 0xff,    0,     0,  0x20 } },
+    { "iso8859",  NULL, "6.16x",  ISO8859_6_16,
+		{ 0x20, 0xff,    0,     0,  0x20 } },
     { "iso8859",  NULL, "6_16",   ISO8859_6_16,
 		{ 0x20, 0xff,    0,     0,  0x20 } },
-    { "iso8859",  NULL, "6_asmo", ASMO449,
+    { "iso8859",  NULL, "6_asmo", ASMO449_PLUS,
 		{ 0x20, 0xff,    0,     0,  0x20 } },
-    { "asmo",     NULL, "449",    ASMO449,
+    { "asmo",     NULL, "449",    ASMO449_PLUS,
+                { 0x20, 0xff,    0,     0,  0x20 } },
+    { "asmo",     NULL, "449+",   ASMO449_PLUS,
                 { 0x20, 0xff,    0,     0,  0x20 } },
     { NULL, NULL, NULL, 0, { 0, 0, 0, 0, 0 } }
 };
@@ -77,7 +85,7 @@ static CharSetRelation const charSetRelations[] = {
 CODECONV_TEMPLATE(cc_iso8859_6_to_ucs2);
 CODECONV_TEMPLATE(cc_iso8859_6_8_to_ucs2);
 CODECONV_TEMPLATE(cc_iso8859_6_16_to_ucs2);
-CODECONV_TEMPLATE(cc_asmo449_to_ucs2);
+CODECONV_TEMPLATE(cc_asmo449_plus_to_ucs2);
 static MapIDRelation const mapIDRelations[] = {
     { ISO8859_6,    EPlfmISO,     EEncISO10646,
                                   cc_iso8859_6_to_ucs2,                NULL },
@@ -97,12 +105,12 @@ static MapIDRelation const mapIDRelations[] = {
                                   cc_iso8859_6_16_to_ucs2,             NULL },
     { ISO8859_6_16, EPlfmMS,      EEncMSUnicode,
                                   cc_iso8859_6_16_to_ucs2,             NULL },
-    { ASMO449,      EPlfmISO,     EEncISO10646,
-                                  cc_asmo449_to_ucs2,                  NULL },
-    { ASMO449,      EPlfmUnicode, EEncAny,
-                                  cc_asmo449_to_ucs2,                  NULL },
-    { ASMO449,      EPlfmMS,      EEncMSUnicode,
-                                  cc_asmo449_to_ucs2,                  NULL },
+    { ASMO449_PLUS, EPlfmISO,     EEncISO10646,
+                                  cc_asmo449_plus_to_ucs2,             NULL },
+    { ASMO449_PLUS, EPlfmUnicode, EEncAny,
+                                  cc_asmo449_plus_to_ucs2,             NULL },
+    { ASMO449_PLUS, EPlfmMS,      EEncMSUnicode,
+                                  cc_asmo449_plus_to_ucs2,             NULL },
     { -1, 0, 0, NULL, NULL }
 };
 

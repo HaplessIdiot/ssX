@@ -25,7 +25,7 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
    SUCH DAMAGE.
 
-   Major Release ID: X-TrueType Server Version 1.2 [Aoi MATSUBARA Release 2]
+   Major Release ID: X-TrueType Server Version 1.3 [Aoi MATSUBARA Release 3]
 
 Notice===
  */
@@ -48,6 +48,7 @@ typedef enum
 
 static CharSetRelation const charSetRelations[] = {
     { "jisx0208", NULL, NULL, JISX0208, { 0x21, 0x7e, 0x21, 0x74, 0x2121 } },
+    { "gt", NULL, NULL, JISX0208, { 0x21, 0x7e, 0x21, 0x74, 0x2121 } },
     { NULL, NULL, NULL, 0, { 0, 0, 0, 0, 0 } }
 };
 
