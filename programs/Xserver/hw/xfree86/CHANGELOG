@@ -1,7 +1,9 @@
 XFree86 4.0a (xx March 2000)
+  38. Fix PCI/AGP bridge I/O window detection (Marc La France).
   37. Add Mach64 solid zero-width line acceleration, except for 24bpp
-      (Marc La France).
-  36. Add Mach64 mono 8x8 pattern fill acceleration (Marc La France).
+      (Kevin Martin, Marc La France).
+  36. Add Mach64 mono 8x8 pattern fill acceleration (Kevin Martin,
+      Marc La France).
   35. Fix DDC bug (John McCorquodale).
   34. Fix minClock and maxClock determination in ATI driver (Marc La France).
   33. A first step at allowing -configure to deal with more than one device per
@@ -166,7 +168,8 @@ XFree86 3.9.18Z (3 March 2000)
       when hardware clipping is not available (Mark Vojkovich).
 3914. Update the mga man page (Mark Vojkovich).
 3913. A Q&D fix for GLX segment violation in loader server (Marc La France).
-3912. Add Mach64 screen-to-screen copy acceleration (Marc La France).
+3912. Add Mach64 screen-to-screen copy acceleration (Kevin Martin,
+      Marc La France).
 3911. IA-64 fixes (Mark Vojkovich).
 3910. Add skeleton man pages for the video and input drivers that don't
       already have one (David Dawes).
@@ -10098,4 +10101,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1102 2000/03/24 19:17:27 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1104 2000/03/25 20:33:51 mvojkovi Exp $
