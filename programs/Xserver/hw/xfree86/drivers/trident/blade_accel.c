@@ -23,7 +23,7 @@
  * 
  * Trident Blade3D accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/blade_accel.c,v 1.9 2000/11/21 09:03:23 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/blade_accel.c,v 1.10 2000/11/28 00:04:39 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -163,9 +163,6 @@ BladeAccelInit(ScreenPtr pScreen)
 
     infoPtr->SetClippingRectangle = BladeSetClippingRectangle;
     infoPtr->DisableClipping = BladeDisableClipping;
-    infoPtr->ClippingFlags = HARDWARE_CLIP_SOLID_FILL |
-			     HARDWARE_CLIP_SCREEN_TO_SCREEN_COPY |
-			     HARDWARE_CLIP_MONO_8x8_FILL;
 
 #if 0
     infoPtr->SolidLineFlags = 0;
@@ -222,7 +219,7 @@ BladeAccelInit(ScreenPtr pScreen)
     infoPtr->CPUToScreenColorExpandFillFlags = CPU_TRANSFER_PAD_DWORD |
 				NO_TRANSPARENCY |
 				LEFT_EDGE_CLIPPING |
-				LEFT_EDGE_CLIPPING_NEGATIVE_X |
+				SYNC_AFTER_COLOR_EXPAND |
 				NO_PLANEMASK |
 				BIT_ORDER_IN_BYTE_MSBFIRST |
 			        SCANLINE_PAD_DWORD;
@@ -248,7 +245,6 @@ BladeAccelInit(ScreenPtr pScreen)
 				BladeSubsequentImageWriteScanline;
     infoPtr->ImageWriteFlags =  NO_PLANEMASK |
 				NO_TRANSPARENCY |
-				LEFT_EDGE_CLIPPING_NEGATIVE_X |
 				LEFT_EDGE_CLIPPING |
 				CPU_TRANSFER_PAD_DWORD |
 				SYNC_AFTER_IMAGE_WRITE;
@@ -270,25 +266,6 @@ BladeAccelInit(ScreenPtr pScreen)
     xf86InitFBManager(pScreen, &AvailFBArea);
 
     return(XAAInit(pScreen, infoPtr));
-}
-
-static void
-BladeSyncClip(ScrnInfoPtr pScrn)
-{
-    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-    int busy;
-    int cnt = 10000000;
-
-    BLADEBUSY(busy);
-    while (busy != 0) {
-	if (--cnt < 0) {
-	    ErrorF("GE timeout\n");
-	    BLADE_OUT(0x2124, 1<<7);
-	    BLADE_OUT(0x2124, 0);
-	    break;
-	}
-    	BLADEBUSY(busy);
-    }
 }
 
 static void
@@ -360,8 +337,6 @@ BladeSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
 	BLADE_OUT(0x2108, y2<<16 | x2);
 	BLADE_OUT(0x210C, ((y2+h-1)&0xfff)<<16 | ((x2+w-1)&0xfff));
     }
-    if (!pTrident->UsePCIRetry)
-    	BladeSyncClip(pScrn);
 }
 
 static void
@@ -435,9 +410,6 @@ BladeSubsequentSolidBresenhamLine( ScrnInfoPtr pScrn,
     BLADE_OUT(0x2140, E<<30 | (y&0xfff)<<20 | ((x&0xfff)<<4));
     BLADE_OUT(0x2144, D<<30 | (((dmaj-dmin)&0xfff) << 16) | (-dmin&0xfff));
     BLADE_OUT(0x2148, ((-(dmin+e)&0xfff) << 16));
-
-    if (!pTrident->UsePCIRetry)
-    	BladeSyncClip(pScrn);
 }
 
 
@@ -461,9 +433,6 @@ BladeSubsequentSolidTwoPointLine( ScrnInfoPtr pScrn,
     if (flags & OMIT_LAST)
 	BladeDisableClipping(pScrn);
 #endif
-
-    if (!pTrident->UsePCIRetry)
-    	BladeSyncClip(pScrn);
 }
 
 static void
@@ -511,9 +480,6 @@ BladeSubsequentDashedTwoPointLine( ScrnInfoPtr pScrn,
 
     if (flags & OMIT_LAST)
 	BladeDisableClipping(pScrn);
-
-    if (!pTrident->UsePCIRetry)
-    	BladeSyncClip(pScrn);
 }
 
 static void
@@ -541,8 +507,6 @@ BladeSubsequentFillRectSolid(ScrnInfoPtr pScrn, int x, int y, int w, int h)
     BLADE_OUT(0x2144, 0x20000000 | pTrident->BltScanDirection | 1<<19 | 1<<4 | 2<<2 | (pTrident->Clipping ? 1:0));
     BLADE_OUT(0x2108, y<<16 | x);
     BLADE_OUT(0x210C, ((y+h-1)&0xfff)<<16 | ((x+w-1)&0xfff));
-    if (!pTrident->UsePCIRetry)
-    	BladeSyncClip(pScrn);
 }
 
 static void 
@@ -662,8 +626,6 @@ BladeSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
  	(CARD32*)pTrident->XAAScanlineColorExpandBuffers[bufno], pTrident->dwords);
 
     pTrident->h--;
-    if (!pTrident->h)
-	BladeSync(pScrn);
 }
 
 static void 
@@ -717,8 +679,6 @@ BladeSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn,
     BLADE_OUT(0x2144, 0x20000000 | pTrident->BltScanDirection | 7<<12 | 1<<4 | 1<<19 | 2<<2 | clip);
     BLADE_OUT(0x2108, y<<16 | x);
     BLADE_OUT(0x210C, ((y+h-1)&0xfff)<<16 | ((x+w-1)&0xfff));
-    if (!pTrident->UsePCIRetry)
-    	BladeSyncClip(pScrn);
 }
 
 static void 
@@ -804,6 +764,4 @@ BladeSubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
  	(CARD32*)pTrident->XAAImageScanlineBuffer[bufno], pTrident->dwords);
 
     pTrident->h--;
-    if (!pTrident->h)
-	BladeSync(pScrn);
 }
