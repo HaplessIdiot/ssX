@@ -366,6 +366,9 @@ XftFontInfoFill (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
     fi->ysize = (FT_F26Dot6) (dsize * 64.0);
     fi->xsize = (FT_F26Dot6) (dsize * aspect * 64.0);
 
+    if (XftDebug() & XFT_DBG_OPEN)
+	printf ("XftFontInfoFill: %s: %d (%g pixels)\n",
+		(filename ? filename : (FcChar8 *) "<none>"), id, dsize);
     /*
      * Get antialias value
      */
@@ -641,9 +644,11 @@ XftFontOpenInfo (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
      * No existing font, create another.  
      */
     
-    if (FcPatternGetCharSet (pattern, FC_CHARSET, 0, &charset) != FcResultMatch)
-	charset = 0;
-    
+    if (XftDebug () & XFT_DBG_CACHE)
+	printf ("New font %s/%d size %dx%d\n",
+		fi->file->file, fi->file->id,
+		(int) fi->xsize >> 6, (int) fi->ysize >> 6);
+		
     if (FcPatternGetInteger (pattern, XFT_MAX_GLYPH_MEMORY, 0,
 			     &max_glyph_memory) != FcResultMatch)
 	max_glyph_memory = XFT_FONT_MAX_GLYPH_MEMORY;
@@ -652,6 +657,15 @@ XftFontOpenInfo (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
     if (!face)
 	goto bail0;
 
+    /*
+     * Get the set of Unicode codepoints covered by the font.
+     * If the incoming pattern doesn't provide this data, go
+     * off and compute it.  Yes, this is expensive, but it's
+     * required to map Unicode to glyph indices.
+     */
+    if (FcPatternGetCharSet (pattern, FC_CHARSET, 0, &charset) != FcResultMatch)
+	charset = FcFreeTypeCharSet (face, FcConfigGetBlanks (0));
+    
     if (!_XftSetFace (fi->file, fi->xsize, fi->ysize, &fi->matrix))
 	goto bail1;
 
