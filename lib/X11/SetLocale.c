@@ -203,7 +203,6 @@ _XlcMapOSLocaleName(osname, siname)
 # endif
 # ifdef STARTCHAR
     if (start && (start = strchr (start, STARTCHAR))) 
-        start++;
 # elif  defined (STARTSTR)
     if (start && (start = strstr (start,STARTSTR)))
 # endif
