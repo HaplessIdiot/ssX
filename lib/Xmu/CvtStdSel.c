@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.17 2001/08/23 00:03:21 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.18 2001/11/19 20:44:15 tsi Exp $ */
 
 /*
  * This file contains routines to handle common selection targets.
@@ -223,8 +223,6 @@ XmuConvertStandardSelection(Widget w, Time time, Atom *selection, Atom *target,
 
 	if ((hostp = _XGethostbyname (hostname,hparams)) == NULL)
 	    return False;
-
-	(void)hparams;
 
 	if (hostp->h_addrtype != AF_INET) return False;
 	*length = hostp->h_length;
