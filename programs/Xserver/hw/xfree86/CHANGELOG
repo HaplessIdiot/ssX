@@ -1,4 +1,6 @@
 XFree86 4.1.99.3 (xx December 2001)
+ 587. Fix Trident driver pitch values when accelerator is in use, applies
+      to Image and Blade series chips (Alan Hourihane).
  586. Minor bugfix to SiS driver, restructured VT switching code 
       (Egbert Eich).
  585. Attempt to fix flickering in 24bpp on Trident CyberBladeXPAi1
@@ -14362,4 +14364,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2093 2001/12/19 15:15:48 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2094 2001/12/19 18:55:11 eich Exp $
