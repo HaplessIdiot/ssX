@@ -1,5 +1,5 @@
 /* $XConsortium: cpq_driver.c,v 1.1 94/03/28 21:50:26 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.0 1994/05/31 08:14:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.1 1994/08/31 04:44:54 dawes Exp $ */
 /*
  * Copyright 1993 Hans Oey <hans@mo.hobby.nl>
  *
@@ -102,6 +102,8 @@ vgaVideoChipRec COMPAQ = {
 	FALSE,
 	0,
 	0,
+	FALSE,
+	FALSE,
 };
 
 #define new ((vgaCOMPAQPtr)vgaNewVideoState)

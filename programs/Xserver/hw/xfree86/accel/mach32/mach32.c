@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.c,v 1.1 94/03/28 21:06:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.13 1994/09/03 02:51:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.14 1994/09/04 10:46:07 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -78,7 +78,7 @@ ScrnInfoRec mach32InfoRec = {
     mach32SwitchMode,	/* Bool (* SwitchMode)() */
     mach32PrintIdent,	/* void (* PrintIdent)() */
     8,			/* int depth */
-    {0, 0, 0},          /* xrgb weight */
+    {5, 6, 5},          /* xrgb weight */
     8,			/* int bitsPerPixel */
     PseudoColor,       	/* int defaultVisual */
     -1, -1,		/* int virtualX,virtualY */
@@ -385,8 +385,7 @@ mach32Probe()
     if (xf86bpp < 0) {
 	xf86bpp = mach32InfoRec.depth;
     }
-    if (mach32InfoRec.weight.red != 0 && mach32InfoRec.weight.green != 0 &&
-	mach32InfoRec.weight.blue != 0) {
+    if (xf86weight.red == 0 || xf86weight.green == 0 || xf86weight.blue == 0) {
 	xf86weight = mach32InfoRec.weight;
     }
     switch (xf86bpp) {

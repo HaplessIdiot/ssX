@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.h,v 1.1 94/03/28 21:06:49 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.h,v 3.2 1994/07/24 11:43:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.h,v 3.3 1994/08/31 04:21:37 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -356,6 +356,17 @@ void mach32ImageOpStipple(
     Pixel bgPixel,
     short alu,
     Pixel planemask
+#endif
+);
+void mach32FontOpStipple(
+#if NeedFunctionPrototypes
+    int x,
+    int y,
+    int w,
+    int h,
+    unsigned char *psrc,
+    int pwidth,
+    Pixel id
 #endif
 );
 /* mach32bstor.c */

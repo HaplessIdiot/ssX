@@ -1,5 +1,5 @@
 /* $XConsortium: mach8fcach.c,v 1.1 94/03/28 21:10:58 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8fcach.c,v 3.0 1994/05/30 08:24:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8fcach.c,v 3.1 1994/07/15 06:58:58 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -82,7 +82,7 @@ mach8FontCache8Init()
         for( BitPlane = 0; BitPlane < N_PLANES; BitPlane++ )
 	  xf86AddToCachePool( FontPool, x, y, w, h, BitPlane );
 
-        xf86InitFontCache( FontPool, w, h, mach8ImageOpStipple, mach8alu );
+        xf86InitFontCache( FontPool, w, h, mach8FontOpStipple );
         xf86InitText( mach8GlyphWrite, mach8NoCPolyText, mach8NoCImageText );
         ErrorF( "%s %s: Using %d planes of %dx%d at %dx%d aligned %d as font cache\n",
 	        XCONFIG_PROBED, mach8InfoRec.name,

@@ -1,5 +1,5 @@
 /* $XConsortium: ibm8514cach.h,v 1.1 94/03/28 21:03:26 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514cach.h,v 3.0 1994/08/11 06:54:11 dawes Exp $ */
 void ibm8514GlyphWrite(
 #if NeedFunctionPrototypes
     int /*x*/,
@@ -45,26 +45,19 @@ void ibm8514CacheMoveBlock(
     int /*dsty*/,
     int /*h*/,
     int /*len*/,
-    unsigned int /*bitplane*/
+    unsigned int /*id*/
 #endif
 );
 
 
-void ibm8514ImageOpStipple(
+void ibm8514FontOpStipple(
 #if NeedFunctionPrototypes
     int /*x*/,
     int /*y*/,
     int /*w*/,
     int /*h*/,
     unsigned char */*psrc*/,
-    int /*pw*/,
-    int /*ph*/,
-    int /*pox*/,
-    int /*poy*/,
     int /*pwidth*/,
-    Pixel /*fgPixel*/,
-    Pixel /*bgPixel*/,
-    short /*alu*/,
-    Pixel /*planemask*/
+    Pixel /*id*/
 #endif
 );

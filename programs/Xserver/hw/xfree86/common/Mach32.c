@@ -1,5 +1,5 @@
 /* $XConsortium: XF86_Mach32.c,v 1.1 94/03/28 21:21:46 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_Mach32.c,v 3.0 1994/05/30 08:24:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_Mach32.c,v 3.1 1994/06/28 12:29:07 dawes Exp $ */
 #include "X.h"
 #include "os.h"
 
@@ -45,7 +45,6 @@ int mach32ValidTokens[] =
   DIRECTCOLOR,
   CHIPSET,
   CLOCKS,
-  DISPLAYSIZE,
   MODES,
   OPTION,
   VIDEORAM,

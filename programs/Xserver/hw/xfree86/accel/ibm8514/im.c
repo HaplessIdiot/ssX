@@ -415,21 +415,16 @@ ibm8514ImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 #endif /* ASM_IMAGE */
 
 void
-ibm8514ImageOpStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
-		  fgPixel, bgPixel, alu, planemask )
+ibm8514FontOpStipple(x, y, w, h, psrc, pwidth, id)
     int			x;
     int			y;
     int			w;
     int			h;
     char		*psrc;
-    int			pw, ph, pox, poy;
     int			pwidth;
-    int			fgPixel;
-    int			bgPixel;
-    short		alu;
-    short		planemask;
+    Pixel		id;
 {
 
-    ibm8514ImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
-		      fgPixel, bgPixel, alu, planemask, 1 );
+    ibm8514ImageStipple(x, y, w, h, psrc, pwidth, w, h, x, y,
+		      ~0, 0, ibm8514alu[GXcopy], 1 << id, 1 );
 }

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86fcache.c,v 1.1 94/03/28 21:02:22 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86fcache.c,v 3.1 1994/05/30 08:23:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86fcache.c,v 3.2 1994/08/11 06:50:00 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -45,30 +45,25 @@ static CacheFont8Ptr xf86HeadFont = NULL;
 static CachePool xf86FontPool = NULL;
 static int xf86MaxWidth;
 static int xf86MaxHeight;
-static void (*xf86ImageOpStippleFunc)(int, int, int, int, unsigned char *, int,
-				      int, int, int, int, Pixel, Pixel,
-				      short, Pixel);
-static short *xf86Alu;
+static void (*xf86FontOpStippleFunc)(int, int, int, int, unsigned char *, int,
+				     Pixel);
 
 /*
  * Init the font cache.
  * The Cache Pool pointer is stored together with  various other information
  */
 void xf86InitFontCache( FontCache, MaxWidth, MaxHeight,
-			ImageOpStippleFunc, Alu )
+			FontOpStippleFunc )
 CachePool FontCache;
 int MaxWidth, MaxHeight;
-void (*ImageOpStippleFunc)(int, int, int, int, unsigned char *, int,
-			   int, int, int, int, Pixel, Pixel, short, Pixel);
-short *Alu;
+void (*FontOpStippleFunc)(int, int, int, int, unsigned char *, int, Pixel);
 
 {
     xf86FontPool = FontCache;
     xf86MaxWidth = MaxWidth / 32;
     xf86MaxHeight = MaxHeight;
     xf86HeadFont = (CacheFont8Ptr) Xcalloc(sizeof(CacheFont8Rec));
-    xf86ImageOpStippleFunc = ImageOpStippleFunc;
-    xf86Alu = Alu;
+    xf86FontOpStippleFunc = FontOpStippleFunc;
 }
 
 /*
@@ -256,16 +251,12 @@ xf86loadFontBlock(fentry, block)
 			*pb++ = *pglyph++;
 		  pb = pbits;
 	       }
-	       (xf86ImageOpStippleFunc)(fentry->fblock[block]->x +
+	       (xf86FontOpStippleFunc)( fentry->fblock[block]->x +
 					 		(c % 32) * fentry->w,
 					fentry->fblock[block]->y,
 					gWidth, gHeight,
-					pb, nbyGlyphWidth, gWidth, gHeight,
-					fentry->fblock[block]->x +
-					(c % 32) * fentry->w,
-					fentry->fblock[block]->y,
-					~0, 0, xf86Alu[GXcopy],
-					1 << fentry->fblock[block]->daddy->id);
+					pb, nbyGlyphWidth,
+					fentry->fblock[block]->daddy->id);
 	    }
 	 }
       }

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86fcache.h,v 1.1 94/03/28 21:02:28 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86fcache.h,v 3.1 1994/08/11 07:26:24 dawes Exp $ */
 /*
  * Data structures and function prototypes for the font cache.
  */
@@ -33,10 +33,8 @@ void xf86InitFontCache(
     CachePool /*FontCache*/,
     int /*RowWidth*/,
     int /*RowHeight*/,
-    void (*/*ImageOpStippleFunc*/)(int, int, int, int, unsigned char *, int,
-				   int, int, int, int, Pixel, Pixel, short,
-				   Pixel),
-    short */*Alu*/
+    void (*/*FontOpStippleFunc*/)(int, int, int, int, unsigned char *, int,
+				  Pixel)
 #endif
 );
 

@@ -1,5 +1,5 @@
 /* $XConsortium: gvg_driver.c,v 1.1 94/03/28 21:51:24 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/gvga/gvg_driver.c,v 3.0 1994/05/31 08:15:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/gvga/gvg_driver.c,v 3.1 1994/08/31 04:45:52 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -90,6 +90,8 @@ vgaVideoChipRec GVGA = {
   FALSE,
   0,
   0,
+  FALSE,
+  FALSE,
 };
 
 
