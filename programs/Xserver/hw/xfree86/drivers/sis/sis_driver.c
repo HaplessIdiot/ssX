@@ -8618,6 +8618,7 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode, int viewmode)
 
      if((!pSiS->UseVESA) && (pSiS->VBFlags & CRT2_ENABLE)) {
         /* Switch on CRT1 for modes that require the bridge in SlaveMode */
+	andSISIDXREG(SISSR,0x1f,0x3f);
 	inSISIDXREG(SISCR, 0x17, CR17);
 	if(!(CR17 & 0x80)) {
            orSISIDXREG(SISCR, 0x17, 0x80);
@@ -8626,7 +8627,6 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode, int viewmode)
            outSISIDXREG(SISSR, 0x00, 0x03);
 	}
      }
-
 }
 
 /* Functions for adjusting various TV settings */
@@ -10382,7 +10382,7 @@ SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 
 	if(pSiS->VGAEngine == SIS_315_VGA) {
 
-	   if(pSiS->CRT1off) {
+	   if((pSiS->CRT1off) && (doit)) {
 	      orSISIDXREG(SISCR,0x63,0x40);
 	      orSISIDXREG(SISSR,0x1f,0xc0);
 	   } else {
@@ -10399,11 +10399,13 @@ SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 		    flag = TRUE;
 		    usScratchCR17 &= ~0x80;
 		 }
+		 orSISIDXREG(SISSR,0x1f,0xc0);
     	      } else {
 	         if(!(usScratchCR17 & 0x80)) {
 		    flag = TRUE;
         	    usScratchCR17 |= 0x80;
 		 }
+		 andSISIDXREG(SISSR,0x1f,0x3f);
               }
 	      /* Reset only if status changed */
 	      if(flag) {
@@ -10412,20 +10414,6 @@ SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 	         usleep(10000);
                  outSISIDXREG(SISSR, 0x00, 0x03);    /* End Reset */
 	      }
-	   }
-
-	   /* For some reason, sending CRT1 into power-save while in slave mode
-	    * on Chrontel TV, makes the chrontel lose sync... TODO: Test this
-	    * on Chrontel 7019
-	    */
-	   if((pSiS->CRT1off) &&
-	      (!((pSiS->VGAEngine == SIS_300_VGA) &&
-	         (pSiS->VBFlags & VB_CHRONTEL)    &&
-		 (pSiS->VBFlags & CRT2_TV)        &&
-		 (!doit)))) {
-	      orSISIDXREG(SISSR,0x1f,0xc0);
-	   } else {
-	      andSISIDXREG(SISSR,0x1f,0x3f);
 	   }
 	}
 
