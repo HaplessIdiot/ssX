@@ -1,3 +1,9 @@
+XFree86 3.9Pe (14 March 1999)
+2332. Disable transparency for screen to screen copies for the Trident
+      Image3D (Alan Hourihane).
+2331. Remove pixmaps from offscreen memory when they are used to tile
+      drawables that aren't in videomemory (#2497, Mark Vojkovich).
+
 XFree86 3.9Pd (9 March 1999)
 2330. Updates for Hurd port (#2528, UCHIYAMA Yasushi).
 2329. Fix some Solaris 7 build problems (#2530, Nicholas Brealey).
@@ -57,7 +63,6 @@ XFree86 3.9Pc (2 March 1999)
       Kevin Brosius).
 2296. Remove typos and inconsistencies between the Xv manual pages and
       the implementation (#2504, Michael Schimek).,
-      and add the ShowCache option (#2523, Mark Vojkovich).
 2295. Ansification and gcc warning elimnation in xfwp, xhost, xieperf,
       xinit, xkbevd, xkbprint, xkbutils, xkill, xlogo (#2502, Matthieu Herrb).
 2294. Fix an MGA driver crash that shows up when running xtest (#2501
@@ -71,8 +76,7 @@ XFree86 3.9Pc (2 March 1999)
 2290. Fix a 'make includes' problem in lib/font that shows up on SVR4.
 2289. Integrate SGI's GLX and the Mesa core rendering library
       (#2492, Precision Insight, SGI, Mesa).
-2288. Remove pixmaps from offscreen memory when they are used to tile
-      drawables that aren't in videomemory (#2497, Mark Vojkovich).
+2288. -
 2287. New DGA DDX layer (not finished yet) (#2495, Mark Vojkovich).
 2286. Backwards compatibility layer translating DGA 1.0 into the new DDX
       (#2494, Mark Vojkovich).
@@ -7421,4 +7425,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.700 1999/03/07 11:40:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.701 1999/03/07 14:05:03 dawes Exp $
