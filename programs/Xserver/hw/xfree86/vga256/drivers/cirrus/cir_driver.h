@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.h,v 1.5 95/01/23 15:35:14 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.15 1995/01/28 17:08:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.16 1995/04/09 14:14:30 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -215,7 +215,8 @@ extern unsigned int cirrusForegroundColorShadow,
 #define CLGD6235    9
 #define CLGD5434    10
 #define CLGD5430    11
-#define LASTCLGD    CLGD5430
+#define CLGD5436    12
+#define LASTCLGD    CLGD5436
 
 #define CIRRUS_BUS_SLOW 0
 #define CIRRUS_BUS_FAST 1
@@ -264,11 +265,12 @@ typedef struct
   int skewed;
 } cirrusCurRec, *cirrusCurRecPtr;
 
-#define HAVE543X() (cirrusChip == CLGD5434 || cirrusChip == CLGD5430)
+#define HAVE543X() (cirrusChip >= CLGD5434)
 
 #define HAVEBITBLTENGINE() (cirrusUseBLTEngine)
 
-#define HAVEBLTWRITEMASK() (cirrusChip == CLGD5429 || cirrusChip == CLGD5430)
+#define HAVEBLTWRITEMASK() (cirrusChip == CLGD5429 || \
+	cirrusChip == CLGD5430 || cirrusChip == CLGD5436)
 
 #define SETWRITEMODE(n) \
 	if (n != cirrusWriteModeShadow) { \

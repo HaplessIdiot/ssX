@@ -1,4 +1,6 @@
 XFree86 3.1.1Ab (2 June 1995)
+111. Preliminary support for the Cirrus 5436 (Harm Hanemaayer).
+110. PCI base address detection for the Cirrus driver (Harm Hanemaayer).
 109. Fix problem linking AGX server with the LinkKit (Stephen Kump).
 108. Support for LynxOS (Thomas Mueller).
 107. Update LinkKit to make it self-contained regarding X headers
