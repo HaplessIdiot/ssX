@@ -26,7 +26,7 @@
  * dealings in this Software without prior written authorization from
  * Torrey T. Lyons.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/fullscreen.c,v 1.1 2002/03/28 02:21:18 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/fullscreen.c,v 1.2 2002/12/05 01:07:40 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "darwin.h"
@@ -330,21 +330,20 @@ Bool QuartzFSAddScreen(
     dfb->height = bounds.size.height;
     dfb->pitch = CGDisplayBytesPerRow(cgID);
     dfb->bitsPerPixel = CGDisplayBitsPerPixel(cgID);
-    dfb->pixelInfo.componentCount = CGDisplaySamplesPerPixel(cgID);
 
     if (dfb->bitsPerPixel == 8) {
         if (CGDisplayCanSetPalette(cgID)) {
-            dfb->pixelInfo.pixelType = kIOCLUTPixels;
+            dfb->colorType = PseudoColor;
         } else {
-            dfb->pixelInfo.pixelType = kIOFixedCLUTPixels;
+            dfb->colorType = StaticColor;
         }
-        dfb->pixelInfo.bitsPerComponent = 8;
+        dfb->bitsPerComponent = 8;
         dfb->colorBitsPerPixel = 8;
     } else {
-        dfb->pixelInfo.pixelType = kIORGBDirectPixels;
-        dfb->pixelInfo.bitsPerComponent = CGDisplayBitsPerSample(cgID);
-        dfb->colorBitsPerPixel = (dfb->pixelInfo.componentCount *
-                                  dfb->pixelInfo.bitsPerComponent);
+        dfb->colorType = TrueColor;
+        dfb->bitsPerComponent = CGDisplayBitsPerSample(cgID);
+        dfb->colorBitsPerPixel = CGDisplaySamplesPerPixel(cgID) *
+                                 dfb->bitsPerComponent;
     }
 
     fsDisplayInfo->framebuffer = CGDisplayBaseAddress(cgID);
@@ -419,7 +418,7 @@ Bool QuartzFSSetupScreen(
         return FALSE;
     }
 
-    if (dfb->pixelInfo.pixelType == kIOCLUTPixels) {
+    if (dfb->colorType == PseudoColor) {
         // Initialize colormap handling
         size_t aquaBpp;
 

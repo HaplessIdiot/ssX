@@ -7,7 +7,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessAquaGlue.c,v 1.3 2002/07/22 00:27:25 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessAquaGlue.c,v 1.4 2002/07/24 05:58:33 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "darwin.h"
@@ -179,13 +179,13 @@ AquaAddScreen(int index, ScreenPtr pScreen)
     CGDisplayCount allocatedDisplays = 0;
     CGDirectDisplayID *displays = NULL;
     CGDisplayErr cgErr;
+    int componentCount;
 
-    dfb->pixelInfo.pixelType = kIORGBDirectPixels;
+    dfb->colorType = TrueColor;
     AquaScreenInit(index, &dfb->x, &dfb->y, &dfb->width, &dfb->height,
-                    &dfb->pitch, &dfb->pixelInfo.bitsPerComponent,
-                    &dfb->pixelInfo.componentCount, &dfb->bitsPerPixel);
-    dfb->colorBitsPerPixel = dfb->pixelInfo.bitsPerComponent *
-                             dfb->pixelInfo.componentCount;
+                    &dfb->pitch, &dfb->bitsPerComponent,
+                    &componentCount, &dfb->bitsPerPixel);
+    dfb->colorBitsPerPixel = dfb->bitsPerComponent * componentCount;
 
     // No frame buffer - it's all in window pixmaps.
     dfb->framebuffer = NULL; // malloc(dfb.pitch * dfb.height);

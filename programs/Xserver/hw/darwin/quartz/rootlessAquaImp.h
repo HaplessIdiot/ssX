@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessAquaImp.h,v 1.3 2001/08/01 05:34:06 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessAquaImp.h,v 1.1 2002/03/28 02:21:19 torrey Exp $ */
 
 #ifndef _ROOTLESSAQUAIMP_H
 #define _ROOTLESSAQUAIMP_H
@@ -13,8 +13,7 @@
 int AquaDisplayCount();
 
 void AquaScreenInit(int index, int *x, int *y, int *width, int *height,
-                    int *rowBytes, unsigned long *bps, unsigned long *spp,
-                    int *bpp);
+                    int *rowBytes, int *bps, int *spp, int *bpp);
 
 void *AquaNewWindow(void *upperw, int x, int y, int w, int h, int isRoot);
 

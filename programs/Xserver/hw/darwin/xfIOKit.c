@@ -33,9 +33,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.14 2002/01/10 06:59:49 torrey Exp $ */
-
-#define NDEBUG 1
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.15 2002/03/28 02:21:08 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -70,6 +68,11 @@
 #include "darwin.h"
 #include "xfIOKit.h"
 
+// Globals
+int             xfIOKitScreenIndex = 0;
+io_connect_t    xfIOKitInputConnect = 0;
+
+static pthread_t                inputThread;
 static EvGlobals *              evg;
 static mach_port_t              masterPort;
 static mach_port_t              notificationPort;
@@ -92,7 +95,7 @@ static void XFIOKitStoreColors(
     int             i;
     IOColorEntry    *newColors;
     ScreenPtr       pScreen = pmap->pScreen;
-    DarwinFramebufferPtr dfb = SCREEN_PRIV(pScreen);
+    XFIOKitScreenPtr iokitScreen = XFIOKIT_SCREEN_PRIV(pScreen);
 
     assert( newColors = (IOColorEntry *)
                 xalloc( numEntries*sizeof(IOColorEntry) ));
@@ -107,7 +110,7 @@ static void XFIOKitStoreColors(
         newColors[i].blue =  pdefs[i].blue;
     }
 
-    kr = IOFBSetCLUT( dfb->fbService, 0, numEntries,
+    kr = IOFBSetCLUT( iokitScreen->fbService, 0, numEntries,
                       kSetCLUTByValue, newColors );
     kern_assert( kr );
 
@@ -136,11 +139,12 @@ void XFIOKitGiveUp( void )
 
     // we must close the HID System first
     // because it is a client of the framebuffer
-    NXCloseEventStatus( hid.paramConnect );
-    IOServiceClose( hid.connect );
+    NXCloseEventStatus( darwinParamConnect );
+    IOServiceClose( xfIOKitInputConnect );
     for (i = 0; i < screenInfo.numScreens; i++) {
-        DarwinFramebufferPtr dfb = SCREEN_PRIV(screenInfo.screens[i]);
-        IOServiceClose( dfb->fbService );
+        XFIOKitScreenPtr iokitScreen =
+                            XFIOKIT_SCREEN_PRIV(screenInfo.screens[i]);
+        IOServiceClose( iokitScreen->fbService );
     }
 }
 
@@ -196,7 +200,7 @@ static void *XFIOKitHIDThread(void *arg)
 static void *XFIOKitPMThread(void *arg)
 {
     ScreenPtr pScreen = (ScreenPtr)arg;
-    DarwinFramebufferPtr dfb = SCREEN_PRIV(pScreen);
+    XFIOKitScreenPtr iokitScreen = XFIOKIT_SCREEN_PRIV(pScreen);
 
     for (;;) {
         mach_msg_return_t       kr;
@@ -208,7 +212,7 @@ static void *XFIOKitPMThread(void *arg)
 
         // display is powering down
         if (msg.header.msgh_id == 0) {
-            IOFBAcknowledgePM( dfb->fbService );
+            IOFBAcknowledgePM( iokitScreen->fbService );
             xf86SetRootClip(pScreen, FALSE);
         }
         // display just woke up
@@ -225,10 +229,12 @@ static void *XFIOKitPMThread(void *arg)
  */
 static Bool SetupFBandHID(
     int                    index,
-    DarwinFramebufferPtr   dfb)
+    DarwinFramebufferPtr   dfb,
+    XFIOKitScreenPtr       iokitScreen)
 {
     kern_return_t           kr;
     io_service_t            service;
+    io_connect_t            fbService;
     vm_address_t            vram;
     vm_size_t               shmemSize;
     int                     i;
@@ -237,6 +243,7 @@ static Bool SetupFBandHID(
     IODisplayModeID         displayMode, *allModes;
     IOIndex                 displayDepth;
     IOFramebufferInformation fbInfo;
+    IOPixelInformation      pixelInfo;
     StdFBShmem_t            *cshmem;
 
     // find and open the IOFrameBuffer service
@@ -245,15 +252,17 @@ static Bool SetupFBandHID(
         return FALSE;
 
     kr = IOServiceOpen( service, mach_task_self(),
-                        kIOFBServerConnectType, &dfb->fbService );
+                        kIOFBServerConnectType, &iokitScreen->fbService );
     IOObjectRelease( service );
     if (kr != KERN_SUCCESS) {
         ErrorF("Failed to connect as window server to screen %i.\n", index);
         return FALSE;
     }
+    fbService = iokitScreen->fbService;
 
     // create the slice of shared memory containing cursor state data
-    kr = IOFBCreateSharedCursor( dfb->fbService, kIOFBCurrentShmemVersion,
+    kr = IOFBCreateSharedCursor( fbService,
+                                 kIOFBCurrentShmemVersion,
                                  32, 32 );
     if (kr != KERN_SUCCESS)
         return FALSE;
@@ -261,7 +270,7 @@ static Bool SetupFBandHID(
     // Register for power management events for the framebuffer's device
     kr = IOCreateReceivePort(kOSNotificationMessageID, &pmNotificationPort);
     kern_assert(kr);
-    kr = IOConnectSetNotificationPort( dfb->fbService, 0,
+    kr = IOConnectSetNotificationPort( fbService, 0,
                                        pmNotificationPort, 0 );
     if (kr != KERN_SUCCESS) {
         ErrorF("Power management registration failed.\n");
@@ -269,7 +278,8 @@ static Bool SetupFBandHID(
 
     // SET THE SCREEN PARAMETERS
     // get the current screen resolution, refresh rate and depth
-    kr = IOFBGetCurrentDisplayModeAndDepth( dfb->fbService, &displayMode,
+    kr = IOFBGetCurrentDisplayModeAndDepth( fbService,
+                                            &displayMode,
                                             &displayDepth );
     if (kr != KERN_SUCCESS)
         return FALSE;
@@ -277,7 +287,8 @@ static Bool SetupFBandHID(
     // use the current screen resolution if the user
     // only wants to change the refresh rate
     if (darwinDesiredRefresh != -1 && darwinDesiredWidth == 0) {
-        kr = IOFBGetDisplayModeInformation( dfb->fbService, displayMode,
+        kr = IOFBGetDisplayModeInformation( fbService,
+                                            displayMode,
                                             &modeInfo );
         if (kr != KERN_SUCCESS)
             return FALSE;
@@ -291,7 +302,8 @@ static Bool SetupFBandHID(
 
         // change the pixel depth if desired
         if (darwinDesiredDepth != -1) {
-            kr = IOFBGetDisplayModeInformation( dfb->fbService, displayMode,
+            kr = IOFBGetDisplayModeInformation( fbService,
+                                                displayMode,
                                                 &modeInfo );
             if (kr != KERN_SUCCESS)
                 return FALSE;
@@ -302,7 +314,7 @@ static Bool SetupFBandHID(
             }
 
             displayDepth = darwinDesiredDepth;
-            kr = IOFBSetDisplayModeAndDepth( dfb->fbService, displayMode,
+            kr = IOFBSetDisplayModeAndDepth( fbService, displayMode,
                                              displayDepth );
             if (kr != KERN_SUCCESS)
                 return FALSE;
@@ -312,17 +324,17 @@ static Bool SetupFBandHID(
     } else {
 
         // get an array of all supported display modes
-        kr = IOFBGetDisplayModeCount( dfb->fbService, &numModes );
+        kr = IOFBGetDisplayModeCount( fbService, &numModes );
         if (kr != KERN_SUCCESS)
             return FALSE;
         assert(allModes = (IODisplayModeID *)
                 xalloc( numModes * sizeof(IODisplayModeID) ));
-        kr = IOFBGetDisplayModes( dfb->fbService, numModes, allModes );
+        kr = IOFBGetDisplayModes( fbService, numModes, allModes );
         if (kr != KERN_SUCCESS)
             return FALSE;
 
         for (i = 0; i < numModes; i++) {
-            kr = IOFBGetDisplayModeInformation( dfb->fbService, allModes[i],
+            kr = IOFBGetDisplayModeInformation( fbService, allModes[i],
                                                 &modeInfo );
             if (kr != KERN_SUCCESS)
                 return FALSE;
@@ -343,7 +355,7 @@ static Bool SetupFBandHID(
                     (darwinDesiredRefresh << 16) == modeInfo.refreshRate)) {
                     displayMode = allModes[i];
                     displayDepth = darwinDesiredDepth;
-                    kr = IOFBSetDisplayModeAndDepth(dfb->fbService,
+                    kr = IOFBSetDisplayModeAndDepth(fbService,
                                                     displayMode,
                                                     displayDepth);
                     if (kr != KERN_SUCCESS)
@@ -361,24 +373,24 @@ static Bool SetupFBandHID(
         }
     }
 
-    kr = IOFBGetPixelInformation( dfb->fbService, displayMode, displayDepth,
-                                  kIOFBSystemAperture, &dfb->pixelInfo );
+    kr = IOFBGetPixelInformation( fbService, displayMode, displayDepth,
+                                  kIOFBSystemAperture, &pixelInfo );
     if (kr != KERN_SUCCESS)
         return FALSE;
 
 #ifdef __i386__
     /* x86 in 8bit mode currently needs fixed color map... */
-    if( dfb->pixelInfo.bitsPerComponent == 8 ) {
-        dfb->pixelInfo.pixelType = kIOFixedCLUTPixels;
+    if( pixelInfo.bitsPerComponent == 8 ) {
+        pixelInfo.pixelType = kIOFixedCLUTPixels;
     }
 #endif
 
 #ifdef OLD_POWERBOOK_G3
-    if (dfb->pixelInfo.pixelType == kIOCLUTPixels)
-        dfb->pixelInfo.pixelType = kIOFixedCLUTPixels;
+    if (pixelInfo.pixelType == kIOCLUTPixels)
+        pixelInfo.pixelType = kIOFixedCLUTPixels;
 #endif
 
-    kr = IOFBGetFramebufferInformationForAperture( dfb->fbService,
+    kr = IOFBGetFramebufferInformationForAperture( fbService,
                                                    kIOFBSystemAperture,
                                                    &fbInfo );
     if (kr != KERN_SUCCESS)
@@ -394,14 +406,14 @@ static Bool SetupFBandHID(
         return FALSE;
     }
 
-    kr = IOConnectMapMemory( dfb->fbService, kIOFBCursorMemory,
+    kr = IOConnectMapMemory( fbService, kIOFBCursorMemory,
                              mach_task_self(), (vm_address_t *) &cshmem,
                              &shmemSize, kIOMapAnywhere );
     if (kr != KERN_SUCCESS)
         return FALSE;
-    dfb->cursorShmem = cshmem;
+    iokitScreen->cursorShmem = cshmem;
 
-    kr = IOConnectMapMemory( dfb->fbService, kIOFBSystemAperture,
+    kr = IOConnectMapMemory( fbService, kIOFBSystemAperture,
                              mach_task_self(), &vram, &shmemSize,
                              kIOMapAnywhere );
     if (kr != KERN_SUCCESS)
@@ -414,16 +426,26 @@ static Bool SetupFBandHID(
     dfb->height = fbInfo.activeHeight;
     dfb->pitch = fbInfo.bytesPerRow;
     dfb->bitsPerPixel = fbInfo.bitsPerPixel;
-    dfb->colorBitsPerPixel = dfb->pixelInfo.componentCount *
-                            dfb->pixelInfo.bitsPerComponent;
+    dfb->colorBitsPerPixel = pixelInfo.componentCount *
+                             pixelInfo.bitsPerComponent;
+    dfb->bitsPerComponent = pixelInfo.bitsPerComponent;
+
+    // Note: Darwin kIORGBDirectPixels = X TrueColor, not DirectColor
+    if (pixelInfo.pixelType == kIORGBDirectPixels) {
+        dfb->colorType = TrueColor;
+    } else if (pixelInfo.pixelType == kIOCLUTPixels) {
+        dfb->colorType = PseudoColor;
+    } else if (pixelInfo.pixelType == kIOFixedCLUTPixels) {
+        dfb->colorType = StaticColor;
+    }
 
     // Inform the HID system that the framebuffer is also connected to it.
-    kr = IOConnectAddClient( hid.connect, dfb->fbService );
+    kr = IOConnectAddClient( xfIOKitInputConnect, fbService );
     kern_assert( kr );
 
     // We have to have added at least one screen
     // before we can enable the cursor.
-    kr = IOHIDSetCursorEnable(hid.connect, TRUE);
+    kr = IOHIDSetCursorEnable(xfIOKitInputConnect, TRUE);
     kern_assert( kr );
 
     return TRUE;
@@ -438,12 +460,13 @@ Bool XFIOKitAddScreen(
     ScreenPtr pScreen)
 {
     DarwinFramebufferPtr dfb = SCREEN_PRIV(pScreen);
+    XFIOKitScreenPtr iokitScreen = XFIOKIT_SCREEN_PRIV(pScreen);
 
     // setup hardware framebuffer
-    dfb->fbService = 0;
-    if (! SetupFBandHID(index, dfb)) {
-        if (dfb->fbService) {
-            IOServiceClose(dfb->fbService);
+    iokitScreen->fbService = 0;
+    if (! SetupFBandHID(index, dfb, iokitScreen)) {
+        if (iokitScreen->fbService) {
+            IOServiceClose(iokitScreen->fbService);
         }
         return FALSE;
     }
@@ -468,7 +491,7 @@ Bool XFIOKitSetupScreen(
     }
 
     // initialize colormap handling as needed
-    if (dfb->pixelInfo.pixelType == kIOCLUTPixels) {
+    if (dfb->colorType == PseudoColor) {
         pScreen->StoreColors = XFIOKitStoreColors;
     }
 
@@ -487,6 +510,7 @@ void XFIOKitInitOutput(
     int argc,
     char **argv)
 {
+    static unsigned long    generation = 0;
     kern_return_t           kr;
     io_service_t            service;
     vm_address_t            shmem;
@@ -494,6 +518,12 @@ void XFIOKitInitOutput(
     int                     fd[2];
 
     ErrorF("Display mode: IOKit\n");
+
+    // Allocate private storage for each screen's IOKit specific info
+    if (generation != serverGeneration) {
+        xfIOKitScreenIndex = AllocateScreenPrivateIndex();
+        generation = serverGeneration;
+    }
 
     kr = IOMasterPort(bootstrap_port, &masterPort);
     kern_assert( kr );
@@ -507,7 +537,7 @@ void XFIOKitInitOutput(
     assert( service = IOIteratorNext( iter ) );
 
     kr = IOServiceOpen( service, mach_task_self(), kIOHIDServerConnectType,
-                        &hid.connect );
+                        &xfIOKitInputConnect );
     if (kr != KERN_SUCCESS) {
         ErrorF("Failed to connect to the HID System as the window server!\n");
 #ifdef DARWIN_WITH_QUARTZ
@@ -520,13 +550,14 @@ void XFIOKitInitOutput(
     IOObjectRelease( service );
     IOObjectRelease( iter );
 
-    kr = IOHIDCreateSharedMemory( hid.connect, kIOHIDCurrentShmemVersion );
+    kr = IOHIDCreateSharedMemory( xfIOKitInputConnect,
+                                  kIOHIDCurrentShmemVersion );
     kern_assert( kr );
 
-    kr = IOHIDSetEventsEnable(hid.connect, TRUE);
+    kr = IOHIDSetEventsEnable(xfIOKitInputConnect, TRUE);
     kern_assert( kr );
 
-    kr = IOConnectMapMemory( hid.connect, kIOHIDGlobalMemory,
+    kr = IOConnectMapMemory( xfIOKitInputConnect, kIOHIDGlobalMemory,
                              mach_task_self(), &shmem, &shmemSize,
                              kIOMapAnywhere );
     kern_assert( kr );
@@ -539,7 +570,8 @@ void XFIOKitInitOutput(
 
     notificationPort = IONotificationPortGetMachPort(NotificationPortRef);
 
-    kr = IOConnectSetNotificationPort( hid.connect, kIOHIDEventNotification,
+    kr = IOConnectSetNotificationPort( xfIOKitInputConnect,
+                                       kIOHIDEventNotification,
                                        notificationPort, 0 );
     kern_assert( kr );
 
@@ -561,6 +593,6 @@ void XFIOKitInitOutput(
     assert( pipe(fd) == 0 );
     darwinEventFD = fd[0];
     fcntl(darwinEventFD, F_SETFL, O_NONBLOCK);
-    pthread_create(&hid.thread, NULL,
+    pthread_create(&inputThread, NULL,
                    XFIOKitHIDThread, (void *) fd[1]);
 }
