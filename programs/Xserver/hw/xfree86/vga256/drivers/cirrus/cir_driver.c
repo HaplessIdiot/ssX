@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.69 1996/10/16 14:42:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.70 1996/12/18 03:12:53 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -3108,12 +3108,14 @@ cirrusInit(mode)
       }
 
       if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) {
+#ifndef MONOVGA
 	if (vgaBitsPerPixel == 8 && multiplexing && cirrusChip >= CLGD5436)
 	  CirrusFindClock(vga256InfoRec.clock[new->std.NoClock] / 2,
 			  vga256InfoRec.maxClock, &SRE, &SR1E, &usemclk);
 	if (vgaBitsPerPixel == 16 && MUST_DOUBLE_VCLK_FOR_16BPP)
 	  CirrusFindClock(vga256InfoRec.clock[new->std.NoClock] * 2,
 			  vga256InfoRec.maxClock, &SRE, &SR1E, &usemclk);
+#endif
 	if (vgaBitsPerPixel == 24 && (cirrusChip <= CLGD5430 ||
 	HAVE754X()))
 	  /* 542x, 5434, 5430, 754x */

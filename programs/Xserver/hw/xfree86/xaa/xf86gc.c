@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gc.c,v 3.1 1996/11/24 09:57:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gc.c,v 3.2 1996/12/09 11:55:26 dawes Exp $ */
 
 /***********************************************************
 
@@ -616,7 +616,5 @@ xf86ValidateGC(pGC, changes, pDrawable)
      * want to use it in any case. That does mean xf86CopyPlane has
      * to do some checking.
      */
-#if PSZ != 24
     pGC->ops->CopyPlane = xf86CopyPlane;
-#endif
 }
