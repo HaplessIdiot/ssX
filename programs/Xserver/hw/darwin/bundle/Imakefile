@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/bundle/Imakefile,v 1.6 2001/04/01 07:12:14 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/bundle/Imakefile,v 1.7 2001/04/02 05:18:50 torrey Exp $
 
 #include <Server.tmpl>
 
@@ -29,7 +29,11 @@ CUSTOMVERDEF =  -DXF86_CUSTOM_VERSION='$(CUSTOMVERSION)'
 #endif
 
 DEFINES = $(CUSTOMVERDEF) -DXBINDIR=$(DESTDIR)$(BINDIR)
-XDARWINBINDIR = $(DESTDIR)$(BINDIR)/XDarwin.app/Contents/MacOS
+#if NothingOutsideProjectRoot
+XDARWINROOT = $(DESTDIR)$(BINDIR)
+#else
+XDARWINROOT = /Applications
+#endif
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(XQuartz,$(OBJS))
@@ -43,8 +47,12 @@ InstallProgram(XDarwinStartup,$(DESTDIR)$(BINDIR))
 install::
 	-(cd $(DESTDIR)$(BINDIR); $(RM) X; $(LN) XDarwinStartup X)
 
+AllTarget(XDarwin)
+XDarwin:
+	pbxbuild -target XDarwin
+
 install::
-	pbxbuild install -target XDarwin DSTROOT=$(DESTDIR)$(BINDIR)
+	pbxbuild install -target XDarwin DSTROOT=$(XDARWINROOT)
 
 clean::
 	pbxbuild "clean" -target XDarwin

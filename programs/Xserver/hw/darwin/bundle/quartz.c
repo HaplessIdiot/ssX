@@ -5,7 +5,7 @@
  * By Gregory Robert Parker
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.5 2001/04/07 22:06:06 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.6 2001/04/11 08:34:18 torrey Exp $ */
 
 // X headers
 #include "scrnintstr.h"
@@ -172,6 +172,8 @@ static void QuartzDisplayInit(void)
  */
 void QuartzOsVendorInit(void)
 {
+    ErrorF("Display mode: Quartz\n");
+
     QuartzAudioInit();
     QuartzDisplayInit();
 }

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.9 2001/03/26 02:55:59 torrey Exp $
+XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.10 2001/04/12 20:09:52 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -94,6 +94,11 @@ XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.9 2001/03/26 02:55:59 torrey Exp $
 
 /* our custom X server */
 #define XDarwinServer           YES
+
+/* Thanks to the IOKit, the X server does not have to be SetUID. */
+#ifndef InstallXserverSetUID
+# define InstallXserverSetUID	NO
+#endif
 
 /* pex? bah.  I'm not going to bother getting the device
  * dependent part of this working.  If I get the time, i'll
