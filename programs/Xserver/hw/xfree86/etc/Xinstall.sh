@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.50 2003/03/07 16:35:52 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.51 2003/03/08 13:47:00 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -175,7 +175,7 @@ XSERVERCMD="$RUNDIR/bin/XFree86"
 
 VERSIONFILE=".XFree86_Version"
 
-WDIR=`pwd`
+WDIR="`pwd`"
 
 DOUPDATE=
 DOBASE=
@@ -746,7 +746,7 @@ GetBindistVersion()
 	fi
 	rm -f $VERSIONFILE
 	if [ X$VERSTARBALL != X ]; then
-		$TAR xzf $VERSTARBALL $VERSIONFILE
+		"$TAR" xzf $VERSTARBALL $VERSIONFILE
 	fi
 	if [ -f $VERSIONFILE ]; then
 		BINDISTVERSION=`cat $VERSIONFILE`
@@ -861,7 +861,7 @@ InstallUpdate()
 	echo "Installing the update binary distribution"
 	echo ""
 	for i in $UPDATEDIST $EXTRAUPDATE; do
-		(cd $RUNDIR; $EXTRACT $WDIR/$i)
+		(cd $RUNDIR; "$EXTRACT" "$WDIR"/$i)
 	done
 
 	# Make sure that $RUNDIR/lib isn't group/other writable
@@ -1044,8 +1044,8 @@ CYGWIN*)
 	;;
 esac
 
-EXTRACT=$WDIR/extract
-TAR=$WDIR/gnu-tar
+EXTRACT="$WDIR"/extract
+TAR="$WDIR"/gnu-tar
 
 CheckInstallType "$@"
 
@@ -1225,8 +1225,8 @@ if [ X"$EtcDirToMove" != X -o X"$EtcFileToMove" != X ]; then
 			if [ ! -d $ETCDIR/X11/$i ]; then
 				mkdir $ETCDIR/X11/$i
 			fi
-			$TAR -C $RUNDIR/lib/X11/$i -c -f - . | \
-				$TAR -C $ETCDIR/X11/$i -v -x -p -U -f - && \
+			"$TAR" -C $RUNDIR/lib/X11/$i -c -f - . | \
+				"$TAR" -C $ETCDIR/X11/$i -v -x -p -U -f - && \
 				rm -fr $RUNDIR/lib/X11/$i && \
 				ln -s $ETCDIR/X11/$i $RUNDIR/lib/X11/$i
 		done
@@ -1247,7 +1247,7 @@ fi
 echo "Extracting $ETCDIST into a temporary location ..."
 rm -fr .etctmp
 mkdir .etctmp
-(cd .etctmp; $EXTRACT $WDIR/$ETCDIST)
+(cd .etctmp; "$EXTRACT" "$WDIR"/$ETCDIST)
 for i in $ETCDLINKS; do
 	DoCopy=YES
 	if [ -d $RUNDIR/lib/X11/$i ]; then
@@ -1276,8 +1276,8 @@ for i in $ETCDLINKS; do
 				mkdir $RUNDIR/lib/X11/$i
 			fi
 		fi
-		$TAR -C .etctmp/X11/$i -c -f - . | \
-			$TAR -C $RUNDIR/lib/X11/$i -v -x -p -U -f -
+		"$TAR" -C .etctmp/X11/$i -c -f - . | \
+			"$TAR" -C $RUNDIR/lib/X11/$i -v -x -p -U -f -
 	fi
 done
 for i in $ETCFLINKS; do
@@ -1312,8 +1312,8 @@ if [ X"$XKBDIR" != X ]; then
 		if [ ! -d $XKBDIR ]; then
 			mkdir $XKBDIR
 		fi
-		$TAR -C .etctmp/X11/xkb -c -f - . | \
-			$TAR -C $XKBDIR -v -x -p -U -f -
+		"$TAR" -C .etctmp/X11/xkb -c -f - . | \
+			"$TAR" -C $XKBDIR -v -x -p -U -f -
 	fi
 fi
 for i in $ETCFONTFILES; do
@@ -1341,10 +1341,10 @@ echo ""
 echo "Installing the mandatory parts of the binary distribution"
 echo ""
 for i in $BASEDIST $SERVDIST; do
-	(cd $RUNDIR; $EXTRACT $WDIR/$i)
+	(cd $RUNDIR; "$EXTRACT" "$WDIR"/$i)
 done
 if [ X"$VARDIST" != X ]; then
-	(cd $VARDIR; $EXTRACT $WDIR/$VARDIST)
+	(cd $VARDIR; "$EXTRACT" "$WDIR"/$VARDIST)
 fi
 
 if [ X"$XKBDIR" != X -a X"$XKBDIR" != X"$RUNDIR/lib/X11/xkb/compiled" -a \
@@ -1363,7 +1363,7 @@ for i in $UPDDIST; do
 			: skip this one
 			;;
 		*)
-			(cd $RUNDIR; $EXTRACT $WDIR/$i)
+			(cd $RUNDIR; "$EXTRACT" "$WDIR"/$i)
 			;;
 		esac
 	fi
@@ -1379,7 +1379,7 @@ for i in $OPTDIST $EXTRAOPTDIST; do
 			: skip this one
 			;;
 		*)
-			(cd $RUNDIR; $EXTRACT $WDIR/$i)
+			(cd $RUNDIR; "$EXTRACT" "$WDIR"/$i)
 			;;
 		esac
 	fi
