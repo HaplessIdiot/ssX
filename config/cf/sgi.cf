@@ -1,4 +1,5 @@
 XCOMM platform:  $TOG: sgi.cf /main/49 1998/02/26 09:12:19 barstow $
+XCOMM $XFree86$
 
 #ifndef OSName
 # define OSName		DefaultOSName
