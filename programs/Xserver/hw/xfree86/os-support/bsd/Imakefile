@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/10/27 11:06:35 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.55 2002/11/09 11:20:30 herrb Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.56 2003/01/15 03:01:13 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -171,7 +171,7 @@ INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
 CONSDEFINES = XFree86ConsoleDefines
 RESDEFINES = -DUSESTDRES
 
-#if HasNetBSDApertureDriver
+#if defined(HasNetBSDApertureDriver) && HasNetBSDApertureDriver
 APDEFINES = -DHAS_APERTURE_DRV
 #endif
 
