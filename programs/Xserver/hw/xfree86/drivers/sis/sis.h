@@ -20,12 +20,12 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  * Authors:  Alan Hourihane, alanh@fairlite.demon.co.uk
- *           Mike Chapman <mike@paranoia.com>, 
+ *           Mike Chapman <mike@paranoia.com>,
  *           Juanjo Santamarta <santamarta@ctv.es>, 
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.22 2001/05/16 13:43:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.23 2001/11/30 12:12:00 eich Exp $ */
 
 #ifndef _SIS_H
 #define _SIS_H_
@@ -37,6 +37,7 @@
 #include "compiler.h"
 #include "xaa.h"
 #include "vgaHW.h"
+#include "vbe.h"
 
 #ifdef XF86DRI
 #include "xf86drm.h"
@@ -85,8 +86,10 @@
 #define VB_301                  0x00100000
 #define VB_302                  0x00200000
 #define VB_303                  0x00400000
+#define VB_301B			0x00800000 /* TW */
 #define VB_LVDS                 0x01000000
 #define VB_CHRONTEL             0x02000000
+#define VB_NOLCD		0x04000000 /* TW */
 #define SINGLE_MODE             0x00000000
 #define SIMU_MODE               0x10000000
 #define MM_MODE                 0x20000000
@@ -123,7 +126,7 @@ typedef struct {
     EntityInfoPtr       pEnt;
     int                 Chipset;
     int                 ChipRev;
-    unsigned long   FbAddress;          /* VRAM physical address */
+    unsigned long       FbAddress;      /* VRAM physical address */
 
     unsigned char *     FbBase;         /* VRAM linear address */
     CARD32              IOAddress;      /* MMIO physical address */
@@ -139,6 +142,7 @@ typedef struct {
     int                 MaxClock;
     int                 Flags;          /* HW config flags */
     long                FbMapSize;
+    unsigned long	maxxfbmem;      /* limit fb memory X is to use to this (KB) */
     DGAModePtr          DGAModes;
     int                 numDGAModes;
     Bool                DGAactive;
@@ -148,6 +152,7 @@ typedef struct {
     Bool                HWCursor;
     Bool                UsePCIRetry;
     Bool                TurboQueue;
+    int			VESA;
     int                 ForceCRT2Type;
     Bool                ValidWidth;
     Bool                FastVram;
@@ -234,6 +239,33 @@ typedef struct {
     unsigned char LCDon;
     Bool Blank;
     unsigned char BIOSModeSave;
+    vbeInfoPtr pVbe;		/* TW: all following for VESA switching with 630+LVDS */
+    CARD16 vesamajor;
+    CARD16 vesaminor;
+    VbeInfoBlock *vbeInfo;
+    int UseVESA;
+    xf86MonPtr monitor;
+    CARD16 maxBytesPerScanline;
+    CARD32 *pal, *savedPal;
+    int mapPhys, mapOff, mapSize;
+    int statePage, stateSize, stateMode;
+    CARD8 *fonts;
+    CARD8 *state, *pstate;
+    void *base, *VGAbase;
 } SISRec, *SISPtr;
+
+typedef struct _ModeInfoData {
+    int mode;
+    VbeModeInfoBlock *data;
+    VbeCRTCInfoBlock *block;
+} ModeInfoData;
+
+typedef struct _sisModeInfoPtr {
+    int width;
+    int height;
+    int bpp;
+    int n;
+    struct _sisModeInfoPtr *next;
+} sisModeInfoRec, *sisModeInfoPtr;
 
 #endif

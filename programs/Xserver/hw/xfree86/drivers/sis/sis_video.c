@@ -24,7 +24,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_video.c,v 1.3 2001/05/16 13:43:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_video.c,v 1.4 2001/06/15 21:23:00 dawes Exp $ */
 
 /*
  * sis_video.c: SIS Xv driver. Based on the mga Xv driver by Mark Vojkovich
@@ -167,11 +167,13 @@ static CARD8 getsisreg(SISPtr pSIS, CARD8 index_offset, CARD8 reg)
     return inb(pSIS->RelIO + index_offset+1);
 }
 
+#if 0
 static void setsisreg(SISPtr pSIS, CARD8 index_offset, CARD8 reg, CARD8 data)
 {
     outb (pSIS->RelIO + index_offset, reg);
     outb (pSIS->RelIO + index_offset+1, data);
 }
+#endif
 
 /* VBlank */
 static CARD8 vblank_active_CRT1(SISPtr pSIS)
