@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_state.c,v 1.3 2002/02/22 21:45:01 dawes Exp $ */
 /*
  * Copyright 2000, 2001 VA Linux Systems Inc., Fremont, California.
  *
@@ -877,7 +877,7 @@ void radeonSetCliprects( radeonContextPtr rmesa, GLenum mode )
 }
 
 
-static GLboolean radeonSetDrawBuffer( GLcontext *ctx, GLenum mode )
+static void radeonSetDrawBuffer( GLcontext *ctx, GLenum mode )
 {
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
 
@@ -898,15 +898,13 @@ static GLboolean radeonSetDrawBuffer( GLcontext *ctx, GLenum mode )
       break;
    default:
       FALLBACK( rmesa, RADEON_FALLBACK_DRAW_BUFFER, GL_TRUE );
-      return GL_FALSE;
+      return;
    }
 
    RADEON_STATECHANGE( rmesa, RADEON_UPLOAD_CONTEXT );
    rmesa->state.hw.context.rb3d_coloroffset = (rmesa->state.color.drawOffset &
 					    RADEON_COLOROFFSET_MASK);
    rmesa->state.hw.context.rb3d_colorpitch = rmesa->state.color.drawPitch;
-
-   return GL_TRUE;
 }
 
 
@@ -1339,7 +1337,7 @@ void radeonInitStateFuncs( GLcontext *ctx )
    ctx->Driver.CopyPixels               = _swrast_CopyPixels;
    ctx->Driver.DrawPixels               = _swrast_DrawPixels;
    ctx->Driver.ReadPixels               = _swrast_ReadPixels;
-   ctx->Driver.ResizeBuffersMESA        = _swrast_alloc_buffers;
+   ctx->Driver.ResizeBuffers            = _swrast_alloc_buffers;
 
    /* Swrast hooks for imaging extensions:
     */

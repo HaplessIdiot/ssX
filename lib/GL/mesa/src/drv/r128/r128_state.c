@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_state.c,v 1.7 2001/01/08 01:07:21 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_state.c,v 1.9 2002/02/22 21:44:58 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -678,10 +678,9 @@ static void r128DDLogicOpCode( GLcontext *ctx, GLenum opcode )
    }
 }
 
-static GLboolean r128DDSetDrawBuffer( GLcontext *ctx, GLenum mode )
+static void r128DDSetDrawBuffer( GLcontext *ctx, GLenum mode )
 {
    r128ContextPtr rmesa = R128_CONTEXT(ctx);
-   int found = GL_TRUE;
 
    FLUSH_BATCH( rmesa );
 
@@ -701,7 +700,6 @@ static GLboolean r128DDSetDrawBuffer( GLcontext *ctx, GLenum mode )
 	 break;
       default:
 	 FALLBACK( rmesa, R128_FALLBACK_DRAW_BUFFER, GL_TRUE );
-	 found = GL_FALSE;
 	 break;
       }
 
@@ -709,8 +707,6 @@ static GLboolean r128DDSetDrawBuffer( GLcontext *ctx, GLenum mode )
 					 (rmesa->drawOffset >> 5));
       rmesa->new_state |= R128_NEW_WINDOW;
    }
-
-   return found;
 }
 
 
@@ -1230,7 +1226,7 @@ void r128DDInitStateFuncs( GLcontext *ctx )
    ctx->Driver.CopyPixels = _swrast_CopyPixels;
    ctx->Driver.DrawPixels = _swrast_DrawPixels;
    ctx->Driver.ReadPixels = _swrast_ReadPixels;
-   ctx->Driver.ResizeBuffersMESA = _swrast_alloc_buffers;
+   ctx->Driver.ResizeBuffers = _swrast_alloc_buffers;
 
    /* Swrast hooks for imaging extensions:
     */

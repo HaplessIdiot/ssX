@@ -23,7 +23,7 @@
  * Adapted for use on the I830M:
  *   Jeff Hartmann <jhartmann@2d3d.com>
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_vb.c,v 1.2 2002/09/09 19:18:49 dawes Exp $ */
 
 #include "glheader.h"
 #include "mtypes.h"
@@ -116,6 +116,7 @@ static struct {
 #define DO_PTEX (IND & I830_PTEX_BIT)
 
 #define VERTEX i830Vertex
+#define VERTEX_COLOR i830_color_t
 #define GET_VIEWPORT_MAT() I830_CONTEXT(ctx)->ViewportMatrix.m
 #define GET_TEXSOURCE(n)  n
 #define GET_VERTEX_FORMAT() I830_CONTEXT(ctx)->vertex_format

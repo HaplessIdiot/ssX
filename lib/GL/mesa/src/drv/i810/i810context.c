@@ -24,7 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810_xmesa.c,v 1.9 2000/12/07 20:26:06 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810context.c,v 1.1 2002/02/22 21:33:03 dawes Exp $ */
 
 /*
  * Authors:
@@ -73,8 +73,10 @@ static const GLubyte *i810GetString( GLcontext *ctx, GLenum name )
    }
 }
 
-static void i810BufferSize(GLcontext *ctx, GLuint *width, GLuint *height)
+static void i810BufferSize(GLframebuffer *buffer,
+			   GLuint *width, GLuint *height)
 {
+   GET_CURRENT_CONTEXT(ctx);
    i810ContextPtr imesa = I810_CONTEXT(ctx);
 
    /* Need to lock to make sure the driDrawable is uptodate.  This

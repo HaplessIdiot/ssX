@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_vb.c,v 1.12 2002/02/22 21:44:58 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_vb.c,v 1.13 2002/02/26 23:37:35 tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -103,6 +103,7 @@ static struct {
 #define DO_PTEX (IND & R128_PTEX_BIT)
 
 #define VERTEX r128Vertex
+#define VERTEX_COLOR r128_color_t
 #define LOCALVARS r128ContextPtr rmesa = R128_CONTEXT(ctx);
 #define GET_VIEWPORT_MAT() rmesa->hw_viewport
 #define GET_TEXSOURCE(n)  rmesa->tmu_source[n]

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_state.c,v 1.2 2002/02/26 23:37:33 tsi Exp $ */
 /*
  * Copyright 2001 by Alan Hourihane.
  *
@@ -1042,7 +1042,7 @@ static void gammaDDLogicalOpcode( GLcontext *ctx, GLenum opcode )
    gmesa->dirty |= GAMMA_UPLOAD_LOGICOP;
 }
 
-static GLboolean gammaDDSetDrawBuffer( GLcontext *ctx, GLenum mode )
+static void gammaDDSetDrawBuffer( GLcontext *ctx, GLenum mode )
 {
    gammaContextPtr gmesa = GAMMA_CONTEXT(ctx);
 
@@ -1056,8 +1056,6 @@ static GLboolean gammaDDSetDrawBuffer( GLcontext *ctx, GLenum mode )
       gmesa->drawOffset = gmesa->driScreen->fbHeight * gmesa->driScreen->fbWidth * gmesa->gammaScreen->cpp; 
       break;
    }
-
-   return GL_TRUE;
 }
 
 /* =============================================================

@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_dd.c,v 1.7 2002/02/22 21:45:03 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_dd.c,v 1.8 2002/02/26 23:37:36 tsi Exp $ */
 
 /*
  * Original rewrite:
@@ -41,6 +41,7 @@
 #include "tdfx_vb.h"
 #include "tdfx_pixels.h"
 
+#include "context.h"
 #include "enums.h"
 #include "swrast/swrast.h"
 #if defined(USE_X86_ASM)
@@ -138,9 +139,10 @@ static const GLubyte *tdfxDDGetString( GLcontext *ctx, GLenum name )
 
 /* Return uptodate buffer size information.
  */
-static void tdfxDDGetBufferSize( GLcontext *ctx,
+static void tdfxDDGetBufferSize( GLframebuffer *buffer,
 				 GLuint *width, GLuint *height )
 {
+   GET_CURRENT_CONTEXT(ctx);
    tdfxContextPtr fxMesa = TDFX_CONTEXT(ctx);
 
    LOCK_HARDWARE( fxMesa );
@@ -263,7 +265,7 @@ void tdfxDDInitDriverFuncs( GLcontext *ctx )
    ctx->Driver.CopyPixels               = _swrast_CopyPixels;
    ctx->Driver.DrawPixels               = _swrast_DrawPixels;
    ctx->Driver.ReadPixels               = _swrast_ReadPixels;
-   ctx->Driver.ResizeBuffersMESA        = _swrast_alloc_buffers;
+   ctx->Driver.ResizeBuffers            = _swrast_alloc_buffers;
 
    /* Accelerated paths
     */

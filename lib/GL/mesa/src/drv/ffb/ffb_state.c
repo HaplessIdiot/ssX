@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/ffb/ffb_state.c,v 1.1.4.1 2001/05/24 16:35:38 dawes Exp $
+/* $XFree86: xc/lib/GL/mesa/src/drv/ffb/ffb_state.c,v 1.3 2002/02/22 21:32:59 dawes Exp $
  *
  * GLX Hardware Device Driver for Sun Creator/Creator3D
  * Copyright (C) 2000, 2001 David S. Miller
@@ -468,7 +468,7 @@ static void ffbDDScissor(GLcontext *ctx, GLint cx, GLint cy,
 	ffbCalcViewport(ctx);
 }
 
-static GLboolean ffbDDSetDrawBuffer(GLcontext *ctx, GLenum buffer)
+static void ffbDDSetDrawBuffer(GLcontext *ctx, GLenum buffer)
 {
 	ffbContextPtr fmesa = FFB_CONTEXT(ctx);
 	unsigned int fbc = fmesa->fbc;
@@ -498,15 +498,13 @@ static GLboolean ffbDDSetDrawBuffer(GLcontext *ctx, GLenum buffer)
 		break;
 
 	default:
-		return GL_FALSE;
+		return;
 	};
 
 	if (fbc != fmesa->fbc) {
 		fmesa->fbc = fbc;
 		FFB_MAKE_DIRTY(fmesa, FFB_STATE_FBC, 1);
 	}
-
-	return GL_TRUE;
 }
 
 static void ffbDDSetReadBuffer(GLcontext *ctx, GLframebuffer *colorBuffer,
@@ -1097,7 +1095,7 @@ void ffbDDInitStateFuncs(GLcontext *ctx)
 	ctx->Driver.CopyPixels = _swrast_CopyPixels;
 	ctx->Driver.DrawPixels = _swrast_DrawPixels;
 	ctx->Driver.ReadPixels = _swrast_ReadPixels;
-	ctx->Driver.ResizeBuffersMESA = _swrast_alloc_buffers;
+	ctx->Driver.ResizeBuffers = _swrast_alloc_buffers;
 
 	/* Swrast hooks for imaging extensions:
 	 */

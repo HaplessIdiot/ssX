@@ -25,7 +25,7 @@
  *    Keith Whitwell <keithw@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgapixel.c,v 1.4 2002/02/22 21:33:06 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgapixel.c,v 1.5 2002/02/26 23:37:35 tsi Exp $ */
 
 #include "enums.h"
 #include "mtypes.h"
@@ -684,7 +684,7 @@ void mgaDDInitPixelFuncs( GLcontext *ctx )
    ctx->Driver.CopyPixels = _swrast_CopyPixels;
    ctx->Driver.DrawPixels = _swrast_DrawPixels;
    ctx->Driver.ReadPixels = _swrast_ReadPixels;
-   ctx->Driver.ResizeBuffersMESA = _swrast_alloc_buffers;
+   ctx->Driver.ResizeBuffers = _swrast_alloc_buffers;
 
    if (getenv("MGA_BLIT_PIXELS")) {
       ctx->Driver.ReadPixels = mgaDDReadPixels; /* requires agp dest */

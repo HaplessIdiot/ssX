@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_context.c,v 1.3 2002/02/22 21:45:00 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -79,9 +79,10 @@ int RADEON_DEBUG = (0
 
 /* Return the width and height of the current color buffer.
  */
-static void radeonGetBufferSize( GLcontext *ctx,
+static void radeonGetBufferSize( GLframebuffer *buffer,
 				   GLuint *width, GLuint *height )
 {
+   GET_CURRENT_CONTEXT(ctx);
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
 
    LOCK_HARDWARE( rmesa );
