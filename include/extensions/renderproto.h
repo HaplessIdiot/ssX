@@ -43,7 +43,7 @@
 
 #define Picture	    CARD32
 #define PictFormat  CARD32
-#define Fixed	    CARD32
+#define Fixed	    INT32
 #define Glyphset    CARD32
 #define Glyph	    CARD32
 
@@ -107,6 +107,19 @@ typedef struct {
 } xIndexValue;
 
 #define sz_xIndexValue	12
+
+typedef struct {
+    Fixed	x B32;
+    Fixed	y B32;
+} xPointFixed;
+
+#define sz_xPointFixed	8
+
+typedef struct {
+    xPointFixed	p1, p2, p3;
+} xTriangle;
+
+#define sz_xTriangle	24
 
 typedef struct {
     CARD16  width B16;
@@ -285,6 +298,18 @@ typedef struct {
 } xRenderScaleReq;
 
 #define sz_xRenderScaleReq			    32
+
+typedef struct {
+    CARD8       reqType;
+    CARD8       renderReqType;
+    CARD16      length B16;
+    Picture	src B32;
+    Picture	dst B32;
+    INT16	xSrc B16;
+    INT16	ySrc B16;
+} xRenderTrianglesReq;
+
+#define sz_xRenderTrianglesReq			    16
 
 typedef struct {
     CARD8       reqType;
