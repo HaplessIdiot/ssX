@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/Login.c,v 3.13 2001/03/06 17:31:39 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/Login.c,v 3.14 2001/12/14 20:01:28 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -949,13 +949,10 @@ InsertChar (
 	MoveToBegining(ctxw, event, params, num_params);
 	return;
     default:
-	if (IsFunctionKey(keysym) || IsMiscFunctionKey(keysym) ||
-	    IsPrivateKeypadKey(keysym) || IsCursorKey(keysym) ||
-	    IsKeypadKey(keysym) || IsPFKey(keysym)) {
-	    XBell(XtDisplay(ctxw), 60);
+	if (len == 0) {
+	    if (!IsModifierKey(keysym))  /* it's not a modifier */
+		XBell(XtDisplay(ctxw), 60);
 	    return;
-	} else if (len == 0 && IsModifierKey(keysym)) {
-	    return; /* it's a modifier */
 	} else
 	    break;
     }
