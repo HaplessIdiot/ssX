@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.6 1994/09/26 15:33:01 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.7 1994/09/27 10:30:26 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -25,7 +25,11 @@ OSREADME = /* README.Amoeba */
 # ifdef i386ScoArchitecture
 OSREADME = README.SCO /* README.SVR3 */
 # else
+#  ifdef i386IscArchitecture
+OSREADME = README.isc /* README.SVR3 */
+#  else
 OSREADME = /* README.SVR3 */
+#  endif
 # endif
 #endif
 #ifdef SVR4Architecture
