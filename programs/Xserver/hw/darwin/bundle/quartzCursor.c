@@ -3,7 +3,7 @@
  * Support for using the Quartz Window Manager cursor
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCursor.c,v 1.12 2001/10/18 16:50:24 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCursor.c,v 1.13 2001/12/05 01:49:22 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartzCursor.h"
@@ -554,7 +554,5 @@ void QuartzResumeXCursor(
     int x,
     int y )
 {
-    QuartzCursorScreenPtr ScreenPriv = CURSOR_PRIV(pScreen);
-
     QuartzSetCursor(pScreen, quartzLatentCursor, x, y);
 }
