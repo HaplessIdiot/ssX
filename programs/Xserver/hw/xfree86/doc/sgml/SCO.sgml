@@ -253,7 +253,7 @@ Check in the X11 <tt>config/README</tt> on how to change your
 <tt>ProjectRoot</tt>.
 
 The defaults are set such that you should only require minimal changes to
-the <tt>site.def</tt> or the <tt>xf85site.def</tt> file.  
+the <tt>site.def</tt> or the <tt>xf86site.def</tt> file.  
 The <tt>BOOTSTRAPCFLAGS</tt> do most of the
 work for you. The defaults will use gcc 2 or above and they also compile
 for shared libraries and setup formatted man pages using compression. The
@@ -621,7 +621,7 @@ the binaries use a log of disk space and a lot of memory<p>
 <tag/Causes:/
 <quote>    
     All SCO unix installations appear to have the Streams pseudo tty driver
-    installed its just not all the devices are present.<p>
+    installed, but not all the devices are present.<p>
 <enum>
 <item> there should be a <tt>/etc/conf/pack.d/sp</tt> directory,
 <item> <tt>/etc/conf/sdevice.d/sp</tt> should have a '<tt>Y</tt>' in it.
@@ -681,7 +681,7 @@ for providing an
 ftp site for the binary distribution.
 
 <verb>  
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.8 1995/09/17 06:31:59 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.9 1996/02/04 09:08:23 dawes Exp $
 
 
 

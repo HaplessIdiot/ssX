@@ -1,13 +1,9 @@
 XCOMM $XConsortium: Imakefile,v 1.7 91/12/20 11:29:16 rws Exp $
-XCOMM $XFree86: xc/programs/xset/Imakefile,v 3.3 1996/02/12 11:16:32 dawes Exp $
+XCOMM $XFree86: xc/programs/xset/Imakefile,v 3.4 1996/02/22 05:15:09 dawes Exp $
 
         DEFINES = ExtensionDefines
         DEPLIBS = $(DEPXMULIB) $(DEPXLIB) $(DEPXF86LIBS)
-#ifdef OS2Architecture
-LOCAL_LIBRARIES = $(XMULIB) $(XLIB) $(XF86LIBS)
-#else
 LOCAL_LIBRARIES = $(XMULIB) $(XF86LIBS) $(XLIB)
-#endif
 
 #if BuildXF86MiscExt
        DEPXF86LIBS = $(DEPXXF86MISCLIB)

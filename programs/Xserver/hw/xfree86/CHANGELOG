@@ -1,3 +1,20 @@
+XFree86 3.1.2D (24 February 1996)
+402. Update Linux/ELF SharedLibraryTarget() (H.J. Lu).
+401. Add a BinUtilsVersion parameter for Linux, and modify ExtraLoadFlags for
+     Binutils versions 2.6.0.7 and later (H.J. Lu).
+400. Set CplusplusCmd to 'c++' for Linux, set YaccCmd to byacc when
+     USE_BYACC is defined, and remove $(CBRT) from ServerExtraSysLibs
+     (H.J. Lu).
+399. Fix installation of some SCO rules/cf files (H.J. Lu).
+398. Modify imake.rules to include Motif rules/tmpl files when BUILD_MOTIF
+     is defined (H.J. Lu).
+397. Fix argument passing typo in SuperProbe (Thomas E. Dickey).
+396. Update Cards database (Joe Moss).
+395. Documentation updates (Holger Veit, Joe Moss).
+394. Fix xset/Imakefile for OS/2 (Holger Veit).
+393. Don't use the index/rindex macros with arguments for non-ANSI compilers.
+392. Uncomment xf86cleanpci() in vga.c.
+
 XFree86 3.1.2Ch (22 February 1996)
 391. Fix xset linking for Linux a.out (Harald Koenig).
 390. Disallow interlaced modes with the SiS driver (Alan Hourihane).

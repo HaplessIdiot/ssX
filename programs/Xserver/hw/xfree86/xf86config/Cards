@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 # 
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.28 1996/02/04 09:15:37 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.29 1996/02/19 09:51:30 dawes Exp $
 
 # Cirrus Logic
 
@@ -155,6 +155,16 @@ CHIPSET S3-801/805
 SERVER S3
 RAMDAC att20c490
 LINE     #Option "dac_8_bit"		# Not supported by some 20c490 clones
+
+NAME S3-801/805 with SC1148{2,3,4} RAMDAC
+CHIPSET S3-801/805
+SERVER S3
+RAMDAC sc11482
+
+NAME S3-801/805 with SC1148{5,7,9} RAMDAC
+CHIPSET S3-801/805
+SERVER S3
+RAMDAC sc11485
 
 NAME S3-801/805 with S3-GenDAC
 CHIPSET S3-801/805

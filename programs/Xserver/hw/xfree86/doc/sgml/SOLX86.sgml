@@ -302,14 +302,14 @@ Xserver.
 </enum>
 <sect> Bug Notification<p>
 
-	Bug reports need to be sent to <bf/XFree86@Xfree86.org/, or posted to 
+	Bug reports need to be sent to <bf/XFree86@XFree86.org/, or posted to 
 	the comp.windows.x.i386unix newsgroup.  Questions or comments about 
 	the Solaris support, or the Solaris distribution need to be made to 
 	<it/davidh@use.com/, or <it/danson@lgc.com./<p>
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.6 1995/07/19 12:43:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.7 1996/02/04 09:08:24 dawes Exp $
 
 
 

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Xos.h,v 1.68 95/06/02 16:51:21 gildea Exp $
- * $XFree86: xc/include/Xos.h,v 3.14 1996/01/24 21:56:44 dawes Exp $
+ * $XFree86: xc/include/Xos.h,v 3.15 1996/02/20 14:31:59 dawes Exp $
  * 
  * 
 Copyright (c) 1987  X Consortium
@@ -68,22 +68,22 @@ in this Software without prior written authorization from the X Consortium.
  * need to have #defines here.
  */
 
-#ifdef MINIX
-/* Prevent accidents with struct members called 'index' */
-#include <string.h>
-#define index(s,c) (strchr((s),(c)))
-#define rindex(s,c) (strrchr((s),(c)))
-#endif
-
 #ifndef X_NOT_STDC_ENV
 
-#if !(defined(sun) && !defined(SVR4))	/* 'index' is problem with K&R */
 #include <string.h>
+#ifdef __STDC__
 #ifndef index
 #define index(s,c) (strchr((s),(c)))
 #endif
 #ifndef rindex
 #define rindex(s,c) (strrchr((s),(c)))
+#endif
+#else
+#ifndef index
+#define index strchr
+#endif
+#ifndef rindex
+#define rindex strrchr
 #endif
 #endif
 

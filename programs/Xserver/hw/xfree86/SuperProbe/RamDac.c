@@ -30,7 +30,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.17tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.18 1996/02/22 05:11:14 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -850,8 +850,8 @@ int *RamDac;
 		*RamDac |= DAC_8BIT;
 	}
 
-	DisableIOPorts(1, ATIMach64DAC_CNTL);
-	DisableIOPorts(1, ATIMach64SCRATCH_REG1);
+	DisableIOPorts(1, &ATIMach64DAC_CNTL);
+	DisableIOPorts(1, &ATIMach64SCRATCH_REG1);
 	return;
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.47 1996/02/18 03:43:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.48 1996/02/22 05:13:30 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -921,10 +921,8 @@ vgaProbe()
 #endif /* !MONOVGA */
 #endif /* !XF86VGA16 */
 
-#if 0	/* Trident driver uses it after the Probe */
 	/* Free PCI information */
 	xf86cleanpci();
-#endif
 
 	return TRUE;
       }
@@ -932,10 +930,8 @@ vgaProbe()
 
   vgaSaveScreenFunc = vgaHWSaveScreen;
 
-#if 0	/* Trident driver use it after the Probe */
   /* Free PCI information */
   xf86cleanpci();
-#endif
   
   if (vga256InfoRec.chipset)
     ErrorF("%s: '%s' is an invalid chipset", vga256InfoRec.name,

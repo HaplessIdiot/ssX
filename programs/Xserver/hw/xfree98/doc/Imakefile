@@ -4,14 +4,12 @@ XCOMM $XConsortium: Imakefile /main/6 1996/01/21 14:32:46 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/doc/Imakefile,v 3.8 1996/02/19 12:19:08 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/doc/Imakefile,v 3.9 1996/02/22 05:14:12 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
 
-#if HasLinuxDoc || InstallJapaneseDocs
 #define IHaveSubdirs
-#endif
 
 #if HasLinuxDoc
 SGMLDIR = sgml

@@ -221,7 +221,7 @@ I could only test two cards against the linear addressing.
            Motif Client like Mosaic-2.4 or xplan. This results in a 
            crash of the XServer. <p>
            <verb>
-           !!! You could workaround this !!!
+           !!! You could work around this !!!
            </verb>
            Expand your .Xdefaults with
            <verb>
@@ -230,7 +230,7 @@ I could only test two cards against the linear addressing.
            </verb>
 
            This bug seems to be fixed since 3.1.2, and therefore the 
-           workaraound is not needed anymore.
+           workaround is not needed anymore.
  
 </itemize>
 
@@ -265,7 +265,7 @@ of the file symbols/de.
 default partial xkb_symbols "basic" {
 
     // Describes the differences between a very simple US/ASCII
-    // keyboard and a very simple German keybaord
+    // keyboard and a very simple German keyboard
 
     // Alphanumeric section
     name[Group1]= "German";
@@ -512,7 +512,7 @@ as to all who contribute to this excellent piece of free software.
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.9 1996/02/10 10:42:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.10 1996/02/19 09:50:44 dawes Exp $
 
 
 
