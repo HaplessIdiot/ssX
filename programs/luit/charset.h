@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/luit/charset.h,v 1.3 2002/07/01 02:25:59 tsi Exp $ */
 
 #define T_FAILED 0
 #define T_94 1
@@ -29,6 +29,7 @@ THE SOFTWARE.
 #define T_9696 5
 /* Big 5 */
 #define T_94192 6
+#define T_OTHER 7
 
 /* True for charsets that pass control chars unchanged, at least in
    the first byte */
@@ -41,6 +42,10 @@ typedef struct _Charset {
     unsigned int (*recode)(unsigned int, struct _Charset *self);
     int (*reverse)(unsigned int, struct _Charset *self);
     void *data;
+    int (*other_stack)(unsigned char c, OtherStatePtr aux);
+    OtherState *other_aux;
+    unsigned int (*other_recode)(unsigned int c, OtherStatePtr aux);
+    unsigned int (*other_reverse)(unsigned int c, OtherStatePtr aux);
     struct _Charset *next;
 } CharsetRec, *CharsetPtr;
 
@@ -52,6 +57,7 @@ typedef struct _LocaleCharset {
     char *g1;
     char *g2;
     char *g3;
+    char *other;
 } LocaleCharsetRec, *LocaleCharsetPtr;
 
 CharsetPtr getUnknownCharset(int);
@@ -61,4 +67,5 @@ void reportCharsets(void);
 int getLocaleState(char *locale, char *charset,
                    int *gl_return, int *gr_return,
                    CharsetPtr *g0_return, CharsetPtr *g1_return,
-                   CharsetPtr *g2_return, CharsetPtr *g3_return);
+                   CharsetPtr *g2_return, CharsetPtr *g3_return,
+                   CharsetPtr *other_return);

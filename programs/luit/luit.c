@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/luit/luit.c,v 1.7 2002/06/05 08:52:06 alanh Exp $ */
+/* $XFree86: xc/programs/luit/luit.c,v 1.8 2002/06/05 22:58:08 dickey Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,8 +38,10 @@ THE SOFTWARE.
 #include <stropts.h>
 #endif
 
+#include <X11/fonts/fontenc.h>
 #include "luit.h"
 #include "sys.h"
+#include "other.h"
 #include "charset.h"
 #include "iso2022.h"
 

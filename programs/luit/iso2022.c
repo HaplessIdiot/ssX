@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/luit/iso2022.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/luit/iso2022.c,v 1.7 2002/09/18 17:11:50 tsi Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -29,11 +29,12 @@ THE SOFTWARE.
 #include <sys/types.h>
 #include <unistd.h>
 #include <errno.h>
-
+#include <X11/fonts/fontenc.h>
 #include "luit.h"
+#include "sys.h"
+#include "other.h"
 #include "charset.h"
 #include "iso2022.h"
-#include "sys.h"
 
 #define BUFFERED_INPUT_SIZE 4
 unsigned char buffered_input[BUFFERED_INPUT_SIZE];
@@ -178,7 +179,7 @@ allocIso2022(void)
     if(!is)
         return NULL;
     is->glp = is->grp = NULL;
-    G0(is) = G1(is) = G2(is) = G3(is) = NULL;
+    G0(is) = G1(is) = G2(is) = G3(is) = OTHER(is) = NULL;
 
     is->parserState = P_NORMAL;
     is->shiftState = S_NORMAL;
@@ -229,6 +230,10 @@ identifyCharset(Iso2022Ptr i, CharsetPtr *p)
 void
 reportIso2022(Iso2022Ptr i)
 {
+    if(OTHER(i) != NULL) {
+        fprintf(stderr, "%s, non-ISO-2022 encoding.\n", OTHER(i)->name);
+        return;
+    }
     fprintf(stderr, "G0 is %s, ", G0(i)->name);
     fprintf(stderr, "G1 is %s, ", G1(i)->name);
     fprintf(stderr, "G2 is %s, ", G2(i)->name);
@@ -241,10 +246,10 @@ int
 initIso2022(char *locale, char *charset, Iso2022Ptr i)
 {
     int gl = 0, gr = 2;
-    CharsetPtr g0 = NULL, g1 = NULL, g2 = NULL, g3 = NULL;
+    CharsetPtr g0 = NULL, g1 = NULL, g2 = NULL, g3 = NULL, other = NULL;
     int rc;
     
-    rc = getLocaleState(locale, charset, &gl, &gr, &g0, &g1, &g2, &g3);
+    rc = getLocaleState(locale, charset, &gl, &gr, &g0, &g1, &g2, &g3, &other);
     if(rc < 0) {
         if(charset)
             ErrorF("Warning: couldn't find charset %s; "
@@ -274,6 +279,11 @@ initIso2022(char *locale, char *charset, Iso2022Ptr i)
     else
         G3(i) = getUnknownCharset(T_94);
 
+    if(other)
+        OTHER(i) = other;
+    else
+        OTHER(i) = NULL;
+
     i->glp = &i->g[gl];
     i->grp = &i->g[gr];
     return 0;
@@ -290,6 +300,8 @@ mergeIso2022(Iso2022Ptr d, Iso2022Ptr s)
         G2(d) = G2(s);
     if(G3(d) == NULL)
         G3(d) = G3(s);
+    if(OTHER(d) == NULL)
+        OTHER(d) = OTHER(s);
     if(d->glp == NULL)
         d->glp = &(d->g[identifyCharset(s, s->glp)]);
     if(d->grp == NULL)
@@ -409,6 +421,14 @@ copyIn(Iso2022Ptr is, int fd, unsigned char *buf, int count)
 #define WRITE_2(i) do \
       {obuf[0]=((i)>>8)&0xFF; obuf[1]=(i)&0xFF; write(fd, obuf, 2);} \
     while(0)
+#define WRITE_3(i) do \
+      {obuf[0]=((i)>>16)&0xFF; obuf[1]=((i)>>8)&0xFF; obuf[2]=(i)&0xFF; \
+       write(fd, obuf, 3);} \
+    while(0)
+#define WRITE_4(i) do \
+      {obuf[0]=((i)>>24)&0xFF; obuf[1]=((i)>>16)&0xFF; obuf[2]=((i)>>8)&0xFF; \
+       obuf[3]=(i)&0xFF; write(fd, obuf, 4);} \
+    while(0)
 #define WRITE_1_P_8bit(p, i) \
     {obuf[0]=(p); obuf[1]=(i); write(fd, obuf, 2);}
 #define WRITE_1_P_7bit(p, i) \
@@ -437,9 +457,18 @@ copyIn(Iso2022Ptr is, int fd, unsigned char *buf, int count)
     while(0)
 
             if(codepoint < 0x20 ||
-               (CHARSET_REGULAR(GR(is)) &&
+               (OTHER(is) == NULL && CHARSET_REGULAR(GR(is)) &&
                 (codepoint >= 0x80 && codepoint < 0xA0))) {
                 WRITE_1(codepoint);
+                continue;
+            }
+            if(OTHER(is) != NULL) {
+                unsigned int c;
+                c = OTHER(is)->other_reverse(codepoint, OTHER(is)->other_aux);
+                if(c>>24) WRITE_4(c);
+                else if (c>>16) WRITE_3(c);
+                else if (c>>8) WRITE_2(c);
+                else if (c) WRITE_1(c);
                 continue;
             }
             i = (GL(is)->reverse)(codepoint, GL(is));
@@ -458,7 +487,7 @@ copyIn(Iso2022Ptr is, int fd, unsigned char *buf, int count)
                 }
                 continue;
             }
-            if(is->inputFlags & IF_EIGHTBIT)  {
+            if(is->inputFlags & IF_EIGHTBIT) {
                 i = GR(is)->reverse(codepoint, GR(is));
                 if(i >= 0) {
                     switch(GR(is)->type) {
@@ -591,6 +620,13 @@ copyOut(Iso2022Ptr is, int fd, unsigned char *buf, int count)
                 if(*s == ESC) {
                     buffer(is, *s++);
                     is->parserState = P_ESC;
+                } else if(OTHER(is) != NULL) {
+                    int c = OTHER(is)->other_stack(*s, OTHER(is)->other_aux);
+                    if(c >= 0) {
+                        outbufUTF8(is, fd, OTHER(is)->other_recode(c, OTHER(is)->other_aux));
+                        is->shiftState = S_NORMAL;
+                    }
+                    s++;
                 } else if(*s == CSI && CHARSET_REGULAR(GR(is))) {
                     buffer(is, *s++);
                     is->parserState = P_CSI;
