@@ -1,5 +1,5 @@
-/* $XConsortium: xkbInit.c /main/18 1996/05/24 14:51:19 kaleb $ */
-/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.9 1996/08/23 11:05:53 dawes Exp $ */
+/* $XConsortium: xkbInit.c /main/23 1996/09/28 17:16:19 rws $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.10 1996/10/13 11:32:27 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -142,7 +142,7 @@ char *
 #if NeedFunctionPrototypes
 XkbGetRulesDflts(XkbRF_VarDefsPtr defs)
 #else
-XkbGetRulesDflts(defs);
+XkbGetRulesDflts(defs)
 	XkbRF_VarDefsPtr defs;
 #endif
 {
@@ -188,7 +188,7 @@ char *			pval;
 	ErrorF("Atom error: %s not created\n",_XKB_RF_NAMES_PROP_ATOM);
 	return True;
     }
-    pval= ALLOCATE_LOCAL(len);
+    pval= (char*) ALLOCATE_LOCAL(len);
     if (!pval) {
 	ErrorF("Allocation error: %s proprerty not created\n",
 						_XKB_RF_NAMES_PROP_ATOM);
@@ -675,7 +675,7 @@ XkbInitKeyboardDeviceStruct( dev,names,pSymsIn,pModsIn,bellProc,ctrlProc )
 {
 XkbFileInfo		finfo;
 KeySymsRec		tmpSyms,*pSyms;
-CARD8			tmpMods[XkbMaxKeyCount],*pMods;
+CARD8			tmpMods[XkbMaxLegalKeyCode+1],*pMods;
 char			name[PATH_MAX],*rules;
 Bool			ok;
 XPointer		config;

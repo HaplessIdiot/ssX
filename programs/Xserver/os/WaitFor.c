@@ -46,8 +46,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: WaitFor.c /main/52 1995/11/30 17:21:05 dpw $ */
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.6 1996/01/30 15:27:36 dawes Exp $ */
+/* $XConsortium: WaitFor.c /main/55 1996/12/02 10:22:24 lehors $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.7 1996/02/09 08:22:26 dawes Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:
@@ -57,6 +57,9 @@ SOFTWARE.
  *
  *****************************************************************/
 
+#ifdef WIN32
+#include <X11/Xwinsock.h>
+#endif
 #include "Xos.h"			/* for strings, fcntl, time */
 
 #include <errno.h>
@@ -273,6 +276,9 @@ WaitForSomething(pClientsReady)
 	}
 	else
 	{
+#ifdef WIN32
+	    fd_set tmp_set;
+#endif
 	    if (AnyClientsWriteBlocked && XFD_ANYSET (&clientsWritable))
 	    {
 		NewOutputPending = TRUE;
@@ -284,7 +290,12 @@ WaitForSomething(pClientsReady)
 
 	    XFD_ANDSET(&devicesReadable, &LastSelectMask, &EnabledDevices);
 	    XFD_ANDSET(&clientsReadable, &LastSelectMask, &AllClients); 
+#ifndef WIN32
 	    if (LastSelectMask.fds_bits[0] & WellKnownConnections.fds_bits[0]) 
+#else
+	    XFD_ANDSET(&tmp_set, &LastSelectMask, &WellKnownConnections);
+	    if (XFD_ANYSET(&tmp_set))
+#endif
 		QueueWorkProc(EstablishNewConnections, NULL,
 			      (pointer)&LastSelectMask);
 	    if (XFD_ANYSET (&devicesReadable) || XFD_ANYSET (&clientsReadable))
@@ -295,6 +306,7 @@ WaitForSomething(pClientsReady)
     nready = 0;
     if (XFD_ANYSET (&clientsReadable))
     {
+#ifndef WIN32
 	for (i=0; i<howmany(XFD_SETSIZE, NFDBITS); i++)
 	{
 	    int highest_priority;
@@ -305,6 +317,17 @@ WaitForSomething(pClientsReady)
 
 		curclient = ffs (clientsReadable.fds_bits[i]) - 1;
 		client_index = ConnectionTranslation[curclient + (i << 5)];
+#else
+	int highest_priority;
+	fd_set savedClientsReadable;
+	XFD_COPYSET(&clientsReadable, &savedClientsReadable);
+	for (i = 0; i < XFD_SETCOUNT(&savedClientsReadable); i++)
+	{
+	    int client_priority, client_index;
+
+	    curclient = XFD_FD(&savedClientsReadable, i);
+	    client_index = ConnectionTranslation[curclient];
+#endif
 #ifdef XSYNC
 		/*  We implement "strict" priorities.
 		 *  Only the highest priority client is returned to
@@ -336,9 +359,13 @@ WaitForSomething(pClientsReady)
 		{
 		    pClientsReady[nready++] = client_index;
 		}
-		clientsReadable.fds_bits[i] &= ~(((FdMask)1) << curclient);
+#ifndef WIN32
+		clientsReadable.fds_bits[i] &= ~(((fd_mask)1) << curclient);
 	    }
-	}	
+#else
+	    FD_CLR(curclient, &clientsReadable);
+#endif
+	}
     }
     return nready;
 }
@@ -607,8 +634,9 @@ TimerForce(timer)
     return FALSE;
 }
 
+
 void
-TimerFree(timer)
+TimerCancel(timer)
     register OsTimerPtr timer;
 {
     register OsTimerPtr *prev;
@@ -623,6 +651,15 @@ TimerFree(timer)
 	    break;
 	}
     }
+}
+
+void
+TimerFree(timer)
+    register OsTimerPtr timer;
+{
+    if (!timer)
+	return;
+    TimerCancel(timer);
     xfree(timer);
 }
 

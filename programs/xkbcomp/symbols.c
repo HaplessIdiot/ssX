@@ -1,5 +1,5 @@
-/* $XConsortium: symbols.c /main/11 1996/03/01 14:32:31 kaleb $ */
-/* $XFree86$ */
+/* $XConsortium: symbols.c /main/12 1996/08/31 12:15:50 kaleb $ */
+/* $XFree86: xc/programs/xkbcomp/symbols.c,v 3.3 1996/08/26 14:44:12 dawes Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 

@@ -1,5 +1,5 @@
-/* $XConsortium: waitfor.c,v 1.14 95/04/05 19:58:24 kaleb Exp $ */
-/* $XFree86: xc/programs/xfs/os/waitfor.c,v 3.2 1996/01/05 13:21:36 dawes Exp $ */
+/* $XConsortium: waitfor.c /main/15 1996/08/30 14:22:34 kaleb $ */
+/* $XFree86: xc/programs/xfs/os/waitfor.c,v 3.3 1996/06/10 09:18:04 dawes Exp $ */
 /*
  * waits for input
  */
@@ -234,7 +234,7 @@ ANYSET(src)
 {
     int         i;
 
-    for (i = 0; i < mskcnt; i++)
+    for (i = 0; i < howmany(XFD_SETSIZE, NFDBITS); i++)
 	if (src[i])
 	    return (1);
     return (0);

@@ -1,5 +1,5 @@
-/* $XConsortium: xkbscan.c /main/8 1996/02/05 06:00:09 kaleb $ */
-/* $XFree86: xc/programs/xkbcomp/xkbscan.c,v 3.4 1996/08/13 11:33:05 dawes Exp $ */
+/* $XConsortium: xkbscan.c /main/9 1996/08/31 12:16:13 kaleb $ */
+/* $XFree86: xc/programs/xkbcomp/xkbscan.c,v 3.5 1996/08/26 10:52:32 dawes Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
