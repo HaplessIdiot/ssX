@@ -1,4 +1,5 @@
 /* $XConsortium: TestExt.c,v 1.2 93/09/23 18:57:14 rws Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -14,6 +15,7 @@ is" without express or implied warranty.
 */
 #include "X.h"
 #include "Xproto.h"
+#include "Xlib.h"
 #include "screenint.h"
 #include "input.h"
 #include "misc.h"
