@@ -166,9 +166,8 @@ contact <it>nygren@mit.edu</it> so we don't duplicate efforts.  The code
 in <tt>p9000blt.c</tt> should work, but the stuff in <tt>p9000im.c</tt>
 probably won't.
 
-For Diamond Viper PCI owners, you'll need to get the <tt>PCIDUMP.EXE</tt>
-program from the Unixware P9000 server for now.  Run it under DOS and
-use the values to fill in <tt>MemBase</tt> and <tt>IOBase</tt> in the
+For Diamond Viper PCI owners, you'll need to use <tt>scanpci</tt>
+to find the values to fill in for <tt>MemBase</tt> and <tt>IOBase</tt> in the
 <tt>Device</tt> section of <tt>XF86Config</tt>.  These values will change
 whenever you move cards around or add cards.
 
@@ -216,7 +215,7 @@ Eventually we would like to autodetect the <tt>IOBase</tt> and
 The Orchid P9000 and other cards based on the Weitek board design
 (such as the STAR 2000) should now work.  Talk to
 <it>harry@brain.jpl.nasa.gov</it>
-if you have problems with this.  Specify the chipset <tt>"orchidp9000"</tt> in
+if you have problems with this.  Specify the chipset <tt>"orchid_p9000"</tt> in
 the <tt>Device</tt> section of <tt>XF86Config</tt>
 
 <sect> Viper Pro and other P9100 and P9130 cards (UNSUPPORTED!!!) <p>
@@ -313,7 +312,7 @@ of the <tt>XF86Config</tt> file are:
 <descrip>
    <tag/VideoRAM/	1024 or 2048  (use 2048 for ``3MB'' Orchid P9000's)
    <tag/ChipSet/	<tt>"vipervlb"</tt> or <tt>"viperpci"</tt> or
-			<tt>"orchidp9000"</tt>
+			<tt>"orchid_p9000"</tt>
    <tag/MemBase/	
 			<descrip>
 			<tag/Viper VLB:/ 0xA0000000 or 0x20000000 or 0x80000000
@@ -425,7 +424,7 @@ acceleration, etc.  Please send any patches to me (<it>nygren@mit.edu</it>).
 
 <verb>
 $XConsortium: P9000.sgml,v 1.4 95/01/27 16:14:28 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.8 1995/01/28 16:02:06 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.9 1995/01/29 10:45:34 dawes Exp $
 </verb>
 
 </article>

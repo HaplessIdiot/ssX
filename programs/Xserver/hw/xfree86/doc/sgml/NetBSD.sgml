@@ -30,14 +30,14 @@ url="ftp://ftp.XFree86.org/pub/XFree86/current">
 
 Binaries for NetBSD 1.0 are available from:
 
-<url name="ftp.XFree86.org:/pub/XFree86/current/NetBSD"
-url="ftp://ftp.XFree86.org/pub/XFree86/current/NetBSD">
+<url name="ftp.XFree86.org:/pub/XFree86/current/binaries/NetBSD"
+url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/NetBSD">
 <p>
 <url name="ftp.laas.fr:/pub/NetBSD/XFree86-3.1.1"
 url="ftp://ftp.laas.fr/pub/NetBSD/XFree86-3.1.1">
 <p>
-<url name="ftp.iastate.edu:/pub/netbsd/XFree86-3.1.1"
-url="ftp://ftp.iastate.edu/pub/netbsd/XFree86-3.1.1">
+<url name="ftp.iastate.edu:/pub/XFree86/XFree86-3.1.1"
+url="ftp://ftp.iastate.edu/pub/XFree86/XFree86-3.1.1">
 <p>
 <url name="ftp.eecs.umich.edu:/BSD/XFree86"
 url="ftp://ftp.eecs.umich.edu/BSD/XFree86">
@@ -619,7 +619,7 @@ and many others.
 
 <verb>
 $XConsortium: NetBSD.sgml,v 1.4 95/01/27 16:14:26 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.9 1995/01/28 00:51:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.10 1995/01/28 16:01:56 dawes Exp $
 </verb>
 
 </article>

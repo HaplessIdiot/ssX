@@ -38,7 +38,8 @@ and other sites archiving GNU source.)
               some of the X Consortium's ``contrib'' distribution)
 
     <item> If upgrading from XFree86 version 3.1 you will only need the
-	   <tt/3.1-3.1.1.diff.gz/ patch, and optionally the
+	   <tt/3.1-3.1.1.diff1.gz/ and <tt/3.1-3.1.1.diff2.gz/ patches,
+	   and optionally the
            <tt/contrib-3.1-3.1.1.diff.gz/ patch.
     <item> The full XFree86 source tree requires about 110MB.  An additional
       110MB (more for OSs without shared libraries) is required to build
@@ -129,7 +130,8 @@ and other sites archiving GNU source.)
    go to the directory above your <tt/xc/ directory, and run:
 
 <tscreen><verb>
-      gzip -d < 3.1-3.1.1.diff.gz | patch -p -E
+      gzip -d < 3.1-3.1.1.diff1.gz | patch -p -E
+      gzip -d < 3.1-3.1.1.diff2.gz | patch -p -E
 </verb></tscreen>
 
    If you are installing in an unmodified tree there shouldn't be any
@@ -295,7 +297,7 @@ name="README.LinkKit"> file.
 
 <verb>
 $XConsortium: INSTALL.sgml,v 1.4 95/01/27 16:14:24 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.6 1995/01/28 16:01:30 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.7 1995/01/30 03:37:10 dawes Exp $
 </verb>
 
 </article>
