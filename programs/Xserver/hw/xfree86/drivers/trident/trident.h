@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.52 2002/01/25 21:56:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.54 2002/04/04 14:05:49 eich Exp $ */
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -207,6 +207,7 @@ void TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg);
 void TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg);
 Bool TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 Bool TridentAccelInit(ScreenPtr pScreen);
+Bool XPAccelInit(ScreenPtr pScreen);
 Bool ImageAccelInit(ScreenPtr pScreen);
 Bool BladeAccelInit(ScreenPtr pScreen);
 Bool TridentHWCursorInit(ScreenPtr pScreen);
