@@ -1,4 +1,12 @@
 XFree86 4.3.99.12 (xx August 2003)
+ 403. Added RGB overlays to i810 driver (Bugzilla# 625, Alastair M. Robinson).
+ 402. Fixed mode switching and mode comparison for xf86VidMode extension for S3
+      driver (Bugzilla #613, Alexey Baj, Egbert Eich).
+ 401. Via driver: Fixed remaining globals, some formatting issues, out of 
+      memory handling in Xv overlay code and a couple of small glitches caused 
+      by the fixes (Bugzilla# 525, Alan Cox)
+      Fixed some missing globals and static build (Egbert Eich).
+      A handful globals still remain.
  400. Update the Xserver(1), XFree86(1) and XF86Config(5) man pages to
       clarify how XFree86 configuration/run-time parameters are specified
       and their order of precedence (David Dawes).
@@ -17614,7 +17622,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2824 2003/08/25 11:16:04 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2825 2003/08/25 18:30:10 dawes Exp $
 
 
 

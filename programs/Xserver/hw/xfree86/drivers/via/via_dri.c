@@ -43,7 +43,6 @@ extern void GlxSetVisualConfigs(
     __GLXvisualConfig *configs,
     void **configprivs
 );
-unsigned int agpaddr;
 
 #define VIDEO	0 
 #define AGP		1
@@ -82,6 +81,7 @@ static void VIADRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
 static Bool VIADRIAgpInit(ScreenPtr pScreen, VIAPtr pVia)
 {
     unsigned long  agp_phys;
+    unsigned int agpaddr;
     VIADRIPtr pVIADRI;
     DRIInfoPtr pDRIInfo;
     pDRIInfo = pVia->pDRIInfo;

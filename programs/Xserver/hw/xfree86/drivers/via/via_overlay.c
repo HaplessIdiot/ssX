@@ -28,21 +28,14 @@
 
 #include "via.h"
 #include "ddmpeg.h"
-#include "HWDiff.h"
-#include "ginfo.h"
+#include "via_overlay.h"
+#include "via_driver.h"
 
-#include "ddover.h"
-OVERLAYRECORD    overlayRecordV1;
-OVERLAYRECORD    overlayRecordV3;
 
-/* E X T E R N   G L O B A L S--------------------------------------------------------------*/
-
-extern MPGDEVICE   MPGDevice;
-extern VIAGRAPHICINFO gVIAGraphicInfo;     /*2D information*/
 
 /* F U N C T I O N ----------------------------------------------------------*/
 
-void viaDDOver_GetV1Format(unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF, unsigned long * lpdwVidCtl,unsigned long * lpdwHQVCtl )
+void viaOverlayGetV1Format(VIAPtr pVia, unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF, unsigned long * lpdwVidCtl,unsigned long * lpdwHQVCtl )
 {
 
    if (lpDPF->dwFlags & DDPF_FOURCC)
@@ -64,16 +57,16 @@ void viaDDOver_GetV1Format(unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF, unsi
        case FOURCC_VIA:
             if (dwVideoFlag&VIDEO_HQV_INUSE)
             {
-                if ((overlayRecordV1.dwDisplayPictStruct == VIA_PICT_STRUCT_TOP)||
-                    (overlayRecordV1.dwDisplayPictStruct == VIA_PICT_STRUCT_BOTTOM)||
-                    (overlayRecordV1.dwMPEGDeinterlaceMode == VIA_DEINTERLACE_BOB))
+                if ((pVia->swov.overlayRecordV1.dwDisplayPictStruct == VIA_PICT_STRUCT_TOP)||
+                    (pVia->swov.overlayRecordV1.dwDisplayPictStruct == VIA_PICT_STRUCT_BOTTOM)||
+                    (pVia->swov.overlayRecordV1.dwMPEGDeinterlaceMode == VIA_DEINTERLACE_BOB))
                 {
                     /*Field Display*/
                     *lpdwVidCtl |= (V1_YUV422 | V1_SWAP_HW_HQV );
                     if (dwVideoFlag&MPEG_USE_HW_FLIP)
                     {
                         *lpdwHQVCtl |= HQV_SRC_MC|HQV_YUV420|HQV_ENABLE |HQV_DEINTERLACE|HQV_FIELD_2_FRAME|HQV_FRAME_2_FIELD;
-                        if (overlayRecordV1.dwMPEGProgressiveMode == VIA_NON_PROGRESSIVE)
+                        if (pVia->swov.overlayRecordV1.dwMPEGProgressiveMode == VIA_NON_PROGRESSIVE)
                         {
                             *lpdwHQVCtl |= HQV_FIELD_UV;
                         }
@@ -81,7 +74,7 @@ void viaDDOver_GetV1Format(unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF, unsi
                     else
                     {
                         *lpdwHQVCtl |= HQV_SRC_SW|HQV_YUV420|HQV_ENABLE|HQV_SW_FLIP|HQV_DEINTERLACE|HQV_FIELD_2_FRAME|HQV_FRAME_2_FIELD;
-                        if (overlayRecordV1.dwMPEGProgressiveMode == VIA_NON_PROGRESSIVE)
+                        if (pVia->swov.overlayRecordV1.dwMPEGProgressiveMode == VIA_NON_PROGRESSIVE)
                         {
                             *lpdwHQVCtl |= HQV_FIELD_UV;
                         }
@@ -107,10 +100,10 @@ void viaDDOver_GetV1Format(unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF, unsi
                 if (dwVideoFlag&MPEG_USE_HW_FLIP)
                 {
                     *lpdwVidCtl |= (V1_YCbCr420 | V1_SWAP_HW_MC );
-                    if (((overlayRecordV1.dwDisplayPictStruct == VIA_PICT_STRUCT_TOP   )||
-                         (overlayRecordV1.dwDisplayPictStruct == VIA_PICT_STRUCT_BOTTOM)||
-                         (overlayRecordV1.dwMPEGDeinterlaceMode == VIA_DEINTERLACE_BOB ))&&
-                         (overlayRecordV1.dwMPEGProgressiveMode == VIA_NON_PROGRESSIVE))
+                    if (((pVia->swov.overlayRecordV1.dwDisplayPictStruct == VIA_PICT_STRUCT_TOP   )||
+                         (pVia->swov.overlayRecordV1.dwDisplayPictStruct == VIA_PICT_STRUCT_BOTTOM)||
+                         (pVia->swov.overlayRecordV1.dwMPEGDeinterlaceMode == VIA_DEINTERLACE_BOB ))&&
+                         (pVia->swov.overlayRecordV1.dwMPEGProgressiveMode == VIA_NON_PROGRESSIVE))
                     {
                         /* CLE bug 
                            *lpdwVidCtl |= V1_SRC_IS_FIELD_PIC;*/
@@ -118,12 +111,12 @@ void viaDDOver_GetV1Format(unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF, unsi
                 }
                 else
                 {                    
-                    if ((overlayRecordV1.dwDisplayPictStruct == VIA_PICT_STRUCT_TOP)||
-                        (overlayRecordV1.dwDisplayPictStruct == VIA_PICT_STRUCT_BOTTOM)||
-                        (overlayRecordV1.dwMPEGDeinterlaceMode == VIA_DEINTERLACE_BOB))
+                    if ((pVia->swov.overlayRecordV1.dwDisplayPictStruct == VIA_PICT_STRUCT_TOP)||
+                        (pVia->swov.overlayRecordV1.dwDisplayPictStruct == VIA_PICT_STRUCT_BOTTOM)||
+                        (pVia->swov.overlayRecordV1.dwMPEGDeinterlaceMode == VIA_DEINTERLACE_BOB))
                     {
                         *lpdwVidCtl |= (V1_YCbCr420 |V1_SWAP_SW | V1_BOB_ENABLE | V1_FRAME_BASE);
-                        if (overlayRecordV1.dwMPEGProgressiveMode == VIA_NON_PROGRESSIVE)
+                        if (pVia->swov.overlayRecordV1.dwMPEGProgressiveMode == VIA_NON_PROGRESSIVE)
                         {
                             /* CLE bug                             
                                *lpdwVidCtl |= V1_SRC_IS_FIELD_PIC;*/
@@ -192,7 +185,7 @@ void viaDDOver_GetV1Format(unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF, unsi
    }
 }
 
-void viaDDOver_GetV3Format(unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF, unsigned long * lpdwVidCtl,unsigned long * lpdwHQVCtl )
+void viaOverlayGetV3Format(VIAPtr pVia, unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF, unsigned long * lpdwVidCtl,unsigned long * lpdwHQVCtl )
 {
 
    if (lpDPF->dwFlags & DDPF_FOURCC)
@@ -215,16 +208,16 @@ void viaDDOver_GetV3Format(unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF, unsi
        case FOURCC_VIA:
             if (dwVideoFlag&VIDEO_HQV_INUSE)
             {
-                if ((overlayRecordV1.dwDisplayPictStruct == VIA_PICT_STRUCT_TOP)||
-                    (overlayRecordV1.dwDisplayPictStruct == VIA_PICT_STRUCT_BOTTOM)||
-                    (overlayRecordV1.dwMPEGDeinterlaceMode == VIA_DEINTERLACE_BOB))
+                if ((pVia->swov.overlayRecordV1.dwDisplayPictStruct == VIA_PICT_STRUCT_TOP)||
+                    (pVia->swov.overlayRecordV1.dwDisplayPictStruct == VIA_PICT_STRUCT_BOTTOM)||
+                    (pVia->swov.overlayRecordV1.dwMPEGDeinterlaceMode == VIA_DEINTERLACE_BOB))
                 {
                     /*Field Display*/
                     *lpdwVidCtl |= (V3_YUV422 | V3_SWAP_HW_HQV );
                     if (dwVideoFlag&MPEG_USE_HW_FLIP)
                     {
                         *lpdwHQVCtl |= HQV_SRC_MC|HQV_YUV420|HQV_ENABLE |HQV_DEINTERLACE|HQV_FIELD_2_FRAME|HQV_FRAME_2_FIELD;
-                        if (overlayRecordV1.dwMPEGProgressiveMode == VIA_NON_PROGRESSIVE)
+                        if (pVia->swov.overlayRecordV1.dwMPEGProgressiveMode == VIA_NON_PROGRESSIVE)
                         {
                             *lpdwHQVCtl |= HQV_FIELD_UV;
                         }
@@ -232,7 +225,7 @@ void viaDDOver_GetV3Format(unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF, unsi
                     else
                     {
                         *lpdwHQVCtl |= HQV_SRC_SW|HQV_YUV420|HQV_ENABLE|HQV_SW_FLIP;
-                        if (overlayRecordV1.dwMPEGProgressiveMode == VIA_NON_PROGRESSIVE)
+                        if (pVia->swov.overlayRecordV1.dwMPEGProgressiveMode == VIA_NON_PROGRESSIVE)
                         {
                             *lpdwHQVCtl |= HQV_FIELD_UV;
                         }
@@ -311,7 +304,7 @@ void viaDDOver_GetV3Format(unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF, unsi
    }
 }
 
-unsigned long viaDDOver_GetSrcStartAddress (unsigned long dwVideoFlag,RECTL rSrc,RECTL rDest, unsigned long dwSrcPitch,LPDDPIXELFORMAT lpDPF,unsigned long * lpHQVoffset )
+unsigned long viaOverlayGetSrcStartAddress(VIAPtr pVia, unsigned long dwVideoFlag,RECTL rSrc,RECTL rDest, unsigned long dwSrcPitch,LPDDPIXELFORMAT lpDPF,unsigned long * lpHQVoffset )
 {
    unsigned long dwOffset=0;
    unsigned long dwHQVsrcWidth=0,dwHQVdstWidth=0;
@@ -370,15 +363,15 @@ unsigned long viaDDOver_GetSrcStartAddress (unsigned long dwVideoFlag,RECTL rSrc
                 {   
                     unsigned long dwDstTop=0, dwDstLeft=0;
 
-                    dwDstTop = ((rSrc.top * MPGDevice.gdwMPGDstHeight) + (MPGDevice.dwHeight>>1))/MPGDevice.dwHeight;
-                    dwDstLeft = ((rSrc.left * MPGDevice.gdwMPGDstWidth) + (MPGDevice.dwWidth>>1))/MPGDevice.dwWidth;
+                    dwDstTop = ((rSrc.top * pVia->swov.MPGDevice.gdwMPGDstHeight) + (pVia->swov.MPGDevice.dwHeight>>1))/pVia->swov.MPGDevice.dwHeight;
+                    dwDstLeft = ((rSrc.left * pVia->swov.MPGDevice.gdwMPGDstWidth) + (pVia->swov.MPGDevice.dwWidth>>1))/pVia->swov.MPGDevice.dwWidth;
 
-                    if (MPGDevice.gdwMPGDstHeight < MPGDevice.dwHeight)
-                        dwOffset = dwDstTop * (MPGDevice.dwPitch <<1);
+                    if (pVia->swov.MPGDevice.gdwMPGDstHeight < pVia->swov.MPGDevice.dwHeight)
+                        dwOffset = dwDstTop * (pVia->swov.MPGDevice.dwPitch <<1);
                     else
-                        dwOffset = rSrc.top * (MPGDevice.dwPitch <<1);
+                        dwOffset = rSrc.top * (pVia->swov.MPGDevice.dwPitch <<1);
                 
-                    if (MPGDevice.gdwMPGDstWidth < MPGDevice.dwWidth)
+                    if (pVia->swov.MPGDevice.gdwMPGDstWidth < pVia->swov.MPGDevice.dwWidth)
                         dwOffset += (dwDstLeft<<1)&~31;
                     else
                         dwOffset += (rSrc.left<<1)&~31;
@@ -389,12 +382,12 @@ unsigned long viaDDOver_GetSrcStartAddress (unsigned long dwVideoFlag,RECTL rSrc
                                 rSrc.left)&~31) ;
                      if (rSrc.top >0)
                      {
-                        overlayRecordV1.dwUVoffset = (((((rSrc.top&~3)>>1) * dwSrcPitch) +
+                        pVia->swov.overlayRecordV1.dwUVoffset = (((((rSrc.top&~3)>>1) * dwSrcPitch) +
                                         rSrc.left)&~31) >>1;
                      }
                      else
                      {
-                        overlayRecordV1.dwUVoffset = dwOffset >>1 ;
+                        pVia->swov.overlayRecordV1.dwUVoffset = dwOffset >>1 ;
                      }
                 }
                 break;
@@ -410,12 +403,12 @@ unsigned long viaDDOver_GetSrcStartAddress (unsigned long dwVideoFlag,RECTL rSrc
                                 rSrc.left)&~31) ;
                     if (rSrc.top >0)
                     {
-                        overlayRecordV1.dwUVoffset = (((((rSrc.top&~3)>>1) * dwSrcPitch) +
+                        pVia->swov.overlayRecordV1.dwUVoffset = (((((rSrc.top&~3)>>1) * dwSrcPitch) +
                                        rSrc.left)&~31) >>1;
                     }
                     else
                     {
-                        overlayRecordV1.dwUVoffset = dwOffset >>1 ;
+                        pVia->swov.overlayRecordV1.dwUVoffset = dwOffset >>1 ;
                     }
                 }
                 break;
@@ -461,13 +454,13 @@ unsigned long viaDDOver_GetSrcStartAddress (unsigned long dwVideoFlag,RECTL rSrc
    }
    else 
    {
-        overlayRecordV1.dwUVoffset = dwOffset = 0;
+        pVia->swov.overlayRecordV1.dwUVoffset = dwOffset = 0;
    }
 
    return dwOffset;
 }
 
-YCBCRREC viaDDOVer_GetYCbCrStartAddress(unsigned long dwVideoFlag,unsigned long dwStartAddr, unsigned long dwOffset,unsigned long dwUVoffset,unsigned long dwSrcPitch/*lpGbl->lPitch*/,unsigned long dwSrcHeight/*lpGbl->wHeight*/)
+YCBCRREC viaOverlayGetYCbCrStartAddress(unsigned long dwVideoFlag,unsigned long dwStartAddr, unsigned long dwOffset,unsigned long dwUVoffset,unsigned long dwSrcPitch/*lpGbl->lPitch*/,unsigned long dwSrcHeight/*lpGbl->wHeight*/)
 {
    YCBCRREC YCbCr;
 
@@ -492,7 +485,7 @@ YCBCRREC viaDDOVer_GetYCbCrStartAddress(unsigned long dwVideoFlag,unsigned long 
 }
 
 
-unsigned long viaDDOVER_HQVCalcZoomWidth(unsigned long dwVideoFlag, unsigned long srcWidth , unsigned long dstWidth,
+unsigned long viaOverlayHQVCalcZoomWidth(VIAPtr pVia, unsigned long dwVideoFlag, unsigned long srcWidth , unsigned long dstWidth,
                            unsigned long * lpzoomCtl, unsigned long * lpminiCtl, unsigned long * lpHQVfilterCtl, unsigned long * lpHQVminiCtl,unsigned long * lpHQVzoomflag)
 {
     unsigned long dwTmp;
@@ -528,13 +521,13 @@ unsigned long viaDDOVER_HQVCalcZoomWidth(unsigned long dwVideoFlag, unsigned lon
                 *lpminiCtl |= V1_X_DIV_2+V1_X_INTERPOLY;
                 if (dwVideoFlag&VIDEO_1_INUSE)
                 {
-                    overlayRecordV1.dwFetchAlignment = 3;
-                    overlayRecordV1.dwminifyH = 2;
+                    pVia->swov.overlayRecordV1.dwFetchAlignment = 3;
+                    pVia->swov.overlayRecordV1.dwminifyH = 2;
                 }
                 else
                 {
-                    overlayRecordV3.dwFetchAlignment = 3;
-                    overlayRecordV3.dwminifyH = 2;
+                    pVia->swov.overlayRecordV3.dwFetchAlignment = 3;
+                    pVia->swov.overlayRecordV3.dwminifyH = 2;
                 }
                 *lpHQVfilterCtl |= HQV_H_TAP4_121;
                 /* *lpHQVminiCtl = 0x00000c00;*/
@@ -546,13 +539,13 @@ unsigned long viaDDOVER_HQVCalcZoomWidth(unsigned long dwVideoFlag, unsigned lon
                     *lpminiCtl |= V1_X_DIV_4+V1_X_INTERPOLY;
                     if (dwVideoFlag&VIDEO_1_INUSE)
                     {
-                        overlayRecordV1.dwFetchAlignment = 7;
-                        overlayRecordV1.dwminifyH = 4;
+                        pVia->swov.overlayRecordV1.dwFetchAlignment = 7;
+                        pVia->swov.overlayRecordV1.dwminifyH = 4;
                     }
                     else
                     {
-                        overlayRecordV3.dwFetchAlignment = 7;
-                        overlayRecordV3.dwminifyH = 4;
+                        pVia->swov.overlayRecordV3.dwFetchAlignment = 7;
+                        pVia->swov.overlayRecordV3.dwminifyH = 4;
                     }
                     *lpHQVfilterCtl |= HQV_H_TAP4_121;
                     /* *lpHQVminiCtl = 0x00000a00;*/
@@ -564,13 +557,13 @@ unsigned long viaDDOVER_HQVCalcZoomWidth(unsigned long dwVideoFlag, unsigned lon
                         *lpminiCtl |= V1_X_DIV_8+V1_X_INTERPOLY;
                         if (dwVideoFlag&VIDEO_1_INUSE)
                         {
-                            overlayRecordV1.dwFetchAlignment = 15;
-                            overlayRecordV1.dwminifyH = 8;
+                            pVia->swov.overlayRecordV1.dwFetchAlignment = 15;
+                            pVia->swov.overlayRecordV1.dwminifyH = 8;
                         }
                         else
                         {
-                            overlayRecordV3.dwFetchAlignment = 15;
-                            overlayRecordV3.dwminifyH = 8;
+                            pVia->swov.overlayRecordV3.dwFetchAlignment = 15;
+                            pVia->swov.overlayRecordV3.dwminifyH = 8;
                         }
                         *lpHQVfilterCtl |= HQV_H_TAP8_12221;
                         /* *lpHQVminiCtl = 0x00000900;*/
@@ -582,13 +575,13 @@ unsigned long viaDDOVER_HQVCalcZoomWidth(unsigned long dwVideoFlag, unsigned lon
                             *lpminiCtl |= V1_X_DIV_16+V1_X_INTERPOLY;
                             if (dwVideoFlag&VIDEO_1_INUSE)
                             {
-                                overlayRecordV1.dwFetchAlignment = 15;
-                                overlayRecordV1.dwminifyH = 16;
+                                pVia->swov.overlayRecordV1.dwFetchAlignment = 15;
+                                pVia->swov.overlayRecordV1.dwminifyH = 16;
                             }
                             else
                             {
-                                overlayRecordV3.dwFetchAlignment = 15;
-                                overlayRecordV3.dwminifyH = 16;
+                                pVia->swov.overlayRecordV3.dwFetchAlignment = 15;
+                                pVia->swov.overlayRecordV3.dwminifyH = 16;
                             }
                             *lpHQVfilterCtl |= HQV_H_TAP8_12221;
                             /* *lpHQVminiCtl = 0x00000880;*/
@@ -601,13 +594,13 @@ unsigned long viaDDOVER_HQVCalcZoomWidth(unsigned long dwVideoFlag, unsigned lon
                             *lpminiCtl |= V1_X_DIV_16+V1_X_INTERPOLY;
                             if (dwVideoFlag&VIDEO_1_INUSE)
                             {
-                                overlayRecordV1.dwFetchAlignment = 15;
-                                overlayRecordV1.dwminifyH = 16;
+                                pVia->swov.overlayRecordV1.dwFetchAlignment = 15;
+                                pVia->swov.overlayRecordV1.dwminifyH = 16;
                             }
                             else
                             {
-                                overlayRecordV3.dwFetchAlignment = 15;
-                                overlayRecordV3.dwminifyH = 16;
+                                pVia->swov.overlayRecordV3.dwFetchAlignment = 15;
+                                pVia->swov.overlayRecordV3.dwminifyH = 16;
                             }
                             *lpHQVfilterCtl |= HQV_H_TAP8_12221;
                         }
@@ -629,11 +622,11 @@ unsigned long viaDDOVER_HQVCalcZoomWidth(unsigned long dwVideoFlag, unsigned lon
     return ~PI_ERR;
 }
 
-unsigned long viaDDOVER_HQVCalcZoomHeight (unsigned long srcHeight,unsigned long dstHeight,
+unsigned long viaOverlayHQVCalcZoomHeight (VIAPtr pVia, unsigned long srcHeight,unsigned long dstHeight,
                              unsigned long * lpzoomCtl, unsigned long * lpminiCtl, unsigned long * lpHQVfilterCtl, unsigned long * lpHQVminiCtl,unsigned long * lpHQVzoomflag)
 {
     unsigned long dwTmp;
-    if (gVIAGraphicInfo.dwExpand)
+    if (pVia->graphicInfo.dwExpand)
     {
         dstHeight = dstHeight + 1;
     }
@@ -727,7 +720,7 @@ unsigned long viaDDOVER_HQVCalcZoomHeight (unsigned long srcHeight,unsigned long
 }
 
 
-unsigned long viaDDOver_GetFetch(unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF,unsigned long dwSrcWidth,unsigned long dwDstWidth,unsigned long dwOriSrcWidth,unsigned long * lpHQVsrcFetch)
+unsigned long viaOverlayGetFetch(unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF,unsigned long dwSrcWidth,unsigned long dwDstWidth,unsigned long dwOriSrcWidth,unsigned long * lpHQVsrcFetch)
 {
    unsigned long dwFetch=0;
    
@@ -836,7 +829,7 @@ unsigned long viaDDOver_GetFetch(unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF
    return dwFetch;
 }
 
-void viaDDOver_GetDisplayCount(unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF,unsigned long dwSrcWidth,unsigned long * lpDisplayCountW)
+void viaOverlayGetDisplayCount(VIAPtr pVia, unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF,unsigned long dwSrcWidth,unsigned long * lpDisplayCountW)
 {
     
    /*unsigned long dwFetch=0;*/
@@ -856,8 +849,8 @@ void viaDDOver_GetDisplayCount(unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF,u
             }
             else
             {
-                /* *lpDisplayCountW = dwSrcWidth - 2*overlayRecordV1.dwminifyH;*/
-                *lpDisplayCountW = dwSrcWidth - overlayRecordV1.dwminifyH;
+                /* *lpDisplayCountW = dwSrcWidth - 2*pVia->swov.overlayRecordV1.dwminifyH;*/
+                *lpDisplayCountW = dwSrcWidth - pVia->swov.overlayRecordV1.dwminifyH;
             }
             break;
        default :
@@ -868,8 +861,8 @@ void viaDDOver_GetDisplayCount(unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF,u
             }
             else
             {
-                /* *lpDisplayCountW = dwSrcWidth - 2*overlayRecordV1.dwminifyH;*/
-                *lpDisplayCountW = dwSrcWidth - overlayRecordV1.dwminifyH;
+                /* *lpDisplayCountW = dwSrcWidth - 2*pVia->swov.overlayRecordV1.dwminifyH;*/
+                *lpDisplayCountW = dwSrcWidth - pVia->swov.overlayRecordV1.dwminifyH;
             }
             break;
        }
@@ -884,7 +877,7 @@ void viaDDOver_GetDisplayCount(unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF,u
             }
             else
             {
-                *lpDisplayCountW = dwSrcWidth - overlayRecordV1.dwminifyH;
+                *lpDisplayCountW = dwSrcWidth - pVia->swov.overlayRecordV1.dwminifyH;
             }
             break;
 
@@ -896,7 +889,7 @@ void viaDDOver_GetDisplayCount(unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF,u
             }
             else
             {
-                *lpDisplayCountW = dwSrcWidth - overlayRecordV1.dwminifyH;
+                *lpDisplayCountW = dwSrcWidth - pVia->swov.overlayRecordV1.dwminifyH;
             }
             break;
        }

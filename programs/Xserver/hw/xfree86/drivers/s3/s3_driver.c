@@ -34,7 +34,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.16 2003/08/23 15:03:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.17 2003/08/23 16:09:19 dawes Exp $ */
 
 
 #include "xf86.h"
@@ -1064,7 +1064,7 @@ Bool S3CloseScreen(int scrnIndex, ScreenPtr pScreen)
 
 Bool S3SwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 {    
-	return S3ModeInit(xf86Screens[scrnIndex], xf86Screens[scrnIndex]->currentMode);
+	return S3ModeInit(xf86Screens[scrnIndex], mode);
 
 }
 
@@ -1167,7 +1167,7 @@ static Bool S3ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	if (mode->HTotal == mode->CrtcHTotal) {
 		if (pS3->pixMuxShift > 0) {
 			/* XXX hack */
-			mode->Flags |= V_PIXMUX;	
+/* 			mode->Flags |= V_PIXMUX; */
 
 			mode->CrtcHTotal >>= pS3->pixMuxShift;
 			mode->CrtcHDisplay >>= pS3->pixMuxShift;
@@ -1175,7 +1175,7 @@ static Bool S3ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 			mode->CrtcHSyncEnd >>= pS3->pixMuxShift;
 			mode->CrtcHSkew >>= pS3->pixMuxShift;
 		} else if (pS3->pixMuxShift < 0) {
-			mode->Flags |= V_PIXMUX;
+/* 			mode->Flags |= V_PIXMUX; */
 
 			mode->CrtcHTotal <<= -pS3->pixMuxShift;
 			mode->CrtcHDisplay <<= -pS3->pixMuxShift;

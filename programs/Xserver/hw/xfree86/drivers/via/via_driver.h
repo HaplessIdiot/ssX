@@ -61,6 +61,7 @@
 #include "via_bios.h"
 #include "via_gpioi2c.h"
 #include "via_priv.h"
+#include "ginfo.h"
 
 #ifdef XF86DRI
 #define _XF86DRI_SERVER_
@@ -118,6 +119,70 @@ typedef struct {
     unsigned char   TVRegs[0xFF];
 /*    unsigned char   LCDRegs[0x40];*/
 } VIARegRec, *VIARegPtr;
+
+/*Definition for  CapturePortID*/
+#define PORT0     0      /* Capture Port 0*/
+#define PORT1     1      /* Capture Port 1*/
+
+typedef struct __viaVideoControl {
+  CARD16 PORTID;
+  CARD32 dwCompose;
+  CARD32 dwHighQVDO;
+  CARD32 VideoStatus;
+  CARD32 dwAction;
+#define ACTION_SET_PORTID      0
+#define ACTION_SET_COMPOSE     1
+#define ACTION_SET_HQV         2
+#define ACTION_SET_BOB	       4
+#define ACTION_SET_VIDEOSTATUS 8
+  Bool  Cap0OnScreen1;   /* True: Capture0 On Screen1 ; False: Capture0 On Screen0 */
+  Bool  Cap1OnScreen1;   /* True: Capture1 On Screen1 ; False: Capture1 On Screen0 */
+  Bool  MPEGOnScreen1;   /* True: MPEG On Screen1 ; False: MPEG On Screen0 */
+} VIAVideoControlRec, VIAVideoControlPtr;
+
+/*For Video HW Difference */
+#define VIA_REVISION_CLEC0        0x10
+#define VIA_REVISION_CLEC1        0x11
+#define VIA_REVISION_CLECX        0x10
+
+#define VID_HWDIFF_TRUE           0x00000001
+#define VID_HWDIFF_FALSE          0x00000000
+
+/*
+ *	Video HW Difference Structure
+ */
+
+typedef struct __VIAHWRec
+{
+    unsigned long dwThreeHQVBuffer;			/*Use Three HQV Buffers*/
+    unsigned long dwV3SrcHeightSetting;			/*Set Video Source Width and Height*/
+    unsigned long dwSupportExtendFIFO;			/*Support Extand FIFO*/
+    unsigned long dwHQVFetchByteUnit;			/*HQV Fetch Count unit is byte*/
+    unsigned long dwHQVInitPatch;			/*Initialize HQV Engine 2 times*/
+    unsigned long dwSupportV3Gamma;			/*Support V3 Gamma */
+    unsigned long dwUpdFlip;				/*Set HQV3D0[15] to flip video*/
+    unsigned long dwHQVDisablePatch;			/*Change Video Engine Clock setting for HQV disable bug*/
+    unsigned long dwSUBFlip;				/*Set HQV3D0[15] to flip video for sub-picture blending*/
+    unsigned long dwNeedV3Prefetch;			/*V3 pre-fetch function for K8*/
+    unsigned long dwNeedV4Prefetch;			/*V4 pre-fetch function for K8*/
+    unsigned long dwUseSystemMemory;			/*Use system memory for DXVA compressed data buffers*/
+    unsigned long dwExpandVerPatch;			/*Patch video HW bug in expand SIM mode or same display path*/
+    unsigned long dwExpandVerHorPatch;			/*Patch video HW bug in expand SAMM mode or same display path*/
+    unsigned long dwV3ExpireNumTune;			/*Change V3 expire number setting for V3 bandwidth issue*/
+    unsigned long dwV3FIFOThresholdTune;		/*Change V3 FIFO, Threshold and Pre-threshold setting for V3 bandwidth issue*/
+    unsigned long dwCheckHQVFIFOEmpty;                  /*HW Flip path, need to check HQV FIFO status */
+    unsigned long dwUseMPEGAGP;                         /*Use MPEG AGP function*/
+    unsigned long dwV3FIFOPatch;                        /*For CLE V3 FIFO Bug (srcWidth <= 8)*/
+    unsigned long dwSupportTwoColorKey;                 /*Support two color key*/
+    unsigned long dwCxColorSpace;                       /*CLE_Cx ColorSpace*/
+} VIAHWRec;
+
+/*Wait Function Structure and Flag*/
+typedef struct _WaitHWINFO
+{
+    unsigned char* pjVideo;				/*MMIO Address Info*/
+    unsigned long dwVideoFlag;				/*Video Flag*/
+}WaitHWINFO, * LPWaitHWINFO;
 
 
 typedef struct _VIA {
@@ -199,7 +264,9 @@ typedef struct _VIA {
     DGAModePtr          DGAModes;
     Bool                DGAactive;
     int                 DGAViewportStatus;
-
+    int			DGAOldDisplayWidth;
+    int			DGAOldBitsPerPixel;
+    int			DGAOldDepth;
     /* The various wait handlers. */
     int                 (*myWaitIdle)(struct _VIA*);
 
@@ -240,7 +307,16 @@ typedef struct _VIA {
     CARD32		CursorBG;
     CARD32		CursorMC;
 
+    /* Video */
     swovRec		swov;
+    VIAVideoControlRec  Video;
+    VIAHWRec		ViaHW;
+    unsigned long	dwV1, dwV3;
+    unsigned long	OverlaySupported;
+    unsigned long	dwFrameNum;
+
+    /* Global 2D state block - needs to slowly die */
+    ViaGraphicRec	graphicInfo;    
 } VIARec, *VIAPtr;
 
 
@@ -270,6 +346,9 @@ typedef struct
 void VIAAdjustFrame(int scrnIndex, int y, int x, int flags);
 Bool VIASwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
 void VIADebugBreak(void);
+
+/* In HwDiff.c */
+void VIAvfInitHWDiff(VIAPtr pVia );
 
 /* In via_cursor.c. */
 Bool VIAHWCursorInit(ScreenPtr pScreen);
@@ -322,5 +401,16 @@ Bool VIALoadUserSetting(VIABIOSInfoPtr pBIOSInfo);
 Bool VIALoadGammaSetting(VIABIOSInfoPtr pBIOSInfo);
 Bool VIARestoreUserSetting(VIABIOSInfoPtr pBIOSInfo);
 void VIAUTRemoveRestartFlag(VIABIOSInfoPtr pBIOSInfo);
+
+/* in via_overlay.c */
+unsigned long viaOverlayHQVCalcZoomHeight (VIAPtr pVia, unsigned long srcHeight,unsigned long dstHeight,
+                             unsigned long * lpzoomCtl, unsigned long * lpminiCtl, unsigned long * lpHQVfilterCtl, unsigned long * lpHQVminiCtl,unsigned long * lpHQVzoomflag);
+unsigned long viaOverlayGetSrcStartAddress (VIAPtr pVia, unsigned long dwVideoFlag,RECTL rSrc,RECTL rDest, unsigned long dwSrcPitch,LPDDPIXELFORMAT lpDPF,unsigned long * lpHQVoffset );
+void viaOverlayGetDisplayCount(VIAPtr pVIa, unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF,unsigned long dwSrcWidth,unsigned long * lpDisplayCountW);
+unsigned long viaOverlayHQVCalcZoomWidth(VIAPtr pVia, unsigned long dwVideoFlag, unsigned long srcWidth , unsigned long dstWidth,
+                           unsigned long * lpzoomCtl, unsigned long * lpminiCtl, unsigned long * lpHQVfilterCtl, unsigned long * lpHQVminiCtl,unsigned long * lpHQVzoomflag);
+void viaOverlayGetV1Format(VIAPtr pVia, unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF, unsigned long * lpdwVidCtl,unsigned long * lpdwHQVCtl );
+void viaOverlayGetV3Format(VIAPtr pVia, unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF, unsigned long * lpdwVidCtl,unsigned long * lpdwHQVCtl );
+
 #endif /* _VIA_DRIVER_H */
 

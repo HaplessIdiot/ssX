@@ -236,18 +236,15 @@ VIADGAInit(ScreenPtr pScreen)
 static Bool
 VIADGASetMode(ScrnInfoPtr pScrn, DGAModePtr pMode)
 {
-    static int OldDisplayWidth[MAXSCREENS];
-    static int OldBitsPerPixel[MAXSCREENS];
-    static int OldDepth[MAXSCREENS];
     int index = pScrn->pScreen->myNum;
     VIAPtr pVia = VIAPTR(pScrn);
 
     if (!pMode) { /* restore the original mode */
         /* put the ScreenParameters back */
 
-        pScrn->displayWidth = OldDisplayWidth[index];
-        pScrn->bitsPerPixel = OldBitsPerPixel[index];
-        pScrn->depth = OldDepth[index];
+        pScrn->displayWidth = pVia->DGAOldDisplayWidth;
+        pScrn->bitsPerPixel = pVia->DGAOldBitsPerPixel;
+        pScrn->depth = pVia->DGAOldDepth;
 
         VIASwitchMode(index, pScrn->currentMode, 0);
         if (pVia->hwcursor)
@@ -267,9 +264,9 @@ VIADGASetMode(ScrnInfoPtr pScrn, DGAModePtr pMode)
             VIAHideCursor(pScrn);
 
         if (!pVia->DGAactive) {  /* save the old parameters */
-            OldDisplayWidth[index] = pScrn->displayWidth;
-            OldBitsPerPixel[index] = pScrn->bitsPerPixel;
-            OldDepth[index] = pScrn->depth;
+            pVia->DGAOldDisplayWidth = pScrn->displayWidth;
+            pVia->DGAOldBitsPerPixel = pScrn->bitsPerPixel;
+            pVia->DGAOldDepth = pScrn->depth;
 
             pVia->DGAactive = TRUE;
         }

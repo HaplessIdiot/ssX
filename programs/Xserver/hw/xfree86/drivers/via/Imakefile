@@ -23,9 +23,9 @@ SRCS = via_driver.c \
     via_gpioi2c.c \
     via_utility.c \
     via_swov.c \
-    regrec.c \
-    HWDiff.c \
-    ddover.c $(DRISRCS)
+    via_regrec.c \
+    via_hwdiff.c \
+    via_overlay.c $(DRISRCS)
 
 OBJS = via_driver.o \
     via_accel.o \
@@ -39,9 +39,9 @@ OBJS = via_driver.o \
     via_gpioi2c.o \
     via_utility.o \
     via_swov.o \
-    regrec.o \
-    HWDiff.o \
-    ddover.o $(DRIOBJS)
+    via_regrec.o \
+    via_hwdiff.o \
+    via_overlay.o $(DRIOBJS)
 
 
 DEFINES = -DPSZ=8

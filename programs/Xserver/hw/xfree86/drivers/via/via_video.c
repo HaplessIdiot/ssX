@@ -37,9 +37,8 @@
 #include "via_driver.h"
 #include "via_video.h"
 
-#include "ginfo.h" /* for VIAGRAPHICINFO */
 #include "ddmpeg.h"
-#include "capture.h"
+#include "via_capture.h"
 #include "via.h"
 
 #include "xf86xv.h"
@@ -102,27 +101,11 @@ static int viaPutVideo(ScrnInfoPtr ,
 static int viaQueryImageAttributesG(ScrnInfoPtr, 
         int, unsigned short *, unsigned short *,  int *, int *);
 
-
-/*
- *  E X T E R N   F U N C T I O N S
- */
-
-/*
- *  G L O B A L S
- */
-unsigned long gdwOverlaySupportFlag;
 static Atom xvBrightness, xvContrast, xvColorKey,xvGivenMpg,xvHue,xvSaturation
             ,xvLuminance,xvNTSC,xvPAL,xvPort,xvCompose,xvAV,xvSVIDEO,xvTV,xvEncoding
             ,xvTVChannel,xvTVPAL,xvTVNTSC ,xvMute, xvVolume, xvFreq, xvAudioCtrl,xvHQV
             ,xvBOB,xvExitTV, xvExitSWOVerlay;
 
-VIAGRAPHICINFO gVIAGraphicInfo;
-volatile unsigned char  * lpVidMEMIO;    /* Pointer to video MMIO Address */
-
-VIAVIDCTRL VideoControl;
-LPVIAVIDCTRL lpVideoControl=&VideoControl;
-
-static unsigned long dwFrameNum = 0;    /* for startaddr select */
 
 /*
  *  S T R U C T S
@@ -258,14 +241,14 @@ static char * XVPORTNAME[5] =
 
 #define DDR100SUPPORTMODECOUNT 24
 #define DDR133UNSUPPORTMODECOUNT 19
-MODEINFO SupportDDR100[DDR100SUPPORTMODECOUNT]=
+static const MODEINFO SupportDDR100[DDR100SUPPORTMODECOUNT]=
          {{640,480,8,60}, {640,480,8,75}, {640,480,8,85}, {640,480,8,100}, {640,480,8,120},
           {640,480,16,60}, {640,480,16,75}, {640,480,16,85}, {640,480,16,100}, {640,480,16,120},
           {640,480,32,60}, {640,480,32,75}, {640,480,32,85}, {640,480,16,100}, {640,480,32,120},
           {800,600,8,60}, {800,600,8,75}, {800,600,8,85}, {800,600,8,100}, {800,600,16,60},
           {800,600,16,75}, {800,600,16,85}, {800,600,32,60}, {1024,768,8,60}};
 
-MODEINFO UnSupportDDR133[DDR133UNSUPPORTMODECOUNT]=
+static const MODEINFO UnSupportDDR133[DDR133UNSUPPORTMODECOUNT]=
          {{1152,864,32,75}, {1280,768,32,75}, {1280,768,32,85}, {1280,960,32,60}, {1280,960,32,75},
           {1280,960,32,85}, {1280,1024,16,85}, {1280,1024,32,60}, {1280,1024,32,75}, {1280,1024,32,85},
           {1400,1050,16,85}, {1400,1050,32,60}, {1400,1050,32,75}, {1400,1050,32,85}, {1600,1200,8,75},
@@ -309,10 +292,10 @@ static Bool DecideOverlaySupport(VIAPtr pVia)
         case DDR100:
             for (iCount=0; iCount < DDR100SUPPORTMODECOUNT; iCount++)
             {
-                if ( (gVIAGraphicInfo.dwWidth == SupportDDR100[iCount].dwWidth) && 
-                     (gVIAGraphicInfo.dwHeight == SupportDDR100[iCount].dwHeight) &&
-                     (gVIAGraphicInfo.dwBPP == SupportDDR100[iCount].dwBPP) && 
-                     (gVIAGraphicInfo.dwRefreshRate == SupportDDR100[iCount].dwRefreshRate) )
+                if ( (pVia->graphicInfo.dwWidth == SupportDDR100[iCount].dwWidth) && 
+                     (pVia->graphicInfo.dwHeight == SupportDDR100[iCount].dwHeight) &&
+                     (pVia->graphicInfo.dwBPP == SupportDDR100[iCount].dwBPP) && 
+                     (pVia->graphicInfo.dwRefreshRate == SupportDDR100[iCount].dwRefreshRate) )
                 {
                     return TRUE;
                     break;
@@ -325,10 +308,10 @@ static Bool DecideOverlaySupport(VIAPtr pVia)
         case DDR133:
             for (iCount=0; iCount < DDR133UNSUPPORTMODECOUNT; iCount++)
             {
-                if ( (gVIAGraphicInfo.dwWidth == UnSupportDDR133[iCount].dwWidth) && 
-                     (gVIAGraphicInfo.dwHeight == UnSupportDDR133[iCount].dwHeight) &&
-                     (gVIAGraphicInfo.dwBPP == UnSupportDDR133[iCount].dwBPP) && 
-                     (gVIAGraphicInfo.dwRefreshRate == UnSupportDDR133[iCount].dwRefreshRate) )
+                if ( (pVia->graphicInfo.dwWidth == UnSupportDDR133[iCount].dwWidth) && 
+                     (pVia->graphicInfo.dwHeight == UnSupportDDR133[iCount].dwHeight) &&
+                     (pVia->graphicInfo.dwBPP == UnSupportDDR133[iCount].dwBPP) && 
+                     (pVia->graphicInfo.dwRefreshRate == UnSupportDDR133[iCount].dwRefreshRate) )
                 {
                     return FALSE;
                     break;
@@ -350,22 +333,21 @@ void viaResetVideo(ScrnInfoPtr pScrn)
 
     DBG_DD(ErrorF(" via_video.c : viaResetVideo: \n"));
 
-     waitVBLANK(viaVidEng);
+    waitVBLANK(viaVidEng);
 
-     ((vmmtr)viaVidEng)->compose    = 0;
-     ((vmmtr)viaVidEng)->video1_ctl = 0;
-     ((vmmtr)viaVidEng)->video3_ctl = 0;
+    ((vmmtr)viaVidEng)->compose    = 0;
+    ((vmmtr)viaVidEng)->video1_ctl = 0;
+    ((vmmtr)viaVidEng)->video3_ctl = 0;
 
 }
 
-static unsigned long dwV1, dwV3;
 void viaSaveVideo(ScrnInfoPtr pScrn)
 {
     VIAPtr  pVia = VIAPTR(pScrn);
     int     viaVidEng = (int) pVia->VidMapBase;    
 
-    dwV1 = ((vmmtr)viaVidEng)->video1_ctl;
-    dwV3 = ((vmmtr)viaVidEng)->video3_ctl;
+    pVia->dwV1 = ((vmmtr)viaVidEng)->video1_ctl;
+    pVia->dwV3 = ((vmmtr)viaVidEng)->video3_ctl;
     waitVBLANK(viaVidEng);
     ((vmmtr)viaVidEng)->video1_ctl = 0;
     ((vmmtr)viaVidEng)->video3_ctl = 0;
@@ -377,8 +359,8 @@ void viaRestoreVideo(ScrnInfoPtr pScrn)
     int     viaVidEng = (int) pVia->VidMapBase;    
 
     waitVBLANK(viaVidEng);
-    ((vmmtr)viaVidEng)->video1_ctl = dwV1 ;
-    ((vmmtr)viaVidEng)->video3_ctl = dwV3 ;
+    ((vmmtr)viaVidEng)->video1_ctl = pVia->dwV1 ;
+    ((vmmtr)viaVidEng)->video3_ctl = pVia->dwV3 ;
 }
 
 void viaExitVideo(ScrnInfoPtr pScrn)
@@ -440,7 +422,6 @@ void viaInitVideo(ScreenPtr pScreen)
 
     /* Driver init */
     /* DriverProc(CREATEDRIVER,NULL); */
-    lpVidMEMIO       = pVia->VidMapBase;
 
     /* 3rd party  Device Init */
     /*
@@ -605,7 +586,7 @@ static unsigned long CreateSWOVSurface(ScrnInfoPtr pScrn, viaPortPrivPtr pPriv, 
     VIAPtr  pVia = VIAPTR(pScrn);
     LPDDSURFACEDESC lpSurfaceDesc = &pPriv->SurfaceDesc;
 
-    if (lpVideoControl->VideoStatus & SWOV_SURFACE_CREATED)
+    if (pVia->Video.VideoStatus & SWOV_SURFACE_CREATED)
         return TRUE;
 
     lpSurfaceDesc->dwWidth  = (unsigned long)width;
@@ -626,34 +607,35 @@ static unsigned long CreateSWOVSurface(ScrnInfoPtr pScrn, viaPortPrivPtr pPriv, 
     DBG_DD(ErrorF(" lpSWOverlaySurface[0]: %p\n", pPriv->ddLock.SWDevice.lpSWOverlaySurface[0]));
     DBG_DD(ErrorF(" lpSWOverlaySurface[1]: %p\n", pPriv->ddLock.SWDevice.lpSWOverlaySurface[1]));
     
-    lpVideoControl->VideoStatus |= SWOV_SURFACE_CREATED|SW_VIDEO_ON;
-    lpVideoControl->dwAction = ACTION_SET_VIDEOSTATUS;
+    pVia->Video.VideoStatus |= SWOV_SURFACE_CREATED|SW_VIDEO_ON;
+    pVia->Video.dwAction = ACTION_SET_VIDEOSTATUS;
     return TRUE;
 }
 
 
 static void DestroySWOVSurface(ScrnInfoPtr pScrn,  viaPortPrivPtr pPriv)
 {
+    VIAPtr  pVia = VIAPTR(pScrn);
     LPDDSURFACEDESC lpSurfaceDesc = &pPriv->SurfaceDesc;
     DBG_DD(ErrorF(" via_video.c : Destroy SW Overlay Surface, fourcc =0x%08x : \n",
               lpSurfaceDesc->dwFourCC));
 
-    if (lpVideoControl->VideoStatus & SWOV_SURFACE_CREATED)
+    if (pVia->Video.VideoStatus & SWOV_SURFACE_CREATED)
     {
         DBG_DD(ErrorF(" via_video.c : Destroy SW Overlay Surface, VideoStatus =0x%08x : \n",
-              lpVideoControl->VideoStatus));
+              pVia->Video.VideoStatus));
     }
     else
     {
         DBG_DD(ErrorF(" via_video.c : No SW Overlay Surface Destroyed, VideoStatus =0x%08x : \n",
-              lpVideoControl->VideoStatus));
+              pVia->Video.VideoStatus));
         return;
     }
 
     VIAVidDestroySurface(pScrn, lpSurfaceDesc);        
 
-    lpVideoControl->VideoStatus &= ~SWOV_SURFACE_CREATED;
-    lpVideoControl->dwAction = ACTION_SET_VIDEOSTATUS;
+    pVia->Video.VideoStatus &= ~SWOV_SURFACE_CREATED;
+    pVia->Video.dwAction = ACTION_SET_VIDEOSTATUS;
 }
 
 
@@ -661,9 +643,10 @@ static void  StopSWOVerlay(ScrnInfoPtr pScrn)
 {
     DDUPDATEOVERLAY      UpdateOverlay_Video;
     LPDDUPDATEOVERLAY    lpUpdateOverlay = &UpdateOverlay_Video;
+    VIAPtr  pVia = VIAPTR(pScrn);
 
-    lpVideoControl->VideoStatus &= ~SW_VIDEO_ON;
-    lpVideoControl->dwAction = ACTION_SET_VIDEOSTATUS;
+    pVia->Video.VideoStatus &= ~SW_VIDEO_ON;
+    pVia->Video.dwAction = ACTION_SET_VIDEOSTATUS;
 
     lpUpdateOverlay->dwFlags  = DDOVER_HIDE;
     VIAVidUpdateOverlay(pScrn, lpUpdateOverlay);    
@@ -673,6 +656,7 @@ static void  StopSWOVerlay(ScrnInfoPtr pScrn)
 static void 
 viaStopVideoG(ScrnInfoPtr pScrn, pointer data, Bool exit)
 {
+    VIAPtr  pVia = VIAPTR(pScrn);
     viaPortPrivPtr pPriv = (viaPortPrivPtr)data;
 
     DBG_DD(ErrorF(" via_video.c : viaStopVideoG: exit=%d\n", exit));
@@ -681,7 +665,7 @@ viaStopVideoG(ScrnInfoPtr pScrn, pointer data, Bool exit)
     if(exit) {
        StopSWOVerlay(pScrn);
        DestroySWOVSurface(pScrn, pPriv);
-       dwFrameNum = 0;    
+       pVia->dwFrameNum = 0;    
        pPriv->old_drw_x= 0;
        pPriv->old_drw_y= 0;
        pPriv->old_drw_w= 0;
@@ -704,8 +688,7 @@ viaStopVideoG(ScrnInfoPtr pScrn, pointer data, Bool exit)
  ****************************************************************************/
 static void SetTunerChannel (viaPortPrivPtr pChanPriv, INT32 frequency)
 {
-
-    LPVIASETTUNERDATA lpTunerParam =  (LPVIASETTUNERDATA)xalloc(sizeof(VIASETTUNERDATA));
+    int      control;
     short    divider = 0;
 
     switch(pChanPriv->dwEncoding)
@@ -724,29 +707,25 @@ static void SetTunerChannel (viaPortPrivPtr pChanPriv, INT32 frequency)
            divider=frequency;
     }
 
-    lpTunerParam->divider = divider;
-    lpTunerParam->control = 0x8E00;
+    control = 0x8E00;
 
     if ( divider <= LOW_BAND )
     {
-       lpTunerParam->control = lpTunerParam->control | 0xA0;
+       control |= 0xA0;
     }
     else{
        if ( divider <= MID_BAND )
-          lpTunerParam->control = lpTunerParam->control | 0x90;
+          control |= 0x90;
        else
-          lpTunerParam->control = lpTunerParam->control | 0x30;
+          control |= 0x30;
     }
 
 
 
     DBG_DD(ErrorF(" via_video.c : SetTunerChannel : Divider = 0x%08x, Control= 0x%08x, \n",
-            lpTunerParam->divider,lpTunerParam->control));
-    /* DriverProc( TUNER_SETCHANNEL , lpTunerParam); */
+            divider,control));
 
-    if ( lpTunerParam )
-       xfree(lpTunerParam);
-
+    /* Tuner chip interfacing goes here */
 
 } /* SetTunerChannel ()... */
 
@@ -777,13 +756,12 @@ viaSetPortAttributeG(
     VIAPtr  pVia = VIAPTR(pScrn);
     int     viaVidEng = (int) pVia->VidMapBase;    
     viaPortPrivPtr pPriv = (viaPortPrivPtr)data;
-    LPVIAAUDCTRL lpAudCtrl = &(pPriv->AudCtrl);
-    LPVIASETPORTATTR lpParam =  (LPVIASETPORTATTR)xalloc(sizeof(VIASETPORTATTR));
     struct video_channel chan;
+    int attr, avalue;
 
     DBG_DD(ErrorF(" via_video.c : viaSetPortAttributeG : \n"));
 
-    gdwOverlaySupportFlag = DecideOverlaySupport(pVia);
+    pVia->OverlaySupported = DecideOverlaySupport(pVia);
 
 
     /* Color Key */
@@ -829,20 +807,19 @@ viaSetPortAttributeG(
             DBG_DD(ErrorF(" via_video.c : viaSetPortAttributeG : xvMute = %08d\n",value));
             if ( value )
             {
-              lpAudCtrl->dwAudioMode = ATTR_MUTE_ON;
-              lpParam->attribute = ATTR_MUTE_ON;
+              pPriv->AudioMode = ATTR_MUTE_ON;
+              attr = ATTR_MUTE_ON;
             }
             else{
-              lpAudCtrl->dwAudioMode = ATTR_MUTE_OFF;
-              lpParam->attribute = ATTR_STEREO;
-              lpParam->attribute = ATTR_MUTE_OFF;
+              pPriv->AudioMode = ATTR_MUTE_OFF;
+              attr = ATTR_STEREO;
             }
 
     } else if (attribute == xvVolume){
             DBG_DD(ErrorF(" via_video.c : viaSetPortAttributeG : xvVolume = %08d\n",value));
-            lpAudCtrl->nVolume = value;
-            lpParam->attribute = ATTR_VOLUME;
-            lpParam->value = value;
+            pPriv->Volume = value;
+            attr = ATTR_VOLUME;
+            avalue = value;
 
     /* Tuner control. Channel switch */
     } else if (attribute == xvFreq){
@@ -915,18 +892,15 @@ viaSetPortAttributeG(
     } else if (attribute == xvAudioCtrl ){
             DBG_DD(ErrorF(" via_video.c : viaSetPortAttributeG : xvAudioSwitch=%d\n", value));
 
-            lpParam->attribute = ATTR_AUDIO_CONTROLByAP;
-            lpParam->value = value;
-
+            attr = ATTR_AUDIO_CONTROLByAP;
+            avalue = value;
     }else{
            DBG_DD(ErrorF(" via_video.c : viaSetPortAttributeG : is not supported the attribute"));
-
            return BadMatch;
     }
-
-    if ( lpParam )
-       xfree(lpParam);
-
+    
+    /* attr,avalue hardware processing goes here */
+    
     return Success;
 }
 
@@ -1000,7 +974,7 @@ viaQueryBestSizeG(
 /*
  *  To do SW Flip
  */
-static void Flip(viaPortPrivPtr pPriv, int fourcc, unsigned long DisplayBufferIndex)
+static void Flip(VIAPtr pVia, viaPortPrivPtr pPriv, int fourcc, unsigned long DisplayBufferIndex)
 {
     switch(fourcc)
     {
@@ -1169,9 +1143,9 @@ viaPutImageG(
                 {
                     case FOURCC_YV12:
                        CopyDataYUV420(pScrn, pVia, buf , buf + srcYSize, buf + srcYSize + srcUVSize,
-                              pPriv->ddLock.SWDevice.lpSWOverlaySurface[dwFrameNum&1],
-                              pPriv->ddLock.SWDevice.lpSWOverlaySurface[dwFrameNum&1] + dstYSize,
-                              pPriv->ddLock.SWDevice.lpSWOverlaySurface[dwFrameNum&1] + dstYSize + dstUVSize,
+                              pPriv->ddLock.SWDevice.lpSWOverlaySurface[pVia->dwFrameNum&1],
+                              pPriv->ddLock.SWDevice.lpSWOverlaySurface[pVia->dwFrameNum&1] + dstYSize,
+                              pPriv->ddLock.SWDevice.lpSWOverlaySurface[pVia->dwFrameNum&1] + dstYSize + dstUVSize,
                               srcPitch, dstPitch, height, width);
                         break;
 
@@ -1179,13 +1153,13 @@ viaPutImageG(
                     case FOURCC_YUY2:
                     default:
                         CopyDataYUV422(pScrn, pVia, buf,
-                               pPriv->ddLock.SWDevice.lpSWOverlaySurface[dwFrameNum&1],
+                               pPriv->ddLock.SWDevice.lpSWOverlaySurface[pVia->dwFrameNum&1],
                                srcPitch, dstPitch, height, width);
                         break;
                 }
 
                 /* If there is bandwidth issue, block the H/W overlay */
-                if ((((vmmtr)viaVidEng)->video3_ctl & 0x00000001) && !gdwOverlaySupportFlag)
+                if ((((vmmtr)viaVidEng)->video3_ctl & 0x00000001) && !pVia->OverlaySupported)
                      return BadAlloc;
 
                 /* 
@@ -1218,19 +1192,19 @@ viaPutImageG(
                 lpUpdateOverlay->dwFourcc = id;
 
                 /* If use extend FIFO mode */
-                if ((gVIAGraphicInfo.dwWidth > 1024))
+                if ((pVia->graphicInfo.dwWidth > 1024))
                 {
                     dwUseExtendedFIFO = 1;
                 }
 
 
-                dwStartAddr = pPriv->ddLock.SWDevice.dwSWPhysicalAddr[dwFrameNum&1];
+                dwStartAddr = pPriv->ddLock.SWDevice.dwSWPhysicalAddr[pVia->dwFrameNum&1];
 
                 DBG_DD(ErrorF("             : dwStartAddr: %x\n", dwStartAddr));
                 DBG_DD(ErrorF("             : Flip\n"));
-                Flip(pPriv, id, dwFrameNum&1);
+                Flip(pVia, pPriv, id, pVia->dwFrameNum&1);
 
-                dwFrameNum ++;
+                pVia->dwFrameNum ++;
     
                 /* If the dest rec. & extendFIFO doesn't change, don't do UpdateOverlay 
                    unless the surface clipping has changed */
@@ -1238,7 +1212,7 @@ viaPutImageG(
                      && (pPriv->old_drw_w == drw_w) && (pPriv->old_drw_h == drw_h)
                      && (pPriv->old_src_w == src_w) && (pPriv->old_src_h == src_h)
                      && (old_dwUseExtendedFIFO == dwUseExtendedFIFO)
-                     && (lpVideoControl->VideoStatus & SW_VIDEO_ON) &&
+                     && (pVia->Video.VideoStatus & SW_VIDEO_ON) &&
                      RegionsEqual(&pPriv->clip, clipBoxes))
                 {
                     return Success;

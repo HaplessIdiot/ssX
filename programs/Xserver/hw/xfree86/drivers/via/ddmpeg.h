@@ -25,7 +25,7 @@
 #ifndef _LINUX_VIDEO_H
 #define _LINUX_VIDEO_H
 
-#include "capture.h"
+#include "via_capture.h"
 
 /*
  *  Overlay surfaces ( frame buffers ) we use
@@ -271,8 +271,7 @@ typedef struct _DDLOCK
     SUBDEVICE SubDev;
     CAPDEVICE Capdev_TV0;
     CAPDEVICE Capdev_TV1;
-    ALPHADEVICE Alphadev;
-	MPGDEVICE MPGDev;
+    MPGDEVICE MPGDev;
     SWDEVICE SWDevice;
 } DDLOCK;
 typedef DDLOCK * LPDDLOCK;
