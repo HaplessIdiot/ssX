@@ -1,4 +1,6 @@
 XFree86 4.2.99.1 (5 June 2002)
+ 187. Update the magellan input driver and turn it on in the build process
+      (#A.1024, Christoph Koulen).
  186. Add Peritek Borealis support to the I128 driver (Robin Cutshaw).
  185. Modify the r128 and radeon drivers to use fbdev's DPMS support when
       fbdev is enabled (#5219, Michel Dänzer).
@@ -14897,4 +14899,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2245 2002/06/05 20:05:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2246 2002/06/07 20:53:01 robin Exp $
