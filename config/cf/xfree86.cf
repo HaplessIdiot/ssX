@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.380 2001/10/04 18:28:18 alanh Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.381 2001/10/28 03:32:01 tsi Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -40,9 +40,9 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 #ifndef XFree86VersionString
 #ifdef XF86_VERSION_MAJOR
 #if XF86_VERSION_SNAP == 0
-#define XFree86VersionString XF86_VERSION_MAJOR.XF86_VERSION_MINOR.XF86_VERSION_PATCH
+#define XFree86VersionString `echo XF86_VERSION_MAJOR XF86_VERSION_MINOR XF86_VERSION_PATCH | sed 's/ /./g'`
 #else
-#define XFree86VersionString XF86_VERSION_MAJOR.XF86_VERSION_MINOR.XF86_VERSION_PATCH.XF86_VERSION_SNAP
+#define XFree86VersionString `echo XF86_VERSION_MAJOR XF86_VERSION_MINOR XF86_VERSION_PATCH XF86_VERSION_SNAP | sed 's/ /./g'`
 #endif
 #endif
 #endif

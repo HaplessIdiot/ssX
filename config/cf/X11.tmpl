@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.129 2001/09/27 08:25:01 alanh Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.130 2001/10/10 12:56:58 alanh Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -66,7 +66,7 @@ VENDORMANNAME = XVendorManNameString
 VENDORMANVERSION = XVendorManVersionString
 
 #ifndef VendorManDefs
-#define VendorManDefs -D__vendorversion__='"$(VENDORMANVERSION)" "$(VENDORMANNAME)"'
+#define VendorManDefs -D__vendorversion__="$(VENDORMANVERSION) $(VENDORMANNAME)"
 #endif
 
 /*
