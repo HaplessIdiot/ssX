@@ -28,7 +28,6 @@
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *
  */
-/* $XFree86$ */
 
 #define __NO_VERSION__
 #include <linux/config.h>

@@ -28,7 +28,6 @@
  *          Keith Whitwell <keithw@valinux.com>
  *
  */
-/* $XFree86$ */
 
 #ifndef _MGA_DRM_H_
 #define _MGA_DRM_H_

@@ -27,7 +27,6 @@
  * Authors: Kevin E. Martin <martin@valinux.com>
  *
  */
-/* $XFree86$ */
 
 #ifndef _R128_DRM_H_
 #define _R128_DRM_H_
