@@ -1,4 +1,18 @@
 XFree86 4.0.1h (1 December 2000)
+1064. Fix for bug in new imConv.c (#4318, Ivan Pascal).
+1063. Fix for FreeBSD sysmouse support (#4317, from FreeBSD ports collection).
+1062. Enable the ru_SU local entries for FreeBSD (based on patch from FreeBSD
+      ports collection).
+1061. Driver for the S3 Savage family of chips (#4315, 4316, Tim Roberts).
+1060. Add xkb definitions for the Logitech cordless keyboard (#4314,
+      Michel Goraczko).
+1059. Add support for "unicode keysym" to XKeysymToString() and
+      XStringToKeysym() (#4313, Ivan Pascal).
+1058. SiS driver updates, including:
+       - Performance tuning for sis630
+       - Support XV extension for sis630
+       - Support Chrontel TV for sis630
+      (#4312, Can-Ru Yeou).
 1057. Fix Xrender library to handle strings > 254 chars long.
       Change Xrender and Xft interfaces to use 'unsigned int'
       instead of 'unsigned long' for 32-bit glyph values.
@@ -11777,4 +11791,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1431 2000/12/01 19:47:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1432 2000/12/01 21:31:55 keithp Exp $

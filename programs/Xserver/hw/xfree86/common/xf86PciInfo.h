@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.79 2000/11/29 09:16:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.80 2000/11/30 10:19:48 alanh Exp $ */
 /*
  * PCI Probe
  *
@@ -543,6 +543,12 @@
 #define PCI_CHIP_VIRGE_MX	0x8C01
 #define PCI_CHIP_VIRGE_MXPLUS	0x8C01
 #define PCI_CHIP_VIRGE_MXP	0x8C03
+#define PCI_CHIP_PROSAVAGE_PM	0x8A25
+#define PCI_CHIP_PROSAVAGE_KM	0x8A26
+#define PCI_CHIP_SAVAGE_MX_MV	0x8c10
+#define PCI_CHIP_SAVAGE_MX	0x8c11
+#define PCI_CHIP_SAVAGE_IX_MV	0x8c12
+#define PCI_CHIP_SAVAGE_IX	0x8c13
 
 /* ARK Logic */
 #define PCI_CHIP_1000PV		0xA091
@@ -1391,6 +1397,12 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_Savage3D_MV,	"Savage3D+MacroVision (86E390)",0},
 				{PCI_CHIP_Savage4,	"Savage4",0},
 				{PCI_CHIP_Savage2000,	"Savage2000",0},
+				{PCI_CHIP_SAVAGE_MX,	"Savage/MX",0},
+				{PCI_CHIP_SAVAGE_MX_MV,	"Savage/MX-MV",0},
+				{PCI_CHIP_SAVAGE_IX,	"Savage/IX",0},
+				{PCI_CHIP_SAVAGE_IX_MV,	"Savage/IX-MV",0},
+				{PCI_CHIP_PROSAVAGE_PM,	"ProSavage PM133",0},
+				{PCI_CHIP_PROSAVAGE_KM,	"ProSavage KM133",0},
 				{PCI_CHIP_VIRGE_MX,	"ViRGE/MX",0},
 				{PCI_CHIP_VIRGE_MXPLUS,	"ViRGE/MX+",0},
 				{PCI_CHIP_VIRGE_MXP,	"ViRGE/MX+MV",0},

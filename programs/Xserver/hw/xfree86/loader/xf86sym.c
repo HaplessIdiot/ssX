@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.172 2000/11/18 19:37:15 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.173 2000/11/21 23:10:39 tsi Exp $ */
 
 /*
  *
@@ -874,7 +874,7 @@ LOOKUP xfree86LookupTab[] = {
                                    of the X server) easier. */
    SYMFUNC(xf86InstallSIGIOHandler)
    SYMFUNC(xf86RemoveSIGIOHandler)
-# ifdef __alpha__
+# if defined(__alpha__) && defined(linux)
    SYMFUNC(_bus_base)
 # endif
 #endif

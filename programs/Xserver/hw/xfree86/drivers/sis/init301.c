@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init301.c,v 1.1 2000/08/01 20:52:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init301.c,v 1.2 2000/09/22 11:35:46 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86PciInfo.h"
@@ -34,12 +34,13 @@ BOOLEAN SetCRT2Group(USHORT BaseAddr,ULONG ROMAddr,USHORT ModeNo, ScrnInfoPtr pS
   }
    SetGroup1(BaseAddr,ROMAddr,ModeNo,pScrn);    
    if(IF_DEF_LVDS==0) {
-     SetGroup2(BaseAddr,ROMAddr);  
-     SetGroup3(BaseAddr);  
+     SetGroup2(BaseAddr,ROMAddr,ModeNo);  
+     SetGroup3(BaseAddr,ROMAddr);  
      SetGroup4(BaseAddr,ROMAddr,ModeNo);
      SetGroup5(BaseAddr,ROMAddr);   
    }
    else {
+     if(IF_DEF_CH7005==1) SetCHTVReg(ROMAddr,ModeNo);   
      ModCRT1CRTC(ROMAddr,ModeNo);   
      SetCRT2ECLK(ROMAddr,ModeNo);
    }
@@ -73,22 +74,35 @@ VOID SetDefCRT2ExtRegs(USHORT BaseAddr)
 }
 
 USHORT GetRatePtrCRT2(ULONG ROMAddr, USHORT ModeNo)
-{                               /* return bit0=>0:standard mode 1:extended mode */
-  SHORT  index;                 /*        bit1=>0:crt2 no support this mode     */
-  USHORT temp;                  /*              1:crt2 support this mode        */
+{                           /* return bit0=>0:standard mode 1:extended mode */
+  SHORT  index;             /*        bit1=>0:crt2 no support this mode     */
+  USHORT temp;             /*              1:crt2 support this mode        */
   USHORT ulRefIndexLength;
-  USHORT temp1;
+  USHORT temp1,modeflag1,Flag;
   SHORT  LCDRefreshIndex[2]={0x03,0x01};
 
-  if(ModeNo<0x14) return(0);             /* Mode No <= 13h then return              */
+  if(IF_DEF_CH7005==1) {
+    if(VBInfo&SetCRT2ToTV) {
+      modeflag1=*((USHORT *)(ROMAddr+ModeIDOffset+0x01));   /* si+St_ModeFlag */
+      if(modeflag1&HalfDCLK) return(0);
+    }
+  }
+  if(ModeNo<0x14) return(0);       /* Mode No <= 13h then return              */
 
-  index=GetReg1(P3d4,0x33);              /* Get 3d4 CRTC33                          */
-  index=index>>SelectCRT2Rate;           /* For CRT2,cl=SelectCRT2Rate=4, shr ah,cl */
-  index=index&0x0F;                      /* Frame rate index                        */
+  index=GetReg1(P3d4,0x33);        /* Get 3d4 CRTC33                          */
+  index=index>>SelectCRT2Rate;     /* For CRT2,cl=SelectCRT2Rate=4, shr ah,cl */
+  index=index&0x0F;                /* Frame rate index                        */
   if(index!=0) index--;
 
   if(SetFlag&ProgrammingCRT2){
-    if(VBInfo&SetCRT2ToLCD){
+    Flag=1;
+    if(IF_DEF_CH7005==1) {
+      if(VBInfo&SetCRT2ToTV) {
+        index=0;
+        Flag=0;
+      }
+    }
+    if((Flag)&&(VBInfo&SetCRT2ToLCD)){
       if(IF_DEF_LVDS==0) {
         temp=LCDResInfo;
         temp1=LCDRefreshIndex[temp];
@@ -132,14 +146,13 @@ USHORT GetRatePtrCRT2(ULONG ROMAddr, USHORT ModeNo)
     temp1=0;
   }
 
-/*  REFIndex=0x2598; */ 
   return(0x01|(temp1<<1));
 }
 
 BOOLEAN AjustCRT2Rate(ULONG ROMAddr)
 {
-  USHORT tempax,tempbx=0,temp;
-  USHORT tempextinfoflag;
+  USHORT tempax,tempbx=0,temp,resinfo;
+  USHORT tempextinfoflag,Flag;
   tempax=0;
   if(IF_DEF_LVDS==0) {
     if(VBInfo&SetCRT2ToRAMDAC){
@@ -149,41 +162,55 @@ BOOLEAN AjustCRT2Rate(ULONG ROMAddr)
       tempax=tempax|SupportLCD;
       if(LCDResInfo!=Panel1280x1024){
         temp=*((UCHAR *)(ROMAddr+ModeIDOffset+0x09)); /* si+Ext_ResInfo */
-        if(temp>=9){
-          tempax=0;
-        }
+        if(temp>=9) tempax=0;
       }
     }
-    if(VBInfo&(SetCRT2ToAVIDEO|SetCRT2ToSVIDEO|SetCRT2ToSCART)){
-      tempax=tempax|SupportTV;
-      if(!(VBInfo&SetPALTV)){
-        tempextinfoflag=*((USHORT *)(ROMAddr+REFIndex+0x0)); /* di+Ext_InfoFlag */
-        if(tempextinfoflag&NoSupportSimuTV){
-          if(VBInfo&SetInSlaveMode){
-            if(!(VBInfo&SetNotSimuTVMode)){
-              return 0;
+/* ynlai begin */
+    if(IF_DEF_HiVision==1) {
+      tempax=tempax|SupportHiVisionTV;
+      if(VBInfo&SetInSlaveMode){
+        resinfo=*((UCHAR *)(ROMAddr+ModeIDOffset+0x09)); /*si+Ext_ResInfo  */
+        if(resinfo==4) return(0);
+        if(resinfo==3) {
+          if(SetFlag&TVSimuMode) return(0);
+        }
+        if(resinfo>7) return(0);
+      }
+    }
+    else {
+      if(VBInfo&(SetCRT2ToAVIDEO|SetCRT2ToSVIDEO|SetCRT2ToSCART)){
+        tempax=tempax|SupportTV;
+        if(!(VBInfo&SetPALTV)){
+          tempextinfoflag=*((USHORT *)(ROMAddr+REFIndex+0x0)); /* di+Ext_InfoFlag */
+          if(tempextinfoflag&NoSupportSimuTV){
+            if(VBInfo&SetInSlaveMode){
+              if(!(VBInfo&SetNotSimuMode)){
+                return 0;
+              }
             }
           }
         }
       }
     }
+/* ynlai end   */
     tempbx=*((USHORT *)(ROMAddr+ModeIDOffset+0x04));   /* si+Ext_point */
   }
-  else {
+  else {  /* for LVDS */
+    Flag=1;
+    if(IF_DEF_CH7005==1) {
+      if(VBInfo&SetCRT2ToTV) {
+        tempax=tempax|SupportCHTV;
+        Flag=0;
+      }
+    }                    
     tempbx=*((USHORT *)(ROMAddr+ModeIDOffset+0x04));   
-    if(VBInfo&SetCRT2ToLCD){
+    if((Flag)&&(VBInfo&SetCRT2ToLCD)){
       tempax=tempax|SupportLCD;
       temp=*((UCHAR *)(ROMAddr+ModeIDOffset+0x09)); /*si+Ext_ResInfo  */
-      if(temp>0x08){ /*1024x768  */
-        return 0;
-      }
+      if(temp>0x08)   return(0);       /*1024x768  */
       if(LCDResInfo<Panel1024x768){
-        if(temp>0x07){ /*800x600  */
-          return 0;
-        }
-        if(temp==0x04){ /*512x384  */
-          return 0;
-        }
+        if(temp>0x07) return(0);       /*800x600  */
+        if(temp==0x04) return(0);      /*512x384  */
       }
     }
   }
@@ -241,7 +268,7 @@ VOID DisableBridge(USHORT  BaseAddr)
   if(IF_DEF_LVDS==0) {
     part2_02=(UCHAR)GetReg1(Part2Port,0x02);
     part2_05=(UCHAR)GetReg1(Part2Port,0x05);
-    if(!WaitVBRetrace(BaseAddr))          /* return 0:no enable read dram */
+/*    if(!WaitVBRetrace(BaseAddr))  */        /* return 0:no enable read dram */
     {
       LongWait();
       DisableLockRegs();
@@ -326,7 +353,7 @@ VOID GetCRT2DataLVDS(ULONG ROMAddr,USHORT ModeNo)
 VOID GetCRT2Data301(ULONG ROMAddr,USHORT ModeNo)
 {
   USHORT tempax,tempbx,modeflag1,OldREFIndex;
-  USHORT tempal,tempah,tempbl;
+  USHORT tempal,tempah,tempbl,resinfo;
 
   OldREFIndex=REFIndex;         /* push di */
   RVBHRS=50;NewFlickerMode=0;RY1COE=0;
@@ -367,7 +394,6 @@ VOID GetCRT2Data301(ULONG ROMAddr,USHORT ModeNo)
     tempax=*((USHORT *)(ROMAddr+REFIndex+6));
     tempax=((tempax>>4)&0x07FF);
     VDE=tempax;
-    /* skipp something about hivisiontv */
     tempax=*((USHORT *)(ROMAddr+REFIndex+8));
     tempbl=(tempax>>8);
     tempax=tempax&0x0FFF;
@@ -376,21 +402,50 @@ VOID GetCRT2Data301(ULONG ROMAddr,USHORT ModeNo)
       tempax=*((USHORT *)(ROMAddr+REFIndex+10));
     }
     RVBHRS=tempax;
-    NewFlickerMode=(tempbl&0x080);
-
-    tempax=*((USHORT *)(ROMAddr+REFIndex+12));
-    RY1COE=(tempax&0x00FF);
-    RY2COE=((tempax&0xFF00)>>8);
-    tempax=*((USHORT *)(ROMAddr+REFIndex+14));
-    RY3COE=(tempax&0x00FF);
-    RY4COE=((tempax&0xFF00)>>8);
-    if(!(VBInfo&SetPALTV)){
-      tempax=NTSCHT;
-      tempbx=NTSCVT;
-    }else{
-      tempax=PALHT;
-      tempbx=PALVT;
+/*  ynlai  begin */
+    tempbl=tempbl&0x80;
+    if(IF_DEF_HiVision==1) {
+       resinfo=*((UCHAR *)(ROMAddr+ModeIDOffset+0x09)); /* si+Ext_ResInfo */
+       if(resinfo==8) tempbl=0x40;
+       else if(resinfo==9) tempbl=0x40;
+       else if(resinfo==10) tempbl=0x40;
     }
+/*  ynlai  end */
+    NewFlickerMode=tempbl;
+
+/* ynlai begin */
+    if(IF_DEF_HiVision==1) {
+      if(VGAVDE==350) SetFlag=SetFlag|TVSimuMode;
+      tempax=ExtHiTVHT;
+      tempbx=ExtHiTVVT;
+      if(VBInfo&SetInSlaveMode) {
+        if(SetFlag&TVSimuMode) {
+          tempax=StHiTVHT;
+          tempbx=StHiTVVT;
+          modeflag1=*((USHORT *)(ROMAddr+ModeIDOffset+0x01));   /* si+St_ModeFlag */
+          if(!(modeflag1&Charx8Dot)){
+             tempax=StHiTextTVHT;
+             tempbx=StHiTextTVVT;
+          }
+        }
+      }
+    }
+    else {
+      tempax=*((USHORT *)(ROMAddr+REFIndex+12));
+      RY1COE=(tempax&0x00FF);
+      RY2COE=((tempax&0xFF00)>>8);
+      tempax=*((USHORT *)(ROMAddr+REFIndex+14));
+      RY3COE=(tempax&0x00FF);
+      RY4COE=((tempax&0xFF00)>>8);
+      if(!(VBInfo&SetPALTV)){
+        tempax=NTSCHT;
+        tempbx=NTSCVT;
+      }else{
+        tempax=PALHT;
+        tempbx=PALVT;
+      }
+    }
+/* ynlai end */
   }
   HT=tempax;
   VT=tempbx;
@@ -530,20 +585,37 @@ VOID GetRAMDAC2DATA(ULONG ROMAddr,USHORT ModeNo)
 VOID GetCRT2Ptr(ULONG ROMAddr,USHORT ModeNo)
 {
   USHORT tempcl,tempbx,tempal,tempax,CRT2PtrData=0;
+  USHORT Flag;
+
   if(IF_DEF_LVDS==0) {
     if(VBInfo&SetCRT2ToLCD){              /* LCD */
       tempbx=LCDResInfo;
       tempcl=LCDDataLen;
       tempbx=tempbx-Panel1024x768;
       if(!(SetFlag&LCDVESATiming)) tempbx+=5;  
-    }else if(VBInfo&SetPALTV){
-      tempcl=TVDataLen;
-      tempbx=3;
-    }else{
-      tempbx=4;
-      tempcl=TVDataLen;
     }
-
+/* ynlai begin */
+    else {
+      if(IF_DEF_HiVision==1) {
+        if(VGAVDE>480) SetFlag=SetFlag&(!TVSimuMode);
+        tempcl=HiTVDataLen;
+        tempbx=2;
+        if(VBInfo&SetInSlaveMode) {
+           if(!(SetFlag&TVSimuMode)) tempbx=10;
+        }
+      }
+      else {
+        if(VBInfo&SetPALTV){
+          tempcl=TVDataLen;
+          tempbx=3;
+        }
+        else{
+          tempbx=4;
+          tempcl=TVDataLen;
+        }
+      }
+    }
+/* ynlai end */
     if(SetFlag&TVSimuMode){
       tempbx=tempbx+4;
     }
@@ -558,17 +630,26 @@ VOID GetCRT2Ptr(ULONG ROMAddr,USHORT ModeNo)
     REFIndex=*((USHORT *)(ROMAddr + 0x20E + tempbx*2));
     REFIndex+=tempax;
   }
-  else {
+  else {   /* LVDS */
+    Flag=1;
+    tempbx=0;
+    if(IF_DEF_CH7005==1) {
+      if(!(VBInfo&SetCRT2ToLCD)) {
+        Flag=0;
+        tempbx=7;
+	if(VBInfo&SetPALTV) tempbx=tempbx+2;
+        if(VBInfo&SetCHTVOverScan) tempbx=tempbx+1;
+      } 
+    }
     tempcl=LVDSDataLen;
-    tempbx=LCDResInfo-Panel800x600;
-    if(LCDInfo&LCDNonExpanding){
-      tempbx=tempbx+3;
-    }
-    if(ModeNo<=0x13){
-      tempal=*((UCHAR *)(ROMAddr+ModeIDOffset+0x04));      /* si+St_CRT2CRTC */
-    }else{
-      tempal=*((UCHAR *)(ROMAddr+REFIndex+0x04));      /* di+Ext_CRT2CRTC */
-    }
+    if(Flag==1) {
+      tempbx=LCDResInfo-Panel800x600;
+      if(LCDInfo&LCDNonExpanding){
+        tempbx=tempbx+3;
+      }
+    } 
+    if(ModeNo<=0x13) tempal=*((UCHAR *)(ROMAddr+ModeIDOffset+0x04));      /* si+St_CRT2CRTC */
+    else tempal=*((UCHAR *)(ROMAddr+REFIndex+0x04));      /* di+Ext_CRT2CRTC */
     tempal=tempal&0x1F;
     tempax=tempal*tempcl;
     CRT2PtrData=*((USHORT *)(ROMAddr+ADR_CRT2PtrData)); /*ADR_CRT2PtrData is defined in init.def  */
@@ -652,6 +733,27 @@ VOID SetCRT2ModeRegs(USHORT BaseAddr,USHORT ModeNo)
     temp3=temp3&(~0x0BF);
     temp3=temp3|tempah;
     SetReg1(Part4Port,0x0D,(USHORT)temp3);
+
+/* ynlai begin */
+    tempah=0;
+    if(VBInfo&SetCRT2ToTV) {
+      if(VBInfo&SetInSlaveMode) {
+        if(!(SetFlag&TVSimuMode)) {
+          if(IF_DEF_HiVision==0) {
+            SetFlag=SetFlag|RPLLDIV2XO;
+            tempah=tempah|0x40;
+          }
+        }
+      }
+      else {
+        SetFlag=SetFlag|RPLLDIV2XO;
+        tempah=tempah|0x40;
+      }
+    }
+    if(LCDResInfo==Panel1280x1024) tempah=tempah|0x80;
+    if(LCDResInfo==Panel1280x960) tempah=tempah|0x80;
+    SetReg1(Part4Port,0x0C,(USHORT)temp3);
+/* ynlai end */
   }
   else {
     tempah=0;
@@ -717,9 +819,15 @@ VOID SetGroup1_LVDS(USHORT  BaseAddr,ULONG ROMAddr,USHORT ModeNo,
   SetReg1(Part1Port,0x0D,tempcl);       /*BTVGA2HRE 0x0D  */
   tempcx=(VGAVT-1);
   tempah=tempcx&0x0FF;
+  if(IF_DEF_CH7005==1) {
+    if(VBInfo&0x0C)  tempah=tempah-1;
+  } 
   SetReg1(Part1Port,0x0E,tempah);        /*BTVGA2TV 0x0E,0x12 */
   tempbx=VGAVDE-1;
   tempah=tempbx&0x0FF;
+  if(IF_DEF_CH7005==1) {
+    if(VBInfo&0x0C)  tempah=tempah-1;
+  } 
   SetReg1(Part1Port,0x0F,tempah);       /*BTVGA2VDEE 0x0F,0x12  */
   tempah=((tempbx&0xFF00)<<3)>>8;
   tempah=tempah|((tempcx&0xFF00)>>8);
@@ -784,14 +892,13 @@ VOID SetGroup1_LVDS(USHORT  BaseAddr,ULONG ROMAddr,USHORT ModeNo,
   tempbx=LCDVDES;               /*VGAVDES  */
   temppush1=tempbx;             /*push bx temppush1 */
   if(IF_DEF_TRUMPION==0){
-    if(LCDResInfo==Panel800x600){
-      tempax=600;
-    }else{
-      tempax=768;
+    if(IF_DEF_CH7005==1) tempax=VGAVDE;
+    if(VBInfo&SetCRT2ToLCD) {
+      if(LCDResInfo==Panel800x600) tempax=600;
+      else tempax=768;  
     }
-  }else{
-    tempax=VGAVDE;
   }
+  else tempax=VGAVDE;
   tempbx=tempbx+tempax;
   tempax=VT;            /*VT  */
   if(tempbx>=VT){
@@ -935,7 +1042,7 @@ VOID SetGroup1_301(USHORT BaseAddr,ULONG ROMAddr,USHORT ModeNo,ScrnInfoPtr pScrn
   SISPtr  pSiS = SISPTR(pScrn);
   USHORT  temp1,temp2,tempcl,tempch,tempbl,tempbh,tempal,tempah,tempax,tempbx;
   USHORT  tempcx,OldREFIndex;
-  USHORT  Part1Port;
+  USHORT  Part1Port,resinfo,modeflag;
   Part1Port=BaseAddr+IND_SIS_CRT2_PORT_04;
   OldREFIndex=REFIndex;         /* push di */
 
@@ -1011,16 +1118,16 @@ VOID SetGroup1_301(USHORT BaseAddr,ULONG ROMAddr,USHORT ModeNo,ScrnInfoPtr pScrn
 
   if( pSiS->Chipset == PCI_CHIP_SIS300 ){
     tempah=0x10;
-    if((LCDResInfo!=Panel1024x768)&&(LCDResInfo==Panel1280x1024)){
-      tempah=0x20;
-    }
-  }else{
-    tempah=0x20;
+    if((LCDResInfo!=Panel1024x768)&&(LCDResInfo==Panel1280x1024)) tempah=0x20;
   }
-  if(VBInfo&SetCRT2ToTV){
-    tempah=0x08;
+  else tempah=0x20;
+  if(VBInfo&SetCRT2ToTV) tempah=0x08;
+/* ynlai begin */
+  if(IF_DEF_HiVision==1) {
+    if(VBInfo&SetInSlaveMode) tempah=0x2c;
+    else tempah=0x20;
   }
-
+/* ynlai end */
   SetRegANDOR(Part1Port,0x13,~0x03C,tempah);
 
   if(!(VBInfo&SetInSlaveMode)){
@@ -1060,42 +1167,62 @@ VOID SetGroup1_301(USHORT BaseAddr,ULONG ROMAddr,USHORT ModeNo,ScrnInfoPtr pScrn
   if(VBInfo&SetCRT2ToTV){
     tempah=tempah+2;
   }
+/* ynlai begin */
+  if(IF_DEF_HiVision==1) {
+    resinfo=*(USHORT *)(ROMAddr+ModeIDOffset+0x09); /* si+Ext_ResInfo */
+    if(resinfo==7) tempah=tempah-2;
+  }
+/* ynlai end */
   SetReg1(Part1Port,0x05,tempah); /* 0x05 Horizontal Display Start */
   SetReg1(Part1Port,0x06,0x03);   /* 0x06 Horizontal Blank end     */
                                   /* 0x07 horizontal Retrace Start */
-  tempcx=(tempbl+tempbh)>>1;
-  tempah=(tempcx&0xFF)+2;
+/* ynlai begin */
+  if(IF_DEF_HiVision==1) {
+    tempah=tempbl-1;
+    modeflag=*((USHORT *)(ROMAddr+ModeIDOffset+0x01));   /* si+St_ModeFlag */
+    if(!(modeflag&HalfDCLK)) {
+      tempah=tempah-6;
+      if(SetFlag&TVSimuMode) {
+        tempah=tempah-4;
+        if(ModeNo>0x13) tempah=tempah-10;
+      }
+    }
+  }
+/* ynlai end */
+  else {
+    tempcx=(tempbl+tempbh)>>1;
+    tempah=(tempcx&0xFF)+2;
 
-  if(VBInfo&SetCRT2ToTV){
-     tempah=tempah-1;
-     if(!(temp1&HalfDCLK)){
-        if((temp1&Charx8Dot)){
-          tempah=tempah+4;
-          if(VGAHDE>=800){
-            tempah=tempah-6;
+    if(VBInfo&SetCRT2ToTV){
+       tempah=tempah-1;
+       if(!(temp1&HalfDCLK)){
+          if((temp1&Charx8Dot)){
+            tempah=tempah+4;
+            if(VGAHDE>=800){
+              tempah=tempah-6;
+            }
           }
         }
-      }
-  }else{
-     if(!(temp1&HalfDCLK)){
-       tempah=tempah-4;
-       if(VGAHDE>=800){
-         tempah=tempah-7;
-         if(ModeType==ModeEGA){
-           if(VGAVDE==1024){
-             tempah=tempah+15;
-             if(LCDResInfo!=Panel1280x1024){
-                tempah=tempah+7;
+    }else{
+       if(!(temp1&HalfDCLK)){
+         tempah=tempah-4;
+         if(VGAHDE>=800){
+           tempah=tempah-7;
+           if(ModeType==ModeEGA){
+             if(VGAVDE==1024){
+               tempah=tempah+15;
+               if(LCDResInfo!=Panel1280x1024){
+                  tempah=tempah+7;
+               }
              }
            }
-         }
-         if(VGAHDE>=1280){
-           tempah=tempah+28;
+           if(VGAHDE>=1280){
+             tempah=tempah+28;
+           }
          }
        }
-     }
+    }
   }
-
   SetReg1(Part1Port,0x07,tempah); /* 0x07 Horizontal Retrace Start */
 
   SetReg1(Part1Port,0x08,0);      /* 0x08 Horizontal Retrace End   */
@@ -1138,6 +1265,8 @@ VOID SetGroup1_301(USHORT BaseAddr,ULONG ROMAddr,USHORT ModeNo,ScrnInfoPtr pScrn
   temp2=tempax;         /* push ax */
   tempax=tempax<<1;
   tempbx=tempax+tempbx;
+/*  ynlai begin */
+/*  ynlai end   */
   if((SetFlag&TVSimuMode)&&(VBInfo&SetPALTV)&&(VGAHDE==800)){
     tempbx=tempbx+40;
   }
@@ -1300,7 +1429,10 @@ VOID SetCRT2FIFO(USHORT  Part1Port,ULONG ROMAddr,USHORT ModeNo,ScrnInfoPtr pScrn
   temp1=(temp1&(~0x1F))|0x16;
   SetReg1(Part1Port,0x01,temp1);
 
-  if(temp2<=6) temp2=6;
+/* ynlai begin */
+  if(IF_DEF_HiVision==1) { if(temp2<=10) temp2=10; }
+  else { if(temp2<=6) temp2=6; }
+/* ynlai end */
   if(temp2>0x14) temp2=0x14;
   temp1=(UCHAR)GetReg1(Part1Port,0x02);         /* part1port index 02 */
   temp1=(temp1&(~0x1F))|temp2;
@@ -1338,7 +1470,7 @@ USHORT GetQueueConfig()
 
 USHORT GetVCLKPtr(ULONG ROMAddr,USHORT ModeNo)
 {
-  USHORT tempal;
+  USHORT tempal=0;
   if(IF_DEF_LVDS==0) {
     tempal=(UCHAR)GetReg2((USHORT)(P3ca+0x02)); /*  Port 3cch */
     tempal=((tempal>>2)&0x03);
@@ -1437,35 +1569,77 @@ USHORT CalcDelayVB()
 
 USHORT GetVCLK2Ptr(ULONG ROMAddr,USHORT ModeNo)
 {
-  USHORT tempal;
+  USHORT tempal,tempbx,temp;
   USHORT LCDXlat1VCLK[4]={VCLK65,VCLK65,VCLK65,VCLK65};
   USHORT LCDXlat2VCLK[4]={VCLK108_2,VCLK108_2,VCLK108_2,VCLK108_2};
+  USHORT LVDSXlat1VCLK[4]={VCLK40,VCLK40,VCLK40,VCLK40};
+  USHORT LVDSXlat2VCLK[4]={VCLK65,VCLK65,VCLK65,VCLK65};
+  USHORT LVDSXlat3VCLK[4]={VCLK65,VCLK65,VCLK65,VCLK65};
 
-  if(ModeNo<=0x13){
-    tempal=*((UCHAR *)(ROMAddr+ModeIDOffset+0x04));  /* si+St_CRT2CRTC */
-  }else{
-    tempal=*((UCHAR *)(ROMAddr+REFIndex+0x04));      /* di+Ext_CRT2CRTC */
-  }
-  tempal=tempal>>6;
-  if(LCDResInfo!=Panel1024x768){
-    tempal=LCDXlat2VCLK[tempal];
-  }else{
-    tempal=LCDXlat1VCLK[tempal];
-  }
-
-  if(VBInfo&SetCRT2ToLCD){
-    tempal=tempal;
-  }else if(VBInfo&SetCRT2ToTV){
-    if(SetFlag&RPLLDIV2XO){
-      tempal=TVVCLKDIV2;
+  if(IF_DEF_LVDS==0) {
+    if(ModeNo<=0x13){
+      tempal=*((UCHAR *)(ROMAddr+ModeIDOffset+0x04));  /* si+St_CRT2CRTC */
     }else{
-      tempal=TVVCLK;
+      tempal=*((UCHAR *)(ROMAddr+REFIndex+0x04));      /* di+Ext_CRT2CRTC */
     }
-  }else{
-    tempal=(UCHAR)GetReg2((USHORT)(P3ca+0x02));      /*  Port 3cch */
-    tempal=((tempal>>2)&0x03);
-    if(ModeNo>0x13){
-      tempal=*((UCHAR *)(ROMAddr+REFIndex+0x03));    /* di+Ext_CRTVCLK */
+    tempal=tempal>>6;
+    if(LCDResInfo!=Panel1024x768){
+      tempal=LCDXlat2VCLK[tempal];
+    }else{
+      tempal=LCDXlat1VCLK[tempal];
+    }
+
+    if(VBInfo&SetCRT2ToLCD){
+      tempal=tempal;
+    }
+/* ynlai begin */
+    else {        /* for TV */
+      if(VBInfo&SetCRT2ToTV) {
+        if(IF_DEF_HiVision==1) {
+          if(SetFlag&RPLLDIV2XO) tempal=HiTVVCLKDIV2;
+          else tempal=HiTVVCLK;
+          if(SetFlag&TVSimuMode){
+            temp=*((USHORT *)(ROMAddr+ModeIDOffset+0x01));      /* si+St_ModeFlag */
+            if(temp&Charx8Dot) tempal=HiTVSimuVCLK;
+            else tempal=HiTVTextVCLK;
+          }
+        }
+        else {
+          if(VBInfo&SetCRT2ToTV){
+            if(SetFlag&RPLLDIV2XO) tempal=TVVCLKDIV2;
+            else tempal=TVVCLK;
+          }
+          else {
+            tempal=(UCHAR)GetReg2((USHORT)(P3ca+0x02));      /*  Port 3cch */
+            tempal=((tempal>>2)&0x03);
+            if(ModeNo>0x13) tempal=*((UCHAR *)(ROMAddr+REFIndex+0x03));    /* di+Ext_CRTVCLK */
+          }
+        }
+      }
+    }
+  } 
+/* ynlai end */
+  else {       /*   LVDS  */
+    if(ModeNo<=0x13) tempal=*((UCHAR *)(ROMAddr+ModeIDOffset+0x04));
+    else tempal=*((UCHAR *)(ROMAddr+REFIndex+0x04));
+    if(IF_DEF_CH7005==1) {
+      if(!(VBInfo&SetCRT2ToLCD)) {
+        tempal=tempal&0x1f;
+        tempbx=0; 
+        if(VBInfo&SetPALTV) tempbx=tempbx+2;
+        if(VBInfo&SetCHTVOverScan) tempbx=tempbx+1;
+        tempbx=tempbx<<1;
+        temp=(*((USHORT *)(ROMAddr+ADR_CHTVVCLKPtr)));
+        tempbx=(*((USHORT *)(ROMAddr+temp+tempbx)));
+        tempal=(*((USHORT *)(ROMAddr+tempbx+tempal)));
+        tempal=tempal&0x00FF;
+      }
+    }
+    else {
+      tempal=tempal>>6;
+      if(LCDResInfo==Panel800x600) tempal=LVDSXlat1VCLK[tempal];
+      else if(LCDResInfo==Panel1024x768) tempal=LVDSXlat2VCLK[tempal];
+      else tempal=LVDSXlat3VCLK[tempal];
     }
   }
   VCLKLen=GetVCLKLen(ROMAddr);
@@ -1545,7 +1719,7 @@ USHORT GetVGAHT2()
   return((USHORT)temp2);
 }
 
-VOID SetGroup2(USHORT  BaseAddr,ULONG ROMAddr)
+VOID SetGroup2(USHORT  BaseAddr,ULONG ROMAddr, USHORT ModeNo)
 {
   USHORT tempah,tempbl,tempbh,tempcl,i,j,tempcx,pushcx,tempbx,tempax;
   USHORT tempmodeflag,tempflowflag;
@@ -1553,7 +1727,9 @@ VOID SetGroup2(USHORT  BaseAddr,ULONG ROMAddr)
   USHORT *temp2;
   USHORT pushbx;
   USHORT  Part2Port;
+  USHORT  modeflag;
   long int longtemp;
+
   Part2Port=BaseAddr+IND_SIS_CRT2_PORT_10;
   tempcx=VBInfo;
   tempah=VBInfo&0x0FF;
@@ -1568,15 +1744,29 @@ VOID SetGroup2(USHORT  BaseAddr,ULONG ROMAddr)
   tempah=tempah|tempbl;
   tempah=tempah^0x0C;
 
-  if(VBInfo&SetPALTV){
+  if(IF_DEF_HiVision==1) {
     temp1=(UCHAR *)(ROMAddr+0x0F1);     /* PALPhase */
-    temp2=PALTiming;
-  }else{
-    tempah=tempah|0x10;
-    temp1=(UCHAR *)(ROMAddr+0x0ED);     /* NTSCPhase */
-    temp2=NTSCTiming;
+    tempah=tempah^0x01;
+    if(VBInfo&SetInSlaveMode) {
+      temp2=HiTVSt2Timing;
+      if(SetFlag&TVSimuMode) {
+        modeflag=*((USHORT *)(ROMAddr+ModeIDOffset+0x01));   
+        if(modeflag&Charx8Dot) temp2=HiTVSt1Timing;
+        else temp2=HiTVTextTiming;
+      }	
+    }
+    else  temp2=HiTVExtTiming;
   }
-
+  else {
+    if(VBInfo&SetPALTV){
+      temp1=(UCHAR *)(ROMAddr+0x0F1);     /* PALPhase */
+      temp2=PALTiming;
+    }else{
+      tempah=tempah|0x10;
+      temp1=(UCHAR *)(ROMAddr+0x0ED);     /* NTSCPhase */
+      temp2=NTSCTiming;
+    }
+  }
   SetReg1(Part2Port,0x0,tempah);
   for(i=0x31;i<=0x34;i++,temp1++){
      SetReg1(Part2Port,i,*(UCHAR *)temp1);
@@ -1597,6 +1787,24 @@ VOID SetGroup2(USHORT  BaseAddr,ULONG ROMAddr)
   SetReg1(Part2Port,0x37,RY3COE);
   SetReg1(Part2Port,0x38,RY4COE);
 
+/* ynlai begin */
+  if(IF_DEF_HiVision==1) tempax=950;
+  else {
+    if(VBInfo&SetPALTV) tempax=520;
+    else tempax=440;
+  }
+  if(VDE<=tempax) {
+    tempax=tempax-VDE;
+    tempax=tempax>>2;
+    tempah=(tempax&0xFF00)>>8;
+    tempah=tempah+temp2[0];
+    SetReg1(Part2Port,0x01,tempah);
+    tempah=tempax&0x00FF;
+    tempah=tempah+temp2[1];
+    SetReg1(Part2Port,0x02,tempah);
+  }
+/* begin end */
+
   tempcx=HT-1;
   tempah=tempcx&0xFF;
   SetReg1(Part2Port,0x1B,tempah);
@@ -1607,6 +1815,9 @@ VOID SetGroup2(USHORT  BaseAddr,ULONG ROMAddr)
   pushcx=tempcx; /* push cx */
 
   tempcx=tempcx+7;
+/* ynlai begin */
+  if(IF_DEF_HiVision==1) tempcx=tempcx-4;
+/* ynlai end   */
   tempah=(tempcx&0xFF);
   tempah=(tempah<<4)&0xFF;
   SetRegANDOR(Part2Port,0x22,~0x0F0,tempah);
@@ -1621,7 +1832,12 @@ VOID SetGroup2(USHORT  BaseAddr,ULONG ROMAddr)
   SetRegANDOR(Part2Port,0x25,~0x0F0,tempah);
 
   tempbx=tempbx+8;
-
+/* ynlai begin */
+  if(IF_DEF_HiVision==1) {
+    tempbx=tempbx-4;
+    tempcx=tempbx;
+  }
+/* ynlai end */
   tempah=((tempbx&0xFF)<<4)&0xFF;
   SetRegANDOR(Part2Port,0x29,~0x0F0,tempah);
 
@@ -1632,7 +1848,9 @@ VOID SetGroup2(USHORT  BaseAddr,ULONG ROMAddr)
   SetRegANDOR(Part2Port,0x28,~0x0F0,tempah);
 
   tempcx=tempcx+8;
-
+/* ynlai begin */
+  if(IF_DEF_HiVision==1) tempcx=tempcx-4;
+/* ynlai end   */
   tempah=tempcx&0xFF;
   tempah=(tempah<<4)&0xFF;
   SetRegANDOR(Part2Port,0x2A,~0x0F0,tempah);
@@ -1668,6 +1886,11 @@ VOID SetGroup2(USHORT  BaseAddr,ULONG ROMAddr)
 
   tempbx=tempbx-2;
   tempah=tempbx&0xFF;
+/* ynlai begin */
+  if(IF_DEF_HiVision==1)
+    if(VBInfo&SetInSlaveMode)
+      if(ModeNo==0x2f) tempah=tempah+1;
+/* ynlai end   */
   SetReg1(Part2Port,0x2F,tempah);
 
   tempah=(tempcx&0xFF00)>>8;
@@ -1675,11 +1898,14 @@ VOID SetGroup2(USHORT  BaseAddr,ULONG ROMAddr)
   tempbh=(tempbh<<6)&0xFF;
   tempah=tempah|tempbh;
   /* assuming <<ifndef>> hivisiontv */
-  tempah=tempah|0x10;
-  if(!(VBInfo&SetCRT2ToSVIDEO)){
-    tempah=tempah|0x20;
+/* ynlai begin */
+  if(IF_DEF_HiVision==0) {
+    tempah=tempah|0x10;
+    if(!(VBInfo&SetCRT2ToSVIDEO)){
+      tempah=tempah|0x20;
+    }
   }
-
+/* ynlai end   */
   SetReg1(Part2Port,0x30,tempah);
 
   tempbh=0;
@@ -1695,8 +1921,15 @@ VOID SetGroup2(USHORT  BaseAddr,ULONG ROMAddr)
       tempah=0;
     }
   }
-  /* assuming ifdef hivisiontv */
   tempcx=0x0101;
+/* ynlai begin */
+  if(IF_DEF_HiVision==1) {
+     if(VGAHDE>=1024) {
+       tempcx=0x1920;
+       if(VGAHDE>=1280) tempcx=0x1420;
+     }
+  }
+/* ynlai end   */
   if(!(tempbh&0x20)){
     if(tempmodeflag&HalfDCLK){
       tempcl=((tempcx&0xFF)<<1)&0xFF;
@@ -1724,6 +1957,12 @@ VOID SetGroup2(USHORT  BaseAddr,ULONG ROMAddr)
   SetReg1(Part2Port,0x44,tempah);
   tempah=tempbh;
   SetRegANDOR(Part2Port,0x45,~0x03F,tempah);
+
+  if(IF_DEF_HiVision==1) {
+    if(!(VBInfo&SetInSlaveMode)) {
+      SetReg1(Part2Port,0x0B,0x00);
+    }
+  }
 
   if(VBInfo&SetCRT2ToTV){
     return;
@@ -1840,20 +2079,37 @@ VOID SetGroup2(USHORT  BaseAddr,ULONG ROMAddr)
  return;
 }
 
-VOID SetGroup3(USHORT  BaseAddr)
+VOID SetGroup3(USHORT  BaseAddr,ULONG ROMAddr)
 {
   USHORT i;
   USHORT *tempdi;
   USHORT  Part3Port;
+  USHORT  modeflag;
   Part3Port=BaseAddr+IND_SIS_CRT2_PORT_12;
+/* ynlai begin */
+  SetReg1(Part3Port,0x00,0x00);
   if(VBInfo&SetPALTV){
-    tempdi=PALGroup3Data;
-  }else{
-    tempdi=NTSCGroup3Data;
+    SetReg1(Part3Port,0x13,0xFA);
+    SetReg1(Part3Port,0x14,0xC8);
   }
-  for(i=0;i<=0x3E;i++){
-     SetReg1(Part3Port,i,tempdi[i]);
+  else {
+    SetReg1(Part3Port,0x13,0xF6);
+    SetReg1(Part3Port,0x14,0xBF);
   }
+  if(IF_DEF_HiVision==1) {
+    tempdi=HiTVGroup3Data;
+    if(SetFlag&TVSimuMode) {
+      tempdi=HiTVGroup3Simu;
+      modeflag=*((USHORT *)(ROMAddr+ModeIDOffset+0x01));   
+      if(!(modeflag&Charx8Dot)) {
+        tempdi=HiTVGroup3Text;
+      }
+    }
+    for(i=0;i<=0x3E;i++){
+       SetReg1(Part3Port,i,tempdi[i]);
+    }
+  }
+/* ynlai end   */
   return;
 }
 
@@ -1914,14 +2170,25 @@ VOID SetGroup4(USHORT  BaseAddr,ULONG ROMAddr,USHORT ModeNo)
     tempbx=tempbx>>1;
   }
 
-  if(VBInfo&SetCRT2ToLCD){
-    tempah=0;
-    if(tempbx>800){
-      tempah=0x60;
+/* ynlai begin */
+  if(IF_DEF_HiVision==1) {
+    tempah=0xA0;
+    if(tempbx!=1024) {
+       tempah=0xC0;
+       if(tempbx!=1280) tempah=0;
     }
-  }else{
-    tempah=0x080;
   }
+  else {
+    if(VBInfo&SetCRT2ToLCD){
+      tempah=0;
+      if(tempbx>800){
+        tempah=0x60;
+      }
+    }else{
+      tempah=0x080;
+    }
+  }
+/* ynlai end   */
   if(LCDResInfo!=Panel1280x1024){
     tempah=tempah|0x0A;
   }
@@ -1929,6 +2196,12 @@ VOID SetGroup4(USHORT  BaseAddr,ULONG ROMAddr,USHORT ModeNo)
   SetRegANDOR(Part4Port,0x0E,~0xEF,tempah);
 
   tempebx=VDE;
+
+/* ynlai begin */
+  if(IF_DEF_HiVision==1) {
+    if(!(tempah&0xE0)) tempbx=tempbx>>1;
+  }
+/* ynlai end   */
 
   tempcx=RVBHRS;
   tempah=tempcx&0xFF;
@@ -1968,7 +2241,8 @@ VOID SetCRT2VCLK(USHORT BaseAddr,ULONG ROMAddr,USHORT ModeNo)
   USHORT vclk2ptr;
   USHORT tempah,temp1;
   USHORT  Part4Port;
-   Part4Port=BaseAddr+IND_SIS_CRT2_PORT_14;
+
+  Part4Port=BaseAddr+IND_SIS_CRT2_PORT_14;
   vclk2ptr=GetVCLK2Ptr(ROMAddr,ModeNo);
   SetReg1(Part4Port,0x0A,0x01);
   tempah=*((UCHAR *)(ROMAddr+vclk2ptr+0x01));   /* di+1 */
@@ -2134,7 +2408,7 @@ VOID SetLockRegs()
 VOID EnableBridge(USHORT BaseAddr)
 {
   USHORT part2_02,part2_05;
-  USHORT Part2Port,Part1Port=0;
+  USHORT Part2Port;
   Part2Port=BaseAddr+IND_SIS_CRT2_PORT_10;
 
   if(IF_DEF_LVDS==0) {
@@ -2157,7 +2431,7 @@ VOID EnableBridge(USHORT BaseAddr)
 
 VOID GetVBInfo(USHORT BaseAddr,ULONG ROMAddr)
 {
-  USHORT flag1,tempbx,tempbl,tempbh,tempah;
+  USHORT flag1,tempbx,tempbl,tempbh,tempah,temp;
 
   SetFlag=0;
   tempbx=*((USHORT *)(ROMAddr+ModeIDOffset+0x01));      /* si+St_ModeFlag */
@@ -2165,7 +2439,7 @@ VOID GetVBInfo(USHORT BaseAddr,ULONG ROMAddr)
   ModeType=tempbl;
   tempbx=0;
   flag1=GetReg1(P3c4,0x38);     /* call BridgeisOn */
-  if(IF_DEF_LVDS==0) {
+  if(IF_DEF_LVDS==0) {          /* for 301 */
    if(!(flag1&0x20)){
      VBInfo=CRT2DisplayFlag;
      return;
@@ -2173,25 +2447,24 @@ VOID GetVBInfo(USHORT BaseAddr,ULONG ROMAddr)
   }
   tempbl=GetReg1(P3d4,0x30);
   tempbh=GetReg1(P3d4,0x31);
-  if(IF_DEF_LVDS==0) {  
-    tempah=SetInSlaveMode;
-    tempah=tempah>>8;
-    tempah=tempah^0xFF; 
-    tempbh=tempbh&tempah;   
+
+  tempah=((SetCHTVOverScan>>8)|(SetInSlaveMode>>8)|(DisableCRT2Display>>8));
+  tempah=tempah^0xFF; 
+  tempbh=tempbh&tempah;   
+/*  ynlai begin */
+  if(IF_DEF_LVDS==1){  /* for LVDS */
+    if(IF_DEF_CH7005==1) temp=SetCRT2ToLCD|SetCRT2ToTV;
+    else temp=SetCRT2ToLCD;
   }
   else {
-    tempbh=tempbh&(!(SetInSlaveMode>>8));
+    if(IF_DEF_HiVision==1) temp=0xFC;
+    else temp=0x7C;
   }
-  if(!(tempbl&0x07C)){
-    VBInfo=CRT2DisplayFlag;
+  if(!(tempbl&temp)) {
+    VBInfo=DisableCRT2Display;
     return;
   }
-  if(IF_DEF_LVDS==1){  /* or LVDS */
-    if(!(tempbl&SetCRT2ToLCD)){
-      VBInfo=CRT2DisplayFlag;
-      return;
-    }
-  }
+/*  ynlai end */
   if(IF_DEF_LVDS==0) {
     if(tempbl&SetCRT2ToRAMDAC){
       tempbl=tempbl&(SetCRT2ToRAMDAC|SwitchToCRT2|SetSimuScanMode);
@@ -2199,14 +2472,21 @@ VOID GetVBInfo(USHORT BaseAddr,ULONG ROMAddr)
       tempbl=tempbl&(SetCRT2ToLCD|SwitchToCRT2|SetSimuScanMode);
     }else if(tempbl&SetCRT2ToSCART){
       tempbl=tempbl&(SetCRT2ToSCART|SwitchToCRT2|SetSimuScanMode);
+      tempbh=tempbh|(SetPALTV>>8);
     }else if(tempbl&SetCRT2ToHiVisionTV){
       tempbl=tempbl&(SetCRT2ToHiVisionTV|SwitchToCRT2|SetSimuScanMode);
+/* ynlai begin */
+      tempbh=tempbh|(SetPALTV>>8);
+/* ynlai end */
     }
   }
   else {
-    if(tempbl&SetCRT2ToLCD){
+    if(IF_DEF_CH7005==1) {
+      if(tempbl&SetCRT2ToTV) 
+        tempbl=tempbl&(SetCRT2ToTV|SwitchToCRT2|SetSimuScanMode);
+    } 
+    if(tempbl&SetCRT2ToLCD) 
       tempbl=tempbl&(SetCRT2ToLCD|SwitchToCRT2|SetSimuScanMode);
-    }
   }
   tempah=GetReg1(P3d4,0x31);
   if(tempah&(CRT2DisplayFlag>>8)){
@@ -2228,17 +2508,34 @@ VOID GetVBInfo(USHORT BaseAddr,ULONG ROMAddr)
         }
       }
     }
+    else {
+      flag1=*((USHORT *)(ROMAddr+ModeIDOffset+0x01));      /* si+St_ModeFlag */
+      if(!(flag1&CRT2Mode)) {
+        VBInfo=VBInfo|SetSimuScanMode;
+      }
+    }
   }
-  if(!((VBInfo&(SetSimuScanMode|SwitchToCRT2)))){
-    return;
-  }
-  if(!(VBInfo&DriverMode)){
-    VBInfo=VBInfo|SetInSlaveMode;
-    return;
-  }
-  flag1=*((USHORT *)(ROMAddr+ModeIDOffset+0x01));      /* si+St_ModeFlag */
-  if(!(flag1&(CRT2Mode|CRT2DisplayFlag))){
-    VBInfo=VBInfo|SetInSlaveMode;
+  if(!(VBInfo&DisableCRT2Display)) {
+    if(VBInfo&DriverMode) {
+      if(VBInfo&SetSimuScanMode) {
+        flag1=*((USHORT *)(ROMAddr+ModeIDOffset+0x01));   /* si+St_ModeFlag */
+        if(!(flag1&CRT2Mode)) {
+          VBInfo=VBInfo|SetInSlaveMode;
+        }
+      } 
+    }
+    else {
+      VBInfo=VBInfo|SetSimuScanMode;
+      if(IF_DEF_LVDS==0) {
+        if(VBInfo&SetCRT2ToTV) {
+          if(!(VBInfo&SetNotSimuMode))  SetFlag=SetFlag|TVSimuMode;
+        }
+      }
+    }
+  } 
+  if(IF_DEF_CH7005==1) {
+    tempah=GetReg1(P3d4,0x35);
+    if(tempah&TVOverScan) VBInfo=VBInfo|SetCHTVOverScan; 
   }
 }
 
@@ -2322,7 +2619,7 @@ BOOLEAN GetLCDResInfo(ULONG ROMAddr,USHORT P3d4)
     return 1;
   }
   if(VBInfo&SetInSlaveMode){
-    if(VBInfo&SetNotSimuTVMode){
+    if(VBInfo&SetNotSimuMode){
       SetFlag=SetFlag|LCDVESATiming;
     }
   }else{
@@ -2469,19 +2766,16 @@ VOID SetCRT2ECLK(ULONG ROMAddr, USHORT ModeNo)
 {
   USHORT OldREFIndex,tempah,tempal;
   USHORT P3cc=P3c9+3;
+
   OldREFIndex=(USHORT)REFIndex;
   if(IF_DEF_TRUMPION==0){  /*no trumpion  */
     tempal=GetReg2(P3cc);
     tempal=tempal&0x0C;
-/*    SetReg3(P3c2,tempal);  */
-    REFIndex=GetVCLKPtr(ROMAddr,ModeNo);
+    REFIndex=GetVCLK2Ptr(ROMAddr,ModeNo);
   }else{  /*trumpion  */
     SetFlag=SetFlag&(~ProgrammingCRT2);
     tempal=*((UCHAR *)(ROMAddr+REFIndex+0x03));   /*&di+Ext_CRTVCLK  */
-  /*[6/8/2000],Mars Wen,for vbios version >=v1.03.00  */
     tempal=tempal&0x03F;
-  /*~[6/8/2000],Mars Wen,for vbios version >=v1.03.00  */
-  /*  tempal=tempal&0x01F;  */
     if(tempal==0x02){ /*31.5MHz  */
       REFIndex=REFIndex-Ext2StructSize;
     }
@@ -2507,16 +2801,27 @@ VOID SetCRT2ECLK(ULONG ROMAddr, USHORT ModeNo)
 USHORT GetLVDSDesPtr(ULONG ROMAddr,USHORT ModeNo)
 {
   USHORT tempcl,tempbx,tempal,tempptr,LVDSDesPtrData;
+  USHORT Flag;
+
+  Flag=1;
+  tempbx=0;
+  if(IF_DEF_CH7005==1) {
+    if(!(VBInfo&SetCRT2ToLCD)) {
+      Flag=0;
+      tempbx=32;
+      if(VBInfo&SetPALTV) tempbx=tempbx+2;
+      if(VBInfo&SetCHTVOverScan) tempbx=tempbx+1;
+    }
+  } 
   tempcl=LVDSDesDataLen;
-  tempbx=LCDTypeInfo;
-  if(LCDInfo&LCDNonExpanding){
-    tempbx=tempbx+16;
-  }
-  if(ModeNo<=0x13){
-    tempal=*((UCHAR *)(ROMAddr+ModeIDOffset+0x04));   /* si+St_CRT2CRTC  */
-  }else{
-    tempal=*((UCHAR *)(ROMAddr+REFIndex+4));    /*di+Ext_CRT2CRTC  */
-  }
+  if(Flag) {
+    tempbx=LCDTypeInfo;
+    if(LCDInfo&LCDNonExpanding){
+      tempbx=tempbx+16;
+    }
+  } 
+  if(ModeNo<=0x13) tempal=*((UCHAR *)(ROMAddr+ModeIDOffset+0x04));   /* si+St_CRT2CRTC  */
+  else  tempal=*((UCHAR *)(ROMAddr+REFIndex+4));    /*di+Ext_CRT2CRTC  */
   tempal=tempal&0x1F;
   tempal=tempal*tempcl;
   tempbx=tempbx<<1;
@@ -2530,27 +2835,32 @@ USHORT GetLVDSDesPtr(ULONG ROMAddr,USHORT ModeNo)
 BOOLEAN GetLVDSCRT1Ptr(ULONG ROMAddr,USHORT ModeNo)
 {
   USHORT tempal,tempbx,modeflag1; 
-  USHORT LVDSCRT1DataPtr; 
+  USHORT LVDSCRT1DataPtr,Flag; 
 
   if(!(VBInfo&SetInSlaveMode)){
 /*       return 0;  */
   }
-  if(ModeNo<=0x13){
-    tempal=*((UCHAR *)(ROMAddr+ModeIDOffset+0x04));   /* si+St_CRT2CRTC  */
-  }else{
-    tempal=*((UCHAR *)(ROMAddr+REFIndex+4));    /*di+Ext_CRT2CRTC  */
+  Flag=1;
+  tempbx=0;
+  if(IF_DEF_CH7005==1) {
+    if(!(VBInfo&SetCRT2ToLCD)) {
+      Flag=0;
+      tempbx=12;
+      if(VBInfo&SetPALTV) tempbx=tempbx+2;
+      if(VBInfo&SetCHTVOverScan) tempbx=tempbx+1;	
+    }
   }
+  if(Flag) {
+    tempbx=LCDResInfo;
+    tempbx=tempbx-Panel800x600;
+    if(LCDInfo&LCDNonExpanding) tempbx=tempbx+6;
+    modeflag1=*((USHORT *)(ROMAddr+ModeIDOffset+0x01));   /* si+St_ModeFlag  */
+    if(modeflag1&HalfDCLK) tempbx=tempbx+3;
+  }
+  if(ModeNo<=0x13) tempal=*((UCHAR *)(ROMAddr+ModeIDOffset+0x04));   /* si+St_CRT2CRTC  */
+  else tempal=*((UCHAR *)(ROMAddr+REFIndex+4));    /*di+Ext_CRT2CRTC  */
   tempal=tempal&0x3F;
 
-  tempbx=LCDResInfo;
-  tempbx=tempbx-Panel800x600;
-  if(LCDInfo&LCDNonExpanding){
-    tempbx=tempbx+6;
-  }
-  modeflag1=*((USHORT *)(ROMAddr+ModeIDOffset+0x01));   /* si+St_ModeFlag  */
-  if(modeflag1&HalfDCLK){
-    tempbx=tempbx+3;
-  }
   tempbx=tempbx<<1;
   LVDSCRT1DataPtr=*((USHORT *)(ROMAddr+ADR_LVDSCRT1DataPtr));
   REFIndex=*((USHORT *)(ROMAddr+LVDSCRT1DataPtr+tempbx));
@@ -2560,5 +2870,281 @@ BOOLEAN GetLVDSCRT1Ptr(ULONG ROMAddr,USHORT ModeNo)
 
 }
 
+VOID SetCHTVReg(ULONG ROMAddr,USHORT ModeNo) 
+{
+  USHORT old_REFIndex,temp,tempbx,tempcl;
+
+  old_REFIndex=(USHORT)REFIndex;                /*push di  */
+  GetCHTVRegPtr(ROMAddr,ModeNo);
+
+  if(VBInfo&SetPALTV) {
+    SetCH7005(0x4304); 
+    SetCH7005(0x6909); 
+  } 
+  else {
+    SetCH7005(0x0304); 
+    SetCH7005(0x7109); 
+  }
+
+  temp=*((USHORT *)(ROMAddr+REFIndex+0x00));
+  tempbx=((temp&0x00FF)<<8)|0x00;
+  SetCH7005(tempbx); 
+  temp=*((USHORT *)(ROMAddr+REFIndex+0x01));
+  tempbx=((temp&0x00FF)<<8)|0x07;
+  SetCH7005(tempbx);	
+  temp=*((USHORT *)(ROMAddr+REFIndex+0x02));
+  tempbx=((temp&0x00FF)<<8)|0x08;
+  SetCH7005(tempbx);	
+  temp=*((USHORT *)(ROMAddr+REFIndex+0x03));
+  tempbx=((temp&0x00FF)<<8)|0x0A;
+  SetCH7005(tempbx);	
+  temp=*((USHORT *)(ROMAddr+REFIndex+0x04));
+  tempbx=((temp&0x00FF)<<8)|0x0B;
+  SetCH7005(tempbx);	
+
+  SetCH7005(0x2801);	
+  SetCH7005(0x3103);	
+  SetCH7005(0x003D);	
+  SetCHTVRegANDOR(0x0010,0x1F);	
+  SetCHTVRegANDOR(0x0211,0xF8);
+  SetCHTVRegANDOR(0x001C,0xEF);
+  
+  if(!(VBInfo&SetPALTV)) {
+    if(ModeNo<=0x13) tempcl=*((UCHAR *)(ROMAddr+ModeIDOffset+0x04));   /* si+St_CRT2CRTC */
+    else tempcl=*((UCHAR *)(ROMAddr+REFIndex+4));    /* di+Ext_CRT2CRTC */
+    tempcl=tempcl&0x3F;
+    if(VBInfo&SetCHTVOverScan) {
+      if(tempcl==0x04) {   /* 640x480   underscan */
+        SetCHTVRegANDOR(0x0020,0xEF);	
+        SetCHTVRegANDOR(0x0121,0xFE);	
+      }
+      else {
+        if(tempcl==0x05) {    /* 800x600  underscan */    
+          SetCHTVRegANDOR(0x0118,0xF0);	
+          SetCHTVRegANDOR(0x0C19,0xF0);	
+          SetCHTVRegANDOR(0x001A,0xF0);	
+          SetCHTVRegANDOR(0x001B,0xF0);	
+          SetCHTVRegANDOR(0x001C,0xF0);	
+          SetCHTVRegANDOR(0x001D,0xF0);	
+          SetCHTVRegANDOR(0x001E,0xF0);	
+          SetCHTVRegANDOR(0x001F,0xF0);	
+          SetCHTVRegANDOR(0x0120,0xEF);	
+          SetCHTVRegANDOR(0x0021,0xFE);	
+        }
+      }
+    }
+    else {
+      if(tempcl==0x04) {     /* 640x480   overscan  */
+        SetCHTVRegANDOR(0x0020,0xEF);	
+        SetCHTVRegANDOR(0x0121,0xFE);	
+      }
+      else {
+        if(tempcl==0x05) {   /* 800x600   overscan */
+          SetCHTVRegANDOR(0x0118,0xF0);	
+          SetCHTVRegANDOR(0x0F19,0xF0);	
+          SetCHTVRegANDOR(0x011A,0xF0);	
+          SetCHTVRegANDOR(0x0C1B,0xF0);	
+          SetCHTVRegANDOR(0x071C,0xF0);	
+          SetCHTVRegANDOR(0x011D,0xF0);	
+          SetCHTVRegANDOR(0x0C1E,0xF0);	
+          SetCHTVRegANDOR(0x071F,0xF0);	
+          SetCHTVRegANDOR(0x0120,0xEF);	
+          SetCHTVRegANDOR(0x0021,0xFE);	
+        }
+      }
+    }
+  }
+
+  REFIndex=old_REFIndex;   		
+}
+
+VOID SetCHTVRegANDOR(USHORT tempax,USHORT tempbh)
+{
+  USHORT tempal,tempah,tempbl;
+
+  tempal=tempax&0x00FF;
+  tempah=(tempax>>8)&0x00FF;
+  tempbl=GetCH7005(tempal); 
+  tempbl=(((tempbl&tempbh)|tempah)<<8|tempal);  
+  SetCH7005(tempbl);  
+}
+
+VOID GetCHTVRegPtr(ULONG ROMAddr,USHORT ModeNo) 
+{
+  USHORT tempbx,tempal,tempcl,CHTVRegDataPtr;
+
+  if(VBInfo&SetCRT2ToTV) {
+    tempbx=0;
+    if(VBInfo&SetPALTV) tempbx=tempbx+2;
+    if(VBInfo&SetCHTVOverScan) tempbx=tempbx+1;
+
+    if(ModeNo<=0x13) tempal=*((UCHAR *)(ROMAddr+ModeIDOffset+0x04));   /* si+St_CRT2CRTC */
+    else tempal=*((UCHAR *)(ROMAddr+REFIndex+4));    /* di+Ext_CRT2CRTC */
+    tempal=tempal&0x3F;
+    
+    tempcl=CHTVRegDataLen;
+    tempal=tempal*tempcl;
+    tempbx=tempbx<<1;
+
+    CHTVRegDataPtr=*((USHORT *)(ROMAddr+ADR_CHTVRegDataPtr));
+    REFIndex=*((USHORT *)(ROMAddr+CHTVRegDataPtr+tempbx));
+    REFIndex=REFIndex+tempal;
+  }	 
+}
+
+VOID SetCH7005(USHORT tempbx)
+{
+  USHORT tempah,temp;
+
+  DDC_Port=0x3c4;
+  DDC_Index=0x11;
+  DDC_DataShift=0x00;
+  DDC_DeviceAddr=0xEA;
+
+  SetSwitchDDC2();  
+  SetStart();
+  tempah=DDC_DeviceAddr;
+  temp=WriteDDC2Data(tempah); 
+  tempah=tempbx&0x00FF; 
+  temp=WriteDDC2Data(tempah);  
+  tempah=(tempbx&0xFF00)>>8; 
+  temp=WriteDDC2Data(tempah);  
+  SetStop();   
+}
+
+USHORT GetCH7005(USHORT tempbx)
+{
+  USHORT tempah;
+
+  DDC_Port=0x3c4;
+  DDC_Index=0x11;
+  DDC_DataShift=0x00;
+  DDC_DeviceAddr=0xEA;
+  DDC_ReadAddr=tempbx;
+
+  SetSwitchDDC2();  
+  SetStart();
+  tempah=DDC_DeviceAddr;
+  WriteDDC2Data(tempah);
+  tempah=DDC_ReadAddr;
+  WriteDDC2Data(tempah);
+
+  SetStart();
+  tempah=DDC_DeviceAddr;
+  tempah=tempah|0x01;
+  if(WriteDDC2Data(tempah)) {
+  }
+  tempah=ReadDDC2Data(tempah);  
+  SetStop();   
+  return(tempah);
+}
+
+VOID SetSwitchDDC2(VOID)
+{
+  USHORT i;
+
+  SetSCLKHigh();
+  for(i=0;i<1000;i++) {
+    GetReg1(DDC_Port,0x05);
+  }
+  SetSCLKLow();
+  for(i=0;i<1000;i++) {
+    GetReg1(DDC_Port,0x05);
+  }
+}
 
 
+VOID SetStart(VOID)
+{
+  USHORT temp;
+
+  SetSCLKLow();  
+  SetRegANDOR(DDC_Port,DDC_Index,0xFD,0x02);     /*  SetSDA(0x01); */
+  SetSCLKHigh();    
+  SetRegANDOR(DDC_Port,DDC_Index,0xFD,0x00);      /* SetSDA(0x00); */
+  SetSCLKHigh();    
+}
+
+VOID SetStop(VOID)
+{
+  SetSCLKLow();  
+  SetRegANDOR(DDC_Port,DDC_Index,0xFD,0x00);    /*  SetSDA(0x00); */
+  SetSCLKHigh();  
+  SetRegANDOR(DDC_Port,DDC_Index,0xFD,0x02);      /* SetSDA(0x01); */
+  SetSCLKHigh();    
+}
+
+USHORT WriteDDC2Data(USHORT tempax)
+{ 
+  USHORT i,flag,temp;
+
+  flag=0x80;
+  for(i=0;i<8;i++) {  
+    SetSCLKLow();  
+    if(tempax&flag) {
+      SetRegANDOR(DDC_Port,DDC_Index,0xFD,0x02);     
+    }
+    else {
+      SetRegANDOR(DDC_Port,DDC_Index,0xFD,0x00);     
+    }
+    SetSCLKHigh();    
+    flag=flag>>1;
+  }
+  return(CheckACK());
+}
+
+USHORT ReadDDC2Data(USHORT tempax)
+{ 
+  USHORT i,temp,getdata;
+
+  getdata=0;
+  for(i=0;i<8;i++) {  
+    getdata=getdata<<1;
+    SetSCLKLow();
+    SetRegANDOR(DDC_Port,DDC_Index,0xFD,0x02);      
+    SetSCLKHigh();
+    temp=GetReg1(DDC_Port,DDC_Index);      	
+    if(temp&0x02) getdata=getdata|0x01;
+  }  
+  return(getdata);
+}  
+
+VOID SetSCLKLow(VOID)
+{
+    SetRegANDOR(DDC_Port,DDC_Index,0xFE,0x00);      /* SetSCLKLow()  */
+    DDC2Delay(); 
+}
+
+
+VOID SetSCLKHigh(VOID)
+{
+  USHORT temp;
+
+  SetRegANDOR(DDC_Port,DDC_Index,0xFE,0x01);      /* SetSCLKLow()  */
+  do {
+    temp=GetReg1(DDC_Port,DDC_Index);
+  } while(!(temp&0x01));
+  DDC2Delay(); 
+}  
+
+VOID DDC2Delay(VOID)
+{
+  USHORT i;
+
+   for(i=0;i<DDC2DelayTime;i++) {   
+    GetReg1(P3c4,0x05); 	
+  }
+}
+
+USHORT CheckACK(VOID)
+{
+  USHORT tempah;
+
+  SetSCLKLow();
+  SetRegANDOR(DDC_Port,DDC_Index,0xFD,0x02);  
+  SetSCLKHigh();
+  tempah=GetReg1(DDC_Port,DDC_Index);
+  SetSCLKLow();
+  if(tempah&0x01) return(1);
+  else return(0);
+}

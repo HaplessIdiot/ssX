@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init300.c,v 1.3 2000/09/22 11:35:46 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init300.c,v 1.4 2000/09/26 15:57:14 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86PciInfo.h"
@@ -43,19 +43,29 @@ Bool SiSSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
    SetReg1(P3c4, 0x20, 0xa1);
    SetReg1(P3c4, 0x1E, 0x5A);
 
-   if(pSiS->LVDSFlags)
+   if(pSiS->VBFlags & VB_LVDS)
       IF_DEF_LVDS = 1;
    else
       IF_DEF_LVDS = 0;
+   if(pSiS->VBFlags & VB_CHRONTEL)
+      IF_DEF_CH7005 = 1;
+   else
+      IF_DEF_CH7005 = 0;
+
+
+/* ynlai begin */
+   IF_DEF_HiVision=0;
+/* ynlai end */
 
    PresetScratchregister(P3d4); /* add for CRT2 */
    /* replace GetSenseStatus,SetTVSystem,SetDisplayInfo */
 
+   DisplayOff();
    SetReg1(P3c4,0x05,0x86);                     /* 1.Openkey */
    temp=SearchModeID(ROMAddr,ModeNo);           /* 2.Get ModeID Table */
    if(temp==0)  return(0);
 
-   SetTVSystem();                               /* add for CRT2 */
+   /*  SetTVSystem();   */                            /* add for CRT2 */
    /*GetLCDDDCInfo(pScrn);*/                        /* add for CRT2 */
    GetVBInfo(BaseAddr,ROMAddr);                 /* add for CRT2 */
    GetLCDResInfo(ROMAddr, P3d4);                /* add for CRT2 */
@@ -95,10 +105,14 @@ Bool SiSSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
    if(((cr30flag&0x01)==1)||((cr30flag&0x03)==0x02)||
      (((cr30flag&0x03)==0x00)&&((cr31flag&0x20)==0x20))) {
      /* if CR30 d[0]=1 or d[1:0]=10, set CRT2 or cr30 cr31== 0x00 0x20 */
-     SetCRT2Group(BaseAddr,ROMAddr,ModeNo, pScrn);      /* add for CRT2 */
+     SetCRT2Group(BaseAddr,ROMAddr,ModeNo, pScrn);   /*    add for CRT2   */
    }
 
+/* ynlai begin test */
+/* ynlai end test */
+
    SetPitch(pScrn, BaseAddr);                     /* 16.SetPitch */
+   WaitVertical();
    DisplayOn();                                   /* 17.DisplayOn */
    return TRUE;
 }
@@ -166,6 +180,13 @@ VOID SetSeqRegs(ULONG ROMAddr)
    StandTable=StandTable+0x05;
    SRdata=*((UCHAR *)(ROMAddr+StandTable));        /* Get SR01 from file    */
    if(IF_DEF_LVDS==1){
+     if(IF_DEF_CH7005==1) {
+       if(VBInfo&SetCRT2ToTV) {
+         if(VBInfo&SetInSlaveMode) {
+           SRdata=SRdata|0x01;
+         }      
+       }
+     }
      if(VBInfo&SetCRT2ToLCD){
        if(VBInfo&SetInSlaveMode){
          if(LCDInfo&LCDNonExpanding){
@@ -217,13 +238,16 @@ VOID SetATTRegs(ULONG ROMAddr)
      StandTable++;
      ARdata=*((UCHAR *)(ROMAddr+StandTable));    /* Get AR for file  */
      if(IF_DEF_LVDS==1){  /*for LVDS*/
+       if(IF_DEF_CH7005==1) {
+         if(VBInfo&SetCRT2ToTV) {
+           if(VBInfo&SetInSlaveMode) {
+             if(i==0x13) ARdata=0;              
+           }
+         }
+       }
        if(VBInfo&SetCRT2ToLCD){
          if(VBInfo&SetInSlaveMode){
-           if(LCDInfo&LCDNonExpanding){
-             if(i==0x13){
-               ARdata=0;
-             }
-           }
+           if(i==0x13) ARdata=0;
          }
        }
      }
@@ -231,15 +255,7 @@ VOID SetATTRegs(ULONG ROMAddr)
      SetReg3(P3c0,i);                            /* set index        */
      SetReg3(P3c0,ARdata);                       /* set data         */
    }
-   if(IF_DEF_LVDS==1){  /*for LVDS*/
-     if(VBInfo&SetCRT2ToLCD){
-       if(VBInfo&SetInSlaveMode){
-         if(LCDInfo&LCDNonExpanding){
-           
-         }
-       }
-     }
-   }
+
    GetReg2(P3da);                                /* reset 3da        */
    SetReg3(P3c0,0x14);                           /* set index        */
    SetReg3(P3c0,0x00);                           /* set data         */
@@ -620,6 +636,15 @@ VOID DisplayOn()
 
    data=GetReg1(P3c4,0x01);
    data=data&0xDF;
+   SetReg1(P3c4,0x01,data);
+}
+
+VOID DisplayOff()
+{
+   USHORT data;
+
+   data=GetReg1(P3c4,0x01);
+   data=data|0x20;
    SetReg1(P3c4,0x01,data);
 }
 
@@ -1062,7 +1087,7 @@ USHORT CalcRefreshRate(ScrnInfoPtr pScrn, DisplayModePtr mode)
           break;
     
    }
-   while(RefreshRate[Index][i] != 0)
+   while(RefreshRate[Index][i] != NULL)
    {
       if(temp == RefreshRate[Index][i])
       {  
@@ -1075,4 +1100,20 @@ USHORT CalcRefreshRate(ScrnInfoPtr pScrn, DisplayModePtr mode)
    if(pSiS->VBFlags & CRT2_VGA)
       Rate |= Rate << 4;
    return(Rate);
+}
+
+VOID WaitVertical(VOID)
+{
+  USHORT tempax,tempdx;
+
+/*  tempdx=0x3da;
+  do {
+    tempax=GetReg2(tempdx);
+  } while(!(tempax&01));
+
+  do {
+    tempax=GetReg2(tempdx);
+  } while(!(tempax&01));
+*/  
+
 }

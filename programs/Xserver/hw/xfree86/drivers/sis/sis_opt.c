@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_opt.c,v 1.2 2000/02/12 23:08:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_opt.c,v 1.3 2000/08/01 20:52:25 dawes Exp $ */
 
 #include "xf86.h"
 
@@ -12,7 +12,8 @@ typedef enum {
     OPTION_NOACCEL,
     OPTION_TURBOQUEUE,
     OPTION_FAST_VRAM,
-    OPTION_SET_MEMCLOCK
+    OPTION_SET_MEMCLOCK,
+    OPTION_FORCE_CRT2TYPE
 } SISOpts;
 
 static OptionInfoRec SISOptions[] = {
@@ -24,6 +25,7 @@ static OptionInfoRec SISOptions[] = {
     { OPTION_TURBOQUEUE,	"TurboQueue",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SET_MEMCLOCK,	"SetMClk",	OPTV_FREQ,	{0}, -1    },
     { OPTION_FAST_VRAM,		"FastVram",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_FORCE_CRT2TYPE,    "ForceCRT2Type",OPTV_ANYSTR,    {0}, FALSE },	
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -33,6 +35,7 @@ SiSOptions(ScrnInfoPtr pScrn)
 	SISPtr	pSiS = SISPTR(pScrn);
 	MessageType	from;
 	double		temp;
+	char *strptr;
 
 	/* Collect all of the relevant option flags (fill in pScrn->options) */
 	xf86CollectOptions(pScrn, NULL);
@@ -85,6 +88,18 @@ SiSOptions(ScrnInfoPtr pScrn)
 	}   */
 	pSiS->TurboQueue = TRUE;
 
+
+	pSiS->ForceCRT2Type= CRT2_DEFAULT; 
+	strptr = (char *)xf86GetOptValString(SISOptions,OPTION_FORCE_CRT2TYPE); 
+	if (strptr != 0)
+	{	
+		if (!xf86strcmp(strptr,"TV"))
+			pSiS->ForceCRT2Type = CRT2_TV;
+		if (!xf86strcmp(strptr,"LCD"))
+			pSiS->ForceCRT2Type = CRT2_LCD;
+		if (!xf86strcmp(strptr,"VGA"))
+			pSiS->ForceCRT2Type = CRT2_VGA;
+	}
 }
 
 OptionInfoPtr

@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.16 2000/11/14 17:33:01 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.17 2000/11/28 19:09:35 dawes Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -22,6 +22,7 @@
   abnt2		Brazilian ABNT2
   hp		HP Internet
   itouch	Logitech iTouch
+  logicordless	Logitech Cordless Desktop Pro
   compaq	Compaq Internet
   microsoftpro	Microsoft Natural Pro
 

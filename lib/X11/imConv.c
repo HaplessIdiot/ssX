@@ -33,7 +33,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ******************************************************************/
 /* 2000 Modifier: Ivan Pascal	The XFree86 Project.
  */
-/* $XFree86: xc/lib/X11/imConv.c,v 1.27 2000/11/28 17:25:08 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imConv.c,v 1.28 2000/11/28 18:49:32 dawes Exp $ */
 
 #define NEED_EVENTS
 #include <stdio.h>
@@ -91,12 +91,12 @@ XPointer
 _XimGetLocaleCode (
     _Xconst char*	encoding_name)
 #else
-_XimGetLocaleCode (encoding_name, charset_ret)
+_XimGetLocaleCode (encoding_name)
     _Xconst char*	encoding_name;
 #endif
 {
     XPointer cvt = _Utf8GetConvByName(encoding_name);
-    if (!cvt) {
+    if (!cvt && encoding_name) {
        int i;
        for (i = 0; i < num_substitute; i++)
            if (!strcmp(encoding_name, SubstTable[i].encoding_name))

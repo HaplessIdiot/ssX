@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init300.h,v 1.2 2000/08/03 12:24:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init300.h,v 1.3 2000/09/22 11:35:46 alanh Exp $ */
 
 #include "initdef.h"
 
@@ -74,6 +74,8 @@ int      RAMType;
 int      ModeIDOffset,StandTable,CRT1Table,ScreenOffset,VCLKData,MCLKData, ECLKData;
 int      REFIndex,ModeType;
 USHORT   IF_DEF_LVDS;
+USHORT	 IF_DEF_HiVision;
+USHORT   IF_DEF_CH7005;
 USHORT   VBInfo,LCDResInfo,LCDTypeInfo,LCDInfo;
 
 USHORT   CalcRefreshRate(ScrnInfoPtr, DisplayModePtr);
@@ -96,6 +98,7 @@ VOID     SetCRT1FIFO2(ULONG);
 VOID     SetCRT1VCLK(ULONG);
 VOID     LoadDAC(ULONG);
 VOID     DisplayOn();
+VOID     DisplayOff();
 VOID     SetPitch(ScrnInfoPtr, USHORT);
 VOID     SetCRT1ModeRegs(ULONG, USHORT);
 VOID     SetVCLKState(ULONG, USHORT);
@@ -105,6 +108,7 @@ USHORT   GetRefindexLength(ULONG, USHORT);
 VOID     SetInterlace(ULONG, USHORT);
 USHORT   CalcDelay2(ULONG ,USHORT);
 USHORT   CalcDelay(ULONG ,USHORT);
+VOID     WaitVertical(VOID);
 
 extern BOOLEAN SetCRT2Group(USHORT BaseAddr,ULONG ROMAddr,USHORT ModeNo,ScrnInfoPtr pScrn);
 extern VOID GetVBInfo(USHORT BaseAddr,ULONG ROMAddr);

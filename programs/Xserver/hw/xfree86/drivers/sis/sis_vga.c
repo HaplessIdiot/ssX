@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_vga.c,v 1.4 2000/08/01 20:52:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_vga.c,v 1.5 2000/09/22 11:35:46 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -381,6 +381,7 @@ SISInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
         pReg->sisRegs3C4[8] = (CRT_CPUthresholdLow & 0xf) << 4 | 0xF;
         pReg->sisRegs3C4[9] &= 0xF0;
         pReg->sisRegs3C4[9] |= (CRT_CPUthresholdHigh & 0xF);
+        /*pReg->sisRegs3C4[0x3F] &= 0xE3;*/
         pReg->sisRegs3C4[0x3F] &= 0xE3;
         pReg->sisRegs3C4[0x3F] |= (CRT_CPUthresholdHigh & 0x10) |
                                         (CRT_CPUthresholdLow & 0x10) >> 2 |
@@ -578,25 +579,36 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
 {
         SISPtr  pSiS = SISPTR(pScrn);
         int     temp;
-	unsigned short usOffsetHigh, usOffsetLow, vBiosVersion;
+        unsigned short usOffsetHigh, usOffsetLow, vBiosVersion;
         unsigned long   ROMAddr  = (unsigned long) SISPTR(pScrn)->BIOS;
 
         usOffsetHigh = *((unsigned char *)(ROMAddr+0x08)) - 0x30;     
         usOffsetLow  = *((unsigned char *)(ROMAddr+0x09)) - 0x30;     
-	vBiosVersion = usOffsetHigh << 4 | usOffsetLow;
-	if(vBiosVersion < 0x02)
-	{
+        vBiosVersion = usOffsetHigh << 4 | usOffsetLow;
+        if(vBiosVersion < 0x02)
+        {
             outSISIDXREG(pSiS->RelIO+CROFFSET, 0x37, 0);
             inSISIDXREG(pSiS->RelIO+CROFFSET, 0x36, temp);
-	    temp &= 0x07;
+            temp &= 0x07;
             outSISIDXREG(pSiS->RelIO+CROFFSET, 0x36, temp);
-	}    
-       
-        inSISIDXREG(pSiS->RelIO+CROFFSET, 0x37, temp);
-        if(temp & 0x0C)
-           pSiS->LVDSFlags = TRUE;
-        else
-           pSiS->LVDSFlags = FALSE;
+        }    
+        outb(SISPART4, 0x00);
+        temp = inb(SISPART4+1) & 0x0F;
+        pSiS->VBFlags = 0; /*reset*/
+        if (temp == 1) 
+                pSiS->VBFlags|=VB_301;  /*301*/
+        else if (temp == 2)
+                pSiS->VBFlags|=VB_302;  /*302*/
+        else if (temp == 3)
+                pSiS->VBFlags|=VB_303;  /*303*/
+        else 
+        {       
+                outb(SISCR, 0x37);
+                temp = ((inb(SISCR+1))>>1) & 0x07;      
+                if ((temp==2) || (temp==3) || (temp==4)) pSiS->VBFlags|=VB_LVDS;        
+                if (temp==4) pSiS->VBFlags |= VB_CHRONTEL;
+        }               
+ 
         switch (pSiS->Chipset)  {
         case PCI_CHIP_SIS300:
         case PCI_CHIP_SIS630:

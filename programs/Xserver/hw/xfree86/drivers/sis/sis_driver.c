@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.52 2000/10/09 23:37:15 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.53 2000/11/09 11:32:21 alanh Exp $ */
 
 
 #include "fb.h"
@@ -61,6 +61,11 @@
 #include "globals.h"
 #define DPMS_SERVER
 #include "extensions/dpms.h"
+#endif
+
+#ifdef XvExtension
+#include "xf86xv.h"
+#include "Xv.h"
 #endif
 
 #ifdef XF86DRI
@@ -820,6 +825,38 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     SISLCDPreInit(pScrn);  
     SISTVPreInit(pScrn); 
     SISCRT2PreInit(pScrn); 
+    if (pSiS->ForceCRT2Type == CRT2_DEFAULT)
+    {	if (pSiS->VBFlags & CRT2_VGA) 
+		pSiS->ForceCRT2Type = CRT2_VGA;
+	else if (pSiS->VBFlags & CRT2_LCD)
+		pSiS->ForceCRT2Type = CRT2_LCD;
+	else if (pSiS->VBFlags & CRT2_TV)
+		pSiS->ForceCRT2Type = CRT2_TV;			
+    }	
+    switch (pSiS->ForceCRT2Type)
+    {	 case CRT2_TV:
+		pSiS->VBFlags = pSiS->VBFlags & ~(CRT2_LCD | CRT2_VGA);	
+		if (pSiS->VBFlags & (VB_301|VB_302|VB_303|VB_LVDS|VB_CHRONTEL))
+			pSiS->VBFlags = pSiS->VBFlags | CRT2_TV;	
+		else
+			pSiS->VBFlags = pSiS->VBFlags & ~(CRT2_TV);	
+		break;
+	 case CRT2_LCD:
+		pSiS->VBFlags = pSiS->VBFlags & ~(CRT2_TV | CRT2_VGA);	
+		if (pSiS->VBFlags & (VB_301|VB_302|VB_303|VB_LVDS|VB_CHRONTEL))
+			pSiS->VBFlags = pSiS->VBFlags | CRT2_LCD;	
+		else
+			pSiS->VBFlags = pSiS->VBFlags & ~(CRT2_LCD);	
+		break;
+	 case CRT2_VGA:
+		pSiS->VBFlags = pSiS->VBFlags & ~(CRT2_TV | CRT2_LCD);	
+		if (pSiS->VBFlags & (VB_301|VB_302|VB_303|VB_LVDS|VB_CHRONTEL))
+			pSiS->VBFlags = pSiS->VBFlags | CRT2_VGA;	
+		else
+			pSiS->VBFlags = pSiS->VBFlags & ~(CRT2_VGA);	
+		break;
+     } 	
+
     SISDACPreInit(pScrn);
 
     outw(VGA_SEQ_INDEX, (unlock << 8) | 0x05);
@@ -1370,6 +1407,19 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     xf86DPMSInit(pScreen, (DPMSSetProcPtr)SISDisplayPowerManagementSet, 0);
 #endif
 
+#ifdef XvExtension
+   {
+      XF86VideoAdaptorPtr *ptr;
+      int n;
+    
+      n = xf86XVListGenericAdaptors(pScrn, &ptr);
+      if (n) {
+	 xf86XVScreenInit(pScreen, ptr, n);
+         xf86DrvMsg(pScrn->scrnIndex, X_INFO, "use generic Xv\n" );
+      }
+   }
+#endif
+
 #ifdef XF86DRI
     if (pSiS->directRenderingEnabled) {
         /* Now that mi, cfb, drm and others have done their thing, 
@@ -1385,6 +1435,8 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
         xf86DrvMsg(pScrn->scrnIndex, X_INFO, "direct rendering disabled\n");
     }
 #endif
+
+    SISInitVideo(pScreen);
 
     pSiS->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = SISCloseScreen;
@@ -1716,47 +1768,38 @@ SISModifyModeInfo(DisplayModePtr mode)
 void SiSPreSetMode(ScrnInfoPtr pScrn)
 {
      SISPtr pSiS = SISPTR(pScrn);
-     unsigned char  ulDispType;
-     unsigned char  ulTemp;
-     unsigned char  usTVType;
-     unsigned char  usScratchCR30, usScratchCR31, usScratchCR32;
+     unsigned char  usScratchCR30, usScratchCR31;
      unsigned short SR26, SR27;
      unsigned long  temp;
+     int vbflag;	
+		
+	usScratchCR30 = usScratchCR31 = 0;
+	outb(SISCR, 0x31);
+	usScratchCR31 = inb(SISCR+1) & 0x06;
+        vbflag=pSiS->VBFlags;	
+	switch (vbflag & (CRT2_TV|CRT2_LCD|CRT2_VGA))
+	{ case CRT2_TV:
+		if (vbflag & TV_HIVISION) usScratchCR30 |= 0x80;	
+		else if (vbflag & TV_PAL) usScratchCR31 |= 0x01;
 
-     ulDispType = 0;                   /* Default connect CRT */
-     ulTemp = GetReg1(SISCR, 0x32);
-     if( ulTemp & 0x10 )
-         ulDispType = MASK_DISPTYPE_CRT2;
-     if( ulTemp & 0x08 )
-         ulDispType = MASK_DISPTYPE_LCD;
-     if( ulTemp & 0x07 )
-         ulDispType = MASK_DISPTYPE_TV;
-
-     switch(ulDispType & MASK_DISPTYPE_DISP2)
-     {
-        case MASK_DISPTYPE_CRT2:
-                usScratchCR30 = 0x41;
-                usScratchCR31 = 0x40; 
-                break;
-        case MASK_DISPTYPE_LCD:
-                usScratchCR30 = 0x21;
-                usScratchCR31 = 0x40;
-                break;
-        case MASK_DISPTYPE_TV:
-                usScratchCR32 = GetReg1(SISCR, 0x32) & 0x07;
-                usScratchCR32 <<= 2;
-                usScratchCR30 = 0x01 | usScratchCR32;
-                usTVType = GetReg1(SISSR, 0x38) & 0x01;
-                if(usTVType) /* PAL */
-                     usScratchCR31 = 0x41;
-                else         /* NTSC */
-                     usScratchCR31 = 0x40;
-                break;
-        default:
-        /* disable CRT2 */
-        usScratchCR30 = 0x00;
-        usScratchCR31 = 0x60;
-     }
+		if (vbflag & TV_AVIDEO) usScratchCR30 |= 0x04;
+		else if (vbflag & TV_SVIDEO) usScratchCR30 |= 0x08;
+		else if (vbflag & TV_SCART) usScratchCR30 |= 0x10;
+		usScratchCR30 |= 0x01;
+		usScratchCR31 |= 0x40;
+		break;
+	  case CRT2_LCD:
+                usScratchCR30 |= 0x21;
+                usScratchCR31 |= 0x40;
+	        break;
+	  case CRT2_VGA:
+                usScratchCR30 |= 0x41;
+                usScratchCR31 |= 0x40; 
+		break;	
+	  default:
+        	usScratchCR30 |= 0x00;
+	        usScratchCR31 |= 0x60;
+	}
      SetReg1(SISCR, 0x30, usScratchCR30);
      SetReg1(SISCR, 0x31, usScratchCR31);
       

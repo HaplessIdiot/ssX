@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.83 2000/11/30 18:59:52 keithp Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.84 2000/11/30 23:29:53 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1302,7 +1302,7 @@ XCOMM  Don't do: 'AllTarget(dest.suffix.html)'. It breaks external packages
 									@@\
 dest.suffix.html: file.man RmanCmdDependency				@@\
 	RemoveFiles(dest.suffix.html dest.suffix-html)			@@\
-	RunProgram(RMAN,$(RMANOPTIONS) < file.man > dest.suffix-html) &&\ @@\
+	RunProgram(RMAN,$(RMANOPTIONS) < file.man > dest.suffix-html) && \ @@\
 	  $(MV) dest.suffix-html $@					@@\
 									@@\
 install.man:: dest.suffix.html						@@\

@@ -1,4 +1,4 @@
-// $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.6 2000/07/27 00:10:33 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.7 2000/11/02 02:51:27 dawes Exp $
 
 partial alphanumeric_keys 
 xkb_symbols "hp" {
@@ -47,6 +47,26 @@ xkb_symbols "itouch" {
     key <I6C>	{	[ XF86Mail		]	};
     key <I65>	{	[ XF86Search		]	};
     key <I66>	{	[ XF86Start		]	};
+};
+
+partial alphanumeric_keys
+xkb_symbols "logicordless" {
+ 
+    // Describes the extra keys on a Logitech Desktop Pro keyboard.
+ 
+    name[Group1]= "CordLess";
+    key <I5F>   {   [ XF86Standby       ]   };
+    key <I20>   {   [ XF86AudioMute     ]   };
+    key <I2E>   {   [ XF86AudioLowerVolume  ]   };
+    key <I30>   {   [ XF86AudioRaiseVolume  ]   };
+    key <I22>   {   [ XF86AudioPlay     ]   };
+    key <I24>   {   [ XF86AudioStop     ]   };
+    key <I10>   {   [ XF86AudioPrev     ]   };
+    key <I19>   {   [ XF86AudioNext     ]   };
+    key <I32>   {   [ XF86HomePage      ]   };
+    key <I6C>   {   [ XF86Mail      ]   };
+    key <I65>   {   [ XF86Search        ]   };
+    key <I66>   {   [ XF86Start     ]   };
 };
 
 
