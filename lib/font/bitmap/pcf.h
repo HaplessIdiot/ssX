@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/pcf.h,v 1.3 2001/01/17 19:43:27 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/pcf.h,v 1.4 2001/12/14 19:56:47 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -95,5 +95,6 @@ extern int pcfReadFontInfo ( FontInfoPtr pFontInfo, FontFilePtr file );
 extern int pmfReadFont ( FontPtr pFont, FontFilePtr file, 
 			 int bit, int byte, int glyph, int scan );
 extern int pcfWriteFont ( FontPtr pFont, FontFilePtr file );
+extern void pcfError ( const char *, ... );
 
 #endif				/* _PCF_H_ */
