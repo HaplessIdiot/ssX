@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.33 2001/11/14 07:18:56 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.34 2001/11/27 07:07:33 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -375,6 +375,8 @@ static NSRect aquaMenuBarBox;
 {
     struct passwd *passwdUser;
     NSString *shellPath, *dashShellName, *commandStr, *startXPath;
+    NSMutableString *safeStartXPath;
+    NSRange aRange;
     NSBundle *thisBundle;
     const char *shellPathStr, *newargv[3], *shellNameStr;
     int fd[2], outFD, length, shellType, i;
@@ -477,13 +479,29 @@ static NSRect aquaMenuBarBox;
         return NO;
     }
 
+    // We will run the startXClients script with the path in single quotes
+    // in case there are problematic characters in the path. We still have
+    // to worry about there being single quotes in the path. So, replace
+    // all instances of the ' character in startXPath with '\''.
+    safeStartXPath = [NSMutableString stringWithString:startXPath];
+    aRange = NSMakeRange(0, [safeStartXPath length]);
+    while (aRange.length) {
+        aRange = [safeStartXPath rangeOfString:@"'" options:0 range:aRange];
+        if (!aRange.length)
+            break;
+        [safeStartXPath replaceCharactersInRange:aRange
+                        withString:@"\'\\'\'"];
+        aRange.location += 4;
+        aRange.length = [safeStartXPath length] - aRange.location;
+    }
+
     if ([Preferences addToPath]) {
-        commandStr = [NSString stringWithFormat:@"%@ :%d %@\n",
-                        startXPath, [Preferences display],
+        commandStr = [NSString stringWithFormat:@"'%@' :%d %@\n",
+                        safeStartXPath, [Preferences display],
                         [Preferences addToPathString]];
     } else {
-        commandStr = [NSString stringWithFormat:@"%@ :%d\n",
-                        startXPath, [Preferences display]];
+        commandStr = [NSString stringWithFormat:@"'%@' :%d\n",
+                        safeStartXPath, [Preferences display]];
     }
 
     length = [commandStr cStringLength];
