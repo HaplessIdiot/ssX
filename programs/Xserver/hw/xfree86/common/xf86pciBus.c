@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.33 2001/02/15 20:31:57 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.34 2001/02/16 21:38:38 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -2983,5 +2983,15 @@ pciConvertRange2Host(int entityIndex, resRange *pRange)
     if (!pvp) return;
     tag = TAG(pvp);
     pciTagConvertRange2Host(tag, pRange);
+}
+
+
+void
+xf86EnablePciBusMaster(PCITAG pcitag)
+{
+    CARD32 temp;
+
+    temp = pciReadLong(pcitag, PCI_CMD_STAT_REG);
+    pciWriteLong(pcitag, PCI_CMD_STAT_REG, temp | PCI_CMD_MASTER_ENABLE);
 }
 
