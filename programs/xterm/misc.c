@@ -1,10 +1,10 @@
-/* $XTermId: misc.c,v 1.211 2004/04/17 20:15:53 tom Exp $ */
+/* $XTermId: misc.c,v 1.213 2004/04/28 00:18:48 tom Exp $ */
 
 /*
  *	$Xorg: misc.c,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/misc.c,v 3.83 2004/03/04 02:21:56 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/misc.c,v 3.84 2004/04/18 20:49:43 dickey Exp $ */
 
 /*
  *
@@ -59,6 +59,7 @@
  * SOFTWARE.
  */
 
+#include <version.h>
 #include <xterm.h>
 
 #include <sys/stat.h>
@@ -2631,4 +2632,41 @@ sortedOpts(OptionHelp * options, XrmOptionDescRec * descs, Cardinal numDescs)
 #endif
     }
     return opt_array;
+}
+
+/*
+ * Returns the version-string used in the "-v' message as well as a few other
+ * places.  It is derived (when possible) from the __vendorversion__ symbol
+ * that some newer imake configurations define.
+ */
+char *
+xtermVersion(void)
+{
+    static char *result;
+    if (result == 0) {
+	char *vendor = __vendorversion__;
+	char first[BUFSIZ];
+	char second[BUFSIZ];
+
+	result = malloc(strlen(vendor) + 10);
+	if (result == 0)
+	    result = vendor;
+	else {
+	    /* some vendors leave trash in this string */
+	    for (;;) {
+		if (!strncmp(vendor, "Version ", 8))
+		    vendor += 8;
+		else if (isspace(CharOf(*vendor)))
+		    ++vendor;
+		else
+		    break;
+	    }
+	    if (strlen(vendor) < BUFSIZ &&
+		sscanf(vendor, "%[0-9.] %[A-Za-z_0-9.]", first, second) == 2)
+		sprintf(result, "%s %s(%d)", second, first, XTERM_PATCH);
+	    else
+		sprintf(result, "%s(%d)", vendor, XTERM_PATCH);
+	}
+    }
+    return result;
 }
