@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.103 2004/03/30 17:49:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.104 2004/06/10 13:08:28 alanh Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -363,8 +363,6 @@ static XF86ModuleVersionInfo i810VersRec = {
 
 XF86ModuleData i810ModuleData = { &i810VersRec, i810Setup, 0 };
 
-int I830EntityIndex = -1;
-
 static pointer
 i810Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
@@ -404,6 +402,8 @@ i810Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 }
 
 #endif
+
+int I830EntityIndex = -1;
 
 #ifndef I830_ONLY
 /*
