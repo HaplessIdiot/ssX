@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/Xft.h,v 1.9 2000/12/02 10:02:04 keithp Exp $
+ * $XFree86: xc/lib/Xft/Xft.h,v 1.11 2000/12/05 03:13:27 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -212,6 +212,10 @@ XftDrawCreate (Display   *dpy,
 	       Drawable  drawable,
 	       Visual    *visual,
 	       Colormap  colormap);
+
+XftDraw *
+XftDrawCreateBitmap (Display  *dpy,
+		     Pixmap   bitmap);
 
 void
 XftDrawChange (XftDraw	*draw,

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftint.h,v 1.8 2000/12/02 10:02:05 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftint.h,v 1.9 2000/12/05 03:13:28 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -41,7 +41,7 @@ typedef struct _XftSymbolic {
 struct _XftDraw {
     Display	    *dpy;
     Drawable	    drawable;
-    Visual	    *visual;
+    Visual	    *visual;	/* NULL for bitmaps */
     Colormap	    colormap;
     Region	    clip;
     Bool	    core_set;
