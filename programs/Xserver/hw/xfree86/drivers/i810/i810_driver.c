@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.20 2000/08/25 13:42:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.21 2000/08/28 18:12:54 dawes Exp $ */
 
 /*
  * Authors:
@@ -1370,12 +1370,16 @@ I810SetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
    i810Reg->ExtHorizBlank = (((mode->CrtcHBlankEnd >> 3) - 1) & 0x40) >> 6;
 
    /*
-    * The following workaround is needed to get video overlay working
-    * at 1024x768 display resolution.
+    * The following workarounds are needed to get video overlay working
+    * at 1024x768 and 1280x1024 display resolutions.
     */
    if ((mode->CrtcVDisplay == 768) && (i810Reg->ExtVertBlankStart == 3))
    {
        i810Reg->ExtVertBlankStart = 2;
+   }
+   if ((mode->CrtcVDisplay == 1024) && (i810Reg->ExtVertBlankStart == 4))
+   {
+       i810Reg->ExtVertBlankStart = 3;
    }
 
    /* OVRACT Register */
