@@ -1,5 +1,69 @@
 XCOMM $XFree86: xc/lib/Xft1/Imakefile,v 1.7 2002/05/27 16:40:05 alanh Exp $
 
+XCOMM Allow for builds against old installed bits
+#if UseInstalled
+
+#ifndef SharedLibXft1
+#define SharedLibXft1		YES
+#endif
+
+#ifndef NormalLibXft1
+#define NormalLibXft1 (!SharedLibXft1 | ForceNormalLib)
+#endif
+
+#ifndef DebugLibXft1
+#define DebugLibXft1		NO
+#endif
+
+#ifndef ProfileLibXft1
+#define ProfileLibXft1		NO
+#endif
+
+#ifndef FontconfigClientDepLibs
+#define FontconfigClientDepLibs $(DEPFONTCONFIGLIB)
+#endif
+#ifndef FontconfigClientLibs
+#define FontconfigClientLibs $(FONTCONFIGLIB)
+#endif
+
+#if SharedLibFontconfig
+#define SharedFontconfigRev 1.0
+
+SharedLibReferences(FONTCONFIG,fontconfig,$(FONTCONFIGSRC),SOXLIBREV,SharedFontconfigRev)
+#else
+
+ProjectUnsharedLibReferences(FONTCONFIG,fontconfig,$(FONTCONFIGSRC),BuildLibDir)
+#endif
+
+#if SharedLibXft1
+#define SharedXft1Rev 1.2
+SharedLibReferences(XFT1,Xft,$(XFT1SRC),SOXFT1REV,SharedXft1Rev)
+#else
+ProjectUnsharedLibReferences(XFT1,Xft,$(XFT1SRC),BuildLibDir)
+#endif
+
+#undef LinkBuildLibrary
+#define LinkBuildLibrary(lib) MakeDir($(BUILDLIBDIR))			@@\
+	RemoveFile($(BUILDLIBDIR)/lib)					@@\
+	cd $(BUILDLIBDIR) && $(LN) $(BUILDLIBTOP)/$(CURRENT_DIR)/lib .
+#undef _LinkBuildLibrary
+#define _LinkBuildLibrary(lib) LinkBuildLibrary(lib)
+
+#undef LinkBuildLibraryMaybe
+#define LinkBuildLibraryMaybe(lib,doit) MakeDir($(BUILDLIBDIR))		@@\
+	@if doit; then (set -x; \					@@\
+	  RemoveFile($(BUILDLIBDIR)/lib); \				@@\
+	  cd $(BUILDLIBDIR) && $(LN) $(BUILDLIBTOP)/$(CURRENT_DIR)/lib .); fi
+
+#ifdef LdPreLibs
+# undef LdPreLibs
+#endif
+#define LdPreLibs -L$(BUILDLIBDIR) LdPreLib XLdPreLibs
+
+LDPRELIBS=LdPreLibs
+#endif
+
+
 #define DoNormalLib NO
 #define DoSharedLib SharedLibXft1
 #define DoExtraLib NO

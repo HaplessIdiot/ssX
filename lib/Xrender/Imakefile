@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xrender/Imakefile,v 1.4 2002/05/13 05:21:32 keithp Exp $
+XCOMM $XFree86: xc/lib/Xrender/Imakefile,v 1.5 2002/05/17 22:34:18 keithp Exp $
 
 
 #define DoNormalLib NormalLibXrender
@@ -21,7 +21,11 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 
       DEFINES = $(ALLOC_DEFINES)
+#if UseInstalled
+     INCLUDES =-I. -I$(INCROOT)/X11 -I$(INCROOT)/X11/extensions
+#else
      INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC)
+#endif
      
          SRCS = Xrender.c \
                 Color.c \
