@@ -1,4 +1,6 @@
 XFree86 4.0.1i (xx December 2000)
+2015. Fix build problems with the wacom driver on Linux 2.4 when building
+      a static server (Frederic Lepied, David Dawes).
 2014. Changed name of server binary to call by xf86cfg back to "XFree86
       (Egbert Eich).
 2013. Modified handling of memory alloctaion in TDFX driver (Egbert Eich).
@@ -216,7 +218,8 @@ XFree86 4.0.1h (4 December 2000)
        - don't let a port option in the config file override the -port
 	 command line option
        - cleanup/fix syslogging
-      (based on #4253, Debian, and Red Hat's XFree86-4.0-xfsredhat patch).
+      (based on #4253, Topi Miettinen, Debian, and Red Hat's
+       XFree86-4.0-xfsredhat patch).
 1026. Support for startx to set up the Xauth when starting an X server
       (based on Red Hat's XFree86-4.0-startx_xauth patch).
 1025. Fix an unaligned access on Alpha with the tdfx driver (Jay Estabrook).
@@ -11922,4 +11925,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1449 2000/12/05 22:09:44 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1451 2000/12/06 15:35:02 eich Exp $

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.21 2000/12/01 17:43:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.22 2000/12/05 05:14:41 keithp Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
@@ -58,6 +58,12 @@
 
 static const char identification[] = "$Identification: 20 $";
 
+#include <xf86Version.h>
+
+#if XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(3,9,0,0,0)
+#define XFREE86_V4 1
+#endif
+
 #ifdef LINUX_INPUT
 #include <asm/types.h>
 #include <linux/input.h>
@@ -69,19 +75,6 @@ static const char identification[] = "$Identification: 20 $";
 #ifdef BUS_ISA
 #undef BUS_ISA
 #endif
-
-#ifndef O_NDELAY
-#ifndef O_NONBLOCK
-#define O_NONBLOCK      04000
-#endif
-#define O_NDELAY	O_NONBLOCK
-#endif
-#endif
-
-#include <xf86Version.h>
-
-#if XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(3,9,0,0,0)
-#define XFREE86_V4 1
 #endif
 
 #ifdef XFREE86_V4
@@ -109,8 +102,6 @@ static const char identification[] = "$Identification: 20 $";
 #include <xf86Module.h>
 #endif
 
-#undef memset
-#define memset xf86memset
 #undef sleep
 #define sleep(t) xf86WaitForInput(-1, 1000 * (t))
 #define wait_for_fd(fd) xf86WaitForInput((fd), 1000)
@@ -2268,7 +2259,11 @@ xf86WcmUSBOpen(LocalDevicePtr	local)
     WacomDevicePtr	priv = (WacomDevicePtr)local->private;
     WacomCommonPtr	common = priv->common;
     
+#ifdef XFREE86_V4
+    local->fd = xf86OpenSerial(local->options);
+#else
     SYSCALL(local->fd = open(common->wcmDevice, O_RDONLY|O_NDELAY, 0));
+#endif
     if (local->fd == -1) {
 	ErrorF("Error opening %s : %s\n", common->wcmDevice, strerror(errno));
 	return !Success;
@@ -2559,7 +2554,7 @@ xf86WcmOpen(LocalDevicePtr	local)
 	     * config header don't use buffer+xx because the header size
 	     * varies on different tablets
 	     */
-	    if (sscanf(buffer, "%[^,],%d,%d,%d,%d", &header, &a, &b, &common->wcmResolX, &common->wcmResolY) == 5) {
+	    if (sscanf(buffer, "%[^,],%d,%d,%d,%d", header, &a, &b, &common->wcmResolX, &common->wcmResolY) == 5) {
 		DBG(6, ErrorF("WC_CONFIG Header = %s\n", header));
 	    }
 	    else {
@@ -2611,7 +2606,7 @@ xf86WcmOpen(LocalDevicePtr	local)
 	     * config header don't use buffer+xx because the header size
 	     * varies on different tablets
 	     */
-	    if (sscanf(buffer, "%[^,],%d,%d,%d,%d", &header, &a, &b, &common->wcmResolX, &common->wcmResolY) == 5) {
+	    if (sscanf(buffer, "%[^,],%d,%d,%d,%d", header, &a, &b, &common->wcmResolX, &common->wcmResolY) == 5) {
 		DBG(6, ErrorF("WC_CONFIG Header = %s\n", header));
 	    }
 	    else {
