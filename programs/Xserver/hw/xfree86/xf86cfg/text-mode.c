@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.5 2000/12/11 20:57:00 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.6 2000/12/11 22:52:07 herrb Exp $
  */
 
 #include <stdio.h>
@@ -3043,7 +3043,7 @@ DialogInput(char *title, char *prompt, int height, int width, char *init,
 {
     int i, x, y, box_y, box_x, box_width, len,
 	input_x = 0, scroll = 0, key = 0, button = -1, x1, x2, l1len, l2len;
-    unsigned char instr[1024 + 1];
+    char instr[1024 + 1];
     WINDOW *dialog;
 
     x = (COLS - width) / 2;
