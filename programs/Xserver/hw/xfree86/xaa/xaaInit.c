@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.2 1998/07/25 16:58:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.3 1998/08/13 14:46:11 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -18,8 +18,9 @@
 #include "xf86fbman.h"
 
 #define MAX_PREALLOC_BOXES	128
-#define MAX_PREALLOC_POINTS	128
-#define MAX_PREALLOC_INTS	MAX_PREALLOC_POINTS
+#define MAX_PREALLOC_POINTS	256
+#define MAX_PREALLOC_INTS	MAX_PREALLOC_POINTS  /* must be >= 255 */
+#define MAX_PREALLOC_POINTERS   (255 + 7)
 
 static Bool XAACloseScreen(int i, ScreenPtr pScreen);
 static void XAAGetImage(DrawablePtr pDrawable, int sx, int sy, int w, int h,
@@ -188,6 +189,12 @@ XAAInit(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 		(int*)xalloc(MAX_PREALLOC_INTS * sizeof(int));
     if(infoRec->PreAllocInts)
     	infoRec->NumPreAllocInts = MAX_PREALLOC_INTS;
+
+    infoRec->PreAllocPointers = 
+		(pointer)xalloc(MAX_PREALLOC_INTS * sizeof(pointer));
+    if(infoRec->PreAllocPointers)
+    	infoRec->NumPreAllocPointers = MAX_PREALLOC_POINTERS;
+
 
     if(infoRec->Flags & PIXMAP_CACHE) 
 	xf86RegisterFreeBoxCallback(pScreen, infoRec->InitPixmapCache,

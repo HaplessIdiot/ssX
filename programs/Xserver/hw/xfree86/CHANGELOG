@@ -1,4 +1,12 @@
 XFree86 3.9Ng (27 September 1998)
+1874. NonTE text optimization for the MGA driver (#2003, Mark Vojkovich).
+1873. Optimise 8x8 opaque fills for MGA G200 so that block mode can be used
+      with SGRAM (#2003, Mark Vojkovich).
+1872. Rewrite the XAA NonTE text code, fixing the handling of overlapping
+      characters (#2002, Mark Vojkovich).
+1871. Fix an typo causing a CapNotLast line bug in XAA (#2002, Mark Vojkovich).
+1870. Some updates to the FreeBSD/ELF support, including auto-detection
+      of the binary format.
 1869. Update the Type1 and Speedo fonts.scale files to take advantage
       of the recent ISO 8859-2 encoding updates (#1995, Juliusz Chroboczek).
 1868. Update drivers to use miCreateDefColormap instead of calling
@@ -13,7 +21,7 @@ XFree86 3.9Ng (27 September 1998)
 1864. Let the C&T driver accept '-depth 15' (#1993, David Bateman).
 1863. Reintroduce DirectColor visual support for depth >8 for the
       Millennium I (#1992, Andrew Aitchison).
-1862. Fixes and cleanups for Linux/Alpha build problems (#1989,
+1862. Fixes and cleanups for Linux/Alpha build problems (#1989, 2000,
       Andrew P. Lentvorski).
 1861. Make some changes to the vgahw MMIO handling for Alpha platforms.
 1860. Cleanup and simply some of the mga driver/dac/clock code (#1991,
@@ -6569,4 +6577,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.628 1998/09/20 14:40:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.629 1998/09/26 08:33:58 dawes Exp $

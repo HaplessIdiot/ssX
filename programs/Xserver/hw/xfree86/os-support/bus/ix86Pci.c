@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.3 1998/09/13 05:23:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.4 1998/09/19 12:14:58 dawes Exp $ */
 /*
  * ix86Pci.c - x86 PCI driver
  *
@@ -559,7 +559,7 @@ ix86PciSetBitsLong(PCITAG Tag, int reg, CARD32 mask, CARD32 val)
 	    break;
     }
 }
-void  
+void
 ix86PciInit()
 {
     /* Initialize pciBusInfo[] array and function pointers */

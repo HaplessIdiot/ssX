@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaNonTEGlyph.c,v 1.3 1998/08/02 05:17:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaNonTEGlyph.c,v 1.4 1998/09/13 05:23:55 dawes Exp $ */
 
 
 #include "xaa.h"
@@ -7,7 +7,8 @@
 #include "xf86.h"
 #include "xf86_ansic.h"
 
-
+/* Not used anymore because the algorithm isn't correct. It doesn't
+   handle overlapping characters properly */
 
 #ifdef TRIPLE_BITS
 #define NonTEGlyphFunc EXPNAME(XAANonTEGlyphScanlineFunc3)

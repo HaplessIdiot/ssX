@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.9 1998/09/05 06:37:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.10 1998/09/13 05:23:54 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -813,73 +813,10 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 
     if(infoRec->NonTEGlyphRenderer) {
 	xf86ErrorF("\tDriver provided NonTEGlyphRenderer replacement\n");
-    } else if(HaveColorExpansion && 
-	!(infoRec->CPUToScreenColorExpandFillFlags & NO_TRANSPARENCY)) {
-	if (infoRec->CPUToScreenColorExpandFillFlags & TRIPLE_BITS_24BPP) {
-	    if(infoRec->CPUToScreenColorExpandFillFlags & 
-					BIT_ORDER_IN_BYTE_MSBFIRST) {
-		if(infoRec->CPUToScreenColorExpandFillFlags & 
-					CPU_TRANSFER_BASE_FIXED) 
-		    infoRec->NonTEGlyphRenderer = 
-			XAANonTEGlyphRenderer3MSBFirstFixedBase;
-		else
-		    infoRec->NonTEGlyphRenderer =
-			XAANonTEGlyphRenderer3MSBFirst;
-	    } else {
-		if(infoRec->CPUToScreenColorExpandFillFlags & 
-					CPU_TRANSFER_BASE_FIXED) 
-		    infoRec->NonTEGlyphRenderer = 
-			XAANonTEGlyphRenderer3LSBFirstFixedBase;
-		else 
-		    infoRec->NonTEGlyphRenderer =
-			XAANonTEGlyphRenderer3LSBFirst;
-	    }
-	} else {
-	    if(infoRec->CPUToScreenColorExpandFillFlags & 
-					BIT_ORDER_IN_BYTE_MSBFIRST) {
-		if(infoRec->CPUToScreenColorExpandFillFlags & 
-					CPU_TRANSFER_BASE_FIXED) 
-		    infoRec->NonTEGlyphRenderer = 
-			XAANonTEGlyphRendererMSBFirstFixedBase;
-		else
-		    infoRec->NonTEGlyphRenderer =
-			XAANonTEGlyphRendererMSBFirst;
-	    } else {
-		if(infoRec->CPUToScreenColorExpandFillFlags & 
-					CPU_TRANSFER_BASE_FIXED) 
-		    infoRec->NonTEGlyphRenderer = 
-			XAANonTEGlyphRendererLSBFirstFixedBase;
-		else 
-		    infoRec->NonTEGlyphRenderer =
-			XAANonTEGlyphRendererLSBFirst;
-	    }
-	}
-	infoRec->NonTEGlyphRendererFlags = 
-		infoRec->CPUToScreenColorExpandFillFlags;
-
-    } else if(HaveScanlineColorExpansion &&
-	!(infoRec->ScanlineCPUToScreenColorExpandFillFlags & NO_TRANSPARENCY)) {
-	if (infoRec->CPUToScreenColorExpandFillFlags & TRIPLE_BITS_24BPP) {
-	    if(infoRec->ScanlineCPUToScreenColorExpandFillFlags & 
-					BIT_ORDER_IN_BYTE_MSBFIRST)
-		infoRec->NonTEGlyphRenderer = 
-			XAANonTEGlyphRendererScanline3MSBFirst;
-	    else
-		infoRec->NonTEGlyphRenderer = 
-			XAANonTEGlyphRendererScanline3LSBFirst;
-	} else {
-	    if(infoRec->ScanlineCPUToScreenColorExpandFillFlags & 
-					BIT_ORDER_IN_BYTE_MSBFIRST)
-		infoRec->NonTEGlyphRenderer = 
-			XAANonTEGlyphRendererScanlineMSBFirst;
-	    else
-		infoRec->NonTEGlyphRenderer = 
-			XAANonTEGlyphRendererScanlineLSBFirst;
-	  
-	}
-
-	infoRec->NonTEGlyphRendererFlags = 
-			infoRec->ScanlineCPUToScreenColorExpandFillFlags;
+    } else if(infoRec->WriteBitmap && 
+	!(infoRec->WriteBitmapFlags & NO_TRANSPARENCY)) {
+	infoRec->NonTEGlyphRenderer = XAANonTEGlyphRenderer;
+	infoRec->NonTEGlyphRendererFlags = infoRec->WriteBitmapFlags;
     }
     
 

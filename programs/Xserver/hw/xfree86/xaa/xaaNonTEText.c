@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaNonTEText.c,v 1.3 1998/08/13 14:46:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaNonTEText.c,v 1.4 1998/09/13 05:23:55 dawes Exp $ */
 
 /********************************************************************
 
@@ -14,7 +14,7 @@
    The NonTEGlyphRenderer itself may optionally be driver supplied to
    facilitate work-arounds/optimizations at a higher level than usual.
 
-   v1.0 - Mark Vojkovich (mvojkovi@ucsd.edu)
+   Written by Mark Vojkovich (mvojkovi@ucsd.edu)
 
 ********************************************************************/
 
@@ -39,7 +39,7 @@ static void ImageGlyphBltNonTEColorExpansion(ScrnInfoPtr pScrn,
 				int fg, int bg, int rop, unsigned planemask,
 				RegionPtr cclip, int nglyph,
 				unsigned char* gBase, CharInfoPtr *ppci);
-static void PolyGlyphBltNonTEColorExpansion(ScrnInfoPtr pScrn,
+static int PolyGlyphBltNonTEColorExpansion(ScrnInfoPtr pScrn,
 				int xInit, int yInit, FontPtr font,
 				int fg, int rop, unsigned planemask,
 				RegionPtr cclip, int nglyph,
@@ -63,22 +63,21 @@ XAAPolyText8NonTEColorExpansion(
     char	*chars )
 {
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
-    unsigned long n, i;
-    int w = 0;
+    unsigned long n;
+    int width = 0;
 
-    CharInfoPtr charinfo[255];	/* encoding only has 1 byte for count */
+    (*pGC->font->get_glyphs)(pGC->font, (unsigned long)count, 
+		(unsigned char *)chars, Linear8Bit, &n, infoRec->CharInfo);
 
-    GetGlyphs(pGC->font, (unsigned long)count, (unsigned char *)chars,
-	      Linear8Bit, &n, charinfo);
+    if(n) {
+	width = PolyGlyphBltNonTEColorExpansion( infoRec->pScrn, 
+		x + pDraw->x, y + pDraw->y, pGC->font, 
+		pGC->fgPixel, pGC->alu, pGC->planemask, 
+		pGC->pCompositeClip, n, FONTGLYPHS(pGC->font),
+ 		infoRec->CharInfo);
+    }
 
-    for (i=0; i < n; i++) w += charinfo[i]->metrics.characterWidth;
-
-    if(n) PolyGlyphBltNonTEColorExpansion(
-	infoRec->pScrn, x + pDraw->x, y + pDraw->y,
-	pGC->font, pGC->fgPixel, pGC->alu, pGC->planemask, 
-	pGC->pCompositeClip, n, FONTGLYPHS(pGC->font), charinfo);
-
-    return (x + w);
+    return (x + width);
 }
 
 
@@ -92,23 +91,23 @@ XAAPolyText16NonTEColorExpansion(
     unsigned short *chars )
 {
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
-    unsigned long n, i;
-    int w = 0;
+    unsigned long n;
+    int width = 0;
 
-    CharInfoPtr charinfo[255];	/* encoding only has 1 byte for count */
+    (*pGC->font->get_glyphs)(
+		pGC->font, (unsigned long)count, (unsigned char *)chars,
+		(FONTLASTROW(pGC->font) == 0) ? Linear16Bit : TwoD16Bit,
+		&n, infoRec->CharInfo);
 
-    GetGlyphs(pGC->font, (unsigned long)count, (unsigned char *)chars,
-	      (FONTLASTROW(pGC->font) == 0) ? Linear16Bit : TwoD16Bit,
-	      &n, charinfo);
+    if(n) {
+	width = PolyGlyphBltNonTEColorExpansion( infoRec->pScrn, 
+		x + pDraw->x, y + pDraw->y, pGC->font, 
+		pGC->fgPixel, pGC->alu, pGC->planemask, 
+		pGC->pCompositeClip, n, FONTGLYPHS(pGC->font),
+		infoRec->CharInfo);
+    }
 
-    for (i=0; i < n; i++) w += charinfo[i]->metrics.characterWidth;
-
-    if(n) PolyGlyphBltNonTEColorExpansion(
-	infoRec->pScrn, x + pDraw->x, y + pDraw->y,
-	pGC->font, pGC->fgPixel, pGC->alu, pGC->planemask, 
-	pGC->pCompositeClip, n, FONTGLYPHS(pGC->font), charinfo);
-
-    return (x + w);
+    return (x + width);
 }
 
 
@@ -123,15 +122,14 @@ XAAImageText8NonTEColorExpansion(
 {
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
     unsigned long n;
-    CharInfoPtr charinfo[255];	/* encoding only has 1 byte for count */
 
-    GetGlyphs(pGC->font, (unsigned long)count, (unsigned char *)chars,
-	      Linear8Bit, &n, charinfo);
+    (*pGC->font->get_glyphs)(pGC->font, (unsigned long)count, 
+		(unsigned char *)chars, Linear8Bit, &n, infoRec->CharInfo);
 
     if(n) ImageGlyphBltNonTEColorExpansion(
 	infoRec->pScrn, x + pDraw->x, y + pDraw->y,
 	pGC->font, pGC->fgPixel, pGC->bgPixel, GXcopy, pGC->planemask, 
-	pGC->pCompositeClip, n, FONTGLYPHS(pGC->font), charinfo);
+	pGC->pCompositeClip, n, FONTGLYPHS(pGC->font), infoRec->CharInfo);
 }
 
 
@@ -146,17 +144,16 @@ XAAImageText16NonTEColorExpansion(
 {
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
     unsigned long n;
-    FontPtr font = pGC->font;
-    CharInfoPtr charinfo[255];	/* encoding only has 1 byte for count */
 
-    GetGlyphs(font, (unsigned long)count, (unsigned char *)chars,
-	      (FONTLASTROW(pGC->font) == 0) ? Linear16Bit : TwoD16Bit,
-	      &n, charinfo);
+    (*pGC->font->get_glyphs)(
+		pGC->font, (unsigned long)count, (unsigned char *)chars,
+		(FONTLASTROW(pGC->font) == 0) ? Linear16Bit : TwoD16Bit,
+		&n, infoRec->CharInfo);
 
     if(n) ImageGlyphBltNonTEColorExpansion(
 	infoRec->pScrn, x + pDraw->x, y + pDraw->y,
 	pGC->font, pGC->fgPixel, pGC->bgPixel, GXcopy, pGC->planemask, 
-	pGC->pCompositeClip, n, FONTGLYPHS(pGC->font), charinfo);
+	pGC->pCompositeClip, n, FONTGLYPHS(pGC->font), infoRec->CharInfo);
 }
 
 
@@ -219,52 +216,27 @@ XAAPolyGlyphBltNonTEColorExpansion(
   
 ********************************************************************/
 
-#define MAX_GLYPHS	256
-
-/* this should be OK until we multi-thread */
-static NonTEGlyphInfo Glyphs[MAX_GLYPHS];
-static int GlyphWidths[MAX_GLYPHS];	/* clipping aid */
 
 
 static int
 CollectCharacterInfo(
-    NonTEGlyphInfo *glyphinfop,
+    NonTEGlyphPtr glyphs,
     unsigned int nglyph,
     CharInfoPtr *ppci,
-    int maxascent )
-{
-    int i, w;
-
-    w = 0;
-    for (i = 0; i < nglyph; i++) {
-        /*
-         * Note that the glyph bitmap address is pre-adjusted, so that the
-         * offset is the same for differently sized glyphs when writing a
-         * text scanline.
-         *
-         * The width of each character should be carefully determined,
-         * considering the leftSideBearing of the next character, since
-         * characters can overlap horizontally.
-         */
-	glyphinfop[i].bitsp = (unsigned int *)(ppci[i]->bits) - 
-			(maxascent - ppci[i]->metrics.ascent);
-
-        if (i < nglyph - 1)
-	    glyphinfop[i].width = ppci[i]->metrics.characterWidth +
-	        ppci[i + 1]->metrics.leftSideBearing -
-	        ppci[i]->metrics.leftSideBearing;
-	else {
- 	    glyphinfop[i].width = ppci[i]->metrics.rightSideBearing -
-				  ppci[i]->metrics.leftSideBearing;
-	    if(ppci[i]->metrics.characterWidth >  glyphinfop[i].width)
-		glyphinfop[i].width = ppci[i]->metrics.characterWidth;
-	}
-	w += glyphinfop[i].width;
-	GlyphWidths[i] = w;	/* store the end of the ith character */
-	glyphinfop[i].firstline = maxascent - ppci[i]->metrics.ascent;
-	glyphinfop[i].lastline = maxascent + ppci[i]->metrics.descent - 1;
-    }
-    return w;
+    FontPtr pfont
+){
+   int i, w = 0;
+   
+   for(i = 0; i < nglyph; i++, ppci++, glyphs++) {
+	glyphs->bits = (unsigned char*)((*ppci)->bits);
+	glyphs->start = w + (*ppci)->metrics.leftSideBearing;
+	glyphs->end = w + (*ppci)->metrics.rightSideBearing;
+	glyphs->yoff = (*ppci)->metrics.ascent;
+	glyphs->height = glyphs->yoff + (*ppci)->metrics.descent;
+	glyphs->srcwidth = ((glyphs->end - glyphs->start + 31) >> 5) << 2;
+	w += (*ppci)->metrics.characterWidth;
+   }
+   return w;
 }
 
 
@@ -281,19 +253,19 @@ ImageGlyphBltNonTEColorExpansion(
    CharInfoPtr *ppci 
 ){
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
-    int skippix, skipglyph, width;
+    int skippix, skipglyph, width, n, i;
     int LeftText, RightText, TopText, BottomText;
     int LeftBox, RightBox, TopBox, BottomBox;
-    int Left, Right, Top, Bottom, ytop, ybot;
+    int Left, Right, Top, Bottom;
+    int LeftEdge, RightEdge, ytop, ybot;
     int nbox = REGION_NUM_RECTS(cclip);
     BoxPtr pbox = REGION_RECTS(cclip);
 
-    width = CollectCharacterInfo(
-		Glyphs, nglyph, ppci, FONTMAXBOUNDS(font, ascent));
+    width = CollectCharacterInfo(infoRec->GlyphInfo, nglyph, ppci, font);
 
-    /* find our text dimensions */
-    LeftText = xInit + (*ppci)->metrics.leftSideBearing;
-    RightText = LeftText + width;
+    /* compute an approximate but covering bounding box */
+    LeftText = xInit + infoRec->GlyphInfo[0].start;
+    RightText = xInit + infoRec->GlyphInfo[nglyph - 1].end;
     TopText = yInit - FONTMAXBOUNDS(font,ascent);
     BottomText = yInit + FONTMAXBOUNDS(font,descent);
 
@@ -303,6 +275,8 @@ ImageGlyphBltNonTEColorExpansion(
     TopBox = yInit - FONTASCENT(font);
     BottomBox = yInit + FONTDESCENT(font);
 
+    Left = min(LeftText, LeftBox);
+    Right = max(RightText, RightBox);
     Top = min(TopText, TopBox);
     Bottom = max(BottomText, BottomBox);
  
@@ -315,40 +289,41 @@ ImageGlyphBltNonTEColorExpansion(
     while(nbox && (Bottom >= pbox->y1)) {
 
 	/* handle backing rect first */
-	Left = max(LeftBox, pbox->x1);
-	Right = min(RightBox, pbox->x2);
-	if(Right > Left) {	    
+	LeftEdge = max(LeftBox, pbox->x1);
+	RightEdge = min(RightBox, pbox->x2);
+	if(RightEdge > LeftEdge) {	    
 	    ytop = max(TopBox, pbox->y1);
 	    ybot = min(BottomBox, pbox->y2);
 
 	    if(ybot > ytop) {
 		(*infoRec->SetupForSolidFill)(pScrn, bg, rop, planemask);
 		(*infoRec->SubsequentSolidFillRect)(pScrn, 
-			Left, ytop, Right - Left, ybot - ytop);
+			LeftEdge, ytop, RightEdge - LeftEdge, ybot - ytop);
 	    }
 	}
 
-	/* now handle the glyphs */
-	Left = max(LeftText, pbox->x1);
-	Right = min(RightText, pbox->x2);
-	if(Right > Left) {	    
+	/* Now do the text */
+	LeftEdge = max(LeftText, pbox->x1);
+	RightEdge = min(RightText, pbox->x2);
+
+	if(RightEdge > LeftEdge) { /* we're possibly drawing something */
 	    ytop = max(TopText, pbox->y1);
 	    ybot = min(BottomText, pbox->y2);
-
 	    if(ybot > ytop) {
-		skippix = Left - LeftText;
-
+		skippix = LeftEdge - xInit;
 		skipglyph = 0;
-		while( skippix >= GlyphWidths[skipglyph])
-		    skipglyph++;
+		while(skippix >= infoRec->GlyphInfo[skipglyph].end)
+		   skipglyph++;
 
-		if(skipglyph)
-		   skippix -= GlyphWidths[skipglyph - 1];
-	    
-		(*infoRec->NonTEGlyphRenderer)(pScrn,
-			Left, Right - Left, ytop, ybot - ytop, 
-			skippix, ytop - TopText, Glyphs + skipglyph,
-			fg, rop, planemask); 
+		skippix = RightEdge - xInit;
+		n = 0; i = skipglyph;
+		while((i < nglyph) && (skippix > infoRec->GlyphInfo[i].start)) {
+		    i++; n++;
+		}
+
+		if(n) (*infoRec->NonTEGlyphRenderer)(pScrn,
+			xInit, yInit, n, infoRec->GlyphInfo + skipglyph, 
+			pbox, fg, rop, planemask); 
 	    }
 	}
 
@@ -357,7 +332,7 @@ ImageGlyphBltNonTEColorExpansion(
 }
 
 
-static void
+static int
 PolyGlyphBltNonTEColorExpansion(
    ScrnInfoPtr pScrn,
    int xInit, int yInit,
@@ -367,22 +342,23 @@ PolyGlyphBltNonTEColorExpansion(
    RegionPtr cclip,
    int nglyph,
    unsigned char* gBase,
-   CharInfoPtr *ppci )
-{
+   CharInfoPtr *ppci 
+){
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
-    int skippix, skipglyph;
+    int skippix, skipglyph, width, n, i;
     int Left, Right, Top, Bottom;
-    int LeftEdge, RightEdge, ytop, ybot;
+    int LeftEdge, RightEdge;
     int nbox = REGION_NUM_RECTS(cclip);
     BoxPtr pbox = REGION_RECTS(cclip);
 
-    /* find our text box */
-    Left = xInit + (*ppci)->metrics.leftSideBearing;
-    Right = Left + 
-	CollectCharacterInfo(Glyphs, nglyph, ppci, FONTMAXBOUNDS(font, ascent));
+    width = CollectCharacterInfo(infoRec->GlyphInfo, nglyph, ppci, font);
+
+    /* compute an approximate but covering bounding box */
+    Left = xInit + infoRec->GlyphInfo[0].start;
+    Right = xInit + infoRec->GlyphInfo[nglyph - 1].end;
     Top = yInit - FONTMAXBOUNDS(font,ascent);
     Bottom = yInit + FONTMAXBOUNDS(font,descent);
- 
+
     /* get into the first band that may contain part of our string */
     while(nbox && (Top >= pbox->y2)) {
 	pbox++; nbox--;
@@ -393,25 +369,80 @@ PolyGlyphBltNonTEColorExpansion(
 	LeftEdge = max(Left, pbox->x1);
 	RightEdge = min(Right, pbox->x2);
 
-	if(RightEdge > LeftEdge) {	/* we're drawing something */
-	    ytop = max(Top, pbox->y1);
-	    ybot = min(Bottom, pbox->y2);
+	if(RightEdge > LeftEdge) { /* we're possibly drawing something */
 
-	    skippix = LeftEdge - Left;
-
+	    skippix = LeftEdge - xInit;
 	    skipglyph = 0;
-	    while( skippix >= GlyphWidths[skipglyph])
+	    while(skippix >= infoRec->GlyphInfo[skipglyph].end)
 		skipglyph++;
 
-	    if(skipglyph)
-		skippix -= GlyphWidths[skipglyph - 1];
-	    
-	    (*infoRec->NonTEGlyphRenderer)(pScrn,
-		LeftEdge, RightEdge - LeftEdge, ytop, ybot - ytop, 
-		skippix, ytop - Top, Glyphs + skipglyph,
-		fg, rop, planemask); 
+	    skippix = RightEdge - xInit;
+	    n = 0; i = skipglyph;
+	    while((i < nglyph) && (skippix > infoRec->GlyphInfo[i].start)) {
+		i++; n++;
+	    }
+
+	    if(n) (*infoRec->NonTEGlyphRenderer)(pScrn,
+			xInit, yInit, n, infoRec->GlyphInfo + skipglyph, 
+			pbox, fg, rop, planemask); 
 	}
 
 	nbox--; pbox++;
     }
+    return width;
+}
+
+
+/* It is possible that the none of the glyphs passed to the 
+   NonTEGlyphRenderer will be drawn.  This function being called
+   indicates that part of the text string's bounding box is visible
+   but not necessarily that any of the characters are visible */
+
+void XAANonTEGlyphRenderer(
+   ScrnInfoPtr pScrn,
+   int x, int y, int n,
+   NonTEGlyphPtr glyphs,
+   BoxPtr pbox,
+   int fg, int rop,
+   unsigned int planemask
+){
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
+    int x1, x2, y1, y2, i, w, h, skipleft, skiptop;
+    unsigned char *src;
+
+    for(i = 0; i < n; i++, glyphs++) {
+	x1 = x + glyphs->start;
+	x2 = x + glyphs->end;
+	y1 = y - glyphs->yoff;
+	y2 = y1 + glyphs->height;
+
+	if(y1 < pbox->y1) {
+	    skiptop = pbox->y1 - y1;
+	    y1 = pbox->y1;
+	} else skiptop = 0;
+	if(y2 > pbox->y2) y2 = pbox->y2;
+	h = y2 - y1;
+	if(h <= 0) continue;
+
+	if(x1 < pbox->x1) {
+	    skipleft = pbox->x1 - x1;
+	    x1 = pbox->x1;
+	} else skipleft = 0;
+	if(x2 > pbox->x2) x2 = pbox->x2;
+
+	w = x2 - x1;
+
+	if(w > 0) {
+	    src = glyphs->bits + (skiptop * glyphs->srcwidth);
+
+	    if(skipleft) {
+		src += (skipleft >> 5) << 2;
+		skipleft &= 31;
+	    }
+
+	    (*infoRec->WriteBitmap)(pScrn, x1, y1, w, h, src,
+			glyphs->srcwidth, skipleft, fg, -1, rop, planemask);
+	}
+    }  
+
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.8 1998/09/05 06:37:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.9 1998/09/13 05:23:54 dawes Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -155,11 +155,14 @@ typedef void (* ValidateGCProcPtr)(
 );
 
 typedef struct {
-    unsigned int *bitsp;
+    unsigned char *bits;
     int width;
-    int firstline;
-    int lastline;
-} NonTEGlyphInfo;
+    int height;
+    int yoff;
+    int srcwidth;
+    int start;
+    int end;
+} NonTEGlyphInfo, *NonTEGlyphPtr;
 
 
 typedef struct {
@@ -635,10 +638,11 @@ typedef struct _XAAInfoRec {
 
    void (*NonTEGlyphRenderer)(
 	ScrnInfoPtr pScrn,
-	int xtext, int wtext, 
-	int w, int h, int skipleft, int startline, 
-	NonTEGlyphInfo *glyphs,
-	int fg, int rop, unsigned planemask
+	int x, int y, int n,
+	NonTEGlyphPtr glyphs,
+	BoxPtr pbox,
+	int fg, int rop,
+	unsigned int planemask
    );
    int NonTEGlyphRendererFlags;
 
@@ -1178,6 +1182,10 @@ typedef struct _XAAInfoRec {
    DDXPointPtr PreAllocDDXPointRecs;
    int NumPreAllocInts;
    int* PreAllocInts;
+   int NumPreAllocPointers;
+   pointer PreAllocPointers;
+   CharInfoPtr CharInfo[255];
+   NonTEGlyphInfo GlyphInfo[255];
 
    unsigned int FullPlanemask;
 

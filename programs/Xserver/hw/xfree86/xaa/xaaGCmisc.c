@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGCmisc.c,v 1.7 1998/09/05 06:37:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGCmisc.c,v 1.8 1998/09/13 05:23:54 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -200,6 +200,7 @@ XAAValidatePolyGlyphBlt(
    DrawablePtr   pDraw )
 {
    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+   Bool BigFont = FALSE;
 
    pGC->ops->PolyText8 = XAAFallbackOps.PolyText8;
    pGC->ops->PolyText16 = XAAFallbackOps.PolyText16;
@@ -211,18 +212,15 @@ XAAValidatePolyGlyphBlt(
    /* no fonts wider than 32 pixels */
    if((FONTMAXBOUNDS(pGC->font, rightSideBearing) - 
 	FONTMINBOUNDS(pGC->font, leftSideBearing) > 32))
-	return;
+	BigFont = TRUE;
 
    /* no funny business */
    if((FONTMINBOUNDS(pGC->font, characterWidth) <= 0) ||
 	((FONTASCENT(pGC->font) + FONTDESCENT(pGC->font)) <= 0))
 	return;
 
-   /* Do I need to check that this font is 4 bytes wide?  Or is
-	that guaranteed? */
-
    /* Check for TE Fonts */
-   if(!TERMINALFONT(pGC->font)) {
+   if(!TERMINALFONT(pGC->font) || BigFont) {
 	if(infoRec->PolyGlyphBltNonTE &&
 	    CHECK_PLANEMASK(pGC,infoRec->PolyGlyphBltNonTEFlags) &&
 	    CHECK_ROP(pGC,infoRec->PolyGlyphBltNonTEFlags) &&
@@ -233,7 +231,7 @@ XAAValidatePolyGlyphBlt(
 	) {
 	    pGC->ops->PolyText8 = infoRec->PolyText8NonTE; 
 	    pGC->ops->PolyText16 = infoRec->PolyText16NonTE;
-	    pGC->ops->PolyGlyphBlt = infoRec->PolyGlyphBltNonTE; 
+	    pGC->ops->PolyGlyphBlt = infoRec->PolyGlyphBltNonTE;
 	}
    } else {
 	if(infoRec->PolyGlyphBltTE &&
@@ -258,6 +256,7 @@ XAAValidateImageGlyphBlt(
    DrawablePtr   pDraw )
 {
    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+   Bool BigFont = FALSE;
 
    pGC->ops->ImageText8 = XAAFallbackOps.ImageText8;
    pGC->ops->ImageText16 = XAAFallbackOps.ImageText16;
@@ -266,19 +265,16 @@ XAAValidateImageGlyphBlt(
    /* no fonts wider than 32 pixels */
    if((FONTMAXBOUNDS(pGC->font, rightSideBearing) - 
 	FONTMINBOUNDS(pGC->font, leftSideBearing) > 32))
-	return;
+	BigFont = TRUE;
 
    /* no funny business */
    if((FONTMINBOUNDS(pGC->font, characterWidth) <= 0) ||
 	((FONTASCENT(pGC->font) + FONTDESCENT(pGC->font)) <= 0))
 	return;
 
-   /* Do I need to check that this font is 4 bytes wide?  Or is
-	that guaranteed since the font is no wider than 32 pixels? */
-
 
    /* Check for TE Fonts */
-   if(!TERMINALFONT(pGC->font)) {
+   if(!TERMINALFONT(pGC->font) || BigFont) {
 	if(infoRec->ImageGlyphBltNonTE &&
 		CHECK_PLANEMASK(pGC,infoRec->ImageGlyphBltNonTEFlags) &&
 		CHECK_FG(pGC,infoRec->ImageGlyphBltNonTEFlags) &&

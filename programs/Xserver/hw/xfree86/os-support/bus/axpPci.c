@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/axpPci.c,v 1.3 1998/09/13 05:23:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/axpPci.c,v 1.4 1998/09/19 12:14:58 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -59,6 +59,7 @@
  */
 CARD32 axpPciCfgRead(PCITAG tag, int off);
 void axpPciCfgWrite(PCITAG, int off, CARD32 val);
+void axpPciCfgSetBits(PCITAG tag, int off, CARD32 mask, CARD32 bits);
 
 pciBusInfo_t axpPci0 = {
 /* configMech  */	  PCI_CFG_MECH_OTHER,

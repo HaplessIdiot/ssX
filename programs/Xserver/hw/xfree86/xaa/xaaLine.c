@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaLine.c,v 1.1 1998/08/19 07:49:28 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -318,7 +318,8 @@ XAAPolyLines(
 		(x2 <  pbox->x2) && (y2 <  pbox->y2))
 	    {
 		(*infoRec->SubsequentSolidHorVertLine)(
-			infoRec->pScrn, x2, y1, 1, DEGREES_0);
+			infoRec->pScrn, x2, y2, 1, DEGREES_0);
+		break;
 	    }
 	    else
 		pbox++;

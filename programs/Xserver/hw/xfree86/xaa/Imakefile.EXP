@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xaa/Imakefile.EXP,v 1.1.2.5 1998/07/24 11:36:41 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xaa/Imakefile.EXP,v 1.2 1998/07/25 16:58:38 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -9,10 +9,8 @@ INCLUDES = -I.. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) \
 
 DEFINES = EXPDEFINES
 
-GENSRCS = xaaBitmap.c xaaTEGlyph.c xaaNonTEGlyph.c xaaNonTEGlyph3.c \
-	  xaaBitmap3.c xaaStipple.c
-GENOBJS = xaaBitmap.o xaaTEGlyph.o xaaNonTEGlyph.o xaaNonTEGlyph3.o \
-	  xaaBitmap3.o xaaStipple.o
+GENSRCS = xaaBitmap.c xaaTEGlyph.c xaaBitmap3.c xaaStipple.c
+GENOBJS = xaaBitmap.o xaaTEGlyph.o xaaBitmap3.o xaaStipple.o
 
 #if defined(i386Architecture) && defined(UseAssembler) && !MakeDllModules
 SRCS = $(GENSRCS) xaaTEGlyphBlt.s
@@ -37,7 +35,6 @@ LinkSourceFile(xaaStipple.c, LinkDirectory)
 LinkSourceFile(xaaTEGlyphBlt.s, LinkDirectory)
 #endif
 
-ObjectFromSpecialSource(xaaNonTEGlyph3, xaaNonTEGlyph, -DTRIPLE_BITS)
 ObjectFromSpecialSource(xaaBitmap3, xaaBitmap, -DTRIPLE_BITS)
 
 InstallLinkKitNonExecFile(EXPOBJECTNAME.o,$(LINKKITDIR)/lib)

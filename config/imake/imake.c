@@ -8,7 +8,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.24 1997/11/22 06:50:06 dawes Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.25 1998/03/22 12:46:46 robin Exp $ */
 
 /*
  * 
@@ -1002,6 +1002,33 @@ static void get_ld_version(inFile)
 }
 #endif
 
+#ifdef __FreeBSD__
+static void
+get_binary_format(FILE *inFile)
+{
+  int mib[2];
+  size_t len;
+  int osrel = 0;
+  FILE *objprog = NULL;
+  int iself = 0;
+  char buf[10];
+
+  mib[0] = CTL_KERN;
+  mib[1] = KERN_OSRELDATE;
+  len = sizeof(osrel);
+  sysctl(mib, 2, &osrel, &len, NULL, 0);
+  if (osrel >= 300004 &&
+      (objprog = popen("objformat", "r")) != NULL &&
+      fgets(buf, sizeof(buf), objprog) != NULL &&
+      strncmp(buf, "elf", 3) == 0)
+    iself = 1;
+  if (objprog)
+    pclose(objprog);
+
+  fprintf(inFile, "#define DefaultToElfFormat %s\n", iself ? "YES" : "NO");
+}
+#endif
+
 #ifndef PATH_MAX
 #define PATH_MAX 1024
 #endif
@@ -1165,6 +1192,9 @@ define_os_defaults(inFile)
     get_gcc_incdir(inFile);
 #if defined (sun) && defined(SVR4)
     get_sun_compiler_versions (inFile);
+#endif
+#ifdef __FreeBSD__
+    get_binary_format(inFile);
 #endif
 #else /* WIN32 */
 #ifndef __EMX__

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaLineMisc.c,v 1.2 1998/07/25 16:58:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaLineMisc.c,v 1.3 1998/09/05 06:37:05 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -33,6 +33,8 @@ XAASolidHorVertLineAsTwoPoint(
    int x, int y, int len, int dir
 ){
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
+
+    len--;
 
     if(dir == DEGREES_0) 
 	(*infoRec->SubsequentSolidTwoPointLine)(pScrn, x, y, x + len, y, 0);

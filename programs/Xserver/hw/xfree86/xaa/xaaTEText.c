@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaTEText.c,v 1.2 1998/07/25 16:58:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaTEText.c,v 1.3 1998/08/13 14:46:12 dawes Exp $ */
 
 /********************************************************************
 
@@ -59,16 +59,14 @@ XAAPolyText8TEColorExpansion(
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
     unsigned long n;
 
-    CharInfoPtr charinfo[255];	/* encoding only has 1 byte for count */
-
-    GetGlyphs(pGC->font, (unsigned long)count, (unsigned char *)chars,
-	      Linear8Bit, &n, charinfo);
+    (*pGC->font->get_glyphs)(pGC->font, (unsigned long)count, 
+		(unsigned char *)chars, Linear8Bit, &n, infoRec->CharInfo);
 
     /* we have divorced XAAGlyphBltTEColorExpansion from the drawable */
     if(n) XAAGlyphBltTEColorExpansion(
 	infoRec->pScrn, x + pDraw->x, y + pDraw->y,
 	pGC->font, pGC->fgPixel, -1, pGC->alu, pGC->planemask, 
-	pGC->pCompositeClip, n, FONTGLYPHS(pGC->font), charinfo);
+	pGC->pCompositeClip, n, FONTGLYPHS(pGC->font), infoRec->CharInfo);
 
     return (x + (n * FONTMAXBOUNDS(pGC->font, characterWidth)));
 }
@@ -85,16 +83,15 @@ XAAPolyText16TEColorExpansion(
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
     unsigned long n;
 
-    CharInfoPtr charinfo[255];	/* encoding only has 1 byte for count */
-
-    GetGlyphs(pGC->font, (unsigned long)count, (unsigned char *)chars,
-	      (FONTLASTROW(pGC->font) == 0) ? Linear16Bit : TwoD16Bit,
-	      &n, charinfo);
+    (*pGC->font->get_glyphs)(
+		pGC->font, (unsigned long)count, (unsigned char *)chars,
+		(FONTLASTROW(pGC->font) == 0) ? Linear16Bit : TwoD16Bit,
+		&n, infoRec->CharInfo);
 
     if(n) XAAGlyphBltTEColorExpansion(
 	infoRec->pScrn, x + pDraw->x, y + pDraw->y,
 	pGC->font, pGC->fgPixel, -1, pGC->alu, pGC->planemask, 
-	pGC->pCompositeClip, n, FONTGLYPHS(pGC->font), charinfo);
+	pGC->pCompositeClip, n, FONTGLYPHS(pGC->font), infoRec->CharInfo);
 
     return (x + (n * FONTMAXBOUNDS(pGC->font, characterWidth)));
 }
@@ -111,15 +108,13 @@ XAAImageText8TEColorExpansion(
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
     unsigned long n;
 
-    CharInfoPtr charinfo[255];	/* encoding only has 1 byte for count */
-
-    GetGlyphs(pGC->font, (unsigned long)count, (unsigned char *)chars,
-	      Linear8Bit, &n, charinfo);
+    (*pGC->font->get_glyphs)(pGC->font, (unsigned long)count, 
+		(unsigned char *)chars, Linear8Bit, &n, infoRec->CharInfo);
 
     if(n) XAAGlyphBltTEColorExpansion(
 	infoRec->pScrn, x + pDraw->x, y + pDraw->y,
 	pGC->font, pGC->fgPixel, pGC->bgPixel, GXcopy, pGC->planemask, 
-	pGC->pCompositeClip, n, FONTGLYPHS(pGC->font), charinfo);
+	pGC->pCompositeClip, n, FONTGLYPHS(pGC->font), infoRec->CharInfo);
 }
 
 
@@ -133,17 +128,16 @@ XAAImageText16TEColorExpansion(
 {
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
     unsigned long n;
-    FontPtr font = pGC->font;
-    CharInfoPtr charinfo[255];	/* encoding only has 1 byte for count */
 
-    GetGlyphs(font, (unsigned long)count, (unsigned char *)chars,
+    (*pGC->font->get_glyphs)(
+	      pGC->font, (unsigned long)count, (unsigned char *)chars,
 	      (FONTLASTROW(pGC->font) == 0) ? Linear16Bit : TwoD16Bit,
-	      &n, charinfo);
+	      &n, infoRec->CharInfo);
 
     if(n) XAAGlyphBltTEColorExpansion(
 	infoRec->pScrn, x + pDraw->x, y + pDraw->y,
 	pGC->font, pGC->fgPixel, pGC->bgPixel, GXcopy, pGC->planemask, 
-	pGC->pCompositeClip, n, FONTGLYPHS(pGC->font), charinfo);
+	pGC->pCompositeClip, n, FONTGLYPHS(pGC->font), infoRec->CharInfo);
 }
 
 
@@ -203,35 +197,6 @@ XAAPolyGlyphBltTEColorExpansion(
   
 ********************************************************************/
 
-#define MAX_GLYPHS	(256 + 6)
-
-/* this should be OK until we multi-thread */
-static unsigned int *Glyphs[MAX_GLYPHS];
-
-
-static unsigned int **
-CollectGlyphs(
-    unsigned int **glyphp,
-    unsigned int nglyph,
-    unsigned char *pglyphBase,
-    CharInfoPtr *ppci )
-{
-    int count;
-
-    for(count = 0; count < nglyph; count++) 
- 	glyphp[count] = (unsigned int*)FONTGLYPHBITS(pglyphBase,*ppci++);
-
-    /* our new unrolled TE code only writes DWORDS at a time so it can read
-	up to 6 characters past the last one we're displaying */
-    glyphp[count + 0] = glyphp[0];
-    glyphp[count + 1] = glyphp[0];
-    glyphp[count + 2] = glyphp[0];
-    glyphp[count + 3] = glyphp[0];
-    glyphp[count + 4] = glyphp[0];
-    glyphp[count + 5] = glyphp[0];
-
-    return glyphp;
-}
 
 static void
 XAAGlyphBltTEColorExpansion(
@@ -258,8 +223,8 @@ XAAGlyphBltTEColorExpansion(
     /* find the size of the box */
     Left = xInit;
     Right = Left + (glyphWidth * nglyph);
-    Top = yInit - FONTMAXBOUNDS(font,ascent);
-    Bottom =  yInit + FONTMAXBOUNDS(font,descent);
+    Top = yInit - FONTASCENT(font);
+    Bottom =  yInit + FONTDESCENT(font);
 
     /* get into the first band that may contain part of our string */
     while(nbox && (Top >= pbox->y2)) {
@@ -280,7 +245,24 @@ XAAGlyphBltTEColorExpansion(
 		skippix %= glyphWidth;
 	    } else skipglyphs = 0;
 
-	    if(!glyphs) glyphs = CollectGlyphs(Glyphs, nglyph, gBase, ppci);
+	    if(!glyphs) {
+		int count;
+		glyphs = (unsigned int**)infoRec->PreAllocPointers;
+
+		for(count = 0; count < nglyph; count++) 
+ 			glyphs[count] = (unsigned int*) 
+				FONTGLYPHBITS(gBase,*ppci++);
+
+		/* our new unrolled TE code only writes DWORDS at a time 
+		   so it can read up to 6 characters past the last one 
+		   we're displaying */
+		glyphs[count + 0] = glyphs[0];
+		glyphs[count + 1] = glyphs[0];
+		glyphs[count + 2] = glyphs[0];
+		glyphs[count + 3] = glyphs[0];
+		glyphs[count + 4] = glyphs[0];
+		glyphs[count + 5] = glyphs[0];
+	    }
 
    /* x, y, w, h, skipleft, skiptop, glyphp, glyphWidth, fg, bg, rop, pm */
 
