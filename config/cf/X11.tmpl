@@ -206,6 +206,9 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.58 2000/02/14 18:11:44 dawes Exp $
 #ifndef BuildXinerama
 #define BuildXinerama		NO
 #endif
+#ifndef BuildXineramaLibrary
+#define BuildXineramaLibrary	BuildXinerama
+#endif
 #ifndef BuildXCSecurity
 #define BuildXCSecurity		YES
 #endif
@@ -1337,6 +1340,22 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #define ProfileLibXv		NO
 #endif
 #endif
+
+#if BuildXineramaLibrary
+#ifndef SharedLibXinerama
+#define SharedLibXinerama	NO
+#endif
+#ifndef NormalLibXinerama
+#define NormalLibXinerama	YES
+#endif
+#ifndef DebugLibXinerama
+#define DebugLibXinerama	NO
+#endif
+#ifndef ProfileLibXinerama
+#define ProfileLibXinerama	NO
+#endif
+#endif
+
 
 #if BuildDPSLibrary
 #ifndef SharedLibDps
