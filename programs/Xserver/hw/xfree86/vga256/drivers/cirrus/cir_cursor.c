@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.11 1996/02/04 09:13:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.12 1996/02/20 14:35:34 dawes Exp $ */
 /*
  *
  * Copyright 1993-94 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -79,9 +79,9 @@ cirrusCursorInit(pm, pScr)
       if (!(miPointerInitialize(pScr, &cirrusPointerSpriteFuncs,
 				&xf86PointerScreenFuncs, FALSE)))
 	return FALSE;
+      pScr->RecolorCursor = cirrusRecolorCursor;
+      cirrusCursGeneration = serverGeneration;
     }
-  pScr->RecolorCursor = cirrusRecolorCursor;
-  cirrusCursGeneration = serverGeneration;
 
   return TRUE;
 }
