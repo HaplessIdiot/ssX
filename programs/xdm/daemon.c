@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/daemon.c,v 3.18 2002/05/31 18:46:10 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/daemon.c,v 3.19tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -40,8 +40,11 @@ from The Open Group.
 #include <string.h>
 
 #ifndef __GLIBC__
-# if defined(__osf__) || defined(__GNU__) || defined(__CYGWIN__)
-# define setpgrp setpgid
+# if defined(__osf__) || \
+     defined(__GNU__) || \
+     defined(__CYGWIN__) || \
+     defined(linux)
+#  define setpgrp setpgid
 # endif
 #endif
 
@@ -67,7 +70,6 @@ void
 BecomeOrphan (void)
 {
     Pid_t child_id;
-    int stat;
 
     /*
      * fork so that the process goes into the background automatically. Also
@@ -88,23 +90,26 @@ BecomeOrphan (void)
 	LogError ("daemon fork failed, errno = %d\n", errno);
 	break;
 
-    default:
+    default: {
 	/* parent */
 
 #if defined(CSRG_BASED) || defined(SYSV) || defined(SVR4) || defined(__QNXNTO__) || defined(__GLIBC__)
 #if defined(SVR4) || defined(__QNXNTO__)
-	stat = setpgid(child_id, child_id); /* This gets error EPERM.  Why? */
+	    /* This gets error EPERM.  Why? */
+	    int stat = setpgid(child_id, child_id);
 #elif defined(SYSV)
-	stat = 0;	/* don't know how to set child's process group */
+	    /* don't know how to set child's process group */
+	    int stat = 0;
 #elif defined(__GLIBC__)
-	stat = setpgrp ();
+	    int stat = setpgrp ();
 #else
-	stat = setpgrp (child_id, child_id);
+	    int stat = setpgrp (child_id, child_id);
 #endif
-	if (stat != 0)
-	    LogError ("setting process group for daemon failed: %s\n",
-		      strerror(errno));
+	    if (stat != 0)
+		LogError ("setting process group for daemon failed: %s\n",
+			  strerror(errno));
 #endif /* ! (CSRG_BASED || SYSV || SVR4 || __QNXNTO__ || __GLIBC__) */
+	}
 	exit (0);
     }
 }
