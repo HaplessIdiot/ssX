@@ -1,16 +1,87 @@
-XCOMM $XFree86: $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/drivers/Imakefile,v 1.2 1997/03/11 14:35:20 hohndel Exp $
 
 
+#define IHaveModules
 #include <Server.tmpl>
 #define IHaveSubdirs
 
-SUBDIRS = XF98CardDrivers
+#if XF98EGCServer || XF98EGCModule
+EGCDIR  = egc
+EGCSRCS = egc/?*.c
+EGCOBJS = egc/egc_drv.o
+#endif
 
-SRCS = */?*.c
+#if XF98GANBWAPServer || XF98GANBWAPModule
+GANBWAPDIR  = ganbwap
+GANBWAPSRCS = ganbwap/?*.c
+GANBWAPOBJS = ganbwap/ganbwap_drv.o
+#endif
 
-OBJS = */?*_drv.o
+#if XF98PEGCServer || XF98PEGCModule
+PEGCDIR  = pegc
+PEGCSRCS = pegc/?*.c
+PEGCOBJS = pegc/pegc_drv.o
+#endif
+
+#if XF98NKVNECServer || XF98NKVNECModule
+NKVNECDIR  = nkvnec
+NKVNECSRCS = nkvnec/?*.c
+NKVNECOBJS = nkvnec/nkvnec_drv.o
+#endif
+
+#if XF98WABSServer || XF98WABSModule
+WABSDIR  = wabs
+WABSSRCS = wabs/?*.c
+WABSOBJS = wabs/wabs_drv.o
+#endif
+
+#if XF98WABEPServer || XF98WABEPModule
+WABEPDIR  = wabep
+WABEPSRCS = wabep/?*.c
+WABEPOBJS = wabep/wabep_drv.o
+#endif
+
+#if XF98WSNAServer || XF98WSNAModule
+WSNADIR  = wsna
+WSNASRCS = wsna/?*.c
+WSNAOBJS = wsna/wsna_drv.o
+#endif
+
+#if XF98TGUIServer || XF98TGUIModule
+TGUIDIR  = trident
+TGUISRCS = trident/?*.c
+TGUIOBJS = trident/trident_drv.o
+#endif
+
+SUBDIRS = $(EGCDIR) $(GANBWAPDIR) $(PEGCDIR) $(NKVNECDIR) $(WABSDIR) \
+	  $(WABEPDIR) $(WSNADIR) $(TGUIDIR)
 
 MakeSubdirs($(SUBDIRS))
+
+#if XF98EGCServer
+NormalDepLibraryTarget(driveregc,$(EGCDIR) $(EGCOBJS),$(EGCOBJS))
+#endif
+#if XF98GANBWAPServer
+NormalDepLibraryTarget(driverganbwap,$(GANBWAPDIR) $(GANBWAPOBJS),$(GANBWAPOBJS))
+#endif
+#if XF98PEGCServer
+NormalDepLibraryTarget(driverpegc,$(PEGCDIR) $(PEGCOBJS),$(PEGCOBJS))
+#endif
+#if XF98NKVNECServer
+NormalDepLibraryTarget(drivernkvnec,$(NKVNECDIR) $(NKVNECOBJS),$(NKVNECOBJS))
+#endif
+#if XF98WABSServer
+NormalDepLibraryTarget(driverwabs,$(WABSDIR) $(WABSOBJS),$(WABSOBJS))
+#endif
+#if XF98WABEPServer
+NormalDepLibraryTarget(driverwabep,$(WABEPDIR) $(WABEPOBJS),$(WABEPOBJS))
+#endif
+#if XF98WSNAServer
+NormalDepLibraryTarget(driverwsna,$(WSNADIR) $(WSNAOBJS),$(WSNAOBJS))
+#endif
+#if XF98TGUIServer
+NormalDepLibraryTarget(drivertrident,$(TGUIDIR) $(TGUIOBJS),$(TGUIOBJS))
+#endif
 
 NormalLibraryObjectRule()
 

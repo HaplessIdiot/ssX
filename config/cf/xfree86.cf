@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.146 1997/03/11 13:04:51 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.147 1997/03/12 06:21:27 hohndel Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -446,21 +446,22 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 # define XF86MonoDrivers	hgc1280 sigma apollo hercules
 #endif
 
-#ifdef XF98LoaderServer
 #ifndef XF98CardDrivers
 # define XF98CardDrivers	egc pegc ganbwap nkvnec trident wabep \
 				wabs wsna
+#endif
+
+#ifdef XF98LoaderServer
 # define XF98SvgaDrivers	/* */
 # define XF98Vga16Drivers	/* */
-#endif
-#else
+#endif /* XF98LoaderServer */
+
 #ifndef XF98SvgaDrivers
 # define XF98SvgaDrivers	generic
 #endif
 #ifndef XF98Vga16Drivers
 # define XF98Vga16Drivers	generic
 #endif
-#endif /* XF98LoaderServer */
 
 #ifndef XF86Vga2Banked
 # define XF86Vga2Banked		YES
@@ -961,6 +962,7 @@ VGA16DRIVERSRC = $(XF86SRC)/vga16/drivers
      XF98HWPWLBSRC = $(XF98SRC)/common_hw/pwlb
     XF98HWGA968SRC = $(XF98SRC)/common_hw/ga968
          XF98OSSRC = $(XF98SRC)/os-support
+     XF98DRIVERSRC = $(XF98SRC)/drivers
   XF98VGADRIVERSRC = $(XF98SRC)/vga256/drivers
 XF98VGA16DRIVERSRC = $(XF98SRC)/vga16/drivers
  XF98VGA2DRIVERSRC = $(XF98SRC)/vga2/drivers

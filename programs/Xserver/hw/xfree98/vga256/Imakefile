@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/9 1996/10/25 15:43:07 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/Imakefile,v 3.10 1996/12/23 07:08:26 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/Imakefile,v 3.12 1997/03/11 13:09:51 hohndel Exp $
 #include <Server.tmpl>
 
 #define IHaveSubdirs
@@ -58,14 +58,8 @@ TGUIOBJS    = trident/?*.o
 TGUIDONES   = trident/DONE
 #endif
 
-#if DoLoadableServer
 SUBDIRS = $(GANBWAPSUBDIRS) $(PEGCSUBDIRS) $(NKVNECSUBDIRS) \
 	  $(WABSSUBDIRS) $(WABEPSUBDIRS) $(WSNASUBDIRS) $(TGUISUBDIRS)
-#else
-SUBDIRS = $(GANBWAPSUBDIRS) $(PEGCSUBDIRS) $(NKVNECSUBDIRS) \
-	  $(WABSSUBDIRS) $(WABEPSUBDIRS) $(WSNASUBDIRS) $(TGUISUBDIRS) \
-	  drivers
-#endif
 
 SRCS    = $(GANBWAPSRCS) $(PEGCSRCS) $(NKVNECSRCS) $(WABSSRCS) \
 	  $(WABEPSRCS) $(WSNASRCS) $(TGUISRCS)
@@ -107,7 +101,7 @@ ConfigTargetNoDepend(vga256Conf,$(ICONFIGFILES),cvga256.SHsuf,cirrus)
 ConfigTargetNoDepend(vga256Conf,$(ICONFIGFILES),cvga256.SHsuf,cirrus)
 #endif
 #if XF98TGUIServer
-ConfigTargetNoDepend(tguiConf,$(ICONFIGFILES),ctgui.SHsuf,tvga8900)
+ConfigTargetNoDepend(tguiConf,$(ICONFIGFILES),ctgui.SHsuf,trident)
 #endif
 #endif
 
@@ -116,47 +110,47 @@ all:: DONE
 	cp $(OBJS) .
 
 #if XF98GANBWAPServer || XF98GANBWAPModule
-NormalDepLibraryTarget(ganbwap,$(GANBWAPSUBDIRS) drivers $(GANBWAPDONES),?*.o)
+NormalDepLibraryTarget(ganbwap,$(GANBWAPSUBDIRS) $(GANBWAPDONES),?*.o)
 #endif
 #if XF98WSNAServer || XF98WSNAModule
-NormalDepLibraryTarget(wsna,$(WSNASUBDIRS) drivers $(WSNADONES),?*.o)
+NormalDepLibraryTarget(wsna,$(WSNASUBDIRS) $(WSNADONES),?*.o)
 #endif
 #if XF98PEGCServer || XF98PEGCModule
-NormalDepLibraryTarget(pegc,$(PEGCSUBDIRS) drivers $(PEGCDONES),?*.o)
+NormalDepLibraryTarget(pegc,$(PEGCSUBDIRS) $(PEGCDONES),?*.o)
 #endif
 #if XF98NKVNECServer || XF98NKVNECModule
-NormalDepLibraryTarget(nkvnec,$(NKVNECSUBDIRS) drivers $(NKVNECDONES),?*.o)
+NormalDepLibraryTarget(nkvnec,$(NKVNECSUBDIRS) $(NKVNECDONES),?*.o)
 #endif
 #if XF98WABSServer || XF98WABSModule
-NormalDepLibraryTarget(wabs,$(WABSSUBDIRS) drivers $(WABSDONES),?*.o)
+NormalDepLibraryTarget(wabs,$(WABSSUBDIRS) $(WABSDONES),?*.o)
 #endif
 #if XF98WABEPServer || XF98WABEPModule
-NormalDepLibraryTarget(wabep,$(WABEPSUBDIRS) drivers $(WABEPDONES),?*.o)
+NormalDepLibraryTarget(wabep,$(WABEPSUBDIRS) $(WABEPDONES),?*.o)
 #endif
 #if XF98TGUIServer || XF98TGUIModule
-NormalDepLibraryTarget(trident,$(TGUISUBDIRS) drivers $(TGUIDONES),?*.o)
+NormalDepLibraryTarget(trident,$(TGUISUBDIRS) $(TGUIDONES),?*.o)
 #endif
 #else
 #if XF98GANBWAPServer || XF98GANBWAPModule
-NormalDepLibraryTarget(ganbwap,$(GANBWAPSUBDIRS) drivers $(GANBWAPDONES),$(GANBWAPOBJS))
+NormalDepLibraryTarget(ganbwap,$(GANBWAPSUBDIRS) $(GANBWAPDONES),$(GANBWAPOBJS))
 #endif
 #if XF98WSNAServer || XF98WSNAModule
-NormalDepLibraryTarget(wsna,$(WSNASUBDIRS) drivers $(WSNADONES),$(WSNAOBJS))
+NormalDepLibraryTarget(wsna,$(WSNASUBDIRS) $(WSNADONES),$(WSNAOBJS))
 #endif
 #if XF98PEGCServer || XF98PEGCModule
-NormalDepLibraryTarget(pegc,$(PEGCSUBDIRS) drivers $(PEGCDONES),$(PEGCOBJS))
+NormalDepLibraryTarget(pegc,$(PEGCSUBDIRS) $(PEGCDONES),$(PEGCOBJS))
 #endif
 #if XF98NKVNECServer || XF98NKVNECModule
-NormalDepLibraryTarget(nkvnec,$(NKVNECSUBDIRS) drivers $(NKVNECDONES),$(NKVNECOBJS))
+NormalDepLibraryTarget(nkvnec,$(NKVNECSUBDIRS) $(NKVNECDONES),$(NKVNECOBJS))
 #endif
 #if XF98WABSServer || XF98WABSModule
-NormalDepLibraryTarget(wabs,$(WABSSUBDIRS) drivers $(WABSDONES),$(WABSOBJS))
+NormalDepLibraryTarget(wabs,$(WABSSUBDIRS) $(WABSDONES),$(WABSOBJS))
 #endif
 #if XF98WABEPServer || XF98WABEPModule
-NormalDepLibraryTarget(wabep,$(WABEPSUBDIRS) drivers $(WABEPDONES),$(WABEPOBJS))
+NormalDepLibraryTarget(wabep,$(WABEPSUBDIRS) $(WABEPDONES),$(WABEPOBJS))
 #endif
 #if XF98TGUIServer || XF98TGUIModule
-NormalDepLibraryTarget(trident,$(TGUISUBDIRS) drivers $(TGUIDONES),$(TGUIOBJS))
+NormalDepLibraryTarget(trident,$(TGUISUBDIRS) $(TGUIDONES),$(TGUIOBJS))
 #endif
 #endif
 

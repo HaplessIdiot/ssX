@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.36 1996/11/18 13:23:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.37 1996/12/23 07:04:46 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -2295,7 +2295,7 @@ static char *modelines_text =
 "# 320x240 @ 72 Hz, 36.5 kHz hsync\n"
 "Modeline \"320x240\"     15.750 320  336  384  400   240  244  246  262 Doublescan\n"
 "# 400x300 @ 56 Hz, 35.2 kHz hsync, 4:3 aspect ratio\n"
-"ModeLine \"400x300\"     18     400  416  448  512   300  301  602  312 Doublescan\n"
+"ModeLine \"400x300\"     18     400  416  448  512   300  301  302  312 Doublescan\n"
 "# 400x300 @ 60 Hz, 37.8 kHz hsync\n"
 "Modeline \"400x300\"     20     400  416  480  528   300  301  303  314 Doublescan\n"
 "# 400x300 @ 72 Hz, 48.0 kHz hsync\n"

@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.1 1997/03/06 23:17:09 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.2 1997/03/11 13:05:55 hohndel Exp $ */
 
 #ifndef _TSENG_H
 #define _TSENG_H
@@ -57,8 +57,13 @@ typedef enum {
     TYPE_ET4000,
     TYPE_ET4000W32,
     TYPE_ET4000W32I,
+    TYPE_ET4000W32Ib,
+    TYPE_ET4000W32Ic,
     TYPE_ET4000W32P,
+    TYPE_ET4000W32Pa,
+    TYPE_ET4000W32Pb,
     TYPE_ET4000W32Pc,
+    TYPE_ET4000W32Pd,
     TYPE_ET6000
 } t_tseng_type;
 

@@ -5,7 +5,7 @@ XCOMM $XConsortium: Imakefile /main/9 1996/10/25 15:43:49 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/ganbwap/Imakefile,v 3.9 1996/12/12 09:19:03 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/ganbwap/Imakefile,v 3.10 1996/12/23 07:08:47 dawes Exp $
 #include <Server.tmpl>
 
 #ifdef i386Architecture
@@ -44,9 +44,6 @@ SRCS =	 vgagc.c vgawindow.c vgascrinit.c \
 	 SpeedUpBlt.c $(BSRCS) \
 	 vgaBanks.c $(FSRCS) vgaHW.c vga.c vgaCmap.c \
 	 vgaPCI.c vgatables.c
-
-FOBJS =  fBitBlt.o fFillCopy.o fFillXor.o fFillOr.o fFillAnd.o \
-         fFillSet.o vgabres.o vgalineH.o vgalineV.o
 
 OBJS =   vgagc.o vgawindow.o vgascrinit.o \
 	 vgagetsp.o vgafillrct.o vgaimage.o \

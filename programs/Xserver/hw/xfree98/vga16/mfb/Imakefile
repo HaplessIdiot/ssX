@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga16/mfb/Imakefile,v 3.2 1996/12/23 07:08:16 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga16/mfb/Imakefile,v 3.3 1997/03/15 06:55:00 hohndel Exp $
 
 
 
@@ -36,7 +36,7 @@ OBJS =   mfbgc.o mfbwindow.o mfbfont.o \
 	 mfbplywhite.o mfbplyblack.o mfbplyinv.o
 
 #if DoLoadableServer
-XF86INCL = -I../../common -I../../os-support -I../../common_hw
+XF86INCL = -I$(XF86SRC) -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC)
 #endif
 
 INCLUDES = -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
@@ -126,6 +126,7 @@ ObjectMapIncludeFromSpecialSource(mfbtegblt,$(SERVERSRC)/mfb/mfbtegblt,/**/)
 ObjectMapIncludeFromSpecialSource(mfbtile,$(SERVERSRC)/mfb/mfbtile,/**/)
 ObjectMapIncludeFromSpecialSource(mfbwindow,$(SERVERSRC)/mfb/mfbwindow,/**/)
 ObjectMapIncludeFromSpecialSource(mfbzerarc1,$(SERVERSRC)/mfb/mfbzerarc,/**/)
+LinkSourceFile(mfbmap.h,$(XF86SRC)/vga16/mfb)
 #endif
 
 ObjectFromSpecialSource(mfbseg1,mfbline1,-DPOLYSEGMENT)

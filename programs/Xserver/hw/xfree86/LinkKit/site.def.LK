@@ -4,7 +4,7 @@ XCOMM $XConsortium: site.def.LK /main/12 1996/10/28 04:23:14 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.25 1996/12/23 06:30:47 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.27 1997/02/16 10:27:02 hohndel Exp $
 
 /* Configuration file for Server Link Kit */
 
@@ -140,7 +140,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.25 1996/1
  *
 #define XF98EGCServer		YES
 #define XF98GANBWAPServer	YES
-#define XF98NEC480Server	YES
+#define XF98PEGCServer		YES
 #define XF98NKVNECServer	YES
 #define XF98WABSServer		YES
 #define XF98WABEPServer		YES

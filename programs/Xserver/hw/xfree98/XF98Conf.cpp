@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.12 1996/12/23 07:04:54 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.13 1997/01/19 12:51:41 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -48,7 +48,7 @@ XCOMM Multiple FontPath entries are allowed (which are concatenated together),
 XCOMM as well as specifying multiple comma-separated entries in one FontPath
 XCOMM command (or a combination of both methods)
 
-    FontPath	MISCFONTPATH
+FontPath	MISCFONTPATH
 USE_75FONTS	DPI75USFONTPATH
 USE_100FONTS	DPI100USFONTPATH
 USE_T1FONTS	T1FONTPATH
@@ -439,7 +439,7 @@ XCOMM    Clocks	25.2 28.3
 EndSection
 
 Section "Device"
-    Identifier	"NEC480"
+    Identifier	"PEGC"
     VendorName	"Unknown"
     BoardName	"Unknown"
     Chipset	"pegc"
@@ -705,7 +705,7 @@ Section "Screen"
     Driver	"svga"
     Device	"WAB"
 XCOMM    Device	"WABEP"
-XCOMM    Device	"NEC480"
+XCOMM    Device	"PEGC"
 XCOMM    Device	"WAP"
 XCOMM    Device	"WSNA2F"
 XCOMM    Device	"NKVNEC"

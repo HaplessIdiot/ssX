@@ -1,12 +1,12 @@
-/* $XConsortium: nec480_dr.c /main/6 1996/10/23 18:51:20 kaleb $ */
+/* $XConsortium: pegc_dr.c /main/6 1996/10/23 18:51:20 kaleb $ */
 /*
- * Id: nec480_driver.c,v 1.6 1995/06/25 00:28:39 ueno Exp
+ * Id: pegc_driver.c,v 1.6 1995/06/25 00:28:39 ueno Exp
  *
  *    It was my dream.                        -- UENO Shuichi.
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/nec480/nec480_dr.c,v 3.7 1997/02/11 10:04:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/drivers/pegc/pegc_dr.c,v 1.1 1997/03/11 14:31:16 hohndel Exp $ */
 
 /*
  * These are X and server generic header files.
@@ -20,6 +20,7 @@
  */
 #include "compiler.h"
 #include "xf86.h"
+#include "xf86Version.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
@@ -34,50 +35,50 @@
  */
 typedef struct {
 	vgaHWRec std;
-} vgaNEC480Rec, *vgaNEC480Ptr;
+} vgaPEGCRec, *vgaPEGCPtr;
 
 /*
  * Forward definitions for the functions that make up the driver.  See
  * the definitions of these functions for the real scoop.
  */
-static Bool     NEC480Probe();
-static char *   NEC480Ident();
-static void     NEC480EnterLeave();
-static Bool     NEC480Init();
-static int	NEC480ValidMode();
-static void *   NEC480Save();
-static void     NEC480Restore();
+static Bool     PEGCProbe();
+static char *   PEGCIdent();
+static void     PEGCEnterLeave();
+static Bool     PEGCInit();
+static int	PEGCValidMode();
+static void *   PEGCSave();
+static void     PEGCRestore();
 
 /*
  * These are VRAM bank select functions.
  */
-extern	void     NEC480SetRead();
-extern	void     NEC480SetWrite();
-extern	void     NEC480SetReadWrite();
+extern	void     PEGCSetRead();
+extern	void     PEGCSetWrite();
+extern	void     PEGCSetReadWrite();
 
 /*
  * This data structure defines the driver itself.  The data structure is
  * initialized with the functions that make up the driver and some data 
  * that defines how the driver operates.
  */
-vgaVideoChipRec NEC480 = {
+vgaVideoChipRec PEGC = {
 	/* 
 	 * Function pointers
 	 */
-	NEC480Probe,
-	NEC480Ident,
-	NEC480EnterLeave,
-	NEC480Init,
-	NEC480ValidMode,
-	NEC480Save,
-	NEC480Restore,
+	PEGCProbe,
+	PEGCIdent,
+	PEGCEnterLeave,
+	PEGCInit,
+	PEGCValidMode,
+	PEGCSave,
+	PEGCRestore,
 	(void (*)())NoopDDA,
 	(void (*)())NoopDDA,
 	(void (*)())NoopDDA,
 	(void (*)())NoopDDA,
-	NEC480SetRead,
-	NEC480SetWrite,
-	NEC480SetReadWrite,
+	PEGCSetRead,
+	PEGCSetWrite,
+	PEGCSetReadWrite,
 	/*
 	 * This is the size of the mapped memory window, usually 64k.
 	 */
@@ -130,9 +131,13 @@ vgaVideoChipRec NEC480 = {
 	FALSE,
 	0,
 	0,
-	FALSE,
-	FALSE,
-	FALSE,
+	FALSE,		/* 1bpp */
+	FALSE,		/* 4bpp */
+	TRUE,		/* 8bpp */
+	FALSE,		/* 15bpp */
+	FALSE,		/* 16bpp */
+	FALSE,		/* 24bpp */
+	FALSE,		/* 32bpp */
 	NULL,
 	1,
 };
@@ -143,6 +148,18 @@ unsigned short *vramwindow;
 static   char  *ppmodep, ppmode_sv;
 
 #ifdef XFree86LOADER
+
+XF86ModuleVersionInfo pegcVersRec =
+{
+	"pegc_drv.o",
+	"The XFree86 Project",
+	MODINFOSTRING1,
+	MODINFOSTRING2,
+	XF86_VERSION_CURRENT,
+	0x00010001,
+	{0,0,0,0}
+};
+
 /*
  * this function returns the vgaVideoChipPtr for this driver
  *
@@ -158,14 +175,15 @@ ModuleInit(data,magic)
     switch(cnt++)
     {
     case 0:
-	* data = (pointer)&NEC480;
-	* magic= MAGIC_ADD_VIDEO_CHIP_REC;
+	* data = (pointer)&pegcVersRec;
+	* magic= MAGIC_VERSION;
 	break;
     case 1:
-        * data = (pointer) "libnec480.a";
-	* magic= MAGIC_LOAD;
+        * data = (pointer)&PEGC;
+	* magic= MAGIC_ADD_VIDEO_CHIP_REC;
 	break;
     default:
+	xf86issvgatype = TRUE;
         * magic= MAGIC_DONE;
 	break;
     }
@@ -175,12 +193,12 @@ ModuleInit(data,magic)
 #endif /* XFree86LOADER */
 
 /*
- * NEC480Ident --
+ * PEGCIdent --
  *
  * Returns the string name for supported chipset 'n'.
  */
 static char *
-NEC480Ident(int n)
+PEGCIdent(int n)
 {
 	static char *chipsets[] = {"pegc"};
 
@@ -190,13 +208,13 @@ NEC480Ident(int n)
 		return(chipsets[n]);
 }
 
-#define	NEC480_MAX_CLOCK_IN_KHZ	31500
+#define	PEGC_MAX_CLOCK_IN_KHZ	31500
 
 /*
- * NEC480Probe --
+ * PEGCProbe --
  */
 static Bool
-NEC480Probe()
+PEGCProbe()
 {
 	xf86ClearIOPortList(vga256InfoRec.scrnIndex);
 	xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
@@ -212,7 +230,7 @@ NEC480Probe()
 		 * is a string comparison against each of the supported
 		 * names available from the Ident() function.
 		 */
-		if (StrCaseCmp(vga256InfoRec.chipset, NEC480Ident(0)))
+		if (StrCaseCmp(vga256InfoRec.chipset, PEGCIdent(0)))
 			return (FALSE);
 	}
 
@@ -237,14 +255,14 @@ NEC480Probe()
   	if (!vga256InfoRec.clocks)
     	{
 		vga256InfoRec.clocks = 1;
-		vga256InfoRec.clock[0] = NEC480_MAX_CLOCK_IN_KHZ;
+		vga256InfoRec.clock[0] = PEGC_MAX_CLOCK_IN_KHZ;
     	}
 
-	vga256InfoRec.maxClock = NEC480_MAX_CLOCK_IN_KHZ;
-  	vga256InfoRec.chipset = NEC480Ident(0);
+	vga256InfoRec.maxClock = PEGC_MAX_CLOCK_IN_KHZ;
+  	vga256InfoRec.chipset = PEGCIdent(0);
   	vga256InfoRec.bankedMono = TRUE;
 
-	NEC480EnterLeave(ENTER);
+	PEGCEnterLeave(ENTER);
 
 	/*
 	 * Map the VRAM window's address
@@ -264,13 +282,13 @@ NEC480Probe()
 }
 
 /*
- * NEC480EnterLeave --
+ * PEGCEnterLeave --
  */
 
 static void gdc_init();
 
 static void 
-NEC480EnterLeave(Bool enter)
+PEGCEnterLeave(Bool enter)
 {
 	static int flag = 0;
 	static int graph_mode, hsync31, cont_page;
@@ -286,7 +304,7 @@ NEC480EnterLeave(Bool enter)
 		outb(0x9a0, 0x0d);
 		cont_page = inb(0x9a0) & 0x01;
 		/* Save current horizontal sync, 1: 31.5KHz */
-		if( vga256InfoRec.clock[0] == NEC480_MAX_CLOCK_IN_KHZ ){
+		if( vga256InfoRec.clock[0] == PEGC_MAX_CLOCK_IN_KHZ ){
 			hsync31 = inb(0x9a8) & 0x01;
 		}
 		flag = 1;
@@ -302,13 +320,13 @@ NEC480EnterLeave(Bool enter)
 		/* GDC : 5MHz mode */
 		outb(0x6a, 0x83);
 		outb(0x6a, 0x85);
-		if( vga256InfoRec.clock[0] == NEC480_MAX_CLOCK_IN_KHZ ){
+		if( vga256InfoRec.clock[0] == PEGC_MAX_CLOCK_IN_KHZ ){
 			gdc_init();
 		}
 		outb(0x6a, 0x07);
 		outb(0x6a, 0x21);		/* Extended mode */
 		outb(0x6a, 0x69);		/* Continuous G-VRAM page */
-		if( vga256InfoRec.clock[0] == NEC480_MAX_CLOCK_IN_KHZ ){
+		if( vga256InfoRec.clock[0] == PEGC_MAX_CLOCK_IN_KHZ ){
 			outb(0x9a8, 0x01);	/* 24.8KHz -> 31.5KHz */
 		}
 		while (!(inb(0x60) & 0x20)) ;	/* V-SYNC wait */
@@ -327,7 +345,7 @@ NEC480EnterLeave(Bool enter)
 			outb(0x6a, 0x07);
 			outb(0x6a, 0x68);	/* separate VRAM page */
 		}
-		if( vga256InfoRec.clock[0] == NEC480_MAX_CLOCK_IN_KHZ
+		if( vga256InfoRec.clock[0] == PEGC_MAX_CLOCK_IN_KHZ
 		   && hsync31==0 ){
 			outb(0x9a8, 0x00);	/* 31.5KHz-> 24.8KHz */
 		}
@@ -339,30 +357,30 @@ NEC480EnterLeave(Bool enter)
 }
 
 /*
- * NEC480Restore --
+ * PEGCRestore --
  */
 static void 
-NEC480Restore(vgaNEC480Ptr restore)
+PEGCRestore(vgaPEGCPtr restore)
 {
 	vgaHWRestore((vgaHWPtr)restore);
 }
 
 /*
- * NEC480Save --
+ * PEGCSave --
  */
 static void *
-NEC480Save(vgaNEC480Ptr save)
+PEGCSave(vgaPEGCPtr save)
 {
-	save = (vgaNEC480Ptr)vgaHWSave((vgaHWPtr)save,
-			sizeof(vgaNEC480Rec));
+	save = (vgaPEGCPtr)vgaHWSave((vgaHWPtr)save,
+			sizeof(vgaPEGCRec));
   	return ((void *) save);
 }
 
 /*
- * NEC480Init --
+ * PEGCInit --
  */
 static Bool
-NEC480Init(DisplayModePtr mode)
+PEGCInit(DisplayModePtr mode)
 {
 	/*
 	 * The character clock is set to 4 dots for 256 color modes
@@ -378,7 +396,7 @@ NEC480Init(DisplayModePtr mode)
 	 * This will allocate the datastructure and initialize all of the
 	 * generic VGA registers.
 	 */
-	if (!vgaHWInit(mode,sizeof(vgaNEC480Rec)))
+	if (!vgaHWInit(mode,sizeof(vgaPEGCRec)))
 		return(FALSE);
 
 	/*
@@ -393,11 +411,11 @@ NEC480Init(DisplayModePtr mode)
 }
 
 /*
- * NEC480ValidMode --
+ * PEGCValidMode --
  *
  */
 static int
-NEC480ValidMode(DisplayModePtr mode, Bool verbose, int flag)
+PEGCValidMode(DisplayModePtr mode, Bool verbose, int flag)
 {
 	return(MODE_OK);
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.83 1997/03/11 17:27:44 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.84 1997/03/13 15:12:23 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1079,6 +1079,7 @@ vgaProbe()
 	  }
 
 	} else {
+#ifndef PC98
 #ifdef BANKEDMONOVGA
 	  if (vgaUse2Banks)
 	  {
@@ -1094,6 +1095,7 @@ vgaProbe()
 	  ourmfbDoBitbltCopy = mfbDoBitbltTwoBanksCopy;
 	  ourmfbDoBitbltCopyInverted = mfbDoBitbltTwoBanksCopyInverted;
 #endif /* BANKEDMONOVGA */
+#endif /* PC98 */
 	}
 
 #if !defined(PC98) || defined(PC98_TGUI)
@@ -1295,6 +1297,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 #else /* XFree86LOADER */	/* } { */
   switch (xf86bpp) {
     case 1:
+#ifndef PC98
         if (!vga2_mfbScreenInit(pScreen,
 		     (pointer) vgaVirtBase,
 		     vga256InfoRec.virtualX,
@@ -1302,8 +1305,10 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 		     displayResolution, displayResolution,
 		     vga256InfoRec.displayWidth))
     	    return(FALSE);
+#endif
     	break;
     case 4:
+#if !defined(PC98) || defined(PC98_EGC)
         /*
 	 * for some reason this function is void and cannot fail
 	 */
@@ -1313,6 +1318,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 		     vga256InfoRec.virtualY,
 		     displayResolution, displayResolution,
 		     vga256InfoRec.displayWidth);
+#endif
     	break;
     default:
   	xf86AccelInfoRec.ServerInfoRec = &vga256InfoRec;
@@ -1389,12 +1395,16 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 
   switch (xf86bpp) {
     case 1:
+#ifndef PC98
   	if (!vga2_mfbCreateDefColormap(pScreen))
     		return(FALSE);
+#endif
     	break;
     case 4:
+#if !defined(PC98) || defined(PC98_EGC)
   	if (!vga16CreateDefColormap(pScreen))
     		return(FALSE);
+#endif
     	break;
     default:
   	if (!cfbCreateDefColormap(pScreen))
@@ -1607,11 +1617,17 @@ vgaEnterLeaveVT(enter, screen_idx)
 	      pspix->devPrivate.ptr = (pointer)vgaVirtBase;
 	  else
 	      pspix->devPrivate.ptr = vgaLinearBase;
-	  if (vgaBitsPerPixel == 1)
+	  if (vgaBitsPerPixel == 1) {
+#ifndef PC98
 	      vga2_mfbDoBitblt(&ppix->drawable, &pspix->drawable, GXcopy, &pixReg,
                       &pixPt);
-	  else if (vgaBitsPerPixel == 4)
+#endif
+	  }
+	  else if (vgaBitsPerPixel == 4) {
+#if !defined(PC98) || defined(PC98_EGC)
 	      vgaRestoreScreenPix(pScreen,ppix);
+#endif
+	  }
 	  else if (vgaBitsPerPixel == 8)
 	      vga256DoBitblt(&ppix->drawable, &pspix->drawable, GXcopy,
 	          &pixReg, &pixPt, 0xFF);
@@ -1663,11 +1679,17 @@ vgaEnterLeaveVT(enter, screen_idx)
 				       pScreen->height, pScreen->rootDepth);
         if (ppix)
         {
-          if (vgaBitsPerPixel == 1)
+          if (vgaBitsPerPixel == 1) {
+#ifndef PC98
 	      vga2_mfbDoBitblt(&pspix->drawable, &ppix->drawable, GXcopy, &pixReg,
                       &pixPt);
-          else if (vgaBitsPerPixel == 4)
+#endif
+	  }
+          else if (vgaBitsPerPixel == 4) {
+#if !defined(PC98) || defined(PC98_EGC)
 	      vgaSaveScreenPix(pScreen,ppix);
+#endif
+	  }
           else if (vgaBitsPerPixel == 8)
 	      vga256DoBitblt(&pspix->drawable, &ppix->drawable, GXcopy,
 	          &pixReg, &pixPt, 0xFF);

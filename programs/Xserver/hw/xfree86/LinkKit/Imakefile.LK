@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile.LK /main/11 1996/10/25 21:18:33 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.39 1997/01/25 04:16:28 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.41 1997/02/16 10:27:00 hohndel Exp $
 /*
  * Server Makefile for LinkKit
  */
@@ -518,25 +518,25 @@ SetUIDServerTarget(XF98_GANBWAP,$(XF98GANBWAPSUBDIRS),$(XF98GANBWAPOBJS),$(XF98G
 #endif	/* XF98GANBWAPServer */
 
 
-#if XF98NEC480Server
+#if XF98PEGCServer
 XCOMM
-XCOMM XFree98 NEC480 Server
+XCOMM XFree98 PEGC Server
 XCOMM
 INCLUDES = -Iinclude -Iinclude/X11 -Idrivers98
 DDXDIR1 = $(XF98VGADRIVERSRC)
-XF98NEC480SUBDIRS = $(XF98VGADRIVERSRC)
-XF98NEC480OBJS = XF86_SVGA.o nec480Conf.o $(XAAOBJS)
-XF98NEC480LIBS = $(XF98VGADRIVERSRC)/LibraryTargetName(drivernec480) $(XAALIBS) \
-	       $(XF98DRIVERSRC)/LibraryTargetName(nec480) $(XF98LIBS) CFBLibs
-XF98NEC480SYSLIBS = $(SYSLIBS)
+XF98PEGCSUBDIRS = $(XF98VGADRIVERSRC)
+XF98PEGCOBJS = XF86_SVGA.o pegcConf.o $(XAAOBJS)
+XF98PEGCLIBS = $(XF98VGADRIVERSRC)/LibraryTargetName(driverpegc) $(XAALIBS) \
+	       $(XF98DRIVERSRC)/LibraryTargetName(pegc) $(XF98LIBS) CFBLibs
+XF98PEGCSYSLIBS = $(SYSLIBS)
 XF98VGADRIVERS = XF98SvgaDrivers
-ConfigTargetNoDepend(nec480Conf,$(ICONFIGFILES),cnec480.sh,nec480)
+ConfigTargetNoDepend(pegcConf,$(ICONFIGFILES),cpegc.sh,pegc)
 XF86_SVGA.o: XF86_SVGA.c $(ICONFIGFILES)
-SetUIDServerTarget(XF98_NEC480,$(XF98NEC480SUBDIRS),$(XF98NEC480OBJS),$(XF98NEC480LIBS),$(XF98NEC480SYSLIBS))
+SetUIDServerTarget(XF98_PEGC,$(XF98PEGCSUBDIRS),$(XF98PEGCOBJS),$(XF98PEGCLIBS),$(XF98PEGCSYSLIBS))
 #ifndef ServerToInstall
-#define ServerToInstall XF98_NEC480
+#define ServerToInstall XF98_PEGC
 #endif
-#endif	/* XF98NEC480Server */
+#endif	/* XF98PEGCServer */
 
 
 #if XF98NKVNECServer
@@ -876,7 +876,7 @@ install::
 #endif
 
 /* Only these servers have subdirs */
-#if XF86SVGAServer || XF86MonoServer || XF86VGA16Server || XF86S3Server || XF98GANBWAPServer || XF98NEC480Server || XF98NKVNECServer || XF98WABSServer || XF98WABEPServer || XF98WSNAServer || XF98TGUIServer || XF98NECS3Server || XF98PWSKBServer || XF98PWLBServer || XF98GA968Server
+#if XF86SVGAServer || XF86MonoServer || XF86VGA16Server || XF86S3Server || XF98GANBWAPServer || XF98PEGCServer || XF98NKVNECServer || XF98WABSServer || XF98WABEPServer || XF98WSNAServer || XF98TGUIServer || XF98NECS3Server || XF98PWSKBServer || XF98PWLBServer || XF98GA968Server
 
 #define IHaveSubdirs
 

@@ -75,7 +75,7 @@ Readme for the XFree86 3.2 LinkKit
 
 	 o To build the GA-98NB/WAP server: set XF98GANBServer to YES.
 
-	 o To build the NEC480 server: set XF98NEC480Server to YES.
+	 o To build the PEGC server: set XF98PEGCServer to YES.
 
 	 o To build the NEC-CIRRUS/EPSON NKV/NKV2 server: set XF98NKVNECServer
 	   to YES.
@@ -329,4 +329,4 @@ Readme for the XFree86 3.2 LinkKit
 
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/README,v 3.21 1997/01/27 22:12:12 dawes Exp $

@@ -1,5 +1,5 @@
 /* $XConsortium: dipexExt.c,v 5.11 94/04/17 20:36:04 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.8 1997/02/25 14:19:08 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.9 1997/02/28 08:18:12 hohndel Exp $ */
 
 /***********************************************************
 
@@ -68,7 +68,8 @@ SOFTWARE.
 #undef LOCAL_FLAG
 
 #ifdef XFree86LOADER
-#include "xf86.h"
+#define	MAGIC_DONE	0
+#define	MAGIC_PEX_INIT	6
 #include "xf86_libc.h"
 #endif
 

@@ -1,5 +1,5 @@
 /* $XConsortium: technq.c,v 1.6 94/04/17 20:34:00 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/technq.c,v 3.0 1996/03/29 22:11:30 dawes Exp $ */
 /**** module technq.c ****/
 /****************************************************************************
 
@@ -115,6 +115,10 @@ terms and conditions:
 #include <macro.h>
 #include <memory.h>
 #include <technq.h>
+
+#ifdef XFree86LOADER
+#include "xf86_libc.h"
+#endif
 
 /*
  *  Xie protocol proceedures called from the dispatcher

@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.3 1997/02/25 18:45:43 hohndel Exp $ */
 
 
 
@@ -72,6 +72,7 @@ typedef struct _xf86dirent *XF86DIRENT;
 #define strncmp(a,b,c)	xf86strncmp(a,b,c)
 #define strcat(a,b)	xf86strcat(a,b)
 #define strcmp(a,b)	xf86strcmp(a,b)
+#define strlen(a)	xf86strlen(a)
 
 /*
  * some math functions

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# $XFree86: xc/programs/Xserver/hw/xfree98/vga256/cvga256.sh,v 3.1 1996/02/04 09:16:59 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree98/vga256/cvga256.sh,v 3.2 1996/12/23 07:08:28 dawes Exp $
 #
 # This script generates vga256Conf.c
 #
@@ -29,7 +29,7 @@ done
 echo "        $1;" >> $VGACONF
 cat >> $VGACONF <<EOF
 
-vgaVideoChipPtr vgaDrivers[] =
+vgaVideoChipPtr videoDrivers[] =
 {
 EOF
 for i in $Args; do

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/trident/Imakefile,v 3.5 1996/12/12 09:19:29 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/trident/Imakefile,v 3.6 1996/12/24 02:27:05 dawes Exp $
 #include <Server.tmpl>
 
 #ifdef i386Architecture
@@ -37,9 +37,6 @@ SRCS =	 vgagc.c vgawindow.c vgascrinit.c \
 	 SpeedUpBlt.c $(BSRCS) \
 	 vgaBanks.c $(FSRCS) vgaHW.c vga.c vgaCmap.c \
 	 vgaPCI.c vgatables.c
-
-FOBJS =  fBitBlt.o fFillCopy.o fFillXor.o fFillOr.o fFillAnd.o \
-         fFillSet.o vgabres.o vgalineH.o vgalineV.o
 
 OBJS =   vgagc.o vgawindow.o vgascrinit.o \
 	 vgagetsp.o vgafillrct.o vgaimage.o \

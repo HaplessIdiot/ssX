@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.55 1997/02/27 13:58:22 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.56 1997/02/27 18:58:59 hohndel Exp $
 
 
 
@@ -347,7 +347,7 @@ InstallLinkKitNonExecFile(cfb24.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(cfb32.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(XF86_LOADER.c,$(LINKKITDIR))
 
-#if DoLoadableServer && XF86P9000Server
+#if DoLoadableServer && XF86P9000Module
 InstallDynamicModule(XF86_P9000.o,$(MODULEDIR))
 #endif
 

@@ -1,3 +1,19 @@
+XFree86 3.2Ao (18 March 1997)
+ 581. Fix bad 400x300 mode line (#165, Koen Gadeyne).
+ 580. Finer W32 chipset detection (#165, Koen Gadeyne).
+ 579. Tseng documentation updates (#165, Koen Gadeyne).
+ 578. Fix unresolved strlen in PEX and XIE (#164, Takaaki Nomura).
+ 577. Fix changes of NEC480 to PEGC (#163, Michio "Karl" Jinbo).
+ 576. Fix building of XF98_LOADER (#163, Michio "Karl" Jinbo, Takaaki Nomura).
+ 575. Fix building of normal X servers for PC98 (#163, Takaaki Nomura).
+ 574. Fix building P9000 module (#160, Takaaki Nomura).
+ 573. Add S3/SVGA color expansion (#161, Mark Vojkovich).
+ 572. Fix problems with "dac_8_bit" in svga server (#159, Mark Vojkovich).
+ 571. Fix ET6000 hardware cursor (#158, Harald Nordgard Hansen).
+ 570. Changes to NetBSD + BSD Elf library configuration (#157, Chris G.
+      Demetriou).
+ 569. Fix for the SVGA/S# hardware cursor (Xavier Ducoin).
+
 XFree86 3.2An (15 March 1997)
  568. Build fixes in order to get a clean compile on Linux and FreeBSD
       (not for PC98, though). The servers still don't work quite as
@@ -4170,4 +4186,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.430 1997/03/12 11:35:28 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.431 1997/03/15 06:57:40 hohndel Exp $

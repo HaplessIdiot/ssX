@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3probe.c,v 1.2 1997/02/27 13:59:48 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3probe.c,v 1.1 1997/03/06 23:16:37 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -322,11 +322,6 @@ Bool S3Probe()
       OFLG_SET(OPTION_SPEA_MERCURY, &vga256InfoRec.options);
 #endif
 
-   if (OFLG_ISSET(OPTION_TRIO32_FC_BUG, &vga256InfoRec.options))
-      s3Trio32FCBug = TRUE;
-   if (OFLG_ISSET(OPTION_S3_968_DASH_BUG, &vga256InfoRec.options))
-      s3_968_DashBug = TRUE;
-
    if (OFLG_ISSET(OPTION_GENOA, &vga256InfoRec.options))
       s3BiosVendor = GENOA_BIOS;
    else if (OFLG_ISSET(OPTION_STB, &vga256InfoRec.options))
@@ -339,8 +334,6 @@ Bool S3Probe()
       s3BiosVendor = DIAMOND_BIOS;
 
 
-   if (OFLG_ISSET(OPTION_PCI_HACK, &vga256InfoRec.options))
-      s3PCIHack = TRUE;  /* can we get rid of this? (MArk) */
    if (OFLG_ISSET(OPTION_POWER_SAVER, &vga256InfoRec.options))
       s3PowerSaver = TRUE;
 
@@ -647,8 +640,8 @@ Bool S3Probe()
    }
 
    if(s3DAC8Bit) {
-	/* Do whatever is needed to get SVGA server to use it! (MArk) */
-/*      xf86weight.red =  xf86weight.green = xf86weight.blue = 8; */
+     /* I think this should be handled automatically by the server (MArk) */
+      xf86weight.red =  xf86weight.green = xf86weight.blue = 8; 
    }
 
 

@@ -40,7 +40,7 @@ PC-ATと共通の事項については、共通のドキュメントを参照してください。この
   ベンダー      チップセット                             サーバ
   ------------- --------------------------------------- ----------------
   NEC/EPSON     EGC(640x400x16)                         XF98_EGC
-  NEC           PEGC(640x400x256,640x480x256)           XF98_NEC480
+  NEC           PEGC(640x400x256,640x480x256)           XF98_PEGC
   NEC           S3 928(As2等), S3 864(As3等)            XF98_NECS3
   NEC           Cirrus CLGD5428/5430(B-Mate,Xe,CanBe等) XF98_NKVNEC
   NEC           Trident TGUI9680XGi(X-Mate,ValueStar等) XF98_TGUI
@@ -242,7 +242,7 @@ MELCOのWAB-EP (EPSON ローカルバス用)で動作するVGA256ベースのサーバです。
 	XF86_VGA16 manpage,README.Config参照。
 
 
-<sect1>XF98_NEC480<p>
+<sect1>XF98_PEGC<p>
 	 PEGCを用いた、640x400, 640x480ドット256色のサーバです。PC-9821
         シリーズの拡張グラフィックアーキテクチャ搭載機で動作します。
 <sect2>XF86Configの設定<p>

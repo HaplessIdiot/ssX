@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_cursor.c,v 1.1 1997/03/06 23:17:13 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_cursor.c,v 1.2 1997/03/11 13:06:01 hohndel Exp $ */
 
 /*
  * Hardware cursor handling. Adapted mainly from apm/apm_cursor.c
@@ -193,7 +193,7 @@ static Bool TsengRealizeCursor(pScr, pCurs)
                       Invert is actualy not used here.
 
           As a result, for Tseng the plane data changes:
-              plane 0 = Src & Msk
+              plane 0 = ~Src & Msk
               plane 1 = ~Msk
           
           The bit order on ET6000 cursor image:
@@ -253,7 +253,7 @@ static Bool TsengRealizeCursor(pScr, pCurs)
         m = pServMsk[offset];
         s = pServSrc[offset];
 
-        b0 = s & m;
+        b0 = ~s & m;
         b1 = ~m;
         
         /*

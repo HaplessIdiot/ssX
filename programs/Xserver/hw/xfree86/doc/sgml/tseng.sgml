@@ -59,7 +59,9 @@ Acceleration does not work together with linear memory mode on some cards,
 and will produce a mostly black screen. If this happens in 8bpp (256 color)
 mode, disabling acceleration or disabling linear memory mode will get rid of
 that problem. If this happens in a 16, 24 or 32 bpp mode, disabling
-acceleration is the only way out.
+acceleration is the only way out. On most cards, however, switching modes
+(CTRL-ALT-+/-) somehow cures the problem (a screen refresh is required to
+repaint the screen).
 
 To disable acceleration, put the following in the Device section of your
 <tt>XF86Config</tt>:
@@ -253,12 +255,51 @@ Option &dquot;linear&dquot;  (ET4000W32p, ET6000)
         is visible at one time) is not necessary. It enhances performance at
         256 colors, and is currently required for 16bpp, 24bpp, and 32bpp.
 <tag>
-Membase 0xE0000000. (or a different address) (ET4000W32p, ET6000)
+MemBase 0xE0000000. (or a different address) (ET4000W32, ET6000)
 </tag>
         This sets the physical memory base address of the linear
-        framebuffer. It must be specified in the Device section. It is
+        framebuffer. It must be specified in the Device section. It may be
         required for non-PCI linear addressing configurations, and might be
         useful for PCI-based systems where auto-detection fails.
+        
+        WARNING: defining a bad MemBase may cause serious injury or death
+        (to your operating system, of course). Especially defining the
+        MemBase to be inside the range of system memory is a ticket to hell.
+        
+        Choosing a suitable MemBase can be quite tricky. If you have no way
+        of determining the MemBase your card uses, trying to put it a few Mb
+        behind the system memory is a good first guess. E.g. if you have 16
+        Mb of RAM, defining MemBase 0x01400000 (=20M) may work.
+        
+        There are some limits as to where the linear memory base may be put.
+        On any ET4000W32, it must have a 4MB granularity (i.e. it can be put
+        at 16M or at 20M, but not at 18M). On ET6000, it needs a 16M
+        granularity (note: the ET6000 driver should be able to determine the
+        linear memory base automatically, so you should never need to define
+        MemBase in the first place).
+        
+        On ET4000W32i, things are worse: the linear address base is
+        hardwired on the card, and there is no reliable way to read it back
+        from the card. You need to know the address in some way, and specify
+        it. The current code does an intelligent guess at it, but this is no
+        guarantee.
+        
+        Use this option ONLY if you have trouble with the default MemBase
+        used by the server, or if the server explicitly states that you must
+        provide one.
+<tag>
+Option &dquot;pci_retry&dquot; (ET4000W32p on PCI bus, ET6000)
+</tag>
+        This enables the PCI bus retry function, which is a performance
+        enhancing mode for PCI bus-based systems, where the VGA controller
+        will put the PCI bus in a hold state (sort of like wait-states) when
+        the server tries to start a new accelerated operation but the
+        accelerator is still busy with the previous operation.
+        
+        This is the fastest way to drive a VGA card (no busy-waiting loops
+        needed), but it also stresses some hardware that is timing-dependent
+        (tape drives, sound cards, etc). See also the trouble shooting
+        section.
 </descrip>
 
 <sect> Mode issues <p>
@@ -465,6 +506,9 @@ Textmode is not properly restored
 <tag>
 Mostly black screen when using accelerated driver features
 </tag>
+        If you are seeing a mostly black screen, with only a few icons
+        (pixmaps) displayed, this section applies to you.
+
         There can be several causes for this.
         
         One is if the amount of memory is not detected correctly. If the
@@ -479,15 +523,18 @@ Mostly black screen when using accelerated driver features
 Problems with DMA hardware (floppy, tape)
 </tag>
 	On some systems, the accelerated server will interfere with other
-	hardware that uses ISA DMA. Most notably is the PC floppy
-	controller. The floppy interface cannot cope with inordinately long
-	bus-holds, which may occur during large accelerated operations. The
-	Linux-ftape module for example (a floppy-tape driver) will generate
-	lots of "write error" messages when running a backup or restore
-	operation while the X-server is in use. These errors should not be
-	fatal, but that all depends on how well the operating system handles
-	these conditions. Linux seems to cope. There is only one solution:
-	disable acceleration using the <tt>"noaccel"</tt> option.
+	hardware that uses ISA DMA. Most notably is the PC floppy controller
+	and sound cards. The floppy interface cannot cope with inordinately
+	long bus-holds, which may occur during large accelerated operations.
+	The Linux-ftape module for example (a floppy-tape driver) will
+	generate lots of "write error" messages when running a backup or
+	restore operation while the X-server is in use. These errors should
+	not be fatal, but that all depends on how well the operating system
+	handles these conditions. Linux seems to cope.
+	
+	There are two possible solutions: disable acceleration using the
+	<tt>"noaccel"</tt> option, or disable PCI-retry (which is causing
+	the large bus delays) by removing the <tt>"pci_retry"</tt> option.
 </descrip>
 For other screen drawing related problems, try the <tt>"noaccel"</tt>
 option.
@@ -509,7 +556,7 @@ keep an eye on forthcoming beta releases at <it>www.xfree86.org</it>.
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.15 1997/01/27 06:57:53 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.17 1997/03/11 13:05:46 hohndel Exp $ 
 
 
 
