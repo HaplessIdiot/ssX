@@ -19,7 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.19 2003/11/23 05:40:36 dawes Exp $ */
+/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.20 2003/12/08 15:46:27 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,6 +44,12 @@
 #include "hash.h"
 #include "data.h"
 #include "ident.h"
+
+#ifdef NEED_SNPRINTF
+#undef SCOPE
+#define SCOPE static
+#include "snprintf.c"
+#endif
 
 #define NPREFIX 1024
 

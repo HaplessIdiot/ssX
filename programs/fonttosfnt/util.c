@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/fonttosfnt/util.c,v 1.7 2003/10/24 20:38:11 tsi Exp $ */
+/* $XFree86: xc/programs/fonttosfnt/util.c,v 1.8 2003/11/21 05:22:09 dawes Exp $ */
 
 #include <time.h>
 #include <string.h>
@@ -37,6 +37,12 @@ THE SOFTWARE.
 #include FT_INTERNAL_OBJECTS_H
 #include FT_BDF_H
 #include "fonttosfnt.h"
+
+#ifdef NEED_SNPRINTF
+#undef SCOPE
+#define SCOPE static
+#include "snprintf.c"
+#endif
 
 #ifdef __GLIBC__
 #define HAVE_TIMEGM
