@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_accel.c,v 1.2 2000/11/09 03:24:35 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_accel.c,v 1.3 2000/11/18 19:37:10 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -155,10 +155,6 @@ void R128EngineReset(ScrnInfoPtr pScrn)
     OUTPLL(R128_MCLK_CNTL,        mclk_cntl);
     OUTREG(R128_CLOCK_CNTL_INDEX, clock_cntl_index);
     OUTREG(R128_GEN_RESET_CNTL,   gen_reset_cntl);
-
-#ifdef XF86DRI
-    if (R128CCE_USE_RING_BUFFER(info->CCEMode)) R128CCEResetRing(pScrn);
-#endif
 }
 
 /* The FIFO has 64 slots.  This routines waits until at least `entries' of
@@ -182,7 +178,10 @@ void R128WaitForFifoFunction(ScrnInfoPtr pScrn, int entries)
 		   "FIFO timed out, resetting engine...\n");
 	R128EngineReset(pScrn);
 #ifdef XF86DRI
-	if (info->CCE2D) R128CCEStart(pScrn);
+	R128CCE_RESET(pScrn, info);
+	if (info->CCE2D) {
+	    R128CCE_START(pScrn, info);
+	}
 #endif
     }
 }
@@ -213,10 +212,45 @@ void R128WaitForIdle(ScrnInfoPtr pScrn)
 		   "Idle timed out, resetting engine...\n");
 	R128EngineReset(pScrn);
 #ifdef XF86DRI
-	if (info->CCE2D) R128CCEStart(pScrn);
+	R128CCE_RESET(pScrn, info);
+	if (info->CCE2D) {
+	    R128CCE_START(pScrn, info);
+	}
 #endif
     }
 }
+
+#ifdef XF86DRI
+/* Wait until the CCE is completely idle: the FIFO has drained and the
+ * CCE is idle.
+ */
+static void R128CCEWaitForIdle(ScrnInfoPtr pScrn)
+{
+    R128InfoPtr info = R128PTR(pScrn);
+    int         ret;
+    int         i    = 0;
+
+    for (;;) {
+	do {
+	    ret = drmR128WaitForIdleCCE(info->drmFD);
+	    if (ret && ret != -EBUSY) {
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			   "%s: CCE idle %d\n", __FUNCTION__, ret);
+	    }
+	} while ((ret == -EBUSY) && (i++ < R128_TIMEOUT));
+
+	if (ret == 0) return;
+
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		   "Idle timed out, resetting engine...\n");
+	R128EngineReset(pScrn);
+
+	/* Always restart the engine when doing CCE 2D acceleration */
+	R128CCE_RESET(pScrn, info);
+	R128CCE_START(pScrn, info);
+    }
+}
+#endif
 
 /* Setup for XAA SolidFill. */
 static void R128SetupForSolidFill(ScrnInfoPtr pScrn,
@@ -224,6 +258,10 @@ static void R128SetupForSolidFill(ScrnInfoPtr pScrn,
 {
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
+
+#ifdef XF86DRI
+    R128CCE_TO_MMIO(pScrn, info);
+#endif
 
     R128WaitForFifo(pScrn, 4);
     OUTREG(R128_DP_GUI_MASTER_CNTL, (info->dp_gui_master_cntl
@@ -246,6 +284,10 @@ static void  R128SubsequentSolidFillRect(ScrnInfoPtr pScrn,
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
+#ifdef XF86DRI
+    R128CCE_TO_MMIO(pScrn, info);
+#endif
+
     R128WaitForFifo(pScrn, 2);
     OUTREG(R128_DST_Y_X,          (y << 16) | x);
     OUTREG(R128_DST_WIDTH_HEIGHT, (w << 16) | h);
@@ -257,6 +299,10 @@ static void R128SetupForSolidLine(ScrnInfoPtr pScrn,
 {
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
+
+#ifdef XF86DRI
+    R128CCE_TO_MMIO(pScrn, info);
+#endif
 
     R128WaitForFifo(pScrn, 3);
     OUTREG(R128_DP_GUI_MASTER_CNTL, (info->dp_gui_master_cntl
@@ -290,6 +336,10 @@ static void R128SubsequentSolidBresenhamLine(ScrnInfoPtr pScrn,
     unsigned char *R128MMIO = info->MMIO;
     int           flags     = 0;
 
+#ifdef XF86DRI
+    R128CCE_TO_MMIO(pScrn, info);
+#endif
+
     if (octant & YMAJOR)         flags |= R128_DST_Y_MAJOR;
     if (!(octant & XDECREASING)) flags |= R128_DST_X_DIR_LEFT_TO_RIGHT;
     if (!(octant & YDECREASING)) flags |= R128_DST_Y_DIR_TOP_TO_BOTTOM;
@@ -315,6 +365,10 @@ static void R128SubsequentSolidHorVertLine(ScrnInfoPtr pScrn,
 {
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
+
+#ifdef XF86DRI
+    R128CCE_TO_MMIO(pScrn, info);
+#endif
 
     R128WaitForFifo(pScrn, 1);
     OUTREG(R128_DP_CNTL, (R128_DST_X_LEFT_TO_RIGHT
@@ -350,6 +404,10 @@ static void R128SetupForDashedLine(ScrnInfoPtr pScrn,
     unsigned char *R128MMIO = info->MMIO;
     CARD32        pat       = *(CARD32 *)pattern;
 
+#ifdef XF86DRI
+    R128CCE_TO_MMIO(pScrn, info);
+#endif
+
     switch (length) {
     case  2: pat |= pat <<  2; /* fall through */
     case  4: pat |= pat <<  4; /* fall through */
@@ -380,6 +438,10 @@ static void R128SubsequentDashedBresenhamLine(ScrnInfoPtr pScrn,
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
     int           flags     = 0;
+
+#ifdef XF86DRI
+    R128CCE_TO_MMIO(pScrn, info);
+#endif
 
     if (octant & YMAJOR)         flags |= R128_DST_Y_MAJOR;
     if (!(octant & XDECREASING)) flags |= R128_DST_X_DIR_LEFT_TO_RIGHT;
@@ -417,6 +479,10 @@ static void R128SubsequentSolidFillTrap(ScrnInfoPtr pScrn, int y, int h,
     int           Rymajor   = 0;
     int           origdxL   = dxL;
     int           origdxR   = dxR;
+
+#ifdef XF86DRI
+    R128CCE_TO_MMIO(pScrn, info);
+#endif
 
     R128TRACE(("Trap %d %d; L %d %d %d %d; R %d %d %d %d\n",
 	       y, h,
@@ -468,6 +534,10 @@ static void R128SetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
+#ifdef XF86DRI
+    R128CCE_TO_MMIO(pScrn, info);
+#endif
+
     info->xdir = xdir;
     info->ydir = ydir;
     R128WaitForFifo(pScrn, 3);
@@ -501,6 +571,10 @@ static void R128SubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
+#ifdef XF86DRI
+    R128CCE_TO_MMIO(pScrn, info);
+#endif
+
     if (info->xdir < 0) xa += w - 1, xb += w - 1;
     if (info->ydir < 0) ya += h - 1, yb += h - 1;
 
@@ -530,6 +604,10 @@ static void R128SetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
+#ifdef XF86DRI
+    R128CCE_TO_MMIO(pScrn, info);
+#endif
+
     R128WaitForFifo(pScrn, 6);
     OUTREG(R128_DP_GUI_MASTER_CNTL, (info->dp_gui_master_cntl
 				     | (bg == -1
@@ -553,6 +631,10 @@ static void R128SubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn,
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
+#ifdef XF86DRI
+    R128CCE_TO_MMIO(pScrn, info);
+#endif
+
     R128WaitForFifo(pScrn, 3);
     OUTREG(R128_BRUSH_Y_X,        (patterny << 8) | patternx);
     OUTREG(R128_DST_Y_X,          (y << 16) | x);
@@ -571,6 +653,10 @@ static void R128SetupForColor8x8PatternFill(ScrnInfoPtr pScrn,
 {
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
+
+#ifdef XF86DRI
+    R128CCE_TO_MMIO(pScrn, info);
+#endif
 
     R128TRACE(("Color8x8 %d %d %d\n", trans_color, patx, paty));
 
@@ -599,6 +685,10 @@ static void R128SubsequentColor8x8PatternFillRect( ScrnInfoPtr pScrn,
 {
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
+
+#ifdef XF86DRI
+    R128CCE_TO_MMIO(pScrn, info);
+#endif
 
     R128TRACE(("Color8x8 %d,%d %d,%d %d %d\n", patx, paty, x, y, w, h));
     R128WaitForFifo(pScrn, 3);
@@ -660,6 +750,10 @@ static void R128SetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
+#ifdef XF86DRI
+    R128CCE_TO_MMIO(pScrn, info);
+#endif
+
     R128WaitForFifo(pScrn, 4);
     OUTREG(R128_DP_GUI_MASTER_CNTL, (info->dp_gui_master_cntl
 				     | R128_GMC_DST_CLIPPING
@@ -686,6 +780,10 @@ static void R128SubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
     unsigned char *R128MMIO = info->MMIO;
     int x1clip = x+skipleft;
     int x2clip = x+w;
+
+#ifdef XF86DRI
+    R128CCE_TO_MMIO(pScrn, info);
+#endif
 
     info->scanline_h      = h;
     info->scanline_words  = (w + 31) >> 5;
@@ -733,6 +831,10 @@ static void R128SubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
     int             left      = info->scanline_words;
     volatile CARD32 *d;
 
+#ifdef XF86DRI
+    R128CCE_TO_MMIO(pScrn, info);
+#endif
+
     if (info->scanline_direct) return;
     --info->scanline_h;
     while (left) {
@@ -779,6 +881,10 @@ static void R128SetupForScanlineImageWrite(ScrnInfoPtr pScrn,
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
+#ifdef XF86DRI
+    R128CCE_TO_MMIO(pScrn, info);
+#endif
+
     info->scanline_bpp = bpp;
 
     R128WaitForFifo(pScrn, 2);
@@ -814,6 +920,10 @@ static void R128SubsequentScanlineImageWriteRect(ScrnInfoPtr pScrn,
     int x2clip = x+w;
 
     int shift = 0; /* 32bpp */
+
+#ifdef XF86DRI
+    R128CCE_TO_MMIO(pScrn, info);
+#endif
 
     if (pScrn->bitsPerPixel == 8) shift = 3;
     else if (pScrn->bitsPerPixel == 16) shift = 1;
@@ -862,6 +972,10 @@ static void R128SubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
     int             i;
     int             left      = info->scanline_words;
     volatile CARD32 *d;
+
+#ifdef XF86DRI
+    R128CCE_TO_MMIO(pScrn, info);
+#endif
 
     if (info->scanline_direct) return;
     --info->scanline_h;
@@ -967,7 +1081,6 @@ static void R128CCEAccelInit(XAAInfoRecPtr a)
 
 				/* Sync */
     a->Sync                             = R128CCEWaitForIdle;
-
 }
 #endif
 

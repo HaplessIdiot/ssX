@@ -53,6 +53,108 @@ static void message( const char *msg )
    }
 }
 
+#if defined(USE_KATMAI_ASM) && defined(__linux__)
+/*
+ * GH: This is a hack.  Try to determine at runtime what version of the
+ * Linux kernel we're running on, and disable the SSE assembly if the
+ * kernel is too old and doesn't correctly support the code.
+ *
+ * Magic versions tested for are:
+ *
+ *   - 2.2.18-pre19 and newer
+ *   - 2.4.0-test11 and newer
+ *
+ * If we find a version older than this, or can't correctly determine
+ * the version, disable the code to be safe.
+ */
+static void verify_linux_kernel_version( void )
+{
+   FILE *fd;
+   int major, minor, teeny, extra;
+   int use_sse = 0;
+   int ret;
+
+   fd = fopen( "/proc/sys/kernel/osrelease", "r" );
+   if ( fd == NULL ) {
+      /* If we can't test the kernel version, disable the code.
+       */
+      message( "couldn't open /proc/sys/kernel/osrelease, disabling SSE." );
+      gl_x86_cpu_features &= ~(X86_FEATURE_XMM);
+      return;
+   }
+
+   fscanf( fd, "%d.%d.%d", &major, &minor, &teeny );
+
+   if ( major == 2 ) {
+      if ( minor == 2 ) {
+	 /* Test 2.2 kernel versions.  2.2.18-pre19 and newer are okay.
+	  */
+	 if ( teeny == 18 ) {
+	    ret = fscanf( fd, "-pre%d", &extra );
+	    switch ( ret ) {
+	    case 1:
+	       if ( extra >= 19 ) {
+		  message( "kernel 2.2.18-pre19 or newer, enabling SSE." );
+		  use_sse = 1;
+	       } else {
+		  message( "kernel older than 2.2.18-pre19, disabling SSE." );
+	       }
+	       break;
+	    case 0:
+	       message( "kernel 2.2.18 or newer, enabling SSE." );
+	       use_sse = 1;
+	       break;
+	    }
+	 } else if ( teeny > 18 ) {
+	    message( "kernel 2.2.19 or newer, enabling SSE." );
+	    use_sse = 1;
+	 } else {
+	    message( "kernel older than 2.2.18, disabling SSE." );
+	 }
+
+      } else if ( minor == 3 ) {
+	 message( "kernel older than 2.4.0-test11, disabling SSE." );
+      } else if ( minor == 4 ) {
+	 /* Test 2.4 kernel versions.  2.4.0-test11 and newer are okay.
+	  */
+	 if ( teeny == 0 ) {
+	    ret = fscanf( fd, "-test%d", &extra );
+	    switch ( ret ) {
+	    case 1:
+	       if ( extra >= 11 ) {
+		  message( "kernel 2.4.0-test11 or newer, enabling SSE." );
+		  use_sse = 1;
+	       } else {
+		  message( "kernel older than 2.4.0-test11, disabling SSE." );
+	       }
+	       break;
+	    case 0:
+	       message( "kernel 2.4.0 or newer, enabling SSE." );
+	       use_sse = 1;
+	       break;
+	    }
+	 } else if ( teeny > 0 ) {
+	    message( "kernel 2.4.1 or newer, enabling SSE." );
+	    use_sse = 1;
+	 }
+      } else if ( minor >= 5 ) {
+	 /* This test should be removed eventually, but cover ourselves
+	  * just in case.
+	  */
+	 message( "kernel 2.5.0 or newer, enabling SSE." );
+	 use_sse = 1;
+      } else {
+	 message( "kernel older than 2.2.18-pre19, disabling SSE." );
+      }
+   }
+
+   fclose( fd );
+
+   if ( !use_sse ) {
+      gl_x86_cpu_features &= ~(X86_FEATURE_XMM);
+   }
+}
+#endif
 
 void gl_init_all_x86_transform_asm( void )
 {
@@ -89,6 +191,12 @@ void gl_init_all_x86_transform_asm( void )
 #endif
 
 #ifdef USE_KATMAI_ASM
+#ifdef __linux__
+   /* HACK: Check the version of the Linux kernel we're being run on,
+    * and disable 'cpu_has_xmm' if user-space SSE is not supported.
+    */
+   verify_linux_kernel_version();
+#endif
    if ( cpu_has_xmm ) {
       if ( getenv( "MESA_NO_KATMAI" ) == 0 ) {
          message( "Katmai cpu detected." );

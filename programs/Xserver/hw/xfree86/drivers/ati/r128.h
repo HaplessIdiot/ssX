@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.4 2000/11/29 22:01:08 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.5 2000/12/01 08:56:02 alanh Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -301,22 +301,14 @@ typedef struct {
     drmSize           ringReadMapSize;  /* Size of map */
     unsigned char     *ringReadPtr;     /* Map */
 
-				/* CCE vertex buffer data */
-    unsigned long     vbStart;          /* Offset into AGP space */
-    drmHandle         vbHandle;         /* Handle from drmAddMap */
-    drmSize           vbMapSize;        /* Size of map */
-    int               vbSize;           /* Size of vert bufs (in MB) */
-    unsigned char     *vb;              /* Map */
-    int               vbBufSize;        /* Size of individual vert buf */
-    int               vbNumBufs;        /* Number of vert bufs */
-    drmBufMapPtr      vbBufs;           /* Buffer map */
-
-				/* CCE indirect buffer data */
-    unsigned long     indStart;         /* Offset into AGP space */
-    drmHandle         indHandle;        /* Handle from drmAddMap */
-    drmSize           indMapSize;       /* Size of map */
-    int               indSize;          /* Size of indirect bufs (in MB) */
-    unsigned char     *ind;             /* Map */
+				/* CCE vertex/indirect buffer data */
+    unsigned long     bufStart;        /* Offset into AGP space */
+    drmHandle         bufHandle;       /* Handle from drmAddMap */
+    drmSize           bufMapSize;      /* Size of map */
+    int               bufSize;         /* Size of buffers (in MB) */
+    unsigned char     *buf;            /* Map */
+    int               bufNumBufs;      /* Number of buffers */
+    drmBufMapPtr      buffers;         /* Buffer map */
 
 				/* CCE AGP Texture data */
     unsigned long     agpTexStart;      /* Offset into AGP space */
@@ -333,11 +325,26 @@ typedef struct {
     int               backY;
     int               depthX;
     int               depthY;
-    int               textureX;
-    int               textureY;
+
+    int               frontOffset;
+    int               frontPitch;
+    int               backOffset;
+    int               backPitch;
+    int               depthOffset;
+    int               depthPitch;
+    int               spanOffset;
+    int               textureOffset;
     int               textureSize;
     int               log2TexGran;
+
+				/* Saved scissor values */
+    CARD32            sc_left;
+    CARD32            sc_right;
+    CARD32            sc_top;
+    CARD32            sc_bottom;
+    CARD32            aux_sc_cntl;
 #endif
+
     XF86VideoAdaptorPtr adaptor;
     void              (*VideoTimerCallback)(ScrnInfoPtr, Time);
     int               videoKey;
@@ -371,10 +378,59 @@ extern void        R128InitVideo(ScreenPtr pScreen);
 extern Bool        R128DRIScreenInit(ScreenPtr pScreen);
 extern void        R128DRICloseScreen(ScreenPtr pScreen);
 extern Bool        R128DRIFinishScreenInit(ScreenPtr pScreen);
-extern void        R128CCEStart(ScrnInfoPtr pScrn);
-extern void        R128CCEStop(ScrnInfoPtr pScrn);
-extern void        R128CCEResetRing(ScrnInfoPtr pScrn);
-extern void        R128CCEWaitForIdle(ScrnInfoPtr pScrn);
+
+#define R128CCE_START(pScrn, info)					\
+do {									\
+    int ret = drmR128StartCCE(info->drmFD);				\
+    if (ret) {								\
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,				\
+		   "%s: CCE start %d\n", __FUNCTION__, ret);		\
+    }									\
+    info->CCEInUse = TRUE;						\
+} while (0)
+
+#define R128CCE_STOP(pScrn, info)					\
+do {									\
+    int ret = drmR128StopCCE(info->drmFD);				\
+    if (ret) {								\
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,				\
+		   "%s: CCE stop %d\n", __FUNCTION__, ret);		\
+    }									\
+    info->CCEInUse = FALSE;						\
+} while (0)
+
+#define R128CCE_RESET(pScrn, info)					\
+do {									\
+    if (R128CCE_USE_RING_BUFFER(info->CCEMode)) {			\
+	int ret = drmR128ResetCCE(info->drmFD);				\
+	if (ret) {							\
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,			\
+		       "%s: CCE reset %d\n", __FUNCTION__, ret);	\
+	}								\
+    }									\
+    info->CCEInUse = FALSE;						\
+} while (0)
+
+#define R128CCE_TO_MMIO(pScrn, info)					\
+do {									\
+    if (info->CCEInUse) {						\
+	R128CCE_STOP(pScrn, info);					\
+									\
+	R128WaitForFifo(pScrn, 5);					\
+	OUTREG(R128_SC_LEFT,     info->sc_left);			\
+	OUTREG(R128_SC_RIGHT,    info->sc_right);			\
+	OUTREG(R128_SC_TOP,      info->sc_top);				\
+	OUTREG(R128_SC_BOTTOM,   info->sc_bottom);			\
+	OUTREG(R128_AUX_SC_CNTL, info->aux_sc_cntl);			\
+    }									\
+} while (0)
+
+#define R128MMIO_TO_CCE(pScrn, info)					\
+do {									\
+    if (!info->CCEInUse) {						\
+	R128CCE_START(pScrn, info);					\
+    }									\
+} while (0)
 #endif
 
 #endif

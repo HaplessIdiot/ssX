@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_reg.h,v 1.2 2000/11/09 03:24:36 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_reg.h,v 1.3 2000/11/18 19:37:11 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -32,6 +32,7 @@
  * Authors:
  *   Rickard E. Faith <faith@valinux.com>
  *   Kevin E. Martin <martin@valinux.com>
+ *   Gareth Hughes <gareth@valinux.com>
  *
  * References:
  *
@@ -151,6 +152,7 @@
 #define R128_ATTRDR                       0x03c1 /* VGA */
 #define R128_ATTRDW                       0x03c0 /* VGA */
 #define R128_ATTRX                        0x03c0 /* VGA */
+#define R128_AUX_SC_CNTL                  0x1660
 #       define R128_AUX1_SC_EN            (1 << 0)
 #       define R128_AUX1_SC_MODE_OR       (0 << 1)
 #       define R128_AUX1_SC_MODE_NAND     (1 << 1)
@@ -160,7 +162,6 @@
 #       define R128_AUX3_SC_EN            (1 << 4)
 #       define R128_AUX3_SC_MODE_OR       (0 << 5)
 #       define R128_AUX3_SC_MODE_NAND     (1 << 5)
-#define R128_AUX_SC_CNTL                  0x1660
 #define R128_AUX1_SC_BOTTOM               0x1670
 #define R128_AUX1_SC_LEFT                 0x1664
 #define R128_AUX1_SC_RIGHT                0x1668
@@ -421,6 +422,8 @@
 #       define R128_GMC_BRUSH_1X8_MONO_FG_LA  (5    <<  4)
 #       define R128_GMC_BRUSH_32x1_MONO_FG_BG (6    <<  4)
 #       define R128_GMC_BRUSH_32x1_MONO_FG_LA (7    <<  4)
+#       define R128_GMC_BRUSH_32x32_MONO_FG_BG (8    <<  4)
+#       define R128_GMC_BRUSH_32x32_MONO_FG_LA (9    <<  4)
 #       define R128_GMC_BRUSH_8x8_COLOR       (10   <<  4)
 #       define R128_GMC_BRUSH_1X8_COLOR       (12   <<  4)
 #       define R128_GMC_BRUSH_SOLID_COLOR     (13   <<  4)
@@ -509,6 +512,7 @@
 #define R128_DST_PITCH_OFFSET             0x142c
 #define R128_DST_PITCH_OFFSET_C           0x1c80
 #       define R128_PITCH_SHIFT               21
+#       define R128_DST_TILE                 (1 << 31)
 #define R128_DST_WIDTH                    0x140c
 #define R128_DST_WIDTH_HEIGHT             0x1598
 #define R128_DST_WIDTH_X                  0x1588
@@ -1088,11 +1092,12 @@
 #       define R128_SET_UP_CONTINUE       (1 << 31)
 
 #define R128_WINDOW_XY_OFFSET             0x1bcc
-#       define R128_WINDOW_Y_SHIFT        4
-#       define R128_WINDOW_X_SHIFT        20
+#       define R128_WINDOW_Y_SHIFT        2
+#       define R128_WINDOW_X_SHIFT        18
 
 #define R128_Z_OFFSET_C                   0x1c90
 #define R128_Z_PITCH_C                    0x1c94
+#       define R128_Z_TILE                    (1 << 16)
 #define R128_Z_STEN_CNTL_C                0x1c98
 #       define R128_Z_PIX_WIDTH_16            (0 <<  1)
 #       define R128_Z_PIX_WIDTH_24            (1 <<  1)
@@ -1163,6 +1168,7 @@
 #       define R128_ANTI_ALIAS                 (1 << 21)
 #       define R128_TEX_CACHE_FLUSH            (1 << 23)
 #       define R128_LOD_BIAS_SHIFT             24
+#       define R128_LOD_BIAS_MASK              (0xff << 24)
 #define R128_MISC_3D_STATE_CNTL_REG       0x1ca0
 #       define R128_REF_ALPHA_MASK                  0xff
 #       define R128_MISC_SCALE_3D_NOOP              (0  <<  8)
@@ -1388,14 +1394,14 @@
 				/* Constants */
 #define R128_AGP_TEX_OFFSET               0x02000000
 
-#define R128_VB_AGE_REG                   R128_GUI_SCRATCH_REG0
-#define R128_SWAP_AGE_REG                 R128_GUI_SCRATCH_REG1
+#define R128_LAST_FRAME_REG               R128_GUI_SCRATCH_REG0
 
 				/* CCE packet types */
 #define R128_CCE_PACKET0                         0x00000000
 #define R128_CCE_PACKET0_ONE_REG_WR              0x00008000
 #define R128_CCE_PACKET1                         0x40000000
 #define R128_CCE_PACKET2                         0x80000000
+#define R128_CCE_PACKET3                         0xC0000000
 #define R128_CCE_PACKET3_NOP                     0xC0001000
 #define R128_CCE_PACKET3_PAINT                   0xC0001100
 #define R128_CCE_PACKET3_BITBLT                  0xC0001200
@@ -1432,7 +1438,7 @@
 #define R128_CCE_PACKET3_NEXT_VERTEX_BUNDLE      0xC0002E00
 #       define R128_CCE_PACKET_MASK              0xC0000000
 #       define R128_CCE_PACKET_COUNT_MASK        0x3fff0000
-#       define R128_CCE_PACKET_MAX_DWORDS        (1 << 14)
+#       define R128_CCE_PACKET_MAX_DWORDS        (1 << 12)
 #       define R128_CCE_PACKET0_REG_MASK         0x000007ff
 #       define R128_CCE_PACKET1_REG0_MASK        0x000007ff
 #       define R128_CCE_PACKET1_REG1_MASK        0x003ff800

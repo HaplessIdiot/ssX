@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_vb.h,v 1.1 2000/06/17 00:03:09 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_vb.h,v 1.2 2000/08/25 13:42:31 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -28,7 +28,8 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * Authors:
- *   Kevin E. Martin <kevin@precisioninsight.com>
+ *   Kevin E. Martin <martin@valinux.com>
+ *   Gareth Hughes <gareth@valinux.com>
  *
  */
 
@@ -39,66 +40,24 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /* FIXME: This is endian-specific */
 typedef struct {
-    GLubyte b;
-    GLubyte g;
-    GLubyte r;
-    GLubyte a;
-} r128Color;
+    GLubyte	blue;
+    GLubyte	green;
+    GLubyte	red;
+    GLubyte	alpha;
+} r128_color_t;
 
-/* Single texture vertex, single x86 cache line.
- *
- * GTH: This is in use now.
+/* The vertex structure.  The final tu1/tv1 values are only used in
+ * multitexture modes, and the rhw2 value is currently never used.
  */
 typedef struct {
-    GLfloat   x, y, z;		/* Coordinates in screen space */
-    GLfloat   rhw;		/* Reciprocal homogeneous w */
-    r128Color dif_argb;		/* Diffuse color */
-    r128Color spec_frgb;	/* Specular color (alpha is fog) */
-    GLfloat   tu0, tv0;		/* Texture 0 coordinates */
-} r128_vertex1;
-
-/* The only vertex format in current use, but unsatisfactory for two
- * reasons:
- *       - Not possible to implement fully conformant rendering
- *         with this format (projective multitexturing),
- *       - Performance is lower with this vertex for single-texture
- *         geometry, as the vertex is unnecessarily larger than
- *         a cacheline.
- *
- * Switching to single-texture vertices can be accomplished in state
- * management, and is relatively trivial.  Switching to the rhw2
- * format is data-dependent (are there any glTexCoord4f's in the
- * current buffer).  One option is to switch between single-texture
- * and rhw2 vertex formats only on the standard path.
- *
- * The fastpath never requires the rhw2 format, as it already makes
- * the data-dependent checks.
- *
- * GTH: This is fixed.
- */
-typedef struct {
-    GLfloat   x, y, z;		/* Coordinates in screen space */
-    GLfloat   rhw;		/* Reciprocal homogeneous w */
-    r128Color dif_argb;		/* Diffuse color */
-    r128Color spec_frgb;	/* Specular color (alpha is fog) */
-    GLfloat   tu0, tv0;		/* Texture 0 coordinates */
-    GLfloat   tu1, tv1;		/* Texture 1 coordinates */
-} r128_vertex2;
-
-/* Need to be slightly clever about flushing vertex buffers in order
- * to use rhw2 only on demand.
- *
- * GTH: This can be used now.
- */
-typedef struct {
-    GLfloat   x, y, z;		/* Coordinates in screen space */
-    GLfloat   rhw;		/* Reciprocal homogeneous w */
-    r128Color dif_argb;		/* Diffuse color */
-    r128Color spec_frgb;	/* Specular color (alpha is fog) */
-    GLfloat   tu0, tv0;		/* Texture 0 coordinates */
-    GLfloat   tu1, tv1;		/* Texture 1 coordinates */
-    GLfloat   rhw2;		/* Reciprocal homogeneous w2 */
-} r128_vertex2_rhw2;
+    GLfloat x, y, z;		/* Coordinates in screen space */
+    GLfloat rhw;		/* Reciprocal homogeneous w */
+    r128_color_t color;		/* Diffuse color */
+    r128_color_t specular;	/* Specular color (alpha is fog) */
+    GLfloat tu0, tv0;		/* Texture 0 coordinates */
+    GLfloat tu1, tv1;		/* Texture 1 coordinates */
+    GLfloat rhw2;		/* Reciprocal homogeneous w2 */
+} r128_vertex;
 
 /* Format of vertices in r128_vertex struct */
 #define R128_TEX0_VERTEX_FORMAT                                            \
@@ -125,11 +84,9 @@ typedef struct {
 
 /* FIXME: We currently only have assembly for 16-stride vertices */
 union r128_vertex_t {
-    r128_vertex1	vert1;
-    r128_vertex2	vert2;
-    r128_vertex2_rhw2	vert3;
-    float		f[16];
-    CARD32		ui[16];
+   r128_vertex	v;
+   GLfloat	f[16];
+   CARD32	ui[16];
 };
 
 typedef union r128_vertex_t r128Vertex;

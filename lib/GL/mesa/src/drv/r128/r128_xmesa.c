@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_xmesa.c,v 1.1 2000/06/17 00:03:09 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -28,45 +28,25 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * Authors:
- *   Kevin E. Martin <kevin@precisioninsight.com>
+ *   Kevin E. Martin <martin@valinux.com>
+ *   Gareth Hughes <gareth@valinux.com>
  *
  */
 
 #ifdef GLX_DIRECT_RENDERING
 
 /* r128 Mesa driver includes */
-#include "r128_init.h"
 #include "r128_context.h"
-#include "r128_xmesa.h"
+#include "r128_ioctl.h"
 #include "r128_state.h"
 #include "r128_tex.h"
-#include "r128_swap.h"
 
 /* Mesa src includes */
 #include "context.h"
 #include "simple_list.h"
 #include "mmath.h"
 
-#ifndef R128_DEBUG_FLAGS
-int R128_DEBUG_FLAGS = (0
-/*			| DEBUG_ALWAYS_SYNC */
-/*			| DEBUG_VERBOSE_CCE */
-/*			| DEBUG_VERBOSE_OUTREG */
-/*			| DEBUG_VERBOSE_MSG */
-/*			| DEBUG_NO_OUTRING */
-/*			| DEBUG_NO_OUTREG */
-/*			| DEBUG_VERBOSE_API */
-/*			| DEBUG_VERBOSE_2D */
-/*			| DEBUG_VERBOSE_DRI */
-/*			| DEBUG_VALIDATE_RING */
-/*			| DEBUG_VERBOSE_IOCTL */
-    );
-#endif
-
-#if DEBUG_LOCKING
-char *prevLockFile = NULL;
-int   prevLockLine = 0;
-#endif
+extern void __driRegisterExtensions( void );
 
 static r128ContextPtr r128Context = NULL;
 
@@ -190,15 +170,27 @@ GLboolean XMesaMakeCurrent(__DRIcontextPrivate *driContextPriv,
     if (driContextPriv) {
 	r128ContextPtr r128ctx = (r128ContextPtr)driContextPriv->driverPrivate;
 
+#if 0
+	/* GH: This causes the driver to fail the glean makeCurrent
+	 * tests.  Leave it disabled for now...
+	 */
 	if (r128Context &&
 	    r128ctx == (void *)r128Context &&
 	    driDrawPriv == R128_DRIDRAWABLE(r128Context))
 	    return GL_TRUE;
+#endif
 
+	/* GH: Do we still need this then?
+	 */
 	r128Context = r128MakeCurrent(r128Context, r128ctx, driDrawPriv);
 
 	gl_make_current2(R128_MESACTX(r128Context),
 			 driDrawPriv->mesaBuffer, driReadPriv->mesaBuffer);
+
+	if (r128Context->driDrawable != driDrawPriv) {
+	   r128Context->driDrawable = driDrawPriv;
+	   r128Context->dirty = R128_UPLOAD_ALL;
+	}
 
 	if (!R128_MESACTX(r128Context)->Viewport.Width) {
 	    gl_Viewport(R128_MESACTX(r128Context), 0, 0,
@@ -218,37 +210,10 @@ GLboolean XMesaUnbindContext(__DRIcontextPrivate *driContextPriv)
     return GL_TRUE;
 }
 
-/* Update the hardware state.  This is called if another context has
-   grabbed the hardware lock, which includes the X server.  This
-   function also updates the driver's window state after the X server
-   moves, resizes or restacks a window -- the change will be reflected
-   in the drawable position and clip rects.  Since the X server grabs
-   the hardware lock when it changes the window state, this routine will
-   automatically be called after such a change. */
-/* NOTE: This routine is only called while holding the hardware lock. */
-void XMesaUpdateState(__DRIcontextPrivate *driContextPriv)
-{
-    r128ContextPtr        r128ctx = driContextPriv->driverPrivate;
-    __DRIscreenPrivate   *sPriv   = R128_DRISCREEN(r128ctx);
-    __DRIdrawablePrivate *dPriv   = R128_DRIDRAWABLE(r128ctx);
-    int                   stamp   = dPriv->lastStamp;
-
-    /* The window might have moved, so we might need to get new clip
-       rects.
-
-       NOTE: This releases and regrabs the hw lock to allow the X server
-       to respond to the DRI protocol request for new drawable info.
-       Since the hardware state depends on having the latest drawable
-       clip rects, all state checking must be done _after_ this call. */
-    XMESA_VALIDATE_DRAWABLE_INFO(r128ctx->display, sPriv, dPriv);
-
-    r128UpdateState(r128ctx, (stamp != dPriv->lastStamp));
-}
-
 /* This function is called by libGL.so as soon as libGL.so is loaded.
  * This is where we'd register new extension functions with the dispatcher.
  */
-void __driRegisterExtensions(void)
+void __driRegisterExtensions( void )
 {
 }
 

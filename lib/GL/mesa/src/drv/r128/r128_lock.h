@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_lock.h,v 1.1 2000/06/17 00:03:06 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -28,7 +28,8 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * Authors:
- *   Kevin E. Martin <kevin@precisioninsight.com>
+ *   Kevin E. Martin <martin@valinux.com>
+ *   Gareth Hughes <gareth@valinux.com>
  *
  */
 
@@ -36,6 +37,9 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _R128_LOCK_H_
 
 #ifdef GLX_DIRECT_RENDERING
+
+extern void r128GetLock( r128ContextPtr r128ctx, GLuint flags );
+
 
 /* Turn DEBUG_LOCKING on to find locking conflicts (see r128_init.h) */
 #if DEBUG_LOCKING
@@ -78,57 +82,28 @@ extern int   prevLockLine;
  * do not do any drawing !!!
  */
 
-/* Lock the hardware using the current context */
-#define LOCK_HARDWARE(CC)                                               \
-    do {                                                                \
-	char                  __ret = 0;                                \
-	__DRIcontextPrivate  *cPriv = CC->driContext;                   \
-	__DRIscreenPrivate   *sPriv = CC->r128Screen->driScreen;        \
-                                                                        \
-	DEBUG_CHECK_LOCK();                                             \
-	DRM_CAS(&sPriv->pSAREA->lock, cPriv->hHWContext,                \
-		DRM_LOCK_HELD|cPriv->hHWContext, __ret);                \
-	if (__ret) {                                                    \
-	    /* We lost the context, so we need to request the lock from \
-               the kernel and update our state. */                      \
-	    drmGetLock(sPriv->fd, cPriv->hHWContext, 0);                \
-	    XMesaUpdateState(cPriv);                                    \
-	}                                                               \
-	DEBUG_LOCK();                                                   \
-    } while (0)
-
-/* Unlock the hardware using the current context */
-#define UNLOCK_HARDWARE(CC)                                             \
-    do {                                                                \
-	__DRIcontextPrivate  *cPriv = CC->driContext;                   \
-	__DRIscreenPrivate   *sPriv = CC->r128Screen->driScreen;        \
-                                                                        \
-	DRM_UNLOCK(sPriv->fd, &sPriv->pSAREA->lock, cPriv->hHWContext); \
-	DEBUG_RESET();                                                  \
-    } while (0)
-
-/*
- * This pair of macros makes a loop over the drawing operations, so it
- * is not self contained and does not have the nice single statement
- * semantics of most macros.
+/* Lock the hardware and validate our state.
  */
-#define BEGIN_CLIP_LOOP(CC)                                             \
-    do {                                                                \
-	__DRIdrawablePrivate *_dPriv = CC->driDrawable;                 \
-	XF86DRIClipRectPtr    _pc = _dPriv->pClipRects;                 \
-	int                   _nc, _sc;                                 \
-                                                                        \
-	for (_nc = _dPriv->numClipRects; _nc > 0; _nc -= 3, _pc += 3) { \
-	    _sc = (_nc <= 3) ? _nc : 3;                                 \
-	    r128SetClipRects(CC, _pc, _sc)
+#define LOCK_HARDWARE( r128ctx )					\
+   do {									\
+      char __ret = 0;							\
+      DEBUG_CHECK_LOCK();						\
+      DRM_CAS( r128ctx->driHwLock, r128ctx->hHWContext,			\
+	       (DRM_LOCK_HELD | r128ctx->hHWContext), __ret );		\
+      if ( __ret )							\
+	 r128GetLock( r128ctx, 0 );					\
+      DEBUG_LOCK();							\
+   } while (0)
 
-/* FIXME: This should be a function call to turn off aux clipping */
-#define END_CLIP_LOOP(CC)                                               \
-	    R128CCE0(R128_CCE_PACKET0, R128_AUX_SC_CNTL, 0);            \
-	    R128CCE(0x00000000);                                        \
-	    R128CCE_SUBMIT_PACKET();                                    \
-	}                                                               \
-    } while (0)
+/* Unlock the hardware.
+ */
+#define UNLOCK_HARDWARE( r128ctx )					\
+   do {									\
+      DRM_UNLOCK( r128ctx->driFd,					\
+		  r128ctx->driHwLock,					\
+		  r128ctx->hHWContext );				\
+      DEBUG_RESET();							\
+   } while (0)
 
 #endif
 #endif /* _R128_LOCK_H_ */

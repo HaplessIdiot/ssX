@@ -1,8 +1,8 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tex.h,v 1.1 2000/06/17 00:03:08 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
-                                               Cedar Park, Texas. 
+                                               Cedar Park, Texas.
 All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a
@@ -28,8 +28,8 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * Authors:
- *   Kevin E. Martin <kevin@precisioninsight.com>
- *   Gareth Hughes <gareth@precisioninsight.com>
+ *   Kevin E. Martin <martin@valinux.com>
+ *   Gareth Hughes <gareth@valinux.com>
  *
  */
 
@@ -38,12 +38,18 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifdef GLX_DIRECT_RENDERING
 
-extern void r128AgeTextures(r128ContextPtr r128ctx, int heap);
-extern int  r128UploadTexImages(r128ContextPtr r128ctx, r128TexObjPtr t);
-extern void r128UpdateTextureState(r128ContextPtr r128ctx);
-extern void r128DestroyTexObj(r128ContextPtr r128ctx, r128TexObjPtr t);
+extern void r128UpdateTextureState( GLcontext *ctx );
 
-extern void r128DDInitTextureFuncs(GLcontext *ctx);
+extern int r128UploadTexImages( r128ContextPtr r128ctx, r128TexObjPtr t );
+
+extern void r128AgeTextures( r128ContextPtr r128ctx, int heap );
+extern void r128DestroyTexObj( r128ContextPtr r128ctx, r128TexObjPtr t );
+
+extern void r128PrintLocalLRU( r128ContextPtr r128ctx, int heap );
+extern void r128PrintGlobalLRU( r128ContextPtr r128ctx, int heap );
+
+extern void r128DDInitTextureFuncs( GLcontext *ctx );
+
 
 #define R128PACKCOLOR332(r, g, b)                                             \
     (((r) & 0xe0) | (((g) & 0xe0) >> 3) | (((b) & 0xc0) >> 6))
@@ -64,16 +70,16 @@ extern void r128DDInitTextureFuncs(GLcontext *ctx);
 #define R128PACKCOLOR4444(r, g, b, a)                                         \
     ((((a) & 0xf0) << 8) | (((r) & 0xf0) << 4) | ((g) & 0xf0) | ((b) >> 4))
 
-static __inline__ CARD32 r128PackColor(GLuint depth,
-				       GLubyte r, GLubyte g,
-				       GLubyte b, GLubyte a)
+static __inline__ CARD32 r128PackColor( GLuint depth,
+					GLubyte r, GLubyte g,
+					GLubyte b, GLubyte a )
 {
-    switch (depth) {
-    case  8: return R128PACKCOLOR332(r, g, b);
-    case 15: return R128PACKCOLOR1555(r, g, b, a);
-    case 16: return R128PACKCOLOR565(r, g, b);
-    case 24: return R128PACKCOLOR888(r, g, b);
-    case 32: return R128PACKCOLOR8888(r, g, b, a);
+    switch ( depth ) {
+    case  8: return R128PACKCOLOR332( r, g, b );
+    case 15: return R128PACKCOLOR1555( r, g, b, a );
+    case 16: return R128PACKCOLOR565( r, g, b );
+    case 24: return R128PACKCOLOR888( r, g, b );
+    case 32: return R128PACKCOLOR8888( r, g, b, a );
     default: return 0;
     }
 }
