@@ -81,3 +81,5 @@ config DRM_SIS
           chipset. If M is selected the module will be called sis. AGP
           support is required for this driver to work.
 
+
+

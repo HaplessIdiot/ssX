@@ -135,7 +135,6 @@ typedef struct drm_radeon_private {
 	unsigned long gart_textures_offset;
 
 	drm_local_map_t *sarea;
-	drm_local_map_t *fb;
 	drm_local_map_t *mmio;
 	drm_local_map_t *cp_ring;
 	drm_local_map_t *ring_rptr;
@@ -691,6 +690,7 @@ extern void radeon_do_release(drm_device_t *dev);
 #define R200_SE_VTX_FMT_1                 0x208c
 #define R200_RE_CNTL                      0x1c50 
 
+#define R200_RB3D_BLENDCOLOR              0x3218
 
 /* Constants */
 #define RADEON_MAX_USEC_TIMEOUT		100000	/* 100 ms */

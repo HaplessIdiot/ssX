@@ -45,13 +45,6 @@ static struct drm_stub_list {
 
 static struct proc_dir_entry *DRM(stub_root);
 
-/** Stub information */
-static struct drm_stub_info {
-	int (*info_register)(const char *name, struct file_operations *fops,
-			     drm_device_t *dev);
-	int (*info_unregister)(int minor);
-} DRM(stub_info);
-
 /**
  * File \c open operation.
  *
@@ -63,7 +56,7 @@ static struct drm_stub_info {
  */
 static int DRM(stub_open)(struct inode *inode, struct file *filp)
 {
-	int                    minor = minor(inode->i_rdev);
+	int                    minor = iminor(inode);
 	int                    err   = -ENODEV;
 	struct file_operations *old_fops;
 
@@ -148,6 +141,7 @@ static int DRM(stub_putminor)(int minor)
 		DRM(free)(DRM(stub_list),
 			  sizeof(*DRM(stub_list)) * DRM_STUB_MAXCARDS,
 			  DRM_MEM_STUB);
+		class_simple_destroy(DRM(stub_info).drm_class);
 		unregister_chrdev(DRM_MAJOR, "drm");
 	}
 	return 0;
@@ -171,24 +165,44 @@ int DRM(stub_register)(const char *name, struct file_operations *fops,
 		       drm_device_t *dev)
 {
 	struct drm_stub_info *i = NULL;
+	int ret1;
+	int ret2;
 
 	DRM_DEBUG("\n");
-	if (register_chrdev(DRM_MAJOR, "drm", &DRM(stub_fops)))
+	ret1 = register_chrdev(DRM_MAJOR, "drm", &DRM(stub_fops));
+	if (ret1 == -EBUSY) 
 		i = (struct drm_stub_info *)inter_module_get("drm");
+	if (ret1 < 0)
+		return -1;
 
 	if (i) {
 				/* Already registered */
 		DRM(stub_info).info_register   = i->info_register;
 		DRM(stub_info).info_unregister = i->info_unregister;
+		DRM(stub_info).drm_class = i->drm_class;
 		DRM_DEBUG("already registered\n");
-	} else if (DRM(stub_info).info_register != DRM(stub_getminor)) {
-		DRM(stub_info).info_register   = DRM(stub_getminor);
-		DRM(stub_info).info_unregister = DRM(stub_putminor);
+	} else if (DRM(stub_info).drm_class == NULL) {
+		DRM(stub_info).drm_class = class_simple_create(THIS_MODULE, "drm");
+		if (IS_ERR(DRM(stub_info).drm_class)) {
+                        printk (KERN_ERR "Error creating drm class.\n");
+                        unregister_chrdev(DRM_MAJOR, "drm");
+                        return PTR_ERR(DRM(stub_info).drm_class);
+		}
 		DRM_DEBUG("calling inter_module_register\n");
 		inter_module_register("drm", THIS_MODULE, &DRM(stub_info));
 	}
-	if (DRM(stub_info).info_register)
-		return DRM(stub_info).info_register(name, fops, dev);
+	if (DRM(stub_info).info_register) {
+		ret2 = DRM(stub_info).info_register(name, fops, dev);
+		if (ret2) {
+			if (!ret1) {
+				unregister_chrdev(DRM_MAJOR, "drm");
+				class_simple_destroy(DRM(stub_info).drm_class);
+			}
+			if (!i)
+				inter_module_unregister("drm");
+		}
+		return ret2;
+	}
 	return -1;
 }
 
@@ -206,3 +220,10 @@ int DRM(stub_unregister)(int minor)
 		return DRM(stub_info).info_unregister(minor);
 	return -1;
 }
+
+/** Stub information */
+struct drm_stub_info DRM(stub_info) = {
+	.info_register   = DRM(stub_getminor),
+	.info_unregister = DRM(stub_putminor),
+	.drm_class = NULL,
+};

@@ -23,20 +23,8 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * RED HAT AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
- * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- * THIS SOFTWARE IS NOT INTENDED FOR USE IN SAFETY CRITICAL SYSTEMS
- *
  * Authors:
  *    Gareth Hughes <gareth@valinux.com>
- *
- * Memory allocation size checks added 14/01/2003, Alan Cox <alan@redhat.com>
  */
 
 #include "r128.h"
@@ -927,8 +915,7 @@ static int r128_cce_dispatch_write_span( drm_device_t *dev,
 	DRM_DEBUG( "\n" );
 
 	count = depth->n;
-
-	if ( count > 4096 )
+	if (count > 4096 || count <= 0)
 		return DRM_ERR(EMSGSIZE);
 
 	if ( DRM_COPY_FROM_USER( &x, depth->x, sizeof(x) ) ) {
@@ -1024,8 +1011,7 @@ static int r128_cce_dispatch_write_pixels( drm_device_t *dev,
 	DRM_DEBUG( "\n" );
 
 	count = depth->n;
-
-	if ( count > 4096 )
+	if (count > 4096 || count <= 0)
 		return DRM_ERR(EMSGSIZE);
 
 	xbuf_size = count * sizeof(*x);
@@ -1144,8 +1130,7 @@ static int r128_cce_dispatch_read_span( drm_device_t *dev,
 	DRM_DEBUG( "\n" );
 
 	count = depth->n;
-
-	if ( count > 4096 )
+	if (count > 4096 || count <= 0)
 		return DRM_ERR(EMSGSIZE);
 
 	if ( DRM_COPY_FROM_USER( &x, depth->x, sizeof(x) ) ) {
@@ -1190,6 +1175,9 @@ static int r128_cce_dispatch_read_pixels( drm_device_t *dev,
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
 
 	count = depth->n;
+	if (count > 4096 || count <= 0)
+		return DRM_ERR(EMSGSIZE);
+
 	if ( count > dev_priv->depth_pitch ) {
 		count = dev_priv->depth_pitch;
 	}

@@ -77,12 +77,6 @@
 	[DRM_IOCTL_NR(DRM_IOCTL_I830_GETPARAM)] = { i830_getparam,  1, 0 }, \
 	[DRM_IOCTL_NR(DRM_IOCTL_I830_SETPARAM)] = { i830_setparam,  1, 0 } 
 
-#define DRIVER_PCI_IDS							\
-	{0x8086, 0x3577, 0, "Intel i830M GMCH"},			\
-	{0x8086, 0x2562, 0, "Intel i845G GMCH"},			\
-	{0x8086, 0x3582, 0, "Intel i852GM/i855GM GMCH"},		\
-	{0, 0, 0, NULL}
-
 #define __HAVE_COUNTERS         4
 #define __HAVE_COUNTER6         _DRM_STAT_IRQ
 #define __HAVE_COUNTER7         _DRM_STAT_PRIMARY
@@ -96,7 +90,7 @@
 	i830_reclaim_buffers( filp );					\
 } while (0)
 
-#define DRIVER_PRETAKEDOWN() do {					\
+#define DRIVER_PRETAKEDOWN( dev ) do {					\
 	i830_dma_cleanup( dev );					\
 } while (0)
 

@@ -158,6 +158,7 @@
 #define DRM_MEM_CTXBITMAP 18
 #define DRM_MEM_STUB      19
 #define DRM_MEM_SGLISTS   20
+#define DRM_MEM_CTXLIST  21
 
 #define DRM_MAX_CTXBITMAP (PAGE_SIZE * 8)
 	
@@ -201,6 +202,14 @@
                     prefetch(pos->member.next))
 #endif
 
+#ifndef list_for_each_entry_safe
+#define list_for_each_entry_safe(pos, n, head, member)                  \
+        for (pos = list_entry((head)->next, typeof(*pos), member),      \
+                n = list_entry(pos->member.next, typeof(*pos), member); \
+             &pos->member != (head);                                    \
+             pos = n, n = list_entry(n->member.next, typeof(*n), member))
+#endif
+
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,19)
 static inline struct page * vmalloc_to_page(void * vmalloc_addr)
 {
@@ -224,6 +233,42 @@ static inline struct page * vmalloc_to_page(void * vmalloc_addr)
 	}
 	return page;
 }
+#endif
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
+static inline unsigned iminor(struct inode *inode)
+{
+        return MINOR(inode->i_rdev);
+}
+
+#define old_encode_dev(x) (x)
+
+struct class_simple;
+struct device;
+
+#define pci_dev_put(x) do {} while (0)
+#define pci_get_subsys pci_find_subsys
+
+#define class_simple_device_add(...) do {} while (0)
+
+static inline void class_simple_device_remove(dev_t dev){};
+
+static inline void class_simple_destroy(struct class_simple *cs){};
+
+static inline struct class_simple *class_simple_create(struct module *owner, char *name) { return NULL; }
+
+#ifndef pci_pretty_name
+#define pci_pretty_name(x) x->name
+#endif
+
+#endif
+
+#ifndef __user
+#define __user
+#endif
+
+#ifndef __put_page
+#define __put_page(p)           atomic_dec(&(p)->count)
 #endif
 
 #ifndef REMAP_PAGE_RANGE_5_ARGS
@@ -309,19 +354,6 @@ static inline struct page * vmalloc_to_page(void * vmalloc_addr)
 			DRM(ioremapfree)( (map)->handle, (map)->size, (dev) );	\
 	} while (0)
 
-#ifndef VMAP_4_ARGS
-
-#define DRM_IOREMAPAGP(map, dev)						\
-	(map)->handle = DRM(ioremap_agp)( (map)->offset, (map)->size, (dev) )
-
-#define DRM_IOREMAPAGPFREE(map)						\
-	do {								\
-		if ( (map)->handle && (map)->size )			\
-			DRM(ioremap_agp_free)( (map)->handle, (map)->size );	\
-	} while (0)
-
-#endif
-
 /**
  * Find mapping.
  *
@@ -404,14 +436,6 @@ do {									\
  */
 typedef int drm_ioctl_t( struct inode *inode, struct file *filp,
 			 unsigned int cmd, unsigned long arg );
-
-typedef struct drm_pci_id_list
-{
-	int vendor;
-	int device;
-	long driver_private;
-	char *name;
-} drm_pci_id_list_t;
 
 typedef struct drm_ioctl_desc {
 	drm_ioctl_t	     *func;
@@ -508,18 +532,6 @@ typedef struct drm_buf_entry {
 
 	drm_freelist_t	  freelist;
 } drm_buf_entry_t;
-
-/**
- * Hardware lock.
- *
- * The lock structure is a simple cache-line aligned integer.  To avoid
- * processor bus contention on a multiprocessor system, there should not be any
- * other data stored in the same cache line.
- */
-typedef struct drm_hw_lock {
-	__volatile__ unsigned int lock;		/**< lock variable */
-	char			  padding[60];	/**< Pad to cache line */
-} drm_hw_lock_t;
 
 /** File private data */
 typedef struct drm_file {
@@ -651,6 +663,15 @@ typedef struct drm_map_list {
 
 typedef drm_map_t drm_local_map_t;
 
+/**
+ * Context handle list
+ */
+typedef struct drm_ctx_list {
+	struct list_head	head;   /**< list head */
+	drm_context_t		handle; /**< context handle */
+	drm_file_t		*tag;   /**< associated fd private data */
+} drm_ctx_list_t;
+
 #if __HAVE_VBL_IRQ
 
 typedef struct drm_vbl_sig {
@@ -710,6 +731,12 @@ typedef struct drm_device {
 	/*@{*/
 	drm_map_list_t	  *maplist;	/**< Linked list of regions */
 	int		  map_count;	/**< Number of mappable regions */
+
+	/** \name Context handle management */
+	/*@{*/
+	drm_ctx_list_t	  *ctxlist;	/**< Linked list of context handles */
+	int		  ctx_count;	/**< Number of context handles */
+	struct semaphore  ctxlist_sem;	/**< For ctxlist */
 
 	drm_map_t	  **context_sareas; /**< per-context SAREA's */
 	int		  max_context;
@@ -811,6 +838,7 @@ extern int           DRM(lock)(struct inode *inode, struct file *filp,
 			       unsigned int cmd, unsigned long arg);
 extern int           DRM(unlock)(struct inode *inode, struct file *filp,
 				 unsigned int cmd, unsigned long arg);
+extern int           DRM(fb_loaded);
 
 				/* Device support (drm_fops.h) */
 extern int	     DRM(open_helper)(struct inode *inode, struct file *filp,
@@ -846,10 +874,6 @@ extern void	     *DRM(ioremap_nocache)(unsigned long offset, unsigned long size,
 extern void	     DRM(ioremapfree)(void *pt, unsigned long size, drm_device_t *dev);
 
 #if __REALLY_HAVE_AGP
-#ifndef VMAP_4_ARGS
-extern void	     *DRM(ioremap_agp)(unsigned long offset, unsigned long size, drm_device_t *dev);
-extern void	     DRM(ioremap_agp_free)(void *pt, unsigned long size);
-#endif
 extern DRM_AGP_MEM   *DRM(alloc_agp)(int pages, u32 type);
 extern int           DRM(free_agp)(DRM_AGP_MEM *handle, int pages);
 extern int           DRM(bind_agp)(DRM_AGP_MEM *handle, unsigned int start);
@@ -1039,6 +1063,12 @@ extern int            DRM(ati_pcigart_init)(drm_device_t *dev,
 extern int            DRM(ati_pcigart_cleanup)(drm_device_t *dev,
 					       unsigned long addr,
 					       dma_addr_t bus_addr);
+
+extern void	      *DRM(pci_alloc)(drm_device_t *dev, size_t size, 
+					size_t align, dma_addr_t maxaddr,
+					dma_addr_t *busaddr);
+extern void	      DRM(pci_free)(drm_device_t *dev, size_t size, 
+					void *vaddr, dma_addr_t busaddr);
 
 /*@}*/
 
