@@ -1,4 +1,6 @@
 XFree86 4.4.99.13 (xx August 2004)
+ 166. Update the vmware driver to save register state before changing it
+      (#6701, Nolan Leake).
 
 XFree86 4.4.99.12 (27 August 2004)
  165. Xterm patch #196 (Thomas Dickey).
@@ -19068,7 +19070,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3303 2004/08/15 21:07:57 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3304 2004/08/27 11:02:34 dawes Exp $
 
 
 
