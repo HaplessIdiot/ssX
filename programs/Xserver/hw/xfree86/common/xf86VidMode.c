@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1999 by The XFree86 Project, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86VidMode.c,v 1.10 2001/02/15 20:31:52 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86VidMode.c,v 1.11 2001/05/06 00:49:12 mvojkovi Exp $ */
 
 /*
  * This file contains the VidMode functions required by the extension.
@@ -566,7 +566,7 @@ VidModeGetGammaRamp(int scrnIndex, int size, CARD16 *r, CARD16 *g, CARD16 *b)
         return FALSE;
 
     pScrn = xf86Screens[scrnIndex];
-    xf86ChangeGammaRamp(pScrn->pScreen, size, r, g, b);
+    xf86GetGammaRamp(pScrn->pScreen, size, r, g, b);
     return TRUE;
 }
 

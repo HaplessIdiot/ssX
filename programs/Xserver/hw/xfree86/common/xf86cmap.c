@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.20 2001/02/15 20:31:53 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.21 2001/05/06 00:49:12 mvojkovi Exp $ */
 
 #ifdef _XOPEN_SOURCE
 #include <math.h>
@@ -1034,6 +1034,7 @@ xf86GetGammaRamp(
 ){
     CMapScreenPtr pScreenPriv;
     LOCO *entry;
+    int shift, sigbits;
 
     if(CMapScreenIndex == -1) 
 	return BadImplementation;
@@ -1046,12 +1047,20 @@ xf86GetGammaRamp(
 	return BadValue;
 
     entry = pScreenPriv->gamma;
+    sigbits = pScreenPriv->sigRGBbits;
 
-    /* This is wrong */
     while(size--) {
-	*(red++) = entry->red;
-	*(green++) = entry->green;
-	*(blue++) = entry->blue;
+	*red = entry->red << (16 - sigbits);
+	*green = entry->green << (16 - sigbits);
+	*blue = entry->blue << (16 - sigbits);
+	shift = sigbits;
+	while(shift < 16) {
+	    *red |= *red >> shift;
+	    *green |= *green >> shift;
+	    *blue |= *blue >> shift;
+	    shift += sigbits;
+	}
+	red++; green++; blue++;
         entry++;
     }
 
