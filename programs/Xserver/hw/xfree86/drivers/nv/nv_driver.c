@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.98 2003/01/01 02:50:19 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.99 2003/01/02 20:44:56 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -116,8 +116,8 @@ static SymTabRec NVKnownChipsets[] =
   { 0x10DE0181, "GeForce4 MX 440 with AGP8X" },
   { 0x10DE0182, "GeForce4 MX 440SE with AGP8X" },
   { 0x10DE0183, "GeForce4 MX 420 with AGP8X" },
-  { 0x10DE0186, "0x0186" },
-  { 0x10DE0187, "0x0187" },
+  { 0x10DE0186, "GeForce4 448 Go" },
+  { 0x10DE0187, "GeForce4 488 Go" },
   { 0x10DE0188, "Quadro4 580 XGL" },
   { 0x10DE018A, "Quadro4 280 NVS" },
   { 0x10DE018B, "Quadro4 380 XGL" },
@@ -141,10 +141,10 @@ static SymTabRec NVKnownChipsets[] =
   { 0x10DE0288, "Quadro4 980 XGL" },
   { 0x10DE0289, "Quadro4 780 XGL" },
   { 0x10DE0300, "0x0300" },
-  { 0x10DE0301, "0x0301" },
-  { 0x10DE0302, "0x0302" },
-  { 0x10DE0308, "0x0308" },
-  { 0x10DE0309, "0x0309" },
+  { 0x10DE0301, "GeForce FX 5800 Ultra" },
+  { 0x10DE0302, "GeForce FX 5800" },
+  { 0x10DE0308, "Quadro FX 2000" },
+  { 0x10DE0309, "Quadro FX 1000" },
   { 0x10DE0311, "0x0311" },
   { 0x10DE0312, "0x0312" },
   { 0x10DE0316, "0x0316" },
@@ -157,6 +157,13 @@ static SymTabRec NVKnownChipsets[] =
   { 0x10DE031D, "0x031D" },
   { 0x10DE031E, "0x031E" },
   { 0x10DE031F, "0x031F" },
+  { 0x10DE0321, "0x0321" },
+  { 0x10DE0322, "0x0322" },
+  { 0x10DE0323, "0x0323" },
+  { 0x10DE0326, "0x0326" },
+  { 0x10DE032A, "0x032A" },
+  { 0x10DE032B, "0x032B" },
+  { 0x10DE032E, "0x032E" },
   {-1, NULL}
 };
 
