@@ -1,4 +1,5 @@
 XFree86 3.9.16f (xx December 1999)
+3376. Fix dynamic loading on the alpha platform (#3459, Hannes Reinecke).
 3375. Add Xinerama option to the serverlayout section of the config file
       (#3458, Joe Moss).
 3374. Add accelerated line support, clean up accel code, and other fixes
@@ -9153,4 +9154,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.871 1999/12/13 23:48:15 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.872 1999/12/13 23:52:51 robin Exp $
