@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/dmxinit.c,v 1.2 2004/07/07 03:46:22 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxinit.c,v 1.3tsi Exp $ */
 /*
  * Copyright 2001-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -60,7 +60,7 @@
 
 #include <signal.h>             /* For SIGQUIT */
 
-#ifdef GLXEXT
+#ifdef GLXPROXY
 #include <GL/glx.h>
 #include <GL/glxint.h>
 #include "dmx_glxvisuals.h"
@@ -72,7 +72,7 @@ extern void GlxSetVisualConfigs(
     __GLXvisualConfig *configs,
     void              **configprivs
 );
-#endif /* GLXEXT */
+#endif /* GLXPROXY */
 
 extern void SetVendorRelease(int release); /* in dix/main.c */
 extern void SetVendorString(char *string); /* in dix/main.c */
@@ -103,7 +103,7 @@ int             dmxDepth = 0;
 
 Bool            dmxNoRender = FALSE;
 
-#ifndef GLXEXT
+#ifndef GLXPROXY
 static Bool     dmxGLXProxy = FALSE;
 #else
 Bool            dmxGLXProxy = TRUE;
@@ -185,7 +185,7 @@ static int dmxErrorHandler(Display *dpy, XErrorEvent *ev)
     return 0;
 }
 
-#ifdef GLXEXT
+#ifdef GLXPROXY
 static int dmxNOPErrorHandler(Display *dpy, XErrorEvent *ev)
 {
     return 0;
@@ -286,7 +286,7 @@ void dmxGetScreenAttribs(DMXScreenInfo *dmxScreen)
 {
     XWindowAttributes attribs;
     Display           *dpy   = dmxScreen->beDisplay;
-#ifdef GLXEXT
+#ifdef GLXPROXY
     int               dummy;
 #endif
 
@@ -342,7 +342,7 @@ void dmxGetScreenAttribs(DMXScreenInfo *dmxScreen)
     else if (dmxScreen->beDepth <= 16) dmxScreen->beBPP = 16;
     else                               dmxScreen->beBPP = 32;
 
-#ifdef GLXEXT
+#ifdef GLXPROXY
     /* get the majorOpcode for the back-end GLX extension */
     XQueryExtension(dpy, "GLX", &dmxScreen->glxMajorOpcode,
 		    &dummy, &dmxScreen->glxErrorBase);
@@ -570,7 +570,7 @@ void InitOutput(ScreenInfo *pScreenInfo, int argc, char *argv[])
 {
     int                  i;
     static unsigned long dmxGeneration = 0;
-#ifdef GLXEXT
+#ifdef GLXPROXY
     Bool                 glxSupported  = TRUE;
 #endif
 
@@ -694,7 +694,7 @@ void InitOutput(ScreenInfo *pScreenInfo, int argc, char *argv[])
      */
     OsSignal(SIGQUIT, GiveUp);
 
-#ifdef GLXEXT
+#ifdef GLXPROXY
     /* Check if GLX extension exists on all back-end servers */
     for (i = 0; i < dmxNumScreens; i++)
 	glxSupported &= (dmxScreens[i].glxMajorOpcode > 0);
@@ -703,7 +703,7 @@ void InitOutput(ScreenInfo *pScreenInfo, int argc, char *argv[])
     /* Tell dix layer about the backend displays */
     for (i = 0; i < dmxNumScreens; i++) {
 
-#ifdef GLXEXT
+#ifdef GLXPROXY
 	if (glxSupported) {
 	    /*
 	     * Builds GLX configurations from the list of visuals
@@ -783,7 +783,7 @@ void InitOutput(ScreenInfo *pScreenInfo, int argc, char *argv[])
 		GlxSetVisualConfigs(nconfigs, configs, (void**)configprivs);
 	    }
 	}
-#endif  /* GLXEXT */
+#endif  /* GLXPROXY */
 
 	AddScreen(dmxScreenInit, argc, argv);
     }
@@ -946,7 +946,7 @@ int ddxProcessArgument(int argc, char *argv[], int i)
     } else if (!strcmp(argv[i], "-norender")) {
 	dmxNoRender = TRUE;
         retval = 1;
-#ifdef GLXEXT
+#ifdef GLXPROXY
     } else if (!strcmp(argv[i], "-noglxproxy")) {
 	dmxGLXProxy = FALSE;
         retval = 1;
@@ -1011,7 +1011,7 @@ void ddxUseMsg(void)
     ErrorF("                     backend displays (cf. -kb).\n");
     ErrorF("-depth               Specify the default root window depth\n");
     ErrorF("-norender            Disable RENDER extension support\n");
-#ifdef GLXEXT
+#ifdef GLXPROXY
     ErrorF("-noglxproxy          Disable GLX Proxy\n");
     ErrorF("-noglxswapgroup      Disable swap group and swap barrier\n");
     ErrorF("                     extensions in GLX proxy\n");

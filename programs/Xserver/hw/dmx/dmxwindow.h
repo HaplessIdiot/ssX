@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxwindow.h,v 1.1tsi Exp $ */
 /*
  * Copyright 2001-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -55,7 +55,7 @@ typedef struct _dmxWinPriv {
 #ifdef RENDER
     Bool           hasPict;
 #endif
-#ifdef GLXEXT
+#ifdef GLXPROXY
     void          *swapGroup;
     int            barrier;
     void         (*windowDestroyed)(WindowPtr);
