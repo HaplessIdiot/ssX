@@ -1,4 +1,7 @@
 XFree86 4.4.99.1 (XX March 2004)
+   4. VeraIt.ttf wasn't getting installed (Bugzilla #1226, Matthieu Herrb).
+   3. Fix an attempted free of an invalid pointer in ScreenSaverSetAttributes()
+      (Bugzilla #1224, Matthieu Herrb, David Dawes).
    2. Fix a build problem when build server side GL libraries on a system
       with no installed X headers (Alan Hourihane).
    1. Fix HTML man page index generation to handle recent rman changes
@@ -18689,7 +18692,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3158 2004/03/01 17:56:25 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3159 2004/03/01 19:23:23 alanh Exp $
 
 
 
