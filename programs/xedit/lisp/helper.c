@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.7 2001/09/30 20:32:00 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.8 2001/10/02 06:38:37 paulo Exp $ */
 
 #include "helper.h"
 #include <ctype.h>
@@ -385,7 +385,8 @@ _LispReallyDo(LispMac *mac, LispObj *list, char *fname, int refs)
 	    LispAddVar(mac, var->data.atom, val);
     }
 
-    env = LispReverse(env);
+    /* Need to update CAR(FRM) or will run loop without gc protection! */
+    env = CAR(FRM) = LispReverse(env);
     if (!refs) {
 	for (obj = env; obj != NIL; obj = CDR(obj)) {
 	    list = CAR(obj);

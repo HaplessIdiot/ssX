@@ -27,20 +27,38 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.h,v 1.1 2001/08/31 15:00:14 paulo Exp $ */
+/* $XFree86$ */
 
-#ifndef Lisp_lisp_h
-#define Lisp_lisp_h
+#ifndef Lisp_debugger_h
+#define Lisp_debugger_h
 
-typedef struct _LispMac LispMac;
+/*
+ * Definitions
+ */
+#define	DBGPROMPT	"DEBUG> "
 
-LispMac *LispBegin(int argc, char *argv[]);
-void LispEnd(LispMac*);
-void LispExecute(LispMac*, char*);
-void LispMachine(LispMac*);
-void LispSetPrompt(LispMac*, char*);
-void LispSetInteractive(LispMac*, int);
-void LispSetExitOnError(LispMac*, int);
-void LispDebug(LispMac*, int);	/* argument is boolean to enable/disable */
+/*
+ * Types
+ */
+typedef enum _LispDebugState {
+    LispDebugUnspec,	/* initial state */
+    LispDebugRun,	/* just run, until breakpoint or error */
+    LispDebugFinish,	/* evaluates until selected form is finished */
+    LispDebugNext,	/* evaluate form */
+    LispDebugStep,	/* evaluate form, and step on subforms */
+} LispDebugState;
 
-#endif /* Lisp_lisp_h */
+typedef enum _LispDebugCall {
+    LispDebugCallBegin,
+    LispDebugCallEnd,
+    LispDebugCallFatal,
+} LispDebugCall;
+
+#include "private.h"
+
+/*
+ * Prototypes
+ */
+void LispDebugger(LispMac*, LispDebugCall, LispObj*, LispObj*);
+
+#endif /* Lisp_debugger_h */

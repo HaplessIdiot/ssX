@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.5 2001/09/21 05:08:43 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.6 2001/10/02 06:38:38 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -41,6 +41,7 @@
 #include "internal.h"
 
 #include "core.h"
+#include "debugger.h"
 #include "helper.h"
 #include "struct.h"
 
@@ -60,6 +61,7 @@
 #define STR	mac->strlist
 #define RUN	mac->runlist
 #define RES	mac->reslist
+#define DBG	mac->dbglist
 
 /*
  * Types
@@ -96,6 +98,8 @@ struct _LispBlock {
     jmp_buf jmp;
     int level;
     int block_level;
+    int debug_level;
+    int debug_step;
 };
 
 struct _LispModule {
@@ -156,6 +160,7 @@ struct _LispMac {
     LispObj *strlist;		/* structure definitions */
     LispObj *runlist[3];	/* +, ++, and +++ */
     LispObj *reslist[3];	/* *, **, and *** */
+    LispObj *dbglist;		/* debug extra information */
 
 #ifdef SIGNALRETURNSINT
     int (*sigint)(int);
@@ -164,6 +169,11 @@ struct _LispMac {
     void (*sigint)(int);
     void (*sigfpe)(int);
 #endif
+
+    int debugging;		/* debugger enabled? */
+    int debug_level;		/* almost always the same as mac->level */
+    int debug_step;		/* control for stoping and printing output */
+    LispDebugState debug;
 };
 
 /*

@@ -1,4 +1,6 @@
-$XFree86$
+$XFree86: xc/programs/xedit/lisp/README,v 1.1 2001/08/31 15:00:13 paulo Exp $
+
+LAST UPDATED:	$Date: 2001/10/03 07:46:02 $
 
     SUMMARY
 
@@ -44,14 +46,15 @@ Note that C-j currently will only work in the *scratch* buffer.
   The interpreter is expected to be a subset of Common Lisp, and is not
 expected to invent any new features or interfaces, just become more and
 more compatible with Common Lisp. The only non Common Lisp features, currently
-are:
+is/are:
 
-  o It is currently case sensitive, this is because in the initial stages it
-    was mean't to be as Emacs Lisp compatible as possible.
   o It has some Emacs Lisp functions, that should be removed and replaced with
     the Common Lisp equivalent ones.
-  o The currently implemented function names are in table.gperf
 
+
+  The currently implemented function names are in table.gperf. There are also
+functions in modules/fun.lsp, that are inplicitly loaded by xedit and the
+sample program lsp.
 
 
     BUGS
@@ -86,6 +89,95 @@ functional.
 
   The lisp interpreter is mean't to be usable without xedit and without Xaw.
 The xedit text buffer interface, when done will be just a module.
+  If you want to test the current implementation, subject to changes, as it
+is only for testing, create a file named "xedit.lsp", with the contents:
+--
+;; (provide "xedit")
+
+(defun point ()
+    (format t "get-point~%")
+    (read)	;; current point
+)
+
+(defun point-min ()
+    (format t "point-min~%")
+    (read)	;; minimal point value
+)
+
+(defun point-max ()
+    (format t "point-max~%")
+    (read)	;; maximal point value
+)
+
+(defun goto-char (point)
+    (format t "set-point ~D~%" point)
+    (read)	;; nil return value
+    point
+)
+
+(defun insert (str)
+    (format t "insert ~S~%" str)
+    (read)	;; nil return value
+)
+
+(defun get-background-color ()
+    (format t "get-background~%")
+    (read)	;; current background color
+)
+
+(defun set-background-color (color)
+    (format t "set-background ~S~%" color)
+    (read)	;; nil return value
+)
+
+(defun get-font ()
+    (format t "get-font~%")
+    (read)	;; current font
+)
+
+(defun set-font (font)
+    (format t "set-font ~S~%" font)
+    (read)	;; nil return value
+)
+
+(defun get-foreground-color ()
+    (format t "get-foreground~%")
+    (read)	;; current foreground color
+)
+
+(defun set-foreground-color (color)
+    (format t "set-foreground ~S~%" color)
+    (read)	;; nil return value
+)
+
+(defun other-buffer ()
+    (format t "get-other-buffer")
+    (read)	;; value of other buffer
+)
+--
+Note that it is printing a literal ESC.
+  After creating the file xedit.lsp, at the *scratch* buffer, type
+(load "xedit.lsp") and press Ctrl+J. After that, you should be able to use
+the defined functions. Try this:
+(set-background-color "PeachPuff")
+(set-foreground-color "Red3")
+(goto-char (point-min))
+
+
+    DEBUGGER
+
+  There is a, currently, very simple debugger implement in the interpreter.
+To use the debugger, run the lsp sample program as "./lsp -d", and optionally
+pass a second parameter, for the file to be interpreted. Once the debugger
+prompt is visible, type "help" for a summary of options. To leave the debugger
+type "continue".
+  Note that the debugger is still very simple, it won't work from xedit, and
+won't drop to the debugger on "fatal errors", and it is not yet possible to
+add breakpoints. Support for this and other useful features should be added
+soon. Also, the only way to call the debugger again, if you told it to
+"continue", is to make an error, so that it will change the state debugger to
+"Stepping", and from now on, its prompt will be available again when the first
+function be called.
 
 
     HELPING
