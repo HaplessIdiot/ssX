@@ -344,40 +344,40 @@ static void TAG(line)( GLcontext *ctx,
 static void TAG(points)(GLcontext *ctx,
 			GLuint first, GLuint last)
 {
-    r128ContextPtr        r128ctx   = R128_CONTEXT(ctx);
-    struct vertex_buffer *VB        = ctx->VB;
-    r128VertexPtr         r128verts = R128_DRIVER_DATA(VB)->verts;
-    GLfloat               size      = ctx->Point.Size * 0.5;
-    int                   i;
+   r128ContextPtr        r128ctx   = R128_CONTEXT(ctx);
+   struct vertex_buffer *VB        = ctx->VB;
+   r128VertexPtr         r128verts = R128_DRIVER_DATA(VB)->verts;
+   GLfloat               size      = ctx->Point.Size * 0.5;
+   int                   i;
 
 
-    for(i = first; i <= last; i++) {
-	if(VB->ClipMask[i] == 0) {
-	   if (IND & (R128_TWOSIDE_BIT|R128_OFFSET_BIT)) {
-	      r128Vertex tmp0 = r128verts[i];
+   for(i = first; i < last; i++) {
+      if(VB->ClipMask[i] == 0) {
+	 if (IND & (R128_TWOSIDE_BIT|R128_OFFSET_BIT)) {
+	    r128Vertex tmp0 = r128verts[i];
 
-	      if (IND & R128_TWOSIDE_BIT) {
-		 GLubyte (*vbcolor)[4] = VB->ColorPtr->data;
-		 R128_COLOR((char *)&tmp0.vert1.dif_argb, vbcolor[i]);
-	      }
-	      if (IND & R128_OFFSET_BIT) {
-		 GLfloat offset = ctx->PointZoffset * r128ctx->depth_scale;
-		 tmp0.vert1.z += offset;
-	      }
-	      r128DrawPointVB( r128ctx, &tmp0, size );
-	   } else
-	      r128DrawPointVB( r128ctx, &r128verts[i], size );
-	}
-    }
+	    if (IND & R128_TWOSIDE_BIT) {
+	       GLubyte (*vbcolor)[4] = VB->ColorPtr->data;
+	       R128_COLOR((char *)&tmp0.v.color, vbcolor[i]);
+	    }
+	    if (IND & R128_OFFSET_BIT) {
+	       GLfloat offset = ctx->PointZoffset * r128ctx->depth_scale;
+	       tmp0.v.z += offset;
+	    }
+	    r128_draw_point( r128ctx, &tmp0, size );
+	 } else
+	    r128_draw_point( r128ctx, &r128verts[i], size );
+      }
+   }
 }
 
 /* Initialize the table of primitives to render. */
 static void TAG(init)(void)
 {
-   rast_tab[IND].tri    = TAG(triangle);
-   rast_tab[IND].quad   = TAG(quad);
-   rast_tab[IND].line   = TAG(line);
-   rast_tab[IND].points = TAG(points);
+   rast_tab[IND].triangle   = TAG(triangle);
+   rast_tab[IND].quad       = TAG(quad);
+   rast_tab[IND].line       = TAG(line);
+   rast_tab[IND].points     = TAG(points);
 }
 
 #undef IND
