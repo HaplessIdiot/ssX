@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ibm.cf /main/79 1996/12/04 10:10:41 swick $
+XCOMM platform:  $XConsortium: ibm.cf /main/80 1996/12/26 08:52:31 kaleb $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -46,13 +46,16 @@ XCOMM operating system:  OSName (OSMajorVersion.OSMinorVersion.OSTeenyVersion)
  * C++ shared libraries.
  */
 
-#ifndef CplusplusCmd
-# if ThreadedX
-#  define CplusplusCmd		xlC_r
-# else
-#  define CplusplusCmd		xlC
+#if !HasGcc2ForCplusplus
+# ifndef CplusplusCmd
+#  if ThreadedX
+#   define CplusplusCmd		xlC_r
+#  else
+#   define CplusplusCmd		xlC
+#  endif
 # endif
 #endif
+
 #ifndef CplusplusFilt
 # define CplusplusFilt		/usr/lpp/xlC/bin/c++filt
 #endif
@@ -63,8 +66,10 @@ XCOMM operating system:  OSName (OSMajorVersion.OSMinorVersion.OSTeenyVersion)
 #  define CplusplusLibC		/usr/lpp/xlC/lib/libC_r.a
 # endif
 #endif
-#ifndef CplusplusDependIncludes
-#define CplusplusDependIncludes -I/usr/lpp/xlC/include
+#if !HasGcc2ForCplusplus
+# ifndef CplusplusDependIncludes
+#  define CplusplusDependIncludes -I/usr/lpp/xlC/include
+# endif
 #endif
 
 /*

@@ -84,8 +84,8 @@ in this Software without prior written authorization from the X Consortium.
 extern int  errno;		/* Internal system error number. */
 #endif
 
-extern      (*_FSIOErrorFunction) ();
-extern      (*_FSErrorFunction) ();
+extern int (*_FSIOErrorFunction) ();
+extern int (*_FSErrorFunction) ();
 
 extern int  _FGetHostname();
 
