@@ -1,4 +1,6 @@
 XFree86 3.9.18a (24 February 2000)
+3850. Fix an exposure problem that occured in 8+32 mode when the root
+      window was in depth 24 (Mark Vojkovich).
 3849. The MGA driver now recognizes a "VideoKey" option that sets the
       default video key for YUV overlays (Mark Vojkovich).
 3848. Add some missing cfbDrawableEnabled checks to the 8+32 and 24+32
@@ -4538,7 +4540,7 @@ XFree86 3.9n (26 August 1997)
 1201. Move most common extensions into a module (#889, Matthieu Herrb).
 1200. OpenBSD multi-architecture support (#888, Matthieu Herrb).
 1199. Disable disables broken software/hardware cursor switching in s3/svga
-      (#887, Mark Voikovich).
+      (#887, Mark Vojkovich).
 1198. Some fixes for PC98. XF86Setup, mga driver, VideoBoards98, Cards98
       (#886, Takaaki Nomura, Takefumi Tsukada).
 1197. Acceleration fixes for Trident and accelerated ImageWrite (#883,884,885
@@ -5459,7 +5461,7 @@ XFree86 3.2At (14 April 1997)
       values for 150MHz through 229MHz dot clocks. Set clock limits correctly
       for Laguna chips. (#280, Corey Anderson).
  678. Fix problem in xf86gcmisc.c that could cause a segfault (#279,
-      Mark Voikovich).
+      Mark Vojkovich).
  677. Fix problems with NonTE text in XAA (#278, David Bateman).
  676. Fix loader under SVR4.0.4 (lstat,fstat,mknod)(#277, Richard Coley).
  675. Speedups for dashed lines in SVGA/S3 (#276, Mark Vojkovich).
