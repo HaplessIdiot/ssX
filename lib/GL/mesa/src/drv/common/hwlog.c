@@ -24,6 +24,7 @@
  *
  *    Wittawat Yamwong <Wittawat.Yamwong@stud.uni-hannover.de>
  */
+/* $XFree86$ */
  
 #include "hwlog.h"
 hwlog_t hwlog = { 0,0,0, "[???] "};
@@ -97,6 +98,27 @@ void hwLogv(int l, const char *format, va_list ap)
   }
 }
 
+void hwMsg(int l, const char *format, ...)
+{
+  va_list ap;
+  va_start(ap, format);
+
+  if (l <= hwlog.level) {
+    if (hwIsLogReady()) {
+      int t = usec();
+
+      hwLog(l, "%6i:", t - hwlog.timeTemp);
+      hwlog.timeTemp = t;
+      hwLogv(l, format, ap);
+    } else {
+      fprintf(stderr, hwlog.prefix);
+      vfprintf(stderr, format, ap);
+    }
+  }
+
+  va_end(ap);
+}
+
 #else /* ifdef HW_LOG_ENABLED */
 
 int hwlogdummy()
@@ -105,3 +127,15 @@ int hwlogdummy()
 }
 
 #endif
+
+void hwError(const char *format, ...)
+{
+  va_list ap;
+  va_start(ap, format);
+
+  fprintf(stderr, hwlog.prefix);
+  vfprintf(stderr, format, ap);
+  hwLogv(0, format, ap);
+
+  va_end(ap);
+}

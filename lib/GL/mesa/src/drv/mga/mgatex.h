@@ -24,6 +24,7 @@
  *    John Carmack <johnc@idsoftware.com>
  *    Keith Whitwell <keithw@precisioninsight.com>
  */
+/* $XFree86$ */
 
 #ifndef MGATEX_INC
 #define MGATEX_INC
@@ -70,7 +71,8 @@ void mgaUpdateTextureState( GLcontext *ctx );
 
 /* Driver functions which are called directly from mesa */
 
-void mgaTexEnv( GLcontext *ctx, GLenum pname, const GLfloat *param );
+void mgaTexEnv( GLcontext *ctx, GLenum target, GLenum pname,
+                const GLfloat *param );
 
 void mgaTexImage( GLcontext *ctx, GLenum target,
 		  struct gl_texture_object *tObj, GLint level,

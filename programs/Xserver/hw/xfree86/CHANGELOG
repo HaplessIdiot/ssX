@@ -1,4 +1,7 @@
 XFree86 4.0f (?? June 2000)
+ 356. Fix GCC 2.96 complaints in big font extension and imstt driver
+      (Steven King).
+ 355. Fix remaining DRI III compile glitches (Marc La France).
  354. Fix long standing bug with 3Dfx driver when DRI module isn't loaded.
       It complained about unresolved symbol called after 'Textures memory'
       output (Alan Hourihane).
@@ -10687,4 +10690,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1199 2000/06/21 13:35:48 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1200 2000/06/22 13:00:29 alanh Exp $

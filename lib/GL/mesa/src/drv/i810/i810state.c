@@ -1,3 +1,4 @@
+/* $XFree86$ */
 
 #include <stdio.h>
 
@@ -252,7 +253,7 @@ static GLboolean i810DDSetDrawBuffer(GLcontext *ctx, GLenum mode )
 
    if (mode == GL_FRONT_LEFT) 
    {
-      imesa->drawMap = imesa->driScreen->pFB;
+      imesa->drawMap = (char *)imesa->driScreen->pFB;
       imesa->BufferSetup[I810_DESTREG_DI1] = (imesa->i810Screen->fbOffset | 
 					      imesa->i810Screen->backPitchBits);
       imesa->dirty |= I810_UPLOAD_BUFFERS;
@@ -280,7 +281,7 @@ static void i810DDSetReadBuffer(GLcontext *ctx, GLframebuffer *colorBuffer,
 
    if (mode == GL_FRONT_LEFT) 
    {
-      imesa->readMap = imesa->driScreen->pFB;
+      imesa->readMap = (char *)imesa->driScreen->pFB;
       imesa->Fallback &= ~I810_FALLBACK_READ_BUFFER;
    } 
    else if (mode == GL_BACK_LEFT) 
@@ -927,7 +928,7 @@ void i810DDInitState( i810ContextPtr imesa )
       imesa->BufferSetup[I810_DESTREG_DI1] = (i810Screen->backOffset | 
 					      i810Screen->backPitchBits);
    } else {
-      imesa->drawMap = imesa->driScreen->pFB;
+      imesa->drawMap = (char *)imesa->driScreen->pFB;
       imesa->BufferSetup[I810_DESTREG_DI1] = (i810Screen->fbOffset | 
 					      i810Screen->backPitchBits);
    }
@@ -935,7 +936,7 @@ void i810DDInitState( i810ContextPtr imesa )
    if (imesa->glCtx->Color.DriverDrawBuffer == GL_BACK_LEFT) {
       imesa->readMap = i810Screen->back.map;
    } else {
-      imesa->readMap = imesa->driScreen->pFB;
+      imesa->readMap = (char *)imesa->driScreen->pFB;
    }
 
    imesa->BufferSetup[I810_DESTREG_DV0] = GFX_OP_DESTBUFFER_VARS;

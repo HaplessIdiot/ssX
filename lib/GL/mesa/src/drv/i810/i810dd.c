@@ -21,7 +21,7 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-
+/* $XFree86$ */
 
 #include "types.h"
 #include "vbrender.h"
@@ -54,9 +54,9 @@ static const GLubyte *i810DDGetString( GLcontext *ctx, GLenum name )
 {
    switch (name) {
    case GL_VENDOR:
-      return "Keith Whitwell, Precision Insight Inc.";
+      return (GLubyte *)"Keith Whitwell, Precision Insight Inc.";
    case GL_RENDERER:
-      return "Mesa DRI I810 20000510";
+      return (GLubyte *)"Mesa DRI I810 20000510";
    default:
       return 0;
    }

@@ -26,7 +26,7 @@
  *	9/20/99 rewrite by John Carmack <johnc@idsoftware.com>
  *      13/1/00 port to DRI by Keith Whitwell <keithw@precisioninsight.com>
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatex.c,v 1.3 2000/06/21 12:11:00 tsi Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -1096,7 +1096,8 @@ Driver functions called directly from mesa
 /*
  * mgaTexEnv
  */      
-void mgaTexEnv( GLcontext *ctx, GLenum pname, const GLfloat *param ) 
+void mgaTexEnv( GLcontext *ctx, GLenum target, GLenum pname,
+                const GLfloat *param ) 
 {
 	mgaContextPtr mmesa = MGA_CONTEXT(ctx);
 	mgaMsg( 10, "mgaTexEnv( %i )\n", pname );

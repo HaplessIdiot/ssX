@@ -20,8 +20,8 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
- *
  */
+/* $XFree86$ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -30,26 +30,26 @@
 #include "hwlog.h"
 
 #define ISFREE(bptr) ((bptr)->free)
-/*  #define PRINTF(f,a...) hwMsg(1,f, ## a) */
-#define PRINTF(f,a...) fprintf(stderr, f, ## a)
+/*  #define PRINTF hwMsg(1, */
+#define PRINTF fprintf(stderr,
 
 void mmDumpMemInfo( memHeap_t *heap )
 {
   TMemBlock *p;
 
-  PRINTF("Memory heap %p:\n", heap);
+  PRINTF "Memory heap %p:\n", heap);
   if (heap == 0) {
-    PRINTF("  heap == 0\n");
+    PRINTF "  heap == 0\n");
   } else {
     p = (TMemBlock *)heap;
     while (p) {
-      PRINTF("  Offset:%08x, Size:%08x, %c%c\n",p->ofs,p->size,
+      PRINTF "  Offset:%08x, Size:%08x, %c%c\n",p->ofs,p->size,
 	     p->free ? '.':'U',
 	     p->reserved ? 'R':'.');
       p = p->next;
     }
   }
-  PRINTF("End of memory blocks\n");
+  PRINTF "End of memory blocks\n");
 }
 
 memHeap_t *mmInit(int ofs,
