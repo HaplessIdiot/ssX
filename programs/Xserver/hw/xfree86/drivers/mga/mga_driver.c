@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.233 2003/04/23 21:51:39 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.234 2003/06/30 16:52:56 eich Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -3490,7 +3490,9 @@ MGASwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
     char sCmdIn[256];
     char sCmdOut[256];
     FILE* fdIn;
+# ifdef MATROX_WRITEBACK
     FILE* fdOut;
+# endif
 #endif
     MGAPtr pMga;
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
@@ -3498,16 +3500,20 @@ MGASwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
  
     if  (mode->Flags & 0x80000000) {
 #ifdef USEMGAHAL
-     MGA_HAL(
+
+# ifdef MATROX_WRITEBACK
+#  define MWB(x) { x; }
+#  define MWB_COND(x) x
+# else
+#  define MWB(x)
+#  define MWB_COND(x) 1
+# endif
+
+	MGA_HAL(
 	fdIn = fopen("/tmp/mgaDriverIn", "rt");
-#ifdef MATROX_WRITEBACK
-	fdOut = fopen("/tmp/mgaDriverOut", "wt");
-#endif
-	if(fdIn
-#ifdef MATROX_WRITEBACK
-	   && fdOut
-#endif
-	    )
+	MWB(fdOut = fopen("/tmp/mgaDriverOut", "wt"))
+
+	if(fdIn && MWB_COND(fdOut))
 	{
  
 	    fgets(sCmdIn, 255, fdIn);
@@ -3520,11 +3526,12 @@ MGASwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 		/* Remove file and close file descriptor */
 		remove("/tmp/mgaDriverIn");
 		fclose(fdIn);
-#ifdef MATROX_WRITEBACK
-		/* Write output data to output file for calling application */
-		fputs(sCmdOut, fdOut);
-		fclose(fdOut);
-#endif
+		MWB(
+		    /* Write output data to output file for
+		       calling application */
+		    fputs(sCmdOut, fdOut);
+		    fclose(fdOut);
+		    )
 		mode->Flags &= 0x7FFFFFFF;
 		return TRUE;
 	    }
