@@ -6,7 +6,7 @@
    Pre-fb-write callbacks and RENDER support - Nolan Leake (nolan@vmware.com)
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadow.c,v 1.14tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadow.c,v 1.15 2003/01/12 03:55:51 tsi Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -247,7 +247,7 @@ ShadowFBInit (
     ScreenPtr		pScreen,
     RefreshAreaFuncPtr  refreshArea
 ){
-    return ShadowFBInit2(pScreen, NULL, refreshArea, TRUE);
+    return ShadowFBInit2(pScreen, NULL, refreshArea, FALSE);
 }
 
 /**********************************************************/
