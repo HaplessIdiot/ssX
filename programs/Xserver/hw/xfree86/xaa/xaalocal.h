@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.29 2000/09/27 23:30:26 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.30 2000/09/28 20:48:01 mvojkovi Exp $ */
 
 #ifndef _XAALOCAL_H
 #define _XAALOCAL_H
@@ -1552,6 +1552,35 @@ XAAGlyphs (CARD8         op,
 	   int           nlist,
 	   GlyphListPtr  list,
 	   GlyphPtr      *glyphs);
+
+
+Bool
+XAADoComposite (CARD8      op,
+	      PicturePtr pSrc,
+	      PicturePtr pMask,
+	      PicturePtr pDst,
+	      INT16      xSrc,
+	      INT16      ySrc,
+	      INT16      xMask,
+	      INT16      yMask,
+	      INT16      xDst,
+	      INT16      yDst,
+	      CARD16     width,
+	      CARD16     height);
+
+
+/* helpers */
+void
+XAA_888_plus_PICT_a8_to_8888 (
+    CARD32 color,
+    CARD8  *alphaPtr,   /* in bytes */
+    int    alphaPitch,
+    CARD32  *dstPtr,
+    int    dstPitch,	/* in dwords */
+    int    width,
+    int    height
+);
+
 #endif
     
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.25 2000/09/25 23:56:14 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.26 2000/09/28 20:48:00 mvojkovi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -12,6 +12,7 @@
 #include "xaalocal.h"
 #include "xf86fbman.h"
 #include "servermd.h"
+
 
 /*
  * XAA Config options
@@ -1201,6 +1202,16 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	   infoRec->ComputeDash = XAAComputeDash;
     }
 
+#ifdef RENDER
+    /* Render stuff */
+    if(!infoRec->Composite &&
+       infoRec->SetupForCPUToScreenAlphaTexture &&
+       infoRec->SubsequentCPUToScreenAlphaTexture)
+    {
+	infoRec->Composite = XAADoComposite;
+    }
+	
+#endif
 
     /************  Validation Functions **************/
 

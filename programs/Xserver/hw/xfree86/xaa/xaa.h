@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.32 2000/09/28 20:47:59 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.33 2000/10/10 22:35:35 mvojkovi Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -193,6 +193,12 @@
 #define DEGREES_270	3
 
 #define OMIT_LAST	1
+
+/* render flags */
+
+#define XAA_RENDER_NO_SRC_ALPHA		0x00000004
+#define XAA_RENDER_IMPRECISE_ONLY	0x00000002	
+#define XAA_RENDER_NO_TILE		0x00000001		
 
 
 typedef void (* ValidateGCProcPtr)(
@@ -1268,6 +1274,56 @@ typedef struct _XAAInfoRec {
         GlyphListPtr  list,
         GlyphPtr      *glyphs
    );
+
+   Bool (*SetupForCPUToScreenAlphaTexture) (
+	ScrnInfoPtr	pScrn,
+	int		op,
+	CARD16		red,
+	CARD16		green,
+	CARD16		blue,
+	CARD16		alpha,
+	int		alphaType,
+	CARD8		*alphaPtr,
+	int		alphaPitch,
+	int		width,
+	int		height,
+	int		flags
+   );
+   void (*SubsequentCPUToScreenAlphaTexture) (
+	ScrnInfoPtr	pScrn,
+	int		dstx,
+	int		dsty,
+	int		srcx,
+	int		srcy,
+	int		width,
+	int		height
+   );
+   int CPUToScreenAlphaTextureFlags;
+   CARD32 * CPUToScreenAlphaTextureFormats;
+
+   Bool (*SetupForCPUToScreenTexture) (
+	ScrnInfoPtr	pScrn,
+	int		op,
+	int		texType,
+	CARD8		*texPtr,
+	int		texPitch,
+	int		width,
+	int		height,
+	int		flags
+   );
+   void (*SubsequentCPUToScreenTexture) (
+	ScrnInfoPtr	pScrn,
+	int		dstx,
+	int		dsty,
+	int		srcx,
+	int		srcy,
+	int		width,
+	int		height
+   );
+   int CPUToScreenTextureFlags;
+   CARD32 * CPUToScreenTextureFormats;
+
+
 #endif
     
 } XAAInfoRec, *XAAInfoRecPtr;
