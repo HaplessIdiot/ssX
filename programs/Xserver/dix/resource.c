@@ -72,7 +72,7 @@ SOFTWARE.
  *      1, and an otherwise arbitrary ID in the low 22 bits, we can create a
  *      resource "owned" by the client.
  */
-/* $XFree86: xc/programs/Xserver/dix/resource.c,v 3.10 2001/12/14 19:59:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/resource.c,v 3.11 2002/02/19 11:09:22 alanh Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -100,14 +100,6 @@ static void RebuildTable(
 #endif
 );
 
-#if 0
-/* These should be in a header */
-extern int DeleteWindow(), dixDestroyPixmap(), FreeGC();
-extern int CloseFont(), FreeCursor();
-extern int FreeColormap(), FreeClientPixels();
-extern int OtherClientGone(), DeletePassiveGrab();
-#endif
-
 #define SERVER_MINID 32
 
 #define INITBUCKETS 64
@@ -132,11 +124,22 @@ typedef struct _ClientResource {
     XID		expectID;
 } ClientResourceRec;
 
-static RESTYPE lastResourceType;
+RESTYPE lastResourceType;
 static RESTYPE lastResourceClass;
-static RESTYPE TypeMask;
+RESTYPE TypeMask;
 
 static DeleteType *DeleteFuncs = (DeleteType *)NULL;
+
+#ifdef XResExtension
+
+Atom * ResourceNames = NULL;
+
+void RegisterResourceName (RESTYPE type, char *name)
+{
+    ResourceNames[type & TypeMask] =  MakeAtom(name, strlen(name), TRUE);
+}
+
+#endif
 
 RESTYPE
 CreateNewResourceType(deleteFunc)
@@ -151,6 +154,18 @@ CreateNewResourceType(deleteFunc)
 				   (next + 1) * sizeof(DeleteType));
     if (!funcs)
 	return 0;
+
+#ifdef XResExtension
+    {
+       Atom *newnames;
+       newnames = xrealloc(ResourceNames, (next + 1) * sizeof(Atom));
+       if(!newnames)
+           return 0;
+       ResourceNames = newnames;
+       ResourceNames[next] = 0;
+    }
+#endif
+
     lastResourceType = next;
     DeleteFuncs = funcs;
     DeleteFuncs[next] = deleteFunc;
@@ -204,6 +219,14 @@ InitClientResources(client)
 	DeleteFuncs[RT_CMAPENTRY & TypeMask] = FreeClientPixels;
 	DeleteFuncs[RT_OTHERCLIENT & TypeMask] = OtherClientGone;
 	DeleteFuncs[RT_PASSIVEGRAB & TypeMask] = DeletePassiveGrab;
+
+#ifdef XResExtension
+        if(ResourceNames)
+            xfree(ResourceNames);
+        ResourceNames = xalloc((lastResourceType + 1) * sizeof(Atom));
+        if(!ResourceNames)
+           return FALSE;
+#endif
     }
     clientTable[i = client->index].resources =
 	(ResourcePtr *)xalloc(INITBUCKETS*sizeof(ResourcePtr));
@@ -630,6 +653,35 @@ FindClientResourcesByType(
 		    next = resources[i]; /* start over */
 	    }
 	}
+    }
+}
+
+void
+FindAllClientResources(
+    ClientPtr client,
+    FindAllRes func,
+    pointer cdata
+){
+    register ResourcePtr *resources;
+    register ResourcePtr this, next;
+    int i, elements;
+    register int *eltptr;
+
+    if (!client)
+        client = serverClient;
+
+    resources = clientTable[client->index].resources;
+    eltptr = &clientTable[client->index].elements;
+    for (i = 0; i < clientTable[client->index].buckets; i++)
+    {
+        for (this = resources[i]; this; this = next)
+        {
+            next = this->next;
+            elements = *eltptr;
+            (*func)(this->value, this->id, this->type, cdata);
+            if (*eltptr != elements)
+                next = resources[i]; /* start over */
+        }
     }
 }
 
