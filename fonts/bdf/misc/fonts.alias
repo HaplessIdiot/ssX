@@ -1,26 +1,32 @@
 ! $TOG: fonts.alias /main/32 1998/05/20 15:10:37 kaleb $
-! $XFree86$
-fixed        -misc-fixed-medium-r-semicondensed--13-120-75-75-c-60-iso10646-1
+! $XFree86: xc/fonts/bdf/misc/fonts.alias,v 1.2 1999/04/25 10:01:16 dawes Exp $
+fixed        -Misc-Fixed-Medium-R-SemiCondensed--13-120-75-75-C-60-ISO10646-1
 variable     -*-helvetica-bold-r-normal-*-*-120-*-*-*-*-iso8859-1
-5x7          -misc-fixed-medium-r-normal--7-70-75-75-c-50-iso8859-1
+5x7          -Misc-Fixed-Medium-R-Normal--7-70-75-75-C-50-ISO10646-1
 5x8          -misc-fixed-medium-r-normal--8-80-75-75-c-50-iso646.1991-irv
 6x9          -misc-fixed-medium-r-normal--9-90-75-75-c-60-iso646.1991-irv
-6x10         -misc-fixed-medium-r-normal--10-100-75-75-c-60-iso8859-1
+6x10         -Misc-Fixed-Medium-R-Normal--10-100-75-75-C-60-ISO10646-1
 6x12         -misc-fixed-medium-r-semicondensed--12-110-75-75-c-60-iso646.1991-irv
-6x13         -misc-fixed-medium-r-semicondensed--13-120-75-75-c-60-iso10646-1
-6x13bold     -misc-fixed-bold-r-semicondensed--13-120-75-75-c-60-iso8859-1
-7x13         -misc-fixed-medium-r-normal--13-120-75-75-c-70-iso8859-1
-7x13bold     -misc-fixed-bold-r-normal--13-120-75-75-c-70-iso8859-1
+6x13         -Misc-Fixed-Medium-R-SemiCondensed--13-120-75-75-C-60-ISO10646-1
+6x13B        -Misc-Fixed-Bold-R-SemiCondensed--13-120-75-75-C-60-ISO10646-1
+6x13bold     -Misc-Fixed-Bold-R-SemiCondensed--13-120-75-75-C-60-ISO10646-1
+7x13         -Misc-Fixed-Medium-R-Normal--13-120-75-75-C-70-ISO10646-1
+7x13B        -Misc-Fixed-Bold-R-Normal--13-120-75-75-C-70-ISO10646-1
+7x13bold     -Misc-Fixed-Bold-R-Normal--13-120-75-75-C-70-ISO10646-1
 7x13euro     -misc-fixed-medium-r-normal--13-120-75-75-c-70-fcd8859-15
 7x13eurobold -misc-fixed-bold-r-normal--13-120-75-75-c-70-fcd8859-15
-7x14         -misc-fixed-medium-r-normal--14-130-75-75-c-70-iso8859-1
-7x14bold     -misc-fixed-bold-r-normal--14-130-75-75-c-70-iso8859-1
-8x13         -misc-fixed-medium-r-normal--13-120-75-75-c-80-iso8859-1
-8x13bold     -misc-fixed-bold-r-normal--13-120-75-75-c-80-iso8859-1
+7x14         -Misc-Fixed-Medium-R-Normal--14-130-75-75-C-70-ISO10646-1
+7x14B        -Misc-Fixed-Bold-R-Normal--14-130-75-75-C-70-ISO10646-1
+7x14bold     -Misc-Fixed-Bold-R-Normal--14-130-75-75-C-70-ISO10646-1
+8x13         -Misc-Fixed-Medium-R-Normal--13-120-75-75-C-80-ISO10646-1
+8x13B        -Misc-Fixed-Bold-R-Normal--13-120-75-75-C-80-ISO10646-1
+8x13bold     -Misc-Fixed-Bold-R-Normal--13-120-75-75-C-80-ISO10646-1
 8x16         -sony-fixed-medium-r-normal--16-120-100-100-c-80-iso8859-1
-9x15         -misc-fixed-medium-r-normal--15-140-75-75-c-90-iso8859-1
-9x15bold     -misc-fixed-bold-r-normal--15-140-75-75-c-90-iso8859-1
-10x20        -misc-fixed-medium-r-normal--20-200-75-75-c-100-iso8859-1
+9x15         -Misc-Fixed-Medium-R-Normal--15-140-75-75-C-90-ISO10646-1
+9x15B        -Misc-Fixed-Bold-R-Normal--15-140-75-75-C-90-ISO10646-1
+9x15bold     -Misc-Fixed-Bold-R-Normal--15-140-75-75-C-90-ISO10646-1
+9x18         -Misc-Fixed-Medium-R-Normal--18-120-100-100-C-90-ISO10646-1
+10x20        -Misc-Fixed-Medium-R-Normal--20-200-75-75-C-100-ISO10646-1
 12x24        -sony-fixed-medium-r-normal--24-170-100-100-c-120-iso8859-1
 nil2         -misc-nil-medium-r-normal--2-20-75-75-c-10-misc-fontspecific
 
@@ -42,6 +48,8 @@ kana14       -misc-fixed-medium-r-normal--14-*-*-*-*-*-jisx0201.1976-0
 12x24romankana -sony-fixed-medium-r-normal--24-170-100-100-c-120-jisx0201.1976-0
 kanji16      -jis-fixed-medium-r-normal--16-*-*-*-*-*-jisx0208.1983-0
 kanji24      -jis-fixed-medium-r-normal--24-*-*-*-*-*-jisx0208.1983-0
+12x13ja      -Misc-Fixed-Medium-R-Normal-ja-13-120-75-75-C-120-ISO10646-1
+18x18ja      -Misc-Fixed-Medium-R-Normal-ja-18-120-100-100-C-180-ISO10646-1
 
 hanzigb16st "-isas-song ti-medium-r-normal--16-160-72-72-c-160-gb2312.1980-0"
 hanzigb24st "-isas-song ti-medium-r-normal--24-240-72-72-c-240-gb2312.1980-0"
