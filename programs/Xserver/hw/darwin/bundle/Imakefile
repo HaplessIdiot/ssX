@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/bundle/Imakefile,v 1.22 2002/01/26 05:04:08 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/bundle/Imakefile,v 1.23 2002/02/05 19:16:14 torrey Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -8,6 +8,7 @@ SRCS =  Preferences.m \
         Xserver.m \
         XView.m \
         XWindow.m \
+        fullscreen.c \
         quartz.c \
         quartzAudio.c \
         quartzCocoa.m \
@@ -27,6 +28,7 @@ OBJS =  Preferences.o \
         Xserver.o \
         XView.o \
         XWindow.o \
+        fullscreen.o \
         quartz.o \
         quartzAudio.o \
         quartzCocoa.o \

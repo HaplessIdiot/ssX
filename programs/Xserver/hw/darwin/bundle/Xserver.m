@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.36 2001/12/05 06:21:46 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.37 2002/01/01 23:09:00 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -662,7 +662,7 @@ static NSRect aquaMenuBarBox;
 
     if (show) {
         if (!quartzRootless) {
-            QuartzCapture();
+            QuartzFSCapture();
             HideMenuBar();
         }
         ev.data.compound.subType = kXDarwinShow;
@@ -739,7 +739,7 @@ static NSRect aquaMenuBarBox;
             // Make sure the X server wasn't queued to be shown again while
             // the hide was pending.
             if (!quartzRootless && !serverVisible) {
-                QuartzRelease();
+                QuartzFSRelease();
                 ShowMenuBar();
             }
 
