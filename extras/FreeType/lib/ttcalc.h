@@ -14,7 +14,7 @@
  *  understand and accept it fully.
  *
  ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/extras/FreeType/lib/ttcalc.h,v 1.2tsi Exp $ */
 
 #ifndef TTCALC_H
 #define TTCALC_H
@@ -73,11 +73,10 @@
 
   LOCAL_DEF TT_Int32  Div64by32( TT_Int64*  x, TT_Int32  y );
 
-  LOCAL_DEF int  Order64( TT_Int64*  z );
-
 #if !defined(TT_MAKE_OPTION_SINGLE_OBJECT) || \
     !defined(TT_CONFIG_OPTION_NO_INTERPRETER)
 
+  LOCAL_DEF int  Order64( TT_Int64*  z );
   LOCAL_DEF TT_Int32  Sqrt64( TT_Int64*  l );
 
 #endif
