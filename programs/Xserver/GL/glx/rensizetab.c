@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/glx/rensizetab.c,v 1.3 2001/03/21 16:29:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/glx/rensizetab.c,v 1.4 2003/09/28 20:15:43 alanh Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -2342,17 +2342,17 @@ __GLXrenderSizeData __glXRenderSizeTable_EXT[__GLX_MAX_RENDER_OPCODE_EXT - __GLX
 	/* CopyTexSubImage1D   */	{  28, 	0 },
 	/* CopyTexSubImage2D   */	{  36, 	0 },
 	/* CopyTexSubImage3D    4123 */ {  40,  0 },
-	/* no such opcode      */	{   0, 	0                         },
-	/* no such opcode      */	{   0, 	0                         },
-	/* no such opcode      */	{   0, 	0                         },
-	/* no such opcode      */	{   0, 	0                         },
-	/* no such opcode      */	{   0, 	0                         },
-	/* no such opcode      */	{   0, 	0                         },
-	/* no such opcode      */	{   0, 	0                         },
-	/* no such opcode      */	{   0, 	0                         },
-	/* no such opcode      */	{   0, 	0                         },
-	/* no such opcode      */	{   0, 	0                         },
-	/* no such opcode      */	{   0, 	0                         },
+	/* FogCoordfv           4124 */	{   8, 	0 },
+	/* FogCoorddv           4125 */	{  12, 	0 },
+	/* SecondaryColor3bv    4126 */	{   8, 	0 },
+	/* SecondaryColor3sv    4127 */	{  12, 	0 },
+	/* SecondaryColor3iv    4128 */	{  16, 	0 },
+	/* SecondaryColor3fv    4129 */	{  16, 	0 },
+	/* SecondaryColor3dv    4130 */	{  28, 	0 },
+	/* SecondaryColor3ubv   4131 */	{   8, 	0 },
+	/* SecondaryColor3usv   4132 */	{  12, 	0 },
+	/* SecondaryColor3uiv   4133 */	{  16, 	0 },
+	/* BlendFuncSeparate    4134 */	{  20, 	0 },
 	/* no such opcode      */	{   0, 	0                         },
 	/* no such opcode      */	{   0, 	0                         },
 	/* no such opcode      */	{   0, 	0                         },
@@ -2439,4 +2439,6 @@ __GLXrenderSizeData __glXRenderSizeTable_EXT[__GLX_MAX_RENDER_OPCODE_EXT - __GLX
 	/* no such opcode      */	{   0, 	0                         },
 	/* no such opcode      */	{   0, 	0                         },
 	/* ActiveStencilFaceEXT 4220 */ {   8,  0 },
+	/* PointParameteri      4221 */	{  12, 	0 },
+	/* PointParameteriv     4222 */	{   8, 	__glXPointParameterivReqSize },
 };

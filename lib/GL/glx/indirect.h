@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/indirect.h,v 1.4 2002/02/22 21:32:54 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/indirect.h,v 1.5 2003/09/28 20:15:03 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -464,6 +464,9 @@ void __indirect_glSampleCoverageARB( GLfloat value, GLboolean invert );
 
 void __indirect_glPointParameterfARB(GLenum pname, GLfloat param);
 void __indirect_glPointParameterfvARB(GLenum pname, const GLfloat *params);
+void __indirect_glPointParameteri(GLenum, GLint);
+void __indirect_glPointParameteriv(GLenum, const GLint *);
+
 void __indirect_glActiveStencilFaceEXT(GLenum mode);
 
 void __indirect_glWindowPos2dARB(GLdouble x, GLdouble y);
@@ -483,7 +486,39 @@ void __indirect_glWindowPos3fvARB(const GLfloat * p);
 void __indirect_glWindowPos3ivARB(const GLint * p);
 void __indirect_glWindowPos3svARB(const GLshort * p);
 
+void __indirect_glMultiDrawArrays(GLenum mode, GLint *first, GLsizei *count, GLsizei primcount);
+void __indirect_glMultiDrawElements(GLenum mode, const GLsizei *count, GLenum type, const GLvoid ** indices, GLsizei primcount);
+void __indirect_glBlendFuncSeparate(GLenum, GLenum, GLenum, GLenum);
+
 void __indirect_glSampleMaskSGIS( GLfloat value, GLboolean invert );
 void __indirect_glSamplePatternSGIS( GLenum pass );
+
+/* 145. GL_EXT_secondary_color / GL 1.4 */
+
+void __indirect_glSecondaryColorPointer (GLint, GLenum, GLsizei, const GLvoid *);
+void __indirect_glSecondaryColor3b(GLbyte red, GLbyte green, GLbyte blue);
+void __indirect_glSecondaryColor3bv(const GLbyte *v);
+void __indirect_glSecondaryColor3d(GLdouble red, GLdouble green, GLdouble blue);
+void __indirect_glSecondaryColor3dv(const GLdouble *v);
+void __indirect_glSecondaryColor3f(GLfloat red, GLfloat green, GLfloat blue);
+void __indirect_glSecondaryColor3fv(const GLfloat *v);
+void __indirect_glSecondaryColor3i(GLint red, GLint green, GLint blue);
+void __indirect_glSecondaryColor3iv(const GLint *v);
+void __indirect_glSecondaryColor3s(GLshort red, GLshort green, GLshort blue);
+void __indirect_glSecondaryColor3sv(const GLshort *v);
+void __indirect_glSecondaryColor3ub(GLubyte red, GLubyte green, GLubyte blue);
+void __indirect_glSecondaryColor3ubv(const GLubyte *v);
+void __indirect_glSecondaryColor3ui(GLuint red, GLuint green, GLuint blue);
+void __indirect_glSecondaryColor3uiv(const GLuint *v);
+void __indirect_glSecondaryColor3us(GLushort red, GLushort green, GLushort blue);
+void __indirect_glSecondaryColor3usv(const GLushort *v);
+
+/* 149. GL_EXT_fog_coord / GL 1.4 */
+
+void __indirect_glFogCoordPointer (GLenum, GLsizei, const GLvoid *);
+void __indirect_glFogCoordd(GLdouble f);
+void __indirect_glFogCoorddv(const GLdouble *v);
+void __indirect_glFogCoordf(GLfloat f);
+void __indirect_glFogCoordfv(const GLfloat *v);
 
 #endif /* _INDIRECT_H_ */
