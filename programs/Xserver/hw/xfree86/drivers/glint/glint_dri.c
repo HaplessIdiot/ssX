@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.2 1999/06/27 14:08:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.3 1999/07/04 06:38:56 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -31,7 +31,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Author:
  *   Jens Owen <jens@precisioninsight.com>
  *
- * $PI: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.48 1999/06/21 14:24:43 faith Exp $
+ * $PI: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.52 1999/07/08 14:33:38 faith Exp $
  */
 
 #include "xf86.h"
@@ -926,22 +926,16 @@ GLINTDRISwapContext(
     GLINTPtr pGlint = GLINTPTR(pScrn);
     GLINTDRIContextPtr pRC = (GLINTDRIContextPtr)readContextStore; 
     GLINTDRIContextPtr pWC = (GLINTDRIContextPtr)writeContextStore; 
-    int	dumpIndex, numWords;
+    int	dumpIndex;
     CARD32 readValue;
 
-
-    if (syncType == DRI_2D_SYNC) {
-	XAASync(pScreen, FALSE);
-    }
-    else if (syncType == DRI_3D_SYNC) {
-	/* Reset cached fifo count here.  
-         * This isn't currently cached for this driver.
-         */
-	XAASync(pScreen, TRUE);
-    }
-    /* else default: DRI_NO_SYNC, do nothing */
-
     if (readContextType != DRI_NO_CONTEXT) {
+
+				/* Sync before reading registers */
+	if (pGlint->AccelInfoRec->Sync) {
+	    (*pGlint->AccelInfoRec->Sync)(pGlint->AccelInfoRec->pScrn);
+	    pGlint->AccelInfoRec->NeedToSync = FALSE;
+	}
 
 	/* save the 2D portion of the old context */
 	pRC->MX1.CStartXDom               = GLINT_READ_REG(StartXDom);
@@ -1384,8 +1378,14 @@ dumpIndex,pWC->Gamma[dumpIndex]);
 		GLINT_WRITE_REG(pWC->Gamma[dumpIndex++], OutputFIFO);
 	    } while (dumpIndex < (GLINT_GAMMA_CONTEXT_SIZE));
 
-	    XAASync(pScreen, TRUE);
-
+				/* Sync after writing gamma context and
+                                   before writing MX context */
+	    if (pGlint->AccelInfoRec->Sync) {
+		(*pGlint->AccelInfoRec->Sync)(pGlint->AccelInfoRec->pScrn);
+	    }
+				/* Update XAA's NeedToSync flag */
+	    pGlint->AccelInfoRec->NeedToSync = TRUE;
+	    
 	    /* finally the MX portions */
             if (pGlint->numMXDevices > 1)
 	    	GLINT_SLOW_WRITE_REG(1, BroadcastMask);
@@ -1824,7 +1824,8 @@ GLINTDRIInitBuffers(
     GLINT_SLOW_WRITE_REG(UNIT_ENABLE,	FBWriteMode);
     GLINT_SLOW_WRITE_REG(UNIT_DISABLE,  GLINTWindow);
 
-    XAASync(pScreen, FALSE);
+				/* Update XAA's NeedToSync flag */
+    pGlint->AccelInfoRec->NeedToSync = TRUE;
 }
 
 void
@@ -1834,8 +1835,10 @@ GLINTDRIMoveBuffers(
     RegionPtr prgnSrc,
     CARD32 index)
 {
+#if 0
     ScreenPtr pScreen = pParent->drawable.pScreen;
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+#endif
     int dx, dy;
     WindowPtr pChild;
     RegionRec rgnSubWindow, rgnTranslateSrc;

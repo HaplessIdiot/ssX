@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.104 1999/06/27 09:20:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.105 1999/06/27 14:08:06 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -285,7 +285,7 @@ static const char *ramdacSymbols[] = {
     NULL
 };
 
-#define MGAuseI2C 0
+#define MGAuseI2C 1
 
 static const char *ddcSymbols[] = {
     "xf86PrintEDID",

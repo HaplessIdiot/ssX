@@ -24,7 +24,7 @@
  * DEC TGA accelerated options.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_accel32.c,v 1.1 1999/04/25 10:02:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_accel32.c,v 1.2 1999/05/15 12:10:28 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -83,10 +83,10 @@ static void TGASubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, int patx,
 					 int paty, int x, int y, int w,
 					 int h);
 
-static int block_or_opaque_p;
-static int blitdirY, blitdirX;
-static unsigned int current_rop;
-static int transparent_pattern_p;
+/*  static int block_or_opaque_p; */
+static int blitdirY, blitdirX; 
+/*  static unsigned int current_rop; */
+/*  static int transparent_pattern_p; */
 
 
 /*
@@ -198,7 +198,7 @@ TGASetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
   /*  ErrorF("TGASetupForSolidFill called"); */
   
   if(rop == MIX_SRC) { /* we can just do a block copy */
-    block_or_opaque_p = USE_BLOCK_FILL;
+    pTga->block_or_opaque_p = USE_BLOCK_FILL;
     TGA_FAST_WRITE_REG(color, TGA_BLOCK_COLOR0_REG);
     TGA_FAST_WRITE_REG(color, TGA_BLOCK_COLOR1_REG);
     TGA_FAST_WRITE_REG(color, TGA_BLOCK_COLOR2_REG);
@@ -209,8 +209,8 @@ TGASetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
     TGA_FAST_WRITE_REG(color, TGA_BLOCK_COLOR7_REG);
   }
   else {
-    block_or_opaque_p = USE_OPAQUE_FILL;
-    current_rop = rop | BPP24;
+    pTga->block_or_opaque_p = USE_OPAQUE_FILL;
+    pTga->current_rop = rop | BPP24;
     TGA_FAST_WRITE_REG(color, TGA_FOREGROUND_REG);
 /*      ErrorF("opaque fill called\n"); */
   }
@@ -246,9 +246,9 @@ TGASubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y, int w, int h)
   
   /*  ErrorF("TGASubsequentFillRectSolid called\n"); */
 
-  if(block_or_opaque_p == USE_OPAQUE_FILL) {
+  if(pTga->block_or_opaque_p == USE_OPAQUE_FILL) {
     mode_reg = OPAQUEFILL | X11 | BPP24;
-    TGA_FAST_WRITE_REG(current_rop, TGA_RASTEROP_REG);
+    TGA_FAST_WRITE_REG(pTga->current_rop, TGA_RASTEROP_REG);
     /* we have to set this to GXCOPY every time before we exit */
   }
   else
@@ -264,7 +264,7 @@ TGASubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y, int w, int h)
   
   for(i = 0; i < h; i++) {
     a1 = fb_offset(pScrn, x, y + i);
-    if(block_or_opaque_p == USE_OPAQUE_FILL)
+    if(pTga->block_or_opaque_p == USE_OPAQUE_FILL)
       TGA_FAST_WRITE_REG(0xFFFFFFFF, TGA_PIXELMASK_REG);
     write_data = pixel_count;
     TGA_FAST_WRITE_REG(a1, TGA_ADDRESS_REG);
@@ -273,7 +273,7 @@ TGASubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y, int w, int h)
     
   mode_reg = SIMPLE | X11 | BPP24;
   TGA_FAST_WRITE_REG(mode_reg, TGA_MODE_REG);
-  if(block_or_opaque_p == USE_OPAQUE_FILL)
+  if(pTga->block_or_opaque_p == USE_OPAQUE_FILL)
     TGA_FAST_WRITE_REG(MIX_SRC | BPP24, TGA_RASTEROP_REG); /* GXCOPY */
 
   TGA_SAVE_OFFSET();  
@@ -307,9 +307,9 @@ TGASetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir,
   
   TGA_FAST_WRITE_REG(planemask, TGA_PLANEMASK_REG);
 
-  current_rop = rop;
-  if(current_rop == MIX_SRC)
-    TGA_FAST_WRITE_REG(current_rop | BPP24, TGA_RASTEROP_REG);
+  pTga->current_rop = rop;
+  if(pTga->current_rop == MIX_SRC)
+    TGA_FAST_WRITE_REG(pTga->current_rop | BPP24, TGA_RASTEROP_REG);
 
   /* do we copy a rectangle from top to bottom or bottom to top? */
   if(ydir == -1)
@@ -358,8 +358,8 @@ TGASubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1, int x2,
   mode_reg = COPY | X11 | BPP24 | (0x3<<8); /* the others are 0 but what the
 					      heck */
   TGA_FAST_WRITE_REG(mode_reg, TGA_MODE_REG);
-  if(current_rop != MIX_SRC)
-    TGA_FAST_WRITE_REG(current_rop | BPP24, TGA_RASTEROP_REG);
+  if(pTga->current_rop != MIX_SRC)
+    TGA_FAST_WRITE_REG(pTga->current_rop | BPP24, TGA_RASTEROP_REG);
 
 
   if (blitdirX == BLIT_FORWARDS) {
@@ -386,7 +386,7 @@ TGASubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1, int x2,
   TGA_GET_OFFSET();
   mode_reg = SIMPLE | X11 | BPP24;
   TGA_FAST_WRITE_REG(mode_reg,TGA_MODE_REG);
-  if(current_rop != MIX_SRC)
+  if(pTga->current_rop != MIX_SRC)
     TGA_FAST_WRITE_REG(MIX_SRC | BPP24, TGA_RASTEROP_REG);
   TGA_SAVE_OFFSET();
   
@@ -621,16 +621,16 @@ TGASetupForMono8x8PatternFill(ScrnInfoPtr pScrn, int patx, int paty,
 /*    ErrorF("TGASetupForMono8x8PatternFill called with patx = %d, paty = %d, fg = %d, bg = %d, rop = %d, planemask = %d\n", */
 /*  	 patx, paty, fg, bg, rop, planemask);  */
   if(bg == -1)  /* we are transparent */
-    transparent_pattern_p = 1;
+    pTga->transparent_pattern_p = 1;
   else
-    transparent_pattern_p = 0;
+    pTga->transparent_pattern_p = 0;
 
   if(rop == MIX_SRC)
-    block_or_opaque_p = USE_BLOCK_FILL;
+    pTga->block_or_opaque_p = USE_BLOCK_FILL;
   else
-    block_or_opaque_p = USE_OPAQUE_FILL;
+    pTga->block_or_opaque_p = USE_OPAQUE_FILL;
 
-  if(transparent_pattern_p && block_or_opaque_p == USE_BLOCK_FILL) {
+  if(pTga->transparent_pattern_p && pTga->block_or_opaque_p == USE_BLOCK_FILL) {
     /* we can use block fill mode to draw a transparent stipple */
     TGA_FAST_WRITE_REG(fg, TGA_BLOCK_COLOR0_REG);
     TGA_FAST_WRITE_REG(fg, TGA_BLOCK_COLOR1_REG);
@@ -641,7 +641,7 @@ TGASetupForMono8x8PatternFill(ScrnInfoPtr pScrn, int patx, int paty,
     TGA_FAST_WRITE_REG(fg, TGA_BLOCK_COLOR6_REG);
     TGA_FAST_WRITE_REG(fg, TGA_BLOCK_COLOR7_REG);
   }
-  else if(transparent_pattern_p) {
+  else if(pTga->transparent_pattern_p) {
     TGA_FAST_WRITE_REG(fg, TGA_FOREGROUND_REG);
   }
   else {
@@ -649,7 +649,7 @@ TGASetupForMono8x8PatternFill(ScrnInfoPtr pScrn, int patx, int paty,
     TGA_FAST_WRITE_REG(fg, TGA_FOREGROUND_REG);
     TGA_FAST_WRITE_REG(0xFFFFFFFF, TGA_PIXELMASK_REG);
   }
-  current_rop = rop;
+  pTga->current_rop = rop;
   TGA_FAST_WRITE_REG(planemask, TGA_PLANEMASK_REG);
   TGA_SAVE_OFFSET();
   return;
@@ -676,8 +676,8 @@ TGASubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, int patx, int paty,
 
   if(w > 2048)
     ErrorF("TGASubsequentMono8x8PatternFillRect called with w > 2048, truncating\n");
-  if(block_or_opaque_p == USE_OPAQUE_FILL)
-    TGA_FAST_WRITE_REG(current_rop | BPP24, TGA_RASTEROP_REG);
+  if(pTga->block_or_opaque_p == USE_OPAQUE_FILL)
+    TGA_FAST_WRITE_REG(pTga->current_rop | BPP24, TGA_RASTEROP_REG);
 
   align = x%4;
 
@@ -697,7 +697,7 @@ TGASubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, int patx, int paty,
     }
   }
 
-  if((block_or_opaque_p == USE_BLOCK_FILL) && transparent_pattern_p) {
+  if((pTga->block_or_opaque_p == USE_BLOCK_FILL) && pTga->transparent_pattern_p) {
     /* use block fill */
     /* ErrorF("Using block fill mode\n"); */
     TGA_FAST_WRITE_REG(BLOCKFILL | X11 | BPP24, TGA_MODE_REG);
@@ -708,7 +708,7 @@ TGASubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, int patx, int paty,
       TGA_FAST_WRITE_REG(w - 1, TGA_CONTINUE_REG);
     }
   }
-  else if(transparent_pattern_p) {
+  else if(pTga->transparent_pattern_p) {
     /* if we can't use block fill, we'll use transparent fill */
     /*  ErrorF("Using transparent fill mode\n"); */
     TGA_FAST_WRITE_REG(TRANSPARENTFILL | X11 | BPP24, TGA_MODE_REG);
@@ -729,7 +729,7 @@ TGASubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, int patx, int paty,
   }
   
   TGA_FAST_WRITE_REG(SIMPLE | X11 | BPP24, TGA_MODE_REG);
-  if(current_rop != MIX_SRC)
+  if(pTga->current_rop != MIX_SRC)
     TGA_FAST_WRITE_REG(MIX_SRC | BPP24, TGA_RASTEROP_REG);
 
   TGA_SAVE_OFFSET();

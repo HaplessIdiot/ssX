@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_cursor.c,v 1.7 1999/03/21 07:35:03 dawes Exp $ */
 
 
 #include "X.h"
@@ -33,6 +33,8 @@ static Bool	ApmUseHWCursor(ScreenPtr pScreen, CursorPtr pCurs);
 
 static u8 ConvertTable[256];
 
+extern int xf86Exiting;
+
 /* Inline functions */
 static __inline__ void
 WaitForFifo(ApmPtr pApm, int slots)
@@ -45,7 +47,7 @@ WaitForFifo(ApmPtr pApm, int slots)
       if ((STATUS() & STATUS_FIFO) >= slots)
 	break;
     }
-    if (i == MAXLOOP) {
+    if (i == MAXLOOP && !xf86Exiting) {
       FatalError("Hung in WaitForFifo() (Status = 0x%08X)\n", STATUS());
     }
   }

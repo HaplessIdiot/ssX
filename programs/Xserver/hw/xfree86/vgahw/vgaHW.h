@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.15 1999/02/05 04:49:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.16 1999/03/07 11:40:45 dawes Exp $ */
 
 
 /*
@@ -63,6 +63,12 @@ extern int vgaHWGetIndex(void);
 #define VGA_IN_STAT_1_OFFSET	0x0A		/* read */
 #define VGA_FEATURE_W_OFFSET	0x0A		/* write */
 
+/* default number of VGA registers stored internally */
+#define VGA_NUM_CRTC 25
+#define VGA_NUM_SEQ 5
+#define VGA_NUM_GFX 9
+#define VGA_NUM_ATTR 21
+
 /* Flags for vgaHWSave() and vgaHWRestore() */
 #define VGA_SR_MODE		0x01
 #define VGA_SR_FONTS		0x02
@@ -78,11 +84,15 @@ extern int vgaHWGetIndex(void);
  */
 typedef struct {
     unsigned char MiscOutReg;     /* */
-    unsigned char CRTC[25];       /* Crtc Controller */
-    unsigned char Sequencer[5];   /* Video Sequencer */
-    unsigned char Graphics[9];    /* Video Graphics */
-    unsigned char Attribute[21];  /* Video Atribute */
+    unsigned char *CRTC;       /* Crtc Controller */
+    unsigned char *Sequencer;   /* Video Sequencer */
+    unsigned char *Graphics;    /* Video Graphics */
+    unsigned char *Attribute;  /* Video Atribute */
     unsigned char DAC[768];       /* Internal Colorlookuptable */
+    unsigned char numCRTC;	/* number of CRTC registers, def=VGA_NUM_CRTC */
+    unsigned char numSequencer;	/* number of seq registers, def=VGA_NUM_SEQ */
+    unsigned char numGraphics;	/* number of gfx registers, def=VGA_NUM_GFX */
+    unsigned char numAttribute;	/* number of attr registers, def=VGA_NUM_ATTR */
 } vgaRegRec, *vgaRegPtr;
 
 typedef struct _vgaHWRec *vgaHWPtr;
@@ -192,6 +202,8 @@ void vgaHWSaveMode(ScrnInfoPtr scrninfp, vgaRegPtr save);
 void vgaHWSaveColormap(ScrnInfoPtr scrninfp, vgaRegPtr save);
 void vgaHWSave(ScrnInfoPtr scrninfp, vgaRegPtr save, int flags);
 Bool vgaHWInit(ScrnInfoPtr scrnp, DisplayModePtr mode);
+Bool vgaHWSetRegCounts(ScrnInfoPtr scrp, int numCRTC, int numSequencer,
+                  	int numGraphics, int numAttribute);
 Bool vgaHWGetHWRec(ScrnInfoPtr scrp);
 void vgaHWFreeHWRec(ScrnInfoPtr scrp);
 Bool vgaHWMapMem(ScrnInfoPtr scrp);

@@ -1,15 +1,9 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.14 1999/04/18 04:08:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.15 1999/04/25 15:30:19 dawes Exp $ */
 
 
 #include "apm.h"
 #include "xf86cmap.h"
-
-#if 0
-#ifdef XFreeXDGA
-#define _XF86DGA_SERVER_
-#include "extensions/xf86dgastr.h"
-#endif
-#endif
+#include "xf86Resources.h"
 
 #ifdef DPMSExtension
 #include "opaque.h"
@@ -37,7 +31,7 @@ static Bool     ApmScreenInit(int Index, ScreenPtr pScreen, int argc,
                                   char **argv);
 static Bool     ApmSwitchMode(int scrnIndex, DisplayModePtr mode,
                                   int flags);
-static Bool     ApmAdjustFrame(int scrnIndex, int x, int y, int flags);
+static void     ApmAdjustFrame(int scrnIndex, int x, int y, int flags);
 static Bool     ApmEnterVT(int scrnIndex, int flags);
 static void     ApmLeaveVT(int scrnIndex, int flags);
 static Bool     ApmCloseScreen(int scrnIndex, ScreenPtr pScreen);
@@ -56,9 +50,9 @@ static void	ApmDisplayPowerManagementSet(ScrnInfoPtr pScrn,
 					     int PowerManagementMode,
 					     int flags);
 #endif
-#if 0
-static Bool	ApmDGAInit(ScreenPtr pScreen);
-#endif
+
+
+int ApmPixmapIndex = -1;
 
 DriverRec APM = {
 	VERSION,
@@ -69,12 +63,6 @@ DriverRec APM = {
 	0
 };
 
-enum ApmChipId {
-    AP6422	= 0x6422,
-    AT24	= 0x6424,
-    AT3D	= 0x643D
-};
-
 static SymTabRec ApmChipsets[] = {
     { AP6422,	"AP6422"	},
     { AT24,	"AT24"		},
@@ -83,10 +71,15 @@ static SymTabRec ApmChipsets[] = {
 };
 
 static PciChipsets ApmPciChipsets[] = {
-    { PCI_CHIP_AP6422,	PCI_CHIP_AP6422,	RES_NONE },
-    { PCI_CHIP_AT24,	PCI_CHIP_AT24,		RES_NONE },
-    { PCI_CHIP_AT3D,	PCI_CHIP_AT3D,		RES_NONE },
+    { PCI_CHIP_AP6422,	PCI_CHIP_AP6422,	RES_SHARED_VGA },
+    { PCI_CHIP_AT24,	PCI_CHIP_AT24,		RES_SHARED_VGA },
+    { PCI_CHIP_AT3D,	PCI_CHIP_AT3D,		RES_SHARED_VGA },
     { -1,			-1,		RES_UNDEFINED }
+};
+
+static IsaChipsets ApmIsaChipsets[] = {
+    { PCI_CHIP_AP6422,	RES_EXCLUSIVE_VGA},
+    {-1,		RES_UNDEFINED}
 };
 
 #ifdef XFree86LOADER
@@ -134,17 +127,19 @@ static OptionInfoRec ApmOptions[] =
  */
 
 static const char *vgahwSymbols[] = {
-    "vgaHWGetHWRec",
-    "vgaHWUnlock",
-    "vgaHWInit",
-    "vgaHWProtect",
-    "vgaHWSetMmioFuncs",
-    "vgaHWGetIOBase",
-    "vgaHWMapMem",
-    "vgaHWLock",
+    "vgaHWBlankScreen",
+    "vgaHWCursor",
     "vgaHWFreeHWRec",
+    "vgaHWGetHWRec",
+    "vgaHWGetIOBase",
+    "vgaHWInit",
+    "vgaHWLock",
+    "vgaHWMapMem",
+    "vgaHWProtect",
+    "vgaHWRestore",
     "vgaHWSaveScreen",
-    "vgaHWddc1SetSpeed",
+    "vgaHWSetMmioFuncs",
+    "vgaHWUnlock",
     NULL
 };
 
@@ -158,19 +153,17 @@ static const char *cfbSymbols[] = {
     NULL
 };
 
-static const char *xf8_32bppSymbols[] = {
-    "xf86Overlay8Plus32Init",
-    NULL
-};
-
 static const char *xaaSymbols[] = {
-    "XAADestroyInfoRec",
     "XAACreateInfoRec",
+    "XAACursorInfoRec",
+    "XAACursorInit",
+    "XAADestroyInfoRec",
     "XAAInit",
-    "XAAStippleScanlineFuncLSBFirst",
-    "XAAOverlayFBfuncs",
-    "XAACachePlanarMonoStipple",
+    "XAAQueryBestSize",
+    "XAARestoreCursor",
     "XAAScreenIndex",
+    "XAAStippleScanlineFuncLSBFirst",
+    "XAAWarpCursor",
     NULL
 };
 
@@ -183,7 +176,6 @@ static const char *ramdacSymbols[] = {
 
 static const char *ddcSymbols[] = {
     "xf86PrintEDID",
-    "xf86DoEDID_DDC1",
     "xf86DoEDID_DDC2",
     NULL
 };
@@ -280,10 +272,12 @@ ApmUnlock(ApmPtr pApm)
 	    pApm->UnlockCalled = TRUE;
 	}
     }
-    if (!pApm->noLinear)
+    if (!pApm->noLinear) {
 	ApmWriteSeq(0x10, 0x12);
-    else
+    }
+    else {
 	wrinx(0x3C4, 0x10, 0x12);
+    }
 }
 
 /* lock Alliance registers */
@@ -291,10 +285,12 @@ static void
 ApmLock(ApmPtr pApm)
 {
     if (pApm->UnlockCalled) {
-	if (!pApm->noLinear)
-	    ApmWriteSeq(0x10, pApm->savedSR10);
-	else
-	    wrinx(0x3C4, 0x10, pApm->savedSR10);
+	if (!pApm->noLinear) {
+	    ApmWriteSeq(0x10, pApm->savedSR10 ? 0 : 0x12);
+	}
+	else {
+	    wrinx(0x3C4, 0x10, pApm->savedSR10 ? 0 : 0x12);
+	}
     }
 }
 
@@ -305,16 +301,80 @@ ApmIdentify(int flags)
 		      ApmChipsets);
 }
 
+static int
+ApmFindIsaDevice(GDevPtr dev)
+{
+    char	save = rdinx(0x3C4, 0x10);
+    int		i;
+    int		apmChip = -1;
+
+    /*
+     * Start by probing the VGA chipset.
+     */
+    outw(0x3C4, 0x1210);
+    if (rdinx(0x3C4, 0x11) == 'P' && rdinx(0x3C4, 0x12) == 'r' &&
+	rdinx(0x3C4, 0x13) == 'o') {
+	char	id_ap6420[] = "6420";
+	char	id_ap6422[] = "6422";
+	char	id_at24[]   = "6424";
+	char	id_at3d[]   = "AT3D";
+	char	idstring[]  = "    ";
+
+	/*
+	 * Must be an Alliance !!!
+	 */
+	for (i = 0; i < 4; i++)
+	    idstring[i] = rdinx(0x3C4, 0x14 + i);
+	if (!memcmp(id_ap6420, idstring, 4) ||
+	    !memcmp(id_ap6422, idstring, 4))
+	    apmChip = AP6422;
+	else if (!memcmp(id_at24, idstring, 4))
+	    apmChip = AT24;
+	else if (!memcmp(id_at3d, idstring, 4))
+	    apmChip = AT3D;
+	if (apmChip >= 0) {
+	    int	apm_xbase;
+
+	    apm_xbase = (rdinx(0x3C4, 0x1F) << 8) | rdinx(0x3C4, 0x1E);
+
+	    if (!(wrinx(0x3C4, 0x1D, 0xCA >> 2), inb(apm_xbase + 2))) {
+		/*
+		 * TODO Not PCI
+		 */
+	    }
+
+	}
+    }
+    wrinx(0x3C4, 0x10, save);
+
+    return apmChip;
+}
+
+static void
+ApmAssignFPtr(ScrnInfoPtr pScrn)
+{
+    pScrn->driverVersion	= VERSION;
+    pScrn->driverName		= APM_DRIVER_NAME;
+    pScrn->name			= APM_NAME;
+    pScrn->Probe		= ApmProbe;
+    pScrn->PreInit		= ApmPreInit;
+    pScrn->ScreenInit		= ApmScreenInit;
+    pScrn->SwitchMode		= ApmSwitchMode;
+    pScrn->AdjustFrame		= ApmAdjustFrame;
+    pScrn->EnterVT		= ApmEnterVT;
+    pScrn->LeaveVT		= ApmLeaveVT;
+    pScrn->FreeScreen		= ApmFreeScreen;
+    pScrn->ValidMode		= ApmValidMode;
+}
+
 static Bool
 ApmProbe(DriverPtr drv, int flags)
 {
-    int		numDevSections, numUsed, i;
-    GDevPtr	*DevSections, *usedDevs;
-    int		*usedChips;
-    pciVideoPtr	*usedPci, pPci;
-    BusResource resource;
-    int		foundScreen = FALSE;
-    int		master_VGA = FALSE;
+    int			numDevSections, numUsed, i;
+    GDevPtr		*DevSections;
+    int			*usedChips;
+    EntityInfoPtr	pEnt;
+    int			foundScreen = FALSE;
 
     /*
      * Check if there is a chipset override in the config file
@@ -329,125 +389,55 @@ ApmProbe(DriverPtr drv, int flags)
      * file info to override any contradictions.
      */
 
-    if (xf86GetPciVideoInfo()) {
-	if ((numUsed = xf86MatchPciInstances(APM_NAME, PCI_VENDOR_ALLIANCE,
-			ApmChipsets, ApmPciChipsets, DevSections,numDevSections,
-			&usedDevs, &usedPci, &usedChips)) > 0) {
-	    for (i = 0; i < numUsed; i++) {
-		pPci = usedPci[i];
-		resource = xf86FindPciResource(usedChips[i], ApmPciChipsets);
+    if (xf86GetPciVideoInfo() == NULL) {
+	return FALSE;
+    }
+    numUsed = xf86MatchPciInstances(APM_NAME, PCI_VENDOR_ALLIANCE,
+		    ApmChipsets, ApmPciChipsets, DevSections, numDevSections,
+		    drv, &usedChips);
+
+    if (numUsed > 0) {
+	for (i = 0; i < numUsed; i++) {
+	    pEnt = xf86GetEntityInfo(usedChips[i]);
+
+	    if (pEnt && pEnt->active) {
+		ScrnInfoPtr	pScrn;
 
 		/*
-		 * Check that nothing else has claimed the slots.
+		 * Allocate a ScrnInfoRec and claim the slot
 		 */
-		if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func,
-				     resource)) {
-		    ScrnInfoPtr	pScrn;
+		pScrn = xf86AllocateScreen(drv, 0);
 
-		    pScrn = xf86AllocateScreen(drv, 0);
-		    if (!xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func,
-					  resource, &APM, usedChips[i],
-					  pScrn->scrnIndex)) {
-			/* This can't happen */
-			FatalError("APM: someone claimed the free slot !\n");
-		    }
-
-		    /*
-		     * Fill in what we can of the ScrnInfoRec
-		     */
-		    pScrn->driverVersion	= VERSION;
-		    pScrn->driverName		= APM_DRIVER_NAME;
-		    pScrn->name			= APM_NAME;
-		    pScrn->Probe		= ApmProbe;
-		    pScrn->PreInit		= ApmPreInit;
-		    pScrn->ScreenInit		= ApmScreenInit;
-		    pScrn->SwitchMode		= ApmSwitchMode;
-		    pScrn->AdjustFrame		= (void(*)(int,int,int,int))ApmAdjustFrame;
-		    pScrn->EnterVT		= ApmEnterVT;
-		    pScrn->LeaveVT		= ApmLeaveVT;
-		    pScrn->FreeScreen		= ApmFreeScreen;
-		    pScrn->ValidMode		= ApmValidMode;
-		    pScrn->device		= usedDevs[i];
-		    foundScreen = TRUE;
-
-		    master_VGA = xf86IsPrimaryPci(pPci);
-		}
+		/*
+		 * Fill in what we can of the ScrnInfoRec
+		 */
+		ApmAssignFPtr(pScrn);
+		xf86ConfigActivePciEntity(pScrn, usedChips[i], ApmPciChipsets,
+					  NULL, NULL, NULL, NULL, NULL);
+		foundScreen = TRUE;
 	    }
-	    xfree(usedDevs);
-	    xfree(usedPci);
+	    xfree(pEnt);
 	}
     }
-    if (!master_VGA) {
-	char save = rdinx(0x3C4, 0x10);
 
-	/*
-	 * Start by probing the VGA chipset.
-	 */
-	outw(0x3C4, 0x1210);
-	if (rdinx(0x3C4, 0x11) == 'P' && rdinx(0x3C4, 0x12) == 'r' &&
-	    rdinx(0x3C4, 0x13) == 'o') {
-	    char	id_ap6420[] = "6420";
-	    char	id_ap6422[] = "6422";
-	    char	id_at24[]   = "6424";
-	    char	id_at3d[]   = "AT3D";
-	    char	idstring[]  = "    ";
-	    int		apmChip = -1;
+    /* Check for non-PCI cards */
+    numUsed = xf86MatchIsaInstances(APM_NAME, ApmChipsets,
+			ApmIsaChipsets, drv, ApmFindIsaDevice, DevSections,
+			numDevSections, &usedChips);
+    if (numUsed > 0) 
+	for (i = 0; i < numUsed; i++) {
+	    ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
 
 	    /*
-	     * Must be an Alliance !!!
+	     * Fill in what we can of the ScrnInfoRec
 	     */
-	    for (i = 0; i < 4; i++)
-		idstring[i] = rdinx(0x3C4, 0x14 + i);
-	    if (!memcmp(id_ap6420, idstring, 4) ||
-		!memcmp(id_ap6422, idstring, 4))
-		apmChip = AP6422;
-	    else if (!memcmp(id_at24, idstring, 4))
-		apmChip = AT24;
-	    else if (!memcmp(id_at3d, idstring, 4))
-		apmChip = AT3D;
-	    if (apmChip >= 0) {
-		int	apm_xbase;
-
-		apm_xbase = (rdinx(0x3C4, 0x1F) << 8) | rdinx(0x3C4, 0x1E);
-
-		if (!(wrinx(0x3c4, 0x1d, 0xCA >> 2), inb(apm_xbase + 2))) {
-		    /*
-		     * TODO Not PCI
-		     */
-		}
-
-
-		if (!xf86CheckIsaSlot(RES_VGA)) {
-		    xf86DrvMsg(-1, X_NOTICE, "someone claimed the slot !\n");
-		}
-		else {
-		    ScrnInfoPtr	pScrn;
-
-		    pScrn = xf86AllocateScreen(drv, 0);
-
-		    xf86ClaimIsaSlot(RES_VGA, &APM, apmChip, pScrn->scrnIndex);
-		    /*
-		     * Fill in what we can of the ScrnInfoRec
-		     */
-		    pScrn->driverVersion	= VERSION;
-		    pScrn->driverName		= APM_DRIVER_NAME;
-		    pScrn->name			= APM_NAME;
-		    pScrn->Probe		= ApmProbe;
-		    pScrn->PreInit		= ApmPreInit;
-		    pScrn->ScreenInit		= ApmScreenInit;
-		    pScrn->SwitchMode		= ApmSwitchMode;
-		    pScrn->AdjustFrame		= (void(*)(int,int,int,int))ApmAdjustFrame;
-		    pScrn->EnterVT		= ApmEnterVT;
-		    pScrn->LeaveVT		= ApmLeaveVT;
-		    pScrn->FreeScreen		= ApmFreeScreen;
-		    pScrn->ValidMode		= ApmValidMode;
-		    pScrn->device		= usedDevs[i];
-		    foundScreen = TRUE;
-		}
-	    }
+	    ApmAssignFPtr(pScrn);
+	    foundScreen = TRUE;
+	    xf86ConfigActiveIsaEntity(pScrn, usedChips[i], ApmIsaChipsets,
+				      NULL, NULL, NULL, NULL, NULL);
 	}
-	wrinx(0x3C4, 0x10, save);
-    }
+    xfree(DevSections);
+    DevSections = NULL;
     return foundScreen;
 }
 
@@ -475,11 +465,11 @@ static Bool
 ApmPreInit(ScrnInfoPtr pScrn, int flags)
 {
     APMDECL(pScrn);
-    pciVideoPtr	*pciList = NULL;
-    MessageType	from;
-    char	*mod = NULL;
+    EntityInfoPtr	pEnt;
+    MessageType		from;
+    char		*mod = NULL;
     ClockRangePtr	clockRanges;
-    int		i;
+    int			i;
 
     /*
      * Note: This function is only called once at server startup, and
@@ -577,6 +567,18 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
     }
     pApm = APMPTR(pScrn);
 
+    /* Get the entity */
+    pEnt = pApm->pEnt	= xf86GetEntityInfo(pScrn->entityList[0]);
+    if (pApm->pEnt->location.type == BUS_PCI) {
+	pApm->PciInfo	= xf86GetPciInfoForEntity(pApm->pEnt->index);
+	pApm->PciTag	= pciTag(pApm->PciInfo->bus, pApm->PciInfo->device,
+				 pApm->PciInfo->func);
+    }
+    else {
+	pApm->PciInfo	= NULL;
+	pApm->PciTag	= 0;
+    }
+
     /* Collect all of the relevant option flags (fill in pScrn->options) */
     xf86CollectOptions(pScrn, NULL);
 
@@ -622,26 +624,16 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
 	  xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "\"pci_retry\" option requires pci_burst \"on\".\n");
     }
 
-    /* Find the PCI slot for this screen */
-    if ((i = xf86GetPciInfoForScreen(pScrn->scrnIndex, &pciList, NULL)) != 1) {
-	/* This shouldn't happen */
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		   "Expected one PCI card, but found %d\n", i);
-	ApmFreeRec(pScrn);
-	return FALSE;
-    }
-
-    pApm->PciInfo = *pciList;
     /*
      * Set the Chipset and ChipRev, allowing config file entries to
      * override.
      */
-    if (pScrn->device->chipset && *pScrn->device->chipset) {
-	pScrn->chipset = pScrn->device->chipset;
+    if (pEnt->device->chipset && *pEnt->device->chipset) {
+	pScrn->chipset = pEnt->device->chipset;
         pApm->Chipset = xf86StringToToken(ApmChipsets, pScrn->chipset);
         from = X_CONFIG;
-    } else if (pScrn->device->chipID >= 0) {
-	pApm->Chipset = pScrn->device->chipID;
+    } else if (pEnt->device->chipID >= 0) {
+	pApm->Chipset = pEnt->device->chipID;
 	pScrn->chipset = (char *)xf86TokenToString(ApmChipsets, pApm->Chipset);
 
 	from = X_CONFIG;
@@ -649,14 +641,17 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
 		   pApm->Chipset);
     } else {
 	from = X_PROBED;
-	pApm->Chipset = pApm->PciInfo->chipType;
+	if (pApm->PciInfo)
+	    pApm->Chipset = pApm->PciInfo->chipType;
+	else
+	    pApm->Chipset = pApm->pEnt->chipset;
 	pScrn->chipset = (char *)xf86TokenToString(ApmChipsets, pApm->Chipset);
     }
-    if (pScrn->device->chipRev >= 0) {
-	pApm->ChipRev = pScrn->device->chipRev;
+    if (pEnt->device->chipRev >= 0) {
+	pApm->ChipRev = pEnt->device->chipRev;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipRev override: %d\n",
 		   pApm->ChipRev);
-    } else {
+    } else if (pApm->PciInfo) {
 	pApm->ChipRev = pApm->PciInfo->chipRev;
     }
 
@@ -677,20 +672,28 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
 
     xf86DrvMsg(pScrn->scrnIndex, from, "Chipset: \"%s\"\n", pScrn->chipset);
 
-    pApm->PciTag = pciTag(pApm->PciInfo->bus, pApm->PciInfo->device,
-			  pApm->PciInfo->func);
-
-    if (pScrn->device->MemBase != 0) {
-	pApm->LinAddress = pScrn->device->MemBase;
+    if (pEnt->device->MemBase != 0) {
+	pApm->LinAddress = pEnt->device->MemBase;
 	from = X_CONFIG;
-    } else {
+    } else if (pApm->PciInfo) {
 	pApm->LinAddress = pApm->PciInfo->memBase[0] & 0xFF800000;
+	from = X_PROBED;
+    } else {
+	/*
+	 * VESA local bus.
+	 * Pray that 2048MB works.
+	 */
+	pApm->LinAddress = 0x80000000;
     }
 
     xf86DrvMsg(pScrn->scrnIndex, from, "Linear framebuffer at 0x%lX\n",
 	       (unsigned long)pApm->LinAddress);
 
     if (pApm->noLinear) {
+	/*
+	 * TODO not AT3D.
+	 * XXX ICI XXX
+	 */
 	pApm->LinMapSize  =  4 * 1024 * 1024 /* 0x10000 */;
 	pApm->FbMapSize   =  4 * 1024 * 1024 /* 0x10000 */;
 	pApm->LinAddress +=  8 * 1024 * 1024 /* 0xA0000 */;
@@ -700,8 +703,8 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
 	pApm->FbMapSize   =  4 * 1024 * 1024;
     }
 
-    if (pScrn->device->videoRam != 0) {
-	pScrn->videoRam = pScrn->device->videoRam;
+    if (pEnt->device->videoRam != 0) {
+	pScrn->videoRam = pEnt->device->videoRam;
 	from = X_CONFIG;
     } else if (!pApm->noLinear) {
 	unsigned char		d9, db, uc;
@@ -715,7 +718,7 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
 	pciWriteLong(pApm->PciTag, PCI_CMD_STAT_REG, save | PCI_CMD_MEM_ENABLE);
 	d9 = LinMap[0xFFECD9];
 	db = LinMap[0xFFECDB];
-	LinMap[0xFFECDB] = (db & 0xF0) | 0x0A;
+	LinMap[0xFFECDB] = (db & 0xF4) | 0x0A;
 	LinMap[0xFFECD9] = (d9 & 0xCF) | 0x20;
 	LinMap[0xFFF3C4] = 0x1C;
 	uc = LinMap[0xFFF3C5];
@@ -728,6 +731,7 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
 	LinMap[0xFFECD9] = d9;
 	pciWriteLong(pApm->PciTag, PCI_CMD_STAT_REG, save);
 	xf86UnMapVidMem(pScrn->scrnIndex, (pointer)LinMap, pApm->LinMapSize);
+	from = X_PROBED;
     }
     else {
 	unsigned long		save;
@@ -736,6 +740,7 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
 	pciWriteLong(pApm->PciTag, PCI_CMD_STAT_REG, save | PCI_CMD_IO_ENABLE);
 	pScrn->videoRam = rdinx(0x3C4, 0x20) * 64;
 	pciWriteLong(pApm->PciTag, PCI_CMD_STAT_REG, save);
+	from = X_PROBED;
     }
 
     xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n",
@@ -749,26 +754,26 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
      * If the user has specified ramdac speed in the XF86Config
      * file, we respect that setting.
      */
-    if (pScrn->device->dacSpeeds[0]) {
+    if (pEnt->device->dacSpeeds[0]) {
 	int speed = 0;
 
 	switch (pScrn->bitsPerPixel) {
 	case 4:
 	case 8:
-	   speed = pScrn->device->dacSpeeds[DAC_BPP8];
+	   speed = pEnt->device->dacSpeeds[DAC_BPP8];
 	   break;
 	case 16:
-	   speed = pScrn->device->dacSpeeds[DAC_BPP16];
+	   speed = pEnt->device->dacSpeeds[DAC_BPP16];
 	   break;
 	case 24:
-	   speed = pScrn->device->dacSpeeds[DAC_BPP24];
+	   speed = pEnt->device->dacSpeeds[DAC_BPP24];
 	   break;
 	case 32:
-	   speed = pScrn->device->dacSpeeds[DAC_BPP32];
+	   speed = pEnt->device->dacSpeeds[DAC_BPP32];
 	   break;
 	}
 	if (speed == 0)
-	    pApm->MaxClock = pScrn->device->dacSpeeds[0];
+	    pApm->MaxClock = pEnt->device->dacSpeeds[0];
 	else
 	    pApm->MaxClock = speed;
 	from = X_CONFIG;
@@ -954,7 +959,9 @@ ApmMapMem(ScrnInfoPtr pScrn)
 	 */
 	pApm->d9 = RDXB(0xD9);
 	pApm->db = RDXB(0xDB);
-	WRXB(0xDB, (pApm->db & 0xF0) | 0x0A);
+
+	/* If you change it, change it also in apm_rush.c */
+	WRXB(0xDB, (pApm->db & 0xF4) | 0x0A);
 	WRXB(0xD9, (pApm->d9 & 0xCF) | 0x20);
 	vgaHWSetMmioFuncs(VGAHWPTR(pScrn), (CARD8 *)pApm->LinMap, 0xFFF000);
     }
@@ -966,7 +973,7 @@ ApmMapMem(ScrnInfoPtr pScrn)
 	 */
 	pApm->d9 = RDXB_IOP(0xD9);
 	pApm->db = RDXB_IOP(0xDB);
-	WRXB_IOP(0xDB, (pApm->db & 0xF0) | 0x08);
+	WRXB_IOP(0xDB, pApm->db & 0xF4);
     }
 
     return TRUE;
@@ -1018,9 +1025,16 @@ ApmSave(ScrnInfoPtr pScrn)
 	 */
 	if (!(vgaHWP->SavedReg.Attribute[0x10] & 1)) {
 	    if (pApm->FontInfo || (pApm->FontInfo = (pointer)xalloc(TEXT_AMOUNT))) {
+		int locked;
+
+		locked = ApmReadSeq(0x10);
+		if (locked)
+		    ApmWriteSeq(0x10, 0x12);
 		ApmWriteSeq(0x1C, 0x3F);
 		memcpy(pApm->FontInfo, pApm->FbBase, TEXT_AMOUNT);
 		ApmWriteSeq(0x1C, ApmReg->SEQ[0x1C]);
+		if (locked)
+		    ApmWriteSeq(0x10, 0);
 	    }
 	}
 	/*
@@ -1293,6 +1307,13 @@ ApmModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	if ((mode->CrtcHSyncStart / 8) & 0x100)
 	    val |= 8;
 	ApmReg->CRT[0x1B] = val;
+
+	/* Assume the CRTC is not KGA (see vgaHWInit) */
+	hwp->ModeReg.CRTC[3] = (hwp->ModeReg.CRTC[3] & 0xE0) |
+				(((mode->CrtcHBlankEnd >> 3) - 1) & 0x1F);
+	hwp->ModeReg.CRTC[5]  = ((((mode->CrtcHBlankEnd >> 3) - 1) & 0x20) << 2)
+				| (hwp->ModeReg.CRTC[5] & 0x7F);
+	hwp->ModeReg.CRTC[22] = (mode->CrtcVBlankEnd - 1) & 0xFF;
     }
     ApmReg->CRT[0x1E] = 1;          /* disable autoreset feature */
 
@@ -1320,8 +1341,9 @@ ApmModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     ApmReg->EX[XRE0] = 0x10;
 
+    /* If you change it, change in apm_rush.c as well */
     ApmReg->SEQ[0x1B] = 0x20;
-    ApmReg->SEQ[0x1C] = 0x3F;
+    ApmReg->SEQ[0x1C] = 0x2F;
 
     /* ICICICICI */
     ApmRestore(pScrn, &hwp->ModeReg, ApmReg);
@@ -1340,7 +1362,6 @@ ApmRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, ApmRegPtr ApmReg)
     vgaHWProtect(pScrn, TRUE);
     ApmUnlock(pApm);
 
-    /* Set aperture index to 0. */
     if (pApm->LinMap) {
 	/*
 	 * Restore fonts
@@ -1350,6 +1371,7 @@ ApmRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, ApmRegPtr ApmReg)
 	    memcpy(pApm->FbBase, pApm->FontInfo, TEXT_AMOUNT);
 	}
 
+	/* Set aperture index to 0. */
 	WRXW(0xC0, 0);
 
 	/*
@@ -1387,6 +1409,7 @@ ApmRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, ApmRegPtr ApmReg)
 	vgaHWRestore(pScrn, vgaReg, VGA_SR_MODE | VGA_SR_CMAP);
     }
     else {
+	/* Set aperture index to 0. */
 	WRXW_IOP(0xC0, 0);
 
 	/*
@@ -1582,17 +1605,16 @@ ApmScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
                 "Hardware cursor initialization failed\n");
     }
 
-#if 0
     if(!ApmDGAInit(pScreen)) {
         xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "DGA initialization failed\n");
     }
-#endif
 
     if (!ApmI2CInit(pScreen)) {
         xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "I2C initialization failed\n");
     }
-    else
+    else {
 	xf86PrintEDID(xf86DoEDID_DDC2(pScrn->scrnIndex,pApm->I2CPtr));
+    }
 
     /*
      * Initialize the acceleration interface.
@@ -1631,6 +1653,14 @@ ApmScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);
     }
 
+    if (pApm->Generation != serverGeneration) {
+	if ((ApmPixmapIndex = AllocatePixmapPrivateIndex()) < 0)
+	    return FALSE;
+    }
+
+    if (!AllocatePixmapPrivate(pScreen, ApmPixmapIndex, sizeof(ApmPixmapRec)))
+	return FALSE;
+
     /* Done */
     return TRUE;
 }
@@ -1666,7 +1696,7 @@ ApmSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
  * displayed location in the video memory.
  */
 /* Usually mandatory */
-static Bool
+static void
 ApmAdjustFrame(int scrnIndex, int x, int y, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
@@ -1699,71 +1729,7 @@ ApmAdjustFrame(int scrnIndex, int x, int y, int flags)
 	 */
 	modinx(0x3D4, 0x1C, 0x0F, (Base & 0x0F0000) >> 16);
     }
-    return TRUE;
 }
-
-#if 0
-static Bool
-ApmDGAGetParams(int scrnIndex, unsigned long *offset,
-		int *banksize, int *memsize)
-{
-    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-    APMDECL(pScrn);
-
-    *offset = (unsigned long)pApm->FbBase;
-    *banksize = pApm->FbMapSize;
-    *memsize = pScrn->device->videoRam * 1024;
-    return TRUE;
-}
-
-static Bool
-ApmDGASetDirect(int scrnIndex, Bool enable)
-{
-    return TRUE;
-}
-
-static Bool
-ApmDGASetBank(int scrnIndex, int bank, int flags)
-{
-    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-    APMDECL(pScrn);
-    int Base = (bank * pApm->FbMapSize) / 4096;
-
-    if (!pApm->noLinear)
-	WRXW(0xC0, Base);
-    else
-	WRXW_IOP(0xC0, Base);
-    return TRUE;
-}
-
-static  Bool
-ApmDGAViewportChanged(int scrnIndex, int n, int flags)
-{
-    return TRUE;
-}
-
-static Bool
-ApmDGAInit(ScreenPtr pScreen)
-{
-    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    APMDECL(pScrn);
-    DGAInfoPtr pDGAInfo;
-
-    pDGAInfo = DGACreateInfoRec();
-    if(pDGAInfo == NULL)
-        return FALSE;
-
-    pApm->DGAInfo = pDGAInfo;
-
-    pDGAInfo->GetParams = ApmDGAGetParams;
-    pDGAInfo->SetDirectMode = ApmDGASetDirect;
-    pDGAInfo->SetBank = ApmDGASetBank;
-    pDGAInfo->SetViewport = ApmAdjustFrame;
-    pDGAInfo->ViewportChanged = ApmDGAViewportChanged;;
-
-    return DGAInit(pScreen, pDGAInfo, 0);
-}
-#endif
 
 /*
  * This is called when VT switching back to the X server.  Its job is
@@ -1777,9 +1743,17 @@ static Bool
 ApmEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    APMDECL(pScrn);
 
-    vgaHWUnlock(VGAHWPTR(pScrn));
+    if (!pApm->noLinear) {
+	/* If you change it, change it also in apm_rush.c */
+	WRXB(0xDB, (pApm->db & 0xF4) | 0x0A);
+	WRXB(0xD9, (pApm->d9 & 0xCF) | 0x20);
+    }
+    else
+	WRXB_IOP(0xDB, pApm->db & 0xF4);
     ApmUnlock(APMPTR(pScrn));
+    vgaHWUnlock(VGAHWPTR(pScrn));
     /* Should we re-save the text mode on each VT enter? */
     if (!ApmModeInit(pScrn, pScrn->currentMode))
 	return FALSE;
@@ -1795,8 +1769,16 @@ ApmLeaveVT(int scrnIndex, int flags)
     APMDECL(pScrn);
 
     ApmRestore(pScrn, &VGAHWPTR(pScrn)->SavedReg, &pApm->SavedReg);
-    ApmLock(pApm);
     vgaHWLock(VGAHWPTR(pScrn));
+    ApmLock(pApm);
+    if (!pApm->noLinear) {
+	WRXB(0xD9, pApm->d9);
+	WRXB(0xDB, pApm->db);
+    }
+    else {
+	WRXB_IOP(0xD9, pApm->d9);
+	WRXB_IOP(0xDB, pApm->db);
+    }
 }
 
 /*
@@ -1809,20 +1791,22 @@ static Bool
 ApmCloseScreen(int scrnIndex, ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    vgaHWPtr	hwp = VGAHWPTR(pScrn);
     APMDECL(pScrn);
 
-    ApmRestore(pScrn, &VGAHWPTR(pScrn)->SavedReg, &pApm->SavedReg);
+    if (pScrn->vtSema) {
+	ApmRestore(pScrn, &VGAHWPTR(pScrn)->SavedReg, &pApm->SavedReg);
+	vgaHWLock(hwp);
+	ApmUnmapMem(pScrn);
+    }
     if(pApm->AccelInfoRec)
 	XAADestroyInfoRec(pApm->AccelInfoRec);
     pApm->AccelInfoRec = NULL;
     if(pApm->CursorInfoRec)
 	xf86DestroyCursorInfoRec(pApm->CursorInfoRec);
     pApm->CursorInfoRec = NULL;
-#if 0
-    if (pApm->DGAInfo)
-        DGADestroyInfoRec(pApm->DGAInfo);
-    pApm->DGAInfo = NULL;
-#endif
+    if (pApm->DGAModes)
+	xfree(pApm->DGAModes);
     if (pApm->I2CPtr)
 	xf86DestroyI2CBusRec(pApm->I2CPtr, TRUE, TRUE);
     pApm->I2CPtr = NULL;
@@ -1830,7 +1814,6 @@ ApmCloseScreen(int scrnIndex, ScreenPtr pScreen)
     pScrn->vtSema = FALSE;
 
     pScreen->CloseScreen = pApm->CloseScreen;
-    ApmUnmapMem(pScrn);
     return (*pScreen->CloseScreen)(scrnIndex, pScreen);
 }
 
@@ -1891,7 +1874,6 @@ ApmDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
     default:
 	dpmsreg = 0;
     }
-    tmp = RDXB_IOP(0xD0);
     if (pApm->noLinear) {
 	tmp = RDXB_IOP(0xD0);
 	WRXB_IOP(0xD0, (tmp & 0xFC) | dpmsreg);
@@ -1914,6 +1896,7 @@ ApmSaveScreen(ScreenPtr pScreen, Bool unblank)
        vgaHWBlankScreen(pScrn, unblank);
    return TRUE;
 }
+
 
 unsigned char _L_ACR(unsigned char *x);
 unsigned char _L_ACR(unsigned char *x)

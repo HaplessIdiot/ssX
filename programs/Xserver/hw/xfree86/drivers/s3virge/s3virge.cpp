@@ -1,5 +1,5 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3virge.cpp,v 1.1 1999/04/04 09:00:21 dawes Exp $
-.TH s3virge __drivermansuffix__ "Version 4.0"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3virge.cpp,v 1.2 1999/05/30 14:41:04 dawes Exp $
+.TH s3virge __drivermansuffix__ "Version 3.9.15"  "XFree86"
 .SH NAME
 s3virge \- S3 ViRGE video driver
 .SH SYNOPSIS
@@ -122,10 +122,11 @@ setting
 and move down if you encounter pixel corruption.
 The optimal setting will probably depend on dot-clock and on color 
 depth. Note that specifying any of these options will also alter other
-memory settings which should increase performance, so you should at
-least use
+memory settings which may increase performance, so trying
 .B "fifo_conservative"
-(this uses the chip defaults).  Default: none.
+will in most cases be a slight benefit (this uses the chip defaults).
+If pixel corruption or transient streaking is observed during drawing
+operations then removing any fifo options is recommended.  Default: none.
 
 .PP
 The following PCI bus
@@ -174,8 +175,8 @@ site at http://www.xfree86.org.  A FAQ is available on the web site at
 http://www.xfree86.org/FAQ/.  If you find a problem with XFree86 or have a
 question not answered in the FAQ please use our bug report form available on
 the web site or send mail to XFree86@XFree86.org.  When reporting problems
-with the driver send as much detail as possible, including chipset type
-and operating system specifics.
+with the driver send as much detail as possible, including chipset type, a 
+server output log, and operating system specifics.
 
 .SH AUTHORS
 Kevin Brosius, 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.12 1999/06/12 15:37:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.13 1999/07/04 06:39:08 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -80,6 +80,8 @@ static Bool MouseConvert(LocalDevicePtr local, int first, int num, int v0,
 static void MouseCtrl(DeviceIntPtr device, PtrCtrl *ctrl);
 static void MousePostEvent(InputInfoPtr pInfo, int buttons,
 			   int dx, int dy, int dz);
+/* XXX This is temporary. */
+const char * xf86ProtocolIDToName(ProtocolID id);
 
 #undef MOUSE
 InputDriverRec MOUSE = {
@@ -209,6 +211,12 @@ ProtocolNameToID(const char *name)
 	if (xf86NameCmp(name, mouseProtocols[i].name) == 0)
 	    return mouseProtocols[i].id;
     return PROT_UNKNOWN;
+}
+
+const char *
+xf86ProtocolIDToName(ProtocolID id)
+{
+	return ProtocolIDToName(id);
 }
 
 static const char *

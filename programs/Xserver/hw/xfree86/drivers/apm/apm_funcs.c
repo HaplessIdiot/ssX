@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_funcs.c,v 1.1 1999/03/21 07:35:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_funcs.c,v 1.2 1999/04/25 10:02:06 dawes Exp $ */
 
 #undef DEBUG
 #define FASTER
@@ -21,7 +21,11 @@
 #  define WRXW	WRXW_IOP
 #  define WRXL	WRXL_IOP
 #  ifdef DEBUG
-#    define DPRINTNAME(s)	do { ErrorF("Apm" #s "_IOP\n"); fflush(stderr); } while (0)
+#    if defined(PSZ) && (PSZ == 24)
+#      define DPRINTNAME(s)	do { ErrorF("Apm" #s "24_IOP\n"); fflush(stderr); sync(); } while (0)
+#    else
+#      define DPRINTNAME(s)	do { ErrorF("Apm" #s "_IOP\n"); fflush(stderr); sync(); } while (0)
+#    endif
 #  endif
 #else
 #  if defined(PSZ) && (PSZ == 24)
@@ -30,7 +34,11 @@
 #    define A(s)	Apm##s
 #  endif
 #  ifdef DEBUG
-#    define DPRINTNAME(s)	do { ErrorF("Apm" #s "\n"); fflush(stderr); sync(); } while (0)
+#    if defined(PSZ) && (PSZ == 24)
+#      define DPRINTNAME(s)	do { ErrorF("Apm" #s "24\n"); fflush(stderr); sync(); } while (0)
+#    else
+#      define DPRINTNAME(s)	do { ErrorF("Apm" #s "\n"); fflush(stderr); sync(); usleep(100000); } while (0)
+#    endif
 #  endif
 #endif
 #ifndef DEBUG
@@ -49,6 +57,7 @@ static void A(SubsequentSolidFillRect)(ScrnInfoPtr pScrn, int x, int y, int w, i
 static void A(SetupForScreenToScreenCopy)(ScrnInfoPtr pScrn, int xdir, int ydir, int rop, unsigned int planemask,
                                           int transparency_color);
 static void A(SubsequentScreenToScreenCopy)(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2, int w, int h);
+#if !defined(PSZ) || PSZ != 24
 static void A(SetupForCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn, int bg, int fg, int rop, unsigned int planemask);
 static void A(SubsequentCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn, int x, int y, int w, int h, int skipleft);
 static void A(SetupForScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
@@ -66,6 +75,10 @@ static void A(SubsequentScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 						       int offset);
 static void A(SubsequentSolidBresenhamLine)(ScrnInfoPtr pScrn, int x1, int y1, int octant, int err, int e1, int e2, int length);
 static void A(SetClippingRectangle)(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2);
+static void A(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
+			   unsigned char *src, int srcwidth, int rop,
+			   unsigned int planemask, int trans, int bpp,
+			   int depth);
 static void A(SetupForMono8x8PatternFill)(ScrnInfoPtr pScrn, int patx, int paty,
 				          int fg, int bg, int rop,
 				          unsigned int planemask);
@@ -78,10 +91,7 @@ static void A(SetupForColor8x8PatternFill)(ScrnInfoPtr pScrn,int patx,int paty,
 static void A(SubsequentColor8x8PatternFillRect)(ScrnInfoPtr pScrn, int patx,
 					         int paty, int x, int y,
 					         int w, int h);
-static void A(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
-			   unsigned char *src, int srcwidth, int rop,
-			   unsigned int planemask, int trans, int bpp,
-			   int depth);
+#endif
 
 /* Inline functions */
 static __inline__ void
@@ -115,7 +125,7 @@ A(SetupForSolidFill)(ScrnInfoPtr pScrn, int color, int rop,
 {
   APMDECL(pScrn);
 
-  DPRINTNAME(SetupForSolidFillRect);
+  DPRINTNAME(SetupForSolidFill);
   A(CheckMMIO_InitFast)(pScrn);
 #ifdef FASTER
   A(WaitForFifo)(pApm, 3 + pApm->apmClip);
@@ -150,7 +160,7 @@ A(SubsequentSolidFillRect)(ScrnInfoPtr pScrn, int x, int y, int w, int h)
   A(WaitForFifo)(pApm, 3);
 #  endif
   /* COLOR */
-  SETOFFSET(3*(pScrn->displayWidth - w));
+  SETOFFSET(3*(pApm->displayWidth - w));
 #else
 #  ifndef FASTER
   A(WaitForFifo)(pApm, 3);
@@ -158,8 +168,8 @@ A(SubsequentSolidFillRect)(ScrnInfoPtr pScrn, int x, int y, int w, int h)
   A(WaitForFifo)(pApm, 2);
 #  endif
 #endif
-  SETDESTXY(x,y);
-  SETWIDTHHEIGHT(w,h);
+  SETDESTXY(x, y);
+  SETWIDTHHEIGHT(w, h);
   UPDATEDEST(x + w + 1, y);
 #ifndef FASTER
   SETDEC(DEC_START | DEC_OP_RECT | DEC_DEST_UPD_TRCORNER | pApm->Setup_DEC);
@@ -177,20 +187,24 @@ A(SetupForScreenToScreenCopy)(ScrnInfoPtr pScrn, int xdir, int ydir, int rop,
   pApm->blitxdir = xdir;
   pApm->blitydir = ydir;
 
+  pApm->apmTransparency = (transparency_color != -1);
+
 #ifdef FASTER
-  A(WaitForFifo)(pApm, 2 + pApm->apmClip);
+  A(WaitForFifo)(pApm, 2 + pApm->apmClip + pApm->apmTransparency);
   SETDEC(DEC_QUICKSTART_ONDIMX | DEC_OP_BLT | DEC_DEST_UPD_TRCORNER |
-	  pApm->Setup_DEC |
+	  (pApm->apmTransparency ? DEC_SOURCE_TRANSPARENCY : 0) | pApm->Setup_DEC |
 	  ((xdir < 0) ? DEC_DIR_X_NEG : DEC_DIR_X_POS) |
 	  ((ydir < 0) ? DEC_DIR_Y_NEG : DEC_DIR_Y_POS));
 #else
-  A(WaitForFifo)(pApm, 1 + pApm->apmClip);
+  A(WaitForFifo)(pApm, 1 + pApm->apmClip + (transparency_color != -1));
 #endif
 
   if (pApm->apmClip)  {
     SETCLIP_CTRL(0);
     pApm->apmClip = FALSE;
   }
+  if (transparency_color != -1)
+    SETBACKGROUNDCOLOR(transparency_color);
 
   SETROP(apmROP[rop]);
 }
@@ -201,7 +215,7 @@ A(SubsequentScreenToScreenCopy)(ScrnInfoPtr pScrn, int x1, int y1,
 {
   APMDECL(pScrn);
 #ifndef FASTER
-  u32 c = 0;
+  u32 c = pApm->apmTransparency ? DEC_SOURCE_TRANSPARENCY : 0;
 #endif
 #if defined(PSZ) && (PSZ == 24)
   u16 offset;
@@ -218,7 +232,7 @@ A(SubsequentScreenToScreenCopy)(ScrnInfoPtr pScrn, int x1, int y1,
     c |= DEC_DIR_X_NEG;
 #endif
 #if defined(PSZ) && (PSZ == 24)
-    offset = 3*(pScrn->displayWidth + w);
+    offset = 3*(pApm->displayWidth + w);
 #endif
     sx = x1+w-1;
     dx = x2+w-1;
@@ -229,7 +243,7 @@ A(SubsequentScreenToScreenCopy)(ScrnInfoPtr pScrn, int x1, int y1,
     c |= DEC_DIR_X_POS;
 #endif
 #if defined(PSZ) && (PSZ == 24)
-    offset = 3*(pScrn->displayWidth - w);
+    offset = 3*(pApm->displayWidth - w);
 #endif
     sx = x1;
     dx = x2;
@@ -279,6 +293,7 @@ A(SubsequentScreenToScreenCopy)(ScrnInfoPtr pScrn, int x1, int y1,
 #endif
 }
 
+#if !defined(PSZ) || PSZ != 24
 static void
 A(SetupForCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn, int fg, int bg,
 					int rop, unsigned int planemask)
@@ -366,28 +381,35 @@ A(SetupForImageWrite)(ScrnInfoPtr pScrn, int rop, unsigned int planemask,
 
   DPRINTNAME(SetupForImageWriteRect);
   A(CheckMMIO_InitFast)(pScrn);
-  if (trans_color == -1)
+  if (trans_color != -1)
   {
 #ifndef FASTER
     pApm->apmTransparency = TRUE;
-    A(WaitForFifo)(pApm, 2);
-#else
     A(WaitForFifo)(pApm, 3);
+#else
+    A(WaitForFifo)(pApm, 4);
     SETDEC(DEC_OP_HOSTBLT_HOST2SCREEN | DEC_SOURCE_LINEAR | DEC_SOURCE_CONTIG |
 	  DEC_SOURCE_TRANSPARENCY | DEC_QUICKSTART_ONDIMX | pApm->Setup_DEC);
 #endif
-    SETFOREGROUNDCOLOR(trans_color+1);
+    SETBACKGROUNDCOLOR(trans_color);
   }
   else {
 #ifndef FASTER
     pApm->apmTransparency = FALSE;
-    A(WaitForFifo)(pApm, 1);
-#else
     A(WaitForFifo)(pApm, 2);
+#else
+    A(WaitForFifo)(pApm, 3);
     SETDEC(DEC_OP_HOSTBLT_HOST2SCREEN | DEC_SOURCE_LINEAR | DEC_SOURCE_CONTIG |
 	  DEC_QUICKSTART_ONDIMX | pApm->Setup_DEC);
 #endif
   }
+
+  /* Daryll : you may not tamper with bits 0, 1 and 3 of this register... */
+#ifdef IOP_ACCESS
+  WRXB_IOP(0xDB, pApm->db & 0xF4);
+#else
+  WRXB(0xDB, (pApm->db & 0xF4) | 0x0A);
+#endif
   SETROP(apmROP[rop]);
 }
 
@@ -468,19 +490,61 @@ A(SubsequentScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn, int x, int y,
 
   DPRINTNAME(SubsequentScreenToScreenColorExpandFill);
 #ifdef FASTER
-  c = DEC_OP_BLT | DEC_SOURCE_LINEAR | DEC_SOURCE_CONTIG | DEC_DIR_X_POS |
-      DEC_DIR_Y_POS | DEC_SOURCE_MONOCHROME | DEC_QUICKSTART_ONDIMX |
-      DEC_DEST_UPD_TRCORNER | pApm->Setup_DEC;
+  c = DEC_OP_BLT | DEC_DIR_X_POS | DEC_DIR_Y_POS | DEC_SOURCE_MONOCHROME |
+      DEC_QUICKSTART_ONDIMX | DEC_DEST_UPD_TRCORNER | pApm->Setup_DEC;
 #else
-  c = DEC_OP_BLT | DEC_SOURCE_LINEAR | DEC_SOURCE_CONTIG | DEC_DIR_X_POS |
-      DEC_DIR_Y_POS | DEC_SOURCE_MONOCHROME | DEC_START |
-      DEC_DEST_UPD_TRCORNER | pApm->Setup_DEC;
+  c = DEC_OP_BLT | DEC_DIR_X_POS | DEC_DIR_Y_POS | DEC_SOURCE_MONOCHROME |
+      DEC_START | DEC_DEST_UPD_TRCORNER | pApm->Setup_DEC;
 #endif
 
   if (pApm->apmTransparency)
     c |= DEC_SOURCE_TRANSPARENCY;
 
-  A(WaitForFifo)(pApm, 4);
+  if (srcy >= pApm->displayHeight) {
+      CARD32	dist;
+
+      /*
+       * Offscreen linear stipple
+       */
+      if (w != pApm->apmStippleCache.orig_w) {
+	  pApm->apmClip = TRUE;
+	  A(WaitForFifo)(pApm, 3);
+	  SETCLIP_LEFTTOP(x, y);
+	  SETCLIP_RIGHTBOT(x + w, y + h);
+	  SETCLIP_CTRL(0x01);
+	  w = pApm->apmStippleCache.orig_w;
+	  srcx = pApm->apmStippleCache.x;
+	  x -= offset;
+      }
+      else if (pApm->apmClip) {
+	  pApm->apmClip = FALSE;
+	  A(WaitForFifo)(pApm, 1);
+	  SETCLIP_CTRL(0x00);
+      }
+      srcx += ((srcy-pApm->apmStippleCache.y) * pApm->apmStippleCache.orig_w *
+	      pApm->displayWidth) / 8;
+      srcy -= pApm->displayHeight;
+      c |= DEC_SOURCE_CONTIG | DEC_SOURCE_LINEAR;
+      dist = srcx + srcy * pApm->displayWidth;
+      srcx = dist & 0xFFF;
+      srcy = dist >> 12;
+  }
+  else if (offset) {
+      pApm->apmClip = TRUE;
+      A(WaitForFifo)(pApm, 3);
+      SETCLIP_LEFTTOP(x, y);
+      SETCLIP_RIGHTBOT(x + w, y + h);
+      SETCLIP_CTRL(0x01);
+      w += offset;
+      x -= offset;
+  }
+  else if (pApm->apmClip) {
+      pApm->apmClip = FALSE;
+      A(WaitForFifo)(pApm, 1);
+      SETCLIP_CTRL(0x00);
+  }
+
+  A(WaitForFifo)(pApm, 5);
 
   SETSOURCEXY(srcx, srcy);
   SETDESTXY(x, y);
@@ -569,13 +633,112 @@ A(SetClippingRectangle)(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2)
   pApm->apmClip = TRUE;
 }
 
+static void
+A(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
+	       unsigned char *src, int srcwidth, int rop,
+	       unsigned int planemask, int trans, int bpp, int depth)
+{
+    APMDECL(pScrn);
+    int dwords, skipleft, Bpp = bpp >> 3; 
+    Bool beCareful = FALSE;
+    int PlusOne = 0, mask;
+
+    DPRINTNAME(WritePixmap);
+    if ((skipleft = (long)src & 0x03L)) {
+	if (Bpp == 3)
+	   skipleft = 4 - skipleft;
+	else
+	   skipleft /= Bpp;
+
+	if (x < skipleft) {
+	   skipleft = 0;
+	   beCareful = TRUE;
+	   goto BAD_ALIGNMENT;
+	}
+
+	x -= skipleft;	     
+	w += skipleft;
+	
+	if (Bpp == 3)
+	   src -= 3 * skipleft;  
+	else   /* is this Alpha friendly ? */
+	   src = (unsigned char*)((long)src & ~0x03L);     
+    }
+
+BAD_ALIGNMENT:
+
+    dwords = ((w * Bpp) + 3) >> 2;
+    mask = (pApm->bitsPerPixel / 8) - 1;
+
+    if (dwords & mask) {
+	/*
+	 * Experimental...
+	 */
+	PlusOne = mask - (dwords & mask) + 1;
+    } 
+
+    A(SetupForImageWrite)(pScrn, rop, planemask, trans, bpp, depth);
+    A(SubsequentImageWriteRect)(pScrn, x, y, w, h, skipleft);
+
+    if (beCareful) {
+	/* in cases with bad alignment we have to be careful not
+	   to read beyond the end of the source */
+	if (((x * Bpp) + (dwords << 2)) > srcwidth) h--;
+	else beCareful = FALSE;
+    }
+
+    srcwidth -= (dwords << 2);
+
+    while (h--) {
+	int		count;
+
+	for (count = dwords; count-- > 0; ) {
+	    while (!(STATUS() & STATUS_HOSTBLTBUSY))
+		;
+	    *(CARD32*)pApm->BltMap = *(CARD32*)src;
+	    src += 4;
+	}
+	src += srcwidth;
+	for (count = PlusOne; count-- > 0; ) {
+	    int	status;
+
+	    while (!((status = STATUS()) & STATUS_HOSTBLTBUSY))
+		if (!(status & STATUS_ENGINEBUSY))
+		    break;
+	    if (status & STATUS_ENGINEBUSY)
+		*(CARD32*)pApm->BltMap = 0x00000000;
+	}
+    }
+    if (beCareful) {
+       int shift = ((long)src & 0x03L) << 3;
+
+       if (--dwords) {
+	    int	count;
+
+	    for (count = dwords >> 2; count-- > 0; ) {
+		while (!(STATUS() & STATUS_HOSTBLTBUSY))
+		    ;
+		*(CARD32*)pApm->BltMap = *(CARD32*)src;
+		src += 4;
+	    }
+       }
+       while (!(STATUS() & STATUS_HOSTBLTBUSY))
+	   ;
+       *((CARD32*)pApm->BltMap) = *((CARD32*)src) >> shift;
+    }
+
+    pApm->apmClip = FALSE;
+    A(WaitForFifo)(pApm, 1);
+    SETCLIP_CTRL(0);
+}
+
 static void A(SetupForMono8x8PatternFill)(ScrnInfoPtr pScrn, int patx, int paty,
 				          int fg, int bg, int rop,
 				          unsigned int planemask)
 {
     APMDECL(pScrn);
 
-    DPRINTNAME(SetupForMono8x8PatternFillRect);
+    DPRINTNAME(SetupForMono8x8PatternFill);
     A(WaitForFifo)(pApm, 3);
     SETFOREGROUNDCOLOR(fg);
     SETBACKGROUNDCOLOR(bg);
@@ -664,6 +827,7 @@ static void A(SubsequentColor8x8PatternFillRect)(ScrnInfoPtr pScrn, int patx,
 	    DEC_PATTERN_88_8bCOLOR | DEC_START);
 #endif
 }
+#endif
 
 
 /* This function is a f*cking kludge since I could not get MMIO to
@@ -673,6 +837,7 @@ void
 A(CheckMMIO_Init)(ScrnInfoPtr pScrn)
 {
   APMDECL(pScrn);
+  volatile int i;
 
   if (!pApm->apmMMIO_Init)
   {
@@ -681,7 +846,7 @@ A(CheckMMIO_Init)(ScrnInfoPtr pScrn)
     A(Sync)(pScrn);
 
     pApm->Setup_DEC = 0;
-    switch(pScrn->bitsPerPixel)
+    switch(pApm->bitsPerPixel)
     {
       case 8:
            pApm->Setup_DEC |= DEC_BITDEPTH_8;
@@ -702,7 +867,7 @@ A(CheckMMIO_Init)(ScrnInfoPtr pScrn)
            break;
     }
 
-    switch(pScrn->displayWidth)
+    switch(pApm->displayWidth)
     {
       case 640:
            pApm->Setup_DEC |= DEC_WIDTH_640;
@@ -725,10 +890,19 @@ A(CheckMMIO_Init)(ScrnInfoPtr pScrn)
       default:
            xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 		       "Cannot set up drawing engine control "
-		       "for screen width = %d\n", pScrn->displayWidth);
+		       "for screen width = %d\n", pApm->displayWidth);
            break;
     }
+
+    /* Setup current register values */
+    for (i = 0; i < sizeof(pApm->regcurr) / 4; i++)
+	((CARD32 *)curr)[i] = RDXL(0x30 + 4*i);
+
+    SETCLIP_CTRL(1);
+    SETCLIP_CTRL(0);
+    SETBYTEMASK(0x00);
     SETBYTEMASK(0xFF);
+    SETROP(ROP_S_xor_D);
     SETROP(ROP_S);
 
   }
@@ -748,98 +922,13 @@ A(Sync)(ScrnInfoPtr pScrn)
   }
   if (i == MAXLOOP) {
     apm_stopit();
-    FatalError("Hung in ApmSync() (Status = 0x%08X)\n", STATUS());
+    if (!xf86Exiting)
+	FatalError("Hung in ApmSync() (Status = 0x%08X)\n", STATUS());
   }
   if (pApm->apmClip) {
     SETCLIP_CTRL(0);
     pApm->apmClip = FALSE;
   }
-}
-
-static void
-A(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
-	       unsigned char *src, int srcwidth, int rop,
-	       unsigned int planemask, int trans, int bpp, int depth)
-{
-    APMDECL(pScrn);
-    int dwords, skipleft, Bpp = bpp >> 3; 
-    Bool beCareful = FALSE;
-    Bool PlusOne = FALSE;
-
-    DPRINTNAME(WritePixmap);
-    if ((skipleft = (long)src & 0x03L)) {
-	if (Bpp == 3)
-	   skipleft = 4 - skipleft;
-	else
-	   skipleft /= Bpp;
-
-	if (x < skipleft) {
-	   skipleft = 0;
-	   beCareful = TRUE;
-	   goto BAD_ALIGNMENT;
-	}
-
-	x -= skipleft;	     
-	w += skipleft;
-	
-	if (Bpp == 3)
-	   src -= 3 * skipleft;  
-	else   /* is this Alpha friendly ? */
-	   src = (unsigned char*)((long)src & ~0x03L);     
-    }
-
-BAD_ALIGNMENT:
-
-    dwords = ((w * Bpp) + 3) >> 2;
-
-    if ((dwords * h) & 0x01) {
-	PlusOne = TRUE;
-    } 
-		
-	
-    A(SetupForImageWrite)(pScrn, rop, planemask, trans, bpp, depth);
-    A(SubsequentImageWriteRect)(pScrn, x, y, w, h, skipleft);
-
-    if (beCareful) {
-	/* in cases with bad alignment we have to be careful not
-	   to read beyond the end of the source */
-	if (((x * Bpp) + (dwords << 2)) > srcwidth) h--;
-	else beCareful = FALSE;
-    }
-
-    while (h--) {
-	int		count;
-
-	for (count = dwords; count-- > 0; ) {
-	    while (!(STATUS() & STATUS_HOSTBLTBUSY))
-		;
-	    *(CARD32*)pApm->BltMap = *(CARD32*)src;
-	    src += 4;
-	}
-    }
-    if (beCareful) {
-       int shift = ((long)src & 0x03L) << 3;
-
-       if (--dwords) {
-	    int	count;
-
-	    for (count = dwords >> 2; count-- > 0; ) {
-		while (!(STATUS() & STATUS_HOSTBLTBUSY))
-		    ;
-		*(CARD32*)pApm->BltMap = *(CARD32*)src;
-		src += 4;
-	    }
-       }
-       *((CARD32*)pApm->BltMap) = *((CARD32*)src) >> shift;
-    }
-
-    if (PlusOne) {
-	*(CARD32*)pApm->BltMap = 0x00000000;
-    }
-
-    pApm->apmClip = FALSE;
-    A(WaitForFifo)(pApm, 1);
-    SETCLIP_CTRL(0);
 }
 
 

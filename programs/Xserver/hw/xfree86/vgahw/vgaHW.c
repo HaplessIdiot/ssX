@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.24 1999/06/12 15:37:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.25 1999/06/12 15:47:57 dawes Exp $ */
 
 /*
  *
- * Copyright 1991-1998 by The XFree86 Project, Inc.
+ * Copyright 1991-1999 by The XFree86 Project, Inc.
  *
  * Loosely based on code bearing the following copyright:
  *
@@ -802,21 +802,21 @@ vgaHWRestoreMode(ScrnInfoPtr scrninfp, vgaRegPtr restore)
 
     hwp->writeMiscOut(hwp, restore->MiscOutReg);
 
-    for (i = 1; i < 5; i++)
+    for (i = 1; i < restore->numSequencer; i++)
 	hwp->writeSeq(hwp, i, restore->Sequencer[i]);
   
     /* Ensure CRTC registers 0-7 are unlocked by clearing bit 7 or CRTC[17] */
 
     hwp->writeCrtc(hwp, 17, restore->CRTC[17] & ~0x80);
 
-    for (i = 0; i < 25; i++)
+    for (i = 0; i < restore->numCRTC; i++)
 	hwp->writeCrtc(hwp, i, restore->CRTC[i]);
 
-    for (i = 0; i < 9; i++)
+    for (i = 0; i < restore->numGraphics; i++)
 	hwp->writeGr(hwp, i, restore->Graphics[i]);
 
     hwp->enablePalette(hwp);
-    for (i = 0; i < 21; i++)
+    for (i = 0; i < restore->numAttribute; i++)
 	hwp->writeAttr(hwp, i, restore->Attribute[i]);
     hwp->disablePalette(hwp);
 }
@@ -982,7 +982,7 @@ vgaHWSaveMode(ScrnInfoPtr scrninfp, vgaRegPtr save)
     else
 	hwp->IOBase = VGA_IOBASE_MONO;
 
-    for (i = 0; i < 25; i++) {
+    for (i = 0; i < save->numCRTC; i++)
 	save->CRTC[i] = hwp->readCrtc(hwp, i);
 #ifdef DEBUG
 	ErrorF("CRTC[0x%02x] = 0x%02x\n", i, save->CRTC[i]);
@@ -990,7 +990,7 @@ vgaHWSaveMode(ScrnInfoPtr scrninfp, vgaRegPtr save)
     }
 
     hwp->enablePalette(hwp);
-    for (i = 0; i < 21; i++) {
+    for (i = 0; i < save->numAttribute; i++)
 	save->Attribute[i] = hwp->readAttr(hwp, i);
 #ifdef DEBUG
 	ErrorF("Attribute[0x%02x] = 0x%02x\n", i, save->Attribute[i]);
@@ -998,14 +998,14 @@ vgaHWSaveMode(ScrnInfoPtr scrninfp, vgaRegPtr save)
     }
     hwp->disablePalette(hwp);
 
-    for (i = 0; i < 9; i++) {
+    for (i = 0; i < save->numGraphics; i++)
 	save->Graphics[i] = hwp->readGr(hwp, i);
 #ifdef DEBUG
 	ErrorF("Graphics[0x%02x] = 0x%02x\n", i, save->Graphics[i]);
 #endif
     }
 
-    for (i = 0; i < 5; i++) {
+    for (i = 1; i < save->numSequencer; i++)
 	save->Sequencer[i] = hwp->readSeq(hwp, i);
 #ifdef DEBUG
 	ErrorF("Sequencer[0x%02x] = 0x%02x\n", i, save->Sequencer[i]);
@@ -1387,6 +1387,131 @@ vgaHWGetHWRecPrivate(void)
 }
 
 
+static void
+vgaHWFreeRegs(vgaRegPtr regp)
+{
+    if (regp->CRTC)
+    	xfree (regp->CRTC);
+
+    regp->CRTC =
+    regp->Sequencer =
+    regp->Graphics =
+    regp->Attribute = NULL;
+
+    regp->numCRTC =
+    regp->numSequencer =
+    regp->numGraphics =
+    regp->numAttribute = 0;
+}
+
+
+
+static Bool
+vgaHWAllocRegs(vgaRegPtr regp)
+{
+    unsigned char *buf;
+
+    if ((regp->numCRTC + regp->numSequencer + regp->numGraphics +
+         regp->numAttribute) == 0)
+        return FALSE;
+
+    buf = xnfcalloc(regp->numCRTC +
+    		    regp->numSequencer +
+		    regp->numGraphics +
+		    regp->numAttribute, 1);
+    if (!buf)
+    	return FALSE;
+
+    regp->CRTC = buf;
+    regp->Sequencer = regp->CRTC + regp->numCRTC;
+    regp->Graphics = regp->Sequencer + regp->numSequencer;
+    regp->Attribute = regp->Graphics + regp->numGraphics;
+
+    return TRUE;
+}
+
+
+static Bool
+vgaHWAllocDefaultRegs(vgaRegPtr regp)
+{
+    unsigned char *buf;
+
+    regp->numCRTC = VGA_NUM_CRTC;
+    regp->numSequencer = VGA_NUM_SEQ;
+    regp->numGraphics = VGA_NUM_GFX;
+    regp->numAttribute = VGA_NUM_ATTR;
+
+    return vgaHWAllocRegs(regp);
+}
+
+
+Bool
+vgaHWSetRegCounts(ScrnInfoPtr scrp, int numCRTC, int numSequencer,
+		  int numGraphics, int numAttribute)
+{
+    vgaRegRec newMode, newSaved;
+    vgaRegPtr regp;
+
+    regp = &VGAHWPTR(scrp)->ModeReg;
+    memcpy (&newMode, regp, sizeof(vgaRegRec));
+
+    /* allocate space for new registers */
+
+    regp = &newMode;
+    regp->numCRTC = numCRTC;
+    regp->numSequencer = numSequencer;
+    regp->numGraphics = numGraphics;
+    regp->numAttribute = numAttribute;
+    if (!vgaHWAllocRegs(regp))
+    	return FALSE;
+
+    regp = &VGAHWPTR(scrp)->SavedReg;
+    memcpy (&newSaved, regp, sizeof(vgaRegRec));
+
+    regp = &newSaved;
+    regp->numCRTC = numCRTC;
+    regp->numSequencer = numSequencer;
+    regp->numGraphics = numGraphics;
+    regp->numAttribute = numAttribute;
+    if (!vgaHWAllocRegs(regp)) {
+        vgaHWFreeRegs(&newMode);
+    	return FALSE;
+    }
+
+    /* allocations succeeded, copy register data into new space */
+
+    /*
+     * XXX This assumes that the new num* values are not smaller than the
+     * old ones.
+     */
+    regp = &VGAHWPTR(scrp)->ModeReg;
+    memcpy (newMode.CRTC, regp->CRTC, regp->numCRTC);
+    memcpy (newMode.Sequencer, regp->Sequencer, regp->numSequencer);
+    memcpy (newMode.Graphics, regp->Graphics, regp->numGraphics);
+    memcpy (newMode.Attribute, regp->Attribute, regp->numAttribute);
+
+    regp = &VGAHWPTR(scrp)->SavedReg;
+    memcpy (newSaved.CRTC, regp->CRTC, regp->numCRTC);
+    memcpy (newSaved.Sequencer, regp->Sequencer, regp->numSequencer);
+    memcpy (newSaved.Graphics, regp->Graphics, regp->numGraphics);
+    memcpy (newSaved.Attribute, regp->Attribute, regp->numAttribute);
+
+    /* free old register arrays */
+
+    regp = &VGAHWPTR(scrp)->ModeReg;
+    vgaHWFreeRegs(regp);
+    memcpy(regp, &newMode, sizeof(vgaRegRec));
+
+    regp = &VGAHWPTR(scrp)->SavedReg;
+    vgaHWFreeRegs(regp);
+    memcpy(regp, &newSaved, sizeof(vgaRegRec));
+
+    return TRUE;
+}
+
+
+
+
 Bool
 vgaHWGetHWRec(ScrnInfoPtr scrp)
 {
@@ -1406,6 +1531,13 @@ vgaHWGetHWRec(ScrnInfoPtr scrp)
 	return TRUE;
     hwp = VGAHWPTRLVAL(scrp) = xnfcalloc(sizeof(vgaHWRec), 1);
     regp = &VGAHWPTR(scrp)->ModeReg;
+
+    if ((!vgaHWAllocDefaultRegs(&VGAHWPTR(scrp)->SavedReg)) ||
+    	(!vgaHWAllocDefaultRegs(&VGAHWPTR(scrp)->ModeReg))) {
+        xfree(hwp);
+	return FALSE;
+    }
+
     if (scrp->bitsPerPixel == 1) {
 	rgb blackColour = scrp->display->blackColour,
 	    whiteColour = scrp->display->whiteColour;
@@ -1471,6 +1603,9 @@ vgaHWFreeHWRec(ScrnInfoPtr scrp)
 	xfree(hwp->FontInfo1);
 	xfree(hwp->FontInfo2);
 	xfree(hwp->TextInfo);
+
+	vgaHWFreeRegs (&hwp->ModeReg);
+	vgaHWFreeRegs (&hwp->SavedReg);
 
 	xfree(hwp);
 	VGAHWPTRLVAL(scrp) = NULL;

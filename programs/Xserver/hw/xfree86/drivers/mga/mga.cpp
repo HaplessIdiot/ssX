@@ -1,5 +1,5 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.cpp,v 1.4 1999/04/27 12:05:12 dawes Exp $ 
-.TH MGA __drivermansuffix__ "Version 4.0"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.cpp,v 1.5 1999/06/20 08:41:35 dawes Exp $ 
+.TH MGA __drivermansuffix__ "Version 3.9.15"  "XFree86"
 .SH NAME
 mga \- Matrox video driver
 .SH SYNOPSIS

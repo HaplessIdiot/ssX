@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.7 1999/06/20 08:41:20 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.8 1999/07/04 06:38:29 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -622,12 +622,13 @@ void XDGAFlush(
 void XDGAChangePixmapMode(
     Display *dpy,
     int screen,
-    int x,
-    int y,
+    int *x,
+    int *y,
     int mode 
 ){
     XExtDisplayInfo *info = xdga_find_display (dpy);
     xXDGAChangePixmapModeReq *req;
+    xXDGAChangePixmapModeReply rep;
 
     XextSimpleCheckExtension (dpy, info, xdga_extension_name);
 
@@ -636,9 +637,12 @@ void XDGAChangePixmapMode(
     req->reqType = info->codes->major_opcode;
     req->dgaReqType = X_XDGAChangePixmapMode;
     req->screen = screen;
-    req->x = x;
-    req->y = y;
+    req->x = *x;
+    req->y = *y;
     req->flags = mode;
+    _XReply(dpy, (xReply *)&rep, 0, xFalse);
+    *x = rep.x;
+    *y = rep.y;
     UnlockDisplay(dpy);
     SyncHandle();
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.65 1999/05/14 14:11:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.66 1999/07/10 07:24:47 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -128,6 +128,13 @@ extern int vsnprintf(char *str, size_t size, const char *format, va_list ap);
 # if defined(SCO) || defined(ISC)
 # include <sys/param.h>
 # endif
+
+#ifdef ISC
+#define       TIOCMSET        (TIOC|26)       /* set all modem bits */
+#define       TIOCMBIS        (TIOC|27)       /* bis modem bits */
+#define       TIOCMBIC        (TIOC|28)       /* bic modem bits */
+#define       TIOCMGET        (TIOC|29)       /* get all modem bits */
+#endif
 
 # include <errno.h>
 

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_regs.h,v 1.1 1999/03/21 07:35:04 dawes Exp $ */
 
 
 
@@ -25,18 +25,18 @@
 #define MIN(a,b)	((a) < (b) ? (a) : (b))
 #endif
 /* Memory mapped access to extended registers */
-#define RDXB(addr)     (*(unsigned char  *)(pApm->MemMap+(addr)))
-#define RDXW(addr)     (*(unsigned short *)(pApm->MemMap+(addr)))
-#define RDXL(addr)     (*(unsigned int   *)(pApm->MemMap+(addr)))
-#define WRXB(addr,val) (void)(check08((addr), (val)) && \
-			    (curr08[MIN(addr, 0x80)] = 		\
-			    *(unsigned char  *)(pApm->MemMap+(addr)) = (val)))
-#define WRXW(addr,val) (void)(check16((addr), (val)) && \
-			    (curr16[MIN((addr) / 2,0x80)] =	\
-			    *(unsigned short *)(pApm->MemMap+(addr)) = (val)))
-#define WRXL(addr,val) (void)(check32((addr), (val)) && \
-			    (curr32[MIN((addr) / 4,0x80)] =	\
-			    *(unsigned int   *)(pApm->MemMap+(addr)) = (val)))
+#define RDXB(addr)     (*(volatile unsigned char  *)(pApm->MemMap+(addr)))
+#define RDXW(addr)     (*(volatile unsigned short *)(pApm->MemMap+(addr)))
+#define RDXL(addr)     (*(volatile unsigned int   *)(pApm->MemMap+(addr)))
+#define WRXB(addr,val) (void) (check08((addr), (val)) && \
+			(*(volatile unsigned char  *)(pApm->MemMap+(addr)) = (val),	\
+			curr08[MIN((addr), 0x80)] = (val)))
+#define WRXW(addr,val) (void) (check16((addr), (val)) && \
+			(*(volatile unsigned short *)(pApm->MemMap+(addr)) = (val),	\
+			curr16[MIN(((addr) / 2), 0x40)] = (val)))
+#define WRXL(addr,val) (void) (check32((addr), (val)) && \
+			(*(volatile unsigned int   *)(pApm->MemMap+(addr)) = (val),	\
+			curr32[MIN(((addr) / 4), 0x20)] = (val)))
 
 /* IO port access to extended registers */
 #define RDXB_IOP(addr)     (wrinx(0x3c4, 0x1d, (addr) >> 2),inb(pApm->xbase + ((addr) & 3)))
@@ -45,19 +45,19 @@
 #define WRXB_IOP(addr,val) do { if (check08((addr), (val))) {		     \
 				    wrinx(0x3c4, 0x1d, (addr) >> 2);	     \
 				    outb(pApm->xbase + ((addr) & 3), (val)); \
-				    curr08[addr] = (val);		     \
+				    curr08[MIN((addr), 0x80)] = (val);	     \
 				    break;				     \
 				}} while (1)
 #define WRXW_IOP(addr,val) do { if (check16((addr), (val))) {		     \
 				    wrinx(0x3c4, 0x1d, (addr) >> 2);	     \
 				    outw(pApm->xbase + ((addr) & 2), (val)); \
-				    curr16[(addr) / 2] = (val);		     \
+				    curr16[MIN(((addr) / 2), 0x40)] = (val); \
 				    break;				     \
 				}} while (1)
 #define WRXL_IOP(addr,val) do { if (check32((addr), (val))) {		     \
 				    wrinx(0x3c4, 0x1d, (addr) >> 2);	     \
 				    outl(pApm->xbase, (val));		     \
-				    curr32[(addr) / 4] = (val);		     \
+				    curr32[MIN(((addr) / 4), 0x20)] = (val); \
 				    break;				     \
 				}} while (1)
 
@@ -107,6 +107,7 @@
 #define SETWIDTHHEIGHT(w,h)		WRXL(0x58, ((h) << 16) | ((w) & 0xFFFF))
 
 #define SETOFFSET(o)			WRXW(0x5C, (o))
+#define SETSOURCEOFFSET(o)		WRXW(0x5E, (o))
 
 #define SETBYTEMASK(mask)		WRXB(0x47, (mask))
 
@@ -160,6 +161,7 @@
 #define DEC_SOURCE_COLOR            (0 << 12)
 #define DEC_SOURCE_TRANSPARENCY     (1 << 13)
 #define DEC_SOURCE_NO_TRANSPARENCY  (0 << 13)
+#define DEC_BITDEPTH_MASK	    (7 << 14)
 #define DEC_BITDEPTH_24             (4 << 14)
 #define DEC_BITDEPTH_32             (3 << 14)
 #define DEC_BITDEPTH_16             (2 << 14)
@@ -176,6 +178,7 @@
 #define DEC_PATTERN_88_1bMONO       (2 << 22)
 #define DEC_PATTERN_44_4bDITHER     (1 << 22)
 #define DEC_PATTERN_NONE            (0 << 22)
+#define DEC_WIDTH_MASK		    (7 << 24)
 #define DEC_WIDTH_1600              (7 << 24)
 #define DEC_WIDTH_1280              (6 << 24)
 #define DEC_WIDTH_1152              (5 << 24)

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.5 1999/03/21 07:35:02 dawes Exp $ */
 
 
 /* Everything using inb/outb, etc needs "compiler.h" */
@@ -121,18 +121,26 @@ typedef struct {
     int		MinClock;                                /* Min ramdac clock */
     int		MaxClock;                                /* Max ramdac clock */
     int		apmMMIO_Init;
+    EntityInfoPtr	pEnt;
     XAAInfoRecPtr	AccelInfoRec;
     xf86CursorInfoPtr	CursorInfoRec;
-#if 0
-    DGAInfoPtr		DGAInfo;
-#endif
+    int		DGAactive, numDGAModes;
+    DGAModePtr	DGAModes;
     int		BaseCursorAddress, CursorAddress, DisplayedCursorAddress;
     int		OffscreenReserved;
     unsigned int	Setup_DEC;
-    int			blitxdir, blitydir;
-    Bool		apmTransparency, apmClip;
-    I2CBusPtr		I2CPtr;
+    int		blitxdir, blitydir;
+    Bool	apmTransparency, apmClip, apmStippleCached;
+    I2CBusPtr	I2CPtr;
+    XAACacheInfoRec	apmStippleCache;
+    unsigned char	regcurr[0x54];
+    ScreenPtr	pScreen;
+    int		displayWidth, displayHeight, bitsPerPixel, bytesPerScanline;
+    FBAreaPtr	area;
+    int		Generation;
 } ApmRec, *ApmPtr;
+
+#define curr		((unsigned char *)pApm->regcurr)
 
 typedef struct {
     u16		ca;
@@ -149,16 +157,31 @@ typedef struct {
     u8		pad2;
 } ApmTextBuf;
 
+enum ApmChipId {
+    AP6422	= 0x6422,
+    AT24	= 0x6424,
+    AT3D	= 0x643D
+};
+
+typedef struct {
+    MoveAreaCallbackProcPtr	MoveAreaCallback;
+    RemoveAreaCallbackProcPtr	RemoveAreaCallback;
+} ApmPixmapRec, *ApmPixmapPtr;
+
 #define APMDECL(p)	ApmPtr pApm = ((ApmPtr)(((ScrnInfoPtr)(p))->driverPrivate))
 #define APMPTR(p)	((ApmPtr)(((ScrnInfoPtr)(p))->driverPrivate))
 
 extern int	ApmHWCursorInit(ScreenPtr pScreen);
+extern int	ApmDGAInit(ScreenPtr pScreen);
 extern int	ApmAccelInit(ScreenPtr pScreen);
 extern Bool	ApmI2CInit(ScreenPtr pScreen);
 extern void	ApmCheckMMIO_Init(ScrnInfoPtr pScrn);
 extern void	ApmCheckMMIO_Init_IOP(ScrnInfoPtr pScrn);
 extern void	ApmCheckMMIO_Init24(ScrnInfoPtr pScrn);
 extern void	ApmCheckMMIO_Init24_IOP(ScrnInfoPtr pScrn);
-extern unsigned char curr[0x54];
+
+extern int	ApmPixmapIndex;
+#define APM_GET_PIXMAP_PRIVATE(pix)\
+	(ApmPixmapPtr)((pix)->devPrivates[ApmPixmapIndex].ptr)
 
 #include "apm_regs.h"

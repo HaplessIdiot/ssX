@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.28 1999/06/20 05:23:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.29 1999/06/27 14:08:12 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -109,9 +109,9 @@ static int pix24bpp = 0;
 
 #define S3VIRGE_NAME "S3VIRGE"
 #define S3VIRGE_DRIVER_NAME "s3virge"
-#define S3VIRGE_VERSION_NAME "0.9.0"
+#define S3VIRGE_VERSION_NAME "0.10.0"
 #define S3VIRGE_VERSION_MAJOR   0
-#define S3VIRGE_VERSION_MINOR   9
+#define S3VIRGE_VERSION_MINOR   10
 #define S3VIRGE_PATCHLEVEL      0
 #define S3VIRGE_DRIVER_VERSION ((S3VIRGE_VERSION_MAJOR << 24) | \
 				(S3VIRGE_VERSION_MINOR << 16) | \
@@ -2129,9 +2129,6 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    }
 	}
   }
-  						/* hardware cursor needs to wrap this layer */
-  S3VDGAInit(pScreen);
-
   	      				/* Initialize acceleration layer */
   if (!ps3v->NoAccel) {
     if(pScrn->bitsPerPixel == 32) {
@@ -2146,6 +2143,8 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
   }
 	
   miInitializeBackingStore(pScreen);
+  						/* hardware cursor needs to wrap this layer */
+  S3VDGAInit(pScreen);
 
     					/* Initialise cursor functions */
   miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
@@ -2398,16 +2397,19 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
    new->MMPR2 = 0x0808;  
    new->MMPR3 = 0x08080810; 
 
-   /* * Set the memory register values always, even if fifo-conservative
-    * * isn't specified.
-    * * 
+   /*
+    * These settings look like they ought to be better adjusted for depth,
+    * so for problem modes running without any fifo_ option should be
+    * usable.  Note that these adjust some memory timings and relate to
+    * the boards MCLK setting.
+    * */
     if( ps3v->fifo_aggressive || ps3v->fifo_moderate || 
        ps3v->fifo_conservative ) {
-    */
+    
          new->MMPR1 = 0x0200;   /* Low P. stream waits before filling */
          new->MMPR2 = 0x1808;   /* Let the FIFO refill itself */
          new->MMPR3 = 0x08081810; /* And let the GE hold the bus for a while */
-    /*  } */
+      } 
 
    /* And setup here the new value for MCLK. We use the XConfig 
     * option "set_mclk", whose value gets stored in ps3v->MCLK.
