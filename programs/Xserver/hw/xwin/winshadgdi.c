@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.1 2001/04/05 20:13:51 dawes Exp $ */
 
 #include "win.h"
 
@@ -176,29 +176,39 @@ winAllocateFBShadowGDI (ScreenPtr pScreen)
     return FALSE;
   else
     {
+#if CYGDEBUG
       ErrorF ("winAllocateFBShadowGDI () - Shadow buffer allocated\n");
+#endif
     }
 
   /* Get information about the bitmap that was allocated */
   GetObject (pScreenPriv->hbmpShadow, sizeof (dibsection),
 	     &dibsection);
-  
+
+#if CYGDEBUG
   /* Print information about bitmap allocated */
   ErrorF ("winAllocateFBShadowGDI () - Dibsection width: %d height: %d\n",
 	  dibsection.dsBmih.biWidth, dibsection.dsBmih.biHeight);
+#endif
 
   /* Select the shadow bitmap into the shadow DC */
   SelectObject (pScreenPriv->hdcShadow,
 		pScreenPriv->hbmpShadow);
 
+#if CYGDEBUG
   ErrorF ("winAllocateFBShadowGDI () - Attempting a shadow blit\n");
+#endif
+
   BitBlt (pScreenPriv->hdcScreen,
 	  0, 0,
 	  pScreenInfo->dwWidth, pScreenInfo->dwHeight,
 	  pScreenPriv->hdcShadow,
 	  0, 0,
 	  SRCCOPY);
+
+#if CYGDEBUG
   ErrorF ("winAllocateFBShadowGDI () - Shadow blit success\n");
+#endif
 
   /* Set screeninfo stride */
   pScreenInfo->dwStrideBytes = pScreenInfo->dwPaddedWidth;
@@ -210,9 +220,9 @@ winAllocateFBShadowGDI (ScreenPtr pScreen)
 
 /* Blit the damaged regions of the shadow fb to the screen */
 void
-winShadowUpdateProcGDI (ScreenPtr pScreen, 
-			PixmapPtr pShadow,
-			RegionPtr damage)
+winShadowUpdateGDI (ScreenPtr pScreen, 
+		    PixmapPtr pShadow,
+		    RegionPtr damage)
 {
   winScreenPriv(pScreen);
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
@@ -234,15 +244,12 @@ winShadowUpdateProcGDI (ScreenPtr pScreen,
       w = pBox->x2 - pBox->x1;
       h = pBox->y2 - pBox->y1;
 
-      if (!BitBlt (pScreenPriv->hdcScreen,
-		   x, y,
-		   w, h,
-		   pScreenPriv->hdcShadow,
-		   x, y,
-		   SRCCOPY))
-	{
-	  FatalError ("winShadowUpdateProc () - BitBlt failed\n");
-	}
+      BitBlt (pScreenPriv->hdcScreen,
+	      x, y,
+	      w, h,
+	      pScreenPriv->hdcShadow,
+	      x, y,
+	      SRCCOPY);
 
       /* Get a pointer to the next box */
       ++pBox;
@@ -264,11 +271,11 @@ winShadowSetWindowLinearGDI (ScreenPtr	pScreen,
 }
 
 void *
-winShadowWindowProcGDI (ScreenPtr	pScreen,
-			CARD32		dwRow,
-			CARD32		dwOffset,
-			int		mode,
-			CARD32		*pdwSize)
+winShadowWindowGDI (ScreenPtr	pScreen,
+		    CARD32	dwRow,
+		    CARD32	dwOffset,
+		    int		mode,
+		    CARD32	*pdwSize)
 {
   return winShadowSetWindowLinearGDI (pScreen, dwRow, dwOffset, mode, pdwSize);
 }
@@ -284,7 +291,9 @@ winCloseScreenShadowGDI (int nIndex, ScreenPtr pScreen)
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
   Bool			fReturn;
 
+#if CYGDEBUG
   ErrorF ("winCloseScreenShadowGDI () - Freeing screen resources\n");
+#endif
 
   /* Flag that the screen is closed */
   pScreenPriv->fClosed = TRUE;
@@ -334,28 +343,21 @@ winInitVisualsShadowGDI (ScreenPtr pScreen)
 {
   winScreenPriv(pScreen);
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
-  BITMAPINFOHEADER	*pbmih = NULL;
-  Bool			fReturn = TRUE;
 
-  /* Allocate bitmap info structure */
-  pbmih = (BITMAPINFOHEADER*) xalloc (sizeof (BITMAPINFOHEADER)
-				      + 256 * sizeof (RGBQUAD));
-  if (pbmih == NULL)
-    return FALSE;
-  
-  /* Set bits per RGB and color masks */
-  fReturn = winQueryRGBBitsAndMasks (pScreen);
-  if (!fReturn)
+  /* Determine our color masks */
+  if (!winQueryRGBBitsAndMasks (pScreen))
     {
-      xfree (pbmih);
-      return fReturn;
+      ErrorF ("winInitVisualsShadowGDI () - winQueryRGBBitsAndMasks failed\n");
+      return FALSE;
     }
 
+#if CYGDEBUG
   ErrorF ("winInitVisualsGDI () - Masks: %08x %08x %08x bpRGB: %d\n",
 	  pScreenPriv->dwRedMask,
 	  pScreenPriv->dwGreenMask,
 	  pScreenPriv->dwBlueMask,
 	  pScreenPriv->dwBitsPerRGB);
+#endif
 
   /* Create a single visual according to the Windows screen depth */
   switch (pScreenInfo->dwDepth)
@@ -372,12 +374,13 @@ winInitVisualsShadowGDI (ScreenPtr pScreen)
 				     pScreenPriv->dwGreenMask,
 				     pScreenPriv->dwBlueMask))
 	{
-	  FatalError ("winInitVisualsGDI () - miSetVisualTypesAndMasks failed\n");
+	  ErrorF ("winInitVisualsGDI () - miSetVisualTypesAndMasks failed\n");
+	  return FALSE;
 	}
       break;
 
     case 8:
-      ErrorF ("winInitVisuals () - Calling miSetVisualTypesAndMasks\n");
+      ErrorF ("winInitVisualsGDI () - Calling miSetVisualTypesAndMasks\n");
       if (!miSetVisualTypesAndMasks (pScreenInfo->dwDepth,
 				     PseudoColorMask,
 				     pScreenPriv->dwBitsPerRGB,
@@ -386,20 +389,27 @@ winInitVisualsShadowGDI (ScreenPtr pScreen)
 				     pScreenPriv->dwGreenMask,
 				     pScreenPriv->dwBlueMask))
 	{
-	  FatalError ("winInitVisualsGDI () - miSetVisualTypesAndMasks failed\n");
+	  ErrorF ("winInitVisualsGDI () - miSetVisualTypesAndMasks failed\n");
+	  return FALSE;
 	}
-      ErrorF ("winInitVisualsGDI () - Returned from miSetVisualTypesAndMasks\n");
       break;
+    default:
+      ErrorF ("winInitVisualsGDI () - Unknown screen depth\n");
+      return FALSE;
     }
-  
+
+#if CYGDEBUG
+  ErrorF ("winInitVisualsShadowGDI () - Returned from "\
+	  "miSetVisualTypesAndMasks\n");
+#endif
+
   /* Set DPI info */
   pScreenInfo->dwDPIx = GetDeviceCaps (pScreenPriv->hdcScreen, LOGPIXELSX);
   pScreenInfo->dwDPIy = GetDeviceCaps (pScreenPriv->hdcScreen, LOGPIXELSY);
 
-  /* Free memory */
-  xfree (pbmih);
-
+#if CYGDEBUG
   ErrorF ("winInitVisualsGDI () - Returning\n");
+#endif
 
   return TRUE;
 }
@@ -446,8 +456,8 @@ winSetEngineFunctionsShadowGDI (ScreenPtr pScreen)
   
   /* Set our pointers */
   pScreenPriv->pwinAllocateFB = winAllocateFBShadowGDI;
-  pScreenPriv->pwinShadowUpdateProc = winShadowUpdateProcGDI;
-  pScreenPriv->pwinShadowWindowProc = winShadowWindowProcGDI;
+  pScreenPriv->pwinShadowUpdate = winShadowUpdateGDI;
+  pScreenPriv->pwinShadowWindow = winShadowWindowGDI;
   pScreenPriv->pwinCloseScreen = winCloseScreenShadowGDI;
   pScreenPriv->pwinInitVisuals = winInitVisualsShadowGDI;
   pScreenPriv->pwinAdjustVideoMode = winAdjustVideoModeShadowGDI;

@@ -28,12 +28,9 @@
  * Authors:	Keith Packard, MIT X Consortium
  *		Harold L Hunt II
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winallpriv.c,v 1.1 2001/04/05 20:13:49 dawes Exp $ */
 
 #include "win.h"
-
-int			g_winScreenPrivateIndex = -1;
-unsigned long		g_winGeneration = 0;
 
 /* See Porting Layer Definition - p. 58 */
 Bool

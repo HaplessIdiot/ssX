@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winms.h,v 1.1 2001/04/05 20:13:50 dawes Exp $ */
 
 #ifndef _WINMS_H_
 #define _WINMS_H_
@@ -40,10 +40,12 @@
 
 #define NONAMELESSUNION
 #define DIRECTDRAW_VERSION	0x0300
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
 
 #include <windows.h>
 #include <windowsx.h>
-//#include <wtypes.h>
 
 #include "obj_base.h"
 #include "ddraw.h"

@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winpfbdd.c,v 1.1 2001/04/05 20:13:50 dawes Exp $ */
 
 #include "win.h"
 
@@ -392,10 +392,10 @@ winSetEngineFunctionsPrimaryDD (ScreenPtr pScreen)
   
   /* Set our pointers */
   pScreenPriv->pwinAllocateFB = winAllocateFBPrimaryDD;
-  pScreenPriv->pwinShadowUpdateProc
-    = (winShadowUpdateProc) (void (*)())NoopDDA;
-  pScreenPriv->pwinShadowWindowProc
-    = (winShadowWindowProc) (void (*)())NoopDDA;
+  pScreenPriv->pwinShadowUpdate
+    = (winShadowUpdateProcPtr) (void (*)())NoopDDA;
+  pScreenPriv->pwinShadowWindow
+    = (winShadowWindowProcPtr) (void (*)())NoopDDA;
   pScreenPriv->pwinCloseScreen = winCloseScreenPrimaryDD;
   pScreenPriv->pwinInitVisuals = winInitVisualsPrimaryDD;
   pScreenPriv->pwinAdjustVideoMode = winAdjustVideoModePrimaryDD;

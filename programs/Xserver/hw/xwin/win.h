@@ -30,34 +30,41 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.1 2001/04/05 20:13:49 dawes Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
 
+#ifndef NO
+#define NO			0
+#endif
+#ifndef YES
+#define YES			1
+#endif
+
 /* Turn debug messages on or off */
-#define CYGDEBUG
+#define CYGDEBUG		NO
 
 /* Debugging macros */
-#ifdef CYGDEBUG
+#if CYGDEBUG
 #define DEBUG_MSG(str) if (fDebugProcMsg == TRUE) MessageBox(NULL, str, szFunctionName, MB_OK )
 #else
 #define DEBUG_MSG(str)
 #endif
 
-#ifdef CYGDEBUG
+#if CYGDEBUG
 #define DEBUG_FN_NAME(str) PTSTR szFunctionName = str
 #else
 #define DEBUG_FN_NAME(str)
 #endif
 
-#ifdef CYGDEBUG
+#if CYGDEBUG
 #define DEBUGVARS BOOL fDebugProcCon = FALSE, fDebugProcMsg = FALSE
 #else
 #define DEBUGVARS
 #endif
 
-#ifdef CYGDEBUG
+#if CYGDEBUG
 #define DEBUGPROC_CON fDebugProcCon = TRUE
 #define DEBUGPROC_MSG fDebugProcMsg = TRUE
 #else
@@ -65,10 +72,14 @@
 #define DEBUGPROC_MSG
 #endif
 
+/* We use xor this macro for detecting toggle key state changes */
+#define WIN_XOR(a,b) ((!(a) && (b)) || ((a) && !(b)))
+
 /* Constant strings */
-#define WINDOW_CLASS "cygwin/xfree86"
-#define WINDOW_TITLE "Cygwin/XFree86"
-#define WIN_SCR_PROP "cyg_screen_prop"
+#define WINDOW_CLASS		"cygwin/xfree86"
+#define WINDOW_TITLE		"Cygwin/XFree86"
+#define WIN_SCR_PROP		"cyg_screen_prop"
+#define WIN_MSG_QUEUE_FNAME	"/dev/windows"
 
 #define NEED_EVENTS
 
@@ -78,7 +89,8 @@
 #define WIN_DEFAULT_WHITEPIXEL	255
 #define WIN_DEFAULT_BLACKPIXEL	0
 #define WIN_DEFAULT_LINEBIAS	0
-#define XWD_WINDOW_NAME_LEN	60
+
+#define WIN_FD_INVALID		-1
 
 #define WIN_SERVER_NONE		0x0L	/* 0 */
 #define WIN_SERVER_SHADOW_GDI	0x1L	/* 1 */
@@ -86,30 +98,16 @@
 #define WIN_SERVER_SHADOW_DDNL	0x4L	/* 4 */
 #define WIN_SERVER_PRIMARY_DD	0x8L	/* 8 */
 
-#define AltMask			Mod1Mask
-#define NumLockMask		Mod2Mask
-#define AltLangMask		Mod3Mask
-#define KanaMask		Mod4Mask
-#define ScrollLockMask		Mod5Mask
-
 #define AltMapIndex		Mod1MapIndex
 #define NumLockMapIndex		Mod2MapIndex
 #define AltLangMapIndex		Mod3MapIndex
 #define KanaMapIndex		Mod4MapIndex
 #define ScrollLockMapIndex	Mod5MapIndex
 
-#define WIN_KEY_EXTENDED	0x01000000
-
 /*
- * Defines for winkeymap.h
+ * We need symbols for the scan codes of keys.
  */
-#define GLYPHS_PER_KEY		4
-#define NUM_KEYCODES		278
-#define NUM_STD_KEYCODES	240
-#define MIN_KEYCODE		8
-#define MAX_KEYCODE		(NUM_KEYCODES + MIN_KEYCODE - 1)
-#define MAX_STD_KEYCODE		(NUM_STD_KEYCODES + MIN_KEYCODE - 1)
-#define WIN_VK_KP_RETURN	0x0e
+#include "../xfree86/common/atKeynames.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -122,7 +120,7 @@
 #include <sys/mman.h>
 #ifndef MAP_FILE
 #define MAP_FILE 0
-#endif
+#endif /* MAP_FILE */
 #endif /* HAS_MMAP */
 
 #include "X.h"
@@ -161,11 +159,12 @@
 #endif
 
 /*
- * Windows headers 26Mar2001 2200
+ * Windows headers
  */
 #include "winms.h"
 
 /* Cygwin's winuser.h does not define VK_KANA as of 28Mar2001 */
+/* NOTE: Cygwin's winuser.h was fixed shortly after 28Mar2001. */
 #ifndef VK_KANA
 #define VK_KANA 15
 #endif
@@ -176,21 +175,23 @@
  * Typedefs for engine dependent function pointers
  */
 
-typedef Bool (*winAllocateFB)(ScreenPtr);
+typedef Bool (*winAllocateFBProcPtr)(ScreenPtr);
 
-typedef void (*winShadowUpdateProc)(ScreenPtr, PixmapPtr, RegionPtr);
+typedef void (*winShadowUpdateProcPtr)(ScreenPtr, PixmapPtr, RegionPtr);
 
-typedef void *(*winShadowWindowProc)(ScreenPtr, CARD32, CARD32, int, CARD32*);
+typedef void *(*winShadowWindowProcPtr)(ScreenPtr,
+					CARD32, CARD32,
+					int, CARD32*);
 
-typedef Bool (*winCloseScreen)(int, ScreenPtr);
+typedef Bool (*winCloseScreenProcPtr)(int, ScreenPtr);
 
-typedef Bool (*winInitVisuals)(ScreenPtr);
+typedef Bool (*winInitVisualsProcPtr)(ScreenPtr);
 
-typedef Bool (*winAdjustVideoMode)(ScreenPtr);
+typedef Bool (*winAdjustVideoModeProcPtr)(ScreenPtr);
 
-typedef void (*winCreateBoundingWindow)(ScreenPtr);
+typedef void (*winCreateBoundingWindowProcPtr)(ScreenPtr);
 
-typedef Bool (*winFinishScreenInit)(ScreenPtr, int, int, char **);
+typedef Bool (*winFinishScreenInitProcPtr)(int, ScreenPtr, int, char **);
 
 /*
  * Privates structures
@@ -277,14 +278,14 @@ typedef struct
   LPDIRECTDRAWCLIPPER	pddcPrimary;
 
   /* Engine specific functions */
-  winAllocateFB			pwinAllocateFB;
-  winShadowUpdateProc		pwinShadowUpdateProc;
-  winShadowWindowProc		pwinShadowWindowProc;
-  winCloseScreen		pwinCloseScreen;
-  winInitVisuals		pwinInitVisuals;
-  winAdjustVideoMode		pwinAdjustVideoMode;
-  winCreateBoundingWindow	pwinCreateBoundingWindow;
-  winFinishScreenInit		pwinFinishScreenInit;
+  winAllocateFBProcPtr			pwinAllocateFB;
+  winShadowUpdateProcPtr		pwinShadowUpdate;
+  winShadowWindowProcPtr		pwinShadowWindow;
+  winCloseScreenProcPtr			pwinCloseScreen;
+  winInitVisualsProcPtr			pwinInitVisuals;
+  winAdjustVideoModeProcPtr		pwinAdjustVideoMode;
+  winCreateBoundingWindowProcPtr	pwinCreateBoundingWindow;
+  winFinishScreenInitProcPtr		pwinFinishScreenInit;
 } winPrivScreenRec, *winPrivScreenPtr;
 
 extern ColormapPtr		g_cmInstalledMaps[];
@@ -292,23 +293,33 @@ extern winScreenInfo		g_winScreens[];
 extern char			*g_pcDisplay;
 extern miPointerScreenFuncRec	g_winPointerCursorFuncs;
 extern DWORD			g_dwEvents;
+extern int			g_fdMessageQueue;
+extern int			g_winScreenPrivateIndex;
+extern unsigned long		g_winGeneration;
 
-int				g_winScreenPrivateIndex;
-unsigned long			g_winGeneration;
-
-/* Screen privates macros */
+/*
+ * Screen privates macros
+ */
 #define winGetScreenPriv(pScreen) ((winPrivScreenPtr) \
 				   (pScreen)->devPrivates[g_winScreenPrivateIndex].ptr)
+
 #define winSetScreenPriv(pScreen,v) ((pScreen)->devPrivates[g_winScreenPrivateIndex].ptr = \
 				     (pointer) v)
+
 #define winScreenPriv(pScreen) winPrivScreenPtr pScreenPriv = winGetScreenPriv(pScreen)
 
-/* Window privates macros */
+/*
+ * Window privates macros
+ */
 #define winGetWindowPrivate(_pWin) ((winPrivWin *)\
 	(_pWin)->devPrivates[winWindowPrivateIndex].ptr)
 
-/* FIXME: Windows mouse wheel macro, should go in Cygwin w32api headers */
-#define GET_WHEEL_DELTA_WPARAM(wParam)  ((short)HIWORD(wParam))
+/*
+  FIXME: Windows mouse wheel macro; should be in Cygwin w32api headers
+*/
+#ifndef GET_WHEEL_DELTA_WPARAM
+#define GET_WHEEL_DELTA_WPARAM(wparam)		((short)HIWORD (wparam))
+#endif /* GET_WHEEL_DELTA_WPARAM */
 
 /* BEGIN DDX and DIX Function Prototypes */
 
@@ -329,16 +340,11 @@ winAllocatePrivates (ScreenPtr pScreen);
 /*
  * winblock.c
  */
-#if 0
-void
-winBlockHandler (pointer pData, OSTimePtr pTimeout, pointer pRead);
-#endif
 
 void
-winBlockHandler (int iScreen,
-		 pointer pBlockData,
-		 pointer pTimeout,
-		 pointer pReadmask);
+winBlockHandler (pointer pBlockData,
+		 OSTimePtr pptv,
+		 pointer pReadMask);
 
 /*
  * winclip.c
@@ -466,6 +472,34 @@ winGetSpansNativeGDI (DrawablePtr	pDrawable,
 		      char		*pDst);
 
 /*
+ * winkeybd.c
+ */
+void
+winTranslateKey (WPARAM wParam, LPARAM lParam, int *piScanCode);
+
+void
+winGetKeyMappings (KeySymsPtr pKeySyms, CARD8 *pModMap);
+
+void
+winKeybdBell (int iPercent, DeviceIntPtr pDeviceInt,
+	      pointer pCtrl, int iClass);
+
+void
+winKeybdCtrl (DeviceIntPtr pDevice, KeybdCtrl *pCtrl);
+
+int
+winKeybdProc (DeviceIntPtr pDeviceInt, int iState);
+
+void
+winInitializeModeKeyStates (void);
+
+void
+winStoreModeKeyStates (ScreenPtr pScreen);
+
+void
+winRestoreModeKeyStates (ScreenPtr pScreen);
+
+/*
  * winmisc.c
  */
 
@@ -475,6 +509,19 @@ winQueryBestSizeNativeGDI (int class, unsigned short *pWidth,
 
 CARD8
 winCountBits (DWORD dw);
+
+Bool
+winUpdateFBPointer (ScreenPtr pScreen, void *pbits);
+
+/*
+ * winmouse.c
+ */
+
+void
+winMouseCtrl (DeviceIntPtr pDevice, PtrCtrl *pCtrl);
+
+int
+winMouseProc (DeviceIntPtr pDeviceInt, int iState);
 
 /*
  * winpfbddd.c
@@ -594,9 +641,9 @@ Bool
 winAllocateFBShadowDD (ScreenPtr pScreen);
 
 void
-winShadowUpdateProcDD (ScreenPtr pScreen, 
-		       PixmapPtr pShadow,
-		       RegionPtr damage);
+winShadowUpdateDD (ScreenPtr pScreen, 
+		   PixmapPtr pShadow,
+		   RegionPtr damage);
 
 void *
 winShadowSetWindowLinearDD (ScreenPtr	pScreen,
@@ -606,11 +653,11 @@ winShadowSetWindowLinearDD (ScreenPtr	pScreen,
 			    CARD32	*pdwSize);
 
 void *
-winShadowWindowProcDD (ScreenPtr	pScreen,
-		       CARD32		row,
-		       CARD32		offset,
-		       int		mode,
-		       CARD32		*size);
+winShadowWindowDD (ScreenPtr	pScreen,
+		   CARD32	row,
+		   CARD32	offset,
+		   int		mode,
+		   CARD32	*size);
 
 Bool
 winCloseScreenShadowDD (int nIndex, ScreenPtr pScreen);
@@ -632,9 +679,9 @@ Bool
 winAllocateFBShadowDDNL (ScreenPtr pScreen);
 
 void
-winShadowUpdateProcDDNL (ScreenPtr pScreen, 
-			 PixmapPtr pShadow,
-			 RegionPtr damage);
+winShadowUpdateDDNL (ScreenPtr pScreen, 
+		     PixmapPtr pShadow,
+		     RegionPtr damage);
 
 void *
 winShadowSetWindowLinearDDNL (ScreenPtr	pScreen,
@@ -644,11 +691,11 @@ winShadowSetWindowLinearDDNL (ScreenPtr	pScreen,
 			      CARD32	*pdwSize);
 
 void *
-winShadowWindowProcDDNL (ScreenPtr	pScreen,
-			 CARD32		row,
-			 CARD32		offset,
-			 int		mode,
-			 CARD32		*size);
+winShadowWindowDDNL (ScreenPtr	pScreen,
+		     CARD32	row,
+		     CARD32	offset,
+		     int	mode,
+		     CARD32	*size);
 
 Bool
 winCloseScreenShadowDDNL (int nIndex, ScreenPtr pScreen);
@@ -670,9 +717,9 @@ Bool
 winAllocateFBShadowGDI (ScreenPtr pScreen);
 
 void
-winShadowUpdateProcGDI (ScreenPtr pScreen, 
-			PixmapPtr pShadow,
-			RegionPtr damage);
+winShadowUpdateGDI (ScreenPtr pScreen, 
+		    PixmapPtr pShadow,
+		    RegionPtr damage);
 
 void *
 winShadowSetWindowLinearGDI (ScreenPtr	pScreen,
@@ -682,11 +729,11 @@ winShadowSetWindowLinearGDI (ScreenPtr	pScreen,
 			     CARD32	*pdwSize);
 
 void *
-winShadowWindowProcGDI (ScreenPtr	pScreen,
-			CARD32		row,
-			CARD32		offset,
-			int		mode,
-			CARD32		*size);
+winShadowWindowGDI (ScreenPtr	pScreen,
+		    CARD32	row,
+		    CARD32	offset,
+		    int		mode,
+		    CARD32	*size);
 
 Bool
 winCloseScreenShadowGDI (int nIndex, ScreenPtr pScreen);
@@ -703,16 +750,11 @@ winSetEngineFunctionsShadowGDI (ScreenPtr pScreen);
 /*
  * winwakeup.c
  */
-#if 0
-void
-winWakeupHandler (pointer pData, int i, pointer pLastSelectMask);
-#endif
 
 void
-winWakeupHandler (int iScreen,
-		  pointer pWakeupData,
-		  unsigned long ulResult, 
-		  pointer pReadMask);
+winWakeupHandler (pointer pWakeupData,
+		  int err,
+		  pointer pReadmask);
 
 /*
  * winwindow.c

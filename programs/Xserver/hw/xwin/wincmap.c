@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/wincmap.c,v 1.1 2001/04/05 20:13:49 dawes Exp $ */
 
 #include "win.h"
 
@@ -42,7 +42,7 @@ winListInstalledColormapsNativeGDI (ScreenPtr pScreen, Colormap *pmaps)
    * is always a colormap installed
    */
   
-  fprintf (stderr, "\nwinListInstalledColormaps ()\n");
+  ErrorF ("\nwinListInstalledColormaps ()\n");
   return miListInstalledColormaps (pScreen, pmaps);
 }
 
@@ -51,7 +51,7 @@ winListInstalledColormapsNativeGDI (ScreenPtr pScreen, Colormap *pmaps)
 void
 winInstallColormapNativeGDI (ColormapPtr pmap)
 {
-  fprintf (stderr, "\nwinInstallColormap ()\n");
+  ErrorF ("\nwinInstallColormap ()\n");
   miInstallColormap (pmap);
 }
 
@@ -59,7 +59,7 @@ winInstallColormapNativeGDI (ColormapPtr pmap)
 void
 winUninstallColormapNativeGDI (ColormapPtr pmap)
 {
-  fprintf (stderr, "\nwinUninstallColormap ()\n");
+  ErrorF ("\nwinUninstallColormap ()\n");
   miUninstallColormap (pmap);
 }
 
@@ -67,7 +67,7 @@ winUninstallColormapNativeGDI (ColormapPtr pmap)
 void
 winStoreColorsNativeGDI (ColormapPtr pmap, int ndef, xColorItem *pdefs)
 {
-  fprintf (stderr, "winStoreColors ()\n");
+  ErrorF ("winStoreColors ()\n");
   //miStoreColors (pmap, ndef, pdefs);
 }
 
@@ -78,7 +78,7 @@ winResolveColorNativeGDI (unsigned short *pred,
 			  unsigned short *pblue,
 			  VisualPtr	pVisual)
 {
-  fprintf (stderr, "\nwinResolveColor ()\n");
+  ErrorF ("\nwinResolveColor ()\n");
   miResolveColor (pred, pgreen, pblue, pVisual);
 }
 
@@ -87,7 +87,7 @@ winResolveColorNativeGDI (unsigned short *pred,
 Bool
 winInitializeColormapNativeGDI (ColormapPtr pmap)
 {
-  fprintf (stderr, "\nwinInitializeColormap ()\n");
+  ErrorF ("\nwinInitializeColormap ()\n");
   return miInitializeColormap (pmap);
 }
 
@@ -95,7 +95,7 @@ int
 winExpandDirectColorsNativeGDI (ColormapPtr pmap, int ndef,
 				xColorItem *indefs, xColorItem *outdefs)
 {
-  fprintf (stderr, "\nwinExpandDirectColors ()\n");
+  ErrorF ("\nwinExpandDirectColors ()\n");
   return miExpandDirectColors (pmap, ndef, indefs, outdefs);
 }
 
@@ -180,14 +180,18 @@ winCreateDefColormapNativeGDI (ScreenPtr pScreen)
 void
 winClearVisualTypes (void)
 {
-  fprintf (stderr, "\nwinClearVisualTypes ()\n");
+#if CYGDEBUG
+  ErrorF ("winClearVisualTypes ()\n");
+#endif
   miClearVisualTypes ();
 }
 
 Bool
 winSetVisualTypesNativeGDI (int nDepth, int nVisuals, int nBitsPerRGB)
 {
-  fprintf (stderr, "\nwinSetVisualTypes ()\n");
+#if CYGDEBUG
+  ErrorF ("winSetVisualTypes ()\n");
+#endif
   return miSetVisualTypes (nDepth, nVisuals, nBitsPerRGB, -1);
 }
 
@@ -204,8 +208,11 @@ winInitVisualsNativeGDI (ScreenPtr pScreen)
 
   /* Exit if we could not allocate a bitmapinfo structure */
   if (pbmi == NULL)
-    FatalError ("winInitVisuals () - Could not allocate a "\
-		"bitmapinfo structure\n");
+    {
+      ErrorF ("winInitVisuals () - Could not allocate a "\
+	      "bitmapinfo structure\n");
+      return FALSE;
+    }
 
   /* Create a bitmap compatible with the primary display */
   hbmp = CreateCompatibleBitmap (hdc, 1, 1);
@@ -224,11 +231,13 @@ winInitVisualsNativeGDI (ScreenPtr pScreen)
 	     pbmi,
 	     0);
 
+#if CYGDEBUG
   ErrorF ("winInitVisuals () - 1st comp %08x rm %08x gm %08x bm %08x\n",
 	  pbmi->bmiHeader.biCompression,
 	  pbmih->bV4RedMask,
 	  pbmih->bV4GreenMask,
 	  pbmih->bV4BlueMask);
+#endif
 
   /* Call GetDIBits again if the masks were zero and the color depth > 8 bpp */
   if ((pScreenInfo->dwDepth > 8)
@@ -243,11 +252,13 @@ winInitVisualsNativeGDI (ScreenPtr pScreen)
 		 0);
     }
 
+#if CYGDEBUG
   ErrorF ("winInitVisuals () - 2nd comp %08x rm %08x gm %08x bm %08x\n",
 	  pbmi->bmiHeader.biCompression,
 	  pbmih->bV4RedMask,
 	  pbmih->bV4GreenMask,
 	  pbmih->bV4BlueMask);
+#endif
 
   /* Set default masks if masks could not be detected */
   switch (pScreenInfo->dwDepth)
@@ -285,11 +296,13 @@ winInitVisualsNativeGDI (ScreenPtr pScreen)
       break;
     }
 
+#if CYGDEBUG
   ErrorF ("winInitVisuals () - 3rd comp %08x rm %08x gm %08x bm %08x\n",
 	  pbmi->bmiHeader.biCompression,
 	  pbmih->bV4RedMask,
 	  pbmih->bV4GreenMask,
 	  pbmih->bV4BlueMask);
+#endif
 
   /* Copy the bitmasks into the screen privates, for later use */
   pScreenPriv->dwRedMask = pbmih->bV4RedMask;
@@ -354,7 +367,8 @@ winInitVisualsNativeGDI (ScreenPtr pScreen)
 				     pScreenPriv->dwGreenMask,
 				     pScreenPriv->dwBlueMask))
 	{
-	  FatalError ("winInitVisuals () - miSetVisualTypesAndMasks failed\n");
+	  ErrorF ("winInitVisuals () - miSetVisualTypesAndMasks failed\n");
+	  return FALSE;
 	}
       break;
 
@@ -368,9 +382,12 @@ winInitVisualsNativeGDI (ScreenPtr pScreen)
 				     pScreenPriv->dwGreenMask,
 				     pScreenPriv->dwBlueMask))
 	{
-	  FatalError ("winInitVisuals () - miSetVisualTypesAndMasks failed\n");
+	  ErrorF ("winInitVisuals () - miSetVisualTypesAndMasks failed\n");
+	  return FALSE;
 	}
+#if CYGDEBUG
       ErrorF ("winInitVisuals () - Returned from miSetVisualTypesAndMasks\n");
+#endif
       break;
 
     default:
@@ -380,7 +397,9 @@ winInitVisualsNativeGDI (ScreenPtr pScreen)
   /* Free memory */
   xfree (pbmi);
 
+#if CYGDEBUG
   ErrorF ("winInitVisuals () - Returning\n");
+#endif
 
   return TRUE;
 }
