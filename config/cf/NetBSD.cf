@@ -61,7 +61,11 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
      (OSMajorVersion == 1 && OSMinorVersion == 2 && OSTeenyVersion < 2))
 #  define HasDlsymBug		YES
 #endif
-
+/* Mkstemp is there since 1.2 (at least) */
+#if (!(OSMajorVersion == 0 || \
+       (OSMajorVersion == 1 && OSMinorVersion < 2))) 
+#define HasMkstemp		YES
+#endif
 /*
  * Compiler Features
  */

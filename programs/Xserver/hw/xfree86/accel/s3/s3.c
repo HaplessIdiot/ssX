@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.167 1997/04/12 13:44:43 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.168 1997/05/03 09:17:01 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -1177,6 +1177,8 @@ s3Probe()
    OFLG_SET(OPTION_TRIO64VP_BUG1, &validOptions);
    OFLG_SET(OPTION_TRIO64VP_BUG2, &validOptions);
    OFLG_SET(OPTION_TRIO64VP_BUG3, &validOptions);
+   OFLG_SET(OPTION_ELSA_W2000PRO_X8, &validOptions);
+   OFLG_SET(OPTION_MIRO_80SV, &validOptions);
    xf86VerifyOptions(&validOptions, &s3InfoRec);
 
 #ifdef __alpha__
@@ -1261,6 +1263,20 @@ s3Probe()
              XCONFIG_PROBED, s3InfoRec.name);
       if (!OFLG_ISSET(OPTION_S3_964_BT485_VCLK, &s3InfoRec.options))
 	 ErrorF("\tplease use Option \"s3_964_bt485_vclk\"\n");
+   }
+
+   if (find_bios_string(s3InfoRec.BIOSbase,
+			"S3 Vision968 IBM RGB DAC", NULL)  != NULL
+       && find_bios_string(s3InfoRec.BIOSbase, 
+			   "miro\37780",NULL) != NULL) {
+      OFLG_SET(OPTION_MIRO_80SV,  &s3InfoRec.options);
+      if (s3InfoRec.dacSpeeds[0] <= 0)
+	 s3InfoRec.dacSpeeds[0] = 250000;
+      if (s3RamdacType == UNKNOWN_DAC) {
+	 s3RamdacType = IBMRGB528_DAC;
+	 ErrorF("%s %s: MIRO 80SV detected, using IBM RGB528 ramdac\n",
+		XCONFIG_PROBED, s3InfoRec.name);
+      }
    }
 
    if (find_bios_string(s3InfoRec.BIOSbase,"Stealth",
@@ -2548,7 +2564,11 @@ s3ValidMode(DisplayModePtr pMode, Bool verbose, int flag)
 	 case IBMRGB524_DAC:
 	 case IBMRGB525_DAC:
 	 case IBMRGB528_DAC:
-	    if (pMode->SynthClock > 80000 || S3_968_SERIES(s3ChipId)) {
+	    if (OFLG_ISSET(OPTION_MIRO_80SV,  &s3InfoRec.options)) {
+	       if (pMode->SynthClock > 80000 && s3Bpp <= 2)
+		  pMode->Flags |= V_DBLCLK;
+	    }
+	    else if (pMode->SynthClock > 80000 || S3_968_SERIES(s3ChipId)) {
 	       pMode->Flags |= V_DBLCLK;
 	    }
 	    break;

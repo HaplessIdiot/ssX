@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/2 1996/11/16 15:23:16 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/Xprint/Imakefile,v 1.4 1997/04/14 07:04:59 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xprint/Imakefile,v 1.5 1997/05/03 09:15:52 dawes Exp $
 #include <Server.tmpl>
 
 #ifndef XpRasterDDX
@@ -68,7 +68,10 @@ PSDIR = ps
 PSDEF = -DXPPSDDX
 #endif
 
-OS_DEFINES = ServerOSDefines
+OS_DEFINES = ServerOSDefines 
+#if HasMkstemp
+EXTRA_DEFINES = -DHAS_MKSTEMP
+#endif
 
 SUBDIRS = $(RASTDIR) $(PCLDIR) $(MPCLDIR) $(PSDIR)
 #define IHaveSubdirs

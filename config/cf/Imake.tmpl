@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
 XCOMM $XConsortium: Imake.tmpl /main/243 1996/11/13 14:42:56 lehors $
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.36 1997/03/10 10:09:27 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.37 1997/05/03 09:14:28 dawes Exp $
 XCOMM
 
 /*
@@ -243,6 +243,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef HasSnprintf
 #define HasSnprintf		NO	/* assume not */
+#endif
+#ifndef HasMkstemp
+#define HasMkstemp		NO	/* assume not */
 #endif
 #ifndef HasFortran
 #define HasFortran		NO

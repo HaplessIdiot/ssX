@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.13 1996/12/20 06:44:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.14 1996/12/23 06:43:42 dawes Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
@@ -266,6 +266,14 @@ void
 xf86XinputFinalizeInit(
 #if NeedFunctionPrototypes
 		       DeviceIntPtr	dev
+#endif
+);
+
+Bool
+xf86CheckButton(
+#if NeedFunctionPrototypes
+		int	button,
+		int	down
 #endif
 );
 

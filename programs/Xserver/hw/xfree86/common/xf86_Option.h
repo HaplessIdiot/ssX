@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.70 1997/05/03 09:17:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.71 1997/05/11 02:53:02 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -133,6 +133,7 @@ typedef struct {
 #define OPTION_HERCULES		108 /* Hercules boards (S3) */
 #define OPTION_MIRO_MAGIC_S4	109 /* miroMagic S4 with (S3) 928 and BT485 */
 #define OPTION_ELSA_W2000PRO_X8	110 /* clock/phase_detect for ELSA Winner 2000PRO/X-8 (S3) */
+#define OPTION_MIRO_80SV	111 /* clock/phase_detect for MIRO 80SV (S3) */
 
 /* Misc options */
 #define OPTION_CSYNC		120 /* Composite sync */
@@ -344,6 +345,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "elsa_w1000isa",	OPTION_ELSA_W1000PRO }, /* These are treated the same */
   { "elsa_w2000pro",	OPTION_ELSA_W2000PRO },
   { "elsa_w2000pro/x8",	OPTION_ELSA_W2000PRO_X8 },
+  { "miro_80sv",	OPTION_MIRO_80SV },
   { "diamond",		OPTION_DIAMOND },
   { "genoa",		OPTION_GENOA },
   { "stb",		OPTION_STB },

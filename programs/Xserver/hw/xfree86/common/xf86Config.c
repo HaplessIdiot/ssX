@@ -1761,6 +1761,12 @@ configPointerSection(MouseDevPtr	mouse_dev,
 	*devicename = strdup(val.str);
 	break;
 
+#ifdef XINPUT
+    case ALWAYSCORE:
+	xf86AlwaysCore(mouse_dev->local, TRUE);
+	break;
+#endif
+	
     case EOF:
       FatalError("Unexpected EOF (missing EndSection?)");
       break; /* :-) */

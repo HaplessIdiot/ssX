@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.16 94/12/27 17:42:37 mor Exp $
+XCOMM $XConsortium: Imakefile /main/18 1996/01/31 23:50:38 gildea $
 #if !defined(RshCmd)
 #if SystemV
 #ifdef HPArchitecture
@@ -13,9 +13,12 @@ XCOMM $XConsortium: Imakefile,v 1.16 94/12/27 17:42:37 mor Exp $
 
          RSHCMD = RshCmd
 
-        DEPLIBS = XawClientDepLibs
-LOCAL_LIBRARIES = XawClientLibs
-
+        DEPLIBS = XawClientDepLibs XkbClientDepLibs
+LOCAL_LIBRARIES = XawClientLibs XkbClientLibs
+        DEFINES = XkbClientDefines
+#if HasMkstemp
+  EXTRA_DEFINES = -DHAS_MKSTEMP
+#endif
            SRCS1 = auth.c choose.c info.c list.c lock.c log.c \
 		   mainwin.c misc.c popup.c printhex.c prop.c remote.c \
 		   restart.c save.c saveutil.c signals.c xsm.c xtwatch.c
@@ -26,16 +29,9 @@ LOCAL_LIBRARIES = XawClientLibs
 
           PROGS1 = xsm
 
-           SRCS2 = xsmclient.c
-           OBJS2 = xsmclient.o
-          PROGS2 = xsmclient
-
-            SRCS = $(SRCS1) $(SRCS2)
-            OBJS = $(OBJS1) $(OBJS2)
-        PROGRAMS = $(PROGS1) $(PROGS2)
+        PROGRAMS = $(PROGS1)
 
 ComplexProgramTarget_1(xsm,$(LOCAL_LIBRARIES),NullParameter)
-ComplexProgramTarget_2(xsmclient,$(LOCAL_LIBRARIES),NullParameter)
 SpecialCObjectRule(remote,NullParameter,'-DRSHCMD="$(RSHCMD)"')
 #if !HasPutenv
 SpecialCObjectRule(misc,NullParameter,-DNOPUTENV)

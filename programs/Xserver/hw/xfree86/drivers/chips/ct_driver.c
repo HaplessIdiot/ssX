@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.6 1997/05/03 09:17:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.7 1997/05/04 05:26:40 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -296,6 +296,7 @@ static void CHIPSSaveScreen();
 static void CHIPSRestore();
 static void CHIPSAdjust();
 static void CHIPSFbInit();
+static int  CHIPSPitchAdjust();
 #if 0			/*it is not used but left for the future */
 static void CHIPSGetMode();
 #endif
@@ -1244,6 +1245,14 @@ CHIPSProbe()
 #ifdef DPMSExtension
     if (ctDPMSSupport)
 	vga256InfoRec.DPMSSet = CHIPSDisplayPowerManagementSet;
+#endif
+
+#ifndef  CT_OLD_ACCL_CODE
+    if (ctAccelSupport && 
+	!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options) &&
+	!OFLG_ISSET(OPTION_NO_BITBLT, &vga256InfoRec.options)) {
+      vgaSetPitchAdjustHook(CHIPSPitchAdjust);
+    }
 #endif
 
     if(ctisHiQV32)
@@ -4852,3 +4861,49 @@ int PowerManagementMode;
 }
 #endif
 
+#ifndef  CT_OLD_ACCL_CODE
+/*
+ * CHIPSPitchAdjust --
+ *
+ * This function adjusts the display width (pitch) once the virtual
+ * width is known.  It returns the display width adjusted to a multiple
+ * of 64 pixels to allow XAA acceleration with hardware pattern fill.
+ */
+static int
+CHIPSPitchAdjust()
+{
+  int pitch, newpitch;
+
+  /* Adjust display pitch for chip rounding */
+  pitch = ((vga256InfoRec.virtualX + CHIPS.ChipRounding - 1) /
+	   CHIPS.ChipRounding) * CHIPS.ChipRounding;
+
+  /* Adjust to a multiple of 64 pixels for XAA acceleration */
+  newpitch = (( pitch + 64 - 1) / 64) * 64;
+
+  /* If pitch only adjusted for chip rounding, return */
+  if (newpitch == pitch) {
+#ifdef DEBUG
+    ErrorF("%s %s: CHIPS: display pitch set to %d pixels.\n",
+	   XCONFIG_PROBED, vga256InfoRec.name, pitch);
+#endif
+    return pitch;
+  }
+
+  /* Don't adjust pitch for XAA if less than 16kb free. What's the point ! */
+  if ((vga256InfoRec.videoRam << 10) - ctFrameBufferSize < newpitch *
+      vga256InfoRec.virtualY * vgaBytesPerPixel + 16 * 1024) {
+    ErrorF("%s %s: CHIPS: not enough free memory to adjust display pitch.\n",
+	   XCONFIG_PROBED, vga256InfoRec.name);
+    ErrorF("%s %s: CHIPS: some acceleration may be disabled.\n",
+	   XCONFIG_PROBED, vga256InfoRec.name);
+    return pitch;
+  }
+
+#ifdef DEBUG
+  ErrorF("%s %s: CHIPS: display pitch adjusted to %d pixels.\n",
+	 XCONFIG_PROBED, vga256InfoRec.name, newpitch);
+#endif
+  return newpitch;
+}
+#endif

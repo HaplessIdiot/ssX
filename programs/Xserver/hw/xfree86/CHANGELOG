@@ -1,4 +1,18 @@
 XFree86 3.9c (xx May 1997)
+ 771. Patch to GLX comment/example in xf86site.def (#409, Henry Worth).
+ 770. Improve handling of screen pitch for accelerated C&T driver (#407,
+      David Bateman).
+ 769. Add support for the Miro 80SV to the S3 server (#406, Harald Koenig).
+ 768. Fix bmtoa, smproxy, twm, xsm and Xprint to use mkstemp, if available,
+      to avoid the mktemp() race condition (#404, Matthieu Herrb).
+ 767. Several updates XInput: Add always core feature to mouse driver. Add zone
+      configuration for the wacom driver (TopX, TopY, BottomX, BottomY). Add
+      KeepShape option for the wacom to respect the ratio of width/height
+      |of the screen. Add multiple active zones on the same tablet. Add
+      checks not to send core button events when multiple devices control the
+      core pointer. Fix problem in the mouse driver not sending the button id
+      in extended events. (#402, Frederic Lepied).
+ 766. More modes for xf86config and XF86Setup database (#397, Koen Gadeyne).
  765. Fix name of GLX stub library (#389, Henry Worth).
  764. Renumber option flag definitions to allow more space in the various
       categories.
@@ -4517,4 +4531,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.463 1997/05/11 04:58:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.464 1997/05/11 13:47:00 dawes Exp $

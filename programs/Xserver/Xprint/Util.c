@@ -30,7 +30,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/Util.c,v 1.4 1996/12/30 13:58:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/Util.c,v 1.5 1996/12/31 07:05:25 dawes Exp $ */
 
 /* To get the tempnam() prototype in <stdio.h> */
 #if defined(linux) && defined(__STRICT_ANSI__)
@@ -353,6 +353,7 @@ XpOpenTmpFile(
     char **fname,
     FILE **stream)
 {
+#ifndef HAS_MKSTEMP
     char *fn = NULL;
 
     /* note that there is a small race condition here... */
@@ -360,6 +361,7 @@ XpOpenTmpFile(
 	!(fn = XpDirName(*fname)) ||
 	access(fn, W_OK) ||
 	!(*stream = fopen(*fname, mode)))
+	
     {
 	xfree(fn);
 	xfree(*fname);
@@ -368,5 +370,26 @@ XpOpenTmpFile(
 	return FALSE;
     }
     xfree(fn);
+#else
+    int fd;
+    
+    *stream = NULL;
+    *fname = (char *)xalloc(14);
+    if (*fname == NULL) 
+	return FALSE;
+    strcpy(*fname, "/tmp/xpXXXXXX");
+    fd = mkstemp(*fname);
+    if (fd < 0) {
+	xfree(*fname);
+	*fname = NULL;
+	return FALSE;
+    }
+    *stream = fdopen(fd, mode);
+    if (stream == NULL) {
+	xfree(*fname);
+	*fname = NULL;
+	return FALSE;
+    }
+#endif
     return TRUE;
 }

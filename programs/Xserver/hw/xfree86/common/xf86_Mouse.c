@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.21 1996/12/23 06:43:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.22 1997/04/17 08:17:01 hohndel Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -649,6 +649,7 @@ xf86MouseAllocate()
     mouse->baudRate = -1;
     mouse->oldBaudRate = -1;
     mouse->sampleRate = -1;
+    mouse->local = local;
     
 #ifdef EXTMOUSEDEBUG
     ErrorF("xf86MouseAllocate mouse=0x%x\n", local->private);

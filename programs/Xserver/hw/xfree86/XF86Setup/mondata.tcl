@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mondata.tcl,v 3.8 1996/12/27 06:54:06 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mondata.tcl,v 3.9 1997/05/09 09:19:41 hohndel Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -127,6 +127,10 @@ array set MonitorStdModes {
 	    "220    1600 1616 1808 2080  1200 1204 1207 1244 +HSync +VSync"
 	"1280x1024 @ 100 Hz, 107.16 kHz hsync"
 	    "181.75 1280 1312 1440 1696  1024 1031 1046 1072 -HSync -VSync"
+	"1800x1440 @ 64Hz, 96.15 kHz hsync"
+	    "230    1800 1896 2088 2392 1440 1441 1444 1490 +HSync +VSync"
+	"1800x1440 @ 70Hz, 104.52 kHz hsync"
+	    "250    1800 1896 2088 2392 1440 1441 1444 1490 +HSync +VSync"
 	"320x200 @ 70 Hz, 31.5 kHz hsync, 8:5 aspect ratio"
 	    "12.588 320  336  384  400   200  204  205  225 Doublescan"
 	"320x240 @ 60 Hz, 31.5 kHz hsync, 4:3 aspect ratio"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.64 1997/04/12 13:45:08 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.65 1997/04/17 08:16:59 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -538,6 +538,7 @@ static SymTabRec KeyboardTab[] = {
 /* This should be removed soon */
 #define REPEATEDMIDDLE	59
 #define DEVICE_NAME	60
+#define ALWAYSCORE	61
 
 #ifdef INIT_CONFIG
 static SymTabRec PointerTab[] = {
@@ -557,6 +558,9 @@ static SymTabRec PointerTab[] = {
   { REPEATEDMIDDLE,"repeatedmiddle" },
 #endif
   { DEVICE_NAME,"devicename" },
+#ifdef XINPUT
+  { ALWAYSCORE,"alwayscore" },
+#endif
   { -1,		"" },
 };
 #endif /* INIT_CONFIG */

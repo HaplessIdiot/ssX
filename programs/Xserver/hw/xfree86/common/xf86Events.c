@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.42 1996/12/24 08:48:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.43 1997/04/17 08:16:57 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1130,9 +1130,15 @@ xf86PostMseEvent(device, buttons, dx, dy)
         change = buttons ^ reverseMap[private->lastButtons];
       if (change & 02)
 	{
+#ifdef XINPUT
+	    if (xf86CheckButton(2, (buttons & 02))) {
+#endif
 	  ENQUEUE(mevent,
 		  2, (buttons & 02) ? ButtonPress : ButtonRelease,
 		  XE_POINTER);
+#ifdef XINPUT
+	    }
+#endif
 	}
       
       /*
@@ -1142,15 +1148,18 @@ xf86PostMseEvent(device, buttons, dx, dy)
 	{
 #ifdef XINPUT
           if (is_pointer) {
+	      if (xf86CheckButton(abs(id), (id >= 0))) {
 #endif
             ENQUEUE(mevent,
                     abs(id), (id < 0 ? ButtonRelease : ButtonPress), 
                     XE_POINTER);
 #ifdef XINPUT
+	      }
           }
           else {
             xev->type = (id < 0 ? DeviceButtonRelease : DeviceButtonPress);
             xev->deviceid = device->id | MORE_EVENTS;
+	    xev->detail = abs(id);
             xv->type = DeviceValuator;
             xv->deviceid = device->id;
             xv->num_valuators = 0;
@@ -1164,15 +1173,18 @@ xf86PostMseEvent(device, buttons, dx, dy)
 	{
 #ifdef XINPUT
 	  if (is_pointer) {
+	    if (xf86CheckButton(abs(id), (id >= 0))) {
 #endif
             ENQUEUE(mevent,
                     abs(id), (id < 0 ? ButtonRelease : ButtonPress), 
                     XE_POINTER);
 #ifdef XINPUT
+	    }
           }
           else {
             xev->type = (id < 0 ? DeviceButtonRelease : DeviceButtonPress);
             xev->deviceid = device->id | MORE_EVENTS;
+	    xev->detail = abs(id);
             xv->type = DeviceValuator;
             xv->deviceid = device->id;
             xv->num_valuators = 0;
@@ -1205,15 +1217,18 @@ xf86PostMseEvent(device, buttons, dx, dy)
       if (truebuttons != 0) {
 #ifdef XINPUT
           if (is_pointer) {
+	    if (xf86CheckButton(truebuttons)) {
 #endif
 	    ENQUEUE(mevent,
 		    truebuttons, (pressed ? ButtonPress : ButtonRelease),
 		    XE_POINTER);
 #ifdef XINPUT
+	    }
 	  }
 	  else {
             xev->type = pressed ? DeviceButtonPress : DeviceButtonRelease;
             xev->deviceid = device->id | MORE_EVENTS;
+	    xev->detail = truebuttons;
             xv->type = DeviceValuator;
             xv->deviceid = device->id;
             xv->num_valuators = 0;
@@ -1238,15 +1253,18 @@ xf86PostMseEvent(device, buttons, dx, dy)
 	  change &= ~(1 << (id-1));
 #ifdef XINPUT
           if (is_pointer) {
+	    if (xf86CheckButton(id, (buttons&(1<<(id-1))))) {
 #endif
             ENQUEUE(mevent,
                     id, (buttons&(1<<(id-1)))? ButtonPress : ButtonRelease,
                     XE_POINTER);
 #ifdef XINPUT
+	    }
           }
           else {
             xev->type = (buttons&(1<<(id-1)))? DeviceButtonPress : DeviceButtonRelease;
             xev->deviceid = device->id | MORE_EVENTS;
+	    xev->detail = id;
             xv->type = DeviceValuator;
             xv->deviceid = device->id;
             xv->num_valuators = 0;

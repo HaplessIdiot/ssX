@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.22 1996/12/24 08:48:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.23 1997/02/23 09:25:10 dawes Exp $ */
 
 #include "Xmd.h"
 #include "XI.h"
@@ -131,6 +131,29 @@ xf86AlwaysCore(LocalDevicePtr	local,
     } else {
 	local->flags &= ~XI86_ALWAYS_CORE;
     }
+}
+
+/***********************************************************************
+ *
+ * xf86CheckButton --
+ *	
+ *	Test if the core pointer button state is coherent with
+ * the button event to send.
+ *
+ ***********************************************************************
+ */
+Bool
+xf86CheckButton(int	button,
+		int	down)
+{
+    int	state = (inputInfo.pointer->button->state & 0x1f00) >> 8;
+    int	check = (state & (1 << (button - 1)));
+    
+    if ((check && down) && (!check && !down)) {
+	return FALSE;
+    }
+
+    return TRUE;
 }
 
 /***********************************************************************
@@ -307,31 +330,39 @@ xf86XinputFinalizeInit(DeviceIntPtr	dev)
 void
 InitExtInput()
 {
-  DeviceIntPtr	dev;
-  int		i;
+    DeviceIntPtr	dev;
+    int		i;
 
-  /* Register a Wakeup handler to handle input when generated */
-  RegisterBlockAndWakeupHandlers((BlockHandlerProcPtr) NoopDDA, ReadInput,
-                                 NULL);
+    /* Register a Wakeup handler to handle input when generated */
+    RegisterBlockAndWakeupHandlers((BlockHandlerProcPtr) NoopDDA, ReadInput,
+				   NULL);
 
-  /* Add each device */
-  for (i = 0; i < num_devices; i++) {
-    if (localDevices[i]->flags & XI86_CONFIGURED) {
-      dev = AddInputDevice(localDevices[i]->device_control,
-			   (localDevices[i]->flags & XI86_NO_OPEN_ON_INIT) ? FALSE : TRUE);
-      if (dev == NULL)
-        FatalError("Too many input devices");
-      localDevices[i]->atom = MakeAtom(localDevices[i]->name, strlen(localDevices[i]->name), TRUE);
-      dev->public.devicePrivate = (pointer) localDevices[i];
-      localDevices[i]->dev = dev;      
+    /* Add each device */
+    for (i = 0; i < num_devices; i++) {
+	if (localDevices[i]->flags & XI86_CONFIGURED) {
+	    int	open_on_init;
 
-      xf86XinputFinalizeInit(dev);
+	    open_on_init = !(localDevices[i]->flags & XI86_NO_OPEN_ON_INIT) ||
+		(localDevices[i]->flags & XI86_ALWAYS_CORE);
+	    
+	    dev = AddInputDevice(localDevices[i]->device_control,
+				 open_on_init);
+	    if (dev == NULL)
+		FatalError("Too many input devices");
+	    
+	    localDevices[i]->atom = MakeAtom(localDevices[i]->name,
+					     strlen(localDevices[i]->name),
+					     TRUE);
+	    dev->public.devicePrivate = (pointer) localDevices[i];
+	    localDevices[i]->dev = dev;      
+
+	    xf86XinputFinalizeInit(dev);
       
-      RegisterOtherDevice(dev);
-      ErrorF("%s Adding extended device \"%s\" (type: %s)\n", XCONFIG_GIVEN,
-	     localDevices[i]->name, localDevices[i]->type_name);
+	    RegisterOtherDevice(dev);
+	    ErrorF("%s Adding extended device \"%s\" (type: %s)\n", XCONFIG_GIVEN,
+		   localDevices[i]->name, localDevices[i]->type_name);
+	}
     }
-  }
 }
 
 
@@ -625,11 +656,13 @@ ChangeDeviceControl (client, dev, control)
      DeviceIntPtr	dev;
      xDeviceCtl		*control;
 {
-  switch (control->control) {
-  case DEVICE_RESOLUTION:
-    return (BadMatch);
-  default:
-    return (BadMatch);
+  LocalDevicePtr        local = (LocalDevicePtr)dev->public.devicePrivate;
+
+  if (!local->control_proc) {
+      return (BadMatch);
+  }
+  else {
+      return (*local->control_proc)(local, control);
   }
 }
 
@@ -1013,6 +1046,13 @@ xf86PostButtonEvent(DeviceIntPtr	device,
     deviceKeyButtonPointer	*xev	        = (deviceKeyButtonPointer*) xE;
     deviceValuator		*xv	        = (deviceValuator*) xev+1;
     int				is_core_pointer = xf86IsCorePointer(device);
+
+    /* Check the core pointer button state not to send an inconsistent
+     * event. This can happen with the AlwaysCore feature.
+     */
+    if (is_core_pointer && !xf86CheckButton(button, is_down)) {
+	return;
+    }
     
     va_start(var, num_valuators);
 

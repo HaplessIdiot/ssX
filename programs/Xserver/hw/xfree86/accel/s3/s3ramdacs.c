@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ramdacs.c,v 3.12 1997/03/22 09:34:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ramdacs.c,v 3.13 1997/03/27 08:30:16 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -3433,6 +3433,10 @@ static int IBMRGB52x_PreInit()
 	 if (!s3InfoRec.s3RefClk)
 	    s3InfoRec.s3RefClk = 28322;
       }
+      else if (OFLG_ISSET(OPTION_MIRO_80SV,  &s3InfoRec.options)) {
+	 if (!s3InfoRec.s3RefClk)
+	    s3InfoRec.s3RefClk = 16000;
+      }
       else if (find_bios_string(s3InfoRec.BIOSbase,
 				"Hercules Graphite Terminator",NULL) != NULL) {
 	 if (s3BiosVendor == UNKNOWN_BIOS) 
@@ -3497,7 +3501,9 @@ static int IBMRGB52x_PreInit()
 
    clockDoublingPossible = FALSE;
       /* LCLK & SCLK limit is 100 MHz */
-   if (OFLG_ISSET(OPTION_ELSA_W2000PRO_X8,  &s3InfoRec.options) && s3Bpp > 2)
+   if ((   OFLG_ISSET(OPTION_ELSA_W2000PRO_X8,  &s3InfoRec.options)
+	|| OFLG_ISSET(OPTION_MIRO_80SV,  &s3InfoRec.options))
+       && s3Bpp > 2)
          s3InfoRec.maxClock = 220000;
    else if ((s3InfoRec.dacSpeed * s3Bpp) / 8 > 100000)
 	 s3InfoRec.maxClock = (100000 * 8) / s3Bpp; 
@@ -3542,12 +3548,28 @@ static int IBMRGB52x_Init(DisplayModePtr mode)
       outb(0x3C5, tmp2 | 0x20); /* blank the screen */
 
       if (DAC_IS_IBMRGB528) {
-	 if (s3InfoRec.clock[mode->Clock] <=  110000)
-	    s3OutIBMRGBIndReg(IBMRGB_misc_clock, 0xf0, 0x01);
-	 else if (s3InfoRec.clock[mode->Clock] <=  220000)
-	    s3OutIBMRGBIndReg(IBMRGB_misc_clock, 0xf0, 0x03);
-	 else
-	    s3OutIBMRGBIndReg(IBMRGB_misc_clock, 0xf0, 0x05);
+	 if (OFLG_ISSET(OPTION_MIRO_80SV,  &s3InfoRec.options)) {
+	    if (xf86bpp == 32)
+	       s3OutIBMRGBIndReg(IBMRGB_misc_clock,    0, 0x43);
+	    else if (xf86bpp == 8)
+	       if (mode->Flags & V_DBLCLK)
+		  s3OutIBMRGBIndReg(IBMRGB_misc_clock, 0, 0x47);
+	       else
+		  s3OutIBMRGBIndReg(IBMRGB_misc_clock, 0, 0x45);
+	    else /* 15/16 bpp */
+	       if (mode->Flags & V_DBLCLK)
+		  s3OutIBMRGBIndReg(IBMRGB_misc_clock, 0, 0x45);
+	       else
+		  s3OutIBMRGBIndReg(IBMRGB_misc_clock, 0, 0x43);
+	 }
+	 else {
+	    if (s3InfoRec.clock[mode->Clock] <=  110000)
+	       s3OutIBMRGBIndReg(IBMRGB_misc_clock, 0xf0, 0x01);
+	    else if (s3InfoRec.clock[mode->Clock] <=  220000)
+	       s3OutIBMRGBIndReg(IBMRGB_misc_clock, 0xf0, 0x03);
+	    else
+	       s3OutIBMRGBIndReg(IBMRGB_misc_clock, 0xf0, 0x05);
+	 }
       }
       else if (mode->Flags & V_DBLCLK)
 	 s3OutIBMRGBIndReg(IBMRGB_misc_clock, 0xf0, 0x03);
@@ -3583,7 +3605,12 @@ static int IBMRGB52x_Init(DisplayModePtr mode)
 #else
       outb(vgaCRIndex, 0x22);
       tmp = inb(vgaCRReg);
-      if (s3Bpp == 1 && S3_968_SERIES(s3ChipId) && !DAC_IS_IBMRGB528)
+      if (OFLG_ISSET(OPTION_MIRO_80SV,  &s3InfoRec.options))
+	 if (s3Bpp == 1)
+	    outb(vgaCRReg, tmp | 8);
+	 else
+	    outb(vgaCRReg, tmp & ~8);
+      else if (s3Bpp == 1 && S3_968_SERIES(s3ChipId) && !DAC_IS_IBMRGB528)
 	 outb(vgaCRReg, tmp | 8);
       else 
 	 outb(vgaCRReg, tmp & ~8);
@@ -3591,7 +3618,10 @@ static int IBMRGB52x_Init(DisplayModePtr mode)
 
       outb(vgaCRIndex, 0x65);
       if (DAC_IS_IBMRGB528)
-	 outb(vgaCRReg, 0x80);
+	 if (OFLG_ISSET(OPTION_MIRO_80SV,  &s3InfoRec.options))
+	    outb(vgaCRReg, 0x82);
+	 else
+	    outb(vgaCRReg, 0x80);
       else
 	 outb(vgaCRReg, 0);
 
@@ -3621,15 +3651,20 @@ static int IBMRGB52x_Init(DisplayModePtr mode)
 	 if (DAC_IS_IBMRGB528) {
 	    int tmp2;
 	    tmp = tmp & 0x80 | 0x60;   /* 128 bit SID mode */
-	    if (s3InfoRec.clock[mode->Clock] <= 110000) tmp2 = 3;
-	    else if (s3InfoRec.clock[mode->Clock] <= 220000) tmp2 = 2;
-	    else tmp2 = 1;
-	    if (s3Bpp == 2) tmp2--;
-	    else if (s3Bpp == 4) {
-	       if (tmp2 >= 2) tmp2 -= 2;
-	       else tmp2 = 0;
+	    if (OFLG_ISSET(OPTION_MIRO_80SV,  &s3InfoRec.options)) {
+	       if (s3Bpp < 4 && !(mode->Flags & V_DBLCLK)) tmp++;
 	    }
-	    tmp |= tmp2;
+	    else {
+	       if (s3InfoRec.clock[mode->Clock] <= 110000) tmp2 = 3;
+	       else if (s3InfoRec.clock[mode->Clock] <= 220000) tmp2 = 2;
+	       else tmp2 = 1;
+	       if (s3Bpp == 2) tmp2--;
+	       else if (s3Bpp == 4) {
+		  if (tmp2 >= 2) tmp2 -= 2;
+		  else tmp2 = 0;
+	       }
+	       tmp |= tmp2;
+	    }
 	 }
 	 else if (!S3_968_SERIES(s3ChipId)) {
 	   if (s3Bpp == 1) tmp |= 3;
@@ -3649,7 +3684,16 @@ static int IBMRGB52x_Init(DisplayModePtr mode)
 
 	 outb(vgaCRIndex, 0x67);
 	 if (DAC_IS_IBMRGB528)
-	    if (s3Bpp == 1)
+	    if (OFLG_ISSET(OPTION_MIRO_80SV,  &s3InfoRec.options)) {
+	       if (s3Bpp == 2) 
+		  if (mode->Flags & V_DBLCLK)
+		     outb(vgaCRReg, 0x18);
+		  else
+		     outb(vgaCRReg, 0x10);
+	       else
+		  outb(vgaCRReg, 0x00);
+	    }
+	    else if (s3Bpp == 1)
 	       outb(vgaCRReg, 0x01);
 	    else
 	       outb(vgaCRReg, 0x00);

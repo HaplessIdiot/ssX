@@ -301,6 +301,15 @@ When constructing a modeline for use with the Chips and Technologies
 driver you'll needed to considered several points
 
 <descrip>
+<tag> * Virtual Screen Size </tag>
+		It is the virtual screen size that determines the amount
+	of memory used by a mode. So if you have a virtual screen size
+	set to 1024x768 using a 800x600 at 8bpp, you use 768kB for the
+	mode. Further to this some of the XAA acceleration requires that
+	the display pitch is a multiple of 64 pixels. So the driver will
+	attempt to round-up the virtual X dimension to a multiple of 64,
+	but leave the virtual resolution untouched. This might further
+	reduce the available memory.
 <tag> * 16/24 Bits Per Pixel </tag>
 		Chips later than the ct65540 are capable of supporting
 	Hi-Color and True-Color modes. These are implemented in the current
@@ -576,7 +585,7 @@ We also thank the many people on the net who have contributed by reporting
 bugs and extensively testing this server before its inclusion in XFree 3.2
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.13 1997/05/03 09:17:25 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.14 1997/05/03 12:48:14 dawes Exp $
 </verb>
 
 </article>

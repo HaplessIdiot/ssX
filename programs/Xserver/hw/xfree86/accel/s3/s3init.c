@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.112 1997/02/25 14:20:35 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.113 1997/03/27 08:30:13 hohndel Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -399,6 +399,9 @@ s3Init(mode)
    if (OFLG_ISSET(OPTION_ELSA_W2000PRO, &s3InfoRec.options))
       pixMuxShift = s3InfoRec.clock[mode->Clock] > 120000 ? 2 : 
 		      s3InfoRec.clock[mode->Clock] > 60000 ? 1 : 0 ;
+   else if (OFLG_ISSET(OPTION_MIRO_80SV,  &s3InfoRec.options))
+      pixMuxShift = ((mode->Flags & V_DBLCLK && s3Bpp == 1)
+		     || s3Bpp == 4) ? 1 : 0;
    else if (DAC_IS_IBMRGB528)
       pixMuxShift = (s3InfoRec.clock[mode->Clock] > 220000 && s3Bpp <= 2) ? 2 :
 	             s3InfoRec.clock[mode->Clock] > 110000 ? 1 : 0 ;
@@ -1220,6 +1223,12 @@ s3Init(mode)
 #endif
       }
    }
+
+   if (OFLG_ISSET(OPTION_MIRO_80SV,  &s3InfoRec.options)) {
+      outb(vgaCRIndex, 0x42);
+      tmp = inb(vgaCRReg) & 0xf0;
+      outb(vgaCRReg, tmp | 0x06);
+   }      
 
    if (OFLG_ISSET(OPTION_ELSA_W2000PRO_X8,  &s3InfoRec.options)) {
       /* check LCLK/SCLK phase */
