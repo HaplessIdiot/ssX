@@ -1,37 +1,34 @@
-<!doctype linuxdoc system>
+<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
  
 <article>
 
 <!-- Title information -->
-<title> Information for SiS Users
-<author> Xavier Ducoin (<it>xavier@rd.lectra.fr</it>)
-<date> 16 January 1997
+<title>Information for SiS Users
+<author>Juanjo Santamarta (<it>santamarta@ctv.es</it>)
+<date>17 April 1999
 
 <!-- Table of contents -->
 <toc>
 
 <sect> Introduction <p>
 
-The driver was primarily written for the SiS86c201.
-The driver has almost been completed, with many additional features.
-These include
+This driver was primarily written for the SiS6326 and SiS530 by Alan Hourihane.
+It also works on 5597/5598 chips, and probably on older SiS862XX family.
+
+The driver supports :
 <itemize>
-  <item>LinearAddressing
+  <item>Linear Addressing
   <item>8/15/16/24 bits per pixel
   <item>Fully programmable clocks are supported
-  <item>H/W cursor support
-  <item>BitBLT acceleration of many operations
+  <item>H/W acceleration and cursor support
   <item>XAA support (XFree86 Acceleration Architecture)
 </itemize>
 
 <sect> Supported chips <p>
 
-<descrip>
-<tag>SiS 86c201</tag>
-	(External hardware clock)
-<tag>SiS 86c202, SiS 86c205</tag>
-	(Internal clock synthesizer)
-</descrip>
+<quote>
+SiS 530, SiS 86c201, SiS 86c202, SiS 86c2x5, SiS 5597/5598, SiS 6326
+</quote>
 
 Color expansion is not supported by the engine in 16M-color graphic mode.
 
@@ -44,31 +41,32 @@ within the Screen subsections of the depths to which they are applicable
 section).
 
 <descrip>
-<tag>Option &dquot;noaccel&dquot;</tag>
-	By default the XAA (XFree86 Acceleration Architecture) is used.
-	This option will disable the use of the XAA and will enable the old
-	BitBlt acceleration operations. (see below).
-<tag>Option &dquot;hw_clocks&dquot;</tag>
-	On chips 86c202 and later, the default is to use the programmable
-	clock for all clocks. It is possible to use the fixed clocks
-	supported by the chip instead of using this option (manufacturer
-	dependant).
-<tag>Option &dquot;sw_cursor&dquot, &dquot;hw_cursor&dquot;</tag>
+<tag>Option "SetMclk"</tag>
+        This option lets you to modify the memory clocking of your card.
+    (only for 5597 and 6326) Modifying the memory timings can destroy the 
+	device, but usually the only ill effects of overclocking is to 
+	have some noise an drawing errors, but BE CAREFUL. Usually a little 
+	increment can improve the drawing speed, and allows also higher dotclocks. 
+	The server reports default memclock on starting messages, so take it
+	as a base. Units are in KHZ.
+<tag>Option "DacSpeed"</tag>
+        This option lets you to modify the maximum allowed dotclock).	
+<tag>Option "sw_cursor", "hw_cursor"</tag>
 	The default is for using the hardware cursor.
-<tag>Option &dquot;no_linear&dquot;</tag>
-	By default linear addressing is used on all chips.
-	However this might be broken in some implementations. It is
-	possible to turn the linear addressing off with this option.
-	Note that H/W acceleration and 16/24bpp are only supported with
-	linear addressing.
-<tag>Option &dquot;no_bitblt&dquot;</tag>
-	This option will disable the use of all the BitBLT engine.
-	It is useful for problems related to acceleration problems.
-	In general this will result in a reduced performance.
-<tag>Option &dquot;no_imageblt&dquot;</tag>
-	It is useful for problems related to image writing, and possible
-	stipple acceleration problems. In general this will result in a reduced
-	performance.
+<tag>Option "Turboqueue"</tag>
+	5597/8 and 6326 have the option to extend the engine command queue on
+	VRAM. With extended queue length, the driver only checks queue status 
+	on some color-expansion commands. This gives some performance improvement, 
+	but is possible to lose some commands, corrupting screen output. As the 
+	size of extended command queue is 16-32K, the probability is very low, but
+	exists. The performance gain observed is around 8-10%. Currently, using
+	this option will occasionally freeze the acceleration engine, causing 
+	weird image display.
+<tag>Option "FastVram"</tag>
+        Enables 1 cycle memory access. Try it. Increased memory bandwidth reduces
+	the possibility of glitches and noise on high resolution modes. 
+
+
 </descrip>
 
 
@@ -80,31 +78,38 @@ driver you'll need to consider several points:
   <item>H/W Acceleration.  The H/W cursor, and fill operations
 	currently allocate memory of the video ram for there own use.
 	If this is not available these functions will automatically be
-	disabled.
-  <item>Dot Clock
+	disabled. Also, Turboqueue allocate 32k of Vram. 
+  <item>Dot Clock. SiS documents the following video modes to work with 
+        6326. The max dot clock allowable for your 6326 based board depends 
+	also on the memory installed on it. Option FastVram can be needed 
+	for high dot clocks to work. Of course, the memory installed must
+	allow 1 cycle R/W. 
+	<p>
+        SiS recommended video modes for 6326: 
+	<descrip>
+         <tag>640x480 :</tag>4, 8, 15, 16, 24 bpp at 85Hz Non-interlaced
+         <tag>800x600 :</tag>4, 8, 15, 16, 24 bpp at 85Hz Non-interlaced
+         <tag>1024x768 :</tag>4, 8, 15, 16, 24 bpp at 85Hz Non-interlaced
+         <tag>1280x1024 :</tag>4, 8, 15, 16, 24 bpp at 75Hz Non-interlaced
+         <tag>1600x1200 :</tag>4, 8  bpp at 65Hz Non-interlaced
+	</descrip>
 </itemize>
 
 <sect> Troubleshooting <p>
 
-With intensive generation there is a snow phenomenum on the screen.
-Can't remove it even if I used the fifo low/high water mark dumped
-from W95.
+6326 based cards with more than 4Mb of RAM probably don't work.
 
+The generic VGA driver don't work with 6326, so XF86Setup can't be used
+for this card. Please use xf86config instead.
 
-With intensive generation in 1024x768 65 Mhz sometimes some points (rubbish,
-fuzz... hard to explain) appear in memory, like memory
-violations or memory corruptions.
-It looks like an electronic refresh not well done or VClk too near
-the MClk.
-I use the default Mclk set by BIOS.
-It is hard to reproduce this problem (It can take one hour,
-two or more).
-I can't reproduce this problem in 1024x768 75 MHz or 1280x1024 110 MHz
-or 1152x900 95 MHz.
+Some video modes with high dot-clocks don't work at all, resulting on black 
+screen. Lowering dotclock in that case could solve the problem. 
+
+<verb>
+Document based on 3.3 version written by Xavier Ducoin.
+</verb>
 
 <verb>
 $XFree86$
 </verb>
-
 </article>
-

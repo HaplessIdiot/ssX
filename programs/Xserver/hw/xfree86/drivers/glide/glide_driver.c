@@ -12,14 +12,31 @@
    any hardware since Glide is the layer beneath the driver.
 
    Author: 
-     Henrik Harmsen (hch@cd.chalmers.se) 
+     Henrik Harmsen (hch@cd.chalmers.se or Henrik.Harmsen@erv.ericsson.se) 
 
-   TODO (In order of importance)
-     Speed up refresharea (MTRR, optimizations, clustering refreshes)
-     Correctly deny virtual framebuffers larger than physical framebufs.  
+   HISTORY
+   1999-04-05
+   - First release for 3.9Pi
+
+   1999-04-17
+   - Soft link to libglide2x.so instead of addition to ModulePath
+   - Changed "EXTERN_MODULE" to EXTERN_MODULE
+   - Uses the "GlideDevice" option instead of the "BusID" line to select
+     which voodoo board to use.
+   - Manpage updates
+
+   TODO
+   * Support for adjusting gamma correction.
+   * Support for setting gamma individually for R,G,B when Glide 3 arrives
+     for Linux.  This will allow me to get rid of that sick green tint my
+     voodoo2 board produces...
+   * Support static loading.
+   * Fix bug that causes the server not to restore the console after failing
+     in glideSetup(). (Which is not a bug in this driver but affects it
+     rather hard).
 */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.1 1999/04/11 13:10:57 dawes Exp $ */
 
 #include "xaa.h"
 #include "xf86Cursor.h"
@@ -163,7 +180,8 @@ DriverRec GLIDE = {
 };
 
 typedef enum {
-  OPTION_ON_AT_EXIT
+  OPTION_ON_AT_EXIT,
+  OPTION_GLIDEDEVICE
 } GLIDEOpts;
 
 static OptionInfoRec GLIDEOptions[] = {
@@ -228,7 +246,8 @@ glideSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 
   /* This module should be loaded only once, but check to be sure. */
 
-  if (!setupDone) {
+  if (!setupDone) 
+  {
     setupDone = TRUE;
     xf86AddDriver(&GLIDE, module, 0);
 
@@ -237,7 +256,7 @@ glideSetup(pointer module, pointer opts, int *errmaj, int *errmin)
      * by calling LoadSubModule().
      */
 
-    ret = LoadSubModule(module, "glide2x", NULL, NULL, "EXTERN_MODULE", NULL,
+    ret = LoadSubModule(module, "glide2x", NULL, NULL, EXTERN_MODULE, NULL,
 			&errmaj2, &errmin2);
     if (!ret)
     {
@@ -247,15 +266,15 @@ glideSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 "\n"
 "You need to have Glide installed to run the glide driver for XFree86.\n"
 "Also, you need to tell XFree86 where the libglide2x.so file is placed\n"
-"by adding a new ModulePath line to the \"Files\" section of your\n"
-"XF86Config file. For example, if libglide2x.so is in /usr/lib, add the\n"
-"line:\n"
+"by making a soft link in the /usr/X11R6/lib/modules directory that points\n"
+"to the libglide2x.so file. For example (if your libglide2x.so file is in\n"
+"/usr/lib):\n"
 "\n"
-"  ModulePath \"/usr/lib\"\n"
-"\n"
-"to the \"Files\" section. Add this line AFTER all other ModulePath lines.\n"
+"  # ln -s /usr/lib/libglide2x.so /usr/X11R6/lib/modules\n"
 "\n"
 "\n");
+      /* TODO: Note: If I return NULL here, the server will not restore the console correctly,
+         forcing a reboot. Must find that. (valid for 3.9Pi) */
       return NULL;
     }
 
@@ -273,8 +292,11 @@ glideSetup(pointer module, pointer opts, int *errmaj, int *errmin)
      * is no TearDownProc.
      */
     return (pointer)1;
-  } else {
-    if (errmaj) *errmaj = LDR_ONCEONLY;
+  } 
+  else 
+  {
+    if (errmaj) 
+      *errmaj = LDR_ONCEONLY;
     return NULL;
   }
 }
@@ -327,6 +349,7 @@ GLIDEProbe(DriverPtr drv, int flags)
   int numdevList;
   Bool foundScreen = FALSE;
   ScrnInfoPtr pScrn;
+  int GlideDevice;
 
   if ((numdevList = xf86MatchDevice(GLIDE_DRIVER_NAME, &devList)) <= 0)
     return FALSE;
@@ -345,10 +368,8 @@ GLIDEProbe(DriverPtr drv, int flags)
     for (i = 0; i < numdevList; i++)
     {
       dev = devList[i];
-      if (
-          (sst == 0 && !dev->busID) ||
-          (dev->busID && (*dev->busID == (sst + '0')))
-         )
+      GlideDevice = xf86SetIntOption(dev->options, "GlideDevice", 0);
+      if (GlideDevice == sst)
       {
         /* Match */
         /* Allocate a ScrnInfoRec and claim the slot */
@@ -401,7 +422,7 @@ GLIDEPreInit(ScrnInfoPtr pScrn, int flags)
   /* Set pScrn->monitor */
   pScrn->monitor = pScrn->confScreen->monitor;
 
-  if (!xf86SetDepthBpp(pScrn, 0, 0, 0, Support32bppFb)) {
+  if (!xf86SetDepthBpp(pScrn, 16, 0, 0, Support32bppFb)) {
     return FALSE;
   }
 
@@ -538,23 +559,24 @@ GLIDEPreInit(ScrnInfoPtr pScrn, int flags)
   pScrn->currentMode = pScrn->modes;
 
   /* Do some checking, we will not support a virtual framebuffer larger than
-     the visible screen. TODO: How to do this "correctly"? */
+     the visible screen. */
   if (pScrn->currentMode->HDisplay != pScrn->virtualX || 
-      pScrn->currentMode->VDisplay != pScrn->virtualY || 
+      pScrn->currentMode->VDisplay != pScrn->virtualY ||
       pScrn->displayWidth != pScrn->virtualX)
   {
-    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
-               "Virtual size doesn't equal display size.\n");
-    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
-               "pScrn->currentMode->HDisplay = %d, "
-               "pScrn->currentMode->VDisplay = %d, "
-               "pScrn->virtualX = %d, pScrn->virtualY = %d, "
-               "pScrn->displayWidth = %d\n", pScrn->currentMode->HDisplay, 
-               pScrn->currentMode->VDisplay, pScrn->virtualX, pScrn->virtualY,
-               pScrn->displayWidth);
-    GLIDEFreeRec(pScrn);
-    return FALSE;
+    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
+               "Virtual size doesn't equal display size. Forcing virtual size to equal display size.\n");
+    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+               "(Virtual size: %dx%d, Display size: %dx%d)\n", pScrn->virtualX, pScrn->virtualY,
+               pScrn->currentMode->HDisplay, pScrn->currentMode->VDisplay);
+    /* I'm not entirely sure this is "legal" but I hope so. */
+    pScrn->virtualX = pScrn->currentMode->HDisplay;
+    pScrn->virtualY = pScrn->currentMode->VDisplay;
+    pScrn->displayWidth = pScrn->virtualX;
   }
+
+  /* TODO: Note: If I return FALSE right here, the server will not restore the console correctly,
+     forcing a reboot. Must find that. (valid for 3.9Pi) */
 
   /* Print the list of modes being used */
   xf86PrintModes(pScrn);

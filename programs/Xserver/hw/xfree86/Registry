@@ -184,6 +184,7 @@ FPClock24                 F     V    Flat panel clock for 24bpp fb (MHz)
 FPClock32                 F     V    Flat panel clock for 32bpp fb (MHz)
 FPMVRAM                   O     V    Fast page mode VRAM
 FramebufferWC             B     V    Enable/disable WC for the framebuffer
+GlideDevice               I     V    Selects which Voodoo board to use
 HiBitHigh                 O     V    High clock bit default to set
 HiBitLow                  O     V    High clock bit default to cleared
 HWClocks                  B     V    Enable/disable HW clocks
@@ -301,4 +302,4 @@ and underscores removed.
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/Registry,v 1.7 1999/04/11 13:10:43 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/Registry,v 1.8 1999/04/17 07:05:55 dawes Exp $
