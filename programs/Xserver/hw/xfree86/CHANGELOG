@@ -1,4 +1,14 @@
 XFree86 4.0.99.x (xx April 2001)
+ 364. Mac OS X specific fixes:
+       - Fix typo in XDarwin startup program that could cause crash with
+         many command line options.
+       - Move Show/HideMenuBar() call to main thread so that XDarwin
+         application displays a menu bar on the Mac OS X desktop.
+      (Greg Parker).
+ 363. XDarwin application fixes including:
+       - Fix bugs causing XDarwin preferences to not be saved correctly.
+       - When using system beep, turn off bell when beep volume is set to 0.
+      (Christoph Pfisterer).
  362. Fix building of dpsops.h and psops.h in correct order (Alan Hourihane).
  361. Change xvmc.h to xvmcext.h to avoid case-(in)sensitive name clash with
       XvMC.h for Cygwin/XFree86 (Alan Hourihane).
@@ -12902,4 +12912,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1673 2001/04/07 11:08:56 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1674 2001/04/07 19:41:50 alanh Exp $

@@ -5,7 +5,7 @@
  * By Gregory Robert Parker
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.3 2001/04/01 07:12:14 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.4 2001/04/02 05:18:50 torrey Exp $ */
 
 // X headers
 #include "scrnintstr.h"
@@ -122,7 +122,6 @@ static void QuartzCapture(void)
 #if 0
         CGDisplayHideCursor(kCGDirectMainDisplay);
 #endif
-        HideMenuBar();
     }
 }
 
@@ -136,7 +135,6 @@ static void QuartzRelease(void)
     if (CGDisplayIsCaptured(kCGDirectMainDisplay)) {
         InitCursor();
         CGDisplayRelease(kCGDirectMainDisplay);
-        ShowMenuBar();
     }
 }
 
