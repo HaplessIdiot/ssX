@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.44 2001/11/14 22:56:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.45 2001/11/19 15:44:17 tsi Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -1238,7 +1238,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 		scrp->monitor->hsync[0].hi = 33;
 	    }
 	    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
-		       "%s: Using default hsync range of %d-%dkHz\n",
+		       "%s: Using default hsync range of %.2f-%.2fkHz\n",
 		       scrp->monitor->id,
 		       scrp->monitor->hsync[0].lo, scrp->monitor->hsync[0].hi);
 	    scrp->monitor->nHsync = 1;
@@ -1265,7 +1265,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 		scrp->monitor->vrefresh[0].hi = 72;
 	    }
 	    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
-		       "%s: using default vrefresh range of %d-%dHz\n",
+		       "%s: using default vrefresh range of %.2f-%.2fHz\n",
 		       scrp->monitor->id,
 		       scrp->monitor->vrefresh[0].lo,
 		       scrp->monitor->vrefresh[0].hi);
