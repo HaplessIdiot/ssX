@@ -22,27 +22,11 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/IntAtom.c,v 1.2 1999/05/09 10:49:38 dawes Exp $ */
+/* $XFree86: xc/lib/X11/IntAtom.c,v 1.3 2001/01/17 19:41:38 dawes Exp $ */
 
 #define NEED_REPLIES
 #include "Xlibint.h"
-
-/* XXX this table def is duplicated in GetAtomNm.c, keep them consistent! */
-
-#define TABLESIZE 64
-
-typedef struct _Entry {
-    unsigned long sig;
-    Atom atom;
-} EntryRec, *Entry;
-
-#define RESERVED ((Entry) 1)
-
-#define EntryName(e) ((char *)(e+1))
-
-typedef struct _XDisplayAtoms {
-    Entry table[TABLESIZE];
-} AtomTable;
+#include "Xintatom.h"
 
 #define HASH(sig) ((sig) & (TABLESIZE-1))
 #define REHASHVAL(sig) ((((sig) % (TABLESIZE-3)) + 2) | 1)
@@ -67,20 +51,20 @@ _XFreeAtomTable(dpy)
 }
 
 static
-Atom _XInternAtom(dpy, name, onlyIfExists, psig, pidx, pn)
-    Display *dpy;
-    char *name;
-    Bool onlyIfExists;
-    unsigned long *psig;
-    int *pidx;
-    int *pn;
+Atom _XInternAtom(
+    Display *dpy,
+    _Xconst char *name,
+    Bool onlyIfExists,
+    unsigned long *psig,
+    int *pidx,
+    int *pn)
 {
     register AtomTable *atoms;
     register char *s1, c, *s2;
     register unsigned long sig;
-    register int idx, i;
+    register int idx = 0, i;
     Entry e;
-    int n, firstidx, rehash;
+    int n, firstidx, rehash = 0;
     xInternAtomReq *req;
 
     /* look in the cache first */
@@ -127,7 +111,7 @@ nomatch:    if (idx == firstidx)
 void
 _XUpdateAtomCache(dpy, name, atom, sig, idx, n)
     Display *dpy;
-    char *name;
+    const char *name;
     Atom atom;
     unsigned long sig;
     int idx;
@@ -174,7 +158,7 @@ _XUpdateAtomCache(dpy, name, atom, sig, idx, n)
 #if NeedFunctionPrototypes
 Atom XInternAtom (
     Display *dpy,
-    _Xconst char *name,
+    const char *name,
     Bool onlyIfExists)
 #else
 Atom XInternAtom (dpy, name, onlyIfExists)
@@ -216,12 +200,12 @@ typedef struct {
 } _XIntAtomState;
 
 static
-Bool _XIntAtomHandler(dpy, rep, buf, len, data)
-    register Display *dpy;
-    register xReply *rep;
-    char *buf;
-    int len;
-    XPointer data;
+Bool _XIntAtomHandler(
+    register Display *dpy,
+    register xReply *rep,
+    char *buf,
+    int len,
+    XPointer data)
 {
     register _XIntAtomState *state;
     register int i, idx;

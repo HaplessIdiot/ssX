@@ -54,10 +54,11 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/Geometry.c,v 1.8 2000/10/21 03:16:16 keithp Exp $ */
+/* $XFree86: xc/lib/Xt/Geometry.c,v 1.9 2001/01/17 19:43:04 dawes Exp $ */
 
 #include "IntrinsicI.h"
 #include "ShellP.h"
+#include "ShellI.h"
 
 static void ClearRectObjAreas(r, old)
     RectObj r;
@@ -744,7 +745,6 @@ void XtTranslateCoords(w, x, y, rootx, rooty)
 		(String *)NULL, (Cardinal *)NULL);
     else {
 	Position x, y;
-	extern void _XtShellGetCoordinates();
 	_XtShellGetCoordinates( w, &x, &y );
 	*rootx += x + w->core.border_width;
 	*rooty += y + w->core.border_width;

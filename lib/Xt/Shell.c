@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Shell.c,v 3.10 2001/07/23 13:15:42 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Shell.c,v 3.11 2001/08/01 00:44:41 tsi Exp $ */
 
 /*
 
@@ -66,6 +66,7 @@ in this Software without prior written authorization from The Open Group.
 #include "StringDefs.h"
 #include "Shell.h"
 #include "ShellP.h"
+#include "ShellI.h"
 #include "Vendor.h"
 #include "VendorP.h"
 #include <X11/Xatom.h>
@@ -1085,8 +1086,6 @@ static void ApplicationInitialize(req, new, args, num_args)
 #define XtRestartStyleHintMask	(1L<<7)
 #define XtShutdownCommandMask	(1L<<8)
 
-extern char *getenv();
-
 static void JoinSession();
 static void SetSessionProperties();
 static void StopManagingSession();
@@ -1983,7 +1982,7 @@ static XtGeometryResult RootGeometryManager(gw, request, reply)
     unsigned int mask = request->request_mode;
     XEvent event;
     Boolean wm;
-    register struct _OldXSizeHints *hintp;
+    register struct _OldXSizeHints *hintp = NULL;
     int oldx, oldy, oldwidth, oldheight, oldborder_width;
     unsigned long request_num;
 
@@ -2253,13 +2252,14 @@ static Boolean SetValues(old, ref, new, args, num_args)
 
 	if (! (ow->shell.client_specified & _XtShellPositionValid)) {
 	    Cardinal n;
-	    void _XtShellGetCoordinates();
 
 	    for (n = *num_args; n; n--, args++) {
 		if (strcmp(XtNx, args->name) == 0) {
-		    _XtShellGetCoordinates(ow, &ow->core.x, &ow->core.y);
+		    _XtShellGetCoordinates((Widget)ow, &ow->core.x,
+							&ow->core.y);
 		} else if (strcmp(XtNy, args->name) == 0) {
-		    _XtShellGetCoordinates(ow, &ow->core.x, &ow->core.y);
+		    _XtShellGetCoordinates((Widget)ow, &ow->core.x,
+							&ow->core.y);
 		}
 	    }
 	}
@@ -2691,7 +2691,6 @@ static void GetValuesHook(widget, args, num_args)
     Cardinal*	num_args;
 {
     ShellWidget w = (ShellWidget) widget;
-    extern void _XtCopyToArg();
 
     /* x and y resource values may be invalid after a shell resize */
     if (XtIsRealized(widget) &&

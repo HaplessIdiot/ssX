@@ -49,6 +49,9 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
+#ifndef _XtThreadsI_h
+#define _XtThreadsI_h
+
 #ifdef XTHREADS
 
 typedef struct _LockRec *LockPtr;
@@ -128,3 +131,4 @@ extern void (*_XtInitAppLock)(
 #define DPY_TO_APPCON(d)
 
 #endif /* !defined(XTHREADS) */
+#endif /* _XtThreadsI_h */

@@ -1,14 +1,9 @@
-/* $XConsortium: locking.c,v 1.36 94/04/17 20:22:13 rws Exp $ */
+/* $Xorg: locking.c,v 1.4 2000/08/17 19:45:20 cpqbld Exp $ */
 /*
  
-Copyright (c) 1992  X Consortium
+Copyright 1992, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -16,13 +11,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 */
 
@@ -46,10 +41,6 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 
 #define NUM_FREE_CVLS 4
-
-/* in XOpenDis.c */
-extern int  (*_XInitDisplayLock_fn)();
-extern void (*_XFreeDisplayLock_fn)();
 
 /* in lcWrap.c */
 extern LockInfoPtr _Xi18n_lock;
@@ -320,7 +311,7 @@ static void _XPopReader(dpy, list, tail)
     }
 
     /* signal new front after it is in place */
-    if (dpy->lock->reply_first = (dpy->lock->reply_awaiters != NULL)) {
+    if ((dpy->lock->reply_first = (dpy->lock->reply_awaiters != NULL))) {
 	ConditionSignal(dpy, dpy->lock->reply_awaiters->cv);
     } else if (dpy->lock->event_awaiters) {
 	ConditionSignal(dpy, dpy->lock->event_awaiters->cv);
@@ -434,7 +425,7 @@ static void _XFreeDisplayLock(dpy)
 	    xcondition_clear(dpy->lock->writers);
 	    xcondition_free(dpy->lock->writers);
 	}
-	while (cvl = dpy->lock->free_cvls) {
+	while ((cvl = dpy->lock->free_cvls)) {
 	    dpy->lock->free_cvls = cvl->next;
 	    xcondition_clear(cvl->cv);
 	    Xfree((char *)cvl->cv);

@@ -20,12 +20,9 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/FreeGC.c,v 1.2 1999/05/09 10:49:23 dawes Exp $ */
+/* $XFree86: xc/lib/X11/FreeGC.c,v 1.3 2001/01/17 19:41:36 dawes Exp $ */
 
 #include "Xlibint.h"
-
-/* FreeEData.c */
-extern int _XFreeExtData();
 
 int
 XFreeGC (dpy, gc)

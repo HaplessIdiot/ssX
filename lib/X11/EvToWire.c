@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/EvToWire.c,v 1.2 1999/05/09 10:49:17 dawes Exp $ */
+/* $XFree86: xc/lib/X11/EvToWire.c,v 1.3 2001/01/17 19:41:35 dawes Exp $ */
 
 /*
  *	XEvToWire.c - Internal support routines for the C subroutine
@@ -34,17 +34,14 @@ from The Open Group.
 
 #include "Xlibint.h"
 
-/* XlibInt.c */
-extern Status _XUnknownNativeEvent();
-
 /*
  * reformat a wire event into an XEvent structure of the right type.
  */
 Status
-_XEventToWire(dpy, re, event)
-register Display *dpy;	/* pointer to display structure */
-register XEvent *re;	/* pointer to where event should be reformatted */
-register xEvent *event;	/* wire protocol event */
+_XEventToWire(
+register Display *dpy,	/* pointer to display structure */
+register XEvent *re,	/* pointer to where event should be reformatted */
+register xEvent *event)	/* wire protocol event */
 {
 	switch (event->u.u.type = re->type) {
 	      case KeyPress:

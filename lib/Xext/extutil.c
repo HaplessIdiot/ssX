@@ -1,14 +1,9 @@
 /*
- * $XConsortium: extutil.c,v 1.18 94/04/17 20:22:58 rws Exp $
+ * $Xorg: extutil.c,v 1.3 2000/08/17 19:45:53 cpqbld Exp $
  *
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -16,13 +11,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
  *
  * Author:  Jim Fulton, MIT X Consortium
  *
@@ -136,6 +131,18 @@ XExtDisplayInfo *XextAddDisplay (extinfo, dpy, ext_name, hooks, nevents, data)
 	if (hooks->error_string)
 	  XESetErrorString (dpy, dpyinfo->codes->extension,
 			    hooks->error_string);
+    } else if (hooks->close_display) {
+	/* The server doesn't have this extension.
+	 * Use a private Xlib-internal extension to hang the close_display
+	 * hook on so that the "cache" (extinfo->cur) is properly cleaned.
+	 * (XBUG 7955)
+	 */
+	XExtCodes *codes = XAddExtension(dpy);
+	if (!codes) {
+	    XFree(dpyinfo);
+	    return NULL;
+	}
+	XESetCloseDisplay (dpy, codes->extension, hooks->close_display);
     }
 
     /*
@@ -225,10 +232,10 @@ XExtDisplayInfo *XextFindDisplay (extinfo, dpy)
 
 
 
-static int _default_exterror (dpy, ext_name, reason)
-    Display *dpy;
-    char *ext_name;
-    char *reason;
+static int _default_exterror (
+    Display *dpy,
+    char *ext_name,
+    char *reason)
 {
     fprintf (stderr, "Xlib:  extension \"%s\" %s on display \"%s\".\n",
 	     ext_name, reason, DisplayString(dpy));
