@@ -1,4 +1,36 @@
 XFree86 4.0.99.4 (xx May 2001)
+ 528. Fixed lbx to handle endian swapping without core dump (Egbert Eich).
+ 527. Fixed MTRR region splitting (Egbert Eich).
+ 526. Cleaned up option handling in int10 code (Egbert Eich).
+ 525. Added options to specify the Video BIOS to use for POSTing a 
+      chipset (Egbert Eich). 
+ 524. Trident driver: added call to BIOS to enable unstretched mode when 
+      display is stretched. This should make the option "CyberShadow"
+      obsolete. (Egbert Eich).
+ 523. Attempt to fix video Support on Trident driver (Egbert Eich).
+ 522. Added VBE DDC support to SiS driver (Egbert Eich).
+ 521. Fixed Silicon Motion to unblank the display when driver fails
+      in PreInit() (Egbert Eich).
+ 520. Cleaned up handling of 'shadow status' in Savage driver
+      (Egbert Eich).
+ 519. Savage driver: fixed lockups for Savage4 when loading colormap,
+      manipulating the HW cursor, doing certain blit operations
+ 518. Cleanded up DDC code in mga driver (Egbert Eich).
+ 517. Fixed KGA handling in i740 driver (Egbert Eich).
+ 516. Converted i740 and Silicon Motion drivers to fb (Egbert Eich).
+ 515. Added calls to vbeFree() or xf86FreeInt10() to C&T, glint, 
+      mga, neomagic, nv, s3v, tdfx and trident drivers to clean up 
+      shared memory segments (Egbert Eich).
+ 514. Reworked video support in C&T driver, cleaned up block handler
+      (Egbert Eich).
+ 513. C&T driver: introduced a delay when setting the cursor image for 
+      the first time after a mode change (Egbert Eich).
+ 512. Fixed R128CCE_RESET in r128 driver to do a reset only when dri
+      is enabled (Egbert Eich).
+ 511. Rewrote readPciBIOS() and getValidBIOSBase() (Egbert Eich).
+ 510. Fixed xf86Info structure in xf86Globals.c to match prototype 
+      (Egbert Eich).
+ 509. Allow ':' as delimiter in locale.alias and similar files (Egbert Eich).
  508. Fix XDarwin install problems with DESTDIR handling and with soft links
       to the XtAppAddTimeOut manpage (Christoph Pfisterer).
  507. Add Error message output in Cygwin/XFree86 (#4632, Harold Hunt).
@@ -13215,4 +13247,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1767 2001/05/14 16:52:32 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1768 2001/05/15 02:53:01 torrey Exp $

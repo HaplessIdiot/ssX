@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.46 2001/05/02 16:41:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.47 2001/05/11 08:16:55 alanh Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -1058,12 +1058,120 @@ static int
 readPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
 		unsigned char *Buf, int Len)
 {
+    CARD32 romsave = 0;
+    int i;
+    romBaseSource b_reg;
+    ADDRESS hostbase;
+    CARD8 tmp[64];
+    CARD8 *image;
+
+    unsigned long offset;
+    int ret, length, len, rlength;
+
+    romsave = pciReadLong(Tag, PCI_MAP_ROM_REG);
+
+    for (i = ROM_BASE_PRESET; i <= ROM_BASE_FIND; i++) {
+        memType savebase = 0, newbase, romaddr;
+
+        if (i == ROM_BASE_PRESET) {
+	    /* Does the driver have a preference? */
+	    if (basereg > ROM_BASE_PRESET && basereg <= ROM_BASE_FIND)
+	        b_reg =  basereg;
+	    else 
+	        b_reg = ++i;
+	} else
+	    b_reg = i;
+
+	if (!(newbase = getValidBIOSBase(Tag, b_reg)))
+	    continue;  /* no valid address found */
+
+	romaddr = PCIGETROM(newbase);
+
+	/* if we use a mem base save it and move it out of the way */
+	if (b_reg >= 0 && b_reg <= 5) {
+	    savebase = pciReadLong(Tag, PCI_MAP_REG_START+(basereg<<2));
+	    xf86MsgVerb(X_INFO,5,"xf86ReadPciBios: modifying membase[%i]"
+			" for device %i:%i:%i\n", basereg,
+			PCI_BUS_FROM_TAG(Tag), PCI_DEV_FROM_TAG(Tag),
+			PCI_FUNC_FROM_TAG(Tag));
+	    pciWriteLong(Tag, PCI_MAP_REG_START + (b_reg << 2),
+			 (CARD32)~0);
+	}
+	/* Set ROM base address and enable ROM address decoding */
+	pciWriteLong(Tag, PCI_MAP_ROM_REG, romaddr 
+		     | PCI_MAP_ROM_DECODE_ENABLE);
+
+	hostbase = pciBusAddrToHostAddr(Tag, PCI_MEM, PCIGETROM(romaddr));
+	
+	if ((xf86ReadBIOS(hostbase, 0, tmp, sizeof(tmp)) != sizeof(tmp)) 
+	    || (tmp[0] != 0x55) 
+	    || (tmp[1] != 0xaa) 
+	    || !tmp[2] ) { 
+	  /* Restore the base register if it was changed. */
+	    if (savebase) pciWriteLong(Tag, PCI_MAP_REG_START + (b_reg << 2),
+				       (CARD32) savebase);
+	    /* No BIOS found: try another address */
+	    continue;
+	}
+
+	/* 
+	 * Currently this is only good for PC style BIOSes.
+	 * This code needs to be revistited after 4.1 is out.
+	 * We need to pass an argument for the BIOS type to
+	 * look for. Then we can pick the correct BIOS.
+	 * Combine this with the code in int10/pci.c.
+	 */
+	if ((Offset) > (tmp[2] << 9)) {
+	    xf86Msg(X_WARNING,"xf86ReadPciBios: requesting data past "
+		    "end of BIOS %i > %i\n",(Offset) , (tmp[2] << 9));
+	} else {
+	  if ((Offset + Len) > (tmp[2] << 9)) {
+	    Len = (tmp[2] << 9) - Offset;
+	    xf86Msg(X_INFO,"Truncating PCI BIOS Length to %i\n",Len);
+	  }
+	}
+
+	/* Read BIOS in 64kB chunks */
+	ret = 0;
+	offset = Offset;
+	image = Buf;
+	len = Len;
+	while ((length = len) > 0) {
+	  if (length > 0x10000) length = 0x10000;
+	  rlength = xf86ReadBIOS(hostbase, offset, image, length);
+	  if (rlength < 0) {
+	    ret = rlength;
+	    break;
+	  }
+	  ret += rlength;
+	  if (rlength < length) break;
+	  offset += length;
+	  image += length;
+	  len -= length;
+	}
+	/* Restore the base register if it was changed. */
+	if (savebase) pciWriteLong(Tag, PCI_MAP_REG_START + (b_reg << 2),
+				   (CARD32) savebase);
+	/* Restore ROM address decoding */
+	pciWriteLong(Tag, PCI_MAP_ROM_REG, romsave);
+	return ret;
+	
+    }
+    /* Restore ROM address decoding */
+    pciWriteLong(Tag, PCI_MAP_ROM_REG, romsave);
+    return 0;
+}
+
+#if 0
+static int
+readPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
+		unsigned char *Buf, int Len)
+{
     ADDRESS hostbase;
     CARD8 *image = Buf;
     unsigned long offset;
     CARD32 romaddr, savebase = 0, romsave = 0, newbase = 0;
-    int ret, length, rlength, n;
-
+    int ret, tmpLen, length, rlength, n;
     /* XXX This assumes that memory access is enabled */
 
     /*
@@ -1108,25 +1216,34 @@ RetryWithBase:
     /* Enable ROM address decoding */
     pciWriteLong(Tag, PCI_MAP_ROM_REG, romaddr | PCI_MAP_ROM_DECODE_ENABLE);
 
-    /* Read BIOS in 64kB chunks */
-    ret = 0;
-    offset = Offset;
-    while ((length = Len) > 0) {
-	if (length > 0x10000) length = 0x10000;
-	rlength = xf86ReadBIOS(hostbase, offset, image, length);
-	if (rlength < 0) {
-	    ret = rlength;
-	    break;
+    /* Check to see if we really have a PCI BIOS image */
+    rlength = xf86ReadBIOS(hostbase, 0, tmp_buf, sizeof(tmp_buf));
+    if (rlength < 0) return rlength;
+    /* If we found a BIOS image we read the requested data */
+    if ((rlength == sizeof(tmp_buf)) && (tmp_buf[0] == 0x55) 
+	 && (tmp_buf[1] == 0xaa) && tmp_buf[2] ) {
+    
+        /* Read BIOS in 64kB chunks */
+        ret = 0;
+	offset = Offset;
+	tmpLen = Len;
+	image = Buf;
+	
+	while ((length = tmpLen) > 0) {
+	    if (length > 0x10000) length = 0x10000;
+	    rlength = xf86ReadBIOS(hostbase, offset, image, length);
+	    if (rlength < 0) {
+	        ret = rlength;
+		break;
+	    }
+	    ret += rlength;
+	    if (rlength < length) break;
+	    offset += length;
+	    image += length;
+	    tmpLen -= length;
 	}
-	ret += rlength;
-	if (rlength < length) break;
-	offset += length;
-	image += length;
-	Len -= length;
-    }
-
-    if ((ret != Len) || (Buf[0] != 0x55) || (Buf[1] != 0xaa) || !Buf[2] ||
-	(Len < (Buf[2] << 9))) {
+    } else {
+        /* If we don't have a PCI BIOS image we look further */
 	n = 0;
 	if ((basereg >= 0) && (basereg <= 5) && xf86PciVideoInfo) do {
 	    pciVideoPtr pvp;
@@ -1148,6 +1265,7 @@ RetryWithBase:
 
     return ret;
 }
+#endif
 
 typedef CARD32 (*ReadProcPtr)(PCITAG, int);
 typedef void (*WriteProcPtr)(PCITAG, int, CARD32);

@@ -261,9 +261,9 @@ mtrr_add_wc_region(int screenNum, unsigned long base, unsigned long size,
 		srem = size;
 
 		do {
-			for (sdiv = size; sdiv /= 2; sdiv) {
+			for (sdiv = (0x1 << 31); sdiv; sdiv >> 1) {
 				while(sdiv > srem) {
-					sdiv /= 2;
+					sdiv >>= 1;
 				}
 				if (!(bcurr % sdiv)) {
 					mtrr_add_wc_region(screenNum, bcurr,
@@ -512,6 +512,8 @@ xf86EnableIO(void)
 #elif !defined(__mc68000__) && !defined(__sparc__) && !defined(__mips__)
 	if (ioperm(0, 1024, 1) || iopl(3))
 		FatalError("xf86EnableIOPorts: Failed to set IOPL for I/O\n");
+	ioperm(0x40,4,0); /* trap access to the timer chip */
+	ioperm(0x60,4,0); /* trap access to the keyboard controller */
 #endif
 	ExtendedEnabled = TRUE;
 

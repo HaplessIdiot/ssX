@@ -406,5 +406,6 @@ cirProbeDDC(ScrnInfoPtr pScrn, int index)
 #endif
         pVbe = VBEInit(NULL,index);
         ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
+	vbeFree(pVbe);
     }
 }

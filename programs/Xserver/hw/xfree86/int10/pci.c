@@ -12,13 +12,13 @@
 #include "xf86int10.h"
 
 int
-mapPciRom(xf86Int10InfoPtr pInt, unsigned char * address)
+mapPciRom(int pciEntity, unsigned char * address)
 {
     PCITAG tag;
     unsigned char *mem, *ptr;
     int length;
-
-    pciVideoPtr pvp = xf86GetPciInfoForEntity(pInt->entityIndex);
+    
+    pciVideoPtr pvp = xf86GetPciInfoForEntity(pciEntity);
 
     if (pvp == NULL) {
 #ifdef DEBUG

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbimggblt.c,v 1.3 1999/06/06 08:48:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbimggblt.c,v 1.5 2001/03/08 17:12:16 eich Exp $ */
 
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
@@ -310,7 +310,6 @@ doImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase,infop)
 
 	    if ((xoff + w) <= 32)
 	    {
-	      int i;
 	        /* glyph all in one longword */
 	        maskpartialbits(xoff, w, startmask);
 

@@ -455,6 +455,7 @@ TRIDENTStopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
      if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
 	pPriv->videoStatus |= OFF_TIMER;
 	pPriv->offTime = currentTime.milliseconds + OFF_DELAY; 
+	pTrident->VideoTimerCallback = TRIDENTVideoTimerCallback;
      }
   }
 }
@@ -660,14 +661,11 @@ TRIDENTDisplayVideo(
     	OUTW(vgaIOBase + 4, 0x00BF);
 	break;
     }  
-
     tx1 = dstBox->x1 + pTrident->hsync;
     tx2 = dstBox->x2 + pTrident->hsync; 
     ty1 = dstBox->y1 + pTrident->vsync - 2;
     ty2 = dstBox->y2 + pTrident->vsync + 2;
 
-    /* Crude way to deal with off the left edge - FIXME - doesn't work well */
-    tx1 -= (x1 >> 16);
 
     OUTW(vgaIOBase + 4, (tx1 & 0xff) <<8 | 0x86);
     OUTW(vgaIOBase + 4, (tx1 & 0xff00)   | 0x87);
@@ -678,6 +676,7 @@ TRIDENTDisplayVideo(
     OUTW(vgaIOBase + 4, (ty2 & 0xff) <<8 | 0x8C);
     OUTW(vgaIOBase + 4, (ty2 & 0xff00)   | 0x8D);
 
+    offset += (x1 >> 15) & ~0x01;
     OUTW(vgaIOBase + 4, (((width<<1) & 0xff)<<8)      | 0x90);
     OUTW(vgaIOBase + 4, ((width<<1) & 0xff00)         | 0x91);
     OUTW(vgaIOBase + 4, ((offset>>3) & 0xff) << 8     | 0x92);
@@ -690,8 +689,9 @@ TRIDENTDisplayVideo(
 	OUTW(vgaIOBase + 4, 0x0081);
     } else
     if (drw_w > src_w) {
-	zoomx1 =   ((float)src_w/(float)drw_w);
-	zoomx2 = ( ((float)src_w/(float)drw_w) - (int)zoomx1 ) * 1024;
+        float z = (float)drw_w/(float)src_w - 1;
+	zoomx1 =  z;
+	zoomx2 = (z - (int)zoomx1 ) * 1024;
 	OUTW(vgaIOBase + 4, (zoomx2&0xff)<<8 | 0x80);
 	OUTW(vgaIOBase + 4, (zoomx1&0x0f)<<10 | (zoomx2&0x0300) | 0x81);
     } else {
@@ -708,8 +708,9 @@ TRIDENTDisplayVideo(
 	OUTW(vgaIOBase + 4, 0x0083);
     } else
     if (drw_h > src_h) {
-	zoomy1 =   ((float)src_h/(float)drw_h);
-	zoomy2 = ( ((float)src_h/(float)drw_h) - (int)zoomy1 ) * 1024;
+        float z = (float)drw_h/(float)src_h - 1;
+	zoomy1 =  z;
+	zoomy2 = (z - (int)zoomy1 ) * 1024;
 	OUTW(vgaIOBase + 4, (zoomy2&0xff)<<8 | 0x82);
 	OUTW(vgaIOBase + 4, (zoomy1&0x0f)<<10 | (zoomy2&0x0300) | 0x83);
     } else {
@@ -780,7 +781,6 @@ TRIDENTPutImage(
 
    dstPitch = ((width << 1) + 15) & ~15;
    new_size = ((dstPitch * height) + bpp - 1) / bpp;
-   
    switch(id) {
    case FOURCC_YV12:
    case FOURCC_I420:
@@ -848,8 +848,6 @@ TRIDENTPutImage(
 	     x1, y1, x2, y2, &dstBox, src_w, src_h, drw_w, drw_h);
 
     pPriv->videoStatus = CLIENT_VIDEO_ON;
-
-    pTrident->VideoTimerCallback = TRIDENTVideoTimerCallback;
 
     return Success;
 }

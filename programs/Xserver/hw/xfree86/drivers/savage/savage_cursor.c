@@ -22,8 +22,19 @@ static void SavageSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg);
 
 #define inCRReg(reg) (VGAHWPTR(pScrn))->readCrtc( VGAHWPTR(pScrn), reg )
 #define outCRReg(reg, val) (VGAHWPTR(pScrn))->writeCrtc( VGAHWPTR(pScrn), reg, val )
+#define inStatus1() (VGAHWPTR(pScrn))->readST01( VGAHWPTR(pScrn) )
 
-
+/* 
+ * certain HW cursor operations seem 
+ * to require a delay to prevent lockups.
+ */
+#define waitHSync(n) { \
+                       int num = n; \
+                       while (num--) { \
+			 while ((inStatus1()) & 0x01){};\
+                         while (!(inStatus1()) & 0x01){};\
+                        } \
+                      } 
 #define MAX_CURS 64
 
 
@@ -55,11 +66,12 @@ SavageHWCursorInit(ScreenPtr pScreen)
      */
 
     if(
-        ( (inCRReg(0x18) & 0x80) && (inCRReg(0x15) & 0x50) )
+        ((psav->Chipset != S3_SAVAGE4) 
+       && (inCRReg(0x18) & 0x80) && (inCRReg(0x15) & 0x50) )
 	||
 	(psav->Chipset == S3_SAVAGE_MX)
-    )
-       infoPtr->Flags |= HARDWARE_CURSOR_TRUECOLOR_AT_8BPP;
+      )
+         infoPtr->Flags |= HARDWARE_CURSOR_TRUECOLOR_AT_8BPP; 
 
     infoPtr->SetCursorColors = SavageSetCursorColors;
     infoPtr->SetCursorPosition = SavageSetCursorPosition;
@@ -88,9 +100,10 @@ void
 SavageHideCursor(ScrnInfoPtr pScrn)
 {
    /* Turn cursor off. */
+/*    ErrorF("CursorOff\n"); */
+   waitHSync(5);
    outCRReg( 0x45, inCRReg(0x45) & 0xfe );
 }
-
 
 static void
 SavageLoadCursorImage(
@@ -115,7 +128,6 @@ SavageLoadCursorImage(
     }
 }
 
-
 static void
 SavageSetCursorPosition(
      ScrnInfoPtr pScrn,
@@ -124,6 +136,8 @@ SavageSetCursorPosition(
 {
     unsigned char xoff, yoff;
 
+/*      ErrorF("CurPos\n"); */
+    waitHSync(5);
     /* adjust for frame buffer base address granularity */
     if (pScrn->bitsPerPixel == 8)
 	x += ((pScrn->frameX0) & 3);

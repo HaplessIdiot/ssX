@@ -364,6 +364,8 @@ static const char *ddcSymbols[] = {
 
 static const char *vbeSymbols[] = {
     "VBEInit",
+    "vbeDoEDID",
+    "vbeFree",
     NULL
 };
 
@@ -1336,7 +1338,7 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		      pScrn->rgbBits, pScrn->defaultVisual))
          return FALSE;
 
-    miSetPixmapDepths ();
+    if (!miSetPixmapDepths ()) return FALSE;
 
     /*
      * Call the framebuffer layer's ScreenInit function, and fill in other
@@ -2801,7 +2803,9 @@ neoProbeDDC(ScrnInfoPtr pScrn, int index)
     vbeInfoPtr pVbe;
 
     if (xf86LoadSubModule(pScrn, "vbe")) {
-        pVbe = VBEInit(NULL,index);
-        ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
+        if ((pVbe = VBEInit(NULL,index))) {
+	    ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
+	    vbeFree(pVbe);
+	}
     }
 }

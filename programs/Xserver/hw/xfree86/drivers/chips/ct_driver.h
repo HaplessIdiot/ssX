@@ -324,6 +324,7 @@ typedef struct _CHIPSRec {
     int			DGAViewportStatus;
     CloseScreenProcPtr	CloseScreen;
     ScreenBlockHandlerProcPtr BlockHandler;
+    void		(*VideoTimerCallback)(ScrnInfoPtr, Time);
     int			videoKey;
     XF86VideoAdaptorPtr	adaptor;
     int			OverlaySkewX;
@@ -352,6 +353,8 @@ typedef struct _CHIPSRec {
     chipsWriteMSSPtr	writeMSS;
     chipsReadIOSSPtr	readIOSS;
     chipsWriteIOSSPtr	writeIOSS;
+    Bool cursorDelay;
+    unsigned int viewportMask;
 } CHIPSRec;
 
 typedef struct _CHIPSi2c {

@@ -125,7 +125,7 @@ void xf86ClearEntityListForScreen(int scrnIndex);
 void xf86AddDevToEntity(int entityIndex, GDevPtr dev);
 extern void xf86PostPreInit(void);
 extern void xf86PostScreenInit(void);
-extern memType getValidBIOSBase(PCITAG tag, int *num);
+extern memType getValidBIOSBase(PCITAG tag, int num);
 extern int pciTestMultiDeviceCard(int bus, int dev, int func, PCITAG** pTag);
 
 /* xf86Config.c */

@@ -10,7 +10,7 @@
  */
 
 memType
-getValidBIOSBase(PCITAG tag, int *num)
+getValidBIOSBase(PCITAG tag, int num)
 {
     return 0;
 }

@@ -139,7 +139,8 @@ xf86InfoRec xf86Info = {
 #endif
 	FALSE,		/* kbdCustomKeycodes */
 	TRUE,		/* pmFlag */
-	0		/* estimateSizesAggressively */
+	0,		/* estimateSizesAggressively */
+	FALSE           /* kbdCustomKeycodes */
 };
 const char *xf86ConfigFile = NULL;
 const char *xf86ModulePath = DEFAULT_MODULE_PATH;

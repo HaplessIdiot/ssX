@@ -62,15 +62,20 @@ xf86InitInt10(int entityIndex)
     int fd;
     static void* vidMem = NULL;
     static void* sysMem = NULL;
+    void *options = NULL;
     int low_mem;
     int high_mem;
     char *base = SHMERRORPTR;
     char *base_high = SHMERRORPTR;
     int pagesize, cs;
     legacyVGARec vga;
-
+    xf86int10BiosLocation bios;
+    
     screen = (xf86FindScreenForEntity(entityIndex))->scrnIndex;
-    if (int10skip(xf86Screens[screen], entityIndex))
+
+    options = xf86HandleInt10Options(xf86Screens[screen],entityIndex);
+
+    if (int10skip(options))
 	return NULL;
 
     if ((!vidMem) || (!sysMem)) {
@@ -167,52 +172,120 @@ xf86InitInt10(int entityIndex)
 	if (xf86ReadBIOS(cs, 0, (pointer)cs, V_BIOS_SIZE) < V_BIOS_SIZE)
 	    xf86DrvMsg(screen, X_WARNING,
 		"Unable to retrieve all of segment 0x%06X.\n", cs);
-    
+
+    xf86int10ParseBiosLocation(options,&bios);
+
     if (xf86IsEntityPrimary(entityIndex) 
-	&& !(initPrimary(xf86Screens[screen],entityIndex))) {
-	cs = ((CARD16*)0)[(0x10<<1) + 1];
-
-	bios_base = (unsigned char *)(cs << 4);
-
-	if (!int10_check_bios(screen, cs, bios_base)) {
-	    cs = ((CARD16*)0)[(0x42 << 1) + 1];
+	&& !(initPrimary(options))) {
+	if (bios.bus == BUS_ISA && bios.location.legacy) {
+	    xf86DrvMsg(screen, X_CONFIG,
+		       "Overriding BIOS location: 0x%lx\n",
+		       bios.location.legacy);
+	    cs = bios.location.legacy >> 4;
 	    bios_base = (unsigned char *)(cs << 4);
 	    if (!int10_check_bios(screen, cs, bios_base)) {
-		cs = V_BIOS >> 4;
+		xf86DrvMsg(screen, X_ERROR,
+			   "No V_BIOS at specified address 0x%x\n",cs << 4);
+		goto error3;
+	    }
+	} else {
+	    if (bios.bus == BUS_PCI) {
+		xf86DrvMsg(screen, X_WARNING,
+			   "Option BiosLocation for primary device ignored: "
+			   "It points to PCI.\n");
+		xf86DrvMsg(screen, X_WARNING,
+			   "You must set Option InitPrimary also\n");
+	    }
+	    
+	    cs = ((CARD16*)0)[(0x10<<1) + 1];
+
+	    bios_base = (unsigned char *)(cs << 4);
+
+	    if (!int10_check_bios(screen, cs, bios_base)) {
+		cs = ((CARD16*)0)[(0x42 << 1) + 1];
 		bios_base = (unsigned char *)(cs << 4);
 		if (!int10_check_bios(screen, cs, bios_base)) {
-		    xf86DrvMsg(screen, X_ERROR, "No V_BIOS found\n");
-		    goto error3;
+		    cs = V_BIOS >> 4;
+		    bios_base = (unsigned char *)(cs << 4);
+		    if (!int10_check_bios(screen, cs, bios_base)) {
+			xf86DrvMsg(screen, X_ERROR, "No V_BIOS found\n");
+			goto error3;
+		    }
 		}
 	    }
 	}
+	
 	xf86DrvMsg(screen, X_INFO, "Primary V_BIOS segment is: 0x%x\n", cs);
 
 	pInt->BIOSseg = cs;
 	set_return_trap(pInt);
     } else {
         EntityInfoPtr pEnt = xf86GetEntityInfo(pInt->entityIndex);
-	switch (pEnt->location.type) {
+	BusType location_type;
+
+	if (bios.bus != BUS_NONE) {
+	    switch (location_type = bios.bus) {
+	    case BUS_PCI:
+		xf86DrvMsg(screen,X_CONFIG,"Overriding bios location: "
+			   "PCI:%i:%i%i\n",bios.location.pci.bus,
+			   bios.location.pci.dev,bios.location.pci.func);
+		break;
+	    case BUS_ISA:
+		if (bios.location.legacy)
+		    xf86DrvMsg(screen,X_CONFIG,"Overriding bios location: "
+			       "Legacy:0x%x\n",bios.location.legacy);
+		else
+		    xf86DrvMsg(screen,X_CONFIG,"Overriding bios location: "
+			       "Legacy\n");
+		break;
+	    default:
+		break;
+	    }
+	} else
+	    location_type = pEnt->location.type;
+
+	switch (location_type) {
 	case BUS_PCI:
-	    if (!mapPciRom(pInt, (unsigned char *)(V_BIOS))) {
+	{
+	    int pci_entity;
+	    
+	    if (bios.bus == BUS_PCI)
+		pci_entity = xf86GetPciEntity(bios.location.pci.bus,
+					      bios.location.pci.dev,
+					      bios.location.pci.func);
+	    else 
+		pci_entity = pInt->entityIndex;
+
+	    if (!mapPciRom(pci_entity, (unsigned char *)(V_BIOS))) {
 	        xf86DrvMsg(screen, X_ERROR, "Cannot read V_BIOS\n");
 		goto error3;
 	    }
 	    pInt->BIOSseg = V_BIOS >> 4;
 	    break;
+	}
 	case BUS_ISA:
-	    cs = ((CARD16*)0)[(0x10<<1)+1];
-	    bios_base = (unsigned char *)(cs << 4);
-	
-	    if (!int10_check_bios(screen, cs, bios_base)) {
-	        cs = ((CARD16*)0)[(0x42<<1)+1];
+	    if (bios.bus == BUS_ISA && bios.location.legacy) {
+		cs = bios.location.legacy >> 4;
 		bios_base = (unsigned char *)(cs << 4);
 		if (!int10_check_bios(screen, cs, bios_base)) {
-		    cs = V_BIOS >> 4;
+		    xf86DrvMsg(screen,X_ERROR,"No V_BIOS found "
+			       "on override address 0x%x\n",bios_base);
+		    goto error3;
+		}
+	    } else {
+		cs = ((CARD16*)0)[(0x10<<1)+1];
+		bios_base = (unsigned char *)(cs << 4);
+		
+		if (!int10_check_bios(screen, cs, bios_base)) {
+		    cs = ((CARD16*)0)[(0x42<<1)+1];
 		    bios_base = (unsigned char *)(cs << 4);
 		    if (!int10_check_bios(screen, cs, bios_base)) {
-		        xf86DrvMsg(screen,X_ERROR,"No V_BIOS found\n");
-			goto error3;
+			cs = V_BIOS >> 4;
+			bios_base = (unsigned char *)(cs << 4);
+			if (!int10_check_bios(screen, cs, bios_base)) {
+			    xf86DrvMsg(screen,X_ERROR,"No V_BIOS found\n");
+			    goto error3;
+			}
 		    }
 		}
 	    }
@@ -573,11 +646,9 @@ do_vm86(xf86Int10InfoPtr pInt)
 {
     int retval, signo;
 
-    xf86DisableIO();	/* So that all I/O can be trapped */
     xf86InterceptSignals(&signo);
     retval = vm86_rep(VM86S);
     xf86InterceptSignals(NULL);
-    xf86EnableIO();
 
     if (signo >= 0) {
 	xf86DrvMsg(pInt->scrnIndex, X_ERROR,

@@ -404,7 +404,8 @@ do {									\
 
 #define R128CCE_RESET(pScrn, info)					\
 do {									\
-    if (R128CCE_USE_RING_BUFFER(info->CCEMode)) {			\
+    if (info->directRenderingEnabled					\
+	&& R128CCE_USE_RING_BUFFER(info->CCEMode)) {			\
 	int _ret = drmR128ResetCCE(info->drmFD);			\
 	if (_ret) {							\
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,			\

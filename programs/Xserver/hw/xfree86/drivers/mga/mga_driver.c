@@ -1015,6 +1015,36 @@ MGAdoDDC(ScrnInfoPtr pScrn)
   pMga = MGAPTR(pScrn);
   MGAdac = &pMga->Dac;
 
+  /* Load DDC if we have the code to use it */
+  /* This gives us DDC1 */
+  if (pMga->ddc1Read || pMga->i2cInit) {
+      if (xf86LoadSubModule(pScrn, "ddc")) {
+	  xf86LoaderReqSymLists(ddcSymbols, NULL);
+	} else {
+	  /* ddc module not found, we can do without it */
+	  pMga->ddc1Read = NULL;
+
+	  /* Without DDC, we have no use for the I2C bus */
+	  pMga->i2cInit = NULL;
+	  return NULL;
+	}
+    } else 
+      return NULL;
+
+#if MGAuseI2C
+    /* - DDC can use I2C bus */
+    /* Load I2C if we have the code to use it */
+    if (pMga->i2cInit) {
+      if ( xf86LoadSubModule(pScrn, "i2c") ) {
+	xf86LoaderReqSymLists(i2cSymbols,NULL);
+      } else {
+	/* i2c module not found, we can do without it */
+	pMga->i2cInit = NULL;
+	pMga->I2C = NULL;
+      }
+    }
+#endif /* MGAuseI2C */
+
   /* Map the MGA memory and MMIO areas */
   if (!MGAMapMem(pScrn))
     return NULL;
@@ -1146,6 +1176,7 @@ MGAProbeDDC(ScrnInfoPtr pScrn, int index)
     if (xf86LoadSubModule(pScrn, "vbe")) {
 	pVbe = VBEInit(NULL,index);
 	ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
+	vbeFree(pVbe);
     }
 }
 
@@ -1838,32 +1869,6 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     (*pMga->PreInit)(pScrn);
 
 #if !defined(__powerpc__)
-    /* Load DDC if we have the code to use it */
-    /* This gives us DDC1 */
-    if (pMga->ddc1Read || pMga->i2cInit) {
-	if (xf86LoadSubModule(pScrn, "ddc")) {
-	  xf86LoaderReqSymLists(ddcSymbols, NULL);
-	} else {
-	  /* ddc module not found, we can do without it */
-	  pMga->ddc1Read = NULL;
-
-	  /* Without DDC, we have no use for the I2C bus */
-	  pMga->i2cInit = NULL;
-	}
-    }
-#if MGAuseI2C
-    /* - DDC can use I2C bus */
-    /* Load I2C if we have the code to use it */
-    if (pMga->i2cInit) {
-      if ( xf86LoadSubModule(pScrn, "i2c") ) {
-	xf86LoaderReqSymLists(i2cSymbols,NULL);
-      } else {
-	/* i2c module not found, we can do without it */
-	pMga->i2cInit = NULL;
-	pMga->I2C = NULL;
-      }
-    }
-#endif /* MGAuseI2C */
 
     /* Read and print the Monitor DDC info */
     pScrn->monitor->DDC = MGAdoDDC(pScrn);

@@ -65,38 +65,25 @@ xf86Int10InfoPtr
 xf86InitInt10(int entityIndex)
 {
     xf86Int10InfoPtr pInt;
-    ScrnInfoPtr pScrn;
     int screen;
     void* base = 0;
     void* vbiosMem = 0;
+    void* options = NULL;
     legacyVGARec vga;
+    xf86int10BiosLocation bios;
+    
 #ifdef _PC
     CARD32 cs;
 #endif
-    /* Default Int10 enabled. */
-    Bool noint10 = FALSE;
-    OptionInfoPtr options;
-
-    pScrn = (xf86FindScreenForEntity(entityIndex));
-
-    if (!(options = xalloc(sizeof(INT10Options))))
-	return NULL;
-
-    (void)memcpy(options, INT10Options, sizeof(INT10Options));
-    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, options);
-
-    xf86GetOptValBool(options, INT10OPT_NOINT10, &noint10);
-
-    xfree(options);
-    
-    if (noint10)
-	return NULL;
-
     screen = (xf86FindScreenForEntity(entityIndex))->scrnIndex;
 
-    if (int10skip(xf86Screens[screen],entityIndex))
+    options = xf86HandleInt10Options(xf86Screens[screen],entityIndex);
+    
+    if (int10skip(options)) {
+	xfree(options);
 	return NULL;
-
+    }
+    
     pInt = (xf86Int10InfoPtr)xnfcalloc(1, sizeof(xf86Int10InfoRec));
     pInt->entityIndex = entityIndex;
     if (!xf86Int10ExecSetup(pInt))
@@ -134,47 +121,107 @@ xf86InitInt10(int entityIndex)
 	    xf86DrvMsg(screen, X_WARNING,
 		"Unable to retrieve all of segment 0x%06X.\n", cs);
 
+    xf86int10ParseBiosLocation(options,&bios);
+    
     if (xf86IsEntityPrimary(entityIndex) 
-	&& !(initPrimary(xf86Screens[screen],entityIndex))) {
-	cs = MEM_RW(pInt,((0x10<<2)+2));
+	&& !(initPrimary(options))) {
 
-	vbiosMem = (unsigned char *)base + (cs << 4);
-	if (!int10_check_bios(screen, cs, vbiosMem)) {
-	    cs = MEM_RW(pInt, (0x42 << 2) + 2);
+	if (bios.bus == BUS_ISA && bios.location.legacy) {
+	    xf86DrvMsg(screen, X_CONFIG,
+			   "Overriding BIOS location: 0x%lx\n",
+		       bios.location.legacy);
+	    cs = bios.location.legacy >> 4;
 	    vbiosMem = (unsigned char *)base + (cs << 4);
 	    if (!int10_check_bios(screen, cs, vbiosMem)) {
-		cs = V_BIOS >> 4;
+		xf86DrvMsg(screen, X_ERROR,
+			   "No V_BIOS at specified address 0x%x\n",cs << 4);
+		goto error1;
+	    }
+	} else {
+	    if (bios.bus == BUS_PCI) {
+		xf86DrvMsg(screen, X_WARNING,
+			   "Option BiosLocation for primary device ignored: "
+			   "It points to PCI.\n");
+		xf86DrvMsg(screen, X_WARNING,
+			   "You must set Option InitPrimary also\n");
+	    }
+	    
+	    cs = MEM_RW(pInt,((0x10<<2)+2));
+
+	    vbiosMem = (unsigned char *)base + (cs << 4);
+	    if (!int10_check_bios(screen, cs, vbiosMem)) {
+		cs = MEM_RW(pInt, (0x42 << 2) + 2);
 		vbiosMem = (unsigned char *)base + (cs << 4);
 		if (!int10_check_bios(screen, cs, vbiosMem)) {
-		    xf86DrvMsg(screen, X_ERROR, "No V_BIOS found\n");
-		    goto error1;
+		    cs = V_BIOS >> 4;
+		    vbiosMem = (unsigned char *)base + (cs << 4);
+		    if (!int10_check_bios(screen, cs, vbiosMem)) {
+			xf86DrvMsg(screen, X_ERROR, "No V_BIOS found\n");
+			goto error1;
+		    }
 		}
 	    }
 	}
+	
 	xf86DrvMsg(screen, X_INFO, "Primary V_BIOS segment is: 0x%x\n", cs);
 
 	set_return_trap(pInt);
 	pInt->BIOSseg = cs;
     } else {
+	BusType location_type;
+	int bios_location = V_BIOS;
+	int pci_entity;
+	
         EntityInfoPtr pEnt = xf86GetEntityInfo(pInt->entityIndex);
         reset_int_vect(pInt);
 	set_return_trap(pInt);
-	vbiosMem = (unsigned char *)base + V_BIOS;
-	switch (pEnt->location.type) {
+
+	if (bios.bus != BUS_NONE) {
+	    switch (location_type = bios.bus) {
+	    case BUS_PCI:
+		xf86DrvMsg(screen,X_CONFIG,"Overriding bios location: "
+			   "PCI:%i:%i%i\n",bios.location.pci.bus,
+			   bios.location.pci.dev,bios.location.pci.func);
+		break;
+	    case BUS_ISA:
+		bios_location = bios.location.legacy;
+		if (bios.location.legacy)
+		    xf86DrvMsg(screen,X_CONFIG,"Overriding bios location: "
+			       "Legacy:0x%x\n",bios.location.legacy);
+		else
+		    xf86DrvMsg(screen,X_CONFIG,"Overriding bios location: "
+			       "Legacy\n");
+		break;
+	    default:
+		break;
+	    }
+	} else
+	    location_type = pEnt->location.type;
+	
+	vbiosMem = (unsigned char *)base + bios_location;
+	
+	switch (location_type) {
 	case BUS_PCI:
-	    if (!mapPciRom(pInt,(unsigned char *)(vbiosMem))) {
-	      xf86DrvMsg(screen,X_ERROR,"Cannot read V_BIOS (3)\n");
-	      goto error1;
+	    if (bios.bus == BUS_PCI)
+		pci_entity = xf86GetPciEntity(bios.location.pci.bus,
+					      bios.location.pci.dev,
+					      bios.location.pci.func);
+	    else 
+		pci_entity = pInt->entityIndex;
+	    if (!mapPciRom(pci_entity,(unsigned char *)(vbiosMem))) {
+		xf86DrvMsg(screen,X_ERROR,"Cannot read V_BIOS (3)\n");
+		goto error1;
 	    }
 	    break;
-	case BUS_ISA:  
+	case BUS_ISA:
 #if 0
 	    (void)memset(vbiosMem, 0, V_BIOS_SIZE);
-	    if (xf86ReadBIOS(V_BIOS, 0, vbiosMem, V_BIOS_SIZE) < V_BIOS_SIZE)
+	    if (xf86ReadBIOS(bios_location, 0, vbiosMem, V_BIOS_SIZE)
+		< V_BIOS_SIZE)
 		xf86DrvMsg(screen, X_WARNING,
-		    "Unable to retrieve all of segment 0x0C0000.\n");
+		    "Unable to retrieve all of segment 0x%x.\n",bios_location);
 #endif
-	    if (!int10_check_bios(screen, V_BIOS >> 4, vbiosMem)) {
+	    if (!int10_check_bios(screen, bios_location >> 4, vbiosMem)) {
 	        xf86DrvMsg(screen,X_ERROR,"Cannot read V_BIOS (4)\n");
 		goto error1;
 	    }
@@ -217,9 +264,44 @@ xf86InitInt10(int entityIndex)
      * If this adapter is the primary, use its post-init BIOS (if we can find
      * it).
      */
-    if (!xf86IsEntityPrimary(entityIndex) ||
-	!int10_check_bios(screen, V_BIOS >> 4, vbiosMem)) {
-	if (!mapPciRom(pInt, vbiosMem)) {
+    xf86int10ParseBiosLocation(options,&bios);
+    
+    {
+	int bios_location = V_BIOS;
+	Bool done = FALSE;
+	vbiosMem = (unsigned char *)base + bios_location;
+	
+	if ((bios.bus == BUS_ISA)
+	    || (bios.bus != BUS_PCI && xf86IsEntityPrimary(entityIndex))) {
+		if (bios.bus == BUS_ISA && bios.location.legacy) {
+		    xf86DrvMsg(screen, X_CONFIG,"Looking for legacy V_BIOS "
+			       "at 0x%x for %sprimary device\n",
+			       bios.location.legacy,
+			       xf86IsEntityPrimary(entityIndex) ? "" : "non-");
+		    bios_location = bios.location.legacy;
+		    vbiosMem = (unsigned char *)base + bios_location;
+		}
+		if (int10_check_bios(screen, bios_location >> 4, vbiosMem)) 
+		    done = TRUE;
+		else 
+		    xf86DrvMsg(screen,X_INFO,
+			       "No legacy BIOS found -- trying PCI\n");
+	    } 
+	} 
+	if (!done) {
+	    int pci_entity;
+	    
+	    if (bios->bus == PCI) {
+		xf86DrvMsg(screen,X_CONFIG,"Looking for BIOS at PCI:%i%i%i\n",
+			   bios.location.pci.bus,bios.location.pci.dev,
+			   bios.location.pci.func);		
+		pci_entity = xf86GetPciEntity(bios->location.pci.bus,
+					      bios->location.pci.dev,
+					      bios->location.pci.func);
+	    else 
+		pci_entity = pInt->entityIndex;
+
+	    !mapPciRom(pci_entity, vbiosMem)) {
 	    xf86DrvMsg(screen, X_ERROR, "Cannot read V_BIOS (5)\n");
 	    goto error1;
 	}
@@ -231,6 +313,7 @@ xf86InitInt10(int entityIndex)
     xf86ExecX86int10(pInt);
     UnlockLegacyVGA(screen, &vga);
 #endif
+    xfree(options);
     return pInt;
 
  error1:
@@ -240,7 +323,8 @@ xf86InitInt10(int entityIndex)
     xfree(pInt->private);
  error0:
     xfree(pInt);
-
+    xfree(options);
+    
     return NULL;
 }
 

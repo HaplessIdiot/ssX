@@ -10,7 +10,7 @@ XCOMM
 DRISRCS = sis_dri.c
 DRIOBJS = sis_dri.o
 DRIINCLUDES = -I$(SERVERSRC)/GL/dri -I$(LIBSRC)/GL/dri \
-              -I$(XTOP)/include
+              -I$(XTOP)/include -I$(XF86SRC)/int10 -I$(XF86OSSRC)/vbe
 DRIDEFINES = $(GLX_DEFINES)
 #endif
 

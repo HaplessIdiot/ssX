@@ -153,6 +153,7 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     int clock = pTrident->currentClock;
     CARD8 protect;
     Bool fullSize = FALSE;
+    Bool isShadow = FALSE;
 
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     vgaRegPtr regp = &hwp->ModeReg;
@@ -285,6 +286,7 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 				|| (pReg->tridentRegs3CE[VertStretch] & 1));
 	    pReg->tridentRegs3CE[CyberControl] |= 0x81;
 	    xf86DrvMsgVerb(pScrn->scrnIndex,X_INFO,1,"Shadow on\n");
+	    isShadow = TRUE;
 	} else {
 	    pReg->tridentRegs3CE[CyberControl] &= 0x7E;
 	    xf86DrvMsgVerb(pScrn->scrnIndex,X_INFO,1,"Shadow off\n");
@@ -293,6 +295,7 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 	if (pTrident->CyberShadow) {
 	    pReg->tridentRegs3CE[CyberControl] &= 0x7E;
+	    isShadow = FALSE;
 	    xf86DrvMsgVerb(pScrn->scrnIndex,X_INFO,1,"Forcing Shadow off\n");
 	}
 
@@ -362,6 +365,43 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	}
     }
 
+    /* Calculate skew offsets for video overlay */
+    {
+        int HTotal, HSyncStart;
+	int VTotal, VSyncStart;
+	int h_off = 0;
+	int v_off = 0;
+
+        if (isShadow) {
+	    HTotal = pReg->tridentRegs3x4[0] << 3;
+	    VTotal = pReg->tridentRegs3x4[6] 
+	            | ((pReg->tridentRegs3x4[7] & (1<<0)) << 8)
+	            | ((pReg->tridentRegs3x4[7] & (1<<5)) << 4);
+	    HSyncStart = pReg->tridentRegs3x4[4] << 3;
+	    VSyncStart = pReg->tridentRegs3x4[0x10] 
+	            | ((pReg->tridentRegs3x4[7] & (1<<2)) << 6)
+	            | ((pReg->tridentRegs3x4[7] & (1<<7)) << 2);
+	    if (pTrident->lcdMode != 0xff) {
+	        h_off = (LCD[pTrident->lcdMode].display_x 
+		  - pScrn->currentMode->HDisplay) >> 1;
+	        v_off = (LCD[pTrident->lcdMode].display_y 
+		  - pScrn->currentMode->VDisplay) >> 1;
+	    }
+	} else {
+	  HTotal = regp->CRTC[0] << 3;
+	  VTotal = regp->CRTC[6] 
+	            | ((regp->CRTC[7] & (1<<0)) << 8)
+	            | ((regp->CRTC[7] & (1<<5)) << 4);	  
+	  HSyncStart = regp->CRTC[4] << 3;;
+	  VSyncStart = regp->CRTC[0x10] 
+	            | ((regp->CRTC[7] & (1<<2)) << 6)
+	            | ((regp->CRTC[7] & (1<<7)) << 2);
+	}
+	pTrident->hsync = (HTotal - HSyncStart) + 23 + h_off;
+	pTrident->vsync = (VTotal - VSyncStart) - 2 + v_off;
+    
+    }
+    
     /* Enable Chipset specific options */
     switch (pTrident->Chipset) {
 	case CYBERBLADEI7:
@@ -563,10 +603,9 @@ TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     	OUTB(0x3C4, Protection);
     	OUTB(0x3C5, 0x92);
     }
-#ifdef NOTYET
-    if (pTrident->doInit) {
+#if 0
+    if (pTrident->doInit && pTrident->Int10) {
         OUTW_3CE(BiosReg);	
-	
     }
 #endif
     /* Goto New Mode */

@@ -45,6 +45,7 @@
 #include "shadowfb.h"
 
 #include "sis_shadow.h"
+#include "vbe.h"
 
 
 #include "mipointer.h"
@@ -238,6 +239,13 @@ static const char *i2cSymbols[] = {
     NULL
 };
 
+static const char *vbeSymbols[] = {
+    "VBEInit",
+    "vbeDoEDID",
+    "vbeFree",
+    NULL
+};
+
 #ifdef XF86DRI
 static const char *drmSymbols[] = {
     "drmAddBufs",
@@ -310,7 +318,7 @@ sisSetup(pointer module, pointer opts, int *errmaj, int *errmin)
         setupDone = TRUE;
         xf86AddDriver(&SIS, module, 0);
         LoaderRefSymLists(vgahwSymbols, fbSymbols, i2cSymbols, xaaSymbols,
-                        shadowSymbols,
+                        shadowSymbols, vbeSymbols,
 #ifdef XF86DRI
                     drmSymbols, driSymbols,
 #endif
@@ -558,9 +566,18 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     char *mod = NULL;
     const char *Sym = NULL;
     int pix24flags;
+    vbeInfoPtr pVbe;
 
-    if (flags & PROBE_DETECT)
-        return FALSE;
+    if (flags & PROBE_DETECT) {
+        if (xf86LoadSubModule(pScrn, "vbe")) {
+	    int index = xf86GetEntityInfo(pScrn->entityList[0])->index;
+	    if ((pVbe = VBEInit(NULL,index))) {
+	        ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
+		vbeFree(pVbe);
+	    }
+	}
+	return TRUE;
+    }
 
     /*
      * Note: This function is only called once at server startup, and
@@ -1039,11 +1056,21 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     }
     xf86LoaderReqSymLists(ddcSymbols, NULL);
 
+    { 
+        Bool ret;
+	if (xf86LoadSubModule(pScrn, "vbe")) {
+	    if ((pVbe = VBEInit(NULL,pSiS->pEnt->index))) {
+	        ret = xf86SetDDCproperties(pScrn,
+					  xf86PrintEDID(vbeDoEDID(pVbe,NULL)));
+		vbeFree(pVbe);
+	    }
+	}
 #if 0
-    /* Initialize DDC1 if possible */
-    if (pSiS->ddc1Read) 
-    xf86PrintEDID(xf86DoEDID_DDC1(pScrn->scrnIndex,vgaHWddc1SetSpeed,pSiS->ddc1Read));
+	if (!ret && pSiS->ddc1Read) 
+  	    xf86SetDDCProperties(xf86PrintEDID(xf86DoEDID_DDC1(
+		     pScrn->scrnIndex,vgaHWddc1SetSpeed,pSiS->ddc1Read )));
 #endif
+    }
 
     return TRUE;
 }

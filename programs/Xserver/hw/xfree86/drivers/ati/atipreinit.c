@@ -632,9 +632,11 @@ ATIPreInit
         return TRUE;
     }
 
-    xf86PrintEDID(ConfiguredMonitor);
-    xf86SetDDCproperties(pScreenInfo, ConfiguredMonitor);
-
+    if (ConfiguredMonitor) {
+	xf86PrintEDID(ConfiguredMonitor);
+	xf86SetDDCproperties(pScreenInfo, ConfiguredMonitor);
+    }
+    
     /* DDC module is no longer needed at this point */
     xf86UnloadSubModule(pDDCModule);
 

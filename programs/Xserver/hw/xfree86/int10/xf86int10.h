@@ -53,6 +53,18 @@ typedef struct {
     CARD8 save_46e8;
 } legacyVGARec, *legacyVGAPtr;
 
+typedef struct {
+    BusType bus;
+    union {
+	struct {
+	    int bus;
+	    int dev;
+	    int func;
+	} pci;
+	int legacy;
+    } location;
+} xf86int10BiosLocation, *xf86int10BiosLocationPtr;
+    
 /* OS dependent functions */
 xf86Int10InfoPtr xf86InitInt10(int entityIndex);
 void xf86FreeInt10(xf86Int10InfoPtr pInt);
@@ -154,15 +166,18 @@ void setup_int_vect(xf86Int10InfoPtr pInt);
 int setup_system_bios(void *base_addr);
 void reset_int_vect(xf86Int10InfoPtr pInt);
 void set_return_trap(xf86Int10InfoPtr pInt);
-Bool int10skip(ScrnInfoPtr pScrn, int entityIndex);
+void * xf86HandleInt10Options(ScrnInfoPtr pScrn, int entityIndex);
+Bool int10skip(void* options);
 Bool int10_check_bios(int scrnIndex, int codeSeg, unsigned char* vbiosMem);
-Bool initPrimary(ScrnInfoPtr pScrn, int entityIndex);
+Bool initPrimary(void* options);
+void xf86int10ParseBiosLocation(void* options, 
+				xf86int10BiosLocationPtr bios);
 #ifdef DEBUG
 void dprint(unsigned long start, unsigned long size);
 #endif
 
 /* pci.c */
-int mapPciRom(xf86Int10InfoPtr pInt, unsigned char *address);
+int mapPciRom(int pciEntity, unsigned char *address);
 
 #endif /* _INT10_PRIVATE */
 #endif /* _XF86INT10_H */

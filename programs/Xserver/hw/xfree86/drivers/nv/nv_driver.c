@@ -653,6 +653,8 @@ NVCloseScreen(int scrnIndex, ScreenPtr pScreen)
 
     NVUnmapMem(pScrn);
     vgaHWUnmapMem(pScrn);
+    if (pNv->pInt)
+	xf86FreeInt10(pNv->pInt);
     if (pNv->AccelInfoRec)
         XAADestroyInfoRec(pNv->AccelInfoRec);
     if (pNv->CursorInfoRec)
@@ -824,6 +826,7 @@ nvProbeDDC(ScrnInfoPtr pScrn, int index)
     if (xf86LoadSubModule(pScrn, "vbe")) {
         pVbe = VBEInit(NULL,index);
         ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
+	vbeFree(pVbe);
     }
 }
 
@@ -945,11 +948,13 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     if (pScrn->chipset == NULL) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		   "ChipID 0x%04X is not recognised\n", pNv->Chipset);
+	xf86FreeInt10(pNv->pInt);
 	return FALSE;
     }
     if (pNv->Chipset < 0) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		   "Chipset \"%s\" is not recognised\n", pScrn->chipset);
+	xf86FreeInt10(pNv->pInt);
 	return FALSE;
     }
 
@@ -962,6 +967,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
      */
 
     if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support32bppFb)) {
+	xf86FreeInt10(pNv->pInt);
 	return FALSE;
     } else {
 	/* Check that the returned depth is one we support */
@@ -983,6 +989,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
                 xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
                     "Given depth (%d) is not supported by this driver\n",
                     pScrn->depth);
+		xf86FreeInt10(pNv->pInt);
                 return FALSE;
 	}
     }
@@ -1000,11 +1007,14 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 	/* The defaults are OK for us */
 	rgb zeros = {0, 0, 0};
 
-	if (!xf86SetWeight(pScrn, zeros, zeros))
+	if (!xf86SetWeight(pScrn, zeros, zeros)) {
+	    xf86FreeInt10(pNv->pInt);
 	    return FALSE;
+	}
     }
 
     if (!xf86SetDefaultVisual(pScrn, -1)) {
+	xf86FreeInt10(pNv->pInt);
 	return FALSE;
     } else {
 	/* We don't currently support DirectColor at > 8bpp */
@@ -1012,6 +1022,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Given default visual"
 		       " (%s) is not supported at depth %d\n",
 		       xf86GetVisualName(pScrn->defaultVisual), pScrn->depth);
+	    xf86FreeInt10(pNv->pInt);
 	    return FALSE;
 	}
     }
@@ -1019,17 +1030,21 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     bytesPerPixel = pScrn->bitsPerPixel / 8;
 
     /* The vgahw module should be loaded here when needed */
-    if (!xf86LoadSubModule(pScrn, "vgahw"))
+    if (!xf86LoadSubModule(pScrn, "vgahw")) {
+	xf86FreeInt10(pNv->pInt);
 	return FALSE;
-
+    }
+    
     xf86LoaderReqSymLists(vgahwSymbols, NULL);
 
     /*
      * Allocate a vgaHWRec
      */
-    if (!vgaHWGetHWRec(pScrn))
+    if (!vgaHWGetHWRec(pScrn)) {
+	xf86FreeInt10(pNv->pInt);
 	return FALSE;
-
+    }
+    
     /* We use a programamble clock */
     pScrn->progClock = TRUE;
 
@@ -1083,11 +1098,16 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     }
     if (pNv->FBDev) {
 	/* check for linux framebuffer device */
-	if (!xf86LoadSubModule(pScrn, "fbdevhw"))
+	if (!xf86LoadSubModule(pScrn, "fbdevhw")) {
+	    xf86FreeInt10(pNv->pInt);
 	    return FALSE;
+	}
+	
 	xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
-	if (!fbdevHWInit(pScrn, pNv->PciInfo, NULL))
+	if (!fbdevHWInit(pScrn, pNv->PciInfo, NULL)) {
+	    xf86FreeInt10(pNv->pInt);
 	    return FALSE;
+	}
 	pScrn->SwitchMode    = fbdevHWSwitchMode;
 	pScrn->AdjustFrame   = fbdevHWAdjustFrame;
 	pScrn->EnterVT       = NVEnterVTFBDev;
@@ -1138,6 +1158,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		"MemBase 0x%08lX doesn't match any PCI base register.\n",
 		pNv->pEnt->device->MemBase);
+	    xf86FreeInt10(pNv->pInt);
 	    NVFreeRec(pScrn);
 	    return FALSE;
 	}
@@ -1152,6 +1173,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 	} else {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 			   "No valid FB address in PCI config space\n");
+	    xf86FreeInt10(pNv->pInt);
 	    NVFreeRec(pScrn);
 	    return FALSE;
 	}
@@ -1165,6 +1187,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		"IOBase 0x%08lX doesn't match any PCI base register.\n",
 		pNv->pEnt->device->IOBase);
+	    xf86FreeInt10(pNv->pInt);
 	    NVFreeRec(pScrn);
 	    return FALSE;
 	}
@@ -1178,6 +1201,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 	} else {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 			"No valid MMIO address in PCI config space\n");
+	    xf86FreeInt10(pNv->pInt);
 	    NVFreeRec(pScrn);
 	    return FALSE;
 	}
@@ -1188,6 +1212,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     if (xf86RegisterResources(pNv->pEnt->index, NULL, ResExclusive)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		"xf86RegisterResources() found resource conflicts\n");
+	xf86FreeInt10(pNv->pInt);
 	NVFreeRec(pScrn);
 	return FALSE;
     }
@@ -1297,6 +1322,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 	Gamma zeros = {0.0, 0.0, 0.0};
 
 	if (!xf86SetGamma(pScrn, zeros)) {
+	    xf86FreeInt10(pNv->pInt);
 	    return FALSE;
 	}
     }
@@ -1353,6 +1379,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 	i = 1;
     }
     if (i == -1) {
+	xf86FreeInt10(pNv->pInt);
 	NVFreeRec(pScrn);
 	return FALSE;
     }
@@ -1362,6 +1389,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 
     if (i == 0 || pScrn->modes == NULL) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No valid modes found\n");
+	xf86FreeInt10(pNv->pInt);
 	NVFreeRec(pScrn);
 	return FALSE;
     }
@@ -1407,9 +1435,11 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
             reqSym = "cfb32ScreenInit";
             break;
         default:
+	    xf86FreeInt10(pNv->pInt);
             return FALSE;
     }
     if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
+	xf86FreeInt10(pNv->pInt);
 	NVFreeRec(pScrn);
 	return FALSE;
     }
@@ -1417,6 +1447,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     xf86LoaderReqSymbols(reqSym, NULL);
 #else
     if (xf86LoadSubModule(pScrn, "fb") == NULL) {
+	xf86FreeInt10(pNv->pInt);
 	NVFreeRec(pScrn);
 	return FALSE;
     }
@@ -1427,6 +1458,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     /* Load XAA if needed */
     if (!pNv->NoAccel) {
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
+	    xf86FreeInt10(pNv->pInt);
 	    NVFreeRec(pScrn);
 	    return FALSE;
 	}
@@ -1436,6 +1468,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     /* Load ramdac if needed */
     if (pNv->HWCursor) {
 	if (!xf86LoadSubModule(pScrn, "ramdac")) {
+	    xf86FreeInt10(pNv->pInt);
 	    NVFreeRec(pScrn);
 	    return FALSE;
 	}
@@ -1445,6 +1478,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     /* Load shadowfb if needed */
     if (pNv->ShadowFB) {
 	if (!xf86LoadSubModule(pScrn, "shadowfb")) {
+	    xf86FreeInt10(pNv->pInt);
 	    NVFreeRec(pScrn);
 	    return FALSE;
 	}
