@@ -1,3 +1,33 @@
+XFree86 3.2r (14 January 1997)
+ 247. Use some extra XAA flags in the MGA acceleration (Radislaw Kapitan).
+ 246. XAA updates (see xaa/NOTES for details) (Harm Hanemaayer).
+ 245. Fix DAC register for > 85 MHz mode on Cirrus 5446 (Harm Hanemaayer).
+ 244. Memory config fix for 2MB Cirrus 7543/8 and fix 754x LCD size detection
+      (Harm Hanemaayer).
+ 243. Fix a problem in Imake.rules that causes problems when using bash
+      (Leonard N. Zubkoff).
+ 242. Fix some server prototyping problems (Thomas E. Dickey).
+ 241. Detect the Trio64UV+, Trio64V2 and Aurora64V+, and handle them
+      as a Trio64V+ (Harald Koenig).
+ 240. Add preliminary support for the ELSA Winner 2000PRO/X-8 (S3 968,
+      IBM RGB528A, 8MB VRAM 250 MHz) (Harald Koenig).
+ 239. Fix retrace waits in the MGA driver (Radislaw Kapitan).
+ 238. Enable CPUToScreen colour expansion for the TGUI driver (Alan Hourihane).
+ 237. Add an options "lcd_center" to the TGUI driver for Cyber chips
+      (Alan Hourihane).
+ 236. Some S3V updates, including combining s3dline.c and s3dseg.c,
+      moving planemask/colour conversion into a separate module,
+      add FillSolid, improve speed of s3plypt.c, and enable some
+      previously disable functions (Berry Dijk).
+ 235. Updates for ISC support (Michael Rohleder).
+ 234. Disable ExportLists for Solaris versions older than 2.5.
+ 233. Fix for C&T 8x8 pattern fills (David Bateman).
+ 232. LinkKit fix (SiS driver) (Takaaki Nomura).
+ 231. Fix for XAA colour expansion when using FIXED_BASE (Koen Gadeyne).
+ 230. ET6000 accel updates and optimisations (Koen Gadeyne).
+ 229. Add code to the MGA driver to set MCLK based on the values
+      stored in the BIOS and the memory size (Andrew E. Mileski).
+
 XFree86 3.2q (12 January 1997)
  228. Make makedepend recognise #warning on all OSs (since we have it
       in shm.h).

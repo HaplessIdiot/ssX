@@ -1,4 +1,4 @@
-/* $XConsortium: Pcl.h /main/2 1996/11/16 15:26:51 rws $ */
+/* $XConsortium: Pcl.h /main/3 1996/12/30 14:56:18 kaleb $ */
 /*******************************************************************
 **
 **    *********************************************************
@@ -44,6 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
+/* $XFree86$ */
 
 #ifndef _PCL_H_
 #define _PCL_H_
@@ -95,7 +96,6 @@ extern int PclContextPrivateIndex;
 extern int PclPixmapPrivateIndex;
 extern int PclGCPrivateIndex;
 
-/*
 /*
  * This structure defines a mapping from an X colormap ID to a list of
  * print contexts which use the colormap.
@@ -192,7 +192,9 @@ typedef struct {
 #endif /* XP_PCL_LJ3 */
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
+#ifndef MAX
 #define MAX(a,b) (((a)>(b))?(a):(b))
+#endif
 
 /******
  * Functions in PclArc.c

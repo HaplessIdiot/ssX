@@ -50,7 +50,7 @@ copyright holders.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/Init.c,v 1.3 1996/12/31 04:16:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/Init.c,v 1.4 1996/12/31 07:05:24 dawes Exp $ */
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -183,7 +183,7 @@ const char *LIST_QUEUES = "LANG=C lpstat -v | "
                             "      print substr($5, 1, x-1)"
                             "   }' | sort";
 #else
-#if defined(CSRG_BASED) || defined(linux)
+#if defined(CSRG_BASED) || defined(linux) || defined(ISC)
 const char *LIST_QUEUES = "LANG=C lpc status | grep -v '^\t' | "
                             "sed -e /:/s/// | sort";
 #else
