@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/r61_main/5 1996/02/02 18:44:52 gildea $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.59 1996/08/18 03:54:16 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.60 1996/08/20 12:12:46 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -439,8 +439,8 @@ XF86AGX = XF86_AGX
 #if XF86I128Server
 XF86I128 = XF86_I128
 #endif
-#if XF86FBDevServer
-XF86FBDEV = XF86_FBDev
+#if XF68FBDevServer
+XF68FBDEV = XF68_FBDev
 #endif
 #if XF98GANBWAPServer
 XF98GANBWAP = XF98_GANBWAP
@@ -484,8 +484,8 @@ XNEST = Xnest
 #if XVirtualFramebufferServer
 XVFB = Xvfb
 #endif
-#if defined(XF86SVGAServer) || defined(XF98GANBWAPServer) || defined(XF98NEC480Server) || defined(XF98NKVNECServer) || defined(XF98WABSServer) || defined(XF98WABEPServer) || defined(XF98WSNAServer) || defined(XF98TGUIServer) || defined(XF86VGA16Server) || defined(XF98EGCServer) || defined(XF86W32Server) || defined(XF86MonoServer) || defined(XF86S3Server) || defined(XF98NECS3Server) || defined(XF98PWSKBServer) || defined(XF98PWLBServer) || defined(XF98GA968Server) || defined(XF86I8514Server) || defined(XF86Mach8Server) || defined(XF86Mach32Server) || defined(XF86Mach64Server) || defined(XF86P9000Server) || defined(XF86AGXServer) || defined(XF86I128Server) || defined(XF86FBDevServer) || defined(XnestServer) || defined(XVirtualFramebufferServer)
-MakeMutex($(XF86SVGA) $(XF98GANBWAP) $(XF98NEC480) $(XF98NKVNEC) $(XF98WABS) $(XF98WABEP) $(XF98WSNA) $(XF98TGUI) $(XF86VGA16) $(XF98EGC) $(XF86W32) $(XF86MONO) $(XF86S3) $(XF98NECS3) $(XF98PWSKB) $(XF98PWLB) $(XF98GA968) $(XF868514) $(XF86MACH8) $(XF86MACH32) $(XF86MACH64) $(XF86P9000) $(XF86AGX) $(XF86I128) $(XF86FBDEV) $(XNEST) $(XVFB))
+#if defined(XF86SVGAServer) || defined(XF98GANBWAPServer) || defined(XF98NEC480Server) || defined(XF98NKVNECServer) || defined(XF98WABSServer) || defined(XF98WABEPServer) || defined(XF98WSNAServer) || defined(XF98TGUIServer) || defined(XF86VGA16Server) || defined(XF98EGCServer) || defined(XF86W32Server) || defined(XF86MonoServer) || defined(XF86S3Server) || defined(XF98NECS3Server) || defined(XF98PWSKBServer) || defined(XF98PWLBServer) || defined(XF98GA968Server) || defined(XF86I8514Server) || defined(XF86Mach8Server) || defined(XF86Mach32Server) || defined(XF86Mach64Server) || defined(XF86P9000Server) || defined(XF86AGXServer) || defined(XF86I128Server) || defined(XF68FBDevServer) || defined(XnestServer) || defined(XVirtualFramebufferServer)
+MakeMutex($(XF86SVGA) $(XF98GANBWAP) $(XF98NEC480) $(XF98NKVNEC) $(XF98WABS) $(XF98WABEP) $(XF98WSNA) $(XF98TGUI) $(XF86VGA16) $(XF98EGC) $(XF86W32) $(XF86MONO) $(XF86S3) $(XF98NECS3) $(XF98PWSKB) $(XF98PWLB) $(XF98GA968) $(XF868514) $(XF86MACH8) $(XF86MACH32) $(XF86MACH64) $(XF86P9000) $(XF86AGX) $(XF86I128) $(XF68FBDEV) $(XNEST) $(XVFB))
 #endif
 MakeMutex($(STDDIRS) mfb cfb cfb16 cfb32)
 #endif
@@ -1193,59 +1193,59 @@ LinkFile(XF86_I128.def,I128.def)
 #endif        /* XF86I128Server */
 
 
-#if XF86FBDevServer
+#if XF68FBDevServer
 XCOMM
-XCOMM XFree86(??) Linux/m68k Frame Buffer Device Server
+XCOMM XFree68 Linux/m68k Frame Buffer Device Server
 XCOMM
 MFBDIR  = mfb
 DDXDIR3 = hw/xfree68
-#if XF86FBDevIPLAN2p2
+#if XF68FBDevIPLAN2p2
 IPLAN2P2DIR = iplan2p2
 FBDEVFBLIBS:= $(FBDEVFBLIBS) iplan2p2/libipl2p2.a
 #endif
-#if XF86FBDevIPLAN2p4
+#if XF68FBDevIPLAN2p4
 IPLAN2P4DIR = iplan2p4
 FBDEVFBLIBS:= $(FBDEVFBLIBS) iplan2p4/libipl2p4.a
 #endif
-#if XF86FBDevIPLAN2p8
+#if XF68FBDevIPLAN2p8
 IPLAN2P8DIR = iplan2p8
 FBDEVFBLIBS:= $(FBDEVFBLIBS) iplan2p8/libipl2p8.a
 #endif
-#if XF86FBDevILBM
+#if XF68FBDevILBM
 ILBMDIR = ilbm
 FBDEVFBLIBS:= $(FBDEVFBLIBS) ilbm/libilbm.a
 #endif
-#if XF86FBDevAFB
+#if XF68FBDevAFB
 AFBDIR = afb
 FBDEVFBLIBS:= $(FBDEVFBLIBS) afb/libafb.a
 #endif
-#if XF86FBDevCFB8
+#if XF68FBDevCFB8
 CFB8DIR = cfb
 FBDEVFBLIBS:= $(FBDEVFBLIBS) $(CFB8)
 #endif
-#if XF86FBDevCFB16
+#if XF68FBDevCFB16
 CFB16DIR = cfb16
 FBDEVFBLIBS:= $(FBDEVFBLIBS) $(CFB16)
 #endif
-#if XF86FBDevCFB32
+#if XF68FBDevCFB32
 CFB32DIR = cfb32
 FBDEVFBLIBS:= $(FBDEVFBLIBS) $(CFB32)
 #endif
-XF86FBDevSUBDIRS = $(STDDIRS) $(MFBDIR) $(IPLAN2P2DIR) $(IPLAN2P4DIR) \
+XF68FBDevSUBDIRS = $(STDDIRS) $(MFBDIR) $(IPLAN2P2DIR) $(IPLAN2P4DIR) \
                    $(IPLAN2P8DIR) $(ILBMDIR) $(AFBDIR) $(CFB8DIR) \
                    $(CFB16DIR) $(CFB32DIR) $(DDXDIR3) $(DEPDIRS)
-XF86FBDevOBJS = $(XF68COMSRC)/XF86_FBDev.o
-XF86FBDevLIBS = $(XF68SRC)/fbdev/LibraryTargetName(fbdev) $(XF68LIBS) \
+XF68FBDevOBJS = $(XF68COMSRC)/XF68_FBDev.o
+XF68FBDevLIBS = $(XF68SRC)/fbdev/LibraryTargetName(fbdev) $(XF68LIBS) \
                 PreFbLibs $(FBDEVFBLIBS) PostFbLibs $(XF68OSLIB)
-XF86FBDevSYSLIBS = $(SYSLIBS)
+XF68FBDevSYSLIBS = $(SYSLIBS)
 #if HasParallelMake
-MakeMutex($(XF86FBDevSUBDIRS) $(XF86FBDevOBJS) $(XF86FBDevLIBS) $(XF86FBDevSYSLIBS))
+MakeMutex($(XF68FBDevSUBDIRS) $(XF68FBDevOBJS) $(XF68FBDevLIBS) $(XF68FBDevSYSLIBS))
 #endif
-SetUIDServerTarget(XF86_FBDev,$(XF86FBDevSUBDIRS),$(XF86FBDevOBJS),$(XF86FBDevLIBS),$(XF86FBDevSYSLIBS))
+SetUIDServerTarget(XF68_FBDev,$(XF68FBDevSUBDIRS),$(XF68FBDevOBJS),$(XF68FBDevLIBS),$(XF68FBDevSYSLIBS))
 #ifndef ServerToInstall
-#define ServerToInstall XF86_FBDev
+#define ServerToInstall XF68_FBDev
 #endif
-#endif /* XF86FBDevServer */
+#endif /* XF68FBDevServer */
 
 
 #if XnestServer

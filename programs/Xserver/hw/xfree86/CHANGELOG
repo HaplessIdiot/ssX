@@ -1,4 +1,6 @@
 XFree86 3.1.2Ek (21 August 1996)
+684. Fixes for m68k support (Geert Uytterhoeven).
+683. Naming changes for m68k servers and config options (Geert Uytterhoeven).
 682. Update SuperProbe to identify the amount of memory for a 65550/54,
      and fix detection of 65545 (David Bateman).
 681. Fix for 65545 PCI problems in the C&T driver (Egbert Eich).
