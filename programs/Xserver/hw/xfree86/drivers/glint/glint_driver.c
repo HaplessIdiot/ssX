@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.144 2002/01/04 21:22:30 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.145 2002/02/27 18:27:36 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -1729,12 +1729,24 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	    pGlint->FIFOSize = 31;
 	    maxheight = 1024;
 	    maxwidth = 1536;
-	    GLINTProbeIBMramdac(pScrn);
-	    if (pGlint->RamDac == NULL) return FALSE;
-	    if (pGlint->RamDac->RamDacType != (IBM526DB_RAMDAC) &&
-		pGlint->RamDac->RamDacType != (IBM526_RAMDAC))
+	    /* Test for an TI ramdac */
+	    if (!pGlint->RamDac) {
+	    	GLINTProbeTIramdac(pScrn);
+		if (pGlint->RamDac)
+	             if (pGlint->RamDac->RamDacType == (TI3026_RAMDAC)) 
+		    	pGlint->RefClock = 14318;
+	    }
+	    /* Test for an IBM ramdac */
+	    if (!pGlint->RamDac) {
+	    	GLINTProbeIBMramdac(pScrn);
+		if (pGlint->RamDac) {
+	    	    if (pGlint->RamDac->RamDacType == (IBM526DB_RAMDAC) ||
+		    	pGlint->RamDac->RamDacType == (IBM526_RAMDAC))
+		    	pGlint->RefClock = 14318;
+		}
+	    }
+	    if (!pGlint->RamDac)
 		return FALSE;
-	    pGlint->RefClock = 14318;
 	    break;
 	case PCI_VENDOR_3DLABS_CHIP_500TX:
 	case PCI_VENDOR_3DLABS_CHIP_300SX:
@@ -1777,12 +1789,24 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 		case PCI_CHIP_TI_PERMEDIA:
 	    	    maxheight = 1024;
 	    	    maxwidth = 1536;
-	    	    GLINTProbeIBMramdac(pScrn);
-	    	    if (pGlint->RamDac == NULL) return FALSE;
-	    	    if (pGlint->RamDac->RamDacType != (IBM526DB_RAMDAC) &&
-			pGlint->RamDac->RamDacType != (IBM526_RAMDAC))
+	    	    /* Test for an TI ramdac */
+	    	    if (!pGlint->RamDac) {
+	    		GLINTProbeTIramdac(pScrn);
+			if (pGlint->RamDac)
+	             	    if (pGlint->RamDac->RamDacType == (TI3026_RAMDAC)) 
+		    		pGlint->RefClock = 14318;
+	    	    }
+	    	    /* Test for an IBM ramdac */
+	    	    if (!pGlint->RamDac) {
+	    		GLINTProbeIBMramdac(pScrn);
+			if (pGlint->RamDac) {
+	    	    	    if (pGlint->RamDac->RamDacType == (IBM526DB_RAMDAC) ||
+		    		pGlint->RamDac->RamDacType == (IBM526_RAMDAC))
+		    		    pGlint->RefClock = 14318;
+			}
+	    	    }
+	    	    if (!pGlint->RamDac)
 			return FALSE;
-	    	    pGlint->RefClock = 14318;
 		    break;
 		case PCI_CHIP_500TX:
 		case PCI_CHIP_300SX:
