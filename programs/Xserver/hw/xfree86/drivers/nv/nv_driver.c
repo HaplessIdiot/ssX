@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.93 2002/11/26 23:41:58 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.94 2002/11/28 23:02:13 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -1243,7 +1243,6 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
             NV10Setup(pScrn);
 	    break;
 	case 0x0300:
-             pNv->NoAccel = TRUE;  /* for now */
 	case 0x0200:
 	case 0x0250:
 	case 0x0280:

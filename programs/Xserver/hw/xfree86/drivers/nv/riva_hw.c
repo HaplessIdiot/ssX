@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.37 2002/11/26 23:41:59 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.38 2002/11/28 23:02:14 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -1311,14 +1311,8 @@ static void CalcStateExt
     state->vpll     = (p << 16) | (n << 8) | m;
     state->repaint0 = (((width/8)*pixelDepth) & 0x700) >> 3;
     state->pixel    = pixelDepth > 2   ? 3    : pixelDepth;
-    state->offset0  =
-    state->offset1  =
-    state->offset2  =
-    state->offset3  = 0;
-    state->pitch0   =
-    state->pitch1   =
-    state->pitch2   =
-    state->pitch3   = pixelDepth * width;
+    state->offset   = 0;
+    state->pitch    = pixelDepth * width;
 }
 /*
  * Load fixed function state and pre-calculated/stored state.
@@ -1362,7 +1356,7 @@ static void LoadStateExt
     RIVA_HW_STATE *state
 )
 {
-    int i;
+    int i, format;
 
     /*
      * Load HW fixed function state.
@@ -1399,14 +1393,14 @@ static void LoadStateExt
             }
             for (i = 0x00000; i < 0x00800; i++)
                 chip->PRAMIN[0x00000502 + i] = (i << 12) | 0x03;
-            chip->PGRAPH[0x00000630/4] = state->offset0;
-            chip->PGRAPH[0x00000634/4] = state->offset1;
-            chip->PGRAPH[0x00000638/4] = state->offset2;
-            chip->PGRAPH[0x0000063C/4] = state->offset3;
-            chip->PGRAPH[0x00000650/4] = state->pitch0;
-            chip->PGRAPH[0x00000654/4] = state->pitch1;
-            chip->PGRAPH[0x00000658/4] = state->pitch2;
-            chip->PGRAPH[0x0000065C/4] = state->pitch3;
+            chip->PGRAPH[0x00000630/4] = state->offset;
+            chip->PGRAPH[0x00000634/4] = state->offset;
+            chip->PGRAPH[0x00000638/4] = state->offset;
+            chip->PGRAPH[0x0000063C/4] = state->offset;
+            chip->PGRAPH[0x00000650/4] = state->pitch;
+            chip->PGRAPH[0x00000654/4] = state->pitch;
+            chip->PGRAPH[0x00000658/4] = state->pitch;
+            chip->PGRAPH[0x0000065C/4] = state->pitch;
             break;
         case NV_ARCH_04:
             /*
@@ -1437,14 +1431,14 @@ static void LoadStateExt
                     LOAD_FIXED_STATE_8BPP(nv4,PGRAPH);
                     break;
             }
-            chip->PGRAPH[0x00000640/4] = state->offset0;
-            chip->PGRAPH[0x00000644/4] = state->offset1;
-            chip->PGRAPH[0x00000648/4] = state->offset2;
-            chip->PGRAPH[0x0000064C/4] = state->offset3;
-            chip->PGRAPH[0x00000670/4] = state->pitch0;
-            chip->PGRAPH[0x00000674/4] = state->pitch1;
-            chip->PGRAPH[0x00000678/4] = state->pitch2;
-            chip->PGRAPH[0x0000067C/4] = state->pitch3;
+            chip->PGRAPH[0x00000640/4] = state->offset;
+            chip->PGRAPH[0x00000644/4] = state->offset;
+            chip->PGRAPH[0x00000648/4] = state->offset;
+            chip->PGRAPH[0x0000064C/4] = state->offset;
+            chip->PGRAPH[0x00000670/4] = state->pitch;
+            chip->PGRAPH[0x00000674/4] = state->pitch;
+            chip->PGRAPH[0x00000678/4] = state->pitch;
+            chip->PGRAPH[0x0000067C/4] = state->pitch;
             break;
         case NV_ARCH_10:
         case NV_ARCH_20:
@@ -1460,48 +1454,59 @@ static void LoadStateExt
             switch (state->bpp)
             {
                 case 15:
+                    format = 2;
                     LOAD_FIXED_STATE_15BPP(nv10,PRAMIN);
                     LOAD_FIXED_STATE_15BPP(nv10,PGRAPH);
                     break;
                 case 16:
+                    format = 5;
                     LOAD_FIXED_STATE_16BPP(nv10,PRAMIN);
                     LOAD_FIXED_STATE_16BPP(nv10,PGRAPH);
                     break;
-                case 24:
                 case 32:
+                    format = 7;
                     LOAD_FIXED_STATE_32BPP(nv10,PRAMIN);
                     LOAD_FIXED_STATE_32BPP(nv10,PGRAPH);
                     break;
-                case 8:
                 default:
+                    format = 1;
                     LOAD_FIXED_STATE_8BPP(nv10,PRAMIN);
                     LOAD_FIXED_STATE_8BPP(nv10,PGRAPH);
                     break;
             }
 
 	    if(chip->Architecture == NV_ARCH_10) {
-                chip->PGRAPH[0x00000640/4] = state->offset0;
-                chip->PGRAPH[0x00000644/4] = state->offset1;
-                chip->PGRAPH[0x00000648/4] = state->offset2;
-                chip->PGRAPH[0x0000064C/4] = state->offset3;
-                chip->PGRAPH[0x00000670/4] = state->pitch0;
-                chip->PGRAPH[0x00000674/4] = state->pitch1;
-                chip->PGRAPH[0x00000678/4] = state->pitch2;
-                chip->PGRAPH[0x0000067C/4] = state->pitch3;
-                chip->PGRAPH[0x00000680/4] = state->pitch3;
+                chip->PGRAPH[0x00000640/4] = state->offset;
+                chip->PGRAPH[0x00000644/4] = state->offset;
+                chip->PGRAPH[0x00000648/4] = state->offset;
+                chip->PGRAPH[0x0000064C/4] = state->offset;
+                chip->PGRAPH[0x00000670/4] = state->pitch;
+                chip->PGRAPH[0x00000674/4] = state->pitch;
+                chip->PGRAPH[0x00000678/4] = state->pitch;
+                chip->PGRAPH[0x0000067C/4] = state->pitch;
+                chip->PGRAPH[0x00000680/4] = state->pitch;
 	    } else {
-                chip->PGRAPH[0x00000820/4] = state->offset0;
-                chip->PGRAPH[0x00000824/4] = state->offset1;
-                chip->PGRAPH[0x00000828/4] = state->offset2;
-                chip->PGRAPH[0x0000082C/4] = state->offset3;
-                chip->PGRAPH[0x00000850/4] = state->pitch0;
-                chip->PGRAPH[0x00000854/4] = state->pitch1;
-                chip->PGRAPH[0x00000858/4] = state->pitch2;
-                chip->PGRAPH[0x0000085C/4] = state->pitch3;
-                chip->PGRAPH[0x00000860/4] = state->pitch3;
-                chip->PGRAPH[0x00000864/4] = state->pitch3;
+                chip->PGRAPH[0x00000864/4] = 0x01ffffff;
+                chip->PGRAPH[0x00000868/4] = 0x01ffffff;
+                chip->PGRAPH[0x0000086c/4] = 0x01ffffff;
+                chip->PGRAPH[0x00000870/4] = 0x01ffffff;
+
+                chip->PGRAPH[0x00000820/4] = state->offset;
+                chip->PGRAPH[0x00000824/4] = state->offset;
+                chip->PGRAPH[0x00000828/4] = state->offset;
+                chip->PGRAPH[0x0000082C/4] = state->offset;
+                chip->PGRAPH[0x00000850/4] = state->pitch;
+                chip->PGRAPH[0x00000854/4] = state->pitch;
+                chip->PGRAPH[0x00000858/4] = state->pitch;
+                chip->PGRAPH[0x0000085C/4] = state->pitch;
                 chip->PGRAPH[0x000009A4/4] = chip->PFB[0x00000200/4]; 
                 chip->PGRAPH[0x000009A8/4] = chip->PFB[0x00000204/4];
+
+                if((chip->Chipset & 0x0ff0) >= 0x0300) {
+                    chip->PGRAPH[0x00000724/4] = format | (format << 5);
+                    chip->PGRAPH[0x0000008C/4] |= 1;
+                    chip->PGRAPH[0x00000890/4] |= 0x00040000;
+                }
 	    }
             if(chip->twoHeads) {
                chip->PCRTC0[0x00000860/4] = state->head;
@@ -1518,13 +1523,13 @@ static void LoadStateExt
             chip->PMC[0x00001588/4] = 0;
 
             chip->PFB[0x00000240/4] = 0;
-            chip->PFB[0x00000244/4] = 0;
-            chip->PFB[0x00000248/4] = 0;
-            chip->PFB[0x0000024C/4] = 0;
             chip->PFB[0x00000250/4] = 0;
-            chip->PFB[0x00000254/4] = 0;
-            chip->PFB[0x00000258/4] = 0;
-            chip->PFB[0x0000025C/4] = 0;
+            chip->PFB[0x00000260/4] = 0;
+            chip->PFB[0x00000270/4] = 0;
+            chip->PFB[0x00000280/4] = 0;
+            chip->PFB[0x00000290/4] = 0;
+            chip->PFB[0x000002A0/4] = 0;
+            chip->PFB[0x000002B0/4] = 0;
 
             chip->PGRAPH[0x00000B00/4] = chip->PFB[0x00000240/4];
             chip->PGRAPH[0x00000B04/4] = chip->PFB[0x00000244/4];
@@ -1724,35 +1729,17 @@ static void UnloadStateExt
     switch (chip->Architecture)
     {
         case NV_ARCH_03:
-            state->offset0  = chip->PGRAPH[0x00000630/4];
-            state->offset1  = chip->PGRAPH[0x00000634/4];
-            state->offset2  = chip->PGRAPH[0x00000638/4];
-            state->offset3  = chip->PGRAPH[0x0000063C/4];
-            state->pitch0   = chip->PGRAPH[0x00000650/4];
-            state->pitch1   = chip->PGRAPH[0x00000654/4];
-            state->pitch2   = chip->PGRAPH[0x00000658/4];
-            state->pitch3   = chip->PGRAPH[0x0000065C/4];
+            state->offset   = chip->PGRAPH[0x00000630/4];
+            state->pitch    = chip->PGRAPH[0x00000650/4];
             break;
         case NV_ARCH_04:
-            state->offset0  = chip->PGRAPH[0x00000640/4];
-            state->offset1  = chip->PGRAPH[0x00000644/4];
-            state->offset2  = chip->PGRAPH[0x00000648/4];
-            state->offset3  = chip->PGRAPH[0x0000064C/4];
-            state->pitch0   = chip->PGRAPH[0x00000670/4];
-            state->pitch1   = chip->PGRAPH[0x00000674/4];
-            state->pitch2   = chip->PGRAPH[0x00000678/4];
-            state->pitch3   = chip->PGRAPH[0x0000067C/4];
+            state->offset   = chip->PGRAPH[0x00000640/4];
+            state->pitch    = chip->PGRAPH[0x00000670/4];
             break;
         case NV_ARCH_10:
         case NV_ARCH_20:
-            state->offset0  = chip->PGRAPH[0x00000640/4];
-            state->offset1  = chip->PGRAPH[0x00000644/4];
-            state->offset2  = chip->PGRAPH[0x00000648/4];
-            state->offset3  = chip->PGRAPH[0x0000064C/4];
-            state->pitch0   = chip->PGRAPH[0x00000670/4];
-            state->pitch1   = chip->PGRAPH[0x00000674/4];
-            state->pitch2   = chip->PGRAPH[0x00000678/4];
-            state->pitch3   = chip->PGRAPH[0x0000067C/4];
+            state->offset   = chip->PGRAPH[0x00000640/4];
+            state->pitch    = chip->PGRAPH[0x00000670/4];
             if(chip->twoHeads) {
                state->head     = chip->PCRTC0[0x00000860/4];
                state->head2    = chip->PCRTC0[0x00002860/4];

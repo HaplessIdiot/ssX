@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
 \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.h,v 1.20 2002/10/09 22:24:12 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.h,v 1.21 2002/10/14 18:22:46 mvojkovi Exp $ */
 #ifndef __RIVA_HW_H__
 #define __RIVA_HW_H__
 #define RIVA_SW_VERSION 0x00010003
@@ -400,14 +400,8 @@ typedef struct _riva_hw_state
     U032 cursor0;
     U032 cursor1;
     U032 cursor2;
-    U032 offset0;
-    U032 offset1;
-    U032 offset2;
-    U032 offset3;
-    U032 pitch0;
-    U032 pitch1;
-    U032 pitch2;
-    U032 pitch3;
+    U032 offset;
+    U032 pitch;
 } RIVA_HW_STATE;
 
 /*
