@@ -36,10 +36,8 @@ extern int BadShmSegCode;
 extern RESTYPE ShmSegType, ShmPixType;
 
 #ifdef PANORAMIX
-extern PanoramiXWindow *PanoramiXWinRoot;
 extern Bool noPanoramiXExtension;
 extern int PanoramiXNumScreens;
-extern PanoramiXPmap *PanoramiXPmapRoot;
 extern PanoramiXData *panoramiXdataPtr;
 #endif
 
@@ -50,10 +48,8 @@ LOOKUP extLookupTab[] = {
  SYMVAR(ShmSegType)
 
 #ifdef PANORAMIX
- SYMVAR(PanoramiXWinRoot)
  SYMVAR(noPanoramiXExtension)
  SYMVAR(PanoramiXNumScreens)
- SYMVAR(PanoramiXPmapRoot)
  SYMVAR(panoramiXdataPtr)
 #endif
 
