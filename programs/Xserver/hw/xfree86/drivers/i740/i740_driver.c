@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.1 1999/08/29 12:20:58 dawes Exp $ */
 
 /*
  * Authors:
@@ -173,7 +173,7 @@ typedef enum {
   OPTION_SGRAM,
   OPTION_SLOW_RAM,
   OPTION_DAC_6BIT,
-  OPTION_USE_PIO,
+  OPTION_USE_PIO
 } I740Opts;
 
 static OptionInfoRec I740Options[] = {
@@ -1347,7 +1347,7 @@ I740ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 static void
 I740LoadPalette16(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
-		  short visualClass) {
+		  VisualPtr pVisual) {
   I740Ptr pI740;
   vgaHWPtr hwp;
   int i, index;
@@ -1377,7 +1377,7 @@ I740LoadPalette16(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
 
 static void
 I740LoadPalette24(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
-		  short visualClass) {
+		  VisualPtr pVisual) {
   I740Ptr pI740;
   vgaHWPtr hwp;
   int i, index;
