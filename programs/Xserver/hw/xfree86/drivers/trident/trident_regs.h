@@ -21,7 +21,10 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.3 1998/11/15 04:30:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.4 1999/01/23 09:55:59 dawes Exp $ */
+
+#define NTSC 14.31818
+#define PAL  17.73448
 
 /* General Registers */
 #define SPR	0x1F		/* Software Programming Register (videoram) */
@@ -164,6 +167,9 @@
 #define IMAGE_GE_STATUS 	0x64
 #define IMAGE_GE_DRAWENV	0x20
 
+/* Defines for BLADE Graphics Engine */
+#define BLADE_GE_STATUS		0x20
+
 /* ROPS */
 #define TGUIROP_0		0x00		/* 0 */
 #define TGUIROP_1		0xFF		/* 1 */
@@ -231,7 +237,9 @@
 
 #ifdef TRIDENT_MMIO
 #define IMAGEBUSY(b) \
-		b = (*(CARD32 *)(pTrident->IOBase+IMAGE_GE_STATUS)) & 0xF8800000;
+		b = (*(CARD32 *)(pTrident->IOBase+IMAGE_GE_STATUS)) & 0xF0000000;
+#define BLADEBUSY(b) \
+		b = (*(CARD32 *)(pTrident->IOBase+BLADE_GE_STATUS)) & 0xFE000000;
 #define BLTBUSY(b) \
 		b = (*(unsigned char *)(pTrident->IOBase+GER_STATUS)) & GE_BUSY;
 #define OLDBLTBUSY(b) \
@@ -295,6 +303,8 @@
 #define TGUI_CKEY(c) \
 		*(CARD32 *)(pTrident->IOBase + GER_CKEY) = c;
 #define IMAGE_OUT(addr, c) \
+		*(CARD32 *)(pTrident->IOBase + addr) = c;
+#define BLADE_OUT(addr, c) \
 		*(CARD32 *)(pTrident->IOBase + addr) = c;
 #define TGUI_OUTL(addr, c) \
 		*(CARD32 *)(pTrident->IOBase + addr) = c;

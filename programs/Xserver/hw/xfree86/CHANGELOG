@@ -1,3 +1,11 @@
+XFree86 3.9Pj (18 April 1999)
+2727. Disable clipping in the trident driver for FillRectSolid because the
+      driver gets passed zero values (#2681, Alan Hourihane).
+2726. Add Trident Blade3D support (#2681, Alan Hourihane).
+2725. Add Mono8x8 pattern for the Trident Image series (#2681, Alan Hourihane).
+2724. Fix trident screen glitches when mode switching (#2681, Alan Hourihane).
+2723. Some minor documentation-related cleanups.
+
 XFree86 3.9Pi (11 April 1999)
 2722. Fix a Linux/PPC loader relocation bug, and reenable building the
       loadable server by default for Linux/PPC (#2668, Gerd Knorr).
@@ -7766,4 +7774,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.723 1999/04/07 16:59:27 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.724 1999/04/11 13:10:41 dawes Exp $

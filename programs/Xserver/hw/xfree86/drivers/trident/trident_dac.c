@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.5 1999/01/11 05:13:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.6 1999/01/23 09:55:58 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -26,12 +26,21 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pReg->tridentRegs3x4[PixelBusReg] = 0x00;
     pReg->tridentRegsDAC[0x00] = 0x00;
     outb(vgaIOBase + 4, NewMode2);
-    pReg->tridentRegs3C4[NewMode2] = inb(vgaIOBase + 5) & 0xF9;
+    pReg->tridentRegs3C4[NewMode2] = 0x20;
+    outb(0x3CE, MiscExtFunc);
+    pReg->tridentRegs3CE[MiscExtFunc] = inb(0x3CF);
 
     /* Enable Chipset specific options */
     switch (pTrident->Chipset) {
+	case BLADE3D:
+	case CYBER9520:
+	case CYBER9397:
+	case CYBER939A:
+	case CYBER9525:
 	case IMAGE975:
 	case IMAGE985:
+    	    pReg->tridentRegs3CE[MiscExtFunc] |= 0x10;
+	    /* Fall Through */
 	case PROVIDIA9685:
 	    if (pTrident->UsePCIRetry) {
 		pTrident->UseGERetry = TRUE;
@@ -58,18 +67,15 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     switch (pScrn->bitsPerPixel) {
 	case 1:
 	case 4:
-	    outb(0x3CE, MiscExtFunc);
-	    pReg->tridentRegs3CE[MiscExtFunc] = (inb(0x3CF) & 0xB7) | 0x04;
+	    pReg->tridentRegs3CE[MiscExtFunc] |= 0x04;
     	    offset = pScrn->displayWidth >> 3;
 	    break;
 	case 8:
-	    outb(0x3CE, MiscExtFunc);
-	    pReg->tridentRegs3CE[MiscExtFunc] = (inb(0x3CF) & 0xB7) | 0x02;
+	    pReg->tridentRegs3CE[MiscExtFunc] |= 0x02;
     	    offset = pScrn->displayWidth >> 3;
 	    break;
 	case 16:
-	    outb(0x3CE, MiscExtFunc);
-	    pReg->tridentRegs3CE[MiscExtFunc] = (inb(0x3CF) & 0xB7) | 0x02;
+	    pReg->tridentRegs3CE[MiscExtFunc] |= 0x02;
     	    offset = pScrn->displayWidth >> 2;
 	    if (pScrn->depth == 15)
     	    	pReg->tridentRegsDAC[0x00] = 0x10;
@@ -80,15 +86,13 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		pReg->tridentRegs3x4[PixelBusReg] |= 0x01;
 	    break;
 	case 24:
-	    outb(0x3CE, MiscExtFunc);
-	    pReg->tridentRegs3CE[MiscExtFunc] = (inb(0x3CF) & 0xB7) | 0x02;
+	    pReg->tridentRegs3CE[MiscExtFunc] |= 0x02;
     	    offset = (pScrn->displayWidth * 3) >> 3;
     	    pReg->tridentRegs3x4[PixelBusReg] = 0x29;
 	    pReg->tridentRegsDAC[0x00] = 0xD0;
 	    break;
 	case 32:
-	    outb(0x3CE, MiscExtFunc);
-	    pReg->tridentRegs3CE[MiscExtFunc] = (inb(0x3CF) & 0xB7) | 0x02;
+	    pReg->tridentRegs3CE[MiscExtFunc] |= 0x02;
     	    pReg->tridentRegs3CE[MiscExtFunc] |= 0x08; /* Clock Division by 2*/
 	    clock *= 2;	/* Double the clock */
     	    offset = pScrn->displayWidth >> 1;
@@ -164,34 +168,15 @@ TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     /* Unprotect registers */
     outw(0x3C4, ((0xC0 ^ 0x02) << 8) | NewMode1);
 
-    inb(0x3C8);
-    inb(0x3C6);
-    inb(0x3C6);
-    inb(0x3C6);
-    inb(0x3C6);
-    outb(0x3C6, tridentReg->tridentRegsDAC[0x00]);
-    inb(0x3C8);
+    /* Select 25MHz clock, program the programmable, and set it */
+    outb(0x3C2, inb(0x3CC) & 0xF3);
+
+    outw(vgaIOBase + 4, (tridentReg->tridentRegs3x4[CursorControl] << 8) | CursorControl);
 
     outw(vgaIOBase + 4, (tridentReg->tridentRegs3x4[CRTCModuleTest] << 8) | CRTCModuleTest);
     outw(vgaIOBase + 4, (tridentReg->tridentRegs3x4[LinearAddReg] << 8) | 
 								LinearAddReg);
 
-    outb(0x3C2, tridentReg->tridentRegsClock[0x00]);
-    if (Is3Dchip) {
-	outw(0x3C4, (tridentReg->tridentRegsClock[0x01])<<8 | ClockLow);
-	outw(0x3C4, (tridentReg->tridentRegsClock[0x02])<<8 | ClockHigh);
-	if (pTrident->MCLK > 0) {
-	    outw(0x3C4, (tridentReg->tridentRegsClock[0x03])<<8 | MCLKLow);
-	    outw(0x3C4, (tridentReg->tridentRegsClock[0x04])<<8 | MCLKHigh);
-	}
-    } else {
-	outb(0x43C8, tridentReg->tridentRegsClock[0x01]);
-	outb(0x43C9, tridentReg->tridentRegsClock[0x02]);
-	if (pTrident->MCLK > 0) {
-	    outb(0x43C6, tridentReg->tridentRegsClock[0x03]);
-	    outb(0x43C7, tridentReg->tridentRegsClock[0x04]);
-	}
-    }
     outw(0x3C4, (tridentReg->tridentRegs3C4[NewMode2])<<8 | NewMode2);
 
     outw(vgaIOBase + 4, (tridentReg->tridentRegs3x4[CRTHiOrd] << 8) | CRTHiOrd);
@@ -210,9 +195,30 @@ TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
         outw(vgaIOBase + 4, (tridentReg->tridentRegs3x4[Enhancement0] << 8) | Enhancement0);
     }
  
-    /* restore cursor registers */
-    for (i=CursorXLow;i<=CursorControl;i++)
-    	outw(vgaIOBase + 4, (tridentReg->tridentRegs3x4[i] << 8) | i);
+    inb(0x3C8);
+    inb(0x3C6);
+    inb(0x3C6);
+    inb(0x3C6);
+    inb(0x3C6);
+    outb(0x3C6, tridentReg->tridentRegsDAC[0x00]);
+    inb(0x3C8);
+
+    if (Is3Dchip) {
+	outw(0x3C4, (tridentReg->tridentRegsClock[0x01])<<8 | ClockLow);
+	outw(0x3C4, (tridentReg->tridentRegsClock[0x02])<<8 | ClockHigh);
+	if (pTrident->MCLK > 0) {
+	    outw(0x3C4, (tridentReg->tridentRegsClock[0x03])<<8 | MCLKLow);
+	    outw(0x3C4, (tridentReg->tridentRegsClock[0x04])<<8 | MCLKHigh);
+	}
+    } else {
+	outb(0x43C8, tridentReg->tridentRegsClock[0x01]);
+	outb(0x43C9, tridentReg->tridentRegsClock[0x02]);
+	if (pTrident->MCLK > 0) {
+	    outb(0x43C6, tridentReg->tridentRegsClock[0x03]);
+	    outb(0x43C7, tridentReg->tridentRegsClock[0x04]);
+	}
+    }
+    outb(0x3C2, tridentReg->tridentRegsClock[0x00]);
 
     outw(0x3C4, ((tridentReg->tridentRegs3C4[NewMode1] ^ 0x02) << 8) | NewMode1);
 }
@@ -266,10 +272,8 @@ TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     }
 
     /* save cursor registers */
-    for (i=CursorXLow;i<=CursorControl;i++) {
-    	outb(vgaIOBase + 4, i);
-    	tridentReg->tridentRegs3x4[i] = inb(vgaIOBase + 5);
-    }
+    outb(vgaIOBase + 4, CursorControl);
+    tridentReg->tridentRegs3x4[CursorControl] = inb(vgaIOBase + 5);
 
     outb(0x3CE, MiscExtFunc);
     tridentReg->tridentRegs3CE[MiscExtFunc] = inb(0x3CF);
@@ -351,9 +355,9 @@ TridentSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
     	outw(vgaIOBase + 4, 0x0047);
 
     outw(vgaIOBase + 4, (x&0xFF)<<8 | 0x40);
-    outw(vgaIOBase + 4, (x&0xFF00)  | 0x41);
+    outw(vgaIOBase + 4, (x&0x0F00)  | 0x41);
     outw(vgaIOBase + 4, (y&0xFF)<<8 | 0x42);
-    outw(vgaIOBase + 4, (y&0xFF00)  | 0x43);
+    outw(vgaIOBase + 4, (y&0x0F00)  | 0x43);
 }
 
 static void
