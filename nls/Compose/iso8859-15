@@ -2,7 +2,7 @@ XCOMM $TOG: fcd8859-15 /main/2 1998/06/17 15:53:45 kaleb $
 XCOMM
 XCOMM ISO 8859-15 (Latin1) Compose Sequence
 XCOMM
-XCOMM $XFree86: xc/nls/Compose/iso8859-15,v 1.6 2001/12/24 17:15:09 dawes Exp $
+XCOMM $XFree86: xc/nls/Compose/iso8859-15,v 1.7 2002/10/10 01:22:28 dawes Exp $
 XCOMM
 XCOMM Sequence Definition
 XCOMM
@@ -155,7 +155,7 @@ XCOMM Special Character
 <Multi_key> <x> <x>			: "\327"	multiply
 <Multi_key> <apostrophe> <apostrophe>	: "\264"	acute
 <Multi_key> <comma> <comma>		: "\270"	cedilla
-<Multi_key> <quotedbl> <quotedbl>	: "\250"	diaeresis
+<Multi_key> <quotedbl> <quotedbl>	: "\250"	quotedbl
 XCOMM Accented Alphabet
 <Multi_key> <A> <grave>			: "\300"	Agrave
 <Multi_key> <grave> <A>			: "\300"	Agrave
@@ -388,7 +388,7 @@ XCOMM These are for us_intl, that does not have diaeresis, etc
 <dead_acute> <space>			: "'"	apostrophe
 <dead_acute> <dead_acute>		: "\264"	acute
 <dead_diaeresis> <space>		: "\""	quotedbl
-<dead_diaeresis> <dead_diaeresis>	: "\250"	diaeresis
+<dead_diaeresis> <dead_diaeresis>	: "\250"	quotedbl
 <dead_doubleacute> <space>		: "\""	quotedbl
 <dead_circumflex> <0>			: "\260"	degree
 <dead_circumflex> <1>			: "\271"	onesuperior
@@ -400,7 +400,7 @@ XCOMM These are for us_intl, that does not have diaeresis, etc
 <dead_circumflex> <underscore>		: "\257"	macron
 <dead_acute> <apostrophe>		: "\264"	acute
 <dead_cedilla> <comma>			: "\270"	cedilla
-<dead_diaeresis> <quotedbl>		: "\250"	diaeresis
+<dead_diaeresis> <quotedbl>		: "\250"	quotedbl
 XCOMM Accented Alphabet
 <dead_abovering> <A>			: "\305"	Aring
 <dead_grave> <A>			: "\300"	Agrave
