@@ -1,4 +1,4 @@
-/* $XConsortium: XpAttr.c /main/2 1996/11/16 15:20:50 rws $ */
+/* $XConsortium: XpAttr.c /main/3 1996/12/27 16:21:50 kaleb $ */
 /******************************************************************************
  ******************************************************************************
  **
@@ -34,7 +34,7 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xp/XpAttr.c,v 1.2 1996/12/26 01:37:47 dawes Exp $ */
 
 #define NEED_REPLIES
 
@@ -93,7 +93,7 @@ XpGetAttributes (
 
     _XReadPad (dpy, (char *) buf, (long) rep.stringLen );
 
-    buf[rep.stringLen] = '\0';		/* tack on NULL terminator */
+    buf[rep.stringLen] = 0;
 
     UnlockDisplay(dpy);
     SyncHandle();
@@ -154,10 +154,10 @@ XpGetOneAttribute (
         return( (char *) NULL ); /* malloc error */
     }
 
-    buf[rep.valueLen] = '\0';
+    buf[rep.valueLen] = 0;
 
     _XReadPad (dpy, (char *) buf, (long) rep.valueLen );
-    buf[rep.valueLen] = '\0';		/* tack on NULL terminator */
+    buf[rep.valueLen] = 0;
 
     UnlockDisplay(dpy);
     SyncHandle();

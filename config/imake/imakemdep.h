@@ -1,5 +1,5 @@
 /* $XConsortium: imakemdep.h /main/100 1996/10/31 14:32:02 kaleb $ */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.18 1996/10/16 14:28:35 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.19 1996/12/23 05:50:59 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -555,7 +555,7 @@ char *cpp_argv[ARGUMENTS] = {
 # define DEFAULT_OS_MINOR_REV	"r %[0-9]"
 /* No information available to generate default OSTeenyVersion value. */
 # define DEFAULT_OS_NAME	"srvm %[^\n]"
-#elif defined(sun) || defined(sgi) || defined(ultrix) || defined(__uxp__) || defined(linux) || defined(sony)
+#elif defined(sun) || defined(sgi) || defined(ultrix) || defined(__uxp__) || defined(sony)
 /* uname -r returns "x.y[.z]", e.g. "5.4" or "4.1.3" */
 # define DEFAULT_OS_MAJOR_REV	"r %[0-9]"
 # define DEFAULT_OS_MINOR_REV	"r %*d.%[0-9]"
@@ -584,6 +584,11 @@ char *cpp_argv[ARGUMENTS] = {
 # define DEFAULT_OS_MAJOR_REV	"v V%[0-9]"
 # define DEFAULT_OS_MINOR_REV	"v V%*dL%[0-9]"
 # define DEFAULT_OS_NAME	"srvm %[^\n]"
+#elif defined(linux)
+# define DEFAULT_OS_MAJOR_REV	"r %[0-9]"
+# define DEFAULT_OS_MINOR_REV	"r %*d.%[0-9]"
+# define DEFAULT_OS_TEENY_REV	"r %*d.%*d.%[0-9]"
+# define DEFAULT_OS_NAME	"srm %[^\n]"
 #elif defined(__FreeBSD__)
 /* NetBSD, OpenBSD, 386BSD, and BSD/OS too? */
 /* uname -r returns "x.y[.z]-mumble", e.g. "2.1.5-RELEASE" or "2.2-0801SNAP" */
