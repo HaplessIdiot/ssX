@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.204 2000/11/30 23:30:01 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.205 2000/12/11 20:29:31 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -1120,8 +1120,13 @@ DARWINDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR1) 
 DARWINOBJS = 
 DARWINLIBS = PreFbLibs hw/darwin/libdarwin.a $(CFB16) $(CFB32) $(CFB8) PostFbLibs ../../lib/font/libXfont.a ../../lib/font/stubs/libfntstubs.a
 
-XCOMM we need extra link flags for IOKit stuff
+XCOMM We need extra link flags for IOKit and CoreGraphics.
+#if DarwinQuartzSupport
+EXTRA_LOAD_FLAGS = -framework IOKit -framework CoreGraphics
+#else
 EXTRA_LOAD_FLAGS = -framework IOKit
+#endif	/* DarwinQuartzSupport */
+
 SetUIDServerTarget(Xdarwin,$(DARWINDIRS),$(DARWINOBJS),$(DARWINLIBS),$(SYSLIBS))
 
 #define ServerToInstall Xdarwin
