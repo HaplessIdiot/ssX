@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xext/xvmc.h,v 1.2 2001/04/01 14:00:03 tsi Exp $ */
 
 #ifndef _XVMC_H
 #define _XVMC_H
