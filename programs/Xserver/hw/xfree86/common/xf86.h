@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.176 2004/12/29 21:22:54 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.177 2004/12/30 02:22:49 tsi Exp $ */
 
 /*
- * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -383,6 +383,10 @@ int  xf86RegisterRootWindowProperty(int ScrnIndex, Atom	property, Atom type,
 				    int format, unsigned long len,
 				    pointer value);
 Bool xf86IsUnblank(int mode);
+MonPtr xf86GetMonitorByNumber(const ScrnInfoRec *pScrn, int monNum);
+DispPtr xf86GetDisplayByMonitorNum(const ScrnInfoRec *pScrn, int monNum);
+Bool xf86GetNextMonitor(const ScrnInfoRec *pScrn, MonPtr *monitor,
+			DispPtr *display);
 
 #ifdef XFree86LOADER
 void xf86AddModuleInfo(ModuleInfoPtr info, pointer module);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.29 2004/02/13 23:58:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.30 2004/10/23 15:29:32 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -27,7 +27,7 @@
  * 
  */
 /*
- * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -899,21 +899,30 @@ xf86findModeLine (const char *ident, XF86ConfModeLinePtr p)
 int
 xf86validateMonitor (XF86ConfigPtr p, XF86ConfScreenPtr screen)
 {
-	XF86ConfMonitorPtr monitor = screen->scrn_monitor;
-	XF86ConfModesLinkPtr modeslnk = monitor->mon_modes_sect_lst;
+	XF86ConfMonitorListPtr monitorlist;
+	XF86ConfModesLinkPtr modeslnk;
 	XF86ConfModesPtr modes;
-	while(modeslnk)
+
+	monitorlist = screen->scrn_monitor_lst;
+	while (monitorlist)
 	{
-		modes = xf86findModes (modeslnk->ml_modes_str, p->conf_modes_lst);
-		if (!modes)
-		{
-			xf86validationError (UNDEFINED_MODES_MSG, 
-					     modeslnk->ml_modes_str, 
-					     screen->scrn_identifier);
-			return (FALSE);
+	    if (monitorlist->monitor) {
+			modeslnk = monitorlist->monitor->mon_modes_sect_lst;
+			while(modeslnk)
+			{
+				modes = xf86findModes (modeslnk->ml_modes_str, p->conf_modes_lst);
+				if (!modes)
+				{
+					xf86validationError (UNDEFINED_MODES_MSG, 
+					     		modeslnk->ml_modes_str, 
+					     		screen->scrn_identifier);
+					return (FALSE);
+				}
+				modeslnk->ml_modes = modes;
+				modeslnk = modeslnk->list.next;
+			}
 		}
-		modeslnk->ml_modes = modes;
-		modeslnk = modeslnk->list.next;
+		monitorlist = monitorlist->list.next;
 	}
 	return (TRUE);
 }

@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.98tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.99 2004/12/07 15:59:17 tsi Exp $ */
 
 /*
- * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -226,6 +226,7 @@ typedef struct {
     int			heightmm;
     pointer		options;
     pointer		DDC;
+    int			monitorNum;
 } MonRec, *MonPtr;
 
 /* the list of clock ranges */
@@ -414,6 +415,7 @@ typedef struct {
     int			defaultVisual;
     char **		modes;
     pointer		options;
+    int			monitorNum;
 } DispRec, *DispPtr;
 
 typedef struct _confxvportrec {
@@ -441,6 +443,8 @@ typedef struct _confscreenrec {
     int			numxvadaptors;
     confXvAdaptorPtr	xvadaptors;
     pointer		options;
+    int			numMonitors;
+    MonPtr *		monitors;
 } confScreenRec, *confScreenPtr;
 
 typedef enum {

@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Opt.h,v 1.15 2003/10/08 14:30:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Opt.h,v 1.16 2004/02/13 23:58:38 dawes Exp $ */
 
 /*
- * Copyright (c) 1998-2003 by The XFree86 Project, Inc.
+ * Copyright (c) 1998-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -102,6 +102,7 @@ pointer xf86NewOption(char *name, char *value );
 pointer xf86NextOption(pointer list );
 pointer xf86OptionListCreate(const char **options, int count, int used);
 pointer xf86OptionListMerge(pointer head, pointer tail);
+pointer xf86OptionListDup(pointer opt);
 void xf86OptionListFree(pointer opt);
 char *xf86OptionName(pointer opt);
 char *xf86OptionValue(pointer opt);

@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.140 2004/09/29 21:19:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.141 2004/12/20 19:27:20 dawes Exp $ */
 
 /*
- * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -467,8 +467,6 @@ Bool
 xf86SetDepthBpp(ScrnInfoPtr scrp, int depth, int dummy, int fbbpp,
 		int depth24flags)
 {
-    int i;
-    DispPtr disp;
     Pix24Flags pix24 = xf86Info.pixmap24;
     Bool nomatch = FALSE;
 
@@ -678,60 +676,7 @@ xf86SetDepthBpp(ScrnInfoPtr scrp, int depth, int dummy, int fbbpp,
 	scrp->pixmap24 = Pix24Use32;
     }
 
-    /*
-     * Find the Display subsection matching the depth/fbbpp and initialise
-     * scrp->display with it.
-     */
-    for (i = 0, disp = scrp->confScreen->displays;
-	 i < scrp->confScreen->numdisplays; i++, disp++) {
-	if ((disp->depth == scrp->depth && disp->fbbpp == scrp->bitsPerPixel)
-	    || (disp->depth == scrp->depth && disp->fbbpp <= 0)
-	    || (disp->fbbpp == scrp->bitsPerPixel && disp->depth <= 0)) {
-	    scrp->display = disp;
-	    break;
-	}
-    }
-
-    /*
-     * If an exact match can't be found, see if there is one with no
-     * depth or fbbpp specified.
-     */
-    if (i == scrp->confScreen->numdisplays) {
-	for (i = 0, disp = scrp->confScreen->displays;
-	     i < scrp->confScreen->numdisplays; i++, disp++) {
-	    if (disp->depth <= 0 && disp->fbbpp <= 0) {
-		scrp->display = disp;
-		break;
-	    }
-	}
-    }
-
-    /*
-     * If all else fails, create a default one.
-     */
-    if (i == scrp->confScreen->numdisplays) {
-	scrp->confScreen->numdisplays++;
-	scrp->confScreen->displays =
-		xnfrealloc(scrp->confScreen->displays,
-			   scrp->confScreen->numdisplays * sizeof(DispRec));
-	xf86DrvMsg(scrp->scrnIndex, X_INFO,
-		   "Creating default Display subsection in Screen section\n"
-		   "\t\"%s\" for depth/fbbpp %d/%d\n",
-		   scrp->confScreen->id, scrp->depth, scrp->bitsPerPixel);
-	memset(&scrp->confScreen->displays[i], 0, sizeof(DispRec));
-	scrp->confScreen->displays[i].blackColour.red = -1;
-	scrp->confScreen->displays[i].blackColour.green = -1;
-	scrp->confScreen->displays[i].blackColour.blue = -1;
-	scrp->confScreen->displays[i].whiteColour.red = -1;
-	scrp->confScreen->displays[i].whiteColour.green = -1;
-	scrp->confScreen->displays[i].whiteColour.blue = -1;
-	scrp->confScreen->displays[i].defaultVisual = -1;
-	scrp->confScreen->displays[i].modes = xnfalloc(sizeof(char *));
-	scrp->confScreen->displays[i].modes[0] = NULL;
-	scrp->confScreen->displays[i].depth = depth;
-	scrp->confScreen->displays[i].fbbpp = fbbpp;
-	scrp->display = &scrp->confScreen->displays[i];
-    }
+    scrp->display = xf86GetDisplayByMonitorNum(scrp, -1);
 
     /*
      * Setup defaults for the display-wide attributes the framebuffer will
@@ -3007,4 +2952,130 @@ xf86IsUnblank(int mode)
 	xf86MsgVerb(X_WARNING, 0, "Unexpected save screen mode: %d\n", mode);
 	return TRUE;
     }
+}
+
+MonPtr
+xf86GetMonitorByNumber(const ScrnInfoRec *pScrn, int monNum)
+{
+    int i;
+
+    for (i = 0; i < pScrn->confScreen->numMonitors; i++) {
+	if (pScrn->confScreen->monitors[i]->monitorNum == monNum) {
+	    return pScrn->confScreen->monitors[i];
+	}
+    }
+    return NULL;
+}
+
+DispPtr
+xf86GetDisplayByMonitorNum(const ScrnInfoRec *pScrn, int monNum)
+{
+    int i;
+    DispPtr pDisp, foundDisplay = NULL;
+
+    /*
+     * Find the Display subsection matching the depth/fbbpp and monitor number.
+     */
+    for (i = 0, pDisp = pScrn->confScreen->displays;
+	 i < pScrn->confScreen->numdisplays; i++, pDisp++) {
+	if (pDisp->monitorNum == monNum &&
+	    ((pDisp->depth == pScrn->depth &&
+	      pDisp->fbbpp == pScrn->bitsPerPixel) ||
+	     (pDisp->depth == pScrn->depth && pDisp->fbbpp <= 0) ||
+	     (pDisp->fbbpp == pScrn->bitsPerPixel && pDisp->depth <= 0))) {
+	    foundDisplay = pDisp;
+	    break;
+	}
+    }
+
+    /*
+     * If an exact match cannot be found, see if there is one with a matching
+     * monitor number and no depth or fbbpp specified.
+     */
+    if (!foundDisplay) {
+	for (i = 0, pDisp = pScrn->confScreen->displays;
+	     i < pScrn->confScreen->numdisplays; i++, pDisp++) {
+	    if (pDisp->monitorNum == monNum &&
+		pDisp->depth <= 0 && pDisp->fbbpp <= 0) {
+		foundDisplay = pDisp;
+		break;
+	    }
+	}
+    }
+
+    /*
+     * If all else fails, create a default one.
+     */
+    if (!foundDisplay) {
+	i = pScrn->confScreen->numdisplays++;
+	pScrn->confScreen->displays =
+		xnfrealloc(pScrn->confScreen->displays,
+			   pScrn->confScreen->numdisplays * sizeof(DispRec));
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		   "Creating default Display subsection in Screen section\n"
+		   "\t\"%s\" ", pScrn->confScreen->id);
+	if (monNum >= 0) {
+	    xf86ErrorF("for monitor number %d, depth/fbbpp %d/%d\n",
+		       monNum, pScrn->depth, pScrn->bitsPerPixel);
+	} else {
+	    xf86ErrorF("for depth/fbbpp %d/%d\n",
+		       pScrn->depth, pScrn->bitsPerPixel);
+	}
+	memset(&pScrn->confScreen->displays[i], 0, sizeof(DispRec));
+	pScrn->confScreen->displays[i].blackColour.red = -1;
+	pScrn->confScreen->displays[i].blackColour.green = -1;
+	pScrn->confScreen->displays[i].blackColour.blue = -1;
+	pScrn->confScreen->displays[i].whiteColour.red = -1;
+	pScrn->confScreen->displays[i].whiteColour.green = -1;
+	pScrn->confScreen->displays[i].whiteColour.blue = -1;
+	pScrn->confScreen->displays[i].defaultVisual = -1;
+	pScrn->confScreen->displays[i].modes = xnfalloc(sizeof(char *));
+	pScrn->confScreen->displays[i].modes[0] = NULL;
+	pScrn->confScreen->displays[i].depth = pScrn->depth;
+	pScrn->confScreen->displays[i].fbbpp = pScrn->bitsPerPixel;
+	pScrn->confScreen->displays[i].monitorNum = monNum;
+	pScrn->confScreen->displays[i].frameX0 = -1;
+	pScrn->confScreen->displays[i].frameY0 = -1;
+	pScrn->confScreen->displays[i].virtualX = -1;
+	pScrn->confScreen->displays[i].virtualY = -1;
+	foundDisplay = &pScrn->confScreen->displays[i];
+    }
+
+    pDisp = xnfalloc(sizeof(DispRec));
+    *pDisp = *foundDisplay;
+    return pDisp;
+}
+
+Bool
+xf86GetNextMonitor(const ScrnInfoRec *pScrn, MonPtr *monitor, DispPtr *display)
+{
+    int i, prevNum, nextNum = 10000000;
+    MonPtr next = NULL;
+
+    if (!monitor)
+	return FALSE;
+
+    if (!*monitor)
+	prevNum = -1;
+    else
+	prevNum = (*monitor)->monitorNum;
+
+    for (i = 0; i < pScrn->confScreen->numMonitors; i++) {
+	if (pScrn->confScreen->monitors[i]->monitorNum > prevNum &&
+	    pScrn->confScreen->monitors[i]->monitorNum < nextNum) {
+	    next = pScrn->confScreen->monitors[i];
+	    nextNum = pScrn->confScreen->monitors[i]->monitorNum;
+	}
+    }
+
+    if (!next)
+	return FALSE;
+
+    *monitor = next;
+
+    if (display) {
+	*display = xf86GetDisplayByMonitorNum(pScrn, nextNum);
+    }
+
+    return TRUE;
 }

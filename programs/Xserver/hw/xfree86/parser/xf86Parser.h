@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.33 2003/10/08 14:58:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.34 2004/02/13 23:58:50 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -27,7 +27,7 @@
  * 
  */
 /*
- * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -233,6 +233,15 @@ typedef struct
 }
 XF86ConfMonitorRec, *XF86ConfMonitorPtr;
 
+typedef struct
+{
+	GenericListRec list;
+	char *monitor_str;
+	XF86ConfMonitorPtr monitor;
+	int monitor_num;
+}
+XF86ConfMonitorListRec, *XF86ConfMonitorListPtr;
+
 #define CONF_MAXDACSPEEDS 4
 #define CONF_MAXCLOCKS    128
 
@@ -288,6 +297,7 @@ typedef struct
 	XF86ModePtr disp_mode_lst;
 	XF86OptionPtr disp_option_lst;
 	char *disp_comment;
+	int monitor_num;
 }
 XF86ConfDisplayRec, *XF86ConfDisplayPtr;
 
@@ -316,6 +326,7 @@ typedef struct
 	int scrn_defaultfbbpp;
 	char *scrn_monitor_str;
 	XF86ConfMonitorPtr scrn_monitor;
+	XF86ConfMonitorListPtr scrn_monitor_lst;
 	char *scrn_device_str;
 	XF86ConfDevicePtr scrn_device;
 	XF86ConfAdaptorLinkPtr scrn_adaptor_lst;

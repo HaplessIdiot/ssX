@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.21 2003/08/24 17:37:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.22 2004/02/13 23:58:49 dawes Exp $ */
 /*
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -27,7 +27,7 @@
  * 
  */
 /*
- * Copyright (c) 1997-2002 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -195,6 +195,11 @@ else\
 #define SCREEN_MSG \
 "The Screen keyword must be followed by an optional number, a screen name\n" \
 "\tin quotes, and optional position/layout information."
+#define MONITOR_MSG \
+"The Monitor keyword must be followed by an optional number and a\n" \
+"\tmonitor name in quotes.\n"
+#define INVALID_MON_MSG \
+"Invalid Monitor line."
 #define INVALID_SCR_MSG \
 "Invalid Screen line."
 #define INPUTDEV_MSG \

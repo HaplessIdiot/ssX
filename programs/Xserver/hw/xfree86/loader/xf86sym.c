@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.243 2004/02/13 23:58:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.244 2004/06/02 22:43:05 dawes Exp $ */
 
 /*
  *
@@ -23,7 +23,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 /*
- * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -516,6 +516,9 @@ LOOKUP xfree86LookupTab[] = {
     SYMFUNC(xf86IsScreenPrimary)
     SYMFUNC(xf86RegisterRootWindowProperty)
     SYMFUNC(xf86IsUnblank)
+    SYMFUNC(xf86GetMonitorByNumber)
+    SYMFUNC(xf86GetDisplayByMonitorNum)
+    SYMFUNC(xf86GetNextMonitor)
     SYMFUNC(xf86AddModuleInfo)
     SYMFUNC(xf86DeleteModuleInfo)
 
@@ -563,6 +566,7 @@ LOOKUP xfree86LookupTab[] = {
     SYMFUNC(xf86NextOption)
     SYMFUNC(xf86OptionListCreate)
     SYMFUNC(xf86OptionListMerge)
+    SYMFUNC(xf86OptionListDup)
     SYMFUNC(xf86OptionListFree)
     SYMFUNC(xf86OptionName)
     SYMFUNC(xf86OptionValue)

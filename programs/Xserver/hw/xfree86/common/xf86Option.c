@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.30 2004/02/13 23:58:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.31 2004/09/01 14:25:34 tsi Exp $ */
 /*
- * Copyright (c) 1998-2003 by The XFree86 Project, Inc.
+ * Copyright (c) 1998-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -367,6 +367,12 @@ xf86OptionListMerge(pointer head, pointer tail)
 	return xf86optionListMerge(head, tail);
 }
 
+pointer
+xf86OptionListDup(pointer opt)
+{
+	return xf86optionListDup(opt);
+}
+
 void
 xf86OptionListFree(pointer opt)
 {
@@ -532,7 +538,7 @@ ParseOptionValue(int scrnIndex, pointer options, OptionInfoPtr p,
 	case OPTV_STRING:
 	    if (*s == '\0') {
 		xf86DrvMsg(scrnIndex, X_WARNING,
-			   "Option \"%s\" requires an string value\n",
+			   "Option \"%s\" requires a string value\n",
 			   p->name);
 		p->found = FALSE;
 	    } else {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.278 2004/06/01 01:23:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.279 2004/11/07 04:20:59 dawes Exp $ */
 
 
 /*
@@ -8,7 +8,7 @@
  */
 
 /*
- * Copyright (c) 1992-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 1992-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -207,7 +207,8 @@ static char *fontPath = NULL;
 /* Forward declarations */
 static Bool configScreen(confScreenPtr screenp, XF86ConfScreenPtr conf_screen,
 			 int scrnum, MessageType from);
-static Bool configMonitor(MonPtr monitorp, XF86ConfMonitorPtr conf_monitor);
+static Bool configMonitor(MonPtr monitorp, XF86ConfMonitorPtr conf_monitor,
+			  int monnum);
 static Bool configDevice(GDevPtr devicep, XF86ConfDevicePtr conf_device,
 			 Bool active);
 static Bool configInput(IDevPtr inputp, XF86ConfInputPtr conf_input,
@@ -1741,6 +1742,42 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
 }
 
 /*
+ * assignIndices takes an array of numbers indexed by config file ordering
+ * and assigns values to the unassigned (negative) values.  The values
+ * assigned begin with the largest already-assigned value + 1, and the
+ * unassigned values are incremented in config file order.
+ *
+ * Note: duplicate already-assigned values are not resolved.  This is typically
+ * a configuration error, but handling such things is up to the driver, and
+ * optional.
+ *
+ * Examples:
+ *
+ *   1. {-1, 0, -1, 1} -> {2, 0, 3, 1}
+ *   2. {0, 1, 2, 1} -> {0, 1, 2, 1}
+ *   3. {1, 3, -1, 5} -> {1, 3, 6, 5}
+ */
+
+static void
+assignIndices(int *mapping, int count)
+{
+    int i;
+    int max = -1;
+
+    /* First pass: find largest assigned value. */
+    for (i = 0; i < count; i++) {
+	if (mapping[i] > max)
+	    max = mapping[i];
+    }
+
+    /* Second pass: assign values to unassigned slots. */
+    for (i = 0; i < count; i++) {
+	if (mapping[i] < 0)
+	    mapping[i] = ++max;
+    }
+}
+
+/*
  * figure out which layout is active, which screens are used in that layout,
  * which drivers and monitors are used in these screens
  */
@@ -1797,10 +1834,8 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout,
         count++;
         adjp = (XF86ConfAdjacencyPtr)adjp->list.next;
     }
-#ifdef DEBUG
-    ErrorF("Found %d screens in the layout section %s",
-           count, conf_layout->lay_identifier);
-#endif
+    xf86MsgVerb(X_INFO, 4, "Found %d screens in the layout section %s\n",
+		count, conf_layout->lay_identifier);
     slp = xnfcalloc(1, (count + 1) * sizeof(screenLayoutRec));
     slp[count].screen = NULL;
     /*
@@ -1890,45 +1925,40 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout,
 	}
     }
 
-#ifdef LAYOUT_DEBUG
-    ErrorF("Layout \"%s\"\n", conf_layout->lay_identifier);
+    xf86MsgVerb(X_INFO, 4, "Layout \"%s\"\n", conf_layout->lay_identifier);
     for (i = 0; i < count; i++) {
-	ErrorF("Screen: \"%s\" (%d):\n", slp[i].screen->id,
-	       slp[i].screen->screennum);
+	xf86MsgVerb(X_NONE, 4, "\tScreen: \"%s\" (%d):\n", slp[i].screen->id,
+		    slp[i].screen->screennum);
 	switch (slp[i].where) {
 	case PosObsolete:
-	    ErrorF("\tObsolete format: \"%s\" \"%s\" \"%s\" \"%s\"\n",
-		   slp[i].top, slp[i].bottom, slp[i].left, slp[i].right);
+	    xf86MsgVerb(X_NONE, 4,
+			"\t\tObsolete format: \"%s\" \"%s\" \"%s\" \"%s\"\n",
+			slp[i].topname, slp[i].bottomname,
+			slp[i].leftname, slp[i].rightname);
 	    break;
 	case PosAbsolute:
-	    if (slp[i].x == -1)
-		if (slp[i].screen->screennum == 0)
-		    ErrorF("\tImplicitly left-most\n");
-		else
-		    ErrorF("\tImplicitly right of screen %d\n",
-			   slp[i].screen->screennum - 1);
-	    else
-		ErrorF("\t%d %d\n", slp[i].x, slp[i].y);
+	    xf86MsgVerb(X_NONE, 4, "\t\t(%d, %d)\n", slp[i].x, slp[i].y);
 	    break;
 	case PosRightOf:
-	    ErrorF("\tRight of \"%s\"\n", slp[i].refscreen->id);
+	    xf86MsgVerb(X_NONE, 4, "\t\tRight of \"%s\"\n",
+			slp[i].refscreen->id);
 	    break;
 	case PosLeftOf:
-	    ErrorF("\tLeft of \"%s\"\n", slp[i].refscreen->id);
+	    xf86MsgVerb(X_NONE, 4, "\t\tLeft of \"%s\"\n",
+			slp[i].refscreen->id);
 	    break;
 	case PosAbove:
-	    ErrorF("\tAbove \"%s\"\n", slp[i].refscreen->id);
+	    xf86MsgVerb(X_NONE, 4, "\t\tAbove \"%s\"\n", slp[i].refscreen->id);
 	    break;
 	case PosBelow:
-	    ErrorF("\tBelow \"%s\"\n", slp[i].refscreen->id);
+	    xf86MsgVerb(X_NONE, 4, "\t\tBelow \"%s\"\n", slp[i].refscreen->id);
 	    break;
 	case PosRelative:
-	    ErrorF("\t%d %d relative to \"%s\"\n", slp[i].x, slp[i].y,
-		   slp[i].refscreen->id);
+	    xf86MsgVerb(X_NONE, 4, "\t\t(%d, %d) relative to \"%s\"\n",
+			slp[i].x, slp[i].y, slp[i].refscreen->id);
 	    break;
 	}
     }
-#endif
     /*
      * Count the number of inactive devices.
      */
@@ -1938,10 +1968,9 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout,
         count++;
         idp = (XF86ConfInactivePtr)idp->list.next;
     }
-#ifdef DEBUG
-    ErrorF("Found %d inactive devices in the layout section %s",
-           count, conf_layout->lay_identifier);
-#endif
+    xf86MsgVerb(X_INFO, 4,
+		"Found %d inactive devices in the layout section %s\n",
+		count, conf_layout->lay_identifier);
     gdp = xnfalloc((count + 1) * sizeof(GDevRec));
     gdp[count].identifier = NULL;
     idp = conf_layout->lay_inactive_lst;
@@ -1961,10 +1990,8 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout,
         count++;
         irp = (XF86ConfInputrefPtr)irp->list.next;
     }
-#ifdef DEBUG
-    ErrorF("Found %d input devices in the layout section %s",
-           count, conf_layout->lay_identifier);
-#endif
+    xf86MsgVerb(X_INFO, 4, "Found %d input devices in the layout section %s\n",
+		count, conf_layout->lay_identifier);
     indp = xnfalloc((count + 1) * sizeof(IDevRec));
     indp[count].identifier = NULL;
     irp = conf_layout->lay_input_lst;
@@ -2091,6 +2118,10 @@ configScreen(confScreenPtr screenp, XF86ConfScreenPtr conf_screen, int scrnum,
     int count = 0;
     XF86ConfDisplayPtr dispptr;
     XF86ConfAdaptorLinkPtr conf_adaptor;
+    XF86ConfMonitorListPtr mlistp;
+    MonPtr *monitors = NULL;
+    int i;
+    int *mapping;
     Bool defaultMonitor = FALSE;
 
     xf86Msg(from, "|-->Screen \"%s\" (%d)\n", conf_screen->scrn_identifier,
@@ -2103,11 +2134,43 @@ configScreen(confScreenPtr screenp, XF86ConfScreenPtr conf_screen, int scrnum,
     screenp->defaultdepth = conf_screen->scrn_defaultdepth;
     screenp->defaultbpp = conf_screen->scrn_defaultbpp;
     screenp->defaultfbbpp = conf_screen->scrn_defaultfbbpp;
-    screenp->monitor    = xnfcalloc(1, sizeof(MonRec));
-    /* If no monitor is specified, create a default one. */
-    if (!conf_screen->scrn_monitor) {
-	XF86ConfMonitorRec defMon;
+    /*
+     * Each monitor is referenced exactly once in a monitor statement,
+     * so find out how many monitors we have.
+     */
+    mlistp = conf_screen->scrn_monitor_lst;
+    count = 0;
+    while (mlistp) {
+	count++;
+	mlistp = (XF86ConfMonitorListPtr)mlistp->list.next;
+    }
 
+    if (count > 0) {
+	monitors = xnfcalloc(1, count * sizeof(MonPtr));
+	mlistp = conf_screen->scrn_monitor_lst;
+	mapping = xnfalloc(count * sizeof(int));
+	for (i = 0; i < count; i++) {
+	    mapping[i] = mlistp->monitor_num;
+	    monitors[i] = xnfcalloc(1, sizeof(MonRec));
+	    mlistp = (XF86ConfMonitorListPtr)mlistp->list.next;
+	}
+	assignIndices(mapping, count);
+
+	mlistp = conf_screen->scrn_monitor_lst;
+	for (i = 0; i < count; i++) {
+	    if (!configMonitor(monitors[i], mlistp->monitor, mapping[i]))
+		return FALSE;
+            mlistp = (XF86ConfMonitorListPtr)mlistp->list.next;
+	}
+	xfree(mapping);
+	screenp->numMonitors = count;
+	screenp->monitors = monitors;
+	/* Set the primary monitor (the only one in most cases). */
+	screenp->monitor = screenp->monitors[0];
+    } else {
+	/* If no monitor is specified, create a default one. */
+	XF86ConfMonitorRec defMon;
+	
 	bzero(&defMon, sizeof(defMon));
 	defMon.mon_identifier = "<default monitor>";
 	/*
@@ -2120,13 +2183,30 @@ configScreen(confScreenPtr screenp, XF86ConfScreenPtr conf_screen, int scrnum,
 						      "TargetRefresh",
 						      TARGET_REFRESH_RATE);
 #endif
-	if (!configMonitor(screenp->monitor, &defMon))
+	screenp->monitor = xnfcalloc(1, sizeof(MonRec));
+	if (!configMonitor(screenp->monitor, &defMon, 0))
 	    return FALSE;
 	defaultMonitor = TRUE;
-    } else {
-	if (!configMonitor(screenp->monitor,conf_screen->scrn_monitor))
-	    return FALSE;
+	screenp->numMonitors = 1;
+	screenp->monitors = &screenp->monitor;
     }
+
+    xf86MsgVerb(X_INFO, 4, "Screen \"%s\"\n", conf_screen->scrn_identifier);
+    for (i = 0; i < count; i++) {
+	xf86MsgVerb(X_NONE, 4, "\tMonitor: \"%s\" (%d)\n", monitors[i]->id,
+		    monitors[i]->monitorNum);
+    }
+
+    if (defaultMonitor) {
+	xf86MsgVerb(X_INFO, 4,
+		    "Created %d default Monitors for the Screen section %s.\n",
+		    screenp->numMonitors, conf_screen->scrn_identifier);
+    } else {
+	xf86MsgVerb(X_INFO, 4,
+		    "Found %d Monitors in the Screen section %s.\n",
+		    screenp->numMonitors, conf_screen->scrn_identifier);
+    }
+
     screenp->device     = xnfcalloc(1, sizeof(GDevRec));
     configDevice(screenp->device,conf_screen->scrn_device, TRUE);
     screenp->device->myScreenSection = screenp;
@@ -2135,6 +2215,7 @@ configScreen(confScreenPtr screenp, XF86ConfScreenPtr conf_screen, int scrnum,
     /*
      * figure out how many display subsections there are and fill them in
      */
+    count = 0;
     dispptr = conf_screen->scrn_display_lst;
     while(dispptr) {
         count++;
@@ -2176,7 +2257,7 @@ configScreen(confScreenPtr screenp, XF86ConfScreenPtr conf_screen, int scrnum,
 }
 
 static Bool
-configMonitor(MonPtr monitorp, XF86ConfMonitorPtr conf_monitor)
+configMonitor(MonPtr monitorp, XF86ConfMonitorPtr conf_monitor, int monnum)
 {
     int count;
     DisplayModePtr mode,last = NULL;
@@ -2186,9 +2267,10 @@ configMonitor(MonPtr monitorp, XF86ConfMonitorPtr conf_monitor)
     Gamma zeros = {0.0, 0.0, 0.0};
     float badgamma = 0.0;
     
-    xf86Msg(X_CONFIG, "|   |-->Monitor \"%s\"\n",
-	    conf_monitor->mon_identifier);
+    xf86Msg(X_CONFIG, "|   |-->Monitor \"%s\" (%d)\n",
+	    conf_monitor->mon_identifier, monnum);
     monitorp->id = conf_monitor->mon_identifier;
+    monitorp->monitorNum = monnum;
     monitorp->vendor = conf_monitor->mon_vendor;
     monitorp->model = conf_monitor->mon_modelname;
     monitorp->Modes = NULL;
@@ -2356,6 +2438,7 @@ configDisplay(DispPtr displayp, XF86ConfDisplayPtr conf_display)
     displayp->whiteColour.green = conf_display->disp_white.green;
     displayp->whiteColour.blue  = conf_display->disp_white.blue;
     displayp->options           = conf_display->disp_option_lst;
+    displayp->monitorNum        = conf_display->monitor_num;
     if (conf_display->disp_visual) {
 	displayp->defaultVisual = lookupVisual(conf_display->disp_visual);
 	if (displayp->defaultVisual == -1) {
