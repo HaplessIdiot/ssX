@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/lib/ICE/authutil.c,v 3.3 1997/10/26 13:24:41 dawes Exp $ */
+/* $XFree86: xc/lib/ICE/authutil.c,v 3.4 1998/10/03 08:41:09 dawes Exp $ */
 
 #include <X11/ICE/ICElib.h>
 #include "ICElibint.h"
@@ -85,7 +85,7 @@ IceAuthFileName ()
     char    	dir[PATH_MAX];
 #endif
 
-    if (name = getenv ("ICEAUTHORITY"))
+    if ((name = getenv ("ICEAUTHORITY")))
 	return (name);
 
     name = getenv ("HOME");

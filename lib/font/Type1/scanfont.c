@@ -45,7 +45,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/scanfont.c,v 1.10 1999/05/03 05:58:46 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/scanfont.c,v 1.11 1999/05/04 09:35:22 dawes Exp $ */
 
 #ifndef FONTMODULE
 #include <string.h>
@@ -521,27 +521,12 @@ static int getEncoding(arrayP)
     psobj *arrayP;
 {
   scan_token(inputP);
-#ifdef BUILDCID
-  if ((tokenType == TOKEN_NAME) &&
-     (((tokenLength==16) && (!strncmp(tokenStartP,"StandardEncoding",16))) ||
-      (((tokenLength==17) && (!strncmp(tokenStartP,"ISOLatin1Encoding",17))))))
-#else
   if ((tokenType == TOKEN_NAME && (tokenLength==16 || tokenLength==17)))
-#endif
   {
-#ifdef BUILDCID
-      /* Adobe Standard Encoding */
-
-      if (tokenLength == 16)
-          arrayP->data.valueP = (char *) StdEncArrayP;
-      else
-          arrayP->data.valueP = (char *) ISOLatin1EncArrayP;
-#else
     if((tokenLength==16) && (!strncmp(tokenStartP,"StandardEncoding",16)))
           arrayP->data.valueP = (char *) StdEncArrayP;
     else
           arrayP->data.valueP = (char *) ISOLatin1EncArrayP;
-#endif
       arrayP->len = 256;
       return(SCAN_OK);
   }
@@ -782,11 +767,7 @@ static int getNbytes(N)
   if (N > vm_free_bytes()) {
     return(SCAN_OUT_OF_MEMORY);
   }
-#ifdef BUILDCID
-  I = fread(tokenStartP,1,N,inputP->data.fileP);
-#else
   I = T1Read(tokenStartP,1,N,inputP->data.fileP);
-#endif
   if ( I != N )     return(SCAN_FILE_EOF);
   return(SCAN_OK);
 }
@@ -1208,11 +1189,7 @@ static int BuildPrivate(fontP)
   objFormatBoolean(&(Private[FORCEBOLD].value),DEFAULTFORCEBOLD);
   objFormatName(&(Private[LANGUAGEGROUP].key),13,"LanguageGroup");
   objFormatInteger(&(Private[LANGUAGEGROUP].value),DEFAULTLANGUAGEGROUP);
-#ifdef BUILDCID
-  objFormatName(&(Private[LENIV].key),5,"LenIV");
-#else
   objFormatName(&(Private[LENIV].key),5,"lenIV");
-#endif
   objFormatInteger(&(Private[LENIV].value),DEFAULTLENIV);
   objFormatName(&(Private[RNDSTEMUP].key),9,"RndStemUp");
   objFormatBoolean(&(Private[RNDSTEMUP].value),DEFAULTRNDSTEMUP);
@@ -1598,18 +1575,12 @@ static int FindDictValue(dictP)
          V = getNextValue(TOKEN_LITERAL_NAME);
          if ( V != SCAN_OK ) return(V);
          if (!(vm_alloc(tokenLength)) ) return(SCAN_OUT_OF_MEMORY);
-#ifdef BUILDCID
-         tokenStartP[tokenLength] = '\0';
-#endif
          objFormatName(&(dictP[N].value),tokenLength,tokenStartP);
          break;
        case OBJ_STRING:
          V = getNextValue(TOKEN_STRING);
          if ( V != SCAN_OK ) return(V);
          if (!(vm_alloc(tokenLength)) ) return(SCAN_OUT_OF_MEMORY);
-#ifdef BUILDCID
-         tokenStartP[tokenLength] = '\0';
-#endif
          objFormatString(&(dictP[N].value),tokenLength,tokenStartP);
          break;
        case OBJ_BOOLEAN:
@@ -2181,7 +2152,7 @@ int scan_cidtype1font(FontP)
             } else if (0 == strncmp(tokenStartP,"eexec",5)) {
                 if (currentfilefound == 1) {
                     currentfilefound = 0;
-                    filterFile.data.fileP = T1eexec(inputP->data.fileP);
+                    filterFile.data.fileP = CIDeexec(inputP->data.fileP);
                     if (filterFile.data.fileP == NULL) {
                       fclose(inputFile.data.fileP);
                       return(SCAN_FILE_OPEN_ERROR);
@@ -2278,11 +2249,7 @@ int scan_font(FontP)
     filterFile.data.fileP = NULL;
  
     inputP = &inputFile;
-#ifdef BUILDCID
-    if (fileP = fopen(filename,filetype)) {
-#else
     if (fileP = T1Open(filename,filetype)) {
-#endif
       /* get the first byte of file */
       V = _XT1getc(fileP);
       /* if file starts with x'80' then skip next 5 bytes */
@@ -2333,11 +2300,7 @@ int scan_font(FontP)
               if (0== strncmp(tokenStartP,"CharStrings",11) ) {
                 rc = BuildCharStrings(FontP);
                 if ( (rc == SCAN_OK) ||(rc == SCAN_END) ) {
-#ifdef BUILDCID
-                  fclose(inputP->data.fileP);
-#else
                   T1Close(inputP->data.fileP);
-#endif
                   /* Build the Blues Structure */
                   rc = GetType1Blues(FontP);
                   /* whatever the return code, return it */
@@ -2383,11 +2346,7 @@ int scan_font(FontP)
                }
                filterFile.data.fileP = T1eexec(inputP->data.fileP);
                if (filterFile.data.fileP == NULL) {
-#ifdef BUILDCID
-                 fclose(inputFile.data.fileP);
-#else
                  T1Close(inputFile.data.fileP);
-#endif
                  return(SCAN_FILE_OPEN_ERROR);
                }
                inputP = &filterFile;
@@ -2399,11 +2358,7 @@ int scan_font(FontP)
  
   }
   while (rc ==0);
-#ifdef BUILDCID
-  fclose(inputP->data.fileP);
-#else
   T1Close(inputP->data.fileP);
-#endif
   if (tokenTooLong) return(SCAN_OUT_OF_MEMORY);
   return(rc);
 }

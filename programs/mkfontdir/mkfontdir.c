@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: mkfontdir.c /main/13 1996/09/28 17:17:17 rws $ */
-/* $XFree86: xc/programs/mkfontdir/mkfontdir.c,v 3.7 1999/02/19 21:27:12 hohndel Exp $ */
+/* $XFree86: xc/programs/mkfontdir/mkfontdir.c,v 3.8 1999/05/03 12:16:08 dawes Exp $ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -122,18 +122,40 @@ extern int errno;
 #define  XK_LATIN1
 #include <X11/keysymdef.h>
 
-typedef struct EncodingEntry {
-  char *filename;
-  char **names;
-  struct EncodingEntry *next;
-} EncodingEntryRec, *EncodingEntryPtr;
-
 char *progName;
 char *prefix = "";
 Bool relative = FALSE;
 
+/* The possible extensions for encoding files, in decreasing priority */
+#ifdef X_GZIP_FONT_COMPRESSION
+#define NUMENCODINGEXTENSIONS 2
+char *encodingExtensions[]={".gz", ".Z"};
+#else
+#define NUMENCODINGEXTENSIONS 1
+char *encodingExtensions[]={".Z"};
+#endif
+
+
+typedef struct _nameBucket {
+    struct _nameBucket	*next;
+    char		*name;
+    FontRendererPtr	renderer;
+} NameBucketRec, *NameBucketPtr;
+
+typedef struct _encodingBucket {
+  struct _encodingBucket *next;
+  char *name;
+  char *fileName;
+  int priority;
+} EncodingBucketRec, *EncodingBucketPtr;
+    
+#define HASH_SIZE   1024
+/* should be a divisor of HASH_SIZE */
+#define ENCODING_HASH_SIZE 256
+
+
 static Bool WriteFontTable ( char *dirName, FontTablePtr table,
-                             EncodingEntryPtr encodings, int count);
+                             EncodingBucketPtr *encodings, int count);
 static char * NameForAtomOrNone ( Atom a );
 static Bool GetFontName ( char *file_name, char *font_name );
 static char * FontNameExists ( FontTablePtr table, char *font_name );
@@ -143,10 +165,11 @@ static Bool ProcessFile ( char *dirName, char *fileName, FontTablePtr table );
 static void Estrip ( char *ext, char *name );
 char * MakeName ( char *name );
 int Hash ( char *name );
-EncodingEntryPtr LoadEncodings(EncodingEntryPtr target, char *dirName);
+Bool LoadEncodings(EncodingBucketPtr *encodings, char *dirName, int priority);
 static Bool LoadDirectory ( char *dirName, FontTablePtr table );
 int LoadScalable ( char *dirName, FontTablePtr table );
-static Bool DoDirectory(char *dirName, EncodingEntryPtr encodings, int count);
+static Bool DoDirectory(char *dirName, 
+                        EncodingBucketPtr *encodings, int count);
 int GetDefaultPointSize ( void );
 void RegisterFPEFunctions ( void );
 void ErrorF ( void );
@@ -155,15 +178,14 @@ static Bool
 WriteFontTable(
     char	    *dirName,
     FontTablePtr    table,
-
-    EncodingEntryPtr encodings,
+    EncodingBucketPtr *encodings,
     int             count)
 {
     int		    i;
     FILE	    *file;
     char	    full_name[PATH_MAX];
     FontEntryPtr    entry;
-    char            **name;
+    EncodingBucketPtr encoding;
 
     sprintf (full_name, "%s/%s", dirName, FontDirFile);
 
@@ -193,7 +215,7 @@ WriteFontTable(
     sprintf (full_name, "%s/%s", dirName, "encodings.dir");
     if (unlink(full_name) < 0 && errno != ENOENT)
     {
-      fprintf(stderr, "%s: cannot unlink %s\n", progName, full_name);
+      fprintf(stderr, "%s: warning: cannot unlink %s\n", progName, full_name);
       return TRUE;              /* non fatal error */
     }
     if(!count) return TRUE;
@@ -204,9 +226,10 @@ WriteFontTable(
       return TRUE;
     }
     fprintf(file, "%d\n", count);
-    for(; encodings; encodings=encodings->next)
-      for(name=encodings->names; *name; name++)
-        fprintf(file, "%s %s%s\n", *name, prefix, encodings->filename);
+    for(i=0; i<ENCODING_HASH_SIZE; i++)
+      for(encoding=encodings[i]; encoding; encoding=encoding->next)
+        fprintf(file, "%s %s%s\n", 
+                encoding->name, prefix, encoding->fileName);
     fclose(file);
 
     return TRUE;
@@ -319,15 +342,7 @@ Estrip(
 
 /***====================================================================***/
 
-typedef struct _nameBucket {
-    struct _nameBucket	*next;
-    char		*name;
-    FontRendererPtr	renderer;
-} NameBucketRec, *NameBucketPtr;
-    
 #define New(type,count)	((type *) malloc (count * sizeof (type)))
-
-#define HASH_SIZE   1024
 
 char *
 MakeName(char *name)
@@ -479,12 +494,78 @@ LoadScalable (char *dirName, FontTablePtr table)
     return TRUE;
 }
 
-EncodingEntryPtr
-LoadEncodings(EncodingEntryPtr target, char *dirName)
+static Bool
+CompareEncodingFiles(char *name1, char *name2)
 {
-  EncodingEntryPtr new;
+  int len, len1, len2, p1, p2, i;
+  char *extension;
+
+  len1=strlen(name1);
+  len2=strlen(name2);
+  p1=p2=-1;
+
+  for(extension=encodingExtensions[0], i=0;
+      i<NUMENCODINGEXTENSIONS;
+      extension++, i++) {
+    len=strlen(extension);
+    if(p1<0 && len1>=len && !strcmp(name1+len1-len, extension))
+      p1=i;
+    if(p2<0 && len2>=len && !strcmp(name2+len2-len, extension))
+      p2=i;
+  }
+
+  if(p1<0)
+    return FALSE;
+  else if(p2<0)
+    return TRUE;
+  else
+    return(p1<p2);
+}
+
+static Bool
+InsertEncoding(EncodingBucketPtr *encodings,
+               char *name, char *fileName, int priority)
+{
+  int bucket;
+  EncodingBucketPtr encoding;
+
+  bucket=Hash(name)%ENCODING_HASH_SIZE;
+
+  for(encoding=encodings[bucket]; encoding; encoding=encoding->next) {
+    if(!strcmp(name, encoding->name)) {
+      if(encoding->priority<priority)
+        return TRUE;
+      else if(encoding->priority>priority)
+        break;
+      else if(CompareEncodingFiles(fileName, encoding->fileName))
+        break;
+      else
+        return TRUE;
+    }
+  }
+  
+  if(!encoding) {
+    /* Need to insert new bucket */
+    if((encoding=New(EncodingBucketRec, 1))==NULL)
+      return FALSE;
+    encoding->next=encodings[bucket];
+    encodings[bucket]=encoding;
+  }
+
+  /* Now encoding points to a bucket to fill in */
+  encoding->name=name;
+  encoding->fileName=fileName;
+  encoding->priority=priority;
+  return TRUE;
+}
+
+Bool
+LoadEncodings(EncodingBucketPtr *encodings, char *dirName, int priority)
+{
+  EncodingBucketPtr new;
   char *filename;
   char **names;
+  char **name;
   char fullname[MAXFONTFILENAMELEN];
   int len;
 #ifdef WIN32
@@ -518,7 +599,7 @@ LoadEncodings(EncodingEntryPtr target, char *dirName)
   while ((file = readdir (dirp)) != NULL) {
 #endif
     if(len+strlen(FileName(file))>=MAXFONTFILENAMELEN) {
-      fprintf(stderr, "%s: filename `%s/%s' too long\n",
+      fprintf(stderr, "%s: warning: filename `%s/%s' too long, ignored\n",
               progName, dirName, FileName(file));
       continue;
     }
@@ -526,31 +607,25 @@ LoadEncodings(EncodingEntryPtr target, char *dirName)
     names=identifyEncodingFile(fullname);
     if(names) {
       if((filename=New(char, strlen(fullname)+1))==NULL) {
-        fprintf(stderr, "%s: out of memory.\n", progName);
+        fprintf(stderr, "%s: warning: out of memory.\n", progName);
         break;
       }
       strcpy(filename, fullname);
-      if((new=New(EncodingEntryRec, 1))==NULL) {
-        free(filename);
-        fprintf(stderr, "%s: out of memory.\n", progName);
-        break;
-      }
-      new->filename=filename;
-      new->names=names;
-      new->next=NULL;
-      
-      target->next=new;
-      target=new;
+      for(name=names; *name; name++)
+        if(!InsertEncoding(encodings, *name, filename, priority))
+          fprintf(stderr, "%s: warning: failed to insert encoding %s\n", *name);
+      /* Only free the spine -- the names themselves may be used */
+      free(names);
     }
   }
 #ifdef WIN32
     while (FindNextFile(dirh, &file));
 #endif
-  return target;
+  return TRUE;
 }
 
 static Bool
-DoDirectory(char *dirName, EncodingEntryPtr encodings, int count)
+DoDirectory(char *dirName, EncodingBucketPtr *encodings, int count)
 {
     FontTableRec	table;
     Bool		status;
@@ -602,15 +677,20 @@ main (int argc, char **argv)
 {
     int argn, i, count;
     char *dirname, fulldirname[MAXFONTFILENAMELEN];
-    EncodingEntryRec encodings; /* linked list with first dummy entry */
-    EncodingEntryPtr encoding;
+    EncodingBucketPtr *encodings;
+    EncodingBucketPtr encoding;
     char **name;
 
     BitmapRegisterFontFileFunctions ();
     progName = argv[0];
+    if((encodings=New(EncodingBucketPtr, ENCODING_HASH_SIZE))==NULL) {
+      fprintf(stderr, "%s: out of memory\n", progName);
+      exit(2);
+    }
 
-    encodings.next=NULL;
-    encoding=&encodings;
+    for(i=0; i<ENCODING_HASH_SIZE; i++)
+      encodings[i]=NULL;
+
     for(argn=1; argn<argc; argn++) {
       if(argv[argn][0]=='\0' || argv[argn][0]!='-')
         break;
@@ -629,7 +709,7 @@ main (int argc, char **argv)
         } else
           dirname=argv[argn]+2;
         if(dirname[0]=='/' || relative)
-          encoding=LoadEncodings(encoding, dirname);
+          LoadEncodings(encodings, dirname, argn);
         else {
           if(getcwd(fulldirname, MAXFONTFILENAMELEN)==NULL) {
             fprintf(stderr, "%s: failed to get cwd\n", progName);
@@ -643,7 +723,7 @@ main (int argc, char **argv)
           }
           fulldirname[i++]='/';
           strcpy(fulldirname+i, dirname);
-          encoding=LoadEncodings(encoding, fulldirname);
+          LoadEncodings(encodings, fulldirname, argn);
         }
       } else if(argv[argn][1]=='p') {
         if(argv[argn][2]=='\0') {
@@ -663,14 +743,13 @@ main (int argc, char **argv)
     }
 
     count=0;
-    for(encoding=encodings.next; encoding; encoding=encoding->next) 
-      if(encoding->names)
-        for(name=encoding->names; *name; name++)
-          count++;
+    for(i=0; i<ENCODING_HASH_SIZE; i++)
+      for(encoding=encodings[i]; encoding; encoding=encoding->next) 
+        count++;
         
     if (argn==argc)
     {
-	if (!DoDirectory(".", encodings.next, count))
+	if (!DoDirectory(".", encodings, count))
 	{
 	    fprintf (stderr, "%s: failed to create directory in %s\n",
 		     progName, ".");
@@ -679,7 +758,7 @@ main (int argc, char **argv)
     }
     else
 	for (; argn < argc; argn++) {
-	    if (!DoDirectory(argv[argn], encodings.next, count))
+	    if (!DoDirectory(argv[argn], encodings, count))
 	    {
 		fprintf (stderr, "%s: failed to create directory in %s\n",
 			 progName, argv[argn]);

@@ -27,7 +27,7 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/t1stdio.h,v 1.5 1998/10/03 09:07:18 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1stdio.h,v 1.6 1999/02/25 06:00:59 dawes Exp $ */
 /* T1IO FILE structure and related stuff */
 #ifdef XFree86LOADER
 #undef FILE
@@ -57,7 +57,7 @@ typedef struct F_FILE {
 #endif
 #define EOF (-1)     /* end of file */
 #define F_BUFSIZ (512)
- 
+
 #define _XT1getc(f) \
   ( \
    ( ((f)->b_cnt > 0) && ((f)->flags == 0) ) ? \
@@ -66,6 +66,10 @@ typedef struct F_FILE {
   )
  
 #define  T1Feof(f)          (((f)->flags & FIOEOF) && ((f)->b_cnt==0))
+
+#ifdef BUILDCID
+extern FILE *CIDeexec();
+#endif
 
 extern FILE *T1Open(), *T1eexec();
 extern int T1Close(), T1Ungetc(), T1Read();
@@ -81,6 +85,7 @@ extern int T1Close(), T1Ungetc(), T1Read();
 #define  fopen(name,mode)   T1Open(name,mode)
 #define  ungetc(c,f)        T1Ungetc(c,f)
 #define  fgetc(f)           T1Getc(f)
+
 #define  fread(bufP,size,n,f) T1Read(bufP,size,n,f)
 #define  feof(f)            (((f)->flags & FIOEOF) && ((f)->b_cnt==0))
 #define  ferror(f)          (((f)->flags & FIOERROR)?(f)->error:0)

@@ -1,15 +1,10 @@
-/* $XConsortium: error.c,v 1.14 94/04/17 20:15:32 mor Exp $ */
+/* $TOG: error.c /main/17 1998/02/06 13:56:02 kaleb $ */
 /******************************************************************************
 
 
-Copyright (c) 1993  X Consortium
+Copyright 1993, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,20 +12,28 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
+/* $XFree86$ */
 
 #include <X11/ICE/ICElib.h>
 #include "ICElibint.h"
 #include <stdio.h>
+
+#include <errno.h>
+
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif
+
 
 void
 _IceErrorBadMinor (iceConn, majorOpcode, offendingMinor, severity)
@@ -422,7 +425,7 @@ IcePointer	values;
     fprintf (stderr, "ICE error:  Offending minor opcode    = %d (%s)\n",
 	offendingMinorOpcode, str);
 
-    fprintf (stderr, "            Offending sequence number = %d\n",
+    fprintf (stderr, "            Offending sequence number = %lu\n",
 	offendingSequence);
 
     switch (errorClass)
@@ -602,7 +605,9 @@ _IceDefaultIOErrorHandler (iceConn)
 IceConn iceConn;
 
 {
-    fprintf (stderr, "ICE Fatal IO error!  Did an exit().\n");
+    fprintf (stderr,
+	"ICE default IO error handler doing an exit(), pid = %d, errno = %d\n",
+	getpid(), errno);
 
     exit (1);
 }

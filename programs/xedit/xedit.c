@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/xedit.c,v 1.7 1999/04/25 10:02:53 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/xedit.c,v 1.8 1999/04/29 09:13:58 dawes Exp $ */
 
 #include "xedit.h"
 #include <X11/Xaw/SmeBSB.h>
@@ -100,6 +100,8 @@ static XtResource resources[] = {
 	 Offset(changed_pixmap_name), XtRString, "dot"},
    {"positionFormat", "Format", XtRString, sizeof(char*),
 	 Offset(position_format), XtRString, "L%l"},
+   {"autoReplace", "Replace", XtRString, sizeof(char*),
+	 Offset(auto_replace), XtRImmediate, NULL},
 };
 
 #undef Offset
@@ -130,6 +132,7 @@ main(int argc, char *argv[])
 
   StartHints();
   StartFormatPosition();
+  (void)StartHooks(appcon);
   if (position_format_mask == 0) {
       int i;
 

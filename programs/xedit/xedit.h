@@ -26,7 +26,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/xedit.h,v 1.7 1999/04/25 10:02:54 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/xedit.h,v 1.8 1999/04/29 09:13:58 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -85,6 +85,7 @@ extern struct _app_resources {
     xedit_hints hints;
     char *changed_pixmap_name;
     char *position_format;
+    char *auto_replace;
 } app_resources;
 
 extern Widget topwindow, textwindow, labelwindow, filenamewindow, messwidget;
@@ -139,3 +140,6 @@ void IspellCallback(Widget, XtPointer, XtPointer);
 
 void CreateEditPopup(void);
 void SetEditMenu(void);
+
+/*	externs in hook.c	*/
+Bool StartHooks(XtAppContext);

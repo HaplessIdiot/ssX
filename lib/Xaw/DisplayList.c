@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/lib/Xaw/DisplayList.c,v 3.10 1999/01/31 12:21:18 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/DisplayList.c,v 3.11 1999/05/16 10:12:47 dawes Exp $ */
 
 #include <ctype.h>
 #include <string.h>
@@ -1858,6 +1858,7 @@ _Xaw_Xlib_ArgsInitProc(String proc_name, String *params, Cardinal *num_params,
 	  else if (XmuCompareISOLatin1(params[0], "includeinferiors") == 0)
 	    retval = (void *)IncludeInferiors;
 	}
+      break;
     case EXPOSURES:
       if (*num_params == 1)
 	{

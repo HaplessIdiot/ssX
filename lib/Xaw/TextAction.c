@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.24 1999/05/09 10:51:41 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.25 1999/05/16 10:12:50 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,12 +47,8 @@ in this Software without prior written authorization from The Open Group.
 #define SrcScan			XawTextSourceScan
 #define FindDist		XawTextSinkFindDistance
 #define FindPos			XawTextSinkFindPosition
-#ifdef NO_NUMERIC_HACK
-#define MULT(w)			(w->text.mult)
-#else
 #define MULT(w)			(w->text.mult == 0 ? 4 :		\
 				 w->text.mult == 32767 ? -4 : w->text.mult)
-#endif
 
 #define KILL_RING_APPEND	2
 #define KILL_RING_BEGIN		3
@@ -153,9 +149,7 @@ static void MoveToLineEnd(Widget, XEvent*, String*, Cardinal*);
 static void MoveToLineStart(Widget, XEvent*, String*, Cardinal*);
 static void Multiply(Widget, XEvent*, String*, Cardinal*);
 static void NoOp(Widget, XEvent*, String*, Cardinal*);
-#ifndef NO_NUMERIC_HACK
 static void Numeric(Widget, XEvent*, String*, Cardinal*);
-#endif
 static void Reconnect(Widget, XEvent*, String*, Cardinal*);
 static void RedrawDisplay(Widget, XEvent*, String*, Cardinal*);
 static void Scroll(TextWidget, XEvent*, XawTextScanDirection);
@@ -314,9 +308,7 @@ EndAction(TextWidget ctx)
 	_XawTextExecuteUpdate((TextWidget)src->textSrc.text[i]);
 
     ctx->text.mult = 1;
-#ifndef NO_NUMERIC_HACK
-    ctx->text.doing_numeric_hack = False;
-#endif
+    ctx->text.numeric = False;
     if (ctx->text.kill_ring) {
 	if (--ctx->text.kill_ring == KILL_RING_YANK_DONE) {
 	    if (ctx->text.kill_ring_ptr) {
@@ -556,9 +548,8 @@ Move(TextWidget ctx, XEvent *event, XawTextScanDirection dir,
     else if (insertPos == ctx->text.insertPos
 	     && IsPositionVisible(ctx, insertPos)) {
 	ctx->text.mult = 1;
-#ifndef NO_NUMERIC_HACK
-	ctx->text.doing_numeric_hack = False;
-#endif
+	ctx->text.numeric = False;
+
 	return;
     }
 
@@ -716,13 +707,8 @@ MoveLine(TextWidget ctx, XEvent *event, XawTextScanDirection dir)
 
     StartAction(ctx, event);
 
-    if (dir == XawsdLeft) {
-#ifndef NO_NUMERIC_HACK
-	if (mult == 0)
-	    mult = 4;
-#endif
-	mult++;
-    }
+    if (dir == XawsdLeft)
+	mult = mult == 0 ? 5 : mult + 1;
 
     cnew = SrcScan(ctx->text.source, ctx->text.insertPos,
 		   XawstEOL, XawsdLeft, 1, False);
@@ -837,9 +823,7 @@ Scroll(TextWidget ctx, XEvent *event, XawTextScanDirection dir)
     }
     else {
 	ctx->text.mult = 1;
-#ifndef NO_NUMERIC_HACK
-	ctx->text.doing_numeric_hack = False;
-#endif
+	ctx->text.numeric = False;
     }
 }
 
@@ -1963,7 +1947,7 @@ FormatText(TextWidget ctx, XawTextPosition left, Bool force,
 	   XawTextPosition *pos, int num_pos)
 {
     char *ptr = NULL;
-    Bool freepos, undo, paragraph = pos != NULL;
+    Bool freepos = False, undo, paragraph = pos != NULL;
     int i, result;
     XawTextBlock block, *text;
     XawTextPosition end = ctx->text.lastPos, buf[32];
@@ -3251,13 +3235,12 @@ DisplayCaret(Widget w, XEvent *event, String *params, Cardinal *num_params)
   EndAction(ctx);
 }
 
-#ifndef NO_NUMERIC_HACK
 static void
 Numeric(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     TextWidget ctx = (TextWidget)w;
 
-    if (ctx->text.doing_numeric_hack) {
+    if (ctx->text.numeric) {
 	long mult = ctx->text.mult;
 
 	if (*num_params != 1 || strlen(params[0]) != 1
@@ -3274,7 +3257,7 @@ Numeric(Widget w, XEvent *event, String *params, Cardinal *num_params)
 			"numeric: Invalid argument%s'%s'",
 			*num_params ? ", " : "", *num_params ? params[0] : "");
 	    XtAppWarning(XtWidgetToApplicationContext(w), err_buf);
-	    ctx->text.doing_numeric_hack = False;
+	    ctx->text.numeric = False;
 	    ctx->text.mult = 1;
 	    return;
 	}
@@ -3293,14 +3276,13 @@ Numeric(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	if (mult != ctx->text.mult || mult >= 32767) {	/* checks for overflow */
 	    XBell(XtDisplay(w), 0);
 	    ctx->text.mult = 1;
-	    ctx->text.doing_numeric_hack = False;
+	    ctx->text.numeric = False;
 	    return;
 	}
     }
     else
 	InsertChar(w, event, params, num_params);
 }
-#endif
 
 /*ARGSUSED*/
 static void
@@ -3308,9 +3290,7 @@ KeyboardReset(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     TextWidget ctx = (TextWidget)w;
 
-#ifndef NO_NUMERIC_HACK
-    ctx->text.doing_numeric_hack = False;
-#endif
+    ctx->text.numeric = False;
     ctx->text.mult = 1;
 
     (void)_XawTextSrcToggleUndo((TextSrcObject)ctx->text.source);
@@ -3338,9 +3318,7 @@ static void
 Multiply(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
   TextWidget ctx = (TextWidget)w;
-#ifdef NO_NUMERIC_HACK
   int mult;
-#endif
 
   if (*num_params != 1)
     {
@@ -3353,15 +3331,17 @@ Multiply(Widget w, XEvent *event, String *params, Cardinal *num_params)
   if ((params[0][0] == 'r') || (params[0][0] == 'R'))
     {
       XBell(XtDisplay(w), 0);
-#ifndef NO_NUMERIC_HACK
-      ctx->text.doing_numeric_hack = False;
-#endif
+      ctx->text.numeric = False;
       ctx->text.mult = 1;
       return;
     }
 
-#ifdef NO_NUMERIC_HACK
-  if ((mult = atoi(params[0])) == 0)
+  if (params[0][0] == 's' || params[0][0] == 'S') {
+      ctx->text.numeric = True;
+      ctx->text.mult = 0;
+      return;
+  }
+  else if ((mult = atoi(params[0])) == 0)
     {
       char buf[BUFSIZ];
 
@@ -3374,12 +3354,6 @@ Multiply(Widget w, XEvent *event, String *params, Cardinal *num_params)
     }
 
   ctx->text.mult *= mult;
-#else
-  if (params[0][0] == 's' || params[0][0] == 'S') {
-      ctx->text.doing_numeric_hack = True;
-      ctx->text.mult = 0;
-  }
-#endif
 }
 
 /* StripOutOldCRs() - called from FormRegion
@@ -4057,9 +4031,7 @@ XtActionsRec _XawTextActionsTable[] = {
   {"form-paragraph",		FormParagraph},
   {"transpose-characters",	TransposeCharacters},
   {"set-keyboard-focus",	SetKeyboardFocus},
-#ifndef NO_NUMERIC_HACK
   {"numeric",			Numeric},
-#endif
   {"undo",			Undo},
   {"keyboard-reset",		KeyboardReset},
   {"kill-ring-yank",		KillRingYank},

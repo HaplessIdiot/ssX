@@ -1,15 +1,10 @@
-/* $XConsortium: misc.c,v 1.24 94/04/17 20:15:35 mor Exp $ */
+/* $TOG: misc.c /main/30 1998/02/06 13:57:24 kaleb $ */
 /******************************************************************************
 
 
-Copyright (c) 1993  X Consortium
+Copyright 1993, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,16 +12,17 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
+/* $XFree86$ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -36,13 +32,7 @@ Author: Ralph Mor, X Consortium
 #include <X11/Xtrans.h>
 #include <stdio.h>
 #ifdef WIN32
-#define BOOL wBOOL
-#undef Status
-#define Status wStatus
-#include <winsock.h>
-#undef Status
-#define Status int
-#undef BOOL
+#include <X11/Xwinsock.h>
 #include <X11/Xw32defs.h>
 #endif
 
@@ -76,8 +66,9 @@ unsigned long	size;
  * Output/Input buffer functions
  */
 
+int
 IceFlush (iceConn)
-
+     
 IceConn iceConn;
 
 {
@@ -86,6 +77,7 @@ IceConn iceConn;
 	iceConn->outbuf);
 
     iceConn->outbufptr = iceConn->outbuf;
+    return 1;
 }
 
 
@@ -289,6 +281,16 @@ register char	 *ptr;
 
 		iceConn->io_ok = False;
 
+		if (iceConn->connection_status == IceConnectPending)
+		{
+		    /*
+		     * Don't invoke IO error handler if we are in the
+		     * middle of a connection setup.
+		     */
+
+		    return (1);
+		}
+
 		if (iceConn->process_msg_info)
 		{
 		    int i;
@@ -388,6 +390,16 @@ register char	 *ptr;
 	     */
 
 	    iceConn->io_ok = False;
+
+	    if (iceConn->connection_status == IceConnectPending)
+	    {
+		/*
+		 * Don't invoke IO error handler if we are in the
+		 * middle of a connection setup.
+		 */
+
+		return;
+	    }
 
 	    if (iceConn->process_msg_info)
 	    {
@@ -603,23 +615,5 @@ _IceGetPeerName (iceConn)
 IceConn iceConn;
 
 {
-    int		family, peer_addrlen;
-    Xtransaddr	*peer_addr;
-    char 	*networkId;
-
-
-    if (_IceTransGetPeerAddr (iceConn->trans_conn,
-	&family, &peer_addrlen, &peer_addr) < 0)
-    {
-	return (NULL);
-    }
-    else
-    {
-	networkId = _IceTransGetPeerNetworkId (
-	    family, peer_addrlen, peer_addr);
-
-	free (peer_addr);
-
-	return (networkId);
-    }
+    return (_IceTransGetPeerNetworkId (iceConn->trans_conn));
 }

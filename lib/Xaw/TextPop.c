@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextPop.c,v 1.7 1998/12/06 06:08:13 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextPop.c,v 1.8 1999/03/21 07:34:30 dawes Exp $ */
 
 /*
  * This file is broken up into three sections one dealing with
@@ -124,6 +124,7 @@ void _XawTextSetField(Widget, XEvent*, String*, Cardinal*);
  * From Text.c
  */
 char *_XawTextGetText(TextWidget, XawTextPosition, XawTextPosition);
+void _XawTextShowPosition(TextWidget);
 
 /*
  * Initialization
@@ -328,7 +329,7 @@ InsertFileNamed(Widget tw, char *str)
   fseek(file, 0L, 0);
   if (fread(text.ptr, 1, text.length, file) != text.length)
       XtErrorMsg("readError", "insertFileNamed", "XawError",
-	       "fread returned error", NULL, NULL);
+                 "fread returned error", NULL, NULL);
 
   if (XawTextReplace(tw, pos, pos, &text) != XawEditDone)
     {
@@ -340,6 +341,7 @@ InsertFileNamed(Widget tw, char *str)
   XtFree(text.ptr);
   fclose(file);
   XawTextSetInsertionPoint(tw, pos);
+  _XawTextShowPosition((TextWidget)tw);
 
   return (True);
 }
@@ -846,62 +848,63 @@ AddSearchChildren(Widget form, char *ptr, Widget tw)
 static Bool
 DoSearch(struct SearchAndReplace *search)
 {
-  char msg[BUFSIZ];
-  Widget tw = XtParent(search->search_popup);
-  XawTextPosition pos;
-  XawTextScanDirection dir;
-  XawTextBlock text;
+    char msg[BUFSIZ];
+    Widget tw = XtParent(search->search_popup);
+    XawTextPosition pos;
+    XawTextScanDirection dir;
+    XawTextBlock text;
+    TextWidget ctx = (TextWidget)tw;
 
-  TextWidget ctx = (TextWidget)tw;
+    text.firstPos = 0;
+    text.ptr = GetStringRaw(search->search_text);
+    if ((text.format = _XawTextFormat(ctx)) == XawFmtWide)
+	text.length = wcslen((wchar_t*)text.ptr);
+    else {
+	text.length = strlen(text.ptr);
 
-  text.firstPos = 0;
-  text.ptr = GetStringRaw(search->search_text);
-  if ((text.format = _XawTextFormat(ctx)) == XawFmtWide)
-      text.length = wcslen((wchar_t*)text.ptr);
-  else {
-      text.length = strlen(text.ptr);
-
-      if (search->case_sensitive) {
+	if (search->case_sensitive) {
 	  /* text.firstPos isn't useful here, so I'll use it as an
 	   * options flag.
 	   */
-	  Arg args[1];
-	  Boolean case_sensitive;
+	    Arg args[1];
+	    Boolean case_sensitive;
 
-	  XtSetArg(args[0], XtNstate, &case_sensitive);
-	  XtGetValues(search->case_sensitive, args, 1);
-	  text.firstPos = !case_sensitive;
-      }
-  }
+	    XtSetArg(args[0], XtNstate, &case_sensitive);
+	    XtGetValues(search->case_sensitive, args, 1);
+	    text.firstPos = !case_sensitive;
+	}
+    }
   
-  dir = (XawTextScanDirection)
-    ((XPointer)XawToggleGetCurrent(search->left_toggle) - R_OFFSET);
+    dir = (XawTextScanDirection)
+      ((XPointer)XawToggleGetCurrent(search->left_toggle) - R_OFFSET);
 
-  pos = XawTextSearch(tw, dir, &text);
+    pos = XawTextSearch(tw, dir, &text);
 
    /* The Raw string in find.ptr may be WC I can't use here, so I re - call 
      GetString to get a tame version */
 
-  if (pos == XawTextSearchError)
-    (void)XmuSnprintf(msg, sizeof(msg),
-		      "Could not find string ``%s''.",
-		      GetString(search->search_text));
-  else
-    {
-    if (dir == XawsdRight)
-	XawTextSetInsertionPoint(tw, pos + text.length);
-    else
-	XawTextSetInsertionPoint(tw, pos);
-    
-      XawTextSetSelection(tw, pos, pos + text.length);
-      search->selection_changed = False;	/* selection is good */
-      return (True);
-  }
-  
-  XawTextUnsetSelection(tw);
-  SetSearchLabels(search, msg, "", True);
+    if (pos == XawTextSearchError)
+	(void)XmuSnprintf(msg, sizeof(msg),
+			  "Could not find string ``%s''.",
+			  GetString(search->search_text));
+    else {
+	XawTextDisableRedisplay(tw);
+	if (dir == XawsdRight)
+	    XawTextSetInsertionPoint(tw, pos + text.length);
+	else
+	    XawTextSetInsertionPoint(tw, pos);
+	_XawTextShowPosition(ctx);
+	XawTextEnableRedisplay(tw);
 
-  return (False);
+	XawTextSetSelection(tw, pos, pos + text.length);
+	search->selection_changed = False;	/* selection is good */
+	return (True);
+    }
+  
+    XawTextUnsetSelection(tw);
+    SetSearchLabels(search, msg, "", True);
+
+    return (False);
 }
 
 /*
@@ -988,109 +991,109 @@ DoReplaceAll(Widget w, XtPointer closure, XtPointer call_data)
 static Bool
 Replace(struct SearchAndReplace *search, Bool once_only, Bool show_current)
 {
-  XawTextPosition pos, new_pos, end_pos;
-  XawTextScanDirection dir;
-  XawTextBlock find, replace;
-  Widget tw = XtParent(search->search_popup);
-  int count = 0;
+    XawTextPosition pos, new_pos, end_pos;
+    XawTextScanDirection dir;
+    XawTextBlock find, replace;
+    Widget tw = XtParent(search->search_popup);
+    int count = 0;
+    TextWidget ctx = (TextWidget)tw;
 
-  TextWidget ctx = (TextWidget)tw;
-
-  find.ptr = GetStringRaw(search->search_text);
-  if ((find.format = _XawTextFormat(ctx)) == XawFmtWide)
-    find.length = (XawTextPosition)wcslen((wchar_t*)find.ptr);
-  else
-    find.length = (XawTextPosition)strlen(find.ptr);
-  find.firstPos = 0;
-
-  replace.ptr = GetStringRaw(search->rep_text);
-  replace.firstPos = 0;
-  if ((replace.format = _XawTextFormat(ctx)) == XawFmtWide)
-      replace.length = wcslen((wchar_t*)replace.ptr);
-  else
-      replace.length = strlen(replace.ptr);
-    
-  dir = (XawTextScanDirection)
-    XawToggleGetCurrent(search->left_toggle) - R_OFFSET;
-      
-  /*CONSTCOND*/
-  while (True)
-    {
-      if (count != 0)
-	{
-	  new_pos = XawTextSearch(tw, dir, &find);
-
-	  if (new_pos == XawTextSearchError)
-	    {
-	      if (count == 0)
-		{
-	  char msg[BUFSIZ];
-
-             /* The Raw string in find.ptr may be WC I can't use here, 
-		     so I call GetString to get a tame version */
-
-	  (void)XmuSnprintf(msg, sizeof(msg),
-				    "Error: Could not find string ``%s''",
-				    GetString(search->search_text));
-		  SetSearchLabels(search, msg, "", True);
-
-		  return (False);
-	}
-	else
-	  break;
-      }
-      pos = new_pos;
-      end_pos = pos + find.length;
-    }
-      else
-	{
-      XawTextGetSelectionPos(tw, &pos, &end_pos);
-
-	  if (search->selection_changed)
-	    {
-	SetSearchLabels(search, "Selection has been modified, aborting.",
-			      "", True);
-	      return (False);
-      }
-      if (pos == end_pos) 
-	    return (False);
-    }
-
-      if (XawTextReplace(tw, pos, end_pos, &replace) != XawEditDone)
-	{
-      char msg[BUFSIZ];
-
-      (void)XmuSnprintf(msg, sizeof(msg),
-			    "'%s' with '%s'", find.ptr, replace.ptr);
-	  SetSearchLabels(search, "Error while replacing", msg, True);
-
-	  return (False);
-    }      
-
-    if (dir == XawsdRight)
-	XawTextSetInsertionPoint(tw, pos + replace.length);
+    find.ptr = GetStringRaw(search->search_text);
+    if ((find.format = _XawTextFormat(ctx)) == XawFmtWide)
+	find.length = (XawTextPosition)wcslen((wchar_t*)find.ptr);
     else
-	XawTextSetInsertionPoint(tw, pos);
+	find.length = (XawTextPosition)strlen(find.ptr);
+    find.firstPos = 0;
 
-    if (once_only) 
-	{
-      if (show_current)
-	break;
-	  else
-	    {
-	DoSearch(search);
-	      return (True);
+    replace.ptr = GetStringRaw(search->rep_text);
+    replace.firstPos = 0;
+    if ((replace.format = _XawTextFormat(ctx)) == XawFmtWide)
+	replace.length = wcslen((wchar_t*)replace.ptr);
+    else
+	replace.length = strlen(replace.ptr);
+    
+    dir = (XawTextScanDirection)
+      XawToggleGetCurrent(search->left_toggle) - R_OFFSET;
+      
+    XawTextDisableRedisplay(tw);
+    /*CONSTCOND*/
+    while (True) {
+	if (count != 0)	{
+	    new_pos = XawTextSearch(tw, dir, &find);
+
+	    if (new_pos == XawTextSearchError) {
+		if (count == 0) {
+		    char msg[BUFSIZ];
+
+		    /* The Raw string in find.ptr may be WC I can't use here, 
+		       so I call GetString to get a tame version */
+
+		    (void)XmuSnprintf(msg, sizeof(msg),
+				      "Error: Could not find string ``%s''",
+				      GetString(search->search_text));
+		    SetSearchLabels(search, msg, "", True);
+
+		    _XawTextShowPosition(ctx);
+		    XawTextEnableRedisplay(tw);
+
+		    return (False);
+		}
+		else
+		    break;
 	    }
-      }
-    count++;
-  }
+	    pos = new_pos;
+	    end_pos = pos + find.length;
+	}
+	else {
+	    XawTextGetSelectionPos(tw, &pos, &end_pos);
 
-  if (replace.length == 0)
-    XawTextUnsetSelection(tw);
-  else
-    XawTextSetSelection(tw, pos, pos + replace.length);
+	    if (search->selection_changed) {
+		SetSearchLabels(search, "Selection has been modified, aborting.",
+				"", True);
+		return (False);
+	    }
+	    if (pos == end_pos) 
+		return (False);
+	}
 
-  return (True);
+	if (XawTextReplace(tw, pos, end_pos, &replace) != XawEditDone) {
+	    char msg[BUFSIZ];
+
+	    (void)XmuSnprintf(msg, sizeof(msg),
+			      "'%s' with '%s'", find.ptr, replace.ptr);
+	    SetSearchLabels(search, "Error while replacing", msg, True);
+
+	    return (False);
+	}
+
+	if (dir == XawsdRight)
+	    XawTextSetInsertionPoint(tw, pos + replace.length);
+	else
+	    XawTextSetInsertionPoint(tw, pos);
+
+	if (once_only) {
+	    if (show_current)
+		break;
+	    else {
+		DoSearch(search);
+		_XawTextShowPosition(ctx);
+		XawTextEnableRedisplay(tw);
+
+		return (True);
+	    }
+	}
+	count++;
+    }
+
+    if (replace.length == 0)
+	XawTextUnsetSelection(tw);
+    else
+	XawTextSetSelection(tw, pos, pos + replace.length);
+
+    _XawTextShowPosition(ctx);
+    XawTextEnableRedisplay(tw);
+
+    return (True);
 }
 
 /*

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xv/Xv.c,v 1.6 1999/01/31 12:21:23 dawes Exp $ */
+/* $XFree86: xc/lib/Xv/Xv.c,v 1.7 1999/04/11 13:10:33 dawes Exp $ */
 /*
 ** File: 
 **
@@ -73,13 +73,15 @@ static char *_XvErrorString();
   SyncHandle()
 
 int
-XvQueryExtension(dpy, p_version, p_revision, 
-		 p_requestBase, p_eventBase, p_errorBase)
-     register Display *dpy;
-     unsigned int *p_version, *p_revision;
-     unsigned int *p_requestBase, *p_eventBase, *p_errorBase;
-{
-  register xvQueryExtensionReq *req;
+XvQueryExtension(
+     Display *dpy,
+     unsigned int *p_version,
+     unsigned int *p_revision,
+     unsigned int *p_requestBase,
+     unsigned int *p_eventBase,
+     unsigned int *p_errorBase
+){
+  xvQueryExtensionReq *req;
   xvQueryExtensionReply rep;
 
   PREAMBLE(XvBadExtension);
@@ -105,13 +107,13 @@ XvQueryExtension(dpy, p_version, p_revision,
 }
 
 int
-XvQueryAdaptors(dpy, window, p_nAdaptors, p_pAdaptors)
-     register Display *dpy;
-     Window window;
-     unsigned int *p_nAdaptors;
-     XvAdaptorInfo **p_pAdaptors;
-{
-  register xvQueryAdaptorsReq *req;
+XvQueryAdaptors(
+     Display *dpy,
+     Window window,
+     unsigned int *p_nAdaptors,
+     XvAdaptorInfo **p_pAdaptors
+){
+  xvQueryAdaptorsReq *req;
   xvQueryAdaptorsReply rep;
   int size,ii,jj;
   char *name;
@@ -143,10 +145,6 @@ XvQueryAdaptors(dpy, window, p_nAdaptors, p_pAdaptors)
   size = rep.length << 2;
   if ( (buffer = (char *)Xmalloc ((unsigned) size)) == NULL)
     {
-#if 0
-      /* XXX lock isn't defined */
-      _XUnlockMutex(&lock);
-#endif
       UnlockDisplay(dpy);
       SyncHandle();
       return(XvBadAlloc);
@@ -242,11 +240,9 @@ XvQueryAdaptors(dpy, window, p_nAdaptors, p_pAdaptors)
 
 
 void
-XvFreeAdaptorInfo(pAdaptors)
-     XvAdaptorInfo *pAdaptors;
+XvFreeAdaptorInfo(XvAdaptorInfo *pAdaptors)
 {
 
-  XvEncodingInfo *pe;
   XvAdaptorInfo *pa;
   int ii;
 
@@ -270,15 +266,15 @@ XvFreeAdaptorInfo(pAdaptors)
 }
 
 int
-XvQueryEncodings(dpy, port, p_nEncodings, p_pEncodings)
-     register Display *dpy;
-     XvPortID port;
-     unsigned int *p_nEncodings;
-     XvEncodingInfo **p_pEncodings;
-{
-  register xvQueryEncodingsReq *req;
+XvQueryEncodings(
+     Display *dpy,
+     XvPortID port,
+     unsigned int *p_nEncodings,
+     XvEncodingInfo **p_pEncodings
+){
+  xvQueryEncodingsReq *req;
   xvQueryEncodingsReply rep;
-  int size,ii,jj;
+  int size, jj;
   char *name;
   XvEncodingInfo *pes, *pe;
   char *buffer;
@@ -306,10 +302,6 @@ XvQueryEncodings(dpy, port, p_nEncodings, p_pEncodings)
   size = rep.length << 2;
   if ( (buffer = (char *)Xmalloc ((unsigned) size)) == NULL)
     {
-#if 0
-      /* XXX lock isn't defined */
-      _XUnlockMutex(&lock);
-#endif
       UnlockDisplay(dpy);
       SyncHandle();
       return(XvBadAlloc);
@@ -377,8 +369,7 @@ XvQueryEncodings(dpy, port, p_nEncodings, p_pEncodings)
 }
 
 void
-XvFreeEncodingInfo(pEncodings)
-     XvEncodingInfo *pEncodings;
+XvFreeEncodingInfo(XvEncodingInfo *pEncodings)
 {
 
   XvEncodingInfo *pe;
@@ -398,17 +389,17 @@ XvFreeEncodingInfo(pEncodings)
 }
 
 int
-XvPutVideo(dpy, port, d, gc, vx, vy, vw, vh, dx, dy, dw, dh)
-     register Display *dpy;
-     XvPortID port;
-     Drawable d;
-     GC gc;
-     int vx, vy, dx, dy;
-     unsigned int vw, vh;
-     unsigned int dw, dh;
-{
-  int size;
-  register xvPutVideoReq *req;
+XvPutVideo(
+     Display *dpy,
+     XvPortID port,
+     Drawable d,
+     GC gc,
+     int vx, int vy, 
+     unsigned int vw, unsigned int vh,
+     int dx, int dy,
+     unsigned int dw, unsigned int dh
+){
+  xvPutVideoReq *req;
 
   PREAMBLE(XvBadExtension);
   
@@ -434,17 +425,17 @@ XvPutVideo(dpy, port, d, gc, vx, vy, vw, vh, dx, dy, dw, dh)
 }
 
 int
-XvPutStill(dpy, port, d, gc, vx, vy, vw, vh, dx, dy, dw, dh)
-     register Display *dpy;
-     XvPortID port;
-     Drawable d;
-     GC gc;
-     int vx, vy, dx, dy;
-     unsigned int vw, vh;
-     unsigned int dw, dh;
-{
-  int size;
-  register xvPutStillReq *req;
+XvPutStill(
+     Display *dpy,
+     XvPortID port,
+     Drawable d,
+     GC gc,
+     int vx, int vy, 
+     unsigned int vw, unsigned int vh,
+     int dx, int dy,
+     unsigned int dw, unsigned int dh
+){
+  xvPutStillReq *req;
 
   PREAMBLE(XvBadExtension);
 
@@ -469,17 +460,17 @@ XvPutStill(dpy, port, d, gc, vx, vy, vw, vh, dx, dy, dw, dh)
 }
 
 int
-XvGetVideo(dpy, port, d, gc, vx, vy, vw, vh, dx, dy, dw, dh)
-     register Display *dpy;
-     XvPortID port;
-     Drawable d;
-     GC gc;
-     int vx, vy, dx, dy;
-     unsigned int vw, vh;
-     unsigned int dw, dh;
-{
-  int size;
-  register xvGetVideoReq *req;
+XvGetVideo(
+     Display *dpy,
+     XvPortID port,
+     Drawable d,
+     GC gc,
+     int vx, int vy, 
+     unsigned int vw, unsigned int vh,
+     int dx, int dy,
+     unsigned int dw, unsigned int dh
+){
+  xvGetVideoReq *req;
 
   PREAMBLE(XvBadExtension);
 
@@ -504,17 +495,17 @@ XvGetVideo(dpy, port, d, gc, vx, vy, vw, vh, dx, dy, dw, dh)
 }
 
 int
-XvGetStill(dpy, port, d, gc, vx, vy, vw, vh, dx, dy, dw, dh)
-     register Display *dpy;
-     XvPortID port;
-     Drawable d;
-     GC gc;
-     int vx, vy, dx, dy;
-     unsigned int vw, vh;
-     unsigned int dw, dh;
-{
-  int size;
-  register xvGetStillReq *req;
+XvGetStill(
+     Display *dpy,
+     XvPortID port,
+     Drawable d,
+     GC gc,
+     int vx, int vy, 
+     unsigned int vw, unsigned int vh,
+     int dx, int dy,
+     unsigned int dw, unsigned int dh
+){
+  xvGetStillReq *req;
 
   PREAMBLE(XvBadExtension);
 
@@ -539,12 +530,12 @@ XvGetStill(dpy, port, d, gc, vx, vy, vw, vh, dx, dy, dw, dh)
 }
 
 int
-XvStopVideo(dpy, port, draw)
-     register Display *dpy;
-     XvPortID port;
-     Drawable draw;
-{
-  register xvStopVideoReq *req;
+XvStopVideo(
+     Display *dpy,
+     XvPortID port,
+     Drawable draw
+){
+  xvStopVideoReq *req;
 
   PREAMBLE(XvBadExtension);
 
@@ -558,14 +549,14 @@ XvStopVideo(dpy, port, draw)
 }
 
 int
-XvGrabPort(dpy, port, time)
-     register Display *dpy;
-     XvPortID port;
-     Time time;
-{
+XvGrabPort(
+     Display *dpy,
+     XvPortID port,
+     Time time
+){
   int result;
   xvGrabPortReply rep;
-  register xvGrabPortReq *req;
+  xvGrabPortReq *req;
 
   PREAMBLE(XvBadExtension);
 
@@ -584,12 +575,12 @@ XvGrabPort(dpy, port, time)
 }
 
 int
-XvUngrabPort(dpy, port, time)
-     register Display *dpy;
-     XvPortID port;
-     Time time;
-{
-  register xvUngrabPortReq *req;
+XvUngrabPort(
+     Display *dpy,
+     XvPortID port,
+     Time time
+){
+  xvUngrabPortReq *req;
 
   PREAMBLE(XvBadExtension);
 
@@ -603,11 +594,11 @@ XvUngrabPort(dpy, port, time)
 }
 
 int
-XvSelectVideoNotify(dpy, drawable, onoff)
-     register Display *dpy;
-     Drawable drawable;
-     Bool onoff;
-{
+XvSelectVideoNotify(
+     Display *dpy,
+     Drawable drawable,
+     Bool onoff
+){
   register xvSelectVideoNotifyReq *req;
 
   PREAMBLE(XvBadExtension);
@@ -622,12 +613,12 @@ XvSelectVideoNotify(dpy, drawable, onoff)
 }
 
 int
-XvSelectPortNotify(dpy, port, onoff)
-     register Display *dpy;
-     XvPortID port;
-     Bool onoff;
-{
-  register xvSelectPortNotifyReq *req;
+XvSelectPortNotify(
+     Display *dpy,
+     XvPortID port,
+     Bool onoff
+){
+  xvSelectPortNotifyReq *req;
 
   PREAMBLE(XvBadExtension);
 
@@ -733,11 +724,56 @@ XvQueryBestSize(dpy, port, motion, vid_w, vid_h, drw_w, drw_h,
   return (Success);
 }
 
+
+XvAttribute* 
+XvQueryPortAttributes(Display *dpy, XvPortID port, int *num)
+{
+  xvQueryPortAttributesReq *req;
+  xvQueryPortAttributesReply rep;
+  XvAttribute *ret = NULL;
+
+  *num = 0;
+
+  PREAMBLE(NULL);
+
+  XvGetReq(QueryPortAttributes, req);
+  req->port = port;
+
+  /* READ THE REPLY */
+
+  if (_XReply(dpy, (xReply *)&rep, 0, xFalse) == 0) {
+      UnlockDisplay(dpy);
+      SyncHandle();
+      return ret;
+  }
+
+  if(rep.num_attributes) {
+      int size = (rep.num_attributes * sizeof(XvAttribute)) + rep.text_size;
+
+      if((ret = Xmalloc(size))) {
+	  char* marker = (char*)(&ret[rep.num_attributes]);
+	  xvAttributeInfo Info;
+	  int i;
+	
+	  for(i = 0; i < rep.num_attributes; i++) {
+             _XRead(dpy, (char*)(&Info), sz_xvAttributeInfo);
+	      ret[i].flags = (int)Info.flags;	      
+	      ret[i].name = marker;	      
+	      _XRead(dpy, marker, Info.size);
+	      marker += Info.size;
+	      (*num)++;
+	  }
+      } else
+	_XEatData(dpy, rep.length << 2);
+  }
+
+  POSTAMBLE;
+
+  return ret;
+}
+
 static Bool
-_XvWireToEvent(dpy, re, event)
-    register Display *dpy;	/* pointer to display structure */
-    register XvEvent *re;	/* pointer to where event should be reformatted */
-    register xvEvent *event;	/* protocol event */
+_XvWireToEvent(Display *dpy, XvEvent *re, xvEvent *event)
 {
 
   if (event->u.u.type == _XvCodes->first_event+XvVideoNotify)
@@ -781,12 +817,8 @@ _XvWireToEvent(dpy, re, event)
 }
 
 Bool
-_XvInitExtension(dpy)
-     register Display *dpy;	/* pointer to display structure */
+_XvInitExtension(Display *dpy)
 {
-  int num;
-  Bool ss;
-
   if (!(_XvCodes = XInitExtension (dpy, XvName)))
     {
       return False;
@@ -809,13 +841,13 @@ _XvInitExtension(dpy)
 }
 
 static char *
-_XvErrorString(dpy, code, ecodes, buffer, size)
-     register Display *dpy;	/* pointer to display structure */
-     int code;
-     XExtCodes *ecodes;
-     char *buffer;
-     int size;
-{
+_XvErrorString(
+     Display *dpy,
+     int code,
+     XExtCodes *ecodes,
+     char *buffer,
+     int size
+){
 
   if (size < strlen("Encoding") + 1)
     {

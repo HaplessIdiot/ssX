@@ -22,13 +22,30 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.5 1999/04/05 07:13:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.6 1999/05/15 12:10:32 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
  *
  * Wacom V protocol work done by Raph Levien <raph@gtk.org>.
  */
+
+/*
+ * Bugs fixed by Steve Day (Updated: Apr 5 1999)
+ *
+ * MaxX and MaxY values that the Wacom returns are now converted from
+ * 1270lpi to the actual X and Y resolutions that the tablet is using.
+ *
+ * Buffer bug fixed when reading X and Y resolutions from config
+ * string, now receives the true X and Y resolutions. This has the
+ * side effect of being more compatible with other models of Wacom
+ * that have varying lengths of headers.
+ *
+ * <steve@lineardesigns.co.uk>
+ *
+ */
+
+static const char identification[] = "$Identification: 3 $";
 
 #include <xf86Version.h>
 
@@ -171,19 +188,35 @@ static int      debug_level = 0;
 
 typedef struct
 {
-    int		device_id;
-    int		serial_num;
-    int		x;
-    int		y;
-    int		buttons;
-    int		pressure;
-    int		tiltx;
-    int		tilty;
-    int		rotation;
-    int		wheel;
-    int		discard_first;
-    int		proximity;
+    int		state;
+    int		coord[3];
+    int		tilt[3];
+} WacomFilterState;
+
+typedef struct
+{
+    int			device_id;
+    int			device_type;
+    unsigned int	serial_num;
+    int			x;
+    int			y;
+    int			buttons;
+    int			pressure;
+    int			tiltx;
+    int			tilty;
+    int			rotation;
+    int			wheel;
+    int			discard_first;
+    int			proximity;
+    WacomFilterState	x_filter;
+    WacomFilterState	y_filter;
 } WacomDeviceState;
+
+#define PEN(ds)         (((ds->device_id) & 0x07ff) == 0x0022)
+#define AIRBRUSH(ds)    (((ds->device_id) & 0x07ff) == 0x0112)
+#define MOUSE_4D(ds)    (((ds->device_id) & 0x07ff) == 0x0094)
+#define LENS_CURSOR(ds) (((ds->device_id) & 0x07ff) == 0x0096)
+#define INKING_PEN(ds)  (((ds->device_id) & 0x07ff) == 0x0012)
 
 typedef struct
 {
@@ -195,6 +228,7 @@ typedef struct
     int			bottomY;	/* Y bottom */
     double		factorX;	/* X factor */
     double		factorY;	/* Y factor */
+    unsigned int	serial;	        /* device serial number */
 
     struct _WacomCommonRec *common;	/* common info pointer */
     
@@ -254,6 +288,7 @@ typedef struct _WacomCommonRec
 #define	TOP_Y		11
 #define	BOTTOM_X	12
 #define	BOTTOM_Y	13
+#define	SERIAL		14
 
 #if !defined(sun) || defined(i386)
 static SymTabRec WcmTab[] = {
@@ -271,6 +306,7 @@ static SymTabRec WcmTab[] = {
   { TOP_Y,		"topy" },
   { BOTTOM_X,		"bottomx" },
   { BOTTOM_Y,		"bottomy" },
+  { SERIAL,		"serial" },
   { -1,			"" }
 };
 
@@ -296,12 +332,13 @@ static SymTabRec ModeTabRec[] = {
 #define XI_ERASER "ERASER"	/* X device name for the eraser */
 #define MAX_VALUE 100           /* number of positions */
 #define MAXTRY 3                /* max number of try to receive magic number */
+#define MAX_COORD_RES 1270	/* Resolution of the returned MaxX and MaxY */
+
 #define SYSCALL(call) while(((call) == -1) && (errno == EINTR))
 
-#define WC_RESET_IV	"RE\r"	/* reset to wacom IV command set */
+#define WC_RESET_IV	"#\rRE\r" /* reset to wacom IV command set or wacom V reset */
 #define WC_CONFIG	"~R\r"	/* request a configuration string */
 #define WC_COORD	"~C\r"	/* request max coordinates */
-/* MODEL should be "~#", methinks -- RLL */
 #define WC_MODEL	"~#\r"	/* request model and ROM version */
 
 #define WC_MULTI	"MU1\r"	/* multi mode input */
@@ -316,6 +353,7 @@ static SymTabRec ModeTabRec[] = {
 #define WC_PRESSURE_MODE "PH1\r" /* enable pressure mode */
 #define WC_STOP		"SP\r"	/* stop sending coordinates */
 #define WC_START	"ST\r"	/* start sending coordinates */
+#define WC_NEW_RESOLUTION "NR"	/* change the resolution */
 
 static const char * setup_string = WC_MULTI WC_UPPER_ORIGIN
  WC_ALL_MACRO WC_NO_MACRO1 WC_RATE WC_NO_INCREMENT WC_STREAM_MODE WC_START;
@@ -323,13 +361,14 @@ static const char * setup_string = WC_MULTI WC_UPPER_ORIGIN
 static const char * penpartner_setup_string = WC_PRESSURE_MODE WC_START;
 
 #define WC_V_SINGLE	"MT0\r"
+#define WC_V_MULTI	"MT1\r"
 #define WC_V_ID		"ID1\r"
 #define WC_V_BAUD	"BA19\r"
 
 #define WC_RESET_19200	"\r$"	/* reset to 9600 baud */
 #define WC_RESET_19200_IV "\r#"
 
-static const char * intuos_setup_string = WC_V_SINGLE WC_V_ID WC_RATE WC_START;
+static const char * intuos_setup_string = WC_V_MULTI WC_V_ID WC_RATE WC_START;
 
 #define COMMAND_SET_MASK	0xc0
 #define BAUD_RATE_MASK		0x0a
@@ -617,6 +656,15 @@ xf86WcmConfig(LocalDevicePtr    *array,
 		ErrorF("%s Wacom bottom y = %d\n", XCONFIG_GIVEN, priv->bottomY);
 	    break;
 
+	case SERIAL:
+	    if (xf86GetToken(NULL) != NUMBER)
+		xf86ConfigError("Option number expected");
+	    priv->serial = val->num;
+	    if (xf86Verbose)
+		ErrorF("%s Wacom serial number = %d\n", XCONFIG_GIVEN,
+		       priv->serial);
+	    break;
+	    
 	case EOF:
 	    FatalError("Unexpected EOF (missing EndSubSection)");
 	    break;
@@ -1009,6 +1057,15 @@ xf86WcmReverseConvert(LocalDevicePtr	local,
     return TRUE;
 }
  
+/*
+ ***************************************************************************
+ *
+ * xf86WcmSendButtons --
+ *	Send button events by comparing the current button mask with the
+ *      previous one.
+ *
+ ***************************************************************************
+ */
 static void
 xf86WcmSendButtons(LocalDevicePtr	local,
 		   int                  buttons,
@@ -1026,7 +1083,7 @@ xf86WcmSendButtons(LocalDevicePtr	local,
 	int mask = 1 << (button-1);
 	
 	if ((mask & priv->oldButtons) != (mask & buttons)) {
-	    DBG(4, ErrorF("xf86WcmReadInput button=%d state=%d\n", 
+	    DBG(4, ErrorF("xf86WcmSendButtons button=%d state=%d\n", 
 			  button, (buttons & mask) != 0));
 	    xf86PostButtonEvent(local->dev, 
 				(priv->flags & ABSOLUTE_FLAG),
@@ -1046,92 +1103,38 @@ xf86WcmSendButtons(LocalDevicePtr	local,
  */
 static void
 xf86WcmSendEvents(LocalDevicePtr	local,
+		  int			type,
+		  unsigned int		serial,
 		  int			is_stylus,
 		  int			is_button,
 		  int			is_proximity,
 		  int			x,
 		  int			y,
 		  int			z,
-		  int			buttons)
+		  int			buttons,
+		  int			tx,
+		  int			ty)
 {
     WacomDevicePtr	priv = (WacomDevicePtr) local->private;
     WacomCommonPtr	common = priv->common;
-    int			tx = 0, ty = 0;
     int			rx, ry, rz, rtx, rty;
     int			is_core_pointer, is_absolute;
-    int                 curDevice;
 
-    DBG(7, ErrorF("[%s] prox=%s\tx=%d\ty=%d\tz=%d\tbutton=%s\tbuttons=%d\n",
-		  is_stylus ? "stylus" : "cursor",
+    DBG(7, ErrorF("[%s] prox=%s\tx=%d\ty=%d\tz=%d\tbutton=%s\tbuttons=%d\ttx=%d ty=%d\n",
+		  (type == STYLUS_ID) ? "stylus" : (type == CURSOR_ID) ? "cursor" : "eraser",
 		  is_proximity ? "true" : "false",
 		  x, y, z,
-		  is_button ? "true" : "false", buttons));
+		  is_button ? "true" : "false", buttons,
+		  tx, ty));
 
-    /* check for device type (STYLUS, ERASER or CURSOR) */
-
-    if (is_stylus) {
-	/* handle tilt values only for stylus */
-	if (HANDLE_TILT(common)) {
-	    tx = (common->wcmData[7] & TILT_BITS);
-	    ty = (common->wcmData[8] & TILT_BITS);
-	    if (common->wcmData[7] & TILT_SIGN_BIT)
-		tx -= (TILT_BITS + 1);
-	    if (common->wcmData[8] & TILT_SIGN_BIT)
-		ty -= (TILT_BITS + 1);
-	}
-
-	/*
-	* The eraser is reported as button 4 and 5 of the stylus.
-	* if we haven't an independent device for the eraser
-	* report the button as button 3 of the stylus.
-	*/
-	if (is_proximity) {
-	    if ((buttons & 4) && common->wcmHasEraser &&
-		((!priv->oldProximity ||
-		  (priv->oldProximity == ERASER_PROX)))) {
-		curDevice = ERASER_ID;
-	    } else {
-		curDevice = STYLUS_ID;
-	    }
-
-	} else {
-	    /*
-	    * When we are out of proximity with the eraser the
-	    * button 4 isn't reported so we must check the
-	    * previous proximity device.
-	    */
-	    if (common->wcmHasEraser && (priv->oldProximity == ERASER_PROX)) {
-		curDevice = ERASER_ID;
-	    } else {
-		curDevice = STYLUS_ID;
-	    }
-	}
-
-	/* We check here to see if we changed between eraser and stylus
-	 * without leaving proximity. The most likely cause is that
-	 * we were fooled by the second side switch into thinking the
-	 * stylus was the eraser. If this happens, we send
-	 * a proximity-out for the old device.
-	 */
-	if (curDevice != DEVICE_ID(priv->flags)) {
-	    if (priv->oldProximity) {
-		buttons = 0;
-		is_proximity = 0;
-	    } else 
-		return;
-	}
- 
-	DBG(10, ErrorF((DEVICE_ID(priv->flags) == ERASER_ID) ? 
-		       "Eraser\n" : 
-		       "Stylus\n"));
+    if ((DEVICE_ID(priv->flags) != type) ||
+	((common->wcmProtocolLevel == 5) &&
+	 priv->serial && (serial != priv->serial))) {
+	DBG(7, ErrorF("xf86WcmSendEvents not the same device type or id (%d,%d)\n",
+		      serial, priv->serial));
+	return;
     }
-    else {
-	if (DEVICE_ID(priv->flags) != CURSOR_ID)
-	    return;	
-	DBG(10, ErrorF("Cursor\n"));
-    }
-      
-      
+    
     /* Translate coordinates according to Top and Bottom points
      * if we are outside the zone do as a ProximityOut event.
      */
@@ -1163,14 +1166,15 @@ xf86WcmSendEvents(LocalDevicePtr	local,
 	y = 0;
     }
     
-    DBG(6, ErrorF("[%s] prox=%s\tx=%d\ty=%d\tz=%d\tbutton=%s\tbuttons=%d\n",
+    is_absolute = (priv->flags & ABSOLUTE_FLAG);
+    is_core_pointer = xf86IsCorePointer(local->dev);
+
+    DBG(6, ErrorF("[%s] %s prox=%s\tx=%d\ty=%d\tz=%d\tbutton=%s\tbuttons=%d\n",
 		  is_stylus ? "stylus" : "cursor",
+		  is_absolute ? "abs" : "rel",
 		  is_proximity ? "true" : "false",
 		  x, y, z,
 		  is_button ? "true" : "false", buttons));
-
-    is_absolute = (priv->flags & ABSOLUTE_FLAG);
-    is_core_pointer = xf86IsCorePointer(local->dev);
 
     /* sets rx and ry according to the mode */
     if (is_absolute) {
@@ -1194,44 +1198,59 @@ xf86WcmSendEvents(LocalDevicePtr	local,
 	    xf86PostProximityEvent(local->dev, 1, 0, 5, rx, ry, z, tx, ty);
 
 	    priv->flags |= FIRST_TOUCH_FLAG;
-	    DBG(4, ErrorF("xf86WcmReadInput FIRST_TOUCH_FLAG set\n"));
+	    DBG(4, ErrorF("xf86WcmSendEvents FIRST_TOUCH_FLAG set\n"));
 		    
-	    /* handle the two sides switches in the stylus */
-	    if (is_stylus && (buttons == 4)) {
-		priv->oldProximity = ERASER_PROX;
+	    if (common->wcmProtocolLevel == 4) {
+		/* handle the two sides switches in the stylus */
+		if (is_stylus && (buttons == 4)) {
+		    priv->oldProximity = ERASER_PROX;
+		}
+		else {
+		    priv->oldProximity = OTHER_PROX;
+		}
 	    }
 	    else {
 		priv->oldProximity = OTHER_PROX;
 	    }
-	}      
+	}
 
-	/* The stylus reports button 4 for the second side
-	* switch and button 4/5 for the eraser tip. We know
-	* how to choose when we come in proximity for the
-	* first time. If we are in proximity and button 4 then
-	* we have the eraser else we have the second side
-	* switch.
-	*/
-	if (is_stylus) {
-	    if (buttons == 4) {
-		buttons = (priv->oldProximity == ERASER_PROX) ? 0 : 4;
+	if (common->wcmProtocolLevel == 4) {
+	    /* The stylus reports button 4 for the second side
+	     * switch and button 4/5 for the eraser tip. We know
+	     * how to choose when we come in proximity for the
+	     * first time. If we are in proximity and button 4 then
+	     * we have the eraser else we have the second side
+	     * switch.
+	     */
+	    if (is_stylus) {
+		if (buttons == 4) {
+		    buttons = (priv->oldProximity == ERASER_PROX) ? 0 : 3;
+		}
+		else {
+		    if (priv->oldProximity == ERASER_PROX && buttons == 5) {
+			buttons = ((DEVICE_ID(priv->flags) == ERASER_ID) ? 1 : 4);
+		    }
+		}
 	    }
 	    else {
-		if (priv->oldProximity == ERASER_PROX && buttons == 5)
-		    buttons = ((DEVICE_ID(priv->flags) == ERASER_ID) ? 1 : 3);
+		/* If the button flag is pressed, but the switch state
+		 * is zero, this means that cursor button 16 was pressed
+		 */
+		if (buttons == 0) {
+		    buttons = 16;
+		}
 	    }
-	} else if (common->wcmProtocolLevel == 4) {
-	    /* If the button flag is pressed, but the switch state
-	    * is zero, this means that cursor button 16 was pressed */
-	    if (buttons == 0)
-		buttons = 16;
 	}
-	/* Turn button index reported by device into a bit mask. */
-	buttons = 1 << (buttons - 1);
-		
-	DBG(4, ErrorF("xf86WcmReadInput %s rx=%d ry=%d rz=%d priv->oldButtons=%d\n",
-		      is_stylus ? "stylus" : "cursor", rx, ry, rz, priv->oldButtons));
-    
+	DBG(4, ErrorF("xf86WcmSendEvents %s rx=%d ry=%d rz=%d buttons=%d\n",
+		      is_stylus ? "stylus" : "cursor", rx, ry, rz, buttons));
+	
+	/* Turn button index reported by stylus into a bit mask for WACOM IV.
+	 * The WACOM V button report is already a bit mask.
+	 */
+	if (is_stylus && common->wcmProtocolLevel == 4) {
+	    buttons = 1 << (buttons - 1);
+	}
+	
 	if ((priv->oldX != x) ||
 	    (priv->oldY != y) ||
 	    (priv->oldZ != z) ||
@@ -1239,7 +1258,7 @@ xf86WcmSendEvents(LocalDevicePtr	local,
 	     (tx != priv->oldTiltX || ty != priv->oldTiltY))) {
 	    if (!is_absolute && (priv->flags & FIRST_TOUCH_FLAG)) {
 		priv->flags -= FIRST_TOUCH_FLAG;
-		DBG(4, ErrorF("xf86WcmReadInput FIRST_TOUCH_FLAG unset\n"));
+		DBG(4, ErrorF("xf86WcmSendEvents FIRST_TOUCH_FLAG unset\n"));
 	    } else {
 		xf86PostMotionEvent(local->dev, is_absolute, 0, 5, rx, ry, rz,
 				    rtx, rty); 
@@ -1313,6 +1332,73 @@ xf86WcmSuppress(int			suppress,
     return 1;
 }
 
+/*
+ ***************************************************************************
+ *
+ * xf86WcmIntuosFilter --
+ *	 Correct some hardware defects we've been seeing in Intuos pads,
+ *       but also cuts down quite a bit on jitter.
+ *
+ ***************************************************************************
+ */
+static int
+xf86WcmIntuosFilter(WacomFilterState	*state,
+		    int			coord,
+		    int			tilt)
+{
+    int tilt_filtered;
+    int ts;
+    int x0_pred;
+    int x0_pred1;
+    int x0, x1, x2, x3;
+    int x;
+    
+    tilt_filtered = tilt + state->tilt[1] + state->tilt[2] + state->tilt[3];
+    state->tilt[2] = state->tilt[1];
+    state->tilt[1] = state->tilt[0];
+    state->tilt[0] = tilt;
+    
+    x0 = coord;
+    x1 = state->coord[0];
+    x2 = state->coord[1];
+    x3 = state->coord[2];
+    state->coord[0] = x0;
+    state->coord[1] = x1;
+    state->coord[2] = x2;
+    
+    ts = tilt_filtered >= 0 ? 1 : -1;
+    
+    if (state->state == 0 || state->state == 3) {
+	x0_pred = 2 * x1 - x2;
+	x0_pred1 = 3 * x2 - 2 * x3;
+	if (ts * (x0 - x0_pred) > 12 &&
+	    ts * (x0 - x0_pred1) > 12) {
+	    /* detected a jump at x0 */
+	    state->state = 1;
+	    x = x1;
+	}
+	else if (state->state == 0) {
+	    x = (7 * x0 + 14 * x1 + 15 * x2 - 4 * x3 + 16) >> 5;
+	}
+	else { /* state->state == 3 */
+	    /* a jump at x3 was detected */
+	    x = (x0 + 2 * x1 + x2 + 2) >> 2;
+	    state->state = 0;
+	}
+    }
+    else if (state->state == 1) {
+	/* a jump at x1 was detected */
+	x = (3 * x0 + 7 * x2 - 2 * x3 + 4) >> 3;
+	state->state = 2;
+    }
+    else { /* state->state == 2 */
+	/* a jump at x2 was detected */
+	x = x1;
+	state->state = 3;
+    }
+
+    return x;
+}
 
 /*
  ***************************************************************************
@@ -1329,7 +1415,8 @@ xf86WcmReadInput(LocalDevicePtr         local)
     WacomCommonPtr	common = priv->common;
     int			len, loop, idx;
     int			is_stylus = 1, is_button, is_proximity;
-    int			x, y, z, buttons;
+    int			is_absolute = (priv->flags & ABSOLUTE_FLAG);
+    int			x, y, z, buttons, tx = 0, ty = 0;
     unsigned char	buffer[BUFFER_SIZE];
     WacomDeviceState	*ds;
     WacomDeviceState	old_ds;
@@ -1470,22 +1557,95 @@ xf86WcmReadInput(LocalDevicePtr         local)
 		DBG(8, ErrorF("xf86WcmReadInput %s side\n",
 			      common->wcmStylusSide ? "stylus" : "eraser"));
 		common->wcmStylusProximity = is_proximity;
+
+		/* handle tilt values only for stylus */
+		if (HANDLE_TILT(common)) {
+		    tx = (common->wcmData[7] & TILT_BITS);
+		    ty = (common->wcmData[8] & TILT_BITS);
+		    if (common->wcmData[7] & TILT_SIGN_BIT)
+			tx -= (TILT_BITS + 1);
+		    if (common->wcmData[8] & TILT_SIGN_BIT)
+			ty -= (TILT_BITS + 1);
+		}
 	    }
 	    
 	    for(idx=0; idx<common->wcmNumDevices; idx++) {
+		WacomDevicePtr	priv = (WacomDevicePtr) common->wcmDevices[idx]->private;
+		int		temp_buttons = buttons;
+		int		temp_is_proximity = is_proximity;
+		int             curDevice;
+		
 		DBG(7, ErrorF("xf86WcmReadInput trying to send to %s\n",
 			      common->wcmDevices[idx]->name));
 		
-		xf86WcmSendEvents(common->wcmDevices[idx],
+		/* check for device type (STYLUS, ERASER or CURSOR) */
+		
+		if (is_stylus) {
+		    /*
+		     * The eraser is reported as button 4 and 5 of the stylus.
+		     * if we haven't an independent device for the eraser
+		     * report the button as button 3 of the stylus.
+		     */
+		    if (is_proximity) {
+			if ((buttons & 4) && common->wcmHasEraser &&
+			    ((!priv->oldProximity ||
+			      (priv->oldProximity == ERASER_PROX)))) {
+			    curDevice = ERASER_ID;
+			} else {
+			    curDevice = STYLUS_ID;
+			}
+			
+		    } else {
+			/*
+			 * When we are out of proximity with the eraser the
+			 * button 4 isn't reported so we must check the
+			 * previous proximity device.
+			 */
+			if (common->wcmHasEraser && (priv->oldProximity == ERASER_PROX)) {
+			    curDevice = ERASER_ID;
+			} else {
+			    curDevice = STYLUS_ID;
+			}
+		    }
+		    
+		    /* We check here to see if we changed between eraser and stylus
+		     * without leaving proximity. The most likely cause is that
+		     * we were fooled by the second side switch into thinking the
+		     * stylus was the eraser. If this happens, we send
+		     * a proximity-out for the old device.
+		     */
+		    if (curDevice != DEVICE_ID(priv->flags)) {
+			if (priv->oldProximity) {
+			    temp_buttons = 0;
+			    temp_is_proximity = 0;
+			} else 
+			    continue;
+		    }
+		    
+		    DBG(10, ErrorF((DEVICE_ID(priv->flags) == ERASER_ID) ? 
+				   "Eraser\n" : 
+				   "Stylus\n"));
+		}
+		else {
+		    if (DEVICE_ID(priv->flags) != CURSOR_ID)
+			continue;	
+		    DBG(10, ErrorF("Cursor\n"));
+		    curDevice = CURSOR_ID;
+		}
+		
+    		xf86WcmSendEvents(common->wcmDevices[idx],
+				  curDevice, 0,
 				  is_stylus,
 				  is_button,
-				  is_proximity,
-				  x, y, z, buttons);
+				  temp_is_proximity,
+				  x, y, z, temp_buttons,
+				  tx, ty);
 	    }
 	}
 	else if (common->wcmProtocolLevel == 5 &&
 		 common->wcmIndex == common->wcmPktLength) {
 	    /* the packet is OK */
+	    int x, y;
 
 	    /* reset count for read of next packet */
 	    common->wcmIndex = 0;
@@ -1493,6 +1653,11 @@ xf86WcmReadInput(LocalDevicePtr         local)
 	    ds = &common->wcmDevStat[common->wcmData[0] & 0x01];
 	    old_ds = *ds;
 	    have_data = 0;
+
+	    DBG(7, ErrorF("packet header = 0x%x\n",
+			  (unsigned int)common->wcmData[0]));
+	    
+	    /* Device ID packet */
 	    if ((common->wcmData[0] & 0xfc) == 0xc0) {
 		ds->proximity = 1;
 		ds->device_id = (((common->wcmData[1] & 0x7f) << 5) |
@@ -1505,12 +1670,35 @@ xf86WcmReadInput(LocalDevicePtr         local)
 				  ((common->wcmData[7] & 0x60) >> 5));
 		if ((ds->device_id & 0xf06) != 0x802)
 		  ds->discard_first = 1;
+
+		if (PEN(ds) || INKING_PEN(ds) || AIRBRUSH(ds))
+		    ds->device_type = STYLUS_ID;
+		else if (MOUSE_4D(ds) || LENS_CURSOR(ds))
+		    ds->device_type = CURSOR_ID;
+		else
+		    ds->device_type = ERASER_ID;
+		
+		DBG(6, ErrorF("device_id=0x%x serial_num=%u type=%s\n",
+			      ds->device_id, ds->serial_num,
+			      (ds->device_type == STYLUS_ID) ? "stylus"
+			      : (ds->device_type == CURSOR_ID) ? "cursor"
+			      : "eraser"));
 	    }
+	    /* Out of proximity packet */
 	    else if ((common->wcmData[0] & 0xfe) == 0x80) {
 		ds->proximity = 0;
 		have_data = 1;
 	    }
-	    else if ((common->wcmData[0] & 0xb8) == 0xa0) {
+	    /* General pen packet or eraser packet or airbrush first packet */
+	    else if (((common->wcmData[0] & 0xb8) == 0xa0) ||
+#if 0
+		     /* airbrush second packet */
+		     ((common->wcmData[0] & 0xbe) == 0xb4)
+#else
+		     0
+#endif
+		)
+		     {
 		is_stylus = 1;
 		ds->x = (((common->wcmData[1] & 0x7f) << 9) |
 			 ((common->wcmData[2] & 0x7f) << 2) |
@@ -1518,16 +1706,28 @@ xf86WcmReadInput(LocalDevicePtr         local)
 		ds->y = (((common->wcmData[3] & 0x1f) << 11) |
 			 ((common->wcmData[4] & 0x7f) << 4) |
 			 ((common->wcmData[5] & 0x78) >> 3));
-		ds->pressure = (((common->wcmData[5] & 0x07) << 7) |
-			 (common->wcmData[6] & 0x7f)) - 512;
+		if ((common->wcmData[0] & 0xb8) == 0xa0) {
+		    ds->pressure = (((common->wcmData[5] & 0x07) << 7) |
+				    (common->wcmData[6] & 0x7f)) - 512;
+		}
+		else {
+		    ds->wheel = (((common->wcmData[5] & 0x07) << 7) |
+				 (common->wcmData[6] & 0x7f)) - 512;
+		}
+		ds->tiltx = (common->wcmData[7] & TILT_BITS);
+		ds->tilty = (common->wcmData[8] & TILT_BITS);
+		if (common->wcmData[7] & TILT_SIGN_BIT)
+		  ds->tiltx -= (TILT_BITS + 1);
+		if (common->wcmData[8] & TILT_SIGN_BIT)
+		  ds->tilty -= (TILT_BITS + 1);
 		ds->buttons = (((common->wcmData[0]) & 0x06) |
 			   (ds->pressure >= common->wcmThreshold));
-		if ((ds->device_id & 0x008) == 0x008)
-		  ds->buttons |= 4;
 		ds->proximity = (common->wcmData[0] & PROXIMITY_BIT);
 		have_data = 1;
 	    }
-	    else if ((common->wcmData[0] & 0xbe) == 0xa8) {
+	    /* 4D mouse 1st packet or Lens cursor packet */
+	    else if (((common->wcmData[0] & 0xbe) == 0xa8) ||
+		     ((common->wcmData[0] & 0xbe) == 0xb0)) {
 		is_stylus = 0;
 		ds->x = (((common->wcmData[1] & 0x7f) << 9) |
 		     ((common->wcmData[2] & 0x7f) << 2) |
@@ -1535,14 +1735,26 @@ xf86WcmReadInput(LocalDevicePtr         local)
 		ds->y = (((common->wcmData[3] & 0x1f) << 11) |
 		     ((common->wcmData[4] & 0x7f) << 4) |
 		     ((common->wcmData[5] & 0x78) >> 3));
+		ds->tilty = 0;
 		ds->wheel = (((common->wcmData[5] & 0x07) << 7) |
 		     (common->wcmData[6] & 0x7f));
 		if (common->wcmData[8] & 0x08) ds->wheel = -ds->wheel;
-		ds->buttons = (((common->wcmData[8] & 0x70) >> 1) |
-			   (common->wcmData[8] & 0x07));
+		ds->pressure = (ds->wheel >> 1);
+
+		/* 4D mouse */
+		if (MOUSE_4D(ds)) {
+		    ds->buttons = (((common->wcmData[8] & 0x70) >> 1) |
+				   (common->wcmData[8] & 0x07));
+		    have_data = !ds->discard_first;
+		}
+		/* Lens cursor */
+		else {
+		    ds->buttons = common->wcmData[8];
+		    have_data = 1;
+		}
 		ds->proximity = (common->wcmData[0] & PROXIMITY_BIT);
-		have_data = !ds->discard_first;
 	    }
+	    /* 4D mouse 2nd packet */
 	    else if ((common->wcmData[0] & 0xbe) == 0xaa) {
 		is_stylus = 0;
 		ds->x = (((common->wcmData[1] & 0x7f) << 9) |
@@ -1551,37 +1763,45 @@ xf86WcmReadInput(LocalDevicePtr         local)
 		ds->y = (((common->wcmData[3] & 0x1f) << 11) |
 			 ((common->wcmData[4] & 0x7f) << 4) |
 			 ((common->wcmData[5] & 0x78) >> 3));
+		ds->tilty = 0;
 		ds->rotation = (((common->wcmData[6] & 0x0f) << 7) |
-				       (common->wcmData[7] & 0x7f));
+				(common->wcmData[7] & 0x7f));
+		ds->tiltx = ((900 - ((ds->rotation + 900) % 1800)) >> 1);
 		ds->proximity = (common->wcmData[0] & PROXIMITY_BIT);
 		have_data = 1;
 		ds->discard_first = 0;
 	    }
 
-	    if (have_data && xf86WcmSuppress (common->wcmSuppress,
-		&old_ds, ds)) {
+	    /* Suppress data */
+	    if (have_data &&
+		xf86WcmSuppress(common->wcmSuppress, &old_ds, ds)) {
+	        DBG(10, ErrorF("Suppressing data\n"));
 		*ds = old_ds;
 		have_data = 0;
 	    }
 
 	    if (have_data) {
+	        if (is_absolute) {
+		    x = xf86WcmIntuosFilter (&ds->x_filter, ds->x, ds->tiltx);
+		    y = xf86WcmIntuosFilter (&ds->y_filter, ds->y, ds->tilty);
+		} 
+		else {
+		    x = ds->x;
+		    y = ds->y;
+		}
 		for(idx=0; idx<common->wcmNumDevices; idx++) {
 		    DBG(7, ErrorF("xf86WcmReadInput trying to send to %s\n",
 				  common->wcmDevices[idx]->name));
 
 		    xf86WcmSendEvents(common->wcmDevices[idx],
+				      ds->device_type, ds->serial_num,
 				      is_stylus,
-				      0,
+				      ds->buttons,
 				      ds->proximity,
-				      ds->x, ds->y,
-				      (ds->device_id & 0xf06) == 0x004 ?
-/* change to #if 0 to make rotation control 3rd valuator */
-#if 1
-				      (ds->wheel >> 1) : ds->pressure,
-#else
-				      ((900 - ((ds->rotation + 900) % 1800)) >> 1) : ds->pressure,
-#endif
-				      ds->buttons);
+				      x, y,
+				      ds->pressure,
+				      ds->buttons,
+				      ds->tiltx, ds->tilty);
 		}
 	    }
 	}
@@ -1619,6 +1839,7 @@ xf86WcmOpen(LocalDevicePtr	local)
     struct timeval	timeout;
 #endif
     char		buffer[256];
+    char		header[64]; /* This is a small buffer for discarding the unwanted header */
     int			err;
     WacomDevicePtr	priv = (WacomDevicePtr)local->private;
     WacomCommonPtr	common = priv->common;
@@ -1650,14 +1871,14 @@ xf86WcmOpen(LocalDevicePtr	local)
         return !Success;
 #endif
     
-    /* send reset to the tablet */
+    /* Send reset to the tablet */
     SYSCALL(err = write(local->fd, WC_RESET_IV, strlen(WC_RESET_IV)));
     if (err == -1) {
 	ErrorF("Wacom write error : %s\n", strerror(errno));
 	return !Success;
     }
     
-    /* wait 15 mSecs */
+    /* Wait 15 mSecs */
 #ifdef XFREE86_V4
     err = xf86WaitForInput(-1, 15000);
 #else
@@ -1690,14 +1911,14 @@ xf86WcmOpen(LocalDevicePtr	local)
     if (xf86Verbose)
 	ErrorF("%s Wacom tablet model : %s\n", XCONFIG_PROBED, buffer+2);
 
-    /* answer is in the form ~#Tablet-Model VRom_Version */
+    /* Answer is in the form ~#Tablet-Model VRom_Version */
     /* look for the first V from the end of the string */
     /* this seems to be the better way to find the version of the ROM */
     for(loop=strlen(buffer); loop>=0 && *(buffer+loop) != 'V'; loop--);
     for(idx=loop; idx<strlen(buffer) && *(buffer+idx) != '-'; idx++);
     *(buffer+idx) = '\0';
 
-    /* extract version numbers */
+    /* Extract version numbers */
     sscanf(buffer+loop+1, "%f", &version);
 
     if (buffer[2] == 'G' && buffer[3] == 'D') {
@@ -1711,7 +1932,7 @@ xf86WcmOpen(LocalDevicePtr	local)
 	common->wcmThreshold = -480;	/* Threshold for counting pressure as a button */
     }
 	
-    /* tilt works on ROM 1.4 and above */
+    /* Tilt works on ROM 1.4 and above */
     DBG(2, ErrorF("wacom flags=%d ROM version=%f buffer=%s\n",
 		  common->wcmFlags, version, buffer+loop+1));
     if (common->wcmProtocolLevel == 4 &&
@@ -1719,7 +1940,7 @@ xf86WcmOpen(LocalDevicePtr	local)
 	common->wcmPktLength = 9;
     }
 
-    /* check for a PenPartner model which doesn't answer WC_CONFIG request */
+    /* Check for a PenPartner model which doesn't answer WC_CONFIG request */
     if (buffer[2] == 'C' && buffer[3] == 'T') {
 	DBG(2, ErrorF("detected a PenPartner model\n"));
 	common->wcmResolX = 1000;
@@ -1731,20 +1952,45 @@ xf86WcmOpen(LocalDevicePtr	local)
 	if (!send_request(local->fd, WC_CONFIG, buffer))
 	    return !Success;
 	DBG(2, ErrorF("%s\n", buffer));
-	sscanf(buffer+19, "%d,%d,%d,%d", &a, &b, &common->wcmResolX, &common->wcmResolY);
+	/* The header string is simply a place to put the unwanted
+	 * config header don't use buffer+xx because the header size
+	 * varies on different tablets
+	 */
+	if (sscanf(buffer, "%[^,],%d,%d,%d,%d", &header, &a, &b, &common->wcmResolX, &common->wcmResolY) == 5) {
+	    DBG(6, ErrorF("WC_CONFIG Header = %s\n", header));
+	}
+	else {
+	    ErrorF("WACOM: unable to read resolution. Using default.\n");
+	}
     }
     
     DBG(2, ErrorF("reading max coordinates\n"));
     if (!send_request(local->fd, WC_COORD, buffer))
 	return !Success;
     DBG(2, ErrorF("%s\n", buffer));
-    sscanf(buffer+2, "%d,%d", &common->wcmMaxX, &common->wcmMaxY);
+    if (sscanf(buffer+2, "%d,%d", &common->wcmMaxX, &common->wcmMaxY) != 2) {
+	ErrorF("WACOM: unable to read max coordinates. Using default.\n");
+    }
 
+    if (!is_a_penpartner && common->wcmProtocolLevel == 4) {
+	/*
+	 * Force the resolution.
+	 */
+	sprintf(buffer, "%s%d\r", WC_NEW_RESOLUTION, common->wcmResolX);
+	SYSCALL(err = write(local->fd, buffer, strlen(buffer)));
+	
+	/* The following couple of lines convert the MaxX and MaxY returned by
+	 * the Wacom from 1270lpi to the Wacom's active resolution.
+	 */
+	common->wcmMaxX = (common->wcmMaxX / MAX_COORD_RES) * common->wcmResolX;
+	common->wcmMaxY = (common->wcmMaxY / MAX_COORD_RES) * common->wcmResolY;
+    }
+    
     DBG(2, ErrorF("setup is max X=%d max Y=%d resol X=%d resol Y=%d\n",
 		  common->wcmMaxX, common->wcmMaxY, common->wcmResolX,
 		  common->wcmResolY));
   
-    /* send a setup string to the tablet */
+    /* Send a setup string to the tablet */
     if (is_a_penpartner) {
 	SYSCALL(err = write(local->fd, penpartner_setup_string,
 			    strlen(penpartner_setup_string)));
@@ -1762,7 +2008,7 @@ xf86WcmOpen(LocalDevicePtr	local)
 	return !Success;
     }
 
-    /* send the tilt mode command after setup because it must be enabled */
+    /* Send the tilt mode command after setup because it must be enabled */
     /* after multi-mode to take precedence */
     if (common->wcmProtocolLevel == 4 && HANDLE_TILT(common)) {
 	DBG(2, ErrorF("Sending tilt mode order\n"));
@@ -1774,19 +2020,20 @@ xf86WcmOpen(LocalDevicePtr	local)
 	}
     }
   
+    if (common->wcmSuppress < 0) {
+	int	xratio = common->wcmMaxX/screenInfo.screens[0]->width;
+	int	yratio = common->wcmMaxY/screenInfo.screens[0]->height;
+	
+	common->wcmSuppress = (xratio > yratio) ? yratio : xratio;
+    }
+    
+    if (common->wcmSuppress > 100) {
+	common->wcmSuppress = 99;
+    }
+
     if (common->wcmProtocolLevel == 4) {
 	char	buf[20];
       
-	if (common->wcmSuppress < 0) {
-	    int	xratio = common->wcmMaxX/screenInfo.screens[0]->width;
-	    int yratio = common->wcmMaxY/screenInfo.screens[0]->height;
-	    
-	    common->wcmSuppress = (xratio > yratio) ? yratio : xratio;
-	}
-	
-	if (common->wcmSuppress > 100) {
-	    common->wcmSuppress = 99;
-	}
 	sprintf(buf, "%s%d\r", WC_SUPPRESS, common->wcmSuppress);
 	SYSCALL(err = write(local->fd, buf, strlen(buf)));
 
@@ -2239,6 +2486,7 @@ xf86WcmAllocate(char *  name,
     priv->factorY = 0.0;		/* Y factor */
     priv->common = common;		/* common info pointer */
     priv->oldProximity = 0;		/* previous proximity */
+    priv->serial = 0;		        /* serial number */
     
     common->wcmDevice = "";		/* device file name */
 #if defined(sun) && !defined(i386)
@@ -2447,13 +2695,13 @@ xf86WcmPlug(pointer	module,
     /* Type is mandatory */
     s = xf86FindOptionValue(options, "Type");
 
-    if (s && (strcasecmp(s, "stylus") == 0)) {
+    if (s && (xf86NameCmp(s, "stylus") == 0)) {
 	local = xf86WcmAllocateStylus();
     }
-    else if (s && (strcasecmp(s, "cursor") == 0)) {
+    else if (s && (xf86NameCmp(s, "cursor") == 0)) {
 	local = xf86WcmAllocateCursor();
     }
-    else if (s && (strcasecmp(s, "eraser") == 0)) {
+    else if (s && (xf86NameCmp(s, "eraser") == 0)) {
 	local = xf86WcmAllocateEraser();
     }
     else {
@@ -2522,10 +2770,10 @@ xf86WcmPlug(pointer	module,
 
     s = xf86FindOptionValue(merged, "Mode");
 
-    if (s && (strcasecmp(s, "absolute") == 0)) {
+    if (s && (xf86NameCmp(s, "absolute") == 0)) {
 	priv->flags = priv->flags | ABSOLUTE_FLAG;
     }
-    else if (s && (strcasecmp(s, "relative") == 0)) {
+    else if (s && (xf86NameCmp(s, "relative") == 0)) {
 	priv->flags = priv->flags & ~ABSOLUTE_FLAG;
     }
     else if (s) {
@@ -2565,6 +2813,10 @@ xf86WcmPlug(pointer	module,
     if (priv->bottomY != 0) {
 	xf86Msg(X_CONFIG, "WACOM: bottom x = %d\n", priv->bottomY);
     }
+    priv->serial = xf86SetIntOption(merged, "Serial", 0);
+    if (priv->bottomY != 0) {
+	xf86Msg(X_CONFIG, "WACOM: serial number = %d\n", priv->serial);
+    }
 	    
     /* Register the device into XFree86 XInput layer */
     xf86AddLocalDevice(local, merged);
@@ -2598,8 +2850,8 @@ static XF86ModuleVersionInfo xf86WcmVersionRec =
 };
 
 XF86ModuleData wacomModuleData = {&xf86WcmVersionRec,
-				     xf86WcmPlug,
-				     xf86WcmUnplug};
+				  xf86WcmPlug,
+				  xf86WcmUnplug};
 
 #endif
 

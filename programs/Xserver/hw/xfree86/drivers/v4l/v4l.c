@@ -2,7 +2,7 @@
  *  video4linux Xv Driver 
  *  based on Michael Schimek's permedia 2 driver.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.5 1999/04/11 14:30:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.6 1999/04/17 07:07:03 dawes Exp $ */
 
 #include "videodev.h"
 #include "xf86.h"
@@ -23,6 +23,7 @@
 typedef unsigned long ulong;
 #endif
 
+/* XXX Lots of xalloc() calls don't check for failure. */
 
 #define DEBUG(x) (x)
 
@@ -502,6 +503,29 @@ V4LBuildEncodings(int fd, int *count)
 }
 
 
+static char *AttributeNames[8] = {
+   XV_ENCODING,
+   XV_BRIGHTNESS,
+   XV_CONTRAST,
+   XV_SATURATION, 
+   XV_HUE,   
+   XV_FREQ,    
+   XV_MUTE,  
+   XV_VOLUME
+};
+
+static int AttributeFlags[8] = {
+   XvGettable | XvSettable,
+   XvGettable | XvSettable,
+   XvGettable | XvSettable,
+   XvGettable | XvSettable,
+   XvGettable | XvSettable,
+   XvGettable | XvSettable,
+   XvGettable | XvSettable,
+   XvGettable | XvSettable,
+};
+
+
 static Bool
 V4LProbe(DriverPtr drv, int flags)
 {
@@ -526,6 +550,8 @@ V4LProbe(DriverPtr drv, int flags)
 
 	/* our private data */
 	pPPriv = xalloc(sizeof(PortPrivRec));
+	if (!pPPriv)
+	    return FALSE;
 	memset(pPPriv,0,sizeof(PortPrivRec));
 	pPPriv->fd    = -1;
 	strncpy(pPPriv->devname, dev, 16);
@@ -535,10 +561,22 @@ V4LProbe(DriverPtr drv, int flags)
 
 	/* alloc VideoAdaptorRec */
 	VAR[i] = xalloc(sizeof(XF86VideoAdaptorRec));
+	if (!VAR[i])
+	    return FALSE;
 	memset(VAR[i],0,sizeof(XF86VideoAdaptorRec));
+
+	/* add attribute lists */
+	VAR[i]->pAttributes = xalloc(sizeof(XF86AttributeListRec));
+	if (!VAR[i]->pAttributes)
+	    return FALSE;
+	VAR[i]->pAttributes[0].number = 8;
+	VAR[i]->pAttributes[0].flags = AttributeFlags;
+	VAR[i]->pAttributes[0].names = AttributeNames;
 
 	/* hook in private data */
 	Private = xalloc(sizeof(DevUnion));
+	if (!Private)
+	    return FALSE;
 	memset(Private,0,sizeof(DevUnion));
 	Private->ptr = (pointer)pPPriv;
 	VAR[i]->pPortPrivates = Private;

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/ispell.c,v 1.4 1999/05/09 10:52:02 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/ispell.c,v 1.5 1999/05/16 10:13:08 dawes Exp $ */
 
 #include "xedit.h"
 #ifndef X_NOT_STDC_ENV
@@ -296,7 +296,7 @@ IspellReceive(void)
     buflen = 0;
     len = 0;
     while (1) {		/* read the entire line */
-	if (len >= ispell.bufsiz)
+	if (buflen >= ispell.bufsiz - 1)
 	    ispell.buf = XtRealloc(ispell.buf, ispell.bufsiz += BUFSIZ);
 	if ((len = read(ispell.ifd[0], &ispell.buf[buflen],
 			ispell.bufsiz - buflen - 1)) <= 0)

@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/lib/Xv/Imakefile,v 1.3 1999/03/07 11:40:25 dawes Exp $
 
 #define DoNormalLib NormalLibXv
 #define DoSharedLib SharedLibXv
@@ -6,8 +6,6 @@ XCOMM $XFree86$
 #define DoProfileLib ProfileLibXv
 #define LibName Xv
 #define SoRev SOXVREV
-#define IncSubdir X11
-#define IncSubSubdir extensions
 
 #include <Threads.tmpl>
 
@@ -24,8 +22,6 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
          SRCS = Xv.c
          OBJS = Xv.o
      LINTLIBS = $(LINTXLIB)
-
-HEADERS = Xvlib.h
 
 #include <Library.tmpl>
 

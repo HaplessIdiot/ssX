@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextP.h,v 3.14 1999/05/09 10:51:41 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextP.h,v 3.15 1999/05/16 10:12:50 dawes Exp $ */
 
 #ifndef _XawTextP_h
 #define _XawTextP_h
@@ -230,9 +230,7 @@ typedef struct _TextPart {
     Time lasttime;
 #endif
 
-#ifndef NO_NUMERIC_HACK
-    char doing_numeric_hack;
-#endif
+    char numeric;
     char source_changed;
     Boolean overwrite;                      /* Overwrite mode */
 

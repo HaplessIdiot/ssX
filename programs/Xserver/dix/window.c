@@ -66,7 +66,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.11 1999/01/26 10:40:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.12 1999/03/20 08:58:58 dawes Exp $ */
 
 #include "misc.h"
 #include "scrnintstr.h"
@@ -212,7 +212,6 @@ PanoramiXWindowOffScreen(pWin,w, h)
     register WindowPtr pWin;
     unsigned short w, h;
 {
-    register ScreenPtr pScreen = pWin->drawable.pScreen;
     int  Scr;
    
     Scr = (pWin->drawable.pScreen)->myNum;
@@ -661,17 +660,7 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     DepthPtr pDepth;
     PixmapFormatRec *format;
     register WindowOptPtr ancwopt;
-#ifdef PANORAMIX
-    PanoramiXWindow    *pPanoramiXWin = PanoramiXWinRoot;
-    Window		parID;
-    register ScreenPtr  PXpScreen;
-    register WindowPtr  PXpParent;
-    register WindowOptPtr PXancwopt; 
-    VisualPtr           pVisual;
-    short		VisualClass;
-    Bool		ClassKnown;
-    int  		i, j, thisVisual, thisDepth;
-#endif
+
     if (class == CopyFromParent)
 	class = pParent->drawable.class;
 
@@ -695,12 +684,6 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     }
 
     pScreen = pParent->drawable.pScreen;
-#ifdef PANORAMIX
-    if (!noPanoramiXExtension) {
-      if (depth > pParent->drawable.depth)
-	depth = pParent->drawable.depth;
-    } 
-#endif
     if ((class == InputOutput) && (depth == 0))
 	 depth = pParent->drawable.depth;
     ancwopt = pParent->optional;

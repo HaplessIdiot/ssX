@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbcpyarea.c,v 1.2 1999/03/28 15:33:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbcpyarea.c,v 1.3 1999/05/16 10:13:05 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -295,79 +295,94 @@ cfbDoBitblt32To8(
 
 
 
-
-
 static void 
 Do8To8Blt(
-   unsigned char *ptr,
-   int pitch,
+   unsigned char *SrcPtr,
+   int SrcPitch,
+   unsigned char *DstPtr,
+   int DstPitch,
    int nbox,
    DDXPointPtr pptSrc,
    BoxPtr pbox,
    int xdir, int ydir
 ){
-   int i, j, width, height, diff;
-   CARD8 *src;
+   int i, j, width, height, ydir2;
+   CARD8 *src, *dst;
 
-   ptr += 3;
+   SrcPtr += 3;
+   DstPtr += 3;
    xdir *= 4;
-   ydir *= pitch;
+   ydir2 = ydir * DstPitch;
+   ydir *= SrcPitch;
 
    for(;nbox; pbox++, pptSrc++, nbox--) {
-	src = ptr + (pptSrc->y * pitch) + (pptSrc->x << 2);
-	diff = ((pbox->y1 - pptSrc->y) * pitch) + ((pbox->x1 - pptSrc->x) << 2);
+	src = SrcPtr + (pptSrc->y * SrcPitch) + (pptSrc->x << 2);
+	dst = DstPtr + (pbox->y1 * DstPitch) + (pbox->x1 << 2);
 	width = pbox->x2 - pbox->x1;
 	height = pbox->y2 - pbox->y1;
 
-	if(ydir < 0) 
-	    src += (height - 1) * pitch;
+	if(ydir < 0) {
+	    src += (height - 1) * SrcPitch;
+	    dst += (height - 1) * DstPitch;
+	}
 
-	if(xdir < 0) 
-	    src += (width - 1) << 2;
+	if(xdir < 0) {
+	    register tmp = (width - 1) << 2;
+	    src += tmp;
+	    dst += tmp;
+	}
 
 	while(height--) {
 	   for(i = width, j = 0; i--; j+=xdir)
-		src[j + diff] = src[j];
+		dst[j] = src[j];
 	   src += ydir;
+	   dst += ydir2;
 	}
     }
 }
 
-
-
 static void 
 Do24To24Blt(
-   unsigned char *ptr,
-   int pitch,
+   unsigned char *SrcPtr,
+   int SrcPitch,
+   unsigned char *DstPtr,
+   int DstPitch,
    int nbox,
    DDXPointPtr pptSrc,
    BoxPtr pbox,
    int xdir, int ydir
 ){
-   int i, j, width, height, diff;
-   CARD8 *src;
+   int i, j, width, height, ydir2;
+   CARD8 *src, *dst;
 
    xdir *= 4;
-   ydir *= pitch;
+   ydir2 = ydir * DstPitch;
+   ydir *= SrcPitch;
 
    for(;nbox; pbox++, pptSrc++, nbox--) {
-	src = ptr + (pptSrc->y * pitch) + (pptSrc->x << 2);
-	diff = ((pbox->y1 - pptSrc->y) * pitch) + ((pbox->x1 - pptSrc->x) << 2);
+	src = SrcPtr + (pptSrc->y * SrcPitch) + (pptSrc->x << 2);
+	dst = DstPtr + (pbox->y1 * DstPitch) + (pbox->x1 << 2);
 	width = pbox->x2 - pbox->x1;
 	height = pbox->y2 - pbox->y1;
 
-	if(ydir < 0) 
-	    src += (height - 1) * pitch;
+	if(ydir < 0) {
+	    src += (height - 1) * SrcPitch;
+	    dst += (height - 1) * DstPitch;
+	}
 
-	if(xdir < 0) 
-	    src += (width - 1) << 2;
+	if(xdir < 0) {
+	    register tmp = (width - 1) << 2;
+	    src += tmp;
+	    dst += tmp;
+	}
 
 	while(height--) {
 	   for(i = width, j = 0; i--; j+=xdir) {
-		*((CARD16*)(src + j + diff)) = *((CARD32*)(src + j));
-		src[j + diff + 2] = src[j + 2];
+		*((CARD16*)(dst + j)) = *((CARD32*)(src + j));
+		dst[j + 2] = src[j + 2];
 	   }
 	   src += ydir;
+	   dst += ydir2;
 	}
     }
 }
@@ -381,11 +396,11 @@ cfb8_32DoBitBlt(
     DDXPointPtr	    pptSrc,
     void	    (*DoBlt)() 
 ){
-    int nbox, careful, pitch;
+    int nbox, careful, SrcPitch, DstPitch;
     BoxPtr pbox, pboxTmp, pboxNext, pboxBase, pboxNew1, pboxNew2;
     DDXPointPtr pptTmp, pptNew1, pptNew2;
     int xdir, ydir;
-    unsigned char *ptr;
+    unsigned char *SrcPtr, *DstPtr;
 
     /* XXX we have to err on the side of safety when both are windows,
      * because we don't know if IncludeInferiors is being used.
@@ -478,9 +493,10 @@ cfb8_32DoBitBlt(
         xdir = 1;
     }
 
-    cfbGetByteWidthAndPointer(pDst, pitch, ptr);
+    cfbGetByteWidthAndPointer(pSrc, SrcPitch, SrcPtr);
+    cfbGetByteWidthAndPointer(pDst, DstPitch, DstPtr);
 
-    (*DoBlt)(ptr, pitch, nbox, pptSrc, pbox, xdir, ydir);
+    (*DoBlt)(SrcPtr,SrcPitch,DstPtr,DstPitch,nbox,pptSrc,pbox,xdir,ydir);
  
     if (pboxNew2) {
 	DEALLOCATE_LOCAL(pptNew2);
