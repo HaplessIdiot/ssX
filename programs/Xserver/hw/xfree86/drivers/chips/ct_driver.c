@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.85 2000/03/31 22:55:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.87 2000/04/17 16:29:57 eich Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -2103,7 +2103,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 
 #ifdef XFree86LOADER
 	if (cPtr->pVbe) {
-	    if ((pMon = xf86PrintEDID(vbeDoEDID(cPtr->pVbe))) != NULL)
+	    if ((pMon = xf86PrintEDID(vbeDoEDID(cPtr->pVbe, NULL))) != NULL)
 		ddc_done = TRUE;
 	    xf86SetDDCproperties(pScrn,pMon);
 	}
@@ -2597,7 +2597,7 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
     if (xf86LoadSubModule(pScrn, "ddc")) {
 	xf86LoaderReqSymLists(ddcSymbols, NULL);
 	if (cPtr->pVbe)
-	    xf86SetDDCproperties(pScrn,xf86PrintEDID(vbeDoEDID(cPtr->pVbe)));
+	    xf86SetDDCproperties(pScrn,xf86PrintEDID(vbeDoEDID(cPtr->pVbe, NULL)));
     }
 #endif    
     return TRUE;
@@ -3370,7 +3370,7 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
     if (xf86LoadSubModule(pScrn, "ddc")) {
 	xf86LoaderReqSymLists(ddcSymbols, NULL);
 	if (cPtr->pVbe)
-	    xf86SetDDCproperties(pScrn,xf86PrintEDID(vbeDoEDID(cPtr->pVbe)));
+	    xf86SetDDCproperties(pScrn,xf86PrintEDID(vbeDoEDID(cPtr->pVbe, NULL)));
     }
 #endif
     return TRUE;

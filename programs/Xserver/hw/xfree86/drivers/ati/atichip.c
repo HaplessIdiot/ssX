@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.9 2000/02/18 12:19:15 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.10 2000/03/30 15:41:16 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -400,7 +400,23 @@ ATIChipID
             return ATI_CHIP_68800AX;
 
         case OldChipID('G', 'X'):  case NewChipID('G', 'X'):
-            return ATI_CHIP_88800GX;
+            switch (ChipRev)
+            {
+                case 0x00U:
+                    return ATI_CHIP_88800GXC;
+
+                case 0x01U:
+                    return ATI_CHIP_88800GXD;
+
+                case 0x02U:
+                    return ATI_CHIP_88800GXE;
+
+                case 0x03U:
+                    return ATI_CHIP_88800GXF;
+
+                default:
+                    return ATI_CHIP_88800GX;
+            }
 
         case OldChipID('C', 'X'):  case NewChipID('C', 'X'):
             return ATI_CHIP_88800CX;

@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.89 2000/03/01 16:01:25 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.92 2000/04/17 16:30:08 eich Exp $ */
 
 #include "cfb24_32.h"
 
@@ -935,15 +935,13 @@ TRIDENTRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
     }
 } 
 
-extern xf86MonPtr ConfiguredMonitor;
-
 void
 TRIDENTProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
     if (xf86LoadSubModule(pScrn, "vbe")) {
 	pVbe = VBEInit(NULL,index);
-	ConfiguredMonitor = vbeDoEDID(pVbe);
+	ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
     }
 }
 
@@ -1913,7 +1911,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
        if (pTrident->ddc1Read) {
     	   if (xf86LoadSubModule(pScrn, "vbe")) {
 		xf86MonPtr pMon;
-		pMon = vbeDoEDID(VBEInit(NULL,pTrident->pEnt->index));
+		pMon = vbeDoEDID(VBEInit(NULL, pTrident->pEnt->index), NULL);
 	   	xf86SetDDCproperties(pScrn,xf86PrintEDID(pMon));
 	   }
        }

@@ -23,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xset/xset.c,v 3.17 1999/03/07 11:41:19 dawes Exp $ */
+/* $XFree86: xc/programs/xset/xset.c,v 3.18 2000/02/13 06:15:47 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -131,6 +131,9 @@ static void query(Display *dpy);
 static void usage(char *fmt, ...);
 static void error(char *message);
 static int local_xerror(Display *dpy, XErrorEvent *rep);
+#ifdef XF86MISC
+static void set_repeatrate(Display *dpy, int delay, int rate);
+#endif
 
 int
 main(int argc, char *argv[])

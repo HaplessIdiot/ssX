@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati.c,v 1.9 2000/02/18 12:19:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati.c,v 1.10 2000/03/22 03:08:06 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -54,11 +54,12 @@
  * James Fast Kane, jfk2@engr.uark.edu
  * Randall Hopper, rhh@ct.picker.com
  * W. Marcus Miller, marcus@llnl.gov
- * Henrik Harmsen, ervhch@erv.ericsson.se (ShadowFB support)
- * Christian Lupien <lupien@physics.utoronto.ca>
+ * Henrik Harmsen, ervhch@erv.ericsson.se
+ * Christian Lupien, lupien@physics.utoronto.ca
  * Precision Insight Incorporated
  * Mark Vojkovich, mvojkovich@valinux.com
  * Huw D M Davies, h.davies1@physics.ox.ac.uk
+ * Andrew C Aitchison, A.C.Aitchison@dpmms.cam.ac.uk
  *
  * ... and, many, many others from around the world.
  *

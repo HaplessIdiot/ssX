@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.17 2000/04/07 03:57:46 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.18 2000/04/12 14:44:38 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -123,7 +123,7 @@ ATIMach64PollEngineStatus
     (CacheByte(__Register) & CacheBit(__Register))
 #define CacheRegister(__Register) \
     CacheByte(__Register) |= CacheBit(__Register)
-#define UnCacheRegister(__Register) \
+#define UncacheRegister(__Register) \
     CacheByte(__Register) &= ~CacheBit(__Register)
 
 #define CacheSlot(__Register)  pATI->MMIOCache[CacheSlotOf(__Register)]
@@ -193,7 +193,8 @@ ATIMach64PreInit
     ATIHWPtr    pATIHW
 )
 {
-    int tmp;
+    CARD32 bus_cntl, config_cntl;
+    int    tmp;
 
     if (pScreenInfo->depth <= 4)
         pATIHW->crtc_off_pitch =
@@ -202,8 +203,8 @@ ATIMach64PreInit
         pATIHW->crtc_off_pitch =
             SetBits(pScreenInfo->displayWidth >> 3, CRTC_PITCH);
 
-    pATIHW->bus_cntl = (inl(pATI->CPIO_BUS_CNTL) & ~BUS_HOST_ERR_INT_EN) |
-        BUS_HOST_ERR_INT;
+    bus_cntl = inl(pATI->CPIO_BUS_CNTL);
+    pATIHW->bus_cntl = (bus_cntl & ~BUS_HOST_ERR_INT_EN) | BUS_HOST_ERR_INT;
     if (pATI->Chip < ATI_CHIP_264VTB)
     {
         pATIHW->bus_cntl &= ~(BUS_FIFO_ERR_INT_EN | BUS_ROM_DIS);
@@ -226,7 +227,7 @@ ATIMach64PreInit
     if ((pScreenInfo->depth > 8) || (pScreenInfo->rgbBits == 8))
         pATIHW->dac_cntl |= DAC_8BIT_EN;
 
-    pATIHW->config_cntl = inl(pATI->CPIO_CONFIG_CNTL);
+    pATIHW->config_cntl = config_cntl = inl(pATI->CPIO_CONFIG_CNTL);
     if (pATI->UseSmallApertures)
         pATIHW->config_cntl |= CFG_MEM_VGA_AP_EN;
     else
@@ -247,6 +248,10 @@ ATIMach64PreInit
     /* Draw engine setup */
     if (pATI->OptionAccel)
     {
+        /* Ensure apertures are enabled */
+        outl(pATI->CPIO_BUS_CNTL, pATIHW->bus_cntl);
+        outl(pATI->CPIO_CONFIG_CNTL, pATIHW->config_cntl);
+
         /*
          * When possible, max out command FIFO size.
          */
@@ -333,6 +338,10 @@ ATIMach64PreInit
 
         /* Initialise colour compare */
         pATIHW->clr_cmp_msk = (CARD32)(-1);
+
+        /* Restore aperture enablement */
+        outl(pATI->CPIO_BUS_CNTL, bus_cntl);
+        outl(pATI->CPIO_CONFIG_CNTL, config_cntl);
     }
 }
 
@@ -376,6 +385,10 @@ ATIMach64Save
     /* Save draw engine state */
     if (pATI->OptionAccel && (pATIHW == &pATI->OldHW))
     {
+        /* Ensure apertures are enabled */
+        outl(pATI->CPIO_BUS_CNTL, pATI->NewHW.bus_cntl);
+        outl(pATI->CPIO_CONFIG_CNTL, pATI->NewHW.config_cntl);
+
         ATIMach64WaitForIdle();
 
         /* Save FIFO size */
@@ -434,6 +447,10 @@ ATIMach64Save
 
         /* Save context */
         pATIHW->context_mask = inm(CONTEXT_MASK);
+
+        /* Restore aperture enablement */
+        outl(pATI->CPIO_BUS_CNTL, pATIHW->bus_cntl);
+        outl(pATI->CPIO_CONFIG_CNTL, pATIHW->config_cntl);
     }
 }
 
@@ -645,21 +662,15 @@ ATIMach64Set
     /* Finalise CRTC setup and turn on the screen */
     outl(pATI->CPIO_CRTC_GEN_CNTL, pATIHW->crtc_gen_cntl);
 
-    /* Aperture setup */
-    outl(pATI->CPIO_BUS_CNTL, pATIHW->bus_cntl);
-
-    outl(pATI->CPIO_MEM_VGA_WP_SEL, pATIHW->mem_vga_wp_sel);
-    outl(pATI->CPIO_MEM_VGA_RP_SEL, pATIHW->mem_vga_rp_sel);
-
-    outl(pATI->CPIO_DAC_CNTL, pATIHW->dac_cntl);
-
-    outl(pATI->CPIO_CONFIG_CNTL, pATIHW->config_cntl);
-
     /* Load draw engine */
     if (pATI->OptionAccel)
     {
         /* Clobber MMIO cache */
         memset(pATI->MMIOCached, 0, sizeof(pATI->MMIOCached));
+
+        /* Ensure apertures are enabled */
+        outl(pATI->CPIO_BUS_CNTL, pATI->NewHW.bus_cntl);
+        outl(pATI->CPIO_CONFIG_CNTL, pATI->NewHW.config_cntl);
 
         pATI->EngineIsBusy = TRUE;      /* Force engine poll */
         ATIMach64WaitForIdle();
@@ -765,6 +776,16 @@ ATIMach64Set
             CacheRegister(CLR_CMP_CNTL);
         }
     }
+
+    /* Aperture setup */
+    outl(pATI->CPIO_BUS_CNTL, pATIHW->bus_cntl);
+
+    outl(pATI->CPIO_MEM_VGA_WP_SEL, pATIHW->mem_vga_wp_sel);
+    outl(pATI->CPIO_MEM_VGA_RP_SEL, pATIHW->mem_vga_rp_sel);
+
+    outl(pATI->CPIO_DAC_CNTL, pATIHW->dac_cntl);
+
+    outl(pATI->CPIO_CONFIG_CNTL, pATIHW->config_cntl);
 }
 
 /*
@@ -909,7 +930,7 @@ ATIMach64Sync
         if (RegisterIsCached(SRC_CNTL) &&
             (CacheSlot(SRC_CNTL) != inm(SRC_CNTL)))
         {
-            UnCacheRegister(SRC_CNTL);
+            UncacheRegister(SRC_CNTL);
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
                 "SRC_CNTL write cache disabled!\n");
         }
@@ -917,7 +938,7 @@ ATIMach64Sync
         if (RegisterIsCached(HOST_CNTL) &&
             (CacheSlot(HOST_CNTL) != inm(HOST_CNTL)))
         {
-            UnCacheRegister(HOST_CNTL);
+            UncacheRegister(HOST_CNTL);
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
                 "HOST_CNTL write cache disabled!\n");
         }
@@ -925,7 +946,7 @@ ATIMach64Sync
         if (RegisterIsCached(PAT_REG0) &&
             (CacheSlot(PAT_REG0) != inm(PAT_REG0)))
         {
-            UnCacheRegister(PAT_REG0);
+            UncacheRegister(PAT_REG0);
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
                 "PAT_REG0 write cache disabled!\n");
         }
@@ -933,7 +954,7 @@ ATIMach64Sync
         if (RegisterIsCached(PAT_REG1) &&
             (CacheSlot(PAT_REG1) != inm(PAT_REG1)))
         {
-            UnCacheRegister(PAT_REG1);
+            UncacheRegister(PAT_REG1);
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
                 "PAT_REG1 write cache disabled!\n");
         }
@@ -941,7 +962,7 @@ ATIMach64Sync
         if (RegisterIsCached(PAT_CNTL) &&
             (CacheSlot(PAT_CNTL) != inm(PAT_CNTL)))
         {
-            UnCacheRegister(PAT_CNTL);
+            UncacheRegister(PAT_CNTL);
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
                 "PAT_CNTL write cache disabled!\n");
         }
@@ -950,7 +971,7 @@ ATIMach64Sync
             (CacheSlot(SC_LEFT_RIGHT) !=
              (SetWord(inm(SC_RIGHT), 1) | SetWord(inm(SC_LEFT), 0))))
         {
-            UnCacheRegister(SC_LEFT_RIGHT);
+            UncacheRegister(SC_LEFT_RIGHT);
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
                 "SC_LEFT_RIGHT write cache disabled!\n");
         }
@@ -959,7 +980,7 @@ ATIMach64Sync
             (CacheSlot(SC_TOP_BOTTOM) !=
              (SetWord(inm(SC_BOTTOM), 1) | SetWord(inm(SC_TOP), 0))))
         {
-            UnCacheRegister(SC_TOP_BOTTOM);
+            UncacheRegister(SC_TOP_BOTTOM);
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
                 "SC_TOP_BOTTOM write cache disabled!\n");
         }
@@ -967,7 +988,7 @@ ATIMach64Sync
         if (RegisterIsCached(DP_BKGD_CLR) &&
             (CacheSlot(DP_BKGD_CLR) != inm(DP_BKGD_CLR)))
         {
-            UnCacheRegister(DP_BKGD_CLR);
+            UncacheRegister(DP_BKGD_CLR);
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
                 "DP_BKGD_CLR write cache disabled!\n");
         }
@@ -975,7 +996,7 @@ ATIMach64Sync
         if (RegisterIsCached(DP_FRGD_CLR) &&
             (CacheSlot(DP_FRGD_CLR) != inm(DP_FRGD_CLR)))
         {
-            UnCacheRegister(DP_FRGD_CLR);
+            UncacheRegister(DP_FRGD_CLR);
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
                 "DP_FRGD_CLR write cache disabled!\n");
         }
@@ -983,7 +1004,7 @@ ATIMach64Sync
         if (RegisterIsCached(DP_WRITE_MASK) &&
             (CacheSlot(DP_WRITE_MASK) != inm(DP_WRITE_MASK)))
         {
-            UnCacheRegister(DP_WRITE_MASK);
+            UncacheRegister(DP_WRITE_MASK);
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
                 "DP_WRITE_MASK write cache disabled!\n");
         }
@@ -991,7 +1012,7 @@ ATIMach64Sync
         if (RegisterIsCached(DP_MIX) &&
             (CacheSlot(DP_MIX) != inm(DP_MIX)))
         {
-            UnCacheRegister(DP_MIX);
+            UncacheRegister(DP_MIX);
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
                 "DP_MIX write cache disabled!\n");
         }
@@ -999,7 +1020,7 @@ ATIMach64Sync
         if (RegisterIsCached(CLR_CMP_CLR) &&
             (CacheSlot(CLR_CMP_CLR) != inm(CLR_CMP_CLR)))
         {
-            UnCacheRegister(CLR_CMP_CLR);
+            UncacheRegister(CLR_CMP_CLR);
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
                 "CLR_CMP_CLR write cache disabled!\n");
         }
@@ -1007,7 +1028,7 @@ ATIMach64Sync
         if (RegisterIsCached(CLR_CMP_MSK) &&
             (CacheSlot(CLR_CMP_MSK) != inm(CLR_CMP_MSK)))
         {
-            UnCacheRegister(CLR_CMP_MSK);
+            UncacheRegister(CLR_CMP_MSK);
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
                 "CLR_CMP_MSK write cache disabled!\n");
         }
@@ -1015,7 +1036,7 @@ ATIMach64Sync
         if (RegisterIsCached(CLR_CMP_CNTL) &&
             (CacheSlot(CLR_CMP_CNTL) != inm(CLR_CMP_CNTL)))
         {
-            UnCacheRegister(CLR_CMP_CNTL);
+            UncacheRegister(CLR_CMP_CNTL);
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
                 "CLR_CMP_CNTL write cache disabled!\n");
         }

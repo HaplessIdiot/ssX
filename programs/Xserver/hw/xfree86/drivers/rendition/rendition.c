@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.30 2000/03/06 23:54:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.32 2000/04/17 16:30:06 eich Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -1531,8 +1531,6 @@ renditionDDC1Read (ScrnInfoPtr pScreenInfo)
   return value;
 }
 
-extern xf86MonPtr ConfiguredMonitor;
-
 void
 renditionProbeDDC(ScrnInfoPtr pScreenInfo, int index)
 {
@@ -1541,6 +1539,6 @@ renditionProbeDDC(ScrnInfoPtr pScreenInfo, int index)
     xf86LoaderReqSymLists(vbeSymbols, NULL);
 
     pVbe = VBEInit(NULL,index);
-    ConfiguredMonitor = vbeDoEDID(pVbe);
+    ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
   }
 }
