@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1999 by The XFree86 Project, Inc.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86VidMode.c,v 1.1 1999/03/07 08:29:45 dawes Exp $ */
 
 /*
  * This file contains the VidMode functions required by the extension.
@@ -45,17 +45,23 @@ VidModeExtensionInit(ScreenPtr pScreen)
     
     DEBUG_P("VidModeExtensionInit");
 
-    if (!xf86GetVidModeEnabled())
+    if (!xf86GetVidModeEnabled()) {
+	DEBUG_P("!xf86GetVidModeEnabled()");
 	return FALSE;
+    }
 
     if (serverGeneration != VidModeGeneration) {
-	if ((VidModeIndex = AllocateScreenPrivateIndex()) < 0)
+	if ((VidModeIndex = AllocateScreenPrivateIndex()) < 0) {
+	    DEBUG_P("AllocateScreenPrivateIndex() failed");
 	    return FALSE;
+	}
 	VidModeGeneration = serverGeneration;
     }
 
-    if (!(pScreen->devPrivates[VidModeIndex].ptr = xcalloc(sizeof(VidModeRec), 1)))
+    if (!(pScreen->devPrivates[VidModeIndex].ptr = xcalloc(sizeof(VidModeRec), 1))) {
+	DEBUG_P("xcalloc failed");
 	return FALSE;
+    }
 
     pVidMode = VMPTR(pScreen);
     pVidMode->Flags = 0;
@@ -65,6 +71,7 @@ VidModeExtensionInit(ScreenPtr pScreen)
     VidModeCount++;
     return TRUE;
 #else
+    DEBUG_P("no vidmode extension");
     return FALSE;
 #endif
 }
@@ -98,18 +105,24 @@ VidModeAvailable(int scrnIndex)
 
     DEBUG_P("VidModeAvailable");
 
-    if (VidModeIndex < 0)
+    if (VidModeIndex < 0) {
+	DEBUG_P("VidModeIndex < 0");
 	return FALSE;
+    }
  
     pScrn = xf86Screens[scrnIndex];
-    if (pScrn == NULL)
+    if (pScrn == NULL) {
+	DEBUG_P("pScrn == NULL");
 	return FALSE;
+    }
     
     pVidMode = VMPTR(pScrn->pScreen);
     if (pVidMode)
 	return TRUE;
-    else
+    else {
+	DEBUG_P("pVidMode == NULL");
 	return FALSE;
+    }
 }
 
 Bool

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.41 1998/10/04 09:36:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.42 1999/03/07 08:29:30 dawes Exp $ */
 
 /*
 
@@ -154,8 +154,26 @@ XFree86VidModeExtensionInit(void)
     ExtensionEntry* extEntry;
     ScreenPtr pScreen;
     int		    i;
+    Bool	    enabled = FALSE;
 
     DEBUG_P("XFree86VidModeExtensionInit");
+
+#ifdef XF86VIDMODE_EVENTS
+    EventType = CreateNewResourceType(XF86VidModeFreeEvents);
+    ScreenPrivateIndex = AllocateScreenPrivateIndex ();
+#endif
+
+    for(i = 0; i < screenInfo.numScreens; i++) {
+        pScreen = screenInfo.screens[i];
+	if (VidModeExtensionInit(pScreen))
+	    enabled = TRUE;
+#ifdef XF86VIDMODE_EVENTS
+	SetScreenPrivate (pScreen, NULL);
+#endif
+    }
+    /* This means that the DDX doesn't want the vidmode extension enabled */
+    if (!enabled)
+	return;
 
     /*
      * Allocate a client private index to hold the client's version
@@ -173,19 +191,6 @@ XFree86VidModeExtensionInit(void)
 	    return;
 	}
 	VidModeGeneration = serverGeneration;
-    }
-
-#ifdef XF86VIDMODE_EVENTS
-    EventType = CreateNewResourceType(XF86VidModeFreeEvents);
-    ScreenPrivateIndex = AllocateScreenPrivateIndex ();
-#endif
-
-    for(i = 0; i < screenInfo.numScreens; i++) {
-        pScreen = screenInfo.screens[i];
-	VidModeExtensionInit(pScreen);
-#ifdef XF86VIDMODE_EVENTS
-	SetScreenPrivate (pScreen, NULL);
-#endif
     }
 
     if (

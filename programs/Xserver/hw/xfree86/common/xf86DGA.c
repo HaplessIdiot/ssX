@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.7 1999/03/02 11:49:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.8 1999/03/07 11:40:31 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -103,8 +103,11 @@ DGACloseScreen(int i, ScreenPtr pScreen)
    /* DGAShutdown() should have ensured that no DGA
 	screen were active by here */
 
+#if 0
+   /* The driver is freeing this */
    if(pScreenPriv->numModes && pScreenPriv->modes)
 	xfree(pScreenPriv->modes);
+#endif
    xfree(pScreenPriv);
 
    return((*pScreen->CloseScreen)(i, pScreen));
