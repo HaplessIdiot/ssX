@@ -138,30 +138,30 @@
         stamps the rated speed below the part numbers in a dark ink.
 
 
-        ``normal''
+        "normal"
            normal VGA style RAMDAC (6-bit DAC), default if none
            specified. Most boards should work with this parm, but some
            capabilities will be unavailable.
 
 
-        ``bt481''
+        "bt481"
            bt481 RAMDAC (supports 8-bit DAC)
 
-        ``bt482''
+        "bt482"
            bt482 RAMDAC (supports 8-bit DAC) The Hercules Graphite HG210
            uses the BT481 or BT482, the only difference between these
            two is the BT482's HW cursor (not yet supported).  The
            BT481/2 are limited to 85Mhz.
 
 
-        ``SC15025''
+        "SC15025"
            Sierra SC15025 and SC15021 RAMDAC (support 8-bit DAC). The
            SC15025 is limited to 125Mhz, and the SC15021 135Mhz. Check
            the RAMDAC's actual rating, some SC15025's used in AGX based
            boards are only rated to 110Mhz.
 
 
-        ``herc_dual_dac''
+        "herc_dual_dac"
            Hercules Graphite Pro RAMDAC probe.  If the 84-pin Big-RAMDAC
            is installed (2MB models), will use the Big RAMDAC, but only
            clocks-doubled, pixel- multiplexed modes (higher clock values
@@ -171,7 +171,7 @@
            run with this option specified if you are going to use it
            (see additional notes in the clock section).
 
-           There has been one report of the `dac-8-bit'' option not
+           There has been one report of the "dac-8-bit" option not
            working with a Graphite Pro equipped with a BT485 RAMDAC,
            puzzling since it should be identical to the AT&T20C505 in
            this regard. No startup messages or XF86Config were submitted
@@ -180,7 +180,7 @@
            Not supported by the HG210 Graphite.
 
 
-        ``herc_small_dac''
+        "herc_small_dac"
            Hercules Graphite Pro RAMDAC probe.  Forces use of only the
            BT481/482 RAMDAC.
 
@@ -190,13 +190,11 @@
 
      Ramdac relatated Option Flags:
 
-        ``dac_8_bit''
-           Sets supported RAMDAC's to 8-bit DAC mode (all but
-           ``normal'').
+        "dac_8_bit"
+           Sets supported RAMDAC's to 8-bit DAC mode (all but "normal").
 
 
-
-        ``sync_on_green''
+        "sync_on_green"
            Composite sync on green for DAC's that support this feature
            (currently BT481 &BT482).
 
@@ -204,10 +202,10 @@
 
 
      Chipset:
-        Must be specified, possible values: ``AGX-016'', ``AGX-015'',
-        ``AGX-014'', ``AGX-010'', ``XGA-2'', ``XGA-1''. Some vendors
-        place stickers over the chip, in general, if it's a VLB board
-        it's probably an AGX-015 and if it's an ISA board it may be an
+        Must be specified, possible values: "AGX-016", "AGX-015",
+        "AGX-014", "AGX-010", "XGA-2", "XGA-1". Some vendors place
+        stickers over the chip, in general, if it's a VLB board it's
+        probably an AGX-015 and if it's an ISA board it may be an
         AGX-014. The Hercules Graphite Power Pro and Spider Black Widow
         Plus use the AGX-016 chipset. In general, specifying a lower
         revision in the AGX-0{14,15,16} series does not seem to causes
@@ -234,24 +232,24 @@
 
         Bus I/O interface:
 
-           ``8_bit_bus''
+           "8_bit_bus"
               Force 8-bit I/O bus.
 
-           ``wait_state'', ``no_wait_state''
+           "wait_state", "no_wait_state"
               Set or clear CPU access wait state, default is the POST
               setting.
 
-           ``fifo_conserv''
+           "fifo_conserv"
               Disable Memory I/O Buffer, AGX-015 and AGX-016.  MS-
               Windows driver default. Required by some VLB systems with
               `aggressive timing'.  The default for this server is to
               disable the buffer.
 
 
-           ``fifo_moderate''
+           "fifo_moderate"
               Enable the AGX-015's Memory I/O buffer.
 
-           ``fifo_aggressive''
+           "fifo_aggressive"
               Enable the AGX-016's extra-large buffer.  Either option
               result in garbage being left about the screen, disabled by
               default.  A good test is the xbench or x11perf dashed
@@ -262,14 +260,16 @@
         Memory Timing:
            POST defaults should be ok.
 
-           ``vram_delay_latch'', ``vram delay_ras'',
-              ``vram_extend_ras'', ``slow_dram''
+
+
+           "vram_delay_latch", "vram delay_ras", "vram_extend_ras",
+              "slow_dram"
               Set all of the above vram options.
 
-           ``med_dram''
+           "med_dram"
               Set vram latch delay, clear others.
 
-           ``fast_dram''
+           "fast_dram"
               All of the vram options are cleared.  Should be specified
               if directly specifying vram options to clear POST
               settings.
@@ -279,26 +279,26 @@
            These shouldn't generally be required:
 
 
-           ``crtc_delay''
+           "crtc_delay"
               Sets XGA mode CRTC delay. Default and AGX recommended
               value is VGA CRTC delay.
 
-           ``engine_delay''
+           "engine_delay"
               AGX-015 only? adds additional VLB wait state.
 
-           ``vram_128'', ``vram_256''
+           "vram_128", "vram_256"
               Sets VRAM shift frequency, vram_128 is for 128Kx8 VRAM.
               Default is to leave this bit unchanged from POST setting.
 
-           ``refresh_20'', ``refresh_25''
+           "refresh_20", "refresh_25"
               Number of clock cycles between screen refreshes. Default
               is to leave this bit unchanged from POST setting.
 
-           ``screen_refresh''
+           "screen_refresh"
               Disable screen refresh during non-blanked intervals,
               AGX-016. Default is leave them enabled.
 
-           ``vlb_a'', ``vlb_b''
+           "vlb_a", "vlb_b"
               VLB transaction type, default is to leave this bit
               unchanged from POST value.
 
@@ -346,7 +346,7 @@
         going to use should also be specified, as this may affect the
         results in some cases.
 
-        For the 2MB Hercules Graphites with the ``herc-dual-dac'' RAMDAC
+        For the 2MB Hercules Graphites with the "herc-dual-dac" RAMDAC
         specified, the probe will generate an additional 16 clocks with
         values double the corresponding values from the first set.
         Unusable values will be zero: for the first 16, clocks that
@@ -367,11 +367,11 @@
                     70.00  75.00  80.00  85.00  90.00 95.00 100.0 108.0
 
      These are the values to be used in the clock statement if specify-
-     ing the ``normal", ``bt481'', or ``herc_small_dac'' RAMDAC in your
+     ing the "normal", "bt481", or "herc_small_dac" RAMDAC in your
      XF86Config.
 
-     BUT, if using the ``herc_dual_dac'' RAMDAC, and with an
-     AT&T20C505-13 84-pin RAMDAC, the clocks should be (approx):
+     BUT, if using the "herc_dual_dac" RAMDAC, and with an AT&T20C505-13
+     84-pin RAMDAC, the clocks should be (approx):
                     25.18  28.32  32.51  36.00  40.00  45.00  50.35  65.00
                     70.00  75.00  80.00  85.00   0.00   0.00   0.00   0.00
                     0.00   0.00   0.00   0.00    0.00  90.00  100.7  130.0
@@ -429,7 +429,7 @@
      Examples:
 
         For the Hercules HG720 (2MB VLB AGX-015, with BT481 and
-        AT&T20C5050 RAMDACs), I use the following XF86Config ``Device''
+        AT&T20C5050 RAMDACs), I use the following XF86Config "Device"
         section:
                      Section "Device"
                          Identifier "HG720"
@@ -523,7 +523,7 @@
   can also be used with the XGA-2.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.1 1994/12/26 11:03:43 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.2 1995/01/11 09:47:56 dawes Exp $
 
 
 

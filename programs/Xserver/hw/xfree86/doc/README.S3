@@ -21,10 +21,10 @@
         8 and 15/16 bpp
 
         Note: the AT&T20C490 RAMDAC is not automatically detected by the
-        server.  You need to provide a ``Ramdac "att20c490"'' entry in
+        server.  You need to provide a `Ramdac "att20c490"' entry in
         your XF86Config.
 
-        Real AT&T 20C490 or 20C491 RAMDACs work with the ``dac_8_bit''
+        Real AT&T 20C490 or 20C491 RAMDACs work with the "dac_8_bit"
         option.  Some clones (like the Winbond 82C490) do not.
 
 
@@ -52,7 +52,7 @@
 
         8 bpp only.
 
-        requires ``Option "nolinear"''
+        requires `Option "nolinear"'
 
 
 
@@ -63,12 +63,12 @@
         8 and 15/16 bpp
 
         Note: the AT&T20C490 RAMDAC is not automatically detected by the
-        server.  You need to provide a ``Ramdac "att20c490"'' entry in
+        server.  You need to provide a `Ramdac "att20c490"' entry in
         your XF86Config.  Also, the server's RAMDAC probe reportedly
         causes problems with some of these boards, and a RamDac entry
         should be used to avoid the probe.
 
-        Real AT&T 20C490 or 20C491 RAMDACs work with the ``dac_8_bit''
+        Real AT&T 20C490 or 20C491 RAMDACs work with the "dac_8_bit"
         option.  Some clones (like the Winbond 82C490) do not.
 
 
@@ -100,12 +100,12 @@
 
         8 bpp only
 
-        Supports RGB with sync-on-green if ``sync_on_green'' option is
+        Supports RGB with sync-on-green if "sync_on_green" option is
         provided and board jumper is set for BNC outputs.
 
-        Option ``stb_pegasus''
+        Option "stb_pegasus"
 
-        The ``dac_8_bit'' option is recommended.
+        The "dac_8_bit" option is recommended.
 
 
 
@@ -115,11 +115,11 @@
 
         8, 15/16 and 24(32) bpp
 
-        Option ``SPEA_Mercury''
+        Option "SPEA_Mercury"
 
-        ClockChip ``SC11412''
+        ClockChip "SC11412"
 
-        The ``dac_8_bit'' option is recommended.
+        The "dac_8_bit" option is recommended.
 
 
 
@@ -130,9 +130,9 @@
 
         8 bpp only
 
-        Option ``number_nine''
+        Option "number_nine"
 
-        The ``dac_8_bit'' option is recommended.
+        The "dac_8_bit" option is recommended.
 
 
 
@@ -144,9 +144,9 @@
 
         Supports RGB with sync-on-green
 
-        Option ``number_nine''
+        Option "number_nine"
 
-        The ``dac_8_bit'' option is recommended.
+        The "dac_8_bit" option is recommended.
 
 
 
@@ -174,12 +174,12 @@
 
         8 and 15/16 bpp
 
-        ClockChip ``ICS2595''
+        ClockChip "ICS2595"
 
         Clockchip support is only preliminary and on some machines
         problems with the first mode after startup of XF86_S3 or after
         switching back from VT have been seen; switching to next mode
-        with CTRL+ALT+``+'' and back seems to solve this problem
+        with CTRL+ALT+``KP+'' and back seems to solve this problem
 
         Mirage P64 with BIOS 4.xx uses the S3 SDAC.
 
@@ -191,9 +191,9 @@
 
         8, 15/16, 24(32) bpp
 
-        Option ``number_nine''
+        Option "number_nine"
 
-        Option ``dac_8_bit'' (recommended)
+        Option "dac_8_bit" (recommended)
 
 
      S3 964, AT&T 20C505 RAMDAC, ICD2061A Clockchip
@@ -218,7 +218,7 @@
 
         8, 15/16, 24(32) bpp
 
-        Option ``SPEA_Mercury''
+        Option "SPEA_Mercury"
 
 
 
@@ -238,17 +238,12 @@
 
         8 bpp, 15, 16 and 24(32) bpp
 
-        Option ``number_nine''
+        Option "number_nine"
 
         There are some known problems with the GXE64 Pro support,
         including some image shifting/wrapping at 15/16/24 bpp.
 
-        **STOP PRESS** We have found that some newer versions of the
-        GXE64 Pro do not work with XFree86 3.1.  We have a patch for
-        this which can be found in the README.late file in this
-        directory.
-
-        We have also found that #9 no longer support the GXE64 Pro at
+        We have found that #9 no longer support the GXE64 Pro at
         1600x1200.  They do however have a new (and more expensive)
         board called the GXE64Pro-1600 which uses a 220MHz RAMDAC
         instead of 135MHz part used on the other boards.  It is not
@@ -321,19 +316,21 @@
 
 
   This is a AT&T 490 with a speed grade of 110 MHz. This would then mean
-  that you put a ``DacSpeed 110'' line in your XF86Config file.  Be
+  that you put a `DacSpeed 110' line in your XF86Config file.  Be
   advised that some RAMDACs have different modes that have different
   limits. The manufacturer will always mark the chip naming the higher
   limits, so you should be careful.  The S3 server knows how to handle
   the limits for most of the RAMDACs it supports providing the DacSpeed
   is specified correctly.
 
-  chips labeled -80 or -8  should use ``DacSpeed 80'' in the device
+
+  chips labeled -80 or -8  should use `DacSpeed 80' in the device
   section
 
-       S3716-ME SDAC  ==>  DacSpeed 110
-       SC15025-8      ==>  DacSpeed  80
-       ATT20C490-80   ==>  DacSpeed  80
+
+  S3716-ME SDAC  ==>  DacSpeed 110
+  SC15025-8      ==>  DacSpeed  80
+  ATT20C490-80   ==>  DacSpeed  80
 
 
 
@@ -343,7 +340,10 @@
   symptom of this not being correct is the HW cursor being chopped off
   when positioned close to the right edge of the screen.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.2 1995/01/10 10:26:46 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.3 1995/01/11 09:47:53 dawes Exp $
+
+
+
 
 
 

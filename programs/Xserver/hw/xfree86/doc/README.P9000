@@ -289,13 +289,14 @@
 
      Option
 
-        ``sw_cursor''
+        "sw_cursor"
            use software cursor
 
-        ``sync_on_green''
-           generate sync pulses on the green ch
+        "sync_on_green"
+           generate sync pulses on the green signal.  Most (all?) P9000
+           based boards don't support this.
 
-        ``noaccel''
+        "noaccel"
            do not do hardware acceleration if it's causing problems for
            you
 
@@ -322,7 +323,6 @@
         These are the Red, Green, and Blue bits per pixel (default=565)
 
   Here's a portion of a sample XF86Config file for the Viper VLB:
-
 
 
 
@@ -382,7 +382,7 @@
   During the course of the next few months, people will be working on
   acceleration, etc.  Please send any patches to me (nygren@mit.edu).
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.1 1994/12/26 11:03:32 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.2 1995/01/11 09:47:52 dawes Exp $
 
 
 

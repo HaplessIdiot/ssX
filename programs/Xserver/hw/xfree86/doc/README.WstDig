@@ -39,17 +39,17 @@
   chipsets.  If you have one of these chipsets, you should let the
   server re-probe the clocks and update your XF86Config.
 
-  There is an ``Option'' flag available for the XF86Config file that is
+  There is an `Option' flag available for the XF86Config file that is
   specific to the Western Digital chipsets.  This option is
-  ``swap_hibit''.  We have determined via experimentation that the
-  WD90C1x and WD90C3x chipsets need the high-order clock-select bit
-  inverted, and the PVGA1 and WD90C00 need it non-inverted.  This is
-  hardcoded into the driver.  Since our sample-set was rather small, we
-  have provided the ``swap_hibit'' option to invert this behavior.  If
-  the clocks detected by the server show a very low last clock (under
+  "swap_hibit".  We have determined via experimentation that the WD90C1x
+  and WD90C3x chipsets need the high-order clock-select bit inverted,
+  and the PVGA1 and WD90C00 need it non-inverted.  This is hardcoded
+  into the driver.  Since our sample-set was rather small, we have
+  provided the "swap_hibit" option to invert this behavior.  If the
+  clocks detected by the server show a very low last clock (under
   28Mhz), then this option is likely needed.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/WstDig.sgml,v 3.0 1994/12/20 11:33:40 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/WstDig.sgml,v 3.1 1995/01/11 09:47:54 dawes Exp $
 
 
 

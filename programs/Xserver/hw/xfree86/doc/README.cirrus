@@ -112,17 +112,17 @@
   they are applicable (you can enable options for all depths by
   specifying them in the Device section).
 
-     Option ``noaccel''
+     Option "noaccel"
         This option will disable the use of any accelerated functions.
         This is likely to help with some problems related to DRAM
         timing, high dot clocks, and bugs in accelerated functions, at
         the cost of performance (which will still be reasonable on VLB).
 
-     Option ``fast_dram'' (5424, 5426, 5428, 5429, 543x)
+     Option "fast_dram" (5424, 5426, 5428, 5429, 543x)
 
-        Option ``med_dram''
+        Option "med_dram"
 
-        Option ``slow_dram''
+        Option "slow_dram"
         " The "fast_dram" option will cause the driver to set the
         internal memory clock (MCLK) register of the video card to a
         higher value.  Normally, this register is not touched but it
@@ -180,14 +180,14 @@
         If you are not having any problems (performance or stability at
         high dot clocks), it is best not to use the "fast_dram" option.
 
-     Option ``no_bitblt''
+     Option "no_bitblt"
         This option, when used with a 5426/28/29/3x, will have the
         effect of disabling the use of the BitBLT engine (which the 5424
         does not have), while retaining some acceleration. This will be
         useful for problems related to functions that use the BitBLT
         engine.
 
-     chipset ``clgd54xx''
+     chipset "clgd54xx"
         Force detection of the given chipset. Useful if you have a
         supported chipset that is not properly detected, or if you have
         an unsupported chip that might be compatible with a supported
@@ -201,25 +201,25 @@
         the upper megabyte of memory, or if the memory detection goes
         wrong. It must be specified in the Device section.
 
-     Option ``fifo_conservative'' (5424/6/8/9/30)
+     Option "fifo_conservative" (5424/6/8/9/30)
         This option will set the CRT FIFO threshold to a conservative
         value for high dot clocks (>= 65 MHz), reducing performance but
         hopefully alleviating problems with `streaks' on the screen
         (especially when a BitBLT operation is in progress).
 
-     Option ``fifo_aggressive'' (5424/6/8/9/30)
+     Option "fifo_aggressive" (5424/6/8/9/30)
         This option will set the CRT FIFO threshold to an aggressive
         value; it will be the same as that used for lower dot clocks. It
         improves performance at high dot clocks.
 
-     Option ``no_2mb_banksel'' (542x)
+     Option "no_2mb_banksel" (542x)
         This option will cause the driver not to set the `DRAM bank
         select' bit to enable the upper megabyte of memory on a 2Mbyte
         card. This should be helpful with cards equipped with 512Kx8
         DRAMs, as opposed to 256Kx4/16 DRAMs, when using a virtual
         screen configuration that uses more than 1Mbyte of memory.
 
-     Option ``probe_clocks''
+     Option "probe_clocks"
         This option will force probing of dot clocks on the card. This
         should not be necessary, since the clocks are fixed and the same
         for all Cirrus chipsets. However, they do depend on the
@@ -237,7 +237,7 @@
                 65.0  72.2  75.0  80.0  85.2
 
 
-     Clockchip ``cirrus''
+     Clockchip "cirrus"
         This enables programmable clocks. It must be specified in the
         Device section. With this option, the clocks the modes use will
         be automatically selected. Do not specify any Clocks line. This
@@ -246,7 +246,7 @@
         tested frequencies (like the default clocks) are guaranteed to
         be stable.
 
-     Option ``linear''
+     Option "linear"
         This enables linear addressing, which is the mapping of the
         entire framebuffer to a high address beyond system memory, so
         that SVGA bank switching is not necessary. It enhances
@@ -258,23 +258,23 @@
         framebuffer. It must be specified in the Device section. It is
         required for most linear addressing configurations.
 
-     Option ``favour_bitblt'' (5426)
+     Option "favour_bitblt" (5426)
         This option will, when the BitBLT engine is enabled, favour its
         use over framebuffer color expansion functions that are normally
         faster.  This can give a performance improvement on a heavily
         CPU-loaded system (e.g. running gcc and other programs at the
         same time) in certain situations.
 
-     Option ``mmio'' (543x)
+     Option "mmio" (543x)
         This enables the use of memory-mapped I/O to talk to the BitBLT
         engine on the 543x/5429, which is a bit faster. It also enables
         additional acceleration using memory-mapped I/O.
 
-     Option ``sw_cursor'' (542x/3x)
+     Option "sw_cursor" (542x/3x)
         This disables use of the hardware cursor provided by the chip.
         Try this if the cursor seems to have problems.
 
-     Option ``clgd6225_lcd''
+     Option "clgd6225_lcd"
         Provides a work-around for problems on the LCD screen of some
         62x5 laptop chipsets with maximum white colors.
 
@@ -550,7 +550,7 @@
 
   o  Support for Memory-Mapped I/O on 543x.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.3 1995/01/10 10:26:48 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.4 1995/01/11 09:47:58 dawes Exp $
 
 
 

@@ -238,8 +238,7 @@
         ALG2101, ALG2228, ALG2301, ALG2302, ALG2308, ALG2401
 
      Chips & Technology
-        82C451, 82C452, 82C453, 82C455, 82C456, 82C457, 65520, 65530,
-        65540, 65545
+        65520, 65530, 65540, 65545
 
      MX MX68000, MX680010
 
@@ -261,6 +260,7 @@
   On the Compaq AVGA, only 64k of video memory is supported for the
   monochrome server, and the GVGA has not been tested with more than
   64k.
+
 
   The VGA16 server supports memory banking with the ET4000, Trident,
   ATI, NCR, OAK and Cirrus 6420 chipsets allowing virtual display sizes
@@ -931,7 +931,7 @@
   archive, and which compile-time option selections were made when
   building the distribution.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.4 1995/01/08 07:00:03 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.5 1995/01/11 03:50:57 dawes Exp $
 
 
 
