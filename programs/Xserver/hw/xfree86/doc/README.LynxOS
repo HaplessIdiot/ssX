@@ -1,4 +1,4 @@
-                     README for XFree86 4.4.0 on LynxOS
+                     README for XFree86® 4.4.0 on LynxOS
 
                                Thomas Mueller
 
@@ -263,7 +263,7 @@ duplicate entries:
           sort /usr/X11R6/man/whatis | uniq > /tmp/tmpfile
           mv /tmp/tmpfile /usr/X11R6/man/whatis
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.20 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.21 dawes Exp $
 
 
-$XFree86: $
+$XFree86$

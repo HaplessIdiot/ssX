@@ -1,4 +1,4 @@
-                      XFree86 server 4.x Design (DRAFT)
+                     XFree86® server 4.x Design (DRAFT)
 
                           The XFree86 Project, Inc
 
@@ -6370,7 +6370,7 @@ eScreen() function.
          ZZZFreeRec(xf86Screens[scrnIndex]);
      }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.56 tsi Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.57 dawes Exp $
 
 
 $XFree86$

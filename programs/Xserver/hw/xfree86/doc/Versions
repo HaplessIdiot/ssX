@@ -1,4 +1,4 @@
-                      XFree86 Version Numbering Schemes
+                     XFree86® Version Numbering Schemes
 
                           The XFree86 Project, Inc
 
@@ -338,7 +338,7 @@ VendorRelease information can be interpreted.
              }
          }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Versions.sgml,v 1.4 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Versions.sgml,v 1.5 dawes Exp $
 
 
-$XFree86: $
+$XFree86$

@@ -18,15 +18,15 @@ copies.
 
 OpenGL is a registered trademark and SGI is a trademark of Silicon Graphics,
 Inc.  Unix is a registered trademark of The Open Group.  The `X' device and X
-Window System are trademarks of The Open Group.  XFree86 is a trademark of
-The XFree86 Project.  Linux is a registered trademark of Linus Torvalds.
-Intel is a registered trademark of Intel Corporation.  3Dlabs, GLINT, and
-Oxygen are either registered trademarks or trademarks of 3Dlabs Inc. Ltd.
-3dfx, Voodoo3, Voodoo4, and Voodoo5 are registered trademarks of 3dfx Inter-
-active, Incorporated.  Matrox is a registered trademark of Matrox Electronic
-Systems Ltd.  ATI Rage and Radeon are registered trademarks of ATI Technolo-
-gies, Inc.  All other trademarks mentioned are the property of their respec-
-tive owners.
+Window System are trademarks of The Open Group.  XFree86 is a registered
+trademark of The XFree86 Project, Inc.  Linux is a registered trademark of
+Linus Torvalds.  Intel is a registered trademark of Intel Corporation.
+3Dlabs, GLINT, and Oxygen are either registered trademarks or trademarks of
+3Dlabs Inc. Ltd.  3dfx, Voodoo3, Voodoo4, and Voodoo5 are registered trade-
+marks of 3dfx Interactive, Incorporated.  Matrox is a registered trademark of
+Matrox Electronic Systems Ltd.  ATI Rage and Radeon are registered trademarks
+of ATI Technologies, Inc.  All other trademarks mentioned are the property of
+their respective owners.
 
 2.  Introduction
 
@@ -1251,7 +1251,7 @@ demo programs is available from http://dri.sourceforge.net/res.phtml
    o In the future there may be IHV and Linux vendor support resources for
      the DRI.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.29 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.30 dawes Exp $
 
 
-$XFree86: $
+$XFree86$

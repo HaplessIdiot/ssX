@@ -1,4 +1,4 @@
-                     README for XFree86 4.4.0 on OpenBSD
+                    README for XFree86® 4.4.0 on OpenBSD
 
                                Matthieu Herrb
 
@@ -306,7 +306,7 @@ particular: David Dawes, Todd Fries, Rod Grimes, Charles Hannum, Amancio
 Hasty, Christoph Robitschko, Matthias Scheler, Michael Smith, Ignatios Sou-
 vatzis, Jack Velte, Nate Williams and Pace Willison.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.33 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.34 dawes Exp $
 
 
-$XFree86: $
+$XFree86$

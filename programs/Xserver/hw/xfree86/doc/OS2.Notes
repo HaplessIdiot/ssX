@@ -1,4 +1,4 @@
-                Notes on Rebuilding XFree86/OS2 from Scratch
+                Notes on Rebuilding XFree86®/OS2 from Scratch
 
                                  Holger Veit
 
@@ -222,7 +222,7 @@ installed them. Nor did I install the test subtree.
 
 Well, you see, this was quite easy :-)
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2Notes.sgml,v 1.2 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2Notes.sgml,v 1.3 dawes Exp $
 
 
-$XFree86: $
+$XFree86$

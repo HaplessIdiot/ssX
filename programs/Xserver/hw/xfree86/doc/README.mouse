@@ -1,4 +1,4 @@
-                          Mouse Support in XFree86
+                          Mouse Support in XFree86®
 
                                Kazutaka Yokota
 
@@ -985,7 +985,7 @@ time. They may prefer the following InputDevice section which defines button
           Option      "DragLockButtons" "4"
      EndSection
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/mouse.sgml,v 1.13 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/mouse.sgml,v 1.14 dawes Exp $
 
 
-$XFree86: $
+$XFree86$
