@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbscrinit.c,v 3.2 1998/04/05 16:42:03 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbscrinit.c,v 3.0.6.3 1998/06/08 15:12:29 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -147,10 +147,10 @@ afbAllocatePrivates(pScreen, pWinIndex, pGCIndex)
 Bool
 afbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	register ScreenPtr pScreen;
-	pointer pbits;					/* pointer to screen bitmap */
-	int xsize, ysize;				/* in pixels */
-	int dpix, dpiy;				/* dots per inch */
-	int width;						/* pixel width of frame buffer */
+	pointer pbits;			/* pointer to screen bitmap */
+	int xsize, ysize;		/* in pixels */
+	int dpix, dpiy;			/* dots per inch */
+	int width;			/* pixel width of frame buffer */
 {
 	VisualPtr visuals;
 	DepthPtr depths;
