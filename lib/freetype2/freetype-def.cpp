@@ -202,6 +202,9 @@ FT_Get_PS_Font_Info
 FT_Has_PS_Glyph_Names
 FT_Get_Name_Index
 FT_Get_BDF_Property
+FT_Activate_Size
+FT_Get_X11_Font_Format
+FT_Get_BDF_Charset_ID
 #endif
 
-/* $XFree86: xc/lib/freetype2/freetype-def.cpp,v 1.4 2003/06/18 16:17:34 eich Exp $ */
+/* $XFree86: xc/lib/freetype2/freetype-def.cpp,v 1.5 2003/08/04 10:32:21 eich Exp $ */
