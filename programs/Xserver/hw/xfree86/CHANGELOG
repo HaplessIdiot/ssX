@@ -1,4 +1,7 @@
-XFree86 4.0e (19 June 2000)
+XFree86 4.0e (20 June 2000)
+ 350. Fix location of dri module links in the xc/exports directory of the
+      build tree.
+ 349. Replace LoaderSymbol() with xf86LoaderCheckSymbol() in drivers.
  348. Disable SmartScheduler on LynxOS 3.1 (#4013, Thomas Mueller).
  347. Update Japanese PC98 docs (#4012, Isao Ohishi, Takaaki Nomura).
  346. Add some S3/Diamond PCI IDs (#4011, Werner Leeb).
@@ -10674,4 +10677,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1192 2000/06/19 23:41:27 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1195 2000/06/20 20:07:56 dawes Exp $
