@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_vga.c,v 1.47tsi Exp $ */
 /* $XdotOrg$ */
 /*
  * Mode setup and basic video bridge detection
@@ -377,24 +377,24 @@ SISInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
        } else {
 
+          /* We have horizontal blank end extension bits, so undo KGA workaround */
+          vgaHWHBlankKGA(mode, vgaReg, 0, 0);
+
           /* Set extended vertical overflow register */
           pReg->sisRegs3C4[0x0A] = ((offset & 0xF00) >> 4) |
-                 (((mode->CrtcVTotal-2)     & 0x400) >> 10 ) |
-                 (((mode->CrtcVDisplay-1)   & 0x400) >>  9 ) |
-/*               (((mode->CrtcVSyncStart-1) & 0x400) >>  8 ) |  */
-	         (((mode->CrtcVBlankStart-1)& 0x400) >>  8 ) |
-/*               (((mode->CrtcVBlankStart-1)& 0x400) >>  7 );  */
-                 (((mode->CrtcVSyncStart)   & 0x400) >>  7 );
+              (((mode->CrtcVTotal-2)     & 0x400) >> 10 ) |
+              (((mode->CrtcVDisplay-1)   & 0x400) >>  9 ) |
+              (((mode->CrtcVBlankStart-1)& 0x400) >>  8 ) |
+              (((mode->CrtcVSyncStart-1) & 0x400) >>  7 );
 
           /* Set extended horizontal overflow register */
           pReg->sisRegs3C4[0x12] &= 0xE0;
-          pReg->sisRegs3C4[0x12] |= (
-              (((mode->CrtcHTotal >> 3) - 5)      & 0x100) >> 8 |
-              (((mode->CrtcHDisplay >> 3) - 1)    & 0x100) >> 7 |
-/*            (((mode->CrtcHSyncStart >> 3) - 1)  & 0x100) >> 6 |  */
-              (((mode->CrtcHBlankStart >> 3) - 1) & 0x100) >> 6 |
-              ((mode->CrtcHSyncStart >> 3)        & 0x100) >> 5 |
-              (((mode->CrtcHBlankEnd >> 3) - 1)   & 0x40)  >> 2);
+          pReg->sisRegs3C4[0x12] |=
+              ((((mode->CrtcHTotal >> 3) - 5)      & 0x100) >> 8) |
+              ((((mode->CrtcHDisplay >> 3) - 1)    & 0x100) >> 7) |
+              ((((mode->CrtcHBlankStart >> 3) - 1) & 0x100) >> 6) |
+              ((((mode->CrtcHSyncStart >> 3) - 1)  & 0x100) >> 5) |
+              ((((mode->CrtcHBlankEnd >> 3) - 1)   & 0x40)  >> 2);
        }
 
 #ifdef TWDEBUG

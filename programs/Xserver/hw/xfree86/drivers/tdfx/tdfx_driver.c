@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.105 2003/11/03 05:11:41 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.106tsi Exp $ */
 
 /*
  * Authors:
@@ -1636,8 +1636,8 @@ TDFXSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode) {
 
   /* Calculate the CRTC values */
   hd = (mode->CrtcHDisplay>>3)-1;
-  hss = (mode->CrtcHSyncStart>>3);
-  hse = (mode->CrtcHSyncEnd>>3);
+  hss = (mode->CrtcHSyncStart>>3)-1;
+  hse = (mode->CrtcHSyncEnd>>3)-1;
   ht = (mode->CrtcHTotal>>3)-5;
   hbs = (mode->CrtcHBlankStart>>3)-1;
   hbe = (mode->CrtcHBlankEnd>>3)-1;
@@ -1717,6 +1717,7 @@ TDFXModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
   vgaHWUnlock(hwp);
 
+  hwp->Flags |= VGA_FIX_SYNC_PULSES;
   if (!vgaHWInit(pScrn, mode)) return FALSE;
 
   pScrn->vtSema = TRUE;

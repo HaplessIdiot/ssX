@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.105 2004/06/14 02:51:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.106tsi Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -1718,11 +1718,12 @@ I810SetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
    /* Calculate the extended CRTC regs */
    i810Reg->ExtVertTotal = (mode->CrtcVTotal - 2) >> 8;
    i810Reg->ExtVertDispEnd = (mode->CrtcVDisplay - 1) >> 8;
-   i810Reg->ExtVertSyncStart = mode->CrtcVSyncStart >> 8;
-   i810Reg->ExtVertBlankStart = mode->CrtcVBlankStart >> 8;
+   i810Reg->ExtVertSyncStart = (mode->CrtcVSyncStart - 1) >> 8;
+   i810Reg->ExtVertBlankStart = (mode->CrtcVBlankStart - 1) >> 8;
    i810Reg->ExtHorizTotal = ((mode->CrtcHTotal >> 3) - 5) >> 8;
    i810Reg->ExtHorizBlank = (((mode->CrtcHBlankEnd >> 3) - 1) & 0x40) >> 6;
 
+#if 0	/* I don't think these are needed anymore */
    /*
     * The following workarounds are needed to get video overlay working
     * at 1024x768 and 1280x1024 display resolutions.
@@ -1733,6 +1734,7 @@ I810SetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
    if ((mode->CrtcVDisplay == 1024) && (i810Reg->ExtVertBlankStart == 4)) {
       i810Reg->ExtVertBlankStart = 3;
    }
+#endif
 
    /* OVRACT Register */
    i810Reg->OverlayActiveStart = mode->CrtcHTotal - 32;
@@ -1789,6 +1791,7 @@ I810ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
    vgaHWUnlock(hwp);
 
+   hwp->Flags |= VGA_FIX_SYNC_PULSES;
    if (!vgaHWInit(pScrn, mode))
       return FALSE;
    /*
@@ -1801,7 +1804,7 @@ I810ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
    pVga = &hwp->ModeReg;
    pVga->CRTC[3] = (((mode->CrtcHBlankEnd >> 3) - 1) & 0x1F) | 0x80;
    pVga->CRTC[5] = ((((mode->CrtcHBlankEnd >> 3) - 1) & 0x20) << 2)
-	 | (((mode->CrtcHSyncEnd >> 3)) & 0x1F);
+	 | (((mode->CrtcHSyncEnd >> 3) - 1) & 0x1F);
    pVga->CRTC[22] = (mode->CrtcVBlankEnd - 1) & 0xFF;
 
    pScrn->vtSema = TRUE;

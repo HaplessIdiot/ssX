@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.193 2004/08/04 16:33:36 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.194tsi Exp $ */
 /* $XdotOrg$ */
 /*
  * SiS driver main code
@@ -191,6 +191,7 @@ static const char *vgahwSymbols[] = {
     "vgaHWGetHWRec",
     "vgaHWGetIOBase",
     "vgaHWGetIndex",
+    "vgaHWHBlankKGA",
     "vgaHWInit",
     "vgaHWLock",
     "vgaHWMapMem",
@@ -6565,6 +6566,7 @@ SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	     /* For other chipsets, use the old method */
 
 	     /* Initialise the ModeReg values */
+	     hwp->Flags |= VGA_FIX_SYNC_PULSES;
     	     if(!vgaHWInit(pScrn, mode)) {
 	        SISErrorLog(pScrn, "vgaHWInit() failed\n");
 	        return FALSE;
