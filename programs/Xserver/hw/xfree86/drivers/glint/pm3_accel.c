@@ -26,7 +26,7 @@
  * 
  * Permedia 3 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.19 2001/02/02 16:28:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.20 2001/02/05 10:44:58 alanh Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -865,6 +865,7 @@ static void
 Permedia3SubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
+    CARD32 *srcp = (CARD32*)pGlint->XAAScanlineColorExpandBuffers[bufno];
     int dwords = pGlint->dwords;
 
     if (pGlint->ScanlineDirect) {
@@ -877,17 +878,16 @@ Permedia3SubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
             GLINT_WRITE_REG(((pGlint->FIFOSize - 2) << 16) | 0x0D, OutputFIFO);
 	    GLINT_MoveDWORDS(
 			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
-	 		(CARD32*)pGlint->XAAScanlineColorExpandBuffers[bufno],
-			pGlint->FIFOSize - 1);
+	 		(CARD32*)srcp, pGlint->FIFOSize - 1);
 	    dwords -= pGlint->FIFOSize - 1;
+	    srcp += pGlint->FIFOSize - 1;
 	}
 	if(dwords) {
 	    GLINT_WAIT(dwords + 1);
             GLINT_WRITE_REG(((dwords - 1) << 16) | 0x0D, OutputFIFO);
 	    GLINT_MoveDWORDS(
 			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
-	 		(CARD32*)pGlint->XAAScanlineColorExpandBuffers[bufno],
-			dwords);
+	 		(CARD32*)srcp, dwords);
 	}
     }
 }
