@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxglidew.c,v 1.1 2000/09/24 13:51:15 alanh Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -57,6 +57,13 @@ grColorMaskExt_t grColorMaskExtPtr = NULL;
 txImgQuantize_t  txImgQuantizePtr = NULL;
 txImgDeQuantize_t txImgDequantizeFXT1Ptr = NULL;
 txErrorSetCallback_t txErrorSetCallbackPtr = NULL;
+grColorCombineExt_t grColorCombineExtPtr = NULL;
+grTexColorCombineExt_t grTexColorCombineExtPtr = NULL;
+grAlphaCombineExt_t grAlphaCombineExtPtr = NULL;
+grTexAlphaCombineExt_t grTexAlphaCombineExtPtr = NULL;
+grAlphaBlendFunctionExt_t grAlphaBlendFunctionExtPtr = NULL;
+grConstantColorValueExt_t grConstantColorValueExtPtr = NULL;
+
 
 FxI32
 FX_grGetInteger_NoLock(FxU32 pname)
@@ -137,6 +144,23 @@ FX_grColorMask(GLcontext *ctx, GLboolean r, GLboolean g,
 }
 
 
+void
+FX_grColorMask_NoLock(GLcontext *ctx, GLboolean r, GLboolean g,
+                      GLboolean b, GLboolean a)
+{
+    if (ctx->Visual->RedBits == 8) {
+        /* 32bpp mode */
+        ASSERT(grColorMaskExtPtr);
+        (*grColorMaskExtPtr)(r, g, b, a);
+    }
+    else {
+        /* 16 bpp mode */
+        /* we never have an alpha buffer */
+        grColorMask(r || g || b, GL_FALSE);
+    }
+}
+
+
 /* As above, but pass the mask as an array
  */
 void
@@ -156,6 +180,22 @@ FX_grColorMaskv(GLcontext *ctx, const GLboolean rgba[4])
         grColorMask(rgba[RCOMP] || rgba[GCOMP] || rgba[BCOMP], GL_FALSE);
     }
     END_BOARD_LOCK(fxMesa);
+}
+
+void
+FX_grColorMaskv_NoLock(GLcontext *ctx, const GLboolean rgba[4])
+{
+    if (ctx->Visual->RedBits == 8) {
+        /* 32bpp mode */
+        ASSERT(grColorMaskExtPtr);
+        (*grColorMaskExtPtr)(rgba[RCOMP], rgba[GCOMP],
+                             rgba[BCOMP], rgba[ACOMP]);
+    }
+    else {
+        /* 16 bpp mode */
+        /* we never have an alpha buffer */
+        grColorMask(rgba[RCOMP] || rgba[GCOMP] || rgba[BCOMP], GL_FALSE);
+    }
 }
 
 
@@ -207,15 +247,6 @@ FX_grTexMaxAddress(fxMesaContext fxMesa, GrChipID_t tmu)
 }
 
 
-#if defined(FX_GLIDE3)
-
-void
-FX_grGammaCorrectionValue(float val)
-{
-    (void) val;
-/* ToDo */
-}
-
 int
 FX_getFogTableSize(fxMesaContext fxMesa)
 {
@@ -234,31 +265,6 @@ FX_getGrStateSize(fxMesaContext fxMesa)
     grGet(GR_GLIDE_STATE_SIZE, sizeof(int), (void *) &result);
     END_BOARD_LOCK(fxMesa);
     return result;
-}
-
-
-void
-FX_grGlideGetVersion(fxMesaContext fxMesa, char *buf)
-{
-    BEGIN_BOARD_LOCK(fxMesa);
-    strcpy(buf, grGetString(GR_VERSION));
-    END_BOARD_LOCK(fxMesa);
-}
-
-void
-FX_grSstPerfStats(GrSstPerfStats_t * st)
-{
-    FxI32 n;
-    grGet(GR_STATS_PIXELS_IN, 4, &n);
-    st->pixelsIn = n;
-    grGet(GR_STATS_PIXELS_CHROMA_FAIL, 4, &n);
-    st->chromaFail = n;
-    grGet(GR_STATS_PIXELS_DEPTHFUNC_FAIL, 4, &n);
-    st->zFuncFail = n;
-    grGet(GR_STATS_PIXELS_AFUNC_FAIL, 4, &n);
-    st->aFuncFail = n;
-    grGet(GR_STATS_PIXELS_OUT, 4, &n);
-    st->pixelsOut = n;
 }
 
 void
@@ -288,25 +294,20 @@ FX_grDrawPolygonVertexList(fxMesaContext fxMesa, int n, GrVertex * verts)
 
 #if FX_USE_PARGB
 void
-FX_setupGrVertexLayout(void)
+FX_setupGrVertexLayout(fxMesaContext fxMesa)
 {
     BEGIN_BOARD_LOCK(fxMesa);
     grReset(GR_VERTEX_PARAMETER);
 
     grCoordinateSpace(GR_WINDOW_COORDS);
     grVertexLayout(GR_PARAM_XY, GR_VERTEX_X_OFFSET << 2, GR_PARAM_ENABLE);
-    grVertexLayout(GR_PARAM_PARGB, GR_VERTEX_PARGB_OFFSET << 2,
-                   GR_PARAM_ENABLE);
+    grVertexLayout(GR_PARAM_PARGB, GR_VERTEX_PARGB_OFFSET << 2, GR_PARAM_ENABLE);
     grVertexLayout(GR_PARAM_Q, GR_VERTEX_OOW_OFFSET << 2, GR_PARAM_ENABLE);
     grVertexLayout(GR_PARAM_Z, GR_VERTEX_OOZ_OFFSET << 2, GR_PARAM_ENABLE);
-    grVertexLayout(GR_PARAM_ST0, GR_VERTEX_SOW_TMU0_OFFSET << 2,
-                   GR_PARAM_ENABLE);
-    grVertexLayout(GR_PARAM_Q0, GR_VERTEX_OOW_TMU0_OFFSET << 2,
-                   GR_PARAM_DISABLE);
-    grVertexLayout(GR_PARAM_ST1, GR_VERTEX_SOW_TMU1_OFFSET << 2,
-                   GR_PARAM_DISABLE);
-    grVertexLayout(GR_PARAM_Q1, GR_VERTEX_OOW_TMU1_OFFSET << 2,
-                   GR_PARAM_DISABLE);
+    grVertexLayout(GR_PARAM_ST0, GR_VERTEX_SOW_TMU0_OFFSET << 2, GR_PARAM_ENABLE);
+    grVertexLayout(GR_PARAM_Q0, GR_VERTEX_OOW_TMU0_OFFSET << 2, GR_PARAM_DISABLE);
+    grVertexLayout(GR_PARAM_ST1, GR_VERTEX_SOW_TMU1_OFFSET << 2, GR_PARAM_DISABLE);
+    grVertexLayout(GR_PARAM_Q1, GR_VERTEX_OOW_TMU1_OFFSET << 2, GR_PARAM_DISABLE);
     END_BOARD_LOCK(fxMesa);
 }
 #else /* FX_USE_PARGB */
@@ -322,17 +323,13 @@ FX_setupGrVertexLayout(fxMesaContext fxMesa)
     grVertexLayout(GR_PARAM_A, GR_VERTEX_A_OFFSET << 2, GR_PARAM_ENABLE);
     grVertexLayout(GR_PARAM_Q, GR_VERTEX_OOW_OFFSET << 2, GR_PARAM_ENABLE);
     grVertexLayout(GR_PARAM_Z, GR_VERTEX_OOZ_OFFSET << 2, GR_PARAM_ENABLE);
-    grVertexLayout(GR_PARAM_ST0, GR_VERTEX_SOW_TMU0_OFFSET << 2,
-                   GR_PARAM_ENABLE);
-    grVertexLayout(GR_PARAM_Q0, GR_VERTEX_OOW_TMU0_OFFSET << 2,
-                   GR_PARAM_DISABLE);
-    grVertexLayout(GR_PARAM_ST1, GR_VERTEX_SOW_TMU1_OFFSET << 2,
-                   GR_PARAM_DISABLE);
-    grVertexLayout(GR_PARAM_Q1, GR_VERTEX_OOW_TMU1_OFFSET << 2,
-                   GR_PARAM_DISABLE);
+    grVertexLayout(GR_PARAM_ST0, GR_VERTEX_SOW_TMU0_OFFSET << 2, GR_PARAM_ENABLE);
+    grVertexLayout(GR_PARAM_Q0, GR_VERTEX_OOW_TMU0_OFFSET << 2, GR_PARAM_DISABLE);
+    grVertexLayout(GR_PARAM_ST1, GR_VERTEX_SOW_TMU1_OFFSET << 2, GR_PARAM_DISABLE);
+    grVertexLayout(GR_PARAM_Q1, GR_VERTEX_OOW_TMU1_OFFSET << 2, GR_PARAM_DISABLE);
     END_BOARD_LOCK(fxMesa);
 }
-#endif
+#endif /* FX_USE_PARGB */
 
 void
 FX_grHints_NoLock(GrHint_t hintType, FxU32 hintMask)
@@ -372,79 +369,6 @@ FX_grHints(fxMesaContext fxMesa, GrHint_t hintType, FxU32 hintMask)
     FX_grHints_NoLock(hintType, hintMask);
     END_BOARD_LOCK(fxMesa);
 }
-
-int
-FX_grSstQueryHardware(fxMesaContext fxMesa, GrHwConfiguration * config)
-{
-    int i, j;
-    int numFB;
-
-    BEGIN_BOARD_LOCK(fxMesa);
-    grGet(GR_NUM_BOARDS, 4, (void *) &(config->num_sst));
-    if (config->num_sst == 0)
-        return 0;
-    for (i = 0; i < config->num_sst; i++) {
-        config->SSTs[i].type = GR_SSTTYPE_VOODOO;
-        grSstSelect(i);
-        grGet(GR_MEMORY_FB, 4,
-              (void *) &(config->SSTs[i].sstBoard.VoodooConfig.fbRam));
-        config->SSTs[i].sstBoard.VoodooConfig.fbRam /= 1024 * 1024;
-
-        grGet(GR_NUM_TMU, 4,
-              (void *) &(config->SSTs[i].sstBoard.VoodooConfig.nTexelfx));
-
-
-        grGet(GR_NUM_FB, 4, (void *) &numFB);
-        if (numFB > 1)
-            config->SSTs[i].sstBoard.VoodooConfig.sliDetect = FXTRUE;
-        else
-            config->SSTs[i].sstBoard.VoodooConfig.sliDetect = FXFALSE;
-        for (j = 0; j < config->SSTs[i].sstBoard.VoodooConfig.nTexelfx; j++) {
-            grGet(GR_MEMORY_TMU, 4,
-                  (void *) &(config->SSTs[i].sstBoard.
-                             VoodooConfig.tmuConfig[j].tmuRam));
-            config->SSTs[i].sstBoard.VoodooConfig.
-                tmuConfig[j].tmuRam /= 1024 * 1024;
-        }
-    }
-    END_BOARD_LOCK(fxMesa);
-    return 1;
-}
-
-#else
-
-int
-FX_grSstScreenWidth()
-{
-    int i;
-    BEGIN_BOARD_LOCK(fxMesa);
-    i = grSstScreenWidth();
-    END_BOARD_LOCK(fxMesa);
-    return i;
-}
-
-int
-FX_grSstScreenHeight()
-{
-    int i;
-    BEGIN_BOARD_LOCK(fxMesa);
-    i = grSstScreenHeight();
-    END_BOARD_LOCK(fxMesa);
-    return i;
-}
-
-int
-FX_grSstQueryHardware(GrHwConfiguration * c)
-{
-    int i;
-    BEGIN_BOARD_LOCK(fxMesa);
-    i = grSstQueryHardware(c);
-    END_BOARD_LOCK(fxMesa);
-    return i;
-}
-
-
-#endif /* FX_GLIDE3 */
 
 /* It appears to me that this function is needed either way. */
 FX_GrContext_t

@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxddtex.c,v 1.1 2000/09/24 13:51:14 alanh Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -64,7 +64,7 @@ fxPrintTextureData(tfxTexInfo * ti)
     else
         fprintf(stderr, "\tName: UNNAMED\n");
     fprintf(stderr, "\tLast used: %d\n", ti->lastTimeUsed);
-    fprintf(stderr, "\tTMU: %ld\n", ti->whichTMU);
+    fprintf(stderr, "\tTMU: %ld\n", (AnyPtr)ti->whichTMU);
     fprintf(stderr, "\t%s\n", (ti->isInTM) ? "In TMU" : "Not in TMU");
     if (ti->tm[0])
         fprintf(stderr, "\tMem0: %x-%x\n", (unsigned) ti->tm[0]->startAddr,
@@ -153,7 +153,7 @@ fxDDTexBind(GLcontext * ctx, GLenum target, struct gl_texture_object *tObj)
 
     if (MESA_VERBOSE & VERBOSE_DRIVER) {
         fprintf(stderr, "fxmesa: fxDDTexBind(%d,%x)\n", tObj->Name,
-                (GLuint) tObj->DriverData);
+                (GLuint)(AnyPtr)tObj->DriverData);
     }
 
     if (target != GL_TEXTURE_2D)
@@ -220,7 +220,7 @@ fxDDTexParam(GLcontext * ctx, GLenum target, struct gl_texture_object *tObj,
 
     if (MESA_VERBOSE & VERBOSE_DRIVER) {
         fprintf(stderr, "fxmesa: fxDDTexParam(%d,%x,%x,%x)\n", tObj->Name,
-                (GLuint) tObj->DriverData, pname, param);
+                (GLuint)(AnyPtr) tObj->DriverData, pname, param);
     }
 
     if (target != GL_TEXTURE_2D)
@@ -358,20 +358,7 @@ void
 fxDDTexDel(GLcontext * ctx, struct gl_texture_object *tObj)
 {
     fxMesaContext fxMesa = FX_CONTEXT(ctx);
-    tfxTexInfo *ti = fxTMGetTexInfo(tObj);
-
-    if (MESA_VERBOSE & VERBOSE_DRIVER) {
-        fprintf(stderr, "fxmesa: fxDDTexDel(%d,%p)\n", tObj->Name, ti);
-    }
-
-    if (!ti)
-        return;
-
     fxTMFreeTexture(fxMesa, tObj);
-
-    FREE(ti);
-    tObj->DriverData = NULL;
-
     ctx->NewState |= NEW_TEXTURING;
 }
 
@@ -468,7 +455,7 @@ fxDDTexPalette(GLcontext * ctx, struct gl_texture_object *tObj)
         tfxTexInfo *ti;
         if (MESA_VERBOSE & VERBOSE_DRIVER) {
             fprintf(stderr, "fxmesa: fxDDTexPalette(%d,%x)\n",
-                    tObj->Name, (GLuint) tObj->DriverData);
+                    tObj->Name, (GLuint)(AnyPtr) tObj->DriverData);
         }
         if (!tObj->DriverData)
             tObj->DriverData = fxAllocTexObjData(fxMesa);
@@ -488,6 +475,9 @@ fxDDTexPalette(GLcontext * ctx, struct gl_texture_object *tObj)
 }
 
 
+/*
+ * Enable/disable the shared texture palette feature.
+ */
 void
 fxDDTexUseGlbPalette(GLcontext * ctx, GLboolean state)
 {
@@ -498,8 +488,6 @@ fxDDTexUseGlbPalette(GLcontext * ctx, GLboolean state)
     }
 
     if (state) {
-        fxMesa->haveGlobalPaletteTexture = 1;
-
         FX_grTexDownloadTable(fxMesa, GR_TMU0, GR_TEXTABLE_PALETTE_6666_EXT,
                               &(fxMesa->glbPalette));
         if (fxMesa->haveTwoTMUs)
@@ -507,8 +495,6 @@ fxDDTexUseGlbPalette(GLcontext * ctx, GLboolean state)
                                   &(fxMesa->glbPalette));
     }
     else {
-        fxMesa->haveGlobalPaletteTexture = 0;
-
         if ((ctx->Texture.Unit[0].Current == ctx->Texture.Unit[0].CurrentD[2])
             && (ctx->Texture.Unit[0].Current != NULL)) {
             struct gl_texture_object *tObj = ctx->Texture.Unit[0].Current;
@@ -897,11 +883,6 @@ fxDDTexImage2D(GLcontext * ctx, GLenum target, GLint level,
     GLint texsize;
     void *uncompressedImage;
 
-    if (target == GL_PROXY_TEXTURE_2D) {
-        /* XXX not possible for now */
-
-    }
-
     isCompressedFormat = texImage->IsCompressed;
     if (target != GL_TEXTURE_2D || texImage->Border > 0)
         return GL_FALSE;
@@ -1267,11 +1248,6 @@ fxDDCompressedTexImage2D( GLcontext *ctx, GLenum target,
     GLboolean isCompressedFormat;
     GLsizei texsize;
 
-    if (target == GL_PROXY_TEXTURE_2D) {
-        /* XXX not possible for now */
-
-    }
-
     if (target != GL_TEXTURE_2D || texImage->Border > 0)
         return GL_FALSE;
 
@@ -1396,6 +1372,84 @@ PrintTexture(int w, int h, int c, const GLubyte * data)
     }
 }
 #endif
+
+
+GLboolean
+fxDDTestProxyTexImage(GLcontext *ctx, GLenum target,
+                      GLint level, GLint internalFormat,
+                      GLenum format, GLenum type,
+                      GLint width, GLint height,
+                      GLint depth, GLint border )
+{
+    fxMesaContext fxMesa = FX_CONTEXT(ctx);
+    struct gl_shared_state *mesaShared = fxMesa->glCtx->Shared;
+    struct TdfxSharedState *shared = (struct TdfxSharedState *) mesaShared->DriverData;
+
+    switch (target) {
+    case GL_PROXY_TEXTURE_1D:
+        return GL_TRUE;  /* software rendering */
+    case GL_PROXY_TEXTURE_2D:
+        {
+            struct gl_texture_object *tObj;
+            tfxTexInfo *ti;
+            int memNeeded;
+
+            tObj = ctx->Texture.Proxy2D;
+            if (!tObj->DriverData)
+                tObj->DriverData = fxAllocTexObjData(fxMesa);
+            ti = fxTMGetTexInfo(tObj);
+
+            /* assign the parameters to test against */
+            tObj->Image[level]->Width = width;
+            tObj->Image[level]->Height = height;
+            tObj->Image[level]->Border = border;
+            tObj->Image[level]->IntFormat = internalFormat;
+            if (level == 0) {
+               /* don't use mipmap levels > 0 */
+               tObj->MinFilter = tObj->MagFilter = GL_NEAREST;
+            }
+            else {
+               /* test with all mipmap levels */
+               tObj->MinFilter = GL_LINEAR_MIPMAP_LINEAR;
+               tObj->MagFilter = GL_NEAREST;
+            }
+            ti->validated = GL_FALSE;
+            fxTexValidate(ctx, tObj);
+
+            /*
+            printf("small lodlog2 0x%x\n", ti->info.smallLodLog2);
+            printf("large lodlog2 0x%x\n", ti->info.largeLodLog2);
+            printf("aspect ratio 0x%x\n", ti->info.aspectRatioLog2);
+            printf("glide format 0x%x\n", ti->info.format);
+            printf("data %p\n", ti->info.data);
+            printf("lodblend %d\n", (int) ti->LODblend);
+            */
+
+            /* determine where texture will reside */
+            if (ti->LODblend && !shared->umaTexMemory) {
+                /* XXX GR_MIPMAPLEVELMASK_BOTH might not be right, but works */
+                memNeeded = FX_grTexTextureMemRequired_NoLock(
+                                        GR_MIPMAPLEVELMASK_BOTH, &(ti->info));
+            }
+            else {
+                /* XXX GR_MIPMAPLEVELMASK_BOTH might not be right, but works */
+                memNeeded = FX_grTexTextureMemRequired_NoLock(
+                                        GR_MIPMAPLEVELMASK_BOTH, &(ti->info));
+            }
+            /*
+            printf("Proxy test %d > %d\n", memNeeded, shared->totalTexMem[0]);
+            */
+            if (memNeeded > shared->totalTexMem[0])
+                return GL_FALSE;
+            else
+                return GL_TRUE;
+        }
+    case GL_PROXY_TEXTURE_3D:
+        return GL_TRUE;  /* software rendering */
+    default:
+        return GL_TRUE;  /* never happens, silence compiler */
+    }
+}
 
 
 /*
@@ -1551,7 +1605,14 @@ fxDDGetCompressedTexImage( GLcontext *ctx, GLenum target,
 GLint
 fxDDSpecificCompressedTexFormat(GLcontext *ctx,
                                 GLint      internalFormat,
-                                GLint      numDimensions)
+                                GLint      numDimensions,
+                                GLint     *levelp,
+                                GLsizei   *widthp,
+                                GLsizei   *heightp,
+                                GLsizei   *depthp,
+                                GLint     *borderp,
+                                GLenum    *formatp,
+                                GLenum    *typep)
 {
     if (numDimensions != 2) {
         return internalFormat;
@@ -1568,6 +1629,35 @@ fxDDSpecificCompressedTexFormat(GLcontext *ctx,
         return(internalFormat);
     }
     switch (internalFormat) {
+   /*
+    * GL_S3_s3tc uses negative level values.
+    */
+    case GL_RGB_S3TC:
+    case GL_RGB4_S3TC:
+        {
+            GLint level;
+            if (levelp) {
+                level = *levelp;
+                if (level < 0) {
+                    level = -level;
+                    *levelp = level;
+                }
+            }
+        }
+        return GL_COMPRESSED_RGB_FXT1_3DFX;
+    case GL_RGBA_S3TC:
+    case GL_RGBA4_S3TC:
+        {
+            GLint level;
+            if (levelp) {
+                level = *levelp;
+                if (level < 0) {
+                    level = -level;
+                    *levelp = level;
+                }
+            }
+        }
+        return GL_COMPRESSED_RGBA_FXT1_3DFX;
     case GL_COMPRESSED_RGB_ARB:
         return GL_COMPRESSED_RGB_FXT1_3DFX;
     case GL_COMPRESSED_RGBA_ARB:

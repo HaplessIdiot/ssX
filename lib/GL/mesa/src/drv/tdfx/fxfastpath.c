@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxfastpath.c,v 1.1 2000/09/24 13:51:15 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxfastpath.c,v 1.2 2000/11/13 23:31:32 dawes Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -49,7 +49,7 @@
 #include "fxtexman.h"
 #include "vertices.h"
 #ifdef __i386__
-#include "X86/common_x86_asm.h"
+#include "X86/common_x86asm.h"
 #endif
 
 
@@ -170,7 +170,8 @@ do {									\
    }									\
 } while (0)
 
-#if defined(FX_V2) || defined(DRIVERTS)
+
+/* Add window offset to window coords to get screen coords */
 
 #define VARS_XYZ				\
   GLfloat vsx = mat[MAT_SX];			\
@@ -185,43 +186,6 @@ do {									\
   f[YCOORD] = f[1] * oow * vsy + vty;		\
   f[ZCOORD] = f[2] * oow * vsz + vtz;
 
-#else
-#if defined(HAVE_FAST_MATH)
-
-#define VARS_XYZ				\
-  GLfloat vsx = mat[MAT_SX];			\
-  GLfloat vsy = mat[MAT_SY];			\
-  GLfloat vsz = mat[MAT_SZ];			\
-  const GLfloat snapper = (3L << 18);		\
-  GLfloat vtx = mat[MAT_TX] + snapper;		\
-  GLfloat vty = mat[MAT_TY] + snapper;		\
-  GLfloat vtz = mat[MAT_TZ];
-
-#define DO_SETUP_XYZ				\
-  f[XCOORD] = f[0] * oow * vsx + vtx;		\
-  f[XCOORD] -= snapper;				\
-  f[YCOORD] = f[1] * oow * vsy + vty;		\
-  f[YCOORD] -= snapper;				\
-  f[ZCOORD] = f[2] * oow * vsz + vtz;
-
-#else
-
-#define VARS_XYZ				\
-  GLfloat vsx = mat[MAT_SX] * 16.0f;		\
-  GLfloat vsy = mat[MAT_SY] * 16.0f;		\
-  GLfloat vsz = mat[MAT_SZ];			\
-  GLfloat vtx = mat[MAT_TX] * 16.0f;		\
-  GLfloat vty = mat[MAT_TY] * 16.0f;		\
-  GLfloat vtz = mat[MAT_TZ];
-
-#define DO_SETUP_XYZ					\
-  f[XCOORD] = ((int)(f[0]*oow*vsx+vtx)) * (1.0f/16.0f);	\
-  f[YCOORD] = ((int)(f[1]*oow*vsy+vty)) * (1.0f/16.0f);	\
-  f[ZCOORD] = f[2]*oow*vsz + vtz;
-
-
-#endif
-#endif
 
 
 
@@ -342,9 +306,7 @@ fxDDFastPath(struct vertex_buffer *VB)
     struct fx_fast_tab *tab = &fxFastTab[fxMesa->setupindex & 0x7];
     GLuint do_clip = 1;
     struct tfxMesaVertexBuffer *fxVB = FX_DRIVER_DATA(VB);
-#ifdef DRIVERTS
     GLfloat tx, ty;
-#endif
 
     fxVertex *first;
     GLfloat *mat = ctx->Viewport.WindowMap.m;
@@ -360,12 +322,11 @@ fxDDFastPath(struct vertex_buffer *VB)
 
     first = FX_DRIVER_DATA(VB)->verts;
 
-#ifdef DRIVERTS
+    /* Add window offset to window coords to get screen coords */
     tx = mat[MAT_TX];
     ty = mat[MAT_TY];
     mat[MAT_TX] = tx + fxMesa->x_offset;
     mat[MAT_TY] = ty + fxMesa->y_delta;
-#endif
 
     if (VB->ClipOrMask) {
         if (!VB->ClipAndMask) {
@@ -392,10 +353,9 @@ fxDDFastPath(struct vertex_buffer *VB)
         fxDDRenderElementsDirect(VB); /* render using orig list */
     }
 
-#ifdef DRIVERTS
+    /* Add window offset to window coords to get screen coords */
     mat[MAT_TX] = tx;
     mat[MAT_TY] = ty;
-#endif
 
     /* This indicates that there is no cached data to reuse.  
      */

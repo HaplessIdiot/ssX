@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxddspan.c,v 1.5 2000/12/02 20:29:06 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxddspan.c,v 1.6 2000/12/05 21:18:34 dawes Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -781,19 +781,20 @@ write_R8G8B8A8_rgb_span(const GLcontext * ctx, GLuint n, GLint x, GLint y,
         const GLint winX = fxMesa->x_offset;
         const GLint scrX = winX + x;
         const GLint scrY = winY - y;
+        GLubyte visMask[MAX_WIDTH];
+
+        generate_vismask(fxMesa, scrX, scrY, n, visMask);
 
         if (fxMesa->glCtx->Color.DrawBuffer == GL_FRONT) {
             GLint dstStride = fxMesa->screen_width * 4;
             GLubyte *dst = (GLubyte *) info.lfbPtr
                 + (winY - y) * dstStride + (winX + x) * 4;
             GLuint *dst32 = (GLuint *) dst;
-            GLubyte visMask[MAX_WIDTH];
             GLuint i;
-            generate_vismask(fxMesa, scrX, scrY, n, visMask);
             for (i = 0; i < n; i++) {
                 if (visMask[i] && (!mask || mask[i])) {
                     dst32[i] =
-                        PACK_BGRA32(rgb[i][0], rgb[i][1], rgb[i][2], 255);
+                       PACK_BGRA32(rgb[i][0], rgb[i][1], rgb[i][2], 255);
                 }
             }
         }
@@ -806,7 +807,7 @@ write_R8G8B8A8_rgb_span(const GLcontext * ctx, GLuint n, GLint x, GLint y,
             if (mask) {
                 GLuint i;
                 for (i = 0; i < n; i++) {
-                    if (mask[i]) {
+                    if (visMask[i] && mask[i]) {
                         dst32[i] =
                             PACK_BGRA32(rgb[i][0], rgb[i][1], rgb[i][2], 255);
                     }
@@ -815,8 +816,10 @@ write_R8G8B8A8_rgb_span(const GLcontext * ctx, GLuint n, GLint x, GLint y,
             else {
                 GLuint i;
                 for (i = 0; i < n; i++) {
-                    dst32[i] =
-                        PACK_BGRA32(rgb[i][0], rgb[i][1], rgb[i][2], 255);
+                    if (visMask[i]) {
+                        dst32[i] = PACK_BGRA32(rgb[i][0], rgb[i][1],
+                                               rgb[i][2], 255);
+                    }
                 }
             }
         }
@@ -860,20 +863,20 @@ write_R8G8B8A8_rgba_span(const GLcontext * ctx, GLuint n, GLint x, GLint y,
         const GLint winX = fxMesa->x_offset;
         const GLint scrX = winX + x;
         const GLint scrY = winY - y;
+        GLubyte visMask[MAX_WIDTH];
+
+        generate_vismask(fxMesa, scrX, scrY, n, visMask);
 
         if (fxMesa->glCtx->Color.DrawBuffer == GL_FRONT) {
             GLint dstStride = fxMesa->screen_width * 4;
             GLubyte *dst = (GLubyte *) info.lfbPtr
                 + (winY - y) * dstStride + (winX + x) * 4;
             GLuint *dst32 = (GLuint *) dst;
-            GLubyte visMask[MAX_WIDTH];
             GLuint i;
-            generate_vismask(fxMesa, scrX, scrY, n, visMask);
             for (i = 0; i < n; i++) {
                 if (visMask[i] && (!mask || mask[i])) {
-                    dst32[i] =
-                        PACK_BGRA32(rgba[i][0], rgba[i][1], rgba[i][2],
-                                    rgba[i][3]);
+                    dst32[i] = PACK_BGRA32(rgba[i][0], rgba[i][1], rgba[i][2],
+                                           rgba[i][3]);
                 }
             }
         }
@@ -883,12 +886,14 @@ write_R8G8B8A8_rgba_span(const GLcontext * ctx, GLuint n, GLint x, GLint y,
             GLubyte *dst = (GLubyte *) info.lfbPtr
                 + (winY - y) * dstStride + (winX + x) * 4;
             GLuint *dst32 = (GLuint *) dst;
+            GLubyte visMask[MAX_WIDTH];
+            generate_vismask(fxMesa, scrX, scrY, n, visMask);
             if (mask) {
                 GLuint i;
                 for (i = 0; i < n; i++) {
-                    if (mask[i]) {
-                       dst32[i] = PACK_BGRA32(rgba[i][0], rgba[i][1],
-                                              rgba[i][2], rgba[i][3]);
+                    if (visMask[i] && mask[i]) {
+                        dst32[i] = PACK_BGRA32(rgba[i][0], rgba[i][1],
+                                               rgba[i][2], rgba[i][3]);
                     }
                 }
             }
@@ -896,8 +901,10 @@ write_R8G8B8A8_rgba_span(const GLcontext * ctx, GLuint n, GLint x, GLint y,
                 /* no mask, write all pixels */
                 GLuint i;
                 for (i = 0; i < n; i++) {
-                   dst32[i] = PACK_BGRA32(rgba[i][0], rgba[i][1],
-                                          rgba[i][2], rgba[i][3]);
+                   if (visMask[i]) {
+                       dst32[i] = PACK_BGRA32(rgba[i][0], rgba[i][1],
+                                              rgba[i][2], rgba[i][3]);
+                   }
                 }
             }
         }
@@ -946,13 +953,11 @@ read_R8G8B8A8_span(const GLcontext * ctx, GLuint n, GLint x, GLint y,
             const GLuint *src32 = (const GLuint *) info.lfbPtr
                 + (winY - y) * srcStride + (winX + x);
             GLuint i;
-	    GLuint *color = (GLuint*)rgba;
-	    MEMCPY(color, src32, n * 4);
+	    MEMCPY(rgba, src32, n * 4);
             for (i = 0; i < n; i++) {
-                const GLuint p = *color;
-                *color++ = ((p & 0x00ff0000) >> 16) |
-                            (p & 0xff00ff00)        |
-                           ((p & 0x000000ff) << 16);
+		rgba[i][0] ^= rgba[i][2];
+		rgba[i][2] ^= rgba[i][0];
+		rgba[i][0] ^= rgba[i][2];
             }
         }
         else {
@@ -961,13 +966,11 @@ read_R8G8B8A8_span(const GLcontext * ctx, GLuint n, GLint x, GLint y,
             const GLuint *src32 = (const GLuint *) info.lfbPtr
                 + (winY - y) * srcStride + (winX + x);
             GLuint i;
-	    GLuint *color = (GLuint*)rgba;
-	    MEMCPY(color, src32, n * 4);
+	    MEMCPY(rgba, src32, n * 4);
             for (i = 0; i < n; i++) {
-                const GLuint p = *color;
-                *color++ = ((p & 0x00ff0000) >> 16) |
-                            (p & 0xff00ff00)        |
-                           ((p & 0x000000ff) << 16);
+		rgba[i][0] ^= rgba[i][2];
+		rgba[i][2] ^= rgba[i][0];
+		rgba[i][0] ^= rgba[i][2];
             }
         }
         grLfbUnlock(GR_LFB_READ_ONLY, fxMesa->currentFB);
@@ -1220,11 +1223,6 @@ typedef struct
 }
 LFBParameters;
 
-static void GetFbParams(fxMesaContext fxMesa,
-                        GrLfbInfo_t * info,
-                        GrLfbInfo_t * backBufferInfo,
-                        LFBParameters * ReadParams, FxU32 elementSize);
-
 /*
  * We need information about the back buffer.  Note that
  * this function *cannot be called* while the aux buffer
@@ -1277,7 +1275,7 @@ GetFbParams(fxMesaContext fxMesa,
      *             < bufferOffset&(info->strideInBytes-1)
      * the buffer begins in the forbidden zone.  We assert for this.
      */
-    bufferOffset = lfbPtr - (char *) backBufferInfo->lfbPtr;
+    bufferOffset = (FxU32)(lfbPtr - (char *) backBufferInfo->lfbPtr);
     physicalStrideInBytes
         = (fxMesa->screen_width * elementSize + TILE_WIDTH_IN_BYTES - 1)
         & ~(TILE_WIDTH_IN_BYTES - 1);
@@ -1380,7 +1378,7 @@ fxDDWriteDepthSpan(GLcontext * ctx,
                     wrappedPartStart = n;
                 }
                 else {
-                    wrappedPartStart = n - (ReadParams.firstWrappedX - x);
+                    wrappedPartStart = (ReadParams.firstWrappedX - x);
                 }
                 for (i = 0; i < wrappedPartStart; i++) {
                     if (mask[i] && visMask[i]) {
@@ -1419,7 +1417,7 @@ fxDDWriteDepthSpan(GLcontext * ctx,
                     wrappedPartStart = n;
                 }
                 else {
-                    wrappedPartStart = n - (ReadParams.firstWrappedX - x);
+                    wrappedPartStart = (ReadParams.firstWrappedX - x);
                 }
                 for (i = 0; i < wrappedPartStart; i++) {
                     GLuint d32;
@@ -1486,7 +1484,7 @@ fxDDWriteDepthSpan(GLcontext * ctx,
                     wrappedPartStart = n;
                 }
                 else {
-                    wrappedPartStart = n - (ReadParams.firstWrappedX - x);
+                    wrappedPartStart = (ReadParams.firstWrappedX - x);
                 }
                 for (i = 0; i < wrappedPartStart; i++) {
                     if (visMask[i]) {
@@ -1532,7 +1530,7 @@ fxDDWriteDepthSpan(GLcontext * ctx,
                     wrappedPartStart = n;
                 }
                 else {
-                    wrappedPartStart = n - (ReadParams.firstWrappedX - x);
+                    wrappedPartStart = (ReadParams.firstWrappedX - x);
                 }
                 for (i = 0; i < wrappedPartStart; i++) {
                     if (visMask[i]) {
@@ -1573,10 +1571,8 @@ fxDDReadDepthSpan(GLcontext * ctx,
 {
     fxMesaContext fxMesa = (fxMesaContext) ctx->DriverCtx;
     GLint bottom = fxMesa->height + fxMesa->y_offset - 1;
-    GLushort depth16[MAX_WIDTH];
     GLuint i;
     GLuint depth_size = fxMesa->glVis->DepthBits;
-    GLuint stencil_size = fxMesa->glVis->StencilBits;
     GrLfbInfo_t info;
 
     if (MESA_VERBOSE & VERBOSE_DRIVER) {
@@ -1590,17 +1586,48 @@ fxDDReadDepthSpan(GLcontext * ctx,
     y = bottom - y;
     switch (depth_size) {
     case 16:
-        FX_grLfbReadRegion(fxMesa, GR_BUFFER_AUXBUFFER, x, y, n, 1, 0, depth16);
-        for (i = 0; i < n; i++) {
-            depth[i] = depth16[i];
+        {
+            LFBParameters ReadParams;
+            GrLfbInfo_t backBufferInfo;
+            int wrappedPartStart;
+            GetBackBufferInfo(fxMesa, &backBufferInfo);
+           /*
+            * Note that the _LOCK macro adds a curly brace,
+            * and the UNLOCK macro removes it.
+            */
+            READ_FB_SPAN_LOCK(fxMesa, info, GR_BUFFER_AUXBUFFER);
+            GetFbParams(fxMesa, &info, &backBufferInfo,
+                        &ReadParams, sizeof(GLushort));
+            if (ReadParams.firstWrappedX <= x) {
+                wrappedPartStart = 0;
+            }
+            else if (n <= (ReadParams.firstWrappedX - x)) {
+                wrappedPartStart = n;
+            }
+            else {
+                wrappedPartStart = (ReadParams.firstWrappedX - x);
+            }
+            /*
+             * Read the line.
+             */
+            for (i = 0; i < wrappedPartStart; i++) {
+                depth[i] =
+                    GET_ORDINARY_FB_DATA(&ReadParams, GLushort, x + i, y);
+            }
+            for (; i < n; i++) {
+                depth[i] = GET_WRAPPED_FB_DATA(&ReadParams, GLushort,
+                                               x + i, y);
+            }
+            READ_FB_SPAN_UNLOCK(fxMesa, GR_BUFFER_AUXBUFFER);
+            break;
         }
-        break;
     case 24:
     case 32:
         {
             LFBParameters ReadParams;
             GrLfbInfo_t backBufferInfo;
             int wrappedPartStart;
+            GLuint stencil_size = fxMesa->glVis->StencilBits;
             GetBackBufferInfo(fxMesa, &backBufferInfo);
            /*
             * Note that the _LOCK macro adds a curly brace,
@@ -1754,14 +1781,14 @@ fxDDReadDepthPixels(GLcontext * ctx, GLuint n,
         {
             LFBParameters ReadParams;
             GetFbParams(fxMesa, &info, &backBufferInfo,
-                        &ReadParams, sizeof(GLuint));
+                        &ReadParams, sizeof(GLushort));
             for (i = 0; i < n; i++) {
                 /*
                  * Convert to screen coordinates.
                  */
                 xpos = x[i] + fxMesa->x_offset;
                 ypos = bottom - y[i];
-                d16 = GET_FB_DATA(&ReadParams, GLuint, xpos, ypos);
+                d16 = GET_FB_DATA(&ReadParams, GLushort, xpos, ypos);
                 depth[i] = d16;
             }
         }

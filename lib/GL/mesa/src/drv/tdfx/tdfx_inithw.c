@@ -24,7 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_inithw.c,v 1.6 2000/09/26 15:56:50 tsi Exp $ */
 
 /*
  * Authors:
@@ -69,10 +69,6 @@ tdfxInitHW(__DRIdrawablePrivate * driDrawPriv, fxMesaContext fxMesa)
         fxMesa->haveTwoTMUs = GL_FALSE;
     else
         fxMesa->haveTwoTMUs = GL_TRUE;
-
-    /* !!! We are forcing these !!! */
-    fxMesa->haveAlphaBuffer = GL_FALSE;
-    fxMesa->haveGlobalPaletteTexture = GL_FALSE;
 
     fxMesa->glideContext =
         FX_grSstWinOpen_NoLock((FxU32) - 1, GR_RESOLUTION_NONE,

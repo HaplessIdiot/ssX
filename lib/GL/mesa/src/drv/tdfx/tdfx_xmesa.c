@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_xmesa.c,v 1.8 2000/09/26 15:56:50 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_xmesa.c,v 1.9 2000/12/07 20:26:10 dawes Exp $ */
 
 /*
  * Authors:
@@ -198,6 +198,17 @@ XMesaDestroyContext(__DRIcontextPrivate * driContextPriv)
 {
     fxMesaContext fxMesa = (fxMesaContext) driContextPriv->driverPrivate;
     if (fxMesa) {
+        if (fxMesa->glCtx->Shared->RefCount == 1) {
+           /* This share group is about to go away, free our private
+            * texture object data.
+            */
+            struct gl_texture_object *tObj;
+            tObj = fxMesa->glCtx->Shared->TexObjectList;
+            while (tObj) {
+                fxTMFreeTexture(fxMesa, tObj);
+                tObj = tObj->Next;
+            }
+        }
         XFree(fxMesa);
         driContextPriv->driverPrivate = NULL;
     }
@@ -281,9 +292,9 @@ XMesaSwapBuffers(__DRIdrawablePrivate * driDrawPriv)
             fprintf(stderr, "%d stalls occurred\n", stalls - prevStalls);
             prevStalls = stalls;
         }
-        if (texSwaps) {
-            fprintf(stderr, "%d texture swaps occurred\n", texSwaps);
-            texSwaps = 0;
+        if (fxMesa && fxMesa->texSwaps) {
+            fprintf(stderr, "%d texture swaps occurred\n", fxMesa->texSwaps);
+            fxMesa->texSwaps = 0;
         }
     }
 #endif
@@ -341,16 +352,23 @@ GLboolean
 XMesaOpenFullScreen(__DRIcontextPrivate *driContextPriv)
 {
     fprintf(stderr,"XMesaOpenFullScreen\n");
+#if 0 /* When new glide3 calls exist */
+    return((GLboolean)grDRISetupFullScreen(GL_TRUE));
+#else
     return GL_TRUE;
+#endif
 }
 
 GLboolean
 XMesaCloseFullScreen(__DRIcontextPrivate *driContextPriv)
 {
-    fprintf(stderr,"XMesaCloseFullScreen\n");
+    fprintf(stderr,"***** XMesaCloseFullScreen *****\n");
+#if 0 /* When new glide3 calls exist */
+    return((GLboolean)grDRISetupFullScreen(GL_FALSE));
+#else
     return GL_TRUE;
+#endif
 }
-
 
 /*
  * This function sends the window position and cliprect list to

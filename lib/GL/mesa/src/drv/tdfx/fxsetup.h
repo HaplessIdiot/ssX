@@ -1,7 +1,8 @@
-/* $XFree86: $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxsetup.h,v 1.1 2000/09/24 13:51:19 alanh Exp $ */
 #ifndef FXSETUP_H
 #define FXSETUP_H
 
+extern void fxTexValidate(GLcontext * ctx, struct gl_texture_object *tObj);
 
 extern void fxDDEnable(GLcontext *, GLenum, GLboolean);
 

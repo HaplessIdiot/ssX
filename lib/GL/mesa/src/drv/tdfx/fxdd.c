@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxdd.c,v 1.1 2000/09/24 13:51:14 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxdd.c,v 1.2 2000/11/08 05:02:52 dawes Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -66,7 +66,6 @@ static const GLboolean true4[4] = { GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE };
 GLubyte FX_PixelToRArray[0x10000];
 GLubyte FX_PixelToGArray[0x10000];
 GLubyte FX_PixelToBArray[0x10000];
-#endif	/* defined(FX_PXCONV_TABULAR) */
 
 /*
  * Initialize the FX_PixelTo{RGB} arrays.
@@ -76,7 +75,6 @@ void
 fxInitPixelTables(fxMesaContext fxMesa, GLboolean bgrOrder)
 {
     fxMesa->bgrOrder = bgrOrder;
-#ifdef	FX_PXCONV_TABULAR
    /*
     * We add a level of braces so that we can define the
     * variable pixel here.
@@ -103,8 +101,8 @@ fxInitPixelTables(fxMesaContext fxMesa, GLboolean bgrOrder)
             FX_PixelToBArray[pixel] = b;
         }
     }
-#endif	/* FX_PXCONV_TABULAR */
 }
+#endif	/* FX_PXCONV_TABULAR */
 
 /**********************************************************************/
 /*****                 Miscellaneous functions                    *****/
@@ -196,7 +194,6 @@ fxDDClear(GLcontext * ctx, GLbitfield mask, GLboolean all,
         mask &= ~(DD_FRONT_LEFT_BIT | DD_BACK_LEFT_BIT);
     }
 
-
     if (fxMesa->haveHwStencil) {
         /*
          * If we want to clear stencil, it must be enabled
@@ -204,17 +201,19 @@ fxDDClear(GLcontext * ctx, GLbitfield mask, GLboolean all,
          * in the OGL state.
          */
         if (mask & DD_STENCIL_BIT) {
-            FX_grStencilMask(fxMesa, 0xff /*ctx->Stencil.WriteMask*/);
+            FX_grStencilMask_NoLock(0xFF /* ctx->Stencil.WriteMask*/ );
             /* set stencil ref value = desired clear value */
-            FX_grStencilFunc(fxMesa, GR_CMP_ALWAYS, ctx->Stencil.Clear, 0xff);
-            FX_grStencilOp(fxMesa, GR_STENCILOP_REPLACE,
+            FX_grStencilFunc_NoLock(GR_CMP_ALWAYS, ctx->Stencil.Clear, 0xff);
+            FX_grStencilOp_NoLock(GR_STENCILOP_REPLACE,
                            GR_STENCILOP_REPLACE, GR_STENCILOP_REPLACE);
-            FX_grEnable(fxMesa, GR_STENCIL_MODE_EXT);
+            FX_grEnable_NoLock(GR_STENCIL_MODE_EXT);
         }
         else {
-            FX_grDisable(fxMesa, GR_STENCIL_MODE_EXT);
+            FX_grDisable_NoLock(GR_STENCIL_MODE_EXT);
         }
     }
+
+    BEGIN_CLIP_LOOP(fxMesa)
 
     /*
      * This could probably be done fancier but doing each possible case
@@ -223,129 +222,143 @@ fxDDClear(GLcontext * ctx, GLbitfield mask, GLboolean all,
     switch (mask & ~DD_STENCIL_BIT) {
     case DD_BACK_LEFT_BIT | DD_DEPTH_BIT:
         /* back buffer & depth */
-        FX_grDepthMask(fxMesa, FXTRUE);
-        FX_grRenderBuffer(fxMesa, GR_BUFFER_BACKBUFFER);
+        FX_grDepthMask_NoLock(FXTRUE);
+        FX_grRenderBuffer_NoLock(GR_BUFFER_BACKBUFFER);
         if (stencil_size > 0)
-            FX_grBufferClearExt(fxMesa, fxMesa->clearC, fxMesa->clearA, clearD,
-                                clearS);
+            FX_grBufferClearExt_NoLock(fxMesa->clearC, fxMesa->clearA, clearD,
+                                       clearS);
         else
-            FX_grBufferClear(fxMesa, fxMesa->clearC, fxMesa->clearA, clearD);
+            FX_grBufferClear_NoLock(fxMesa->clearC, fxMesa->clearA, clearD);
         if (!ctx->Depth.Mask || !ctx->Depth.Test) {
-            FX_grDepthMask(fxMesa, FXFALSE);
+            FX_grDepthMask_NoLock(FXFALSE);
         }
         break;
     case DD_FRONT_LEFT_BIT | DD_DEPTH_BIT:
         /* XXX it appears that the depth buffer isn't cleared when
-         * glRenderBuffer(fxMesa, GR_BUFFER_FRONTBUFFER) is set.
+         * glRenderBuffer(GR_BUFFER_FRONTBUFFER) is set.
          * This is a work-around/
          */
         /* clear depth */
-        FX_grDepthMask(fxMesa, FXTRUE);
-        FX_grRenderBuffer(fxMesa, GR_BUFFER_BACKBUFFER);
-        FX_grColorMaskv(ctx, false4);
+        FX_grDepthMask_NoLock(FXTRUE);
+        FX_grRenderBuffer_NoLock(GR_BUFFER_BACKBUFFER);
+        FX_grColorMaskv_NoLock(ctx, false4);
         if (stencil_size > 0)
-            FX_grBufferClearExt(fxMesa, fxMesa->clearC, fxMesa->clearA, clearD,
+            FX_grBufferClearExt_NoLock(fxMesa->clearC, fxMesa->clearA, clearD,
                                 clearS);
         else
-            FX_grBufferClear(fxMesa, fxMesa->clearC, fxMesa->clearA, clearD);
+            FX_grBufferClear_NoLock(fxMesa->clearC, fxMesa->clearA, clearD);
         /* clear front */
-        FX_grColorMaskv(ctx, true4);
-        FX_grRenderBuffer(fxMesa, GR_BUFFER_FRONTBUFFER);
+        FX_grColorMaskv_NoLock(ctx, true4);
+        FX_grRenderBuffer_NoLock(GR_BUFFER_FRONTBUFFER);
         if (stencil_size > 0)
-            FX_grBufferClearExt(fxMesa, fxMesa->clearC, fxMesa->clearA, clearD,
+            FX_grBufferClearExt_NoLock(fxMesa->clearC, fxMesa->clearA, clearD,
                                 clearS);
         else
-            FX_grBufferClear(fxMesa, fxMesa->clearC, fxMesa->clearA, clearD);
+            FX_grBufferClear_NoLock(fxMesa->clearC, fxMesa->clearA, clearD);
         if (!ctx->Depth.Mask || !ctx->Depth.Test) {
-            FX_grDepthMask(fxMesa, FXFALSE);
+            FX_grDepthMask_NoLock(FXFALSE);
         }
         break;
     case DD_BACK_LEFT_BIT:
         /* back buffer only */
-        FX_grDepthMask(fxMesa, FXFALSE);
-        FX_grRenderBuffer(fxMesa, GR_BUFFER_BACKBUFFER);
+        FX_grDepthMask_NoLock(FXFALSE);
+        FX_grRenderBuffer_NoLock(GR_BUFFER_BACKBUFFER);
         if (stencil_size > 0)
-            FX_grBufferClearExt(fxMesa, fxMesa->clearC, fxMesa->clearA, clearD,
+            FX_grBufferClearExt_NoLock(fxMesa->clearC, fxMesa->clearA, clearD,
                                 clearS);
         else
-            FX_grBufferClear(fxMesa, fxMesa->clearC, fxMesa->clearA, clearD);
+            FX_grBufferClear_NoLock(fxMesa->clearC, fxMesa->clearA, clearD);
         if (ctx->Depth.Mask && ctx->Depth.Test) {
-            FX_grDepthMask(fxMesa, FXTRUE);
+            FX_grDepthMask_NoLock(FXTRUE);
         }
         break;
     case DD_FRONT_LEFT_BIT:
         /* front buffer only */
-        FX_grDepthMask(fxMesa, FXFALSE);
-        FX_grRenderBuffer(fxMesa, GR_BUFFER_FRONTBUFFER);
+        FX_grDepthMask_NoLock(FXFALSE);
+        FX_grRenderBuffer_NoLock(GR_BUFFER_FRONTBUFFER);
         if (stencil_size > 0)
-            FX_grBufferClearExt(fxMesa, fxMesa->clearC, fxMesa->clearA, clearD,
+            FX_grBufferClearExt_NoLock(fxMesa->clearC, fxMesa->clearA, clearD,
                                 clearS);
         else
-            FX_grBufferClear(fxMesa, fxMesa->clearC, fxMesa->clearA, clearD);
+            FX_grBufferClear_NoLock(fxMesa->clearC, fxMesa->clearA, clearD);
         if (ctx->Depth.Mask && ctx->Depth.Test) {
-            FX_grDepthMask(fxMesa, FXTRUE);
+            FX_grDepthMask_NoLock(FXTRUE);
         }
         break;
     case DD_FRONT_LEFT_BIT | DD_BACK_LEFT_BIT:
         /* front and back */
-        FX_grDepthMask(fxMesa, FXFALSE);
-        FX_grRenderBuffer(fxMesa, GR_BUFFER_BACKBUFFER);
+        FX_grDepthMask_NoLock(FXFALSE);
+        FX_grRenderBuffer_NoLock(GR_BUFFER_BACKBUFFER);
         if (stencil_size > 0)
-            FX_grBufferClearExt(fxMesa, fxMesa->clearC, fxMesa->clearA, clearD,
+            FX_grBufferClearExt_NoLock(fxMesa->clearC, fxMesa->clearA, clearD,
                                 clearS);
         else
-            FX_grBufferClear(fxMesa, fxMesa->clearC, fxMesa->clearA, clearD);
-        FX_grRenderBuffer(fxMesa, GR_BUFFER_FRONTBUFFER);
+            FX_grBufferClear_NoLock(fxMesa->clearC, fxMesa->clearA, clearD);
+        FX_grRenderBuffer_NoLock(GR_BUFFER_FRONTBUFFER);
         if (stencil_size > 0)
-            FX_grBufferClearExt(fxMesa, fxMesa->clearC, fxMesa->clearA, clearD,
+            FX_grBufferClearExt_NoLock(fxMesa->clearC, fxMesa->clearA, clearD,
                                 clearS);
         else
-            FX_grBufferClear(fxMesa, fxMesa->clearC, fxMesa->clearA, clearD);
+            FX_grBufferClear_NoLock(fxMesa->clearC, fxMesa->clearA, clearD);
         if (ctx->Depth.Mask && ctx->Depth.Test) {
-            FX_grDepthMask(fxMesa, FXTRUE);
+            FX_grDepthMask_NoLock(FXTRUE);
         }
         break;
     case DD_FRONT_LEFT_BIT | DD_BACK_LEFT_BIT | DD_DEPTH_BIT:
         /* clear front */
-        FX_grDepthMask(fxMesa, FXFALSE);
-        FX_grRenderBuffer(fxMesa, GR_BUFFER_FRONTBUFFER);
+        FX_grDepthMask_NoLock(FXFALSE);
+        FX_grRenderBuffer_NoLock(GR_BUFFER_FRONTBUFFER);
         if (stencil_size > 0)
-            FX_grBufferClearExt(fxMesa, fxMesa->clearC, fxMesa->clearA, clearD,
+            FX_grBufferClearExt_NoLock(fxMesa->clearC, fxMesa->clearA, clearD,
                                 clearS);
         else
-            FX_grBufferClear(fxMesa, fxMesa->clearC, fxMesa->clearA, clearD);
+            FX_grBufferClear_NoLock(fxMesa->clearC, fxMesa->clearA, clearD);
         /* clear back and depth */
-        FX_grDepthMask(fxMesa, FXTRUE);
-        FX_grRenderBuffer(fxMesa, GR_BUFFER_BACKBUFFER);
+        FX_grDepthMask_NoLock(FXTRUE);
+        FX_grRenderBuffer_NoLock(GR_BUFFER_BACKBUFFER);
         if (stencil_size > 0)
-            FX_grBufferClearExt(fxMesa, fxMesa->clearC, fxMesa->clearA, clearD,
+            FX_grBufferClearExt_NoLock(fxMesa->clearC, fxMesa->clearA, clearD,
                                 clearS);
         else
-            FX_grBufferClear(fxMesa, fxMesa->clearC, fxMesa->clearA, clearD);
+            FX_grBufferClear_NoLock(fxMesa->clearC, fxMesa->clearA, clearD);
         if (!ctx->Depth.Mask || !ctx->Depth.Mask) {
-            FX_grDepthMask(fxMesa, FXFALSE);
+            FX_grDepthMask_NoLock(FXFALSE);
         }
         break;
     case DD_DEPTH_BIT:
         /* just the depth buffer */
-        FX_grRenderBuffer(fxMesa, GR_BUFFER_BACKBUFFER);
-        FX_grColorMaskv(ctx, false4);
-        FX_grDepthMask(fxMesa, FXTRUE);
+        FX_grRenderBuffer_NoLock(GR_BUFFER_BACKBUFFER);
+        FX_grColorMaskv_NoLock(ctx, false4);
+        FX_grDepthMask_NoLock(FXTRUE);
         if (stencil_size > 0)
-            FX_grBufferClearExt(fxMesa, fxMesa->clearC, fxMesa->clearA, clearD,
+            FX_grBufferClearExt_NoLock(fxMesa->clearC, fxMesa->clearA, clearD,
                                 clearS);
         else
-            FX_grBufferClear(fxMesa, fxMesa->clearC, fxMesa->clearA, clearD);
-        FX_grColorMaskv(ctx, true4);
+            FX_grBufferClear_NoLock(fxMesa->clearC, fxMesa->clearA, clearD);
+        FX_grColorMaskv_NoLock(ctx, true4);
         if (ctx->Color.DrawDestMask & FRONT_LEFT_BIT)
-            FX_grRenderBuffer(fxMesa, GR_BUFFER_FRONTBUFFER);
+            FX_grRenderBuffer_NoLock(GR_BUFFER_FRONTBUFFER);
         if (!ctx->Depth.Test || !ctx->Depth.Mask)
-           FX_grDepthMask(fxMesa, FXFALSE);
+           FX_grDepthMask_NoLock(FXFALSE);
         break;
     default:
-        /* error */
-        ;
+         /* clear no color buffers or depth buffer but might clear stencil */
+	 if ((stencil_size > 0) && (mask & DD_STENCIL_BIT)) {
+            FX_grDepthMask_NoLock(FXFALSE);
+            FX_grColorMaskv_NoLock(ctx, false4);
+            FX_grBufferClearExt_NoLock(fxMesa->clearC,
+                                       fxMesa->clearA,
+				       clearD,
+                                       (FxU32) clearS);
+            if (ctx->Depth.Mask && ctx->Depth.Test) {
+               FX_grDepthMask_NoLock(FXTRUE);
+            }
+            FX_grColorMaskv_NoLock(ctx, true4);
+         }
+         break;
     }
+
+    END_CLIP_LOOP(fxMesa);
 
     if (fxMesa->haveHwStencil) {
         if (ctx->Stencil.Enabled) {
@@ -353,16 +366,17 @@ fxDDClear(GLcontext * ctx, GLbitfield mask, GLboolean all,
             GrStencil_t sfail = fxConvertGLStencilOp(ctx->Stencil.FailFunc);
             GrStencil_t zfail = fxConvertGLStencilOp(ctx->Stencil.ZFailFunc);
             GrStencil_t zpass = fxConvertGLStencilOp(ctx->Stencil.ZPassFunc);
-            FX_grStencilOp(fxMesa, sfail, zfail, zpass);
-            FX_grStencilMask(fxMesa, ctx->Stencil.WriteMask);
-            FX_grStencilFunc(fxMesa, ctx->Stencil.Function - GL_NEVER,
+            FX_grStencilOp_NoLock(sfail, zfail, zpass);
+            FX_grStencilMask_NoLock(ctx->Stencil.WriteMask);
+            FX_grStencilFunc_NoLock(ctx->Stencil.Function - GL_NEVER,
                              ctx->Stencil.Ref, ctx->Stencil.ValueMask);
-            FX_grEnable(fxMesa, GR_STENCIL_MODE_EXT);
+            FX_grEnable_NoLock(GR_STENCIL_MODE_EXT);
         }
         else {
-            FX_grDisable(fxMesa, GR_STENCIL_MODE_EXT);
+            FX_grDisable_NoLock(GR_STENCIL_MODE_EXT);
         }
     }
+
     return softwareMask;
 }
 
@@ -480,6 +494,7 @@ fxDDDepthMask(GLcontext * ctx, GLboolean mask)
  * Return the current value of the occlusion test flag and
  * reset the flag (hardware counters) to false.
  */
+#if 0
 static GLboolean
 get_occlusion_result(GLcontext *ctx)
 {
@@ -515,7 +530,54 @@ get_occlusion_result(GLcontext *ctx)
 
     return result;
 }
+#else
 
+static GLboolean get_occlusion_result( GLcontext *ctx )
+{
+   fxMesaContext fxMesa = (fxMesaContext) ctx->DriverCtx;
+   GLboolean result;
+
+   LOCK_HARDWARE( fxMesa );
+
+   printf("start state: %d %d\n", ctx->Depth.OcclusionTest, ctx->OcclusionResult);
+
+   if (ctx->Depth.OcclusionTest) {
+      if (ctx->OcclusionResult) {
+	 result = GL_TRUE;  /* result of software rendering */
+         printf("res = true 1\n");
+      }
+      else {
+	 FxI32 zfail, in;
+	 zfail = FX_grGetInteger_NoLock(GR_STATS_PIXELS_DEPTHFUNC_FAIL);
+	 in = FX_grGetInteger_NoLock(GR_STATS_PIXELS_IN);
+	 if (in == zfail) {
+	    result = GL_FALSE; /* geom was completely occluded */
+         printf("res = false 2\n");
+         }
+	 else {
+	    result = GL_TRUE;  /* all or part of geom was visible */
+         printf("res = true 2\n");
+
+         }
+      }
+   }
+   else {
+      result = ctx->OcclusionResultSaved;
+         printf("res = saved\n");
+   }
+
+   /* reset results now */
+   grReset(GR_STATS_PIXELS);
+   ctx->OcclusionResult = GL_FALSE;
+   ctx->OcclusionResultSaved = GL_FALSE;
+
+   UNLOCK_HARDWARE( fxMesa );
+
+   printf("result = %d\n", result);
+   return result;
+}
+
+#endif
 
 /*
  * We're only implementing this function to handle the
@@ -566,7 +628,6 @@ fxDDGetDoublev(GLcontext *ctx, GLenum pname, GLdouble *result)
 }
 
 
-#ifdef XF86DRI
 /* test if window coord (px,py) is visible */
 static GLboolean
 inClipRects(fxMesaContext fxMesa, int px, int py)
@@ -580,7 +641,6 @@ inClipRects(fxMesaContext fxMesa, int px, int py)
     }
     return GL_FALSE;
 }
-#endif
 
 
 
@@ -678,12 +738,6 @@ bitmap_R5G6B5(GLcontext * ctx, GLint px, GLint py,
         return GL_TRUE;
     }
 
-#ifdef XF86DRI
-#define INSIDE(c, x, y) inClipRects((c), (x), (y))
-#else
-#define INSIDE(c, x, y) (1)
-#endif
-
     {
         const GLint winX = fxMesa->x_offset;
         const GLint winY = fxMesa->y_offset + fxMesa->height - 1;
@@ -691,12 +745,8 @@ bitmap_R5G6B5(GLcontext * ctx, GLint px, GLint py,
          * to the front or back buffer.  This compile-time test seems to do
          * the job for now.
          */
-#ifdef XF86DRI
         const GLint dstStride = (fxMesa->glCtx->Color.DrawBuffer == GL_FRONT)
             ? (fxMesa->screen_width) : (info.strideInBytes / 2);
-#else
-        const GLint dstStride = info.strideInBytes / 2; /* stride in GLushorts */
-#endif
         GLint row;
         /* compute dest address of bottom-left pixel in bitmap */
         GLushort *dst = (GLushort *) info.lfbPtr
@@ -714,7 +764,7 @@ bitmap_R5G6B5(GLcontext * ctx, GLint px, GLint py,
                 GLint col;
                 for (col = 0; col < width; col++) {
                     if (*src & mask) {
-                        if (INSIDE(fxMesa, winX + px + col, winY - py - row))
+                        if (inClipRects(fxMesa, winX + px + col, winY - py - row))
                             dst[col] = color;
                     }
                     if (mask == 128U) {
@@ -734,7 +784,7 @@ bitmap_R5G6B5(GLcontext * ctx, GLint px, GLint py,
                 GLint col;
                 for (col = 0; col < width; col++) {
                     if (*src & mask) {
-                        if (INSIDE(fxMesa, winX + px + col, winY - py - row))
+                        if (inClipRects(fxMesa, winX + px + col, winY - py - row))
                             dst[col] = color;
                     }
                     if (mask == 1U) {
@@ -751,8 +801,6 @@ bitmap_R5G6B5(GLcontext * ctx, GLint px, GLint py,
             dst -= dstStride;
         }
     }
-
-#undef INSIDE
 
     FX_grLfbUnlock(fxMesa, GR_LFB_WRITE_ONLY, fxMesa->currentFB);
     return GL_TRUE;
@@ -841,12 +889,6 @@ bitmap_R8G8B8A8(GLcontext * ctx, GLint px, GLint py,
         return GL_TRUE;
     }
 
-#ifdef XF86DRI
-#define INSIDE(c, x, y) inClipRects((c), (x), (y))
-#else
-#define INSIDE(c, x, y) (1)
-#endif
-
     {
         const GLint winX = fxMesa->x_offset;
         const GLint winY = fxMesa->y_offset + fxMesa->height - 1;
@@ -880,7 +922,7 @@ bitmap_R8G8B8A8(GLcontext * ctx, GLint px, GLint py,
                 GLint col;
                 for (col = 0; col < width; col++) {
                     if (*src & mask) {
-                        if (INSIDE(fxMesa, winX + px + col, winY - py - row))
+                        if (inClipRects(fxMesa, winX + px + col, winY - py - row))
                             dst[col] = color;
                     }
                     if (mask == 128U) {
@@ -900,7 +942,7 @@ bitmap_R8G8B8A8(GLcontext * ctx, GLint px, GLint py,
                 GLint col;
                 for (col = 0; col < width; col++) {
                     if (*src & mask) {
-                        if (INSIDE(fxMesa, winX + px + col, winY - py - row))
+                        if (inClipRects(fxMesa, winX + px + col, winY - py - row))
                             dst[col] = color;
                     }
                     if (mask == 1U) {
@@ -917,8 +959,6 @@ bitmap_R8G8B8A8(GLcontext * ctx, GLint px, GLint py,
             dst -= dstStride;
         }
     }
-
-#undef INSIDE
 
     FX_grLfbUnlock(fxMesa, GR_LFB_WRITE_ONLY, fxMesa->currentFB);
     return GL_TRUE;
@@ -948,14 +988,10 @@ readpixels_R5G6B5(GLcontext * ctx, GLint x, GLint y,
                       GR_ORIGIN_UPPER_LEFT, FXFALSE, &info)) {
             const GLint winX = fxMesa->x_offset;
             const GLint winY = fxMesa->y_offset + fxMesa->height - 1;
-#ifdef XF86DRI
             const GLint srcStride =
                 (fxMesa->glCtx->Color.DrawBuffer ==
                  GL_FRONT) ? (fxMesa->screen_width) : (info.strideInBytes /
                                                        2);
-#else
-            const GLint srcStride = info.strideInBytes / 2; /* stride in GLushorts */
-#endif
             const GLushort *src = (const GLushort *) info.lfbPtr
                 + (winY - y) * srcStride + (winX + x);
             GLubyte *dst = (GLubyte *) _mesa_image_address(packing, dstImage,
@@ -1083,12 +1119,8 @@ readpixels_R8G8B8A8(GLcontext * ctx, GLint x, GLint y,
                       fxMesa->currentFB,
                       GR_LFBWRITEMODE_ANY,
                       GR_ORIGIN_UPPER_LEFT, FXFALSE, &info)) {
-#ifdef XF86DRI
             const GLint srcStride = (fxMesa->glCtx->Color.DrawBuffer == GL_FRONT)
                 ? (fxMesa->screen_width) : (info.strideInBytes / 4);
-#else
-            const GLint srcStride = info.strideInBytes / 4; /* stride in GLuints */
-#endif
             const GLuint *src = (const GLuint *) info.lfbPtr
                 + scrY * srcStride + scrX;
             const GLint dstStride =
@@ -1116,13 +1148,14 @@ readpixels_R8G8B8A8(GLcontext * ctx, GLint x, GLint y,
                     MEMCPY(dst, src, widthInBytes);
                     dst += dstStride;
                     src -= srcStride;
-                    /* Data is in memory in BGRA format - we need to convert now */
-                    for (i = 0; i < width; i++) {
-                        const GLuint data = *dstp;
-                        /* Swap R & B values */
-                        *dstp++ = ((data & 0xff) << 16) |
-                                  ((data & 0xff0000) >> 16) |
-                                   (data & 0xff00ff00);
+                    /* Data is in memory in BGRA format */
+                    /* We need to swap R & B values */
+                    for (i = 0; i < width; i++, dstp++) {
+                        char *dstp0 = ((char *)(dstp)) + 0;
+                        char *dstp2 = ((char *)(dstp)) + 2;
+                        *dstp0 ^= *dstp2;
+                        *dstp2 ^= *dstp0;
+                        *dstp0 ^= *dstp2;
                     }
                 }
                 result = GL_TRUE;
@@ -1190,12 +1223,8 @@ drawpixels_R8G8B8A8(GLcontext * ctx, GLint x, GLint y,
         if (grLfbLock(GR_LFB_WRITE_ONLY,
                       fxMesa->currentFB,
                       GR_LFBWRITEMODE_8888, GR_ORIGIN_UPPER_LEFT, FXFALSE, &info)) {
-#ifdef XF86DRI
             const GLint dstStride = (fxMesa->glCtx->Color.DrawBuffer == GL_FRONT)
                 ? (fxMesa->screen_width * 4) : (info.strideInBytes);
-#else
-            const GLint dstStride = info.strideInBytes;
-#endif
             const GLubyte *dst = (const GLubyte *) info.lfbPtr
                 + scrY * dstStride + scrX * 4;
             const GLint srcStride =
@@ -1276,12 +1305,8 @@ drawpixels_R8G8B8A8_v2(GLcontext * ctx, GLint x, GLint y,
         if (grLfbLock(GR_LFB_WRITE_ONLY,
                       fxMesa->currentFB,
                       GR_LFBWRITEMODE_8888, GR_ORIGIN_UPPER_LEFT, FXTRUE, &info)) {
-#ifdef XF86DRI
             const GLint dstStride = (fxMesa->glCtx->Color.DrawBuffer == GL_FRONT)
                 ? (fxMesa->screen_width * 4) : (info.strideInBytes);
-#else
-            const GLint dstStride = info.strideInBytes;
-#endif
             const GLubyte *dst = (const GLubyte *) info.lfbPtr
                 + scrY * dstStride + scrX * 4;
             const GLint srcStride =
@@ -1397,6 +1422,10 @@ fxDDGetString(GLcontext * ctx, GLenum name)
             strcpy(hardware, FX_grGetString(fxMesa, GR_HARDWARE));
             if (strcmp(hardware, "Voodoo3 (tm)") == 0)
                 strcpy(hardware, "Voodoo3");
+	    else if (strcmp(hardware, "Voodoo4 (tm)") == 0)
+	        strcpy(hardware, "Voodoo4");
+	    else if (strcmp(hardware, "Voodoo5 (tm)") == 0)
+	        strcpy(hardware, "Voodoo5");
             else if (strcmp(hardware, "Voodoo Banshee (tm)") == 0)
                 strcpy(hardware, "VoodooBanshee");
             else {
@@ -1408,7 +1437,7 @@ fxDDGetString(GLcontext * ctx, GLenum name)
                 }
             }
             /* now make the GL_RENDERER string */
-            sprintf(buffer, "Mesa DRI %s 20000821", hardware);
+            sprintf(buffer, "Mesa DRI %s 20001101", hardware);
             return buffer;
         }
     case GL_VENDOR:
@@ -1455,6 +1484,14 @@ fxDDInitExtensions(GLcontext * ctx)
     if (fxMesa->isNapalm) {
         gl_extensions_enable(ctx, "GL_ARB_texture_compression");
         gl_extensions_enable(ctx, "GL_3DFX_texture_compression_FXT1");
+        {
+            char *legacy_str = getenv("FX_GL_COMPRESS_LEGACY_TEXTURES");
+            if (!legacy_str || ((legacy_str[0] == '0')
+                                && (legacy_str[1] == '\0'))) {
+                gl_extensions_add(ctx, ALWAYS_ENABLED, "GL_S3_s3tc", 0);
+            }
+        }
+        gl_extensions_enable(ctx, "GL_EXT_texture_env_combine");
     }
 
     /* Example of hooking in an extension function.
@@ -1489,9 +1526,20 @@ fxDDInitFxMesaContext(fxMesaContext fxMesa)
     {
         void *handle = dlopen(NULL, RTLD_NOW | RTLD_GLOBAL);
         if (!handle) {
-            txImgQuantizePtr = 0;
-            txImgDequantizeFXT1Ptr = 0;
-            txErrorSetCallbackPtr = 0;
+            txImgQuantizePtr = NULL;
+            txImgDequantizeFXT1Ptr = NULL;
+            txErrorSetCallbackPtr = NULL;
+            grStencilFuncPtr = NULL;
+            grStencilMaskPtr = NULL;
+            grStencilOpPtr = NULL;
+            grBufferClearExtPtr = NULL;
+            grColorMaskExtPtr = NULL;
+            grColorCombineExtPtr = NULL;
+            grTexColorCombineExtPtr = NULL;
+            grAlphaCombineExtPtr = NULL;
+            grTexAlphaCombineExtPtr = NULL;
+            grAlphaBlendFunctionExtPtr = NULL;
+            grConstantColorValueExtPtr = NULL;
             return 0;
         }
         else {
@@ -1506,6 +1554,12 @@ fxDDInitFxMesaContext(fxMesaContext fxMesa)
             grStencilOpPtr = dlsym(handle, "grStencilOp");
             grBufferClearExtPtr = dlsym(handle, "grBufferClearExt");
             grColorMaskExtPtr = dlsym(handle, "grColorMaskExt");
+            grColorCombineExtPtr = dlsym(handle, "grColorCombineExt");
+            grTexColorCombineExtPtr = dlsym(handle, "grTexColorCombineExt");
+            grAlphaCombineExtPtr = dlsym(handle, "grAlphaCombineExt");
+            grTexAlphaCombineExtPtr = dlsym(handle, "grTexAlphaCombineExt");
+            grAlphaBlendFunctionExtPtr = dlsym(handle, "grAlphaBlendFunctionExt");
+            grConstantColorValueExtPtr = dlsym(handle, "grConstantColorValueExt");
         }
         dlclose(handle);
     }
@@ -1649,7 +1703,9 @@ fxDDInitFxMesaContext(fxMesaContext fxMesa)
     fxMesa->new_state = NEW_ALL;
     fxMesa->glCtx->Driver.RenderStart = fxSetupFXUnits;
 
+#if	defined(FX_PXCONV_TABULAR)
     fxInitPixelTables(fxMesa, GL_FALSE); /* Load tables of pixel colors */
+#endif	/* FX_PXCONV_TABULAR */
 
     /* Run the config file */
     gl_context_initialize(fxMesa->glCtx);
@@ -1658,9 +1714,6 @@ fxDDInitFxMesaContext(fxMesaContext fxMesa)
 }
 
 
-/************************************************************************/
-/************************************************************************/
-/************************************************************************/
 
 /* Check if the hardware supports the current context 
  *
@@ -1674,6 +1727,29 @@ fxIsInHardware(GLcontext * ctx)
     if (!ctx->Hint.AllowDrawMem)
         return GL_TRUE;         /* you'll take it and like it */
 
+    if (ctx->Color.BlendEnabled
+        && ctx->Color.BlendEquation != GL_FUNC_ADD_EXT) {
+        return GL_FALSE;
+    }
+
+    if (ctx->Color.ColorLogicOpEnabled && ctx->Color.LogicOp != GL_COPY) {
+        return GL_FALSE;
+    }
+
+    if (ctx->Light.Enabled &&
+        ctx->Light.Model.ColorControl == GL_SEPARATE_SPECULAR_COLOR) {
+        return GL_FALSE;
+    }
+
+    if (ctx->Visual->RedBits < 8 &&
+        (ctx->Color.ColorMask[RCOMP] != ctx->Color.ColorMask[GCOMP] ||
+         ctx->Color.ColorMask[GCOMP] != ctx->Color.ColorMask[BCOMP])) {
+        /* can't individually mask R, G, B in 16bpp/Voodoo3 mode */
+        return GL_FALSE;
+    }
+       
+
+#if 000
     if (
         ((ctx->Color.BlendEnabled)
          && (ctx->Color.BlendEquation != GL_FUNC_ADD_EXT))
@@ -1687,6 +1763,9 @@ fxIsInHardware(GLcontext * ctx)
         ) {
         return GL_FALSE;
     }
+#endif
+
+
     /* Unsupported texture/multitexture cases */
 
     if (fxMesa->emulateTwoTMUs) {
@@ -1704,7 +1783,8 @@ fxIsInHardware(GLcontext * ctx)
               return GL_FALSE;
            }
 #endif
-            if (ctx->Texture.Unit[0].EnvMode == GL_BLEND &&
+            if (!fxMesa->isNapalm &&
+                ctx->Texture.Unit[0].EnvMode == GL_BLEND &&
                 (ctx->Texture.ReallyEnabled & TEXTURE1_2D ||
                  ctx->Texture.Unit[0].EnvColor[0] != 0 ||
                  ctx->Texture.Unit[0].EnvColor[1] != 0 ||
@@ -1717,9 +1797,9 @@ fxIsInHardware(GLcontext * ctx)
         }
 
         if (ctx->Texture.ReallyEnabled & TEXTURE1_2D) {
-            if (ctx->Texture.Unit[1].EnvMode == GL_BLEND)
+            if (!fxMesa->isNapalm && ctx->Texture.Unit[1].EnvMode == GL_BLEND)
                 return GL_FALSE;
-            if (ctx->Texture.Unit[0].Current->Image[0]->Border > 0)
+            if (ctx->Texture.Unit[1].Current->Image[0]->Border > 0)
                 return GL_FALSE;
         }
 
@@ -1759,7 +1839,7 @@ fxIsInHardware(GLcontext * ctx)
         }
 
 
-        if ((ctx->Texture.ReallyEnabled & TEXTURE0_2D) &&
+        if (!fxMesa->isNapalm && (ctx->Texture.ReallyEnabled & TEXTURE0_2D) &&
             (ctx->Texture.Unit[0].EnvMode == GL_BLEND)) {
             return GL_FALSE;
         }
@@ -1878,6 +1958,7 @@ fxSetupDDPointers(GLcontext * ctx)
 
     ctx->Driver.TexImage2D = fxDDTexImage2D;
     ctx->Driver.TexSubImage2D = fxDDTexSubImage2D;
+    ctx->Driver.TestProxyTexImage = fxDDTestProxyTexImage;
     ctx->Driver.GetTexImage = fxDDGetTexImage;
     ctx->Driver.CompressedTexImage2D = fxDDCompressedTexImage2D;
     ctx->Driver.CompressedTexSubImage2D = fxDDCompressedTexSubImage2D;

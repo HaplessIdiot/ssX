@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxtritmp.h,v 1.1 2000/09/24 13:51:20 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxtritmp.h,v 1.2 2000/12/05 21:18:34 dawes Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -306,10 +306,8 @@ static void TAG(fx_line) (GLcontext * ctx, GLuint e1, GLuint e2, GLuint pv)
     GLfloat w = ctx->Line.Width * .5;
 
     if (IND & FX_FLAT) {
-        v1->r = v2->r = UBYTE_COLOR_TO_FLOAT_255_COLOR(color[pv][0]);
-        v1->g = v2->g = UBYTE_COLOR_TO_FLOAT_255_COLOR(color[pv][1]);
-        v1->b = v2->b = UBYTE_COLOR_TO_FLOAT_255_COLOR(color[pv][2]);
-        v1->a = v2->a = UBYTE_COLOR_TO_FLOAT_255_COLOR(color[pv][3]);
+        GOURAUD2(v1, color[pv]);
+        GOURAUD2(v2, color[pv]);
     }
     else if (IND & FX_TWOSIDE) {
         /* XXX use signed area of the polygon to determine front/back color choice */
@@ -354,10 +352,7 @@ static void TAG(fx_line) (GLcontext * ctx, GLuint e1, GLuint e2, GLuint pv)
     do {							\
 	GrVertex verts[4], *tmp;				\
 	tmp = (GrVertex *) gWin[i].f;				\
-	tmp->r = UBYTE_COLOR_TO_FLOAT_255_COLOR(color[0]);	\
-	tmp->g = UBYTE_COLOR_TO_FLOAT_255_COLOR(color[1]);	\
-	tmp->b = UBYTE_COLOR_TO_FLOAT_255_COLOR(color[2]);	\
-	tmp->a = UBYTE_COLOR_TO_FLOAT_255_COLOR(color[3]);	\
+        GOURAUD2(tmp, color);                                   \
 	verts[0] = *tmp;					\
 	verts[1] = *tmp;					\
 	verts[2] = *tmp;					\
@@ -389,12 +384,12 @@ static void TAG(fx_points) (GLcontext * ctx, GLuint first, GLuint last)
     }
 
     if (!VB->ClipOrMask) {
-        for (i = first; i < last; i++) {
+        for (i = first; i <= last; i++) {
             DRAW_POINT(i, radius, color[i]);
         }
     }
     else {
-        for (i = first; i < last; i++) {
+        for (i = first; i <= last; i++) {
             if (VB->ClipMask[i] == 0) {
                 DRAW_POINT(i, radius, color[i]);
             }
@@ -408,12 +403,12 @@ static void TAG(fx_points) (GLcontext * ctx, GLuint first, GLuint last)
         FX_grRenderBuffer(fxMesa, GR_BUFFER_FRONTBUFFER);
 
         if (!VB->ClipOrMask) {
-            for (i = first; i < last; i++) {
+            for (i = first; i <= last; i++) {
                 DRAW_POINT(i, radius, color[i]);
             }
         }
         else {
-            for (i = first; i < last; i++) {
+            for (i = first; i <= last; i++) {
                 if (VB->ClipMask[i] == 0) {
                     DRAW_POINT(i, radius, color[i]);
                 }

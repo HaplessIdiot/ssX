@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxddtex.h,v 1.1 2000/09/24 13:51:15 alanh Exp $ */
 #ifndef FXDDTEX_H
 #define FXDDTEX_H
 
@@ -32,6 +32,12 @@ extern GLboolean fxDDTexSubImage2D(GLcontext * ctx, GLenum target,
                                    struct gl_texture_object *texObj,
                                    struct gl_texture_image *texImage);
 
+extern GLboolean fxDDTestProxyTexImage(GLcontext *ctx, GLenum target,
+                                       GLint level, GLint internalFormat,
+                                       GLenum format, GLenum type,
+                                       GLint width, GLint height,
+                                       GLint depth, GLint border );
+
 extern GLvoid *fxDDGetTexImage(GLcontext * ctx, GLenum target, GLint level,
                                const struct gl_texture_object *texObj,
                                GLenum * formatOut, GLenum * typeOut,
@@ -56,7 +62,14 @@ extern void fxDDGetCompressedTexImage( GLcontext *ctx, GLenum target,
                                        struct gl_texture_image *texImage );
 extern GLint fxDDSpecificCompressedTexFormat(GLcontext *ctx,
                                              GLint      internalFormat,
-                                             GLint      numDimensions);
+                                             GLint      numDimensions,
+                                             GLint     *levelp,
+                                             GLsizei   *widthp,
+                                             GLsizei   *heightp,
+                                             GLsizei   *depthp,
+                                             GLint     *borderp,
+                                             GLenum    *formatp,
+                                             GLenum    *typep);
 extern GLint fxDDBaseCompressedTexFormat(GLcontext *ctx,
                                          GLint      internalFormat);
 
@@ -96,4 +109,15 @@ extern GLsizei fxDDCompressedImageSize(GLcontext *ctx,
                                        GLuint height,
                                        GLuint depth);
                                       
+/*
+ * This is not in glext.h, since this is not an EXT or ARB
+ * extension.  It probably shouldn't be here exactly, but
+ * there's not an obvious good place for it.
+ */
+#ifndef GL_S3_s3tc
+#define GL_RGB_S3TC                       0x83A0
+#define GL_RGB4_S3TC                      0x83A1
+#define GL_RGBA_S3TC                      0x83A2
+#define GL_RGBA4_S3TC                     0x83A3
+#endif
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxglidew.h,v 1.1 2000/09/24 13:51:16 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxglidew.h,v 1.2 2000/11/13 23:31:32 dawes Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -84,6 +84,42 @@ typedef void (*grStencilOp_t) (GrStencilOp_t stencil_fail,
 typedef void (*grBufferClearExt_t) (GrColor_t color, GrAlpha_t alpha,
                                     FxU32 depth, GrStencil_t stencil);
 typedef void (*grColorMaskExt_t) (FxBool r, FxBool g, FxBool b, FxBool a);
+
+/*
+ * "COMBINE" extension for Napalm
+ */
+typedef void (*grColorCombineExt_t)(GrCCUColor_t a, GrCombineMode_t a_mode,
+                                    GrCCUColor_t b, GrCombineMode_t b_mode,
+                                    GrCCUColor_t c, FxBool c_invert,
+                                    GrCCUColor_t d, FxBool d_invert,
+                                    FxU32 shift, FxBool invert);
+typedef void (*grTexColorCombineExt_t)(FxU32 tmu,
+                                       GrTCCUColor_t a, GrCombineMode_t a_mode,
+                                       GrCCUColor_t b, GrCombineMode_t b_mode,
+                                       GrCCUColor_t c, FxBool c_invert,
+                                       GrCCUColor_t d, FxBool d_invert,
+                                       FxU32 shift, FxBool invert);
+typedef void (*grAlphaCombineExt_t)(GrCCUColor_t a, GrCombineMode_t a_mode,
+                                    GrCCUColor_t b, GrCombineMode_t b_mode,
+                                    GrCCUColor_t c, FxBool c_invert,
+                                    GrCCUColor_t d, FxBool d_invert,
+                                    FxU32 shift, FxBool invert);
+typedef void (*grTexAlphaCombineExt_t)(FxU32 tmu,
+                                       GrTACUColor_t a, GrCombineMode_t a_mode,
+                                       GrTACUColor_t b, GrCombineMode_t b_mode,
+                                       GrTACUColor_t c, FxBool c_invert,
+                                       GrTACUColor_t d, FxBool d_invert,
+                                       FxU32 shift, FxBool invert);
+typedef void (*grAlphaBlendFunctionExt_t)(GrAlphaBlendFnc_t rgb_sf,
+                                          GrAlphaBlendFnc_t rgb_df,
+                                          GrAlphaBlendOp_t rgb_op,
+                                          GrAlphaBlendFnc_t alpha_sf,
+                                          GrAlphaBlendFnc_t alpha_df,
+                                          GrAlphaBlendOp_t alpha_op);
+typedef void (*grConstantColorValueExt_t)(FxU32 tmu, GrColor_t value);
+
+
+
 /*
  * These are functions to compress and decompress images.
  * The types of the first and second parameters are not exactly
@@ -112,49 +148,27 @@ extern grColorMaskExt_t grColorMaskExtPtr;
 extern txImgQuantize_t  txImgQuantizePtr;
 extern txImgDeQuantize_t txImgDequantizeFXT1Ptr;
 extern txErrorSetCallback_t txErrorSetCallbackPtr;
+extern grColorCombineExt_t grColorCombineExtPtr;
+extern grTexColorCombineExt_t grTexColorCombineExtPtr;
+extern grAlphaCombineExt_t grAlphaCombineExtPtr;
+extern grTexAlphaCombineExt_t grTexAlphaCombineExtPtr;
+extern grAlphaBlendFunctionExt_t grAlphaBlendFunctionExtPtr;
+extern grConstantColorValueExt_t grConstantColorValueExtPtr;
 
-FX_ENTRY void FX_CALL grEnable(GrEnableMode_t mode);
 
 /* 
  * General context: 
  */
-#if !defined(FX_GLIDE3)
-typedef FxU32 FX_GrContext_t;   /* Not used in Glide2 */
-#else
 typedef GrContext_t FX_GrContext_t;
-#endif
 
-/* 
- * Glide3 emulation on Glide2: 
- */
-#if !defined(FX_GLIDE3)
- /* Constanst for FX_grGetInteger( ) */
-#define FX_FOG_TABLE_ENTRIES            0x0004 /* The number of entries in the hardware fog table. */
-#define FX_GLIDE_STATE_SIZE             0x0006 /* Size of buffer, in bytes, needed to save Glide state. */
-#define FX_LFB_PIXEL_PIPE               0x0009 /* 1 if LFB writes can go through the 3D pixel pipe. */
-#define FX_PENDING_BUFFERSWAPS          0x0014 /* The number of buffer swaps pending. */
-#define FX_TEXTURE_ALIGN		0x0024 /* The required alignment for textures */
-#else
 #define FX_FOG_TABLE_ENTRIES            GR_FOG_TABLE_ENTRIES
 #define FX_GLIDE_STATE_SIZE             GR_GLIDE_STATE_SIZE
 #define FX_LFB_PIXEL_PIPE               GR_LFB_PIXEL_PIPE
 #define FX_PENDING_BUFFERSWAPS          GR_PENDING_BUFFERSWAPS
 #define FX_TEXTURE_ALIGN		GR_TEXTURE_ALIGN
-#endif
+
 #define FX_ZDEPTH_MAX 0x100
 
-/*
- * General warper functions for Glide2/Glide3:
- */
-extern FxI32 FX_grGetInteger_NoLock(FxU32 pname);
-extern FxI32 FX_grGetInteger(fxMesaContext fxMesa, FxU32 pname);
-
-extern const char *FX_grGetString(fxMesaContext fxMesa, FxU32 pname);
-
-/*
- * Glide2 emulation on Glide3:
- */
-#if defined(FX_GLIDE3)
 
 #define GR_ASPECT_1x1 GR_ASPECT_LOG2_1x1
 #define GR_ASPECT_2x1 GR_ASPECT_LOG2_2x1
@@ -176,66 +190,6 @@ extern const char *FX_grGetString(fxMesaContext fxMesa, FxU32 pname);
 
 #define GR_FOG_WITH_TABLE GR_FOG_WITH_TABLE_ON_Q
 
-typedef int GrSstType;
-
-#define MAX_NUM_SST            4
-
-#define GR_SSTTYPE_VOODOO    0
-#define GR_SSTTYPE_SST96     1
-#define GR_SSTTYPE_AT3D      2
-#define GR_SSTTYPE_Voodoo2   3
-
-typedef struct GrTMUConfig_St
-{
-    int tmuRev;                 /* Rev of Texelfx chip */
-    int tmuRam;                 /* 1, 2, or 4 MB */
-}
-GrTMUConfig_t;
-
-typedef struct GrVoodooConfig_St
-{
-    int fbRam;                  /* 1, 2, or 4 MB */
-    int fbiRev;                 /* Rev of Pixelfx chip */
-    int nTexelfx;               /* How many texelFX chips are there? */
-    FxBool sliDetect;           /* Is it a scan-line interleaved board? */
-    GrTMUConfig_t tmuConfig[GLIDE_NUM_TMU]; /* Configuration of the Texelfx chips */
-}
-GrVoodooConfig_t;
-
-typedef struct GrSst96Config_St
-{
-    int fbRam;                  /* How much? */
-    int nTexelfx;
-    GrTMUConfig_t tmuConfig;
-}
-GrSst96Config_t;
-
-typedef GrVoodooConfig_t GrVoodoo2Config_t;
-
-typedef struct GrAT3DConfig_St
-{
-    int rev;
-}
-GrAT3DConfig_t;
-
-typedef struct
-{
-    int num_sst;                /* # of HW units in the system */
-    struct
-    {
-        GrSstType type;         /* Which hardware is it? */
-        union SstBoard_u
-        {
-            GrVoodooConfig_t VoodooConfig;
-            GrSst96Config_t SST96Config;
-            GrAT3DConfig_t AT3DConfig;
-            GrVoodoo2Config_t Voodoo2Config;
-        }
-        sstBoard;
-    }
-    SSTs[MAX_NUM_SST];          /* configuration for each board */
-}
-GrHwConfiguration;
 
 typedef FxU32 GrHint_t;
 #define GR_HINTTYPE_MIN                 0
@@ -260,26 +214,52 @@ typedef FxU32 GrSTWHint_t;
 */
 typedef struct
 {
-    float sow;                  /* s texture ordinate (s over w) */
-    float tow;                  /* t texture ordinate (t over w) */
-    float oow;                  /* 1/w (used mipmapping - really 0xfff/w) */
+    GLfloat sow;                  /* s texture ordinate (s over w) */
+    GLfloat tow;                  /* t texture ordinate (t over w) */
+    GLfloat oow;                  /* 1/w (used mipmapping - really 0xfff/w) */
 }
 GrTmuVertex;
 
 
 #if FX_USE_PARGB
 
+/* standard vertex, packed argb, double texture, 12 dwords */
 typedef struct
 {
-    float x, y;                 /* X and Y in screen space */
-    float ooz;                  /* 65535/Z (used for Z-buffering) */
-    float oow;                  /* 1/W (used for W-buffering, texturing) */
-    FxU32 argb;                 /* R, G, B, A [0..255.0] */
+    GLfloat x, y;                 /* X and Y in screen space */
+    GLfloat ooz;                  /* 65535/Z (used for Z-buffering) */
+    GLfloat oow;                  /* 1/W (used for W-buffering, texturing) */
+    FxU32 argb;                   /* R, G, B, A [0..255.0] */
     GrTmuVertex tmuvtx[GLIDE_NUM_TMU];
-    float z;                    /* Z is ignored */
+    GLfloat z;                    /* Z is ignored */
 }
-GrVertex;
+GrVertex_12;
 
+/* optimised vertex, packed argb, single texture, 8 dwords = 1 cacheline */
+typedef struct
+{
+    GLfloat x, y;                 /* X and Y in screen space */
+    GLfloat ooz;                  /* 65535/Z (used for Z-buffering) */
+    GLfloat oow;                  /* 1/W (used for W-buffering, texturing) */
+    FxU32 argb;                   /* R, G, B, A [0..255.0] */
+    GrTmuVertex tmuvtx;           /* only 1 TMU used to keep vertex size down */
+}
+GrVertex_8;
+
+/* vertex structure, padded to 16 dwords */
+typedef union
+{
+    GrVertex_8    v_8;
+    GrVertex_12   v_12;
+    GLfloat       f[16];
+    GLuint        u[16];
+}
+GrVertex_t;
+
+/* keep the compiler happy for now */
+typedef GrVertex_12 GrVertex;
+
+/* following offsets work for both vertex layouts */
 #define GR_VERTEX_X_OFFSET              0
 #define GR_VERTEX_Y_OFFSET              1
 #define GR_VERTEX_OOZ_OFFSET            2
@@ -293,21 +273,26 @@ GrVertex;
 #define GR_VERTEX_OOW_TMU1_OFFSET       10
 #define GR_VERTEX_Z_OFFSET		11
 
-#define GET_PARGB(v)	((FxU32*)(v))[GR_VERTEX_PARGB_OFFSET]
-/* GET_PA: returns the alpha component */
 #if GLIDE_ENDIAN == GLIDE_ENDIAN_BIG
-#define GET_PA(v)		((FxU8*)(v))[GR_VERTEX_PARGB_OFFSET*4]
-#else
 #define GET_PA(v)		((FxU8*)(v))[GR_VERTEX_PARGB_OFFSET*4+3]
+#define GET_PR(v)		((FxU8*)(v))[GR_VERTEX_PARGB_OFFSET*4+2]
+#define GET_PG(v)		((FxU8*)(v))[GR_VERTEX_PARGB_OFFSET*4+1]
+#define GET_PB(v)		((FxU8*)(v))[GR_VERTEX_PARGB_OFFSET*4+0]
+#else
+#define GET_PA(v)		((FxU8*)(v))[GR_VERTEX_PARGB_OFFSET*4+0]
+#define GET_PR(v)		((FxU8*)(v))[GR_VERTEX_PARGB_OFFSET*4+1]
+#define GET_PG(v)		((FxU8*)(v))[GR_VERTEX_PARGB_OFFSET*4+2]
+#define GET_PB(v)		((FxU8*)(v))[GR_VERTEX_PARGB_OFFSET*4+3]
 #endif
-#define MESACOLOR2PARGB(c)	(c[ACOMP] << 24 | c[GCOMP] << 16 | c[GCOMP] << 8 | c[BCOMP])
-#define PACK_4F_ARGB(dest,a,r,g,b) { 								\
-    					     const GLuint cr = (int)r;				\
-    					     const GLuint cg = (int)g;				\
-    					     const GLuint ca = (int)a;				\
-    					     const GLuint cb = (int)b;				\
-    					     dest = ca << 24 | cr << 16 | cg << 8 | cb;		\
-    				        }
+
+#define GET_PARGB(v)	        ((FxU32*)(v))[GR_VERTEX_PARGB_OFFSET]
+#define PACK_4F_ARGB(dest, a, r, g, b) { 					\
+    			        const GLuint cr = (int)r;		        \
+    				const GLuint cg = (int)g;		        \
+    				const GLuint ca = (int)a;		        \
+    				const GLuint cb = (int)b;		        \
+    				dest = ca << 24 | cr << 16 | cg << 8 | cb;	\
+                                }
 
 #else /* FX_USE_PARGB */
 
@@ -339,12 +324,14 @@ GrVertex;
 #define GR_VERTEX_OOW_TMU1_OFFSET       14
 #endif /* FX_USE_PARGB */
 
-#endif
 
-/*
- * Glide2 functions for Glide3
- */
-#if defined(FX_GLIDE3)
+
+extern FxI32 FX_grGetInteger_NoLock(FxU32 pname);
+
+extern FxI32 FX_grGetInteger(fxMesaContext fxMesa, FxU32 pname);
+
+extern const char *FX_grGetString(fxMesaContext fxMesa, FxU32 pname);
+
 
 #define FX_grTexDownloadTable(fxMesa, TMU, type, data)	\
   do { 							\
@@ -356,34 +343,13 @@ GrVertex;
 #define FX_grTexDownloadTable_NoLock(TMU, type, data) \
   grTexDownloadTable(type, data)
 
-#else
-#define FX_grTexDownloadTable(TMU,type,data) 	\
-  do {						\
-    BEGIN_BOARD_LOCK();				\
-    grTexDownloadTable(TMU,type,data);		\
-    END_BOARD_LOCK();				\
-  } while (0);
-#define FX_grTexDownloadTable_NoLock grTexDownloadTable
-#endif
 
-/*
- * Flush
- */
-#if defined(FX_GLIDE3)
 #define FX_grFlush(fxMesa)	\
   do {				\
     BEGIN_BOARD_LOCK(fxMesa);	\
     grFlush();			\
     END_BOARD_LOCK(fxMesa);	\
   } while (0)
-#else
-#define FX_grFlush(fxMesa)	\
-  do {				\
-    BEGIN_BOARD_LOCK(fxMesa);	\
-    grSstIdle();		\
-    END_BOARD_LOCK(fxMesa);	\
-  } while (0)
-#endif
 
 #define FX_grFinish(fxMesa)	\
   do {				\
@@ -392,10 +358,6 @@ GrVertex;
     END_BOARD_LOCK(fxMesa);	\
   } while (0)
 
-/*
- * Write region: ToDo possible exploit the PixelPipe parameter.
- */
-#if defined(FX_GLIDE3)
 
 #define FX_grLfbWriteRegion(fxMesa,dst_buffer,dst_x,dst_y,src_format,src_width,src_height,src_stride,src_data)		\
   do {				\
@@ -404,19 +366,7 @@ GrVertex;
     END_BOARD_LOCK(fxMesa);		\
   } while(0)
 
-#else
 
-#define FX_grLfbWriteRegion(dst_buffer,dst_x,dst_y,src_format,src_width,src_height,src_stride,src_data)		\
-  do {				\
-    BEGIN_BOARD_LOCK();		\
-    grLfbWriteRegion(dst_buffer,dst_x,dst_y,src_format,src_width,src_height,src_stride,src_data);		\
-    END_BOARD_LOCK();		\
-  } while (0)
-#endif
-
-/*
- * Read region
- */
 #define FX_grLfbReadRegion(fxMesa,src_buffer,src_x,src_y,src_width,src_height,dst_stride,dst_data)			\
   do {				\
     BEGIN_BOARD_LOCK(fxMesa);		\
@@ -424,9 +374,7 @@ GrVertex;
     END_BOARD_LOCK(fxMesa);		\
   } while (0);
 
-/*
- * Draw triangle
- */
+
 #define FX_grDrawTriangle_NoLock(a,b,c) grDrawTriangle(a,b,c)
 #define FX_grDrawTriangle(fxMesa, a,b,c)	\
   do {						\
@@ -438,165 +386,34 @@ GrVertex;
 /*
  * For Lod/LodLog2 conversion.
  */
-#if defined(FX_GLIDE3)
 #define FX_largeLodLog2(info)		(info).largeLodLog2
-#else
-#define FX_largeLodLog2(info)		(info).largeLod
-#endif
 
-#if defined(FX_GLIDE3)
-#define FX_aspectRatioLog2(info)		(info).aspectRatioLog2
-#else
-#define FX_aspectRatioLog2(info)		(info).aspectRatio
-#endif
-
-#if defined(FX_GLIDE3)
 #define FX_smallLodLog2(info)		(info).smallLodLog2
-#else
-#define FX_smallLodLog2(info)		(info).smallLod
-#endif
 
-#if defined(FX_GLIDE3)
+#define FX_aspectRatioLog2(info)	(info).aspectRatioLog2
+
 #define FX_lodToValue(val)		((int)(GR_LOD_256-val))
-#else
-#define FX_lodToValue(val)		((int)(val))
-#endif
 
-#if defined(FX_GLIDE3)
 #define FX_largeLodValue(info)		((int)(GR_LOD_256-(info).largeLodLog2))
-#else
-#define FX_largeLodValue(info)		((int)(info).largeLod)
-#endif
 #define FX_largeLodValue_NoLock FX_largeLodValue
 
-#if defined(FX_GLIDE3)
 #define FX_smallLodValue(info)		((int)(GR_LOD_256-(info).smallLodLog2))
-#else
-#define FX_smallLodValue(info)		((int)(info).smallLod)
-#endif
 #define FX_smallLodValue_NoLock FX_smallLodValue
 
-#if defined(FX_GLIDE3)
 #define FX_valueToLod(val)		((GrLOD_t)(GR_LOD_256-val))
-#else
-#define FX_valueToLod(val)		((GrLOD_t)(val))
-#endif
 
 
 
-/*
- * Version string.
- */
-#if defined(FX_GLIDE3)
-extern void FX_grGlideGetVersion(fxMesaContext fxMesa, char *buf);
-#else
-#define FX_grGlideGetVersion(b)	\
-	do {				\
-	  BEGIN_BOARD_LOCK();		\
-	  grGlideGetVersion(b);		\
-	  END_BOARD_LOCK();		\
-	} while (0)
-#endif
-
-/*
- * Performance statistics
- */
-#if defined(FX_GLIDE3)
-extern void FX_grSstPerfStats(GrSstPerfStats_t * st);
-#else
-#define FX_grSstPerfStats(s)	\
-	do {				\
-	  BEGIN_BOARD_LOCK();		\
-	  grSstPerfStats(s);		\
-	  END_BOARD_LOCK();		\
-	} while (0)
-#endif
-
-/*
- * Hardware Query
- */
-extern int FX_grSstQueryHardware(fxMesaContext fxMesa,
-                                 GrHwConfiguration * config);
-
-/*
- * GrHints
- */
-#if defined(FX_GLIDE3)
 extern void FX_grHints_NoLock(GrHint_t hintType, FxU32 hintMask);
 extern void FX_grHints(fxMesaContext fxMesa, GrHint_t hintType, FxU32 hintMask);
-#else
-#define FX_grHints(t,m)		\
-	do {				\
-	  BEGIN_BOARD_LOCK();		\
-	  grHints(t, m);		\
-	  END_BOARD_LOCK();		\
-	} while(0)
-#define FX_grHints_NoLock grHints
-#endif
-/*
- * Antialiashed line+point drawing.
- */
-#if defined(FX_GLIDE3)
+
+
 extern void FX_grAADrawLine(fxMesaContext fxMesa, GrVertex * a, GrVertex * b);
-#else
-#define FX_grAADrawLine(a,b)	\
-	do {				\
-	  BEGIN_CLIP_LOOP();		\
-	  grAADrawLine(a,b);		\
-	  END_CLIP_LOOP();		\
-	} while (0)
-#endif
 
-#if defined(FX_GLIDE3)
 extern void FX_grAADrawPoint(fxMesaContext fxMesa, GrVertex * a);
-#else
-#define FX_grAADrawPoint(a)	\
-	do {				\
-	  BEGIN_CLIP_LOOP();		\
-	  grAADrawPoint(a);		\
-	  END_CLIP_LOOP();		\
-	} while (0)
-#endif
 
-/*
- * Needed for Glide3 only, to set up Glide2 compatible vertex layout.
- */
-#if defined(FX_GLIDE3)
+
 extern void FX_setupGrVertexLayout(fxMesaContext fxMesa);
-#else
-#define FX_setupGrVertexLayout()		do {} while (0)
-#endif
-
-
-/*
- * grGammaCorrectionValue
- */
-#if defined(FX_GLIDE3)
-extern void FX_grGammaCorrectionValue(float val);
-#else
-#define FX_grGammaCorrectionValue(v)	\
-      do {					\
-        BEGIN_BOARD_LOCK();			\
-	grGammaCorrectionValue(v)		\
-        END_BOARD_LOCK();			\
-      } while (0)
-#endif
-
-#if defined(FX_GLIDE3)
-#define FX_grSstWinClose(fxMesa, w)	\
-  do { 					\
-    BEGIN_BOARD_LOCK(fxMesa);		\
-    grSstWinClose(w);			\
-    END_BOARD_LOCK(fxMesa);		\
-  } while (0)
-#else
-#define FX_grSstWinClose(w)	\
-  do { 				\
-    BEGIN_BOARD_LOCK();		\
-    grSstWinClose();		\
-    END_BOARD_LOCK();		\
-  } while (0)
-#endif
 
 
 extern FX_GrContext_t FX_grSstWinOpen(fxMesaContext fxMesa,
@@ -624,17 +441,8 @@ extern FX_GrContext_t FX_grSstWinOpen(fxMesaContext fxMesa,
     END_CLIP_LOOP(fxMesa);		\
   } while (0)
 
-#if defined(FX_GLIDE3)
 extern void FX_grDrawPolygonVertexList(fxMesaContext fxMesa,
                                        int n, GrVertex * v);
-#else
-#define FX_grDrawPolygonVertexList(n, v)	\
-  do {						\
-    BEGIN_CLIP_LOOP();				\
-    grDrawPolygonVertexList(n, v);		\
-    END_CLIP_LOOP();				\
-  } while (0)
-#endif
 
 #define FX_grDitherMode(fxMesa, m)	\
   do {					\
@@ -650,12 +458,16 @@ extern void FX_grDrawPolygonVertexList(fxMesaContext fxMesa,
     END_BOARD_LOCK(fxMesa);		\
   } while (0)
 
+#define FX_grRenderBuffer_NoLock(b)  grRenderBuffer(b)
+
 #define FX_grBufferClear(fxMesa, c, a, d)	\
   do {						\
     BEGIN_CLIP_LOOP(fxMesa);			\
     grBufferClear(c, a, d);			\
     END_CLIP_LOOP(fxMesa);			\
   } while (0)
+
+#define FX_grBufferClearExt_NoLock(c, a, d, s)  (*grBufferClearExtPtr)(c, a, d, s)
 
 #define FX_grBufferClearExt(fxMesa, c, a, d, s)	\
   do {						\
@@ -664,15 +476,17 @@ extern void FX_grDrawPolygonVertexList(fxMesaContext fxMesa,
     END_CLIP_LOOP(fxMesa);			\
   } while (0)
 
-/*
- * Enable/Disable
- */
+#define FX_grBufferClear_NoLock(c, a, d)  grBufferClear(c, a, d)
+
+
 #define FX_grEnable(fxMesa, m)           \
   do {				         \
     BEGIN_BOARD_LOCK(fxMesa);	         \
     grEnable(m);                         \
     END_BOARD_LOCK(fxMesa);	         \
   } while (0)
+
+#define FX_grEnable_NoLock(m) grEnable(m)
 
 #define FX_grDisable(fxMesa, m)          \
   do {				         \
@@ -681,43 +495,56 @@ extern void FX_grDrawPolygonVertexList(fxMesaContext fxMesa,
     END_BOARD_LOCK(fxMesa);	         \
   } while (0)
 
-/*
- * Stencil operations.
- */
-#define FX_grStencilFunc(fxMesa, fnc, ref, mask) \
-  do {				         \
-    BEGIN_BOARD_LOCK(fxMesa);		         \
-    (*grStencilFuncPtr)((fnc), (ref), (mask)); \
-    END_BOARD_LOCK(fxMesa);		         \
-  } while (0)
-
-#define FX_grStencilMask(fxMesa, write_mask)     \
-  do {				         \
-    BEGIN_BOARD_LOCK(fxMesa);		         \
-    (*grStencilMaskPtr)(write_mask);           \
-    END_BOARD_LOCK(fxMesa);		         \
-  } while (0)
+#define FX_grDisable_NoLock(m) grDisable(m)
 
 
-#define FX_grStencilOp(fxMesa, stencil_fail, depth_fail, depth_pass) \
-  do {				                             \
-    BEGIN_BOARD_LOCK(fxMesa);		                             \
-    (*grStencilOpPtr)((stencil_fail), (depth_fail), (depth_pass)); \
-    END_BOARD_LOCK(fxMesa);		                             \
+#define FX_grStencilFunc(fxMesa, fnc, ref, mask)	\
+  do {							\
+    BEGIN_BOARD_LOCK(fxMesa);				\
+    (*grStencilFuncPtr)((fnc), (ref), (mask));		\
+    END_BOARD_LOCK(fxMesa);				\
   } while (0)
+
+#define FX_grStencilFunc_NoLock(f, r, m)  (*grStencilFuncPtr)(f, r, m)
+
+#define FX_grStencilMask(fxMesa, write_mask)	\
+  do {						\
+    BEGIN_BOARD_LOCK(fxMesa);			\
+    (*grStencilMaskPtr)(write_mask);		\
+    END_BOARD_LOCK(fxMesa);			\
+  } while (0)
+
+#define FX_grStencilMask_NoLock(m) (*grStencilMaskPtr)(m)
+
+#define FX_grStencilOp(fxMesa, stencil_fail, depth_fail, depth_pass)	\
+  do {									\
+    BEGIN_BOARD_LOCK(fxMesa);						\
+    (*grStencilOpPtr)((stencil_fail), (depth_fail), (depth_pass));	\
+    END_BOARD_LOCK(fxMesa);						\
+  } while (0)
+
+#define FX_grStencilOp_NoLock(sf, df, dp)  (*grStencilOpPtr)(sf, df, dp)
 
 #define FX_grDepthMask(fxMesa, m)	\
-  do {				\
+  do {					\
     BEGIN_BOARD_LOCK(fxMesa);		\
-    grDepthMask(m);		\
+    grDepthMask(m);			\
     END_BOARD_LOCK(fxMesa);		\
   } while (0)
+
+#define FX_grDepthMask_NoLock(m)  grDepthMask(m)
 
 
 extern void FX_grColorMask(GLcontext *ctx, GLboolean r, GLboolean g,
                            GLboolean b, GLboolean a);
 
+extern void FX_grColorMask_NoLock(GLcontext *ctx, GLboolean r, GLboolean g,
+                                  GLboolean b, GLboolean a);
+
 extern void FX_grColorMaskv(GLcontext *ctx, const GLboolean rgba[4]);
+
+extern void FX_grColorMaskv_NoLock(GLcontext *ctx, const GLboolean rgba[4]);
+
 
 extern FxBool FX_grLfbLock(fxMesaContext fxMesa,
                            GrLock_t type, GrBuffer_t buffer,
@@ -779,18 +606,18 @@ extern FxBool FX_grLfbLock(fxMesaContext fxMesa,
   } while (0)
 
 #define FX_grClipWindow(fxMesa, minx, miny, maxx, maxy)	\
-  do {						\
-    BEGIN_BOARD_LOCK(fxMesa);			\
-    grClipWindow(minx, miny, maxx, maxy);	\
-    END_BOARD_LOCK(fxMesa);			\
+  do {							\
+    BEGIN_BOARD_LOCK(fxMesa);				\
+    grClipWindow(minx, miny, maxx, maxy);		\
+    END_BOARD_LOCK(fxMesa);				\
   } while (0)
 
 #define FX_grClipWindow_NoLock grClipWindow
 
 #define FX_grColorCombine(fxMesa, func, fact, loc, oth, inv)	\
-  do {							\
+  do {								\
     BEGIN_BOARD_LOCK(fxMesa);					\
-    grColorCombine(func, fact, loc, oth, inv);		\
+    grColorCombine(func, fact, loc, oth, inv);			\
     END_BOARD_LOCK(fxMesa);					\
   } while (0)
 
@@ -804,17 +631,17 @@ extern FxBool FX_grLfbLock(fxMesaContext fxMesa,
   } while (0)
 
 #define FX_grDepthBiasLevel(fxMesa, lev)	\
-  do {					\
-    BEGIN_BOARD_LOCK(fxMesa);		\
-    grDepthBiasLevel(lev);		\
-    END_BOARD_LOCK(fxMesa);		\
+  do {						\
+    BEGIN_BOARD_LOCK(fxMesa);			\
+    grDepthBiasLevel(lev);			\
+    END_BOARD_LOCK(fxMesa);			\
   } while (0)
 
 #define FX_grDepthBufferFunction(fxMesa, func)	\
-  do {					\
-    BEGIN_BOARD_LOCK(fxMesa);		\
-    grDepthBufferFunction(func);	\
-    END_BOARD_LOCK(fxMesa);		\
+  do {						\
+    BEGIN_BOARD_LOCK(fxMesa);			\
+    grDepthBufferFunction(func);		\
+    END_BOARD_LOCK(fxMesa);			\
   } while (0)
 
 #define FX_grFogColorValue(fxMesa, c)	\
@@ -839,10 +666,10 @@ extern FxBool FX_grLfbLock(fxMesaContext fxMesa,
   } while (0)
 
 #define FX_grTexClampMode(fxMesa, t, sc, tc)	\
-  do {					\
-    BEGIN_BOARD_LOCK(fxMesa);		\
-    grTexClampMode(t, sc, tc);		\
-    END_BOARD_LOCK(fxMesa);		\
+  do {						\
+    BEGIN_BOARD_LOCK(fxMesa);			\
+    grTexClampMode(t, sc, tc);			\
+    END_BOARD_LOCK(fxMesa);			\
   } while (0)
 
 #define FX_grTexClampMode_NoLock grTexClampMode
@@ -873,10 +700,10 @@ extern FxBool FX_grLfbLock(fxMesaContext fxMesa,
   } while (0)
 
 #define FX_grTexFilterMode(fxMesa, t, minf, magf)	\
-  do {						\
-    BEGIN_BOARD_LOCK(fxMesa);			\
-    grTexFilterMode(t, minf, magf);		\
-    END_BOARD_LOCK(fxMesa);			\
+  do {							\
+    BEGIN_BOARD_LOCK(fxMesa);				\
+    grTexFilterMode(t, minf, magf);			\
+    END_BOARD_LOCK(fxMesa);				\
   } while (0)
 
 #define FX_grTexFilterMode_NoLock grTexFilterMode
@@ -940,23 +767,23 @@ extern FxU32 FX_grTexTextureMemRequired(fxMesaContext fxMesa,
 #define FX_grGlideSetState_NoLock(s) grGlideSetState(s);
 
 #define FX_grDepthBufferMode(fxMesa, m)	\
-  do {				\
-    BEGIN_BOARD_LOCK(fxMesa);	\
-    grDepthBufferMode(m);	\
-    END_BOARD_LOCK(fxMesa);	\
-  } while (0)
-
-#define FX_grLfbWriteColorFormat(fxMesa, f)	\
   do {					\
     BEGIN_BOARD_LOCK(fxMesa);		\
-    grLfbWriteColorFormat(f);		\
+    grDepthBufferMode(m);		\
     END_BOARD_LOCK(fxMesa);		\
   } while (0)
 
+#define FX_grLfbWriteColorFormat(fxMesa, f)	\
+  do {						\
+    BEGIN_BOARD_LOCK(fxMesa);			\
+    grLfbWriteColorFormat(f);			\
+    END_BOARD_LOCK(fxMesa);			\
+  } while (0)
+
 #define FX_grDrawVertexArray(fxMesa, m, c, p)	\
-  do {					\
+  do {						\
     BEGIN_CLIP_LOOP(fxMesa);			\
-    grDrawVertexArray(m, c, p);		\
+    grDrawVertexArray(m, c, p);			\
     END_CLIP_LOOP(fxMesa);			\
   } while (0)
 

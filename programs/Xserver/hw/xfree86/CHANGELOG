@@ -1,4 +1,5 @@
 XFree86 4.0.1Z (8 December 2000)
+1144. Merge tdfx 3D driver code (VA Linux).
 1143. Add support PPC support on Rage 128 and disable Int10 for PPC on
       Rage 128 (until the bug in PPC Int10 support is fixed) (Kevin Martin).
 1142. Install an alternative fonts.alias file that references the UCS-encoded
@@ -11985,4 +11986,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1458 2000/12/08 16:37:16 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1459 2000/12/08 19:15:29 martin Exp $

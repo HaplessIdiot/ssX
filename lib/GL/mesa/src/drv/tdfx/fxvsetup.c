@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxvsetup.c,v 1.1 2000/09/24 13:51:20 alanh Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -462,7 +462,10 @@ fxDDPartialRasterSetup(struct vertex_buffer *VB)
         setupfuncs[ind] (VB, VB->Start, VB->Count);
 }
 
-/* Almost certainly never called.
+
+/*
+ * This is called by the fastpath code if we need to resize a vertex buffer.
+ * (Almost certainly never called.)
  */
 void
 fxDDResizeVB(struct vertex_buffer *VB, GLuint size)
@@ -475,26 +478,23 @@ fxDDResizeVB(struct vertex_buffer *VB, GLuint size)
     ALIGN_FREE(VB->ClipMask);
     VB->ClipMask = (GLubyte *) ALIGN_MALLOC(sizeof(GLubyte) * fvb->size, 4);
 
-    FREE(fvb->vert_store);
-    fvb->vert_store = MALLOC(sizeof(fxVertex) * fvb->size + 31);
-    if (!fvb->vert_store || !VB->ClipMask) {
-        fprintf(stderr, "fx Driver: out of memory !\n");
-        return;
-    }
-    fvb->verts = (fxVertex *) (((unsigned long) fvb->vert_store + 31) & ~31);
+    ALIGN_FREE(fvb->verts);
+    fvb->verts = (fxVertex *) ALIGN_MALLOC(sizeof(fxVertex) * fvb->size, 32);
 
     gl_vector1ui_free(&fvb->clipped_elements);
     gl_vector1ui_alloc(&fvb->clipped_elements, VEC_WRITABLE, fvb->size, 32);
 
-    if (!fvb->clipped_elements.start)
-        goto memerror;
-
-    return;
-  memerror:
-    fprintf(stderr, "fx Driver: out of memory !\n");
+    if (!fvb->verts || !VB->ClipMask || !fvb->clipped_elements.start) {
+        gl_problem(NULL, "tdfx driver out of memory in fxDDResizeVB");
+        return;
+    }
 }
 
 
+/*
+ * This is called by Mesa when it creates a new vertex buffer.
+ * Here, we allocate a tfxMesaVertexBuffer and hook it to VB->driver_data.
+ */
 void
 fxDDRegisterVB(struct vertex_buffer *VB)
 {
@@ -508,9 +508,10 @@ fxDDRegisterVB(struct vertex_buffer *VB)
      */
     if (VB->Type == VB_CVA_PRECALC) {
         fvb->size = VB->Size * 5;
-        fvb->vert_store = MALLOC(sizeof(fxVertex) * fvb->size + 31);
-        if (!fvb->vert_store)
+        fvb->verts = (fxVertex *) ALIGN_MALLOC(sizeof(fxVertex)*fvb->size, 32);
+        if (!fvb->verts)
             goto memerror;
+
 #if defined(FX_GLIDE3)
         fvb->triangle_b = MALLOC(sizeof(GrVertex *) * 4 * fvb->size + 31);
         if (!fvb->triangle_b)
@@ -519,23 +520,21 @@ fxDDRegisterVB(struct vertex_buffer *VB)
         if (!fvb->strips_b)
             goto memerror;
 #endif
-        fvb->verts =
-            (fxVertex *) (((unsigned long) fvb->vert_store + 31) & ~31);
-        gl_vector1ui_alloc(&fvb->clipped_elements, VEC_WRITABLE, fvb->size,
-                           32);
+        gl_vector1ui_alloc(&fvb->clipped_elements, VEC_WRITABLE, fvb->size,32);
         if (!fvb->clipped_elements.start)
             goto memerror;
 
         ALIGN_FREE(VB->ClipMask);
-        VB->ClipMask = (GLubyte *) ALIGN_MALLOC(sizeof(GLubyte) * fvb->size, 4);
+        VB->ClipMask = (GLubyte *) ALIGN_MALLOC(sizeof(GLubyte)*fvb->size, 4);
         if (!VB->ClipMask)
             goto memerror;
-
     }
     else {
-        fvb->vert_store = MALLOC(sizeof(fxVertex) * (VB->Size + 12) + 31);
-        if (!fvb->vert_store)
+        fvb->size = VB->Size + 12;
+        fvb->verts = (fxVertex *) ALIGN_MALLOC(sizeof(fxVertex)*fvb->size, 32);
+        if (!fvb->verts)
             goto memerror;
+
 #if defined(FX_GLIDE3)
         fvb->triangle_b = MALLOC(sizeof(GrVertex *) * 4 * fvb->size + 31);
         if (!fvb->triangle_b)
@@ -544,35 +543,36 @@ fxDDRegisterVB(struct vertex_buffer *VB)
         if (!fvb->strips_b)
             goto memerror;
 #endif
-        fvb->verts =
-            (fxVertex *) (((unsigned long) fvb->vert_store + 31) & ~31);
-        fvb->size = VB->Size + 12;
     }
-
 
     VB->driver_data = fvb;
     return;
+
   memerror:
     fprintf(stderr, "fx Driver: out of memory !\n");
 }
 
 
+/*
+ * This is called by Mesa when it's about to deallocate a vertex buffer.
+ * Here we free the tfxMesaVertexBuffer we attached to VB->driver_data.
+ */
 void
 fxDDUnregisterVB(struct vertex_buffer *VB)
 {
     struct tfxMesaVertexBuffer *fvb = FX_DRIVER_DATA(VB);
 
     if (fvb) {
-        if (fvb->vert_store)
-            FREE(fvb->vert_store);
+        if (fvb->verts)
+            ALIGN_FREE(fvb->verts);
         gl_vector1ui_free(&fvb->clipped_elements);
-        FREE(fvb);
 #if defined(FX_GLIDE3)
         if (fvb->strips_b)
             FREE(fvb->strips_b);
         if (fvb->triangle_b)
             FREE(fvb->triangle_b);
 #endif
-        VB->driver_data = 0;
+        FREE(fvb);
+        VB->driver_data = NULL;
     }
 }
