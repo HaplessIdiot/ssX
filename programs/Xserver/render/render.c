@@ -850,7 +850,34 @@ ProcRenderAddGlyphsFromPicture (ClientPtr client)
 static int
 ProcRenderFreeGlyphs (ClientPtr client)
 {
-    return BadImplementation;
+    REQUEST(xRenderFreeGlyphsReq);
+    GlyphSetPtr     glyphSet;
+    int		    nglyph;
+    CARD32	    *gids;
+    CARD32	    glyph;
+
+    REQUEST_AT_LEAST_SIZE(xRenderFreeGlyphsReq);
+    glyphSet = (GlyphSetPtr) SecurityLookupIDByType (client,
+						     stuff->glyphset,
+						     GlyphSetType,
+						     SecurityWriteAccess);
+    if (!glyphSet)
+    {
+	client->errorValue = stuff->glyphset;
+	return RenderErrBase + BadGlyphSet;
+    }
+    nglyph = ((client->req_len << 2) - sizeof (xRenderFreeGlyphsReq)) >> 2;
+    gids = (CARD32 *) (stuff + 1);
+    while (nglyph-- > 0)
+    {
+	glyph = *gids++;
+	if (!DeleteGlyph (glyphSet, glyph))
+	{
+	    client->errorValue = glyph;
+	    return RenderErrBase + BadGlyph;
+	}
+    }
+    return client->noClientException;
 }
 
 static int
