@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.20 2001/05/25 02:44:36 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.21 2001/07/25 08:04:43 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -265,7 +265,8 @@ typedef struct {
     RADEONDDCType     DDCType;
     RADEONConnectorType ConnectorType;
     BOOL              HasCRTC2;     /* VE/M6/M7 */
-    BOOL              IsM7;         /* M7 chip */
+    BOOL              IsR200;       /* R200 chip */
+    BOOL              IsRV200;      /* RV200 chip */
     BOOL              IsSecondary;  /* second Screen */
     BOOL              UseCRT;       /* force use CRT port as primary */
     BOOL              IsM6;         /* M6 card, for some workarounds */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.11 2001/06/14 21:46:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.12 2001/07/25 08:04:43 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -83,6 +83,8 @@ SymTabRec RADEONChipsets[] = {
     { PCI_CHIP_RADEON_LW, "ATI Radeon Mobility LW (AGP)" },
     { PCI_CHIP_RADEON_LY, "ATI Radeon Mobility LY (AGP)" },
     { PCI_CHIP_RADEON_LZ, "ATI Radeon Mobility LZ (AGP)" },
+    { PCI_CHIP_R200_QL, "ATI Radeon 8500 QL (AGP)" },
+    { PCI_CHIP_RV200_QW, "ATI Radeon 7500 QW (AGP)" },
     { -1,                 NULL }
 };
 
@@ -96,6 +98,8 @@ PciChipsets RADEONPciChipsets[] = {
     { PCI_CHIP_RADEON_LW, PCI_CHIP_RADEON_LW, RES_SHARED_VGA },
     { PCI_CHIP_RADEON_LY, PCI_CHIP_RADEON_LY, RES_SHARED_VGA },
     { PCI_CHIP_RADEON_LZ, PCI_CHIP_RADEON_LZ, RES_SHARED_VGA },
+    { PCI_CHIP_R200_QL, PCI_CHIP_R200_QL, RES_SHARED_VGA },
+    { PCI_CHIP_RV200_QW, PCI_CHIP_RV200_QW, RES_SHARED_VGA },
     { -1,                 -1,                 RES_UNDEFINED }
 };
 
@@ -222,6 +226,8 @@ RADEONProbe(DriverPtr drv, int flags)
         /* VE/M6 card support Dual-Head, mark the entity as sharable*/
         if(pEnt->chipset == PCI_CHIP_RADEON_QY ||
            pEnt->chipset == PCI_CHIP_RADEON_QZ ||
+           pEnt->chipset == PCI_CHIP_R200_QL ||
+           pEnt->chipset == PCI_CHIP_RV200_QW ||
            pEnt->chipset == PCI_CHIP_RADEON_LW ||
            pEnt->chipset == PCI_CHIP_RADEON_LY ||
            pEnt->chipset == PCI_CHIP_RADEON_LZ)

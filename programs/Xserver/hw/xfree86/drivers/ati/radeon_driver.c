@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.34 2001/08/17 22:08:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.35 2001/09/14 13:54:01 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -203,7 +203,8 @@ static const char *fbdevHWSymbols[] = {
 
 static const char *ddcSymbols[] = {
     "xf86PrintEDID",
-    "xf86SetDDCproperties",
+    "xf86DoEDID_DDC1",
+    "xf86DoEDID_DDC2",
     NULL
 };
 
@@ -908,109 +909,6 @@ static Bool RADEONGetBIOSParameters(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
 	******/
     }
 
-#if 0 
-    /*retrieving panel size info from BIOS doesn't quite work at present
-    */
-    if(info->Port1 == MT_LCD)
-    {
-        int FPHeader = 0;
-        int i;
-	info->FPBIOSstart = 0;
-        return TRUE;
-
-	/* FIXME: There should be direct access to the start of the FP info
-	   tables, but until we find out where that offset is stored, we
-           must search for the ATI signature string: "M6      ". */
-        for (i = 4; i < RADEON_VBIOS_SIZE-8; i++)
-        {
-	    if (RADEON_BIOS8(i)   == 'M' &&
-	            RADEON_BIOS8(i+1) == '6' &&
-		RADEON_BIOS8(i+2) == ' ' &&
-		RADEON_BIOS8(i+3) == ' ' &&
-		RADEON_BIOS8(i+4) == ' ' &&
-		RADEON_BIOS8(i+5) == ' ' &&
-		RADEON_BIOS8(i+6) == ' ' &&
-	            RADEON_BIOS8(i+7) == ' ')
-            {
-		FPHeader = i-2;
-		break;
-	    }
-	}
-
-        if (!FPHeader)
-        { 
-             xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-                "Cannot find Flat Panel Header\n");
-             return TRUE;
-        }
-	/* Assume that only one panel is attached and supported */
-        for (i = FPHeader+20; i < FPHeader+84; i += 2)
-        {
-            if (RADEON_BIOS16(i) != 0)
-            {
-		info->FPBIOSstart = RADEON_BIOS16(i);
-		break;
-	    }
-	}
-        if (!info->FPBIOSstart)
-        {
-            xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-                "Cannot find Flat Panel BIOS Start\n");
-	          return TRUE;
-        }
-	    info->PanelXRes = RADEON_BIOS16(info->FPBIOSstart+25);
-	    info->PanelYRes = RADEON_BIOS16(info->FPBIOSstart+27);
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Panel size: %dx%d\n",
-		   info->PanelXRes, info->PanelYRes);
-
-	info->PanelPwrDly = RADEON_BIOS8(info->FPBIOSstart+56);
-
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Panel ID: ");
-	for (i = 1; i <= 24; i++)
-	    ErrorF("%c", RADEON_BIOS8(info->FPBIOSstart+i));
-	ErrorF("\n");
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Panel Type: ");
-	i = RADEON_BIOS16(info->FPBIOSstart+29);
-	if (i & 1) ErrorF("Color, ");
-	else       ErrorF("Monochrome, ");
-	if (i & 2) ErrorF("Dual(split), ");
-	else       ErrorF("Single, ");
-        switch ((i >> 2) & 0x3f)
-        {
-             case 0:
-                 ErrorF("STN");
-                 break;
-             case 1:
-                 ErrorF("TFT");
-                 break;
-             case 2:
-                 ErrorF("Active STN");
-                 break;
-             case 3:
-                 ErrorF("EL");
-                 break;
-             case 4:
-                 ErrorF("Plasma");
-                 break;
-             default:
-                 ErrorF("UNKNOWN");
-                 break;
-	}
-	ErrorF("\n");
-        if (RADEON_BIOS8(info->FPBIOSstart+61) & 1)
-        {
-	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Panel Interface: LVDS\n");
-	      }
-	      else
-	      {
-	    /* FIXME: Add Non-LVDS flat pael support */
-	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		       "Non-LVDS panel interface detected!  "
-		       "This support is untested and may not "
-		       "function properly\n");
-	}
-    }
-#endif
     return TRUE;
 }
 
@@ -1200,10 +1098,15 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
             /*VE or M6 has secondary CRTC*/
             info->HasCRTC2 = TRUE;  
             break;
-   	case PCI_CHIP_RADEON_LW:  
-            /* M7 */
+   	case PCI_CHIP_R200_QL:
+            /*R200 has secondary CRTC*/
             info->HasCRTC2 = TRUE;  
-            info->IsM7 = TRUE;
+            info->IsR200 = TRUE;
+            break;
+   	case PCI_CHIP_RV200_QW:   /* RV200 desktop */
+   	case PCI_CHIP_RADEON_LW:  /* M7 */
+            info->HasCRTC2 = TRUE;  
+            info->IsRV200 = TRUE;
             break;
         default: 
             info->HasCRTC2 = FALSE;  
@@ -1272,6 +1175,8 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
     else
 	pScrn->videoRam      = INREG(RADEON_CONFIG_MEMSIZE) / 1024;
     
+    /* some production boards of m6 will return 0 if it's 8 MB */
+    if(pScrn->videoRam == 0) pScrn->videoRam = 8192;
         
     if(info->IsSecondary)
     {  
@@ -1336,6 +1241,8 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
 	case PCI_CHIP_RADEON_QE:
 	case PCI_CHIP_RADEON_QF:
 	case PCI_CHIP_RADEON_QG:
+    case PCI_CHIP_R200_QL:
+    case PCI_CHIP_RV200_QW:
 	default:                 info->IsPCI = FALSE; break;
 	}
     }
@@ -3807,17 +3714,14 @@ static Bool RADEONInitCrtc2Registers(ScrnInfoPtr pScrn, RADEONSavePtr save,
 			     ? RADEON_CRTC2_INTERLACE_EN
 			     : 0));
 
-    if(!info->IsM7)
+    if(info->IsR200)
+        save->disp_output_cntl = 
+            ((info->SavedReg.disp_output_cntl & ~RADEON_DISP_DAC_SOURCE_MASK)
+            | RADEON_DISP_DAC_SOURCE_CRTC2);
+    else
         save->dac2_cntl = info->SavedReg.dac2_cntl 
                       /*| RADEON_DAC2_DAC2_CLK_SEL*/
                       | RADEON_DAC2_DAC_CLK_SEL;
-    else
-	{
-        save->disp_output_cntl = 
-            ((info->SavedReg.disp_output_cntl &
-	      (CARD32)~RADEON_DISP_DAC_SOURCE_MASK)
-            | RADEON_DISP_DAC_SOURCE_CRTC2);
-    }
 
     save->crtc2_h_total_disp = ((((mode->CrtcHTotal / 8) - 1) & 0x3ff)
 	   | ((((mode->CrtcHDisplay / 8) - 1) & 0x1ff) << 16));

@@ -1,4 +1,5 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 283. Support Radeon 7500, 8500 and Rage128ProII (#4941, ATI Technologies).
  282. Support Trident TGUI96xx and greater with Xv (Alan Hourihane).
  281. XDarwin fixes for Xinerama in Quartz modes:
        - Turn Xinerama on by default.
@@ -13823,4 +13824,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1951 2001/09/24 06:56:49 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1952 2001/09/24 11:19:06 alanh Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.38 2001/08/18 17:25:51 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.39 2001/09/14 13:54:01 alanh Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -224,7 +224,14 @@ static const char *fbdevHWSymbols[] = {
 
 static const char *ddcSymbols[] = {
     "xf86PrintEDID",
-    "xf86SetDDCproperties",
+    "xf86DoEDID_DDC1",
+    "xf86DoEDID_DDC2",
+    NULL
+};
+
+static const char *i2cSymbols[] = {
+    "xf86CreateI2CBusRec",
+    "xf86I2CBusInit",
     NULL
 };
 
@@ -463,8 +470,10 @@ static void R128Blank(ScrnInfoPtr pScrn)
 {
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
-
-    OUTREGP(R128_CRTC_EXT_CNTL, R128_CRTC_DISPLAY_DIS, ~R128_CRTC_DISPLAY_DIS);
+    if(info->isDFP)
+        OUTREGP(R128_FP_GEN_CNTL, R128_FP_BLANK_DIS, ~R128_FP_BLANK_DIS);
+    else
+        OUTREGP(R128_CRTC_EXT_CNTL, R128_CRTC_DISPLAY_DIS, ~R128_CRTC_DISPLAY_DIS);
 }
 
 /* Unblank screen. */
@@ -473,7 +482,10 @@ static void R128Unblank(ScrnInfoPtr pScrn)
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
-    OUTREGP(R128_CRTC_EXT_CNTL, 0, ~R128_CRTC_DISPLAY_DIS);
+    if(info->isDFP)
+        OUTREGP(R128_FP_GEN_CNTL, 0, ~R128_FP_BLANK_DIS);
+    else
+        OUTREGP(R128_CRTC_EXT_CNTL, 0, ~R128_CRTC_DISPLAY_DIS);
 }
 
 /* Compute log base 2 of val. */
@@ -875,7 +887,19 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 		   "\n\nWARNING: Forcing the driver to use/not use the flat panel registers\nmight damage your flat panel.  Use at your *OWN* *RISK*.\n\n");
     } else {
+        info->isDFP = FALSE;
+        info->isPro2 = FALSE;
 	switch (info->Chipset) {
+	/* R128 Pro and Pro2 can have DFP, we will deal with it.
+	   No support for dual-head/xinerama yet.
+          M3 can also have DFP, no support for now */	
+	case PCI_CHIP_RAGE128TF: 
+	case PCI_CHIP_RAGE128TL:
+	case PCI_CHIP_RAGE128TR: info->isPro2 = TRUE; 
+	case PCI_CHIP_RAGE128PD:
+	case PCI_CHIP_RAGE128PR:
+	case PCI_CHIP_RAGE128PF: info->isDFP = TRUE; break;
+
 	case PCI_CHIP_RAGE128LE:
 	case PCI_CHIP_RAGE128LF:
 	case PCI_CHIP_RAGE128MF:
@@ -886,13 +910,6 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 	case PCI_CHIP_RAGE128RK:
 	case PCI_CHIP_RAGE128RL:
 	case PCI_CHIP_RAGE128SM:
-	case PCI_CHIP_RAGE128PD:
-	case PCI_CHIP_RAGE128PF:
-	case PCI_CHIP_RAGE128PR:
-	/* R128 ULTRA can have dual-head and DFP, not support yet */
-	case PCI_CHIP_RAGE128TF: 
-	case PCI_CHIP_RAGE128TL:
-	case PCI_CHIP_RAGE128TR:
 	default:                 info->HasPanelRegs = FALSE; break;
 	}
     }
@@ -922,7 +939,7 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		     "Option \"Display\" ignored "
 		     "(framebuffer device determines display type)\n");
-	else if (!Display || !xf86NameCmp(Display, "FP"))
+	else if (!display || !xf86NameCmp(display, "FP"))
 	    info->BIOSDisplay = R128_BIOS_DISPLAY_FP;
 	else if (!xf86NameCmp(Display, "BIOS"))
 	    info->BIOSDisplay = INREG8(R128_BIOS_5_SCRATCH);
@@ -1063,8 +1080,7 @@ static Bool R128PreInitDDC(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
 	xf86LoaderReqSymLists(vbeSymbols,NULL);
 	pVbe = VBEInit(pInt10,info->pEnt->index);
 	if (!pVbe) return FALSE;
-
-	xf86SetDDCproperties(pScrn,xf86PrintEDID(vbeDoEDID(pVbe,NULL)));
+        xf86SetDDCproperties(pScrn,xf86PrintEDID(vbeDoEDID(pVbe,NULL)));
 	vbeFree(pVbe);
 	return TRUE;
     } else
@@ -1081,6 +1097,359 @@ static Bool R128PreInitGamma(ScrnInfoPtr pScrn)
     return TRUE;
 }
 
+static void
+R128I2CGetBits(I2CBusPtr b, int *clock, int *data)
+{
+    ScrnInfoPtr   pScrn       = xf86Screens[b->scrnIndex];
+    R128InfoPtr info = R128PTR(pScrn);
+    unsigned long val;
+    unsigned char *R128MMIO = info->MMIO;
+
+    /* Get the result. */
+    val = INREG(info->DDCReg);
+    *clock = (val & R128_GPIO_MONID_Y_3) != 0;
+    *data  = (val & R128_GPIO_MONID_Y_0) != 0;
+
+}
+
+static void
+R128I2CPutBits(I2CBusPtr b, int clock, int data)
+{
+    ScrnInfoPtr   pScrn       = xf86Screens[b->scrnIndex];
+    R128InfoPtr info = R128PTR(pScrn);
+    unsigned long val;
+    unsigned char *R128MMIO = info->MMIO;
+
+    val = INREG(info->DDCReg)  
+              & ~R128_GPIO_MONID_EN_0 & ~R128_GPIO_MONID_EN_3;
+    val |= (clock ? 0:R128_GPIO_MONID_EN_3);
+    val |= (data ? 0:R128_GPIO_MONID_EN_0);
+    OUTREG(info->DDCReg, val);
+}
+
+
+static Bool
+R128I2cInit(ScrnInfoPtr pScrn)
+{
+    R128InfoPtr info = R128PTR(pScrn);
+    if ( xf86LoadSubModule(pScrn, "i2c") )
+        xf86LoaderReqSymLists(i2cSymbols,NULL);
+	else{
+        xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
+            "Fail to load 12c module\n");
+		return FALSE;
+    }
+
+    info->pI2CBus = xf86CreateI2CBusRec();
+    if(!info->pI2CBus) return FALSE;
+
+    info->pI2CBus->BusName    = "DDC";
+    info->pI2CBus->scrnIndex  = pScrn->scrnIndex;
+    info->DDCReg = R128_GPIO_MONID;
+    info->pI2CBus->I2CPutBits = R128I2CPutBits;
+    info->pI2CBus->I2CGetBits = R128I2CGetBits;
+    info->pI2CBus->AcknTimeout = 5;
+
+    if (!xf86I2CBusInit(info->pI2CBus)) {
+        return FALSE;
+    }
+    return TRUE;
+}
+
+/* return TRUE is a DFP is indeed connected to a DVI port */
+static Bool R128GetDFPInfo(ScrnInfoPtr pScrn)
+{
+    R128InfoPtr info  = R128PTR(pScrn);
+    int i;
+    xf86MonPtr MonInfo = NULL;
+    xf86MonPtr ddc;
+    unsigned char *R128MMIO = info->MMIO;
+
+    if(!R128I2cInit(pScrn)){
+        xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
+                  "I2C initialization failed!\n");
+    }
+
+    OUTREG(info->DDCReg, (INREG(info->DDCReg) 
+           | R128_GPIO_MONID_MASK_0 | R128_GPIO_MONID_MASK_3));
+
+    OUTREG(info->DDCReg, INREG(info->DDCReg)
+           & ~R128_GPIO_MONID_A_0 & ~R128_GPIO_MONID_A_3);
+
+    MonInfo = xf86DoEDID_DDC2(pScrn->scrnIndex, info->pI2CBus);
+    if(!MonInfo) {
+        xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
+                   "No DFP detected\n");
+        return FALSE;
+    }
+    xf86SetDDCproperties(pScrn, MonInfo);
+    ddc = pScrn->monitor->DDC;
+
+    for(i=0; i<4; i++)
+    {
+        if(ddc->det_mon[i].type == 0)
+        {
+            info->PanelXRes =
+                ddc->det_mon[i].section.d_timings.h_active;
+            info->PanelYRes =
+                ddc->det_mon[i].section.d_timings.v_active;
+
+            info->HOverPlus =
+                ddc->det_mon[i].section.d_timings.h_sync_off;
+            info->HSyncWidth = 
+                ddc->det_mon[i].section.d_timings.h_sync_width;
+            info->HBlank =
+                ddc->det_mon[i].section.d_timings.h_blanking;
+            info->VOverPlus =
+                ddc->det_mon[i].section.d_timings.v_sync_off;
+            info->VSyncWidth = 
+                ddc->det_mon[i].section.d_timings.v_sync_width;
+            info->VBlank =
+                ddc->det_mon[i].section.d_timings.v_blanking;
+        }  
+    }
+    return TRUE;    
+}
+
+
+static void R128SetSyncRangeFromEdid(ScrnInfoPtr pScrn, int flag)
+{
+    int i;
+    xf86MonPtr ddc = pScrn->monitor->DDC;
+    if(flag)  /*HSync*/
+    {
+        for(i=0; i<4; i++)
+        {
+            if(ddc->det_mon[i].type == DS_RANGES)
+            {
+                pScrn->monitor->nHsync = 1;
+                pScrn->monitor->hsync[0].lo = 
+                    ddc->det_mon[i].section.ranges.min_h;
+                pScrn->monitor->hsync[0].hi = 
+                    ddc->det_mon[i].section.ranges.max_h;
+                return;
+            }
+        }
+        /*if no sync ranges detected in detailed timing table,
+          let's try to derive them from supported VESA modes
+          Are we doing too much here!!!? 
+        **/
+        i = 0;
+        if(ddc->timings1.t1 & 0x02) /*800x600@56*/
+        {
+            pScrn->monitor->hsync[i].lo = 
+                pScrn->monitor->hsync[i].hi = 35.2;
+            i++;
+        }       
+        if(ddc->timings1.t1 & 0x04) /*640x480@75*/
+        {
+            pScrn->monitor->hsync[i].lo = 
+                pScrn->monitor->hsync[i].hi = 37.5;
+            i++;
+        }       
+        if((ddc->timings1.t1 & 0x08) || (ddc->timings1.t1 & 0x01))
+        {
+            pScrn->monitor->hsync[i].lo = 
+                pScrn->monitor->hsync[i].hi = 37.9;
+            i++;
+        }       
+        if(ddc->timings1.t2 & 0x40)
+        {
+            pScrn->monitor->hsync[i].lo = 
+                pScrn->monitor->hsync[i].hi = 46.9;
+            i++;
+        }
+        if((ddc->timings1.t2 & 0x80) || (ddc->timings1.t2 & 0x08))
+        {
+            pScrn->monitor->hsync[i].lo = 
+                pScrn->monitor->hsync[i].hi = 48.1;
+            i++;
+        }       
+        if(ddc->timings1.t2 & 0x04)
+        {
+            pScrn->monitor->hsync[i].lo = 
+                pScrn->monitor->hsync[i].hi = 56.5;
+            i++;
+        }       
+        if(ddc->timings1.t2 & 0x02)
+        {
+            pScrn->monitor->hsync[i].lo = 
+                pScrn->monitor->hsync[i].hi = 60.0;
+            i++;
+        }       
+        if(ddc->timings1.t2 & 0x01)
+        {
+            pScrn->monitor->hsync[i].lo = 
+                pScrn->monitor->hsync[i].hi = 64.0;
+            i++;
+        }
+        pScrn->monitor->nHsync = i;
+    }
+    else      /*Vrefresh*/
+    {
+        for(i=0; i<4; i++)
+        {
+            if(ddc->det_mon[i].type == DS_RANGES)
+            {
+                pScrn->monitor->nVrefresh = 1;
+                pScrn->monitor->vrefresh[0].lo = 
+                    ddc->det_mon[i].section.ranges.min_v;
+                pScrn->monitor->vrefresh[0].hi = 
+                    ddc->det_mon[i].section.ranges.max_v;
+                return;
+            }
+        }
+        i = 0;
+        if(ddc->timings1.t1 & 0x02) /*800x600@56*/
+        {        
+            pScrn->monitor->vrefresh[i].lo = 
+                pScrn->monitor->vrefresh[i].hi = 56;
+            i++;
+        }
+        if((ddc->timings1.t1 & 0x01) || (ddc->timings1.t2 & 0x08))
+        {        
+            pScrn->monitor->vrefresh[i].lo = 
+                pScrn->monitor->vrefresh[i].hi = 60;
+            i++;
+        }
+        if(ddc->timings1.t2 & 0x04)
+        {        
+            pScrn->monitor->vrefresh[i].lo = 
+                pScrn->monitor->vrefresh[i].hi = 70;
+            i++;
+        }
+        if((ddc->timings1.t1 & 0x08) || (ddc->timings1.t2 & 0x80))
+        {        
+            pScrn->monitor->vrefresh[i].lo = 
+                pScrn->monitor->vrefresh[i].hi = 72;
+            i++;
+        }
+        if((ddc->timings1.t1 & 0x04) || (ddc->timings1.t2 & 0x40)
+           || (ddc->timings1.t2 & 0x02) || (ddc->timings1.t2 & 0x01))
+        {        
+            pScrn->monitor->vrefresh[i].lo = 
+                pScrn->monitor->vrefresh[i].hi = 75;
+            i++;
+        }
+        pScrn->monitor->nVrefresh = i;
+    }
+}
+
+/*********** 
+   xfree's xf86ValidateModes routine deosn't work well with DFPs
+   here is our own validation routine. All modes between 
+   640<=XRes<=MaxRes and 480<=YRes<=MaxYRes will be permitted. 
+   NOTE: RageProII doesn't support rmx, can only work with the 
+         standard modes the monitor can support (scale).
+************/ 
+
+static int R128ValidateFPModes(ScrnInfoPtr pScrn)
+{
+    int i, j, count=0, width, height;
+    R128InfoPtr info = R128PTR(pScrn);
+    DisplayModePtr last = NULL, new = NULL, first = NULL;
+    xf86MonPtr ddc;
+
+    /* Free any allocated modes during configuration. We don't need them*/
+    while (pScrn->modes)
+    {
+	    xf86DeleteMode(&pScrn->modes, pScrn->modes);
+    }
+    while (pScrn->modePool)
+    {
+	    xf86DeleteMode(&pScrn->modePool, pScrn->modePool);
+    }
+
+    pScrn->virtualX = pScrn->display->virtualX;
+    pScrn->virtualY = pScrn->display->virtualY;
+
+    /* If no mode specified in config, we use native resolution*/
+    if(!pScrn->display->modes[0])
+    {
+        pScrn->display->modes[0] = xnfalloc(16);
+        sprintf(pScrn->display->modes[0], "%dx%d",
+               info->PanelXRes, info->PanelYRes);
+    }
+
+    for(i=0; pScrn->display->modes[i] != NULL; i++)
+    {
+        if (sscanf(pScrn->display->modes[i], "%dx%d", &width, &height) == 2)
+        {
+
+            if(width < 640 || width > info->PanelXRes || 
+               height < 480 || height > info->PanelYRes)
+            {
+                xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
+                    "Mode %s is out of range.\n"
+                    "Valid mode should be between 640x480-%dx%d\n",
+                    pScrn->display->modes[i], info->PanelXRes, info->PanelYRes);
+                continue;
+            }           
+
+            new = xnfcalloc(1, sizeof(DisplayModeRec));
+            new->prev = last;
+            new->name = xnfalloc(strlen(pScrn->display->modes[i]) + 1);
+            strcpy(new->name, pScrn->display->modes[i]);
+            new->HDisplay = new->CrtcHDisplay = width;
+            new->VDisplay = new->CrtcVDisplay = height;
+
+            ddc = pScrn->monitor->DDC;
+            for(j=0; j<DET_TIMINGS; j++)
+            {
+                /*We use native mode clock only*/
+                if(ddc->det_mon[j].type == 0){
+                    new->Clock = ddc->det_mon[j].section.d_timings.clock / 1000;
+                    break;
+                }
+            }
+
+            if(new->prev) new->prev->next = new;
+            last = new;
+            if(!first) first = new;
+            pScrn->display->virtualX =
+            pScrn->virtualX = MAX(pScrn->virtualX, width);
+            pScrn->display->virtualY =
+            pScrn->virtualY = MAX(pScrn->virtualY, height);
+            count++;
+        }
+        else
+        {
+            xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
+                "Mode name %s is invalid\n", pScrn->display->modes[i]); 
+            continue;
+        }
+   }
+
+   if(last)
+   {
+       last->next = first;
+       first->prev = last;
+       pScrn->modes = first;
+
+       /*FIXME: May need to validate line pitch here*/
+       {
+           int dummy = 0;
+           switch(pScrn->depth / 8)
+           {
+              case 1:
+                  dummy = 128 - pScrn->virtualX % 128;
+                  break;
+              case 2:
+                  dummy = 32 - pScrn->virtualX % 32;
+                  break;
+              case 3:
+              case 4:
+                  dummy = 16 - pScrn->virtualX % 16;
+           }
+           pScrn->displayWidth = pScrn->virtualX + dummy;
+       }
+
+   }
+
+   return count;
+}
+
+
 /* This is called by R128PreInit to validate modes and compute parameters
    for all of the valid modes. */
 static Bool R128PreInitModes(ScrnInfoPtr pScrn)
@@ -1093,22 +1462,60 @@ static Bool R128PreInitModes(ScrnInfoPtr pScrn)
     const char    *Sym = NULL;
 #endif
 
-				/* Get mode information */
-    pScrn->progClock                   = TRUE;
-    clockRanges                        = xnfcalloc(sizeof(*clockRanges), 1);
-    clockRanges->next                  = NULL;
-    clockRanges->minClock              = info->pll.min_pll_freq;
-    clockRanges->maxClock              = info->pll.max_pll_freq * 10;
-    clockRanges->clockIndex            = -1;
-    if (info->HasPanelRegs) {
-	clockRanges->interlaceAllowed  = FALSE;
-	clockRanges->doubleScanAllowed = FALSE;
-    } else {
-	clockRanges->interlaceAllowed  = TRUE;
-	clockRanges->doubleScanAllowed = TRUE;
+    if(info->isDFP) {
+        R128MapMem(pScrn);
+        /* validate if DFP really connected. */
+        if(!R128GetDFPInfo(pScrn)) {
+            info->isDFP = FALSE;
+        } else if(!info->isPro2) {
+            /* RageProII doesn't support rmx, we can't use native-mode 
+               stretching for other non-native modes. It will rely on
+               whatever VESA modes monitor can support. */
+            modesFound = R128ValidateFPModes(pScrn);
+            if(modesFound < 1) {
+                 xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
+                     "No valid mode found for this DFP/LCD\n");
+                 R128UnmapMem(pScrn);
+                 return FALSE;
+                
+            }
+        }
+        info->BIOSDisplay = R128_BIOS_DISPLAY_FP;
+        R128UnmapMem(pScrn);
     }
 
-    modesFound = xf86ValidateModes(pScrn,
+    if(!info->isDFP || info->isPro2) {
+				/* Get mode information */
+        pScrn->progClock                   = TRUE;
+        clockRanges                        = xnfcalloc(sizeof(*clockRanges), 1);
+        clockRanges->next                  = NULL;
+        clockRanges->minClock              = info->pll.min_pll_freq;
+        clockRanges->maxClock              = info->pll.max_pll_freq * 10;
+        clockRanges->clockIndex            = -1;
+        if (info->HasPanelRegs || info->isDFP) {
+            clockRanges->interlaceAllowed  = FALSE;
+            clockRanges->doubleScanAllowed = FALSE;
+        } else {
+            clockRanges->interlaceAllowed  = TRUE;
+            clockRanges->doubleScanAllowed = TRUE;
+        }
+
+        if(pScrn->monitor->DDC) {
+        /*if we still don't know sync range yet, let's try EDID.
+          Note that, since we can have dual heads, the Xconfigurator
+          may not be able to probe both monitors correctly through
+          vbe probe function (R128ProbeDDC). Here we provide an
+          additional way to auto-detect sync ranges if they haven't
+          been added to XF86Config manually.
+        **/
+            if(pScrn->monitor->nHsync <= 0)
+                R128SetSyncRangeFromEdid(pScrn, 1);
+            if(pScrn->monitor->nVrefresh <= 0)
+                R128SetSyncRangeFromEdid(pScrn, 0);
+        }
+
+
+        modesFound = xf86ValidateModes(pScrn,
 				   pScrn->monitor->Modes,
 				   pScrn->display->modes,
 				   clockRanges,
@@ -1123,23 +1530,24 @@ static Bool R128PreInitModes(ScrnInfoPtr pScrn)
 				   info->FbMapSize,
 				   LOOKUP_BEST_REFRESH);
 
-    if (modesFound < 1 && info->FBDev) {
-	fbdevHWUseBuildinMode(pScrn);
-	pScrn->displayWidth = pScrn->virtualX; /* FIXME: might be wrong */
-	modesFound = 1;
-    }
+        if (modesFound < 1 && info->FBDev) {
+	        fbdevHWUseBuildinMode(pScrn);
+	        pScrn->displayWidth = pScrn->virtualX; /* FIXME: might be wrong */
+	        modesFound = 1;
+        }
 
-    if (modesFound == -1) return FALSE;
-    xf86PruneDriverModes(pScrn);
-    if (!modesFound || !pScrn->modes) {
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No valid modes found\n");
-	return FALSE;
+        if (modesFound == -1) return FALSE;
+        xf86PruneDriverModes(pScrn);
+        if (!modesFound || !pScrn->modes) {
+            xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No valid modes found\n");
+            return FALSE;
+        }
+        xf86SetCrtcForModes(pScrn, 0);
     }
-    xf86SetCrtcForModes(pScrn, 0);
+				/* Set DPI */
     pScrn->currentMode = pScrn->modes;
     xf86PrintModes(pScrn);
 
-				/* Set DPI */
     xf86SetDpi(pScrn, 0, 0);
 
 				/* Get ScreenInit function */
@@ -1358,8 +1766,7 @@ Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
 #endif
 		      fbdevHWSymbols,
 		      vbeSymbols,
-		      int10Symbols,
-		      ddcSymbols,
+		      /* ddcsymbols, */
 		      /* i2csymbols, */
 		      /* shadowSymbols, */
 		      NULL);
@@ -1507,7 +1914,7 @@ static void R128LoadPalette(ScrnInfoPtr pScrn, int numColors,
     unsigned char r, g, b;
 
     /* Select palette 0 (main CRTC) if using FP-enabled chip */
-    if (info->HasPanelRegs) PAL_SELECT(0);
+    if (info->HasPanelRegs || info->isDFP) PAL_SELECT(0);
 
     if (info->CurrentLayout.depth == 15) {
 	/* 15bpp mode.  This sends 32 values. */
@@ -2026,6 +2433,8 @@ static void R128RestoreCommonRegisters(ScrnInfoPtr pScrn, R128SavePtr restore)
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
+    OUTREG(R128_FP_GEN_CNTL, restore->fp_gen_cntl | R128_FP_BLANK_DIS);
+
     OUTREG(R128_OVR_CLR,              restore->ovr_clr);
     OUTREG(R128_OVR_WID_LEFT_RIGHT,   restore->ovr_wid_left_right);
     OUTREG(R128_OVR_WID_TOP_BOTTOM,   restore->ovr_wid_top_bottom);
@@ -2072,16 +2481,19 @@ static void R128RestoreFPRegisters(ScrnInfoPtr pScrn, R128SavePtr restore)
     unsigned char *R128MMIO = info->MMIO;
     CARD32        tmp;
 
-    OUTREG(R128_CRTC2_GEN_CNTL,       restore->crtc2_gen_cntl);
+
+    /*OUTREG(R128_CRTC2_GEN_CNTL,       restore->crtc2_gen_cntl);*/
+    OUTREG(R128_FP_HORZ_STRETCH,      restore->fp_horz_stretch);
+    OUTREG(R128_FP_VERT_STRETCH,      restore->fp_vert_stretch);
     OUTREG(R128_FP_CRTC_H_TOTAL_DISP, restore->fp_crtc_h_total_disp);
     OUTREG(R128_FP_CRTC_V_TOTAL_DISP, restore->fp_crtc_v_total_disp);
-    OUTREG(R128_FP_GEN_CNTL,          restore->fp_gen_cntl);
     OUTREG(R128_FP_H_SYNC_STRT_WID,   restore->fp_h_sync_strt_wid);
-    OUTREG(R128_FP_HORZ_STRETCH,      restore->fp_horz_stretch);
-    OUTREG(R128_FP_PANEL_CNTL,        restore->fp_panel_cntl);
     OUTREG(R128_FP_V_SYNC_STRT_WID,   restore->fp_v_sync_strt_wid);
-    OUTREG(R128_FP_VERT_STRETCH,      restore->fp_vert_stretch);
     OUTREG(R128_TMDS_CRC,             restore->tmds_crc);
+    OUTREG(R128_FP_PANEL_CNTL,        restore->fp_panel_cntl);
+    OUTREG(R128_FP_GEN_CNTL, restore->fp_gen_cntl & ~R128_FP_BLANK_DIS);
+
+    if(info->isDFP) return;
 
     tmp = INREG(R128_LVDS_GEN_CNTL);
     if ((tmp & (R128_LVDS_ON | R128_LVDS_BLON)) ==
@@ -2179,7 +2591,7 @@ static void R128RestorePalette(ScrnInfoPtr pScrn, R128SavePtr restore)
     if (!restore->palette_valid) return;
 
     /* Select palette 0 (main CRTC) if using FP-enabled chip */
-    if (info->HasPanelRegs) PAL_SELECT(0);
+    if (info->HasPanelRegs || info->isDFP) PAL_SELECT(0);
 
     OUTPAL_START(0);
     for (i = 0; i < 256; i++) OUTPAL_NEXT_CARD32(restore->palette[i]);
@@ -2193,11 +2605,13 @@ static void R128RestoreMode(ScrnInfoPtr pScrn, R128SavePtr restore)
     R128TRACE(("R128RestoreMode(%p)\n", restore));
     R128RestoreCommonRegisters(pScrn, restore);
     R128RestoreCrtcRegisters(pScrn, restore);
-    if (info->HasPanelRegs)
-	R128RestoreFPRegisters(pScrn, restore);
-    if (!info->HasPanelRegs || info->BIOSDisplay == R128_BIOS_DISPLAY_CRT)
-	R128RestorePLLRegisters(pScrn, restore);
+    if (!(info->HasPanelRegs) || info->BIOSDisplay == R128_BIOS_DISPLAY_CRT){
+        R128RestorePLLRegisters(pScrn, restore);
+    }
     R128RestoreDDARegisters(pScrn, restore);
+    if (info->HasPanelRegs || info->isDFP)
+        R128RestoreFPRegisters(pScrn, restore);
+
     R128RestorePalette(pScrn, restore);
 }
 
@@ -2258,6 +2672,7 @@ static void R128SaveFPRegisters(ScrnInfoPtr pScrn, R128SavePtr save)
     save->fp_vert_stretch      = INREG(R128_FP_VERT_STRETCH);
     save->lvds_gen_cntl        = INREG(R128_LVDS_GEN_CNTL);
     save->tmds_crc             = INREG(R128_TMDS_CRC);
+    save->tmds_transmitter_cntl = INREG(R128_TMDS_TRANSMITTER_CNTL);
 }
 
 /* Read PLL registers. */
@@ -2295,7 +2710,7 @@ static void R128SavePalette(ScrnInfoPtr pScrn, R128SavePtr save)
     int           i;
 
     /* Select palette 0 (main CRTC) if using FP-enabled chip */
-    if (info->HasPanelRegs) PAL_SELECT(0);
+    if (info->HasPanelRegs || info->isDFP) PAL_SELECT(0);
 
     INPAL_START(0);
     for (i = 0; i < 256; i++) save->palette[i] = INPAL_NEXT();
@@ -2309,7 +2724,7 @@ static void R128SaveMode(ScrnInfoPtr pScrn, R128SavePtr save)
 
     R128SaveCommonRegisters(pScrn, save);
     R128SaveCrtcRegisters(pScrn, save);
-    if (R128PTR(pScrn)->HasPanelRegs)
+    if (R128PTR(pScrn)->HasPanelRegs || R128PTR(pScrn)->isDFP)
 	R128SaveFPRegisters(pScrn, save);
     R128SavePLLRegisters(pScrn, save);
     R128SaveDDARegisters(pScrn, save);
@@ -2457,6 +2872,21 @@ static Bool R128InitCrtcRegisters(ScrnInfoPtr pScrn, R128SavePtr save,
 			   | R128_DAC_VGA_ADR_EN
 			   | (info->dac6bits ? 0 : R128_DAC_8BIT_EN));
 
+
+    if(info->isDFP && !info->isPro2)
+    {
+        if(info->PanelXRes < mode->CrtcHDisplay)
+            mode->HDisplay = mode->CrtcHDisplay = info->PanelXRes;
+        if(info->PanelYRes < mode->CrtcVDisplay)
+            mode->VDisplay = mode->CrtcVDisplay = info->PanelYRes;
+        mode->CrtcHTotal = mode->CrtcHDisplay + info->HBlank;
+        mode->CrtcHSyncStart = mode->CrtcHDisplay + info->HOverPlus;
+        mode->CrtcHSyncEnd = mode->CrtcHSyncStart + info->HSyncWidth;
+        mode->CrtcVTotal = mode->CrtcVDisplay + info->VBlank;
+        mode->CrtcVSyncStart = mode->CrtcVDisplay + info->VOverPlus;
+        mode->CrtcVSyncEnd = mode->CrtcVSyncStart + info->VSyncWidth;
+    }
+
     save->crtc_h_total_disp = ((((mode->CrtcHTotal / 8) - 1) & 0xffff)
 			      | (((mode->CrtcHDisplay / 8) - 1) << 16));
 
@@ -2523,20 +2953,20 @@ static void R128InitFPRegisters(R128SavePtr orig, R128SavePtr save,
     float Hratio, Vratio;
 
     if (info->BIOSDisplay == R128_BIOS_DISPLAY_CRT) {
-	save->crtc_ext_cntl  |= R128_CRTC_CRT_ON;
-	save->crtc2_gen_cntl  = 0;
-	save->fp_gen_cntl     = orig->fp_gen_cntl;
-	save->fp_gen_cntl    &= ~(R128_FP_FPON |
-				  R128_FP_CRTC_USE_SHADOW_VEND |
-				  R128_FP_CRTC_HORZ_DIV2_EN |
-				  R128_FP_CRTC_HOR_CRT_DIV2_DIS |
-				  R128_FP_USE_SHADOW_EN);
-	save->fp_gen_cntl    |= (R128_FP_SEL_CRTC2 |
-				 R128_FP_CRTC_DONT_SHADOW_VPAR);
-	save->fp_panel_cntl   = orig->fp_panel_cntl & (CARD32)~R128_FP_DIGON;
-	save->lvds_gen_cntl   = orig->lvds_gen_cntl &
-				(CARD32)~(R128_LVDS_ON | R128_LVDS_BLON);
-	return;
+        save->crtc_ext_cntl  |= R128_CRTC_CRT_ON;
+        save->crtc2_gen_cntl  = 0;
+        save->fp_gen_cntl     = orig->fp_gen_cntl;
+        save->fp_gen_cntl    &= ~(R128_FP_FPON |
+            R128_FP_CRTC_USE_SHADOW_VEND |
+            R128_FP_CRTC_HORZ_DIV2_EN |
+            R128_FP_CRTC_HOR_CRT_DIV2_DIS |
+            R128_FP_USE_SHADOW_EN);
+        save->fp_gen_cntl    |= (R128_FP_SEL_CRTC2 |
+                                 R128_FP_CRTC_DONT_SHADOW_VPAR);
+        save->fp_panel_cntl   = orig->fp_panel_cntl & (CARD32)~R128_FP_DIGON;
+        save->lvds_gen_cntl   = orig->lvds_gen_cntl &
+	                            (CARD32)~(R128_LVDS_ON | R128_LVDS_BLON);
+        return;
     }
 
     if (xres > info->PanelXRes) xres = info->PanelXRes;
@@ -2548,14 +2978,15 @@ static void R128InitFPRegisters(R128SavePtr orig, R128SavePtr save,
     save->fp_horz_stretch =
 	(((((int)(Hratio * R128_HORZ_STRETCH_RATIO_MAX + 0.5))
 	   & R128_HORZ_STRETCH_RATIO_MASK) << R128_HORZ_STRETCH_RATIO_SHIFT) |
-	 (orig->fp_horz_stretch & (R128_HORZ_PANEL_SIZE |
-				   R128_HORZ_FP_LOOP_STRETCH |
-				   R128_HORZ_STRETCH_RESERVED)));
+       (orig->fp_horz_stretch & (R128_HORZ_PANEL_SIZE |
+                                 R128_HORZ_FP_LOOP_STRETCH |
+                                 R128_HORZ_STRETCH_RESERVED)));
     save->fp_horz_stretch &= ~R128_HORZ_AUTO_RATIO_FIX_EN;
-    if (Hratio == 1.0) save->fp_horz_stretch &= ~(R128_HORZ_STRETCH_BLEND |
-						  R128_HORZ_STRETCH_ENABLE);
-    else               save->fp_horz_stretch |=  (R128_HORZ_STRETCH_BLEND |
-						  R128_HORZ_STRETCH_ENABLE);
+    save->fp_horz_stretch &= ~R128_AUTO_HORZ_RATIO;
+    if (xres == info->PanelXRes) 
+         save->fp_horz_stretch &= ~(R128_HORZ_STRETCH_BLEND | R128_HORZ_STRETCH_ENABLE);
+    else 
+         save->fp_horz_stretch |=  (R128_HORZ_STRETCH_BLEND | R128_HORZ_STRETCH_ENABLE);
 
     save->fp_vert_stretch =
 	(((((int)(Vratio * R128_VERT_STRETCH_RATIO_MAX + 0.5))
@@ -2563,10 +2994,10 @@ static void R128InitFPRegisters(R128SavePtr orig, R128SavePtr save,
 	 (orig->fp_vert_stretch & (R128_VERT_PANEL_SIZE |
 				   R128_VERT_STRETCH_RESERVED)));
     save->fp_vert_stretch &= ~R128_VERT_AUTO_RATIO_EN;
-    if (Vratio == 1.0) save->fp_vert_stretch &= ~(R128_VERT_STRETCH_ENABLE |
-						  R128_VERT_STRETCH_BLEND);
-    else               save->fp_vert_stretch |=  (R128_VERT_STRETCH_ENABLE |
-						  R128_VERT_STRETCH_BLEND);
+    if (yres == info->PanelYRes) 
+        save->fp_vert_stretch &= ~(R128_VERT_STRETCH_ENABLE | R128_VERT_STRETCH_BLEND);
+    else               
+        save->fp_vert_stretch |=  (R128_VERT_STRETCH_ENABLE | R128_VERT_STRETCH_BLEND);
 
     save->fp_gen_cntl = (orig->fp_gen_cntl &
 			 (CARD32)~(R128_FP_SEL_CRTC2 |
@@ -2574,14 +3005,9 @@ static void R128InitFPRegisters(R128SavePtr orig, R128SavePtr save,
 				   R128_FP_CRTC_HORZ_DIV2_EN |
 				   R128_FP_CRTC_HOR_CRT_DIV2_DIS |
 				   R128_FP_USE_SHADOW_EN));
-    if (orig->fp_gen_cntl & R128_FP_DETECT_SENSE) {
-	save->fp_gen_cntl |= (R128_FP_CRTC_DONT_SHADOW_VPAR |
-			      R128_FP_TDMS_EN);
-    }
-
+ 
     save->fp_panel_cntl        = orig->fp_panel_cntl;
     save->lvds_gen_cntl        = orig->lvds_gen_cntl;
-
     save->tmds_crc             = orig->tmds_crc;
 
     /* Disable CRT output by disabling CRT output and setting the CRT
@@ -2589,21 +3015,36 @@ static void R128InitFPRegisters(R128SavePtr orig, R128SavePtr save,
        want to use the dual CRTC capabilities of the R128 to allow both
        the flat panel and external CRT to either simultaneously display
        the same image or display two different images. */
-    if (info->BIOSDisplay == R128_BIOS_DISPLAY_FP_CRT) {
-	save->crtc_ext_cntl  |= R128_CRTC_CRT_ON;
-    } else {
-	save->crtc_ext_cntl  &= ~R128_CRTC_CRT_ON;
-	save->dac_cntl       |= R128_DAC_CRT_SEL_CRTC2;
-	save->crtc2_gen_cntl  = 0;
+    
+    if(!info->isDFP){
+        if (info->BIOSDisplay == R128_BIOS_DISPLAY_FP_CRT) {
+	        save->crtc_ext_cntl  |= R128_CRTC_CRT_ON;
+        } else {
+	        save->crtc_ext_cntl  &= ~R128_CRTC_CRT_ON;
+	        save->dac_cntl       |= R128_DAC_CRT_SEL_CRTC2;
+	        save->crtc2_gen_cntl  = 0;
+        }
     }
 
     /* WARNING: Be careful about turning on the flat panel */
-#if 1
-    save->lvds_gen_cntl  |= (R128_LVDS_ON | R128_LVDS_BLON);
-#else
-    save->fp_panel_cntl  |= (R128_FP_DIGON | R128_FP_BLON);
-    save->fp_gen_cntl    |= (R128_FP_FPON);
-#endif
+    if(info->isDFP){
+        save->fp_gen_cntl = orig->fp_gen_cntl;
+ 
+        save->fp_gen_cntl &= ~(R128_FP_CRTC_USE_SHADOW_VEND |
+                               R128_FP_CRTC_USE_SHADOW_ROWCUR |
+                               R128_FP_CRTC_HORZ_DIV2_EN |
+                               R128_FP_CRTC_HOR_CRT_DIV2_DIS |
+                               R128_FP_CRT_SYNC_SEL |
+                               R128_FP_USE_SHADOW_EN);
+				 
+        save->fp_panel_cntl  |= (R128_FP_DIGON | R128_FP_BLON);
+        save->fp_gen_cntl    |= (R128_FP_FPON | R128_FP_TDMS_EN |
+             R128_FP_CRTC_DONT_SHADOW_VPAR | R128_FP_CRTC_DONT_SHADOW_HEND);
+        save->tmds_transmitter_cntl = (orig->tmds_transmitter_cntl
+            & ~R128_TMDS_PLLRST) | R128_TMDS_PLLEN;
+    }
+    else
+        save->lvds_gen_cntl  |= (R128_LVDS_ON | R128_LVDS_BLON);
 
     save->fp_crtc_h_total_disp = save->crtc_h_total_disp;
     save->fp_crtc_v_total_disp = save->crtc_v_total_disp;
@@ -2660,11 +3101,13 @@ static void R128InitPLLRegisters(ScrnInfoPtr pScrn, R128SavePtr save,
     save->ppll_ref_div   = pll->reference_div;
     save->ppll_div_3     = (save->feedback_div | (post_div->bitvalue << 16));
     save->htotal_cntl    = 0;
+
 }
 
 /* Define DDA registers for requested video mode. */
 static Bool R128InitDDARegisters(ScrnInfoPtr pScrn, R128SavePtr save,
-				 R128PLLPtr pll, R128InfoPtr info)
+				 R128PLLPtr pll, R128InfoPtr info, 
+                                 DisplayModePtr mode)
 {
     int         DisplayFifoWidth = 128;
     int         DisplayFifoDepth = 32;
@@ -2680,6 +3123,11 @@ static Bool R128InitDDARegisters(ScrnInfoPtr pScrn, R128SavePtr save,
 
     VclkFreq = R128Div(pll->reference_freq * save->feedback_div,
 		       pll->reference_div * save->post_div);
+
+    if(info->isDFP && !info->isPro2){
+        if(info->PanelXRes != mode->CrtcHDisplay)
+            VclkFreq = (VclkFreq * mode->CrtcHDisplay)/info->PanelXRes;
+	}
 
     XclksPerTransfer = R128Div(XclkFreq * DisplayFifoWidth,
 			       VclkFreq * (info->CurrentLayout.pixel_bytes * 8));
@@ -2790,12 +3238,20 @@ static Bool R128Init(ScrnInfoPtr pScrn, DisplayModePtr mode, R128SavePtr save)
 
     R128InitCommonRegisters(save, info);
     if (!R128InitCrtcRegisters(pScrn, save, mode, info)) return FALSE;
-    if (info->HasPanelRegs)
-	R128InitFPRegisters(&info->SavedReg, save, mode, info);
-    R128InitPLLRegisters(pScrn, save, &info->pll, dot_clock);
-    if (!R128InitDDARegisters(pScrn, save, &info->pll, info))
-	return FALSE;
-    if (!info->PaletteSavedOnVT) R128InitPalette(save);
+    if (info->HasPanelRegs || info->isDFP)
+	    R128InitFPRegisters(&info->SavedReg, save, mode, info);
+    if(dot_clock > 0){
+        R128InitPLLRegisters(pScrn, save, &info->pll, dot_clock);
+        if (!R128InitDDARegisters(pScrn, save, &info->pll, info, mode))
+	        return FALSE;
+    }
+    else{
+        save->ppll_ref_div         = info->SavedReg.ppll_ref_div;
+        save->ppll_div_3           = info->SavedReg.ppll_div_3;
+        save->htotal_cntl          = info->SavedReg.htotal_cntl;
+        save->dda_config           = info->SavedReg.dda_config;
+        save->dda_on_off           = info->SavedReg.dda_on_off;
+    }
 
     R128TRACE(("R128Init returns %p\n", save));
     return TRUE;
@@ -2847,6 +3303,14 @@ int R128ValidMode(int scrnIndex, DisplayModePtr mode,
 {
     ScrnInfoPtr   pScrn = xf86Screens[scrnIndex];
     R128InfoPtr   info  = R128PTR(pScrn);
+
+    if(info->isDFP) {
+        if(info->PanelXRes < mode->CrtcHDisplay ||
+           info->PanelYRes < mode->CrtcVDisplay)
+            return MODE_NOMODE;
+        else
+            return MODE_OK;
+    }
 
     if (info->HasPanelRegs) {
 	if (mode->Flags & V_INTERLACE) return MODE_NO_INTERLACE;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.13 2001/05/15 10:19:36 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.14 2001/05/25 02:44:36 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -46,6 +46,9 @@
 				/* XAA and Cursor Support */
 #include "xaa.h"
 #include "xf86Cursor.h"
+
+				/* DDC support */
+#include "xf86DDC.h"
 
 				/* Xv support */
 #include "xf86xv.h"
@@ -143,6 +146,7 @@ typedef struct {
     CARD32     fp_vert_stretch;
     CARD32     lvds_gen_cntl;
     CARD32     tmds_crc;
+    CARD32     tmds_transmitter_cntl;
 
 				/* Computed values for PLL */
     CARD32     dot_clock_freq;
@@ -211,6 +215,12 @@ typedef struct {
 				/* Computed values for FPs */
     int               PanelXRes;
     int               PanelYRes;
+    int               HOverPlus;
+    int               HSyncWidth;
+    int               HBlank;
+    int               VOverPlus;
+    int               VSyncWidth;
+    int               VBlank;
     int               PanelPwrDly;
 
     R128PLLRec        pll;
@@ -359,6 +369,12 @@ typedef struct {
     int               videoKey;
     Bool              showCache;
     OptionInfoPtr     Options;
+
+    Bool              isDFP;
+    Bool              isPro2;
+    I2CBusPtr         pI2CBus;
+    CARD32            DDCReg;
+
 } R128InfoRec, *R128InfoPtr;
 
 #define R128WaitForFifo(pScrn, entries)                                      \
