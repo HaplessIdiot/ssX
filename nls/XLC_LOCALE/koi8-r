@@ -1,8 +1,6 @@
-XCOMM  $TOG: koi8-r /main/2 1997/09/29 13:14:37 kaleb $
+XCOMM  $XFree86: xc/nls/X11/locale/XLC_LOCALE/koi8-r,v 3.0 1995/09/23 06:00:07 dawes Exp $
 XCOMM  XLocale Database Sample for koi8-r.
 XCOMM 
-XCOMM 
-XCOMM  $XFree86: xc/nls/XLC_LOCALE/koi8-r,v 3.1 1996/12/28 08:10:21 dawes Exp $
 
 XCOMM 
 XCOMM 	XLC_FONTSET category
@@ -54,7 +52,7 @@ cs1	{
 #else
 	wc_encoding	\x00008080
 #endif
-	ct_encoding     KOI8-R:GR; ISO8859-1:GR
+	ct_encoding     KOI8-R:GR
 }
 
 END XLC_XLOCALE

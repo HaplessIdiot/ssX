@@ -1,4 +1,4 @@
-<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
+<!doctype linuxdoc system>
  
 <article>
 
@@ -16,7 +16,7 @@ The driver was primarily written for the SiS86c201.
 The driver has almost been completed, with many additional features.
 These include
 <itemize>
-  <item>Linear Addressing
+  <item>LinearAddressing
   <item>8/15/16/24 bits per pixel
   <item>Fully programmable clocks are supported
   <item>H/W cursor support
@@ -52,7 +52,7 @@ section).
 	On chips 86c202 and later, the default is to use the programmable
 	clock for all clocks. It is possible to use the fixed clocks
 	supported by the chip instead of using this option (manufacturer
-	dependent).
+	dependant).
 <tag>Option &dquot;sw_cursor&dquot, &dquot;hw_cursor&dquot;</tag>
 	The default is for using the hardware cursor.
 <tag>Option &dquot;no_linear&dquot;</tag>
@@ -86,14 +86,14 @@ driver you'll need to consider several points:
 
 <sect> Troubleshooting <p>
 
-With intensive generation there is a snow phenomenon on the screen.
+With intensive generation there is a snow phenomenum on the screen.
 Can't remove it even if I used the fifo low/high water mark dumped
 from W95.
 
 
 With intensive generation in 1024x768 65 Mhz sometimes some points (rubbish,
 fuzz... hard to explain) appear in memory, like memory
-violations or memory corruption.
+violations or memory corruptions.
 It looks like an electronic refresh not well done or VClk too near
 the MClk.
 I use the default Mclk set by BIOS.
@@ -103,7 +103,7 @@ I can't reproduce this problem in 1024x768 75 MHz or 1280x1024 110 MHz
 or 1152x900 95 MHz.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SiS.sgml,v 3.2 1997/01/24 09:32:28 dawes Exp $
+$XFree86$
 </verb>
 
 </article>

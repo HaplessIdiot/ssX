@@ -1,5 +1,5 @@
 /* This is OS/2 Rexx, written for OS/2 to avoid need for secondary shell */
-/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/cvga256.cmd,v 3.0 1995/12/17 10:06:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/cvga256.cmd,v 3.0 1995/03/11 14:16:43 dawes Exp $ */
 /*
  * This script generates vga256Conf.c
  *
@@ -26,7 +26,7 @@ DO i=1 TO WORDS(all)
     ELSE
 	CALL LineOut vgaconf, '        'arg','
 END
-CALL LineOut vgaconf, 'vgaVideoChipPtr videoDrivers[] ='
+CALL LineOut vgaconf, 'vgaVideoChipPtr vgaDrivers[] ='
 CALL LineOut vgaconf, '{'
 DO i=1 TO WORDS(all)
     arg = WORD(all,i)

@@ -1,4 +1,3 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Matrox.c,v 3.2 1997/02/14 12:16:41 hohndel Exp $ */
 /*
  * (c) Copyright 1997 Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -62,9 +61,6 @@ int *Chipset;
 		{
 			switch (pcrp->_device)
 			{
-			case PCI_CHIP_MGA1064SG:
-				*Chipset = CHIP_MGA1064SG;
-				break;
 			case PCI_CHIP_MGA2064W:
 				*Chipset = CHIP_MGA2064W;
 				break;

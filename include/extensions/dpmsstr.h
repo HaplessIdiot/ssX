@@ -1,4 +1,3 @@
-/* $TOG: dpmsstr.h /main/1 1997/11/12 14:36:58 kaleb $ */
 /*****************************************************************
 
 Copyright (c) 1996 Digital Equipment Corporation, Maynard, Massachusetts.

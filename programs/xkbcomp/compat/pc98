@@ -1,9 +1,4 @@
-// $TOG: pc98 /main/1 1997/08/02 10:10:34 kaleb $
-
-
-
-
-// $XFree86: xc/programs/xkbcomp/compat/pc98,v 3.0 1996/02/19 12:21:03 dawes Exp $
+// $XFree86$
 
 // Minimal set of symbol interpretations to provide 
 // reasonable default behavior (Num lock, shift and 

@@ -1,59 +1,38 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/xaa/Imakefile,v 3.20 1998/04/27 13:27:29 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xaa/Imakefile,v 3.0 1996/11/18 13:22:00 dawes Exp $
 
-#define IHaveModules
 #include <Server.tmpl>
 
 #define IHaveSubdirs
 
-BPPSRCS = xaavga256/?*.c xaa8/?*.c xaa16/?*.c xaa24/?*.c xaa32/?*.c
+BPPSRCS = xaavga256/?*.c xaa16/?*.c xaa24/?*.c xaa32/?*.c
 
-GENSRCS = xf86initac.c \
+SRCS = 	xf86initac.c \
 	xf86cparea.c xf86frect.c xf86spans.c xf86text.c xf86window.c \
 	xf86defs.c xf86pcache.c xf86farc.c xf86fpoly.c \
 	xf86expblt.c xf86expblM.c xf86bitmap.c xf86plane.c \
 	xf86orect.c xf86line.c xf86seg.c \
-	xf86bench.c xf86line2.c xf86seg2.c \
-	xf86expblF.c xf86expbFM.c xf86tables.c xf86stip.c xf86dseg.c \
-	xf86dline.c xf86wline.c xf86cursor.c xf86spoly.c xf86trect.c
+	xf86bench.c xf86line2.c xf86seg2.c
 
-BPPOBJS = xaavga256/xaavga256.o xaa8/xaa8.o xaa16/xaa16.o xaa24/xaa24.o \
-	  xaa32/xaa32.o
+BPPOBJS = xaavga256/xaavga256.o xaa16/xaa16.o xaa24/xaa24.o xaa32/xaa32.o
 
-GENOBJS = xf86initac.o \
+OBJS = 	xf86initac.o \
 	xf86cparea.o xf86frect.o xf86spans.o xf86text.o xf86window.o \
 	xf86defs.o xf86pcache.o xf86farc.o xf86fpoly.o \
 	xf86expblt.o xf86expblM.o xf86bitmap.o xf86plane.o \
 	xf86orect.o xf86line.o xf86seg.o \
-	xf86bench.o xf86line2.o xf86seg2.o \
-	xf86expblF.o xf86expbFM.o xf86tables.o xf86stip.o xf86dseg.o \
-	xf86dline.o xf86wline.o xf86cursor.o xf86spoly.o xf86trect.o
+	xf86bench.o xf86line2.o xf86seg2.o
 
-#ifdef i386Architecture
-SRCS = $(GENSRCS) xf86txtblt.s xf86txtblM.s 
-OBJS = $(GENOBJS) xf86txtblt.o xf86txtblM.o
-#else
-SRCS = $(GENSRCS)
-OBJS = $(GENOBJS)
-#endif
+SUBDIRS = xaavga256 xaa16 xaa24 xaa32
 
-SUBDIRS = xaavga256 xaa8 xaa16 xaa24 xaa32
-
-DONES = xaavga256/DONE xaa8/DONE xaa16/DONE xaa24/DONE xaa32/DONE
+DONES = xaavga256/DONE xaa16/DONE xaa24/DONE xaa32/DONE
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) \
-	   -I$(XF86SRC)/vga256/vga -I$(XF86SRC) \
+	   -I$(XF86SRC)/vga256/vga \
            -I$(SERVERSRC)/cfb -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
-	   -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(FONTINCSRC)
+	   -I$(SERVERSRC)/include -I$(INCLUDESRC) -I$(FONTINCSRC)
 
 
-
-xaavga256/DONE:	xaavga256
-xaa8/DONE:	xaa8
-xaa16/DONE:	xaa16
-xaa24/DONE:	xaa24
-xaa32/DONE:	xaa32
-
-NormalDepLibraryTarget(xaa,$(OBJS) $(SUBDIRS) $(DONES),$(OBJS))
+NormalDepLibraryTarget(xaa,$(OBJS) $(SUBDIRS) $(DONES),$(OBJS) $(BPPOBJS))
 NormalLibraryObjectRule()
 NormalAsmObjectRule()
 
@@ -64,11 +43,7 @@ LinkSourceFile(vga256map.h,$(XF86SRC)/xaa)
 LinkSourceFile(xf86bench.c,$(XF86SRC)/xaa)
 LinkSourceFile(xf86bitmap.c,$(XF86SRC)/xaa)
 LinkSourceFile(xf86cparea.c,$(XF86SRC)/xaa)
-LinkSourceFile(xf86cursor.c,$(XF86SRC)/xaa)
-LinkSourceFile(xf86cursor.h,$(XF86SRC)/xaa)
 LinkSourceFile(xf86defs.c,$(XF86SRC)/xaa)
-LinkSourceFile(xf86dline.c,$(XF86SRC)/xaa)
-LinkSourceFile(xf86dseg.c,$(XF86SRC)/xaa)
 LinkSourceFile(xf86expblt.c,$(XF86SRC)/xaa)
 LinkSourceFile(xf86expblt.h,$(XF86SRC)/xaa)
 LinkSourceFile(xf86farc.c,$(XF86SRC)/xaa)
@@ -90,41 +65,15 @@ LinkSourceFile(xf86plane.c,$(XF86SRC)/xaa)
 LinkSourceFile(xf86scrin.c,$(XF86SRC)/xaa)
 LinkSourceFile(xf86scrin.h,$(XF86SRC)/xaa)
 LinkSourceFile(xf86spans.c,$(XF86SRC)/xaa)
-LinkSourceFile(xf86spoly.c,$(XF86SRC)/xaa)
-LinkSourceFile(xf86stip.c,$(XF86SRC)/xaa)
-LinkSourceFile(xf86tables.c,$(XF86SRC)/xaa)
 LinkSourceFile(xf86text.c,$(XF86SRC)/xaa)
-LinkSourceFile(xf86trect.c,$(XF86SRC)/xaa)
-LinkSourceFile(xf86txtblt.s,$(XF86SRC)/xaa)
 LinkSourceFile(xf86window.c,$(XF86SRC)/xaa)
-LinkSourceFile(xf86wline.c,$(XF86SRC)/xaa)
-LinkSourceFile(xf86wrapper.c,$(XF86SRC)/xaa)
 LinkSourceFile(xf86xaa.h,$(XF86SRC)/xaa)
 
 ObjectFromSpecialSource(xf86expblM, xf86expblt, -DMSBFIRST)
-ObjectFromSpecialSource(xf86expblF, xf86expblt, -DFIXEDBASE)
-ObjectFromSpecialSource(xf86expbFM, xf86expblt, -DMSBFIRST -DFIXEDBASE)
-#ifdef i386Architecture
-ObjectFromSpecialAsmSource(xf86txtblM, xf86txtblt, -DMSBFIRST)
-#endif
 ObjectFromSpecialSource(xf86seg, xf86line, -DPOLYSEGMENT)
 ObjectFromSpecialSource(xf86seg2, xf86line2, -DPOLYSEGMENT)
-
-#if DoLoadableServer
-#ifndef DontInstallPC98Version
-InstallDynamicModule(LibraryTargetName(xaa),$(MODULEDIR))
-#endif
-#endif
 
 DependTarget()
 
 ForceSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
-
-#ifndef DontInstallPC98Version
-InstallLinkKitLibrary(xaa,$(LINKKITDIR)/lib)
-InstallLinkKitNonExecFile(xf86scrin.h,$(LINKKITDIR)/include)
-InstallLinkKitNonExecFile(xf86xaa.h,$(LINKKITDIR)/include)
-InstallLinkKitNonExecFile(xf86cursor.h,$(LINKKITDIR)/include)
-InstallLinkKitNonExecFile(xf86local.h,$(LINKKITDIR)/include)
-#endif

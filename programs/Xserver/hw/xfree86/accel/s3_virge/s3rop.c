@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3rop.c,v 3.1 1997/01/14 22:17:24 dawes Exp $ */
+/* $XFree86$ */
 
 #include "X.h"
 
@@ -92,165 +92,102 @@ int s3ConvertPlanemask(GCPtr pGC, int *new_color)
       switch (pGC->alu) {
       case GXclear:  /* ROP_0 */
          rop = ROP_DPa;
-/*
          color = ~pGC->planemask;
-*/
-         color = ~(pGC->planemask & 0x00ffFFff);
          break;
       case GXand:  /* ROP_DPa */
          if ((pGC->fgPixel & pGC->planemask) != pGC->planemask) {
             rop = ROP_DPa;
-/*
             color = pGC->fgPixel | ~pGC->planemask;
-*/
-            color = pGC->fgPixel | ~(pGC->planemask & 0x00ffFFff);
          }
          break;
       case GXandReverse:  /* ROP_PDna */
          if ((pGC->fgPixel & pGC->planemask) == pGC->planemask) {
             rop = ROP_DPx;
-/*
             color = pGC->planemask;
-*/
-            color = pGC->planemask & 0x00ffFFff;
          } else if (!(pGC->fgPixel & pGC->planemask)) {
             rop = ROP_DPa;
-/*
             color = ~pGC->planemask;
-*/
-            color = ~(pGC->planemask & 0x00ffFFff);
          }
          break;
       case GXcopy:  /* ROP_P */
          if ((pGC->fgPixel & pGC->planemask) == pGC->planemask) {
             rop = ROP_DPo;
-/*
             color = pGC->planemask;
-*/
-            color = pGC->planemask & 0x00ffFFff;
          } else if (!(pGC->fgPixel & pGC->planemask)) {
             rop = ROP_DPa;
-/*
             color = ~pGC->planemask;
-*/
-            color = ~(pGC->planemask & 0x00ffFFff);
          }
          break;
       case GXandInverted:  /* ROP_DPna */
          if ((~pGC->fgPixel & pGC->planemask) != pGC->planemask) {
             rop = ROP_DPa;
-/*
             color = ~pGC->fgPixel | ~pGC->planemask;
-*/
-            color = ~pGC->fgPixel | ~(pGC->planemask & 0x00ffFFff);
          }
          break;
       case GXnoop:  /* ROP_D */
          break;
       case GXxor:  /* ROP_DPx */
-/*
          color = pGC->fgPixel & pGC->planemask;
-*/
-         color = pGC->fgPixel & (pGC->planemask & 0x00ffFFff);
          if (color)
             rop = ROP_DPx;
          break;
       case GXor:  /* ROP_DPo */
-/*
          color = pGC->fgPixel & pGC->planemask;
-*/
-         color = pGC->fgPixel & (pGC->planemask & 0x00ffFFff);
          if (color)
             rop = ROP_DPo;
          break;
       case GXnor:  /* ROP_DPon */
          if ((pGC->fgPixel & pGC->planemask) == pGC->planemask) {
             rop = ROP_DPa;
-/*
             color = ~pGC->planemask;
-*/
-            color = ~(pGC->planemask & 0x00ffFFff);
          } else if (!(pGC->fgPixel & pGC->planemask)) {
             rop = ROP_DPx;
-/*
             color = pGC->planemask;
-*/
-            color = pGC->planemask & 0x00ffFFff;
          }
          break;
       case GXequiv:  /* ROP_DPxn */
-/*
          color = ~pGC->fgPixel & pGC->planemask;
-*/
-         color = ~pGC->fgPixel & (pGC->planemask & 0x00ffFFff);
          if (color)
             rop = ROP_DPx;
          break;
       case GXinvert:  /* ROP_Dn */
          rop = ROP_DPx;
-/*
          color = pGC->planemask;
-*/
-         color = pGC->planemask & 0x00ffFFff;
          break;
       case GXorReverse:  /* ROP_PDno */
          if ((pGC->fgPixel & pGC->planemask) == pGC->planemask) {
             rop = ROP_DPo;
-/*
             color = pGC->planemask;
-*/
-            color = pGC->planemask & 0x00ffFFff;
          } else if (!(pGC->fgPixel & pGC->planemask)) {
             rop = ROP_DPx;
-/*
             color = pGC->planemask;
-*/
-            color = pGC->planemask & 0x00ffFFff;
          }
          break;
       case GXcopyInverted:  /* ROP_Pn */
          if ((pGC->fgPixel & pGC->planemask) == pGC->planemask) {
             rop = ROP_DPa;
-/*
             color = ~pGC->planemask;
-*/
-            color = ~(pGC->planemask & 0x00ffFFff);
          } else if (!(pGC->fgPixel & pGC->planemask)) {
             rop = ROP_DPo;
-/*
             color = pGC->planemask;
-*/
-            color = pGC->planemask & 0x00ffFFff;
          }
       case GXorInverted:  /* ROP_DPno */
-/*
          color = ~pGC->fgPixel & pGC->planemask;
-*/
-         color = ~pGC->fgPixel & (pGC->planemask & 0x00ffFFff);
          if (color)
             rop = ROP_DPo;
          break;
       case GXnand:  /* ROP_DPan */
          if ((pGC->fgPixel & pGC->planemask) == pGC->planemask) {
             rop = ROP_DPx;
-/*
             color = pGC->planemask;
-*/
-            color = pGC->planemask & 0x00ffFFff;
          } else if (!(pGC->fgPixel & pGC->planemask)) {
             rop = ROP_DPo;
-/*
             color = pGC->planemask;
-*/
-            color = pGC->planemask & 0x00ffFFff;
          }
          break;
       case GXset:  /* ROP_1 */
          rop = ROP_DPo;
-/*
          color = pGC->planemask;
-*/
-         color = pGC->planemask & 0x00ffFFff;
          break;
       }
    }
