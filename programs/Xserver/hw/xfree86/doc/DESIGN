@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                       Last modified 15 February 2000
+                          Last modified 1 May 2000
 
 NOTE: This is a DRAFT document, and the interfaces described here are subject
 to change without notice.
@@ -496,14 +496,14 @@ Probe() function of each registered video driver is called.
           The probe must register all non-relocatable resources at
           this stage.  If a resource conflict is found between
           exclusive resources the driver will fail immediately.
-          This is usually best done with the xf86ConfigActivePciEn-
-          tity() helper function for PCI and xf86ConfigActiveIsaEn-
-          tity() for ISA (see the RAC (section 9., page 1) sec-
-          tion).  It is possible to register some entity specific
-          functions with those helpers.  When not using the
-          helpers, the xf86AddEntityToScreen() xf86ClaimFixe-
-          dResources() and xf86SetEntityFuncs() should be used
-          instead (see the RAC (section 9., page 1) section).
+          This is usually best done with the xf86ConfigPciEntity()
+          helper function for PCI and xf86ConfigIsaEntity() for ISA
+          (see the RAC (section 9., page 1) section).  It is possi-
+          ble to register some entity specific functions with those
+          helpers.  When not using the helpers, the xf86AddEntity-
+          ToScreen() xf86ClaimFixedResources() and xf86SetEntity-
+          Funcs() should be used instead (see the RAC (section 9.,
+          page 1) section).
 
           If a chipset is specified in an active device section
           which the driver considers relevant (ie it has no driver
@@ -514,12 +514,16 @@ Probe() function of each registered video driver is called.
           If there are no active device sections that the driver
           considers relevant, it must return FALSE.
 
-          Allocate a ScrnInfoRec for each instance of the hardware
-          found, and fill in the basic information, including the
-          other driver entry points.  The xf86AllocateScreen()
-          function must be used to allocate the ScrnInfoRec, and it
-          takes care of initialising fields to defined ``unused''
-          values.
+          Allocate a ScrnInfoRec for each active instance of the
+          hardware found, and fill in the basic information,
+          including the other driver entry points.   This is best
+          done with the xf86ConfigIsaEntity() helper function for
+          ISA instances or xf86ConfigPciEntity() for PCI instances.
+          These functions allocate a ScrnInfoRec for active enti-
+          ties. Optionally xf86AllocateScreen() function may also
+          be used to allocate the ScrnInfoRec.  Any of these func-
+          tions take care of initialising fields to defined
+          ``unused'' values.
 
           Claim the entities for each instance of the hardware
           found.  This prevents other drivers from claiming the
@@ -697,14 +701,16 @@ ChipPreInit() function.
 
           Modules may be loaded at any point in this function, and
           all modules that the driver will need must be loaded
-          before the end of this function.  The xf86LoadSubModule()
-          function should be used to load modules.  A driver may
-          unload a module within this function if it was only
-          needed temporarily, and the xf86UnloadSubModule() func-
-          tion should be used to do that.  Otherwise there is no
-          need to explicitly unload modules because the loader
-          takes care of module dependencies and will unload submod-
-          ules automatically if/when the driver module is unloaded.
+          before the end of this function.  Either the
+          xf86LoadSubModule() or the xf86LoadDrvSubModule() func-
+          tion should be used to load modules depending on whether
+          a ScrnInfoRec has been set up. A driver may unload a mod-
+          ule within this function if it was only needed temporar-
+          ily, and the xf86UnloadSubModule() function should be
+          used to do that.  Otherwise there is no need to explic-
+          itly unload modules because the loader takes care of mod-
+          ule dependencies and will unload submodules automatically
+          if/when the driver module is unloaded.
 
           The bulk of the ScrnInfoRec fields should be filled out
           in this function.
@@ -768,7 +774,8 @@ going to use them:
                     chipID
                     chipRev
 
-     pointer xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name):
+     pointer xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name): and
+     pointer xf86LoadDrvSubModule(DriverPtr drv, const char *name):
 
           Load a module that a driver depends on.  This function
           loads the module name as a sub module of the driver.  The
@@ -781,7 +788,8 @@ going to use them:
      void xf86UnloadSubModule(pointer module)
 
           Unloads the module referenced by module.  module should
-          be a pointer returned previously by xf86LoadSubModule().
+          be a pointer returned previously by xf86LoadSubModule()
+          or xf86LoadDrvSubModule() .
 
 5.13  Cleaning up Unused Drivers
 
@@ -1641,30 +1649,29 @@ able at the driver level:
 
 Two helper functions are provided to aid configuring entities:
 
-     Bool xf86ConfigActivePciEntity(ScrnInfoPtr pScrn, int entityIndex,
+     ScrnInfoPtr xf86ConfigPciEntity(ScrnInfoPtr pScrn,
+               int scrnFlag, int entityIndex,
+               PciChipsets *p_chip,
+               resList res, EntityProc init,
+               EntityProc enter, EntityProc leave,
+               pointer private)
+     ScrnInfoPtr xf86ConfigIsaEntity(ScrnInfoPtr pScrn,
+               int scrnFlag, int entityIndex,
+               IsaChipsets *i_chip,
 
-               PciChipsets *p_chip, resList res,
-
-               EntityProc init, EntityProc enter,
-
-               EntityProc leave, pointer private)
-
-     Bool xf86ConfigActiveIsaEntity(ScrnInfoPtr pScrn, int entityIndex,
-
-               IsaChipsets *i_chip, resList res,
-
-               EntityProc init, EntityProc enter,
-
-               EntityProc leave, pointer private)
+               resList res, EntityProc init,
+               EntityProc enter, EntityProc leave,
+               pointer private)
 
           These functions are used to register the non-relocatable
           resources for an entity, and the optional entity-specific
           Init, Enter and Leave functions.  Usually the list of
           fixed resources is obtained from the Isa/PciChipsets
           lists.  However an additional list of resources may be
-          passed.  Generally this is not required.  The return
-          value is TRUE when successful.  The init, enter, leave
-          functions are defined as follows:
+          passed.  Generally this is not required.  For active
+          entities a ScrnInfoRec is allocated if the pScrn argument
+          is NULL.  The return value is TRUE when successful.  The
+          init, enter, leave functions are defined as follows:
 
                typedef void (*EntityProc)(int entityIndex,
 
@@ -1672,8 +1679,8 @@ Two helper functions are provided to aid configuring entities:
 
           They are passed the entity index and a pointer to a pri-
           vate scratch area.  This are can be set up during Probe()
-          and its address can be passed to xf86ConfigActiveIsaEn-
-          tity() xf86ConfigActivePciEntity() as the last argument.
+          and its address can be passed to xf86ConfigIsaEntity()
+          xf86ConfigPciEntity() as the last argument.
 
 These two helper functions make use of several core functions that are avail-
 able at the driver level:
@@ -1833,11 +1840,16 @@ xf86FixPciResource() can be used to do this:
 The driver may replace the generic access control functions for an entity by
 it's own ones.  This is done with the xf86SetAccessFuncs():
 
-     void xf86SetAccessFuncs(EntityInfoPtr pEnt, xf86AccessPtr p_io,
+     void xf86SetAccessFuncs(EntityInfoPtr pEnt,
+               xf86SetAccessFuncPtr funcs,
 
-               xf86AccessPtr p_mem, xf86AccessPtr p_io_mem,
+               xf86SetAccessFuncPtr oldFuncs) with:
 
-               xf86AccessPtr *ppAccessOld)
+                typedef struct {
+                    xf86AccessPtr mem;
+                    xf86AccessPtr io;
+                    xf86AccessPtr io_mem;
+                } xf86SetAccessFuncRec, *xf86SetAccessFuncPtr;
 
           The driver can pass three functions: one for I/O access,
           one for memory access and one for combined memory and I/O
@@ -2013,6 +2025,12 @@ Next, the higher level functions that most drivers would use.
           number is known (e.g., from the ChipProbe() function) a
           scrnIndex value of -1 should be used.
 
+          NOTE 2: Given that this function stores into the Option-
+          InfoRecs pointed to by optinfo, the caller should ensure
+          the OptionInfoRecs are (re-)initialised before the call,
+          especially if the caller expects to use the predefined
+          option values as defaults.
+
           The OptionInfoRec is defined as follows:
 
                        typedef struct {
@@ -2061,14 +2079,13 @@ Next, the higher level functions that most drivers would use.
           specified, freq.units is set to 0, and freq.freq is
           unscaled.
 
-          Typical usage is to setup a static array of OptionIn-
-          foRecs with the token, name, and type fields initialised.
-          The value and found fields get set by xf86ProcessOp-
-          tions().  For cases where the value parsing is more com-
-          plex, the driver should specify OPTV_STRING, and parse
-          the string itself.  An example of using this option han-
-          dling is included in the Sample Driver (section 20., page
-          1) section.
+          Typical usage is to setup an array of OptionInfoRecs with
+          all fields initialised.  The value and found fields get
+          set by xf86ProcessOptions().  For cases where the value
+          parsing is more complex, the driver should specify
+          OPTV_STRING, and parse the string itself.  An example of
+          using this option handling is included in the Sample
+          Driver (section 20., page 1) section.
 
      void xf86ShowUnusedOptions(int scrnIndex, pointer options)
 
@@ -3764,11 +3781,11 @@ are defined as
           if it calls other loader functions that require a refer-
           ence to it.   The remaining arguments are those that were
           passed to the LoadModule() (or LoadSubModule()), and are
-          described above.  When the SetupProc is successful it
-          must return a non-NULL value.  The loader checks this,
-          and if it is NULL it unloads the module and reports the
-          failure to the caller of LoadModule().  If the SetupProc
-          does things that need to be undone when the module is
+          described above. When the SetupProc is successful it must
+          return a non-NULL value.  The loader checks this, and if
+          it is NULL it unloads the module and reports the failure
+          to the caller of LoadModule().  If the SetupProc does
+          things that need to be undone when the module is
           unloaded, it should define a TearDownProc, and return a
           pointer that the TearDownProc can use to undo what has
           been done.
@@ -5429,6 +5446,8 @@ Drivers must NOT include the following:
             { -1,               NULL,        OPTV_NONE,    {0}, FALSE }
           };
 
+          #define nZZZOptions (sizeof(ZZZOptions) / sizeof(ZZZOptions[0]))
+
 20.3  Functions
 
 20.3.1  SetupProc
@@ -5574,27 +5593,26 @@ NOTE: The xf86DrvMsg() functions cannot be used from the Probe.
                                  numDevSections, drv, &usedChips);
 
              for (i = 0; i < numUsed; i++) {
-                 ScrnInfoPtr pScrn;
-
-                 /* Allocate a ScrnInfoRec */
-                 pScrn = xf86AllocateScreen(drv, 0);
-                 pScrn->driverVersion = VERSION;
-                 pScrn->driverName    = ZZZ_DRIVER_NAME;
-                 pScrn->name          = ZZZ_NAME;
-                 pScrn->Probe         = ZZZProbe;
-                 pScrn->PreInit       = ZZZPreInit;
-                 pScrn->ScreenInit    = ZZZScreenInit;
-                 pScrn->SwitchMode    = ZZZSwitchMode;
-                 pScrn->AdjustFrame   = ZZZAdjustFrame;
-                 pScrn->EnterVT       = ZZZEnterVT;
-                 pScrn->LeaveVT       = ZZZLeaveVT;
-                 pScrn->FreeScreen    = ZZZFreeScreen;
-                 pScrn->ValidMode     = ZZZValidMode;
-                 foundScreen = TRUE;
-                 /* add screen to entity */
-                 xf86ConfigActivePciEntity(pScrn, usedChips[i],
-                             ZZZPciChipsets, NULL, NULL, NULL, NULL, NULL);
-
+                 ScrnInfoPtr pScrn = NULL;
+                 if ((pScrn = xf86ConfigPciEntity(pScrn, flags, usedChips[i],
+                                                  ZZZPciChipsets, NULL, NULL,
+                                                  NULL, NULL, NULL))) {
+                    /* Allocate a ScrnInfoRec */
+                    pScrn->driverVersion = VERSION;
+                    pScrn->driverName    = ZZZ_DRIVER_NAME;
+                    pScrn->name          = ZZZ_NAME;
+                    pScrn->Probe         = ZZZProbe;
+                    pScrn->PreInit       = ZZZPreInit;
+                    pScrn->ScreenInit    = ZZZScreenInit;
+                    pScrn->SwitchMode    = ZZZSwitchMode;
+                    pScrn->AdjustFrame   = ZZZAdjustFrame;
+                    pScrn->EnterVT       = ZZZEnterVT;
+                    pScrn->LeaveVT       = ZZZLeaveVT;
+                    pScrn->FreeScreen    = ZZZFreeScreen;
+                    pScrn->ValidMode     = ZZZValidMode;
+                    foundScreen = TRUE;
+                    /* add screen to entity */
+                }
              }
              if (numUsed > 0)
                  xfree(usedChips);
@@ -5609,23 +5627,24 @@ NOTE: The xf86DrvMsg() functions cannot be used from the Probe.
                                   ZZZIsaChipsets, drv, ZZZFindIsaDevice,
                                   devSections, numDevSections, &usedChips);
          for (i = 0; i < numUsed; i++) {
-             ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
-
-             pScrn->driverVersion = VERSION;
-             pScrn->driverName    = ZZZ_DRIVER_NAME;
-             pScrn->name          = ZZZ_NAME;
-             pScrn->Probe         = ZZZProbe;
-             pScrn->PreInit       = ZZZPreInit;
-             pScrn->ScreenInit    = ZZZScreenInit;
-             pScrn->SwitchMode    = ZZZSwitchMode;
-             pScrn->AdjustFrame   = ZZZAdjustFrame;
-             pScrn->EnterVT       = ZZZEnterVT;
-             pScrn->LeaveVT       = ZZZLeaveVT;
-             pScrn->FreeScreen    = ZZZFreeScreen;
-             pScrn->ValidMode     = ZZZValidMode;
-             foundScreen = TRUE;
-             xf86ConfigActiveIsaEntity(pScrn, usedChips[i], ZZZIsaChipsets,
-                                       NULL, NULL, NULL, NULL, NULL);
+             ScrnInfoPtr pScrn = NULL;
+          if ((pScrn = xf86ConfigIsaEntity(pScrn, flags, usedChips[i],
+                               ZZZIsaChipsets, NULL, NULL, NULL,
+                               NULL, NULL))) {
+                 pScrn->driverVersion = VERSION;
+                 pScrn->driverName    = ZZZ_DRIVER_NAME;
+                 pScrn->name          = ZZZ_NAME;
+                 pScrn->Probe         = ZZZProbe;
+                 pScrn->PreInit       = ZZZPreInit;
+                 pScrn->ScreenInit    = ZZZScreenInit;
+                 pScrn->SwitchMode    = ZZZSwitchMode;
+                 pScrn->AdjustFrame   = ZZZAdjustFrame;
+                 pScrn->EnterVT       = ZZZEnterVT;
+                 pScrn->LeaveVT       = ZZZLeaveVT;
+                 pScrn->FreeScreen    = ZZZFreeScreen;
+                 pScrn->ValidMode     = ZZZValidMode;
+                 foundScreen = TRUE;
+             }
          }
          if (numUsed > 0)
              xfree(usedChips);
@@ -5673,6 +5692,8 @@ NOTES:
      static Bool
      ZZZPreInit(ScrnInfoPtr pScrn, int flags)
      {
+         OptionInfoRec options[nZZZOptions];
+
          /* Fill in the monitor field */
          pScrn->monitor = pScrn->confScreen->monitor;
 
@@ -5751,9 +5772,10 @@ NOTES:
 
          /*
           * Process the options based on the information in ZZZOptions.
-          * The results are written to ZZZOptions.
+          * The results are written to options.
           */
-         xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, ZZZOptions);
+         (void)memcpy(options, ZZZOptions, sizeof(ZZZOptions));
+         xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, options);
 
          /*
           * Set various fields of ScrnInfoRec and/or ZZZRec based on
@@ -5761,25 +5783,25 @@ NOTES:
           */
          from = X_DEFAULT;
          pZzz->hwCursor = FALSE;
-         if (xf86IsOptionSet(ZZZOptions, OPTION_HW_CURSOR)) {
+         if (xf86IsOptionSet(options, OPTION_HW_CURSOR)) {
              from = X_CONFIG;
              pZzz->hwCursor = TRUE;
          }
          xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
                     pZzz->hwCursor ? "HW" : "SW");
-         if (xf86IsOptionSet(ZZZOptions, OPTION_NOACCEL)) {
+         if (xf86IsOptionSet(options, OPTION_NOACCEL)) {
              pZzz->noAccel = TRUE;
              xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
                         "Acceleration disabled\n");
          } else {
              pZzz->noAccel = FALSE;
          }
-         if (xf86IsOptionSet(ZZZOptions, OPTION_PCI_RETRY)) {
+         if (xf86IsOptionSet(options, OPTION_PCI_RETRY)) {
              pZzz->UsePCIRetry = TRUE;
              xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
          }
          pZzz->fooHack = 0;
-         if (xf86GetOptValInteger(ZZZOptions, OPTION_FOO_HACK,
+         if (xf86GetOptValInteger(options, OPTION_FOO_HACK,
                                   &pZzz->fooHack)) {
              xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Foo Hack set to %d\n",
                         pZzz->fooHack);
@@ -6257,7 +6279,7 @@ eScreen() function.
          ZZZFreeRec(xf86Screens[scrnIndex]);
      }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.26 2000/04/16 04:34:53 tsi Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.29 2000/05/03 00:43:57 tsi Exp $
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/DESIGN,v 1.21 2000/03/01 01:47:59 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/DESIGN,v 1.22 2000/04/16 04:48:17 tsi Exp $
