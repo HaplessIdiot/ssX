@@ -1,4 +1,8 @@
 XFree86 4.2.99.2 (xx September 2002)
+ 321. Allow the Record extension to report logical coordinated with Xinerama
+      (#5231, Paul Stewart).
+ 320. Allow the XTrap extension to report logical coordinated with Xinerama
+      (#5230, Paul Stewart).
  319. Moved LdPreLib define after the vendor/OS specific config files
       as it may depend on setting done there (Egbert Eich).
  318. Several fixes for cross compile environment (Egbert Eich).
@@ -15154,4 +15158,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2296 2002/09/16 14:38:02 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2298 2002/09/16 18:05:35 eich Exp $

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/include/cursor.h,v 1.5 2002/09/12 12:53:52 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -173,5 +173,13 @@ extern void GetSpritePosition(
     int * /*py*/
 #endif
 );
+
+#ifdef PANORAMIX
+extern int XineramaGetCursorScreen(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+#endif /* PANORAMIX */
 
 #endif /* CURSOR_H */

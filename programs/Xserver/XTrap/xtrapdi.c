@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/XTrap/xtrapdi.c,v 1.2 2001/11/08 04:00:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/XTrap/xtrapdi.c,v 1.3 2002/01/23 03:31:39 dawes Exp $ */
 /*****************************************************************************
 Copyright 1987, 1988, 1989, 1990, 1991 by Digital Equipment Corp., Maynard, MA
 X11R6 Changes Copyright (c) 1994 by Robert Chesler of Absol-Puter, Hudson, NH.
@@ -76,6 +76,12 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/extensions/xtrapddmi.h>
 #include <X11/extensions/xtrapproto.h>
 #include "colormapst.h"
+#ifdef PANORAMIX
+#include "panoramiX.h"
+#include "panoramiXsrv.h"
+#include "cursor.h"
+#endif
+
 
 /*----------------------------*
  *  Global Data Declarations  *
@@ -1546,6 +1552,21 @@ void XETrapStampAndMail(xEvent *x_event)
             penv->last_input_time = x_event->u.keyButtonPointer.time;
             /* Copy the event information into our local memory */
             (void)memcpy(&(data.u.event),x_event,sizeof(xEvent));
+
+#ifdef PANORAMIX
+	    if (!noPanoramiXExtension &&
+                (data.u.event.u.u.type == MotionNotify ||
+                data.u.event.u.u.type == ButtonPress ||
+                data.u.event.u.u.type == ButtonRelease ||
+                data.u.event.u.u.type == KeyPress ||
+                data.u.event.u.u.type == KeyRelease)) {
+		    int scr = XineramaGetCursorScreen();
+		    data.u.event.u.keyButtonPointer.rootX +=
+			panoramiXdataPtr[scr].x - panoramiXdataPtr[0].x;
+		    data.u.event.u.keyButtonPointer.rootY +=
+			panoramiXdataPtr[scr].y - panoramiXdataPtr[0].y;
+	    }
+#endif
 
             if (penv->client->swapped)
             {   /* 
