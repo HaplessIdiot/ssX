@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/mathimp.c,v 1.11 2002/11/17 07:51:29 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/mathimp.c,v 1.12 2002/11/20 07:44:42 paulo Exp $ */
 
 
 /*
@@ -123,7 +123,6 @@
 
 #define XALLOC(type)		LispMalloc(sizeof(type))
 #define XFREE(ptr)		LispFree(ptr)
-#define XMEM(ptr)		LispMused(ptr)
 
 
 /*
@@ -659,7 +658,6 @@ make_real_object(n_real *real)
 	    break;
 	case N_BIGNUM:
 	    obj = BIGNUM(RBI(real));
-	    XMEM(RBI(real));
 	    break;
 	case N_FLONUM:
 	    obj = DFLOAT(RFF(real));
@@ -672,7 +670,6 @@ make_real_object(n_real *real)
 	    break;
 	case N_BIGRATIO:
 	    obj = BIGRATIO(RBR(real));
-	    XMEM(RBR(real));
 	    break;
 	default:
 	    obj = NIL;
@@ -712,7 +709,6 @@ make_number_object(n_number *num)
 		break;
 	    case N_BIGNUM:
 		obj = BIGNUM(NRBI(num));
-		XMEM(NRBI(num));
 		break;
 	    case N_FLONUM:
 		obj = DFLOAT(NRFF(num));
@@ -725,7 +721,6 @@ make_number_object(n_number *num)
 		break;
 	    case N_BIGRATIO:
 		obj = BIGRATIO(NRBR(num));
-		XMEM(NRBR(num));
 		break;
 	    default:
 		obj = NIL;

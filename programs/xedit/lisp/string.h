@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/string.h,v 1.7 2002/10/06 17:11:45 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/string.h,v 1.8 2002/11/08 08:00:57 paulo Exp $ */
 
 #ifndef Lisp_string_h
 #define Lisp_string_h
@@ -35,6 +35,7 @@
 #include "internal.h"
 
 LispObj *Lisp_AlphaCharP(LispBuiltin*);
+LispObj *Lisp_BothCaseP(LispBuiltin*);
 LispObj *Lisp_Char(LispBuiltin*);
 LispObj *Lisp_CharLess(LispBuiltin*);
 LispObj *Lisp_CharLessEqual(LispBuiltin*);
@@ -53,8 +54,10 @@ LispObj *Lisp_Characterp(LispBuiltin*);
 LispObj *Lisp_CharDowncase(LispBuiltin*);
 LispObj *Lisp_CharInt(LispBuiltin*);
 LispObj *Lisp_CharUpcase(LispBuiltin*);
+LispObj *Lisp_DigitChar(LispBuiltin*);
 LispObj *Lisp_DigitCharP(LispBuiltin*);
 LispObj *Lisp_IntChar(LispBuiltin*);
+LispObj *Lisp_LowerCaseP(LispBuiltin*);
 LispObj *Lisp_MakeString(LispBuiltin*);
 LispObj *Lisp_ParseInteger(LispBuiltin*);
 LispObj *Lisp_ReadFromString(LispBuiltin*);
@@ -79,6 +82,7 @@ LispObj *Lisp_StringUpcase(LispBuiltin*);
 LispObj *Lisp_StringDowncase(LispBuiltin*);
 LispObj *Lisp_StringCapitalize(LispBuiltin*);
 LispObj *Lisp_StringConcat(LispBuiltin*);
+LispObj *Lisp_UpperCaseP(LispBuiltin*);
 LispObj *Lisp_XeditCharStore(LispBuiltin*);
 
 #endif /* Lisp_string_h */

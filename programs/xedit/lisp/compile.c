@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/compile.c,v 1.5 2002/11/08 08:00:56 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/compile.c,v 1.6 2002/11/10 16:29:03 paulo Exp $ */
 
 #define VARIABLE_USED		0x0001
 #define VARIABLE_ARGUMENT	0x0002
@@ -59,9 +59,7 @@ static void ComProgn(LispCom*, LispObj*);
 static void ComEval(LispCom*, LispObj*);
 
 static void ComRecursiveCall(LispCom*, LispArgList*, LispObj*, LispObj*);
-#if 0
 static void ComInlineCall(LispCom*, LispArgList*, LispObj*, LispObj*, LispObj*);
-#endif
 
 static void ComMacroBackquote(LispCom*, LispObj*);
 static void ComMacroCall(LispCom*, LispArgList*, LispObj*, LispObj*, LispObj*);
@@ -1111,6 +1109,7 @@ ComConstantp(LispCom *com, LispObj *object)
 	case LispQuote_t:
 	case LispBackquote_t:
 	case LispComma_t:
+	case LispFunctionQuote_t:
 	    return (0);
 
 	    /* Anything else is a literal constant */
@@ -1755,6 +1754,7 @@ ComFuncall(LispCom *com, LispObj *function, LispObj *arguments, int eval)
 
     switch (OBJECT_TYPE(function)) {
 	case LispAtom_t:
+	case LispFunction_t:
 	    atom = function->data.atom;
 	    alist = atom->property->alist;
 
@@ -1851,14 +1851,25 @@ ComFuncall(LispCom *com, LispObj *function, LispObj *arguments, int eval)
 	    break;
 
 	case LispLambda_t:
-	    /* XXX TODO compile inline */
-	    com_Funcall(com, function, arguments);
+	    lambda = function->data.lambda.code;
+	    alist = (LispArgList*)function->data.lambda.name->data.opaque.data;
+	    ComInlineCall(com, alist, NIL, arguments, lambda->data.lambda.code);
 	    break;
 
 	case LispCons_t:
-	    /* XXX TODO compile inline */
-	    com_Funcall(com, function, arguments);
-	    break;
+	    if (CAR(function) == Olambda) {
+		function = EVAL(function);
+		if (LAMBDAP(function)) {
+		    GC_ENTER();
+
+		    GC_PROTECT(function);
+		    lambda = function->data.lambda.code;
+		    alist = (LispArgList*)function->data.lambda.name->data.opaque.data;
+		    ComInlineCall(com, alist, NIL, arguments, lambda->data.lambda.code);
+		    GC_LEAVE();
+		    break;
+		}
+	    }
 
 	default:
 	    /*  XXX If bytecode objects are made available, should
@@ -1931,6 +1942,30 @@ ComEval(LispCom *com, LispObj *object)
 	    LispDestroy("EVAL: comma outside of backquote");
 	    break;
 
+	case LispFunctionQuote_t:
+	    object = object->data.quote;
+	    if (SYMBOLP(object) &&
+		((object->data.atom->a_builtin &&
+		  object->data.atom->property->fun.builtin->type ==
+		  LispFunction) ||
+		 (object->data.atom->a_function &&
+		  object->data.atom->property->fun.function->funtype ==
+		  LispFunction) ||
+		 /* XXX currently bytecode is only generated for functions */
+		 object->data.atom->a_compiled))
+		object = FUNCTION(object);
+	    else if (CONSP(object) && CAR(object) == Olambda) {
+		/* object will only be associated with bytecode later,
+		 * so, make sure it is protected until compilation finishes */
+		object = EVAL(object);
+		RPLACD(com->plist, CONS(CAR(com->plist), CDR(com->plist)));
+		RPLACA(com->plist, object);
+	    }
+	    else
+		LispDestroy("FUNCTION: %s is not a function", STROBJ(object));
+	    com_LoadCon(com, object);
+	    break;
+
 	case LispFixnum_t:
 	    if (IN_TAGBODY()) {
 		ComLabel(com, object);
@@ -1988,7 +2023,6 @@ ComRecursiveCall(LispCom *com, LispArgList *alist,
     lisp__data.env.head = lisp__data.env.length = base;
 }
 
-#if 0	/* Will be used later */
 static void
 ComInlineCall(LispCom *com, LispArgList *alist,
 	      LispObj *name, LispObj *arguments, LispObj *lambda)
@@ -2030,7 +2064,6 @@ ComInlineCall(LispCom *com, LispArgList *alist,
     lisp__data.env.lex = lex;
     lisp__data.env.head = lisp__data.env.length = base;
 }
-#endif
 
 /***********************************************************************
  * Macro expansion helper functions.
@@ -2076,6 +2109,10 @@ ComMacroExpandEval(LispCom *com, LispObj *object)
 
 	case LispComma_t:
 	    LispDestroy("EVAL: comma outside of backquote");
+
+	case LispFunctionQuote_t:
+	    result = EVAL(object);
+	    break;
 
 	default:
 	    result = object;

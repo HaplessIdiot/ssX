@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.58 2002/11/15 07:01:28 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.59 2002/11/20 07:44:41 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -67,6 +67,10 @@ extern void unsetenv(const char *name);
 #define SUBSETP		5
 #define NSETDIFFERENCE	6
 
+#define COPY_LIST	1
+#define COPY_ALIST	2
+#define COPY_TREE	3
+
 /* Call directly LispObjectCompare() if possible */
 #define FCODE(predicate)					\
     predicate == Oeql ? FEQL :					\
@@ -88,12 +92,13 @@ LispObj *LispListSet(LispBuiltin*, int);
 extern LispObj *LispRunSetf(LispArgList*, LispObj*, LispObj*, LispObj*);
 static LispObj *LispMergeSort(LispObj*, LispObj*, LispObj*, int);
 LispObj *LispXReverse(LispBuiltin*, int);
+static LispObj *LispCopyList(LispBuiltin*, LispObj*, int);
 
 /*
  * Initialization
  */
 LispObj *Oeq, *Oeql, *Oequal, *Oequalp, *Omake_array,
-	*Kinitial_contents, *Osetf, *Ootherwise;
+	*Kinitial_contents, *Osetf, *Ootherwise, *Oquote;
 LispObj *Ogensym_counter;
 
 Atom_id Svariable, Sstructure, Stype, Ssetf;
@@ -112,6 +117,7 @@ LispCoreInit(void)
     Kinitial_contents	= KEYWORD("INITIAL-CONTENTS");
     Osetf		= STATIC_ATOM("SETF");
     Ootherwise		= STATIC_ATOM("OTHERWISE");
+    Oquote		= STATIC_ATOM("QUOTE");
 
     Svariable		= GETATOMID("VARIABLE");
     Sstructure		= GETATOMID("STRUCTURE");
@@ -847,31 +853,97 @@ Lisp_Cond(LispBuiltin *builtin)
     return (result);
 }
 
+static LispObj *
+LispCopyList(LispBuiltin *builtin, LispObj *list, int function)
+{
+    GC_ENTER();
+    LispObj *result, *cons;
+
+    if (list == NIL)
+	return (list);
+    CHECK_CONS(list);
+
+    result = cons = CONS(NIL, NIL);
+    GC_PROTECT(result);
+    if (CONSP(CAR(list))) {
+	switch (function) {
+	    case COPY_LIST:
+		RPLACA(result, CAR(list));
+		break;
+	    case COPY_ALIST:
+		RPLACA(result, CONS(CAR(CAR(list)), CDR(CAR(list))));
+		break;
+	    case COPY_TREE:
+		RPLACA(result, LispCopyList(builtin, CAR(list), COPY_TREE));
+		break;
+	}
+    }
+    else
+	RPLACA(result, CAR(list));
+
+    for (list = CDR(list); CONSP(list); list = CDR(list)) {
+	CDR(cons) = CONS(NIL, NIL);
+	cons = CDR(cons);
+	if (CONSP(CAR(list))) {
+	    switch (function) {
+		case COPY_LIST:
+		    RPLACA(cons, CAR(list));
+		    break;
+		case COPY_ALIST:
+		    RPLACA(cons, CONS(CAR(CAR(list)), CDR(CAR(list))));
+		    break;
+		case COPY_TREE:
+		    RPLACA(cons, LispCopyList(builtin, CAR(list), COPY_TREE));
+		    break;
+	    }
+	}
+	else
+	    RPLACA(cons, CAR(list));
+    }
+    /* in case list is dotted */
+    RPLACD(cons, list);
+    GC_LEAVE();
+
+    return (result);
+}
+
+LispObj *
+Lisp_CopyAlist(LispBuiltin *builtin)
+/*
+ copy-alist list
+ */
+{
+    LispObj *list;
+
+    list = ARGUMENT(0);
+
+    return (LispCopyList(builtin, list, COPY_ALIST));
+}
+
 LispObj *
 Lisp_CopyList(LispBuiltin *builtin)
 /*
  copy-list list
  */
 {
-    GC_ENTER();
-    LispObj *result, *cons;
-
     LispObj *list;
 
     list = ARGUMENT(0);
 
-    if (list == NIL)
-	return (list);
+    return (LispCopyList(builtin, list, COPY_LIST));
+}
 
-    result = cons = CONS(CAR(list), CDR(list));
-    GC_PROTECT(result);
-    for (list = CDR(list); CONSP(list); list = CDR(list)) {
-	RPLACD(cons, CONS(CAR(list), CDR(list)));
-	cons = CDR(cons);
-    }
-    GC_LEAVE();
+LispObj *
+Lisp_CopyTree(LispBuiltin *builtin)
+/*
+ copy-tree list
+ */
+{
+    LispObj *list;
 
-    return (result);
+    list = ARGUMENT(0);
+
+    return (LispCopyList(builtin, list, COPY_TREE));
 }
 
 LispObj *
@@ -912,9 +984,13 @@ Lisp_Constantp(LispBuiltin *builtin)
     environment = ARGUMENT(1);
     form = ARGUMENT(0);
 
-    if (CONSTANTP(form) ||
-	(SYMBOLP(form) && form->data.atom->constant) ||
-	QUOTEP(form))
+    if (!POINTERP(form) ||
+	NUMBERP(form) ||
+	XQUOTEP(form) ||
+	(XCONSP(form) && CAR(form) == Oquote) ||
+	(XSYMBOLP(form) && form->data.atom->constant) ||
+	XSTRINGP(form) ||
+	XARRAYP(form))
 	return (T);
 
     return (NIL);
@@ -1657,6 +1733,7 @@ Lisp_IgnoreErrors(LispBuiltin *builtin)
 
     RETURN_COUNT = 0;
 
+    ++lisp__data.ignore_errors;
     presult = &result;
     pjumped = &jumped;
     pbody = &body;
@@ -1672,14 +1749,13 @@ Lisp_IgnoreErrors(LispBuiltin *builtin)
     if (!lisp__data.destroyed && jumped)
 	result = lisp__data.block.block_ret;
 
-    /* No condition system (yet?!), just return T, and for now, let
-     * LispDestroy print the error message */
     if (lisp__data.destroyed) {
 	lisp__data.destroyed = 0;
 	result = NIL;
 	RETURN_COUNT = 1;
-	RETURN(0) = T;
+	RETURN(0) = lisp__data.error_condition;
     }
+    --lisp__data.ignore_errors;
 
     return (result);
 }
@@ -1721,7 +1797,7 @@ Lisp_Lambda(LispBuiltin *builtin)
     body = ARGUMENT(1);
     lambda_list = ARGUMENT(0);
 
-    alist = LispCheckArguments(LispLambda, lambda_list, ATOMID(Olambda));
+    alist = LispCheckArguments(LispLambda, lambda_list, Snil);
 
     name = OPAQUE(alist, LispArgList_t);
     lambda_list = LispListProtectedArguments(alist);
@@ -3007,9 +3083,8 @@ LispFindOrPosition(LispBuiltin *builtin,
     cmp = element = NIL;
     istring = STRINGP(sequence);
     if (istring) {
-	if (comparison == NONE) {
-	    CHECK_SCHAR(item);
-	}
+	if (comparison == NONE && !SCHARP(item))
+	    return (NIL);
 	string = THESTR(sequence);
     }
     else {
@@ -5402,7 +5477,7 @@ Lisp_Throw(LispBuiltin *builtin)
     while (blevel) {
 	LispBlock *block = lisp__data.block.block[--blevel];
 
-	if (block->type == LispBlockCatch && XEQ(tag, block->tag) != NIL) {
+	if (block->type == LispBlockCatch && tag == block->tag) {
 	    RETURN_COUNT = 0;
 	    lisp__data.block.block_ret = EVAL(result);
 	    LispBlockUnwind(block);

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.33 2002/11/10 16:29:06 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.34 2002/11/15 07:01:30 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -210,6 +210,7 @@ struct _LispAtom {
     LispObj *object;		/* backpointer to object ATOM */
     int offset;			/* in the environment list */
     LispObj *package;		/* package home of symbol */
+    LispObj *function;		/* symbol function */
     LispProperty *property;
     struct _LispAtom *next;
 };
@@ -315,8 +316,8 @@ struct _LispMac {
     LispPackage *savepack;
 
     struct {
-	unsigned block_level;
-	unsigned block_size;
+	int block_level;
+	int block_size;
 	LispObj *block_ret;
 	LispBlock **block;
     } block;
@@ -349,9 +350,9 @@ struct _LispMac {
     int errexit;
 
     struct {
-	unsigned index;
-	unsigned level;
-	unsigned space;
+	int index;
+	int level;
+	int space;
 	void **mem;
     } mem;		/* memory from Lisp*Alloc, to be release in error */
     LispModule *module;
@@ -382,6 +383,9 @@ struct _LispMac {
 
     int destroyed;		/* reached LispDestroy, used by unwind-protect */
     int running;		/* there is somewhere to siglongjmp */
+
+    int ignore_errors;		/* inside a ignore-errors block */
+    LispObj *error_condition;	/* actually, a string */
 
     int debugging;		/* debugger enabled? */
 #ifdef DEBUGGER

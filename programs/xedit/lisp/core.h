@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.27 2002/11/13 04:35:46 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.28 2002/11/20 07:44:41 paulo Exp $ */
 
 #ifndef Lisp_core_h
 #define Lisp_core_h
@@ -60,7 +60,9 @@ LispObj *Lisp_Cond(LispBuiltin*);
 LispObj *Lisp_Cons(LispBuiltin*);
 LispObj *Lisp_Consp(LispBuiltin*);
 LispObj *Lisp_Constantp(LispBuiltin*);
+LispObj *Lisp_CopyAlist(LispBuiltin*);
 LispObj *Lisp_CopyList(LispBuiltin*);
+LispObj *Lisp_CopyTree(LispBuiltin*);
 LispObj *Lisp_Defconstant(LispBuiltin*);
 LispObj *Lisp_Defmacro(LispBuiltin*);
 LispObj *Lisp_Defun(LispBuiltin*);

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.10 2002/11/10 16:29:03 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.11 2002/11/13 04:35:45 paulo Exp $ */
 
 
 /*
@@ -233,7 +233,7 @@ struct _LispCom {
 
     int warnings;
 
-    LispObj *form;
+    LispObj *form, *plist;
 
     jmp_buf jmp;		/* Used if compilation cannot be finished */
 
@@ -474,6 +474,8 @@ Lisp_Compile(LispBuiltin *builtin)
 	    form = CONS(lambda->data.lambda.code, NIL);
 	    GC_PROTECT(form);
 	    com.form = form;
+	    com.plist = CONS(NIL, NIL);
+	    GC_PROTECT(com.plist);
 
 	    pfailed = &failed;
 	    plex = &lex;
@@ -1181,6 +1183,7 @@ predicate:
 LispObj *
 LispCompileForm(LispObj *form)
 {
+    GC_ENTER();
     int failed, *pfailed;
     LispCom com;
     LispObj *code, **pform;
@@ -1195,6 +1198,9 @@ LispCompileForm(LispObj *form)
     com.block->type = LispBlockNone;
     com.lex = lisp__data.env.lex;
 
+    com.plist = CONS(NIL, NIL);
+    GC_PROTECT(com.plist);
+
     pfailed = &failed;
     pform = &form;
     failed = 1;
@@ -1205,6 +1211,7 @@ LispCompileForm(LispObj *form)
 	}
 	failed = 0;
     }
+    GC_LEAVE();
 
     return (failed ? NIL : MakeBytecodeObject(&com, NIL, NIL));
 }

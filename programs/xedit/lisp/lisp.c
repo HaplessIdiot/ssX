@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.71 2002/11/17 07:51:28 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.72 2002/11/20 07:44:41 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -228,6 +228,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_AssocIfNot, "assoc-if-not predicate list &key key"},
     {LispFunction, Lisp_Atom, "atom object"},
     {LispMacro, Lisp_Block, "block name &rest body", 0, 0, Com_Block},
+    {LispFunction, Lisp_BothCaseP, "both-case-p character"},
     {LispFunction, Lisp_Boundp, "boundp symbol"},
     {LispFunction, Lisp_Butlast, "butlast list &optional count"},
     {LispFunction, Lisp_Nbutlast, "nbutlast list &optional count"},
@@ -254,11 +255,13 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_CharNotLessp, "char-not-lessp character &rest more-characters"},
     {LispFunction, Lisp_CharNotEqual, "char-not-equal character &rest more-characters"},
     {LispFunction, Lisp_CharDowncase, "char-downcase character"},
+    {LispFunction, Lisp_CharInt, "char-code character"},
     {LispFunction, Lisp_CharInt, "char-int character"},
     {LispFunction, Lisp_CharUpcase, "char-upcase character"},
     {LispFunction, Lisp_Character, "character object"},
     {LispFunction, Lisp_Characterp, "characterp object"},
     {LispFunction, Lisp_Clrhash, "clrhash hash-table"},
+    {LispFunction, Lisp_IntChar, "code-char integer"},
     {LispFunction, Lisp_Coerce, "coerce object result-type"},
     {LispFunction, Lisp_Compile, "compile name &optional definition", 1},
     {LispFunction, Lisp_Complex, "complex realpart &optional imagpart"},
@@ -268,7 +271,9 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Constantp, "constantp form &optional environment"},
     {LispFunction, Lisp_Conjugate, "conjugate number"},
     {LispFunction, Lisp_Complexp, "complexp object"},
+    {LispFunction, Lisp_CopyAlist, "copy-alist list"},
     {LispFunction, Lisp_CopyList, "copy-list list"},
+    {LispFunction, Lisp_CopyTree, "copy-tree list"},
     {LispFunction, Lisp_Close, "close stream &key abort"},
     {LispFunction, Lisp_C_r, "caar list", 0, 0, Com_C_r},
     {LispFunction, Lisp_C_r, "cadr list", 0, 0, Com_C_r},
@@ -310,7 +315,8 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_DeleteIf, "delete-if predicate sequence &key from-end start end count key"},
     {LispFunction, Lisp_DeleteIfNot, "delete-if-not predicate sequence &key from-end start end count key"},
     {LispFunction, Lisp_Denominator, "denominator rational"},
-    {LispFunction, Lisp_DigitCharP, "digit-char-p character &optional (radix 10)"},
+    {LispFunction, Lisp_DigitChar, "digit-char weight &optional radix"},
+    {LispFunction, Lisp_DigitCharP, "digit-char-p character &optional radix"},
     {LispFunction, Lisp_Directory, "directory pathname &key all if-cannot-read"},
     {LispFunction, Lisp_DirectoryNamestring, "directory-namestring pathname"},
     {LispFunction, Lisp_Disassemble, "disassemble function"},
@@ -392,6 +398,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Lognot, "lognot integer"},
     {LispFunction, Lisp_Logxor, "logxor &rest integers"},
     {LispMacro, Lisp_Loop, "loop &rest body", 0, 0, Com_Loop},
+    {LispFunction, Lisp_LowerCaseP, "lower-case-p character"},
     {LispFunction, Lisp_MakeArray, "make-array dimensions &key element-type initial-element initial-contents adjustable fill-pointer displaced-to displaced-index-offset"},
     {LispFunction, Lisp_MakeHashTable, "make-hash-table &key test size rehash-size rehash-threshold initial-contents"},
     {LispFunction, Lisp_MakeList, "make-list size &key initial-element"},
@@ -541,6 +548,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispMacro, Lisp_Unless, "unless test &rest body", 0, 0, Com_Unless},
     {LispFunction, Lisp_UserHomedirPathname, "user-homedir-pathname &optional host"},
     {LispMacro, Lisp_UnwindProtect, "unwind-protect protect &rest cleanup"},
+    {LispFunction, Lisp_UpperCaseP, "upper-case-p character"},
     {LispFunction, Lisp_Values, "values &rest objects", 1},
     {LispFunction, Lisp_Vector, "vector &rest objects"},
     {LispMacro, Lisp_When, "when test &rest body", 0, 0, Com_When},
@@ -627,15 +635,20 @@ LispDestroy(char *fmt, ...)
 	char string[128];
 	va_list ap;
 
-	if (Stderr->column)
-	    LispFputc(Stderr, '\n');
-	LispFputs(Stderr, Error);
 	va_start(ap, fmt);
 	vsnprintf(string, sizeof(string), fmt, ap);
 	va_end(ap);
-	LispFputs(Stderr, string);
-	LispFputc(Stderr, '\n');
-	LispFflush(Stderr);
+
+	if (!lisp__data.ignore_errors) {
+	    if (Stderr->column)
+		LispFputc(Stderr, '\n');
+	    LispFputs(Stderr, Error);
+	    LispFputs(Stderr, string);
+	    LispFputc(Stderr, '\n');
+	    LispFflush(Stderr);
+	}
+	else
+	    lisp__data.error_condition = STRING(string);
 
 #ifdef DEBUGGER
 	if (lisp__data.debugging) {
@@ -766,7 +779,7 @@ LispTopLevel(void)
 	lisp__data.block.block = NULL;
     }
 
-    lisp__data.destroyed = 0;
+    lisp__data.destroyed = lisp__data.ignore_errors = 0;
 
     if (CONSP(lisp__data.input_list)) {
 	LispUngetInfo **info, *unget = lisp__data.unget[0];
@@ -2168,6 +2181,7 @@ mark_again:
 	case LispAtom_t:
 	case LispFixnum_t:
 	case LispSChar_t:
+	case LispFunction_t:
 	    return;
 	case LispLambda_t:
 	    if (OPAQUEP(object->data.lambda.name))
@@ -2178,6 +2192,7 @@ mark_again:
 	    goto mark_cons;
 	case LispQuote_t:
 	case LispBackquote_t:
+	case LispFunctionQuote_t:
 	    object->mark = 1;
 	    object = object->data.quote;
 	    goto mark_again;
@@ -2260,6 +2275,7 @@ mark_stream:
 			case LispAtom_t:
 			case LispFixnum_t:
 			case LispSChar_t:
+			case LispFunction_t:
 			case LispPackage_t:
 			    break;
 			case LispInteger_t:
@@ -2280,6 +2296,7 @@ mark_stream:
 			case LispAtom_t:
 			case LispFixnum_t:
 			case LispSChar_t:
+			case LispFunction_t:
 			case LispPackage_t:
 			    break;
 			case LispInteger_t:
@@ -2313,6 +2330,7 @@ prot_again:
 	case LispAtom_t:
 	case LispFixnum_t:
 	case LispSChar_t:
+	case LispFunction_t:
 	    return;
 	case LispLambda_t:
 	    if (OPAQUEP(object->data.lambda.name))
@@ -2323,6 +2341,7 @@ prot_again:
 	    goto prot_cons;
 	case LispQuote_t:
 	case LispBackquote_t:
+	case LispFunctionQuote_t:
 	    object->prot = 1;
 	    object = object->data.quote;
 	    goto prot_again;
@@ -2349,6 +2368,7 @@ prot_cons:
 		    case LispAtom_t:
 		    case LispFixnum_t:
 		    case LispSChar_t:
+		    case LispFunction_t:
 		    case LispPackage_t:		/* protected in gc */
 			break;
 		    case LispInteger_t:
@@ -2405,6 +2425,7 @@ prot_stream:
 			case LispAtom_t:
 			case LispFixnum_t:
 			case LispSChar_t:
+			case LispFunction_t:
 			case LispPackage_t:
 			    break;
 			case LispInteger_t:
@@ -2425,6 +2446,7 @@ prot_stream:
 			case LispAtom_t:
 			case LispFixnum_t:
 			case LispSChar_t:
+			case LispFunction_t:
 			case LispPackage_t:
 			    break;
 			case LispInteger_t:
@@ -2586,6 +2608,41 @@ LispNewSymbol(LispAtom *atom)
 
 	return (symbol);
     }
+}
+
+LispObj *
+LispNewFunction(LispObj *symbol)
+{
+    LispObj *function;
+
+    if (symbol->data.atom->function)
+	return (symbol->data.atom->function);
+
+    if (symbol->data.atom->package == NULL)
+	symbol->data.atom->package = PACKAGE;
+
+    if (atomseg.freeobj == NIL)
+	LispAllocSeg(&atomseg, pagesize);
+    function = atomseg.freeobj;
+    atomseg.freeobj = CDR(function);
+    --atomseg.nfree;
+
+    function->type = LispFunction_t;
+    function->data.atom = symbol->data.atom;
+    symbol->data.atom->function = function;
+
+    return (function);
+}
+
+LispObj *
+LispNewFunctionQuote(LispObj *object)
+{
+    LispObj *quote = LispNew(object, NIL);
+
+    quote->type = LispFunctionQuote_t;
+    quote->data.quote = object;
+
+    return (quote);
 }
 
 LispObj *
@@ -2929,6 +2986,7 @@ LispNewBignum(mpi *bignum)
     integer->type = LispBignum_t;
     integer->data.mp.integer = bignum;
     LispMused(bignum->digs);
+    LispMused(bignum);
 
     return (integer);
 }
@@ -2942,6 +3000,7 @@ LispNewBigratio(mpr *bigratio)
     ratio->data.mp.ratio = bigratio;
     LispMused(mpr_num(bigratio)->digs);
     LispMused(mpr_den(bigratio)->digs);
+    LispMused(bigratio);
 
     return (ratio);
 }
@@ -4494,6 +4553,7 @@ LispFuncall(LispObj *function, LispObj *arguments, int eval)
 
     switch (OBJECT_TYPE(function)) {
 	case LispAtom_t:
+	case LispFunction_t:
 	    atom = function->data.atom;
 	    if (atom->a_builtin) {
 		builtin = atom->property->fun.builtin;
@@ -4628,6 +4688,23 @@ LispEval(LispObj *object)
 	    break;
 	case LispQuote_t:
 	    result = object->data.quote;
+	    break;
+	case LispFunctionQuote_t:
+	    result = object->data.quote;
+	    if (SYMBOLP(result) &&
+		((result->data.atom->a_builtin &&
+		  result->data.atom->property->fun.builtin->type ==
+		  LispFunction) ||
+		 (result->data.atom->a_function &&
+		  result->data.atom->property->fun.function->funtype ==
+		  LispFunction) ||
+		 /* XXX currently bytecode is only generated for functions */
+		 result->data.atom->a_compiled))
+		result = FUNCTION(result);
+	    else if (CONSP(result) && CAR(result) == Olambda)
+		result = EVAL(result);
+	    else
+		LispDestroy("FUNCTION: %s is not a function", STROBJ(result));
 	    break;
 	case LispBackquote_t:
 	    result = LispEvalBackquote(object->data.quote, 1);
@@ -4873,10 +4950,6 @@ LispMachine(void)
 		LispFflush(Stdout);
 	    }
 	    if ((cod = LispRead()) != NULL) {
-		if (cod == EOLIST)
-		    LispDestroy("object cannot start with #\\)");
-		else if (cod == DOT)
-		    LispDestroy("dot allowed only on lists");
 		obj = EVAL(cod);
 		if (lisp__data.interactive) {
 		    if (RETURN_COUNT >= 0)
@@ -4944,10 +5017,6 @@ LispExecute(char *str)
     /*CONSTCOND*/
     while (1) {
 	if ((obj = LispRead()) != NULL) {
-	    if (obj == EOLIST)
-		LispDestroy("EXECUTE: object cannot start with #\\)");
-	    else if (obj == DOT)
-		LispDestroy("dot allowed only on lists");
 	    result = EVAL(obj);
 	    COD = cod;
 	}

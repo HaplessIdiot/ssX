@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.18 2002/11/17 07:51:28 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.19 2002/11/20 07:44:42 paulo Exp $ */
 
 #include "math.h"
 #include "private.h"
@@ -662,7 +662,6 @@ Lisp_Denominator(LispBuiltin *builtin)
 		mpi_init(den);
 		mpi_set(den, OBRD(rational));
 		result = BIGNUM(den);
-		XMEM(den);
 	    }
 	    break;
 	default:
@@ -912,10 +911,8 @@ Lisp_Isqrt(LispBuiltin *builtin)
 		mpi_clear(bigi);
 		XFREE(bigi);
 	    }
-	    else {
+	    else
 		result = BIGNUM(bigi);
-		XMEM(bigi);
-	    }
 	}   break;
 	default:
 	    goto not_a_natural_number;
@@ -1166,7 +1163,6 @@ Lisp_Numerator(LispBuiltin *builtin)
 		mpi_init(num);
 		mpi_set(num, OBRN(rational));
 		result = BIGNUM(num);
-		XMEM(num);
 	    }
 	    break;
 	default:

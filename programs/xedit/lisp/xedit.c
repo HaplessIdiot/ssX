@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.15 2002/11/17 07:51:29 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.16 2002/11/20 07:44:42 paulo Exp $ */
 
 #include "../xedit.h"
 #include <X11/Xaw/TextSrcP.h>	/* Needs some private definitions */
@@ -375,13 +375,8 @@ XeditLispExecute(Widget output, XawTextPosition left, XawTextPosition right)
     LispPushInput(&execute_stream);
     _cod = COD;
     result = NIL;
-    if ((code = LispRead()) != NULL) {
-	if (code == EOLIST)
-	    LispDestroy("object cannot start with #\\)");
-	else if (code == DOT)
-	    LispDestroy("dot allowed only on lists");
+    if ((code = LispRead()) != NULL)
 	result = EVAL(code);
-    }
     COD = _cod;
     LispPopInput(&execute_stream);
 
