@@ -1,3 +1,5 @@
+3531. Update Trident driver to fix Clock source for 9440 chips and allow
+      linear framebuffer mapping for nommio (Alan Hourihane).
 3530. Fix fb for module compiling and ifdef fbcmap for now (Alan Hourihane).
 3529. Add Cyber9397 and Cyber9397DVD PCI ID detection to trident driver
       (Alan Hourihane).
