@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.h,v 1.16 2000/06/20 05:08:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.h,v 1.17 2001/01/06 20:19:07 tsi Exp $ */
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
  */
@@ -113,6 +113,7 @@ extern int xf86NumEntities;
 extern xf86AccessRec AccessNULL;
 extern BusRec primaryBus;
 extern resPtr Acc;
+extern resPtr osRes;
 extern resPtr ResRange;
 extern BusAccPtr xf86BusAccInfo;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.30 2001/01/26 10:35:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.31 2001/01/30 22:06:18 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -1839,7 +1839,7 @@ ValidatePci(void)
      * Mark all pciInfoRecs that need to be validated. These are
      * the ones which have been assigned to a screen.
      */
-    Sys = NULL;
+    Sys = xf86DupResList(osRes);
     for (i=0; i<xf86NumScreens; i++) {
 	for (m = 0; m < xf86Screens[i]->numEntities; m++)
 	    if ((pvp = xf86GetPciInfoForEntity(xf86Screens[i]->entityList[m])))

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.57 2001/01/06 20:19:06 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.58 2001/01/26 10:35:28 alanh Exp $ */
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
@@ -46,7 +46,8 @@ static resPtr AccReducers = NULL;
 #endif
 
 /* resource lists */
-resPtr Acc =  NULL;
+resPtr Acc = NULL;
+resPtr osRes = NULL;
 
 /* allocatable ranges */
 resPtr ResRange = NULL;
@@ -1366,7 +1367,8 @@ void
 xf86ResourceBrokerInit(void)
 {
     resPtr resPci;
-    resPtr osRes = NULL;
+
+    osRes = NULL;
 
     /* Get the addressable ranges */
     ResRange = xf86BusAccWindowsFromOS();
@@ -1374,14 +1376,13 @@ xf86ResourceBrokerInit(void)
     xf86PrintResList(3, ResRange);
 
     /* Get the ranges used exclusively by the system */
-    osRes = xf86AccResFromOS(osRes); /*these need to be in host address space*/
+    osRes = xf86AccResFromOS(osRes);
     xf86MsgVerb(X_INFO, 3, "OS-reported resource ranges:\n");
     xf86PrintResList(3, osRes);
 
     /* Bus dep initialization */
     resPci = ResourceBrokerInitPci(&osRes);
-    Acc = xf86JoinResLists(osRes, resPci);
-
+    Acc = xf86JoinResLists(xf86DupResList(osRes), resPci);
     
     xf86MsgVerb(X_INFO, 3, "All system resource ranges:\n");
     xf86PrintResList(3, Acc);

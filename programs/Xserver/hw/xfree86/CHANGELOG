@@ -1,4 +1,7 @@
 XFree86 4.0.99.1 (?? February 2001)
+ 119. An attempt at fixing the handling of unassigned PCI resources by
+      improving detection of them and forcing them to be relocated
+      (Marc La France).
  118. Make lndir ignore finder data files on Mac OS X (Matthieu Herrb).
  117. [SECURITY] complete fix for /tmp race in gccmakedep and makedepend.
       (Branden Robinson). 
@@ -12389,4 +12392,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1567 2001/02/11 21:46:09 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1568 2001/02/11 22:04:09 herrb Exp $
