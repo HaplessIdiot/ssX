@@ -1,7 +1,7 @@
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.302 2004/06/30 20:21:37 martin Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.303tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -303,8 +303,10 @@ TINY_EXTENSIONS = $(TINY_STATICEXTS) $(TINY_LOADABLEEXTS)
 #else
        TINY_DIX = $(DIX)
 #endif
+#if DoLoadableServer
        FONTBASE = $(FONTLIBSRC)/fontbase.o \
 		  $(FONTLIBSRC)/LibraryTargetName(fontbase)
+#endif
 #if XserverStaticFontLib
            FONT = $(FONTLIBSRC)/LibraryTargetName(Xfont) $(FREETYPE2LIB)
       TINY_FONT = $(FONTLIBSRC)/LibraryTargetName(Xfont)
