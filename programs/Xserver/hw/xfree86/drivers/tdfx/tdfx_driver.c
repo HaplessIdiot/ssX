@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.43 2000/09/24 13:51:31 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.44 2000/11/07 10:49:51 alanh Exp $ */
 
 /*
  * Authors:
@@ -1762,16 +1762,19 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
   miSetPixmapDepths ();
     
+  pTDFX->NoAccel=xf86ReturnOptValBool(TDFXOptions, OPTION_NOACCEL, FALSE);
 #ifdef XF86DRI
   /*
    * Setup DRI after visuals have been established, but before fbScreenInit
    * is called.   fbScreenInit will eventually call into the drivers
    * InitGLXVisuals call back.
    */
-  pTDFX->directRenderingEnabled = TDFXDRIScreenInit(pScreen);
-  /* Force the initialization of the context */
-  if (pTDFX->directRenderingEnabled)
+  if (!pTDFX->NoAccel) {
+    pTDFX->directRenderingEnabled = TDFXDRIScreenInit(pScreen);
+    /* Force the initialization of the context */
+    if (pTDFX->directRenderingEnabled)
   	TDFXLostContext(pScreen);
+  }
 #endif
 
   switch (pScrn->bitsPerPixel) {
@@ -1821,7 +1824,6 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   }
   REGION_UNINIT(pScreen, &MemRegion);
 
-  pTDFX->NoAccel=xf86ReturnOptValBool(TDFXOptions, OPTION_NOACCEL, FALSE);
   if (!pTDFX->NoAccel) {
     if (!TDFXAccelInit(pScreen)) {
       xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -1861,17 +1863,19 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 #endif
 
 #ifdef XF86DRI
+  if (!pTDFX->NoAccel) {
     if (pTDFX->directRenderingEnabled) {
 	/* Now that mi, fb, drm and others have done their thing, 
          * complete the DRI setup.
          */
 	pTDFX->directRenderingEnabled = TDFXDRIFinishScreenInit(pScreen);
     }
-    if (pTDFX->directRenderingEnabled) {
+  }
+  if (pTDFX->directRenderingEnabled) {
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "direct rendering enabled\n");
-    } else {
+  } else {
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "direct rendering disabled\n");
-    }
+  }
 #endif
 
 #ifdef XvExtension
