@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.32 2001/08/18 02:51:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.33 2001/08/23 18:25:40 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -65,6 +65,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "glxserver.h"
 #include "mi.h"
 #include "mipointer.h"
+
+#if defined(XFree86LOADER) && !defined(PANORAMIX)
+extern Bool noPanoramiXExtension;
+#endif
 
 static int DRIScreenPrivIndex = -1;
 static int DRIWindowPrivIndex = -1;
