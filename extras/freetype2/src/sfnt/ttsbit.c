@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    TrueType and OpenType embedded bitmap support (body).                */
 /*                                                                         */
-/*  Copyright 1996-2001, 2002 by                                           */
+/*  Copyright 1996-2001, 2002, 2003, 2004 by                               */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -14,7 +14,7 @@
 /*  understand and accept it fully.                                        */
 /*                                                                         */
 /***************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/extras/freetype2/src/sfnt/ttsbit.c,v 1.2 2004/04/14 15:32:43 dawes Exp $ */
 
 
 #include <ft2build.h>
@@ -623,22 +623,22 @@
 
   FT_LOCAL_DEF( FT_Error )
   tt_face_set_sbit_strike( TT_Face    face,
-                           FT_Int     x_ppem,
-                           FT_Int     y_ppem,
+                           FT_UInt    x_ppem,
+                           FT_UInt    y_ppem,
                            FT_ULong  *astrike_index )
   {
     FT_ULong  i;
 
 
-    if ( x_ppem < 0 || x_ppem > 255 ||
+    if ( x_ppem > 255 ||
          y_ppem < 1 || y_ppem > 255 )
       return SFNT_Err_Invalid_PPem;
 
     for ( i = 0; i < face->num_sbit_strikes; i++ )
     {
-      if ( ( face->sbit_strikes[i].y_ppem  == y_ppem )    &&
-           ( ( x_ppem == 0 )                            ||
-             ( face->sbit_strikes[i].x_ppem == x_ppem ) ) )
+      if ( ( (FT_UInt)face->sbit_strikes[i].y_ppem == y_ppem )     &&
+           ( ( x_ppem == 0 )                                     ||
+             ( (FT_UInt)face->sbit_strikes[i].x_ppem == x_ppem ) ) )
       {
         *astrike_index = i;
         return SFNT_Err_Ok;
@@ -1233,9 +1233,9 @@
     if ( error )
       goto Exit;
 
-    /* this function is recursive.  At the top-level call, we  */
+    /* This function is recursive.  At the top-level call, we  */
     /* compute the dimensions of the higher-level glyph to     */
-    /* allocate the final pixmap buffer                        */
+    /* allocate the final pixmap buffer.                       */
     if ( depth == 0 )
     {
       FT_Long  size;
@@ -1356,7 +1356,7 @@
                                  y_offset + comp->y_offset,
                                  stream,
                                  &elem_metrics,
-                                 depth+1 );
+                                 depth + 1 );
         if ( error )
           goto Fail_Memory;
       }
