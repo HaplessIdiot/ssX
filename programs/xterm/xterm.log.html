@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
  *****************************************************************************
- * Copyright 1996-2001,2002 by Thomas E. Dickey                              *
+ * Copyright 1996-2002,2003 by Thomas E. Dickey                              *
  * All Rights Reserved.                                                      *
  *                                                                           *
  * Permission to use, copy, modify, and distribute this software and its     *
@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.89 2002/12/27 21:05:23 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.90 2002/12/27 21:08:20 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -30,7 +30,7 @@
 </HEAD>
 <BODY>
 <HR>
-Copyright 1997-2001,2002 by <A
+Copyright 1997-2002,2003 by <A
 HREF="mailto:dickey@invisible-island.net">Thomas E. Dickey</A>
 <HR>
 <H1>Contents</H1>
@@ -43,6 +43,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_173">Patch #173 - 2003/2/6 - XFree86 4.2.99.902</A>
 <LI><A HREF="#xterm_172">Patch #172 - 2002/12/27 - XFree86 4.2.99.3</A>
 <LI><A HREF="#xterm_171">Patch #171 - 2002/12/12 - XFree86 4.2.99.3</A>
 <LI><A HREF="#xterm_170">Patch #170 - 2002/10/13 - XFree86 4.2.1</A>
@@ -217,6 +218,18 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_173">Patch #173 - 2003/2/6 - XFree86 4.2.99.902</A></H1>
+<ul>
+	<li>reset mouse mode to normal on a full reset.  This does not apply
+	    to mouse hilite tracking mode, of course (see ctlseqs.ms).
+
+	<li>add a time-delay at the point where mouse hilite tracking mode
+	    choses to not handle X events, to avoid runaway CPU usage
+	    (report by D Hugh Redelmeier).
+
+	<li>check for illegal character in DECUDK string, quit if detected.
+</ul>
 
 <H1><A NAME="xterm_172">Patch #172 - 2002/12/27 - XFree86 4.2.99.3</A></H1>
 <ul>
