@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.4 1998/08/29 05:43:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.5 1998/09/13 05:23:32 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1189,7 +1189,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 
     if (vendorID == 0) {
         for (ppPci = xf86PciVideoInfo; *ppPci != NULL; ppPci++) {
-	    for (id = PCIchipsets; id->PCIid != ~0; id++) {
+	    for (id = PCIchipsets; id->PCIid != -1; id++) {
 	        if ( (((id->PCIid & 0xFFFF0000) >> 16) == (*ppPci)->vendor) && 
 		     ((id->PCIid & 0x0000FFFF)        == (*ppPci)->chipType)){
 	            numClaimedInstances = ++allocatedInstances;
@@ -1219,7 +1219,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 		instances[allocatedInstances - 1].foundHW = FALSE;
 
 		/* Check if the chip type is listed in the chipsets table */
-		for (id = PCIchipsets; id->PCIid >= 0; id++) {
+		for (id = PCIchipsets; id->PCIid != -1; id++) {
 		    if (id->PCIid == (*ppPci)->chipType) {
 			instances[allocatedInstances - 1].chip
 			    = id->numChipset;
