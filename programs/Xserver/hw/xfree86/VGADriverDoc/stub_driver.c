@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.3 1994/08/31 04:20:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.4 1994/09/07 15:46:49 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -219,6 +219,17 @@ vgaVideoChipRec STUB = {
 	 * This is TRUE if the driver has support for 32bpp
 	 */
 	FALSE,
+	/*
+	 * This is a pointer to a list of builtin driver modes.
+	 * This is rarely used, and in must cases, set it to NULL
+	 */
+	NULL,
+	/*
+	 * This is a factor that can be used to scale the raw clocks
+	 * to pixel clocks.  This is rarely used, and in most cases, set
+	 * it to 1.
+	 */
+	1,
 };
 
 /*

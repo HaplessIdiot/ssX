@@ -1,3 +1,5 @@
+XFree86 3.0Dk (8 September 1994)
+
 XFree86 3.0Dj (8 September 1994)
 245. Added a sample XF86Config file that gets installed as
      $(LIBDIR)/XF86Config.eg.

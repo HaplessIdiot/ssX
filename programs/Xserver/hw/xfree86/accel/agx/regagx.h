@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.4 1994/08/20 07:32:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.5 1994/09/07 15:47:39 dawes Exp $ */
 /*
  * AGXregs.h
  *
@@ -548,9 +548,9 @@ extern agxPixMap *agxCurPixMap[2];
 #define IR_M1_AGX_BUS_SIZE			0x01
 
 #define IR_M2_MODE_REG_2		0x76
-#define IR_M2_PRESERVE_MASK			0xC3
+#define IR_M2_PRESERVE_MASK			0x01
 #define IR_M2_MASK				0x0F
-#define IR_M2_CCLK_DIV_2			0x20
+#define IR_M2_CCLK_DOUBLED			0x20
 #define IR_M2_DELAY_DISPLAY			0x10
 #define IR_M2_84DAC_SELECT			0x08
 #define IR_M2_COPROC_CLK_DIV_2 			0x04

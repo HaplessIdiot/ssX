@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.5 1994/08/20 07:32:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.6 1994/09/07 15:47:29 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -327,17 +327,6 @@ agxInitDisplay(screen_idx, crtcRegs)
    
    agxInitGE();
 
-
-   /* enable DAC output */
-   outb(agxIdxReg, 0);
-   if(XGA_PALETTE_CONTROL(agxChipId)) {
-      outb(agxIdxReg, IR_PAL_MASK);
-      outb(agxByteData, 0xFF);
-   }
-   else {
-      outb(VGA_PAL_MASK, 0xFF);
-   }
-
    outb(agxIdxReg, 0);
    agxInited = TRUE;
 }
@@ -473,28 +462,44 @@ agxSetCRTCRegs(crtcRegs)
      agxCRTCRegPtr crtcRegs;
 {
    unsigned char byteData;
-   Bool          usingHercBigDAC = FALSE;
+   Bool usingHercBigDAC = hercBigDAC && crtcRegs->clock_sel > 15;
 
    /*
     * Now initialize the display controller.
     * The CRTC registers are passed in from the calling routine.
     */
 
+#if 1
    if (AGX_SERIES(agxChipId)) {
-      if( hercBigDAC && crtcRegs->clock_sel > 15 ) {
-         usingHercBigDAC = TRUE;
-         hercSwitchToBigDac();
-      }
-      else if( hercSmallDAC || hercBigDAC ) {
-         hercSwitchToLittleDac();
+      if( hercBigDAC ) {
+         if( !usingHercBigDAC && inb(hercBrdIO+4) & 0x01 ) {
+            /* needed to reliably get AGX-015 out of clock-doubling mode */ 
+            outb(agxDAReg+DA_OP_MODE, DA_OM_DISP_VGA_XGA_EN);
+            outb(agxIdxReg,IR_M2_MODE_REG_2); 
+            byteData = inb(agxByteData) & IR_M2_PRESERVE_MASK;
+            outb(agxByteData,byteData);
+         }
+         usingHercBigDAC = hercBigDAC && crtcRegs->clock_sel > 15;
+         if( usingHercBigDAC )
+            hercSwitchToBigDac();
+         else 
+            hercSwitchToLittleDac();
+         agxClearColor0();
+         outb(agxIdxReg, 0);
+         outb(VGA_PAL_MASK, 0x00);
       }
       (*xf86RamDacInit)();
    }
+#endif
 
    /*
     * switch to XGA graphics mode 
     */
    outb(agxDAReg+DA_OP_MODE, DA_OM_DISP_XGA_MODE);
+   agxResetCRTC(CRTC_PRERESET);
+   (*agxClockSelectFunc)(0,0);
+   agxResetCRTC(CRTC_RESET);
+
    if(AGX_SERIES(agxChipId)) {
       outb(agxIdxReg,IR_M1_MODE_REG_1); 
       byteData = inb(agxByteData) & IR_M1_PRESERVE_MASK;
@@ -514,23 +519,19 @@ agxSetCRTCRegs(crtcRegs)
           byteData |= IR_M1_INTERLACED;         
       else
           byteData &= ~IR_M1_INTERLACED;
-      /* alternate AGX-016 clock doubling method?  
-      if (usingHercBigDAC)
-          byteData |= IR_M1_PCLK_DIV_2; */
       outb(agxByteData,byteData);
 
       outb(agxIdxReg,IR_M2_MODE_REG_2); 
       byteData = inb(agxByteData) & IR_M2_PRESERVE_MASK;
-      byteData &= ~( IR_M2_CCLK_DIV_2 | IR_M2_DELAY_DISPLAY 
-                    | IR_M2_84DAC_SELECT | IR_M2_COPROC_CLK_DIV_2 );
       if (OFLG_ISSET(OPTION_VRAM_128, &agxInfoRec.options)) 
           byteData &= ~IR_M2_VRAM_256;
       if (OFLG_ISSET(OPTION_VRAM_256, &agxInfoRec.options)) 
           byteData |= IR_M2_VRAM_256;
       if (usingHercBigDAC) {
-          byteData |= IR_M2_84DAC_SELECT;
-          byteData |= IR_M2_DELAY_DISPLAY;
-          byteData |= IR_M2_CCLK_DIV_2;  /* for AGX-015/016 clock doubling */
+          /* for AGX-015/016 clock doubled pix-mux mode */
+          byteData |= IR_M2_84DAC_SELECT 
+                      | IR_M2_DELAY_DISPLAY 
+                      | IR_M2_CCLK_DOUBLED;
       }
       outb(agxByteData,byteData);
 
@@ -636,20 +637,6 @@ agxSetCRTCRegs(crtcRegs)
       outb(agxDAReg+DA_APERATURE_CNTL, DA_AC_64K_AT_A0000);
    }
 
-   /*
-    * Mask off output
-    */ 
-   if(XGA_PALETTE_CONTROL(agxChipId)) {
-      outb(agxIdxReg, IR_PAL_MASK);
-      outb(agxByteData, 0x00);
-   }
-   else {
-      outb(VGA_PAL_MASK, 0x00);
-   }
-
-   agxResetCRTC(CRTC_PRERESET);
-   agxResetCRTC(CRTC_RESET);
-
     /* Horizontal CRTC registers */
    outb(agxIdxReg, IR_CRTC_HTOTAL_LO);
    outb(agxByteData, crtcRegs->htotal_lo);
@@ -674,10 +661,7 @@ agxSetCRTCRegs(crtcRegs)
    outb(agxIdxReg, IR_CRTC_HBLANK_END_HI);
    outb(agxByteData, 0x00);
    outb(agxIdxReg, IR_CRTC_HSYNC_START_LO); 
-   if (usingHercBigDAC)
-      outb(agxByteData, crtcRegs->hsync_strt_lo);
-   else
-      outb(agxByteData, crtcRegs->hsync_strt_lo);
+   outb(agxByteData, crtcRegs->hsync_strt_lo);
    outb(agxIdxReg, IR_CRTC_HSYNC_START_HI);
    outb(agxByteData, 0x00);
    outb(agxIdxReg, IR_CRTC_HSYNC_END_LO);
@@ -734,10 +718,23 @@ agxSetCRTCRegs(crtcRegs)
    outb(agxByteData, crtcRegs->overscan);
    outb(agxIdxReg, IR_PAL_SEQUENCE);
    outb(agxByteData, IR_PS_FRMT_RGB);
+#if 0
+   if (AGX_SERIES(agxChipId)) {
+      if( hercBigDAC ) {
+         usingHercBigDAC = hercBigDAC && crtcRegs->clock_sel > 15;
+         if( usingHercBigDAC )
+            hercSwitchToBigDac();
+         else 
+            hercSwitchToLittleDac();
+         usleep(10000);
+      }
+      (*xf86RamDacInit)();
+   }
+#endif
 
    /* Clock select register */
    (*agxClockSelectFunc)(crtcRegs->clock_sel,0);
-
+   agxResetCRTC(CRTC_PRERESET);
    agxResetCRTC(CRTC_RESET);
    agxResetCRTC(CRTC_RUN);
 
@@ -768,14 +765,20 @@ agxSwitchMode(mode)
    if( hercBigDAC )
       agxSaveLUT(agxsavedLUT);
 
+   agxClearColor0();
+   outb(agxIdxReg, 0);
+   if(XGA_PALETTE_CONTROL(agxChipId)) {
+      outb(agxIdxReg, IR_PAL_MASK);
+      outb(agxByteData, 0x00);
+   }
+   else {
+      outb(VGA_PAL_MASK, 0x00);
+   }
+
    agxCalcCRTCRegs(&agxCRTCRegs, mode);
    agxInited = FALSE;
    agxInitDisplay(agxInfoRec.scrnIndex,&agxCRTCRegs);
 
-   if( hercBigDAC )
-      agxRestoreLUT(agxsavedLUT);
-
-   /* enable DAC output */
    outb(agxIdxReg, 0);
    if(XGA_PALETTE_CONTROL(agxChipId)) {
       outb(agxIdxReg, IR_PAL_MASK);
@@ -784,6 +787,11 @@ agxSwitchMode(mode)
    else {
       outb(VGA_PAL_MASK, 0xFF);
    }
+
+   if( hercBigDAC )
+      agxRestoreLUT(agxsavedLUT);
+   else
+      agxRestoreColor0(savepScreen);
 
    agxInited = TRUE;
 
@@ -1500,6 +1508,14 @@ agxCleanUp()
    if (LUTInited) {
       agxRestoreLUT(oldlut);
       LUTInited = FALSE;
+   }
+
+   if(XGA_PALETTE_CONTROL(agxChipId)) {
+      outb(agxIdxReg, IR_PAL_MASK);
+      outb(agxByteData, 0xFF);
+   }
+   else {
+      outb(VGA_PAL_MASK, 0xFF);
    }
 
    xf86DisableIOPorts(agxInfoRec.scrnIndex);

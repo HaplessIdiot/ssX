@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.3 1994/08/12 13:56:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.4 1994/09/07 15:47:09 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  *
@@ -57,6 +57,7 @@ extern void agxSetRamdac();
 extern void (*agxImageReadFunc)();
 extern void (*agxImageWriteFunc)();
 extern void (*agxImageFillFunc)();
+extern ScreenPtr savepScreen;
 
 /* agx.c */
 Bool agxProbe(
@@ -130,6 +131,17 @@ void agxUninstallColormap(
     ColormapPtr 
 #endif
 );
+void agxRestoreColor0(
+#if NeedFunctionPrototypes
+    ScreenPtr pScreen
+#endif
+);
+void agxClearColor0(
+#if NeedFunctionPrototypes
+   void
+#endif
+);
+
 /* agxCursor.c */
 Bool agxCursorInit(
 #if NeedFunctionPrototypes

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/hercRamDac.c,v 3.0 1994/06/15 15:35:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/hercRamDac.c,v 3.1 1994/09/07 15:47:38 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -278,15 +278,13 @@ hercProbeRamDac(
    }
    else if ( hercBigDAC ) {
       /* use 84-pin dac */
-      /* not ready for prime time -- unable to support low-res modes */
       xf86RamDacType = hercBigDacType;
 
       switch ( xf86RamDacType ) {
    
          case BT485_DAC:
             xf86MaxClock = 135000;
-            /* xf86MaxClockDirect =  86500 */;
-            xf86MaxClockDirect =  0;
+            xf86MaxClockDirect =  86500;
             xf86MinClockDoubled = 33750;
             xf86MaxClockDoubled = 67500;
             xf86MaxCurs = 64;
@@ -294,8 +292,7 @@ hercProbeRamDac(
       
          case ATT20C505_DAC:
             xf86MaxClock = 135000;
-            /* xf86MaxClockDirect =  86500 */;
-            xf86MaxClockDirect =  0;
+            xf86MaxClockDirect =  86500;
             xf86MinClockDoubled = 45000;
             xf86MaxClockDoubled = 67500;
             xf86MaxCurs = 64;
@@ -303,8 +300,7 @@ hercProbeRamDac(
    
          case ATT20C504_DAC:
             xf86MaxClock = 110000;
-            /* xf86MaxClockDirect =  86500 */;
-            xf86MaxClockDirect =  0;
+            xf86MaxClockDirect =  86500;
             xf86MinClockDoubled = 45000;
             xf86MaxClockDoubled = 55000;
             xf86MaxCurs = 32;
@@ -347,48 +343,52 @@ hercSwitchToBigDac(
 {
    int hercDacSw = hercBrdIO + 4;
    unsigned char tmp;
+   Bool wasLittle = !(inb(hercDacSw) & 0x01);
 
-   if( !(inb(hercDacSw) & 0x01) ) {
-      outb( agxIdxReg, IR_CLEAR_RS2 );
+   outb( agxIdxReg, IR_CLEAR_RS2 );
+   if( wasLittle ) {
+      xf86OutBt481IndReg( BT481_COMMAND_REG_B, 0xFF, 0x01 ); 
+      outb( agxIdxReg, IR_CLEAR_RS2 );    /* delay */
       inb( VGA_PAL_MASK );
       outb( VGA_PAL_MASK, 0x00 );
-      xf86OutBt481IndReg( BT481_COMMAND_REG_B, 0xFC, 0x01 ); 
-      tmp = inb(hercDacSw);
-      outb( hercDacSw, tmp | 0x01 );
-      /* outb( hercDacSw, 0x0F );*/
+#if 1
+      tmp = inb(hercDacSw) | 0x01;
+      outb( hercDacSw, tmp );  /* switch to big dac */
+#else
+      outb( hercDacSw, 0x01 );  /* switch to big dac */
+#endif
+      usleep(10000);
    }
 
-   /* 2x mult disabled */
+   /* 2x mult enabled */
    xf86OutBt485IndReg( BT485_COMMAND_REG_3, 0x00, 0x08 );
-   /* pixel port selected, PCLK1, and SCLK enabled */
-   xf86OutRamDacReg( BT485_COMMAND_REG_2, 0x00, 0xB0 );
+   /* pixel port selected, PCLK0, and SCLK disabled */
+   xf86OutRamDacData( BT485_COMMAND_REG_2, 0x20 );
    /* 4-1 Multiplexed */
-   xf86OutRamDacReg( BT485_COMMAND_REG_1, 0x00, 0x40 );
+   xf86OutRamDacData( BT485_COMMAND_REG_1, 0x40 );
    /* 8-bit dac */ 
-   xf86OutRamDacReg( BT485_COMMAND_REG_0, 0x00, 0x02 );
-   /*outb(agxIdxReg,IR_M2_MODE_REG_2);
-   outb(agxByteData, inb(agxByteData)|0x00);*/
-   outb( agxIdxReg, IR_CLEAR_RS2 );
-   outb( VGA_PAL_MASK, 0xFF );
+   xf86OutRamDacData( BT485_COMMAND_REG_0, 0x02 );
 
-   if( inb(hercDacSw) & 0x01 ) {
-      if (xf86Verbose) 
-         ErrorF( "%s %s: 84-pin RAMDAC currently in use (0x%02x).\n",
-                 XCONFIG_PROBED, agxInfoRec.name, inb(hercDacSw) );
-      xf86RamDacHWSave = xf86Bt485HWSave;
-      xf86RamDacHWRestore = xf86Bt485HWRestore;
-      xf86RamDacInit = xf86Bt485Init;
-   }
-   else {
-      if (xf86Verbose) 
-         ErrorF( "%s %s: 44-pin RAMDAC currently in use (0x%02x).\n",
-                 XCONFIG_PROBED, agxInfoRec.name, inb(hercDacSw) );
-      xf86RamDacHWSave = xf86Bt481HWSave;
-      xf86RamDacHWRestore = xf86Bt481HWRestore;
-      xf86RamDacInit = xf86Bt481Init;
+   if( wasLittle ) {
+      if( inb(hercDacSw) & 0x01 ) {
+         if (xf86Verbose) 
+            ErrorF( "%s %s: 84-pin RAMDAC currently in use (0x%02x).\n",
+                    XCONFIG_PROBED, agxInfoRec.name, inb(hercDacSw) );
+         xf86RamDacHWSave = xf86Bt485HWSave;
+         xf86RamDacHWRestore = xf86Bt485HWRestore;
+         xf86RamDacInit = xf86Bt485Init;
+      }
+      else {
+         if (xf86Verbose) 
+            ErrorF( "%s %s: Error, 84-pin RAMDAC switchover failed (0x%02x).\n",
+                    XCONFIG_PROBED, agxInfoRec.name, inb(hercDacSw) );
+         xf86RamDacHWSave = xf86Bt481HWSave;
+         xf86RamDacHWRestore = xf86Bt481HWRestore;
+         xf86RamDacInit = xf86Bt481Init;
+      }
    }
 }
-
+   
 /*
  * hercPowerDownBigDac()
  *
@@ -401,28 +401,41 @@ hercPowerDownBigDac(
 )
 {
    unsigned int hercDacSw = hercBrdIO + 4;
-   unsigned char saveMask; 
-   Bool wasLittle;
    unsigned char tmp;
 
-   wasLittle = !(inb(hercDacSw) & 0x01);
-   if (wasLittle) {     /* switch to big dac */
+   outb( agxIdxReg, IR_CLEAR_RS2 );
+
+   if ( !(inb(hercDacSw) & 0x01) ) {     /* big dac */
+      xf86OutBt481IndReg( BT481_COMMAND_REG_B, 0xFF, 0x01 ); /* power-down */
       outb( agxIdxReg, IR_CLEAR_RS2 );
-      saveMask = inb( VGA_PAL_MASK );
+      inb( VGA_PAL_MASK );
       outb( VGA_PAL_MASK, 0x00 );
+#if 1
       tmp = inb(hercDacSw);
-      outb( hercDacSw, tmp | 0x01 );
+      outb( hercDacSw, tmp | 0x01 );  /* switch to big DAC */
+#else
+      outb( hercDacSw, 0x01 );    /* switch to big DAC */
+#endif
+      usleep(10000);
    }
 
-   xf86OutRamDacReg( BT485_COMMAND_REG_0, 0xFF, 0x01 );  /* powerdown */
+   /* 2x mult disabled */
+   xf86OutBt485IndReg( BT485_COMMAND_REG_3, 0x00, 0x00 );
+   /* vga port selected, PCLK0, and SCLK disabled */
+   xf86OutRamDacData( BT485_COMMAND_REG_2, 0x00 );
+
+   xf86OutRamDacData( BT485_COMMAND_REG_0, 0x01 );  /* powerdown */
    outb( agxIdxReg, IR_CLEAR_RS2 );
+#if 1
    tmp = inb(hercDacSw);
-   outb( hercDacSw, tmp & 0xFE );  /* switch to */
-   if (wasLittle)
-      outb( VGA_PAL_MASK, saveMask );
-   else
-      outb( VGA_PAL_MASK, 0xFF );
-   xf86OutBt481IndReg( BT481_COMMAND_REG_B, 0xFE, 0x00 ); /* powerup */
+   outb( hercDacSw, tmp & 0xFE );  /* switch to little DAC */
+#else
+   outb( hercDacSw, 0x00 );  /* switch to little DAC */
+#endif
+   usleep(10000);
+   outb( VGA_PAL_MASK, 0x00 );
+   xf86OutRamDacData( BT481_COMMAND_REG_A, 0x00 );
+   xf86OutBt481IndReg( BT481_COMMAND_REG_B, 0x7E, 0x00 ); /* powerup */
 
 }
  
@@ -438,24 +451,27 @@ hercSwitchToLittleDac(
 )
 {
    int hercDacSw = hercBrdIO + 4;
+   Bool wasBig = inb(hercDacSw) & 0x01;
 
-   hercPowerDownBigDac();
+   if( wasBig ) {
+      hercPowerDownBigDac();
 
-   if( inb(hercDacSw) & 0x01 ) {
-      if (xf86Verbose) 
-         ErrorF( "%s %s: 84-pin RAMDAC currently in use (0x%02x).\n",
-                 XCONFIG_PROBED, agxInfoRec.name, inb(hercDacSw) );
-      xf86RamDacHWSave = xf86Bt485HWSave;
-      xf86RamDacHWRestore = xf86Bt485HWRestore;
-      xf86RamDacInit = xf86Bt485Init;
-   }
-   else {
-      if (xf86Verbose) 
-         ErrorF( "%s %s: 44-pin RAMDAC currently in use (0x%02x).\n",
-                 XCONFIG_PROBED, agxInfoRec.name, inb(hercDacSw) );
-      xf86RamDacHWSave = xf86Bt481HWSave;
-      xf86RamDacHWRestore = xf86Bt481HWRestore;
-      xf86RamDacInit = xf86Bt481Init;
+      if( inb(hercDacSw) & 0x01 ) {
+         if (xf86Verbose) 
+            ErrorF( "%s %s: Error 44-pin RAMDAC switchover failed (0x%02x).\n",
+                    XCONFIG_PROBED, agxInfoRec.name, inb(hercDacSw) );
+         xf86RamDacHWSave = xf86Bt485HWSave;
+         xf86RamDacHWRestore = xf86Bt485HWRestore;
+         xf86RamDacInit = xf86Bt485Init;
+      }
+      else {
+         if (xf86Verbose) 
+            ErrorF( "%s %s: 44-pin RAMDAC currently in use (0x%02x).\n",
+                    XCONFIG_PROBED, agxInfoRec.name, inb(hercDacSw) );
+         xf86RamDacHWSave = xf86Bt481HWSave;
+         xf86RamDacHWRestore = xf86Bt481HWRestore;
+         xf86RamDacInit = xf86Bt481Init;
+      }
    }
 }
 
