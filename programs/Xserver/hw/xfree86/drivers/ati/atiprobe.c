@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.45 2001/05/18 20:22:28 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.46 2001/06/13 02:33:31 tsi Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1720,17 +1720,18 @@ ATIProbe
                 {
                     case ATI_CHIP_RAGE128GL:
                     case ATI_CHIP_RAGE128VR:
+                    case ATI_CHIP_RAGE128PROULTRA:
                     case ATI_CHIP_RAGE128PROGL:
                     case ATI_CHIP_RAGE128PROVR:
                     case ATI_CHIP_RAGE128MOBILITY3:
                     case ATI_CHIP_RAGE128MOBILITY4:
-                    case ATI_CHIP_RAGE128ULTRA:
                         DoRage128 = TRUE;
                         continue;
 
                     case ATI_CHIP_RADEON:
                     case ATI_CHIP_RADEONVE:
-                    case ATI_CHIP_RADEONMOBILITY:
+                    case ATI_CHIP_RADEONMOBILITY6:
+                    case ATI_CHIP_RADEONMOBILITY7:
                         DoRadeon = TRUE;
                         continue;
 
