@@ -24,7 +24,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $XFree86: xc/programs/Xserver/hw/xfree86/parser/DRI.c,v 1.4 2000/03/31 20:13:39 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/parser/DRI.c,v 1.5 2000/04/04 19:25:21 dawes Exp $
  * 
  */
 
@@ -87,9 +87,9 @@ parseDRISection (void)
 	switch (token)
 	    {
 	    case GROUP:
-		if (xf86GetToken (NULL) == STRING)
+		if ((token = xf86GetToken (NULL)) == STRING)
 		    ptr->dri_group_name = val.str;
-		else if (xf86GetToken (NULL) == NUMBER)
+		else if (token == NUMBER)
 		    ptr->dri_group = val.num;
 		else
 		    Error (GROUP_MSG, NULL);
