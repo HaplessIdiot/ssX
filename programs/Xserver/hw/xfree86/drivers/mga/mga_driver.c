@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.204 2001/05/28 14:21:55 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.205 2001/06/11 08:20:38 alanh Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -263,105 +263,92 @@ static const OptionInfoRec MGAOptions[] = {
  */
 
 static const char *vgahwSymbols[] = {
-    "vgaHWGetHWRec",
-    "vgaHWUnlock",
-    "vgaHWInit",
-    "vgaHWProtect",
-    "vgaHWSetMmioFuncs",
-    "vgaHWGetIOBase",
-    "vgaHWMapMem",
-    "vgaHWLock",
     "vgaHWFreeHWRec",
+    "vgaHWGetHWRec",
+    "vgaHWGetIOBase",
+    "vgaHWGetIndex",
+    "vgaHWInit",
+    "vgaHWLock",
+    "vgaHWMapMem",
+    "vgaHWProtect",
+    "vgaHWRestore",
+    "vgaHWSave",
     "vgaHWSaveScreen",
+    "vgaHWSetMmioFuncs",
+    "vgaHWUnlock",
+    "vgaHWUnmapMem",
     "vgaHWddc1SetSpeed",
     NULL
 };
 
-static const char *cfbSymbols[] = {
-    "cfb8_32ScreenInit",
-    NULL
-};
-
 static const char *fbSymbols[] = {
+    "fbPictureInit",
     "fbScreenInit",
     NULL
 };
 
 static const char *xf8_32bppSymbols[] = {
+    "cfb8_32ScreenInit",
     "xf86Overlay8Plus32Init",
     NULL
 };
 
 static const char *xaaSymbols[] = {
-    "XAADestroyInfoRec",
-    "XAACreateInfoRec",
-    "XAAInit",
-    "XAAStippleScanlineFuncLSBFirst",
-    "XAAOverlayFBfuncs",
     "XAACachePlanarMonoStipple",
-    "XAAScreenIndex",
+    "XAACreateInfoRec",
+    "XAADestroyInfoRec",
     "XAAFallbackOps",
     "XAAFillSolidRects",
+    "XAAInit",
     "XAAMoveDWORDS",
+    "XAAScreenIndex",
+    "XAA_888_plus_PICT_a8_to_8888",
     NULL
 };
 
 static const char *ramdacSymbols[] = {
-    "xf86InitCursor",
     "xf86CreateCursorInfoRec",
     "xf86DestroyCursorInfoRec",
+    "xf86InitCursor",
     NULL
 };
 
 #ifdef XF86DRI
 static const char *drmSymbols[] = {
-    "drmAvailable",
     "drmAddBufs",
     "drmAddMap",
-    "drmCtlInstHandler",
-    "drmGetInterruptFromBusID",
+    "drmAgpAcquire",
+    "drmAgpAlloc",
+    "drmAgpBind",
+    "drmAgpDeviceId",
+    "drmAgpEnable",
+    "drmAgpFree",
+    "drmAgpGetMode",
+    "drmAgpRelease",
+    "drmAgpUnbind",
+    "drmAgpVendorId",
     "drmFreeVersion",
     "drmGetVersion",
+    "drmMGACleanupDMA",
+    "drmMGAEngineReset",
+    "drmMGAFlushDMA",
+    "drmMGAInitDMA",
+    "drmMapBufs",
     "drmMap",
     "drmUnmap",
-    "drmMapBufs",
     "drmUnmapBufs",
-    "drmAgpAcquire",
-    "drmAgpRelease",
-    "drmAgpEnable",
-    "drmAgpAlloc",
-    "drmAgpFree",
-    "drmAgpBind",
-    "drmAgpUnbind",
-    "drmAgpGetMode",
-    "drmAgpBase",
-    "drmAgpSize",
-    "drmAgpVendorId",
-    "drmAgpDeviceId",
-    "drmMGAInitDMA",
-    "drmMGACleanupDMA",
-    "drmMGAFlushDMA",
-    "drmMGAEngineReset",
     NULL
 };
 
 static const char *driSymbols[] = {
-    "DRIGetDrawableIndex",
-    "DRIFinishScreenInit",
-    "DRIDestroyInfoRec",
     "DRICloseScreen",
-    "DRIDestroyInfoRec",
-    "DRIScreenInit",
-    "DRIDestroyInfoRec",
     "DRICreateInfoRec",
+    "DRIDestroyInfoRec",
+    "DRIFinishScreenInit",
     "DRILock",
-    "DRIUnlock",
-    "DRIGetSAREAPrivate",
-    "DRIGetContext",
     "DRIQueryVersion",
-    "DRIAdjustFrame",
-    "DRIOpenFullScreen",
-    "DRICloseFullScreen",
+    "DRIScreenInit",
+    "DRIUnlock",
     "GlxSetVisualConfigs",
     NULL
 };
@@ -370,11 +357,12 @@ static const char *driSymbols[] = {
 #define MGAuseI2C 1
 
 static const char *ddcSymbols[] = {
-    "xf86PrintEDID",
     "xf86DoEDID_DDC1",
 #if MGAuseI2C
     "xf86DoEDID_DDC2",
 #endif
+    "xf86PrintEDID",
+    "xf86SetDDCproperties",
     NULL
 };
 
@@ -397,8 +385,8 @@ static const char *vbeSymbols[] = {
 };
 
 static const char *int10Symbols[] = {
-    "xf86InitInt10",
     "xf86FreeInt10",
+    "xf86InitInt10",
     NULL
 };
 
@@ -406,26 +394,25 @@ static const char *fbdevHWSymbols[] = {
 	"fbdevHWInit",
 	"fbdevHWUseBuildinMode",
 
-	"fbdevHWGetDepth",
 	"fbdevHWGetVidmem",
 
 	/* colormap */
 	"fbdevHWLoadPalette",
 
 	/* ScrnInfo hooks */
-	"fbdevHWSwitchMode",
 	"fbdevHWAdjustFrame",
 	"fbdevHWEnterVT",
 	"fbdevHWLeaveVT",
-	"fbdevHWValidMode",
-	"fbdevHWRestore",
 	"fbdevHWModeInit",
+	"fbdevHWRestore",
 	"fbdevHWSave",
+	"fbdevHWSwitchMode",
+	"fbdevHWValidMode",
 
-	"fbdevHWUnmapMMIO",
-	"fbdevHWUnmapVidmem",
 	"fbdevHWMapMMIO",
 	"fbdevHWMapVidmem",
+	"fbdevHWUnmapMMIO",
+	"fbdevHWUnmapVidmem",
 
 	NULL
 };
@@ -433,16 +420,16 @@ static const char *fbdevHWSymbols[] = {
 #ifdef USEMGAHAL
 static const char *halSymbols[] = {
   "MGACloseLibrary",
-  "MGASaveVgaState",
-  "MGARestoreVgaState",
-  "MGASetVgaMode",
-  "MGASetMode",
-  "MGAValidateMode",
-  "MGAValidateVideoParameters",
   "MGAGetBOARDHANDLESize",
   "MGAGetHardwareInfo",
   "MGAOpenLibrary",
-        NULL
+  "MGARestoreVgaState",
+  "MGASaveVgaState",
+  "MGASetMode",
+  "MGASetVgaMode",
+  "MGAValidateMode",
+  "MGAValidateVideoParameters",
+   NULL
 };
 #endif
 #ifdef XFree86LOADER
@@ -485,7 +472,7 @@ mgaSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * Tell the loader about symbols from other modules that this module
 	 * might refer to.
 	 */
-	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols,
+	LoaderRefSymLists(vgahwSymbols, xaaSymbols,
 			  xf8_32bppSymbols, ramdacSymbols,
 			  ddcSymbols, i2cSymbols, shadowSymbols,
 			  fbdevHWSymbols, vbeSymbols,
@@ -1193,7 +1180,6 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     double real;
     int bytesPerPixel;
     ClockRangePtr clockRanges;
-    const char *reqSym = NULL;
     const char *s;
     int flags24;
     MGAEntPtr pMgaEnt = NULL;
@@ -1432,6 +1418,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
         xf86LoadSubModule(pScrn, "int10")) {
         xf86Int10InfoPtr pInt;
 
+	xf86LoaderReqSymLists(int10Symbols, NULL);
         xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Initializing int10\n");
         pInt = xf86InitInt10(pMga->pEnt->index);
 	if (pInt) pMga->softbooted = TRUE;
@@ -2303,16 +2290,14 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	    MGAFreeRec(pScrn);
 	    return FALSE;
 	}
-	reqSym = "cfb8_32ScreenInit";
+	xf86LoaderReqSymLists(xf8_32bppSymbols, NULL);
     } else {
 	if (!xf86LoadSubModule(pScrn, "fb")) {
 	    MGAFreeRec(pScrn);
 	    return FALSE;
 	}
-	reqSym = "fbScreenInit";
-	xf86LoaderReqSymbols("fbPictureInit", NULL);
+	xf86LoaderReqSymLists(fbSymbols, NULL);
     }
-    xf86LoaderReqSymbols(reqSym, NULL);
 
 
     /* Load XAA if needed */

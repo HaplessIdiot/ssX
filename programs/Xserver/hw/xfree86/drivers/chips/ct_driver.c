@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.110 2001/05/15 10:19:36 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.111 2001/05/25 18:19:12 eich Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -658,56 +658,66 @@ static const OptionInfoRec ChipsHiQVOptions[] = {
  */
 
 static const char *vgahwSymbols[] = {
-    "vgaHWGetHWRec",
-    "vgaHWUnlock",
-    "vgaHWInit",
-    "vgaHWProtect",
-    "vgaHWGetIOBase",
-    "vgaHWMapMem",
-    "vgaHWLock",
+    "vgaHWAllocDefaultRegs",
     "vgaHWFreeHWRec",
-    "vgaHWSaveScreen",
+    "vgaHWGetHWRec",
+    "vgaHWGetIOBase",
+    "vgaHWGetIndex",
+    "vgaHWHBlankKGA",
+    "vgaHWInit",
+    "vgaHWLock",
+    "vgaHWMapMem",
+    "vgaHWProtect",
+    "vgaHWRestore",
+    "vgaHWSave",
+    "vgaHWUnlock",
+    "vgaHWVBlankKGA",
+    "vgaHWddc1SetSpeed",
+    NULL
+};
+
+static const char *miscfbSymbols[] = {
+    "xf1bppScreenInit",
+    "xf4bppScreenInit",
+    "cfb8_16ScreenInit",
     NULL
 };
 
 static const char *fbSymbols[] = {
-    "xf1bppScreenInit",
-    "xf4bppScreenInit",
-    "cfb8_16ScreenInit",
     "fbScreenInit",
     "fbPictureInit",
     NULL
 };
 
 static const char *xaaSymbols[] = {
-    "XAADestroyInfoRec",
     "XAACreateInfoRec",
-    "XAAInit",
+    "XAADestroyInfoRec",
     "XAAFillSolidRects" ,
+    "XAAInit",
     "XAAInitDualFramebufferOverlay",
     "XAAStippleScanlineFuncMSBFirst",
     NULL
 };
 
 static const char *ramdacSymbols[] = {
-    "xf86InitCursor",
     "xf86CreateCursorInfoRec",
     "xf86DestroyCursorInfoRec",
+    "xf86InitCursor",
     NULL
 };
 
 static const char *ddcSymbols[] = {
-    "xf86PrintEDID",
     "xf86DoEDID_DDC1",
     "xf86DoEDID_DDC2",
+    "xf86PrintEDID",
     NULL
 };
 
 static const char *i2cSymbols[] = {
     "xf86CreateI2CBusRec",
     "xf86I2CBusInit",
-    "xf86I2CProbeAddress",
     "xf86I2CFindBus",
+    "xf86I2CProbeAddress",
     NULL
 };
 
@@ -718,6 +728,8 @@ static const char *shadowSymbols[] = {
 
 static const char *vbeSymbols[] = {
     "VBEInit",
+    "vbeDoEDID",
+    "vbeFree",
     NULL
 };
 
@@ -763,7 +775,7 @@ chipsSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * Tell the loader about symbols from other modules that this module
 	 * might refer to.
 	 */
-	LoaderRefSymLists(vgahwSymbols, fbSymbols, xaaSymbols,
+	LoaderRefSymLists(vgahwSymbols, miscfbSymbols, fbSymbols, xaaSymbols,
 			  ramdacSymbols, ddcSymbols, i2cSymbols,
 			  shadowSymbols, vbeSymbols, NULL);
 
@@ -1095,6 +1107,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 #if 0
     if (xf86LoadSubModule(pScrn, "int10")) {
  	xf86Int10InfoPtr pInt;
+	xf86LoaderReqSymLists(int10Symbols, NULL);
 #if 1
 	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"initializing int10\n");
 	pInt = xf86InitInt10(cPtr->pEnt->index);
@@ -1104,6 +1117,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 #endif
 
     if (xf86LoadSubModule(pScrn, "vbe")) {
+	xf86LoaderReqSymLists(vbeSymbols);
 	cPtr->pVbe =  VBEInit(NULL,cPtr->pEnt->index);
     }
     
@@ -1302,7 +1316,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	    CHIPSFreeRec(pScrn);
 	    return FALSE;
 	}	
-	xf86LoaderReqSymbols("fbScreenInit", "fbPictureInit", NULL);
+	xf86LoaderReqSymLists(fbSymbols, NULL);
 	break;
     }
     
@@ -2326,14 +2340,12 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	
 	xf86LoaderReqSymLists(ddcSymbols, NULL);
 
-#ifdef XFree86LOADER
 	if (cPtr->pVbe) {
 	    if ((pMon = xf86PrintEDID(vbeDoEDID(cPtr->pVbe, NULL))) != NULL) {
 		ddc_done = TRUE;
 		xf86SetDDCproperties(pScrn,pMon);
 	    }
 	}
-#endif
 
 	if (!ddc_done)
 	    if (xf86LoadSubModule(pScrn, "i2c")) {
@@ -2827,13 +2839,11 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 		(float)(cPtr->MaxClock / 1000.));
     }
     
-#ifdef XFree86LOADER
     if (xf86LoadSubModule(pScrn, "ddc")) {
 	xf86LoaderReqSymLists(ddcSymbols, NULL);
 	if (cPtr->pVbe)
 	    xf86SetDDCproperties(pScrn,xf86PrintEDID(vbeDoEDID(cPtr->pVbe, NULL)));
     }
-#endif    
     return TRUE;
 }
 
@@ -3592,13 +3602,11 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 		       "Memory clock option not supported for this chipset\n");
     
-#ifdef XFree86LOADER
     if (xf86LoadSubModule(pScrn, "ddc")) {
 	xf86LoaderReqSymLists(ddcSymbols, NULL);
 	if (cPtr->pVbe)
 	    xf86SetDDCproperties(pScrn,xf86PrintEDID(vbeDoEDID(cPtr->pVbe, NULL)));
     }
-#endif
     return TRUE;
 }
     

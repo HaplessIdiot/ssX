@@ -45,7 +45,7 @@
    * Support static loading.  
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.24 2001/05/16 06:48:08 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.25 2001/06/08 10:53:39 alanh Exp $ */
 
 #include "xaa.h"
 #include "xf86Cursor.h"
@@ -213,9 +213,7 @@ static SymTabRec GLIDEChipsets[] = {
 
 static const char *fbSymbols[] = {
   "fbScreenInit",
-#ifdef RENDER
   "fbPictureInit",
-#endif
   NULL
 };
 
@@ -708,9 +706,7 @@ GLIDEScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
   if (!ret)
     return FALSE;
 
-#ifdef RENDER
   fbPictureInit (pScreen, 0, 0);
-#endif
 
   /* Fixup RGB ordering */
   visual = pScreen->visuals + pScreen->numVisuals;

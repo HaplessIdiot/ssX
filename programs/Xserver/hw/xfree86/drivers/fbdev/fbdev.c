@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.29 2001/04/06 18:16:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.30 2001/05/04 19:05:37 dawes Exp $ */
 
 /*
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
@@ -23,6 +23,7 @@
 #ifdef USE_AFB
 #include "afb.h"
 #endif
+#include "cfb24_32.h"
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -56,7 +57,7 @@ static Bool	FBDevScreenInit(int Index, ScreenPtr pScreen, int argc,
 				char **argv);
 static Bool	FBDevCloseScreen(int scrnIndex, ScreenPtr pScreen);
 static void *	FBDevWindowLinear(ScreenPtr pScreen, CARD32 row, CARD32 offset, int mode,
-				  CARD32 *size);
+				  CARD32 *size, void *closure);
 static Bool	FBDevDGAInit(ScrnInfoPtr pScrn, ScreenPtr pScreen);
 
 
@@ -131,8 +132,13 @@ static const char *afbSymbols[] = {
 };
 
 static const char *cfbSymbols[] = {
-	"fbScreenInit",
 	"cfb24_32ScreenInit",
+	NULL
+};
+
+static const char *fbSymbols[] = {
+	"fbScreenInit",
+	"fbPictureInit",
 	NULL
 };
 
@@ -144,25 +150,35 @@ static const char *shadowSymbols[] = {
 };
 
 static const char *fbdevHWSymbols[] = {
-	"fbdevHWProbe",
 	"fbdevHWInit",
+	"fbdevHWProbe",
 	"fbdevHWSetVideoModes",
 	"fbdevHWUseBuildinMode",
 
-	"fbdevHWGetName",
 	"fbdevHWGetDepth",
 	"fbdevHWGetLineLength",
+	"fbdevHWGetName",
+	"fbdevHWGetType",
 	"fbdevHWGetVidmem",
+	"fbdevHWLinearOffset",
+	"fbdevHWLoadPalette",
+	"fbdevHWMapVidmem",
+	"fbdevHWUnmapVidmem",
 
 	/* colormap */
 	"fbdevHWLoadpalette",
 
 	/* ScrnInfo hooks */
-	"fbdevHWSwitchMode",
 	"fbdevHWAdjustFrame",
 	"fbdevHWEnterVT",
 	"fbdevHWLeaveVT",
+	"fbdevHWModeInit",
+	"fbdevHWRestore",
+	"fbdevHWSwitchMode",
 	"fbdevHWValidMode",
+
+	"fbdevHWDPMSSet",
+
 	NULL
 };
 
@@ -194,7 +210,8 @@ FBDevSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	if (!setupDone) {
 		setupDone = TRUE;
 		xf86AddDriver(&FBDEV, module, 0);
-		LoaderRefSymLists(afbSymbols, cfbSymbols, shadowSymbols, NULL);
+		LoaderRefSymLists(afbSymbols, cfbSymbols,
+				  fbSymbols, shadowSymbols, NULL);
 		return (pointer)1;
 	} else {
 		if (errmaj) *errmaj = LDR_ONCEONLY;
@@ -365,8 +382,8 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 {
 	FBDevPtr fPtr;
 	int default_depth;
-	char *mod = NULL, *s;
-	const char *reqSym = NULL;
+	const char *mod = NULL, *s;
+	const char **syms = NULL;
 	Gamma zeros = {0.0, 0.0, 0.0};
 
 	if (flags & PROBE_DETECT) return FALSE;
@@ -521,24 +538,27 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 	{
 	case FBDEVHW_PLANES:
 		mod = "afb";
-		reqSym = "afbScreenInit";
+		syms = afbSymbols;
 		break;
 	case FBDEVHW_PACKED_PIXELS:
-		mod = "fb";
-		reqSym = "fbScreenInit";
-		xf86LoaderReqSymbols("fbPictureInit", NULL);
-
 		switch (pScrn->bitsPerPixel)
 		{
 		case 8:
 		case 16:
 		case 32:
+			mod = "fb";
+			syms = fbSymbols;
 			break;
 		case 24:
 			if (pix24bpp == 32)
 			{
 				mod = "xf24_32bpp";
-				reqSym = "cfb24_32ScreenInit";
+				syms = cfbSymbols;
+			}
+			else 
+			{
+				mod = "fb";
+				syms = fbSymbols;
 			}
 			break;
 		default:
@@ -573,7 +593,9 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 		FBDevFreeRec(pScrn);
 		return FALSE;
 	}
-	xf86LoaderReqSymbols(reqSym, NULL);
+	if (mod && syms) {
+		xf86LoaderReqSymLists(syms, NULL);
+	}
 
 	/* Load shadow if needed */
 	if (fPtr->shadowFB) {
@@ -596,7 +618,6 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	FBDevPtr fPtr = FBDEVPTR(pScrn);
 	VisualPtr visual;
 	int ret,flags,width,height;
-	ShadowUpdateProc fun;
 
 	TRACE_ENTER("FBDevScreenInit");
 
@@ -880,7 +901,7 @@ FBDevCloseScreen(int scrnIndex, ScreenPtr pScreen)
 
 static void *
 FBDevWindowLinear(ScreenPtr pScreen, CARD32 row, CARD32 offset, int mode,
-		 CARD32 *size)
+		 CARD32 *size, void *closure)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     FBDevPtr fPtr = FBDEVPTR(pScrn);

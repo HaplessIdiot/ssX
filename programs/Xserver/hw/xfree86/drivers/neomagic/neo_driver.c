@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.50 2001/02/15 17:44:24 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.52 2001/05/15 10:19:39 eich Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -316,49 +316,53 @@ static const OptionInfoRec NEOOptions[] = {
  */
 
 static const char *vgahwSymbols[] = {
-    "vgaHWGetHWRec",
-    "vgaHWUnlock",
-    "vgaHWInit",
-    "vgaHWProtect",
-    "vgaHWGetIOBase",
-    "vgaHWMapMem",
-    "vgaHWLock",
     "vgaHWFreeHWRec",
+    "vgaHWGetHWRec",
+    "vgaHWGetIOBase",
+    "vgaHWGetIndex",
+    "vgaHWInit",
+    "vgaHWLock",
+    "vgaHWMapMem",
+    "vgaHWProtect",
+    "vgaHWRestore",
+    "vgaHWSave",
     "vgaHWSaveScreen",
+    "vgaHWSetStdFuncs",
+    "vgaHWUnlock",
+    "vgaHWddc1SetSpeed",
     NULL
 };
 
 static const char *fbSymbols[] = {
+    "fbPictureInit",
     "fbScreenInit",
     NULL
 };
 
 static const char *xaaSymbols[] = {
-    "XAADestroyInfoRec",
     "XAACreateInfoRec",
+    "XAADestroyInfoRec",
     "XAAInit",
     NULL
 };
 
 static const char *ramdacSymbols[] = {
-    "xf86InitCursor",
     "xf86CreateCursorInfoRec",
     "xf86DestroyCursorInfoRec",
+    "xf86InitCursor",
     NULL
 };
 
 static const char *shadowSymbols[] = {
     "shadowInit",
-#if 0
-    "ShadowFBInit",
-#endif
     NULL
 };
 
 static const char *ddcSymbols[] = {
-    "xf86PrintEDID",
     "xf86DoEDID_DDC1",
     "xf86DoEDID_DDC2",
+    "xf86PrintEDID",
+    "xf86SetDDCproperties",
     NULL
 };
 
@@ -1190,7 +1194,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	RETURN;
     }
 
-    xf86LoaderReqSymbols("fbScreenInit", "fbPictureInit", NULL);
+    xf86LoaderReqSymLists(fbSymbols, NULL);
 
     if (!nPtr->noLinear) {
 	if (!xf86LoadSubModule(pScrn, "xaa")) 
@@ -2744,6 +2748,7 @@ neoDoDDCVBE(ScrnInfoPtr pScrn)
 
     VGAwGR(0x09,0x26);
     if (xf86LoadSubModule(pScrn, "vbe")) {
+	xf86LoaderReqSymLists(vbeSymbols, NULL);
         if ((pVbe = VBEInit(NULL,nPtr->pEnt->index))) {
 	  ret = xf86SetDDCproperties(
 				     pScrn,xf86PrintEDID(vbeDoEDID(pVbe,NULL)));

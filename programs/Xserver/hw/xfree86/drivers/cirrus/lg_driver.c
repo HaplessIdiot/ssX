@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.36 2001/02/15 17:39:28 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.37 2001/05/04 19:05:36 dawes Exp $ */
 
 #define EXPERIMENTAL
 
@@ -169,40 +169,39 @@ static int LgLinePitches[4][11] = {
  */
 
 static const char *vgahwSymbols[] = {
-	"vgaHWGetHWRec",
-	"vgaHWUnlock",
-	"vgaHWInit",
-	"vgaHWProtect",
-	"vgaHWSetMmioFuncs",
-	"vgaHWGetIOBase",
-	"vgaHWMapMem",
-	"vgaHWLock",
 	"vgaHWFreeHWRec",
+	"vgaHWGetHWRec",
+	"vgaHWGetIOBase",
+	"vgaHWGetIndex",
+	"vgaHWHandleColormaps",
+	"vgaHWInit",
+	"vgaHWLock",
+	"vgaHWMapMem",
+	"vgaHWProtect",
+	"vgaHWRestore",
+	"vgaHWSave",
 	"vgaHWSaveScreen",
-	"vgaHWddc1SetSpeed",
+	"vgaHWUnlock",
 	NULL
 };
 
 static const char *fbSymbols[] = {
 	"fbScreenInit",
+	"fbPictureInit",
 	NULL
 };
 
 static const char *xaaSymbols[] = {
-	"XAADestroyInfoRec",
 	"XAACreateInfoRec",
+	"XAADestroyInfoRec",
 	"XAAInit",
-	"XAAStippleScanlineFuncLSBFirst",
-	"XAAOverlayFBfuncs",
-	"XAACachePlanarMonoStipple",
-	"XAAScreenIndex",
 	NULL
 };
 
 static const char *ramdacSymbols[] = {
-	"xf86InitCursor",
 	"xf86CreateCursorInfoRec",
 	"xf86DestroyCursorInfoRec",
+	"xf86InitCursor",
 	NULL
 };
 
@@ -210,7 +209,6 @@ static const char *ramdacSymbols[] = {
 
 static const char *ddcSymbols[] = {
 	"xf86PrintEDID",
-	"xf86DoEDID_DDC1",
 #if LGuseI2C
 	"xf86DoEDID_DDC2",
 #endif
@@ -224,8 +222,8 @@ static const char *i2cSymbols[] = {
 };
 
 static const char *int10Symbols[] = {
-	"xf86InitInt10",
 	"xf86FreeInt10",
+	"xf86InitInt10",
 	NULL
 };
 
@@ -864,7 +862,7 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 	         LgFreeRec(pScrn);
 		 return FALSE;
 	    }
-	    xf86LoaderReqSymbols("fbScreenInit", "fbPictureInit", NULL);
+	    xf86LoaderReqSymLists(fbSymbols, NULL);
 	    break;
 	}
 

@@ -30,7 +30,7 @@
  * Project.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.9 2001/05/04 19:05:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.10 2001/05/16 06:48:09 keithp Exp $ */
 
 /* function prototypes, common data structures & generic includes */
 #include "newport.h"
@@ -101,10 +101,8 @@ static SymTabRec NewportChipsets[] = {
 /* List of Symbols from other modules that this module references */
 
 static const char *fbSymbols[] = {
-	"fbScreenInit",
-#ifdef RENDER
 	"fbPictureInit",
-#endif
+	"fbScreenInit",
 	NULL
 };	
 
@@ -491,9 +489,7 @@ NewportScreenInit(int index, ScreenPtr pScreen, int argc, char **argv)
 	if(!ret)
 		return FALSE;
 
-#ifdef RENDER
 	fbPictureInit (pScreen, 0, 0);
-#endif
 
 	/* we need rgb ordering if bitsPerPixel > 8 */
 	if (pScrn->bitsPerPixel > 8) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.49 2001/04/25 17:46:42 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.50 2001/05/04 19:05:31 dawes Exp $ */
 
 #define COMPILER_H_EXTRAS
 #include "apm.h"
@@ -138,7 +138,6 @@ static const char *vgahwSymbols[] = {
     "vgaHWProtect",
     "vgaHWRestore",
     "vgaHWSave",
-    "vgaHWSaveScreen",
     "vgaHWSetMmioFuncs",
     "vgaHWUnlock",
     NULL
@@ -149,22 +148,21 @@ static const char *xaaSymbols[] = {
     "XAACursorInfoRec",
     "XAACursorInit",
     "XAADestroyInfoRec",
+    "XAAGlyphScanlineFuncLSBFirst",
     "XAAInit",
-    "XAAPixmapIndex",
     "XAAQueryBestSize",
     "XAAReverseBitOrder",
     "XAARestoreCursor",
     "XAAScreenIndex",
     "XAAStippleScanlineFuncMSBFirst",
-    "XAAGlyphScanlineFuncLSBFirst",
     "XAAWarpCursor",
     NULL
 };
 
 static const char *ramdacSymbols[] = {
-    "xf86InitCursor",
     "xf86CreateCursorInfoRec",
     "xf86DestroyCursorInfoRec",
+    "xf86InitCursor",
     NULL
 };
 
@@ -175,9 +173,9 @@ static const char *vbeSymbols[] = {
 };
 
 static const char *ddcSymbols[] = {
-    "xf86PrintEDID",
     "xf86DoEDID_DDC1",
     "xf86DoEDID_DDC2",
+    "xf86PrintEDID",
     NULL
 };
 
@@ -192,16 +190,25 @@ static const char *shadowSymbols[] = {
     NULL
 };
 
-
-#ifdef XFree86LOADER
-
-static const char *fbSymbols[] = {
+static const char *miscfbSymbols[] = {
     "xf1bppScreenInit",
     "xf4bppScreenInit",
-    "fbScreenInit",
-    "fbPictureInit",
     NULL
 };
+
+static const char *fbSymbols[] = {
+    "fbPictureInit",
+    "fbScreenInit",
+    NULL
+};
+
+static const char *int10Symbols[] = {
+    "xf86Free10",
+    "xf86InitInt10",
+    NULL
+};
+
+#ifdef XFree86LOADER
 
 static XF86ModuleVersionInfo apmVersRec = {
     "apm",
@@ -234,8 +241,9 @@ apmSetup(pointer module, pointer opts, int *errmaj, int *errmain)
 	xf86AddDriver(&APM, module, 0);
 
 	LoaderRefSymLists(vgahwSymbols, fbSymbols, xaaSymbols, 
-			  /*xf8_32bppSymbols,*/ ramdacSymbols, vbeSymbols,
-			  ddcSymbols, i2cSymbols, shadowSymbols, NULL);
+			  miscfbSymbols, ramdacSymbols, vbeSymbols,
+			  ddcSymbols, i2cSymbols, shadowSymbols, 
+			  int10Symbols, NULL);
 
 	return (pointer)1;
     }
@@ -765,6 +773,7 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
     if (xf86LoadSubModule(pScrn, "int10")) {
 	void	*ptr;
 
+	xf86LoaderReqSymLists(int10Symbols, NULL);
 	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"initializing int10\n");
 	ptr = xf86InitInt10(pEnt->index);
 	if (ptr)
@@ -1047,7 +1056,6 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
     case 24:
     case 32:
 	mod = "fb";
-	req = "fbScreenInit";
 	break;
     }
 
@@ -1056,7 +1064,13 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
 
-    xf86LoaderReqSymbols(req, NULL);
+    switch (pScrn->bitsPerPixel) {
+    case 1:
+    case 4:
+	xf86LoaderReqSymbols(req, NULL);
+    default:
+	xf86LoaderReqSymLists(fbSymbols, NULL);
+    }
 
     /* Load XAA if needed */
     if (!pApm->NoAccel) {
@@ -2154,8 +2168,7 @@ ApmCloseScreen(int scrnIndex, ScreenPtr pScreen)
 static void
 ApmFreeScreen(int scrnIndex, int flags)
 {
-    if (xf86LoaderCheckSymbol("vgaHWFreeHWRec"))
-	vgaHWFreeHWRec(xf86Screens[scrnIndex]);
+    vgaHWFreeHWRec(xf86Screens[scrnIndex]);
     ApmFreeRec(xf86Screens[scrnIndex]);
 }
 

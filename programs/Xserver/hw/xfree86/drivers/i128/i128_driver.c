@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.20 2001/05/04 19:05:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.21 2001/06/07 14:28:38 robin Exp $ */
 
 
 /* All drivers should typically include these */
@@ -176,11 +176,10 @@ static const char *vgahwSymbols[] = {
     "vgaHWFreeHWRec",
     "vgaHWGetHWRec",
     "vgaHWGetIOBase",  
-    "vgaHWLock",
+    "vgaHWGetIndex",  
     "vgaHWProtect",
     "vgaHWRestore",
     "vgaHWSave",
-    "vgaHWUnlock",
     NULL
 };      
 
@@ -191,27 +190,23 @@ static const char *fbSymbols[] = {
 };
 
 static const char *xaaSymbols[] = {
-    "XAADestroyInfoRec",
     "XAACreateInfoRec",
+    "XAADestroyInfoRec",
     "XAAInit",
-    "XAAStippleScanlineFuncLSBFirst",
-    "XAAOverlayFBfuncs",
-    "XAACachePlanarMonoStipple",
-    "XAAScreenIndex",
     NULL
 };
 
 static const char *ramdacSymbols[] = {
-    "xf86InitCursor",
     "xf86CreateCursorInfoRec",
     "xf86DestroyCursorInfoRec",
+    "xf86InitCursor",
     NULL
 };
 
 static const char *ddcSymbols[] = {
-    "xf86PrintEDID",
     "xf86DoEDID_DDC1",
     "xf86DoEDID_DDC2",
+    "xf86PrintEDID",
     NULL
 };
 
@@ -221,12 +216,14 @@ static const char *i2cSymbols[] = {
     NULL
 };
 
+/* XXX The vbe module isn't currently loaded. */
 static const char *vbeSymbols[] = {
     "VBEInit",
     "vbeDoEDID",
     NULL
 };
 
+/* XXX The int10 module isn't currently loaded. */
 static const char *int10Symbols[] = {
     "xf86InitInt10",
     "xf86FreeInt10",
@@ -523,7 +520,6 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
     int bytesPerPixel;
     ClockRangePtr clockRanges;
     MessageType from;
-    char *mod = NULL;
     CARD32 iobase;
     char *ramdac = NULL;
     CARD32 tmpl, tmph, tmp;
@@ -1148,16 +1144,11 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
     /* Set display resolution */
     xf86SetDpi(pScrn, 0, 0);
 
-    if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
-	I128FreeRec(pScrn);
-	return FALSE;
-    }
-
     if (!xf86LoadSubModule(pScrn, "fb")) {
 	I128FreeRec(pScrn);
 	return FALSE;
     }
-    xf86LoaderReqSymbols("fbScreenInit", "fbPictureInit", NULL);
+    xf86LoaderReqSymLists(fbSymbols, NULL);
 
     /* Load XAA if needed */
     if (!pI128->NoAccel) {

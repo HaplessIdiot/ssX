@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.50 2001/05/23 20:13:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.51 2001/06/08 20:39:35 dawes Exp $ */
 
 /*
  * Authors:
@@ -136,30 +136,26 @@ static const OptionInfoRec I810Options[] = {
 };
 
 static const char *vgahwSymbols[] = {
-   "vgaHWGetHWRec",
-   "vgaHWSave", 
-   "vgaHWRestore",
-   "vgaHWProtect",
-   "vgaHWInit",
-   "vgaHWMapMem",
-   "vgaHWSetMmioFuncs",
-   "vgaHWGetIOBase",
-   "vgaHWLock",
-   "vgaHWUnlock",
    "vgaHWFreeHWRec",
+   "vgaHWGetHWRec",
+   "vgaHWGetIOBase",
+   "vgaHWGetIndex",
+   "vgaHWInit",
+   "vgaHWLock",
+   "vgaHWMapMem",
+   "vgaHWProtect",
+   "vgaHWRestore",
+   "vgaHWSave", 
    "vgaHWSaveScreen",
-   "vgaHWHandleColormaps",
-   0
-};
-
-static const char *fbSymbols[] = {
-   "fbScreenInit",
-   "fbPictureInit",
+   "vgaHWSetMmioFuncs",
+   "vgaHWUnlock",
+   "vgaHWUnmapMem",
    NULL
 };
 
-static const char *miscSymbols[] = {
-   "GetTimeInMillis",
+static const char *fbSymbols[] = {
+   "fbPictureInit",
+   "fbScreenInit",
    NULL
 };
 
@@ -177,58 +173,49 @@ static const char *ddcSymbols[] = {
 };
 
 static const char *xaaSymbols[] = {
-   "XAADestroyInfoRec",
-   "XAACachePlanarMonoStipple",
    "XAACreateInfoRec",
+   "XAADestroyInfoRec",
    "XAAFillSolidRects"
    "XAAInit",
-   "XAAOverlayFBfuncs",
-   "XAAScreenIndex",
-   "XAAStippleScanlineFuncLSBFirst",
    NULL
 };
 
 static const char *ramdacSymbols[] = {
-   "xf86InitCursor",
    "xf86CreateCursorInfoRec",
    "xf86DestroyCursorInfoRec",
+   "xf86InitCursor",
    NULL
 };
 
 #ifdef XF86DRI
 static const char *drmSymbols[] = {
-   "drmAvailable",
    "drmAddBufs",
    "drmAddMap",
-   "drmCtlInstHandler",
-   "drmGetInterruptFromBusID",
    "drmAgpAcquire",
-   "drmAgpRelease",
-   "drmAgpEnable",
    "drmAgpAlloc",
-   "drmAgpFree",
    "drmAgpBind",
+   "drmAgpEnable",
+   "drmAgpFree",
+   "drmAgpRelease",
+   "drmCtlInstHandler",
+   "drmFreeVersion",
+   "drmGetInterruptFromBusID",
+   "drmGetVersion",
    "drmI810CleanupDma",
    "drmI810InitDma",
-   "drmFreeVersion",
-   "drmGetVersion",
    NULL
 };
 
 static const char *driSymbols[] = {
-    "DRIGetDrawableIndex",
-    "DRIFinishScreenInit",
-    "DRIDestroyInfoRec",
     "DRICloseScreen",
-    "DRIDestroyInfoRec",
-    "DRIScreenInit",
-    "DRIDestroyInfoRec",
     "DRICreateInfoRec",
-    "DRILock",
-    "DRIUnlock",
+    "DRIDestroyInfoRec",
+    "DRIFinishScreenInit",
     "DRIGetSAREAPrivate",
-    "DRIGetContext",
+    "DRILock",
     "DRIQueryVersion",
+    "DRIScreenInit",
+    "DRIUnlock",
     "GlxSetVisualConfigs",
     NULL
 };
@@ -297,16 +284,12 @@ i810Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 			fbSymbols, 
 			xaaSymbols, 
 			ramdacSymbols,
-			miscSymbols, 
 #ifdef XF86DRI
 			drmSymbols, 
 			driSymbols,
 #endif
 			vbeSymbols,
 			ddcSymbols, 
-			NULL /* i2csymbols */, 
-			NULL /* shadowSymbols */,
-			NULL /* fbdevsymbols */, 
 			NULL);
 
       /*

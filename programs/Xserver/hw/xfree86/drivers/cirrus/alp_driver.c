@@ -11,7 +11,7 @@
  *    Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.19 2001/02/15 17:39:27 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.20 2001/05/04 19:05:35 dawes Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -155,53 +155,53 @@ static int gd7548_MaxClocks[] = {  80100,  80100,  80100,  80100,  80100 };
  */
 
 static const char *vgahwSymbols[] = {
-	"vgaHWGetHWRec",
-	"vgaHWUnlock",
-	"vgaHWInit",
-	"vgaHWProtect",
-	"vgaHWSetMmioFuncs",
-	"vgaHWGetIOBase",
-	"vgaHWMapMem",
-	"vgaHWLock",
 	"vgaHWFreeHWRec",
+	"vgaHWGetHWRec",
+	"vgaHWGetIOBase",
+	"vgaHWGetIndex",
+	"vgaHWHandleColormaps",
+	"vgaHWInit",
+	"vgaHWLock",
+	"vgaHWMapMem",
+	"vgaHWProtect",
+	"vgaHWRestore",
+	"vgaHWSave",
 	"vgaHWSaveScreen",
-	"vgaHWddc1SetSpeed",
+	"vgaHWSetMmioFuncs",
+	"vgaHWSetStdFuncs",
+	"vgaHWUnlock",
 	NULL
 };
 
-#ifdef XFree86LOADER
-
-static const char *fbSymbols[] = {
+static const char *miscfbSymbols[] = {
     "xf1bppScreenInit",
     "xf4bppScreenInit",
+    NULL
+};
+
+static const char *fbSymbols[] = {
     "fbScreenInit",
     "fbPictureInit",
     NULL
 };
 
-#endif
-
 static const char *xaaSymbols[] = {
-	"XAADestroyInfoRec",
 	"XAACreateInfoRec",
+	"XAADestroyInfoRec",
 	"XAAInit",
-	"XAAStippleScanlineFuncLSBFirst",
-	"XAAOverlayFBfuncs",
-	"XAACachePlanarMonoStipple",
-	"XAAScreenIndex",
 	NULL
 };
 
 static const char *ramdacSymbols[] = {
-	"xf86InitCursor",
 	"xf86CreateCursorInfoRec",
 	"xf86DestroyCursorInfoRec",
+	"xf86InitCursor",
 	NULL
 };
 
 static const char *int10Symbols[] = {
-    "xf86InitInt10",
     "xf86FreeInt10",
+    "xf86InitInt10",
     NULL
 };
 
@@ -210,14 +210,9 @@ static const char *shadowSymbols[] = {
     NULL
 };
 
-#define ALPuseI2C 0
-
 static const char *ddcSymbols[] = {
 	"xf86PrintEDID",
-	"xf86DoEDID_DDC1",
-#if ALPuseI2C
 	"xf86DoEDID_DDC2",
-#endif
 	NULL
 };
 
@@ -262,7 +257,7 @@ alpSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	if (!setupDone) {
 		setupDone = TRUE;
 		LoaderRefSymLists(vgahwSymbols, fbSymbols, xaaSymbols,
-				  ramdacSymbols,int10Symbols,
+				  miscfbSymbols, ramdacSymbols,int10Symbols,
 				  ddcSymbols, i2cSymbols, shadowSymbols, NULL);
 	}
 	return (pointer)1;
@@ -1090,7 +1085,7 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
 	        AlpFreeRec(pScrn);
 		return FALSE;
 	    } 
-	    xf86LoaderReqSymbols("fbScreenInit", "fbPictureInit", NULL);
+	    xf86LoaderReqSymLists(fbSymbols, NULL);
 	    break;
 	}
 

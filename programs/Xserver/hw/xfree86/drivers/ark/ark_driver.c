@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.13 2001/05/07 21:12:20 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.14 2001/05/10 16:48:12 dawes Exp $ */
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
  *
@@ -113,29 +113,30 @@ static const OptionInfoRec ARKOptions[] = {
 };
 
 static const char *fbSymbols[] = {
+	"fbPictureInit",
 	"fbScreenInit",
 	NULL
 };
 
 static const char *vgaHWSymbols[] = {
-	"vgaHWGetHWRec",
 	"vgaHWFreeHWRec",
+	"vgaHWGetHWRec",
 	"vgaHWGetIOBase",
-	"vgaHWSave",
+	"vgaHWGetIndex",
+	"vgaHWInit",
+	"vgaHWLock",
 	"vgaHWProtect",
 	"vgaHWRestore",
-	"vgaHWMapMem",
-	"vgaHWUnmapMem",
+	"vgaHWSave",
 	"vgaHWSaveScreen",
-	"vgaHWLock",
+	"vgaHWUnlock",
+	"vgaHWUnmapMem",
 	NULL
 };
 
 static const char *xaaSymbols[] = {
 	"XAACreateInfoRec",
-	"XAADestroyInfoRec",
 	"XAAInit",
-	"XAAScreenIndex",
 	NULL
 };
 
@@ -484,7 +485,7 @@ static Bool ARKPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86SetDpi(pScrn, 0, 0);
 
 	xf86LoadSubModule(pScrn, "fb");
-	xf86LoaderReqSymbols("fbScreenInit", NULL);
+	xf86LoaderReqSymLists(fbSymbols, NULL);
 
 	if (!pARK->NoAccel) {
 		xf86LoadSubModule(pScrn, "xaa");
@@ -1067,6 +1068,7 @@ static void ARKUnmapMem(ScrnInfoPtr pScrn)
 {
 	ARKPtr pARK = ARKPTR(pScrn);
 
+	/* XXX vgaHWMapMem() isn't called explicitly, so is this correct? */
 	vgaHWUnmapMem(pScrn);
 
 	xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pARK->FBBase,
@@ -1091,6 +1093,8 @@ Bool ARKCloseScreen(int scrnIndex, ScreenPtr pScreen)
 
 	pScrn->vtSema = FALSE;
 	pScreen->CloseScreen = pARK->CloseScreen;
+
+	/* XXX Shouldn't XAADestroyInfoRec() be called? */
 
 	return (*pScreen->CloseScreen)(scrnIndex, pScreen);
 }

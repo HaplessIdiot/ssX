@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.129 2001/05/29 11:23:38 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.130 2001/06/05 10:19:43 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -215,35 +215,31 @@ static RamDacSupportedInfoRec TIRamdacs[] = {
 };
 
 static const char *xf8_32bppSymbols[] = {
+    "cfb8_32ScreenInit",
     "xf86Overlay8Plus32Init",
     NULL
 };
 
 static const char *xaaSymbols[] = {
-    "XAADestroyInfoRec",
     "XAACreateInfoRec",
+    "XAADestroyInfoRec",
+    "XAAFillSolidRects",
     "XAAInit",
-    "XAAStippleScanlineFuncLSBFirst",
-    "XAAOverlayFBfuncs",
-    "XAACachePlanarMonoStipple",
-    "XAAScreenIndex",
     "XAAPolyLines",
     "XAAPolySegment",
-    "XAAFillSolidRects",
+    "XAAScreenIndex",
     NULL
 };
 
 static const char *fbSymbols[] = {
-    "cfb8_32ScreenInit",
+    "fbBres",
     "fbPictureInit",
     "fbScreenInit",
-    "fbBres",
     NULL
 };
 
 static const char *ddcSymbols[] = {
     "xf86PrintEDID",
-    "xf86DoEDID_DDC1",
     "xf86DoEDID_DDC2",
     "xf86SetDDCproperties",
     NULL
@@ -273,12 +269,18 @@ static const char *vbeSymbols[] = {
     NULL
 };
 
+static const char *ramdacSymbols[] = {
+    "xf86CreateCursorInfoRec",
+    "xf86DestroyCursorInfoRec",
+    "xf86InitCursor",
+    NULL
+};
+
+
 static const char *fbdevHWSymbols[] = {
+	"fbdevHWFreeRec",
 	"fbdevHWInit",
-	"fbdevHWFreeRec",
 	"fbdevHWProbe",
-	"fbdevHWFreeRec",
-	"fbdevHWGetName",
 	"fbdevHWUseBuildinMode",
 
 	"fbdevHWGetDepth",
@@ -288,18 +290,18 @@ static const char *fbdevHWSymbols[] = {
 	"fbdevHWLoadPalette",
 
 	/* ScrnInfo hooks */
-	"fbdevHWSwitchMode",
 	"fbdevHWAdjustFrame",
 	"fbdevHWEnterVT",
 	"fbdevHWLeaveVT",
-	"fbdevHWValidMode",
-	"fbdevHWRestore",
-	"fbdevHWModeInit",
-	"fbdevHWSave",
-	"fbdevHWUnmapMMIO",
-	"fbdevHWUnmapVidmem",
 	"fbdevHWMapMMIO",
 	"fbdevHWMapVidmem",
+	"fbdevHWModeInit",
+	"fbdevHWRestore",
+	"fbdevHWSave",
+	"fbdevHWSwitchMode",
+	"fbdevHWUnmapMMIO",
+	"fbdevHWUnmapVidmem",
+	"fbdevHWValidMode",
 	
 	NULL
 };
@@ -314,27 +316,22 @@ static const char *int10Symbols[] = {
 static const char *drmSymbols[] = {
     "drmAddBufs",
     "drmAddMap",
-    "drmCtlAddCommand",
     "drmCtlInstHandler",
-    "drmGetInterruptFromBusID",
-    "drmMapBufs",
-    "drmMarkBufs",
-    "drmUnmapBufs",
     "drmFreeVersion",
     "drmGetVersion",
+    "drmMapBufs",
+    "drmUnmapBufs",
     NULL
 };
 
 static const char *driSymbols[] = {
-    "DRIGetDrawableIndex",
-    "DRIFinishScreenInit",
-    "DRIDestroyInfoRec",
     "DRICloseScreen",
-    "DRIDestroyInfoRec",
-    "DRIScreenInit",
-    "DRIDestroyInfoRec",
     "DRICreateInfoRec",
+    "DRIDestroyInfoRec",
+    "DRIFinishScreenInit",
+    "DRIGetDrawableIndex",
     "DRIQueryVersion",
+    "DRIScreenInit",
     "GlxSetVisualConfigs",
     NULL
 };
@@ -371,7 +368,7 @@ glintSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	LoaderRefSymLists(fbSymbols, ddcSymbols, i2cSymbols,
 			  xaaSymbols, xf8_32bppSymbols,
 			  shadowSymbols, fbdevHWSymbols, int10Symbols,
-			  vbeSymbols,
+			  vbeSymbols, ramdacSymbols,
 #ifdef XF86DRI
 			  drmSymbols, driSymbols,
 #endif
@@ -577,9 +574,7 @@ static void
 GLINTProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
-#ifdef XFree86LOADER
     if (xf86LoadSubModule(pScrn, "vbe"))
-#endif
     {
 	pVbe =  VBEInit(NULL,index);
 	vbeDoEDID(pVbe, NULL);
@@ -948,6 +943,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     ClockRangePtr clockRanges;
     char *mod = NULL;
     const char *s;
+    const char **syms = NULL;
 
     TRACE_ENTER("GLINTPreInit");
 
@@ -1592,6 +1588,8 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     if (!xf86LoadSubModule(pScrn, "ramdac"))
 	return FALSE;
 
+    xf86LoaderReqSymLists(ramdacSymbols, NULL);
+
     /* Let's check what type of DAC we have and reject if necessary */
     switch (pGlint->Chipset) {
 	case PCI_VENDOR_TI_CHIP_PERMEDIA2:
@@ -2214,21 +2212,24 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     case 16:
     case 24:
 	mod = "fb";
+	syms = fbSymbols;
 	break;
     case 32:
 	if (pScrn->overlayFlags & OVERLAY_8_32_PLANAR) {
-	    if (xf86LoadSubModule(pScrn, "xf8_32bpp") == NULL) {
-		GLINTFreeRec(pScrn);
-		return FALSE;
-	    } else
-		xf86LoaderReqSymLists(xf8_32bppSymbols,NULL);
-	} else
+	    mod = "xf8_32bpp";
+	    syms = xf8_32bppSymbols;
+	} else {
 	    mod = "fb";
+	    syms = fbSymbols;
+	}
 	break;
     }
     if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
 	GLINTFreeRec(pScrn);
 	return FALSE;
+    }
+    if (mod && syms) {
+	xf86LoaderReqSymLists(syms, NULL);
     }
 
     /* Load XAA if needed */
@@ -2254,6 +2255,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	GLINTFreeRec(pScrn);
 	return FALSE;
     }
+    xf86LoaderReqSymLists(ddcSymbols, NULL);
     /* Load I2C if needed */
     if ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2) ||
 	(pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V) ||
@@ -2262,6 +2264,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	if (xf86LoadSubModule(pScrn, "i2c")) {
 	    I2CBusPtr pBus;
 
+	    xf86LoaderReqSymLists(i2cSymbols, NULL);
 	    if ((pBus = xf86CreateI2CBusRec())) {
 		pBus->BusName = "DDC";
 		pBus->scrnIndex = pScrn->scrnIndex;
