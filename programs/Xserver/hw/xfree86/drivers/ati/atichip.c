@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.30 2003/01/17 19:54:02 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.31 2003/02/07 20:41:13 martin Exp $ */
 /*
  * Copyright 1997 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -540,27 +540,29 @@ ATIChipID
         case NewChipID('S', 'K'):
         case NewChipID('S', 'L'):
         case NewChipID('S', 'M'):
-        case NewChipID('S', 'N'): /* Listed as ATI_CHIP_RAGE128_4X in ATI docs */
+        /* "SN" is listed as ATI_CHIP_RAGE128_4X in ATI docs */
+        case NewChipID('S', 'N'):
             return ATI_CHIP_RAGE128GL;
 
         case NewChipID('R', 'K'):
         case NewChipID('R', 'L'):
-	/* FIXME: ATI documentation lists SE/SF/SG under both ATI_CHIP_RAGE128VR
-	 * and ATI_CHIP_RAGE128_4X, and lists SH/SK/SL under Rage 128 4X only.
+        /*
+         * ATI documentation lists SE/SF/SG under both ATI_CHIP_RAGE128VR
+         * and ATI_CHIP_RAGE128_4X, and lists SH/SK/SL under Rage 128 4X only.
          * I'm stuffing them here for now until this can be clarified as ATI
          * documentation doesn't mention their details. <mharris@redhat.com>
-	 */
+         */
         case NewChipID('S', 'E'):
         case NewChipID('S', 'F'):
         case NewChipID('S', 'G'):
         case NewChipID('S', 'H'):
             return ATI_CHIP_RAGE128VR;
 
-        /* case NewChipID('S', 'H'): */
-        /* case NewChipID('S', 'K'): */
-        /* case NewChipID('S', 'L'): */
-        /* case NewChipID('S', 'N'): */
-        /*    return ATI_CHIP_RAGE128_4X */
+     /* case NewChipID('S', 'H'): */
+     /* case NewChipID('S', 'K'): */
+     /* case NewChipID('S', 'L'): */
+     /* case NewChipID('S', 'N'): */
+     /*     return ATI_CHIP_RAGE128_4X; */
 
         case NewChipID('P', 'A'):
         case NewChipID('P', 'B'):
@@ -600,8 +602,12 @@ ATIChipID
 
         case NewChipID('L', 'E'):
         case NewChipID('L', 'F'):
-        case NewChipID('L', 'K'): /* FIXME: Not in any ATI documentation I can find - mharris */
-        case NewChipID('L', 'L'): /* FIXME: Not in any ATI documentation I can find - mharris */
+        /*
+         * "LK" and "LL" are not in any ATI documentation I can find
+         * - mharris
+         */
+        case NewChipID('L', 'K'):
+        case NewChipID('L', 'L'):
             return ATI_CHIP_RAGE128MOBILITY3;
 
         case NewChipID('M', 'F'):
