@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.78 1997/06/03 14:11:25 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.79 1997/06/08 15:31:51 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -1658,8 +1658,10 @@ mach64Probe()
     }
 
 #ifdef DPMSExtension
-    if (OFLG_ISSET(OPTION_POWER_SAVER, &mach64InfoRec.options))
-	DPMSEnabled = TRUE;
+    if (DPMSEnabledSwitch ||
+	(OFLG_ISSET(OPTION_POWER_SAVER, &mach64InfoRec.options) &&
+	 !DPMSDisabledSwitch))
+	defaultDPMSEnabled = DPMSEnabled = TRUE;
 #endif
 
 #ifdef XFreeXDGA

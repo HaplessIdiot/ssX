@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.33 1997/05/06 09:45:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.34 1997/05/25 14:41:17 dawes Exp $ */
 
 /*
 
@@ -947,6 +947,7 @@ ProcXF86VidModeModModeLine(client)
     }
 
     (vptr->SwitchMode)(mptr);
+    (vptr->AdjustFrame)(vptr->frameX0, vptr->frameY0);
 
     if (xf86Verbose > 1)
 	ErrorF("ModModeLine - Succeeded\n");

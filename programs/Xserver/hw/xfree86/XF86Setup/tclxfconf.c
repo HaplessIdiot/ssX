@@ -5,7 +5,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.17 1997/05/18 13:58:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.18 1997/06/03 14:11:16 hohndel Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -244,6 +244,9 @@ Bool		noXkbExtension;
 char		*XkbInitialMap;
 #endif
 #ifdef DPMSExtension
+CARD32 defaultDPMSStandbyTime;
+CARD32 defaultDPMSSuspendTime;
+CARD32 defaultDPMSOffTime;
 CARD32 DPMSStandbyTime;
 CARD32 DPMSSuspendTime;
 CARD32 DPMSOffTime;

@@ -23,7 +23,7 @@
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.21 1997/05/27 06:30:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.22 1997/06/03 14:11:45 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -434,8 +434,10 @@ tgaProbe()
 	tgaDAC8Bit = FALSE;
 
 #ifdef DPMSExtension
-  if (OFLG_ISSET(OPTION_POWER_SAVER, &tgaInfoRec.options))
-	DPMSEnabled = TRUE;
+  if (DPMSEnabledSwitch ||
+      (OFLG_ISSET(OPTION_POWER_SAVER, &tgaInfoRec.options) &&
+       !DPMSDisabledSwitch))
+	defaultDPMSEnabled = DPMSEnabled = TRUE;
 #endif
 
   if (xf86bpp < 0)

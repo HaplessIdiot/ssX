@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_clock.c,v 1.1 1997/03/06 23:17:12 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_clock.c,v 1.2 1997/04/14 07:05:27 hohndel Exp $ */
 
 /*
  *
@@ -161,7 +161,6 @@ Tseng_ET6000ClockSelect(freq)
    return(result);
 }
 
-#ifdef W32_SUPPORT
 /*
  * ICS5341ClockSelect --
  *      programmable clock chip
@@ -250,5 +249,4 @@ Tseng_ICD2061AClockSelect(freq)
    }
    return(result);
 }
-#endif
 

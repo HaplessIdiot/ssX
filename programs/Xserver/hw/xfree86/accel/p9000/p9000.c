@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.49 1997/05/03 09:16:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.50 1997/06/03 14:11:27 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -609,8 +609,10 @@ p9000Probe()
       }
 
 #ifdef DPMSExtension
-    if (OFLG_ISSET(OPTION_POWER_SAVER, &p9000InfoRec.options))
-	DPMSEnabled = TRUE;
+    if (DPMSEnabledSwitch ||
+	(OFLG_ISSET(OPTION_POWER_SAVER, &p9000InfoRec.options) &&
+	 !DPMSDisabledSwitch))
+	defaultDPMSEnabled = DPMSEnabled = TRUE;
 #endif
 
     if (OFLG_ISSET(OPTION_NOACCEL, &p9000InfoRec.options))

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.169 1997/05/12 13:27:54 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.170 1997/06/03 14:11:29 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -2246,8 +2246,10 @@ redo_mode_lookup:
    if (OFLG_ISSET(OPTION_PCI_HACK, &s3InfoRec.options))
       s3PCIHack = TRUE;
 #ifdef DPMSExtension
-   if (OFLG_ISSET(OPTION_POWER_SAVER, &s3InfoRec.options))
-      DPMSEnabled = TRUE;
+   if (DPMSEnabledSwitch ||
+       (OFLG_ISSET(OPTION_POWER_SAVER, &s3InfoRec.options) &&
+        !DPMSDisabledSwitch))
+      defaultDPMSEnabled = DPMSEnabled = TRUE;
 #endif
 
    if (! (s3Port59 | s3Port5A)) { /* s3Port59/s3Port5A not yet initialized */

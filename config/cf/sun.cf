@@ -1,9 +1,9 @@
-XCOMM platform:  $TOG: sun.cf /main/161 1997/04/17 14:11:29 barstow $
+XCOMM platform:  $TOG: sun.cf /main/162 1997/05/12 12:06:13 kaleb $
 
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.33 1997/05/21 15:16:58 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.34 1997/05/22 14:22:17 dawes Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -110,23 +110,6 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 # endif
 #endif
 
-/* 
- * Assume /opt/SUNWspro/bin/ contains symlinks to the appropriate tools
- */
-#ifndef  CcCmd
-# define CcCmd		/opt/SUNWspro/bin/cc
-#endif
-#ifndef  CplusplusCmd
-# define CplusplusCmd	/opt/SUNWspro/bin/CC
-#endif
-#ifndef  CplusplusFilt
-# define CplusplusFilt	/opt/SUNWspro/bin/c++filt
-#endif
-#ifndef  CplusplusDependIncludes
-# define CplusplusDependIncludes	-I/opt/SUNWspro/SC3.0/include/CC
-#endif
-
-
 #if OSMajorVersion < 4 || (OSMajorVersion == 4 && OSMinorVersion < 1)
 /* We do not guarantee this will work */
 # define BootstrapCFlags	-DNOSTDHDRS
@@ -160,6 +143,24 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define XkbServerDefines  -DXKB_ALWAYS_USES_SOFT_REPEAT
 
 #if OSMajorVersion > 4
+#if HasSunC
+/* 
+ * Assume /opt/SUNWspro/bin/ contains symlinks to the appropriate tools
+ */
+#ifndef  CcCmd
+# define CcCmd		/opt/SUNWspro/bin/cc
+#endif
+#ifndef  CplusplusCmd
+# define CplusplusCmd	/opt/SUNWspro/bin/CC
+#endif
+#ifndef  CplusplusFilt
+# define CplusplusFilt	/opt/SUNWspro/bin/c++filt
+#endif
+#ifndef  CplusplusDependIncludes
+# define CplusplusDependIncludes	-I/opt/SUNWspro/SC3.0/include/CC
+#endif
+#endif
+
 # if HasSunC && (CCompilerMajorVersion < 3)
 #  define BootstrapCFlags	-DSVR4
 # else

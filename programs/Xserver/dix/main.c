@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: main.c /main/82 1996/09/28 17:12:09 rws $ */
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.9 1997/01/12 10:40:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.10.2.1 1997/06/01 12:33:21 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -269,6 +269,13 @@ main(argc, argv)
 	ScreenSaverInterval = defaultScreenSaverInterval;
 	ScreenSaverBlanking = defaultScreenSaverBlanking;
 	ScreenSaverAllowExposures = defaultScreenSaverAllowExposures;
+#ifdef DPMSExtension
+	DPMSStandbyTime = defaultDPMSStandbyTime;
+	DPMSSuspendTime = defaultDPMSSuspendTime;
+	DPMSOffTime = defaultDPMSOffTime;
+	DPMSEnabled = defaultDPMSEnabled;
+	DPMSPowerLevel = 0;
+#endif
 	InitBlockAndWakeupHandlers();
 	/* Perform any operating system dependent initializations you'd like */
 	OsInit();		

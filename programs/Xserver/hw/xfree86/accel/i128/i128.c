@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.27 1997/05/03 09:16:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.28 1997/06/03 14:11:20 hohndel Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -722,8 +722,10 @@ i128Probe()
    }
 
 #ifdef DPMSExtension
-   if (OFLG_ISSET(OPTION_POWER_SAVER, &i128InfoRec.options))
-      DPMSEnabled = TRUE;
+   if (DPMSEnabledSwitch ||
+       (OFLG_ISSET(OPTION_POWER_SAVER, &i128InfoRec.options) &&
+	!DPMSDisabledSwitch))
+      defaultDPMSEnabled = DPMSEnabled = TRUE;
 #endif
 
    /* Free PCI information */

@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/include/opaque.h,v 1.2 1997/01/12 10:48:40 dawes Exp $ */
 
 #ifndef OPAQUE_H
 #define OPAQUE_H
@@ -57,10 +57,14 @@ extern int argcGlobal;
 extern char **argvGlobal;
 
 #if DPMSExtension
+extern CARD32 defaultDPMSStandbyTime;
+extern CARD32 defaultDPMSSuspendTime;
+extern CARD32 defaultDPMSOffTime;
 extern CARD32 DPMSStandbyTime;
 extern CARD32 DPMSSuspendTime;
 extern CARD32 DPMSOffTime;
 extern CARD16 DPMSPowerLevel;
+extern Bool defaultDPMSEnabled;
 extern Bool DPMSEnabled;
 extern Bool DPMSEnabledSwitch;
 extern Bool DPMSDisabledSwitch;

@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.6 1997/06/03 14:12:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.7 1997/06/06 06:07:19 hohndel Exp $ */
 
 #ifndef _TSENG_H
 #define _TSENG_H
@@ -12,7 +12,6 @@
 
 #define MAX_TSENG_CLOCK 86000
 
-#ifdef W32_SUPPORT
 typedef struct {
   unsigned char cmd_reg;
   unsigned char PLL_f2_M;
@@ -21,36 +20,32 @@ typedef struct {
   unsigned char PLL_w_idx;
   unsigned char PLL_r_idx;
   } GenDACstate;
-#endif
 
 
 typedef struct {
-  vgaHWRec std;               /* good old IBM VGA */
-  unsigned char ExtStart;     /* Tseng ET4000 specials   CRTC 0x33/0x34/0x35 */
-  unsigned char Compatibility;
-  unsigned char OverflowHigh;
-  unsigned char StateControl;    /* TS 6 & 7 */
-  unsigned char AuxillaryMode;
-  unsigned char Misc;           /* ATC 0x16 */
-  unsigned char SegSel1, SegSel2;
-  unsigned char HorOverflow;
-  unsigned char ET6KMMAPCtrl;    /* ET6000 -- used for linear memory mapping */
-  unsigned char ET6KVidCtrl1;    /* ET6000 -- used for 15/16 bpp modes */
-  unsigned char ET6KMemBase;     /* ET6000 -- linear memory mapped address */
-  unsigned char ET6KPerfContr;   /* ET6000 -- system performance control */
-  unsigned char ET6KDispFeat;    /* ET6000 -- display feature register (0x46) */
-  unsigned char ET6KMclkM, ET6KMclkN; /* memory clock values */
-#ifdef W32_SUPPORT
-  unsigned char SegMapComp;     /* CRTC 0x30 */
-  unsigned char GenPurp;        /* CRTC 0x31 */
-  unsigned char VSConf1;        /* CRTC 0x36 */
-  unsigned char VSConf2;        /* CRTC 0x37 */
-  unsigned char IMAPortCtrl;    /* IMA port control register (0x217B index 0xF7) */
+  vgaHWRec std;                  /* good old IBM VGA */
+  unsigned char SegMapComp;      /* CRTC 0x30 */
+  unsigned char GenPurp;         /* CRTC 0x31 */
+  unsigned char RCConf;          /* CRTC 0x32 */
+  unsigned char ExtStart;        /* CRTC 0x33 */
+  unsigned char Compatibility;   /* CRTC 0x34 */
+  unsigned char OverflowHigh;    /* CRTC 0x35 */
+  unsigned char VSConf1;         /* CRTC 0x36 */
+  unsigned char VSConf2;         /* CRTC 0x37 */
+  unsigned char HorOverflow;     /* CRTC 0x3F */
+  unsigned char StateControl;    /* TS  0x06 */
+  unsigned char AuxillaryMode;   /* TS  0x07 */
+  unsigned char Misc;            /* ATC 0x16 */
+  unsigned char SegSel1, SegSel2;  /* 0x3CD, 0x3CB */
+  unsigned char ET6KMemBase;     /* ET6000 0x13 -- linear memory mapped address */
+  unsigned char ET6KMMAPCtrl;    /* ET6000 0x40 -- used for linear memory mapping */
+  unsigned char ET6KPerfContr;   /* ET6000 0x41 -- system performance control */
+  unsigned char ET6KDispFeat;    /* ET6000 0x46 -- display feature register */
+  unsigned char ET6KVidCtrl1;    /* ET6000 0x58 -- used for 15/16 bpp modes */
+  unsigned char ET6KMclkM, ET6KMclkN; /* ET6000 memory clock values */
+  unsigned char IMAPortCtrl;     /* IMA port control register (0x217B index 0xF7) */
   GenDACstate gendac;
-  Bool Gr_Mode;                 /* kludge: true if we're dealing with a graphics mode */
-  unsigned char ATTdac_cmd;     /* command register for ATT 49x DACs */
-#endif
-  unsigned char RCConf;       /* CRTC 0x32 */
+  unsigned char ATTdac_cmd;      /* command register for ATT 49x DACs */
   } vgaET4000Rec, *vgaET4000Ptr;
 
 extern vgaVideoChipRec TSENG;

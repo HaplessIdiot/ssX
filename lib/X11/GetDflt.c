@@ -1,5 +1,5 @@
 /* $XConsortium: GetDflt.c /main/55 1996/12/03 19:15:16 kaleb $ */
-/* $XFree86: xc/lib/X11/GetDflt.c,v 3.9 1996/05/13 06:37:06 dawes Exp $ */
+/* $XFree86: xc/lib/X11/GetDflt.c,v 3.10 1996/12/23 05:59:31 dawes Exp $ */
 
 /***********************************************************
 
@@ -154,7 +154,7 @@ static XrmDatabase InitDefaults (dpy)
     if (dpy->xdefaults == NULL) {
 	char *slashDotXdefaults = "/.Xdefaults";
 
-	(void) GetHomeDir (fname, PATH_MAX - sizeof slashDotXdefaults - 1);
+	(void) GetHomeDir (fname, PATH_MAX - strlen (slashDotXdefaults) - 1);
 	(void) strcat (fname, slashDotXdefaults);
 	xdb = XrmGetFileDatabase (fname);
     } else {
@@ -165,7 +165,7 @@ static XrmDatabase InitDefaults (dpy)
 	char *slashDotXdefaultsDash = "/.Xdefaults-";
 	int len;
 
-	(void) GetHomeDir (fname, PATH_MAX - sizeof slashDotXdefaultsDash - 1);
+	(void) GetHomeDir (fname, PATH_MAX - strlen (slashDotXdefaultsDash) - 1);
 	(void) strcat (fname, slashDotXdefaultsDash);
 	len = strlen (fname);
 	(void) _XGetHostname (fname+len, PATH_MAX-len);

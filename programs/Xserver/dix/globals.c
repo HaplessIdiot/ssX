@@ -52,7 +52,7 @@ SOFTWARE.
 
 
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/dix/globals.c,v 1.2.2.1 1997/06/01 12:33:21 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -101,14 +101,18 @@ int  ScreenSaverAllowExposures;
 #define DEFAULT_STANDBY_TIME DEFAULT_SCREEN_SAVER_TIME * 2
 #define DEFAULT_SUSPEND_TIME DEFAULT_SCREEN_SAVER_TIME * 3
 #define DEFAULT_OFF_TIME DEFAULT_SCREEN_SAVER_TIME * 4
-CARD32 DPMSStandbyTime = DEFAULT_STANDBY_TIME;
-CARD32 DPMSSuspendTime = DEFAULT_SUSPEND_TIME;
-CARD32 DPMSOffTime = DEFAULT_OFF_TIME;
+CARD32 defaultDPMSStandbyTime = DEFAULT_STANDBY_TIME;
+CARD32 defaultDPMSSuspendTime = DEFAULT_SUSPEND_TIME;
+CARD32 defaultDPMSOffTime = DEFAULT_OFF_TIME;
 CARD16 DPMSPowerLevel = 0;
-Bool DPMSEnabled = FALSE;
+Bool defaultDPMSEnabled = FALSE;
 Bool DPMSEnabledSwitch = FALSE;	  /* these denote the DPMS command line */
 Bool DPMSDisabledSwitch = FALSE;  /*                      switch states */
 Bool DPMSCapableFlag = FALSE;
+CARD32 DPMSStandbyTime;
+CARD32 DPMSSuspendTime;
+CARD32 DPMSOffTime;
+Bool DPMSEnabled;
 #endif
 
 CARD32 defaultScreenSaverTime = DEFAULT_SCREEN_SAVER_TIME;

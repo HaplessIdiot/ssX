@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.94 1997/06/08 15:31:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.95 1997/06/10 12:30:34 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -713,8 +713,10 @@ vgaProbe()
 	xf86VerifyOptions(&vgaOptionFlags, &vga256InfoRec);
 
 #ifdef DPMSExtension
-	if (OFLG_ISSET(OPTION_POWER_SAVER, &vga256InfoRec.options))
-	    DPMSEnabled = TRUE;
+	if (DPMSEnabledSwitch ||
+	    (OFLG_ISSET(OPTION_POWER_SAVER, &vga256InfoRec.options) &&
+	     !DPMSDisabledSwitch))
+	    defaultDPMSEnabled = DPMSEnabled = TRUE;
 #endif
 
 	if (OFLG_ISSET(OPTION_CLGD6225_LCD, &vga256InfoRec.options))
