@@ -8,7 +8,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.26 1998/09/27 04:43:37 dawes Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.27 1998/10/02 06:15:16 dawes Exp $ */
 
 /*
  * 
@@ -155,10 +155,12 @@ in this Software without prior written authorization from The Open Group.
 #ifdef WIN32
 # include "Xw32defs.h"
 #endif
+#if 0
 #ifndef X_NOT_POSIX
 # ifndef _POSIX_SOURCE
 #  define _POSIX_SOURCE
 # endif
+#endif
 #endif
 #include <sys/types.h>
 #include <fcntl.h>
@@ -345,33 +347,43 @@ char	*ImakefileC = "Imakefile.c";
 boolean haveImakefileC = FALSE;
 char	*cleanedImakefile = NULL;
 char	*program;
-char	*FindImakefile();
-char	*ReadLine();
-char	*CleanCppInput();
-char	*Strdup();
-char	*Emalloc();
-void	LogFatalI(), LogFatal(), LogMsg();
+char	*FindImakefile(char *Imakefile);
+char	*ReadLine(FILE *tmpfd, char *tmpfname);
+char	*CleanCppInput(char *imakefile);
+char	*Strdup(char *cp);
+char	*Emalloc(int size);
+void	LogFatalI(char *s, int i), LogFatal(char *x0, char *x1), 
+        LogMsg(char *x0, char *x1);
 
-void	showit();
-void	wrapup();
-void	init();
-void	AddMakeArg();
-void	AddCppArg();
-void	SetOpts();
-void	CheckImakefileC();
-void	cppit();
-void	makeit();
-void	CleanCppOutput();
-boolean	isempty();
-void	writetmpfile();
+void	showit(FILE *fd);
+void	wrapup(void);
+void	init(void);
+void	AddMakeArg(char *arg);
+void	AddCppArg(char *arg);
+void	SetOpts(int argc, char **argv);
+void	CheckImakefileC(char *masterc);
+void	cppit(char *imakefile, char *template, char *masterc, 
+	      FILE *outfd, char *outfname);
+void	makeit(void);
+void	CleanCppOutput(FILE *tmpfd, char *tmpfname);
+boolean	isempty(char *line);
+void	writetmpfile(FILE *fd, char *buf, int cnt, char *fname);
+#ifdef SIGNALRETURNSINT
+int     catch(int sig);
+#else
+void    catch(int sig);
+#endif
+void    showargs(char **argv);
+boolean optional_include(FILE *inFile, char *defsym, char *fname);
+void    doit(FILE *outfd, char *cmd, char **argv);
+boolean define_os_defaults(FILE *inFile);
+
 
 boolean	verbose = FALSE;
 boolean	show = TRUE;
 
 int
-main(argc, argv)
-	int	argc;
-	char	**argv;
+main(int argc, char *argv[])
 {
 	FILE	*tmpfd;
 	char	makeMacro[ BUFSIZ ];
@@ -412,8 +424,7 @@ main(argc, argv)
 }
 
 void
-showit(fd)
-	FILE	*fd;
+showit(FILE *fd)
 {
 	char	buf[ BUFSIZ ];
 	int	red;
@@ -426,7 +437,7 @@ showit(fd)
 }
 
 void
-wrapup()
+wrapup(void)
 {
 	if (tmpMakefile != Makefile)
 		unlink(tmpMakefile);
@@ -441,8 +452,7 @@ int
 #else
 void
 #endif
-catch(sig)
-	int	sig;
+catch(int sig)
 {
 	errno = 0;
 	LogFatalI("Signal %d.", sig);
@@ -452,7 +462,7 @@ catch(sig)
  * Initialize some variables.
  */
 void
-init()
+init(void)
 {
 	register char	*p;
 
@@ -468,7 +478,7 @@ init()
 	 * the default.  Or if cpp is not the default.  Or if the make
 	 * found by the PATH variable is not the default.
 	 */
-	if (p = getenv("IMAKEINCLUDE")) {
+	if ((p = getenv("IMAKEINCLUDE"))) {
 		if (*p != '-' || *(p+1) != 'I')
 			LogFatal("Environment var IMAKEINCLUDE %s",
 				"must begin with -I");
@@ -479,9 +489,9 @@ init()
 				AddCppArg(p);
 			}
 	}
-	if (p = getenv("IMAKECPP"))
+	if ((p = getenv("IMAKECPP")))
 		cpp = p;
-	if (p = getenv("IMAKEMAKE"))
+	if ((p = getenv("IMAKEMAKE")))
 		make_argv[0] = p;
 
 	if (signal(SIGINT, SIG_IGN) != SIG_IGN)
@@ -492,8 +502,7 @@ init()
 }
 
 void
-AddMakeArg(arg)
-	char	*arg;
+AddMakeArg(char *arg)
 {
 	errno = 0;
 	if (make_argindex >= ARGUMENTS-1)
@@ -503,8 +512,7 @@ AddMakeArg(arg)
 }
 
 void
-AddCppArg(arg)
-	char	*arg;
+AddCppArg(char *arg)
 {
 	errno = 0;
 	if (cpp_argindex >= ARGUMENTS-1)
@@ -514,9 +522,7 @@ AddCppArg(arg)
 }
 
 void
-SetOpts(argc, argv)
-	int	argc;
-	char	**argv;
+SetOpts(int argc, char **argv)
 {
 	errno = 0;
 	/*
@@ -597,36 +603,32 @@ SetOpts(argc, argv)
 }
 
 char *
-FindImakefile(Imakefile)
-	char	*Imakefile;
+FindImakefile(char *Imakefile)
 {
 	if (Imakefile) {
 		if (access(Imakefile, R_OK) < 0)
 			LogFatal("Cannot find %s.", Imakefile);
 	} else {
-		if (access("Imakefile", R_OK) < 0)
+		if (access("Imakefile", R_OK) < 0) {
 			if (access("imakefile", R_OK) < 0)
 				LogFatal("No description file.", "");
 			else
 				Imakefile = "imakefile";
-		else
+		} else
 			Imakefile = "Imakefile";
 	}
 	return(Imakefile);
 }
 
 void
-LogFatalI(s, i)
-	char *s;
-	int i;
+LogFatalI(char *s, int i)
 {
 	/*NOSTRICT*/
 	LogFatal(s, (char *)(long)i);
 }
 
 void
-LogFatal(x0,x1)
-	char *x0, *x1;
+LogFatal(char *x0, char *x1)
 {
 	static boolean	entered = FALSE;
 
@@ -641,8 +643,7 @@ LogFatal(x0,x1)
 }
 
 void
-LogMsg(x0,x1)
-	char *x0, *x1;
+LogMsg(char *x0, char *x1)
 {
 	int error_number = errno;
 
@@ -656,8 +657,7 @@ LogMsg(x0,x1)
 }
 
 void
-showargs(argv)
-	char	**argv;
+showargs(char **argv)
 {
 	for (; *argv; argv++)
 		fprintf(stderr, "%s ", *argv);
@@ -667,8 +667,7 @@ showargs(argv)
 #define ImakefileCHeader "/* imake - temporary file */"
 
 void
-CheckImakefileC(masterc)
-	char *masterc;
+CheckImakefileC(char *masterc)
 {
 	char mkcbuf[1024];
 	FILE *inFile;
@@ -695,10 +694,7 @@ CheckImakefileC(masterc)
 #define OverrideWarning	"Warning: local file \"%s\" overrides global macros."
 
 boolean
-optional_include(inFile, defsym, fname)
-        FILE	*inFile;
-        char    *defsym;
-        char    *fname;
+optional_include(FILE *inFile, char *defsym, char *fname)
 {
 	errno = 0;
 	if (access(fname, R_OK) == 0) {
@@ -710,10 +706,7 @@ optional_include(inFile, defsym, fname)
 }
 
 void
-doit(outfd, cmd, argv)
-	FILE	*outfd;
-	char    *cmd;
-	char	**argv;
+doit(FILE *outfd, char *cmd, char **argv)
 {
 	int	pid;
 	waitType	status;
@@ -755,11 +748,7 @@ doit(outfd, cmd, argv)
 
 #ifndef WIN32
 static void
-parse_utsname(name, fmt, result, msg)
-     struct utsname *name;
-     char *fmt;
-     char *result;
-     char *msg;
+parse_utsname(struct utsname *name, char *fmt, char *result, char *msg)
 {
   char buf[SYS_NMLN * 5 + 1];
   char *ptr = buf;
@@ -829,8 +818,7 @@ parse_utsname(name, fmt, result, msg)
  */
 	
 static char *
-trim_version(p)
-	char *p;
+trim_version(char *p)
 {
 
 	if (p != 0 && *p != '\0')
@@ -909,8 +897,7 @@ const char *libc_c=
 ;
 
 static void
-get_distrib(inFile)
-  FILE* inFile;
+get_distrib(FILE *inFile)
 {
   struct stat sb;
 
@@ -946,8 +933,7 @@ get_distrib(inFile)
 }
 
 static void
-get_libc_version(inFile)
-  FILE* inFile;
+get_libc_version(FILE *inFile)
 {
   char *aout = tmpnam (NULL);
   FILE *fp;
@@ -985,8 +971,7 @@ get_libc_version(inFile)
 }
 
 static void
-get_ld_version(inFile)
-  FILE* inFile;
+get_ld_version(FILE *inFile)
 {
   FILE* ldprog = popen ("ld -v", "r");
   char c;
@@ -1038,8 +1023,7 @@ get_binary_format(FILE *inFile)
 
 #if defined(sun) && defined(__SVR4)
 static void
-get_sun_compiler_versions (inFile)
-  FILE* inFile;
+get_sun_compiler_versions (FILE *inFile)
 {
   char buf[PATH_MAX];
   char cmd[PATH_MAX];
@@ -1093,8 +1077,7 @@ get_sun_compiler_versions (inFile)
 
 #ifndef __EMX__
 static void
-get_gcc_incdir(inFile)
-  FILE* inFile;
+get_gcc_incdir(FILE *inFile)
 {
   static char* gcc_path[] = {
 #if defined(linux) || defined(__OpenBSD__)
@@ -1131,8 +1114,7 @@ get_gcc_incdir(inFile)
 #endif
 
 boolean
-define_os_defaults(inFile)
-	FILE	*inFile;
+define_os_defaults(FILE *inFile)
 {
 #if !defined(WIN32) && !defined(__EMX__)
 #if (defined(DEFAULT_OS_NAME) || defined(DEFAULT_OS_MAJOR_REV) || \
@@ -1227,12 +1209,8 @@ define_os_defaults(inFile)
 }
 
 void
-cppit(imakefile, template, masterc, outfd, outfname)
-	char	*imakefile;
-	char	*template;
-	char	*masterc;
-	FILE	*outfd;
-	char	*outfname;
+cppit(char *imakefile, char *template, char *masterc, 
+      FILE *outfd, char *outfname)
 {
 	FILE	*inFile;
 
@@ -1260,14 +1238,13 @@ cppit(imakefile, template, masterc, outfd, outfname)
 }
 
 void
-makeit()
+makeit(void)
 {
 	doit(NULL, make_argv[0], make_argv);
 }
 
 char *
-CleanCppInput(imakefile)
-	char	*imakefile;
+CleanCppInput(char *imakefile)
 {
 	FILE	*outFile = NULL;
 	FILE	*inFile;
@@ -1350,14 +1327,12 @@ CleanCppInput(imakefile)
 }
 
 void
-CleanCppOutput(tmpfd, tmpfname)
-	FILE	*tmpfd;
-	char	*tmpfname;
+CleanCppOutput(FILE *tmpfd, char *tmpfname)
 {
 	char	*input;
 	int	blankline = 0;
 
-	while(input = ReadLine(tmpfd, tmpfname)) {
+	while((input = ReadLine(tmpfd, tmpfname))) {
 		if (isempty(input)) {
 			if (blankline++)
 				continue;
@@ -1386,10 +1361,9 @@ CleanCppOutput(tmpfd, tmpfname)
  * "XCOMM" token is transformed to "#".
  */
 boolean
-isempty(line)
-	register char	*line;
+isempty(char *line)
 {
-	register char	*pend;
+	char	*pend;
 
 	/*
 	 * Check for lines of the form
@@ -1460,9 +1434,7 @@ isempty(line)
 
 /*ARGSUSED*/
 char *
-ReadLine(tmpfd, tmpfname)
-	FILE	*tmpfd;
-	char	*tmpfname;
+ReadLine(FILE *tmpfd, char *tmpfname)
 {
 	static boolean	initialized = FALSE;
 	static char	*buf, *pline, *end;
@@ -1533,19 +1505,14 @@ ReadLine(tmpfd, tmpfname)
 }
 
 void
-writetmpfile(fd, buf, cnt, fname)
-	FILE	*fd;
-	int	cnt;
-	char	*buf;
-	char	*fname;
+writetmpfile(FILE *fd, char *buf, int cnt, char *fname)
 {
 	if (fwrite(buf, sizeof(char), cnt, fd) == -1)
 		LogFatal("Cannot write to %s.", fname);
 }
 
 char *
-Emalloc(size)
-	int	size;
+Emalloc(int size)
 {
 	char	*p;
 
@@ -1556,8 +1523,7 @@ Emalloc(size)
 
 #ifdef FIXUP_CPP_WHITESPACE
 void
-KludgeOutputLine(pline)
-	char	**pline;
+KludgeOutputLine(char **pline)
 {
 	char	*p = *pline;
 	char	quotechar = '\0';
@@ -1640,17 +1606,16 @@ breakfor:
 }
 
 void
-KludgeResetRule()
+KludgeResetRule(void)
 {
 	InRule = FALSE;
 }
 #endif /* FIXUP_CPP_WHITESPACE */
 
 char *
-Strdup(cp)
-	register char *cp;
+Strdup(char *cp)
 {
-	register char *new = Emalloc(strlen(cp) + 1);
+	char *new = Emalloc(strlen(cp) + 1);
 
 	strcpy(new, cp);
 	return new;

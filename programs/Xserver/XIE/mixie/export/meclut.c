@@ -66,7 +66,7 @@ terms and conditions:
 	Larry Hare -- AGE Logic, Inc. July, 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/export/meclut.c,v 3.1 1996/08/20 13:16:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/export/meclut.c,v 3.2 1998/10/04 09:36:01 dawes Exp $ */
 
 #define _XIEC_MECLUT
 #define _XIEC_ECLUT
@@ -74,7 +74,6 @@ terms and conditions:
 /*
  *  Include files
  */
-#include <stdio.h>
 /*
  *  Core X Includes
  */

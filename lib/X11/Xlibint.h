@@ -23,7 +23,10 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlibint.h,v 3.9 1997/11/22 06:50:10 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlibint.h,v 3.10 1998/10/03 08:41:30 dawes Exp $ */
+
+#ifndef _XLIBINT_H_
+#define _XLIBINT_H_ 1
 
 /*
  *	Xlibint.h - Header definition and support file for the internal
@@ -33,10 +36,8 @@ from The Open Group.
  *	Warning, there be dragons here....
  */
 
-#ifndef _XLIBINT_H_
-#define _XLIBINT_H_
-
 #include <X11/Xlib.h>
+#include <X11/Xproto.h>		/* to declare xEvent */
 
 #ifdef WIN32
 #define _XFlush _XFlushIt
@@ -125,14 +126,26 @@ struct _XDisplay
 	 * list to find the right procedure for each event might be
 	 * expensive if many extensions are being used.
 	 */
-	Bool (*event_vec[128])();  /* vector for wire to event */
-	Status (*wire_vec[128])(); /* vector for event to wire */
+	Bool (*event_vec[128])(	/* vector for wire to event */
+		Display *	/* dpy */,
+		XEvent *	/* re */,
+		xEvent *	/* event */
+		);
+	Status (*wire_vec[128])( /* vector for event to wire */
+		Display *	/* dpy */,
+		XEvent *	/* re */,
+		xEvent *	/* event */
+		);
 	KeySym lock_meaning;	   /* for XLookupString */
 	struct _XLockInfo *lock;   /* multi-thread state, display lock */
 	struct _XInternalAsync *async_handlers; /* for internal async */
 	unsigned long bigreq_size; /* max size of big requests */
 	struct _XLockPtrs *lock_fns; /* pointers to threads functions */
-	void (*idlist_alloc)();	   /* XID list allocator function */
+	void (*idlist_alloc)(	   /* XID list allocator function */
+		Display *	/* dpy */,
+		XID *		/* ids */,
+		int		/* count */
+		);
 	/* things above this line should not move, for binary compatibility */
 	struct _XKeytrans *key_bindings; /* for XLookupString */
 	Font cursor_font;	   /* for XCreateFontCursor */
@@ -140,7 +153,11 @@ struct _XDisplay
 	unsigned int mode_switch;  /* keyboard group modifiers */
 	unsigned int num_lock;  /* keyboard numlock modifiers */
 	struct _XContextDB *context_db; /* context database */
-	Bool (**error_vec)();      /* vector for wire to error */
+	Bool (**error_vec)(	/* vector for wire to error */
+		Display     *	/* display */,
+		XErrorEvent *	/* he */,
+		xError      *	/* we */
+		);
 	/*
 	 * Xcms information
 	 */
@@ -159,7 +176,9 @@ struct _XDisplay
 	struct _XConnWatchInfo *conn_watchers; /* XAddConnectionWatch */
 	int watcher_count;	/* number of conn_watchers */
 	XPointer filedes;	/* struct pollfd cache for _XWaitForReadable */
-	int (*savedsynchandler)(); /* user synchandler when Xlib usurps */
+	int (*savedsynchandler)( /* user synchandler when Xlib usurps */
+		Display *	/* dpy */
+		);
 	XID resource_max;	/* allocator max ID */
 	int xcmisc_opcode;	/* major opcode for XC-MISC */
 	struct _XkbInfoRec *xkb_info; /* XKB info */
@@ -213,8 +232,8 @@ typedef struct _XSQEvent
 #include <stdlib.h>
 #include <string.h>
 #else
-char *malloc(), *realloc(), *calloc();
-void exit();
+char *malloc(size_t), *realloc(char *, size_t), *calloc(size_t, size_t);
+void exit(int);
 #ifdef SYSV
 #include <string.h>
 #else
@@ -234,13 +253,26 @@ void exit();
 
 #include <X11/Xfuncproto.h>
 
+typedef struct _LockInfoRec *LockInfoPtr;
+
+/* interfaces for locking.c */
 struct _XLockPtrs {
     /* used by all, including extensions; do not move */
-    void (*lock_display)();
-    void (*unlock_display)();
+    void (*lock_display)(
+		LockInfoPtr lip
+#if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
+		, char *file
+		, int line
+#endif
+	);
+    void (*unlock_display)(
+		Display *dpy
+#if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
+		, char *file
+		, int line
+#endif
+	);
 };
-
-typedef struct _LockInfoRec *LockInfoPtr;
 
 #if defined(WIN32) && !defined(_XLIBINT_)
 #define _XCreateMutex_fn (*_XCreateMutex_fn_p)
@@ -555,7 +587,7 @@ extern int errno;			/* Internal system error number. */
 #define SyncHandle() \
 	if (dpy->synchandler) (*dpy->synchandler)(dpy)
 
-extern void _XFlushGCCache();
+extern void _XFlushGCCache(Display *dpy, GC gc);
 #define FlushGC(dpy, gc) \
 	if ((gc)->dirty) _XFlushGCCache((dpy), (gc))
 /*
@@ -725,7 +757,7 @@ typedef struct _XAsyncEState {
     int error_count;
 } _XAsyncErrorState;
 
-extern void _XDeqAsyncHandler();
+extern void _XDeqAsyncHandler(Display *dpy, _XAsyncHandler *handler);
 #define DeqAsyncHandler(dpy,handler) { \
     if (dpy->async_handlers == (handler)) \
 	dpy->async_handlers = (handler)->next; \
@@ -733,40 +765,144 @@ extern void _XDeqAsyncHandler();
 	_XDeqAsyncHandler(dpy, handler); \
     }
 
-/*
- * This structure is private to the library.
- */
-typedef struct _XFreeFuncs {
-    void (*atoms)();		/* _XFreeAtomTable */
-    int (*modifiermap)();	/* XFreeModifierMap */
-    void (*key_bindings)();	/* _XFreeKeyBindings */
-    void (*context_db)();	/* _XFreeContextDB */
-    void (*defaultCCCs)();	/* _XcmsFreeDefaultCCCs */
-    void (*clientCmaps)();	/* _XcmsFreeClientCmaps */
-    void (*intensityMaps)();	/* _XcmsFreeIntensityMaps */
-    void (*im_filters)();	/* _XFreeIMFilters */
-    void (*xkb)();		/* _XkbFreeInfo */
-} _XFreeFuncRec;
+typedef void (*FreeFuncType) (
+#if NeedFunctionPrototypes
+    Display*	/* display */
+#endif
+);
+
+typedef int (*FreeModmapType) (
+#if NeedFunctionPrototypes
+    XModifierKeymap*	/* modmap */
+#endif
+);
 
 /*
  * This structure is private to the library.
  */
-typedef struct _XExten {	/* private to extension mechanism */
-	struct _XExten *next;	/* next in list */
-	XExtCodes codes;	/* public information, all extension told */
-	int (*create_GC)();	/* routine to call when GC created */
-	int (*copy_GC)();	/* routine to call when GC copied */
-	int (*flush_GC)();	/* routine to call when GC flushed */
-	int (*free_GC)();	/* routine to call when GC freed */
-	int (*create_Font)();	/* routine to call when Font created */
-	int (*free_Font)();	/* routine to call when Font freed */
-	int (*close_display)();	/* routine to call when connection closed */
-	int (*error)();		/* who to call when an error occurs */
-        char *(*error_string)();  /* routine to supply error string */
-	char *name;		/* name of this extension */
-	void (*error_values)(); /* routine to supply error values */
-	void (*before_flush)();	/* routine to call when sending data */
-	struct _XExten *next_flush; /* next in list of those with flushes */
+typedef struct _XFreeFuncs {
+    FreeFuncType atoms;		/* _XFreeAtomTable */
+    FreeModmapType modifiermap;	/* XFreeModifierMap */
+    FreeFuncType key_bindings;	/* _XFreeKeyBindings */
+    FreeFuncType context_db;	/* _XFreeContextDB */
+    FreeFuncType defaultCCCs;	/* _XcmsFreeDefaultCCCs */
+    FreeFuncType clientCmaps;	/* _XcmsFreeClientCmaps */
+    FreeFuncType intensityMaps;	/* _XcmsFreeIntensityMaps */
+    FreeFuncType im_filters;	/* _XFreeIMFilters */
+    FreeFuncType xkb;		/* _XkbFreeInfo */
+} _XFreeFuncRec;
+
+/* types for InitExt.c */
+typedef int (*CreateGCType) (
+#if NeedFunctionPrototypes
+    Display*	/* display */,
+    GC		/* gc */,
+    XExtCodes*	/* codes */
+#endif
+);
+
+typedef int (*CopyGCType)(
+#if NeedFunctionPrototypes
+    Display*	/* display */,
+    GC		/* gc */,
+    XExtCodes*	/* codes */
+#endif
+);
+
+typedef int (*FlushGCType) (
+#if NeedFunctionPrototypes
+    Display*	/* display */,
+    GC		/* gc */,
+    XExtCodes*	/* codes */
+#endif
+);
+
+typedef int (*FreeGCType) (
+#if NeedFunctionPrototypes
+    Display*	/* display */,
+    GC		/* gc */,
+    XExtCodes*	/* codes */
+#endif
+);
+
+typedef int (*CreateFontType) (
+#if NeedFunctionPrototypes
+    Display*	/* display */,
+    XFontStruct* /* fs */,
+    XExtCodes*	/* codes */
+#endif
+);
+
+typedef int (*FreeFontType) (
+#if NeedFunctionPrototypes
+    Display*	/* display */,
+    XFontStruct* /* fs */,
+    XExtCodes*	/* codes */
+#endif
+);
+
+typedef int (*CloseDisplayType) (
+#if NeedFunctionPrototypes
+    Display*	/* display */,
+    XExtCodes*	/* codes */
+#endif
+);
+
+typedef int (*ErrorType) (
+#if NeedFunctionPrototypes
+    Display*	/* display */,
+    xError*	/* err */,
+    XExtCodes*	/* codes */,
+    int*	/* ret_code */
+#endif
+);
+
+typedef char* (*ErrorStringType) (
+#if NeedFunctionPrototypes
+    Display*	/* display */,
+    int		/* code */,
+    XExtCodes*	/* codes */,
+    char*	/* buffer */,
+    int		/* nbytes */
+#endif
+);
+
+typedef void (*PrintErrorType)(
+#if NeedFunctionPrototypes
+    Display*	/* display */,
+    XErrorEvent* /* ev */,
+    void*	/* fp */
+#endif
+);
+
+typedef void (*BeforeFlushType)(
+#if NeedFunctionPrototypes
+    Display*	/* display */,
+    XExtCodes*	/* codes */,
+    char*	/* data */,
+    long	/* len */
+#endif
+);
+
+/*
+ * This structure is private to the library.
+ */
+typedef struct _XExten {		/* private to extension mechanism */
+	struct _XExten *next;		/* next in list */
+	XExtCodes codes;		/* public information, all extension told */
+	CreateGCType create_GC;		/* routine to call when GC created */
+	CopyGCType copy_GC;		/* routine to call when GC copied */
+	FlushGCType flush_GC;		/* routine to call when GC flushed */
+	FreeGCType free_GC;		/* routine to call when GC freed */
+	CreateFontType create_Font;	/* routine to call when Font created */
+	FreeFontType free_Font;		/* routine to call when Font freed */
+	CloseDisplayType close_display;	/* routine to call when connection closed */
+	ErrorType error;		/* who to call when an error occurs */
+	ErrorStringType error_string;	/* routine to supply error string */
+	char *name;			/* name of this extension */
+	PrintErrorType error_values;	/* routine to supply error values */
+	BeforeFlushType before_flush;	/* routine to call when sending data */
+	struct _XExten *next_flush;	/* next in list of those with flushes */
 } _XExtension;
 
 /* extension hooks */
@@ -774,7 +910,7 @@ typedef struct _XExten {	/* private to extension mechanism */
 _XFUNCPROTOBEGIN
 
 #ifdef DataRoutineIsProcedure
-extern void Data();
+extern void Data(Display *dpy, char *data, long len);
 #endif
 extern int _XError(
 #if NeedFunctionPrototypes

@@ -68,14 +68,13 @@ terms and conditions:
 	Ben Fahy 	-- AGE Logic, Inc. May   1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/import/iclut.c,v 3.0 1996/03/29 22:10:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/import/iclut.c,v 3.1 1998/10/04 09:35:29 dawes Exp $ */
 
 #define _XIEC_ICLUT
 
 /*
  *  Include files
  */
-#include <stdio.h>
   /*
    *  Core X Includes
    */

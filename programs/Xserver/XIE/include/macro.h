@@ -66,7 +66,7 @@ terms and conditions:
 	Robert NC Shelley -- AGE Logic, Inc.  March 1993
 
 ******************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/include/macro.h,v 1.5 1998/07/25 08:05:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/include/macro.h,v 1.6 1998/10/04 09:35:58 dawes Exp $ */
 
 #ifndef _XIEH_MACRO
 #define _XIEH_MACRO
@@ -205,7 +205,11 @@ terms and conditions:
  * if XIE is built as a module, it shouldn't call libc functions.
  * The following macros should wrap all calls in XIE
  */
-#ifdef XFree86LOADER
+#ifndef XFree86LOADER
+#include <stdio.h>
+#include <math.h>
+#else
 #include "xf86_ansic.h"
 #endif
+
 #endif /* end _XIEH_MACRO */

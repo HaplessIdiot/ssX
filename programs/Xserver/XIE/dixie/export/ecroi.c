@@ -66,14 +66,13 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. August 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/export/ecroi.c,v 3.0 1996/03/29 22:10:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/export/ecroi.c,v 3.1 1998/10/04 09:35:25 dawes Exp $ */
 
 #define _XIEC_ECROI
 
 /*
  *  Include files
  */
-#include <stdio.h>
   /*
    *  Core X Includes
    */

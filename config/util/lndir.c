@@ -22,7 +22,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/util/lndir.c,v 3.6 1997/01/18 06:51:01 dawes Exp $ */
+/* $XFree86: xc/config/util/lndir.c,v 3.7 1998/10/02 06:15:26 dawes Exp $ */
 
 /* From the original /bin/sh script:
 
@@ -81,7 +81,7 @@ int ignore_links = 0;		/* -ignorelinks */
 char *rcurdir;
 char *curdir;
 
-void
+static void
 quit (
 #if NeedVarargsPrototypes
     int code, char * fmt, ...)
@@ -102,15 +102,14 @@ quit (
     exit (code);
 }
 
-void
-quiterr (code, s)
-    char *s;
+static void
+quiterr (int code, char *s)
 {
     perror (s);
     exit (code);
 }
 
-void
+static void
 msg (
 #if NeedVarargsPrototypes
     char * fmt, ...)
@@ -136,9 +135,8 @@ msg (
     putc ('\n', stderr);
 }
 
-void
-mperror (s)
-    char *s;
+static void
+mperror (char *s)
 {
     if (curdir) {
 	fprintf (stderr, "%s:\n", curdir);
@@ -148,9 +146,8 @@ mperror (s)
 }
 
 
-int equivalent(lname, rname)
-    char *lname;
-    char *rname;
+static int 
+equivalent(char *lname, char *rname)
 {
     char *s;
 
@@ -166,12 +163,12 @@ int equivalent(lname, rname)
 
 /* Recursively create symbolic links from the current directory to the "from"
    directory.  Assumes that files described by fs and ts are directories. */
-
-dodir (fn, fs, ts, rel)
-char *fn;			/* name of "from" directory, either absolute or
+static int
+dodir (char *fn,		/* name of "from" directory, either absolute or
 				   relative to cwd */
-struct stat *fs, *ts;		/* stats for the "from" directory and cwd */
-int rel;			/* if true, prepend "../" to fn before using */
+       struct stat *fs, 
+       struct stat *ts,		/* stats for the "from" directory and cwd */
+       int rel)			/* if true, prepend "../" to fn before using */
 {
     DIR *df;
     struct dirent *dp;
@@ -203,7 +200,7 @@ int rel;			/* if true, prepend "../" to fn before using */
     p = buf + strlen (buf);
     *p++ = '/';
     n_dirs = fs->st_nlink;
-    while (dp = readdir (df)) {
+    while ((dp = readdir (df))) {
 	if (dp->d_name[strlen(dp->d_name) - 1] == '~')
 	    continue;
 	strcpy (p, dp->d_name);
@@ -294,10 +291,8 @@ int rel;			/* if true, prepend "../" to fn before using */
     return 0;
 }
 
-
-main (ac, av)
-int ac;
-char **av;
+int
+main (int ac, char *av[])
 {
     char *prog_name = av[0];
     char *fn, *tn;

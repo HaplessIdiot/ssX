@@ -66,14 +66,13 @@ terms and conditions:
 	Robert NC Shelley && Dean Verheiden -- AGE Logic, Inc. April 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/export/ephoto.c,v 3.1 1996/08/20 12:13:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/export/ephoto.c,v 3.2 1998/10/04 09:35:27 dawes Exp $ */
 
 #define _XIEC_EPHOTO
 
 /*
  *  Include files
  */
-#include <stdio.h>
   /*
    *  Core X Includes
    */

@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/def.h,v 3.3 1997/01/12 10:38:17 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/def.h,v 3.4 1998/10/02 06:15:21 dawes Exp $ */
 
 #include "Xos.h"
 #include "Xfuncproto.h"
@@ -29,9 +29,11 @@ in this Software without prior written authorization from The Open Group.
 #include <string.h>
 #endif
 #include <ctype.h>
+#if 0
 #ifndef X_NOT_POSIX
 #ifndef _POSIX_SOURCE
 #define _POSIX_SOURCE
+#endif
 #endif
 #endif
 #include <sys/types.h>
@@ -130,15 +132,43 @@ char			*malloc();
 char			*realloc();
 #endif
 
-char			*copy();
-char			*base_name();
-char			*getline();
-struct symtab		**slookup();
-struct symtab		**isdefined();
-struct symtab		**fdefined();
-struct filepointer	*getfile();
-struct inclist		*newinclude();
-struct inclist		*inc_path();
+char			*copy(char *str);
+int                     match(char *str, char **list);
+char			*base_name(char *file);
+char			*getline(struct filepointer *fp);
+struct symtab		**slookup(char *symbol, struct inclist *file);
+struct symtab		**isdefined(char *symbol, struct inclist *file,
+				    struct inclist **srcfile);
+struct symtab		**fdefined(char *symbol, struct inclist *file,
+				   struct inclist **srcfile);
+struct filepointer	*getfile(char *file);
+void                    included_by(struct inclist *ip, 
+				    struct inclist *newfile);
+struct inclist		*newinclude(char *newfile, char *incstring);
+void                    inc_clean (void);
+struct inclist		*inc_path(char *file, char *include, boolean dot);
+
+void                    freefile(struct filepointer *fp);
+
+void                    define2(char *name, char *val, struct inclist *file);
+void                    define(char *def, struct inclist *file);
+void                    undefine(char *symbol, struct inclist *file);
+int                     find_includes(struct filepointer *filep, 
+				      struct inclist *file, 
+				      struct inclist *file_red, 
+				      int recursion, boolean failOK);
+
+void                    recursive_pr_include(struct inclist *head, 
+					     char *file, char *base);
+void                    add_include(struct filepointer *filep, 
+				    struct inclist *file, 
+				    struct inclist *file_red, 
+				    char *include, boolean dot, 
+				    boolean failOK);
+
+int                     cppsetup(char *line, struct filepointer *filep, 
+				 struct inclist *inc);
+
 
 #if NeedVarargsPrototypes
 extern void fatalerr(char *, ...);

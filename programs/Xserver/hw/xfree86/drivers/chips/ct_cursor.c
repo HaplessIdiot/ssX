@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.13 1998/08/29 05:43:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.14 1998/08/29 14:34:30 dawes Exp $ */
 
 /*
  * Copyright 1994  The XFree86 Project
@@ -116,7 +116,7 @@ static void
 CHIPSSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 {
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
-
+    
     CURSOR_SYNC(pScrn);
 
     if (pScrn->currentMode->Flags & V_DBLSCAN)

@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.7 1996/12/23 06:29:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.8 1998/10/04 09:38:04 dawes Exp $ */
 
 #include "windowstr.h"
 #include "fontstruct.h"
@@ -1422,6 +1422,18 @@ ProcChangeGC(client)
     len = client->req_len -  (sizeof(xChangeGCReq) >> 2);
     if (len != Ones(stuff->mask))
         return BadLength;
+
+#ifdef XFree86Server
+    /* the protocol says the top bits are undetermined so we will
+	alter them to our advantage */
+    if(stuff->mask & (GCForeground | GCBackground | GCPlaneMask)) {
+	unsigned long mask =  (1 << pGC->depth) - 1;
+	pGC->fgPixel &= mask;
+	pGC->bgPixel &= mask;
+	pGC->planemask |= ~mask;
+    }
+#endif
+
     result = dixChangeGC(client, pGC, stuff->mask, (CARD32 *) &stuff[1], 0);
     if (client->noClientException != Success)
         return(client->noClientException);

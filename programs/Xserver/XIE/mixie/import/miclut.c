@@ -66,7 +66,7 @@ terms and conditions:
 	Ben Fahy -- AGE Logic, Inc. May, 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/import/miclut.c,v 3.1 1996/08/20 13:16:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/import/miclut.c,v 3.2 1998/10/04 09:36:11 dawes Exp $ */
 
 #define _XIEC_MICLUT
 #define _XIEC_ICLUT
@@ -74,7 +74,6 @@ terms and conditions:
 /*
  *  Include files
  */
-#include <stdio.h>
 /*
  *  Core X Includes
  */

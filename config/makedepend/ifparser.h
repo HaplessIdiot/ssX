@@ -57,26 +57,28 @@
  *     ParseIfExpression		parse a string for #if
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/config/makedepend/ifparser.h,v 3.2 1996/12/30 13:57:56 dawes Exp $ */
 
 #include <stdio.h>
 
+#ifndef __STDC__
 #define const /**/
+#endif
 typedef int Bool;
 #define False 0
 #define True 1
 
 typedef struct _if_parser {
     struct {				/* functions */
-	char *(*handle_error) (/* struct _if_parser *, const char *,
-				 const char * */);
-	long (*eval_variable) (/* struct _if_parser *, const char *, int */);
-	int (*eval_defined) (/* struct _if_parser *, const char *, int */);
+	const char *(*handle_error) (struct _if_parser *, const char *,
+				     const char *);
+	long (*eval_variable) (struct _if_parser *, const char *, int);
+	int (*eval_defined) (struct _if_parser *, const char *, int);
     } funcs;
     char *data;
 } IfParser;
 
-char *ParseIfExpression (
+const char *ParseIfExpression (
 #ifdef __STDC__
     IfParser *, 
     const char *, 

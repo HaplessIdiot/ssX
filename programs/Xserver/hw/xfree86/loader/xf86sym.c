@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.41 1998/09/20 14:41:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.42 1998/09/26 08:34:21 dawes Exp $ */
 
 /*
  *
@@ -37,6 +37,8 @@
 #include "xf86Parser.h"
 #include "xf86Config.h"
 #include "xf86Xinput.h"
+#include "xf86xv.h"
+#include "xf86_8plus24.h"
 #include "opaque.h"
 #include "dgaproc.h"
 #include "loader.h"
@@ -185,6 +187,8 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86EnableAccess)
    SYMFUNC(xf86EnablePrimaryDevice)
    SYMFUNC(xf86IsPrimaryPci)
+   SYMFUNC(xf86IsPrimaryIsa)
+   SYMFUNC(xf86CheckPciGAType)
 
    /* xf86Cursor.c  XXX not all of these should be exported */
    SYMFUNC(xf86LockZoom)
@@ -306,6 +310,13 @@ LOOKUP xfree86LookupTab[] = {
    /* xf86fbman.c */
    SYMFUNC(xf86InitFBManager)
    SYMFUNC(xf86RegisterFreeBoxCallback)
+
+   /* xf86_8plus24.c */
+   SYMFUNC(xf86Overlay8Plus24Init)
+   SYMFUNC(diOverlayFBfuncs)
+
+   /* xf86xv.c */
+   SYMFUNC(xf86XVScreenInit)
 
    /* Misc */
    SYMFUNC(GetTimeInMillis)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_macros.h,v 1.3 1998/08/13 14:45:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_macros.h,v 1.4 1998/08/29 05:43:31 dawes Exp $ */
 
 #ifndef _MGA_MACROS_H_
 #define _MGA_MACROS_H_
@@ -34,7 +34,7 @@
 #define SET_PLANEMASK(p) /**/
 #else
 #define SET_PLANEMASK(p) \
-	if((p) != pMga->PlaneMask) { \
+	if(!(pMga->AccelFlags & MGA_NO_PLANEMASK) && ((p) != pMga->PlaneMask)) { \
 	   pMga->PlaneMask = (p); \
 	   REPLICATE((p)); \
 	   OUTREG(MGAREG_PLNWT,(p)); \

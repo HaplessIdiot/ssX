@@ -66,14 +66,13 @@ terms and conditions:
 	Ben Fahy -- AGE Logic, Inc. June 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pgeom.c,v 3.1 1996/08/25 14:04:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pgeom.c,v 3.2 1998/10/04 09:35:42 dawes Exp $ */
 
 #define _XIEC_PGEOM
 
 /*
  *  Include files
  */
-#include <stdio.h>
   /*
    *  Core X Includes
    */

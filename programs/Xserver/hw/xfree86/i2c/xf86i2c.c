@@ -1,11 +1,12 @@
-/* (c) Itai Nahshon
+/*
+ * Copyright (C) 1998 Itai Nahshon, Michael Schimek
  *
- * This code is derived from and inspired by the I2C driver
- * from the Linux kernel.
+ * The original code was derived from and inspired by 
+ * the I2C driver from the Linux kernel.
  *      (c) 1998 Gerd Knorr <kraxel@cs.tu-berlin.de>
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/i2c/xf86i2c.c,v 1.1 1998/09/05 06:36:57 dawes Exp $ */
 
 #if 1
 #include "misc.h"
@@ -34,50 +35,77 @@ typedef void *Pointer;
 
 #include "xf86i2c.h"
 
-#if 0	/* Do not show trace of  I2C commands */
-#define I2C_DEBUG(x)        (x)
-#else
-#define I2C_DEBUG(x)	    (0)
-#endif
+#define I2C_TIMEOUT(x) (x) /* Report timeouts */
+#define I2C_TRACE(x) (x)   /* Report progress */
 
-/*
- * I2C bus works at 100 kbit/second (or less).
+/* This is the default I2CUDelay function if not supplied by the driver.
+ * High level I2C interfaces should supply this function too.
  *
- * These are temporary delay functions (until a better, portable
- * way is found).
+ * Delay execution at least usec microseconds.
+ * All values 0 to 1e6 inclusive must be expected.
  *
- * xdelay (n) - delay n microseconds.
- * Adjust counter to match CPU speed.
+ * This is temporary until a better, portable
+ * way is found. Adjust bogo_usec to match CPU speed.
  */
-static int ddelay = 1660;
-static void xdelay(unsigned int n) {
-	while(n > 0) {
-		volatile x = ddelay;
-		while(x > 0)
-			--x;
-		--n;
-	}
+
+static int bogo_usec = 500;
+
+static void
+I2CUDelay(I2CBusPtr b, int usec)
+{
+    volatile long i;
+
+    if (usec > 0)
+	for (i = usec * bogo_usec; i > 0; i--)
+	    /* (perhaps hw delay action) */;
 }
 
-static void udelay(int x) { xdelay(x); }
-
-#define D (udelay(1))
-
-/*
- * Most drivers will register just with Get/Put bits functions.
- * Following functions implement generic I2CPutByte and I2CGetbyte
+/* Most drivers will register just with GetBits/PutBits functions.
+ * The following functions implement a software I2C protocol
  * by using the promitive functions given by the driver.
+ * ================================================================
  *
  * It is assumed that there is just one master on the I2C bus, therefore
  * There is no explicit test for conflits.
  */
 
-/*
- * Send a start signal on the I2C bus. The start signal notifies
+#define RISEFALLTIME 1 /* usec, actually 300 to 1000 ns according to the i2c specs */
+
+/* Some devices will hold SCL low to slow down the bus or until 
+ * ready for transmission.
+ *
+ * This condition will be noticed when the master tries to raise
+ * the SCL line. You can set the timeout to zero if the slave device
+ * does not support clock synchronization.
+ */
+
+static Bool
+I2CRaiseSCL(I2CBusPtr b, int sda, int timeout)
+{
+    int i, scl;
+
+    b->I2CPutBits(b, 1, sda);
+    b->I2CUDelay(b, RISEFALLTIME);
+
+    for (i = timeout; i > 0; i -= RISEFALLTIME) {
+	b->I2CGetBits(b, &scl, &sda);
+	if (scl) break;
+	b->I2CUDelay(b, RISEFALLTIME);
+    }
+
+    if (i <= 0) {
+	I2C_TIMEOUT(ErrorF("[I2CRaiseSCL(<%s>, %d, %d) timeout]", b->BusName, sda, timeout));    
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
+/* Send a start signal on the I2C bus. The start signal notifies
  * devices that a new transaction is initiated by the bus master.
  *
- * The start signal is always followed by a device address.
- * Devide addresses are 8 bits. The first 7 bits identifies the
+ * The start signal is always followed by a slave address.
+ * Slave addresses are 8 bits. The first 7 bits identify the
  * device and the last bit signals if this is a read (1) or
  * write (0) operation.
  *
@@ -87,414 +115,671 @@ static void udelay(int x) { xdelay(x); }
  * address (with the last bit 0) and the register number. Then send
  * a new start bit with the device address (with the last bit 1)
  * and then read the value from the device.
+ *
+ * Note this is function does not implement a multiple master
+ * arbitration procedure.
  */
-static void
-I2CStart(I2CBusPtr b)
+
+static Bool
+I2CStart(I2CBusPtr b, int timeout)
 {
-	D; b->I2CPutBits(b, 1, 1);
-	D; b->I2CPutBits(b, 1, 0);
-	D; b->I2CPutBits(b, 0, 0);
-#ifdef I2C_DEBUG
-	ErrorF("i2c: <");
-#endif
+    int i, scl, sda;
+
+    b->I2CPutBits(b, 1, 1);
+    b->I2CUDelay(b, RISEFALLTIME);
+
+    for (i = timeout; i > 0; i -= RISEFALLTIME) {
+	b->I2CGetBits(b, &scl, &sda);
+	if (scl) break;
+	b->I2CUDelay(b, RISEFALLTIME);
+    }
+
+    if (i <= 0) { 
+	I2C_TIMEOUT(ErrorF("\ni2c: <[I2CStart(<%s>, %d) timeout]", b->BusName, timeout));
+	return FALSE;
+    }
+
+    b->I2CPutBits(b, 1, 0);
+    b->I2CUDelay(b, b->HoldTime);
+    b->I2CPutBits(b, 0, 0);
+    b->I2CUDelay(b, b->HoldTime);
+
+    I2C_TRACE(ErrorF("\ni2c: <"));
+
+    return TRUE;
 }
 
-/*
+/* This is the default I2CStop function if not supplied by the driver.
+ *
  * Signal devices on the I2C bus that a transaction on the
  * bus has finished. There may be more than one start signal
  * on a transaction but only one stop signal.
  */
+
 static void
-I2CStop(I2CBusPtr b)
+I2CStop(I2CDevPtr d)
 {
-	D; b->I2CPutBits(b, 0, 0);
-	D; b->I2CPutBits(b, 1, 0);
-	D; b->I2CPutBits(b, 1, 1);
-#ifdef I2C_DEBUG
-	ErrorF(">\n");
-#endif
+    I2CBusPtr b = d->pI2CBus;
+
+    b->I2CPutBits(b, 0, 0);
+    b->I2CUDelay(b, RISEFALLTIME);
+
+    b->I2CPutBits(b, 1, 0);
+    b->I2CUDelay(b, b->HoldTime);
+    b->I2CPutBits(b, 1, 1);
+    b->I2CUDelay(b, b->HoldTime);
+
+    I2C_TRACE(ErrorF(">\n"));
 }
 
-/*
- * Write a single "One" bit to a device.
+/* Write/Read a single bit to/from a device.
+ * Return FALSE if a timeout occurs.
  */
-static void
-I2CWriteOne(I2CBusPtr b)
-{
-	D; b->I2CPutBits(b, 0, 1);
-	D; b->I2CPutBits(b, 1, 1);
-	D; b->I2CPutBits(b, 0, 1);
-}
 
-/*
- * Write a single "Zero" bit to a device.
- */
-static void
-I2CWriteZero(I2CBusPtr b)
-{
-	D; b->I2CPutBits(b, 0, 0);
-	D; b->I2CPutBits(b, 1, 0);
-	D; b->I2CPutBits(b, 0, 0);
-}
-
-/*
- * Get the "Ack" bit from a device.
- */
-static int
-I2CGetAck(I2CBusPtr b)
-{
-	int scl, ack;
-    
-        D; b->I2CPutBits(b, 0, 1);
-        D; b->I2CPutBits(b, 1, 1);
-	D; b->I2CGetBits(b, &scl, &ack);
-
-        D; b->I2CPutBits(b, 0, 1);
-
-	return ack;
-}
-
-/*
- * This is the default I2CPutByte if not supplied by s driver.
- *
- * A single byte is sent to the device, MSB first.
- * If wait_for_ack is non zero, there is some delay. Then
- * The Ack bit is read from the device.
- */
 static Bool
-xf86I2CPutByte(I2CBusPtr b, unsigned char data, int wait_for_ack, int *ack)
+I2CWriteBit(I2CBusPtr b, int sda, int timeout)
 {
-	int i;
-    
-        b->I2CPutBits(b, 0, 0);
+    Bool r;
 
-	for (i = 7; i >= 0; i--) {
-                if (data&(1<<i))
-			I2CWriteOne(b);
-		else
-			I2CWriteZero(b);
+    b->I2CPutBits(b, 0, sda);
+    b->I2CUDelay(b, RISEFALLTIME);
+
+    r = I2CRaiseSCL(b, sda, timeout);
+    b->I2CUDelay(b, b->HoldTime);
+
+    b->I2CPutBits(b, 0, sda);
+    b->I2CUDelay(b, b->HoldTime);
+
+    return r;
+}
+
+static Bool
+I2CReadBit(I2CBusPtr b, int *psda, int timeout)
+{
+    Bool r;
+    int scl;
+
+    r = I2CRaiseSCL(b, 1, timeout);
+    b->I2CUDelay(b, b->HoldTime);
+
+    b->I2CGetBits(b, &scl, psda);
+
+    b->I2CPutBits(b, 0, 1);
+    b->I2CUDelay(b, b->HoldTime);
+
+    return r;
+}
+
+/* This is the default I2CPutByte function if not supplied by the driver.
+ *
+ * A single byte is sent to the device.
+ * The function must return FALSE if a timeout occurs, 
+ * it is recommended the master will send a stop condition then
+ * to reset the bus.
+ *
+ * A timeout occurs,
+ * if the slave pulls SCL to slow down the bus more than ByteTimeout usecs,
+ * or slows down the bus for more than BitTimeout usecs for each bit,
+ * or does not send an ACK bit (0) to acknowledge the transmission within
+ * AcknTimeout usecs, but a NACK (1) bit.
+ *
+ * AcknTimeout must be at least b->HoldTime.
+ */
+
+static Bool
+I2CPutByte(I2CDevPtr d, I2CByte data)
+{
+    Bool r;
+    int i, scl, sda;
+    I2CBusPtr b = d->pI2CBus;
+
+    if (!I2CWriteBit(b, (data >> 7) & 1, d->ByteTimeout))
+	return FALSE;
+
+    for (i = 6; i >= 0; i--)
+	if (!I2CWriteBit(b, (data >> i) & 1, d->BitTimeout))
+	    return FALSE;
+
+    b->I2CPutBits(b, 0, 1);
+    b->I2CUDelay(b, RISEFALLTIME);
+
+    r = I2CRaiseSCL(b, 1, b->HoldTime);
+
+    if (r) {
+    	for (i = d->AcknTimeout; i > 0; i -= b->HoldTime) {
+	    b->I2CUDelay(b, b->HoldTime);
+	    b->I2CGetBits(b, &scl, &sda);
+	    if (sda == 0) break;
 	}
 
-	if (wait_for_ack)
-		udelay(wait_for_ack);
-
-	*ack = I2CGetAck(b);
-
-#ifdef I2C_DEBUG
-	ErrorF("%02x%c ", (int)data, *ack?'-':'+');
-#endif
-
-	return *ack;
-}
-
-/*
- * This is the default I2CGetbyte if not supplied by s driver.
- *
- * A single data byte is read from a device.
- * Bits are read MSB first. 
- * If this is NOT the last byte read on a transaction,
- * we have to acknowledge this to the device that sent
- * this byte. Tha last read byte is usually not acknowledged.
- */
-static Bool
-xf86I2CGetByte(I2CBusPtr b, unsigned char *data, Bool last)
-{
-	int i;
-        int c, d;
-	unsigned char rdata = 0;
-
-        b->I2CPutBits(b, 0, 1);
-
-	for (i=7; i>=0; i--) 
-	{
-		b->I2CPutBits(b, 1, 1);
-                b->I2CGetBits(b, &c, &d);
-		if (d) rdata |= (1<<i);
-		b->I2CPutBits(b, 0, 1);
+	if (i <= 0) {
+	    I2C_TIMEOUT(ErrorF("[I2CPutByte(<%s>, 0x%02x, %d, %d, %d) timeout]", 
+				       b->BusName, data, d->BitTimeout, 
+				       d->ByteTimeout, d->AcknTimeout));
+	    r = FALSE;
 	}
 
-	if (last)
-		 I2CWriteOne(b);
+	I2C_TRACE(ErrorF("W%02x%c ", (int) data, sda ? '-' : '+'));
+    }
+
+    b->I2CPutBits(b, 0, 1);
+    b->I2CUDelay(b, b->HoldTime);
+
+    return r;
+}
+
+/* This is the default I2CGetByte function if not supplied by the driver.
+ *
+ * A single byte is read from the device.
+ * The function must return FALSE if a timeout occurs,
+ * it is recommended the master will send a stop condition then
+ * to reset the bus.
+ * 
+ * A timeout occurs,
+ * if the slave pulls SCL to slow down the bus more than ByteTimeout usecs,
+ * or slows down the bus for more than b->BitTimeout usecs for each bit.
+ *
+ * ByteTimeout must be at least b->HoldTime.
+ *
+ * For the last byte in a sequence the acknowledge bit NACK (1), 
+ * otherwise ACK (0) must be sent.
+ */
+
+static Bool
+I2CGetByte(I2CDevPtr d, I2CByte *data, Bool last)
+{
+    int i, sda;
+    I2CBusPtr b = d->pI2CBus;
+
+    b->I2CPutBits(b, 0, 1);
+    b->I2CUDelay(b, RISEFALLTIME);
+
+    if (!I2CReadBit(b, &sda, d->ByteTimeout))
+	return FALSE;
+
+    *data = (sda > 0) << 7;
+
+    for (i = 6; i >= 0; i--)
+	if (!I2CReadBit(b, &sda, d->BitTimeout))
+	    return FALSE;
 	else
-		 I2CWriteZero(b);
+	    *data |= (sda > 0) << i;
 
-        *data = rdata;
+    if (!I2CWriteBit(b, last ? 1 : 0, d->BitTimeout))
+	return FALSE;
 
-#ifdef I2C_DEBUG
-	ErrorF("=%02x%c ", (int)rdata, last?'-':'+');
-#endif
+    I2C_TRACE(ErrorF("R%02x%c ", (int) *data, last ? '+' : '-'));
 
-	return TRUE;
+    return TRUE;
+}
+
+/* This is the default I2CAddress function if not supplied by the driver.
+ *
+ * It creates the start condition, followed by the d->SlaveAddr.
+ * It has been decided to wrap this in one function instead of 
+ * I2CStart/PutByte since a hardware I2C master may not be able 
+ * to send a slave addr without also a start condition.
+ *
+ * The same timeouts apply as with PutByte and additional a
+ * StartTimeout, similar to the ByteTimeout but for the start 
+ * condition.
+ *
+ * In case of a timeout, the bus is left in a clean idle condition.
+ * I. e. you must not send a Stop. If this function succeeds, you must.
+ *
+ * The slave address format is 16 bit, with the legacy _8_bit_ slave address
+ * in the least significant byte. This is, the slave address must include the
+ * r/w flags as least significant bit.
+ *
+ * The most significant byte of the address will be sent _after_ the LSB, 
+ * but only if the LSB indicates:
+ * a) an 11 bit address, this is, LSB = 1111 0xxx.
+ * b) a 'general call address', this is, LSB = 0000 000x - see the I2C specs for more.
+ */
+
+static Bool
+I2CAddress(I2CDevPtr d, I2CSlaveAddr addr)
+{
+    if (I2CStart(d->pI2CBus, d->StartTimeout)) {
+	if (I2CPutByte(d, addr & 0xFF)) {
+	    if ((addr & 0xF8) != 0xF0 &&
+		(addr & 0xFE) != 0x00)
+		return TRUE;
+
+	    if (I2CPutByte(d, (addr >> 8) & 0xFF))
+		return TRUE;
+	}
+
+	I2CStop(d);
+    }
+
+    return FALSE;
+}
+
+/* These are the hardware independent I2C helper functions.
+ * ========================================================
+ */
+
+/* Function for probing. Just send the slave address 
+   and return true if the device responds. The slave address
+   must have the lsb set to reflect a read (1) or write (0) access.
+   Don't expect a read- or write-only device will respond otherwise. */
+
+Bool
+xf86I2CProbeAddress(I2CBusPtr b, I2CSlaveAddr addr)
+{
+    int r;
+    I2CDevRec d;
+
+    d.DevName = "Probing";
+    d.BitTimeout = b->BitTimeout;
+    d.ByteTimeout = b->ByteTimeout;
+    d.AcknTimeout = b->AcknTimeout;
+    d.StartTimeout = b->StartTimeout;
+    d.SlaveAddr = addr;
+    d.pI2CBus = b;
+    d.NextDev = NULL;
+
+    r = b->I2CAddress(&d, addr);
+
+    if (r) b->I2CStop(&d);
+
+    return r;
+}
+
+/* All functions below are related to devices and take the
+ * slave address and timeout values from an I2CDevRec.
+ */
+
+/* General purpose read and write function.
+ *
+ * If nWrite > 0
+ *   Send a Start condition
+ *   Send the slave address (1 or 2 bytes) with write flag
+ *   Write n bytes from WriteBuffer
+ * Then if nRead > 0
+ *   Send a Start condition [again]
+ *   Send the slave address (1 or 2 bytes) with read flag
+ *   Read n bytes to ReadBuffer
+ * Then if a Start condition has been successfully sent,
+ *   Send a Stop condition.
+ */
+
+Bool
+xf86I2CWriteRead(I2CDevPtr d,
+		 I2CByte *WriteBuffer, int nWrite,
+		 I2CByte *ReadBuffer,  int nRead) 
+{
+    Bool r = TRUE;
+    I2CBusPtr b = d->pI2CBus;
+    int s = 0;
+
+    if (r && nWrite > 0) {
+	r = b->I2CAddress(d, d->SlaveAddr & ~1);
+	if (r) {
+	    for (; nWrite > 0; WriteBuffer++, nWrite--)
+		if (!(r = b->I2CPutByte(d, *WriteBuffer))) 
+		    break;
+	    s++;
+	}
+    }
+
+    if (r && nRead > 0) {
+	r = b->I2CAddress(d, d->SlaveAddr | 1);
+	if (r) {
+	    for (; nRead > 0; ReadBuffer++, nRead--)
+		if (!(r = b->I2CGetByte(d, ReadBuffer, nRead == 1))) 
+		    break;
+	    s++;
+	}
+    }
+
+    if (s) b->I2CStop(d);
+
+    return r;
+}
+
+/* Read a byte, the only readable register of a device.
+ */
+
+Bool
+xf86I2CReadStatus(I2CDevPtr d, I2CByte *pbyte)
+{
+    return xf86I2CWriteRead(d, NULL, 0, pbyte, 1);
+}
+
+/* Read a byte from one of the registers determined by its sub-address.
+ */
+
+Bool
+xf86I2CReadByte(I2CDevPtr d, I2CByte subaddr, I2CByte *pbyte)
+{
+    return xf86I2CWriteRead(d, &subaddr, 1, pbyte, 1);
+}
+
+/* Read bytes from subsequent registers determined by the 
+ * sub-address of the first register.
+ */
+
+Bool
+xf86I2CReadBytes(I2CDevPtr d, I2CByte subaddr, I2CByte *pbyte, int n)
+{
+    return xf86I2CWriteRead(d, &subaddr, 1, pbyte, n);
+}
+
+/* Read a word (high byte, then low byte) from one of the registers 
+ * determined by its sub-address.
+ */
+
+Bool
+xf86I2CReadWord(I2CDevPtr d, I2CByte subaddr, unsigned short *pword)
+{
+    I2CByte rb[2];
+
+    if (!xf86I2CWriteRead(d, &subaddr, 1, rb, 2)) return FALSE;
+
+    *pword = (rb[0] << 8) | rb[1];
+
+    return TRUE;
+}
+
+/* Write a byte to one of the registers determined by its sub-address.
+ */
+
+Bool
+xf86I2CWriteByte(I2CDevPtr d, I2CByte subaddr, I2CByte byte)
+{
+    I2CByte wb[2];
+
+    wb[0] = subaddr;
+    wb[1] = byte;
+
+    return xf86I2CWriteRead(d, wb, 2, NULL, 0);
+}
+
+/* Write bytes to subsequent registers determined by the 
+ * sub-address of the first register.
+ */
+
+Bool
+xf86I2CWriteBytes(I2CDevPtr d, I2CByte subaddr, 
+		  I2CByte *WriteBuffer, int nWrite)
+{
+    I2CBusPtr b = d->pI2CBus;
+    Bool r = TRUE;
+
+    if (nWrite > 0) {
+	r = b->I2CAddress(d, d->SlaveAddr & ~1);
+	if (r){
+	    if (!(r = b->I2CPutByte(d, subaddr)))
+		for (; nWrite > 0; WriteBuffer++, nWrite--)
+		    if (!(r = b->I2CPutByte(d, *WriteBuffer))) 
+			break;
+
+	    b->I2CStop(d);
+	}
+    }
+
+    return r;
+}
+
+/* Write a word (high byte, then low byte) to one of the registers 
+ * determined by its sub-address.
+ */
+
+Bool
+xf86I2CWriteWord(I2CDevPtr d, I2CByte subaddr, unsigned short word)
+{
+    I2CByte wb[3];
+
+    wb[0] = subaddr;
+    wb[1] = word >> 8;
+    wb[2] = word & 0xFF;
+
+    return xf86I2CWriteRead(d, wb, 3, NULL, 0);
+}
+
+/* Write a vector of bytes to not adjacent registers. This vector is, 
+ * 1st byte sub-address, 2nd byte value, 3rd byte sub-address asf.
+ * This function is intended to initialize devices.
+ */
+
+Bool
+xf86I2CWriteVec(I2CDevPtr d, I2CByte *vec, int nValues)
+{
+    I2CBusPtr b = d->pI2CBus;
+    Bool r = TRUE;
+    int s = 0;
+
+    if (nValues > 0) {
+	for (; nValues > 0; nValues--, vec += 2) {
+	    if (!(r = b->I2CAddress(d, d->SlaveAddr & ~1)))
+	    	break;
+
+	    s++;
+
+	    if (!(r = b->I2CPutByte(d, vec[0])))
+		break;
+
+	    if (!(r = b->I2CPutByte(d, vec[1]))) 
+		break;
+	}
+
+	if (s > 0) b->I2CStop(d);	
+    }
+
+    return r;
+}
+
+/* Administrative functions.
+ * =========================
+ */
+
+I2CDevPtr
+xf86CreateI2CDevRec(void) 
+{
+    return (I2CDevPtr) xcalloc(1, sizeof(I2CDevRec));
+}
+
+void
+xf86DestroyI2CDevRec(I2CDevPtr d, Bool unalloc) 
+{
+    if (d) {
+	I2CDevPtr *p;
+
+	/* Remove this from the list of active I2C devices. */
+
+	for (p = &d->pI2CBus->FirstDev; *p != NULL; p = &(*p)->NextDev) 
+	    if (*p == d) {
+		*p = (*p)->NextDev;
+		break;
+	    }
+
+	if (d->pI2CBus->scrnIndex >= 0)
+	    xf86DrvMsg(d->pI2CBus->scrnIndex, X_DEFAULT, 
+		       "I2C device \"%s:%s\" removed.\n",
+		       d->pI2CBus->BusName, d->DevName);
+	else
+	    xf86Msg(X_DEFAULT, "I2C device \"%s:%s\" removed.\n",
+		    d->pI2CBus->BusName, d->DevName);
+
+	if (unalloc) xfree(d);
+    }
+}
+
+Bool
+xf86I2CDevInit(I2CDevPtr d) 
+{
+    I2CBusPtr b;
+
+    if (d == NULL ||
+	(b = d->pI2CBus) == NULL ||
+        (d->SlaveAddr & 1) ||
+        xf86I2CFindDev(b, d->SlaveAddr) != NULL)
+	return FALSE;
+
+    if (d->BitTimeout <= 0) d->BitTimeout = b->BitTimeout;
+    if (d->ByteTimeout <= 0) d->ByteTimeout = b->ByteTimeout;
+    if (d->AcknTimeout <= 0) d->AcknTimeout = b->AcknTimeout;
+    if (d->StartTimeout <= 0) d->StartTimeout = b->StartTimeout;
+
+    d->NextDev = b->FirstDev;
+    b->FirstDev = d;
+
+    if(b->scrnIndex >= 0)
+	xf86DrvMsg(b->scrnIndex, X_DEFAULT, 
+		   "I2C device \"%s:%s\" registered.\n",
+		   b->BusName, d->DevName);
+    else
+	xf86Msg(X_DEFAULT, "I2C device \"%s:%s\" registered.\n",
+		b->BusName, d->DevName);
+
+    return TRUE;
+}
+
+I2CDevPtr
+xf86I2CFindDev(I2CBusPtr b, I2CSlaveAddr addr) 
+{
+    I2CDevPtr d;
+
+    if (b) { 
+         for (d = b->FirstDev; d != NULL; d = d->NextDev) 
+	    if (d->SlaveAddr == addr)
+		return d;
+    }
+
+    return NULL;
 }
 
 static I2CBusPtr I2CBusList;
 
 I2CBusPtr
-xf86CreateI2CBusRec(void) {
-	I2CBusPtr b = (I2CBusPtr)xcalloc(1, sizeof(I2CBusRec));
-	if(b == NULL)
-		return NULL;
-	return b;
+xf86CreateI2CBusRec(void) 
+{
+    I2CBusPtr b;
+
+    b = (I2CBusPtr) xcalloc(1, sizeof(I2CBusRec));
+
+    if (b != NULL) {
+	b->scrnIndex = -1;
+	b->HoldTime = 5;
+	b->BitTimeout = 5;
+	b->ByteTimeout = 5;
+	b->AcknTimeout = 5;
+	b->StartTimeout = 5;
+    }
+
+    return b;
 }
 
 void
-xf86DestroyI2CBusRec(I2CBusPtr b) {
+xf86DestroyI2CBusRec(I2CBusPtr b, Bool unalloc, Bool devs_too) 
+{
+    if (b) {
 	I2CBusPtr *p;
 
-	if(b == NULL)
-		return;
+	/* Remove this from the list of active I2C busses. */
 
-	/* remove this from the list of active I2C busses. */
-	for(p = &I2CBusList; *p != NULL; p = &(*p)->NextBus) {
-		if(*p == b) {
-			*p = (*p)->NextBus;
-			break;
+	for (p = &I2CBusList; *p != NULL; p = &(*p)->NextBus) 
+	    if (*p == b) {
+		*p = (*p)->NextBus;
+		break;
+	    }
+
+	if (b->FirstDev != NULL) {
+	    if (devs_too) {
+		I2CDevPtr d;
+
+		while ((d = b->FirstDev) != NULL)
+		    xf86DestroyI2CDevRec(d, unalloc); 
+	    } else {
+		if (unalloc) {
+		    xf86Msg(X_ERROR, "i2c bug: Attempt to remove I2C bus \"%s\", "
+			    "but device list is not empty.\n",
+			    b->BusName);
+		    return;
 		}
+	    }
 	}
 
-	if(b->scrnIndex >= 0)
-		xf86DrvMsg(b->scrnIndex, X_DEFAULT, "I2C bus \"%s\" removed.\n",
-			b->BusName);
+	if (b->scrnIndex >= 0)
+	    xf86DrvMsg(b->scrnIndex, X_DEFAULT, "I2C bus \"%s\" removed.\n",
+		       b->BusName);
 	else
-		xf86Msg(X_DEFAULT, "I2C bus \"%s\" removed.\n",
-			b->BusName);
+	    xf86Msg(X_DEFAULT, "I2C bus \"%s\" removed.\n",
+		    b->BusName);
 
-	if(b->FirstDev != NULL) {
-		ErrorF("Attempt to remove I2C bus \"%s\", but device list is not empty.\n",
-			b->BusName);
-
-		return;		/* What can we do */
-	}
-
-	xfree(b);
+	if (unalloc) xfree(b);
+    }
 }
 
 Bool
-xf86I2CBusInit(I2CBusPtr b) {
+xf86I2CBusInit(I2CBusPtr b) 
+{
+    /* I2C busses must be identified by a unique scrnIndex 
+     * and name. If scrnIndex is unspecified (a negative value), 
+     * then the name must be unique throughout the server. 
+     */
 
-	/* I2C busses must be identified with a name */
-	if(b->BusName == NULL)
-		return FALSE;
-	/*
-	 * If the high level functions are not
-	 * supplied, use the generic functions.
-	 * In this case we need the low-level
-	 * function.
-	 */
-	if(b->I2CPutByte == NULL ||
-	   b->I2CGetByte == NULL) {
+    if (b->BusName == NULL ||
+	xf86I2CFindBus(b->scrnIndex, b->BusName) != NULL)
+	return FALSE;
 
-		if(b->I2CPutBits == NULL ||
-		   b->I2CGetBits == NULL)
-			return FALSE;
+    /* If the high level functions are not
+     * supplied, use the generic functions.
+     * In this case we need the low-level
+     * function.
+     */
 
-		if(b->I2CPutByte == NULL)
-			b->I2CPutByte = xf86I2CPutByte;
-	
-		if(b->I2CPutByte == NULL)
-			b->I2CGetByte = xf86I2CGetByte;
-	}
+    if (b->I2CPutBits == NULL ||
+	b->I2CGetBits == NULL) 
+    {
+	if (b->I2CPutByte == NULL ||
+	    b->I2CGetByte == NULL ||
+	    b->I2CAddress == NULL ||
+	    b->I2CStop    == NULL)
+	    return FALSE;
+    } else {
+	b->I2CPutByte = I2CPutByte;
+	b->I2CGetByte = I2CGetByte;
+	b->I2CAddress = I2CAddress;
+	b->I2CStop    = I2CStop;
+    }
 
-	/*
-	 * Put new bus on list.
-	 */
-	b->NextBus = I2CBusList;
-	I2CBusList = b;
+    if (b->I2CUDelay == NULL)
+	b->I2CUDelay = I2CUDelay;
 
-	if(b->scrnIndex >= 0)
-		xf86DrvMsg(b->scrnIndex, X_DEFAULT, "I2C bus \"%s\" initialized.\n",
-			b->BusName);
-	else
-		xf86Msg(X_DEFAULT, "I2C bus \"%s\" initialized.\n",
-			b->BusName);
+    if (b->HoldTime < 2) b->HoldTime = 5;
+    if (b->BitTimeout <= 0) b->BitTimeout = b->HoldTime;
+    if (b->ByteTimeout <= 0) b->ByteTimeout = b->HoldTime;
+    if (b->AcknTimeout <= 0) b->AcknTimeout = b->HoldTime;
+    if (b->StartTimeout <= 0) b->StartTimeout = b->HoldTime;
 
-	return TRUE;
+    /* Put new bus on list. */
+
+    b->NextBus = I2CBusList;
+    I2CBusList = b;
+
+    if (b->scrnIndex >= 0)
+	xf86DrvMsg(b->scrnIndex, X_DEFAULT, "I2C bus \"%s\" initialized.\n",
+		   b->BusName);
+    else
+	xf86Msg(X_DEFAULT, "I2C bus \"%s\" initialized.\n",
+		b->BusName);
+
+    return TRUE;
 }
 
 I2CBusPtr
-xf86I2CFindBus(char *name) {
-I2CBusPtr p;
+xf86I2CFindBus(int scrnIndex, char *name) 
+{
+    I2CBusPtr p;
 
-	for(p = I2CBusList; p != NULL; p = p->NextBus) {
-		if(!strcmp(p->BusName, name))
-			return p;
-	}
+    if (name != NULL)
+	for (p = I2CBusList; p != NULL; p = p->NextBus)
+	    if (scrnIndex < 0 || p->scrnIndex == scrnIndex) 
+		if (!strcmp(p->BusName, name))
+		    return p;
 
-	return NULL;
-}
-
-/* Function for probing. Just send the address and return
-   true if the device returns and ack. */
-Bool
-xf86I2CTryAddress(I2CBusPtr b, I2CAddr addr) {
-        int ack;
-
-	I2CStart(b);
-	b->I2CPutByte(b, addr, 0, &ack);
-	I2CStop(b);
-
-	return !ack;
-}
-
-I2CDevPtr
-xf86CreateI2CDevRec(void) {
-	return((I2CDevPtr)xcalloc(1, sizeof(I2CDevRec)));
-}
-
-void
-xf86DestroyI2CDevRec(I2CDevPtr d) {
-	I2CDevPtr *p;
-
-	if(d == NULL)
-		return;
-
-	/* remove this from the list of active I2C busses. */
-	for(p = &d->pI2CBus->FirstDev; *p != NULL; p = &(*p)->NextDev) {
-		if(*p == d) {
-			*p = (*p)->NextDev;
-			break;
-		}
-	}
-
-	if(d->scrnIndex >= 0)
-		xf86DrvMsg(d->scrnIndex, X_DEFAULT, "I2C device \"%s:%s\" removed.\n",
-			d->pI2CBus->BusName, d->DevName);
-	else
-		xf86Msg(X_DEFAULT, "I2C device \"%s:%s\" removed.\n",
-			d->pI2CBus->BusName, d->DevName);
-
-	xfree(d);
-}
-
-Bool
-xf86I2CDevInit(I2CDevPtr d) {
-	if(d->pI2CBus == NULL)
-		return FALSE;
-
-	if(d->i2caddr & 1)
-		return FALSE;
-
-	d->NextDev = d->pI2CBus->FirstDev;
-	d->pI2CBus->FirstDev = d;
-
-	if(d->scrnIndex >= 0)
-		xf86DrvMsg(d->scrnIndex, X_DEFAULT, "I2C device \"%s:%s\" registered.\n",
-			d->pI2CBus->BusName, d->DevName);
-	else
-		xf86Msg(X_DEFAULT, "I2C device \"%s:%s\" registered.\n",
-			d->pI2CBus->BusName, d->DevName);
-
-	return TRUE;
-}
-
-
-/* Input/Output done by slaves */
-/* 8 bit address is taken fron the I2CDev */
-
-/* Write N bytes and then read N bytes. Only one Stop signal. */
-Bool
-xf86I2CWriteNReadN(I2CDevPtr d,
-                   I2CByte *WriteBuffer, int nWrite,
-                   I2CByte *ReadBuffer,  int nRead) {
-
-	I2CBusPtr b = d->pI2CBus;
-	int i;
-	int ack;
-
-	if(nWrite > 0) {
-		I2CStart(b);
-		b->I2CPutByte(b, d->i2caddr, 0, &ack);
-
-		for(i = 0; i < nWrite; i++)
-			b->I2CPutByte(b, WriteBuffer[i], 0, &ack);
-	}
-
-	if(nRead > 0) {
-		I2CStart(b);
-		b->I2CPutByte(b, d->i2caddr|1, 0, &ack);
-
-		for(i = 0; i < nRead; i++)
-			b->I2CGetByte(b, &ReadBuffer[i], i==nRead-1);
-	}
-
-	I2CStop(b);
-
-	return TRUE;
-}
-
-/* Write 1 byte */
-Bool
-xf86I2CWrite(I2CDevPtr d, I2CByte Out) {
-	I2CBusPtr b = d->pI2CBus;
-        int ack;
-
-	I2CStart(b);
-	b->I2CPutByte(b, d->i2caddr, 0, &ack);
-	b->I2CPutByte(b, Out, 0, &ack);
-	I2CStop(b);
-
-	return TRUE;
-}
-
-/* Write 16 bits (short) */
-Bool
-xf86I2CWriteShort(I2CDevPtr d, unsigned short Out) {
-	I2CBusPtr b = d->pI2CBus;
-        int ack;
-
-	I2CStart(b);
-	b->I2CPutByte(b, d->i2caddr, 0, &ack);
-
-	/* Allways MSB first ! */
-	b->I2CPutByte(b, ((Out >> 8) & 0xff), 0, &ack);
-	b->I2CPutByte(b, ( Out       & 0xff), 0, &ack);
-
-	I2CStop(b);
-
-	return TRUE;
-}
-
-/* Read  1 byte  */
-Bool
-xf86I2CRead(I2CDevPtr d, I2CByte *In) {
-	I2CBusPtr b = d->pI2CBus;
-        int ack;
-
-	I2CStart(b);
-	b->I2CPutByte(b, d->i2caddr|1, 0, &ack);
-	b->I2CGetByte(b, In, 1);
-	I2CStop(b);
-
-	return TRUE;
-}
-
-/* Read  16 bits (short) */
-Bool
-xf86I2CReadShort(I2CDevPtr d, unsigned short *In) {
-	I2CBusPtr b = d->pI2CBus;
-        int ack;
-	I2CByte x;
-
-	I2CStart(b);
-	b->I2CPutByte(b, d->i2caddr|1, 0, &ack);
-	b->I2CGetByte(b, &x, 1);
-	*In = (x << 8);
-	b->I2CGetByte(b, &x, 1);
-	*In |= x;
-	I2CStop(b);
-
-	return TRUE;
-}
-
-/* Write 1 byte and then read 1 byte */
-Bool
-xf86I2CWriteRead(I2CDevPtr d, unsigned char Out, unsigned char *In) {
-	I2CBusPtr b = d->pI2CBus;
-        int ack;
-
-	I2CStart(b);
-	b->I2CPutByte(b, d->i2caddr, 0, &ack);
-	b->I2CPutByte(b, Out, 0, &ack);
-
-	return xf86I2CRead(d, In);
+    return NULL;
 }

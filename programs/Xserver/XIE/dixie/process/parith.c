@@ -66,14 +66,13 @@ terms and conditions:
 	Robert NC Shelley -- AGE Logic, Inc. April 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/process/parith.c,v 3.0 1996/03/29 22:10:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/parith.c,v 3.1 1998/10/04 09:35:36 dawes Exp $ */
 
 #define _XIEC_PARITH
 
 /*
  *  Include files
  */
-#include <stdio.h>
   /*
    *  Core X Includes
    */

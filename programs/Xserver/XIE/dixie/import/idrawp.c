@@ -66,14 +66,13 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. June 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/import/idrawp.c,v 3.0 1996/03/29 22:10:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/import/idrawp.c,v 3.1 1998/10/04 09:35:31 dawes Exp $ */
 
 #define _XIEC_IDRAWP
 
 /*
  *  Include files
  */
-#include <stdio.h>
   /*
    *  Core X Includes
    */

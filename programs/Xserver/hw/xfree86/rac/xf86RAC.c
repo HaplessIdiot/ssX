@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/rac/xf86RAC.c,v 1.1 1998/09/19 12:15:00 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -16,6 +16,14 @@
 #include "window.h"
 #include "xf86str.h"
 #include "xf86RAC.h"
+#include "mipointer.h"
+#include "mipointrst.h"
+
+#ifdef DEBUG
+#define DPRINT(x) ErrorF(x "\n");
+#else
+#define DPRINT(x)
+#endif
 
 #define WRAP_SCREEN(x,y)     {pScreenPriv->x = pScreen->x;\
                               pScreen->x = y;}
@@ -38,6 +46,19 @@
                                      pScrn->x = y;}
 #define UNWRAP_SCREEN_INFO(x)    pScrn->x = pScreenPriv->x
 
+#define SPRITE_PROLOG     miPointerScreenPtr PointPriv = \
+(miPointerScreenPtr)pScreen->devPrivates[miPointerScreenIndex].ptr;\
+                               RACScreenPtr pScreenPriv = \
+((RACScreenPtr) (pScreen)->devPrivates[RACScreenIndex].ptr);\
+			PointPriv->spriteFuncs = pScreenPriv->miSprite;
+#define SPRITE_EPILOG pScreenPriv->miSprite = PointPriv->spriteFuncs;\
+	              PointPriv->spriteFuncs  = &RACSpriteFuncs;
+#define WRAP_SPRITE_COND(cond){pScreenPriv->miSprite = PointPriv->spriteFuncs;\
+	                      if(flag & (cond))\
+	                      PointPriv->spriteFuncs  = &RACSpriteFuncs;}
+#define UNWRAP_SPRITE PointPriv->spriteFuncs = pScreenPriv->miSprite
+    
+	    
 #define GC_WRAP(x) pGCPriv->wrapOps = (x)->ops;\
 		 pGCPriv->wrapFuncs = (x)->funcs;\
                            (x)->ops = &RACGCOps;\
@@ -70,13 +91,13 @@ typedef struct _RACScreen {
     RealizeCursorProcPtr         RealizeCursor;
     UnrealizeCursorProcPtr       UnrealizeCursor;
     RecolorCursorProcPtr         RecolorCursor;
-    SetCursorPositionProcPtr    SetCursorPosition;
+    SetCursorPositionProcPtr     SetCursorPosition;
     void                         (*AdjustFrame)(int,int,int,int);
     Bool                         (*SwitchMode)(int, DisplayModePtr,int);
     Bool                         (*EnterVT)(int, int);
     void                         (*LeaveVT)(int, int);
     void                         (*FreeScreen)(int, int);
-    
+    miPointerSpriteFuncPtr       miSprite;
 } RACScreenRec, *RACScreenPtr;
 
 typedef struct _RACGC {
@@ -176,6 +197,12 @@ static void RACPolyGlyphBlt(DrawablePtr pDraw, GCPtr pGC, int xInit,
 			    CharInfoPtr *ppci, pointer pglyphBase );
 static void RACPushPixels(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDraw,
 			  int dx, int dy, int xOrg, int yOrg );
+/* miSpriteFuncs */
+static Bool RACSpriteRealizeCursor(ScreenPtr pScreen, CursorPtr pCur);
+static Bool RACSpriteUnrealizeCursor(ScreenPtr pScreen, CursorPtr pCur);
+static void RACSpriteSetCursor(ScreenPtr pScreen, CursorPtr pCur,
+			       int x, int y);
+static void RACSpriteMoveCursor(ScreenPtr pScreen, int x, int y);
 
 GCFuncs RACGCFuncs = {
     RACValidateGC, RACChangeGC, RACCopyGC, RACDestroyGC,
@@ -194,6 +221,11 @@ GCOps RACGCOps = {
     {NULL}		/* devPrivate */
 };
 
+miPointerSpriteFuncRec RACSpriteFuncs = {
+    RACSpriteRealizeCursor, RACSpriteUnrealizeCursor, RACSpriteSetCursor,
+    RACSpriteMoveCursor
+};
+
 int RACScreenIndex = -1;
 int RACGCIndex = -1;
 static unsigned long RACGeneration = 0;
@@ -204,7 +236,10 @@ xf86RACInit(ScreenPtr pScreen, unsigned int flag)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     RACScreenPtr pScreenPriv;
-
+    miPointerScreenPtr PointPriv
+	= (miPointerScreenPtr)pScreen->devPrivates[miPointerScreenIndex].ptr;
+    
+    DPRINT("RACInit");
     if (RACGeneration != serverGeneration) {
 	if (	((RACScreenIndex = AllocateScreenPrivateIndex()) < 0) ||
 		((RACGCIndex = AllocateGCPrivateIndex()) < 0))
@@ -220,7 +255,7 @@ xf86RACInit(ScreenPtr pScreen, unsigned int flag)
 	return FALSE;
 
     pScreen->devPrivates[RACScreenIndex].ptr = (pointer)pScreenPriv;
-
+    
     WRAP_SCREEN(CloseScreen, RACCloseScreen);
     WRAP_SCREEN(SaveScreen, RACSaveScreen);
     WRAP_SCREEN_COND(CreateGC, RACCreateGC, RAC_FB);
@@ -245,7 +280,8 @@ xf86RACInit(ScreenPtr pScreen, unsigned int flag)
     WRAP_SCREEN_INFO(EnterVT, RACEnterVT);
     WRAP_SCREEN_INFO(LeaveVT, RACLeaveVT);
     WRAP_SCREEN_INFO(FreeScreen, RACFreeScreen);
-    
+    WRAP_SPRITE_COND(RAC_CURSOR);
+
     return TRUE;
 }
 
@@ -256,7 +292,10 @@ RACCloseScreen (int i, ScreenPtr pScreen)
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     RACScreenPtr pScreenPriv = 
 	(RACScreenPtr) pScreen->devPrivates[RACScreenIndex].ptr;
-
+    miPointerScreenPtr PointPriv
+	= (miPointerScreenPtr)pScreen->devPrivates[miPointerScreenIndex].ptr;
+    
+    DPRINT("RACCloseScreen");
     UNWRAP_SCREEN(CreateGC);
     UNWRAP_SCREEN(CloseScreen);
     UNWRAP_SCREEN(GetImage);
@@ -280,7 +319,8 @@ RACCloseScreen (int i, ScreenPtr pScreen)
     UNWRAP_SCREEN_INFO(EnterVT);
     UNWRAP_SCREEN_INFO(LeaveVT);
     UNWRAP_SCREEN_INFO(FreeScreen);
-    
+    UNWRAP_SPRITE;
+        
     xfree ((pointer) pScreenPriv);
 
     return (*pScreen->CloseScreen) (i, pScreen);
@@ -296,6 +336,7 @@ RACGetImage (
     )
 {
     ScreenPtr pScreen = pDrawable->pScreen;
+    DPRINT("RACGetImage");
     SCREEN_PROLOG(GetImage);
     if (xf86Screens[pScreen->myNum]->vtSema && 
        (pDrawable->type == DRAWABLE_WINDOW)) {
@@ -317,6 +358,8 @@ RACGetSpans (
     )
 {
     ScreenPtr	    pScreen = pDrawable->pScreen;
+
+    DPRINT("RACGetSpans");
     SCREEN_PROLOG (GetSpans);
     if (xf86Screens[pScreen->myNum]->vtSema && 
        (pDrawable->type == DRAWABLE_WINDOW)) {
@@ -332,6 +375,7 @@ RACSourceValidate (
     int	x, int y, int width, int height )
 {
     ScreenPtr	pScreen = pDrawable->pScreen;
+    DPRINT("RACSourceValidate");
     SCREEN_PROLOG (SourceValidate);
     if (xf86Screens[pScreen->myNum]->vtSema) {
 	ENABLE;
@@ -350,6 +394,7 @@ RACPaintWindowBackground(
 {
     ScreenPtr pScreen = pWin->drawable.pScreen;
 
+    DPRINT("RACPaintWindowBackground");
     SCREEN_PROLOG (PaintWindowBackground);
     if (xf86Screens[pScreen->myNum]->vtSema) {
 	ENABLE;
@@ -367,6 +412,7 @@ RACPaintWindowBorder(
 {
     ScreenPtr pScreen = pWin->drawable.pScreen;
 
+    DPRINT("RACPaintWindowBorder");
     SCREEN_PROLOG (PaintWindowBorder);
     if (xf86Screens[pScreen->myNum]->vtSema) {
 	ENABLE;
@@ -383,6 +429,7 @@ RACCopyWindow(
 {
     ScreenPtr pScreen = pWin->drawable.pScreen;
 
+    DPRINT("RACCopyWindow");
     SCREEN_PROLOG (CopyWindow);
     if (xf86Screens[pScreen->myNum]->vtSema) {
 	ENABLE;
@@ -400,6 +447,7 @@ RACClearToBackground (
 {
     ScreenPtr pScreen = pWin->drawable.pScreen;
 
+    DPRINT("RACClearToBackground");
     SCREEN_PROLOG ( ClearToBackground);
     if (xf86Screens[pScreen->myNum]->vtSema) {
 	ENABLE;
@@ -418,6 +466,7 @@ RACSaveAreas (
     )
 {
     ScreenPtr pScreen = pPixmap->drawable.pScreen;
+    DPRINT("RACSaveAreas");
     SCREEN_PROLOG (BackingStoreFuncs.SaveAreas);
     if (xf86Screens[pScreen->myNum]->vtSema) {
 	ENABLE;
@@ -439,6 +488,7 @@ RACRestoreAreas (
 {
     ScreenPtr pScreen = pPixmap->drawable.pScreen;
 
+    DPRINT("RACRestoreAreas");
     SCREEN_PROLOG (BackingStoreFuncs.RestoreAreas);
     if (xf86Screens[pScreen->myNum]->vtSema) {
 	ENABLE;
@@ -453,7 +503,8 @@ static PixmapPtr
 RACCreatePixmap(ScreenPtr pScreen, int w, int h, int depth)
 {
     PixmapPtr pPix;
-    
+
+    DPRINT("RACCreatePixmap");
     SCREEN_PROLOG ( CreatePixmap);
     if (xf86Screens[pScreen->myNum]->vtSema) {
 	ENABLE;
@@ -468,7 +519,8 @@ static Bool
 RACSaveScreen(ScreenPtr pScreen, Bool unblank)
 {
     Bool val;
-    
+
+    DPRINT("RACSaveScreen");
     SCREEN_PROLOG (SaveScreen);
     if (xf86Screens[pScreen->myNum]->vtSema) {
 	ENABLE;
@@ -487,6 +539,7 @@ RACStoreColors (
 {
     ScreenPtr pScreen = pmap->pScreen;
 
+    DPRINT("RACStoreColors");
     SCREEN_PROLOG (StoreColors);
     if (xf86Screens[pScreen->myNum]->vtSema) {
 	ENABLE;
@@ -503,6 +556,7 @@ RACRecolorCursor (
     Bool displayed
     )
 {
+    DPRINT("RACRecolorCursor");
     SCREEN_PROLOG (RecolorCursor);
     if (xf86Screens[pScreen->myNum]->vtSema) {
 	ENABLE;
@@ -519,7 +573,8 @@ RACRealizeCursor (
     )
 {
     Bool val;
-    
+
+    DPRINT("RACRealizeCursor");
     SCREEN_PROLOG (RealizeCursor);
     if (xf86Screens[pScreen->myNum]->vtSema) {
 	ENABLE;
@@ -538,6 +593,7 @@ RACUnrealizeCursor (
 {
     Bool val;
 
+    DPRINT("RACUnrealizeCursor");
     SCREEN_PROLOG (UnrealizeCursor);
     if (xf86Screens[pScreen->myNum]->vtSema) {
 	ENABLE;
@@ -555,7 +611,8 @@ RACDisplayCursor (
     )
 {
     Bool val;
-    
+
+    DPRINT("RACDisplayCursor");
     SCREEN_PROLOG (DisplayCursor);
     if (xf86Screens[pScreen->myNum]->vtSema) {
 	ENABLE;
@@ -574,6 +631,7 @@ RACSetCursorPosition (
 {
     Bool val;
 
+    DPRINT("RACSetCursorPosition");
     SCREEN_PROLOG (SetCursorPosition);
     if (xf86Screens[pScreen->myNum]->vtSema) {
 	ENABLE;
@@ -590,6 +648,8 @@ RACAdjustFrame(int index, int x, int y, int flags)
     ScreenPtr pScreen = screenInfo.screens[index];
     RACScreenPtr pScreenPriv =
 	(RACScreenPtr) pScreen->devPrivates[RACScreenIndex].ptr;
+
+    DPRINT("RACAdjustFrame");
     xf86EnableAccess(&(xf86Screens[index]->Access));
 
     (*pScreenPriv->AdjustFrame)(index, x, y, flags);
@@ -601,6 +661,8 @@ RACSwitchMode(int index, DisplayModePtr mode, int flags)
     ScreenPtr pScreen = screenInfo.screens[index];
     RACScreenPtr pScreenPriv =
 	(RACScreenPtr) pScreen->devPrivates[RACScreenIndex].ptr;
+
+    DPRINT("RACSwitchMode");
     xf86EnableAccess(&(xf86Screens[index]->Access));
 
     return (*pScreenPriv->SwitchMode)(index, mode, flags);
@@ -612,6 +674,8 @@ RACEnterVT(int index, int flags)
     ScreenPtr pScreen = screenInfo.screens[index];
     RACScreenPtr pScreenPriv =
 	(RACScreenPtr) pScreen->devPrivates[RACScreenIndex].ptr;
+
+    DPRINT("RACEnterVT");
     xf86EnableAccess(&(xf86Screens[index]->Access));
 
     return (*pScreenPriv->EnterVT)(index, flags);
@@ -623,6 +687,8 @@ RACLeaveVT(int index, int flags)
     ScreenPtr pScreen = screenInfo.screens[index];
     RACScreenPtr pScreenPriv =
 	(RACScreenPtr) pScreen->devPrivates[RACScreenIndex].ptr;
+
+    DPRINT("RACLeaveVT");
     xf86EnableAccess(&(xf86Screens[index]->Access));
 
     (*pScreenPriv->LeaveVT)(index, flags);
@@ -634,6 +700,8 @@ RACFreeScreen(int index, int flags)
     ScreenPtr pScreen = screenInfo.screens[index];
     RACScreenPtr pScreenPriv =
 	(RACScreenPtr) pScreen->devPrivates[RACScreenIndex].ptr;
+
+    DPRINT("RACFreeScreen");
     xf86EnableAccess(&(xf86Screens[index]->Access));
 
     (*pScreenPriv->FreeScreen)(index, flags);
@@ -646,6 +714,7 @@ RACCreateGC(GCPtr pGC)
     RACGCPtr     pGCPriv = (RACGCPtr) (pGC)->devPrivates[RACGCIndex].ptr;
     Bool         ret;
 
+    DPRINT("RACCreateGC");
     SCREEN_PROLOG(CreateGC);
 
     ret = (*pScreen->CreateGC)(pGC);
@@ -664,6 +733,7 @@ RACValidateGC(
    DrawablePtr   pDraw )
 {
     GC_UNWRAP(pGC);
+    DPRINT("RACValidateGC");
     (*pGC->funcs->ValidateGC)(pGC, changes, pDraw);
     GC_WRAP(pGC);
 }
@@ -673,6 +743,7 @@ static void
 RACDestroyGC(GCPtr pGC)
 {
     GC_UNWRAP (pGC);
+    DPRINT("RACDestroyGC");
     (*pGC->funcs->DestroyGC)(pGC);
     GC_WRAP (pGC);
 }
@@ -683,6 +754,7 @@ RACChangeGC (
     unsigned long   mask)
 {
     GC_UNWRAP (pGC);
+    DPRINT("RACChangeGC");
     (*pGC->funcs->ChangeGC) (pGC, mask);
     GC_WRAP (pGC);
 }
@@ -694,6 +766,7 @@ RACCopyGC (
     GCPtr	    pGCDst)
 {
     GC_UNWRAP (pGCDst);
+    DPRINT("RACCopyGC");
     (*pGCDst->funcs->CopyGC) (pGCSrc, mask, pGCDst);
     GC_WRAP (pGCDst);
 }
@@ -706,6 +779,7 @@ RACChangeClip (
     int		nrects )
 {
     GC_UNWRAP (pGC);
+    DPRINT("RACChangeClip");
     (*pGC->funcs->ChangeClip) (pGC, type, pvalue, nrects);
     GC_WRAP (pGC);
 }
@@ -714,6 +788,7 @@ static void
 RACCopyClip(GCPtr pgcDst, GCPtr pgcSrc)
 {
     GC_UNWRAP (pgcDst);
+    DPRINT("RACCopyClip");
     (* pgcDst->funcs->CopyClip)(pgcDst, pgcSrc);
     GC_WRAP (pgcDst);
 }
@@ -722,6 +797,7 @@ static void
 RACDestroyClip(GCPtr pGC)
 {
     GC_UNWRAP (pGC);
+    DPRINT("RACDestroyClip");
     (* pGC->funcs->DestroyClip)(pGC);
     GC_WRAP (pGC);
 }
@@ -737,6 +813,7 @@ RACFillSpans(
     int fSorted )
 {
     GC_UNWRAP(pGC);
+    DPRINT("RACFillSpans");
     ENABLE_GC;
     (*pGC->ops->FillSpans)(pDraw, pGC, nInit, pptInit, pwidthInit, fSorted);
     GC_WRAP(pGC);
@@ -753,6 +830,7 @@ RACSetSpans(
     int			fSorted )
 {
     GC_UNWRAP(pGC);
+    DPRINT("RACSetSpans");
     ENABLE_GC;
     (*pGC->ops->SetSpans)(pDraw, pGC, pcharsrc, ppt, pwidth, nspans, fSorted);
     GC_WRAP(pGC);
@@ -769,6 +847,7 @@ RACPutImage(
     char 	*pImage )
 {
     GC_UNWRAP(pGC);
+    DPRINT("RACPutImage");
     ENABLE_GC;
     (*pGC->ops->PutImage)(pDraw, pGC, depth, x, y, w, h, 
 			  leftPad, format, pImage);
@@ -787,6 +866,7 @@ RACCopyArea(
     RegionPtr ret;
 
     GC_UNWRAP(pGC);
+    DPRINT("RACCopyArea");
     if ((pSrc == DRAWABLE_WINDOW) || (pDst == DRAWABLE_WINDOW)) {
 	ENABLE_GC;
     }
@@ -809,6 +889,7 @@ RACCopyPlane(
     RegionPtr ret;
 
     GC_UNWRAP(pGC);
+    DPRINT("RACCopyPlane");
     if ((pSrc == DRAWABLE_WINDOW) || (pDst == DRAWABLE_WINDOW)) {
 	ENABLE_GC;
     }
@@ -827,6 +908,7 @@ RACPolyPoint(
     xPoint *pptInit )
 {
     GC_UNWRAP(pGC);
+    DPRINT("RACPolyPoint");
     ENABLE_GC;
     (*pGC->ops->PolyPoint)(pDraw, pGC, mode, npt, pptInit);
     GC_WRAP(pGC);
@@ -842,6 +924,7 @@ RACPolylines(
     DDXPointPtr pptInit )
 {
     GC_UNWRAP(pGC);
+    DPRINT("RACPolylines");
     ENABLE_GC;
     (*pGC->ops->Polylines)(pDraw, pGC, mode, npt, pptInit);
     GC_WRAP(pGC);
@@ -855,6 +938,7 @@ RACPolySegment(
     xSegment	*pSeg )
 {
     GC_UNWRAP(pGC);
+    DPRINT("RACPolySegment");
     ENABLE_GC;
     (*pGC->ops->PolySegment)(pDraw, pGC, nseg, pSeg);
     GC_WRAP(pGC);
@@ -868,6 +952,7 @@ RACPolyRectangle(
     xRectangle  *pRectsInit )
 {
     GC_UNWRAP(pGC);
+    DPRINT("RACPolyRectangle");
     ENABLE_GC;
     (*pGC->ops->PolyRectangle)(pDraw, pGC, nRectsInit, pRectsInit);
     GC_WRAP(pGC);
@@ -881,6 +966,7 @@ RACPolyArc(
     xArc	*parcs )
 {
     GC_UNWRAP(pGC);
+    DPRINT("RACPolyArc");
     ENABLE_GC;
     (*pGC->ops->PolyArc)(pDraw, pGC, narcs, parcs);
     GC_WRAP(pGC);
@@ -896,6 +982,7 @@ RACFillPolygon(
     DDXPointPtr	ptsIn )
 {
     GC_UNWRAP(pGC);
+    DPRINT("RACFillPolygon");
     ENABLE_GC;
     (*pGC->ops->FillPolygon)(pDraw, pGC, shape, mode, count, ptsIn);
     GC_WRAP(pGC);
@@ -910,6 +997,7 @@ RACPolyFillRect(
     xRectangle	*prectInit )  
 {
     GC_UNWRAP(pGC);
+    DPRINT("RACPolyFillRect");
     ENABLE_GC;
     (*pGC->ops->PolyFillRect)(pDraw, pGC, nrectFill, prectInit);
     GC_WRAP(pGC);
@@ -924,6 +1012,7 @@ RACPolyFillArc(
     xArc	*parcs )
 {
     GC_UNWRAP(pGC);
+    DPRINT("RACPolyFillArc");
     ENABLE_GC;
     (*pGC->ops->PolyFillArc)(pDraw, pGC, narcs, parcs);
     GC_WRAP(pGC);
@@ -941,6 +1030,7 @@ RACPolyText8(
     int ret;
 
     GC_UNWRAP(pGC);
+    DPRINT("RACPolyText8");
     ENABLE_GC;
     ret = (*pGC->ops->PolyText8)(pDraw, pGC, x, y, count, chars);
     GC_WRAP(pGC);
@@ -959,6 +1049,7 @@ RACPolyText16(
     int ret;
 
     GC_UNWRAP(pGC);
+    DPRINT("RACPolyText16");
     ENABLE_GC;
     ret = (*pGC->ops->PolyText16)(pDraw, pGC, x, y, count, chars);
     GC_WRAP(pGC);
@@ -975,6 +1066,7 @@ RACImageText8(
     char	*chars )
 {
     GC_UNWRAP(pGC);
+    DPRINT("RACImageText8");
     ENABLE_GC;
     (*pGC->ops->ImageText8)(pDraw, pGC, x, y, count, chars);
     GC_WRAP(pGC);
@@ -990,6 +1082,7 @@ RACImageText16(
     unsigned short *chars )
 {
     GC_UNWRAP(pGC);
+    DPRINT("RACImageText16");
     ENABLE_GC;
     (*pGC->ops->ImageText16)(pDraw, pGC, x, y, count, chars);
     GC_WRAP(pGC);
@@ -1006,6 +1099,7 @@ RACImageGlyphBlt(
     pointer pglyphBase )
 {
     GC_UNWRAP(pGC);
+    DPRINT("RACImageGlyphBlt");
     ENABLE_GC;
     (*pGC->ops->ImageGlyphBlt)(pDraw, pGC, xInit, yInit,
 			       nglyph, ppci, pglyphBase);
@@ -1022,6 +1116,7 @@ RACPolyGlyphBlt(
     pointer pglyphBase )
 {
     GC_UNWRAP(pGC);
+    DPRINT("RACPolyGlyphBlt");
     ENABLE_GC;
     (*pGC->ops->PolyGlyphBlt)(pDraw, pGC, xInit, yInit,
 			      nglyph, ppci, pglyphBase);
@@ -1036,7 +1131,50 @@ RACPushPixels(
     int	dx, int dy, int xOrg, int yOrg )
 {
     GC_UNWRAP(pGC);
+    DPRINT("RACPushPixels");
     ENABLE_GC;
     (*pGC->ops->PushPixels)(pGC, pBitMap, pDraw, dx, dy, xOrg, yOrg);
     GC_WRAP(pGC);
+}
+
+
+/* miSpriteFuncs */
+static Bool
+RACSpriteRealizeCursor(ScreenPtr pScreen, CursorPtr pCur)
+{
+    Bool val;
+    SPRITE_PROLOG;
+    DPRINT("RACSpriteRealizeCursor");
+    val = PointPriv->spriteFuncs->RealizeCursor(pScreen, pCur);
+    SPRITE_EPILOG;
+    return val;
+}
+
+static Bool
+RACSpriteUnrealizeCursor(ScreenPtr pScreen, CursorPtr pCur)
+{
+    Bool val;
+    SPRITE_PROLOG;
+    DPRINT("RACSpriteUnrealizeCursor");
+    val = PointPriv->spriteFuncs->UnrealizeCursor(pScreen, pCur);
+    SPRITE_EPILOG;
+    return val;
+}
+
+static void
+RACSpriteSetCursor(ScreenPtr pScreen, CursorPtr pCur, int x, int y)
+{
+    SPRITE_PROLOG;
+    DPRINT("RACSpriteSetCursor");
+    PointPriv->spriteFuncs->SetCursor(pScreen, pCur, x, y);
+    SPRITE_EPILOG;
+}
+
+static void
+RACSpriteMoveCursor(ScreenPtr pScreen, int x, int y)
+{
+    SPRITE_PROLOG;
+    DPRINT("RACSpriteMoveCursor");
+    PointPriv->spriteFuncs->MoveCursor(pScreen, x, y);
+    SPRITE_EPILOG;
 }

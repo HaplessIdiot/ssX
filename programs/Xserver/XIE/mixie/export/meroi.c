@@ -66,14 +66,13 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. August, 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/export/meroi.c,v 3.1 1996/08/20 13:16:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/export/meroi.c,v 3.2 1998/10/04 09:36:08 dawes Exp $ */
 
 #define _XIEC_MEROI
 
 /*
  *  Include files
  */
-#include <stdio.h>
 /*
  *  Core X Includes
  */

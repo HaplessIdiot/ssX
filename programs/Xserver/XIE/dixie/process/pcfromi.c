@@ -66,7 +66,7 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. June 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pcfromi.c,v 3.0 1996/03/29 22:10:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pcfromi.c,v 3.1 1998/10/04 09:35:39 dawes Exp $ */
 
 #define _XIEC_PCFROMI
 #define _XIEC_PCI
@@ -74,7 +74,6 @@ terms and conditions:
 /*
  *  Include files
  */
-#include <stdio.h>
   /*
    *  Core X Includes
    */

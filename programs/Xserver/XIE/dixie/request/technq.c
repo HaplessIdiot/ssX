@@ -64,7 +64,7 @@ terms and conditions:
 
 	Dean Verheiden  AGE Logic, Inc.  April 1993
 ****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/request/technq.c,v 3.2 1998/07/25 08:05:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/technq.c,v 3.3 1998/10/04 09:35:55 dawes Exp $ */
 
 #define _XIEC_TECHNQ
 
@@ -109,10 +109,6 @@ terms and conditions:
 #include <macro.h>
 #include <memory.h>
 #include <technq.h>
-
-#ifndef XFree86LOADER
-#include <stdio.h>
-#endif
 
 /*
  *  Xie protocol proceedures called from the dispatcher

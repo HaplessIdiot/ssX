@@ -1,15 +1,9 @@
-/* $XConsortium: InitExt.c,v 11.32 94/04/17 20:20:00 rws Exp $ */
+/* $TOG: InitExt.c /main/23 1998/02/06 17:37:56 kaleb $ */
 /*
 
-Copyright (c) 1987  X Consortium
+Copyright 1987, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,15 +11,15 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
 
@@ -119,6 +113,7 @@ XAddToExtensionList(structure, ext_data)
 {
     ext_data->next = *structure;
     *structure = ext_data;
+    return 1;
 }
 
 XExtData *XFindOnExtensionList(structure, number)
@@ -132,14 +127,6 @@ XExtData *XFindOnExtensionList(structure, number)
 	ext = ext->next;
     return ext;
 }
-
-typedef int (*CreateGCType) (
-#if NeedFunctionPrototypes
-    Display*	/* display */,
-    GC		/* gc */,
-    XExtCodes*	/* codes */
-#endif
-);
 
 /*
  * Routines to hang procs on the extension structure.
@@ -159,14 +146,6 @@ CreateGCType XESetCreateGC(dpy, extension, proc)
 	return (CreateGCType)oldproc;
 }
 
-typedef int (*CopyGCType)(
-#if NeedFunctionPrototypes
-    Display*	/* display */,
-    GC		/* gc */,
-    XExtCodes*	/* codes */
-#endif
-);
-
 CopyGCType XESetCopyGC(dpy, extension, proc)
 	Display *dpy;		/* display */
 	int extension;		/* extension number */
@@ -181,14 +160,6 @@ CopyGCType XESetCopyGC(dpy, extension, proc)
 	UnlockDisplay(dpy);
 	return (CopyGCType)oldproc;
 }
-
-typedef int (*FlushGCType) (
-#if NeedFunctionPrototypes
-    Display*	/* display */,
-    GC		/* gc */,
-    XExtCodes*	/* codes */
-#endif
-);
 
 FlushGCType XESetFlushGC(dpy, extension, proc)
 	Display *dpy;		/* display */
@@ -205,14 +176,6 @@ FlushGCType XESetFlushGC(dpy, extension, proc)
 	return (FlushGCType)oldproc;
 }
 
-typedef int (*FreeGCType) (
-#if NeedFunctionPrototypes
-    Display*	/* display */,
-    GC		/* gc */,
-    XExtCodes*	/* codes */
-#endif
-);
-
 FreeGCType XESetFreeGC(dpy, extension, proc)
 	Display *dpy;		/* display */
 	int extension;		/* extension number */
@@ -227,14 +190,6 @@ FreeGCType XESetFreeGC(dpy, extension, proc)
 	UnlockDisplay(dpy);
 	return (FreeGCType)oldproc;
 }
-
-typedef int (*CreateFontType) (
-#if NeedFunctionPrototypes
-    Display*	/* display */,
-    XFontStruct* /* fs */,
-    XExtCodes*	/* codes */
-#endif
-);
 
 CreateFontType XESetCreateFont(dpy, extension, proc)
 	Display *dpy;		/* display */
@@ -251,14 +206,6 @@ CreateFontType XESetCreateFont(dpy, extension, proc)
 	return (CreateFontType)oldproc;
 }
 
-typedef int (*FreeFontType) (
-#if NeedFunctionPrototypes
-    Display*	/* display */,
-    XFontStruct* /* fs */,
-    XExtCodes*	/* codes */
-#endif
-);
-
 FreeFontType XESetFreeFont(dpy, extension, proc)
 	Display *dpy;		/* display */
 	int extension;		/* extension number */
@@ -273,13 +220,6 @@ FreeFontType XESetFreeFont(dpy, extension, proc)
 	UnlockDisplay(dpy);
 	return (FreeFontType)oldproc;
 }
-
-typedef int (*CloseDisplayType) (
-#if NeedFunctionPrototypes
-    Display*	/* display */,
-    XExtCodes*	/* codes */
-#endif
-);
 
 CloseDisplayType XESetCloseDisplay(dpy, extension, proc)
 	Display *dpy;		/* display */
@@ -370,15 +310,6 @@ WireToErrorType XESetWireToError(dpy, error_number, proc)
 	return (WireToErrorType)oldproc;
 }
 
-typedef int (*ErrorType) (
-#if NeedFunctionPrototypes
-    Display*	/* display */,
-    xError*	/* err */,
-    XExtCodes*	/* codes */,
-    int*	/* ret_code */
-#endif
-);
-
 ErrorType XESetError(dpy, extension, proc)
 	Display *dpy;		/* display */
 	int extension;		/* extension number */
@@ -393,16 +324,6 @@ ErrorType XESetError(dpy, extension, proc)
 	UnlockDisplay(dpy);
 	return (ErrorType)oldproc;
 }
-
-typedef char* (*ErrorStringType) (
-#if NeedFunctionPrototypes
-    Display*	/* display */,
-    int		/* code */,
-    XExtCodes*	/* codes */,
-    char*	/* buffer */,
-    int		/* nbytes */
-#endif
-);
 
 ErrorStringType XESetErrorString(dpy, extension, proc)
 	Display *dpy;		/* display */
@@ -419,14 +340,6 @@ ErrorStringType XESetErrorString(dpy, extension, proc)
 	return (ErrorStringType)oldproc;
 }
 
-typedef void (*PrintErrorType)(
-#if NeedFunctionPrototypes
-    Display*	/* display */,
-    XErrorEvent* /* ev */,
-    void*	/* fp */
-#endif
-);
-
 PrintErrorType XESetPrintErrorValues(dpy, extension, proc)
 	Display *dpy;		/* display */
 	int extension;		/* extension number */
@@ -441,15 +354,6 @@ PrintErrorType XESetPrintErrorValues(dpy, extension, proc)
 	UnlockDisplay(dpy);
 	return (PrintErrorType)oldproc;
 }
-
-typedef void (*BeforeFlushType)(
-#if NeedFunctionPrototypes
-    Display*	/* display */,
-    XExtCodes*	/* codes */,
-    char*	/* data */,
-    long	/* len */
-#endif
-);
 
 BeforeFlushType XESetBeforeFlush(dpy, extension, proc)
 	Display *dpy;		/* display */

@@ -61,14 +61,13 @@ terms and conditions:
      Title to this software shall at all times remain with AGE
      Logic, Inc.
 ****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/request/error.c,v 3.0 1996/03/29 22:11:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/error.c,v 3.1 1998/10/04 09:35:50 dawes Exp $ */
 
 #define _XIEC_ERROR
 
 /*
  *  Include files
  */
-#include <stdio.h>
 /*
  *  Core X Includes
  */
@@ -95,25 +94,13 @@ terms and conditions:
 /*
  *  routines referenced by other modules.
  */
-int	SendResourceError();
-int	SendFloIDError();
-int	SendFloError();
-void	FloError();
-void	ErrGeneric();
-void	ErrResource();
-void	ErrDomain();
-void	ErrOperator();
-void	ErrTechnique();
-void	ErrValue();
 
 
 /*------------------------------------------------------------------------
 -------------------------- Send Resource Error ---------------------------
 ------------------------------------------------------------------------*/
-int SendResourceError(client, code, id)
-     ClientPtr client;
-     CARD8     code;
-     XID       id;
+int
+SendResourceError(ClientPtr client, CARD8 code, XID id)
 {
   xieResourceErr err;
   REQUEST(xieReq);
@@ -143,10 +130,8 @@ int SendResourceError(client, code, id)
 /*------------------------------------------------------------------------
 ----------------------------- Send FloID Error ---------------------------
 ------------------------------------------------------------------------*/
-int SendFloIDError(client, spaceID, floID)
-     ClientPtr client;
-     XID spaceID;
-     XID floID;
+int
+SendFloIDError(ClientPtr client, XID spaceID, XID floID)
 {
   xieFloIDErr err;
   REQUEST(xieReq);
@@ -179,9 +164,8 @@ int SendFloIDError(client, spaceID, floID)
 /*------------------------------------------------------------------------
 ----------------------------- Send Flo Error -----------------------------
 ------------------------------------------------------------------------*/
-int SendFloError(client, flo)
-     ClientPtr client;
-     floDefPtr flo;
+int
+SendFloError(ClientPtr client, floDefPtr flo)
 {
   int status = Success;
   register int n;
@@ -264,57 +248,42 @@ int SendFloError(client, flo)
 /*------------------------------------------------------------------------
 -------------- Convenience routines for setting Flo Errors ---------------
 ------------------------------------------------------------------------*/
-void FloError(flo,tag,type,code)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     CARD16         type;
-     CARD8          code;
+void
+FloError(floDefPtr flo, xieTypPhototag tag, CARD16 type, CARD8 code)
 {
   ferrError(flo,tag,type,code);
 }
 
-void ErrGeneric(flo,ped,code)
-     floDefPtr flo;
-     peDefPtr  ped;
-     CARD8     code;
+void
+ErrGeneric(floDefPtr flo, peDefPtr ped, CARD8 code)
 {
   ferrError(flo,ped->phototag,ped->elemRaw->elemType,code);
 }
 
-void ErrResource(flo,ped,code,id)
-     floDefPtr flo;
-     peDefPtr  ped;
-     CARD8     code;
-     CARD32    id;
+void
+ErrResource(floDefPtr flo, peDefPtr ped, CARD8 code, CARD32 id)
 {
   ferrError(flo,ped->phototag,ped->elemRaw->elemType,code);
   ((xieFloResourceErr *)(&flo->error))->resourceID = id;
 }
 
-void ErrDomain(flo,ped,domain)
-     floDefPtr flo;
-     peDefPtr  ped;
-     xieTypPhototag domain;
+void
+ErrDomain(floDefPtr flo, peDefPtr ped, xieTypPhototag domain)
 {
   ferrError(flo,ped->phototag,ped->elemRaw->elemType,xieErrNoFloDomain);
   ((xieFloDomainErr *)(&flo->error))->domainSrc = domain;
 }
 
-void ErrOperator(flo,ped,operator)
-     floDefPtr flo;
-     peDefPtr  ped;
-     CARD8     operator;
+void
+ErrOperator(floDefPtr flo, peDefPtr ped, CARD8 operator)
 {
   ferrError(flo,ped->phototag,ped->elemRaw->elemType,xieErrNoFloOperator);
   ((xieFloOperatorErr *)(&flo->error))->operator = operator;
 }
 
-void ErrTechnique(flo,ped,group,tech,lenParams)
-     floDefPtr flo;
-     peDefPtr  ped;
-     CARD8     group;
-     CARD16    tech;
-     CARD16    lenParams;
+void
+ErrTechnique(floDefPtr flo, peDefPtr ped, CARD8 group, CARD16 tech,
+	     CARD16 lenParams)
 {
   ferrError(flo,ped->phototag,ped->elemRaw->elemType,xieErrNoFloTechnique);
   ((xieFloTechniqueErr *)(&flo->error))->techniqueGroup  = group;
@@ -322,10 +291,8 @@ void ErrTechnique(flo,ped,group,tech,lenParams)
   ((xieFloTechniqueErr *)(&flo->error))->lenTechParams   = lenParams;
 }
 
-void ErrValue(flo,ped,value)
-     floDefPtr flo;
-     peDefPtr  ped;
-     CARD32    value;
+void
+ErrValue(floDefPtr flo, peDefPtr ped, CARD32 value)
 {
   ferrError(flo,ped->phototag,ped->elemRaw->elemType,xieErrNoFloValue);
   ((xieFloValueErr *)(&flo->error))->badValue = value;

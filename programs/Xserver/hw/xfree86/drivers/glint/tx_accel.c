@@ -28,7 +28,7 @@
  * 
  * GLINT 500TX / MX accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_accel.c,v 1.5 1998/08/20 08:56:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_accel.c,v 1.6 1998/10/04 14:35:54 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -228,7 +228,9 @@ TXAccelInit(ScreenPtr pScreen)
         infoPtr->WriteBitmap = TXWriteBitmap;
         infoPtr->WritePixmap = TXWritePixmap;
         infoPtr->TEGlyphRenderer = TXTEGlyphRenderer;
+#if 0
         infoPtr->NonTEGlyphRenderer = TXNonTEGlyphRenderer;
+#endif
         infoPtr->FillColorExpandRects = TXFillColorExpandRects;
         infoPtr->FillColorExpandSpans = TXFillColorExpandSpans;
     }
@@ -932,6 +934,7 @@ TXTEGlyphRenderer(
     SET_SYNC_FLAG(infoRec);
 }
 
+#if 0
 static void 
 TXNonTEGlyphRenderer(
     ScrnInfoPtr pScrn,
@@ -956,17 +959,16 @@ TXNonTEGlyphRenderer(
 					pScrn, xText, y, wText, h, 0);
 
    	while(h--) {
-#if 0 /* XXX FIX THIS! */
 	    XAANonTEGlyphScanlineFuncLSBFirst(
 		(CARD32*)infoRec->ColorExpandBase, 
 		glyphp, startline++, wText, skipleft);
-#endif
 
     	}
     }
 
     SET_SYNC_FLAG(infoRec);
 }
+#endif
 
 static void 
 TXWritePixmap(

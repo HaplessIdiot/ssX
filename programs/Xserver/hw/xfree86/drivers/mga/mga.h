@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.22 1998/09/20 08:39:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.24 1998/09/26 13:24:16 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -118,12 +118,14 @@ typedef struct {
     long		FbUsableSize;
     long		FbCursorOffset;
     MGARamdacRec	Dac;
+    Bool		HasSDRAM;
     Bool		NoAccel;
     Bool		SyncOnGreen;
     Bool		Dac6Bit;
     Bool		HWCursor;
     Bool		UsePCIRetry;
     Bool		ShowCache;
+    Bool		Overlay8Plus24;
     int			MemClk;
     int			MinClock;
     int			MaxClock;
@@ -143,6 +145,8 @@ typedef struct {
     int			StyleLen;
     XAAInfoRecPtr	AccelInfoRec;
     xf86CursorInfoPtr	CursorInfoRec;
+    CARD32		*Atype;
+    CARD32		*AtypeNoBLK;
     void		(*PreInit)(ScrnInfoPtr pScrn);
     void		(*Save)(ScrnInfoPtr, vgaRegPtr, MGARegPtr, Bool);
     void		(*Restore)(ScrnInfoPtr, vgaRegPtr, MGARegPtr, Bool);
@@ -159,7 +163,12 @@ extern CARD32 MGAAtypeNoBLK[16];
 #define BLK_OPAQUE_EXPANSION	0x00000008
 #define TRANSC_SOLID_FILL	0x00000010
 #define	NICE_DASH_PATTERN	0x00000020
+#define	TWO_PASS_COLOR_EXPAND	0x00000040
+#define	MGA_NO_PLANEMASK	0x00000080
 
+
+#define TRANSPARENCY_KEY	255
+#define KEY_COLOR		0
 
 /* Prototypes */
 

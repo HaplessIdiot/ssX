@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/cppsetup.c,v 3.2 1996/12/30 13:57:53 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/cppsetup.c,v 3.3 1998/10/02 06:15:21 dawes Exp $ */
 
 #include "def.h"
 
@@ -55,12 +55,10 @@ extern char	slotab[];
 struct filepointer	*currentfile;
 struct inclist		*currentinc;
 
-cppsetup(line, filep, inc)
-	register char	*line;
-	register struct filepointer	*filep;
-	register struct inclist		*inc;
+int
+cppsetup(char *line, struct filepointer *filep, struct inclist *inc)
 {
-	register char *p, savec;
+	char *p, savec;
 	static boolean setupdone = FALSE;
 	boolean	value;
 
@@ -128,10 +126,7 @@ struct _parse_data {
 };
 
 static const char *
-my_if_errors (ip, cp, expecting)
-    IfParser *ip;
-    const char *cp;
-    const char *expecting;
+my_if_errors (IfParser *ip, const char *cp, const char *expecting)
 {
     struct _parse_data *pd = (struct _parse_data *) ip->data;
     int lineno = pd->filep->f_line;
@@ -158,10 +153,7 @@ my_if_errors (ip, cp, expecting)
 #define MAXNAMELEN 256
 
 static struct symtab **
-lookup_variable (ip, var, len)
-    IfParser *ip;
-    const char *var;
-    int len;
+lookup_variable (IfParser *ip, const char *var, int len)
 {
     char tmpbuf[MAXNAMELEN + 1];
     struct _parse_data *pd = (struct _parse_data *) ip->data;
@@ -176,10 +168,7 @@ lookup_variable (ip, var, len)
 
 
 static int
-my_eval_defined (ip, var, len)
-    IfParser *ip;
-    const char *var;
-    int len;
+my_eval_defined (IfParser *ip, const char *var, int len)
 {
     if (lookup_variable (ip, var, len))
 	return 1;
@@ -190,10 +179,7 @@ my_eval_defined (ip, var, len)
 #define isvarfirstletter(ccc) (isalpha(ccc) || (ccc) == '_')
 
 static long
-my_eval_variable (ip, var, len)
-    IfParser *ip;
-    const char *var;
-    int len;
+my_eval_variable (IfParser *ip, const char *var, int len)
 {
     struct symtab **s;
 
@@ -210,11 +196,8 @@ my_eval_variable (ip, var, len)
     return strtol(var, NULL, 0);
 }
 
-
-cppsetup(line, filep, inc)
-	register char	*line;
-	register struct filepointer	*filep;
-	register struct inclist		*inc;
+int
+cppsetup(char *line, struct filepointer *filep, struct inclist *inc)
 {
     IfParser ip;
     struct _parse_data pd;

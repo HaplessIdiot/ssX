@@ -20,22 +20,28 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/parse.c,v 1.3 1997/01/12 10:39:45 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/parse.c,v 1.4 1998/10/02 06:15:23 dawes Exp $ */
 
 #include "def.h"
 
 extern char	*directives[];
 extern struct inclist	maininclist;
 
-int
-gobble(filep, file, file_red)
-	register struct filepointer *filep;
-	struct inclist		*file, *file_red;
-{
-	register char	*line;
-	register int	type;
+static int deftype (char *line, struct filepointer *filep,
+		    struct inclist *file_red, struct inclist *file,
+		    int parse_it);
+static int zero_value(char *exp, struct filepointer *filep,
+		    struct inclist *file_red);
+static int merge2defines(struct inclist *file1, struct inclist *file2);
 
-	while (line = getline(filep)) {
+static int
+gobble(struct filepointer *filep, struct inclist *file,
+       struct inclist *file_red)
+{
+	char	*line;
+	int	type;
+
+	while ((line = getline(filep))) {
 		switch(type = deftype(line, filep, file_red, file, FALSE)) {
 		case IF:
 		case IFFALSE:
@@ -82,11 +88,9 @@ gobble(filep, file, file_red)
 /*
  * Decide what type of # directive this line is.
  */
-int deftype (line, filep, file_red, file, parse_it)
-	register char	*line;
-	register struct filepointer *filep;
-	register struct inclist *file_red, *file;
-	int	parse_it;
+static int 
+deftype (char *line, struct filepointer *filep, 
+	     struct inclist *file_red, struct inclist *file, int parse_it)
 {
 	register char	*p;
 	char	*directive, savechar;
@@ -227,20 +231,18 @@ int deftype (line, filep, file_red, file, parse_it)
 	return(ret);
 }
 
-struct symtab **fdefined(symbol, file, srcfile)
-	register char	*symbol;
-	struct inclist	*file;
-	struct inclist	**srcfile;
+struct symtab **
+fdefined(char *symbol, struct inclist *file, struct inclist **srcfile)
 {
-	register struct inclist	**ip;
-	register struct symtab	**val;
-	register int	i;
+	struct inclist	**ip;
+	struct symtab	**val;
+	int	i;
 	static int	recurse_lvl = 0;
 
 	if (file->i_flags & DEFCHECKED)
 		return(NULL);
 	file->i_flags |= DEFCHECKED;
-	if (val = slookup(symbol, file))
+	if ((val = slookup(symbol, file)))
 		debug(1,("%s defined in %s as %s\n",
 			 symbol, file->i_file, (*val)->s_value));
 	if (val == NULL && file->i_list)
@@ -262,19 +264,17 @@ struct symtab **fdefined(symbol, file, srcfile)
 	return(val);
 }
 
-struct symtab **isdefined(symbol, file, srcfile)
-	register char	*symbol;
-	struct inclist	*file;
-	struct inclist	**srcfile;
+struct symtab **
+isdefined(char *symbol, struct inclist *file, struct inclist **srcfile)
 {
-	register struct symtab	**val;
+	struct symtab	**val;
 
-	if (val = slookup(symbol, &maininclist)) {
+	if ((val = slookup(symbol, &maininclist))) {
 		debug(1,("%s defined on command line\n", symbol));
 		if (srcfile != NULL) *srcfile = &maininclist;
 		return(val);
 	}
-	if (val = fdefined(symbol, file, srcfile))
+	if ((val = fdefined(symbol, file, srcfile)))
 		return(val);
 	debug(1,("%s not defined in %s\n", symbol, file->i_file));
 	return(NULL);
@@ -283,11 +283,8 @@ struct symtab **isdefined(symbol, file, srcfile)
 /*
  * Return type based on if the #if expression evaluates to 0
  */
-int
-zero_value(exp, filep, file_red)
-	register char	*exp;
-	register struct filepointer *filep;
-	register struct inclist *file_red;
+static int
+zero_value(char *exp, struct filepointer *filep, struct inclist *file_red)
 {
 	if (cppsetup(exp, filep, file_red))
 	    return(IFFALSE);
@@ -296,9 +293,7 @@ zero_value(exp, filep, file_red)
 }
 
 void
-define2(name, val, file)
-	char	*name, *val;
-	struct inclist	*file;
+define2(char *name, char *val, struct inclist *file)
 {
     int first, last, below;
     register struct symtab **sp = NULL, **dest;
@@ -380,9 +375,7 @@ define2(name, val, file)
 }
 
 void
-define(def, file)
-	char	*def;
-	struct inclist	*file;
+define(char *def, struct inclist *file)
 {
     char *val;
 
@@ -400,9 +393,8 @@ define(def, file)
     define2(def, val, file);
 }
 
-struct symtab **slookup(symbol, file)
-	register char	*symbol;
-	register struct inclist	*file;
+struct symtab **
+slookup(char *symbol, struct inclist *file)
 {
 	register int first = 0;
 	register int last = file->i_ndefs - 1;
@@ -440,9 +432,8 @@ struct symtab **slookup(symbol, file)
 	return(NULL);
 }
 
-int merge2defines(file1, file2)
-	struct inclist	*file1;
-	struct inclist	*file2;
+static int 
+merge2defines(struct inclist *file1, struct inclist *file2)
 {
 	if ((file1!=NULL) && (file2!=NULL)) 
         {
@@ -499,9 +490,7 @@ int merge2defines(file1, file2)
 }
 
 void
-undefine(symbol, file)
-	char	*symbol;
-	register struct inclist	*file;
+undefine(char *symbol, struct inclist *file)
 {
 	register struct symtab **ptr;
 	struct inclist *srcfile;
@@ -514,17 +503,14 @@ undefine(symbol, file)
 }
 
 int
-find_includes(filep, file, file_red, recursion, failOK)
-	struct filepointer	*filep;
-	struct inclist		*file, *file_red;
-	int			recursion;
-	boolean			failOK;
+find_includes(struct filepointer *filep, struct inclist *file, 
+	      struct inclist *file_red, int recursion, boolean failOK)
 {
 	register char	*line;
 	register int	type;
 	boolean recfailOK;
 
-	while (line = getline(filep)) {
+	while ((line = getline(filep))) {
 		switch(type = deftype(line, filep, file_red, file, TRUE)) {
 		case IF:
 		doif:

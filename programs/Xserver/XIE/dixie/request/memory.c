@@ -67,14 +67,13 @@ terms and conditions:
 	Dean Verheiden, AGE Logic, Inc., April 1993
 
 ****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/request/memory.c,v 3.2 1997/02/18 10:50:50 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/memory.c,v 3.3 1998/10/04 09:35:52 dawes Exp $ */
 
 #define _XIEC_MEMORY
 
 /*
 **  Include files
 */
-#include <stdio.h>
 /*
  *  Core X Includes
  */
