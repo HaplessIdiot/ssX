@@ -449,18 +449,20 @@ architectures known to work on (e.g., Alpha, PPC), etc.
             ated) for those ViRGE chips, as well as the Trio3D and Trio3D/2X
             is provided by the XF86_SVGA server with the s3v driver.  Support
             (accelerated) for the Savage3D, Savage3D/MV, Savage4, Savage2000,
-            is provided by the XF86_SVGA server with the s3_savage driver
-            (CHECK: is this support Linux-only?).
+            is provided by the XF86_SVGA server with the s3_savage driver on
+            some OSes (Linux, *BSD).
 
       4.0.2:
             Support (accelerated) for the ViRGE, ViRGE/VX, ViRGE/DX,
             ViRGE/GX, ViRGE/GX2, ViRGE/MX, ViRGE/MX+, Trio3D and Trio3D/2X is
-            provided by the "s3virge" driver.  Support for the other S3
-            chipsets has not yet been ported.
+            provided by the "s3virge" driver.  Support (accelerated) for the
+            Savage3D, Savage3D/MV, Savage4, Savage2000, is provided by the
+            XF86_SVGA server with the savage driver.  Support for the other
+            S3 chipsets has not yet been ported.
 
       Summary:
-            Only the ViRGE and Trio3D chipsets are supported in 4.0.2.  All
-            of the other chipsets are only supported in 3.3.6.
+            Only the ViRGE, Trio3D and savage chipsets are supported in
+            4.0.2.  All of the other chipsets are only supported in 3.3.6.
 
 28.  Silicon Integrated Systems (SiS)
 
@@ -569,7 +571,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
       Summary:
             No Weitek chips are supported in 4.0.2.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.22 2000/12/12 17:01:59 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.24 2000/12/14 08:00:45 herrb Exp $
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/Status,v 1.17 2000/12/12 17:20:16 dawes Exp $
+$XFree86$
