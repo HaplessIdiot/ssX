@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.125 2004/04/05 00:13:51 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.126 2004/08/26 22:38:47 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -1622,17 +1622,21 @@ NVRestore(ScrnInfoPtr pScrn)
     NVPtr pNv = NVPTR(pScrn);
     NVRegPtr nvReg = &pNv->SavedReg;
 
+    NVLockUnlock(pNv, 0);
+
     if(pNv->twoHeads) {
         VGA_WR08(pNv->PCIO, 0x03D4, 0x44);
-        VGA_WR08(pNv->PCIO, 0x03D5, nvReg->crtcOwner);
+        VGA_WR08(pNv->PCIO, 0x03D5, pNv->CRTCnumber * 0x3);
         NVLockUnlock(pNv, 0);
     }
-
-    NVLockUnlock(pNv, 0);
 
     /* Only restore text mode fonts/text for the primary card */
     vgaHWProtect(pScrn, TRUE);
     NVDACRestore(pScrn, vgaReg, nvReg, pNv->Primary);
+    if(pNv->twoHeads) {
+        VGA_WR08(pNv->PCIO, 0x03D4, 0x44);
+        VGA_WR08(pNv->PCIO, 0x03D5, nvReg->crtcOwner);
+    }
     vgaHWProtect(pScrn, FALSE);
 }
 
@@ -1971,6 +1975,13 @@ NVSave(ScrnInfoPtr pScrn)
     NVRegPtr nvReg = &pNv->SavedReg;
     vgaHWPtr pVga = VGAHWPTR(pScrn);
     vgaRegPtr vgaReg = &pVga->SavedReg;
+
+    NVLockUnlock(pNv, 0);
+    if(pNv->twoHeads) {
+        VGA_WR08(pNv->PCIO, 0x03D4, 0x44);
+        VGA_WR08(pNv->PCIO, 0x03D5, pNv->CRTCnumber * 0x3);
+        NVLockUnlock(pNv, 0);
+    }
 
     NVDACSave(pScrn, vgaReg, nvReg, pNv->Primary);
 }

@@ -37,7 +37,7 @@
 |*                                                                           *|
  \***************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.39 2004/03/13 22:07:06 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.40 2004/03/20 01:52:16 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -270,8 +270,6 @@ NVDACSave(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, NVRegPtr nvReg,
 #if defined(__powerpc__)
     saveFonts = FALSE;
 #endif
-
-    NVLockUnlock(pNv, 0);
 
     vgaHWSave(pScrn, vgaReg, VGA_SR_CMAP | VGA_SR_MODE | 
                              (saveFonts? VGA_SR_FONTS : 0));
