@@ -33,7 +33,7 @@ typedef unsigned long	PictFormat;
 
 #define RENDER_NAME	"RENDER"
 #define RENDER_MAJOR	0
-#define RENDER_MINOR	2
+#define RENDER_MINOR	3
 
 #define X_RenderQueryVersion		    0
 #define X_RenderQueryPictFormats	    1
