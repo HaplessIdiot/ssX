@@ -1,4 +1,5 @@
 XFree86 4.1.99.1 (xx June 2001)
+  31. Acceleration bug fixes for GLINT Permedia1 (Alan Hourihane).
   30. Ensure glint driver chips don't exceed the specified virtual sizes.
       (Alan Hourihane).
   29. ATI DGA changes (Patrick Chase and Marc La France):
@@ -13361,4 +13362,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1802 2001/05/25 02:44:31 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1803 2001/05/25 12:01:51 alanh Exp $

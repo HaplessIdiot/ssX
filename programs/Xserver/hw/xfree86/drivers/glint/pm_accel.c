@@ -28,7 +28,7 @@
  * 
  * Permedia accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_accel.c,v 1.20 2001/01/30 17:31:07 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_accel.c,v 1.21 2001/01/31 16:15:02 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -217,8 +217,7 @@ PermediaAccelInit(ScreenPtr pScreen)
     infoPtr->PolySegmentThinSolid = PermediaPolySegmentThinSolidWrapper;
     infoPtr->PolylinesThinSolid = PermediaPolylinesThinSolidWrapper;
   
-    infoPtr->ScreenToScreenCopyFlags = NO_TRANSPARENCY |
-				       ONLY_LEFT_TO_RIGHT_BITBLT; 
+    infoPtr->ScreenToScreenCopyFlags = NO_TRANSPARENCY;
 
     infoPtr->SetupForScreenToScreenCopy = PermediaSetupForScreenToScreenCopy;
     infoPtr->SubsequentScreenToScreenCopy = PermediaSubsequentScreenToScreenCopy;
@@ -240,14 +239,14 @@ PermediaAccelInit(ScreenPtr pScreen)
 #endif
 					       BIT_ORDER_IN_BYTE_LSBFIRST;
 
-    pGlint->XAAScanlineColorExpandBuffers[0] =
-	    xnfalloc(((pScrn->virtualX + 63)/32) *4* (pScrn->bitsPerPixel / 8));
-    pGlint->XAAScanlineColorExpandBuffers[1] =
-	    xnfalloc(((pScrn->virtualX + 63)/32) *4* (pScrn->bitsPerPixel / 8));
-
-    infoPtr->NumScanlineColorExpandBuffers = 2;
+    infoPtr->NumScanlineColorExpandBuffers = 1;
+    pGlint->ScratchBuffer                 = xalloc(((pScrn->virtualX+62)/32*4)
+					    + (pScrn->virtualX
+					    * pScrn->bitsPerPixel / 8));
     infoPtr->ScanlineColorExpandBuffers = 
 					pGlint->XAAScanlineColorExpandBuffers;
+    pGlint->XAAScanlineColorExpandBuffers[0] = 
+					pGlint->IOBase + OutputFIFO + 4;
 
     infoPtr->SetupForScanlineCPUToScreenColorExpandFill =
 			PermediaSetupForScanlineCPUToScreenColorExpandFill;
@@ -553,15 +552,11 @@ PermediaWriteBitmap(ScrnInfoPtr pScrn,
     register CARD32* pattern;
     int dobackground = 0;
 
-    skipleft = 0;
-
     w += skipleft;
     x -= skipleft;
     dwords = (w + 31) >> 5;
 
-#if 0
     PermediaSetClippingRectangle(pScrn, x+skipleft, y, x+w, y+h);
-#endif
 
     GLINT_WAIT(14);
     DO_PLANEMASK(planemask);
@@ -620,6 +615,7 @@ PermediaWriteBitmap(ScrnInfoPtr pScrn,
 	srcpntr += srcwidth;
     }    
 
+    PermediaDisableClipping(pScrn);
     SET_SYNC_FLAG(infoRec);	
 }
 
@@ -678,49 +674,59 @@ PermediaSubsequentScanlineCPUToScreenColorExpandFill(
     PermediaSetClippingRectangle(pScrn, x+skipleft, y, x+w, y+h);
 #endif
 
-    pGlint->cpucount = y;
-    pGlint->cpuheight = h;
+    pGlint->cpucount = h;
 
     GLINT_WAIT(6);
-    PermediaLoadCoord(pScrn, x<<16, y<<16, (x+w)<<16, 1, 0, 1<<16);
+    PermediaLoadCoord(pScrn, x<<16, y<<16, (x+w)<<16, h, 0, 1<<16);
+    GLINT_WRITE_REG(PrimitiveTrapezoid | pGlint->FrameBufferReadMode | SyncOnBitMask,
+							Render);
+#if defined(__alpha__)
+    if (0) /* force Alpha to use indirect always */
+#else
+    if ((pGlint->dwords*h) < pGlint->FIFOSize)
+#endif
+    {
+	/* Turn on direct for less than 120 dword colour expansion */
+    	pGlint->XAAScanlineColorExpandBuffers[0] = pGlint->IOBase+OutputFIFO+4;
+	pGlint->ScanlineDirect = 1;
+    	GLINT_WRITE_REG(((pGlint->dwords*h)-1)<<16 | 0x0D, OutputFIFO);
+    	GLINT_WAIT(pGlint->dwords*h);
+    } else {
+	/* Use indirect for anything else */
+    	pGlint->XAAScanlineColorExpandBuffers[0] = pGlint->ScratchBuffer;
+	pGlint->ScanlineDirect   = 0;
+    }
+
+    pGlint->cpucount--;
 }
 
 static void
 PermediaSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
 {
-    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
     GLINTPtr pGlint = GLINTPTR(pScrn);
-    CARD32 *src;
+    CARD32 *srcp = (CARD32*)pGlint->XAAScanlineColorExpandBuffers[bufno];
     int dwords = pGlint->dwords;
 
-    GLINT_WAIT(7);
-    PermediaLoadCoord(pScrn, pGlint->startxdom, pGlint->cpucount<<16, pGlint->startxsub, 1, 0, 1<<16);
-
-    GLINT_WRITE_REG(PrimitiveTrapezoid | pGlint->FrameBufferReadMode | SyncOnBitMask,
-							Render);
-    dwords = pGlint->dwords;
-
-    src = (CARD32*)pGlint->XAAScanlineColorExpandBuffers[bufno];
-    while (dwords >= infoRec->ColorExpandRange) {
-    	GLINT_WAIT(infoRec->ColorExpandRange);
-    	GLINT_WRITE_REG((infoRec->ColorExpandRange - 2)<<16 | 0x0D, OutputFIFO);
-    	GLINT_MoveDWORDS((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
-		src, infoRec->ColorExpandRange - 1);
-    	dwords -= (infoRec->ColorExpandRange - 1);
-	src += (infoRec->ColorExpandRange - 1);
+    if (!pGlint->ScanlineDirect) {
+	while(dwords >= pGlint->FIFOSize) {
+	    GLINT_WAIT(pGlint->FIFOSize);
+            GLINT_WRITE_REG(((pGlint->FIFOSize - 2) << 16) | 0x0D, OutputFIFO);
+	    GLINT_MoveDWORDS(
+			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+	 		(CARD32*)srcp, pGlint->FIFOSize - 1);
+	    dwords -= pGlint->FIFOSize - 1;
+	    srcp += pGlint->FIFOSize - 1;
+	}
+	if(dwords) {
+	    GLINT_WAIT(dwords + 1);
+            GLINT_WRITE_REG(((dwords - 1) << 16) | 0x0D, OutputFIFO);
+	    GLINT_MoveDWORDS(
+			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+	 		(CARD32*)srcp, dwords);
+	}
     }
-    if (dwords) {
-    	GLINT_WAIT(dwords);
-    	GLINT_WRITE_REG((dwords - 1)<<16 | 0x0D, OutputFIFO);
-    	GLINT_MoveDWORDS((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
-		src,dwords);
-    }
-    pGlint->cpucount += 1;
-#if 0
-    if (pGlint->cpucount == (pGlint->cpuheight + 1))
-	CHECKCLIPPING;
-#endif
 }
+
 
 static void
 PermediaWritePixmap8bpp(
