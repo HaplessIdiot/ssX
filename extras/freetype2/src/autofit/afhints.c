@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include "afhints.h"
 
 #ifdef AF_DEBUG
@@ -290,7 +292,7 @@
      /* note that we don't need to free the segment and edge
       * buffers, since they're really within the hints->points array
       */
-      for ( dim = 0; dim < 2; dim++ )
+      for ( dim = AF_DIMENSION_HORZ; dim < AF_DIMENSION_MAX; dim++ )
       {
         AF_AxisHints  axis = &hints->axis[ dim ];
 
@@ -466,7 +468,7 @@
             point->flags = AF_FLAG_CUBIC;
             break;
           default:
-            point->flags = 0;
+            point->flags = AF_FLAG_NONE;
             ;
           }
         }
