@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.25 1999/12/13 23:42:57 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.30 2000/01/30 01:15:53 alanh Exp $ */
 
 #include "nv_include.h"
 
@@ -164,6 +164,23 @@ static const char *ramdacSymbols[] = {
     "xf86InitCursor",
     "xf86CreateCursorInfoRec",
     "xf86DestroyCursorInfoRec",
+    NULL
+};
+
+#define NVuseI2C 1
+
+static const char *ddcSymbols[] = {
+    "xf86PrintEDID",
+    "xf86DoEDID_DDC1",
+#if NVuseI2C
+    "xf86DoEDID_DDC2",
+#endif
+    NULL
+};
+
+static const char *i2cSymbols[] = {
+    "xf86CreateI2CBusRec",
+    "xf86I2CBusInit",
     NULL
 };
 
@@ -322,6 +339,7 @@ nvSetup(pointer module, pointer opts, int *errmaj, int *errmin)
          */
         LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols,
                           ramdacSymbols, shadowSymbols,
+                          i2cSymbols, ddcSymbols,
                           fbdevHWSymbols, int10Symbols, NULL);
 
         /*
@@ -601,6 +619,70 @@ NVValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
     DEBUG(xf86DrvMsg(scrnIndex, X_INFO, "NVValidMode\n"));
     /* HACK HACK HACK */
     return (MODE_OK);
+}
+
+/* Internally used */
+static xf86MonPtr
+NVdoDDC(ScrnInfoPtr pScrn)
+{
+    vgaHWPtr hwp;
+    NVPtr pNv;
+    NVRamdacPtr NVdac;
+    xf86MonPtr MonInfo = NULL;
+
+    hwp = VGAHWPTR(pScrn);
+    pNv = NVPTR(pScrn);
+    NVdac = &pNv->Dac;
+
+    /* Map the VGA memory when the primary video */
+    if (!pNv->Primary) {
+        /* XXX Need to write an NV mode ddc1SetSpeed */
+        if (pNv->DDC1SetSpeed == vgaHWddc1SetSpeed) {
+            pNv->DDC1SetSpeed = NULL;
+            xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2,
+                           "DDC1 disabled - chip not in VGA mode\n");
+        }
+    }
+
+    /* Save the current state */
+    NVSave(pScrn);
+
+    /* Enable access to extended registers */
+    RivaEnterLeave(pScrn, TRUE);
+
+    /* It is now safe to talk to the card */
+#if NVuseI2C
+    /* Initialize I2C bus - used by DDC if available */
+    if (pNv->i2cInit) {
+        pNv->i2cInit(pScrn);
+        ErrorF("I2C initialized on %p\n",pNv->I2C);
+    }
+    /* Read and output monitor info using DDC2 over I2C bus */
+    if (pNv->I2C) {
+        MonInfo = xf86DoEDID_DDC2(pScrn->scrnIndex,pNv->I2C);
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "I2C Monitor info: %p\n", MonInfo);
+
+        xf86PrintEDID(MonInfo);
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of I2C Monitor info\n\n");
+    }
+    if (!MonInfo)
+#endif /* NVuseI2C */
+        /* Read and output monitor info using DDC1 */
+        if (pNv->ddc1Read && pNv->DDC1SetSpeed) {
+            MonInfo = xf86DoEDID_DDC1(pScrn->scrnIndex, pNv->DDC1SetSpeed,
+                                      pNv->ddc1Read );
+            xf86DrvMsg(pScrn->scrnIndex, X_INFO, "DDC Monitor info: %p\n",
+                       MonInfo);
+            xf86PrintEDID( MonInfo );
+            xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of DDC Monitor info\n\n");
+        }
+
+    /* Restore previous state */
+    NVRestore(pScrn);
+
+    xf86SetDDCproperties(pScrn, MonInfo);
+
+    return MonInfo;
 }
 
 /* Mandatory */
@@ -990,6 +1072,36 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
                pScrn->videoRam);
 	
     pNv->FbMapSize = pScrn->videoRam * 1024;
+
+    /* Load DDC if we have the code to use it */
+    /* This gives us DDC1 */
+    if (pNv->ddc1Read || pNv->i2cInit) {
+        if (xf86LoadSubModule(pScrn, "ddc")) {
+            xf86LoaderReqSymLists(ddcSymbols, NULL);
+        } else {
+            /* ddc module not found, we can do without it */
+            pNv->ddc1Read = NULL;
+
+            /* Without DDC, we have no use for the I2C bus */
+            pNv->i2cInit = NULL;
+        }
+    }
+#if NVuseI2C
+    /* - DDC can use I2C bus */
+    /* Load I2C if we have the code to use it */
+    if (pNv->i2cInit) {
+        if ( xf86LoadSubModule(pScrn, "i2c") ) {
+            xf86LoaderReqSymLists(i2cSymbols,NULL);
+        } else {
+            /* i2c module not found, we can do without it */
+            pNv->i2cInit = NULL;
+            pNv->I2C = NULL;
+        }
+    }
+#endif /* NVuseI2C */
+
+    /* Read and print the Monitor DDC info */
+    pScrn->monitor->DDC = NVdoDDC(pScrn);
 
     /*
      * If the driver can do gamma correction, it should call xf86SetGamma()

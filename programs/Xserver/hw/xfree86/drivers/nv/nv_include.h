@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_include.h,v 1.2 1999/08/01 12:17:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_include.h,v 1.4 1999/10/31 23:54:39 mvojkovi Exp $ */
 
 #ifndef __NV_INCLUDE_H__
 #define __NV_INCLUDE_H__
@@ -48,6 +48,7 @@
 #include "vgaHW.h"
 
 #include "xf86Cursor.h"
+#include "xf86DDC.h"
 
 #include "region.h"
 

@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.1 1999/08/01 07:20:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.5 1999/11/05 19:16:58 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -151,15 +151,6 @@ NVDACRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, NVRegPtr nvReg,
 }
 
 /*
- * NVRamdacInit
- */
-void
-NVRamdacInit(ScrnInfoPtr pScrn)
-{
-    DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NVRamdacInit\n"));
-}
-
-/*
  * NVDACSave
  *
  * This function saves the video state.
@@ -193,5 +184,112 @@ NVDACLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
 	pVga->DAC[(index*3)+2] = colors[index].blue;
     }
     vgaHWRestore(pScrn, pVga, VGA_SR_CMAP);
+}
+
+/*
+ * DDC1 support only requires DDC_SDA_MASK,
+ * DDC2 support requires DDC_SDA_MASK and DDC_SCL_MASK
+ */
+#define DDC_SDA_READ_MASK  (1 << 3)
+#define DDC_SCL_READ_MASK  (1 << 2)
+#define DDC_SDA_WRITE_MASK (1 << 4)
+#define DDC_SCL_WRITE_MASK (1 << 5)
+
+static unsigned int
+NV_ddc1Read(ScrnInfoPtr pScrn)
+{
+    NVPtr pNv = NVPTR(pScrn);
+    unsigned char val;
+
+    /* wait for Vsync */
+    if(pNv->riva.Architecture == 3) {
+        while(inb(0x3DA) & 0x08); 
+        while(!(inb(0x3DA) & 0x08)); 
+    } else {
+        while(pNv->riva.PCRTC[0x202] & 0x00010000); 
+        while(!(pNv->riva.PCRTC[0x202] & 0x00010000));
+    }
+
+    /* Get the result */
+    outb(0x3d4, 0x3e);
+    val = inb(0x3d5);
+    DEBUG(ErrorF("NV_ddc1Read(%p,...) returns %d\n",
+                 pScrn, val));
+    return (val & DDC_SDA_READ_MASK) != 0;
+}
+
+static void
+NV_I2CGetBits(I2CBusPtr b, int *clock, int *data)
+{
+    unsigned char val;
+
+    /* Get the result. */
+    outb(0x3d4, 0x3e);
+    val = inb(0x3d5);
+
+    *clock = (val & DDC_SCL_READ_MASK) != 0;
+    *data  = (val & DDC_SDA_READ_MASK) != 0;
+    DEBUG(ErrorF("NV_I2CGetBits(%p,...) val=0x%x, returns clock %d, data %d\n",
+                 b, val, *clock, *data));
+}
+
+static void
+NV_I2CPutBits(I2CBusPtr b, int clock, int data)
+{
+    unsigned char val;
+
+    outb(0x3d4, 0x3f);
+    val = inb(0x3d5) & 0xf0;
+    if (clock)
+        val |= DDC_SCL_WRITE_MASK;
+    else
+        val &= ~DDC_SCL_WRITE_MASK;
+
+    if (data)
+        val |= DDC_SDA_WRITE_MASK;
+    else
+        val &= ~DDC_SDA_WRITE_MASK;
+
+    outb(0x3d4, 0x3f);
+    outb(0x3d5, val | 0x01);
+    
+    DEBUG(ErrorF("NV_I2CPutBits(%p, %d, %d) val=0x%x\n", b, clock, data, val));
+}
+
+static Bool
+NV_i2cInit(ScrnInfoPtr pScrn)
+{
+    NVPtr pNv = NVPTR(pScrn);
+    I2CBusPtr I2CPtr;
+
+    I2CPtr = xf86CreateI2CBusRec();
+    if(!I2CPtr) return FALSE;
+
+    pNv->I2C = I2CPtr;
+
+    I2CPtr->BusName    = "DDC";
+    I2CPtr->scrnIndex  = pScrn->scrnIndex;
+    I2CPtr->I2CPutBits = NV_I2CPutBits;
+    I2CPtr->I2CGetBits = NV_I2CGetBits;
+    I2CPtr->AcknTimeout = 5;
+
+    if (!xf86I2CBusInit(I2CPtr)) {
+        return FALSE;
+    }
+    return TRUE;
+}
+
+/*
+ * NVRamdacInit
+ */
+void
+NVRamdacInit(ScrnInfoPtr pScrn)
+{
+    NVPtr pNv = NVPTR(pScrn);
+    DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NVRamdacInit\n"));
+    pNv->ddc1Read = NV_ddc1Read;
+    /* vgaHWddc1SetSpeed will only work if the card is in VGA mode */
+    pNv->DDC1SetSpeed = vgaHWddc1SetSpeed;
+    pNv->i2cInit = NV_i2cInit;
 }
 
