@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.c,v 1.1 1997/06/25 08:25:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.c,v 1.2 1997/06/25 11:54:46 dawes Exp $ */
 
 
 
@@ -113,7 +113,7 @@ DLLoadModule(int modtype,
     }
     dlfile->handle = handle;
     dlfile->dlhandle = dlopen(modname, DLOPEN_FLAGS);
-    if (handle == NULL) {
+    if (handle == 0) {
 	ErrorF("dlopen: %s\n", dlerror());
 	free(dlfile);
 	return NULL;

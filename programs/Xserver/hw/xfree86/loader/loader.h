@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.6 1997/03/03 15:55:26 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.7 1997/06/25 08:25:04 hohndel Exp $ */
 
 
 
@@ -316,6 +316,11 @@ int
 void DLUnloadModule(
 #if NeedFunctionPrototypes
 void *
+#endif
+);
+void *DLFindSymbol(
+#if NeedFuncionPrototypes
+char *
 #endif
 );
 
