@@ -91,8 +91,12 @@ VidModeClose(int i, ScreenPtr pScreen)
 
     pScreen->CloseScreen = pVidMode->CloseScreen;
 
-    if (--VidModeCount == 0)
+    if (--VidModeCount == 0) {
+	if (pScreen->devPrivates[VidModeIndex].ptr)
+	  xfree(pScreen->devPrivates[VidModeIndex].ptr);
+	pScreen->devPrivates[VidModeIndex].ptr = NULL;
 	VidModeIndex = -1;
+    }
     return pScreen->CloseScreen(i, pScreen);
 }
 

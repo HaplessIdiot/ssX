@@ -1011,7 +1011,10 @@ xf86FBCloseScreen (int i, ScreenPtr pScreen)
    REGION_DESTROY(pScreen, offman->InitialBoxes);
    REGION_DESTROY(pScreen, offman->FreeBoxes);
 
+   xfree(offman->FreeBoxesUpdateCallback);
+   xfree(offman->devPrivates);
    xfree(offman);
+   pScreen->devPrivates[xf86FBScreenIndex].ptr = NULL;
 
    return (*pScreen->CloseScreen) (i, pScreen);
 }

@@ -985,28 +985,34 @@ configInputKbd(IDevPtr inputp)
 #else
      xf86Info.kbdEvents  = xf86KbdEvents;
 #endif
+     xfree(s);
   } else if (xf86NameCmp(s, "xqueue") == 0) {
 #ifdef XQUEUE
     xf86Info.kbdProc = xf86XqueKbdProc;
     xf86Info.kbdEvents = xf86XqueEvents;
     xf86Msg(X_CONFIG, "Xqueue selected for keyboard input\n");
 #endif
+    xfree(s);
 #ifdef WSCONS_SUPPORT
   } else if (xf86NameCmp(s, "wskbd") == 0) {
      int xf86WSKbdProc(DeviceIntPtr, int);
 
      xf86Info.kbdProc    = xf86WSKbdProc;
      xf86Info.kbdEvents  = xf86KbdEvents;
+     xfree(s);
      s = xf86SetStrOption(inputp->commonOptions, "Device", NULL);
      xf86Msg(X_CONFIG, "Keyboard: Protocol: wskbd\n");
      xf86Info.kbdFd = open(s, O_RDONLY | O_NONBLOCK | O_EXCL);
      if (xf86Info.kbdFd == -1) {
        xf86ConfigError("cannot open \"%s\"", s);
+       xfree(s);
        return FALSE;
      }
+     xfree(s);
 #endif
   } else {
     xf86ConfigError("\"%s\" is not a valid keyboard protocol name", s);
+    xfree(s);
     return FALSE;
   }
 
@@ -1014,9 +1020,12 @@ configInputKbd(IDevPtr inputp)
   if (s) {
     if (sscanf(s, "%d %d", &xf86Info.kbdDelay, &xf86Info.kbdRate) != 2) {
       xf86ConfigError("\"%s\" is not a valid AutoRepeat value", s);
+      xfree(s);
       return FALSE;
     }
+  xfree(s);
   }
+
   s = xf86SetStrOption(inputp->commonOptions, "XLeds", NULL);
   if (s) {
     char *l, *end;
@@ -1028,10 +1037,12 @@ configInputKbd(IDevPtr inputp)
 	xf86Info.xleds |= 1L << (i - 1);
       else {
 	xf86ConfigError("\"%s\" is not a valid XLeds value", l);
+	xfree(s);
 	return FALSE;
       }
       l = strtok(NULL, " \t\n");
     }
+    xfree(s);
   }
 
 #ifdef XKB
@@ -1046,7 +1057,7 @@ configInputKbd(IDevPtr inputp)
   if (noXkbExtension)
     xf86Msg(from, "XKB: disabled\n");
 
-#define NULL_IF_EMPTY(s) (s[0] ? s : NULL)
+#define NULL_IF_EMPTY(s) (s[0] ? s : (xfree(s), NULL))
 
   if (!noXkbExtension && !XkbInitialMap) {
     if ((s = xf86SetStrOption(inputp->commonOptions, "XkbKeymap", NULL))) {

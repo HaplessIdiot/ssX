@@ -1714,11 +1714,13 @@ xf86RegisterResources(int entityIndex, resList list, int access)
 {
     resPtr res = NULL;
     resRange range;
-    
+    resList list_f = NULL;
+
     if (!list) {
 	list = xf86GetResourcesImplicitly(entityIndex);
 	/* these resources have to be in host address space already */
 	if (!list) return NULL;
+	list_f = list;
     }
     
     while(list->type != ResEnd) {
@@ -1738,6 +1740,9 @@ xf86RegisterResources(int entityIndex, resList list, int access)
 	}
 	list++;
     }
+    if (list_f)
+      xfree(list_f);
+
 #ifdef DEBUG
     xf86MsgVerb(X_INFO, 3,"Resources after driver initialization\n");
     xf86PrintResList(3, Acc);
@@ -2077,6 +2082,8 @@ setAccess(EntityPtr pEnt, xf86State state)
  * xf86EnterServerState() -- set state the server is in.
  */
 
+typedef enum { TRI_UNSET, TRI_TRUE, TRI_FALSE } TriState;
+
 void
 xf86EnterServerState(xf86State state)
 {
@@ -2084,13 +2091,29 @@ xf86EnterServerState(xf86State state)
     ScrnInfoPtr pScrn;
     int i,j;
     resType rt;
+    static int sigio_state;
+    static TriState sigio_blocked = TRI_UNSET;
 
+    /* 
+     * This is a good place to block SIGIO during SETUP state.
+     * SIGIO should be blocked in SETUP state otherwise (u)sleep()
+     * might get interrupted early. 
+     * We take care not to call xf86BlockSIGIO() twice. 
+     */
+    if ((state == SETUP) && (sigio_blocked != TRI_TRUE)) {
+        sigio_state = xf86BlockSIGIO();
+	sigio_blocked = TRI_TRUE;
+    } else if ((state == OPERATING) && (sigio_blocked != TRI_UNSET)) {
+        xf86UnblockSIGIO(sigio_state);
+        sigio_blocked = TRI_FALSE;
+    }
 #ifdef DEBUG
     if (state == SETUP)
 	ErrorF("Entering SETUP state\n");
     else
 	ErrorF("Entering OPERATING state\n");
 #endif
+
     /* When servicing a dump framebuffer we don't need to do anything */
     if (doFramebufferMode) return;
 

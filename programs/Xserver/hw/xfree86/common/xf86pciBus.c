@@ -1595,7 +1595,9 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
     int MaxBus = 0;
     int i;
     memType base, limit;
-    
+
+    resPtr pciBusAccWindows = xf86PciBusAccWindowsFromOS();
+
     if (pciInfo == NULL) return NULL;
     
     /* Add each PCI-PCI bridge */
@@ -1719,11 +1721,11 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 		PciBus->subclass = sub_class;
 		PciBus->brcontrol = PCI_PCI_BRIDGE_VGA_EN;
 		PciBus->preferred_io = xf86ExtractTypeFromList(
-		    xf86PciBusAccWindowsFromOS(),ResIo);
+		    pciBusAccWindows,ResIo);
 		PciBus->preferred_mem = xf86ExtractTypeFromList(
-		    xf86PciBusAccWindowsFromOS(),ResMem);
+		    pciBusAccWindows,ResMem);
 		PciBus->preferred_pmem = xf86ExtractTypeFromList(
-		    xf86PciBusAccWindowsFromOS(),ResMem);
+		    pciBusAccWindows,ResMem);
 		xf86MsgVerb(X_INFO,3,"Host-to-PCI bridge:\n");
 		break;
 	    default:
@@ -1755,11 +1757,11 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 		PciBus->secondary = i;
 		PciBus->subclass = PCI_SUBCLASS_BRIDGE_HOST;
 		PciBus->preferred_io = xf86ExtractTypeFromList(
-		    xf86PciBusAccWindowsFromOS(),ResIo);
+		    pciBusAccWindows,ResIo);
 		PciBus->preferred_mem = xf86ExtractTypeFromList(
-		    xf86PciBusAccWindowsFromOS(),ResMem);
+		    pciBusAccWindows,ResMem);
 		PciBus->preferred_pmem = xf86ExtractTypeFromList(
-		    xf86PciBusAccWindowsFromOS(),ResMem);
+		    pciBusAccWindows,ResMem);
 		xf86MsgVerb(X_INFO,3,"Host-to-PCI bridge:\n");
 	    }
 	}
@@ -1790,6 +1792,7 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 	printBridgeInfo(PciBus);
     }
     
+    xf86FreeResList(pciBusAccWindows);
     return PciBusBase;
     
 }
@@ -2023,8 +2026,10 @@ ValidatePci(void)
 		if (xf86IsSubsetOf(range,res_m_io)
 		    && ! ChkConflict(&range,own,SETUP)
 		    && ! ChkConflict(&range,avoid,SETUP)
-		    && ! ChkConflict(&range,NonSys,SETUP))
+		    && ! ChkConflict(&range,NonSys,SETUP)) {
+		    xf86FreeResList(own);
 		    continue;
+		}
 		xf86MsgVerb(X_WARNING, 0,
 			"****INVALID IO ALLOCATION**** b: 0x%lx e: 0x%lx "
 			"correcting\a\n", range.rBegin,range.rEnd);
@@ -2038,14 +2043,18 @@ ValidatePci(void)
 		    if (xf86IsSubsetOf(range,res_mp)
 			&& ! ChkConflict(&range,own,SETUP)
 			&& ! ChkConflict(&range,avoid,SETUP)
-			&& ! ChkConflict(&range,NonSys,SETUP))
+			&& ! ChkConflict(&range,NonSys,SETUP)) {
+		        xf86FreeResList(own);
 			continue;
+		    }
 		}
 		if (xf86IsSubsetOf(range,res_m_io)
 		    && ! ChkConflict(&range,own,SETUP)
 		    && ! ChkConflict(&range,avoid,SETUP)
-		    && ! ChkConflict(&range,NonSys,SETUP))
+		    && ! ChkConflict(&range,NonSys,SETUP)) {
+		    xf86FreeResList(own);
 		    continue;
+		}
 		xf86MsgVerb(X_WARNING, 0,
 			"****INVALID MEM ALLOCATION**** b: 0x%lx e: 0x%lx "
 			"correcting\a\n", range.rBegin,range.rEnd);

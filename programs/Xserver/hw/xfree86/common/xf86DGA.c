@@ -266,7 +266,7 @@ DGASetDGAMode(
 	    pScreenPriv->current = NULL;
 	    pScrn->vtSema = TRUE;
 	    if(pScreenPriv->savedColormap) {
-		miInstalledMaps[index] = pScreenPriv->savedColormap;
+	        (*pScreen->InstallColormap)(pScreenPriv->savedColormap);
 		pScreenPriv->savedColormap = NULL;
 	    }
 	    pScreenPriv->dgaColormap = NULL;
@@ -644,6 +644,7 @@ DGAInstallCmap(ColormapPtr cmap)
 
     if(!pScreenPriv->dgaColormap) 
 	pScreenPriv->savedColormap = miInstalledMaps[pScreen->myNum];
+
     pScreenPriv->dgaColormap = cmap;    
 
     (*pScreen->InstallColormap)(cmap);
