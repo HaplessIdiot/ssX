@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.98 2002/12/24 17:42:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.100 2003/06/12 14:12:31 eich Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -423,23 +423,37 @@ __ustw (unsigned long r5, unsigned short * r11)
 #    define stq_u(v,p)	__ustq(v,p)
 #    define stl_u(v,p)	__ustl(v,p)
 #    define stw_u(v,p)	__ustw(v,p)
-  
-#    define mem_barrier()        __asm__ __volatile__ ("mf" ::: "memory")
-#    define write_mem_barrier()  __asm__ __volatile__ ("mf" ::: "memory")
+
+#    ifndef __INTEL_COMPILER  
+#      define mem_barrier()        __asm__ __volatile__ ("mf" ::: "memory")
+#      define write_mem_barrier()  __asm__ __volatile__ ("mf" ::: "memory")
+#    else
+#      include "ia64intrin.h"
+#      define mem_barrier() __mf()
+#      define write_mem_barrier() __mf()
+#    endif
 
 /*
  * This is overkill, but for different reasons depending on where it is used.
  * This is thus general enough to be used everywhere cache flushes are needed.
  * It doesn't handle memory access serialisation by other processors, though.
  */
-#    define ia64_flush_cache(Addr) \
+#    ifndef __INTEL_COMPILER
+#       define ia64_flush_cache(Addr) \
 	__asm__ __volatile__ ( \
 		"fc %0;;;" \
 		"sync.i;;;" \
 		"mf;;;" \
 		"srlz.i;;;" \
 		:: "r"(Addr) : "memory")
-
+#    else
+#      define ia64_flush_cache(Addr) { \
+        __fc(Addr);\
+        __synci();\
+        __mf();\
+        __isrlz();\
+       }
+#    endif
 #    undef outb
 #    undef outw
 #    undef outl

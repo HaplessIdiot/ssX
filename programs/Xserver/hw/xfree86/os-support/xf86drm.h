@@ -26,7 +26,7 @@
  *
  * Author: Rickard E. (Rik) Faith <faith@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.20 2002/12/12 22:17:35 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.22 2003/06/12 14:12:35 eich Exp $
  *
  */
 
@@ -325,15 +325,19 @@ do {	register unsigned int __old __asm("o0");		\
 
 #elif defined(__ia64__)
 
-#if 0
+#ifdef __INTEL_COMPILER
 /* this currently generates bad code (missing stop bits)... */
 #include <ia64intrin.h>
 
 #define DRM_CAS(lock,old,new,__ret)					      \
 	do {								      \
-		__ret = (__sync_val_compare_and_swap(&__drm_dummy_lock(lock), \
+		unsigned long __result, __old = (old) & 0xffffffff;		\
+		__mf();							      	\
+		__result = _InterlockedCompareExchange_acq(&__drm_dummy_lock(lock), (new), __old);\
+		__ret = (__result) != (__old);					\
+/*		__ret = (__sync_val_compare_and_swap(&__drm_dummy_lock(lock), \
 						     (old), (new))	      \
-			 != (old));					      \
+			 != (old));					      */\
 	} while (0)
 
 #else
