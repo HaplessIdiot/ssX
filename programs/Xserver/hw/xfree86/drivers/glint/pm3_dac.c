@@ -25,7 +25,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.6 2000/09/19 14:12:32 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.7 2000/10/17 09:07:05 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -349,6 +349,13 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
     if (!(mode->Flags & V_PVSYNC))
         pReg->DacRegs[PM2VDACRDSyncControl] |= 0x08; /* invert vsync */
 
+#if 0 /* Currently commented out while testing Flat Panel support */
+    pReg->DacRegs[PM2VDACRDDACControl] = 0x01;
+    pReg->DacRegs[PM2VDACRDSyncControl] |= 0x40;
+    pReg->glintRegs[VSConfiguration >> 3] = (GLINT_READ_REG(VSConfiguration) & 0xFFFFFFF8) | 0x06;
+    pReg->glintRegs[VSBBase >> 3] = 1<<14;
+#endif
+
     switch (pScrn->bitsPerPixel)
     {
     case 8:
@@ -412,6 +419,10 @@ Permedia3Save(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     glintReg->glintRegs[PMScreenBase >> 3] = GLINT_READ_REG(PMScreenBase);
     glintReg->glintRegs[PMVideoControl >> 3] = GLINT_READ_REG(PMVideoControl);
     glintReg->glintRegs[VClkCtl >> 3] = GLINT_READ_REG(VClkCtl);
+#if 0 /* Currently commented out while testing Flat Panel support */
+    glintReg->glintRegs[VSConfiguration >> 3] = GLINT_READ_REG(VSConfiguration);
+    glintReg->glintRegs[VSBBase >> 3] = GLINT_READ_REG(VSBBase);
+#endif
 
     for (i=0;i<768;i++) {
     	Permedia2ReadAddress(pScrn, i);
@@ -480,6 +491,10 @@ Permedia3Restore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMVbEnd >> 3], PMVbEnd);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMVsStart >> 3], PMVsStart);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMVsEnd >> 3], PMVsEnd);
+#if 0 /* Currently commented out while testing Flat Panel support */
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[VSConfiguration >> 3], VSConfiguration);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[VSBBase >> 3], VSBBase);
+#endif
 
     Permedia2vOutIndReg(pScrn, PM2VDACRDIndexControl, 0x00, 
 				glintReg->DacRegs[PM2VDACRDIndexControl]);
