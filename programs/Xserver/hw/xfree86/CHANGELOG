@@ -1,4 +1,5 @@
 XFree86 4.2.99.1 (XX March 2002)
+ 111. Fix usage of BuildBinTop in Cygwin/XFree86 (#5223, Harold Hunt).
  110. Implement WarpCursor for Cygwin/XFree86, and use GetProcAddress
       instead of relying on ddraw.dll (#5220-#5222, Harold Hunt).
  109. Fix bug that prevented the vesa driver from accessing VGA CRTC registers
@@ -14759,4 +14760,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2199 2002/04/10 17:19:25 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2200 2002/04/11 08:25:15 alanh Exp $
