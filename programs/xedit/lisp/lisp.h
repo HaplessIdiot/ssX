@@ -27,20 +27,18 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.h,v 1.2 2001/10/03 07:46:02 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.h,v 1.4 2002/07/16 05:19:39 paulo Exp $ */
 
 #ifndef Lisp_lisp_h
 #define Lisp_lisp_h
 
-typedef struct _LispMac LispMac;
-
-LispMac *LispBegin(void);
-void LispEnd(LispMac*);
-void *LispExecute(LispMac*, char*);
-void LispMachine(LispMac*);
-void LispSetPrompt(LispMac*, char*);
-void LispSetInteractive(LispMac*, int);
-void LispSetExitOnError(LispMac*, int);
-void LispDebug(LispMac*, int);	/* argument is boolean to enable/disable */
+void LispBegin(void);
+void LispEnd(void);
+void *LispExecute(char*);
+void LispMachine(void);
+void LispSetPrompt(char*);
+void LispSetInteractive(int);
+void LispSetExitOnError(int);
+void LispDebug(int);		/* argument is boolean to enable/disable */
 
 #endif /* Lisp_lisp_h */

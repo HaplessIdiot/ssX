@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/xedit.h,v 1.2 2002/10/06 17:11:45 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/xedit.h,v 1.3 2002/11/04 04:15:53 paulo Exp $ */
 
 #ifndef Lisp_xedit_h
 #define Lisp_xedit_h
@@ -38,38 +38,38 @@
 #include "read.h"
 #include "write.h"
 
-LispObj *Xedit_AddEntity(LispMac*, LispBuiltin*);
-LispObj *Xedit_AutoFill(LispMac*, LispBuiltin*);
-LispObj *Xedit_Background(LispMac*, LispBuiltin*);
-LispObj *Xedit_CharAfter(LispMac*, LispBuiltin*);
-LispObj *Xedit_CharBefore(LispMac*, LispBuiltin*);
-LispObj *Xedit_ClearEntities(LispMac*, LispBuiltin*);
-LispObj *Xedit_ConvertPropertyList(LispMac*, LispBuiltin*);
-LispObj *Xedit_Font(LispMac*, LispBuiltin*);
-LispObj *Xedit_Foreground(LispMac*, LispBuiltin*);
-LispObj *Xedit_GotoChar(LispMac*, LispBuiltin*);
-LispObj *Xedit_HorizontalScrollbar(LispMac*, LispBuiltin*);
-LispObj *Xedit_Insert(LispMac*, LispBuiltin*);
-LispObj *Xedit_Justification(LispMac*, LispBuiltin*);
-LispObj *Xedit_LeftColumn(LispMac*, LispBuiltin*);
-LispObj *Xedit_Point(LispMac*, LispBuiltin*);
-LispObj *Xedit_PointMax(LispMac*, LispBuiltin*);
-LispObj *Xedit_PointMin(LispMac*, LispBuiltin*);
-LispObj *Xedit_PropertyList(LispMac*, LispBuiltin*);
-LispObj *Xedit_ReadText(LispMac*, LispBuiltin*);
-LispObj *Xedit_ReplaceText(LispMac*, LispBuiltin*);
-LispObj *Xedit_RightColumn(LispMac*, LispBuiltin*);
-LispObj *Xedit_Scan(LispMac*, LispBuiltin*);
-LispObj *Xedit_SearchBackward(LispMac*, LispBuiltin*);
-LispObj *Xedit_SearchForward(LispMac*, LispBuiltin*);
-LispObj *Xedit_VerticalScrollbar(LispMac*, LispBuiltin*);
-LispObj *Xedit_WrapMode(LispMac*, LispBuiltin*);
-LispObj *Xedit_XrmStringToQuark(LispMac*, LispBuiltin*);
+LispObj *Xedit_AddEntity(LispBuiltin*);
+LispObj *Xedit_AutoFill(LispBuiltin*);
+LispObj *Xedit_Background(LispBuiltin*);
+LispObj *Xedit_CharAfter(LispBuiltin*);
+LispObj *Xedit_CharBefore(LispBuiltin*);
+LispObj *Xedit_ClearEntities(LispBuiltin*);
+LispObj *Xedit_ConvertPropertyList(LispBuiltin*);
+LispObj *Xedit_Font(LispBuiltin*);
+LispObj *Xedit_Foreground(LispBuiltin*);
+LispObj *Xedit_GotoChar(LispBuiltin*);
+LispObj *Xedit_HorizontalScrollbar(LispBuiltin*);
+LispObj *Xedit_Insert(LispBuiltin*);
+LispObj *Xedit_Justification(LispBuiltin*);
+LispObj *Xedit_LeftColumn(LispBuiltin*);
+LispObj *Xedit_Point(LispBuiltin*);
+LispObj *Xedit_PointMax(LispBuiltin*);
+LispObj *Xedit_PointMin(LispBuiltin*);
+LispObj *Xedit_PropertyList(LispBuiltin*);
+LispObj *Xedit_ReadText(LispBuiltin*);
+LispObj *Xedit_ReplaceText(LispBuiltin*);
+LispObj *Xedit_RightColumn(LispBuiltin*);
+LispObj *Xedit_Scan(LispBuiltin*);
+LispObj *Xedit_SearchBackward(LispBuiltin*);
+LispObj *Xedit_SearchForward(LispBuiltin*);
+LispObj *Xedit_VerticalScrollbar(LispBuiltin*);
+LispObj *Xedit_WrapMode(LispBuiltin*);
+LispObj *Xedit_XrmStringToQuark(LispBuiltin*);
 #endif /* XEDIT_LISP_PRIVATE */
 
-void LispXeditInitialize(LispMac*);
-void XeditLispExecute(LispMac*, Widget, XawTextPosition, XawTextPosition);
-void XeditLispSetEditMode(LispMac*, xedit_flist_item*);
-void XeditLispUnsetEditMode(LispMac*, xedit_flist_item*);
+void LispXeditInitialize(void);
+void XeditLispExecute(Widget, XawTextPosition, XawTextPosition);
+void XeditLispSetEditMode(xedit_flist_item*);
+void XeditLispUnsetEditMode(xedit_flist_item*);
 
 #endif /* Lisp_xedit_h */

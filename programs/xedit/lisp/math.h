@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/math.h,v 1.4 2002/08/25 02:48:31 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/math.h,v 1.5 2002/10/06 17:11:44 paulo Exp $ */
 
 #ifndef Lisp_math_h
 #define Lisp_math_h
@@ -35,66 +35,66 @@
 #include "internal.h"
 #include "mp.h"
 
-void LispMathInit(LispMac*);
-LispObj *LispFloatCoerce(LispMac*, LispBuiltin*, LispObj*);
+void LispMathInit(void);
+LispObj *LispFloatCoerce(LispBuiltin*, LispObj*);
 
-LispObj *Lisp_Mul(LispMac*, LispBuiltin*);		/* * */
-LispObj *Lisp_Plus(LispMac*, LispBuiltin*);		/* + */
-LispObj *Lisp_Minus(LispMac*, LispBuiltin*);		/* - */
-LispObj *Lisp_Div(LispMac*, LispBuiltin*);		/* / */
-LispObj *Lisp_OnePlus(LispMac*, LispBuiltin*);		/* 1+ */
-LispObj *Lisp_OneMinus(LispMac*, LispBuiltin*);		/* 1- */
-LispObj *Lisp_Less(LispMac*, LispBuiltin*);		/* < */
-LispObj *Lisp_LessEqual(LispMac*, LispBuiltin*);	/* <= */
-LispObj *Lisp_Equal_(LispMac*, LispBuiltin*);		/* = */
-LispObj *Lisp_Greater(LispMac*, LispBuiltin*);		/* > */
-LispObj *Lisp_GreaterEqual(LispMac*, LispBuiltin*);	/* >= */
-LispObj *Lisp_NotEqual(LispMac*, LispBuiltin*);		/* /= */
-LispObj *Lisp_Max(LispMac*, LispBuiltin*);		/* max */
-LispObj *Lisp_Min(LispMac*, LispBuiltin*);		/* min */
-LispObj *Lisp_Mod(LispMac*, LispBuiltin*);		/* mod */
-LispObj *Lisp_Abs(LispMac*, LispBuiltin*);		/* abs */
-LispObj *Lisp_Complex(LispMac*, LispBuiltin*);		/* complex */
-LispObj *Lisp_Complexp(LispMac*, LispBuiltin*);		/* complexp */
-LispObj *Lisp_Conjugate(LispMac*, LispBuiltin*);	/* conjugate */
-LispObj *Lisp_Decf(LispMac*, LispBuiltin*);		/* decf */
-LispObj *Lisp_Denominator(LispMac*, LispBuiltin*);	/* denominator */
-LispObj *Lisp_Evenp(LispMac*, LispBuiltin*);		/* evenp */
-LispObj *Lisp_Float(LispMac*, LispBuiltin*);		/* float */
-LispObj *Lisp_Floatp(LispMac*, LispBuiltin*);		/* floatp */
-LispObj *Lisp_Gcd(LispMac*, LispBuiltin*);		/* gcd */
-LispObj *Lisp_Imagpart(LispMac*, LispBuiltin*);		/* imagpart */
-LispObj *Lisp_Incf(LispMac*, LispBuiltin*);		/* incf */
-LispObj *Lisp_Integerp(LispMac*, LispBuiltin*);		/* integerp */
-LispObj *Lisp_Isqrt(LispMac*, LispBuiltin*);		/* isqrt */
-LispObj *Lisp_Lcm(LispMac*, LispBuiltin*);		/* lcm */
-LispObj *Lisp_Logand(LispMac*, LispBuiltin*);		/* logand */
-LispObj *Lisp_Logeqv(LispMac*, LispBuiltin*);		/* logeqv */
-LispObj *Lisp_Logior(LispMac*, LispBuiltin*);		/* logior */
-LispObj *Lisp_Lognot(LispMac*, LispBuiltin*);		/* lognot */
-LispObj *Lisp_Logxor(LispMac*, LispBuiltin*);		/* logxor */
-LispObj *Lisp_Minusp(LispMac*, LispBuiltin*);		/* minusp */
-LispObj *Lisp_Numberp(LispMac*, LispBuiltin*);		/* numberp */
-LispObj *Lisp_Numerator(LispMac*, LispBuiltin*);	/* numerator */
-LispObj *Lisp_Oddp(LispMac*, LispBuiltin*);		/* oddp */
-LispObj *Lisp_Plusp(LispMac*, LispBuiltin*);		/* plusp */
-LispObj *Lisp_Rational(LispMac*, LispBuiltin*);		/* rational */
+LispObj *Lisp_Mul(LispBuiltin*);
+LispObj *Lisp_Plus(LispBuiltin*);
+LispObj *Lisp_Minus(LispBuiltin*);
+LispObj *Lisp_Div(LispBuiltin*);
+LispObj *Lisp_OnePlus(LispBuiltin*);
+LispObj *Lisp_OneMinus(LispBuiltin*);
+LispObj *Lisp_Less(LispBuiltin*);
+LispObj *Lisp_LessEqual(LispBuiltin*);
+LispObj *Lisp_Equal_(LispBuiltin*);
+LispObj *Lisp_Greater(LispBuiltin*);
+LispObj *Lisp_GreaterEqual(LispBuiltin*);
+LispObj *Lisp_NotEqual(LispBuiltin*);
+LispObj *Lisp_Max(LispBuiltin*);
+LispObj *Lisp_Min(LispBuiltin*);
+LispObj *Lisp_Mod(LispBuiltin*);
+LispObj *Lisp_Abs(LispBuiltin*);
+LispObj *Lisp_Complex(LispBuiltin*);
+LispObj *Lisp_Complexp(LispBuiltin*);
+LispObj *Lisp_Conjugate(LispBuiltin*);
+LispObj *Lisp_Decf(LispBuiltin*);
+LispObj *Lisp_Denominator(LispBuiltin*);
+LispObj *Lisp_Evenp(LispBuiltin*);
+LispObj *Lisp_Float(LispBuiltin*);
+LispObj *Lisp_Floatp(LispBuiltin*);
+LispObj *Lisp_Gcd(LispBuiltin*);
+LispObj *Lisp_Imagpart(LispBuiltin*);
+LispObj *Lisp_Incf(LispBuiltin*);
+LispObj *Lisp_Integerp(LispBuiltin*);
+LispObj *Lisp_Isqrt(LispBuiltin*);
+LispObj *Lisp_Lcm(LispBuiltin*);
+LispObj *Lisp_Logand(LispBuiltin*);
+LispObj *Lisp_Logeqv(LispBuiltin*);
+LispObj *Lisp_Logior(LispBuiltin*);
+LispObj *Lisp_Lognot(LispBuiltin*);
+LispObj *Lisp_Logxor(LispBuiltin*);
+LispObj *Lisp_Minusp(LispBuiltin*);
+LispObj *Lisp_Numberp(LispBuiltin*);
+LispObj *Lisp_Numerator(LispBuiltin*);
+LispObj *Lisp_Oddp(LispBuiltin*);
+LispObj *Lisp_Plusp(LispBuiltin*);
+LispObj *Lisp_Rational(LispBuiltin*);
 #if 0
-LispObj *Lisp_Rationalize(LispMac*, LispBuiltin*);	/* rationalize */
+LispObj *Lisp_Rationalize(LispBuiltin*);
 #endif
-LispObj *Lisp_Rationalp(LispMac*, LispBuiltin*);	/* rationalp */
-LispObj *Lisp_Realpart(LispMac*, LispBuiltin*);		/* realpart */
-LispObj *Lisp_Rem(LispMac*, LispBuiltin*);		/* rem */
-LispObj *Lisp_Sqrt(LispMac*, LispBuiltin*);		/* sqrt */
-LispObj *Lisp_Zerop(LispMac*, LispBuiltin*);		/* zerop */
-LispObj *Lisp_Ceiling(LispMac*, LispBuiltin*);		/* ceiling */
-LispObj *Lisp_Fceiling(LispMac*, LispBuiltin*);		/* fceiling */
-LispObj *Lisp_Floor(LispMac*, LispBuiltin*);		/* floor */
-LispObj *Lisp_Ffloor(LispMac*, LispBuiltin*);		/* ffloor */
-LispObj *Lisp_Round(LispMac*, LispBuiltin*);		/* round */
-LispObj *Lisp_Fround(LispMac*, LispBuiltin*);		/* fround */
-LispObj *Lisp_Truncate(LispMac*, LispBuiltin*);		/* truncate */
-LispObj *Lisp_Ftruncate(LispMac*, LispBuiltin*);	/* ftruncate */
+LispObj *Lisp_Rationalp(LispBuiltin*);
+LispObj *Lisp_Realpart(LispBuiltin*);
+LispObj *Lisp_Rem(LispBuiltin*);
+LispObj *Lisp_Sqrt(LispBuiltin*);
+LispObj *Lisp_Zerop(LispBuiltin*);
+LispObj *Lisp_Ceiling(LispBuiltin*);
+LispObj *Lisp_Fceiling(LispBuiltin*);
+LispObj *Lisp_Floor(LispBuiltin*);
+LispObj *Lisp_Ffloor(LispBuiltin*);
+LispObj *Lisp_Round(LispBuiltin*);
+LispObj *Lisp_Fround(LispBuiltin*);
+LispObj *Lisp_Truncate(LispBuiltin*);
+LispObj *Lisp_Ftruncate(LispBuiltin*);
 
 
 #endif /* Lisp_math_h */

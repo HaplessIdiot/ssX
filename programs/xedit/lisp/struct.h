@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/struct.h,v 1.3 2002/01/30 21:00:58 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/struct.h,v 1.4 2002/03/10 04:57:47 paulo Exp $ */
 
 #ifndef Lisp_struct_h
 #define Lisp_struct_h
@@ -37,15 +37,15 @@
 /*
  * Defines
  */
-#define STRUCT(fields, def)	LispNewStruct(mac, fields, def)
+#define STRUCT(fields, def)	LispNewStruct(fields, def)
 
 /*
  * Prototypes
  */
-LispObj *Lisp_Defstruct(LispMac*, LispBuiltin*);	/* defstruct */
-LispObj *Lisp_XeditMakeStruct(LispMac*, LispBuiltin*);	/* lisp::make-struct */
-LispObj *Lisp_XeditStructAccess(LispMac*, LispBuiltin*);/* lisp::struct-access */
-LispObj *Lisp_XeditStructStore(LispMac*, LispBuiltin*);	/* lisp::struct-store */
-LispObj *Lisp_XeditStructType(LispMac*, LispBuiltin*);	/* lisp::struct-type */
+LispObj *Lisp_Defstruct(LispBuiltin*);
+LispObj *Lisp_XeditMakeStruct(LispBuiltin*);
+LispObj *Lisp_XeditStructAccess(LispBuiltin*);
+LispObj *Lisp_XeditStructStore(LispBuiltin*);
+LispObj *Lisp_XeditStructType(LispBuiltin*);
 
 #endif /* Lisp_struct_h */

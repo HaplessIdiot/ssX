@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/mathimp.c,v 1.7 2002/09/15 21:32:21 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/mathimp.c,v 1.8 2002/10/06 17:11:44 paulo Exp $ */
 
 #ifdef __GNUC__
 #define CONST __attribute__ ((__const__))
@@ -43,7 +43,7 @@
 /* RE					     REAL NUMBER */
 #define CX		LispComplex_t	  /* COMPLEX NUMBER */
 
-#define XFI(obj)	(obj)->data.integer
+#define XFI(obj)	GETINT(obj)
 #define XFRN(obj)	(obj)->data.ratio.numerator
 #define XFRD(obj)	(obj)->data.ratio.denominator
 #define XFF(obj)	(obj)->data.real
@@ -61,9 +61,9 @@
 
 #define XTYPE(obj)	(obj)->type
 #ifdef DEBUG
-#define XALLOC(type)	LispMalloc(mac, sizeof(type))
-#define XFREE(pointer)	LispFree(mac, pointer)
-#define XMEM(pointer)	LispMused(mac, pointer)
+#define XALLOC(type)	LispMalloc(sizeof(type))
+#define XFREE(pointer)	LispFree(pointer)
+#define XMEM(pointer)	LispMused(pointer)
 #else
 #define XALLOC(type)	malloc(sizeof(type))
 #define XFREE(pointer)	free(pointer)
@@ -101,21 +101,21 @@
 #endif
 
 #define XERROR(msg)					\
-    LispDestroy(mac, "%s: " msg, STRFUN(builtin))
+    LispDestroy("%s: " msg, STRFUN(builtin))
 
 #define XWARN(msg)					\
-    LispWarning(mac, "%s: " msg, STRFUN(builtin))
+    LispWarning("%s: " msg, STRFUN(builtin))
 
 #define NOT_A_NUMBER(object)				\
-    LispDestroy(mac, "%s: %s is not a number",		\
+    LispDestroy("%s: %s is not a number",		\
 		STRFUN(builtin), STROBJ(object))
 
 #define NOT_A_REAL_NUMBER(object)			\
-    LispDestroy(mac, "%s: %s is not a real number",	\
+    LispDestroy("%s: %s is not a real number",		\
 		STRFUN(builtin), STROBJ(object))
 
 #define NOT_AN_INTEGER(object)				\
-    LispDestroy(mac, "%s: %s is not an integer",	\
+    LispDestroy("%s: %s is not an integer",		\
 		STRFUN(builtin), STROBJ(object))
 
 
@@ -123,221 +123,221 @@
 /*
  * Prototypes
  */
-static LispObj *math_pi(LispMac*);
-static void add_accumulator(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static void add_float(LispMac*, LispBuiltin*, LispObj*, double, double);
-static void sub_accumulator(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static void sub_float(LispMac*, LispBuiltin*, LispObj*, double, double);
-static void mul_accumulator(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static void mul_float(LispMac*, LispBuiltin*, LispObj*, double, double);
-static void div_accumulator(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static void div_float(LispMac*, LispBuiltin*, LispObj*, double, double);
-static INLINE void abs_accumulator(LispMac*, LispBuiltin*, LispObj*);
-static INLINE void neg_accumulator(LispMac*, LispBuiltin*, LispObj*);
-static INLINE void mod_accumulator(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void rem_accumulator(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static void gcd_accumulator(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static int math_compare(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static int cmp_float(LispMac*, LispBuiltin*, double, double);
-static INLINE void sqrt_accumulator(LispMac*, LispBuiltin*, LispObj*);
-static INLINE LispObj *copy_number(LispMac*, LispBuiltin*, LispObj*);
-static INLINE LispObj *copy_real(LispMac*, LispBuiltin*, LispObj*);
-static INLINE void set_real(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE LispObj *copy_complex(LispMac*, LispBuiltin*, LispObj*);
-static INLINE void fr_canonicalize(LispMac*, LispBuiltin*, LispObj*);
-static INLINE void br_canonicalize(LispMac*, LispBuiltin*, LispObj*);
+static LispObj *math_pi(void);
+static void add_accumulator(LispBuiltin*, LispObj*, LispObj*);
+static void add_float(LispBuiltin*, LispObj*, double, double);
+static void sub_accumulator(LispBuiltin*, LispObj*, LispObj*);
+static void sub_float(LispBuiltin*, LispObj*, double, double);
+static void mul_accumulator(LispBuiltin*, LispObj*, LispObj*);
+static void mul_float(LispBuiltin*, LispObj*, double, double);
+static void div_accumulator(LispBuiltin*, LispObj*, LispObj*);
+static void div_float(LispBuiltin*, LispObj*, double, double);
+static INLINE void abs_accumulator(LispBuiltin*, LispObj*);
+static INLINE void neg_accumulator(LispBuiltin*, LispObj*);
+static INLINE void mod_accumulator(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void rem_accumulator(LispBuiltin*, LispObj*, LispObj*);
+static void gcd_accumulator(LispBuiltin*, LispObj*, LispObj*);
+static int math_compare(LispBuiltin*, LispObj*, LispObj*);
+static int cmp_float(LispBuiltin*, double, double);
+static INLINE void sqrt_accumulator(LispBuiltin*, LispObj*);
+static INLINE LispObj *copy_number(LispBuiltin*, LispObj*);
+static INLINE LispObj *copy_real(LispBuiltin*, LispObj*);
+static INLINE void set_real(LispBuiltin*, LispObj*, LispObj*);
+static INLINE LispObj *copy_complex(LispBuiltin*, LispObj*);
+static INLINE void fr_canonicalize(LispBuiltin*, LispObj*);
+static INLINE void br_canonicalize(LispBuiltin*, LispObj*);
 static INLINE void maybe_integer(LispObj*);
-static INLINE void cx_canonicalize(LispMac*, LispBuiltin*, LispObj*, int, int);
-static INLINE void abs_cx(LispMac*, LispBuiltin*, LispObj*);
-static INLINE void abs_fi(LispMac*, LispBuiltin*, LispObj*);
-static INLINE void abs_fr(LispMac*, LispBuiltin*, LispObj*);
-static INLINE void abs_ff(LispMac*, LispBuiltin*, LispObj*);
-static INLINE void abs_bi(LispMac*, LispBuiltin*, LispObj*);
-static INLINE void abs_br(LispMac*, LispBuiltin*, LispObj*);
-static INLINE void neg_cx(LispMac*, LispBuiltin*, LispObj*);
-static INLINE void neg_fi(LispMac*, LispBuiltin*, LispObj*);
-static INLINE void neg_fr(LispMac*, LispBuiltin*, LispObj*);
-static INLINE void neg_ff(LispMac*, LispBuiltin*, LispObj*);
-static INLINE void neg_bi(LispMac*, LispBuiltin*, LispObj*);
-static INLINE void neg_br(LispMac*, LispBuiltin*, LispObj*);
-static INLINE void mod_fi_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mod_fi_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mod_bi_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mod_bi_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void rem_fi_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void rem_fi_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void rem_bi_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void rem_bi_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static void sqrt_fi(LispMac*, LispBuiltin*, LispObj*);
-static void sqrt_fr(LispMac*, LispBuiltin*, LispObj*);
-static INLINE void sqrt_ff(LispMac*, LispBuiltin*, LispObj*);
-static void sqrt_bi(LispMac*, LispBuiltin*, LispObj*);
-static void sqrt_br(LispMac*, LispBuiltin*, LispObj*);
-static void sqrt_cx(LispMac*, LispBuiltin*, LispObj*);
+static INLINE void cx_canonicalize(LispBuiltin*, LispObj*, int, int);
+static INLINE void abs_cx(LispBuiltin*, LispObj*);
+static INLINE void abs_fi(LispBuiltin*, LispObj*);
+static INLINE void abs_fr(LispBuiltin*, LispObj*);
+static INLINE void abs_ff(LispBuiltin*, LispObj*);
+static INLINE void abs_bi(LispBuiltin*, LispObj*);
+static INLINE void abs_br(LispBuiltin*, LispObj*);
+static INLINE void neg_cx(LispBuiltin*, LispObj*);
+static INLINE void neg_fi(LispBuiltin*, LispObj*);
+static INLINE void neg_fr(LispBuiltin*, LispObj*);
+static INLINE void neg_ff(LispBuiltin*, LispObj*);
+static INLINE void neg_bi(LispBuiltin*, LispObj*);
+static INLINE void neg_br(LispBuiltin*, LispObj*);
+static INLINE void mod_fi_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mod_fi_bi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mod_bi_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mod_bi_bi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void rem_fi_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void rem_fi_bi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void rem_bi_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void rem_bi_bi(LispBuiltin*, LispObj*, LispObj*);
+static void sqrt_fi(LispBuiltin*, LispObj*);
+static void sqrt_fr(LispBuiltin*, LispObj*);
+static INLINE void sqrt_ff(LispBuiltin*, LispObj*);
+static void sqrt_bi(LispBuiltin*, LispObj*);
+static void sqrt_br(LispBuiltin*, LispObj*);
+static void sqrt_cx(LispBuiltin*, LispObj*);
 static INLINE int fi_fi_add_overflow(long, long) CONST;
 static INLINE int fi_fi_sub_overflow(long, long) CONST;
 static INLINE int fi_fi_mul_overflow(long, long) CONST;
-static INLINE void add_re_cx(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_re_cx(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_re_cx(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_re_cx(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_cx_re(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_cx_re(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_cx_re(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_cx_re(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_cx_cx(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_cx_cx(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_cx_cx(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_cx_cx(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_cx_cx(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_fi_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_fi_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_fi_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_fi_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_fi_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_fi_fr(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_fi_fr(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_fi_fr(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_fi_fr(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_fi_fr(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_fi_ff(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_fi_ff(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_fi_ff(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_fi_ff(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_fi_ff(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_fi_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_fi_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_fi_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_fi_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_fi_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_fi_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_fi_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_fi_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_fi_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_fi_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_fr_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_fr_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_fr_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_fr_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_fr_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_fr_fr(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_fr_fr(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_fr_fr(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_fr_fr(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_fr_fr(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_fr_ff(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_fr_ff(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_fr_ff(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_fr_ff(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_fr_ff(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_fr_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_fr_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_fr_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_fr_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_fr_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_fr_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_fr_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_fr_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_fr_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_fr_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_ff_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_ff_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_ff_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_ff_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_ff_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_ff_fr(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_ff_fr(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_ff_fr(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_ff_fr(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_ff_fr(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_ff_ff(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_ff_ff(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_ff_ff(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_ff_ff(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_ff_ff(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_ff_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_ff_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_ff_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_ff_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_ff_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_ff_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_ff_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_ff_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_ff_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_ff_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_bi_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_bi_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_bi_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_bi_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_bi_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_bi_fr(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_bi_fr(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_bi_fr(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_bi_fr(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_bi_fr(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_bi_ff(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_bi_ff(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_bi_ff(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_bi_ff(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_bi_ff(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_bi_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_bi_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_bi_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_bi_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_bi_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_bi_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_bi_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_bi_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_bi_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_bi_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_br_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_br_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_br_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_br_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_br_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_br_fr(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_br_fr(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_br_fr(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_br_fr(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_br_fr(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_br_ff(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_br_ff(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_br_ff(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_br_ff(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_br_ff(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_br_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_br_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_br_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_br_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_br_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void add_br_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void sub_br_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void mul_br_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE void div_br_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static INLINE int cmp_br_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
-static LispObj *math_divide(LispMac*, LispBuiltin*, int, int);
-static LispObj *divide_float(LispMac*, LispBuiltin*, double, double, int, int);
-static LispObj *divide_xi_xi(LispMac*,LispBuiltin*,LispObj*,LispObj*,int,int);
-static LispObj *divide_xi_xr(LispMac*,LispBuiltin*,LispObj*,LispObj*,int,int);
-static LispObj *divide_xr_xi(LispMac*,LispBuiltin*,LispObj*,LispObj*,int,int);
-static LispObj *divide_xr_xr(LispMac*,LispBuiltin*,LispObj*,LispObj*,int,int);
-static LispObj *divide_fi_fi(LispMac*,LispBuiltin*,LispObj*,LispObj*,int,int);
-static LispObj *divide_fi_ff(LispMac*,LispBuiltin*,LispObj*,LispObj*,int,int);
-static LispObj *divide_fr_ff(LispMac*,LispBuiltin*,LispObj*,LispObj*,int,int);
-static LispObj *divide_ff_fi(LispMac*,LispBuiltin*,LispObj*,LispObj*,int,int);
-static LispObj *divide_ff_fr(LispMac*,LispBuiltin*,LispObj*,LispObj*,int,int);
-static LispObj *divide_ff_ff(LispMac*,LispBuiltin*,LispObj*,LispObj*,int,int);
-static LispObj *divide_ff_bi(LispMac*,LispBuiltin*,LispObj*,LispObj*,int,int);
-static LispObj *divide_ff_br(LispMac*,LispBuiltin*,LispObj*,LispObj*,int,int);
-static LispObj *divide_bi_ff(LispMac*,LispBuiltin*,LispObj*,LispObj*,int,int);
-static LispObj *divide_br_ff(LispMac*,LispBuiltin*,LispObj*,LispObj*,int,int);
+static INLINE void add_re_cx(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void sub_re_cx(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mul_re_cx(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void div_re_cx(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void add_cx_re(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void sub_cx_re(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mul_cx_re(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void div_cx_re(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void add_cx_cx(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void sub_cx_cx(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mul_cx_cx(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void div_cx_cx(LispBuiltin*, LispObj*, LispObj*);
+static INLINE int cmp_cx_cx(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void add_fi_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void sub_fi_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mul_fi_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void div_fi_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE int cmp_fi_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void add_fi_fr(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void sub_fi_fr(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mul_fi_fr(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void div_fi_fr(LispBuiltin*, LispObj*, LispObj*);
+static INLINE int cmp_fi_fr(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void add_fi_ff(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void sub_fi_ff(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mul_fi_ff(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void div_fi_ff(LispBuiltin*, LispObj*, LispObj*);
+static INLINE int cmp_fi_ff(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void add_fi_bi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void sub_fi_bi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mul_fi_bi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void div_fi_bi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE int cmp_fi_bi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void add_fi_br(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void sub_fi_br(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mul_fi_br(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void div_fi_br(LispBuiltin*, LispObj*, LispObj*);
+static INLINE int cmp_fi_br(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void add_fr_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void sub_fr_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mul_fr_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void div_fr_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE int cmp_fr_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void add_fr_fr(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void sub_fr_fr(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mul_fr_fr(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void div_fr_fr(LispBuiltin*, LispObj*, LispObj*);
+static INLINE int cmp_fr_fr(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void add_fr_ff(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void sub_fr_ff(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mul_fr_ff(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void div_fr_ff(LispBuiltin*, LispObj*, LispObj*);
+static INLINE int cmp_fr_ff(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void add_fr_bi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void sub_fr_bi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mul_fr_bi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void div_fr_bi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE int cmp_fr_bi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void add_fr_br(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void sub_fr_br(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mul_fr_br(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void div_fr_br(LispBuiltin*, LispObj*, LispObj*);
+static INLINE int cmp_fr_br(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void add_ff_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void sub_ff_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mul_ff_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void div_ff_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE int cmp_ff_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void add_ff_fr(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void sub_ff_fr(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mul_ff_fr(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void div_ff_fr(LispBuiltin*, LispObj*, LispObj*);
+static INLINE int cmp_ff_fr(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void add_ff_ff(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void sub_ff_ff(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mul_ff_ff(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void div_ff_ff(LispBuiltin*, LispObj*, LispObj*);
+static INLINE int cmp_ff_ff(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void add_ff_bi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void sub_ff_bi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mul_ff_bi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void div_ff_bi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE int cmp_ff_bi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void add_ff_br(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void sub_ff_br(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mul_ff_br(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void div_ff_br(LispBuiltin*, LispObj*, LispObj*);
+static INLINE int cmp_ff_br(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void add_bi_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void sub_bi_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mul_bi_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void div_bi_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE int cmp_bi_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void add_bi_fr(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void sub_bi_fr(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mul_bi_fr(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void div_bi_fr(LispBuiltin*, LispObj*, LispObj*);
+static INLINE int cmp_bi_fr(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void add_bi_ff(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void sub_bi_ff(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mul_bi_ff(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void div_bi_ff(LispBuiltin*, LispObj*, LispObj*);
+static INLINE int cmp_bi_ff(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void add_bi_bi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void sub_bi_bi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mul_bi_bi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void div_bi_bi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE int cmp_bi_bi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void add_bi_br(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void sub_bi_br(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mul_bi_br(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void div_bi_br(LispBuiltin*, LispObj*, LispObj*);
+static INLINE int cmp_bi_br(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void add_br_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void sub_br_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mul_br_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void div_br_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE int cmp_br_fi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void add_br_fr(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void sub_br_fr(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mul_br_fr(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void div_br_fr(LispBuiltin*, LispObj*, LispObj*);
+static INLINE int cmp_br_fr(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void add_br_ff(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void sub_br_ff(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mul_br_ff(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void div_br_ff(LispBuiltin*, LispObj*, LispObj*);
+static INLINE int cmp_br_ff(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void add_br_bi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void sub_br_bi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mul_br_bi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void div_br_bi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE int cmp_br_bi(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void add_br_br(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void sub_br_br(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void mul_br_br(LispBuiltin*, LispObj*, LispObj*);
+static INLINE void div_br_br(LispBuiltin*, LispObj*, LispObj*);
+static INLINE int cmp_br_br(LispBuiltin*, LispObj*, LispObj*);
+static LispObj *math_divide(LispBuiltin*, int, int);
+static LispObj *divide_float(LispBuiltin*, double, double, int, int);
+static LispObj *divide_xi_xi(LispBuiltin*,LispObj*,LispObj*,int,int);
+static LispObj *divide_xi_xr(LispBuiltin*,LispObj*,LispObj*,int,int);
+static LispObj *divide_xr_xi(LispBuiltin*,LispObj*,LispObj*,int,int);
+static LispObj *divide_xr_xr(LispBuiltin*,LispObj*,LispObj*,int,int);
+static LispObj *divide_fi_fi(LispBuiltin*,LispObj*,LispObj*,int,int);
+static LispObj *divide_fi_ff(LispBuiltin*,LispObj*,LispObj*,int,int);
+static LispObj *divide_fr_ff(LispBuiltin*,LispObj*,LispObj*,int,int);
+static LispObj *divide_ff_fi(LispBuiltin*,LispObj*,LispObj*,int,int);
+static LispObj *divide_ff_fr(LispBuiltin*,LispObj*,LispObj*,int,int);
+static LispObj *divide_ff_ff(LispBuiltin*,LispObj*,LispObj*,int,int);
+static LispObj *divide_ff_bi(LispBuiltin*,LispObj*,LispObj*,int,int);
+static LispObj *divide_ff_br(LispBuiltin*,LispObj*,LispObj*,int,int);
+static LispObj *divide_bi_ff(LispBuiltin*,LispObj*,LispObj*,int,int);
+static LispObj *divide_br_ff(LispBuiltin*,LispObj*,LispObj*,int,int);
 
 
 /************************************************************************
  *	HELPER FUNCTIONS
  ************************************************************************/
 static LispObj *
-math_pi(LispMac *mac)
+math_pi(void)
 {
     LispObj *result;
 #ifndef M_PI
@@ -349,62 +349,62 @@ math_pi(LispMac *mac)
 }
 
 static void
-add_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_accumulator(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     if (XTYPE(accum) == CX) {
-	if (XTYPE(ope) == CX)	add_cx_cx(mac, builtin, accum, ope);
-	else			add_cx_re(mac, builtin, accum, ope);
+	if (XTYPE(ope) == CX)	add_cx_cx(builtin, accum, ope);
+	else			add_cx_re(builtin, accum, ope);
     }
-    else if (XTYPE(ope) == CX)	add_re_cx(mac, builtin, accum, ope);
+    else if (XTYPE(ope) == CX)	add_re_cx(builtin, accum, ope);
     else
 	switch (XTYPE(accum)) {
 	    case FI:
 		switch (XTYPE(ope)) {
-		    case FI:	add_fi_fi(mac, builtin, accum, ope);	break;
-		    case FR:	add_fi_fr(mac, builtin, accum, ope);	break;
-		    case FF:	add_fi_ff(mac, builtin, accum, ope);	break;
-		    case BI:	add_fi_bi(mac, builtin, accum, ope);	break;
-		    case BR:	add_fi_br(mac, builtin, accum, ope);	break;
+		    case FI:	add_fi_fi(builtin, accum, ope);	break;
+		    case FR:	add_fi_fr(builtin, accum, ope);	break;
+		    case FF:	add_fi_ff(builtin, accum, ope);	break;
+		    case BI:	add_fi_bi(builtin, accum, ope);	break;
+		    case BR:	add_fi_br(builtin, accum, ope);	break;
 		    default:	goto add_bad_ope;
 		}
 		break;
 	    case FR:
 		switch (XTYPE(ope)) {
-		    case FI:	add_fr_fi(mac, builtin, accum, ope);	break;
-		    case FR:	add_fr_fr(mac, builtin, accum, ope);	break;
-		    case FF:	add_fr_ff(mac, builtin, accum, ope);	break;
-		    case BI:	add_fr_bi(mac, builtin, accum, ope);	break;
-		    case BR:	add_fr_br(mac, builtin, accum, ope);	break;
+		    case FI:	add_fr_fi(builtin, accum, ope);	break;
+		    case FR:	add_fr_fr(builtin, accum, ope);	break;
+		    case FF:	add_fr_ff(builtin, accum, ope);	break;
+		    case BI:	add_fr_bi(builtin, accum, ope);	break;
+		    case BR:	add_fr_br(builtin, accum, ope);	break;
 		    default:	goto add_bad_ope;
 		}
 		break;
 	    case FF:
 		switch (XTYPE(ope)) {
-		    case FI:	add_ff_fi(mac, builtin, accum, ope);	break;
-		    case FR:	add_ff_fr(mac, builtin, accum, ope);	break;
-		    case FF:	add_ff_ff(mac, builtin, accum, ope);	break;
-		    case BI:	add_ff_bi(mac, builtin, accum, ope);	break;
-		    case BR:	add_ff_br(mac, builtin, accum, ope);	break;
+		    case FI:	add_ff_fi(builtin, accum, ope);	break;
+		    case FR:	add_ff_fr(builtin, accum, ope);	break;
+		    case FF:	add_ff_ff(builtin, accum, ope);	break;
+		    case BI:	add_ff_bi(builtin, accum, ope);	break;
+		    case BR:	add_ff_br(builtin, accum, ope);	break;
 		    default:	goto add_bad_ope;
 		}
 		break;
 	    case BI:
 		switch (XTYPE(ope)) {
-		    case FI:	add_bi_fi(mac, builtin, accum, ope);	break;
-		    case FR:	add_bi_fr(mac, builtin, accum, ope);	break;
-		    case FF:	add_bi_ff(mac, builtin, accum, ope);	break;
-		    case BI:	add_bi_bi(mac, builtin, accum, ope);	break;
-		    case BR:	add_bi_br(mac, builtin, accum, ope);	break;
+		    case FI:	add_bi_fi(builtin, accum, ope);	break;
+		    case FR:	add_bi_fr(builtin, accum, ope);	break;
+		    case FF:	add_bi_ff(builtin, accum, ope);	break;
+		    case BI:	add_bi_bi(builtin, accum, ope);	break;
+		    case BR:	add_bi_br(builtin, accum, ope);	break;
 		    default:	goto add_bad_ope;
 		}
 		break;
 	    case BR:
 		switch (XTYPE(ope)) {
-		    case FI:	add_br_fi(mac, builtin, accum, ope);	break;
-		    case FR:	add_br_fr(mac, builtin, accum, ope);	break;
-		    case FF:	add_br_ff(mac, builtin, accum, ope);	break;
-		    case BI:	add_br_bi(mac, builtin, accum, ope);	break;
-		    case BR:	add_br_br(mac, builtin, accum, ope);	break;
+		    case FI:	add_br_fi(builtin, accum, ope);	break;
+		    case FR:	add_br_fr(builtin, accum, ope);	break;
+		    case FF:	add_br_ff(builtin, accum, ope);	break;
+		    case BI:	add_br_bi(builtin, accum, ope);	break;
+		    case BR:	add_br_br(builtin, accum, ope);	break;
 		    default:	goto add_bad_ope;
 		}
 		break;
@@ -418,8 +418,7 @@ add_bad_ope:
 }
 
 static void
-add_float(LispMac *mac, LispBuiltin *builtin, LispObj *accum,
-	  double op1, double op2)
+add_float(LispBuiltin *builtin, LispObj *accum, double op1, double op2)
 {
     double value = op1 + op2;
 
@@ -445,62 +444,62 @@ add_float(LispMac *mac, LispBuiltin *builtin, LispObj *accum,
 }
 
 static void
-sub_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_accumulator(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     if (XTYPE(accum) == CX) {
-	if (XTYPE(ope) == CX)	sub_cx_cx(mac, builtin, accum, ope);
-	else			sub_cx_re(mac, builtin, accum, ope);
+	if (XTYPE(ope) == CX)	sub_cx_cx(builtin, accum, ope);
+	else			sub_cx_re(builtin, accum, ope);
     }
-    else if (XTYPE(ope) == CX)	sub_re_cx(mac, builtin, accum, ope);
+    else if (XTYPE(ope) == CX)	sub_re_cx(builtin, accum, ope);
     else
 	switch (XTYPE(accum)) {
 	    case FI:
 		switch (XTYPE(ope)) {
-		    case FI:	sub_fi_fi(mac, builtin, accum, ope);	break;
-		    case FR:	sub_fi_fr(mac, builtin, accum, ope);	break;
-		    case FF:	sub_fi_ff(mac, builtin, accum, ope);	break;
-		    case BI:	sub_fi_bi(mac, builtin, accum, ope);	break;
-		    case BR:	sub_fi_br(mac, builtin, accum, ope);	break;
+		    case FI:	sub_fi_fi(builtin, accum, ope);	break;
+		    case FR:	sub_fi_fr(builtin, accum, ope);	break;
+		    case FF:	sub_fi_ff(builtin, accum, ope);	break;
+		    case BI:	sub_fi_bi(builtin, accum, ope);	break;
+		    case BR:	sub_fi_br(builtin, accum, ope);	break;
 		    default:	goto sub_bad_ope;
 		}
 		break;
 	    case FR:
 		switch (XTYPE(ope)) {
-		    case FI:	sub_fr_fi(mac, builtin, accum, ope);	break;
-		    case FR:	sub_fr_fr(mac, builtin, accum, ope);	break;
-		    case FF:	sub_fr_ff(mac, builtin, accum, ope);	break;
-		    case BI:	sub_fr_bi(mac, builtin, accum, ope);	break;
-		    case BR:	sub_fr_br(mac, builtin, accum, ope);	break;
+		    case FI:	sub_fr_fi(builtin, accum, ope);	break;
+		    case FR:	sub_fr_fr(builtin, accum, ope);	break;
+		    case FF:	sub_fr_ff(builtin, accum, ope);	break;
+		    case BI:	sub_fr_bi(builtin, accum, ope);	break;
+		    case BR:	sub_fr_br(builtin, accum, ope);	break;
 		    default:	goto sub_bad_ope;
 		}
 		break;
 	    case FF:
 		switch (XTYPE(ope)) {
-		    case FI:	sub_ff_fi(mac, builtin, accum, ope);	break;
-		    case FR:	sub_ff_fr(mac, builtin, accum, ope);	break;
-		    case FF:	sub_ff_ff(mac, builtin, accum, ope);	break;
-		    case BI:	sub_ff_bi(mac, builtin, accum, ope);	break;
-		    case BR:	sub_ff_br(mac, builtin, accum, ope);	break;
+		    case FI:	sub_ff_fi(builtin, accum, ope);	break;
+		    case FR:	sub_ff_fr(builtin, accum, ope);	break;
+		    case FF:	sub_ff_ff(builtin, accum, ope);	break;
+		    case BI:	sub_ff_bi(builtin, accum, ope);	break;
+		    case BR:	sub_ff_br(builtin, accum, ope);	break;
 		    default:	goto sub_bad_ope;
 		}
 		break;
 	    case BI:
 		switch (XTYPE(ope)) {
-		    case FI:	sub_bi_fi(mac, builtin, accum, ope);	break;
-		    case FR:	sub_bi_fr(mac, builtin, accum, ope);	break;
-		    case FF:	sub_bi_ff(mac, builtin, accum, ope);	break;
-		    case BI:	sub_bi_bi(mac, builtin, accum, ope);	break;
-		    case BR:	sub_bi_br(mac, builtin, accum, ope);	break;
+		    case FI:	sub_bi_fi(builtin, accum, ope);	break;
+		    case FR:	sub_bi_fr(builtin, accum, ope);	break;
+		    case FF:	sub_bi_ff(builtin, accum, ope);	break;
+		    case BI:	sub_bi_bi(builtin, accum, ope);	break;
+		    case BR:	sub_bi_br(builtin, accum, ope);	break;
 		    default:	goto sub_bad_ope;
 		}
 		break;
 	    case BR:
 		switch (XTYPE(ope)) {
-		    case FI:	sub_br_fi(mac, builtin, accum, ope);	break;
-		    case FR:	sub_br_fr(mac, builtin, accum, ope);	break;
-		    case FF:	sub_br_ff(mac, builtin, accum, ope);	break;
-		    case BI:	sub_br_bi(mac, builtin, accum, ope);	break;
-		    case BR:	sub_br_br(mac, builtin, accum, ope);	break;
+		    case FI:	sub_br_fi(builtin, accum, ope);	break;
+		    case FR:	sub_br_fr(builtin, accum, ope);	break;
+		    case FF:	sub_br_ff(builtin, accum, ope);	break;
+		    case BI:	sub_br_bi(builtin, accum, ope);	break;
+		    case BR:	sub_br_br(builtin, accum, ope);	break;
 		    default:	goto sub_bad_ope;
 		}
 		break;
@@ -514,8 +513,7 @@ sub_bad_ope:
 }
 
 static void
-sub_float(LispMac *mac, LispBuiltin *builtin, LispObj *accum,
-	  double op1, double op2)
+sub_float(LispBuiltin *builtin, LispObj *accum, double op1, double op2)
 {
     double value = op1 - op2;
 
@@ -541,62 +539,62 @@ sub_float(LispMac *mac, LispBuiltin *builtin, LispObj *accum,
 }
 
 static void
-mul_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_accumulator(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     if (XTYPE(accum) == CX) {
-	if (XTYPE(ope) == CX)	mul_cx_cx(mac, builtin, accum, ope);
-	else			mul_cx_re(mac, builtin, accum, ope);
+	if (XTYPE(ope) == CX)	mul_cx_cx(builtin, accum, ope);
+	else			mul_cx_re(builtin, accum, ope);
     }
-    else if (XTYPE(ope) == CX)	mul_re_cx(mac, builtin, accum, ope);
+    else if (XTYPE(ope) == CX)	mul_re_cx(builtin, accum, ope);
     else
 	switch (XTYPE(accum)) {
 	    case FI:
 		switch (XTYPE(ope)) {
-		    case FI:	mul_fi_fi(mac, builtin, accum, ope);	break;
-		    case FR:	mul_fi_fr(mac, builtin, accum, ope);	break;
-		    case FF:	mul_fi_ff(mac, builtin, accum, ope);	break;
-		    case BI:	mul_fi_bi(mac, builtin, accum, ope);	break;
-		    case BR:	mul_fi_br(mac, builtin, accum, ope);	break;
+		    case FI:	mul_fi_fi(builtin, accum, ope);	break;
+		    case FR:	mul_fi_fr(builtin, accum, ope);	break;
+		    case FF:	mul_fi_ff(builtin, accum, ope);	break;
+		    case BI:	mul_fi_bi(builtin, accum, ope);	break;
+		    case BR:	mul_fi_br(builtin, accum, ope);	break;
 		    default:	goto mul_bad_ope;
 		}
 		break;
 	    case FR:
 		switch (XTYPE(ope)) {
-		    case FI:	mul_fr_fi(mac, builtin, accum, ope);	break;
-		    case FR:	mul_fr_fr(mac, builtin, accum, ope);	break;
-		    case FF:	mul_fr_ff(mac, builtin, accum, ope);	break;
-		    case BI:	mul_fr_bi(mac, builtin, accum, ope);	break;
-		    case BR:	mul_fr_br(mac, builtin, accum, ope);	break;
+		    case FI:	mul_fr_fi(builtin, accum, ope);	break;
+		    case FR:	mul_fr_fr(builtin, accum, ope);	break;
+		    case FF:	mul_fr_ff(builtin, accum, ope);	break;
+		    case BI:	mul_fr_bi(builtin, accum, ope);	break;
+		    case BR:	mul_fr_br(builtin, accum, ope);	break;
 		    default:	goto mul_bad_ope;
 		}
 		break;
 	    case FF:
 		switch (XTYPE(ope)) {
-		    case FI:	mul_ff_fi(mac, builtin, accum, ope);	break;
-		    case FR:	mul_ff_fr(mac, builtin, accum, ope);	break;
-		    case FF:	mul_ff_ff(mac, builtin, accum, ope);	break;
-		    case BI:	mul_ff_bi(mac, builtin, accum, ope);	break;
-		    case BR:	mul_ff_br(mac, builtin, accum, ope);	break;
+		    case FI:	mul_ff_fi(builtin, accum, ope);	break;
+		    case FR:	mul_ff_fr(builtin, accum, ope);	break;
+		    case FF:	mul_ff_ff(builtin, accum, ope);	break;
+		    case BI:	mul_ff_bi(builtin, accum, ope);	break;
+		    case BR:	mul_ff_br(builtin, accum, ope);	break;
 		    default:	goto mul_bad_ope;
 		}
 		break;
 	    case BI:
 		switch (XTYPE(ope)) {
-		    case FI:	mul_bi_fi(mac, builtin, accum, ope);	break;
-		    case FR:	mul_bi_fr(mac, builtin, accum, ope);	break;
-		    case FF:	mul_bi_ff(mac, builtin, accum, ope);	break;
-		    case BI:	mul_bi_bi(mac, builtin, accum, ope);	break;
-		    case BR:	mul_bi_br(mac, builtin, accum, ope);	break;
+		    case FI:	mul_bi_fi(builtin, accum, ope);	break;
+		    case FR:	mul_bi_fr(builtin, accum, ope);	break;
+		    case FF:	mul_bi_ff(builtin, accum, ope);	break;
+		    case BI:	mul_bi_bi(builtin, accum, ope);	break;
+		    case BR:	mul_bi_br(builtin, accum, ope);	break;
 		    default:	goto mul_bad_ope;
 		}
 		break;
 	    case BR:
 		switch (XTYPE(ope)) {
-		    case FI:	mul_br_fi(mac, builtin, accum, ope);	break;
-		    case FR:	mul_br_fr(mac, builtin, accum, ope);	break;
-		    case FF:	mul_br_ff(mac, builtin, accum, ope);	break;
-		    case BI:	mul_br_bi(mac, builtin, accum, ope);	break;
-		    case BR:	mul_br_br(mac, builtin, accum, ope);	break;
+		    case FI:	mul_br_fi(builtin, accum, ope);	break;
+		    case FR:	mul_br_fr(builtin, accum, ope);	break;
+		    case FF:	mul_br_ff(builtin, accum, ope);	break;
+		    case BI:	mul_br_bi(builtin, accum, ope);	break;
+		    case BR:	mul_br_br(builtin, accum, ope);	break;
 		    default:	goto mul_bad_ope;
 		}
 		break;
@@ -610,8 +608,7 @@ mul_bad_ope:
 }
 
 static void
-mul_float(LispMac *mac, LispBuiltin *builtin, LispObj *accum,
-	  double op1, double op2)
+mul_float(LispBuiltin *builtin, LispObj *accum, double op1, double op2)
 {
     double value = op1 * op2;
 
@@ -637,62 +634,62 @@ mul_float(LispMac *mac, LispBuiltin *builtin, LispObj *accum,
 }
 
 static void
-div_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_accumulator(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     if (XTYPE(accum) == CX) {
-	if (XTYPE(ope) == CX)	div_cx_cx(mac, builtin, accum, ope);
-	else			div_cx_re(mac, builtin, accum, ope);
+	if (XTYPE(ope) == CX)	div_cx_cx(builtin, accum, ope);
+	else			div_cx_re(builtin, accum, ope);
     }
-    else if (XTYPE(ope) == CX)	div_re_cx(mac, builtin, accum, ope);
+    else if (XTYPE(ope) == CX)	div_re_cx(builtin, accum, ope);
     else
 	switch (XTYPE(accum)) {
 	    case FI:
 		switch (XTYPE(ope)) {
-		    case FI:	div_fi_fi(mac, builtin, accum, ope);	break;
-		    case FR:	div_fi_fr(mac, builtin, accum, ope);	break;
-		    case FF:	div_fi_ff(mac, builtin, accum, ope);	break;
-		    case BI:	div_fi_bi(mac, builtin, accum, ope);	break;
-		    case BR:	div_fi_br(mac, builtin, accum, ope);	break;
+		    case FI:	div_fi_fi(builtin, accum, ope);	break;
+		    case FR:	div_fi_fr(builtin, accum, ope);	break;
+		    case FF:	div_fi_ff(builtin, accum, ope);	break;
+		    case BI:	div_fi_bi(builtin, accum, ope);	break;
+		    case BR:	div_fi_br(builtin, accum, ope);	break;
 		    default:	goto div_bad_ope;
 		}
 		break;
 	    case FR:
 		switch (XTYPE(ope)) {
-		    case FI:	div_fr_fi(mac, builtin, accum, ope);	break;
-		    case FR:	div_fr_fr(mac, builtin, accum, ope);	break;
-		    case FF:	div_fr_ff(mac, builtin, accum, ope);	break;
-		    case BI:	div_fr_bi(mac, builtin, accum, ope);	break;
-		    case BR:	div_fr_br(mac, builtin, accum, ope);	break;
+		    case FI:	div_fr_fi(builtin, accum, ope);	break;
+		    case FR:	div_fr_fr(builtin, accum, ope);	break;
+		    case FF:	div_fr_ff(builtin, accum, ope);	break;
+		    case BI:	div_fr_bi(builtin, accum, ope);	break;
+		    case BR:	div_fr_br(builtin, accum, ope);	break;
 		    default:	goto div_bad_ope;
 		}
 		break;
 	    case FF:
 		switch (XTYPE(ope)) {
-		    case FI:	div_ff_fi(mac, builtin, accum, ope);	break;
-		    case FR:	div_ff_fr(mac, builtin, accum, ope);	break;
-		    case FF:	div_ff_ff(mac, builtin, accum, ope);	break;
-		    case BI:	div_ff_bi(mac, builtin, accum, ope);	break;
-		    case BR:	div_ff_br(mac, builtin, accum, ope);	break;
+		    case FI:	div_ff_fi(builtin, accum, ope);	break;
+		    case FR:	div_ff_fr(builtin, accum, ope);	break;
+		    case FF:	div_ff_ff(builtin, accum, ope);	break;
+		    case BI:	div_ff_bi(builtin, accum, ope);	break;
+		    case BR:	div_ff_br(builtin, accum, ope);	break;
 		    default:	goto div_bad_ope;
 		}
 		break;
 	    case BI:
 		switch (XTYPE(ope)) {
-		    case FI:	div_bi_fi(mac, builtin, accum, ope);	break;
-		    case FR:	div_bi_fr(mac, builtin, accum, ope);	break;
-		    case FF:	div_bi_ff(mac, builtin, accum, ope);	break;
-		    case BI:	div_bi_bi(mac, builtin, accum, ope);	break;
-		    case BR:	div_bi_br(mac, builtin, accum, ope);	break;
+		    case FI:	div_bi_fi(builtin, accum, ope);	break;
+		    case FR:	div_bi_fr(builtin, accum, ope);	break;
+		    case FF:	div_bi_ff(builtin, accum, ope);	break;
+		    case BI:	div_bi_bi(builtin, accum, ope);	break;
+		    case BR:	div_bi_br(builtin, accum, ope);	break;
 		    default:	goto div_bad_ope;
 		}
 		break;
 	    case BR:
 		switch (XTYPE(ope)) {
-		    case FI:	div_br_fi(mac, builtin, accum, ope);	break;
-		    case FR:	div_br_fr(mac, builtin, accum, ope);	break;
-		    case FF:	div_br_ff(mac, builtin, accum, ope);	break;
-		    case BI:	div_br_bi(mac, builtin, accum, ope);	break;
-		    case BR:	div_br_br(mac, builtin, accum, ope);	break;
+		    case FI:	div_br_fi(builtin, accum, ope);	break;
+		    case FR:	div_br_fr(builtin, accum, ope);	break;
+		    case FF:	div_br_ff(builtin, accum, ope);	break;
+		    case BI:	div_br_bi(builtin, accum, ope);	break;
+		    case BR:	div_br_br(builtin, accum, ope);	break;
 		    default:	goto div_bad_ope;
 		}
 		break;
@@ -706,8 +703,7 @@ div_bad_ope:
 }
 
 static void
-div_float(LispMac *mac, LispBuiltin *builtin, LispObj *accum,
-	  double op1, double op2)
+div_float(LispBuiltin *builtin, LispObj *accum, double op1, double op2)
 {
     double value;
 
@@ -736,7 +732,7 @@ div_float(LispMac *mac, LispBuiltin *builtin, LispObj *accum,
 }
 
 static LispObj *
-math_divide(LispMac *mac, LispBuiltin *builtin, int function, int floating)
+math_divide(LispBuiltin *builtin, int function, int floating)
 {
     LispObj *number, *divisor;
 
@@ -747,82 +743,82 @@ math_divide(LispMac *mac, LispBuiltin *builtin, int function, int floating)
 	divisor = &one;
 
     RETURN_COUNT = 1;
-    if (math_compare(mac, builtin, divisor, &zero) == 0)
+    if (math_compare(builtin, divisor, &zero) == 0)
 	XERROR("divide by zero");
-    if (math_compare(mac, builtin, number, &zero) == 0)
+    if (math_compare(builtin, number, &zero) == 0)
 	return (RETURN(0) = &zero);
     switch (XTYPE(number)) {
 	case FI:
 	    switch (XTYPE(divisor)) {
-		case FI: return (divide_fi_fi(mac, builtin, number,
+		case FI: return (divide_fi_fi(builtin, number,
 					      divisor, function, floating));
-		case FR: return (divide_xi_xr(mac, builtin, number,
+		case FR: return (divide_xi_xr(builtin, number,
 					      divisor, function, floating));
-		case FF: return (divide_fi_ff(mac, builtin, number,
+		case FF: return (divide_fi_ff(builtin, number,
 					      divisor, function, floating));
-		case BI: return (divide_xi_xi(mac, builtin, number,
+		case BI: return (divide_xi_xi(builtin, number,
 					      divisor, function, floating));
-		case BR: return (divide_xi_xr(mac, builtin, number,
+		case BR: return (divide_xi_xr(builtin, number,
 					      divisor, function, floating));
 		default: goto divide_bad_divisor;
 	    }
 	    break;
 	case FR:
 	    switch (XTYPE(divisor)) {
-		case FI: return (divide_xr_xi(mac, builtin, number,
+		case FI: return (divide_xr_xi(builtin, number,
 					      divisor, function, floating));
-		case FR: return (divide_xr_xr(mac, builtin, number,
+		case FR: return (divide_xr_xr(builtin, number,
 					      divisor, function, floating));
-		case FF: return (divide_fr_ff(mac, builtin, number,
+		case FF: return (divide_fr_ff(builtin, number,
 					      divisor, function, floating));
-		case BI: return (divide_xr_xi(mac, builtin, number,
+		case BI: return (divide_xr_xi(builtin, number,
 					      divisor, function, floating));
-		case BR: return (divide_xr_xr(mac, builtin, number,
+		case BR: return (divide_xr_xr(builtin, number,
 					      divisor, function, floating));
 		default: goto divide_bad_divisor;
 	    }
 	    break;
 	case FF:
 	    switch (XTYPE(divisor)) {
-		case FI: return (divide_ff_fi(mac, builtin, number,
+		case FI: return (divide_ff_fi(builtin, number,
 					      divisor, function, floating));
-		case FR: return (divide_ff_fr(mac, builtin, number,
+		case FR: return (divide_ff_fr(builtin, number,
 					      divisor, function, floating));
-		case FF: return (divide_ff_ff(mac, builtin, number,
+		case FF: return (divide_ff_ff(builtin, number,
 					      divisor, function, floating));
-		case BI: return (divide_ff_bi(mac, builtin, number,
+		case BI: return (divide_ff_bi(builtin, number,
 					      divisor, function, floating));
-		case BR: return (divide_ff_br(mac, builtin, number,
+		case BR: return (divide_ff_br(builtin, number,
 					      divisor, function, floating));
 		default: goto divide_bad_divisor;
 	    }
 	    break;
 	case BI:
 	    switch (XTYPE(divisor)) {
-		case FI: return (divide_xi_xi(mac, builtin, number,
+		case FI: return (divide_xi_xi(builtin, number,
 					      divisor, function, floating));
-		case FR: return (divide_xi_xr(mac, builtin, number,
+		case FR: return (divide_xi_xr(builtin, number,
 					      divisor, function, floating));
-		case FF: return (divide_bi_ff(mac, builtin, number,
+		case FF: return (divide_bi_ff(builtin, number,
 					      divisor, function, floating));
-		case BI: return (divide_xi_xi(mac, builtin, number,
+		case BI: return (divide_xi_xi(builtin, number,
 					      divisor, function, floating));
-		case BR: return (divide_xi_xr(mac, builtin, number,
+		case BR: return (divide_xi_xr(builtin, number,
 					      divisor, function, floating));
 		default: goto divide_bad_divisor;
 	    }
 	    break;
 	case BR:
 	    switch (XTYPE(divisor)) {
-		case FI: return (divide_xr_xi(mac, builtin, number,
+		case FI: return (divide_xr_xi(builtin, number,
 					      divisor, function, floating));
-		case FR: return (divide_xr_xr(mac, builtin, number,
+		case FR: return (divide_xr_xr(builtin, number,
 					      divisor, function, floating));
-		case FF: return (divide_br_ff(mac, builtin, number,
+		case FF: return (divide_br_ff(builtin, number,
 					      divisor, function, floating));
-		case BI: return (divide_xr_xi(mac, builtin, number,
+		case BI: return (divide_xr_xi(builtin, number,
 					      divisor, function, floating));
-		case BR: return (divide_xr_xr(mac, builtin, number,
+		case BR: return (divide_xr_xr(builtin, number,
 					      divisor, function, floating));
 		default: goto divide_bad_divisor;
 	    }
@@ -838,7 +834,7 @@ divide_bad_divisor:
 }
 
 static LispObj *
-divide_float(LispMac *mac, LispBuiltin *builtin, double num, double div,
+divide_float(LispBuiltin *builtin, double num, double div,
 	     int function, int floating)
 {
     LispObj *result;
@@ -920,7 +916,7 @@ divide_float(LispMac *mac, LispBuiltin *builtin, double num, double div,
 #define DIVIDE_ADD	1
 #define DIVIDE_SUB	2
 static LispObj *
-divide_xi_xi(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
+divide_xi_xi(LispBuiltin *builtin, LispObj *num, LispObj *div,
 	     int function, int floating)
 {
     int state = DIVIDE_NOP, dsign, rsign;
@@ -1027,7 +1023,7 @@ divide_xi_xi(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
 	mpi_clear(quo);
 	XFREE(quo);
 	if (!finite(dval))
-	    LispDestroy(mac, "floating point overflow");
+	    LispDestroy("floating point overflow");
 	result = REAL(dval);
     }
     else {
@@ -1046,7 +1042,7 @@ divide_xi_xi(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
 }
 
 static LispObj *
-divide_xi_xr(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
+divide_xi_xr(LispBuiltin *builtin, LispObj *num, LispObj *div,
 	     int function, int floating)
 {
     int state = DIVIDE_NOP, dsign, rsign;
@@ -1102,26 +1098,26 @@ divide_xi_xr(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
 		state = DIVIDE_SUB;
 	    break;
 	case DIVIDE_ROUND: {
-	    LispObj *cmp = copy_real(mac, builtin, div);
+	    LispObj *cmp = copy_real(builtin, div);
 
-	    div_accumulator(mac, builtin, cmp, &two);
+	    div_accumulator(builtin, cmp, &two);
 	    if (dsign > 0) {
 		if (rsign > 0) {
-		    if (math_compare(mac, builtin, remainder, cmp) >= 0)
+		    if (math_compare(builtin, remainder, cmp) >= 0)
 			state = DIVIDE_ADD;
 		}
 		else {
-		    if (math_compare(mac, builtin, remainder, cmp) >= 0)
+		    if (math_compare(builtin, remainder, cmp) >= 0)
 			state = DIVIDE_SUB;
 		}
 	    }
 	    else {
 		if (rsign > 0) {
-		    if (math_compare(mac, builtin, remainder, cmp) <= 0)
+		    if (math_compare(builtin, remainder, cmp) <= 0)
 			state = DIVIDE_SUB;
 		}
 		else {
-		    if (math_compare(mac, builtin, remainder, cmp) <= 0)
+		    if (math_compare(builtin, remainder, cmp) <= 0)
 			state = DIVIDE_ADD;
 		}
 	    }
@@ -1131,11 +1127,11 @@ divide_xi_xr(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
 
     if (state == DIVIDE_ADD) {
 	mpi_addi(quo, quo, 1);
-	sub_accumulator(mac, builtin, remainder, div);
+	sub_accumulator(builtin, remainder, div);
     }
     else if (state == DIVIDE_SUB) {
 	mpi_subi(quo, quo, 1);
-	add_accumulator(mac, builtin, remainder, div);
+	add_accumulator(builtin, remainder, div);
     }
 
     if (floating) {
@@ -1164,7 +1160,7 @@ divide_xi_xr(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
 }
 
 static LispObj *
-divide_xr_xi(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
+divide_xr_xi(LispBuiltin *builtin, LispObj *num, LispObj *div,
 	     int function, int floating)
 {
     int state = DIVIDE_NOP, dsign, rsign;
@@ -1225,26 +1221,26 @@ divide_xr_xi(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
 		modp = mpi_cmpi(XBRD(remainder), 2) == 0;
 
 	    if (!modp || (quo->digs[0] & 1) == 1) {
-		LispObj *cmp = copy_real(mac, builtin, div);
+		LispObj *cmp = copy_real(builtin, div);
 
-		div_accumulator(mac, builtin, cmp, &two);
+		div_accumulator(builtin, cmp, &two);
 		if (dsign > 0) {
 		    if (rsign > 0) {
-			if (math_compare(mac, builtin, remainder, cmp) >= 0)
+			if (math_compare(builtin, remainder, cmp) >= 0)
 			    state = DIVIDE_ADD;
 		    }
 		    else {
-			if (math_compare(mac, builtin, remainder, cmp) >= 0)
+			if (math_compare(builtin, remainder, cmp) >= 0)
 			    state = DIVIDE_SUB;
 		    }
 		}
 		else {
 		    if (rsign > 0) {
-			if (math_compare(mac, builtin, remainder, cmp) <= 0)
+			if (math_compare(builtin, remainder, cmp) <= 0)
 			    state = DIVIDE_SUB;
 		    }
 		    else {
-			if (math_compare(mac, builtin, remainder, cmp) <= 0)
+			if (math_compare(builtin, remainder, cmp) <= 0)
 			    state = DIVIDE_ADD;
 		    }
 		}
@@ -1255,11 +1251,11 @@ divide_xr_xi(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
 
     if (state == DIVIDE_ADD) {
 	mpi_addi(quo, quo, 1);
-	sub_accumulator(mac, builtin, remainder, div);
+	sub_accumulator(builtin, remainder, div);
     }
     else if (state == DIVIDE_SUB) {
 	mpi_subi(quo, quo, 1);
-	add_accumulator(mac, builtin, remainder, div);
+	add_accumulator(builtin, remainder, div);
     }
 
     if (floating) {
@@ -1288,7 +1284,7 @@ divide_xr_xi(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
 }
 
 static LispObj *
-divide_xr_xr(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
+divide_xr_xr(LispBuiltin *builtin, LispObj *num, LispObj *div,
 	     int function, int floating)
 {
     int state = DIVIDE_NOP, dsign, rsign;
@@ -1329,8 +1325,8 @@ divide_xr_xr(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
     else
 	mpi_mul(mpr_den(bigr), mpr_den(bigr), XBRD(num));
 
-    br_canonicalize(mac, builtin, rem);
-    rsign = math_compare(mac, builtin, rem, &zero);
+    br_canonicalize(builtin, rem);
+    rsign = math_compare(builtin, rem, &zero);
 
     switch (function) {
 	case DIVIDE_CEIL:
@@ -1352,25 +1348,25 @@ divide_xr_xr(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
 	    if (!modp || (bigi->digs[0] & 1) == 1) {
 		LispObj *cmp;
 
-		cmp = copy_real(mac, builtin, div);
-		div_accumulator(mac, builtin, cmp, &two);
+		cmp = copy_real(builtin, div);
+		div_accumulator(builtin, cmp, &two);
 		if (dsign > 0) {
 		    if (rsign > 0) {
-			if (math_compare(mac, builtin, rem, cmp) >= 0)
+			if (math_compare(builtin, rem, cmp) >= 0)
 			    state = DIVIDE_ADD;
 		    }
 		    else {
-			if (math_compare(mac, builtin, rem, cmp) >= 0)
+			if (math_compare(builtin, rem, cmp) >= 0)
 			    state = DIVIDE_SUB;
 		    }
 		}
 		else {
 		    if (rsign > 0) {
-			if (math_compare(mac, builtin, rem, cmp) <= 0)
+			if (math_compare(builtin, rem, cmp) <= 0)
 			    state = DIVIDE_SUB;
 		    }
 		    else {
-			if (math_compare(mac, builtin, rem, cmp) <= 0)
+			if (math_compare(builtin, rem, cmp) <= 0)
 			    state = DIVIDE_ADD;
 		    }
 		}
@@ -1380,12 +1376,12 @@ divide_xr_xr(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
     }
 
     if (state == DIVIDE_ADD) {
-	add_accumulator(mac, builtin, quo, &one);
-	sub_accumulator(mac, builtin, rem, div);
+	add_accumulator(builtin, quo, &one);
+	sub_accumulator(builtin, rem, div);
     }
     else if (state == DIVIDE_SUB) {
-	sub_accumulator(mac, builtin, quo, &one);
-	add_accumulator(mac, builtin, rem, div);
+	sub_accumulator(builtin, quo, &one);
+	add_accumulator(builtin, rem, div);
     }
 
     if (floating) {
@@ -1409,44 +1405,44 @@ divide_xr_xr(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
 }
 
 static INLINE void
-abs_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
+abs_accumulator(LispBuiltin *builtin, LispObj *accum)
 {
     switch (XTYPE(accum)) {
-	case CX:	abs_cx(mac, builtin, accum);	break;
-	case FI:	abs_fi(mac, builtin, accum);	break;
-	case FR:	abs_fr(mac, builtin, accum);	break;
-	case FF:	abs_ff(mac, builtin, accum);	break;
-	case BI:	abs_bi(mac, builtin, accum);	break;
-	case BR:	abs_br(mac, builtin, accum);	break;
-	default:	NOT_A_NUMBER(accum);		break;
+	case CX:	abs_cx(builtin, accum);	break;
+	case FI:	abs_fi(builtin, accum);	break;
+	case FR:	abs_fr(builtin, accum);	break;
+	case FF:	abs_ff(builtin, accum);	break;
+	case BI:	abs_bi(builtin, accum);	break;
+	case BR:	abs_br(builtin, accum);	break;
+	default:	NOT_A_NUMBER(accum);	break;
     }
 }
 
 static INLINE void
-neg_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
+neg_accumulator(LispBuiltin *builtin, LispObj *accum)
 {
     switch (XTYPE(accum)) {
-	case CX:	neg_cx(mac, builtin, accum);	break;
-	case FI:	neg_fi(mac, builtin, accum);	break;
-	case FR:	neg_fr(mac, builtin, accum);	break;
-	case FF:	neg_ff(mac, builtin, accum);	break;
-	case BI:	neg_bi(mac, builtin, accum);	break;
-	case BR:	neg_br(mac, builtin, accum);	break;
-	default:	NOT_A_NUMBER(accum);		break;
+	case CX:	neg_cx(builtin, accum);	break;
+	case FI:	neg_fi(builtin, accum);	break;
+	case FR:	neg_fr(builtin, accum);	break;
+	case FF:	neg_ff(builtin, accum);	break;
+	case BI:	neg_bi(builtin, accum);	break;
+	case BR:	neg_br(builtin, accum);	break;
+	default:	NOT_A_NUMBER(accum);	break;
     }
 }
 
 static INLINE void
-mod_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mod_accumulator(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     switch (XTYPE(accum)) {
 	case FI:
 	    switch (XTYPE(ope)) {
 		case FI:
-		    mod_fi_fi(mac, builtin, accum, ope);
+		    mod_fi_fi(builtin, accum, ope);
 		    break;
 		case BI:
-		    mod_fi_bi(mac, builtin, accum, ope);
+		    mod_fi_bi(builtin, accum, ope);
 		    break;
 		default:	goto mod_bad_ope;
 	    }
@@ -1454,10 +1450,10 @@ mod_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
 	case BI:
 	    switch (XTYPE(ope)) {
 		case FI:
-		    mod_bi_fi(mac, builtin, accum, ope);
+		    mod_bi_fi(builtin, accum, ope);
 		    break;
 		case BI:
-		    mod_bi_bi(mac, builtin, accum, ope);
+		    mod_bi_bi(builtin, accum, ope);
 		    break;
 		default:	goto mod_bad_ope;
 	    }
@@ -1472,16 +1468,16 @@ mod_bad_ope:
 }
 
 static INLINE void
-rem_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+rem_accumulator(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     switch (XTYPE(accum)) {
 	case FI:
 	    switch (XTYPE(ope)) {
 		case FI:
-		    rem_fi_fi(mac, builtin, accum, ope);
+		    rem_fi_fi(builtin, accum, ope);
 		    break;
 		case BI:
-		    rem_fi_bi(mac, builtin, accum, ope);
+		    rem_fi_bi(builtin, accum, ope);
 		    break;
 		default:	goto rem_bad_ope;
 	    }
@@ -1489,10 +1485,10 @@ rem_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
 	case BI:
 	    switch (XTYPE(ope)) {
 		case FI:
-		    rem_bi_fi(mac, builtin, accum, ope);
+		    rem_bi_fi(builtin, accum, ope);
 		    break;
 		case BI:
-		    rem_bi_bi(mac, builtin, accum, ope);
+		    rem_bi_bi(builtin, accum, ope);
 		    break;
 		default:	goto rem_bad_ope;
 	    }
@@ -1507,19 +1503,19 @@ rem_bad_ope:
 }
 
 static void
-gcd_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+gcd_accumulator(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     /* check for zero operand */
-    if (math_compare(mac, builtin, accum, &zero) == 0)
-	set_real(mac, builtin, accum, ope);
-    else if (math_compare(mac, builtin, ope, &zero) != 0) {
+    if (math_compare(builtin, accum, &zero) == 0)
+	set_real(builtin, accum, ope);
+    else if (math_compare(builtin, ope, &zero) != 0) {
 	LispObj operand, *integer = accum, *rest = &operand;
 
 	XTYPE(rest) = FI;
-	set_real(mac, builtin, rest, ope);
+	set_real(builtin, rest, ope);
 	for (;;) {
-	    mod_accumulator(mac, builtin, rest, integer);
-	    if (math_compare(mac, builtin, rest, &zero) == 0)
+	    mod_accumulator(builtin, rest, integer);
+	    if (math_compare(builtin, rest, &zero) == 0)
 		break;
 	    /* swap values */
 	    ope = integer;
@@ -1548,19 +1544,19 @@ gcd_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
 }
 
 static int
-math_compare(LispMac *mac, LispBuiltin *builtin, LispObj *op1, LispObj *op2)
+math_compare(LispBuiltin *builtin, LispObj *op1, LispObj *op2)
 {
     if (XTYPE(op1) == CX) {
 	if (XTYPE(op2) == CX)
-	    return (cmp_cx_cx(mac, builtin, op1, op2));
-	else if (math_compare(mac, builtin, CXI(op1), &zero) == 0)
-	    return (math_compare(mac, builtin, CXR(op1), op2));
+	    return (cmp_cx_cx(builtin, op1, op2));
+	else if (math_compare(builtin, CXI(op1), &zero) == 0)
+	    return (math_compare(builtin, CXR(op1), op2));
 	else
 	    return (1);
     }
     else if (XTYPE(op2) == CX) {
-	if (math_compare(mac, builtin, CXI(op2), &zero) == 0)
-	    return (math_compare(mac, builtin, op1, CXR(op2)));
+	if (math_compare(builtin, CXI(op2), &zero) == 0)
+	    return (math_compare(builtin, op1, CXR(op2)));
 	else
 	    return (1);
     }
@@ -1568,51 +1564,51 @@ math_compare(LispMac *mac, LispBuiltin *builtin, LispObj *op1, LispObj *op2)
 	switch (XTYPE(op1)) {
 	    case FI:
 		switch (XTYPE(op2)) {
-		    case FI: return (cmp_fi_fi(mac, builtin, op1, op2));
-		    case FR: return (cmp_fi_fr(mac, builtin, op1, op2));
-		    case FF: return (cmp_fi_ff(mac, builtin, op1, op2));
-		    case BI: return (cmp_fi_bi(mac, builtin, op1, op2));
-		    case BR: return (cmp_fi_br(mac, builtin, op1, op2));
+		    case FI: return (cmp_fi_fi(builtin, op1, op2));
+		    case FR: return (cmp_fi_fr(builtin, op1, op2));
+		    case FF: return (cmp_fi_ff(builtin, op1, op2));
+		    case BI: return (cmp_fi_bi(builtin, op1, op2));
+		    case BR: return (cmp_fi_br(builtin, op1, op2));
 		    default:	break;
 		}
 		break;
 	    case FR:
 		switch (XTYPE(op2)) {
-		    case FI: return (cmp_fr_fi(mac, builtin, op1, op2));
-		    case FR: return (cmp_fr_fr(mac, builtin, op1, op2));
-		    case FF: return (cmp_fr_ff(mac, builtin, op1, op2));
-		    case BI: return (cmp_fr_bi(mac, builtin, op1, op2));
-		    case BR: return (cmp_fr_br(mac, builtin, op1, op2));
+		    case FI: return (cmp_fr_fi(builtin, op1, op2));
+		    case FR: return (cmp_fr_fr(builtin, op1, op2));
+		    case FF: return (cmp_fr_ff(builtin, op1, op2));
+		    case BI: return (cmp_fr_bi(builtin, op1, op2));
+		    case BR: return (cmp_fr_br(builtin, op1, op2));
 		    default:	break;
 		}
 		break;
 	    case FF:
 		switch (XTYPE(op2)) {
-		    case FI: return (cmp_ff_fi(mac, builtin, op1, op2));
-		    case FR: return (cmp_ff_fr(mac, builtin, op1, op2));
-		    case FF: return (cmp_ff_ff(mac, builtin, op1, op2));
-		    case BI: return (cmp_ff_bi(mac, builtin, op1, op2));
-		    case BR: return (cmp_ff_br(mac, builtin, op1, op2));
+		    case FI: return (cmp_ff_fi(builtin, op1, op2));
+		    case FR: return (cmp_ff_fr(builtin, op1, op2));
+		    case FF: return (cmp_ff_ff(builtin, op1, op2));
+		    case BI: return (cmp_ff_bi(builtin, op1, op2));
+		    case BR: return (cmp_ff_br(builtin, op1, op2));
 		    default:	break;
 		}
 		break;
 	    case BI:
 		switch (XTYPE(op2)) {
-		    case FI: return (cmp_bi_fi(mac, builtin, op1, op2));
-		    case FR: return (cmp_bi_fr(mac, builtin, op1, op2));
-		    case FF: return (cmp_bi_ff(mac, builtin, op1, op2));
-		    case BI: return (cmp_bi_bi(mac, builtin, op1, op2));
-		    case BR: return (cmp_bi_br(mac, builtin, op1, op2));
+		    case FI: return (cmp_bi_fi(builtin, op1, op2));
+		    case FR: return (cmp_bi_fr(builtin, op1, op2));
+		    case FF: return (cmp_bi_ff(builtin, op1, op2));
+		    case BI: return (cmp_bi_bi(builtin, op1, op2));
+		    case BR: return (cmp_bi_br(builtin, op1, op2));
 		    default:	break;
 		}
 		break;
 	    case BR:
 		switch (XTYPE(op2)) {
-		    case FI: return (cmp_br_fi(mac, builtin, op1, op2));
-		    case FR: return (cmp_br_fr(mac, builtin, op1, op2));
-		    case FF: return (cmp_br_ff(mac, builtin, op1, op2));
-		    case BI: return (cmp_br_bi(mac, builtin, op1, op2));
-		    case BR: return (cmp_br_br(mac, builtin, op1, op2));
+		    case FI: return (cmp_br_fi(builtin, op1, op2));
+		    case FR: return (cmp_br_fr(builtin, op1, op2));
+		    case FF: return (cmp_br_ff(builtin, op1, op2));
+		    case BI: return (cmp_br_bi(builtin, op1, op2));
+		    case BR: return (cmp_br_br(builtin, op1, op2));
 		    default:	break;
 		}
 		break;
@@ -1626,7 +1622,7 @@ math_compare(LispMac *mac, LispBuiltin *builtin, LispObj *op1, LispObj *op2)
 }
 
 static int
-cmp_float(LispMac *mac, LispBuiltin *builtin, double cmp1, double cmp2)
+cmp_float(LispBuiltin *builtin, double cmp1, double cmp2)
 {
     double value = cmp1 - cmp2;
 
@@ -1636,32 +1632,32 @@ cmp_float(LispMac *mac, LispBuiltin *builtin, double cmp1, double cmp2)
 }
 
 static INLINE void
-sqrt_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
+sqrt_accumulator(LispBuiltin *builtin, LispObj *accum)
 {
     switch (XTYPE(accum)) {
-	case FI:	sqrt_fi(mac, builtin, accum);	break;
-	case FR:	sqrt_fr(mac, builtin, accum);	break;
-	case FF:	sqrt_ff(mac, builtin, accum);	break;
-	case BI:	sqrt_bi(mac, builtin, accum);	break;
-	case BR:	sqrt_br(mac, builtin, accum);	break;
-	case CX:	sqrt_cx(mac, builtin, accum);	break;
+	case FI:	sqrt_fi(builtin, accum);	break;
+	case FR:	sqrt_fr(builtin, accum);	break;
+	case FF:	sqrt_ff(builtin, accum);	break;
+	case BI:	sqrt_bi(builtin, accum);	break;
+	case BR:	sqrt_br(builtin, accum);	break;
+	case CX:	sqrt_cx(builtin, accum);	break;
 	default:	NOT_A_NUMBER(accum);		break;
     }
 }
 
 
 static INLINE LispObj *
-copy_number(LispMac *mac, LispBuiltin *builtin, LispObj *obj)
+copy_number(LispBuiltin *builtin, LispObj *obj)
 {
     if (XTYPE(obj) == CX)
-	return (copy_complex(mac, builtin, obj));
-    return (copy_real(mac, builtin, obj));
+	return (copy_complex(builtin, obj));
+    return (copy_real(builtin, obj));
 }
 
 static INLINE LispObj *
-copy_real(LispMac *mac, LispBuiltin *builtin, LispObj *obj)
+copy_real(LispBuiltin *builtin, LispObj *obj)
 {
-    LispObj *accum = LispNew(mac, obj, NIL);
+    LispObj *accum = LispNew(obj, NIL);
 
     switch (XTYPE(accum) = XTYPE(obj)) {
 	case FI:
@@ -1699,7 +1695,7 @@ copy_real(LispMac *mac, LispBuiltin *builtin, LispObj *obj)
  * reducing gc time on very heavy math calculations.
  */
 static INLINE void
-set_real(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *obj)
+set_real(LispBuiltin *builtin, LispObj *accum, LispObj *obj)
 {
     XCLEAR_ACCUM(accum);
 
@@ -1733,27 +1729,26 @@ set_real(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *obj)
 }
 
 static INLINE LispObj *
-copy_complex(LispMac *mac, LispBuiltin *builtin, LispObj *obj)
+copy_complex(LispBuiltin *builtin, LispObj *obj)
 {
+    GC_ENTER();
     LispObj *accum;
 
-    if (mac->protect.length + 1 >= mac->protect.space)
-	LispMoreProtects(mac);
-    accum = LispNew(mac, obj, NIL);
-    mac->protect.objects[mac->protect.length++] = accum;
-    CXR(accum) = copy_real(mac, builtin, CXR(obj));
+    accum = LispNew(obj, NIL);
+    GC_PROTECT(accum);
+    CXR(accum) = copy_real(builtin, CXR(obj));
     XTYPE(accum) = CX;
     /* just in case GC is called and there is garbage in imagpart */
     CXI(accum) = NIL;
-    CXI(accum) = copy_real(mac, builtin, CXI(obj));
-    mac->protect.length--;
+    CXI(accum) = copy_real(builtin, CXI(obj));
+    GC_LEAVE();
 
     return (accum);
 }
 
 
 static INLINE void
-fr_canonicalize(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
+fr_canonicalize(LispBuiltin *builtin, LispObj *accum)
 {
     long num, numerator, den, denominator, rest;
 
@@ -1794,7 +1789,7 @@ fr_canonicalize(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
 }
 
 static INLINE void
-br_canonicalize(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
+br_canonicalize(LispBuiltin *builtin, LispObj *accum)
 {
     int fitnum, fitden;
     long numerator, denominator;
@@ -1867,7 +1862,7 @@ maybe_integer(LispObj *accum)
 }
 
 static INLINE void
-cx_canonicalize(LispMac *mac, LispBuiltin *builtin, LispObj *accum,
+cx_canonicalize(LispBuiltin *builtin, LispObj *accum,
 		int irealpart, int iimagpart)
 {
     if (irealpart && !INTEGER_P(CXR(accum)))
@@ -1980,35 +1975,32 @@ fi_fi_mul_overflow(long op1, long op2)
 	RE accumulator - CX operator
  */
 static INLINE void
-add_re_cx(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_re_cx(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
 /*
 	Ra+Rb Ib
  */
+    GC_ENTER();
     int irealpart, iimagpart;
-    int length = mac->protect.length;
     LispObj *realpart, *imagpart;
 
     irealpart = INTEGER_P(accum) && INTEGER_P(CXR(ope));
     iimagpart = INTEGER_P(CXI(ope));
 
-    if (mac->protect.length + 2 >= mac->protect.space)
-	LispMoreProtects(mac);
-
     /* protect accumulator */
-    mac->protect.objects[mac->protect.length++] = accum;
+    GC_PROTECT(accum);
 
     /* protect realpart */
-    realpart = copy_number(mac, builtin, accum);
-    mac->protect.objects[mac->protect.length++] = realpart;
+    realpart = copy_number(builtin, accum);
+    GC_PROTECT(realpart);
 
     /* Ra+Rb */
-    add_accumulator(mac, builtin, realpart, CXR(ope));
+    add_accumulator(builtin, realpart, CXR(ope));
 
     /* Ib */
-    imagpart = copy_real(mac, builtin, CXI(ope));
+    imagpart = copy_real(builtin, CXI(ope));
 
-    mac->protect.length = length;
+    GC_LEAVE();
 
     XCLEAR_ACCUM(accum);
 
@@ -2017,40 +2009,37 @@ add_re_cx(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     CXR(accum) = realpart;
     CXI(accum) = imagpart;
 
-    cx_canonicalize(mac, builtin, accum, irealpart, iimagpart);
+    cx_canonicalize(builtin, accum, irealpart, iimagpart);
 }
 
 static INLINE void
-sub_re_cx(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_re_cx(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
 /*
 	Ra-Rb -Ib
  */
+    GC_ENTER();
     int irealpart, iimagpart;
-    int length = mac->protect.length;
     LispObj *realpart, *imagpart;
 
     irealpart = INTEGER_P(accum) && INTEGER_P(CXR(ope));
     iimagpart = INTEGER_P(CXI(ope));
 
-    if (mac->protect.length + 2 >= mac->protect.space)
-	LispMoreProtects(mac);
-
     /* protect accumulator */
-    mac->protect.objects[mac->protect.length++] = accum;
+    GC_PROTECT(accum);
 
     /* protect realpart */
-    realpart = copy_real(mac, builtin, accum);
-    mac->protect.objects[mac->protect.length++] = realpart;
+    realpart = copy_real(builtin, accum);
+    GC_PROTECT(realpart);
  
     /* Ra-Rb */
-    sub_accumulator(mac, builtin, realpart, CXR(ope));
+    sub_accumulator(builtin, realpart, CXR(ope));
 
     /* -Ib */
     imagpart = INTEGER(-1);
-    mul_accumulator(mac, builtin, imagpart, CXI(ope));
+    mul_accumulator(builtin, imagpart, CXI(ope));
 
-    mac->protect.length = length;
+    GC_LEAVE();
 
     XCLEAR_ACCUM(accum);
 
@@ -2059,40 +2048,37 @@ sub_re_cx(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     CXR(accum) = realpart;
     CXI(accum) = imagpart;
 
-    cx_canonicalize(mac, builtin, accum, irealpart, iimagpart);
+    cx_canonicalize(builtin, accum, irealpart, iimagpart);
 }
 
 static INLINE void
-mul_re_cx(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_re_cx(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
 /*
 	Ra*Rb Ra*Ib
  */
+    GC_ENTER();
     int irealpart, iimagpart;
-    int length = mac->protect.length;
     LispObj *realpart, *imagpart;
 
     irealpart = INTEGER_P(accum) && INTEGER_P(CXR(ope));
     iimagpart = INTEGER_P(CXI(ope));
 
-    if (mac->protect.length + 2 >= mac->protect.space)
-	LispMoreProtects(mac);
-
     /* protect accumulator */
-    mac->protect.objects[mac->protect.length++] = accum;
+    GC_PROTECT(accum);
 
     /* protect realpart */
-    realpart = copy_real(mac, builtin, accum);
-    mac->protect.objects[mac->protect.length++] = realpart;
+    realpart = copy_real(builtin, accum);
+    GC_PROTECT(realpart);
  
     /* Ra*Rb */
-    mul_accumulator(mac, builtin, realpart, CXR(ope));
+    mul_accumulator(builtin, realpart, CXR(ope));
 
     /* Ra*Ib */
-    imagpart = copy_real(mac, builtin, accum);
-    mul_accumulator(mac, builtin, imagpart, CXI(ope));
+    imagpart = copy_real(builtin, accum);
+    mul_accumulator(builtin, imagpart, CXI(ope));
 
-    mac->protect.length = length;
+    GC_LEAVE();
 
     XCLEAR_ACCUM(accum);
 
@@ -2101,19 +2087,19 @@ mul_re_cx(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     CXR(accum) = realpart;
     CXI(accum) = imagpart;
 
-    cx_canonicalize(mac, builtin, accum, irealpart, iimagpart);
+    cx_canonicalize(builtin, accum, irealpart, iimagpart);
 }
 
 static INLINE void
-div_re_cx(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_re_cx(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
 /*
 	Ra*Rb        -Ib*Ra
 	-----------  -----------
 	Rb*Rb+Ib*Ib  Rb*Rb+Ib*Ib
  */
+    GC_ENTER();
     int irealpart, iimagpart;
-    int length = mac->protect.length;
     LispObj *realpart, *imagpart, *object;
 
 	/* may change to floating point if operation done, and it is not
@@ -2124,34 +2110,31 @@ div_re_cx(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     irealpart = INTEGER_P(accum) && INTEGER_P(CXR(ope));
     iimagpart = INTEGER_P(CXI(ope));
 
-    if (mac->protect.length + 3 >= mac->protect.space)
-	LispMoreProtects(mac);
-
     /* Ra*Rb */
-    mac->protect.objects[mac->protect.length++] = accum;
-    realpart = copy_real(mac, builtin, accum);
-    mac->protect.objects[mac->protect.length++] = realpart;
-    mul_accumulator(mac, builtin, realpart, CXR(ope));
+    GC_PROTECT(accum);
+    realpart = copy_real(builtin, accum);
+    GC_PROTECT(realpart);
+    mul_accumulator(builtin, realpart, CXR(ope));
 
     /* -Ib*Ra */
     imagpart = INTEGER(-1);
-    mac->protect.objects[mac->protect.length++] = imagpart;
-    mul_accumulator(mac, builtin, imagpart, CXI(ope));
-    mul_accumulator(mac, builtin, imagpart, accum);
+    GC_PROTECT(imagpart);
+    mul_accumulator(builtin, imagpart, CXI(ope));
+    mul_accumulator(builtin, imagpart, accum);
 
-    object = copy_real(mac, builtin, CXR(ope));
-    mul_accumulator(mac, builtin, object, CXR(ope));
+    object = copy_real(builtin, CXR(ope));
+    mul_accumulator(builtin, object, CXR(ope));
 
     XCLEAR_ACCUM(accum);	/* destructively change */
-    set_real(mac, builtin, accum, CXI(ope));
-    mul_accumulator(mac, builtin, accum, CXI(ope));
+    set_real(builtin, accum, CXI(ope));
+    mul_accumulator(builtin, accum, CXI(ope));
 
-    add_accumulator(mac, builtin, object, accum);
+    add_accumulator(builtin, object, accum);
 
-    div_accumulator(mac, builtin, realpart, object);
-    div_accumulator(mac, builtin, imagpart, object);
+    div_accumulator(builtin, realpart, object);
+    div_accumulator(builtin, imagpart, object);
 
-    mac->protect.length = length;
+    GC_LEAVE();
 
     XCLEAR_ACCUM(accum);
 
@@ -2159,7 +2142,7 @@ div_re_cx(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     CXR(accum) = realpart;
     CXI(accum) = imagpart;
 
-    cx_canonicalize(mac, builtin, accum, irealpart, iimagpart);
+    cx_canonicalize(builtin, accum, irealpart, iimagpart);
 }
 
 
@@ -2167,7 +2150,7 @@ div_re_cx(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	CX accumulator - RE operator
  */
 static INLINE void
-add_cx_re(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_cx_re(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
 /*
 	Ra+Rb Ia
@@ -2177,13 +2160,13 @@ add_cx_re(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     irealpart = INTEGER_P(ope) && INTEGER_P(CXR(accum));
     iimagpart = INTEGER_P(CXI(accum));
 
-    add_accumulator(mac, builtin, CXR(accum), ope);
+    add_accumulator(builtin, CXR(accum), ope);
 
-    cx_canonicalize(mac, builtin, accum, irealpart, iimagpart);
+    cx_canonicalize(builtin, accum, irealpart, iimagpart);
 }
 
 static INLINE void
-sub_cx_re(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_cx_re(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
 /*
 	Ra-Rb Ia
@@ -2193,13 +2176,13 @@ sub_cx_re(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     irealpart = INTEGER_P(ope) && INTEGER_P(CXR(accum));
     iimagpart = INTEGER_P(CXI(accum));
 
-    sub_accumulator(mac, builtin, CXR(accum), ope);
+    sub_accumulator(builtin, CXR(accum), ope);
 
-    cx_canonicalize(mac, builtin, accum, irealpart, iimagpart);
+    cx_canonicalize(builtin, accum, irealpart, iimagpart);
 }
 
 static INLINE void
-mul_cx_re(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_cx_re(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
 /*
 	Ra*Rb Ia*Rb
@@ -2209,14 +2192,14 @@ mul_cx_re(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     irealpart = INTEGER_P(ope) && INTEGER_P(CXR(accum));
     iimagpart = INTEGER_P(CXI(accum));
 
-    mul_accumulator(mac, builtin, CXR(accum), ope);
-    mul_accumulator(mac, builtin, CXI(accum), ope);
+    mul_accumulator(builtin, CXR(accum), ope);
+    mul_accumulator(builtin, CXI(accum), ope);
 
-    cx_canonicalize(mac, builtin, accum, irealpart, iimagpart);
+    cx_canonicalize(builtin, accum, irealpart, iimagpart);
 }
 
 static INLINE void
-div_cx_re(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_cx_re(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
 /*
 	Ra/Rb Ia/Rb
@@ -2226,10 +2209,10 @@ div_cx_re(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     irealpart = INTEGER_P(ope) && INTEGER_P(CXR(accum));
     iimagpart = INTEGER_P(CXI(accum));
 
-    div_accumulator(mac, builtin, CXR(accum), ope);
-    div_accumulator(mac, builtin, CXI(accum), ope);
+    div_accumulator(builtin, CXR(accum), ope);
+    div_accumulator(builtin, CXI(accum), ope);
 
-    cx_canonicalize(mac, builtin, accum, irealpart, iimagpart);
+    cx_canonicalize(builtin, accum, irealpart, iimagpart);
 }
 
 
@@ -2237,7 +2220,7 @@ div_cx_re(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	CX accumulator - CX operator
  */
 static INLINE void
-add_cx_cx(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_cx_cx(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
 /*
 	Ra+Rb Ia+Ib
@@ -2247,14 +2230,14 @@ add_cx_cx(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     irealpart = INTEGER_P(CXR(accum)) && INTEGER_P(CXR(ope));
     iimagpart = INTEGER_P(CXI(accum)) && INTEGER_P(CXI(ope));
 
-    add_accumulator(mac, builtin, CXR(accum), CXR(ope));
-    add_accumulator(mac, builtin, CXI(accum), CXI(ope));
+    add_accumulator(builtin, CXR(accum), CXR(ope));
+    add_accumulator(builtin, CXI(accum), CXI(ope));
 
-    cx_canonicalize(mac, builtin, accum, irealpart, iimagpart);
+    cx_canonicalize(builtin, accum, irealpart, iimagpart);
 }
 
 static INLINE void
-sub_cx_cx(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_cx_cx(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
 /*
 	Ra-Rb Ia-Ib
@@ -2264,114 +2247,109 @@ sub_cx_cx(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     irealpart = INTEGER_P(CXR(accum)) && INTEGER_P(CXR(ope));
     iimagpart = INTEGER_P(CXI(accum)) && INTEGER_P(CXI(ope));
 
-    sub_accumulator(mac, builtin, CXR(accum), CXR(ope));
-    sub_accumulator(mac, builtin, CXI(accum), CXI(ope));
+    sub_accumulator(builtin, CXR(accum), CXR(ope));
+    sub_accumulator(builtin, CXI(accum), CXI(ope));
 
-    cx_canonicalize(mac, builtin, accum, irealpart, iimagpart);
+    cx_canonicalize(builtin, accum, irealpart, iimagpart);
 }
 
 static INLINE void
-mul_cx_cx(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_cx_cx(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
 /*
 	Ra*Rb-Ia*Ib Ra*Ib+Ia*Rb
  */
+    GC_ENTER();
     int irealpart, iimagpart;
-    int length = mac->protect.length;
     LispObj *realpart, *imagpart, *object;
 
     irealpart = INTEGER_P(CXR(accum)) && INTEGER_P(CXR(ope));
     iimagpart = INTEGER_P(CXI(accum)) && INTEGER_P(CXI(ope));
 
-    if (mac->protect.length + 2 >= mac->protect.space)
-	LispMoreProtects(mac);
-
-    mac->protect.objects[mac->protect.length++] = accum;
-    realpart = copy_real(mac, builtin, CXR(accum));
-    mac->protect.objects[mac->protect.length++] = realpart;
-    imagpart = copy_number(mac, builtin, CXI(accum));
+    GC_PROTECT(accum);
+    realpart = copy_real(builtin, CXR(accum));
+    GC_PROTECT(realpart);
+    imagpart = copy_number(builtin, CXI(accum));
 
     /* Ra*Rb-Ia*Ib */
-    mul_accumulator(mac, builtin, realpart, CXR(ope));
-    mul_accumulator(mac, builtin, imagpart, CXI(ope));
-    sub_accumulator(mac, builtin, realpart, imagpart);
+    mul_accumulator(builtin, realpart, CXR(ope));
+    mul_accumulator(builtin, imagpart, CXI(ope));
+    sub_accumulator(builtin, realpart, imagpart);
 
     /* Ra*Ib+Ia*Rb */
     object = CXI(accum);	/* destructively change */
     imagpart = CXR(accum);	/* destructively change */
-    mul_accumulator(mac, builtin, imagpart, CXI(ope));
-    mul_accumulator(mac, builtin, object, CXR(ope));
-    add_accumulator(mac, builtin, imagpart, object);
+    mul_accumulator(builtin, imagpart, CXI(ope));
+    mul_accumulator(builtin, object, CXR(ope));
+    add_accumulator(builtin, imagpart, object);
 
-    mac->protect.length = length;
+    GC_LEAVE();
 
     CXR(accum) = realpart;
     CXI(accum) = imagpart;
 
-    cx_canonicalize(mac, builtin, accum, irealpart, iimagpart);
+    cx_canonicalize(builtin, accum, irealpart, iimagpart);
 }
 
 static INLINE void
-div_cx_cx(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_cx_cx(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
 /*
 	Ra*Rb+Ia*Ib  Ia*Rb-Ib*Ra
 	-----------  -----------
 	Rb*Rb+Ib*Ib  Rb*Rb+Ib*Ib
  */
+    GC_ENTER();
     int irealpart, iimagpart;
-    int length = mac->protect.length;
     LispObj *realpart, *imagpart, *object;
 
     irealpart = INTEGER_P(CXR(accum)) && INTEGER_P(CXR(ope));
     iimagpart = INTEGER_P(CXI(accum)) && INTEGER_P(CXI(ope));
 
-    if (mac->protect.length + 3 >= mac->protect.space)
-	LispMoreProtects(mac);
 
-    mac->protect.objects[mac->protect.length++] = accum;
+    GC_PROTECT(accum);
 
     /* Ra*Rb+Ia*Ib */
-    realpart = copy_real(mac, builtin, CXR(accum));
-    mac->protect.objects[mac->protect.length++] = realpart;
-    imagpart = copy_real(mac, builtin, CXI(accum));
-    mac->protect.objects[mac->protect.length++] = imagpart;
-    mul_accumulator(mac, builtin, realpart, CXR(ope));
-    mul_accumulator(mac, builtin, imagpart, CXI(ope));
-    add_accumulator(mac, builtin, realpart, imagpart);
+    realpart = copy_real(builtin, CXR(accum));
+    GC_PROTECT(realpart);
+    imagpart = copy_real(builtin, CXI(accum));
+    GC_PROTECT(imagpart);
+    mul_accumulator(builtin, realpart, CXR(ope));
+    mul_accumulator(builtin, imagpart, CXI(ope));
+    add_accumulator(builtin, realpart, imagpart);
 
     /* Ra*Rb+Ia*Ib */
-    set_real(mac, builtin, imagpart, CXI(accum));
-    mul_accumulator(mac, builtin, imagpart, CXR(ope));
+    set_real(builtin, imagpart, CXI(accum));
+    mul_accumulator(builtin, imagpart, CXR(ope));
     object = CXR(accum);	/* destructively change */
-    mul_accumulator(mac, builtin, object, CXI(ope));
-    sub_accumulator(mac, builtin, imagpart, object);
+    mul_accumulator(builtin, object, CXI(ope));
+    sub_accumulator(builtin, imagpart, object);
 
     /* Rb*Rb+Ib*Ib */
-    set_real(mac, builtin, CXI(accum), CXI(ope));    /* destructively change */
-    set_real(mac, builtin, object, CXR(ope));	     /* destructively change */
-    mul_accumulator(mac, builtin, object, CXR(ope));
-    mul_accumulator(mac, builtin, CXI(accum), CXI(ope));
-    add_accumulator(mac, builtin, object, CXI(accum));
+    set_real(builtin, CXI(accum), CXI(ope));    /* destructively change */
+    set_real(builtin, object, CXR(ope));	     /* destructively change */
+    mul_accumulator(builtin, object, CXR(ope));
+    mul_accumulator(builtin, CXI(accum), CXI(ope));
+    add_accumulator(builtin, object, CXI(accum));
 
-    div_accumulator(mac, builtin, realpart, object);
-    div_accumulator(mac, builtin, imagpart, object);
+    div_accumulator(builtin, realpart, object);
+    div_accumulator(builtin, imagpart, object);
 
-    mac->protect.length = length;
+    GC_LEAVE();
 
     CXR(accum) = realpart;
     CXI(accum) = imagpart;
 
-    cx_canonicalize(mac, builtin, accum, irealpart, iimagpart);
+    cx_canonicalize(builtin, accum, irealpart, iimagpart);
 }
 
 static INLINE int
-cmp_cx_cx(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_cx_cx(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int cmp;
 
-    if ((cmp = math_compare(mac, builtin, CXR(accum), CXR(ope))) == 0)
-	cmp = math_compare(mac, builtin, CXI(accum), CXI(ope));
+    if ((cmp = math_compare(builtin, CXR(accum), CXR(ope))) == 0)
+	cmp = math_compare(builtin, CXI(accum), CXI(ope));
 
     return (cmp);
 }
@@ -2380,21 +2358,21 @@ cmp_cx_cx(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
  *	ABS OPERATIONS
  ************************************************************************/
 static void
-abs_cx(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
+abs_cx(LispBuiltin *builtin, LispObj *accum)
 {
-    abs_accumulator(mac, builtin, CXR(accum));
-    abs_accumulator(mac, builtin, CXI(accum));
+    abs_accumulator(builtin, CXR(accum));
+    abs_accumulator(builtin, CXI(accum));
 
-    if (math_compare(mac, builtin, CXR(accum), CXI(accum)) < 0) {
+    if (math_compare(builtin, CXR(accum), CXI(accum)) < 0) {
 	LispObj *temp = CXR(accum);
 
 	CXR(accum) = CXI(accum);
 	CXI(accum) = temp;
     }
 
-    if (math_compare(mac, builtin, CXI(accum), &zero) == 0) {
+    if (math_compare(builtin, CXI(accum), &zero) == 0) {
 	XCLEAR_ACCUM(CXI(accum));
-	set_real(mac, builtin, accum, CXR(accum));
+	set_real(builtin, accum, CXR(accum));
     }
     else {
 	int rational;
@@ -2402,21 +2380,21 @@ abs_cx(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
 
 	rational = INTEGER_P(CXR(accum)) && INTEGER_P(CXI(accum));
 
-	div_accumulator(mac, builtin, CXI(accum), CXR(accum));
+	div_accumulator(builtin, CXI(accum), CXR(accum));
 	/* just to make sure no side effects will happen in the future,
 	 * currently, it is safe to call
-		mul_accumulator(mac, builtin, CXI(accum), CXI(accum));
+		mul_accumulator(builtin, CXI(accum), CXI(accum));
 	 */
-	set_real(mac, builtin, &operand, CXI(accum));
-	mul_accumulator(mac, builtin, CXI(accum), &operand);
+	set_real(builtin, &operand, CXI(accum));
+	mul_accumulator(builtin, CXI(accum), &operand);
 	XCLEAR_ACCUM(&operand);
 
-	add_accumulator(mac, builtin, CXI(accum), &one);
-	sqrt_accumulator(mac, builtin, CXI(accum));
+	add_accumulator(builtin, CXI(accum), &one);
+	sqrt_accumulator(builtin, CXI(accum));
 
-	mul_accumulator(mac, builtin, CXI(accum), CXR(accum));
+	mul_accumulator(builtin, CXI(accum), CXR(accum));
 	XCLEAR_ACCUM(CXR(accum));
-	set_real(mac, builtin, accum, CXI(accum));
+	set_real(builtin, accum, CXI(accum));
 
 	if (rational) {
 	    if ((long)XFF(accum) == XFF(accum)) {
@@ -2428,7 +2406,7 @@ abs_cx(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
 }
 
 static INLINE void
-abs_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
+abs_fi(LispBuiltin *builtin, LispObj *accum)
 {
     if (XFI(accum) == MINSLONG) {
 	mpi *bigi = XALLOC(mpi);
@@ -2445,7 +2423,7 @@ abs_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
 }
 
 static INLINE void
-abs_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
+abs_fr(LispBuiltin *builtin, LispObj *accum)
 {
     if (XFRN(accum) == MINSLONG) {
 	mpr *bigr = XALLOC(mpr);
@@ -2462,21 +2440,21 @@ abs_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
 }
 
 static INLINE void
-abs_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
+abs_ff(LispBuiltin *builtin, LispObj *accum)
 {
     if (XFF(accum) < 0.0)
 	XFF(accum) = -XFF(accum);
 }
 
 static INLINE void
-abs_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
+abs_bi(LispBuiltin *builtin, LispObj *accum)
 {
     if (mpi_cmpi(XBI(accum), 0) < 0)
 	mpi_neg(XBI(accum), XBI(accum));
 }
 
 static INLINE void
-abs_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
+abs_br(LispBuiltin *builtin, LispObj *accum)
 {
     if (mpi_cmpi(XBRN(accum), 0) < 0)
 	mpi_neg(XBRN(accum), XBRN(accum));
@@ -2486,14 +2464,14 @@ abs_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
  *	NEG OPERATIONS
  ************************************************************************/
 static INLINE void
-neg_cx(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
+neg_cx(LispBuiltin *builtin, LispObj *accum)
 {
-    neg_accumulator(mac, builtin, CXR(accum));
-    neg_accumulator(mac, builtin, CXI(accum));
+    neg_accumulator(builtin, CXR(accum));
+    neg_accumulator(builtin, CXI(accum));
 }
 
 static INLINE void
-neg_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
+neg_fi(LispBuiltin *builtin, LispObj *accum)
 {
     if (XFI(accum) == MINSLONG) {
 	mpi *bigi = XALLOC(mpi);
@@ -2510,7 +2488,7 @@ neg_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
 }
 
 static INLINE void
-neg_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
+neg_fr(LispBuiltin *builtin, LispObj *accum)
 {
     if (XFRN(accum) == MINSLONG) {
 	mpr *bigr = XALLOC(mpr);
@@ -2527,19 +2505,19 @@ neg_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
 }
 
 static INLINE void
-neg_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
+neg_ff(LispBuiltin *builtin, LispObj *accum)
 {
     XFF(accum) = -XFF(accum);
 }
 
 static INLINE void
-neg_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
+neg_bi(LispBuiltin *builtin, LispObj *accum)
 {
     mpi_neg(XBI(accum), XBI(accum));
 }
 
 static INLINE void
-neg_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
+neg_br(LispBuiltin *builtin, LispObj *accum)
 {
     mpi_neg(XBRN(accum), XBRN(accum));
 }
@@ -2549,7 +2527,7 @@ neg_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
  *	MOD INTEGER
  ************************************************************************/
 static INLINE void
-mod_fi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mod_fi_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     if (XFI(ope) == 0)
 	XERROR("divide by zero");
@@ -2561,7 +2539,7 @@ mod_fi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 }
 
 static INLINE void
-mod_fi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mod_fi_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi *bigi;
 
@@ -2585,7 +2563,7 @@ mod_fi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 }
 
 static INLINE void
-mod_bi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mod_bi_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi iop;
 
@@ -2607,7 +2585,7 @@ mod_bi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 }
 
 static INLINE void
-mod_bi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mod_bi_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     if (mpi_cmpi(XBI(ope), 0) == 0)
 	XERROR("divide by zero");
@@ -2627,7 +2605,7 @@ mod_bi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
  *	REM INTEGER
  ************************************************************************/
 static INLINE void
-rem_fi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+rem_fi_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     if (XFI(ope) == 0)
 	XERROR("divide by zero");
@@ -2636,7 +2614,7 @@ rem_fi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 }
 
 static INLINE void
-rem_fi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+rem_fi_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi *bigi;
 
@@ -2660,7 +2638,7 @@ rem_fi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 }
 
 static INLINE void
-rem_bi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+rem_bi_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi iop;
 
@@ -2682,7 +2660,7 @@ rem_bi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 }
 
 static INLINE void
-rem_bi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+rem_bi_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     if (mpi_cmpi(XBI(ope), 0) == 0)
 	XERROR("divide by zero");
@@ -2702,12 +2680,12 @@ rem_bi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
  *	SQRT OPERATION
  ************************************************************************/
 static void
-sqrt_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
+sqrt_fi(LispBuiltin *builtin, LispObj *accum)
 {
     double value;
 
     if (XFI(accum) < 0) {
-	int length = mac->protect.length;
+	GC_ENTER();
 	LispObj *realpart, *imagpart;
 
 	value = XFI(accum);
@@ -2720,11 +2698,9 @@ sqrt_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
 	else
 	    imagpart = REAL(value);
 
-	if (length + 1 >= mac->protect.space)
-	    LispMoreProtects(mac);
-	mac->protect.objects[mac->protect.length++] = imagpart;
+	GC_PROTECT(imagpart);
 	realpart = INTEGER(0);
-	mac->protect.length = length;
+	GC_LEAVE();
 	XTYPE(accum) = CX;
 	CXR(accum) = realpart;
 	CXI(accum) = imagpart;
@@ -2747,7 +2723,7 @@ sqrt_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
  * FIXME: check if sqrt of rational is rational
  */
 static void
-sqrt_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
+sqrt_fr(LispBuiltin *builtin, LispObj *accum)
 {
     LispObj *imagpart = NIL;
     double value, ratio;
@@ -2770,14 +2746,12 @@ sqrt_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
     }
 
     if (cmp < 0) {
-	int length = mac->protect.length;
+	GC_ENTER();
 	LispObj *realpart;
 
-	if (length + 1 >= mac->protect.space)
-	    LispMoreProtects(mac);
-	mac->protect.objects[mac->protect.length++] = imagpart;
+	GC_PROTECT(imagpart);
 	realpart = INTEGER(0);
-	mac->protect.length = length;
+	GC_LEAVE();
 	XTYPE(accum) = CX;
 	CXR(accum) = realpart;
 	CXI(accum) = imagpart;
@@ -2785,23 +2759,21 @@ sqrt_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
 }
 
 static INLINE void
-sqrt_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
+sqrt_ff(LispBuiltin *builtin, LispObj *accum)
 {
     double value;
 
     if (XFF(accum) < 0) {
-	int length = mac->protect.length;
+	GC_ENTER();
 	LispObj *realpart, *imagpart;
 	value = sqrt(-XFF(accum));
 
 	if (!finite(value))
 	    XERROR("floating point overflow");
 	realpart = INTEGER(0);
-	if (length + 1 >= mac->protect.space)
-	    LispMoreProtects(mac);
-	mac->protect.objects[mac->protect.length++] = realpart;
+	GC_PROTECT(realpart);
 	imagpart = REAL(value);
-	mac->protect.length = length;
+	GC_LEAVE();
 	XTYPE(accum) = CX;
 	CXR(accum) = realpart;
 	CXI(accum) = imagpart;
@@ -2816,7 +2788,7 @@ sqrt_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
 }
 
 static void
-sqrt_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
+sqrt_bi(LispBuiltin *builtin, LispObj *accum)
 {
     int cmp;
     double value;
@@ -2866,14 +2838,12 @@ sqrt_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
     }
 
     if (cmp < 0) {
-	int length = mac->protect.length;
+	GC_ENTER();
 	LispObj *realpart;
 
-	if (length + 1 >= mac->protect.space)
-	    LispMoreProtects(mac);
-	mac->protect.objects[mac->protect.length++] = imagpart;
+	GC_PROTECT(imagpart);
 	realpart = INTEGER(0);
-	mac->protect.length = length;
+	GC_LEAVE();
 	XCLEAR_BI(accum);
 	XTYPE(accum) = CX;
 	CXR(accum) = realpart;
@@ -2885,7 +2855,7 @@ sqrt_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
  * FIXME: check if sqrt of rational is rational
  */
 static void
-sqrt_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
+sqrt_br(LispBuiltin *builtin, LispObj *accum)
 {
     int cmp;
     double value;
@@ -2909,14 +2879,12 @@ sqrt_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
     }
 
     if (cmp < 0) {
-	int length = mac->protect.length;
+	GC_ENTER();
 	LispObj *realpart;
 
-	if (length + 1 >= mac->protect.space)
-	    LispMoreProtects(mac);
-	mac->protect.objects[mac->protect.length++] = imagpart;
+	GC_PROTECT(imagpart);
 	realpart = INTEGER(0);
-	mac->protect.length = length;
+	GC_LEAVE();
 	XCLEAR_BR(accum);
 	XTYPE(accum) = CX;
 	CXR(accum) = realpart;
@@ -2925,11 +2893,11 @@ sqrt_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
 }
 
 static void
-sqrt_cx(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
+sqrt_cx(LispBuiltin *builtin, LispObj *accum)
 {
+    GC_ENTER();
     int irealpart, iimagpart;
-    int length = mac->protect.length;
-    LispObj *mag = copy_complex(mac, builtin, accum);
+    LispObj *mag = copy_complex(builtin, accum);
     LispObj *realpart, *imagpart;
 
     irealpart = INTEGER_P(CXR(accum));
@@ -2938,52 +2906,50 @@ sqrt_cx(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
     /* protect mag, realpart and imagpart so that they can be reused below
      * avoiding the need of requesting more object cells, so this operation
      * will put left only 3 objects to be catched by gc */
-    if (length + 3 >= mac->protect.space)
-	LispMoreProtects(mac);
-    mac->protect.objects[mac->protect.length++] = mag;
+    GC_PROTECT(mag);
     realpart = CXR(mag);
-    mac->protect.objects[mac->protect.length++] = realpart;
+    GC_PROTECT(realpart);
     imagpart = CXI(mag);
-    mac->protect.objects[mac->protect.length++] = imagpart;
+    GC_PROTECT(imagpart);
 
-    abs_accumulator(mac, builtin, mag);
-    if (math_compare(mac, builtin, mag, &zero) == 0)
-	set_real(mac, builtin, accum, mag);
-    else if (math_compare(mac, builtin, CXR(accum), &zero) > 0) {
+    abs_accumulator(builtin, mag);
+    if (math_compare(builtin, mag, &zero) == 0)
+	set_real(builtin, accum, mag);
+    else if (math_compare(builtin, CXR(accum), &zero) > 0) {
 	/* R = sqrt((mag + Ra) / 2) */
-	set_real(mac, builtin, realpart, mag);
-	add_accumulator(mac, builtin, realpart, CXR(accum));
-	div_accumulator(mac, builtin, realpart, &two);
-	sqrt_accumulator(mac, builtin, realpart);
+	set_real(builtin, realpart, mag);
+	add_accumulator(builtin, realpart, CXR(accum));
+	div_accumulator(builtin, realpart, &two);
+	sqrt_accumulator(builtin, realpart);
 
 	/* I = Ia / R / 2 */
-	set_real(mac, builtin, imagpart, CXI(accum));
-	div_accumulator(mac, builtin, imagpart, realpart);
-	div_accumulator(mac, builtin, imagpart, &two);
+	set_real(builtin, imagpart, CXI(accum));
+	div_accumulator(builtin, imagpart, realpart);
+	div_accumulator(builtin, imagpart, &two);
 
 	CXR(accum) = realpart;
 	CXI(accum) = imagpart;
     }
     else {
 	/* I = sqrt((mag - Ra) / 2) */
-	set_real(mac, builtin, imagpart, mag);
-	sub_accumulator(mac, builtin, imagpart, CXR(accum));
-	div_accumulator(mac, builtin, imagpart, &two);
-	sqrt_accumulator(mac, builtin, imagpart);
-	if (math_compare(mac, builtin, CXI(accum), &zero) < 0)
-	    neg_accumulator(mac, builtin, imagpart);
+	set_real(builtin, imagpart, mag);
+	sub_accumulator(builtin, imagpart, CXR(accum));
+	div_accumulator(builtin, imagpart, &two);
+	sqrt_accumulator(builtin, imagpart);
+	if (math_compare(builtin, CXI(accum), &zero) < 0)
+	    neg_accumulator(builtin, imagpart);
 
 	/* R = Ia / I / 2 */
-	set_real(mac, builtin, realpart, CXI(accum));
-	div_accumulator(mac, builtin, realpart, imagpart);
-	div_accumulator(mac, builtin, realpart, &two);
+	set_real(builtin, realpart, CXI(accum));
+	div_accumulator(builtin, realpart, imagpart);
+	div_accumulator(builtin, realpart, &two);
 
 	CXR(accum) = realpart;
 	CXI(accum) = imagpart;
     }
 
-    mac->protect.length = length;
-    cx_canonicalize(mac, builtin, accum, irealpart, iimagpart);
+    GC_LEAVE();
+    cx_canonicalize(builtin, accum, irealpart, iimagpart);
 }
 
 
@@ -2994,7 +2960,7 @@ sqrt_cx(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
 	FI accumulator - FI operator
  */
 static INLINE void
-add_fi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_fi_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     if (!fi_fi_add_overflow(XFI(accum), XFI(ope)))
 	XFI(accum) += XFI(ope);
@@ -3011,7 +2977,7 @@ add_fi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 }
 
 static INLINE void
-sub_fi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_fi_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     if (!fi_fi_sub_overflow(XFI(accum), XFI(ope)))
 	XFI(accum) -= XFI(ope);
@@ -3028,7 +2994,7 @@ sub_fi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 }
 
 static INLINE void
-mul_fi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_fi_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     long op1 = XFI(accum), op2 = XFI(ope);
 
@@ -3047,16 +3013,16 @@ mul_fi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 }
 
 static INLINE void
-div_fi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_fi_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     XTYPE(accum) = FR;
     XFRN(accum) = XFI(accum);
     XFRD(accum) = XFI(ope);
-    fr_canonicalize(mac, builtin, accum);
+    fr_canonicalize(builtin, accum);
 }
 
 static INLINE int
-cmp_fi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_fi_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     if (XFI(accum) > XFI(ope))
 	return (1);
@@ -3067,7 +3033,7 @@ cmp_fi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 }
 
 static LispObj *
-divide_fi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
+divide_fi_fi(LispBuiltin *builtin, LispObj *num, LispObj *div,
 	     int function, int floating)
 {
     long quo, rem;
@@ -3129,7 +3095,7 @@ divide_fi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
 	FI accumulator - FR operator
  */
 static INLINE void
-add_fi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_fi_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int fit;
     long value = 0, op = XFI(accum), num = XFRN(ope), den = XFRD(ope);
@@ -3143,7 +3109,7 @@ add_fi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	XFRN(accum) = value + num;
 	XFRD(accum) = den;
 	XTYPE(accum) = FR;
-	fr_canonicalize(mac, builtin, accum);
+	fr_canonicalize(builtin, accum);
     }
     else {
 	mpi iop;
@@ -3160,12 +3126,12 @@ add_fi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	XBR(accum) = bigr;
 	XTYPE(accum) = BR;
 	XMEM(XBR(accum));
-	br_canonicalize(mac, builtin, accum);
+	br_canonicalize(builtin, accum);
     }
 }
 
 static INLINE void
-sub_fi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_fi_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int fit;
     long value = 0, op = XFI(accum), num = XFRN(ope), den = XFRD(ope);
@@ -3179,7 +3145,7 @@ sub_fi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	XFRN(accum) = value - num;
 	XFRD(accum) = den;
 	XTYPE(accum) = FR;
-	fr_canonicalize(mac, builtin, accum);
+	fr_canonicalize(builtin, accum);
     }
     else {
 	mpi iop;
@@ -3196,12 +3162,12 @@ sub_fi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	XBR(accum) = bigr;
 	XTYPE(accum) = BR;
 	XMEM(XBR(accum));
-	br_canonicalize(mac, builtin, accum);
+	br_canonicalize(builtin, accum);
     }
 }
 
 static INLINE void
-mul_fi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_fi_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int fit;
     long op = XFI(accum), num = XFRN(ope), den = XFRD(ope);
@@ -3211,7 +3177,7 @@ mul_fi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	XFRN(accum) = op * num;
 	XFRD(accum) = den;
 	XTYPE(accum) = FR;
-	fr_canonicalize(mac, builtin, accum);
+	fr_canonicalize(builtin, accum);
     }
     else {
 	mpi iop;
@@ -3227,12 +3193,12 @@ mul_fi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	XBR(accum) = bigr;
 	XTYPE(accum) = BR;
 	XMEM(XBR(accum));
-	br_canonicalize(mac, builtin, accum);
+	br_canonicalize(builtin, accum);
     }
 }
 
 static INLINE void
-div_fi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_fi_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int fit;
     long op = XFI(accum), num = XFRN(ope), den = XFRD(ope);
@@ -3242,7 +3208,7 @@ div_fi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	XFRN(accum) = op * den;
 	XFRD(accum) = num;
 	XTYPE(accum) = FR;
-	fr_canonicalize(mac, builtin, accum);
+	fr_canonicalize(builtin, accum);
     }
     else {
 	mpi iop;
@@ -3258,12 +3224,12 @@ div_fi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	XBR(accum) = bigr;
 	XTYPE(accum) = BR;
 	XMEM(XBR(accum));
-	br_canonicalize(mac, builtin, accum);
+	br_canonicalize(builtin, accum);
     }
 }
 
 static INLINE int
-cmp_fi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_fi_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     double val1 = XFRD(ope) / (double)XFRN(ope),
 		  val = XFI(accum) - val1;
@@ -3281,40 +3247,40 @@ cmp_fi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	FI accumulator - FF operator
  */
 static INLINE void
-add_fi_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_fi_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    add_float(mac, builtin, accum, (double)XFI(accum), XFF(ope));
+    add_float(builtin, accum, (double)XFI(accum), XFF(ope));
 }
 
 static INLINE void
-sub_fi_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_fi_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    sub_float(mac, builtin, accum, (double)XFI(accum), XFF(ope));
+    sub_float(builtin, accum, (double)XFI(accum), XFF(ope));
 }
 
 static INLINE void
-mul_fi_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_fi_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    mul_float(mac, builtin, accum, (double)XFI(accum), XFF(ope));
+    mul_float(builtin, accum, (double)XFI(accum), XFF(ope));
 }
 
 static INLINE void
-div_fi_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_fi_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    div_float(mac, builtin, accum, (double)XFI(accum), XFF(ope));
+    div_float(builtin, accum, (double)XFI(accum), XFF(ope));
 }
 
 static INLINE int
-cmp_fi_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_fi_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    return (cmp_float(mac, builtin, (double)XFI(accum), XFF(ope)));
+    return (cmp_float(builtin, (double)XFI(accum), XFF(ope)));
 }
 
 static LispObj *
-divide_fi_ff(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
+divide_fi_ff(LispBuiltin *builtin, LispObj *num, LispObj *div,
 	     int function, int floating)
 {
-    return (divide_float(mac, builtin, (double)XFI(num), XFF(div),
+    return (divide_float(builtin, (double)XFI(num), XFF(div),
 			 function, floating));
 }
 
@@ -3323,7 +3289,7 @@ divide_fi_ff(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
 	FI accumulator - BI operator
  */
 static INLINE void
-add_fi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_fi_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi *bigi = XALLOC(mpi);
 
@@ -3345,7 +3311,7 @@ add_fi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 }
 
 static INLINE void
-sub_fi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_fi_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi *bigi = XALLOC(mpi);
 
@@ -3367,7 +3333,7 @@ sub_fi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 }
 
 static INLINE void
-mul_fi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_fi_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi *bigi = XALLOC(mpi);
 
@@ -3389,7 +3355,7 @@ mul_fi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 }
 
 static INLINE void
-div_fi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_fi_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpr *bigr;
 
@@ -3403,11 +3369,11 @@ div_fi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     XBR(accum) = bigr;
     XTYPE(accum) = BR;
     XMEM(XBR(accum));
-    br_canonicalize(mac, builtin, accum);
+    br_canonicalize(builtin, accum);
 }
 
 static INLINE int
-cmp_fi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_fi_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     return (-mpi_cmpi(XBI(ope), XFI(accum)));
 }
@@ -3419,7 +3385,7 @@ cmp_fi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	FI accumulator - BR operator
  */
 static INLINE void
-add_fi_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_fi_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi iop;
     mpr *bigr = XALLOC(mpr);
@@ -3437,11 +3403,11 @@ add_fi_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     XBR(accum) = bigr;
     XTYPE(accum) = BR;
     XMEM(XBR(accum));
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE void
-sub_fi_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_fi_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi iop;
     mpr *bigr = XALLOC(mpr);
@@ -3459,11 +3425,11 @@ sub_fi_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     XBR(accum) = bigr;
     XTYPE(accum) = BR;
     XMEM(XBR(accum));
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE void
-mul_fi_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_fi_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi iop;
     mpr *bigr = XALLOC(mpr);
@@ -3480,11 +3446,11 @@ mul_fi_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     XBR(accum) = bigr;
     XTYPE(accum) = BR;
     XMEM(XBR(accum));
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE void
-div_fi_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_fi_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi iop;
     mpr *bigr = XALLOC(mpr);
@@ -3501,11 +3467,11 @@ div_fi_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     XBR(accum) = bigr;
     XTYPE(accum) = BR;
     XMEM(XBR(accum));
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE int
-cmp_fi_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_fi_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int cmp;
 
@@ -3524,7 +3490,7 @@ cmp_fi_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	FR accumulator - FI operator
  */
 static INLINE void
-add_fr_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_fr_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int fit;
     long value = 0, op = XFI(ope), num = XFRN(accum), den = XFRD(accum);
@@ -3536,7 +3502,7 @@ add_fr_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     }
     if (fit) {
 	XFRN(accum) = value + num;
-	fr_canonicalize(mac, builtin, accum);
+	fr_canonicalize(builtin, accum);
     }
     else {
 	mpi iop;
@@ -3552,12 +3518,12 @@ add_fr_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	XBR(accum) = bigr;
 	XTYPE(accum) = BR;
 	XMEM(XBR(accum));
-	br_canonicalize(mac, builtin, accum);
+	br_canonicalize(builtin, accum);
     }
 }
 
 static INLINE void
-sub_fr_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_fr_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int fit;
     long value = 0, op = XFI(ope), num = XFRN(accum), den = XFRD(accum);
@@ -3569,7 +3535,7 @@ sub_fr_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     }
     if (fit) {
 	XFRN(accum) = num - value;
-	fr_canonicalize(mac, builtin, accum);
+	fr_canonicalize(builtin, accum);
     }
     else {
 	mpi iop;
@@ -3585,12 +3551,12 @@ sub_fr_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	XBR(accum) = bigr;
 	XTYPE(accum) = BR;
 	XMEM(XBR(accum));
-	br_canonicalize(mac, builtin, accum);
+	br_canonicalize(builtin, accum);
     }
 }
 
 static INLINE void
-mul_fr_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_fr_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int fit;
     long op = XFI(ope), num = XFRN(accum), den = XFRD(accum);
@@ -3598,7 +3564,7 @@ mul_fr_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     fit = !fi_fi_mul_overflow(op, num);
     if (fit) {
 	XFRN(accum) = op * num;
-	fr_canonicalize(mac, builtin, accum);
+	fr_canonicalize(builtin, accum);
     }
     else {
 	mpi iop;
@@ -3613,12 +3579,12 @@ mul_fr_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	XBR(accum) = bigr;
 	XTYPE(accum) = BR;
 	XMEM(XBR(accum));
-	br_canonicalize(mac, builtin, accum);
+	br_canonicalize(builtin, accum);
     }
 }
 
 static INLINE void
-div_fr_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_fr_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int fit;
     long op = XFI(ope), num = XFRN(accum), den = XFRD(accum);
@@ -3626,7 +3592,7 @@ div_fr_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     fit = !fi_fi_mul_overflow(op, den);
     if (fit) {
 	XFRD(accum) = op * den;
-	fr_canonicalize(mac, builtin, accum);
+	fr_canonicalize(builtin, accum);
     }
     else {
 	mpi iop;
@@ -3641,12 +3607,12 @@ div_fr_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	XBR(accum) = bigr;
 	XTYPE(accum) = BR;
 	XMEM(XBR(accum));
-	br_canonicalize(mac, builtin, accum);
+	br_canonicalize(builtin, accum);
     }
 }
 
 static INLINE int
-cmp_fr_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_fr_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     double val1 = XFRN(accum) / (double)XFRD(accum),
 	   val = val1 - XFI(ope);
@@ -3664,7 +3630,7 @@ cmp_fr_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	FR accumulator - FR operator
  */
 static INLINE void
-add_fr_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_fr_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int fit;
     long num1 = XFRN(accum), den1 = XFRD(accum),
@@ -3688,7 +3654,7 @@ add_fr_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     if (fit) {
 	XFRN(accum) = num;
 	XFRD(accum) = den;
-	fr_canonicalize(mac, builtin, accum);
+	fr_canonicalize(builtin, accum);
     }
     else {
 	mpi iop;
@@ -3706,12 +3672,12 @@ add_fr_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	XBR(accum) = bigr;
 	XTYPE(accum) = BR;
 	XMEM(XBR(accum));
-	br_canonicalize(mac, builtin, accum);
+	br_canonicalize(builtin, accum);
     }
 }
 
 static INLINE void
-sub_fr_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_fr_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int fit;
     long num1 = XFRN(accum), den1 = XFRD(accum),
@@ -3735,7 +3701,7 @@ sub_fr_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     if (fit) {
 	XFRN(accum) = num;
 	XFRD(accum) = den;
-	fr_canonicalize(mac, builtin, accum);
+	fr_canonicalize(builtin, accum);
     }
     else {
 	mpi iop;
@@ -3753,12 +3719,12 @@ sub_fr_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	XBR(accum) = bigr;
 	XTYPE(accum) = BR;
 	XMEM(XBR(accum));
-	br_canonicalize(mac, builtin, accum);
+	br_canonicalize(builtin, accum);
     }
 }
 
 static INLINE void
-mul_fr_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_fr_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int fit;
     long num1 = XFRN(accum), den1 = XFRD(accum),
@@ -3775,7 +3741,7 @@ mul_fr_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     if (fit) {
 	XFRN(accum) = num;
 	XFRD(accum) = den;
-	fr_canonicalize(mac, builtin, accum);
+	fr_canonicalize(builtin, accum);
     }
     else {
 	mpr *bigr = XALLOC(mpr);
@@ -3793,12 +3759,12 @@ mul_fr_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	XBR(accum) = bigr;
 	XTYPE(accum) = BR;
 	XMEM(XBR(accum));
-	br_canonicalize(mac, builtin, accum);
+	br_canonicalize(builtin, accum);
     }
 }
 
 static INLINE void
-div_fr_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_fr_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int fit;
     long num1 = XFRN(accum), den1 = XFRD(accum),
@@ -3815,7 +3781,7 @@ div_fr_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     if (fit) {
 	XFRN(accum) = num;
 	XFRD(accum) = den;
-	fr_canonicalize(mac, builtin, accum);
+	fr_canonicalize(builtin, accum);
     }
     else {
 	mpr *bigr = XALLOC(mpr);
@@ -3828,12 +3794,12 @@ div_fr_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	XBR(accum) = bigr;
 	XTYPE(accum) = BR;
 	XMEM(XBR(accum));
-	br_canonicalize(mac, builtin, accum);
+	br_canonicalize(builtin, accum);
     }
 }
 
 static INLINE int
-cmp_fr_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_fr_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     long num1 = XFRN(accum), den1 = XFRD(accum),
 	 num2 = XFRN(ope), den2 = XFRD(ope);
@@ -3854,45 +3820,45 @@ cmp_fr_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	FR accumulator - FF operator
  */
 static INLINE void
-add_fr_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_fr_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    add_float(mac, builtin, accum,
+    add_float(builtin, accum,
 	      (double)XFRN(accum) / (double)XFRD(accum), XFF(ope));
 }
 
 static INLINE void
-sub_fr_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_fr_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    sub_float(mac, builtin, accum,
+    sub_float(builtin, accum,
 	      (double)XFRN(accum) / (double)XFRD(accum), XFF(ope));
 }
 
 static INLINE void
-mul_fr_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_fr_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    mul_float(mac, builtin, accum,
+    mul_float(builtin, accum,
 	      (double)XFRN(accum) / (double)XFRD(accum), XFF(ope));
 }
 
 static INLINE void
-div_fr_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_fr_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    div_float(mac, builtin, accum,
+    div_float(builtin, accum,
 	      (double)XFRN(accum) / (double)XFRD(accum), XFF(ope));
 }
 
 static INLINE int
-cmp_fr_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_fr_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    return (cmp_float(mac, builtin,
+    return (cmp_float(builtin,
 		      (double)XFRN(accum) / (double)XFRD(accum), XFF(ope)));
 }
 
 static LispObj *
-divide_fr_ff(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
+divide_fr_ff(LispBuiltin *builtin, LispObj *num, LispObj *div,
 	     int function, int floating)
 {
-    return (divide_float(mac, builtin, (double)XFRN(num) / (double)XFRD(num),
+    return (divide_float(builtin, (double)XFRN(num) / (double)XFRD(num),
 			 XFF(div), function, floating));
 }
 
@@ -3901,7 +3867,7 @@ divide_fr_ff(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
 	FR accumulator - BI operator
  */
 static INLINE void
-add_fr_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_fr_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi iop;
     mpr *bigr = XALLOC(mpr);
@@ -3919,11 +3885,11 @@ add_fr_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     XBR(accum) = bigr;
     XTYPE(accum) = BR;
     XMEM(XBR(accum));
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE void
-sub_fr_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_fr_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi iop;
     mpr *bigr = XALLOC(mpr);
@@ -3941,11 +3907,11 @@ sub_fr_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     XBR(accum) = bigr;
     XTYPE(accum) = BR;
     XMEM(XBR(accum));
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE void
-mul_fr_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_fr_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpr *bigr = XALLOC(mpr);
 
@@ -3957,11 +3923,11 @@ mul_fr_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     XBR(accum) = bigr;
     XTYPE(accum) = BR;
     XMEM(XBR(accum));
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE void
-div_fr_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_fr_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpr *bigr = XALLOC(mpr);
 
@@ -3973,11 +3939,11 @@ div_fr_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     XBR(accum) = bigr;
     XTYPE(accum) = BR;
     XMEM(XBR(accum));
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE int
-cmp_fr_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_fr_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int cmp;
     mpr cmp1, cmp2;
@@ -4003,7 +3969,7 @@ cmp_fr_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	FR accumulator - BR operator
  */
 static INLINE void
-add_fr_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_fr_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpr *bigr = XALLOC(mpr);
 
@@ -4015,11 +3981,11 @@ add_fr_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     XBR(accum) = bigr;
     XTYPE(accum) = BR;
     XMEM(XBR(accum));
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE void
-sub_fr_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_fr_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpr *bigr = XALLOC(mpr);
 
@@ -4031,11 +3997,11 @@ sub_fr_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     XBR(accum) = bigr;
     XTYPE(accum) = BR;
     XMEM(XBR(accum));
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE void
-mul_fr_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_fr_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpr *bigr = XALLOC(mpr);
 
@@ -4047,11 +4013,11 @@ mul_fr_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     XBR(accum) = bigr;
     XTYPE(accum) = BR;
     XMEM(XBR(accum));
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE void
-div_fr_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_fr_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpr *bigr = XALLOC(mpr);
 
@@ -4063,11 +4029,11 @@ div_fr_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     XBR(accum) = bigr;
     XTYPE(accum) = BR;
     XMEM(XBR(accum));
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE int
-cmp_fr_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_fr_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int cmp;
     mpr cmp1;
@@ -4091,40 +4057,40 @@ cmp_fr_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	FF accumulator - FI operator
  */
 static INLINE void
-add_ff_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_ff_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    add_float(mac, builtin, accum, XFF(accum), (double)XFI(ope));
+    add_float(builtin, accum, XFF(accum), (double)XFI(ope));
 }
 
 static INLINE void
-sub_ff_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_ff_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    sub_float(mac, builtin, accum, XFF(accum), (double)XFI(ope));
+    sub_float(builtin, accum, XFF(accum), (double)XFI(ope));
 }
 
 static INLINE void
-mul_ff_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_ff_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    mul_float(mac, builtin, accum, XFF(accum), (double)XFI(ope));
+    mul_float(builtin, accum, XFF(accum), (double)XFI(ope));
 }
 
 static INLINE void
-div_ff_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_ff_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    div_float(mac, builtin, accum, XFF(accum), (double)XFI(ope));
+    div_float(builtin, accum, XFF(accum), (double)XFI(ope));
 }
 
 static INLINE int
-cmp_ff_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_ff_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    return (cmp_float(mac, builtin, XFF(accum), (double)XFI(ope)));
+    return (cmp_float(builtin, XFF(accum), (double)XFI(ope)));
 }
 
 static LispObj *
-divide_ff_fi(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
+divide_ff_fi(LispBuiltin *builtin, LispObj *num, LispObj *div,
 	     int function, int floating)
 {
-    return (divide_float(mac, builtin, XFF(num), (double)XFI(div),
+    return (divide_float(builtin, XFF(num), (double)XFI(div),
 			 function, floating));
 }
 
@@ -4133,45 +4099,45 @@ divide_ff_fi(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
 	FF accumulator - FR operator
  */
 static INLINE void
-add_ff_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_ff_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    add_float(mac, builtin, accum, XFF(accum),
+    add_float(builtin, accum, XFF(accum),
 	      (double)XFRN(ope) / (double)XFRD(ope));
 }
 
 static INLINE void
-sub_ff_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_ff_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    sub_float(mac, builtin, accum, XFF(accum),
+    sub_float(builtin, accum, XFF(accum),
 	      (double)XFRN(ope) / (double)XFRD(ope));
 }
 
 static INLINE void
-mul_ff_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_ff_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    mul_float(mac, builtin, accum, XFF(accum),
+    mul_float(builtin, accum, XFF(accum),
 	      (double)XFRN(ope) / (double)XFRD(ope));
 }
 
 static INLINE void
-div_ff_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_ff_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    div_float(mac, builtin, accum, XFF(accum),
+    div_float(builtin, accum, XFF(accum),
 	      (double)XFRN(ope) / (double)XFRD(ope));
 }
 
 static INLINE int
-cmp_ff_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_ff_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    return (cmp_float(mac, builtin, XFF(accum),
+    return (cmp_float(builtin, XFF(accum),
 		      (double)XFRN(ope) / (double)XFRD(ope)));
 }
 
 static LispObj *
-divide_ff_fr(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
+divide_ff_fr(LispBuiltin *builtin, LispObj *num, LispObj *div,
 	     int function, int floating)
 {
-    return (divide_float(mac, builtin, XFF(num),
+    return (divide_float(builtin, XFF(num),
 			 (double)XFRN(div) / (double)XFRD(div),
 			 function, floating));
 }
@@ -4181,40 +4147,40 @@ divide_ff_fr(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
 	FF accumulator - FF operator
  */
 static INLINE void
-add_ff_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_ff_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    add_float(mac, builtin, accum, XFF(accum), XFF(ope));
+    add_float(builtin, accum, XFF(accum), XFF(ope));
 }
 
 static INLINE void
-sub_ff_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_ff_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    sub_float(mac, builtin, accum, XFF(accum), XFF(ope));
+    sub_float(builtin, accum, XFF(accum), XFF(ope));
 }
 
 static INLINE void
-mul_ff_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_ff_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    mul_float(mac, builtin, accum, XFF(accum), XFF(ope));
+    mul_float(builtin, accum, XFF(accum), XFF(ope));
 }
 
 static INLINE void
-div_ff_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_ff_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    div_float(mac, builtin, accum, XFF(accum), XFF(ope));
+    div_float(builtin, accum, XFF(accum), XFF(ope));
 }
 
 static INLINE int
-cmp_ff_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_ff_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    return (cmp_float(mac, builtin, XFF(accum), XFF(ope)));
+    return (cmp_float(builtin, XFF(accum), XFF(ope)));
 }
 
 static LispObj *
-divide_ff_ff(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
+divide_ff_ff(LispBuiltin *builtin, LispObj *num, LispObj *div,
 	     int function, int floating)
 {
-    return (divide_float(mac, builtin, XFF(num), XFF(div), function, floating));
+    return (divide_float(builtin, XFF(num), XFF(div), function, floating));
 }
 
 
@@ -4222,40 +4188,40 @@ divide_ff_ff(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
 	FF accumulator - BI operator
  */
 static INLINE void
-add_ff_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_ff_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    add_float(mac, builtin, accum, XFF(accum), mpi_getd(XBI(ope)));
+    add_float(builtin, accum, XFF(accum), mpi_getd(XBI(ope)));
 }
 
 static INLINE void
-sub_ff_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_ff_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    sub_float(mac, builtin, accum, XFF(accum), mpi_getd(XBI(ope)));
+    sub_float(builtin, accum, XFF(accum), mpi_getd(XBI(ope)));
 }
 
 static INLINE void
-mul_ff_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_ff_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    mul_float(mac, builtin, accum, XFF(accum), mpi_getd(XBI(ope)));
+    mul_float(builtin, accum, XFF(accum), mpi_getd(XBI(ope)));
 }
 
 static INLINE void
-div_ff_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_ff_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    div_float(mac, builtin, accum, XFF(accum), mpi_getd(XBI(ope)));
+    div_float(builtin, accum, XFF(accum), mpi_getd(XBI(ope)));
 }
 
 static INLINE int
-cmp_ff_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_ff_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    return (cmp_float(mac, builtin, XFF(accum), mpi_getd(XBI(ope))));
+    return (cmp_float(builtin, XFF(accum), mpi_getd(XBI(ope))));
 }
 
 static LispObj *
-divide_ff_bi(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
+divide_ff_bi(LispBuiltin *builtin, LispObj *num, LispObj *div,
 	     int function, int floating)
 {
-    return (divide_float(mac, builtin, XFF(num), mpi_getd(XBI(div)),
+    return (divide_float(builtin, XFF(num), mpi_getd(XBI(div)),
 			 function, floating));
 }
 
@@ -4264,40 +4230,40 @@ divide_ff_bi(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
 	FF accumulator - BR operator
  */
 static INLINE void
-add_ff_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_ff_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    add_float(mac, builtin, accum, XFF(accum), mpr_getd(XBR(ope)));
+    add_float(builtin, accum, XFF(accum), mpr_getd(XBR(ope)));
 }
 
 static INLINE void
-sub_ff_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_ff_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    sub_float(mac, builtin, accum, XFF(accum), mpr_getd(XBR(ope)));
+    sub_float(builtin, accum, XFF(accum), mpr_getd(XBR(ope)));
 }
 
 static INLINE void
-mul_ff_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_ff_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    mul_float(mac, builtin, accum, XFF(accum), mpr_getd(XBR(ope)));
+    mul_float(builtin, accum, XFF(accum), mpr_getd(XBR(ope)));
 }
 
 static INLINE void
-div_ff_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_ff_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    div_float(mac, builtin, accum, XFF(accum), mpr_getd(XBR(ope)));
+    div_float(builtin, accum, XFF(accum), mpr_getd(XBR(ope)));
 }
 
 static INLINE int
-cmp_ff_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_ff_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    return (cmp_float(mac, builtin, XFF(accum), mpr_getd(XBR(ope))));
+    return (cmp_float(builtin, XFF(accum), mpr_getd(XBR(ope))));
 }
 
 static LispObj *
-divide_ff_br(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
+divide_ff_br(LispBuiltin *builtin, LispObj *num, LispObj *div,
 	     int function, int floating)
 {
-    return (divide_float(mac, builtin, XFF(num), mpr_getd(XBR(div)),
+    return (divide_float(builtin, XFF(num), mpr_getd(XBR(div)),
 			 function, floating));
 }
 
@@ -4309,7 +4275,7 @@ divide_ff_br(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
 	BI accumulator - FI operator
  */
 static INLINE void
-add_bi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_bi_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi_addi(XBI(accum), XBI(accum), XFI(ope));
     if (mpi_fiti(XBI(accum))) {
@@ -4322,7 +4288,7 @@ add_bi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 }
 
 static INLINE void
-sub_bi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_bi_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi_subi(XBI(accum), XBI(accum), XFI(ope));
     if (mpi_fiti(XBI(accum))) {
@@ -4335,7 +4301,7 @@ sub_bi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 }
 
 static INLINE void
-mul_bi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_bi_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi_muli(XBI(accum), XBI(accum), XFI(ope));
     if (mpi_fiti(XBI(accum))) {
@@ -4348,7 +4314,7 @@ mul_bi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 }
 
 static INLINE void
-div_bi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_bi_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpr *bigr;
 
@@ -4363,11 +4329,11 @@ div_bi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     XBR(accum) = bigr;
     XTYPE(accum) = BR;
     XMEM(XBR(accum));
-    br_canonicalize(mac, builtin, accum);
+    br_canonicalize(builtin, accum);
 }
 
 static INLINE int
-cmp_bi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_bi_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     return (mpi_cmpi(XBI(accum), XFI(ope)));
 }
@@ -4379,7 +4345,7 @@ cmp_bi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	BI accumulator - FR operator
  */
 static INLINE void
-add_bi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_bi_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi iop;
     mpr *bigr = XALLOC(mpr);
@@ -4398,11 +4364,11 @@ add_bi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     XBR(accum) = bigr;
     XTYPE(accum) = BR;
     XMEM(XBR(accum));
-    br_canonicalize(mac, builtin, accum);
+    br_canonicalize(builtin, accum);
 }
 
 static INLINE void
-sub_bi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_bi_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi iop;
     mpr *bigr = XALLOC(mpr);
@@ -4421,11 +4387,11 @@ sub_bi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     XBR(accum) = bigr;
     XTYPE(accum) = BR;
     XMEM(XBR(accum));
-    br_canonicalize(mac, builtin, accum);
+    br_canonicalize(builtin, accum);
 }
 
 static INLINE void
-mul_bi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_bi_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpr *bigr = XALLOC(mpr);
 
@@ -4438,11 +4404,11 @@ mul_bi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     XBR(accum) = bigr;
     XTYPE(accum) = BR;
     XMEM(XBR(accum));
-    br_canonicalize(mac, builtin, accum);
+    br_canonicalize(builtin, accum);
 }
 
 static INLINE void
-div_bi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_bi_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpr *bigr = XALLOC(mpr);
 
@@ -4455,11 +4421,11 @@ div_bi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     XBR(accum) = bigr;
     XTYPE(accum) = BR;
     XMEM(XBR(accum));
-    br_canonicalize(mac, builtin, accum);
+    br_canonicalize(builtin, accum);
 }
 
 static INLINE int
-cmp_bi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_bi_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int cmp;
     mpr cmp1, cmp2;
@@ -4485,40 +4451,40 @@ cmp_bi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	BI accumulator - FF operator
  */
 static INLINE void
-add_bi_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_bi_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    add_float(mac, builtin, accum, mpi_getd(XBI(accum)), XFF(ope));
+    add_float(builtin, accum, mpi_getd(XBI(accum)), XFF(ope));
 }
 
 static INLINE void
-sub_bi_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_bi_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    sub_float(mac, builtin, accum, mpi_getd(XBI(accum)), XFF(ope));
+    sub_float(builtin, accum, mpi_getd(XBI(accum)), XFF(ope));
 }
 
 static INLINE void
-mul_bi_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_bi_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    mul_float(mac, builtin, accum, mpi_getd(XBI(accum)), XFF(ope));
+    mul_float(builtin, accum, mpi_getd(XBI(accum)), XFF(ope));
 }
 
 static INLINE void
-div_bi_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_bi_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    div_float(mac, builtin, accum, mpi_getd(XBI(accum)), XFF(ope));
+    div_float(builtin, accum, mpi_getd(XBI(accum)), XFF(ope));
 }
 
 static INLINE int
-cmp_bi_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_bi_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    return (cmp_float(mac, builtin, mpi_getd(XBI(accum)), XFF(ope)));
+    return (cmp_float(builtin, mpi_getd(XBI(accum)), XFF(ope)));
 }
 
 static LispObj *
-divide_bi_ff(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
+divide_bi_ff(LispBuiltin *builtin, LispObj *num, LispObj *div,
 	     int function, int floating)
 {
-    return (divide_float(mac, builtin, mpi_getd(XBI(num)), XFF(div),
+    return (divide_float(builtin, mpi_getd(XBI(num)), XFF(div),
 			 function, floating));
 }
 
@@ -4527,25 +4493,25 @@ divide_bi_ff(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
 	BI accumulator - BI operator
  */
 static INLINE void
-add_bi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_bi_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi_add(XBI(accum), XBI(accum), XBI(ope));
 }
 
 static INLINE void
-sub_bi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_bi_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi_sub(XBI(accum), XBI(accum), XBI(ope));
 }
 
 static INLINE void
-mul_bi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_bi_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi_mul(XBI(accum), XBI(accum), XBI(ope));
 }
 
 static INLINE void
-div_bi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_bi_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpr *bigr;
 
@@ -4560,11 +4526,11 @@ div_bi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     XBR(accum) = bigr;
     XTYPE(accum) = BR;
     XMEM(XBR(accum));
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE int
-cmp_bi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_bi_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     return (mpi_cmp(XBI(accum), XBI(ope)));
 }
@@ -4576,7 +4542,7 @@ cmp_bi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	BI accumulator - BR operator
  */
 static INLINE void
-add_bi_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_bi_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi iop;
     mpr *bigr = XALLOC(mpr);
@@ -4594,11 +4560,11 @@ add_bi_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     XBR(accum) = bigr;
     XTYPE(accum) = BR;
     XMEM(XBR(accum));
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE void
-sub_bi_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_bi_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi iop;
     mpr *bigr = XALLOC(mpr);
@@ -4616,11 +4582,11 @@ sub_bi_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     XBR(accum) = bigr;
     XTYPE(accum) = BR;
     XMEM(XBR(accum));
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE void
-mul_bi_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_bi_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpr *bigr = XALLOC(mpr);
 
@@ -4633,11 +4599,11 @@ mul_bi_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     XBR(accum) = bigr;
     XTYPE(accum) = BR;
     XMEM(XBR(accum));
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE void
-div_bi_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_bi_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpr *bigr = XALLOC(mpr);
 
@@ -4650,11 +4616,11 @@ div_bi_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     XBR(accum) = bigr;
     XTYPE(accum) = BR;
     XMEM(XBR(accum));
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE int
-cmp_bi_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_bi_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int cmp;
     mpr cmp1;
@@ -4679,7 +4645,7 @@ cmp_bi_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	BR accumulator - FI operator
  */
 static INLINE void
-add_br_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_br_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi iop;
 
@@ -4688,11 +4654,11 @@ add_br_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     mpi_mul(&iop, &iop, XBRD(accum));
     mpi_add(mpr_num(XBR(accum)), mpr_num(XBR(accum)), &iop);
     mpi_clear(&iop);
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE void
-sub_br_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_br_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi iop;
 
@@ -4701,25 +4667,25 @@ sub_br_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     mpi_mul(&iop, &iop, XBRD(accum));
     mpi_sub(mpr_num(XBR(accum)), mpr_num(XBR(accum)), &iop);
     mpi_clear(&iop);
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE void
-mul_br_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_br_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi_muli(mpr_num(XBR(accum)), mpr_num(XBR(accum)), XFI(ope));
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE void
-div_br_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_br_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi_muli(mpr_den(XBR(accum)), mpr_den(XBR(accum)), 	XFI(ope));
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE int
-cmp_br_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_br_fi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int cmp;
     mpr cmp2;
@@ -4739,7 +4705,7 @@ cmp_br_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	BR accumulator - FR operator
  */
 static INLINE void
-add_br_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_br_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpr rop;
 
@@ -4747,11 +4713,11 @@ add_br_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     mpr_seti(&rop, XFRN(ope), XFRD(ope));
     mpr_add(XBR(accum), XBR(accum), &rop);
     mpr_clear(&rop);
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE void
-sub_br_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_br_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpr rop;
 
@@ -4759,11 +4725,11 @@ sub_br_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     mpr_seti(&rop, XFRN(ope), XFRD(ope));
     mpr_sub(XBR(accum), XBR(accum), &rop);
     mpr_clear(&rop);
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE void
-mul_br_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_br_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpr rop;
 
@@ -4771,11 +4737,11 @@ mul_br_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     mpr_seti(&rop, XFRN(ope), XFRD(ope));
     mpr_mul(XBR(accum), XBR(accum), &rop);
     mpr_clear(&rop);
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE void
-div_br_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_br_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpr rop;
 
@@ -4783,11 +4749,11 @@ div_br_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     mpr_seti(&rop, XFRN(ope), XFRD(ope));
     mpr_div(XBR(accum), XBR(accum), &rop);
     mpr_clear(&rop);
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE int
-cmp_br_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_br_fr(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int cmp;
     mpr cmp2;
@@ -4807,40 +4773,40 @@ cmp_br_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	BR accumulator - FF operator
  */
 static INLINE void
-add_br_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_br_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    add_float(mac, builtin, accum, mpr_getd(XBR(accum)), XFF(ope));
+    add_float(builtin, accum, mpr_getd(XBR(accum)), XFF(ope));
 }
 
 static INLINE void
-sub_br_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_br_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    sub_float(mac, builtin, accum, mpr_getd(XBR(accum)), XFF(ope));
+    sub_float(builtin, accum, mpr_getd(XBR(accum)), XFF(ope));
 }
 
 static INLINE void
-mul_br_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_br_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    mul_float(mac, builtin, accum, mpr_getd(XBR(accum)), XFF(ope));
+    mul_float(builtin, accum, mpr_getd(XBR(accum)), XFF(ope));
 }
 
 static INLINE void
-div_br_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_br_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    div_float(mac, builtin, accum, mpr_getd(XBR(accum)), XFF(ope));
+    div_float(builtin, accum, mpr_getd(XBR(accum)), XFF(ope));
 }
 
 static INLINE int
-cmp_br_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_br_ff(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    return (cmp_float(mac, builtin, mpr_getd(XBR(accum)), XFF(ope)));
+    return (cmp_float(builtin, mpr_getd(XBR(accum)), XFF(ope)));
 }
 
 static LispObj *
-divide_br_ff(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
+divide_br_ff(LispBuiltin *builtin, LispObj *num, LispObj *div,
 	     int function, int floating)
 {
-    return (divide_float(mac, builtin, mpr_getd(XBR(num)), XFF(div),
+    return (divide_float(builtin, mpr_getd(XBR(num)), XFF(div),
 			 function, floating));
 }
 
@@ -4849,7 +4815,7 @@ divide_br_ff(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
 	BR accumulator - BI operator
  */
 static INLINE void
-add_br_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_br_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi iop;
 
@@ -4859,11 +4825,11 @@ add_br_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     mpi_mul(&iop, &iop, XBRD(accum));
     mpi_add(XBRN(accum), XBRN(accum), &iop);
     mpi_clear(&iop);
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE void
-sub_br_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_br_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi iop;
 
@@ -4873,25 +4839,25 @@ sub_br_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     mpi_mul(&iop, &iop, XBRD(accum));
     mpi_sub(XBRN(accum), XBRN(accum), &iop);
     mpi_clear(&iop);
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE void
-mul_br_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_br_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi_mul(XBRN(accum), XBRN(accum), XBI(ope));
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE void
-div_br_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_br_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpi_mul(XBRD(accum), XBRD(accum), XBI(ope));
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE int
-cmp_br_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_br_bi(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int cmp;
     mpr cmp1;
@@ -4913,35 +4879,35 @@ cmp_br_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	BR accumulator - BR operator
  */
 static INLINE void
-add_br_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+add_br_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpr_add(XBR(accum), XBR(accum), XBR(ope));
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE void
-sub_br_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+sub_br_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpr_sub(XBR(accum), XBR(accum), XBR(ope));
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE void
-mul_br_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+mul_br_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpr_mul(XBR(accum), XBR(accum), XBR(ope));
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE void
-div_br_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+div_br_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     mpr_div(XBR(accum), XBR(accum), XBR(ope));
-    br_canonicalize(mac, builtin, accum); 
+    br_canonicalize(builtin, accum); 
 }
 
 static INLINE int
-cmp_br_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+cmp_br_br(LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     return (mpr_cmp(XBR(accum), XBR(accum)));
 }

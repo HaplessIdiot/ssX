@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.20 2002/09/15 21:32:19 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.21 2002/10/06 17:11:41 paulo Exp $ */
 
 #include <ctype.h>
 #include "io.h"
@@ -58,7 +58,7 @@
  * Prototypes
  */
 static char *format_integer(int);
-static void LispDebuggerCommand(LispMac*, LispObj *obj);
+static void LispDebuggerCommand(LispObj *obj);
 
 /*
  * Initialization
@@ -132,7 +132,7 @@ Subcommands may be abbreviated.\n";
 /* Debugger variables layout (if you change it, update description):
  *
  * DBG
- *	is a macro for mac->dbglist
+ *	is a macro for lisp__data.dbglist
  *	is a NIL terminated list
  *	every element is a list in the format (NOT NIL terminated):
  *	(list* NAM ARG ENV HED LEX)
@@ -140,13 +140,13 @@ Subcommands may be abbreviated.\n";
  *		NAM is an ATOM for the function/macro name
  *		    or NIL for lambda expressions
  *		ARG is NAM arguments (a LIST)
- *		ENV is the value of mac->stack.base (a INTEGER)
- *		LEN is the value of mac->env.length (a INTEGER)
- *		LEX is the value of mac->env.lex (a INTEGER)
+ *		ENV is the value of lisp__data.stack.base (a INTEGER)
+ *		LEN is the value of lisp__data.env.length (a INTEGER)
+ *		LEX is the value of lisp__data.env.lex (a INTEGER)
  *	new elements are added to the beggining of the DBG list
  *
  * BRK
- *	is macro for mac->brklist
+ *	is macro for lisp__data.brklist
  *	is a NIL terminated list
  *	every element is a list in the format (NIL terminated):
  *	(list NAM IDX TYP HIT VAR VAL FRM)
@@ -169,47 +169,50 @@ Subcommands may be abbreviated.\n";
  * Implementation
  */
 void
-LispDebugger(LispMac *mac, LispDebugCall call, LispObj *name, LispObj *arg)
+LispDebugger(LispDebugCall call, LispObj *name, LispObj *arg)
 {
     int force = 0;
     LispObj *obj, *prev;
 
     switch (call) {
 	case LispDebugCallBegin:
-	    ++mac->debug_level;
+	    ++lisp__data.debug_level;
 	    GCDisable();
-	    DBG = CONS(CONS(name, CONS(arg, CONS(SMALLINT(mac->stack.base),
-		       CONS(SMALLINT(mac->env.length),
-			    SMALLINT(mac->env.lex))))), DBG);
+	    DBG = CONS(CONS(name, CONS(arg, CONS(SMALLINT(lisp__data.stack.base),
+		       CONS(SMALLINT(lisp__data.env.length),
+			    SMALLINT(lisp__data.env.lex))))), DBG);
 	    GCEnable();
 	    for (obj = BRK; obj != NIL; obj = CDR(obj))
 		if (ATOMID(CAR(CAR(obj))) == ATOMID(name) &&
-		    CAR(CDR(CDR(CAR(obj))))->data.integer == LispDebugBreakFunction)
+		    GETINT(CAR(CDR(CDR(CAR(obj))))) == LispDebugBreakFunction)
 		    break;
 	    if (obj != NIL) {
+		long counter;
+
 		/* if not at a fresh line */
-		if (LispGetColumn(mac, NIL))
+		if (LispGetColumn(NIL))
 		    LispFputc(Stdout, '\n');
 		LispFputs(Stdout, "BREAK #");
-		LispDoWriteObject(mac, NIL, CAR(CDR(CAR(obj))), 1);
+		LispDoWriteObject(NIL, CAR(CDR(CAR(obj))), 1);
 		LispFputs(Stdout, "> (");
-		LispDoWriteObject(mac, NIL, CAR(CAR(DBG)), 1);
+		LispDoWriteObject(NIL, CAR(CAR(DBG)), 1);
 		LispFputc(Stdout, ' ');
-		LispDoWriteObject(mac, NIL, CAR(CDR(CAR(DBG))), 0);
+		LispDoWriteObject(NIL, CAR(CDR(CAR(DBG))), 0);
 		LispFputs(Stdout, ")\n");
 		force = 1;
 		/* update hits counter */
-		CAR(CDR(CDR(CDR(CAR(obj)))))->data.integer += 1;
+		counter = GETINT(CAR(CDR(CDR(CDR(CAR(obj))))));
+		SETINT(CAR(CDR(CDR(CDR(CAR(obj))))), counter + 1);
 	    }
 	    break;
 	case LispDebugCallEnd:
 	    DBG = CDR(DBG);
-	    if (mac->debug_level < mac->debug_step)
-		mac->debug_step = mac->debug_level;
-	    --mac->debug_level;
+	    if (lisp__data.debug_level < lisp__data.debug_step)
+		lisp__data.debug_step = lisp__data.debug_level;
+	    --lisp__data.debug_level;
 	    break;
 	case LispDebugCallFatal:
-	    LispDebuggerCommand(mac, NIL);
+	    LispDebuggerCommand(NIL);
 	    return;
 	case LispDebugCallWatch:
 	    break;
@@ -219,17 +222,17 @@ LispDebugger(LispMac *mac, LispDebugCall call, LispObj *name, LispObj *arg)
     if (call == LispDebugCallEnd || call == LispDebugCallWatch) {
 watch_again:
 	for (prev = obj = BRK; obj != NIL; prev = obj, obj = CDR(obj)) {
-	    if (CAR(CDR(CDR(CAR(obj))))->data.integer == LispDebugBreakVariable) {
+	    if (GETINT(CAR(CDR(CDR(CAR(obj))))) == LispDebugBreakVariable) {
 		/* the variable */
 		LispObj *wat = CAR(CDR(CDR(CDR(CDR(CAR(obj))))));
-		void *sym = LispGetVarAddr(mac, CAAR(obj));
+		void *sym = LispGetVarAddr(CAAR(obj));
 		LispObj *frm = CAR(CDR(CDR(CDR(CDR(CDR(CDR(CAR(obj))))))));
 
-		if ((sym == NULL && mac->debug_level <= 0) ||
+		if ((sym == NULL && lisp__data.debug_level <= 0) ||
 		    (sym != wat->data.opaque.data &&
-		     frm->data.integer > mac->debug_level)) {
+		     GETINT(frm) > lisp__data.debug_level)) {
 		    LispFputs(Stdout, "WATCH #");
-		    LispFputs(Stdout, format_integer(CAR(CDR(CAR(obj)))->data.integer));
+		    LispFputs(Stdout, format_integer(GETINT(CAR(CDR(CAR(obj))))));
 		    LispFputs(Stdout, "> ");
 		    LispFputs(Stdout, STRPTR(CAR(CAR(obj))));
 		    LispFputs(Stdout, " deleted. Variable does not exist anymore.\n");
@@ -249,23 +252,26 @@ watch_again:
 		    /* last value */
 		    LispObj *val = CAR(CDR(CDR(CDR(CDR(CDR(CAR(obj)))))));
 		    if (XEQUAL(val, cur) == NIL) {
+			long counter;
+
 			LispFputs(Stdout, "WATCH #");
-			LispFputs(Stdout, format_integer(CAR(CDR(CAR(obj)))->data.integer));
+			LispFputs(Stdout, format_integer(GETINT(CAR(CDR(CAR(obj))))));
 			LispFputs(Stdout, "> ");
 			LispFputs(Stdout, STRPTR(CAR(CAR(obj))));
 			LispFputc(Stdout, '\n');
 
 			LispFputs(Stdout, "OLD: ");
-			LispDoWriteObject(mac, NIL, val, 1);
+			LispDoWriteObject(NIL, val, 1);
 
 			LispFputs(Stdout, "\nNEW: ");
-			LispDoWriteObject(mac, NIL, cur, 1);
+			LispDoWriteObject(NIL, cur, 1);
 			LispFputc(Stdout, '\n');
 
 			/* update current value */
 			CAR(CDR(CDR(CDR(CDR(CDR(CAR(obj))))))) = cur;
 			/* update hits counter */
-			CAR(CDR(CDR(CDR(CAR(obj)))))->data.integer += 1;
+			counter = GETINT(CAR(CDR(CDR(CDR(CAR(obj))))));
+			SETINT(CAR(CDR(CDR(CDR(CAR(obj))))), counter + 1);
 			/* force debugger to stop */
 			force = 1;
 		    }
@@ -279,26 +285,27 @@ watch_again:
 	    return;
     }
 
-    switch (mac->debug) {
+    switch (lisp__data.debug) {
 	case LispDebugUnspec:
-	    LispDebuggerCommand(mac, NIL);
+	    LispDebuggerCommand(NIL);
 	    goto debugger_done;
 	case LispDebugRun:
 	    if (force)
-		LispDebuggerCommand(mac, NIL);
+		LispDebuggerCommand(NIL);
 	    goto debugger_done;
 	case LispDebugFinish:
 	    if (!force &&
-		(call != LispDebugCallEnd || mac->debug_level != mac->debug_step))
+		(call != LispDebugCallEnd ||
+		 lisp__data.debug_level != lisp__data.debug_step))
 		goto debugger_done;
 	    break;
 	case LispDebugNext:
 	    if (call == LispDebugCallBegin) {
-		if (!force && mac->debug_level != mac->debug_step)
+		if (!force && lisp__data.debug_level != lisp__data.debug_step)
 		    goto debugger_done;
 	    }
 	    else if (call == LispDebugCallEnd) {
-		if (!force && mac->debug_level >= mac->debug_step)
+		if (!force && lisp__data.debug_level >= lisp__data.debug_step)
 		    goto debugger_done;
 	    }
 	    break;
@@ -308,39 +315,41 @@ watch_again:
 
     if (call == LispDebugCallBegin) {
 	LispFputc(Stdout, '#');
-	LispFputs(Stdout, format_integer(mac->debug_level));
+	LispFputs(Stdout, format_integer(lisp__data.debug_level));
 	LispFputs(Stdout, "> (");
-	LispDoWriteObject(mac, NIL, CAR(CAR(DBG)), 1);
+	LispDoWriteObject(NIL, CAR(CAR(DBG)), 1);
 	LispFputc(Stdout, ' ');
-	LispDoWriteObject(mac, NIL, CAR(CDR(CAR(DBG))), 0);
+	LispDoWriteObject(NIL, CAR(CDR(CAR(DBG))), 0);
 	LispFputs(Stdout, ")\n");
-	LispDebuggerCommand(mac, NIL);
+	LispDebuggerCommand(NIL);
     }
     else if (call == LispDebugCallEnd) {
 	LispFputc(Stdout, '#');
-	LispFputs(Stdout, format_integer(mac->debug_level + 1));
+	LispFputs(Stdout, format_integer(lisp__data.debug_level + 1));
 	LispFputs(Stdout, "= ");
-	LispDoWriteObject(mac, NIL, arg, 1);
+	LispDoWriteObject(NIL, arg, 1);
 	LispFputc(Stdout, '\n');
-	LispDebuggerCommand(mac, NIL);
+	LispDebuggerCommand(NIL);
     }
     else if (force)
-	LispDebuggerCommand(mac, arg);
+	LispDebuggerCommand(arg);
 
 debugger_done:
     return;
 }
 
 static void
-LispDebuggerCommand(LispMac *mac, LispObj *args)
+LispDebuggerCommand(LispObj *args)
 {
     LispObj *obj, *frm, *curframe;
     int i = 0, frame, matches, action = -1, subaction = 0;
     char *cmd, *arg, *ptr, line[256];
 
-    int envbase = mac->stack.base, envlen = mac->env.length, envlex = mac->env.lex;
+    int envbase = lisp__data.stack.base,
+	envlen = lisp__data.env.length,
+	envlex = lisp__data.env.lex;
 
-    frame = mac->debug_level;
+    frame = lisp__data.debug_level;
     curframe = CAR(DBG);
 
     line[0] = '\0';
@@ -381,13 +390,13 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 
 	if (*cmd == '\0') {
 	    if (action < 0) {
-		if (mac->debug == LispDebugFinish)
+		if (lisp__data.debug == LispDebugFinish)
 		    action = DebuggerFinish;
-		else if (mac->debug == LispDebugNext)
+		else if (lisp__data.debug == LispDebugNext)
 		    action = DebuggerNext;
-		else if (mac->debug == LispDebugStep)
+		else if (lisp__data.debug == LispDebugStep)
 		    action = DebuggerStep;
-		else if (mac->debug == LispDebugRun)
+		else if (lisp__data.debug == LispDebugRun)
 		    action = DebuggerContinue;
 		else
 		    continue;
@@ -474,16 +483,16 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 			for (obj = BRK; obj != NIL; obj = CDR(obj)) {
 			    /* breakpoint number */
 			    LispFputc(Stdout, '#');
-			    LispDoWriteObject(mac, NIL, CAR(CDR(CAR(obj))), 1);
+			    LispDoWriteObject(NIL, CAR(CDR(CAR(obj))), 1);
 
 			    /* number of hits */
 			    LispFputc(Stdout, '\t');
-			    LispDoWriteObject(mac, NIL,
-					     CAR(CDR(CDR(CDR(CAR(obj))))), 1);
+			    LispDoWriteObject(NIL,
+					      CAR(CDR(CDR(CDR(CAR(obj))))), 1);
 
 			    /* breakpoint type */
 			    LispFputc(Stdout, '\t');
-			    switch ((int)CAR(CDR(CDR(CAR(obj))))->data.integer) {
+			    switch ((int)GETINT(CAR(CDR(CDR(CAR(obj)))))) {
 				case LispDebugBreakFunction:
 				    LispFputs(Stdout, "Function");
 				    break;
@@ -494,7 +503,7 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 
 			    /* breakpoint object */
 			    LispFputc(Stdout, '\t');
-			    LispDoWriteObject(mac, NIL, CAR(CAR(obj)), 1);
+			    LispDoWriteObject(NIL, CAR(CAR(obj)), 1);
 			    LispFputc(Stdout, '\n');
 			}
 			break;
@@ -503,18 +512,19 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		}
 		break;
 	    case DebuggerAbort:
-		while (mac->mem.level) {
-		    --mac->mem.level;
-		    if (mac->mem.mem[mac->mem.level])
-			free(mac->mem.mem[mac->mem.level]);
+		while (lisp__data.mem.level) {
+		    --lisp__data.mem.level;
+		    if (lisp__data.mem.mem[lisp__data.mem.level])
+			free(lisp__data.mem.mem[lisp__data.mem.level]);
 		}
-		mac->mem.index = 0;
-		LispTopLevel(mac);
-		if (!mac->running) {
-		    LispMessage(mac, "*** Fatal: nowhere to longjmp.");
+		lisp__data.mem.index = 0;
+		LispTopLevel();
+		if (!lisp__data.running) {
+		    LispMessage("*** Fatal: nowhere to longjmp.");
 		    abort();
 		}
-		siglongjmp(mac->jmp, 1);/* don't need to restore environment */
+		/* don't need to restore environment */
+		siglongjmp(lisp__data.jmp, 1);
 		/*NOTREACHED*/
 		break;
 	    case DebuggerBreak:
@@ -534,8 +544,8 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		else {
 		    for (obj = frm = BRK; obj != NIL; frm = obj, obj = CDR(obj))
 			;
-		    i = mac->debug_break;
-		    ++mac->debug_break;
+		    i = lisp__data.debug_break;
+		    ++lisp__data.debug_break;
 		    GCDisable();
 		    obj = CONS(ATOM(arg),
 			       CONS(SMALLINT(i),
@@ -560,7 +570,7 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		    ++ptr;
 		}
 		atom = ATOM(arg);
-		val = LispGetVar(mac, atom);
+		val = LispGetVar(atom);
 		if (val == NULL) {
 		    LispFputs(Stdout, "* No variable named '");
 		    LispFputs(Stdout, arg);
@@ -569,39 +579,39 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		}
 
 		/* variable is available at the current frame */
-		sym = LispGetVarAddr(mac, atom);
+		sym = LispGetVarAddr(atom);
 
 		/* find the lowest frame where the variable is visible */
 		vframe = 0;
 		if (frame > 0) {
 		    for (; vframe < frame; vframe++) {
-			for (frm = DBG, i = mac->debug_level; i > vframe;
+			for (frm = DBG, i = lisp__data.debug_level; i > vframe;
 			     frm = CDR(frm), i--)
 			    ;
 			obj = CAR(frm);
-			mac->stack.base = CAR(CDR(CDR(obj)))->data.integer;
-			mac->env.length = CAR(CDR(CDR(CDR(obj))))->data.integer;
-			mac->env.lex = CDR(CDR(CDR(CDR(obj))))->data.integer;
+			lisp__data.stack.base = GETINT(CAR(CDR(CDR(obj))));
+			lisp__data.env.length = GETINT(CAR(CDR(CDR(CDR(obj)))));
+			lisp__data.env.lex = GETINT(CDR(CDR(CDR(CDR(obj)))));
 
-			if (LispGetVarAddr(mac, atom) == sym)
+			if (LispGetVarAddr(atom) == sym)
 			    /* got variable initial frame */
 			    break;
 		    }
 		    vframe = i;
 		    if (vframe != frame) {
 			/* restore environment */
-			for (frm = DBG, i = mac->debug_level; i > frame;
+			for (frm = DBG, i = lisp__data.debug_level; i > frame;
 			     frm = CDR(frm), i--)
 			    ;
 			obj = CAR(frm);
-			mac->stack.base = CAR(CDR(CDR(obj)))->data.integer;
-			mac->env.length = CAR(CDR(CDR(CDR(obj))))->data.integer;
-			mac->env.lex = CDR(CDR(CDR(CDR(obj))))->data.integer;
+			lisp__data.stack.base = GETINT(CAR(CDR(CDR(obj))));
+			lisp__data.env.length = GETINT(CAR(CDR(CDR(CDR(obj)))));
+			lisp__data.env.lex = GETINT(CDR(CDR(CDR(CDR(obj)))));
 		    }
 		}
 
-		i = mac->debug_break;
-		++mac->debug_break;
+		i = lisp__data.debug_break;
+		++lisp__data.debug_break;
 		for (obj = frm = BRK; obj != NIL; frm = obj, obj = CDR(obj))
 		    ;
 
@@ -659,7 +669,7 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 			i = atoi(arg);
 			for (obj = frm = BRK; frm != NIL;
 			     obj = frm, frm = CDR(frm))
-			    if (CAR(CDR(CAR(frm)))->data.integer == i)
+			    if (GETINT(CAR(CDR(CAR(frm)))) == i)
 				break;
 			if (frm == NIL) {
 			    LispFputs(Stdout, "* No breakpoint number ");
@@ -695,14 +705,14 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		}
 		else
 		    goto debugger_print_frame;
-		if (i >= 0 && i <= mac->debug_level)
+		if (i >= 0 && i <= lisp__data.debug_level)
 		    goto debugger_new_frame;
 		LispFputs(Stdout, "* No such frame ");
 		LispFputs(Stdout, format_integer(i));
 		LispFputs(Stdout, ".\n");
 		break;
 	    case DebuggerDown:
-		if (frame + 1 > mac->debug_level) {
+		if (frame + 1 > lisp__data.debug_level) {
 		    LispFputs(Stdout, "* Cannot go down.\n");
 		    break;
 		}
@@ -723,9 +733,9 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		    *ptr = toupper(*ptr);
 		    ++ptr;
 		}
-		obj = LispGetVar(mac, ATOM(arg));
+		obj = LispGetVar(ATOM(arg));
 		if (obj != NULL) {
-		    LispDoWriteObject(mac, NIL, obj, 1);
+		    LispDoWriteObject(NIL, obj, 1);
 		    LispFputc(Stdout, '\n');
 		}
 		else {
@@ -746,32 +756,32 @@ debugger_print_backtrace:
 		    LispFputc(Stdout, '#');
 		    LispFputs(Stdout, format_integer(i));
 		    LispFputs(Stdout, "> (");
-		    LispDoWriteObject(mac, NIL, CAR(frm), 1);
+		    LispDoWriteObject(NIL, CAR(frm), 1);
 		    LispFputc(Stdout, ' ');
-		    LispDoWriteObject(mac, NIL, CAR(CDR(frm)), 0);
+		    LispDoWriteObject(NIL, CAR(CDR(frm)), 0);
 		    LispFputs(Stdout, ")\n");
 		}
 		DBG = LispReverse(DBG);
 		break;
 	    case DebuggerContinue:
-		mac->debug = LispDebugRun;
+		lisp__data.debug = LispDebugRun;
 		goto debugger_command_done;
 	    case DebuggerFinish:
-		if (mac->debug != LispDebugFinish) {
-		    mac->debug_step = mac->debug_level - 2;
-		    mac->debug = LispDebugFinish;
+		if (lisp__data.debug != LispDebugFinish) {
+		    lisp__data.debug_step = lisp__data.debug_level - 2;
+		    lisp__data.debug = LispDebugFinish;
 		}
 		else
-		    mac->debug_step = mac->debug_level - 1;
+		    lisp__data.debug_step = lisp__data.debug_level - 1;
 		goto debugger_command_done;
 	    case DebuggerNext:
-		if (mac->debug != LispDebugNext) {
-		    mac->debug = LispDebugNext;
-		    mac->debug_step = mac->debug_level + 1;
+		if (lisp__data.debug != LispDebugNext) {
+		    lisp__data.debug = LispDebugNext;
+		    lisp__data.debug_step = lisp__data.debug_level + 1;
 		}
 		goto debugger_command_done;
 	    case DebuggerStep:
-		mac->debug = LispDebugStep;
+		lisp__data.debug = LispDebugStep;
 		goto debugger_command_done;
 	}
 	continue;
@@ -780,27 +790,28 @@ debugger_new_frame:
 	/* goto here with i as the new frame value, after error checking */
 	if (i != frame) {
 	    frame = i;
-	    for (frm = DBG, i = mac->debug_level; i > frame; frm = CDR(frm), i--)
+	    for (frm = DBG, i = lisp__data.debug_level;
+		 i > frame; frm = CDR(frm), i--)
 		;
 	    curframe = CAR(frm);
-	    mac->stack.base = CAR(CDR(CDR(curframe)))->data.integer;
-	    mac->env.length = CAR(CDR(CDR(CDR(curframe))))->data.integer;
-	    mac->env.lex = CDR(CDR(CDR(CDR(curframe))))->data.integer;
+	    lisp__data.stack.base = GETINT(CAR(CDR(CDR(curframe))));
+	    lisp__data.env.length = GETINT(CAR(CDR(CDR(CDR(curframe)))));
+	    lisp__data.env.lex = GETINT(CDR(CDR(CDR(CDR(curframe)))));
 	}
 debugger_print_frame:
 	LispFputc(Stdout, '#');
 	LispFputs(Stdout, format_integer(frame));
 	LispFputs(Stdout, "> (");
-	LispDoWriteObject(mac, NIL, CAR(curframe), 1);
+	LispDoWriteObject(NIL, CAR(curframe), 1);
 	LispFputc(Stdout, ' ');
-	LispDoWriteObject(mac, NIL, CAR(CDR(curframe)), 0);
+	LispDoWriteObject(NIL, CAR(CDR(curframe)), 0);
 	LispFputs(Stdout, ")\n");
     }
 
 debugger_command_done:
-    mac->stack.base = envbase;
-    mac->env.length = envlen;
-    mac->env.lex = envlex;
+    lisp__data.stack.base = envbase;
+    lisp__data.env.length = envlen;
+    lisp__data.env.lex = envlex;
 }
 
 static char *

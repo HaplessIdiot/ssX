@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.7 2002/10/20 05:58:55 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.8 2002/11/02 22:58:08 paulo Exp $ */
 
 
 /*
@@ -109,7 +109,7 @@ somethings TODO:
 #define	FORM_LEAVE()		--com->level
 
 #define COMPILE_FAILURE(message)			\
-    LispMessage(com->mac, "COMPILE: %s", message);	\
+    LispMessage("COMPILE: %s", message);		\
     longjmp(com->jmp, 1)
 
 /*
@@ -220,8 +220,6 @@ struct _CodeBlock {
 };
 
 struct _LispCom {
-    LispMac *mac;		/* Interpreter data */
-
     unsigned char *bytecode;	/* Bytecode generated so far */
     long length;
 
@@ -267,12 +265,12 @@ struct _LispCom {
 /*
  * Prototypes
  */
-static LispObj *MakeBytecodeObject(LispMac*, LispCom*, LispObj*, LispObj*);
+static LispObj *MakeBytecodeObject(LispCom*, LispObj*, LispObj*);
 
 static CodeTree *CompileNewTree(LispCom*, CodeTreeType);
 static void CompileFreeState(LispCom*);
-static void CompileFreeBlock(LispMac*, CodeBlock*);
-static void CompileFreeTree(LispMac*, CodeTree*);
+static void CompileFreeBlock(CodeBlock*);
+static void CompileFreeTree(CodeTree*);
 
 static void CompileIniBlock(LispCom*, LispBlockType, LispObj*);
 static void CompileFiniBlock(LispCom*);
@@ -318,15 +316,15 @@ static void CompileStackLeave(LispCom*, int, int);
 
 static void LinkBytecode(LispCom*);
 
-static LispObj *ExecuteBytecode(LispMac*, unsigned char*);
+static LispObj *ExecuteBytecode(unsigned char*);
 
 
 /* Defined in lisp.c */
-void LispMoreStack(LispMac*);
-void LispMoreEnvironment(LispMac*);
-void LispMoreGlobals(LispMac*, LispPackage*);
-LispObj *LispEvalBackquote(LispMac*, LispObj*, int);
-void LispSetAtomObjectProperty(LispMac*, LispAtom*, LispObj*);
+void LispMoreStack(void);
+void LispMoreEnvironment(void);
+void LispMoreGlobals(LispPackage*);
+LispObj *LispEvalBackquote(LispObj*, int);
+void LispSetAtomObjectProperty(LispAtom*, LispObj*);
 
 /*
  * Initialization
@@ -342,7 +340,7 @@ static LispObj *cons, *cons1, *cons2, *cons3, *cons4, *cons5, *cons6, *cons7;
 #include "compile.c"
 
 void
-LispBytecodeInit(LispMac *mac)
+LispBytecodeInit(void)
 {
     cons = &x_cons[7];
     cons->type = LispCons_t;
@@ -371,7 +369,7 @@ LispBytecodeInit(LispMac *mac)
 }
 
 LispObj *
-Lisp_Compile(LispMac *mac, LispBuiltin *builtin)
+Lisp_Compile(LispBuiltin *builtin)
 /*
  compile name &optional definition
  */
@@ -410,8 +408,7 @@ Lisp_Compile(LispMac *mac, LispBuiltin *builtin)
 	    alist = atom->property->alist;
 
 	    memset(&com, 0, sizeof(LispCom));
-	    com.mac = mac;
-	    com.toplevel = com.block = LispCalloc(mac, 1, sizeof(CodeBlock));
+	    com.toplevel = com.block = LispCalloc(1, sizeof(CodeBlock));
 	    com.block->type = LispBlockClosure;
 	    com.block->tag = name;
 
@@ -489,24 +486,24 @@ Lisp_Compile(LispMac *mac, LispBuiltin *builtin)
 	    failed = 1;
 	    if (setjmp(com.jmp) == 0) {
 		/* Save interpreter state */
-		lex = com.lex = mac->env.lex;
+		lex = com.lex = lisp__data.env.lex;
 		base = ComCall(&com, alist, name, arguments, 1, 0, 1);
 
 		/* Generate code tree */
-		mac->env.lex = base;
+		lisp__data.env.lex = base;
 		ComProgn(&com, CAR(form));
 		failed = 0;
 	    }
 
 	    /* Restore interpreter state */
-	    mac->env.lex = lex;
-	    mac->env.head = mac->env.length = base;
+	    lisp__data.env.lex = lex;
+	    lisp__data.env.head = lisp__data.env.length = base;
 
 	    if (!failed) {
 		failure_p = NIL;
-		result = MakeBytecodeObject(mac, &com, name,
+		result = MakeBytecodeObject(&com, name,
 					    lambda->data.lambda.data);
-		LispSetAtomCompiledProperty(mac, atom, result);
+		LispSetAtomCompiledProperty(atom, result);
 		result = name;
 	    }
 	    if (com.warnings)
@@ -518,7 +515,7 @@ Lisp_Compile(LispMac *mac, LispBuiltin *builtin)
     }
 
 undefined_function:
-    LispDestroy(mac, "%s: the function %s is undefined",
+    LispDestroy("%s: the function %s is undefined",
 		STRFUN(builtin), STROBJ(name));
 
 finished_compilation:
@@ -531,7 +528,7 @@ finished_compilation:
 }
 
 LispObj *
-Lisp_Disassemble(LispMac *mac, LispBuiltin *builtin)
+Lisp_Disassemble(LispBuiltin *builtin)
 /*
  disassemble function
  */
@@ -578,7 +575,7 @@ Lisp_Disassemble(LispMac *mac, LispBuiltin *builtin)
 		xbuiltin = atom->property->fun.builtin;
 	    }
 	    else
-		LispDestroy(mac, "%s: the function %s is not defined",
+		LispDestroy("%s: the function %s is not defined",
 			    STRFUN(builtin), STROBJ(function));
 	    break;
 	case LispBytecode_t:
@@ -600,24 +597,24 @@ Lisp_Disassemble(LispMac *mac, LispBuiltin *builtin)
 		}
 	    }
 	default:
-	    LispDestroy(mac, "%s: %s is not a function",
+	    LispDestroy("%s: %s is not a function",
 			STRFUN(builtin), STROBJ(function));
 	    break;
     }
 
     if (xbuiltin) {
-	LispWriteStr(mac, NIL, "Builtin ", 8);
+	LispWriteStr(NIL, "Builtin ", 8);
 	if (macro)
-	    LispWriteStr(mac, NIL, "macro ", 6);
+	    LispWriteStr(NIL, "macro ", 6);
 	else
-	    LispWriteStr(mac, NIL, "function ", 9);
+	    LispWriteStr(NIL, "function ", 9);
     }
     else if (macro)
-	LispWriteStr(mac, NIL, "Macro ", 6);
+	LispWriteStr(NIL, "Macro ", 6);
     else
-	LispWriteStr(mac, NIL, "Function ", 9);
-    LispWriteAtom(mac, NIL, name);
-    LispWriteStr(mac, NIL, ":\n", 2);
+	LispWriteStr(NIL, "Function ", 9);
+    LispWriteAtom(NIL, name);
+    LispWriteStr(NIL, ":\n", 2);
 
     if (alist) {
 	int i;
@@ -625,46 +622,46 @@ Lisp_Disassemble(LispMac *mac, LispBuiltin *builtin)
 	sprintf(buffer, "%d required argument%s",
 		alist->normals.num_symbols,
 		alist->normals.num_symbols != 1 ? "s" : "");
-	LispWriteStr(mac, NIL, buffer, strlen(buffer));
+	LispWriteStr(NIL, buffer, strlen(buffer));
 	for (i = 0; i < alist->normals.num_symbols; i++) {
-	    LispWriteChar(mac, NIL, i ? ',' : ':');
-	    LispWriteChar(mac, NIL, ' ');
-	    LispWriteStr(mac, NIL, STRPTR(alist->normals.symbols[i]),
+	    LispWriteChar(NIL, i ? ',' : ':');
+	    LispWriteChar(NIL, ' ');
+	    LispWriteStr(NIL, STRPTR(alist->normals.symbols[i]),
 			 strlen(STRPTR(alist->normals.symbols[i])));
 	}
-	LispWriteChar(mac, NIL, '\n');
+	LispWriteChar(NIL, '\n');
 
 	sprintf(buffer, "%d optional argument%s",
 		alist->optionals.num_symbols,
 		alist->optionals.num_symbols != 1 ? "s" : "");
-	LispWriteStr(mac, NIL, buffer, strlen(buffer));
+	LispWriteStr(NIL, buffer, strlen(buffer));
 	for (i = 0; i < alist->optionals.num_symbols; i++) {
-	    LispWriteChar(mac, NIL, i ? ',' : ':');
-	    LispWriteChar(mac, NIL, ' ');
-	    LispWriteStr(mac, NIL, STRPTR(alist->optionals.symbols[i]),
+	    LispWriteChar(NIL, i ? ',' : ':');
+	    LispWriteChar(NIL, ' ');
+	    LispWriteStr(NIL, STRPTR(alist->optionals.symbols[i]),
 			 strlen(STRPTR(alist->optionals.symbols[i])));
 	}
-	LispWriteChar(mac, NIL, '\n');
+	LispWriteChar(NIL, '\n');
 
 	sprintf(buffer, "%d keyword parameter%s",
 		alist->keys.num_symbols,
 		alist->keys.num_symbols != 1 ? "s" : "");
-	LispWriteStr(mac, NIL, buffer, strlen(buffer));
+	LispWriteStr(NIL, buffer, strlen(buffer));
 	for (i = 0; i < alist->keys.num_symbols; i++) {
-	    LispWriteChar(mac, NIL, i ? ',' : ':');
-	    LispWriteChar(mac, NIL, ' ');
-	    LispWriteAtom(mac, NIL, alist->keys.symbols[i]);
+	    LispWriteChar(NIL, i ? ',' : ':');
+	    LispWriteChar(NIL, ' ');
+	    LispWriteAtom(NIL, alist->keys.symbols[i]);
 	}
-	LispWriteChar(mac, NIL, '\n');
+	LispWriteChar(NIL, '\n');
 
 	if (alist->rest) {
-	    LispWriteStr(mac, NIL, "Rest argument: ", 15);
-	    LispWriteStr(mac, NIL, STRPTR(alist->rest),
+	    LispWriteStr(NIL, "Rest argument: ", 15);
+	    LispWriteStr(NIL, STRPTR(alist->rest),
 			 strlen(STRPTR(alist->rest)));
-	    LispWriteChar(mac, NIL, '\n');
+	    LispWriteChar(NIL, '\n');
 	}
 	else
-	    LispWriteStr(mac, NIL, "No rest argument\n", 17);
+	    LispWriteStr(NIL, "No rest argument\n", 17);
     }
 
     if (bytecode) {
@@ -679,24 +676,24 @@ Lisp_Disassemble(LispMac *mac, LispBuiltin *builtin)
 	short stack, num_constants, num_symbols, num_builtins, num_bytecodes;
 	unsigned char *base, *stream = bytecode->data.bytecode.bytecode->code;
 
-	LispWriteStr(mac, NIL, "\nBytecode header:\n", 18);
+	LispWriteStr(NIL, "\nBytecode header:\n", 18);
 
 	/* Header information */
 	stack = *(short*)stream;
 	stream += sizeof(short);
 	sprintf(buffer, "%d element%s used in the stack\n",
 		stack, stack != 1 ? "s" : "");
-	LispWriteStr(mac, NIL, buffer, strlen(buffer));
+	LispWriteStr(NIL, buffer, strlen(buffer));
 	stack = *(short*)stream;
 	stream += sizeof(short);
 	sprintf(buffer, "%d element%s used in the builtin stack\n",
 		stack, stack != 1 ? "s" : "");
-	LispWriteStr(mac, NIL, buffer, strlen(buffer));
+	LispWriteStr(NIL, buffer, strlen(buffer));
 	stack = *(short*)stream;
 	stream += sizeof(short);
 	sprintf(buffer, "%d element%s used in the protected stack\n",
 		stack, stack != 1 ? "s" : "");
-	LispWriteStr(mac, NIL, buffer, strlen(buffer));
+	LispWriteStr(NIL, buffer, strlen(buffer));
 
 	num_constants = *(short*)stream;
 	stream += sizeof(short);
@@ -720,7 +717,7 @@ Lisp_Disassemble(LispMac *mac, LispBuiltin *builtin)
 
 	for (i = 0; i < num_constants; i++) {
 	    sprintf(buffer, "Constant %d = %s\n", i, STROBJ(constants[i]));
-	    LispWriteStr(mac, NIL, buffer, strlen(buffer));
+	    LispWriteStr(NIL, buffer, strlen(buffer));
 	}
 
 /* Macro XSTRING avoids some noisy in the output, if it were defined as
@@ -733,53 +730,53 @@ Lisp_Disassemble(LispMac *mac, LispBuiltin *builtin)
 	for (i = 0; i < num_symbols; i++) {
 	    sprintf(buffer, "Symbol %d = %s\n",
 		    i, XSTRING(symbols[i]->string));
-	    LispWriteStr(mac, NIL, buffer, strlen(buffer));
+	    LispWriteStr(NIL, buffer, strlen(buffer));
 	}
 	for (i = 0; i < num_builtins; i++) {
 	    sprintf(buffer, "Builtin %d = %s\n",
 		    i, STROBJ(builtins[i]->symbol));
-	    LispWriteStr(mac, NIL, buffer, strlen(buffer));
+	    LispWriteStr(NIL, buffer, strlen(buffer));
 	}
 	for (i = 0; i < num_bytecodes; i++) {
 	    sprintf(buffer, "Bytecode %d = %s\n",
 		    i, STROBJ(names[i]));
-	    LispWriteStr(mac, NIL, buffer, strlen(buffer));
+	    LispWriteStr(NIL, buffer, strlen(buffer));
 	}
 
 	/*  Make readability slightly easier printing the names of local
 	 * variables where it's offset is known, i.e. function arguments. */
 	if (alist) {
 	    if (alist->num_arguments == 0)
-		LispWriteStr(mac, NIL, "\nNo initial stack\n", 18);
+		LispWriteStr(NIL, "\nNo initial stack\n", 18);
 	    else {
 		int len1, len2;
 
 		j = 0;
-		LispWriteStr(mac, NIL, "\nInitial stack:\n", 16);
+		LispWriteStr(NIL, "\nInitial stack:\n", 16);
 
 		for (i = 0; i < alist->normals.num_symbols; i++, j++) {
 		    sprintf(buffer, "%d = ", j);
-		    LispWriteStr(mac, NIL, buffer, strlen(buffer));
+		    LispWriteStr(NIL, buffer, strlen(buffer));
 		    ptr = alist->normals.symbols[i]->data.atom->string;
-		    LispWriteStr(mac, NIL, ptr, strlen(ptr));
-		    LispWriteChar(mac, NIL, '\n');
+		    LispWriteStr(NIL, ptr, strlen(ptr));
+		    LispWriteChar(NIL, '\n');
 		}
 
 		for (i = 0; i < alist->optionals.num_symbols; i++, j++) {
 		    sprintf(buffer, "%d = ", j);
-		    LispWriteStr(mac, NIL, buffer, strlen(buffer));
+		    LispWriteStr(NIL, buffer, strlen(buffer));
 		    ptr = alist->optionals.symbols[i]->data.atom->string;
-		    LispWriteStr(mac, NIL, ptr, strlen(ptr));
-		    LispWriteChar(mac, NIL, '\n');
+		    LispWriteStr(NIL, ptr, strlen(ptr));
+		    LispWriteChar(NIL, '\n');
 		    if (alist->optionals.sforms[i]) {
 			sprintf(buffer, "%d = ", j);
 			len1 = strlen(buffer);
-			LispWriteStr(mac, NIL, buffer, len1);
+			LispWriteStr(NIL, buffer, len1);
 			ptr = alist->optionals.sforms[i]->data.atom->string;
 			len2 = strlen(ptr);
-			LispWriteStr(mac, NIL, ptr, len2);
-			LispWriteChars(mac, NIL, ' ', 28 - (len1 + len2));
-			LispWriteStr(mac, NIL, ";  sform\n", 9);
+			LispWriteStr(NIL, ptr, len2);
+			LispWriteChars(NIL, ' ', 28 - (len1 + len2));
+			LispWriteStr(NIL, ";  sform\n", 9);
 			j++;
 		    }
 		}
@@ -787,28 +784,28 @@ Lisp_Disassemble(LispMac *mac, LispBuiltin *builtin)
 		for (i = 0; i < alist->keys.num_symbols; i++, j++) {
 		    sprintf(buffer, "%d = ", j);
 		    len1 = strlen(buffer);
-		    LispWriteStr(mac, NIL, buffer, len1);
+		    LispWriteStr(NIL, buffer, len1);
 		    if (alist->keys.keys[i]) {
 			ptr = alist->keys.keys[i]->data.atom->string;
 			len2 = strlen(ptr);
-			LispWriteStr(mac, NIL, ptr, strlen(ptr));
-			LispWriteChars(mac, NIL, ' ', 28 - (len1 + len2));
-			LispWriteStr(mac, NIL, ";  special key", 14);
+			LispWriteStr(NIL, ptr, strlen(ptr));
+			LispWriteChars(NIL, ' ', 28 - (len1 + len2));
+			LispWriteStr(NIL, ";  special key", 14);
 		    }
 		    else {
 			ptr = alist->keys.symbols[i]->data.atom->string;
-			LispWriteStr(mac, NIL, ptr, strlen(ptr));
+			LispWriteStr(NIL, ptr, strlen(ptr));
 		    }
-		    LispWriteChar(mac, NIL, '\n');
+		    LispWriteChar(NIL, '\n');
 		    if (alist->keys.sforms[i]) {
 			sprintf(buffer, "%d = ", j);
 			len1 = strlen(buffer);
-			LispWriteStr(mac, NIL, buffer, len1);
+			LispWriteStr(NIL, buffer, len1);
 			ptr = alist->keys.sforms[i]->data.atom->string;
 			len2 = strlen(ptr);
-			LispWriteStr(mac, NIL, ptr, len2);
-			LispWriteChars(mac, NIL, ' ', 28 - (len1 + len2));
-			LispWriteStr(mac, NIL, ";  sform\n", 9);
+			LispWriteStr(NIL, ptr, len2);
+			LispWriteChars(NIL, ' ', 28 - (len1 + len2));
+			LispWriteStr(NIL, ";  sform\n", 9);
 			j++;
 		    }
 		}
@@ -816,28 +813,28 @@ Lisp_Disassemble(LispMac *mac, LispBuiltin *builtin)
 		if (alist->rest) {
 		    sprintf(buffer, "%d = ", j);
 		    len1 = strlen(buffer);
-		    LispWriteStr(mac, NIL, buffer, len1);
+		    LispWriteStr(NIL, buffer, len1);
 		    ptr = alist->rest->data.atom->string;
 		    len2 = strlen(ptr);
-		    LispWriteStr(mac, NIL, ptr, len2);
-		    LispWriteChar(mac, NIL, '\n');
+		    LispWriteStr(NIL, ptr, len2);
+		    LispWriteChar(NIL, '\n');
 		    j++;
 		}
 
 		for (i = 0; i < alist->auxs.num_symbols; i++, j++) {
 		    sprintf(buffer, "%d = ", j);
 		    len1 = strlen(buffer);
-		    LispWriteStr(mac, NIL, buffer, len1);
+		    LispWriteStr(NIL, buffer, len1);
 		    ptr = alist->auxs.symbols[i]->data.atom->string;
 		    len2 = strlen(ptr);
-		    LispWriteStr(mac, NIL, ptr, len2);
-		    LispWriteChars(mac, NIL, ' ', 28 - (len1 + len2));
-		    LispWriteStr(mac, NIL, ";  aux\n", 7);
+		    LispWriteStr(NIL, ptr, len2);
+		    LispWriteChars(NIL, ' ', 28 - (len1 + len2));
+		    LispWriteStr(NIL, ";  aux\n", 7);
 		}
 	    }
 	}
 
-	LispWriteStr(mac, NIL, "\nBytecode stream:\n", 18);
+	LispWriteStr(NIL, "\nBytecode stream:\n", 18);
 
 	base = stream;
 	for (done = j = 0; !done; j = 0) {
@@ -1095,12 +1092,12 @@ integer:
 		    break;
 	    }
 	    i = ptr - buffer + strlen(ptr);
-	    LispWriteStr(mac, NIL, buffer, i);
+	    LispWriteStr(NIL, buffer, i);
 	    if (j) {
 
 		/* Pad */
-		LispWriteChars(mac, NIL, ' ', 28 - i);
-		LispWriteChar(mac, NIL, ';');
+		LispWriteChars(NIL, ' ', 28 - i);
+		LispWriteChar(NIL, ';');
 
 		ptr = buffer;
 
@@ -1160,9 +1157,9 @@ integer:
 		}
 
 		i = ptr - buffer;
-		LispWriteStr(mac, NIL, buffer, i);
+		LispWriteStr(NIL, buffer, i);
 	    }
-	    LispWriteChar(mac, NIL, '\n');
+	    LispWriteChar(NIL, '\n');
 	    continue;
 predicate:
 	    switch (*stream++) {
@@ -1170,8 +1167,8 @@ predicate:
 		case XBP_LISTP:     strcpy(ptr, "LISTP");   break;
 		case XBP_NUMBERP:   strcpy(ptr, "NUMBERP"); break;
 	    }
-	    LispWriteStr(mac, NIL, buffer, ptr - buffer + strlen(ptr));
-	    LispWriteChar(mac, NIL, '\n');
+	    LispWriteStr(NIL, buffer, ptr - buffer + strlen(ptr));
+	    LispWriteChar(NIL, '\n');
 	}
 #undef XSTRING
     }
@@ -1182,7 +1179,7 @@ predicate:
 
 
 LispObj *
-LispCompileForm(LispMac *mac, LispObj *form)
+LispCompileForm(LispObj *form)
 {
     int failed, *pfailed;
     LispCom com;
@@ -1194,10 +1191,9 @@ LispCompileForm(LispMac *mac, LispObj *form)
 
     memset(&com, 0, sizeof(LispCom));
 
-    com.mac = mac;
-    com.toplevel = com.block = LispCalloc(mac, 1, sizeof(CodeBlock));
+    com.toplevel = com.block = LispCalloc(1, sizeof(CodeBlock));
     com.block->type = LispBlockNone;
-    com.lex = mac->env.lex;
+    com.lex = lisp__data.env.lex;
 
     pfailed = &failed;
     pform = &form;
@@ -1210,20 +1206,20 @@ LispCompileForm(LispMac *mac, LispObj *form)
 	failed = 0;
     }
 
-    return (failed ? NIL : MakeBytecodeObject(mac, &com, NIL, NIL));
+    return (failed ? NIL : MakeBytecodeObject(&com, NIL, NIL));
 }
 
 LispObj *
-LispExecuteBytecode(LispMac *mac, LispObj *object)
+LispExecuteBytecode(LispObj *object)
 {
     if (object->type != LispBytecode_t)
 	return (EVAL(object));
 
-    return (ExecuteBytecode(mac, object->data.bytecode.bytecode->code));
+    return (ExecuteBytecode(object->data.bytecode.bytecode->code));
 }
 
 static LispObj *
-MakeBytecodeObject(LispMac *mac, LispCom *com, LispObj *name, LispObj *plist)
+MakeBytecodeObject(LispCom *com, LispObj *name, LispObj *plist)
 {
     LispObj *object;
     LispBytecode *bytecode;
@@ -1236,9 +1232,9 @@ MakeBytecodeObject(LispMac *mac, LispCom *com, LispObj *name, LispObj *plist)
     /* Resolve dependencies, optimize and create byte stream */
     LinkBytecode(com);
 
-    object = LispNew(mac, NIL, NIL);
+    object = LispNew(NIL, NIL);
     GC_PROTECT(object);
-    bytecode = LispMalloc(mac, sizeof(LispBytecode));
+    bytecode = LispMalloc(sizeof(LispBytecode));
     bytecode->code = com->bytecode;
     bytecode->length = com->length;
 
@@ -1314,48 +1310,48 @@ MakeBytecodeObject(LispMac *mac, LispCom *com, LispObj *name, LispObj *plist)
     object->data.bytecode.name = name;
     object->type = LispBytecode_t;
 
-    LispMused(mac, bytecode);
-    LispMused(mac, bytecode->code);
+    LispMused(bytecode);
+    LispMused(bytecode->code);
     GC_LEAVE();
 
     return (object);
 }
 
 static void
-CompileFreeTree(LispMac *mac, CodeTree *tree)
+CompileFreeTree(CodeTree *tree)
 {
     if (tree->type == CodeTreeBlock)
-	CompileFreeBlock(mac, tree->data.block);
-    LispFree(mac, tree);
+	CompileFreeBlock(tree->data.block);
+    LispFree(tree);
 }
 
 static void
-CompileFreeBlock(LispMac *mac, CodeBlock *block)
+CompileFreeBlock(CodeBlock *block)
 {
     CodeTree *tree = block->tree, *next;
 
     while (tree) {
 	next = tree->next;
-	CompileFreeTree(mac, tree);
+	CompileFreeTree(tree);
 	tree = next;
     }
     if (block->type == LispBlockBody) {
-	LispFree(mac, block->tagbody.labels);
-	LispFree(mac, block->tagbody.codes);
+	LispFree(block->tagbody.labels);
+	LispFree(block->tagbody.codes);
     }
-    LispFree(mac, block->variables.symbols);
-    LispFree(mac, block->variables.flags);
-    LispFree(mac, block);
+    LispFree(block->variables.symbols);
+    LispFree(block->variables.flags);
+    LispFree(block);
 }
 
 static void
 CompileFreeState(LispCom *com)
 {
-    CompileFreeBlock(com->mac, com->block);
-    LispFree(com->mac, com->table.constants);
-    LispFree(com->mac, com->table.symbols);
-    LispFree(com->mac, com->table.builtins);
-    LispFree(com->mac, com->table.bytecodes);
+    CompileFreeBlock(com->block);
+    LispFree(com->table.constants);
+    LispFree(com->table.symbols);
+    LispFree(com->table.builtins);
+    LispFree(com->table.bytecodes);
 }
 
 /* XXX Put a breakpoint here when changing the macro expansion code.
@@ -1363,7 +1359,7 @@ CompileFreeState(LispCom *com)
 static CodeTree *
 CompileNewTree(LispCom *com, CodeTreeType type)
 {
-    CodeTree *tree = LispMalloc(com->mac, sizeof(CodeTree));
+    CodeTree *tree = LispMalloc(sizeof(CodeTree));
 
     tree->type = type;
     tree->next = NULL;
@@ -1381,7 +1377,7 @@ static void
 CompileIniBlock(LispCom *com, LispBlockType type, LispObj *tag)
 {
     CodeTree *tree = NEW_TREE(CodeTreeBlock);
-    CodeBlock *block = LispCalloc(com->mac, 1, sizeof(CodeBlock));
+    CodeBlock *block = LispCalloc(1, sizeof(CodeBlock));
 
     tree->data.block = block;
 
@@ -1654,13 +1650,13 @@ LinkWarnUnused(LispCom *com, CodeBlock *block)
     for (i = 0; i < block->variables.length; i++)
 	if (!(block->variables.flags[i] & (VARIABLE_USED | VARIABLE_ARGUMENT))) {
 	    ++com->warnings;
-	    LispWarning(com->mac, "the variable %s is unused",
+	    LispWarning("the variable %s is unused",
 			block->variables.symbols[i]->string);
 	}
 }
 
 #define	INTERNAL_ERROR_STRING "COMPILE: internal error #%d"
-#define	INTERNAL_ERROR(value) LispDestroy(com->mac, INTERNAL_ERROR_STRING, value)
+#define	INTERNAL_ERROR(value) LispDestroy(INTERNAL_ERROR_STRING, value)
 static long
 LinkBuildOffsets(LispCom *com, CodeTree *tree, long offset)
 {
@@ -1856,9 +1852,8 @@ LinkDoOptimize_0(LispCom *com, CodeBlock *block)
 				case XBC_CAR:
 				    if (tree->data.object != NIL) {
 					if (!CONS_P(tree->data.object))
-					    LispDestroy(com->mac,
-							"CAR: %s is not a list",
-						        LispStrObj(com->mac,
+					    LispDestroy("CAR: %s is not a list",
+						        STROBJ(
 							tree->data.object));
 					next->code = XBC_LOADCON;
 					next->data.object =
@@ -1868,9 +1863,8 @@ LinkDoOptimize_0(LispCom *com, CodeBlock *block)
 				case XBC_CDR:
 				    if (tree->data.object != NIL) {
 					if (!CONS_P(tree->data.object))
-					    LispDestroy(com->mac,
-							"CAR: %s is not a list",
-						        LispStrObj(com->mac,
+					    LispDestroy("CAR: %s is not a list",
+						        STROBJ(
 							tree->data.object));
 					next->code = XBC_LOADCON;
 					next->data.object =
@@ -2070,12 +2064,12 @@ remove_label:
 	}
 	else
 	    prev->next = next;
-	CompileFreeTree(com->mac, tree);
+	CompileFreeTree(tree);
 	tree = next;
 	continue;
 remove_next_label:
 	tree->next = next->next;
-	CompileFreeTree(com->mac, next);
+	CompileFreeTree(next);
 	continue;
 update_label:
 	prev = tree;
@@ -2094,7 +2088,6 @@ static void
 LinkResolveLabels(LispCom *com, CodeBlock *block)
 {
     int i;
-    LispMac *mac = com->mac;
     CodeTree *tree = block->tree;
 
     for (; tree; tree = tree->next) {
@@ -2114,7 +2107,6 @@ static void
 LinkResolveJumps(LispCom *com, CodeBlock *block)
 {
     int i;
-    LispMac *mac = com->mac;
     CodeBlock *body = block;
     CodeTree *ptr, *tree = block->tree;
 
@@ -2137,7 +2129,7 @@ LinkResolveJumps(LispCom *com, CodeBlock *block)
 		    if (XEQL(tree->data.object, body->tagbody.labels[i]) == T)
 			break;
 		if (i == body->tagbody.length)
-		    LispDestroy(mac, "COMPILE: no visible tag %s to GO",
+		    LispDestroy("COMPILE: no visible tag %s to GO",
 				STROBJ(tree->data.object));
 		/* Now the jump code is known */
 		tree->data.tree = body->tagbody.codes[i];
@@ -2381,7 +2373,7 @@ LinkFixupJumps(LispCom *com, CodeTree *tree)
 static void
 LinkBuildTableSymbol(LispCom *com, LispAtom *symbol)
 {
-    if (BuildTablePointer(com->mac, symbol, (void***)&com->table.symbols,
+    if (BuildTablePointer(symbol, (void***)&com->table.symbols,
 			  &com->table.num_symbols) > 0xff) {
 	COMPILE_FAILURE("more than 256 symbols");
     }
@@ -2390,7 +2382,7 @@ LinkBuildTableSymbol(LispCom *com, LispAtom *symbol)
 static void
 LinkBuildTableConstant(LispCom *com, LispObj *constant)
 {
-    if (BuildTablePointer(com->mac, constant, (void***)&com->table.constants,
+    if (BuildTablePointer(constant, (void***)&com->table.constants,
 			  &com->table.num_constants) > 0xff) {
 	COMPILE_FAILURE("more than 256 constants");
     }
@@ -2399,7 +2391,7 @@ LinkBuildTableConstant(LispCom *com, LispObj *constant)
 static void
 LinkBuildTableBuiltin(LispCom *com, LispBuiltin *builtin)
 {
-    if (BuildTablePointer(com->mac, builtin, (void***)&com->table.builtins,
+    if (BuildTablePointer(builtin, (void***)&com->table.builtins,
 			  &com->table.num_builtins) > 0xff) {
 	COMPILE_FAILURE("more than 256 functions");
     }
@@ -2408,7 +2400,7 @@ LinkBuildTableBuiltin(LispCom *com, LispBuiltin *builtin)
 static void
 LinkBuildTableBytecode(LispCom *com, LispObj *bytecode)
 {
-    if (BuildTablePointer(com->mac, bytecode, (void***)&com->table.bytecodes,
+    if (BuildTablePointer(bytecode, (void***)&com->table.bytecodes,
 			  &com->table.num_bytecodes) > 0xff) {
 	COMPILE_FAILURE("more than 256 bytecode functions");
     }
@@ -2778,7 +2770,7 @@ LinkBytecode(LispCom *com)
 
     /* Allocate space for the bytecode stream */
     com->length += com->block->tail->offset + 1;
-    com->bytecode = LispMalloc(com->mac, com->length);
+    com->bytecode = LispMalloc(com->length);
 
     /* Add header */
     offset = 0;
@@ -2827,7 +2819,7 @@ LinkBytecode(LispCom *com)
 }
 
 static LispObj *
-ExecuteBytecode(register LispMac *mac, register unsigned char *stream)
+ExecuteBytecode(register unsigned char *stream)
 {
     register LispObj *reg0;
     register LispAtom *atom;
@@ -2945,31 +2937,31 @@ ExecuteBytecode(register LispMac *mac, register unsigned char *stream)
     reg0 = NIL;
 
     bytecode = stream;
-    pbase = mac->protect.length;
+    pbase = lisp__data.protect.length;
 
     /* stack */
     offset = *(short*)stream;
     stream += sizeof(short);
-    if (mac->env.length + offset > mac->env.space) {
+    if (lisp__data.env.length + offset > lisp__data.env.space) {
 	do
-	    LispMoreEnvironment(mac);
-	while (mac->env.length + offset >= mac->env.space);
+	    LispMoreEnvironment();
+	while (lisp__data.env.length + offset >= lisp__data.env.space);
     }
     /* builtin stack */
     offset = *(short*)stream;
     stream += sizeof(short);
-    if (mac->stack.length + offset >= mac->stack.space) {
+    if (lisp__data.stack.length + offset >= lisp__data.stack.space) {
 	do
-	    LispMoreStack(mac);
-	while (mac->stack.length + offset >= mac->stack.space);
+	    LispMoreStack();
+	while (lisp__data.stack.length + offset >= lisp__data.stack.space);
     }
     /* protect stack */
     phead = *(short*)stream;
     stream += sizeof(short);
-    if (mac->protect.length + phead > mac->protect.space) {
+    if (lisp__data.protect.length + phead > lisp__data.protect.space) {
 	do
-	    LispMoreProtects(mac);
-	while (mac->protect.length + phead >= mac->protect.space);
+	    LispMoreProtects();
+	while (lisp__data.protect.length + phead >= lisp__data.protect.space);
     }
 
     num_constants = *(short*)stream;
@@ -2991,7 +2983,7 @@ ExecuteBytecode(register LispMac *mac, register unsigned char *stream)
     stream += num_codes * (sizeof(unsigned char*) + sizeof(LispObj*));
 
     for (; phead > 0; phead--)
-	mac->protect.objects[mac->protect.length++] = NIL;
+	lisp__data.protect.objects[lisp__data.protect.length++] = NIL;
     phead = pbase;
 
 #ifdef ALLOW_GOTO_ADDRESS
@@ -3029,7 +3021,7 @@ OPCODE_LABEL(XBC_CAR):
 car:
 	if (reg0 != NIL) {
 	    if (!CONS_P(reg0))
-		LispDestroy(mac, "CAR: %s is not a list", STROBJ(reg0));
+		LispDestroy("CAR: %s is not a list", STROBJ(reg0));
 	    reg0 = CAR(reg0);
 	}
 	NEXT_OPCODE();
@@ -3038,142 +3030,142 @@ OPCODE_LABEL(XBC_CDR):
 cdr:
 	if (reg0 != NIL) {
 	    if (!CONS_P(reg0))
-		LispDestroy(mac, "CDR: %s is not a list", STROBJ(reg0));
+		LispDestroy("CDR: %s is not a list", STROBJ(reg0));
 	    reg0 = CDR(reg0);
 	}
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_RPLACA):
-	reg1 = mac->stack.values[--mac->stack.length];
+	reg1 = lisp__data.stack.values[--lisp__data.stack.length];
 	if (!CONS_P(reg1))
-	    LispDestroy(mac, "RPLACA: %s is not a cons", STROBJ(reg1));
+	    LispDestroy("RPLACA: %s is not a cons", STROBJ(reg1));
 	RPLACA(reg1, reg0);
 	reg0 = reg1;
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_RPLACD):
-	reg1 = mac->stack.values[--mac->stack.length];
+	reg1 = lisp__data.stack.values[--lisp__data.stack.length];
 	if (!CONS_P(reg1))
-	    LispDestroy(mac, "RPLACD: %s is not a cons", STROBJ(reg1));
+	    LispDestroy("RPLACD: %s is not a cons", STROBJ(reg1));
 	RPLACD(reg1, reg0);
 	reg0 = reg1;
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_BCONS):
 	CAR(cons) = reg0;
-	mac->stack.values[mac->stack.length++] = cons;
+	lisp__data.stack.values[lisp__data.stack.length++] = cons;
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_BCONS1):
-	offset = mac->stack.length - 1;
+	offset = lisp__data.stack.length - 1;
 	CAR(cons) = reg0;
-	CAR(cons1) = mac->stack.values[offset];
-	mac->stack.values[offset] = cons1;
+	CAR(cons1) = lisp__data.stack.values[offset];
+	lisp__data.stack.values[offset] = cons1;
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_BCONS2):
-	offset = mac->stack.length;
+	offset = lisp__data.stack.length;
 	CAR(cons) = reg0;
-	CAR(cons1) = mac->stack.values[--offset];
-	CAR(cons2) = mac->stack.values[--offset];
-	mac->stack.values[offset] = cons2;
-	mac->stack.length = offset + 1;
+	CAR(cons1) = lisp__data.stack.values[--offset];
+	CAR(cons2) = lisp__data.stack.values[--offset];
+	lisp__data.stack.values[offset] = cons2;
+	lisp__data.stack.length = offset + 1;
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_BCONS3):
-	offset = mac->stack.length;
+	offset = lisp__data.stack.length;
 	CAR(cons) = reg0;
-	CAR(cons1) = mac->stack.values[--offset];
-	CAR(cons2) = mac->stack.values[--offset];
-	CAR(cons3) = mac->stack.values[--offset];
-	mac->stack.values[offset] = cons3;
-	mac->stack.length = offset + 1;
+	CAR(cons1) = lisp__data.stack.values[--offset];
+	CAR(cons2) = lisp__data.stack.values[--offset];
+	CAR(cons3) = lisp__data.stack.values[--offset];
+	lisp__data.stack.values[offset] = cons3;
+	lisp__data.stack.length = offset + 1;
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_BCONS4):
-	offset = mac->stack.length;
+	offset = lisp__data.stack.length;
 	CAR(cons) = reg0;
-	CAR(cons1) = mac->stack.values[--offset];
-	CAR(cons2) = mac->stack.values[--offset];
-	CAR(cons3) = mac->stack.values[--offset];
-	CAR(cons4) = mac->stack.values[--offset];
-	mac->stack.values[offset] = cons4;
-	mac->stack.length = offset + 1;
+	CAR(cons1) = lisp__data.stack.values[--offset];
+	CAR(cons2) = lisp__data.stack.values[--offset];
+	CAR(cons3) = lisp__data.stack.values[--offset];
+	CAR(cons4) = lisp__data.stack.values[--offset];
+	lisp__data.stack.values[offset] = cons4;
+	lisp__data.stack.length = offset + 1;
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_BCONS5):
-	offset = mac->stack.length;
+	offset = lisp__data.stack.length;
 	CAR(cons) = reg0;
-	CAR(cons1) = mac->stack.values[--offset];
-	CAR(cons2) = mac->stack.values[--offset];
-	CAR(cons3) = mac->stack.values[--offset];
-	CAR(cons4) = mac->stack.values[--offset];
-	CAR(cons5) = mac->stack.values[--offset];
-	mac->stack.values[offset] = cons5;
-	mac->stack.length = offset + 1;
+	CAR(cons1) = lisp__data.stack.values[--offset];
+	CAR(cons2) = lisp__data.stack.values[--offset];
+	CAR(cons3) = lisp__data.stack.values[--offset];
+	CAR(cons4) = lisp__data.stack.values[--offset];
+	CAR(cons5) = lisp__data.stack.values[--offset];
+	lisp__data.stack.values[offset] = cons5;
+	lisp__data.stack.length = offset + 1;
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_BCONS6):
-	offset = mac->stack.length;
+	offset = lisp__data.stack.length;
 	CAR(cons) = reg0;
-	CAR(cons1) = mac->stack.values[--offset];
-	CAR(cons2) = mac->stack.values[--offset];
-	CAR(cons3) = mac->stack.values[--offset];
-	CAR(cons4) = mac->stack.values[--offset];
-	CAR(cons5) = mac->stack.values[--offset];
-	CAR(cons6) = mac->stack.values[--offset];
-	mac->stack.values[offset] = cons6;
-	mac->stack.length = offset + 1;
+	CAR(cons1) = lisp__data.stack.values[--offset];
+	CAR(cons2) = lisp__data.stack.values[--offset];
+	CAR(cons3) = lisp__data.stack.values[--offset];
+	CAR(cons4) = lisp__data.stack.values[--offset];
+	CAR(cons5) = lisp__data.stack.values[--offset];
+	CAR(cons6) = lisp__data.stack.values[--offset];
+	lisp__data.stack.values[offset] = cons6;
+	lisp__data.stack.length = offset + 1;
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_BCONS7):
-	offset = mac->stack.length;
+	offset = lisp__data.stack.length;
 	CAR(cons) = reg0;
-	CAR(cons1) = mac->stack.values[--offset];
-	CAR(cons2) = mac->stack.values[--offset];
-	CAR(cons3) = mac->stack.values[--offset];
-	CAR(cons4) = mac->stack.values[--offset];
-	CAR(cons5) = mac->stack.values[--offset];
-	CAR(cons6) = mac->stack.values[--offset];
-	CAR(cons7) = mac->stack.values[--offset];
-	mac->stack.values[offset] = cons7;
-	mac->stack.length = offset + 1;
+	CAR(cons1) = lisp__data.stack.values[--offset];
+	CAR(cons2) = lisp__data.stack.values[--offset];
+	CAR(cons3) = lisp__data.stack.values[--offset];
+	CAR(cons4) = lisp__data.stack.values[--offset];
+	CAR(cons5) = lisp__data.stack.values[--offset];
+	CAR(cons6) = lisp__data.stack.values[--offset];
+	CAR(cons7) = lisp__data.stack.values[--offset];
+	lisp__data.stack.values[offset] = cons7;
+	lisp__data.stack.length = offset + 1;
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_EQ):
-	reg0 = reg0 == mac->stack.values[--mac->stack.length] ? T : NIL;
+	reg0 = reg0 == lisp__data.stack.values[--lisp__data.stack.length] ? T : NIL;
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_EQL):
-	reg1 = mac->stack.values[--mac->stack.length];
+	reg1 = lisp__data.stack.values[--lisp__data.stack.length];
 	reg0 = XEQL(reg1, reg0);
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_EQUAL):
-	reg1 = mac->stack.values[--mac->stack.length];
+	reg1 = lisp__data.stack.values[--lisp__data.stack.length];
 	reg0 = XEQUAL(reg1, reg0);
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_EQUALP):
-	reg1 = mac->stack.values[--mac->stack.length];
+	reg1 = lisp__data.stack.values[--lisp__data.stack.length];
 	reg0 = XEQUALP(reg1, reg0);
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_LENGTH):
-	reg0 = SMALLINT(LispLength(mac, reg0));
+	reg0 = SMALLINT(LispLength(reg0));
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_LAST):
     {
 	long length, count;
 
-	reg1 = mac->stack.values[--mac->stack.length];
+	reg1 = lisp__data.stack.values[--lisp__data.stack.length];
 	if (CONS_P(reg1)) {
 	    if (reg0 != NIL) {
-		if (!INT_P(reg0) || reg0->data.integer < 0)
-		    LispDestroy(mac, "LAST: %s is not a positive fixnum",
+		if (!INT_P(reg0) || GETINT(reg0) < 0)
+		    LispDestroy("LAST: %s is not a positive fixnum",
 				STROBJ(reg0));
-		count = reg0->data.integer;
+		count = GETINT(reg0);
 	    }
 	    else
 		count = 1;
@@ -3190,15 +3182,15 @@ OPCODE_LABEL(XBC_LAST):
     }	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_NTHCDR):
-	reg1 = mac->stack.values[--mac->stack.length];
-	if (!INT_P(reg1) || reg1->data.integer < 0)
-	    LispDestroy(mac, "NTHCDR: %s is not a positive fixnum",
+	reg1 = lisp__data.stack.values[--lisp__data.stack.length];
+	if (!INT_P(reg1) || GETINT(reg1) < 0)
+	    LispDestroy("NTHCDR: %s is not a positive fixnum",
 			STROBJ(reg1));
 	if (reg0 != NIL) {
-	    long count = reg1->data.integer;
+	    long count = GETINT(reg1);
 
 	    if (!CONS_P(reg0))
-		LispDestroy(mac, "NTHCDR: %s is not a list",
+		LispDestroy("NTHCDR: %s is not a list",
 			    STROBJ(reg0));
 	    for (; count > 0; count--) {
 		if (!CONS_P(reg0))
@@ -3212,7 +3204,7 @@ OPCODE_LABEL(XBC_NTHCDR):
 OPCODE_LABEL(XBC_CAR_PUSH):
 	if (reg0 != NIL) {
 	    if (!CONS_P(reg0))
-		LispDestroy(mac, "CAR: %s is not a list", STROBJ(reg0));
+		LispDestroy("CAR: %s is not a list", STROBJ(reg0));
 	    reg0 = CAR(reg0);
 	}
 	goto push_builtin;
@@ -3220,27 +3212,27 @@ OPCODE_LABEL(XBC_CAR_PUSH):
 OPCODE_LABEL(XBC_CDR_PUSH):
 	if (reg0 != NIL) {
 	    if (!CONS_P(reg0))
-		LispDestroy(mac, "CDR: %s is not a list", STROBJ(reg0));
+		LispDestroy("CDR: %s is not a list", STROBJ(reg0));
 	    reg0 = CDR(reg0);
 	}
 	/*FALLTROUGH*/
 
 OPCODE_LABEL(XBC_PUSH):
 push_builtin:
-	mac->stack.values[mac->stack.length++] = reg0;
+	lisp__data.stack.values[lisp__data.stack.length++] = reg0;
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_PUSH_NIL):
-	mac->stack.values[mac->stack.length++] = NIL;
+	lisp__data.stack.values[lisp__data.stack.length++] = NIL;
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_PUSH_T):
-	mac->stack.values[mac->stack.length++] = T;
+	lisp__data.stack.values[lisp__data.stack.length++] = T;
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_PUSH_NIL_N):
 	for (offset = *stream++; offset >= 0; offset--)
-	    mac->stack.values[mac->stack.length++] = NIL;
+	    lisp__data.stack.values[lisp__data.stack.length++] = NIL;
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_LET):
@@ -3251,100 +3243,100 @@ let_argument:
 	 * bytecode generation. Check can be done looking at the
 	 * atom->constant field. */
 	atom = symbols[*stream++];
-	atom->offset = mac->env.length;
-	mac->env.names[mac->env.length] = atom->string;
-	mac->env.values[mac->env.length++] = reg0;
+	atom->offset = lisp__data.env.length;
+	lisp__data.env.names[lisp__data.env.length] = atom->string;
+	lisp__data.env.values[lisp__data.env.length++] = reg0;
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_LETX):
 letx_argument:
 	atom = symbols[*stream++];
-	atom->offset = mac->env.length;
-	mac->env.names[mac->env.length] = atom->string;
-	mac->env.values[mac->env.length++] = reg0;
-	mac->env.head++;
+	atom->offset = lisp__data.env.length;
+	lisp__data.env.names[lisp__data.env.length] = atom->string;
+	lisp__data.env.values[lisp__data.env.length++] = reg0;
+	lisp__data.env.head++;
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_LET_NIL):
 	atom = symbols[*stream++];
-	atom->offset = mac->env.length;
-	mac->env.names[mac->env.length] = atom->string;
-	mac->env.values[mac->env.length++] = NIL;
+	atom->offset = lisp__data.env.length;
+	lisp__data.env.names[lisp__data.env.length] = atom->string;
+	lisp__data.env.values[lisp__data.env.length++] = NIL;
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_LETX_NIL):
 	atom = symbols[*stream++];
-	atom->offset = mac->env.length;
-	mac->env.names[mac->env.length] = atom->string;
-	mac->env.values[mac->env.length++] = NIL;
-	mac->env.head++;
+	atom->offset = lisp__data.env.length;
+	lisp__data.env.names[lisp__data.env.length] = atom->string;
+	lisp__data.env.values[lisp__data.env.length++] = NIL;
+	lisp__data.env.head++;
 	NEXT_OPCODE();
 
 	/* Bind locally added variables to a block */
 OPCODE_LABEL(XBC_LETBIND):
 	offset = *stream++;
-	mac->env.head += offset;
+	lisp__data.env.head += offset;
 	NEXT_OPCODE();
 
 	/* Unbind locally added variables to a block */
 OPCODE_LABEL(XBC_UNLET):
 	offset = *stream++;
-	mac->env.head -= offset;
-	mac->env.length -= offset;
+	lisp__data.env.head -= offset;
+	lisp__data.env.length -= offset;
 	NEXT_OPCODE();
 
 	/* Load value from stack */
 OPCODE_LABEL(XBC_LOAD):
 	offset = *stream++;
-	reg0 = mac->env.values[mac->env.lex + offset];
+	reg0 = lisp__data.env.values[lisp__data.env.lex + offset];
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_LOAD_CAR):
 	offset = *stream++;
-	reg0 = mac->env.values[mac->env.lex + offset];
+	reg0 = lisp__data.env.values[lisp__data.env.lex + offset];
 	goto car;
 
 OPCODE_LABEL(XBC_LOAD_CDR):
 	offset = *stream++;
-	reg0 = mac->env.values[mac->env.lex + offset];
+	reg0 = lisp__data.env.values[lisp__data.env.lex + offset];
 	goto cdr;
 
 OPCODE_LABEL(XBC_LOAD_CAR_STORE):
 	offset = *stream++;
-	reg0 = mac->env.values[mac->env.lex + offset];
+	reg0 = lisp__data.env.values[lisp__data.env.lex + offset];
 	if (reg0 != NIL) {
 	    if (!CONS_P(reg0))
-		LispDestroy(mac, "CAR: %s is not a list", STROBJ(reg0));
+		LispDestroy("CAR: %s is not a list", STROBJ(reg0));
 	    reg0 = CAR(reg0);
-	    mac->env.values[mac->env.lex + offset] = reg0;
+	    lisp__data.env.values[lisp__data.env.lex + offset] = reg0;
 	}
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_LOAD_CDR_STORE):
 	offset = *stream++;
-	reg0 = mac->env.values[mac->env.lex + offset];
+	reg0 = lisp__data.env.values[lisp__data.env.lex + offset];
 	if (reg0 != NIL) {
 	    if (!CONS_P(reg0))
-		LispDestroy(mac, "CDR: %s is not a list", STROBJ(reg0));
+		LispDestroy("CDR: %s is not a list", STROBJ(reg0));
 	    reg0 = CDR(reg0);
-	    mac->env.values[mac->env.lex + offset] = reg0;
+	    lisp__data.env.values[lisp__data.env.lex + offset] = reg0;
 	}
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_LOAD_LET):
 	offset = *stream++;
-	reg0 = mac->env.values[mac->env.lex + offset];
+	reg0 = lisp__data.env.values[lisp__data.env.lex + offset];
 	goto let_argument;
 
 OPCODE_LABEL(XBC_LOAD_LETX):
 	offset = *stream++;
-	reg0 = mac->env.values[mac->env.lex + offset];
+	reg0 = lisp__data.env.values[lisp__data.env.lex + offset];
 	goto letx_argument;
 
 OPCODE_LABEL(XBC_LOAD_PUSH):
 	offset = *stream++;
-	reg0 = mac->env.values[mac->env.lex + offset];
-	mac->stack.values[mac->stack.length++] = reg0;
+	reg0 = lisp__data.env.values[lisp__data.env.lex + offset];
+	lisp__data.stack.values[lisp__data.stack.length++] = reg0;
 	NEXT_OPCODE();
 
 	/* Load pointer to constant */
@@ -3362,13 +3354,13 @@ OPCODE_LABEL(XBC_LOADCON_LETX):
 
 OPCODE_LABEL(XBC_LOADCON_PUSH):
 	reg0 = constants[*stream++];
-	mac->stack.values[mac->stack.length++] = reg0;
+	lisp__data.stack.values[lisp__data.stack.length++] = reg0;
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_LOADCON_SET):
 	reg0 = constants[*stream++];
 	offset = *stream++;
-	mac->env.values[mac->env.lex + offset] = reg0;
+	lisp__data.env.values[lisp__data.env.lex + offset] = reg0;
 	NEXT_OPCODE();
 
 	/* Change value of local variable */
@@ -3376,7 +3368,7 @@ OPCODE_LABEL(XBC_CAR_SET):
 car_set:
 	if (reg0 != NIL) {
 	    if (!CONS_P(reg0))
-		LispDestroy(mac, "CAR: %s is not a list", STROBJ(reg0));
+		LispDestroy("CAR: %s is not a list", STROBJ(reg0));
 	    reg0 = CAR(reg0);
 	}
 	goto set_local_variable;
@@ -3385,35 +3377,35 @@ OPCODE_LABEL(XBC_CDR_SET):
 cdr_set:
 	if (reg0 != NIL) {
 	    if (!CONS_P(reg0))
-		LispDestroy(mac, "CDR: %s is not a list", STROBJ(reg0));
+		LispDestroy("CDR: %s is not a list", STROBJ(reg0));
 	    reg0 = CDR(reg0);
 	}
 	goto set_local_variable;
 
 OPCODE_LABEL(XBC_LOAD_CAR_SET):
 	offset = *stream++;
-	reg0 = mac->env.values[mac->env.lex + offset];
+	reg0 = lisp__data.env.values[lisp__data.env.lex + offset];
 	goto car_set;
 
 OPCODE_LABEL(XBC_LOAD_CDR_SET):
 	offset = *stream++;
-	reg0 = mac->env.values[mac->env.lex + offset];
+	reg0 = lisp__data.env.values[lisp__data.env.lex + offset];
 	goto cdr_set;
 
 OPCODE_LABEL(XBC_LOAD_SET):
 	offset = *stream++;
-	reg0 = mac->env.values[mac->env.lex + offset];
+	reg0 = lisp__data.env.values[lisp__data.env.lex + offset];
 	/*FALLTROUGH*/
 
 OPCODE_LABEL(XBC_SET):
 set_local_variable:
 	offset = *stream++;
-	mac->env.values[mac->env.lex + offset] = reg0;
+	lisp__data.env.values[lisp__data.env.lex + offset] = reg0;
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_SET_NIL):
 	offset = *stream++;
-	mac->env.values[mac->env.lex + offset] = NIL;
+	lisp__data.env.values[lisp__data.env.lex + offset] = NIL;
 	NEXT_OPCODE();
 
 	/* Change value of a global/special variable */
@@ -3422,22 +3414,22 @@ OPCODE_LABEL(XBC_SETSYM):
 	    if (atom->dyn) {
 		/*  atom->dyn and atom->constant are exclusive, no
 		 * need to check if variable declared as constant. */
-		if (atom->offset < mac->env.head &&
-		    mac->env.names[atom->offset] == atom->string)
-		    mac->env.values[atom->offset] = reg0;
+		if (atom->offset < lisp__data.env.head &&
+		    lisp__data.env.names[atom->offset] == atom->string)
+		    lisp__data.env.values[atom->offset] = reg0;
 		else {
 		    if (atom->watch)
-			LispSetAtomObjectProperty(mac, atom, reg0);
+			LispSetAtomObjectProperty(atom, reg0);
 		    else
 			SETVALUE(atom, reg0);
 		}
 	    }
 	    else if (atom->a_object) {
 		if (atom->constant)
-		    LispDestroy(mac, "EVAL: %s is a constant",
+		    LispDestroy("EVAL: %s is a constant",
 				STROBJ(atom->object));
 		else if (atom->watch)
-		    LispSetAtomObjectProperty(mac, atom, reg0);
+		    LispSetAtomObjectProperty(atom, reg0);
 		else
 		    SETVALUE(atom, reg0);
 	    }
@@ -3445,12 +3437,12 @@ OPCODE_LABEL(XBC_SETSYM):
 		/* Create new global variable */
 		LispPackage *pack;
 
-		LispWarning(mac, "the variable %s was not declared",
+		LispWarning("the variable %s was not declared",
 			    atom->string);
-		LispSetAtomObjectProperty(mac, atom, reg0);
+		LispSetAtomObjectProperty(atom, reg0);
 		pack = atom->package->data.package.package;
 		if (pack->glb.length >= pack->glb.space)
-		    LispMoreGlobals(mac, pack);
+		    LispMoreGlobals(pack);
 		pack->glb.pairs[pack->glb.length++] = atom->object;
 	    }
 	    NEXT_OPCODE();
@@ -3459,13 +3451,13 @@ OPCODE_LABEL(XBC_SETSYM):
 #define LOAD_SYMBOL_VALUE()					    \
     atom = symbols[*stream++];					    \
     if (atom->dyn) {						    \
-	if (atom->offset < mac->env.head &&			    \
-	    mac->env.names[atom->offset] == atom->string)	    \
-	    reg0 = mac->env.values[atom->offset];		    \
+	if (atom->offset < lisp__data.env.head &&			    \
+	    lisp__data.env.names[atom->offset] == atom->string)	    \
+	    reg0 = lisp__data.env.values[atom->offset];		    \
 	else {							    \
 	    reg0 = atom->property->value;			    \
 	    if (reg0 == UNBOUND)				    \
-		LispDestroy(mac, "EVAL: the symbol %s is unbound",  \
+		LispDestroy("EVAL: the symbol %s is unbound",  \
 			    STROBJ(atom->object));		    \
 	}							    \
     }								    \
@@ -3473,7 +3465,7 @@ OPCODE_LABEL(XBC_SETSYM):
 	if (atom->a_object)					    \
 	    reg0 = atom->property->value;			    \
 	else							    \
-	    LispDestroy(mac, "EVAL: the symbol %s is unbound",	    \
+	    LispDestroy("EVAL: the symbol %s is unbound",	    \
 			STROBJ(atom->object));			    \
     }
 
@@ -3491,48 +3483,48 @@ OPCODE_LABEL(XBC_LOADSYM_LETX):
 
 OPCODE_LABEL(XBC_LOADSYM_PUSH):
 	LOAD_SYMBOL_VALUE();
-	mac->stack.values[mac->stack.length++] = reg0;
+	lisp__data.stack.values[lisp__data.stack.length++] = reg0;
 	NEXT_OPCODE();
 
 	    /* Builtin function */
 OPCODE_LABEL(XBC_CALL):
 	offset = *stream++;
-	mac->stack.base = mac->stack.length - offset;
+	lisp__data.stack.base = lisp__data.stack.length - offset;
 	builtin = builtins[*stream++];
-	reg0 = builtin->function(mac, builtin);
+	reg0 = builtin->function(builtin);
 	if (!builtin->multiple_values)
 	    RETURN_COUNT = 0;
-	mac->stack.length -= offset;
+	lisp__data.stack.length -= offset;
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_CALL_SET):
 	offset = *stream++;
-	mac->stack.base = mac->stack.length - offset;
+	lisp__data.stack.base = lisp__data.stack.length - offset;
 	builtin = builtins[*stream++];
-	reg0 = builtin->function(mac, builtin);
+	reg0 = builtin->function(builtin);
 	if (!builtin->multiple_values)
 	    RETURN_COUNT = 0;
-	mac->stack.length -= offset;
+	lisp__data.stack.length -= offset;
 	offset = *stream++;
-	mac->env.values[mac->env.lex + offset] = reg0;
+	lisp__data.env.values[lisp__data.env.lex + offset] = reg0;
 	NEXT_OPCODE();
 
 	/* Bytecode call */
 OPCODE_LABEL(XBC_BYTECALL):
-	lex = mac->env.lex;
+	lex = lisp__data.env.lex;
 	offset = *stream++;
-	mac->env.head = mac->env.length;
-	len = mac->env.lex = mac->env.length - offset;
-	reg0 = ExecuteBytecode(mac, codes[*stream++]);
-	mac->env.length = mac->env.head = len;
-	mac->env.lex = lex;
+	lisp__data.env.head = lisp__data.env.length;
+	len = lisp__data.env.lex = lisp__data.env.length - offset;
+	reg0 = ExecuteBytecode(codes[*stream++]);
+	lisp__data.env.length = lisp__data.env.head = len;
+	lisp__data.env.lex = lex;
 	NEXT_OPCODE();
 
 	/* Unimplemented function/macro call */
 OPCODE_LABEL(XBC_FUNCALL):
 	lambda = constants[*stream++];
 	arguments = constants[*stream++];
-	reg0 = LispFuncall(mac, lambda, arguments, 1);
+	reg0 = LispFuncall(lambda, arguments, 1);
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_JUMP):
@@ -3565,34 +3557,34 @@ OPCODE_LABEL(XBC_CCONS):
 	/* Start CONS */
 OPCODE_LABEL(XBC_CSTAR):
 	/* This the CAR of the CONS */
-	mac->protect.objects[phead++] = reg0;
+	lisp__data.protect.objects[phead++] = reg0;
 	NEXT_OPCODE();
 
 	/* Finish CONS */
 OPCODE_LABEL(XBC_CFINI):
-	reg0 = CONS(mac->protect.objects[--phead], reg0);
+	reg0 = CONS(lisp__data.protect.objects[--phead], reg0);
 	NEXT_OPCODE();
 
 	/* Start building list */
 OPCODE_LABEL(XBC_LSTAR):
 	reg1 = CONS(reg0, NIL);
 	/* Start of list stored here */
-	mac->protect.objects[phead++] = reg1;
+	lisp__data.protect.objects[phead++] = reg1;
 	/* Tail of list stored here */
-	mac->protect.objects[phead++] = reg1;
+	lisp__data.protect.objects[phead++] = reg1;
 	NEXT_OPCODE();
 
 	/* Add to list */
 OPCODE_LABEL(XBC_LCONS):
-	reg1 = mac->protect.objects[phead - 2];
+	reg1 = lisp__data.protect.objects[phead - 2];
 	RPLACD(reg1, CONS(reg0, NIL));
-	 mac->protect.objects[phead - 2] = CDR(reg1);
+	 lisp__data.protect.objects[phead - 2] = CDR(reg1);
 	NEXT_OPCODE();
 
 	/* Finish list */
 OPCODE_LABEL(XBC_LFINI):
 	phead -= 2;
-	reg0 = mac->protect.objects[phead];
+	reg0 = lisp__data.protect.objects[phead];
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_STRUCT):
@@ -3604,7 +3596,7 @@ OPCODE_LABEL(XBC_STRUCT):
 
 	    for (reg1 = CDR(reg1); offset; offset--)
 		reg1 = CDR(reg1);
-	    LispDestroy(mac, "%s-%s: %s is not a %s",
+	    LispDestroy("%s-%s: %s is not a %s",
 			name, STRPTR(CAR(reg1)),
 			STROBJ(reg0), name);
 	}
@@ -3622,14 +3614,14 @@ OPCODE_LABEL(XBC_STRUCTP):
 OPCODE_LABEL(XBC_LETREC):
 	/* XXX could/should optimize, shouldn't need to parse
 	 * the bytecode header again */
-	lex = mac->env.lex;
-	mac->env.lex = mac->env.length - (*stream++);
-	reg0 = ExecuteBytecode(mac, bytecode);
-	mac->env.lex = lex;
+	lex = lisp__data.env.lex;
+	lisp__data.env.lex = lisp__data.env.length - (*stream++);
+	reg0 = ExecuteBytecode(bytecode);
+	lisp__data.env.lex = lex;
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_RETURN):
-	mac->protect.length = pbase;
+	lisp__data.protect.length = pbase;
 	return (reg0);
 
 #ifndef ALLOW_GOTO_ADDRESS

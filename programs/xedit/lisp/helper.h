@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.h,v 1.10 2002/06/03 21:39:23 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.h,v 1.11 2002/08/05 03:56:24 paulo Exp $ */
 
 #ifndef Lisp_helper_h
 #define Lisp_helper_h
@@ -37,36 +37,36 @@
 /*
  * Prototypes
  */
-void LispCheckSequenceStartEnd(LispMac*, LispBuiltin*, LispObj*,
+void LispCheckSequenceStartEnd(LispBuiltin*, LispObj*,
 			       LispObj*, LispObj*, long*, long*, long*);
-long LispLength(LispMac*, LispObj*);
-LispObj *LispCharacterCoerce(LispMac*, LispBuiltin*, LispObj*);
-LispObj *LispStringCoerce(LispMac*, LispBuiltin*, LispObj*);
-LispObj *LispCoerce(LispMac*, LispBuiltin*, LispObj*, LispObj*);
+long LispLength(LispObj*);
+LispObj *LispCharacterCoerce(LispBuiltin*, LispObj*);
+LispObj *LispStringCoerce(LispBuiltin*, LispObj*);
+LispObj *LispCoerce(LispBuiltin*, LispObj*, LispObj*);
 
 /*
  do init test &rest body
  do* init test &rest body
  */
-LispObj *LispDo(LispMac*, LispBuiltin*, int);
+LispObj *LispDo(LispBuiltin*, int);
 
 /*
  dolist init &rest body
  dotimes init &rest body
  */
-LispObj *LispDoListTimes(LispMac*, LispBuiltin*, int);
+LispObj *LispDoListTimes(LispBuiltin*, int);
 
 #define FEQ	1
 #define FEQL	2
 #define FEQUAL	3
 #define FEQUALP	4
-LispObj *LispObjectCompare(LispMac*, LispObj*, LispObj*, int);
-#define XEQ(x, y)	LispObjectCompare(mac, x, y, FEQ)
-#define XEQL(x, y)	LispObjectCompare(mac, x, y, FEQL)
-#define XEQUAL(x, y)	LispObjectCompare(mac, x, y, FEQUAL)
-#define XEQUALP(x, y)	LispObjectCompare(mac, x, y, FEQUALP)
+LispObj *LispObjectCompare(LispObj*, LispObj*, int);
+#define XEQ(x, y)	LispObjectCompare(x, y, FEQ)
+#define XEQL(x, y)	LispObjectCompare(x, y, FEQL)
+#define XEQUAL(x, y)	LispObjectCompare(x, y, FEQUAL)
+#define XEQUALP(x, y)	LispObjectCompare(x, y, FEQUALP)
 
-LispObj *LispLoadFile(LispMac*, LispObj*, int, int, int);
+LispObj *LispLoadFile(LispObj*, int, int, int);
 
 /*
  string= string1 string2 &key start1 end1 start2 end2
@@ -82,7 +82,7 @@ LispObj *LispLoadFile(LispMac*, LispObj*, int, int, int);
  string-not-greaterp string1 string2 &key start1 end1 start2 end2
  string-not-equal string1 string2 &key start1 end1 start2 end2
 */
-void LispGetStringArgs(LispMac*, LispBuiltin*,
+void LispGetStringArgs(LispBuiltin*,
 			char**,	/* string1 */
 			char**,	/* string2 */
 			int*,	/* start1 */
@@ -95,7 +95,7 @@ void LispGetStringArgs(LispMac*, LispBuiltin*,
  string-left-trim character-bag string
  string-right-trim character-bag string
 */
-LispObj *LispStringTrim(LispMac*, LispBuiltin*, int, int);
+LispObj *LispStringTrim(LispBuiltin*, int, int);
 
 /*
  pathname-host pathname
@@ -105,24 +105,24 @@ LispObj *LispStringTrim(LispMac*, LispBuiltin*, int, int);
  pathname-type pathname
  pathname-version pathname
  */
-LispObj *LispPathnameField(LispMac*, int, int);
+LispObj *LispPathnameField(int, int);
 
 /*
  truename pathname
  probe-file pathname
  */
-LispObj *LispProbeFile(LispMac*, LispBuiltin*, int);
+LispObj *LispProbeFile(LispBuiltin*, int);
 
 /*
  read-char &optional input-stream (eof-error-p t) eof-value recursive-p
  read-char-no-hang &optional input-stream (eof-error-p t) eof-value recursive-p
  */
-LispObj *LispReadChar(LispMac*, LispBuiltin*, int);
+LispObj *LispReadChar(LispBuiltin*, int);
 
 /*
  write-string string &optional output-stream &key start end
  write-line string &optional output-stream &key start end
  */
-LispObj *LispWriteString_(LispMac*, LispBuiltin*, int);
+LispObj *LispWriteString_(LispBuiltin*, int);
 
 #endif	/* Lisp_helper_h */

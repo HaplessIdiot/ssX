@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/hash.h,v 1.1 2002/10/06 17:11:42 paulo Exp $ */
 
 #ifndef Lisp_hash_h
 #define Lisp_hash_h
@@ -55,17 +55,17 @@ struct _LispHashTable {
  */
 void LispFreeHashTable(LispHashTable*);
 
-LispObj *Lisp_Clrhash(LispMac*, LispBuiltin*);
-LispObj *Lisp_Gethash(LispMac*, LispBuiltin*);
-LispObj *Lisp_HashTableCount(LispMac*, LispBuiltin*);
-LispObj *Lisp_HashTableP(LispMac*, LispBuiltin*);
-LispObj *Lisp_HashTableRehashSize(LispMac*, LispBuiltin*);
-LispObj *Lisp_HashTableRehashThreshold(LispMac*, LispBuiltin*);
-LispObj *Lisp_HashTableSize(LispMac*, LispBuiltin*);
-LispObj *Lisp_HashTableTest(LispMac*, LispBuiltin*);
-LispObj *Lisp_Maphash(LispMac*, LispBuiltin*);
-LispObj *Lisp_MakeHashTable(LispMac*, LispBuiltin*);
-LispObj *Lisp_Remhash(LispMac*, LispBuiltin*);
-LispObj *Lisp_XeditPuthash(LispMac*, LispBuiltin*);
+LispObj *Lisp_Clrhash(LispBuiltin*);
+LispObj *Lisp_Gethash(LispBuiltin*);
+LispObj *Lisp_HashTableCount(LispBuiltin*);
+LispObj *Lisp_HashTableP(LispBuiltin*);
+LispObj *Lisp_HashTableRehashSize(LispBuiltin*);
+LispObj *Lisp_HashTableRehashThreshold(LispBuiltin*);
+LispObj *Lisp_HashTableSize(LispBuiltin*);
+LispObj *Lisp_HashTableTest(LispBuiltin*);
+LispObj *Lisp_Maphash(LispBuiltin*);
+LispObj *Lisp_MakeHashTable(LispBuiltin*);
+LispObj *Lisp_Remhash(LispBuiltin*);
+LispObj *Lisp_XeditPuthash(LispBuiltin*);
 
 #endif /* Lisp_hash_h */

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.21 2002/09/15 21:32:22 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.22 2002/09/22 07:09:07 paulo Exp $ */
 
 #include <errno.h>
 #include "read.h"
@@ -36,30 +36,30 @@
 /*
  * Protypes
  */
-static int LispSkipWhiteSpace(LispMac*);
-static LispObj *LispReadList(LispMac*);
-static LispObj *LispReadQuote(LispMac*);
-static LispObj *LispReadBackquote(LispMac*);
-static LispObj *LispReadCommaquote(LispMac*);
-static LispObj *LispReadObject(LispMac*, int);
-static LispObj *LispParseAtom(LispMac*, char*, char*, int, int);
-static LispObj *LispParseNumber(LispMac*, char*, int);
+static int LispSkipWhiteSpace(void);
+static LispObj *LispReadList(void);
+static LispObj *LispReadQuote(void);
+static LispObj *LispReadBackquote(void);
+static LispObj *LispReadCommaquote(void);
+static LispObj *LispReadObject(int);
+static LispObj *LispParseAtom(char*, char*, int, int);
+static LispObj *LispParseNumber(char*, int);
 static int StringInRadix(char*, int, int);
 static int AtomSeparator(int, int, int);
-static LispObj *LispReadVector(LispMac*);
-static LispObj *LispReadMacro(LispMac*);
-static LispObj *LispReadFunction(LispMac*);
-static LispObj *LispReadRational(LispMac*, int);
-static LispObj *LispReadCharacter(LispMac*);
-static void LispSkipComment(LispMac*);
-static LispObj *LispReadEval(LispMac*);
-static LispObj *LispReadComplex(LispMac*);
-static LispObj *LispReadPathname(LispMac*);
-static LispObj *LispReadStruct(LispMac*);
-static LispObj *LispReadMacroArg(LispMac*);
-static LispObj *LispReadArray(LispMac*, long);
-static LispObj *LispReadFeature(LispMac*, int);
-static LispObj *LispEvalFeature(LispMac*, LispObj*);
+static LispObj *LispReadVector(void);
+static LispObj *LispReadMacro(void);
+static LispObj *LispReadFunction(void);
+static LispObj *LispReadRational(int);
+static LispObj *LispReadCharacter(void);
+static void LispSkipComment(void);
+static LispObj *LispReadEval(void);
+static LispObj *LispReadComplex(void);
+static LispObj *LispReadPathname(void);
+static LispObj *LispReadStruct(void);
+static LispObj *LispReadMacroArg(void);
+static LispObj *LispReadArray(long);
+static LispObj *LispReadFeature(int);
+static LispObj *LispEvalFeature(LispObj*);
 
 /*
  * Initialization
@@ -367,19 +367,19 @@ LispObj *DOT = &lispdot;
  * Implementation
  */
 LispObj *
-LispRead(LispMac *mac)
+LispRead(void)
 {
     LispObj *object, *code = COD;
-    int ch = LispSkipWhiteSpace(mac);
+    int ch = LispSkipWhiteSpace();
 
     switch (ch) {
 	case '(':
-	    object = LispReadList(mac);
+	    object = LispReadList();
 	    break;
 	case ')':
-	    for (ch = LispGet(mac); ch != EOF && ch != '\n'; ch = LispGet(mac)) {
+	    for (ch = LispGet(); ch != EOF && ch != '\n'; ch = LispGet()) {
 		if (!isspace(ch)) {
-		    LispUnget(mac, ch);
+		    LispUnget(ch);
 		    break;
 		}
 	    }
@@ -387,24 +387,24 @@ LispRead(LispMac *mac)
 	case EOF:
 	    return (NULL);
 	case '\'':
-	    object = LispReadQuote(mac);
+	    object = LispReadQuote();
 	    break;
 	case '`':
-	    object = LispReadBackquote(mac);
+	    object = LispReadBackquote();
 	    break;
 	case ',':
-	    object = LispReadCommaquote(mac);
+	    object = LispReadCommaquote();
 	    break;
 	case '#':
-	    object = LispReadMacro(mac);
+	    object = LispReadMacro();
 	    /* Don't "link" EOLIST to COD, this may happen if
 	     * a multiline comment is the last token in a form. */
 	    if (INVALID_P(object))
 		return (object);
 	    break;
 	default:
-	    LispUnget(mac, ch);
-	    object = LispReadObject(mac, 0);
+	    LispUnget(ch);
+	    object = LispReadObject(0);
 	    break;
     }
 
@@ -419,72 +419,72 @@ LispRead(LispMac *mac)
 }
 
 static LispObj *
-LispReadMacro(LispMac *mac)
+LispReadMacro(void)
 {
-    int ch = LispGet(mac);
+    int ch = LispGet();
 
     switch (ch) {
 	case '(':
-	    return (LispReadVector(mac));
+	    return (LispReadVector());
 	case '\'':
-	    return (LispReadFunction(mac));
+	    return (LispReadFunction());
 	case 'b':
 	case 'B':
-	    return (LispReadRational(mac, 2));
+	    return (LispReadRational(2));
 	case 'o':
 	case 'O':
-	    return (LispReadRational(mac, 8));
+	    return (LispReadRational(8));
 	case 'x':
 	case 'X':
-	    return (LispReadRational(mac, 16));
+	    return (LispReadRational(16));
 	case '\\':
-	    return (LispReadCharacter(mac));
+	    return (LispReadCharacter());
 	case '|':
-	    LispSkipComment(mac);
-	    return (LispRead(mac));
+	    LispSkipComment();
+	    return (LispRead());
 	case '.':	/* eval when compiling */
 	case ',':	/* eval when loading */
-	    return (LispReadEval(mac));
+	    return (LispReadEval());
 	case 'c':
 	case 'C':
-	    return (LispReadComplex(mac));
+	    return (LispReadComplex());
 	case 'p':
 	case 'P':
-	    return (LispReadPathname(mac));
+	    return (LispReadPathname());
 	case 's':
 	case 'S':
-	    return (LispReadStruct(mac));
+	    return (LispReadStruct());
 	case '+':
-	    return (LispReadFeature(mac, 1));
+	    return (LispReadFeature(1));
 	case '-':
-	    return (LispReadFeature(mac, 0));
+	    return (LispReadFeature(0));
 	case ':':
 	    /* Uninterned symbol */
-	    return (LispReadObject(mac, 1));
+	    return (LispReadObject(1));
 	default:
 	    if (isdigit(ch)) {
-		LispUnget(mac, ch);
-		return (LispReadMacroArg(mac));
+		LispUnget(ch);
+		return (LispReadMacroArg());
 	    }
-	    if (!mac->discard)
-		LispDestroy(mac, "READ: undefined dispatch macro character #%c", ch);
+	    if (!lisp__data.discard)
+		LispDestroy("READ: undefined dispatch macro character #%c", ch);
     }
 
     return (NIL);
 }
 
 static LispObj *
-LispReadMacroArg(LispMac *mac)
+LispReadMacroArg(void)
 {
     long integer;
     int ch;
 
     /* skip leading zeros */
-    while (ch = LispGet(mac), ch != EOF && isdigit(ch) && ch == '0')
+    while (ch = LispGet(), ch != EOF && isdigit(ch) && ch == '0')
 	;
 
     if (ch == EOF)
-	LispDestroy(mac, "READ: unexpected end of input");
+	LispDestroy("READ: unexpected end of input");
 
     /* if ch is not a number the argument was zero */
     if (isdigit(ch)) {
@@ -493,21 +493,21 @@ LispReadMacroArg(LispMac *mac)
 
 	stk[0] = ch;
 	for (;;) {
-	    ch = LispGet(mac);
+	    ch = LispGet();
 	    if (!isdigit(ch))
 		break;
 	    if (len + 1 >= sizeof(stk)) {
-		if (mac->discard)
+		if (lisp__data.discard)
 		    continue;
-		LispDestroy(mac, "READ: number is not a FIXNUM");
+		LispDestroy("READ: number is not a FIXNUM");
 	    }
 	    stk[len++] = ch;
 	}
 	stk[len] = '\0';
 	integer = strtol(stk, &str, 10);
 	if (*str || errno == ERANGE) {
-	    if (!mac->discard)
-		LispDestroy(mac, "READ: number is not a FIXNUM");
+	    if (!lisp__data.discard)
+		LispDestroy("READ: number is not a FIXNUM");
 	}
     }
     else
@@ -519,35 +519,35 @@ LispReadMacroArg(LispMac *mac)
 	    if (integer == 1) {
 		/* LispReadArray and LispReadList expect
 		 * the '(' being already read  */
-		if ((ch = LispSkipWhiteSpace(mac)) != '(') {
-		    if (mac->discard)
+		if ((ch = LispSkipWhiteSpace()) != '(') {
+		    if (lisp__data.discard)
 			return (ch == EOF ? NULL : NIL);
-		    LispDestroy(mac, "READ: bad array specification");
+		    LispDestroy("READ: bad array specification");
 		}
-		return (LispReadVector(mac));
+		return (LispReadVector());
 	    }
-	    return (LispReadArray(mac, integer));
+	    return (LispReadArray(integer));
 	case 'r':
 	case 'R':
-	    return (LispReadRational(mac, integer));
+	    return (LispReadRational(integer));
 	default:
-	    if (!mac->discard)
-		LispDestroy(mac, "READ: undefined dispatch macro character #%c", ch);
+	    if (!lisp__data.discard)
+		LispDestroy("READ: undefined dispatch macro character #%c", ch);
     }
 
     return (NIL);
 }
 
 static int
-LispSkipWhiteSpace(LispMac *mac)
+LispSkipWhiteSpace(void)
 {
     int ch;
 
     for (;;) {
-	while (ch = LispGet(mac), isspace(ch) && ch != EOF)
+	while (ch = LispGet(), isspace(ch) && ch != EOF)
 	    ;
 	if (ch == ';') {
-	    while (ch = LispGet(mac), ch != '\n' && ch != EOF)
+	    while (ch = LispGet(), ch != '\n' && ch != EOF)
 		;
 	    if (ch == EOF)
 		return (EOF);
@@ -561,20 +561,20 @@ LispSkipWhiteSpace(LispMac *mac)
 
 /* any data in the format '(' FORM ')' is read here */
 static LispObj *
-LispReadList(LispMac *mac)
+LispReadList(void)
 {
     GC_ENTER();
     LispObj *result, *cons, *object;
     int dot = 0;
 
     /* check for () */
-    object = LispRead(mac);
+    object = LispRead();
     if (object == EOLIST)
 	return (NIL);
 
     if (object == DOT) {
-	if (!mac->discard)
-	    LispDestroy(mac, "READ: illegal start of dotted list");
+	if (!lisp__data.discard)
+	    LispDestroy("READ: illegal start of dotted list");
 	return (NIL);
     }
 
@@ -583,14 +583,14 @@ LispReadList(LispMac *mac)
     /* make sure GC will not release data being read */
     GC_PROTECT(result);
 
-    while ((object = LispRead(mac)) != EOLIST) {
+    while ((object = LispRead()) != EOLIST) {
 	if (object == NULL)
-	    LispDestroy(mac, "READ: unexpected end of input");
+	    LispDestroy("READ: unexpected end of input");
 	if (object == DOT) {
 	    /* this is a dotted list */
 	    if (dot) {
-		if (!mac->discard)
-		    LispDestroy(mac, "READ: more than one . in list");
+		if (!lisp__data.discard)
+		    LispDestroy("READ: more than one . in list");
 		GC_LEAVE();
 
 		return (NIL);
@@ -601,8 +601,8 @@ LispReadList(LispMac *mac)
 	    if (dot) {
 		/* only one object after a dot */
 		if (++dot > 2) {
-		    if (!mac->discard)
-			LispDestroy(mac, "READ: more than one object after . in list");
+		    if (!lisp__data.discard)
+			LispDestroy("READ: more than one object after . in list");
 		    GC_LEAVE();
 
 		    return (NIL);
@@ -618,8 +618,8 @@ LispReadList(LispMac *mac)
 
     /* this will happen if last list element was a dot */
     if (dot == 1) {
-	if (!mac->discard)
-	    LispDestroy(mac, "READ: illegal end of dotted list");
+	if (!lisp__data.discard)
+	    LispDestroy("READ: illegal end of dotted list");
 	GC_LEAVE();
 
 	return (NIL);
@@ -631,53 +631,53 @@ LispReadList(LispMac *mac)
 }
 
 static LispObj *
-LispReadQuote(LispMac *mac)
+LispReadQuote(void)
 {
-    LispObj *quote = LispRead(mac);
+    LispObj *quote = LispRead();
 
     if (INVALID_P(quote)) {
-	if (mac->discard)
+	if (lisp__data.discard)
 	    return (NULL);
-	LispDestroy(mac, "READ: illegal quoted object");
+	LispDestroy("READ: illegal quoted object");
     }
 
     return (QUOTE(quote));
 }
 
 static LispObj *
-LispReadBackquote(LispMac *mac)
+LispReadBackquote(void)
 {
-    LispObj *backquote = LispRead(mac);
+    LispObj *backquote = LispRead();
 
     if (INVALID_P(backquote)) {
-	if (mac->discard)
+	if (lisp__data.discard)
 	    return (NULL);
-	LispDestroy(mac, "READ: illegal back-quoted object");
+	LispDestroy("READ: illegal back-quoted object");
     }
 
     return (BACKQUOTE(backquote));
 }
 
 static LispObj *
-LispReadCommaquote(LispMac *mac)
+LispReadCommaquote(void)
 {
     LispObj *comma;
-    int atlist = LispGet(mac);
+    int atlist = LispGet();
 
     if (atlist == EOF)
-	LispDestroy(mac, "READ: unexpected end of input");
+	LispDestroy("READ: unexpected end of input");
     else if (atlist != '@' && atlist != '.')
-	LispUnget(mac, atlist);
+	LispUnget(atlist);
 
-    comma = LispRead(mac);
+    comma = LispRead();
     if (comma == DOT) {
 	atlist = '@';
-	comma = LispRead(mac);
+	comma = LispRead();
     }
     if (INVALID_P(comma)) {
-	if (mac->discard)
+	if (lisp__data.discard)
 	    return (NULL);
-	LispDestroy(mac, "READ: illegal comma-quoted object");
+	LispDestroy("READ: illegal comma-quoted object");
     }
 
     return (COMMA(comma, atlist == '@' || atlist == '.'));
@@ -688,7 +688,7 @@ LispReadCommaquote(LispMac *mac)
  * and also put the code for reading atoms, numbers and strings together.
  */
 static LispObj *
-LispReadObject(LispMac *mac, int unintern)
+LispReadObject(int unintern)
 {
     LispObj *object;
     char stk[128], *string, *package, *symbol;
@@ -699,9 +699,9 @@ LispReadObject(LispMac *mac, int unintern)
     backslash = quote = unreadable = collon = 0;
     length = 0;
 
-    ch = LispGet(mac);
+    ch = LispGet();
     if (unintern && (ch == ':' || ch == '"'))
-	LispDestroy(mac, "READ: syntax error after #:");
+	LispDestroy("READ: syntax error after #:");
     else if (ch == '"' || ch == '|')
 	quote = ch;
     else if (ch == '\\') {
@@ -721,13 +721,13 @@ LispReadObject(LispMac *mac, int unintern)
 
     /* read remaining data */
     for (;;) {
-	ch = LispGet(mac);
+	ch = LispGet();
 
 	if (ch == EOF) {
 	    if (quote) {
 		/* if quote, file ended with an open quoted object */
 		if (string != stk)
-		    LispFree(mac, string);
+		    LispFree(string);
 		return (NULL);
 	    }
 	    break;
@@ -753,7 +753,7 @@ LispReadObject(LispMac *mac, int unintern)
 	    else if (isspace(ch))
 		break;
 	    else if (AtomSeparator(ch, 0, 0)) {
-		LispUnget(mac, ch);
+		LispUnget(ch);
 		break;
 	    }
 	    else if (ch == ':') {
@@ -763,19 +763,19 @@ LispReadObject(LispMac *mac, int unintern)
 		    symbol = string + length + 1;
 		}
 		else
-		    LispDestroy(mac, "READ: too many collons");
+		    LispDestroy("READ: too many collons");
 	    }
 	}
 
 	if (length + 2 >= size) {
 	    if (string == stk) {
 		size = 1024;
-		string = LispMalloc(mac, size);
+		string = LispMalloc(size);
 		strcpy(string, stk);
 	    }
 	    else {
 		size += 1024;
-		string = LispRealloc(mac, string, size);
+		string = LispRealloc(string, size);
 	    }
 	    symbol = string + (symbol - package);
 	    package = string;
@@ -783,9 +783,9 @@ LispReadObject(LispMac *mac, int unintern)
 	string[length++] = ch;
     }
 
-    if (mac->discard) {
+    if (lisp__data.discard) {
 	if (string != stk)
-	    LispFree(mac, string);
+	    LispFree(string);
 
 	return (ch == EOF ? NULL : NIL);
     }
@@ -794,7 +794,7 @@ LispReadObject(LispMac *mac, int unintern)
 
     if (unintern) {
 	if (length == 0)
-	    LispDestroy(mac, "READ: syntax error after #:");
+	    LispDestroy("READ: syntax error after #:");
 	object = UNINTERNED_ATOM(string);
     }
 
@@ -812,7 +812,7 @@ LispReadObject(LispMac *mac, int unintern)
 	symbol[-1] = '\0';
 	if (collon > 1)
 	    symbol[-2] = '\0';
-	object = LispParseAtom(mac, package, symbol,
+	object = LispParseAtom(package, symbol,
 			       collon == 2, unreadable || length == 0);
     }
 
@@ -833,20 +833,20 @@ LispReadObject(LispMac *mac, int unintern)
     else if (isdigit(string[0]) || string[0] == '.' ||
 	     ((string[0] == '-' || string[0] == '+') && string[1]))
 	/* Looks like a number */
-	object = LispParseNumber(mac, string, 10);
+	object = LispParseNumber(string, 10);
 
     else
 	/* A normal atom */
 	object = ATOM(string);
 
     if (string != stk)
-	LispFree(mac, string);
+	LispFree(string);
 
     return (object);
 }
 
 static LispObj *
-LispParseAtom(LispMac *mac, char *package, char *symbol,
+LispParseAtom(char *package, char *symbol,
 	      int intern, int unreadable)
 {
     LispObj *object = NULL, *thepackage = NULL;
@@ -854,21 +854,21 @@ LispParseAtom(LispMac *mac, char *package, char *symbol,
 
     /* If package is empty, it is a keyword */
     if (package[0] == '\0') {
-	thepackage = mac->keyword;
-	pack = mac->key;
+	thepackage = lisp__data.keyword;
+	pack = lisp__data.key;
     }
 
     else {
 	/* Else, search it in the package list */
-	thepackage = LispFindPackageFromString(mac, package);
+	thepackage = LispFindPackageFromString(package);
 
 	if (thepackage == NIL)
-	    LispDestroy(mac, "READ: the package %s is not available", package);
+	    LispDestroy("READ: the package %s is not available", package);
 
 	pack = thepackage->data.package.package;
     }
 
-    if (pack == mac->pack && intern) {
+    if (pack == lisp__data.pack && intern) {
 	/* Redundant package specification, since requesting a
 	 * intern symbol, create it if does not exist */
 
@@ -877,29 +877,29 @@ LispParseAtom(LispMac *mac, char *package, char *symbol,
 	    object->data.atom->unreadable = 1;
     }
 
-    else if (intern || pack == mac->key) {
+    else if (intern || pack == lisp__data.key) {
 	/* Symbol is created, or just fetched from the specified package */
 
 	LispPackage *savepack;
 	LispObj *savepackage = PACKAGE;
 
 	/* Remember curent package */
-	savepack = mac->pack;
+	savepack = lisp__data.pack;
 
 	/* Temporarily set another package */
-	mac->pack = pack;
+	lisp__data.pack = pack;
 	PACKAGE = thepackage;
 
 	/* Get the object pointer */
-	if (pack == mac->key)
-	    object = KEYWORD(LispDoGetAtom(mac, symbol, 0)->string);
+	if (pack == lisp__data.key)
+	    object = KEYWORD(LispDoGetAtom(symbol, 0)->string);
 	else
 	    object = ATOM(symbol);
 	if (unreadable)
 	    object->data.atom->unreadable = 1;
 
 	/* Restore current package */
-	mac->pack = savepack;
+	lisp__data.pack = savepack;
 	PACKAGE = savepackage;
     }
 
@@ -923,7 +923,7 @@ LispParseAtom(LispMac *mac, char *package, char *symbol,
 
 	/* No object found */
 	if (object == NULL || object->data.atom->ext == 0)
-	    LispDestroy(mac, "READ: no extern symbol %s in package %s",
+	    LispDestroy("READ: no extern symbol %s in package %s",
 			symbol, package);
     }
 
@@ -931,7 +931,7 @@ LispParseAtom(LispMac *mac, char *package, char *symbol,
 }
 
 static LispObj *
-LispParseNumber(LispMac *mac, char *str, int radix)
+LispParseNumber(char *str, int radix)
 {
     mpr *rop;
     mpi *iop;
@@ -1014,7 +1014,7 @@ LispParseNumber(LispMac *mac, char *str, int radix)
 
 	    real = strtod(str, NULL);
 	    if (!finite(real))
-		LispDestroy(mac, "READ: floating point overflow");
+		LispDestroy("READ: floating point overflow");
 
 	    return (REAL(real));
 	}
@@ -1049,12 +1049,12 @@ LispParseNumber(LispMac *mac, char *str, int radix)
     if (errno == ERANGE &&
 	((*str == '-' && integer == LONG_MIN) ||
 	 (*str != '-' && integer == LONG_MAX))) {
-	iop = LispMalloc(mac, sizeof(mpi));
+	iop = LispMalloc(sizeof(mpi));
 	mpi_init(iop);
 	mpi_setstr(iop, str, radix);
 	if (ratio == NULL) {
 	    number = BIGINTEGER(iop);
-	    LispMused(mac, iop);
+	    LispMused(iop);
 
 	    return (number);
 	}
@@ -1066,16 +1066,16 @@ LispParseNumber(LispMac *mac, char *str, int radix)
 	errno = 0;
 	denominator = strtol(ratio, NULL, radix);
 	if (denominator == 0)
-	    LispDestroy(mac, "READ: divide by zero");
+	    LispDestroy("READ: divide by zero");
 
 	/* if denominator won't fit in a long */
 	if (denominator == LONG_MAX && errno == ERANGE) {
-	    rop = LispMalloc(mac, sizeof(mpr));
+	    rop = LispMalloc(sizeof(mpr));
 	    mpr_init(rop);
 	    if (iop) {
 		mpi_set(mpr_num(rop), iop);
 		mpi_clear(iop);
-		LispFree(mac, iop);
+		LispFree(iop);
 		iop = NULL;
 	    }
 	    else		
@@ -1083,11 +1083,11 @@ LispParseNumber(LispMac *mac, char *str, int radix)
 	    mpi_setstr(mpr_den(rop), ratio, radix);
 	}
 	else if (iop) {
-	    rop = LispMalloc(mac, sizeof(mpr));
+	    rop = LispMalloc(sizeof(mpr));
 	    mpr_init(rop);
 	    mpi_set(mpr_num(rop), iop);
 	    mpi_clear(iop);
-	    LispFree(mac, iop);
+	    LispFree(iop);
 	    iop = NULL;
 	    mpi_seti(mpr_den(rop), denominator);
 	}
@@ -1098,14 +1098,14 @@ LispParseNumber(LispMac *mac, char *str, int radix)
 		integer = mpi_geti(mpr_num(rop));
 		denominator = mpi_geti(mpr_den(rop));
 		mpr_clear(rop);
-		LispFree(mac, rop);
+		LispFree(rop);
 		rop = NULL;
 		/* if denominator becames 1, RATIO will convert to INTEGER */
 		number = RATIO(integer, denominator);
 	    }
 	    else {
 		number = BIGRATIO(rop);
-		LispMused(mac, rop);
+		LispMused(rop);
 	    }
 
 	    return (number);
@@ -1116,7 +1116,7 @@ LispParseNumber(LispMac *mac, char *str, int radix)
 
     if (iop) {
 	number = BIGINTEGER(iop);
-	LispMused(mac, iop);
+	LispMused(iop);
     }
     else
 	number = SMALLINT(integer);
@@ -1157,48 +1157,48 @@ AtomSeparator(int ch, int check_space, int check_backslash)
 }
 
 static LispObj *
-LispReadVector(LispMac *mac)
+LispReadVector(void)
 {
     LispObj *object;
     LispObj *objects;
 
-    objects = LispReadList(mac);
+    objects = LispReadList();
 
-    if (mac->discard)
+    if (lisp__data.discard)
 	return (NULL);
 
     for (object = objects; CONS_P(object); object = CDR(object))
 	;
     if (object != NIL)
-	LispDestroy(mac, "READ: vector cannot be a dotted list");
+	LispDestroy("READ: vector cannot be a dotted list");
 
     return (VECTOR(objects));
 }
 
 static LispObj *
-LispReadFunction(LispMac *mac)
+LispReadFunction(void)
 {
-    LispObj *function = LispRead(mac);
+    LispObj *function = LispRead();
 
-    if (mac->discard)
+    if (lisp__data.discard)
 	return (function);
 
     if (INVALID_P(function)) 
-	LispDestroy(mac, "READ: illegal function object");
+	LispDestroy("READ: illegal function object");
     else if (CONS_P(function)) {
 	if (CAR(function) != Olambda)
-	    LispDestroy(mac, "READ: %s is not a valid lambda", STROBJ(function));
+	    LispDestroy("READ: %s is not a valid lambda", STROBJ(function));
 
 	return (EVAL(function));
     }
     else if (!SYMBOL_P(function))
-	LispDestroy(mac, "READ: %s cannot name a function", STROBJ(function));
+	LispDestroy("READ: %s cannot name a function", STROBJ(function));
 
     return (QUOTE(function));
 }
 
 static LispObj *
-LispReadRational(LispMac *mac, int radix)
+LispReadRational(int radix)
 {
     LispObj *number;
     int ch, len, size;
@@ -1209,11 +1209,11 @@ LispReadRational(LispMac *mac, int radix)
     size = sizeof(stk);
 
     for (;;) {
-	ch = LispGet(mac);
+	ch = LispGet();
 	if (ch == EOF || isspace(ch))
 	    break;
 	else if (AtomSeparator(ch, 0, 1)) {
-	    LispUnget(mac, ch);
+	    LispUnget(ch);
 	    break;
 	}
 	else if (islower(ch))
@@ -1221,51 +1221,51 @@ LispReadRational(LispMac *mac, int radix)
 	if ((ch < '0' || ch > '9') && (ch < 'A' || ch > 'Z') &&
 	    ch != '+' && ch != '-' && ch != '/') {
 	    if (str != stk)
-		LispFree(mac, str);
-	    if (!mac->discard)
-		LispDestroy(mac, "READ: bad character %c for rational number", ch);
+		LispFree(str);
+	    if (!lisp__data.discard)
+		LispDestroy("READ: bad character %c for rational number", ch);
 	}
 	if (len + 1 >= size) {
 	    if (str == stk) {
 		size = 512;
-		str = LispMalloc(mac, size);
+		str = LispMalloc(size);
 		strcpy(str + 1, stk + 1);
 	    }
 	    else {
 		size += 512;
-		str = LispRealloc(mac, str, size);
+		str = LispRealloc(str, size);
 	    }
 	}
 	str[len++] = ch;
     }
 
-    if (mac->discard) {
+    if (lisp__data.discard) {
 	if (str != stk)
-	    LispFree(mac, str);
+	    LispFree(str);
 
 	return (ch == EOF ? NULL : NIL);
     }
 
     str[len] = '\0';
 
-    number = LispParseNumber(mac, str, radix);
+    number = LispParseNumber(str, radix);
     if (str != stk)
-	LispFree(mac, str);
+	LispFree(str);
 
     if (!RATIONAL_P(number))
-	LispDestroy(mac, "READ: bad rational number specification");
+	LispDestroy("READ: bad rational number specification");
 
     return (number);
 }
 
 static LispObj *
-LispReadCharacter(LispMac *mac)
+LispReadCharacter(void)
 {
     long c;
     int ch, len;
     char stk[64];
 
-    ch = LispGet(mac);
+    ch = LispGet();
     if (ch == EOF)
 	return (NULL);
 
@@ -1273,11 +1273,11 @@ LispReadCharacter(LispMac *mac)
     len = 1;
 
     for (;;) {
-	ch = LispGet(mac);
+	ch = LispGet();
 	if (ch == EOF)
 	    break;
 	else if (ch != '-' && !isalnum(ch)) {
-	    LispUnget(mac, ch);
+	    LispUnget(ch);
 	    break;
 	}
 	if (len + 1 < sizeof(stk))
@@ -1306,9 +1306,9 @@ LispReadCharacter(LispMac *mac)
 	}
 
 	if (!found) {
-	    if (mac->discard)
+	    if (lisp__data.discard)
 		return (NIL);
-	    LispDestroy(mac, "READ: unkwnown character %s", stk);
+	    LispDestroy("READ: unkwnown character %s", stk);
 	}
     }
     else
@@ -1318,54 +1318,54 @@ LispReadCharacter(LispMac *mac)
 }
 
 static void
-LispSkipComment(LispMac *mac)
+LispSkipComment(void)
 {
     int ch, comm = 1;
 
     for (;;) {
-	ch = LispGet(mac);
+	ch = LispGet();
 	if (ch == '#') {
-	    ch = LispGet(mac);
+	    ch = LispGet();
 	    if (ch == '|')
 		++comm;
 	    continue;
 	}
 	while (ch == '|') {
-	    ch = LispGet(mac);
+	    ch = LispGet();
 	    if (ch == '#' && --comm == 0)
 		return;
 	}
 	if (ch == EOF)
-	    LispDestroy(mac, "READ: unexpected end of input");
+	    LispDestroy("READ: unexpected end of input");
     }
 }
 
 static LispObj *
-LispReadEval(LispMac *mac)
+LispReadEval(void)
 {
-    LispObj *code = LispRead(mac);
+    LispObj *code = LispRead();
 
-    if (mac->discard)
+    if (lisp__data.discard)
 	return (code);
 
     if (INVALID_P(code))
-	LispDestroy(mac, "READ: invalid eval code");
+	LispDestroy("READ: invalid eval code");
 
     return (EVAL(code));
 }
 
 static LispObj *
-LispReadComplex(LispMac *mac)
+LispReadComplex(void)
 {
     GC_ENTER();
-    LispObj *number, *arguments = LispRead(mac);
+    LispObj *number, *arguments = LispRead();
 
     /* form read */
-    if (mac->discard)
+    if (lisp__data.discard)
 	return (arguments);
 
     if (INVALID_P(arguments) || !CONS_P(arguments))
-	LispDestroy(mac, "READ: invalid complex-number specification");
+	LispDestroy("READ: invalid complex-number specification");
 
     GC_PROTECT(arguments);
     number = APPLY(Ocomplex, arguments);
@@ -1375,17 +1375,17 @@ LispReadComplex(LispMac *mac)
 }
 
 static LispObj *
-LispReadPathname(LispMac *mac)
+LispReadPathname(void)
 {
     GC_ENTER();
-    LispObj *path = LispRead(mac);
+    LispObj *path = LispRead();
 
     /* form read */
-    if (mac->discard)
+    if (lisp__data.discard)
 	return (path);
 
     if (INVALID_P(path))
-	LispDestroy(mac, "READ: invalid pathname specification");
+	LispDestroy("READ: invalid pathname specification");
 
     GC_PROTECT(path);
     path = APPLY1(Oparse_namestring, path);
@@ -1395,32 +1395,32 @@ LispReadPathname(LispMac *mac)
 }
 
 static LispObj *
-LispReadStruct(LispMac *mac)
+LispReadStruct(void)
 {
     GC_ENTER();
     int len;
     char stk[128], *str;
-    LispObj *struc, *arguments = LispRead(mac);
+    LispObj *struc, *arguments = LispRead();
 
     /* form read */
-    if (mac->discard)
+    if (lisp__data.discard)
 	return (arguments);
 
     if (INVALID_P(arguments) || !CONS_P(arguments) || !SYMBOL_P(CAR(arguments)))
-	LispDestroy(mac, "READ: invalid structure specification");
+	LispDestroy("READ: invalid structure specification");
 
     GC_PROTECT(arguments);
 
     len = strlen(STRPTR(CAR(arguments)));
 	   /* MAKE- */
     if (len + 6 > sizeof(stk))
-	str = LispMalloc(mac, len + 6);
+	str = LispMalloc(len + 6);
     else
 	str = stk;
     sprintf(str, "MAKE-%s", STRPTR(CAR(arguments)));
     RPLACA(arguments, ATOM(str));
     if (str != stk)
-	LispFree(mac, str);
+	LispFree(str);
     struc = APPLY(Omake_struct, arguments);
     GC_LEAVE();
 
@@ -1428,19 +1428,19 @@ LispReadStruct(LispMac *mac)
 }
 
 static LispObj *
-LispReadArray(LispMac *mac, long dimensions)
+LispReadArray(long dimensions)
 {
     GC_ENTER();
     long count;
     LispObj *arguments, *initial, *dim, *cons;
-    LispObj *data = LispRead(mac);
+    LispObj *data = LispRead();
 
     /* form read */
-    if (mac->discard)
+    if (lisp__data.discard)
 	return (data);
 
     if (INVALID_P(data))
-	LispDestroy(mac, "READ: invalid array specification");
+	LispDestroy("READ: invalid array specification");
 
     initial = Kinitial_contents;
 
@@ -1453,7 +1453,7 @@ LispReadArray(LispMac *mac, long dimensions)
 	    LispObj *item;
 
 	    if (!CONS_P(array))
-		LispDestroy(mac, "READ: bad array for given dimension");
+		LispDestroy("READ: bad array for given dimension");
 	    item = array;
 	    array = CAR(array);
 
@@ -1480,42 +1480,42 @@ LispReadArray(LispMac *mac, long dimensions)
 }
 
 static LispObj *
-LispReadFeature(LispMac *mac, int with)
+LispReadFeature(int with)
 {
     LispObj *status;
-    LispObj *feature = LispRead(mac);
+    LispObj *feature = LispRead();
 
     /* form read */
-    if (mac->discard)
+    if (lisp__data.discard)
 	return (feature);
 
     if (INVALID_P(feature))
-	LispDestroy(mac, "READ: invalid feature specification");
+	LispDestroy("READ: invalid feature specification");
 
-    status = LispEvalFeature(mac, feature);
+    status = LispEvalFeature(feature);
 
     if (with) {
 	if (status == T)
-	    return (LispRead(mac));
+	    return (LispRead());
 
 	/* need to use the field discard because the following expression
 	 * may be #.FORM or #,FORM or any other form that may generate
 	 * side effects */
-	mac->discard = 1;
-	LispRead(mac);
-	mac->discard = 0;
+	lisp__data.discard = 1;
+	LispRead();
+	lisp__data.discard = 0;
 
-	return (LispRead(mac));
+	return (LispRead());
     }
 
     if (status == NIL)
-	return (LispRead(mac));
+	return (LispRead());
 
-    mac->discard = 1;
-    LispRead(mac);
-    mac->discard = 0;
+    lisp__data.discard = 1;
+    LispRead();
+    lisp__data.discard = 0;
 
-    return (LispRead(mac));
+    return (LispRead());
 }
 
 /*
@@ -1523,7 +1523,7 @@ LispReadFeature(LispMac *mac, int with)
  * the available features.
  */
 static LispObj *
-LispEvalFeature(LispMac *mac, LispObj *feature)
+LispEvalFeature(LispObj *feature)
 {
     Atom_id test;
     LispObj *object;
@@ -1532,34 +1532,34 @@ LispEvalFeature(LispMac *mac, LispObj *feature)
 	LispObj *function = CAR(feature), *arguments = CDR(feature);
 
 	if (!SYMBOL_P(function))
-	    LispDestroy(mac, "READ: bad feature test function %s",
+	    LispDestroy("READ: bad feature test function %s",
 			STROBJ(function));
 	if (!CONS_P(arguments))
-	    LispDestroy(mac, "READ: bad feature test arguments %s",
+	    LispDestroy("READ: bad feature test arguments %s",
 			STROBJ(arguments));
 	test = ATOMID(function);
 	if (test == Sand) {
 	    for (; CONS_P(arguments); arguments = CDR(arguments)) {
-		if (LispEvalFeature(mac, CAR(arguments)) == NIL)
+		if (LispEvalFeature(CAR(arguments)) == NIL)
 		    return (NIL);
 	    }
 	    return (T);
 	}
 	else if (test == Sor) {
 	    for (; CONS_P(arguments); arguments = CDR(arguments)) {
-		if (LispEvalFeature(mac, CAR(arguments)) == T)
+		if (LispEvalFeature(CAR(arguments)) == T)
 		    return (T);
 	    }
 	    return (NIL);
 	}
 	else if (test == Snot) {
 	    if (CONS_P(CDR(arguments)))
-		LispDestroy(mac, "READ: too many arguments to NOT");
+		LispDestroy("READ: too many arguments to NOT");
 
-	    return (LispEvalFeature(mac, CAR(arguments)) == NIL ? T : NIL);
+	    return (LispEvalFeature(CAR(arguments)) == NIL ? T : NIL);
 	}
 	else
-	    LispDestroy(mac, "READ: unimplemented feature test function %s",
+	    LispDestroy("READ: unimplemented feature test function %s",
 			test);
     }
 
@@ -1567,7 +1567,7 @@ LispEvalFeature(LispMac *mac, LispObj *feature)
 	feature = feature->data.quote;
 
     if (!SYMBOL_P(feature))
-	LispDestroy(mac, "READ: bad feature specification %s",
+	LispDestroy("READ: bad feature specification %s",
 		    STROBJ(feature));
 
     test = ATOMID(feature);

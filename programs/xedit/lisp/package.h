@@ -27,32 +27,32 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/package.h,v 1.2 2002/02/27 06:56:36 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/package.h,v 1.3 2002/03/08 04:33:18 paulo Exp $ */
 
 #ifndef Lisp_package_h
 #define Lisp_package_h
 
 #include "internal.h"
 
-void LispPackageInit(LispMac*);
-LispObj *LispFindPackage(LispMac*, LispObj*);
-LispObj *LispFindPackageFromString(LispMac*, char*);
+void LispPackageInit(void);
+LispObj *LispFindPackage(LispObj*);
+LispObj *LispFindPackageFromString(char*);
 
-LispObj *Lisp_DoAllSymbols(LispMac*, LispBuiltin*);	/* do-all-symbols */
-LispObj *Lisp_DoExternalSymbols(LispMac*, LispBuiltin*);/* do-external-symbols */
-LispObj *Lisp_DoSymbols(LispMac*, LispBuiltin*);	/* do-symbols */
-LispObj *Lisp_FindAllSymbols(LispMac*, LispBuiltin*);	/* find-all-symbols */
-LispObj *Lisp_FindPackage(LispMac*, LispBuiltin*);	/* find-package */
-LispObj *Lisp_Export(LispMac*, LispBuiltin*);		/* export */
-LispObj *Lisp_Import(LispMac*, LispBuiltin*);		/* import */
-LispObj *Lisp_InPackage(LispMac*, LispBuiltin*);	/* in-package */
-LispObj *Lisp_Intern(LispMac*, LispBuiltin*);		/* intern */
-LispObj *Lisp_ListAllPackages(LispMac*, LispBuiltin*);	/* list-all-packages */
-LispObj *Lisp_MakePackage(LispMac*, LispBuiltin*);	/* make-package */
-LispObj *Lisp_PackageName(LispMac*, LispBuiltin*);	/* package-name */
-LispObj *Lisp_PackageNicknames(LispMac*, LispBuiltin*);	/* package-nicknames */
-LispObj *Lisp_PackageUseList(LispMac*, LispBuiltin*);	/* package-use-list */
-LispObj *Lisp_PackageUsedByList(LispMac*, LispBuiltin*);/* package-used-by-list */
-LispObj *Lisp_Unexport(LispMac*, LispBuiltin*);		/* unexport */
+LispObj *Lisp_DoAllSymbols(LispBuiltin*);
+LispObj *Lisp_DoExternalSymbols(LispBuiltin*);
+LispObj *Lisp_DoSymbols(LispBuiltin*);
+LispObj *Lisp_FindAllSymbols(LispBuiltin*);
+LispObj *Lisp_FindPackage(LispBuiltin*);
+LispObj *Lisp_Export(LispBuiltin*);
+LispObj *Lisp_Import(LispBuiltin*);
+LispObj *Lisp_InPackage(LispBuiltin*);
+LispObj *Lisp_Intern(LispBuiltin*);
+LispObj *Lisp_ListAllPackages(LispBuiltin*);
+LispObj *Lisp_MakePackage(LispBuiltin*);
+LispObj *Lisp_PackageName(LispBuiltin*);
+LispObj *Lisp_PackageNicknames(LispBuiltin*);
+LispObj *Lisp_PackageUseList(LispBuiltin*);
+LispObj *Lisp_PackageUsedByList(LispBuiltin*);
+LispObj *Lisp_Unexport(LispBuiltin*);
 
 #endif /* Lisp_package_h */

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/compile.c,v 1.3 2002/10/20 05:58:55 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/compile.c,v 1.4 2002/11/02 22:58:09 paulo Exp $ */
 
 #define VARIABLE_USED		0x0001
 #define VARIABLE_ARGUMENT	0x0002
@@ -49,7 +49,7 @@ static void ComVariableSetFlag(LispCom*, LispAtom*, int);
 
 static int FindIndex(void*, void**, int);
 static int compare(const void*, const void*);
-static int BuildTablePointer(LispMac*, void*, void***, int*);
+static int BuildTablePointer(void*, void***, int*);
 
 static void ComLabel(LispCom*, LispObj*);
 static void ComPush(LispCom*, LispObj*, LispObj*, int, int, int);
@@ -79,7 +79,6 @@ Com_And(LispCom *com, LispBuiltin *builtin)
  and &rest args
  */
 {
-    LispMac *mac = com->mac;
     LispObj *args;
 
     args = ARGUMENT(0);
@@ -122,14 +121,13 @@ Com_Block(LispCom *com, LispBuiltin *builtin)
  */
 {
 
-    LispMac *mac = com->mac;
     LispObj *name, *body;
 
     body = ARGUMENT(1);
     name = ARGUMENT(0);
 
     if (name != NIL && name != T && !SYMBOL_P(name))
-	LispDestroy(mac, "%s: %s cannot name a block",
+	LispDestroy("%s: %s cannot name a block",
 		    STRFUN(builtin), STROBJ(name));
     if (CONS_P(body)) {
 	CompileIniBlock(com, LispBlockTag, name);
@@ -147,7 +145,6 @@ Com_C_r(LispCom *com, LispBuiltin *builtin)
  c[ad]{1,4}r list
  */
 {
-    LispMac *mac = com->mac;
     LispObj *list;
     char *desc;
 
@@ -175,7 +172,6 @@ Com_Cond(LispCom *com, LispBuiltin *builtin)
  cond &rest body
  */
 {
-    LispMac *mac = com->mac;
     int count;
     LispObj *code, *body;
     CodeTree *group, *tree;
@@ -218,7 +214,6 @@ Com_Cons(LispCom *com, LispBuiltin *builtin)
  cons car cdr
  */
 {
-    LispMac *mac = com->mac;
     LispObj *car, *cdr;
 
     cdr = ARGUMENT(1);
@@ -254,7 +249,6 @@ Com_Dolist(LispCom *com, LispBuiltin *builtin)
  */
 {
     int unbound, item;
-    LispMac *mac = com->mac;
     LispObj *symbol, *list, *result;
     LispObj *init, *body;
     CodeTree *group, *tree;
@@ -276,7 +270,7 @@ Com_Dolist(LispCom *com, LispBuiltin *builtin)
     if (CONS_P(init)) {
 	result = CAR(init);
 	if (CONS_P(CDR(init)))
-	    LispDestroy(mac, "%s: too many arguments %s",
+	    LispDestroy("%s: too many arguments %s",
 			STRFUN(builtin), STROBJ(CDR(init)));
     }
     else
@@ -306,7 +300,7 @@ Com_Dolist(LispCom *com, LispBuiltin *builtin)
      * by adding more opcodes for compound operations ... */
 
     /* Relative offsets the locally added variables will have at run time */
-    unbound = mac->env.length - mac->env.lex;
+    unbound = lisp__data.env.length - lisp__data.env.lex;
     item = unbound + 1;
 
     /* Start BLOCK NIL */
@@ -322,7 +316,7 @@ Com_Dolist(LispCom *com, LispBuiltin *builtin)
     /* Bind variables */
     com_Bind(com, 2);
     com->block->bind += 2;
-    mac->env.head += 2;
+    lisp__data.env.head += 2;
 
     /* Remember that iteration variable is used even if it not referenced */
     COM_VARIABLE_USED(symbol->data.atom);
@@ -379,8 +373,8 @@ Com_Dolist(LispCom *com, LispBuiltin *builtin)
     ComEval(com, result);
 
     /* Unbind variables */
-    mac->env.head -= 2;
-    mac->env.length -= 2;
+    lisp__data.env.head -= 2;
+    lisp__data.env.length -= 2;
     com->block->bind -= 2;
     com_Unbind(com, 2);
     /* Stack length is reduced. */
@@ -400,7 +394,6 @@ Com_Eq(LispCom *com, LispBuiltin *builtin)
  equalp left right
  */
 {
-    LispMac *mac = com->mac;
     LispObj *left, *right;
     LispByteOpcode code;
     char *name;
@@ -439,7 +432,6 @@ Com_Go(LispCom *com, LispBuiltin *builtin)
  go tag
  */
 {
-    LispMac *mac = com->mac;
     int bind;
     LispObj *tag;
     CodeTree *tree;
@@ -459,7 +451,7 @@ Com_Go(LispCom *com, LispBuiltin *builtin)
     }
 
     if (!block || block->type != LispBlockBody)
-	LispDestroy(com->mac, "%s called not within a block", STRFUN(builtin));
+	LispDestroy("%s called not within a block", STRFUN(builtin));
 
     /* Unbind any local variables */
     com_Unbind(com, bind);
@@ -473,7 +465,6 @@ Com_If(LispCom *com, LispBuiltin *builtin)
  if test then &optional else
  */
 {
-    LispMac *mac = com->mac;
     CodeTree *group, *tree;
     LispObj *test, *then, *oelse;
 
@@ -513,7 +504,6 @@ Com_Last(LispCom *com, LispBuiltin *builtin)
  last list &optional count
  */
 {
-    LispMac *mac = com->mac;
     LispObj *list, *count;
 
     count = ARGUMENT(1);
@@ -533,7 +523,6 @@ Com_Length(LispCom *com, LispBuiltin *builtin)
  length sequence
  */
 {
-    LispMac *mac = com->mac;
     LispObj *sequence;
 
     sequence = ARGUMENT(0);
@@ -548,7 +537,6 @@ Com_Let(LispCom *com, LispBuiltin *builtin)
  let init &rest body
  */
 {
-    LispMac *mac = com->mac;
     LispObj *init, *body;
 
     body = ARGUMENT(1);
@@ -572,7 +560,7 @@ Com_Let(LispCom *com, LispBuiltin *builtin)
 		if (CONS_P(pair)) {
 		    value = CAR(pair);
 		    if (CDR(pair) != NIL)
-			LispDestroy(mac, "%s: too much arguments to initialize %s",
+			LispDestroy("%s: too much arguments to initialize %s",
 				    STRFUN(builtin), STROBJ(symbol));
 		}
 		else
@@ -594,12 +582,12 @@ Com_Let(LispCom *com, LispBuiltin *builtin)
 	/* Bind the added variables */
 	com_Bind(com, count);
 	com->block->bind += count;
-	mac->env.head += count;
+	lisp__data.env.head += count;
 	/* Generate code for the body of the form */
 	ComProgn(com, body);
 	/* Unbind the added variables */
-	mac->env.head -= count;
-	mac->env.length -= count;
+	lisp__data.env.head -= count;
+	lisp__data.env.length -= count;
 	com->block->bind -= count;
 	com_Unbind(com, count);
 	/* Stack length is reduced. */
@@ -613,7 +601,6 @@ Com_Letx(LispCom *com, LispBuiltin *builtin)
  let* init &rest body
  */
 {
-    LispMac *mac = com->mac;
     LispObj *init, *body;
 
     body = ARGUMENT(1);
@@ -637,7 +624,7 @@ Com_Letx(LispCom *com, LispBuiltin *builtin)
 		if (CONS_P(pair)) {
 		    value = CAR(pair);
 		    if (CDR(pair) != NIL)
-			LispDestroy(mac, "%s: too much arguments to initialize %s",
+			LispDestroy("%s: too much arguments to initialize %s",
 				    STRFUN(builtin), STROBJ(symbol));
 		}
 		else
@@ -655,7 +642,7 @@ Com_Letx(LispCom *com, LispBuiltin *builtin)
 	    /* Every added variable is binded */
 	    com_Bind(com, 1);
 	    /* Must be binded at compile time also */
-	    ++mac->env.head;
+	    ++lisp__data.env.head;
 	    ++com->block->bind;
 	}
 
@@ -664,8 +651,8 @@ Com_Letx(LispCom *com, LispBuiltin *builtin)
 	ComProgn(com, body);
 	com_Unbind(com, count);
 	com->block->bind -= count;
-	mac->env.head -= count;
-	mac->env.length -= count;
+	lisp__data.env.head -= count;
+	lisp__data.env.length -= count;
 	CompileStackLeave(com, count, 0);
     }
 }
@@ -685,7 +672,6 @@ Com_Loop(LispCom *com, LispBuiltin *builtin)
  loop &rest body
  */
 {
-    LispMac *mac = com->mac;
     CodeTree *tree, *group;
     LispObj *body;
 
@@ -720,7 +706,6 @@ Com_Nthcdr(LispCom *com, LispBuiltin *builtin)
  nthcdr index list
  */
 {
-    LispMac *mac = com->mac;
     LispObj *oindex, *list;
 
     list = ARGUMENT(1);
@@ -740,7 +725,6 @@ Com_Null(LispCom *com, LispBuiltin *builtin)
  null list
  */
 {
-    LispMac *mac = com->mac;
     LispObj *list;
 
     list = ARGUMENT(0);
@@ -770,7 +754,6 @@ Com_Or(LispCom *com, LispBuiltin *builtin)
  or &rest args
  */
 {
-    LispMac *mac = com->mac;
     LispObj *args;
 
     args = ARGUMENT(0);
@@ -811,7 +794,6 @@ Com_Progn(LispCom *com, LispBuiltin *builtin)
  progn &rest body
  */
 {
-    LispMac *mac = com->mac;
     LispObj *body;
 
     body = ARGUMENT(0);
@@ -843,7 +825,6 @@ Com_Rplac_(LispCom *com, LispBuiltin *builtin)
  rplac[ad] place value
  */
 {
-    LispMac *mac = com->mac;
     LispObj *place, *value;
 
     value = ARGUMENT(1);
@@ -863,7 +844,6 @@ Com_Setq(LispCom *com, LispBuiltin *builtin)
  setq &rest form
  */
 {
-    LispMac *mac = com->mac;
     int offset;
     LispObj *form, *symbol, *value;
 
@@ -875,7 +855,7 @@ Com_Setq(LispCom *com, LispBuiltin *builtin)
 	ERROR_CHECK_CONSTANT(symbol);
 	form = CDR(form);
 	if (!CONS_P(form))
-	    LispDestroy(mac, "%s: odd number of arguments", STRFUN(builtin));
+	    LispDestroy("%s: odd number of arguments", STRFUN(builtin));
 	value = CAR(form);
 	/* Generate code to load value */
 	ComEval(com, value);
@@ -893,7 +873,6 @@ Com_Tagbody(LispCom *com, LispBuiltin *builtin)
  tagbody &rest body
  */
 {
-    LispMac *mac = com->mac;
     LispObj *body;
 
     body = ARGUMENT(0);
@@ -916,7 +895,6 @@ Com_Unless(LispCom *com, LispBuiltin *builtin)
  unless test &rest body
  */
 {
-    LispMac *mac = com->mac;
     CodeTree *group, *tree;
     LispObj *test, *body;
 
@@ -942,7 +920,6 @@ Com_Until(LispCom *com, LispBuiltin *builtin)
  until test &rest body
  */
 {
-    LispMac *mac = com->mac;
     CodeTree *tree, *group, *ltree, *lgroup;
     LispObj *test, *body;
 
@@ -978,7 +955,6 @@ Com_When(LispCom *com, LispBuiltin *builtin)
  when test &rest body
  */
 {
-    LispMac *mac = com->mac;
     CodeTree *group, *tree;
     LispObj *test, *body;
 
@@ -1004,7 +980,6 @@ Com_While(LispCom *com, LispBuiltin *builtin)
  while test &rest body
  */
 {
-    LispMac *mac = com->mac;
     CodeTree *tree, *group, *ltree, *lgroup;
     LispObj *test, *body;
 
@@ -1041,7 +1016,6 @@ Com_While(LispCom *com, LispBuiltin *builtin)
 static void
 ComPredicate(LispCom *com, LispBuiltin *builtin, LispBytePredicate predicate)
 {
-    LispMac *mac = com->mac;
     LispObj *object;
 
     object = ARGUMENT(0);
@@ -1073,7 +1047,6 @@ ComPredicate(LispCom *com, LispBuiltin *builtin, LispBytePredicate predicate)
 static void
 ComReturnFrom(LispCom *com, LispBuiltin *builtin, int from)
 {
-    LispMac *mac = com->mac;
     int bind;
     CodeTree *tree;
     LispObj *name, *result;
@@ -1101,7 +1074,7 @@ ComReturnFrom(LispCom *com, LispBuiltin *builtin, int from)
     }
 
     if (!block || block->tag != name)
-	LispDestroy(mac, "%s: no visible %s block",
+	LispDestroy("%s: no visible %s block",
 		    STRFUN(builtin), STROBJ(name));
 
     /* Generate code to load result */
@@ -1123,7 +1096,7 @@ ComConstantp(LispCom *com, LispObj *object)
     switch (object->type) {
 	case LispAtom_t:
 	    /* Keywords are guaranteed to evaluate to itself */
-	    if (object->data.atom->package == com->mac->keyword)
+	    if (object->data.atom->package == lisp__data.keyword)
 		break;
 	    return (0);
 
@@ -1175,13 +1148,12 @@ compare(const void *left, const void *right)
 }
 
 static int
-BuildTablePointer(LispMac *mac,
-		  void *pointer, void ***pointers, int *num_pointers)
+BuildTablePointer(void *pointer, void ***pointers, int *num_pointers)
 {
     int i;
 
     if ((i = FindIndex(pointer, *pointers, *num_pointers)) < 0) {
-	*pointers = LispRealloc(mac, *pointers,
+	*pointers = LispRealloc(*pointers,
 				sizeof(void*) * (*num_pointers + 1));
 	(*pointers)[*num_pointers] = pointer;
 	if (++*num_pointers > 1)
@@ -1200,13 +1172,12 @@ ComAddVariable(LispCom *com, LispObj *symbol, LispObj *value)
     if (atom && atom->string && !com->macro) {
 	int i, length = com->block->variables.length;
 
-	i = BuildTablePointer(com->mac, atom,
-			      (void***)&com->block->variables.symbols,
+	i = BuildTablePointer(atom, (void***)&com->block->variables.symbols,
 			      &com->block->variables.length);
 
 	if (com->block->variables.length != length) {
 	    com->block->variables.flags =
-		LispRealloc(com->mac, com->block->variables.flags,
+		LispRealloc(com->block->variables.flags,
 			    com->block->variables.length * sizeof(int));
 
 	    /* Variable was inserted in the middle of the list */
@@ -1219,21 +1190,19 @@ ComAddVariable(LispCom *com, LispObj *symbol, LispObj *value)
 	}
     }
 
-    LispAddVar(com->mac, symbol, value);
+    LispAddVar(symbol, value);
 }
 
 static int
 ComGetVariable(LispCom *com, LispObj *symbol)
 {
-    LispMac *mac;
     LispAtom *name;
     int i, base, offset;
     Atom_id id;
 
-    mac = com->mac;
     name = symbol->data.atom;
     if (name->constant) {
-	if (name->package == mac->keyword)
+	if (name->package == lisp__data.keyword)
 	    /*	Just load <symbol> from the byte stream, keywords are
 	     * guaranteed to evaluate to itself. */
 	    return (SYMBOL_KEYWORD);
@@ -1242,11 +1211,11 @@ ComGetVariable(LispCom *com, LispObj *symbol)
 
     offset = name->offset;
     id = name->string;
-    base = mac->env.lex;
-    i = mac->env.head - 1;
+    base = lisp__data.env.lex;
+    i = lisp__data.env.head - 1;
 
     /* If variable is local */
-    if (offset <= i && offset >= com->lex && mac->env.names[offset] == id) {
+    if (offset <= i && offset >= com->lex && lisp__data.env.names[offset] == id) {
 	COM_VARIABLE_USED(name);
 	/* Relative offset */
 	return (offset - base);
@@ -1254,7 +1223,7 @@ ComGetVariable(LispCom *com, LispObj *symbol)
 
     /* name->offset may have been changed in a macro expansion */
     for (; i >= com->lex; i--)
-	if (mac->env.names[i] == id) {
+	if (lisp__data.env.names[i] == id) {
 	    name->offset = i;
 	    COM_VARIABLE_USED(name);
 	    return (i - base);
@@ -1262,7 +1231,7 @@ ComGetVariable(LispCom *com, LispObj *symbol)
 
     if (!name->a_object) {
 	++com->warnings;
-	LispWarning(mac, "variable %s is neither declared nor bound",
+	LispWarning("variable %s is neither declared nor bound",
 		    name->string);
     }
 
@@ -1295,21 +1264,20 @@ ComLabel(LispCom *com, LispObj *label)
 {
     int i;
     CodeTree *tree;
-    LispMac *mac = com->mac;
 
     for (i = 0; i < com->block->tagbody.length; i++)
 	if (XEQL(label, com->block->tagbody.labels[i]) == T)
-	    LispDestroy(mac, "TAGBODY: tag %s specified more than once",
+	    LispDestroy("TAGBODY: tag %s specified more than once",
 			STROBJ(label));
 
     if (com->block->tagbody.length >= com->block->tagbody.space) {
 	com->block->tagbody.labels =
-	    LispRealloc(com->mac, com->block->tagbody.labels,
+	    LispRealloc(com->block->tagbody.labels,
 			sizeof(LispObj*) * (com->block->tagbody.space + 8));
 	/*  Reserve space, will be used at link time when
 	 * resolving GO jumps. */
 	com->block->tagbody.codes =
-	    LispRealloc(com->mac, com->block->tagbody.codes,
+	    LispRealloc(com->block->tagbody.codes,
 			sizeof(CodeTree*) * (com->block->tagbody.space + 8));
 	com->block->tagbody.space += 8;
     }
@@ -1323,13 +1291,11 @@ static void
 ComPush(LispCom *com, LispObj *symbol, LispObj *value,
 	int eval, int builtin, int compile)
 {
-    LispMac *mac = com->mac;
-
     /*  If <compile> is set, it is pushing an argument to one of
      * Com_XXX functions. */
     if (compile) {
 	if (builtin)
-	    mac->stack.values[mac->stack.length++] = value;
+	    lisp__data.stack.values[lisp__data.stack.length++] = value;
 	else
 	    ComAddVariable(com, symbol, value);
 	return;
@@ -1389,7 +1355,7 @@ ComPush(LispCom *com, LispObj *symbol, LispObj *value,
 	/*  Remember <symbol> will be bound, <value> only matters for
 	 * the Com_XXX  functions */
 	if (builtin)
-	    mac->stack.values[mac->stack.length++] = value;
+	    lisp__data.stack.values[lisp__data.stack.length++] = value;
 	else
 	    ComAddVariable(com, symbol, value);
 	return;
@@ -1404,7 +1370,7 @@ ComPush(LispCom *com, LispObj *symbol, LispObj *value,
     if (builtin) {
 	/* Load <value> as a constant in builtin stack */
 	com_LoadConPush(com, value);
-	mac->stack.values[mac->stack.length++] = value;
+	lisp__data.stack.values[lisp__data.stack.length++] = value;
     }
     else {
 	/* Load <value> as a constant in stack */
@@ -1424,22 +1390,20 @@ ComCall(LispCom *com, LispArgList *alist,
 	int eval, int builtin, int compile)
 {
     char *desc;
-    LispMac *mac;
     int i, count, base;
     LispObj **symbols, **defaults, **sforms;
 
-    mac = com->mac;
     if (builtin) {
-	base = mac->stack.length;
+	base = lisp__data.stack.length;
 	/* This should never be executed, but make the check for safety */
-	if (base + alist->num_arguments > mac->stack.space) {
+	if (base + alist->num_arguments > lisp__data.stack.space) {
 	    do
-		LispMoreStack(mac);
-	    while (base + alist->num_arguments > mac->stack.space);
+		LispMoreStack();
+	    while (base + alist->num_arguments > lisp__data.stack.space);
 	}
     }
     else
-	base = mac->env.length;
+	base = lisp__data.env.length;
 
     desc = alist->description;
     switch (*desc++) {
@@ -1469,7 +1433,7 @@ normal_label:
 	    COM_VARIABLE_ARGUMENT(symbols[i]->data.atom);
     }
     if (i < count)
-	LispDestroy(mac, "%s: too few arguments", STROBJ(name));
+	LispDestroy("%s: too few arguments", STROBJ(name));
 
     switch (*desc++) {
 	case 'o':
@@ -1505,14 +1469,14 @@ optional_label:
     for (; i < count; i++) {
 	if (!builtin) {
 	    int lex = com->lex;
-	    int head = mac->env.head;
+	    int head = lisp__data.env.head;
 
 	    com->lex = base;
-	    mac->env.head = mac->env.length;
+	    lisp__data.env.head = lisp__data.env.length;
 	    ComPush(com, symbols[i], defaults[i], eval, 0, compile);
 	    if (!com->macro)
 		COM_VARIABLE_ARGUMENT(symbols[i]->data.atom);
-	    mac->env.head = head;
+	    lisp__data.env.head = head;
 	    com->lex = lex;
 	}
 	else
@@ -1573,13 +1537,13 @@ key_label:
 		char function_name[36];
 
 		strcpy(function_name, STROBJ(name));
-		LispDestroy(mac, "%s: invalid keyword %s",
+		LispDestroy("%s: invalid keyword %s",
 			    function_name, STROBJ(val));
 	    }
 
 	    karg = CDR(karg);
 	    if (!CONS_P(karg))
-		LispDestroy(mac, "%s: &KEY needs arguments as pairs",
+		LispDestroy("%s: &KEY needs arguments as pairs",
 			    STROBJ(name));
 	}
 
@@ -1628,12 +1592,12 @@ key_label:
 	    else {
 		if (eval && !builtin) {
 		    int lex = com->lex;
-		    int head = mac->env.head;
+		    int head = lisp__data.env.head;
 
 		    com->lex = base;
-		    mac->env.head = mac->env.length;
+		    lisp__data.env.head = lisp__data.env.length;
 		    ComPush(com, symbols[i], val, eval, 0, compile);
-		    mac->env.head = head;
+		    lisp__data.env.head = head;
 		    com->lex = lex;
 		}
 		else
@@ -1753,12 +1717,12 @@ aux_label:
 	int lex = com->lex;
 
 	com->lex = base;
-	mac->env.head = mac->env.length;
+	lisp__data.env.head = lisp__data.env.length;
 	for (; i < count; i++) {
 	    ComPush(com, symbols[i], defaults[i], 1, 0, 0);
 	    if (!com->macro)
 		COM_VARIABLE_ARGUMENT(symbols[i]->data.atom);
-	    ++mac->env.head;
+	    ++lisp__data.env.head;
 	}
 	com->lex = lex;
     }
@@ -1772,13 +1736,13 @@ aux_label:
 
 done_label:
     if (CONS_P(values))
-	LispDestroy(mac, "%s: too many arguments", STROBJ(name));
+	LispDestroy("%s: too many arguments", STROBJ(name));
 
 finished_label:
     if (builtin)
-	mac->stack.base = base;
+	lisp__data.stack.base = base;
     else
-	mac->env.head = mac->env.length;
+	lisp__data.env.head = lisp__data.env.length;
 
     return (base);
 }
@@ -1791,7 +1755,6 @@ ComFuncall(LispCom *com, LispObj *function, LispObj *arguments, int eval)
     LispArgList *alist;
     LispBuiltin *builtin;
     LispObj *lambda;
-    LispMac *mac = com->mac;
 
     switch (function->type) {
 	case LispAtom_t:
@@ -1827,7 +1790,7 @@ ComFuncall(LispCom *com, LispObj *function, LispObj *arguments, int eval)
 		    com_Call(com, alist->num_arguments, builtin);
 		    CompileStackLeave(com, alist->num_arguments, 1);
 		}
-		mac->stack.base = mac->stack.length = base;
+		lisp__data.stack.base = lisp__data.stack.length = base;
 		FORM_LEAVE();
 	    }
 	    else if (atom->a_function) {
@@ -1860,7 +1823,7 @@ ComFuncall(LispCom *com, LispObj *function, LispObj *arguments, int eval)
 		LispObj *definition = atom->property->structure.definition;
 
 		if (!CONS_P(arguments) || CONS_P(CDR(arguments)))
-		    LispDestroy(mac, "%s: too %s arguments", atom->string,
+		    LispDestroy("%s: too %s arguments", atom->string,
 				CONS_P(arguments) ? "many" : "few");
 
 		ComEval(com, CAR(arguments));
@@ -1879,13 +1842,13 @@ ComFuncall(LispCom *com, LispObj *function, LispObj *arguments, int eval)
 		com_Bytecall(com, alist->num_arguments,
 			     atom->property->fun.function);
 		CompileStackLeave(com, alist->num_arguments, 0);
-		mac->env.head = mac->env.length = base;
+		lisp__data.env.head = lisp__data.env.length = base;
 		FORM_LEAVE();
 	    }
 	    else {
 		/* Not yet defined function/macro. */
 		++com->warnings;
-		LispWarning(mac, "call to undefined function %s", atom->string);
+		LispWarning("call to undefined function %s", atom->string);
 		com_Funcall(com, function, arguments);
 	    }
 	    break;
@@ -1903,7 +1866,7 @@ ComFuncall(LispCom *com, LispObj *function, LispObj *arguments, int eval)
 	default:
 	    /*  XXX If bytecode objects are made available, should
 	     * handle it here. */
-	    LispDestroy(mac, "EVAL: %s is invalid as a function",
+	    LispDestroy("EVAL: %s is invalid as a function",
 			STROBJ(function));
 	    /*NOTREACHED*/
 	    break;
@@ -1943,7 +1906,7 @@ ComEval(LispCom *com, LispObj *object)
 		    com_LoadCon(com, object);
 		else if (offset == SYMBOL_CONSTANT)
 		    /* Symbol defined as constant, just load it's value */
-		    com_LoadCon(com, LispGetVar(com->mac, object));
+		    com_LoadCon(com, LispGetVar(object));
 		else
 		    /* Load value bound to symbol at run time */
 		    com_LoadSym(com, object->data.atom);
@@ -1968,7 +1931,7 @@ ComEval(LispCom *com, LispObj *object)
 	    break;
 
 	case LispComma_t:
-	    LispDestroy(com->mac, "EVAL: comma outside of backquote");
+	    LispDestroy("EVAL: comma outside of backquote");
 	    break;
 
 	case LispInteger_t:
@@ -1992,11 +1955,10 @@ static void
 ComRecursiveCall(LispCom *com, LispArgList *alist,
 		 LispObj *name, LispObj *arguments)
 {
-    LispMac *mac = com->mac;
     int base, lex;
 
     /* Save state */
-    lex = mac->env.lex;
+    lex = lisp__data.env.lex;
 
     FORM_ENTER();
 
@@ -2021,8 +1983,8 @@ ComRecursiveCall(LispCom *com, LispArgList *alist,
     FORM_LEAVE();
 
     /* Restore state */
-    mac->env.lex = lex;
-    mac->env.head = mac->env.length = base;
+    lisp__data.env.lex = lex;
+    lisp__data.env.head = lisp__data.env.length = base;
 }
 
 #if 0	/* Will be used later */
@@ -2030,11 +1992,10 @@ static void
 ComInlineCall(LispCom *com, LispArgList *alist,
 	      LispObj *name, LispObj *arguments, LispObj *lambda)
 {
-    LispMac *mac = com->mac;
     int base, lex;
 
     /* Save state */
-    lex = mac->env.lex;
+    lex = lisp__data.env.lex;
 
     FORM_ENTER();
     /* Start the inline function block */
@@ -2065,8 +2026,8 @@ ComInlineCall(LispCom *com, LispArgList *alist,
     FORM_LEAVE();
 
     /* Restore state */
-    mac->env.lex = lex;
-    mac->env.head = mac->env.length = base;
+    lisp__data.env.lex = lex;
+    lisp__data.env.head = lisp__data.env.length = base;
 }
 #endif
 
@@ -2076,28 +2037,27 @@ ComInlineCall(LispCom *com, LispArgList *alist,
 static LispObj *
 ComMacroExpandBackquote(LispCom *com, LispObj *object)
 {
-    return (LispEvalBackquote(com->mac, object->data.quote, 1));
+    return (LispEvalBackquote(object->data.quote, 1));
 }
 
 static LispObj *
 ComMacroExpandFuncall(LispCom *com, LispObj *function, LispObj *arguments)
 {
-    return (LispFuncall(com->mac, function, arguments, 1));
+    return (LispFuncall(function, arguments, 1));
 }
 
 static LispObj *
 ComMacroExpandEval(LispCom *com, LispObj *object)
 {
-    LispMac *mac = com->mac;
     LispObj *result;
 
     switch (object->type) {
 	case LispAtom_t:
-	    result = LispGetVar(mac, object);
+	    result = LispGetVar(object);
 
 	    /* Macro expansion requires bounded symbols */
 	    if (result == NULL)
-		LispDestroy(mac, "EVAL: the variable %s is unbound",
+		LispDestroy("EVAL: the variable %s is unbound",
 			    STROBJ(object));
 	    break;
 
@@ -2114,7 +2074,7 @@ ComMacroExpandEval(LispCom *com, LispObj *object)
 	    break;
 
 	case LispComma_t:
-	    LispDestroy(com->mac, "EVAL: comma outside of backquote");
+	    LispDestroy("EVAL: comma outside of backquote");
 
 	default:
 	    result = object;
@@ -2129,15 +2089,14 @@ ComMacroExpand(LispCom *com, LispObj *lambda)
 {
     LispObj *result, **presult = &result, **plambda;
     int jumped, *pjumped = &jumped, backquote, *pbackquote = &backquote;
-    LispMac *mac = com->mac;
     LispBlock *block;
 
     int interpreter_lex, interpreter_head, interpreter_base;
 
     /* Save interpreter state */
-    interpreter_base = mac->stack.length;
-    interpreter_head = mac->env.length;
-    interpreter_lex = mac->env.lex;
+    interpreter_base = lisp__data.stack.length;
+    interpreter_head = lisp__data.env.length;
+    interpreter_lex = lisp__data.env.lex;
 
     /* Use the variables */
     plambda = &lambda;
@@ -2145,7 +2104,7 @@ ComMacroExpand(LispCom *com, LispObj *lambda)
     *pjumped = 1;
     *pbackquote = !CONS_P(lambda);
 
-    block = LispBeginBlock(mac, NIL, LispBlockProtect);
+    block = LispBeginBlock(NIL, LispBlockProtect);
     if (setjmp(block->jmp) == 0) {
 	if (!backquote) {
 	    for (; CONS_P(lambda); lambda = CDR(lambda))
@@ -2156,22 +2115,22 @@ ComMacroExpand(LispCom *com, LispObj *lambda)
 
 	*pjumped = 0;
     }
-    LispEndBlock(mac, block);
+    LispEndBlock(block);
 
     /* If tried to jump out of the macro expansion block */
-    if (!mac->destroyed && jumped)
-	LispDestroy(mac, "*** EVAL: bad jump in macro expansion");
+    if (!lisp__data.destroyed && jumped)
+	LispDestroy("*** EVAL: bad jump in macro expansion");
 
     /* Macro expansion did something wrong */
-    if (mac->destroyed) {
-	LispMessage(mac, "*** EVAL: aborting macro expansion");
-	LispDestroy(mac, NULL);
+    if (lisp__data.destroyed) {
+	LispMessage("*** EVAL: aborting macro expansion");
+	LispDestroy(NULL);
     }
 
     /* Restore interpreter state */
-    mac->env.lex = interpreter_lex;
-    mac->stack.length = interpreter_base;
-    mac->env.head = mac->env.length = interpreter_head;
+    lisp__data.env.lex = interpreter_lex;
+    lisp__data.stack.length = interpreter_base;
+    lisp__data.env.head = lisp__data.env.length = interpreter_head;
 
     return (result);
 }
@@ -2182,14 +2141,13 @@ ComMacroCall(LispCom *com, LispArgList *alist,
 {
     int base;
     LispObj *body;
-    LispMac *mac = com->mac;
 
     ++com->macro;
     base = ComCall(com, alist, name, arguments, 0, 0, 0);
     body = lambda->data.lambda.code;
     body = ComMacroExpand(com, body);
     --com->macro;
-    mac->env.head = mac->env.length = base;
+    lisp__data.env.head = lisp__data.env.length = base;
 
     /* Macro is expanded, store the result */
     CAR(com->form) = body;

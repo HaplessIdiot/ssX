@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.30 2002/10/06 17:11:45 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.31 2002/11/04 04:15:53 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -54,32 +54,32 @@
 #define	STRTBLSZ		23
 #define MULTIPLE_VALUES_LIMIT	127
 
-#define FEATURES					\
-    mac->features->data.atom->a_object ?		\
-	mac->features->data.atom->property->value :	\
+#define FEATURES						\
+    lisp__data.features->data.atom->a_object ?			\
+	lisp__data.features->data.atom->property->value :	\
 	NIL
-#define PACK	mac->packlist
-#define PACKAGE	mac->package->data.atom->property->value
-#define MOD	mac->modlist
-#define COD	mac->codlist
-#define RUN	mac->runlist
-#define RES	mac->reslist
-#define DBG	mac->dbglist
-#define BRK	mac->brklist
-#define PRO	mac->prolist
-#define DOC	mac->doclist
+#define PACK	lisp__data.packlist
+#define PACKAGE	lisp__data.package->data.atom->property->value
+#define MOD	lisp__data.modlist
+#define COD	lisp__data.codlist
+#define RUN	lisp__data.runlist
+#define RES	lisp__data.reslist
+#define DBG	lisp__data.dbglist
+#define BRK	lisp__data.brklist
+#define PRO	lisp__data.prolist
+#define DOC	lisp__data.doclist
 
 #define	EOLIST	(LispObj*)1	/* end-of-list ")" found in LispRun */
 #define INVALID_P(obj) ((obj) == NULL || (obj) == EOLIST || (obj) == DOT)
 
-#define SINPUT	mac->input
-#define SOUTPUT	mac->output
-#define STANDARD_INPUT					\
-    mac->standard_input->data.atom->property->value
-#define STANDARD_OUTPUT					\
-    mac->standard_output->data.atom->property->value
-#define STANDARDSTREAM(file, desc, flags)	\
-	LispNewStandardStream(mac, file, desc, flags)
+#define SINPUT	lisp__data.input
+#define SOUTPUT	lisp__data.output
+#define STANDARD_INPUT						\
+    lisp__data.standard_input->data.atom->property->value
+#define STANDARD_OUTPUT						\
+    lisp__data.standard_output->data.atom->property->value
+#define STANDARDSTREAM(file, desc, flags)			\
+	LispNewStandardStream(file, desc, flags)
 
 /*
  * Types
@@ -306,7 +306,7 @@ struct _LispMac {
     } protect;
 
     LispObj *package;		/* package object */
-    LispPackage *pack;		/* pointer to mac->package->data.package.package */
+    LispPackage *pack;		/* pointer to lisp__data.package->data.package.package */
 
     /* fast access to the KEYWORD package */
     LispObj *keyword;
@@ -390,7 +390,7 @@ struct _LispMac {
 
     int debugging;		/* debugger enabled? */
 #ifdef DEBUGGER
-    int debug_level;		/* almost always the same as mac->level */
+    int debug_level;		/* almost always the same as lisp__data.level */
     int debug_step;		/* control for stoping and printing output */
     int debug_break;		/* next breakpoint number */
     LispDebugState debug;
@@ -406,84 +406,84 @@ struct _LispCharInfo {
 /*
  * Prototypes
  */
-void LispUseArgList(LispMac*, LispArgList*);
-void LispFreeArgList(LispMac*, LispArgList*);
-LispArgList *LispCheckArguments(LispMac*, LispFunType, LispObj*, char*);
-LispObj *LispListProtectedArguments(LispMac*, LispArgList*);
+void LispUseArgList(LispArgList*);
+void LispFreeArgList(LispArgList*);
+LispArgList *LispCheckArguments(LispFunType, LispObj*, char*);
+LispObj *LispListProtectedArguments(LispArgList*);
 
-LispObj *LispGetDoc(LispMac*, LispObj*);
-LispObj *LispGetVar(LispMac*, LispObj*);
+LispObj *LispGetDoc(LispObj*);
+LispObj *LispGetVar(LispObj*);
 #ifdef DEBUGGER
-void *LispGetVarAddr(LispMac*, LispObj*);	/* used by debugger */
+void *LispGetVarAddr(LispObj*);	/* used by debugger */
 #endif
-LispObj *LispAddVar(LispMac*, LispObj*, LispObj*);
-LispObj *LispSetVar(LispMac*, LispObj*, LispObj*);
-void LispUnsetVar(LispMac*, LispObj*);
+LispObj *LispAddVar(LispObj*, LispObj*);
+LispObj *LispSetVar(LispObj*, LispObj*);
+void LispUnsetVar(LispObj*);
 
 	/* only used at initialization time */
-LispObj *LispNewStandardStream(LispMac*, LispFile*, LispObj*, int);
+LispObj *LispNewStandardStream(LispFile*, LispObj*, int);
 
 	/* create a new package */
-LispObj *LispNewPackage(LispMac*, LispObj*, LispObj*);
+LispObj *LispNewPackage(LispObj*, LispObj*);
 	/* add package to use-list of current, and imports all extern symbols */
-void LispUsePackage(LispMac*, LispObj*);
+void LispUsePackage(LispObj*);
 	/* make symbol extern in the current package */
-void LispExportSymbol(LispMac*, LispObj*);
+void LispExportSymbol(LispObj*);
 	/* imports symbol to current package */
-void LispImportSymbol(LispMac*, LispObj*);
+void LispImportSymbol(LispObj*);
 
 	/* always returns the same string */
-char *LispGetAtomString(LispMac*, char*, int);
+char *LispGetAtomString(char*, int);
 
 /* destructive fast reverse, note that don't receive a LispMac* argument */
 LispObj *LispReverse(LispObj *list);
 
-char *LispIntToOpaqueType(LispMac*, int);
+char *LispIntToOpaqueType(int);
 
 /* (print) */
-void LispPrint(LispMac*, LispObj*, LispObj*, int);
+void LispPrint(LispObj*, LispObj*, int);
 
-LispBlock *LispBeginBlock(LispMac*, LispObj*, LispBlockType);
-#define BLOCKJUMP(block)			\
-    mac->stack.length = (block)->stack;		\
-    mac->protect.length = (block)->protect;	\
+LispBlock *LispBeginBlock(LispObj*, LispBlockType);
+#define BLOCKJUMP(block)				\
+    lisp__data.stack.length = (block)->stack;		\
+    lisp__data.protect.length = (block)->protect;	\
     longjmp((block)->jmp, 1)
-void LispEndBlock(LispMac*, LispBlock*);
+void LispEndBlock(LispBlock*);
 	/* if unwind-protect active, jump to cleanup code, else do nothing */
-void LispBlockUnwind(LispMac*, LispBlock*);
+void LispBlockUnwind(LispBlock*);
 
-void LispUpdateResults(LispMac*, LispObj*, LispObj*);
-void LispTopLevel(LispMac*);
+void LispUpdateResults(LispObj*, LispObj*);
+void LispTopLevel(void);
 
-LispAtom *LispDoGetAtom(LispMac*, char *str, int);
+LispAtom *LispDoGetAtom(char *str, int);
 	/* get value from atom's property list */
-LispObj *LispGetAtomProperty(LispMac*, LispAtom*, LispObj*);
+LispObj *LispGetAtomProperty(LispAtom*, LispObj*);
 	/* put value in atom's property list */
-LispObj *LispPutAtomProperty(LispMac*, LispAtom*, LispObj*, LispObj*);
+LispObj *LispPutAtomProperty(LispAtom*, LispObj*, LispObj*);
 
 	/* define byte compiled function, or replace definition */
-void LispSetAtomCompiledProperty(LispMac*, LispAtom*, LispObj*);
+void LispSetAtomCompiledProperty(LispAtom*, LispObj*);
 	/* remove byte compiled function property */
-void LispRemAtomCompiledProperty(LispMac*, LispAtom*);
+void LispRemAtomCompiledProperty(LispAtom*);
 	/* define function, or replace function definition */
-void LispSetAtomFunctionProperty(LispMac*, LispAtom*, LispObj*, LispArgList*);
+void LispSetAtomFunctionProperty(LispAtom*, LispObj*, LispArgList*);
 	/* remove function property */
-void LispRemAtomFunctionProperty(LispMac*, LispAtom*);
+void LispRemAtomFunctionProperty(LispAtom*);
 	/* define builtin, or replace builtin definition */
-void LispSetAtomBuiltinProperty(LispMac*, LispAtom*, LispBuiltin*, LispArgList*);
+void LispSetAtomBuiltinProperty(LispAtom*, LispBuiltin*, LispArgList*);
 	/* remove builtin property */
-void LispRemAtomBuiltinProperty(LispMac*, LispAtom*);
+void LispRemAtomBuiltinProperty(LispAtom*);
 	/* define setf macro, or replace current definition */
-void LispSetAtomSetfProperty(LispMac*, LispAtom*, LispObj*, LispArgList*);
+void LispSetAtomSetfProperty(LispAtom*, LispObj*, LispArgList*);
 	/* remove setf macro */
-void LispRemAtomSetfProperty(LispMac*, LispAtom*);
+void LispRemAtomSetfProperty(LispAtom*);
 	/* create or change structure property */
-void LispSetAtomStructProperty(LispMac*, LispAtom*, LispObj*, int);
+void LispSetAtomStructProperty(LispAtom*, LispObj*, int);
 	/* remove structure property */
-void LispRemAtomStructProperty(LispMac*, LispAtom*);
+void LispRemAtomStructProperty(LispAtom*);
 
-void LispProclaimSpecial(LispMac*, LispObj*, LispObj*, LispObj*);
-void LispDefconstant(LispMac*, LispObj*, LispObj*, LispObj*);
+void LispProclaimSpecial(LispObj*, LispObj*, LispObj*);
+void LispDefconstant(LispObj*, LispObj*, LispObj*);
 
 typedef enum _LispDocType_t {
     LispDocVariable,
@@ -493,26 +493,30 @@ typedef enum _LispDocType_t {
     LispDocSetf
 } LispDocType_t;
 
-void LispAddDocumentation(LispMac*, LispObj*, LispObj*, LispDocType_t);
-void LispRemDocumentation(LispMac*, LispObj*, LispDocType_t);
-LispObj *LispGetDocumentation(LispMac*, LispObj*, LispDocType_t);
+void LispAddDocumentation(LispObj*, LispObj*, LispDocType_t);
+void LispRemDocumentation(LispObj*, LispDocType_t);
+LispObj *LispGetDocumentation(LispObj*, LispDocType_t);
 
 /* increases storage for functions returning multiple values */
-void LispMoreReturns(LispMac*);
+void LispMoreReturns(void);
 
 /* increases storage for temporarily protected data */
-void LispMoreProtects(LispMac*);
+void LispMoreProtects(void);
 
 /* Initialization */
 extern int LispArgList_t;
 extern LispCharInfo LispChars[256];
 
 /* This function will return if the interpreter cannot be stopped */
-extern void LispSignal(LispMac*, int);
+extern void LispSignal(int);
 
-void LispDisableInterrupts(LispMac*);
-void LispEnableInterrupts(LispMac*);
-#define DISABLE_INTERRUPTS()	LispDisableInterrupts(mac)
-#define ENABLE_INTERRUPTS()	LispEnableInterrupts(mac)
+void LispDisableInterrupts(void);
+void LispEnableInterrupts(void);
+#define DISABLE_INTERRUPTS()	LispDisableInterrupts()
+#define ENABLE_INTERRUPTS()	LispEnableInterrupts()
+
+/* Value returned by LispBegin, used everywhere in the code.
+ * Only one interpreter instance allowed. */
+extern LispMac lisp__data;
 
 #endif /* Lisp_private_h */

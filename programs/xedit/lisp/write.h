@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/write.h,v 1.3 2002/02/14 04:48:10 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.h,v 1.4 2002/08/05 03:56:24 paulo Exp $ */
 
 #ifndef Lisp_write_h
 #define Lisp_write_h
@@ -37,58 +37,55 @@
 /*
  * Prototypes
  */
-int LispGetColumn(LispMac*, LispObj*);
-int LispGetEscape(LispMac*, LispObj*);
-void LispSetEscape(LispMac*, LispObj*, int);
+int LispGetColumn(LispObj*);
+int LispGetEscape(LispObj*);
+void LispSetEscape(LispObj*, int);
 
-int LispWriteChar(LispMac*, LispObj*, int);
-int LispWriteChars(LispMac*, LispObj*, int, int);
-int LispWriteStr(LispMac*, LispObj*, char*, long);
+int LispWriteChar(LispObj*, int);
+int LispWriteChars(LispObj*, int, int);
+int LispWriteStr(LispObj*, char*, long);
 
 /* use default parameters to write objects */
 	/* object must be an atom */
-int LispWriteAtom(LispMac*, LispObj*, LispObj*);
+int LispWriteAtom(LispObj*, LispObj*);
 	/* object must be an integer */
-int LispWriteInteger(LispMac*, LispObj*, LispObj*);
+int LispWriteInteger(LispObj*, LispObj*);
 	/* object must be a character */
-int LispWriteCharacter(LispMac*, LispObj*, LispObj*);
+int LispWriteCharacter(LispObj*, LispObj*);
 	/* object must be a string */
-int LispWriteString(LispMac*, LispObj*, LispObj*);
+int LispWriteString(LispObj*, LispObj*);
 	/* object must be a float */
-int LispWriteFloat(LispMac*, LispObj*, LispObj*);
+int LispWriteFloat(LispObj*, LispObj*);
 	/* object must be a cons */
-int LispWriteList(LispMac*, LispObj*, LispObj*);
+int LispWriteList(LispObj*, LispObj*);
 	/* object must be an array */
-int LispWriteArray(LispMac*, LispObj*, LispObj*);
+int LispWriteArray(LispObj*, LispObj*);
 	/* object must be a structure */
-int LispWriteStruct(LispMac*, LispObj*, LispObj*);
+int LispWriteStruct(LispObj*, LispObj*);
 	/* write any lisp object to stream */
-int LispWriteObject(LispMac*, LispObj*, LispObj*);
+int LispWriteObject(LispObj*, LispObj*);
 
 	/* write any lisp object to stream, only print top-level
 	 * parenthesis if paren argument specified */
-int LispDoWriteObject(LispMac*, LispObj*, LispObj*, int);
+int LispDoWriteObject(LispObj*, LispObj*, int);
 
 /* formatted output */
 	/* object must be an integer */
-int LispFormatInteger(LispMac*, LispObj*, LispObj*, int,
-		      int, int, int, int, int, int);
+int LispFormatInteger(LispObj*, LispObj*, int, int, int, int, int, int, int);
 	/* must be in range 1 to 3999 for new roman, 1 to 4999 for old roman */
-int LispFormatRomanInteger(LispMac*, LispObj*, long, int);
+int LispFormatRomanInteger(LispObj*, long, int);
 	/* must be in range -9999999 to 9999999 */
-int LispFormatEnglishInteger(LispMac*, LispObj*, long, int);
+int LispFormatEnglishInteger(LispObj*, long, int);
 	/* object must be a character */
-int LispFormatCharacter(LispMac*, LispObj*, LispObj*, int, int);
+int LispFormatCharacter(LispObj*, LispObj*, int, int);
 	/* object must be a float */
-int LispFormatFixedFloat(LispMac*, LispObj*, LispObj*, int,
-			 int, int*, int, int, int);
+int LispFormatFixedFloat(LispObj*, LispObj*, int, int, int*, int, int, int);
 	/* object must be a float */
-int LispFormatExponentialFloat(LispMac*, LispObj*, LispObj*,
-			      int, int, int*, int, int, int, int, int);
+int LispFormatExponentialFloat(LispObj*, LispObj*,
+			       int, int, int*, int, int, int, int, int);
 	/* object must be a float */
-int LispFormatGeneralFloat(LispMac*, LispObj*, LispObj*, int,
+int LispFormatGeneralFloat(LispObj*, LispObj*, int,
 			   int, int*, int, int, int, int, int);
-int LispFormatDollarFloat(LispMac*, LispObj*, LispObj*,
-			  int, int, int, int, int, int);
+int LispFormatDollarFloat(LispObj*, LispObj*, int, int, int, int, int, int);
 
 #endif /* Lisp_write_h */

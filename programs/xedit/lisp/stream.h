@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/stream.h,v 1.3 2002/08/05 03:56:24 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/stream.h,v 1.4 2002/08/25 02:48:31 paulo Exp $ */
 
 #ifndef Lisp_stream_h
 #define Lisp_stream_h
@@ -35,29 +35,29 @@
 #include "io.h"
 #include "internal.h"
 
-void LispStreamInit(LispMac*);
+void LispStreamInit(void);
 
-LispObj *Lisp_InputStreamP(LispMac*, LispBuiltin*);		/* input-stream-p */
-LispObj *Lisp_OpenStreamP(LispMac*, LispBuiltin*);		/* open-stream-p */
-LispObj *Lisp_OutputStreamP(LispMac*, LispBuiltin*);		/* output-stream-p */
-LispObj *Lisp_Open(LispMac*, LispBuiltin*);			/* open */
-LispObj *Lisp_MakePipe(LispMac*, LispBuiltin*);			/* make-pipe */
-LispObj *Lisp_PipeBroken(LispMac*, LispBuiltin*);		/* pipe-broken */
-LispObj *Lisp_PipeErrorStream(LispMac*, LispBuiltin*);		/* pipe-error-stream */
-LispObj *Lisp_PipeInputDescriptor(LispMac*, LispBuiltin*);	/* pipe-input-descriptor */
-LispObj *Lisp_PipeErrorDescriptor(LispMac*, LispBuiltin*);	/* pipe-error-descriptor */
-LispObj *Lisp_Close(LispMac*, LispBuiltin*);			/* close */
-LispObj *Lisp_Listen(LispMac*, LispBuiltin*);			/* listen */
-LispObj *Lisp_Read(LispMac*, LispBuiltin*);			/* read */
-LispObj *Lisp_ReadChar(LispMac*, LispBuiltin*);			/* read-char */
-LispObj *Lisp_ReadCharNoHang(LispMac*, LispBuiltin*);		/* read-char-no-hang */
-LispObj *Lisp_Streamp(LispMac*, LispBuiltin*);			/* streamp */
-LispObj *Lisp_WriteChar(LispMac*, LispBuiltin*);		/* write-char */
-LispObj *Lisp_ReadLine(LispMac*, LispBuiltin*);			/* read-line */
-LispObj *Lisp_WriteLine(LispMac*, LispBuiltin*);		/* write-line */
-LispObj *Lisp_WriteString(LispMac*, LispBuiltin*);		/* write-string */
-LispObj *Lisp_MakeStringInputStream(LispMac*, LispBuiltin*);	/* make-string-input-stream */
-LispObj *Lisp_MakeStringOutputStream(LispMac*, LispBuiltin*);	/* make-string-output-stream */
-LispObj *Lisp_GetOutputStreamString(LispMac*, LispBuiltin*);	/* get-output-stream-string */
+LispObj *Lisp_InputStreamP(LispBuiltin*);
+LispObj *Lisp_OpenStreamP(LispBuiltin*);
+LispObj *Lisp_OutputStreamP(LispBuiltin*);
+LispObj *Lisp_Open(LispBuiltin*);
+LispObj *Lisp_MakePipe(LispBuiltin*);
+LispObj *Lisp_PipeBroken(LispBuiltin*);
+LispObj *Lisp_PipeErrorStream(LispBuiltin*);
+LispObj *Lisp_PipeInputDescriptor(LispBuiltin*);
+LispObj *Lisp_PipeErrorDescriptor(LispBuiltin*);
+LispObj *Lisp_Close(LispBuiltin*);
+LispObj *Lisp_Listen(LispBuiltin*);
+LispObj *Lisp_Read(LispBuiltin*);
+LispObj *Lisp_ReadChar(LispBuiltin*);
+LispObj *Lisp_ReadCharNoHang(LispBuiltin*);
+LispObj *Lisp_Streamp(LispBuiltin*);
+LispObj *Lisp_WriteChar(LispBuiltin*);
+LispObj *Lisp_ReadLine(LispBuiltin*);
+LispObj *Lisp_WriteLine(LispBuiltin*);
+LispObj *Lisp_WriteString(LispBuiltin*);
+LispObj *Lisp_MakeStringInputStream(LispBuiltin*);
+LispObj *Lisp_MakeStringOutputStream(LispBuiltin*);
+LispObj *Lisp_GetOutputStreamString(LispBuiltin*);
 
 #endif /* Lisp_stream_h */

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.14 2002/09/15 21:32:21 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.15 2002/10/06 17:11:43 paulo Exp $ */
 
 #include "math.h"
 #include "private.h"
@@ -49,20 +49,20 @@ Atom_id Sdefault_float_format;
 #include "mathimp.c"
 
 void
-LispMathInit(LispMac *mac)
+LispMathInit(void)
 {
     LispObj *object, *result;
 
     Oequal_		= STATIC_ATOM("=");
     Ocomplex		= STATIC_ATOM(Scomplex);
     Oshort_float	= STATIC_ATOM("SHORT-FLOAT");
-    LispExportSymbol(mac, Oshort_float);
+    LispExportSymbol(Oshort_float);
     Osingle_float	= STATIC_ATOM("SINGLE-FLOAT");
-    LispExportSymbol(mac, Osingle_float);
+    LispExportSymbol(Osingle_float);
     Odouble_float	= STATIC_ATOM("DOUBLE-FLOAT");
-    LispExportSymbol(mac, Odouble_float);
+    LispExportSymbol(Odouble_float);
     Olong_float		= STATIC_ATOM("LONG-FLOAT");
-    LispExportSymbol(mac, Olong_float);
+    LispExportSymbol(Olong_float);
 
     zero.type = one.type = two.type = FI;
     zero.data.integer = 0;
@@ -70,26 +70,26 @@ LispMathInit(LispMac *mac)
     two.data.integer = 2;
 
     object		= STATIC_ATOM("*DEFAULT-FLOAT-FORMAT*");
-    LispProclaimSpecial(mac, object, Odouble_float, NIL);
-    LispExportSymbol(mac, object);
+    LispProclaimSpecial(object, Odouble_float, NIL);
+    LispExportSymbol(object);
     Sdefault_float_format = ATOMID(object);
 
     object		= STATIC_ATOM("PI");
-    result = math_pi(mac);
-    LispProclaimSpecial(mac, object, result, NIL);
-    LispExportSymbol(mac, object);
+    result = math_pi();
+    LispProclaimSpecial(object, result, NIL);
+    LispExportSymbol(object);
 
     object		= STATIC_ATOM("MOST-POSITIVE-FIXNUM");
-    LispDefconstant(mac, object, INTEGER(LONG_MAX), NIL);
-    LispExportSymbol(mac, object);
+    LispDefconstant(object, INTEGER(LONG_MAX), NIL);
+    LispExportSymbol(object);
 
     object		= STATIC_ATOM("MOST-NEGATIVE-FIXNUM");
-    LispDefconstant(mac, object, INTEGER(LONG_MIN), NIL);
-    LispExportSymbol(mac, object);
+    LispDefconstant(object, INTEGER(LONG_MIN), NIL);
+    LispExportSymbol(object);
 }
 
 LispObj *
-Lisp_Mul(LispMac *mac, LispBuiltin *builtin)
+Lisp_Mul(LispBuiltin *builtin)
 /*
  * &rest numbers
  */
@@ -110,17 +110,17 @@ Lisp_Mul(LispMac *mac, LispBuiltin *builtin)
     else
 	return (SMALLINT(1));
 
-    result = copy_number(mac, builtin, number);
+    result = copy_number(builtin, number);
     for (; CONS_P(numbers); numbers = CDR(numbers)) {
 	number = CAR(numbers);
-	mul_accumulator(mac, builtin, result, number);
+	mul_accumulator(builtin, result, number);
     }
 
     return (result);
 }
 
 LispObj *
-Lisp_Plus(LispMac *mac, LispBuiltin *builtin)
+Lisp_Plus(LispBuiltin *builtin)
 /*
  + &rest numbers
  */
@@ -141,17 +141,17 @@ Lisp_Plus(LispMac *mac, LispBuiltin *builtin)
     else
 	return (SMALLINT(0));
 
-    result = copy_number(mac, builtin, number);
+    result = copy_number(builtin, number);
     for (; CONS_P(numbers); numbers = CDR(numbers)) {
 	number = CAR(numbers);
-	add_accumulator(mac, builtin, result, number);
+	add_accumulator(builtin, result, number);
     }
 
     return (result);
 }
 
 LispObj *
-Lisp_Minus(LispMac *mac, LispBuiltin *builtin)
+Lisp_Minus(LispBuiltin *builtin)
 /*
  - number &rest more_numbers
  */
@@ -161,22 +161,22 @@ Lisp_Minus(LispMac *mac, LispBuiltin *builtin)
     more_numbers = ARGUMENT(1);
     number = ARGUMENT(0);
 
-    result = copy_number(mac, builtin, number);
+    result = copy_number(builtin, number);
     if (!CONS_P(more_numbers)) {
-	neg_accumulator(mac, builtin, result);
+	neg_accumulator(builtin, result);
 
 	return (result);
     }
     for (; CONS_P(more_numbers); more_numbers = CDR(more_numbers)) {
 	number = CAR(more_numbers);
-	sub_accumulator(mac, builtin, result, number);
+	sub_accumulator(builtin, result, number);
     }
 
     return (result);
 }
 
 LispObj *
-Lisp_Div(LispMac *mac, LispBuiltin *builtin)
+Lisp_Div(LispBuiltin *builtin)
 /*
  / number &rest more_numbers
  */
@@ -187,7 +187,7 @@ Lisp_Div(LispMac *mac, LispBuiltin *builtin)
     number = ARGUMENT(0);
 
     if (CONS_P(more_numbers)) {
-	result = copy_number(mac, builtin, number);
+	result = copy_number(builtin, number);
     }
     else {
 	result = INTEGER(1);
@@ -199,7 +199,7 @@ Lisp_Div(LispMac *mac, LispBuiltin *builtin)
 	more_numbers = CDR(more_numbers);
 
 div_one_argument:
-	div_accumulator(mac, builtin, result, number);
+	div_accumulator(builtin, result, number);
 	if (!CONS_P(more_numbers))
 	    break;
     }
@@ -208,7 +208,7 @@ div_one_argument:
 }
 
 LispObj *
-Lisp_OnePlus(LispMac *mac, LispBuiltin *builtin)
+Lisp_OnePlus(LispBuiltin *builtin)
 /*
  1+ number
  */
@@ -217,13 +217,13 @@ Lisp_OnePlus(LispMac *mac, LispBuiltin *builtin)
 
     number = ARGUMENT(0);
     result = INTEGER(1);
-    add_accumulator(mac, builtin, result, number);
+    add_accumulator(builtin, result, number);
 
     return (result);
 }
 
 LispObj *
-Lisp_OneMinus(LispMac *mac, LispBuiltin *builtin)
+Lisp_OneMinus(LispBuiltin *builtin)
 /*
  1- number
  */
@@ -232,13 +232,13 @@ Lisp_OneMinus(LispMac *mac, LispBuiltin *builtin)
 
     number = ARGUMENT(0);
     result = INTEGER(-1);
-    add_accumulator(mac, builtin, result, number);
+    add_accumulator(builtin, result, number);
 
     return (result);
 }
 
 LispObj *
-Lisp_Less(LispMac *mac, LispBuiltin *builtin)
+Lisp_Less(LispBuiltin *builtin)
 /*
  < number &rest more-numbers
  */
@@ -251,7 +251,7 @@ Lisp_Less(LispMac *mac, LispBuiltin *builtin)
     ERROR_CHECK_REAL(compare);
     for (; CONS_P(more_numbers); more_numbers = CDR(more_numbers)) {
 	number = CAR(more_numbers);
-	if (math_compare(mac, builtin, compare, number) >= 0)
+	if (math_compare(builtin, compare, number) >= 0)
 	    return (NIL);
 	compare = number;
     }
@@ -260,7 +260,7 @@ Lisp_Less(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_LessEqual(LispMac *mac, LispBuiltin *builtin)
+Lisp_LessEqual(LispBuiltin *builtin)
 /*
  <= number &rest more-numbers
  */
@@ -273,7 +273,7 @@ Lisp_LessEqual(LispMac *mac, LispBuiltin *builtin)
     ERROR_CHECK_REAL(compare);
     for (; CONS_P(more_numbers); more_numbers = CDR(more_numbers)) {
 	number = CAR(more_numbers);
-	if (math_compare(mac, builtin, compare, number) > 0)
+	if (math_compare(builtin, compare, number) > 0)
 	    return (NIL);
 	compare = number;
     }
@@ -282,7 +282,7 @@ Lisp_LessEqual(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Equal_(LispMac *mac, LispBuiltin *builtin)
+Lisp_Equal_(LispBuiltin *builtin)
 /*
  = number &rest more-numbers
  */
@@ -295,7 +295,7 @@ Lisp_Equal_(LispMac *mac, LispBuiltin *builtin)
     ERROR_CHECK_REAL(compare);
     for (; CONS_P(more_numbers); more_numbers = CDR(more_numbers)) {
 	number = CAR(more_numbers);
-	if (math_compare(mac, builtin, compare, number) != 0)
+	if (math_compare(builtin, compare, number) != 0)
 	    return (NIL);
 	compare = number;
     }
@@ -304,7 +304,7 @@ Lisp_Equal_(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Greater(LispMac *mac, LispBuiltin *builtin)
+Lisp_Greater(LispBuiltin *builtin)
 /*
  > number &rest more-numbers
  */
@@ -317,7 +317,7 @@ Lisp_Greater(LispMac *mac, LispBuiltin *builtin)
     ERROR_CHECK_REAL(compare);
     for (; CONS_P(more_numbers); more_numbers = CDR(more_numbers)) {
 	number = CAR(more_numbers);
-	if (math_compare(mac, builtin, compare, number) <= 0)
+	if (math_compare(builtin, compare, number) <= 0)
 	    return (NIL);
 	compare = number;
     }
@@ -326,7 +326,7 @@ Lisp_Greater(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_GreaterEqual(LispMac *mac, LispBuiltin *builtin)
+Lisp_GreaterEqual(LispBuiltin *builtin)
 /*
  >= number &rest more-numbers
  */
@@ -339,7 +339,7 @@ Lisp_GreaterEqual(LispMac *mac, LispBuiltin *builtin)
     ERROR_CHECK_REAL(compare);
     for (; CONS_P(more_numbers); more_numbers = CDR(more_numbers)) {
 	number = CAR(more_numbers);
-	if (math_compare(mac, builtin, compare, number) < 0)
+	if (math_compare(builtin, compare, number) < 0)
 	    return (NIL);
 	compare = number;
     }
@@ -348,7 +348,7 @@ Lisp_GreaterEqual(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_NotEqual(LispMac *mac, LispBuiltin *builtin)
+Lisp_NotEqual(LispBuiltin *builtin)
 /*
  /= number &rest more-numbers
  */
@@ -366,7 +366,7 @@ Lisp_NotEqual(LispMac *mac, LispBuiltin *builtin)
 	for (object = more_numbers; CONS_P(object); object = CDR(object)) {
 	    number = CAR(object);
 
-	    if (math_compare(mac, builtin, compare, number) == 0)
+	    if (math_compare(builtin, compare, number) == 0)
 		return (NIL);
 	}
 	if (CONS_P(more_numbers)) {
@@ -381,7 +381,7 @@ Lisp_NotEqual(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Min(LispMac *mac, LispBuiltin *builtin)
+Lisp_Min(LispBuiltin *builtin)
 /*
  min number &rest more-numbers
  */
@@ -394,7 +394,7 @@ Lisp_Min(LispMac *mac, LispBuiltin *builtin)
     ERROR_CHECK_REAL(result);
     for (; CONS_P(more_numbers); more_numbers = CDR(more_numbers)) {
 	number = CAR(more_numbers);
-	if (math_compare(mac, builtin, result, number) > 0)
+	if (math_compare(builtin, result, number) > 0)
 	    result = number;
     }
 
@@ -402,7 +402,7 @@ Lisp_Min(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Max(LispMac *mac, LispBuiltin *builtin)
+Lisp_Max(LispBuiltin *builtin)
 /*
  max number &rest more-numbers
  */
@@ -415,7 +415,7 @@ Lisp_Max(LispMac *mac, LispBuiltin *builtin)
     ERROR_CHECK_REAL(result);
     for (; CONS_P(more_numbers); more_numbers = CDR(more_numbers)) {
 	number = CAR(more_numbers);
-	if (math_compare(mac, builtin, result, number) < 0)
+	if (math_compare(builtin, result, number) < 0)
 	    result = number;
     }
 
@@ -423,7 +423,7 @@ Lisp_Max(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Abs(LispMac *mac, LispBuiltin *builtin)
+Lisp_Abs(LispBuiltin *builtin)
 /*
  abs number
  */
@@ -438,14 +438,14 @@ Lisp_Abs(LispMac *mac, LispBuiltin *builtin)
 	case FF:
 	case BI:
 	case BR:
-	    if (math_compare(mac, builtin, number, &zero) < 0) {
-		result = copy_real(mac, builtin, number);
-		neg_accumulator(mac, builtin, result);
+	    if (math_compare(builtin, number, &zero) < 0) {
+		result = copy_real(builtin, number);
+		neg_accumulator(builtin, result);
 	    }
 	    break;
 	case CX:
-	    result = copy_number(mac, builtin, number);
-	    abs_accumulator(mac, builtin, result);
+	    result = copy_number(builtin, number);
+	    abs_accumulator(builtin, result);
 	    break;
 	default:
 	    NOT_A_NUMBER(number);
@@ -456,7 +456,7 @@ Lisp_Abs(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Complex(LispMac *mac, LispBuiltin *builtin)
+Lisp_Complex(LispBuiltin *builtin)
 /*
  complex realpart &optional imagpart
  */
@@ -474,7 +474,7 @@ Lisp_Complex(LispMac *mac, LispBuiltin *builtin)
     else if (!FLOAT_P(imagpart)) {
 	int cmp;
 
-	cmp = math_compare(mac, builtin, imagpart, &zero);
+	cmp = math_compare(builtin, imagpart, &zero);
 	if (cmp == 0)
 	    return (realpart);
     }
@@ -483,7 +483,7 @@ Lisp_Complex(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Complexp(LispMac *mac, LispBuiltin *builtin)
+Lisp_Complexp(LispBuiltin *builtin)
 /*
  complexp object
  */
@@ -496,7 +496,7 @@ Lisp_Complexp(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Conjugate(LispMac *mac, LispBuiltin *builtin)
+Lisp_Conjugate(LispBuiltin *builtin)
 /*
  conjugate number
  */
@@ -508,18 +508,18 @@ Lisp_Conjugate(LispMac *mac, LispBuiltin *builtin)
     if (REAL_P(number))
 	return (number);
     else if (!COMPLEX_P(number))
-	LispDestroy(mac, "%s: %s is not a number",
+	LispDestroy("%s: %s is not a number",
 		    STRFUN(builtin), STROBJ(number));
 
     realpart = CXR(number);
     imagpart = INTEGER(-1);
-    mul_accumulator(mac, builtin, imagpart, CXI(number));
+    mul_accumulator(builtin, imagpart, CXI(number));
 
     return (COMPLEX(realpart, imagpart));
 }
 
 LispObj *
-Lisp_Decf(LispMac *mac, LispBuiltin *builtin)
+Lisp_Decf(LispBuiltin *builtin)
 /*
  decf place &optional delta
  */
@@ -531,9 +531,9 @@ Lisp_Decf(LispMac *mac, LispBuiltin *builtin)
     place = ARGUMENT(0);
 
     if (SYMBOL_P(place)) {
-	number = LispGetVar(mac, place);
+	number = LispGetVar(place);
 	if (number == NULL)
-	    LispDestroy(mac, "EVAL: the variable %s is unbound", STROBJ(place));
+	    LispDestroy("EVAL: the variable %s is unbound", STROBJ(place));
     }
     else
 	number = EVAL(place);
@@ -543,21 +543,21 @@ Lisp_Decf(LispMac *mac, LispBuiltin *builtin)
 
 	if (NCONSTANT_P(operand = delta))
 	    operand = EVAL(operand);
-	accumulator = copy_number(mac, builtin, number);
+	accumulator = copy_number(builtin, number);
 	GC_PROTECT(accumulator);
-	sub_accumulator(mac, builtin, accumulator, operand);
+	sub_accumulator(builtin, accumulator, operand);
 	number = accumulator;
     }
     else {
 	accumulator = INTEGER(-1);
 	GC_PROTECT(accumulator);
-	add_accumulator(mac, builtin, accumulator, number);
+	add_accumulator(builtin, accumulator, number);
 	number = accumulator;
     }
 
     if (SYMBOL_P(place)) {
 	ERROR_CHECK_CONSTANT(place);
-	LispSetVar(mac, place, number);
+	LispSetVar(place, number);
     }
     else
 	(void)APPLY2(Osetf, place, number);
@@ -568,7 +568,7 @@ Lisp_Decf(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Denominator(LispMac *mac, LispBuiltin *builtin)
+Lisp_Denominator(LispBuiltin *builtin)
 /*
  denominator rational
  */
@@ -600,7 +600,7 @@ Lisp_Denominator(LispMac *mac, LispBuiltin *builtin)
 	    }
 	    break;
 	default:
-	    LispDestroy(mac, "%s: %s is not a rational number",
+	    LispDestroy("%s: %s is not a rational number",
 			STRFUN(builtin), STROBJ(rational));
 	    /*NOTREACHED*/
 	    result = NIL;
@@ -610,7 +610,7 @@ Lisp_Denominator(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Evenp(LispMac *mac, LispBuiltin *builtin)
+Lisp_Evenp(LispBuiltin *builtin)
 /*
  evenp integer
  */
@@ -637,7 +637,7 @@ Lisp_Evenp(LispMac *mac, LispBuiltin *builtin)
 
 /* only one float format */
 LispObj *
-Lisp_Float(LispMac *mac, LispBuiltin *builtin)
+Lisp_Float(LispBuiltin *builtin)
 /*
  float number &optional (other 1.0)
  */
@@ -649,11 +649,11 @@ Lisp_Float(LispMac *mac, LispBuiltin *builtin)
 
     ERROR_CHECK_FLOAT(other);
 
-    return (LispFloatCoerce(mac, builtin, number));
+    return (LispFloatCoerce(builtin, number));
 }
 
 LispObj *
-LispFloatCoerce(LispMac *mac, LispBuiltin *builtin, LispObj *number)
+LispFloatCoerce(LispBuiltin *builtin, LispObj *number)
 {
     double value = 0.0;
 
@@ -663,7 +663,7 @@ LispFloatCoerce(LispMac *mac, LispBuiltin *builtin, LispObj *number)
 
     switch (XTYPE(number)) {
 	case FI:
-	    value = number->data.integer;
+	    value = GETINT(number);
 	    break;
 	case FR:
 	    value = XFRN(number) / (double)XFRD(number);
@@ -685,7 +685,7 @@ LispFloatCoerce(LispMac *mac, LispBuiltin *builtin, LispObj *number)
 }
 
 LispObj *
-Lisp_Floatp(LispMac *mac, LispBuiltin *builtin)
+Lisp_Floatp(LispBuiltin *builtin)
 /*
  floatp object
  */
@@ -698,7 +698,7 @@ Lisp_Floatp(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Gcd(LispMac *mac, LispBuiltin *builtin)
+Lisp_Gcd(LispBuiltin *builtin)
 /*
  gcd &rest integers
  */
@@ -713,22 +713,22 @@ Lisp_Gcd(LispMac *mac, LispBuiltin *builtin)
     integer = CAR(integers);
 
     ERROR_CHECK_INTEGER(integer);
-    integer = copy_real(mac, builtin, integer);
+    integer = copy_real(builtin, integer);
     integers = CDR(integers);
 
     for (; CONS_P(integers); integers = CDR(integers)) {
 	operand = CAR(integers);
 
 	ERROR_CHECK_INTEGER(operand);
-	gcd_accumulator(mac, builtin, integer, operand);
+	gcd_accumulator(builtin, integer, operand);
     }
-    abs_accumulator(mac, builtin, integer);
+    abs_accumulator(builtin, integer);
 
     return (integer);
 }
 
 LispObj *
-Lisp_Imagpart(LispMac *mac, LispBuiltin *builtin)
+Lisp_Imagpart(LispBuiltin *builtin)
 /*
  imagpart number
  */
@@ -745,7 +745,7 @@ Lisp_Imagpart(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Incf(LispMac *mac, LispBuiltin *builtin)
+Lisp_Incf(LispBuiltin *builtin)
 /*
  incf place &optional delta
  */
@@ -757,9 +757,9 @@ Lisp_Incf(LispMac *mac, LispBuiltin *builtin)
     place = ARGUMENT(0);
 
     if (SYMBOL_P(place)) {
-	number = LispGetVar(mac, place);
+	number = LispGetVar(place);
 	if (number == NULL)
-	    LispDestroy(mac, "EVAL: the variable %s is unbound", STROBJ(place));
+	    LispDestroy("EVAL: the variable %s is unbound", STROBJ(place));
     }
     else
 	number = EVAL(place);
@@ -769,18 +769,18 @@ Lisp_Incf(LispMac *mac, LispBuiltin *builtin)
 
 	if (NCONSTANT_P(operand = delta))
 	    operand = EVAL(operand);
-	accumulator = copy_number(mac, builtin, operand);
+	accumulator = copy_number(builtin, operand);
     }
     else
 	accumulator = INTEGER(1);
     GC_PROTECT(accumulator);
 
-    add_accumulator(mac, builtin, accumulator, number);
+    add_accumulator(builtin, accumulator, number);
     number = accumulator;
 
     if (SYMBOL_P(place)) {
 	ERROR_CHECK_CONSTANT(place);
-	LispSetVar(mac, place, number);
+	LispSetVar(place, number);
     }
     else
 	(void)APPLY2(Osetf, place, number);
@@ -791,7 +791,7 @@ Lisp_Incf(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Integerp(LispMac *mac, LispBuiltin *builtin)
+Lisp_Integerp(LispBuiltin *builtin)
 /*
  integerp object
  */
@@ -804,7 +804,7 @@ Lisp_Integerp(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Isqrt(LispMac *mac, LispBuiltin *builtin)
+Lisp_Isqrt(LispBuiltin *builtin)
 /*
  isqrt natural
  */
@@ -816,7 +816,7 @@ Lisp_Isqrt(LispMac *mac, LispBuiltin *builtin)
     switch (XTYPE(natural)) {
 	case FI:
 	    if (XFI(natural) < 0)
-		LispDestroy(mac, "%s: %s is not a natural number",
+		LispDestroy("%s: %s is not a natural number",
 			    STRFUN(builtin), STROBJ(natural));
 	    result = SMALLINT(floor(sqrt(XFI(natural))));
 	    break;
@@ -824,7 +824,7 @@ Lisp_Isqrt(LispMac *mac, LispBuiltin *builtin)
 	    mpi *bigi;
 
 	    if (mpi_cmpi(XBI(natural), 0) < 0)
-		LispDestroy(mac, "%s: %s is not a natural number",
+		LispDestroy("%s: %s is not a natural number",
 			    STRFUN(builtin), STROBJ(natural));
 	    bigi = XALLOC(mpi);
 	    mpi_init(bigi);
@@ -840,7 +840,7 @@ Lisp_Isqrt(LispMac *mac, LispBuiltin *builtin)
 	    }
 	}   break;
 	default:
-	    LispDestroy(mac, "%s: %s is not a natural number",
+	    LispDestroy("%s: %s is not a natural number",
 			STRFUN(builtin), STROBJ(natural));
 	    /*NOTREACHED*/
 	    result = NIL;
@@ -850,7 +850,7 @@ Lisp_Isqrt(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Lcm(LispMac *mac, LispBuiltin *builtin)
+Lisp_Lcm(LispBuiltin *builtin)
 /*
  lcm &rest integers
  */
@@ -865,7 +865,7 @@ Lisp_Lcm(LispMac *mac, LispBuiltin *builtin)
     integer = CAR(integers);
 
     ERROR_CHECK_INTEGER(integer);
-    integer = copy_real(mac, builtin, integer);
+    integer = copy_real(builtin, integer);
     integers = CDR(integers);
     if (CONS_P(integers))
 	gcd = INTEGER(0);	/* create non side effect operator */
@@ -879,20 +879,20 @@ Lisp_Lcm(LispMac *mac, LispBuiltin *builtin)
 	ERROR_CHECK_INTEGER(operand);
 
 	/* calculate gcd before changing integer */
-	set_real(mac, builtin, gcd, integer);
-	gcd_accumulator(mac, builtin, gcd, operand);
+	set_real(builtin, gcd, integer);
+	gcd_accumulator(builtin, gcd, operand);
 
 	/* calculate lcm */
-	mul_accumulator(mac, builtin, integer, operand);
-	div_accumulator(mac, builtin, integer, gcd);
+	mul_accumulator(builtin, integer, operand);
+	div_accumulator(builtin, integer, gcd);
     }
-    abs_accumulator(mac, builtin, integer);
+    abs_accumulator(builtin, integer);
 
     return (integer);
 }
 
 LispObj *
-Lisp_Logand(LispMac *mac, LispBuiltin *builtin)
+Lisp_Logand(LispBuiltin *builtin)
 /*
  logand &rest integers
  */
@@ -964,7 +964,7 @@ Lisp_Logand(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Logeqv(LispMac *mac, LispBuiltin *builtin)
+Lisp_Logeqv(LispBuiltin *builtin)
 /*
  logeqv &rest integers
  */
@@ -1043,7 +1043,7 @@ Lisp_Logeqv(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Logior(LispMac *mac, LispBuiltin *builtin)
+Lisp_Logior(LispBuiltin *builtin)
 /*
  logior &rest integers
  */
@@ -1115,7 +1115,7 @@ Lisp_Logior(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Lognot(LispMac *mac, LispBuiltin *builtin)
+Lisp_Lognot(LispBuiltin *builtin)
 /*
  lognot integer
  */
@@ -1146,7 +1146,7 @@ Lisp_Lognot(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Logxor(LispMac *mac, LispBuiltin *builtin)
+Lisp_Logxor(LispBuiltin *builtin)
 /*
  logior &rest integers
  */
@@ -1218,7 +1218,7 @@ Lisp_Logxor(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Minusp(LispMac *mac, LispBuiltin *builtin)
+Lisp_Minusp(LispBuiltin *builtin)
 /*
  minusp number
  */
@@ -1233,10 +1233,10 @@ Lisp_Minusp(LispMac *mac, LispBuiltin *builtin)
 	case FF:
 	case BI:
 	case BR:
-	    result = math_compare(mac, builtin, number, &zero) < 0 ? T : NIL;
+	    result = math_compare(builtin, number, &zero) < 0 ? T : NIL;
 	    break;
 	default:
-	    LispDestroy(mac, "%s: %s is not a real number",
+	    LispDestroy("%s: %s is not a real number",
 			STRFUN(builtin), STROBJ(number));
 	    /*NOTREACHED*/
 	    result = NIL;
@@ -1246,7 +1246,7 @@ Lisp_Minusp(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Mod(LispMac *mac, LispBuiltin *builtin)
+Lisp_Mod(LispBuiltin *builtin)
 /*
  mod number divisor
  */
@@ -1260,11 +1260,11 @@ Lisp_Mod(LispMac *mac, LispBuiltin *builtin)
 
     if ((XTYPE(number) == FI || XTYPE(number) == BI) &&
 	(XTYPE(divisor) == FI || XTYPE(divisor) == BI)) {
-	result = copy_number(mac, builtin, number);
-	mod_accumulator(mac, builtin, result, divisor);
+	result = copy_number(builtin, number);
+	mod_accumulator(builtin, result, divisor);
     }
     else {
-	math_divide(mac, builtin, DIVIDE_FLOOR, 0);
+	math_divide(builtin, DIVIDE_FLOOR, 0);
 	result = RETURN(0);
 	RETURN_COUNT = 0;
     }
@@ -1273,7 +1273,7 @@ Lisp_Mod(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Numberp(LispMac *mac, LispBuiltin *builtin)
+Lisp_Numberp(LispBuiltin *builtin)
 /*
  numberp object
  */
@@ -1286,7 +1286,7 @@ Lisp_Numberp(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Numerator(LispMac *mac, LispBuiltin *builtin)
+Lisp_Numerator(LispBuiltin *builtin)
 /*
  numerator rational
  */
@@ -1318,7 +1318,7 @@ Lisp_Numerator(LispMac *mac, LispBuiltin *builtin)
 	    }
 	    break;
 	default:
-	    LispDestroy(mac, "%s: %s is not a rational number",
+	    LispDestroy("%s: %s is not a rational number",
 			STRFUN(builtin), STROBJ(rational));
 	    /*NOTREACHED*/
 	    result = NIL;
@@ -1328,7 +1328,7 @@ Lisp_Numerator(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Oddp(LispMac *mac, LispBuiltin *builtin)
+Lisp_Oddp(LispBuiltin *builtin)
 /*
  oddp integer
  */
@@ -1354,7 +1354,7 @@ Lisp_Oddp(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Plusp(LispMac *mac, LispBuiltin *builtin)
+Lisp_Plusp(LispBuiltin *builtin)
 /*
  plusp number
  */
@@ -1369,10 +1369,10 @@ Lisp_Plusp(LispMac *mac, LispBuiltin *builtin)
 	case FF:
 	case BI:
 	case BR:
-	    result = math_compare(mac, builtin, number, &zero) > 0 ? T : NIL;
+	    result = math_compare(builtin, number, &zero) > 0 ? T : NIL;
 	    break;
 	default:
-	    LispDestroy(mac, "%s: %s is not a real number",
+	    LispDestroy("%s: %s is not a real number",
 			STRFUN(builtin), STROBJ(number));
 	    /*NOTREACHED*/
 	    result = NIL;
@@ -1382,7 +1382,7 @@ Lisp_Plusp(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Rational(LispMac *mac, LispBuiltin *builtin)
+Lisp_Rational(LispBuiltin *builtin)
 /*
  rational number
  */
@@ -1404,7 +1404,7 @@ Lisp_Rational(LispMac *mac, LispBuiltin *builtin)
 	    mpr_setd(bigr, numerator);
 	    number = BIGRATIO(bigr);
 	    XMEM(bigr);
-	    br_canonicalize(mac, builtin, number);
+	    br_canonicalize(builtin, number);
 	}
     }
 
@@ -1412,7 +1412,7 @@ Lisp_Rational(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Rationalp(LispMac *mac, LispBuiltin *builtin)
+Lisp_Rationalp(LispBuiltin *builtin)
 /*
  rationalp object
  */
@@ -1425,7 +1425,7 @@ Lisp_Rationalp(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Realpart(LispMac *mac, LispBuiltin *builtin)
+Lisp_Realpart(LispBuiltin *builtin)
 /*
  realpart number
  */
@@ -1442,7 +1442,7 @@ Lisp_Realpart(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Rem(LispMac *mac, LispBuiltin *builtin)
+Lisp_Rem(LispBuiltin *builtin)
 /*
  rem number divisor
  */
@@ -1456,11 +1456,11 @@ Lisp_Rem(LispMac *mac, LispBuiltin *builtin)
 
     if ((XTYPE(number) == FI || XTYPE(number) == BI) &&
 	(XTYPE(divisor) == FI || XTYPE(divisor) == BI)) {
-	result = copy_number(mac, builtin, number);
-	rem_accumulator(mac, builtin, result, divisor);
+	result = copy_number(builtin, number);
+	rem_accumulator(builtin, result, divisor);
     }
     else {
-	math_divide(mac, builtin, DIVIDE_TRUNC, 0);
+	math_divide(builtin, DIVIDE_TRUNC, 0);
 	result = RETURN(0);
 	RETURN_COUNT = 0;
     }
@@ -1469,7 +1469,7 @@ Lisp_Rem(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Sqrt(LispMac *mac, LispBuiltin *builtin)
+Lisp_Sqrt(LispBuiltin *builtin)
 /*
  sqrt number
  */
@@ -1479,14 +1479,14 @@ Lisp_Sqrt(LispMac *mac, LispBuiltin *builtin)
     number = ARGUMENT(0);
 
     ERROR_CHECK_NUMBER(number);
-    result = copy_number(mac, builtin, number);
-    sqrt_accumulator(mac, builtin, result);
+    result = copy_number(builtin, number);
+    sqrt_accumulator(builtin, result);
 
     return (result);
 }
 
 LispObj *
-Lisp_Zerop(LispMac *mac, LispBuiltin *builtin)
+Lisp_Zerop(LispBuiltin *builtin)
 /*
  zerop number
  */
@@ -1501,7 +1501,7 @@ Lisp_Zerop(LispMac *mac, LispBuiltin *builtin)
 	case FF:
 	case BI:
 	case BR:
-	    result = math_compare(mac, builtin, number, &zero) == 0 ? T : NIL;
+	    result = math_compare(builtin, number, &zero) == 0 ? T : NIL;
 	    break;
 	case CX:
 	    result = NIL;
@@ -1516,73 +1516,73 @@ Lisp_Zerop(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Ceiling(LispMac *mac, LispBuiltin *builtin)
+Lisp_Ceiling(LispBuiltin *builtin)
 /*
  ceiling number &optional divisor
  */
 {
-    return (math_divide(mac, builtin, DIVIDE_CEIL, 0));
+    return (math_divide(builtin, DIVIDE_CEIL, 0));
 }
 
 LispObj *
-Lisp_Fceiling(LispMac *mac, LispBuiltin *builtin)
+Lisp_Fceiling(LispBuiltin *builtin)
 /*
  fceiling number &optional divisor
  */
 {
-    return (math_divide(mac, builtin, DIVIDE_CEIL, 1));
+    return (math_divide(builtin, DIVIDE_CEIL, 1));
 }
 
 LispObj *
-Lisp_Floor(LispMac *mac, LispBuiltin *builtin)
+Lisp_Floor(LispBuiltin *builtin)
 /*
  floor number &optional divisor
  */
 {
-    return (math_divide(mac, builtin, DIVIDE_FLOOR, 0));
+    return (math_divide(builtin, DIVIDE_FLOOR, 0));
 }
 
 LispObj *
-Lisp_Ffloor(LispMac *mac, LispBuiltin *builtin)
+Lisp_Ffloor(LispBuiltin *builtin)
 /*
  ffloor number &optional divisor
  */
 {
-    return (math_divide(mac, builtin, DIVIDE_FLOOR, 1));
+    return (math_divide(builtin, DIVIDE_FLOOR, 1));
 }
 
 LispObj *
-Lisp_Round(LispMac *mac, LispBuiltin *builtin)
+Lisp_Round(LispBuiltin *builtin)
 /*
  round number &optional divisor
  */
 {
-    return (math_divide(mac, builtin, DIVIDE_ROUND, 0));
+    return (math_divide(builtin, DIVIDE_ROUND, 0));
 }
 
 LispObj *
-Lisp_Fround(LispMac *mac, LispBuiltin *builtin)
+Lisp_Fround(LispBuiltin *builtin)
 /*
  fround number &optional divisor
  */
 {
-    return (math_divide(mac, builtin, DIVIDE_ROUND, 1));
+    return (math_divide(builtin, DIVIDE_ROUND, 1));
 }
 
 LispObj *
-Lisp_Truncate(LispMac *mac, LispBuiltin *builtin)
+Lisp_Truncate(LispBuiltin *builtin)
 /*
  truncate number &optional divisor
  */
 {
-    return (math_divide(mac, builtin, DIVIDE_TRUNC, 0));
+    return (math_divide(builtin, DIVIDE_TRUNC, 0));
 }
 
 LispObj *
-Lisp_Ftruncate(LispMac *mac, LispBuiltin *builtin)
+Lisp_Ftruncate(LispBuiltin *builtin)
 /*
  ftruncate number &optional divisor
  */
 {
-    return (math_divide(mac, builtin, DIVIDE_TRUNC, 1));
+    return (math_divide(builtin, DIVIDE_TRUNC, 1));
 }

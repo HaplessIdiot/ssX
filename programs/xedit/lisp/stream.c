@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.12 2002/08/25 02:48:31 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.13 2002/10/06 17:11:45 paulo Exp $ */
 
 #include "read.h"
 #include "stream.h"
@@ -73,7 +73,7 @@ Atom_id Sprobe, Sinput, Soutput, Sio, Snew_version, Srename,
  * Implementation
  */
 void
-LispStreamInit(LispMac *mac)
+LispStreamInit(void)
 {
     Oopen		= STATIC_ATOM("OPEN");
     Oclose		= STATIC_ATOM("CLOSE");
@@ -93,7 +93,7 @@ LispStreamInit(LispMac *mac)
 }
 
 LispObj *
-Lisp_Streamp(LispMac *mac, LispBuiltin *builtin)
+Lisp_Streamp(LispBuiltin *builtin)
 /*
  streamp object
  */
@@ -106,7 +106,7 @@ Lisp_Streamp(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_InputStreamP(LispMac *mac, LispBuiltin *builtin)
+Lisp_InputStreamP(LispBuiltin *builtin)
 /*
  input-stream-p stream
  */
@@ -121,7 +121,7 @@ Lisp_InputStreamP(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_OpenStreamP(LispMac *mac, LispBuiltin *builtin)
+Lisp_OpenStreamP(LispBuiltin *builtin)
 /*
  open-stream-p stream
  */
@@ -137,7 +137,7 @@ Lisp_OpenStreamP(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_OutputStreamP(LispMac *mac, LispBuiltin *builtin)
+Lisp_OutputStreamP(LispBuiltin *builtin)
 /*
  output-stream-p stream
  */
@@ -152,7 +152,7 @@ Lisp_OutputStreamP(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Open(LispMac *mac, LispBuiltin *builtin)
+Lisp_Open(LispBuiltin *builtin)
 /*
  open filename &key direction element-type if-exists if-does-not-exist external-format
  */
@@ -180,13 +180,12 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
     }
     else if (STREAM_P(filename)) {
 	if (filename->data.stream.type != LispStreamFile)
-	    LispDestroy(mac, "%s: only FILE-STREAM accepted, not %s",
+	    LispDestroy("%s: only FILE-STREAM accepted, not %s",
 			STRFUN(builtin), STROBJ(filename));
 	filename = filename->data.stream.pathname;
     }
     else if (!PATHNAME_P(filename))
-	LispDestroy(mac, "%s: bad argument %s",
-		    STRFUN(builtin), STROBJ(filename));
+	LispDestroy("%s: bad argument %s", STRFUN(builtin), STROBJ(filename));
 
     if (odirection != NIL) {
 	direction = -1;
@@ -203,7 +202,7 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
 		direction = DIR_IO;
 	}
 	if (direction == -1)
-	    LispDestroy(mac, "%s: bad :DIRECTION %s",
+	    LispDestroy("%s: bad :DIRECTION %s",
 			STRFUN(builtin), STROBJ(odirection));
     }
     else
@@ -218,7 +217,7 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
 	    ATOMID(element_type) == Sdefault)
 	    ;	/* do nothing */
 	else
-	    LispDestroy(mac, "%s: only :%s and %s supported for :ELEMENT-TYPE, not %s",
+	    LispDestroy("%s: only :%s and %s supported for :ELEMENT-TYPE, not %s",
 			STRFUN(builtin), Sdefault, Scharacter, STROBJ(element_type));
     }
 
@@ -243,7 +242,7 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
 		exist = EXT_SUPERSEDE;
 	}
 	if (exist == -1)
-	    LispDestroy(mac, "%s: bad :IF-EXISTS %s",
+	    LispDestroy("%s: bad :IF-EXISTS %s",
 			STRFUN(builtin), STROBJ(if_exists));
     }
     else
@@ -260,7 +259,7 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
 		noexist = NOEXT_CREATE;
 	}
 	if (noexist == -1)
-	    LispDestroy(mac, "%s: bad :IF-DOES-NO-EXISTS %s",
+	    LispDestroy("%s: bad :IF-DOES-NO-EXISTS %s",
 			STRFUN(builtin), STROBJ(if_does_not_exist));
     }
     else
@@ -275,7 +274,7 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
 	    ATOMID(external_format) == Sdefault)
 	    ;	/* do nothing */
 	else
-	    LispDestroy(mac, "%s: only :%s and %s supported for :EXTERNAL-FORMAT, not %s",
+	    LispDestroy("%s: only :%s and %s supported for :EXTERNAL-FORMAT, not %s",
 			STRFUN(builtin), Sdefault, Scharacter, STROBJ(external_format));
     }
 
@@ -292,7 +291,7 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
 		return (NIL);
 	    }
 	    else if (exist == EXT_ERROR)
-		LispDestroy(mac, "%s: file %s already exists",
+		LispDestroy("%s: file %s already exists",
 			    STRFUN(builtin), STROBJ(CAR(filename->data.quote)));
 	    else if (exist == EXT_RENAME) {
 		/* Add an ending '~' at the end of the backup file */
@@ -300,12 +299,12 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
 
 		strcpy(string, tmp);
 		if (strlen(tmp) + 1 > PATH_MAX)
-		    LispDestroy(mac, "%s: backup name for %s too long",
+		    LispDestroy("%s: backup name for %s too long",
 				STRFUN(builtin),
 				STROBJ(CAR(filename->data.quote)));
 		strcat(tmp, "~");
 		if (rename(string, tmp))
-		    LispDestroy(mac, "%s: rename: %s",
+		    LispDestroy("%s: rename: %s",
 				STRFUN(builtin), strerror(errno));
 		mode |= FILE_WRITE;
 	    }
@@ -314,7 +313,7 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
 	    else if (exist == EXT_APPEND)
 		mode |= FILE_APPEND;
 	    else
-		LispDestroy(mac, "%s: unsupported :IF-EXISTS %s",
+		LispDestroy("%s: unsupported :IF-EXISTS %s",
 		    STRFUN(builtin), STROBJ(if_exists));
 	}
 	else
@@ -330,7 +329,7 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
 		return (NIL);
 	    }
 	    else if (noexist == NOEXT_ERROR)
-		LispDestroy(mac, "%s: file %s does not exist",
+		LispDestroy("%s: file %s does not exist",
 			    STRFUN(builtin), STROBJ(CAR(filename->data.quote)));
 	    else if (noexist == NOEXT_CREATE) {
 		LispFile *tmp = LispFopen(string, FILE_WRITE);
@@ -338,12 +337,12 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
 		if (tmp)
 		    LispFclose(tmp);
 		else
-		    LispDestroy(mac, "%s: cannot create file %s",
+		    LispDestroy("%s: cannot create file %s",
 				STRFUN(builtin),
 				STROBJ(CAR(filename->data.quote)));
 	    }
 	    else
-		LispDestroy(mac, "%s: unsupported :IF-DOES-NOT-EXIST %s",
+		LispDestroy("%s: unsupported :IF-DOES-NOT-EXIST %s",
 			    STRFUN(builtin), STROBJ(if_does_not_exist));
 	}
 	mode |= FILE_READ;
@@ -351,7 +350,7 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
 
     file = LispFopen(string, mode);
     if (file == NULL)
-	LispDestroy(mac, "%s: open: %s",
+	LispDestroy("%s: open: %s",
 		    STRFUN(builtin), strerror(errno));
 
     flags = 0;
@@ -372,7 +371,7 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Close(LispMac *mac, LispBuiltin *builtin)
+Lisp_Close(LispBuiltin *builtin)
 /*
  close stream &key abort
  */
@@ -415,7 +414,7 @@ Lisp_Close(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Listen(LispMac *mac, LispBuiltin *builtin)
+Lisp_Listen(LispBuiltin *builtin)
 /*
  listen &optional input-stream
  */
@@ -431,7 +430,7 @@ Lisp_Listen(LispMac *mac, LispBuiltin *builtin)
 	ERROR_CHECK_STREAM(stream);
     }
     else
-	stream = mac->standard_input;
+	stream = lisp__data.standard_input;
 
     if (stream->data.stream.readable) {
 	switch (stream->data.stream.type) {
@@ -458,7 +457,7 @@ Lisp_Listen(LispMac *mac, LispBuiltin *builtin)
 
 		if (!file->nonblock) {
 		    if (fcntl(file->descriptor, F_SETFL, O_NONBLOCK) < 0)
-			LispDestroy(mac, "%s: fcntl: %s",
+			LispDestroy("%s: fcntl: %s",
 				    STRFUN(builtin), strerror(errno));
 		    file->nonblock = 1;
 		}
@@ -474,7 +473,7 @@ Lisp_Listen(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Read(LispMac *mac, LispBuiltin *builtin)
+Lisp_Read(LispBuiltin *builtin)
 /*
  read &optional input-stream (eof-error-p t) eof-value recursive-p
  */
@@ -490,29 +489,29 @@ Lisp_Read(LispMac *mac, LispBuiltin *builtin)
 
     if (input_stream != NIL) {
 	if (!STREAM_P(input_stream))
-	    LispDestroy(mac, "%s: %s is not a stream",
+	    LispDestroy("%s: %s is not a stream",
 			STRFUN(builtin), STROBJ(input_stream));
 	else if (!input_stream->data.stream.readable)
-	    LispDestroy(mac, "%s: stream %s is not readable",
+	    LispDestroy("%s: stream %s is not readable",
 			STRFUN(builtin), STROBJ(input_stream));
-	LispPushInput(mac, input_stream);
+	LispPushInput(input_stream);
     }
-    else if (CONS_P(mac->input_list)) {
+    else if (CONS_P(lisp__data.input_list)) {
 	input_stream = STANDARD_INPUT;
-	LispPushInput(mac, input_stream);
+	LispPushInput(input_stream);
     }
 
-    result = LispRead(mac);
+    result = LispRead();
     if (result == EOLIST)
-	LispDestroy(mac, "%s: object cannot start with #\\)", STRFUN(builtin));
+	LispDestroy("%s: object cannot start with #\\)", STRFUN(builtin));
     else if (result == DOT)
-	LispDestroy(mac, "dot allowed only on lists");
+	LispDestroy("dot allowed only on lists");
     if (input_stream != NIL)
-	LispPopInput(mac, input_stream);
+	LispPopInput(input_stream);
 
     if (result == NULL) {
 	if (eof_error_p != NIL)
-	    LispDestroy(mac, "%s: EOF reading stream %s",
+	    LispDestroy("%s: EOF reading stream %s",
 			STRFUN(builtin), STROBJ(input_stream));
 	else
 	    result = eof_value;
@@ -522,25 +521,25 @@ Lisp_Read(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_ReadChar(LispMac *mac, LispBuiltin *builtin)
+Lisp_ReadChar(LispBuiltin *builtin)
 /*
  read-char &optional input-stream (eof-error-p t) eof-value recursive-p
  */
 {
-    return (LispReadChar(mac, builtin, 0));
+    return (LispReadChar(builtin, 0));
 }
 
 LispObj *
-Lisp_ReadCharNoHang(LispMac *mac, LispBuiltin *builtin)
+Lisp_ReadCharNoHang(LispBuiltin *builtin)
 /*
  read-char-no-hang &optional input-stream (eof-error-p t) eof-value recursive-p
  */
 {
-    return (LispReadChar(mac, builtin, 1));
+    return (LispReadChar(builtin, 1));
 }
 
 LispObj *
-Lisp_WriteChar(LispMac *mac, LispBuiltin *builtin)
+Lisp_WriteChar(LispBuiltin *builtin)
 /*
  write-char character &optional output-stream
  */
@@ -553,15 +552,15 @@ Lisp_WriteChar(LispMac *mac, LispBuiltin *builtin)
     character = ARGUMENT(0);
 
     ERROR_CHECK_CHARACTER(character);
-    ch = character->data.integer;
+    ch = GETINT(character);
 
-    LispWriteChar(mac, output_stream, ch);
+    LispWriteChar(output_stream, ch);
 
     return (character);
 }
 
 LispObj *
-Lisp_ReadLine(LispMac *mac, LispBuiltin *builtin)
+Lisp_ReadLine(LispBuiltin *builtin)
 /*
  read-line &optional input-stream (eof-error-p t) eof-value recursive-p
  */
@@ -588,7 +587,7 @@ Lisp_ReadLine(LispMac *mac, LispBuiltin *builtin)
     length = 0;
 
     if (!input_stream->data.stream.readable)
-	LispDestroy(mac, "%s: stream %s is unreadable",
+	LispDestroy("%s: stream %s is unreadable",
 		    STRFUN(builtin), STROBJ(input_stream));
     if (input_stream->data.stream.type == LispStreamString) {
 	unsigned char *start, *end, *ptr;
@@ -596,7 +595,7 @@ Lisp_ReadLine(LispMac *mac, LispBuiltin *builtin)
 	if (SSTREAMP(input_stream)->input >=
 	    SSTREAMP(input_stream)->length) {
 	    if (eof_error_p != NIL)
-		LispDestroy(mac, "%s: EOS found reading %s",
+		LispDestroy("%s: EOS found reading %s",
 			    STRFUN(builtin), STROBJ(input_stream));
 
 	    status = T;
@@ -614,7 +613,7 @@ Lisp_ReadLine(LispMac *mac, LispBuiltin *builtin)
 	if (ptr == end)
 	    status = T;
 	length = ptr - start;
-	string = LispMalloc(mac, length + 1);
+	string = LispMalloc(length + 1);
 	memcpy(string, start, length);
 	string[length] = '\0';
 	result = LSTRING2(string, length);
@@ -634,7 +633,7 @@ Lisp_ReadLine(LispMac *mac, LispBuiltin *builtin)
 
 	if (file->nonblock) {
 	    if (fcntl(file->descriptor, F_SETFL, 0) < 0)
-		LispDestroy(mac, "%s: fcntl: %s",
+		LispDestroy("%s: fcntl: %s",
 			    STRFUN(builtin), strerror(errno));
 	    file->nonblock = 0;
 	}
@@ -646,10 +645,10 @@ Lisp_ReadLine(LispMac *mac, LispBuiltin *builtin)
 		    /* XXX must return flag in the second return value */
 		    break;
 		if (eof_error_p != NIL)
-		    LispDestroy(mac, "%s: EOF found reading %s",
+		    LispDestroy("%s: EOF found reading %s",
 				STRFUN(builtin), STROBJ(input_stream));
 		if (string)
-		    LispFree(mac, string);
+		    LispFree(string);
 
 		status = T;
 		result = eof_value;
@@ -658,12 +657,12 @@ Lisp_ReadLine(LispMac *mac, LispBuiltin *builtin)
 	    else if (ch == '\n')
 		break;
 	    else if ((length % 64) == 0)
-		string = LispRealloc(mac, string, length + 64);
+		string = LispRealloc(string, length + 64);
 	    string[length++] = ch;
 	}
 	if (string) {
 	    if ((length % 64) == 0)
-		string = LispRealloc(mac, string, length + 1);
+		string = LispRealloc(string, length + 1);
 	    string[length] = '\0';
 	    result = LSTRING2(string, length);
 	}
@@ -679,25 +678,25 @@ read_line_done:
 }
 
 LispObj *
-Lisp_WriteLine(LispMac *mac, LispBuiltin *builtin)
+Lisp_WriteLine(LispBuiltin *builtin)
 /*
  write-line string &optional output-stream &key start end
  */
 {
-    return (LispWriteString_(mac, builtin, 1));
+    return (LispWriteString_(builtin, 1));
 }
 
 LispObj *
-Lisp_WriteString(LispMac *mac, LispBuiltin *builtin)
+Lisp_WriteString(LispBuiltin *builtin)
 /*
  write-string string &optional output-stream &key start end
  */
 {
-    return (LispWriteString_(mac, builtin, 0));
+    return (LispWriteString_(builtin, 0));
 }
 
 LispObj *
-Lisp_MakeStringInputStream(LispMac *mac, LispBuiltin *builtin)
+Lisp_MakeStringInputStream(LispBuiltin *builtin)
 /*
  make-string-input-stream string &optional start end
  */
@@ -713,7 +712,7 @@ Lisp_MakeStringInputStream(LispMac *mac, LispBuiltin *builtin)
 
     start = end = 0;
     ERROR_CHECK_STRING(ostring);
-    LispCheckSequenceStartEnd(mac, builtin, ostring, ostart, oend,
+    LispCheckSequenceStartEnd(builtin, ostring, ostart, oend,
 			      &start, &end, &length);
     string = THESTR(ostring);
 
@@ -725,7 +724,7 @@ Lisp_MakeStringInputStream(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_MakeStringOutputStream(LispMac *mac, LispBuiltin *builtin)
+Lisp_MakeStringOutputStream(LispBuiltin *builtin)
 /*
  make-string-output-stream &key element-type
  */
@@ -742,7 +741,7 @@ Lisp_MakeStringOutputStream(LispMac *mac, LispBuiltin *builtin)
 	    ATOMID(element_type) == Sdefault)
 	    ;	/* do nothing */
 	else
-	    LispDestroy(mac, "%s: only :%s and %s supported for :ELEMENT-TYPE, not %s",
+	    LispDestroy("%s: only :%s and %s supported for :ELEMENT-TYPE, not %s",
 			STRFUN(builtin), Sdefault, Scharacter, STROBJ(element_type));
     }
 
@@ -750,7 +749,7 @@ Lisp_MakeStringOutputStream(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_GetOutputStreamString(LispMac *mac, LispBuiltin *builtin)
+Lisp_GetOutputStreamString(LispBuiltin *builtin)
 /*
  get-output-stream-string string-output-stream
  */
@@ -765,7 +764,7 @@ Lisp_GetOutputStreamString(LispMac *mac, LispBuiltin *builtin)
 	string_output_stream->data.stream.type != LispStreamString ||
 	string_output_stream->data.stream.readable ||
 	!string_output_stream->data.stream.writable)
-	LispDestroy(mac, "%s: %s is not an output string stream",
+	LispDestroy("%s: %s is not an output string stream",
 		    STRFUN(builtin), STROBJ(string_output_stream));
 
     string = LispGetSstring(SSTREAMP(string_output_stream), &length);
@@ -782,7 +781,7 @@ Lisp_GetOutputStreamString(LispMac *mac, LispBuiltin *builtin)
 /* XXX Non standard functions below
  */
 LispObj *
-Lisp_MakePipe(LispMac *mac, LispBuiltin *builtin)
+Lisp_MakePipe(LispBuiltin *builtin)
 /*
  make-pipe command-line &key :direction :element-type :external-format
  */
@@ -808,7 +807,7 @@ Lisp_MakePipe(LispMac *mac, LispBuiltin *builtin)
     if (PATHNAME_P(command_line))
 	command_line = CAR(command_line->data.quote);
     else if (!STRING_P(command_line))
-	LispDestroy(mac, "%s: %s is a bad pathname",
+	LispDestroy("%s: %s is a bad pathname",
 		    STRFUN(builtin), STROBJ(command_line));
 
     if (odirection != NIL) {
@@ -826,7 +825,7 @@ Lisp_MakePipe(LispMac *mac, LispBuiltin *builtin)
 		direction = DIR_IO;
 	}
 	if (direction == -1)
-	    LispDestroy(mac, "%s: bad :DIRECTION %s",
+	    LispDestroy("%s: bad :DIRECTION %s",
 			STRFUN(builtin), STROBJ(odirection));
     }
     else
@@ -840,7 +839,7 @@ Lisp_MakePipe(LispMac *mac, LispBuiltin *builtin)
 	    ATOMID(element_type) == Sdefault)
 	    ;	/* do nothing */
 	else
-	    LispDestroy(mac, "%s: only :%s and %s supported for :ELEMENT-TYPE, not %s",
+	    LispDestroy("%s: only :%s and %s supported for :ELEMENT-TYPE, not %s",
 			STRFUN(builtin), Sdefault, Scharacter, STROBJ(element_type));
     }
 
@@ -852,12 +851,12 @@ Lisp_MakePipe(LispMac *mac, LispBuiltin *builtin)
 	    ATOMID(external_format) == Sdefault)
 	    ;	/* do nothing */
 	else
-	    LispDestroy(mac, "%s: only :%s and %s supported for :EXTERNAL-FORMAT, not %s",
+	    LispDestroy("%s: only :%s and %s supported for :EXTERNAL-FORMAT, not %s",
 			STRFUN(builtin), Sdefault, Scharacter, STROBJ(external_format));
     }
 
     string = THESTR(command_line);
-    program = LispMalloc(mac, sizeof(LispPipe));
+    program = LispMalloc(sizeof(LispPipe));
     if (direction != DIR_PROBE) {
 	argv[0] = "sh";
 	argv[1] = "-c";
@@ -883,7 +882,7 @@ Lisp_MakePipe(LispMac *mac, LispBuiltin *builtin)
 	    exit(-1);
 	}
 	else if (program->pid < 0)
-	    LispDestroy(mac, "%s: fork: %s", STRFUN(builtin), strerror(errno));
+	    LispDestroy("%s: fork: %s", STRFUN(builtin), strerror(errno));
 
 	program->input = LispFdopen(ifd[0], FILE_READ | FILE_UNBUFFERED);
 	close(ifd[1]);
@@ -908,7 +907,7 @@ Lisp_MakePipe(LispMac *mac, LispBuiltin *builtin)
 	    flags |= STREAM_WRITE;
     }
     stream = PIPESTREAM(program, command_line, flags);
-    LispMused(mac, program);
+    LispMused(program);
 
     return (stream);
 }
@@ -916,7 +915,7 @@ Lisp_MakePipe(LispMac *mac, LispBuiltin *builtin)
 /* Helper function, primarily for use with the xt module
  */
 LispObj *
-Lisp_PipeBroken(LispMac *mac, LispBuiltin *builtin)
+Lisp_PipeBroken(LispBuiltin *builtin)
 /*
  pipe-broken pipe-stream
  */
@@ -930,7 +929,7 @@ Lisp_PipeBroken(LispMac *mac, LispBuiltin *builtin)
 
     if (!STREAM_P(pipe_stream) ||
 	pipe_stream->data.stream.type != LispStreamPipe)
-	LispDestroy(mac, "%s: %s is not a pipe stream",
+	LispDestroy("%s: %s is not a pipe stream",
 		    STRFUN(builtin), STROBJ(pipe_stream));
 
     if ((pid = PIDPSTREAMP(pipe_stream)) > 0) {
@@ -946,7 +945,7 @@ Lisp_PipeBroken(LispMac *mac, LispBuiltin *builtin)
  Helper function, so that it is not required to redirect error output
  */
 LispObj *
-Lisp_PipeErrorStream(LispMac *mac, LispBuiltin *builtin)
+Lisp_PipeErrorStream(LispBuiltin *builtin)
 /*
  pipe-error-stream pipe-stream
  */
@@ -957,7 +956,7 @@ Lisp_PipeErrorStream(LispMac *mac, LispBuiltin *builtin)
 
     if (!STREAM_P(pipe_stream) ||
 	pipe_stream->data.stream.type != LispStreamPipe)
-	LispDestroy(mac, "%s: %s is not a pipe stream",
+	LispDestroy("%s: %s is not a pipe stream",
 		    STRFUN(builtin), STROBJ(pipe_stream));
 
     return (pipe_stream->data.stream.source.program->errorp);
@@ -967,7 +966,7 @@ Lisp_PipeErrorStream(LispMac *mac, LispBuiltin *builtin)
  Helper function, primarily for use with the xt module
  */
 LispObj *
-Lisp_PipeInputDescriptor(LispMac *mac, LispBuiltin *builtin)
+Lisp_PipeInputDescriptor(LispBuiltin *builtin)
 /*
  pipe-input-descriptor pipe-stream
  */
@@ -978,10 +977,10 @@ Lisp_PipeInputDescriptor(LispMac *mac, LispBuiltin *builtin)
 
     if (!STREAM_P(pipe_stream) ||
 	pipe_stream->data.stream.type != LispStreamPipe)
-	LispDestroy(mac, "%s: %s is not a pipe stream",
+	LispDestroy("%s: %s is not a pipe stream",
 		    STRFUN(builtin), STROBJ(pipe_stream));
     if (!IPSTREAMP(pipe_stream))
-	LispDestroy(mac, "%s: pipe %s is unreadable",
+	LispDestroy("%s: pipe %s is unreadable",
 		    STRFUN(builtin), STROBJ(pipe_stream));
 
     return (SMALLINT(LispFileno(IPSTREAMP(pipe_stream))));
@@ -991,7 +990,7 @@ Lisp_PipeInputDescriptor(LispMac *mac, LispBuiltin *builtin)
  Helper function, primarily for use with the xt module
  */
 LispObj *
-Lisp_PipeErrorDescriptor(LispMac *mac, LispBuiltin *builtin)
+Lisp_PipeErrorDescriptor(LispBuiltin *builtin)
 /*
  pipe-error-descriptor pipe-stream
  */
@@ -1002,10 +1001,10 @@ Lisp_PipeErrorDescriptor(LispMac *mac, LispBuiltin *builtin)
 
     if (!STREAM_P(pipe_stream) ||
 	pipe_stream->data.stream.type != LispStreamPipe)
-	LispDestroy(mac, "%s: %s is not a pipe stream",
+	LispDestroy("%s: %s is not a pipe stream",
 		    STRFUN(builtin), STROBJ(pipe_stream));
     if (!EPSTREAMP(pipe_stream))
-	LispDestroy(mac, "%s: pipe %s is closed",
+	LispDestroy("%s: pipe %s is closed",
 		    STRFUN(builtin), STROBJ(pipe_stream));
 
     return (SMALLINT(LispFileno(EPSTREAMP(pipe_stream))));
