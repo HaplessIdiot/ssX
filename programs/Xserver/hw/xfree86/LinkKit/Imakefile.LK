@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.0 1994/05/30 08:22:47 dawes Exp $
 /*
  * Server Makefile for LinkKit
  */
@@ -262,7 +262,11 @@ XCOMM
 XCOMM XFree86 Mach32 Server
 XCOMM
 XF86MACH32OBJS = XF86_Mach32.o
+#if Mach32ShareCfb
+XF86MACH32FBLIBS = $(CFB16)
+#else
 XF86MACH32FBLIBS = $(DRIVERSRC)/libm32cfb.a $(DRIVERSRC)/libm32cfb16.a
+#endif
 XF86MACH32LIBS = $(DRIVERSRC)/libmach32.a $(XF86LIBS) PreFbLibs $(XF86MACH32FBLIBS) PostFbLibs
 XF86MACH32SYSLIBS = $(SYSLIBS)
 XF86_Mach32.o: XF86_Mach32.c $(ICONFIGFILES)

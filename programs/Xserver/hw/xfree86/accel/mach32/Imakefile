@@ -1,10 +1,12 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:06:24 dpw Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/Imakefile,v 3.0 1994/05/08 05:19:08 dawes Exp $
 #include <Server.tmpl>
 
+#if !Mach32ShareCfb
 #define IHaveSubdirs
 
 SUBDIRS = cfb cfb16
+#endif
 
 SRCS = 	mach32.c mach32cmap.c mach32gc.c mach32fs.c mach32ss.c \
 	mach32gs.c mach32win.c mach32init.c mach32im.c mach32bstor.c \
@@ -27,7 +29,11 @@ INCLUDES = -I$(XF86COMSRC) -I. -I$(XF86SRC)/vga256/vga \
            -I$(SERVERSRC)/cfb -I$(INCLUDESRC) -I$(FONTSRC)/include \
 	   -I$(FONTINCSRC) -I$(XF86OSSRC) -I$(XF86HWSRC)
 
+#if Mach32ShareCfb
+DEFINES = -DMACH32_SERVER -DPSZ=8 -DMACH32_SHARE_CFB
+#else
 DEFINES = -DMACH32_SERVER -DPSZ=8
+#endif
 
 NormalLibraryObjectRule()
 
@@ -35,7 +41,9 @@ NormalAsmObjectRule()
 
 NormalLibraryTarget(mach32,$(OBJS))
 
+#if !Mach32ShareCfb
 MakeSubdirs($(SUBDIRS))
+#endif
 
 ObjectFromSpecialSource(vgaHW,../../vga256/vga/vgaHW,/**/)
 ObjectFromSpecialSource(mach32line1r,mach32line,-DONE_RECT)
@@ -44,4 +52,6 @@ InstallLinkKitLibrary(mach32,$(LINKKITDIR)/drivers)
 
 DependTarget()
 
+#if !Mach32ShareCfb
 DependSubdirs($(SUBDIRS))
+#endif
