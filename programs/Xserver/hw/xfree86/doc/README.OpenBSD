@@ -2,13 +2,13 @@
 
                                Matthieu Herrb
 
-                     Last modified on: 31 December 2001
+                      Last modified on: 16 January 2002
 
 1.  What and Where is XFree86?
 
-XFree86 is the Open Source port of X.Org's X11R6.5.1 release that supports
-several UNIX(R) and UNIX-like (such as Linux, the BSDs and Solaris x86) oper-
-ating systems on Intel and other platforms.
+XFree86 is the Open Source port of X.Org's X11R6.6 release that supports sev-
+eral UNIX(R) and UNIX-like (such as Linux, the BSDs and Solaris x86) operat-
+ing systems on Intel and other platforms.
 
 See the Copyright Notice.
 
@@ -16,7 +16,7 @@ The sources for XFree86 4.2.0 are available by anonymous ftp from:
 
 ftp://ftp.XFree86.org/pub/XFree86/4.2.0
 
-Binaries for OpenBSD/i386 2.9 and later are available from:
+Binaries for OpenBSD/i386 3.0 and later are available from:
 
 ftp://ftp.XFree86.org/pub/XFree86/4.2.0/binaries/OpenBSD
 
@@ -37,6 +37,8 @@ See the Release Notes for non-OS dependent new features in XFree86 4.2.0.
 3.1  New OS dependent features in 4.2
 
    o Support for OpenBSD/macppc on the ATI Rage128 based Power Macintosh.
+
+   o Support for building clients on OpenBSD/sparc64.
 
 3.2  New OS dependent features in 4.0.3
 
@@ -226,14 +228,9 @@ to your kernel config file.
 
 8.  Rebuilding the XFree86 Distribution
 
-The server developer's kit allow you to rebuild just the X server with a min-
-imum amount of disk space.  Just unpack it, make the appropriate changes to
-the xf86site.def, type ``./mkmf'' and ``make'' to link the server.  See
-/usr/X11R6/lib/Server/README for more info.
-
 You should configure the distribution by editing xc/config/cf/host.def
 before compiling.  To compile the sources, invoke ``make World'' in the xc
-directory.
+directory."
 
 8.1  Console drivers
 
@@ -275,16 +272,17 @@ cvs.html for details on anoncvs.
 
 8.2.1  XFree86 on OpenBSD/macppc
 
-The XFree86 server is currently known to work on the G4 Macs with ATI Rage
-128 cards with OpenBSD 3.0.  Other machines are more or less untested. Ear-
-lier OpenBSD versions lack some kernel support for it.
+The XFree86 server is currently known to work on the G4 Macs and new iBooks
+with ATI Rage 128 cards running OpenBSD 3.0 or later.  Other machines are
+more or less untested. Earlier OpenBSD versions lack some kernel support for
+it.
 
 Use xf86config to build a /etc/X11/XF86Config file before starting the server
 for the first time.
 
 Tou configure the keyboard, the protocol should be specified as wskbd and the
 device as /dev/wskbd0.  Using a wsmux device as the keyboard device doesn't
-work (yet). Use Macintosh as XkbModel.
+work (yet). Use macintosh as XkbModel.
 
 For the Titanium Powerbook G4, you can try the following mode line in
 /etc/X11/XF86Config to match the flat panel resolution:
@@ -308,7 +306,7 @@ Many thanks to all people who contributed to make XFree86 work on *BSD, in
 particular, David Dawes, Pace Willison, Amancio Hasty, Christoph Robitschko,
 Nate Williams, Rod Grimes, Jack Velte and Michael Smith.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.23 2001/12/31 19:02:24 herrb Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.24 2002/01/16 22:35:17 herrb Exp $
 
 
 $XFree86: $
