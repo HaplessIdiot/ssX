@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonfig.c,v 1.1 2000/10/11 22:52:55 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonfig.c,v 1.3 2001/02/15 18:04:55 eich Exp $ */
 /*
  * Copyright 2000 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -145,27 +145,27 @@ ATIProcessOptions
     pATI->OptionSync = Sync;
 
     /* Only set the reference clock if it hasn't already been determined */
-    if (pATI->ReferenceNumerator && pATI->ReferenceDenominator) {
-        xfree(PublicOption);
-        return;
-    }
-    switch ((int)(ReferenceClock / ((double)100000.0)))
+    if (!pATI->ReferenceNumerator || !pATI->ReferenceDenominator)
     {
-        case 143:
-            pATI->ReferenceNumerator = 157500;
-            pATI->ReferenceDenominator = 11;
-            break;
+        switch ((int)(ReferenceClock / ((double)100000.0)))
+        {
+            case 143:
+                pATI->ReferenceNumerator = 157500;
+                pATI->ReferenceDenominator = 11;
+                break;
 
-        case 286:
-            pATI->ReferenceNumerator = 315000;
-            pATI->ReferenceDenominator = 11;
-            break;
+            case 286:
+                pATI->ReferenceNumerator = 315000;
+                pATI->ReferenceDenominator = 11;
+                break;
 
-        default:
-            pATI->ReferenceNumerator =
-                (int)(ReferenceClock / ((double)1000.0));
-            pATI->ReferenceDenominator = 1;
-            break;
+            default:
+                pATI->ReferenceNumerator =
+                    (int)(ReferenceClock / ((double)1000.0));
+                pATI->ReferenceDenominator = 1;
+                break;
+        }
     }
+
     xfree(PublicOption);
 }
