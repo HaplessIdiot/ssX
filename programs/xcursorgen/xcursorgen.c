@@ -306,6 +306,7 @@ check_image (char *image)
   for (i = 0; i < XCURSOR_BITMAP_HASH_SIZE; i++)
     printf ("%02x", hash[i]);
   printf ("\n");
+  return 0;
 }
 
 int
