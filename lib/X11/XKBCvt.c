@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.17 1998/10/21 06:11:58 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.18 1999/05/09 10:50:23 dawes Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -74,6 +74,13 @@ extern unsigned int _Xlatin2[];
 extern unsigned char _Xkoi8[];
 
 extern unsigned short _Xkoi8_size;
+
+
+/* maps Cyrillic keysyms to KOI8-U */
+extern unsigned char _Xkoi8u[];
+
+extern unsigned short _Xkoi8u_size;
+
 
 #define sLatin1         0
 #define sLatin2         1
@@ -363,6 +370,54 @@ _XkbKoi8ToKS(priv,buffer,nbytes,status)
     return NoSymbol;
 }
 
+/***========================KOI8-U======================================***/
+static int _XkbKSToKoi8U (priv, keysym, buffer, nbytes, status)
+    XPointer priv;
+    KeySym keysym;
+    char *buffer;
+    int nbytes;
+    Status *status;
+{
+    if ((keysym&0xffffff00)==0xff00) {
+        return _XkbHandleSpecialSym(keysym, buffer, nbytes, status);
+    }
+    else if (((keysym&0xffffff80)==0x680)||((keysym&0xffffff80)==0)) {
+	if (nbytes>0) {
+	    if ( (keysym&0x80)==0 )
+		 buffer[0] = keysym&0x7f;
+	    else buffer[0] = _Xkoi8u[keysym & 0x7f];
+	    if (nbytes>1)
+		buffer[1]= '\0';
+	    return 1;
+	}
+    }
+    return 0;
+}
+
+static KeySym
+_XkbKoi8UToKS(priv,buffer,nbytes,status)
+    XPointer priv;
+    char *buffer;
+    int nbytes;
+    Status *status;
+{
+    if (nbytes!=1)
+        return NoSymbol;
+    if (((buffer[0]&0x80)==0)&&(buffer[0]>=32))
+        return buffer[0];
+    else if ((buffer[0]&0x7f)>=32) {
+	register int i;
+	for (i=0;i<_Xkoi8u_size;i++) {
+	    if (_Xkoi8u[i]==buffer[0])
+		return 0x680|i;
+	}
+    }
+    return NoSymbol;
+}
+
+
+
+
 /***====================================================================***/
 
 
@@ -428,6 +483,10 @@ static XkbConverters    cvt_Thai = {
 
 static XkbConverters    cvt_Koi8 = {
         _XkbKSToKoi8, NULL, _XkbKoi8ToKS, NULL, NULL
+};
+
+static XkbConverters    cvt_Koi8u = {
+        _XkbKSToKoi8U, NULL, _XkbKoi8UToKS, NULL, NULL
 };
 
 static int
@@ -510,6 +569,8 @@ _XkbGetConverters(encoding_name, cvt_rtrn)
 	     *cvt_rtrn = cvt_Thai;
 	else if (Strcmp(encoding_name, "koi8-r")==0)
 	     *cvt_rtrn = cvt_Koi8;
+	else if (Strcmp(encoding_name, "koi8-u")==0)
+	     *cvt_rtrn = cvt_Koi8u;
 	/* other codesets go here */
 	else *cvt_rtrn = cvt_latin1;
 	return 1;

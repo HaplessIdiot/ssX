@@ -58,6 +58,7 @@ typedef unsigned short Rune;		/* 16 bits */
 #define		ksc5601		"ksc5601"
 #define		gb2312		"gb2312"
 #define		tabkoi8_r	"tabkoi8_r"
+#define		tabkoi8_u	"tabkoi8_u"
 
 #define emit(x)    *r = (Rune)x;
 

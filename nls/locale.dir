@@ -4,7 +4,7 @@ XCOMM	This file contains locALE: database file name
 XCOMM	The first word is the locALE: database file name and
 XCOMM	the second word is full locALE: name.
 XCOMM
-XCOMM	$XFree86: xc/nls/locale.dir,v 1.5 1998/01/11 03:48:17 dawes Exp $
+XCOMM	$XFree86: xc/nls/locale.dir,v 1.6 1998/10/02 08:13:52 dawes Exp $
 XCOMM
 C/XLC_LOCALE:	C
 iso8859-1/XLC_LOCALE:	af_ZA.ISO8859-1
@@ -98,6 +98,7 @@ iso8859-1/XLC_LOCALE:	pt_PT.ISO8859-1
 iso8859-2/XLC_LOCALE:	ro_RO.ISO8859-2
 iso8859-5/XLC_LOCALE: 	ru_RU.ISO8859-5
 koi8-r/XLC_LOCALE: 	ru_RU.KOI8-R
+koi8-u/XLC_LOCALE: 	uk_UA.KOI8-U
 iso8859-2/XLC_LOCALE: 	sh_YU.ISO8859-2
 iso8859-2/XLC_LOCALE: 	sk_SK.ISO8859-2
 iso8859-2/XLC_LOCALE: 	sl_CS.ISO8859-2

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.17 1999/03/14 03:21:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.18 1999/04/07 16:59:30 hohndel Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -2468,7 +2468,9 @@ ProcessPointerEvent (xE, mouse, count)
 	    butc->buttonsDown++;
 	    butc->motionMask = ButtonMotionMask;
 	    *kptr |= bit;
+#ifndef XINPUT
 	    xE->u.u.detail = butc->map[key];
+#endif
 	    if (xE->u.u.detail == 0)
 		return;
 	    if (xE->u.u.detail <= 5)
@@ -2483,7 +2485,9 @@ ProcessPointerEvent (xE, mouse, count)
 	    if (!--butc->buttonsDown)
 		butc->motionMask = 0;
 	    *kptr &= ~bit;
+#ifndef XINPUT
 	    xE->u.u.detail = butc->map[key];
+#endif
 	    if (xE->u.u.detail == 0)
 		return;
 	    if (xE->u.u.detail <= 5)

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.45 1999/05/05 14:29:48 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.46 1999/05/15 12:10:04 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -2079,10 +2079,9 @@ clean::									@@\
 #endif
 
 #ifndef MakeEncodings
-#define MakeEncodings(inst,dirlist)					@@\
-all::  $(OBJS)								@@\
+#define MakeEncodings(deplist,inst,dirlist)				@@\
 									@@\
-MakeEncDir($(OBJS),inst,dirlist)					@@\
+MakeEncDir(deplist $(OBJS),inst,dirlist)				@@\
 									@@\
 clean::									@@\
 	RemoveFiles(*.enc.Z *.enc.gz)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.10 1999/05/15 06:24:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.11 1999/05/15 12:10:26 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -433,10 +433,10 @@ static void SiSSubsequentSolidTwoPointLine(ScrnInfoPtr pScrn,
 	op = sisCMDLINE  | sisSRCFG;
     if ((flags & OMIT_LAST)) op |= sisLASTPIX ;
     if (pSiS->ClipEnabled) op |= sisCLIPINTRN | sisCLIPENABL;
-    if ((major = x2 - x1) < 0) {
+    if ((major = x2 - x1) <= 0) {
        major = -major;
     } else op |= sisXINCREASE;;		   
-    if ((minor = y2 - y1) < 0) {
+    if ((minor = y2 - y1) <= 0) {
        minor = -minor;
     } else op |= sisYINCREASE;
     if(minor >= major){
