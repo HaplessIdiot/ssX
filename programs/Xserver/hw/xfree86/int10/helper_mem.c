@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_mem.c,v 1.18 2001/03/03 22:46:32 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_mem.c,v 1.20 2001/05/15 10:19:41 eich Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -218,7 +218,7 @@ xf86HandleInt10Options(ScrnInfoPtr pScrn, int entityIndex)
 Bool
 int10skip(void* options)
 {
-    Bool noint10;
+    Bool noint10 = FALSE;
 
     if (!options) return FALSE;
     
