@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.15 2000/12/09 22:22:01 herrb Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.16 2000/12/10 00:15:24 herrb Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000 by VA Linux Systems, Inc.
@@ -604,6 +604,9 @@ GetOsInfo
 # Make OS-specific adjustments
 
 case "$OsName" in
+Darwin)
+	SERVDIST="Xxserv.tgz"
+	;;
 FreeBSD|NetBSD|OpenBSD)
 	VARDIST="Xvar.tgz"
 	XKBDIR="/var/db/xkb"
