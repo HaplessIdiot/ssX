@@ -1,4 +1,5 @@
 XFree86 4.2.99.2 (xx October 2002)
+ 417. Fix black cursor images on Mac OS X 10.2.2 (Joseph Maurer).
  416. Fix hotkey switching for user-specified modes, and fix hotkey switching
       between all valid modes when no specific modes are specified in the
       config file (David Dawes).
@@ -15374,4 +15375,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2344 2002/10/16 02:22:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2345 2002/10/16 17:05:59 dawes Exp $
