@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.67 2002/03/02 22:56:02 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.68 2002/03/17 21:30:35 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -89,6 +89,11 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 /* OpenBSD after 2.9 has BSD authentication */
 #if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 9)
 # define HasBSDAuth		YES
+#endif
+
+/* OpenBSD 3.0 and later has getpeereid() */
+#if OSMajorVersion >= 3
+# define HasGetpeereid		YES
 #endif
 
 /* OpenBSD 3.0 has APM with kqueue interface */
