@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.35 2001/08/17 16:31:24 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.36 2001/10/10 19:18:31 herrb Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -72,6 +72,9 @@
   pt		Portuguese
   ro		Romanian
   ru		Russian
+  se_FI		Saami (Finland)
+  se_NO		Saami (Norway)
+  se_SE		Saami (Sweden)
   sr		Serbian
   si		Slovenian
   sk		Slovak
