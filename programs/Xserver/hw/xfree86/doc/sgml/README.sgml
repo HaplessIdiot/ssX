@@ -898,8 +898,8 @@ and the following mirror sites:
 	name="ftp://abode.ccd.bnl.gov/pub/XFree86">
 	(Solaris, SVR4, SCO binaries)
 -->
-<item><htmlurl url="ftp://despair.capecod.net/pub/XFree86" 
-	name="ftp://despair.capecod.net/pub/XFree86">
+<item><htmlurl url="ftp://ftp.thebandit.com/pub/XFree86" 
+	name="ftp://ftp.thebandit.com/pub/XFree86">
 	(Linux, NetBSD and FreeBSD binaries)
 </itemize> 
 
@@ -945,9 +945,11 @@ and the following mirror sites:
 <item><htmlurl url="ftp://ftp.ibp.fr/pub/X11/XFree86/XFree86" 
 	name="ftp://ftp.ibp.fr/pub/X11/XFree86/XFree86">
 	(source and binaries)
+<!--
 <item><htmlurl url="ftp://ftp.laas.fr/pub/ii/NetBSD/XFree86" 
 	name="ftp://ftp.laas.fr/pub/ii/NetBSD/XFree86">
 	(NetBSD binaries only)
+-->
 <!--
 <item><htmlurl url="ftp://ftp.unipi.it/pub/mirrors/XFree86-3.2"
 	name="ftp://ftp.unipi.it/pub/mirrors/XFree86-3.2">
@@ -1017,7 +1019,7 @@ url="RELNOTES.html"> to find which files you need to take from the
 archive.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.76 1997/03/03 10:19:18 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.77 1997/04/13 14:50:04 dawes Exp $
 
 
 
