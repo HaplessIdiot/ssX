@@ -1,5 +1,5 @@
 /* $XConsortium: bitscale.c,v 1.28 94/07/25 13:50:59 kaleb Exp $ */
-/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.0 1994/08/01 12:06:07 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.1 1994/08/20 07:29:55 dawes Exp $ */
 
 /*
 
@@ -327,6 +327,7 @@ FindBestToScale(fpe, entry, vals, best, dxp, dyp, sdxp, sdyp, fpep)
     FontNameRec	    xlfdName;
 
     /* find the best match */
+    rescale_x = 1.0;
     best_scaled = 0;
     best_score = 0;
     best_unscaled = 0;
