@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.89 1999/04/18 04:08:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.90 1999/04/18 12:59:45 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -944,7 +944,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     /* Prefer 24bpp fb unless the 8+24 option is set */
     flags24 = Support24bppFb | Support32bppFb | SupportConvert32to24;
     c = xf86TokenToOptName(MGAOptions, OPTION_8_PLUS_24);
-    if (!(xf86FindOption(pScrn->options, c) ||
+    if (!(xf86FindOption(pScrn->confScreen->options, c) ||
 	  xf86FindOption(pScrn->device->options, c))) {
 	flags24 |= PreferConvert32to24;
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.1 1999/04/17 07:06:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.2 1999/04/18 04:08:38 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -903,7 +903,7 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     return FALSE;
 
     /* initialise the framebuffer */
-    switch (pScreenInfo->depth)
+    switch (pScreenInfo->bitsPerPixel)
     {
         case 8:
             Inited = cfbScreenInit(pScreen, FBBase,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.9 1999/01/26 10:40:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.10 1999/03/14 03:21:50 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -123,9 +123,9 @@ xf86InfoRec xf86Info = {
 	NULL,		/* xkboptions */
 #endif
 	FALSE,		/* allowMouseOpenFail */
-	FALSE,		/* vidModeEnabled */
+	TRUE,		/* vidModeEnabled */
 	FALSE,		/* vidModeAllowNonLocal */
-	FALSE,		/* miscModInDevEnabled */
+	TRUE,		/* miscModInDevEnabled */
 	FALSE,		/* miscModInDevAllowNonLocal */
 	PCIProbe1,	/* pciFlags */
 	Pix24DontCare,	/* pixmap24 */
@@ -175,11 +175,11 @@ Bool xf86ShowUnresolved = DEFAULT_UNRESOLVED;
 Bool xf86BestRefresh = DEFAULT_BEST_REFRESH;
 Bool xf86AllowMouseOpenFail = FALSE;
 #ifdef XF86VIDMODE
-Bool xf86VidModeEnabled = TRUE;
+Bool xf86VidModeDisabled = FALSE;
 Bool xf86VidModeAllowNonLocal = FALSE;
 #endif
 #ifdef XF86MISC
-Bool xf86MiscModInDevEnabled = TRUE;
+Bool xf86MiscModInDevDisabled = FALSE;
 Bool xf86MiscModInDevAllowNonLocal = FALSE;
 #endif
 

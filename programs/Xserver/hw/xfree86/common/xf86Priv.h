@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.37 1999/03/21 16:20:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.38 1999/04/04 00:20:52 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -22,11 +22,11 @@
  */
 extern Bool xf86AllowMouseOpenFail;
 #ifdef XF86VIDMODE
-extern Bool xf86VidModeEnabled;
+extern Bool xf86VidModeDisabled;
 extern Bool xf86VidModeAllowNonLocal; 
 #endif 
 #ifdef XF86MISC
-extern Bool xf86MiscModInDevEnabled;
+extern Bool xf86MiscModInDevDisabled;
 extern Bool xf86MiscModInDevAllowNonLocal;
 #endif 
 extern Bool xf86fpFlag;

@@ -1,3 +1,7 @@
+XFree86 3.9Pk (25 April 1999)
+2751. Fix the initialisation of some global flags when the config file has
+      no ServerFlags section (David Dawes).
+
 XFree86 3.9Pj (18 April 1999)
 2750. Update SiS docs (#2690, Juanjo Santamarta).
 2749. Glide driver and documentation updates.  Fix the "EXTERN_MODULE"
@@ -7815,4 +7819,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.730 1999/04/18 04:08:24 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.731 1999/04/18 13:49:05 dawes Exp $

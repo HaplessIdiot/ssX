@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.167 1999/03/29 09:41:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.168 1999/04/05 07:13:06 dawes Exp $ */
 
 
 /*
@@ -437,6 +437,7 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
     XF86OptionPtr optp, tmp;
     int i;
     Pix24Flags pix24 = Pix24DontCare;
+    Bool value;
 
     if(flagsconf == NULL)
 	return TRUE;
@@ -461,39 +462,27 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
     xf86GetOptValBool(FlagOptions, FLAG_DONTZAP, &xf86Info.dontZap);
     xf86GetOptValBool(FlagOptions, FLAG_DONTZOOM, &xf86Info.dontZoom);
 
+    /*
+     * Set things up based on the config file information.  Some of these
+     * settings may be overridden later when the command line options are
+     * checked.
+     */
 #ifdef XF86VIDMODE
-    if (xf86VidModeEnabled) {
-	xf86GetOptValBool(FlagOptions, FLAG_DISABLEVIDMODE,
-			  &xf86Info.vidModeEnabled);
-	xf86Info.vidModeEnabled = !xf86Info.vidModeEnabled;
-    } else
-	xf86Info.vidModeEnabled = xf86VidModeEnabled;
-    if (!xf86VidModeAllowNonLocal)
-	xf86GetOptValBool(FlagOptions, FLAG_ALLOWNONLOCAL,
-			  &xf86Info.vidModeAllowNonLocal);
-    else
-	xf86Info.vidModeAllowNonLocal = xf86VidModeAllowNonLocal;
+    if (xf86GetOptValBool(FlagOptions, FLAG_DISABLEVIDMODE, &value))
+	xf86Info.vidModeEnabled = !value;
+    if (xf86GetOptValBool(FlagOptions, FLAG_ALLOWNONLOCAL, &value))
+	xf86Info.vidModeAllowNonLocal = value;
 #endif
 
 #ifdef XF86MISC
-    if (xf86MiscModInDevEnabled) {
-	if (xf86GetOptValBool(FlagOptions, FLAG_DISABLEMODINDEV,
-			      &xf86Info.miscModInDevEnabled))
-	    xf86Info.miscModInDevEnabled = !xf86Info.miscModInDevEnabled;
-    } else
-	xf86Info.miscModInDevEnabled = xf86MiscModInDevEnabled;
-    if (!xf86MiscModInDevAllowNonLocal)
-	xf86GetOptValBool(FlagOptions, FLAG_MODINDEVALLOWNONLOCAL,
-			  &xf86Info.miscModInDevAllowNonLocal);
-    else
-	xf86Info.miscModInDevAllowNonLocal = xf86MiscModInDevAllowNonLocal;
+    if (xf86GetOptValBool(FlagOptions, FLAG_DISABLEMODINDEV, &value))
+	xf86Info.miscModInDevEnabled = !value;
+    if (xf86GetOptValBool(FlagOptions, FLAG_MODINDEVALLOWNONLOCAL, &value))
+	xf86Info.miscModInDevAllowNonLocal = value;
 #endif
 
-    if (!xf86AllowMouseOpenFail)
-	xf86GetOptValBool(FlagOptions, FLAG_ALLOWMOUSEOPENFAIL,
-			  &xf86Info.allowMouseOpenFail);
-    else
-	xf86Info.allowMouseOpenFail = xf86AllowMouseOpenFail;
+    if (xf86GetOptValBool(FlagOptions, FLAG_ALLOWMOUSEOPENFAIL, &value))
+	xf86Info.allowMouseOpenFail = value;
 
     if (xf86IsOptionSet(FlagOptions, FLAG_PCIPROBE1))
 	xf86Info.pciFlags = PCIProbe1;
@@ -1757,6 +1746,27 @@ xf86HandleConfigFile(void)
              ErrorF ("Problem when converting the config data structures\n");
              return FALSE;
     }
+
+    /*
+     * Handle some command line options that can override some of the
+     * ServerFlags settings.
+     */
+#ifdef XF86VIDMODE
+    if (xf86VidModeDisabled)
+	xf86Info.vidModeEnabled = FALSE;
+    if (xf86VidModeAllowNonLocal)
+	xf86Info.vidModeAllowNonLocal = TRUE;
+#endif
+
+#ifdef XF86MISC
+    if (xf86MiscModInDevDisabled)
+	xf86Info.miscModInDevEnabled = FALSE;
+    if (xf86MiscModInDevAllowNonLocal)
+	xf86Info.miscModInDevAllowNonLocal = TRUE;
+#endif
+
+    if (xf86AllowMouseOpenFail)
+	xf86Info.allowMouseOpenFail = TRUE;
 
     return TRUE;
 }

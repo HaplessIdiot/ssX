@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.107 1999/04/04 00:20:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.108 1999/04/05 07:13:08 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -860,7 +860,7 @@ ddxProcessArgument(int argc, char **argv, int i)
 #ifdef XF86VIDMODE
   if (!strcmp(argv[i],"-disableVidMode"))
   {
-    xf86VidModeEnabled = FALSE;
+    xf86VidModeDisabled = TRUE;
     return 1;
   }
   if (!strcmp(argv[i],"-allowNonLocalXvidtune"))
@@ -872,7 +872,7 @@ ddxProcessArgument(int argc, char **argv, int i)
 #ifdef XF86MISC
   if (!strcmp(argv[i],"-disableModInDev"))
   {
-    xf86MiscModInDevEnabled = FALSE;
+    xf86MiscModInDevDisabled = TRUE;
     return 1;
   }
   if (!strcmp(argv[i],"-allowNonLocalModInDev"))
