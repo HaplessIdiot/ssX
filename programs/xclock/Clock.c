@@ -42,13 +42,14 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/xclock/Clock.c,v 3.4 1999/03/02 11:49:36 dawes Exp $ */
+/* $XFree86: xc/programs/xclock/Clock.c,v 3.5 2000/01/21 01:12:25 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>
 #include "ClockP.h"
 #include <X11/Xosdefs.h>
+#include <stdio.h>
 
 #if defined(__STDC__) && !defined(AIXV3) /* AIX is broken */
 #define Const const
@@ -111,7 +112,7 @@ static XtResource resources[] = {
     {XtNanalog, XtCBoolean, XtRBoolean, sizeof(Boolean),
         offset(analog), XtRImmediate, (XtPointer) TRUE},
     {XtNbrief, XtCBoolean, XtRBoolean, sizeof(Boolean),
-        offset(brief), XtRImmediate, (XtPointer) TRUE},
+        offset(brief), XtRImmediate, (XtPointer) FALSE},
     {XtNchime, XtCBoolean, XtRBoolean, sizeof(Boolean),
 	offset(chime), XtRImmediate, (XtPointer) FALSE },
     {XtNpadding, XtCMargin, XtRInt, sizeof(int),

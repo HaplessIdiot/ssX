@@ -31,7 +31,7 @@
  * Modifier: Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/XlcPublic.h,v 1.3 2000/02/12 02:54:07 dawes Exp $ */
 /*
  * Most of this API is documented in i18n/Framework.PS
  */
@@ -79,6 +79,8 @@ typedef char* (*XlcGetCSValuesProc)(
 #endif
 );
 
+typedef enum {CSsrcUndef = 0, CSsrcStd, CSsrcXLC} CSSrc;
+
 typedef struct _XlcCharSetRec {
     char 		*name;		/* character set name */
     XrmQuark 		xrm_name;
@@ -93,6 +95,8 @@ typedef struct _XlcCharSetRec {
     Bool        	string_encoding;
     UDCArea 		udc_area;
     int     		udc_area_num;
+    /* CS description source */
+    CSSrc		source;
 } XlcCharSetRec;
 
 /*

@@ -19,7 +19,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/lib/Xaw/ListP.h,v 1.5 1999/06/06 08:47:59 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/ListP.h,v 1.6 1999/06/20 08:41:02 dawes Exp $ */
 
 
 /* 
@@ -95,7 +95,11 @@ typedef struct {
     int freedoms;			/* flags for resizing height
 					   and width */
 #ifndef OLDXAW
-    XtPointer pad[4];	/* for future use and keep binary compatability */
+    int selected;
+    Boolean show_current;
+    char pad1[(sizeof(XtPointer) - sizeof(Boolean)) +
+		 (sizeof(XtPointer) - sizeof(int))];
+    XtPointer pad2[2];	/* for future use and keep binary compatability */
 #endif
 } ListPart;
 

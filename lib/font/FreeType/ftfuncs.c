@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.11 1999/06/13 13:47:29 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.12 1999/10/13 04:20:49 dawes Exp $ */
 
 #include <string.h>
 
@@ -860,7 +860,7 @@ FreeTypeAddProperties(TTFFont *font, FontScalablePtr vals, FontInfoPtr info,
     3+                          /* from `name' table */
     (os2Props?6:0)+            /* from `os/2' table */
     (postProps?3:0)+           /* from `post' table */
-    1;                          /* type */
+    2;                          /* type */
 
   if ((info->props =
        (FontPropPtr)xalloc(maxprops * sizeof(FontPropRec))) == 0)
@@ -1050,6 +1050,10 @@ FreeTypeAddProperties(TTFFont *font, FontScalablePtr vals, FontInfoPtr info,
 
   info->props[i].name  = MakeAtom("FONT_TYPE", 9, TRUE);
   info->props[i].value = MakeAtom("TrueType", 8, TRUE);
+  i++;
+
+  info->props[i].name  = MakeAtom("RASTERIZER_NAME", 15, TRUE);
+  info->props[i].value = MakeAtom("FreeType", 8, TRUE);
   i++;
 
   info->nprops=i;

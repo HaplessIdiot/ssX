@@ -45,7 +45,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/Speedo/spinfo.c,v 1.7 1999/02/07 06:18:21 dawes Exp $ */
+/* $XFree86: xc/lib/font/Speedo/spinfo.c,v 1.8 1999/03/14 11:17:43 dawes Exp $ */
 
 #include "fntfilst.h"
 #include "fontutil.h"
@@ -97,7 +97,9 @@ static fontProp extraProps[] = {
     { "RAW_POINT_SIZE", 0, },
     { "RAW_ASCENT", 0, },
     { "RAW_DESCENT", 0, },
-    { "RAW_AVERAGE_WIDTH", 0, }
+    { "RAW_AVERAGE_WIDTH", 0, },
+    { "FONT_TYPE", 0, },
+    { "RASTERIZER_NAME", 0, }
 };
 
 /* this is a bit kludgy */
@@ -108,7 +110,8 @@ static fontProp extraProps[] = {
 #define RAWASCENTPROP	4
 #define RAWDESCENTPROP	5
 #define RAWWIDTHPROP	6
-
+#define FONT_TYPEPROP   7
+#define RASTERIZER_NAMEPROP 8
 
 #define NNAMEPROPS (sizeof(fontNamePropTable) / sizeof(fontProp))
 #define NEXTRAPROPS (sizeof(extraProps) / sizeof(fontProp))
@@ -417,6 +420,16 @@ sp_compute_props(
 	    *is_str = TRUE;
 	    pp->value = MakeAtom(spf->master->copyright,
 				 strlen(spf->master->copyright), TRUE);
+	    break;
+	case FONT_TYPEPROP:
+	    *is_str = TRUE;
+	    pp->value = MakeAtom("Speedo", strlen("Speedo"), TRUE);
+	    break;
+	case RASTERIZER_NAMEPROP:
+	    *is_str = TRUE;
+	    pp->value = MakeAtom("X Consortium Speedo Rasterizer",
+                                 strlen("X Consortium Speedo Rasterizer"), 
+                                 TRUE);
 	    break;
          case RAWPIXELPROP:
             *is_str = FALSE;

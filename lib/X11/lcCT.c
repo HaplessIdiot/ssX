@@ -36,7 +36,7 @@
  *  Modifier: Ivan Pascal     The XFree86 Project
  *  Modifier: Bruno Haible    The XFree86 Project
  */
-/* $XFree86: xc/lib/X11/lcCT.c,v 3.14 2000/02/08 17:18:44 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcCT.c,v 3.15 2000/02/12 02:54:08 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"
@@ -129,18 +129,6 @@ static CTDataRec default_ct_data[] =
     { "BIG5-1:GR", "\033$)1" },
 #endif
 }; 
-
-CTDataRec *default_ct_data_list()
-{
-	return(default_ct_data);
-}
-
-size_t default_ct_data_list_num()
-{
-	size_t num = sizeof(default_ct_data) / sizeof(CTDataRec);
-	return(num);
-}
-
 
 /* ======================= Parsing ESC Sequences ======================= */
 
@@ -661,7 +649,7 @@ cstoct(conv, from, from_left, to, to_left, args, num_args)
           charset != state->GL_charset) ) {
 
         /* output esc-sequence */
-        if ((ct_info->type == XctExtSeg) && (length >= 7)) {
+        if ((ct_info->type == XctExtSeg) && (length < 7)) {
             int comp_len = length + strlen(ct_info->ext_segment) + 3;
 
             if (ct_len < comp_len)
@@ -918,13 +906,17 @@ _XlcInitCTInfo()
     if (ct_list == NULL) {
         CTData ct_data;
         int num;
+        XlcCharSet charset;
 
         /* Initialize ct_list.  */
 
 	num = sizeof(default_ct_data) / sizeof(CTDataRec);
-	for (ct_data = default_ct_data; num > 0; ct_data++, num--)
-	    _XlcAddCT(ct_data->name, ct_data->encoding);
-
+	for (ct_data = default_ct_data; num > 0; ct_data++, num--) {
+	    charset = _XlcAddCT(ct_data->name, ct_data->encoding);
+            if (charset == NULL)
+                continue;
+            charset->source = CSsrcStd;
+	}
         /* Register CompoundText and CharSet converters.  */
 
         _XlcSetConverter((XLCd) NULL, XlcNCompoundText,

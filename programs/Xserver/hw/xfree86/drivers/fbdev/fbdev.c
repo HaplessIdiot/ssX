@@ -1,4 +1,9 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.15 2000/02/10 21:12:39 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.17 2000/02/22 02:00:50 mvojkovi Exp $ */
+
+/*
+ * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
+ *	     Michel Dänzer, <michdaen@iiic.ethz.ch>
+ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -13,12 +18,8 @@
 #include "shadowfb.h"
 
 /* for visuals */
-#define PSZ 8
-#include "cfb.h"
-#undef PSZ
-#include "cfb16.h"
-#include "cfb24.h"
-#include "cfb32.h"
+#include "fb.h"
+#include "cfb24_32.h"
 #ifdef USE_AFB
 #include "afb.h"
 #endif
@@ -57,6 +58,12 @@ static Bool	FBDevCloseScreen(int scrnIndex, ScreenPtr pScreen);
 static Bool	FBDevSaveScreen(ScreenPtr pScreen, int mode);
 
 /* -------------------------------------------------------------------- */
+
+/*
+ * This is intentionally screen-independent.  It indicates the binding
+ * choice made in the first PreInit.
+ */
+static int pix24bpp = 0;
 
 #define VERSION			4000
 #define FBDEV_NAME		"FBDev"
@@ -113,11 +120,8 @@ static const char *afbSymbols[] = {
 };
 
 static const char *cfbSymbols[] = {
-	"cfbScreenInit",
-	"cfb16ScreenInit",
-	"cfb24ScreenInit",
-	"cfb32ScreenInit",
-	"cfbCreateDefColormap",
+	"fbScreenInit",
+	"cfb24_32ScreenInit",
 	NULL
 };
 
@@ -365,6 +369,10 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 		return FALSE;
 	xf86PrintDepthBpp(pScrn);
 
+	/* Get the depth24 pixmap format */
+	if (pScrn->depth == 24 && pix24bpp == 0)
+		pix24bpp = xf86GetBppFromDepth(pScrn, 24);
+
 	/* color weight */
 	if (pScrn->depth > 8) {
 		rgb zeros = { 0, 0, 0 };
@@ -403,7 +411,22 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 		   "Option ShadowFB is %s\n",fPtr->shadowFB ? "on" : "off");
 
 	/* select video modes */
+
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Checking Modes against framebuffer device...\n");
 	fbdevHWSetVideoModes(pScrn);
+
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Checking Modes against monitor...\n");
+	{
+		DisplayModePtr mode, first = mode = pScrn->modes;
+		
+		if (mode != NULL) do {
+			mode->status = xf86CheckModeForMonitor(mode, pScrn->monitor);
+			mode = mode->next;
+		} while (mode != NULL && mode != first);
+
+		xf86PruneDriverModes(pScrn);
+	}
+
 	if (NULL == pScrn->modes)
 		fbdevHWUseBuildinMode(pScrn);
 	pScrn->currentMode = pScrn->modes;
@@ -421,47 +444,49 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 		reqSym = "afbScreenInit";
 		break;
 	case FBDEVHW_PACKED_PIXELS:
+		mod = "fb";
+		reqSym = "fbScreenInit";
+
 		switch (pScrn->bitsPerPixel)
 		{
 		case 8:
-			mod = "cfb";
-			reqSym = "cfbScreenInit";
-			break;
 		case 16:
-			mod = "cfb16";
-			reqSym = "cfb16ScreenInit";
+		case 32:
 			break;
 		case 24:
-			mod = "cfb24";
-			reqSym = "cfb24ScreenInit";
+			if (pix24bpp == 32)
+			{
+				mod = "xf24_32bpp";
+				reqSym = "cfb24_32ScreenInit";
+			}
 			break;
-		case 32:
-			mod = "cfb32";
-			reqSym = "cfb32ScreenInit";
-			break;
+		default:
+			xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			"Unsupported bpp: %d", pScrn->bitsPerPixel);
+			return FALSE;
 		}
 		break;
 	case FBDEVHW_INTERLEAVED_PLANES:
                /* Not supported yet, don't know what to do with this */
                xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-               "Interleaved Planes are not supprted yet by drivers/fbdev.");
-		break;
+               "Interleaved Planes are not supported yet by drivers/fbdev.");
+		return FALSE;
 	case FBDEVHW_TEXT:
                /* This should never happen ...
                 * we should check for this much much earlier ... */
                xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
                "Text mode is not supprted by drivers/fbdev.\n"
                "Why do you want to run the X in TEXT mode anyway ?");
-		break;
+		return FALSE;
        case FBDEVHW_VGA_PLANES:
                /* Not supported yet */
                xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
                "EGA/VGA Planes are not supprted yet by drivers/fbdev.");
-               break;
+               return FALSE;
        default:
                xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
                "Fbdev type (%d) not supported yet.");
-               break;
+               return FALSE;
 	}
 	if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
 		FBDevFreeRec(pScrn);
@@ -600,25 +625,20 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 #endif
 	case FBDEVHW_PACKED_PIXELS:
 		switch (pScrn->bitsPerPixel) {
-		case 8:
-			ret = cfbScreenInit
-				(pScreen, fPtr->fbstart, pScrn->virtualX, pScrn->virtualY,
-				 pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth);
-			break;
-		case 16:
-			ret = cfb16ScreenInit
-				(pScreen, fPtr->fbstart, pScrn->virtualX, pScrn->virtualY,
-				 pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth);
-			break;
 		case 24:
-			ret = cfb24ScreenInit
-				(pScreen, fPtr->fbstart, pScrn->virtualX, pScrn->virtualY,
-				 pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth);
-			break;
+			if (pix24bpp == 32)
+			{
+				ret = cfb24_32ScreenInit
+					(pScreen, fPtr->fbstart, pScrn->virtualX, pScrn->virtualY,
+				 	pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth);
+				break;
+			}
+		case 8:
+		case 16:
 		case 32:
-			ret = cfb32ScreenInit
+			ret = fbScreenInit
 				(pScreen, fPtr->fbstart, pScrn->virtualX, pScrn->virtualY,
-				 pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth);
+				 pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth, pScrn->bitsPerPixel);
 			break;
 	 	default:
 			xf86DrvMsg(scrnIndex, X_ERROR,
@@ -697,7 +717,7 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		break;
 #endif
 	case FBDEVHW_PACKED_PIXELS:
-		if (!cfbCreateDefColormap(pScreen))
+		if (!miCreateDefColormap(pScreen))
 			return FALSE;
 		break;
 	case FBDEVHW_INTERLEAVED_PLANES:

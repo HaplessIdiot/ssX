@@ -28,7 +28,7 @@
  *  This is source code modified by FUJITSU LIMITED under the Joint
  *  Development Agreement for the CDE/Motif PST.
  */
-/* $XFree86: xc/lib/X11/lcGeneric.c,v 3.7 1999/05/09 10:50:40 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcGeneric.c,v 3.8 2000/02/08 17:18:45 dawes Exp $ */
 
 #include <stdio.h>
 #include "Xlibint.h"
@@ -405,6 +405,7 @@ int *new;
         (charset = _XlcCreateDefaultCharSet(name, ""))) {
         _XlcAddCharSet(charset);
         *new = 1;
+        charset->source = CSsrcXLC;
     }
     return(charset);
 }
@@ -733,6 +734,7 @@ load_generic(lcd)
     unsigned long l;
     int i;
     int M,ii;
+    XlcCharSet charset;
 
     gen->codeset_num = 0;
 
@@ -861,7 +863,6 @@ load_generic(lcd)
 	sprintf(name, "%s.%s", cs, "ct_encoding");
 	_XlcGetResource(lcd, "XLC_XLOCALE", name, &value, &num);
 	if (num > 0) {
-	    XlcCharSet charset;
 	    char *encoding;
 
 	    if (codeset == NULL && (codeset = add_codeset(gen)) == NULL)
@@ -981,6 +982,34 @@ load_generic(lcd)
     read_charset_define(lcd,gen);       /* For VW/UDC */
     read_segmentconversion(lcd,gen);    /* For VW/UDC */
 
+    if (gen->initial_state_GL == NULL) {
+       CodeSetRec *codeset;
+       for (i = 0; i < gen->codeset_num; i++){
+          codeset = gen->codeset_list[i];
+          if (codeset->side == XlcGL)
+             gen->initial_state_GL = codeset;
+       }
+    }
+
+    if (gen->initial_state_GR == NULL) {
+       CodeSetRec *codeset;
+       for (i = 0; i < gen->codeset_num; i++){
+          codeset = gen->codeset_list[i];
+          if (codeset->side == XlcGR)
+             gen->initial_state_GR = codeset;
+       }
+    }
+
+    for (i = 0; i < gen->codeset_num; i++){
+       CodeSetRec *codeset = gen->codeset_list[i];
+       for (ii = 0; ii < codeset->num_charsets; ii++){
+          charset = codeset->charset_list[ii];
+          if (! strcmp(charset->encoding_name, "ISO8859-1"))
+              charset->string_encoding = True;
+          if ( charset->string_encoding )
+              codeset->string_encoding = True;
+       }
+    }
     return True;
 
 err:
