@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/dri/dri_mesa.c,v 1.17 2001/08/27 17:40:57 dawes Exp $ */
+/* $XFree86: xc/lib/GL/apple/dri_driver.c,v 1.1 2003/06/30 01:45:10 torrey Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -67,31 +67,34 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /* Context binding */
 static Bool driMesaBindContext(Display *dpy, int scrn,
-			       GLXDrawable draw, GLXContext gc);
+                               GLXDrawable draw, GLXContext gc);
 static Bool driMesaUnbindContext(Display *dpy, int scrn,
-				 GLXDrawable draw, GLXContext gc,
-				 int will_rebind);
+                                 GLXDrawable draw, GLXContext gc,
+                                 int will_rebind);
 
 /* Drawable methods */
 static void *driMesaCreateDrawable(Display *dpy, int scrn, GLXDrawable draw,
-				   VisualID vid, __DRIdrawable *pdraw);
+                                   VisualID vid, __DRIdrawable *pdraw);
 static __DRIdrawable *driMesaGetDrawable(Display *dpy, GLXDrawable draw,
-					 void *screenPrivate);
+                                         void *screenPrivate);
 static void driMesaSwapBuffers(Display *dpy, void *drawPrivate);
 static void driMesaDestroyDrawable(Display *dpy, void *drawPrivate);
 
 /* Context methods */
 static void *driMesaCreateContext(Display *dpy, XVisualInfo *vis, void *shared,
-				  __DRIcontext *pctx);
+                                  __DRIcontext *pctx);
 static void driMesaDestroyContext(Display *dpy, int scrn, void *screenPrivate);
 
 /* Screen methods */
 static void *driMesaCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
-				 int numConfigs, __GLXvisualConfig *config);
+                                 int numConfigs, __GLXvisualConfig *config);
 static void driMesaDestroyScreen(Display *dpy, int scrn, void *screenPrivate);
 
 static void driMesaCreateSurface(Display *dpy, int scrn,
-				 __DRIdrawablePrivate *pdp);
+                                 __DRIdrawablePrivate *pdp);
+
+static void unwrap_context(__DRIcontextPrivate *pcp);
+static void wrap_context(__DRIcontextPrivate *pcp);
 
 extern const CGLContextObj XAppleDRIGetIndirectContext(void);
 
@@ -115,7 +118,7 @@ static inline __DRIdrawable *
 __driMesaFindDrawable(x_hash_table *drawHash, GLXDrawable draw)
 {
     if (drawHash == NULL)
-	return NULL;
+        return NULL;
 
     return x_hash_table_lookup(drawHash, (void *) draw, NULL);
 }
@@ -133,7 +136,7 @@ find_by_uid_cb(void *k, void *v, void *data)
     struct find_by_uid_closure *c = data;
 
     if (pdp->uid == c->uid)
-	c->ret = pdraw;
+        c->ret = pdraw;
 }
 
 static __DRIdrawable *
@@ -154,7 +157,7 @@ __driMesaRemoveDrawable(x_hash_table *drawHash, __DRIdrawable *pdraw)
     __DRIdrawablePrivate *pdp = (__DRIdrawablePrivate *)pdraw->private;
 
     if (drawHash == NULL)
-	return;
+        return;
 
     x_hash_table_remove(drawHash, (void *) pdp->draw);
 }
@@ -164,7 +167,7 @@ static Bool __driMesaWindowExistsFlag;
 static int __driMesaWindowExistsErrorHandler(Display *dpy, XErrorEvent *xerr)
 {
     if (xerr->error_code == BadWindow) {
-	__driMesaWindowExistsFlag = GL_FALSE;
+        __driMesaWindowExistsFlag = GL_FALSE;
     }
     return 0;
 }
@@ -193,10 +196,10 @@ static void __driMesaCollectCallback(void *k, void *v, void *data)
     dpy = pdp->driScreenPriv->display;
     XSync(dpy, GL_FALSE);
     if (!pdp->destroyed && !__driMesaWindowExists(dpy, draw)) {
-	/* Destroy the local drawable data in the hash table, if the
-	   drawable no longer exists in the Xserver */
-	pdp->destroyed = TRUE;
-	*todelete = x_list_prepend(*todelete, pdraw);
+        /* Destroy the local drawable data in the hash table, if the
+           drawable no longer exists in the Xserver */
+        pdp->destroyed = TRUE;
+        *todelete = x_list_prepend(*todelete, pdraw);
     }
 }
 
@@ -211,16 +214,16 @@ static void __driMesaGarbageCollectDrawables(void *drawHash)
 
     for (node = todelete; node != NULL; node = node->next)
     {
-	pdraw = node->data;
-	pdp = (__DRIdrawablePrivate *)pdraw->private;
-	dpy = pdp->driScreenPriv->display;
+        pdraw = node->data;
+        pdp = (__DRIdrawablePrivate *)pdraw->private;
+        dpy = pdp->driScreenPriv->display;
 
-	/* Destroy the local drawable data in the hash table, if the
-	   drawable no longer exists in the Xserver */
+        /* Destroy the local drawable data in the hash table, if the
+           drawable no longer exists in the Xserver */
 
-	__driMesaRemoveDrawable(drawHash, pdraw);
-	(*pdraw->destroyDrawable)(dpy, pdraw->private);
-	Xfree(pdraw);
+        __driMesaRemoveDrawable(drawHash, pdraw);
+        (*pdraw->destroyDrawable)(dpy, pdraw->private);
+        Xfree(pdraw);
     }
 
     x_list_free(todelete);
@@ -228,10 +231,11 @@ static void __driMesaGarbageCollectDrawables(void *drawHash)
 
 /*****************************************************************/
 
+/* returns with psp->mutex locked if successful. */
 static Bool
 driMesaFindDrawableByUID(Display *dpy,unsigned int uid,
-			  __DRIscreenPrivate **psp_ret,
-			  __DRIdrawablePrivate **pdp_ret)
+                         __DRIscreenPrivate **psp_ret,
+                         __DRIdrawablePrivate **pdp_ret)
 {
     __DRIscreen *pDRIScreen;
     __DRIscreenPrivate *psp;
@@ -240,20 +244,24 @@ driMesaFindDrawableByUID(Display *dpy,unsigned int uid,
 
     for (scrn = 0; scrn < ScreenCount(dpy); scrn++)
     {
-	if (!(pDRIScreen = __glXFindDRIScreen(dpy, scrn))) {
-	    /* ERROR!!! */
-	    return FALSE;
-	} else if (!(psp = (__DRIscreenPrivate *)pDRIScreen->private)) {
-	    /* ERROR!!! */
-	    return FALSE;
-	}
+        if (!(pDRIScreen = __glXFindDRIScreen(dpy, scrn))) {
+            /* ERROR!!! */
+            return FALSE;
+        } else if (!(psp = (__DRIscreenPrivate *)pDRIScreen->private)) {
+            /* ERROR!!! */
+            return FALSE;
+        }
 
-	pdraw = __driMesaFindDrawableByUID(psp->drawHash, uid);
-	if (pdraw != NULL) {
-	    *psp_ret = psp;
-	    *pdp_ret = pdraw->private;
-	    return TRUE;
-	};
+        xmutex_lock(psp->mutex);
+
+        pdraw = __driMesaFindDrawableByUID(psp->drawHash, uid);
+        if (pdraw != NULL) {
+            *psp_ret = psp;
+            *pdp_ret = pdraw->private;
+            return TRUE;
+        };
+
+        xmutex_unlock(psp->mutex);
     }
 
     return FALSE;
@@ -266,16 +274,22 @@ unbind_context(__DRIcontextPrivate *pcp)
 
     if (pcp->driDrawablePriv != NULL)
     {
-	if (pcp->next != NULL)
-	    pcp->next->prev = pcp->prev;
-	if (pcp->prev != NULL)
-	    pcp->prev->next = pcp->next;
+        if (pcp->next != NULL)
+            pcp->next->prev = pcp->prev;
+        if (pcp->prev != NULL)
+            pcp->prev->next = pcp->next;
 
-	if (pcp->driDrawablePriv->driContextPriv == pcp)
-	    pcp->driDrawablePriv->driContextPriv = pcp->next;
+        if (pcp->driDrawablePriv->driContextPriv == pcp)
+            pcp->driDrawablePriv->driContextPriv = pcp->next;
 
-	pcp->driDrawablePriv = NULL;
-	pcp->prev = pcp->next = NULL;
+        pcp->driDrawablePriv = NULL;
+        pcp->prev = pcp->next = NULL;
+    }
+
+    if (pcp->surface_id != 0)
+    {
+        pcp->surface_id = 0;
+        pcp->pending_clear = TRUE;
     }
 }
 
@@ -286,28 +300,36 @@ unbind_drawable(__DRIdrawablePrivate *pdp)
 
     for (pcp = pdp->driContextPriv; pcp != NULL; pcp = next)
     {
-	next = pcp->next;
+        next = pcp->next;
+        unbind_context(pcp);
+    }
+}
 
-	if (pcp->surface_id != 0)
-	{
-	    CGLClearDrawable(pcp->ctx);
-	    pcp->surface_id = 0;
-	}
+static void
+update_context(__DRIcontextPrivate *pcp)
+{
+    if (pcp->pending_clear)
+    {
+        CGLClearDrawable(pcp->ctx);
+        pcp->pending_clear = FALSE;
+    }
 
-	unbind_context(pcp);
+    if (pcp->pending_update && pcp->surface_id != 0)
+    {
+        xp_update_gl_context(pcp->ctx);
+        pcp->pending_update = FALSE;
     }
 }
 
 static Bool driMesaUnbindContext(Display *dpy, int scrn,
-				 GLXDrawable draw, GLXContext gc,
-				 int will_rebind)
+                                 GLXDrawable draw, GLXContext gc,
+                                 int will_rebind)
 {
     __DRIscreen *pDRIScreen;
-    __DRIdrawable *pdraw;
+//  __DRIdrawable *pdraw;
     __DRIcontextPrivate *pcp;
     __DRIscreenPrivate *psp;
     __DRIdrawablePrivate *pdp;
-    void *current_ctx;
 
     /*
     ** Assume error checking is done properly in glXMakeCurrent before
@@ -315,85 +337,74 @@ static Bool driMesaUnbindContext(Display *dpy, int scrn,
     */
 
     if (gc == NULL || draw == None) {
-	/* ERROR!!! */
-	return GL_FALSE;
+        /* ERROR!!! */
+        return GL_FALSE;
     }
 
     if (!(pDRIScreen = __glXFindDRIScreen(dpy, scrn))) {
-	/* ERROR!!! */
-	return GL_FALSE;
+        /* ERROR!!! */
+        return GL_FALSE;
     } else if (!(psp = (__DRIscreenPrivate *)pDRIScreen->private)) {
-	/* ERROR!!! */
-	return GL_FALSE;
+        /* ERROR!!! */
+        return GL_FALSE;
     }
+
+    xmutex_lock(psp->mutex);
 
     pcp = (__DRIcontextPrivate *)gc->driContext.private;
 
-    pdraw = __driMesaFindDrawable(psp->drawHash, draw);
-    if (!pdraw) {
-	/* ERROR!!! */
-	return GL_FALSE;
-    }
-    pdp = (__DRIdrawablePrivate *)pdraw->private;
-
-    /* Unbind Mesa's drawable from Mesa's context */
-    current_ctx = CGLGetCurrentContext();
-    if (current_ctx == pcp->ctx) {
-	CGLSetCurrentContext(XAppleDRIGetIndirectContext());
-    } else {
-	fprintf(stderr, "GL: huh, unbinding non-context context\n");
+    pdp = pcp->driDrawablePriv;
+    if (pdp == NULL) {
+        /* ERROR!!! */
+        xmutex_unlock(psp->mutex);
+        return GL_FALSE;
     }
 
-#if 0
-    /* FIXME: I'm going to leave contexts attached to surfaces until
-       they need to be reconnected elsewhere, may help performance when
-       we subsequently rebind to the same surface? What happens when
-       the refcount goes to zero? */
-    if (!will_rebind && pcp->surface_id != 0)
-    {
-	CGLClearDrawable(pcp->ctx);
-	pcp->surface_id = 0;
-    }
-#endif
+    /* Put this thread back into normal (indirect) dispatch mode. */
+    CGLSetCurrentContext(XAppleDRIGetIndirectContext());
+    pcp->thread_id = 0;
 
+    /* Lazily unbind the drawable from the context */
     unbind_context(pcp);
 
     if (pdp->refcount == 0) {
-	/* ERROR!!! */
-	return GL_FALSE;
+        /* ERROR!!! */
+        xmutex_unlock(psp->mutex);
+        return GL_FALSE;
     } else if (--pdp->refcount == 0) {
 #if 0
-	/*
-	** NOT_DONE: When a drawable is unbound from one direct
-	** rendering context and then bound to another, we do not want
-	** to destroy the drawable data structure each time only to
-	** recreate it immediatly afterwards when binding to the next
-	** context.  This also causes conflicts with caching of the
-	** drawable stamp.
-	**
-	** In addition, we don't destroy the drawable here since Mesa
-	** keeps private data internally (e.g., software accumulation
-	** buffers) that should not be destroyed unless the client
-	** explicitly requests that the window be destroyed.
-	**
-	** When GLX 1.3 is integrated, the create and destroy drawable
-	** functions will have user level counterparts and the memory
-	** will be able to be recovered.
-	** 
-	** Below is an example of what needs to go into the destroy
-	** drawable routine to support GLX 1.3.
-	*/
-	__driMesaRemoveDrawable(psp->drawHash, pdraw);
-	(*pdraw->destroyDrawable)(dpy, pdraw->private);
-	Xfree(pdraw);
+        /*
+        ** NOT_DONE: When a drawable is unbound from one direct
+        ** rendering context and then bound to another, we do not want
+        ** to destroy the drawable data structure each time only to
+        ** recreate it immediatly afterwards when binding to the next
+        ** context.  This also causes conflicts with caching of the
+        ** drawable stamp.
+        **
+        ** In addition, we don't destroy the drawable here since Mesa
+        ** keeps private data internally (e.g., software accumulation
+        ** buffers) that should not be destroyed unless the client
+        ** explicitly requests that the window be destroyed.
+        **
+        ** When GLX 1.3 is integrated, the create and destroy drawable
+        ** functions will have user level counterparts and the memory
+        ** will be able to be recovered.
+        ** 
+        ** Below is an example of what needs to go into the destroy
+        ** drawable routine to support GLX 1.3.
+        */
+        __driMesaRemoveDrawable(psp->drawHash, pdraw);
+        (*pdraw->destroyDrawable)(dpy, pdraw->private);
+        Xfree(pdraw);
 #endif
     }
 
+    xmutex_unlock(psp->mutex);
     return GL_TRUE;
 }
 
 static Bool driMesaBindContext(Display *dpy, int scrn,
-			       GLXDrawable draw, GLXContext gc)
+                               GLXDrawable draw, GLXContext gc)
 {
     __DRIscreen *pDRIScreen;
     __DRIdrawable *pdraw;
@@ -407,43 +418,48 @@ static Bool driMesaBindContext(Display *dpy, int scrn,
     */
 
     if (gc == NULL || draw == None) {
-	/* ERROR!!! */
-	return GL_FALSE;
+        /* ERROR!!! */
+        return GL_FALSE;
     }
 
     if (!(pDRIScreen = __glXFindDRIScreen(dpy, scrn))) {
-	/* ERROR!!! */
-	return GL_FALSE;
+        /* ERROR!!! */
+        return GL_FALSE;
     } else if (!(psp = (__DRIscreenPrivate *)pDRIScreen->private)) {
-	/* ERROR!!! */
-	return GL_FALSE;
+        /* ERROR!!! */
+        return GL_FALSE;
     }
+
+    xmutex_lock(psp->mutex);
 
     pdraw = __driMesaFindDrawable(psp->drawHash, draw);
     if (!pdraw) {
-	/* Allocate a new drawable */
-	pdraw = (__DRIdrawable *)Xmalloc(sizeof(__DRIdrawable));
-	if (!pdraw) {
-	    /* ERROR!!! */
-	    return GL_FALSE;
-	}
+        /* Allocate a new drawable */
+        pdraw = (__DRIdrawable *)Xmalloc(sizeof(__DRIdrawable));
+        if (!pdraw) {
+            /* ERROR!!! */
+            xmutex_unlock(psp->mutex);
+            return GL_FALSE;
+        }
 
-	/* Create a new drawable */
-	pdraw->private = driMesaCreateDrawable(dpy, scrn, draw, gc->vid,
-					       pdraw);
-	if (!pdraw->private) {
-	    /* ERROR!!! */
-	    Xfree(pdraw);
-	    return GL_FALSE;
-	}
+        /* Create a new drawable */
+        pdraw->private = driMesaCreateDrawable(dpy, scrn, draw, gc->vid,
+                                               pdraw);
+        if (!pdraw->private) {
+            /* ERROR!!! */
+            Xfree(pdraw);
+            xmutex_unlock(psp->mutex);
+            return GL_FALSE;
+        }
 
-	/* Add pdraw to drawable list */
-	if (!__driMesaAddDrawable(psp->drawHash, pdraw)) {
-	    /* ERROR!!! */
-	    (*pdraw->destroyDrawable)(dpy, pdraw->private);
-	    Xfree(pdraw);
-	    return GL_FALSE;
-	}
+        /* Add pdraw to drawable list */
+        if (!__driMesaAddDrawable(psp->drawHash, pdraw)) {
+            /* ERROR!!! */
+            (*pdraw->destroyDrawable)(dpy, pdraw->private);
+            Xfree(pdraw);
+            xmutex_unlock(psp->mutex);
+            return GL_FALSE;
+        }
     }
 
     pdp = (__DRIdrawablePrivate *)pdraw->private;
@@ -451,9 +467,9 @@ static Bool driMesaBindContext(Display *dpy, int scrn,
 
     if (pdp->surface_id == 0)
     {
-	/* Surface got destroyed. Try to create a new one. */
+        /* Surface got destroyed. Try to create a new one. */
 
-	driMesaCreateSurface(dpy, scrn, pdp);
+        driMesaCreateSurface(dpy, scrn, pdp);
     }
 
     unbind_context(pcp);
@@ -468,18 +484,35 @@ static Bool driMesaBindContext(Display *dpy, int scrn,
     /* And the physical surface to the physical context */
     if (pcp->surface_id != pdp->surface_id)
     {
-	pcp->surface_id = 0;
-	if (pdp->surface_id == 0)
-	    CGLClearDrawable(pcp->ctx);
-	else if (xp_attach_gl_context(pcp->ctx, pdp->surface_id) == Success)
-	    pcp->surface_id = pdp->surface_id;
-	else
-	    fprintf(stderr, "failed to bind to surface\n");
+        pcp->surface_id = 0;
+
+        /* Attaching the drawable sets the default viewport. But we don't
+           want to catch that call to glViewport in our wrappers. */
+        unwrap_context(pcp);
+
+        if (pdp->surface_id == 0)
+            CGLClearDrawable(pcp->ctx);
+        else if (xp_attach_gl_context(pcp->ctx, pdp->surface_id) == Success)
+            pcp->surface_id = pdp->surface_id;
+        else
+            fprintf(stderr, "failed to bind to surface\n");
+
+        wrap_context(pcp);
+
+        pcp->pending_clear = FALSE;
+        pcp->pending_update = FALSE;
+    }
+    else if (pcp->pending_clear)
+    {
+        CGLClearDrawable(pcp->ctx);
+        pcp->pending_clear = FALSE;
     }
 
-    /* Call device-specific MakeCurrent */
+    /* Activate the CGL context and remember which thread it's current for. */
     CGLSetCurrentContext(pcp->ctx);
+    pcp->thread_id = xthread_self();
 
+    xmutex_unlock(psp->mutex);
     return GL_TRUE;
 }
 
@@ -492,18 +525,18 @@ get_client_id(void)
 
     if (id == 0)
     {
-	if (xp_init(XP_IN_BACKGROUND) != Success
-	    || xp_get_client_id(&id) != Success)
-	{
-	    return 0;
-	}
+        if (xp_init(XP_IN_BACKGROUND) != Success
+            || xp_get_client_id(&id) != Success)
+        {
+            return 0;
+        }
     }
 
     return id;
 }
 
 static void driMesaCreateSurface(Display *dpy, int scrn,
-				 __DRIdrawablePrivate *pdp)
+                                 __DRIdrawablePrivate *pdp)
 {
     xp_client_id client_id;
     unsigned int key[2];
@@ -513,17 +546,17 @@ static void driMesaCreateSurface(Display *dpy, int scrn,
 
     client_id = get_client_id();
     if (client_id == 0)
-	return;
+        return;
 
     if (XAppleDRICreateSurface(dpy, scrn, pdp->draw,
                                client_id, key, &pdp->uid))
     {
-	xp_import_surface(key, &pdp->surface_id);
+        xp_import_surface(key, &pdp->surface_id);
     }
 }
 
 static void *driMesaCreateDrawable(Display *dpy, int scrn, GLXDrawable draw,
-				   VisualID vid, __DRIdrawable *pdraw)
+                                   VisualID vid, __DRIdrawable *pdraw)
 {
     __DRIscreen *pDRIScreen;
     __DRIscreenPrivate *psp;
@@ -531,7 +564,7 @@ static void *driMesaCreateDrawable(Display *dpy, int scrn, GLXDrawable draw,
 
     pdp = (__DRIdrawablePrivate *)Xmalloc(sizeof(__DRIdrawablePrivate));
     if (!pdp) {
-	return NULL;
+        return NULL;
     }
 
     pdp->draw = draw;
@@ -541,19 +574,19 @@ static void *driMesaCreateDrawable(Display *dpy, int scrn, GLXDrawable draw,
     pdp->destroyed = FALSE;
 
     if (!(pDRIScreen = __glXFindDRIScreen(dpy, scrn))) {
-	Xfree(pdp);
-	return NULL;
+        Xfree(pdp);
+        return NULL;
     } else if (!(psp = (__DRIscreenPrivate *)pDRIScreen->private)) {
-	Xfree(pdp);
-	return NULL;
+        Xfree(pdp);
+        return NULL;
     }
     pdp->driScreenPriv = psp;
     pdp->driContextPriv = NULL;
 
     driMesaCreateSurface(dpy, scrn, pdp);
     if (pdp->surface_id == 0) {
-	Xfree(pdp);
-	return NULL;
+        Xfree(pdp);
+        return NULL;
     }
 
     pdraw->destroyDrawable = driMesaDestroyDrawable;
@@ -563,25 +596,55 @@ static void *driMesaCreateDrawable(Display *dpy, int scrn, GLXDrawable draw,
 }
 
 static __DRIdrawable *driMesaGetDrawable(Display *dpy, GLXDrawable draw,
-					 void *screenPrivate)
+                                         void *screenPrivate)
 {
     __DRIscreenPrivate *psp = (__DRIscreenPrivate *) screenPrivate;
+    __DRIdrawable *dri_draw;
+
+    xmutex_lock(psp->mutex);
 
     /*
     ** Make sure this routine returns NULL if the drawable is not bound
     ** to a direct rendering context!
     */
-    return __driMesaFindDrawable(psp->drawHash, draw);
+    dri_draw = __driMesaFindDrawable(psp->drawHash, draw);
+
+    xmutex_unlock(psp->mutex);
+    return dri_draw;
 }
 
 static void driMesaSwapBuffers(Display *dpy, void *drawPrivate)
 {
     __DRIdrawablePrivate *pdp = (__DRIdrawablePrivate *) drawPrivate;
+    __DRIcontextPrivate *pcp;
+    xthread_t self = xthread_self();
+    static Bool warned;
 
-    if (pdp->driContextPriv != NULL)
+    xmutex_lock(pdp->driScreenPriv->mutex);
+
+    /* FIXME: this is sub-optimal, since we may not always find a context
+       bound to the given drawable on this thread. */
+
+    for (pcp = pdp->driContextPriv; pcp != NULL; pcp = pcp->next)
     {
-	CGLFlushDrawable(pdp->driContextPriv->ctx);
+        if (pcp->thread_id == self || pcp->thread_id == 0)
+            break;
     }
+
+    if (pcp != NULL)
+    {
+        CGLFlushDrawable(pcp->ctx);
+    }
+    else
+    {
+        if (!warned) {
+            fprintf(stderr, "glXSwapBuffers: no context for this drawable\n");
+            warned = TRUE;
+        }
+    }
+
+
+    xmutex_unlock(pdp->driScreenPriv->mutex);
 }
 
 static void driMesaDestroyDrawable(Display *dpy, void *drawPrivate)
@@ -589,16 +652,18 @@ static void driMesaDestroyDrawable(Display *dpy, void *drawPrivate)
     __DRIdrawablePrivate *pdp = (__DRIdrawablePrivate *)drawPrivate;
 
     if (pdp) {
-	unbind_drawable(pdp);
-	if (pdp->surface_id != 0) {
-	    xp_destroy_surface(pdp->surface_id);
-	    pdp->surface_id = 0;
-	}
-	if (!pdp->destroyed) {
-	    /* don't try to destroy an already destroyed surface. */
-	    XAppleDRIDestroySurface(dpy, pdp->driScreenPriv->myNum, pdp->draw);
-	}
-	Xfree(pdp);
+        xmutex_lock(pdp->driScreenPriv->mutex);
+        unbind_drawable(pdp);
+        xmutex_unlock(pdp->driScreenPriv->mutex);
+        if (pdp->surface_id != 0) {
+            xp_destroy_surface(pdp->surface_id);
+            pdp->surface_id = 0;
+        }
+        if (!pdp->destroyed) {
+            /* don't try to destroy an already destroyed surface. */
+            XAppleDRIDestroySurface(dpy, pdp->driScreenPriv->myNum, pdp->draw);
+        }
+        Xfree(pdp);
     }
 }
 
@@ -616,13 +681,13 @@ driCreatePixelFormat(Display *dpy, __DRIscreenPrivate *psp,
     i = 0;
 
     if (!config->rgba)
-	return NULL;
+        return NULL;
 
     if (config->stereo)
-	attr[i++] = kCGLPFAStereo;
+        attr[i++] = kCGLPFAStereo;
 
     if (config->doubleBuffer)
-	attr[i++] = kCGLPFADoubleBuffer;
+        attr[i++] = kCGLPFADoubleBuffer;
 
     attr[i++] = kCGLPFAColorSize;
     attr[i++] = config->redSize + config->greenSize + config->blueSize;
@@ -630,26 +695,26 @@ driCreatePixelFormat(Display *dpy, __DRIscreenPrivate *psp,
     attr[i++] = 1; /* FIXME: ignoring config->alphaSize which is always 0 */
 
     if (config->accumRedSize + config->accumGreenSize
-	+ config->accumBlueSize + config->accumAlphaSize > 0)
+        + config->accumBlueSize + config->accumAlphaSize > 0)
     {
-	attr[i++] = kCGLPFAAccumSize;
-	attr[i++] = (config->accumRedSize + config->accumGreenSize
-		     + config->accumBlueSize + config->accumAlphaSize);
+        attr[i++] = kCGLPFAAccumSize;
+        attr[i++] = (config->accumRedSize + config->accumGreenSize
+                     + config->accumBlueSize + config->accumAlphaSize);
     }
 
     if (config->depthSize > 0) {
-	attr[i++] = kCGLPFADepthSize;
-	attr[i++] = config->depthSize;
+        attr[i++] = kCGLPFADepthSize;
+        attr[i++] = config->depthSize;
     }
 
     if (config->stencilSize > 0) {
-	attr[i++] = kCGLPFAStencilSize;
-	attr[i++] = config->stencilSize;
+        attr[i++] = kCGLPFAStencilSize;
+        attr[i++] = config->stencilSize;
     }
 
     if (config->auxBuffers > 0) {
-	attr[i++] = kCGLPFAAuxBuffers;
-	attr[i++] = config->auxBuffers;
+        attr[i++] = kCGLPFAAuxBuffers;
+        attr[i++] = config->auxBuffers;
     }
 
     /* FIXME: things we don't handle: color/alpha masks, level,
@@ -664,7 +729,7 @@ driCreatePixelFormat(Display *dpy, __DRIscreenPrivate *psp,
 }
 
 static void *driMesaCreateContext(Display *dpy, XVisualInfo *vis, void *shared,
-				  __DRIcontext *pctx)
+                                  __DRIcontext *pctx)
 {
     __DRIscreen *pDRIScreen;
     __DRIcontextPrivate *pcp;
@@ -673,20 +738,24 @@ static void *driMesaCreateContext(Display *dpy, XVisualInfo *vis, void *shared,
     int i;
 
     if (!(pDRIScreen = __glXFindDRIScreen(dpy, vis->screen))) {
-	/* ERROR!!! */
-	return NULL;
+        /* ERROR!!! */
+        return NULL;
     } else if (!(psp = (__DRIscreenPrivate *)pDRIScreen->private)) {
-	/* ERROR!!! */
-	return NULL;
+        /* ERROR!!! */
+        return NULL;
     }
 
     /* Create the hash table */
-    if (!psp->drawHash)
-	psp->drawHash = x_hash_table_new(NULL, NULL, NULL, NULL);
+    if (!psp->drawHash) {
+        xmutex_lock(psp->mutex);
+        if (!psp->drawHash)
+            psp->drawHash = x_hash_table_new(NULL, NULL, NULL, NULL);
+        xmutex_unlock(psp->mutex);
+    }
 
     pcp = (__DRIcontextPrivate *)Xmalloc(sizeof(__DRIcontextPrivate));
     if (!pcp) {
-	return NULL;
+        return NULL;
     }
 
     pcp->display = dpy;
@@ -696,24 +765,31 @@ static void *driMesaCreateContext(Display *dpy, XVisualInfo *vis, void *shared,
     pcp->ctx = NULL;
     pcp->surface_id = 0;
 
+    pcp->pending_clear = FALSE;
+    pcp->pending_update = FALSE;
+
     pcp->ctx = NULL;
     for (i = 0; pcp->ctx == NULL && i < psp->numVisuals; i++) {
         if (psp->visuals[i].vid == vis->visualid) {
-	    CGLCreateContext(psp->visuals[i].pixel_format,
-			      pshare ? pshare->ctx : NULL, &pcp->ctx);
+            CGLCreateContext(psp->visuals[i].pixel_format,
+                             pshare ? pshare->ctx : NULL, &pcp->ctx);
         }
     }
 
     if (!pcp->ctx) {
-	Xfree(pcp);
-	return NULL;
+        Xfree(pcp);
+        return NULL;
     }
 
     pctx->destroyContext = driMesaDestroyContext;
     pctx->bindContext    = driMesaBindContext;
     pctx->unbindContext  = driMesaUnbindContext;
 
+    wrap_context(pcp);
+
+    xmutex_lock(psp->mutex);
     __driMesaGarbageCollectDrawables(pcp->driScreenPriv->drawHash);
+    xmutex_unlock(psp->mutex);
 
     return pcp;
 }
@@ -723,43 +799,46 @@ static void driMesaDestroyContext(Display *dpy, int scrn, void *contextPrivate)
     __DRIcontextPrivate  *pcp   = (__DRIcontextPrivate *) contextPrivate;
 
     if (pcp) {
-	unbind_context(pcp);
-	__driMesaGarbageCollectDrawables(pcp->driScreenPriv->drawHash);
-	CGLDestroyContext(pcp->ctx);
-	Xfree(pcp);
+        xmutex_lock(pcp->driScreenPriv->mutex);
+        unbind_context(pcp);
+        __driMesaGarbageCollectDrawables(pcp->driScreenPriv->drawHash);
+        xmutex_unlock(pcp->driScreenPriv->mutex);
+        CGLDestroyContext(pcp->ctx);
+        Xfree(pcp);
     }
 }
 
 /*****************************************************************/
 
 static void *driMesaCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
-				 int numConfigs, __GLXvisualConfig *config)
+                                 int numConfigs, __GLXvisualConfig *config)
 {
     int directCapable, i, n;
     __DRIscreenPrivate *psp;
     XVisualInfo visTmpl, *visinfo;
 
     if (!XAppleDRIQueryDirectRenderingCapable(dpy, scrn, &directCapable)) {
-	return NULL;
+        return NULL;
     }
 
     if (!directCapable) {
-	return NULL;
+        return NULL;
     }
 
     psp = (__DRIscreenPrivate *)Xmalloc(sizeof(__DRIscreenPrivate));
     if (!psp) {
-	return NULL;
+        return NULL;
     }
 
+    psp->mutex = xmutex_malloc();
     psp->display = dpy;
     psp->myNum = scrn;
 
 #if 0
     if (!XAppleDRIAuthConnection(dpy, scrn, magic)) {
-	Xfree(psp);
-	(void)XAppleDRICloseConnection(dpy, scrn);
-	return NULL;
+        Xfree(psp);
+        (void)XAppleDRICloseConnection(dpy, scrn);
+        return NULL;
     }
 #endif
 
@@ -767,36 +846,36 @@ static void *driMesaCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
      * Allocate space for an array of visual records and initialize them.
      */
     psp->visuals = (__DRIvisualPrivate *)Xmalloc(numConfigs *
-						 sizeof(__DRIvisualPrivate));
+                                                 sizeof(__DRIvisualPrivate));
     if (!psp->visuals) {
-	Xfree(psp);
-	return NULL;
+        Xfree(psp);
+        return NULL;
     }
 
     visTmpl.screen = scrn;
     visinfo = XGetVisualInfo(dpy, VisualScreenMask, &visTmpl, &n);
     if (n != numConfigs) {
-	Xfree(psp);
-	return NULL;
+        Xfree(psp);
+        return NULL;
     }
 
     psp->numVisuals = 0;
     for (i = 0; i < numConfigs; i++, config++) {
-	psp->visuals[psp->numVisuals].vid = visinfo[i].visualid;
+        psp->visuals[psp->numVisuals].vid = visinfo[i].visualid;
         psp->visuals[psp->numVisuals].pixel_format =
                  driCreatePixelFormat(dpy, psp, &visinfo[i], config);
-	if (psp->visuals[psp->numVisuals].pixel_format != NULL) {
-	    psp->numVisuals++;
-	}
+        if (psp->visuals[psp->numVisuals].pixel_format != NULL) {
+            psp->numVisuals++;
+        }
     }
 
     XFree(visinfo);
 
     if (psp->numVisuals == 0) {
-	/* Couldn't create any pixel formats. */
-	Xfree(psp->visuals);
-	Xfree(psp);
-	return NULL;
+        /* Couldn't create any pixel formats. */
+        Xfree(psp->visuals);
+        Xfree(psp);
+        return NULL;
     }
 
     /* Initialize the drawHash when the first context is created */
@@ -815,9 +894,9 @@ static void driMesaDestroyScreen(Display *dpy, int scrn, void *screenPrivate)
     __DRIscreenPrivate *psp = (__DRIscreenPrivate *) screenPrivate;
 
     if (psp) {
-	//FIXME resetDriver ?
-	Xfree(psp->visuals);
-	Xfree(psp);
+        //FIXME resetDriver ?
+        Xfree(psp->visuals);
+        Xfree(psp);
     }
 }
 
@@ -828,28 +907,52 @@ static void driAppleSurfaceNotify(Display *dpy, unsigned int uid, int kind)
     __DRIdrawablePrivate *pdp;
     __DRIcontextPrivate *pcp;
 
+    /* locks psp->mutex if successful. */
     if (driMesaFindDrawableByUID(dpy, uid, &psp, &pdp))
     {
-	switch (kind)
-	{
-	case AppleDRISurfaceNotifyDestroyed:
-	    xp_destroy_surface(pdp->surface_id);
-	    pdp->surface_id = 0;
+        xthread_t self = xthread_self();
 
-	    for (pcp = pdp->driContextPriv; pcp != NULL; pcp = pcp->next)
-	    {
-		CGLClearDrawable(pcp->ctx);
-		pcp->surface_id = 0;
-	    }
-	    break;
+        switch (kind)
+        {
+            Bool all_safe;
 
-	case AppleDRISurfaceNotifyChanged:
-	    for (pcp = pdp->driContextPriv; pcp != NULL; pcp = pcp->next)
-	    {
-		xp_update_gl_context(pcp->ctx);
-	    }
-	    break;
-	}
+        case AppleDRISurfaceNotifyDestroyed:
+            xp_destroy_surface(pdp->surface_id);
+            pdp->surface_id = 0;
+
+            for (pcp = pdp->driContextPriv; pcp != NULL; pcp = pcp->next)
+            {
+                pcp->surface_id = 0;
+
+                if (pcp->thread_id == self || pcp->thread_id == 0) {
+                    CGLClearDrawable(pcp->ctx);
+                    pcp->pending_clear = FALSE;
+                } else
+                    pcp->pending_clear = TRUE;
+            }
+            break;
+
+        case AppleDRISurfaceNotifyChanged:
+            all_safe = TRUE;
+            for (pcp = pdp->driContextPriv; pcp != NULL; pcp = pcp->next)
+            {
+                if (pcp->thread_id != 0 && pcp->thread_id != self) {
+                    all_safe = FALSE;
+                    break;
+                }
+            }
+            for (pcp = pdp->driContextPriv; pcp != NULL; pcp = pcp->next)
+            {
+                if (all_safe) {
+                    xp_update_gl_context(pcp->ctx);
+                    pcp->pending_update = FALSE;
+                } else
+                    pcp->pending_update = TRUE;
+            }
+            break;
+        }
+
+        xmutex_unlock(psp->mutex);
     }
 }
 
@@ -865,8 +968,8 @@ void *__driCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
 
     if (!here_before)
     {
-	XAppleDRISetSurfaceNotifyHandler(driAppleSurfaceNotify);
-	here_before = True;
+        XAppleDRISetSurfaceNotifyHandler(driAppleSurfaceNotify);
+        here_before = True;
     }
 
     return driMesaCreateScreen(dpy, scrn, psc, numConfigs, config);
@@ -879,6 +982,83 @@ void __driRegisterExtensions(void)
 __private_extern__ void XAppleDRIUseIndirectDispatch(void)
 {
     CGLSetCurrentContext(XAppleDRIGetIndirectContext());
+}
+
+/*****************************************************************/
+
+/*
+ * Currently (Mac OS X 10.3) the only way we have of regaining control
+ * from threads calling GL and nothing else is by patching the dispatch
+ * table of the CGLContext, so that glViewport, glFlush and glFinish
+ * call us back.
+ *
+ * Since glNewList and glEndList overwrite the entire dispatch table we
+ * also need to patch those so we can restore the others.
+ *
+ * WARNING: This is not expected to work on future OS releases.
+ */
+
+#define WRAP_CGL(context, vec, fun)			\
+    do {						\
+        (context)->disp.vec = (context)->ctx->disp.vec;	\
+        (context)->ctx->disp.vec = (fun);		\
+    } while (0)
+
+#define UNWRAP_CGL(context, vec)			\
+    do {						\
+        (context)->ctx->disp.vec = (context)->disp.vec;	\
+    } while (0)
+
+#define WRAP_BOILERPLATE					\
+    GLXContext gc;						\
+    __DRIcontextPrivate *pcp;					\
+    gc = __glXGetCurrentContext();				\
+    if (gc == NULL || !gc->isDirect) return;			\
+    pcp = (__DRIcontextPrivate *) gc->driContext.private;	\
+    if (pcp == NULL) return;
+
+static void viewport_callback(GLIContext ctx, GLint x, GLint y,
+                              GLsizei width, GLsizei height)
+{
+    WRAP_BOILERPLATE
+
+    xmutex_lock(pcp->driScreenPriv->mutex);
+    update_context(pcp);
+    xmutex_unlock(pcp->driScreenPriv->mutex);
+
+    (*pcp->disp.viewport)(ctx, x, y, width, height);
+}
+
+static void new_list_callback(GLIContext ctx, GLuint list, GLenum mode)
+{
+    WRAP_BOILERPLATE
+
+    unwrap_context(pcp);
+    (*pcp->ctx->disp.new_list)(ctx, list, mode);
+    wrap_context(pcp);
+}
+
+static void end_list_callback(GLIContext ctx)
+{
+    WRAP_BOILERPLATE
+
+    unwrap_context(pcp);
+    (*pcp->ctx->disp.end_list)(ctx);
+    wrap_context(pcp);
+}
+
+static void unwrap_context(__DRIcontextPrivate *pcp)
+{
+    UNWRAP_CGL(pcp, viewport);
+    UNWRAP_CGL(pcp, new_list);
+    UNWRAP_CGL(pcp, end_list);
+}
+
+static void wrap_context(__DRIcontextPrivate *pcp)
+{
+    WRAP_CGL(pcp, new_list, new_list_callback);
+    WRAP_CGL(pcp, end_list, end_list_callback);
+    WRAP_CGL(pcp, viewport, viewport_callback);
 }
 
 #endif /* GLX_DIRECT_RENDERING */

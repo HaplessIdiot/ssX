@@ -1,4 +1,6 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 539. Add support for multi-threaded direct GLX rendering with AppleDRI
+      (John Harper).
  538. Fix a problem in Xlib that was cause by the ANSI prototype cleanups
       (Bugzilla #839, Owen Taylor).
  537. Limit the rate of duplicate audit messages in the X server. (Matthieu 
@@ -18066,7 +18068,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2915 2003/10/30 21:21:12 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2916 2003/10/30 21:54:58 alanh Exp $
 
 
 
