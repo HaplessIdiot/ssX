@@ -27,12 +27,12 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/format.h,v 1.2 2002/01/30 21:00:57 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/format.h,v 1.3tsi Exp $ */
 
 #ifndef Lisp_format_h
 #define Lisp_format_h
 
-#include "private.h"
+#include "lisp/private.h"
 
 /*
  * Prototypes

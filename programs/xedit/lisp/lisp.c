@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.84 2002/12/30 05:37:55 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.85tsi Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -67,20 +67,20 @@
 #define HAS_SC_PAGESIZE
 #endif
 
-#include "bytecode.h"
+#include "lisp/bytecode.h"
 
-#include "read.h"
-#include "format.h"
-#include "math.h"
-#include "hash.h"
-#include "package.h"
-#include "pathname.h"
-#include "regex.h"
-#include "require.h"
-#include "stream.h"
-#include "struct.h"
-#include "time.h"
-#include "write.h"
+#include "lisp/read.h"
+#include "lisp/format.h"
+#include "lisp/math.h"
+#include "lisp/hash.h"
+#include "lisp/package.h"
+#include "lisp/pathname.h"
+#include "lisp/regex.h"
+#include "lisp/require.h"
+#include "lisp/stream.h"
+#include "lisp/struct.h"
+#include "lisp/time.h"
+#include "lisp/write.h"
 #include <math.h>
 
 typedef struct {

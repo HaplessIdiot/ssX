@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.14 2002/11/25 02:35:29 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.15tsi Exp $ */
 
 
 /*
@@ -93,8 +93,8 @@ somethings TODO:
  */
 
 
-#include "bytecode.h"
-#include "write.h"
+#include "lisp/bytecode.h"
+#include "lisp/write.h"
 
 #define	SYMBOL_KEYWORD	-1	/* A keyword, load as constant */
 #define	SYMBOL_CONSTANT	-2	/* Defined as constant at compile time */
@@ -337,7 +337,7 @@ static LispObj *cons, *cons1, *cons2, *cons3, *cons4, *cons5, *cons6, *cons7;
 /*
  * Implementation
  */
-#include "compile.c"
+#include "lisp/compile.c"
 
 void
 LispBytecodeInit(void)

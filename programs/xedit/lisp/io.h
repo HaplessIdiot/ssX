@@ -27,12 +27,12 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/io.h,v 1.7 2002/11/30 23:13:12 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/io.h,v 1.8tsi Exp $ */
 
 #ifndef Lisp_io_h
 #define Lisp_io_h
 
-#include "private.h"
+#include "lisp/private.h"
 
 #define	FILE_READ	0x01
 #define FILE_WRITE	0x02

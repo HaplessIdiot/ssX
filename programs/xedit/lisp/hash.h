@@ -27,12 +27,12 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/hash.h,v 1.1 2002/10/06 17:11:42 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/hash.h,v 1.2tsi Exp $ */
 
 #ifndef Lisp_hash_h
 #define Lisp_hash_h
 
-#include "private.h"
+#include "lisp/private.h"
 
 typedef struct _LispHashEntry {
     LispObj **keys;

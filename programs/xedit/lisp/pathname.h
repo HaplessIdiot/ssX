@@ -27,12 +27,12 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/pathname.h,v 1.3 2002/08/25 02:48:31 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/pathname.h,v 1.4tsi Exp $ */
 
 #ifndef Lisp_pathname_h
 #define Lisp_pathname_h
 
-#include "internal.h"
+#include "lisp/internal.h"
 
 #define	PATH_SEP	'/'
 #define	PATH_TYPESEP	'.'

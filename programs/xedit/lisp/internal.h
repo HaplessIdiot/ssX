@@ -27,13 +27,13 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.48 2002/12/06 03:25:27 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.49tsi Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
 
 #include <stdio.h>
-#include "lisp.h"
+#include "lisp/lisp.h"
 
 #include "mp.h"
 #include "re.h"

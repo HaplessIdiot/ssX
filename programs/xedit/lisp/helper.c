@@ -27,15 +27,15 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.47 2002/11/26 04:06:28 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.48tsi Exp $ */
 
-#include "helper.h"
-#include "pathname.h"
-#include "package.h"
-#include "read.h"
-#include "stream.h"
-#include "write.h"
-#include "hash.h"
+#include "lisp/helper.h"
+#include "lisp/pathname.h"
+#include "lisp/package.h"
+#include "lisp/read.h"
+#include "lisp/stream.h"
+#include "lisp/write.h"
+#include "lisp/hash.h"
 #include <ctype.h>
 #include <fcntl.h>
 #include <errno.h>

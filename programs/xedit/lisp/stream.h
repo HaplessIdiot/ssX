@@ -27,13 +27,13 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/stream.h,v 1.7 2002/12/04 05:27:58 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/stream.h,v 1.8tsi Exp $ */
 
 #ifndef Lisp_stream_h
 #define Lisp_stream_h
 
-#include "io.h"
-#include "internal.h"
+#include "lisp/io.h"
+#include "lisp/internal.h"
 
 void LispStreamInit(void);
 

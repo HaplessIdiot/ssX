@@ -27,12 +27,12 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/math.h,v 1.5 2002/10/06 17:11:44 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/math.h,v 1.6tsi Exp $ */
 
 #ifndef Lisp_math_h
 #define Lisp_math_h
 
-#include "internal.h"
+#include "lisp/internal.h"
 #include "mp.h"
 
 void LispMathInit(void);

@@ -27,12 +27,12 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/package.h,v 1.6 2002/11/23 21:41:52 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/package.h,v 1.7tsi Exp $ */
 
 #ifndef Lisp_package_h
 #define Lisp_package_h
 
-#include "internal.h"
+#include "lisp/internal.h"
 
 void LispPackageInit(void);
 LispObj *LispFindPackage(LispObj*);

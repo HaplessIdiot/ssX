@@ -27,12 +27,12 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.23 2002/11/10 16:29:03 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.24tsi Exp $ */
 
 #include <ctype.h>
-#include "io.h"
-#include "debugger.h"
-#include "write.h"
+#include "lisp/io.h"
+#include "lisp/debugger.h"
+#include "lisp/write.h"
 
 #ifdef DEBUGGER
 #define DebuggerHelp		0
