@@ -28,7 +28,7 @@
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *          David Dawes <dawes@xfree86.org>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.40 2003/11/03 05:11:45 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.41 2003/11/07 22:50:57 dawes Exp $
  */
 
 #include "vesa.h"
@@ -372,7 +372,7 @@ VESAFindIsaDevice(GDevPtr dev)
     outb(VGA_ATTR_DATA_W, CurrentValue ^ 0x0F);
     outb(VGA_ATTR_INDEX, 0x14 | 0x20);
     TestValue = inb(VGA_ATTR_DATA_R);
-    outb(VGA_ATTR_DATA_R, CurrentValue);
+    outb(VGA_ATTR_DATA_W, CurrentValue);
 
     /* Quit now if no VGA is present */
     if ((CurrentValue ^ 0x0F) != TestValue)
