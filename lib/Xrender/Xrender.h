@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Xrender.h,v 1.9 2001/12/16 18:27:55 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Xrender.h,v 1.11 2002/05/13 05:21:32 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -195,6 +195,17 @@ XRenderFindFormat (Display			*dpy,
 		   _Xconst XRenderPictFormat	*templ,
 		   int				count);
     
+#define PictStandardARGB32  0
+#define PictStandardRGB24   1
+#define PictStandardA8	    2
+#define PictStandardA4	    3
+#define PictStandardA1	    4
+#define PictStandardNUM	    5
+
+XRenderPictFormat *
+XRenderFindStandardFormat (Display		*dpy,
+			   int			format);
+
 Picture
 XRenderCreatePicture (Display				*dpy,
 		      Drawable				drawable,
