@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.16 2000/12/20 00:08:57 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.17 2000/12/20 19:48:44 mvojkovi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -146,6 +146,8 @@ typedef struct {
     DRIWindowRequests	bufferRequests;
     int			devPrivateSize;
     void*		devPrivate;
+    Bool		createDummyCtx;
+    Bool		createDummyCtxPriv;
 } DRIInfoRec, *DRIInfoPtr;
 
 
