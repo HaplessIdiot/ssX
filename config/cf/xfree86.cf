@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.331 2000/12/01 19:47:37 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.332 2000/12/04 18:49:13 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -550,7 +550,11 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #  define BuildGlxExt    YES
 #endif
 
-#ifdef BuildXF86DRI
+#ifndef BuildXF86DRI
+#define BuildXF86DRI	NO
+#endif
+
+#if BuildXF86DRI
 
 /*
  * One and ONLY one of the GlxBuiltIn* drivers can be defined to be YES.
@@ -594,9 +598,6 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #    define DRIDynLoadDefines -DGLX_USE_DLOPEN
 #  endif
 
-#else
-/* BuildXF86DRI can defined to be YES only in an OS specific .cf file */
-#  define BuildXF86DRI   NO
 #endif
 
 /*

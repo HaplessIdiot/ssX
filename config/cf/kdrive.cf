@@ -28,8 +28,8 @@ XCOMM $XConsortium: $
 #ifndef XItsyServer
 #define XItsyServer	NO
 #endif
-#ifndef XiPAQH3600Server
-#define XiPAQH3600Server	NO
+#ifndef TinyXServer
+#define TinyXServer	NO
 #endif
 #ifndef XvesaServer
 #define XvesaServer	NO
@@ -39,8 +39,12 @@ XCOMM $XConsortium: $
 #include <itsy.cf>
 #endif
 
-#if XiPAQH3600Server
-#include <iPAQH3600.cf>
+#if TinyXServer
+#include <TinyX.cf>
+#endif
+
+#if CrossCompiling
+#include <cross.def>
 #endif
 
 #define XprtServer	NO
