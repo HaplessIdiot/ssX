@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/luit/luit.c,v 1.5 2002/06/03 22:51:15 dawes Exp $ */
+/* $XFree86: xc/programs/luit/luit.c,v 1.6 2002/06/04 21:05:51 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -399,7 +399,7 @@ main(int argc, char **argv)
     if(converter)
         return convert(0, 1);
     else
-        return condom(argc - i, argv + 1);
+        return condom(argc - i, argv + i);
 }
 
 static int
