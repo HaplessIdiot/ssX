@@ -1,4 +1,4 @@
-.\" $XFree86$
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/getconfig/getconfig.man,v 1.1 2003/11/12 04:52:15 dawes Exp $
 .TH getconfig 1 __vendorversion__
 .SH NAME
 getconfig - get configuration information for the XFree86 server
@@ -8,7 +8,7 @@ getconfig - get configuration information for the XFree86 server
 .IR ... ]
 .SH DESCRIPTION
 .B getconfig
-is a programatic interface that is used by the
+is a programmatic interface that is used by the
 .B XFree86
 server to get configuration information about video hardware when
 operating without an
@@ -54,7 +54,7 @@ Specify the PCI subsystem ID of the video device.
 Specify the PCI class of the video device.
 .TP 8
 .BI \-d " device-id"
-Specify the PCI devide ID of the video device.
+Specify the PCI device ID of the video device.
 .TP 8
 .BI \-r " revision"
 Specify the PCI revision of the video device.
