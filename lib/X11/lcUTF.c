@@ -25,7 +25,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
   Author: Hiromu Inukai (inukai@Japan.Sun.COM) SunSoft, inc.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/lcUTF.c,v 3.10 1999/05/30 02:28:00 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcUTF.c,v 3.11 1999/06/06 14:05:54 dawes Exp $ */
 
 
 #ifdef X_LOCALE
@@ -282,7 +282,7 @@ static XlcUTFDataRec default_utf_data[] =
     {"GB2312.1980-0", XlcGL, init_gb2312tab, gb2rune, N11n_zh, 0x2175},
     {"GB2312.1980-0", XlcGR, init_gb2312tab, gb2rune, N11n_zh, 0x2175},
     {"TIS620.2533-1", XlcGL, init_tis620tab, latin2rune, N11n_none, 0x20},
-    {"TIS620.2533-1", XlcGR, init_tis620rtab, latin2rune, N11n_none, 0x20},
+    {"TIS620.2533-1", XlcGR, init_tis620tab, latin2rune, N11n_none, 0x20},
     {"KOI8-R", XlcGL, init_koi8rtab, latin2rune, N11n_none, 0x20},
     {"KOI8-R", XlcGR, init_koi8rtab, latin2rune, N11n_none, 0x20},
     {"KOI8-U", XlcGL, init_koi8utab, latin2rune, N11n_none, 0x20},
@@ -292,7 +292,7 @@ static XlcUTFDataRec default_utf_data[] =
     {"IBM-CP1133", XlcGL, init_ibmcp1133tab, latin2rune, N11n_none, 0x20},
     {"IBM-CP1133", XlcGR, init_ibmcp1133tab, latin2rune, N11n_none, 0x20},
     {"MULELAO-1", XlcGL, init_mulelao1tab, latin2rune, N11n_none, 0x20},
-    {"MULELAO-1", XlcGR, init_mulelaotab, latin2rune, N11n_none, 0x20},
+    {"MULELAO-1", XlcGR, init_mulelao1tab, latin2rune, N11n_none, 0x20},
     {"VISCII1.1-1", XlcGL, init_visciitab, latin2rune, N11n_none, 0x20},
     {"VISCII1.1-1", XlcGR, init_visciitab, latin2rune, N11n_none, 0x20},
     {"TCVN-5712", XlcGL, init_tcvn5712tab, latin2rune, N11n_none, 0x20},
