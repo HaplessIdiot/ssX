@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxIm.c,v 3.10 1994/11/30 21:49:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxIm.c,v 3.11 1995/01/23 01:28:37 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -1662,6 +1662,18 @@ agxFillBoxTile( pDrawable, nBox, pBox, tile, pox, poy, alu, planemask )
 
  
 void
+#if NeedFunctionPrototypes
+agxFSpansTile(
+    DrawablePtr     pDrawable,
+    int             nSpans,
+    DDXPointPtr     ppts,
+    int            *pwidth,
+    PixmapPtr       tile,
+    int             pox,
+    int             poy,
+    short           alu,
+    unsigned long   planemask)
+#else
 agxFSpansTile( pDrawable, nSpans, ppts, pwidth,
                tile, pox, poy,
                alu, planemask )
@@ -1672,8 +1684,9 @@ agxFSpansTile( pDrawable, nSpans, ppts, pwidth,
     PixmapPtr       tile;
     int             pox;
     int             poy;
-    unsigned int    alu;
-    unsigned int    planemask;
+    short           alu;
+    unsigned long   planemask;
+#endif
 {
     unsigned int   width  = tile->drawable.width;
     unsigned int   height = tile->drawable.height;
