@@ -1,4 +1,6 @@
 XFree86 4.4.99.13 (xx August 2004)
+ 176. Add support for the si_LK.UTF-8 locale (Bugzilla #1465,
+      Chamath Keppitiyagama on behalf of the Lanka Linux User Group).
  175. Fix the host memory to bus macro in xf86pciBus.c, and add translations
       for the B2I and I2B macros (Bugzilla #1220, Bill Randle).
  174. Add PCI address mapping support to linuxPci.c (Bugzilla #1229,
@@ -19086,7 +19088,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3308 2004/09/01 23:27:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3309 2004/09/01 23:57:56 dawes Exp $
 
 
 
