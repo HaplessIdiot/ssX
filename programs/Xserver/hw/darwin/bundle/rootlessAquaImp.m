@@ -1,7 +1,7 @@
 /*
  * Rootless implementation for Mac OS X Aqua environment
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessAquaImp.m,v 1.3 2001/08/01 05:34:06 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessAquaImp.m,v 1.4 2001/09/19 01:44:41 torrey Exp $ */
 
 #include "rootlessAquaImp.h"
 #include "XWindow.h"
@@ -42,8 +42,7 @@ void AquaScreenInit(int index, int *x, int *y, int *width, int *height,
     *height = NSHeight(frame);
     *rowBytes = (*width) * (*bpp) / 8;
 
-    // Shift the usable part of screen down to avoid the menu bar
-    // on the main screen.
+    // Shift the usable part of main screen down to avoid the menu bar.
     if (NSEqualRects(frame, [[NSScreen mainScreen] frame])) {
         *y      += aquaMenuBarHeight;
         *height -= aquaMenuBarHeight;

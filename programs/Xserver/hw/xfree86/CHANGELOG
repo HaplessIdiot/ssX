@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 277. Fix problems with XDarwin multi-monitor support for some screen
+      arrangements (Gregory Parker).
  276. Preliminary big endian (PowerPC) support for the "nv" driver
       (Ani Joshi, Mark Vojkovich).
  275. Enable ThreadedX for Cygwin/XFree86 using auto import features of
@@ -13810,4 +13812,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1944 2001/09/19 15:46:58 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1945 2001/09/19 23:42:43 mvojkovi Exp $

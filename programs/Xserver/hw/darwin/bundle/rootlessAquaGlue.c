@@ -7,7 +7,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessAquaGlue.c,v 1.2 2001/07/01 02:13:41 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessAquaGlue.c,v 1.3 2001/08/01 05:34:06 torrey Exp $ */
 
 #include "regionstr.h"
 #include "scrnintstr.h"
@@ -27,11 +27,11 @@ static void
 AquaGlueCreateFrame(ScreenPtr pScreen, RootlessFramePtr pFrame,
                     RootlessFramePtr pUpper)
 {
-    int sx = dixScreenOrigins[pScreen->myNum].x;
-    int sy = dixScreenOrigins[pScreen->myNum].y;
+    int sx = dixScreenOrigins[pScreen->myNum].x + darwinMainScreenX;
+    int sy = dixScreenOrigins[pScreen->myNum].y + darwinMainScreenY;
 
     pFrame->devPrivate = AquaNewWindow(pUpper ? pUpper->devPrivate : NULL,
-                                       pFrame->x+sx, pFrame->y+sy,
+                                       pFrame->x + sx, pFrame->y + sy,
                                        pFrame->w, pFrame->h,
                                        pFrame->isRoot);
     AquaGetPixmap(pFrame->devPrivate, &pFrame->pixelData,
@@ -50,10 +50,10 @@ static void
 AquaGlueMoveFrame(ScreenPtr pScreen, RootlessFramePtr pFrame,
                   int oldX, int oldY)
 {
-    int sx = dixScreenOrigins[pScreen->myNum].x;
-    int sy = dixScreenOrigins[pScreen->myNum].y;
+    int sx = dixScreenOrigins[pScreen->myNum].x + darwinMainScreenX;
+    int sy = dixScreenOrigins[pScreen->myNum].y + darwinMainScreenY;
 
-    AquaMoveWindow(pFrame->devPrivate, pFrame->x+sx, pFrame->y+sy);
+    AquaMoveWindow(pFrame->devPrivate, pFrame->x + sx, pFrame->y + sy);
 }
 
 
@@ -62,11 +62,11 @@ AquaGlueStartResizeFrame(ScreenPtr pScreen, RootlessFramePtr pFrame,
                          int oldX, int oldY,
                          unsigned int oldW, unsigned int oldH)
 {
-    int sx = dixScreenOrigins[pScreen->myNum].x;
-    int sy = dixScreenOrigins[pScreen->myNum].y;
+    int sx = dixScreenOrigins[pScreen->myNum].x + darwinMainScreenX;
+    int sy = dixScreenOrigins[pScreen->myNum].y + darwinMainScreenY;
 
     AquaStartResizeWindow(pFrame->devPrivate,
-                          pFrame->x+sx, pFrame->y+sy, pFrame->w, pFrame->h);
+                          pFrame->x + sx, pFrame->y + sy, pFrame->w, pFrame->h);
     AquaGetPixmap(pFrame->devPrivate, &pFrame->pixelData,
                   &pFrame->bytesPerRow, &pFrame->depth,
                   &pFrame->bitsPerPixel);
@@ -77,11 +77,12 @@ AquaGlueFinishResizeFrame(ScreenPtr pScreen, RootlessFramePtr pFrame,
                           int oldX, int oldY,
                           unsigned int oldW, unsigned int oldH)
 {
-    int sx = dixScreenOrigins[pScreen->myNum].x;
-    int sy = dixScreenOrigins[pScreen->myNum].y;
+    int sx = dixScreenOrigins[pScreen->myNum].x + darwinMainScreenX;
+    int sy = dixScreenOrigins[pScreen->myNum].y + darwinMainScreenY;
 
     AquaFinishResizeWindow(pFrame->devPrivate,
-                           pFrame->x+sx, pFrame->y+sy, pFrame->w, pFrame->h);
+                           pFrame->x + sx, pFrame->y + sy,
+                           pFrame->w, pFrame->h);
 }
 
 
@@ -98,8 +99,8 @@ static void
 AquaGlueReshapeFrame(ScreenPtr pScreen, RootlessFramePtr pFrame,
                      RegionPtr pNewShape)
 {
-    int sx = dixScreenOrigins[pScreen->myNum].x;
-    int sy = dixScreenOrigins[pScreen->myNum].y;
+    int sx = dixScreenOrigins[pScreen->myNum].x + darwinMainScreenX;
+    int sy = dixScreenOrigins[pScreen->myNum].y + darwinMainScreenY;
 
     if (pFrame->isRoot) return; // shouldn't happen; mi or dix covers this
     REGION_TRANSLATE(pScreen, pNewShape, sx, sy);

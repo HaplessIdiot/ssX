@@ -3,7 +3,7 @@
  * Support for using the Quartz Window Manager cursor
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCursor.c,v 1.5 2001/08/07 01:52:24 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCursor.c,v 1.6 2001/09/19 01:44:41 torrey Exp $ */
 
 #include "mi.h"
 #include "scrnintstr.h"
@@ -380,10 +380,7 @@ QuartzWarpCursor(
     }
 
     if (serverVisible) {
-        if (quartzRootless)
-            cgPoint = CGPointMake(x, y + aquaMenuBarHeight);
-        else
-            cgPoint = CGPointMake(x, y);
+        cgPoint = CGPointMake(x + darwinMainScreenX, y + darwinMainScreenY);
         cgErr = CGDisplayMoveCursorToPoint(kCGDirectMainDisplay, cgPoint);
         if (cgErr != CGDisplayNoErr) {
             ErrorF("Could not set cursor position with error code 0x%x.\n",

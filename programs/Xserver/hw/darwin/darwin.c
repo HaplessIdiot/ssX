@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.32 2001/08/12 00:10:01 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.33 2001/09/19 02:50:43 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -45,7 +45,9 @@
 #define SCROLLWHEELUPFAKE	4
 #define SCROLLWHEELDOWNFAKE	5
 
-// X server shared global variables
+/*
+ * X server shared global variables
+ */
 int                     darwinScreensFound = 0;
 int                     darwinScreenIndex = 0;
 DarwinInputRec          hid;
@@ -58,6 +60,12 @@ int                     quartzUseSysBeep = 0;
 int                     quartzMouseAccelChange = 1;
 int                     darwinFakeButtons = 0;
 int                     aquaMenuBarHeight = 0;
+
+// location of X11's (0,0) point in global screen coordinates
+int                     darwinMainScreenX = 0;
+int                     darwinMainScreenY = 0;
+
+// parameters read from the command line or user preferences
 UInt32                  darwinDesiredWidth = 0, darwinDesiredHeight = 0;
 IOIndex                 darwinDesiredDepth = -1;
 SInt32                  darwinDesiredRefresh = -1;
@@ -291,7 +299,7 @@ static Bool DarwinAddScreen(
     dixScreenOrigins[index].x = dfb->x;
     dixScreenOrigins[index].y = dfb->y;
 
-    ErrorF("Screen %d added: %dx%d @ %d,%d\n",
+    ErrorF("Screen %d added: %dx%d @ (%d,%d)\n",
             index, dfb->width, dfb->height, dfb->x, dfb->y);
 
     return TRUE;
@@ -646,8 +654,12 @@ void ProcessInputEvents(void)
         // translate it to an X event and post it
         memset(&xe, 0, sizeof(xe));
 
-        xe.u.keyButtonPointer.rootX = ev.location.x;
-        xe.u.keyButtonPointer.rootY = ev.location.y;
+        // Shift from global screen coordinates to coordinates relative to
+        // the origin of the current screen.
+        xe.u.keyButtonPointer.rootX = ev.location.x - darwinMainScreenX -
+                dixScreenOrigins[miPointerCurrentScreen()->myNum].x;
+        xe.u.keyButtonPointer.rootY = ev.location.y - darwinMainScreenY -
+                dixScreenOrigins[miPointerCurrentScreen()->myNum].y;
         //xe.u.keyButtonPointer.time = ev.time;
         xe.u.keyButtonPointer.time = tv.tv_sec * 1000 + tv.tv_usec / 1000;
 
@@ -831,7 +843,8 @@ void ProcessInputEvents(void)
                     break;
 
                 case kXDarwinShow:
-                    QuartzShow(ev.location.x, ev.location.y);
+                    QuartzShow(xe.u.keyButtonPointer.rootX,
+                               xe.u.keyButtonPointer.rootY);
                     // The mouse location will have moved; track it.
                     xe.u.u.type = MotionNotify;
                     (darwinPointer->public.processInputProc)
@@ -878,10 +891,9 @@ void ProcessInputEvents(void)
                 break;
         }
 
-        // why isn't this handled automatically by X???
-        //miPointerAbsoluteCursor( ev.location.x, ev.location.y, ev.time );
-        miPointerAbsoluteCursor( ev.location.x, ev.location.y,
-                                tv.tv_sec * 1000 + tv.tv_usec / 1000 );
+        miPointerAbsoluteCursor( xe.u.keyButtonPointer.rootX,
+                                 xe.u.keyButtonPointer.rootX,
+                                 tv.tv_sec * 1000 + tv.tv_usec / 1000 );
     }
 
     miPointerUpdate();
@@ -918,7 +930,7 @@ void InitInput( int argc, char **argv )
  */
 void InitOutput( ScreenInfo *pScreenInfo, int argc, char **argv )
 {
-    int i;
+    int i, left, top;
     static unsigned long generation = 0;
 
     pScreenInfo->imageByteOrder = IMAGE_BYTE_ORDER;
@@ -945,9 +957,47 @@ void InitOutput( ScreenInfo *pScreenInfo, int argc, char **argv )
     }
 
     // Add screens
-    // The first is the main screen.
     for (i = 0; i < darwinScreensFound; i++) {
         AddScreen( DarwinAddScreen, argc, argv );
+    }
+
+    // Shift all screens so the X11 (0, 0) coordinate is at the top left
+    // of the global screen coordinates.
+    // Screens can be arranged so the top left isn't on any screen,
+    // so instead use the top left of the leftmost screen as (0,0).
+    // This may mean some screen space is in -y, but it's better
+    // that (0,0) be onscreen, or else default xterms disappear.
+    // It's better that -y be used than -x, because when popup
+    // menus are forced "onscreen" by dumb window managers like twm,
+    // they'll shift the menus down instead of left, which still looks
+    // funny but is an easier target to hit.
+    left = dixScreenOrigins[0].x;
+    top  = dixScreenOrigins[0].y;
+
+    // Find leftmost screen. If there's a tie, take the topmost of the two.
+    for (i = 1; i < pScreenInfo->numScreens; i++) {
+        if (dixScreenOrigins[i].x < left  ||
+            (dixScreenOrigins[i].x == left &&
+             dixScreenOrigins[i].y < top))
+        {
+            left = dixScreenOrigins[i].x;
+            top = dixScreenOrigins[i].y;
+        }
+    }
+
+    darwinMainScreenX = left;
+    darwinMainScreenY = top;
+
+    // Shift all screens so that there is a screen whose top left
+    // is at X11 (0,0) and at global screen coordinate
+    // (darwinMainScreenX, darwinMainScreenY).
+    if (darwinMainScreenX != 0 || darwinMainScreenY != 0) {
+        for (i = 0; i < pScreenInfo->numScreens; i++) {
+            dixScreenOrigins[i].x -= darwinMainScreenX;
+            dixScreenOrigins[i].y -= darwinMainScreenY;
+            ErrorF("Screen %d placed at X11 coordinate (%d,%d).\n",
+                   i, dixScreenOrigins[i].x, dixScreenOrigins[i].y);
+        }
     }
 }
 
