@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:41:52 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/config/util/Imakefile,v 3.41 2001/11/16 16:47:51 dawes Exp $
+XCOMM $XFree86: xc/config/util/Imakefile,v 3.42 2002/01/07 20:38:21 dawes Exp $
 
 #if UseCCMakeDepend
 CCMDEP_PROG = ccmakedep
@@ -12,24 +12,24 @@ CCMDEP_PROG = ccmakedep
 EXPORTLISTGEN = exportlistgen
 #endif
 
-#ifdef Win32Architecture
+#if defined(Win32Architecture)
 CMKDIRHIER = mkdirhier.exe
 #endif
 
-#ifndef OS2Architecture
 GCCMDEP_PROG = gccmakedep
+#if HasSymLinks
 #if CrossCompiling
 LNDIR_PROG = HostProgramTargetName(lndir)
 #else
-LNDIR_PROG = lndir
+LNDIR_PROG = ProgramTargetName(lndir)
 #endif
 #endif
 
 #if BuildRman
-RMAN_PROG = rman
+RMAN_PROG = ProgramTargetName(rman)
 #endif
 
-PROGRAMS = $(RMAN_PROG) $(LNDIR_PROG) makestrs revpath $(EXPORTLISTGEN) $(CMKDIRHIER)
+PROGRAMS = $(RMAN_PROG) $(LNDIR_PROG) ProgramTargetName(makestrs) \			   ProgramTargetName(revpath) $(EXPORTLISTGEN) $(CMKDIRHIER)
 DEPLIBS =
 #ifndef Win32Architecture
   EXTRA_LIBRARIES =
@@ -71,9 +71,7 @@ InstallNamedProg(exportlistgen,exportlistgen,$(BINDIR))
 CppScriptTarget(xmkmf,xmkmf.cpp,-DCONFIGDIRSPEC='"'"-I$(CONFIGDIR)"'"',$(ICONFIGFILES))
 CppScriptTarget(ccmakedep,mdepend.cpp,-DPREPROC='"'"$(PREPROCESSCMD_MKDEPEND)"'"',$(ICONFIGFILES))
 CppScriptTarget(mergelib,mergelib.cpp,"-DARCMD=$(AR)" "-DRANLIB=$(RANLIB)",$(ICONFIGFILES))
-#ifndef OS2Architecture
 CppScriptTarget(gccmakedep,gccmdep.cpp,-DCCCMD='"'"$(GCCCMD)"'"' -DRMCMD='"'"$(RM)"'"' -DLNCMD='"'"$(LN)"'"' -DMVCMD='"'"$(MV)"'"',$(ICONFIGFILES))
-#endif
 
 #ifndef OpenBSDArchitecture
 #if HasSymLinks
@@ -81,12 +79,12 @@ CppScriptTarget(gccmakedep,gccmdep.cpp,-DCCCMD='"'"$(GCCCMD)"'"' -DRMCMD='"'"$(R
 SimpleHostProgramTarget_2(lndir)
 #else
 AllTarget($(LNDIR_PROG))
-SimpleProgramTarget_2(lndir)
+SimpleProgramTarget_2($(LNDIR_PROG))
 #endif
 #endif
 #endif
 
-#ifdef Win32Architecture
+#if defined(Win32Architecture)
 AllTarget(ProgramTargetName(mkdirhier))
 SimpleProgramTarget_3(mkdirhier)
 #endif
@@ -122,19 +120,6 @@ LinkFile(rman.man,$(TOP)/extras/rman/rman.1)
 
 InstallManPage(xmkmf,$(MANDIR))
 
-#if defined(OS2Architecture)
-includes:: makestrs.exe
-	ImakeHelper 7 makestrs.exe /makestrs.exe
-
-InstallNamedProg(mkdirhier.cmd,mkdirhier.cmd,$(BINDIR))
-InstallNamedProg(indir.cmd,indir.cmd,$(BINDIR))
-InstallNamedProg(os2inst.cmd,os2inst.cmd,$(BINDIR))
-InstallNamedProg(xmkmf.cmd,xmkmf.cmd,$(BINDIR))
-InstallNamedProg(xmake.cmd,make.cmd,$(BINDIR))
-InstallDriverSDKNamedProg(mkdirhier.cmd,mkdirhier.cmd,$(DRIVERSDKDIR)/config/util)
-InstallDriverSDKNamedProg(indir.cmd,indir.cmd,$(DRIVERSDKDIR)/config/util)
-InstallDriverSDKNamedProg(os2inst.cmd,os2inst.cmd,$(DRIVERSDKDIR)/config/util)
-#else
 InstallNamedProg(xmkmf,xmkmf,$(BINDIR))
 InstallNamedProg(mkdirhier.sh,mkdirhier,$(BINDIR))
 InstallNamedProg(gccmakedep,gccmakedep,$(BINDIR))
@@ -152,7 +137,6 @@ InstallNamedProg(mkhtmlindex.pl,mkhtmlindex,$(BINDIR))
 #else
 InstallNamedProg(mkhtmlindex.sh,mkhtmlindex,$(BINDIR))
 #endif
-#endif
 InstallManPage(mkdirhier,$(MANDIR))
 InstallNamedProg(ccmakedep,ccmakedep,$(BINDIR))
 InstallDriverSDKNamedProg(ccmakedep,ccmakedep,$(DRIVERSDKDIR)/config/util)
@@ -162,3 +146,6 @@ InstallDriverSDKNamedProg(bsdinst.sh,bsdinst.sh,$(DRIVERSDKDIR)/config/util)
 #endif
 
 InstallDriverSDKNamedProg(revpath,revpath,$(DRIVERSDKDIR)/config/util)
+#ifdef OS2Architecture
+InstallNamedProg(gccmakedep.cmd,gccmakedep.cmd,$(BINDIR))
+#endif

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.101 2001/10/02 11:44:12 alanh Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.102 2001/12/17 20:00:37 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -786,9 +786,9 @@ InstallManPage(program,$(MANDIR))
  */
 #ifndef ComplexProgramTarget
 #define	ComplexProgramTarget(program)					@@\
-        PROGRAM = program						@@\
+        PROGRAM = ProgramTargetName(program)				@@\
 									@@\
-AllTarget(program)							@@\
+AllTarget(ProgramTargetName(program))					@@\
 									@@\
 ProgramTargetHelper(program,SRCS,OBJS,DEPLIBS,$(LOCAL_LIBRARIES),NullParameter) @@\
 									@@\
@@ -801,9 +801,9 @@ clean::									@@\
 
 #ifndef ComplexCplusplusProgramTarget
 #define	ComplexCplusplusProgramTarget(program)				@@\
-        PROGRAM = program						@@\
+        PROGRAM = ProgramTargetName(program)				@@\
 									@@\
-AllTarget(program)							@@\
+AllTarget(ProgramTargetName(program))					@@\
 									@@\
 CplusplusProgramTargetHelper(program,SRCS,OBJS,DEPLIBS,$(LOCAL_LIBRARIES),NullParameter) @@\
 									@@\
@@ -822,9 +822,9 @@ clean::									@@\
  */
 #ifndef ComplexProgramTargetNoMan
 #define ComplexProgramTargetNoMan(program)				@@\
-        PROGRAM = program						@@\
+        PROGRAM = ProgramTargetName(program)				@@\
 									@@\
-AllTarget(program)							@@\
+AllTarget(ProgramTargetName(program))					@@\
 									@@\
 ProgramTargetHelperNoMan(program,SRCS,OBJS,DEPLIBS,$(LOCAL_LIBRARIES),NullParameter) @@\
 									@@\
@@ -1377,7 +1377,7 @@ NoCmpScript(ProgramTargetName($(RMAN)))					@@\
 									@@\
 ProgramTargetName($(RMAN)):						@@\
 	@echo "checking $@ over in $(TOP)/config/util first..."; \	@@\
-	cd $(TOP)/config/util && $(MAKE) rman; \			@@\
+	cd $(TOP)/config/util && $(MAKE) $@; \				@@\
 	echo "okay, continuing in $(CURRENT_DIR)"
 
 #endif /* UseInstalled */
@@ -1821,7 +1821,7 @@ install.man::								@@\
 #ifndef DependDependencyStatement
 #if HasMakefileSafeInclude
 #define DependDependencyStatement()					@@\
-DependFileName:: ProgramTargetName($(DEPEND))
+DependFileName: ProgramTargetName($(DEPEND))
 #else
 #define DependDependencyStatement()					@@\
 depend:: ProgramTargetName($(DEPEND))

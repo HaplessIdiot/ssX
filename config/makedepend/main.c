@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/main.c,v 3.26 2001/12/19 22:21:52 tsi Exp $ */
+/* $XFree86: xc/config/makedepend/main.c,v 3.27 2001/12/20 16:14:06 tsi Exp $ */
 
 #include "def.h"
 #ifdef hpux
@@ -115,7 +115,7 @@ catch (int sig)
 	fatalerr ("got signal %d\n", sig);
 }
 
-#if defined(USG) || (defined(i386) && defined(SYSV)) || defined(WIN32) || defined(__EMX__) || defined(Lynx_22) || defined(__CYGWIN__)
+#if defined(USG) || (defined(i386) && defined(SYSV)) || defined(WIN32) || defined(__UNIXOS2__) || defined(Lynx_22) || defined(__CYGWIN__)
 #define USGISH
 #endif
 
@@ -342,7 +342,7 @@ main(int argc, char *argv[])
 		fatalerr("Too many -I flags.\n");
 	    *incp++ = PREINCDIR;
 #endif
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 	    {
 		char *emxinc = getenv("C_INCLUDE_PATH");
 		/* can have more than one component */
@@ -360,7 +360,7 @@ main(int argc, char *argv[])
 		    }
 		}
 	    }
-#else /* !__EMX__, does not use INCLUDEDIR at all */
+#else /* !__UNIXOS2__, does not use INCLUDEDIR at all */
 	    if (incp >= includedirs + MAXDIRS)
 		fatalerr("Too many -I flags.\n");
 	    *incp++ = INCLUDEDIR;
@@ -467,7 +467,7 @@ main(int argc, char *argv[])
 	return 0;
 }
 
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 /*
  * eliminate \r chars from file
  */
@@ -503,7 +503,7 @@ getfile(char *file)
 		fatalerr("cannot allocate mem\n");
 	if ((st.st_size = read(fd, content->f_base, st.st_size)) < 0)
 		fatalerr("failed to read %s\n", file);
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 	st.st_size = elim_cr(content->f_base,st.st_size);
 #endif
 	close(fd);
@@ -654,7 +654,7 @@ char *base_name(char *file)
 	return(file);
 }
 
-#if defined(USG) && !defined(CRAY) && !defined(SVR4) && !defined(__EMX__) && !defined(clipper) && !defined(__clipper__)
+#if defined(USG) && !defined(CRAY) && !defined(SVR4) && !defined(__UNIXOS2__) && !defined(clipper) && !defined(__clipper__)
 int rename (char *from, char *to)
 {
     (void) unlink (to);
@@ -702,12 +702,12 @@ redirect(char *line, char *makefile)
 		fatalerr("cannot open \"%s\"\n", makefile);
 	sprintf(backup, "%s.bak", makefile);
 	unlink(backup);
-#if defined(WIN32) || defined(__EMX__) || defined(__CYGWIN__)
+#if defined(WIN32) || defined(__UNIXOS2__) || defined(__CYGWIN__)
 	fclose(fdin);
 #endif
 	if (rename(makefile, backup) < 0)
 		fatalerr("cannot rename %s to %s\n", makefile, backup);
-#if defined(WIN32) || defined(__EMX__) || defined(__CYGWIN__)
+#if defined(WIN32) || defined(__UNIXOS2__) || defined(__CYGWIN__)
 	if ((fdin = fopen(backup, "r")) == NULL)
 		fatalerr("cannot open \"%s\"\n", backup);
 #endif

@@ -36,7 +36,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/config/pswrap/lexer.l,v 1.9 2000/06/07 19:48:09 tsi Exp $ */
+/* $XFree86: xc/config/pswrap/lexer.l,v 1.10 2001/10/28 03:32:03 tsi Exp $ */
 
 #include <ctype.h>
 #include <stdlib.h>
@@ -46,7 +46,7 @@
 #include "pswparser.h"
 
 /* flex of EMX seems to be too old */
-#if defined(FLEX_SCANNER) && !defined(YY_FLEX_LEX_COMPAT) && !defined(__EMX__)
+#if defined(FLEX_SCANNER) && !defined(YY_FLEX_LEX_COMPAT) && !defined(__UNIXOS2__)
 int yylineno = 1;
 #endif
 

@@ -7,7 +7,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.54 2002/04/30 17:15:38 tsi Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.55 2002/05/14 17:59:45 dawes Exp $ */
 
 /*
  * 
@@ -238,9 +238,6 @@ extern char	*getenv();
 #endif
 
 #if !((defined(sun) && !defined(SVR4)) || defined(macII))
-#define USE_STRERROR		1
-#endif
-#ifdef __EMX__
 #define USE_STRERROR		1
 #endif
 #ifndef WIN32
@@ -1297,7 +1294,7 @@ get_gcc(char *cmd)
     return FALSE;
 }
 
-#if defined CROSSCOMPILE || !defined __EMX__
+#if defined CROSSCOMPILE || !defined __UNIXOS2__
 static void
 get_gcc_incdir(FILE *inFile, char* name)
 {
@@ -1326,7 +1323,7 @@ get_gcc_incdir(FILE *inFile, char* name)
 boolean
 define_os_defaults(FILE *inFile)
 {
-#if defined CROSSCOMPILE || ( !defined(WIN32) && !defined(__EMX__) )
+#if defined CROSSCOMPILE || ( !defined(WIN32) && !defined(__UNIXOS2__) )
 #ifdef CROSSCOMPILE
   if ((sys != win32) && (sys != emx))
 #endif
@@ -1527,7 +1524,7 @@ define_os_defaults(FILE *inFile)
 	  char name[PATH_MAX];
 	  if (get_gcc(name)) {
 	      get_gcc_version (inFile,name);
-#  if defined CROSSCOMPILE || !defined __EMX__
+#  if defined CROSSCOMPILE || !defined __UNIXOS2__
 #   if defined CROSSCOMPILE
 	      if (sys != emx)
 #   endif
@@ -1543,7 +1540,7 @@ define_os_defaults(FILE *inFile)
 	  get_binary_format(inFile);
 # endif
     }
-#endif /* !WIN32 && !__EMX__*/
+#endif /* !WIN32 && !__UNIXOS2__*/
 #if defined WIN32
 # ifdef CROSSCOMPILE
   else if (sys == win32 && !CrossCompiling)
@@ -1568,7 +1565,7 @@ define_os_defaults(FILE *inFile)
 #ifdef CROSSCOMPILE
   else if (sys == emx)
 #endif
-#if defined CROSSCOMPILE || defined __EMX__
+#if defined CROSSCOMPILE || defined __UNIXOS2__
     {
       fprintf(inFile, "#define DefaultOSMajorVersion 4\n");
       fprintf(inFile, "#define DefaultOSMinorVersion 0\n");
@@ -1651,7 +1648,7 @@ CleanCppInput(char *imakefile)
 		while (*ptoken == ' ' || *ptoken == '\t')
 			ptoken++;
 		pend = ptoken;
-		while (*pend && *pend != ' ' && *pend != '\t' && *pend != '\n')
+		while (*pend && *pend != ' ' && *pend != '\t' && *pend != '\n' && *pend != '\r')
 			pend++;
 		savec = *pend;
 		*pend = '\0';
@@ -1790,8 +1787,8 @@ isempty(char *line)
 	    for (pend = line; *pend; pend++) {
 		if (*pend == 'X' && pend[1] == 'C' && pend[2] == 'O' &&
 		    pend[3] == 'M' && pend[4] == 'M' &&
-		    (pend == line || pend[-1] == ' ' || pend[-1] == '\t') &&
-		    (pend[5] == ' ' || pend[5] == '\t' || pend[5] == '\0'))
+		    (pend == line || pend[-1] == ' ' || pend[-1] == '\t' || pend[-1] == '\r') &&
+		    (pend[5] == ' ' || pend[5] == '\t' || pend[5] == '\r' || pend[5] == '\0'))
 		{
 		    *pend = '#';
 		    strcpy(pend+1, pend+5);
@@ -1829,7 +1826,7 @@ isempty(char *line)
 		}
 	    }
 	}
-	while (--pend >= line && (*pend == ' ' || *pend == '\t')) ;
+	while (--pend >= line && (*pend == ' ' || *pend == '\t' || *pend == '\r')) ;
 	pend[1] = '\0';
 	return (*line == '\0');
 }
