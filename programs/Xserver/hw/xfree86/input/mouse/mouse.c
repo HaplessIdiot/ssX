@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.63 2002/12/15 01:15:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.64 2002/12/17 20:55:21 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -1461,7 +1461,7 @@ MouseReadInput(InputInfoPtr pInfo)
 	    if (pMse->protoPara[4] >= 8) {
 		dz = ((signed char)(pBuf[5] << 1) +
 		      (signed char)(pBuf[6] << 1)) >> 1;
-		buttons |= (int)(~pBuf[7] & 0x07) << 3;
+		buttons |= (int)(~pBuf[7] & 0xf7) << 3;
 	    }
 	    break;
 
