@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.20 1999/07/04 06:38:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.21 1999/07/11 10:27:04 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -92,9 +92,6 @@ xf86InfoRec xf86Info = {
 	NULL,		/* pMouse */
 #ifdef XINPUT
 	NULL,		/* mouseLocal */
-#endif
-#ifndef NEW_INPUT
-	NULL,		/* mouseDev */
 #endif
 	-1,		/* lastEventTime */
 	FALSE,		/* vtRequestsPending */

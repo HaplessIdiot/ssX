@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/confwrite.c,v 1.7 1999/04/29 09:13:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/confwrite.c,v 1.8 1999/07/12 08:14:25 dawes Exp $ */
 /*
  * Copyright 1999 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -50,10 +50,6 @@
 static int putsection_files   (Tcl_Interp *interp, char *varpfx);
 static int putsection_module  (Tcl_Interp *interp, char *varpfx);
 static int putsection_flags   (Tcl_Interp *interp, char *varpfx);
-#ifndef NEW_INPUT
-static int putsection_keyboard(Tcl_Interp *interp, char *varpfx);
-static int putsection_pointer (Tcl_Interp *interp, char *varpfx);
-#endif
 #if 0
 static int putsection_input   (Tcl_Interp *interp, char *varpfx);
 static int putsection_dri     (Tcl_Interp *interp, char *varpfx);
@@ -105,10 +101,6 @@ TCL_XF86WriteXF86Config(clientData, interp, argc, argv)
 	putsection_files   (interp, argv[2]);
 	putsection_module  (interp, argv[2]);
 	putsection_flags   (interp, argv[2]);
-#ifndef NEW_INPUT
-	putsection_keyboard(interp, argv[2]);
-	putsection_pointer (interp, argv[2]);
-#endif
 #if 0
 	putsection_input   (interp, argv[2]);
 	putsection_dri     (interp, argv[2]);
@@ -244,101 +236,6 @@ putsection_flags(interp, varpfx)
 	}
 	return TCL_OK;
 }
-
-#ifndef NEW_INPUT
-static int
-putsection_keyboard(interp, varpfx)
-  Tcl_Interp *interp;
-  char *varpfx;
-{
-	char section[128], *ptr;
-	long val;
-	XF86ConfKeyboardPtr kptr;
-
-	fprintf(stderr, "putsection_keyboard(%p, %s)\n", interp, varpfx);
-	SECTION_NAME("Keyboard");
-	kptr = (XF86ConfKeyboardPtr)  XtMalloc(sizeof(XF86ConfKeyboardRec));
-	config_list->conf_keyboard = kptr;
-	memset(kptr, 0, sizeof(XF86ConfKeyboardRec));
-	SETSTR (kptr->keyb_protocol,		"Protocol");
-	ptr = Tcl_GetVar2(interp, section, "AutoRepeat_delay", 0);
-	if (ptr) Tcl_GetInt(interp, ptr, &(kptr->keyb_kbdDelay));
-	ptr = Tcl_GetVar2(interp, section, "AutoRepeat_rate", 0);
-	if (ptr) Tcl_GetInt(interp, ptr, &(kptr->keyb_kbdRate));
-	ptr = Tcl_GetVar2(interp, section, "XLeds", 0);
-	while (ptr && *ptr != '\0') {
-		val = strtoul(ptr, &ptr, 0);
-		if (val > sizeof(long)*8)
-			continue;
-		kptr->keyb_xleds |= 1L << (val - 1);
-	}
-#ifdef XKB
-	SETBOOL(kptr->keyb_xkbDisable,	"XkbDisable");
-	SETSTR(kptr->keyb_xkbkeycodes,	"XkbKeycodes");
-	SETSTR(kptr->keyb_xkbtypes,	"XkbTypes");
-	SETSTR(kptr->keyb_xkbcompat,	"XkbCompat");
-	SETSTR(kptr->keyb_xkbsymbols,	"XkbSymbols");
-	SETSTR(kptr->keyb_xkbgeometry,	"XkbGeometry");
-	SETSTR(kptr->keyb_xkbkeymap,	"XkbKeymap");
-	SETSTR(kptr->keyb_xkbrules,	"XkbRules");
-	SETSTR(kptr->keyb_xkbmodel,	"XkbModel");
-	SETSTR(kptr->keyb_xkblayout,	"XkbLayout");
-	SETSTR(kptr->keyb_xkbvariant,	"XkbVariant");
-	SETSTR(kptr->keyb_xkboptions,	"XkbOptions");
-#endif
-#if defined(SVR4) && defined(i386) && defined(PC98)
-	SETBOOL(kptr->keyb_panix106,	"Panix106");
-#endif
-	return TCL_OK;
-}
-
-static int
-putsection_pointer(interp, varpfx)
-  Tcl_Interp *interp;
-  char *varpfx;
-{
-	char section[128], *ptr;
-	XF86ConfPointerPtr pptr;
-
-	fprintf(stderr, "putsection_pointer(%p, %s)\n", interp, varpfx);
-	SECTION_NAME("Pointer");
-	pptr = (XF86ConfPointerPtr) XtMalloc(sizeof(XF86ConfPointerRec));
-	config_list->conf_pointer = pptr;
-	memset(pptr, 0, sizeof(XF86ConfPointerRec));
-	SETSTR (pptr->pntr_protocol,		"Protocol");
-#ifndef OSMOUSE_ONLY
-	SETSTR (pptr->pntr_device,		"Device");
-	SETINT (pptr->pntr_baudrate,		"BaudRate");
-	SETINT (pptr->pntr_samplerate,		"SampleRate");
-	SETINT (pptr->pntr_resolution,		"Resolution");
-	SETBOOL(pptr->pntr_chordMiddle,		"ChordMiddle");
-#ifdef XINPUT
-	SETBOOL(pptr->pntr_alwaysCore,		"AlwaysCore");
-#endif
-#ifdef CLEARDTR_SUPPORT
-	SETBOOL(pptr->pntr_clearDtr,		"ClearDTR");
-	SETBOOL(pptr->pntr_clearRts,		"ClearRTS");
-#endif
-#endif /* OSMOUSE_ONLY */
-	SETBOOL(pptr->pntr_emulate3Buttons,	"Emulate3Buttons");
-	SETINT (pptr->pntr_emulate3Timeout,	"Emulate3Timeout");
-	SETINT (pptr->pntr_buttons,		"Buttons");
-	ptr = Tcl_GetVar2(interp, section, "ZAxisPosMapping", 0);
-	if (!strlen(ptr))
-		return TCL_OK;
-	if (!strcmp(ptr, "X")) {
-		pptr->pntr_negativeZ = CONF_ZAXIS_MAPTOX;
-		pptr->pntr_positiveZ = CONF_ZAXIS_MAPTOX;
-	} else if (!strcmp(ptr, "Y")) {
-		pptr->pntr_negativeZ = CONF_ZAXIS_MAPTOY;
-		pptr->pntr_positiveZ = CONF_ZAXIS_MAPTOY;
-	} else {
-		SETINT(pptr->pntr_negativeZ,	"ZAxisNegMapping");
-		SETINT(pptr->pntr_positiveZ,	"ZAxisPosMapping");
-	}
-	return TCL_OK;
-}
-#endif /* NEW_INPUT */
 
 static int
 putsection_monitor(interp, varpfx)

@@ -1,4 +1,5 @@
 XFree86 3.9.16a (5 September 1999)
+3136. Remove the "old input" code (David Dawes).
 3135. Fix a problem with xman that prevents it form recognising the
       XM_DELETE_WINDOW message when xman is run with the "topbox" disabled
       (#3207, Carlos A M dos Santos).
@@ -8706,4 +8707,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.826 1999/08/31 08:39:04 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.827 1999/09/04 09:14:14 dawes Exp $

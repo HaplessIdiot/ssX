@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 3.16 1999/05/22 09:59:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 3.17 1999/05/23 04:26:08 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993-1999 by The XFree86 Project, Inc.
@@ -30,11 +30,9 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
-#ifdef NEW_INPUT
 #include "xf86Xinput.h"
 #include "xf86OSmouse.h"
 #include "xqueue.h"
-#endif
 
 #ifdef XQUEUE
 
@@ -55,7 +53,6 @@ extern Bool noXkbExtension;
 #include "xf86Xinput.h"
 #include "mipointer.h"
 
-#ifdef NEW_INPUT
 typedef struct {
 	int		xquePending;
 	int		xqueSema;
@@ -63,7 +60,6 @@ typedef struct {
 
 InputInfoPtr XqMouse = NULL;
 InputInfoPtr XqKeyboard = NULL;
-#endif
 
 #ifndef XQUEUE_ASYNC
 /*
@@ -75,11 +71,7 @@ InputInfoPtr XqKeyboard = NULL;
 static void
 xf86XqueSignal(int signum)
 {
-#ifndef NEW_INPUT
-  xf86Info.mouseDev->xquePending = 1;
-#else
   ((XqInfoPtr)(((MouseDevPtr)(XqMouse->private))->mousePriv))->xquePending = 1;
-#endif
   /*
    * This is a hack, but it is the only reliable way I can find of letting
    * the main select() loop know that there is more input waiting.  Receiving
@@ -98,252 +90,6 @@ xf86XqueSignal(int signum)
 }
 #endif
   
-
-#ifndef NEW_INPUT
-/*
- * xf86XqueRequest --
- *      Notice an i/o request from the xqueue.
- */
-
-void
-xf86XqueRequest()
-{
-  xqEvent  *XqueEvents;
-  int       XqueHead;
-  char      buf[100];
-
-  if (xqueFd < 0)
-    return;
-
-  XqueEvents = XqueQaddr->xq_events;
-  XqueHead = XqueQaddr->xq_head;
-
-  while (XqueHead != XqueQaddr->xq_tail)
-    {
-
-      switch(XqueEvents[XqueHead].xq_type) {
-	
-      case XQ_BUTTON:
-	xf86PostMseEvent(xf86Info.pMouse,
-			~(XqueEvents[XqueHead].xq_code) & 0x07, 0, 0);
-	break;
-
-      case XQ_MOTION: {
-	signed char dx, dy;
-
-	dx = (signed char)XqueEvents[XqueHead].xq_x;
-	dy = (signed char)XqueEvents[XqueHead].xq_y;
-	xf86PostMseEvent(xf86Info.pMouse,
-			~(XqueEvents[XqueHead].xq_code) & 0x07,
-			(int)dx, (int)dy);
-	break;
-      }
-
-      case XQ_KEY:
-	xf86PostKbdEvent(XqueEvents[XqueHead].xq_code);
-	break;
-	
-      default:
-	xf86Msg(X_WARNING, "Unknown Xque Event: 0x%02x\n",
-		XqueEvents[XqueHead].xq_type);
-      }
-      
-      if ((++XqueHead) == XqueQaddr->xq_size) XqueHead = 0;
-    }
-
-  /* reenable the signal-processing */
-  xf86Info.inputPending = TRUE;
-#ifdef XQUEUE_ASYNC
-  signal(SIGUSR2, (void (*)()) xf86XqueRequest);
-#else
-#if 0
-  signal(SIGUSR2, (void (*)()) xf86XqueSignal);
-#endif
-#endif
-
-#ifndef XQUEUE_ASYNC
-  {
-    int rval;
-
-    while ((rval = read(xquePipe[0], buf, sizeof(buf))) > 0)
-#ifdef DEBUG
-      ErrorF("Read %d bytes from xquePipe[0]\n", rval);
-#else
-      ;
-#endif
-  }
-#endif
-
-  XqueQaddr->xq_head = XqueQaddr->xq_tail;
-  xf86Info.mouseDev->xquePending = 0;
-  XqueQaddr->xq_sigenable = 1; /* UNLOCK */
-}
-
-
-
-/*
- * xf86XqueEnable --
- *      Enable the handling of the Xque
- */
-
-static int
-xf86XqueEnable()
-{
-  static struct kd_quemode xqueMode;
-  static Bool              was_here = FALSE;
-
-  if (!was_here) {
-    if ((xqueFd = open("/dev/mouse", O_RDONLY|O_NDELAY)) < 0)
-      {
-	if (xf86GetAllowMouseOpenFail()) {
-	  xf86Msg(X_WARNING, "Cannot open /dev/mouse (%s) - Continuing...\n",
-		  strerror(errno));
-	  return (Success);
-	} else {
-	  Error ("Cannot open /dev/mouse");
-	  return (!Success);
-	}
-      }
-#ifndef XQUEUE_ASYNC
-    pipe(xquePipe);
-    fcntl(xquePipe[0],F_SETFL,fcntl(xquePipe[0],F_GETFL,0)|O_NDELAY);
-    fcntl(xquePipe[1],F_SETFL,fcntl(xquePipe[1],F_GETFL,0)|O_NDELAY);
-#endif
-    was_here = TRUE;
-  }
-
-  if (xf86Info.mouseDev->xqueSema++ == 0) 
-    {
-#ifdef XQUEUE_ASYNC
-      (void) signal(SIGUSR2, (void (*)()) xf86XqueRequest);
-#else
-      (void) signal(SIGUSR2, (void (*)()) xf86XqueSignal);
-#endif
-      xqueMode.qsize = 64;    /* max events */
-      xqueMode.signo = SIGUSR2;
-      ioctl(xf86Info.consoleFd, KDQUEMODE, NULL);
-      
-      if (ioctl(xf86Info.consoleFd, KDQUEMODE, &xqueMode) < 0) {
-	Error ("Cannot set KDQUEMODE");
-	/* CONSTCOND */
-	return (!Success);
-      }
-      
-      XqueQaddr = (xqEventQueue *)xqueMode.qaddr;
-      XqueQaddr->xq_sigenable = 1; /* UNLOCK */
-    }
-
-  return(Success);
-}
-
-
-
-/*
- * xf86XqueDisable --
- *      disable the handling of the Xque
- */
-
-static int
-xf86XqueDisable()
-{
-  if (xf86Info.mouseDev->xqueSema-- == 1)
-    {
-      
-      XqueQaddr->xq_sigenable = 0; /* LOCK */
-      
-      if (ioctl(xf86Info.consoleFd, KDQUEMODE, NULL) < 0) {
-	Error ("Cannot unset KDQUEMODE");
-	/* CONSTCOND */
-	return (!Success);
-      }
-    }
-
-  return(Success);
-}
-
-
-
-/*
- * xf86XqueMseProc --
- *      Handle the initialization, etc. of a mouse
- */
-
-int
-xf86XqueMseProc(DeviceIntPtr pPointer, int what)
-{
-  MouseDevPtr	mouse = MOUSE_DEV(pPointer);
-  unchar        map[4];
-  int ret;
- 
-  mouse->device = pPointer;
-
-  switch (what)
-    {
-    case DEVICE_INIT: 
-      
-      pPointer->public.on = FALSE;
-      
-      map[1] = 1;
-      map[2] = 2;
-      map[3] = 3;
-      InitPointerDeviceStruct((DevicePtr)pPointer, 
-			      map, 
-			      3, 
-			      miPointerGetMotionEvents, 
-			      (PtrCtrlProcPtr)xf86MseCtrl, 
-			      miPointerGetMotionBufferSize());
-#ifdef XINPUT
-      InitValuatorAxisStruct(pPointer,
-			     0,
-			     0, /* min val */
-			     screenInfo.screens[0]->width, /* max val */
-			     1, /* resolution */
-			     0, /* min_res */
-			     1); /* max_res */
-      InitValuatorAxisStruct(pPointer,
-			     1,
-			     0, /* min val */
-			     screenInfo.screens[0]->height, /* max val */
-			     1, /* resolution */
-			     0, /* min_res */
-			     1); /* max_res */
-      /*
-       * Initialize valuator values in synch
-       * with dix/event.c DefineInitialRootWindow
-       */
-      *pPointer->valuator->axisVal = screenInfo.screens[0]->width / 2;
-      *(pPointer->valuator->axisVal+1) = screenInfo.screens[0]->height / 2;
-#endif
-
-      break;
-      
-    case DEVICE_ON:
-      mouse->lastButtons = 0;
-      mouse->emulateState = 0;
-      pPointer->public.on = TRUE;
-      ret = xf86XqueEnable();
-#ifndef XQUEUE_ASYNC
-      if (xquePipe[0] != -1)
-	AddEnabledDevice(xquePipe[0]);
-#endif
-      return(ret);
-      
-    case DEVICE_CLOSE:
-    case DEVICE_OFF:
-      pPointer->public.on = FALSE;
-      ret = xf86XqueDisable();
-#ifndef XQUEUE_ASYNC
-      if (xquePipe[0] != -1)
-	RemoveEnabledDevice(xquePipe[0]);
-#endif
-      return(ret);
-    }
-  
-  return Success;
-}
-#endif /* !NEW_INPUT */
-
-
 
 /*
  * xf86XqueKbdProc --
@@ -428,17 +174,11 @@ xf86XqueKbdProc(DeviceIntPtr pKeyboard, int what)
   case DEVICE_ON:
     pKeyboard->public.on = TRUE;
     xf86InitKBD(FALSE);
-#ifndef NEW_INPUT
-    return(xf86XqueEnable());
-#endif
     break;
     
   case DEVICE_CLOSE:
   case DEVICE_OFF:
     pKeyboard->public.on = FALSE;
-#ifndef NEW_INPUT
-    return(xf86XqueDisable());
-#endif
     break;
   }
   
@@ -456,7 +196,6 @@ xf86XqueEvents()
 {
 }
 
-#ifdef NEW_INPUT
 
 #ifdef XQUEUE_ASYNC
 static void XqDoInput(int signum);
@@ -794,6 +533,5 @@ XqueueMousePreInit(InputInfoPtr pInfo, const char *protocol, int flags)
     pInfo->flags |= XI86_CONFIGURED;
     return TRUE;
 }
-#endif
 
 #endif /* XQUEUE */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.74 1999/06/20 05:23:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.75 1999/06/27 09:20:16 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -153,114 +153,6 @@ typedef struct x_IHRec {
 
 static IHPtr InputHandlers = NULL;
 
-#ifndef NEW_INPUT
-static CARD32 buttonTimer(OsTimerPtr timer, CARD32 now, pointer arg);
-
-/*
- * Lets create a simple finite-state machine:
- *
- *   state[?][0]: action1
- *   state[?][1]: action2
- *   state[?][2]: next state
- *
- *   action > 0: ButtonPress
- *   action = 0: nothing
- *   action < 0: ButtonRelease
- *
- * Why this stuff ??? Normally you cannot press both mousebuttons together, so
- * the mouse reports both pressed at the same time ...
- */
-
-static signed char stateTab[48][3] = {
-
-/* nothing pressed */
-  {  0,  0,  0 },	
-  {  0,  0,  8 },	/* 1 right -> delayed right */
-  {  0,  0,  0 },       /* 2 nothing */
-  {  0,  0,  8 },	/* 3 right -> delayed right */
-  {  0,  0, 16 },	/* 4 left -> delayed left */
-  {  2,  0, 24 },       /* 5 left & right (middle press) -> middle pressed */
-  {  0,  0, 16 },	/* 6 left -> delayed left */
-  {  2,  0, 24 },       /* 7 left & right (middle press) -> middle pressed */
-
-/* delayed right */
-  {  1, -1,  0 },	/* 8 nothing (right event) -> init */
-  {  1,  0, 32 },       /* 9 right (right press) -> right pressed */
-  {  1, -1,  0 },	/* 10 nothing (right event) -> init */
-  {  1,  0, 32 },       /* 11 right (right press) -> right pressed */
-  {  1, -1, 16 },       /* 12 left (right event) -> delayed left */
-  {  2,  0, 24 },       /* 13 left & right (middle press) -> middle pressed */
-  {  1, -1, 16 },       /* 14 left (right event) -> delayed left */
-  {  2,  0, 24 },       /* 15 left & right (middle press) -> middle pressed */
-
-/* delayed left */
-  {  3, -3,  0 },	/* 16 nothing (left event) -> init */
-  {  3, -3,  8 },       /* 17 right (left event) -> delayed right */
-  {  3, -3,  0 },	/* 18 nothing (left event) -> init */
-  {  3, -3,  8 },       /* 19 right (left event) -> delayed right */
-  {  3,  0, 40 },	/* 20 left (left press) -> pressed left */
-  {  2,  0, 24 },	/* 21 left & right (middle press) -> pressed middle */
-  {  3,  0, 40 },	/* 22 left (left press) -> pressed left */
-  {  2,  0, 24 },	/* 23 left & right (middle press) -> pressed middle */
-
-/* pressed middle */
-  { -2,  0,  0 },	/* 24 nothing (middle release) -> init */
-  { -2,  0,  0 },	/* 25 right (middle release) -> init */
-  { -2,  0,  0 },	/* 26 nothing (middle release) -> init */
-  { -2,  0,  0 },	/* 27 right (middle release) -> init */
-  { -2,  0,  0 },	/* 28 left (middle release) -> init */
-  {  0,  0, 24 },	/* 29 left & right -> pressed middle */
-  { -2,  0,  0 },	/* 30 left (middle release) -> init */
-  {  0,  0, 24 },	/* 31 left & right -> pressed middle */
-
-/* pressed right */
-  { -1,  0,  0 },	/* 32 nothing (right release) -> init */
-  {  0,  0, 32 },	/* 33 right -> pressed right */
-  { -1,  0,  0 },	/* 34 nothing (right release) -> init */
-  {  0,  0, 32 },	/* 35 right -> pressed right */
-  { -1,  0, 16 },	/* 36 left (right release) -> delayed left */
-  { -1,  2, 24 },	/* 37 left & right (r rel, m prs) -> middle pressed */
-  { -1,  0, 16 },	/* 38 left (right release) -> delayed left */
-  { -1,  2, 24 },	/* 39 left & right (r rel, m prs) -> middle pressed */
-
-/* pressed left */
-  { -3,  0,  0 },	/* 40 nothing (left release) -> init */
-  { -3,  0,  8 },	/* 41 right (left release) -> delayed right */
-  { -3,  0,  0 },	/* 42 nothing (left release) -> init */
-  { -3,  0,  8 },	/* 43 right (left release) -> delayed right */
-  {  0,  0, 40 },	/* 44 left -> left pressed */
-  { -3,  2, 24 },	/* 45 left & right (l rel, mprs) -> middle pressed */
-  {  0,  0, 40 },	/* 46 left -> left pressed */
-  { -3,  2, 24 },	/* 47 left & right (l rel, mprs) -> middle pressed */
-};
-
-
-/*
- * Table to allow quick reversal of natural button mapping to correct mapping
- */
-
-/*
- * [JCH-96/01/21] The ALPS GlidePoint pad extends the MS protocol
- * with a fourth button activated by tapping the PAD.
- * The 2nd line corresponds to 4th button on; the drv sends
- * the buttons in the following map (MSBit described first) :
- * 0 | 4th | 1st | 2nd | 3rd
- * And we remap them (MSBit described first) :
- * 0 | 4th | 3rd | 2nd | 1st
- */
-static char reverseMap[32] = { 0,  4,  2,  6,  1,  5,  3,  7,
-			       8, 12, 10, 14,  9, 13, 11, 15,
-			      16, 20, 18, 22, 17, 21, 19, 23,
-			      24, 28, 26, 30, 25, 29, 27, 31};
-
-
-static char hitachMap[16] = {  0,  2,  1,  3, 
-			       8, 10,  9, 11,
-			       4,  6,  5,  7,
-			      12, 14, 13, 15 };
-
-#define reverseBits(map, b)	(((b) & ~0x0f) | map[(b) & 0x0f])
-#endif
 
 /*
  * TimeSinceLastInputEvent --
@@ -990,208 +882,6 @@ special:
 #endif /* !__EMX__ */
 
 
-#ifndef NEW_INPUT
-static CARD32
-buttonTimer(OsTimerPtr timer, CARD32 now, pointer arg)
-{
-#ifndef NEW_INPUT
-    MouseDevPtr	priv = MOUSE_DEV((DeviceIntPtr) arg);
-
-    xf86PostMseEvent(((DeviceIntPtr) arg), priv->truebuttons, 0, 0);
-#endif
-    return(0);
-}
-#endif
-
-
-/*      
- * xf86PostMseEvent --
- *	Translate the raw hardware MseEvent into an XEvent(s), and tell DIX
- *	about it. Perform a 3Button emulation if required.
- */
-
-#ifndef NEW_INPUT
-void
-xf86PostMseEvent(DeviceIntPtr device, int buttons, int dx, int dy)
-{
-  static OsTimerPtr timer = NULL;
-  MouseDevPtr private = MOUSE_DEV(device);
-  int         id, change;
-  int         truebuttons;
-  xEvent      mevent[2];
-
-#ifdef AMOEBA
-  int	      pressed;
-
-  pressed = ((buttons & BUTTON_PRESS) != 0);
-  buttons &= ~BUTTON_PRESS;
-#endif
-
-  xf86Info.lastEventTime = mevent->u.keyButtonPointer.time = GetTimeInMillis();
-
-  truebuttons = buttons;
-  if (private->mseType == PROT_MMHIT)
-    buttons = reverseBits(hitachMap, buttons);
-  else
-    buttons = reverseBits(reverseMap, buttons);
-
-  if (dx || dy) {
-    /*
-     * The accelaration stuff is now done in xf86Xinput.c when XInput
-     * support is enabled.
-     */
-#ifndef XINPUT
-    
-    /*
-     * accelerate the baby now if sqrt(dx*dx + dy*dy) > threshold !
-     * but do some simpler arithmetic here...
-     */
-    if ((abs(dx) + abs(dy)) >= private->threshold) {
-      dx = (dx * private->num) / private->den;
-      dy = (dy * private->num)/ private->den;
-    }
-
-    MOVEPOINTER(dx, dy, mevent->u.keyButtonPointer.time);
-#else
-    xf86PostMotionEvent(device, 0, 0, 2, dx, dy);
-#endif
-  }
-
-  if (private->emulate3Buttons)
-    {
-
-      /*
-       * Hack to operate the middle button even with Emulate3Buttons set.
-       * Modifying the state table to keep track of the middle button state
-       * would nearly double its size, so I'll stick with this fix.  - TJW
-       */
-      if (private->mseType == PROT_MMHIT)
-        change = buttons ^ reverseBits(hitachMap, private->lastButtons);
-      else
-        change = buttons ^ reverseBits(reverseMap, private->lastButtons);
-      if (change & 02)
-	{
-#ifndef XINPUT
-	  ENQUEUE(mevent,
-		  2, (buttons & 02) ? ButtonPress : ButtonRelease,
-		  XE_POINTER);
-#else
-	  xf86PostButtonEvent(device, 0, 2, (buttons & 02), 0, 0);	  
-#endif
-	}
-      
-      /*
-       * emulate the third button by the other two
-       */
-      if ((id = stateTab[(buttons & 0x07) + private->emulateState][0]) != 0)
-	{
-#ifndef XINPUT
-            ENQUEUE(mevent,
-                    abs(id), (id < 0 ? ButtonRelease : ButtonPress), 
-                    XE_POINTER);
-#else
-	    xf86PostButtonEvent(device, 0, abs(id), (id >= 0), 0, 0);
-#endif 
-	}
-
-      if ((id = stateTab[(buttons & 0x07) + private->emulateState][1]) != 0)
-	{
-#ifndef XINPUT
-            ENQUEUE(mevent,
-                    abs(id), (id < 0 ? ButtonRelease : ButtonPress), 
-                    XE_POINTER);
-#else
-	    xf86PostButtonEvent(device, 0, abs(id), (id >= 0), 0, 0);
-#endif
-	}
-
-      private->emulateState = stateTab[(buttons & 0x07) + private->emulateState][2];
-      if (stateTab[(buttons & 0x07) + private->emulateState][0] ||
-          stateTab[(buttons & 0x07) + private->emulateState][1])
-        {
-	    private->truebuttons = truebuttons;
-	    timer = TimerSet(timer, 0, private->emulate3Timeout, buttonTimer,
-			     (pointer)device);
-        }
-      else
-        {
-          if (timer)
-            {
-              TimerFree(timer);
-              timer = NULL;
-            }
-        }
-    }
-  else
-    {
-#ifdef AMOEBA
-      if (truebuttons != 0) {
-# ifndef XINPUT
-	    ENQUEUE(mevent,
-		    truebuttons, (pressed ? ButtonPress : ButtonRelease),
-		    XE_POINTER);
-# else
-	    xf86PostButtonEvent(device, 0, truebuttons, pressed, 0, 0);
-# endif
-      }
-#else
-      /*
-       * real three button event
-       * Note that xf86Info.lastButtons has the hardware button mapping which
-       * is the reverse of the button mapping reported to the server.
-       */
-      if (private->mseType == PROT_MMHIT)
-	change = buttons ^ reverseBits(hitachMap, private->lastButtons);
-      else
-	change = buttons ^ reverseBits(reverseMap, private->lastButtons);
-      while (change)
-	{
-	  id = ffs(change);
-	  change &= ~(1 << (id-1));
-# ifndef XINPUT
-            ENQUEUE(mevent,
-                    id, (buttons&(1<<(id-1)))? ButtonPress : ButtonRelease,
-                    XE_POINTER);
-# else
-	    xf86PostButtonEvent(device, 0, id, (buttons&(1<<(id-1))), 0, 0);
-# endif
-	}
-#endif
-    }
-    private->lastButtons = truebuttons;
-}
-#endif
-
-
-
-#ifndef NEW_INPUT
-/*
- * xf86Block --
- *      Os block handler.
- */
-
-/* ARGSUSED */
-void
-xf86Block(pointer blockData, OSTimePtr pTimeout, pointer pReadmask)
-{
-#if defined(XQUEUE)
-    /* 
-     * On MP SVR4 boxes, a race condition exists because the XQUEUE does
-     * not have anyway to lock it for exclusive access. This results in one
-     * processor putting something on the queue at the same time the other
-     * processor is taking it something off. The count of items in the queue
-     * can get off by 1. This just goes and checks to see if an extra event
-     * was put in the queue a during this period. The signal for this event
-     * was ignored while processing the previous event.
-     */ 
-
-    if (xf86Screens[0]->vtSema)
-	xf86XqueRequest();
-#endif
-}
-#endif
-
-
 #ifndef AMOEBA
 
 /*
@@ -1211,9 +901,7 @@ xf86Wakeup(pointer blockData, int err, pointer pReadmask)
 #endif	/* __OSF__ */
     fd_set* LastSelectMask = (fd_set*)pReadmask;
     fd_set devicesWithInput;
-#ifdef NEW_INPUT
     InputInfoPtr pInfo;
-#endif
 
     if (err >= 0) {
 
@@ -1221,9 +909,6 @@ xf86Wakeup(pointer blockData, int err, pointer pReadmask)
 #ifndef __OSF__
 	if (XFD_ANYSET(&devicesWithInput)) {
 	    (xf86Info.kbdEvents)();
-#ifndef NEW_INPUT
-	    (xf86Info.mouseDev->mseEvents)(xf86Info.mouseDev);
-#else
 	    pInfo = xf86InputDevs;
 	    while (pInfo) {
 		if (pInfo->read_input && pInfo->fd >= 0 &&
@@ -1237,7 +922,6 @@ xf86Wakeup(pointer blockData, int err, pointer pReadmask)
 		}
 		pInfo = pInfo->next;
 	    }
-#endif /* NEW_INPUT */
 	}
 #else /* __OSF__ */
 	/*
@@ -1277,14 +961,6 @@ xf86Wakeup(pointer blockData, int err, pointer pReadmask)
 	}
     }
 	    
-#ifndef NEW_INPUT
-#if defined(XQUEUE) && !defined(XQUEUE_ASYNC)
-  /* This could be done more cleanly */
-    if (xf86Info.mouseDev->xqueSema && xf86Info.mouseDev->xquePending)
-	xf86XqueRequest();
-#endif
-#endif
-
     if (xf86VTSwitchPending()) xf86VTSwitch();
 
     if (xf86Info.inputPending) ProcessInputEvents();
@@ -1317,9 +993,7 @@ static void
 xf86VTSwitch()
 {
   int i;
-#ifdef NEW_INPUT
   InputInfoPtr pInfo;
-#endif
   IHPtr ih;
 
 #ifdef DEBUG
@@ -1352,15 +1026,11 @@ xf86VTSwitch()
     }
 #ifndef __EMX__
     DisableDevice((DeviceIntPtr)xf86Info.pKeyboard);
-#ifndef NEW_INPUT
-    DisableDevice((DeviceIntPtr)xf86Info.pMouse);
-#else
     pInfo = xf86InputDevs;
     while (pInfo) {
       DisableDevice(pInfo->dev);
       pInfo = pInfo->next;
     }
-#endif /* NEW_INPUT */
 #endif /* !__EMX__ */
     for (ih = InputHandlers; ih; ih = ih->next)
       xf86DisableInputHandler(ih);
@@ -1392,15 +1062,11 @@ xf86VTSwitch()
 
 #ifndef __EMX__
       EnableDevice((DeviceIntPtr)xf86Info.pKeyboard);
-#ifndef NEW_INPUT
-      EnableDevice((DeviceIntPtr)xf86Info.pMouse);
-#else
       pInfo = xf86InputDevs;
       while (pInfo) {
 	EnableDevice(pInfo->dev);
 	pInfo = pInfo->next;
       }
-#endif /* NEW_INPUT */
 #endif /* !__EMX__ */
     for (ih = InputHandlers; ih; ih = ih->next)
       xf86EnableInputHandler(ih);
@@ -1442,15 +1108,11 @@ xf86VTSwitch()
 
 #ifndef __EMX__
     EnableDevice((DeviceIntPtr)xf86Info.pKeyboard);
-#ifndef NEW_INPUT
-    EnableDevice((DeviceIntPtr)xf86Info.pMouse);
-#else
     pInfo = xf86InputDevs;
     while (pInfo) {
       EnableDevice(pInfo->dev);
       pInfo = pInfo->next;
     }
-#endif /* NEW_INPUT */
 #endif /* !__EMX__ */
     for (ih = InputHandlers; ih; ih = ih->next)
       xf86EnableInputHandler(ih);

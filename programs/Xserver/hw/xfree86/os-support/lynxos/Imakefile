@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/Imakefile,v 3.11 1999/05/22 08:40:14 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/Imakefile,v 3.12 1999/07/10 07:24:48 dawes Exp $
 #include <Server.tmpl>
 
 #if !defined(PpcArchitecture)
@@ -11,13 +11,8 @@ PPC_SRCS=lynx_noinline.c lynx_ppc.S
 PPC_OBJS=lynx_noinline.o lynx_ppc.o
 #endif
 
-#if NewInput
 MOUSESRC = lynx_mouse.c
 MOUSEOBJ = lynx_mouse.o
-#else
-MOUSESRC = std_mouse.c std_mseEv.c
-MOUSEOBJ = std_mouse.o std_mseEv.o
-#endif
 
 SRCS = lynx_init.c lynx_video.c lynx_io.c lynx_mmap.c mapVT_noop.c \
        VTsw_usl.c std_kbdEv.c posix_tty.c $(MOUSESRC) \
@@ -46,10 +41,6 @@ LinkSourceFile(mapVT_noop.c,../shared)
 LinkSourceFile(VTsw_usl.c,../shared)
 LinkSourceFile(std_kbdEv.c,../shared)
 LinkSourceFile(posix_tty.c,../shared)
-#if !NewInput
-LinkSourceFile(std_mouse.c,../shared)
-LinkSourceFile(std_mseEv.c,../shared)
-#endif
 LinkSourceFile(libc_wrapper.c,../shared)
 LinkSourceFile(stdResource.c,../shared)
 LinkSourceFile(vidmem.c,../shared)

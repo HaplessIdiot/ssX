@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/confread.c,v 1.7 1999/04/29 09:13:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/confread.c,v 1.8 1999/07/12 08:14:25 dawes Exp $ */
 /*
  * Copyright 1999 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -53,10 +53,6 @@ char *rgbPath = RGB_DB;
 static int  getsection_files   (Tcl_Interp *interp, char *varpfx);
 static int  getsection_module  (Tcl_Interp *interp, char *varpfx);
 static int  getsection_flags   (Tcl_Interp *interp, char *varpfx);
-#ifndef NEW_INPUT
-static int  getsection_keyboard(Tcl_Interp *interp, char *varpfx);
-static int  getsection_pointer (Tcl_Interp *interp, char *varpfx);
-#endif
 #if 0
 static int  getsection_input   (Tcl_Interp *interp, char *varpfx);
 static int  getsection_dri     (Tcl_Interp *interp, char *varpfx);
@@ -131,10 +127,6 @@ TCL_XF86ReadXF86Config(clientData, interp, argc, argv)
 	getsection_files   (interp, argv[pfxarg]);
 	getsection_module  (interp, argv[pfxarg]);
 	getsection_flags   (interp, argv[pfxarg]);
-#ifndef NEW_INPUT
-	getsection_keyboard(interp, argv[pfxarg]);
-	getsection_pointer (interp, argv[pfxarg]);
-#endif
 #if 0
 	getsection_input   (interp, argv[pfxarg]);
 	getsection_dri     (interp, argv[pfxarg]);
@@ -202,196 +194,6 @@ getsection_flags(interp, varpfx)
 		config_list->conf_flags->flg_option_lst);
 	return TCL_OK;
 }
-
-#ifndef NEW_INPUT
-
-/*
-  Set the Tcl variables for the config from the Keyboard section
-*/
-
-static int
-getsection_keyboard(interp, varpfx)
-  Tcl_Interp *interp;
-  char *varpfx;
-{
-	char section[128];
-	XF86ConfKeyboardPtr keyboard;
-	char	tmpbuf[128], tmpbuf2[16];
-	int	i;
-
-	SECTION_NAME("Keyboard");
-	fprintf(stderr, "getsection_%s(%p, %p(%s))\n", section, interp, varpfx, varpfx);
-
-	keyboard = config_list->conf_keyboard;
-#ifdef XQUEUE
-	if (!NameCompare(keyboard->keyb_protocol, "Xqueue"))
-		Tcl_SetVar2(interp, section, "Protocol", "Xqueue", 0);
-#endif
-	if (!NameCompare(keyboard->keyb_protocol, "Standard"))
-		Tcl_SetVar2(interp, section, "Protocol", "Standard", 0);
-
-	if (keyboard->keyb_kbdDelay) {
-		sprintf(tmpbuf, "%d", keyboard->keyb_kbdDelay);
-		Tcl_SetVar2(interp, section, "AutoRepeat_delay", tmpbuf, 0);
-	}
-	if (keyboard->keyb_kbdRate) {
-		sprintf(tmpbuf, "%d", keyboard->keyb_kbdRate);
-		Tcl_SetVar2(interp, section, "AutoRepeat_rate", tmpbuf, 0);
-	}
-
-	tmpbuf[0] = '\0';
-	for (i = 1; i < 8; i++) {
-		if (keyboard->keyb_xleds & (1L << (i-1))) {
-			sprintf(tmpbuf2, "%d ", i);
-			strcat(tmpbuf, tmpbuf2);
-		}
-	}
-	Tcl_SetVar2(interp, section, "XLeds", tmpbuf, 0);
-
-#ifdef XKB
-	Tcl_SetVar2(interp, section, "XkbDisable",
-		keyboard->keyb_xkbDisable ? "XkbDisable": "", 0);
-	Tcl_SetVar2(interp, section, "XkbKeycodes",
-		StrOrNull(keyboard->keyb_xkbkeycodes), 0);
-	Tcl_SetVar2(interp, section, "XkbTypes",
-		StrOrNull(keyboard->keyb_xkbtypes), 0);
-	Tcl_SetVar2(interp, section, "XkbCompat",
-		StrOrNull(keyboard->keyb_xkbcompat), 0);
-	Tcl_SetVar2(interp, section, "XkbSymbols",
-		StrOrNull(keyboard->keyb_xkbsymbols), 0);
-	Tcl_SetVar2(interp, section, "XkbGeometry",
-		StrOrNull(keyboard->keyb_xkbgeometry), 0);
-	Tcl_SetVar2(interp, section, "XkbKeymap",
-		StrOrNull(keyboard->keyb_xkbkeymap), 0);
-	Tcl_SetVar2(interp, section, "XkbRules",
-		StrOrNull(keyboard->keyb_xkbrules), 0);
-	Tcl_SetVar2(interp, section, "XkbModel",
-		StrOrNull(keyboard->keyb_xkbmodel), 0);
-	Tcl_SetVar2(interp, section, "XkbLayout",
-		StrOrNull(keyboard->keyb_xkblayout), 0);
-	Tcl_SetVar2(interp, section, "XkbVariant",
-		StrOrNull(keyboard->keyb_xkbvariant), 0);
-	Tcl_SetVar2(interp, section, "XkbOptions",
-		StrOrNull(keyboard->keyb_xkboptions), 0);
-#endif /* XKB */
-
-#if defined(SVR4) && defined(i386) && defined(PC98)
-	Tcl_SetVar2(interp, section, "Panix106",
-		keyboard->keyb_panix106 ? "Panix106": "", 0);
-#endif
-
-	return TCL_OK;
-}
-
-/*
-  Set the Tcl variables for the config from the Pointer section
-*/
-
-static int
-getsection_pointer(interp, varpfx)
-  Tcl_Interp *interp;
-  char *varpfx;
-{
-	char section[128];
-	char tmpbuf[16];
-	char *name;
-	XF86ConfPointerPtr pntr;
-	int mtoken = -1;
-	int i;
-
-	SECTION_NAME("Pointer");
-	fprintf(stderr, "getsection_%s(%p, %p(%s))\n", section, interp, varpfx, varpfx);
-	pntr = config_list->conf_pointer;
-	name = NULL;
-	if (pntr->pntr_protocol) {
-		if (!NameCompare(pntr->pntr_protocol, "Xqueue"))
-#ifdef XQUEUE
-			name = "Xqueue";
-#else
-			name = NULL;
-#endif
-		if (!NameCompare(pntr->pntr_protocol, "OSMouse"))
-#if defined(USE_OSMOUSE) || defined(OSMOUSE_ONLY)
-			name = "OSMouse";
-#else
-			name = NULL;
-#endif
-#ifndef OSMOUSE_ONLY
-		if (name == NULL) {
-			mtoken = string_to_token(xfsMouseTab, 
-				pntr->pntr_protocol);
-			if (mtoken >= 0)
-				name = pntr->pntr_protocol;
-		}
-#endif
-	}
-	Tcl_SetVar2(interp, section, "Protocol", StrOrNull(name), 0);
-
-#ifndef OSMOUSE_ONLY
-	Tcl_SetVar2(interp, section, "Device",
-		StrOrNull(pntr->pntr_device), 0);
-	i = pntr->pntr_baudrate;
-	if (i) {
-		if (mtoken == PROT_LOGIMAN && i != 1200 && i != 9600)
-			i = 0;
-		else if (i % 1200 != 0 || i < 1200 || i > 9600)
-			i = 0;
-	}
-	sprintf(tmpbuf, "%d", i);
-	Tcl_SetVar2(interp, section, "BaudRate", tmpbuf, 0);
-	sprintf(tmpbuf, "%d", pntr->pntr_samplerate);
-	Tcl_SetVar2(interp, section, "SampleRate", tmpbuf, 0);
-	sprintf(tmpbuf, "%d", pntr->pntr_resolution);
-	Tcl_SetVar2(interp, section, "Resolution", tmpbuf, 0);
-	Tcl_SetVar2(interp, section, "ChordMiddle",
-		pntr->pntr_chordMiddle ? "ChordMiddle": "", 0);
-
-#ifdef XINPUT
-	Tcl_SetVar2(interp, section, "AlwaysCore",
-		pntr->pntr_alwaysCore ? "AlwaysCore": "", 0);
-#endif
-
-#ifdef CLEARDTR_SUPPORT
-	Tcl_SetVar2(interp, section, "ClearDTR",
-		pntr->pntr_clearDtr ? "ClearDTR": "", 0);
-	Tcl_SetVar2(interp, section, "ClearRTS",
-		pntr->pntr_clearRts ? "ClearRTS": "", 0);
-#endif
-#endif /* OSMOUSE_ONLY */
-
-	sprintf(tmpbuf, "%d", pntr->pntr_buttons);
-	Tcl_SetVar2(interp, section, "Buttons", tmpbuf, 0);
-	Tcl_SetVar2(interp, section, "Emulate3Buttons",
-		pntr->pntr_emulate3Buttons ? "Emulate3Buttons": "", 0);
-	if (pntr->pntr_emulate3Timeout) {
-		sprintf(tmpbuf, "%d", pntr->pntr_emulate3Timeout);
-		Tcl_SetVar2(interp, section, "Emulate3Timeout", tmpbuf, 0);
-	}
-
-	switch (pntr->pntr_positiveZ) {
-	case 0:
-		Tcl_SetVar2(interp, section, "ZAxisPosMapping", "", 0);
-		Tcl_SetVar2(interp, section, "ZAxisNegMapping", "", 0);
-		break;
-	case CONF_ZAXIS_MAPTOX:
-		Tcl_SetVar2(interp, section, "ZAxisPosMapping", "X", 0);
-		Tcl_SetVar2(interp, section, "ZAxisNegMapping", "X", 0);
-		break;
-	case CONF_ZAXIS_MAPTOY:
-		Tcl_SetVar2(interp, section, "ZAxisPosMapping", "Y", 0);
-		Tcl_SetVar2(interp, section, "ZAxisNegMapping", "Y", 0);
-		break;
-	default:
-		sprintf(tmpbuf, "%d", pntr->pntr_negativeZ);
-		Tcl_SetVar2(interp, section, "ZAxisNegMapping", tmpbuf, 0);
-		sprintf(tmpbuf, "%d", pntr->pntr_positiveZ);
-		Tcl_SetVar2(interp, section, "ZAxisPosMapping", tmpbuf, 0);
-	}
-
-	return TCL_OK;
-}
-
-#endif /* NEW_INPUT */
 
 /*
   Set the Tcl variables for the config from the Monitor sections

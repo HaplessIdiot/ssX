@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.104 1999/07/17 06:30:55 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.105 1999/08/14 10:49:34 dawes Exp $
 
 
 
@@ -43,16 +43,6 @@ LOGDEFINES = -DDEFAULT_LOGPREFIX=\"$(LOGDIRECTORY)/XFree86.\"
 
 #if DoLoadableServer
 EXT_MODULES_DEFINES = $(GLX_DEFINES)
-#endif
-
-#if !NewInput
-#if !defined(LynxOSArchitecture) && !defined(OS2Architecture)
-    PNPMOUSESRCS = xf86PnPMouse.c
-    PNPMOUSEOBJS = xf86PnPMouse.o
- PNPMOUSEDEFINES = -DPNP_MOUSE
-#endif
-    MOUSESRCS = xf86Mouse.c
-    MOUSEOBJS = xf86Mouse.o
 #endif
 
 #if defined(LinuxArchitecture) && defined(PpcArchitecture)
@@ -96,8 +86,6 @@ SRCS =	\
 	xf86Io.c \
 	xf86MiscExt.c \
 	xf86Mode.c \
-	$(MOUSESRCS) \
-	$(PNPMOUSESRCS) \
 	xf86Option.c \
 	xf86VidMode.c \
 	xf86fbman.c \
@@ -124,8 +112,6 @@ OBJS = \
 	xf86Io.o \
 	xf86MiscExt.o \
 	xf86Mode.o \
-	$(MOUSEOBJS) \
-	$(PNPMOUSEOBJS) \
 	xf86Option.o \
 	xf86VidMode.o \
 	xf86fbman.o \
@@ -158,7 +144,7 @@ EXP_DEFINES = -DEXPIRY_TIME=XF86ServerExpiry $(EXP_FORCE_DEFINES)
 PROJECTROOT = ProjectRoot
 XCONFIGDEFINES = -DPROJECTROOT='"$(PROJECTROOT)"'
 
-    DEFINES =	$(CONSDEFINES) $(PNPMOUSEDEFINES) $(KBDDEFINES) $(EXT_DEFINES)
+    DEFINES =	$(CONSDEFINES) $(KBDDEFINES) $(EXT_DEFINES)
 
 AllTarget($(OFILES))
 

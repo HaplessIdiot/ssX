@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.53 1999/07/06 11:38:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.54 1999/08/01 07:57:11 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -147,9 +147,6 @@ void DoScanPci(int argc, char **argv, int i);
 
 void xf86PostKbdEvent(unsigned key);
 void xf86PostMseEvent(DeviceIntPtr device, int buttons, int dx, int dy);
-#ifndef NEW_INPUT
-void xf86Block(pointer blockData, OSTimePtr pTimeout, pointer pReadmask);
-#endif
 void xf86Wakeup(pointer blockData, int err, pointer pReadmask);
 void xf86SigHandler(int signo);
 
@@ -169,25 +166,6 @@ void xf86KbdLeds(void);
 void xf86KbdCtrl(DevicePtr pKeyboard, KeybdCtrl *ctrl); 
 void xf86InitKBD(Bool init);  
 int xf86KbdProc(DeviceIntPtr pKeyboard, int what);
-#ifndef NEW_INPUT
-void xf86MseCtrl(DevicePtr pPointer, PtrCtrl *ctrl);
-int xf86MseProc(DeviceIntPtr pPointer, int what);
-int xf86MseProcAux(DeviceIntPtr pPointer, int what, MouseDevPtr mouse,
-		   int *fd, PtrCtrlProcPtr ctrl);
-void xf86MseEvents(MouseDevPtr mouse);
-
-/* xf86Mouse.c */
-
-Bool xf86MouseSupported(int mousetype);
-void xf86SetupMouse(MouseDevPtr mouse);  
-void xf86MouseProtocol(DeviceIntPtr device, unsigned char *rBuf,  int nBytes);  
-#ifdef XINPUT
-void xf86MouseCtrl(DeviceIntPtr device, PtrCtrl *ctrl);
-#endif
-
-/* xf86PnPMouse.c */
-int xf86GetPnPMouseProtocol(MouseDevPtr mouse);
-#endif
 
 /* xf86Kbd.c */ 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.133 1999/08/21 13:48:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.134 1999/08/28 09:00:52 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -93,7 +93,6 @@ static PixmapFormatRec formats[MAXFORMATS] = {
 static int numFormats = 6;
 static Bool formatsDone = FALSE;
 
-#ifdef NEW_INPUT
 InputDriverRec xf86KEYBOARD = {
 	1,
 	"keyboard",
@@ -105,7 +104,6 @@ InputDriverRec xf86KEYBOARD = {
 };
 #undef MOUSE
 extern InputDriverRec MOUSE;
-#endif
 
 /*
  * InitOutput --
@@ -268,11 +266,9 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     if ((modulelist = xf86DriverlistFromConfig()))
       xf86LoadModules(modulelist, NULL);
 
-#ifdef NEW_INPUT
     /* Setup the builtin input drivers */
     xf86AddInputDriver(&xf86KEYBOARD, NULL, 0);
     xf86AddInputDriver(&MOUSE, NULL, 0);
-#endif
     /* Load all input driver modules specified in the config file. */
     if ((modulelist = xf86InputDriverlistFromConfig()))
       xf86LoadModules(modulelist, NULL);
@@ -742,12 +738,8 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
   xf86Initialising = FALSE;
 
 #ifndef AMOEBA
-#ifdef NEW_INPUT
   RegisterBlockAndWakeupHandlers((BlockHandlerProcPtr)NoopDDA, xf86Wakeup,
 				 NULL);
-#else
-  RegisterBlockAndWakeupHandlers(xf86Block, xf86Wakeup, NULL);
-#endif
 #endif
 }
 
@@ -852,7 +844,6 @@ InitInput(argc, argv)
 		}
 	    }
 	}
-#ifdef NEW_INPUT
 	if (!corePointer) {
 	    xf86Msg(X_WARNING, "No core pointer registered\n");
 	    /* XXX register a dummy core pointer */
@@ -863,50 +854,22 @@ InitInput(argc, argv)
 	    /* XXX register a dummy core keyboard */
 	}
 #endif
-#endif
     }
 
-#ifdef NEW_INPUT
     /* Initialise all input devices. */
     pInfo = xf86InputDevs;
     while (pInfo) {
 	xf86ActivateDevice(pInfo);
 	pInfo = pInfo->next;
     }
-#endif
 
     xf86Info.pKeyboard = AddInputDevice(xf86Info.kbdProc, TRUE); 
-#ifndef NEW_INPUT
-    xf86Info.pMouse =  AddInputDevice(xf86Info.mouseDev->mseProc, TRUE);
-#else
     if (corePointer)
 	xf86Info.pMouse = corePointer->dev;
-#endif
     RegisterKeyboardDevice(xf86Info.pKeyboard); 
-#ifndef NEW_INPUT
-    RegisterPointerDevice(xf86Info.pMouse); 
-#endif
-
-#ifndef NEW_INPUT
-#ifdef XINPUT
-  (xf86Info.pMouse)->public.devicePrivate = xf86Info.mouseLocal;
-  ((LocalDevicePtr) xf86Info.mouseLocal)->dev = xf86Info.pMouse;
-#else
-  (xf86Info.pMouse)->public.devicePrivate = (pointer) xf86Info.mouseDev;
-#endif
-#endif
-  
-#ifndef NEW_INPUT
-#ifdef XINPUT
-  InitExtInput();
-#endif
-#endif
 
   miRegisterPointerDevice(screenInfo.screens[0], xf86Info.pMouse);
 #ifdef XINPUT
-#ifndef NEW_INPUT
-  xf86XinputFinalizeInit(xf86Info.pMouse);
-#endif
   xf86eqInit ((DevicePtr)xf86Info.pKeyboard, (DevicePtr)xf86Info.pMouse);
 #else
   mieqInit (xf86Info.pKeyboard, xf86Info.pMouse);
@@ -990,10 +953,6 @@ AbortDDX()
   /*
    * try to deinitialize all input devices
    */
-#ifndef NEW_INPUT
-  if (xf86Info.pMouse)
-    (xf86Info.mouseDev->mseProc)(xf86Info.pMouse, DEVICE_CLOSE);
-#endif
   if (xf86Info.pKeyboard)
     (xf86Info.kbdProc)(xf86Info.pKeyboard, DEVICE_CLOSE);
 

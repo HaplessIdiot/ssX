@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/10 1996/10/19 18:06:19 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/Imakefile,v 3.22 1999/06/27 14:08:18 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/Imakefile,v 3.23 1999/08/14 10:50:05 dawes Exp $
 XCOMM $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/Imakefile,v 1.9 1999/06/07 13:01:42 faith Exp $
 
 #include <Server.tmpl>
@@ -26,13 +26,8 @@ DRI_SRC = sigio.c
 DRI_OBJ = sigio.o
 #endif
 
-#if NewInput
 MOUSESRC = lnx_mouse.c
 MOUSEOBJ = lnx_mouse.o
-#else
-MOUSESRC = std_mouse.c std_mseEv.c
-MOUSEOBJ = std_mouse.o std_mseEv.o
-#endif
 
 SRCS = lnx_init.c lnx_video.c lnx_io.c libc_wrapper.c bios_mmap.c \
        mapVT_noop.c VTsw_usl.c std_kbdEv.c posix_tty.c $(MOUSESRC) \
@@ -76,10 +71,6 @@ LinkSourceFile(mapVT_noop.c,../shared)
 LinkSourceFile(VTsw_usl.c,../shared)
 LinkSourceFile(std_kbdEv.c,../shared)
 LinkSourceFile(posix_tty.c,../shared)
-#if !NewInput
-LinkSourceFile(std_mouse.c,../shared)
-LinkSourceFile(std_mseEv.c,../shared)
-#endif
 LinkSourceFile(libc_wrapper.c,../shared)
 LinkSourceFile(stdResource.c,../shared)
 LinkSourceFile(vidmem.c,../shared)

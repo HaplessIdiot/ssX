@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1999 by The XFree86 Project, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86MiscExt.c,v 1.1 1999/07/10 12:17:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86MiscExt.c,v 1.2 1999/07/18 03:26:49 dawes Exp $ */
 
 /*
  * This file contains the Pointer/Keyboard functions needed by the 
@@ -32,11 +32,9 @@
 #include "inputstr.h"
 #endif
 
-#ifdef NEW_INPUT
 #include "xf86OSmouse.h"
 #include "../input/mouse/mouse.h"
 const char * xf86ProtocolIDToName(ProtocolID id);
-#endif
 
 #define DEBUG
 #ifdef DEBUG
@@ -81,29 +79,6 @@ typedef enum {
 static int
 MapMseProto(int proto, MseProtoMapDirection mapping)
 {
-#ifndef NEW_INPUT
-    static int MapProto_ToMisc[] = {
-	MTYPE_MICROSOFT,	MTYPE_MOUSESYS,		MTYPE_MMSERIES,
-	MTYPE_LOGITECH,		MTYPE_BUSMOUSE,		MTYPE_LOGIMAN,
-	MTYPE_PS_2,		MTYPE_MMHIT,		MTYPE_GLIDEPOINT,
-	MTYPE_IMSERIAL,		MTYPE_THINKING,		MTYPE_IMPS2,
-	MTYPE_THINKINGPS2,	MTYPE_MMANPLUSPS2,	MTYPE_GLIDEPOINTPS2,
-	MTYPE_NETPS2,		MTYPE_NETSCROLLPS2,	MTYPE_SYSMOUSE,
-	MTYPE_UNKNOWN,		MTYPE_UNKNOWN,		MTYPE_AUTOMOUSE,
-	MTYPE_ACECAD
-    };
-
-    static MouseProtocol MapProto_FromMisc[] = {
-	PROT_MS,		PROT_MSC,		PROT_MM,
-	PROT_LOGI,		PROT_BM,		PROT_LOGIMAN,
-	PROT_PS2,		PROT_MMHIT,		PROT_GLIDEPOINT,
-	PROT_IMSERIAL,		PROT_THINKING,		PROT_IMPS2,
-	PROT_THINKINGPS2,	PROT_MMPLUSPS2,		PROT_GLIDEPOINTPS2,
-	PROT_NETPS2,		PROT_NETSCROLLPS2,	PROT_SYSMOUSE,
-	PROT_AUTO,		PROT_ACECAD
-    };
-#define PROT_DEFAULT  0 /* PROT_MS */
-#else
     static int MapProto_ToMisc[] = {
 	MTYPE_MICROSOFT,	MTYPE_MOUSESYS,		MTYPE_MMSERIES,
 	MTYPE_LOGITECH,		MTYPE_LOGIMAN,		MTYPE_MMHIT,
@@ -122,21 +97,12 @@ MapMseProto(int proto, MseProtoMapDirection mapping)
 	PROT_NETSCPS2,	PROT_SYSMOUSE,	PROT_AUTO,	PROT_ACECAD
     };
 #define PROT_DEFAULT  -2 /* PROT_UNKNOWN */
-#endif
 
     if (mapping == TO_MISC) {
-#ifndef NEW_INPUT
-	if ((MouseProtocol) proto == PROT_OSMOUSE)
-		return MTYPE_OSMOUSE;
-#endif
 	if (proto < 0 || proto >= sizeof(MapProto_ToMisc)/sizeof(int))
 		return MTYPE_UNKNOWN;
 	return MapProto_ToMisc[proto];
     } else {
-#ifndef NEW_INPUT
-	if (proto == MTYPE_OSMOUSE || proto == MTYPE_XQUEUE)
-		return -1; /* PROT_OSMOUSE */
-#endif
 	if (proto < 0 || proto >= sizeof(MapProto_FromMisc)/sizeof(int))
 		return PROT_DEFAULT;
 	return MapProto_FromMisc[proto];
@@ -155,26 +121,6 @@ MiscExtGetMouseSettings(pointer *mouse, char **devname)
     if (!mseptr)
 	return FALSE;
 
-#ifndef NEW_INPUT
-    *devname = xf86Info.mouseDev->mseDevice;
-    mseptr->type =	MapMseProto(xf86Info.mouseDev->mseType, TO_MISC);
-#ifdef XQUEUE
-    if (xf86Info.mouseDev->mseProc == xf86XqueMseProc)
-	mseptr->type = MTYPE_XQUEUE;
-#endif
-#if defined(USE_OSMOUSE) || defined(OSMOUSE_ONLY)
-    if (xf86Info.mouseDev->mseProc == xf86OsMouseProc)
-	mseptr->type = MTYPE_OSMOUSE;
-#endif
-    mseptr->baudrate =		xf86Info.mouseDev->baudRate;
-    mseptr->samplerate =	xf86Info.mouseDev->sampleRate;
-    mseptr->resolution =	xf86Info.mouseDev->resolution;
-    mseptr->buttons =		xf86Info.mouseDev->buttons;
-    mseptr->em3buttons =	xf86Info.mouseDev->emulate3Buttons;
-    mseptr->em3timeout =	xf86Info.mouseDev->emulate3Timeout;
-    mseptr->chordmiddle =	xf86Info.mouseDev->chordMiddle;
-    mseptr->flags =		xf86Info.mouseDev->mouseFlags;
-#else
     {
 	InputInfoPtr pInfo;
 	MouseDevPtr pMse;
@@ -202,7 +148,6 @@ MiscExtGetMouseSettings(pointer *mouse, char **devname)
 	mseptr->flags =		pMse->mouseFlags;
 	mseptr->private =	pInfo;
     }
-#endif
     *mouse = mseptr;
     return TRUE;
 }
@@ -355,14 +300,10 @@ MiscExtApply(pointer structure, MiscExtStructType mse_or_kbd)
     if (mse_or_kbd == MISC_POINTER) {
 	Bool reopen = FALSE;
 	mseParamsPtr mse = structure;
-#ifndef NEW_INPUT
-	int msetype;
-#else
 	InputInfoPtr pInfo;
 	MouseDevPtr pMse;
 	MouseProtocolPtr protocol;
 	char tmpbuf[128];
-#endif
 
 	if (mse->type < MTYPE_MICROSOFT
 		|| ( mse->type > MTYPE_ACECAD
@@ -372,14 +313,10 @@ MiscExtApply(pointer structure, MiscExtStructType mse_or_kbd)
 	if (mse->type != MTYPE_OSMOUSE)
 	    return MISC_RET_BADMSEPROTO;
 #else
-#if !defined(XQUEUE) || defined(NEW_INPUT)
 	if (mse->type == MTYPE_XQUEUE)
 	    return MISC_RET_BADMSEPROTO;
-#endif
-#if !defined(USE_OSMOUSE) || defined(NEW_INPUT)
 	if (mse->type == MTYPE_OSMOUSE)
 	    return MISC_RET_BADMSEPROTO;
-#endif
 #endif /* OSMOUSE_ONLY */
 
 	if (mse->em3timeout < 0)
@@ -390,26 +327,6 @@ MiscExtApply(pointer structure, MiscExtStructType mse_or_kbd)
 	    return MISC_RET_BADBAUDRATE;
 	if (mse->type == MTYPE_LOGIMAN && mse->samplerate)
 	    return MISC_RET_BADCOMBO;
-
-#ifndef NEW_INPUT
-	msetype    = xf86Info.mouseDev->mseType;
-#ifdef XQUEUE
-	if (xf86Info.mouseDev->mseProc == xf86XqueMseProc)
-	    msetype = MTYPE_XQUEUE;
-#endif
-#if defined(USE_OSMOUSE) || defined(OSMOUSE_ONLY)
-	if (xf86Info.mouseDev->mseProc == xf86OsMouseProc)
-	    msetype = MTYPE_OSMOUSE;
-#endif
-
-	if (mse->type != msetype) {
-	    if (mse->type == MTYPE_XQUEUE || mse->type == MTYPE_OSMOUSE
-		    || msetype == MTYPE_XQUEUE || msetype == MTYPE_OSMOUSE)
-		return MISC_RET_BADMSEPROTO;
-	    else
-		reopen = TRUE;
-	}
-#endif /* NEW_INPUT */
 
 	if (mse->flags & MF_REOPEN) {
 	    reopen = TRUE;
@@ -452,34 +369,6 @@ MiscExtApply(pointer structure, MiscExtStructType mse_or_kbd)
 		return MISC_RET_BADCOMBO;
 	}
 
-#ifndef NEW_INPUT
-	if (xf86Info.mouseDev->mseType != MapMseProto(mse->type, FROM_MISC)
-		|| xf86Info.mouseDev->baudRate != mse->baudRate
-		|| xf86Info.mouseDev->sampleRate != mse->sampleRate
-		|| xf86Info.mouseDev->resolution != mse->resolution
-		|| xf86Info.mouseDev->mouseFlags != mse->flags)
-	    reopen = TRUE;
-
-	if (reopen && msetype != MTYPE_OSMOUSE && msetype != MTYPE_XQUEUE)
-	    (xf86Info.mouseDev->mseProc)(xf86Info.pMouse, DEVICE_CLOSE);
-
-	xf86Info.mouseDev->mseType         = MapMseProto(mse->type, FROM_MISC);
-	xf86Info.mouseDev->baudRate        = mse->baudRate;
-	xf86Info.mouseDev->sampleRate      = mse->sampleRate;
-	xf86Info.mouseDev->resolution      = mse->resolution;
-	xf86Info.mouseDev->buttons         = mse->buttons;
-	xf86Info.mouseDev->emulate3Buttons = mse->em3buttons;
-	xf86Info.mouseDev->emulate3Timeout = mse->em3timeout;
-	xf86Info.mouseDev->chordMiddle     = mse->chordMiddle;
-	xf86Info.mouseDev->mouseFlags      = mse->flags;
-
-	if (reopen && msetype != MTYPE_OSMOUSE && msetype != MTYPE_XQUEUE) {
-	    xf86Info.pMouse->public.on = FALSE;
-	    xf86AllowMouseOpenFail = TRUE;
-	    xf86MouseInit(xf86Info.mouseDev);
-	    (xf86Info.mouseDev->mseProc)(xf86Info.pMouse, DEVICE_ON);
-	}
-#else /* NEW_INPUT */
 	/* XXX - This still needs work */
 
 	pInfo = mse->private;
@@ -510,7 +399,6 @@ MiscExtApply(pointer structure, MiscExtStructType mse_or_kbd)
 	    (pMse->device->deviceProc)(pMse->device, DEVICE_ON);
 	/* Set pInfo->options too */
 
-#endif /* NEW_INPUT */
     }
     if (mse_or_kbd == MISC_KEYBOARD) {
 	kbdParamsPtr kbd = structure;

@@ -69,7 +69,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_devs.c,v 1.4 1999/05/07 02:56:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_devs.c,v 1.5 1999/05/22 08:40:15 dawes Exp $ */
 
 #include "X.h"
 
@@ -113,32 +113,3 @@ xf86SetKbdLeds(int leds)
 	ioctl(xf86Info.consoleFd, KDSETLED, leds);
 }
 
-#ifndef NEW_INPUT
-void
-xf86MouseInit(MouseDevPtr mouse)
-{
-	return;
-}
-
-int
-xf86MouseOn(MouseDevPtr mouse)
-{
-	if ((mouse->mseFd = open(mouse->mseDevice, O_RDWR | O_NDELAY)) < 0)
-	{
-		if (xf86Info.allowMouseOpenFail) {
-			xf86Msg(X_WARNING,
-				"Cannot open mouse (%s) - Continuing...\n",
-				strerror(errno));
-			return(-2);
-		}
-		FatalError("Cannot open mouse (%s)\n", strerror(errno));
-	}
-
-	xf86SetupMouse(mouse);
-
-	/* Flush any pending input */
-	ioctl(mouse->mseFd, TCFLSH, 0);
-
-	return(mouse->mseFd);
-}
-#endif

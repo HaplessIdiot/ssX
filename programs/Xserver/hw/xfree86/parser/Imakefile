@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Imakefile,v 1.8 1999/06/27 14:08:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Imakefile,v 1.9 1999/07/04 06:39:16 dawes Exp $ */
 
 
 
@@ -8,10 +8,6 @@
 #define DoProfileLib    NO
 #define HasSharedData   NO
 #define LibName         xf86config
-
-#if NewInput
-INPUTDEFS=-DNEW_INPUT
-#endif
 
 #define UseDBMalloc	NO
 
@@ -31,8 +27,6 @@ XCONFIGFILE = XConfigFile
 XCONFIGDIR = XConfigDir
 
 INCLUDES = -I. -I$(XF86OSSRC)
-
-DEFINES = $(INPUTDEFS)
 
 HEADERS = xf86Parser.h xf86Optrec.h
 

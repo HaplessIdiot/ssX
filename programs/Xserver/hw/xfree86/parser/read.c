@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/read.c,v 1.9 1999/05/30 14:04:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/read.c,v 1.10 1999/06/27 14:08:31 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -75,16 +75,6 @@ xf86ReadConfigFile (void)
 			{
 				HANDLE_RETURN (conf_flags, parseFlagsSection ());
 			}
-#ifndef NEW_INPUT
-			else if (NameCompare (val.str, "keyboard") == 0)
-			{
-				HANDLE_RETURN (conf_keyboard, parseKeyboardSection ());
-			}
-			else if (NameCompare (val.str, "pointer") == 0)
-			{
-				HANDLE_RETURN (conf_pointer, parsePointerSection ());
-			}
-#else
 			else if (NameCompare (val.str, "keyboard") == 0)
 			{
 				HANDLE_LIST (conf_input_lst, parseKeyboardSection,
@@ -95,7 +85,6 @@ xf86ReadConfigFile (void)
 				HANDLE_LIST (conf_input_lst, parsePointerSection,
 							 XF86ConfInputPtr);
 			}
-#endif
 			else if (NameCompare (val.str, "videoadaptor") == 0)
 			{
 				HANDLE_LIST (conf_videoadaptor_lst, parseVideoAdaptorSection,
@@ -220,10 +209,6 @@ XF86FreeConfig (XF86ConfigPtr p)
 	freeFiles (p->conf_files);
 	freeModules (p->conf_modules);
 	freeFlags (p->conf_flags);
-#ifndef NEW_INPUT
-	freeKeyboard (p->conf_keyboard);
-	freePointer (p->conf_pointer);
-#endif
 	freeMonitorList (p->conf_monitor_lst);
 	freeVideoAdaptorList (p->conf_videoadaptor_lst);
 	freeDeviceList (p->conf_device_lst);

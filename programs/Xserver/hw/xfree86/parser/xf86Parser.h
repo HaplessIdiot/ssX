@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.15 1999/05/30 14:04:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.16 1999/06/27 14:08:32 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -68,56 +68,7 @@ XF86ConfModuleRec, *XF86ConfModulePtr;
 
 #define CONF_IMPLICIT_KEYBOARD	"Implicit Core Keyboard"
 
-#ifndef NEW_INPUT
-/* Device tokens */
-typedef struct
-{
-	char *keyb_protocol;
-	int keyb_kbdDelay;
-	int keyb_kbdRate;
-	long keyb_xleds;
-	int keyb_xkbDisable;
-	char *keyb_xkbkeymap;
-	char *keyb_xkbcompat;
-	char *keyb_xkbtypes;
-	char *keyb_xkbkeycodes;
-	char *keyb_xkbgeometry;
-	char *keyb_xkbsymbols;
-	char *keyb_xkbrules;
-	char *keyb_xkbmodel;
-	char *keyb_xkblayout;
-	char *keyb_xkbvariant;
-	char *keyb_xkboptions;
-	int keyb_panix106;
-}
-XF86ConfKeyboardRec, *XF86ConfKeyboardPtr;
-#endif /* NEW_INPUT */
-
 #define CONF_IMPLICIT_POINTER	"Implicit Core Pointer"
-
-#ifndef NEW_INPUT
-#define CONF_ZAXIS_MAPTOX	-1
-#define CONF_ZAXIS_MAPTOY	-2
-
-typedef struct
-{
-	char *pntr_protocol;
-	char *pntr_device;
-	int pntr_buttons;
-	int pntr_baudrate;
-	int pntr_samplerate;
-	int pntr_resolution;
-	int pntr_emulate3Buttons;
-	int pntr_emulate3Timeout;
-	int pntr_chordMiddle;
-	int pntr_clearDtr;
-	int pntr_clearRts;
-	int pntr_negativeZ;
-	int pntr_positiveZ;
-	int pntr_alwaysCore;
-}
-XF86ConfPointerRec, *XF86ConfPointerPtr;
-#endif /* NEW_INPUT */
 
 #define XF86CONF_PHSYNC    0x0001
 #define XF86CONF_NHSYNC    0x0002
@@ -395,10 +346,6 @@ typedef struct
 	XF86ConfFilesPtr conf_files;
 	XF86ConfModulePtr conf_modules;
 	XF86ConfFlagsPtr conf_flags;
-#ifndef NEW_INPUT
-	XF86ConfKeyboardPtr conf_keyboard;
-	XF86ConfPointerPtr conf_pointer;
-#endif
 	XF86ConfVideoAdaptorPtr conf_videoadaptor_lst;
 	XF86ConfModesPtr conf_modes_lst;
 	XF86ConfMonitorPtr conf_monitor_lst;

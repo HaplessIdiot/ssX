@@ -1,15 +1,10 @@
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/Imakefile,v 1.3 1999/04/04 00:20:58 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/Imakefile,v 1.4 1999/05/22 08:40:15 dawes Exp $
 
 #include <Server.tmpl>
 
-#if NewInput
-MOUSESRC = bsd_mouse.c
-MOUSEOBJ = bsd_mouse.o
-#else
-MOUSESRC = std_mouse.c std_mseEv.c
-MOUSEOBJ = std_mouse.o std_mseEv.o
-#endif
+MOUSESRC = pmax_mouse.c
+MOUSEOBJ = pmax_mouse.o
 
 SRCS =  pmax_devs.c pmax_init.c pmax_map.c pmax_pci.c pmax_ppc.c \
 	bios_V4mmap.c VTsw_usl.c sysv_kbd.c std_kbdEv.c \
@@ -36,10 +31,6 @@ LinkSourceFile(ioperm_noop.c,../shared)
 LinkSourceFile(sysv_kbd.c,../shared)
 LinkSourceFile(std_kbdEv.c,../shared)
 LinkSourceFile(posix_tty.c,../shared)
-#if !NewInput
-LinkSourceFile(std_mouse.c,../shared)
-LinkSourceFile(std_mseEv.c,../shared)
-#endif
 LinkSourceFile(libc_wrapper.c,../shared)
 LinkSourceFile(stdResource.c,../shared)
 

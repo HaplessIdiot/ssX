@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/Imakefile,v 3.16 1999/05/22 08:40:17 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/Imakefile,v 3.17 1999/05/22 14:52:28 dawes Exp $
 
 
 
@@ -14,13 +14,8 @@ BIOS_MOD = bios_mmap
 BIOS_MOD = bios_devmem
 #endif
 
-#if NewInput
 MOUSESRC = sysv_mouse.c
 MOUSEOBJ = sysv_mouse.o
-#else
-MOUSESRC = std_mouse.c std_mseEv.c
-MOUSEOBJ = std_mouse.o std_mseEv.o
-#endif
 
 SRCS = sysv_init.c sysv_video.c sysv_io.c $(BIOS_MOD).c VTsw_usl.c \
        sysv_kbd.c std_kbdEv.c posix_tty.c $(MOUSESRC) xqueue.c \
@@ -49,10 +44,6 @@ LinkSourceFile(VTsw_usl.c,../shared)
 LinkSourceFile(sysv_kbd.c,../shared)
 LinkSourceFile(std_kbdEv.c,../shared)
 LinkSourceFile(posix_tty.c,../shared)
-#if !NewInput
-LinkSourceFile(std_mouse.c,../shared)
-LinkSourceFile(std_mseEv.c,../shared)
-#endif
 LinkSourceFile(libc_wrapper.c,../shared)
 LinkSourceFile(stdResource.c,../shared)
 LinkSourceFile(vidmem.c,../shared)

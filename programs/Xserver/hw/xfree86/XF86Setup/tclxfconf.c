@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.27 1999/04/05 07:13:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.28 1999/07/12 08:14:26 dawes Exp $ */
 /*
  * Copyright 1996,1999 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -36,10 +36,8 @@
 #include "xf86Parser.h"
 #include "xf86tokens.h"
 
-#ifdef NEW_INPUT
 #include "xf86Xinput.h"
 #include "mouse.h"
-#endif
 
 #include "tcl.h"
 
@@ -56,32 +54,6 @@ XF86ConfigPtr config_list;
 Tcl_Interp *errinterp;
 
 Bool Must_have_memory = FALSE;
-
-#ifndef NEW_INPUT
-SymTabRec xfsMouseTab[] = {
-	  { PROT_MS,                    "microsoft" },
-	  { PROT_MSC,                   "mousesystems" },
-	  { PROT_MM,                    "mmseries" },
-	  { PROT_LOGI,                  "logitech" },
-	  { PROT_BM,                    "busmouse" },
-	  { PROT_LOGIMAN,               "mouseman" },
-	  { PROT_PS2,                   "ps/2" },
-	  { PROT_MMHIT,                 "mmhittab" },
-	  { PROT_GLIDEPOINT,            "glidepoint" },
-	  { PROT_IMSERIAL,              "intellimouse" },
-	  { PROT_THINKING,              "thinkingmouse" },
-	  { PROT_IMPS2,                 "imps/2" },
-	  { PROT_THINKINGPS2,           "thinkingmouseps/2" },
-	  { PROT_MMANPLUSPS2,           "mousemanplusps/2" },
-	  { PROT_GLIDEPOINTPS2,         "glidepointps/2" },
-	  { PROT_NETPS2,                "netmouseps/2" },
-	  { PROT_NETSCROLLPS2,          "netscrollps/2" },
-	  { PROT_SYSMOUSE,              "sysmouse" },
-	  { PROT_WSMOUSE,               "wsmouse" },
-	  { PROT_AUTO,                  "auto" },
-	  { -1,                         "" },
-};
-#endif
 
 /* Error handling functions */
 

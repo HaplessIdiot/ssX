@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.26 1999/06/06 05:14:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.27 1999/06/13 05:18:48 dawes Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
@@ -60,10 +60,6 @@
 
 #define XI_PRIVATE(dev) \
 	(((LocalDevicePtr)((dev)->public.devicePrivate))->private)
-
-#ifndef NEW_INPUT
-#define MOUSE_DEV(dev) (MouseDevPtr) XI_PRIVATE(dev)
-#endif
 
 #ifdef DBG
 #undef DBG

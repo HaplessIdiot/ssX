@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.15 1999/07/06 11:38:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.16 1999/07/11 10:27:05 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -15,67 +15,6 @@
 #include "Xproto.h"
 #include "xf86Pci.h"
 #ifdef XINPUT
-#endif
-
-#ifndef NEW_INPUT
-/* Mouse device private record */
-
-typedef struct _MouseDevRec {
-    DeviceProc		mseProc;	/* procedure for initializing */
-    void		(*mseEvents)(struct _MouseDevRec *);
-					/* proc for processing events */
-    DeviceIntPtr	device;
-    int			mseFd;
-    char *		mseDevice;
-    MouseProtocol	mseType;
-    int			mseModel;
-    int			baudRate;
-    int			oldBaudRate;
-    int			sampleRate;
-    int			lastButtons;
-    int			threshold;	/* acceleration */
-    int			num;
-    int			den;
-    int			buttons;	/* # of buttons */
-    int			emulateState;	/* automata state for 2 button mode */
-    Bool		emulate3Buttons;
-    int			emulate3Timeout;/* Timeout for 3 button emulation */
-    Bool		chordMiddle;
-    int			mouseFlags;	/* Flags to Clear after opening
-					 * mouse dev */
-    int			truebuttons;	/* Arg to maintain before
-					 * emulate3buttons timer callback */
-    int			resolution;
-    int			negativeZ;
-    int			positiveZ;
-#ifndef MOUSE_PROTOCOL_IN_KERNEL
-    int			protoBufTail;
-#ifndef WSCONS_SUPPORT
-    unsigned char	protoBuf[8];
-#else
-    unsigned char	protoBuf[32];
-#endif
-    unsigned char	protoPara[7];
-    unsigned char	inSync;		/* driver in sync with datastream */
-#endif
-    /* xqueue part */
-    int			xquePending;	/* was xqueFd, but nothing uses that */
-    int			xqueSema;
-#ifdef XINPUT
-    struct _LocalDeviceRec *local;
-#endif
-} MouseDevRec, *MouseDevPtr;
-
-#ifndef XINPUT
-#define MOUSE_DEV(dev) (MouseDevPtr) (dev)->public.devicePrivate
-#endif
-
-/* Mouse device private record */
-
-#define MSE_MAPTOX	-1
-#define MSE_MAPTOY	-2
-#define MSE_MAXBUTTONS	12
-#define MSE_DFLTBUTTONS	 3
 #endif
 
 /* PCI probe flags */
@@ -126,9 +65,6 @@ typedef struct {
     DeviceIntPtr	pMouse;
 #ifdef XINPUT
     pointer		mouseLocal;
-#endif
-#ifndef NEW_INPUT
-    MouseDevPtr		mouseDev;
 #endif
 
     /* event handler part */

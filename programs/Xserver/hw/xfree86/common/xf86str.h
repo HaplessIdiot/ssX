@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.46 1999/08/01 07:57:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.47 1999/08/22 05:57:31 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -801,38 +801,6 @@ typedef enum {
 #define SupportConvert32to24	0x08	/* Can convert 32bpp pixmap to 24bpp */
 #define PreferConvert24to32	0x10	/* prefer 24bpp pixmap to 32bpp conv */
 #define PreferConvert32to24	0x20	/* prefer 32bpp pixmap to 24bpp conv */
-
-#ifndef NEW_INPUT
-/*
- * mouse protocol types
- */
-typedef enum {
-    PROT_OSMOUSE = -1,
-    PROT_MS			= 0,	/* Microsoft */
-    PROT_MSC,				/* Mouse Systems Corp */
-    PROT_MM,				/* MMseries */
-    PROT_LOGI,				/* Logitech */
-    PROT_BM,				/* BusMouse ??? */
-    PROT_LOGIMAN,			/* MouseMan / TrackMan */
-    PROT_PS2,				/* PS/2 mouse */
-    PROT_MMHIT,				/* MM_HitTab */
-    PROT_GLIDEPOINT,			/* ALPS serial GlidePoint */
-    PROT_IMSERIAL,			/* Microsoft serial IntelliMouse */
-    PROT_THINKING,			/* Kensington serial ThinkingMouse */
-    PROT_IMPS2,				/* Microsoft PS/2 IntelliMouse */
-    PROT_THINKINGPS2,			/* Kensington PS/2 ThinkingMouse */
-    PROT_MMANPLUSPS2,			/* Logitech PS/2 MouseMan+ */
-    PROT_GLIDEPOINTPS2,			/* ALPS PS/2 GlidePoint */
-    PROT_NETPS2,			/* Genius PS/2 NetMouse */
-    PROT_NETSCROLLPS2,			/* Genius PS/2 NetScroll */
-    PROT_SYSMOUSE,			/* SysMouse */
-    PROT_WSMOUSE,			/* wsmouse (NetBSD) */
-    PROT_SUN,				/* Sun Microsystems */
-    PROT_AUTO,				/* automatic */
-    PROT_ACECAD,			/* Acecad tablets */
-    NUM_PROTOCOLS			/* MUST BE LAST */
-} MouseProtocol;
-#endif
 
 
 /* For DPMS */
