@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3seg.c,v 3.3 1996/10/06 13:15:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3seg.c,v 3.4 1996/10/08 12:21:14 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -110,7 +110,7 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
    RegionPtr cclip;
    cfbPrivGCPtr devPriv;
 
-   if (!xf86VTSema)
+   if (!xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
    {
       if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {

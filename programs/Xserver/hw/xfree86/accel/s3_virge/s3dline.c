@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3dline.c,v 3.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3dline.c,v 3.1 1996/10/03 08:33:21 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -150,7 +150,7 @@ s3Dline(pDrawable, pGC, mode, npt, pptInit)
    cfbPrivGCPtr devPriv;
    short fix;
 
-   if (1 || !xf86VTSema)
+   if (1 || !xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
    {
       if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {

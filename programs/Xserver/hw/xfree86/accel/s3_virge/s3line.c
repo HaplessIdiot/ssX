@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3line.c,v 3.2 1996/10/03 08:33:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3line.c,v 3.3 1996/10/06 13:15:23 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -112,7 +112,7 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
    RegionPtr cclip;
    cfbPrivGCPtr devPriv;
 
-   if (!xf86VTSema)
+   if (!xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
       {
 	 if (xf86VTSema) WaitIdleEmpty();
 	 switch (s3InfoRec.bitsPerPixel) {

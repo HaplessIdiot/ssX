@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3fcach.c,v 3.1 1996/10/03 08:33:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3fcach.c,v 3.2 1996/10/08 12:21:12 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -62,7 +62,7 @@ void
 s3FontCache8Init()
 {
    static int first = TRUE;
-   int x, y, w, h, pmwidth = 0, pmx, pmy;
+   int x, y, w, h, pmwidth = 0, pmx=0, pmy=0;
    int x2, y2, w2, h2;
    int BitPlane;
    CachePool FontPool;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3scrin.c,v 3.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3scrin.c,v 3.1 1996/10/03 08:33:38 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -103,7 +103,7 @@ s3ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     int	i;
     Bool Rstatus;
     VisualPtr visual;
-    pointer oldDevPrivate;
+    pointer oldDevPrivate=NULL;
 
     rootdepth = 0;
     bitsPerRGB = 6;

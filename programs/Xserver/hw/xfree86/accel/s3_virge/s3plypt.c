@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3plypt.c,v 3.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3plypt.c,v 3.1 1996/10/03 08:33:37 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -82,7 +82,7 @@ s3PolyPoint(pDrawable, pGC, mode, npt, pptInit)
    xPoint *pptPrev;
 
 
-   if (1 || !xf86VTSema)
+   if (1 || !xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
    {
       if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3im.c,v 3.3 1996/10/03 08:33:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3im.c,v 3.4 1996/10/06 13:15:20 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -566,7 +566,7 @@ s3ImageFillNoMem (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 
 
    for (j = 0; j < h; j++) {
-      CARD32 wrapped, *pnext;
+      CARD32 wrapped=0, *pnext=NULL;
       CARD32 *pend;
       CARD32 *plines;
 

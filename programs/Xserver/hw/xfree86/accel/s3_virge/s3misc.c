@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3misc.c,v 3.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3misc.c,v 3.4 1996/10/03 08:33:37 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -850,7 +850,7 @@ s3EnterLeaveVT(enter, screen_idx)
      Bool  enter;
      int screen_idx;
 {
-   PixmapPtr pspix;
+   PixmapPtr pspix=NULL;
    ScreenPtr pScreen = s3savepScreen;
 
    if (!xf86Exiting && !xf86Resetting) {

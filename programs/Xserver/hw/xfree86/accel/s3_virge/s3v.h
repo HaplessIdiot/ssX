@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3v.h,v 3.1 1996/10/06 13:15:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3v.h,v 3.2 1996/10/08 12:21:16 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -168,6 +168,8 @@ extern int s3Trio32FCBug;
 extern int s3_968_DashBug;
 extern int s3_gcmd;
 extern int s3bltbug_width1, s3bltbug_width2;
+
+extern Pixel s3BppPMask;
 
 #define UNKNOWN_DAC       -1
 #define NORMAL_DAC         0

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3ss.c,v 3.1 1996/10/03 08:33:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3ss.c,v 3.2 1996/10/06 13:15:25 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -105,7 +105,7 @@ s3SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
   * *pwidth);
   */
 
-   if (1 || !xf86VTSema)
+   if (1 || !xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
    {
       if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {

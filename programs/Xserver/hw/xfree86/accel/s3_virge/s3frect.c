@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3frect.c,v 3.2 1996/10/03 08:33:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3frect.c,v 3.3 1996/10/06 13:15:17 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -526,7 +526,7 @@ s3PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
    int   xrot, yrot;
    CacheInfoPtr pci;
 
-   if (!xf86VTSema)
+   if (!xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
    {
       if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {

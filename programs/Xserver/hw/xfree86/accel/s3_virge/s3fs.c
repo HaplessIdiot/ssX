@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3fs.c,v 3.1 1996/10/03 08:33:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3fs.c,v 3.2 1996/10/06 13:15:18 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -104,7 +104,7 @@ s3SolidFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    DDXPointPtr initPpt;
    int *initPwidth;
 
-   if (1 || !xf86VTSema)
+   if (1 || !xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
    {
       if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {
@@ -206,7 +206,7 @@ s3TiledFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    DDXPointPtr initPpt;
    int *initPwidth;
 
-   if (1 || !xf86VTSema)
+   if (1 || !xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
    {
       if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {
@@ -304,7 +304,7 @@ s3StipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    DDXPointPtr initPpt;
    int *initPwidth;
 
-   if (1 || !xf86VTSema)
+   if (1 || !xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
    {
       if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {
@@ -406,7 +406,7 @@ s3OStipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    DDXPointPtr initPpt;
    int *initPwidth;
 
-   if (1 || !xf86VTSema)
+   if (1 || !xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
    {
       if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {

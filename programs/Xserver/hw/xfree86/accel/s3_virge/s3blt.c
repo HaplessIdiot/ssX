@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3blt.c,v 3.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3blt.c,v 3.2 1996/10/03 08:33:17 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -82,7 +82,7 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
      int   width, height;
      int   dstx, dsty;
 {
-   RegionPtr prgnSrcClip;	/* may be a new region, or just a copy */
+   RegionPtr prgnSrcClip=NULL;	/* may be a new region, or just a copy */
    Bool  freeSrcClip = FALSE;
 
    RegionPtr prgnExposed;
@@ -98,23 +98,29 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
    int   fastClip = 0;		/* for fast clipping with pixmap source */
    int   fastExpose = 0;	/* for fast exposures with pixmap source */
 
-   if (!xf86VTSema ||
+   if (!xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask) ||
        (pSrcDrawable->type != DRAWABLE_WINDOW &&
-                      pDstDrawable->type != DRAWABLE_WINDOW))
-	switch (max(pSrcDrawable->bitsPerPixel, pDstDrawable->bitsPerPixel)) {
- 	case 8:
-	    return cfbCopyArea(pSrcDrawable, pDstDrawable, pGC,
-			       srcx, srcy, width, height, dstx, dsty);
-	case 16:
-	    return cfb16CopyArea(pSrcDrawable, pDstDrawable, pGC,
-				 srcx, srcy, width, height, dstx, dsty);
-	case 24:
-	    return cfb24CopyArea(pSrcDrawable, pDstDrawable, pGC,
-				 srcx, srcy, width, height, dstx, dsty);
-	case 32:
-	    return cfb32CopyArea(pSrcDrawable, pDstDrawable, pGC,
-				 srcx, srcy, width, height, dstx, dsty);
-	}
+	pDstDrawable->type != DRAWABLE_WINDOW)) {
+      RegionPtr ret=NULL;
+
+      if (xf86VTSema) WaitIdleEmpty();
+      switch (max(pSrcDrawable->bitsPerPixel, pDstDrawable->bitsPerPixel)) {
+      case 8:
+	 ret = cfbCopyArea(pSrcDrawable, pDstDrawable, pGC,
+			   srcx, srcy, width, height, dstx, dsty);
+      case 16:
+	 ret = cfb16CopyArea(pSrcDrawable, pDstDrawable, pGC,
+			     srcx, srcy, width, height, dstx, dsty);
+      case 24:
+	 ret = cfb24CopyArea(pSrcDrawable, pDstDrawable, pGC,
+			     srcx, srcy, width, height, dstx, dsty);
+      case 32:
+	 ret = cfb32CopyArea(pSrcDrawable, pDstDrawable, pGC,
+			     srcx, srcy, width, height, dstx, dsty);
+      }
+      if (xf86VTSema) WaitIdleEmpty();
+      return ret;
+   }
 
    origSource.x = srcx;
    origSource.y = srcy;
@@ -486,7 +492,7 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
     unsigned long    bitPlane;
 {
    PixmapPtr pBitmap = NULL;
-   RegionPtr prgnSrcClip;	/* may be a new region, or just a copy */
+   RegionPtr prgnSrcClip=NULL;	/* may be a new region, or just a copy */
    Bool  freeSrcClip = FALSE;
 
    RegionPtr prgnExposed;
@@ -505,25 +511,30 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
    /*
     * If switched away, or doing pixmap->pixmap copy, just use cfb.
     */
-   if (!xf86VTSema ||
+   if (!xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask) ||
        (pSrcDrawable->type != DRAWABLE_WINDOW &&
-	pDstDrawable->type != DRAWABLE_WINDOW))
-   {
-	switch (max(pSrcDrawable->bitsPerPixel, pDstDrawable->bitsPerPixel)) {
- 	case 8:
-	    return cfbCopyPlane(pSrcDrawable, pDstDrawable, pGC,
+	pDstDrawable->type != DRAWABLE_WINDOW)) {
+      RegionPtr ret=NULL;
+
+      if (xf86VTSema) WaitIdleEmpty();
+      switch (max(pSrcDrawable->bitsPerPixel, pDstDrawable->bitsPerPixel)) {
+      case 8:
+	 ret = cfbCopyPlane(pSrcDrawable, pDstDrawable, pGC,
 			    srcx, srcy, width, height, dstx, dsty, bitPlane);
-	case 16:
-	    return cfb16CopyPlane(pSrcDrawable, pDstDrawable, pGC,
+      case 16:
+	 ret = cfb16CopyPlane(pSrcDrawable, pDstDrawable, pGC,
 			      srcx, srcy, width, height, dstx, dsty, bitPlane);
 	case 24:
-	    return cfb24CopyPlane(pSrcDrawable, pDstDrawable, pGC,
+	 ret = cfb24CopyPlane(pSrcDrawable, pDstDrawable, pGC,
 			      srcx, srcy, width, height, dstx, dsty, bitPlane);
-	case 32:
-	    return cfb32CopyPlane(pSrcDrawable, pDstDrawable, pGC,
+      case 32:
+	 ret = cfb32CopyPlane(pSrcDrawable, pDstDrawable, pGC,
 			      srcx, srcy, width, height, dstx, dsty, bitPlane);
-	}
+      }
+      if (xf86VTSema) WaitIdleEmpty();
+      return ret;
    }
+
 #if 0
    /* This can cause server lockups */
    /*
