@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.17 1997/07/05 08:45:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.18 1997/07/06 05:30:58 dawes Exp $ */
 
 
 
@@ -257,7 +257,7 @@ LoadModule(module,path)
 	 */
 	name = (char*)xalloc(strlen(found)+strlen("ModuleInit")+1);
 	strcpy(name,found);
-	p = strchr(name,'.'); /* get rid of the .o/.a/.so */
+	p = strrchr(name,'.'); /* get rid of the .o/.a/.so */
 	if( p )
 	    *p = '\0';
 	strcat(name,"ModuleInit");

@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/ddxList.c,v 3.3 1996/12/23 07:10:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxList.c,v 3.4 1997/06/22 10:16:58 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -214,10 +214,10 @@ char tmpname[32];
     status= Success;
     if (!haveDir)
 #ifndef WIN32
-	in= popen(buf,"r");
+	in= Popen(buf,"r");
 #else
     {
-	if (system(buf) < 0)
+	if (System(buf) < 0)
 	    ErrorF("Could not invoke keymap compiler\n");
 	else
 	    in= fopen(tmpname, "r");
