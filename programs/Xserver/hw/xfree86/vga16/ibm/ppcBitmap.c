@@ -1,4 +1,5 @@
 /* $XConsortium: ppcBitmap.c,v 1.1 94/03/28 21:35:58 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -29,7 +30,6 @@
 #include "pixmap.h"
 #include "pixmapstr.h"
 
-#include "mfb.h"
 #include "maskbits.h"
 
 #include "OScompiler.h"

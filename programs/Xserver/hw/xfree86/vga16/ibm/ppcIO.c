@@ -1,4 +1,5 @@
 /* $XConsortium: ppcIO.c,v 1.2 94/04/17 20:31:50 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1990  X Consortium
@@ -64,13 +65,9 @@ SOFTWARE.
 #include "ppc.h"
 
 #include "mistruct.h"
-#include "mfb.h"
 #include "mi.h"
 
-static PixmapPtr BogusPixmap = (PixmapPtr) 1 ;
 extern ScreenRec vgaScreenRec ; /* Forward Declaration Here */
-
-PixmapFormatRec	vgaFormats[] = { { 4, 8, 32 } } ;
 
 VisualRec vgaVisuals[] = {
 	{
@@ -106,8 +103,6 @@ NeverCalled()
 	abort();
 }
 
-Bool ppcInitializeColormap();	/* GJAHACK */
-
 miBSFuncRec ppcBSFuncRec = {
     ppcSaveAreas,
     ppcRestoreAreas,
@@ -115,10 +110,6 @@ miBSFuncRec ppcBSFuncRec = {
     (PixmapPtr (*)()) 0,
     (PixmapPtr (*)()) 0,
 };
-
-
-/* Global Variables */
-int BYTES_PER_LINE, MAX_ROW, MAX_COLUMN;
 
 /*ARGSUSED*/
 Bool
@@ -199,23 +190,14 @@ v16CreateScreenResources(pScreen)
 
 
 void
-Init16Output( pScreen, virtx, virty )
+Init16Output( pScreen, pbits, virtx, virty, dpix, dpiy, width )
     ScreenPtr pScreen;
+    pointer pbits; /* We assume that this is equal to vgaBase */
     int virtx, virty;
+    int dpix, dpiy;
+    int width;
 {
   extern int defaultColorVisualClass;
-#ifdef UNBANKED_VGA16
-  extern pointer vgaBase; /* GJAHACK */
-#else
-  extern pointer vgaVirtBase; /* GJAHACK */
-#endif
-
-  /*
-   * patch the original structures
-   */
-  BYTES_PER_LINE = virtx / 8;
-  MAX_ROW       = virty - 1;
-  MAX_COLUMN    = virtx - 1;
 
   if ( defaultColorVisualClass < 0 ) {
     vgaVisuals[0].class = PseudoColor;
@@ -264,13 +246,10 @@ Init16Output( pScreen, virtx, virty )
   if (!mfbAllocatePrivates(pScreen, (int*)NULL, (int*)NULL))
 	return ;
 
-#ifdef UNBANKED_VGA16
-  miScreenInit(pScreen, vgaBase, virtx, virty, 75, 75, virtx,
-#else
-  miScreenInit(pScreen, vgaVirtBase, virtx, virty, 75, 75, virtx,
-#endif
+  miScreenInit(pScreen, pbits, virtx, virty, 75, 75, virtx,
 	VGA_MAXPLANES, NUM_DEPTHS, vgaDepths, 0 /* See above */,
 	NUM_VISUALS, vgaVisuals, &ppcBSFuncRec);
+
   /* GJA -- Now we override the supplied default: */
   pScreen -> CreateScreenResources = v16CreateScreenResources;
 

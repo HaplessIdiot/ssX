@@ -1,4 +1,5 @@
 /* $XConsortium: vgaSolid.c,v 1.1 94/03/28 21:40:01 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -48,13 +49,14 @@ SOFTWARE.
 /* Source: /andrew/X11/r3src/release/server/ddx/ibm/vga/RCS/vgaSolid.c,v */
 
 #include "X.h"
-
 #include "OScompiler.h"
-
-/* #include "ibmIOArch.h" /* GJA */
-
 #include "vgaVideo.h"
 #include "vgaReg.h"
+
+#include "windowstr.h" /* GJA -- for pWin */
+#include "scrnintstr.h" /* GJA -- for pWin */
+#include "pixmapstr.h" /* GJA -- for pWin */
+#include "ppc.h" /* GJA -- for pWin */
 
 #undef TRUE
 #undef FALSE
@@ -66,13 +68,14 @@ extern void fastFill();
 extern void fastFillRMW();
 #else
 
-static void fastFill( destination, bytewidth, height )
+static void fastFill( destination, bytes_per_line, bytewidth, height )
 register volatile unsigned char *destination ;
+register const unsigned int bytes_per_line ;
 register const unsigned int bytewidth ;	/* MUST BE > 0 !! */
 register unsigned int height ;		/* MUST BE > 0 !! */
 {
 int stop_count = bytewidth ;
-register int row_jump = BYTES_PER_LINE - bytewidth ;
+register int row_jump = bytes_per_line - bytewidth ;
 #if !defined(OLDHC) && defined(BSDrt) && !defined(i386)
 register const int notZero = ~0x0 ;
 #else
@@ -124,13 +127,14 @@ switch ( bytewidth & 0xF ) { /* Jump into loop at mod 16 remainder */
 }
 
 /* For Read-Modify-Write Case */
-static void fastFillRMW( destination, bytewidth, height )
+static void fastFillRMW( destination, bytes_per_line, bytewidth, height )
 register volatile unsigned char *destination ;
+register const unsigned int bytes_per_line ;
 register const unsigned int bytewidth ;	/* MUST BE > 0 !! */
 register unsigned int height ;		/* MUST BE > 0 !! */
 {
 int stop_count = bytewidth ;
-register int row_jump = BYTES_PER_LINE - bytewidth ;
+register int row_jump = bytes_per_line - bytewidth ;
 #if !defined(OLDHC) && defined(BSDrt) && !defined(i386)
 register const int notZero = ~0x0 ;
 #else
@@ -185,7 +189,8 @@ switch ( bytewidth & 0xF ) { /* Jump into loop at mod 16 remainder */
 #endif
 
 
-void vgaFillSolid( color, alu, planes, x0, y0, lx, ly )
+void vgaFillSolid( pWin, color, alu, planes, x0, y0, lx, ly )
+WindowPtr pWin; /* GJA */
 unsigned long int color ;
 const int alu ;
 unsigned long int planes ;
@@ -206,7 +211,7 @@ unsigned int invert_existing_data = FALSE ;
 	extern int xf86VTSema;
 
 	if ( !xf86VTSema ) {
-		offFillSolid( color, alu, planes, x0, y0, lx, ly );
+		offFillSolid( pWin, color, alu, planes, x0, y0, lx, ly );
 		return;
 	}
 }	/* End GJA */
@@ -300,23 +305,23 @@ if ( tmp = x0 & 07 ) {
 	if ( invert_existing_data == TRUE ) {
                 SetVideoGraphics( Set_ResetIndex, VGA_ALLPLANES ) ;
 		SetVideoGraphics( Data_RotateIndex, VGA_XOR_MODE ) ;
-		dst = SCREENADDRESS( x0, y0 ); VSETRW(dst) ;
+		dst = SCREENADDRESS( pWin, x0, y0 ); VSETRW(dst) ;
 		for ( tmp = ly;
 		      tmp-- ; ) {
 			tmp3 = *( (VgaMemoryPtr) dst ) ;
 			*( (VgaMemoryPtr) dst ) = tmp2 ;
-			dst += BYTES_PER_LINE; VCHECKRWO(dst);
+			dst += BYTES_PER_LINE(pWin); VCHECKRWO(dst);
 		}
                 SetVideoGraphics( Set_ResetIndex, color & VGA_ALLPLANES ) ;
 		SetVideoGraphics( Data_RotateIndex, data_rotate_value ) ;
 			/* Un-Set XOR */
 	}
-	dst = SCREENADDRESS( x0, y0 ); VSETRW(dst) ;
+	dst = SCREENADDRESS( pWin, x0, y0 ); VSETRW(dst) ;
 	for ( tmp = ly;
 	      tmp-- ; ) {
 		tmp3 = *( (VgaMemoryPtr) dst ) ;
 		*( (VgaMemoryPtr) dst ) = tmp2 ;
-		dst += BYTES_PER_LINE; VCHECKRWO(dst) ;
+		dst += BYTES_PER_LINE(pWin); VCHECKRWO(dst) ;
 	}
 	if ( !lx ) { /* All Handled In This Byte */
 		return ;
@@ -330,7 +335,8 @@ if ( ROW_OFFSET( lx ) ) {
 	if ( invert_existing_data == TRUE ) {
                 SetVideoGraphics( Set_ResetIndex, VGA_ALLPLANES ) ;
 		SetVideoGraphics( Data_RotateIndex, VGA_XOR_MODE ) ;
-		fastFillRMW( SCREENADDRESS( x0, y0 ),
+		fastFillRMW( SCREENADDRESS( pWin, x0, y0 ),
+			     BYTES_PER_LINE(pWin),
 			     ROW_OFFSET( lx ), ly ) ;
                 SetVideoGraphics( Set_ResetIndex, color & VGA_ALLPLANES ) ;
 		SetVideoGraphics( Data_RotateIndex, data_rotate_value ) ;
@@ -338,7 +344,8 @@ if ( ROW_OFFSET( lx ) ) {
 		/* Point At The Bit Mask Reg */
 	}
 	(* ( ( read_write_modify == FALSE ) ? fastFill : fastFillRMW ) )
-		( SCREENADDRESS( x0, y0 ), ROW_OFFSET( lx ), ly ) ;
+		( SCREENADDRESS( pWin, x0, y0 ), BYTES_PER_LINE(pWin),
+		  ROW_OFFSET( lx ), ly ) ;
 }
 
 /* Do Right Edge */
@@ -349,23 +356,23 @@ if ( tmp = BIT_OFFSET( lx ) ) { /* x0 Now Is Byte Aligned */
 	if ( invert_existing_data == TRUE ) {
                 SetVideoGraphics( Set_ResetIndex, VGA_ALLPLANES ) ;
 		SetVideoGraphics( Data_RotateIndex, VGA_XOR_MODE ) ;
-		dst = SCREENADDRESS( ( x0 + lx ), y0 ); VSETRW(dst) ;
+		dst = SCREENADDRESS( pWin, ( x0 + lx ), y0 ); VSETRW(dst) ;
 		for ( tmp = ly; 
 		      tmp-- ; ) {
 			tmp3 = *( (VgaMemoryPtr) dst ) ;
 			*( (VgaMemoryPtr) dst ) = tmp2 ;
-			dst += BYTES_PER_LINE; VCHECKRWO(dst) ;
+			dst += BYTES_PER_LINE(pWin); VCHECKRWO(dst) ;
 		}
                 SetVideoGraphics( Set_ResetIndex, color & VGA_ALLPLANES ) ;
 		SetVideoGraphics( Data_RotateIndex, data_rotate_value ) ;
 			/* Un-Set XOR */
 	}
-	dst = SCREENADDRESS( ( x0 + lx ), y0 ); VSETRW(dst) ;
+	dst = SCREENADDRESS( pWin, ( x0 + lx ), y0 ); VSETRW(dst) ;
 	for ( tmp = ly; 
 	      tmp-- ; ) {
 		tmp3 = *( (VgaMemoryPtr) dst ) ;
 		*( (VgaMemoryPtr) dst ) = tmp2 ;
-		dst += BYTES_PER_LINE ; VCHECKRWO(dst) ;
+		dst += BYTES_PER_LINE(pWin) ; VCHECKRWO(dst) ;
 	}
 }
 /* Disable Set/Reset Register */

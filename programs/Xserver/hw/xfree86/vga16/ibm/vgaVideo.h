@@ -1,4 +1,5 @@
 /* $XConsortium: vgaVideo.h,v 1.1 94/03/28 21:40:14 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -81,19 +82,6 @@ typedef volatile VideoAdapterObject *VgaMemoryPtr ;
 #define IMAGE_BYTE_ORDER LSBFirst
 #endif
 
-	/* GJA -- Connect IBM code with XFree86 */
-extern pointer vgaBase;
-#ifdef UNBANKED_VGA16
-#define SCREEN_ADDR ((int)vgaBase)
-#else
-extern pointer vgaVirtBase;
-#define SCREEN_ADDR ((int)vgaVirtBase)
-#endif
-
-#define VIDEO_MEMORY_BASE ( (volatile unsigned char *) ( SCREEN_ADDR ) )
-#define VIDBASE VIDEO_MEMORY_BASE
-
-
 /* Bit Ordering Macros */
 #if !defined(SCRLEFT8)
 #define SCRLEFT8(lw, n)	( (unsigned char) (((unsigned char) lw) << (n)) )
@@ -108,34 +96,21 @@ extern pointer vgaVirtBase;
 /*
  * [ev]ga video screen defines & macros
  */
-#define PIX_PER_BYTE 8
+#define VGA_BLACK_PIXEL 0
+#define VGA_WHITE_PIXEL 1
 
-#define xGA_BLACK_PIXEL 0
-#define xGA_WHITE_PIXEL 1
+#define VGA_MAXPLANES 4
+#define VGA_ALLPLANES 0xFL
 
-#define xGA_MAXPLANES 4
-#define xGA_ALLPLANES 0xFL
+#define VIDBASE(pDraw) ((volatile unsigned char *) \
+	(((PixmapPtr)(((DrawablePtr)(pDraw))->pScreen->devPrivate))-> \
+		devPrivate.ptr))
+#define BYTES_PER_LINE(pDraw) \
+   ((int)((PixmapPtr)(((DrawablePtr)(pDraw))->pScreen->devPrivate))->devKind)
 
-#define COLOR_TUBE 1
-
-#define VGA_BLACK_PIXEL xGA_BLACK_PIXEL
-#define VGA_WHITE_PIXEL xGA_WHITE_PIXEL
-
-#define VGA_MAXPLANES xGA_MAXPLANES
-#define VGA_ALLPLANES xGA_ALLPLANES
-
-#define VIDEO_MEM_BYTES_PER_PLANE ( 96 * 1024 )
-
-extern int BYTES_PER_LINE;
-extern int MAX_ROW;
-extern int MAX_COLUMN;
-extern int MAX_OFFSCREEN_ROW;
-
-#define ROW_OFFSET( PIXEL_X_VALUE ) ( ( PIXEL_X_VALUE ) >> 3 )
-#define BIT_OFFSET( PIXEL_X_VALUE ) ( ( PIXEL_X_VALUE ) & 0x7 )
-#define BYTE_OFFSET( PIXEL_X_VALUE, PIXEL_Y_VALUE ) \
-	( ( ( PIXEL_Y_VALUE ) * BYTES_PER_LINE ) + ( ( PIXEL_X_VALUE ) >> 3 ) )
-#define SCREENADDRESS( PIXEL_X_VALUE, PIXEL_Y_VALUE ) \
-	( VIDEO_MEMORY_BASE + BYTE_OFFSET( PIXEL_X_VALUE, PIXEL_Y_VALUE ) )
+#define ROW_OFFSET( x ) ( ( x ) >> 3 )
+#define BIT_OFFSET( x ) ( ( x ) & 0x7 )
+#define SCREENADDRESS( pWin, x, y ) \
+	( VIDBASE(pWin) + (y) * BYTES_PER_LINE(pWin) + ROW_OFFSET(x) )
 
 

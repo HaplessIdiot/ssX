@@ -1,4 +1,5 @@
 /* $XConsortium: ppcPushPxl.c,v 1.1 94/03/28 21:37:46 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -284,7 +285,8 @@ ySrc = pGC->patOrg.y + pDrawable->y ;
 			for ( nbox = REGION_NUM_RECTS(prgnDst), pbox = REGION_RECTS(prgnDst);
 			      nbox-- ;
 			      pbox++ ) {
-				vgaFillStipple( ptmpBitmap, bg, alu, pm,
+				vgaFillStipple( (WindowPtr)pDrawable,
+					      ptmpBitmap, bg, alu, pm,
 					      pbox->x1,
 					      pbox->y1,
 					      pbox->x2 - pbox->x1,
@@ -312,7 +314,8 @@ ySrc = pGC->patOrg.y + pDrawable->y ;
 			for ( nbox = REGION_NUM_RECTS(prgnDst), pbox = REGION_RECTS(prgnDst);
 			      nbox-- ;
 			      pbox++ ) {
-				vgaFillStipple( ptmpBitmap, fg, alu, pm,
+				vgaFillStipple( (WindowPtr)pDrawable,
+					      ptmpBitmap, fg, alu, pm,
 					      pbox->x1,
 					      pbox->y1,
 					      pbox->x2 - pbox->x1,

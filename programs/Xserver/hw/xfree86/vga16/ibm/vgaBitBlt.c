@@ -1,651 +1,601 @@
 /* $XConsortium: vgaBitBlt.c,v 1.1 94/03/28 21:39:02 dpw Exp $ */
-/*
- * Copyright IBM Corporation 1987,1988,1989
- *
- * All Rights Reserved
- *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose and without fee is hereby granted,
- * provided that the above copyright notice appear in all copies and that 
- * both that copyright notice and this permission notice appear in
- * supporting documentation, and that the name of IBM not be
- * used in advertising or publicity pertaining to distribution of the
- * software without specific, written prior permission.
- *
- * IBM DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
- * ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
- * IBM BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
- * ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
- * WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
- * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
- * SOFTWARE.
- *
-*/
-
-
-/*
- * REGISTER USAGE
- * 0x3C4 -- GENERAL REGISTER INDEX
- * 0x3C5 -- MAP MASK
- * 0x3CE -- GRAPHICS REGISTER INDEX
- * 0x3CF -- DATA ROTATE
- * 0x3CF -- BIT MASK
- */
+/* $XFree86$ */
+/* GJA -- span move routines */
 
 #include "X.h"
 #include "OScompiler.h"
-#include "vgaVideo.h"
-/* #include "ibmIOArch.h" /* GJA */
 #include "vgaReg.h"
+#include "vgaVideo.h"
 
-#undef TRUE
-#undef FALSE
-#define TRUE 1
-#define FALSE 0
+#include "windowstr.h" /* GJA -- for pWin */
+#include "scrnintstr.h" /* GJA -- for pWin */
+#include "pixmapstr.h" /* GJA -- for pWin */
+#include "ppc.h" /* GJA -- for pWin */
 
-#ifdef LEFT_SHIFT
-#undef LEFT_SHIFT
-#endif
+/* NOTE: It seems that there is no way to program the VGA to copy just
+ * a part of a byte in the smarter modes. Therefore we copy the boundaries
+ * plane by plane.
+ */
+#define WORDSZ 8
+ /* The fast blit code requires WORDSZ = 8 for its read-modify write cycle.
+  * Therefore, we do not fully implement the other options.
+  */
+#define HIGHPLANEMASK 0x08
+#define HIGHPLANEINDEX 3
 
-#ifdef NO_SHIFT
-#undef NO_SHIFT
-#endif
+/* Of course, we want the following anyway:
+ * (Yes, they're identical now.)
+ */
+#define SMEM(x,y) ( VIDBASE(pWin) + (y) * BYTES_PER_LINE(pWin) + (x) )
+#define DMEM(x,y) ( VIDBASE(pWin) + (y) * BYTES_PER_LINE(pWin) + (x) )
 
-#define RIGHT_SHIFT
+#define WORD8 unsigned char
+#define LW8 BYTES_PER_LINE(pWin) /* Line width */
+#define WSHIFT8 0x3
+#define WMASK8 0x07
+/* NOTE: lmask[8] matters. It must be different from lmask[0] */
+unsigned char lmasktab[] = {
+	0x00, 0x80, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC, 0xFE, 0xFF
+} ;
+unsigned char rmasktab[] = {
+	0xFF, 0x7F, 0x3F, 0x1F, 0x0F, 0x07, 0x03, 0x01, 0x00
+} ;
 
-static /* fast_blt_Right() */
-#include "vgaAddr.c"
+#define LMASK8(n) lmasktab[n]
+#define RMASK8(n) rmasktab[n]
+#define SWAPB8(x) (x)
 
-#undef RIGHT_SHIFT
+#if (WORDSZ == 8)
 
+#define WORD WORD8
+#define LW LW8
+#define WSHIFT WSHIFT8
+#define WMASK WMASK8
 
-#define LEFT_SHIFT
-static /* fast_blt_Left() */
-#include "vgaAddr.c"
-#undef LEFT_SHIFT
+#define LMASK(n) LMASK8(n)
+#define RMASK(n) RMASK8(n)
+#define SWAPB(x) SWAPB8(x)
 
+#endif /* WORDSZ == 8 */
 
-#ifdef USE_ASM
-extern void fast_blt_Aligned_Left();
-extern void fast_blt_Aligned_Right();
-#else
-
-#define NO_SHIFT
-#define MOVE_RIGHT
-static /* fast_blt_Aligned_Right() */
-#include "vgaAddr.c"
-#undef MOVE_RIGHT
-
-#define MOVE_LEFT
-static /* fast_blt_Aligned_Left() */
-#include "vgaAddr.c"
-#endif
-#undef MOVE_LEFT
-#undef NO_SHIFT
-
-static void
-fix_video_byte( source, destination, byte_offset, alu )
-register volatile unsigned char *source ;
-register volatile unsigned char *destination ;
-register const int byte_offset ;
-register const int alu ;
-{
-register unsigned long int tmp1, tmp2 ;
-
-	if ( byte_offset )
-
-/* This Code MIGHT try to read the byte before the start of the screen */
-
-	{
-		if ( source != VIDBASE ) {
-			tmp1 = SCRRIGHT8( *( (VgaMemoryPtr) source ), byte_offset ) ;
-			VDECR(source);
-			tmp1 |= SCRLEFT8( *( (VgaMemoryPtr) source ), ( 8 - byte_offset ) ) ;
-			VINCR(source);
-		} else
-		tmp1 = SCRRIGHT8( *( (VgaMemoryPtr) source ), byte_offset ) ;
+#define DO_ALU(dst,src,mask,alu) {\
+	int _ndst, _odst; _odst = dst; \
+	switch ( alu ) { \
+	case GXclear: \
+		_ndst = 0;			break; \
+	case GXand: \
+		_ndst = src & _odst;		break; \
+	case GXandReverse: \
+		_ndst = src & ~ _odst;		break; \
+	case GXcopy: \
+		_ndst = src;			break; \
+	case GXandInverted: \
+		_ndst = ~ src & _odst;		break; \
+	case GXnoop: \
+		_ndst = _odst;			break; \
+	case GXxor: \
+		_ndst = src ^ _odst;		break; \
+	case GXor: \
+		_ndst = src | _odst;		break; \
+	case GXnor: \
+		_ndst = ~ src & ~ _odst;	break; \
+	case GXequiv: \
+		_ndst = ~ src ^ _odst;		break; \
+	case GXinvert: \
+		_ndst = ~ _odst;		break; \
+	case GXorReverse: \
+		_ndst = src | ~ _odst;		break; \
+	case GXcopyInverted: \
+		_ndst = ~ src;			break; \
+	case GXorInverted: \
+		_ndst = ~ src | _odst;		break; \
+	case GXnand: \
+		_ndst = ~ src | ~ _odst;	break; \
+	case GXset: \
+		_ndst = ~0;			break; \
+	} \
+	dst = (_odst & ~(mask)) | (_ndst & (mask)); \
 	}
-	else
-		tmp1 = *( (VgaMemoryPtr) source ) ;
-	VPUSHR();
-	tmp2 = *( (VgaMemoryPtr) destination ) ;
-	switch ( alu ) {
-	case GXnor:
-		tmp1 = ~( tmp1 | tmp2 ) ;
-		break ;
-	case GXandInverted:
-		tmp1 = ~tmp1 & tmp2 ;
-		break ;
-	case GXand:
-		tmp1 &= tmp2 ;
-		break ;
-	case GXequiv:
-		tmp1 = ~tmp1 ^ tmp2 ;
-		break ;
-	case GXxor:
-		tmp1 ^= tmp2 ;
-		break ;
-	case GXandReverse:
-		tmp1 &= ~tmp2 ;
-		break ;
-	case GXorReverse:
-		tmp1 |= ~tmp2 ;
-		break ;
-	case GXnand:
-		tmp1 = ~( tmp1 & tmp2 ) ;
-		break ;
-	case GXorInverted:
-		tmp1 = ~tmp1 | tmp2 ;
-		break ;
-	case GXor:
-		tmp1 |= tmp2 ;
-		break ;
-	case GXcopyInverted:
-		tmp1 = ~tmp1 ;
-	case GXcopy:
-	default:
-		break ;
-	}
-	*( (VgaMemoryPtr) destination ) = tmp1 ;
-	VPOPR();
-return ;
-}
 
-#ifdef __GNUC__
 
-static void
-fix_video_byte_copy_edgeLoop( source, destination, byte_offset,
-			      height, y_direction )
-register volatile unsigned char *source ;
-register volatile unsigned char *destination ;
-register const int byte_offset ;
-register unsigned int height ;
-register int y_direction ;
+void vgaBitBlt(pWin,alu,readplanes,writeplanes,x0,y0,x1,y1,w,h)
+WindowPtr pWin; /* GJA */
+int alu;
+int readplanes; /* unused */
+int writeplanes; /* planes */
+int x0, y0, x1, y1, w, h;
 {
-  register unsigned long int tmp1, tmp2 ;
-  VSETW(destination); VSETR(source); /* GJA */
-  if ( byte_offset ) {
+    int plane, bit;
+    extern int xf86VTSema;
 
-    for ( ; height-- ; ) {
-      if (source != vgaBase) {
-        tmp1 = SCRRIGHT8( *( (VgaMemoryPtr) source ), byte_offset ) ;
-	VDECR(source);
-	tmp1 |= SCRLEFT8( *( (VgaMemoryPtr) source), ( 8 - byte_offset )) ;
-	VINCR(source);
-      } else {
-        tmp1 =
-         SCRRIGHT8( *( (VgaMemoryPtr) ( source ) ), byte_offset ) ;
-      }
-      ADDR(source,y_direction);
-      VPUSHR();
-      tmp2 = *( (VgaMemoryPtr) destination ) ;
-        *( (VgaMemoryPtr) destination ) = tmp1 ;
-      ADDW(destination,y_direction); 
-      VPOPR();
+    if ( !w || !h ) return;
+
+    if ( ! xf86VTSema ) {
+        offBitBlt(pWin,alu,readplanes,writeplanes,x0,y0,x1,y1,w,h);
+        return;
     }
 
+    /* 0x7, not WMASK: it is hardware dependant */
+    if ( ((x0 - x1) & 0x7) || (alu != GXcopy) ) {
+	/* Use slow copy */
+	SetVideoGraphics(Enb_Set_ResetIndex, 0); /* All from CPU */
+	SetVideoGraphics(Bit_MaskIndex, 0xFF); /* All bits */
+	SetVideoGraphics(Graphics_ModeIndex, 0); /* Write mode 0 */
+	SetVideoGraphics(Data_RotateIndex, 0); /* Don't rotate, replace */
+
+	for ( plane = HIGHPLANEMASK, bit = HIGHPLANEINDEX ;
+		plane ; plane >>= 1, bit-- )
+	{
+
+		if ( writeplanes & plane) {
+			SetVideoGraphics(Read_Map_SelectIndex, bit);
+			SetVideoSequencer(Mask_MapIndex, plane);
+
+			shift(pWin,x0,x1,y0,y1,w,h,alu);
+		}
+	}
+    } else {
+        aligned_blit(pWin,x0,x1,y0,y1,w,h,alu,writeplanes);
+    }
+}
+
+/* Copy a span a number of places to the right.
+ */
+shift(pWin,x0,x1,y0,y1,w,h,alu)
+WindowPtr pWin; /* GJA */
+int x0;  /* left edge of source */
+int x1;  /* left edge of target */
+int y0;
+int y1;
+int w; /* length of source, and of target */
+int h;
+int alu;
+{
+  if ( ((x1 & WMASK) + w) <= WORDSZ ) {
+     shift_thin_rect(pWin,x0,x1,y0,y1,w,h,alu);
+  } else if ( x1 > x0 ) { /* Shift right: start right */
+     int l1 = x1 & WMASK, r1 = (x1 + w) & WMASK;
+
+     if ( r1 ) /* right edge */
+        shift_thin_rect(pWin,x0+w-r1,x1+w-r1,y0,y1,r1,h,alu);
+     shift_center(pWin,x0,x1,y0,y1,w,h,alu);
+     if ( l1 ) /* left edge */
+        shift_thin_rect(pWin,x0,x1,y0,y1,(WORDSZ-l1),h,alu);
   } else {
+     int l1 = x1 & WMASK, r1 = (x1 + w) & WMASK;
 
-   for ( ; height-- ; ) {
-      tmp1 = *( (VgaMemoryPtr) source ) ;
-      ADDR(source,y_direction);
-      VPUSHR();
-      tmp2 = *( (VgaMemoryPtr) destination ) ;
-      *( (VgaMemoryPtr) destination ) = tmp1 ; }
-      ADDW(destination,y_direction); 
-      VPOPR();
+     if ( l1 ) /* left edge */
+        shift_thin_rect(pWin,x0,x1,y0,y1,(WORDSZ-l1),h,alu);
+     shift_center(pWin,x0,x1,y0,y1,w,h,alu);
+     if ( r1 ) /* right edge */
+        shift_thin_rect(pWin,x0+w-r1,x1+w-r1,y0,y1,r1,h,alu);
   }
-return ;
 }
 
-#else
-
-static void
-fix_video_byte_copy_edgeLoop( source, destination, byte_offset,
-			      height, y_direction )
-register volatile unsigned char *source ;
-register volatile unsigned char *destination ;
-register const int byte_offset ;
-register unsigned int height ;
-register int y_direction ;
+/* The whole rectangle is so thin that it fits in one byte written */
+shift_thin_rect(pWin,x0,x1,y0,y1,w,h,alu)
+WindowPtr pWin; /* GJA */
+int x0;  /* left edge of source */
+int x1;  /* left edge of target */
+int y0;
+int y1;
+int w; /* length of source, and of target */
+int h;
+int alu;
 {
-register unsigned long int tmp1, tmp2 ;
+  int l0 = x0 & WMASK; /* Left edge of source, as bit */
+  int l1 = x1 & WMASK; /* Left edge of target, as bit */
+  int L0 = x0 >> WSHIFT; /* Left edge of source, as byte */
+  int L1 = x1 >> WSHIFT; /* Left edge of target, as byte */
+  int pad;
+  int htmp;
+  int mask;
+  int tmp;
+  int bs;
+  
+  volatile unsigned char *sp, *dp;
 
-	VSETW(destination); VSETR(source); /* GJA */
+  mask = RMASK(l1) & LMASK(l1+w);
+  bs = (x1 - x0) & WMASK;
 
-	for ( ; height-- ; ) {
-		if ( byte_offset )
-	/* This Code MIGHT try to read the byte before the start of the screen */
-		{
-			if ( source != vgaBase ) {
-			tmp1 =
-		  SCRRIGHT8( *( (VgaMemoryPtr) source ), byte_offset ) ;
-			VDECR(source);
-			tmp1 |=
-		  SCRLEFT8( *( (VgaMemoryPtr) source ), ( 8 - byte_offset ) ) ;
-			VINCR(source);
-			} else
-			tmp1 =
-		  SCRRIGHT8( *( (VgaMemoryPtr) ( source ) ), byte_offset ) ;
-		}
-		else
-			tmp1 = *( (VgaMemoryPtr) source ) ;
-		ADDR(source,y_direction);
-		VPUSHR();
-		tmp2 = *( (VgaMemoryPtr) destination ) ;
-		*( (VgaMemoryPtr) destination ) = tmp1 ;
-		ADDW(destination,y_direction); 
-		VPOPR();
-	}
-return ;
+  if ( y1 > y0 ) { /* Move down, start at the bottom */
+    pad = - BYTES_PER_LINE(pWin);
+    sp = SMEM(L0,y0+h-1);
+    dp = DMEM(L1,y1+h-1);
+  } else { /* Move up, start at the top */
+    pad = BYTES_PER_LINE(pWin);
+    sp = SMEM(L0,y0);
+    dp = DMEM(L1,y1);
+  }
+  VSETW(dp); VSETR(sp);
+
+  if ( l0+w > WORDSZ ) {
+    /* Need two bytes */
+    for ( htmp = h ; htmp ; htmp-- ) {
+      tmp = (sp[0] << (WORDSZ - bs));
+      VINCR(sp);
+      tmp |= (sp[0] >> bs);
+      VDECR(sp);
+      VPUSHR();
+      DO_ALU(dp[0],tmp,mask,alu);
+      ADDW(dp,pad);
+      VPOPR();
+      ADDR(sp,pad);
+    }
+  } else if ( l0 <= l1 ) {
+    /* Need one byte, shifted right */
+    for ( htmp = h ; htmp ; htmp-- ) {
+      tmp = (sp[0] >> bs);
+      VPUSHR();
+      DO_ALU(dp[0],tmp,mask,alu);
+      ADDW(dp,pad);
+      VPOPR();
+      ADDR(sp,pad);
+    }
+  } else {
+    /* Need one byte, shifted left */
+    for ( htmp = h ; htmp ; htmp-- ) {
+      tmp = (sp[0] << (WORDSZ - bs));
+      VPUSHR();
+      DO_ALU(dp[0],tmp,mask,alu);
+      ADDW(dp,pad);
+      VPOPR();
+      ADDR(sp,pad);
+    }
+  }
 }
-#endif
 
-static void
-edgeLoop( dest, src, height, y_direction )
-register volatile unsigned char *dest ;
-register volatile unsigned char *src ;
-register unsigned int height ;
-register int y_direction ;
+shift_center(pWin,x0,x1,y0,y1,w,h,alu)
+WindowPtr pWin; /* GJA */
+int x0;  /* left edge of source */
+int x1;  /* left edge of target */
+int y0;
+int y1;
+int w; /* length of source, and of target */
+int h;
+int alu;
 {
-register unsigned char tmp1, tmp2 ;
- 
-	VSETW(dest); VSETR(src); /* GJA */
-	for ( ; height-- ; ) {
-		tmp1 = *( (VgaMemoryPtr) src ) ;
-		ADDR(src,y_direction);
-		VPUSHR();
-		tmp2 = *( (VgaMemoryPtr) dest ) ;
-		*( (VgaMemoryPtr) dest ) = tmp1 ;
-		ADDW(dest,y_direction); 
-		VPOPR();
-	}
-return ;
+  int l0 = x0 & WMASK; /* Left edge of source, as bit */
+  int l1 = x1 & WMASK; /* Left edge of target, as bit */
+  int r0 = (x0 + w) & WMASK; /* Right edge of source, as bit */
+  int r1 = (x1 + w) & WMASK; /* Right edge of target, as bit */
+  int L0 = x0 >> WSHIFT; /* Left edge of source, as byte */
+  int L1 = x1 >> WSHIFT; /* Left edge of target, as byte */
+  int pad;
+  int htmp, wtmp; /* Temporaries for indices over height and width */
+  volatile unsigned char tmp; /* Temporary result of the shifts */
+  int bs;
+  int rem; /* Remaining bits; temporary in loop */
+  int bytecnt;
+  
+  volatile unsigned char *sp, *dp;
+
+  bs = (x1 - x0) & WMASK;
+
+  if ( l1 ) {
+     bytecnt = (w - (WORDSZ - l1) - r1) >> WSHIFT;
+     sp = SMEM( ((x0 + (WORDSZ - l1)) >> WSHIFT), y0);
+     dp = DMEM( ((x1 + (WORDSZ - l1)) >> WSHIFT), y1);
+  } else {
+     bytecnt = (w - r1) >> WSHIFT;
+     sp = SMEM( (x0 >> WSHIFT), y0);
+     dp = DMEM( (x1 >> WSHIFT), y1);
+  }
+
+  if ( y1 > y0 ) { /* Move down, start at the bottom */
+    if ( x1 > x0 ) { /* Move right, start right */
+       pad = - BYTES_PER_LINE(pWin) + bytecnt;
+       sp += BYTES_PER_LINE(pWin) * (h - 1) + bytecnt - 1;
+       dp += BYTES_PER_LINE(pWin) * (h - 1) + bytecnt - 1;
+    } else { /* Move left, start left */
+       pad = - BYTES_PER_LINE(pWin) - bytecnt;
+       sp += BYTES_PER_LINE(pWin) * (h - 1);
+       dp += BYTES_PER_LINE(pWin) * (h - 1);
+    }
+  } else { /* Move up, start at the top */
+    if ( x1 > x0 ) { /* Move right, start right */
+       pad = BYTES_PER_LINE(pWin) + bytecnt;
+       sp += bytecnt - 1;
+       dp += bytecnt - 1;
+    } else { /* Move left, start left */
+       pad = BYTES_PER_LINE(pWin) - bytecnt;
+       sp += 0;
+       dp += 0;
+    }
+  }
+  VSETW(dp); VSETR(sp);
+
+  if ( x1 > x0 ) { /* Move right, start right */
+    if ( bs == 0 ) { /* No shift. Need one byte only */
+      for ( htmp = h ; htmp ; htmp-- ) {
+        for ( wtmp = bytecnt ; wtmp ; wtmp-- ) {
+          tmp = sp[0];
+          VPUSHR();
+          DO_ALU(dp[0],tmp,~0,alu); 
+	  VDECW(dp);
+	  VPOPR();
+          VDECR(sp);
+        }
+	VPUSHR();
+        ADDW(dp,pad);
+        VPOPR();
+        ADDR(sp,pad);
+      } 
+    } else {
+      for ( htmp = h ; htmp ; htmp-- ) {
+	if ( bytecnt ) {
+	   VINCR(sp);
+   	   rem = sp[0];
+	   VDECR(sp);
+           for ( wtmp = bytecnt ; wtmp ; wtmp-- ) {
+             tmp = (rem >> bs);
+             rem = sp[0];
+             tmp |= (rem << (WORDSZ - bs)) ;
+	     VPUSHR();
+             DO_ALU(dp[0],tmp,~0,alu); 
+	     VDECW(dp);
+	     VPOPR();
+             VDECR(sp);
+           }
+        }
+	VPUSHR();
+        ADDW(dp,pad);
+        VPOPR();
+        ADDR(sp,pad);
+      } 
+    }
+  } else { /* x1 <= x0 */ /* Move left, start left */
+    if ( bs == 0 ) { /* No shift. Need one byte only */
+      for ( htmp = h ; htmp ; htmp-- ) {
+        for ( wtmp = bytecnt ; wtmp ; wtmp-- ) {
+          tmp = sp[0];
+	  VPUSHR();
+          DO_ALU(dp[0],tmp,~0,alu); 
+	  VINCW(dp);
+          VPOPR();
+          VINCR(sp);
+        }
+	VPUSHR();
+        ADDW(dp,pad);
+        VPOPR();
+        ADDR(sp,pad);
+      } 
+    } else {
+      for ( htmp = h ; htmp ; htmp-- ) {
+        if ( bytecnt ) {
+          rem = sp[0];
+          for ( wtmp = bytecnt ; wtmp ; wtmp-- ) {
+            tmp = (rem << (WORDSZ - bs));
+	    VINCR(sp);
+	    rem = sp[0];
+	    VDECR(sp);
+            tmp |= (rem >> bs);
+	    VPUSHR();
+            DO_ALU(dp[0],tmp,~0,alu); 
+	    VINCW(dp);
+	    VPOPR();
+            VINCR(sp);
+          }
+        }
+	VPUSHR();
+        ADDW(dp,pad);
+        VPOPR();
+        ADDR(sp,pad);
+      } 
+    }
+  }
 }
 
-extern int vgaFillSolid() ;
-
-/* GJA -- BANKING STRATEGY:
- * The strategy for setting up banking is quite simple:
- * Call SETR/SETW whenever we begin a vertical line or block.
- * This can be at the start of the left edge, at the start of the right
- * edge, or at the start of the center.
- * This requires that we walk 'nicely' through the center; e.g. assuming,
- * for the sake of example, that we can move bytes left to right and top
- * down: when we arrive at the right hand side of a span we jump to the next
- * span in the rectangle by adding the remaining bytes, not by BYTES_PER_LINE
- * to the left hand side of the previous span.
- * The latter will go wrong if there has been a bankswitch in the middle of
- * the span: The addition will cause yet another bank switch.
+/* Copy a rectangle.
  */
-void
-vgaBitBlt( alu, readplanes, writeplanes, x0, y0, x1, y1, w, h )
-const int alu, readplanes, writeplanes ;
-register int x0 ;
-int y0 ;
-register int x1 ;
-int y1 ;
-register int w, h ;
+aligned_blit(pWin,x0,x1,y0,y1,w,h,alu,planes)
+WindowPtr pWin; /* GJA */
+int x0;  /* left edge of source */
+int x1;  /* left edge of target */
+int y0;
+int y1;
+int w; /* length of source, and of target */
+int h;
+int alu;
+int planes;
 {
-register volatile unsigned char *s1ptr ;
-register unsigned int j ;
-register volatile unsigned char *d1ptr ;
-register center_width ;
-register int x_interval ;
-register int y_interval ;
-register unsigned int i ;
-register volatile unsigned char *src ;
-register volatile unsigned char *dst ;
-unsigned int currplane ;
-int byte_offset ;
-int left_ragged ;
-int right_ragged ;
-unsigned char first_edgeMask ;
-unsigned char second_edgeMask ;
+  int plane, bit;
 
-{	/* Start GJA */
-	extern int xf86VTSema;
+  if ( ((x1 & WMASK) + w) <= WORDSZ ) {
+	SetVideoGraphics(Enb_Set_ResetIndex, 0); /* All from CPU */
+	SetVideoGraphics(Bit_MaskIndex, 0xFF); /* All bits */
+	SetVideoGraphics(Graphics_ModeIndex, 0); /* Write mode 0 */
+	SetVideoGraphics(Data_RotateIndex, 0); /* Don't rotate, replace */
 
-	if ( !xf86VTSema ) {
-		offBitBlt( alu, readplanes, writeplanes,
-			   x0, y0, x1, y1, w, h );
-		return;
-	}
-}	/* End GJA */
+	for ( plane = HIGHPLANEMASK, bit = HIGHPLANEINDEX;
+		plane ; plane >>= 1, bit-- )
+	{
+		if ( planes & plane) {
+			SetVideoGraphics(Read_Map_SelectIndex, bit);
+			SetVideoSequencer(Mask_MapIndex, plane);
 
-switch ( alu ) {
-	case GXclear:		/* 0x0 Zero 0 */
-	case GXinvert:		/* 0xa NOT dst */
-	case GXset:		/* 0xf 1 */
-		vgaFillSolid( VGA_ALLPLANES, alu, writeplanes, x1, y1, w, h ) ;
-			/* x1, y1, GJA */
-	case GXnoop:		/* 0x5 dst */
-		return ;
-	default:
-		break ;
-}
-
-left_ragged  = BIT_OFFSET( x1 ) ;
-right_ragged = 7 - BIT_OFFSET( x1 + w - 1 ) ;
-center_width = ROW_OFFSET( x1 + w ) - ROW_OFFSET( ( x1 + 0x7 ) & ~0x7 ) ;
-
-src = (unsigned char *) VIDBASE + ( BYTES_PER_LINE * y0 ) ;
-dst = (unsigned char *) VIDBASE + ( BYTES_PER_LINE * y1 ) ;
-if ( y1 > y0 ) {
-	y_interval = - BYTES_PER_LINE ;
-	src += BYTES_PER_LINE * ( h - 1 ) ;
-	dst += BYTES_PER_LINE * ( h - 1 ) ;
-}
-else {
-	y_interval = BYTES_PER_LINE ;
-}
-
-if ( x1 < x0 ) {
-	x_interval = 1 ;
-	src += ROW_OFFSET( x0 ) ;
-	dst += ROW_OFFSET( x1 ) ;
-	byte_offset = left_ragged - BIT_OFFSET( x0 ) ;
-	if ( center_width < 0 ) {
-		first_edgeMask = SCRRIGHT8( 0xFF, left_ragged )
-			       & SCRLEFT8( 0xFF, right_ragged ) ;
-		second_edgeMask = 0 ;
-	}
-	else {
-		first_edgeMask = left_ragged ?
-				 SCRRIGHT8( 0xFF, left_ragged ) : 0 ;
-		second_edgeMask = right_ragged ?
-				 SCRLEFT8( 0xFF, right_ragged ) : 0 ;
-	}
-}
-else {
-	x_interval = -1 ;
-	src += ROW_OFFSET( x0 + w - 1 ) ;
-	dst += ROW_OFFSET( x1 + w - 1 ) ;
-	byte_offset = 7 - BIT_OFFSET( x0 + w - 1 ) - right_ragged ;
-	if ( center_width < 0 ) {
-		first_edgeMask = SCRRIGHT8( 0xFF, left_ragged )
-			       & SCRLEFT8( 0xFF, right_ragged ) ;
-		second_edgeMask = 0 ;
-	}
-	else {
-		first_edgeMask = right_ragged ?
-				 SCRLEFT8( 0xFF, right_ragged ) : 0 ;
-		second_edgeMask = left_ragged ?
-				 SCRRIGHT8( 0xFF, left_ragged ) : 0 ;
-	}
-}
-/*
- * byte_offset <==> Number Of Bits To Move To The Right
- * EXAMPLES:
- * if ( byte_offset == 2 )  THEN Shift "src" 2 Bits To To The Right
- *			    AND Shift In Byte From The Left
- * or
- * if ( byte_offset == -2 ) THEN Shift "src" 2 Bits To To The Left
- *			    AND Shift In Byte From The Right
- */
-if ( byte_offset < 0 ) {
-	src += 1 ;
-	byte_offset += 8 ;
-}
-
-/* Disable SET/RESET Function */
-SetVideoGraphics( Enb_Set_ResetIndex, 0 ) ;
-/* Set Write Mode To 0 -- Read Mode To 0 */
-SetVideoGraphics( Graphics_ModeIndex, VGA_READ_MODE_0 | VGA_WRITE_MODE_0 ) ;
-
-/* Test For Special Case -- Try To Do Fast Blt */
-if ( alu == GXcopy ) {
-
-	if ( !byte_offset ) { /* Test For Special Case -- VERY Fast Blt */
-		/* Prepare To Set Bit Mask */
-		if ( first_edgeMask ) {
-			SetVideoGraphics( Bit_MaskIndex, first_edgeMask ) ;
-			/* Set Data Rotate Function To Direct Write */
-			SetVideoGraphics( Data_RotateIndex, VGA_COPY_MODE ) ;
-			for ( currplane = 0 ;
-			      currplane <= VGA_MAXPLANES ;
-			      currplane++  ) {
-				if ( i = writeplanes & ( 1 << currplane ) ) {
-					SetVideoSequencer( Mask_MapIndex, i ) ;
-					/* Set Map Read Select */
-					SetVideoGraphics( Read_Map_SelectIndex,
-							  currplane ) ;
-					/* Move First Edge */
-					/* GJA -- handles banking */
-					edgeLoop( dst, src, h, y_interval ) ;
-				}
-			}
-			if ( center_width < 0 ) {
-				return ;
-			}
-			src += x_interval;
-			dst += x_interval;
-		}
-		/* Set Map Mask */
-		SetVideoSequencer( Mask_MapIndex, writeplanes & VGA_ALLPLANES );
-		/* Move Center Of Box */
-		if ( center_width ) {
-			/* Set Bit Mask -- ALL OFF */
-			SetVideoGraphics( Bit_MaskIndex, 0 ) ; /* GJA */
-			/* GJA -- handles banking */
-			(* ( ( x_interval > 0 )
-			   ? fast_blt_Aligned_Right : fast_blt_Aligned_Left ) )
-				( src, dst, center_width, h, y_interval ) ;
-		}
-		if ( !second_edgeMask ) {
-			return ;
-		}
-		/* Move Second Edge */
-		SetVideoGraphics( Bit_MaskIndex, second_edgeMask ) ; /* GJA */
-		/* Adjust Offsets */
-		if ( x_interval > 0 ) {
-			src += center_width ;
-			dst += center_width ;
-		}
-		else { /* Move Left Edge */
-			src -= center_width ;
-			dst -= center_width ;
-		}
-		/* Set Data Rotate Function To Direct Write */
-		SetVideoGraphics( Data_RotateIndex, VGA_COPY_MODE ) ;
-		for ( currplane = 0 ;
-		      currplane <= VGA_MAXPLANES ;
-		      currplane++  ) {
-			if ( i = writeplanes & ( 1 << currplane ) ) {
-				SetVideoSequencer( Mask_MapIndex, i ) ;
-				/* Set Map Read Select */
-				SetVideoGraphics( Read_Map_SelectIndex,
-						  currplane ) ;
-				/* GJA -- handles banking */
-				edgeLoop( dst, src, h, y_interval ) ;
-			}
-		}
-	} /* End Of Very Fast BitBlt */
-	else {	/* Slow GXcopy BitBlt Here -- Bits in Bytes NOT Aligned */
-		/* Set Data Rotate Function To Direct Write */
-		SetVideoGraphics( Data_RotateIndex, VGA_COPY_MODE ) ;
-		for ( currplane = 0 ;
-		      currplane <= VGA_MAXPLANES ;
-		      currplane++  ) {
-			if ( i = writeplanes & ( 1 << currplane ) ) {
-				/* Logical Operation Depending On Src & Dst */
-				SetVideoSequencer( Mask_MapIndex, i ) ;
-				/* Set Map Read Select */
-				SetVideoGraphics( Read_Map_SelectIndex,
-						  currplane ) ;
-				SetVideoGraphics( Bit_MaskIndex, 0xFF ) ;
-				/* Move First Edge */
-				s1ptr = src ;
-				d1ptr = dst ;
-				if ( first_edgeMask ) {
-					SetVideoGraphics( Bit_MaskIndex,
-						first_edgeMask ) ; /* GJA */
-					/* GJA -- handles banking */
-					fix_video_byte_copy_edgeLoop(
-					  src, dst, byte_offset,
-					  h, y_interval ) ;
-					if ( center_width < 0 ) /* All In One Byte */
-						continue ; /* Next Plane */
-					SetVideoGraphics( Bit_MaskIndex, 0xFF ) ; /* GJA */
-					s1ptr = src + x_interval ;
-					d1ptr = dst + x_interval ;
-				}
-				/* Move Center Of Box */
-				if ( center_width ) {
-					/* GJA -- handles banking */
-					(* ( ( x_interval >= 0 )
-					 ? fast_blt_Right : fast_blt_Left ) )
-					( ( ( x_interval >= 0 ) ? s1ptr : s1ptr - 1 ),
-					 d1ptr, byte_offset,
-					 center_width, h, y_interval ) ;
-
-					if ( x_interval >= 0 ) {
-						s1ptr += center_width ;
-						d1ptr += center_width ;
-					}
-					else {
-						s1ptr -= center_width ;
-						d1ptr -= center_width ;
-					}
-				}
-				/* Move Second Edge */
-				if ( second_edgeMask ) {
-					SetVideoGraphics( Bit_MaskIndex, second_edgeMask) ; /* GJA */
-					/* GJA -- handles banking */
-					fix_video_byte_copy_edgeLoop(
-					  s1ptr, d1ptr, byte_offset,
-					  h, y_interval ) ;
-					SetVideoGraphics( Bit_MaskIndex, 0xFF ) ; /* GJA */
-				}
-			}
-		}
-		/* Re-Enable All Planes In Map Mask */
-		SetVideoSequencer( Mask_MapIndex, VGA_ALLPLANES ) ;
-	}
-
-	return ;
-} /* End Of GXcopy BitBlt */
-
-/* Slow BitBlt Here */
-/* Set Data Rotate Function To Direct Write */
-SetVideoGraphics( Data_RotateIndex, VGA_COPY_MODE ) ;
-for ( currplane = 0 ; currplane <= VGA_MAXPLANES ; currplane++  ) {
-	if ( i = writeplanes & ( 1 << currplane ) ) {
-		register volatile unsigned char *s2ptr ;
-		register volatile unsigned char *d2ptr ;
-		/* Logical Operation Depending On Src & Dst */
-
-		SetVideoSequencer( Mask_MapIndex, i ) ;
-		/* Set Map Read Select */
-		SetVideoGraphics( Read_Map_SelectIndex,
-				  currplane ) ;
-		SetVideoGraphics( Bit_MaskIndex, 0xFF ) ;
-		/* Move First Edge */
-		s1ptr = src ;
-		d1ptr = dst ;
-		if ( first_edgeMask ) {
-			/* GJA -- Left edge. Setup banks */
-			VSETW(d1ptr); VSETR(s1ptr);
-			SetVideoGraphics( Bit_MaskIndex , first_edgeMask) ; /* GJA */
-			for ( j = h ; j-- ; ) {
-				fix_video_byte( s1ptr, d1ptr, byte_offset, alu ) ;
-				VPUSHR(); ADDW(d1ptr, y_interval); VPOPR();
-				ADDR(s1ptr, y_interval);
-			}
-			if ( center_width < 0 ) /* All In One Byte */
-				continue ; /* Next Plane */
-			SetVideoGraphics( Bit_MaskIndex, 0xFF ) ; /* GJA */
-			s1ptr = src + x_interval ;
-			d1ptr = dst + x_interval ;
-		}
-		/* Move Center Of Box */
-		for ( i = h ;
-		      i-- ;
-		      s1ptr += y_interval, d1ptr += y_interval ) {
-			/* GJA -- Middle part. Setup banks */
-			d2ptr = d1ptr; VSETW(d2ptr) ;
-			s2ptr = s1ptr; VSETR(s2ptr);
-			for ( j = center_width;
-			      j-- ; ) {
-				register unsigned long int tmp1 ;
-
-				if ( byte_offset ) {
-					tmp1 =
-				  SCRRIGHT8( *( (VgaMemoryPtr) s2ptr ), byte_offset ) ;
-					VDECR(s2ptr);
-					tmp1 |=
-				  SCRLEFT8( *( (VgaMemoryPtr) s2ptr ),
-					   ( 8 - byte_offset ) ) ;
-					VINCR(s2ptr);
-				}
-				else
-					tmp1 = *( (VgaMemoryPtr) s2ptr ) ;
-				ADDR(s2ptr, x_interval);
-				VPUSHR();
-				switch ( alu ) {
-				case GXnor:
-					tmp1 = ~( tmp1
-					 | *( (VgaMemoryPtr) d2ptr ) ) ;
-					break ;
-				case GXandInverted:
-					tmp1 =
-				~tmp1 & *( (VgaMemoryPtr) d2ptr ) ;
-					break ;
-				case GXand:
-					tmp1 &= *( (VgaMemoryPtr) d2ptr ) ;
-					break ;
-				case GXequiv:
-					tmp1 = ~tmp1 ^ *( (VgaMemoryPtr) d2ptr ) ;
-					break ;
-				case GXxor:
-					tmp1 ^= *( (VgaMemoryPtr) d2ptr ) ;
-					break ;
-				case GXandReverse:
-					tmp1 &= ~ *( (VgaMemoryPtr) d2ptr ) ;
-					break ;
-				case GXorReverse:
-					tmp1 |= ~*( (VgaMemoryPtr) d2ptr ) ;
-					break ;
-				case GXnand:
-					tmp1 = ~( tmp1 & *( (VgaMemoryPtr) d2ptr ) ) ;
-					break ;
-				case GXorInverted:
-					tmp1 = ~tmp1 | *( (VgaMemoryPtr) d2ptr ) ;
-					break ;
-				case GXor:
-					tmp1 |= *( (VgaMemoryPtr) d2ptr ) ;
-					break ;
-				case GXcopyInverted:
-					tmp1 = ~*( (VgaMemoryPtr) d2ptr ) ;
-				default:
-					break ;
-				}
-				*( (VgaMemoryPtr) d2ptr ) = tmp1 ;
-				ADDW(d2ptr, x_interval);
-				VPOPR();
-			}
-		}
-		/* Adjust Offsets */
-		j = ( h * y_interval ) - ( center_width * x_interval ) ;
-		s1ptr -= j ;
-		d1ptr -= j ;
-		/* Move Second Edge */
-		if ( second_edgeMask ) {
-			/* GJA -- Right edge. Setup banks */
-			VSETW(d1ptr); VSETR(s1ptr);
-			SetVideoGraphics( Bit_MaskIndex, second_edgeMask ) ; /* GJA */
-			for ( j = h ;
-		 	      j-- ; ) {
-				fix_video_byte( s1ptr, d1ptr, byte_offset, alu ) ;
-				ADDR(s1ptr, y_interval);
-				VPUSHR(); ADDW(d1ptr, y_interval); VPOPR();
-			}
-			SetVideoGraphics( Bit_MaskIndex, 0xFF ) ; /* GJA */
+     			shift_thin_rect(pWin,x0,x1,y0,y1,w,h,alu);
 		}
 	}
-}
-/* Re-Enable All Planes In Map Mask */
-SetVideoSequencer( Mask_MapIndex, VGA_ALLPLANES ) ;
+  } else if ( x1 > x0 ) { /* Shift right: start right */
+     int l1 = x1 & WMASK, r1 = (x1 + w) & WMASK;
 
-return ;
+     if ( r1 ) { /* right edge */
+	SetVideoGraphics(Enb_Set_ResetIndex, 0); /* All from CPU */
+	SetVideoGraphics(Bit_MaskIndex, 0xFF); /* All bits */
+	SetVideoGraphics(Graphics_ModeIndex, 0); /* Write mode 0 */
+	SetVideoGraphics(Data_RotateIndex, 0); /* Don't rotate, replace */
+
+	for ( plane = HIGHPLANEMASK, bit = HIGHPLANEINDEX;
+		plane ; plane >>= 1, bit-- )
+	{
+		if ( planes & plane) {
+			SetVideoGraphics(Read_Map_SelectIndex, bit);
+			SetVideoSequencer(Mask_MapIndex, plane);
+
+		        shift_thin_rect(pWin,x0+w-r1,x1+w-r1,y0,y1,r1,h,alu);
+		}
+	}
+     }
+
+     /* Center */
+     SetVideoGraphics(Graphics_ModeIndex, 1); /* Write mode 1 */
+     SetVideoSequencer(Mask_MapIndex, planes);
+
+     aligned_blit_center(pWin,x0,x1,y0,y1,w,h,alu);
+
+     if ( l1 ) { /* left edge */
+	SetVideoGraphics(Enb_Set_ResetIndex, 0); /* All from CPU */
+	SetVideoGraphics(Bit_MaskIndex, 0xFF); /* All bits */
+	SetVideoGraphics(Graphics_ModeIndex, 0); /* Write mode 0 */
+	SetVideoGraphics(Data_RotateIndex, 0); /* Don't rotate, replace */
+
+	for ( plane = HIGHPLANEMASK, bit = HIGHPLANEINDEX;
+		plane ; plane >>= 1, bit-- )
+	{
+		if ( planes & plane) {
+			SetVideoGraphics(Read_Map_SelectIndex, bit);
+			SetVideoSequencer(Mask_MapIndex, plane);
+
+        		shift_thin_rect(pWin,x0,x1,y0,y1,(WORDSZ-l1),h,alu);
+		}
+	}
+     }
+  } else {
+     int l1 = x1 & WMASK, r1 = (x1 + w) & WMASK;
+
+     if ( l1 ) { /* left edge */
+	SetVideoGraphics(Enb_Set_ResetIndex, 0); /* All from CPU */
+	SetVideoGraphics(Bit_MaskIndex, 0xFF); /* All bits */
+	SetVideoGraphics(Graphics_ModeIndex, 0); /* Write mode 0 */
+	SetVideoGraphics(Data_RotateIndex, 0); /* Don't rotate, replace */
+
+	for ( plane = HIGHPLANEMASK, bit = HIGHPLANEINDEX;
+		plane ; plane >>= 1, bit-- )
+	{
+		if ( planes & plane) {
+			SetVideoGraphics(Read_Map_SelectIndex, bit);
+			SetVideoSequencer(Mask_MapIndex, plane);
+
+        		shift_thin_rect(pWin,x0,x1,y0,y1,(WORDSZ-l1),h,alu);
+		}
+	}
+     }
+
+     /* Center */
+     SetVideoGraphics(Graphics_ModeIndex, 1); /* Write mode 1 */
+     SetVideoSequencer(Mask_MapIndex, planes);
+
+     aligned_blit_center(pWin,x0,x1,y0,y1,w,h,alu);
+
+     if ( r1 ) { /* right edge */
+	SetVideoGraphics(Enb_Set_ResetIndex, 0); /* All from CPU */
+	SetVideoGraphics(Bit_MaskIndex, 0xFF); /* All bits */
+	SetVideoGraphics(Graphics_ModeIndex, 0); /* Write mode 0 */
+	SetVideoGraphics(Data_RotateIndex, 0); /* Don't rotate, replace */
+
+	for ( plane = HIGHPLANEMASK, bit = HIGHPLANEINDEX ;
+		plane ; plane >>= 1, bit-- )
+	{
+		if ( planes & plane) {
+			SetVideoGraphics(Read_Map_SelectIndex, bit);
+			SetVideoSequencer(Mask_MapIndex, plane);
+
+        		shift_thin_rect(pWin,x0+w-r1,x1+w-r1,y0,y1,r1,h,alu);
+		}
+	}
+     }
+  }
+}
+
+aligned_blit_center(pWin,x0,x1,y0,y1,w,h,alu)
+WindowPtr pWin; /* GJA */
+int x0;  /* left edge of source */
+int x1;  /* left edge of target */
+int y0;
+int y1;
+int w; /* length of source, and of target */
+int h;
+int alu;
+{
+  int l0 = x0 & WMASK; /* Left edge of source, as bit */
+  int l1 = x1 & WMASK; /* Left edge of target, as bit */
+  int r0 = (x0 + w) & WMASK; /* Right edge of source, as bit */
+  int r1 = (x1 + w) & WMASK; /* Right edge of target, as bit */
+  int L0 = x0 >> WSHIFT; /* Left edge of source, as byte */
+  int L1 = x1 >> WSHIFT; /* Left edge of target, as byte */
+  int pad;
+  int htmp, wtmp; /* Temporaries for indices over height and width */
+  volatile unsigned char tmp; /* Temporary result of the shifts */
+  int bs;
+  int bytecnt;
+  
+  volatile unsigned char *sp, *dp;
+
+  bs = (x1 - x0) & WMASK;
+
+  if ( l1 ) {
+     bytecnt = (w - (WORDSZ - l1) - r1) >> WSHIFT;
+     sp = SMEM( ((x0 + (WORDSZ - l1)) >> WSHIFT), y0);
+     dp = DMEM( ((x1 + (WORDSZ - l1)) >> WSHIFT), y1);
+  } else {
+     bytecnt = (w - r1) >> WSHIFT;
+     sp = SMEM( (x0 >> WSHIFT), y0);
+     dp = DMEM( (x1 >> WSHIFT), y1);
+  }
+
+  if ( y1 > y0 ) { /* Move down, start at the bottom */
+    if ( x1 > x0 ) { /* Move right, start right */
+       pad = - BYTES_PER_LINE(pWin) + bytecnt;
+       sp += BYTES_PER_LINE(pWin) * (h - 1) + bytecnt - 1;
+       dp += BYTES_PER_LINE(pWin) * (h - 1) + bytecnt - 1;
+    } else { /* Move left, start left */
+       pad = - BYTES_PER_LINE(pWin) - bytecnt;
+       sp += BYTES_PER_LINE(pWin) * (h - 1);
+       dp += BYTES_PER_LINE(pWin) * (h - 1);
+    }
+  } else { /* Move up, start at the top */
+    if ( x1 > x0 ) { /* Move right, start right */
+       pad = BYTES_PER_LINE(pWin) + bytecnt;
+       sp += bytecnt - 1;
+       dp += bytecnt - 1;
+    } else { /* Move left, start left */
+       pad = BYTES_PER_LINE(pWin) - bytecnt;
+       sp += 0;
+       dp += 0;
+    }
+  }
+  VSETW(dp); VSETR(sp);
+
+  if ( x1 > x0 ) { /* Move right, start right */
+      for ( htmp = h ; htmp ; htmp-- ) {
+        for ( wtmp = bytecnt ; wtmp ; wtmp-- ) {
+          tmp = sp[0];
+	  VPUSHR();
+	  dp[0] = tmp;
+	  VDECW(dp);
+	  VPOPR();
+          VDECR(sp);
+        }
+	VPUSHR();
+        ADDW(dp,pad);
+        VPOPR();
+        ADDR(sp,pad);
+      } 
+  } else { /* x1 <= x0 */ /* Move left, start left */
+      for ( htmp = h ; htmp ; htmp-- ) {
+        for ( wtmp = bytecnt ; wtmp ; wtmp-- ) {
+          tmp = sp[0];
+	  VPUSHR();
+          dp[0] = tmp;
+	  VINCW(dp);
+	  VPOPR();
+          VINCR(sp);
+        }
+	VPUSHR();
+        ADDW(dp,pad);
+        VPOPR();
+        ADDR(sp,pad);
+      } 
+  }
 }

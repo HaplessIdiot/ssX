@@ -1,4 +1,5 @@
 /* $XConsortium: ppcWindowFS.c,v 1.2 94/04/17 20:31:58 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -56,7 +57,6 @@ SOFTWARE.
 #include "scrnintstr.h"
 #include "windowstr.h"
 
-#include "mfb.h"
 #include "maskbits.h"
 
 #include "OScompiler.h"
@@ -129,7 +129,8 @@ ppcSolidWindowFS( pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted )
 
     for ( ; n-- ; ppt++, pwidth++ )
 	if ( *pwidth )
-	    vgaFillSolid( fg, alu, pm, ppt->x, ppt->y, *pwidth, 1 ) ;
+	    vgaFillSolid( (WindowPtr)pDrawable,
+		           fg, alu, pm, ppt->x, ppt->y, *pwidth, 1 ) ;
 
     DEALLOCATE_LOCAL( pptFree ) ;
     DEALLOCATE_LOCAL( pwidthFree ) ;
@@ -186,7 +187,8 @@ int fSorted ;
     pTile = pGC->stipple ;
 
     for ( ; n-- ; ppt++, pwidth++ )
-	vgaFillStipple( pTile, fg, alu, pm, ppt->x, ppt->y, *pwidth, 1, xSrc, ySrc ) ;
+	vgaFillStipple( (WindowPtr)pDrawable, pTile, fg, alu, pm,
+			ppt->x, ppt->y, *pwidth, 1, xSrc, ySrc ) ;
 
     DEALLOCATE_LOCAL( pptFree ) ;
     DEALLOCATE_LOCAL( pwidthFree ) ;
@@ -237,9 +239,8 @@ int fSorted ;
     ySrc = pGC->patOrg.y + pDrawable->y ;
 
     for ( ; n-- ; ppt++, pwidth++ )
-	ppcOpaqueStipple( pGC->stipple, fg, bg, alu, pm,
-		ppt->x, ppt->y, *pwidth, 1,
-		xSrc, ySrc ) ;
+	ppcOpaqueStipple( (WindowPtr)pDrawable, pGC->stipple, fg, bg, alu, pm,
+		ppt->x, ppt->y, *pwidth, 1, xSrc, ySrc ) ;
 
     DEALLOCATE_LOCAL( pptFree ) ;
     DEALLOCATE_LOCAL( pwidthFree ) ;
@@ -280,7 +281,7 @@ int fSorted ;
     pm = ( (ppcPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr )->colorRrop.planemask ;
 
     for ( ; n-- ; ppt++, pwidth++ )
-	    ppcTileRect( pGC->tile.pixmap, alu, pm,
+	    ppcTileRect( (WindowPtr)pDrawable, pGC->tile.pixmap, alu, pm,
 		     ppt->x, ppt->y, *pwidth, 1, xSrc, ySrc ) ;
 
     DEALLOCATE_LOCAL( pptFree ) ;

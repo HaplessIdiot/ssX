@@ -1,4 +1,5 @@
 /* $XConsortium: ppcBStore.c,v 1.2 94/04/17 20:31:46 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -91,7 +92,6 @@ SOFTWARE.
 #include "windowstr.h"
 
 #include "mibstore.h"
-#include "mfb.h"
 
 #include "ppc.h"
 
@@ -129,7 +129,7 @@ ppcSaveAreas( pPixmap, prgnSave, xorg, yorg, pWin )
 	return ;
 
     for ( pBox = REGION_RECTS(prgnSave) ; nBox-- ; pBox++ )
-	vgaReadColorImage( pBox->x1 + xorg,
+	vgaReadColorImage( pWin, pBox->x1 + xorg,
 		 pBox->y1 + yorg,
 		 pBox->x2 - pBox->x1,
 		 pBox->y2 - pBox->y1,
@@ -171,7 +171,7 @@ ppcRestoreAreas( pPixmap, prgnRestore, xorg, yorg, pWin )
     if ( !( nBox = REGION_NUM_RECTS(prgnRestore) ) )
 	return ;
     for ( pBox = REGION_RECTS(prgnRestore) ; nBox-- ; pBox++ )
-	vgaDrawColorImage( pBox->x1,
+	vgaDrawColorImage( pWin, pBox->x1,
 		 pBox->y1,
 		 pBox->x2 - pBox->x1,
 		 pBox->y2 - pBox->y1,

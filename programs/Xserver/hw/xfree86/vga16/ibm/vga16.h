@@ -1,4 +1,5 @@
 /* $XConsortium: vga16.h,v 1.1 94/03/28 21:38:17 dpw Exp $ */
+/* $XFree86$ */
 
 /*
  * some header files need to be included here to make
@@ -8,6 +9,7 @@
 #include <gcstruct.h>
 #include <colormapst.h>
 #include <fontstruct.h>
+#include <mfb.h>	/* GJA -- for PixelType */
 
 /* ppcArea.c */
 void ppcAreaFill(
@@ -554,6 +556,7 @@ Bool ppcCreateWindowForXYhardware(
 /* emulOpStip.c */
 void ppcOpaqueStipple(
 #if NeedFunctionPrototypes
+    WindowPtr,
     PixmapPtr,
     unsigned long int,
     unsigned long int,
@@ -570,6 +573,7 @@ void ppcOpaqueStipple(
 /* emulRepAre.c */
 void ppcReplicateArea(
 #if NeedFunctionPrototypes
+    WindowPtr,
     int,
     int,
     int,
@@ -583,6 +587,7 @@ void ppcReplicateArea(
 /* emulTile.c */
 void ppcTileRect(
 #if NeedFunctionPrototypes
+    WindowPtr,
     PixmapPtr,
     const int,
     const unsigned long int,
@@ -610,6 +615,7 @@ Mask vgaChangeWindowGC(
 /* vgaBitBlt.c */
 void vgaBitBlt(
 #if NeedFunctionPrototypes
+    WindowPtr,
     int,
     int,
     int,
@@ -624,11 +630,12 @@ void vgaBitBlt(
 /* vgaImages.c */
 void vgaDrawColorImage(
 #if NeedFunctionPrototypes
+    WindowPtr,
     int,
     int,
     int,
     int,
-    char *,
+    unsigned char *,
     int,
     int,
     unsigned long int 
@@ -636,6 +643,7 @@ void vgaDrawColorImage(
 );
 void vgaReadColorImage(
 #if NeedFunctionPrototypes
+    WindowPtr,
     int,
     int,
     int,
@@ -647,6 +655,7 @@ void vgaReadColorImage(
 /* vgaLine.c */
 void vgaHorzLine(
 #if NeedFunctionPrototypes
+    WindowPtr,
     unsigned long int,
     int,
     unsigned long int,
@@ -657,6 +666,7 @@ void vgaHorzLine(
 );
 void vgaVertLine(
 #if NeedFunctionPrototypes
+    WindowPtr,
     unsigned long int,
     int,
     unsigned long int,
@@ -667,6 +677,7 @@ void vgaVertLine(
 );
 void vgaBresLine(
 #if NeedFunctionPrototypes
+    WindowPtr,
     unsigned long int,
     int,
     unsigned long int,
@@ -684,6 +695,7 @@ void vgaBresLine(
 /* vgaStipple.c */
 void vgaDrawMonoImage(
 #if NeedFunctionPrototypes
+    WindowPtr,
     unsigned char *,
     int,
     int,
@@ -696,6 +708,7 @@ void vgaDrawMonoImage(
 );
 void vgaFillStipple(
 #if NeedFunctionPrototypes
+    WindowPtr,
     const PixmapPtr,
     unsigned long int,
     const int,
@@ -711,6 +724,7 @@ void vgaFillStipple(
 /* vgaSolid.c */
 void vgaFillSolid(
 #if NeedFunctionPrototypes
+    WindowPtr,
     unsigned long int,
     int,
     unsigned long int,
@@ -743,6 +757,7 @@ int do_rop(
 );
 void offBitBlt(
 #if NeedFunctionPrototypes
+    WindowPtr,
     int,
     int,
     int,
@@ -756,6 +771,7 @@ void offBitBlt(
 );
 void offDrawColorImage(
 #if NeedFunctionPrototypes
+    WindowPtr,
     int,
     int,
     int,
@@ -768,6 +784,7 @@ void offDrawColorImage(
 );
 void offReadColorImage(
 #if NeedFunctionPrototypes
+    WindowPtr,
     int,
     int,
     int,
@@ -778,6 +795,7 @@ void offReadColorImage(
 );
 void offBresLine(
 #if NeedFunctionPrototypes
+    WindowPtr,
     unsigned long int,
     int,
     unsigned long int,
@@ -794,6 +812,7 @@ void offBresLine(
 );
 void offFillSolid(
 #if NeedFunctionPrototypes
+    WindowPtr,
     unsigned long int,
     int,
     unsigned long int,
@@ -805,6 +824,7 @@ void offFillSolid(
 );
 void offDrawMonoImage(
 #if NeedFunctionPrototypes
+    WindowPtr,
     unsigned char *,
     int,
     int,
@@ -817,6 +837,7 @@ void offDrawMonoImage(
 );
 void offFillStipple(
 #if NeedFunctionPrototypes
+    WindowPtr,
     PixmapPtr,
     unsigned long int,
     int,
@@ -874,8 +895,12 @@ Bool vgaScreenClose(
 void Init16Output(
 #if NeedFunctionPrototypes
     ScreenPtr,
+    pointer,
     int,
-    int 
+    int,
+    int,
+    int,
+    int
 #endif
 );
 /* mfbfillarc.c */
@@ -895,6 +920,7 @@ void v16PolyFillArc(
     xArc *
 #endif
 );
+
 /* mfbzerarc.c */
 void v16ZeroPolyArcSS(
 #if NeedFunctionPrototypes
@@ -914,3 +940,126 @@ void v16ZeroPolyArc(
 );
 
 extern Bool xf86VTSema;
+
+/* mfbline.c */
+/* internal */ void DoV16SegmentSS (
+#if NeedFunctionPrototypes
+    DrawablePtr,
+    GCPtr,
+    int,
+    register xSegment *
+#endif
+);
+/* internal */ void DoV16LineSS (
+#if NeedFunctionPrototypes
+    DrawablePtr,
+    GCPtr,
+    int	,
+    int	,
+    DDXPointPtr
+#endif
+);
+/* internal */ void DoV16SegmentSD (
+#if NeedFunctionPrototypes
+    DrawablePtr,
+    GCPtr,
+    int,
+    register xSegment *
+#endif
+);
+/* internal */ void DoV16LineSD (
+#if NeedFunctionPrototypes
+    DrawablePtr,
+    GCPtr,
+    int,
+    int,
+    DDXPointPtr
+#endif
+);
+void v16SegmentSS (
+#if NeedFunctionPrototypes
+    DrawablePtr,
+    GCPtr,
+    int,
+    register xSegment *
+#endif
+);
+void v16LineSS (
+#if NeedFunctionPrototypes
+    DrawablePtr,
+    GCPtr,
+    int	,
+    int	,
+    DDXPointPtr
+#endif
+);
+void v16SegmentSD (
+#if NeedFunctionPrototypes
+    DrawablePtr,
+    GCPtr,
+    int,
+    register xSegment *
+#endif
+);
+void v16LineSD (
+#if NeedFunctionPrototypes
+    DrawablePtr,
+    GCPtr,
+    int,
+    int,
+    DDXPointPtr
+#endif
+);
+
+/* mfbbres.c */
+void v16BresS(
+#if NeedFunctionPrototypes
+	PixelType *,
+	int,
+	int,
+	int,
+	int,
+	int,
+	int,
+	register int,
+	register int,
+	int,
+	int
+#endif
+);
+
+/* mfbbresd.c */
+void v16BresD(
+#if NeedFunctionPrototypes
+	int, int,
+	int *,
+	unsigned char *,
+	int,
+	int *,
+	int,
+	PixelType *,
+	int, int, int, int, int, int,
+	register, register,
+	int, int
+#endif
+);
+
+/* mfbhrzvert.c */
+int v16HorzS(
+#if NeedFunctionPrototypes
+	register PixelType *,
+	register int,
+	int,
+	int,
+	int
+#endif
+);
+int v16VertS(
+#if NeedFunctionPrototypes
+	register PixelType *,
+	register int,
+	int,
+	int,
+	register int
+#endif
+);

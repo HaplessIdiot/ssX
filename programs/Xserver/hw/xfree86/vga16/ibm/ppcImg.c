@@ -1,4 +1,5 @@
 /* $XConsortium: ppcImg.c,v 1.1 94/03/28 21:37:03 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -89,8 +90,10 @@ ppcGetImage( pDraw, sx, sy, w, h, format, planeMask, pdstLine )
     GCPtr	pGC ;
     char *pDst = (char *) pdstLine ;
 
+#if 0
 	miGetImage( pDraw, sx, sy, w, h, format, planeMask, pdstLine ) ;
         return;
+#endif
 
     depth = pDraw->depth ;
     if ( format == ZPixmap ) {
@@ -117,9 +120,10 @@ ppcGetImage( pDraw, sx, sy, w, h, format, planeMask, pdstLine )
 		width = w ;
 		(* pDraw->pScreen->GetSpans)( pDraw, w, &pt, &width, 1, pbits ) ;
 		pt.x = 0 ;
-		pt.y = 0 ;
+		pt.y = i ;
 		width = w ;
-		(* pGC->ops->SetSpans)( pPixmap, pGC, pbits, &pt, &width, 1, TRUE ) ;
+		if ( planeMask & ((1 << depth) - 1) ) /* GJA -- mfb bug */ 
+		  (* pGC->ops->SetSpans)( pPixmap, pGC, pbits, &pt, &width, 1, TRUE ) ;
 		(* pDraw->pScreen->GetSpans)( pPixmap, w, &pt, &width, 1, pDst ) ;
 		pDst += linelength ;
 	    }

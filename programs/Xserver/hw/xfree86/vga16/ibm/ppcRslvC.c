@@ -1,4 +1,5 @@
 /* $XConsortium: ppcRslvC.c,v 1.2 94/04/17 20:31:56 dpw Exp $ */
+/* $XFree86$ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -76,7 +77,8 @@ register VisualPtr const pVisual ;
     int shift = 16 - pVisual->bitsPerRGBValue;
     unsigned lim = (1 << pVisual->bitsPerRGBValue) - 1;
 
-    if ((pVisual->class == PseudoColor) || (pVisual->class == DirectColor))
+    if ((pVisual->class == PseudoColor) || (pVisual->class == DirectColor) ||
+	(pVisual->class == StaticColor))
     {
 	/* rescale to rgb bits */
 	*pRed = ((*pRed >> shift) * 65535) / lim;
@@ -102,6 +104,24 @@ register VisualPtr const pVisual ;
     }
 }
 	
+/* GJA -- took the following from Ferraro's book. */
+#if 1
+	/* use RGBI as palette */
+static unsigned char defaultpalette[16][3] = {
+    {  0,  0,  0 }, {  0,  0, 42 }, {  0, 42,  0 }, {  0, 42, 42 }, 
+    { 42,  0,  0 }, { 42,  0, 42 }, { 42, 21,  0 }, { 42, 42, 42 }, 
+    { 21, 21, 21 }, { 21, 21, 63 }, { 21, 63, 21 }, { 21, 63, 63 }, 
+    { 63, 21, 21 }, { 63, 21, 63 }, { 63, 63, 21 }, { 63, 63, 63 }
+};
+#else
+	/* use RrGgBb as palette */
+static unsigned char defaultpalette[16][3] = {
+    {  0,  0,  0 }, {  0,  0, 42 }, {  0, 42,  0 }, {  0, 42, 42 }, 
+    { 42,  0,  0 }, { 42,  0, 42 }, { 14, 14, 14 }, { 42, 42, 42 }, 
+    { 31, 31, 63 }, { 39, 31, 63 }, { 47, 31, 63 }, { 55, 31, 63 }, 
+    { 63, 31, 63 }, { 63, 31, 55 }, { 63, 31, 47 }, { 63, 31, 39 }
+};
+#endif
 
 /* GJA --
  * Took the code below from cfb. It's for staticgray visuals.
@@ -128,6 +148,15 @@ ppcInitializeColormap(pmap)
 					 * 65535) / lim;
 	    pmap->red[i].co.local.green = pmap->red[i].co.local.red;
 	    pmap->red[i].co.local.blue = pmap->red[i].co.local.red;
+	}
+    }
+    else if ( pVisual->class == StaticColor ) {
+	/* GJA -- I *know* we have 16 colours, otherwise this code is useless.
+	 */
+	for ( i = 0 ; i < 16 ; i++ ) {
+	    pmap->red[i].co.local.red   = (defaultpalette[i][0] << 10);
+	    pmap->red[i].co.local.green = (defaultpalette[i][1] << 10);
+	    pmap->red[i].co.local.blue  = (defaultpalette[i][2] << 10);
 	}
     }
     return TRUE;

@@ -1,4 +1,5 @@
 /* $XConsortium: ppcPixmapFS.c,v 1.2 94/04/17 20:31:53 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -56,7 +57,6 @@ SOFTWARE.
 #include "scrnintstr.h"
 #include "windowstr.h"
 
-#include "mfb.h"
 #include "maskbits.h"
 
 #include "OScompiler.h"
@@ -169,7 +169,7 @@ ppcSolidPixmapFS( pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted )
     return ;
 }
 
-/* GJA -- copied from ../vga/vgaStipple.c */
+/* GJA -- copied from vgaStipple.c */
 static unsigned char
 vgagetbits( x, patternWidth, lineptr )
 register const int x ;
@@ -188,6 +188,35 @@ if ( shift = x & 7 )
 if ( ( wrap = x + 8 - patternWidth ) > 0 ) {
       bits &= SCRLEFT8( 0xFF, wrap ) ;
       bits |= SCRRIGHT8( *lineptr, ( 8 - wrap ) ) ;
+}
+
+/* GJA -- Handle extraction of 8 bits from < 8 bits wide stipple.
+ * I duplicated case 4,5,6,7 to give the compiler a chance to optimize.
+ */
+switch (patternWidth) {
+case 1:	/* Not really useful. */
+	bits &= ~SCRRIGHT8(0xFF,1);
+	bits |= SCRRIGHT8(bits,1); 
+	bits |= SCRRIGHT8(bits,2);
+	bits |= SCRRIGHT8(bits,4);
+	break;
+case 2:
+	bits &= ~SCRRIGHT8(0xFF,2);
+	bits |= SCRRIGHT8(bits,2); bits |= SCRRIGHT8(bits,4); break;
+case 3:
+	bits &= ~SCRRIGHT8(0xFF,3);
+	bits |= (SCRRIGHT8(bits,3) | SCRRIGHT8(bits,6)); break;
+case 4:
+	bits = (bits & ~SCRRIGHT8(0xFF,4)) | SCRRIGHT8(bits,4); break;
+case 5:
+	bits = (bits & ~SCRRIGHT8(0xFF,5)) | SCRRIGHT8(bits,5); break;
+case 6:
+	bits = (bits & ~SCRRIGHT8(0xFF,6)) | SCRRIGHT8(bits,6); break;
+case 7:
+	bits = (bits & ~SCRRIGHT8(0xFF,7)) | SCRRIGHT8(bits,7); break;
+default:
+	;
+	/* Do nothing, of course */
 }
 
 return bits ;

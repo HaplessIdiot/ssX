@@ -1,4 +1,5 @@
 /* $XConsortium: vgaStipple.c,v 1.1 94/03/28 21:40:08 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -28,7 +29,11 @@
 #include "OScompiler.h"
 #include "vgaVideo.h"
 #include "vgaReg.h"
-#include "ppc.h"
+
+#include "windowstr.h" /* GJA -- for pWin */
+#include "scrnintstr.h" /* GJA -- for pWin */
+#include "pixmapstr.h" /* GJA -- for pWin */
+#include "ppc.h" /* GJA -- for pWin */
 
 static unsigned char
 getbits( x, patternWidth, lineptr )
@@ -93,8 +98,9 @@ extern void vgaFillSolid() ;
  * This is taken care of above.
  */
 static void
-DoMonoSingle( w, x, y, mastersrc, h, width, paddedByteWidth, height,
+DoMonoSingle( pWin, w, x, y, mastersrc, h, width, paddedByteWidth, height,
 	      xshift, yshift )
+WindowPtr pWin; /* GJA */
 int w, x, y ;
 register const unsigned char *mastersrc ;
 int h ;
@@ -124,7 +130,7 @@ if ( tmp1 = x & 07 ) {
 	/*
 	 * For Each Line In The Source Pixmap
 	 */
-	xDst = SCREENADDRESS( x, y ); VSETRW(xDst);
+	xDst = SCREENADDRESS( pWin, x, y ); VSETRW(xDst);
 	for ( tmp1 = yshift, rowCounter = h;
 	      rowCounter ;
 	      rowCounter-- , tmp1++ ) {
@@ -138,7 +144,7 @@ if ( tmp1 = x & 07 ) {
 			getbits( xshift /* GJA */, width,
 				 mastersrc
 				 + ( tmp1 * paddedByteWidth ) ) >> (x & 07) ;
- 		xDst += BYTES_PER_LINE; VCHECKRWO(xDst);
+ 		xDst += BYTES_PER_LINE(pWin); VCHECKRWO(xDst);
 	}
 	NeedValX = (xshift + 8 - (x & 07)) % width;
 	x = ( x + 7 ) & ~07 ;
@@ -154,7 +160,7 @@ if ( byte_cnt = ROW_OFFSET( w ) ) { /* Fill The Center Of The Box */
 	/*
 	 * For Each Line In The Source Pixmap
 	 */
-	xDst = SCREENADDRESS( x, y ); VSETRW(xDst);
+	xDst = SCREENADDRESS( pWin, x, y ); VSETRW(xDst);
 	for ( tmp1 = yshift, rowCounter = h;
 	      rowCounter ;
 	      rowCounter-- , tmp1++ ) {
@@ -176,7 +182,7 @@ if ( byte_cnt = ROW_OFFSET( w ) ) { /* Fill The Center Of The Box */
 			NeedValX = (NeedValX + 8) % width;
 			xDst++; VCHECKRWO(xDst);
 		}
-		xDst += BYTES_PER_LINE - byte_cnt; VCHECKRWO(xDst);
+		xDst += BYTES_PER_LINE(pWin) - byte_cnt; VCHECKRWO(xDst);
 	}
 }
 
@@ -187,7 +193,7 @@ if ( tmp1 = BIT_OFFSET( w ) ) { /* x Now Is Byte Aligned */
 	/*
 	 * For Each Line In The Source Pixmap
 	 */
-	xDst = SCREENADDRESS( ( x + w ), y ); VSETRW(xDst);
+	xDst = SCREENADDRESS( pWin, ( x + w ), y ); VSETRW(xDst);
 	for ( tmp1 = yshift, rowCounter = h;
 	      rowCounter ;
 	      rowCounter-- , tmp1++ ) {
@@ -200,7 +206,7 @@ if ( tmp1 = BIT_OFFSET( w ) ) { /* x Now Is Byte Aligned */
 			getbits( NeedValX, width,
 				 mastersrc
 				 + ( tmp1 * paddedByteWidth ) ) ;
-		xDst += BYTES_PER_LINE ; VCHECKRWO(xDst);
+		xDst += BYTES_PER_LINE(pWin) ; VCHECKRWO(xDst);
 	}
 }
 
@@ -208,8 +214,9 @@ return ;
 }
 
 static void
-DoMonoMany( w, x, y, mastersrc, h, width, paddedByteWidth, height,
+DoMonoMany( pWin, w, x, y, mastersrc, h, width, paddedByteWidth, height,
 	    xshift, yshift )
+WindowPtr pWin; /* GJA */
 int w, x, y ;
 register const unsigned char *mastersrc ;
 int h ;
@@ -227,7 +234,7 @@ register int tmp1 ;
 unsigned DestinationRow ;
 unsigned int SourceRow ;
 volatile unsigned char *dst ;
-int scr_incr = ( height * BYTES_PER_LINE ) ;
+int scr_incr = ( height * BYTES_PER_LINE(pWin) ) ;
 
 /* Do Left Edge */
 if ( tmp1 = x & 07 ) {
@@ -241,9 +248,9 @@ if ( tmp1 = x & 07 ) {
 	/*
 	 * For Each Line In The Source Pixmap
 	 */
-	for ( tmp1 = yshift, SourceRow = 0, dst = SCREENADDRESS( x, y ) ;
+	for ( tmp1 = yshift, SourceRow = 0, dst = SCREENADDRESS( pWin, x, y ) ;
 	      SourceRow < height ;
-	      tmp1++, SourceRow++, dst += BYTES_PER_LINE ) {
+	      tmp1++, SourceRow++, dst += BYTES_PER_LINE(pWin) ) {
 		register unsigned bitPattern ;
 
 		if ( tmp1 >= height )
@@ -279,9 +286,9 @@ if ( byte_cnt = ROW_OFFSET( w ) ) { /* Fill The Center Of The Box */
 	/*
 	 * For Each Line In The Source Pixmap
 	 */
-	for ( tmp1 = yshift, SourceRow = 0, dst = SCREENADDRESS( x, y ) ;
+	for ( tmp1 = yshift, SourceRow = 0, dst = SCREENADDRESS( pWin, x, y ) ;
 	      SourceRow < height ;
-	      tmp1++, SourceRow++, dst += BYTES_PER_LINE - byte_cnt ) {
+	      tmp1++, SourceRow++, dst += BYTES_PER_LINE(pWin) - byte_cnt ) {
 		register const unsigned char *l_ptr ;
 		if ( tmp1 >= height )
 			tmp1 -= height ;
@@ -321,9 +328,9 @@ if ( tmp1 = BIT_OFFSET( w ) ) { /* x Now Is Byte Aligned */
 	 * For Each Line In The Source Pixmap
 	 */
 	for ( tmp1 = yshift, SourceRow = 0,
-	      dst = SCREENADDRESS( ( x + w ), y ) ;
+	      dst = SCREENADDRESS( pWin, ( x + w ), y ) ;
 	      SourceRow < height ;
-	      tmp1++, SourceRow++, dst += BYTES_PER_LINE ) {
+	      tmp1++, SourceRow++, dst += BYTES_PER_LINE(pWin) ) {
 		register unsigned bitPattern ;
 		if ( tmp1 >= height )
 			tmp1 -= height ;
@@ -434,7 +441,8 @@ return ( color & VGA_ALLPLANES ) | data_rotate_value | invert_existing_data ;
 }
 
 void
-vgaDrawMonoImage( data, x, y, w, h, fg, alu, planes )
+vgaDrawMonoImage( pWin, data, x, y, w, h, fg, alu, planes )
+WindowPtr pWin; /* GJA */
 unsigned char *data;
 int x, y, w, h ;
 unsigned long int fg ;
@@ -444,7 +452,7 @@ unsigned long int planes;
 unsigned long regState ;
 
 if ( !xf86VTSema ) {
-	offDrawMonoImage( data, x, y, w, h, fg, alu, planes );
+	offDrawMonoImage( pWin, data, x, y, w, h, fg, alu, planes );
 	return;
 }
 
@@ -452,7 +460,7 @@ if ( ( alu == GXnoop ) || !( planes &= VGA_ALLPLANES ) )
 	return ;
 
 if ( ( regState = vgaCalcMonoMode( alu, fg ) ) & DO_RECURSE ) {
-	vgaDrawMonoImage( data, x, y, w, h,
+	vgaDrawMonoImage( pWin, data, x, y, w, h,
 			  VGA_ALLPLANES, GXinvert, planes ) ;
 	regState &= ~DO_RECURSE ;
 }
@@ -460,7 +468,7 @@ if ( ( regState = vgaCalcMonoMode( alu, fg ) ) & DO_RECURSE ) {
 
 vgaSetMonoRegisters( planes, regState ) ;
 
-DoMonoSingle( w, x, y, (const unsigned char *) data, h,
+DoMonoSingle( pWin, w, x, y, (const unsigned char *) data, h,
 	      w, ( ( w + 31 ) & ~31 ) >> 3, h, 0, 0 ) ;
 
 
@@ -468,7 +476,8 @@ return ;
 }
 
 void
-vgaFillStipple( pStipple, fg, alu, planes, x, y, w, h, xSrc, ySrc )
+vgaFillStipple( pWin, pStipple, fg, alu, planes, x, y, w, h, xSrc, ySrc )
+WindowPtr pWin; /* GJA */
 register PixmapPtr const pStipple ;
 unsigned long int fg ;
 const int alu ;
@@ -483,7 +492,7 @@ int yshift ;
 unsigned long regState ;
 
 if ( !xf86VTSema ) {
-	offFillStipple( pStipple, fg, alu, planes,
+	offFillStipple( pWin, pStipple, fg, alu, planes,
 			x, y, w, h, xSrc, ySrc );
 	return;
 }
@@ -492,7 +501,7 @@ if ( ( alu == GXnoop ) || !( planes &= VGA_ALLPLANES ) )
 	return ;
 
 if ( ( regState = vgaCalcMonoMode( alu, fg ) ) & DO_RECURSE ) {
-	vgaFillStipple( pStipple, VGA_ALLPLANES, GXinvert, planes,
+	vgaFillStipple( pWin, pStipple, VGA_ALLPLANES, GXinvert, planes,
 			x, y, w, h, xSrc, ySrc ) ;
 	regState &= ~DO_RECURSE ;
 }
@@ -516,7 +525,7 @@ else
 if ( yshift == height ) yshift = 0;
 
 	(* ( (h > height) ? DoMonoMany : DoMonoSingle ) ) (
-			w, x, y,
+			pWin, w, x, y,
 			(const unsigned char *) pStipple->devPrivate.ptr,
 			h,
 			width,

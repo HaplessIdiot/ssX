@@ -1,4 +1,5 @@
 /* $XConsortium: ppcGetSp.c,v 1.2 94/04/17 20:31:49 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -123,7 +124,8 @@ ppcGetSpans( pDrawable, wMax, ppt, pwidth, nspans, pdstStart )
 
     if ( pDrawable->type == DRAWABLE_WINDOW ) {
 	for ( ; nspans-- ; ppt++, pwidth++ ) {
-		vgaReadColorImage( ppt->x, ppt->y, j = *pwidth, 1, pdst, pixmapStride ) ;
+		vgaReadColorImage(  (WindowPtr)pDrawable,
+			ppt->x, ppt->y, j = *pwidth, 1, pdst, pixmapStride ) ;
 		pdst += j ; /* width is in 32 bit words */
 		j = ( -j ) & 3 ;
 		while ( j-- ) /* Pad out to 32-bit boundary */

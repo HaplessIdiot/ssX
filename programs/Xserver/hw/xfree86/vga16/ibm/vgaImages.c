@@ -1,4 +1,5 @@
 /* $XConsortium: vgaImages.c,v 1.1 94/03/28 21:39:26 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -33,6 +34,11 @@
 
 #include "vgaReg.h"
 
+#include "windowstr.h" /* GJA -- for pWin */
+#include "scrnintstr.h" /* GJA -- for pWin */
+#include "pixmapstr.h" /* GJA -- for pWin */
+#include "ppc.h" /* GJA -- for pWin */
+
 #undef TRUE
 #undef FALSE
 #define TRUE 1
@@ -41,10 +47,11 @@
 extern void vgaFillSolid() ;
 
 void
-vgaDrawColorImage( x, y, w, h, data, RowIncrement, alu, planes )
+vgaDrawColorImage( pWin, x, y, w, h, data, RowIncrement, alu, planes )
+WindowPtr pWin; /* GJA */
 int x, y ;
 register int w, h ;
-register const unsigned char *data ;
+unsigned char *data ;
 register int RowIncrement ;
 const int alu ;
 const unsigned long int planes ;
@@ -62,7 +69,7 @@ unsigned int invert_source_data = FALSE ;
 	extern int xf86VTSema;
 
 	if ( !xf86VTSema ) {
-		offDrawColorImage( x, y, w, h, data, RowIncrement, alu, planes );
+		offDrawColorImage( pWin, x, y, w, h, data, RowIncrement, alu, planes );
 		return;
 	}
 }	/* End GJA */
@@ -75,7 +82,7 @@ unsigned int invert_source_data = FALSE ;
 		case GXclear:		/* 0x0 Zero 0 */
 		case GXinvert:		/* 0xa NOT dst */
 		case GXset:		/* 0xf 1 */
-			vgaFillSolid( VGA_ALLPLANES, alu, planes, x, y, w, h ) ;
+			vgaFillSolid( pWin, VGA_ALLPLANES, alu, planes, x, y, w, h ) ;
 		case GXnoop:		/* 0x5 dst */
 			return ;
 		case GXnor:		/* 0x8 NOT src AND NOT dst */
@@ -113,7 +120,7 @@ unsigned int invert_source_data = FALSE ;
 			break ;
 	}
 	if ( invert_existing_data )
-		vgaFillSolid( VGA_ALLPLANES, GXinvert, planes, x, y, w, h ) ;
+		vgaFillSolid( pWin, VGA_ALLPLANES, GXinvert, planes, x, y, w, h ) ;
 	/* Setup VGA Registers */
 	SetVideoSequencer( Mask_MapIndex, planes & VGA_ALLPLANES ) ;
 	/* Set Raster Op */
@@ -121,13 +128,12 @@ unsigned int invert_source_data = FALSE ;
 	SetVideoGraphics( Graphics_ModeIndex, VGA_WRITE_MODE_2 ) ;
 }
 
-StartByte = (volatile unsigned char *)
-	( VIDBASE + ( y * BYTES_PER_LINE ) + ROW_OFFSET( x ) ) ;
+StartByte = SCREENADDRESS(pWin, x, y);
 InitialMask = SCRRIGHT8( LeftmostBit, BIT_OFFSET( x ) ) ;
 if ( invert_source_data )
 	for ( ;
 	      h-- ;
-	      data += RowIncrement, StartByte += BYTES_PER_LINE ) {
+	      data += RowIncrement, StartByte += BYTES_PER_LINE(pWin) ) {
 		dst = StartByte; VSETRW(dst);
 		for ( src = data,
 		      Pixel_Count = w, currMask = InitialMask ;
@@ -149,7 +155,7 @@ if ( invert_source_data )
 else /* invert_source_data == FALSE */
 	for ( ;
 	      h-- ;
-	      data += RowIncrement, StartByte += BYTES_PER_LINE ) {
+	      data += RowIncrement, StartByte += BYTES_PER_LINE(pWin) ) {
 		dst = StartByte; VSETRW(dst);
 		for ( src = data,
 		      Pixel_Count = w, currMask = InitialMask ;
@@ -246,7 +252,8 @@ return j ;
 }
 
 void
-vgaReadColorImage( x, y, lx, ly, data, RowIncrement )
+vgaReadColorImage( pWin, x, y, lx, ly, data, RowIncrement )
+WindowPtr pWin; /* GJA */
 int x, y ;
 int lx, ly ;
 register unsigned char *data ;
@@ -267,7 +274,7 @@ unsigned char tmpc;
 	extern int xf86VTSema;
 
 	if ( !xf86VTSema ) {
-		offReadColorImage( x, y, lx, ly, data, RowIncrement );
+		offReadColorImage( pWin, x, y, lx, ly, data, RowIncrement );
 		return;
 	}
 }	/* End GJA */
@@ -284,7 +291,7 @@ SetVideoGraphicsIndex( Read_Map_SelectIndex ) ;
 skip = BIT_OFFSET( x ) ;
 pad = RowIncrement - lx ;
 ignore = BIT_OFFSET( x + lx ) ;
-masterSrc = (volatile unsigned char *) SCREENADDRESS( x, y ) ;
+masterSrc = SCREENADDRESS( pWin, x, y ) ;
 center_width = ROW_OFFSET( x + lx ) - ROW_OFFSET( ( x + 0x7 ) & ~0x7 ) ;
 
 #define SINGLE_STEP 	*data++ = tmp & VGA_ALLPLANES ; tmp >>= 4
@@ -298,13 +305,13 @@ if ( center_width < 0 ) {
 			SINGLE_STEP ;
 		}
 		data += pad ;
-		src += BYTES_PER_LINE; VCHECKRWO(src) ;
+		src += BYTES_PER_LINE(pWin); VCHECKRWO(src) ;
 	}
 } else
 	for ( savCenterWidth = center_width ;
 	      ly-- ;
 	      center_width = savCenterWidth,
-	      masterSrc += BYTES_PER_LINE ) {
+	      masterSrc += BYTES_PER_LINE(pWin) ) {
 		src = masterSrc ; VSETRW(src);
 		tmp = read8Z( src ) ; VINCRW(src);
 		if ( dx = skip )

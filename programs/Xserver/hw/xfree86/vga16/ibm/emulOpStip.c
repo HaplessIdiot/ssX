@@ -1,4 +1,5 @@
 /* $XConsortium: emulOpStip.c,v 1.1 94/03/28 21:34:29 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -42,7 +43,8 @@
 extern PixmapPtr ppcCopyPixmap();
 
 void 
-ppcOpaqueStipple( pStipple, fg, bg, alu, planes, x, y, w, h, xSrc, ySrc )
+ppcOpaqueStipple( pWin, pStipple, fg, bg, alu, planes, x, y, w, h, xSrc, ySrc )
+WindowPtr pWin; /* GJA */
 register PixmapPtr pStipple ;
 unsigned long int fg ;
 unsigned long int bg ;
@@ -59,7 +61,7 @@ int xSrc, ySrc ;
 	case GXclear:		/* 0x0 Zero 0 */
 	case GXset:		/* 0xf 1 */
  	    /* Foreground And Background Are Both The Same !! */
-	    vgaFillSolid( bg, alu, planes, x, y, w, h ) ;
+	    vgaFillSolid( pWin, bg, alu, planes, x, y, w, h ) ;
 	case GXnoop:		/* 0x5 dst */
 	    break ;
 	case GXcopy:		/* 0x3 src */
@@ -73,15 +75,15 @@ int xSrc, ySrc ;
 		vtarget = MIN( h, pStipple->drawable.height ) ;
 
 		/* First The Background */
-		vgaFillSolid( bg, alu, planes, x, y,
+		vgaFillSolid( pWin, bg, alu, planes, x, y,
 					htarget, vtarget ) ;
 		/* Then The Foreground */
-		vgaFillStipple( pStipple, fg, alu, planes,
+		vgaFillStipple( pWin, pStipple, fg, alu, planes,
 				       x, y, htarget, vtarget,
 				       xSrc, ySrc ) ;
 
 		/* Here We Double The Size Of The BLIT Each Iteration */
-		ppcReplicateArea( x, y, planes, w, h,
+		ppcReplicateArea( pWin, x, y, planes, w, h,
 					    htarget, vtarget,
 					    pStipple->drawable.pScreen ) ;
 	    }
@@ -98,10 +100,10 @@ int xSrc, ySrc ;
 			for ( j = pInvPixmap->devKind ; j-- ; data++ )
 				*data = ~ ( *data ) ;
 
-	        vgaFillStipple( pInvPixmap, bg, alu, planes, x, y, w, h, xSrc, ySrc );
+	        vgaFillStipple( pWin, pInvPixmap, bg, alu, planes, x, y, w, h, xSrc, ySrc );
 	        mfbDestroyPixmap( pInvPixmap ) ;
 	        /* DO FOREGROUND */
-	        vgaFillStipple( pStipple, fg, alu, planes, x, y, w, h, xSrc, ySrc );
+	        vgaFillStipple( pWin, pStipple, fg, alu, planes, x, y, w, h, xSrc, ySrc );
 	    }
 	break ;
     }

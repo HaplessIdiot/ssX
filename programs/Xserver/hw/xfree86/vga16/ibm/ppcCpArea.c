@@ -1,4 +1,5 @@
 /* $XConsortium: ppcCpArea.c,v 1.2 94/04/17 20:31:47 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -58,7 +59,6 @@ SOFTWARE.
 #include "scrnintstr.h"
 
 #include "mi.h"
-#include "mfb.h"
 
 #include "OScompiler.h"
 
@@ -154,7 +154,8 @@ if ( ! pPriv->pCompositeClip )
 		dy = srcy - dsty ;
 
 		for ( ; nbox-- ; pbox++ )
-			vgaDrawColorImage( pbox->x1, pbox->y1,
+			vgaDrawColorImage( (WindowPtr)pDstDrawable,
+				 pbox->x1, pbox->y1,
 				 pbox->x2 - pbox->x1,
 				 pbox->y2 - pbox->y1,
 				 data + pbox->x1 + dx
@@ -353,7 +354,7 @@ int dstx, dsty ;
 		}
 		{ /* Here is the "REAL" copy. All clipped and GO. */
 		for ( ; nbox-- ; pbox++ )
-			vgaBitBlt( alu, pm, pm,
+			vgaBitBlt( (WindowPtr)pDstDrawable, alu, pm, pm,
 				 pbox->x1 + dx, pbox->y1 + dy,
 				 pbox->x1, pbox->y1,
 				 pbox->x2 - pbox->x1, pbox->y2 - pbox->y1 ) ;

@@ -1,4 +1,5 @@
 /* $XConsortium: offscreen.c,v 1.1 94/03/28 21:35:21 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1993 Gerrit Jan Akkerman 
  *
@@ -42,17 +43,19 @@
  *
 */
 
-
 #include "X.h"
 #include "compiler.h"
 #include "vgaVideo.h"
-#include "pixmapstr.h"
-#include "scrnintstr.h"
+
+#include "windowstr.h" /* GJA -- for pWin */
+#include "scrnintstr.h" /* GJA -- for pWin */
+#include "pixmapstr.h" /* GJA -- for pWin */
+#include "ppc.h" /* GJA -- for pWin */
 
 unsigned char *saved_screen;
 
-#define SAVEDSCREEN(x,y) \
-	(*(saved_screen + (y) * ((MAX_COLUMN)+1) + (x)))
+#define SAVEDSCREEN(pWin, x, y) \
+	(*(saved_screen + (y) * (BYTES_PER_LINE(pWin) << 3) + (x)))
 
 #define DO_ROP(src,dst,alu,planes) \
 	((dst) = do_rop((src),(dst),(alu),(planes)))
@@ -69,7 +72,8 @@ vgaSaveScreenPix(pScreen,ppix)
 PixmapPtr ppix;
 ScreenPtr pScreen;
 {
-          vgaReadColorImage(0,0,pScreen->width,pScreen->height,
+          vgaReadColorImage( (WindowPtr)(pScreen->devPrivate),
+			0,0,pScreen->width,pScreen->height,
                         ppix->devPrivate.ptr,ppix->devKind);
           saved_screen = ppix->devPrivate.ptr;
 }
@@ -80,7 +84,8 @@ vgaRestoreScreenPix(pScreen,ppix)
 PixmapPtr ppix;
 ScreenPtr pScreen;
 {
-          vgaDrawColorImage(0,0,pScreen->width,pScreen->height,
+          vgaDrawColorImage( (WindowPtr)(pScreen->devPrivate),
+			0,0,pScreen->width,pScreen->height,
                         ppix->devPrivate.ptr,ppix->devKind,GXcopy,0x0F);
 
 }
@@ -132,7 +137,8 @@ const unsigned long planes;
 
 /* File vgaBitBlt.c */
 void
-offBitBlt( alu, readplanes, writeplanes, x0, y0, x1, y1, w, h )
+offBitBlt( pWin, alu, readplanes, writeplanes, x0, y0, x1, y1, w, h )
+WindowPtr pWin; /* GJA */
 const int alu, readplanes, writeplanes ;
 register int x0 ;
 int y0 ;
@@ -147,7 +153,7 @@ register int w, h ;
 		case GXclear:		/* 0x0 Zero 0 */
 		case GXinvert:		/* 0xa NOT dst */
 		case GXset:		/* 0xf 1 */
-			offFillSolid( VGA_ALLPLANES, alu, writeplanes,
+			offFillSolid( pWin, VGA_ALLPLANES, alu, writeplanes,
 				x0, y0, w, h ) ;
 		case GXnoop:		/* 0x5 dst */
 			return ;
@@ -159,7 +165,7 @@ register int w, h ;
 
 	for ( y = 0 ; y < h ; y++ ) {
 		for ( x = 0 ; x < w ; x++ ) {
-			DO_ROP(SAVEDSCREEN(x0+x,y0+y),SAVEDSCREEN(x1+x,y1+y),
+			DO_ROP(SAVEDSCREEN(pWin,x0+x,y0+y),SAVEDSCREEN(pWin,x1+x,y1+y),
 				alu,writeplanes);
 		}
 	}
@@ -168,10 +174,11 @@ register int w, h ;
 /* for file vgaImages.c */
 
 void
-offDrawColorImage( x, y, w, h, data, RowIncrement, alu, planes )
+offDrawColorImage( pWin, x, y, w, h, data, RowIncrement, alu, planes )
+WindowPtr pWin; /* GJA */
 int x, y ;
 register int w, h ;
-register const unsigned char *data ;
+unsigned char *data ;
 register int RowIncrement ;
 const int alu ;
 const unsigned long int planes ;
@@ -182,16 +189,17 @@ const unsigned long int planes ;
 	for ( dy = 0 ; dy < h ; dy++ ) {
 		for ( dx = 0 ; dx < w ; dx++ ) {
 			DO_ROP(	data[dy * RowIncrement + dx],
-				SAVEDSCREEN(x+dx,y+dy), alu, planes);
+				SAVEDSCREEN(pWin,x+dx,y+dy), alu, planes);
 		}
 	}
 }
 
 void
-offReadColorImage( x, y, lx, ly, data, RowIncrement )
+offReadColorImage( pWin, x, y, lx, ly, data, RowIncrement )
+WindowPtr pWin; /* GJA */
 int x, y ;
 int lx, ly ;
-register unsigned char *data ;
+unsigned char *data ;
 int RowIncrement ;
 {
 	int dx, dy;
@@ -201,7 +209,7 @@ int RowIncrement ;
 
 	for ( dy = 0 ; dy < ly ; dy++ ) {
 		for ( dx = 0 ; dx < lx ; dx++ ) {
-			data[dy*RowIncrement+dx] = SAVEDSCREEN(x+dx,y+dy);
+			data[dy*RowIncrement+dx] = SAVEDSCREEN(pWin,x+dx,y+dy);
 		}
 	}
 }
@@ -310,8 +318,9 @@ const int alu, color, planes ;
 	}
 }
 
-void offBresLine( color, alu, planes, signdx, signdy,
+void offBresLine( pWin, color, alu, planes, signdx, signdy,
 		  axis, x, y, et, e1, e2, len )
+WindowPtr pWin; /* GJA */
 unsigned long int color ;
 int alu ;
 unsigned long int planes ;
@@ -333,15 +342,17 @@ if ( !( planes & VGA_ALLPLANES ) ) {
 (* ( ( signdx > 0 ) ? ( axis ? fast_y_line_right : fast_x_line_right )
 		    : ( axis ? fast_y_line_left  : fast_x_line_left ) ) )
 			( et, e1, e2, len,
-			  ( signdy > 0 ? (MAX_COLUMN+1) : - (MAX_COLUMN+1) ),
-			  &SAVEDSCREEN( x, y ), alu, color, planes ) ;
+			  ( signdy > 0 ?   (BYTES_PER_LINE(pWin)<<3)
+				       : - (BYTES_PER_LINE(pWin)<<3) ),
+			  &SAVEDSCREEN( pWin, x, y ), alu, color, planes ) ;
 
 return ;
 }
 
 /* For file vgaSolid.c */
 
-void offFillSolid( color, alu, planes, x0, y0, lx, ly )
+void offFillSolid( pWin, color, alu, planes, x0, y0, lx, ly )
+WindowPtr pWin; /* GJA */
 unsigned long int color ;
 const int alu ;
 unsigned long int planes ;
@@ -357,7 +368,7 @@ register const int ly ;		/* MUST BE > 0 !! */
 
 	for ( dy = 0 ; dy < ly ; dy++ ) {
 		for ( dx = 0 ; dx < lx ; dx++ ) {
-			DO_ROP(color,SAVEDSCREEN(x0+dx,y0+dy),alu,planes);
+			DO_ROP(color,SAVEDSCREEN(pWin, x0+dx,y0+dy),alu,planes);
 		}
 	}
 }
@@ -396,8 +407,9 @@ register const unsigned char * const data ;
 }
 
 static void
-DoMono( w, x, y, mastersrc, h, width, paddedByteWidth, height,
+DoMono( pWin, w, x, y, mastersrc, h, width, paddedByteWidth, height,
 	      xshift, yshift, alu, planes, fg )
+WindowPtr pWin; /* GJA */
 int x, y ;
 register const unsigned char *mastersrc ;
 int w, h ;			/* width and height of area to be stippled */
@@ -418,7 +430,7 @@ int alu, planes, fg;
 					paddedByteWidth, height, mastersrc);
 			for ( i = 0 ; i < 8 ; i++ ) {
 				if ( byte & (128 >> i) ) {
-					DO_ROP(fg,SAVEDSCREEN(x+dx+i,y+dy),
+					DO_ROP(fg,SAVEDSCREEN(pWin,x+dx+i,y+dy),
 						alu,planes);
 				}
 			}
@@ -428,7 +440,7 @@ int alu, planes, fg;
 				paddedByteWidth, height, mastersrc);
 		for ( i = 0 ; i < (w - dx) ; i++ ) {
 			if ( byte & (128 >> i) ) {
-				DO_ROP(fg,SAVEDSCREEN(x+dx+i,y+dy),
+				DO_ROP(fg,SAVEDSCREEN(pWin,x+dx+i,y+dy),
 					alu,planes);
 			}
 		}
@@ -436,7 +448,8 @@ int alu, planes, fg;
 }
 
 void
-offDrawMonoImage( data, x, y, w, h, fg, alu, planes )
+offDrawMonoImage( pWin, data, x, y, w, h, fg, alu, planes )
+WindowPtr pWin; /* GJA */
 unsigned char *data;
 int x, y, w, h ;
 unsigned long int fg ;
@@ -447,13 +460,14 @@ unsigned long int planes;
 	if ( ( alu == GXnoop ) || !( planes &= VGA_ALLPLANES ) )
 		return ;
 
-	DoMono( w, x, y, (const unsigned char *) data, h,
+	DoMono( pWin, w, x, y, (const unsigned char *) data, h,
 		      w, ( ( w + 31 ) & ~31 ) >> 3, h, 0, 0, alu, planes, fg) ;
 
 }
 
 void
-offFillStipple( pStipple, fg, alu, planes, x, y, w, h, xSrc, ySrc )
+offFillStipple( pWin, pStipple, fg, alu, planes, x, y, w, h, xSrc, ySrc )
+WindowPtr pWin; /* GJA */
 register PixmapPtr const pStipple ;
 unsigned long int fg ;
 const int alu ;
@@ -482,7 +496,7 @@ const int xSrc, ySrc ;
 	else
 		yshift %= height ;
 
-	DoMono( w, x, y,
+	DoMono( pWin, w, x, y,
 		(const unsigned char *) pStipple->devPrivate.ptr,
 		h,
 		width,

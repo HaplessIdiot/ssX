@@ -1,4 +1,5 @@
 /* $XConsortium: ppcWindow.c,v 1.2 94/04/17 20:31:58 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -73,7 +74,6 @@ SOFTWARE.
 #include "X.h"
 #include "scrnintstr.h"
 #include "windowstr.h"
-#include "mfb.h"
 #include "mistruct.h"
 #include "regionstr.h"
 
@@ -184,7 +184,7 @@ ppcCopyWindow(pWin, ptOldOrg, prgnSrc)
 
     pm = ( 1 << pWin->drawable.depth ) - 1 ;
     for ( ; nbox-- ; pbox++ )
-	vgaBitBlt( GXcopy, pm, pm, 
+	vgaBitBlt( pWin, GXcopy, pm, pm, 
 		 pbox->x1 + dx, pbox->y1 + dy, 
 		 pbox->x1, pbox->y1, 
 		 pbox->x2 - pbox->x1, pbox->y2 - pbox->y1) ;
@@ -291,7 +291,7 @@ ppcCopyWindowForXYhardware(pWin, ptOldOrg, prgnSrc)
     if ( box_direction < 0 )
 	pbox += nbox - 1 ;
     for ( ; nbox-- ; pbox += box_direction )
-	vgaBitBlt( GXcopy, pm, pm, 
+	vgaBitBlt( pWin, GXcopy, pm, pm, 
 		 pbox->x1 + dx, pbox->y1 + dy, 
 		 pbox->x1, pbox->y1, 
 		 pbox->x2 - pbox->x1, pbox->y2 - pbox->y1) ;
@@ -305,7 +305,7 @@ ppcCopyWindowForXYhardware(pWin, ptOldOrg, prgnSrc)
 	    unsigned long int fg = pWin->optional->backingPixel ;
 
 	    for ( pbox = REGION_RECTS(prgnDst) ; nbox-- ; pbox++ )
-		vgaFillSolid( fg, GXcopy, pm,
+		vgaFillSolid( pWin, fg, GXcopy, pm,
 			 pbox->x1, pbox->y1,
 			 pbox->x2 - pbox->x1, pbox->y2 - pbox->y1 ) ;
 	    }

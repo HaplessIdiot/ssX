@@ -1,4 +1,5 @@
 /* $XConsortium: ppcGC.c,v 1.2 94/04/17 20:31:49 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -107,8 +108,6 @@ SOFTWARE.
 #include "mi.h"
 #include "mistruct.h"
 
-#include "mfb.h"
-
 #include "OScompiler.h"
 
 #include "ppc.h"
@@ -171,8 +170,8 @@ static GCOps vgaGCOps = {
 	ppcCopyArea,		/*  RegionPtr (* CopyArea)()	 */
 	miCopyPlane,		/*  void (* CopyPlane)() */
 	ppcPolyPoint,		/*  void (* PolyPoint)() */
-	ppcScrnZeroLine,	/*  void (* Polylines)() */
-	ppcScrnZeroSegs,	/*  void (* PolySegment)() */
+	miZeroLine,		/*  void (* Polylines)() */
+	miPolySegment,		/*  void (* PolySegment)() */
 	miPolyRectangle,	/*  void (* PolyRectangle)() */
 	v16ZeroPolyArc,		/*  void (* PolyArc)()	 */
 	miFillPolygon,		/*  void (* FillPolygon)() */

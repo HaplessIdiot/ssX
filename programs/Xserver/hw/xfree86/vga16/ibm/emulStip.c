@@ -1,4 +1,5 @@
 /* $XConsortium: emulStip.c,v 1.1 94/03/28 21:34:41 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -39,7 +40,8 @@
 extern PixmapPtr ppcCopyPixmap() ;
 
 void
-ppcStipple( pStipple, fg, merge, planes, x, y, w, h, xSrc, ySrc )
+ppcStipple( pWin, pStipple, fg, merge, planes, x, y, w, h, xSrc, ySrc )
+WindowPtr pWin; /* GJA */
 PixmapPtr pStipple ;
 unsigned long int fg ;
 int merge ;
@@ -93,7 +95,7 @@ int 		savehcount, savevcount, hcount, vcount,
 	for ( htarget = x, hcount = savehcount ;
 	      hcount-- ;
 	      htarget += tlx )
-		vgaDrawMonoImage( data, htarget, vtarget, tlx, tly, fg, merge, planes ) ;
+		vgaDrawMonoImage( pWin, data, htarget, vtarget, tlx, tly, fg, merge, planes ) ;
 
 /* NOW DO RIGHT HAND SIDE */
     if ( Rtlx = w % tlx ) {
@@ -104,7 +106,7 @@ int 		savehcount, savevcount, hcount, vcount,
 		for ( vcount = savevcount, vtarget = y ;
 	      		vcount-- ;
 	      		vtarget += tly )
-				vgaDrawMonoImage( data, htarget, vtarget, 
+				vgaDrawMonoImage( pWin, data, htarget, vtarget, 
 					Rtlx, tly, fg, merge, planes ) ;
 	   else
 		for ( vcount = savevcount, vtarget = y ;
@@ -114,7 +116,7 @@ int 		savehcount, savevcount, hcount, vcount,
 			int tvtarget = vtarget ;
 			unsigned char *tdata = data ;
 			while ( th-- ) {
-				vgaDrawMonoImage( tdata, htarget, tvtarget++, 
+				vgaDrawMonoImage( pWin, tdata, htarget, tvtarget++, 
 					Rtlx, 1, fg, merge, planes ) ;
 				tdata += pStipple->devKind ;
 			}
@@ -127,17 +129,17 @@ int 		savehcount, savevcount, hcount, vcount,
 	for ( hcount = savehcount, htarget = x ;
       		hcount-- ;
       		htarget += tlx )
-		vgaDrawMonoImage( data, htarget, vtarget, tlx, Btly, fg, merge, planes ) ;
+		vgaDrawMonoImage( pWin, data, htarget, vtarget, tlx, Btly, fg, merge, planes ) ;
 
 /* NOW DO BOTTOM RIGHT CORNER */
     if ( Btly && Rtlx )
 	/* htarget is already set to ( x + ( savehcount * tlx ) ) from above */
 	/* vtarget is already set to ( x + ( savevcount * tly ) ) from above */
 	if (xfits)
-		vgaDrawMonoImage( data, htarget, vtarget, Rtlx, Btly, fg, merge, planes) ;
+		vgaDrawMonoImage( pWin, data, htarget, vtarget, Rtlx, Btly, fg, merge, planes) ;
 	else
 		while ( Btly-- ) {
-			vgaDrawMonoImage( data, htarget, vtarget++, 
+			vgaDrawMonoImage( pWin, data, htarget, vtarget++, 
 				Rtlx, 1, fg, merge, planes ) ;
 			data += pStipple->devKind ;
 		}
