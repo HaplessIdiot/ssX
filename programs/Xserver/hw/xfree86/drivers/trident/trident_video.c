@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.8 2001/09/21 15:22:55 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.9 2001/09/21 15:48:00 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -893,10 +893,11 @@ TRIDENTDisplayVideo(
     	OUTW(vgaIOBase + 4,  (lb & 0xFF)<<8   | 0x0096);
     }
 
-    if (src_w > 384) 
+    if (src_w > 384) { 
     	OUTW(vgaIOBase + 4, 0x0497); /* 2x line buffers */ 
-    else
+    } else {
     	OUTW(vgaIOBase + 4, 0x0097); /* 1x line buffers */
+    }
 
     OUTW(vgaIOBase + 4, 0x00BA);
     OUTW(vgaIOBase + 4, 0x00BB);
@@ -1011,7 +1012,7 @@ TRIDENTPutImage(
     if(!RegionsEqual(&pPriv->clip, clipBoxes)) {
     	/* update cliplist */
         REGION_COPY(pScreen, &pPriv->clip, clipBoxes);
-        xf86XVFillKeyHelper(pScreen, pPriv->colorKey, clipBoxes);
+        xf86XVFillKeyHelper(pScrn->pScreen, pPriv->colorKey, clipBoxes);
     }
 
     offset += top * dstPitch;
@@ -1221,7 +1222,7 @@ TRIDENTDisplaySurface(
 	     surface->width, surface->height, surface->pitches[0],
 	     x1, y1, x2, y2, &dstBox, src_w, src_h, drw_w, drw_h);
 
-    xf86XVFillKeyHelper(pScreen, portPriv->colorKey, clipBoxes);
+    xf86XVFillKeyHelper(pScrn->pScreen, portPriv->colorKey, clipBoxes);
 
     pPriv->isOn = TRUE;
     /* we've prempted the XvImage stream so set its free timer */
