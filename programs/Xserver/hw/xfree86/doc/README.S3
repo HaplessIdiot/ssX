@@ -5,16 +5,16 @@
   1.  Supported hardware
 
   The current S3 Server supports all available S3 chipsets: 911, 924,
-  801/805, 928, 864, and 964. Nevertheless, this is not enough to
-  support every board using one of these chipsets. The following list
-  contains some data points on boards that are known to work. If your
-  card is similar to one of the described ones, chances are good it
-  might work for you, too.
+  801/805, 928, 764 (Trio64), 864, and 964. Nevertheless, this is not
+  enough to support every board using one of these chipsets. The
+  following list contains some data points on boards that are known to
+  work. If your card is similar to one of the described ones, chances
+  are good it might work for you, too.
 
 
      S3 801/805, AT&T 20C490 (or similar) RAMDAC
 
-        o  Orchid Farenheit 1280+ VLB
+        o  Orchid Fahrenheit 1280+ VLB
 
         o  Actix GE32
 
@@ -109,7 +109,7 @@
 
         D-step (or below) chips cannot be used with a line width of
         1152; hence the most effective mode for a 1 MB board is about
-        1088x800x8 (similiar to 2 MB, 1088x800x16).
+        1088x800x8 (similar to 2 MB, 1088x800x16).
 
 
 
@@ -274,7 +274,7 @@
   2.  16bpp and 32bpp
 
 
-  On 801/805 + AT&T490 Cards (like the Farenheit 1280+ VLB) only 15 and
+  On 801/805 + AT&T490 Cards (like the Fahrenheit 1280+ VLB) only 15 and
   16bpp are supported. 32bpp isn't available on this type of chips.
   (There is a 24 bit mode under MS Windows, but it's not a 32bpp sparse
   mode but a real 3 bytes/pixel mode -- implementing this in XFree86
@@ -308,8 +308,8 @@
   overdrive it using XF86_S3. Better contact the XFree86 team first to
   verify that running XF86_S3 will not damage your board.
 
-  If you feel adventerous you could also open up your computer and have
-  a peek at your RAMDAC. The RAMDAC is usually ome the larger chips
+  If you feel adventurous you could also open up your computer and have
+  a peek at your RAMDAC. The RAMDAC is usually one the larger chips
   (second or third largest chip that is NOT an EPROM) on the board.  The
   markings on it are usually
 
@@ -368,7 +368,7 @@
   For cards with S3 Vision864 chip there is a automatic correction which
   depends on the pixel clock and the memory clock MCLK at which the S3
   chip operates. For most clock chips this value can't be read (only the
-  S3 SDAC allows reading the MCLK value su far), so this value has to be
+  S3 SDAC allows reading the MCLK value so far), so this value has to be
   estimated and specified by the user (the default is 60 MHz).
 
   With the new `s3MCLK' entry for your XF86Config file now you can
@@ -381,10 +381,10 @@
 
 
   for a 55 MHz MCLK which will reduce snowing. Smaller MCLK values will
-  reduce performace a bit so you shouldn't use a too low value (55 or 50
-  should be a good guess in most cases).
+  reduce performance a bit so you shouldn't use a too low value (55 or
+  50 should be a good guess in most cases).
 
-  Below is a small shell script which might be usefull to determine the
+  Below is a small shell script which might be useful to determine the
   approximate value for MCLK (about +/- 1-2 MHz error). Before running
   this script you have to add the line
 
@@ -396,7 +396,7 @@
 
   to the device section in your XF86Config file and restart X Windows.
   With this option (which is for testing and debugging only) you'll get
-  lots of disasterous display flickering and snowing, so it should be
+  lots of disastrous display flickering and snowing, so it should be
   removed again immediately after running the test script below.
 
   Running this script will use xbench and/or x11perf to run a test to
@@ -445,7 +445,7 @@
 
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.5 1995/01/18 06:11:56 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.7 1995/01/21 10:44:31 dawes Exp $
 
 
 

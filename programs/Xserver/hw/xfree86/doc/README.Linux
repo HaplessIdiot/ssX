@@ -15,7 +15,7 @@
 
   X11R6 is considered a major update from X11R5, so the shared libraries
   in XFree86 3.1 and later are not compatible with XFree86 2.1.1 and
-  older libraries. To continue to run X11R5 applictions, you must keep
+  older libraries. To continue to run X11R5 applications, you must keep
   the old libraries somewhere on your machine. They can be moved from
   /usr/X386/lib elsewhere, but /etc/ld.so.conf must be updated.  All
   X11R5 applications should work with the X11R6 servers without
@@ -41,7 +41,7 @@
   be retained in order to run dynamically-linked X11R5 binaries.
 
   Each binary distribution of XFree86 3.X comes with a detailed
-  installation document relevent to that release. The most up-to-date
+  installation document relevant to that release. The most up-to-date
   information is kept there, while this document describes basic
   features of XFree86 3.X on Linux and how to compile the sources.
 
@@ -89,7 +89,7 @@
 
   When the server is exited, it will return to the original VT it was
   started from, unless it dies unexpectedly, when the switch must be
-  done manually. There still seem to be wierd combinations of graphic
+  done manually. There still seem to be weird combinations of graphic
   cards and motherboards that have problems to restore the textfont when
   returning from XFree86 to the text mode. In these cases using the runx
   script from the svgalib distribution might help.
@@ -102,10 +102,10 @@
   their X equivalents.  Note that the XFree86 server only allows for
   four modifier maps: unshifted, shifted, modeswitch unshifted and
   modeswitch shifted.  Depending on what the modeswitch key is (it is
-  settable in your XF86Config and defaults to Alt), XFree86 will read
-  those tables into its keymaps.  This means if you use certain keys,
-  like left-Control, for Linux modeswitch, that will not be mappable to
-  X.
+  configurable in your XF86Config and defaults to Alt), XFree86 will
+  read those tables into its keymaps.  This means if you use certain
+  keys, like left-Control, for Linux modeswitch, that will not be
+  mappable to X.
 
   There are some quirks that may need some fixing depending on your
   configuration. In the past, Linux xload used the BSD method of
@@ -172,7 +172,7 @@
   comp.windows.x.i386unix newsgroup. Questions or comments about Linux
   support or the Linux distribution should be made to orestz@eskimo.com.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.1 1994/12/26 11:03:27 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.3 1995/01/21 10:44:23 dawes Exp $
 
 
 

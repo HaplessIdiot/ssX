@@ -56,7 +56,7 @@
 
 
      o  The video memory probe has been problematic, recent fixes
-        haven't failed yet, but earler versions showed promise too...
+        haven't failed yet, but earlier versions showed promise too...
 
 
 
@@ -66,7 +66,7 @@
 
      o  Sometimes running with -probeonly option under Linux results in
         corruption of the lower-order characters of the font (most
-        noticable are the blanks). This is difficult to reproduce (I've
+        noticeable are the blanks). This is difficult to reproduce (I've
         only seen once myself), one fix was made hours before 3.1
         release that may have fixed it, but ...
 
@@ -82,7 +82,7 @@
         improvements. Many existing acceleration routines are Q&D
         adaptations of existing routines from other servers that support
         graphics chips that differ significantly, architecturally, from
-        that XGA and are undoubtly less than optimal.
+        that XGA and are undoubtedly less than optimal.
 
 
 
@@ -188,7 +188,7 @@
 
 
 
-     Ramdac relatated Option Flags:
+     Ramdac related Option Flags:
 
         "dac_8_bit"
            Sets supported RAMDAC's to 8-bit DAC mode (all but "normal").
@@ -523,7 +523,7 @@
   can also be used with the XGA-2.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.2 1995/01/11 09:47:56 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.4 1995/01/21 10:44:39 dawes Exp $
 
 
 

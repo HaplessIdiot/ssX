@@ -28,7 +28,7 @@
 
      CL-GD6420/6440
         These chipsets are not compatible with the 542x series, but is
-        supported by a seperate driver (cl64xx). It is used in recent
+        supported by a separate driver (cl64xx). It is used in recent
         laptops, and bears some similarity to old Cirrus chipsets
         (5410/AVGA2). The driver may also work for other 64xx chips. The
         configuration identifiers for this driver are "cl6420" and
@@ -439,7 +439,7 @@
   32bpp mode is only supported on a 5434 with 2Mb or more of memory.
 
   In the XF86Config "Screen" section, a "Display" subsection must be
-  defined for each depth that you want to run, with seperates Modes and
+  defined for each depth that you want to run, with separates Modes and
   virtual screen size. Example (2Mb of video memory):
 
 
@@ -622,7 +622,7 @@
 
      o  Support for dot clocks up to 110 MHz on the 5434.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.6 1995/01/18 06:11:57 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.7 1995/01/21 07:16:51 dawes Exp $
 
 
 

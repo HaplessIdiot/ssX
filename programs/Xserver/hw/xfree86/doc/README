@@ -30,7 +30,8 @@
 
      5. New chipset support for the SVGA server.  This includes the
         Avance Logic 2228/2301, Chips & Technology 655xx, Cirrus Logic
-        6440, and improved support for the Oak OTI-087.
+        6440, and Oak OTI-087.  Accelerated support is included for the
+        OTI-087.
 
      6. Support for FreeBSD 2.0.
 
@@ -59,7 +60,6 @@
 
   Plus a number of other small items.  Refer to the CHANGELOG file in
   the source distribution for full details.
-
 
 
 
@@ -244,11 +244,12 @@
      Tseng
         ET4000/W32, ET4000/W32i, ET4000/W32p
 
-  The Cirrus and Western Digital accelerators are supported in the SVGA
-  server; the other chipsets each have their own server.  A list of some
-  cards which the accelerated servers have been tested is included in
-  the files AccelCards, Devices, and some of the chipset-specific README
-  files.  They may well work on other cards, but we cannot guarantee it.
+  The Cirrus, Western Digital and Oak accelerators are supported in the
+  SVGA server; the other chipsets each have their own server.  A list of
+  some cards which the accelerated servers have been tested is included
+  in the files AccelCards, Devices, and some of the chipset-specific
+  README files.  They may well work on other cards, but we cannot
+  guarantee it.
 
   In addition, the following SVGA chipsets are supported:
 
@@ -260,7 +261,6 @@
 
      Western Digital
         WD90C00, WD90C10, WD90C11, WD90C24, WD90C30, WD90C31,WD90C33
-
 
      Genoa
         GVGA
@@ -304,8 +304,8 @@
   Video 7 chipsets, which are only supported in 256 color mode.
 
   Refer to the chipset-specific README files (currently for Cirrus,
-  Tseng, Western Digital, ATI, Trident and Video 7) for more information
-  about using those chipsets.
+  Tseng, Western Digital, ATI, Trident, Oak and Video 7) for more
+  information about using those chipsets.
 
   The monochrome server also supports generic VGA cards, using 64k of
   video memory in a single bank, the Hercules monochrome card, the
@@ -345,7 +345,7 @@
   The old Xconfig file has been replaced in XFree86 3.1 by an XF86Config
   file.  This is more than just a name change.  The new XF86Config file
   uses a format that is quite different from the old Xconfig file.  The
-  new format is more structured, logical, and extendable than the old
+  new format is more structured, logical, and extensible than the old
   format.  We realise that the transition to this new format won't be
   without problems.  To help in this transition we have provided a
   program (`reconfig') to convert the old Xconfig format into the new
@@ -604,6 +604,10 @@
 
         o  Bill Conn <conn@bnr.ca>
 
+     Oak Technologies Inc. accelerated code by:
+
+        o  Jorge Delgado <ernar@dit.upm.es>,
+
 
      16 color VGA server by:
 
@@ -653,10 +657,10 @@
 
      Compaq SVGA driver by:
 
+
         o  Hans Oey <hans@mo.hobby.nl>
 
      Oak SVGA driver by:
-
 
         o  Steve Goldman <sgoldman@encore.com>
 
@@ -731,7 +735,7 @@
         development, and release of The X Window System.
 
      2. To provide some basic funding for acquisition of facilities for
-        ongoing XFree86 development, largly to consist of new video
+        ongoing XFree86 development, largely to consist of new video
         hardware and basic computing facilities.
 
   The first of these was the primary motivation.  We have held discus-
@@ -753,7 +757,7 @@
 
   An additional benefit of this incorporation is that The XFree86
   Project, Inc has obtained outside financial support for our work.
-  This will hopefully give us the freedom to be more proactive in
+  This will hopefully give us the freedom to be more pro-active in
   obtaining new video hardware, and enable us to release better products
   more quickly, as we will be able to go and get what we need, and get
   it into the hands of the people who can do the work.
@@ -786,7 +790,6 @@
   that by doing this, our corporation will be merely a formalization of
   what we have been doing in the past, rather than something entirely
   new.
-
   Here is a list of the organizations and individuals who have provided
   sponsorship to The XFree86 Project, Inc, either by financial
   contribution or by the donation of equipment and resources.  The
@@ -851,6 +854,7 @@
      o  Joel Storm
 
      o  S.u.S.E, GmbH, Fuerth, Germany
+
 
      o  Tekelec Airtronic GmbH, Muenchen, Germany
 
@@ -922,6 +926,7 @@
 
         +  ftp.fee.vutbr.cz:/pub/XFree86
            (ftp://ftp.fee.vutbr.cz/pub/XFree86) (source and binaries)
+
         +  ftp.gwdg.de:/pub/Xfree86 (ftp://ftp.gwdg.de/pub/Xfree86)
            (source and binaries)
 
@@ -988,12 +993,7 @@
   archive, and which compile-time option selections were made when
   building the distribution.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.10 1995/01/19 05:22:51 dawes Exp $
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.12 1995/01/21 10:44:29 dawes Exp $
 
 
 

@@ -22,7 +22,7 @@
   (ftp://ftp.bsdi.com/contrib/X11/XFree86)
 
   If you're running BSD 1.0, you'll have to build it from the source.
-  Building the distribution on BSD/386 1.0 is untested, but belived to
+  Building the distribution on BSD/386 1.0 is untested, but believed to
   work correctly. If you run into trouble building on BSD/386 1.0,
   please let us know so that we can correct any incompatibilities.  If
   you've done it and want to share your binaries, please let the Bsdi
@@ -44,7 +44,7 @@
   The binary distribution is composed of a number of tar archives which
   contains the executables, servers, fonts, libraries, include files,
   man pages, config files, and the server link kit. All tar archives
-  should be extraced as root with / as the default directory. The full
+  should be extracted as root with / as the default directory. The full
   distribution takes over 40MB of disk space.
 
   Note that many clients were moved from the X11R6 distribution to the
@@ -328,7 +328,7 @@
                   return (-1);
     #endif
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.5 1995/01/19 05:22:41 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.6 1995/01/21 07:16:29 dawes Exp $
 
 
 

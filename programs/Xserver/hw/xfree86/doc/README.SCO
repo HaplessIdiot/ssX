@@ -69,7 +69,7 @@
 
      XFXXX-pex.tz
         All files relating to PEX including libraries and
-        header files.  The likkit is required to obtain
+        header files.  The LinkKit is required to obtain
         servers capable of running PEX.
 
 
@@ -160,7 +160,7 @@
   dmmap driver comes in two forms, a binary archive which is supplied
   with the full binary distribution and a source archive which is
   located in /usr/X11R6/lib/X11/etc.  Both distributions provide
-  instuctions for installation/removal within the README file.
+  instructions for installation/removal within the README file.
 
 
 
@@ -171,7 +171,8 @@
   servers.  That is, Ctrl-PrntScr takes you to the next console along
   from the one X is running on.  If this is the last console it will
   take you to console 1.  Those interested in modifying the console
-  switching should look in mit/server/ddx/x386/common/x386Events.c.
+  switching should look in
+  xc/programs/Xserver/hw/xfree86/common/xf86Events.c.
 
 
 
@@ -257,10 +258,14 @@
 
        B) create a /usr/include/net/errno.h containing
 
-           #ifndef _XFREE86_ERRNO_
-           #define _XFREE86_ERRNO_ 1
-           #include <errno.h>
-           #endif /* _XFREE86_ERRNO_ */
+
+
+
+
+      #ifndef _XFREE86_ERRNO_
+      #define _XFREE86_ERRNO_ 1
+      #include <errno.h>
+      #endif /* _XFREE86_ERRNO_ */
 
   C) create a /usr/include/sys/bsdtypes.h which is empty for
   now.
@@ -323,8 +328,6 @@
 
 
   DO NOT USE "./configure i386-*-sco" it will not work.
-
-
   Make sure you run the "make fix-includes" after you have installed.
 
 
@@ -391,8 +394,9 @@
 
 
   should become,
-
            #define GCC_STDC_VALUE 0
+
+
 
   It is recommended to use gcc compiled without the STDC_VALUE=0 for
   building XFree86.  It is, however, possible with the above changes.
@@ -456,16 +460,14 @@
           driver from the distribution may allow the server to
           operate correctly.
 
-
      Problem:
 
-
-     x386install does not work.
+          xf86install does not work.
 
 
      Causes:
 
-          You should not be running x386install when using the
+          You should not be running xf86install when using the
           XFree86 server under SCO.  It is used for Interactive
           (ISC) installations.
 
@@ -473,7 +475,7 @@
      Problem:
 
           The server starts but the screen is not aligned correctly
-          or is shakey and impossible to view.
+          or is shaky and impossible to view.
 
 
      Causes:
@@ -526,6 +528,7 @@
            not support dynamic resizing or xterms fully so this command
            must be run after resizing an xterm in order for
            curses/termcap applications to operate correctly.
+
      Problem:
 
         1. When starting X it dies with an error "Cannot access a needed
@@ -588,9 +591,11 @@
 
      Problem:
 
-          When compiling the XFree86 source under 3.2.4, libX11
-          fails to get built with an error like "mkshlib : : cannot
-          exec /bin/sh"
+
+     When compiling the XFree86 source under 3.2.4, libX11
+     fails to get built with an error like "mkshlib : : cannot
+     exec /bin/sh"
+
 
      Causes:
 
@@ -653,9 +658,7 @@
                   ./idmkenv
 
 
-          and try it out.
-
-
+     and try it out.
 
 
   13.  Acknowledgements
@@ -676,10 +679,7 @@
   an ftp site for the binary distribution.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.2 1995/01/15 10:34:22 dawes Exp $
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.4 1995/01/21 10:44:32 dawes Exp $
 
 
 

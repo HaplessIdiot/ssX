@@ -77,7 +77,7 @@
            Local configuration customization
 
         xf86site.def
-           XFree86 local configuration custonization
+           XFree86 local configuration customization
 
 
      xc/programs/Xserver/hw/xfree86/
@@ -800,10 +800,10 @@
 
   The FbInit() function is required for drivers with accelerated
   graphics support.  It is used to replace default cfb.banked functions
-  with accelerated chip-specific versions.  cfbLowlevFuncs is a struct
-  containing a list of functions which can be replaced.  This struct
-  defined in cfbfuncs.h.  Examples of FbInit() functions can be found in
-  the et4000, pvga1 and cirrus drivers.
+  with accelerated chip-specific versions.  vga256LowlevFuncs is a
+  struct containing a list of functions which can be replaced.  This
+  struct defined in vga256.h.  Examples of FbInit() functions can be
+  found in the et4000, pvga1 and cirrus drivers.
 
   If you do NOT need this function, simply don't define it, and put
   `NoopDDA' in its place in the vgaVideoChipRec structure
@@ -1047,7 +1047,7 @@
      Western Digital
         (714) 932-4900
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VGADriv.sgml,v 3.2 1995/01/19 05:22:53 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VGADriv.sgml,v 3.4 1995/01/21 10:44:34 dawes Exp $
 
 
 

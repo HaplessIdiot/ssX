@@ -25,7 +25,7 @@
   on ways to tweak the timing numbers to achieve particular effects.
 
   XFree86 allows you to hot-key between different modes defined in
-  XF86Config (see XF86Config.man for details).  Use this capabilty to
+  XF86Config (see XF86Config.man for details).  Use this capability to
   save yourself hassles!  When you want to test a new mode, give it a
   unique mode label and add it to the end your hot-key list.  Leave a
   known-good mode as the default to fall back on if the test mode
@@ -210,8 +210,8 @@
   quality (esp.  sharpness for fine details).
 
   Your monitor's video bandwidth should be included on the manual's spec
-  page.  If it's not, look at the monitor's higest rated resolution.  As
-  a rule of thumb, here's how to translate these into bandwidth
+  page.  If it's not, look at the monitor's highest rated resolution.
+  As a rule of thumb, here's how to translate these into bandwidth
   estimates (and thus into rough upper bounds for the dot clock you can
   use):
 
@@ -544,8 +544,8 @@
   electron guns can sync up to 76 Hz vertical.  (the popular NEC 4D, for
   instance, cannot.  It goes only up to 75 Hz VSF).
 
-  So far, most of this is simple arithematic and basic facts about
-  raster displays.  Hardly any black magic at all!
+  So far, most of this is simple arithmetic and basic facts about raster
+  displays.  Hardly any black magic at all!
 
 
   8.  Black Magic and Sync Pulses
@@ -556,7 +556,7 @@
   to place synchronization pulses.
 
   The sync pulses actually control the horizontal and vertical scan
-  frequebcies of the monitor.  The HSF and VSF you've pulled off the
+  frequencies of the monitor.  The HSF and VSF you've pulled off the
   spec sheet are nominal, approximate maximum sync frequencies.  The
   sync pulse in the signal from the adapter card tells the monitor how
   fast to actually run.
@@ -615,7 +615,7 @@
   the time, we can safely assume that a sync pulse is about 3.5 to 4.0
   microsecond in length.
 
-  For concretness again, let's take HSP to be 3.8 microseconds (which
+  For concreteness again, let's take HSP to be 3.8 microseconds (which
   btw, is not a bad value to start with when experimenting).
 
   Now, using the 65Mhz clock timing above, we know HSP is equivalent to
@@ -683,7 +683,7 @@
   we'll use that in this example.  A few need two or three ticks of
   guard time, and it usually doesn't hurt to add that.
 
-  Returning to the example: since by the defintion of frame length, a
+  Returning to the example: since by the definition of frame length, a
   vertical tick is the time for tracing a complete HORIZONTAL frame,
   therefore in our example, it is 1232/65Mhz=18.95us.
 
@@ -718,7 +718,7 @@
   illuminated to form the picture (what we've called HR).  The second
   field of the section indicates at which dot the horizontal sync pulse
   will begin.  The third field indicates at which dot the horizontal
-  sync pulse will end.  The fourth field specifies the toal horzontal
+  sync pulse will end.  The fourth field specifies the total horizontal
   frame length (HFL).
 
   The vertical section also contains four fields.  The first field
@@ -808,12 +808,12 @@
 
   Q. The example you gave is not a standard screen size, can I use it?
 
-  A. Why not?  There is NO reason whatsover why you have to use 640x480,
-  800x600, or even 1024x768.  XFree86 driver lets you config your
-  hardware with a lot of freedom.  It usually takes two to three minutes
-  to come up the right one.  The important thing to shoot for is high
-  refresh rate with reasonable viewing area. not high resolution at the
-  price of eye-tearing flicker!
+  A. Why not?  There is NO reason whatsoever why you have to use
+  640x480, 800x600, or even 1024x768.  XFree86 driver lets you config
+  your hardware with a lot of freedom.  It usually takes two to three
+  minutes to come up the right one.  The important thing to shoot for is
+  high refresh rate with reasonable viewing area. not high resolution at
+  the price of eye-tearing flicker!
 
   Q. It this the *only* resolution given the 65Mhz dot clock and 55Khz
   HSF?
@@ -826,14 +826,14 @@
   card to clock it at way above its bandwidth --- if you stick
   reasonably close to the highest resolution the monitor is documented
   to support this can't happen).  Beware fixed-frequency monitors!  This
-  kind ofhacking around *can* damage them.
+  kind of hacking around *can* damage them.
 
   Q. You just mentioned two standard resolutions. In Xconfig, there are
   many standard resolutions available, can you tell me whether there's
   any point in tinkering with timings?
 
   A. Absolutely!  Take, for example, the "standard" 640x480 listed in
-  the current Xconfig.  It employes 25Mhz driving frequency, frame
+  the current Xconfig.  It employs 25Mhz driving frequency, frame
   lengths are 800 and 525 => refresh rate   59.5Hz. Not too bad.  But
   28Mhz is a commonly available driving frequency from many SVGA boards.
   If we use it to drive 640x480, following the procedure we discussed
@@ -1229,7 +1229,7 @@
   Finally, remember that increasing either frame length will decrease
   your refresh rate, and vice-versa.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VidModes.sgml,v 3.1 1994/12/25 08:38:41 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VidModes.sgml,v 3.3 1995/01/21 10:44:37 dawes Exp $
 
 
 

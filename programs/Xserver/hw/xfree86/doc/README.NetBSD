@@ -1,7 +1,7 @@
   README for XFree86 3.1.1 on NetBSD
   Rich  Murphey, David Dawes, Marc  Wandschneider, Mark  Weaver,
   Matthieu Herrb
-  15 January 1995
+  19 January 1995
 
   1.  What and Where is XFree86?
 
@@ -36,7 +36,7 @@
   source.  If you've done it and want to share your binaries, please let
   us know.
 
-  This release has also been tested on NetBSD-current of January, 1st
+  This release has also been tested on NetBSD-current of January, 11th
   1995 with option "COMPAT_10" in the kernel config file.
 
   XFree86 now also builds on NetBSD/sparc. See section ``Building on
@@ -55,10 +55,10 @@
   The binary distribution is composed of a number of split tar archives
   which are the executables, servers, fonts, libraries, include files,
   man pages, config files, and the server link kit.  The full
-  distribution takes over 40MB of disk space.  The large archives are
+  distribution takes over 55MB of disk space.  The large archives are
   split into smaller chunks.
 
-  All archives are now made using the NetBSD package tools. We recommand
+  All archives are now made using the NetBSD package tools. We recommend
   that you install these tools first.  All packages can be installed
   using pkg_add.
 
@@ -169,7 +169,7 @@
 
      If you don't have enough room in /usr/X11R6 you can specify another
      directory by using the -p option to pkg_add. See pkg_add(8) for
-     details.
+     details. Then make a symbolic link /usr/X11R6 to this directory.
 
   Continue with item ``Setting XWINHOME'' below.
 
@@ -321,7 +321,7 @@
   5.  Configuring X for Your Hardware
 
   The XF86Config file tells the X server what kind of monitor, video
-  card and mouse you have.  You must create it to tell the xerver what
+  card and mouse you have.  You must create it to tell the server what
   specific hardware you have.
 
   If you plan to fine tune the screen size or position on your monitor
@@ -332,7 +332,7 @@
   mouse serial port and verify that it does indeed generate characters.
 
   If you've been running a previous version of XFree86, you can get the
-  video card and monitor information from your previous XConfig file.
+  video card and monitor information from your previous Xconfig file.
   Don't forget to update the font and RGB paths.
 
 
@@ -391,7 +391,7 @@
   Syscons and codrv are not bundled with NetBSD 1.0. They are available
   by anonymous FTP from a number of sites.
 
-  If using pccons you get the mesage:
+  If using pccons you get the message:
 
 
   > XFree86 Version 3.1.1 / X Window System
@@ -526,15 +526,48 @@
   You should configure the distribution by editing
   xc/config/cf/xf86site.def  before compiling.  To compile the sources,
   invoke ``make World'' in the xc directory.
-  8.1.  console.h and ioctl_pc.h files:
+  8.1.  Console drivers
 
-  If you don't already have the header files console.h and ioctl_pc.h
-  installed in /usr/include/machine, then install the copies that are
-  supplied in lib/Server/etc (or in xc/programs/Xserver/hw/xfree86/etc
-  if you got the full source distribution). If you run NetBSD-current
-  you probably want to install them in /usr/src/sys/arch/i386/include
-  too, so that they get reinstalled each time you make install in
-  /usr/src/include.
+  XFree86 3.1.0C has now a configuration option to select the console
+  drivers to use in xf86site.def:
+
+     o  if you're using pccons put:
+
+           #define XFree86ConsoleDefines -DPCCONS_SUPPORT
+
+
+
+     o  if you're using pcvt put:
+
+           #define XFree86ConsoleDefines -DPCVT_SUPPORT
+
+
+
+     o  if you're using syscons put:
+
+           #define XFree86ConsoleDefines -DSYSCONS_SUPPORT
+
+
+
+     o  if you're running codrv put:
+
+           #define XFree86ConsoleDefines -DCODRV_SUPPORT
+
+
+
+  If you don't define XFree86ConsoleDefines in xf86site.def the pccons,
+  pcvt and syscons drivers will be supported.
+
+
+  8.2.  console.h and ioctl_pc.h files:
+
+  If you want to build a server supporting syscons or codrv and you
+  don't already have the corresponding header files console.h and
+  ioctl_pc.h installed in /usr/include/machine, then install the copies
+  that are supplied in xc/programs/Xserver/hw/xfree86/etc.  If you run
+  NetBSD-current you probably want to install them in
+  /usr/src/sys/arch/i386/include too, so that they get reinstalled each
+  time you make install in /usr/src/include.
 
   Another way to keep these files accessible is to make a symbolic link
   like this in the xc directory (suggested by Andrew Cagney
@@ -548,7 +581,7 @@
   files should be taken from your installed version of the driver.
 
 
-  8.2.  Support for shared libs under NetBSD 1.0
+  8.3.  Support for shared libs under NetBSD 1.0
 
   By default XFree86 3.1.1 builds for NetBSD 1.0 with shared libraries
   support. If you're building on 0.9 or don't want shared libraries add
@@ -559,8 +592,7 @@
        #define BuildBsdSharedLibs      NO
 
 
-
-  8.3.  Building on NetBSD/sparc
+  8.4.  Building on NetBSD/sparc
 
   XFree86 3.1.1 now also compiles on NetBSD/sparc. The Sun server
   patches from Dennis Ferguson and Matthew Green have been integrated in
@@ -575,7 +607,8 @@
      o  Set ServerToInstall to the sun server of your choice. (Xsun or
         XsunMono).
 
-     o  Look at other applicable options in the INSTALL document.
+     o  Look at other applicable options in the INSTALL document
+        (INSTALL.html).
 
   Problems with this port should be reported to the port-
   sparc@NetBSD.Org mailing list or directly to me matthieu@laas.fr
@@ -624,7 +657,7 @@
 
   at run-time, you've stumbled on a semantic weakness of NetBSD 1.0
   dynamic linker. Applications that use libXmu also need libXt. If the
-  client uses a standard Imakefile, this dependancy will probably by
+  client uses a standard Imakefile, this dependency will probably by
   included in the Makefile automagically -- you'll not see the problem.
   Otherwise, just add ``-lXt'' to your library list in the Imakefile or
   Makefile and relink.
@@ -646,7 +679,40 @@
      o  Rod Grimes and Jack Velte of Walnut Creek Cdrom for use of their
         machines in preparing the FreeBSD binary release.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.4 1995/01/15 10:34:15 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.6 1995/01/21 10:44:26 dawes Exp $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
