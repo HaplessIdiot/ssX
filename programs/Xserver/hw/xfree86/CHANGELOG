@@ -1,4 +1,7 @@
 XFree86 4.0Z (30 June 2000)
+ 414. Fix some palette and fbdev problems, and add a missing break to the
+      video memory type detection code for the r128 (#4043, Benjamin
+      Herrenschmidt). 
  413. README updates (Georgina Economou).
  412. Add some SiS DRI code, but currently disabled because the X server
       driver level support hasn't been integrated yet (Can-Ru Yeou, SiS).
@@ -10809,4 +10812,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1225 2000/06/30 19:30:31 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1226 2000/06/30 22:26:26 dawes Exp $
