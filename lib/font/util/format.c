@@ -46,6 +46,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
+/* $XFree86$ */
 
 #include	"FSproto.h"
 #include	"font.h"

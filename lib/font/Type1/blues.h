@@ -28,6 +28,8 @@
  * CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+/* $XFree86$ */
+
  
 extern psobj *GetType1CharString ( psfont *fontP, unsigned char code );
  
