@@ -2,7 +2,7 @@
  * $Xorg: charproc.c,v 1.6 2001/02/09 02:06:02 xorgcvs Exp $
  */
 
-/* $XFree86: xc/programs/xterm/charproc.c,v 3.152 2003/12/31 17:12:26 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/charproc.c,v 3.153 2004/03/04 02:21:54 dickey Exp $ */
 
 /*
 
@@ -3291,7 +3291,6 @@ HandleStructNotify(Widget w GCC_UNUSED,
 static void
 SetCursorBlink(register TScreen * screen, int enable)
 {
-    ShowCursor();
     if (enable) {
 	screen->cursor_blink = TRUE;
 	StartBlinking(screen);
