@@ -1,5 +1,5 @@
 XCOMM $XConsortium: lnxLib.rules /main/13 1996/09/28 16:11:01 rws $
-XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.27 1996/12/25 04:01:10 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.28 1996/12/30 13:57:36 dawes Exp $
 
 /*
  * Linux shared library rules (DLL & ELF versions)
@@ -148,7 +148,6 @@ clean::									@@\
 	$(RM) name
 
 #endif /* SharedDepModuleTarget */
-
 
 /*
  * SharedLibraryDataTarget - generate rules to create shlib data file;

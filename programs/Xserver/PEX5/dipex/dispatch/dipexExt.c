@@ -1,5 +1,5 @@
 /* $XConsortium: dipexExt.c,v 5.11 94/04/17 20:36:04 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.2 1996/10/03 08:30:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.3 1996/10/06 13:11:28 dawes Exp $ */
 
 /***********************************************************
 
@@ -67,6 +67,9 @@ SOFTWARE.
 #undef _DIPEXEXT_
 #undef LOCAL_FLAG
 
+#ifdef XFree86LOADER
+#include "xf86.h"
+#endif
 
 unsigned long add_pad_of[] = {0, 3, 2, 1};
 
@@ -331,6 +334,8 @@ pexReq *strmPtr;
  */
 extern void (*PexExtensionInitPtr)(void);
 
+#ifndef XFree86LOADER
+
 int
 #ifndef DLSYM_BUG
 init_module(server_version)
@@ -346,4 +351,16 @@ unsigned long server_version;
 #endif
   return 1;
 }
+#else /* XFree86LOADER */
+
+void
+libpex5ModuleInit(data,magic)
+    pointer	* data;
+    INT32	* magic;
+{
+    PexExtensionInitPtr = PexExtensionInit;
+    * magic= MAGIC_DONE;
+    return;
+}
+#endif /* XFree86LOADER */
 #endif /* DYNAMIC_MODULE */

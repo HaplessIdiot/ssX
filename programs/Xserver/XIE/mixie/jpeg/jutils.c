@@ -86,6 +86,7 @@ terms and conditions:
  */
 
 #include "jinclude.h"
+#include "macro.h"
 
 
 GLOBAL long

@@ -1,4 +1,5 @@
-/* $XConsortium: jdhuff.c,v 1.4 94/04/17 20:35:34 rws Exp $ */
+/* $XConsortium: jdhuff.c /main/5 1995/12/02 16:51:33 dpw $ */
+/* AGE Logic - Oct 15 1995 - Larry Hare */
 /* Module jdhuff.c */
 
 /****************************************************************************
@@ -68,7 +69,6 @@ terms and conditions:
 *****************************************************************************
 
 	Gary Rogers, AGE Logic, Inc., October 1993
-	Gary Rogers, AGE Logic, Inc., January 1994
 
 ****************************************************************************/
 
@@ -85,6 +85,7 @@ terms and conditions:
  */
 
 #include "jinclude.h"
+#include "macro.h"
 
 
 /* Static variables to avoid passing 'round extra parameters */
@@ -94,6 +95,8 @@ static decompress_info_ptr dcinfo;
 static INT32 get_buffer;	   /* current bit-extraction buffer */
 static int bits_left;		   /* # of unused bits in it */
 #ifdef XIE_SUPPORTED
+static UINT16 restarts_to_go;             /* MCUs left in this restart interval */
+static short next_restart_num;            /* # of next RSTn marker (0..7) */
 #define XIE_EOB   0xffffffff  /* Return value when input buffer is empty */
 #else
 static boolean printed_eod;	/* flag to suppress multiple end-of-data msgs */
@@ -429,7 +432,6 @@ process_restart (decompress_info_ptr cinfo)
 #else  
   printed_eod = FALSE;		        /* next segment can get another warning */
 #endif	/* XIE_SUPPORTED */
-  cinfo->printed_eod = FALSE;		/* next segment can get another warning */
 
   /* Scan for next JPEG marker */
   do {
@@ -469,6 +471,7 @@ process_restart (decompress_info_ptr cinfo)
     TRACEMS1(cinfo->emethods, 2, "RST%d", cinfo->next_restart_num);
 #endif	/* XIE_SUPPORTED */
 
+#ifndef XIE_SUPPORTED
   /* Re-initialize DC predictions to 0 */
   for (ci = 0; ci < cinfo->comps_in_scan; ci++)
     cinfo->last_dc_val[ci] = 0;
@@ -476,7 +479,9 @@ process_restart (decompress_info_ptr cinfo)
   /* Update restart state */
   cinfo->restarts_to_go = cinfo->restart_interval;
   cinfo->next_restart_num = (cinfo->next_restart_num + 1) & 7;
-#ifdef XIE_SUPPORTED
+#else
+  restarts_to_go = cinfo->restart_interval;
+  next_restart_num = (next_restart_num + 1) & 7;
   return(0);
 #endif	/* XIE_SUPPORTED */
 }
@@ -542,13 +547,26 @@ huff_decode_mcu (decompress_info_ptr cinfo, JBLOCKROW *MCU_data)
   dcinfo = cinfo;
   bits_left = cinfo->XIEbits_left;
   get_buffer = cinfo->XIEget_buffer;
+  restarts_to_go = cinfo->restarts_to_go;
+  next_restart_num = cinfo->next_restart_num;
 #endif	/* XIE_SUPPORTED */
 
   /* Account for restart interval, process restart marker if needed */
   if (cinfo->restart_interval) {
     if (cinfo->restarts_to_go == 0)
+#ifdef XIE_SUPPORTED
+    {
+      s = process_restart(cinfo);
+      if (s == XIE_EOB)
+        return(XIE_EOB);
+      for (ci = 0; ci < cinfo->comps_in_scan; ci++)
+        last_dc_val[ci] = 0;
+    }
+    restarts_to_go--;
+#else    
       process_restart(cinfo);
     cinfo->restarts_to_go--;
+#endif	/* XIE_SUPPORTED */
   }
 
   /* Outer loop handles each block in the MCU */
@@ -627,6 +645,8 @@ huff_decode_mcu (decompress_info_ptr cinfo, JBLOCKROW *MCU_data)
     cinfo->last_dc_val[ci] = last_dc_val[ci];
   cinfo->XIEbits_left = bits_left;
   cinfo->XIEget_buffer = get_buffer;
+  cinfo->restarts_to_go = restarts_to_go;
+  cinfo->next_restart_num = next_restart_num;
   return(0);
 #endif	/* XIE_SUPPORTED */
 }

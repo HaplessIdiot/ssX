@@ -1,5 +1,5 @@
 /* $XConsortium: memory.c,v 1.6 94/04/17 20:33:56 rws Exp $ */
-/* $XFree86: xc/programs/Xserver/XIE/dixie/request/memory.c,v 3.0 1995/07/07 15:36:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/memory.c,v 3.1 1996/08/20 12:21:53 dawes Exp $ */
 /* Module memory.c */
 
 /****************************************************************************
@@ -88,6 +88,7 @@ terms and conditions:
 
 #include "misc.h"	/* for pointer */
 #include <memory.h>	/* to assert declaration and definition match */
+#include "macro.h"
 
 
 int ALLOCS = 0; /* DEBUG */

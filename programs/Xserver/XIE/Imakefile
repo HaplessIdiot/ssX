@@ -58,8 +58,14 @@ $(SUBDIRS_2): $(DONES)
 REQUIREDLIBS = -lm
 #endif
 
+#if DoLoadableServer
+NormalLibraryObjectRule()
+NormalDepLibraryTarget(xie,$(SUBDIRS) $(DONES),$(OBJS))
+InstallDynamicModule(LibraryTargetName(xie),$(MODULEDIR))
+#else
 SharedDepModuleTarget(xie.so,$(SUBDIRS) $(DONES),$(OBJS))
 InstallDynamicModule(xie.so,$(MODULEDIR))
+#endif
 #if HasGnuMake
 ForceSubdirs($(SUBDIRS_1))
 #else

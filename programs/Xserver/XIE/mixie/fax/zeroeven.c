@@ -1,4 +1,4 @@
-/* $XConsortium: zeroeven.c,v 1.4 94/04/17 20:34:47 rws Exp $ */
+/* $XConsortium: zeroeven.c /main/5 1995/12/02 16:50:41 dpw $ */
 /**** module fax/zeroeven.c ****/
 /******************************************************************************
 
@@ -96,9 +96,11 @@ terms and conditions:
 ***/
 
 #include <xiemd.h>
+#include "macro.h"
 
 /**********************************************************************/
 
+void
 zero_even(cp,t,nt,w,white)
 register LogInt *cp;
 register int	*t, nt,w,white;

@@ -79,6 +79,7 @@ terms and conditions:
  */
 
 #include "jinclude.h"
+#include "macro.h"
 
 METHODDEF void
 #if NeedFunctionPrototypes

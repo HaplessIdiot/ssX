@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/5 1996/09/28 16:55:47 rws $
-XCOMM $XFree86: xc/programs/Xserver/XIE/dixie/request/Imakefile,v 3.1 1996/10/03 09:17:16 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/XIE/dixie/request/Imakefile,v 3.2 1996/12/23 06:26:51 dawes Exp $
 XCOMM build device independent request objects
 #include <Server.tmpl>
 
@@ -26,7 +26,9 @@ DEFINES = $(DIS_DEFINES) $(MODULE_DEFINES)
 
        OBJS = $(OBJS1) $(OBJS2)
 
-   INCLUDES = -I../../include -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(EXTINCSRC)
+   INCLUDES = -I../../include -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
+              -I$(EXTINCSRC) -I$(XF86COMSRC)
+
    LINTLIBS = ../export/llib-lexp.ln ../import/llib-limp.ln \
               ../process/llib-lproc.ln ../request/llib-lreq.ln
 

@@ -31,7 +31,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.0 1996/12/19 10:02:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.1 1997/02/17 09:46:37 hohndel Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -405,6 +405,14 @@ extern int xf86strncmp(const char *, const char *, INT32);
 extern size_t xf86strlen(const char *);
 
 extern void xf86getsecs(INT32 *, INT32 *);
+
+double xf86exp(double x);
+
+double xf86log(double x);
+
+double xf86pow(double x, double y);
+
+double xf86sqrt(double x);
 
 _XFUNCPROTOEND
 #endif /* NO_OSLIB_PROTOTYPES */

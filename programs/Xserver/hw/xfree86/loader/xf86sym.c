@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.3 1997/02/17 11:33:01 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.4 1997/02/17 14:22:55 hohndel Exp $ */
 
 
 
@@ -146,7 +146,17 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86strncmp)
    SYMFUNC(xf86strcmp)
    SYMFUNC(xf86strlen)
+   SYMFUNC(xf86exp)
+   SYMFUNC(xf86log)
+   SYMFUNC(xf86pow)
+   SYMFUNC(xf86sqrt)
+
+/*
+ * these are our own interfaces where libc functions
+ * would pass structures around
+ */
    SYMFUNC(xf86getsecs)
+
 /*
  * these are only needed for the /tmp/accelswitch in the mga driver
  */

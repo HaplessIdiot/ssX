@@ -47,8 +47,15 @@ DONES = \
 $(DONES): $(SUBDIRS)
 #endif
 
+#if DoLoadableServer
+NormalLibraryObjectRule()
+NormalDepLibraryTarget(pex5,$(SUBDIRS) $(DONES),$(OBJS))
+InstallDynamicModule(LibraryTargetName(pex5),$(MODULEDIR))
+#else
 SharedDepModuleTarget(pex5.so,$(SUBDIRS) $(DONES),$(OBJS))
 InstallDynamicModule(pex5.so,$(MODULEDIR))
+#endif
+
 ForceSubdirs($(SUBDIRS))
 
 #else
