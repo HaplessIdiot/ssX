@@ -21,7 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
+/* $XFree86$ */
 
 #include "glheader.h"
 #include "colormac.h"
@@ -128,7 +128,6 @@ fast_draw_pixels(GLcontext *ctx, GLint x, GLint y,
       GLint skipPixels = unpack->SkipPixels;
       GLint skipRows = unpack->SkipRows;
       GLint rowLength;
-      GLdepth zSpan[MAX_WIDTH];  /* only used when zooming */
       GLint zoomY0 = 0;
 
       if (unpack->RowLength > 0)
@@ -188,12 +187,7 @@ fast_draw_pixels(GLcontext *ctx, GLint x, GLint y,
             return GL_TRUE;
       }
       else {
-         /* setup array of fragment Z value to pass to zoom function */
-         GLdepth z = (GLdepth) (ctx->Current.RasterPos[2] * ctx->DepthMaxF);
-         GLint i;
          ASSERT(drawWidth < MAX_WIDTH);
-         for (i=0; i<drawWidth; i++)
-            zSpan[i] = z;
 
          /* save Y value of first row */
          zoomY0 = IROUND(ctx->Current.RasterPos[1]);

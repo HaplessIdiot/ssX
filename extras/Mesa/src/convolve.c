@@ -1,4 +1,4 @@
-
+/* $XFree86$ */
 /*
  * Mesa 3-D graphics library
  * Version:  4.1
@@ -178,7 +178,7 @@ void
 _mesa_ConvolutionFilter2D(GLenum target, GLenum internalFormat, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *image)
 {
    GLint baseFormat;
-   GLint i, components;
+   GLint i;
    GET_CURRENT_CONTEXT(ctx);
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx);
 
@@ -215,8 +215,8 @@ _mesa_ConvolutionFilter2D(GLenum target, GLenum internalFormat, GLsizei width, G
       return;
    }
 
-   components = _mesa_components_in_format(format);
-   assert(components > 0);  /* this should have been caught earlier */
+   /* this should have been caught earlier */
+   assert(_mesa_components_in_format(format) > 0);
 
    ctx->Convolution2D.Format = format;
    ctx->Convolution2D.InternalFormat = internalFormat;
@@ -304,22 +304,18 @@ void
 _mesa_ConvolutionParameterfv(GLenum target, GLenum pname, const GLfloat *params)
 {
    GET_CURRENT_CONTEXT(ctx);
-   struct gl_convolution_attrib *conv;
    GLuint c;
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx);
 
    switch (target) {
       case GL_CONVOLUTION_1D:
          c = 0;
-         conv = &ctx->Convolution1D;
          break;
       case GL_CONVOLUTION_2D:
          c = 1;
-         conv = &ctx->Convolution2D;
          break;
       case GL_SEPARABLE_2D:
          c = 2;
-         conv = &ctx->Separable2D;
          break;
       default:
          _mesa_error(ctx, GL_INVALID_ENUM, "glConvolutionParameterfv(target)");
@@ -403,22 +399,18 @@ void
 _mesa_ConvolutionParameteriv(GLenum target, GLenum pname, const GLint *params)
 {
    GET_CURRENT_CONTEXT(ctx);
-   struct gl_convolution_attrib *conv;
    GLuint c;
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx);
 
    switch (target) {
       case GL_CONVOLUTION_1D:
          c = 0;
-         conv = &ctx->Convolution1D;
          break;
       case GL_CONVOLUTION_2D:
          c = 1;
-         conv = &ctx->Convolution2D;
          break;
       case GL_SEPARABLE_2D:
          c = 2;
-         conv = &ctx->Separable2D;
          break;
       default:
          _mesa_error(ctx, GL_INVALID_ENUM, "glConvolutionParameteriv(target)");

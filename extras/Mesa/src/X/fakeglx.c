@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Mesa 3-D graphics library
  * Version:  5.0.2
@@ -1051,6 +1052,7 @@ static XMesaVisual choose_visual( Display *dpy, int screen, const int *list )
          case GLX_VISUAL_CAVEAT_EXT:
             parselist++;
             caveat = *parselist++; /* ignored for now */
+            (void) caveat;
             break;
 
          /*
@@ -1990,7 +1992,6 @@ Fake_glXCreatePbuffer( Display *dpy, GLXFBConfig config,
    XMesaBuffer xmbuf;
    const int *attrib;
    int width = 0, height = 0;
-   GLboolean useLargest = GL_FALSE, preserveContents = GL_FALSE;
 
    (void) dpy;
 
@@ -2006,11 +2007,9 @@ Fake_glXCreatePbuffer( Display *dpy, GLXFBConfig config,
             break;
          case GLX_PRESERVED_CONTENTS:
             attrib++;
-            preserveContents = *attrib; /* ignored */
             break;
          case GLX_LARGEST_PBUFFER:
             attrib++;
-            useLargest = *attrib; /* ignored */
             break;
          default:
             return 0;
@@ -2352,7 +2351,6 @@ Fake_glXCreateGLXPbufferSGIX(Display *dpy, GLXFBConfigSGIX config,
    XMesaVisual xmvis = (XMesaVisual) config;
    XMesaBuffer xmbuf;
    const int *attrib;
-   GLboolean useLargest = GL_FALSE, preserveContents = GL_FALSE;
 
    (void) dpy;
 
@@ -2360,11 +2358,9 @@ Fake_glXCreateGLXPbufferSGIX(Display *dpy, GLXFBConfigSGIX config,
       switch (*attrib) {
          case GLX_PRESERVED_CONTENTS_SGIX:
             attrib++;
-            preserveContents = *attrib; /* ignored */
             break;
          case GLX_LARGEST_PBUFFER_SGIX:
             attrib++;
-            useLargest = *attrib; /* ignored */
             break;
          default:
             return 0;

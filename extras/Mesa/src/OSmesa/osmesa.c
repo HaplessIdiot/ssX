@@ -21,7 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
+/* $XFree86$ */
 
 /*
  * Off-Screen Mesa rendering / Rendering into client memory space
@@ -1229,7 +1229,7 @@ write_rgba_pixels_RGB( const GLcontext *ctx, GLuint n,
                        const GLint x[], const GLint y[],
                        CONST GLchan rgba[][4], const GLubyte mask[] )
 {
-   const OSMesaContext osmesa = (const OSMesaContext) ctx;
+   const OSMesaContext osmesa = OSMESA_CONTEXT(ctx);
    GLuint i;
    for (i = 0; i < n; i++) {
       if (mask[i]) {
@@ -1244,7 +1244,7 @@ write_rgba_pixels_BGR( const GLcontext *ctx, GLuint n,
                        const GLint x[], const GLint y[],
                        CONST GLchan rgba[][4], const GLubyte mask[] )
 {
-   const OSMesaContext osmesa = (const OSMesaContext) ctx;
+   const OSMesaContext osmesa = OSMESA_CONTEXT(ctx);
    GLuint i;
    for (i = 0; i < n; i++) {
       if (mask[i]) {

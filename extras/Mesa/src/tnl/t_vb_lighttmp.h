@@ -1,4 +1,4 @@
-
+/* $XFree86$ */
 /*
  * Mesa 3-D graphics library
  * Version:  4.1
@@ -104,12 +104,18 @@ static void TAG(light_rgba_spec)( GLcontext *ctx,
    const GLfloat *normal = (GLfloat *)VB->NormalPtr->data;
 
    GLfloat *CMcolor;
+#if IDX & LIGHT_COLORMATERIAL
    GLuint CMstride;
+#endif
 
    GLchan (*Fcolor)[4] = (GLchan (*)[4]) store->LitColor[0].Ptr;
+#if IDX & LIGHT_TWOSIDE
    GLchan (*Bcolor)[4] = (GLchan (*)[4]) store->LitColor[1].Ptr;
+#endif
    GLchan (*Fspec)[4] = (GLchan (*)[4]) store->LitSecondary[0].Ptr;
+#if IDX & LIGHT_TWOSIDE
    GLchan (*Bspec)[4] = (GLchan (*)[4]) store->LitSecondary[1].Ptr;
+#endif
 
    const GLuint nr = VB->Count;
    const GLuint *flags = VB->Flag;
@@ -124,24 +130,24 @@ static void TAG(light_rgba_spec)( GLcontext *ctx,
    fprintf(stderr, "%s\n", __FUNCTION__ );
 #endif
 
-   if (IDX & LIGHT_COLORMATERIAL) {
-      if (VB->ColorPtr[0]->Type != GL_FLOAT || 
-	  VB->ColorPtr[0]->Size != 4)
-	 import_color_material( ctx, stage );
+#if IDX & LIGHT_COLORMATERIAL
+   if (VB->ColorPtr[0]->Type != GL_FLOAT ||
+       VB->ColorPtr[0]->Size != 4)
+      import_color_material( ctx, stage );
 
-      CMcolor = (GLfloat *) VB->ColorPtr[0]->Ptr;
-      CMstride = VB->ColorPtr[0]->StrideB;
-   }
+   CMcolor = (GLfloat *) VB->ColorPtr[0]->Ptr;
+   CMstride = VB->ColorPtr[0]->StrideB;
+#endif
 
    VB->ColorPtr[0] = &store->LitColor[0];
    VB->SecondaryColorPtr[0] = &store->LitSecondary[0];
    UNCLAMPED_FLOAT_TO_CHAN(sumA[0], ctx->Light.Material[0].Diffuse[3]);
 
-   if (IDX & LIGHT_TWOSIDE) {
-      VB->ColorPtr[1] = &store->LitColor[1];
-      VB->SecondaryColorPtr[1] = &store->LitSecondary[1];
-      UNCLAMPED_FLOAT_TO_CHAN(sumA[1], ctx->Light.Material[1].Diffuse[3]);
-   }
+#if IDX & LIGHT_TWOSIDED
+   VB->ColorPtr[1] = &store->LitColor[1];
+   VB->SecondaryColorPtr[1] = &store->LitSecondary[1];
+   UNCLAMPED_FLOAT_TO_CHAN(sumA[1], ctx->Light.Material[1].Diffuse[3]);
+#endif
 
    /* Side-effects done, can we finish now?
     */
@@ -164,17 +170,18 @@ static void TAG(light_rgba_spec)( GLcontext *ctx,
       if ( CHECK_VALIDATE(j) ) {
 	 TNL_CONTEXT(ctx)->Driver.NotifyMaterialChange( ctx );
 	 UNCLAMPED_FLOAT_TO_CHAN(sumA[0], ctx->Light.Material[0].Diffuse[3]);
-	 if (IDX & LIGHT_TWOSIDE) 
-	    UNCLAMPED_FLOAT_TO_CHAN(sumA[1], ctx->Light.Material[1].Diffuse[3]);
+#if IDX & LIGHT_TWOSIDE
+	 UNCLAMPED_FLOAT_TO_CHAN(sumA[1], ctx->Light.Material[1].Diffuse[3]);
+#endif
       }
 
       COPY_3V(sum[0], base[0]);
       ZERO_3V(spec[0]);
 
-      if (IDX & LIGHT_TWOSIDE) {
-	 COPY_3V(sum[1], base[1]);
-	 ZERO_3V(spec[1]);
-      }
+#if IDX & LIGHT_TWOSIDE
+      COPY_3V(sum[1], base[1]);
+      ZERO_3V(spec[1]);
+#endif
 
       /* Add contribution from each enabled light source */
       foreach (light, &ctx->Light.EnabledList) {
@@ -235,17 +242,18 @@ static void TAG(light_rgba_spec)( GLcontext *ctx,
 	 /* Which side gets the diffuse & specular terms? */
 	 if (n_dot_VP < 0.0F) {
 	    ACC_SCALE_SCALAR_3V(sum[0], attenuation, light->_MatAmbient[0]);
-	    if (!(IDX & LIGHT_TWOSIDE)) {
-	       continue;
-	    }
+#if IDX & LIGHT_TWOSIDE
 	    side = 1;
 	    correction = -1;
 	    n_dot_VP = -n_dot_VP;
+#else
+	    continue;
+#endif
 	 }
          else {
-	    if (IDX & LIGHT_TWOSIDE) {
-	       ACC_SCALE_SCALAR_3V( sum[1], attenuation, light->_MatAmbient[1]);
-	    }
+#if IDX & LIGHT_TWOSIDE
+	    ACC_SCALE_SCALAR_3V( sum[1], attenuation, light->_MatAmbient[1]);
+#endif
 	    side = 0;
 	    correction = 1;
 	 }
@@ -292,11 +300,11 @@ static void TAG(light_rgba_spec)( GLcontext *ctx,
       UNCLAMPED_FLOAT_TO_RGB_CHAN( Fspec[j], spec[0] );
       Fcolor[j][3] = sumA[0];
 
-      if (IDX & LIGHT_TWOSIDE) {
-	 UNCLAMPED_FLOAT_TO_RGB_CHAN( Bcolor[j], sum[1] );
-	 UNCLAMPED_FLOAT_TO_RGB_CHAN( Bspec[j], spec[1] );
-	 Bcolor[j][3] = sumA[1];
-      }
+#if IDX & LIGHT_TWOSIDE
+      UNCLAMPED_FLOAT_TO_RGB_CHAN( Bcolor[j], sum[1] );
+      UNCLAMPED_FLOAT_TO_RGB_CHAN( Bspec[j], spec[1] );
+      Bcolor[j][3] = sumA[1];
+#endif
    }
 }
 
@@ -318,11 +326,14 @@ static void TAG(light_rgba)( GLcontext *ctx,
    const GLfloat *normal = (GLfloat *)VB->NormalPtr->data;
 
    GLfloat *CMcolor;
+#if IDX & LIGHT_COLORMATERIAL
    GLuint CMstride;
+#endif
 
    GLchan (*Fcolor)[4] = (GLchan (*)[4]) store->LitColor[0].Ptr;
+#if IDX & LIGHT_TWOSIDE
    GLchan (*Bcolor)[4] = (GLchan (*)[4]) store->LitColor[1].Ptr;
-   GLchan (*color[2])[4];
+#endif
    const GLuint *flags = VB->Flag;
 
    struct gl_material (*new_material)[2] = VB->Material;
@@ -337,25 +348,22 @@ static void TAG(light_rgba)( GLcontext *ctx,
    (void) nstride;
    (void) vstride;
 
-   color[0] = Fcolor;
-   color[1] = Bcolor;
+#if IDX & LIGHT_COLORMATERIAL
+   if (VB->ColorPtr[0]->Type != GL_FLOAT ||
+       VB->ColorPtr[0]->Size != 4)
+      import_color_material( ctx, stage );
 
-   if (IDX & LIGHT_COLORMATERIAL) {
-      if (VB->ColorPtr[0]->Type != GL_FLOAT || 
-	  VB->ColorPtr[0]->Size != 4)
-	 import_color_material( ctx, stage );
-
-      CMcolor = (GLfloat *)VB->ColorPtr[0]->Ptr;
-      CMstride = VB->ColorPtr[0]->StrideB;
-   }
+   CMcolor = (GLfloat *)VB->ColorPtr[0]->Ptr;
+   CMstride = VB->ColorPtr[0]->StrideB;
+#endif
 
    VB->ColorPtr[0] = &store->LitColor[0];
    UNCLAMPED_FLOAT_TO_CHAN(sumA[0], ctx->Light.Material[0].Diffuse[3]);
 
-   if (IDX & LIGHT_TWOSIDE) {
-      VB->ColorPtr[1] = &store->LitColor[1];
-      UNCLAMPED_FLOAT_TO_CHAN(sumA[1], ctx->Light.Material[1].Diffuse[3]);
-   }
+#if IDX & LIGHT_TWOSIDE
+   VB->ColorPtr[1] = &store->LitColor[1];
+   UNCLAMPED_FLOAT_TO_CHAN(sumA[1], ctx->Light.Material[1].Diffuse[3]);
+#endif
 
    if (stage->changed_inputs == 0)
       return;
@@ -376,14 +384,16 @@ static void TAG(light_rgba)( GLcontext *ctx,
       if ( CHECK_VALIDATE(j) ) {
 	 TNL_CONTEXT(ctx)->Driver.NotifyMaterialChange( ctx );
 	 UNCLAMPED_FLOAT_TO_CHAN(sumA[0], ctx->Light.Material[0].Diffuse[3]);
-	 if (IDX & LIGHT_TWOSIDE)
-	    UNCLAMPED_FLOAT_TO_CHAN(sumA[1], ctx->Light.Material[1].Diffuse[3]);
+#if IDX & LIGHT_TWOSIDE
+	 UNCLAMPED_FLOAT_TO_CHAN(sumA[1], ctx->Light.Material[1].Diffuse[3]);
+#endif
       }
 
       COPY_3V(sum[0], base[0]);
 
-      if ( IDX & LIGHT_TWOSIDE )
-	 COPY_3V(sum[1], base[1]);
+#if IDX & LIGHT_TWOSIDE
+      COPY_3V(sum[1], base[1]);
+#endif
 
       /* Add contribution from each enabled light source */
       foreach (light, &ctx->Light.EnabledList) {
@@ -446,18 +456,18 @@ static void TAG(light_rgba)( GLcontext *ctx,
 	 /* which side are we lighting? */
 	 if (n_dot_VP < 0.0F) {
 	    ACC_SCALE_SCALAR_3V(sum[0], attenuation, light->_MatAmbient[0]);
-
-	    if (!(IDX & LIGHT_TWOSIDE))
-	       continue;
-
+#if IDX & LIGHT_TWOSIDE
 	    side = 1;
 	    correction = -1;
 	    n_dot_VP = -n_dot_VP;
+#else
+	    continue;
+#endif
 	 }
          else {
-	    if (IDX & LIGHT_TWOSIDE) {
-	       ACC_SCALE_SCALAR_3V( sum[1], attenuation, light->_MatAmbient[1]);
-	    }
+#if IDX & LIGHT_TWOSIDE
+	    ACC_SCALE_SCALAR_3V( sum[1], attenuation, light->_MatAmbient[1]);
+#endif
 	    side = 0;
 	    correction = 1;
 	 }
@@ -506,10 +516,10 @@ static void TAG(light_rgba)( GLcontext *ctx,
       UNCLAMPED_FLOAT_TO_RGB_CHAN( Fcolor[j], sum[0] );
       Fcolor[j][3] = sumA[0];
 
-      if (IDX & LIGHT_TWOSIDE) {
-	 UNCLAMPED_FLOAT_TO_RGB_CHAN( Bcolor[j], sum[1] );
-	 Bcolor[j][3] = sumA[1];
-      }
+#if IDX & LIGHT_TWOSIDE
+      UNCLAMPED_FLOAT_TO_RGB_CHAN( Bcolor[j], sum[1] );
+      Bcolor[j][3] = sumA[1];
+#endif
    }
 }
 
@@ -528,9 +538,13 @@ static void TAG(light_fast_rgba_single)( GLcontext *ctx,
    const GLuint nstride = VB->NormalPtr->stride;
    const GLfloat *normal = (GLfloat *)VB->NormalPtr->data;
    GLfloat *CMcolor;
+#if IDX & LIGHT_COLORMATERIAL
    GLuint CMstride;
+#endif
    GLchan (*Fcolor)[4] = (GLchan (*)[4]) store->LitColor[0].Ptr;
+#if IDX & LIGHT_TWOSIDE
    GLchan (*Bcolor)[4] = (GLchan (*)[4]) store->LitColor[1].Ptr;
+#endif
    const struct gl_light *light = ctx->Light.EnabledList.next;
    const GLuint *flags = VB->Flag;
    GLchan basechan[2][4];
@@ -549,18 +563,19 @@ static void TAG(light_fast_rgba_single)( GLcontext *ctx,
    (void) nr;
    (void) nstride;
 
-   if (IDX & LIGHT_COLORMATERIAL) {
-      if (VB->ColorPtr[0]->Type != GL_FLOAT || 
-	  VB->ColorPtr[0]->Size != 4)
-	 import_color_material( ctx, stage );
+#if IDX & LIGHT_COLORMATERIAL
+   if (VB->ColorPtr[0]->Type != GL_FLOAT ||
+       VB->ColorPtr[0]->Size != 4)
+      import_color_material( ctx, stage );
 
-      CMcolor = (GLfloat *)VB->ColorPtr[0]->Ptr;
-      CMstride = VB->ColorPtr[0]->StrideB;
-   }
+   CMcolor = (GLfloat *)VB->ColorPtr[0]->Ptr;
+   CMstride = VB->ColorPtr[0]->StrideB;
+#endif
 
    VB->ColorPtr[0] = &store->LitColor[0];
-   if (IDX & LIGHT_TWOSIDE)
-      VB->ColorPtr[1] = &store->LitColor[1];
+#if IDX & LIGHT_TWOSIDE
+   VB->ColorPtr[1] = &store->LitColor[1];
+#endif
 
    if (stage->changed_inputs == 0)
       return;
@@ -586,34 +601,33 @@ static void TAG(light_fast_rgba_single)( GLcontext *ctx,
       UNCLAMPED_FLOAT_TO_CHAN(basechan[0][3], 
 			      ctx->Light.Material[0].Diffuse[3]);
 
-      if (IDX & LIGHT_TWOSIDE) {
-	 COPY_3V(base[1], light->_MatAmbient[1]);
-	 ACC_3V(base[1], ctx->Light._BaseColor[1]);
-	 UNCLAMPED_FLOAT_TO_RGB_CHAN( basechan[1], base[1]);
-	 UNCLAMPED_FLOAT_TO_CHAN(basechan[1][3], 
-				 ctx->Light.Material[1].Diffuse[3]);
-      }
+#if IDX & LIGHT_TWOSIDE
+      COPY_3V(base[1], light->_MatAmbient[1]);
+      ACC_3V(base[1], ctx->Light._BaseColor[1]);
+      UNCLAMPED_FLOAT_TO_RGB_CHAN( basechan[1], base[1]);
+      UNCLAMPED_FLOAT_TO_CHAN(basechan[1][3],
+			      ctx->Light.Material[1].Diffuse[3]);
+#endif
 
       do {
 	 GLfloat n_dot_VP = DOT3(normal, light->_VP_inf_norm);
 
 	 if (n_dot_VP < 0.0F) {
-	    if (IDX & LIGHT_TWOSIDE) {
-	       GLfloat n_dot_h = -DOT3(normal, light->_h_inf_norm);
-	       GLfloat sum[3];
-	       COPY_3V(sum, base[1]);
-	       ACC_SCALE_SCALAR_3V(sum, -n_dot_VP, light->_MatDiffuse[1]);
-	       if (n_dot_h > 0.0F) {
-		  GLfloat spec;
-		  GET_SHINE_TAB_ENTRY( ctx->_ShineTable[1], n_dot_h, spec );
-		  ACC_SCALE_SCALAR_3V(sum, spec, light->_MatSpecular[1]);
-	       }
-	       UNCLAMPED_FLOAT_TO_RGB_CHAN(Bcolor[j], sum );
-	       Bcolor[j][3] = basechan[1][3];
+#if IDX & LIGHT_TWOSIDE
+	    GLfloat n_dot_h = -DOT3(normal, light->_h_inf_norm);
+	    GLfloat sum[3];
+	    COPY_3V(sum, base[1]);
+	    ACC_SCALE_SCALAR_3V(sum, -n_dot_VP, light->_MatDiffuse[1]);
+	    if (n_dot_h > 0.0F) {
+	       GLfloat spec;
+	       GET_SHINE_TAB_ENTRY( ctx->_ShineTable[1], n_dot_h, spec );
+	       ACC_SCALE_SCALAR_3V(sum, spec, light->_MatSpecular[1]);
 	    }
+	    UNCLAMPED_FLOAT_TO_RGB_CHAN(Bcolor[j], sum );
+	    Bcolor[j][3] = basechan[1][3];
+#endif
 	    COPY_CHAN4(Fcolor[j], basechan[0]);
-	 }
-         else {
+	 } else {
 	    GLfloat n_dot_h = DOT3(normal, light->_h_inf_norm);
 	    GLfloat sum[3];
 	    COPY_3V(sum, base[0]);
@@ -626,7 +640,9 @@ static void TAG(light_fast_rgba_single)( GLcontext *ctx,
 	    }
 	    UNCLAMPED_FLOAT_TO_RGB_CHAN(Fcolor[j], sum );
 	    Fcolor[j][3] = basechan[0][3];
-	    if (IDX & LIGHT_TWOSIDE) COPY_CHAN4(Bcolor[j], basechan[1]);
+#if IDX & LIGHT_TWOSIDE
+	    COPY_CHAN4(Bcolor[j], basechan[1]);
+#endif
 	 }
 
 	 j++;
@@ -638,8 +654,9 @@ static void TAG(light_fast_rgba_single)( GLcontext *ctx,
       for ( ; REUSE_LIGHT_RESULTS(j) ; j++, CMSTRIDE, STRIDE_F(normal,NSTRIDE))
       {
 	 COPY_CHAN4(Fcolor[j], Fcolor[j-1]);
-	 if (IDX & LIGHT_TWOSIDE)
-	    COPY_CHAN4(Bcolor[j], Bcolor[j-1]);
+#if IDX & LIGHT_TWOSIDE
+	 COPY_CHAN4(Bcolor[j], Bcolor[j-1]);
+#endif
       }
 
    } while (!CHECK_END_VB(j));
@@ -658,9 +675,13 @@ static void TAG(light_fast_rgba)( GLcontext *ctx,
    const GLuint nstride = VB->NormalPtr->stride;
    const GLfloat *normal = (GLfloat *)VB->NormalPtr->data;
    GLfloat *CMcolor;
+#if IDX & LIGHT_COLORMATERIAL
    GLuint CMstride;
+#endif
    GLchan (*Fcolor)[4] = (GLchan (*)[4]) store->LitColor[0].Ptr;
+#if IDX & LIGHT_TWOSIDE
    GLchan (*Bcolor)[4] = (GLchan (*)[4]) store->LitColor[1].Ptr;
+#endif
    const GLuint *flags = VB->Flag;
    GLuint j = 0;
    struct gl_material (*new_material)[2] = VB->Material;
@@ -680,18 +701,19 @@ static void TAG(light_fast_rgba)( GLcontext *ctx,
    UNCLAMPED_FLOAT_TO_CHAN(sumA[0], ctx->Light.Material[0].Diffuse[3]);
    UNCLAMPED_FLOAT_TO_CHAN(sumA[1], ctx->Light.Material[1].Diffuse[3]);
 
-   if (IDX & LIGHT_COLORMATERIAL) {
-      if (VB->ColorPtr[0]->Type != GL_FLOAT || 
-	  VB->ColorPtr[0]->Size != 4)
-	 import_color_material( ctx, stage );
+#if IDX & LIGHT_COLORMATERIAL
+   if (VB->ColorPtr[0]->Type != GL_FLOAT ||
+       VB->ColorPtr[0]->Size != 4)
+      import_color_material( ctx, stage );
 
-      CMcolor = (GLfloat *)VB->ColorPtr[0]->Ptr;
-      CMstride = VB->ColorPtr[0]->StrideB;
-   }
+   CMcolor = (GLfloat *)VB->ColorPtr[0]->Ptr;
+   CMstride = VB->ColorPtr[0]->StrideB;
+#endif
 
    VB->ColorPtr[0] = &store->LitColor[0];
-   if (IDX & LIGHT_TWOSIDE)
-      VB->ColorPtr[1] = &store->LitColor[1];
+#if IDX & LIGHT_TWOSIDE
+   VB->ColorPtr[1] = &store->LitColor[1];
+#endif
 
    if (stage->changed_inputs == 0)
       return;
@@ -709,22 +731,23 @@ static void TAG(light_fast_rgba)( GLcontext *ctx,
 	 if ( CHECK_VALIDATE(j) ) {
 	    TNL_CONTEXT(ctx)->Driver.NotifyMaterialChange( ctx );
 	    UNCLAMPED_FLOAT_TO_CHAN(sumA[0], ctx->Light.Material[0].Diffuse[3]);
-	    if (IDX & LIGHT_TWOSIDE)
-	       UNCLAMPED_FLOAT_TO_CHAN(sumA[1], 
-				       ctx->Light.Material[1].Diffuse[3]);
+#if IDX & LIGHT_TWOSIDE
+	    UNCLAMPED_FLOAT_TO_CHAN(sumA[1], ctx->Light.Material[1].Diffuse[3]);
+#endif
 	 }
 
-
 	 COPY_3V(sum[0], ctx->Light._BaseColor[0]);
-	 if (IDX & LIGHT_TWOSIDE)
-	    COPY_3V(sum[1], ctx->Light._BaseColor[1]);
+#if IDX & LIGHT_TWOSIDE
+	 COPY_3V(sum[1], ctx->Light._BaseColor[1]);
+#endif
 
 	 foreach (light, &ctx->Light.EnabledList) {
 	    GLfloat n_dot_h, n_dot_VP, spec;
 
 	    ACC_3V(sum[0], light->_MatAmbient[0]);
-	    if (IDX & LIGHT_TWOSIDE)
-	       ACC_3V(sum[1], light->_MatAmbient[1]);
+#if IDX & LIGHT_TWOSIDE
+	    ACC_3V(sum[1], light->_MatAmbient[1]);
+#endif
 
 	    n_dot_VP = DOT3(normal, light->_VP_inf_norm);
 
@@ -738,7 +761,8 @@ static void TAG(light_fast_rgba)( GLcontext *ctx,
 				       light->_MatSpecular[0]);
 	       }
 	    }
-	    else if (IDX & LIGHT_TWOSIDE) {
+#if IDX & LIGHT_TWOSIDE
+	    else {
 	       ACC_SCALE_SCALAR_3V(sum[1], -n_dot_VP, light->_MatDiffuse[1]);
 	       n_dot_h = -DOT3(normal, light->_h_inf_norm);
 	       if (n_dot_h > 0.0F) {
@@ -748,15 +772,16 @@ static void TAG(light_fast_rgba)( GLcontext *ctx,
 				       light->_MatSpecular[1]);
 	       }
 	    }
+#endif
 	 }
 
 	 UNCLAMPED_FLOAT_TO_RGB_CHAN( Fcolor[j], sum[0] );
 	 Fcolor[j][3] = sumA[0];
 
-	 if (IDX & LIGHT_TWOSIDE) {
-	    UNCLAMPED_FLOAT_TO_RGB_CHAN( Bcolor[j], sum[1] );
-	    Bcolor[j][3] = sumA[1];
-	 }
+#if IDX & LIGHT_TWOSIDE
+	 UNCLAMPED_FLOAT_TO_RGB_CHAN( Bcolor[j], sum[1] );
+	 Bcolor[j][3] = sumA[1];
+#endif
 
 	 j++;
 	 CMSTRIDE;
@@ -769,8 +794,9 @@ static void TAG(light_fast_rgba)( GLcontext *ctx,
       for ( ; REUSE_LIGHT_RESULTS(j) ; j++, CMSTRIDE, STRIDE_F(normal, NSTRIDE))
       {
 	 COPY_CHAN4(Fcolor[j], Fcolor[j-1]);
-	 if (IDX & LIGHT_TWOSIDE)
-	    COPY_CHAN4(Bcolor[j], Bcolor[j-1]);
+#if IDX & LIGHT_TWOSIDE
+	 COPY_CHAN4(Bcolor[j], Bcolor[j-1]);
+#endif
       }
 
    } while (!CHECK_END_VB(j));
@@ -801,7 +827,9 @@ static void TAG(light_ci)( GLcontext *ctx,
    const GLuint nstride = VB->NormalPtr->stride;
    const GLfloat *normal = (GLfloat *)VB->NormalPtr->data;
    GLfloat *CMcolor;
+#if IDX & LIGHT_COLORMATERIAL
    GLuint CMstride;
+#endif
    const GLuint *flags = VB->Flag;
    GLuint *indexResult[2];
    struct gl_material (*new_material)[2] = VB->Material;
@@ -817,24 +845,26 @@ static void TAG(light_ci)( GLcontext *ctx,
    (void) vstride;
 
    VB->IndexPtr[0] = &store->LitIndex[0];
-   if (IDX & LIGHT_TWOSIDE)
-      VB->IndexPtr[1] = &store->LitIndex[1];
+#if IDX & LIGHT_TWOSIDE
+   VB->IndexPtr[1] = &store->LitIndex[1];
+#endif
 
    if (stage->changed_inputs == 0)
       return;
 
    indexResult[0] = VB->IndexPtr[0]->data;
-   if (IDX & LIGHT_TWOSIDE)
-      indexResult[1] = VB->IndexPtr[1]->data;
+#if IDX & LIGHT_TWOSIDE
+   indexResult[1] = VB->IndexPtr[1]->data;
+#endif
 
-   if (IDX & LIGHT_COLORMATERIAL) {
-      if (VB->ColorPtr[0]->Type != GL_FLOAT || 
-	  VB->ColorPtr[0]->Size != 4)
-	 import_color_material( ctx, stage );
+#if IDX & LIGHT_COLORMATERIAL
+   if (VB->ColorPtr[0]->Type != GL_FLOAT ||
+       VB->ColorPtr[0]->Size != 4)
+      import_color_material( ctx, stage );
 
-      CMcolor = (GLfloat *)VB->ColorPtr[0]->Ptr;
-      CMstride = VB->ColorPtr[0]->StrideB;
-   }
+   CMcolor = (GLfloat *)VB->ColorPtr[0]->Ptr;
+   CMstride = VB->ColorPtr[0]->StrideB;
+#endif
 
    /* loop over vertices */
    for ( j=0 ;
@@ -856,9 +886,9 @@ static void TAG(light_ci)( GLcontext *ctx,
 
       diffuse[0] = specular[0] = 0.0F;
 
-      if ( IDX & LIGHT_TWOSIDE ) {
-	 diffuse[1] = specular[1] = 0.0F;
-      }
+#if IDX & LIGHT_TWOSIDE
+      diffuse[1] = specular[1] = 0.0F;
+#endif
 
       /* Accumulate diffuse and specular from each light source */
       foreach (light, &ctx->Light.EnabledList) {
@@ -911,11 +941,13 @@ static void TAG(light_ci)( GLcontext *ctx,
 
 	 /* which side are we lighting? */
 	 if (n_dot_VP < 0.0F) {
-	    if (!(IDX & LIGHT_TWOSIDE))
-	       continue;
+#if IDX & LIGHT_TWOSIDE
 	    side = 1;
 	    correction = -1;
 	    n_dot_VP = -n_dot_VP;
+#else
+	    continue;
+#endif
 	 }
 
 	 /* accumulate diffuse term */

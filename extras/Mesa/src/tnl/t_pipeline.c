@@ -1,4 +1,4 @@
-
+/* $XFree86$ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.5
@@ -125,7 +125,9 @@ void _tnl_run_pipeline( GLcontext *ctx )
    GLuint changed_state = pipe->run_state_changes;
    GLuint changed_inputs = pipe->run_input_changes;
    GLboolean running = GL_TRUE;
+#ifdef HAVE_FAST_MATH
    unsigned short __tmp;
+#endif
 
    pipe->run_state_changes = 0;
    pipe->run_input_changes = 0;
@@ -134,7 +136,9 @@ void _tnl_run_pipeline( GLcontext *ctx )
     */
    ASSERT(pipe->build_state_changes == 0);
 
+#ifdef HAVE_FAST_MATH
    START_FAST_MATH(__tmp);
+#endif
 
    /* If something changes in the pipeline, tag all subsequent stages
     * using this value for recalculation.  Inactive stages have their
@@ -158,7 +162,9 @@ void _tnl_run_pipeline( GLcontext *ctx )
       }
    }
 
+#ifdef HAVE_FAST_MATH
    END_FAST_MATH(__tmp);
+#endif
 }
 
 

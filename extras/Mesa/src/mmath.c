@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mmath.c,v 1.6 2002/02/22 19:25:36 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mmath.c,v 1.7tsi Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.5
@@ -27,8 +27,6 @@
 #include "glheader.h"
 #include "mmath.h"
 
-
-static int in_fast_math;
 
 /*
  * A High Speed, Low Precision Square Root
@@ -141,7 +139,6 @@ _mesa_init_math(void)
       init_sqrt();
 
       initialized = GL_TRUE;
-      in_fast_math = 0;
 
 #if defined(_FPU_GETCW) && defined(_FPU_SETCW)
       {
