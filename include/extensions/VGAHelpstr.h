@@ -1,4 +1,4 @@
-
+/* $XFree86$ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -38,7 +38,7 @@ from the Kaleb S. KEITHLEY
 #define VGAHELPNAME "VGAHELP"
 
 #define VGAHELP_MAJOR_VERSION	0	/* current version numbers */
-#define VGAHELP_MINOR_VERSION	0
+#define VGAHELP_MINOR_VERSION	1
 
 typedef struct _VGAHelpQueryVersion {
     CARD8	reqType;		/* always VgaHelpReqCode */
@@ -68,8 +68,9 @@ typedef struct _VGAHelpGetModeLine {
     CARD16	length B16;
     CARD16	screen B16;
     CARD16	pad B16;
-} xVGAHelpGetModeLineReq;
+} xVGAHelpGetModeLineReq, xVGAHelpGetMonitorReq;
 #define sz_xVGAHelpGetModeLineReq	8
+#define sz_xVGAHelpGetMonitorReq	8
 
 typedef struct {
     BYTE	type;			/* X_Reply */
@@ -106,5 +107,31 @@ typedef struct _VGAHelpModModeLine {
     CARD32	pad B32;
 } xVGAHelpModModeLineReq;
 #define sz_xVGAHelpModModeLineReq	32
+
+typedef struct _VGAHelpSwitchMode {
+    CARD8	reqType;		/* always VgaHelpReqCode */
+    CARD8	vgahelpReqType;		/* always X_VGAHelpSwitchMode */
+    CARD16	length B16;
+    CARD16	screen B16;
+    CARD16	zoom B16;
+} xVGAHelpSwitchModeReq;
+#define sz_xVGAHelpSwitchModeReq	8
+
+typedef struct {
+    BYTE	type;			/* X_Reply */
+    BOOL	pad1;
+    CARD16	sequenceNumber B16;
+    CARD32	length B32;
+    CARD8	vendorLength;
+    CARD8	modelLength;
+    CARD8	nhsync;
+    CARD8	nvsync;
+    CARD32	bandwidth;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
+} xVGAHelpGetMonitorReply;
+#define sz_xVGAHelpGetMonitorReply	32
 
 #endif /* _XVGASTR_H_ */

@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.c,v 1.5 95/01/16 13:16:29 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.32 1995/02/12 09:53:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.33 1995/03/04 06:03:38 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -108,7 +108,7 @@ ScrnInfoRec mach32InfoRec = {
     240, 180,		/* int width, height */
     0,                  /* unsigned long  speedup */
     NULL,	       	/* DisplayModePtr modes */
-    NULL,	       	/* DisplayModePtr pModes */
+    NULL,	       	/* MonPtr monitor */
     NULL,               /* char *clockprog */
     -1,                 /* int textclock */   
     FALSE,              /* Bool bankedMono */
