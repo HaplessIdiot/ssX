@@ -1,4 +1,5 @@
 XFree86 4.0.99.3 (xx April 2001)
+ 406. Make OS_DEFINES available to all server Makefiles (Marc La France).
  405. Add support to xman for parsing '\" <string> formatting hints.
       Also cleanup some of the vendor-specific definitions and fix
       processing of mandoc pages on FreeBSD (based on #4573,
@@ -13022,4 +13023,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1701 2001/04/19 16:07:08 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1702 2001/04/19 19:54:48 dawes Exp $
