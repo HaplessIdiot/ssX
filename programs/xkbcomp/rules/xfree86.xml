@@ -392,12 +392,6 @@
     </model>
     <model>
       <configItem>
-        <name>logicdit</name>
-        <description>Logitech Cordless Desktop iTouch</description>
-      </configItem>
-    </model>
-    <model>
-      <configItem>
         <name>logicdp</name>
         <description>Logitech Cordless Desktop Pro</description>
       </configItem>
@@ -411,33 +405,26 @@
     </model>
     <model>
       <configItem>
-        <name>logicdpa2</name>
-        <description>Logitech Cordless Desktop Pro (alternate option2)</description>
-        <description xml:lang="ru">Logitech Cordless Desktop Pro (альтернативный вариант 2)</description>
+        <name>logicink</name>
+        <description>Logitech Internet Navigator Keyboard</description>
       </configItem>
     </model>
     <model>
       <configItem>
-        <name>logicdo</name>
-        <description>Logitech Cordless Desktop Optical</description>
+        <name>logiciink</name>
+        <description>Logitech iTouch Internet Navigator Keyboard</description>
       </configItem>
     </model>
     <model>
       <configItem>
-        <name>logicfn</name>
-        <description>Logitech Cordless Freedom/Desktop Navigator</description>
+        <name>logiinkse</name>
+        <description>Logitech iTouch Internet Navigator Keyboard SE</description>
       </configItem>
     </model>
     <model>
       <configItem>
-        <name>logicdn</name>
-        <description>Logitech Cordless Desktop Navigator</description>
-      </configItem>
-    </model>
-    <model>
-      <configItem>
-        <name>logidak</name>
-        <description>Logitech Deluxe Access Keyboard</description>
+        <name>logiinkseusb</name>
+        <description>Logitech iTouch Internet Navigator Keyboard SE (USB)</description>
       </configItem>
     </model>
     <model>
@@ -451,33 +438,6 @@
       <configItem>
         <name>itouch</name>
         <description>Logitech iTouch</description>
-      </configItem>
-    </model>
-    <model>
-      <configItem>
-        <name>logiitc</name>
-        <description>Logitech iTouch Cordless Keyboard (model Y-RB6)</description>
-        <description xml:lang="ru">Logitech iTouch Cordless Keyboard (модель Y-RB6)</description>
-      </configItem>
-    </model>
-    <model>
-      <configItem>
-        <name>logiik</name>
-        <description>Logitech Internet Keyboard</description>
-        <description xml:lang="bg">Logitech Интернет клавиатура</description>
-      </configItem>
-    </model>
-    <model>
-      <configItem>
-        <name>logiink</name>
-        <description>Logitech Internet Navigator Keyboard</description>
-        <description xml:lang="bg">Logitech клавиатура за Интернет навигация</description>
-      </configItem>
-    </model>
-    <model>
-      <configItem>
-        <name>itouchin</name>
-        <description>Logitech iTouch keyboard Internet Navigator</description>
       </configItem>
     </model>
     <model>
