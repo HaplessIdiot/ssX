@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.139 2001/08/30 07:56:22 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.140 2001/09/11 14:12:09 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -1437,6 +1437,19 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    pTrident->UsePCIRetry = FALSE; /* Not Supported */
 	    pTrident->frequency = NTSC;
 	    break;
+	case TVGA8900C:
+	    pScrn->progClock = FALSE;
+	    NoClocks = 16;
+	    pTrident->NoMMIO = TRUE;
+	    pTrident->NoAccel = TRUE;
+	    pTrident->HWCursor = FALSE;
+	    chipset = "TVGA8900C";
+	    ramtype = "Standard DRAM";
+	    if (pTrident->UsePCIRetry)
+	    	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry not supported, disabling\n");
+	    pTrident->UsePCIRetry = FALSE; /* Not Supported */
+	    pTrident->frequency = NTSC;
+	    break;
 	case TVGA8900D:
 	    pScrn->progClock = FALSE;
 	    NoClocks = 16;
@@ -1986,6 +1999,8 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     clockRanges = xnfcalloc(sizeof(ClockRange), 1);
     clockRanges->next = NULL;
     if (!pScrn->progClock) {
+	if (pScrn->videoRam < 1024)
+    	    clockRanges->ClockMulFactor = 2;
 	if (pScrn->bitsPerPixel == 16)
     	    clockRanges->ClockMulFactor = 2;
     }
@@ -2349,6 +2364,18 @@ TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		mode->CrtcHBlankStart >>= 1;
 		mode->CrtcHBlankEnd >>= 1;
 		mode->CrtcHTotal >>= 1;
+		mode->CrtcHAdjusted = TRUE;
+	    }
+	    break;
+	default:
+	    if (pScrn->videoRam < 1024 &&
+		!mode->CrtcHAdjusted) {
+		mode->CrtcHDisplay <<= 1;
+		mode->CrtcHSyncStart <<= 1;
+		mode->CrtcHSyncEnd <<= 1;
+		mode->CrtcHBlankStart <<= 1;
+		mode->CrtcHBlankEnd <<= 1;
+		mode->CrtcHTotal <<= 1;
 		mode->CrtcHAdjusted = TRUE;
 	    }
 	    break;
