@@ -1141,26 +1141,31 @@ SiSOptions(ScrnInfoPtr pScrn)
 	               (!xf86NameCmp(strptr,"PAL-N"))) {
 	        pSiS->OptTVStand = 1;
 	        pSiS->NonDefaultPAL = 0;
+	     } else if((!xf86NameCmp(strptr,"NTSCJ")) ||
+	               (!xf86NameCmp(strptr,"NTSC-J"))) {
+	        pSiS->OptTVStand = 0;
+	        pSiS->NonDefaultNTSC = 1;
   	     } else if(!xf86NameCmp(strptr,"NTSC"))
 	        pSiS->OptTVStand = 0;
 	     else {
 	        xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mybadparm, strptr, "TVStandard");
                 xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	            "Valid parameters are \"PAL\", \"PALM\", \"PALN\" or \"NTSC\"\n");
+	            "Valid parameters are \"PAL\", \"PALM\", \"PALN\", \"NTSC\", \"NTSCJ\"\n");
 	     }
 
 	     if(pSiS->OptTVStand != -1) {
 	        static const char *tvstdstr = "TV standard shall be %s\n";
 	        if(pSiS->Chipset == PCI_CHIP_SIS6326) {
 	           pSiS->NonDefaultPAL = -1;
+		   pSiS->NonDefaultNTSC = -1;
 	           xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, tvstdstr,
 	               pSiS->OptTVStand ? "PAL" : "NTSC");
 	        } else {
 	           xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, tvstdstr,
 		       (pSiS->OptTVStand ?
 		           ( (pSiS->NonDefaultPAL == -1) ? "PAL" :
-			      ((pSiS->NonDefaultPAL) ? "PALM" : "PALN") )
-				           : "NTSC"));
+			      ((pSiS->NonDefaultPAL) ? "PALM" : "PALN") ) :
+				(pSiS->NonDefaultNTSC == -1) ? "NTSC" : "NTSCJ"));
 	        }
 	     }
           }

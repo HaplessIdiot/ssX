@@ -78,6 +78,7 @@ InitCommonPointer(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
    SiS_Pr->SiS_PALNPhase2   = SiS_PALNPhase2;
    SiS_Pr->SiS_SpecialPhase = SiS_SpecialPhase;
    SiS_Pr->SiS_SpecialPhaseM= SiS_SpecialPhaseM;
+   SiS_Pr->SiS_SpecialPhaseJ= SiS_SpecialPhaseJ;
 
    SiS_Pr->SiS_NTSCTiming     = SiS_NTSCTiming;
    SiS_Pr->SiS_PALTiming      = SiS_PALTiming;
@@ -575,7 +576,7 @@ InitTo310Pointer(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
    SiS_Pr->SiS_CHTVCRT1ONTSC         = (SiS_LVDSCRT1DataStruct *)SiS310_CHTVCRT1ONTSC;
    SiS_Pr->SiS_CHTVCRT1UPAL          = (SiS_LVDSCRT1DataStruct *)SiS310_CHTVCRT1UPAL;
    SiS_Pr->SiS_CHTVCRT1OPAL          = (SiS_LVDSCRT1DataStruct *)SiS310_CHTVCRT1OPAL;
-   SiS_Pr->SiS_CHTVCRT1SOPAL         = (SiS_LVDSCRT1DataStruct *)SiS310_CHTVCRT1SOPAL;
+   SiS_Pr->SiS_CHTVCRT1SOPAL         = (SiS_LVDSCRT1DataStruct *)SiS310_CHTVCRT1OPAL;
 
    SiS_Pr->SiS_CHTVReg_UNTSC = (SiS_CHTVRegDataStruct *)SiS310_CHTVReg_UNTSC;
    SiS_Pr->SiS_CHTVReg_ONTSC = (SiS_CHTVRegDataStruct *)SiS310_CHTVReg_ONTSC;
@@ -585,7 +586,7 @@ InitTo310Pointer(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
    SiS_Pr->SiS_CHTVReg_OPALM = (SiS_CHTVRegDataStruct *)SiS310_CHTVReg_OPALM;
    SiS_Pr->SiS_CHTVReg_UPALN = (SiS_CHTVRegDataStruct *)SiS310_CHTVReg_UPALN;
    SiS_Pr->SiS_CHTVReg_OPALN = (SiS_CHTVRegDataStruct *)SiS310_CHTVReg_OPALN;
-   SiS_Pr->SiS_CHTVReg_SOPAL = (SiS_CHTVRegDataStruct *)SiS310_CHTVReg_SOPAL;
+   SiS_Pr->SiS_CHTVReg_SOPAL = (SiS_CHTVRegDataStruct *)SiS310_CHTVReg_OPAL;
 
    SiS_Pr->SiS_LCDACRT11024x768_1    = (SiS_LCDACRT1DataStruct *)SiS310_LCDACRT11024x768_1;
    SiS_Pr->SiS_LCDACRT11280x1024_1   = (SiS_LCDACRT1DataStruct *)SiS310_LCDACRT11280x1024_1;
@@ -612,7 +613,7 @@ InitTo310Pointer(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
    SiS_Pr->SiS_CHTVVCLKOPALM = SiS310_CHTVVCLKOPALM;
    SiS_Pr->SiS_CHTVVCLKUPALN = SiS310_CHTVVCLKUPALN;
    SiS_Pr->SiS_CHTVVCLKOPALN = SiS310_CHTVVCLKOPALN;   
-   SiS_Pr->SiS_CHTVVCLKSOPAL = SiS310_CHTVVCLKSOPAL;
+   SiS_Pr->SiS_CHTVVCLKSOPAL = SiS310_CHTVVCLKOPAL;
 
    SiS_Pr->SiS_Panel320x480   = Panel_320x480;
    SiS_Pr->SiS_Panel640x480   = Panel_640x480;
@@ -1838,7 +1839,7 @@ SiS_SetCRT1CRTC(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex,
      }
   }
 
-  if((SiS_Pr->SiS_IF_DEF_LVDS == 0) && (SiS_Pr->SiS_VBInfo & SetCRT2ToLCDA)) {
+  if((SiS_Pr->SiS_VBType & VB_SISVB) && (SiS_Pr->SiS_VBInfo & SetCRT2ToLCDA)) {
 
 #ifdef SIS315H
 
@@ -3808,7 +3809,7 @@ SiS_GetPanelID(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
      tempbx = (tempbx & 0xff00) >> 8;
      temp = tempbx & 0xc1;
      SiS_SetRegANDOR(SiS_Pr->SiS_P3d4,0x37,~(LCDSyncBit|LCDRGB18Bit),temp);
-     if(SiS_Pr->SiS_IF_DEF_LVDS == 0) {
+     if(SiS_Pr->SiS_VBType & VB_SISVB) {
         temp = tempbx & 0x04;
         SiS_SetRegANDOR(SiS_Pr->SiS_P3d4,0x39,0xfb,temp);
      }

@@ -256,6 +256,7 @@
 #define SiSHiVision2            0x20   /* ? - |  --- mask 0x38 combinations have different meaning! */
 #define EnablePALM              0x40   /* 1 = Set PALM */
 #define EnablePALN              0x80   /* 1 = Set PALN */
+#define EnableNTSCJ             EnablePALM  /* Not BIOS */
 
 /* CR38 (315 series)
   D[7:5]  000 No VB
