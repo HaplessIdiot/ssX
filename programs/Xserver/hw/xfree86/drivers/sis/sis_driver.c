@@ -1029,7 +1029,7 @@ SiSSetSyncRangeFromEdid(ScrnInfoPtr pScrn, int flag)
  * (Code base from mga driver)
  */
 static int
-SiSStrToRanges(range *r, char *s)
+SiSStrToRanges(range *r, char *s, int max)
 {
    float num = 0.0;
    int rangenum = 0;
@@ -1037,42 +1037,44 @@ SiSStrToRanges(range *r, char *s)
    Bool nextdash = FALSE;
    char* strnum = NULL;
    do {
-     switch(*s) {
-     case '0':
-     case '1':
-     case '2':
-     case '3':
-     case '4':
-     case '5':
-     case '6':
-     case '7':
-     case '8':
-     case '9':
-     case '.':
-        if(strnum == NULL) {
-           strnum = s;
-           gotdash = nextdash;
-           nextdash = FALSE;
-        }
-        break;
-     case '-':
-     case ' ':
-     case 0:
-        if(strnum == NULL) break;
-        if(strnum != NULL) sscanf(strnum,"%f",&num);
-        if(gotdash) {
-           r[rangenum - 1].hi = num;
-        } else {
-           r[rangenum].lo = num;
-           r[rangenum].hi = num;
-           rangenum++;
-        }
-        strnum = NULL;
-        if(*s == '-') nextdash = (rangenum != 0);
-        break;
-     default :
-        return 0;
-     }
+      switch(*s) {
+      case '0':
+      case '1':
+      case '2':
+      case '3':
+      case '4':
+      case '5':
+      case '6':
+      case '7':
+      case '8':
+      case '9':
+      case '.':
+         if(strnum == NULL) {
+            strnum = s;
+            gotdash = nextdash;
+            nextdash = FALSE;
+         }
+         break;
+      case '-':
+      case ' ':
+      case 0:
+         if(strnum == NULL) break;
+         sscanf(strnum, "%f", &num);
+	 strnum = NULL;
+         if(gotdash) {
+            r[rangenum - 1].hi = num;
+         } else {
+            r[rangenum].lo = num;
+            r[rangenum].hi = num;
+            rangenum++;
+         }
+         if(*s == '-') nextdash = (rangenum != 0);
+	 else if(rangenum >= max) return rangenum;
+         break;
+      default:
+         return 0;
+      }
+
    } while(*(s++) != 0);
 
    return rangenum;
@@ -1095,9 +1097,12 @@ SiSCopyModeNLink(ScrnInfoPtr pScrn, DisplayModePtr dest,
     DisplayModePtr mode;
     int dx = 0,dy = 0;
 
-    mode = xalloc(sizeof(DisplayModeRec));
+    if(!((mode = xalloc(sizeof(DisplayModeRec))))) return dest;
     memcpy(mode, i, sizeof(DisplayModeRec));
-    mode->Private = xalloc(sizeof(SiSMergedDisplayModeRec));
+    if(!((mode->Private = xalloc(sizeof(SiSMergedDisplayModeRec))))) {
+       xfree(mode);
+       return dest;
+    }
     ((SiSMergedDisplayModePtr)mode->Private)->CRT1 = i;
     ((SiSMergedDisplayModePtr)mode->Private)->CRT2 = j;
     ((SiSMergedDisplayModePtr)mode->Private)->CRT2Position = srel;
@@ -1112,15 +1117,12 @@ SiSCopyModeNLink(ScrnInfoPtr pScrn, DisplayModePtr dest,
           dx = min(pScrn->virtualX, i->HDisplay + j->HDisplay);
        }
        dx -= mode->HDisplay;
-       if((!pScrn->display->virtualY)) {
+       if(!(pScrn->display->virtualY)) {
           dy = max(i->VDisplay, j->VDisplay);
        } else {
           dy = min(pScrn->virtualY, max(i->VDisplay, j->VDisplay));
        }
        dy -= mode->VDisplay;
-#ifdef SISXINERAMA
-       pSiS->AtLeastOneNonClone = TRUE;
-#endif
        break;
     case sisAbove:
     case sisBelow:
@@ -1136,9 +1138,6 @@ SiSCopyModeNLink(ScrnInfoPtr pScrn, DisplayModePtr dest,
           dx = min(pScrn->virtualX, max(i->HDisplay, j->HDisplay));
        }
        dx -= mode->HDisplay;
-#ifdef SISXINERAMA
-       pSiS->AtLeastOneNonClone = TRUE;
-#endif
        break;
     case sisClone:
        if(!(pScrn->display->virtualX)) {
@@ -1178,10 +1177,16 @@ SiSCopyModeNLink(ScrnInfoPtr pScrn, DisplayModePtr dest,
        return dest;
     }
 
+#ifdef SISXINERAMA
+    if(srel != sisClone) {
+       pSiS->AtLeastOneNonClone = TRUE;
+    }
+#endif
+
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-    	"Merged %dx%d and %dx%d to %dx%d\n",
+    	"Merged %dx%d and %dx%d to %dx%d%s\n",
 	i->HDisplay, i->VDisplay, j->HDisplay, j->VDisplay,
-	mode->HDisplay, mode->VDisplay);
+	mode->HDisplay, mode->VDisplay, (srel == sisClone) ? " (Clone)" : "");
 
     mode->next = mode;
     mode->prev = mode;
@@ -1255,17 +1260,11 @@ SiSGenerateModeListFromLargestModes(ScrnInfoPtr pScrn,
     case sisRightOf:
        mode1 = SiSFindWidestTallestMode(i, FALSE);
        mode2 = SiSFindWidestTallestMode(j, FALSE);
-#ifdef SISXINERAMA
-       pSiS->AtLeastOneNonClone = TRUE;
-#endif
        break;
     case sisAbove:
     case sisBelow:
        mode1 = SiSFindWidestTallestMode(i, TRUE);
        mode2 = SiSFindWidestTallestMode(j, TRUE);
-#ifdef SISXINERAMA
-       pSiS->AtLeastOneNonClone = TRUE;
-#endif
        break;
     case sisClone:
        mode1 = i;
@@ -1399,7 +1398,7 @@ SiSRecalcDefaultVirtualSize(ScrnInfoPtr pScrn)
 {
     DisplayModePtr mode, bmode;
     int max;
-    static const char *str = "MergedFB: Default virtual %s %d\n";
+    static const char *str = "MergedFB: Virtual %s %d\n";
 
     if(!(pScrn->display->virtualX)) {
        mode = bmode = pScrn->modes;
@@ -1410,7 +1409,7 @@ SiSRecalcDefaultVirtualSize(ScrnInfoPtr pScrn)
        } while(mode != bmode);
        pScrn->virtualX = max;
        pScrn->displayWidth = max;
-       xf86DrvMsg(pScrn->scrnIndex, X_INFO, str, "width", max);
+       xf86DrvMsg(pScrn->scrnIndex, X_PROBED, str, "width", max);
     }
     if(!(pScrn->display->virtualY)) {
        mode = bmode = pScrn->modes;
@@ -1420,7 +1419,7 @@ SiSRecalcDefaultVirtualSize(ScrnInfoPtr pScrn)
           mode = mode->next;
        } while(mode != bmode);
        pScrn->virtualY = max;
-       xf86DrvMsg(pScrn->scrnIndex, X_INFO, str, "height", max);
+       xf86DrvMsg(pScrn->scrnIndex, X_PROBED, str, "height", max);
     }
 }
 
@@ -1463,7 +1462,6 @@ SiSMergedFBSetDpi(ScrnInfoPtr pScrn1, ScrnInfoPtr pScrn2, SiSScrn2Rel srel)
       default:
 	 break;
       }
-
    } else if(DDC1 && (DDC1->features.hsize > 0 && DDC1->features.vsize > 0)) {
       ddcWidthmm = DDC1->features.hsize * 10;
       ddcHeightmm = DDC1->features.vsize * 10;
@@ -1570,11 +1568,7 @@ SiSUpdateXineramaScreenInfo(ScrnInfoPtr pScrn1)
 
     if(SiSnoPanoramiXExtension) return;
 
-    if(!SiSXineramadataPtr) {
-       SISErrorLog(pScrn1,
-          "Internal error: SiSUpdateXineramaScreenInfo(): SiSXineramadataPtr is NULL\n");
-       return;
-    }
+    if(!SiSXineramadataPtr) return;
 
     if(pSiS->CRT2IsScrn0) {
        crt1scrnnum = 1;
@@ -1590,11 +1584,7 @@ SiSUpdateXineramaScreenInfo(ScrnInfoPtr pScrn1)
 
     if((pSiS->SiSXineramaVX != pScrn1->virtualX) || (pSiS->SiSXineramaVY != pScrn1->virtualY)) {
 
-       if(!(pScrn1->modes)) {
-          SISErrorLog(pScrn1,
-       	     "Internal error: SiSUpdateXineramaScreenInfo(): pScrn->modes is NULL\n");
-	  return;
-       }
+       if(!(pScrn1->modes)) return;
 
        pSiS->maxCRT1_X1 = pSiS->maxCRT1_X2 = 0;
        pSiS->maxCRT1_Y1 = pSiS->maxCRT1_Y2 = 0;
@@ -1713,12 +1703,10 @@ SiSUpdateXineramaScreenInfo(ScrnInfoPtr pScrn1)
        if(y2 < 0) y2 = 0;
        w2 = pScrn1->virtualX;
        h2 = pScrn1->virtualY - y2;
-       break;
     default:
-       SISErrorLog(pScrn1,
-       	  "Internal error: UpdateXineramaInfo(): unsupported CRT2Position (%d)\n",
-	  pSiS->CRT2Position);
+       break;
     }
+
     SiSXineramadataPtr[crt1scrnnum].x = x1;
     SiSXineramadataPtr[crt1scrnnum].y = y1;
     SiSXineramadataPtr[crt1scrnnum].width = w1;
@@ -2273,8 +2261,10 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     static const char *nointerlacestr = "Not using mode \"%s\" (interlace not supported on CRT2)\n";
     static const char *ddcsstr = "CRT%d DDC monitor info: ************************************\n";
     static const char *ddcestr = "End of CRT%d DDC monitor info ******************************\n";
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,14,0)
     static const char *subshstr = "Substituting missing CRT%d monitor HSync data by DDC data\n";
     static const char *subsvstr = "Substituting missing CRT%d monitor VRefresh data by DDC data\n";
+#endif
 #ifdef SISMERGED
     static const char *mergeddisstr = "MergedFB mode disabled";
     static const char *modesforstr = "Modes for CRT%d: *********************************************\n";
@@ -4478,11 +4468,11 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	  }
           if(pSiS->CRT2HSync) {
              pSiS->CRT2pScrn->monitor->nHsync =
-	    	SiSStrToRanges(pSiS->CRT2pScrn->monitor->hsync, pSiS->CRT2HSync);
+	    	SiSStrToRanges(pSiS->CRT2pScrn->monitor->hsync, pSiS->CRT2HSync, MAX_HSYNC);
           }
           if(pSiS->CRT2VRefresh) {
              pSiS->CRT2pScrn->monitor->nVrefresh =
-	    	SiSStrToRanges(pSiS->CRT2pScrn->monitor->vrefresh, pSiS->CRT2VRefresh);
+	    	SiSStrToRanges(pSiS->CRT2pScrn->monitor->vrefresh, pSiS->CRT2VRefresh, MAX_VREFRESH);
           }
 	  if((pMonitor = SiSInternalDDC(pSiS->CRT2pScrn, 1))) {
 	     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, ddcsstr, 2);
@@ -4695,12 +4685,12 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
              SiS6326PAL800x600Mode.next = pScrn->monitor->Modes;
              pScrn->monitor->Modes = &SiS6326PAL640x480Mode;
 	     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	     	"\"PAL800x600\" \"PAL800x600U\" \"PAL720x540\" \"PAL640x480\"\n");
+	     	"\t\"PAL800x600\" \"PAL800x600U\" \"PAL720x540\" \"PAL640x480\"\n");
 	  } else {
 	     SiS6326NTSC640x480Mode.next = pScrn->monitor->Modes;
              pScrn->monitor->Modes = &SiS6326NTSC640x400Mode;
 	     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	     	"\"NTSC640x480\" \"NTSC640x480U\" \"NTSC640x400\"\n");
+	     	"\t\"NTSC640x480\" \"NTSC640x480U\" \"NTSC640x400\"\n");
 	  }
        }
     }
@@ -5055,7 +5045,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	*/
        SiSRecalcDefaultVirtualSize(pScrn);
 
-       pScrn->modes = pScrn->modes->next;  /* We get the last from GenerateModeList() */
+       pScrn->modes = pScrn->modes->next;  /* We get the last from GenerateModeList(), skip to first */
        pScrn->currentMode = pScrn->modes;
 
        /* Update CurrentLayout */
@@ -5140,7 +5130,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
           xf86LoaderReqSymLists(driSymbols, drmSymbols, NULL);
        } else {
           xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-	  	"Remove >Load \"dri\"< from the Module section of your config file\n");
+	  	"Remove >Load \"dri\"< from the Module section of your XF86Config file\n");
        }
     }
 #endif    
@@ -6389,7 +6379,7 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if(pSiS->Primary) {
        hwp->MapSize = 0x10000;  /* Standard 64k VGA window */
        if(!vgaHWMapMem(pScrn)) {
-          SISErrorLog(pScrn, "Could not map VGA window\n");
+          SISErrorLog(pScrn, "Could not map VGA memory window\n");
           return FALSE;
        }
     }
@@ -10780,7 +10770,7 @@ SiSBuildVesaModeList(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe)
 	m->next = pSiS->SISVESAModeList;
 
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	      "BIOS reported VESA mode 0x%x: x:%i y:%i bpp:%i\n",
+	      "BIOS supports VESA mode 0x%x: x:%i y:%i bpp:%i\n",
 	       m->n, m->width, m->height, m->bpp);
 
 	pSiS->SISVESAModeList = m;
@@ -11746,7 +11736,7 @@ SiS_GetSetBIOSScratch(ScrnInfoPtr pScrn, USHORT offset, unsigned char value)
 
     /* value != 0xff means: set register */
     if(value != 0xff)
-	*(base + offset) = value;
+       *(base + offset) = value;
 
     xf86UnMapVidMem(pScrn->scrnIndex, base, 0x2000);
 
@@ -11776,8 +11766,8 @@ sisSaveUnlockExtRegisterLock(SISPtr pSiS, unsigned char *reg1, unsigned char *re
 	  int i;
 #endif
           SISErrorLog(pSiS->pScrn,
-               "Failed to unlock sr registers (%p, %x, 0x%02x; %ld)\n",
-	       (void *)pSiS, pSiS->RelIO, val, mylockcalls);
+               "Failed to unlock sr registers (%p, %lx, 0x%02x; %ld)\n",
+	       (void *)pSiS, (unsigned long)pSiS->RelIO, val, mylockcalls);
 #ifdef TWDEBUG
           for(i = 0; i <= 0x3f; i++) {
 	  	inSISIDXREG(SISSR, i, val1);
@@ -11804,8 +11794,8 @@ sisSaveUnlockExtRegisterLock(SISPtr pSiS, unsigned char *reg1, unsigned char *re
 	  inSISIDXREG(SISCR, 0x80, val);
 	  if(val != 0xA1) {
 	     SISErrorLog(pSiS->pScrn,
-	        "Failed to unlock cr registers (%p, %x, 0x%02x)\n",
-	       (void *)pSiS, pSiS->RelIO, val);
+	        "Failed to unlock cr registers (%p, %lx, 0x%02x)\n",
+	       (void *)pSiS, (unsigned long)pSiS->RelIO, val);
 	  }
        }
     }
