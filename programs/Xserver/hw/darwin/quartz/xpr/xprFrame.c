@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/xprFrame.c,v 1.1 2003/04/30 23:15:42 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/xprFrame.c,v 1.2 2003/06/30 01:45:13 torrey Exp $ */
 
 #include "xpr.h"
 #include "rootless.h"
@@ -369,6 +369,7 @@ static RootlessFrameProcsRec xprRootlessProcs = {
     xprSwitchWindow,
     xp_copy_bytes,
     xp_fill_bytes,
+    xp_composite_pixels,
     xprCopyWindow
 };
 
@@ -383,6 +384,7 @@ xprInit(ScreenPtr pScreen)
 
     rootless_CopyBytes_threshold = xp_copy_bytes_threshold;
     rootless_FillBytes_threshold = xp_fill_bytes_threshold;
+    rootless_CompositePixels_threshold = xp_composite_area_threshold;
     rootless_CopyWindow_threshold = xp_scroll_area_threshold;
 
     no_configure_window = FALSE;

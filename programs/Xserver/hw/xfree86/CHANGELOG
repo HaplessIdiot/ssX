@@ -1,4 +1,6 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 506. Add optimized code for RENDER with rootless XDarwin (John Harper,
+      Torrey T. Lyons).
  505. Declare LoadPalette, SetOverscan and DPMSSet as public functions through
       the XFree86's ScrnInfoRec, so these functions can be wrapped.
       (Alan Hourihane).
@@ -17956,7 +17958,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2886 2003/10/16 23:50:01 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2887 2003/10/17 20:02:09 alanh Exp $
 
 
 
