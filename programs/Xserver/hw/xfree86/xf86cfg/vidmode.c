@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/vidmode.c,v 1.3 2000/10/20 14:59:08 alanh Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/vidmode.c,v 1.4 2000/11/14 21:59:24 dawes Exp $
  */
 
 /*
@@ -118,7 +118,8 @@ static void AddModeCallback(Widget, XtPointer, XtPointer);
 static void TestCallback(Widget, XtPointer, XtPointer);
 static void TestTimeout(XtPointer, XtIntervalId*);
 static void StopTestCallback(Widget, XtPointer, XtPointer);
-
+static int ForceAddMode(void);
+static int AddMode(void);
 /*
  * Initialization
  */
@@ -133,7 +134,7 @@ static Bool S3Specials;
 static int invert_vclk, blank1, blank2, early_sc, screenno;
 static int (*XtErrorFunc)(Display*, XErrorEvent*);
 static Widget labels[VSYNC + 1], values[VSYNC + 1], repeater, monitor,
-	      monitorb, add, text, vesab, vesap, forceshell, testshell;
+	      monitorb, add, text, vesab, vesap, forceshell, testshell, addshell;
 static int MajorVersion, MinorVersion, EventBase, ErrorBase;
 static XtIntervalId timeout;
 
@@ -1056,6 +1057,7 @@ AddVesaModeCallback(Widget w, XtPointer call_data, XtPointer client_data)
 {
     xf86cfgVesaModeInfo *vesa = (xf86cfgVesaModeInfo*)call_data;
     XF86VidModeModeInfo mode;
+    int num_infos = vidtune->num_infos;
 
     memcpy(&mode, &vesa->info, sizeof(XF86VidModeModeInfo));
     if (XF86VidModeAddModeLine(XtDisplay(toplevel), vidtune->screen,
@@ -1063,8 +1065,54 @@ AddVesaModeCallback(Widget w, XtPointer call_data, XtPointer client_data)
 	XSync(XtDisplay(toplevel), False);
 	GetModes();
     }
-    else
-	XBell(XtDisplay(w), 80);
+    else {
+	XBell(XtDisplayOfObject(w), 80);
+	return;
+    }
+
+    if (vidtune && num_infos == vidtune->num_infos) {
+	/* XF86VidModeAddModeLine returned True, but no modeline was added */
+	XBell(XtDisplayOfObject(w), 80);
+	if (vidtune->monitor && AddMode()) {
+	    XF86ConfModeLinePtr mode;
+	    char label[256], *ptr, *str;
+
+	    XmuSnprintf(label, sizeof(label), "%s", vesa->ident);
+
+	    /* format mode name to not have spaces */
+	    ptr = strchr(label, ')');
+	    if (ptr)
+		*++ptr = '\0';
+	    ptr = str = label;
+	    while (*ptr) {
+		if (*ptr != ' ')
+		    *str++ = *ptr;
+		++ptr;
+	    }
+	    *str = '\0';
+
+	    if (xf86findModeLine(label, vidtune->monitor->mon_modeline_lst)
+		!= NULL && !ForceAddMode())
+		return;
+
+	    mode = (XF86ConfModeLinePtr)XtCalloc(1, sizeof(XF86ConfModeLineRec));
+	    mode->ml_identifier = XtNewString(label);
+	    mode->ml_clock = vesa->info.dotclock;
+	    mode->ml_hdisplay = vesa->info.hdisplay;
+	    mode->ml_hsyncstart = vesa->info.hsyncstart;
+	    mode->ml_hsyncend = vesa->info.hsyncend;
+	    mode->ml_htotal = vesa->info.htotal;
+	    mode->ml_vdisplay = vesa->info.vdisplay;
+	    mode->ml_vsyncstart = vesa->info.vsyncstart;
+	    mode->ml_vsyncend = vesa->info.vsyncend;
+	    mode->ml_vtotal = vesa->info.vtotal;
+/*	    mode->ml_vscan = ???;*/
+	    mode->ml_flags = vesa->info.flags;
+	    mode->ml_hskew = vesa->info.hskew;
+	    vidtune->monitor->mon_modeline_lst =
+		xf86addModeLine(vidtune->monitor->mon_modeline_lst, mode);
+	}
+    }
 }
 
 static void
@@ -1118,13 +1166,6 @@ PopdownForce(Widget w, XtPointer user_data, XtPointer call_data)
     do_force = (long)user_data;
 }
 
-void
-CancelForceAddModeAction(Widget w, XEvent *event,
-			 String *params, Cardinal *num_params)
-{
-    PopdownForce(w, (XtPointer)False, NULL);
-}
-
 static int
 ForceAddMode(void)
 {
@@ -1148,6 +1189,51 @@ ForceAddMode(void)
 	XtAppProcessEvent(XtWidgetToApplicationContext(forceshell), XtIMAll);
 
     return (do_force);
+}
+
+static int do_add, asking_add;
+
+static void
+PopdownAdd(Widget w, XtPointer user_data, XtPointer call_data)
+{
+    asking_add = 0;
+    XtPopdown(addshell);
+    do_add = (long)user_data;
+}
+
+void
+CancelAddModeAction(Widget w, XEvent *event,
+		       String *params, Cardinal *num_params)
+{
+    if (asking_force)
+	PopdownForce(w, (XtPointer)False, NULL);
+    else if (asking_add)
+	PopdownAdd(w, (XtPointer)False, NULL);
+}
+
+static int
+AddMode(void)
+{
+    if (addshell == NULL) {
+	Widget dialog;
+
+	addshell = XtCreatePopupShell("addMode", transientShellWidgetClass,
+				      toplevel, NULL, 0);
+	dialog = XtVaCreateManagedWidget("dialog", dialogWidgetClass,
+					 addshell, XtNvalue, NULL, NULL, 0);
+	XawDialogAddButton(dialog, "yes", PopdownAdd, (XtPointer)True);
+	XawDialogAddButton(dialog, "no", PopdownAdd, (XtPointer)False);
+	XtRealizeWidget(addshell);
+	XSetWMProtocols(DPY, XtWindow(addshell), &wm_delete_window, 1);
+    }
+
+    asking_add = 1;
+
+    XtPopup(addshell, XtGrabExclusive);
+    while (asking_add)
+	XtAppProcessEvent(XtWidgetToApplicationContext(addshell), XtIMAll);
+
+    return (do_add);
 }
 
 /*ARGSUSED*/
