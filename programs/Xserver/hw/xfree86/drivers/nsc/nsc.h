@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc.h,v 1.1 2002/12/10 15:12:23 alanh Exp $ */
 /*
  * $Workfile: nsc.h $
  * $Revision$
@@ -142,6 +142,9 @@
 #ifndef _NSC_GEODE_H_
 #define _NSC_GEODE_H_
 
+#undef READ
+#undef WRITE
+
 #include "xaa.h"
 #include "xf86Cursor.h"
 #if !defined(STB_X)
@@ -196,7 +199,7 @@ extern unsigned char DCount;
 
 #if defined(STB_X)
 extern void gfx_outb(unsigned short port, unsigned char data);
-extern void gfx_inb(unsigned short port, unsigned char data);
+extern unsigned char gfx_inb(unsigned short port);
 #endif
 #endif
 
@@ -210,7 +213,12 @@ extern int gfx_read_reg32(int offset);
 extern short gfx_read_reg16(int offset);
 extern void gfx_write_vid32(int offset, int data);
 extern int gfx_read_vid32(int offset);
+extern unsigned char gfx_inb(unsigned short port);
+extern void gfx_outb(unsigned short port, unsigned char data);
+extern unsigned short gfx_inw(unsigned short port);
 extern void gfx_outw(unsigned short port, unsigned short data);
+extern long gfx_ind(unsigned short port);
+extern void gfx_outd(unsigned short port, unsigned long data);
 
 #include "gfx_rtns.h"
 #include "gfx_defs.h"

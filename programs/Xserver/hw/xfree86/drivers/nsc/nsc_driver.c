@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_driver.c,v 1.1 2002/12/10 15:12:23 alanh Exp $ */
 /*
  * $Workfile: nsc_driver.c $
  * $Revision$
@@ -324,7 +324,7 @@ OptionInfoRec GeodeOptions[] = {
 /* List of symbols from other modules that this module references.The purpose
 * is that to avoid unresolved symbol warnings
 */
-const char *vgahwSymbols[] = {
+const char *nscVgahwSymbols[] = {
    "vgaHWGetHWRec",
    "vgaHWUnlock",
    "vgaHWInit",
@@ -339,14 +339,14 @@ const char *vgahwSymbols[] = {
    NULL
 };
 
-const char *vbeSymbols[] = {
+const char *nscVbeSymbols[] = {
    "VBEInit",
    "vbeDoEDID",
    "vbeFree",
    NULL
 };
 
-const char *int10Symbols[] = {
+const char *nscInt10Symbols[] = {
    "xf86ExecX86int10",
    "xf86InitInt10",
    "xf86Int10AllocPages",
@@ -355,7 +355,7 @@ const char *int10Symbols[] = {
 };
 
 #if CFB
-const char *cfbSymbols[] = {
+const char *nscCfbSymbols[] = {
    "cfbScreenInit",
    "cfb16ScreenInit",
    "cfb24ScreenInit",
@@ -363,14 +363,14 @@ const char *cfbSymbols[] = {
    NULL
 };
 #else
-const char *fbSymbols[] = {
+const char *nscFbSymbols[] = {
    "fbScreenInit",
    "fbPictureInit",
    NULL
 };
 #endif
 
-const char *xaaSymbols[] = {
+const char *nscXaaSymbols[] = {
    "XAADestroyInfoRec",
    "XAACreateInfoRec",
    "XAAInit",
@@ -378,14 +378,14 @@ const char *xaaSymbols[] = {
    NULL
 };
 
-const char *ramdacSymbols[] = {
+const char *nscRamdacSymbols[] = {
    "xf86InitCursor",
    "xf86CreateCursorInfoRec",
    "xf86DestroyCursorInfoRec",
    NULL
 };
 
-const char *shadowSymbols[] = {
+const char *nscShadowSymbols[] = {
    "ShadowFBInit",
    NULL
 };
@@ -444,14 +444,14 @@ NscSetup(pointer Module, pointer Options, int *ErrorMajor, int *ErrorMinor)
       /* Tell the loader about symbols from other modules that this
        * module might refer to.
        */
-      LoaderRefSymLists(vgahwSymbols, vbeSymbols,
+      LoaderRefSymLists(nscVgahwSymbols, nscVbeSymbols,
 #if CFB
-			cfbSymbols,
+			nscCfbSymbols,
 #else
-			fbSymbols,
+			nscFbSymbols,
 #endif
-			xaaSymbols,
-			int10Symbols, ramdacSymbols, shadowSymbols, NULL);
+			nscXaaSymbols,
+			nscInt10Symbols, nscRamdacSymbols, nscShadowSymbols, NULL);
       return (pointer) TRUE;
    }
    /*The return value must be non-NULL on success */

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_driver.c,v 1.1 2002/12/10 15:12:23 alanh Exp $ */
 /*
  * $Workfile: nsc_gx1_driver.c $
  * $Revision$
@@ -306,18 +306,18 @@ extern unsigned char *XpressROMPtr;
 /* List of symbols from other modules that this module references.The purpose
 * is that to avoid unresolved symbol warnings
 */
-extern const char *vgahwSymbols[];
-extern const char *vbeSymbols[];
-extern const char *int10Symbols[];
+extern const char *nscVgahwSymbols[];
+extern const char *nscVbeSymbols[];
+extern const char *nscInt10Symbols[];
 
 #if CFB
-extern const char *cfbSymbols[];
+extern const char *nscCfbSymbols[];
 #else
-extern const char *fbSymbols[];
+extern const char *nscFbSymbols[];
 #endif
-extern const char *xaaSymbols[];
-extern const char *ramdacSymbols[];
-extern const char *shadowSymbols[];
+extern const char *nscXaaSymbols[];
+extern const char *nscRamdacSymbols[];
+extern const char *nscShadowSymbols[];
 
 void
 GX1SetupChipsetFPtr(ScrnInfoPtr pScrn)
@@ -517,7 +517,7 @@ GX1PreInit(ScrnInfoPtr pScreenInfo, int flags)
       return FALSE;
    }
 
-   xf86LoaderReqSymLists(vgahwSymbols, NULL);
+   xf86LoaderReqSymLists(nscVgahwSymbols, NULL);
 #endif /* STB_X */
    GeodeDebug(("GX1PreInit(1)!\n"));
 
@@ -1036,7 +1036,7 @@ GX1PreInit(ScrnInfoPtr pScreenInfo, int flags)
       return FALSE;
    }
 
-   xf86LoaderReqSymLists(fbSymbols, NULL);
+   xf86LoaderReqSymLists(nscFbSymbols, NULL);
 #endif
    GeodeDebug(("GX1PreInit(15)!\n"));
    if (pGeode->NoAccel == FALSE) {
@@ -1044,7 +1044,7 @@ GX1PreInit(ScrnInfoPtr pScreenInfo, int flags)
 	 GX1FreeRec(pScreenInfo);
 	 return FALSE;
       }
-      xf86LoaderReqSymLists(xaaSymbols, NULL);
+      xf86LoaderReqSymLists(nscXaaSymbols, NULL);
    }
    GeodeDebug(("GX1PreInit(16)!\n"));
    if (pGeode->HWCursor == TRUE) {
@@ -1052,7 +1052,7 @@ GX1PreInit(ScrnInfoPtr pScreenInfo, int flags)
 	 GX1FreeRec(pScreenInfo);
 	 return FALSE;
       }
-      xf86LoaderReqSymLists(ramdacSymbols, NULL);
+      xf86LoaderReqSymLists(nscRamdacSymbols, NULL);
    }
    GeodeDebug(("GX1PreInit(17)!\n"));
    /* Load shadowfb if needed */
@@ -1061,7 +1061,7 @@ GX1PreInit(ScrnInfoPtr pScreenInfo, int flags)
 	 GX1FreeRec(pScreenInfo);
 	 return FALSE;
       }
-      xf86LoaderReqSymLists(shadowSymbols, NULL);
+      xf86LoaderReqSymLists(nscShadowSymbols, NULL);
    }
    GeodeDebug(("GX2PreInit(18)!\n"));
    if (xf86RegisterResources(pGeode->pEnt->index, NULL, ResExclusive)) {

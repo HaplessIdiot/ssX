@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/panel/pnl_bios.c,v 1.1 2002/12/10 15:12:28 alanh Exp $ */
 /*
  * $Workfile: pnl_bios.c $
  * $Revision$
@@ -140,10 +140,6 @@
  * END_NSC_LIC_GPL */
 
 #include "panel.h"
-
-extern unsigned long gfx_cpu_version;
-extern void gfx_outw(unsigned short port, unsigned short data);
-extern unsigned short gfx_inw(unsigned short port);
 
 #define SOFTVGA_DISPLAY_ENABLE   0x50
 #define SOFTVGA_FPRESOLUTION     0x52

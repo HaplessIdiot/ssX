@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/panel/gx2_9211.c,v 1.1 2002/12/10 15:12:28 alanh Exp $ */
 /*
  * $Workfile: gx2_9211.c $
  *
@@ -132,14 +132,13 @@
 #include "92xx.h"
 #include "gx2_9211.h"
 #include "pnl_defs.h"
-#include "gfx_defs.h"
+
+#undef READ
+#define READ 0
+#undef WRITE
+#define WRITE 1
 
 static unsigned long FPBaseAddr;
-
-extern DEV_STATUS gfx_msr_read(unsigned int device, unsigned int msrRegister,
-			       Q_WORD * msrValue);
-extern DEV_STATUS gfx_msr_write(unsigned int device, unsigned int msrRegister,
-				Q_WORD * msrValue);
 
 void
 SetFPBaseAddr(unsigned long addr)
@@ -165,7 +164,7 @@ SetFPBaseAddr(unsigned long addr)
  * pdata is: A pointer to the data to be read or written into.
  * NOTE! WORD or DWORD accesses can only be made on WORD or DWORD boundaries!
  ****************************************************************************/
-void
+static void
 protected_mode_access(unsigned long mode,
 		      unsigned long width,
 		      unsigned long addr, char *pdata)
@@ -215,7 +214,7 @@ protected_mode_access(unsigned long mode,
  * This function uses Sys_info.video_reg_base as the base address, so
  * the value of offset should be with respect to this base.
  *************************************************************************/
-void
+static void
 write_video_reg64_low(unsigned long offset, unsigned long value)
 {
    protected_mode_access(WRITE, FOUR_BYTES,
@@ -229,7 +228,7 @@ write_video_reg64_low(unsigned long offset, unsigned long value)
  * This function uses Sys_info.video_reg_base as the base address, so
  * the value of offset should be with respect to this base.
  *************************************************************************/
-unsigned long
+static unsigned long
 read_video_reg64_low(unsigned long offset)
 {
    unsigned long data;
@@ -376,3 +375,6 @@ Redcloud_9211init(Pnl_PanelStat * pstat)
    set_Redcloud_92xx_mode(pstat);
 
 }
+
+#undef READ
+#undef WRITE

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/panel/platform.c,v 1.1 2002/12/10 15:12:28 alanh Exp $ */
 /*
  * $Workfile: platform.c $
  * $Revision$
@@ -302,12 +302,9 @@ FindStringInSeg(unsigned int segment_address, char *string_ptr)
    (void)mem_ptr;
    (void)segment_buffer;
 
-#if defined(linux)
-#if defined(__KERNEL__)
+#if defined(linux) && !defined(XFree86Server)
+#ifdef __KERNEL__
    XpressROMPtr = (unsigned char *)ioremap(mem_ptr, SEGMENT_LENGTH + 1);
-   psegment_buf = (char *)XpressROMPtr;
-#else
-#if defined(XFree86Server) && defined(IN_MODULE)
    psegment_buf = (char *)XpressROMPtr;
 #else
    /* Fill the segment_buffer with 16 page accesses */
@@ -318,12 +315,13 @@ FindStringInSeg(unsigned int segment_address, char *string_ptr)
 			    &(segment_buffer[(cursor * PAGE_LENGTH)]));
    }
    psegment_buf = segment_buffer;
-#endif /* defined(XFree86Server) && defined(IN_MODULE) */
 #endif /* __KERNEL__ */
-
+#elif defined (XFree86Server)
+   psegment_buf = (char *)XpressROMPtr;
 #elif defined(_WIN32)			/* Windows */
    psegment_buf = XpressROMPtr;
 #endif
+
    /* Now search for the first character of the string_ptr */
    for (i = 0; i < SEGMENT_LENGTH + 1; i++) {
       if (*(psegment_buf + i) == *string_ptr) {
