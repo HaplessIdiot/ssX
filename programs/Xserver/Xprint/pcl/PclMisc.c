@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclMisc.c,v 1.9 2001/08/01 00:44:45 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclMisc.c,v 1.10tsi Exp $ */
 
 #include <stdlib.h>
 #include <signal.h>
@@ -153,14 +153,14 @@ GetPropString(
 static void SigchldHndlr (
     int dummy)
 {
-    int   status, w;
+    int   status;
     int olderrno = errno;
     struct sigaction act;
     sigfillset(&act.sa_mask);
     act.sa_flags = 0;
     act.sa_handler = SigchldHndlr;
 
-    w = wait (&status);
+    (void) wait (&status);
 
     /*
      * Is this really necessary?

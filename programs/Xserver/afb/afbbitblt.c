@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbbitblt.c,v 3.3 2001/10/28 03:32:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbbitblt.c,v 3.4tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -235,7 +235,7 @@ afbBitBlt(pSrcDrawable, pDstDrawable, pGC, srcx, srcy, width, height,
 		fastExpose = 1;
 		/*
 		 * clip the source; if regions extend beyond the source size,
- 		 * make sure exposure events get sent
+		 * make sure exposure events get sent
 		 */
 		if (fastBox.x1 < pSrcDrawable->x) {
 			fastBox.x1 = pSrcDrawable->x;

@@ -73,7 +73,7 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 **
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/PsInit.c,v 1.12 2001/12/14 19:59:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsInit.c,v 1.13tsi Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -108,7 +108,9 @@ InitializePsDriver(ndx, pScreen, argc, argv)
   int         argc;
   char      **argv;
 {
+#if 0
   PsScreenPrivPtr   pPriv;
+#endif
   int               nVisuals;
   int               nDepths;
   VisualPtr         visuals;
@@ -125,8 +127,10 @@ InitializePsDriver(ndx, pScreen, argc, argv)
  */
   AllocatePsPrivates(pScreen);
 
+#if 0
   pPriv = (PsScreenPrivPtr)pScreen->devPrivates[PsScreenPrivateIndex].ptr;
-/*pPriv->resDB = rmdb;*/
+  pPriv->resDB = rmdb;
+#endif
 
   pScreen->defColormap            = (Colormap) FakeClientID(0);
   pScreen->blackPixel             = 1;

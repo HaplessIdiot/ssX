@@ -30,7 +30,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/Oid.c,v 1.4 2001/01/17 22:36:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/Oid.c,v 1.5tsi Exp $ */
 
 #include "attributes.h"
 
@@ -274,7 +274,7 @@ XpOidParse(const char* value_string,
      */
     if(ptr_return != (const char**)NULL)
 	*ptr_return = ptr+length;
-    return i;
+    return (XpOid)i;
 }
 
 /*
