@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbmodule.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbmodule.c,v 1.1.2.3 1998/06/21 15:38:29 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -26,38 +26,29 @@
  */
 
 #ifdef XFree86LOADER
-#include "xf86.h"
-#include "xf86Version.h"
+#include "xf86Module.h"
+
+MODULEINITPROTO(mfbModuleInit);
 
 static XF86ModuleVersionInfo VersRec =
 {
-        "libmfb.a",
+        "mfb",
         MODULEVENDORSTRING,
         MODINFOSTRING1,
         MODINFOSTRING2,
         XF86_VERSION_CURRENT,
         0x00010001,
+	ABI_CLASS_ANSIC,		/* Only need the ansic layer */
+	ABI_ANSIC_VERSION,
         {0,0,0,0}       /* signature, to be patched into the file by a tool */
 };
 
 void
-ModuleInit(data,magic)
-    pointer   * data;
-    INT32     * magic;
+mfbModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
+	      ModuleTearDownProc *teardown)
 {
-    static int cnt = 0;
-
-    switch(cnt++)
-    {
-        /* MAGIC_VERSION must be first in ModuleInit */
-    case 0:
-        * data = (pointer) &VersRec;
-        * magic= MAGIC_VERSION;
-        break;
-    default:
-        * magic= MAGIC_DONE;
-        break;
-    }
-    return;
+    *vers = &VersRec;
+    *setup = NULL;
+    *teardown = NULL;
 }
 #endif

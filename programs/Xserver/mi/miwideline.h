@@ -1,5 +1,4 @@
 /* $XConsortium: miwideline.h,v 1.11 94/04/17 20:28:02 dpw Exp $ */
-/* $XFree86: $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -246,32 +245,10 @@ extern void miCleanupSpanData(
 #endif
 );
 
-extern int miPolyBuildEdge (
-#if NeedFunctionPrototypes
-    double /*x0*/, 
-    double /*y0*/,
-    double /*k*/, 
-    int /*dx*/, 
-    int /*dy*/,
-    int	/*xi*/, 
-    int /*yi*/,
-    int	/*left*/,
-    PolyEdgePtr /*edge*/
-#endif
-);
-
-extern int miPolyBuildPoly (
-#if NeedFunctionPrototypes
-    PolyVertexPtr /*vertices*/,
-    PolySlopePtr  /*slopes*/,
-    int	/*count*/,
-    int	/*xi*/, 
-    int /*yi*/,
-    PolyEdgePtr	    /*left*/, 
-    PolyEdgePtr	   /*right*/,
-    int*	/*pnleft*/, 
-    int* /*pnright*/,
-    int*	/*h*/
-#endif
-);
+extern int miPolyBuildEdge(double x0, double y0, double k, int dx, int dy,
+				int xi, int yi, int left, PolyEdgePtr edge);
+extern int miPolyBuildPoly(PolyVertexPtr vertices, PolySlopePtr slopes,
+				int count, int xi, int yi, PolyEdgePtr left,
+				PolyEdgePtr right, int *pnleft, int *pnright,
+				int *h);
 

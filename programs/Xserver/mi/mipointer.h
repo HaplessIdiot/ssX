@@ -4,7 +4,7 @@
  */
 
 /* $XConsortium: mipointer.h,v 5.7 94/04/17 20:27:40 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/mi/mipointer.h,v 3.1 1996/02/18 12:02:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mipointer.h,v 3.2.6.1 1998/07/03 13:44:15 dawes Exp $ */
 
 /*
 
@@ -185,5 +185,7 @@ extern void _miRegisterPointerDevice(
     DeviceIntPtr /*pDevice*/
 #endif
 );
+
+extern int miPointerScreenIndex;
 
 #endif /* MIPOINTER_H */

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/mi/Imakefile,v 3.20 1997/11/16 10:46:17 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/mi/Imakefile,v 3.19.2.2 1998/07/19 13:22:15 dawes Exp $
 XCOMM $XConsortium: Imakefile /main/44 1996/12/02 10:22:16 lehors $
 #include <Server.tmpl>
 
@@ -21,8 +21,9 @@ SRCS =  $(CBRT_SRC) mivaltree.c mipolyseg.c mipolyrect.c \
 	miwindow.c micursor.c miregion.c \
 	mipolytext.c mibitblt.c mipolypnt.c mipushpxl.c \
 	miexpose.c miglblt.c mizerline.c mifpolycon.c \
-	midash.c mibstore.c $(MIINITEXTSRC) mieq.c \
-	mipointer.c misprite.c midispcur.c miscrinit.c miclipn.c migc.c
+	midash.c mibstore.c mibank.c $(MIINITEXTSRC) mieq.c \
+	mipointer.c misprite.c midispcur.c miscrinit.c miclipn.c migc.c \
+	micmap.c
 
 OBJS =	$(CBRT_OBJ) mivaltree.o mipolyseg.o mipolyrect.o \
 	mipoly.o mipolycon.o mipolygen.o mipolyutil.o \
@@ -31,8 +32,9 @@ OBJS =	$(CBRT_OBJ) mivaltree.o mipolyseg.o mipolyrect.o \
 	miwindow.o micursor.o miregion.o \
 	mipolytext.o mibitblt.o mipolypnt.o mipushpxl.o \
 	miexpose.o miglblt.o mizerline.o mifpolycon.o \
-	midash.o mibstore.o $(MIINITEXTOBJ) mieq.o \
-	mipointer.o misprite.o midispcur.o miscrinit.o miclipn.o migc.o
+	midash.o mibstore.o mibank.o $(MIINITEXTOBJ) mieq.o \
+	mipointer.o misprite.o midispcur.o miscrinit.o miclipn.o migc.o \
+	micmap.o
 
 #ifdef XFree86Version
 /* 
@@ -58,7 +60,7 @@ NormalLintTarget($(SRCS))
 NormalLibraryTarget(cbrt,cbrt.o)
 #endif
 
-SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(EXT_DEFINES) $(EXT_MODULE_DEFINES))
+SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(EXT_DEFINES))
 SpecialCObjectRule(miscrinit,$(ICONFIGFILES),$(EXT_DEFINES))
 
 AllTarget($(EXTRAMIINITEXTOBJ))
@@ -66,6 +68,7 @@ AllTarget($(EXTRAMIINITEXTOBJ))
 InstallLinkKitLibrary(mi,$(LINKKITDIR)/lib)
 InstallLinkKitLibrary(cbrt,$(LINKKITDIR)/lib)
 InstallLinkKitNonExecFile(mi.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(mibank.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(mibstore.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(miline.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(mipointer.h,$(LINKKITDIR)/include)
