@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.102 2001/12/17 20:00:37 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.103 2002/05/31 16:31:18 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1821,7 +1821,7 @@ install.man::								@@\
 #ifndef DependDependencyStatement
 #if HasMakefileSafeInclude
 #define DependDependencyStatement()					@@\
-DependFileName: ProgramTargetName($(DEPEND))
+DependFileName:: ProgramTargetName($(DEPEND))
 #else
 #define DependDependencyStatement()					@@\
 depend:: ProgramTargetName($(DEPEND))
