@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/modules/xt.c,v 1.1 2001/08/31 15:00:14 paulo Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
@@ -112,7 +112,7 @@ static int xtAppContext_t, xtWidget_t, xtWidgetClass_t;
 int
 xtLoadModule(LispMac *mac)
 {
-    char *fname = "internal:xt-load-module";
+    char *fname = "INTERNAL:XT-LOAD-MODULE";
 
     xtAppContext_t = LispRegisterOpaqueType(mac, "XtAppContext");
     xtWidget_t = LispRegisterOpaqueType(mac, "Widget");
@@ -137,7 +137,7 @@ _LispXtCallback(Widget w, XtPointer user_data, XtPointer call_data)
     code = CONS(QUOTE(ATOM(args->callback)), CONS(OPAQUE(w, xtWidget_t),
 		CONS(args->argument, CONS(OPAQUE(call_data, 0), NIL))));
 
-    (void)Lisp_Funcall(mac, code, "funcall");
+    (void)Lisp_Funcall(mac, code, "FUNCALL");
     GCUPRO();
 }
 
@@ -453,7 +453,7 @@ LispConvertResources(LispMac *mac, LispObj *list, Widget widget,
     XrmValue from, to;
     LispObj *arg, *val;
     ResourceInfo *resource;
-    char *fname = "xt-internal:convert-resources";
+    char *fname = "XT-INTERNAL:CONVERT-RESOURCES";
     Resources *resources = (Resources*)XtCalloc(1, sizeof(Resources));
     static ResourceInfo info;
 

@@ -29,18 +29,18 @@ struct _LispBuiltin
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/modules/x11table.gperf,v 1.1 2001/08/31 15:00:14 paulo Exp $ */
 %}
 %%
-x-open-display,Lisp_XOpenDisplay,1,0,1
-x-close-display,Lisp_XCloseDisplay,1,1,1
-x-default-root-window,Lisp_XDefaultRootWindow,1,1,1
-x-default-screen-of-display,Lisp_XDefaultScreenOfDisplay,1,1,1
-x-black-pixel-of-screen,Lisp_XBlackPixelOfScreen,1,1,1
-x-white-pixel-of-screen,Lisp_XWhitePixelOfScreen,1,1,1
-x-default-gc-of-screen,Lisp_XDefaultGCOfScreen,1,1,1
-x-create-simple-window,Lisp_XCreateSimpleWindow,1,9,9
-x-map-window,Lisp_XMapWindow,1,2,2
-x-destroy-window,Lisp_XDestroyWindow,1,2,2
-x-flush,Lisp_XFlush,1,1,1
-x-draw-line,Lisp_XDrawLine,1,7,7
+X-OPEN-DISPLAY,Lisp_XOpenDisplay,1,0,1
+X-CLOSE-DISPLAY,Lisp_XCloseDisplay,1,1,1
+X-DEFAULT-ROOT-WINDOW,Lisp_XDefaultRootWindow,1,1,1
+X-DEFAULT-SCREEN-OF-DISPLAY,Lisp_XDefaultScreenOfDisplay,1,1,1
+X-BLACK-PIXEL-OF-SCREEN,Lisp_XBlackPixelOfScreen,1,1,1
+X-WHITE-PIXEL-OF-SCREEN,Lisp_XWhitePixelOfScreen,1,1,1
+X-DEFAULT-GC-OF-SCREEN,Lisp_XDefaultGCOfScreen,1,1,1
+X-CREATE-SIMPLE-WINDOW,Lisp_XCreateSimpleWindow,1,9,9
+X-MAP-WINDOW,Lisp_XMapWindow,1,2,2
+X-DESTROY-WINDOW,Lisp_XDestroyWindow,1,2,2
+X-FLUSH,Lisp_XFlush,1,1,1
+X-DRAW-LINE,Lisp_XDrawLine,1,7,7

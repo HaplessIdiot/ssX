@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.3 2001/09/01 18:28:12 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.4 2001/09/09 23:03:47 paulo Exp $ */
 
 #include "core.h"
 #include "helper.h"
@@ -447,17 +447,17 @@ Lisp_Coerce(LispMac *mac, LispObj *list, char *fname)
     else if (to->type != LispAtom_t)
 	LispDestroy(mac, "bad argument %s, at %s", LispStrObj(mac, to), fname);
     else {
-	if (strcmp(to->data.atom, "atom") == 0)
+	if (strcmp(to->data.atom, "ATOM") == 0)
 	    type = LispAtom_t;
-	else if (strcmp(to->data.atom, "real") == 0)
+	else if (strcmp(to->data.atom, "REAL") == 0)
 	    type = LispReal_t;
-	else if (strcmp(to->data.atom, "cons") == 0)
+	else if (strcmp(to->data.atom, "CONS") == 0)
 	    type = LispCons_t;
-	else if (strcmp(to->data.atom, "string") == 0)
+	else if (strcmp(to->data.atom, "STRING") == 0)
 	    type = LispString_t;
-	else if (strcmp(to->data.atom, "symbol") == 0)
+	else if (strcmp(to->data.atom, "SYMBOL") == 0)
 	    type = LispSymbol_t;
-	else if (strcmp(to->data.atom, "opaque") == 0)
+	else if (strcmp(to->data.atom, "OPAQUE") == 0)
 	    type = LispOpaque_t;
 	else
 	    LispDestroy(mac, "invalid type specification %s, at %s",
@@ -561,7 +561,7 @@ Lisp_Defstruct(LispMac *mac, LispObj *list, char *fname)
     /* get structure name */
     if (CAR(list)->type != LispAtom_t ||
 	/* reserved name(s) */
-	strcmp(CAR(list)->data.atom, "array") == 0)
+	strcmp(CAR(list)->data.atom, "ARRAY") == 0)
 	LispDestroy(mac, "%s cannot be a structure name, at %s",
 		    LispStrObj(mac, CAR(list)), fname);
 
@@ -574,7 +574,7 @@ Lisp_Defstruct(LispMac *mac, LispObj *list, char *fname)
 	    /* and not a pair, with field name and default value */
 	    CAR(list)->data.atom[0] == ':' ||
 	    /* and it is a valid field name */
-	    strcmp(CAR(list)->data.atom, "p") == 0)
+	    strcmp(CAR(list)->data.atom, "P") == 0)
 	    /* p is invalid as a field name due to `type'-p */
 	    LispDestroy(mac, "%s cannot be a field for %s, at %s",
 			LispStrObj(mac, CAR(list)), CAR(str)->data.atom, fname);
@@ -846,16 +846,16 @@ Lisp_Makearray(LispMac *mac, LispObj *list, char *fname)
     /* parse extra arguments */
     for (list = CDR(list); list != NIL; list = CDR(list)) {
 	if (CAR(list)->type == LispAtom_t) {
-	    if (strcmp(CAR(list)->data.atom, ":initial-element") == 0) {
+	    if (strcmp(CAR(list)->data.atom, ":INITIAL-ELEMENT") == 0) {
 		if ((list = CDR(list)) == NIL)
-		    LispDestroy(mac, "expecting :initial-element, at %s",
+		    LispDestroy(mac, "expecting :INITIAL-ELEMENT, at %s",
 				fname);
 		if (init == NULL)
 		    init = CAR(list);
 	    }
-	    else if (strcmp(CAR(list)->data.atom, ":element-type") == 0) {
+	    else if (strcmp(CAR(list)->data.atom, ":ELEMENT-TYPE") == 0) {
 		if ((list = CDR(list)) == NIL)
-		    LispDestroy(mac, "expecting :element-type, at %s",
+		    LispDestroy(mac, "expecting :ELEMENT-TYPE, at %s",
 				fname);
 		if (type == LispNil_t) {
 		    if (CAR(list)->type != LispAtom_t) {
@@ -866,15 +866,15 @@ Lisp_Makearray(LispMac *mac, LispObj *list, char *fname)
 					LispStrObj(mac, CAR(list)), fname);
 		    }
 		    else {
-			if (strcmp(CAR(list)->data.atom, "atom") == 0)
+			if (strcmp(CAR(list)->data.atom, "ATOM") == 0)
 			    type = LispAtom_t;
-			else if (strcmp(CAR(list)->data.atom, "real") == 0)
+			else if (strcmp(CAR(list)->data.atom, "REAL") == 0)
 			    type = LispReal_t;
-			else if (strcmp(CAR(list)->data.atom, "string") == 0)
+			else if (strcmp(CAR(list)->data.atom, "STRING") == 0)
 			    type = LispString_t;
-			else if (strcmp(CAR(list)->data.atom, "list") == 0)
+			else if (strcmp(CAR(list)->data.atom, "LIST") == 0)
 			    type = LispCons_t;
-			else if (strcmp(CAR(list)->data.atom, "opaque") == 0)
+			else if (strcmp(CAR(list)->data.atom, "OPAQUE") == 0)
 			    type = LispOpaque_t;
 			else
 			    LispDestroy(mac, "unsupported element type %s, at %s",
@@ -882,9 +882,9 @@ Lisp_Makearray(LispMac *mac, LispObj *list, char *fname)
 		    }
 		}
 	    }
-	    else if (strcmp(CAR(list)->data.atom, ":initial-contents") == 0) {
+	    else if (strcmp(CAR(list)->data.atom, ":INITIAL-CONTENTS") == 0) {
 		if ((list = CDR(list)) == NIL)
-		    LispDestroy(mac, "expecting :initial-contents, at %s",
+		    LispDestroy(mac, "expecting :INITIAL-CONTENTS, at %s",
 				fname);
 		if (cont == NULL)
 		    cont = CAR(list);
@@ -892,9 +892,9 @@ Lisp_Makearray(LispMac *mac, LispObj *list, char *fname)
 		    LispDestroy(mac, "%s is not a list, at %s",
 				LispStrObj(mac, cont), fname);
 	    }
-	    else if (strcmp(CAR(list)->data.atom, ":displaced-to") == 0) {
+	    else if (strcmp(CAR(list)->data.atom, ":DISPLACED-TO") == 0) {
 		if ((list = CDR(list)) == NIL)
-		    LispDestroy(mac, "expecting :displaced-to, at %s",
+		    LispDestroy(mac, "expecting :DISPLACED-TO, at %s",
 				fname);
 		if (disp == NULL)
 		    disp = CAR(list);
@@ -902,14 +902,14 @@ Lisp_Makearray(LispMac *mac, LispObj *list, char *fname)
 		    LispDestroy(mac, "%s is not an array, at %s",
 				LispStrObj(mac, disp), fname);
 	    }
-	    else if (strcmp(CAR(list)->data.atom, ":displaced-index-offset") == 0) {
+	    else if (strcmp(CAR(list)->data.atom, ":DISPLACED-INDEX-OFFSET") == 0) {
 		if ((list = CDR(list)) == NIL)
-		    LispDestroy(mac, "expecting :displaced-index-offset, at %s",
+		    LispDestroy(mac, "expecting :DISPLACED-INDEX-OFFSET, at %s",
 				fname);
 		if (CAR(list)->type != LispReal_t ||
 		    (int)CAR(list)->data.real != CAR(list)->data.real ||
 		    CAR(list)->data.real < 0)
-		    LispDestroy(mac, "%s is a bad :displaced-index-offset, at %s",
+		    LispDestroy(mac, "%s is a bad :DISPLACED-INDEX-OFFSET, at %s",
 				LispStrObj(mac, CAR(list)), fname);
 		if (offset < 0)
 		    offset = (int)CAR(list)->data.real;
@@ -1551,7 +1551,7 @@ Lisp_Setf(LispMac *mac, LispObj *list, char *fname)
 	    }
 	    else {
 		if (cons == NULL)
-		    LispDestroy(mac, "internal error, at internal:setf");
+		    LispDestroy(mac, "internal error, at %s", fname);
 		switch (cons->type) {
 		    case LispSymbol_t:
 			cons->data.symbol.obj = res;
@@ -1567,7 +1567,7 @@ Lisp_Setf(LispMac *mac, LispObj *list, char *fname)
 			}
 			/*FALLTHROUGH*/
 		    default:
-			LispDestroy(mac, "internal error, at internal:setf");
+			LispDestroy(mac, "internal error, at %s", fname);
 			/*NOTREACHED*/
 		}
 	    }
@@ -1673,15 +1673,15 @@ Lisp_Typep(LispMac *mac, LispObj *list, char *fname)
 		    LispStrObj(mac, obj), fname);
     else {
 	atom = obj->data.atom;
-	if (strcmp(atom, "atom") == 0)
+	if (strcmp(atom, "ATOM") == 0)
 	    type = LispAtom_t;
-	else if (strcmp(atom, "real") == 0)
+	else if (strcmp(atom, "REAL") == 0)
 	    type = LispReal_t;
-	else if (strcmp(atom, "list") == 0)
+	else if (strcmp(atom, "LIST") == 0)
 	    type = LispCons_t;
-	else if (strcmp(atom, "string") == 0)
+	else if (strcmp(atom, "STRING") == 0)
 	    type = LispString_t;
-	else if (strcmp(atom, "opaque") == 0)
+	else if (strcmp(atom, "OPAQUE") == 0)
 	    type = LispOpaque_t;
     }
 

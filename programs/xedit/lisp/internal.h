@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.2 2001/09/01 18:28:12 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.3 2001/09/09 23:03:47 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -183,6 +183,9 @@ void *LispCalloc(LispMac*, unsigned, unsigned);
 void *LispRealloc(LispMac*, void*, unsigned);
 char *LispStrdup(LispMac*, char*);
 void LispFree(LispMac*, void*);
+/* LispMused means memory is now safe from LispDestroy, and should not be
+ * freed in case of an error */
+void LispMused(LispMac*, void*);
 
 void LispGC(LispMac*, LispObj*, LispObj*);
 

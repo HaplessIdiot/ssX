@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#define BUFFERFMT	"<#0x%lx-buffer>"
+#define BUFFERFMT	"\"<#0x%lx-BUFFER>\""
 
 /*
  * Types
@@ -265,7 +265,7 @@ XeditProto(char *input, char **result)
     char fun[64], *ptr, *str, *desc, *fmt;
     int i, len;
 
-    *result = "nil";
+    *result = "NIL";
 
     /* get function name */
     ptr = input;

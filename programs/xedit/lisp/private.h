@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.3 2001/09/09 23:03:47 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.4 2001/09/16 22:21:28 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -76,6 +76,9 @@ struct _LispStream {
 };
 
 struct _LispString {
+    unsigned int mark	: 1;	/* gc protected */
+    unsigned int dirty	: 1;
+    unsigned int prot	: 1;	/* never released */
     char *string;
     LispString *next;
 };
