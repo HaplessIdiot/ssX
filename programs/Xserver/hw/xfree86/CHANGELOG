@@ -1,4 +1,5 @@
 XFree86 4.2.99.1 (XX February 2002)
+  33. Build I2C support before building drivers (Marc La France).
   32. Fix a problem related to reserving the overlay key in the default
       colormap in 24+8 mode.  This caused some clients using the 8-bit
       visuals to fail (David Dawes).
@@ -14623,4 +14624,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2167 2002/02/07 02:54:40 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2168 2002/02/11 00:07:22 dawes Exp $
