@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.118 2003/05/27 16:15:38 tsi Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.120tsi Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -2359,6 +2359,58 @@ depend::  dst.c								@@\
 clean::									@@\
 	RemoveFile(dst.c)
 #endif /* ObjectFromSpecialSource */
+
+#ifndef CPPOnlyAsm
+#define CPPOnlyAsm(basename,options) RemoveFile(basename.i)		@@\
+	$(CPP) AsmDefines $(DEFINES) $(INCLUDES) options basename.S | \	@@\
+		grep -v '^\#' > basename.i
+#endif
+
+#ifndef AssembleObject
+#define AssembleObject(flags) CPPOnlyAsm($*,flags)			@@\
+	RemoveFile($*.o)						@@\
+	$(AS) -o $*.o $*.i						@@\
+	RemoveFile($*.i)
+#endif
+
+#ifndef NormalAsmObjectRule
+#define NormalAsmObjectRule()						@@\
+.S.o:									@@\
+	AssembleObject($(_NOOP_))					@@\
+									@@\
+.S.i:									@@\
+	CPPOnlyAsm($*,$(_NOOP_))
+#endif
+
+#ifndef ObjectFromSpecialAsmSource
+#define ObjectFromSpecialAsmSource(dst,src,flags)			@@\
+dst.S:  src.S								@@\
+	RemoveFile($@)							@@\
+	$(LN) $? $@							@@\
+									@@\
+dst.o:  dst.S								@@\
+	AssembleObject(flags)						@@\
+									@@\
+dst.i:  dst.S								@@\
+	CPPOnlyAsm(dst,flags)						@@\
+									@@\
+depend:: dst.S								@@\
+									@@\
+clean::									@@\
+	RemoveFile(dst.S)
+#endif
+
+#ifndef ObjectFromAsmSource
+#define ObjectFromAsmSource(src,flags)					@@\
+									@@\
+src.o:  src.S								@@\
+	AssembleObject(flags)						@@\
+									@@\
+src.i:  src.S								@@\
+	CPPOnlyAsm(src,flags)						@@\
+									@@\
+depend:: src.S
+#endif
 
 #ifndef SwitchYYPrefix
 #define SwitchYYPrefix(in,out,prefix) \

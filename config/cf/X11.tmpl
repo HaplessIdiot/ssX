@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.212 2003/08/12 23:47:09 torrey Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.213tsi Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -502,7 +502,7 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildGLXLibrary		(BuildGlxExt && !BuildServersOnly)
 #endif
 #ifndef BuildOSMesaLib
-#define BuildOSMesaLib		(BuildGlxExt && defined(XFree86Version))
+#define BuildOSMesaLib		BuildGlxExt
 #endif
 #ifndef BuildGLULibrary
 #define BuildGLULibrary		(BuildGLXLibrary && BuildLibraries && \
