@@ -1,73 +1,79 @@
-                  Release Notes for XFree86[tm] 4.3.99.903
+                     Release Notes for XFree86[tm] 4.4.0
 
                           The XFree86 Project, Inc
 
-                              14 February 2004
+                              23 February 2004
 
                                   Abstract
 
-     This document contains some information about features present in
-     XFree86 4.3.99.903 and their status.
+     This document contains information about features and their status
+     in XFree86 4.4.0.
 
 1.  Introduction to the 4.x Release Series
 
-XFree86 4.0 was the first official release of the new XFree86 4 series.
-XFree86 4 represents a significant redesign of the XFree86 X server.  Not all
-of the hardware drivers from 3.3.x have been ported to 4.x yet, but con-
-versely, 4.x has support for a lot of hardware that is not supported in
-3.3.x.  Our Driver Status document summarizes how the hardware driver support
-compares between 3.3.6 and 4.3.99.903.  Please check there first before down-
-loading 4.3.99.903.
+XFree86 4.0 was the first official release of the new XFree86 4 series.  The
+current release (4.4.0) is the latest in that series.  XFree86 4 represents a
+significant redesign of the XFree86 X server.  Not all of the hardware
+drivers from 3.3.x have been ported to 4.x yet, but conversely, 4.x has sup-
+port for a lot of hardware that is not supported in 3.3.x.  Our Driver Status
+document summarizes how the hardware driver support compares between 3.3.6
+and 4.4.0.
 
 XFree86 4.4 introduces an automatic configuration mechanism for the XFree86
-server.  This makes it possible to start XFree86 in a usable way without
-first creating a configuration file.  The initial automatic configuration
-support is currently targeted towards Linux and FreeBSD.  Automatic configu-
-ration will be supported on other platforms in future releases.  If you're
-running Linux or FreeBSD, try it out if you don't already have a working
-XF86Config file.  If you want to customise things afterwards, you can cut and
-paste the automatically generated configuration from the
+server which makes it now possible to start XFree86 without first creating a
+configuration file.  The initial automatic configuration support is targeted
+towards Linux and FreeBSD and it is hoped that automatic configuration will
+be supported on other platforms in future releases.
+
+If you are running either  Linux or FreeBSD, try it out if you do not already
+have a working XF86Config file.  If you want to customise things afterwards,
+you can cut and paste the automatically generated configuration from the
 /var/log/XFree86.0.log file into an XF86Config file and make your customisa-
-tions there.  Runtime and dynamic configuration is planned for future
-releases.
+tions there.
 
-If you don't have any luck with automatic configuration, or you are using a
-platform that it isn't currently supported on, try one of the older methods
-for getting started.
+If you do not have any luck with automatic configuration, or you are using a
+platform that is not currently supported, try one of the older methods for
+getting started.
 
-XFree86 comes with a graphical configuration tool called "xf86cfg".  It also
-has a text mode interface.  It can be used to create an initial configuration
-file, and to customise existing configurations.
+XFree86 comes with a graphical configuration tool called "xf86cfg", which
+also has a text mode interface and can be used to create an initial configu-
+ration file. It can also be used to customise existing configurations.
 
-Next in the order of configuration preferences is to make use of the XFree86
-server's ability to create a starting configuration file.  To do this, just
-run (as root):
+Next in the order of configuration preferences is to use the XFree86 server's
+ability to create a starting configuration file.  Run as root:
 
      XFree86 -configure
 
 and follow the instructions.
 
-Finally, the trusty old text-based tool "xf86config" can also be used for
-generating X server config files.
+Finally, if all else fails, the trusty old standby text-based tool "xf86con-
+fig" can also be used for generating X server config files.
 
-At least one of these configuration options will give you a reasonable start-
-ing point for a suitable configuration file.  With the automatic mechanism
-you might even find that you don't need one!  If you do need to customise the
-configuration file, you can find it fully documented in the XF86Config manual
-page.  Also check the driver-specific manual pages and the related documenta-
-tion for further information.  References to this driver-specific information
-can be found in the tables below (section 3., page 1).
+At least one, and hopefully, all of these configuration options will give you
+a reasonable starting point for a suitable configuration file.  With the
+automatic mechanism you might even find that you don't need one!
 
-Before you go to download and install the binary distributions for this
-release, please have a quick read through the Installation Document.  It may
-save you some time and help you figure out which of the binary releases you
-need.
+If you do need to customise the configuration file, see the XF86Config manual
+page.  You can also check the driver-specific manual pages and the related
+documentation (found at tables below (section 3., page 1) also.
 
-The other sections below describe some of the new features and changes
-between 3.3.x and 4.0.  There are lot's of new features, and we definitely
-don't have enough space to cover them all here.
+Before downloading  the binary distributions for this release, please have a
+quick read through the Installation Document.  It may save you some time and
+also help you figure out which of the binary releases you need.
+
+The next section describes what is new in the latest version (4.4.0) compared
+with the previous full release (4.3.0).  The other sections below describe
+some of the new features and changes between 3.3.x and 4.0.  There are lot's
+of new features, and we definitely don't have enough space to cover them all
+here.
 
 2.  Summary of new features in 4.4.0.
+
+This is a sampling of the new features in XFree86 4.4.0.  A more complete
+list of changes can be found in the CHANGELOG that is part of the XFree86
+source tree.  It can also be viewed online at our CVSweb server
+<URL:http://cvsweb.xfree86.org/cvsweb/xc/pro-
+grams/Xserver/hw/xfree86/CHANGELOG?rev=HEAD>.
 
 2.1  Video Driver Enhancements
 
@@ -82,12 +88,12 @@ don't have enough space to cover them all here.
           didn't work with XFree86 4.3.
 
         o The driver now does a much better job of auto-detecting which con-
-          nector of dual output cards the monitor is attached to, which
+          nector of dual output cards the monitor is attached to, and this
           should reduce or eliminate the need for manual XF86Config over-
           rides.
 
-        o The 2D acceleration for TNT and GeForce was completely rewritten.
-          Performance should be substantially improved.
+        o The 2D acceleration for TNT and GeForce has been completely rewrit-
+          ten and its performance should be substantially improved.
 
         o TNT and GeForce cards have a new Xv PutImage adaptor which does
           scaled YUV bit blits.
@@ -110,14 +116,15 @@ don't have enough space to cover them all here.
 2.2  Input Driver Enhancements
 
    o The mouse driver has some support on Linux and FreeBSD for auto-detect-
-     ing the device node to use, making it unnecessary to supply this infor-
-     mation in the XF86Config file in most cases.
+     ing which device node to use. This makes it unnecessary to supply this
+     information in the XF86Config file in most cases.
 
 2.3  IPv6 support
 
-XFree86 4.4 supports IPv6, based on the code contributed by Sun Microsystems
-to X.Org. See X.org's document <URL:http://www.x.org/IPV6_Spe-
-cific_Changes.html> for a detailed list of the changes.
+XFree86 4.4 supports IPv6, based on the code contributed by Sun Microsystems,
+Inc. to X.Org. See X.org's document <URL:http://www.x.org/IPV6_Spe-
+cific_Changes.html> for a detailed list of what these changes are and how
+your system is affected by them.
 
 2.3.1  Protocol names and aliases.
 
@@ -128,7 +135,7 @@ cific_Changes.html> for a detailed list of the changes.
    o inet6 specifies IPv6 only.
 
 You can force the X server to only listen to IPv4 connections with the X
--nolisten inet6  command.  Or you can force a IPv6 connection by setting DIS-
+-nolisten inet6  command or you can force a IPv6 connection by setting DIS-
 PLAY to inet6/host:0.
 
 2.3.2  XDM
@@ -136,10 +143,10 @@ PLAY to inet6/host:0.
 The IPv6 XDMCP code is not enabled by default on platforms that don't support
 binding a IPv6 socket to a IPv4 address.
 
-The XDM-AUTHORIZATION-1 authentication scheme does not support IPv6
-addresses. A new release of the protocol, XDM-AUTHORIZATION-2 has been
-designed, but is not implemented yet.  Note that  by default XFree86 builds
-do not enable the XDM-AUTHORIZATION-1 code.
+The XDM-AUTHORIZATION-1 authentication scheme does not support IPv6 addresses
+but a new release of the protocol, XDM-AUTHORIZATION-2 has been designed;
+this though is yet to be  implemented.  By default XFree86 builds do not
+enable the XDM-AUTHORIZATION-1 code.
 
 2.4  X Server and Extension Updates
 
@@ -293,12 +300,12 @@ Modified terminfo/termcap entries:
      below (section 4.20, page 1).
 
    o The Bitstream Vera TrueType fonts that Bitstream, Inc donated to the
-     GNOME Foundation are included with this release.
+     GNOME Foundation have been included with this release.
 
 2.7  OS Support Updates
 
    o On Mac OS X, the appropriate backend drawing code is now dynamically
-     loaded at runtime. This reduces the X server's memory footprint.  In
+     loaded at runtime which reduces the X server's memory footprint.  In
      rootless mode, Apple's Xplugin library is used where available.  (Xplu-
      gin is included as part of Mac OS X on Panther.) With Xplugin, XDarwin
      provides identical performance to Apple's X11, including the following
@@ -321,16 +328,11 @@ Modified terminfo/termcap entries:
      with Maintenance Pack 1, or on prior releases through Release 5.0.4.
      Please consult the README.SCO file for details.
 
-A more complete list of changes can be found in the CHANGELOG that is part of
-the XFree86 source tree.  It can also be viewed online at our CVSweb server
-<URL:http://cvsweb.xfree86.org/cvsweb/xc/pro-
-grams/Xserver/hw/xfree86/CHANGELOG?rev=HEAD>.
-
 3.  Drivers
 
 3.1  Video Drivers
 
-XFree86 4.3.99.903 includes the following video drivers:
+XFree86 4.4.0 includes the following video drivers:
 
 +--------------+--------------------------+---------------------------------------------+
 |Driver Name   | Description              | Further Information                         |
@@ -386,7 +388,7 @@ Drivers marked with (-) are for Linux/mips only.
 Darwin/Mac OS X uses IOKit drivers and does not use the module loader drivers
 listed above. Further information can be found in README.Darwin.
 
-XFree86 4.3.99.903 includes the following input drivers:
+XFree86 4.4.0 includes the following input drivers:
 
 3.2  Input Drivers
 
@@ -423,44 +425,41 @@ Drivers marked with (*) are available for Linux only.
 4.  Overview of XFree86 4.x.
 
 XFree86 4.x has a single X server binary called XFree86.  This binary can
-either have one or more video and input drivers linked in statically, or,
-more usually, dynamically load the video drivers, input drivers, and other
-modules that are needed.
+either have one or more video and input drivers linked in statically, or more
+usually, dynamically, and in that manner load the video drivers, input
+drivers, and other modules that are needed.
 
-XFree86 4.3.99.903 has X server support for most UNIX® and UNIX-like operat-
-ing systems on Intel/x86 platforms, plus support for Linux and some BSD OSs
-on Alpha, PowerPC, IA-64, AMD64, Sparc, and Mips platforms, and for Darwin on
-PowerPC.  Work on support for additional architectures and operating systems
-is in progress, and is planned for future releases.
+XFree86 4.4.0 has X server support for most UNIX® and UNIX-like operating
+systems on Intel/x86 platforms, plus support for Linux and some BSD OSs on
+Alpha, PowerPC, IA-64, AMD64, Sparc, and Mips platforms, and for Darwin on
+PowerPC.  Support for additional architectures and operating systems is in
+progress and is planned for future releases.
 
 4.1  Loader and Modules
 
-The XFree86 X server has a built-in run-time loader developed from code
-donated by Metro Link <URL:http://www.metrolink.com>.  This loader can load
-normal object files and libraries in most of the commonly used formats.
-Since the loader doesn't rely on an operating system's native dynamic loader
-support, it works on platforms that don't provide this feature, and makes it
-possible for the modules to be operating system independent (although not, of
-course, independent of CPU architecture).  This means that a module compiled
-on Linux/x86 can be loaded by an X server running on Solaris/x86, or FreeBSD,
-or even OS/2.
+The XFree86 X server has a built-in run-time loader, which can load normal
+object files and libraries in most of the commonly used formats.  The loader
+does not rely on an operating system's native dynamic loader support and it
+works on platforms that do not provide this feature.  This  allows  for the
+modules to be operating system independent (although not, of course, CPU
+architecture independent) which means that a module compiled on Linux/x86 can
+be loaded by an X server running on Solaris/x86, or FreeBSD, or even OS/2.
 
-One of the main benefits of this loader is that when modules are updated,
-they do not need to be recompiled for every different operating system.
-
-The loader in version 4.3.99.903 has support for Intel (x86), Alpha and Pow-
-erPC platforms.  It also has preliminary support for Sparc platforms.
+A main benefit of this, is that when modules are updated, they do not need to
+be recompiled for every different operating system.  The loader in version
+4.4.0 has support for Intel (x86), Alpha and PowerPC platforms.  It also has
+preliminary support for Sparc platforms.
 
 The X server makes use of modules for video drivers, X server extensions,
 font rasterisers, input device drivers, framebuffer layers (like mfb, cfb,
 etc), and internal components used by some drivers (like XAA),
 
-The module interfaces (API and ABI) used in this release is subject to change
-without notice.  While we will attempt to provide backward compatibility for
-the module interfaces as of the 4.0 release (meaning that 4.0 modules will
-work with future core X server binaries), we cannot guarantee this.  Compati-
-bility in the other direction is explicitly not guaranteed because new mod-
-ules may rely on interfaces added in new releases.
+The module interfaces (both API and ABI) used in this release are subject to
+change without notice.  While we will attempt to provide backward compatibil-
+ity for the module interfaces as of the 4.0 release (meaning that 4.0 modules
+will work with future core X server binaries), we cannot guarantee this.
+Compatibility in the other direction is explicitly not guaranteed because new
+modules may rely on interfaces added in new releases.
 
 Note about module security
 
@@ -531,9 +530,9 @@ Known problems:
 
 4.7  DGA version 2
 
-DGA 2.0 is included in 4.3.99.903.  Documentation for the client libraries
-can be found in the XDGA(3) man page.  A good degree of backwards compatibil-
-ity with version 1.0 is provided.
+DGA 2.0 is included in 4.4.0.  Documentation for the client libraries can be
+found in the XDGA(3) man page.  A good degree of backwards compatibility with
+version 1.0 is provided.
 
 4.8  DDC
 
@@ -586,7 +585,7 @@ anti-aliased text and geometric objects as well as perform translucent image
 overlays and other image operations not possible with the core X rendering
 system.
 
-XFree86 4.3.99.903 provides a partial implementation of Render sufficient for
+XFree86 4.4.0 provides a partial implementation of Render sufficient for
 drawing anti-aliased text and image composition.  Still to be implemented are
 geometric primitives and affine transformation of images.
 
@@ -621,15 +620,15 @@ the Xft(3) man page.
 
 4.11.2  FreeType support in Xft
 
-XFree86 4.3.99.903 includes sources for FreeType version 2.1.4, and, by
-default, they are built and installed automatically.
+XFree86 4.4.0 includes sources for FreeType version 2.1.4, and, by default,
+they are built and installed automatically.
 
 4.11.3  Application Support For Anti-Aliased Text
 
-Only three applications have been modified in XFree86 4.3.99.903 to work with
-the Render extension and the Xft and FreeType libraries to provide anti-
-aliased text.  Xterm, xditview and x11perf.  Migration of other applications
-may occur in future releases.
+Only three applications have been modified in XFree86 4.4.0 to work with the
+Render extension and the Xft and FreeType libraries to provide anti-aliased
+text.  Xterm, xditview and x11perf.  Migration of other applications may
+occur in future releases.
 
 By default, xterm uses core fonts through the standard core API.  It has a
 command line option and associated resource to direct it to use Xft instead:
@@ -814,13 +813,9 @@ site <URL:http://www.urwpp.de>.
 
 5.  Credits
 
-THIS IS A DRAFT OF THE XFree86 4.4.0 CREDITS SECTION.  If you find missing
-credits, incorrect attributions, or other errors, please send details to
-<devel@XFree86.org>.
-
-This section lists the credits for the XFree86 4.3.99.903 release.  For a
-more detailed breakdown, refer to the CHANGELOG file in the XFree86 source
-tree, the cvs-commit archives <URL:http://www.mail-archive.com/cvs-com-
+This section lists the credits for the XFree86 4.4.0 release.  For a more
+detailed breakdown, refer to the CHANGELOG file in the XFree86 source tree,
+the cvs-commit archives <URL:http://www.mail-archive.com/cvs-com-
 mit@xfree86.org/maillist.html>, or the 'cvs log' information for individual
 source files.
 
@@ -962,7 +957,7 @@ its contributors
 This product includes software developed by X-Oz Technologies (http://www.x-
 oz.com/).
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.114 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.115 dawes Exp $
 
 
 $XFree86: $

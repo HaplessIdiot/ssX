@@ -41,7 +41,7 @@ XFree86 licensing policy, please contact us.
 3.1  Open Source
 
 With one possible exception, we believe that all of the code in this release
-(4.3.99.903) of XFree86 meet the requirements of the Open Source Definition
+(4.4.0) of XFree86 meet the requirements of the Open Source Definition
 <URL:http://opensource.org/docs/definition.php>, as maintained by the Open
 Source Initiative (OSI) <URL:http://opensource.org/>.
 
@@ -53,10 +53,10 @@ all versions of XFree86.
 
 3.2  Free Software
 
-We believe that most of the code in this release (4.3.99.903) of XFree86
-meets the requirements of the Free Software definition
-<URL:http://www.fsf.org/philosophy/free-sw.html> as defined by the Free Soft-
-ware Foundation (FSF) <URL:http://www.fsf.org/>.
+We believe that most of the code in this release (4.4.0) of XFree86 meets the
+requirements of the Free Software definition <URL:http://www.fsf.org/philoso-
+phy/free-sw.html> as defined by the Free Software Foundation (FSF)
+<URL:http://www.fsf.org/>.
 
 The exceptions, aside from the font decompression code mentioned in the pre-
 vious section, are the GLX extension and CID font code that are covered by
@@ -64,12 +64,11 @@ the SGI Free Software License B, version 1.1 (section 9., page 1).
 
 3.3  GPL-compatible
 
-The client-side X libraries distributed with this release (4.3.99.903), with
-the exception of the GL, GLU, and GLw libraries, carry a subset of the
-acceptable licenses that satisfy an additional condition: they are GPL-com-
-patible.  The GL, GLU, and GLw libraries contain code covered by the SGI Free
-Software License B, version 1.1 (section 9., page 1), which is not GPL-com-
-patible.
+The client-side X libraries distributed with this release (4.4.0), with the
+exception of the GL, GLU, and GLw libraries, carry a subset of the acceptable
+licenses that satisfy an additional condition: they are GPL-compatible.  The
+GL, GLU, and GLw libraries contain code covered by the SGI Free Software
+License B, version 1.1 (section 9., page 1), which is not GPL-compatible.
 
 Other portions of XFree86, including the X servers, may include code with
 licenses that are not GPL-compatible.  Example of such licenses include some
