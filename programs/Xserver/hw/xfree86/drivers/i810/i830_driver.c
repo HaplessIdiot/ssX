@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.63 2005/02/28 17:50:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.64 2005/03/03 18:06:26 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -2667,6 +2667,9 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
                                  pI830->pipeDisplaySize[n].y2,
                                  60);
 
+   } else {
+        xf86SetMonitorParameters(pScrn, pScrn->monitor, 0, 0, 0);
+        xf86AddEDIDModes(pScrn, pScrn->monitor, 0);
    }
 
    /* By now, we should have had some monitor settings, but if not, we
