@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/print.c,v 1.7 1998/10/25 07:12:46 dawes Exp $
+ * $XFree86: xc/programs/xterm/print.c,v 1.8 1999/04/11 13:11:34 dawes Exp $
  */
 
 /************************************************************
@@ -34,11 +34,11 @@ authorization.
 
 ********************************************************/
 
-#include <stdio.h>
-
 #include <xterm.h>
 #include <data.h>
 #include <error.h>
+
+#include <stdio.h>
 
 #undef  CTRL
 #define	CTRL(c)	((c) & 0x1f)

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: ptyx.h /main/67 1996/11/29 10:34:19 swick $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.53 1999/04/29 09:14:06 dawes Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.54 1999/05/03 12:16:12 dawes Exp $
  */
 
 /*
@@ -329,7 +329,7 @@ typedef struct {
 
 /***====================================================================***/
 
-#if XtSpecificationRelease < 6
+#if (XtSpecificationRelease < 6)
 #ifndef NO_ACTIVE_ICON
 #define NO_ACTIVE_ICON 1 /* Note: code relies on an X11R6 function */
 #endif
@@ -358,7 +358,7 @@ typedef struct {
 #endif
 
 #ifndef OPT_I18N_SUPPORT
-#if XtSpecificationRelease >= 6
+#if (XtSpecificationRelease >= 6)
 #define OPT_I18N_SUPPORT 1 /* true if xterm uses internationalization support */
 #else
 #define OPT_I18N_SUPPORT 0
@@ -370,7 +370,7 @@ typedef struct {
 #endif
 
 #ifndef OPT_INPUT_METHOD
-#if XtSpecificationRelease >= 6
+#if (XtSpecificationRelease >= 6)
 #define OPT_INPUT_METHOD 1 /* true if xterm uses input-method support */
 #else
 #define OPT_INPUT_METHOD 0
@@ -920,7 +920,7 @@ typedef struct {
 	Boolean		cutNewline;	/* whether or not line cut has \n */
 	Boolean		cutToBeginningOfLine;  /* line cuts to BOL? */
 	Boolean		highlight_selection; /* controls appearance of selection */
-	char		*selection;	/* the current selection */
+	char		*selection_data; /* the current selection */
 	int		selection_size; /* size of allocated buffer */
 	int		selection_length; /* number of significant bytes */
 	Time		selection_time;	/* latest event timestamp */

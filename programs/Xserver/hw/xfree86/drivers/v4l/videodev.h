@@ -7,19 +7,9 @@
  * Used here with the explicit permission of the original author, Alan Cox.
  *				<alan@lxorguk.ukuu.org.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/videodev.h,v 1.4 1999/04/29 09:13:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/videodev.h,v 1.5 1999/05/03 14:33:43 dawes Exp $ */
 
 #include <Xmd.h>
-
-#ifdef XFree86LOADER
-typedef CARD32 __u32;
-typedef unsigned long ulong;
-typedef CARD16 __u16;
-typedef INT32 __s32;
-typedef CARD8 __u8;
-#else
-#include <sys/types.h>
-#endif
 
 #define VID_TYPE_CAPTURE	1	/* Can capture */
 #define VID_TYPE_TUNER		2	/* Can tune */
@@ -50,13 +40,13 @@ struct video_channel
 	int channel;
 	char name[32];
 	int tuners;
-	__u32  flags;
+	CARD32  flags;
 #define VIDEO_VC_TUNER		1	/* Channel has a tuner */
 #define VIDEO_VC_AUDIO		2	/* Channel has audio */
-	__u16  type;
+	CARD16  type;
 #define VIDEO_TYPE_TV		1
 #define VIDEO_TYPE_CAMERA	2	
-	__u16 norm;			/* Norm set by channel */
+	CARD16 norm;			/* Norm set by channel */
 };
 
 struct video_tuner
@@ -64,30 +54,30 @@ struct video_tuner
 	int tuner;
 	char name[32];
 	ulong rangelow, rangehigh;	/* Tuner range */
-	__u32 flags;
+	CARD32 flags;
 #define VIDEO_TUNER_PAL		1
 #define VIDEO_TUNER_NTSC	2
 #define VIDEO_TUNER_SECAM	4
 #define VIDEO_TUNER_LOW		8	/* Uses KHz not MHz */
 #define VIDEO_TUNER_NORM	16	/* Tuner can set norm */
 #define VIDEO_TUNER_STEREO_ON	128	/* Tuner is seeing stereo */
-	__u16 mode;			/* PAL/NTSC/SECAM/OTHER */
+	CARD16 mode;			/* PAL/NTSC/SECAM/OTHER */
 #define VIDEO_MODE_PAL		0
 #define VIDEO_MODE_NTSC		1
 #define VIDEO_MODE_SECAM	2
 #define VIDEO_MODE_AUTO		3
-	__u16 signal;			/* Signal strength 16bit scale */
+	CARD16 signal;			/* Signal strength 16bit scale */
 };
 
 struct video_picture
 {
-	__u16	brightness;
-	__u16	hue;
-	__u16	colour;
-	__u16	contrast;
-	__u16	whiteness;	/* Black and white only */
-	__u16	depth;		/* Capture depth */
-	__u16   palette;	/* Palette in use */
+	CARD16	brightness;
+	CARD16	hue;
+	CARD16	colour;
+	CARD16	contrast;
+	CARD16	whiteness;	/* Black and white only */
+	CARD16	depth;		/* Capture depth */
+	CARD16   palette;	/* Palette in use */
 #define VIDEO_PALETTE_GREY	1	/* Linear greyscale */
 #define VIDEO_PALETTE_HI240	2	/* High 240 cube (BT848) */
 #define VIDEO_PALETTE_RGB565	3	/* 565 16 bit RGB */
@@ -111,9 +101,9 @@ struct video_picture
 struct video_audio
 {
 	int	audio;		/* Audio channel */
-	__u16	volume;		/* If settable */
-	__u16	bass, treble;
-	__u32	flags;
+	CARD16	volume;		/* If settable */
+	CARD16	bass, treble;
+	CARD32	flags;
 #define VIDEO_AUDIO_MUTE	1
 #define VIDEO_AUDIO_MUTABLE	2
 #define VIDEO_AUDIO_VOLUME	4
@@ -124,24 +114,24 @@ struct video_audio
 #define VIDEO_SOUND_STEREO	2
 #define VIDEO_SOUND_LANG1	4
 #define VIDEO_SOUND_LANG2	8
-        __u16   mode;
-        __u16	balance;	/* Stereo balance */
-        __u16	step;		/* Step actual volume uses */
+        CARD16   mode;
+        CARD16	balance;	/* Stereo balance */
+        CARD16	step;		/* Step actual volume uses */
 };
 
 struct video_clip
 {
-	__s32	x,y;
-	__s32	width, height;
+	INT32	x,y;
+	INT32	width, height;
 	struct	video_clip *next;	/* For user use/driver use only */
 };
 
 struct video_window
 {
-	__u32	x,y;			/* Position of window */
-	__u32	width,height;		/* Its size */
-	__u32	chromakey;
-	__u32	flags;
+	CARD32	x,y;			/* Position of window */
+	CARD32	width,height;		/* Its size */
+	CARD32	chromakey;
+	CARD32	flags;
 	struct	video_clip *clips;	/* Set only */
 	int	clipcount;
 #define VIDEO_WINDOW_INTERLACE	1
@@ -152,10 +142,10 @@ struct video_window
 
 struct video_capture
 {
-	__u32 	x,y;			/* Offsets into image */
-	__u32	width, height;		/* Area to capture */
-	__u16	decimation;		/* Decimation divder */
-	__u16	flags;			/* Flags for capture */
+	CARD32 	x,y;			/* Offsets into image */
+	CARD32	width, height;		/* Area to capture */
+	CARD16	decimation;		/* Decimation divder */
+	CARD16	flags;			/* Flags for capture */
 #define VIDEO_CAPTURE_ODD		0	/* Temporal */
 #define VIDEO_CAPTURE_EVEN		1
 };
@@ -177,8 +167,8 @@ struct video_mmap
 
 struct video_key
 {
-	__u8	key[8];
-	__u32	flags;
+	CARD8	key[8];
+	CARD32	flags;
 };
 
 

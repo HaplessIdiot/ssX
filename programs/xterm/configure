@@ -2104,7 +2104,7 @@ do
 #include "confdefs.h"
 
 #ifndef CC_HAS_PROTOS
-#if !defined(__STDC__) || __STDC__ != 1
+#if !defined(__STDC__) || (__STDC__ != 1)
 choke me
 #endif
 #endif
@@ -4924,7 +4924,7 @@ if test -n "$GCC"
 then
 		cat > conftest.$ac_ext <<EOF
 #line 4927 "configure"
-int main(int argc, char *argv[]) { return argv[argc-1] == 0; }
+int main(int argc, char *argv[]) { return (argv[argc-1] == 0) ; }
 EOF
 		echo "checking for gcc warning options" 1>&6
 echo "configure:4931: checking for gcc warning options" >&5

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPaintWin.c,v 1.5 1998/12/06 06:08:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPaintWin.c,v 1.6 1999/03/28 15:33:04 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -15,6 +15,12 @@
 #include "pixmapstr.h"
 #include "xaawrap.h"
 
+#ifdef PANORAMIX
+#include "panoramiX.h"
+#include "panoramiXsrv.h"
+#endif
+
+extern WindowPtr *WindowTable;
 
 void
 XAAPaintWindow(
@@ -71,6 +77,7 @@ XAAPaintWindow(
         XAAPixmapPtr pPriv = XAA_GET_PIXMAP_PRIVATE(pPix);
 	WindowPtr pBgWin = pWin;
 	Bool NoCache = FALSE;
+	int xorg, yorg;
 
 	/* Hack so we can use this with the dual framebuffer layers
 	   which only support the pixmap cache in the primary bpp */
@@ -83,6 +90,19 @@ XAAPaintWindow(
 		 pBgWin = pBgWin->parent);
 	}
 
+        xorg = pBgWin->drawable.x;
+        yorg = pBgWin->drawable.y;
+
+#ifdef PANORAMIX
+	if(!noPanoramiXExtension) {
+	    int index = pScreen->myNum;
+	    if(WindowTable[index] == pBgWin) {
+		xorg -= panoramiXdataPtr[index].x;
+		yorg -= panoramiXdataPtr[index].y;
+	    }
+	}
+#endif
+
 	if(IS_OFFSCREEN_PIXMAP(pPix) && infoRec->FillCacheBltRects) {
 	    XAACacheInfoPtr pCache = &(infoRec->ScratchCacheInfoRec);
 
@@ -94,7 +114,7 @@ XAAPaintWindow(
 		pPriv->offscreenArea->box.y2 - pCache->y;
 	     
 	    (*infoRec->FillCacheBltRects)(infoRec->pScrn, GXcopy, ~0,
-		nBox, pBox, pBgWin->drawable.x, pBgWin->drawable.y, pCache);
+				nBox, pBox, xorg, yorg, pCache);
 	    return;
 	}
 
@@ -117,8 +137,7 @@ XAAPaintWindow(
 
 	    	(*infoRec->FillMono8x8PatternRects)(infoRec->pScrn,
 			pPriv->fg, pPriv->bg, GXcopy, ~0, nBox, pBox,
-			pPriv->pattern0, pPriv->pattern1,
-			pBgWin->drawable.x, pBgWin->drawable.y);
+			pPriv->pattern0, pPriv->pattern1, xorg, yorg);
 		return;
 	    }
 	    if(infoRec->CanDoColor8x8 && !NoCache &&
@@ -126,9 +145,8 @@ XAAPaintWindow(
 		XAACacheInfoPtr pCache = (*infoRec->CacheColor8x8Pattern)(
 					infoRec->pScrn, pPix, -1, -1);
 
-		(*infoRec->FillColor8x8PatternRects) (
-			infoRec->pScrn, GXcopy, ~0, nBox, pBox, 
-			pBgWin->drawable.x, pBgWin->drawable.y, pCache);
+		(*infoRec->FillColor8x8PatternRects) ( infoRec->pScrn, 
+				GXcopy, ~0, nBox, pBox, xorg, yorg, pCache);
 		return;
 	    }        
 	}
@@ -140,15 +158,14 @@ XAAPaintWindow(
 	     XAACacheInfoPtr pCache = 
 			(*infoRec->CacheTile)(infoRec->pScrn, pPix);
 	     (*infoRec->FillCacheBltRects)(infoRec->pScrn, GXcopy, ~0,
-		nBox, pBox, pBgWin->drawable.x, pBgWin->drawable.y, pCache);
+					nBox, pBox, xorg, yorg, pCache);
 	     return;
 	}
 
 	if(infoRec->FillImageWriteRects && 
 		!(infoRec->FillImageWriteRectsFlags & NO_GXCOPY)) {
 	    (*infoRec->FillImageWriteRects) (infoRec->pScrn, GXcopy, 
-                   ~0, nBox, pBox, pBgWin->drawable.x, pBgWin->drawable.y,
-                   pPix);
+                   		~0, nBox, pBox, xorg, yorg, pPix);
 	    return;
 	}
     }

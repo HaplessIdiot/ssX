@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.23 1999/05/03 12:16:14 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.24 1999/05/09 10:52:12 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,8 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_102">Patch #102 - 1999/5/12 - XFree86 3.9Pm</A>
+<LI><A HREF="#xterm_101">Patch #101 - 1999/5/10 - XFree86 3.9Pm</A>
 <LI><A HREF="#xterm_100">Patch #100 - 1999/5/3 - XFree86 3.9Pl</A>
 <LI><A HREF="#xterm_99">Patch #99 - 1999/5/2 - XFree86 3.9Pk</A>
 <LI><A HREF="#xterm_98">Patch #98 - 1999/4/26 - XFree86 3.9Pk</A>
@@ -143,6 +145,56 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_102">Patch #102 - 1999/5/12 - XFree86 3.9Pm</A></H1>
+<ul>
+	<li>revert change to openpty call in patch #101; this causes xterm to
+	  fail on DEC-Alpha OSF/1 4.0B (reported by H Merijn Brand).
+
+	<li>modify print.c to move include of stdio.h after the autoconf'd
+	  xtermcfg.h since HP's ANSI C compiler otherwise sees inconsistent
+	  prototype for getopt, probably due to problem with const (reported by
+	  H Merijn Brand).
+</ul>
+
+<H1><A NAME="xterm_101">Patch #101 - 1999/5/10 - XFree86 3.9Pm</A></H1>
+<ul>
+	<li>moved includes and definitions for 'select' from data.h to xterm.h
+	  to fix problem introduced by prototype for getPtyData, part of UTF-8
+	  changes (reported by Jens Schleusener &lt;Jens.Schleusener@dlr.de&gt;)
+
+	<li>added "Meta &lt;Btn2Down&gt;:clear-saved-lines()" default
+	  translation (patch by H Merijn Brand)
+
+	<li>fixes to configure script and ifdef's in main.c to build on a
+	  HP9000/D390 (hppa-2.0w) running HP-UX 11.00 (64 bit) with egcs 1.1.2
+	  and HP's ANSI C compiler (patch by H Merijn Brand
+	  &lt;PROCURA_BV@CompuServe.com&gt;)
+
+	<li>add more parentheses in ifdef's (patch by Bob Maynard).
+
+	<li>eliminate conflicting definitions for USE_TERMINFO in resize.c
+	  (reported by Jeremy Buhler).
+
+	<li>change openpty call to pass NULL rather than ttydev parameter,
+	  since that was used only to estimate the length of the
+	  corresponding data, and may not really be long enough
+	  (reported by Andreas Jaeger)
+
+	<li>update description in xterm manpage for character class table,
+	  which said it handles only 7-bit codes.
+
+	<li>correct a typo in ScrnDeleteChar() which made it not clear the
+	  high byte of wide-character data.
+
+	<li>add logic to convert selection to UTF-8 form when appropriate.
+	  This makes select/paste "work", but further work is needed to
+	  make UTF-8 recognized as a locale in Xlib.
+
+	<li>correct right-limit check when selecting double-width characters.
+
+	<li>change default answerback response to an empty string.
+</ul>
 
 <H1><A NAME="xterm_100">Patch #100 - 1999/5/3 - XFree86 3.9Pl</A></H1>
 <ul>
@@ -853,7 +905,7 @@ This patch fixes several small bugs:
 
 Again, most of the bulk of this patch is for ANSI conversion.  I used the
 IRIX compiler's -wlint option to find the remaining functions that use
-K&R syntax (since gcc does not do this properly).
+K&amp;R syntax (since gcc does not do this properly).
 
 Also, I changed the logic in the print code slightly to close unwanted files
 before opening a pipe to the printer.  This may help in some configurations
@@ -861,7 +913,7 @@ where the line printer hangs until xterm closes the pipe.
 
 <H1><A NAME="xterm_77">Patch #77 - 1998/5/26 - XFree86 3.9Ah and 3.3.2</A></H1>
 
-Most of the bulk of this patch is to convert the extended C (K&R functions
+Most of the bulk of this patch is to convert the extended C (K&amp;R functions
 with prototypes) to ANSI.  I verified that on Linux by comparing object
 files, to ensure that I did not, for example, interchange parameters in
 the function declarations.
@@ -962,7 +1014,7 @@ that I made based on feedback from users:
 	  application.  Also use this value in install rule "make install-ti",
 	  for the standalone configure script.
 
-	  (patch & feedback from Tor Lillqvist &lt;tml@hemuli.tte.vtt.fi&gt;)
+	  (patch &amp; feedback from Tor Lillqvist &lt;tml@hemuli.tte.vtt.fi&gt;)
 
 	<li>change ifdef's for "hpux" to "__hpux" (patch by Tor Lillqvist).  The
 	  imake configuration uses the former, but the latter is predefined by
@@ -1122,7 +1174,7 @@ in the VT220 emulation:
 <H1><A NAME="xterm_69">Patch #69 - 1998/3/16 - XFree86 3.9Ad and 3.3.2</A></H1>
 
 This corrects the problem in xterm with utmp, reported by Olivier Calle
-&lt;olivier@tc.fluke.com&gt
+&lt;olivier@tc.fluke.com&gt;
 as well as some other people after the XFree86 3.3.2 release.
 <P>
 The error was introduced by my patch #53 in XFree86 3.9r (October 1997).
@@ -1180,7 +1232,7 @@ This patch does the following:
 	<LI>add a configure option, --enable-logfile-exec, which allows the
 	  user to specify a pipe for logfile.  This defines ALLOWLOGFILEEXEC.
 
-	<LI>makes the ALLOWLOGFILEEXEC code compile & run, if configured.
+	<LI>makes the ALLOWLOGFILEEXEC code compile &amp; run, if configured.
 
 	<LI>minor documentation nits.
 </UL>
@@ -1653,7 +1705,7 @@ configure script):
 	  circumstances.
 
 	<LI>adds more special-case tokens to the standalone configure script's
-	  imake-option filter (e.g., "&&", since a "make -n main.o" on my IRIX
+	  imake-option filter (e.g., "&amp;&amp;", since a "make -n main.o" on my IRIX
 	  system uses that shell construct).
 
 	<LI>adds a '--enable-logging' option for the standalone configure script.
@@ -1884,7 +1936,7 @@ This patch corrects the following reported by Roland Rosenfeld
 &lt;roland@spinnaker.rhein.de&gt;:
 <UL>
 	<LI>handle SGR 22, 24 and 25 in combination with colorUL and colorBD
-	  resources.  Also noted & fixed reset of colored underline/bold
+	  resources.  Also noted &amp; fixed reset of colored underline/bold
 	  with SGR 0.
 
 	<LI>a typo in the termcap (missing '['), from 3.1.2Dj (my error)
@@ -2047,7 +2099,7 @@ This implements the following:
 	<LI>minor tweak to the screen-repainting when resizing (I still cannot
 	  entirely get rid of flicker).
 
-	<LI>still more fixes to terminfo & termcap (I corrected my error for
+	<LI>still more fixes to terminfo &amp; termcap (I corrected my error for
 	  the hpa code and added some other stuff by comparing to ncurses'
 	  description and rxvt's).
 
@@ -2122,7 +2174,7 @@ I made the following changes:
 	<LI>in both, corrected home/end keys to match the code correction made
 	  by Thomas Mueller in 3.1.2Bk
 
-	  =&gt; (I'm still considering modifying the code & description to match
+	  <P>=&gt; (I'm still considering modifying the code &amp; description to match
 	      the rxvt program).
 </UL>
 

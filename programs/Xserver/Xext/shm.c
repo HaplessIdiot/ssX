@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.13 1999/02/01 11:55:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.14 1999/03/21 07:34:43 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -52,6 +52,16 @@ in this Software without prior written authorization from The Open Group.
 #include "Xfuncproto.h"
 #ifdef EXTMODULE
 #include "xf86_ansic.h"
+#endif
+
+#ifdef PANORAMIX
+#include "panoramiX.h"
+extern int PanoramiXNumScreens;
+extern Bool noPanoramiXExtension;
+extern PanoramiXWindow *PanoramiXWinRoot;
+extern PanoramiXPmap   *PanoramiXPmapRoot;
+extern PanoramiXGC     *PanoramiXGCRoot;
+extern PanoramiXData   *panoramiXdataPtr;
 #endif
 
 typedef struct _ShmDesc {
@@ -190,14 +200,17 @@ ShmExtensionInit()
     }
 #endif
 
-#ifdef INTERNAL_VS_EXTERNAL_PADDING
     sharedPixmaps = xFalse;
     pixmapFormat = 0;
-#else
-    sharedPixmaps = xTrue;
-    pixmapFormat = shmPixFormat[0];
-    for (i = 0; i < screenInfo.numScreens; i++)
+#ifndef INTERNAL_VS_EXTERNAL_PADDING
+#ifdef PANORAMIX
+    if(noPanoramiXExtension)
+#endif
     {
+      sharedPixmaps = xTrue;
+      pixmapFormat = shmPixFormat[0];
+      for (i = 0; i < screenInfo.numScreens; i++)
+      {
 	if (!shmFuncs[i])
 	    shmFuncs[i] = &miFuncs;
 	if (!shmFuncs[i]->CreatePixmap)
@@ -207,9 +220,10 @@ ShmExtensionInit()
 	    sharedPixmaps = xFalse;
 	    pixmapFormat = 0;
 	}
-    }
-    if (!pixmapFormat)
+      }
+      if (!pixmapFormat)
 	pixmapFormat = ZPixmap;
+    }
 #endif
     ShmSegType = CreateNewResourceType(ShmDetachSegment);
     ShmPixType = CreateNewResourceType(ShmDetachSegment);
@@ -435,7 +449,54 @@ fbShmPutImage(dst, pGC, depth, format, w, h, sx, sy, sw, sh, dx, dy, data)
 		      data);
 }
 
-static int
+
+#ifdef PANORAMIX
+static int 
+ProcPanoramiXShmPutImage(register ClientPtr client)
+{
+    GC		 	 *pGC;
+    DrawablePtr 	 pDraw;
+    int			 j;
+    PanoramiXWindow 	 *pPanoramiXWin;
+    PanoramiXWindow 	 *pPanoramiXRoot;
+    PanoramiXGC 	 *pPanoramiXGC = PanoramiXGCRoot;
+    int			 orig_x, orig_y;
+    int			 result;
+
+
+    REQUEST(xShmPutImageReq);
+    REQUEST_SIZE_MATCH(xShmPutImageReq);
+
+    pDraw = (DrawablePtr) SecurityLookupIDByClass(
+		client, stuff->drawable, RC_DRAWABLE, SecurityReadAccess);
+    IF_RETURN(!pDraw, BadDrawable);
+    pPanoramiXRoot = (pDraw->type == DRAWABLE_PIXMAP) 
+				? PanoramiXPmapRoot : PanoramiXWinRoot;
+    pPanoramiXWin = pPanoramiXRoot;
+    PANORAMIXFIND_ID(pPanoramiXWin, stuff->drawable);
+    IF_RETURN(!pPanoramiXWin,BadDrawable);
+    PANORAMIXFIND_ID(pPanoramiXGC, stuff->gc);
+    IF_RETURN(!pPanoramiXGC, BadGC);
+    orig_x = stuff->dstX;
+    orig_y = stuff->dstY;
+    FOR_NSCREENS_OR_ONCE(pPanoramiXWin, j) {
+	stuff->drawable = pPanoramiXWin->info[j].id;
+	stuff->gc = pPanoramiXGC->info[j].id;
+	if (pPanoramiXWin == pPanoramiXRoot) {
+	    stuff->dstX = orig_x - panoramiXdataPtr[j].x;
+	    stuff->dstY = orig_y - panoramiXdataPtr[j].y;
+	}
+	result = ProcShmPutImage(client);
+	BREAK_IF(result != client->noClientException);
+    }
+    return(result);
+}
+#endif
+
+#ifdef PANORAMIX
+static
+#endif
+int
 ProcShmPutImage(client)
     register ClientPtr client;
 {
@@ -946,6 +1007,10 @@ ProcShmDispatch (client)
     case X_ShmDetach:
 	return ProcShmDetach(client);
     case X_ShmPutImage:
+#ifdef PANORAMIX
+        if ( !noPanoramiXExtension )
+	   return ProcPanoramiXShmPutImage(client);
+#endif
 	return ProcShmPutImage(client);
     case X_ShmGetImage:
 	return ProcShmGetImage(client);

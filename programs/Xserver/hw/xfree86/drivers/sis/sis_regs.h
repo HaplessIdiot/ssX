@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_regs.h,v 1.4 1999/01/31 12:22:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_regs.h,v 1.6 1999/05/09 10:51:59 dawes Exp $ */
 
 /* 3C4 */
 #define BankReg 0x06
@@ -124,83 +124,83 @@ extern int sisReg32MMIO[];
    ((unsigned long *)(pSiS->IOBase + BR(11)))
 
 #define sisSETCMD(op) \
-  *(unsigned short *)(pSiS->IOBase + BR(10) +2 ) = op
+  *(volatile unsigned short *)(pSiS->IOBase + BR(10) +2 ) = op
 
 #define sisSETROPFG(op) \
-  *(unsigned int *)(pSiS->IOBase + BR(4)) = ((*(unsigned int *)(pSiS->IOBase + BR(4)))&0xffffff) | (op<<24)
+  *(volatile unsigned int *)(pSiS->IOBase + BR(4)) = ((*(volatile unsigned int *)(pSiS->IOBase + BR(4)))&0xffffff) | (op<<24)
 
 #define sisSETROPBG(op) \
-  *(unsigned int *)(pSiS->IOBase + BR(5)) = ((*(unsigned int *)(pSiS->IOBase + BR(5)))&0xffffff) | (op<<24)
+  *(volatile unsigned int *)(pSiS->IOBase + BR(5)) = ((*(volatile unsigned int *)(pSiS->IOBase + BR(5)))&0xffffff) | (op<<24)
 
 #define sisSETROP(op) \
    sisSETROPFG(op);sisSETROPBG(op);
 
 
 #define sisSETSRCADDR(srcAddr) \
-  *(unsigned int *)(pSiS->IOBase + BR(0)) = srcAddr&0x3FFFFFL
+  *(volatile unsigned int *)(pSiS->IOBase + BR(0)) = srcAddr&0x3FFFFFL
 
 #define sisSETDSTADDR(dstAddr) \
-  *(unsigned int *)(pSiS->IOBase + BR(1)) = dstAddr&0x3FFFFFL
+  *(volatile unsigned int *)(pSiS->IOBase + BR(1)) = dstAddr&0x3FFFFFL
 
 #define sisSETPITCH(srcPitch,dstPitch) \
-  *(unsigned int *)(pSiS->IOBase + BR(2)) = ((dstPitch&0xFFFF)<<16)| \
+  *(volatile unsigned int *)(pSiS->IOBase + BR(2)) = ((dstPitch&0xFFFF)<<16)| \
       (srcPitch&0xFFFF)
 
 /* according to SIS 2D Engine Programming Guide 
  * width -1 independant of Bpp
  */ 
 #define sisSETHEIGHTWIDTH(Height,Width)\
-  *(unsigned int *)(pSiS->IOBase + BR(3)) = (((Height)&0xFFFF)<<16)| \
+  *(volatile unsigned int *)(pSiS->IOBase + BR(3)) = (((Height)&0xFFFF)<<16)| \
       ((Width)&0xFFFF)
 
 #define sisSETCLIPTOP(x,y)\
-  *(unsigned int *)(pSiS->IOBase + BR(8)) = (((y)&0xFFFF)<<16)| \
+  *(volatile unsigned int *)(pSiS->IOBase + BR(8)) = (((y)&0xFFFF)<<16)| \
       ((x)&0xFFFF)
 
 #define sisSETCLIPBOTTOM(x,y)\
-  *(unsigned int *)(pSiS->IOBase + BR(9)) = (((y)&0xFFFF)<<16)| \
+  *(volatile unsigned int *)(pSiS->IOBase + BR(9)) = (((y)&0xFFFF)<<16)| \
       ((x)&0xFFFF)
 
 #define sisSETBGCOLOR(bgColor)\
-  *(unsigned int *)(pSiS->IOBase + BR(5)) = (bgColor)
+  *(volatile unsigned int *)(pSiS->IOBase + BR(5)) = (bgColor)
 
 #define sisSETBGCOLOR8(bgColor)\
-  *(unsigned int *)(pSiS->IOBase + BR(5)) = (bgColor&0xFF)
+  *(volatile unsigned int *)(pSiS->IOBase + BR(5)) = (bgColor&0xFF)
 
 #define sisSETBGCOLOR16(bgColor)\
-  *(unsigned int *)(pSiS->IOBase + BR(5)) = (bgColor&0xFFFF)
+  *(volatile unsigned int *)(pSiS->IOBase + BR(5)) = (bgColor&0xFFFF)
 
 #define sisSETBGCOLOR24(bgColor)\
-  *(unsigned int *)(pSiS->IOBase + BR(5)) = (bgColor&0xFFFFFF)
+  *(volatile unsigned int *)(pSiS->IOBase + BR(5)) = (bgColor&0xFFFFFF)
 
 
 #define sisSETFGCOLOR(fgColor)\
-  *(unsigned int *)(pSiS->IOBase + BR(4)) = (fgColor)
+  *(volatile unsigned int *)(pSiS->IOBase + BR(4)) = (fgColor)
 
 #define sisSETFGCOLOR8(fgColor)\
-  *(unsigned int *)(pSiS->IOBase + BR(4)) = (fgColor&0xFF)
+  *(volatile unsigned int *)(pSiS->IOBase + BR(4)) = (fgColor&0xFF)
 
 #define sisSETFGCOLOR16(fgColor)\
-  *(unsigned int *)(pSiS->IOBase + BR(4)) = (fgColor&0xFFFF)
+  *(volatile unsigned int *)(pSiS->IOBase + BR(4)) = (fgColor&0xFFFF)
 
 #define sisSETFGCOLOR24(fgColor)\
-  *(unsigned int *)(pSiS->IOBase + BR(4)) = (fgColor&0xFFFFFF)
+  *(volatile unsigned int *)(pSiS->IOBase + BR(4)) = (fgColor&0xFFFFFF)
 
 /* Line drawing */
 
 #define sisSETXStart(XStart) \
-  *(unsigned short *)(pSiS->IOBase + BR(0)) = XStart
+  *(volatile unsigned short *)(pSiS->IOBase + BR(0)) = XStart
 
-#define sisSETYStart(XStart) \
-  *(unsigned short *)(pSiS->IOBase + BR(1)) = YStart
+#define sisSETYStart(YStart) \
+  *(volatile unsigned short *)(pSiS->IOBase + BR(1)) = YStart
 
 #define sisSETLineMajorCount(MajorAxisCount) \
-  *(unsigned short *)(pSiS->IOBase + BR(3)) = MajorAxisCount
+  *(volatile unsigned short *)(pSiS->IOBase + BR(3)) = MajorAxisCount
 
 #define sisSETLineSteps(K1,K2) \
-  *(unsigned int *)(pSiS->IOBase + BR(6)) = (((K2)&0xFFFF)<<16)| \
+  *(volatile unsigned int *)(pSiS->IOBase + BR(6)) = (((K2)&0xFFFF)<<16)| \
       ((K1)&0xFFFF)
 
 #define sisSETLineErrorTerm(ErrorTerm) \
-  *(unsigned short *)(pSiS->IOBase + BR(7)) = ErrorTerm
+  *(volatile unsigned short *)(pSiS->IOBase + BR(7)) = ErrorTerm
 

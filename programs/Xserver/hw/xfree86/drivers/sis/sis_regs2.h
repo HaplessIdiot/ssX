@@ -26,7 +26,7 @@
  *           David Thomas <davtom@dream.org.uk>. 
  *           Xavier Ducoin <x.ducoin@lectra.com>
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_regs2.h,v 1.1 1999/03/21 07:35:20 dawes Exp $ */
 
 /* 3C4 */
 #define BankReg 0x06
@@ -110,7 +110,7 @@ extern int sis2Reg32MMIO[];
    ((unsigned char *)(pSiS->IOBase + BR(17)))
 
 #define sisSETCMD(op) \
-  *(unsigned long *)(pSiS->IOBase + BR(15) ) = op
+  *(volatile unsigned long *)(pSiS->IOBase + BR(15) ) = op
 
 #define sisSETROP(op) \
    pSiS->ROPReg = (op<<8)
@@ -118,51 +118,51 @@ extern int sis2Reg32MMIO[];
 #define sisROP pSiS->ROPReg
 
 #define sisSETSRCADDR(srcAddr) \
-  *(unsigned long *)(pSiS->IOBase + BR(0)) = srcAddr
+  *(volatile unsigned long *)(pSiS->IOBase + BR(0)) = srcAddr
 
 #define sisSETDSTADDR(dstAddr) \
-  *(unsigned int *)(pSiS->IOBase + BR(4)) = dstAddr
+  *(volatile unsigned int *)(pSiS->IOBase + BR(4)) = dstAddr
 
 #define sisSETPITCH(srcPitch,dstPitch) \
-  *(unsigned short *)(pSiS->IOBase + BR(1)) = (srcPitch); \
-  *(unsigned short *)(pSiS->IOBase + BR(5)) = (dstPitch) 
+  *(volatile unsigned short *)(pSiS->IOBase + BR(1)) = (srcPitch); \
+  *(volatile unsigned short *)(pSiS->IOBase + BR(5)) = (dstPitch) 
 
 #define sisSETHEIGHTWIDTH(Height,Width)\
-  *(unsigned int *)(pSiS->IOBase + BR(6)) = (((Height)&0xFFFF)<<16) | ((Width)&0xFFFF)
+  *(volatile unsigned int *)(pSiS->IOBase + BR(6)) = (((Height)&0xFFFF)<<16) | ((Width)&0xFFFF)
 
 #define sisSETDSTHEIGHT(Height)\
-  *(unsigned short *)(pSiS->IOBase + BR(5)+2) = (Height)
+  *(volatile unsigned short *)(pSiS->IOBase + BR(5)+2) = (Height)
 
 
 #define sisSETSRCXSRCY(X,Y)\
-  *(unsigned int *)(pSiS->IOBase + BR(2)) = (((X)&0xFFFF)<<16)| \
+  *(volatile unsigned int *)(pSiS->IOBase + BR(2)) = (((X)&0xFFFF)<<16)| \
       ((Y)&0xFFFF)
 
 #define sisSETDSTXDSTY(X,Y)\
-  *(unsigned int *)(pSiS->IOBase + BR(3)) = (((X)&0xFFFF)<<16)| \
+  *(volatile unsigned int *)(pSiS->IOBase + BR(3)) = (((X)&0xFFFF)<<16)| \
       ((Y)&0xFFFF)
 
 #define sisSETCLIPTOP(x,y)\
-  *(unsigned int *)(pSiS->IOBase + BR(13)) = (((y)&0xFFFF)<<16)| \
+  *(volatile unsigned int *)(pSiS->IOBase + BR(13)) = (((y)&0xFFFF)<<16)| \
       ((x)&0xFFFF)
 
 #define sisSETCLIPBOTTOM(x,y)\
-  *(unsigned int *)(pSiS->IOBase + BR(14)) = (((y)&0xFFFF)<<16)| \
+  *(volatile unsigned int *)(pSiS->IOBase + BR(14)) = (((y)&0xFFFF)<<16)| \
       ((x)&0xFFFF)
 
 
 #define sisSETBGCOLOR(bgColor)\
-  *(unsigned int *)(pSiS->IOBase + BR(10)) = (bgColor)
+  *(volatile unsigned int *)(pSiS->IOBase + BR(10)) = (bgColor)
 
 #define sisSETFGCOLOR(fgColor)\
-  *(unsigned int *)(pSiS->IOBase + BR(9)) = (fgColor)
+  *(volatile unsigned int *)(pSiS->IOBase + BR(9)) = (fgColor)
 
 
 #define sisSETPATBGCOLOR(bgColor)\
-  *(unsigned int *)(pSiS->IOBase + BR(8)) = (bgColor)
+  *(volatile unsigned int *)(pSiS->IOBase + BR(8)) = (bgColor)
 
 #define sisSETPATFGCOLOR(fgColor)\
-  *(unsigned int *)(pSiS->IOBase + BR(7)) = (fgColor)
+  *(volatile unsigned int *)(pSiS->IOBase + BR(7)) = (fgColor)
 
 
 

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/fontutils.c,v 1.8 1999/04/11 13:11:31 dawes Exp $
+ * $XFree86: xc/programs/xterm/fontutils.c,v 1.9 1999/04/25 10:02:59 dawes Exp $
  */
 
 /************************************************************
@@ -444,11 +444,19 @@ xtermLoadFont (
 	if (EmptyFont(bfs))
 		goto bad;		/* can't use a 0-sized font */
 
+	/*
+	 * Normal/bold fonts should be the same width.  Also, the min/max
+	 * values should be the same.
+	 */
 	if (nfs->min_bounds.width != nfs->max_bounds.width
 	 || bfs->min_bounds.width != bfs->max_bounds.width
 	 || nfs->min_bounds.width != bfs->min_bounds.width
 	 || nfs->max_bounds.width != bfs->max_bounds.width) {
-		TRACE(("Proportional font!\n"))
+		TRACE(("Proportional font! normal %d/%d, bold %d/%d\n",
+			nfs->min_bounds.width,
+			nfs->max_bounds.width,
+			bfs->min_bounds.width,
+			bfs->max_bounds.width))
 		proportional = True;
 	}
 
