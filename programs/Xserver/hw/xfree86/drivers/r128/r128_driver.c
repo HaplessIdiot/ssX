@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.16 2000/02/15 18:01:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.17 2000/02/18 16:23:22 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -2146,7 +2146,8 @@ static void R128FreeScreen(int scrnIndex, int flags)
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     
     R128TRACE(("R128FreeScreen\n"));
-    vgaHWFreeHWRec(pScrn);
+    if (xf86LoaderCheckSymbol("vgaHWFreeHWRec"))
+	vgaHWFreeHWRec(pScrn);
     R128FreeRec(pScrn);
 }
 

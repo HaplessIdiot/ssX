@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.64 2000/02/15 15:33:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.65 2000/02/15 18:01:07 dawes Exp $ */
 /* $PI: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.37 1999/07/02 18:38:31 faith Exp $ */
 
 #define PSZ 8
@@ -3045,11 +3045,11 @@ GLINTFreeScreen(int scrnIndex, int flags)
     GLINTPtr pGlint = GLINTPTR(pScrn);
 
     TRACE_ENTER("GLINTFreeScreen");
-    if (pGlint->FBDev)
+    if (pGlint->FBDev && xf86LoaderCheckSymbol("fbdevHWFreeRec"))
 	fbdevHWFreeRec(xf86Screens[scrnIndex]);
-    if (pGlint->VGAcore)
+    if (pGlint->VGAcore && xf86LoaderCheckSymbol("vgaHWFreeHWRec"))
     	vgaHWFreeHWRec(xf86Screens[scrnIndex]);
-    if (pGlint->RamDacRec)
+    if (pGlint->RamDacRec && xf86LoaderCheckSymbol("RamDacFreeRec"))
     	RamDacFreeRec(xf86Screens[scrnIndex]);
     GLINTFreeRec(xf86Screens[scrnIndex]);
     TRACE_EXIT("GLINTFreeScreen");

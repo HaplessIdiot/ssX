@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.20 2000/02/10 22:33:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.21 2000/02/15 18:01:04 dawes Exp $ */
 
 #define EXPERIMENTAL
 
@@ -1768,7 +1768,8 @@ LgFreeScreen(int scrnIndex, int flags)
 	 * This only gets called when a screen is being deleted.  It does not
 	 * get called routinely at the end of a server generation.
 	 */
-	vgaHWFreeHWRec(xf86Screens[scrnIndex]);
+	if (xf86LoaderCheckSymbol("vgaHWFreeHWRec"))
+		vgaHWFreeHWRec(xf86Screens[scrnIndex]);
 	LgFreeRec(xf86Screens[scrnIndex]);
 }
 

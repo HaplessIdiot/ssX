@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.34 2000/02/08 13:13:34 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.35 2000/02/15 18:01:21 dawes Exp $ */
 
 /*
  *
@@ -1657,6 +1657,9 @@ vgaHWFreeHWRec(ScrnInfoPtr scrp)
 {
     if (vgaHWPrivateIndex >= 0) {
 	vgaHWPtr hwp = VGAHWPTR(scrp);
+
+	if (!hwp)
+	    return;
 
 	xfree(hwp->FontInfo1);
 	xfree(hwp->FontInfo2);

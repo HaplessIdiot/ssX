@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.19 2000/02/16 19:10:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.20 2000/02/18 12:20:03 tsi Exp $ */
 
 /*
  * Authors:
@@ -1840,7 +1840,8 @@ static void
 TDFXFreeScreen(int scrnIndex, int flags) {
   TDFXTRACE("TDFXFreeScreen start\n");
   TDFXFreeRec(xf86Screens[scrnIndex]);
-  vgaHWFreeHWRec(xf86Screens[scrnIndex]);
+  if (xf86LoaderCheckSymbol("vgaHWFreeHWRec"))
+    vgaHWFreeHWRec(xf86Screens[scrnIndex]);
 }
 
 static int

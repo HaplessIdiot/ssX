@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.82 2000/02/06 20:04:47 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.84 2000/02/17 22:39:28 alanh Exp $ */
 
 #include "cfb24_32.h"
 
@@ -2497,7 +2497,8 @@ TRIDENTCloseScreen(int scrnIndex, ScreenPtr pScreen)
 static void
 TRIDENTFreeScreen(int scrnIndex, int flags)
 {
-    vgaHWFreeHWRec(xf86Screens[scrnIndex]);
+    if (xf86LoaderCheckSymbol("vgaHWFreeHWRec"))
+	vgaHWFreeHWRec(xf86Screens[scrnIndex]);
     TRIDENTFreeRec(xf86Screens[scrnIndex]);
 }
 

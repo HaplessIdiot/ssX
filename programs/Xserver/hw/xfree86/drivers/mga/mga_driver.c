@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.138 2000/02/14 18:11:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.139 2000/02/15 18:01:09 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -2728,7 +2728,8 @@ MGAFreeScreen(int scrnIndex, int flags)
      * This only gets called when a screen is being deleted.  It does not
      * get called routinely at the end of a server generation.
      */
-    vgaHWFreeHWRec(xf86Screens[scrnIndex]);
+    if (xf86LoaderCheckSymbol("vgaHWFreeHWRec"))
+	vgaHWFreeHWRec(xf86Screens[scrnIndex]);
     MGAFreeRec(xf86Screens[scrnIndex]);
 }
 

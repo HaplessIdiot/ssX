@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.78 2000/02/12 02:54:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.79 2000/02/15 18:01:01 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -4064,7 +4064,8 @@ CHIPSCloseScreen(int scrnIndex, ScreenPtr pScreen)
 static void
 CHIPSFreeScreen(int scrnIndex, int flags)
 {
-    vgaHWFreeHWRec(xf86Screens[scrnIndex]);
+    if (xf86LoaderCheckSymbol("vgaHWFreeHWRec"))
+	vgaHWFreeHWRec(xf86Screens[scrnIndex]);
     CHIPSFreeRec(xf86Screens[scrnIndex]);
 }
 

@@ -9,7 +9,7 @@
  *    Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.4 2000/02/10 22:33:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.5 2000/02/15 18:01:02 dawes Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -1792,7 +1792,8 @@ AlpFreeScreen(int scrnIndex, int flags)
 	 * This only gets called when a screen is being deleted.  It does not
 	 * get called routinely at the end of a server generation.
 	 */
-	vgaHWFreeHWRec(xf86Screens[scrnIndex]);
+	if (xf86LoaderCheckSymbol("vgaHWFreeHWRec"))
+		vgaHWFreeHWRec(xf86Screens[scrnIndex]);
 	AlpFreeRec(xf86Screens[scrnIndex]);
 }
 

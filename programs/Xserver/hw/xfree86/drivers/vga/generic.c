@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.37 2000/02/10 21:14:52 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.38 2000/02/15 18:01:19 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -394,7 +394,8 @@ GenericGetRec(ScrnInfoPtr pScreenInfo)
 static void
 GenericFreeRec(ScrnInfoPtr pScreenInfo)
 {
-    vgaHWFreeHWRec(pScreenInfo);
+    if (xf86LoaderCheckSymbol("vgaHWFreeHWRec"))
+	vgaHWFreeHWRec(pScreenInfo);
     xfree(pScreenInfo->driverPrivate);
     pScreenInfo->driverPrivate = NULL;
 }
