@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.138 2001/08/07 07:04:52 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.139 2001/08/30 07:56:22 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -136,7 +136,12 @@ DriverRec TRIDENT = {
 };
 
 static SymTabRec TRIDENTChipsets[] = {
+    { TVGA9000,			"tvga9000" },
+    { TVGA9000i,		"tvga9000i" },
+    { TVGA8900C,		"tvga8900c" },
     { TVGA8900D,		"tvga8900d" },
+    { TVGA9200CXr,		"tvga9200cxr" },
+    { TGUI9400CXi,		"tgui9400cxi" },
     { CYBER9320,		"cyber9320" },
     { CYBER9388,		"cyber9388" },
     { CYBER9397,		"cyber9397" },
@@ -167,8 +172,14 @@ static SymTabRec TRIDENTChipsets[] = {
 };
 
 static IsaChipsets TRIDENTISAchipsets[] = {
+    { TVGA9000,			RES_EXCLUSIVE_VGA },
+    { TVGA9000i,		RES_EXCLUSIVE_VGA },
+    { TVGA8900C,		RES_EXCLUSIVE_VGA },
     { TVGA8900D,		RES_EXCLUSIVE_VGA },
+    { TVGA9200CXr,		RES_EXCLUSIVE_VGA },
+    { TGUI9400CXi,		RES_EXCLUSIVE_VGA },
     { CYBER9320,		RES_EXCLUSIVE_VGA },
+    { TGUI9440AGi,		RES_EXCLUSIVE_VGA },
     { -1,			RES_UNDEFINED }
 };
 
@@ -1412,6 +1423,20 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     OUTB(vgaIOBase + 4, InterfaceSel);
 
     switch (pTrident->Chipset) {
+	case TVGA9000:
+	case TVGA9000i:
+	    pScrn->progClock = FALSE;
+	    NoClocks = 16;
+	    pTrident->NoMMIO = TRUE;
+	    pTrident->NoAccel = TRUE;
+	    pTrident->HWCursor = FALSE;
+	    chipset = "TVGA9000/9000i";
+	    ramtype = "Standard DRAM";
+	    if (pTrident->UsePCIRetry)
+	    	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry not supported, disabling\n");
+	    pTrident->UsePCIRetry = FALSE; /* Not Supported */
+	    pTrident->frequency = NTSC;
+	    break;
 	case TVGA8900D:
 	    pScrn->progClock = FALSE;
 	    NoClocks = 16;
@@ -1419,6 +1444,32 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    pTrident->NoAccel = TRUE;
 	    pTrident->HWCursor = FALSE;
 	    chipset = "TVGA8900D";
+	    ramtype = "Standard DRAM";
+	    if (pTrident->UsePCIRetry)
+	    	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry not supported, disabling\n");
+	    pTrident->UsePCIRetry = FALSE; /* Not Supported */
+	    pTrident->frequency = NTSC;
+	    break;
+	case TVGA9200CXr:
+	    pScrn->progClock = FALSE;
+	    NoClocks = 16;
+	    pTrident->NoMMIO = TRUE;
+	    pTrident->NoAccel = TRUE;
+	    pTrident->HWCursor = FALSE;
+	    chipset = "TVGA9200CXr";
+	    ramtype = "Standard DRAM";
+	    if (pTrident->UsePCIRetry)
+	    	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry not supported, disabling\n");
+	    pTrident->UsePCIRetry = FALSE; /* Not Supported */
+	    pTrident->frequency = NTSC;
+	    break;
+	case TGUI9400CXi:
+	    pScrn->progClock = FALSE;
+	    NoClocks = 16;
+	    pTrident->NoMMIO = TRUE;
+	    pTrident->NoAccel = TRUE;
+	    pTrident->HWCursor = FALSE;
+	    chipset = "TVGA9200CXr";
 	    ramtype = "Standard DRAM";
 	    if (pTrident->UsePCIRetry)
 	    	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry not supported, disabling\n");
@@ -1805,6 +1856,9 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	else
 	    videorammask = 0x0F;
 	switch (videoram & videorammask) {
+	case 0x01:
+	    pScrn->videoRam = 512;
+	    break;
 	case 0x03:
 	    pScrn->videoRam = 1024;
 	    break;
