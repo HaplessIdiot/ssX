@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.93 2000/08/24 11:45:51 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.94 2000/09/11 16:58:56 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -1274,7 +1274,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     pGlint->irq = pGlint->pEnt->device->irq;
 
     /* Register all entities */
-    for (i = 1; i < pScrn->numEntities; i++) {
+    for (i = 0; i < pScrn->numEntities; i++) {
 	EntityInfoPtr pEnt;
 	pEnt = xf86GetEntityInfo(pScrn->entityList[i]);
         if (xf86RegisterResources(pEnt->index, NULL, ResExclusive)) {
