@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/mesa/src/X/xf86glx.c,v 1.15 2002/09/10 02:54:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/mesa/src/X/xf86glx.c,v 1.16 2002/10/30 12:52:04 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -142,7 +142,7 @@ static XMesaVisual find_mesa_visual(int screen, VisualID vid)
  * of red, green, blue and alpha.  If set set bufferSize to 32 we may
  * foul-up the visual matching code below (search for bufferSize).
  */
-#define NUM_FALLBACK_CONFIGS 4
+#define NUM_FALLBACK_CONFIGS 5
 static __GLXvisualConfig FallbackConfigs[NUM_FALLBACK_CONFIGS] = {
   /* [0] = RGB, double buffered, Z */
   {
@@ -204,7 +204,27 @@ static __GLXvisualConfig FallbackConfigs[NUM_FALLBACK_CONFIGS] = {
     0, 0, 0, 0,         /* transparent rgba color (floats scaled to ints) */
     0                   /* transparentIndex */
   },
-  /* [3] = CI, double buffered, Z */
+  /* [3] = RGB+Alpha, single buffered, Z, stencil, accum */
+  {
+    -1,                 /* vid */
+    -1,                 /* class */
+    True,               /* rgba */
+    -1, -1, -1, 8,      /* rgba sizes */
+    -1, -1, -1, -1,     /* rgba masks */
+    16, 16, 16, 16,     /* rgba accum sizes */
+    False,              /* doubleBuffer */
+    False,              /* stereo */
+    -1,                 /* bufferSize */
+    16,                 /* depthSize */
+    8,                  /* stencilSize */
+    0,                  /* auxBuffers */
+    0,                  /* level */
+    GLX_NONE_EXT,       /* visualRating */
+    0,                  /* transparentPixel */
+    0, 0, 0, 0,         /* transparent rgba color (floats scaled to ints) */
+    0                   /* transparentIndex */
+  },
+  /* [4] = CI, double buffered, Z */
   {
     -1,                 /* vid */
     -1,                 /* class */
