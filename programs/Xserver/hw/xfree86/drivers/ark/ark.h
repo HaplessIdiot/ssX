@@ -67,5 +67,6 @@ typedef struct _ARKRec {
 #define	ZOOMDAC		0x404
 #define ATT490		0x101
 
+Bool ARKAccelInit(ScreenPtr pScreen);
 
 #endif /* _ARK_H */
