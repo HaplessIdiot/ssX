@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.59 2000/06/28 07:51:47 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.60 2000/06/30 19:06:56 keithp Exp $ */
 
 #include "Xfuncproto.h"
 #include "Xmd.h"
@@ -903,13 +903,16 @@ xf86PostMotionEvent(DeviceIntPtr	device,
     Bool			is_shared = xf86ShareCorePointer(device);
     Bool			drag = xf86SendDragEvents(device);
     ValuatorClassPtr		val = device->valuator;
+    int				valuator[6];
+    int				oldaxis[6];
     int				*axisvals;
     AxisInfoPtr			axes;
     int				dx, dy;
     float			mult;
-#ifdef XFreeXDGA
-    int				rawx = 0, rawy = 0;
-#endif
+    int				x, y;
+    int				loop_start;
+    int				i;
+    int				num;
     
     DBG(5, ErrorF("xf86PostMotionEvent BEGIN 0x%x(%s) switch=0x%x is_core=%s is_shared=%s is_absolute=%s\n",
 		  device, device->name, switch_device,
@@ -921,7 +924,7 @@ xf86PostMotionEvent(DeviceIntPtr	device,
       xf86SwitchCoreDevice(switch_device, device);
     }
     
-    current = GetTimeInMillis();
+    xf86Info.lastEventTime = xev->time = current = GetTimeInMillis();
     
     if (!is_core) {
       if (HAS_MOTION_HISTORY(local)) {
@@ -940,207 +943,147 @@ xf86PostMotionEvent(DeviceIntPtr	device,
     
     va_start(var, num_valuators);
 
+    loop_start = 0;
     for(loop=0; loop<num_valuators; loop++) {
-	switch (loop % 6) {
-	case 0:
-	    xv->valuator0 = va_arg(var, int);
-	    if (loop == num_valuators)
-		RELATIVE_CHECK(xv->valuator0, loop+first_valuator);
-	    break;
-	case 1:
-	    xv->valuator1 = va_arg(var, int);
-
-	    DBG(5, ErrorF("xf86PostMotionEvent v0=%d v1=%d\n", xv->valuator0, xv->valuator1));
-	    
-#ifdef XFreeXDGA
+	
+	valuator[loop%6] = va_arg(var,int);
+	
+	if (loop % 6 == 5 || loop == num_valuators - 1)	{
+	    num = loop % 6 + 1;
 	    /*
-	     * DGA wants raw dx/dy (or at least, I think it does -keithp)
+	     * Adjust first two relative valuators
 	     */
-	    rawx = xv->valuator0;
-	    rawy = xv->valuator1;
-	    if (is_absolute)
-	    {
-		rawx -= local->old_x;
-		rawy -= local->old_y;
-	    }
-#endif
-	    if (loop == 1 && !is_absolute && device->ptrfeed && device->ptrfeed->ctrl.num) {
-		/* modeled from xf86Events.c */
-		if (device->ptrfeed->ctrl.threshold) {
-		    if ((abs(xv->valuator0) + abs(xv->valuator1)) >= device->ptrfeed->ctrl.threshold) {
-			xv->valuator0 = (xv->valuator0 * device->ptrfeed->ctrl.num) /
-			    device->ptrfeed->ctrl.den;
-			xv->valuator1 = (xv->valuator1 * device->ptrfeed->ctrl.num) /
-			    device->ptrfeed->ctrl.den;
-		    }
-		}
-		else if (xv->valuator0 || xv->valuator1) {
-		    dx = xv->valuator0;
-		    dy = xv->valuator1;
-		    mult = pow((float)(dx*dx+dy*dy),
-			       ((float)(device->ptrfeed->ctrl.num) /
-				(float)(device->ptrfeed->ctrl.den) - 1.0) / 
-			       2.0) / 2.0;
-		    if (dx) {
-			local->dxremaind = mult * (float)dx + local->dxremaind;
-			xv->valuator0 = dx = (int)local->dxremaind;
-			local->dxremaind = local->dxremaind - (float)dx;
-		    }
-		    if (dy) {
-			local->dyremaind = mult * (float)dy + local->dyremaind;
-			xv->valuator1 = dy = (int)local->dyremaind;
-			local->dyremaind = local->dyremaind - (float)dy;
-		    }
-		}
-		DBG(6, ErrorF("xf86PostMotionEvent acceleration v0=%d v1=%d\n", xv->valuator0, xv->valuator1));
-	    }
-	    
-            /* mr Sat Jul  5 13:46:55 MET 1997
-             * fix to recognize XWarpCursor requests
-	     * FL Thu Nov 12 07:42:03 1998
-	     * Fix the fix to revert x/y coordinates to valuators space.
-	     * This has to be done only for relative devices which control
-	     * the core pointer.
-             */
-            if ((loop == 1) && !is_absolute && (is_core || is_shared)) {
-		int x1, y1;
-
-		miPointerPosition(&x1,&y1);
+	    if (!is_absolute && num_valuators >= 2 && loop_start == 0) {
 		
-		if (x1!=local->old_x || y1!=local->old_y ) {
-		    if (!local->reverse_conversion_proc) {
-			axisvals[loop+first_valuator-1] = x1;
-			axisvals[loop+first_valuator] = y1;
+		dx = valuator[0];
+		dy = valuator[1];
+
+		/*
+		 * Accelerate
+		 */
+		if (device->ptrfeed && device->ptrfeed->ctrl.num) {
+		    /* modeled from xf86Events.c */
+		    if (device->ptrfeed->ctrl.threshold) {
+			if ((abs(dx) + abs(dy)) >= device->ptrfeed->ctrl.threshold) {
+			    valuator[0] = (dx * device->ptrfeed->ctrl.num) /
+					    device->ptrfeed->ctrl.den;
+			    valuator[1] = (dy * device->ptrfeed->ctrl.num) /
+					    device->ptrfeed->ctrl.den;
+			}
 		    }
-		    else {
-			(*local->reverse_conversion_proc)(local, x1, y1, axisvals);
+		    else if (dx || dy) {
+			mult = pow((float)(dx*dx+dy*dy),
+				   ((float)(device->ptrfeed->ctrl.num) /
+				    (float)(device->ptrfeed->ctrl.den) - 1.0) / 
+				   2.0) / 2.0;
+			if (dx) {
+			    local->dxremaind = mult * (float)dx + local->dxremaind;
+			    valuator[0] = (int)local->dxremaind;
+			    local->dxremaind = local->dxremaind - (float)valuator[0];
+			}
+			if (dy) {
+			    local->dyremaind = mult * (float)dy + local->dyremaind;
+			    valuator[1] = (int)local->dyremaind;
+			    local->dyremaind = local->dyremaind - (float)valuator[1];
+			}
 		    }
-		    DBG(5, ErrorF("xf86PostMotionEvent(mr) x1=%d y1=%d\n", x1,y1));
+		    DBG(6, ErrorF("xf86PostMotionEvent acceleration v0=%d v1=%d\n",
+				  valuator[0], valuator[1]));
 		}
-            }
-	    RELATIVE_CHECK(xv->valuator0, loop+first_valuator-1);
-	    RELATIVE_CHECK(xv->valuator1, loop+first_valuator);
-	    break;
-	case 2:
-	    xv->valuator2 = va_arg(var, int);
-	    RELATIVE_CHECK(xv->valuator2, loop+first_valuator);
-	    break;
-	case 3:
-	    xv->valuator3 = va_arg(var, int);
-	    RELATIVE_CHECK(xv->valuator3, loop+first_valuator);
-	    break;
-	case 4:
-	    xv->valuator4 = va_arg(var, int);
-	    RELATIVE_CHECK(xv->valuator4, loop+first_valuator);
-	    break;
-	case 5:
-	    xv->valuator5 = va_arg(var, int);
-	    RELATIVE_CHECK(xv->valuator5, loop+first_valuator);
-	    break;
-	}
-	if ((loop % 6 == 5) || (loop == num_valuators - 1)) {
-	    xv->num_valuators = (loop % 6) + 1;
-	    xv->first_valuator = first_valuator + (loop / 6) * 6;
-	    
+		
+		/*
+		 * Map current position back to device space in case
+		 * the cursor was warped
+		 */
+		if (is_core || is_shared)
+		{
+		    miPointerPosition (&x, &y);
+		    if (local->reverse_conversion_proc)
+			(*local->reverse_conversion_proc)(local, x, y, axisvals);
+		    else
+		    {
+			axisvals[0] = x;
+			axisvals[1] = y;
+		    }
+		}
+	    }
+		
+	    /*
+	     * Update axes
+	     */
+	    for (i = 0; i < num; i++)
+	    {
+		oldaxis[i] = axisvals[loop_start + i];
+	        if (is_absolute)
+		    axisvals[loop_start + i] = valuator[i];
+		else
+		    axisvals[loop_start + i] += valuator[i];
+	    }
+		
+	    /*
+	     * Deliver extension event
+	     */
 	    if (!is_core) {
 		xev->type = DeviceMotionNotify;
 		xev->detail = 0;
-		xf86Info.lastEventTime = xev->time = current;
 		xev->deviceid = device->id | MORE_EVENTS;
             
 		xv->type = DeviceValuator;
 		xv->deviceid = device->id;
 	    
 		xv->device_state = 0;
+		xv->num_valuators = num;
+		xv->first_valuator = loop_start;
+		memcpy (&xv->valuator0, &axisvals[loop_start],
+			sizeof(INT32)*xv->num_valuators);
 		
 		if (HAS_MOTION_HISTORY(local)) {
 		    *(Time*)buff = current;
-		    memcpy(buff+sizeof(Time)+sizeof(INT32)*xv->first_valuator, &xv->valuator0,
+		    memcpy(buff+sizeof(Time)+sizeof(INT32)*xv->first_valuator,
+			   &axisvals[loop_start],
 			   sizeof(INT32)*xv->num_valuators);
 		}
 		ENQUEUE(xE);
 	    }
-	    /* Drag is true if no buttons are down, or if there are buttons
-	     * down and SendDragEvents is true.
+	    
+	    /*
+	     * Deliver core event
 	     */
-	    if ((is_core || is_shared) && (num_valuators >= 2) && drag) {
-	        int	x, y;
-
-		if ((*local->conversion_proc)(local,
-					      xv->first_valuator,
-					      xv->num_valuators,
-					      xv->valuator0,
-					      xv->valuator1,
-					      xv->valuator2,
-					      xv->valuator3,
-					      xv->valuator4,
-					      xv->valuator5,
-					      &x, &y) == FALSE) {
-		    DBG(4, ErrorF("xf86PostMotionEvent conversion failed\n"));
-		    continue;
-		}
-
-		DBG(4, ErrorF("xf86PostMotionEvent x=%d y=%d\n", x, y));
-
-		if (x == local->old_x && y == local->old_y) {
-		    DBG(4, ErrorF("xf86PostMotionEvent same cursor position continuing\n"));
-		    continue;
-		}
-		
-		xf86Info.lastEventTime = current;
-
-		/* FL [Sat Jun 14 14:32:01 1997]
-		 * needs to integrate with DGA and XTEST event posting
-		 */
-
+	    if (is_core || is_shared) {
 #ifdef XFreeXDGA
+		/*
+		 * Let DGA peek at the event and steal it
+		 */
 		xev->type = MotionNotify;
-		if (!DGAStealMouseEvent(xf86EventQueue.pEnqueueScreen->myNum, xE, rawx, rawy )) {
+		xev->detail = 0;
+		if (DGAStealMouseEvent(xf86EventQueue.pEnqueueScreen->myNum,
+				       xE,
+				       axisvals[0] - oldaxis[0],
+				       axisvals[1] - oldaxis[1]))
+		    continue;
 #endif
-		    miPointerAbsoluteCursor(x, y, xf86Info.lastEventTime); 
+		if (!(*local->conversion_proc)(local, loop_start, num,
+					       axisvals[0], axisvals[1],
+					       axisvals[2], axisvals[3],
+					       axisvals[4], axisvals[5],
+					       &x, &y))
+		    continue;
 
-		    /* Fix valuators for relative devices when the mi layer
-		     * has bounded the x and y coordinates. This is needed
-		     * to be sure to have an exact mapping between x,y coordinates
-		     * and valuators space.
-		     */
-		    if (!is_absolute) {
-			int x1, y1;
-			
-			miPointerPosition(&x1, &y1);
-			
-			/* The mi layer has bounded the coordinates.
-			 */
-			if (x != x1 || y != y1) {
-			    /* When there is no reverse conversion proc, we
-			     * asume that x,y are mapped to the first valuators.
-			     */
-			    if (!local->reverse_conversion_proc) {
-				axisvals[0] = x1;
-				axisvals[1] = y1;
-			    }
-			    else {
-				(*local->reverse_conversion_proc)(local, x1, y1, axisvals);
-			    }
-			    x = x1;
-			    y = y1;
-			}
-		    }
-#ifdef XFreeXDGA
+		if (drag)
+		    miPointerAbsoluteCursor (x, y, current);
+		/*
+		 * Retrieve the position
+		 */
+		miPointerPosition (&x, &y);
+		if (local->reverse_conversion_proc)
+		    (*local->reverse_conversion_proc)(local, x, y, axisvals);
+		else
+		{
+		    axisvals[0] = x;
+		    axisvals[1] = y;
 		}
-#endif
-		/* Save the core pointer coordinates to be able to work
-		 * with multiple relative devices and to detect XWarpCursor
-		 * requests.
-		 */
-		local->old_x = x;
-		local->old_y = y;
-
-		/* If the device don't send extended events, stop the loop.
-		 */
-		if (!is_shared)
-		    break;
 	    }
+	    loop_start = loop + 1;
 	}
     }
     va_end(var);
