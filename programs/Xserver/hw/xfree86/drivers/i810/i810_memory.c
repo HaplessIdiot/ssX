@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.21 2001/11/19 15:33:40 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.22 2001/11/26 16:25:06 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -292,7 +292,7 @@ void I810SetTiledMemory (ScrnInfoPtr pScrn,int nr,unsigned int start,unsigned in
 
    if (nr < 0 || nr > 7)
 	 {
-		xf86DrvMsg (X_WARNING,pScrn->scrnIndex,"%s - fence %d out of range\n",__FUNCTION__,nr);
+		xf86DrvMsg (X_WARNING,pScrn->scrnIndex,"%s - fence %d out of range\n","I810SetTiledMemory",nr);
 		return;
 	 }
 
@@ -302,19 +302,19 @@ void I810SetTiledMemory (ScrnInfoPtr pScrn,int nr,unsigned int start,unsigned in
 
    if (start & fence_mask)
 	 {
-		xf86DrvMsg (X_WARNING,pScrn->scrnIndex,"%s %d: start (%x) is not 512k aligned\n",__FUNCTION__,nr,start);
+		xf86DrvMsg (X_WARNING,pScrn->scrnIndex,"%s %d: start (%x) is not 512k aligned\n","I810SetTiledMemory",nr,start);
 		return;
 	 }
 
    if (start % size)
 	 {
-		xf86DrvMsg (X_WARNING,pScrn->scrnIndex,"%s %d: start (%x) is not size (%x) aligned\n",__FUNCTION__,nr,start,size);
+		xf86DrvMsg (X_WARNING,pScrn->scrnIndex,"%s %d: start (%x) is not size (%x) aligned\n","I810SetTiledMemory",nr,start,size);
 		return;
 	 }
 
    if (pitch & 127)
 	 {
-		xf86DrvMsg (X_WARNING,pScrn->scrnIndex,"%s %d: pitch (%x) not a multiple of 128 bytes\n",__FUNCTION__,nr,pitch);
+		xf86DrvMsg (X_WARNING,pScrn->scrnIndex,"%s %d: pitch (%x) not a multiple of 128 bytes\n","I810SetTiledMemory",nr,pitch);
 		return;
 	 }
 
@@ -333,7 +333,7 @@ void I810SetTiledMemory (ScrnInfoPtr pScrn,int nr,unsigned int start,unsigned in
 		   case MB (32): val |= FENCE_SIZE_32M; break;
 		   case MB (64): val |= FENCE_SIZE_64M; break;
 		   default:
-			 xf86DrvMsg (X_WARNING,pScrn->scrnIndex,"%s %d: illegal size (0x%x)\n",__FUNCTION__,size);
+			 xf86DrvMsg (X_WARNING,pScrn->scrnIndex,"%s %d: illegal size (0x%x)\n","I810SetTiledMemory",nr,size);
 			 return;
 		  }
 
@@ -347,7 +347,7 @@ void I810SetTiledMemory (ScrnInfoPtr pScrn,int nr,unsigned int start,unsigned in
 		   case 32: val |= FENCE_PITCH_32; break;
 		   case 64: val |= FENCE_PITCH_64; break;
 		   default:
-			 xf86DrvMsg (X_WARNING,pScrn->scrnIndex,"%s %d: illegal size (0x%x)\n",__FUNCTION__,size);
+			 xf86DrvMsg (X_WARNING,pScrn->scrnIndex,"%s %d: illegal size (0x%x)\n","I810SetTiledMemory",nr,size);
 			 return;
 		  }
 	 }
@@ -363,7 +363,7 @@ void I810SetTiledMemory (ScrnInfoPtr pScrn,int nr,unsigned int start,unsigned in
 		   case MB (16): val |= FENCE_SIZE_16M; break;
 		   case MB (32): val |= FENCE_SIZE_32M; break;
 		   default:
-			 xf86DrvMsg (X_WARNING,pScrn->scrnIndex,"%s %d: illegal size (0x%x)\n",__FUNCTION__,size);
+			 xf86DrvMsg (X_WARNING,pScrn->scrnIndex,"%s %d: illegal size (0x%x)\n","I810SetTiledMemory",nr,size);
 			 return;
 		  }
 
@@ -376,7 +376,7 @@ void I810SetTiledMemory (ScrnInfoPtr pScrn,int nr,unsigned int start,unsigned in
 		   case 16: val |= FENCE_PITCH_16; break;
 		   case 32: val |= FENCE_PITCH_32; break;
 		   default:
-			 xf86DrvMsg (X_WARNING,pScrn->scrnIndex,"%s %d: illegal size (0x%x)\n",__FUNCTION__,size);
+			 xf86DrvMsg (X_WARNING,pScrn->scrnIndex,"%s %d: illegal size (0x%x)\n","I810SetTiledMemory",nr,size);
 			 return;
 		  }
 	 }
@@ -448,7 +448,7 @@ int I810CheckAvailableMemory (ScrnInfoPtr pScrn)
 	 return (-1);
 
    maxPages = agpinf->totalPages - agpinf->usedPages;
-   xf86DrvMsgVerb (pScrn->scrnIndex,X_INFO,2,"%s: %dk available\n",__FUNCTION__,maxPages * 4);
+   xf86DrvMsgVerb (pScrn->scrnIndex,X_INFO,2,"%s: %dk available\n","I810CheckAvailableMemory",maxPages * 4);
 
    return (maxPages * 4);
 }
