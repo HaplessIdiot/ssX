@@ -1,5 +1,5 @@
 /*
- * Copyright 1997,1998 by Alan Hourihane, Wigan, England.
+ * Copyright 1997-2003 by Alan Hourihane, North Wales, UK.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -23,7 +23,7 @@
  * 
  * Trident Blade3D accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/blade_accel.c,v 1.18 2002/10/08 22:14:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/blade_accel.c,v 1.19 2003/04/15 22:13:43 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"

@@ -1,5 +1,5 @@
 /*
- * Copyright 1992-2000 by Alan Hourihane, Wigan, England.
+ * Copyright 1992-2003 by Alan Hourihane, North Wales, UK.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -23,7 +23,7 @@
  * 
  * Trident accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_accel.c,v 1.25tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_accel.c,v 1.26 2003/02/12 21:46:42 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"

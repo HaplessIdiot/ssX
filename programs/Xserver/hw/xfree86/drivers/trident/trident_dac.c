@@ -1,5 +1,5 @@
 /*
- * Copyright 1992-2000 by Alan Hourihane, Wigan, England.
+ * Copyright 1992-2003 by Alan Hourihane, North Wales, UK.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.71 2003/03/17 09:32:51 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.72 2003/04/15 22:13:43 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -504,6 +504,7 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     /* Enable Chipset specific options */
     switch (pTrident->Chipset) {
+	case CYBERBLADEXP4:
 	case CYBERBLADEXPAI1:
 	case BLADEXP:
 	case CYBERBLADEI7:
@@ -584,14 +585,16 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     	    offset = (pScrn->displayWidth * 3) >> 3;
     	    pReg->tridentRegs3x4[PixelBusReg] = 0x29;
 	    pReg->tridentRegsDAC[0x00] = 0xD0;
-	    if (pTrident->Chipset == CYBERBLADEE4) {
+	    if (pTrident->Chipset == CYBERBLADEXP4 ||
+	        pTrident->Chipset == CYBERBLADEE4) {
     		OUTB(vgaIOBase+ 4, New32);
 		pReg->tridentRegs3x4[New32] = INB(vgaIOBase + 5) & 0x7F;
 	    }
 	    break;
 	case 32:
 	    pReg->tridentRegs3CE[MiscExtFunc] |= 0x02;
-	    if (pTrident->Chipset != CYBERBLADEE4
+	    if (pTrident->Chipset != CYBERBLADEXP4
+	        && pTrident->Chipset != CYBERBLADEE4
 		&& pTrident->Chipset != CYBERBLADEXPAI1) {
 	        /* Clock Division by 2*/
 	        pReg->tridentRegs3CE[MiscExtFunc] |= 0x08; 
@@ -600,7 +603,8 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     	    offset = pScrn->displayWidth >> 1;
     	    pReg->tridentRegs3x4[PixelBusReg] = 0x09;
 	    pReg->tridentRegsDAC[0x00] = 0xD0;
-	    if (pTrident->Chipset == CYBERBLADEE4
+	    if (pTrident->Chipset == CYBERBLADEXP4
+	        || pTrident->Chipset == CYBERBLADEE4
 		|| pTrident->Chipset == CYBERBLADEXPAI1) {
     		OUTB(vgaIOBase+ 4, New32);
 		pReg->tridentRegs3x4[New32] = INB(vgaIOBase + 5) | 0x80;
@@ -728,6 +732,9 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     	OUTB(0x3C4, Protection);
     	OUTB(0x3C5, protect);
     }
+ 
+    if (pTrident->Chipset == CYBERBLADEXP4)
+    	pReg->tridentRegs3CE[DisplayEngCont] = 0x08;
    
     return(TRUE);
 }
@@ -801,7 +808,9 @@ TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     }
     if (pTrident->Chipset >= CYBER9385)    OUTW_3x4(Enhancement0);
     if (pTrident->Chipset >= BLADE3D)      OUTW_3x4(RAMDACTiming);
-    if (pTrident->Chipset == CYBERBLADEE4) OUTW_3x4(New32);
+    if (pTrident->Chipset == CYBERBLADEXP4 ||
+        pTrident->Chipset == CYBERBLADEE4) OUTW_3x4(New32);
+    if (pTrident->Chipset == CYBERBLADEXP4) OUTW_3CE(DisplayEngCont);
     if (pTrident->IsCyber) {
 	CARD8 tmp;
 
@@ -932,7 +941,9 @@ TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     }
     if (pTrident->Chipset >= CYBER9385)    INB_3x4(Enhancement0);
     if (pTrident->Chipset >= BLADE3D)      INB_3x4(RAMDACTiming);
-    if (pTrident->Chipset == CYBERBLADEE4) INB_3x4(New32);
+    if (pTrident->Chipset == CYBERBLADEXP4 ||
+        pTrident->Chipset == CYBERBLADEE4) INB_3x4(New32);
+    if (pTrident->Chipset == CYBERBLADEXP4) INB_3CE(DisplayEngCont);
     if (pTrident->IsCyber) {
 	CARD8 tmp;
 	INB_3CE(VertStretch);
@@ -1120,7 +1131,8 @@ TridentHWCursorInit(ScreenPtr pScreen)
     infoPtr->Flags = HARDWARE_CURSOR_BIT_ORDER_MSBFIRST |
 		HARDWARE_CURSOR_SWAP_SOURCE_AND_MASK |
 		HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_32 |
-                ((pTrident->Chipset == CYBERBLADEE4) ? 
+                ((pTrident->Chipset == CYBERBLADEXP4 ||
+                  pTrident->Chipset == CYBERBLADEE4) ? 
                 HARDWARE_CURSOR_TRUECOLOR_AT_8BPP : 0);
     infoPtr->SetCursorColors = TridentSetCursorColors;
     infoPtr->SetCursorPosition = TridentSetCursorPosition;
