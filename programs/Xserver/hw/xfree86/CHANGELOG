@@ -1,4 +1,6 @@
 XFree86 4.4.99.19 (xx November 2004)
+ 228. Build dummylib before drivers/chips/util, since the latter depends upon
+      the former (Thomas Dickey).
  227. Add mga/util to the build (Marc La France).
  226. Port chips/util to Alpha, ia64 and AMD64 architectures (Marc La France).
 
@@ -19182,7 +19184,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3352 2004/11/28 02:13:44 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3353 2004/11/28 03:37:40 tsi Exp $
 
 
 
