@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.266 2000/02/13 00:56:00 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.268 2000/02/15 02:00:12 eich Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -234,6 +234,11 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #  define XF86RAC		YES
 # endif
 
+/* int10 module */
+# ifndef XF86Int10
+#  define XF86Int10		YES
+# endif
+
 /* Pure PCI drivers should go first */
 # ifndef XF86CardDrivers
 #  define XF86CardDrivers	mga tdfx glint s3virge rendition tga \
@@ -303,6 +308,11 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 /* RAC (Resource Access Control) module */
 # ifndef XF86RAC
 #  define XF86RAC		YES
+# endif
+
+/* int10 module */
+# ifndef XF86Int10
+#  define XF86Int10		YES
 # endif
 
 /* Pure PCI drivers should go first */
