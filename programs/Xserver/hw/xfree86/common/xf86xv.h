@@ -138,12 +138,12 @@ typedef struct {
 typedef struct {
   XF86ImagePtr image;
   int flags;
-  int (*allocate)(ScrnInfoPtr pScrn,
+  int (*alloc_surface)(ScrnInfoPtr pScrn,
 		  int id,
 		  unsigned short width, 	
 		  unsigned short height,
 		  XF86SurfacePtr surface);
-  int (*free)    (XF86SurfacePtr surface);
+  int (*free_surface)(XF86SurfacePtr surface);
   int (*display) (XF86SurfacePtr surface,
 		  short vid_x, short vid_y, 
 		  short drw_x, short drw_y,
