@@ -9,7 +9,7 @@
 <date>18 December 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.95 2004/01/04 20:55:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.96 2004/01/06 17:16:02 dawes Exp $
 </ident>
 
 <abstract>
@@ -1063,6 +1063,7 @@ Ani,
 Juuso &Aring;berg,
 Sergey Babkin,
 Alexey Baj,
+Bang Jun-Young,
 Uberto Barbini,
 Matthew W. S. Bell,
 Vano Beridze,
@@ -1110,6 +1111,7 @@ Hugues Fournier,
 Miguel Freitas,
 Quentin Garnier,
 B&oslash;rre Gaup,
+Michael Geddes,
 Frank Giessler,
 Wolfram Gloger,
 Alexander Gottwald,
@@ -1165,6 +1167,7 @@ Michal Maruska,
 Kensuke Matsuzaki,
 Stephen McCamant,
 Ferris McCormick,
+Luke Mewburn,
 Nicholas Miell,
 Robert Millan,
 Hisashi MIYASHITA,
