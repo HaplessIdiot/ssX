@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/xclock/Clock.c,v 3.13 2002/05/17 23:55:29 keithp Exp $ */
+/* $XFree86: xc/programs/xclock/Clock.c,v 3.14 2002/05/20 06:07:32 keithp Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/StringDefs.h>
@@ -222,6 +222,26 @@ XtConvertArgRec xftColorConvertArgs[] = {
      sizeof(Colormap)}
 };
 
+#define	donestr(type, value, tstr) \
+	{							\
+	    if (toVal->addr != NULL) {				\
+		if (toVal->size < sizeof(type)) {		\
+		    toVal->size = sizeof(type);			\
+		    XtDisplayStringConversionWarning(dpy, 	\
+			(char*) fromVal->addr, tstr);		\
+		    return False;				\
+		}						\
+		*(type*)(toVal->addr) = (value);		\
+	    }							\
+	    else {						\
+		static type static_val;				\
+		static_val = (value);				\
+		toVal->addr = (XPointer)&static_val;		\
+	    }							\
+	    toVal->size = sizeof(type);				\
+	    return True;					\
+	}
+
 static void
 XmuFreeXftColor (XtAppContext app, XrmValuePtr toVal, XtPointer closure,
 		 XrmValuePtr args, Cardinal *num_args)
@@ -299,8 +319,7 @@ XmuCvtStringToXftColor(Display *dpy,
 			     &xftColor))
 	return False;
     
-    *((XftColor *) toVal->addr) = xftColor;
-    return True;
+    donestr (XftColor, xftColor, XtRXftColor);
 }
 
 static void
@@ -352,8 +371,12 @@ XmuCvtStringToXftFont(Display *dpy,
     font = XftFontOpenName (dpy,
 			    XScreenNumberOfScreen (screen),
 			    name);
-    *((XftFont **) toVal->addr) = font;
-    return font ? True : False;
+    if (font)
+    {
+	donestr (XftFont *, font, XtRXftFont);
+    }
+    XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, XtRXftFont);
+    return False;
 }
 
 XtConvertArgRec xftFontConvertArgs[] = {
@@ -424,6 +447,10 @@ Initialize (Widget request, Widget new, ArgList args, Cardinal *num_args)
        (void) time(&time_value);
        tm = *localtime(&time_value);
        str = TimeString (w, &tm);
+       if (w->clock.font == NULL)
+          w->clock.font = XQueryFont( XtDisplay(w),
+				      XGContextFromGC(
+					   DefaultGCOfScreen(XtScreen(w))) );
 #ifdef XRENDER
        if (w->clock.render)
        {
@@ -437,10 +464,6 @@ Initialize (Widget request, Widget new, ArgList args, Cardinal *num_args)
        else
 #endif
        {
-       if (w->clock.font == NULL)
-          w->clock.font = XQueryFont( XtDisplay(w),
-				      XGContextFromGC(
-					   DefaultGCOfScreen(XtScreen(w))) );
        min_width = XTextWidth(w->clock.font, str, strlen(str)) +
 	  2 * w->clock.padding;
        min_height = w->clock.font->ascent +
@@ -452,10 +475,6 @@ Initialize (Widget request, Widget new, ArgList args, Cardinal *num_args)
     if (w->core.height == 0)
 	w->core.height = min_height;
 
-#ifdef XRENDER
-    if (!w->clock.render)
-#endif
-    {
     myXGCV.foreground = w->clock.fgpixel;
     myXGCV.background = w->core.background_pixel;
     if (w->clock.font != NULL)
@@ -475,7 +494,6 @@ Initialize (Widget request, Widget new, ArgList args, Cardinal *num_args)
     valuemask = GCForeground;
     myXGCV.foreground = w->clock.Hdpixel;
     w->clock.HandGC = XtGetGC((Widget)w, valuemask, &myXGCV);
-    }
 
     if (w->clock.update <= 0)
 	w->clock.update = 60;	/* make invalid update's use a default */
@@ -758,8 +776,6 @@ Destroy(Widget gw)
 	XRenderFreePicture (dpy, w->clock.picture);
     if (w->clock.fill_picture)
 	XRenderFreePicture (dpy, w->clock.fill_picture);
-    if (w->clock.render) 
-	return;
 #endif
      XtReleaseGC (gw, w->clock.myGC);
      XtReleaseGC (gw, w->clock.HighGC);
@@ -785,13 +801,13 @@ Resize(Widget gw)
 
         w->clock.centerX = w->core.width / 2;
         w->clock.centerY = w->core.height / 2;
-#ifdef XRENDER
-	w->clock.x_scale = 0.45 * w->core.width;
-	w->clock.y_scale = 0.45 * w->core.height;
-	w->clock.x_off = 0.5 * w->core.width;
-	w->clock.y_off = 0.5 * w->core.height;
-#endif
     }
+#ifdef XRENDER
+    w->clock.x_scale = 0.45 * w->core.width;
+    w->clock.y_scale = 0.45 * w->core.height;
+    w->clock.x_off = 0.5 * w->core.width;
+    w->clock.y_off = 0.5 * w->core.height;
+#endif
 }
 
 /* ARGSUSED */
@@ -877,6 +893,7 @@ clock_tic(XtPointer client_data, XtIntervalId *id)
 	    {
 		XClearArea (dpy, win, 0, 0, 0, 0, False);
 		RenderPrepare (w, 0);
+		XftDrawSetClip (w->clock.draw, 0);
 		XftDrawString8 (w->clock.draw,
 				&w->clock.hour_color,
 				w->clock.face,
@@ -937,6 +954,7 @@ clock_tic(XtPointer client_data, XtIntervalId *id)
 			    if (w->clock.damage.width && 
 				w->clock.damage.height)
 			    {
+				Region	r;
 				XClearArea (XtDisplay (w),
 					    XtWindow (w), 
 					    w->clock.damage.x,
@@ -944,11 +962,11 @@ clock_tic(XtPointer client_data, XtIntervalId *id)
 					    w->clock.damage.width,
 					    w->clock.damage.height, False);
 				RenderPrepare (w, 0);
-				XRenderSetPictureClipRectangles (XtDisplay (w),
-								 w->clock.picture,
-								 0, 0, 
-								 &w->clock.damage,
-								 1);
+				r = XCreateRegion ();
+				XUnionRectWithRegion (&w->clock.damage,
+						      r, r);
+				XftDrawSetClip (w->clock.draw, r);
+				XDestroyRegion (r);
 				DrawClockFace (w);
 				RenderHands (w, &tm, True);
 				if (w->clock.show_second_hand == TRUE)
@@ -1376,6 +1394,18 @@ clock_round(double x)
 	return(x >= 0.0 ? (int)(x + .5) : (int)(x - .5));
 }
 
+#ifdef XRENDER
+static Boolean
+sameColor (XftColor *old, XftColor *new)
+{
+    if (old->color.red != new->color.red) return False;
+    if (old->color.green != new->color.green) return False;
+    if (old->color.blue != new->color.blue) return False;
+    if (old->color.alpha != new->color.alpha) return False;
+    return True;
+}
+#endif
+
 /* ARGSUSED */
 static Boolean 
 SetValues(Widget gcurrent, Widget grequest, Widget gnew, 
@@ -1400,6 +1430,8 @@ SetValues(Widget gcurrent, Widget grequest, Widget gnew,
 				         clock_tic, (XtPointer)gnew);
 
 	  new->clock.show_second_hand =(new->clock.update <= SECOND_HAND_TIME);
+	  if (new->clock.show_second_hand != current->clock.show_second_hand)
+	    redisplay = TRUE;
       }
 
       if (new->clock.padding != current->clock.padding)
@@ -1449,7 +1481,20 @@ SetValues(Widget gcurrent, Widget grequest, Widget gnew,
 	  new->clock.EraseGC = XtGetGC((Widget)gcurrent, valuemask, &myXGCV);
 	  redisplay = TRUE;
 	  }
-     
+#ifdef XRENDER
+     if (new->clock.face != current->clock.face)
+	redisplay = TRUE;
+     if (!sameColor (&new->clock.hour_color, &current->clock.hour_color) ||
+	 !sameColor (&new->clock.min_color, &current->clock.min_color) ||
+	 !sameColor (&new->clock.sec_color, &current->clock.sec_color) ||
+	 !sameColor (&new->clock.major_color, &current->clock.major_color) ||
+	 !sameColor (&new->clock.minor_color, &current->clock.minor_color))
+	redisplay = True;
+    if (new->clock.sharp != current->clock.sharp)
+	redisplay = True;
+    if (new->clock.render != current->clock.render)
+	redisplay = True;
+#endif
      return (redisplay);
 
 }
