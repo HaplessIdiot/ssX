@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/xedit.c,v 1.6 1999/04/11 13:11:23 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/xedit.c,v 1.7 1999/04/25 10:02:53 dawes Exp $ */
 
 #include "xedit.h"
 #include <X11/Xaw/SmeBSB.h>
@@ -168,9 +168,8 @@ main(int argc, char *argv[])
 	  filename = ResolveName(argv[i]);
 	  if (filename == NULL || FindTextSource(NULL, filename) != NULL)
 	      continue;
-	  if (stat(filename, &st) == 0 && ((st.st_mode & S_IFMT) != S_IFREG)) {
-	      if ((st.st_mode & S_IFDIR) == S_IFDIR
-		  || ((st.st_mode) & S_IFLNK) == S_IFLNK && IsDir(filename, False)) {
+	  if (stat(filename, &st) == 0 && !S_ISREG(st.st_mode)) {
+	      if (S_ISDIR(st.st_mode)) {
 		  if (!num_loaded) {
 		      char path[BUFSIZ + 1];
 

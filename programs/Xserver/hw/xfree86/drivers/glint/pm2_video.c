@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.5 1999/04/17 07:06:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.6 1999/04/18 04:08:36 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -177,7 +177,7 @@ static Bool xvipcHandshake(PortPrivPtr pPPriv, int op, Bool block);
 #define XV_SATURATION  	"XV_SATURATION"
 #define XV_HUE		"XV_HUE"
 /* Proprietary */
-#define XV_INTERLACE	"XV_INTERLACE"			/* Boolean */
+#define XV_INTERLACE	"XV_INTERLACE"			/* Integer */
 #define XV_FILTER	"XV_FILTER"			/* Boolean */
 #define XV_BKGCOLOR	"XV_BKGCOLOR"			/* Integer */
 
@@ -512,7 +512,7 @@ ReallocateOffscreenBuffer(PortPrivPtr pPPriv, int num)
 
     pPPriv->fw = 704;
     pPPriv->fh = InputVideoEncodings[pAPriv->VideoStd * 3].height >>
-	(1 - pPPriv->Attribute[4]);
+	(!pPPriv->Attribute[4]);
 
     return TRUE;
 }
@@ -967,8 +967,8 @@ StartVideoStream(PortPrivPtr pPPriv, RegionPtr pRegion)
 	}
 
 	xvipc.a = pPPriv->Buffers;
-	xvipc.b = 1 - pPPriv->Attribute[4];
-	xvipc.c = 1;
+	xvipc.b = !pPPriv->Attribute[4];
+	xvipc.c = 1 + (pPPriv->Attribute[4] & 2);
 
 	if (!xvipcHandshake(pPPriv, OP_START, TRUE))
 		return FALSE;
@@ -1389,7 +1389,7 @@ Permedia2SetPortAttribute(ScrnInfoPtr pScrn,
 	pPPriv->Attribute[5] = !!value;
 	return Success;
     } else if (attribute == xvInterlace) {
-	value = !!value;
+	value %= 3;
 
 	if (value != pPPriv->Attribute[4]) {
 	    int VideoOn = ABS(pPPriv->VideoOn);
@@ -1401,7 +1401,7 @@ Permedia2SetPortAttribute(ScrnInfoPtr pScrn,
 
 	    pPPriv->Attribute[4] = value;
 
-	    fh = InputVideoEncodings[pAPriv->VideoStd * 3].height >> (1 - value);
+	    fh = InputVideoEncodings[pAPriv->VideoStd * 3].height >> (1 - (value & 1));
 	    AdjustVideoH(pPPriv, fh, pPPriv->fh);
 	    pPPriv->fh = fh;
 
@@ -1483,11 +1483,11 @@ Permedia2SetPortAttribute(ScrnInfoPtr pScrn,
 
 	    SetVideoStd(pAPriv);
 
-	    fh = InputVideoEncodings[pAPriv->VideoStd * 3].height >> (1 - pAPriv->Port[0].Attribute[4]);
+	    fh = InputVideoEncodings[pAPriv->VideoStd * 3].height >> (!pAPriv->Port[0].Attribute[4]);
 	    AdjustVideoH(&pAPriv->Port[0], fh, pAPriv->Port[0].fh);
 	    pAPriv->Port[0].fh = fh;
 
-	    fh = InputVideoEncodings[pAPriv->VideoStd * 3].height >> (1 - pAPriv->Port[1].Attribute[4]);
+	    fh = InputVideoEncodings[pAPriv->VideoStd * 3].height >> (!pAPriv->Port[1].Attribute[4]);
 	    AdjustVideoH(&pAPriv->Port[1], fh, pAPriv->Port[1].fh);
 	    pAPriv->Port[1].fh = fh;
 
@@ -1830,7 +1830,7 @@ AdaptorPrivInit(ScrnInfoPtr pScrn)
 	pAPriv->Port[0].Attribute[1] = 0; 	/* Contrast (-3000..+1000) */
 	pAPriv->Port[0].Attribute[2] = 0; 	/* Color saturation (-3000..+1000) */
 	pAPriv->Port[0].Attribute[3] = 0;	/* Hue (-1000..+1000) */
-	pAPriv->Port[0].Attribute[4] = 1;	/* Interlaced (Bool) */
+	pAPriv->Port[0].Attribute[4] = 1;	/* Interlaced (0 = not, 1 = yes, 2 = dscan) */
 	pAPriv->Port[0].Attribute[5] = 0;	/* Bilinear Filter (Bool) */
 
 	pAPriv->Port[1].Attribute[4] = 1;	/* Interlaced (Bool) */

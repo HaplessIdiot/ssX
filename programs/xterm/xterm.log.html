@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.20 1999/04/11 13:11:37 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.21 1999/04/25 10:03:04 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,8 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_98">Patch #98 - 1999/4/26 - XFree86 3.9Pk</A>
+<LI><A HREF="#xterm_97">Patch #97 - 1999/4/25 - XFree86 3.9Pk</A>
 <LI><A HREF="#xterm_96">Patch #96 - 1999/4/19 - XFree86 3.9Pj</A>
 <LI><A HREF="#xterm_95">Patch #95 - 1999/4/5 - XFree86 3.9Ph</A>
 <LI><A HREF="#xterm_94">Patch #94 - 1999/3/27 - XFree86 3.9Pf</A>
@@ -140,6 +142,77 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
 
+<H1><A NAME="xterm_98">Patch #98 - 1999/4/26 - XFree86 3.9Pk</A></H1>
+<ul>
+	<li>correct data manipulation in unparseputc(), broken for
+	  little-endian machines by patch #97's UTF-8 changes.  This meant that
+	  keyboard input on SunOS did not work, though Linux i386 was fine.
+
+	<li>modify initialization for backarrowKey and logic for initial-erase
+	  to prevent the initial-erase from overriding an explicitly set
+	  backarrowKey resource (reported by Vikas Agnihotri).
+
+	<li>add a missing null-pointer check in ScrnRefresh, for the
+	  wide-characters configuration.
+</ul>
+
+<H1><A NAME="xterm_97">Patch #97 - 1999/4/25 - XFree86 3.9Pk</A></H1>
+<ul>
+	<li>add configure script test for -lutil, needed for openpty call when
+	  configuring xterm for Glibc-2.1 and Unix98 PTY's (first reported by
+	  Martin Lorentz" &lt;m.lorentz@w12.link-goe.de&gt;).
+
+	<li>completely parenthesize ifdef expressions for Glibc (suggested by
+	  Bob Maynard).
+
+	<li>add initial-erase options (-ie, +ie) to help message (reported by
+	  Vikas Agnihotri).
+
+	<li>remove duplicate definition of USE_USG_PTYS (reported by Jeremy
+	  Buhler).
+
+	<li>change termcap <em>kD</em> and terminfo <em>kdch1</em> to a DEL
+	  (\177).
+	  I overlooked this when separating the styles of keyboard with
+	  the <em>sunKeyboard</em> resources in patch #94, so that it normally
+	  matches the value of the stty erase character:
+	  <ul>
+	  <li>Reported by Jae Gangemi &lt;jgangemi@ccf.rutgers.edu&gt;,
+	    this caused emacs to not process the DEL properly, combining it
+	    with succeeding characters.
+	  <li>This does not appear to be related to a problem which I have
+	    found with <em>screen</em>, which translates the stty erase into
+	    the termcap <em>kD</em> or terminfo <em>kdch1</em> value
+	    (depending on how it is linked)
+	    if the $TERMCAP variable is set when <em>screen</em> is invoked.
+	  </ul>
+
+	<li>add command-line options for enabling UTF-8 mode: -u8 and +u8.
+	  The more obvious -utf8 and +utf8 would conflict with xterm's
+	  -ut and +ut (utmp) options.
+
+	  The utf8 changes were requested by Markus Kuhn
+	  &lt;Markus.Kuhn@cl.cam.ac.uk&gt;.  This patch does not complete utf8
+	  implementation, but makes it usable, i.e., display and refresh work,
+	  and I am able to display the test cases which Markus provides.
+	  More work is needed to complete this feature:
+	  <ul>
+	  <li>the control sequences for switching in/out of UTF-8 mode are
+	    partly implemented (don't use them).  Similarly, the switching
+	    between vt100 and tek4014 emulations when UTF-8 mode is enabled
+	    will not work properly.
+	    <p>
+	    You must use the -u8 command line option
+	    to use this feature, as well as compile with the OPT_WIDE_CHARS
+	    definition.
+	  <li>cut/paste only copies 8-bit characters.
+	  <li>logging is disabled in the wide-character configuration
+	  <li>printing only writes 8-bit characters.
+	  <li>input only does 8-bit characters.  This is the area that I know
+	    least about.
+	  </ul>
+</ul>
+
 <H1><A NAME="xterm_96">Patch #96 - 1999/4/19 - XFree86 3.9Pj</A></H1>
 <ul>
 	<li>modify Makefile.in to work with configure script's --srcdir option.
@@ -154,7 +227,7 @@ xc/programs/Xserver/hw/xfree86).
 	  bold version of that using a one-pixel offset overstrike
 	  (reported by Henrik Harmsen &lt;harmsen@erv.ericsson.se&gt;).
 
-	<li>correct horizontal spacing of doublewidth line-drawing characters
+	<li>correct horizontal spacing of double width line-drawing characters
 	  that xterm simulates.
 
 	<li>improve support for Unix98 PTY's, using patch in Debian bug report
@@ -170,7 +243,7 @@ xc/programs/Xserver/hw/xfree86).
 <ul>
 	<li>modify primary DA response to allow a '1' parameter.
 
-	<li>add printer and national replacment character sets to VT220
+	<li>add printer and national replacement character sets to VT220
 	  primary DA response.
 
 	<li>document primary and secondary DA responses in ctlseqs.ms
@@ -185,13 +258,13 @@ xc/programs/Xserver/hw/xfree86).
 	<li>limit user-defined keys (DECUDK) to VT220-style keyboard
 	  when sunKeyBoard resource is true.
 
-	<li>modify ifdef's for Linux-2.2.x with GLibc-2.1 to work with
+	<li>modify ifdef's for Linux-2.2.x with Glibc-2.1 to work with
 	  Glibc-2.1 and no Unix98 PTY support (patch from From Andreas Jaeger
 	  &lt;aj@arthur.rhein-neckar.de&gt;)
 
 	<li>add optional feature (resource and command-line options) to make
-	  xterm use the pty's sense of erase character on startup, rather than
-	  requiring it to be \177, or set the pty's erase character to match
+	  xterm use the PTY's sense of erase character on startup, rather than
+	  requiring it to be \177, or set the PTY's erase character to match
 	  xterm's configuration.  Note that while $TERMCAP is modified to
 	  reflect the actual configuration, the terminfo kdch1 string is not
 	  (request by Dirk H Hohndel &lt;hohndel@suse.de&gt;)
@@ -385,7 +458,7 @@ used to working around the problems.
 
 	<li>correct missing initialization of tekInhibit and tekSmall resources.
 
-	<li>correct ifdefs in charproc.c for XtNgeometry and XtCGeometry
+	<li>correct ifdef's in charproc.c for XtNgeometry and XtCGeometry
 	  (reported by Bram Moolenaar).
 </ul>
 
@@ -599,7 +672,7 @@ as well as
 <H1><A NAME="sync_83">Resync #83 - 1998/10/7 - XFree86 3.3.2e</A></H1>
 
 Merge changes through patch #83 with the 3.3.2e version.  This follows a
-patch by Matthieu Herrb &lt;matthieu@laas.fr&gt; to add checks for nonnull
+patch by Matthieu Herrb &lt;matthieu@laas.fr&gt; to add checks for non-null
 return from malloc.
 
 <H1><A NAME="xterm_83">Patch #83 - 1998/8/25 - XFree86 3.9Nb</A></H1>
@@ -659,7 +732,7 @@ More bug fixes:
 </ul>
 From resync with XFree86 3.9Aj:
 <ul>
-	<li>correcton to patch #73, supply missing #else for fallback definitions
+	<li>correction to patch #73, supply missing #else for fallback definitions
 	  of size_t, time_t (Robin Cutshaw &lt;robin@intercore.com&gt;).
 </ul>
 
@@ -702,7 +775,7 @@ This patch fixes several small bugs:
 	  backarrow key from sending a 127 for the delete key (the 'remove'
 	  escape sequence was being sent instead).
 
-	<li>use return-value from getutid() rather than the parameter, to work on
+	<li>use return-value from getuid() rather than the parameter, to work on
 	  systems which do not update the latter (patch by Kevin Buhr
 	  &lt;buhr@mozart.stat.wisc.edu&gt;)
 
@@ -853,7 +926,7 @@ that I made based on feedback from users:
 	<li>define USE_SYSV_ENVVARS for HP-UX, curses does not use $TERMCAP (patch
 	  by Tor Lillqvist).
 
-	<li>on HP-UX, use the /dev/ptym/clone device to allocate ptys.  Works
+	<li>on HP-UX, use the /dev/ptym/clone device to allocate PTY's.  Works
 	  both on HP-UX 9 and 10.  (patch by Tor Lillqvist).
 
 	<li>modify configure script to obtain the $(EXTRA_LOADFLAGS) value from
@@ -1161,7 +1234,7 @@ description:
 	  resource, text is highlighted by changing only the background color,
 	  rather than using reverse video.  I find this easier to read,
 	  especially when selecting multi-colored text, and it is similar to
-	  the way netscape shows selections.
+	  the way Netscape shows selections.
 
 	<LI>Most of the code changes are under "#if OPT_HIGHLIGHT_COLOR".  The
 	  principal exception is in screen.c, where I added a couple calls to
@@ -1288,7 +1361,7 @@ minor corrections are added:
 	  Hiebert &lt;darren@hmi.com&gt;.
 
 	<LI>review diffs between main.c and os2main.c, to make them more alike.
-	  (applies some minor bugfixes to OS/2's version).
+	  (applies some minor bug-fixes to OS/2's version).
 
 	<LI>add missing quotes in memmove/bcopy configure test
 </UL>
@@ -1583,7 +1656,7 @@ as well as fixing a handful of bugs:
 	<LI>the doublesize character support uses the normal font (using scaled
 	  fonts will be another patch) with blanks to simulate doublesize
 	  characters.  This patch does most of the global changes that'll be
-	  required.  I've hidden most of the details in macros and ifdefs so
+	  required.  I've hidden most of the details in macros and ifdef's so
 	  it's easy to configure out (part of the patch is a configure option
 	  for that purpose).
 
@@ -1653,7 +1726,7 @@ add more options later).  It does the following:
 	  2.4, possibly IRIX - sorry network was down today, but I did test
 	  an earlier version yesterday).
 
-	<LI>enables/disables the configuration ifdefs for ANSI color and VT52
+	<LI>enables/disables the configuration ifdef's for ANSI color and VT52
 	  emulation.
 </UL>
 It does not make tests for the things that imake does (that's another project),

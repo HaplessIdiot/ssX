@@ -5,7 +5,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.24 1999/03/14 03:22:41 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.25 1999/04/11 13:11:34 dawes Exp $ */
 
 /***********************************************************
 
@@ -98,8 +98,6 @@ char *ttyname(int fd) { return "/dev/tty"; }
 #include <sys/param.h>	/* for NOFILE */
 
 #include <stdio.h>
-#include <setjmp.h>
-
 #include <time.h>
 
 #include <signal.h>
@@ -405,6 +403,10 @@ static XrmOptionDescRec optionDescList[] = {
 {"-ti",		"*decTerminalID",XrmoptionSepArg,	(caddr_t) NULL},
 {"-tm",		"*ttyModes",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-tn",		"*termName",	XrmoptionSepArg,	(caddr_t) NULL},
+#if OPT_WIDE_CHARS
+{"-u8",		"*utf8",	XrmoptionNoArg,		(caddr_t) "2"},
+{"+u8",		"*utf8",	XrmoptionNoArg,		(caddr_t) "0"},
+#endif
 {"-ulc",	"*colorULMode",	XrmoptionNoArg,		(caddr_t) "off"},
 {"+ulc",	"*colorULMode",	XrmoptionNoArg,		(caddr_t) "on"},
 {"-ut",		"*utmpInhibit",	XrmoptionNoArg,		(caddr_t) "on"},
@@ -516,6 +518,9 @@ static struct _options {
 { "-ti termid",            "terminal identifier" },
 { "-tm string",            "terminal mode keywords and characters" },
 { "-tn name",              "TERM environment variable name" },
+#if OPT_WIDE_CHARS
+{ "-/+u8",                 "turn on/off UTF-8 mode (implies wide-characters)" },
+#endif
 { "-/+ulc",                "turn off/on display of underline as color" },
 { "-/+ut",                 "turn on/off utmp inhibit (not supported)" },
 { "-/+vb",                 "turn on/off visual bell" },

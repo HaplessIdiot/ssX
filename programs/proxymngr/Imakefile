@@ -11,7 +11,7 @@ XCOMM $TOG: Imakefile /main/12 1997/08/05 09:00:09 kaleb $
                    
            OBJS1 = main.o pmdb.o config.o
 
-          PROGS1 = proxymngr
+          PROGS1 = ProgramTargetName(proxymngr)
 
         PROGRAMS = $(PROGS1)
 
@@ -19,7 +19,7 @@ XCOMM $TOG: Imakefile /main/12 1997/08/05 09:00:09 kaleb $
 
      SITE_CONFIG = -DLBXPROXY=$(LBXPROXY)
 
-all:: pmconfig proxymngr
+AllTarget(pmconfig ProgramTargetName(proxymngr))
 
 LinkVarDirectory(proxymngr,.,proxymngr,.)
 

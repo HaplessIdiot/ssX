@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Imakefile,v 1.4 1999/04/05 07:13:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Imakefile,v 1.5 1999/04/17 09:08:42 dawes Exp $ */
 
 
 
@@ -14,6 +14,12 @@
 #if UseDBMalloc
 SYS_LIBRARIES=-ldbmalloc
 DBMALLOCDEFINE=-DDBMALLOC
+#endif
+
+#if defined(OS2Architecture)
+LOCAL_LIBRARIES=-lxf86_os
+#else
+LOCAL_LIBRARIES=
 #endif
 
 XCONFIGFILE = XConfigFile
@@ -34,7 +40,7 @@ CONFIG_DEFINES = -DXCONFIGDIR=\"$(XCONFIGDIR)\" -DXCONFIGFILE=\"$(XCONFIGFILE)\"
 
 SpecialObjectRule(scan.o,scan.c,$(CONFIG_DEFINES) $(MODULEDEFINES) $(EXT_DEFINES))
 
-NormalProgramTarget(cpconfig,cpconfig.o $(OBJS),NullParameter,NullParameter,NullParameter)
+NormalProgramTarget(cpconfig,cpconfig.o $(OBJS),NullParameter,$(LOCAL_LIBRARIES),NullParameter)
 
-AllTarget(cpconfig)
+AllTarget(ProgramTargetName(cpconfig))
 DependTarget()

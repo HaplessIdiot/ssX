@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/14 1998/06/16 15:23:15 msr $
-XCOMM $XFree86: xc/lib/font/Imakefile,v 3.20 1999/02/07 06:18:13 dawes Exp $
+XCOMM $XFree86: xc/lib/font/Imakefile,v 3.21 1999/04/17 09:08:12 dawes Exp $
 #include <Server.tmpl>
 
 #define	IHaveSubdirs
@@ -95,17 +95,8 @@ $(DONES): $(SUBDIRS)
 #define _LinkBuildLibrary(lib) LinkBuildLibrary(lib)
 
 #if NormalLibFont
-#ifndef OS2Architecture
 NormalDepLibraryTarget(Xfont,$(SUBDIRS) $(DONES),$(STATIC_OBJS))
-#else
-all:: DONE
-	cp $(STATIC_OBJS) .
-
-NormalDepLibraryTarget(Xfont,$(DONES),?*.o)
-#endif /* OS2Architecture */
 InstallLibrary(Xfont,$(USRLIBDIR))
-#if !SharedLibFont
-#endif /* !SharedLibFont */
 #endif /* NormalLibFont */
 
 #if SharedLibFont
@@ -113,45 +104,18 @@ SharedDepLibraryTarget(Xfont,$(SOFONTREV),$(SUBDIRS) $(DONES),$(SHARED_OBJS),.,.
 InstallSharedLibrary(Xfont,$(SOFONTREV),$(SHLIBDIR))
 #endif /* SharedLibFont */
 
-
 #if DebugLibFont
-#ifndef OS2Architecture
 DebuggedDepLibraryTarget(Xfont,$(SUBDIRS) $(DONES),$(DEBUG_OBJS))
-#else
-all:: DONE
-	rm -rf debugged
-	mkdir debugged
-	cp $(DEBUG_OBJS) debugged
-
-DebuggedDepLibraryTarget(Xfont,$(DONES),?*.o)
-#endif /* OS2Architecture */
 InstallLibrary(Xfont_d,$(USRLIBDIR))
 #endif /* DebugLibFont */
 
 #if ProfileLibFont
-#ifndef OS2Architecture
 ProfiledDepLibraryTarget(Xfont,$(SUBDIRS) $(DONES),$(PROFILE_OBJS))
-#else
-all:: DONE
-	rm -rf profiled
-	mkdir profiled
-	cp $(PROFILE_OBJS) profiled
-
-ProfiledDepLibraryTarget(Xfont,$(DONES),?*.o)
-#endif /* OS2Architecture */
 InstallLibrary(Xfont_p,$(USRLIBDIR))
 #endif /* ProfileLibFont */
 
 #if DoLoadableServer
-#ifndef OS2Architecture
 NormalDepLibraryTarget(fontbase,$(BASEDIRS) $(BASEDONES),$(BASEOBJS))
-#else
-all:: DONE
-	mkdir baseobjs
-	cp $(BASEOBJS) baseobjs
-
-NormalDepLibraryTarget(fontbase,$(BASEDONES),baseobjs/?*.o)
-#endif
 #endif
 
 

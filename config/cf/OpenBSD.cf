@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.21 1999/03/21 07:34:23 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.22 1999/04/17 09:08:04 dawes Exp $
 XCOMM
 XCOMM $OpenBSD: OpenBSD.cf,v 1.33 1998/09/27 04:52:48 rahnds Exp $
 XCOMM
@@ -40,6 +40,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define HasDlopen		YES
 #define DlLibrary		/**/
 #define HasUsableFileMmap	YES
+
+#define HasNCurses		YES
+#define NCursesLibName		-lcurses
 
 /*
  * Compiler Features

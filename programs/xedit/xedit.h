@@ -26,7 +26,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/xedit.h,v 1.6 1999/04/11 13:11:24 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/xedit.h,v 1.7 1999/04/25 10:02:54 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -129,7 +129,6 @@ void LoadFile(Widget, XEvent*, String*, Cardinal*);
 void FileCompletion(Widget, XEvent*, String*, Cardinal*);
 void KillFile(Widget, XEvent*, String*, Cardinal*);
 void DirWindowCB(Widget, XtPointer, XtPointer);
-Bool IsDir(char*, Bool);
 
 /*	externs in ispell.c	*/
 

@@ -1,5 +1,5 @@
 # $XConsortium: terminfo,v 1.11 94/10/13 21:24:31 gildea Exp $
-# $XFree86: xc/programs/xterm/terminfo,v 3.30 1999/03/14 03:22:44 dawes Exp $
+# $XFree86: xc/programs/xterm/terminfo,v 3.31 1999/03/28 15:33:23 dawes Exp $
 #
 # XFree86 updates/notes/new entries (including xterm-8bit, xterm-16color)
 # - Thomas E. Dickey <dickey@clark.net>
@@ -603,7 +603,7 @@ xterm-r6|xterm-old|xterm X11R6 version,
 	kcud1=\EOB,
 	kcuf1=\EOC,
 	kcuu1=\EOA,
-	kdch1=\E[3~,
+	kdch1=\177,
 	kend=\E[4~,
 	kf1=\EOP,
 	kf10=\E[21~,
@@ -708,7 +708,7 @@ xterm-r5|xterm R5 version,
 	kcud1=\EOB,
 	kcuf1=\EOC,
 	kcuu1=\EOA,
-	kdch1=\E[3~,
+	kdch1=\177,
 	kdl1=\E[31~,
 	kel=\E[8~,
 	kend=\E[4~,

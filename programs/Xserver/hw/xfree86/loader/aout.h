@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aout.h,v 1.4 1998/07/25 16:56:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aout.h,v 1.5 1998/09/05 06:36:57 dawes Exp $ */
 
 /*
  * Borrowed from NetBSD's exec_aout.h
@@ -39,6 +39,11 @@
 
 /* Get prototype for ntohl. */
 #include <ctype.h>
+
+/* OS/2 EMX has ntohl in this file */
+#ifdef __EMX__ 
+#include <sys/param.h> 
+#endif
 
 #define __LDPGSZ        4096U
 #ifndef AOUT_PAGSIZ

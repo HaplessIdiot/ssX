@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/commands.c,v 1.12 1999/04/11 13:11:23 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/commands.c,v 1.13 1999/04/25 10:02:48 dawes Exp $ */
 
 #include <X11/Xfuncs.h>
 #include <X11/Xos.h>
@@ -213,7 +213,7 @@ DoSave(Widget w, XtPointer client_data, XtPointer call_data)
     else {
 	struct stat st;
 
-	if (stat(filename, &st) == 0 && ((st.st_mode & S_IFMT) != S_IFREG)) {
+	if (stat(filename, &st) == 0 && !S_ISREG(st.st_mode)) {
 	    XmuSnprintf(buf, sizeof(buf),
 			"Save: file %s is not a regular file -- nothing saved.\n",
 			name);
@@ -395,9 +395,8 @@ ReallyDoLoad(char *name, char *filename)
     else {
 	struct stat st;
 
-	if (stat(filename, &st) == 0 && ((st.st_mode & S_IFMT) != S_IFREG)) {
-	    if ((st.st_mode & S_IFDIR) == S_IFDIR
-		|| ((st.st_mode) & S_IFLNK) == S_IFLNK && IsDir(filename, False)) {
+	if (stat(filename, &st) == 0 && !S_ISREG(st.st_mode)) {
+	    if (S_ISDIR(st.st_mode)) {
 		Arg args[1];
 		char path[BUFSIZ + 1];
 
@@ -630,26 +629,6 @@ CancelFindFile(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	SwitchDirWindow(False);
 }
 
-Bool
-IsDir(char *path, Bool feep)
-{
-    char lname[BUFSIZ];
-    struct stat st;
-    int llen;
-
-    if ((llen = readlink(path, lname, sizeof(lname) - 1)) > 0) {
-	lname[llen] = '\0';
-	if (stat(lname, &st) == 0)
-	    return ((st.st_mode & S_IFDIR) == S_IFDIR);
-	else if (feep)
-	    Feep();
-    }
-    else if (feep)
-	Feep();
-
-    return (False);
-}
-
 static int
 compar(_Xconst void *a, _Xconst void *b)
 {
@@ -806,17 +785,14 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	    if (d_namlen >= len && strncmp(ent->d_name, file_name, len) == 0) {
 		char *tmp = &(ent->d_name[len]), *mat = match;
 		struct stat st;
-		Bool is_dir;
+		Bool is_dir = FALSE;
 
 		strncpy(pptr, ent->d_name, bytes);
 		pptr[bytes] = '\0';
 		if (stat(path, &st) != 0) /* Probably a broken symbolic link */
 		    is_dir = False;
 		else if (first || show_matches != SM_NEVER) {
-		    if ((st.st_mode & S_IFLNK) == S_IFLNK)
-			is_dir = IsDir(path, False);
-		    else
-			is_dir = (st.st_mode & S_IFDIR) == S_IFDIR;
+		    is_dir = S_ISDIR(st.st_mode);
 		}
 
 		if (first) {
@@ -981,10 +957,7 @@ DirWindowCB(Widget w, XtPointer user_data, XtPointer call_data)
 		strncpy(pptr, ent->d_name, bytes);
 		pptr[bytes] = '\0';
 		if (stat(path, &st) == 0) {
-		    if ((st.st_mode & S_IFLNK) == S_IFLNK)
-			isdir = IsDir(path, False);
-		    else
-			isdir = (st.st_mode & S_IFDIR) == S_IFDIR;
+		    isdir = S_ISDIR(st.st_mode);
 		}
 		else
 		    isdir = False;	/* Probably a broken symbolic link */

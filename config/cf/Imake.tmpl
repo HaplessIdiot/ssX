@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.57 1999/04/17 09:08:03 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.58 1999/04/28 05:36:05 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -384,6 +384,19 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef HasNCurses
 #define HasNCurses		NO
+#endif
+#ifndef NCursesLibName
+#if HasNCurses
+#define NCursesLibName	-lncurses
+#else
+#define NCursesLibName
+#endif
+#endif
+#ifdef NCursesLibDir
+NCURSESLIBDIR = NCursesLibDir
+#endif
+#ifdef NCursesIncDir
+NCURSESINCDIR = NCursesIncDir
 #endif
 #ifndef HasGlide
 #define HasGlide NO

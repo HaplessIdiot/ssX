@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: data.c,v 1.12 95/04/05 19:58:47 kaleb Exp $
- *	$XFree86: xc/programs/xterm/data.c,v 3.12 1998/12/20 11:58:32 dawes Exp $
+ *	$XFree86: xc/programs/xterm/data.c,v 3.13 1999/04/11 13:11:31 dawes Exp $
  */
 
 /*
@@ -33,11 +33,8 @@
 #include <ptyx.h>		/* gets Xt stuff, too */
 #include <data.h>
 
-#include <setjmp.h>
-
 #if OPT_TEK4014
-Char *Tbptr;
-Char *Tbuffer;
+PtyData *Tbuffer;
 Char *Tpushb;
 Char *Tpushback;
 TekLink *TekRefresh;
@@ -45,14 +42,11 @@ TekWidget tekWidget;
 int TEKgcFontMask = GCFont;
 int T_lastx = -1;
 int T_lasty = -1;
-int Tbcnt = 0;
 int Ttoggled = 0;
 jmp_buf Tekend;
 #endif
 
-int bcnt = 0;
-Char VTbuffer[BUF_SIZE];
-Char *bptr = VTbuffer;
+PtyData VTbuffer;
 
 jmp_buf VTend;
 

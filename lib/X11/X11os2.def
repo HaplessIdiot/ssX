@@ -1,5 +1,5 @@
 LIBRARY X11
-DESCRIPTION "$XFree86: xc/lib/X11/X11os2.def,v 3.6 1997/07/06 05:30:36 dawes Exp $"
+DESCRIPTION "@#XFREE86:4.0#@ $XFree86: xc/lib/X11/X11os2.def,v 3.7 1998/06/28 08:41:32 dawes Exp $"
 CODE
 	PRELOAD
 DATA
@@ -796,7 +796,7 @@ EXPORTS
 	_XimLocalOpenIM  @ 787
 	_XimLocalMbLookupString  @ 788
 	_XimLocalWcLookupString  @ 789
-	XimParseStringFile  @ 790
+	_XimParseStringFile  @ 790
 	_XimSetICValueData  @ 791
 	_XimLocalSetICValues  @ 792
 	_XimSetIMResourceList  @ 793
