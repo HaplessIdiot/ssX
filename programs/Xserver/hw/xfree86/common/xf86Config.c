@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.70 1996/01/28 07:30:24 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.71 1996/01/30 15:25:52 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1150,12 +1150,18 @@ configKeyboardSection()
   xf86Info.specialKeyMap[SCROLLLOCK - LEFTALT] = KM_COMPOSE;
   xf86Info.specialKeyMap[RIGHTCTL - LEFTALT] = KM_CONTROL;
 #ifdef XKB
-  xf86Info.xkbkeymap = NULL;
+  xf86Info.xkbkeymap   = NULL;
+  xf86Info.xkbtypes    = "types/default";
+  xf86Info.xkbcompat   = "compat/default";
+#ifndef PC98
   xf86Info.xkbkeycodes = "keycodes/xfree86";
-  xf86Info.xkbtypes = "types/default";
-  xf86Info.xkbcompat = "compat/default";
-  xf86Info.xkbsymbols = "symbols/us(pc101)";
-  xf86Info.xkbgeometry = "pc";
+  xf86Info.xkbsymbols  = "symbols/us(pc101)";
+  xf86Info.xkbgeometry = "geometry/pc";
+#else
+  xf86Info.xkbkeycodes = "keycodes/xfree98";
+  xf86Info.xkbsymbols  = "symbols/nec/jp(pc98)";
+  xf86Info.xkbgeometry = "geometry/nec(pc98)";
+#endif
 #endif
 
   while ((token = xf86GetToken(KeyboardTab)) != ENDSECTION) {
@@ -1403,6 +1409,8 @@ configPointerSection()
 	  if ((val.num != 1200) && (val.num != 9600))
 	    xf86ConfigError("Only 1200 or 9600 Baud are supported by MouseMan");
 	}
+      else if (val.num%1200 != 0 || val.num < 1200 || val.num > 9600)
+	    xf86ConfigError("Baud rate must be one of 1200, 2400, 4800, or 9600");
       xf86Info.baudRate = val.num;
       break;
 

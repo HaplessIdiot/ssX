@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.19 1996/01/28 07:29:09 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.20 1996/01/30 15:25:42 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -134,7 +134,7 @@ XCOMM XkbDisable
 XCOMM To use the default map in ProjectRoot keymap/xfree86, uncomment 
 XCOMM XkbKeymap. To use one of the alternate maps in keymap/xfree86 
 XCOMM uncomment and modify the XkbKeymap line, e.g.: 
-XCOMM    XkbKeymap  keymap/xfree86(us_microsoft)
+XCOMM    XkbKeymap   "keymap/xfree86(us_microsoft)"
 XCOMM To tailor a combination not already in keymap/xfree86 modify
 XCOMM keymap/xfree86 or uncomment and modify the other lines as 
 XCOMM desired. One way to get a german layout on a 101 key keyboard 

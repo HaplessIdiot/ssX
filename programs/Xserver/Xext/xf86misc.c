@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.5 1996/01/28 07:28:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.6 1996/01/30 15:25:31 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -14,6 +14,7 @@
 #include "dixstruct.h"
 #include "extnsionst.h"
 #include "scrnintstr.h"
+#include "inputstr.h"
 #include "servermd.h"
 #define _XF86MISC_SERVER_
 #include "xf86mscstr.h"
@@ -32,6 +33,7 @@ static unsigned char XF86MiscReqCode = 0;
 
 extern void Swap32Write();
 
+extern InputInfo inputInfo;
 
 void
 XFree86MiscExtensionInit()
@@ -245,6 +247,9 @@ ProcXF86MiscSetMouseSettings(client)
     if (stuff->flags & (MF_CLEAR_DTR|MF_CLEAR_RTS)
             && stuff->mousetype != MTYPE_MOUSESYS)
 	return BadValue;
+    if (stuff->baudrate % 1200 != 0
+            || stuff->baudrate < 1200 || stuff->baudrate > 9600)
+	return BadValue;
     if (stuff->mousetype == MTYPE_LOGIMAN
             && !(stuff->baudrate == 1200 || stuff->baudrate == 9600) )
 	return BadValue;
@@ -279,8 +284,27 @@ ProcXF86MiscSetMouseSettings(client)
             || xf86Info.sampleRate != stuff->samplerate 
             || xf86Info.mouseFlags != stuff->flags ) {
 	
+	ButtonClassPtr butc = inputInfo.pointer->button;
+
 	if (xf86Info.pPointer)
             (xf86Info.mseProc)(xf86Info.pPointer, DEVICE_CLOSE);
+
+	/* Dynamically changing the number of buttons could
+	   confuse some clients, but we'll do it anyway */
+	if (stuff->mousetype == MTYPE_MMHIT
+	        || stuff->mousetype == MTYPE_GLIDEPOINT) {
+	    if (xf86Info.mseType != MTYPE_MMHIT
+		    && xf86Info.mseType != MTYPE_GLIDEPOINT) {
+		butc->numButtons = 4;
+		/* should this be set or left alone?? */
+		butc->map[4] = 4;
+	    }
+	} else {
+	    if (xf86Info.mseType == MTYPE_MMHIT
+		    || xf86Info.mseType == MTYPE_GLIDEPOINT) {
+		butc->numButtons = 3;
+	    }
+	}
 
         xf86Info.mseType = stuff->mousetype;
         xf86Info.mseProc = xf86MseProc;
@@ -302,8 +326,13 @@ ProcXF86MiscSetMouseSettings(client)
         xf86Info.sampleRate = stuff->samplerate;
         xf86Info.mouseFlags = stuff->flags;
 
+	xf86Info.pPointer->on = FALSE;
+#ifdef XQUEUE
+	if (xf86Info.mseType != MTYPE_XQUEUE)
+#endif
+	xf86MouseInit();
 	if (xf86Info.pPointer)
-            (xf86Info.mseProc)(xf86Info.pPointer, DEVICE_INIT);
+            (xf86Info.mseProc)(xf86Info.pPointer, DEVICE_ON);
 
     }
 

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.114 1996/01/11 10:37:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.115 1996/01/24 22:01:24 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -710,7 +710,6 @@ s3Probe()
    Bool pixMuxLimitedWidths = TRUE;
    Bool pixMuxInterlaceOK = TRUE;
    Bool pixMuxWidthOK = TRUE;
-   int s3ChipRev = 0;
    int idx = 0;
    S3PCIInformation *pciInfo = NULL;
    struct pci_config_reg *pcrp;
@@ -1037,11 +1036,10 @@ s3Probe()
 	    chipname = "964";
 	 } else if (S3_TRIO32_SERIES(s3ChipId)) {
 	    chipname = "Trio32";
+	 } else if (S3_TRIO64V_SERIES(s3ChipId /* , s3ChipRev */)) {
+	    chipname = "Trio64V+ (untested, please report !!)";
 	 } else if (S3_TRIO64_SERIES(s3ChipId)) {
-	    if ((s3ChipRev & 0x400) == 0x400) 
-	       chipname = "Trio64V+ (untested, please report !!)";
-	    else 
-	       chipname = "Trio64";
+	    chipname = "Trio64";
 	 }
 	 ErrorF("%s %s: chipset:   %s rev. %x\n",
                 XCONFIG_PROBED, s3InfoRec.name, chipname, s3ChipRev);

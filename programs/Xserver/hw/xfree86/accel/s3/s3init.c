@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.6 95/01/23 15:34:00 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.81 1995/12/21 11:44:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.82 1995/12/23 09:38:36 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -99,6 +99,7 @@ extern void crtswitch(short);
 #define new ((vgaHWPtr)vgaNewVideoState)
 
 short s3ChipId = 0;
+int  s3ChipRev = 0;
 
 #define	cebank() do {							\
    	if (S3_801_928_SERIES(s3ChipId)) {				\
@@ -1430,7 +1431,12 @@ s3Init(mode)
       outb(0x3c4, 0x18);
       sr18 = inb(0x3c5) & ~0x80;
       outb(vgaCRIndex, 0x33);
-      cr33 = (inb(vgaCRReg) & ~0x08) | 0x20;
+      cr33 = inb(vgaCRReg) & ~0x28;
+
+      /* for Trio64+ we need corrected blank signal timing */
+      if (!S3_TRIO64V_SERIES(s3ChipId /* , s3ChipRev */)) {
+	 cr33 |= 0x20;
+      }
 
       if (s3PixelMultiplexing)
       {

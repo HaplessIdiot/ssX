@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.0 1996/01/24 22:03:31 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.1 1996/01/30 15:27:06 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -129,24 +129,18 @@ XCOMM    ScrollLock  ModeLock
 
 XCOMM To disable the XKEYBOARD extension, uncomment XkbDisable.
 
-    XkbDisable
+XCOMM XkbDisable
 
-XCOMM To use the default map in ProjectRoot keymap/xfree86, uncomment 
-XCOMM XkbKeymap. To use one of the alternate maps in keymap/xfree86 
-XCOMM uncomment and modify the XkbKeymap line, e.g.: 
-XCOMM    XkbKeymap  keymap/xfree86(us_microsoft)
-XCOMM To tailor a combination not already in keymap/xfree86 modify
-XCOMM keymap/xfree86 or uncomment and modify the other lines as 
-XCOMM desired. One way to get a german layout on a 101 key keyboard 
-XCOMM is to modify the XkbSymbols line, e.g.:
-XCOMM    XkbSymbols  "symbols/us(pc101)+de"
+XCOMM To tailor a combination not already in keymap/xfree98 modify
+XCOMM keymap/xfree98 or uncomment and modify the other lines as
+XCOMM desired.
 
-XCOMM    XkbKeymap   "keymap/xfree86"
-XCOMM    Xkbkeycodes "keycodes/xfree86"
+XCOMM    XkbKeymap   "keymap/xfree98"
+XCOMM    Xkbkeycodes "keycodes/xfree98"
 XCOMM    XkbTypes    "types/default"
 XCOMM    XkbCompat   "compat/default"
-XCOMM    XkbSymbols  "symbols/us(pc101)"
-XCOMM    XkbGeometry "geometry/pc"
+XCOMM    XkbSymbols  "symbols/nec/jp(pc98)"
+XCOMM    XkbGeometry "geometry/nec(pc98)"
 
 EndSection
 

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Keymap.h,v 1.8 95/01/23 15:34:05 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Keymap.h,v 3.5 1995/01/28 17:03:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Keymap.h,v 3.6 1995/12/21 11:44:36 dawes Exp $ */
 /*
  * For Scancodes see notes in atKeynames.h  !!!!
  */
@@ -187,7 +187,7 @@ static KeySym map[NUM_KEYCODES * GLYPHS_PER_KEY] = {
     /* 0x32 */  XK_slash,       XK_question,	XK_kana_ME,	XK_kana_middledot,
     /* 0x33 */  XK_underscore,	XK_underscore,	XK_kana_RO,	NoSymbol,
     /* 0x34 */  XK_space,       NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x35 */  XK_Kanji,       NoSymbol,	NoSymbol,	NoSymbol,
+    /* 0x35 */  XK_Henkan,	XK_Kanji,	NoSymbol,	NoSymbol,
     /* 0x36 */  XK_Next,	NoSymbol,	NoSymbol,	NoSymbol,
     /* 0x37 */  XK_Prior,	NoSymbol,	NoSymbol,	NoSymbol,
     /* 0x38 */  XK_Insert,	NoSymbol,	NoSymbol,	NoSymbol,

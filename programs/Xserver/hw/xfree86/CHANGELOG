@@ -1,3 +1,16 @@
+XFree86 3.1.2C (31 January 1996)
+303. Allow the mouse parameters (except the device) to be changed with
+     the XFree86-Misc extension.  This causes a close/reopen of the the
+     device (Joe Moss).
+302. Fix problem introduced with the server lock code which causes a delay
+     at startup.
+301. Add some checking for the mouse baud rate given in the XF86Config
+     (Joe Moss).
+300. Fix for the bright left border problem with some Trio64V+ cards
+     (Harald Koenig).
+299. PC98 XKB support files (Kaleb Keithley, Toyonori Fujiura).
+298. Update German XKB symbols (Thomas Mueller).
+
 XFree86 3.1.2Bo (30 January 1996)
 297. Updates for XF98Conf.cpp (Takefumi Tsukada).
 296. Add an XF86Config option for disabling XKB (Kaleb Keithley).
