@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.11 1996/09/29 13:43:25 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.12 1996/12/23 07:04:54 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -349,8 +349,8 @@ XCOMM USER MANUAL FOR THE CORRECT NUMBERS.
 
     Mode "640x400"
         DotClock	28.322
-        HTimings	640 640 640 1142
-        VTimings	400 400 400 440
+        HTimings	640 664 712 808
+        VTimings	400 400 402 417
     EndMode
 
     Mode "640x480"
@@ -361,8 +361,7 @@ XCOMM USER MANUAL FOR THE CORRECT NUMBERS.
 
     Mode "NEC480"
         DotClock	31.5
-        XCOMMHTimings	640 664 760 800
-        HTimings	640 480 760 800
+        HTimings	640 664 760 800
         VTimings	480 491 493 525
     EndMode
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/laguna_acl.c,v 3.2 1997/01/08 20:35:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/laguna_acl.c,v 3.3 1997/01/18 06:56:36 dawes Exp $ */
 
 /*
  * New-style acceleration for the Laguna-family (CL-GD5462/5464).
@@ -13,14 +13,6 @@
 #include "cir_driver.h"
 #include "cir_blitLG.h"
 
-#include <stdio.h>
-
-/* Hardware 8x8 mono color expansion patterns are now working in XAA (3.2q),
-   but I haven't been able to debug the code for the Laguna yet.  This
-   probably will be the case when the 3.2A binaries are released.  Ah, well.
-*/
-#define USE_PAT_COLEXP 0
-#define DEBUG_MONOPAT 0
 
 /* Do we really want to check the command FIFO on the laguna part?  Doing
    so produces a PCI read, which is a real performance pinch-point.  And 
@@ -49,10 +41,8 @@ void LagunaSetupForScreenToScreenColorExpand();
 void LagunaSubsequentScreenToScreenColorExpand();
 void LagunaSetupForFill8x8Pattern();
 void LagunaSubsequentFill8x8Pattern();
-#if USE_PAT_COLEXP
 void LagunaSetupFor8x8PatternColorExpand();
 void LagunaSubsequent8x8PatternColorExpand();
-#endif
 void LagunaImageWrite();
 
 
@@ -110,22 +100,18 @@ void LagunaAccelInit() {
   xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE
     | ONLY_LEFT_TO_RIGHT_BITBLT | HARDWARE_PATTERN_SCREEN_ORIGIN |
       HARDWARE_PATTERN_PROGRAMMED_ORIGIN | HARDWARE_PATTERN_TRANSPARENCY | 
-	HARDWARE_PATTERN_MONO_TRANSPARENCY | HARDWARE_PATTERN_PROGRAMMED_BITS;
+	HARDWARE_PATTERN_MONO_TRANSPARENCY;
   if (cirrusChip == CLGD5464 && vga256InfoRec.bitsPerPixel == 24)
     xf86AccelInfoRec.Flags |= NO_TRANSPARENCY;
   xf86AccelInfoRec.Sync = LagunaSync;
 
 
   /* Solid Color fills */
-/*  xf86GCInfoRec.PolyFillRectSolidFlags |= NO_PLANEMASK;
-*/
   xf86AccelInfoRec.SetupForFillRectSolid = LagunaSetupForFillRectSolid;
   xf86AccelInfoRec.SubsequentFillRectSolid = LagunaSubsequentFillRectSolid;
 
 
   /* Screen-to-screen copies */
-/*  xf86GCInfoRec.CopyAreaFlags |= NO_PLANEMASK;
-*/
   xf86AccelInfoRec.SetupForScreenToScreenCopy =
     LagunaSetupForScreenToScreenCopy;
   xf86AccelInfoRec.SubsequentScreenToScreenCopy =
@@ -158,20 +144,18 @@ void LagunaAccelInit() {
     /* Only 8 and 16bpp pattern fills are supported.  24 and 32 bpp
        pattern fills require their patterns to be on _two_ adjacent
        lines in video memory.  XAA currently doesn't support this
-       mode for pattern caching (as of 3.2i). */
+       mode for pattern caching (as of 3.2t). */
     xf86AccelInfoRec.SetupForFill8x8Pattern = 
       LagunaSetupForFill8x8Pattern;
     xf86AccelInfoRec.SubsequentFill8x8Pattern = 
       LagunaSubsequentFill8x8Pattern;
   }
-#if USE_PAT_COLEXP
-  /* According to Harm's NOTES file, 8x8 colexp pattern fills aren't
-     working yet (12/17/96) */
+
   xf86AccelInfoRec.SetupFor8x8PatternColorExpand =
     LagunaSetupFor8x8PatternColorExpand;
   xf86AccelInfoRec.Subsequent8x8PatternColorExpand =
     LagunaSubsequent8x8PatternColorExpand;
-#endif
+
 
 
   /* PixMap caching and CPU-to-screen transfers. */
@@ -477,85 +461,21 @@ void LagunaSetupForFill8x8Pattern(patternx, patterny, rop, planemask,
 void LagunaSubsequentFill8x8Pattern(patternx, patterny, x, y, w, h)
      int patternx, patterny, x, y, w, h;
 {
-  /* The pattern source (patternx, patterny) won't change, because
-     we've set HARDWARE_PATTERN_SOURCE_ORIGIN.  Although the Laguna
-     chips can adjust the pattern origin (by writing the pattern
-     offset into register PATOFF), XAA doesn't take advantage of
-     this capability yet (3.2i). */
-
   LagunaWaitQAvail(3);
+
   LgSETPATOFF(patternx, patterny);
   LgSETDSTXY(x, y);
   LgSETEXTENTS(w, h);
 }
 
 
-#if USE_PAT_COLEXP
+
 /* 8x8 mono pattern color expansion fills */
-
-void LagunaLoadMonoPattern(int bits0_31, int bits32_63)
-{
-  /* Idea:  Load the pattern into the on-chip SRAM (SRAM2, for those
-     following along in the book).  In subsequent pattern colexp's, 
-     we'll just source SRAM2, and all will be well. */
-
-  volatile unsigned long *pHOSTDATA = 
-    (unsigned long *)(cirrusMMIOBase + HOSTDATA);
-
-  LagunaSync();
-  LagunaWaitQAvail(7);
-
-  LgSetBitmask(0xFFFFFFFF);
-
-
-#if 0
-  LgSETFOREGROUND(0x00000000);
-  LgSETBACKGROUND(0x01010101);
-
-  LgSETMODE(0x6020);
-  LgSETROP(0x00CC);
-  LgSETSRAMDST(0);
-  LgSETPHASE1(0);
-  LgSETMEXTENTS(8, 1);
-  *pHOSTDATA = 0x40404000;
-  *pHOSTDATA = 0x00484878;
-#else
-  LgSETMODE(HOST2SRAM2);      /* Transfer into SRAM2 */
-  LgSETROP(LGROP_SRC);        /* Copy bits directly */
-  LgSETPHASE1(0);             /* Byte phase */
-  LgSETSRAMDST(0);            /* Offset 0 into SRAM2 */
-  
-  LgSETMEXTENTS(8, 1);        /* 8 bytes (64 bits), 1 row */
-  *pHOSTDATA = bits0_31;
-  *pHOSTDATA = bits32_63;
-#endif
-
-  LagunaSync();
-
-  LgSETMODE(0x110C);
-  LgSETROP(0x00F0);
-  LgSETSRAM2OFFSET(0);
-  LgSETDSTXY(0x40, 0x40);
-  LgSETEXTENTS(200, 200);
-
-
-#if DEBUG_MONOPAT
-  fprintf(stderr, "bits0_31 = 0x%08X  bits32_63 = 0x%08X\n", 
-	  bits0_31, bits32_63);
-#endif
-}
-
-
-
 void LagunaSetupFor8x8PatternColorExpand(patternx, patterny, bg, fg, rop,
 					 planemask)
      int patternx, patterny, bg, fg, rop, planemask;
 {
   int trans = (bg == -1)?TRANSBG:TRANSNONE;
-
-
-  /* Load the mono pattern into SRAM */
-  LagunaLoadMonoPattern(patternx, patterny);
 
 
   switch (vga256InfoRec.bitsPerPixel) {
@@ -584,20 +504,11 @@ void LagunaSetupFor8x8PatternColorExpand(patternx, patterny, bg, fg, rop,
   LgSETFOREGROUND(fg);
 
   /* 'Monochrome' source coordinates */
-/*
   LgSETMPATXY(patternx, patterny);
-*/
-  LgSETSRAM2OFFSET(0);
   LgSETROP(lgCirrusPatRop[rop] | trans);
-  LgSETMODE(SRAM2PAT2SCR | MONOPAT);
+  LgSETMODE(PAT2SCR | MONOPAT);
+  
   LgSetBitmask(planemask);
-
-
-#if DEBUG_MONOPAT
-  fprintf(stderr, 
-	  "fg = 0x%08X  bg = 0x%08X  patx = %d = 0x%08X  paty = %d = 0x%08X\n",
-	 fg, bg, patternx, patternx, patterny, patterny);
-#endif
 
 
 }
@@ -611,7 +522,6 @@ void LagunaSubsequent8x8PatternColorExpand(patternx, patterny, x, y, w, h)
   LgSETDSTXY(x, y);
   LgSETEXTENTS(w, h);
 }
-#endif /* USE_PAT_COLEXP */
 
 
 
@@ -636,11 +546,6 @@ void LagunaImageWrite(x, y, w, h, src, srcwidth, rop, planemask)
   int dwords, dwordTotal;
   int burst;
   
-#if DEBUG_MONOPAT
-  fprintf(stderr, "x = %d  y = %d  w = %d  h = %x  src = 0x%08X\n", 
-	  x, y, w, h, src);
-#endif
-
   /* Don't try any funny stuff */
   if (h == 0 || w == 0)
     return;

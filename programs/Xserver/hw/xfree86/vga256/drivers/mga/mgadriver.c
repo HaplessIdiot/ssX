@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.20 1997/01/14 22:21:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.21 1997/01/18 06:56:45 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -1691,6 +1691,7 @@ static void MGADisplayPowerManagementSet(PowerManagementMode)
 int PowerManagementMode;
 {
 	unsigned char crtcext1;
+	if (!xf86VTSema) return;
 	outb(0x3DE, 0x01);
 	crtcext1 = inb(0x3DF) & ~0x30;
 	switch (PowerManagementMode)

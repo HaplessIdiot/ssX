@@ -29,7 +29,7 @@
  * cir_blitLG.h
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitLG.h,v 3.5 1997/01/08 20:35:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitLG.h,v 3.6 1997/01/18 06:56:30 dawes Exp $ */
 
 
 /* This header file defines the necessary structures, contstants, and 
@@ -61,11 +61,15 @@ enum {                            /* Offsets into MMIO space for bitBLT regs */
   OP1_opMRDRAM = 0x0544,
   OP2_opMRDRAM = 0x0564,
   OP0_opSRAM   = 0x0528,
+  OP1_opSRAM   = 0x0548,
   OP2_opSRAM   = 0x0568,
+  OP1_opMSRAM  = 0x054A,
+  OP2_opMSRAM  = 0x056A,
   DRAWDEF      = 0x0584,
   BLTDEF       = 0x0586,
   BLTEXT_EX    = 0x0700,
   MBLTEXT_EX   = 0x0720,
+  MONOQW       = 0x0588,
   QFREE        = 0x0404,
   PATOFF       = 0x052A,
   HOSTDATA     = 0x0800,
@@ -88,6 +92,7 @@ enum {                      /* OR these together to form a bitBLT mode */
   MONOSRC    = 0x0040,      /* Source is mono data (color expansion) */
   COLORTRANS = 0x0009,      /* Transparent screen/screen transfer */
   COLORFILL  = 0x0070,      /* Solid color fill mode */
+  SRAM1SCR2SCR = 0x1180,    /* Pattern fill, source from SRAM1 */
 
   PAT2SCR    = 0x1109,      /* Pattern/Screen transfers */
   COLORPAT   = 0x0000,      /* Pattern is color data */
@@ -144,8 +149,17 @@ int LgReady(void);
 #define LgSETSRAMDST(offset) \
   *(unsigned short *)(cirrusMMIOBase + OP0_opSRAM) = (offset);
 
+#define LgSETSRAM1OFFSET(offset) \
+  *(unsigned short *)(cirrusMMIOBase + OP2_opSRAM) = (offset);
+
 #define LgSETSRAM2OFFSET(offset) \
   *(unsigned short *)(cirrusMMIOBase + OP2_opSRAM) = (offset);
+
+#define LgSETMSRAM1OFFSET(offset) \
+  *(unsigned short *)(cirrusMMIOBase + OP1_opMSRAM) = (offset);
+
+#define LgSETMSRAM2OFFSET(offset) \
+  *(unsigned short *)(cirrusMMIOBase + OP2_opMSRAM) = (offset);
 
 #define LgSETMDSTXY(X, Y) \
   *(unsigned long *)(cirrusMMIOBase + OP0_opMRDRAM) = (((Y) << 16) | (X));
@@ -176,8 +190,24 @@ int LgReady(void);
 #define LgSETEXTENTS(width, height)  \
   *(unsigned long *)(cirrusMMIOBase + BLTEXT_EX) = (((height) << 16)|(width));
 
+#if 0
 #define LgSETMEXTENTS(width, height)  \
   *(unsigned long *)(cirrusMMIOBase + MBLTEXT_EX) = (((height) << 16)|(width));
+#else
+/* For monochrome (byte) blits, we need to set how many QWORDs of data 
+   encompass the X extent.  Write this piece of data into MONOQW. */
+#define LgSETMEXTENTS(width, height)  \
+  { \
+    *(unsigned short *)(cirrusMMIOBase + MONOQW) = ((width + 7) >> 3);  \
+    *(unsigned long *)(cirrusMMIOBase + MBLTEXT_EX) = \
+           (((height) << 16)|(width));  \
+  }
+
+/*
+    *(unsigned short *)(cirrusMMIOBase + MBLTEXT_EX) = height;
+    *(unsigned short *)(cirrusMMIOBase + MBLTEXT_EX + 2) = width;
+*/
+#endif
 
 #define LgHOSTDATAWRITE(data)  \
   *(unsigned long *)(cirrusMMIOBase + HOSTDATA) = (data);

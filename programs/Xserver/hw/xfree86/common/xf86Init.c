@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.64 1997/01/12 10:41:47 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.65 1997/01/18 06:55:32 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -581,8 +581,8 @@ AbortDDX()
 void
 OsVendorFatalError()
 {
-  ErrorF("When reporting a problem related to a server crash, please send\n"
-	 "the full server output, not just the last messages\n");
+  ErrorF("\nWhen reporting a problem related to a server crash, please send\n"
+	 "the full server output, not just the last messages\n\n");
 }
 
 /*

@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.48 1996/10/26 09:42:23 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.49 1996/12/23 07:04:40 dawes Exp $
 
 #Chips & Technologies
 
@@ -734,6 +734,12 @@ SERVER S3
 LINE     #Option "sync_on_green"
 NOCLOCKPROBE
 
+NAME ELSA Winner 2000PRO/X-8
+CHIPSET S3 968
+SERVER S3
+LINE     #Option "sync_on_green"
+NOCLOCKPROBE
+
 NAME ELSA Winner 2000AVI
 CHIPSET S3 968
 SERVER S3
@@ -756,6 +762,22 @@ NAME VideoLogic GrafixStar 700
 CHIPSET S3 968
 SERVER S3
 NOCLOCKPROBE
+
+NAME LeadTek WinFast S430
+CHIPSET S3 968
+SERVER S3
+NOCLOCKPROBE
+
+NAME WinFast S430
+SEE LeadTek WinFast S430
+
+NAME LeadTek WinFast S510
+CHIPSET S3 968
+SERVER S3
+NOCLOCKPROBE
+
+NAME WinFast S510
+SEE LeadTek WinFast S510
 
 # S3 928
 
@@ -871,6 +893,9 @@ SEE S3 ViRGE (generic)
 NAME ELSA Victory 3D
 SEE S3 ViRGE (generic)
 
+NAME ELSA Winner 3000-S
+SEE S3 ViRGE (generic)
+
 NAME Number Nine Visual 9FX Reality 332
 SEE S3 ViRGE (generic)
 
@@ -901,6 +926,9 @@ SEE S3 ViRGE (generic)
 NAME LeadTek WinFast 3D S600
 SEE S3 ViRGE (generic)
 
+NAME WinFast 3D S600
+SEE LeadTek WinFast 3D S600
+
 NAME miro miroMedia 3D
 SEE S3 ViRGE (generic)
 
@@ -920,6 +948,22 @@ SEE S3 ViRGE/VX (generic)
 
 NAME ELSA Winner 3000
 SEE S3 ViRGE/VX (generic)
+
+NAME ELSA Winner 3000-M-22
+SEE S3 ViRGE/VX (generic)
+
+NAME ELSA Winner 3000-L-42
+SEE S3 ViRGE/VX (generic)
+
+NAME ELSA Winner 2000AVI/3D
+SEE S3 ViRGE/VX (generic)
+
+NAME Diamond Stealth 3D 3000
+SEE S3 ViRGE/VX (generic)
+
+NAME STB Systems Velocity 3D
+SEE S3 ViRGE/VX (generic)
+
 
 
 
@@ -971,6 +1015,9 @@ SEE ET4000/W32, W32i, W32p (generic)
 
 NAME LeadTek WinFast S200
 SEE ET4000/W32, W32i, W32p (generic)
+
+NAME WinFast S200
+SEE LeadTek WinFast S200
 
 NAME Sigma Concorde
 SEE ET4000/W32, W32i, W32p (generic)

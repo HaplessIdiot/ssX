@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.39 1996/12/31 05:01:16 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.40 1997/01/18 09:10:52 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -607,16 +607,31 @@ ET4000LinMem()
 
 
 static Bool
-ET6000InitVars()
+ET6000InitVars(Bool autodetect)
 {
    int i;
 
    /* check the PCI config for ET6000 data. This assumes ET6000 cards are
     * _always_ on the PCI bus. They _can_ be on the VL-bus, but I don't
     * think they'll be making any VLB cards with this chip anyway.
+    *
+    * If chipset was forced (=no autodetect via PCI), don't use
+    * PCI-scanner-provided data, because specifying the chipset might have
+    * been done to overcome a misdetected card (e.g. if two VGA cards are
+    * in the system, XFree's PCI scanner might give us the wrong one).
     */
 
-   ET6Kbase = vgaPCIInfo->IOBase & ~0xFF;
+   if (autodetect)
+   {
+     ET6Kbase = vgaPCIInfo->IOBase & ~0xFF;
+   }
+   else
+   {
+     /* get PCI IOBase from CRTC registers instead of from XFree PCI structure */
+     outb(vgaIOBase + 4, 0x21); ET6Kbase  = (inb(vgaIOBase + 5) << 8);
+     outb(vgaIOBase + 4, 0x22); ET6Kbase += (inb(vgaIOBase + 5) << 16);
+     outb(vgaIOBase + 4, 0x23); ET6Kbase += (inb(vgaIOBase + 5) << 24); /* keep this split up */
+   }
 
    /* define used IO ports... Is this really necessary for PCI config space IO? */
    for (i=0; i<Num_ET6000_PCIPorts; i++)
@@ -816,6 +831,7 @@ static Bool
 ET4000Probe()
 {
   int numClocks;
+  Bool autodetect = TRUE;
 
   /*
    * Set up I/O ports to be used by this card
@@ -831,6 +847,7 @@ ET4000Probe()
     et4000_type = xf86StringToToken(chipsets, vga256InfoRec.chipset);
     if (et4000_type < 0)
         return FALSE;
+    autodetect = FALSE;
   }
   else if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TSENG)
   {
@@ -857,7 +874,7 @@ ET4000Probe()
     if (ET4000AutoDetect()==FALSE) return(FALSE);
 
   if (et4000_type == TYPE_ET6000)
-      ET6000InitVars();
+      ET6000InitVars(autodetect);
 
   ET4000EnterLeave(ENTER);
 
@@ -886,11 +903,20 @@ ET4000Probe()
    * Linear mode and >8bpp mode handling
    */
 
-  if (et4000_type >= TYPE_ET6000)  /* currently only ET6000 has >8bpp */
+  if (et4000_type >= TYPE_ET4000W32Pc)
   {
-    ET4000.ChipHas16bpp = TRUE;
-    ET4000.ChipHas24bpp = TRUE;
-    ET4000.ChipHas32bpp = TRUE;
+    OFLG_SET(OPTION_LINEAR, &ET4000.ChipOptionFlags);
+  }
+
+  /* currently only W32p rev C and up support linear memory */
+  if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
+  {
+    if (et4000_type < TYPE_ET4000W32Pc)
+    {
+      ErrorF("%s %s: Linear memory mode disabled (not yet supported on this device).\n",
+             XCONFIG_PROBED, vga256InfoRec.name);
+      OFLG_CLR(OPTION_LINEAR, &vga256InfoRec.options);
+    }
   }
 
   /* Use banked addressing by default. */
@@ -901,7 +927,12 @@ ET4000Probe()
              XCONFIG_PROBED, vga256InfoRec.name);
   }
 
-  OFLG_SET(OPTION_LINEAR, &ET4000.ChipOptionFlags);
+  if (et4000_type >= TYPE_ET6000)  /* currently only ET6000 has >8bpp */
+  {
+    ET4000.ChipHas16bpp = TRUE;
+    ET4000.ChipHas24bpp = TRUE;
+    ET4000.ChipHas32bpp = TRUE;
+  }
 
   /*
    * acceleration-related stuff
@@ -935,6 +966,15 @@ ET4000Probe()
              XCONFIG_PROBED, vga256InfoRec.name);
       vga256InfoRec.videoRam -= 1; /* 1kb reserved for accelerator code */
     }
+    
+    if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)
+        && OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
+    {
+      if (et4000_type < TYPE_ET6000)
+      ErrorF("%s %s: Acceleration disabled (not yet supported in linear mode).\n",
+             XCONFIG_PROBED, vga256InfoRec.name);
+      OFLG_SET(OPTION_NOACCEL, &vga256InfoRec.options);
+    }
   }
 #endif
 
@@ -956,6 +996,17 @@ ET4000Probe()
     OFLG_SET(OPTION_SLOW_DRAM, &ET4000.ChipOptionFlags);
     OFLG_SET(OPTION_NOACCEL, &ET4000.ChipOptionFlags);
 #endif
+
+ /* currently, the power-saving method used by the XFree86 SVGA servers
+  * causes the DRAM refresh on both ET4000 and ET6000 boards to be disabled,
+  * resulting in video memory corruption. Until a better DPMS implementation
+  * is added, disable this option.
+  */
+  if (OFLG_ISSET(OPTION_POWER_SAVER, &vga256InfoRec.options)) {
+    ErrorF("%s %s: option \"power_saver\" not working in this release (disabled).\n",
+           XCONFIG_GIVEN, vga256InfoRec.name);
+    OFLG_CLR(OPTION_POWER_SAVER, &vga256InfoRec.options);
+  }
 
 #ifdef W32_ACCEL_SUPPORT
     if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions))
@@ -1712,6 +1763,7 @@ ET4000Init(mode)
          new->ET6KPerfContr = initialET6KPerfContr & ~0x10;
        }
 
+#ifdef ALLOW_ET6K_FAST_DRAM
        if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options))
        {
          /*
@@ -1726,6 +1778,8 @@ ET4000Init(mode)
           * 0x28 = 100 MHz ; 0x2C = 110 MHz; 0x30 = 120 MHz.
           *   120 MHz causes permanent mayhem on my system 
           *    -- don't try this at home!
+          *
+          * Currently disabled -- causes trouble [KMG].
           */
          new->ET6KMclkM = 0x28;
          new->ET6KMclkN = 0x21;
@@ -1735,6 +1789,7 @@ ET4000Init(mode)
          new->ET6KMclkM = initialET6KMclkM;
          new->ET6KMclkN = initialET6KMclkN;
        }
+#endif
 
        /* force clock #2 */
        new->Compatibility = (new->Compatibility & 0xFD);   

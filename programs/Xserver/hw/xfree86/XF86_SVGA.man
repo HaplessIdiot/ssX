@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.38 1996/12/23 06:30:35 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.39 1996/12/31 04:59:43 dawes Exp $ 
 .TH XF86_SVGA 1 "Version 3.2"  "XFree86"
 .SH NAME
 XF86_SVGA - SVGA X Window System servers for UNIX on 
@@ -260,10 +260,9 @@ screen.
 .sp
 \fBpower_saver\fP - This option enables the server
 to use the power saving features of VESA DPMS compatible monitors.
-The suspend level is currently not supported.
 Refer to the \fIXF86Config(4/5)\fP
 manual page for details of how to set the timeouts for the different levels
-of operation.  This option is experimental.
+of operation.
 .sp
 \fBnoaccel\fP - for Cirrus, WD, ARK, C&T, MGA and Tseng chipsets.  This option
 disables the accelerated features for the clgd542X, clgd543x, clgd5446,
@@ -331,7 +330,8 @@ cursor.
 hardware cursor.
 .sp
 \fBsync_on_green\fP - for Chips & Technologies 65550's and 65554's
-enables the generation of a sync on the green signal. 
+and Matrox MGA2064W's.  This option enables the generation of a sync
+on green signal.
 .ig
 intern_disp (use internal display for laptops -- WD90C2x)
 extern_disp (use external display for laptops -- WD90C2x)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.65 1997/01/14 22:16:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.66 1997/01/18 06:55:03 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -1018,6 +1018,7 @@ s3DPMSSet(PowerManagementMode)
     int PowerManagementMode;
 {
   unsigned char extsync;
+  if (!xf86VTSema) return;
   outw(0x3C4, 0x0608);		/* unlock SRD */
   outb(0x3C4, 0x0D);
   extsync = inb(0x3C5) & ~0x30;

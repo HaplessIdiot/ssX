@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.28 1996/12/23 06:58:05 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.29 1996/12/28 08:18:23 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -204,6 +204,120 @@ static unsigned PVGA1_ExtPorts_WD90C33[] =    /* extra ports for WD90C33 */
 static int NumPVGA1_ExtPorts_WD90C33 =
              ( sizeof(PVGA1_ExtPorts_WD90C33)
             / sizeof(PVGA1_ExtPorts_WD90C33[0]) );
+
+/*
+ * PVGA1lcd24power(int)
+ * 
+ * Sets VESA Display Power Management Signaling (DPMS) Mode for monitor.
+ * Also Enable or disable LCD power for WD90c24 controlled LCD.
+ */
+#ifdef DPMSExtension
+static void
+PVGA1lcd24power(int PowerManagementMode)
+{
+  unsigned char sync2;
+  static unsigned char lcd_off = 0;
+  unsigned char lock_val, reg_val;
+  int crt_on; /* allow sync to turn off? */
+
+  if (!xf86VTSema) return;
+
+  switch (PowerManagementMode)
+    {
+    case DPMSModeOn:
+      /* HSync: On, VSync: on */
+      /* Turn LCD on */
+      if (lcd_off) {
+	/* this is a wd90c24 LCD which we have turned off */
+	lcd_off = 0; /* Don't allow nested calls */
+
+	/* Unlock extended PR registers */
+	wrinx(0x3C4, 0x06, 0x48);
+
+	reg_val = rdinx(0x3C4, 0x19); /* PR57 */
+	/* PNLOFF low */
+	wrinx(0x3C4, 0x19, reg_val | 0x04); /* set bit 2 */
+
+	usleep(100000);
+	lock_val = rdinx(0x3CE, 0x0F);
+	/* Unlock PR0-PR4 */
+	wrinx(0x3CE, 0x0F, (0xF8 & lock_val) | 0x05);
+	reg_val = rdinx(0x3CE, 0x0E); /* PR4 */
+	/* Drive FP interface pins active */
+	wrinx(0x3CE, 0x0E, 0xDF & reg_val); /* clear bit 5 */
+	wrinx(0x3CE, 0x0F, lock_val); /* restore lock */
+      
+	usleep(100000);
+	lock_val = rdinx(vgaIOBase+0x04, 0x34);
+	/* Unlock FP Reg */
+	wrinx(vgaIOBase+0x04, 0x34, (0x0F & lock_val) | 0xA0);
+	reg_val = rdinx(vgaIOBase+0x04, 0x032);
+	/* Turn on LCD */
+	wrinx(vgaIOBase+0x04, 0x32, 0x10 | reg_val); /* set PR19, bit 4 */
+	wrinx(vgaIOBase+0x04, 0x34, lock_val); /* restore locks*/
+      }
+
+      outb(vgaIOBase + 4, 0x17);
+      sync2 = inb(vgaIOBase + 5);
+      sync2 |= 0x80;			/* enable sync   */
+      usleep(10000);
+      outb(vgaIOBase + 5, sync2);
+      break;
+
+    case DPMSModeStandby:
+      /* HSync: Off, VSync: on */
+      /* This may be supported later */
+      break;
+    case DPMSModeSuspend:
+      /* HSync: On, VSync: off */
+      /* This may be supported later */
+      break;
+    case DPMSModeOff:
+      /* HSync: Off, VSync: off */
+      /* Turn LCD off */
+      lock_val = rdinx(vgaIOBase+0x04, 0x34);
+      /* Unlock FP Reg */
+      wrinx(vgaIOBase+0x04, 0x34, (0x0F & lock_val) | 0xA0);
+      reg_val = rdinx(vgaIOBase+0x04, 0x032); /* PR19 */
+      crt_on = ((reg_val & 0x20) == 0x20); /* CRT on? */
+      if (reg_val & 0x10) {
+
+	/* this is a wd90c24 with LCD on */
+	lcd_off ++;
+	/* Turn off LCD */
+	wrinx(vgaIOBase+0x04, 0x32, 0xEF & reg_val); /* clear PR19, bit 4 */
+	wrinx(vgaIOBase+0x04, 0x34, lock_val); /* restore locks*/
+
+	lock_val = rdinx(0x3CE, 0x0F);
+	/* Unlock PR0-PR4 */
+	wrinx(0x3CE, 0x0F, (0xF8 & lock_val) | 0x05);
+	reg_val = rdinx(0x3CE, 0x0E); /* PR4 */
+	/* Tri-state FP interfacee pins */
+	wrinx(0x3CE, 0x0E, reg_val | 0x20); /* set bit 5 */
+	wrinx(0x3CE, 0x0F, lock_val); /* restore lock */
+
+	lock_val = rdinx(0x3C4, 0x06);
+	/* Unlock extended PR registers */
+	wrinx(0x3C4, 0x06, 0x48);
+	reg_val = rdinx(0x3C4, 0x19); /* PR57 */
+	/* PNLOFF high */
+	wrinx(0x3C4, 0x19, 0xFB & reg_val); /* clear bit 2 */
+      }
+      else {
+	wrinx(vgaIOBase+0x04, 0x34, lock_val); /* restore locks*/
+      }
+
+      if (crt_on) {	/* disable sync only if monitor in use */
+	outb(vgaIOBase + 4, 0x17);
+	sync2 = inb(vgaIOBase + 5);
+	sync2 &= ~0x80;			/* disable sync */
+	usleep(10000);
+	outb(vgaIOBase + 5, sync2);
+      }
+      break;
+    }
+}
+#endif
 
 /*
  * PVGA1Ident
@@ -524,6 +638,9 @@ PVGA1Probe()
 		    vga256InfoRec.virtualX = 640;
 		    vga256InfoRec.virtualY = 480;
 		}
+#ifdef DPMSExtension
+		vga256InfoRec.DPMSSet = PVGA1lcd24power;
+#endif
 	    }
 	}
 	break;

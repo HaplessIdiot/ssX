@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.60 1997/01/05 11:53:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.61 1997/01/18 06:54:35 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -1230,6 +1230,10 @@ mach64Probe()
 	}
     }
 
+    if (!mach64InfoRec.videoRam) {
+	mach64InfoRec.videoRam = info->Mem_Size;
+    }
+
     tx = mach64InfoRec.virtualX;
     ty = mach64InfoRec.virtualY;
     pMode = mach64InfoRec.modes;
@@ -1249,6 +1253,14 @@ mach64Probe()
                 pModeSv=pMode->next;
                 xf86DeleteMode(&mach64InfoRec, pMode);
                 pMode = pModeSv; 
+	  } else if (pMode->HDisplay * pMode->VDisplay *
+	      (mach64InfoRec.bitsPerPixel / 8) >
+	      mach64InfoRec.videoRam*1024) {
+		pModeSv=pMode->next;
+		ErrorF("%s %s: Too little memory for mode \"%s\"\n",
+		       XCONFIG_PROBED, mach64InfoRec.name, pMode->name);
+		xf86DeleteMode(&mach64InfoRec, pMode);
+		pMode = pModeSv;
           } else if (((tx > 0) && (pMode->HDisplay > tx)) || 
                      ((ty > 0) && (pMode->VDisplay > ty))) {
                 pModeSv=pMode->next;
@@ -1346,10 +1358,6 @@ mach64Probe()
 	       OFLG_ISSET(XCONFIG_VIRTUAL, &mach64InfoRec.xconfigFlag) ?
 		XCONFIG_GIVEN : XCONFIG_PROBED,
 		mach64InfoRec.name, mach64VirtX, mach64VirtY);
-    }
-
-    if (!mach64InfoRec.videoRam) {
-	mach64InfoRec.videoRam = info->Mem_Size;
     }
 
     /* Set mach64MemorySize to required MEM_SIZE value in MISC_OPTIONS */
@@ -1930,7 +1938,7 @@ mach64DPMSSet(PowerManagementMode)
 {
 #ifdef DPMSExtension
     int crtcGenCntl;
-    if (!DPMSEnabled) return;
+    if (!xf86VTSema) return;
     crtcGenCntl = regr(CRTC_GEN_CNTL) & ~(CRTC_HSYNC_DIS | CRTC_VSYNC_DIS);
     switch (PowerManagementMode)
     {

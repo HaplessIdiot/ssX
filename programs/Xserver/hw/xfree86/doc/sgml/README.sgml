@@ -600,6 +600,18 @@ XFree86 support was integrated into the base X11R6 distribution by:
        <item> Hamish Coleman <it>&lt;hamish@zot.apana.org.au&gt;</it>
 </itemize>
 
+<tag/Matrox SVGA driver by:  /
+<itemize>
+       <item> Radoslaw Kapitan <it>&lt;kapitan@student.uci.agh.edu.pl&gt;</it>
+       <item> Andrew Vanderstock <it>&lt;vanderaj@mail2.svhm.org.au&gt;</it>
+       <item> Angsar Hockmann <it>&lt;Ansgar.Hockmann@hrz.uni-dortmund.de&gt;</it>
+       <item> Michael Will <it>&lt;Michael.Will@student.uni-tuebingen.de&gt;</it>
+       <item> Andrew Mileski <it>&lt;aem@ott.hookup.net&gt;</it>
+       <item> Stephen Pitts <it>&lt;pitts2@memphisonline.com&gt;</it>
+       <item> Dirk Hohndel <it>&lt;hohndel@XFree86.Org&gt;</it>
+       <item> Leonard N. Zubkoff <it>&lt;lnz@dandelion.com&gt;</it>
+</itemize>
+
 <tag/XFree86-VidModeExtension and xvidtune client by:  /
 <itemize>
        <item> Kaleb S. Keithley <it>&lt;kaleb@x.org&gt;</it>
@@ -994,7 +1006,7 @@ url="RELNOTES.html"> to find which files you need to take from the
 archive.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.66 1996/12/23 06:46:09 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.67 1997/01/12 10:41:52 dawes Exp $
 
 
 

@@ -11,7 +11,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_accel.c,v 3.3 1997/01/08 20:50:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_accel.c,v 3.4 1997/01/14 22:21:09 dawes Exp $ */
 
 
 /*
@@ -59,25 +59,22 @@ void TsengSetupForFill8x8Pattern();
 void TsengSubsequentFill8x8Pattern();
 
 
-int bytesperpixel;
-int tseng_line_width;
+static int bytesperpixel, powerPerPixel;
+static int tseng_line_width;
 
 /* These will hold the ping-pong registers.
  * Note that ping-pong registers might not be needed when using
  * BACKGROUND_OPERATIONS (because of the WAIT()-ing involved)
  */
 
-LongP MemFg;
-long Fg;
+static LongP MemFg;
+static long Fg;
 
-LongP MemBg;
-long Bg;
+static LongP MemBg;
+static long Bg;
 
-LongP MemPat;
-long Pat;
-
-/* temp kludge */
-int col_exp_banked_offset;
+static LongP MemPat;
+static long Pat;
 
 
 /*
@@ -94,8 +91,13 @@ void TsengAccelInit() {
      * Set up the main acceleration flags.
      */
     xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE
-      | HARDWARE_PATTERN_SCREEN_ORIGIN
-      | COP_FRAMEBUFFER_CONCURRENCY;
+      | HARDWARE_PATTERN_SCREEN_ORIGIN;
+
+    /* we'll disable COP_FRAMEBUFFER_CONCURRENCY for the public beta
+     * release, because it causes font corruption. But THIS NEEDS TO BE
+     * INVESTIGATED.
+     */
+/*      | COP_FRAMEBUFFER_CONCURRENCY;*/
       
     if (et4000_type >= TYPE_ET6000)
     {
@@ -203,25 +205,29 @@ void TsengAccelInit() {
         TsengSetupForScanlineScreenToScreenColorExpand;
     xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand =
         TsengSubsequentScanlineScreenToScreenColorExpand;
+        
+    /* triple-buffering is needed to account for double-buffering of Tseng
+     * acceleration registers. Increasing this number doesn't help solve the
+     * problems with both ET4000 and ET6000 with text rendering.
+     */
+    xf86AccelInfoRec.PingPongBuffers = 3;
 
-    if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
+    xf86AccelInfoRec.ScratchBufferSize = vga256InfoRec.videoRam * 1024 - (long) W32Mix;
+    xf86AccelInfoRec.ScratchBufferAddr = W32Mix;
+
+    if (!OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
     {
-      xf86AccelInfoRec.ScratchBufferSize = vga256InfoRec.videoRam * 1024 - (long) W32Mix;
-      xf86AccelInfoRec.ScratchBufferAddr = W32Mix;
+      /* in banked mode, use aperture #0 */
+      xf86AccelInfoRec.ScratchBufferBase =
+         (unsigned char *)
+           ( ((int)vgaBase) + 0x18000L + 1024 - xf86AccelInfoRec.ScratchBufferSize );
     }
-    else
-    {
-     /* In banked mode, it works if we set ScratchBufferAddr to 0x18000
-      * which would use aperture 0 ... Still, we must add some correction in
-      * the Subsequent() function because of XAA's linear-mode assumption
-      */
-      xf86AccelInfoRec.ScratchBufferSize = vga256InfoRec.videoRam * 1024 - (long) W32Mix;
-      xf86AccelInfoRec.ScratchBufferAddr = 0x18000 + 1024 - xf86AccelInfoRec.ScratchBufferSize;
-      col_exp_banked_offset = ( (long) W32Mix - xf86AccelInfoRec.ScratchBufferAddr ) * 8;
-    }
-    ErrorF("ColorExpand ScratchBuf: Base = %d (0x%x); Size = %d (0x%x)\n",
+#if 0
+    ErrorF("ColorExpand ScratchBuf: Addr = %d (0x%x); Size = %d (0x%x); Base = %d (0x%x)\n",
            xf86AccelInfoRec.ScratchBufferAddr, xf86AccelInfoRec.ScratchBufferAddr,
-           xf86AccelInfoRec.ScratchBufferSize, xf86AccelInfoRec.ScratchBufferSize);
+           xf86AccelInfoRec.ScratchBufferSize, xf86AccelInfoRec.ScratchBufferSize,
+           xf86AccelInfoRec.ScratchBufferBase, xf86AccelInfoRec.ScratchBufferBase);
+#endif
 
 #if 0
     /*
@@ -281,6 +287,16 @@ void TsengAccelInit() {
      * For Tseng, we set up some often-used values
      */
      bytesperpixel = vga256InfoRec.bitsPerPixel / 8;
+     switch (bytesperpixel)   /* for MULBPP optimization */
+     {
+       case 1: powerPerPixel = 0;
+               break;
+       case 2: powerPerPixel = 1;
+               break;
+       case 3:
+       case 4: powerPerPixel = 2;
+     }
+     
      tseng_line_width = vga256InfoRec.displayWidth * bytesperpixel;
 
     /*
@@ -381,36 +397,24 @@ static __inline__ void SET_FG_BG_COLOR(int fgcolor, int bgcolor)
     *ACL_ROUTING_CONTROL = 0x02;
 
 /*
- * Real 32-bit multiplications are horribly slow compared to 16-bit.
+ * Real 32-bit multiplications are horribly slow compared to 16-bit (on i386).
+ *
+ * FBADDR() could be implemented completely in assembler on i386.
  */
 #ifdef NO_OPTIMIZE
 #define MULBPP(x) ((x) * bytesperpixel)
 #else
-static __inline__ int MULBPP(int x)
+static __inline__ MULBPP(int x)
 {
-#if defined(__GNUC__) && defined(__i386__)
-  __asm__("imulw %1,%2" : "=q" (x) : "gm" (bytesperpixel), "0" (x));
-  return x;
-#else
-  return ((x) * bytesperpixel);
-#endif
+    int result = x << powerPerPixel;
+    if (bytesperpixel != 3)
+      return result;
+    else
+      return result + 3;
 }
 #endif
 
-#ifdef NO_OPTIMIZE
-#define FBADDR(x,y) ( ((y) * tseng_line_width) + MULBPP(x) )
-#else
-/* does not work yet because 16-bit multiply gives... a 16-bit result. How ridiculous */
-__inline__ int FBADDR(int x, int y)
-{
-#ifdef WHEN_IT_WORKS
-  __asm__("imulw %1,%2" : "=q" (y) : "gm" (tseng_line_width), "0" (y));
-  return MULBPP(x)+y;
-#else
-  return y * tseng_line_width + MULBPP(x);
-#endif
-}
-#endif
+#define FBADDR(x,y) ( (y) * tseng_line_width + MULBPP(x) )
 
 #define SET_FG_ROP(rop) \
     *ACL_FOREGROUND_RASTER_OPERATION = W32OpTable[rop];
@@ -817,7 +821,8 @@ void TsengSubsequentScanlineScreenToScreenColorExpand(srcaddr)
      * this, because XAA can still overwrite scanline 1 when writing data
      * for scanline three. Right _after_ that, the accelerator blocks on
      * queueing in TsengSubsequentScanlineScreenToScreenColorExpand(), but
-     * then it's too late: the scanline data is already overwritten.
+     * then it's too late: the scanline data is already overwritten. That's
+     * why we use 3 ping-pong buffers.
      *
      * "x11perf -fitext" is about 530k chars/sec now, but with
      * COP_FRAMEBUFFER_CONCURRENCY, this goes up to >700k (which is similar
@@ -832,14 +837,6 @@ void TsengSubsequentScanlineScreenToScreenColorExpand(srcaddr)
      * here and there). This _could_ be a bug in the ET6000.
      */
     
-    if (!OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
-    {
-      /* until scanline-color expansion gets support for banked memory,
-       * we have to use this kludge.
-       */
-       srcaddr += col_exp_banked_offset;
-    }
-
     *ACL_MIX_ADDRESS = srcaddr;
     START_ACL(ColorExpandDst);
     ColorExpandDst += tseng_line_width;
@@ -851,8 +848,9 @@ void TsengSubsequentScanlineScreenToScreenColorExpand(srcaddr)
      * being worked with with new data too soon. This will not be necessary
      * anymore once ScanlineScreenToScreenColorExpand supports triple (or
      * more) buffering.
+     *
+     * WAIT_QUEUE; // not needed with triple-buffering
      */
-    WAIT_QUEUE;
 }
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.7 1997/01/14 22:22:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.8 1997/01/18 06:57:19 dawes Exp $ */
 
 /*
  * Fill rectangles.
@@ -40,7 +40,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cfbfillrct.c,v 5.18 94/04/17 20:28:47 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.7 1997/01/14 22:22:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.8 1997/01/18 06:57:19 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -742,7 +742,9 @@ xf86FillRectTileCached(pDrawable, pGC, nBoxInit, pBoxInit)
                  */
 	        patternx = pci->x * xf86AccelInfoRec.BitsPerPixel;
 	        patterny = pci->y;
-	        if (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_SCREEN_ORIGIN) {
+	        if ((xf86AccelInfoRec.Flags & HARDWARE_PATTERN_SCREEN_ORIGIN) 
+		    && !(xf86AccelInfoRec.Flags & 
+			 HARDWARE_PATTERN_PROGRAMMED_ORIGIN)) {
 	            /*
  	             * Since we have horizontally rotated copies on consecutive
 	             * scanlines, rotation is very simple.

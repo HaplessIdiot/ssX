@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.47 1997/01/08 20:51:20 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.48 1997/01/18 06:57:07 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -362,7 +362,7 @@ vgaDPMSSet(PowerManagementMode)
 {
 #ifdef DPMSExtension
     unsigned char crtc17;
-    if (!DPMSEnabled) return;
+    if (!xf86VTSema) return;
     outb(vgaIOBase + 4, 0x17);
     crtc17 = inb(vgaIOBase + 5);
     switch (PowerManagementMode)

@@ -23,7 +23,7 @@
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.14 1997/01/05 12:51:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.15 1997/01/18 06:55:23 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -686,94 +686,6 @@ tgaCloseScreen(screen_idx, pScreen)
     return(TRUE);
 }
 
-extern CARD32 ScreenSaverTime;
-
-#if 0
-/*
- * tgaOffMode -- put the screen into power off mode.
- */
-
-static CARD32
-tgaOffMode(timer, now, arg)
-     OsTimerPtr timer;
-     CARD32 now;
-     pointer arg;
-{
-    Bool on = (Bool)((unsigned long)arg);
-
-    if (!DPMSEnabled) return(0);
-
-    if (xf86VTSema) {
-	int crtcGenCntl = TGA_READ_REG(TGA_VALID_REG);
-	if (on) 
-	    crtcGenCntl |= 0x0001;	/* Video Enabled */
-	else 
-	    crtcGenCntl &= 0xFFFE;	/* Video Disabled */
-
-	usleep(10000);
-	TGA_WRITE_REG(crtcGenCntl, TGA_VALID_REG);
-   }
-   if (offTimer) {
-      TimerFree(offTimer);
-      offTimer = NULL;
-   }
-
-   return(0);
-}
-
-/*
- * tgaSuspendMode -- put the screen into suspend mode.
- */
-
-static CARD32
-tgaSuspendMode(timer, now, arg)
-     OsTimerPtr timer;
-     CARD32 now;
-     pointer arg;
-{
-    Bool on = (Bool)((unsigned long)arg);
-
-    if (!DPMSEnabled) return(0);
-
-    if (xf86VTSema) {
-	int crtcGenCntl = TGA_READ_REG(TGA_VALID_REG);
-	if (on) {
-	    crtcGenCntl |= 0x0001;
-	} else {
-	    crtcGenCntl &= 0xFFFE;
-	}
-
-	usleep(10000);
-	TGA_WRITE_REG(crtcGenCntl, TGA_VALID_REG);
-
-	if (!on && tgaInfoRec.offTime != 0) {
-	    if (tgaInfoRec.offTime > tgaInfoRec.suspendTime &&
-		tgaInfoRec.offTime > ScreenSaverTime) {
-
-		int timeout;
-
-		/* Setup timeout for tgaOffMode() */
-		if (tgaInfoRec.suspendTime < ScreenSaverTime)
-		   timeout = tgaInfoRec.offTime - ScreenSaverTime;
-		else
-		   timeout = tgaInfoRec.offTime - tgaInfoRec.suspendTime;
-
-		offTimer = TimerSet(offTimer, 0, timeout,
-			        tgaOffMode, (pointer)FALSE);
-	    } else {
-		tgaOffMode(NULL, 0, (pointer)FALSE);
-	    }
-	}
-    }
-    if (suspendTimer) {
-      TimerFree(suspendTimer);
-      suspendTimer = NULL;
-   }
-
-   return(0);
-}
-#endif
-
 /*
  * tgaSaveScreen --
  *      blank the screen.
@@ -832,7 +744,7 @@ tgaDPMSSet(PowerManagementMode)
 {
 #ifdef DPMSExtension
     int crtcGenCntl;
-    if (!DPMSEnabled) return;
+    if (!xf86VTSema) return;
     crtcGenCntl = TGA_READ_REG(TGA_VALID_REG);
     switch (PowerManagementMode)
     {

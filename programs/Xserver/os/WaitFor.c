@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: WaitFor.c /main/55 1996/12/02 10:22:24 lehors $ */
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.9 1997/01/12 10:49:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.10 1997/01/18 06:57:57 dawes Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:
@@ -176,7 +176,11 @@ WaitForSomething(pClientsReady)
 	    XFD_COPYSET (&ClientsWithInput, &clientsReadable);
 	    break;
 	}
+#ifdef DPMSExtension
 	if (ScreenSaverTime > 0 || DPMSEnabled || timers)
+#else
+	if (ScreenSaverTime > 0 || timers)
+#endif
 	    now = GetTimeInMillis();
 	wt = NULL;
 	if (timers)

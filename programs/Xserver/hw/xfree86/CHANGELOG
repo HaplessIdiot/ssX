@@ -1,3 +1,39 @@
+XFree86 3.2u (19 January 1997)
+ 305. Only show the "extension not loaded" messages for the first
+      server generation.
+ 304. Don't allow DPMS to be switched if the Xserver's VT isn't active
+      (Leonard N. Zubkoff).
+ 303. Implement DPMS "off" support for the WD90C24, for LCD, CRT or both
+      (Brad Bosch).
+ 302. Add a missing DPMSExtension #ifdef in os/WaitFor.c (Corin Anderson).
+ 301. Fix an XAA bug with mono patterns, SCREEN_ORIGIN, and PROGRAMMED_ORIGIN
+      (Corin Anderson).
+ 300. Implement monochrome pattern fill for Cirrus Laguna chips
+      (Corin Anderson).
+ 299. Disable "fast_dram" for the ET6000 because it can cause serious
+      problems (Koen Gadeyne).
+ 298. Disable "power saving" in the Tseng driver because the current
+      way of doing it causes memory corruption (Koen Gadeyne).
+ 297. Disable linear mode and acceleration for Tseng chips that have
+      not been tested or which are not supported (Koen Gadeyne).
+ 296. Add some code to treat the ET6000 slightly differently when the
+      chipset is specified in the XF86Config file, to help the case
+      when another (disabled) PCI video card is detected (Koen Gadeyne).
+ 295. Use triple-buffering for colour expansion in the tseng driver
+      (Koen Gadeyne).
+ 294. Make some variables in the tseng driver static (Koen Gadeyne).
+ 293. Remove some asm stuff in the tseng driver, and add a C optimised
+      MULBPP calculation (Koen Gadeyne).
+ 292. Disable XAA framebuffer concurrency in the tseng driver, which
+      hides most of the text corruption problems (Koen Gadeyne).
+ 291. Man page (DPMS) and documentation (MGA) updates (Leonard N. Zubkoff).
+ 290. Fix invalid modelines in XF98Conf.cpp (Takaaki Nomura).
+ 289. Add checking of mode size against video memory requirements to the
+      Mach32 and Mach64 servers.
+ 288. Fix GXnor and GXnand ROP definitions for the TGUI driver.
+ 287. Update for Linux a.out libX11's jump_ignore (Harald Koenig).
+ 286. Fix (?) TGA server link problem.
+
 XFree86 3.2t (18 January 1997)
  285. Update W32 docs (Dirk Hohndel).
  284. Recognise "noaccel" and "slow_dram" options in the ET4000 driver

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.77 1997/01/14 22:19:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.78 1997/01/18 06:56:32 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -569,7 +569,7 @@ static int cirrusClockLimit24bpp[] = {
   85500,        /* 5446 */
   135100,      	/* 5462 */
   135100,       /* 5464 */
-  0,		/* 7541 XXXX Don't know for 754x. */
+  80100 / 3,	/* 7541 XXXX Don't know for 754x. */ /* 80100 / 3 is a guess */
   0,		/* 7542 */
   80100 / 3,	/* 7543 */
   80100 / 3,    /* 7548 */
@@ -2259,7 +2259,7 @@ nolinear:
 	    cirrusMMIOBase = 
 	      xf86MapVidMem(0, EXTENDED_REGION, (pointer)vgaPCIInfo->IOBase, 0x4000);
 	  ErrorF("%s %s: %s: Using memory-mapped I/O at address 0x%08X\n",
-		 XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset,
+		 XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset,
 		 (unsigned char *)vgaPCIInfo->IOBase);
 	} else {
 	    /*

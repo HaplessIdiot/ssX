@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/tseng_acl.c,v 3.3 1997/01/08 20:50:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/tseng_acl.c,v 3.4 1997/01/14 22:21:10 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -169,7 +169,6 @@ void tseng_init_acl()
     /*
      * prepare some shortcuts for faster access to memory mapped registers
      */
-
     scratchVidBase = vga256InfoRec.videoRam * 1024 - 1024; /* the last 1024 bytes */
 
     if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
@@ -343,8 +342,9 @@ void tseng_init_acl()
        * This seems to be necessary to enable access to 2 MB in a linear fashion.
        * Otherwise, only the first 1 MB is accessible in the linear memory map.
        */
+      ErrorF("--- linear base kludge ---\n");
       *((LongP) (MMioBase + 0x00)) = 0x0L;
-      *((LongP) (MMioBase + 0x04)) = 0x100000L;
+      *((LongP) (MMioBase + 0x04)) = 0x100000L/2;
     }
 #endif
     

@@ -22,7 +22,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_ger.h,v 3.7 1997/01/08 20:51:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_ger.h,v 3.8 1997/01/14 22:21:51 dawes Exp $ */
 
 /* Graphics Engine for 9400/9420/9430 */
 
@@ -93,11 +93,11 @@
 #define TGUIROP_AND		0x88		/* DSa */
 #define TGUIROP_SRC_AND_NOT_DST	0x44		/* SDna */
 #define TGUIROP_NOT_SRC_AND_DST 0x22		/* DSna */
-#define TGUIROP_NOR		0x77		/* DSan */
+#define TGUIROP_NAND		0x77		/* DSan */
 #define TGUIROP_OR		0xEE		/* DSo */
 #define TGUIROP_SRC_OR_NOT_DST	0xDD		/* SDno */
 #define TGUIROP_NOT_SRC_OR_DST	0xBB		/* DSno */
-#define TGUIROP_NAND		0x11		/* DSon */
+#define TGUIROP_NOR		0x11		/* DSon */
 #define TGUIROP_XOR		0x66		/* DSx */
 #define TGUIROP_XNOR		0x99		/* SDxn */
 
@@ -106,10 +106,10 @@
 #define TGUIROP_AND_PAT		0xA0		/* DPa */
 #define TGUIROP_PAT_AND_NOT_DST	0x50		/* PDna */
 #define TGUIROP_NOT_PAT_AND_DST 0x0A		/* DPna */
-#define TGUIROP_NOR_PAT		0x5F		/* DPan */
+#define TGUIROP_NAND_PAT	0x5F		/* DPan */
 #define TGUIROP_OR_PAT		0xFA		/* DPo */
 #define TGUIROP_PAT_OR_NOT_DST	0xF5		/* PDno */
 #define TGUIROP_NOT_PAT_OR_DST	0xAF		/* DPno */
-#define TGUIROP_NAND_PAT	0x05		/* DPon */
+#define TGUIROP_NOR_PAT		0x05		/* DPon */
 #define TGUIROP_XOR_PAT		0x5A		/* DPx */
 #define TGUIROP_XNOR_PAT	0xA5		/* PDxn */
