@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.21 2002/11/26 04:06:29 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.22 2002/12/04 05:27:58 paulo Exp $ */
 
 #include "helper.h"
 #include "read.h"
@@ -598,6 +598,12 @@ Lisp_ParseInteger(LispBuiltin *builtin)
     LispCheckSequenceStartEnd(builtin, ostring, ostart, oend,
 			      &start, &end, &length);
     string = THESTR(ostring);
+    if (oradix == UNSPEC)
+	radix = 10;
+    else {
+	CHECK_INDEX(oradix);
+	radix = FIXNUM_VALUE(oradix);
+    }
     if (radix < 2 || radix > 36)
 	LispDestroy("%s: :RADIX %ld must be in the range 2 to 36",
 		    STRFUN(builtin), radix);
