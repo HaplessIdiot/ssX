@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/ppc_video.c,v 1.2 2002/11/09 17:17:34 herrb Exp $ */
+/* $XFree86: ppc_video.c,v 1.3 2002/11/09 17:28:08 herrb Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -44,7 +44,11 @@
 /* Video Memory Mapping section                                            */
 /***************************************************************************/
 
+#ifndef __OpenBSD__
 #define DEV_MEM "/dev/mem"
+#else
+#define DEV_MEM "/dev/xf86"
+#endif
 
 static pointer ppcMapVidMem(int, unsigned long, unsigned long, int flags);
 static void ppcUnmapVidMem(int, pointer, unsigned long);
@@ -93,9 +97,9 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 	static int kmem = -1;
 
 	if (kmem == -1) {
-		kmem = open("/dev/xf86", 2);
+		kmem = open(DEV_MEM, 2);
 		if (kmem == -1) {
-			FatalError("xf86ReadBIOS: open /dev/xf86\n");
+			FatalError("xf86ReadBIOS: open %s\n", DEV_MEM);
 		}
 	}
 
