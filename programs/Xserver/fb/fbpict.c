@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.14 2002/05/17 23:53:57 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.15 2002/09/26 02:56:48 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -671,7 +671,7 @@ fbCompositeSrcAdd_8000x8000 (CARD8	op,
     CARD8	*dstLine, *dst;
     CARD8	*srcLine, *src;
     FbStride	dstStride, srcStride;
-    CARD8	w;
+    CARD16	w;
     CARD8	s, d;
     CARD16	t;
     
@@ -689,13 +689,17 @@ fbCompositeSrcAdd_8000x8000 (CARD8	op,
 	while (w--)
 	{
 	    s = *src++;
-	    if (s != 0xff)
+	    if (s)
 	    {
-		d = *dst;
-		t = d + s;
-		s = t | (0 - (t >> 8));
+		if (s != 0xff)
+		{
+		    d = *dst;
+		    t = d + s;
+		    s = t | (0 - (t >> 8));
+		}
+		*dst = s;
 	    }
-	    *dst++ = s;
+	    dst++;
 	}
     }
 }
@@ -736,19 +740,23 @@ fbCompositeSrcAdd_8888x8888 (CARD8	op,
 	while (w--)
 	{
 	    s = *src++;
-	    if (s != 0xffffffff)
+	    if (s)
 	    {
-		d = *dst;
-		if (d)
+		if (s != 0xffffffff)
 		{
-		    m = FbAdd(s,d,0,t);
-		    n = FbAdd(s,d,8,t);
-		    o = FbAdd(s,d,16,t);
-		    p = FbAdd(s,d,24,t);
-		    s = m|n|o|p;
+		    d = *dst;
+		    if (d)
+		    {
+			m = FbAdd(s,d,0,t);
+			n = FbAdd(s,d,8,t);
+			o = FbAdd(s,d,16,t);
+			p = FbAdd(s,d,24,t);
+			s = m|n|o|p;
+		    }
 		}
+		*dst = s;
 	    }
-	    *dst++ = s;
+	    dst++;
 	}
     }
 }
