@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.27 1998/04/26 16:04:59 robin Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.28 1998/04/26 17:03:37 robin Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -39,6 +39,7 @@
 #include "extensions/xf86dgastr.h"
 #endif
 
+#include "compiler.h"
 #include "tseng_acl.h"
 #include "tseng.h"
 #include "vga256.h"
