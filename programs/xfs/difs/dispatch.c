@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/dispatch.c,v 3.5 1999/08/21 13:48:48 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/dispatch.c,v 3.6 1999/08/22 07:19:45 dawes Exp $ */
 
 #include	<dispatch.h>
 #include	<swapreq.h>
@@ -102,6 +102,7 @@ Dispatch(void)
                 result;
     int        *clientReady;
     ClientPtr   client;
+    int		op;
 
     nextFreeClientID = MINCLIENT;
     nClients = 0;
@@ -135,7 +136,13 @@ Dispatch(void)
 		if (result > (MAX_REQUEST_SIZE << 2))
 		    result = FSBadLength;
 		else
-		    result = (*client->requestVector[MAJOROP]) (client);
+		{
+		    op = MAJOROP;
+		    if (op >= NUM_PROC_VECTORS)
+			result = ProcBadRequest (client);
+		    else
+			result = (*client->requestVector[op]) (client);
+		}
 		if (result != FSSuccess) {
 		    if (client->noClientException != FSSuccess)
 			CloseDownClient(client);
