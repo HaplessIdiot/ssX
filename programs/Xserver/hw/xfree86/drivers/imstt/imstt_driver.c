@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.18 2001/11/08 04:15:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.19 2002/07/24 01:47:29 tsi Exp $ */
 
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
@@ -254,7 +254,7 @@ static const OptionInfoRec * IMSTTAvailableOptions(int chipid, int busid)
 
 static void IMSTTIdentify(int flags)
 {
-	xf86PrintChipsets("IMSTT", "driver (version " DRIVER_VERSION " for IMS TwinTurbo chipsets ",
+	xf86PrintChipsets("IMSTT", "driver (version " DRIVER_VERSION ") for IMS TwinTurbo chipsets ",
 			  IMSTTChipsets);
 }
 
