@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/Imakefile,v 1.2 1999/06/27 14:07:29 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/Imakefile,v 1.3 1999/12/14 01:33:37 robin Exp $
 XCOMM $PI: xc/lib/GL/mesa/src/drv/Imakefile,v 1.3 1999/06/14 21:10:41 faith Exp $
 
 #define DoNormalLib NormalLibGlx
@@ -21,7 +21,9 @@ DRIVER += tdfx
 SUBDIRS = $(DRIVER)
 #else
 SUBDIRS += gamma
+#if HasGlide
 SUBDIRS += tdfx
+#endif
 #endif
 
 MakeSubdirs($(SUBDIRS))
