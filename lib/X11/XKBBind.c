@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/XKBBind.c,v 3.11 2000/01/21 18:41:48 dawes Exp $ */
 
 	/* the new monsters ate the old ones */
 
@@ -583,8 +583,6 @@ _XkbLoadDpy(dpy)
     LockDisplay(dpy);
     xkbi->desc = desc;
 
-    _XkbGetConverters(_XkbGetCharset(),&xkbi->cvt);
-    _XkbGetConverters("ISO8859-1",&xkbi->latin1cvt);
     UnlockDisplay(dpy);
     oldEvents= xkbi->selected_events;
     if (!(xkbi->xlib_ctrls&XkbLC_IgnoreNewKeyboards)) {
@@ -670,35 +668,26 @@ XkbTranslateKeySym(dpy, sym_rtrn, mods, buffer, nbytes, extra_rtrn)
     XkbKSToMBFunc cvtr;
     XPointer priv;
     char tmp[4];
-    register struct _XKeytrans *p; 
     int n;
+
+    xkb= dpy->xkb_info;
+    if (!xkb->cvt.KSToMB) {
+        _XkbGetConverters(_XkbGetCharset(),&xkb->cvt);
+        _XkbGetConverters("ISO8859-1",&xkb->latin1cvt);
+    }
 
     if (extra_rtrn)
 	*extra_rtrn= 0;
 
-    if (_XkbUnavailable(dpy))
-        return _XTranslateKeySym(dpy, *sym_rtrn, mods, buffer, nbytes);
-    _XkbCheckPendingRefresh(dpy,dpy->xkb_info);
-
-    xkb= dpy->xkb_info;
     if ((buffer==NULL)||(nbytes==0)) {
 	buffer= tmp;
 	nbytes= 4;
     }
 
     /* see if symbol rebound, if so, return that string. */
-    for (p = dpy->key_bindings; p; p = p->next) {
-	if (((mods & AllMods) == p->state) && (*sym_rtrn == p->key)) {
-	    int tmp = p->len;
-	    if (tmp > nbytes) {
-		if (extra_rtrn)
-		    *extra_rtrn= tmp-nbytes;
-		tmp = nbytes;
-	    }
-	    memcpy (buffer, p->string, tmp);
-	    return tmp;
-	}
-    }
+    n = XkbLookupKeyBinding(dpy,*sym_rtrn,mods,buffer,nbytes,extra_rtrn);
+    if (n)
+        return n;
 
     if ( nbytes>0 )
 	buffer[0]= '\0';
@@ -718,35 +707,23 @@ XkbTranslateKeySym(dpy, sym_rtrn, mods, buffer, nbytes, extra_rtrn)
 
     if ((!xkb->cvt.KSToUpper)&&( mods&LockMask )) {
 	register int i;
-
-	if (!xkb->cvt.KSToUpper) {
-	    int change;
-	    char ch;
-	    for (i=change=0;i<n;i++) {
-		ch= toupper(buffer[i]);
-		change= (change||(buffer[i]!=ch));
-		buffer[i] = ch;
-	    }
-	    if (change) {
-		if (n==1)
-		     *sym_rtrn=(*xkb->cvt.MBToKS)(xkb->cvt.MBToKSPriv,
-								buffer,n,0);
-		else *sym_rtrn= NoSymbol;
-	    }
+	int change;
+	char ch;
+	for (i=change=0;i<n;i++) {
+	    ch= toupper(buffer[i]);
+	    change= (change||(buffer[i]!=ch));
+	    buffer[i] = ch;
+	}
+	if (change) {
+	    if (n==1)
+	        *sym_rtrn=(*xkb->cvt.MBToKS)(xkb->cvt.MBToKSPriv,buffer,n,0);
+	    else *sym_rtrn= NoSymbol;
 	}
     }
 
     if ( mods&ControlMask ) {
 	if ( n==1 ) {
-	    register char c = buffer[0];
-
-	    if ((c >= '@' && c < '\177') || c == ' ') c &= 0x1F;
-	    else if (c == '2') c = '\000';
-	    else if (c >= '3' && c <= '7') c -= ('3' - '\033');
-	    else if (c == '8') c = '\177';
-	    else if (c == '/') c = '_' & 0x1F;
-
-	    buffer[0]= c;
+	    buffer[0]= XkbToControl(buffer[0]);
 	    if ( nbytes>1 )
 		buffer[1]= '\0';
 	    return 1;
@@ -780,14 +757,10 @@ XLookupString (event, buffer, nbytes, keysym, status)
     Display *dpy = event->display;
     XkbDescPtr	xkb;
 
-    if (_XkbUnavailable(dpy))
-	return _XLookupString(event, buffer, nbytes, keysym, status);
-    _XkbCheckPendingRefresh(dpy,dpy->xkb_info);
-
     if (keysym==NULL)
 	keysym= &dummy;
     xkb= dpy->xkb_info->desc;
-    if (!XkbTranslateKeyCode(xkb,event->keycode,event->state, &new_mods,keysym))
+    if (!XkbLookupKeySym(dpy,event->keycode,event->state, &new_mods,keysym))
 	return 0;
     new_mods= (event->state&(~new_mods));
 
@@ -896,15 +869,24 @@ XLookupString (event, buffer, nbytes, keysym, status)
 	return rtrnLen;
 
     rtrnLen = XkbTranslateKeySym(dpy,keysym,new_mods,buffer,nbytes,NULL);
+
     if ((event->state&ControlMask)&&(nbytes>0)&&
 			((rtrnLen==0)||
                         ((rtrnLen==1)&&((unsigned char) buffer[0]>=' ')))&&
-			(XkbGroupForCoreState(event->state)!=XkbGroup1Index)&&
 			(dpy->xkb_info->xlib_ctrls&XkbLC_ControlFallback)) {
 	XKeyEvent	tmp_ev;
 	tmp_ev= *event;
-	tmp_ev.state= XkbBuildCoreState(event->state,XkbGroup1Index);
-	return XLookupString (&tmp_ev, buffer, nbytes, keysym, status);
+        if (_XkbUnavailable(dpy)) {
+            if (event->state & dpy->mode_switch) {
+                tmp_ev.state= event->state & ~dpy->mode_switch;
+	        return XLookupString (&tmp_ev, buffer, nbytes, keysym, status);
+	    }
+        } else {
+            if (XkbGroupForCoreState(event->state) != XkbGroup1Index) {
+                tmp_ev.state= XkbBuildCoreState(event->state,XkbGroup1Index);
+	        return XLookupString (&tmp_ev, buffer, nbytes, keysym, status);
+	    }
+        }
     }
     return rtrnLen;
 }
@@ -950,12 +932,14 @@ XkbLookupKeyBinding(dpy, sym, mods, buffer, nbytes, extra_rtrn)
 
 char
 #if NeedFunctionPrototypes
-XkbToControl( char c )
+XkbToControl( char ch )
 #else
-XkbToControl( c )
-    char c;
+XkbToControl( ch )
+    char ch;
 #endif
 {
+    register char c = ch;
+ 
     if ((c >= '@' && c < '\177') || c == ' ') c &= 0x1F;
     else if (c == '2') c = '\000';
     else if (c >= '3' && c <= '7') c -= ('3' - '\033');

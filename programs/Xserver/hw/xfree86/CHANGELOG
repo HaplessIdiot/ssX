@@ -1,4 +1,20 @@
 XFree86 4.0.1c (25 August 2000)
+ 560. Improve libX11 behaviour when a server doesn't have XKB, allowing
+      XKB-aware XLookupString features with servers without XKB (#4108,
+      Ivan Pascal).
+ 559. Fix a bug in xkbcomp'shandling of 'group compat' data (#4107,
+      Ivan Pascal).
+ 558. Fix an i810 driver problem doing XvImage with clipping (#4106, 4110,
+      Jonathan Bian).
+ 557. Add PCI info for devices found on the G4 Mac (#4105, Matthieu Herrb).
+ 556. New XkbOptions for LED selection (#4101, Ivan Pascal).
+ 555. Changes to XkbGetControls regarding ax_options (#4100, Ivan Pascal,
+      based on A.125, Stephen Montgomery-Smith).
+ 554. Changes to XkbSetControls regarding per_key_repeat (#4099, Ivan Pascal,
+      based on A.124, Stephen Montgomery-Smith).
+ 553. Fix MouseKeys acceleration (#4098, Ivan Pascal, based on A.112,
+      Stephen Montgomery-Smith).
+ 552. Add an encoding file for KOI8-R (#A.139, Andrey A. Chernov).
  551. Man page for Xmark (#4097, Richard Braakman).
  550. Fixes for Macintosh XKB data files (#4094, Ani Joshi).
  549. Change VarDbDirectory to /var/lib on Linux to comply with FHS 2.1
@@ -11058,4 +11074,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1281 2000/08/25 21:51:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1282 2000/08/26 04:30:50 dawes Exp $

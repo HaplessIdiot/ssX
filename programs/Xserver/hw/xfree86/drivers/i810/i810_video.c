@@ -23,7 +23,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.3 2000/08/03 12:24:02 dawes Exp $ */
 
 /*
  * i810_video.c: i810 Xv driver. Based on the mga Xv driver by Mark Vojkovich.
@@ -384,12 +384,15 @@ I810SetupImageVideo(ScreenPtr pScreen)
     pPriv->brightness = 0;
     pPriv->contrast = 128;
 
-#ifndef XF86DRI
-    if (!I810AllocHigh(&(pI810->OverlayBuf0), &(pI810->SysMem), Y_BUF_SIZE*2))
-	return NULL;
-    if (!I810AllocHigh(&(pI810->OverlayBuf1), &(pI810->SysMem), Y_BUF_SIZE*2))
-	return NULL;
-#endif
+    /*
+     * If I810DRIScreenInit() has not allocated the overlay buffers
+     */
+    if (!pI810->directRenderingEnabled) {
+      if (!I810AllocHigh(&(pI810->OverlayBuf0), &(pI810->SysMem), Y_BUF_SIZE*2))
+	  return NULL;
+      if (!I810AllocHigh(&(pI810->OverlayBuf1), &(pI810->SysMem), Y_BUF_SIZE*2))
+	  return NULL;
+    }
 
     if((!pI810->OverlayBuf0.Start) || (!pI810->OverlayBuf1.Start))
 	return NULL;
@@ -652,7 +655,7 @@ I810CopyPackedData(
     while(h--) {
 	memcpy(dst, src, w);
 	src += srcPitch;
-	dst += 720*2;
+	dst += IMAGE_MAX_WIDTH*2;
     }
 }
 
@@ -661,6 +664,7 @@ I810CopyPlanarData(
    ScrnInfoPtr pScrn, 
    unsigned char *buf,
    int srcPitch,
+   int srcH,
    int top,
    int left,
    int h,
@@ -682,11 +686,11 @@ I810CopyPlanarData(
     for (i = 0; i < h; i++) {
 	memcpy(dst1, src1, w);
 	src1 += srcPitch;
-	dst1 += 720;
+	dst1 += IMAGE_MAX_WIDTH;
     }
 
     /* Copy V data */
-    src2 = buf + (h*srcPitch) + (top*(srcPitch>>1)) + (left>>1);
+    src2 = buf + (srcH*srcPitch) + ((top*srcPitch)>>2) + (left>>1);
     if (pPriv->currentBuf == 0)
 	dst2 = (unsigned char *) pPriv->VBuf0VirtAddr;
     else
@@ -695,11 +699,11 @@ I810CopyPlanarData(
     for (i = 0; i < h/2; i++) {
 	memcpy(dst2, src2, w/2);
 	src2 += srcPitch>>1;
-	dst2 += 360;
+	dst2 += IMAGE_MAX_WIDTH>>1;
     }
 
     /* Copy U data */
-    src3 = buf + (h*srcPitch) + (h*srcPitch/4) + (top*(srcPitch>>1)) + (left>>1);
+    src3 = buf + (srcH*srcPitch) + ((srcH*srcPitch)>>2) + ((top*srcPitch)>>2) + (left>>1);
     if (pPriv->currentBuf == 0)
 	dst3 = (unsigned char *) pPriv->UBuf0VirtAddr;
     else
@@ -708,7 +712,7 @@ I810CopyPlanarData(
     for (i = 0; i < h/2; i++) {
 	memcpy(dst3, src3, w/2);
 	src3 += srcPitch>>1;
-	dst3 += 360;
+	dst3 += IMAGE_MAX_WIDTH>>1;
     }
 }
 
@@ -936,8 +940,9 @@ I810PutImage(
 
     switch(id) {
     case 0x32315659: /* YV12 */
+	top &= ~1;
 	nlines = ((((y2 + 0xffff) >> 16) + 1) & ~1) - top;
-	I810CopyPlanarData(pScrn, buf, srcPitch, top, left, nlines, npixels);
+	I810CopyPlanarData(pScrn, buf, srcPitch, height, top, left, nlines, npixels);
 	break;
     case 0x32595559: /* YUY2 */
     default:
