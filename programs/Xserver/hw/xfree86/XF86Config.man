@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.5 2001/05/08 21:53:08 paulo Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.6 2001/08/15 16:25:21 paulo Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH XF86Config __filemansuffix__ __vendorversion__
@@ -367,13 +367,23 @@ still recognised.  Those old style entries are not documented here, and
 using them is discouraged.
 .PP
 .B Options
-specified in this section may be overridden by
+specified in this section (with the exception of the
+.B \*qDefaultServerLayout\*q
+.BR Option )
+may be overridden by
 .B Options
 specified in the active
 .B ServerLayout
 section.  Options with command line equivalents are overridden when their
 command line equivalent is used.  The options recognised by this section
 are:
+.TP 7
+.BI "Option \*qDefaultServerLayout\*q  \*q" layout-id \*q
+This specifies the default
+.B ServerLayout
+section to use in the absence of the
+.B \-layout
+command line option.
 .TP 7
 .BI "Option \*qNoTrapSignals\*q  \*q" boolean \*q
 This prevents the X server from trapping a range of unexpected
@@ -1236,6 +1246,7 @@ flags may be specified in the
 section.  Some are driver-specific and are described in the driver
 documentation.  Others are driver-independent, and will eventually be
 described here.
+.\" XXX These should really be in an xaa man page.
 .TP 7
 .BI "Option \*qAccel\*q"
 Enables XAA (X Acceleration Architecture), a mechanism that makes video
@@ -1501,7 +1512,12 @@ it also specifies the relative layout of the heads.  A
 .B ServerLayout
 section is considered "active" if it is referenced by the
 .B \-layout
-command line option.  If that option is not used, the first
+command line option or by an
+.B "Option \*qDefaultServerLayout\*q"
+entry in the
+.B ServerFlags
+section (the former takes precedence over the latter).  If those options are
+not used, the first
 .B ServerLayout
 section found in the config file is considered the active one.  If no
 .B ServerLayout
