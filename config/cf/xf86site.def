@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.156 2000/03/03 01:05:23 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.157 2000/03/03 23:12:21 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -652,16 +652,28 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.156 2000/03/03 01:05:23 dawes Exp 
 
 /* 
  * To enable building the glide driver, you need to define 
- * HasGlide to YES and set the GlideIncDir variable. 
- * HasGlide is per default NO.
+ * HasGlide2 to YES and set the Glide2IncDir variable. 
+ * HasGlide2 is per default NO.
  *
-#define HasGlide YES
+#define HasGlide2 YES
  */
 
 /*
  * Set the path to your Glide include files.
  *
-#define GlideIncDir /usr/include/glide
+#define Glide2IncDir /usr/include/glide
+ */
+
+/* 
+ * The 3Dfx 3D DRI driver requires glide 3.
+ *
+#define HasGlide3 YES
+ */
+
+/*
+ * Set the path to your Glide 3 include files.
+ *
+#define Glide3IncDir /usr/include/glide
  */
 
 /*

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.280 2000/03/06 22:59:09 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.281 2000/03/07 13:58:58 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -52,7 +52,7 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #endif
 
 /* The glide driver only works for the loadable server at the moment */
-#if HasGlide && DoLoadableServer
+#if HasGlide2 && DoLoadableServer
 #define GlideDriver glide
 #else
 #define GlideDriver /**/

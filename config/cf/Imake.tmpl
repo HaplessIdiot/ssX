@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.68 2000/03/02 17:52:49 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.69 2000/03/03 01:05:22 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -415,17 +415,28 @@ NCURSESLIBDIR = NCursesLibDir
 #ifdef NCursesIncDir
 NCURSESINCDIR = NCursesIncDir
 #endif
-#ifndef HasGlide
-#define HasGlide NO
+#ifndef HasGlide2
+#define HasGlide2 NO
 #endif
-#ifndef GlideIncDir
-#if HasGlide
-#define GlideIncDir /usr/include/glide
+#ifndef Glide2IncDir
+#if HasGlide2
+#define Glide2IncDir /usr/include/glide
 #else
-#define GlideIncDir
+#define Glide2IncDir
 #endif
 #endif
-GLIDEINCDIR = GlideIncDir
+GLIDE2INCDIR = Glide2IncDir
+#ifndef HasGlide3
+#define HasGlide3 NO
+#endif
+#ifndef Glide3IncDir
+#if HasGlide3
+#define Glide3IncDir /usr/include/glide3
+#else
+#define Glide3IncDir
+#endif
+#endif
+GLIDE3INCDIR = Glide3IncDir
 #ifndef HasTk
 #define HasTk NO
 #endif
