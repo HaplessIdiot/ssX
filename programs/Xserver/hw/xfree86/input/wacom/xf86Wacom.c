@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.31 2002/10/15 02:02:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.32 2003/01/15 03:48:36 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
@@ -165,6 +165,7 @@ static int      debug_level = 0;
  *****************************************************************************/
 #define TILT_FLAG	1
 #define GRAPHIRE_FLAG	2
+#define CINTIQ_FLAG	4
 
 typedef struct
 {
@@ -644,10 +645,16 @@ xf86WcmSendButtons(LocalDevicePtr	local,
 		   int			rwheel)
 		   
 {
-    int             button;
+    int             button, maxbutton;
     WacomDevicePtr  priv = (WacomDevicePtr) local->private;
+    WacomCommonPtr  common = priv->common;
 
-    for (button=1; button<=16; button++) {
+    if (common->wcmFlags & CINTIQ_FLAG)
+	maxbutton = 3;
+    else
+	maxbutton = 16;
+
+    for (button=1; button<=maxbutton; button++) {
 	int mask = 1 << (button-1);
 	
 	if ((mask & priv->oldButtons) != (mask & buttons)) {
@@ -810,7 +817,8 @@ xf86WcmSendEvents(LocalDevicePtr	local,
 	}
 
 	if (common->wcmProtocolLevel == 4 &&
-	    !(common->wcmFlags & GRAPHIRE_FLAG)) {
+	    !(common->wcmFlags & GRAPHIRE_FLAG) &&
+	    !(common->wcmFlags & CINTIQ_FLAG)) {
 	    /* The stylus reports button 4 for the second side
 	     * switch and button 4/5 for the eraser tip. We know
 	     * how to choose when we come in proximity for the
@@ -837,15 +845,17 @@ xf86WcmSendEvents(LocalDevicePtr	local,
 		}
 	    }
 	}
+
 	DBG(4, ErrorF("xf86WcmSendEvents %s rx=%d ry=%d rz=%d buttons=%d\n",
 		      is_stylus ? "stylus" : "cursor", rx, ry, rz, buttons));
-	
+
 	/* Turn button index reported into a bit mask for WACOM IV.
 	 * The WACOM V and Graphire models already report buttons
 	 * as a bit mask.
 	 */
 	if (common->wcmProtocolLevel == 4 &&
-	    !(common->wcmFlags & GRAPHIRE_FLAG)) {
+	    !(common->wcmFlags & GRAPHIRE_FLAG) &&
+	    !(common->wcmFlags & CINTIQ_FLAG)) {
 	    buttons = 1 << (buttons - 1);
 	}
 	
@@ -2009,8 +2019,11 @@ xf86WcmOpen(LocalDevicePtr	local)
 		       XCONFIG_PROBED, common->wcmThreshold);
 	    }
 	}
+    } else if (buffer[2] == 'P' && buffer[3] == 'L') {
+	DBG(2, ErrorF("detected an Cintiq model\n"));
+	common->wcmFlags |= CINTIQ_FLAG;
     }
-	
+
     /* Tilt works on ROM 1.4 and above */
     DBG(2, ErrorF("wacom flags=%d ROM version=%f buffer=%s\n",
 		  common->wcmFlags, version, buffer+loop+1));
