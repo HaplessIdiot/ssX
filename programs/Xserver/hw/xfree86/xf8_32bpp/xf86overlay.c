@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/xf86overlay.c,v 1.1 1999/01/03 03:58:57 dawes Exp $ */
 
 /*
    Copyright (C) 1998.  The XFree86 Project Inc.
@@ -28,6 +28,7 @@ static Bool OverlayCreateGC(GCPtr pGC);
 static Bool OverlayDestroyPixmap(PixmapPtr);
 static PixmapPtr OverlayCreatePixmap(ScreenPtr, int, int, int);
 static Bool OverlayChangeWindowAttributes(WindowPtr, unsigned long);
+static void OverlayPaintWindow(WindowPtr, RegionPtr, int);
 
 /** Funcs **/
 static void OverlayValidateGC(GCPtr, unsigned long, DrawablePtr);
@@ -37,6 +38,9 @@ static void OverlayDestroyGC(GCPtr);
 static void OverlayChangeClip(GCPtr, int, pointer, int);
 static void OverlayDestroyClip(GCPtr);
 static void OverlayCopyClip(GCPtr, GCPtr);
+
+
+static PixmapPtr OverlayRefreshPixmap(PixmapPtr);
 
 static GCFuncs OverlayGCFuncs = {
    OverlayValidateGC, OverlayChangeGC, 
@@ -155,6 +159,8 @@ typedef struct {
    CreatePixmapProcPtr		CreatePixmap;
    DestroyPixmapProcPtr		DestroyPixmap;
    ChangeWindowAttributesProcPtr ChangeWindowAttributes;
+   PaintWindowBackgroundProcPtr	PaintWindowBackground;
+   PaintWindowBorderProcPtr	PaintWindowBorder;
    int				LockPrivate;
 } OverlayScreenRec, *OverlayScreenPtr;
 
@@ -278,12 +284,16 @@ xf86Overlay8Plus32Init (ScreenPtr pScreen)
     pScreenPriv->CreatePixmap = pScreen->CreatePixmap;
     pScreenPriv->DestroyPixmap = pScreen->DestroyPixmap;
     pScreenPriv->ChangeWindowAttributes = pScreen->ChangeWindowAttributes;
+    pScreenPriv->PaintWindowBackground = pScreen->PaintWindowBackground;
+    pScreenPriv->PaintWindowBorder = pScreen->PaintWindowBorder;
 
     pScreen->CreateGC = OverlayCreateGC;
     pScreen->CloseScreen = OverlayCloseScreen;
     pScreen->CreatePixmap = OverlayCreatePixmap; 
     pScreen->DestroyPixmap = OverlayDestroyPixmap; 
     pScreen->ChangeWindowAttributes = OverlayChangeWindowAttributes; 
+    pScreen->PaintWindowBackground = OverlayPaintWindow; 
+    pScreen->PaintWindowBorder = OverlayPaintWindow; 
 
     pScreenPriv->LockPrivate = 0; 
 
@@ -303,7 +313,7 @@ OverlayCreateGC(GCPtr pGC)
 
     pScreen->CreateGC = pScreenPriv->CreateGC;
 
-    if((ret = (*pScreen->CreateGC)(pGC))) {
+    if((ret = (*pScreen->CreateGC)(pGC)) && (pGC->depth != 1)) {
 	pGCPriv->wrapFuncs = pGC->funcs;
 	pGC->funcs = &OverlayGCFuncs;
 	pGCPriv->wrapOps = NULL;
@@ -347,8 +357,11 @@ OverlayDestroyPixmap(PixmapPtr pPix)
 
     if((pPix->refcnt == 1) && (pPix->drawable.bitsPerPixel == 8)) {
 	OverlayPixmapPtr pPriv = OVERLAY_GET_PIXMAP_PRIVATE(pPix);
-	if(pPriv->pix32)
+	if(pPriv->pix32) {
+	   if(pPriv->pix32->refcnt != 1)
+	     ErrorF("Warning! private pix refcnt = %i\n", pPriv->pix32->refcnt);
 	   (*pScreen->DestroyPixmap)(pPriv->pix32);
+	}
 	pPriv->pix32 = NULL;
     }
 
@@ -368,70 +381,30 @@ OverlayCloseScreen (int i, ScreenPtr pScreen)
     pScreen->CreatePixmap = pScreenPriv->CreatePixmap;
     pScreen->DestroyPixmap = pScreenPriv->DestroyPixmap;
     pScreen->ChangeWindowAttributes = pScreenPriv->ChangeWindowAttributes;
+    pScreen->PaintWindowBackground = pScreenPriv->PaintWindowBackground;
+    pScreen->PaintWindowBorder = pScreenPriv->PaintWindowBorder;
 
     xfree ((pointer) pScreenPriv);
 
     return (*pScreen->CloseScreen) (i, pScreen);
 }
 
+
+
 static Bool
 OverlayChangeWindowAttributes (WindowPtr pWin, unsigned long mask)
 {
     ScreenPtr pScreen = pWin->drawable.pScreen;
     OverlayScreenPtr pScreenPriv = OVERLAY_GET_SCREEN_PRIVATE(pScreen);
-    PixmapPtr newPix, pPix;
-    GCPtr pGC;
     Bool result;    
 
     if(pWin->drawable.depth == 8) {
-
 	if((mask & CWBackPixmap) && 
-	   (pWin->backgroundState == BackgroundPixmap)) {
-	    pPix = pWin->background.pixmap;
+	   (pWin->backgroundState == BackgroundPixmap)) 	
+		OverlayRefreshPixmap(pWin->background.pixmap);
 
-	    newPix = (*pScreen->CreatePixmap)(pScreen, pPix->drawable.width,
-						pPix->drawable.height, 24);
-	    if(!newPix) return FALSE;
-
-	    newPix->drawable.depth = 8;
-	    
-            pGC = GetScratchGC(8, pScreen);
-	    pScreenPriv->LockPrivate++;  /* don't modify this one */
-	    ValidateGC((DrawablePtr)newPix, pGC);
-
-	    (*pGC->ops->CopyArea)((DrawablePtr)pPix, (DrawablePtr)newPix,
-		pGC, 0, 0, pPix->drawable.width, pPix->drawable.height, 0, 0);
-	    
-	    pScreenPriv->LockPrivate--;
-	    FreeScratchGC(pGC);
-
-	    pWin->background.pixmap = newPix;
-	    (*pScreen->DestroyPixmap)(pPix);
-	}
-
-	if((mask & CWBorderPixmap) && !pWin->borderIsPixel) {
-	    pPix = pWin->border.pixmap;
-
-	    newPix = (*pScreen->CreatePixmap)(pScreen, pPix->drawable.width,
-						pPix->drawable.height, 24);
-	    if(!newPix) return FALSE;
-
-	    newPix->drawable.depth = 8;
-	    
-            pGC = GetScratchGC(8, pScreen);
-	    pScreenPriv->LockPrivate++;  /* don't modify this one */
-	    ValidateGC((DrawablePtr)newPix, pGC);
-
-	    (*pGC->ops->CopyArea)((DrawablePtr)pPix, (DrawablePtr)newPix,
-		pGC, 0, 0, pPix->drawable.width, pPix->drawable.height, 0, 0);
-	    
-	    pScreenPriv->LockPrivate--;
-	    FreeScratchGC(pGC);
-
-	    pWin->border.pixmap = newPix;
-	    (*pScreen->DestroyPixmap)(pPix);
-	}
-
+	if((mask & CWBorderPixmap) && !pWin->borderIsPixel)
+		OverlayRefreshPixmap(pWin->border.pixmap);
     }
 
     pScreen->ChangeWindowAttributes = pScreenPriv->ChangeWindowAttributes;
@@ -441,57 +414,86 @@ OverlayChangeWindowAttributes (WindowPtr pWin, unsigned long mask)
     return result;
 }
 
+static void
+OverlayPaintWindow(
+  WindowPtr pWin,
+  RegionPtr pReg,
+  int what
+){
+    ScreenPtr pScreen = pWin->drawable.pScreen;
+    OverlayScreenPtr pScreenPriv = OVERLAY_GET_SCREEN_PRIVATE(pScreen);
+    OverlayPixmapPtr pixPriv;
+    PixmapPtr oldPix = NULL;
+
+    if(what == PW_BACKGROUND) {
+	if((pWin->drawable.depth == 8) && 
+		(pWin->backgroundState == BackgroundPixmap)) {
+	   oldPix = pWin->background.pixmap;
+	   pixPriv = OVERLAY_GET_PIXMAP_PRIVATE(oldPix);
+	   pWin->background.pixmap = pixPriv->pix32;
+	}
+
+	pScreen->PaintWindowBackground = pScreenPriv->PaintWindowBackground;
+	(*pScreen->PaintWindowBackground) (pWin, pReg, what);
+	pScreen->PaintWindowBackground = OverlayPaintWindow;
+
+	if(oldPix)
+	   pWin->background.pixmap = oldPix;
+    } else {
+	if((pWin->drawable.depth == 8) && !pWin->borderIsPixel) {
+	   oldPix = pWin->border.pixmap;
+	   pixPriv = OVERLAY_GET_PIXMAP_PRIVATE(oldPix);
+	   pWin->border.pixmap = pixPriv->pix32;
+        }
+
+	pScreen->PaintWindowBorder = pScreenPriv->PaintWindowBorder;
+	(*pScreen->PaintWindowBorder) (pWin, pReg, what);
+	pScreen->PaintWindowBorder = OverlayPaintWindow;
+
+	if(oldPix)
+	   pWin->border.pixmap = oldPix;
+    }
+}
 
 
 /*********************** GC Funcs *****************************/
 
-/* This function assumes you've already created the pix32 private */
-static void
-OverlayRefreshPixmap(PixmapPtr pix8)
+
+static PixmapPtr
+OverlayRefreshPixmap(PixmapPtr pix8) 
 {
-    ScreenPtr pScreen = pix8->drawable.pScreen;
-    OverlayScreenPtr pScreenPriv = OVERLAY_GET_SCREEN_PRIVATE(pScreen);
     OverlayPixmapPtr pixPriv = OVERLAY_GET_PIXMAP_PRIVATE(pix8);
-    PixmapPtr pix32 = pixPriv->pix32;
-    GCPtr pGC;
-
-    pGC = GetScratchGC(8, pScreen);
-
-    pScreenPriv->LockPrivate++;  /* don't modify this one */
-    ValidateGC((DrawablePtr)pix32, pGC);
-
-    (*pGC->ops->CopyArea)((DrawablePtr)pix8, (DrawablePtr)pix32,
-	pGC, 0, 0, pix8->drawable.width, pix8->drawable.height, 0, 0);
-	    
-    pScreenPriv->LockPrivate--;
-    FreeScratchGC(pGC);
-
-    pixPriv->dirty = FALSE;
-    pix32->drawable.serialNumber = NEXT_SERIAL_NUMBER;    
-}
-
-/* This function assumes you've already verified that the tile exists */
-static void
-OverlaySet32BppTile(GCPtr pGC) 
-{
-    OverlayGCPtr pGCPriv = OVERLAY_GET_GC_PRIVATE(pGC);
-    OverlayPixmapPtr pixPriv = OVERLAY_GET_PIXMAP_PRIVATE(pGC->tile.pixmap);
+    ScreenPtr pScreen = pix8->drawable.pScreen;
 
     if(!pixPriv->pix32) {
-	ScreenPtr pScreen = pGC->pScreen;
-	PixmapPtr newPix, pPix = pGC->tile.pixmap;
-	
-	newPix = (*pScreen->CreatePixmap)(pScreen, pPix->drawable.width,
-		pPix->drawable.height, 24);
+	PixmapPtr newPix;
+
+	newPix = (*pScreen->CreatePixmap)(pScreen, pix8->drawable.width,
+		pix8->drawable.height, 24);
 	newPix->drawable.depth = 8;  /* Bad Mark! Bad Mark! */
         pixPriv->pix32 = newPix;
         pixPriv->dirty = TRUE;
     }
 
-    pGCPriv->tile = pixPriv->pix32;
+    if(pixPriv->dirty) {
+	OverlayScreenPtr pScreenPriv = OVERLAY_GET_SCREEN_PRIVATE(pScreen);
+	GCPtr pGC;
 
-    if(pixPriv->dirty) 
-	OverlayRefreshPixmap(pGC->tile.pixmap);
+	pGC = GetScratchGC(8, pScreen);
+
+	pScreenPriv->LockPrivate++;  /* don't modify this one */
+	ValidateGC((DrawablePtr)pixPriv->pix32, pGC);
+
+	(*pGC->ops->CopyArea)((DrawablePtr)pix8, (DrawablePtr)pixPriv->pix32,
+		pGC, 0, 0, pix8->drawable.width, pix8->drawable.height, 0, 0);  
+	pScreenPriv->LockPrivate--;
+	FreeScratchGC(pGC);
+
+	pixPriv->dirty = FALSE;
+	pixPriv->pix32->drawable.serialNumber = NEXT_SERIAL_NUMBER;    
+    }
+
+    return pixPriv->pix32;
 }
 
 
@@ -510,15 +512,15 @@ OverlayValidateGC(
     }
 
     if(pGC->depth == 24) {
+	unsigned long oldpm = pGC->planemask;
 	pGCPriv->overlayOps = NULL;
-#if 1   
+
 	if(pDraw->type == DRAWABLE_WINDOW)
 	   pGC->planemask &= 0x00ffffff;
 	else
 	   pGC->planemask |= 0xff000000; 
-#else
-	pGC->planemask &= 0x00ffffff;
-#endif
+
+        if(oldpm != pGC->planemask) changes |= GCPlaneMask;
 
 	(*pGC->funcs->ValidateGC)(pGC, changes, pDraw);
 
@@ -528,7 +530,7 @@ OverlayValidateGC(
 	if(pDraw->bitsPerPixel == 32) {
 	
 	    if(pGC->fillStyle == FillTiled)
-		OverlaySet32BppTile(pGC);
+		pGCPriv->tile = OverlayRefreshPixmap(pGC->tile.pixmap);
 	    else pGCPriv->tile = NULL;
 
 	    if(pGCPriv->overlayOps != &WindowGCOps) {
