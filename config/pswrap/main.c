@@ -35,7 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/config/pswrap/main.c,v 1.2 2000/02/18 12:18:43 tsi Exp $ */
+/* $XFree86: xc/config/pswrap/main.c,v 1.3 2000/05/18 23:46:08 dawes Exp $ */
 
 #include <stdio.h>
 
@@ -54,6 +54,7 @@
 
 /* global data */
 char	*prog;			/* program name */
+char	*special_h = NULL;	/* -f option */
 char	*hfile = NULL;		/* name of -h file */
 char	*ofile = NULL;		/* name of -o file */
 char	*ifile = NULL;		/* name of input file */
@@ -79,6 +80,7 @@ static void Usage(void)
     fprintf(stderr,"Usage:  pswrap [options] [input-file]\n");
     fprintf(stderr,"    -a              produce ANSI C procedure prototypes\n");
     fprintf(stderr,"    -b              process a big file\n");
+    fprintf(stderr,"    -f filename     include special header\n");
     fprintf(stderr,"    -h filename     specify header filename\n");
     fprintf(stderr,"    -o filename     specify output C filename\n");
     fprintf(stderr,"    -r              make wraps re-entrant\n");
@@ -118,6 +120,9 @@ static void ScanArgs(int argc, char *argv[])
 	    	lexdebug++;
 		break;
 #endif /* PSWDEBUG */
+	    case 'f':
+		special_h = argv[++i];
+		break;
 	    case 'h':
 		hfile = argv[++i];
 		slash = rindex(hfile,SLASH);
