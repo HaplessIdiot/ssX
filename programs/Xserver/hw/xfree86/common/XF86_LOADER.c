@@ -28,7 +28,7 @@ int  xf86MaxScreens = sizeof(xf86Screens) / sizeof(ScrnInfoPtr);
 
 int xf86ScreenNames[] =
 {
-  ACCEL,
+  XF86,
   -1
 };
 

@@ -1,14 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_initacc.c,v 3.5 1997/02/23 09:25:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_initacc.c,v 3.6 1997/02/27 13:59:35 hohndel Exp $ */
 
 #include "xf86.h"
 #include "vga.h"
 
 #include "mga.h"
 #include "mgareg.h"
-
-#ifndef XFree86LOADER
-typedef pointer XF86FILE;	/* opaque FILE* replacement */
-#endif
 
 void Mga8AccelInit();
 void Mga16AccelInit();
@@ -81,35 +77,4 @@ void MGAEngineInit()
     OUTREG(MGAREG_MACCESS, maccess);
     OUTREG(MGAREG_PLNWT, ~0);
     OUTREG(MGAREG_OPMODE, 0);
-}
-
-/*
- * for testing only; reads accel config from file 
- * values:
- *   0 - disable primitive
- *   1 - enable primitive
- *   2 - set NoopDDA as primitive
- */
-int MgaAccelSwitch(primitive)
-    char* primitive;
-{
-    char buf[1000];
-    int i;
-    XF86FILE file;
-#ifndef __EMX__
-    file = xf86fopen("/tmp/accelswitch", "r");
-#else
-    /* make it simple on OS/2, can't rely on /tmp, but too lazy to
-     * ask (xf86)getenv("TMP"); don't rely on HPFS
-     */
-    file = xf86fopen("\\accelsw","r");	
-#endif
-    if( !file )
-        return 1;
-    
-    while( xf86fscanf(file, "%s%d", buf, &i) == 2 )
-        if( !xf86strcmp(buf, primitive) ) 
-            return i;
-    
-    return 1;
 }

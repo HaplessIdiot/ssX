@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_accel.c,v 3.6 1997/01/18 06:56:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_accel.c,v 3.7 1997/01/18 09:11:02 dawes Exp $ */
 
 /*
  * This is a sample driver implementation template for the new acceleration
@@ -15,9 +15,18 @@
 #include "mgareg.h"
 #include "mga_map.h"
 
+/*
+ * external functions
+ */
 void MgaSync();
+ 
+/*
+ * forward definitions for the functions in this file.
+ * MGANAME macro gives correct name for current depth
+ */
 void MGANAME(SetupForFillRectSolid)();
 void MGANAME(SubsequentFillRectSolid)();
+void MGANAME(SubsequentFillTrapezoidSolid)();
 void MGANAME(SetupForScreenToScreenCopy)();
 void MGANAME(SubsequentScreenToScreenCopy)();
 void MGANAME(SetupForCPUToScreenColorExpand)();
@@ -69,8 +78,8 @@ void MGANAME(AccelInit)()
      * install hardware lines and clipping
      */
 
-    xf86AccelInfoRec.SubsequentTwoPointLine = MGANAME_A(SubsequentTwoPointLine);
-    xf86AccelInfoRec.SetClippingRectangle = MGANAME_A(SetClippingRectangle);
+    xf86AccelInfoRec.SubsequentTwoPointLine = MGANAME(SubsequentTwoPointLine);
+    xf86AccelInfoRec.SetClippingRectangle = MGANAME(SetClippingRectangle);
 
     /*
      * The following line installs a "Sync" function, that waits for
@@ -84,7 +93,11 @@ void MGANAME(AccelInit)()
      * It may include GXCOPY_ONLY, NO_PLANEMASK, and RGB_EQUAL.
      */
     xf86GCInfoRec.PolyFillRectSolidFlags = 0;
+
 #if PSZ == 24
+    /*
+     * In 24 bpp, all three colors must have the same mask
+     */
     xf86GCInfoRec.PolyFillRectSolidFlags |= NO_PLANEMASK;
 #endif
 
@@ -92,9 +105,13 @@ void MGANAME(AccelInit)()
      * Install the low-level functions for drawing solid filled rectangles.
      */
     xf86AccelInfoRec.SetupForFillRectSolid   = 
-    				MGANAME_A(SetupForFillRectSolid);
+    				MGANAME(SetupForFillRectSolid);
     xf86AccelInfoRec.SubsequentFillRectSolid = 
-    				MGANAME_A(SubsequentFillRectSolid);
+    				MGANAME(SubsequentFillRectSolid);
+#if 0  /* there are some problems, probably with error term */
+    xf86AccelInfoRec.SubsequentFillTrapezoidSolid =
+    				MGANAME(SubsequentFillTrapezoidSolid);
+#endif
 
     /*
      * We also want to set up the ScreenToScreenCopy (BitBLT) primitive for
@@ -112,9 +129,9 @@ void MGANAME(AccelInit)()
      * Install the low-level functions for screen-to-screen copy.
      */
     xf86AccelInfoRec.SetupForScreenToScreenCopy =
-        			MGANAME_A(SetupForScreenToScreenCopy);
+        			MGANAME(SetupForScreenToScreenCopy);
     xf86AccelInfoRec.SubsequentScreenToScreenCopy =
-        			MGANAME_A(SubsequentScreenToScreenCopy);
+        			MGANAME(SubsequentScreenToScreenCopy);
 
     /*
      * color expansion
@@ -130,27 +147,19 @@ void MGANAME(AccelInit)()
 #endif
 
     xf86AccelInfoRec.SetupForScreenToScreenColorExpand =
-    			MGANAME_A(SetupForScreenToScreenColorExpand);
+    			MGANAME(SetupForScreenToScreenColorExpand);
     xf86AccelInfoRec.SubsequentScreenToScreenColorExpand =
-    			MGANAME_A(SubsequentScreenToScreenColorExpand);
+    			MGANAME(SubsequentScreenToScreenColorExpand);
     					
     xf86AccelInfoRec.SetupForCPUToScreenColorExpand = 
-				MGANAME_A(SetupForCPUToScreenColorExpand);
+				MGANAME(SetupForCPUToScreenColorExpand);
     xf86AccelInfoRec.SubsequentCPUToScreenColorExpand = 
-				MGANAME_A(SubsequentCPUToScreenColorExpand);
+				MGANAME(SubsequentCPUToScreenColorExpand);
     
-    if( xf86AccelInfoRec.SubsequentCPUToScreenColorExpand == 
-    							(void (*)())NoopDDA) 
-    {	
-        static char expandwin[0x1C00];	
-        xf86AccelInfoRec.CPUToScreenColorExpandBase = (unsigned*)expandwin;
-    }
-    else
 #ifdef __alpha__
-        xf86AccelInfoRec.CPUToScreenColorExpandBase =
-	  (unsigned*)MGAMMIOBaseDENSE;
+    xf86AccelInfoRec.CPUToScreenColorExpandBase = (unsigned*)MGAMMIOBaseDENSE;
 #else /* __alpha__ */
-        xf86AccelInfoRec.CPUToScreenColorExpandBase = (unsigned*)MGAMMIOBase;
+    xf86AccelInfoRec.CPUToScreenColorExpandBase = (unsigned*)MGAMMIOBase;
 #endif /* __alpha__ */
     xf86AccelInfoRec.CPUToScreenColorExpandRange = 0x1C00;
 
@@ -158,9 +167,9 @@ void MGANAME(AccelInit)()
      * 8x8 color expand pattern fill
      */
     xf86AccelInfoRec.SetupFor8x8PatternColorExpand =
-    			MGANAME_A(SetupFor8x8PatternColorExpand);
+    			MGANAME(SetupFor8x8PatternColorExpand);
     xf86AccelInfoRec.Subsequent8x8PatternColorExpand =
-    			MGANAME_A(Subsequent8x8PatternColorExpand);
+    			MGANAME(Subsequent8x8PatternColorExpand);
      
     /*
      * Finally, we set up the video memory space available to the pixmap
@@ -216,6 +225,10 @@ void MGANAME(AccelInit)()
  * SETACCESS1 for any rop and foreground only used
  * SETACCESS2 for any rop and both foreground and background used
  */
+/* 
+ * when rop != GXcopy we can use RPL or RSTR access type 
+ * (mga2064w pp 5-19, 5-23, 5-24, 5-29, 5-31, 5-33, 5-34, 5-37, 5-39)
+ */  
 #define SETACCESSNOGXCOPY(cmd,rop) \
     if( (rop == GXclear) || (rop == GXcopyInverted) || (rop == GXset) ) \
     	cmd |= MGADWG_RPL; \
@@ -224,6 +237,10 @@ void MGANAME(AccelInit)()
 
 #if PSZ != 24
 
+/*
+ * when rop == GXcopy and bpp != 24 we can use BLOCK access type 
+ * (mga2064w pp 5-23, 5-24, 5-33, 5-39)
+ */
 #define SETACCESS2(cmd,rop,bg,fg,transc) SETACCESS1(cmd,rop,fg)
 #define SETACCESS1(cmd,rop,fg) \
     if( rop == GXcopy ) \
@@ -233,6 +250,14 @@ void MGANAME(AccelInit)()
 
 #else /* PSZ != 24 */
 
+/*
+ * in 24 bpp, when rop == GXcopy, we can use BLOCK atype
+ * only if color is gray (R=G=B=A)
+ */
+/* 
+ * SETACCESS1 checks only foreground color
+ * (mga2064w pp 5-23) 
+ */
 #define SETACCESS1(cmd,rop,fg) \
     if( rop == GXcopy ) \
     { \
@@ -247,6 +272,11 @@ void MGANAME(AccelInit)()
     else \
         SETACCESSNOGXCOPY(cmd,rop);
 
+/*
+ * SETACCESS2 checks both foreground and background colors.
+ * The background color is checked only if it isn't transparent (transc flag).
+ * (mga2064w pp 5-24, 5-33, 5-39)
+ */
 #define SETACCESS2(cmd,rop,bg,fg,transc) \
     if( rop == GXcopy ) \
         if( (transc || \
@@ -276,6 +306,7 @@ void MGANAME(SetupForFillRectSolid)(color, rop, planemask)
     mga_cmd = MGADWG_TRAP | MGADWG_NOZCMP | MGADWG_SOLID | MGADWG_ARZERO | 
     	       MGADWG_SGNZERO | MGADWG_SHIFTZERO | MGADWG_BMONOLEF;
 
+    /* set atype - foreground color only used (mga2064w pp 5-23) */
     SETACCESS1(mga_cmd,rop,color);
 
     REPLICATE(color);
@@ -301,7 +332,7 @@ void MGANAME(SetupForFillRectSolid)(color, rop, planemask)
 }
 
 /*
- * This is the implementation of the SubsequentForFillRectSolid function
+ * This is the implementation of the SubsequentFillRectSolid function
  * that sends commands to the coprocessor to fill a solid rectangle of
  * the specified location and size, with the parameters from the SetUp
  * call.
@@ -311,6 +342,33 @@ void MGANAME(SubsequentFillRectSolid)(x, y, w, h)
 {
     OUTREG(MGAREG_FXBNDRY, ((x + w) << 16) | x);
     OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
+}
+
+/*
+ * This is the implementation of the SubsequentFillTrapezoidSolid
+ */
+void MGANAME(SubsequentFillTrapezoidSolid)(y, h, left, dxL, dyL, eL, 
+						right, dxR, dyR, eR)
+    int y, h, left, dxL, dyL, eL, right, dxR, dyR, eR;
+{
+    int sdxl = (dxL < 0);
+    int sdxr = (dxR < 0);
+    
+    /* change command because we are after SetupForFillRectSolid */
+    OUTREG(MGAREG_DWGCTL, mga_cmd & ~(MGADWG_ARZERO | MGADWG_SGNZERO));
+
+    OUTREG(MGAREG_AR0, dyL);
+    OUTREG(MGAREG_AR1, sdxl? (dxL + dyL - 1) : -dxL);
+    OUTREG(MGAREG_AR2, sdxl? dxL : -dxL);
+    OUTREG(MGAREG_AR4, sdxr? (dxR + dyR - 1) : -dxR);
+    OUTREG(MGAREG_AR5, sdxr? dxR : -dxR);
+    OUTREG(MGAREG_AR6, dyR);
+    OUTREG(MGAREG_SGN, (sdxl << 1) | (sdxr << 5));
+    OUTREG(MGAREG_FXBNDRY, ((right + 1) << 16) | left);
+    OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
+
+    /* restore FillRect state for future rects */
+    OUTREG(MGAREG_DWGCTL, mga_cmd);
 }
 
 /*
@@ -333,6 +391,7 @@ transparency_color)
     mga_cmd = MGADWG_BITBLT | MGADWG_NOZCMP | MGADWG_SHIFTZERO | MGADWG_BFCOL;
     /*
      * now use faster access type for certain rop's
+     * we can't use BLOCK atype for GXcopy (mga2064w 5-29)
      */
     if( rop == GXcopy )
         mga_cmd |= MGADWG_RPL;
@@ -341,12 +400,12 @@ transparency_color)
 
     mgablitxdir = xdir;
     mgablitydir = ydir;
-    if( ydir == 1 )
+    if( ydir == 1 )     /* top - down */
     {
         mga_sgn = 0;
         srcpitch = xf86AccelInfoRec.FramebufferWidth;
     }
-    else
+    else                /* bottom - up */
     {
         mga_sgn = 4;
         srcpitch = -xf86AccelInfoRec.FramebufferWidth;
@@ -379,11 +438,14 @@ void MGANAME(SubsequentScreenToScreenCopy)(xsrc, ysrc, xdst, ydst, w, h)
     int cmd;
     int fxright = xdst + --w;
     int cxright = 0xFFFF;  /* maxX */
+    /* check whether this blit can be converted to left-to-right blit */
     int left_to_right = ((mgablitxdir == 1) || (ysrc != ydst));
     
     /*
-     * try to use fast bitblt
+     * Try to use fast bitblt
      */
+        /* alignment constraints (SDK 5-30)
+        */
     if(
 #if PSZ == 32
         !((xsrc ^ xdst) & 31)
@@ -392,9 +454,12 @@ void MGANAME(SubsequentScreenToScreenCopy)(xsrc, ysrc, xdst, ydst, w, h)
 #else
         !((xsrc ^ xdst) & 127)
 #endif
+        /* fast bitblt works only with GXcopy and from left to right
+        */ 
         && (mga_rop == GXcopy) && left_to_right && MGAusefbitblt)
     {
-        /* undocumented constraints */
+        /* undocumented constraints
+        */
 #if PSZ == 8
         if( (xdst & (1 << 6)) && (((fxright >> 6) - (xdst >> 6)) & 7) == 7 )
             cxright = fxright, fxright |= 1 << 6;
@@ -409,10 +474,12 @@ void MGANAME(SubsequentScreenToScreenCopy)(xsrc, ysrc, xdst, ydst, w, h)
         if( (xdst & (1 << 4)) && (((fxright >> 4) - (xdst >> 4)) & 7) == 7 )
             cxright = fxright, fxright |= 1 << 4;
 #endif
+        /* command for fast blit (mga2064w pp 5-30) */
         cmd = MGADWG_FBITBLT | MGADWG_RPL | MGADWG_NOZCMP | 
               MGADWG_SHIFTZERO | 0x000A0000 | MGADWG_BFCOL;
     }
     else
+        /* normal blit */
         cmd = mga_cmd;
         
     if(mgablitydir != 1)    /* bottom to top */
@@ -433,7 +500,8 @@ void MGANAME(SubsequentScreenToScreenCopy)(xsrc, ysrc, xdst, ydst, w, h)
         mga_sgn |= 1;
     }
  
-    /* cmd, mga_sgn and cxright are constants for normal blits */
+    /* cmd, mga_sgn and cxright are constant in most cases
+    */
     if(cmd != mga_lastcmd)
         OUTREG(MGAREG_DWGCTL, mga_lastcmd = cmd);
     if(mga_sgn != mga_lastsgn)
@@ -454,12 +522,16 @@ void MGANAME(SetupForScreenToScreenColorExpand)(bg, fg, rop, planemask)
     int bg, fg, rop;
     unsigned planemask;
 {
+    /* handle transparent background */
     int transc = ( bg == -1 );
     
+    /* bitblt with expansion (mga2064w pp 5-33) */
     mga_cmd = MGADWG_BITBLT | MGADWG_NOZCMP | MGADWG_SGNZERO |
     	MGADWG_SHIFTZERO | MGADWG_BMONOLEF;
     
+    /* set atype, both foreground and background used */
     SETACCESS2(mga_cmd,rop,bg,fg,transc)
+    
     /*
      * check transparency 
      */
@@ -494,7 +566,7 @@ void MGANAME(SubsequentScreenToScreenColorExpand)(srcx, srcy, x, y, w, h)
 
     OUTREG(MGAREG_AR3, srcStart);
     OUTREG(MGAREG_AR0, srcStop);
-    OUTREG(MGAREG_AR5, (w + 31) & ~31);   /* SCANLINE_PAD_DWORD */
+    OUTREG(MGAREG_AR5, (w + 31) & ~31);   /* source is DWORD-padded */
     OUTREG(MGAREG_FXBNDRY, ((x + w - 1) << 16) | x);
     OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
 }
@@ -508,10 +580,13 @@ void MGANAME(SetupForCPUToScreenColorExpand)(bg, fg, rop, planemask)
 {
     int transc = ( bg == -1 );
     
+    /* ILOAD with expansion (mga2064w pp 5-39) */
     mga_cmd = MGADWG_ILOAD | MGADWG_LINEAR | MGADWG_NOZCMP | MGADWG_SGNZERO |
     	MGADWG_SHIFTZERO | MGADWG_BMONOLEF;
 
+    /* set atype, both foreground and background color used */
     SETACCESS2(mga_cmd,rop,bg,fg,transc)
+    
     /*
      * check transparency 
      */
@@ -542,12 +617,8 @@ void MGANAME(SetupForCPUToScreenColorExpand)(bg, fg, rop, planemask)
 void MGANAME(SubsequentCPUToScreenColorExpand)(x, y, w, h, skipleft)
     int x, y, w, h, skipleft;
 {
-#if 0
-    if( !(w * h) ) return;
-#endif
-       
     OUTREG(MGAREG_CXBNDRY, ((x + w - 1) << 16) | ((x + skipleft) & 0xffff));
-    w = (w + 31) & ~31;     /* SCANLINE_PAD_DWORD */
+    w = (w + 31) & ~31;     /* source is dword padded */
     OUTREG(MGAREG_AR0, (w * h) - 1);
     OUTREG(MGAREG_AR3, 0);            /* we need it here for stability */
     OUTREG(MGAREG_FXBNDRY, ((x + w - 1) << 16) | (x & 0xffff));
@@ -564,10 +635,13 @@ void MGANAME(SetupFor8x8PatternColorExpand)(patternx, patterny, bg, fg,
 {
     int transc = ( bg == -1 );
     
+    /* patterned rectangle fill (mga2064w pp 5-24) */
     mga_cmd = MGADWG_TRAP | MGADWG_NOZCMP | MGADWG_ARZERO | MGADWG_SGNZERO |
     	      MGADWG_BMONOLEF;
 
+    /* set atype, both foreground and background used */
     SETACCESS2(mga_cmd,rop,bg,fg,transc)
+    
     /*
      * check transparency 
      */
@@ -587,8 +661,8 @@ void MGANAME(SetupFor8x8PatternColorExpand)(patternx, patterny, bg, fg,
 #endif
     SETRASTEROP(rop);
     OUTREG(MGAREG_DWGCTL, mga_cmd);
-    OUTREG(MGAREG_PAT0, patternx);
-    OUTREG(MGAREG_PAT1, patterny);
+    OUTREG(MGAREG_PAT0, patternx);      /* just store pattern */
+    OUTREG(MGAREG_PAT1, patterny);      /* in chip registers */
     DISABLECLIPPING();
     mga_lastshift = -1;
 }
@@ -660,19 +734,21 @@ MGANAME(SetClippingRectangle)(x1, y1, x2, y2)
 {
         int tmp;
 
+#if 0  /* [rdk] I think we don't need it, see xaa/NOTES */
         if ( x2 < x1 )
         {
                 tmp = x2;
                 x2 = x1;
                 x1 = tmp;
         }
-
         if ( y2 < y1 )
         {
                 tmp = y2;
                 y2 = y1;
                 y1 = tmp;
         }
+#endif
+
         OUTREG(MGAREG_CXBNDRY, (x2 << 16) | x1);
         OUTREG(MGAREG_YTOP,
 	       y1 * xf86AccelInfoRec.FramebufferWidth + MGAydstorg);

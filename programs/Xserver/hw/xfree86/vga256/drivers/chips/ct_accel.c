@@ -310,38 +310,87 @@ void CTNAME(24SubsequentFillRectSolid)(x, y, w, h)
     int x, y, w, h;
 {
     static unsigned int dwords[3] = { 0x24499224, 0x92244992, 0x49922449};
-    int destaddr, line, i;
+    int srcaddr, destaddr, line, i, width, dispw;
+
+    if(w == 0 || h == 0)
+      return;
 
     destaddr = (y * vga256InfoRec.displayWidth + x) * 3;
+    dispw = vga256InfoRec.displayWidth  * 3;
+    destaddr = y * dispw + x * 3;
+    w *= 3;
+    width = ((w  + 31) & ~31) >> 5;
+
     ctBLTWAIT;
     ctSETDSTADDR(destaddr);
 
     if (!fastfill) ctSETFGCOLOR8(fgpixel);
     ctSETROP(CommandFlags | ctAluConv[GXcopy & 0xF]);
     ctSETDSTADDR(destaddr);
-    ctSETHEIGHTWIDTHGO(h, w * 3);
-    line = 0;
-    while (line < h) {
-	for (i = 0; i < (((w * 3 + 31) & ~31) >> 5); i++) {
-	    *(unsigned int *)ctBltDataWindow = dwords[((fillindex + i) % 3)];
-	}
-	line++;
-    }
-
-    if (!fastfill) {
-	ctBLTWAIT;
-	ctSETFGCOLOR8(xorpixel);
-	ctSETROP(CommandFlags | ctAluConv[GXxor & 0xF] | ctBGTRANSPARENT);
-	ctSETDSTADDR(destaddr);
-	ctSETHEIGHTWIDTHGO(h, w * 3);
+    if (fastfill) {
+	ctSETHEIGHTWIDTHGO(h, w);
 	line = 0;
 	while (line < h) {
-	    for (i = 0; i < (((w * 3 + 31) & ~31) >> 5); i++) {
-		*(unsigned int *)ctBltDataWindow = dwords[((1 + i) % 3)];
+	    for (i = 0; i < width; i++) {
+		*(unsigned int *)ctBltDataWindow = dwords[((fillindex + i) % 3)];
 	    }
 	    line++;
 	}
     }
+    else {
+	ctSETHEIGHTWIDTHGO(1, w);
+	i = 0;
+	while(i < width){
+	    *(unsigned int *)ctBltDataWindow = dwords[(i++ % 3)];
+	}
+
+	for(line = 0; (h >> line ) > 1; line++){;}
+
+	i = 0;
+
+	ctBLTWAIT;
+	ctSETFGCOLOR8(xorpixel);
+	ctSETROP(CommandFlags | ctAluConv[GXxor & 0xF] | ctBGTRANSPARENT);
+	ctSETDSTADDR(destaddr);
+	ctSETHEIGHTWIDTHGO(1, w);
+
+	while(i < width) {
+	    *(unsigned int *)ctBltDataWindow = dwords[((++i) % 3)];
+	}
+
+	srcaddr = destaddr;
+
+	ctBLTWAIT;
+
+	if(line){
+	    i = 0;
+	    ctBLTWAIT;
+	    ctSETROP(ctTOP2BOTTOM | ctLEFT2RIGHT | ctAluConv[GXcopy & 0xF]);
+	    ctSETPITCH(dispw, dispw);
+	    ctSETSRCADDR(srcaddr);
+	    
+	    while(i < line){
+	      destaddr = srcaddr + (dispw << i);
+	      ctBLTWAIT;
+	      ctSETDSTADDR(destaddr);
+	      ctSETHEIGHTWIDTHGO((1 << i), w);
+	      i++;
+	    }
+
+	    if((1 <<  line)  < h){
+	      destaddr = srcaddr + (dispw << line);
+	      ctBLTWAIT;
+	      ctSETDSTADDR(destaddr);
+	      ctSETHEIGHTWIDTHGO(h-(1 << line), w);
+	    }
+
+	    ctBLTWAIT;
+	    ctSETROP(ctSRCMONO | ctSRCSYSTEM | ctTOP2BOTTOM | ctLEFT2RIGHT |
+		     ctAluConv[GXcopy & 0xF]);
+	    ctSETSRCADDR(0);
+	    ctSETPITCH(0, dispw);
+	  }
+      }
 }
 #endif
 

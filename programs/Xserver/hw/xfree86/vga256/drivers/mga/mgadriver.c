@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.31 1997/02/27 13:59:39 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.32 1997/02/28 08:21:39 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -89,26 +89,29 @@ static pciTagRec MGAPciTag;
 static int MGABppShft;
 static unsigned char* MGAInitDAC;
 
+/*
+ * indexes to ti3026 registers (the order is important)
+ */
 static unsigned char MGADACregs[] = {
 	0x0F, 0x18, 0x19, 0x1A, 0x1C, 0x1D, 0x1E, 0x2A, 0x2B, 0x30,
 	0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A
 };
 
+/*
+ * initial values of ti3026 registers
+ */
 static unsigned char MGADACbpp8[] = {
 	0x06, 0x80,    0, 0x25, 0x00, 0x00, 0x0C, 0x00, 0x1E, 0xFF,
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00,    0, 0x00
 };
-
 static unsigned char MGADACbpp16[] = {
 	0x07, 0x05,    0, 0x15, 0x00, 0x00, 0x2C, 0x00, 0x1E, 0xFF,
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00,	   0, 0x00
 };
-
 static unsigned char MGADACbpp24[] = {
 	0x07, 0x16,    0, 0x25, 0x00, 0x00, 0x2C, 0x00, 0x1E, 0xFF,
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00,	   0, 0x00
 };
-
 static unsigned char MGADACbpp32[] = {
 	0x07, 0x06,    0, 0x05, 0x00, 0x00, 0x2C, 0x00, 0x1E, 0xFF,
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00,	   0, 0x00
@@ -139,10 +142,6 @@ static int		MGAPitchAdjust();
 static int		MGALinearOffset();
 static void		MGADisplayPowerManagementSet();
 
-extern void		MGASetRead();
-extern void		MGASetWrite();
-extern void		MGASetReadWrite();
-
 /*
  * This data structure defines the driver itself.
  */
@@ -159,11 +158,11 @@ vgaVideoChipRec MGA = {
 	MGARestore,
 	MGAAdjust,
 	vgaHWSaveScreen,
-	(void (*)())NoopDDA,	/* MGAGetMode, */
+	(void (*)())NoopDDA,	/* GetMode, */
 	MGAFbInit,
-	(void (*)())NoopDDA,	/* MGASetRead, */
-	(void (*)())NoopDDA,	/* MGASetWrite, */
-	(void (*)())NoopDDA,	/* MGASetReadWrite, */
+	(void (*)())NoopDDA,	/* SetRead, */
+	(void (*)())NoopDDA,	/* SetWrite, */
+	(void (*)())NoopDDA,	/* SetReadWrite, */
 	/*
 	 * This is the size of the mapped memory window, usually 64k.
 	 */
@@ -389,8 +388,7 @@ MGAReadBios()
 }
 
 /*
- * Read/write to the DAC.  This includes both MMIO and PCI config space
- * methods of accessing the DAC.
+ * Read/write to the DAC via MMIO 
  */
 
 static void outTi3026(reg, val)
@@ -768,15 +766,18 @@ MGACountRam()
 			      (pointer)((unsigned long)MGA.ChipLinearBase),
 			      MGA.ChipLinearSize);
 	
+		/* turn MGA mode on - enable linear frame buffer (CRTCEXT3) */
 		outb(0x3DE, 3);
 		tmp = inb(0x3DF);
 		outb(0x3DF, tmp | 0x80);
 	
+		/* write, read and compare method */
 		base[0x500000] = 0x55;
 		base[0x300000] = 0x33;
 		tmp5 = base[0x500000];
 		tmp3 = base[0x300000];
 
+		/* restore CRTCEXT3 state */
 		outb(0x3DE, 3);
 		outb(0x3DF, tmp);
 	
@@ -839,13 +840,13 @@ MGAProbe()
 	if (!pcr)
 	{
 		if (vga256InfoRec.chipset)
-			ErrorF("%s %s: MGA: unknown PCI device vendor\n",
+			ErrorF("%s %s: MGA: unknown chipset\n",
 				XCONFIG_PROBED, vga256InfoRec.name);
 		return(FALSE);
 	}
 
 	/*
-	 *	OK. It's MGA Millennium (or something pretty close)
+	 *	OK. It's MGA Millennium
 	 */
 	 
 	MGAPciTag = pcibusTag(pcr->_bus, pcr->_cardnum, pcr->_func);
@@ -882,7 +883,10 @@ MGAProbe()
 		FatalError("MGA: Can't detect linear framebuffer address\n");
 	if (!MGAMMIOAddr)
 		FatalError("MGA: Can't detect IO registers address\n");
-	 
+	
+	/*
+	 * Map IO registers to virtual address space
+	 */ 
 	MGAMMIOBase =
 #if defined(__alpha__)
 			/* for Alpha, we need to map SPARSE memory,
@@ -920,6 +924,7 @@ MGAProbe()
 	xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_mgaExtPorts,
 				mgaExtPorts);
 
+	/* enable IO ports, etc. */
 	MGAEnterLeave(ENTER);
 	
 #ifdef DEBUG
@@ -982,7 +987,9 @@ MGAProbe()
  
 	OFLG_SET(OPTION_NOACCEL, &MGA.ChipOptionFlags);
 	OFLG_SET(OPTION_SYNC_ON_GREEN, &MGA.ChipOptionFlags);
+#if 0 /* [rdk] do we really need this? */
 	OFLG_SET(OPTION_DAC_8_BIT, &MGA.ChipOptionFlags);
+#endif
 
 	OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
 	OFLG_SET(OPTION_DAC_8_BIT, &vga256InfoRec.options);
@@ -1015,8 +1022,10 @@ TestAndSetRounding(pitch)
 	int size;
 
 	if (vga256InfoRec.videoRam <= 2048)
+		/* we can't use interleave mode on 2MB board */
 		size = 0;
 	else
+		/* we can't display more than 2MB in non-interleave */
 		size = pitch * vga256InfoRec.virtualY / 1024;
 		
 	if (vgaBitsPerPixel == 32)
@@ -1305,14 +1314,14 @@ DisplayModePtr mode;
 	/*
 	 * Here all of the other fields of 'newVS' get filled in.
 	 */
-	hd = (mode->CrtcHDisplay >> 3)		- 1;
-	hs = (mode->CrtcHSyncStart >> 3)	- 1;
+	hd = (mode->CrtcHDisplay	>> 3)	- 1;
+	hs = (mode->CrtcHSyncStart	>> 3)	- 1;
 	he = (mode->CrtcHSyncEnd	>> 3)	- 1;
 	ht = (mode->CrtcHTotal		>> 3)	- 1;
-	vd = mode->CrtcVDisplay				- 1;
-	vs = mode->CrtcVSyncStart			- 1;
-	ve = mode->CrtcVSyncEnd				- 1;
-	vt = mode->CrtcVTotal				- 2;
+	vd = mode->CrtcVDisplay			- 1;
+	vs = mode->CrtcVSyncStart		- 1;
+	ve = mode->CrtcVSyncEnd			- 1;
+	vt = mode->CrtcVTotal			- 2;
 	if (vgaBitsPerPixel == 24)
 		wd = (vga256InfoRec.displayWidth * 3) >> (4 - MGABppShft);
 	else
@@ -1375,6 +1384,9 @@ DisplayModePtr mode;
 	newVS->std.CRTC[21] = vd & 0xFF;
 	newVS->std.CRTC[22] = (vt + 1) & 0xFF;
 
+	if (mode->Flags & V_DBLSCAN)
+		newVS->std.CRTC[9] |= 0x80;
+    
 	for (i = 0; i < sizeof(MGADACregs); i++)
 	{
 	    newVS->DACreg[i] = MGAInitDAC[i]; 
@@ -1467,10 +1479,16 @@ vgaMGAPtr restore;
 	for (i = 0; i < 3; i++)
 		outTi3026(0x2D, restore->DACclk[i]);
 	
+	/* Wait for PCLK PLL to lock on frequency */
+	while ( ! ( inTi3026( TVP3026_PIX_CLK_DATA ) & 0x40 ));
+
 	outTi3026(0x2C, 0x00);
 	for (i = 3; i < 6; i++)
 		outTi3026(0x2F, restore->DACclk[i]);
 	
+	/* Wait for PCLK PLL to lock on frequency */
+	while ( ! ( inTi3026( TVP3026_PIX_CLK_DATA ) & 0x40 ));
+
 	for (i = 0; i < sizeof(MGADACregs); i++)
 		outTi3026(MGADACregs[i], restore->DACreg[i]);
 

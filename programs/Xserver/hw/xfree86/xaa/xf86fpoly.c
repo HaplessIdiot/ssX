@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86fpoly.c,v 3.2 1997/02/28 14:53:41 hohndel Exp $ */
 /*
  * Copyright 1996  The XFree86 Project
  *
@@ -280,7 +280,19 @@ xf86FillPolygonSolid1Rect(pDrawable, pGC, shape, mode, count, ptsIn)
 	/* fill spans for this segment */
         if(DX1 | DX2) {
       	  if(xf86AccelInfoRec.SubsequentFillTrapezoidSolid) {
-             if((x1 < x2) || ((x1 == x2) && (DX1 < DX2)))
+	     if(x1 == x2) {
+		while(x1 == x2) {
+	     	   y++;
+	    	   if (!--h)
+		   	break;
+	    	   Step(x1,dx1,dy1,e1,sign1,step1)
+	    	   Step(x2,dx2,dy2,e2,sign2,step2)
+		}
+		if(y == maxy) break;
+    		if(!h) continue;
+	     }
+
+             if(x1 < x2)
  	     	xf86AccelInfoRec.SubsequentFillTrapezoidSolid(y + yoffset, h,
 					x1, DX1, dy1, e1, 
 					x2 - 1, DX2, dy2, e2);

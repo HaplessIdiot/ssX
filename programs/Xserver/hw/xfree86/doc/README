@@ -220,6 +220,9 @@ README for XFree86[tm] 3.2A
 	    CLGD5464, CLGD6205, CLGD6215, CLGD6225, CLGD6235, CLGD6410,
 	    CLGD6412, CLGD6420, CLGD6440, CLGD7541, CLGD7543, CLGD7548
 
+      Compaq
+	    AVGA
+
       OAK
 	    OTI067, OTI077, OTI087
 
@@ -783,6 +786,10 @@ README for XFree86[tm] 3.2A
       Compaq SVGA driver by:
 
 	       o Hans Oey <hans@mo.hobby.nl>
+
+	       o Ming Yu <yum@itp.ac.cn>
+
+	       o Gerry Toll <gtoll@tc.cornell.edu>
 
 
 
@@ -1451,4 +1458,4 @@ README for XFree86[tm] 3.2A
 
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README,v 3.76 1997/01/27 22:12:33 dawes Exp $

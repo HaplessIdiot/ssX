@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga.h,v 3.7 1996/12/28 08:17:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga.h,v 3.8 1997/01/04 12:18:37 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -64,19 +64,5 @@ extern int MGAydstorg;
 					    ((rop & 8)==8)) << 16;
 #define SETWRITEPLANEMASK(pm)	OUTREG(MGAREG_PLNWT, (pm))
 #define SETBLTXYDIR(x,y)	OUTREG(MGAREG_SGN, ((-x+1)>>1)+4*((-y+1)>>1))
-
-/*
- * prototypes
- */
-void
-mgaLine (
-#ifdef NeedFunctionPrototypes
-	 DrawablePtr pDrawable, 
-	 GCPtr pGC, 
-	 int mode, 
-	 int npt, 
-	 DDXPointPtr pptInit
-#endif
-);
 
 #endif

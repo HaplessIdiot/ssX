@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.58 1996/12/23 06:43:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.59 1997/01/18 06:55:35 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -150,6 +150,7 @@ static SymTabRec UnitTab[] = {
 #define VGA16	1013
 #define ACCEL	1014
 #define FBDEV	1015
+#define XF86	1016
 
 #ifdef INIT_CONFIG
 static SymTabRec DriverTab[] = {
@@ -160,6 +161,7 @@ static SymTabRec DriverTab[] = {
   { VGA16,	"vga16" },
   { ACCEL,	"accel" },
   { FBDEV,	"fbdev" },
+  { XF86,	"xfree86" },
   { -1,		"" },
 };
 #endif /* INIT_CONFIG */

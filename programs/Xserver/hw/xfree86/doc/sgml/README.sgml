@@ -172,10 +172,8 @@ In addition, the following SVGA chipsets are supported:
 	CLGD5464, CLGD6205, CLGD6215,
 	CLGD6225, CLGD6235, CLGD6410, CLGD6412, CLGD6420,
 	CLGD6440, CLGD7541, CLGD7543, CLGD7548
-<!--
     <tag/Compaq /
 	AVGA 
--->
     <tag/OAK /
 	OTI067, OTI077, OTI087
     <tag/Avance Logic /
@@ -555,6 +553,8 @@ XFree86 support was integrated into the base X11R6 distribution by:
 <tag/Compaq SVGA driver by:  /
 <itemize>
        <item>Hans Oey <it>&lt;hans@mo.hobby.nl&gt;</it>
+       <item>Ming Yu <it>&lt;yum@itp.ac.cn&gt;</it>
+       <item>Gerry Toll <it>&lt;gtoll@tc.cornell.edu&gt;</it>
 </itemize>
 <tag/Oak SVGA driver by:  /
 <itemize>
@@ -1017,7 +1017,7 @@ url="RELNOTES.html"> to find which files you need to take from the
 archive.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.74 1997/01/27 11:28:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.75 1997/01/27 20:34:33 dawes Exp $
 
 
 
