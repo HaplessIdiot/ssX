@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Xrender.c,v 1.11 2002/09/26 02:56:52 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Xrender.c,v 1.12 2002/09/29 23:39:44 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -581,4 +581,69 @@ XRenderFindStandardFormat (Display  *dpy,
 				  &standardFormats[format].templ,
 				  0);
     return 0;
+}
+
+XIndexValue *
+XRenderQueryPictIndexValues(Display			*dpy,
+			    _Xconst XRenderPictFormat	*format,
+			    int				*num)
+{
+    XExtDisplayInfo			*info = XRenderFindDisplay (dpy);
+    xRenderQueryPictIndexValuesReq	*req;
+    xRenderQueryPictIndexValuesReply	rep;
+    XIndexValue				*values;
+    int					nbytes, nread, rlength, i;
+
+    RenderCheckExtension (dpy, info, 0);
+
+    LockDisplay (dpy);
+    GetReq (RenderQueryPictIndexValues, req);
+    req->reqType = info->codes->major_opcode;
+    req->renderReqType = X_RenderQueryPictIndexValues;
+    req->format = format->id;
+    if (!_XReply (dpy, (xReply *) &rep, 0, xFalse))
+    {
+	UnlockDisplay (dpy);
+	SyncHandle ();
+	return 0;
+    }
+
+    /* request data length */
+    nbytes = (long)rep.length << 2;
+    /* bytes of actual data in the request */
+    nread = rep.numIndexValues * SIZEOF (xIndexValue);
+    /* size of array returned to application */
+    rlength = rep.numIndexValues * sizeof (XIndexValue);
+
+    /* allocate returned data */
+    values = (XIndexValue *)Xmalloc (rlength);
+    if (!values)
+    {
+	_XEatData (dpy, nbytes);
+	UnlockDisplay (dpy);
+	SyncHandle ();
+	return 0;
+    }
+
+    /* read the values one at a time and convert */
+    *num = rep.numIndexValues;
+    for(i = 0; i < rep.numIndexValues; i++)
+    {
+	xIndexValue value;
+	
+	_XRead (dpy, (char *) &value, SIZEOF (xIndexValue));
+	values[i].pixel = value.pixel;
+	values[i].red = value.red;
+	values[i].green = value.green;
+	values[i].blue = value.blue;
+	values[i].alpha = value.alpha;
+    }
+    /* skip any padding */
+    if(nbytes > nread)
+    {
+	_XEatData (dpy, (unsigned long) (nbytes - nread));
+    }
+    UnlockDisplay (dpy);
+    SyncHandle ();
+    return values;
 }
