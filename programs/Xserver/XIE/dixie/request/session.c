@@ -1,5 +1,5 @@
 /* $XConsortium: session.c,v 1.6 94/04/17 20:33:58 rws Exp $ */
-/* $XFree86: xc/programs/Xserver/XIE/dixie/request/session.c,v 3.6 1997/02/28 08:18:25 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/session.c,v 3.7.2.4 1998/07/04 13:32:19 dawes Exp $ */
 /**** session.c ****/
 /****************************************************************************
 
@@ -94,8 +94,7 @@ terms and conditions:
 #include <technq.h>		/* extern def for technique_init	*/
 
 #ifdef XFree86LOADER
-#include "xf86.h"
-#include "xf86_ldext.h"
+#include "xf86Module.h"
 #endif
 
 /* function declarations */
@@ -350,33 +349,11 @@ static void XieReset (extEntry)
 #endif  
 }
 
-#ifdef DYNAMIC_MODULE
-/*
- * Entry point of dynamic loading for dlopen type of loading
- */
-extern void (*XieInitPtr)(void);
-
-int
-#ifndef DLSYM_BUG
-init_module(server_version)
-#else
-init_xie(server_version)
-#endif
-unsigned long server_version;
-{
-
-  XieInitPtr = XieInit;
-#ifdef DEBUG
-  ErrorF("Init module XIE %p\n", XieInit);
-#endif
-  return 1;
-}
-#endif /* DYNAMIC_MODULE */
-
 #ifdef XFree86LOADER
-/*
- * Entry point for the new loading code that can load .a files
- */
+
+MODULEINITPROTO(xieModuleInit);
+static MODULESETUPPROTO(xieSetup);
+
 ExtensionModule XieExt =
 {
     XieInit,
@@ -384,23 +361,35 @@ ExtensionModule XieExt =
     NULL
 };
 
-void
-libxieModuleInit(data,magic)
-    pointer	* data;
-    INT32	* magic;
+static XF86ModuleVersionInfo VersRec =
 {
-    static int cnt = 0;
+        "xie",
+        MODULEVENDORSTRING,
+        MODINFOSTRING1,
+        MODINFOSTRING2,
+        XF86_VERSION_CURRENT,
+        0x00010001,				/* 1.1 */
+        ABI_CLASS_EXTENSION,
+        ABI_EXTENSION_VERSION,
+        {0,0,0,0}
+};
 
-    switch(cnt++)
-    {
-    case 0:
-	*magic = MAGIC_LOAD_EXTENSION;
-        * data = (pointer) &XieExt;
-	break;
-    default:
-        * magic= MAGIC_DONE;
-    }
-    return;
+void
+xieModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
+	      ModuleTearDownProc *teardown)
+{
+    *vers = &VersRec;
+    *setup = xieSetup;
+    *teardown = NULL;
+}
+
+static pointer
+xieSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+{
+    LoadExtension(&XieExt);
+
+    /* Need a non-NULL return value to indicate success */
+    return (pointer)1;
 }
 #endif /* XFree86LOADER */
 

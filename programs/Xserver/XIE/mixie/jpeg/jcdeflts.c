@@ -71,6 +71,7 @@ terms and conditions:
 	Gary Rogers, AGE Logic, Inc., January 1994
 
 ****************************************************************************/
+/* $XFree86: xc/programs/Xserver/XIE/mixie/jpeg/jcdeflts.c,v 1.1.1.1.14.2 1998/06/09 15:23:09 dawes Exp $ */
 /*
  * jcdeflts.c
  *
@@ -84,6 +85,7 @@ terms and conditions:
  */
 
 #include "jinclude.h"
+#include "macro.h"
 
 #ifndef XIE_SUPPORTED
 /* Default do-nothing progress monitoring routine.

@@ -1,5 +1,5 @@
 /* $XConsortium: macro.h,v 1.7 94/04/17 20:34:05 rws Exp $ */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/XIE/include/macro.h,v 1.4.2.2 1998/06/03 15:49:36 dawes Exp $ */
 /**** module macro.h ****/
 /******************************************************************************
 
@@ -211,6 +211,6 @@ terms and conditions:
  * The following macros should wrap all calls in XIE
  */
 #ifdef XFree86LOADER
-#include <xf86_libc.h>
+#include "xf86_ansic.h"
 #endif
 #endif /* end _XIEH_MACRO */
