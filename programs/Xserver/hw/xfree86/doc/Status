@@ -8,8 +8,10 @@
 
      This document provides information about the status of the driver
      and hardware support in XFree86 4.0.2 compared with that in XFree86
-     3.3.6.  Please send updates for this document to
-     <fixes@xfree86.org>
+     3.3.6.  Unless otherwise stated, hardware is classified as "sup-
+     ported" if its driver provides basic 2D support.  Support for addi-
+     tional features may or may not be present.  Please send updates for
+     this document to <fixes@xfree86.org>
 
 1.  Introduction
 
@@ -514,8 +516,8 @@ architectures known to work on (e.g., Alpha, PPC), etc.
             some problems with it in this version.
 
       Summary:
-            Support for the 86C201, 86C202, 86C215, 86C225, 5597 and 5598 is
-            currently only available in 3.3.6.
+            Support for the 86C201, 86C202, 86C205, 86C215, 86C225, 5597 and
+            5598 is currently only available in 3.3.6.
 
 31.  Silicon Motion, Inc.
 
@@ -627,7 +629,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
       Summary:
             No Weitek chips are supported in 4.0.2.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.26 2000/12/14 22:15:48 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.28 2001/03/16 22:13:19 dawes Exp $
 
 
 $XFree86$

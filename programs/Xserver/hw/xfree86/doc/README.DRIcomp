@@ -2,13 +2,13 @@
 
           VA Linux Systems, Inc. Professional Services - Graphics.
 
-                               5 January 2001
+                                15 March 2001
 
 1.  Preamble
 
 1.1  Copyright
 
-Copyright 2000 by VA Linux Systems, Inc.  All Rights Reserved.
+Copyright 2000-2001 by VA Linux Systems, Inc.  All Rights Reserved.
 
 Permission is granted to make and distribute verbatim copies of this document
 provided the copyright notice and this permission notice are preserved on all
@@ -55,7 +55,7 @@ You'll need the following:
    o FreeBSD support is not currently being maintained and may not work.
 
 The DRI 3D drivers generally work on systems with Intel or AMD CPUs.  How-
-ever, there is limited support for Alpha and Sparc.
+ever, there is limited support for Alpha and PowerPC support is underway.
 
 For 3dfx Voodoo3 hardware, you'll also need:
 
@@ -80,8 +80,9 @@ For ATI Rage 128 and Radeon hardware, you'll also need:
 
 The DRI project closely tracks Linux kernel development.  Since the internal
 Linux data structures might change in the 2.4 Linux kernel, it's important to
-have use the most recent Linux kernel.  As of this writing (Jan 2001), 2.4.0
-is the most recent version of Linux which the DRI is synchronized to.
+use the most recent Linux kernel and not an old, intermediate development
+release.  As of this writing (Jan 2001), 2.4.0 is the most recent version of
+Linux which the DRI is synchronized to.
 
 Most of the DRI drivers require AGP support and using Intel Pentium III SSE
 optimizations also requires an up-to-date Linux kernel.  Configuring your
@@ -214,7 +215,7 @@ the DRI/Mesa drivers.
 To enable this optimization edit your xc/config/host.def file and add the
 line:
 
-#define DefaultCCOptions -ansi GccWarningOptions -pipe -mcpu=ev6
+#define DefaultGcc2AxpOpt -O2 -mcpu=ev6
 
 Additional speed improvements to 3D rendering can be achieved by installing
 Compaq's Math Libraries (CPML) which can be obtained from http://www.sup-
@@ -444,7 +445,8 @@ grams/Xserver/hw/xfree86/os-support/linux/drm/kernel/.
 
 To load the appropriate DRI module in your running kernel you can either use
 ismod and restart your X server or copy the kernel module to /lib/mod-
-ules/2.4.x/kernel/driver/char/drm/ then run depmod and restart your X server.
+ules/2.4.x/kernel/drivers/char/drm/ then run depmod and restart your X
+server.
 
 Make sure you first unload any older DRI kernel modules that might be already
 loaded.
@@ -599,7 +601,7 @@ At this point your X server should be up and running with hardware-acceler-
 ated direct rendering.  Please read the DRI User Guide for information about
 trouble shooting and how to use the DRI-enabled X server for 3D applications.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.10 2001/01/08 01:07:34 martin Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.11 2001/03/21 16:56:18 dawes Exp $
 
 
 $XFree86$
