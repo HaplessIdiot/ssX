@@ -30,11 +30,15 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
+/* $XFree86$ */
 
 #ifndef _PCLMAP_H_
 #define _PCLMAP_H_
 
 #ifdef XP_PCL_COLOR
+#ifdef CATNAME
+#undef CATNAME
+#endif
 #if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define NAME(subname) PclCr##subname
 #define CATNAME(prefix,subname) prefix##Color##subname
@@ -45,6 +49,9 @@ copyright holders.
 #endif /* XP_PCL_COLOR */
 
 #ifdef XP_PCL_MONO
+#ifdef CATNAME
+#undef CATNAME
+#endif
 #if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define NAME(subname) PclMn##subname
 #define CATNAME(prefix,subname) prefix##Mono##subname
@@ -55,6 +62,9 @@ copyright holders.
 #endif /* XP_PCL_MONO */
 
 #ifdef XP_PCL_LJ3
+#ifdef CATNAME
+#undef CATNAME
+#endif
 #if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define NAME(subname) PclLj3##subname
 #define CATNAME(prefix,subname) prefix##Lj3##subname
