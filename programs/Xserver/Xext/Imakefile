@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.45 2004/06/02 22:42:55 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.46 2004/06/29 00:02:18 dawes Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -140,6 +140,11 @@ XF86BIGFOBJS = xf86bigfont.o
         PNRXOBJS = panoramiX.o panoramiXSwap.o panoramiXprocs.o
     PNRXINCLUDES = -I$(FONTINCSRC) -I$(SERVERSRC)/mi -I$(SERVERSRC)/render
 #endif
+#if !(BuildSeparateTinyDIX && BuildTinyDIX) && XdmxServer
+         DMXSRCS = dmx.c
+         DMXOBJS = dmx.o
+     DMXINCLUDES = -I../hw/dmx
+#endif
 #if BuildDPMS
         DPMSSRCS = dpms.c
         DPMSOBJS = dpms.o
@@ -159,14 +164,14 @@ XF86BIGFOBJS = xf86bigfont.o
 	      bigreq.c sync.c $(SCRNSAVSRC) xcmisc.c $(VIDMODESRCS) \
 	      $(XF86MISCSRCS) $(XF86BIGFSRCS) $(XF86DGASRCS) $(SECURITYSRCS) \
 	      $(APPGROUPSRCS) xprint.c $(CUPSRCS) $(PNRXSRCS) $(DPMSSRCS) \
-	      $(EVISRCS) $(XVSRCS) $(FONTCACHESRCS) $(XRESSRCS)
+	      $(EVISRCS) $(XVSRCS) $(FONTCACHESRCS) $(XRESSRCS) $(DMXSRCS)
 
        OBJS = shape.o $(SHMOBJS) $(MULTIBUFOBJ) \
               mitmisc.o xtest.o xtest1di.o xtest1dd.o sleepuntil.o \
               bigreq.o sync.o $(SCRNSAVOBJ) xcmisc.o $(VIDMODEOBJS) \
 	      $(XF86MISCOBJS) $(XF86BIGFOBJS) $(XF86DGAOBJS) $(SECURITYOBJS) \
 	      $(APPGROUPOBJS) xprint.o $(CUPOBJS) $(PNRXOBJS) $(DPMSOBJS) \
-	      $(EVIOBJS) $(XVOBJS) $(FONTCACHEOBJS) $(XRESOBJS)
+	      $(EVIOBJS) $(XVOBJS) $(FONTCACHEOBJS) $(XRESOBJS) $(DMXOBJS)
 
       SOBJS = $(SHMOBJS) $(APPGROUPOBJS) $(SECURITYOBJS) xprint.o \
 	      xtest.o xtest1di.o xtest1dd.o sleepuntil.o $(PNRXOBJS) \
@@ -179,7 +184,7 @@ XF86INCLUDES = -I$(XF86COMSRC)
     INCLUDES = -I$(SERVERSRC)/Xext -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
 		-I$(EXTINCSRC) \
 		$(PNRXINCLUDES) $(XF86INCLUDES) -I$(FONTINCSRC) \
- 		$(FONTCACHEINCLUDES)
+		$(FONTCACHEINCLUDES) $(DMXINCLUDES)
     LINTLIBS = $(SERVERSRC)/dix/llib-ldix.ln $(SERVERSRC)/os/llib-los.ln
 
 #if BuildTinyDIX

@@ -96,7 +96,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/os/log.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/log.c,v 1.8 2004/03/31 16:37:10 tsi Exp $ */
 
 #include "Xos.h"
 #include <stdio.h>
@@ -408,10 +408,10 @@ LogMessage(MessageType type, const char *format, ...)
 }
 
 #ifdef __GNUC__
-static void AbortServer(void) __attribute__((noreturn));
+void AbortServer(void) __attribute__((noreturn));
 #endif
 
-static void
+void
 AbortServer(void)
 {
     OsCleanup(TRUE);

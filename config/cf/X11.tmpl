@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.259 2004/06/11 00:02:16 alanh Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.260 2004/06/23 17:04:14 dawes Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -180,8 +180,16 @@ VENDORMANVERSION = XVendorManVersionString
 #ifndef BuildDocs
 #define BuildDocs		!BuildServersOnly
 #endif
+#ifndef BuildLibrariesForDMX
+#ifdef XdmxServer
+#define BuildLibrariesForDMX	XdmxServer
+#else
+#define BuildLibrariesForDMX	NO
+#endif
+#endif
 #ifndef BuildLibraries
-#define BuildLibraries		(!BuildServersOnly || BuildClients)
+#define BuildLibraries		(!BuildServersOnly || BuildClients || \
+				 BuildLibrariesForDMX)
 #endif
 #ifndef BuildLibrariesForXServers
 #define BuildLibrariesForXServers	BuildServer
@@ -400,7 +408,8 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildXInputExt		NO
 #endif
 #ifndef BuildXInputLib
-#define BuildXInputLib		(BuildXInputExt && !BuildServersOnly)
+#define BuildXInputLib		(BuildXInputExt && \
+				 (!BuildServersOnly || BuildLibrariesForDMX))
 #endif
 #ifndef BuildEVI
 #define BuildEVI		YES
@@ -424,7 +433,7 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildFontLib		(BuildLibraries || \
 				 (BuildServer && !DoLoadableServer) || \
 				 XnestServer || XVirtualFramebufferServer || \
-				 XprtServer || \
+				 XprtServer || XdmxServer || \
 				 (defined(TinyXServer) && TinyXServer))
 #endif
 #endif
@@ -536,6 +545,12 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #ifndef BuildXineramaLibrary
 #define BuildXineramaLibrary	(BuildXinerama && !BuildServersOnly)
+#endif
+#ifndef BuildDmxExt
+#define BuildDmxExt		XdmxServer
+#endif
+#ifndef BuildDmxLibrary
+#define BuildDmxLibrary		(BuildDmxExt && !BuildServersOnly)
 #endif
 #ifndef BuildXCSecurity
 #define BuildXCSecurity		YES
@@ -2549,6 +2564,20 @@ SharedLibReferences(XXF86DGA,Xxf86dga,$(XXF86DGALIBSRC),SOXXF86DGAREV,SharedXxf8
 ProjectUnsharedLibReferences(XXF86DGA,Xxf86dga,$(XXF86DGALIBSRC),XBuildLibDir)
 #endif
 
+#if BuildDmxLibrary
+#ifndef SharedLibDmx
+#define SharedLibDmx		NO
+#endif
+#ifndef NormalLibDmx
+#define NormalLibDmx		YES
+#endif
+#ifndef DebugLibDmx
+#define DebugLibDmx		NO
+#endif
+#ifndef ProfileLibDmx
+#define ProfileLibDmx		NO
+#endif
+#endif
 
     XXF86RUSHLIBSRC = $(LIBSRC)/Xxf86rush
 #if SharedLibXxf86rush
@@ -2602,6 +2631,15 @@ SharedLibReferences(XRES,XRes,$(XRESLIBSRC),SOXRESREV,SharedXResRev)
 ProjectUnsharedLibReferences(XRES,XRes,$(XRESLIBSRC),XBuildLibDir)
 #endif
 
+    DMXLIBSRC = $(LIBSRC)/dmx
+#if SharedLibDmx
+#ifndef SharedDmxRev
+#define SharedDmxRev 1.0
+#endif
+SharedLibReferences(DMX,dmx,$(DMXLIBSRC),SODMXREV,SharedDmxRev)
+#else
+ProjectUnsharedLibReferences(DMX,dmx,$(DMXLIBSRC),XBuildLibDir)
+#endif
 
     DPSLIBSRC = $(LIBSRC)/dps
 #if SharedLibDps

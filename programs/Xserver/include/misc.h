@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.28 2001/12/14 19:59:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.29 2003/04/27 21:31:04 herrb Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -95,7 +95,7 @@ extern unsigned long serverGeneration;
 #define MAXCLIENTS	256
 #define MAXDITS		1
 #define MAXEXTENSIONS	128
-#define MAXFORMATS	8
+#define MAXFORMATS	14
 #define MAXVISUALS_PER_SCREEN 50
 
 typedef unsigned long PIXEL;
