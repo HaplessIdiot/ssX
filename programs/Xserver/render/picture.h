@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picture.h,v 1.7 2001/08/10 22:25:59 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picture.h,v 1.8 2002/05/13 05:25:11 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -106,17 +106,21 @@ typedef struct _Picture		*PicturePtr;
 /* Fixed point updates from Carl Worth, USC, Information Sciences Institute */
 
 #ifdef WIN32
-typedef __int64    Fixed_32_32;
+typedef __int64		Fixed_32_32;
 #else
 #  if defined(__alpha__) || defined(__alpha) || \
       defined(ia64) || defined(__ia64__) || \
       defined(__sparc64__) || \
       defined(__s390x__) || \
       defined(x86_64) || defined (__x86_64__)
-typedef long	    Fixed_32_32;
+typedef long		Fixed_32_32;
 # else
+#  if defined(__GNUC__) && \
+    ((__GNUC__ > 2) || \
+     ((__GNUC__ == 2) && defined(__GNUC_MINOR__) && (__GNUC_MINOR__ > 7)))
 __extension__
-typedef long long int  Fixed_32_32;
+#  endif
+typedef long long int	Fixed_32_32;
 # endif
 #endif
 
