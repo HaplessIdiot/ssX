@@ -1,4 +1,6 @@
 XFree86 4.2.99.5 (XX January 2003)
+ 775. Protect magic cookie from short-lived exposure on command line in 
+      startx (Christian Biere).
  774. Fix ELF loader to ignore -g debugging information
       (#A.1539, Juergen Keil).
  773. Fix artifacts left by XDarwin when reshaping a shaped window (reported
@@ -16100,4 +16102,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2493 2003/01/24 00:11:33 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2494 2003/01/24 17:26:29 tsi Exp $

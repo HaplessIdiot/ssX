@@ -11,7 +11,7 @@ XCOMM and pop a clock and serveral xterms.
 XCOMM
 XCOMM Site administrators are STRONGLY urged to write nicer versions.
 XCOMM
-XCOMM $XFree86: xc/programs/xinit/startx.cpp,v 3.14 2002/01/28 18:19:50 tsi Exp $
+XCOMM $XFree86: xc/programs/xinit/startx.cpp,v 3.15 2002/09/19 00:19:38 dawes Exp $
 
 #ifdef SCO
 
@@ -164,7 +164,9 @@ authdisplay=${display:-:0}
 mcookie=`MK_COOKIE`
 for displayname in $authdisplay $hostname$authdisplay; do
     if ! xauth list "$displayname" | grep "$displayname " >/dev/null 2>&1; then
-	xauth add $displayname . $mcookie
+        xauth << EOF 
+add $displayname . $mcookie
+EOF
 	removelist="$displayname $removelist"
     fi
 done
