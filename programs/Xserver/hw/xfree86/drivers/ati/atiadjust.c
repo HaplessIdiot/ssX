@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadjust.c,v 1.9 2000/10/11 22:52:54 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadjust.c,v 1.10 2001/01/06 20:58:04 tsi Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -178,40 +178,32 @@ ATIAdjustFrame
         }
     }
     else
+    /*
+     * On integrated controllers, there is only one set of CRTC control bits,
+     * many of which are simultaneously accessible through both VGA and
+     * accelerator I/O ports.  Given VGA's architectural limitations, setting
+     * the CRTC's offset register to more than 256k needs to be done through
+     * the accelerator port.
+     */
+    if (pATI->depth <= 4)
+    {
+        outr(CRTC_OFF_PITCH, SetBits(pATI->displayWidth >> 4, CRTC_PITCH) |
+            SetBits(Base, CRTC_OFFSET));
+    }
+    else
 
 #endif /* AVOID_CPIO */
 
     {
-        /*
-         * On integrated controllers, there is only one set of CRTC control
-         * bits, many of which are simultaneously accessible through both VGA
-         * and accelerator I/O ports.  Given VGA's architectural limitations,
-         * setting the CRTC's offset register to more than 256k needs to be
-         * done through the accelerator port.
-         */
 
 #ifndef AVOID_CPIO
 
-        if (pATI->depth <= 4)
-        {
-            outr(CRTC_OFF_PITCH, SetBits(pATI->displayWidth >> 4, CRTC_PITCH) |
-                SetBits(Base, CRTC_OFFSET));
-        }
-        else
+        if (pATI->NewHW.crtc == ATI_CRTC_VGA)
+            Base <<= 1;                 /* LSBit must be zero */
 
 #endif /* AVOID_CPIO */
 
-        {
-
-#ifndef AVOID_CPIO
-
-            if (pATI->NewHW.crtc == ATI_CRTC_VGA)
-                Base <<= 1;                     /* LSBit must be zero */
-
-#endif /* AVOID_CPIO */
-
-            outr(CRTC_OFF_PITCH, SetBits(pATI->displayWidth >> 3, CRTC_PITCH) |
-                SetBits(Base, CRTC_OFFSET));
-        }
+        outr(CRTC_OFF_PITCH, SetBits(pATI->displayWidth >> 3, CRTC_PITCH) |
+            SetBits(Base, CRTC_OFFSET));
     }
 }
