@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.181 2000/02/25 21:02:33 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.182 2000/02/29 15:24:15 tsi Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -728,6 +728,31 @@ $(SAVAGEOBJS) $(XSAVAGE) $(SAVAGELIBS) $(SAVAGESYSLIBS):: $(SAVAGEDIRS)
 ServerTarget(Xsavage,$(SAVAGEDIRS),$(SAVAGEOBJS),$(SAVAGELIBS),$(SAVAGESYSLIBS))
 #endif /* XSAVAGEServer */
 
+#if XIgsServer
+XCOMM
+XCOMM server with Keith's S3 Igs driver
+XCOMM
+
+       IGSDIR = $(KDRIVE)/igs
+          IGS = $(IGSDIR)/LibraryTargetName(igs)
+    
+       KDDIRS = StdKdDirs
+   
+      IGSDIRS = $(STDDIRS) $(KDDIRS) $(IGSDIR)
+   
+      IGSLIBS = PreFbLibs $(IGS) KdLibs FbPostFbLibs
+   IGSSYSLIBS = StdKdSysLibs
+
+#if HasParallelMake
+MakeMutex($(IGSDIRS) $(IGSOBJS) $(IGSLIBS) $(IGSSYSLIBS))
+#endif
+#if ForceServerRemake
+$(IGSOBJS) $(XIGS) $(IGSLIBS) $(IGSSYSLIBS):: $(IGSDIRS)
+	@if [ -f $@ ]; then touch $@; fi
+#endif
+ServerTarget(Xigs,$(IGSDIRS),$(IGSOBJS),$(IGSLIBS),$(IGSSYSLIBS))
+#endif /* XIGSServer */
+
 #if XTridentServer
 XCOMM
 XCOMM server with Keith's TRIDENT Cyber9525 driver
@@ -861,7 +886,7 @@ ServerTarget(Xitsy,$(ITSYDIRS),$(ITSYOBJS),$(ITSYLIBS),$(ITSYSYSLIBS))
 #endif /* XItsyServer */
 
 KDRIVEDIRS=$(KDDIRS) $(FBDEVDIR) $(SAVAGEDIR) $(TRIDENTDIR) $(SIS530DIR) \
-	$(TRIODIR) $(TS300DIR) $(ITSYDIR)
+	$(TRIODIR) $(TS300DIR) $(ITSYDIR) $(IGSDIR)
 
 #if XprtServer && !MakeDllModules
 XCOMM
