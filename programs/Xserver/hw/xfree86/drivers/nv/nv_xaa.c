@@ -37,7 +37,7 @@
 |*                                                                           *|
  \***************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.32 2003/08/18 21:40:04 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.33 2003/09/21 00:17:34 mvojkovi Exp $ */
 
 #include "nv_include.h"
 #include "xaalocal.h"
@@ -118,7 +118,7 @@ NVDmaKickoff(NVPtr pNv)
    You can't jump to the location of your put offset.  We write put
    at the jump offset + SKIPS dwords with noop padding in between
    to solve this problem */
-#define SKIPS  4
+#define SKIPS  8
 
 void 
 NVDmaWait (
