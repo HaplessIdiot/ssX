@@ -26,12 +26,17 @@ PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
+/* $XFree86$ */
 
 #include <X11/Xlib.h>
 #include "Xlibint.h"
 #include "Xutil.h"
 #include "Xlcint.h"
 #include "Ximint.h"
+
+/* EXTERNS */
+/* imTransR.c */
+extern Bool _XimRegisterDispatcher();
 
 Public Bool
 #if NeedFunctionPrototypes

@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/ErrDes.c,v 3.5 1997/08/26 10:00:45 hohndel Exp $ */
+/* $XFree86: xc/lib/X11/ErrDes.c,v 3.6 1998/10/03 08:41:16 dawes Exp $ */
 
 #include "Xlibint.h"
 #include <X11/Xos.h>
@@ -87,6 +87,7 @@ static Const char * Const _XErrorList[] = {
 };
 
 
+int
 XGetErrorText(dpy, code, buffer, nbytes)
     register int code;
     register Display *dpy;
@@ -122,6 +123,7 @@ XGetErrorText(dpy, code, buffer, nbytes)
     return 0;
 }
 
+int
 #if NeedFunctionPrototypes
 /*ARGSUSED*/
 XGetErrorDatabaseText(

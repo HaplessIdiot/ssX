@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/fontfile/encparse.c,v 1.7 1999/04/25 10:01:42 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/encparse.c,v 1.8 1999/05/03 12:15:54 dawes Exp $ */
 
 /* Parser for encoding files */
 
@@ -615,18 +615,17 @@ string_mapping:
         (struct font_encoding_simple_naming*)
         xalloc(sizeof(struct font_encoding_simple_naming)))==NULL)
       goto error;
-    if(first<=last) {
-      sn->first=first;
-      sn->len=last-first+1;
-      if((sn->map=
-          (char**)xalloc(sn->len*sizeof(char*)))
-         ==NULL) {
-        xfree(sn);
-      } else {
-        sn->first=0;
-        sn->len=0;
-        sn->map=0;
-      }
+    if(first>last) {
+      xfree(sn);
+      mapping->client_data=sn=NULL;
+      goto error;
+    }
+    sn->first=first;
+    sn->len=last-first+1;
+    if((sn->map=
+        (char**)xalloc(sn->len*sizeof(char*)))
+       ==NULL) {
+      xfree(sn);
       mapping->client_data=sn=NULL;
       goto error;
     }
@@ -717,15 +716,14 @@ error:
 
 /* Public entrypoint */  
 struct font_encoding* 
-loadEncodingFile(const char *charset, const char *fontFileName)
+loadEncodingFile(char *charset, char *fontFileName)
 {
   FontFilePtr f;
   FILE *file;
   struct font_encoding *encoding;
-  char dir[MAXFONTNAMELEN], buf[MAXFONTNAMELEN],
-    file_name[MAXFONTNAMELEN], encoding_name[MAXFONTNAMELEN],
-    *q, *lastslash;
-  const char *p;
+  char dir[MAXFONTFILENAMELEN], buf[MAXFONTFILENAMELEN],
+    file_name[MAXFONTFILENAMELEN], encoding_name[MAXFONTNAMELEN],
+    *p, *q, *lastslash;
   int count, n;
 
   for(p=fontFileName, q=dir, lastslash=NULL; *p; p++, q++) {
@@ -762,8 +760,13 @@ loadEncodingFile(const char *charset, const char *fontFileName)
     if(count!=2)
       break;
     if(!strcasecmp(encoding_name, charset)) {
-      strcpy(buf, dir);
-      strcat(buf, file_name);
+      if(file_name[0]!='/') {
+        if(strlen(dir)+strlen(file_name)>=MAXFONTFILENAMELEN)
+          return NULL;
+        strcpy(buf, dir);
+        strcat(buf, file_name);
+      } else
+        strcpy(buf,file_name);
       if((f=FontFileOpen(buf))==NULL) {
         return NULL;
       }

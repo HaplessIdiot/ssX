@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextSink.c,v 1.7 1998/10/03 08:42:26 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSink.c,v 1.8 1999/05/03 12:15:45 dawes Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -64,6 +64,13 @@ static void FindDistance(Widget, XawTextPosition, int, XawTextPosition, int*,
 static void Resolve(Widget, XawTextPosition, int, int, XawTextPosition*);
 static void SetTabs(Widget, int, short*);
 static void GetCursorBounds(Widget, XRectangle*);
+
+/*
+ * External
+ */
+void _XawTextSinkClearToBackground(Widget, int, int, unsigned, unsigned);
+void _XawTextSinkDisplayText(Widget, int, int, XawTextPosition, XawTextPosition,
+			     Bool);
 
 /*
  * Initialization
@@ -541,9 +548,27 @@ GetCursorBounds(Widget w, XRectangle *rect)
  */
 /*ARGSUSED*/
 void
-XawTextSinkDisplayText(Widget w, int x, int y,
+XawTextSinkDisplayText(Widget w,
+#if NeedWidePrototypes
+                       int x, int y,
+#else
+                       Position x, Position y,
+#endif
 		       XawTextPosition pos1, XawTextPosition pos2,
-		       int highlight)
+#if NeedWidePrototypes
+		       int highlight
+#else
+		       Boolean highlight
+#endif
+)
+{
+    _XawTextSinkDisplayText(w, x, y, pos1, pos2, highlight);
+}
+
+void
+_XawTextSinkDisplayText(Widget w, int x, int y,
+		        XawTextPosition pos1, XawTextPosition pos2,
+		        Bool highlight)
 {
   TextSinkObjectClass cclass = (TextSinkObjectClass)w->core.widget_class;
 
@@ -593,8 +618,22 @@ XawTextSinkInsertCursor(Widget w, Position x, Position y, XawTextInsertState sta
 /*ARGSUSED*/
 void
 XawTextSinkClearToBackground(Widget w,
+#if NeedWidePrototypes
 			     int x, int y,
-			     unsigned int width, unsigned int height)
+			     unsigned int width, unsigned int height
+#else
+			     Position x, Position y,
+			     Dimension width, Dimension height
+#endif
+)
+{
+    _XawTextSinkClearToBackground(w, x, y, width, height);
+}
+
+void
+_XawTextSinkClearToBackground(Widget w,
+			      int x, int y,
+			      unsigned int width, unsigned int height)
 {
   TextSinkObjectClass cclass = (TextSinkObjectClass)w->core.widget_class;
 

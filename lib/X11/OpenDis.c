@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/OpenDis.c,v 3.3 1996/02/04 08:54:22 dawes Exp $ */
+/* $XFree86: xc/lib/X11/OpenDis.c,v 3.4 1998/10/03 08:41:20 dawes Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -29,6 +29,10 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xatom.h>
 #include "bigreqstr.h"
 #include <stdio.h>
+
+#ifdef XKB
+#include "XKBlib.h"
+#endif /* XKB */
 
 #ifdef X_NOT_STDC_ENV
 extern char *getenv();
@@ -61,7 +65,7 @@ void (*_XFreeDisplayLock_fn)() = NULL;
 #else
 #define InitDisplayLock(dis) Success
 #define FreeDisplayLock(dis)
-#endif
+#endif /* XTHREADS */
 
 static xReq _dummy_request = {
 	0, 0, 0
@@ -73,6 +77,16 @@ static Bool _XBigReqHandler();
 extern Bool _XWireToEvent();
 extern Status _XUnknownNativeEvent();
 extern Bool _XUnknownWireEvent();
+
+/* XlibInt.c */
+extern Bool _XPollfdCacheInit();
+
+/* ConnDis.c */
+extern int _XDisconnectDisplay();
+
+/* FreeEData.c */
+extern int _XFreeExtData();
+
 /* 
  * Connects to a server, creates a Display object and returns a pointer to
  * the newly created Display back to the caller.

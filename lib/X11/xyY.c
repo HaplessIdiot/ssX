@@ -34,6 +34,7 @@
  *	DOCUMENTATION
  *		"TekColor Color Management System, System Implementor's Manual"
  */
+/* $XFree86$ */
 
 #include <stdio.h>
 #include <X11/Xos.h>
@@ -55,6 +56,12 @@
  */
 
 extern char _XcmsCIExyY_prefix[];
+
+/* CvCols.c */
+extern Status _XcmsDIConvertColors();
+
+/* XYZ.c */
+extern Status _XcmsCIEXYZ_ValidSpec();
 
 /*
  *	FORWARD DECLARATIONS

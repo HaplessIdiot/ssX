@@ -20,6 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
+/* $XFree86$ */
 
 #include "Xlibint.h"
 
@@ -56,6 +57,7 @@ static XGCValues Const initial_GC = {
 };
 
 static void _XGenerateGCList();
+int _XUpdateGCCache();
 
 GC XCreateGC (dpy, d, valuemask, values)
      register Display *dpy;
@@ -86,7 +88,7 @@ GC XCreateGC (dpy, d, valuemask, values)
     req->drawable = d;
     req->gc = gc->gid = XAllocID(dpy);
 
-    if (req->mask = gc->dirty)
+    if ((req->mask = gc->dirty))
         _XGenerateGCList (dpy, gc, (xReq *) req);
     /* call out to any extensions interested */
     for (ext = dpy->ext_procs; ext; ext = ext->next)
@@ -156,6 +158,7 @@ _XGenerateGCList (dpy, gc, req)
     }
 
 
+int
 _XUpdateGCCache (gc, mask, attr)
     register unsigned long mask;
     register XGCValues *attr;

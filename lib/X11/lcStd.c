@@ -23,6 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"
@@ -253,7 +254,7 @@ _Xwcscpy(wstr1, wstr2)
 {
     wchar_t *wstr_tmp = wstr1;
 
-    while (*wstr1++ = *wstr2++)
+    while ((*wstr1++ = *wstr2++))
 	;
 
     return wstr_tmp;

@@ -1,14 +1,9 @@
-/* $XConsortium: Window.c,v 11.18 94/04/17 20:21:31 rws Exp $ */
+/* $TOG: Window.c /main/10 1998/02/06 17:57:10 kaleb $ */
 /*
 
-Copyright (c) 1986  X Consortium
+Copyright 1986, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -16,69 +11,25 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 */
+/* $XFree86$ */
 
 #include "Xlibint.h"
 
-#define AllMaskBits (CWBackPixmap|CWBackPixel|CWBorderPixmap|\
-		     CWBorderPixel|CWBitGravity|CWWinGravity|\
-		     CWBackingStore|CWBackingPlanes|CWBackingPixel|\
-		     CWOverrideRedirect|CWSaveUnder|CWEventMask|\
-		     CWDontPropagate|CWColormap|CWCursor)
-
-Window XCreateWindow(dpy, parent, x, y, width, height, 
-                borderWidth, depth, class, visual, valuemask, attributes)
-    register Display *dpy;
-    Window parent;
-    int x, y;
-    unsigned int width, height, borderWidth;
-    int depth;
-    unsigned int class;
-    Visual *visual;
-    unsigned long valuemask;
-    XSetWindowAttributes *attributes;
-{
-    Window wid;
-    register xCreateWindowReq *req;
-
-    LockDisplay(dpy);
-    GetReq(CreateWindow, req);
-    req->parent = parent;
-    req->x = x;
-    req->y = y;
-    req->width = width;
-    req->height = height;
-    req->borderWidth = borderWidth;
-    req->depth = depth;
-    req->class = class;
-    if (visual == CopyFromParent)
-	req->visual = CopyFromParent;
-    else
-	req->visual = visual->visualid;
-    wid = req->wid = XAllocID(dpy);
-    valuemask &= AllMaskBits;
-    if (req->mask = valuemask) 
-        _XProcessWindowAttributes (dpy, (xChangeWindowAttributesReq *)req, 
-			valuemask, attributes);
-    UnlockDisplay(dpy);
-    SyncHandle();
-    return (wid);
-    }
-
-_XProcessWindowAttributes (dpy, req, valuemask, attributes)
+void _XProcessWindowAttributes (dpy, req, valuemask, attributes)
     register Display *dpy;
     xChangeWindowAttributesReq *req;
     register unsigned long valuemask;
     register XSetWindowAttributes *attributes;
-    {
+{
     unsigned long values[32];
     register unsigned long *value = values;
     unsigned int nvalues;
@@ -133,4 +84,50 @@ _XProcessWindowAttributes (dpy, req, valuemask, attributes)
     nvalues <<= 2;			    /* watch out for macros... */
     Data32 (dpy, (long *) values, (long)nvalues);
 
+}
+
+#define AllMaskBits (CWBackPixmap|CWBackPixel|CWBorderPixmap|\
+		     CWBorderPixel|CWBitGravity|CWWinGravity|\
+		     CWBackingStore|CWBackingPlanes|CWBackingPixel|\
+		     CWOverrideRedirect|CWSaveUnder|CWEventMask|\
+		     CWDontPropagate|CWColormap|CWCursor)
+
+Window XCreateWindow(dpy, parent, x, y, width, height, 
+                borderWidth, depth, class, visual, valuemask, attributes)
+    register Display *dpy;
+    Window parent;
+    int x, y;
+    unsigned int width, height, borderWidth;
+    int depth;
+    unsigned int class;
+    Visual *visual;
+    unsigned long valuemask;
+    XSetWindowAttributes *attributes;
+{
+    Window wid;
+    register xCreateWindowReq *req;
+
+    LockDisplay(dpy);
+    GetReq(CreateWindow, req);
+    req->parent = parent;
+    req->x = x;
+    req->y = y;
+    req->width = width;
+    req->height = height;
+    req->borderWidth = borderWidth;
+    req->depth = depth;
+    req->class = class;
+    if (visual == CopyFromParent)
+	req->visual = CopyFromParent;
+    else
+	req->visual = visual->visualid;
+    wid = req->wid = XAllocID(dpy);
+    valuemask &= AllMaskBits;
+    if ((req->mask = valuemask))
+        _XProcessWindowAttributes (dpy, (xChangeWindowAttributesReq *)req, 
+			valuemask, attributes);
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return (wid);
     }
+

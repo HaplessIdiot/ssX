@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ConnDis.c,v 3.14 1998/10/03 08:41:16 dawes Exp $ */
+/* $XFree86: xc/lib/X11/ConnDis.c,v 3.15 1999/01/12 06:24:14 dawes Exp $ */
 
 /* 
  * This file contains operating system dependencies.
@@ -112,7 +112,7 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
     Bool dnet = False;			/* if true, then DECnet format */
     int idisplay;			/* required display number */
     int iscreen = 0;			/* optional screen number */
-    int (*connfunc)();			/* method to create connection */
+    /*  int (*connfunc)(); */		/* method to create connection */
     int len, hostlen;			/* length tmp variable */
     int retry;				/* retry counter */
     char addrbuf[128];			/* final address passed to
@@ -1118,18 +1118,18 @@ GetAuthorization(trans_conn, family, saddr, saddrlen, idisplay,
     }
 #endif
     if (saddr) free ((char *) saddr);
-    if (*auth_namelenp = auth_namelen)
+    if ((*auth_namelenp = auth_namelen))
     {
-	if (*auth_namep = Xmalloc(auth_namelen))
+	if ((*auth_namep = Xmalloc(auth_namelen)))
 	    memcpy(*auth_namep, auth_name, auth_namelen);
 	else
 	    *auth_namelenp = 0;
     }
     else
 	*auth_namep = NULL;
-    if (*auth_datalenp = auth_datalen)
+    if ((*auth_datalenp = auth_datalen))
     {
-	if (*auth_datap = Xmalloc(auth_datalen))
+	if ((*auth_datap = Xmalloc(auth_datalen)))
 	    memcpy(*auth_datap, auth_data, auth_datalen);
 	else
 	    *auth_datalenp = 0;

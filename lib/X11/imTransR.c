@@ -28,6 +28,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -35,21 +36,21 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "Ximint.h"
 
 Public TransportSW _XimTransportRec[] = {
-    "X",          _XimXConf,  /* 1st entry must be X. 
+    { "X",          _XimXConf },  /* 1st entry must be X. 
 					This will be a fallback */
 #ifdef TCPCONN
-    "tcp",        _XimTransConf, /* use X transport lib */
+    { "tcp",        _XimTransConf }, /* use X transport lib */
 #endif /* TCPCONN */
 #if defined(UNIXCONN) || defined(LOCALCONN)
-    "local",      _XimTransConf, /* use X transport lib */
+    { "local",      _XimTransConf }, /* use X transport lib */
 #endif /* UNIXCONN */
 #ifdef DNETCONN
-    "dnet",     _XimTransConf, /* use X transport lib */
+    { "dnet",     _XimTransConf }, /* use X transport lib */
 #endif /* DNETCONN */
 #ifdef STREAMSCONN
-    "streams",    _XimTransConf, /* use X transport lib */
+    { "streams",    _XimTransConf }, /* use X transport lib */
 #endif /* STREAMSCONN */
-    (char *)NULL, (Bool (*)())NULL,
+    { (char *)NULL, (Bool (*)())NULL },
 };
 
 Public Bool
@@ -113,7 +114,7 @@ _XimReadData(im, len, buf, buf_size)
     packet_size = 0;
     data_len = 0;
 
-    if (hold_buf = im->private.proto.hold_data) {
+    if ((hold_buf = im->private.proto.hold_data)) {
 	data_len = im->private.proto.hold_data_len;
 	if (data_len >= XIM_HEADER_SIZE) {
 	    packet_size = _CheckProtocolData(im, hold_buf);

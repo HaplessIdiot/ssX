@@ -32,6 +32,7 @@ THIS SOFTWARE.
 	                          frankyling@hgrd01.enet.dec.com
 
 ******************************************************************/
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -46,8 +47,8 @@ _XimCheckIfDefault(im)
 }
 
 XimImsportSW _XimImSportRec[] = {
-    _XimCheckIfLocalProcessing, _XimLocalOpenIM, _XimLocalIMFree,
-    _XimCheckIfThaiProcessing,	_XimThaiOpenIM,	 _XimThaiIMFree,
-    _XimCheckIfDefault,         _XimProtoOpenIM, _XimProtoIMFree,
-    NULL,                       NULL,		 NULL,
+    { _XimCheckIfLocalProcessing, _XimLocalOpenIM, _XimLocalIMFree },
+    { _XimCheckIfThaiProcessing,	_XimThaiOpenIM,	 _XimThaiIMFree },
+    { _XimCheckIfDefault,         _XimProtoOpenIM, _XimProtoIMFree },
+    { NULL,                       NULL,		 NULL },
 };

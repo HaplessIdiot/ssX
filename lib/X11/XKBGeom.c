@@ -1,4 +1,4 @@
-/* $XConsortium $ */
+/* $XConsortium: XKBGeom.c /main/7 1996/02/02 14:38:29 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,6 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
+/* $XFree86$ */
 
 #ifdef DEBUG
 #include <stdio.h>
@@ -46,9 +47,13 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 /***====================================================================***/
 
 static void
+#if NeedFunctionPrototypes
+_XkbCheckBounds(XkbBoundsPtr bounds,int	x,int y)
+#else
 _XkbCheckBounds(bounds,x,y)
     XkbBoundsPtr	bounds;
     int			x,y;
+#endif
 {
     if (x<bounds->x1)	bounds->x1= x;
     if (x>bounds->x2)	bounds->x2= x;
@@ -58,8 +63,12 @@ _XkbCheckBounds(bounds,x,y)
 }
 
 Bool
+#if NeedFunctionPrototypes
+XkbComputeShapeBounds(XkbShapePtr shape)
+#else
 XkbComputeShapeBounds(shape)
    XkbShapePtr	shape;
+#endif
 {
 register int	o,p;
 XkbOutlinePtr	outline;
@@ -78,9 +87,13 @@ XkbPointPtr	pt;
 }
 
 Bool
+#if NeedFunctionPrototypes
+XkbComputeShapeTop(XkbShapePtr shape,XkbBoundsPtr bounds)
+#else
 XkbComputeShapeTop(shape,bounds)
    XkbShapePtr	shape;
    XkbBoundsPtr	bounds;
+#endif
 {
 register int	p;
 XkbOutlinePtr	outline;
@@ -105,10 +118,14 @@ XkbPointPtr	pt;
 }
 
 Bool
+#if NeedFunctionPrototypes
+XkbComputeRowBounds(XkbGeometryPtr geom,XkbSectionPtr section,XkbRowPtr row)
+#else
 XkbComputeRowBounds(geom,section,row)
     XkbGeometryPtr	geom;
     XkbSectionPtr	section;
     XkbRowPtr		row;
+#endif
 {
 register int	k,pos;
 XkbKeyPtr	key;
@@ -145,9 +162,13 @@ XkbBoundsPtr	bounds,sbounds;
 }
 
 Bool
+#if NeedFunctionPrototypes
+XkbComputeSectionBounds(XkbGeometryPtr geom,XkbSectionPtr section)
+#else
 XkbComputeSectionBounds(geom,section)
     XkbGeometryPtr	geom;
     XkbSectionPtr	section;
+#endif
 {
 register int	i;
 XkbShapePtr	shape;
@@ -203,10 +224,14 @@ XkbBoundsPtr	bounds,rbounds;
 /***====================================================================***/
 
 char *
+#if NeedFunctionPrototypes
+XkbFindOverlayForKey(XkbGeometryPtr geom,XkbSectionPtr wanted,char *under)
+#else
 XkbFindOverlayForKey(geom,wanted,under)
     XkbGeometryPtr	geom;
     XkbSectionPtr	wanted;
     char *		under;
+#endif
 {
 int		s;
 XkbSectionPtr	section;
@@ -246,10 +271,16 @@ XkbSectionPtr	section;
 /***====================================================================***/
 
 static Status
+#if NeedFunctionPrototypes
+_XkbReadGeomProperties(	XkbReadBufferPtr	buf,
+			XkbGeometryPtr 		geom,
+			xkbGetGeometryReply *	rep)
+#else
 _XkbReadGeomProperties(buf,geom,rep)
     XkbReadBufferPtr		buf;
     XkbGeometryPtr		geom;
     xkbGetGeometryReply *	rep;
+#endif
 {
 Status	rtrn;
 
@@ -272,23 +303,26 @@ Status	rtrn;
 }
 
 static Status
+#if NeedFunctionPrototypes
+_XkbReadGeomKeyAliases(	XkbReadBufferPtr	buf,
+			XkbGeometryPtr		geom,
+			xkbGetGeometryReply *	rep)
+#else
 _XkbReadGeomKeyAliases(buf,geom,rep)
     XkbReadBufferPtr		buf;
     XkbGeometryPtr		geom;
     xkbGetGeometryReply *	rep;
+#endif
 {
 Status	rtrn;
 
     if (rep->nKeyAliases<1)
 	return Success;
     if ((rtrn=XkbAllocGeomKeyAliases(geom,rep->nKeyAliases))==Success) {
-	register int i;
-	for (i=0;i<rep->nKeyAliases;i++) {
-	    if (!_XkbCopyFromReadBuffer(buf,(char *)geom->key_aliases,
+	if (!_XkbCopyFromReadBuffer(buf,(char *)geom->key_aliases,
 					(rep->nKeyAliases*XkbKeyNameLength*2)))
-		return BadLength;
-	    geom->num_key_aliases= rep->nKeyAliases;
-	}
+	    return BadLength;
+	geom->num_key_aliases= rep->nKeyAliases;
 	return Success;
     }
     else { /* alloc failed, just skip the aliases */
@@ -298,10 +332,16 @@ Status	rtrn;
 }
 
 static Status
+#if NeedFunctionPrototypes
+_XkbReadGeomColors(	XkbReadBufferPtr	buf,
+			XkbGeometryPtr		geom,
+			xkbGetGeometryReply *	rep)
+#else
 _XkbReadGeomColors(buf,geom,rep)
     XkbReadBufferPtr		buf;
     XkbGeometryPtr		geom;
     xkbGetGeometryReply *	rep;
+#endif
 {
 Status	rtrn;
 
@@ -313,7 +353,7 @@ Status	rtrn;
 	for (i=0;i<rep->nColors;i++) {
 	    if (!_XkbGetReadBufferCountedString(buf,&spec))
 		return BadLength;
-	    if (XkbAddGeomColor(geom,spec)==NULL)
+	    if (XkbAddGeomColor(geom,spec,geom->num_colors)==NULL)
 		return BadAlloc;
 	}
 	return Success;
@@ -322,10 +362,16 @@ Status	rtrn;
 }
 
 static Status
+#if NeedFunctionPrototypes
+_XkbReadGeomShapes(	XkbReadBufferPtr	buf,
+			XkbGeometryPtr		geom,
+			xkbGetGeometryReply *	rep)
+#else
 _XkbReadGeomShapes(buf,geom,rep)
     XkbReadBufferPtr		buf;
     XkbGeometryPtr		geom;
     xkbGetGeometryReply *	rep;
+#endif
 {
 register int i;
 Status	rtrn;
@@ -354,7 +400,7 @@ Status	rtrn;
 		 _XkbGetReadBufferPtr(buf,SIZEOF(xkbOutlineWireDesc));
 	    if (!olWire)
 		return BadLength;
-	    ol= XkbAddGeomOutline(geom,shape,olWire->nPoints);
+	    ol= XkbAddGeomOutline(shape,olWire->nPoints);
 	    if (!ol)
 		return BadAlloc;
 	    ol->corner_radius=  olWire->cornerRadius;
@@ -382,9 +428,9 @@ Status	rtrn;
 
 static Status
 #if NeedFunctionPrototypes
-_XkbReadGeomDoodad(	XkbReadBufferPtr buf,
-			XkbGeometryPtr geom,
-			XkbSectionPtr section)
+_XkbReadGeomDoodad(	XkbReadBufferPtr 	buf,
+			XkbGeometryPtr 		geom,
+			XkbSectionPtr 		section)
 #else
 _XkbReadGeomDoodad(buf,geom,section)
     XkbReadBufferPtr		buf;
@@ -406,15 +452,14 @@ xkbDoodadWireDesc *	doodadWire;
     doodad->any.priority= doodadWire->any.priority;
     doodad->any.top= doodadWire->any.top;
     doodad->any.left= doodadWire->any.left;
+    doodad->any.angle= doodadWire->any.angle;
     switch (doodad->any.type) {
 	case XkbOutlineDoodad:
 	case XkbSolidDoodad:
-	    doodad->shape.angle= doodadWire->shape.angle;
 	    doodad->shape.color_ndx= doodadWire->shape.colorNdx;
 	    doodad->shape.shape_ndx= doodadWire->shape.shapeNdx;
 	    break;
 	case XkbTextDoodad:
-	    doodad->text.angle= doodadWire->text.angle;
 	    doodad->text.width= doodadWire->text.width;
 	    doodad->text.height= doodadWire->text.height;
 	    doodad->text.color_ndx= doodadWire->text.colorNdx;
@@ -429,7 +474,6 @@ xkbDoodadWireDesc *	doodadWire;
 	    doodad->indicator.off_color_ndx= doodadWire->indicator.offColorNdx;
 	    break;
 	case XkbLogoDoodad:
-	    doodad->logo.angle= doodadWire->logo.angle;
 	    doodad->logo.color_ndx= doodadWire->logo.colorNdx;
 	    doodad->logo.shape_ndx= doodadWire->logo.shapeNdx;
 	    if (!_XkbGetReadBufferCountedString(buf,&doodad->logo.logo_name))
@@ -442,10 +486,16 @@ xkbDoodadWireDesc *	doodadWire;
 }
 
 static Status
+#if NeedFunctionPrototypes
+_XkbReadGeomOverlay(	XkbReadBufferPtr	buf,
+			XkbGeometryPtr		geom,
+			XkbSectionPtr		section)
+#else
 _XkbReadGeomOverlay(buf,geom,section)
     XkbReadBufferPtr		buf;
     XkbGeometryPtr		geom;
     XkbSectionPtr		section;
+#endif
 {
 XkbOverlayPtr		ol;
 xkbOverlayWireDesc *	olWire;
@@ -455,7 +505,7 @@ register int		r;
 		   _XkbGetReadBufferPtr(buf,SIZEOF(xkbOverlayWireDesc));
     if (olWire==NULL)
 	return BadLength;
-    ol= XkbAddGeomOverlay(geom,section,olWire->name,olWire->nRows);
+    ol= XkbAddGeomOverlay(section,olWire->name,olWire->nRows);
     if (ol==NULL)
 	return BadLength;
     for (r=0;r<olWire->nRows;r++) {
@@ -467,7 +517,7 @@ register int		r;
 			_XkbGetReadBufferPtr(buf,SIZEOF(xkbOverlayRowWireDesc));
 	if (rowWire==NULL)
 	    return BadLength;
-	row= XkbAddGeomOverlayRow(geom,ol,rowWire->nKeys);
+	row= XkbAddGeomOverlayRow(ol,rowWire->rowUnder,rowWire->nKeys);
 	row->row_under= rowWire->rowUnder;
 	if (!row)
 	    return BadAlloc;
@@ -489,10 +539,16 @@ register int		r;
 }
 
 static Status
+#if NeedFunctionPrototypes
+_XkbReadGeomSections(	XkbReadBufferPtr	buf,
+			XkbGeometryPtr		geom,
+			xkbGetGeometryReply *	rep)
+#else
 _XkbReadGeomSections(buf,geom,rep)
     XkbReadBufferPtr		buf;
     XkbGeometryPtr		geom;
     xkbGetGeometryReply *	rep;
+#endif
 {
 register int 		s;
 XkbSectionPtr		section;
@@ -528,7 +584,7 @@ Status			rtrn;
 			 _XkbGetReadBufferPtr(buf,SIZEOF(xkbRowWireDesc));
 		if (!rowWire)
 		    return BadLength;
-		row= XkbAddGeomRow(geom,section,rowWire->nKeys);
+		row= XkbAddGeomRow(section,rowWire->nKeys);
 		if (!row)
 		    return BadAlloc;
 		row->top= rowWire->top;
@@ -543,7 +599,7 @@ Status			rtrn;
 			      _XkbGetReadBufferPtr(buf,SIZEOF(xkbKeyWireDesc));
 			if (!keyWire)
 			    return BadLength;
-			key= XkbAddGeomKey(geom,row);
+			key= XkbAddGeomKey(row);
 			if (!key)
 			    return BadAlloc;
 			memcpy(key->name.name,keyWire->name,XkbKeyNameLength);
@@ -573,10 +629,16 @@ Status			rtrn;
 }
 
 static Status
+#if NeedFunctionPrototypes
+_XkbReadGeomDoodads(	XkbReadBufferPtr	buf,
+			XkbGeometryPtr		geom,
+			xkbGetGeometryReply *	rep)
+#else
 _XkbReadGeomDoodads(buf,geom,rep)
     XkbReadBufferPtr		buf;
     XkbGeometryPtr		geom;
     xkbGetGeometryReply *	rep;
+#endif
 {
 register int d;
 Status	rtrn;
@@ -660,16 +722,20 @@ XkbGeometryPtr	geom;
 }
 
 Status
+#if NeedFunctionPrototypes
+XkbGetGeometry(Display *dpy,XkbDescPtr xkb)
+#else
 XkbGetGeometry(dpy,xkb)
     Display *	dpy;
     XkbDescPtr	xkb;
+#endif
 {
 xkbGetGeometryReq	*req;
 xkbGetGeometryReply	 rep;
 
     if ( (!xkb) || (dpy->flags & XlibDisplayNoXkb) ||
 	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)))
-	return BadValue;
+	return BadAccess;
     
     GetReq(kbGetGeometry, req);
     req->reqType = dpy->xkb_info->codes->major_opcode;
@@ -684,17 +750,21 @@ xkbGetGeometryReply	 rep;
 }
 
 Status
+#if NeedFunctionPrototypes
+XkbGetNamedGeometry(Display *dpy,XkbDescPtr xkb,Atom name)
+#else
 XkbGetNamedGeometry(dpy,xkb,name)
     Display *	dpy;
     XkbDescPtr	xkb;
     Atom	name;
+#endif
 {
 xkbGetGeometryReq	*req;
 xkbGetGeometryReply	 rep;
 
     if ( (name==None) || (dpy->flags & XlibDisplayNoXkb) ||
 	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)) )
-	return NULL;
+	return BadAccess;
     
     GetReq(kbGetGeometry, req);
     req->reqType = dpy->xkb_info->codes->major_opcode;
@@ -702,7 +772,7 @@ xkbGetGeometryReply	 rep;
     req->deviceSpec = xkb->device_spec;
     req->name= (CARD32)name;
     if ((!_XReply(dpy, (xReply *)&rep, 0, xFalse))||(!rep.found))
-	return NULL;
+	return BadImplementation;
     if (!rep.found)
 	return BadName;
     return _XkbReadGetGeometryReply(dpy,&rep,xkb,NULL);

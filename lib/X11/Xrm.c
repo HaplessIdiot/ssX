@@ -45,7 +45,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xrm.c,v 3.10 1998/08/20 08:55:50 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xrm.c,v 3.11 1998/10/03 08:41:30 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<ctype.h>
@@ -68,6 +68,8 @@ from The Open Group.
 #else
 #define RConst /**/
 #endif
+
+extern XrmQuark _XrmInternalStringToQuark();
 
 /*
 
@@ -357,7 +359,7 @@ void XrmStringToQuarkList(name, quarks)
     register char       	ch, *tname;
     register int 		i = 0;
 
-    if (tname = (char *)name) {
+    if ((tname = (char *)name)) {
 	tname--;
 	while (!is_EOF(bits = next_char(ch, tname))) {
 	    if (is_binding (bits)) {
@@ -398,7 +400,7 @@ void XrmStringToBindingQuarkList(name, bindings, quarks)
     register XrmBinding 	binding;
     register int 		i = 0;
 
-    if (tname = (char *)name) {
+    if ((tname = (char *)name)) {
 	tname--;
 	binding = XrmBindTightly;
 	while (!is_EOF(bits = next_char(ch, tname))) {
@@ -758,7 +760,7 @@ void XrmCombineDatabase(from, into, override)
     } else if (from) {
 	_XLockMutex(&from->linfo);
 	_XLockMutex(&(*into)->linfo);
-	if (ftable = from->table) {
+	if ((ftable = from->table)) {
 	    prev = &(*into)->table;
 	    ttable = *prev;
 	    if (!ftable->leaf) {
@@ -2344,7 +2346,7 @@ Bool XrmQGetSearchResource(searchList, name, class, pType, pValue)
 	table = (LTable)NULL;
     } else if (flags == 3) {
 	/* both name and class */
-	while (table = *list++) {
+	while ((table = *list++)) {
 	    if (table != LOOSESEARCH) {
 		VTIGHTLOOSE(name);  /* do name, tight and loose */
 		VTIGHTLOOSE(class); /* do class, tight and loose */
@@ -2358,7 +2360,7 @@ Bool XrmQGetSearchResource(searchList, name, class, pType, pValue)
 	/* just one of name or class */
 	if (flags == 1)
 	    name = class;
-	while (table = *list++) {
+	while ((table = *list++)) {
 	    if (table != LOOSESEARCH) {
 		VTIGHTLOOSE(name); /* tight and loose */
 	    } else {
@@ -2614,7 +2616,7 @@ static void DestroyLTable(table)
 
     buckets = table->buckets;
     for (i = table->table.mask; i >= 0; i--, buckets++) {
-	for (next = *buckets; entry = next; ) {
+	for (next = *buckets; (entry = next); ) {
 	    next = entry->next;
 	    Xfree((char *)entry);
 	}
@@ -2633,7 +2635,7 @@ static void DestroyNTable(table)
 
     buckets = NodeBuckets(table);
     for (i = table->mask; i >= 0; i--, buckets++) {
-	for (next = *buckets; entry = next; ) {
+	for (next = *buckets; (entry = next); ) {
 	    next = entry->next;
 	    if (entry->leaf)
 		DestroyLTable((LTable)entry);
@@ -2661,7 +2663,7 @@ void XrmDestroyDatabase(db)
 
     if (db) {
 	_XLockMutex(&db->linfo);
-	for (next = db->table; table = next; ) {
+	for (next = db->table; (table = next); ) {
 	    next = table->next;
 	    if (table->leaf)
 		DestroyLTable((LTable)table);

@@ -1,5 +1,5 @@
-BEGINENCODING adobe-symbol
-BEGINMAPPING postscript
+STARTENCODING adobe-symbol
+STARTMAPPING postscript
 32 space
 33 exclam
 34 universal
@@ -190,7 +190,7 @@ BEGINMAPPING postscript
 254 bracerightbt
 ENDMAPPING
 
-BEGINMAPPING unicode
+STARTMAPPING unicode
 UNDEFINE 0x20 0xFF
 0x20 0x0020    # SPACE
 0x21 0x0021    # EXCLAMATION MARK

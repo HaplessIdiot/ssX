@@ -1,4 +1,4 @@
-/* $XConsortium: LabMnL.c,v 1.3 93/09/07 21:31:27 rws Exp $ */
+/* $XConsortium: LabMnL.c /main/4 1995/10/24 11:18:39 gildea $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -31,6 +31,7 @@
  *		querying routine.
  *
  */
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include "Xcmsint.h"
@@ -47,6 +48,9 @@
  *	EXTERNS
  */
 extern Status _XcmsCIELabQueryMaxLCRGB();
+
+/* CvColW.c */
+extern Status _XcmsConvertColorsWithWhitePt();
 
 
 /************************************************************************
@@ -138,13 +142,13 @@ XcmsCIELabQueryMinL(ccc, hue_angle, chroma, pColor_return)
 	return(XcmsSuccess);
     }
 
+    /*
+     *  If the chroma is equal to the chroma for the 
+     *  maximum L_star/chroma point then the L_star is the
+     *  the L_star for the maximum L* and chroma point.
+     */
     /* if (max_chroma == chroma) {
-     *	/*
-     *	 *  If the chroma is equal to the chroma for the 
-     *	 *  maximum L_star/chroma point then the L_star is the
-     *	 *  the L_star for the maximum L* and chroma point.
-     *	 */
-    /*  memcpy ((char *) pColor_return, (char *) &max_lc, sizeof (XcmsColor));
+     *  memcpy ((char *) pColor_return, (char *) &max_lc, sizeof (XcmsColor));
      *	return(XcmsSuccess);
      *    }
      */

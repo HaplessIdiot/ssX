@@ -49,6 +49,7 @@ from The Open Group.
  *
  *		 Katsuhisa Yano		TOSHIBA Corp.
  */				
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -212,7 +213,7 @@ _XlcRemoveLoader(proc)
 	return;
     }
 
-    while (loader = loader->next) {
+    while ((loader = loader->next)) {
 	if (loader->proc == proc) {
 	    prev->next = loader->next;
 	    Xfree(loader);
@@ -337,7 +338,7 @@ _XCloseLC(lcd)
 {
     XLCdList cur, *prev;
 
-    for (prev = &lcd_list; cur = *prev; prev = &cur->next) {
+    for (prev = &lcd_list; (cur = *prev); prev = &cur->next) {
 	if (cur->lcd == lcd) {
 	    if (--cur->ref_count < 1) {
 		(*lcd->methods->close)(lcd);

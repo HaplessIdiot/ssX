@@ -43,6 +43,7 @@
  *		Source for XcmsTekHVCClipVC() gamut
  *		compression function.
  */
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include "Xcmsint.h"
@@ -62,6 +63,12 @@ extern int _XcmsTekHVC_CheckModify();
 extern Status _XcmsTekHVCQueryMaxVCRGB();
 extern XcmsColorSpace XcmsTekHVCColorSpace;
 extern XcmsFunctionSet	XcmsLinearRGBFunctionSet;
+
+/* CvCols.c */
+extern Status _XcmsDIConvertColors();
+
+/* CvColW.c */
+extern Status _XcmsConvertColorsWithWhitePt();
 
 
 /************************************************************************

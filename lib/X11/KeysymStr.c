@@ -21,10 +21,13 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include <X11/Xresource.h>
 #include <X11/keysymdef.h>
+
+#include <stdio.h> /* sprintf */
 
 #ifdef __STDC__
 #define Const const
@@ -99,7 +102,7 @@ char *XKeysymToString(ks)
 	i = ks % VTABLESIZE;
 	h = i + 1;
 	n = VMAXHASH;
-	while (idx = hashKeysym[i])
+	while ((idx = hashKeysym[i]))
 	{
 	    entry = &_XkeyTable[idx];
 	    if ((entry[0] == val1) && (entry[1] == val2))
@@ -112,7 +115,7 @@ char *XKeysymToString(ks)
 	}
     }
 
-    if (keysymdb = _XInitKeysymDB())
+    if ((keysymdb = _XInitKeysymDB()))
     {
 	char buf[9];
 	XrmValue resval;

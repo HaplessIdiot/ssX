@@ -33,6 +33,7 @@
  *
  *
  */
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include "Xcmsint.h"
@@ -62,6 +63,7 @@ extern XcmsColorSpace **_XcmsDDColorSpaces;
  */
 Status _XcmsDIConvertColors();
 Status _XcmsDDConvertColors();
+int _XcmsEqualWhitePts();
 
 
 /************************************************************************

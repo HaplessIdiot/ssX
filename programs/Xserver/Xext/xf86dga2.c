@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.4 1999/04/25 10:01:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.5 1999/05/03 12:15:56 dawes Exp $ */
 
 
 #define NEED_REPLIES
@@ -553,3 +553,11 @@ ProcXDGADispatch (ClientPtr client)
 	return BadRequest;
     }
 }
+
+#ifdef XFree86LOADER
+void
+XFree86DGARegister()
+{
+  XDGAEventBase = &DGAEventBase; 
+}
+#endif

@@ -1,4 +1,4 @@
-/* $XConsortium: lcConv.c,v 1.5 94/03/29 22:51:51 rws Exp $ */
+/* $XConsortium: lcConv.c /main/8 1996/09/28 16:37:28 rws $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -23,6 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"
@@ -58,7 +59,6 @@ get_converter(from_lcd, from_type, to_lcd, to_type)
     XrmQuark to_type;
 {
     register XlcConverterList list, prev = NULL;
-    XlcConv conv;
 
     for (list = conv_list; list; list = list->next) {
 	if (list->from_lcd == from_lcd && list->to_lcd == to_lcd 
@@ -229,9 +229,10 @@ open_indirect_converter(from_lcd, from, to_lcd, to)
     XlcConv lc_conv, from_conv, to_conv;
     Conv conv;
     XrmQuark from_type, to_type;
-    static XrmQuark QChar, QCharSet = (XrmQuark) 0;
+    static XrmQuark QChar, QCharSet, QCTCharSet = (XrmQuark) 0;
 
-    if (QCharSet == (XrmQuark) 0) {
+    if (QCTCharSet == (XrmQuark) 0) {
+	QCTCharSet = XrmStringToQuark(XlcNCTCharSet);
 	QCharSet = XrmStringToQuark(XlcNCharSet);
 	QChar = XrmStringToQuark(XlcNChar);
     }
@@ -249,22 +250,26 @@ open_indirect_converter(from_lcd, from, to_lcd, to)
     
     lc_conv->methods = &conv_methods;
 
-    lc_conv->state = (XPointer) Xmalloc(sizeof(ConvRec));
+    lc_conv->state = (XPointer) Xcalloc(1, sizeof(ConvRec));
     if (lc_conv->state == NULL)
 	goto err;
     
     conv = (Conv) lc_conv->state;
 
-    from_conv = get_converter(from_lcd, from_type, from_lcd, QChar);
+    from_conv = get_converter(from_lcd, from_type, from_lcd, QCTCharSet);
     if (from_conv == NULL)
 	from_conv = get_converter(from_lcd, from_type, from_lcd, QCharSet);
     if (from_conv == NULL)
 	from_conv = get_converter((XLCd)NULL, from_type, (XLCd)NULL, QCharSet);
     if (from_conv == NULL)
+	from_conv = get_converter(from_lcd, from_type, from_lcd, QChar);
+    if (from_conv == NULL)
 	goto err;
     conv->from_conv = from_conv;
 
-    to_conv = get_converter(to_lcd, QCharSet, to_lcd, to_type);
+    to_conv = get_converter(to_lcd, QCTCharSet, to_lcd, to_type);
+    if (to_conv == NULL)
+	to_conv = get_converter(to_lcd, QCharSet, to_lcd, to_type);
     if (to_conv == NULL)
 	to_conv = get_converter((XLCd) NULL, QCharSet, (XLCd) NULL, to_type);
     if (to_conv == NULL)
@@ -292,7 +297,7 @@ _XlcOpenConverter(from_lcd, from, to_lcd, to)
     from_type = XrmStringToQuark(from);
     to_type = XrmStringToQuark(to);
 
-    if (conv = get_converter(from_lcd, from_type, to_lcd, to_type))
+    if ((conv = get_converter(from_lcd, from_type, to_lcd, to_type)))
 	return conv;
     
     return open_indirect_converter(from_lcd, from, to_lcd, to);

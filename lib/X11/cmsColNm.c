@@ -31,7 +31,7 @@
  *
  *
  */
-/* $XFree86: xc/lib/X11/cmsColNm.c,v 3.3 1997/10/26 13:24:46 dawes Exp $ */
+/* $XFree86: xc/lib/X11/cmsColNm.c,v 3.4 1998/10/03 08:41:32 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xcmsint.h"
@@ -55,8 +55,16 @@ extern void qsort();
 extern char *bsearch();
 #endif
 extern XcmsColorSpace **_XcmsDIColorSpaces;
+
+/* CvCols.c */
+extern Status _XcmsDDConvertColors();
+extern int _XcmsEqualWhitePts();
+extern Status _XcmsDIConvertColors();
+
+
 static Status LoadColornameDB();
 void _XcmsCopyISOLatin1Lowered();
+
 
 /*
  *      LOCAL DEFINES

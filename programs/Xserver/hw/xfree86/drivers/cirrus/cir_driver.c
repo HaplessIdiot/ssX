@@ -9,7 +9,7 @@
  *	Guy DESBIEF
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.35 1999/04/25 15:30:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.36 1999/05/03 04:35:35 dawes Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -224,6 +224,8 @@ static const char *vgahwSymbols[] = {
 };
 
 static const char *cfbSymbols[] = {
+    "xf1bppScreenInit",
+    "xf4bppScreenInit",
     "cfbScreenInit",
     "cfb16ScreenInit",
     "cfb24ScreenInit",
@@ -1196,7 +1198,7 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
     xf86LoaderReqSymLists(ddcSymbols, NULL);
 
     xf86DelControlledResource(&pScrn->Access, FALSE);
-   
+
     return TRUE;
 }
 
@@ -1259,13 +1261,16 @@ CIRMapMem(ScrnInfoPtr pScrn)
 #endif
 
 #ifdef __alpha__
-    if (pCir->IOBase != NULL) {
+    if (pCir->IOAddress == 0) {
+        pCir->IOBaseDense = NULL;
+    }
+    else {
         /*
          * for Alpha, we need to map DENSE memory as well, for
          * setting CPUToScreenColorExpandBase.
          */
         pCir->IOBaseDense = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
-					    pCir->PciTag, pCir->IOAddr,
+					    pCir->PciTag, pCir->IOAddress,
 					    0x4000);
         if (pCir->IOBaseDense == NULL)
 	    return FALSE;
@@ -1291,15 +1296,19 @@ CIRUnmapMem(ScrnInfoPtr pScrn)
 
     pCir = CIRPTR(pScrn);
 
-    /*
-     * Unmap IO registers to virtual address space
-     */ 
-    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pCir->IOBase, 0x4000);
-    pCir->IOBase = NULL;
+    if(pCir->IOBase != NULL) {
+        /*
+         * Unmap IO registers to virtual address space
+         */ 
+        xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pCir->IOBase, 0x4000);
+        pCir->IOBase = NULL;
+    }
 
 #ifdef __alpha__
-    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pCir->IOBaseDense, 0x4000);
-    pCir->IOBaseDense = NULL;
+    if(pCir->IOBaseDense != NULL) {
+        xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pCir->IOBaseDense, 0x4000);
+        pCir->IOBaseDense = NULL;
+    }
 #endif /* __alpha__ */
 
     xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pCir->FbBase, pScrn->videoRam);
@@ -1327,6 +1336,7 @@ CIRSave(ScrnInfoPtr pScrn)
     vgaHWSave(pScrn, &VGAHWPTR(pScrn)->SavedReg, VGA_SR_ALL);
 
 #if 1
+    pCir->ModeReg.ExtVga[CR1A] = pCir->SavedReg.ExtVga[CR1A] = hwp->readCrtc(hwp, 0x1A);
     pCir->ModeReg.ExtVga[CR1B] = pCir->SavedReg.ExtVga[CR1B] = hwp->readCrtc(hwp, 0x1B);
     pCir->ModeReg.ExtVga[CR1D] = pCir->SavedReg.ExtVga[CR1D] = hwp->readCrtc(hwp, 0x1D);
     pCir->ModeReg.ExtVga[SR07] = pCir->SavedReg.ExtVga[SR07] = hwp->readSeq(hwp, 0x07);
@@ -1343,6 +1353,7 @@ CIRSave(ScrnInfoPtr pScrn)
     hwp->readDacMask(hwp); hwp->readDacMask(hwp); 
     pCir->ModeReg.ExtVga[HDR ] = pCir->SavedReg.ExtVga[HDR ] = hwp->readDacMask(hwp);
 #else
+    outb(hwp->IOBase+4, 0x1A); pCir->ModeReg.ExtVga[CR1A] = pCir->SavedReg.ExtVga[CR1A] = inb(hwp->IOBase + 5);
     outb(hwp->IOBase+4, 0x1B); pCir->ModeReg.ExtVga[CR1B] = pCir->SavedReg.ExtVga[CR1B] = inb(hwp->IOBase + 5);
     outb(hwp->IOBase+4, 0x1D); pCir->ModeReg.ExtVga[CR1D] = pCir->SavedReg.ExtVga[CR1D] = inb(hwp->IOBase + 5);
     outb(0x3C4, 0x07);   pCir->ModeReg.ExtVga[SR07] = pCir->SavedReg.ExtVga[SR07] = inb(0x3C5);
@@ -1421,7 +1432,7 @@ CIRModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     if(pScrn->bitsPerPixel == 32)
        depthcode = 32;
 
-    if ((pCir->Chipset == PCI_CHIP_GD5480 && mode->Clock > 135100) |
+    if ((pCir->Chipset == PCI_CHIP_GD5480 && mode->Clock > 135100) ||
         (pCir->Chipset == PCI_CHIP_GD5446 && mode->Clock >  85500)) {
         /* The actual DAC register value is set later. */
         /* The CRTC is clocked at VCLK / 2, so we must half the */
@@ -1549,6 +1560,9 @@ CIRModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     else
         pCir->ModeReg.ExtVga[GR18] &= ~0x20;
 
+    /* No support for interlace (yet) */
+    pCir->ModeReg.ExtVga[CR1A] = 0x00;
+    
 #if 1
     hwp->writeGr(hwp, 0x18, pCir->ModeReg.ExtVga[GR18]);
 #else
@@ -1582,8 +1596,10 @@ CIRModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pCir->ModeReg.ExtVga[CR1B] |= 0x22;
 
 #if 1
+    hwp->writeCrtc(hwp, 0x1A, pCir->ModeReg.ExtVga[CR1A]);
     hwp->writeCrtc(hwp, 0x1B, pCir->ModeReg.ExtVga[CR1B]);
 #else
+    outw(hwp->IOBase + 4, (pCir->ModeReg.ExtVga[CR1A] << 8) | 0x1A);
     outw(hwp->IOBase + 4, (pCir->ModeReg.ExtVga[CR1B] << 8) | 0x1B);
 #endif
 
@@ -1622,6 +1638,7 @@ CIRRestore(ScrnInfoPtr pScrn)
     vgaHWProtect(pScrn, TRUE);
 
 #if 1
+    hwp->writeCrtc(hwp, 0x1A, cirReg->ExtVga[CR1A]);
     hwp->writeCrtc(hwp, 0x1B, cirReg->ExtVga[CR1B]);
     hwp->writeCrtc(hwp, 0x1D, cirReg->ExtVga[CR1D]);
     hwp->writeSeq(hwp, 0x07, cirReg->ExtVga[SR07]);
@@ -1637,6 +1654,7 @@ CIRRestore(ScrnInfoPtr pScrn)
     hwp->readDacMask(hwp); hwp->readDacMask(hwp); hwp->readDacMask(hwp); hwp->readDacMask(hwp);
     hwp->writeDacMask(hwp, pCir->SavedReg.ExtVga[HDR ]);
 #else
+    outw(hwp->IOBase + 4, (cirReg->ExtVga[CR1A] << 8) | 0x1A);
     outw(hwp->IOBase + 4, (cirReg->ExtVga[CR1B] << 8) | 0x1B);
     outw(hwp->IOBase + 4, (cirReg->ExtVga[CR1D] << 8) | 0x1D);
     outw(0x3C4, (cirReg->ExtVga[SR07] << 8) | 0x07);

@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/GetDflt.c,v 3.14 1998/06/28 08:41:30 dawes Exp $ */
+/* $XFree86: xc/lib/X11/GetDflt.c,v 3.15 1998/10/03 08:41:18 dawes Exp $ */
 
 #include "Xlibint.h"
 #include <X11/Xos.h>
@@ -122,7 +122,7 @@ static char *GetHomeDir (dest, len)
 	(void) strncpy(dest, ptr, len-1);
 	dest[len-1] = '\0';
     } else {
-	if (ptr = getenv("USER"))
+	if ((ptr = getenv("USER")))
 	    pw = _XGetpwnam(ptr,pwparams);
 	else
 	    pw = _XGetpwuid(getuid(),pwparams);

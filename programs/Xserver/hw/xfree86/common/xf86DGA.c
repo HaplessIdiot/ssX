@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.16 1999/05/03 14:24:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.17 1999/05/03 14:56:30 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -33,6 +33,11 @@ DGACopyModeInfo(
    XDGAModePtr xmode
 );
 
+#ifdef XFree86LOADER
+int *XDGAEventBase = NULL;
+#else
+int *XDGAEventBase = &DGAEventBase;
+#endif
 
 #define DGA_GET_SCREEN_PRIV(pScreen) \
 	((DGAScreenPtr)((pScreen)->devPrivates[DGAScreenIndex].ptr))
@@ -517,27 +522,46 @@ DGAStealKeyEvent(int index, xEvent *e)
    if(!pScreenPriv || !pScreenPriv->current) /* no direct mode */
 	return FALSE;
 
-   if(pScreenPriv->client && (pScreenPriv->input & e->u.u.type)){ 
-	/* steal this event */
-	DeviceIntPtr keybd = (DeviceIntPtr)xf86Info.pKeyboard;
-	KeyClassPtr keyc = keybd->key;
-	int keycode = e->u.u.detail;
-	BYTE *kptr;
+   if(pScreenPriv->client && !pScreenPriv->client->clientGone) {
+	Bool GrabEvent = FALSE;
 
-	kptr = &keyc->down[keycode >> 3];
+        switch(e->u.u.type) {
+        case KeyPress:
+             if(pScreenPriv->input & KeyPressMask) 
+                GrabEvent = TRUE;
+             break;
+        case KeyRelease:
+             if(pScreenPriv->input & KeyReleaseMask) 
+                GrabEvent = TRUE;
+             break;
+        }
 
-	e->u.keyButtonPointer.eventX =  0;
-	e->u.keyButtonPointer.eventY =  0;
-	e->u.keyButtonPointer.rootX =   0;
-	e->u.keyButtonPointer.rootY =   0;
+        if(GrabEvent){ /* steal this event */
+            dgaEvent de;
+	    DeviceIntPtr keybd = (DeviceIntPtr)xf86Info.pKeyboard;
+	    KeyClassPtr keyc = keybd->key;
+	    int keycode = e->u.u.detail;
+	    BYTE *kptr;
 
-	/* clear the keypress state */
-	if (e->u.u.type == KeyPress) 
-	    *kptr &= ~(1 << (keycode & 7));
+	    kptr = &keyc->down[keycode >> 3];
+            
+            de.u.u.type = e->u.u.type + *XDGAEventBase;
+	    de.u.u.detail = e->u.u.detail;
+            de.u.u.sequenceNumber = pScreenPriv->client->sequence;
+            de.u.event.time = e->u.keyButtonPointer.time;
+            de.u.event.screen = index;
+            de.u.event.state = e->u.keyButtonPointer.state;
 
-	WriteEventsToClient(pScreenPriv->client, 1, e);
+	    /* clear the keypress state */
+	    if (e->u.u.type == KeyPress) 
+		*kptr &= ~(1 << (keycode & 7));
+
+            TryClientEvents(pScreenPriv->client, (xEvent*)&de, 1, 
+                        NoEventMask, NoEventMask, NullGrab);
+	}
 	return TRUE;
-   } 
+   }
+
 
    /* Not sure how best to handle this stuff. It's only for
       DGA 1.0 compatibility.  Hopefully, we can remove this
@@ -575,7 +599,6 @@ Bool
 DGAStealMouseEvent(int index, xEvent *e, int dx, int dy)
 {
    DGAScreenPtr pScreenPriv;
-   Bool GrabEvent;
 
    if(DGAScreenIndex < 0) /* no DGA */
 	return FALSE;
@@ -596,8 +619,9 @@ DGAStealMouseEvent(int index, xEvent *e, int dx, int dy)
    }
 
   
-   GrabEvent = FALSE;
    if(pScreenPriv->client && !pScreenPriv->client->clientGone) {
+	Bool GrabEvent = FALSE;
+
 	switch(e->u.u.type) {
 	case MotionNotify:
 	     if(pScreenPriv->input & PointerMotionMask) 
@@ -616,9 +640,8 @@ DGAStealMouseEvent(int index, xEvent *e, int dx, int dy)
 	if(GrabEvent){ /* steal this event */
 	    dgaEvent de;
 	    
-#if 0
-	    de.u.u.type = e->u.u.type + DGAEventBase;
-#endif
+	    de.u.u.type = e->u.u.type + *XDGAEventBase;
+	    de.u.u.detail = e->u.u.detail;
             de.u.u.sequenceNumber = pScreenPriv->client->sequence;
 	    de.u.event.dx = dx;
 	    de.u.event.dy = dy;
@@ -626,9 +649,8 @@ DGAStealMouseEvent(int index, xEvent *e, int dx, int dy)
 	    de.u.event.screen = index;
 	    de.u.event.state = e->u.keyButtonPointer.state;
 
-ErrorF("%i!\n", sizeof(xEvent));
-
-	    WriteEventsToClient(pScreenPriv->client, 1, (xEvent*)&de);
+	    TryClientEvents(pScreenPriv->client, (xEvent*)&de, 1, 
+			NoEventMask, NoEventMask, NullGrab);
 	}
 	return TRUE;
    }

@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.22 1999/04/25 10:01:28 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.23 1999/05/03 12:15:44 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -470,7 +470,7 @@ _SelectionReceived(Widget w, XtPointer client_data, Atom *selection,
 }
 
 static void
-GetSelection(Widget w, Time time, String *params, Cardinal num_params)
+GetSelection(Widget w, Time timev, String *params, Cardinal num_params)
 {
   Atom selection;
   int buffer;
@@ -499,7 +499,7 @@ GetSelection(Widget w, Time time, String *params, Cardinal num_params)
       if ((length = nbytes) != 0L)
 	_SelectionReceived(w, NULL, &selection, &type, line, &length, &fmt8);
       else if (num_params > 1)
-	GetSelection(w, time, params+1, num_params-1);
+	GetSelection(w, timev, params+1, num_params-1);
     }
   else
     {
@@ -510,14 +510,14 @@ GetSelection(Widget w, Time time, String *params, Cardinal num_params)
 	  list = XtNew(struct _SelectionList);
 	  list->params = params + 1;
 	  list->count = num_params;
-	  list->time = time;
+	  list->time = timev;
 	  list->CT_asked = True;
 	  list->selection = selection;
 	}
       else
 	list = NULL;
       XtGetSelectionValue(w, selection, XA_COMPOUND_TEXT(XtDisplay(w)),
-			  _SelectionReceived, (XtPointer)list, time);
+			  _SelectionReceived, (XtPointer)list, timev);
     }
 }
 
@@ -1630,16 +1630,13 @@ StripSpaces(TextWidget ctx, XawTextPosition left, XawTextPosition right,
 				 &block, right - left);
     ipos = ctx->text.insertPos;
     done = False;
-    space = True;
     while (!done) {
 	if (XawTextFormat(ctx, XawFmt8Bit)) {
 	    for (i = 0; i < block.length; i++)
 		if (block.ptr[i] == ' ')
-		    space = ++count < 2;
-		else if (count == 1) {
-		    space = True;
+		    ++count;
+		else if (count == 1)
 		    count = 0;
-		}
 		else if (count)
 		    break;
 	}
@@ -1647,15 +1644,13 @@ StripSpaces(TextWidget ctx, XawTextPosition left, XawTextPosition right,
 	    wchar_t *wptr = (wchar_t*)block.ptr;
 	    for (i = 0; i < block.length; i++)
 		if (wptr[i] == _Xaw_atowc(' '))
-		    space = ++count < 2;
-		else if (count == 1) {
-		    space = True;
+		    ++count;
+		else if (count == 1)
 		    count = 0;
-		}
 		else if (count)
 		    break;
 	}
-	if ((count -= !space) > 0) {
+	if (--count > 0) {
 	    CHECK_SAVE();
 	    if (_XawTextReplace(ctx, tmp + i - count, tmp + i, &text))
 		return (False);
@@ -1678,9 +1673,11 @@ StripSpaces(TextWidget ctx, XawTextPosition left, XawTextPosition right,
 			ipos = tmp + i - count;
 		}
 	    }
+	    tmp += i - count;
 	}
-	tmp += i - count + (space);
-	count = !space;
+	else
+	    tmp += i + 1;
+	count = 0;
 	position = XawTextSourceRead(ctx->text.source, tmp,
 				     &block, right - tmp);
 	if (block.length == 0 || tmp == position || tmp >= right)
@@ -1991,14 +1988,14 @@ DoFormatText(TextWidget ctx, XawTextPosition left, Bool force, int level,
 #define iswalnum(c)	(isascii(c) && isalnum(toascii(c)))
 #endif
     if (block.length == 0 || ctx->text.left_column >= ctx->text.right_column ||
-	level == 1 && ((XawTextFormat(ctx, XawFmt8Bit) &&
+	(level == 1 && ((XawTextFormat(ctx, XawFmt8Bit) &&
 	 block.ptr[0] != ' ' &&
 	 block.ptr[0] != '\t' &&
 	 !isalnum(*(unsigned char*)block.ptr)) ||
 	(XawTextFormat(ctx, XawFmtWide) &&
 	 _Xaw_atowc(XawSP) != *(wchar_t*)block.ptr &&
 	 _Xaw_atowc(XawTAB) != *(wchar_t*)block.ptr &&
-	 !iswalnum(*(wchar_t*)block.ptr))))
+	 !iswalnum(*(wchar_t*)block.ptr)))))
 	return (XawEditDone);
 
     if (level == 1 && !paragraph) {
@@ -2083,10 +2080,10 @@ DoFormatText(TextWidget ctx, XawTextPosition left, Bool force, int level,
 
 	XawTextSourceRead(ctx->text.source, right - 1, &block, 1);
 	if (block.length &&
-	    (XawTextFormat(ctx, XawFmt8Bit) &&
+	    ((XawTextFormat(ctx, XawFmt8Bit) &&
 	     block.ptr[0] != ' ') ||
 	    (XawTextFormat(ctx, XawFmtWide) &&
-	     _Xaw_atowc(XawSP) != *(wchar_t*)block.ptr))
+	     _Xaw_atowc(XawSP) != *(wchar_t*)block.ptr)))
 	    sub = 1;
 	StripSpaces(ctx, left + skip, right - 1 - sub, pos, num_pos, save);
 	right += ctx->text.lastPos - len;
@@ -2101,10 +2098,10 @@ DoFormatText(TextWidget ctx, XawTextPosition left, Bool force, int level,
 	position = tmp = right;
 	XawTextSourceRead(ctx->text.source, position - 1, &block, 1);
 	if (block.length &&
-	    (XawTextFormat(ctx, XawFmt8Bit) &&
+	    ((XawTextFormat(ctx, XawFmt8Bit) &&
 	     block.ptr[0] == ' ') ||
 	    (XawTextFormat(ctx, XawFmtWide) &&
-	     _Xaw_atowc(XawSP) == *(wchar_t*)block.ptr))
+	     _Xaw_atowc(XawSP) == *(wchar_t*)block.ptr)))
 	    --position;
 	while (position - left > ctx->text.right_column) {
 	    tmp = position;
@@ -2252,12 +2249,12 @@ Indent(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     TextWidget ctx = (TextWidget)w;
     TextSrcObject src = (TextSrcObject)ctx->text.source;
-    XawTextPosition from, to, tmp, end, *pos, *posbuf[32];
+    XawTextPosition from, to, tmp, end = 0, *pos, *posbuf[32];
     char buf[32];
     XawTextBlock text;
     int i, spaces = MULT(ctx);
-    char *lbuf, *rbuf;
-    unsigned llen, rlen, size;
+    char *lbuf = NULL, *rbuf;
+    unsigned llen = 0, rlen, size;
     Bool undo = src->textSrc.enable_undo && src->textSrc.undo_state == False;
     Bool format = ctx->text.auto_fill
 	&& ctx->text.left_column < ctx->text.right_column;
@@ -2412,7 +2409,7 @@ InsertNewLineAndBackupInternal(TextWidget ctx)
 
     if (mult < 0) {
 	ctx->text.mult = 1;
-	return;
+	return (XawEditError);
     }
 
     text.format = _XawTextFormat(ctx);
@@ -3208,11 +3205,17 @@ Numeric(Widget w, XEvent *event, String *params, Cardinal *num_params)
 		&& (params[0][0] != '-' || mult != 0))) {
 	    char err_buf[256];
 
+	    if (event && (event->type == KeyPress || event->type == KeyRelease)
+		&& params[0][0] == '-') {
+		InsertChar(w, event, params, num_params);
+		return;
+	    }
 	    XmuSnprintf(err_buf, sizeof(err_buf),
 			"numeric: Invalid argument%s'%s'",
 			*num_params ? ", " : "", *num_params ? params[0] : "");
 	    XtAppWarning(XtWidgetToApplicationContext(w), err_buf);
 	    ctx->text.doing_numeric_hack = False;
+	    ctx->text.mult = 1;
 	    return;
 	}
 	if (params[0][0] == '-') {
@@ -3477,6 +3480,8 @@ InsertNewCRs(TextWidget ctx, XawTextPosition from, XawTextPosition to,
       XawTextSinkFindPosition(ctx->text.sink, startPos, 
 			      (int)ctx->text.left_margin, wwidth,
 			      True, &eol, &width, &height);
+      if (eol == startPos)
+	++eol;
       if (eol >= to)
 	break;
 

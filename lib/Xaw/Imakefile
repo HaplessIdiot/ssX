@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/87 1996/09/28 16:43:34 rws $
-XCOMM $XFree86: xc/lib/Xaw/Imakefile,v 1.5 1998/12/06 13:30:38 dawes Exp $
+XCOMM $XFree86: xc/lib/Xaw/Imakefile,v 1.6 1998/12/20 11:57:02 dawes Exp $
 #define DoNormalLib NormalLibXaw
 #define DoSharedLib SharedLibXaw
 #define DoExtraLib SharedLibXaw
@@ -191,4 +191,6 @@ OBJS = \
 SpecialCObjectRule(sharedlib,NullParameter,$(SHLIBDEF))
 #endif
 
+MANSUFFIX = $(LIBMANSUFFIX)
+InstallManPage(Xaw,$(LIBMANDIR))
 DependTarget()

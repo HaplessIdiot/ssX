@@ -31,7 +31,7 @@
  *   Modifier: Masayoshi Shimamura      FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.9 1997/11/22 06:50:12 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.10 1997/11/22 12:50:10 dawes Exp $ */
 
 
 #include "Xlibint.h"
@@ -509,15 +509,15 @@ ct_parse_charset(lcd, inbufptr, charset, ctr_seq_len)
 
 	for (j = 0; j < num_charsets; j++) {
 	    *charset = charset_list[j];
-            if ( *ctr_seq_len = cmp_esc_sequence(inbufptr, 
-		    (*charset)->ct_sequence, (*charset)->encoding_name) )
+            if (( *ctr_seq_len = cmp_esc_sequence(inbufptr, 
+		    (*charset)->ct_sequence, (*charset)->encoding_name) ))
 		return(True);
 	}
 
 	if (ctextseg) {
 	    *charset = ctextseg->charset;
-            if ( *ctr_seq_len = cmp_esc_sequence(inbufptr, 
-		    (*charset)->ct_sequence, (*charset)->encoding_name) )
+            if (( *ctr_seq_len = cmp_esc_sequence(inbufptr, 
+		    (*charset)->ct_sequence, (*charset)->encoding_name) ))
 		return(True);
 	}
     }
@@ -529,12 +529,12 @@ ct_parse_charset(lcd, inbufptr, charset, ctr_seq_len)
 
     for (i = 0; i < segment_conv_num; i++) {
 	*charset = segment_conv[i].source;
-        if ( *ctr_seq_len = cmp_esc_sequence(inbufptr, 
-	        (*charset)->ct_sequence, (*charset)->encoding_name) )
+        if (( *ctr_seq_len = cmp_esc_sequence(inbufptr, 
+	        (*charset)->ct_sequence, (*charset)->encoding_name) ))
 	    return(True);
 	*charset = segment_conv[i].dest;
-        if ( *ctr_seq_len = cmp_esc_sequence(inbufptr, 
-	        (*charset)->ct_sequence, (*charset)->encoding_name) )
+        if (( *ctr_seq_len = cmp_esc_sequence(inbufptr, 
+	        (*charset)->ct_sequence, (*charset)->encoding_name) ))
 	    return(True);
     }
     
@@ -820,11 +820,11 @@ mbstowcs_org(conv, from, from_left, to, to_left, args, num_args)
         } 
     
 	/* next mb char data for byteM ? */
-	if (codeset = byteM_parse_codeset(lcd, (inbufptr - 1)))
+	if ((codeset = byteM_parse_codeset(lcd, (inbufptr - 1))))
 	    goto next_mb_char;
 
 	/* next mb char data for GL or GR side ? */
-	if (codeset = GLGR_parse_codeset(lcd, ch))
+	if ((codeset = GLGR_parse_codeset(lcd, ch)))
 	    goto next_mb_char;
 	    
         /* can't find codeset for the ch */
@@ -1074,7 +1074,6 @@ wcstocts(conv, from, from_left, to, to_left, args, num_args)
     CodeSet codeset;
     XlcCharSet charset, old_charset = NULL;
     char *ct_sequence;
-    XPointer p;
 
     wchar_t *inbufptr = (wchar_t *) *from;
     XPointer outbufptr = *to;
@@ -1566,11 +1565,11 @@ mbstostr(conv, from, from_left, to, to_left, args, num_args)
         } 
     
 	/* next char data : byteM ? */
-	if (codeset = byteM_parse_codeset(lcd, (inbufptr - 1)))
+	if ((codeset = byteM_parse_codeset(lcd, (inbufptr - 1))))
 	    goto next_mb_char;
 
 	/* next char data : GL or GR side ? */
-	if (codeset = GLGR_parse_codeset(lcd, ch))
+	if ((codeset = GLGR_parse_codeset(lcd, ch)))
 	    goto next_mb_char;
 	    
         /* can't find codeset for the ch */
@@ -1631,13 +1630,12 @@ mbtocs(conv, from, from_left, to, to_left, args, num_args)
 
     int length = 0, len_left = 0, char_len;
     int unconv_num = 0;
-    int i, num;
+    int num;
     XlcSide side;
 
     CodeSet codeset = NULL;
     XlcCharSet charset;
     ParseInfo parse_info;
-    XPointer p;
 
     XPointer inbufptr = *from;
     XPointer outbufptr = *to;
@@ -1682,11 +1680,11 @@ mbtocs(conv, from, from_left, to, to_left, args, num_args)
         } 
     
 	/* next mb char data for byteM ? */
-	if (codeset = byteM_parse_codeset(lcd, (inbufptr - 1)))
+	if ((codeset = byteM_parse_codeset(lcd, (inbufptr - 1))))
 	    goto next_mb_char;
 
 	/* next mb char data for GL or GR side ? */
-	if (codeset = GLGR_parse_codeset(lcd, ch))
+	if ((codeset = GLGR_parse_codeset(lcd, ch)))
 	    goto next_mb_char;
 	    
         /* can't find codeset for the ch */
@@ -1953,13 +1951,12 @@ wctocs(conv, from, from_left, to, to_left, args, num_args)
     wchar_t wc;
     unsigned long glyph_index;
 
-    int i, char_len;
+    int char_len;
     int unconv_num = 0;
     XlcSide side;
 
     CodeSet codeset;
     XlcCharSet charset;
-    XPointer p;
 
     wchar_t *inbufptr = (wchar_t *) *from;
     XPointer outbufptr = *to;
@@ -2048,7 +2045,7 @@ stdc_wctocs(conv, from, from_left, to, to_left, args, num_args)
     int from_size = *from_left;
 
     if (src_left > 0 && *to_left > 0) {
-	if (wch = *src) {
+	if ((wch = *src)) {
 	    length = wctomb(tmp, wch);
 	} else {
 	    goto end;

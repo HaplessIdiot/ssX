@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/lib/X11/XKBMisc.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/lib/X11/XKBMisc.c,v 3.1 1999/03/14 03:21:03 dawes Exp $ */
 
 #ifndef XKB_IN_SERVER
 
@@ -51,16 +51,20 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #endif /* XKB_IN_SERVER */
 
+/* FORWARD DECLARATIONS */
+
+Bool XkbApplyVirtualModChanges();
+
 /***====================================================================***/
 
 #define	mapSize(m)	(sizeof(m)/sizeof(XkbKTMapEntryRec))
 static  XkbKTMapEntryRec map2Level[]= { 
-	{ True, ShiftMask, 1, ShiftMask, 0 }
+  { True, ShiftMask, {1, ShiftMask, 0} }
 };
 
 static  XkbKTMapEntryRec mapAlpha[]= { 
-	{ True, ShiftMask, 1, ShiftMask, 0 },
-	{ True,	LockMask,  0,  LockMask, 0 }
+  { True, ShiftMask, { 1, ShiftMask, 0 } },
+  { True, LockMask,  { 0,  LockMask, 0 } }
 };
 
 static	XkbModsRec preAlpha[]= {
@@ -70,8 +74,8 @@ static	XkbModsRec preAlpha[]= {
 
 #define	NL_VMOD_MASK	0
 static  XkbKTMapEntryRec mapKeypad[]= { 
-	{ True,	ShiftMask, 1, ShiftMask,            0 },
-	{ False,        0, 1,         0, NL_VMOD_MASK }
+	{ True,	ShiftMask, { 1, ShiftMask,            0 } },
+	{ False,        0, { 1,         0, NL_VMOD_MASK } }
 };
 
 static	XkbKeyTypeRec	canonicalTypes[XkbNumRequiredTypes] = {
@@ -470,7 +474,7 @@ KeySym *		syms;
 unsigned char 		explicit,mods;
 XkbSymInterpretPtr	*interps,ibuf[IBUF_SIZE]; 
 int			n,nSyms,found;
-unsigned		changed,changedVMods,tmp;
+unsigned		changed,tmp; 
 
     if ((!xkb)||(!xkb->map)||(!xkb->map->key_sym_map)||
     			(!xkb->compat)||(!xkb->compat->sym_interpret)||

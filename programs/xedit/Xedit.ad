@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xedit/Xedit.ad,v 1.8 1999/04/25 10:02:48 dawes Exp $
+! $XFree86: xc/programs/xedit/Xedit.ad,v 1.9 1999/05/03 12:16:09 dawes Exp $
 
 *geometry:				590x440
 *input:					TRUE
@@ -143,6 +143,21 @@ m<Key>I:	no-op(r)
 <Ctrl>X,<Ctrl>S:save-file()\n\
 <Ctrl>X,<Ctrl>F:find-file()
 
+*messageWindow.Translations: #override \
+<Enter>:	no-op()\n\
+<Leave>:	no-op()\n\
+<Btn1Down>:	set-keyboard-focus() select-start()
+
+*searchText.Translations: #override \
+<Enter>:	no-op()\n\
+<Leave>:	no-op()\n\
+<Btn1Down>:	set-keyboard-focus() select-start()
+
+*replaceText.Translations: #override \
+<Enter>:	no-op()\n\
+<Leave>:	no-op()\n\
+<Btn1Down>:	set-keyboard-focus() select-start()
+
 *editWindow.translations: #override \
 <Ctrl>X,<Key>Tab:indent()\n\
 <Ctrl>X,:<Key>0:delete-window(current)\n\
@@ -211,7 +226,10 @@ m<Key>I:	no-op(r)\n\
 c<Key>G:	cancel-find-file()\n\
 <Key>Return:	load-file()\n\
 <Key>Tab:	file-completion(h)\n\
-<Key>Escape:	cancel-find-file()
+<Key>Escape:	cancel-find-file()\n\
+<Enter>:	no-op()\n\
+<Leave>:	no-op()\n\
+<Btn1Down>:	set-keyboard-focus() select-start()
 
 *ispell.translations:	#override \
 <Message>WM_PROTOCOLS:	ispell(end)

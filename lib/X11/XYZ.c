@@ -33,10 +33,13 @@
  *
  *
  */
+/* $XFree86$ */
 
 #include <X11/Xos.h>
 #include "Xlibint.h"
 #include "Xcmsint.h"
+
+#include <stdio.h> /* sscanf */
 
 
 /*

@@ -28,7 +28,7 @@
  *  This is source code modified by FUJITSU LIMITED under the Joint
  *  Development Agreement for the CDE/Motif PST.
  */
-/* $XFree86: xc/lib/X11/lcGeneric.c,v 3.5 1998/06/28 08:41:38 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcGeneric.c,v 3.6 1998/10/03 08:41:39 dawes Exp $ */
 
 #include <stdio.h>
 #include "Xlibint.h"
@@ -156,7 +156,7 @@ add_charset(codeset, charset)
     XlcCharSet *new_list;
     int num;
 
-    if (num = codeset->num_charsets)
+    if ((num = codeset->num_charsets))
         new_list = (XlcCharSet *) Xrealloc(codeset->charset_list,
                                         (num + 1) * sizeof(XlcCharSet));
     else
@@ -184,7 +184,7 @@ add_codeset(gen)
         return NULL;
     bzero((char *) new, sizeof(CodeSetRec));
 
-    if (num = gen->codeset_num)
+    if ((num = gen->codeset_num))
         new_list = (CodeSet *) Xrealloc(gen->codeset_list,
                                         (num + 1) * sizeof(CodeSet));
     else
@@ -234,7 +234,7 @@ add_parse_list(gen, type, encoding, codeset)
         bzero((char *) gen->mb_parse_table, 256);
     }
 
-    if (num = gen->mb_parse_list_num)
+    if ((num = gen->mb_parse_list_num))
         new_list = (ParseInfo *) Xrealloc(gen->mb_parse_list,
                                           (num + 2) * sizeof(ParseInfo));
     else {
@@ -280,7 +280,7 @@ free_charset(lcd)
 
     if (gen->mb_parse_table)
         Xfree(gen->mb_parse_table);
-    if (num = gen->mb_parse_list_num) {
+    if ((num = gen->mb_parse_list_num)) {
         for (parse_info = gen->mb_parse_list; num-- > 0; parse_info++) {
             if ((*parse_info)->encoding)
                 Xfree((*parse_info)->encoding);
@@ -289,7 +289,7 @@ free_charset(lcd)
         Xfree(gen->mb_parse_list);
     }
 
-    if (num = gen->codeset_num)
+    if ((num = gen->codeset_num))
         Xfree(gen->codeset_list);
 }
 /* For VW/UDC */
@@ -539,7 +539,7 @@ XLCdGenericPart *gen;
     SegConv new_list;
     int num;
 
-    if (num = gen->segment_conv_num){
+    if ((num = gen->segment_conv_num)) {
         new_list = (SegConv) Xrealloc(gen->segment_conv,
                                         (num + 1) * sizeof(SegConvRec));
     } else {
@@ -573,7 +573,6 @@ XLCdGenericPart *gen;
         sprintf(name, "%s.%s", conv , "length");
         _XlcGetResource(lcd, "XLC_SEGMENTCONVERSION", name, &value, &num);
         if (num > 0) {
-            char *tmp;
             if (conversion == NULL &&
                 (conversion = add_conversion(gen)) == NULL) {
                 return ;
@@ -637,7 +636,6 @@ XLCdGenericPart *gen;
         sprintf(name, "%s.%s", conv , "range");
         _XlcGetResource(lcd, "XLC_SEGMENTCONVERSION", name, &value, &num);
         if (num > 0) {
-            char *tmp;
             _XlcDbg_printValue(name,value,num);
             sscanf(value[0],"\\x%lx,\\x%lx",
                 &(conversion->range.start),
@@ -647,7 +645,6 @@ XLCdGenericPart *gen;
         sprintf(name, "%s.%s", conv , "conversion");
         _XlcGetResource(lcd, "XLC_SEGMENTCONVERSION", name, &value, &num);
         if (num > 0) {
-            char *tmp;
             _XlcDbg_printValue(name,value,num);
             conversion->conv =
                 _XlcParse_scopemaps(value[0],&conversion->conv_num);
@@ -823,7 +820,7 @@ load_generic(lcd)
 		{"<SS>", E_SS},
 		{"<LSL>", E_LSL},
 		{"<LSR>", E_LSR},
-		0
+		{0}
 	    };
 	    int j;
 
@@ -1033,7 +1030,6 @@ static void
 freeConversion(codeset)
     CodeSet codeset;
 {
-    int i;
     Conversion mbconv,ctconv;
     if( codeset->mbconv ) {
 	mbconv = codeset->mbconv;
@@ -1060,7 +1056,6 @@ static void
 freeExtdSegment(codeset)
     CodeSet codeset;
 {
-    int i;
     ExtdSegment ctextseg;
     if(codeset->ctextseg == NULL) {
 	return ;
@@ -1081,7 +1076,6 @@ static void
 freeParseInfo(codeset)
     CodeSet codeset;
 {
-    int i;
     ParseInfo parse_info;
     if(codeset->parse_info == NULL) {
 	return ;

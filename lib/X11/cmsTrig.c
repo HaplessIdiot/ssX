@@ -1,5 +1,4 @@
 /* $XConsortium: cmsTrig.c,v 1.7 95/06/08 23:20:39 gildea Exp $" */
-/* $XFree86: xc/lib/X11/cmsTrig.c,v 3.1 1995/06/14 07:07:22 dawes Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -25,6 +24,7 @@
  * CONNECTION WITH THE USE OR THE PERFORMANCE OF THIS SOFTWARE.
  */
 
+/* $XFree86: xc/lib/X11/cmsTrig.c,v 3.2 1996/05/06 05:54:11 dawes Exp $ */
 /*
  *	It should be pointed out that for simplicity's sake, the
  *	environment parameters are defined as floating point constants,
@@ -92,10 +92,10 @@ double _XcmsArcTangent();
 #else
 #ifdef __alpha__
 #define XCMS_DMAXPOWTWO	((double)(XCMS_LONG_MAX) * \
-	    (1L << (XCMS_NBITS(double)-XCMS_DEXPLEN) - XCMS_NBITS(int) + 1))
+	    (1L << ((XCMS_NBITS(double)-XCMS_DEXPLEN) - XCMS_NBITS(int) + 1)))
 #else
 #define XCMS_DMAXPOWTWO	((double)(XCMS_LONG_MAX) * \
-	    (1L << (XCMS_NBITS(double)-XCMS_DEXPLEN) - XCMS_NBITS(long) + 1))
+	    (1L << ((XCMS_NBITS(double)-XCMS_DEXPLEN) - XCMS_NBITS(long) + 1)))
 #endif
 #endif
 

@@ -20,11 +20,18 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
+/* $XFree86$ */
 
 #define NEED_REPLIES
 #include "Xlibint.h"
 
 extern void _XFreeAtomTable();
+
+/* IntAtom.c */
+extern void _XUpdateAtomCache();
+
+/* XlibAsync.c */
+extern void _XGetAsyncData();
 
 /* XXX this table def is duplicated in IntAtom.c, keep them consistent! */
 
@@ -57,7 +64,7 @@ char *_XGetAtomName(dpy, atom)
 	for (idx = TABLESIZE; --idx >= 0; ) {
 	    if ((e = *table++) && (e->atom == atom)) {
 		idx = strlen(EntryName(e)) + 1;
-		if (name = (char *)Xmalloc(idx))
+		if ((name = (char *)Xmalloc(idx)))
 		    strcpy(name, EntryName(e));
 		return name;
 	    }		
@@ -75,7 +82,7 @@ char *XGetAtomName(dpy, atom)
     char *name;
 
     LockDisplay(dpy);
-    if (name = _XGetAtomName(dpy, atom)) {
+    if ((name = _XGetAtomName(dpy, atom))) {
 	UnlockDisplay(dpy);
 	return name;
     }	
@@ -84,7 +91,7 @@ char *XGetAtomName(dpy, atom)
 	SyncHandle();
 	return(NULL);
     }
-    if (name = (char *) Xmalloc(rep.nameLength+1)) {
+    if ((name = (char *) Xmalloc(rep.nameLength+1))) {
 	_XReadPad(dpy, name, (long)rep.nameLength);
 	name[rep.nameLength] = '\0';
 	_XUpdateAtomCache(dpy, name, atom, 0, -1, 0);
@@ -181,7 +188,7 @@ XGetAtomNames (dpy, atoms, count, names_return)
     }
     if (missed >= 0) {
 	if (_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
-	    if (names_return[missed] = (char *) Xmalloc(rep.nameLength+1)) {
+	    if ((names_return[missed] = (char *) Xmalloc(rep.nameLength+1))) {
 		_XReadPad(dpy, names_return[missed], (long)rep.nameLength);
 		names_return[missed][rep.nameLength] = '\0';
 		_XUpdateAtomCache(dpy, names_return[missed], atoms[missed],

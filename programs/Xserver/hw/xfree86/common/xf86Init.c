@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.113 1999/05/05 14:29:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.114 1999/05/09 06:06:19 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -396,9 +396,14 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     }
 
     for (i = 0; i < xf86NumScreens; i++)
-      if (!xf86Screens[i]->PreInit(xf86Screens[i], 0))
-        xf86DeleteScreen(i--, 0);
+	if (xf86Screens[i]->PreInit &&
+	    xf86Screens[i]->PreInit(xf86Screens[i], 0))
+	    xf86Screens[i]->configured = TRUE;
 
+    for (i = 0; i < xf86NumScreens; i++)
+	if (!xf86Screens[i]->configured)
+	    xf86DeleteScreen(i--, 0);
+    
     /*
      * If no screens left, return now.
      */

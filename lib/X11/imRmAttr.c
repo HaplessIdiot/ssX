@@ -26,6 +26,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -167,17 +168,17 @@ _XimMakeICAttrIDList(ic, res_list, res_num, arg, buf, len, mode)
 	buf++;
 	if (res->resource_size == XimType_NEST) {
 	    if (res->xrm_name == pre_quark) {
-		if (name = _XimMakeICAttrIDList(ic, res_list, res_num,
+		if ((name = _XimMakeICAttrIDList(ic, res_list, res_num,
 				(XIMArg *)p->value, buf, &new_len,
-				(mode | XIM_PREEDIT_ATTR))) {
+				(mode | XIM_PREEDIT_ATTR)))) {
 		    if (new_len < 0) *len = -1;
 		    else *len += new_len;
 		    return name;
 		}
 	    } else if (res->xrm_name == sts_quark) {
-		if (name = _XimMakeICAttrIDList(ic, res_list, res_num,
+		if ((name = _XimMakeICAttrIDList(ic, res_list, res_num,
 				(XIMArg *)p->value, buf, &new_len,
-				(mode | XIM_STATUS_ATTR))) {
+				(mode | XIM_STATUS_ATTR)))) {
 		    if (new_len < 0) *len = -1;
 		    else *len += new_len;
 		    return name;
@@ -560,14 +561,14 @@ _XimDecodeICATTRIBUTE(ic, res_list, res_num,  data, data_len, arg, mode)
 
 	if (res->resource_size == XimType_NEST) {
 	    if (res->xrm_name == pre_quark) {
-	        if (name = _XimDecodeICATTRIBUTE(ic, res_list, res_num,
+	        if ((name = _XimDecodeICATTRIBUTE(ic, res_list, res_num,
 			&buf[2], buf[1], (XIMArg *)p->value,
-			(mode | XIM_PREEDIT_ATTR)))
+			(mode | XIM_PREEDIT_ATTR))))
 		    return name;
 	    } else if (res->xrm_name == sts_quark) {
-	        if (name = _XimDecodeICATTRIBUTE(ic, res_list, res_num,
+	        if ((name = _XimDecodeICATTRIBUTE(ic, res_list, res_num,
 			&buf[2], buf[1], (XIMArg *)p->value,
-			(mode | XIM_STATUS_ATTR)))
+			(mode | XIM_STATUS_ATTR))))
 		    return name;
 	    }
 	} else {
@@ -1144,21 +1145,21 @@ _XimEncodeICATTRIBUTE(ic, res_list, res_num, arg, arg_ret, buf, size, ret_len, t
 
 	    if (res->xrm_name == pre_quark) {
 		XIMArg		*arg_rt;
-		if (name = _XimEncodeICATTRIBUTE(ic, res_list, res_num,
+		if ((name = _XimEncodeICATTRIBUTE(ic, res_list, res_num,
 				(XIMArg *)p->value, &arg_rt,
 				(char *)&buf_s[2], (size - min_len),
 				 &len, (XPointer)&ic_attr->preedit_attr, flag,
-				(mode | XIM_PREEDIT_ATTR))) {
+				(mode | XIM_PREEDIT_ATTR)))) {
 		    return name;
 		}
 
 	    } else if (res->xrm_name == sts_quark) {
 		XIMArg		*arg_rt;
-		if (name = _XimEncodeICATTRIBUTE(ic, res_list, res_num,
+		if ((name = _XimEncodeICATTRIBUTE(ic, res_list, res_num,
 				(XIMArg *)p->value,  &arg_rt,
 				(char *)&buf_s[2], (size - min_len),
 				 &len, (XPointer)&ic_attr->status_attr, flag,
-				(mode | XIM_STATUS_ATTR))) {
+				(mode | XIM_STATUS_ATTR)))) {
 		    return name;
 		}
 	    }

@@ -23,11 +23,15 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/lcCharSet.c,v 3.1 1997/11/22 12:50:08 dawes Exp $ */
 
 #include <stdio.h>
 #include "Xlibint.h"
 #include "XlcPublic.h"
+
+/* EXTERNS */
+/* lcCt.c */
+extern Bool _XlcParseCharSet();
 
 #if NeedVarargsPrototypes
 char *

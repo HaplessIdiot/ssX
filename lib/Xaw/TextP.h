@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextP.h,v 3.12 1999/04/25 10:01:29 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextP.h,v 3.13 1999/05/03 12:15:45 dawes Exp $ */
 
 #ifndef _XawTextP_h
 #define _XawTextP_h
@@ -172,7 +172,11 @@ extern TextClassRec textClassRec;
 /* New fields for the Text widget record */
 typedef struct _TextPart {
     /* resources */
+#ifndef NO_BIN_COMPAT_HACK	/* 4 bytes from SimpleWidget */
+    Widget sink;
+#else
     Widget source, sink;
+#endif
     XawTextPosition insertPos;
     XawTextSelection s;
     XawTextSelectType *sarray;		     /* Array to cycle for selections */
@@ -192,7 +196,9 @@ typedef struct _TextPart {
     XawTextLineTable lt;
     XawTextScanDirection extendDir;
     XawTextSelection origSel;		     /* the selection being modified */
+#ifdef NO_BIN_COMPAT_HACK	/* 4 bytes from XawTextLineTable */
     Time lasttime;			     /* timestamp of last processed action */
+#endif
     Time time;				     /* time of last key or button action */
     Position ev_x, ev_y;		     /* x, y coords for key or button action */
     Widget vbar, hbar;			     /* The scroll bars (none = NULL) */
@@ -217,6 +223,11 @@ typedef struct _TextPart {
     /* private state, shared w/Source and Sink */
     Boolean redisplay_needed;		     /* in SetValues */
     XawTextSelectionSalt *salt2;	     /* salted away selections */
+
+#ifndef NO_BIN_COMPAT_HACK
+    Widget source;
+    Time lasttime;
+#endif
 
 #ifndef NO_NUMERIC_HACK
     char doing_numeric_hack;

@@ -1,5 +1,5 @@
 dnl
-dnl $XFree86: xc/programs/xterm/aclocal.m4,v 3.18 1999/03/14 03:22:32 dawes Exp $
+dnl $XFree86: xc/programs/xterm/aclocal.m4,v 3.19 1999/04/11 13:11:28 dawes Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl 
@@ -651,7 +651,7 @@ AC_PATH_PROG(XTERM_PATH,xterm)
 XTERM_MODE=755
 AC_MSG_CHECKING(for presumed installation-mode)
 if test -f "$XTERM_PATH" ; then
-	ls -l $XTERM_PATH >conftest.out
+	ls -Ll $XTERM_PATH >conftest.out
 	read cf_mode cf_rest <conftest.out
 	case ".$cf_mode" in #(vi
 	.???s*)

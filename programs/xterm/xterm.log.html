@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.22 1999/04/29 09:14:10 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.23 1999/05/03 12:16:14 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_100">Patch #100 - 1999/5/3 - XFree86 3.9Pl</A>
 <LI><A HREF="#xterm_99">Patch #99 - 1999/5/2 - XFree86 3.9Pk</A>
 <LI><A HREF="#xterm_98">Patch #98 - 1999/4/26 - XFree86 3.9Pk</A>
 <LI><A HREF="#xterm_97">Patch #97 - 1999/4/25 - XFree86 3.9Pk</A>
@@ -143,6 +144,19 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
 
+<H1><A NAME="xterm_100">Patch #100 - 1999/5/3 - XFree86 3.9Pl</A></H1>
+<ul>
+	<li>Correct a typo in the default resource value for
+	  backarrowKeyIsErase:  it was always true (reported by Bram
+	  Moolenaar).
+
+	<li>improve configure script's test if the installed xterm is setuid,
+	  in case that is a symbolic link.
+
+	<li>correct "install-ti" rule in Makefile.in, by not setting a blank
+	  $TERMINFO value.  That is interpreted as "." by ncurses' tic.
+</ul>
+
 <H1><A NAME="xterm_99">Patch #99 - 1999/5/2 - XFree86 3.9Pk</A></H1>
 <ul>
 	<li>correct logic that computes num_ptrs count of the number of indices
@@ -165,7 +179,7 @@ xc/programs/Xserver/hw/xfree86).
 	  helpful for developers of code that output UTF-8 strings for
 	  debugging.  See the file utf-8-test.txt in
 	  http://www.cl.cam.ac.uk/~mgk25/download/ucs-fonts.tar.gz for a
-	  demonstration text that contains numerous illegal UTF-8 values. 
+	  demonstration text that contains numerous illegal UTF-8 values.
 	  (patch by Markus Kuhn).
 
 	<li>correct a place in ScrnRefresh where I was filling the high byte of
@@ -369,7 +383,7 @@ xc/programs/Xserver/hw/xfree86).
 	  be suppressed properly (reported by Clint Olsen).
 
 	<li>integrated patch from Pavel Roskin
-	  &lt;pavel_roskin@geocities.com&gt; 
+	  &lt;pavel_roskin@geocities.com&gt;
 	  for Linux-2.2.x with GLibc-2.1 and
 	  /dev/ptmx support:
 	<ul>
@@ -385,8 +399,8 @@ xc/programs/Xserver/hw/xfree86).
 
 	  <li>/dev/tty does exist in Linux, but it doesn't mean, it
 	    should be used.  Therefore EACCES is now an acceptable
-	    result. 
- 
+	    result.
+
 	  <li>ifdef'd several calls such as <code>ioctl (ptyfd, I_PUSH,
 	    "ptem")</code> to build on Linux (I_PUSH is not defined when
 	    sys/stropts.h is not included).

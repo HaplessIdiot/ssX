@@ -71,7 +71,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.13 1999/05/03 05:58:47 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.14 1999/05/04 09:35:23 dawes Exp $ */
 
 /*
 
@@ -705,7 +705,14 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
                    codename=font_encoding_name(i, encoding, mapping);
                  len=codename?strlen(codename):0;
                }
-               
+
+               /* Avoid multiply rasterising the undefined glyph */
+               if(len==7 && !strncmp(codename, ".notdef", 7)) {
+                 len=0;
+                 codename=0;
+               }
+
+               /* But do rasterise it at least once */
                if(len==0) {
                  if(i==0) {
                    codename=".notdef";

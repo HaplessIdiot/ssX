@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/commands.c,v 1.13 1999/04/25 10:02:48 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/commands.c,v 1.14 1999/04/29 09:13:57 dawes Exp $ */
 
 #include <X11/Xfuncs.h>
 #include <X11/Xos.h>
@@ -397,7 +397,6 @@ ReallyDoLoad(char *name, char *filename)
 
 	if (stat(filename, &st) == 0 && !S_ISREG(st.st_mode)) {
 	    if (S_ISDIR(st.st_mode)) {
-		Arg args[1];
 		char path[BUFSIZ + 1];
 
 		strncpy(path, filename, sizeof(path) - 2);
@@ -743,7 +742,7 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
 		block.firstPos = 0;
 		block.format = FMT8BIT;
 		XawTextReplace(filenamewindow, 0, length, &block);
-		XawTextSetInsertionPoint(filenamewindow, block.length);
+		XawTextSetInsertionPoint(filenamewindow, length = block.length);
 	    }
 	    else
 		*slash2 = '/';
@@ -837,15 +836,20 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	if (n_matches) {
 	    Bool free_matches = True, add_slash = n_matches == 1 && isdir && !slash;
 
-	    if (mlen >= 1 && match[mlen - 1] == '.' && text[length] == '.')
-		--mlen;
+	    if (mlen) {
+		char *dot = strchr(match, '.');
+
+		if (dot && length != strlen(text))
+		    mlen = dot - match;
+	    }
+
 	    if (mlen || add_slash) {
 		XawTextPosition pos;
 
 		block.firstPos = 0;
 		block.format = FMT8BIT;
 		if (mlen) {
-		    pos = XawTextGetInsertionPoint(filenamewindow);
+		    pos = length;
 		    block.length = mlen;
 		    block.ptr = match;
 		    XawTextReplace(filenamewindow, pos, pos, &block);

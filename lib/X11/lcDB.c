@@ -28,7 +28,7 @@
  *  This is source code modified by FUJITSU LIMITED under the Joint
  *  Development Agreement for the CDE/Motif PST.
  */
-/* $XFree86: xc/lib/X11/lcDB.c,v 3.8 1998/08/20 08:55:50 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcDB.c,v 3.9 1998/10/03 08:41:37 dawes Exp $ */
 
 
 
@@ -126,7 +126,7 @@ static TokenTable token_tbl[] = {
     { T_NUMERIC_DEC,	"\\d",	2,	f_numeric },
     { T_NUMERIC_OCT,	"\\o",	2,	f_numeric },
     { T_DEFAULT,	" ",	1,	f_default },	/* any character */
-    0 
+    {0} 
 };
 
 #define	SYM_CR          '\r'
@@ -294,7 +294,7 @@ zap_comment(str, quoted)
 	if(*p == SYM_COMMENT && !*quoted){
 	    int pos = p - str;
 	    if(pos == 0 ||
-	       iswhite(p[-1]) && (pos == 1 || p[-2] != SYM_BACKSLASH)){
+	       (iswhite(p[-1]) && (pos == 1 || p[-2] != SYM_BACKSLASH))) {
 		int len = strlen(p);
 		if(len > 0 && (p[len - 1] == SYM_NEWLINE || p[len-1] == SYM_CR)) {
 		    /* newline is the identifier for finding end of value.

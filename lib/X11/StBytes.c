@@ -1,14 +1,9 @@
-/* $XConsortium: StBytes.c,v 11.22 94/04/17 20:21:09 kaleb Exp $ */
+/* $TOG: StBytes.c /main/13 1998/02/06 17:54:00 kaleb $ */
 /*
 
-Copyright (c) 1986  X Consortium
+Copyright 1986, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -16,15 +11,16 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 */
+/* $XFree86$ */
 
 #include <X11/Xlibint.h>
 #include <X11/Xatom.h>
@@ -40,11 +36,12 @@ static Atom n_to_atom[8] = {
 	XA_CUT_BUFFER6,
 	XA_CUT_BUFFER7};
 
+int
 XRotateBuffers (dpy, rotate)
     register Display *dpy;
     int rotate;
 {
-	XRotateWindowProperties(dpy, RootWindow(dpy, 0), n_to_atom, 8, rotate);
+    return XRotateWindowProperties(dpy, RootWindow(dpy, 0), n_to_atom, 8, rotate);
 }
     
 char *XFetchBuffer (dpy, nbytes, buffer)
@@ -80,6 +77,7 @@ char *XFetchBytes (dpy, nbytes)
     return (XFetchBuffer (dpy, nbytes, 0));
 }
 
+int
 #if NeedFunctionPrototypes
 XStoreBuffer (
     register Display *dpy,
@@ -95,11 +93,11 @@ XStoreBuffer (dpy, bytes, nbytes, buffer)
 #endif
 {
     if ((buffer < 0) || (buffer > 7)) return 0;
-    XChangeProperty(dpy, RootWindow(dpy, 0), n_to_atom[buffer], 
+    return XChangeProperty(dpy, RootWindow(dpy, 0), n_to_atom[buffer], 
 	XA_STRING, 8, PropModeReplace, (unsigned char *) bytes, nbytes);
-    return 0;
 }
 
+int
 #if NeedFunctionPrototypes
 XStoreBytes (
     register Display *dpy,
@@ -112,5 +110,5 @@ XStoreBytes (dpy, bytes, nbytes)
     int nbytes;
 #endif
 {
-    XStoreBuffer (dpy, bytes, nbytes, 0);
+    return XStoreBuffer (dpy, bytes, nbytes, 0);
 }

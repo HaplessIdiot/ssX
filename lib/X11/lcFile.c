@@ -23,7 +23,7 @@
  * SOFTWARE.
  *
 */
-/* $XFree86: xc/lib/X11/lcFile.c,v 3.15 1998/08/20 13:22:09 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcFile.c,v 3.16 1998/10/03 08:41:38 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -310,7 +310,7 @@ _XlcResolveLocaleName(lc_name, pub)
 {
     char dir[PATH_MAX], buf[PATH_MAX], *name = NULL;
     char *dst;
-    int i, n, len, sinamelen;
+    int i, n, sinamelen;
     char *args[NUM_LOCALEDIR];
     static char locale_alias[] = LOCALE_ALIAS;
     char *tmp_siname;

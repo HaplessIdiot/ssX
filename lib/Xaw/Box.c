@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Box.c,v 1.10 1999/04/04 10:05:24 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Box.c,v 1.11 1999/04/11 13:10:30 dawes Exp $ */
 
 #include	<X11/IntrinsicP.h>
 #include	<X11/StringDefs.h>
@@ -648,10 +648,10 @@ XawBoxSetValues(Widget current, Widget request, Widget cnew,
 		ArgList args, Cardinal *num_args)
 {
    /* need to relayout if h_space or v_space change */
+#ifdef USE_XPM
     BoxWidget b_old = (BoxWidget)current;
     BoxWidget b_new = (BoxWidget)cnew;
 
-#ifdef USE_XPM
     if (b_old->core.background_pixmap != b_new->core.background_pixmap) {
 	XawPixmap *opix, *npix;
 

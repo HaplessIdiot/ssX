@@ -32,6 +32,7 @@
  *
  *
  */
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include "Xcmsint.h"
@@ -148,13 +149,13 @@ char	_XcmsRGBi_prefix[] = "rgbi";
 char	_XcmsRGB_prefix[] = "rgb";
 
 XcmsRegColorSpaceEntry _XcmsRegColorSpaces[] = {
-    _XcmsCIEXYZ_prefix,	XcmsCIEXYZFormat,
-    _XcmsCIEuvY_prefix,	XcmsCIEuvYFormat,
-    _XcmsCIExyY_prefix,	XcmsCIExyYFormat,
-    _XcmsCIELab_prefix,	XcmsCIELabFormat,
-    _XcmsCIELuv_prefix,	XcmsCIELuvFormat,
-    _XcmsTekHVC_prefix,	XcmsTekHVCFormat,
-    _XcmsRGB_prefix,	XcmsRGBFormat,
-    _XcmsRGBi_prefix,	XcmsRGBiFormat,
-    NULL, 0
+    { _XcmsCIEXYZ_prefix, XcmsCIEXYZFormat },
+    { _XcmsCIEuvY_prefix, XcmsCIEuvYFormat },
+    { _XcmsCIExyY_prefix, XcmsCIExyYFormat },
+    { _XcmsCIELab_prefix, XcmsCIELabFormat },
+    { _XcmsCIELuv_prefix, XcmsCIELuvFormat },
+    { _XcmsTekHVC_prefix, XcmsTekHVCFormat },
+    { _XcmsRGB_prefix, XcmsRGBFormat },
+    { _XcmsRGBi_prefix,	XcmsRGBiFormat },
+    { NULL, 0 }
 };

@@ -1,15 +1,9 @@
-/* $XConsortium: IntAtom.c,v 11.26 94/04/17 20:20:02 rws Exp $ */
+/* $TOG: IntAtom.c /main/20 1998/02/06 17:38:11 kaleb $ */
 /*
 
-Copyright (c) 1986, 1990  X Consortium
+Copyright 1986, 1990, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,17 +11,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
+/* $XFree86$ */
 
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -94,12 +89,12 @@ Atom _XInternAtom(dpy, name, onlyIfExists, psig, pidx, pn)
 	dpy->free_funcs->atoms = _XFreeAtomTable;
     }
     sig = 0;
-    for (s1 = (char *)name; c = *s1++; )
+    for (s1 = (char *)name; (c = *s1++); )
 	sig += c;
     n = s1 - (char *)name - 1;
     if (atoms) {
 	firstidx = idx = HASH(sig);
-	while (e = atoms->table[idx]) {
+	while ((e = atoms->table[idx])) {
 	    if (e != RESERVED && e->sig == sig) {
 	    	for (i = n, s1 = (char *)name, s2 = EntryName(e); --i >= 0; ) {
 		    if (*s1++ != *s2++)
@@ -152,7 +147,7 @@ _XUpdateAtomCache(dpy, name, atom, sig, idx, n)
 	    return;
     }
     if (!sig) {
-	for (s1 = (char *)name; c = *s1++; )
+	for (s1 = (char *)name; (c = *s1++); )
 	    sig += c;
 	n = s1 - (char *)name - 1;
 	if (idx < 0) {
@@ -196,14 +191,14 @@ Atom XInternAtom (dpy, name, onlyIfExists)
     if (!name)
 	name = "";
     LockDisplay(dpy);
-    if (atom = _XInternAtom(dpy, name, onlyIfExists, &sig, &idx, &n)) {
+    if ((atom = _XInternAtom(dpy, name, onlyIfExists, &sig, &idx, &n))) {
 	UnlockDisplay(dpy);
 	return atom;
     }
     if (dpy->atoms && dpy->atoms->table[idx] == RESERVED)
 	dpy->atoms->table[idx] = NULL; /* unreserve slot */
     if (_XReply (dpy, (xReply *)&rep, 0, xTrue)) {
-	if (atom = rep.atom)
+	if ((atom = rep.atom))
 	    _XUpdateAtomCache(dpy, name, atom, sig, idx, n);
     }
     UnlockDisplay(dpy);
@@ -254,8 +249,8 @@ Bool _XIntAtomHandler(dpy, rep, buf, len, data)
 	_XGetAsyncReply(dpy, (char *)&replbuf, rep, buf, len,
 			(SIZEOF(xInternAtomReply) - SIZEOF(xReply)) >> 2,
 			True);
-    if (state->atoms[i] = repl->atom)
-	_XUpdateAtomCache(dpy, state->names[i], repl->atom,
+    if ((state->atoms[i] = repl->atom))
+	_XUpdateAtomCache(dpy, state->names[i], (Atom) repl->atom,
 			  (unsigned long)0, idx, 0);
     return True;
 }
@@ -305,8 +300,9 @@ XInternAtoms (dpy, names, count, onlyIfExists, atoms_return)
 	    }
         }
 	if (_XReply (dpy, (xReply *)&rep, 0, xTrue)) {
-	    if (atoms_return[missed] = rep.atom)
-		_XUpdateAtomCache(dpy, names[missed], rep.atom, sig, idx, n);
+	    if ((atoms_return[missed] = rep.atom))
+		_XUpdateAtomCache(dpy, names[missed], (Atom) rep.atom, 
+				  sig, idx, n);
 	} else {
 	    atoms_return[missed] = None;
 	    async_state.status = 0;

@@ -87,11 +87,16 @@ extern int sisReg32MMIO[];
 #define sisCLIPINTRN		0x00
 #define sisCLIPEXTRN		0x80
 
+#define sisXINCREASE		0x10
+#define sisYINCREASE		0x20
 #define sisCLIPENABL		0x40
 
 #define sisPATREG		0x08
 #define sisPATFG		0x04
 #define sisPATBG		0x00
+
+#define sisLASTPIX		0x08
+#define sisXMAJOR		0x04
 
 
 /* Macros to do useful things with the SIS BitBLT engine */
@@ -180,3 +185,22 @@ extern int sisReg32MMIO[];
 
 #define sisSETFGCOLOR24(fgColor)\
   *(unsigned int *)(pSiS->IOBase + BR(4)) = (fgColor&0xFFFFFF)
+
+/* Line drawing */
+
+#define sisSETXStart(XStart) \
+  *(unsigned short *)(pSiS->IOBase + BR(0)) = XStart
+
+#define sisSETYStart(XStart) \
+  *(unsigned short *)(pSiS->IOBase + BR(1)) = YStart
+
+#define sisSETLineMajorCount(MajorAxisCount) \
+  *(unsigned short *)(pSiS->IOBase + BR(3)) = MajorAxisCount
+
+#define sisSETLineSteps(K1,K2) \
+  *(unsigned int *)(pSiS->IOBase + BR(6)) = (((K2)&0xFFFF)<<16)| \
+      ((K1)&0xFFFF)
+
+#define sisSETLineErrorTerm(ErrorTerm) \
+  *(unsigned short *)(pSiS->IOBase + BR(7)) = ErrorTerm
+

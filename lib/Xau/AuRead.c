@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xau/AuRead.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/lib/Xau/AuRead.c,v 1.2 1999/03/14 03:21:06 dawes Exp $ */
 
 #include <X11/Xauth.h>
 
@@ -32,10 +32,8 @@ extern char *malloc();
 #include <stdlib.h>
 #endif
 
-static
-read_short (shortp, file)
-unsigned short	*shortp;
-FILE		*file;
+static int
+read_short (unsigned short *shortp, FILE *file)
 {
     unsigned char   file_short[2];
 
@@ -45,11 +43,8 @@ FILE		*file;
     return 1;
 }
 
-static
-read_counted_string (countp, stringp, file)
-unsigned short	*countp;
-char	**stringp;
-FILE	*file;
+static int
+read_counted_string (unsigned short *countp, char **stringp, FILE *file)
 {
     unsigned short  len;
     char	    *data;

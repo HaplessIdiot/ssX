@@ -19,7 +19,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/lib/Xaw/List.c,v 1.8 1999/03/14 03:21:10 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/List.c,v 1.9 1999/05/03 12:15:40 dawes Exp $ */
 
 /*
  * List.c - List widget
@@ -900,11 +900,11 @@ Layout(Widget w, Bool xfree, Bool yfree, Dimension *width, Dimension *height)
     {
         lw->list.ncols = lw->list.default_cols;
 	if (lw->list.ncols <= 0) {
-	    int width = (int)XtWidth(lw) - (int)(lw->list.internal_width << 1)
+	    int wid = (int)XtWidth(lw) - (int)(lw->list.internal_width << 1)
 	      + (int)lw->list.column_space;
 
-	    if (width <= 0 || lw->list.col_width <= 0
-		|| (lw->list.ncols = width / lw->list.col_width) <= 0)
+	    if (wid <= 0 || lw->list.col_width <= 0
+		|| (lw->list.ncols = wid / lw->list.col_width) <= 0)
 		lw->list.ncols = 1;
 	}
         width2 = lw->list.ncols * lw->list.col_width

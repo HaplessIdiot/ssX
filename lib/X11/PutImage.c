@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/PutImage.c,v 3.3 1997/01/18 07:17:38 dawes Exp $ */
+/* $XFree86: xc/lib/X11/PutImage.c,v 3.4 1998/10/03 08:41:21 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xutil.h"
@@ -114,7 +114,7 @@ static unsigned char Const _reverse_nibs[0x100] = {
 	0x8f, 0x9f, 0xaf, 0xbf, 0xcf, 0xdf, 0xef, 0xff
 };
 
-
+int
 _XReverse_Bytes (bpt, nb)
     register unsigned char *bpt;
     register int nb;
@@ -905,6 +905,7 @@ PutSubImage (dpy, d, gc, image, req_xoffset, req_yoffset, x, y,
     }
 }
 
+int
 XPutImage (dpy, d, gc, image, req_xoffset, req_yoffset, x, y, req_width,
 							      req_height)
     register Display *dpy;

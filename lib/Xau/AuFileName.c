@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xau/AuFileName.c,v 3.2 1996/12/24 08:46:53 dawes Exp $ */
+/* $XFree86: xc/lib/Xau/AuFileName.c,v 3.3 1998/10/03 08:41:58 dawes Exp $ */
 
 #include <X11/Xauth.h>
 #include <X11/Xos.h>
@@ -44,7 +44,7 @@ XauFileName ()
 #endif
     int	    size;
 
-    if (name = getenv ("XAUTHORITY"))
+    if ((name = getenv ("XAUTHORITY")))
 	return name;
     name = getenv ("HOME");
     if (!name) {

@@ -31,7 +31,7 @@
  * Modifier: Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/lcCT.c,v 3.9 1998/10/03 08:41:37 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcCT.c,v 3.10 1998/10/21 06:11:59 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"
@@ -420,7 +420,7 @@ _XlcParseCharSet(charset)
 
 	if (bufp == NULL) return False;
 	strcpy(bufp, charset->name);
-	if (ptr = strchr(bufp, ':'))
+	if ((ptr = strchr(bufp, ':')))
 	    *ptr = '\0';
 	charset->xrm_encoding_name = XrmStringToQuark(bufp);
 	if (bufp != buf) Xfree (bufp);
@@ -487,7 +487,7 @@ _XlcCheckCTSequence(state, ctext, ctext_len)
 	    state->ext_seg_charset = NULL;
 	}
     } else if (ct_info) {
-	if (charset = ct_info->charset) {
+	if ((charset = ct_info->charset)) {
 	    if (charset->side == XlcGL)
 		state->GL_charset = charset;
 	    else if (charset->side == XlcGR)

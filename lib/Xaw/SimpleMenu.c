@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
 
-/* $XFree86: xc/lib/Xaw/SimpleMenu.c,v 3.12 1999/04/11 13:10:32 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SimpleMenu.c,v 3.13 1999/04/25 10:01:24 dawes Exp $ */
 
 /*
  * SimpleMenu.c - Source code file for SimpleMenu widget.
@@ -933,7 +933,6 @@ Highlight(Widget w, XEvent *event, String *params, Cardinal *num_params)
 static void
 Notify(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
-    SimpleMenuWidget smw = (SimpleMenuWidget)w;
     SmeObject entry;
     SmeObjectClass cclass;
 

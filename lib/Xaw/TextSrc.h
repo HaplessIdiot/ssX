@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextSrc.h,v 1.6 1998/11/15 04:30:05 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrc.h,v 1.7 1999/05/03 12:15:46 dawes Exp $ */
 
 #ifndef _XawTextSrc_h
 #define _XawTextSrc_h
@@ -55,7 +55,10 @@ SOFTWARE.
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
+ callback	     Callback		Callback	NULL
  editType	     EditType		XawTextEditType	XawtextRead
+ enableUndo	     Undo		Boolean		False
+ sourceChanged	     Changed		Boolean		False
 
 */
  

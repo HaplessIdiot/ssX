@@ -26,7 +26,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imDefLkup.c,v 3.4 1997/06/22 10:16:51 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imDefLkup.c,v 3.5 1998/10/03 08:41:33 dawes Exp $ */
 
 #include <X11/Xatom.h>
 #define  NEED_EVENTS
@@ -899,7 +899,7 @@ _XimError(im, ic, error_code, detail_length, type, detail)
 }
 
 #ifndef MAXINT
-#define MAXINT		(~((unsigned int)1 << (8 * sizeof(int)) - 1))
+#define MAXINT		(~((unsigned int)1 << ((8 * sizeof(int)) - 1)))
 #endif /* !MAXINT */
 
 Public int

@@ -26,6 +26,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
+/* $XFree86$ */
 
 #include <X11/Xatom.h>
 #define NEED_EVENTS
@@ -139,7 +140,9 @@ _XimProtoKeypressFilter(ic, ev)
     Xic		 ic;
     XKeyEvent	*ev;
 {
+#ifdef XIM_CONNECTABLE
     Xim		im = (Xim)ic->core.im;
+#endif
 
     if (IS_FABLICATED(ic)) {
 	_XimPendingFilter(ic);
@@ -200,7 +203,9 @@ _XimProtoKeyreleaseFilter( ic, ev )
     Xic		 ic;
     XKeyEvent	*ev;
 {
+#ifdef XIM_CONNECTABLE
     Xim		im = (Xim)ic->core.im;
+#endif
 
     if (IS_FABLICATED(ic)) {
 	_XimPendingFilter(ic);

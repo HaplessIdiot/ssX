@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/AsciiSink.c,v 1.14 1999/03/14 03:21:09 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSink.c,v 1.15 1999/05/03 12:15:38 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -89,6 +89,11 @@ static void GetGC(AsciiSinkObject);
 static int CharWidth(AsciiSinkObject, XFontStruct*, int, unsigned int);
 static unsigned int PaintText(Widget w, GC gc, int x, int y,
 			      char *buf, int len, Bool);
+
+/*
+ * Defined in TextSink.c
+ */
+void _XawTextSinkClearToBackground(Widget, int, int, unsigned, unsigned);
 
 /*
  * Initialization
@@ -283,7 +288,7 @@ PaintText(Widget w, GC gc, int x, int y, char *buf, int len, Bool clear_bg)
       return (width);
 
   if (clear_bg) {
-      XawTextSinkClearToBackground(w, x, y - sink->ascii_sink.font->ascent,
+      _XawTextSinkClearToBackground(w, x, y - sink->ascii_sink.font->ascent,
 				   width, sink->ascii_sink.font->ascent
 				   + sink->ascii_sink.font->descent);
       XDrawString(XtDisplay(ctx), XtWindow(ctx), gc, x, y, buf, len);
@@ -351,7 +356,7 @@ DisplayText(Widget w, int x, int y,
 
 	      if ((width = CharWidth(sink, font, x, '\t')) > -x) {
 		  if (clear_bg)
-		      XawTextSinkClearToBackground(w, x, y-font->ascent, width,
+		      _XawTextSinkClearToBackground(w, x, y-font->ascent, width,
 						   font->ascent+font->descent);
 		  else
 		      XFillRectangle(XtDisplayOfObject(w), XtWindowOfObject(w),
@@ -462,7 +467,7 @@ InsertCursor(Widget w, int x, int y, XawTextInsertState state)
 	    ochar = block.ptr;
 
 	  if (!ochar)
-	    XawTextSinkClearToBackground(w, sink->ascii_sink.cursor_x,
+	    _XawTextSinkClearToBackground(w, sink->ascii_sink.cursor_x,
 					 sink->ascii_sink.cursor_y
 					 - 1 - fheight,
 					 CharWidth(sink, font, 0, ' '), fheight);
@@ -714,6 +719,9 @@ XawAsciiSinkResize(Widget w)
   AsciiSinkObject sink = (AsciiSinkObject)w;
   XRectangle rect;
   int width, height;
+
+  if (w->core.widget_class != asciiSinkObjectClass)
+    return;
 
   rect.x = ctx->text.r_margin.left;
   rect.y = ctx->text.r_margin.top;

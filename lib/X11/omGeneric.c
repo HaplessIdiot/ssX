@@ -31,7 +31,7 @@
  * Modifier:  Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/omGeneric.c,v 3.10 1998/10/03 08:41:44 dawes Exp $ */
+/* $XFree86: xc/lib/X11/omGeneric.c,v 3.11 1998/10/04 11:55:41 dawes Exp $ */
 
 /*
  * Fixed the algorithms in parse_fontname() and parse_fontdata()
@@ -255,7 +255,6 @@ static Bool
 load_font(oc)
     XOC oc;
 {
-    int i;
     XOCGenericPart *gen = XOC_GENERIC(oc);
     FontSet font_set = gen->font_set;
     int num = gen->font_set_num;
@@ -572,7 +571,7 @@ static char
 			ptr++, field_num++) {
 	fields[field_num] = ptr;
 
-	if(ptr = strchr(ptr, '-')) {
+	if((ptr = strchr(ptr, '-'))) {
 	    *ptr = '\0';
 	}
     }
@@ -914,7 +913,6 @@ parse_fontdata(oc, font_set, font_data, font_data_count, name_list, name_list_co
     char	*font_name      = (char *) NULL;
     char	*pattern        = (char *) NULL;
     int		found_num       = 0, ret = 0;
-    int		fd_count        = font_data_count;
     int		count           = name_list_count;
     Bool	is_found        = False;
 
@@ -1486,10 +1484,7 @@ destroy_oc(oc)
 {
     Display *dpy = oc->core.om->core.display;
     XOCGenericPart *gen = XOC_GENERIC(oc);
-    XFontStruct **font_list, *font;
-    FontSet	font_set = (FontSet) NULL;
-    int		font_set_num = 0;
-    int		count = 0;
+    XFontStruct **font_list;
 
     if (gen->mbs_to_cs)
 	_XlcCloseConverter(gen->mbs_to_cs);
@@ -1509,7 +1504,7 @@ destroy_oc(oc)
     if (oc->core.font_info.font_name_list)
 	XFreeStringList(oc->core.font_info.font_name_list);
 
-    if (font_list = oc->core.font_info.font_struct_list) {
+    if ((font_list = oc->core.font_info.font_struct_list)) {
 	Xfree(oc->core.font_info.font_struct_list);
     }
 
@@ -1532,7 +1527,6 @@ set_oc_values(oc, args, num_args)
     XlcArgList args;
     int num_args;
 {
-    int i;
     XOCGenericPart *gen = XOC_GENERIC(oc);
     FontSet font_set = gen->font_set;
     char *ret;
@@ -1717,7 +1711,7 @@ close_om(om)
     OMData data;
     int count;
 
-    if (data = gen->data) {
+    if ((data = gen->data)) {
 	for (count = gen->data_num; count-- > 0; data++) {
 	    if (data->charset_list){
 		Xfree(data->charset_list);
@@ -1880,7 +1874,7 @@ add_data(om)
     OMData new;
     int num;
 
-    if (num = gen->data_num)
+    if ((num = gen->data_num))
         new = (OMData) Xrealloc(gen->data, (num + 1) * sizeof(OMDataRec));
     else
         new = (OMData) Xmalloc(sizeof(OMDataRec));
@@ -1908,7 +1902,6 @@ char **value;
 {
     FontData font_data,ret;
     char *buf, *bufptr,*scp;
-    FontScope scope;
     int len;
     font_data = (FontData) Xmalloc(sizeof(FontDataRec) * count);
     if (font_data == NULL)
@@ -1921,7 +1914,7 @@ char **value;
         strcpy(buf, *value++);
 */
 	buf = *value; value++;
-        if (bufptr = strchr(buf, ':')){
+        if ((bufptr = strchr(buf, ':'))) {
 	    len = (int)(bufptr - buf);
             bufptr++ ;
 	}
@@ -1950,8 +1943,6 @@ char **value;
 int *type;
 int *vrotate_num;
 {
-    FontData font_data,ret;
-    char *buf, *bufptr,*scp;
     CodeRange   range;
     if(!strcmp(value[0],"all")){
 	*type 	     = VROTATE_ALL ;
@@ -1973,8 +1964,8 @@ XLCd    lcd;
 OMData  font_set;
 int num;
 {
-    char **value, buf[BUFSIZ], *bufptr;
-    int count,i;
+    char **value, buf[BUFSIZ];
+    int count;
 
     sprintf(buf, "fs%d.font.vertical_map", num);
     _XlcGetResource(lcd, "XLC_FONTSET", buf, &value, &count);
@@ -2053,7 +2044,8 @@ init_om(om)
 	    if (udc == NULL)
 	        return False;
             for(i=0;i<count;i++){
-                sscanf(value[i],"\\x%x,\\x%x", &(udc[i].start), &(udc[i].end));
+                sscanf(value[i],"\\x%lx,\\x%lx", &(udc[i].start),
+		       &(udc[i].end));
             }
             for(i=0;i<data->charset_count;i++){
 		if(data->charset_list[i]->udc_area == NULL){

@@ -20,6 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include <X11/Xresource.h>
@@ -88,14 +89,14 @@ KeySym XStringToKeysym(s)
     unsigned char sig1, sig2;
     KeySym val;
 
-    while (c = *p++)
+    while ((c = *p++))
 	sig = (sig << 1) + c;
     i = sig % KTABLESIZE;
     h = i + 1;
     sig1 = (sig >> 8) & 0xff;
     sig2 = sig & 0xff;
     n = KMAXHASH;
-    while (idx = hashString[i])
+    while ((idx = hashString[i]))
     {
 	entry = &_XkeyTable[idx];
 	if ((entry[0] == sig1) && (entry[1] == sig2) &&

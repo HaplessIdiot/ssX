@@ -47,11 +47,14 @@
  *	DOCUMENTATION
  *		"TekColor Color Management System, System Implementor's Manual"
  */
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include "Xcmsint.h"
 #include <X11/Xos.h>
 #include <math.h>
+
+#include <stdio.h>
 
 /*
  *	DEFINES
@@ -94,6 +97,12 @@
  */
 
 extern char _XcmsTekHVC_prefix[];
+
+/* CvCols.c */
+extern Status _XcmsDIConvertColors();
+
+/* uvY.c */
+extern Status _XcmsCIEuvY_ValidSpec();
 
 /*
  *	FORWARD DECLARATIONS

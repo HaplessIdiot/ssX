@@ -20,6 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
+/* $XFree86$ */
 
 #define NEED_EVENTS
 #include "Xlibint.h"
@@ -43,6 +44,7 @@ extern long Const _Xevent_to_mask[];
  * matches.
  */
 
+int
 XWindowEvent (dpy, w, mask, event)
         register Display *dpy;
 	Window w;		/* Selected window. */

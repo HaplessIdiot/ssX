@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.16 1998/10/03 08:41:26 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.17 1998/10/21 06:11:58 dawes Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -448,7 +448,7 @@ Strcmp(str1, str2)
     if (strlen(str1) >= sizeof(str)) /* almost certain it's a mismatch */
 	return 1;
 
-    for (s = str; c = *str1++; ) {
+    for (s = str; (c = *str1++); ) {
 	if (isupper(c))
 	    c = tolower(c);
 	*s++ = c;

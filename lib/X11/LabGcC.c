@@ -30,9 +30,12 @@
  *		Source for XcmsCIELabClipuv() gamut compression routine.
  *
  */
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include "Xcmsint.h"
+
+extern Status _XcmsDIConvertColors();
 
 
 /************************************************************************
