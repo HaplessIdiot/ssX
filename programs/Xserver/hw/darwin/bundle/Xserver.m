@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.26 2001/09/23 04:04:49 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.27 2001/09/24 06:56:51 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -382,8 +382,15 @@ static NSRect aquaMenuBarBox;
                 close(outFD);
             }
 
+            // Setup environment
+            setenv("HOME", passwdUser->pw_dir, 1);
+            setenv("SHELL", passwdUser->pw_shell, 1);
+            setenv("LOGNAME", passwdUser->pw_name, 1);
+            setenv("USER", passwdUser->pw_name, 1);
+            setenv("TERM", "unknown", 1);
             if (chdir(passwdUser->pw_dir))	// Change to user's home dir
                 NSLog(@"Could not change to user's home directory.");
+
             execv(shellPathStr, newargv);	// Start user's shell
 
             NSLog(@"Could not start X client process with errno = %i.", errno);
@@ -406,11 +413,13 @@ static NSRect aquaMenuBarBox;
         // Form xinit command
         if (hasClient) {
             commandStr = [NSString stringWithFormat:
-                            @"xinit %s -- XDarwinStartup :%d -idle\n",
-                            xinitrcbuf, [Preferences display]];
+                            @"xinit %s -- %s :%d -idle\n",
+                            xinitrcbuf, XPATH(XDarwinStartup),
+                            [Preferences display]];
         } else {
             commandStr = [NSString stringWithFormat:
-                            @"xinit -- XDarwinStartup :%d -idle\n",
+                            @"xinit -- %s :%d -idle\n",
+                            XPATH(XDarwinStartup),
                             [Preferences display]];
         }
 
@@ -502,6 +511,7 @@ static NSRect aquaMenuBarBox;
 // Show or hide the X server or menu bar in rootless mode
 - (void)toggle
 {
+/* FIXME: Remove or add option to not dodge menubar
     if (quartzRootless) {
         if (rootlessMenuBarVisible)
             HideMenuBar();
@@ -509,11 +519,12 @@ static NSRect aquaMenuBarBox;
             ShowMenuBar();
         rootlessMenuBarVisible = !rootlessMenuBarVisible;
     } else {
+*/
         if (serverVisible)
             [self hide];
         else
             [self show];
-    }
+//    }
 }
 
 // Show the X server on screen
