@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.34 2001/09/17 16:07:48 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.35 2001/10/28 03:34:16 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -276,7 +276,7 @@ WaitForSomething(pClientsReady)
 		    timeout = offTimeout;
 	    }
 #endif
-	    if (timeout > 0 && (!wt || timeout < (timers->expires - now)))
+	    if (timeout > 0 && (!wt || timeout < (int) (timers->expires - now)))
 	    {
 		waittime.tv_sec = timeout / MILLI_PER_SECOND;
 		waittime.tv_usec = (timeout % MILLI_PER_SECOND) *
@@ -577,7 +577,7 @@ TimerSet(timer, flags, millis, func, arg)
 	    return timer;
     }
     for (prev = &timers;
-	 *prev && millis > (*prev)->expires;
+	 *prev && (int) ((*prev)->expires - millis) <= 0;
 	 prev = &(*prev)->next)
 	;
     timer->next = *prev;
