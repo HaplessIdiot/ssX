@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/glx/Imakefile,v 1.10 2003/08/06 14:04:01 eich Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/glx/Imakefile,v 1.11 2004/01/28 18:11:50 alanh Exp $
 
 #if DoLoadableServer
 # if !BuildModuleInSubdir
@@ -34,9 +34,13 @@ SUBDIRS = module
                 -I$(EXTINCSRC) -I$(FONTINCSRC) -I$(LIBSRC)/GL/include \
                 -I$(XF86SRC)
 
+#if defined(DarwinArchitecture) && ((OSMajorVersion == 6 && OSMinorVersion < 3) || OSMajorVersion < 6)
+  NO_EXT_DEFS = -DMISSING_GL_EXTS
+#endif
+
 XCOMM If you add "-DDEBUG" in DEFINES, then make sure you also
 XCOMM add DEBUG to the define in ../mesa/src/X/xf86glx.c
-      DEFINES = $(GLX_DEFINES)
+      DEFINES = $(GLX_DEFINES) $(NO_EXT_DEFS)
 
 
 #ifdef IHaveModules

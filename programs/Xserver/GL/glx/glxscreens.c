@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/glx/glxscreens.c,v 1.13 2004/01/28 18:11:50 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/glx/glxscreens.c,v 1.14 2004/02/09 23:46:31 alanh Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -134,7 +134,9 @@ static char GLXServerExtensions[] =
 			"GLX_EXT_visual_rating "
 			"GLX_EXT_import_context "
 			"GLX_SGI_make_current_read "
+#ifndef __DARWIN__
 			"GLX_SGIS_multisample "
+#endif
 			;
 
 /*
