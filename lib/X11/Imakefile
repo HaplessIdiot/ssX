@@ -1007,9 +1007,15 @@ LOCAL_LDFLAGS=-F
 
 MAKEKEYS = ./makekeys
 
+#if CrossCompiling
+HOST_LDLIBS=
+#else
+HOST_LDLIBS=$(LDLIBS)
+#endif
+
 ks_tables.h: $(XINCLUDESRC)/keysymdef.h util/makekeys.c
 	RemoveFiles($@ HostProgramTargetName(makekeys) makekeys.Osuf)
-	-HostLinkRule(HostProgramTargetName(makekeys),$(CFLAGS) $(LOCAL_LDFLAGS),util/makekeys.c,$(LDLIBS))
+	-HostLinkRule(HostProgramTargetName(makekeys),$(CFLAGS) $(LOCAL_LDFLAGS),util/makekeys.c,$(HOST_LDLIBS))
 	RunProgram(MAKEKEYS,< $(XINCLUDESRC)/keysymdef.h > ks_tables_h)
 	$(MV) ks_tables_h $@
 	RemoveFiles(HostProgramTargetName(makekeys) makekeys.Osuf ks_tables_h)
