@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.10 2000/11/01 23:33:05 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.11 2000/11/03 00:50:53 robin Exp $ */
 
 
 /* All drivers should typically include these */
@@ -282,6 +282,7 @@ i128Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 			  i2cSymbols,
 			  vbeSymbols,
 			  int10Symbols,
+			  vgahwSymbols,
 			  NULL);
 
 	/*
