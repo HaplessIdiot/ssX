@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.27 2000/10/21 22:26:20 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.28 2001/01/31 15:59:27 alanh Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -1218,7 +1218,12 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     {
 	infoRec->Composite = XAADoComposite;
     }
-	
+
+    if(!infoRec->Glyphs && infoRec->WriteBitmap &&
+	!(infoRec->WriteBitmapFlags & NO_TRANSPARENCY)) 
+    {
+	infoRec->Glyphs = XAADoGlyphs;
+    }	
 #endif
 
     /************  Validation Functions **************/

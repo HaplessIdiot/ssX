@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPict.c,v 1.7 2001/01/23 22:11:08 mvojkovi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPict.c,v 1.8 2001/01/28 22:49:26 mvojkovi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -40,6 +40,7 @@
 #include "xaa.h"
 #include "xaalocal.h"
 #include "xaawrap.h"
+#include "xaacexp.h"
 #include "xf86fbman.h"
 #include "servermd.h"
 
@@ -408,6 +409,173 @@ XAAComposite (CARD8      op,
     XAA_RENDER_EPILOGUE(pScreen, Composite, XAAComposite);
 }
 
+Bool
+XAADoGlyphs (CARD8         op,
+	   PicturePtr    pSrc,
+	   PicturePtr    pDst,
+	   PictFormatPtr maskFormat,
+	   INT16         xSrc,
+	   INT16         ySrc,
+	   int           nlist,
+	   GlyphListPtr  list,
+	   GlyphPtr      *glyphs)
+{
+    ScreenPtr	pScreen = pDst->pDrawable->pScreen;
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCREEN(pScreen);
+
+    if(!infoRec->pScrn->vtSema || 
+      ((pDst->pDrawable->type != DRAWABLE_WINDOW) &&
+	!IS_OFFSCREEN_PIXMAP(pDst->pDrawable)))
+	return FALSE;
+
+    if(maskFormat && (maskFormat->depth == 1) && 
+       (pSrc->pDrawable->width == 1) && (pSrc->pDrawable->height == 1) &&
+       (op == PictOpOver) && infoRec->WriteBitmap &&
+       !(infoRec->WriteBitmapFlags & NO_TRANSPARENCY))
+    {
+	CARD16 red, green, blue, alpha;
+	CARD32 pixel =
+                *((CARD32*)(((PixmapPtr)(pSrc->pDrawable))->devPrivate.ptr));
+	CARD32 *bits, *pntr, *pnt;
+	int x, y, i, n, left, top, right, bottom, width, height, pitch;
+	int L, T, R, B, X, Y, h, w, dwords, row, column, nbox;
+	int leftEdge, rightEdge, topLine, botLine;
+	BoxPtr pbox;
+	GlyphPtr glyph;
+	
+	if(!XAAGetRGBAFromPixel(pixel,&red,&green,&blue,&alpha,pSrc->format))
+		return FALSE;
+
+	if(alpha != 0xffff) return FALSE;
+
+	XAAGetPixelFromRGBA(&pixel, red, green, blue, 0, pDst->format);
+
+	if((infoRec->WriteBitmapFlags & RGB_EQUAL) && !(red == green == blue))
+	   return FALSE;
+
+	x = pDst->pDrawable->x;
+	y = pDst->pDrawable->y;
+
+	while(nlist--) {
+	    x += list->xOff;
+	    y += list->yOff;
+	    left = right = X = x;
+	    top = bottom = Y = y;
+	    for(i = 0; i < list->len; i++) {
+		glyph = glyphs[i];
+
+		L = X - glyph->info.x;
+		if(L < left) left = L;
+		R = L + glyph->info.width;
+		if(R > right) right = R;
+
+		T = Y - glyph->info.y;
+		if(T < top) top = T;
+		B = T + glyph->info.height;
+		if(B > bottom) bottom = B;
+
+		X += glyph->info.xOff;
+		Y += glyph->info.yOff;
+	    }
+
+	    width = right - left;
+	    height = bottom - top;
+
+	    if(width && height) {
+		pitch = (((width + 31) & ~31) >> 5) + 1;
+		pntr = (CARD32*)xalloc(sizeof(CARD32) * pitch * height);
+		if(!pntr) 
+		    return TRUE;
+		bzero(pntr, sizeof(CARD32) * pitch * height);
+		n = list->len;
+
+		X = x; Y = y;
+		while(n--) {
+		    glyph = *glyphs++;
+		    h = glyph->info.height;
+		    w = glyph->info.width;
+		    if(h && w) {
+			row = y - top - glyph->info.y;
+			column = x - left - glyph->info.x;
+			pnt = pntr + (row * pitch) + (column >> 5);
+			column &= 31;
+			dwords = ((w + 31) >> 5) - 1;
+			bits = (CARD32*)(glyph + 1);
+			if(dwords) {
+			  while(h--) {
+			    for(i = 0; i <= dwords; i++) {
+				if(column) {
+				    pnt[i] |= SHIFT_L(*bits, column);
+				    pnt[i + 1] |= SHIFT_R(*bits, 32 - column);
+				} else
+				    pnt[i] |= *bits;
+
+				if(i != dwords) bits++;
+			    }
+			    bits++;
+			    pnt += pitch;
+			  } 
+			} else {
+			  if(column) {
+			     while(h--) {
+				pnt[0] |= SHIFT_L(*bits, column);
+				pnt[0 + 1] |= SHIFT_R(*bits, 32 - column);
+				bits++;
+				pnt += pitch;
+			     }
+			  } else {
+			     while(h--) {
+				*pnt |= *bits++;
+				pnt += pitch;
+			     }			  
+			  }	  
+			}
+		    }
+		    x += glyph->info.xOff;
+		    y += glyph->info.yOff;
+		}
+		
+		nbox = REGION_NUM_RECTS(pDst->pCompositeClip);
+		pbox = REGION_RECTS(pDst->pCompositeClip);
+		
+		while(nbox && (top >= pbox->y2)) {
+		    pbox++; nbox--;
+		}
+		
+		while(nbox && (bottom > pbox->y1)) {		
+		    leftEdge = max(left, pbox->x1);
+		    rightEdge = min(right, pbox->x2);
+		    
+		    if(rightEdge > leftEdge) {
+		    	column = leftEdge - left;
+			topLine = max(top, pbox->y1);
+			botLine = min(bottom, pbox->y2);
+			h = botLine - topLine;
+			
+			if(h > 0) {
+			  (*infoRec->WriteBitmap)(infoRec->pScrn, 
+			  	leftEdge, topLine, rightEdge - leftEdge, h,
+				(unsigned char*)(pntr + 
+				  ((topLine - top) * pitch) + (column >> 5)),
+				pitch << 2, column & 31, pixel, -1, GXcopy, ~0);
+			}
+		    }	
+		    nbox--; pbox++;
+	   	}
+		xfree(pntr);
+	    } else {
+		x = X; y = Y;
+	    }
+	    list++;
+	}
+
+	return TRUE;
+    }
+
+    return FALSE;
+}	   
+	 
+	
 void
 XAAGlyphs (CARD8         op,
 	   PicturePtr    pSrc,
