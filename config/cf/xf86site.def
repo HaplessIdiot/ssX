@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.149 1999/09/27 06:29:02 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.151 1999/11/19 13:53:23 hohndel Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -431,9 +431,9 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.149 1999/09/27 06:29:02 dawes Exp 
  */
 
 /* 
- * If you want to build Xinerama, uncomment this.
+ * If you don't want to build Xinerama support, uncomment this.
  *
-#define BuildXinerama		YES
+#define BuildXinerama		NO
  */
 
 /*
