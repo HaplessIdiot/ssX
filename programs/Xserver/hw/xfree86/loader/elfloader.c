@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.40 2002/01/14 18:16:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.43tsi Exp $ */
 
 /*
  *
@@ -1101,7 +1101,9 @@ Elf_Rel_t	*rel;
 int		force;
 {
     unsigned char *secp = elffile->saddr[secn];
+#if !defined(__ia64__)
     unsigned int *dest32;	/* address of the 32 bit place being modified */
+#endif
 #if defined(__powerpc__) || defined(__sparc__)
     unsigned short *dest16;	/* address of the 16 bit place being modified */
 #endif

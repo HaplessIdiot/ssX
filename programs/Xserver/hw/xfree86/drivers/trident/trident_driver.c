@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.172 2002/05/28 10:39:39 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.174tsi Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -1314,7 +1314,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	Bool error = FALSE;
 	int i;
 	
-	i = xf86sscanf(s,"%lf %i",&gamma,&brightness);
+	i = sscanf(s,"%lf %i",&gamma,&brightness);
 	
 	if (i != 2 || brightness == -1 || gamma == -1.0) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,

@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include "vmware.h"
 
 static __inline void
@@ -72,7 +74,7 @@ void vmwareGlyphs(CARD8 op, PicturePtr pSrc, PicturePtr pDst,
     DrawablePtr         pDrawable = pDst->pDrawable;
     ScreenPtr		pScreen = pDrawable->pScreen;
     VMWAREPtr		pVMWARE = VMWAREPTR(infoFromScreen(pScreen));
-    int			width, height;
+    int			width = 0, height = 0;
     BoxRec		extents;
 
     if (pDrawable->type == DRAWABLE_WINDOW) {

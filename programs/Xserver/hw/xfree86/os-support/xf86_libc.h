@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.52 2002/04/04 14:05:53 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.53tsi Exp $ */
 
 
 
@@ -400,6 +400,7 @@ typedef int xf86jmp_buf[20];
 #undef hypot
 #define hypot(x,y)		xf86hypot(x,y)
 
+#undef qsort
 #define qsort(b, n, s, f)	xf86qsort(b, n, s, f)
 
 /* non-ANSI C functions */
@@ -439,11 +440,17 @@ typedef int xf86jmp_buf[20];
 #define mkdir(a,b)              xf86mkdir(a,b)
 #undef getpagesize
 #define getpagesize		xf86getpagesize
+#undef shmget
 #define shmget(a,b,c)		xf86shmget(a,b,c)
+#undef shmat
 #define shmat(a,b,c)		xf86shmat(a,b,c)
+#undef shmdt
 #define shmdt(a)		xf86shmdt(a)
+#undef shmctl
 #define shmctl(a,b,c)		xf86shmctl(a,b,c)
+#undef setjmp
 #define setjmp(a)               xf86setjmp(a)
+#undef longjmp
 #define longjmp(a,b)            xf86longjmp(a,b) 
 
 #undef S_ISUID
@@ -502,7 +509,11 @@ typedef int xf86jmp_buf[20];
 #define gid_t                   xf86gid_t
 #undef jmp_buf
 #define jmp_buf                 xf86jmp_buf
+#undef stat_t
 #define stat_t			struct xf86stat
+
+#undef ulong
+#define ulong			unsigned long
 
 /*
  * There should be no need to #undef any of these.  If they are already
