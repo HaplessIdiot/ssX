@@ -1,5 +1,5 @@
-/* $XConsortium: NextEvent.c,v 1.143 94/05/11 16:01:26 kaleb Exp $ */
-/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.1 1994/05/22 06:45:22 dawes Exp $ */
+/* $XConsortium: NextEvent.c,v 1.144 94/06/14 10:11:06 kaleb Exp $ */
+/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.2 1994/05/29 02:03:41 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -454,7 +454,7 @@ ENDILOOP:   ;
     if (!ignoreEvents) {
 	fdlp = wf->fdlist;
 	for (ii = 0; ii < wf->num_dpys; ii++, fdlp++) {
-	    if (*dpy_no == -1 && fdlp->revents & (POLLIN|POLLHUP) &&
+	    if (*dpy_no == -1 && fdlp->revents & (POLLIN|POLLHUP|POLLERR) &&
 #ifdef XTHREADS
 		!(fdlp->revents & POLLNVAL) &&
 #endif

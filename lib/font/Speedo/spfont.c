@@ -1,5 +1,5 @@
-/* $XConsortium: spfont.c,v 1.22 94/04/17 20:17:48 gildea Exp $ */
-/* $XFree86$ */
+/* $XConsortium: spfont.c,v 1.23 94/07/25 13:48:35 kaleb Exp $ */
+/* $XFree86: xc/lib/font/Speedo/spfont.c,v 3.0 1994/08/01 12:02:37 dawes Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation
@@ -60,10 +60,12 @@ from the X Consortium.
 #include	"FSproto.h"
 #include	"spint.h"
 #include	<servermd.h>
-#include	<math.h>
-
-#if defined(SVR4) && __STDC__
-extern double hypot(double, double);
+#ifdef _XOPEN_SOURCE
+#include <math.h>
+#else
+#define _XOPEN_SOURCE	/* to get prototype for hypot on some systems */
+#include <math.h>
+#undef _XOPEN_SOURCE
 #endif
 
 #ifndef M_PI

@@ -1,5 +1,5 @@
-/* $XConsortium: bitscale.c,v 1.27 94/04/17 20:17:13 gildea Exp $ */
-/* $XFree86$ */
+/* $XConsortium: bitscale.c,v 1.28 94/07/25 13:50:59 kaleb Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.0 1994/08/01 12:06:07 dawes Exp $ */
 
 /*
 
@@ -37,10 +37,12 @@ from the X Consortium.
 
 #include "fntfilst.h"
 #include "bitmap.h"
+#ifdef _XOPEN_SOURCE
 #include <math.h>
-
-#if defined(SVR4) && __STDC__
-extern double hypot(double, double);
+#else
+#define _XOPEN_SOURCE	/* to get prototype for hypot on some systems */
+#include <math.h>
+#undef _XOPEN_SOURCE
 #endif
 
 extern Atom MakeAtom();
