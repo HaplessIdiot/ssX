@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fb.h,v 1.23 2001/01/17 07:40:01 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fb.h,v 1.24 2001/01/21 21:19:09 tsi Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -112,6 +112,10 @@ typedef unsigned long long  FbBits;
 
 #if FB_SHIFT == 5
 typedef CARD32		    FbBits;
+#endif
+
+#if FB_SHIFT == 4
+typedef CARD16		    FbBits;
 #endif
 
 #if LOG2_BITMAP_PAD == FB_SHIFT
