@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.5 2001/06/04 09:45:40 keithp Exp $
+ * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.6 2001/06/07 15:33:44 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  *
@@ -114,18 +114,18 @@ SRRScreenChangeNotifyEvent(from, to)
     xRRScreenChangeNotifyEvent *from, *to;
 {
     to->type = from->type;
-    to->resident = from->resident;
+    to->rotation = from->rotation;
     cpswaps(from->sequenceNumber, to->sequenceNumber);
     cpswapl(from->timestamp, to->timestamp);
     cpswapl(from->configTimestamp, to->configTimestamp);
     cpswapl(from->root, to->root);
-    cpswaps(from->sizeIndex, to->sizeIndex);
-    cpswaps(from->rotation, to->rotation);
-    cpswaps(from->new.widthInPixels, to->new.widthInPixels);
-    cpswaps(from->new.heightInPixels, to->new.heightInPixels);
-    cpswaps(from->new.widthInMillimeters, to->new.widthInMillimeters);
-    cpswaps(from->new.heightInMillimeters, to->new.heightInMillimeters);
-    cpswaps(from->new.visualGroup, to->new.visualGroup);
+    cpswapl(from->window, to->window);
+    cpswaps(from->sizeID, to->sizeID);
+    cpswaps(from->visualGroupID, to->visualGroupID);
+    cpswaps(from->widthInPixels, to->widthInPixels);
+    cpswaps(from->heightInPixels, to->heightInPixels);
+    cpswaps(from->widthInMillimeters, to->widthInMillimeters);
+    cpswaps(from->heightInMillimeters, to->heightInMillimeters);
 }
 
 Bool RRScreenInit(ScreenPtr pScreen)
@@ -266,29 +266,42 @@ TellChanged (WindowPtr pWin, pointer value)
     pHead = (RREventPtr *) LookupIDByType (pWin->drawable.id, EventType);
     if (!pHead)
 	return;
+
+    se.type = RRScreenChangeNotify + RREventBase;
+    se.rotation = (CARD8) pScrPriv->rotation;
+    se.sequenceNumber = client->sequence;
+    se.timestamp = pScrPriv->lastSetTime.milliseconds;
+    se.configTimestamp = pScrPriv->lastConfigTime.milliseconds;
+    se.root = pRoot->drawable.id;
+    se.window = pWin->drawable.id;
+    if (pSize)
+    {
+	se.sizeID = pSize->id;
+	se.visualGroupID = pScrPriv->pVisualGroup->id;
+	se.widthInPixels = pSize->width;
+	se.heightInPixels = pSize->height;
+	se.widthInMillimeters = pSize->mmWidth;
+	se.heightInMillimeters = pSize->mmHeight;
+    }
+    else
+    {
+	/*
+	 * This "shouldn't happen", but a broken DDX can
+	 * forget to set the current configuration on GetInfo
+	 */
+	se.sizeID = 0xffff;
+	se.visualGroupID = 0xffff;
+	se.widthInPixels = 0;
+	se.heightInPixels = 0;
+	se.widthInMillimeters = 0;
+	se.heightInMillimeters = 0;
+    }    
+
     for (pRREvent = *pHead; pRREvent; pRREvent = pRREvent->next) 
     {
 	client = pRREvent->client;
 	if (client == serverClient || client->clientGone)
 	    continue;
-	se.type = RRScreenChangeNotify + RREventBase;
-        se.resident = xTrue;	/* XXX likely to disappear in any case */
-	se.sequenceNumber = client->sequence;
-	se.timestamp = pScrPriv->lastSetTime.milliseconds;
-	se.configTimestamp = pScrPriv->lastConfigTime.milliseconds;
-	se.root = pRoot->drawable.id;
-	se.rotation = pScrPriv->rotation;
-	if (pSize)
-	{
-	    se.sizeIndex = pSize->id;
-	    se.new.widthInPixels = pSize->width;
-	    se.new.heightInPixels = pSize->height;
-	    se.new.widthInMillimeters = pSize->mmWidth;
-	    se.new.heightInMillimeters = pSize->mmHeight;
-	    se.new.visualGroup = pScrPriv->pGroupsOfVisualGroups[pSize->groupOfVisualGroups].id;
-	}
-	else
-	    se.sizeIndex = 0xffff;
 	WriteEventsToClient (client, 1, (xEvent *) &se);
     }
 }
@@ -696,6 +709,12 @@ ProcRRSetScreenConfig (ClientPtr client)
     rrScrPrivPtr	    pScrPriv;
     TimeStamp		    configTime;
     TimeStamp		    time;
+    RRScreenSizePtr	    pSize;
+    RRVisualGroupPtr	    pVisualGroup;
+    RRGroupOfVisualGroupPtr pGroupsOfVisualGroups;
+    int			    i;
+    Rotation		    rotation;
+    short		    oldWidth, oldHeight;
 
     UpdateCurrentTime ();
 
@@ -707,108 +726,176 @@ ProcRRSetScreenConfig (ClientPtr client)
 
     pScrPriv= rrGetScrPriv(pScreen);
     
-    rep.type = X_Reply;
-    rep.length = 0;
-    rep.sequenceNumber = client->sequence;
-    rep.success = xFalse;
-
+    time = ClientTimeToServerTime(stuff->timestamp);
+    configTime = ClientTimeToServerTime(stuff->configTimestamp);
+    
+    oldWidth = pScreen->width;
+    oldHeight = pScreen->height;
+    
     if (!pScrPriv)
     {
 	time = currentTime;
+	rep.status = RRSetConfigFailed;
+	goto sendReply;
     }
-    else
+    if (!RRGetInfo (pScreen))
+	return BadAlloc;
+    
+    /*
+     * if the client's config timestamp is not the same as the last config
+     * timestamp, then the config information isn't up-to-date and
+     * can't even be validated
+     */
+    if (CompareTimeStamps (configTime, pScrPriv->lastConfigTime) != 0)
     {
-	if (!RRGetInfo (pScreen))
-	    return BadAlloc;
-
-	time = ClientTimeToServerTime(stuff->timestamp);
-	configTime = ClientTimeToServerTime(stuff->configTimestamp);
+	rep.status = RRSetConfigInvalidConfigTime;
+	goto sendReply;
+    }
     
+    /*
+     * Search for the requested size
+     */
+    for (i = 0; i < pScrPriv->nSizes; i++)
+    {
+	pSize = &pScrPriv->pSizes[i];
+	if (pSize->referenced && pSize->id == stuff->sizeID)
+	    break;
+    }
+    if (i == pScrPriv->nSizes)
+    {
 	/*
-	 * if the client's config timestamp is not the same as the last config
-	 * timestamp or the client's timestamp is not newer than the last set
-	 * timestamp, then ignore the request
+	 * Invalid size ID
 	 */
+	client->errorValue = stuff->sizeID;
+	return BadValue;
+    }
     
-	if (CompareTimeStamps (configTime, pScrPriv->lastConfigTime) == 0 &&
-	    CompareTimeStamps (time, pScrPriv->lastSetTime) >= 0)
-	{
-	    RRScreenSizePtr	pSize;
-	    RRVisualGroupPtr	pVisualGroup;
-	    RRGroupOfVisualGroupPtr	pGroupsOfVisualGroups;
-	    int			i;
-	    int			rotation;
-	    short		oldWidth, oldHeight;
-
-	    rep.success = xTrue;
-	    for (i = 0; i < pScrPriv->nSizes; i++)
-	    {
-		pSize = &pScrPriv->pSizes[i];
-		if (pSize->referenced && pSize->id == stuff->sizeID)
-		    break;
-	    }
-	    if (i == pScrPriv->nSizes)
-	    {
-		client->errorValue = stuff->sizeID;
-		return BadValue;
-	    }
-	    for (i = 0; i < pScrPriv->nVisualGroups; i++)
-	    {
-		pVisualGroup = &pScrPriv->pVisualGroups[i];
-		if (pVisualGroup->referenced && pVisualGroup->id == stuff->visualGroupID)
-		    break;
-	    }
-	    if (i == pScrPriv->nVisualGroups)
-	    {
-		client->errorValue = stuff->visualGroupID;
-		return BadValue;
-	    }
-	    pGroupsOfVisualGroups = &pScrPriv->pGroupsOfVisualGroups[pSize->groupOfVisualGroups];
-	    for (i = 0; i < pGroupsOfVisualGroups->ngroups; i++)
-	    {
-		if (pGroupsOfVisualGroups->groups[i] == pVisualGroup - pScrPriv->pVisualGroups)
-		    break;
-	    }
-	    if (i == pGroupsOfVisualGroups->ngroups)
-		return BadMatch;
-	    rotation = stuff->rotation;
-	    switch (rotation) {
-	    case RR_Rotate_0:
-	    case RR_Rotate_90:
-	    case RR_Rotate_180:
-	    case RR_Rotate_270:
-		break;
-	    default:
-		client->errorValue = stuff->rotation;
-		return BadValue;
-	    }
-	    if (!pScrPriv->rotations & rotation)
-		return BadMatch;
-	    
-	    oldWidth = pScreen->width;
-	    oldHeight = pScreen->height;
-	    
-	    /* call out to ddx routine */
-	    if (!(*pScrPriv->rrSetConfig) (pScreen, rotation, pSize, pVisualGroup))
-		return BadAlloc;
-	    /* set current configuration */
-	    RRSetCurrentConfig (pScreen, rotation, pSize, pVisualGroup);
-	    /* tell interested clients */
-	    WalkTree (pScreen, TellChanged, (pointer) pScreen);
-	    if (oldWidth != pScreen->width || oldHeight != pScreen->height)
-		RRSendConfigNotify (pScreen);
-	    RREditConnectionInfo (pScreen);
-	    ScreenRestructured (pScreen);
-	    pScrPriv->lastSetTime = time;
-	}
-	time = pScrPriv->lastSetTime;
-	configTime = pScrPriv->lastConfigTime;
+    /*
+     * Search for the requested visual group
+     */
+    for (i = 0; i < pScrPriv->nVisualGroups; i++)
+    {
+	pVisualGroup = &pScrPriv->pVisualGroups[i];
+	if (pVisualGroup->referenced && pVisualGroup->id == stuff->visualGroupID)
+	    break;
+    }
+    if (i == pScrPriv->nVisualGroups)
+    {
+	/*
+	 * Invalid group ID
+	 */
+	client->errorValue = stuff->visualGroupID;
+	return BadValue;
+    }
+    
+    /*
+     * Make sure visualgroup is supported by size
+     */
+    pGroupsOfVisualGroups = &pScrPriv->pGroupsOfVisualGroups[pSize->groupOfVisualGroups];
+    for (i = 0; i < pGroupsOfVisualGroups->ngroups; i++)
+    {
+	if (pGroupsOfVisualGroups->groups[i] == pVisualGroup - pScrPriv->pVisualGroups)
+	    break;
+    }
+    if (i == pGroupsOfVisualGroups->ngroups)
+    {
+	/*
+	 * requested group not supported by requested size
+	 */
+	return BadMatch;
     }
 
-    rep.newTimestamp = time.milliseconds;
-    rep.newConfigTimestamp = configTime.milliseconds;
+    /*
+     * Validate requested rotation
+     */
+    rotation = (Rotation) stuff->rotation;
+    switch (rotation) {
+    case RR_Rotate_0:
+    case RR_Rotate_90:
+    case RR_Rotate_180:
+    case RR_Rotate_270:
+	break;
+    default:
+	/*
+	 * Invalid rotation
+	 */
+	client->errorValue = stuff->rotation;
+	return BadValue;
+    }
+    if (!pScrPriv->rotations & rotation)
+    {
+	/*
+	 * requested rotation not supported by screen
+	 */
+	return BadMatch;
+    }
+    
+    /*
+     * Make sure the requested set-time is not older than
+     * the last set-time
+     */
+    if (CompareTimeStamps (time, pScrPriv->lastSetTime) < 0)
+    {
+	rep.status = RRSetConfigInvalidTime;
+	goto sendReply;
+    }
+
+    /*
+     * call out to ddx routine to effect the change
+     */
+    if (!(*pScrPriv->rrSetConfig) (pScreen, rotation, 
+					pSize, pVisualGroup))
+    {
+	/*
+	 * unknown DDX failure, report to client
+	 */
+	rep.status = RRSetConfigFailed;
+	goto sendReply;
+    }
+    
+    /*
+     * set current extension configuration pointers
+     */
+    RRSetCurrentConfig (pScreen, rotation, pSize, pVisualGroup);
+    
+    /*
+     * Deliver ScreenChangeNotify events whenever
+     * the configuration is updated
+     */
+    WalkTree (pScreen, TellChanged, (pointer) pScreen);
+    
+    /*
+     * Deliver ConfigureNotify events when root changes
+     * pixel size
+     */
+    if (oldWidth != pScreen->width || oldHeight != pScreen->height)
+	RRSendConfigNotify (pScreen);
+    RREditConnectionInfo (pScreen);
+    
+    /*
+     * Fix pointer bounds and location
+     */
+    ScreenRestructured (pScreen);
+    pScrPriv->lastSetTime = time;
+    
+    /*
+     * Report Success
+     */
+    rep.status = RRSetConfigSuccess;
+    
+sendReply:
+    
+    rep.type = X_Reply;
+    /* rep.status has already been filled in */
+    rep.length = 0;
+    rep.sequenceNumber = client->sequence;
+
+    rep.newTimestamp = pScrPriv->lastSetTime.milliseconds;
+    rep.newConfigTimestamp = pScrPriv->lastConfigTime.milliseconds;
     rep.root = WindowTable[pDraw->pScreen->myNum]->drawable.id;
-    if (client->swapped) {
+    
+    if (client->swapped) 
+    {
     	swaps(&rep.sequenceNumber, n);
     	swapl(&rep.length, n);
 	swapl(&rep.newTimestamp, n);
@@ -817,7 +904,6 @@ ProcRRSetScreenConfig (ClientPtr client)
     }
     WriteToClient(client, sizeof(xRRSetScreenConfigReply), (char *)&rep);
 
-    /* need code here to generate ScreenChangeNotifyEvent */
     return (client->noClientException);
 }
 
