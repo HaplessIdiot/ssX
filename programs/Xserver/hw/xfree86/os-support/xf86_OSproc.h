@@ -217,7 +217,7 @@ extern void xf86XqueEvents(void);
 /* internal to os-support layer */
 resPtr xf86StdAccWindowsFromOS(void);
 resPtr xf86StdAccResFromOS(resPtr ret);
-void xf86StdInitOSPciAllocator(const pciConfigPtr *pciInfo,
+PciBusPtr xf86StdInitOSPciAllocator(const pciConfigPtr *pciInfo,
 				resPtr *sysRes, const resPtr pciRes);
 
 /* available to the common layer */
