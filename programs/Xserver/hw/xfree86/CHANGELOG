@@ -1,4 +1,5 @@
 XFree86 3.9.18c (2 March 2000)
+3912. Add Mach64 screen-to-screen copy acceleration (Marc La France).
 3911. IA-64 fixes (Mark Vojkovich).
 3910. Add skeleton man pages for the video and input drivers that don't
       already have one (David Dawes).
@@ -9930,4 +9931,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1053 2000/03/03 00:30:42 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1055 2000/03/03 01:14:41 mvojkovi Exp $
