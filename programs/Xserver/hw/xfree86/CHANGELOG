@@ -1,4 +1,5 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 353. Add xkb map for Macintosh USB keyboards (#4970, Charles M. Hannum).
  352. Reverting patch #340, fixing type (Egbert Eich).
  351. Fix rotation in fbdev driver (#4958, #4959, Michel Dänzer).
  350. Resync with DRI CVS trunk (DRI Project).
@@ -13966,4 +13967,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1969 2001/10/02 15:57:30 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1970 2001/10/02 18:23:53 eich Exp $
