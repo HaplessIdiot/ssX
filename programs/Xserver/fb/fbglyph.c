@@ -1,5 +1,5 @@
 /*
- * $Id: fbglyph.c,v 1.3 2000/01/21 01:11:58 dawes Exp $
+ * $Id: fbglyph.c,v 1.4 2000/02/14 19:20:29 dawes Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,13 +21,13 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbglyph.c,v 1.2 1999/12/30 02:33:59 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbglyph.c,v 1.3 2000/01/21 01:11:58 dawes Exp $ */
 
 #include "fb.h"
 #include	"fontstruct.h"
 #include	"dixfontstr.h"
       
-Bool
+static Bool
 fbGlyphIn (RegionPtr	pRegion,
 	   int		x,
 	   int		y,

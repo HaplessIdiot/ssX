@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.24 1999/04/18 04:08:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.28 2000/02/12 23:56:20 eich Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -344,8 +344,8 @@ unmapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 }
 
 #else
-static pointer lnxSBase = 0;
-static pointer lnxBase = 0;
+pointer xf86LinuxSBase = 0;
+pointer xf86LinuxBase = 0;
 
 static pointer
 mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
@@ -371,25 +371,25 @@ mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
     return base;
   }
 
-  if (!lnxBase) {
+  if (!xf86LinuxBase) {
     if ((fd = open("/dev/mem", O_RDWR)) < 0)
       {
 	FatalError("xf86MapVidMem: failed to open /dev/mem (%s)\n",
 		   strerror(errno));
       }
     /* This requires linux-0.99.pl10 or above */
-    lnxBase = mmap((caddr_t)0, 0x100000000,
+    xf86LinuxBase = mmap((caddr_t)0, 0x100000000,
 		   PROT_READ|PROT_WRITE,
 		   MAP_SHARED, fd,
 		   (off_t)(BUS_BASE));
     close(fd);
-    if (lnxBase == MAP_FAILED) {
+    if (xf86LinuxBase == MAP_FAILED) {
       FatalError("xf86MapVidMem: Could not mmap framebuffer"
 		 " (0x%08x,0x%x) (%s)\n", Base, Size,
 		 strerror(errno));
     }
   }
-  return (void*)((CARD8*)lnxBase + Base);
+  return (void*)((CARD8*)xf86LinuxBase + Base);
 }
 
 static void
@@ -548,7 +548,7 @@ mapVidMemSparse(int ScreenNum, unsigned long Base, unsigned long Size)
     if (!_bus_base()) xf86SparseShift = 7; /* Uh, oh, JENSEN... */
     if (!_bus_base_sparse()) xf86SparseShift = 0; /* no sparse  */
     
-    if (!lnxSBase) {
+    if (!xf86LinuxSBase) {
 	if (isJensen) {
 	    xf86WriteMmio8 = writeSparseJensen8;
 	    xf86WriteMmio16 = writeSparseJensen16;
@@ -577,22 +577,22 @@ mapVidMemSparse(int ScreenNum, unsigned long Base, unsigned long Size)
 		       strerror(errno));
 	}
 	/* This requirers linux-0.99.pl10 or above */
-	if (!isJensen && !lnxBase)
-	    lnxBase = mmap((caddr_t)0, 0x100000000,
+	if (!isJensen && !xf86LinuxBase)
+	    xf86LinuxBase = mmap((caddr_t)0, 0x100000000,
 			   PROT_READ | PROT_WRITE,
 			   MAP_SHARED, fd,
 			   (off_t) _bus_base());
 	if (xf86SparseShift != 0) {
-	    lnxSBase = mmap((caddr_t)0, 0x100000000,
+	    xf86LinuxSBase = mmap((caddr_t)0, 0x100000000,
 			    PROT_READ | PROT_WRITE,
 			    MAP_SHARED, fd,
 			    (off_t) _bus_base_sparse());
 	} else
-	    lnxSBase = lnxBase;
+	    xf86LinuxSBase = xf86LinuxBase;
 	
 	close(fd);
 	
-	if (lnxSBase == MAP_FAILED || lnxBase == MAP_FAILED)	{
+	if (xf86LinuxSBase == MAP_FAILED || xf86LinuxBase == MAP_FAILED)	{
 		FatalError("xf86MapVidMem: Could not mmap framebuffer (%s)\n",
 			   strerror(errno));
 	}
@@ -626,7 +626,7 @@ readSparse8(pointer Base, register unsigned long Offset)
 	}
       }
 
-    result = *(vuip) ((unsigned long)lnxSBase + (Offset << 5));
+    result = *(vuip) ((unsigned long)xf86LinuxSBase + (Offset << 5));
     result >>= shift;
     return 0xffUL & result;
 }
@@ -647,7 +647,7 @@ readSparse16(pointer Base, register unsigned long Offset)
 	msb_set = msb;
       }
     }
-    result = *(vuip)((unsigned long)lnxSBase+(Offset<<5)+(1<<(5-2)));
+    result = *(vuip)((unsigned long)xf86LinuxSBase+(Offset<<5)+(1<<(5-2)));
     result >>= shift;
     return 0xffffUL & result;
 }
@@ -658,7 +658,7 @@ readSparse32(pointer Base, register unsigned long Offset)
     register unsigned long result;
     register unsigned long msb;
 #if 1
-    return *(vuip)((unsigned long)lnxBase+(unsigned long)Base+(Offset));
+    return *(vuip)((unsigned long)xf86LinuxBase+(unsigned long)Base+(Offset));
 #endif
     Offset = (unsigned long)((CARD8*)Base + Offset);
     if (Offset >= (1UL << 24)) {
@@ -669,7 +669,7 @@ readSparse32(pointer Base, register unsigned long Offset)
 	msb_set = msb;
       }
     }
-    result = *(vuip)((unsigned long)lnxSBase+(Offset<<5)+(3<<(5-2)));
+    result = *(vuip)((unsigned long)xf86LinuxSBase+(Offset<<5)+(3<<(5-2)));
     return result;
 }
 
@@ -688,7 +688,7 @@ writeSparse8(int Value, pointer Base, register unsigned long Offset)
 	msb_set = msb;
       }
     }
-    *(vuip) ((unsigned long)lnxSBase + (Offset << 5)) = b * 0x01010101;
+    *(vuip) ((unsigned long)xf86LinuxSBase + (Offset << 5)) = b * 0x01010101;
 #if defined(__alpha__)
     /* CAUTION: if you make changes inside this block you need to */
     /* make them to the other two identical blocks in this file   */
@@ -712,7 +712,7 @@ writeSparse16(int Value, pointer Base, register unsigned long Offset)
 	msb_set = msb;
       }
     }
-    *(vuip)((unsigned long)lnxSBase+(Offset<<5)+(1<<(5-2))) =
+    *(vuip)((unsigned long)xf86LinuxSBase+(Offset<<5)+(1<<(5-2))) =
       w * 0x00010001;
 #if defined(__alpha__)
     /* CAUTION: if you make changes inside this block you need to */
@@ -725,7 +725,7 @@ writeSparse16(int Value, pointer Base, register unsigned long Offset)
 static void
 writeSparse32(int Value, pointer Base, register unsigned long Offset)
 {
-    *(vuip)((unsigned long)lnxBase+(unsigned long)Base+(Offset)) = Value;
+    *(vuip)((unsigned long)xf86LinuxBase+(unsigned long)Base+(Offset)) = Value;
 #if defined(__alpha__)
     /* CAUTION: if you make changes inside this block you need to */
     /* make them to the other two identical blocks in this file   */
@@ -749,7 +749,7 @@ writeSparseNB8(int Value, pointer Base, register unsigned long Offset)
 	msb_set = msb;
       }
     }
-    *(vuip) ((unsigned long)lnxSBase + (Offset << 5)) = b * 0x01010101;
+    *(vuip) ((unsigned long)xf86LinuxSBase + (Offset << 5)) = b * 0x01010101;
 }
 
 static void
@@ -767,14 +767,14 @@ writeSparseNB16(int Value, pointer Base, register unsigned long Offset)
 	msb_set = msb;
       }
     }
-    *(vuip)((unsigned long)lnxSBase+(Offset<<5)+(1<<(5-2))) =
+    *(vuip)((unsigned long)xf86LinuxSBase+(Offset<<5)+(1<<(5-2))) =
       w * 0x00010001;
 }
 
 static void
 writeSparseNB32(int Value, pointer Base, register unsigned long Offset)
 {
-    *(vuip)((unsigned long)lnxBase+(unsigned long)Base+(Offset)) = Value;
+    *(vuip)((unsigned long)xf86LinuxBase+(unsigned long)Base+(Offset)) = Value;
     return;
 }
 
@@ -787,7 +787,7 @@ readSparseJensen8(pointer Base, register unsigned long Offset)
     Offset = (unsigned long)((CARD8*)Base + Offset);
     shift = (Offset & 0x3) << 3;
 
-    result = *(vuip) ((unsigned long)lnxSBase + (Offset << 7));
+    result = *(vuip) ((unsigned long)xf86LinuxSBase + (Offset << 7));
 
     result >>= shift;
     return 0xffUL & result;
@@ -801,7 +801,7 @@ readSparseJensen16(pointer Base, register unsigned long Offset)
     Offset = (unsigned long)((CARD8*)Base + Offset);
     shift = (Offset & 0x2) << 3;
 
-    result = *(vuip)((unsigned long)lnxSBase+(Offset<<7)+(1<<(7-2)));
+    result = *(vuip)((unsigned long)xf86LinuxSBase+(Offset<<7)+(1<<(7-2)));
 
     result >>= shift;
     return 0xffffUL & result;
@@ -814,7 +814,7 @@ readSparseJensen32(pointer Base, register unsigned long Offset)
 
     Offset = (unsigned long)((CARD8*)Base + Offset);
 
-    result = *(vuip)((unsigned long)lnxSBase+(Offset<<7)+(3<<(7-2)));
+    result = *(vuip)((unsigned long)xf86LinuxSBase+(Offset<<7)+(3<<(7-2)));
 
     return result;
 }
@@ -825,7 +825,7 @@ writeSparseJensen8(int Value, pointer Base, register unsigned long Offset)
     register unsigned int b = Value & 0xffU;
 
     Offset = (unsigned long)((CARD8*)Base + Offset);
-    *(vuip) ((unsigned long)lnxSBase + (Offset << 7)) = b * 0x01010101;
+    *(vuip) ((unsigned long)xf86LinuxSBase + (Offset << 7)) = b * 0x01010101;
 
 #if defined(__alpha__)
     /* CAUTION: if you make changes inside this block you need to */
@@ -841,7 +841,7 @@ writeSparseJensen16(int Value, pointer Base, register unsigned long Offset)
     register unsigned int w = Value & 0xffffU;
 
     Offset = (unsigned long)((CARD8*)Base + Offset);
-    *(vuip)((unsigned long)lnxSBase+(Offset<<7)+(1<<(7-2))) =
+    *(vuip)((unsigned long)xf86LinuxSBase+(Offset<<7)+(1<<(7-2))) =
       w * 0x00010001;
 
 #if defined(__alpha__)
@@ -858,7 +858,7 @@ writeSparseJensen32(int Value, pointer Base, register unsigned long Offset)
 
     Offset = (unsigned long)((CARD8*)Base + Offset);
 
-    *(vuip)((unsigned long)lnxSBase+(Offset<<7)+(3<<(7-2))) = Value;
+    *(vuip)((unsigned long)xf86LinuxSBase+(Offset<<7)+(3<<(7-2))) = Value;
 
 #if defined(__alpha__)
     /* CAUTION: if you make changes inside this block you need to */
@@ -873,7 +873,7 @@ writeSparseJensenNB8(int Value, pointer Base, register unsigned long Offset)
     register unsigned int b = Value & 0xffU;
 
     Offset = (unsigned long)((CARD8*)Base + Offset);
-    *(vuip) ((unsigned long)lnxSBase + (Offset << 7)) = b * 0x01010101;
+    *(vuip) ((unsigned long)xf86LinuxSBase + (Offset << 7)) = b * 0x01010101;
 
 }
 
@@ -883,7 +883,7 @@ writeSparseJensenNB16(int Value, pointer Base, register unsigned long Offset)
     register unsigned int w = Value & 0xffffU;
 
     Offset = (unsigned long)((CARD8*)Base + Offset);
-    *(vuip)((unsigned long)lnxSBase+(Offset<<7)+(1<<(7-2))) =
+    *(vuip)((unsigned long)xf86LinuxSBase+(Offset<<7)+(1<<(7-2))) =
       w * 0x00010001;
 
 }
@@ -894,7 +894,7 @@ writeSparseJensenNB32(int Value, pointer Base, register unsigned long Offset)
 
     Offset = (unsigned long)((CARD8*)Base + Offset);
 
-    *(vuip)((unsigned long)lnxSBase+(Offset<<7)+(3<<(7-2))) = Value;
+    *(vuip)((unsigned long)xf86LinuxSBase+(Offset<<7)+(3<<(7-2))) = Value;
 
 }
 

@@ -30,16 +30,14 @@ from the X Consortium.
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <X11/Xatom.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include "Mailbox.h"
 #include <X11/Xaw/Cardinals.h>
 
-extern void exit();
-static void quit();
-
-char *ProgramName;
+const char *ProgramName;
 
 static XrmOptionDescRec options[] = {
 { "-update", "*mailbox.update", XrmoptionSepArg, (caddr_t) NULL },
@@ -48,14 +46,30 @@ static XrmOptionDescRec options[] = {
 { "-shape",  "*mailbox.shapeWindow", XrmoptionNoArg, (caddr_t) "on" },
 };
 
+static Atom wm_delete_window;
+
+static void quit (w, event, params, num_params)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
+{
+    if (event->type == ClientMessage &&
+        event->xclient.data.l[0] != wm_delete_window) {
+        XBell (XtDisplay(w), 0);
+        return;
+    }
+    XCloseDisplay (XtDisplay(w));
+    exit (0);
+}
+
 static XtActionsRec xbiff_actions[] = {
     { "quit", quit },
 };
-static Atom wm_delete_window;
 
 static void Usage ()
 {
-    static char *help_message[] = {
+    static const char *help_message[] = {
 "where options include:",
 "    -display host:dpy              X server to contact",
 "    -geometry geom                 size of mailbox",
@@ -67,18 +81,18 @@ static void Usage ()
 "    -rv                            reverse video",
 "    -shape                         shape the window",
 NULL};
-    char **cpp;
+    const char **cpp;
 
     fprintf (stderr, "usage:  %s [-options ...]\n", ProgramName);
-    for (cpp = help_message; *cpp; cpp++) {
+    for (cpp = help_message; *cpp; cpp++)
 	fprintf (stderr, "%s\n", *cpp);
-    }
     fprintf (stderr, "\n");
     exit (1);
 }
 
 
-void main (argc, argv)
+int
+main (argc, argv)
     int argc;
     char **argv;
 {
@@ -97,6 +111,8 @@ void main (argc, argv)
      * This is a hack so that f.delete will do something useful in this
      * single-window application.
      */
+    wm_delete_window = XInternAtom (XtDisplay(toplevel), "WM_DELETE_WINDOW",
+                                    False);
     XtAppAddActions (xtcontext, xbiff_actions, XtNumber(xbiff_actions));
     XtOverrideTranslations(toplevel,
 		   XtParseTranslationTable ("<Message>WM_PROTOCOLS: quit()"));
@@ -104,24 +120,9 @@ void main (argc, argv)
     w = XtCreateManagedWidget ("mailbox", mailboxWidgetClass, toplevel,
 			       NULL, 0);
     XtRealizeWidget (toplevel);
-    wm_delete_window = XInternAtom (XtDisplay(toplevel), "WM_DELETE_WINDOW",
-                                    False);
     (void) XSetWMProtocols (XtDisplay(toplevel), XtWindow(toplevel),
                             &wm_delete_window, 1);
     XtAppMainLoop (xtcontext);
-}
 
-static void quit (w, event, params, num_params)
-    Widget w;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
-{
-    if (event->type == ClientMessage &&
-        event->xclient.data.l[0] != wm_delete_window) {
-        XBell (XtDisplay(w), 0);
-        return;
-    }
-    XCloseDisplay (XtDisplay(w));
-    exit (0);
+    return 0;
 }

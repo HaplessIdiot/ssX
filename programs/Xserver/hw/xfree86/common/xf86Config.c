@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.206 2000/02/10 00:38:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.207 2000/02/12 03:39:53 dawes Exp $ */
 
 
 /*
@@ -1267,6 +1267,7 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout,
     servlayoutp->inputs = indp;
     servlayoutp->options = conf_layout->lay_option_lst;
     from = X_DEFAULT;
+#ifdef PANORAMIX
     if (!noPanoramiXExtension)
       from = X_CMDLINE;
     else if (xf86FindOption(conf_layout->lay_option_lst, "Xinerama")) {
@@ -1276,6 +1277,7 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout,
     }
     if (!noPanoramiXExtension)
       xf86Msg(from, "Xinerama: enabled\n");
+#endif
 
     if (!checkCoreInputDevices(servlayoutp, FALSE))
 	return FALSE;

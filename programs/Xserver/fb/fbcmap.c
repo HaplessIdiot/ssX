@@ -1,5 +1,5 @@
 /* $XConsortium: fbcmap.c,v 4.19 94/04/17 20:28:46 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/fb/fbcmap.c,v 1.1 1999/11/19 13:53:42 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbcmap.c,v 1.3 2000/01/09 17:54:34 alanh Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -35,6 +35,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "scrnintstr.h"
 #include "colormapst.h"
 #include "resource.h"
+#include "fb.h"
 
 #ifndef XFree86Server
 ColormapPtr FbInstalledMaps[MAXSCREENS];
@@ -597,69 +598,61 @@ fbInitVisuals (VisualPtr    *visualp,
 #include "micmap.h"
 
 int
-fbListInstalledColormaps(pScreen, pmaps)
-    ScreenPtr	pScreen;
-    Colormap	*pmaps;
+fbListInstalledColormaps(ScreenPtr pScreen, Colormap *pmaps)
 {
     return miListInstalledColormaps(pScreen, pmaps);
 }
 
 void
-fbInstallColormap(pmap)
-    ColormapPtr	pmap;
+fbInstallColormap(ColormapPtr pmap)
 {
     miInstallColormap(pmap);
 }
 
 void
-fbUninstallColormap(pmap)
-    ColormapPtr	pmap;
+fbUninstallColormap(ColormapPtr pmap)
 {
     miUninstallColormap(pmap);
 }
 
 void
-fbResolveColor(pred, pgreen, pblue, pVisual)
-    unsigned short	*pred, *pgreen, *pblue;
-    register VisualPtr	pVisual;
+fbResolveColor(unsigned short   *pred,
+	       unsigned short   *pgreen,
+	       unsigned short   *pblue,
+	       VisualPtr	pVisual)
 {
     miResolveColor(pred, pgreen, pblue, pVisual);
 }
 
 Bool
-fbInitializeColormap(pmap)
-    register ColormapPtr	pmap;
+fbInitializeColormap(ColormapPtr pmap)
 {
     return miInitializeColormap(pmap);
 }
 
 int
-fbExpandDirectColors (pmap, ndef, indefs, outdefs)
-    ColormapPtr	pmap;
-    int		ndef;
-    xColorItem	*indefs, *outdefs;
+fbExpandDirectColors (ColormapPtr   pmap,
+		      int	    ndef,
+		      xColorItem    *indefs,
+		      xColorItem    *outdefs)
 {
     return miExpandDirectColors(pmap, ndef, indefs, outdefs);
 }
 
 Bool
-fbCreateDefColormap(pScreen)
-    ScreenPtr pScreen;
+fbCreateDefColormap(ScreenPtr pScreen)
 {
     return miCreateDefColormap(pScreen);
 }
 
 void
-fbClearVisualTypes()
+fbClearVisualTypes(void)
 {
     miClearVisualTypes();
 }
 
 Bool
-fbSetVisualTypes (depth, visuals, bitsPerRGB)
-    int	    depth;
-    int	    visuals;
-    int     bitsPerRGB;
+fbSetVisualTypes (int depth, int visuals, int bitsPerRGB)
 {
     return miSetVisualTypes(depth, visuals, bitsPerRGB, -1);
 }
@@ -671,14 +664,14 @@ fbSetVisualTypes (depth, visuals, bitsPerRGB)
  */
 
 Bool
-fbInitVisuals (visualp, depthp, nvisualp, ndepthp, rootDepthp, defaultVisp, sizes, bitsPerRGB)
-    VisualPtr	*visualp;
-    DepthPtr	*depthp;
-    int		*nvisualp, *ndepthp;
-    int		*rootDepthp;
-    VisualID	*defaultVisp;
-    unsigned long   sizes;
-    int		bitsPerRGB;
+fbInitVisuals (VisualPtr    *visualp, 
+	       DepthPtr	    *depthp,
+	       int	    *nvisualp,
+	       int	    *ndepthp,
+	       int	    *rootDepthp,
+	       VisualID	    *defaultVisp,
+	       unsigned long	sizes,
+	       int	    bitsPerRGB)
 {
     return miInitVisuals(visualp, depthp, nvisualp, ndepthp, rootDepthp,
 			 defaultVisp, sizes, bitsPerRGB, -1);

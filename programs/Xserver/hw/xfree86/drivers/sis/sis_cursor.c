@@ -25,7 +25,7 @@
  *	     Mitani Hiroshi <hmitani@drl.mei.co.jp>
  *	     David Thomas <davtom@dream.org.uk>.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_cursor.c,v 1.10 1999/06/20 15:02:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_cursor.c,v 1.1 2000/02/12 20:45:34 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86PciInfo.h"
@@ -39,9 +39,12 @@
 static void
 SiSShowCursor(ScrnInfoPtr pScrn)
 {
+	unsigned char temp;
+
 	outw(VGA_SEQ_INDEX, 0x8605);	/* Unlock Registers */
 	outb(VGA_SEQ_INDEX, 0x06);
-	outb(VGA_SEQ_DATA, inb(VGA_SEQ_DATA) | 0x40);
+	temp = inb(VGA_SEQ_DATA) | 0x40;
+	outb(VGA_SEQ_DATA, temp);
 }
 
 static void
@@ -58,9 +61,12 @@ SiS300ShowCursor(ScrnInfoPtr pScrn)
 static void
 SiSHideCursor(ScrnInfoPtr pScrn)
 {
+	unsigned char temp;
+
 	outw(VGA_SEQ_INDEX, 0x8605);	/* Unlock Registers */
 	outb(VGA_SEQ_INDEX, 0x06);
-	outb(VGA_SEQ_DATA, inb(VGA_SEQ_DATA) & 0xBF);
+	temp = inb(VGA_SEQ_DATA) & 0xBF;
+	outb(VGA_SEQ_DATA, temp);
 }
 
 static void
@@ -181,16 +187,19 @@ SiSLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 	/* if set, store the bit [22] to SR3E */
 	if (cursor_addr & 0x1000) {
 		outb(VGA_SEQ_INDEX, 0x3E);
-		outb(VGA_SEQ_DATA, inb(VGA_SEQ_DATA) | 0x04);
+		temp = inb(VGA_SEQ_DATA) | 0x04;
+		outb(VGA_SEQ_DATA, temp);
 	}
 
 	/* set HW cursor pattern, use pattern 0xF */
 	outb(VGA_SEQ_INDEX, 0x1E);
-	outb(VGA_SEQ_DATA, inb(VGA_SEQ_DATA) | 0xF0);
+	temp = inb(VGA_SEQ_DATA) | 0xF0;
+	outb(VGA_SEQ_DATA, temp);
 
 	/* disable the hardware cursor side pattern */
 	outb(VGA_SEQ_INDEX, 0x1E);
-	outb(VGA_SEQ_DATA, inb(VGA_SEQ_DATA) & 0xF7);
+	temp = inb(VGA_SEQ_DATA) & 0xF7;
+	outb(VGA_SEQ_DATA, temp);
 }
 
 static void

@@ -1,5 +1,5 @@
 /*
- * $Id: fbarc.c,v 1.1 1999/11/19 13:53:41 hohndel Exp $
+ * $Id: fbarc.c,v 1.2 2000/02/14 19:20:26 dawes Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/fb/fbarc.c,v 1.1 1999/11/19 13:53:41 hohndel Exp $ */
 
 #include "fb.h"
 #include "mizerarc.h"
@@ -53,6 +53,9 @@ fbPolyArc (DrawablePtr	pDrawable,
 	    {
 	    case 8:	arc = fbArc8; break;
 	    case 16:    arc = fbArc16; break;
+#ifdef FB_24BIT
+	    case 24:	arc = fbArc24; break;
+#endif
 	    case 32:    arc = fbArc32; break;
 	    }
 	}

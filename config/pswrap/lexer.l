@@ -42,7 +42,7 @@
 #include "pswpriv.h"
 #include "pswparser.h"
 
-#ifdef FLEX_SCANNER
+#if defined(FLEX_SCANNER) && !defined(YY_FLEX_LEX_COMPAT)
 int yylineno = 1;
 #endif
 

@@ -1,5 +1,5 @@
 /*
- * $Id: fbbltone.c,v 1.5 2000/02/12 03:39:42 dawes Exp $
+ * $Id: fbbltone.c,v 1.6 2000/02/14 19:20:27 dawes Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbbltone.c,v 1.4 2000/01/21 18:46:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbbltone.c,v 1.5 2000/02/12 03:39:42 dawes Exp $ */
 
 #include "fb.h"
 
@@ -157,12 +157,10 @@ fbBltOne (FbStip    *src,
     int		    nDst;			/* dest longwords (w.o. end) */
     int		    w;
     int		    n, nmiddle;
-    int		    nthistime;
     int		    dstS;			/* stipple-relative dst X coordinate */
     Bool	    copy;			/* accelerate dest-invariant */
     Bool	    transparent;		/* accelerate 0 nop */
     int		    srcinc;			/* source units consumed */
-    int		    dstinc;			/* dest units produced */
     Bool	    endNeedsLoad;		/* need load for endmask */
 #ifndef FBNOPIXADDR
     CARD8	    *fbLane;
@@ -557,10 +555,10 @@ fbBltOne24 (FbStip	*srcLine,
     FbStip	*src;
     FbBits	leftMask, rightMask, mask;
     int		nlMiddle, nl;
-    FbStip	stip, bits, right;
+    FbStip	stip, bits;
     int		remain;
     int		dstS;
-    int		offset, firstlen;
+    int		firstlen;
     int		rot0, rot;
     int		nDst;
     
@@ -592,9 +590,10 @@ fbBltOne24 (FbStip	*srcLine,
 	    if (leftMask)
 	    {
 		mask = fbStipple24Bits[rot >> 3][stip];
-		*dst = *dst & ~leftMask | FbOpaqueStipple (mask,
-							   FbRot24(fgxor, rot),
-							   FbRot24(bgxor, rot)) & leftMask;
+		*dst = (*dst & ~leftMask) | (FbOpaqueStipple (mask,
+							      FbRot24(fgxor, rot),
+							      FbRot24(bgxor, rot))
+					     & leftMask);
 		dst++;
 		fbNextStipBits(rot,stip);
 	    }
@@ -611,9 +610,10 @@ fbBltOne24 (FbStip	*srcLine,
 	    if (rightMask)
 	    {
 		mask = fbStipple24Bits[rot >> 3][stip];
-		*dst = *dst & ~rightMask | FbOpaqueStipple (mask,
-							    FbRot24(fgxor, rot),
-							    FbRot24(bgxor, rot)) & rightMask;
+		*dst = (*dst & ~rightMask) | (FbOpaqueStipple (mask,
+							       FbRot24(fgxor, rot),
+							       FbRot24(bgxor, rot))
+					      & rightMask);
 	    }
 	    dst += dstStride;
 	    src += srcStride;
@@ -633,7 +633,7 @@ fbBltOne24 (FbStip	*srcLine,
 		if (stip)
 		{
 		    mask = fbStipple24Bits[rot >> 3][stip] & leftMask;
-		    *dst = *dst & ~mask | FbRot24(fgxor, rot) & mask;
+		    *dst = (*dst & ~mask) | (FbRot24(fgxor, rot) & mask);
 		}
 		dst++;
 		fbNextStipBits (rot, stip);
@@ -644,7 +644,7 @@ fbBltOne24 (FbStip	*srcLine,
 		if (stip)
 		{
 		    mask = fbStipple24Bits[rot>>3][stip];
-		    *dst = *dst & ~mask | FbRot24(fgxor,rot) & mask;
+		    *dst = (*dst & ~mask) | (FbRot24(fgxor,rot) & mask);
 		}
 		dst++;
 		fbNextStipBits (rot, stip);
@@ -654,7 +654,7 @@ fbBltOne24 (FbStip	*srcLine,
 		if (stip)
 		{
 		    mask = fbStipple24Bits[rot >> 3][stip] & rightMask;
-		    *dst = *dst & ~mask | FbRot24(fgxor, rot) & mask;
+		    *dst = (*dst & ~mask) | (FbRot24(fgxor, rot) & mask);
 		}
 	    }
 	    dst += dstStride;
@@ -739,7 +739,6 @@ fbBltPlane (FbBits	    *src,
     FbBits	srcMask0;
     FbBits	srcBits;
     
-    FbStip	pixel;
     FbStip	dstBits;
     FbStip	*d;
     FbStip	dstMask;
@@ -747,7 +746,6 @@ fbBltPlane (FbBits	    *src,
     FbStip	dstUnion;
     int		w;
     int		wt;
-    int		dst_words;
     int		rot0;
 
     if (!width)

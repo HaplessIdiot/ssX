@@ -33,8 +33,7 @@ from the X Consortium.
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
 #include <stdio.h>
-
-extern char *malloc();
+#include <stdlib.h>
 
 extern char *read_file();
 extern Widget make_queryform();
@@ -43,9 +42,7 @@ extern Widget make_queryform();
  * data used by xmessage
  */
 
-char *ProgramName;
-
-static Atom wm_delete_window;
+const char *ProgramName;
 
 static struct _QueryResources {
     char *file;
@@ -105,7 +102,7 @@ static String fallback_resources[] = {
 static void usage (outf)
     FILE *outf;
 {
-    static char *options[] = {
+    static const char *options[] = {
 "    -file filename              file to read message from, \"-\" for stdin",
 "    -buttons string             comma-separated list of label:exitcode",
 "    -default button             button to activate if Return is pressed",
@@ -115,14 +112,13 @@ static void usage (outf)
 "    -timeout secs               exit with status 0 after \"secs\" seconds",
 "",
 NULL};
-    char **cpp;
+    const char **cpp;
 
     fprintf (outf, "usage: %s [-options] [message ...]\n\n",
 	     ProgramName);
     fprintf (outf, "where options include:\n");
-    for (cpp = options; *cpp; cpp++) {
+    for (cpp = options; *cpp; cpp++)
 	fprintf (outf, "%s\n", *cpp);
-    }
     fprintf (outf, "%s\n", id+1);
 }
 
@@ -130,6 +126,7 @@ NULL};
  * Action to implement ICCCM delete_window and other translations.
  * Takes one argument, the exit status.
  */
+static Atom wm_delete_window;
 /* ARGSUSED */
 static void
 exit_action(w, event, params, num_params)
@@ -170,114 +167,6 @@ static XtActionsRec actions_list[] = {
 
 static String top_trans =
     "<ClientMessage>WM_PROTOCOLS: exit(1)\n";
-
-/* forward references */
-static void position_near_mouse();
-static void position_near_center();
-static void time_out();
-
-/*
- * xmessage main program - make sure that there is a message,
- * then create the query box and go.  Callbacks take care of exiting.
- */
-void
-main (argc, argv)
-    int argc;
-    char **argv;
-{
-    Widget top, queryform;
-    XtAppContext app_con;
-    char *message_str;
-    int message_len;
-
-    ProgramName = argv[0];
-
-    XtSetLanguageProc(NULL, (XtLanguageProc) NULL, NULL);
-
-    top = XtAppInitialize (&app_con, "Xmessage",
-			   optionList, XtNumber(optionList), &argc, argv,
-			   fallback_resources, NULL, 0);
-
-    XtGetApplicationResources (top, (XtPointer) &qres, resources,
-			       XtNumber(resources), NULL, 0);
-
-    if (argc > 1 && !strcmp(argv[1], "-help")) {
-	usage(stdout);
-	exit(0);
-    }
-    if (argc == 1 && qres.file != NULL) {
-	message_str = read_file (qres.file, &message_len);
-	if (message_str == NULL) {
-	    fprintf (stderr, "%s: problems reading message file\n",
-		     ProgramName);
-	    exit (1);
-	}
-    } else if (argc > 1 && qres.file == NULL) {
-	int i, len;
-	char *cp;
-
-	len = argc - 1;		/* spaces between words and final NULL */
-	for (i=1; i<argc; i++)
-	    len += strlen(argv[i]);
-	message_str = malloc(len);
-	if (!message_str) {
-	    fprintf (stderr, "%s: cannot get memory for message string\n",
-		     ProgramName);
-	    exit (1);
-	}
-	cp = message_str;
-	for (i=1; i<argc; i++) {
-	    strcpy(cp, argv[i]);
-	    cp += strlen(argv[i]);
-	    if (i != argc-1)
-		*cp++ = ' ';
-	    else
-		*cp = '\0';
-	}
-	message_len = len;
-    } else {
-	usage(stderr);
-	exit(1);
-    }
-
-    XtAppAddActions(app_con, actions_list, XtNumber(actions_list));
-    XtOverrideTranslations(top, XtParseTranslationTable(top_trans));
-
-    /*
-     * create the query form; this is where most of the real work is done
-     */
-    queryform = make_queryform (top, message_str, message_len,
-				qres.button_list,
-				qres.print_value, qres.default_button,
-				qres.maxWidth, qres.maxHeight);
-    if (!queryform) {
-	fprintf (stderr,
-		 "%s: unable to create query form with buttons: %s\n",
-		 ProgramName, qres.button_list);
-	exit (1);
-    }
-
-    XtSetMappedWhenManaged(top, FALSE);
-    XtRealizeWidget(top);
-
-    /* do WM_DELETE_WINDOW before map */
-    wm_delete_window = XInternAtom(XtDisplay(top), "WM_DELETE_WINDOW", False);
-    XSetWMProtocols(XtDisplay(top), XtWindow(top), &wm_delete_window, 1);
-
-    if (qres.center)
-	position_near_center(top);
-    else if (qres.nearmouse)
-	position_near_mouse(top);
-
-    XtMapWidget(top);
-
-    if (qres.timeout_secs)
-	XtAppAddTimeOut(app_con, 1000*qres.timeout_secs, time_out, NULL);
-
-    XtAppMainLoop(app_con);
-
-    exit (0);
-}
 
 /* assumes shell widget has already been realized */
 
@@ -359,4 +248,107 @@ time_out(client_data, iid)
     XtIntervalId *iid;
 {
     exit(0);
+}
+
+/*
+ * xmessage main program - make sure that there is a message,
+ * then create the query box and go.  Callbacks take care of exiting.
+ */
+int
+main (argc, argv)
+    int argc;
+    char **argv;
+{
+    Widget top, queryform;
+    XtAppContext app_con;
+    char *message_str;
+    int message_len;
+
+    ProgramName = argv[0];
+
+    XtSetLanguageProc(NULL, (XtLanguageProc) NULL, NULL);
+
+    top = XtAppInitialize (&app_con, "Xmessage",
+			   optionList, XtNumber(optionList), &argc, argv,
+			   fallback_resources, NULL, 0);
+
+    XtGetApplicationResources (top, (XtPointer) &qres, resources,
+			       XtNumber(resources), NULL, 0);
+
+    if (argc > 1 && !strcmp(argv[1], "-help")) {
+	usage(stdout);
+	exit(0);
+    }
+    if (argc == 1 && qres.file != NULL) {
+	message_str = read_file (qres.file, &message_len);
+	if (message_str == NULL) {
+	    fprintf (stderr, "%s: problems reading message file\n",
+		     ProgramName);
+	    exit (1);
+	}
+    } else if (argc > 1 && qres.file == NULL) {
+	int i, len;
+	char *cp;
+
+	len = argc - 1;		/* spaces between words and final NULL */
+	for (i=1; i<argc; i++)
+	    len += strlen(argv[i]);
+	message_str = malloc(len);
+	if (!message_str) {
+	    fprintf (stderr, "%s: cannot get memory for message string\n",
+		     ProgramName);
+	    exit (1);
+	}
+	cp = message_str;
+	for (i=1; i<argc; i++) {
+	    strcpy(cp, argv[i]);
+	    cp += strlen(argv[i]);
+	    if (i != argc-1)
+		*cp++ = ' ';
+	    else
+		*cp = '\0';
+	}
+	message_len = len;
+    } else {
+	usage(stderr);
+	exit(1);
+    }
+
+    wm_delete_window = XInternAtom(XtDisplay(top), "WM_DELETE_WINDOW", False);
+    XtAppAddActions(app_con, actions_list, XtNumber(actions_list));
+    XtOverrideTranslations(top, XtParseTranslationTable(top_trans));
+
+    /*
+     * create the query form; this is where most of the real work is done
+     */
+    queryform = make_queryform (top, message_str, message_len,
+				qres.button_list,
+				qres.print_value, qres.default_button,
+				qres.maxWidth, qres.maxHeight);
+    if (!queryform) {
+	fprintf (stderr,
+		 "%s: unable to create query form with buttons: %s\n",
+		 ProgramName, qres.button_list);
+	exit (1);
+    }
+
+    XtSetMappedWhenManaged(top, FALSE);
+    XtRealizeWidget(top);
+
+    /* do WM_DELETE_WINDOW before map */
+    XSetWMProtocols(XtDisplay(top), XtWindow(top), &wm_delete_window, 1);
+
+    if (qres.center)
+	position_near_center(top);
+    else if (qres.nearmouse)
+	position_near_mouse(top);
+
+    XtMapWidget(top);
+
+    if (qres.timeout_secs)
+	XtAppAddTimeOut(app_con, 1000*qres.timeout_secs, time_out, NULL);
+
+    XtAppMainLoop(app_con);
+
+    exit (0);
 }

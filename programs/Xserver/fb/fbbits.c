@@ -1,5 +1,5 @@
 /*
- * $Id: fbbits.c,v 1.3 2000/01/21 01:11:56 dawes Exp $
+ * $Id: fbbits.c,v 1.4 2000/02/14 19:20:26 dawes Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbbits.c,v 1.2 2000/01/18 16:35:41 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbbits.c,v 1.3 2000/01/21 01:11:56 dawes Exp $ */
 
 #include "fb.h"
 #include "miline.h"
@@ -72,6 +72,7 @@
 #if FB_SHIFT == 6
 #define BITS4	    FbBits
 #endif
+
 #include "fbbits.h"
 
 #undef BRESSOLID
@@ -86,6 +87,64 @@
 #if FB_SHIFT == 6
 #undef BITS4
 #endif
+
+#ifdef FB_24BIT
+#define BRESSOLID   fbBresSolid24
+#define BRESDASH    fbBresDash24
+#define DOTS        fbDots24
+#define ARC         fbArc24
+#define POLYLINE    fbPolyline24
+#define POLYSEGMENT fbPolySegment24
+
+#define BITS        CARD32
+#define BITSUNIT    BYTE
+#define BITSMUL	    3
+
+#define FbDoTypeStore(b,t,x,s)	(*((t *) (b)) = (x) >> (s))
+#define FbDoTypeRRop(b,t,a,x,s) (*((t *) (b)) = FbDoRRop(*((t *) (b)),\
+							 (a) >> (s), \
+							 (x) >> (s)))
+#define FbDoTypeMaskRRop(b,t,a,x,m,s) (*((t *) (b)) = FbDoMaskRRop(*((t *) (b)),\
+								   (a) >> (s), \
+								   (x) >> (s), \
+								   (m) >> (s))
+#if BITMAP_BIT_ORDER == LSBFirst
+#define BITSSTORE(b,x)	((unsigned long) (b) & 1 ? \
+			 (FbDoTypeStore (b, CARD8, x, 0), \
+			  FbDoTypeStore ((b) + 1, CARD16, x, 8)) : \
+			 (FbDoTypeStore (b, CARD16, x, 0), \
+			  FbDoTypeStore ((b) + 2, CARD8, x, 16)))
+#define BITSRROP(b,a,x)	((unsigned long) (b) & 1 ? \
+			 (FbDoTypeRRop(b,CARD8,a,x,0), \
+			  FbDoTypeRRop((b)+1,CARD16,a,x,8)) : \
+			 (FbDoTypeRRop(b,CARD16,a,x,0), \
+			  FbDoTypeRRop((b)+2,CARD8,a,x,16)))
+#else
+#define BITSSTORE(b,x)  ((unsigned long) (b) & 1 ? \
+			 (FbDoTypeStore (b, CARD8, x, 16), \
+			  FbDoTypeStore ((b) + 1, CARD16, x, 0)) : \
+			 (FbDoTypeStore (b, CARD16, x, 8), \
+			  FbDoTypeStore ((b) + 2, CARD8, x, 0)))
+#define BITSRROP(b,a,x)	((unsigned long) (b) & 1 ? \
+			 (FbDoTypeRRop (b, CARD8, a, x, 16), \
+			  FbDoTypeRRop ((b) + 1, CARD16, a, x, 0)) : \
+			 (FbDoTypeRRop (b, CARD16, a, x, 8), \
+			  FbDoTypeRRop ((b) + 2, CARD8, a, x, 0)))
+#endif
+
+#include "fbbits.h"
+
+#undef BITSMUL
+#undef BITS
+#undef BITSPTR
+    
+#undef BRESSOLID
+#undef BRESDASH
+#undef DOTS
+#undef ARC
+#undef POLYLINE
+#undef POLYSEGMENT
+#endif /* FB_24BIT */
 
 #define BRESSOLID   fbBresSolid32
 #define BRESDASH    fbBresDash32

@@ -43,7 +43,7 @@ get_filename(success,failure)
   ** confirm the user's choice.  Other keys which would move out of
   ** the range of a one-line window are disabled. */
 
-  static char *translationtable = 
+  static const char *translationtable = 
     "Ctrl<Key>J:    KillPopup() Done()\n\
      Ctrl<Key>M:    KillPopup() Done()\n\
      <Key>Linefeed: KillPopup() Done()\n\

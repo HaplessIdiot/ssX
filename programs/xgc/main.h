@@ -58,8 +58,8 @@ XgcData TestData[NUM_TESTS] = {
   {"(Get Image)",        "GetImage",      GetImage},
   {"Text 8",             "PolyText8",     PolyText8},
   {"Image Text 8",       "ImageText8",    ImageText8},
-  {"(Text 16)",          "PolyText16",    PolyText16},
-  {"(Image Text 16)",    "ImageText16",   ImageText16}
+  {"Text 16",            "PolyText16",    PolyText16},
+  {"Image Text 16",      "ImageText16",   ImageText16}
 };
 
 XgcStuff TestStuff = {

@@ -5,11 +5,11 @@
 <article>
 
 <title>Fonts in XFree86
-<author>Juliusz Chroboczek, <tt/jec@dcs.ed.ac.uk/
-<date>10 February 2000</date>
+<author>Juliusz Chroboczek, <tt/Juliusz.Chroboczek@ens.fr/
+<date>14 February 2000</date>
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.4 1999/08/28 10:43:33 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.5 2000/02/11 18:06:48 dawes Exp $
 </ident>
 
 <toc>
@@ -596,7 +596,7 @@ In order to access the faces in a TrueType Collection file, the face
 number must be specified in the fonts.dir file before the filename
 within colons.  For example,
 <tscreen>
-<p>:2:mincho.ttc -misc-mincho-medium-r-normal--0-0-0-0-c-0-jisx0208.1990-0
+:2:mincho.ttc -misc-mincho-medium-r-normal--0-0-0-0-c-0-jisx0208.1990-0
 </tscreen>
 refers to face 2 in the `<tt/mincho.ttc/' TrueType Collection file.
 
@@ -683,8 +683,8 @@ should be replaced by <tt/fonts.scale/ and <tt/fonts.dir/ files with a
 number of entries of the form:
 <tscreen>
 1
-Adobe-Korea1/Munhwa-Regular--Adobe-Korea1-0.cid \
- -adobe-munhwa-medium-r-normal--0-0-0-0-p-0-adobe.korea1-0
+<p>Adobe-Korea1/Munhwa-Regular--Adobe-Korea1-0.cid \
+<p>  -adobe-munhwa-medium-r-normal--0-0-0-0-p-0-adobe.korea1-0
 </tscreen>
 (the font file name and the XLFD name should be on the same line).
 Note that the first column does not specify an actual filename;
@@ -714,11 +714,11 @@ stored in the subdirectory CIDFont of the Adobe-Korea1 directory.  The
 directory structure looks as following:
 <tscreen>
 CID/Adobe-Korea1/CIDFont/Munhwa-Regular
-CID/Adobe-Korea1/CMap/Adobe-Korea1-0
-CID/Adobe-Korea1/AFM/Munhwa-Regular.afm
-CID/Adobe-Korea1/CFM
-CID/fonts.dir
-CID/fonts.scale
+<p>CID/Adobe-Korea1/CMap/Adobe-Korea1-0
+<p>CID/Adobe-Korea1/AFM/Munhwa-Regular.afm
+<p>CID/Adobe-Korea1/CFM
+<p>CID/fonts.dir
+<p>CID/fonts.scale
 </tscreen>
 The file `<tt/Munhwa-Regular.afm/' is an Adobe Font Metric File (AFM).
 The directory `<tt/CFM/' will be used for summaries of that font

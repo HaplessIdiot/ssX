@@ -31,7 +31,7 @@
 
 Notice===
 */
-/* $XFree86: xc/extras/X-TrueType/xttcommon.h,v 1.4 1999/07/18 16:04:15 dawes Exp $ */
+/* $XFree86: xc/extras/X-TrueType/xttcommon.h,v 1.5 2000/02/13 05:24:36 dawes Exp $ */
 
 #ifndef _XTTCOMMON_H_
 #define _XTTCOMMON_H_ (1)
@@ -122,8 +122,8 @@ mystrcasecmp(char const *s1, char const *s2);
 
 /* strdup clone */
 char *
-Xstrdup(char const *str);
-#define xstrdup(s) Xstrdup((char const*)s)
+XttXstrdup(char const *str);
+#define xstrdup(s) XttXstrdup((char const*)s)
 
 #endif
 

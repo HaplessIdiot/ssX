@@ -1,5 +1,5 @@
 /*
- * $Id: fbpush.c,v 1.2 1999/11/19 14:59:16 hohndel Exp $
+ * $Id: fbpush.c,v 1.3 2000/02/14 19:20:30 dawes Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/fb/fbpush.c,v 1.2 1999/11/19 14:59:16 hohndel Exp $ */
 
 #include "fb.h"
 
@@ -42,9 +42,7 @@ fbPushPattern (DrawablePtr  pDrawable,
     FbStip	    *s, bitsMask, bitsMask0, bits;
     int		    xspan;
     int		    w;
-    int		    rot;
     int		    lenspan;
-    FbBits	    *d;
     
     src += srcX >> FB_STIP_SHIFT;
     srcX &= FB_STIP_MASK;

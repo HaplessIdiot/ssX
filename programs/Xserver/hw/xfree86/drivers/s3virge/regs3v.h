@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/regs3v.h,v 1.5 1999/03/21 07:35:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/regs3v.h,v 1.6 2000/02/08 17:19:14 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -314,7 +314,7 @@ in this Software without prior written authorization from the XFree86 Project.
 #endif
 
 
-#define MAXLOOP 0xffffff /* timeout value for engine waits, ~6 secs */
+#define MAXLOOP 0x0fffff /* timeout value for engine waits, 0.5 secs */
 
 /* Wait until "v" queue entries are free */
 #define	WaitQueue(v) \

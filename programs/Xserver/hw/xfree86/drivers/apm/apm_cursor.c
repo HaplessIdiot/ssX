@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_cursor.c,v 1.10 1999/09/27 06:29:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_cursor.c,v 1.11 2000/02/11 22:35:56 dawes Exp $ */
 
 
 #include "X.h"
@@ -154,8 +154,8 @@ ApmSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
       yoff = 0;
 
   WaitForFifo(pApm, 2);
-  WRXW(0x14c, (yoff << 8) | (xoff & 0xff));
-  WRXL(0x148, (y << 16) | (x & 0xffff));
+  WRXW(0x14C, (yoff << 8) | (xoff & 0xFF));
+  WRXL(0x148, (y << 16) | (x & 0xFFFF));
 }
 
 
@@ -174,13 +174,13 @@ ApmSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
   else
   {
     packedcolfg = 
-      ((fg & 0xe00000) >> 16) |
-      ((fg & 0x00e000) >> 11) |
-      ((fg & 0x0000c0) >> 6);
+      ((fg & 0xE00000) >> 16) |
+      ((fg & 0x00E000) >> 11) |
+      ((fg & 0x0000C0) >> 6);
     packedcolbg = 
-      ((bg & 0xe00000) >> 16) |
-      ((bg & 0x00e000) >> 11) |
-      ((bg & 0x0000c0) >> 6);
+      ((bg & 0xE00000) >> 16) |
+      ((bg & 0x00E000) >> 11) |
+      ((bg & 0x0000C0) >> 6);
     WaitForFifo(pApm, 2);
     WRXB(0x141, packedcolfg);
     WRXB(0x142, packedcolbg);

@@ -34,11 +34,9 @@ from the X Consortium.
 #include <X11/Shell.h>
 #include "Eyes.h"
 #include <stdio.h> 
+#include <stdlib.h> 
 #include "eyes.bit"
 #include "eyesmask.bit"
-
-extern void exit();
-static void quit();
 
 /* Exit with message describing command line format */
 
@@ -68,13 +66,30 @@ static XrmOptionDescRec options[] = {
 {"+shape",	"*eyes.shapeWindow",	XrmoptionNoArg,		"FALSE"},
 };
 
+static Atom wm_delete_window;
+
+/*ARGSUSED*/
+static void quit(w, event, params, num_params)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
+{
+    if (event->type == ClientMessage && 
+	event->xclient.data.l[0] != wm_delete_window) {
+	XBell(XtDisplay(w), 0);
+    } else {
+	XtDestroyApplicationContext(XtWidgetToApplicationContext(w));
+	exit(0);
+    }
+}
+
 static XtActionsRec actions[] = {
     {"quit",	quit}
 };
 
-static Atom wm_delete_window;
-
-void main(argc, argv)
+int
+main(argc, argv)
     int argc;
     char **argv;
 {
@@ -89,6 +104,9 @@ void main(argc, argv)
 			       options, XtNumber(options), &argc, argv,
 			       NULL, arg, (Cardinal) 0);
     if (argc != 1) usage();
+
+    wm_delete_window = XInternAtom(XtDisplay(toplevel), "WM_DELETE_WINDOW",
+				   False);
     XtAppAddActions(app_context, actions, XtNumber(actions));
     XtOverrideTranslations
 	(toplevel, XtParseTranslationTable ("<Message>WM_PROTOCOLS: quit()"));
@@ -109,25 +127,9 @@ void main(argc, argv)
 
     (void) XtCreateManagedWidget ("eyes", eyesWidgetClass, toplevel, NULL, 0);
     XtRealizeWidget (toplevel);
-    wm_delete_window = XInternAtom(XtDisplay(toplevel), "WM_DELETE_WINDOW",
-				   False);
     (void) XSetWMProtocols (XtDisplay(toplevel), XtWindow(toplevel),
                             &wm_delete_window, 1);
     XtAppMainLoop(app_context);
-}
 
-/*ARGSUSED*/
-static void quit(w, event, params, num_params)
-    Widget w;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
-{
-    if (event->type == ClientMessage && 
-	event->xclient.data.l[0] != wm_delete_window) {
-	XBell(XtDisplay(w), 0);
-    } else {
-	XtDestroyApplicationContext(XtWidgetToApplicationContext(w));
-	exit(0);
-    }
+    return 0;
 }

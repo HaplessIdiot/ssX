@@ -3,18 +3,16 @@
  */
 
 # include	<X11/Xos.h>
-# ifndef X_NOT_STDC_ENV
 # include	<stdlib.h>
-# endif
 # include	<X11/Xlib.h>
 # include	"transform.h"
 
 static XPoint *
 TranslatePoints (points, n_points, t, mode)
-TPoint	*points;
-int	n_points;
-Transform	*t;
-int	mode;
+    TPoint	*points;
+    int	n_points;
+    Transform	*t;
+    int	mode;
 {
 	XPoint	*xpoints;
 	int	i;
@@ -22,7 +20,7 @@ int	mode;
 
 	xpoints = (XPoint *) malloc (n_points * sizeof (*xpoints));
 	if (!xpoints)
-		return 0;
+		return NULL;
 	for (i = 0; i < n_points; i++) {
 		xpoints[i].x = Xx(points[i].x + xoff, points[i].y + yoff, t);
 		xpoints[i].y = Xy(points[i].x + xoff, points[i].y + yoff, t);
@@ -34,15 +32,16 @@ int	mode;
 	return xpoints;
 }
 
+void
 TFillPolygon (dpy, d, gc, t, points, n_points, shape, mode)
-register Display	*dpy;
-Drawable		d;
-GC			gc;
-Transform		*t;
-TPoint			*points;
-int			n_points;
-int			shape;
-int			mode;
+    Display	*dpy;
+    Drawable	d;
+    GC		gc;
+    Transform	*t;
+    TPoint	*points;
+    int		n_points;
+    int		shape;
+    int		mode;
 {
 	XPoint	*xpoints;
 
@@ -54,13 +53,14 @@ int			mode;
 	}
 }
 
+void
 TDrawArc (dpy, d, gc, t, x, y, width, height, angle1, angle2)
-	register Display	*dpy;
-	Drawable		d;
-	GC			gc;
-	Transform		*t;
-	double			x, y, width, height;
-	int			angle1, angle2;
+    Display	*dpy;
+    Drawable	d;
+    GC		gc;
+    Transform	*t;
+    double	x, y, width, height;
+    int		angle1, angle2;
 {
 	int	xx, xy, xw, xh;
 
@@ -79,13 +79,14 @@ TDrawArc (dpy, d, gc, t, x, y, width, height, angle1, angle2)
 	XDrawArc (dpy, d, gc, xx, xy, xw, xh, angle1, angle2);
 }
 
+void
 TFillArc (dpy, d, gc, t, x, y, width, height, angle1, angle2)
-	register Display	*dpy;
-	Drawable		d;
-	GC			gc;
-	Transform		*t;
-	double			x, y, width, height;
-	int			angle1, angle2;
+    Display	*dpy;
+    Drawable	d;
+    GC		gc;
+    Transform	*t;
+    double	x, y, width, height;
+    int		angle1, angle2;
 {
 	int	xx, xy, xw, xh;
 
@@ -104,10 +105,11 @@ TFillArc (dpy, d, gc, t, x, y, width, height, angle1, angle2)
 	XFillArc (dpy, d, gc, xx, xy, xw, xh, angle1, angle2);
 }
 
+void
 SetTransform (t, xx1, xx2, xy1, xy2, tx1, tx2, ty1, ty2)
-Transform	*t;
-int		xx1, xx2, xy1, xy2;
-double		tx1, tx2, ty1, ty2;
+    Transform	*t;
+    int		xx1, xx2, xy1, xy2;
+    double	tx1, tx2, ty1, ty2;
 {
 	t->mx = ((double) xx2 - xx1) / (tx2 - tx1);
 	t->bx = ((double) xx1) - t->mx * tx1;

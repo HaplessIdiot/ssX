@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_video.c,v 1.2 2000/02/12 02:54:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_video.c,v 1.3 2000/02/13 03:06:37 dawes Exp $ */
 
 #if PSZ != 24
 #include "dixstruct.h"
@@ -268,10 +268,11 @@ typedef struct {
    unsigned char	contrast;
    unsigned short	reg, val;
    ApmPtr	pApm;
-   int		x1, y1, drw_x, drw_y, Bpp, Bps;
+   int		x1, x10, y1, drw_x, drw_y, Bpp, Bps;
    FBAreaPtr	area;
    RegionRec	clip;
    int		xnum, xden, ynum, yden;
+   CARD32	scalex, scaley;
    CARD32	data;
 } ApmPortPrivRec, *ApmPortPrivPtr;
 #endif
@@ -371,7 +372,7 @@ ApmClipVideo(BoxPtr dst, INT32 *x1, INT32 *x2, INT32 *y1, INT32 *y2,
 	      BoxPtr extents, INT32 width, INT32 height,
 	      CARD32 *scalex, CARD32 *scaley, INT32 mask)
 {
-    INT32 vscale, hscale, delta;
+    INT32 vscale, hscale;
     int diff;
 
     if (dst->x2 - dst->x1 < *x2 - *x1)
@@ -407,52 +408,14 @@ ApmClipVideo(BoxPtr dst, INT32 *x1, INT32 *x2, INT32 *y1, INT32 *y2,
 	*y2 -= diff * vscale;
     }
 
-    if(*x1 < 0) {
-	diff = (-*x1 + hscale - 1) / hscale;
-	dst->x1 += diff;
-	*x1 += diff * hscale;
-    }
-    diff = dst->x1 & mask;
-    if (diff) {
-	diff = mask + 1 - diff;
-	dst->x1 += diff;
-	*x1 += diff * hscale;
-    }
-    delta = *x2 - (width << 16);
-    if(delta > 0) {
-	diff = (delta + hscale - 1) / hscale;
-	dst->x2 -= diff;
-	*x2 -= diff * hscale;
-    }
-    diff = dst->x2 & mask;
-    if (diff) {
-	dst->x2 -= diff;
-	*x2 -= diff * hscale;
-    }
-    if(*y1 < 0) {
-	diff = (-*y1 + vscale - 1) / vscale;
-	dst->y1 += diff;
-	*y1 += diff * vscale;
-    }
-    delta = *y2 - (height << 16);
-    if(delta > 0) {
-	diff = (delta + vscale - 1) / vscale;
-	dst->y2 -= diff;
-	*y2 -= diff * vscale;
-    }
-
-    hscale = (*x2 - *x1) / (dst->x2 - dst->x1);
-    vscale = (*y2 - *y1) / (dst->y2 - dst->y1);
-    if (hscale == 0x10000)	/* Shrinking */
+    if (*x2 - *x1 == 0x10000 * (dst->x2 - dst->x1))	/* Shrinking */
 	*scalex = 0;
     else
-	*scalex = (0xFFF0000 - (((hscale * ((dst->x1 + mask - 1) & ~mask) - 1))
-	    & 0xFFF0000)) | ((*x2 - *x1 - 1) / (dst->x2 - dst->x1 - 1) >> 4);
-    if (vscale == 0x10000)	/* Shrinking */
+	*scalex = ((*x2 - *x1 - 0x1000) / (dst->x2 - dst->x1 - 1)) >> 4;
+    if (*y2 - *y1 == 0x10000 * (dst->y2 - dst->y1))	/* Shrinking */
 	*scaley = 0;
     else
-	*scaley = (0xFFF0000 - ((vscale * dst->y1) & 0xFFF0000)) |
-		    ((*y2 - *y1 - 1) / (dst->y2 - dst->y1 - 1) >> 4);
+	*scaley = ((*y2 - *y1 - 0x1000) / (dst->y2 - dst->y1 - 1)) >> 4;
 }
 #endif
 
@@ -514,7 +477,7 @@ ApmQueryBestSize(ScrnInfoPtr pScrn, Bool motion, short vid_w, short vid_h,
 		  unsigned int *p_w, unsigned int *p_h, pointer data)
 {
     APMDECL(pScrn);
-    unsigned short	round = ~(32 / pApm->CurrentLayout.bitsPerPixel - 1);
+    unsigned short	round = ~pApm->CurrentLayout.mask32;
 
     *p_w = drw_w & round;
     *p_h = drw_h & round;
@@ -592,15 +555,22 @@ A(ReputImage)(ScrnInfoPtr pScrn, short drw_x, short drw_y,
     RegionRec	Union;
     RegionPtr	reg0;
     int		nrects, CurrY, tile;
-    int		x1, x2, y1, xmax, ymax;
+    int		X1, X2, Y1, y2, xmax, ymax;
     BoxPtr	rects;
     Bool	didit = 0;
 
+    mask = pApm->CurrentLayout.mask32;
+    fx = pScrn->frameX0 & ~mask;
+    fy = pScrn->frameY0 + 1;
     REGION_COPY(pScreen, &pPriv->clip, clipBoxes);
     pPriv->x1 += drw_x - pPriv->drw_x;
+    pPriv->x10 = ((pPriv->x1 + mask) & ~mask) - fx;
     pPriv->y1 += drw_y - pPriv->drw_y;
     pPriv->drw_x = drw_x;
     pPriv->drw_y = drw_y;
+    A(WaitForFifo)(pApm, 2);
+    WRXW(pPriv->reg + 0x06, 0xFFF - (((pPriv->scalex * pPriv->x10) & 0xFFF000) >> 12));
+    WRXW(pPriv->reg + 0x0A, 0xFFF - (((pPriv->scaley * pPriv->y1) & 0xFFF000) >> 12));
     pPriv0 = (ApmPortPrivPtr)pApm->adaptor->pPortPrivates[0].ptr;
     pPriv1 = (ApmPortPrivPtr)pApm->adaptor->pPortPrivates[1].ptr;
     reg0 = &pPriv0->clip;
@@ -611,33 +581,34 @@ A(ReputImage)(ScrnInfoPtr pScrn, short drw_x, short drw_y,
     nrects = REGION_NUM_RECTS(&Union);
     rects = REGION_RECTS(&Union);
     tile = 0x200;
-    fx = pScrn->frameX0;
-    fy = pScrn->frameY0 + 1;
-    xmax = pScrn->frameX1 - fx;
-    ymax = pScrn->frameY1 - fy;
-    CurrY = 0;
-    mask = 32 / pApm->CurrentLayout.bitsPerPixel - 1;
-    x1 = (rects->x1 - fx + mask) & ~mask;
-    if (x1 < 0)
-	x1 = 0;
-    x2 = (rects->x2 - fx) & ~mask;
-    while ((x2 <= x1 || x1 >= xmax) && --nrects > 0) {
+    xmax = pScrn->frameX1 - pScrn->frameX0 + 1;
+    ymax = pScrn->frameY1 - pScrn->frameY0;
+    CurrY = -1;
+    goto BEGIN_LOOP_1;
+    do {
 	rects++;
-	x1 = (rects->x1 - fx + mask) & ~mask;
-	if (x1 < 0)
-	    x1 = 0;
-	x2 = (rects->x2 - fx) & ~mask;
-    }
-    y1 = rects->y1 - fy;
+BEGIN_LOOP_1:
+	X1 = ((rects->x1 + mask) & ~mask) - fx;
+	if (X1 < 0)
+	    X1 = 0;
+	X2 = (rects->x2 & ~mask) - fx;
+	if (X2 > xmax)
+	    X2 = xmax;
+	y2 = rects->y2 - fy;
+    } while ((X2 <= X1 || y2 < -1) && --nrects > 0);
+    Y1 = rects->y1 - fy;
 
-    while (STATUS() & 0x800);
     while (!(STATUS() & 0x800));
+    while (STATUS() & 0x800);
     while (nrects-- > 0) {
-	CARD32	reg;
-	int	X1, X2, Y1, y2 = rects->y2 - fy;
+	CARD32	reg, data;
+	int	x1, x2, y1;
 
-	if (y1 < 0) y1 = 0;
-	if (y2 < 0 || y1 > ymax)
+	x1 = X1;
+	x2 = X2;
+	y1 = Y1;
+	if (y1 < -1) y1 = -1;
+	if (y1 > ymax)
 	    break;
 	didit = 1;
 	if (y1 > CurrY) {
@@ -656,20 +627,23 @@ A(ReputImage)(ScrnInfoPtr pScrn, short drw_x, short drw_y,
 	    reg = (x1 << 16) | 2;
 	}
 	CurrY = y2;
-	if (nrects > 0)
+	if (nrects <= 0)
+	    goto BEGIN_LOOP_2;
+	do {
 	    rects++;
-	X1 = (rects->x1 - fx + mask) & ~mask;
-	if (X1 < 0)
-	    X1 = 0;
-	X2 = (rects->x2 - fx) & ~mask;
-	while ((X2 <= x1 || X1 >= xmax) && --nrects > 0) {
-	    rects++;
-	    X1 = (rects->x1 - fx + mask) & ~mask;
+BEGIN_LOOP_2:
+	    X1 = ((rects->x1 + mask) & ~mask) - fx;
 	    if (X1 < 0)
 		X1 = 0;
-	    X2 = (rects->x2 - fx) & ~mask;
-	}
+	    X2 = (rects->x2 & ~mask) - fx;
+	    if (X2 > xmax)
+		X2 = xmax;
+	} while (X2 <= X1 && --nrects > 0);
 	Y1 = rects->y1 - fy;
+	y2 = rects->y2 - fy;
+	data = pPriv->data + (((x1 - pPriv->x10)
+				* pPriv->xden) / pPriv->xnum) * pPriv->Bpp +
+	    (((y1 - pPriv->y1 + fy) * pPriv->yden) / pPriv->ynum) * pPriv->Bps;
 	A(WaitForFifo)(pApm, 4);
 	if (!nrects || tile == 0x2B0 || y1 < Y1) {
 	    WRXL(tile   , 0x10 | reg);
@@ -678,13 +652,9 @@ A(ReputImage)(ScrnInfoPtr pScrn, short drw_x, short drw_y,
 	    WRXL(tile   , reg);
 	}
 	WRXL(tile + 0x04, x2 | (CurrY << 16));
-	WRXW(tile + 0x08, ((x2 - x1) * pPriv->xden) / pPriv->xnum);
-	WRXL(tile + 0x0A, pPriv->data +
-	    (((x1 - pPriv->x1 + fx) * pPriv->xden) / pPriv->xnum) * pPriv->Bpp +
-	    (((y1 - pPriv->y1 + fy) * pPriv->yden) / pPriv->ynum) * pPriv->Bps);
-	x1 = X1;
-	x2 = X2;
-	y1 = Y1;
+	WRXL(tile + 0x08, (((x2-x1)*pPriv->xden+pPriv->xnum-1) / pPriv->xnum) |
+				(data << 16));
+	WRXB(tile + 0x0C, data >> 16);
 	tile += 16;
 	if (tile == 0x2C0) {
 	    tile = 0x200;
@@ -698,7 +668,7 @@ A(ReputImage)(ScrnInfoPtr pScrn, short drw_x, short drw_y,
 	WRXW(0x8E, tile - 0x200);
     }
 
-    if (didit ^ (pPriv0->val & pPriv1->val & 1)) {
+    if (didit ^ ((pPriv0->val | pPriv1->val) & 1)) {
 	if (didit) {
 	    pPriv0->val |= 1;
 	    pPriv1->val |= 1;
@@ -758,7 +728,7 @@ A(PutImage)(ScrnInfoPtr pScrn, short src_x, short src_y,
     dstBox.y1 = drw_y;
     dstBox.y2 = drw_y + drw_h;
 
-    mask = 32 / pApm->CurrentLayout.bitsPerPixel - 1;
+    mask = pApm->CurrentLayout.mask32;
 
     ApmClipVideo(&dstBox, &x1, &x2, &y1, &y2,
 		REGION_EXTENTS(pScreen, clipBoxes), width, height,
@@ -915,9 +885,11 @@ A(PutImage)(ScrnInfoPtr pScrn, short src_x, short src_y,
     }
     pPriv->on = 1;
     A(WaitForFifo)(pApm, 3);
-    WRXW(pPriv->reg + 2, dstPitch >> 2);
-    WRXL(pPriv->reg + 4, scalex);
-    WRXL(pPriv->reg + 8, scaley);
+    WRXW(pPriv->reg + 0x02, dstPitch >> 2);
+    WRXW(pPriv->reg + 0x04, scalex);
+    WRXW(pPriv->reg + 0x08, scaley);
+    pPriv->scalex = scalex;
+    pPriv->scaley = scaley;
     if (scalex && scaley)
 	scale = 0x0E00;
     else if (scalex)

@@ -10,9 +10,7 @@
 
 #include <X11/Xos.h>
 #include <stdio.h>
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#endif
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Xaw/Form.h>
@@ -82,7 +80,7 @@ create_planemask_choice(w)
   num_planes = PlanesOfScreen(X.scr);
 
   planemask = (1<<num_planes)-1;
-  sprintf(buf,"planemask %d",planemask);
+  sprintf(buf,"planemask %lu",planemask);
   interpret(buf);
 
   /* Allocate space for stuff that we don't know the size of yet */
@@ -164,7 +162,7 @@ choose_plane(w,closure,call_data)
   else
     planemask &= ~(1<<num);
 
-  (void) sprintf(buf,"planemask %d\n",planemask);
+  (void) sprintf(buf,"planemask %lu\n",planemask);
   interpret(buf);
 }
 

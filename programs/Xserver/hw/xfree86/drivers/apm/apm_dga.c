@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_dga.c,v 1.6 1999/12/27 01:33:57 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_dga.c,v 1.7 2000/02/11 22:35:56 dawes Exp $ */
 /*
  * file: apm_dga.c
  * ported from s3virge, ported from mga
@@ -182,45 +182,45 @@ ApmDGAInit(ScreenPtr pScreen)
    modes = ApmSetupDGAMode (pScrn, modes, &num, 16, 15, 
 		(pScrn->bitsPerPixel != 24),
 		(pScrn->depth != 15) ? 0 : pScrn->displayWidth,
-		0x7c00, 0x03e0, 0x001f, TrueColor);
+		0x7C00, 0x03E0, 0x001F, TrueColor);
 
    modes = ApmSetupDGAMode (pScrn, modes, &num, 16, 15, 
 		(pScrn->bitsPerPixel != 24),
 		(pScrn->depth != 15) ? 0 : pScrn->displayWidth,
-		0x7c00, 0x03e0, 0x001f, DirectColor);
+		0x7C00, 0x03E0, 0x001F, DirectColor);
 
    /* 16 */
    modes = ApmSetupDGAMode (pScrn, modes, &num, 16, 16, 
 		(pScrn->bitsPerPixel != 24),
 		(pScrn->depth != 16) ? 0 : pScrn->displayWidth,
-		0xf800, 0x07e0, 0x001f, TrueColor);
+		0xF800, 0x07E0, 0x001F, TrueColor);
 
    modes = ApmSetupDGAMode (pScrn, modes, &num, 16, 16, 
 		(pScrn->bitsPerPixel != 24),
 		(pScrn->depth != 16) ? 0 : pScrn->displayWidth,
-		0xf800, 0x07e0, 0x001f, DirectColor);
+		0xF800, 0x07E0, 0x001F, DirectColor);
 
    /* 24 */
    modes = ApmSetupDGAMode (pScrn, modes, &num, 24, 24, 
 		(pScrn->bitsPerPixel == 24),
 		(pScrn->bitsPerPixel != 24) ? 0 : pScrn->displayWidth,
-		0xff0000, 0x00ff00, 0x0000ff, TrueColor);
+		0xFF0000, 0x00FF00, 0x0000FF, TrueColor);
 
    modes = ApmSetupDGAMode (pScrn, modes, &num, 24, 24, 
 		(pScrn->bitsPerPixel == 24),
 		(pScrn->bitsPerPixel != 24) ? 0 : pScrn->displayWidth,
-		0xff0000, 0x00ff00, 0x0000ff, DirectColor);
+		0xFF0000, 0x00FF00, 0x0000FF, DirectColor);
 
    /* 32 */
    modes = ApmSetupDGAMode (pScrn, modes, &num, 32, 24, 
 		(pScrn->bitsPerPixel != 24),
 		(pScrn->bitsPerPixel != 32) ? 0 : pScrn->displayWidth,
-		0xff0000, 0x00ff00, 0x0000ff, TrueColor);
+		0xFF0000, 0x00FF00, 0x0000FF, TrueColor);
 
    modes = ApmSetupDGAMode (pScrn, modes, &num, 32, 24, 
 		(pScrn->bitsPerPixel != 24),
 		(pScrn->bitsPerPixel != 32) ? 0 : pScrn->displayWidth,
-		0xff0000, 0x00ff00, 0x0000ff, DirectColor);
+		0xFF0000, 0x00FF00, 0x0000FF, DirectColor);
 
    pApm->numDGAModes = num;
    pApm->DGAModes = modes;
@@ -264,6 +264,10 @@ ApmSetMode(ScrnInfoPtr pScrn, DGAModePtr pMode)
 	pApm->CurrentLayout.bitsPerPixel	= pMode->bitsPerPixel;
 	pApm->CurrentLayout.bytesPerScanline	= pMode->bytesPerScanline;
 	pApm->CurrentLayout.pMode		= pMode->mode;
+	if (pMode->bitsPerPixel == 24)
+	    pApm->CurrentLayout.mask32		= 3;
+	else
+	    pApm->CurrentLayout.mask32		= 32 / pMode->bitsPerPixel - 1;
 
         ApmSwitchMode(index, pMode->mode, 0);
 	ApmSetupXAAInfo(pApm, NULL);

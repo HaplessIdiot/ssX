@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_regs.h,v 1.4 1999/09/27 06:29:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_regs.h,v 1.5 2000/02/11 22:35:58 dawes Exp $ */
 
 
 
@@ -48,23 +48,23 @@
 			curr32[MIN(((addr) / 4), 0x20)] = (val); }} while (0)
 
 /* IO port access to extended registers */
-#define RDXB_IOP(addr)     (wrinx(0x3c4, 0x1d, (addr) >> 2),inb(pApm->xbase + ((addr) & 3)))
-#define RDXW_IOP(addr)     (wrinx(0x3c4, 0x1d, (addr) >> 2),inw(pApm->xbase + ((addr) & 2)))
-#define RDXL_IOP(addr)     (wrinx(0x3c4, 0x1d, (addr) >> 2),inl(pApm->xbase))
+#define RDXB_IOP(addr)     (wrinx(0x3C4, 0x1D, (addr) >> 2),inb(pApm->xbase + ((addr) & 3)))
+#define RDXW_IOP(addr)     (wrinx(0x3C4, 0x1D, (addr) >> 2),inw(pApm->xbase + ((addr) & 2)))
+#define RDXL_IOP(addr)     (wrinx(0x3C4, 0x1D, (addr) >> 2),inl(pApm->xbase))
 #define WRXB_IOP(addr,val) do { if (check08((addr), (val))) {		     \
-				    wrinx(0x3c4, 0x1d, (addr) >> 2);	     \
+				    wrinx(0x3C4, 0x1D, (addr) >> 2);	     \
 				    outb(pApm->xbase + ((addr) & 3), (val)); \
 				    curr08[MIN((addr), 0x80)] = (val);	     \
 				    break;				     \
 				}} while (1)
 #define WRXW_IOP(addr,val) do { if (check16((addr), (val))) {		     \
-				    wrinx(0x3c4, 0x1d, (addr) >> 2);	     \
+				    wrinx(0x3C4, 0x1D, (addr) >> 2);	     \
 				    outw(pApm->xbase + ((addr) & 2), (val)); \
 				    curr16[MIN(((addr) / 2), 0x40)] = (val); \
 				    break;				     \
 				}} while (1)
 #define WRXL_IOP(addr,val) do { if (check32((addr), (val))) {		     \
-				    wrinx(0x3c4, 0x1d, (addr) >> 2);	     \
+				    wrinx(0x3C4, 0x1D, (addr) >> 2);	     \
 				    outl(pApm->xbase, (val));		     \
 				    curr32[MIN(((addr) / 4), 0x20)] = (val); \
 				    break;				     \
@@ -99,9 +99,9 @@
 #define ApmWriteDacData(val)	do { APMVGAB(0x3C9) = (val); break; } while(1)
 #define ApmReadDacData()	APMVGAB(0x3C9)
 
-#define STATUS()			(RDXL(0x1fc))
-#define STATUS_IOP()			(RDXL_IOP(0x1fc))
-#define STATUS_FIFO			(0x0f)
+#define STATUS()			(RDXL(0x1FC))
+#define STATUS_IOP()			(RDXL_IOP(0x1FC))
+#define STATUS_FIFO			(0x0F)
 #define STATUS_HOSTBLTBUSY		(1 << 8)
 #define STATUS_ENGINEBUSY		(1 << 10)
 #define STATUS_SDA			(1 << 16)

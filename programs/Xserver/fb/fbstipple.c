@@ -1,5 +1,5 @@
 /*
- * $Id: fbstipple.c,v 1.4 2000/02/12 03:39:43 dawes Exp $
+ * $Id: fbstipple.c,v 1.5 2000/02/14 19:20:31 dawes Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbstipple.c,v 1.3 2000/01/21 15:06:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbstipple.c,v 1.4 2000/02/12 03:39:43 dawes Exp $ */
 
 #include "fb.h"
 
@@ -165,8 +165,8 @@ fbEvenStipple (FbBits	*dst,
 	 * Rotate into position and compute reduced rop values
 	 */
 	mask = FbRotLeft(mask, rot);
-	and = fgand & mask | bgand & ~mask;
-	xor = fgxor & mask | bgxor & ~mask;
+	and = (fgand & mask) | (bgand & ~mask);
+	xor = (fgxor & mask) | (bgxor & ~mask);
 	
 #ifndef FBNOPIXADDR
 	if (transparent)

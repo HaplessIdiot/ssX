@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: contrib/programs/ico/ico.c,v 1.3 1999/10/13 17:20:00 dawes Exp $ */
+/* $XFree86: xc/programs/ico/ico.c,v 1.1 2000/02/13 03:26:12 dawes Exp $ */
 
 /******************************************************************************
  * Description
@@ -99,22 +99,11 @@ SOFTWARE.
 Polyinfo polygons[] = {
 #include "allobjs.h"
 };
- int polysize = sizeof(polygons)/sizeof(polygons[0]);
+#define NumberPolygons sizeof(polygons)/sizeof(polygons[0])
 
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#include <time.h>
-#define Time_t time_t
-#else
-#define Time_t long
-extern Time_t time ();
-extern long rand();
-char *malloc();
-#endif
-
-void *do_ico_window();		/* function to create and run an ico window */
-Polyinfo *findpoly();
-char *xalloc();
+#include <time.h>	/* for time_t */
+#include <sys/time.h>	/* for struct timeval */
 
 typedef double Transform3D[4][4];
 
@@ -176,10 +165,12 @@ Atom wm_delete_window;
  * any additional threads are created
  */
 
-char *Primaries[] = {"red", "green", "blue", "yellow", "cyan", "magenta"};
+const char *Primaries[] = {
+    "red", "green", "blue", "yellow", "cyan", "magenta"
+};
 #define NumberPrimaries 6
 
-char *help_message[] = {
+const char *help_message[] = {
 "where options include:",
 "-display host:dpy           X server to use",
 "    -geometry geom          geometry of window to use",
@@ -211,13 +202,15 @@ char *help_message[] = {
 #endif
 NULL};
 
+const char *ProgramName;	/* argv[0] */
+
 /*
  * variables set by command-line options
  */
-char *geom = NULL;		/* -geometry: window geometry */
+const char *geom = NULL;	/* -geometry: window geometry */
 int useRoot = 0;		/* -r */
 int dash = 0;			/* -d: dashed line pattern */
-char **colornames;		/* -colors (points into argv) */
+const char **colornames;	/* -colors (points into argv) */
 #ifdef MULTIBUFFER
 int update_action = MultibufferUpdateActionBackground;
 #endif
@@ -225,16 +218,15 @@ int linewidth = 0;		/* -lw */
 int multibufext = 0;		/* -dbl: use Multi-Buffering extension */
 int dblbuf = 0;			/* -dbl or -softdbl: double buffering */
 int numcolors = 0;		/* -p: number of primary colors to use */
-char *background_colorname = NULL; /* -bg */
+const char *background_colorname = NULL; /* -bg */
 int doedges = 1;		/* -noedges turns this off */
 int dofaces = 0;		/* -faces */
 int invert = 0;			/* -i */
-char *ico_geom = NULL;		/* -size: size of object in window */
-char *delta_geom = NULL;	/* -delta: amount by which to move object */
+const char *ico_geom = NULL;	/* -size: size of object in window */
+const char *delta_geom = NULL;	/* -delta: amount by which to move object */
 Polyinfo *poly;			/* -obj: the poly to draw */
 int dsync = 0;			/* -dsync */
-int sleepcount = 0;		/* -sleep */
-int msleepcount = 0;
+int msleepcount = 0;		/* -sleep value in milliseconds*/
 #ifdef MULTITHREAD
 int thread_count;
 #ifdef XMUTEX_INITIALIZER
@@ -249,165 +241,196 @@ xcondition_rec count_cond;	/* Xthreads doesn't define an equivalent to
 
 /******************************************************************************
  * Description
- *	Main routine.  Process command-line arguments, then bounce a bounding
- *	box inside the window.  Call DrawIco() to redraw the icosahedron.
+ *	Error handling
  *****************************************************************************/
 
-int main(argc, argv)
-int argc;
-char **argv;
+#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 7)
+void icoFatal () __attribute__((__noreturn__));
+#endif
+/* VARARGS1 */
+void
+icoFatal(fmt,a0)
+    const char *fmt;
+    const char *a0;
 {
-        char *ProgramName;
-	char *display = NULL;
-	extern int _Xdebug;
-#ifdef MULTIBUFFER
-	int mbevbase, mberrbase;
-#endif
-#ifdef MULTITHREAD
-	int nthreads = 1;	/* -threads: number of windows */
-	int i;
-#endif
-	struct closure *closure;
-
-	ProgramName = argv[0];
-
-	/* Process arguments: */
-
-	poly = findpoly("icosahedron");	/* default */
-
-	while (*++argv) {
-		if (!strcmp (*argv, "-display")) {
-			display = *++argv;
-		} else if (!strncmp (*argv, "-g", 2))
-			geom = *++argv;
-		else if (!strcmp(*argv, "-r"))
-			useRoot = 1;
-		else if (!strcmp (*argv, "-d"))
-			dash = atoi(*++argv);
-#ifdef MULTITHREAD
-		else if (!strcmp(*argv, "-threads"))
-		        nthreads = atoi(*++argv);
-#endif
-		else if (!strcmp(*argv, "-colors")) {
-			colornames = ++argv;
-			for ( ; *argv && *argv[0]!='-'; argv++) ;
-			numcolors = argv - colornames;
-			--argv;
-		}
-		else if (!strcmp (*argv, "-copy")) {
-#ifdef MULTIBUFFER
-			update_action = MultibufferUpdateActionCopied;
-#endif
-		}
-		else if (!strcmp (*argv, "-untouched")) {
-#ifdef MULTIBUFFER
-			update_action = MultibufferUpdateActionUntouched;
-#endif
-		}
-		else if (!strcmp (*argv, "-undefined")) {
-#ifdef MULTIBUFFER
-			update_action = MultibufferUpdateActionUndefined;
-#endif
-		} else if (!strcmp (*argv, "-lw"))
-			linewidth = atoi(*++argv);
-		else if (!strcmp (*argv, "-dbl")) {
-			dblbuf = 1;
-#ifdef MULTIBUFFER
-			multibufext = 1;
-#endif
-		}
-		else if (!strcmp(*argv, "-softdbl")) {
-		        dblbuf = 1;
-			multibufext = 0;
-		}
-		else if (!strncmp(*argv, "-p", 2)) {
-			numcolors = atoi(argv[0]+2);
-			if (numcolors < 1 || numcolors > NumberPrimaries)
-			  numcolors = NumberPrimaries;
-			colornames = Primaries;
-			dofaces = 1;
-		}
-		else if (!strcmp(*argv, "-bg"))
-			background_colorname = *++argv;
-		else if (!strcmp(*argv, "-noedges"))
-			doedges = 0;
-		else if (!strcmp(*argv, "-faces"))
-			dofaces = 1;
-		else if (!strcmp(*argv, "-i"))
-			invert = 1;
-		else if (!strcmp(*argv, "-size"))
-			ico_geom = *++argv;
-		else if (!strcmp(*argv, "-delta"))
-			delta_geom = *++argv;
-		else if (!strcmp (*argv, "-sleep")) {
-			float f = 0.0;
-			sscanf (*++argv, "%f", &f);
-			msleepcount = (int) (f * 1000.0);
-			sleepcount = msleepcount / 1000;
-		} else if (!strcmp (*argv, "-obj"))
-			poly = findpoly(*++argv);
-		else if (!strcmp(*argv, "-dsync"))
-			dsync = 1;
-		else if (!strncmp(*argv, "-sync",  5)) 
-			_Xdebug = 1;
-		else if (!strcmp(*argv, "-objhelp")) {
-			giveObjHelp();
-			exit(1);
-		}
-		else {	/* unknown arg */
-		    char **cpp;
-
-		  usage:
-		    fprintf (stderr, "usage:  %s [options]\n\n", ProgramName);
-		    for (cpp = help_message; *cpp; cpp++) {
-			fprintf (stderr, "%s\n", *cpp);
-		    }
-		    exit (1);
-		}
-	}
-
-	if (!dofaces && !doedges) icoFatal("nothing to draw");
-
-#ifdef MULTITHREAD
-	XInitThreads();
-#endif
-	if (!(dpy = XOpenDisplay(display)))
-	{
-	    icoFatal("cannot open display \"%s\"", XDisplayName(display));
-	}
-    	wm_delete_window = XInternAtom (dpy, "WM_DELETE_WINDOW", False);
-
-#ifdef MULTIBUFFER
-	if (multibufext && !XmbufQueryExtension (dpy, &mbevbase, &mberrbase)) {
-	    multibufext = 0;
-	}
-#endif
-
-#ifdef MULTITHREAD
-#ifndef XMUTEX_INITIALIZER
-	xmutex_init(&count_mutex);
-#endif
-	xcondition_init(&count_cond);
-
-	/* start all threads here */
-	thread_count = nthreads;
-	for (i=1; i <= nthreads; i++) {
-	    closure = (struct closure *) xalloc(sizeof(struct closure));
-	    closure->thread_num = i;
-	    xthread_fork(do_ico_window, closure);
-	}
-	/* wait until all theads terminate */
-	xmutex_lock(&count_mutex);
-	xcondition_wait(&count_cond, &count_mutex);
-	xmutex_unlock(&count_mutex);
-#else
-	/* start the animation */
-	closure = (struct closure *) xalloc(sizeof(struct closure));
-	do_ico_window(closure);
-#endif
-	XCloseDisplay(dpy);
-	return 0;
+	fprintf(stderr, "%s: ", ProgramName);
+	fprintf(stderr, fmt, a0);
+	fprintf(stderr, "\n");
+	exit(1);
 }
+
+
+/******************************************************************************
+ * Description
+ *	Memory allocation
+ *****************************************************************************/
+
+char *
+xalloc(nbytes)
+    unsigned int nbytes;
+{
+        char *p;
+
+	p = malloc(nbytes);
+	if (p)
+		return p;
+
+	fprintf(stderr, "%s: no more memory\n", ProgramName);
+	exit(1);
+}
+
+
+/******************************************************************************
+ * Description
+ *	Sleep a certain number of milliseconds
+ *****************************************************************************/
+
+void
+msleep(msecs)
+    unsigned int msecs;
+{
+	struct timeval timeout;
+
+	timeout.tv_sec = msecs / 1000; timeout.tv_usec = (msecs % 1000) * 1000;
+	select(1,NULL,NULL,NULL,&timeout);
+}
+
+
+/******************************************************************************
+ * Description
+ *	Format a 4x4 identity matrix.
+ *
+ * Output
+ *	*m		Formatted identity matrix
+ *****************************************************************************/
+
+void
+IdentMat(m)
+    Transform3D m;
+{
+	int i;
+	int j;
+
+	for (i = 3; i >= 0; --i) {
+		for (j = 3; j >= 0; --j)
+			m[i][j] = 0.0;
+		m[i][i] = 1.0;
+	}
+}
+
+
+/******************************************************************************
+ * Description
+ *	Concatenate two 4-by-4 transformation matrices.
+ *
+ * Input
+ *	l		multiplicand (left operand)
+ *	r		multiplier (right operand)
+ *
+ * Output
+ *	*m		Result matrix
+ *****************************************************************************/
+
+void
+ConcatMat(l, r, m)
+    const Transform3D l;
+    const Transform3D r;
+    Transform3D m;
+{
+	int i;
+	int j;
+
+	for (i = 0; i < 4; ++i)
+		for (j = 0; j < 4; ++j)
+			m[i][j] = l[i][0] * r[0][j]
+			    + l[i][1] * r[1][j]
+			    + l[i][2] * r[2][j]
+			    + l[i][3] * r[3][j];
+}
+
+
+/******************************************************************************
+ * Description
+ *	Format a matrix that will perform a rotation transformation
+ *	about the specified axis.  The rotation angle is measured
+ *	counterclockwise about the specified axis when looking
+ *	at the origin from the positive axis.
+ *
+ * Input
+ *	axis		Axis ('x', 'y', 'z') about which to perform rotation
+ *	angle		Angle (in radians) of rotation
+ *	A		Pointer to rotation matrix
+ *
+ * Output
+ *	*m		Formatted rotation matrix
+ *****************************************************************************/
+
+void
+FormatRotateMat(axis, angle, m)
+    char axis;
+    double angle;
+    Transform3D m;
+{
+	double s, c;
+	double sin(), cos();
+
+	IdentMat(m);
+
+	s = sin(angle);
+	c = cos(angle);
+
+	switch (axis)
+	{
+		case 'x':
+			m[1][1] = m[2][2] = c;
+			m[1][2] = s;
+			m[2][1] = -s;
+			break;
+		case 'y':
+			m[0][0] = m[2][2] = c;
+			m[2][0] = s;
+			m[0][2] = -s;
+			break;
+		case 'z':
+			m[0][0] = m[1][1] = c;
+			m[0][1] = s;
+			m[1][0] = -s;
+			break;
+	}
+}
+
+
+/******************************************************************************
+ * Description
+ *	Perform a partial transform on non-homogeneous points.
+ *	Given an array of non-homogeneous (3-coordinate) input points,
+ *	this routine multiplies them by the 3-by-3 upper left submatrix
+ *	of a standard 4-by-4 transform matrix.  The resulting non-homogeneous
+ *	points are returned.
+ *
+ * Input
+ *	n		number of points to transform
+ *	m		4-by-4 transform matrix
+ *	in		array of non-homogeneous input points
+ *
+ * Output
+ *	*out		array of transformed non-homogeneous output points
+ *****************************************************************************/
+
+void
+PartialNonHomTransform(n, m, in, out)
+    int n;
+    const Transform3D m;
+    const Point3D *in;
+    Point3D *out;
+{
+	for (; n > 0; --n, ++in, ++out) {
+		out->x = in->x * m[0][0] + in->y * m[1][0] + in->z * m[2][0];
+		out->y = in->x * m[0][1] + in->y * m[1][1] + in->z * m[2][1];
+		out->z = in->x * m[0][2] + in->y * m[1][2] + in->z * m[2][2];
+	}
+}
+
 
 /*
  * Unfortunately we can not use XWindowEvent and XCheckWindowEvent to get
@@ -430,7 +453,401 @@ Bool predicate(display, event, args)
  *	Icosahedron animator.
  *****************************************************************************/
 
-void * do_ico_window(closure)
+void
+icoClearArea(closure,x,y,w,h)
+    struct closure *closure;
+    int x,y,w,h;
+{
+	if (multibufext && dblbuf)
+		return;
+
+	if (dblbuf || dofaces) {
+		XSetForeground(dpy,
+			closure->gcontext,
+			closure->drawbuf->pixels[0]);
+
+		/* use background as foreground color for fill */
+		XFillRectangle(dpy,closure->win,closure->gcontext,x,y,w,h);
+	} else {
+		XClearArea(dpy,closure->win,x,y,w,h,0);
+	}
+}
+
+/* Set up points, transforms, etc.  */
+
+void
+initPoly(closure, poly, icoW, icoH)
+    struct closure *closure;
+    const Polyinfo *poly;
+    int icoW, icoH;
+{
+    Point3D *vertices = poly->v;
+    int NV = poly->numverts;
+    Transform3D r1;
+    Transform3D r2;
+
+    FormatRotateMat('x', 5 * 3.1416 / 180.0, r1);
+    FormatRotateMat('y', 5 * 3.1416 / 180.0, r2);
+    ConcatMat(r1, r2, closure->xform);
+
+    memcpy((char *)closure->xv[0], (char *)vertices, NV * sizeof(Point3D));
+    closure->xv_buffer = 0;
+
+    closure->wo2 = icoW / 2.0;
+    closure->ho2 = icoH / 2.0;
+}
+
+void
+setDrawBuf (closure, n)
+    struct closure *closure;
+    int n;
+{
+    XGCValues xgcv;
+    unsigned long mask;
+
+#ifdef MULTIBUFFER
+    if (multibufext && dblbuf) {
+	closure->win = closure->multibuffers[n];
+	n = 0;
+    }
+#endif /* MULTIBUFFER */
+
+    closure->drawbuf = closure->bufs+n;
+    xgcv.foreground = closure->drawbuf->pixels[closure->pixelsperbuf-1];
+    xgcv.background = closure->drawbuf->pixels[0];
+    mask = GCForeground | GCBackground;
+    if (dblbuf && !multibufext) {
+	xgcv.plane_mask = closure->drawbuf->enplanemask;
+	mask |= GCPlaneMask;
+    }
+    XChangeGC(dpy, closure->gcontext, mask, &xgcv);
+}
+
+void
+setDisplayBuf(closure, n, firsttime)
+    struct closure *closure;
+    int n;
+    int firsttime;
+{
+#if MULTIBUFFER
+	if (multibufext && dblbuf) {
+		XmbufDisplayBuffers (dpy, 1, &closure->multibuffers[n], msleepcount, 0);
+		if (!firsttime)
+			return;
+		n = 0;
+	}
+#endif
+	closure->dpybuf = closure->bufs+n;
+	if (closure->totalpixels > 2)
+	    XStoreColors(dpy,closure->cmap,closure->dpybuf->colors,closure->totalpixels);
+}
+
+void
+setBufColor(closure, n,color)
+    struct closure *closure;
+    int n;		/* color index */
+    XColor *color;	/* color to set */
+{
+	int i,j,cx;
+	DBufInfo *b;
+	unsigned long pix;
+
+	for (i=0; i<closure->nplanesets; i++) {
+		b = closure->bufs+i;
+		for (j=0; j<(dblbuf&&!multibufext?closure->pixelsperbuf:1); j++) {
+			cx = n + j*closure->pixelsperbuf;
+			pix = b->colors[cx].pixel;
+			b->colors[cx] = *color;
+			b->colors[cx].pixel = pix;
+			b->colors[cx].flags = DoRed | DoGreen | DoBlue;
+		}
+	}
+}
+
+/******************************************************************************
+ * Description
+ *	Undraw previous polyhedron (by erasing its bounding box).
+ *	Rotate and draw the new polyhedron.
+ *
+ * Input
+ *	poly		the polyhedron to draw
+ *	gc		X11 graphics context to be used for drawing
+ *	icoX, icoY	position of upper left of bounding-box
+ *	icoW, icoH	size of bounding-box
+ *	prevX, prevY	position of previous bounding-box
+ *****************************************************************************/
+
+void
+drawPoly(closure, poly, gc, icoX, icoY, icoW, icoH, prevX, prevY)
+    struct closure *closure;
+    Polyinfo *poly;
+    GC gc;
+    int icoX, icoY, icoW, icoH;
+    int prevX, prevY;
+{
+	int *f = poly->f;
+	int NV = poly->numverts;
+	int NF = poly->numfaces;
+
+	int p0;
+	int p1;
+	XPoint *pv2;
+	XSegment *pe;
+	Point3D *pxv;
+	XPoint v2[MAXNV];
+	XSegment edges[MAXEDGES];
+	int i;
+	int j,k;
+	int *pf;
+	int facecolor;
+
+	int pcount;
+	double pxvz;
+	XPoint ppts[MAXEDGESPERPOLY];
+
+	/* Switch double-buffer and rotate vertices */
+
+	closure->xv_buffer = !closure->xv_buffer;
+	PartialNonHomTransform(NV, closure->xform,
+		closure->xv[!closure->xv_buffer],
+		closure->xv[closure->xv_buffer]);
+
+
+	/* Convert 3D coordinates to 2D window coordinates: */
+
+	pxv = closure->xv[closure->xv_buffer];
+	pv2 = v2;
+	for (i = NV - 1; i >= 0; --i) {
+		pv2->x = (int) ((pxv->x + 1.0) * closure->wo2) + icoX;
+		pv2->y = (int) ((pxv->y + 1.0) * closure->ho2) + icoY;
+		++pxv;
+		++pv2;
+	}
+
+
+	/* Accumulate edges to be drawn, eliminating duplicates for speed: */
+
+	pxv = closure->xv[closure->xv_buffer];
+	pv2 = v2;
+	pf = f;
+	pe = edges;
+	bzero(closure->drawn, sizeof(closure->drawn));
+
+	if (dblbuf)
+		setDrawBuf(closure, closure->dbufnum);
+			/* switch drawing buffers if double buffered */
+	/* for faces, need to clear before FillPoly */
+	if (dofaces && !(multibufext && dblbuf)) {
+		/* multibuf uses update background */
+		if (dblbuf)
+			icoClearArea(closure,
+				closure->drawbuf->prevX - linewidth/2,
+				closure->drawbuf->prevY - linewidth/2,
+				icoW + linewidth + 1, icoH + linewidth + 1);
+		icoClearArea(closure,
+			prevX - linewidth/2, prevY - linewidth/2,
+			icoW + linewidth + 1, icoH + linewidth + 1);
+	}
+
+	if (dsync)
+		XSync(dpy, 0);
+
+	for (i = NF - 1; i >= 0; --i, pf += pcount) {
+
+		pcount = *pf++;	/* number of edges for this face */
+		pxvz = 0.0;
+		for (j=0; j<pcount; j++) {
+			p0 = pf[j];
+			pxvz += pxv[p0].z;
+		}
+
+		/* If facet faces away from viewer, don't consider it: */
+		if (pxvz<0.0)
+			continue;
+
+		if (dofaces) {
+			if (numcolors)
+				facecolor = i%numcolors + 1;
+			else
+				facecolor = 1;
+			XSetForeground(dpy, gc,
+				closure->drawbuf->pixels[facecolor]);
+			for (j=0; j<pcount; j++) {
+				p0 = pf[j];
+				ppts[j].x = pv2[p0].x;
+				ppts[j].y = pv2[p0].y;
+			}
+			XFillPolygon(dpy, closure->win, gc, ppts, pcount,
+				Convex, CoordModeOrigin);
+		}
+
+		if (doedges) {
+			for (j=0; j<pcount; j++) {
+				if (j<pcount-1) k=j+1;
+				else k=0;
+				p0 = pf[j];
+				p1 = pf[k];
+				if (!closure->drawn[p0][p1]) {
+					closure->drawn[p0][p1] = 1;
+					closure->drawn[p1][p0] = 1;
+					pe->x1 = pv2[p0].x;
+					pe->y1 = pv2[p0].y;
+					pe->x2 = pv2[p1].x;
+					pe->y2 = pv2[p1].y;
+					++pe;
+				}
+			}
+		}
+	}
+
+	/* Erase previous, draw current icosahedrons; sync for smoothness. */
+
+	if (doedges) {
+		if (dofaces) {
+			XSetForeground(dpy, gc, closure->drawbuf->pixels[0]);
+				/* use background as foreground color */
+		} else {
+			if (dblbuf && !multibufext)
+				icoClearArea(closure,
+					closure->drawbuf->prevX - linewidth/2,
+					closure->drawbuf->prevY - linewidth/2,
+					icoW + linewidth + 1,
+					icoH + linewidth + 1);
+			if (!(multibufext && dblbuf))
+				icoClearArea(closure,
+					prevX - linewidth/2,
+					prevY - linewidth/2,
+					icoW + linewidth + 1,
+					icoH + linewidth + 1);
+			if (dblbuf || dofaces) {
+				XSetForeground(dpy, gc, closure->drawbuf->pixels[
+					closure->pixelsperbuf-1]);
+			}
+		}
+		XDrawSegments(dpy, closure->win, gc, edges, pe - edges);
+	}
+
+	if (dsync)
+		XSync(dpy, 0);
+
+	if (dblbuf) {
+		closure->drawbuf->prevX = icoX;
+		closure->drawbuf->prevY = icoY;
+		setDisplayBuf(closure, closure->dbufnum, 0);
+	}
+	if (dblbuf)
+		closure->dbufnum = 1 - closure->dbufnum;
+	if (!(multibufext && dblbuf) && msleepcount > 0)
+		msleep(msleepcount);
+}
+
+void
+initDBufs(closure, fg,bg,planesperbuf)
+    struct closure *closure;
+    int fg,bg;
+    int planesperbuf;
+{
+	int i,j,jj,j0,j1,k,m,t;
+	DBufInfo *b, *otherb;
+	XColor bgcolor, fgcolor;
+
+	closure->nplanesets = (dblbuf && !multibufext ? 2 : 1);
+
+	closure->planesperbuf = planesperbuf;
+	closure->pixelsperbuf = 1<<planesperbuf;
+	closure->totalplanes = closure->nplanesets * planesperbuf;
+	closure->totalpixels = 1<<closure->totalplanes;
+	closure->plane_masks = (unsigned long *)
+		xalloc(closure->totalplanes * sizeof(unsigned long));
+	closure->dbufnum = 0;
+	for (i=0; i < closure->nplanesets; i++) {
+		b = closure->bufs+i;
+		b->plane_masks = closure->plane_masks + (i*planesperbuf);
+		b->colors = (XColor *)
+			xalloc(closure->totalpixels * sizeof(XColor));
+		b->pixels = (unsigned long *)
+			xalloc(closure->pixelsperbuf * sizeof(unsigned long));
+	}
+
+	if (closure->totalplanes == 1) {
+	    closure->pixels[0] = bg;
+	    closure->plane_masks[0] = fg ^ bg;
+	} else {
+	    t = XAllocColorCells(dpy,closure->cmap,0,
+		    closure->plane_masks,closure->totalplanes, closure->pixels,1);
+			    /* allocate color planes */
+	    if (t==0) {
+		    icoFatal("can't allocate enough color planes");
+	    }
+	}
+
+	fgcolor.pixel = fg;
+	bgcolor.pixel = bg;
+	XQueryColor(dpy,closure->cmap,&fgcolor);
+	XQueryColor(dpy,closure->cmap,&bgcolor);
+
+	setBufColor(closure, 0,&bgcolor);
+	setBufColor(closure, 1,&fgcolor);
+	for (i=0; i<closure->nplanesets; i++) {
+		b = closure->bufs+i;
+		if (dblbuf)
+			otherb = closure->bufs+(1-i);
+		for (j0=0; j0<(dblbuf&&!multibufext?closure->pixelsperbuf:1); j0++) {
+		    for (j1=0; j1<closure->pixelsperbuf; j1++) {
+			j = (j0<<closure->planesperbuf)|j1;
+			if (i==0) jj=j;
+			else jj= (j1<<closure->planesperbuf)|j0;
+			b->colors[jj].pixel = closure->pixels[0];
+			for (k=0, m=j; m; k++, m=m>>1) {
+				if (m&1)
+				   b->colors[jj].pixel ^= closure->plane_masks[k];
+			}
+			b->colors[jj].flags = DoRed | DoGreen | DoBlue;
+		    }
+		}
+		b->prevX = b->prevY = 0;
+		b->enplanemask = 0;
+		for (j=0; j<planesperbuf; j++) {
+			b->enplanemask |= b->plane_masks[j];
+		}
+		for (j=0; j<closure->pixelsperbuf; j++) {
+			b->pixels[j] = closure->pixels[0];
+			for (k=0, m=j; m; k++, m=m>>1) {
+				if (m&1)
+				   b->pixels[j] ^= b->plane_masks[k];
+			}
+		}
+	}
+
+	if (!(multibufext && dblbuf)) {
+	    setDrawBuf(closure, 0);
+	    XSetBackground(dpy, closure->gcontext, closure->bufs[0].pixels[0]);
+	    XSetWindowBackground(dpy, closure->draw_window, closure->bufs[0].pixels[0]);
+	    XSetPlaneMask(dpy, closure->gcontext, AllPlanes);
+	    icoClearArea(closure, 0, 0, closure->winW, closure->winH); /* clear entire window */
+	}
+}
+
+void
+setBufColname(closure, n,colname)
+    struct closure *closure;
+    int n;
+    char *colname;
+{
+	int t;
+	XColor dcolor, color;
+
+	t = XLookupColor(dpy,closure->cmap,colname,&dcolor,&color);
+	if (t==0) {	/* no such color */
+		icoFatal("no such color %s",colname);
+	}
+	setBufColor(closure, n,&color);
+}
+
+
+/* function to create and run an ico window */
+void *
+do_ico_window(closure)
     struct closure *closure;
 {
 	int fg, bg;
@@ -489,15 +906,13 @@ void * do_ico_window(closure)
 
 	/* Set up window parameters, create and map window if necessary */
 
-	if (useRoot)
-	{
+	if (useRoot) {
 		closure->draw_window = DefaultRootWindow(dpy);
 		winX = 0;
 		winY = 0;
 		closure->winW = DisplayWidth(dpy, DefaultScreen(dpy));
 		closure->winH = DisplayHeight(dpy, DefaultScreen(dpy));
-	}
-	else {
+	} else {
 		closure->winW = closure->winH = (multibufext&&dblbuf ? 300 : 600);
 		winX = (DisplayWidth(dpy, DefaultScreen(dpy)) - closure->winW) >> 1;
 		winY = (DisplayHeight(dpy, DefaultScreen(dpy)) - closure->winH) >> 1;
@@ -622,7 +1037,7 @@ void * do_ico_window(closure)
 
 	/* Get the initial position, size, and speed of the bounding-box */
 
-	srand((int) time((Time_t *)0) % 231);
+	srand((int) time((time_t *)0) % 231);
 	icoX = ((closure->winW - icoW) * (rand() & 0xFF)) >> 8;
 	icoY = ((closure->winH - icoH) * (rand() & 0xFF)) >> 8;
 
@@ -633,8 +1048,7 @@ void * do_ico_window(closure)
 	icodeltay2 = icoDeltaY * 2;
 	initPoly(closure, poly, icoW, icoH);
 
-	while (do_it)
-	{
+	while (do_it) {
 		int prevX;
 		int prevY;
 		Bool do_event;
@@ -652,11 +1066,11 @@ void * do_ico_window(closure)
 		 */
 		if (blocking) {
 		    XIfEvent(dpy, &xev, predicate, (XPointer) closure->win);
+		    do_event = True;
 		} else
 		    do_event = XCheckIfEvent(dpy, &xev, predicate,
 			    (XPointer) closure->win);
-		if (blocking || do_event)
-		{
+		if (do_event) {
 		    switch (xev.type) {
 		      case ConfigureNotify:
 #ifdef DEBUG
@@ -703,19 +1117,17 @@ void * do_ico_window(closure)
 		prevY = icoY;
 
 		icoX += icoDeltaX;
-		if (icoX < 0 || icoX + icoW > closure->winW)
-			{
+		if (icoX < 0 || icoX + icoW > closure->winW) {
 			icoX -= icodeltax2;
 			icoDeltaX = - icoDeltaX;
 			icodeltax2 = icoDeltaX * 2;
-			}
+		}
 		icoY += icoDeltaY;
-		if (icoY < 0 || icoY + icoH > closure->winH)
-			{
+		if (icoY < 0 || icoY + icoH > closure->winH) {
 			icoY -= icodeltay2;
 			icoDeltaY = - icoDeltaY;
 			icodeltay2 = icoDeltaY * 2;
-			}
+		}
 
 		drawPoly(closure, poly, closure->gcontext,
 			 icoX, icoY, icoW, icoH, prevX, prevY);
@@ -729,15 +1141,24 @@ void * do_ico_window(closure)
 	}
 	xmutex_unlock(&count_mutex);
 #endif
+	return NULL;
 }
 
+/******************************************************************************
+ * Description
+ *	Main routine.  Process command-line arguments, then bounce a bounding
+ *	box inside the window.  Call DrawIco() to redraw the icosahedron.
+ *****************************************************************************/
+
+void
 giveObjHelp()
 {
-int i;
-Polyinfo *poly;
+	int i;
+	Polyinfo *poly;
+
 	printf("%-16s%-12s  #Vert.  #Edges  #Faces  %-16s\n",
 		"Name", "ShortName", "Dual");
-	for (i=0; i<polysize; i++) {
+	for (i=0; i<NumberPolygons; i++) {
 		poly = polygons+i;
 		printf("%-16s%-12s%6d%8d%8d    %-16s\n",
 			poly->longname, poly->shortname,
@@ -748,554 +1169,192 @@ Polyinfo *poly;
 
 Polyinfo *
 findpoly(name)
-char *name;
+    const char *name;
 {
-int i;
-Polyinfo *poly;
-	for (i=0; i<polysize; i++) {
+	int i;
+        Polyinfo *poly;
+
+	for (i=0; i<NumberPolygons; i++) {
 		poly = polygons+i;
-		if (strcmp(name,poly->longname)==0 ||
-		    strcmp(name,poly->shortname)==0) return poly;
+		if (strcmp(name,poly->longname)==0 || strcmp(name,poly->shortname)==0)
+			return poly;
 	}
 	icoFatal("can't find object %s", name);
 }
 
-void icoClearArea(closure,x,y,w,h)
-    struct closure *closure;
-    int x,y,w,h;
+int main(argc, argv)
+    int argc;
+    const char **argv;
 {
-    if (multibufext && dblbuf) return;
+	const char *display = NULL;
+	extern int _Xdebug;
+#ifdef MULTIBUFFER
+	int mbevbase, mberrbase;
+#endif
+#ifdef MULTITHREAD
+	int nthreads = 1;	/* -threads: number of windows */
+	int i;
+#endif
+	struct closure *closure;
 
-	if (dblbuf || dofaces) {
-		XSetForeground(dpy,
-			closure->gcontext,
-			closure->drawbuf->pixels[0]);
+	ProgramName = argv[0];
 
-		/* use background as foreground color for fill */
-		XFillRectangle(dpy,closure->win,closure->gcontext,x,y,w,h);
-	}
-	else {
-		XClearArea(dpy,closure->win,x,y,w,h,0);
-	}
-}
+	/* Process arguments: */
 
-/* Set up points, transforms, etc.  */
+	poly = findpoly("icosahedron");	/* default */
 
-initPoly(closure, poly, icoW, icoH)
-    struct closure *closure;
-    Polyinfo *poly;
-    int icoW, icoH;
-{
-    Point3D *vertices = poly->v;
-    int NV = poly->numverts;
-    Transform3D r1;
-    Transform3D r2;
-
-    FormatRotateMat('x', 5 * 3.1416 / 180.0, r1);
-    FormatRotateMat('y', 5 * 3.1416 / 180.0, r2);
-    ConcatMat(r1, r2, closure->xform);
-
-    memcpy((char *)closure->xv[0], (char *)vertices, NV * sizeof(Point3D));
-    closure->xv_buffer = 0;
-
-    closure->wo2 = icoW / 2.0;
-    closure->ho2 = icoH / 2.0;
-}
-
-/******************************************************************************
- * Description
- *	Undraw previous polyhedron (by erasing its bounding box).
- *	Rotate and draw the new polyhedron.
- *
- * Input
- *	poly		the polyhedron to draw
- *	gc		X11 graphics context to be used for drawing
- *	icoX, icoY	position of upper left of bounding-box
- *	icoW, icoH	size of bounding-box
- *	prevX, prevY	position of previous bounding-box
- *****************************************************************************/
-
-
-drawPoly(closure, poly, gc, icoX, icoY, icoW, icoH, prevX, prevY)
-    struct closure *closure;
-    Polyinfo *poly;
-    GC gc;
-    int icoX, icoY, icoW, icoH;
-    int prevX, prevY;
-{
-	int *f = poly->f;
-	int NV = poly->numverts;
-	int NF = poly->numfaces;
-
-	register int p0;
-	register int p1;
-	register XPoint *pv2;
-	XSegment *pe;
-	register Point3D *pxv;
-	XPoint v2[MAXNV];
-	XSegment edges[MAXEDGES];
-	register int i;
-	int j,k;
-	register int *pf;
-	int facecolor;
-
-	int pcount;
-	double pxvz;
-	XPoint ppts[MAXEDGESPERPOLY];
-
-	/* Switch double-buffer and rotate vertices */
-
-	closure->xv_buffer = !closure->xv_buffer;
-	PartialNonHomTransform(NV, closure->xform,
-		closure->xv[!closure->xv_buffer],
-		closure->xv[closure->xv_buffer]);
-
-
-	/* Convert 3D coordinates to 2D window coordinates: */
-
-	pxv = closure->xv[closure->xv_buffer];
-	pv2 = v2;
-	for (i = NV - 1; i >= 0; --i)
-		{
-		pv2->x = (int) ((pxv->x + 1.0) * closure->wo2) + icoX;
-		pv2->y = (int) ((pxv->y + 1.0) * closure->ho2) + icoY;
-		++pxv;
-		++pv2;
+	for (argv++, argc--; argc > 0; argv++, argc--) {
+		if (!strcmp (*argv, "-display")) {
+			if (argc < 2)
+				icoFatal("missing argument for %s", *argv);
+			display = *++argv; argc--;
+		} else if (!strncmp (*argv, "-g", 2)) {
+			if (argc < 2)
+				icoFatal("missing argument for %s", *argv);
+			geom = *++argv; argc--;
+		} else if (!strcmp(*argv, "-r"))
+			useRoot = 1;
+		else if (!strcmp (*argv, "-d")) {
+			if (argc < 2)
+				icoFatal("missing argument for %s", *argv);
+			dash = atoi(*++argv); argc--;
 		}
-
-
-	/* Accumulate edges to be drawn, eliminating duplicates for speed: */
-
-	pxv = closure->xv[closure->xv_buffer];
-	pv2 = v2;
-	pf = f;
-	pe = edges;
-	bzero(closure->drawn, sizeof(closure->drawn));
-
-	if (dblbuf)
-		setDrawBuf(closure, closure->dbufnum);
-			/* switch drawing buffers if double buffered */
-	/* for faces, need to clear before FillPoly */
-	if (dofaces && !(multibufext && dblbuf)) {
-		/* multibuf uses update background */
-		if (dblbuf)
-			icoClearArea(closure,
-				closure->drawbuf->prevX,
-				closure->drawbuf->prevY,
-				icoW + 1, icoH + 1);
-		icoClearArea(closure, prevX, prevY, icoW + 1, icoH + 1);
-	}
-
-	if (dsync)
-		XSync(dpy, 0);
-
-	for (i = NF - 1; i >= 0; --i, pf += pcount)
-		{
-
-		pcount = *pf++;	/* number of edges for this face */
-		pxvz = 0.0;
-		for (j=0; j<pcount; j++) {
-			p0 = pf[j];
-			pxvz += pxv[p0].z;
+#ifdef MULTITHREAD
+		else if (!strcmp(*argv, "-threads")) {
+			if (argc < 2)
+				icoFatal("missing argument for %s", *argv);
+		        nthreads = atoi(*++argv); argc--;
 		}
-
-		/* If facet faces away from viewer, don't consider it: */
-		if (pxvz<0.0)
-			continue;
-
-		if (dofaces) {
-			if (numcolors)
-				facecolor = i%numcolors + 1;
-			else	facecolor = 1;
-			XSetForeground(dpy, gc,
-				closure->drawbuf->pixels[facecolor]);
-			for (j=0; j<pcount; j++) {
-				p0 = pf[j];
-				ppts[j].x = pv2[p0].x;
-				ppts[j].y = pv2[p0].y;
-			}
-			XFillPolygon(dpy, closure->win, gc, ppts, pcount,
-				Convex, CoordModeOrigin);
+#endif
+		else if (!strcmp(*argv, "-colors")) {
+			if (argc < 2)
+				icoFatal("missing argument for %s", *argv);
+			colornames = ++argv; argc--; numcolors = 0;
+			for ( ; argc > 0 && argv[0][0]!='-'; argv++, argc--, numcolors++) ;
+			argv--; argc++;
 		}
-
-		if (doedges) {
-			for (j=0; j<pcount; j++) {
-				if (j<pcount-1) k=j+1;
-				else k=0;
-				p0 = pf[j];
-				p1 = pf[k];
-				if (!closure->drawn[p0][p1]) {
-					closure->drawn[p0][p1] = 1;
-					closure->drawn[p1][p0] = 1;
-					pe->x1 = pv2[p0].x;
-					pe->y1 = pv2[p0].y;
-					pe->x2 = pv2[p1].x;
-					pe->y2 = pv2[p1].y;
-					++pe;
-				}
-			}
+		else if (!strcmp (*argv, "-copy")) {
+#ifdef MULTIBUFFER
+			update_action = MultibufferUpdateActionCopied;
+#endif
 		}
+		else if (!strcmp (*argv, "-untouched")) {
+#ifdef MULTIBUFFER
+			update_action = MultibufferUpdateActionUntouched;
+#endif
 		}
-
-	/* Erase previous, draw current icosahedrons; sync for smoothness. */
-
-	if (doedges) {
-		if (dofaces) {
-			XSetForeground(dpy, gc, closure->drawbuf->pixels[0]);
-				/* use background as foreground color */
+		else if (!strcmp (*argv, "-undefined")) {
+#ifdef MULTIBUFFER
+			update_action = MultibufferUpdateActionUndefined;
+#endif
+		} else if (!strcmp (*argv, "-lw")) {
+			if (argc < 2)
+				icoFatal("missing argument for %s", *argv);
+			linewidth = atoi(*++argv); argc--;
+		} else if (!strcmp (*argv, "-dbl")) {
+			dblbuf = 1;
+#ifdef MULTIBUFFER
+			multibufext = 1;
+#endif
 		}
-		else {
-			if (dblbuf && !multibufext)
-				icoClearArea(closure, closure->drawbuf->prevX,
-					closure->drawbuf->prevY,
-					icoW + 1, icoH + 1);
-			if (!(multibufext && dblbuf))
-				icoClearArea(closure, prevX, prevY, icoW + 1, icoH + 1);
-			if (dblbuf || dofaces) {
-				XSetForeground(dpy, gc, closure->drawbuf->pixels[
-					closure->pixelsperbuf-1]);
-			}
+		else if (!strcmp(*argv, "-softdbl")) {
+		        dblbuf = 1;
+			multibufext = 0;
 		}
-		XDrawSegments(dpy, closure->win, gc, edges, pe - edges);
-	}
-
-	if (dsync)
-		XSync(dpy, 0);
-
-	if (dblbuf) {
-		closure->drawbuf->prevX = icoX;
-		closure->drawbuf->prevY = icoY;
-		setDisplayBuf(closure, closure->dbufnum, 0);
-	}
-	if (dblbuf)
-		closure->dbufnum = 1 - closure->dbufnum;
-	if (!(multibufext && dblbuf) && sleepcount) sleep(sleepcount);
-}
-
-char *xalloc(nbytes)
-    unsigned int nbytes;
-{
-        char *p;
-
-	p = malloc(nbytes);
-	if (p) return p;
-	fprintf(stderr,"ico: no more memory\n");
-	exit(1);
-}
-
-initDBufs(closure, fg,bg,planesperbuf)
-    struct closure *closure;
-    int fg,bg;
-    int planesperbuf;
-{
-    int i,j,jj,j0,j1,k,m,t;
-    DBufInfo *b, *otherb;
-    XColor bgcolor, fgcolor;
-
-	closure->nplanesets = (dblbuf && !multibufext ? 2 : 1);
-
-	closure->planesperbuf = planesperbuf;
-	closure->pixelsperbuf = 1<<planesperbuf;
-	closure->totalplanes = closure->nplanesets * planesperbuf;
-	closure->totalpixels = 1<<closure->totalplanes;
-	closure->plane_masks = (unsigned long *)
-		xalloc(closure->totalplanes * sizeof(unsigned long));
-	closure->dbufnum = 0;
-	for (i=0; i < closure->nplanesets; i++) {
-		b = closure->bufs+i;
-		b->plane_masks = closure->plane_masks + (i*planesperbuf);
-		b->colors = (XColor *)
-			xalloc(closure->totalpixels * sizeof(XColor));
-		b->pixels = (unsigned long *)
-			xalloc(closure->pixelsperbuf * sizeof(unsigned long));
-	}
-
-	if (closure->totalplanes == 1) {
-	    closure->pixels[0] = bg;
-	    closure->plane_masks[0] = fg ^ bg;
-	} else {
-	    t = XAllocColorCells(dpy,closure->cmap,0,
-		    closure->plane_masks,closure->totalplanes, closure->pixels,1);
-			    /* allocate color planes */
-	    if (t==0) {
-		    icoFatal("can't allocate enough color planes");
-	    }
-	}
-
-	fgcolor.pixel = fg;
-	bgcolor.pixel = bg;
-	XQueryColor(dpy,closure->cmap,&fgcolor);
-	XQueryColor(dpy,closure->cmap,&bgcolor);
-
-	setBufColor(closure, 0,&bgcolor);
-	setBufColor(closure, 1,&fgcolor);
-	for (i=0; i<closure->nplanesets; i++) {
-		b = closure->bufs+i;
-		if (dblbuf)
-			otherb = closure->bufs+(1-i);
-		for (j0=0; j0<(dblbuf&&!multibufext?closure->pixelsperbuf:1); j0++) {
-		    for (j1=0; j1<closure->pixelsperbuf; j1++) {
-			j = (j0<<closure->planesperbuf)|j1;
-			if (i==0) jj=j;
-			else jj= (j1<<closure->planesperbuf)|j0;
-			b->colors[jj].pixel = closure->pixels[0];
-			for (k=0, m=j; m; k++, m=m>>1) {
-				if (m&1)
-				   b->colors[jj].pixel ^= closure->plane_masks[k];
-			}
-			b->colors[jj].flags = DoRed | DoGreen | DoBlue;
-		    }
+		else if (!strncmp(*argv, "-p", 2)) {
+			numcolors = atoi(argv[0]+2);
+			if (numcolors < 1 || numcolors > NumberPrimaries)
+				numcolors = NumberPrimaries;
+			colornames = Primaries;
+			dofaces = 1;
 		}
-		b->prevX = b->prevY = 0;
-		b->enplanemask = 0;
-		for (j=0; j<planesperbuf; j++) {
-			b->enplanemask |= b->plane_masks[j];
+		else if (!strcmp(*argv, "-bg")) {
+			if (argc < 2)
+				icoFatal("missing argument for %s", *argv);
+			background_colorname = *++argv; argc--;
+		} else if (!strcmp(*argv, "-noedges"))
+			doedges = 0;
+		else if (!strcmp(*argv, "-faces"))
+			dofaces = 1;
+		else if (!strcmp(*argv, "-i"))
+			invert = 1;
+		else if (!strcmp(*argv, "-size")) {
+			if (argc < 2)
+				icoFatal("missing argument for %s", *argv);
+			ico_geom = *++argv; argc--;
+		} else if (!strcmp(*argv, "-delta")) {
+			if (argc < 2)
+				icoFatal("missing argument for %s", *argv);
+			delta_geom = *++argv; argc--;
+		} else if (!strcmp (*argv, "-sleep")) {
+			float f;
+			if (argc < 2)
+				icoFatal("missing argument for %s", *argv);
+			if (sscanf (*++argv, "%f", &f) < 1)
+				icoFatal("invalid argument for %s", argv[-1]);
+			msleepcount = (int) (f * 1000.0);
+			argc--;
+		} else if (!strcmp (*argv, "-obj")) {
+			if (argc < 2)
+				icoFatal("missing argument for %s", *argv);
+			poly = findpoly(*++argv); argc--;
+		} else if (!strcmp(*argv, "-dsync"))
+			dsync = 1;
+		else if (!strncmp(*argv, "-sync",  5)) 
+			_Xdebug = 1;
+		else if (!strcmp(*argv, "-objhelp")) {
+			giveObjHelp();
+			exit(1);
 		}
-		for (j=0; j<closure->pixelsperbuf; j++) {
-			b->pixels[j] = closure->pixels[0];
-			for (k=0, m=j; m; k++, m=m>>1) {
-				if (m&1)
-				   b->pixels[j] ^= b->plane_masks[k];
-			}
+		else {	/* unknown arg */
+			const char **cpp;
+
+			fprintf (stderr, "usage:  %s [options]\n\n",
+			         ProgramName);
+			for (cpp = help_message; *cpp; cpp++)
+				fprintf (stderr, "%s\n", *cpp);
+			exit (1);
 		}
 	}
 
-	if (!(multibufext && dblbuf)) {
-	    setDrawBuf(closure, 0);
-	    XSetBackground(dpy, closure->gcontext, closure->bufs[0].pixels[0]);
-	    XSetWindowBackground(dpy, closure->draw_window, closure->bufs[0].pixels[0]);
-	    XSetPlaneMask(dpy, closure->gcontext, AllPlanes);
-	    icoClearArea(closure, 0, 0, closure->winW, closure->winH); /* clear entire window */
-	}
-}
+	if (!dofaces && !doedges)
+		icoFatal("nothing to draw");
 
-setBufColname(closure, n,colname)
-    struct closure *closure;
-    int n;
-    char *colname;
-{
-    int t;
-    XColor dcolor, color;
-
-	t = XLookupColor(dpy,closure->cmap,colname,&dcolor,&color);
-	if (t==0) {	/* no such color */
-		icoFatal("no such color %s",colname);
-	}
-	setBufColor(closure, n,&color);
-}
-
-setBufColor(closure, n,color)
-    struct closure *closure;
-    int n;		/* color index */
-    XColor *color;	/* color to set */
-{
-    int i,j,cx;
-    DBufInfo *b;
-    unsigned long pix;
-
-	for (i=0; i<closure->nplanesets; i++) {
-		b = closure->bufs+i;
-		for (j=0; j<(dblbuf&&!multibufext?closure->pixelsperbuf:1); j++) {
-			cx = n + j*closure->pixelsperbuf;
-			pix = b->colors[cx].pixel;
-			b->colors[cx] = *color;
-			b->colors[cx].pixel = pix;
-			b->colors[cx].flags = DoRed | DoGreen | DoBlue;
-		}
-	}
-}
-
-setDrawBuf (closure, n)
-    struct closure *closure;
-    int n;
-{
-    XGCValues xgcv;
-    unsigned long mask;
+#ifdef MULTITHREAD
+	XInitThreads();
+#endif
+	if (!(dpy = XOpenDisplay(display)))
+	    icoFatal("cannot open display \"%s\"", XDisplayName(display));
+    	wm_delete_window = XInternAtom (dpy, "WM_DELETE_WINDOW", False);
 
 #ifdef MULTIBUFFER
-    if (multibufext && dblbuf) {
-	closure->win = closure->multibuffers[n];
-	n = 0;
-    }
-#endif /* MULTIBUFFER */
-
-    closure->drawbuf = closure->bufs+n;
-    xgcv.foreground = closure->drawbuf->pixels[closure->pixelsperbuf-1];
-    xgcv.background = closure->drawbuf->pixels[0];
-    mask = GCForeground | GCBackground;
-    if (dblbuf && !multibufext) {
-	xgcv.plane_mask = closure->drawbuf->enplanemask;
-	mask |= GCPlaneMask;
-    }
-    XChangeGC(dpy, closure->gcontext, mask, &xgcv);
-}
-
-setDisplayBuf(closure, n, firsttime)
-    struct closure *closure;
-    int n;
-    int firsttime;
-{
-#if MULTIBUFFER
-    if (multibufext && dblbuf) {
-	XmbufDisplayBuffers (dpy, 1, &closure->multibuffers[n], msleepcount, 0);
-	if (firsttime) {
-	    firsttime = 0;
-	    n = 0;
-	    goto storecolors;
+	if (multibufext && !XmbufQueryExtension (dpy, &mbevbase, &mberrbase)) {
+	    multibufext = 0;
 	}
-    } else
 #endif
-    {
-      storecolors:
-	closure->dpybuf= closure->bufs+n;
-	if (closure->totalpixels > 2)
-	    XStoreColors(dpy,closure->cmap,closure->dpybuf->colors,closure->totalpixels);
-    }
-}
 
-/* VARARGS1 */
-icoFatal(fmt,a0)
-    char *fmt;
-    char *a0;
-{
-	fprintf(stderr,"ico: ");
-	fprintf(stderr,fmt,a0);
-	fprintf(stderr,"\n");
-	exit(1);
-}
+#ifdef MULTITHREAD
+#ifndef XMUTEX_INITIALIZER
+	xmutex_init(&count_mutex);
+#endif
+	xcondition_init(&count_cond);
 
-/******************************************************************************
- * Description
- *	Concatenate two 4-by-4 transformation matrices.
- *
- * Input
- *	l		multiplicand (left operand)
- *	r		multiplier (right operand)
- *
- * Output
- *	*m		Result matrix
- *****************************************************************************/
-
-ConcatMat(l, r, m)
-register Transform3D l;
-register Transform3D r;
-register Transform3D m;
-{
-	register int i;
-	register int j;
-
-	for (i = 0; i < 4; ++i)
-		for (j = 0; j < 4; ++j)
-			m[i][j] = l[i][0] * r[0][j]
-			    + l[i][1] * r[1][j]
-			    + l[i][2] * r[2][j]
-			    + l[i][3] * r[3][j];
-}
-
-
-
-/******************************************************************************
- * Description
- *	Format a matrix that will perform a rotation transformation
- *	about the specified axis.  The rotation angle is measured
- *	counterclockwise about the specified axis when looking
- *	at the origin from the positive axis.
- *
- * Input
- *	axis		Axis ('x', 'y', 'z') about which to perform rotation
- *	angle		Angle (in radians) of rotation
- *	A		Pointer to rotation matrix
- *
- * Output
- *	*m		Formatted rotation matrix
- *****************************************************************************/
-
-FormatRotateMat(axis, angle, m)
-char axis;
-double angle;
-register Transform3D m;
-{
-	double s, c;
-	double sin(), cos();
-
-	IdentMat(m);
-
-	s = sin(angle);
-	c = cos(angle);
-
-	switch(axis)
-	{
-		case 'x':
-			m[1][1] = m[2][2] = c;
-			m[1][2] = s;
-			m[2][1] = -s;
-			break;
-		case 'y':
-			m[0][0] = m[2][2] = c;
-			m[2][0] = s;
-			m[0][2] = -s;
-			break;
-		case 'z':
-			m[0][0] = m[1][1] = c;
-			m[0][1] = s;
-			m[1][0] = -s;
-			break;
+	/* start all threads here */
+	thread_count = nthreads;
+	for (i=1; i <= nthreads; i++) {
+	    closure = (struct closure *) xalloc(sizeof(struct closure));
+	    closure->thread_num = i;
+	    xthread_fork(do_ico_window, closure);
 	}
-}
-
-
-
-/******************************************************************************
- * Description
- *	Format a 4x4 identity matrix.
- *
- * Output
- *	*m		Formatted identity matrix
- *****************************************************************************/
-
-IdentMat(m)
-register Transform3D m;
-{
-	register int i;
-	register int j;
-
-	for (i = 3; i >= 0; --i)
-	{
-		for (j = 3; j >= 0; --j)
-			m[i][j] = 0.0;
-		m[i][i] = 1.0;
-	}
-}
-
-
-
-/******************************************************************************
- * Description
- *	Perform a partial transform on non-homogeneous points.
- *	Given an array of non-homogeneous (3-coordinate) input points,
- *	this routine multiplies them by the 3-by-3 upper left submatrix
- *	of a standard 4-by-4 transform matrix.  The resulting non-homogeneous
- *	points are returned.
- *
- * Input
- *	n		number of points to transform
- *	m		4-by-4 transform matrix
- *	in		array of non-homogeneous input points
- *
- * Output
- *	*out		array of transformed non-homogeneous output points
- *****************************************************************************/
-
-PartialNonHomTransform(n, m, in, out)
-int n;
-register Transform3D m;
-register Point3D *in;
-register Point3D *out;
-{
-	for (; n > 0; --n, ++in, ++out)
-	{
-		out->x = in->x * m[0][0] + in->y * m[1][0] + in->z * m[2][0];
-		out->y = in->x * m[0][1] + in->y * m[1][1] + in->z * m[2][1];
-		out->z = in->x * m[0][2] + in->y * m[1][2] + in->z * m[2][2];
-	}
+	/* wait until all theads terminate */
+	xmutex_lock(&count_mutex);
+	xcondition_wait(&count_cond, &count_mutex);
+	xmutex_unlock(&count_mutex);
+#else
+	/* start the animation */
+	closure = (struct closure *) xalloc(sizeof(struct closure));
+	do_ico_window(closure);
+#endif
+	XCloseDisplay(dpy);
+	return 0;
 }
