@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picture.h,v 1.5 2000/11/21 04:11:42 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picture.h,v 1.6 2001/07/18 10:15:02 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -50,7 +50,7 @@ typedef struct _Picture		*PicturePtr;
 #define PICT_FORMAT_B(f)	(((f)      ) & 0x0f)
 #define PICT_FORMAT_RGB(f)	(((f)      ) & 0xfff)
 
-#define PICT_OTHER	0
+#define PICT_TYPE_OTHER	0
 #define PICT_TYPE_A	1
 #define PICT_TYPE_ARGB	2
 #define PICT_TYPE_ABGR	3
