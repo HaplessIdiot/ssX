@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.47 2004/03/05 04:02:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.48 2004/03/21 11:27:06 herrb Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -132,7 +132,7 @@
 /*
  * Global Definitions
  */
-#define MAX_PCI_DEVICES 64	/* Max number of devices accomodated */
+#define MAX_PCI_DEVICES 128	/* Max number of devices accomodated */
 				/* by xf86scanpci		     */
 #if defined(sun) && defined(SVR4) && defined(sparc)
 # define MAX_PCI_BUSES   4096	/* Max number of PCI buses           */
