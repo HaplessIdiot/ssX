@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifndef _FFB_DRISHARE_H
 #define _FFB_DRISHARE_H
 
