@@ -2,14 +2,14 @@
 
                           The XFree86 Project, Inc
 
-                  11 July 1999 (this document needs work!)
+                  12 July 1999 (this document needs work!)
 
                                   Abstract
 
      This document contains some information about the features present
      in XFree86 3.9.15 and their status.
 
-Most of the sections below are currently empty.
+Many of the sections below are currently empty.
 
 1.  X server
 
@@ -44,6 +44,22 @@ platforms.  It also has preliminary support for Sparc platforms.
 The X server makes use of modules for video drivers, X server extensions,
 font rasterisers, input device drivers, framebuffer layers (like mfb, cfb,
 etc), and internal components used by some drivers (like XAA),
+
+The module interfaces (API and ABI) used in the snapshot releases are subject
+to change without notice.  This means that there is no guarantee that modules
+built for one shapshot release will function with another snapshot release.
+As of the 4.0 release we plan to make every effort to provide backward com-
+patibility for the module interfaces (that means older modules working with
+newer core X server binaries).
+
+Note about module security
+
+     The XFree86 X server runs with root privileges, which means that
+     the X server loadable modules also run with these privileges.  For
+     this reason we recommend that all users be careful to only use
+     loadable modules from reliable sources.  By the time that XFree86
+     4.0 is released, we hope to have implemented a method for sign-
+     ing/verifying modules that we provide.
 
 1.2  Configuration File
 
@@ -138,17 +154,23 @@ the monitor gamma (brightness) curve, and the screen size and pitch.
 
    o The gamma is particularly noticeable; every monitor I have tried has a
      gamma setting > 2, which means that the picture is much lighter than
-     under 3.3.x or without DDC. To revert to the previous behavior put Gamma
-     1.0 1.0 1.0 in the appropriate "Monitor" section of the Config file.
+     under 3.3.x or without DDC. To revert to the previous behavior put
+
+          Gamma 1.0 1.0 1.0
+
+     in the appropriate "Monitor" section of the config file.
 
    o Similarly, you can override the DDC probed "dpi" value by explicitly
      resetting it to the 3.3.x and non-DDC default value 75 with the -dpi 75
-     command line option for the X server. There may be a way of doing this
-     with the config file too.
+     command line option for the X server, or by specifying appropriate
+     screen dimensions with the "DisplaySize" keyword in the "Monitor" sec-
+     tion of the config file.
 
-1.10  Other extensions
+1.10  GLX
 
-1.11  Sections for specific drivers go here
+1.11  Other extensions
+
+1.12  Sections for specific drivers go here
 
 2.  X libraries and clients
 
@@ -239,11 +261,33 @@ Bug fixes/improvements:
 
 3.  Fonts and Internationalisation
 
+Details about the font support in this version of XFree86 can be found in the
+README.fonts document.
+
 3.1  TrueType support
+
+This version of XFree86 comes with two TrueType backends, known as `xfsft'
+(the "freetype" module) and `X-TrueType' (the "xtt" module).  Both of these
+backends are based on the FreeType library.
 
 3.2  CID font support
 
-3.3  Unicode support
+Support for CID-keyed fonts is included in this version of XFree86.  The CID-
+keyed font format was designed by Adobe Systems <URL:http://www.adobe.com>
+for fonts with large character sets.  The CID-keyed font support in XFree86
+was donated by SGI <URL:http://www.sgi.com>.  See the LICENSE document for a
+copy of the CID Font Code Public License.
+
+3.3  Internationalisation of the scalable font backends
+
+A new ``fontenc'' layer has been added to allow the scalable font backends to
+use a common method of font reencoding.  This reencoding makes it possible to
+uses fonts in encodings other than their their native encoding.  This layer
+is used by the Type1 and Speedo backends and the `xfsft' version of the True-
+Type backend.  The `X-TrueType' version of the TrueType backend uses a dif-
+ferent reencoding method based on loadable encoding modules.
+
+3.4  Unicode support
 
 What is included:
 
@@ -273,7 +317,7 @@ Known problems:
    o ISO 10646 Level 2 combining characters not yet supported by xterm (will
      be needed for instance for the Thai script).
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.6 1999/07/11 08:49:23 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.7 1999/07/12 07:47:50 dawes Exp $
 
 
 $XFree86$
