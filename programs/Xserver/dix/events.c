@@ -2176,6 +2176,117 @@ NewCurrentScreen(newScreen, x, y)
     if (newScreen != sprite.hotPhys.pScreen)
 	ConfineCursorToWindow(WindowTable[newScreen->myNum], TRUE, FALSE);
 }
+
+#ifdef PANORAMIX
+
+static Bool
+PanoramiXPointInWindowIsVisible(
+    WindowPtr pWin,
+    int x,
+    int y
+)
+{
+    ScreenPtr pScreen = pWin->drawable.pScreen;
+    BoxRec box;
+    int i, xoff, yoff;
+
+    if (!pWin->realized) return FALSE;
+
+    if (POINT_IN_REGION(pScreen, &pWin->borderClip, x, y, &box))
+        return TRUE;
+    
+    if(!PanoramiXSetWindowPntrs(pWin)) return FALSE;
+
+    xoff = x + panoramiXdataPtr[0].x;  
+    yoff = y + panoramiXdataPtr[0].y;  
+
+    for(i = 1; i < PanoramiXNumScreens; i++) {
+	pWin = sprite.windows[i];
+	pScreen = pWin->drawable.pScreen;
+	x = xoff - panoramiXdataPtr[i].x;
+	y = yoff - panoramiXdataPtr[i].y;
+
+	if(POINT_IN_REGION(pScreen, &pWin->borderClip, x, y, &box))
+            return TRUE;
+
+    }
+
+    return FALSE;
+}
+
+static int
+PanoramiXWarpPointer(ClientPtr client)
+{
+    WindowPtr	dest = NULL;
+    int		x, y;
+
+    REQUEST(xWarpPointerReq);
+
+
+    if (stuff->dstWid != None)
+    {
+	dest = SecurityLookupWindow(stuff->dstWid, client, SecurityReadAccess);
+	if (!dest)
+	    return BadWindow;
+    }
+    x = sprite.hotPhys.x;
+    y = sprite.hotPhys.y;
+
+    if (stuff->srcWid != None)
+    {
+	int     winX, winY;
+ 	XID 	winID = stuff->srcWid;
+        WindowPtr source;
+	
+	source = SecurityLookupWindow(winID, client, SecurityReadAccess);
+	if (!source) return BadWindow;
+
+	winX = source->drawable.x;
+	winY = source->drawable.y;
+	if(source == WindowTable[0]) {
+	    winX -= panoramiXdataPtr[0].x;
+	    winY -= panoramiXdataPtr[0].y;
+	}
+	if (x < winX + stuff->srcX ||
+	    y < winY + stuff->srcY ||
+	    (stuff->srcWidth != 0 &&
+	     winX + stuff->srcX + (int)stuff->srcWidth < x) ||
+	    (stuff->srcHeight != 0 &&
+	     winY + stuff->srcY + (int)stuff->srcHeight < y) ||
+	    !PanoramiXPointInWindowIsVisible(source, x, y))
+	    return Success;
+    }
+    if (dest) {
+	x = dest->drawable.x;
+	y = dest->drawable.y;
+	if(dest == WindowTable[0]) {
+	    x -= panoramiXdataPtr[0].x;
+	    y -= panoramiXdataPtr[0].y;
+	}
+    } 
+
+    x += stuff->dstX;
+    y += stuff->dstY;
+
+    if (x < sprite.physLimits.x1)
+	x = sprite.physLimits.x1;
+    else if (x >= sprite.physLimits.x2)
+	x = sprite.physLimits.x2 - 1;
+    if (y < sprite.physLimits.y1)
+	y = sprite.physLimits.y1;
+    else if (y >= sprite.physLimits.y2)
+	y = sprite.physLimits.y2 - 1;
+    if (sprite.hotShape)
+	ConfineToShape(sprite.hotShape, &x, &y);
+
+    PanoramiXSetCursorPosition(x, y, TRUE);
+
+    return Success;
+}
+
+#endif
+
+
 int
 ProcWarpPointer(client)
     ClientPtr client;
@@ -2187,6 +2298,12 @@ ProcWarpPointer(client)
     REQUEST(xWarpPointerReq);
 
     REQUEST_SIZE_MATCH(xWarpPointerReq);
+
+#ifdef PANORAMIX
+    if(!noPanoramiXExtension)
+	return PanoramiXWarpPointer(client);
+#endif
+
     if (stuff->dstWid != None)
     {
 	dest = SecurityLookupWindow(stuff->dstWid, client, SecurityReadAccess);
@@ -2217,7 +2334,8 @@ ProcWarpPointer(client)
 	    !PointInWindowIsVisible(source, x, y))
 	    return Success;
     }
-    if (dest) {
+    if (dest) 
+    {
 	x = dest->drawable.x;
 	y = dest->drawable.y;
 	newScreen = dest->drawable.pScreen;
@@ -2227,19 +2345,14 @@ ProcWarpPointer(client)
     x += stuff->dstX;
     y += stuff->dstY;
 
-#ifdef PANORAMIX
-    if(noPanoramiXExtension) /* Clip to the SLS not Screen 0 */
-#endif
-    {
-	if (x < 0)
-	    x = 0;
-	else if (x >= newScreen->width)
-	    x = newScreen->width - 1;
-	if (y < 0)
-	    y = 0;
-	else if (y >= newScreen->height)
-	    y = newScreen->height - 1;
-    }
+    if (x < 0)
+	x = 0;
+    else if (x >= newScreen->width)
+	x = newScreen->width - 1;
+    if (y < 0)
+	y = 0;
+    else if (y >= newScreen->height)
+	y = newScreen->height - 1;
 
     if (newScreen == sprite.hotPhys.pScreen)
     {
@@ -2251,14 +2364,9 @@ ProcWarpPointer(client)
 	    y = sprite.physLimits.y1;
 	else if (y >= sprite.physLimits.y2)
 	    y = sprite.physLimits.y2 - 1;
-#if defined(SHAPE) || defined(PANORAMIX)
+#if defined(SHAPE)
 	if (sprite.hotShape)
 	    ConfineToShape(sprite.hotShape, &x, &y);
-#endif
-#ifdef PANORAMIX
-	if(!noPanoramiXExtension)
-	    PanoramiXSetCursorPosition(x, y, TRUE);
-	else
 #endif
 	(*newScreen->SetCursorPosition)(newScreen, x, y, TRUE);
     }
