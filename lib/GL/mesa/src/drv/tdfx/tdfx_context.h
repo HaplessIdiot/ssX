@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_context.h,v 1.3 2001/10/02 11:44:13 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_context.h,v 1.4 2002/02/22 21:45:03 dawes Exp $ */
 
 /*
  * Original rewrite:
@@ -673,10 +673,8 @@ struct tdfx_glide {
    void (*grDisable)( GrEnableMode_t mode );
    void (*grCoordinateSpace)( GrCoordinateSpaceMode_t mode );
    void (*grDepthRange)( FxFloat n, FxFloat f );
-#ifdef __linux__ 
    void (*grStippleMode)( GrStippleMode_t mode );
    void (*grStipplePattern)( GrStipplePattern_t mode );
-#endif /* __linux__ */
    void (*grViewport)( FxI32 x, FxI32 y, FxI32 width, FxI32 height );
    FxU32 (*grTexCalcMemRequired)(GrLOD_t lodmin, GrLOD_t lodmax,
                                 GrAspectRatio_t aspect, GrTextureFormat_t fmt);
