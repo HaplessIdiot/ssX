@@ -3,7 +3,7 @@
  * For conditions of distribution and use, see copyright notice in zlib.h 
  */
 
-/* @(#) $Id: zconf.h,v 1.1 2003/06/01 21:00:18 herrb Exp $ */
+/* $XFree86: xc/lib/zlib/zconf.h,v 1.9 2002/05/31 18:45:52 dawes Exp $ */
 
 #ifndef _ZCONF_H
 #define _ZCONF_H
@@ -51,7 +51,7 @@
 #if (defined(_WIN32) || defined(__WIN32__)) && !defined(WIN32)
 #  define WIN32
 #endif
-#if defined(__GNUC__) || defined(WIN32) || defined(__386__) || defined(i386)
+#if defined(__GNUC__) || defined(WIN32) || defined(__386__) || defined(i386) || defined(__UNIXOS2__)
 #  ifndef __32BIT__
 #    define __32BIT__
 #  endif
@@ -235,9 +235,13 @@ typedef uLong FAR uLongf;
    typedef Byte     *voidp;
 #endif
 
-#ifdef HAVE_UNISTD_H
+#ifndef X_NOT_POSIX
 #  include <sys/types.h> /* for off_t */
+#ifndef WIN32
 #  include <unistd.h>    /* for SEEK_* and off_t */
+#else
+#  include <stdio.h>	 /* this is where VC++ has SEEK_ */
+#endif
 #  define z_off_t  off_t
 #endif
 #ifndef SEEK_SET

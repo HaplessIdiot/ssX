@@ -5,8 +5,6 @@
  * Compile this file with -DNO_DEFLATE to avoid the compression code.
  */
 
-/* @(#) $Id: gzio.c,v 1.1 2003/06/01 21:00:16 herrb Exp $ */
-
 #include <stdio.h>
 
 #include "zutil.h"

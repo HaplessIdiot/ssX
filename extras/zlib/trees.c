@@ -29,8 +29,6 @@
  *          Addison-Wesley, 1983. ISBN 0-201-06672-6.
  */
 
-/* @(#) $Id: trees.c,v 1.1 2003/06/01 21:00:18 herrb Exp $ */
-
 /* #define GEN_TREES_H */
 
 #include "deflate.h"
