@@ -1,5 +1,5 @@
 /* $XConsortium: imake.c,v 1.89 94/08/12 00:45:51 gildea Exp $ */
-/* $XFree86: xc/config/imake/imake.c,v 3.3 1994/06/28 12:17:36 dawes Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.4 1994/08/20 07:27:39 dawes Exp $ */
 
 /***************************************************************************
  *                                                                         *
@@ -194,6 +194,9 @@ extern int	errno;
 #endif
 
 #if !(defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4)) || defined(macII))
+#define USE_STRERROR		1
+#endif
+#ifdef __EMX__
 #define USE_STRERROR		1
 #endif
 

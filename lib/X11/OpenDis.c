@@ -1,4 +1,5 @@
 /* $XConsortium: OpenDis.c,v 11.152 94/04/17 20:20:21 rws Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1985, 1986  X Consortium
@@ -119,6 +120,9 @@ Display *XOpenDisplay (display)
 	extern XtransConnInfo _X11TransConnectDisplay();
 	extern XID _XAllocID();
 	extern void _XAllocIDs();
+
+	bzero((char *) &client, sizeof(client));
+	bzero((char *) &prefix, sizeof(prefix));
 
 	/*
 	 * If the display specifier string supplied as an argument to this 
@@ -249,7 +253,7 @@ Display *XOpenDisplay (display)
 	}	
 
 	/* Set up the output buffers. */
-	if ((dpy->bufptr = dpy->buffer = Xmalloc(BUFSIZE)) == NULL) {
+	if ((dpy->bufptr = dpy->buffer = Xcalloc(1, BUFSIZE)) == NULL) {
 	        OutOfMemory (dpy, setup);
 		return(NULL);
 	}

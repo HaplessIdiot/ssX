@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.1 94/03/28 21:55:24 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.21 1994/09/22 15:52:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.22 1994/09/24 15:15:18 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1283,6 +1283,10 @@ vgaSwitchMode(mode)
   if ((vgaInitFunc)(mode))
   {
     vgaRestore(vgaNewVideoState);
+    if (vgaHWCursor.Initialized)
+    {
+      vgaHWCursor.Restore(savepScreen);
+    }
     return(TRUE);
   }
   else

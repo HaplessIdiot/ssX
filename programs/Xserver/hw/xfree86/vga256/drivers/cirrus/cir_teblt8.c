@@ -1,5 +1,5 @@
 /* $XConsortium: cir_teblt8.c,v 1.2 94/04/17 20:32:34 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.7 1994/09/19 13:45:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.8 1994/09/21 10:58:42 dawes Exp $ */
 /*
  * TEGblt - ImageText expanded glyph fonts only.  For
  * 8 bit displays, in Copy mode with no clipping.
@@ -93,7 +93,6 @@ static void CollectCharacters(glyphp, nglyph, pglyphBase, ppci)
 	}
 }
 
-
 #ifdef CIRRUS_MMIO
 void CirrusMMIOImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 #else
@@ -127,18 +126,52 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	glyphWidthBytes = GLYPHWIDTHBYTESPADDED(*ppci);
 
 	cfbGetLongWidthAndPointer(pDrawable, widthDst, pdstBase)
-	widthDst *= 4;		/* Convert to bytes. */
+	switch (vgaBitsPerPixel) {
+	case 16 :
+		widthDst = vga256InfoRec.virtualX * 2;
+		break;
+	case 32 :
+		widthDst = vga256InfoRec.virtualX * 4;
+		break;
+	default :
+		widthDst *= 4;	/* Convert to bytes. */
+		break;
+	}
 
 	/* We only accelerate fonts 32 or less pixels wide. */
 	/* Let cfb handle writing into offscreen pixmap. */
-	if (!CHECKSCREEN(pdstBase) || !xf86VTSema) {
+	if (vgaBitsPerPixel == 8 && (!CHECKSCREEN(pdstBase) || !xf86VTSema)) {
 	        cfbImageGlyphBlt8(pDrawable, pGC, xInit, yInit, nglyph, ppci,
 	        	pglyphBase);
 		return;	        
 	}
-	if (glyphWidthBytes != 4 || glyphWidth > 32) {
-	        vga256TEGlyphBlt8(pDrawable, pGC, xInit, yInit, nglyph, ppci,
+	if (vgaBitsPerPixel == 16 && (pDrawable->type != DRAWABLE_WINDOW ||
+	!xf86VTSema)) {
+	        cfb16TEGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci,
 	        	pglyphBase);
+		return;
+	}
+	if (vgaBitsPerPixel == 32 && (pDrawable->type != DRAWABLE_WINDOW ||
+	!xf86VTSema)) {
+	        cfb32TEGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci,
+	        	pglyphBase);
+		return;
+	}
+	if (glyphWidthBytes != 4 || glyphWidth > 32) {
+		switch (vgaBitsPerPixel) {
+		case 8 :
+	        	vga256TEGlyphBlt8(pDrawable, pGC, xInit, yInit, nglyph,
+	        		ppci, pglyphBase);
+	        	break;
+	        case 16 :
+	        	cfb16TEGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph,
+	        		ppci, pglyphBase);
+	        	break;
+	        case 32 :
+	        	cfb32TEGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph,
+	        		ppci, pglyphBase);
+	        	break;
+	        }
 	        return;
 	}
 
@@ -153,14 +186,28 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     bbox.y1 = y;
     bbox.y2 = y + h;
 
-    switch ((*pGC->pScreen->RectIn)(
-                ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip, &bbox))
-    {
-      case rgnPART:
-	vga256TEGlyphBlt8(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
-      case rgnOUT:
-	return;
-    }
+       	switch ((*pGC->pScreen->RectIn)(
+               	((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))
+                ->pCompositeClip, &bbox))
+        {
+        case rgnPART:
+		switch (vgaBitsPerPixel) {
+		case 8 :
+			vga256TEGlyphBlt8(pDrawable, pGC, xInit, yInit, nglyph,
+				ppci, pglyphBase);
+			break;
+		case 16 :
+			cfb16TEGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph,
+				ppci, pglyphBase);
+			break;
+		case 32 :
+			cfb32TEGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph,
+				ppci, pglyphBase);
+			break;
+		}
+        case rgnOUT:
+		return;
+       	}
 
 	/* Allocate list of pointers to glyph bitmaps. */
 	glyphp = (unsigned long **)ALLOCATE_LOCAL(nglyph * sizeof(unsigned long *));
@@ -186,19 +233,55 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 
 	CollectCharacters(glyphp, nglyph, pglyphBase, ppci);
 
-	destaddr = y * widthDst + x;
+	switch (vgaBitsPerPixel) {
+	case 16 :
+		destaddr = y * widthDst + x * 2;
+		break;
+	case 32 :
+		destaddr = y * widthDst + x * 4;
+		break;
+	default : /* 8 */
+		destaddr = y * widthDst + x;
+		break;
+	}
 	SETDESTADDR(destaddr);
 	SETDESTPITCH(widthDst);
 	SETSRCADDR(0);
 	SETSRCPITCH(0);
 	blitwidth = glyphWidth * nglyph;
+	if (vgaBitsPerPixel == 16)
+		blitwidth *= 2;
+	if (vgaBitsPerPixel == 32)
+		blitwidth *= 4;
 	SETWIDTH(blitwidth);
 	SETHEIGHT(h);
 
-	SETBACKGROUNDCOLOR(pGC->bgPixel);
-	SETFOREGROUNDCOLOR(pGC->fgPixel);
+	switch (vgaBitsPerPixel) {
+	case 16 :
+		SETBACKGROUNDCOLOR16(pGC->bgPixel);
+		SETFOREGROUNDCOLOR16(pGC->fgPixel);
+		break;
+	case 32 :
+		SETBACKGROUNDCOLOR32(pGC->bgPixel);
+		SETFOREGROUNDCOLOR32(pGC->fgPixel);
+		break;
+	default : /* 8 */
+		SETBACKGROUNDCOLOR(pGC->bgPixel);
+		SETFOREGROUNDCOLOR(pGC->fgPixel);
+		break;
+	}
 
-	SETBLTMODE(SYSTEMSRC | COLOREXPAND);
+	switch (vgaBitsPerPixel) {
+	case 16 :
+		SETBLTMODE(SYSTEMSRC | COLOREXPAND | PIXELWIDTH16);
+		break;
+	case 32 :
+		SETBLTMODE(SYSTEMSRC | COLOREXPAND | PIXELWIDTH32);
+		break;
+	default : /* 8 */
+		SETBLTMODE(SYSTEMSRC | COLOREXPAND);
+		break;
+	}
 	SETROP(CROP_SRC);
 	STARTBLT();
 
@@ -287,7 +370,7 @@ void CirrusPolyGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 
 	PolyGlyph = NULL;
 
-	if (HAVEBITBLTENGINE() && HAVE543X())
+	if (HAVEBITBLTENGINE())
 		fontwidthlimit = 32;	/* BitBLT transfer function used. */
 	else
 		fontwidthlimit = 16;	/* Color expansion function used. */
@@ -339,11 +422,13 @@ void CirrusPolyGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	/* Allocate list of pointers to glyph bitmaps. */
 	glyphp = (unsigned long **)ALLOCATE_LOCAL(nglyph * sizeof(unsigned long *));
 
-	if (HAVE543X() && HAVEBITBLTENGINE()) {
+	if (HAVEBITBLTENGINE()) {
 		/* On the 543x, we can use BitBLT text transfer for
 		 * transparent text. This is because on the 543x,
 		 * transparency in the BitBLT engine is 'fixed' to be
-		 * similar to write mode 4. */
+		 * similar to write mode 4.
+		 * On the 5426/8, it turns out it can also work.
+		 */
 		int destaddr, blitwidth;
 		unsigned int color;
 
@@ -361,13 +446,33 @@ void CirrusPolyGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 		/* Transparency is a special case. All four foreground
 		 * color registers must be loaded, and the background color
 		 * registers must be loaded with the bitwise complement of
-		 * the foreground color. */
-		color = (~pGC->fgPixel) & 0xff;
-		color = color | (color << 8) | (color << 16) | (color << 24);
-		SETBACKGROUNDCOLOR32(color);
-		color = pGC->fgPixel;
-		color = color | (color << 8) | (color << 16) | (color << 24);
-		SETFOREGROUNDCOLOR32(color);
+		 * the foreground color.
+		 * MMIO implies a 5429 or 543x.
+		 */
+#ifndef CIRRUS_MMIO
+		if (HAVE543X() || cirrusChip == CLGD5429) {
+#endif
+			color = (~pGC->fgPixel) & 0xff;
+			color = color | (color << 8) | (color << 16)
+				| (color << 24);
+			SETBACKGROUNDCOLOR32(color);
+			color = pGC->fgPixel;
+			color = color | (color << 8) | (color << 16)
+				| (color << 24);
+			SETFOREGROUNDCOLOR32(color);
+#ifndef CIRRUS_MMIO
+		}
+		else {
+			color = (~pGC->fgPixel) & 0xff;
+			color = color | (color << 8);
+			SETBACKGROUNDCOLOR16(color);
+			SETTRANSPARENCYCOLOR16(color);
+			SETTRANSPARENCYCOLORMASK16(0x0000);
+			color = pGC->fgPixel;
+			color = color | (color << 8);
+			SETFOREGROUNDCOLOR16(color);
+		}
+#endif
 
 		SETBLTMODE(SYSTEMSRC | COLOREXPAND | TRANSPARENCYCOMPARE);
 		SETROP(CROP_SRC);

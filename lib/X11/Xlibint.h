@@ -1,4 +1,5 @@
 /* $XConsortium: Xlibint.h,v 11.143 94/04/17 20:21:50 rws Exp $ */
+/* $XFree86$ */
 
 /*
 
@@ -1191,5 +1192,13 @@ struct _XConnWatchInfo {	/* info from XAddConnectionWatch */
     XPointer client_data;
     struct _XConnWatchInfo *next;
 };
+
+#ifdef __EMX__
+extern char* __XOS2RedirRoot(
+#if NeedFunctionPrototypes
+    char*
+#endif
+);
+#endif
 
 _XFUNCPROTOEND

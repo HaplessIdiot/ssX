@@ -1,6 +1,6 @@
 /*
  * $XConsortium: vgaHW.c,v 1.3 94/03/28 21:56:01 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.9 1994/09/04 10:51:06 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.10 1994/09/23 10:27:05 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -892,6 +892,8 @@ vgaHWInit(mode, size)
 		| ((mode->VSyncStart & 0x200) >> 2 );
   new->CRTC[8]  = 0x00;
   new->CRTC[9]  = ((mode->VSyncStart & 0x200) >>4) | 0x40;
+  if (mode->Flags & V_DBLSCAN)
+    new->CRTC[9] |= 0x80;
   new->CRTC[10] = 0x00;
   new->CRTC[11] = 0x00;
   new->CRTC[12] = 0x00;

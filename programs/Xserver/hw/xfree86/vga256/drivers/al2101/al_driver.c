@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/al2101/al_driver.c,v 3.3 1994/09/07 15:55:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/al2101/al_driver.c,v 3.4 1994/09/11 00:52:21 dawes Exp $ */
 /*
  * Copyright 1994 by Paolo Severini, Italy.
  *
@@ -94,6 +94,10 @@ vgaVideoChipRec AL2101 = {
 
 #define new ((vgaAL2101Ptr)vgaNewVideoState)
 
+static unsigned AL2101_IOPorts[] = {
+	0x3D6, 0x3D7
+};
+
 /*
  * AL2101ClockSelect --
  *      select one of the possible clocks ...
@@ -158,6 +162,8 @@ AL2101Probe()
    */  
   xf86ClearIOPortList(vga256InfoRec.scrnIndex);
   xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
+  xf86AddIOPorts(vga256InfoRec.scrnIndex, sizeof(AL2101_IOPorts) /
+      sizeof(AL2101_IOPorts[0]), AL2101_IOPorts);
 
   if (vga256InfoRec.chipset)
     {

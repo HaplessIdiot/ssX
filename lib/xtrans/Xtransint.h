@@ -1,5 +1,5 @@
 /* $XConsortium: Xtransint.h,v 1.21 94/05/10 11:08:46 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.0 1994/05/08 05:16:35 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.1 1994/05/22 06:45:50 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -89,6 +89,9 @@ extern int  errno;		/* Internal system error number. */
 #ifndef MINIX
 #include <sys/socket.h>
 #endif
+#ifdef __EMX__
+#include <sys/ioctl.h>
+#endif
 
 /*
  * makedepend screws up on #undef OPEN_MAX, so we define a new symbol
@@ -128,8 +131,11 @@ extern int  errno;		/* Internal system error number. */
 
 #endif /* TRANS_OPEN_MAX */
 
-
+#ifdef __EMX__
+#define ESET(val)
+#else
 #define ESET(val) errno = val
+#endif
 #define EGET() errno
 
 #else /* WIN32 */
@@ -368,7 +374,7 @@ typedef struct _Xtransport_table {
  * systems, so they may be emulated.
  */
 
-#if defined(CRAY) || (defined(SYSV) && defined(SYSV386)) || defined(WIN32) || defined(__sxg__) || defined(SCO)
+#if defined(CRAY) || (defined(SYSV) && defined(SYSV386)) || defined(WIN32) || defined(__sxg__) || defined(SCO) || defined(__EMX__)
 
 #define READV(ciptr, iov, iovcnt)	TRANS(ReadV)(ciptr, iov, iovcnt)
 
@@ -387,7 +393,7 @@ static	int TRANS(ReadV)(
 #endif /* CRAY || (SYSV && SYSV386) || WIN32 || __sxg__ || SCO */
 
 
-#if defined(CRAY) || defined(WIN32) || defined(__sxg__) || defined(SCO)
+#if defined(CRAY) || defined(WIN32) || defined(__sxg__) || defined(SCO) || defined(__EMX__)
 
 #define WRITEV(ciptr, iov, iovcnt)	TRANS(WriteV)(ciptr, iov, iovcnt)
 
@@ -421,11 +427,18 @@ static int is_numeric (
 /* add hack to the format string to avoid warnings about extra arguments
  * to fprintf.
  */
+#ifndef __EMX__
 #define PRMSG(lvl,x,a,b,c)	if (lvl <= DEBUG){ \
 			int hack= 0, saveerrno=errno; \
 			fprintf(stderr, x+hack,a,b,c); fflush(stderr); \
 			errno=saveerrno; \
 			} else ((void)0)
+#else
+#define PRMSG(lvl,x,a,b,c)	if (lvl <= DEBUG){ \
+			int hack= 0; \
+			fprintf(stdout, x+hack,a,b,c); fflush(stdout); \
+			} else ((void)0)
+#endif /* __EMX__ */
 #else
 #define PRMSG(lvl,x,a,b,c)	((void)0)
 #endif /* DEBUG */

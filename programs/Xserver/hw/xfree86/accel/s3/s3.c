@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.42 1994/09/26 15:31:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.43 1994/09/26 16:10:44 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -1175,21 +1175,31 @@ s3Probe()
    case BT485_DAC:
       if (maxRawClock > 67500)
 	 clockDoublingPossible = TRUE;
+      /* These limits are based on the LCLK rating, and may be too high */
       if (s3Bt485PixMux && s3Bpp < 4)
 	 s3InfoRec.maxClock = s3InfoRec.dacSpeed;
-      else
-	 s3InfoRec.maxClock = 85000;
+      else {
+	 if (s3InfoRec.dacSpeed < 150000)    /* 110 and 135 */
+	    s3InfoRec.maxClock = 90000;
+	 else				      /* 150 and 170 (if they exist) */
+	    s3InfoRec.maxClock = 110000;
+      }
       break;
    case ATT20C505_DAC:
       if (maxRawClock > 90000)
 	 clockDoublingPossible = TRUE;
+      /* These limits are based on the LCLK rating, and may be too high */
       if (s3Bt485PixMux && s3Bpp < 4)
 	 s3InfoRec.maxClock = s3InfoRec.dacSpeed;
-      else
-	 s3InfoRec.maxClock = 85000;
+      else {
+	 if (s3InfoRec.dacSpeed < 110000)	  /* 85 */
+	    s3InfoRec.maxClock = 85000;
+	 else if (s3InfoRec.dacSpeed < 135000)	  /* 110 */
+	    s3InfoRec.maxClock = 90000;
+	 else					  /* 135, 150, 170 */
+	    s3InfoRec.maxClock = 110000;
+      }
       break;
-      /* XXXX What happens for 16bpp and 32bpp?? */
-      /* XXXX Include scaling of maxRawClock for 16bpp and 32bpp */
    case ATT20C498_DAC:
    case STG1700_DAC:
    case S3_SDAC_DAC:
@@ -1221,9 +1231,10 @@ s3Probe()
    case ATT20C490_DAC:
       s3InfoRec.maxClock = s3InfoRec.dacSpeed;
       /* Halve it for 16bpp (32bpp not supported) */
-      if (s3Bpp > 1)
+      if (s3Bpp > 1) {
 	 s3InfoRec.maxClock /= 2;
 	 maxRawClock /= 2;
+      }
       break;
    case S3_GENDAC_DAC:
       s3InfoRec.maxClock = s3InfoRec.dacSpeed / s3Bpp;
@@ -1568,7 +1579,8 @@ s3Probe()
 	        * We'll act based on clock doubling changeover at 67500
 	        */
 	       if (pMode->SynthClock > 67500) {
-		  pMode->SynthClock /= 2;
+		  if (!S3_864_SERIES(s3ChipId) || !S3_SDAC_DAC) 
+		     pMode->SynthClock /= 2;
 		  pMode->Flags |= V_DBLCLK;
 	       }
 	       break;
@@ -1717,8 +1729,8 @@ s3Probe()
     * the 12-bit (4096) limit when small display widths are used on cards
     * with a lot of memory
     */
-   if (s3InfoRec.videoRam * 1024 / s3DisplayWidth > 4096) {
-      s3InfoRec.videoRam = s3DisplayWidth * 4096 / 1024;
+   if (s3InfoRec.videoRam * 1024 / s3BppDisplayWidth > 4096) {
+      s3InfoRec.videoRam = s3BppDisplayWidth * 4096 / 1024;
       ErrorF("%s %s: videoram usage reduced to %dk to avoid co-ord overflow\n",
 	     XCONFIG_PROBED, s3InfoRec.name, s3InfoRec.videoRam);
    }

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.23 1994/09/23 10:13:02 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.24 1994/09/24 15:13:13 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1696,7 +1696,8 @@ configMonitorSection()
       token = getToken(TimingTab);
       while ( (token == INTERLACE) || (token == PHSYNC) ||
               (token == NHSYNC) || (token == PVSYNC) ||
-              (token == NVSYNC) || (token == CSYNC) )
+              (token == NVSYNC) || (token == CSYNC) ||
+              (token == DBLSCAN) )
       {
         switch(token) {
               
@@ -1706,6 +1707,7 @@ configMonitorSection()
         case PVSYNC:    pNew->Flags |= V_PVSYNC;     break;
         case NVSYNC:    pNew->Flags |= V_NVSYNC;     break;
         case CSYNC:     pNew->Flags |= V_CSYNC;      break;
+        case DBLSCAN:   pNew->Flags |= V_DBLSCAN;    break;
         default:
           configError("bug found in config reader"); break;
         }
@@ -1931,8 +1933,9 @@ MonPtr monp;
         case PVSYNC:    pNew->Flags |= V_PVSYNC;     break;
         case NVSYNC:    pNew->Flags |= V_NVSYNC;     break;
         case CSYNC:     pNew->Flags |= V_CSYNC;      break;
+        case DBLSCAN:   pNew->Flags |= V_DBLSCAN;    break;
         default:
-          configError("bug found in config reader"); break;
+          configError("Unknown flag string"); break;
         }
         token = getToken(NULL);
       }

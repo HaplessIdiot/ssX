@@ -1,5 +1,5 @@
 /* $XConsortium: Xtrans.c,v 1.25 94/06/02 10:59:43 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.2 1994/05/22 06:45:47 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.3 1994/06/09 10:45:56 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -689,7 +689,8 @@ int		arg;
 	    /* Set to blocking mode */
 	    break;
 	case 1: /* Set to non-blocking mode */
-#if defined(O_NONBLOCK) && (!defined(SCO) && !defined(ultrix) && !defined(hpux) && !defined(AIXV3) && !defined(uniosu))
+
+#if defined(O_NONBLOCK) && (!defined(SCO) && !defined(ultrix) && !defined(hpux) && !defined(AIXV3) && !defined(uniosu) && !defined(__EMX__))
 	    ret = fcntl (fd, F_SETFL, O_NONBLOCK);
 #else
 #ifdef FIOSNBIO
@@ -699,11 +700,17 @@ int		arg;
 	    ret = ioctl (fd, FIOSNBIO, &arg);
 	}
 #else
-#if (defined(AIXV3) || defined(uniosu) || defined(WIN32)) && defined(FIONBIO)
+#if (defined(AIXV3) || defined(uniosu) || defined(WIN32) || defined(__EMX__)) && defined(FIONBIO)
 	{
 	    int arg;
 	    arg = 1;
+/* IBM TCP/IP understands this option too well: it causes TRANS(Read) to fail
+ * eventually with EWOULDBLOCK */
+#ifndef __EMX__
 	    ret = ioctl (fd, FIONBIO, &arg);
+#else
+/*	    ret = ioctl(fd, FIONBIO, &arg, sizeof(int));*/
+#endif
 	}
 #else
 #ifdef FNDELAY
@@ -1287,7 +1294,7 @@ int 		iovcnt;
 
 #endif /* CRAY */
 
-#if (defined(SYSV) && defined(SYSV386)) || defined(WIN32) || defined(__sxg__) || defined(SCO)
+#if (defined(SYSV) && defined(SYSV386)) || defined(WIN32) || defined(__sxg__) || defined(SCO) || defined(__EMX__)
 
 /*
  * emulate readv
@@ -1323,7 +1330,7 @@ int 		iovcnt;
 
 #endif /* SYSV && SYSV386 || WIN32 || __sxg__ || SCO */
 
-#if defined(WIN32) || defined(__sxg__) || defined(SCO)
+#if defined(WIN32) || defined(__sxg__) || defined(SCO) || defined(__EMX__)
 
 /*
  * emulate writev

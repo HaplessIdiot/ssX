@@ -1,4 +1,5 @@
 /* "$XConsortium: XKBCvt.c,v 1.14 94/04/17 20:21:35 erik Exp $"; */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1988, 1989  X Consortium
@@ -534,8 +535,12 @@ _XkbGetCharset(locale)
     } else {
 	struct stat sbuf;
 	FILE *file;
-	if ( (stat(CHARSET_FILE,&sbuf)==0) && (sbuf.st_mode&S_IFREG) &&
-	    (file = fopen(CHARSET_FILE,"r")) ) {
+#ifdef __EMX__
+        char *cf = __XOS2RedirRoot(CHARSET_FILE);
+#else
+	char *cf = CHARSET_FILE;
+	if ( (stat(cf,&sbuf)==0) && (sbuf.st_mode&S_IFREG) &&
+	    (file = fopen(cf,"r")) ) {
 	    tmp = Xmalloc(sbuf.st_size+1);
 	    if (tmp!=NULL) {
 		sbuf.st_size = fread(tmp,1,sbuf.st_size,file);

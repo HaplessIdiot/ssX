@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_span.s,v 3.0 1994/08/20 07:36:38 dawes Exp $ */
 /*
  *
  * Copyright 1994 by H. Hanemaayer, Utrecht, The Netherlands
@@ -1696,3 +1696,403 @@ GLNAME(CirrusLatchWriteTileSpans):
 	DEC_L	(EDX)
 	JNZ	(.tile8)
 	JMP	(.tileend)
+
+
+/*
+ * Function to help vertical BitBlt in BY8 addressing mode with the latch
+ * registers.
+ *
+ * srcp 	Source pointer.
+ * destp	Destination pointer.
+ * count	Number of bytes to be copied for each scanline.
+ * linecount	Number of scanlines to write.
+ * vpitch	Screen width.
+ *
+ * count >= 1
+ *
+ * C equivalent:
+
+void CirrusLatchCopySpans(srcp, destp, bcount, n, destpitch)
+	unsigned char *srcp;
+	unsigned char *destp;
+	int bcount;
+	int n;
+	int destpitch;
+{
+	int i;
+	for (i = 0; i < n; i++) {
+		for (j = 0; j < bcount; j++)
+			*(destp + j) = *(srcp + j);
+		srcp += destpitch;
+		destp += destpitch;
+	}
+}
+
+*/
+
+#define srcp_arg	REGOFF(8,EBP)
+#undef destp_arg
+#define destp_arg	REGOFF(12,EBP)
+#define bcount_arg	REGOFF(16,EBP)
+#define linecount_arg	REGOFF(20,EBP)
+#undef vpitch_arg
+#define vpitch_arg	REGOFF(24,EBP)
+
+
+.latchcopyjumptable:
+	D_LONG	.latchcopy0
+	D_LONG	.latchcopy1
+	D_LONG	.latchcopy2
+	D_LONG	.latchcopy3
+	D_LONG	.latchcopy4
+	D_LONG	.latchcopy5
+	D_LONG	.latchcopy6
+	D_LONG	.latchcopy7
+
+	ALIGNTEXT4
+
+	GLOBL GLNAME(CirrusLatchCopySpans)
+GLNAME(CirrusLatchCopySpans):
+
+	PUSH_L	(EBP)
+	MOV_L	(ESP,EBP)
+	PUSH_L	(EBX)
+	PUSH_L	(ECX)
+	PUSH_L	(EDI)
+	PUSH_L	(ESI)
+
+	MOV_L	(linecount_arg,EDX)
+	MOV_L	(srcp_arg,ESI)
+	MOV_L	(destp_arg,EDI)
+
+	MOV_L	(vpitch_arg,EBX)
+	MOV_L	(bcount_arg,EAX)
+	AND_L	(CONST(0xfffffff8),EAX)
+	SUB_L	(EAX,EBX)		/* Value to add each scanline. */
+
+	MOV_L	(bcount_arg,EAX)
+	AND_L	(CONST(7),EAX)
+	JMP	(CODEPTR(REGDIS(.latchcopyjumptable,EAX,4)))
+
+.latchcopyend:
+	POP_L	(ESI)
+	POP_L	(EDI)
+	POP_L	(ECX)
+	POP_L	(EBX)
+	POP_L	(EBP)
+	RET
+
+/*
+ * First digit indicates <number of bytes to copy> MOD 8.
+ */
+
+.latchcopy0:
+	MOV_L	(bcount_arg,ECX)
+	SHR_L	(CONST(3),ECX)
+	JZ	(.latchcopyend)
+.latchcopy0loop:
+	MOV_B	(REGIND(ESI),AL)
+	MOV_B	(CONST(0),REGIND(EDI))
+	MOV_B	(REGOFF(1,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(1,EDI))
+	MOV_B	(REGOFF(2,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(2,EDI))
+	MOV_B	(REGOFF(3,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(3,EDI))
+	MOV_B	(REGOFF(4,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(4,EDI))
+	MOV_B	(REGOFF(5,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(5,EDI))
+	MOV_B	(REGOFF(6,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(6,EDI))
+	ADD_L	(CONST(8),EDI)			/* blend */
+	MOV_B	(REGOFF(7,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(-1,EDI))
+	ADD_L	(CONST(8),ESI)
+	DEC_L	(ECX)
+	JNZ	(.latchcopy0loop)
+	ADD_L	(EBX,ESI)
+	ADD_L	(EBX,EDI)
+	DEC_L	(EDX)
+	JNZ	(.latchcopy0)
+	JMP	(.latchcopyend)
+
+.latchcopy1:
+	MOV_L	(bcount_arg,ECX)
+	SHR_L	(CONST(3),ECX)
+	JZ	(.latchcopy1cont)
+.latchcopy1loop:
+	MOV_B	(REGIND(ESI),AL)
+	MOV_B	(CONST(0),REGIND(EDI))
+	MOV_B	(REGOFF(1,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(1,EDI))
+	MOV_B	(REGOFF(2,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(2,EDI))
+	MOV_B	(REGOFF(3,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(3,EDI))
+	MOV_B	(REGOFF(4,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(4,EDI))
+	MOV_B	(REGOFF(5,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(5,EDI))
+	MOV_B	(REGOFF(6,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(6,EDI))
+	ADD_L	(CONST(8),EDI)			/* blend */
+	MOV_B	(REGOFF(7,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(-1,EDI))
+	ADD_L	(CONST(8),ESI)
+	DEC_L	(ECX)
+	JNZ	(.latchcopy1loop)
+.latchcopy1cont:
+	MOV_B	(REGIND(ESI),AL)
+	MOV_B	(CONST(0),REGIND(EDI))
+	ADD_L	(EBX,ESI)
+	ADD_L	(EBX,EDI)
+	DEC_L	(EDX)
+	JNZ	(.latchcopy1)
+	JMP	(.latchcopyend)
+
+.latchcopy2:
+	MOV_L	(bcount_arg,ECX)
+	SHR_L	(CONST(3),ECX)
+	JZ	(.latchcopy2cont)
+.latchcopy2loop:
+	MOV_B	(REGIND(ESI),AL)
+	MOV_B	(CONST(0),REGIND(EDI))
+	MOV_B	(REGOFF(1,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(1,EDI))
+	MOV_B	(REGOFF(2,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(2,EDI))
+	MOV_B	(REGOFF(3,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(3,EDI))
+	MOV_B	(REGOFF(4,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(4,EDI))
+	MOV_B	(REGOFF(5,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(5,EDI))
+	MOV_B	(REGOFF(6,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(6,EDI))
+	ADD_L	(CONST(8),EDI)			/* blend */
+	MOV_B	(REGOFF(7,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(-1,EDI))
+	ADD_L	(CONST(8),ESI)
+	DEC_L	(ECX)
+	JNZ	(.latchcopy2loop)
+.latchcopy2cont:
+	MOV_B	(REGIND(ESI),AL)
+	MOV_B	(CONST(0),REGIND(EDI))
+	MOV_B	(REGOFF(1,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(0,EDI))
+	ADD_L	(EBX,ESI)
+	ADD_L	(EBX,EDI)
+	DEC_L	(EDX)
+	JNZ	(.latchcopy2)
+	JMP	(.latchcopyend)
+
+.latchcopy3:
+	MOV_L	(bcount_arg,ECX)
+	SHR_L	(CONST(3),ECX)
+	JZ	(.latchcopy3cont)
+.latchcopy3loop:
+	MOV_B	(REGIND(ESI),AL)
+	MOV_B	(CONST(0),REGIND(EDI))
+	MOV_B	(REGOFF(1,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(1,EDI))
+	MOV_B	(REGOFF(2,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(2,EDI))
+	MOV_B	(REGOFF(3,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(3,EDI))
+	MOV_B	(REGOFF(4,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(4,EDI))
+	MOV_B	(REGOFF(5,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(5,EDI))
+	MOV_B	(REGOFF(6,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(6,EDI))
+	ADD_L	(CONST(8),EDI)			/* blend */
+	MOV_B	(REGOFF(7,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(-1,EDI))
+	ADD_L	(CONST(8),ESI)
+	DEC_L	(ECX)
+	JNZ	(.latchcopy3loop)
+.latchcopy3cont:
+	MOV_B	(REGIND(ESI),AL)
+	MOV_B	(CONST(0),REGIND(EDI))
+	MOV_B	(REGOFF(1,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(1,EDI))
+	MOV_B	(REGOFF(2,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(2,EDI))
+	ADD_L	(EBX,ESI)
+	ADD_L	(EBX,EDI)
+	DEC_L	(EDX)
+	JNZ	(.latchcopy3)
+	JMP	(.latchcopyend)
+
+.latchcopy4:
+	MOV_L	(bcount_arg,ECX)
+	SHR_L	(CONST(3),ECX)
+	JZ	(.latchcopy4cont)
+.latchcopy4loop:
+	MOV_B	(REGIND(ESI),AL)
+	MOV_B	(CONST(0),REGIND(EDI))
+	MOV_B	(REGOFF(1,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(1,EDI))
+	MOV_B	(REGOFF(2,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(2,EDI))
+	MOV_B	(REGOFF(3,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(3,EDI))
+	MOV_B	(REGOFF(4,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(4,EDI))
+	MOV_B	(REGOFF(5,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(5,EDI))
+	MOV_B	(REGOFF(6,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(6,EDI))
+	ADD_L	(CONST(8),EDI)			/* blend */
+	MOV_B	(REGOFF(7,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(-1,EDI))
+	ADD_L	(CONST(8),ESI)
+	DEC_L	(ECX)
+	JNZ	(.latchcopy4loop)
+.latchcopy4cont:
+	MOV_B	(REGIND(ESI),AL)
+	MOV_B	(CONST(0),REGIND(EDI))
+	MOV_B	(REGOFF(1,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(1,EDI))
+	MOV_B	(REGOFF(2,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(2,EDI))
+	MOV_B	(REGOFF(3,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(3,EDI))
+	ADD_L	(EBX,ESI)
+	ADD_L	(EBX,EDI)
+	DEC_L	(EDX)
+	JNZ	(.latchcopy4)
+	JMP	(.latchcopyend)
+
+.latchcopy5:
+	MOV_L	(bcount_arg,ECX)
+	SHR_L	(CONST(3),ECX)
+	JZ	(.latchcopy5cont)
+.latchcopy5loop:
+	MOV_B	(REGIND(ESI),AL)
+	MOV_B	(CONST(0),REGIND(EDI))
+	MOV_B	(REGOFF(1,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(1,EDI))
+	MOV_B	(REGOFF(2,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(2,EDI))
+	MOV_B	(REGOFF(3,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(3,EDI))
+	MOV_B	(REGOFF(4,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(4,EDI))
+	MOV_B	(REGOFF(5,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(5,EDI))
+	MOV_B	(REGOFF(6,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(6,EDI))
+	ADD_L	(CONST(8),EDI)			/* blend */
+	MOV_B	(REGOFF(7,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(-1,EDI))
+	ADD_L	(CONST(8),ESI)
+	DEC_L	(ECX)
+	JNZ	(.latchcopy5loop)
+.latchcopy5cont:
+	MOV_B	(REGIND(ESI),AL)
+	MOV_B	(CONST(0),REGIND(EDI))
+	MOV_B	(REGOFF(1,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(1,EDI))
+	MOV_B	(REGOFF(2,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(2,EDI))
+	MOV_B	(REGOFF(3,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(3,EDI))
+	MOV_B	(REGOFF(4,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(4,EDI))
+	ADD_L	(EBX,ESI)
+	ADD_L	(EBX,EDI)
+	DEC_L	(EDX)
+	JNZ	(.latchcopy5)
+	JMP	(.latchcopyend)
+
+.latchcopy6:
+	MOV_L	(bcount_arg,ECX)
+	SHR_L	(CONST(3),ECX)
+	JZ	(.latchcopy6cont)
+.latchcopy6loop:
+	MOV_B	(REGIND(ESI),AL)
+	MOV_B	(CONST(0),REGIND(EDI))
+	MOV_B	(REGOFF(1,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(1,EDI))
+	MOV_B	(REGOFF(2,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(2,EDI))
+	MOV_B	(REGOFF(3,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(3,EDI))
+	MOV_B	(REGOFF(4,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(4,EDI))
+	MOV_B	(REGOFF(5,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(5,EDI))
+	MOV_B	(REGOFF(6,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(6,EDI))
+	ADD_L	(CONST(8),EDI)			/* blend */
+	MOV_B	(REGOFF(7,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(-1,EDI))
+	ADD_L	(CONST(8),ESI)
+	DEC_L	(ECX)
+	JNZ	(.latchcopy6loop)
+.latchcopy6cont:
+	MOV_B	(REGIND(ESI),AL)
+	MOV_B	(CONST(0),REGIND(EDI))
+	MOV_B	(REGOFF(1,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(1,EDI))
+	MOV_B	(REGOFF(2,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(2,EDI))
+	MOV_B	(REGOFF(3,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(3,EDI))
+	MOV_B	(REGOFF(4,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(4,EDI))
+	MOV_B	(REGOFF(5,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(5,EDI))
+	ADD_L	(EBX,ESI)
+	ADD_L	(EBX,EDI)
+	DEC_L	(EDX)
+	JNZ	(.latchcopy6)
+	JMP	(.latchcopyend)
+
+.latchcopy7:
+	MOV_L	(bcount_arg,ECX)
+	SHR_L	(CONST(3),ECX)
+	JZ	(.latchcopy7cont)
+.latchcopy7loop:
+	MOV_B	(REGIND(ESI),AL)
+	MOV_B	(CONST(0),REGIND(EDI))
+	MOV_B	(REGOFF(1,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(1,EDI))
+	MOV_B	(REGOFF(2,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(2,EDI))
+	MOV_B	(REGOFF(3,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(3,EDI))
+	MOV_B	(REGOFF(4,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(4,EDI))
+	MOV_B	(REGOFF(5,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(5,EDI))
+	MOV_B	(REGOFF(6,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(6,EDI))
+	ADD_L	(CONST(8),EDI)			/* blend */
+	MOV_B	(REGOFF(7,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(-1,EDI))
+	ADD_L	(CONST(8),ESI)
+	DEC_L	(ECX)
+	JNZ	(.latchcopy7loop)
+.latchcopy7cont:
+	MOV_B	(REGIND(ESI),AL)
+	MOV_B	(CONST(0),REGIND(EDI))
+	MOV_B	(REGOFF(1,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(1,EDI))
+	MOV_B	(REGOFF(2,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(2,EDI))
+	MOV_B	(REGOFF(3,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(3,EDI))
+	MOV_B	(REGOFF(4,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(4,EDI))
+	MOV_B	(REGOFF(5,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(5,EDI))
+	MOV_B	(REGOFF(6,ESI),AL)
+	MOV_B	(CONST(0),REGOFF(6,EDI))
+	ADD_L	(EBX,ESI)
+	ADD_L	(EBX,EDI)
+	DEC_L	(EDX)
+	JNZ	(.latchcopy7)
+	JMP	(.latchcopyend)

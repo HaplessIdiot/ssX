@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.182 94/04/14 09:07:43 rws Exp $
-XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.0 1994/05/21 23:45:51 dawes Exp $
+XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.1 1994/06/28 12:21:02 dawes Exp $
 #define DoNormalLib NormalLibX11
 #define DoSharedLib SharedLibX11
 #define DoDebugLib DebugLibX11
@@ -941,7 +941,7 @@ MAKEKEYS = ./makekeys
 
 ks_tables.h: $(INCLUDESRC)/keysymdef.h util/makekeys.c
 	RemoveFiles($@ ProgramTargetName(makekeys) makekeys.Osuf)
-	-HostLinkRule(makekeys,$(CFLAGS) $(LOCAL_LDFLAGS),util/makekeys.c,$(LDLIBS))
+	-HostLinkRule(ProgramTargetName(makekeys),$(CFLAGS) $(LOCAL_LDFLAGS),util/makekeys.c,$(LDLIBS))
 	RunProgram(MAKEKEYS,< $(INCLUDESRC)/keysymdef.h > ks_tables_h)
 	$(MV) ks_tables_h $@
 	RemoveFiles(ProgramTargetName(makekeys) makekeys.Osuf ks_tables_h)

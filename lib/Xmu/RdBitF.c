@@ -1,4 +1,5 @@
 /* $XConsortium: RdBitF.c,v 1.10 94/04/17 20:16:13 kaleb Exp $ */
+/* $XFree86$ */
 
 /*
 
@@ -273,6 +274,9 @@ int XmuReadBitmapDataFromFile (filename, width, height, datap, x_hot, y_hot)
     FILE *fstream;
     int status;
 
+#ifdef __EMX__
+    filename = __XOS2RedirRoot(filename);
+#endif
     if ((fstream = fopen (filename, "r")) == NULL) {
 	return BitmapOpenFailed;
     }

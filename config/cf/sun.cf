@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: sun.cf,v 1.134 94/08/17 18:56:43 matt Exp $
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.7 1994/09/17 04:03:28 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.8 1994/09/17 13:38:32 dawes Exp $
 
 #ifdef SVR4
 #ifdef i386Architecture
@@ -217,6 +217,11 @@ XCOMM operating system:  OSName
 #endif
 
 #if HasGcc
+#if OSMajorVersion > 4 && defined(i386Architecture)
+#ifndef DefaultCCOptions
+#define DefaultCCOptions -DNO_ASM
+#endif
+#endif
 #if HasGcc2
 #define OptimizedCDebugFlags -O2
 #else

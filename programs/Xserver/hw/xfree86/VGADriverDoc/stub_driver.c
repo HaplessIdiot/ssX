@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.7 1994/09/27 10:27:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.8 1994/09/27 14:18:35 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
@@ -74,7 +74,7 @@
  * This header is required for drivers that implement STUBFbInit().
  */
 #if !defined(MONOVGA) && !defined(XF86VGA16)
-#include "cfbfuncs.h"
+#include "vga256.h"
 #endif
 
 /*

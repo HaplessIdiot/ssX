@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.30 1994/09/25 12:28:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.31 1994/09/26 15:31:47 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -375,7 +375,7 @@ s3Init(mode)
        * Set up the Serial Access Mode 256 Words Control
        *   (bit 6 in CR58)
        */
-      if (S3_964_SERIES(s3ChipId))
+      if (S3_964_SERIES(s3ChipId) && !DAC_IS_TI3025)
          s3SAM256 = 0x40;
       else
          s3SAM256 = 0x00;
@@ -1012,9 +1012,9 @@ s3Init(mode)
 
             case 16: /* 15/16-bit color, 1VCLK/pixel */
                if (s3Weight == RGB16_555)
-                  pixmux = 0x50;
-               else
                   pixmux = 0x30;
+               else
+                  pixmux = 0x50;
                blank_delay = 2;
                break;
 
@@ -1273,7 +1273,8 @@ s3Init(mode)
       if (DAC_IS_TI3025) {
          /* set s3 reg65 for some unknown reason                        */
          outb(vgaCRIndex, 0x65);
-         outb(vgaCRReg, 0x02);
+         outb(vgaCRReg, 0x82);
+         /* was 0x02 for all, now 0x82 is required on new ones */
       }
 
       if (pixel_multiplexing) {
@@ -1389,26 +1390,34 @@ s3Init(mode)
 
 	 if (s3InfoRec.depth == 24) {                          /* 24bpp */
             if (DAC_IS_TI3025) {
-               s3OutTiIndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_WEIRD_MODE_3);
-               s3OutTiIndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_WEIRD_MODE_3);
+               s3OutTiIndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_3025T_888);
+               s3OutTiIndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_TC_D24P64);
+               s3OutTiIndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x01);
             } else {
                s3OutTiIndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_DIRECT_888);
                s3OutTiIndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_DC_D24P64);
+               s3OutTiIndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x00);
             }
-            s3OutTiIndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x00);
 	 } else if (s3InfoRec.depth == 16) {                    /* 5-6-5 */
             if (DAC_IS_TI3025) {
-               s3OutTiIndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_WEIRD_MODE_2);
-               s3OutTiIndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_WEIRD_MODE_2);
+               s3OutTiIndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_3025T_565);
+               s3OutTiIndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_TC_D16P64);
+               s3OutTiIndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x01);
             } else {
                s3OutTiIndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_DIRECT_565);
                s3OutTiIndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_DC_D16P64);
+               s3OutTiIndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x00);
             }
-            s3OutTiIndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x00);
 	 } else if (s3InfoRec.depth == 15) {                     /* 5-5-5 */
-            s3OutTiIndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_DIRECT_555);
-            s3OutTiIndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_DC_D15P64);
-            s3OutTiIndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x00);
+            if (DAC_IS_TI3025) {
+               s3OutTiIndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_3025T_555);
+               s3OutTiIndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_TC_D15P64);
+               s3OutTiIndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x01);
+            } else {
+               s3OutTiIndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_DIRECT_555);
+               s3OutTiIndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_DC_D15P64);
+               s3OutTiIndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x00);
+            }
 	 } else {
             /* set mux control 1 and 2 to provide pseudocolor sub-mode 4   */
             /* this provides a 64-bit pixel bus with 8:1 multiplexing      */
@@ -1907,7 +1916,7 @@ InitLUT()
       }
    }
 
-   if (s3InfoRec.bitsPerPixel > 8 && DAC_IS_SC15025) {
+   if (s3InfoRec.bitsPerPixel > 8 && (DAC_IS_SC15025 || DAC_IS_TI3025)) {
       int r,g,b;
       int mr,mg,mb;
       int nr=5, ng=5, nb=5;
@@ -1915,7 +1924,7 @@ InitLUT()
       extern LUTENTRY currents3dac[];
 
       if (!LUTInited) {
-	 if (s3Weight == RGB32_888) {
+	 if (s3Weight == RGB32_888 || DAC_IS_TI3025) {
 	    for(i=0; i<256; i++) {
 	       currents3dac[i].r = xf86rGammaMap[i];
 	       currents3dac[i].g = xf86gGammaMap[i];

@@ -1,5 +1,5 @@
 /* $XConsortium: util.c,v 1.17 94/04/17 20:03:48 rws Exp $ */
-/* $XFree86: xc/programs/xdm/util.c,v 3.2 1994/06/28 12:32:42 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/util.c,v 3.3 1994/07/24 12:00:09 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -263,7 +263,7 @@ SIGVAL (*Signal (sig, handler))()
     int sig;
     SIGVAL (*handler)();
 {
-#ifndef X_NOT_POSIX
+#if !defined(X_NOT_POSIX) && !defined(__EMX__)
     struct sigaction sigact, osigact;
     sigact.sa_handler = handler;
     sigemptyset(&sigact.sa_mask);

@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.h,v 1.1 94/03/28 21:48:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.6 1994/09/11 11:15:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.7 1994/09/17 04:07:37 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -318,6 +318,7 @@ _XFUNCPROTOEND
 	outw(0x3c4, 0x02 + ((m) << 8));
 #endif
 
+#define ENHANCEDWRITES16	0x10
 #define EIGHTDATALATCHES	0x08
 #define EXTENDEDWRITEMODES	0x04
 #define BY8ADDRESSING		0x02
@@ -376,11 +377,16 @@ _XFUNCPROTOEND
 
 #define CIRRUSSETSINGLEB CIRRUSSETREADB
 
-/* Maximize the size of the banking region for the current address/bank. */
+/* Adjust the banking address, and maximize the size of the banking */
+/* region for the current address/bank. */
 #define CIRRUSCHECKREADB(addr, bank) \
 	if (!cirrusUseLinear && addr >= 0x4000) { \
 		addr -= 0x4000; \
 		bank++; \
+		if (addr >= 0x4000) { \
+			addr -= 0x4000; \
+			bank++; \
+		} \
 		setreadbank(bank); \
 	}
 
@@ -388,6 +394,10 @@ _XFUNCPROTOEND
 	if (!cirrusUseLinear && addr >= 0x4000) { \
 		addr -= 0x4000; \
 		bank++; \
+		if (addr >= 0x4000) { \
+			addr -= 0x4000; \
+			bank++; \
+		} \
 		setwritebank(bank); \
 	}
 
@@ -398,18 +408,27 @@ _XFUNCPROTOEND
 		setbank(bank); \
 	}
 
-/* Bank adjust for routines that write from bottom to top. */
-#define CIRRUSCHECKREADBTOP(addr, bank) \
-	if (!cirrusUseLinear && addr < 0) { \
+/* Bank adjust and maximimize size of banking region for routines that */
+/* write from bottom to top. */
+#define CIRRUSCHECKREVERSEDREADB(addr, bank, pitch) \
+	if (!cirrusUseLinear && addr + (pitch) <= 0x4000) { \
 		addr += 0x4000; \
 		bank--; \
+		if (addr + (pitch) <= 0x4000) { \
+			addr += 0x4000; \
+			bank--; \
+		} \
 		setreadbank(bank); \
 	}
 
-#define CIRRUSCHECKWRITEBTOP(addr, bank) \
-	if (!cirrusUseLinear && addr < 0) { \
+#define CIRRUSCHECKREVERSEDWRITEB(addr, bank, pitch) \
+	if (!cirrusUseLinear && addr + (pitch) <= 0x4000) { \
 		addr += 0x4000; \
 		bank--; \
+		if (addr + (pitch) <= 0x4000) { \
+			addr += 0x4000; \
+			bank--; \
+		} \
 		setwritebank(bank); \
 	}
 
@@ -428,6 +447,9 @@ _XFUNCPROTOEND
 
 #define CIRRUSWRITEREGIONLINES(addr, pitch) (cirrusUseLinear ? 0xf0000 \
 	: (0x8000 - (addr)) / (pitch))
+
+#define CIRRUSREVERSEDWRITEREGIONLINES(addr, pitch) \
+	(cirrusUseLinear ? 0xf0000 : (addr) / (pitch))
 
 
 #if !defined(__GNUC__) || defined(NO_INLINE)

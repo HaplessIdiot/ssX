@@ -1,5 +1,5 @@
 /* $XConsortium: xinit.c,v 11.58 94/04/17 20:24:30 rws Exp $ */
-/* $XFree86: xc/programs/xinit/xinit.c,v 3.0 1994/04/28 12:45:48 dawes Exp $ */
+/* $XFree86: xc/programs/xinit/xinit.c,v 3.1 1994/09/22 15:52:49 dawes Exp $ */
 
 /*
 
@@ -48,6 +48,13 @@ extern char *getenv();
 #endif
 extern char **environ;
 char **newenviron = NULL;
+
+#ifdef __EMX__
+#define setpgid(a,b)
+#define setuid(a)
+#define setgid(a)
+
+#endif
 
 #ifndef SHELL
 #define SHELL "sh"
@@ -103,6 +110,9 @@ char *server_names[] = {
     "XF86_8514   IBM 8514/A colour display on i386 PC",
     "XF86_Mach8  ATI Mach8 colour display on i386 PC",
     "XF86_Mach32 ATI Mach32 colour display on i386 PC",
+    "XF86_P9000  Weitek P9000 colour display on i386 PC",
+    "XF86_AGX    IIT AGX colour display on i386 PC",
+    "XF86_W32    Tseng ET4000/W32 colour display on i386 PC",
 #endif
     NULL};
 
@@ -132,7 +142,7 @@ char *displayNum;
 char *program;
 Display *xd;			/* server connection */
 #ifndef SYSV
-#if defined(SVR4) || defined(_POSIX_SOURCE) || defined(__bsdi__) || defined(__FreeBSD__) || defined(__386BSD__) || defined(__NetBSD__)
+#if defined(SVR4) || defined(_POSIX_SOURCE) || defined(__bsdi__) || defined(__FreeBSD__) || defined(__386BSD__) || defined(__NetBSD__) || defined(__EMX__)
 int status;
 #else
 union wait	status;
@@ -391,7 +401,7 @@ processTimeout(timeout, string)
 	static char	*laststring;
 
 	for (;;) {
-#ifdef SYSV
+#if defined(SYSV) || defined(__EMX__)
 		alarm(1);
 		if ((pidfound = wait(NULL)) == serverpid)
 			break;

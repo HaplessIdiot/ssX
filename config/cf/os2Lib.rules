@@ -1,0 +1,165 @@
+XCOMM $XFree86$
+
+/*
+ * OS2/EMX shared library rules (DLL version)
+ */
+#ifndef __EMX__
+#error You must edit os2Lib.rules for your (non-EMX) OS/2 dev system
+#endif
+
+#ifndef HasSharedLibraries
+#define HasSharedLibraries YES
+#endif
+#ifndef ForceNormalLib
+#define ForceNormalLib NO
+#endif
+
+#define SharedOldX NO
+
+#ifndef SharedDataSeparation
+#define SharedDataSeparation NO
+#endif
+#ifndef SharedCodeDef
+#define SharedCodeDef /**/
+#endif
+#ifndef SharedLibraryDef
+#define SharedLibraryDef /**/
+#endif
+#ifndef ShLibIncludeFile
+#define ShLibIncludeFile <os2Lib.tmpl>
+#endif
+#ifndef SharedLibraryLoadFlags
+#define SharedLibraryLoadFlags /**/
+#endif
+#ifndef PositionIndependentCFlags
+#define PositionIndependentCFlags -Zdll -Zomf -Zmtd
+#endif
+
+/*
+ * NormalSharedLibObjCompile - compile fragment for shared object when
+ * a normal library is not being built
+ */
+#ifndef NormalSharedLibObjCompile
+#define NormalSharedLibObjCompile(options) $(RM) $@                        @@\
+	$(CC) -c $(CFLAGS) options $(SHLIBDEF) $(SHAREDCODEDEF) $(PICFLAGS) $*.c @@\
+	touch $*.o
+#endif
+
+/*
+ * InstallSharedLibrary - generate rules to install the shared library.
+ */
+#ifndef InstallSharedLibrary
+#ifdef BuildImplibs
+#define InstallSharedLibrary(libname,rev,dest)				@@\
+install:: libname.dll libname.a	libname.lib				@@\
+	MakeDir($(DESTDIR)dest)						@@\
+	$(INSTALL) -c $(INSTLIBFLAGS) libname.dll $(DESTDIR)dest 	@@\
+	$(INSTALL) -c $(INSTLIBFLAGS) libname.a $(DESTDIR)dest 		@@\
+	$(INSTALL) -c $(INSTLIBFLAGS) libname.lib $(DESTDIR)dest
+#else
+#define InstallSharedLibrary(libname,rev,dest)				@@\
+install:: libname.dll libname.a						@@\
+	MakeDir($(DESTDIR)dest)						@@\
+	$(INSTALL) -c $(INSTLIBFLAGS) libname.a $(DESTDIR)dest		@@\
+	$(INSTALL) -c $(INSTLIBFLAGS) libname.dll $(DESTDIR)dest
+#endif
+#endif /* InstallSharedLibrary */
+
+#ifdef UseInstalled
+#define LinkBuildLibrary(lib) $(_NULLCMD_)
+#else
+#define LinkBuildLibrary(lib) MakeDir($(BUILDLIBDIR))			@@\
+	RemoveFile($(BUILDLIBDIR)/lib)					@@\
+	ImakeIndir $(BUILDLIBDIR) $(LN) $(BUILDINCTOP)/$(CURRENT_DIR)/lib .
+#endif
+
+        EMXIMP = emximp
+        EMXOMF = emxomf
+          SHLD = gcc -Zomf -Zdll -Zmtd
+     SHADDLIBS = -lbsd -lnet -lcdll
+#ifndef BuildDllSupportLibs
+#ifdef UseInstalled
+#define BuildDllSupportLibs(slib) $(_NULLCMD_)
+#else
+#define BuildDllSupportLibs(slib)					@@\
+	$(EMXIMP) -o slib.imp slib.def					@@\
+	$(EMXIMP) -o slib.a slib.imp					@@\
+	$(EMXOMF) -s -l slib.a 						@@\
+	LinkBuildLibrary(slib.a)					@@\
+	LinkBuildLibrary(slib.lib)
+#endif
+#endif
+
+#ifndef BuildDllSupportLibs2
+#ifdef UseInstalled
+#define BuildDllSupportLibs2(slib) $(_NULLCMD_)
+#else
+#define BuildDllSupportLibs2(slib)					@@\
+	$(EMXIMP) -o slib.imp Concat3(slib,os2,.def)			@@\
+	$(EMXIMP) -o slib.a slib.imp					@@\
+	$(EMXOMF) -s -l slib.a 						@@\
+	LinkBuildLibrary(slib.a)					@@\
+	LinkBuildLibrary(slib.lib)
+#endif
+#endif
+
+#ifndef BuildLibSupportLibs
+#ifdef UseInstalled
+#define BuildLibSupportLibs(slib) $(_NULLCMD_)
+#else
+#define BuildLibSupportLibs(slib)					@@\
+	$(EMXOMF) -s -l slib.a 						@@\
+	LinkBuildLibrary(slib.a)					@@\
+	LinkBuildLibrary(slib.lib)
+#endif
+#endif
+
+
+/*
+ * NormalSharedLibraryTarget - generate rules to create a shared library
+ * Stuff with making it under a different name removed
+ */
+#ifndef SharedLibraryTarget
+#define SharedLibraryTarget(libname,rev,solist,down,up)			@@\
+AllTarget(libname.dll)							@@\
+.SUFFIXES: .obj .rsp .def						@@\
+									@@\
+link.rsp: Concat3(libname,os2,.rsp)					@@\
+	@echo $(EMXLIBPATH)"\\dll0.obj+" >link.rsp			@@\
+	@cat Concat3(libname,os2,.rsp) >>link.rsp			@@\
+	@echo $(EMXLIBPATH)\\ $(REQUIREDLIBS) net bsd cdll os2 emx2 >>link.rsp	@@\
+	@echo Concat3(libname,os2,.def) >>link.rsp			@@\
+									@@\
+libname.dll:  $(OBJS) link.rsp						@@\
+	link386 @link.rsp >nul						@@\
+	BuildDllSupportLibs2(libname)					@@\
+	LinkBuildLibrary(libname.dll)					@@\
+									@@\
+clean::									@@\
+	$(RM) libname.lib libname.imp *.obj link.rsp
+#endif /* SharedLibraryTarget */
+
+/*
+ * NormalLibraryTarget - generate rules to create a library.
+ */
+#ifndef NormalLibraryTarget
+#define	NormalLibraryTarget(libname,objlist)				@@\
+AllTarget(LibraryTargetName(libname))					@@\
+									@@\
+LibraryTargetName(libname): objlist					@@\
+	RemoveFile($@)							@@\
+	MakeLibrary($@,objlist)						@@\
+	RanLibrary($@)							@@\
+	BuildLibSupportLibs($*)
+#endif /* NormalLibraryTarget */
+
+/*
+ * SharedLibraryDataTarget - generate rules to create shlib data file;
+ */
+#ifndef SharedLibraryDataTarget
+#define SharedLibraryDataTarget(libname,rev,salist)
+#endif /* SharedLibraryDataTarget */
+
+#ifndef InstallSharedLibraryData
+#define InstallSharedLibraryData(libname,rev,dest)
+#endif /* InstallSharedLibraryData */

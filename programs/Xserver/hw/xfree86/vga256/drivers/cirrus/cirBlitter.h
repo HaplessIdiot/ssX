@@ -1,5 +1,5 @@
 /* $XConsortium: cir_blitter.h,v 1.1 94/03/28 21:48:17 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.h,v 3.2 1994/06/05 06:00:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.h,v 3.3 1994/08/20 07:36:17 dawes Exp $ */
 
 /* Definitions for BitBLT engine communication. */
 
@@ -86,6 +86,14 @@
 #define SETBLTWRITEMASK(m) outw(0x3ce, ((m) << 8) | 0x2f);
 
 #define SETTRANSPARENCYCOLOR(c) outw(0x3ce, ((c) << 8) | 0x34);
+
+#define SETTRANSPARENCYCOLOR16(c) \
+  outw(0x3ce, ((c) << 8) | 0x34); \
+  outw(0x3ce, (c & 0xff00) | 0x35);
+
+#define SETTRANSPARENCYCOLORMASK16(m) \
+  outw(0x3ce, ((m) << 8) | 0x38); \
+  outw(0x3ce, (m & 0xff00) | 0x39);
 
 #define SETROP(rop) \
   if (rop != cirrusBltRopShadow) { \

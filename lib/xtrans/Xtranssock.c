@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranssock.c,v 1.29 94/06/02 10:51:53 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.2 1994/06/09 10:46:00 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.3 1994/08/31 03:24:58 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -128,6 +128,28 @@ from the X Consortium.
 #undef SO_DONTLINGER
 #endif
 
+#ifdef __EMX__
+static int IBMsockInit = 0;
+#define SocketInitOnce()\
+    if (!IBMsockInit) {\
+	sock_init();\
+	IBMsockInit = 1;\
+    }
+#undef EINTR
+#define EINTR SOCEINTR
+#undef EINVAL
+#define EINVAL SOCEINVAL
+#undef errno
+#define errno sock_errno()
+#undef close
+#define close soclose
+#undef ioctl
+#define ioctl sockioctl
+#define SOCKET int
+#else
+/* others don't need this */
+#define SocketInitOnce() /**/
+#endif
 
 /*
  * This is the Socket implementation of the X Transport service layer
@@ -435,6 +457,8 @@ char       *port;
     PRMSG (2, "TRANS(SocketOpenCOTSClient) (%s,%s,%s)\n",
 	protocol, host, port);
 
+    SocketInitOnce();
+
     if ((i = TRANS(SocketSelectFamily) (thistrans->TransName)) < 0)
     {
 	PRMSG (1,
@@ -476,6 +500,8 @@ char 	   *port;
     int	i;
 
     PRMSG (2,"TRANS(SocketOpenCOTSServer) (%s,%s,%s)\n", protocol, host, port);
+
+    SocketInitOnce();
 
     if ((i = TRANS(SocketSelectFamily) (thistrans->TransName)) < 0)
     {
@@ -533,6 +559,8 @@ char 	   *port;
 
     PRMSG (2,"TRANS(SocketOpenCLTSClient) (%s,%s,%s)\n", protocol, host, port);
 
+    SocketInitOnce();
+
     if ((i = TRANS(SocketSelectFamily) (thistrans->TransName)) < 0)
     {
 	PRMSG (1,
@@ -574,6 +602,8 @@ char 	   *port;
     int	i;
 
     PRMSG (2,"TRANS(SocketOpenCLTSServer) (%s,%s,%s)\n", protocol, host, port);
+
+    SocketInitOnce();
 
     if ((i = TRANS(SocketSelectFamily) (thistrans->TransName)) < 0)
     {
@@ -617,6 +647,8 @@ char	   *port;
     PRMSG (2,
 	"TRANS(SocketReopenCOTSServer) (%d, %s)\n", fd, port, 0);
 
+    SocketInitOnce();
+
     if ((i = TRANS(SocketSelectFamily) (thistrans->TransName)) < 0)
     {
 	PRMSG (1,
@@ -652,9 +684,10 @@ char	   *port;
     XtransConnInfo	ciptr;
     int			i;
 
-
     PRMSG (2,
 	"TRANS(SocketReopenCLTSServer) (%d, %s)\n", fd, port, 0);
+
+    SocketInitOnce();
 
     if ((i = TRANS(SocketSelectFamily) (thistrans->TransName)) < 0)
     {
@@ -1493,6 +1526,8 @@ XtransConnInfo ciptr;
 BytesReadable_t *pend;
 
 {
+int ret;
+char dummybuf[1500];
     PRMSG (2,"TRANS(SocketBytesReadable) (%x,%d,%x)\n",
 	ciptr, ciptr->fd, pend);
 
@@ -1502,7 +1537,11 @@ BytesReadable_t *pend;
 #if (defined(SYSV386) && defined(SYSV) && !defined(SCO)) || defined(_SEQUENT_)
     return ioctl (ciptr->fd, I_NREAD, (char *) pend);
 #else
+#if defined(__EMX__)
+    return ioctl (ciptr->fd, FIONREAD, (char*) pend, sizeof(int));
+#else
     return ioctl (ciptr->fd, FIONREAD, (char *) pend);
+#endif /* __EMX__ */
 #endif /* SYSV386 && SYSV || _SEQUENT_ */
 #endif /* WIN32 */
 }
@@ -1516,10 +1555,15 @@ char		*buf;
 int		size;
 
 {
+int ret;
+
     PRMSG (2,"TRANS(SocketRead) (%d,%x,%d)\n", ciptr->fd, buf, size);
 
-#ifdef WIN32
-    return recv ((SOCKET)ciptr->fd, buf, size, 0);
+#if defined(WIN32) || defined(__EMX__)
+    ret = recv ((SOCKET)ciptr->fd, buf, size, 0);
+printf("recv: return = %d\n",ret);
+if (ret==-1) psock_errno("read");
+return ret;
 #else
     return read (ciptr->fd, buf, size);
 #endif /* WIN32 */
@@ -1536,7 +1580,7 @@ int 	       size;
 {
     PRMSG (2,"TRANS(SocketWrite) (%d,%x,%d)\n", ciptr->fd, buf, size);
 
-#ifdef WIN32
+#if defined(WIN32) || defined(__EMX__)
     return send ((SOCKET)ciptr->fd, buf, size, 0);
 #else
     return write (ciptr->fd, buf, size);

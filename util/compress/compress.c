@@ -169,10 +169,10 @@ char_type magic_header[] = { "\037\235" };	/* 1F 9D */
  *		James A. Woods		(decvax!ihnp4!ames!jaw)
  *		Joe Orost		(decvax!vax135!petsd!joe)
  *
- * $Header: /vol1/history/xf86/xc/util/compress/Attic/compress.c,v 1.1 1994/04/27 07:36:27 dawes Exp $
+ * $Header: /vol1/history/xf86/xc/util/compress/Attic/compress.c,v 3.0 1994/10/20 06:20:37 dawes Exp $
  * $Log: compress.c,v $
- * Revision 1.1  1994/04/27 07:36:27  dawes
- * Initial revision
+ * Revision 3.0  1994/10/20 06:20:37  dawes
+ * updates
  *
  * Revision 4.0  85/07/30  12:50:00  joe
  * Removed ferror() calls in output routine on every output except first.
@@ -284,7 +284,7 @@ char_type magic_header[] = { "\037\235" };	/* 1F 9D */
  * Add variable bit length output.
  *
  */
-static char rcs_ident[] = "$Header: /vol1/history/xf86/xc/util/compress/Attic/compress.c,v 1.1 1994/04/27 07:36:27 dawes Exp $";
+static char rcs_ident[] = "$Header: /vol1/history/xf86/xc/util/compress/Attic/compress.c,v 3.0 1994/10/20 06:20:37 dawes Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -493,7 +493,7 @@ register int argc; char **argv;
 	zcat_flg = 1;
     }
 
-#ifdef BSD4_2
+#if defined(BSD4_2) && !defined(__EMX__)
     /* 4.2BSD dependent - take it out if not */
     setlinebuf( stderr );
 #endif /* BSD4_2 */
@@ -1365,10 +1365,15 @@ char *ifname, *ofname;
 	mode = statbuf.st_mode & 07777;
 	if (chmod(ofname, mode))		/* Copy modes */
 	    perror(ofname);
+#ifndef __EMX__
 	chown(ofname, statbuf.st_uid, statbuf.st_gid);	/* Copy ownership */
+#endif
 	timep[0] = statbuf.st_atime;
 	timep[1] = statbuf.st_mtime;
 	utime(ofname, timep);	/* Update last accessed and modified times */
+#ifdef __EMX__
+	fclose(stdin);
+#endif
 	if (unlink(ifname))	/* Remove input file */
 	    perror(ifname);
 	if(!quiet)

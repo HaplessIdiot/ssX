@@ -1,5 +1,5 @@
 /* $XConsortium: cir_colexp.c,v 1.1 94/03/28 21:48:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_colexp.c,v 3.3 1994/09/03 02:52:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_colexp.c,v 3.4 1994/09/19 13:45:44 dawes Exp $ */
 /*
  *
  * Copyright 1994 by H. Hanemaayer, Utrecht, The Netherlands
@@ -75,50 +75,6 @@ extern pointer vgaBase;
 #include "cir_driver.h"
 #include "cir_inline.h"
 #include "cir_span.h"
-
-
-#if __GNUC__ > 1 && defined(GCCUSESGAS)
-
-static __inline__ void latchedcopy8( unsigned char *srcp, unsigned char *destp ) {
-/* This is critical code. gcc produces unnecessary overhead with the */
-/* C equivalent. */
-	__asm__ __volatile__(
-	"movb (%0),%%al\n\t"
-	"movb %%al,(%1)\n\t"
-	"movb 1(%0),%%al\n\t"
-	"movb %%al,1(%1)\n\t"
-	"movb 2(%0),%%al\n\t"
-	"movb %%al,2(%1)\n\t"
-	"movb 3(%0),%%al\n\t"
-	"movb %%al,3(%1)\n\t"
-	"movb 4(%0),%%al\n\t"
-	"movb %%al,4(%1)\n\t"
-	"movb 5(%0),%%al\n\t"
-	"movb %%al,5(%1)\n\t"
-	"movb 6(%0),%%al\n\t"
-	"movb %%al,6(%1)\n\t"
-	"movb 7(%0),%%al\n\t"
-	"movb %%al,7(%1)\n\t"
-	: : "r" (srcp), "r" (destp) : "ax"
-	);
-}
-
-#else /* !defined(__GNUC__) */
-
-static void latchedcopy8( unsigned char *srcp, unsigned char *destp ) {
-/* This is optimal if the compiler stores the temporary in a register; */
-/* gcc 2.4.5 does not manage this when inlined. */
-	*(destp + 0) = *(srcp + 0);
-	*(destp + 1) = *(srcp + 1);
-	*(destp + 2) = *(srcp + 2);
-	*(destp + 3) = *(srcp + 3);
-	*(destp + 4) = *(srcp + 4);
-	*(destp + 5) = *(srcp + 5);
-	*(destp + 6) = *(srcp + 6);
-	*(destp + 7) = *(srcp + 7);
-}
-
-#endif
 
 
 /* Table with bit-reversed equivalent for each possible byte. */
@@ -273,23 +229,42 @@ destpitch )
  * Basically, a read from display memory fills the 8 latches with 8 pixels,
  * and subsequent writes (CPU data written doesn't matter) will each write
  * the 8 pixels stored in the latches.
+ *
+ * This new version divides into unbanked regions, with efficient assembler
+ * inner loop; the left and right edge are drawn seperately within each
+ * region.
+ *
  */
- 
-/* #define USE_MEMCPYB */
 
-#ifdef __STDC__
-void CirrusLatchedBitBlt( int x1, int y1, int x2, int y2, int w, int h,
-int destpitch )
-#else
-void CirrusLatchedBitBlt( x1, y1, x2, y2, w, h, destpitch )
-	int x1, y1, x2, y2, w, h, destpitch;
+#ifdef AVOID_ASM_ROUTINES
+
+static void CirrusLatchCopySpans(srcp, destp, bcount, n, destpitch)
+	unsigned char *srcp;
+	unsigned char *destp;
+	int bcount;
+	int n;
+	int destpitch;
+{
+	int i;
+	for (i = 0; i < n; i++) {
+		for (j = 0; j < bcount; j++)
+			*(destp + j) = *(srcp + j);
+		srcp += destpitch;
+		destp += destpitch;
+	}
+}
+
 #endif
+
+void CirrusLatchedBitBlt(x1, y1, x2, y2, w, h, destpitch)
+	int x1, y1, x2, y2, w, h, destpitch;
 {
 	int j;
 	int destaddr, srcaddr;
 	unsigned char *destp, *srcp;
 	int writebank, readbank;
 	int bitoffset;
+	int nspans, bcount, leftbyte;
 
 	unsigned char *readbase;	/* Video read window base address. */
 	unsigned char *writebase;	/* Video write window */
@@ -316,75 +291,76 @@ void CirrusLatchedBitBlt( x1, y1, x2, y2, w, h, destpitch )
 	SETPIXELMASK(0xff);
 	SETFOREGROUNDCOLOR(0);		/* Disable set/reset. */
 
-	/* Bit offset of leftmost pixel of area to be filled. */
+	/* Bitmask offset of leftmost byte (group of 8 pixels). */
 	bitoffset = destaddr & 7;
+	leftbyte = bitoffset == 0 ? 0 : 1;
+	/* Number of full bytes (groups of 8 pixels). */
+	bcount = bitoffset == 0 ? w / 8 : (w - (8 - bitoffset)) / 8;
 
 	destaddr >>= 3;			/* Divide address by 8. */
 	srcaddr >>= 3;
 
+	nspans = h;	/* Number of spans to go. */
+
 	CIRRUSSETREADB(srcaddr, readbank);
 	CIRRUSSETWRITEB(destaddr, writebank);
 
-	for (j = 0; j < h; j++) {
-		int count;
-
-		CIRRUSCHECKREADB(srcaddr, readbank);
-		CIRRUSCHECKWRITEB(destaddr, writebank);
-
-		/* Address in write window. */
-		destp = writebase + destaddr;
-		/* Address in read window. */
-		srcp = readbase + srcaddr;
-
-		count = w;		/* Number of pixels left. */
+	for (;;) {
+		int nread, nwrite, n;
+		/* Calculate how many scanlines fit in the banking region. */
+		nread = CIRRUSWRITEREGIONLINES(srcaddr, destpitch >> 3);
+		nwrite = CIRRUSWRITEREGIONLINES(destaddr, destpitch >> 3);
+		n = nread;
+		if (nwrite < n)
+			n = nwrite;
+		if (n > nspans)
+			n = nspans;
+		nspans -= n;
 
 		/* Do first byte (left edge). */
 		if (bitoffset != 0) {
+			int i;
 			SETPIXELMASK(leftbitmask[bitoffset]);
-			/* Write mode 1 latch read/write. */
-			*destp = *srcp;
+			srcp = readbase + srcaddr;
+			destp = writebase + destaddr;
+			for (i = 0; i < n; i++) {
+				/* Write mode 1 latch read/write. */
+				*destp = *srcp;
+				srcp += destpitch >> 3;
+				destp += destpitch >> 3;
+			}
 			SETPIXELMASK(0xff);
-			destp++;
-			srcp++;
-			count -= 8 - bitoffset;
 		}
 
-#ifndef USE_MEMCPYB
-		/* Using rep movsb here would seem appropriate, but I */
-		/* think some recent non-Intel chips actually try */
-		/* to optimize that instruction by writing words, which */
-		/* would break this. */
-		while (count >= 64) {
-			/* Write mode 1 latch read/write. */
-			latchedcopy8(srcp, destp);
-			destp += 8;
-			srcp += 8;
-			count -= 64;
-		}
-		while (count >= 8) {
-			/* Write mode 1 latch read/write. */
-			*destp = *srcp;
-			destp++;
-			srcp++;
-			count -= 8;
-		}
-#else
-		__memcpyb(destp, srcp, count >> 3);
-		destp += count >> 3;
-		srcp += count >> 3;
-		count &= 7;
-#endif
+		CirrusLatchCopySpans(
+			readbase + srcaddr + leftbyte,
+			writebase + destaddr + leftbyte,
+			bcount,
+			n,
+			destpitch >> 3
+			);
 
 		/* Do last byte (right edge). */
-		if (count != 0) {
-			SETPIXELMASK(rightbitmask[count]);
-			/* Write mode 1 latch read/write. */
-			*destp = *srcp;
+		if (((x1 + w) & 7) > 0) {
+			int i;
+			SETPIXELMASK(rightbitmask[(x1 + w) & 7]);
+			srcp = readbase + srcaddr + leftbyte + bcount;
+			destp = writebase + destaddr + leftbyte + bcount;
+			for (i = 0; i < n; i++) {
+				/* Write mode 1 latch read/write. */
+				*destp = *srcp;
+				srcp += destpitch >> 3;
+				destp += destpitch >> 3;
+			}
 			SETPIXELMASK(0xff);
 		}
 
-		destaddr += (destpitch >> 3);
-		srcaddr += (destpitch >> 3);
+		if (nspans == 0)
+			break;
+		srcaddr += n * (destpitch >> 3);
+		destaddr += n * (destpitch >> 3);
+		CIRRUSCHECKREADB(srcaddr, readbank);
+		CIRRUSCHECKWRITEB(destaddr, writebank);
 	}
 
 	/* Disable extended write modes and BY8 addressing. */
@@ -394,14 +370,12 @@ void CirrusLatchedBitBlt( x1, y1, x2, y2, w, h, destpitch )
 	else {
 		SETMODEEXTENSIONS(DOUBLEBANKED);
 	}
-
 	SETWRITEMODE(0);
-
 	SETFOREGROUNDCOLOR(0x00);	/* Disable set/reset. */
 }
 
 
-void CirrusLatchedBitBltReversed( x1, y1, x2, y2, w, h, destpitch )
+void CirrusLatchedBitBltReversed(x1, y1, x2, y2, w, h, destpitch)
 	int x1, y1, x2, y2, w, h, destpitch;
 {
 	int j;
@@ -409,6 +383,8 @@ void CirrusLatchedBitBltReversed( x1, y1, x2, y2, w, h, destpitch )
 	unsigned char *destp, *srcp;
 	int writebank, readbank;
 	int bitoffset;
+	int nspans, bcount, leftbyte;
+
 	unsigned char *readbase;	/* Video read window base address. */
 	unsigned char *writebase;	/* Video write window */
 
@@ -434,75 +410,79 @@ void CirrusLatchedBitBltReversed( x1, y1, x2, y2, w, h, destpitch )
 	SETPIXELMASK(0xff);
 	SETFOREGROUNDCOLOR(0);		/* Disable set/reset. */
 
-	/* Bit offset of leftmost pixel of area to be filled. */
+	/* Bitmask offset of leftmost byte (group of 8 pixels). */
 	bitoffset = destaddr & 7;
+	leftbyte = bitoffset == 0 ? 0 : 1;
+	/* Number of full bytes (groups of 8 pixels). */
+	bcount = bitoffset == 0 ? w / 8 : (w - (8 - bitoffset)) / 8;
 
 	destaddr >>= 3;			/* Divide address by 8. */
 	srcaddr >>= 3;
 
+	nspans = h;	/* Number of spans to go. */
+
 	CIRRUSSETREADB(srcaddr, readbank);
 	CIRRUSSETWRITEB(destaddr, writebank);
 
-	for (j = 0; j < h; j++) {
-		int count;
+	for (;;) {
+		int nread, nwrite, n;
 
-		CIRRUSCHECKREADBTOP(srcaddr, readbank);
-		CIRRUSCHECKWRITEBTOP(destaddr, writebank);
+		/* Adjust bank regions. */
+		CIRRUSCHECKREVERSEDREADB(srcaddr, readbank, destpitch >> 3);
+		CIRRUSCHECKREVERSEDWRITEB(destaddr, writebank, destpitch >> 3);
 
-		/* Address in write window. */
-		destp = writebase + destaddr;
-		/* Address in read window. */
-		srcp = readbase + srcaddr;
-
-		count = w;		/* Number of pixels left. */
+		/* Calculate how many scanlines fit in the banking region. */
+		nread = CIRRUSREVERSEDWRITEREGIONLINES(srcaddr, destpitch >> 3);
+		nwrite = CIRRUSREVERSEDWRITEREGIONLINES(destaddr, destpitch >> 3);
+		n = nread;
+		if (nwrite < n)
+			n = nwrite;
+		if (n > nspans)
+			n = nspans;
+		nspans -= n;
 
 		/* Do first byte (left edge). */
 		if (bitoffset != 0) {
+			int i;
 			SETPIXELMASK(leftbitmask[bitoffset]);
-			/* Write mode 1 latch read/write. */
-			*destp = *srcp;
+			srcp = readbase + srcaddr;
+			destp = writebase + destaddr;
+			for (i = 0; i < n; i++) {
+				/* Write mode 1 latch read/write. */
+				*destp = *srcp;
+				srcp -= destpitch >> 3;
+				destp -= destpitch >> 3;
+			}
 			SETPIXELMASK(0xff);
-			destp++;
-			srcp++;
-			count -= 8 - bitoffset;
 		}
 
-#ifndef USE_MEMCPYB
-		/* Using rep movsb here would seem appropriate, but I */
-		/* think some recent non-Intel chips actually try */
-		/* to optimize that instruction by writing words, which */
-		/* would break this. */
-		while (count >= 64) {
-			/* Write mode 1 latch read/write. */
-			latchedcopy8(srcp, destp);
-			destp += 8;
-			srcp += 8;
-			count -= 64;
-		}
-		while (count >= 8) {
-			/* Write mode 1 latch read/write. */
-			*destp = *srcp;
-			destp++;
-			srcp++;
-			count -= 8;
-		}
-#else
-		__memcpyb(destp, srcp, count >> 3);
-		destp += count >> 3;
-		srcp += count >> 3;
-		count &= 7;
-#endif
+		CirrusLatchCopySpans(
+			readbase + srcaddr + leftbyte,
+			writebase + destaddr + leftbyte,
+			bcount,
+			n,
+			- (destpitch >> 3)
+			);
 
 		/* Do last byte (right edge). */
-		if (count != 0) {
-			SETPIXELMASK(rightbitmask[count]);
-			/* Write mode 1 latch read/write. */
-			*destp = *srcp;
+		if (((x1 + w) & 7) > 0) {
+			int i;
+			SETPIXELMASK(rightbitmask[(x1 + w) & 7]);
+			srcp = readbase + srcaddr + leftbyte + bcount;
+			destp = writebase + destaddr + leftbyte + bcount;
+			for (i = 0; i < n; i++) {
+				/* Write mode 1 latch read/write. */
+				*destp = *srcp;
+				srcp -= destpitch >> 3;
+				destp -= destpitch >> 3;
+			}
 			SETPIXELMASK(0xff);
 		}
 
-		destaddr -= (destpitch >> 3);
-		srcaddr -= (destpitch >> 3);
+		if (nspans == 0)
+			break;
+		srcaddr -= n * (destpitch >> 3);
+		destaddr -= n * (destpitch >> 3);
 	}
 
 	/* Disable extended write modes and BY8 addressing. */
@@ -512,9 +492,7 @@ void CirrusLatchedBitBltReversed( x1, y1, x2, y2, w, h, destpitch )
 	else {
 		SETMODEEXTENSIONS(DOUBLEBANKED);
 	}
-
 	SETWRITEMODE(0);
-
 	SETFOREGROUNDCOLOR(0x00);	/* Disable set/reset. */
 }
 
@@ -574,6 +552,45 @@ void CirrusSimpleBitBlt( x1, y1, x2, y2, w, h, destpitch )
  * bank regions of 512K.
  * w >= 32.
  */
+
+#ifdef AVOID_ASM_ROUTINES
+
+static void CirrusColorExpandWriteSpans(destp, leftmask, leftbcount,
+midlcount, rightbcount, rightmask, h, destpitch)
+	unsigned char *destp;
+	int leftmask, leftbcount, midlcount, rightbcount, rightmask;
+	int h;
+	int destpitch;
+{
+	while (h > 0) {
+		unsigned char *destpsave;
+		int i;
+		destpsave = destp;
+		if (leftbcount > 0) {
+			*destp = leftmask;
+			destp++;
+			for (i = 0; i < leftbcount - 1; i++) {
+				*destp = 0xff;
+				destp++;
+			}
+		}
+		for (i = 0; i < midlcount; i++) {
+			*(unsigned long *)destp = 0xffffffff;
+			destp += 4;
+		}
+		if (rightbcount > 1) 
+			for (i = 0; i < rightbcount - 1; i++) {
+				*destp = 0xff;
+				destp++;
+			}
+		if (rightbcount > 0)
+			*destp = rightmask;
+		destp = destpsave + destpitch;
+		h--;
+	}
+}
+
+#endif
 
 void CirrusColorExpandSolidFill(x, y, w, h, fg, destpitch)
 	int x, y, w, h, fg, destpitch;
@@ -660,6 +677,73 @@ masksdone:
  * same stipple bits word. Assumes a virtual screen width that is a multiple
  * 32 (otherwise video memory access will be largely unaligned).
  */
+
+#ifdef AVOID_ASM_ROUTINES
+
+static void CirrusColorExpandWriteStippleSpans(destp, leftmask, leftbcount,
+midlcount, rightbcount, stipplerightmask, h, stippleword, destpitch)
+	unsigned char *destp;
+	int stippleleftmask, leftbcount, midlcount, rightbcount;
+	int stipplerightmask;
+	int h;
+	unsigned long stippleword;
+	int destpitch;
+{
+	while (h > 0) {
+		unsigned char *destpsave;
+		int i;
+		destpsave = destp;
+		switch (leftbcount) {
+		case 1 :
+			*destp = stippleleftmask;
+			destp++;
+			break;
+		case 2 :
+			*destp = stippleleftmask;
+			*(destp + 1) = stippleword >> 24;
+			destp += 2;
+			break;
+		case 3 :
+			*destp = stippleleftmask;
+			*(destp + 1) = stippleword >> 16;
+			*(destp + 2) = stippleword >> 24;
+			destp + = 3;
+			break;
+		case 4 :
+			*destp = stippleleftmask;
+			*(destp + 1) = stippleword >> 8;
+			*(unsigned short *)(destp + 2) = stippleword >> 16;
+			destp += 4;
+			break;
+		}
+		for (i = 0; i < midlcount; i++) {
+			*(unsigned long *)destp = stippleword;
+			destp += 4;
+		}
+		switch (rightbcount) {
+		case 1 :
+			*destp = stipplerightmask;
+			break;
+		case 2 :
+			*destp = stippleword;
+			*(destp + 1) = stipplerightmask;
+			break;
+		case 3 :
+			*(unsigned short *)destp = stippleword;
+			*(destp + 2) = stipplerightmask;
+			break;
+		case 4 :
+			*(unsigned short *)destp = stippleword;
+			*(destp + 2) = stippleword >> 16;
+			*(destp + 3) = stipplerightmask;
+			break;
+		}
+		destp = destpsave + destpitch;
+		h--;
+	}
+}
+
+#endif
 
 void CirrusColorExpandStippleFill(x, y, w, h, bits_in, sh, sox, soy, fg,
 destpitch)
@@ -1041,6 +1125,23 @@ skiprightpart:
  * w must be >= 32.
  * Tile must be aligned to start of scanline.
  */
+
+#ifdef AVOID_ASM_ROUTINES
+
+static void CirrusLatchWriteTileSpans(destp, count, tbytes, linecount, vpitch)
+	unsigned char *destp;
+	int tbytes, count, linecount, vpitch;
+{
+	int i;
+	for (i = 0; i < linecount; i++) {
+		int j;
+		for (j = 0; j < count; j++)
+			*(destp + j * tbytes) = 0;
+		destp += vpitch;
+	}
+}
+
+#endif
 
 void CirrusColorExpandFillTile8(x, y, w, h, vtileaddr, tpitch, tbytes, theight,
 toy, destpitch)

@@ -1,5 +1,5 @@
 /* $XConsortium: daemon.c,v 1.14 94/04/17 20:03:35 gildea Exp $ */
-/* $XFree86: xc/programs/xdm/daemon.c,v 3.1 1994/06/22 05:04:45 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/daemon.c,v 3.2 1994/06/28 12:32:31 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -125,6 +125,7 @@ BecomeDaemon ()
     close (1);
     close (2);
 
+#ifndef __EMX__
 #ifdef MINIX
 #if 0
     /* Use setsid() to get rid of our controlling tty, this requires an extra
@@ -152,6 +153,7 @@ BecomeDaemon ()
     }
 #endif /* !SYSV386 */
 #endif /* MINIX */
+#endif /* !__EMX__ */
 
     /*
      * Set up the standard file descriptors.

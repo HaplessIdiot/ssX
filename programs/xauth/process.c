@@ -1,4 +1,5 @@
 /* $XConsortium: process.c,v 1.48 94/04/17 20:37:52 gildea Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -815,7 +816,7 @@ int auth_finalize ()
 			 ProgramName, tmpnam);
 	    } else {
 		(void) unlink (xauth_filename);
-#ifdef WIN32
+#if defined(WIN32) || defined(__EMX__)
 		if (rename(tmpnam, xauth_filename) == -1) {
 #else
 		if (link (tmpnam, xauth_filename) == -1) {

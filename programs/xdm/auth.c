@@ -1,5 +1,5 @@
 /* $XConsortium: auth.c,v 1.55 94/06/03 16:34:12 mor Exp $ */
-/* $XFree86: xc/programs/xdm/auth.c,v 3.3 1994/06/22 05:04:43 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.4 1994/06/28 12:32:27 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -94,6 +94,11 @@ from the X Consortium.
 
 #if ((defined(SVR4) && !defined(sun)) || defined(ISC)) && defined(SIOCGIFCONF)
 #define SYSV_SIOCGIFCONF
+#endif
+
+#ifdef __EMX__
+#define link rename
+#define chown(a,b,c)
 #endif
 
 extern int	MitInitAuth ();

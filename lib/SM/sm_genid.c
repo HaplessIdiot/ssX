@@ -1,5 +1,5 @@
 /* $XConsortium: sm_genid.c,v 1.7 94/05/02 11:14:45 mor Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/SM/sm_genid.c,v 3.0 1994/06/28 12:19:54 dawes Exp $ */
 
 /*
 
@@ -40,7 +40,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xtrans.h>
 #include <stdio.h>
 
-#ifdef X_NOT_STDC_ENV
+#if defined(X_NOT_STDC_ENV) && !defined(__EMX__)
 #define Time_t long
 extern Time_t time ();
 #else

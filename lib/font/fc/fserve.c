@@ -1,4 +1,5 @@
 /* $XConsortium: fserve.c,v 1.43 94/04/17 20:17:39 mor Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1990  X Consortium
@@ -64,7 +65,7 @@ in this Software without prior written authorization from the X Consortium.
 #include	"fservestr.h"
 #include	"fslibos.h"
 #include	<errno.h>
-#ifdef X_NOT_STDC_ENV
+#if defined(X_NOT_STDC_ENV) && !defined(__EMX__)
 extern int errno;
 #define Time_t long
 extern Time_t time ();

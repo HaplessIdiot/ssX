@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.3 1994/09/19 13:45:47 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.4 1994/09/21 13:24:29 dawes Exp $
  *
  * Copyright 1993-94 by Simon P. Cooper, New Brunswick, New Jersey, USA.
  *
@@ -399,6 +399,9 @@ cirrusMoveCursor(pScr, x, y)
   if (x < 0) x = 0;
   if (y < 0) y = 0;
 
+  if (XF86SCRNINFO(pScr)->modes->Flags & V_DBLSCAN)
+      y *= 2;
+
   /* Your eyes do not deceive you - the low order bits form part of the
    * the INDEX
    */
@@ -419,17 +422,17 @@ cirrusRecolorCursor(pScr, pCurs, displayed)
    VisualPtr pVisual;
    unsigned char sr12;
 
-   /* Find the PseudoColour or DirectColor visual for the colour mapping
+   /* Find the PseudoColour or TrueColor visual for the colour mapping
     * function
     */
 
    for (i = 0, pVisual = pScr->visuals; i < pScr->numVisuals; i++, pVisual++)
      {
-       if ((pVisual->class == PseudoColor) || (pVisual->class == DirectColor))
+       if ((pVisual->class == PseudoColor) || (pVisual->class == TrueColor))
 	 break;
      }
 
-   if ((pVisual->class != PseudoColor) && (pVisual->class != DirectColor))
+   if (i == pScr->numVisuals)
      {
        ErrorF ("CIRRUS: Failed to find a visual for mapping hardware cursor colours\n");
        return;

@@ -1,5 +1,5 @@
 /* $XConsortium: s3im.c,v 1.1 94/03/28 21:15:39 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.7 1994/08/31 04:29:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.8 1994/09/23 13:38:12 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -915,15 +915,130 @@ s3ImageFillNoMem (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu,
    UNBLOCK_CURSOR;
 }
 
-static int _internal_s3_mskbits[9] =
+static int _internal_s3_mskbits[17] =
 {
-   0x00, 0x01, 0x03, 0x07, 0x0f, 0x1f, 0x3f, 0x7f, 0xff
+   0x00, 0x01, 0x03, 0x07, 0x0f, 0x1f, 0x3f, 0x7f, 0xff, 0x1ff, 0x3ff, 0x7ff,
+   0xfff, 0x1fff, 0x3fff, 0x7fff, 0xffff
 };
 
-/* #define MSKBITS(n) ((n)? ((1<<(n))-1): 0) */
 #define MSKBIT(n) (_internal_s3_mskbits[(n)])
-#define SWPBIT(s) (s3SwapBits[pline[(s)]])
 
+static void
+s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
+		   fgPixel, bgPixel, alu, planemask, opaque)
+    int			x;
+    int			y;
+    int			w;
+    int			h;
+    unsigned char	*psrc;
+    int			pw, ph, pox, poy;
+    int			pwidth;
+    Pixel		fgPixel;
+    Pixel		bgPixel;
+    short		alu;
+    Pixel		planemask;
+    int			opaque;
+{
+    int			srcx, srch, dstw;
+    unsigned short	*ptmp;
+
+
+    if (alu == MIX_DST || w == 0 || h == 0)
+	return;
+
+    BLOCK_CURSOR;
+    WaitQueue16_32(5,8);
+    S3_OUTW32 (WRT_MASK, planemask);
+    S3_OUTW (FRGD_MIX, FSS_FRGDCOL | alu);
+    if( opaque ) {
+      S3_OUTW (BKGD_MIX, BSS_BKGDCOL | alu);
+      S3_OUTW32 (BKGD_COLOR,  bgPixel);
+    }
+    else
+      S3_OUTW (BKGD_MIX, BSS_BKGDCOL | MIX_DST);
+
+    S3_OUTW32 (FRGD_COLOR,  fgPixel);
+    WaitQueue(6);
+    S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPPC | COLCMPOP_F);
+    S3_OUTW (MAJ_AXIS_PCNT, (short) (w - 1));
+    S3_OUTW (CUR_X, (short) x);
+    S3_OUTW (CUR_Y, (short) y);
+    S3_OUTW (MULTIFUNC_CNTL, MIN_AXIS_PCNT | (h-1));   
+    S3_OUTW (CMD, CMD_RECT | PCDATA | _16BIT | INC_Y | INC_X |
+	     DRAW | PLANAR | WRTDATA | BYTSEQ);
+    modulus(x - pox, pw, x);
+    modulus(y - poy, ph, y);
+    /*
+     * When the source bitmap is properly aligned, max 16 pixels wide
+     * and nonrepeating, use this faster loop instead.
+     */
+    if( (x & 7) == 0 && w <= 16 && x+w <= pw && y+h <= ph ) {
+	unsigned short pix;
+	unsigned char *pnt;
+
+	pnt = (unsigned char *)(psrc + pwidth * y + (x >> 3));
+	while( h-- > 0 ) {
+	    pix = *((unsigned short *)(pnt));
+	    S3_OUTW(PIX_TRANS, s3SwapBits[ pix & 0xff ] | 
+			       s3SwapBits[ ( pix >> 8 ) & 0xff ] << 8);
+	    pnt += pwidth;
+	}
+    }
+    else {
+	while( h > 0 ) {
+	    srch = ( y+h > ph ? ph - y : h );
+	    while( srch > 0 ) {
+		dstw = w;
+		srcx = x;
+		ptmp = (unsigned short *)(psrc + pwidth * y);
+		while( dstw > 0 ) {
+		    int np, x2;
+		    unsigned short *pnt, pix;
+		    /*
+		     * Assemble 16 bits and feed them to the draw engine.
+		     */
+		    np = pw - srcx;		/* No. pixels left in bitmap.*/
+		    pnt =(unsigned short *)
+				       ((unsigned char *)(ptmp) + (srcx >> 3));
+		    x2 = srcx & 7;		/* Offset within byte. */
+		    if( np >= 16 ) {
+			pix = (unsigned short)(*((unsigned int *)(pnt)) >> x2);
+		    }
+		    else if( pw >= 16 ) {
+			pix = (unsigned short)((*((unsigned int *)(pnt)) >> x2)
+						 & MSKBIT(np)) | (*ptmp << np);
+		    }
+		    else if( pw >= 8 ) {
+			pix = ((*pnt >> x2) & MSKBIT(np)) | (*ptmp << np)
+						      | (*pnt << (np+pw));
+		    }
+		    else {
+			pix = (*ptmp >> x2) & MSKBIT(np);
+			while( np < 16 && np < dstw ) {
+			    pix |= *ptmp << np;
+			    np += pw;
+			}
+		    }
+		    S3_OUTW(PIX_TRANS, s3SwapBits[ pix & 0xff ] | 
+				       s3SwapBits[ ( pix >> 8 ) & 0xff ] << 8);
+		    srcx += 16;
+		    if( srcx >= pw )
+			srcx -= pw;
+		    dstw -= 16;
+		}
+		y++;
+		h--;
+		srch--;
+	    }
+	    y = 0;
+	}
+    }
+    WaitQueue(3);
+    S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
+    S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
+    S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
+    UNBLOCK_CURSOR;
+}
 
 void
 s3ImageStipple (x, y, w, h, psrc, pwidth, pw,
@@ -939,131 +1054,11 @@ s3ImageStipple (x, y, w, h, psrc, pwidth, pw,
      short alu;
      Pixel planemask;
 {
-   int   x1, x2, y1, y2, width;
-   unsigned char *newsrc = NULL;
 
-   if (alu == MIX_DST)
-      return;
-
-   if (w == 0 || h == 0)
-      return;
-      
-   x1 = x ;
-   x2 = (x + w);
-   y1 = y;
-   y2 = y + h;
-
-   width = w;
-
-   if (pw <= 8 && pw < w) {
-      newsrc = (unsigned char *) ALLOCATE_LOCAL (2 * ph * sizeof (char));
-
-      if (!newsrc) {
-	 return;
-      }
-      while (pw <= 8) {
-	 unsigned char *newline, *pline;
-	 int   i;
-
-	 pline = (unsigned char *)psrc;
-	 newline = newsrc;
-	 for (i = 0; i < ph; i++) {
-	    newline[0] = (pline[0] & (0xff >> (8 - pw))) | pline[0] << pw;
-	    if (pw > 4)
-	       newline[1] = pline[0] >> (8 - pw);
-
-	    pline += pwidth;
-	    newline += 2;
-	 }
-	 pw *= 2;
-	 pwidth = 2;
-	 psrc = (char *)newsrc;
-      }
-   }
-   BLOCK_CURSOR;
-
-   WaitQueue16_32(6,8);
-   S3_OUTW32 (WRT_MASK, planemask);
-   S3_OUTW (FRGD_MIX, FSS_FRGDCOL | alu);
-   S3_OUTW (BKGD_MIX, BSS_BKGDCOL | MIX_DST);
-   S3_OUTW32 (FRGD_COLOR,  fgPixel);
-   S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPPC | COLCMPOP_F);
-   S3_OUTW (MAJ_AXIS_PCNT, (short) (width - 1));
-
-   WaitQueue(4);
-   S3_OUTW (CUR_X, (short) x1);
-   S3_OUTW (CUR_Y, (short) y1);
-   S3_OUTW (MULTIFUNC_CNTL, MIN_AXIS_PCNT | (h-1));   
-   S3_OUTW (CMD, CMD_RECT | PCDATA | _16BIT | INC_Y | INC_X |
-	     DRAW | PLANAR | WRTDATA);
-
-   {
-      int   xpix, ypix, j;
-      int   clobits, lobits, chibits, hibits, pw8;
-      unsigned char *pline;
-
-      modulus (x - pox, pw, xpix);
-      clobits = xpix % 8;
-      lobits = 8 - clobits;
-      xpix /= 8;
-
-      hibits = pw % 8;
-      chibits = 8 - hibits;
-      pw8 = pw / 8;
-
-      modulus (y1 - poy, ph, ypix);
-      pline = (unsigned char *)psrc + (pwidth * ypix);
-      for (j = y1; j < y2; j++) {
-	 unsigned long getbuf;
-	 int   i, bitlft, pix;
-
-
-         if (pw8 == xpix) {
-            bitlft = hibits - clobits;
-            getbuf = (SWPBIT (xpix) & ~MSKBIT (chibits)) >> chibits;
-            pix = 0;
-	 } else {
-            bitlft = lobits;
-            getbuf = SWPBIT (xpix) & MSKBIT (lobits);
-            pix = xpix + 1;
-	 }
-
-	 for (i = 0; i < width; i += 16) {
-	    while (bitlft < 16) {
-	       if (pix >= pw8) {
-		  if (hibits > 0) {
-		     getbuf = (getbuf << hibits)
-			| ((SWPBIT (pix) & ~MSKBIT (chibits)) >> chibits);
-		     bitlft += hibits;
-		  }
-		  pix = 0;
-	       }
-	       getbuf = (getbuf << 8) | SWPBIT (pix++);
-	       bitlft += 8;
-	    }
-	    bitlft -= 16;
-	    S3_OUTW (PIX_TRANS, getbuf >> bitlft);
-	 }
-
-	 if ((++ypix) == ph) {
-	    ypix = 0;
-	    pline = (unsigned char *)psrc;
-	 } else
-	    pline += pwidth;
-      }
-   }
-
-   WaitQueue(3);
-   S3_OUTW (FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
-   S3_OUTW (BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
-   S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
-   UNBLOCK_CURSOR;
-
-   if (newsrc)
-      DEALLOCATE_LOCAL (newsrc);
+    s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
+		       fgPixel, 0, alu, planemask, 0);
 }
 
-/* Needs rewritng for non 8 bpp */
 #if NeedFunctionPrototypes
 void
 s3ImageOpStipple (int x, int y, int w, int h, unsigned char *psrc, int pwidth,
@@ -1071,144 +1066,22 @@ s3ImageOpStipple (int x, int y, int w, int h, unsigned char *psrc, int pwidth,
 		  Pixel bgPixel, short alu, Pixel planemask)
 #else
 void
-s3ImageOpStipple (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, fgPixel,
-		  bgPixel, alu, planemask)
+s3ImageOpStipple (x, y, w, h, psrc, pwidth, pw,
+		  ph, pox, poy, fgPixel, bgPixel, alu, planemask)
      int   x;
      int   y;
      int   w;
      int   h;
-     unsigned char  *psrc;
-     int   pwidth;
+     unsigned char *psrc;
      int   pw, ph, pox, poy;
+     int   pwidth;
      Pixel fgPixel;
      Pixel bgPixel;
      short alu;
      Pixel planemask;
 #endif
 {
-   int   x1, x2, y1, y2, width;
-   unsigned char *newsrc = NULL;
 
-   if (alu == MIX_DST)
-      return;
-
-   if (w == 0 || h == 0)
-      return;
-
-   x1 = x;
-   x2 = (x + w);
-   y1 = y;
-   y2 = y + h;
-
-   width = w;
-
-   if (pw <= 8 && pw < w) {
-      newsrc = (unsigned char *) ALLOCATE_LOCAL (2 * ph * sizeof (char));
-
-      if (!newsrc) {
-	 return;
-      }
-      while (pw <= 8) {
-	 unsigned char *newline, *pline;
-	 int   i;
-
-	 pline = psrc;
-	 newline = newsrc;
-	 for (i = 0; i < ph; i++) {
-	    newline[0] = (pline[0] & (0xff >> (8 - pw))) | pline[0] << pw;
-	    if (pw > 4)
-	       newline[1] = pline[0] >> (8 - pw);
-
-	    pline += pwidth;
-	    newline += 2;
-	 }
-	 pw *= 2;
-	 pwidth = 2;
-	 psrc = newsrc;
-      }
-   }
-   BLOCK_CURSOR;
-
-   WaitQueue16_32(5,8);
-   S3_OUTW32 (WRT_MASK, planemask);
-   S3_OUTW (FRGD_MIX, FSS_FRGDCOL | alu);
-   S3_OUTW (BKGD_MIX, BSS_BKGDCOL | alu);
-   S3_OUTW32 (FRGD_COLOR,  fgPixel);
-   S3_OUTW32 (BKGD_COLOR,  bgPixel);
-
-   WaitQueue(6);
-   S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPPC | COLCMPOP_F);
-   S3_OUTW (MAJ_AXIS_PCNT, (short) (width - 1));
-   S3_OUTW (CUR_X, (short) x1);
-   S3_OUTW (CUR_Y, (short) y1);
-   S3_OUTW (MULTIFUNC_CNTL, MIN_AXIS_PCNT | (h-1));   
-   S3_OUTW (CMD, CMD_RECT | PCDATA | _16BIT | INC_Y | INC_X |
-	     DRAW | PLANAR | WRTDATA);
-
-
-   {
-      int   xpix, ypix, j;
-      int   clobits, lobits, chibits, hibits, pw8;
-      unsigned char *pline;
-
-      modulus (x - pox, pw, xpix);
-      clobits = xpix % 8;
-      lobits = 8 - clobits;
-      xpix /= 8;
-
-      hibits = pw % 8;
-      chibits = 8 - hibits;
-      pw8 = pw / 8;
-
-      modulus (y1 - poy, ph, ypix);
-      pline = (unsigned char *)psrc + (pwidth * ypix);
-
-      for (j = y1; j < y2; j++) {
-	 unsigned long getbuf;
-	 int   i, bitlft, pix;
-
-	 WaitQueue(3);
-         if (pw8 == xpix) {
-            bitlft = hibits - clobits;
-            getbuf = (SWPBIT (xpix) & ~MSKBIT (chibits)) >> chibits;
-            pix = 0;
-	 } else {
-            bitlft = lobits;
-            getbuf = SWPBIT (xpix) & MSKBIT (lobits);
-            pix = xpix + 1;
-	 }
-	 
-	 for (i = 0; i < width; i += 16) {
-	    while (bitlft < 16) {
-	       if (pix >= pw8) {
-		  if (hibits > 0) {
-		     getbuf = (getbuf << hibits)
-			| ((SWPBIT (pix) & ~MSKBIT (chibits)) >> chibits);
-		     bitlft += hibits;
-		  }
-		  pix = 0;
-	       }
-	       getbuf = (getbuf << 8) | SWPBIT (pix++);
-	       bitlft += 8;
-	    }
-	    bitlft -= 16;
-	    S3_OUTW (PIX_TRANS, (getbuf >> bitlft));
-	 }
-
-	 if ((++ypix) == ph) {
-	    ypix = 0;
-	    pline = (unsigned char *)psrc;
-	 } else
-	    pline += pwidth;
-      }
-   }
-
-   WaitQueue(3);
-   S3_OUTW (FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
-   S3_OUTW (BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
-   S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
-   UNBLOCK_CURSOR;
-
-   if (newsrc)
-      DEALLOCATE_LOCAL (newsrc);
+    s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
+		       fgPixel, bgPixel, alu, planemask, 1);
 }

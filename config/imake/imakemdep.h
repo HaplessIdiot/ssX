@@ -1,5 +1,5 @@
 /* $XConsortium: imakemdep.h,v 1.76 94/04/17 20:10:31 gildea Exp $ */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.2 1994/06/05 05:53:09 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.3 1994/08/31 03:20:10 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -148,6 +148,11 @@ in this Software without prior written authorization from the X Consortium.
 #define imake_ccflags "-DNOSTDHDRS"
 #endif
 
+/* this is for OS/2 under EMX. This won't work with DOS */
+#if defined(__EMX__) 
+#define imake_ccflags "-DBSD43"
+#endif
+
 #else /* not CCIMAKE */
 #ifndef MAKEDEPEND
 /*
@@ -225,6 +230,10 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 #ifdef __minix_vmd
 #define DEFAULT_CPP "/usr/lib/cpp"
+#endif
+#if defined(__EMX__)
+/* expects cpp in PATH */
+#define DEFAULT_CPP "cpp"
 #endif
 
 /*
@@ -437,6 +446,12 @@ char *cpp_argv[ARGUMENTS] = {
 #ifdef __minix_vmd
         "-Dminix",
 #endif
+
+#if defined(__EMX__)
+	"-traditional",
+	"-Demxos2",
+#endif
+
 };
 #else /* else MAKEDEPEND */
 /*
@@ -635,6 +650,9 @@ struct symtab	predefs[] = {
 #endif
 #ifdef PC_UX
 	{"PC_UX", "1"},
+#endif
+#ifdef __EMX__
+	{"__EMX__", "1"},
 #endif
 	/* add any additional symbols before this line */
 	{NULL, NULL}

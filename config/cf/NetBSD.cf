@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: NetBSD.cf,v 1.1 94/03/29 15:34:45 gildea Exp $
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.9 1994/09/19 13:36:18 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.10 1994/09/24 15:09:48 dawes Exp $
 
 #define OSName		NetBSD 1.0_BETA
 #define	OSVendor	/**/
@@ -58,7 +58,11 @@ XCOMM operating system:  OSName
 
 #undef CcCmd
 #define CcCmd 			gcc
+#if UseInstalled
 #define DefaultCCOptions 	/**/
+#else
+#define DefaultCCOptions 	-ansi -pedantic -Dasm=__asm
+#endif
 
 #define GccGasOption 		-DGCCUSESGAS
 #define AsmDefines 		-DUSE_GAS

@@ -1,0 +1,23 @@
+LIBRARY XTST
+DESCRIPTION "X11R6 XFree86 libXTST.dll for OS/2 EMX08H VERSION=6.0"
+CODE
+	PRELOAD
+DATA
+	SINGLE NONSHARED
+STACKSIZE 4096
+EXPORTS
+	 XTestCompareCurrentCursorWithWindow  @ 1
+	 XTestCompareCursorWithWindow  @ 2
+	 XTestDiscard  @ 3
+	 XTestFakeButtonEvent  @ 4
+	 XTestFakeDeviceButtonEvent  @ 5
+	 XTestFakeDeviceKeyEvent  @ 6
+	 XTestFakeDeviceMotionEvent  @ 7
+	 XTestFakeKeyEvent  @ 8
+	 XTestFakeMotionEvent  @ 9
+	 XTestFakeProximityEvent  @ 10
+	 XTestFakeRelativeMotionEvent  @ 11
+	 XTestGrabControl  @ 12
+	 XTestQueryExtension  @ 13
+	 XTestSetGContextOfGC  @ 14
+	 XTestSetVisualIDOfVisual  @ 15

@@ -1,5 +1,5 @@
 /* $XConsortium: ConnDis.c,v 11.123 94/05/19 11:00:27 mor Exp $ */
-/* $XFree86: xc/lib/X11/ConnDis.c,v 3.4 1994/05/22 08:50:59 dawes Exp $ */
+/* $XFree86: xc/lib/X11/ConnDis.c,v 3.5 1994/06/09 10:42:54 dawes Exp $ */
 /*
  
 Copyright (c) 1989  X Consortium
@@ -230,8 +230,7 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
      * is "unix", then choose BSD UNIX domain sockets (if configured).
      */
 
-#if defined(TCPCONN) || defined(UNIXCONN) || defined(LOCALCONN) || \
-	defined(MNX_TCPCONN)
+#if defined(TCPCONN) || defined(UNIXCONN) || defined(LOCALCONN) || defined(MNX_TCPCONN)
     if (!pprotocol) {
 	if (!phostname)
 #if defined(UNIXCONN) || defined(LOCALCONN)
@@ -453,7 +452,7 @@ _XSendClientPrefix (dpy, client, auth_proto, auth_string, prefix)
 {
     int auth_length = client->nbytesAuthProto;
     int auth_strlen = client->nbytesAuthString;
-    char padbuf[3];			/* for padding to 4x bytes */
+    static char padbuf[3];		/* for padding to 4x bytes */
     int pad;
     struct iovec iovarray[5], *iov = iovarray;
     int niov = 0;

@@ -1,0 +1,77 @@
+XCOMM $XFree86$
+
+/*
+ * OS2/EMX shared library template
+ */
+#ifndef __EMX__
+#error You must edit os2Lib.tmpl for your (non-EMX) OS/2 dev system
+#endif
+
+/* note these are special because of linking with link386 */
+#ifdef NOT_EMX
+#define SharedXtReqs $(LDPRELIB) $(XLIBONLY)
+#define SharedXawReqs $(LDPRELIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
+#define SharedXmuReqs $(LDPRELIB) $(XTOOLLIB) $(XLIB)
+#define SharedSMReqs $(LDPRELIB) $(ICELIB)
+#define SharedXextReqs $(LDPRELIB) $(XLIBONLY)
+#define SharedXiReqs $(LDPRELIB) $(XLIB)
+#define SharedXieReqs $(LDPRELIB) $(XLIB)
+#define SharedXtstReqs $(LDPRELIB) $(XLIB)
+#define SharedOldXReqs $(LDPRELIB) $(XLIBONLY)
+#define SharedPexReqs $(LDPRELIB) $(XLIBONLY) MathLibrary
+#else
+#define SharedXtReqs ..\\..\\usrlib\\ ICE SM X11
+#define SharedXawReqs ..\\..\\usrlib\\ Xmu Xt X11 XexExt Xext
+#define SharedXmuReqs ..\\..\\usrlib\\ Xt X11 XexExt Xext
+#define SharedSMReqs ..\\..\\usrlib\\ ICE
+#define SharedXextReqs ..\\..\\usrlib\\ X11 XexExt Xext
+#define SharedXiReqs ..\\..\\usrlib\\ X11 XexExt Xext
+#define SharedXieReqs ..\\..\\usrlib\\ X11 XexExt Xext
+#define SharedXtstReqs ..\\..\\usrlib\\ X11 XexExt Xext
+#define SharedOldXReqs ..\\..\\usrlib\\ X11 XexExt Xext
+#define SharedPexReqs ..\\..\\usrlib\\ X11 m
+#endif
+
+/*
+ * and now a little bit of magic for using imake without source tree; if we
+ * are using shared libraries, we really do not need to depend on anything
+ */
+#if SharedLibXext
+ DEPEXTENSIONLIB = 
+    EXTENSIONLIB = _Use(-lXext,-L$(EXTENSIONSRC)/lib -lXext)
+#endif
+#if SharedLibX11
+         DEPXLIB = 
+            XLIB = $(EXTENSIONLIB) _Use(-lX11,-L$(XLIBSRC) -lX11)
+#endif
+#if SharedLibXmu
+       DEPXMULIB = 
+          XMULIB = _Use(-lXmu,-L$(XMUSRC) -lXmu) $(XLIB)
+#ifndef XawClientLibs
+#define XawClientLibs $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
+#endif
+#endif
+#if SharedOldX
+      DEPOLDXLIB = 
+         OLDXLIB = _Use(-loldX,-L$(OLDXLIBSRC) -loldX)
+#endif
+#if SharedLibXt
+     DEPXTOOLLIB = 
+        XTOOLLIB = _Use(-lXt,-L$(TOOLKITSRC) -lXt)
+#endif
+#if SharedLibXaw
+       DEPXAWLIB = 
+          XAWLIB = _Use(-lXaw,-L$(AWIDGETSRC) -lXaw)
+#endif
+#if SharedLibXi
+        DEPXILIB = 
+           XILIB = _Use(-lXi,-L$(XILIBSRC) -lXi)
+#endif
+#if SharedLibXTest
+    DEPXTESTLIB = 
+       XTESTLIB = _Use(-lXtst,-L$(EXTENSIONSRC)/lib/xtest -lXtst)
+#endif
+#if SharedLibPex
+      DEPPEXLIB = 
+         PEXLIB = _Use(-lPEX5,-L$(PEXLIBSRC) -lPEX5)
+#endif

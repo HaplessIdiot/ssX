@@ -1,5 +1,5 @@
 XCOMM $XConsortium: svr4.cf,v 1.6 94/04/08 18:56:33 rws Exp $
-XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.1 1994/05/06 08:35:24 dawes Exp $
+XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.2 1994/05/14 05:58:53 dawes Exp $
 /*
  * A default OS name
  */
@@ -87,12 +87,15 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.1 1994/05/06 08:35:24 dawes Exp $
 #endif
 #ifndef DefaultCCOptions
 #if HasGcc2
-#if !defined(SunArchitecture)
+#if UseInstalled
 #define DefaultCCOptions -ansi
+#else
+#define DefaultCCOptions -ansi -pedantic
 #endif
 #else
 #define DefaultCCOptions -Xc -Dasm=__asm
 #ifndef ServerCCOptions
+/* This might be better in sun.cf -- does it ever get used? */
 #if defined(SunArchitecture)
 #define ServerCCOptions -Xt -Dasm=__asm
 #endif

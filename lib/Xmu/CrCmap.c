@@ -1,4 +1,5 @@
 /* $XConsortium: CrCmap.c,v 1.6 94/04/17 20:15:53 rws Exp $ */
+/* $XFree86$ */
 
 /* 
 
@@ -38,6 +39,9 @@ in this Software without prior written authorization from the X Consortium.
 #include <stdio.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#ifdef __EMX__
+#include <stdlib.h>	/* to get qsort() */
+#endif
 
 extern char	*calloc();
 

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Xfuncs.h,v 1.15 94/04/17 20:10:50 rws Exp $
- * $XFree86$
+ * $XFree86: xc/include/Xfuncs.h,v 3.0 1994/05/21 23:44:30 dawes Exp $
  * 
  * 
 Copyright (c) 1990  X Consortium
@@ -55,10 +55,16 @@ int bcmp();
 void bcopy();
 #define bzero(b,len) memset(b, 0, len)
 #define bcmp(b1,b2,len) memcmp(b1, b2, len)
+#else
+#ifdef __EMX__
+#include <strings.h>
+#define _XFUNCS_H_INCLUDED_STRING_H
+/* bcopy, bcmp, bzero declared */
 #else /* bsd */
 void bcopy();
 void bzero();
 int bcmp();
+#endif
 #endif /* SYSV */
 #endif /* sgi */
 #endif /* __STDC__ and relatives */

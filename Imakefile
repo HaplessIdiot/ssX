@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.125 94/04/08 19:57:43 rws Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/Imakefile,v 3.0 1994/07/24 11:38:17 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -12,7 +12,7 @@ RELEASE = "Release 6"
 #if BuildFonts
         FONTSDIR = fonts
 #endif
-#ifndef Win32Architecture
+#if !defined(Win32Architecture) && !defined(OS2Architecture)
         WIPDIR = workInProgress
         DOCSDIR = doc
 #endif
@@ -30,6 +30,7 @@ MakeLintSubdirs($(LNINSTALLDIRS),external.ln,lintlib)
 DependSubdirs($(SUBDIRS))
 
 #ifndef Win32Architecture
+#ifndef OS2Architecture
 VerifyOS::
 	@echo ""
 	@echo Building on OSName.
@@ -94,7 +95,76 @@ dangerous_strip_clean::
 	find . -type l -exec rm {} \;
 	find . \( \! \( -type d -o -name Makefile \) \) -print
 
-#else
+#else /* OS2Architecture */
+VerifyOS::
+	@echo :
+	@echo Building on OSName.
+	@echo :
+
+includes::
+	MakeDir($(subst /,\,$(BUILDINCDIR)))
+
+XCOMM
+XCOMM Watch out!!!  Make sure you do make includes after removing X11....
+XCOMM
+clean::
+	$(RM) -r $(BUILDINCDIR)
+	$(RM) -r $(BUILDLIBDIR)
+
+XCOMM do not name your log file make.log when you run this ...
+World::
+	@echo :
+	@echo Building $(RELEASE) of the X Window System on OS/2
+	@echo :
+	@echo :
+	\indir $(IMAKESRC) $(MAKE) $(MFLAGS) SHELL= -f Makefile.ini clean.os2 
+	\indir $(IMAKESRC) $(MAKE) $(MFLAGS) SHELL= -f Makefile.ini BOOTSTRAPCFLAGS=-Zexe
+	if exist Makefile.bak del Makefile.bak
+	if exist MAkefile ren Makefile Makefile.bak
+	$(MAKE) $(MFLAGS) -f Makefile.bak Makefile
+	$(MAKE) $(MFLAGS) SHELL= VerifyOS
+	$(MAKE) $(MFLAGS) SHELL= Makefiles
+	$(MAKE) $(MFLAGS) SHELL= clean
+	$(MAKE) $(MFLAGS) SHELL= includes
+	$(MAKE) $(MFLAGS) SHELL= depend
+	$(MAKE) $(MFLAGS)
+	@echo :
+	@echo :
+	@echo Full build of $(RELEASE) of the X Window System complete.
+	@echo :
+
+Everything::
+	@echo :
+	@echo Building $(RELEASE) of the X Window System on OS/2
+	@echo :
+	@echo :
+	\indir $(IMAKESRC) $(MAKE) $(MFLAGS) SHELL= -f Makefile.ini BOOTSTRAPCFLAGS=-Zexe
+	if exist Makefile.bak del Makefile.bak
+	if exist MAkefile ren Makefile Makefile.bak
+	$(MAKE) $(MFLAGS) -f Makefile.bak Makefile
+	$(MAKE) $(MFLAGS) SHELL= VerifyOS
+	$(MAKE) $(MFLAGS) SHELL= Makefiles
+	$(MAKE) $(MFLAGS) SHELL= clean
+	$(MAKE) $(MFLAGS) SHELL= includes
+	$(MAKE) $(MFLAGS) SHELL= depend
+	$(MAKE) $(MFLAGS)
+	@echo :
+	@echo :
+	@echo Full build of $(RELEASE) of the X Window System complete.
+	@echo :
+
+#ifdef ProjectRoot
+install::
+	MakeDir($(subst /,\,$(PROJECTROOT)))
+#endif
+
+install::
+	MakeDir($(subst /,\,$(INCROOT)))
+	MakeDir($(subst /,\,$(USRLIBDIR)))
+	MakeDir($(subst /,\,$(LIBDIR)))
+
+#endif
+#else /* Win32Architecture */
 VerifyOS::
 	@echo :
 	@echo Building on OSName.

@@ -1,4 +1,5 @@
 /* $XConsortium: authutil.c,v 1.14 94/04/17 20:15:31 mor Exp $ */
+/* $XFree86$ */
 /******************************************************************************
 
 
@@ -35,7 +36,7 @@ Author: Ralph Mor, X Consortium
 #include <sys/stat.h>
 #include <errno.h>
 
-#ifdef X_NOT_STDC_ENV
+#if defined(X_NOT_STDC_ENV) && !defined(__EMX__)
 extern int errno;
 extern long time ();
 extern char *getenv();
@@ -43,6 +44,10 @@ extern char *getenv();
 #else
 #include <time.h>
 #define Time_t time_t
+#ifdef __EMX__
+extern char* getenv(const char*);
+#define link rename
+#endif
 #endif
 #ifndef X_NOT_POSIX
 #include <unistd.h>
@@ -77,7 +82,7 @@ IceAuthFileName ()
     static char	*buf;
     static int	bsize;
     int	    	size;
-#ifdef WIN32
+#if defined(WIN32) || defined(__EMX__)
     char    	dir[128];
 #endif
 
@@ -97,6 +102,11 @@ IceAuthFileName ()
 	}
 	if (!name)
 #endif
+#ifdef __EMX__
+	strcpy (dir,"c:");
+	name = dir;
+	if (!name)
+#endif
 	return (NULL);
     }
 
@@ -113,8 +123,11 @@ IceAuthFileName ()
     }
 
     strcpy (buf, name);
+#ifdef __EMX__
+    strcat (buf, "/ICEauth." + (name[1] == '\0' ? 1 : 0));
+#else
     strcat (buf, "/.ICEauthority" + (name[1] == '\0' ? 1 : 0));
-
+#endif
     return (buf);
 }
 

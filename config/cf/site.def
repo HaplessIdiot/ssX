@@ -1,5 +1,5 @@
 XCOMM site:  $XConsortium: site.sample,v 1.9 94/04/08 17:02:06 rws Exp $
-XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.3 1994/05/21 23:39:30 dawes Exp $
+XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.4 1994/05/29 02:01:47 dawes Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -56,7 +56,9 @@ XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.3 1994/05/21 23:39:30 dawes Exp
 
 #ifdef AfterVendorCF
 
+#ifndef ProjectRoot
 #define ProjectRoot /usr/X11R6
+#endif
 
 /* #define HasXdmAuth YES */
 

@@ -1,5 +1,5 @@
 /* $XConsortium: dm.c,v 1.70 94/04/17 20:03:36 gildea Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xdm/dm.c,v 3.0 1994/06/28 12:32:33 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -385,7 +385,7 @@ WaitForChild ()
     int		pid;
     struct display	*d;
     waitType	status;
-#ifndef X_NOT_POSIX
+#if !defined(X_NOT_POSIX) && !defined(__EMX__)
     sigset_t mask, omask;
 #else
     int		omask;

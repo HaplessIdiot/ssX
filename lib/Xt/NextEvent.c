@@ -1,5 +1,5 @@
 /* $XConsortium: NextEvent.c,v 1.144 94/06/14 10:11:06 kaleb Exp $ */
-/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.2 1994/05/29 02:03:41 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.3 1994/08/20 07:29:16 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -66,6 +66,12 @@ in this Software without prior written authorization from the X Consortium.
 #include <errno.h>
 #ifdef X_NOT_STDC_ENV
 extern int errno;
+#endif
+
+#ifdef __EMX__
+#define BSD_SELECT
+#include <sys/time.h>
+#include <sys/select.h>
 #endif
 
 #ifdef MINIX

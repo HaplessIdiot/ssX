@@ -1,0 +1,13 @@
+.\" $XFree86$
+.TH xf86config 1 "Version 3.1.1" "XFree86"
+.SH NAME
+xf86config \- generate an XF86Config file
+.SH SYNOPSIS
+.B xf86config
+.SH DESCRIPTION
+\fIxf86config\fP is an interactive program for generating an XF86Config file
+for use with XFree86 X servers.
+.SH "SEE ALSO"
+XFree86(1), XF86Config(4/5), reconfig(1)
+.SH AUTHOR
+Harm Hanemaayer.

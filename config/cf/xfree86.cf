@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.2 94/03/31 11:37:26 gildea Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.23 1994/09/22 15:45:35 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.24 1994/09/25 12:20:27 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -297,7 +297,7 @@ XF86MLIBS  = $(XF86MINIT) $(XF86CONFIG) $(XF86COMLIB) $(XF86HWLIB) $(XF86OSLIB)
 #endif
 
 #ifndef XFree86Version
-#define XFree86Version	3100
+#define XFree86Version	3101
 #endif
 
 #ifndef XVendorString
@@ -329,12 +329,13 @@ XF86MLIBS  = $(XF86MINIT) $(XF86CONFIG) $(XF86COMLIB) $(XF86HWLIB) $(XF86OSLIB)
 #define HasGcc2ForCplusplus HasGcc2
 #endif
 
+/* Do we really need the -DNO_ASM ? */
 #if HasGcc
 #ifndef DefaultCCOptions
-#if defined(SunArchitecture) && defined(i386Architecture)
-#define DefaultCCOptions -DNO_ASM
-#else
+#if UseInstalled
 #define DefaultCCOptions -ansi  -DNO_ASM
+#else
+#define DefaultCCOptions -ansi -pedantic -DNO_ASM
 #endif
 #endif
 #endif

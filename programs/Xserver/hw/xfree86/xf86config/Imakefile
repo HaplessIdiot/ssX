@@ -1,0 +1,10 @@
+XCOMM $XFree86$
+
+            SRCS = xf86config.c
+            OBJS = xf86config.o
+ LOCAL_LIBRARIES =
+         DEPLIBS =
+
+ComplexProgramTargetNoMan(xf86config)
+
+InstallManPageLong(xf86conf,$(MANDIR),xf86config)
