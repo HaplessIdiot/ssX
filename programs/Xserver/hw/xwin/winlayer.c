@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winlayer.c,v 1.4 2001/07/31 09:46:57 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winlayer.c,v 1.5 2001/07/31 19:59:52 alanh Exp $ */
 
 #include "win.h"
 
@@ -47,14 +47,8 @@ winLayerCreate (ScreenPtr pScreen)
   ErrorF ("winLayerCreate () - dwDepth %d\n",
 	  pScreenInfo->dwDepth);
 
-  /*
-   * LayerKind is really just an index into the array of layer kinds.
-   * LAYER_FB = 0 and LAYER_SHADOW = 1, but we only create one layer kind
-   * on Cygwin, so we use LAYER_FB here as an index to our one and only
-   * layer kind.  Check the code over in
-   * miext/layer/layerinit.c/LayerStartInit () for the Cygwin #ifdef's.
-   */
-  dwLayerKind = LAYER_FB;
+  /* We only need a single layer kind: shadow */
+  dwLayerKind = LAYER_SHADOW;
   pPixmap = LAYER_SCREEN_PIXMAP;
 
   return LayerCreate (pScreen,
