@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xdpyinfo.c /main/34 1995/12/08 12:09:32 dpw $
- * $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.3 1996/01/16 15:08:52 dawes Exp $
+ * $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.4 1996/01/17 12:50:53 dawes Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -615,9 +615,9 @@ print_XF86VidMode_info(dpy, extname)
     Display *dpy;
     char *extname;
 {
-    int majorrev, minorrev, dot_clock, i;
+    int majorrev, minorrev, modecount, i;
     XF86VidModeMonitor monitor;
-    XF86VidModeModeLine mode_line;
+    XF86VidModeModeInfo **modelines;
 
     if (!XF86VidModeQueryVersion(dpy, &majorrev, &minorrev))
 	return 0;
@@ -637,26 +637,28 @@ print_XF86VidMode_info(dpy, extname)
                monitor.vsync[i].hi);
     }
 
-    if (!XF86VidModeGetModeLine(dpy, DefaultScreen(dpy), &dot_clock, &mode_line))
+    if (!XF86VidModeGetAllModeLines(dpy, DefaultScreen(dpy), &modecount, &modelines))
 	return 0;
-    printf("  Current Video Mode Settings:\n");
+    printf("  Available Video Mode Settings (current first):\n");
     printf("     Clock   Hdsp Hbeg Hend Httl   Vdsp Vbeg Vend Vttl  Flags\n");
-    printf("    %6.2f   %4d %4d %4d %4d   %4d %4d %4d %4d ",
-        (float)dot_clock/1000.0,
-        mode_line.hdisplay, mode_line.hsyncstart,
-        mode_line.hsyncend, mode_line.htotal,
-        mode_line.vdisplay, mode_line.vsyncstart,
-        mode_line.vsyncend, mode_line.vtotal);
-    if (mode_line.flags & V_PHSYNC)    printf(" +hsync");
-    if (mode_line.flags & V_NHSYNC)    printf(" -hsync");
-    if (mode_line.flags & V_PVSYNC)    printf(" +vsync");
-    if (mode_line.flags & V_NVSYNC)    printf(" -vsync");
-    if (mode_line.flags & V_INTERLACE) printf(" interlace");
-    if (mode_line.flags & V_CSYNC)     printf(" composite");
-    if (mode_line.flags & V_PCSYNC)    printf(" +csync");
-    if (mode_line.flags & V_PCSYNC)    printf(" -csync");
-    if (mode_line.flags & V_DBLSCAN)   printf(" doublescan");
-    printf("\n");
+    for (i = 0; i < modecount; i++) {
+        printf("    %6.2f   %4d %4d %4d %4d   %4d %4d %4d %4d ",
+            (float)modelines[i]->dotclock/1000.0,
+            modelines[i]->hdisplay, modelines[i]->hsyncstart,
+            modelines[i]->hsyncend, modelines[i]->htotal,
+            modelines[i]->vdisplay, modelines[i]->vsyncstart,
+            modelines[i]->vsyncend, modelines[i]->vtotal);
+        if (modelines[i]->flags & V_PHSYNC)    printf(" +hsync");
+        if (modelines[i]->flags & V_NHSYNC)    printf(" -hsync");
+        if (modelines[i]->flags & V_PVSYNC)    printf(" +vsync");
+        if (modelines[i]->flags & V_NVSYNC)    printf(" -vsync");
+        if (modelines[i]->flags & V_INTERLACE) printf(" interlace");
+        if (modelines[i]->flags & V_CSYNC)     printf(" composite");
+        if (modelines[i]->flags & V_PCSYNC)    printf(" +csync");
+        if (modelines[i]->flags & V_PCSYNC)    printf(" -csync");
+        if (modelines[i]->flags & V_DBLSCAN)   printf(" doublescan");
+        printf("\n");
+    }
 
     return 1;
 }

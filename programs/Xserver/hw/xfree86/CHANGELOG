@@ -1,4 +1,10 @@
 XFree86 3.1.2Bk (17 January 1996)
+261. 6-bit/rgb fix for the I128 server (Robin Cutshaw).
+260. Update hw/xfree98 Imakefiles (Takefumi Tsukada).
+259. Add a GetAllModeLines function to the VidMode extension, and modify
+     xdpyinfo to use it (Joe Moss).
+
+XFree86 3.1.2Bk (17 January 1996)
 258. Don't allow DGA operations which affect the server when it isn't on
      the active screen.
 257. Have XFree86-Misc report the power saver times in seconds rather

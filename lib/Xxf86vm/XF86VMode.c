@@ -1,5 +1,5 @@
 /* $XConsortium: XF86VMode.c /main/2 1995/11/14 18:17:58 kaleb $ */
-/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.13 1996/01/16 15:01:53 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.14 1996/01/17 12:45:58 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -175,6 +175,81 @@ Bool XF86VidModeGetModeLine(dpy, screen, dotclock, modeline)
     } else {
 	modeline->private = NULL;
     }
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return True;
+}
+
+Bool XF86VidModeGetAllModeLines(dpy, screen, modecount, modelinesPtr)
+    Display* dpy;
+    int screen;
+    int* modecount; 
+    XF86VidModeModeInfo ***modelinesPtr;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xXF86VidModeGetAllModeLinesReply rep;
+    xXF86VidModeGetAllModeLinesReq *req;
+    XF86VidModeModeInfo *mdinfptr, **modelines;
+    xXF86VidModeModeInfo xmdline;
+    int i;
+
+    XF86VidModeCheckExtension (dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(XF86VidModeGetAllModeLines, req);
+    req->reqType = info->codes->major_opcode;
+    req->xf86vidmodeReqType = X_XF86VidModeGetAllModeLines;
+    req->screen = screen;
+    if (!_XReply(dpy, (xReply *)&rep, 
+        (SIZEOF(xXF86VidModeGetAllModeLinesReply) - SIZEOF(xReply)) >> 2, xFalse)) {
+        UnlockDisplay(dpy);
+        SyncHandle();
+        return False;
+    }
+    *modecount = rep.modecount;
+    if (!(modelines = (XF86VidModeModeInfo **) Xcalloc(rep.modecount,
+                                          sizeof(XF86VidModeModeInfo *)))) {
+        _XEatData(dpy, (rep.modecount) * sizeof(xXF86VidModeModeInfo));
+        Xfree(modelines);
+        return False;
+    }
+    if (!(mdinfptr = (XF86VidModeModeInfo *) Xcalloc(rep.modecount,
+                                          sizeof(XF86VidModeModeInfo)))) {
+        _XEatData(dpy, (rep.modecount) * sizeof(xXF86VidModeModeInfo));
+        Xfree(modelines);
+        Xfree(mdinfptr);
+        return False;
+    }
+    for (i = 0; i < rep.modecount; i++) {
+        modelines[i] = mdinfptr;
+        _XRead32(dpy, &xmdline, sizeof(xXF86VidModeModeInfo));
+        mdinfptr->dotclock   = xmdline.dotclock;
+        mdinfptr->hdisplay   = xmdline.hdisplay;
+        mdinfptr->hsyncstart = xmdline.hsyncstart;
+        mdinfptr->hsyncend   = xmdline.hsyncend;
+        mdinfptr->htotal     = xmdline.htotal;
+        mdinfptr->vdisplay   = xmdline.vdisplay;
+        mdinfptr->vsyncstart = xmdline.vsyncstart;
+        mdinfptr->vsyncend   = xmdline.vsyncend;
+        mdinfptr->vtotal     = xmdline.vtotal;
+        mdinfptr->flags      = xmdline.flags;
+        mdinfptr->privsize   = xmdline.privsize;
+        mdinfptr->private    = NULL;
+#if 0
+        if (rep.privsize > 0) {
+            if (!(modeline->private = Xcalloc(rep.privsize, sizeof(INT32)))) {
+                _XEatData(dpy, (rep.privsize) * sizeof(INT32));
+                Xfree(modeline->private);
+                return False;
+            }
+            _XRead32(dpy, modeline->private, rep.privsize * sizeof(INT32));
+        } else {
+            modeline->private = NULL;
+        }
+#endif
+        mdinfptr++;
+    }
+    *modelinesPtr = modelines;
     UnlockDisplay(dpy);
     SyncHandle();
     return True;

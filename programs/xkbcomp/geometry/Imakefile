@@ -1,9 +1,10 @@
-XCOMM $XConsortium: Imakefile /main/2 1995/12/07 21:34:34 kaleb $
+XCOMM $XConsortium: Imakefile /main/5 1996/01/16 07:19:00 kaleb $
+XCOMM $XFree86$
 
       TESTDATA = 
      DATAFILES = STEPnote kinesis pc101-NG sgi101 sgi102 \
-		microsoft \
-		$(TESTDATA)
+		microsoft /*digital_lk digital_pc digital_unix*/ \
+		flexpro sun4 sun5 sun5unix $(TESTDATA)
 
 all::
 
