@@ -30,7 +30,7 @@
  * Project.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.14 2001/11/23 19:50:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.15 2001/12/17 20:52:32 dawes Exp $ */
 
 /* function prototypes, common data structures & generic includes */
 #include "newport.h"
@@ -645,7 +645,7 @@ NewportModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	NewportBackupPalette(pScrn);
 	/* XXX move this into a generic backup_xmap9 function */
 	if( pNewport->Bpp == 3) { /* at 24bpp we have to backup some more registers */
-		NewportBackupXMap9s( pScrn );
+		NewportBackupXmap9s( pScrn );
 	}
 	/* ...then  setup the hardware */
 	pNewport->drawmode1 = DM1_RGBPLANES | 
