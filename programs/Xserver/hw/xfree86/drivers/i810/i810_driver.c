@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.56 2001/10/04 18:28:21 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.57 2001/10/10 14:08:37 alanh Exp $ */
 
 /*
  * Authors:
@@ -1058,10 +1058,15 @@ I810Save(ScrnInfoPtr pScrn)
 {
    vgaHWPtr hwp;
    I810Ptr pI810;
+   unsigned temp;
 
    hwp = VGAHWPTR(pScrn);
    pI810 = I810PTR(pScrn);
    DoSave(pScrn, &hwp->SavedReg, &pI810->SavedReg, TRUE);
+
+   temp = INREG(MEMMODE);
+   temp |= 4;
+   OUTREG(MEMMODE, temp);
 }
 
 
