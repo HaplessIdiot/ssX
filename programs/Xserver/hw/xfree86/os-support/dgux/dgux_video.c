@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/dgux/dgux_video.c,v 1.3 1999/04/18 04:08:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/dgux/dgux_video.c,v 1.4 1999/04/29 12:24:52 dawes Exp $ */
 /*
  * INTEL DG/UX RELEASE 4.20 MU03
  * Copyright 1997 Takis Psarogiannakopoulos Cambridge,UK
@@ -199,29 +199,6 @@ pointer Base;
 unsigned long Size;
 {
 	munmap(Base, Size);
-}
-
-
-
-
-
-/* NULL for DG/ux  */
-void xf86MapDisplay(ScreenNum, Region)
-int ScreenNum;
-int Region;
-{
-	return;
-}
-
-
-
-
-/* NULL for DG/ux */
-void xf86UnMapDisplay(ScreenNum, Region)
-int ScreenNum;
-int Region;
-{
-	return;
 }
 
 /***************************************************************************/

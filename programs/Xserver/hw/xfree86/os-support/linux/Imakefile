@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/10 1996/10/19 18:06:19 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/Imakefile,v 3.39 2000/03/31 22:55:52 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/Imakefile,v 3.40 2000/06/17 00:03:33 martin Exp $
 
 #include <Server.tmpl>
 
@@ -40,12 +40,12 @@ AXP_OBJ=lnx_ev56.o
 #endif
 
 SRCS = lnx_init.c lnx_video.c lnx_io.c libc_wrapper.c bios_mmap.c \
-       mapVT_noop.c VTsw_usl.c std_kbdEv.c posix_tty.c $(MOUSESRC) \
+       VTsw_usl.c std_kbdEv.c posix_tty.c $(MOUSESRC) \
        lnx_pci.c vidmem.c lnx_apm.c $(JOYSTICK_SRC) $(DRI_SRC) $(RES_SRCS) \
        $(AXP_SRC) lnx_kmod.c
 
 OBJS = lnx_init.o lnx_video.o lnx_io.o libc_wrapper.o bios_mmap.o \
-       mapVT_noop.o VTsw_usl.o std_kbdEv.o posix_tty.o $(MOUSEOBJ) \
+       VTsw_usl.o std_kbdEv.o posix_tty.o $(MOUSEOBJ) \
        lnx_pci.o vidmem.o lnx_apm.o $(JOYSTICK_OBJ) $(DRI_OBJ) $(RES_OBJS) \
        $(AXP_OBJ) lnx_kmod.o
 
@@ -94,7 +94,6 @@ InstallDynamicModule(lnx_jstk.o,$(MODULEDIR),input)
 #endif
 
 LinkSourceFile(bios_mmap.c,../shared)
-LinkSourceFile(mapVT_noop.c,../shared)
 LinkSourceFile(std_kbdEv.c,../shared)
 LinkSourceFile(posix_tty.c,../shared)
 LinkSourceFile(libc_wrapper.c,../shared)

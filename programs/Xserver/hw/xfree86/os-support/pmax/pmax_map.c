@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_map.c,v 1.5 1999/07/18 08:14:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_map.c,v 1.6 2000/02/11 22:36:03 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -147,24 +147,6 @@ xf86UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 {
 	munmap(Base, Size);
 }
-
-#if 0
-/* ARGSUSED */
-void xf86MapDisplay(ScreenNum, Region)
-int ScreenNum;
-int Region;
-{
-	return;
-}
-
-/* ARGSUSED */
-void xf86UnMapDisplay(ScreenNum, Region)
-int ScreenNum;
-int Region;
-{
-	return;
-}
-#endif
 
 /*
  * Read BIOS via mmap()ing /dev/iomem.
