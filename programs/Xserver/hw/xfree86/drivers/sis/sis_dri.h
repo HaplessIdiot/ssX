@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.h,v 1.2 2000/08/04 03:51:46 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.h,v 1.4 2001/04/19 12:40:33 alanh Exp $ */
 
 /* modified from tdfx_dri.h */
 
@@ -57,7 +57,14 @@ typedef struct {
   int dummy;
 } SISDRIContextRec, *SISDRIContextPtr;
 
+#ifdef XFree86Server
+
+#include "screenint.h"
+
 Bool SISDRIScreenInit(ScreenPtr pScreen);
 void SISDRICloseScreen(ScreenPtr pScreen);
 Bool SISDRIFinishScreenInit(ScreenPtr pScreen);
+
+#endif
+
 #endif
