@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.24 2002/02/10 04:25:08 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.25 2002/02/10 04:36:36 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -1575,6 +1575,7 @@ static void LoadStateExt
        chip->PRAMDAC0[0x00000508/4] = state->vpll;
        chip->PRAMDAC0[0x00000520/4] = state->vpll2;
        chip->PRAMDAC0[0x0000050C/4] = state->pllsel;
+    } else {
        chip->PRAMDAC[0x00000848/4]  = state->scale;
     }
     chip->PRAMDAC[0x00000600/4]  = state->general;
