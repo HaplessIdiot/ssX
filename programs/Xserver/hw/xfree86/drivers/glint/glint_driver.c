@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.107 2000/12/27 04:57:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.108 2001/01/21 21:19:25 tsi Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -161,6 +161,7 @@ static PciChipsets GLINTPciChipsets[] = {
 
 
 typedef enum {
+    OPTION_PM3_USE_GAMMA,
     OPTION_SW_CURSOR,
     OPTION_HW_CURSOR,
     OPTION_PCI_RETRY,
@@ -171,11 +172,7 @@ typedef enum {
     OPTION_MEM_CLK,
     OPTION_OVERLAY,
     OPTION_SHADOW_FB,
-    OPTION_FBDEV,
-    OPTION_NOWRITEBITMAP,
-    OPTION_PM3_USE_GAMMA,
-    OPTION_PM3_NOIMAGEWRITE,
-    OPTION_PM3_NODIRECTFIFOWRITE
+    OPTION_FBDEV
 } GLINTOpts;
 
 static OptionInfoRec GLINTOptions[] = {
@@ -191,8 +188,6 @@ static OptionInfoRec GLINTOptions[] = {
     { OPTION_OVERLAY,		"Overlay",	OPTV_ANYSTR,	{0}, FALSE },
     { OPTION_SHADOW_FB,		"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_FBDEV,		"UseFBDev",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_PM3_NOIMAGEWRITE, "PM3NoImageWrite", OPTV_BOOLEAN, {0}, FALSE },
-    { OPTION_PM3_NODIRECTFIFOWRITE, "PM3NoDirectFifoWrite", OPTV_BOOLEAN, {0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -1083,17 +1078,6 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
 		"Using \"Shadow Framebuffer\" - acceleration disabled\n");
     }
-    pGlint->PM3_NoImageWrite = FALSE;
-    if (xf86ReturnOptValBool(GLINTOptions, OPTION_PM3_NOIMAGEWRITE, FALSE)) {
-	pGlint->PM3_NoImageWrite = TRUE;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "WritePixmap disabled for Permedia3\n");
-    }
-    pGlint->PM3_NoDirectFifoWrite = FALSE;
-    if (xf86ReturnOptValBool(GLINTOptions, OPTION_PM3_NODIRECTFIFOWRITE, FALSE)) {
-	pGlint->PM3_NoDirectFifoWrite = TRUE;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "DirectFifoWrite disabled for Permedia3\n");
-    }
-
 
     /* Check whether to use the FBDev stuff and fill in the rest of pScrn */
     if (xf86ReturnOptValBool(GLINTOptions, OPTION_FBDEV, FALSE)) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.21 2000/09/19 14:12:32 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.22 2000/12/20 11:13:02 alanh Exp $ */
 
 /*
  * glint register file 
@@ -1203,12 +1203,34 @@ do{								\
 	while(delay--){tmp = GLINT_READ_REG(InFIFOSpace);};     \
 	} while(0)
         
+#if defined(__alpha__)
+#define GLINT_SLOW_WRITE_REG(v,r)				\
+do{								\
+	mem_barrier();						\
+	GLINT_READ_REG(InFIFOSpace);     			\
+	mem_barrier();						\
+        GLINT_WRITE_REG(v,r);					\
+}while(0)
+
+#define GLINT_SET_INDEX(index)					\
+do{								\
+	GLINT_WRITE_REG(((index)>>8)&0xff,PM2VDACIndexRegHigh);	\
+	GLINT_WRITE_REG((index)&0xff,PM2VDACIndexRegLow);	\
+} while(0)
+#else /* __alpha__ */
 #define GLINT_SLOW_WRITE_REG(v,r)				\
 do{								\
 	GLINTDACDelay(5);					\
         GLINT_WRITE_REG(v,r);					\
 	GLINTDACDelay(5);					\
 }while(0)
+
+#define GLINT_SET_INDEX(index)					\
+do{								\
+	GLINT_SLOW_WRITE_REG(((index)>>8)&0xff,PM2VDACIndexRegHigh);	\
+	GLINT_SLOW_WRITE_REG((index)&0xff,PM2VDACIndexRegLow);	\
+} while(0)
+#endif /* __alpha__ */
 
 #define GLINT_SECONDARY_SLOW_WRITE_REG(v,r)				\
 do{									\

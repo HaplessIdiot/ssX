@@ -21,11 +21,12 @@
  *
  * Authors: Sven Luther, <luther@dpt-info.u-strasbg.fr>
  *          Thomas Witzel, <twitzel@nmr.mgh.harvard.edu>
+ *          Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.9 2000/12/20 11:13:04 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.10 2000/12/29 16:48:28 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -50,70 +51,41 @@
 # define TRACE(str)
 #endif
 
-int PM3QuickFillMemory(ScrnInfoPtr pScrn,int size);
-
-int
-PM3QuickFillMemory(ScrnInfoPtr pScrn,int size)
-{
-    GLINTPtr pGlint = GLINTPTR (pScrn);
-    unsigned int * p;
-    unsigned int p_content;
-    unsigned int i, j;
-    long savemapsize;
-
-    savemapsize = pGlint->FbMapSize;
-    pGlint->FbMapSize = size*1024*1024;
-
-    pGlint->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
-	pGlint->PciTag, pGlint->FbAddress, pGlint->FbMapSize);
-    if (pGlint->FbBase == NULL) {
-	pGlint->FbMapSize = savemapsize;
-	return FALSE;
-    }
-
-    /* Set pointer to Aperture1 */
-    p = (unsigned int *) pGlint->FbBase;
-    /* Fill in megs number of megabytes */
-    for(i=0;i<size;i++)
-	for(j=0;j<1024*256;j+=1024)
-	    p[j+(i*1024*256)] = j + (i * 1024*256);
-
-    /* Set pointer to Aperture1 */
-    p = (unsigned int *) pGlint->FbBase;
-
-    /* If original ptr is 0x0 then no rollover occured */
-    p_content = p[0];
-    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pGlint->FbBase,
-	pGlint->FbMapSize);
-    pGlint->FbBase = NULL;
-    pGlint->FbMapSize = savemapsize;
-    if (p_content == 0x0)
-	return TRUE;
-    else return FALSE;
-}
 int
 Permedia3MemorySizeDetect(ScrnInfoPtr pScrn)
 {
-    GLINTPtr pGlint;
-    int size = 1;
-    pGlint = GLINTPTR (pScrn);
-    /* Fill memory until get a rollover of dram to 0
-     * fill in powers of 2, 1,2,4,8,16,32
-     */
-    while(PM3QuickFillMemory(pScrn,size))
-    {
-	size = size*2;
-	if(size == 64) break;
+    GLINTPtr pGlint = GLINTPTR (pScrn);
+    CARD32 size = 0, i;
+
+    /* We can map 64MB, as that's the size of the Permedia3 aperture 
+     * regardless of memory configuration */
+    pGlint->FbMapSize = 64*1024*1024;
+
+    pGlint->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
+			pGlint->PciTag, pGlint->FbAddress, pGlint->FbMapSize);
+
+    if (pGlint->FbBase == NULL) 
+	return 0;
+
+    for(i=0;i<64;i++) {
+    	/* Clear test memory */
+	MMIO_OUT32(pGlint->FbBase,i*1024*1024, 0);
+    	/* ok, now write 0xf5f5f5f5 magic */
+	MMIO_OUT32(pGlint->FbBase,i*1024*1024, 0xf5f5f5f5);
+    	/* Let's check for wrapover, write will fail */
+	if (MMIO_IN32(pGlint->FbBase, i*1024*1024) == 0xf5f5f5f5) 
+		size = i;
+	else 
+		break;
     }
-    /* Correct memory amount since fail */
-    if (size != 1)
-	size = size / 2;
-    else
-	return 1*1024;
-    /* Just to make sure */
-    if (PM3QuickFillMemory(pScrn,size))
-	return size*1024;
-    return 16*1024;
+
+    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pGlint->FbBase, 
+							pGlint->FbMapSize);
+
+    pGlint->FbBase = NULL;
+    pGlint->FbMapSize = 0;
+
+    return ( (size+1) * 1024 );
 }
 
 static int

@@ -1,4 +1,11 @@
 XFree86 4.X.Ya (?? January 2001)
+  91. Rework the memory detection code for Permedia3, now correctly detects
+      boards which aren't 32MB (Alan Hourihane).
+  90. Write ScanlineCPUToScreen, ScanlineImageWrite functions for Permedia3
+      which write directly to the FIFO, and remove obsolete functions 
+      (Alan Hourihane).
+  89. Fix ordering of writes in pm2v/pm3 ramdac functions in the glint driver,
+      thus fixing the R/B inversion problems (Jay Estabrook).
   88. Set the version strings in man pages dynamically (David Dawes).
   87. Remove the XF86_VERSION string from xf86Version.h, leaving just
       the numerical values.  All the version information is now derived
@@ -12326,4 +12333,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1544 2001/01/27 11:04:23 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1545 2001/01/27 18:20:41 dawes Exp $
