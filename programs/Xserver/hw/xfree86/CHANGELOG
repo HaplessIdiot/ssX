@@ -1,4 +1,5 @@
 XFree86 4.0.99.4 (xx May 2001)
+ 530. Update freetype2 bits to 2.0.2 version (Keith Packard).
  529. Re-fix the Trident Video scaler support for Blade series chips 
       (Alan Hourihane).
  528. Fixed lbx to handle endian swapping without core dump (Egbert Eich).
@@ -13249,4 +13250,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1769 2001/05/15 10:19:34 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1770 2001/05/15 11:08:38 alanh Exp $
