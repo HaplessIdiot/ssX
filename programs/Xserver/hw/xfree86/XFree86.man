@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.62 2003/11/12 02:43:25 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.63 2003/11/12 02:58:20 dawes Exp $
 .TH XFree86 1 __vendorversion__
 .SH NAME
 XFree86 - X11R6 X server
@@ -123,10 +123,11 @@ Starting with version 4.4,
 .B XFree86
 has support for generating a usable configuration at run-time when no
 XF86Config(__filemansuffix__) configuration file is provided.  The
-initial version of this automatic configuration support is targetted at
+initial version of this automatic configuration support is targeted at
 the most popular hardware and software platforms supported by XFree86.
-Some details about how this works can be found in the getconfig(1) manual
-page.
+Some details about how this works can be found in the
+.B CONFIGURATION
+section below and in the getconfig(1) manual page.
 .PP
 In addition to the normal server options described in the Xserver(1)
 manual page,
@@ -299,7 +300,7 @@ server is run as root (i.e, with real-uid 0).
 Sets the verbosity level for information printed to the X server log
 file.  If the
 .I n
-value isn't supplied, each occurrance of this option increments the log
+value isn't supplied, each occurrence of this option increments the log
 file verbosity level.  When the
 .I n
 value is supplied, the log file verbosity level is set to that value.
@@ -321,13 +322,13 @@ Set the internal pixmap format for depth 24 pixmaps to 24 bits per pixel.
 The default is usually 32 bits per pixel.  There is normally little
 reason to use this option.  Some client applications don't like this
 pixmap format, even though it is a perfectly legal format.  This is
-equvalent to the
+equivalent to the
 .B Pixmap
 XF86Config(__filemansuffix__) file option.
 .TP 8
 .B \-pixmap32
 Set the internal pixmap format for depth 24 pixmaps to 32 bits per pixel.
-This is usually the default.  This is equvalent to the
+This is usually the default.  This is equivalent to the
 .B Pixmap
 XF86Config(__filemansuffix__) file option.
 .TP 8
@@ -396,7 +397,7 @@ those drivers which support 16 bpp.
 .BR \-verbose " [\fIn\fP]"
 Sets the verbosity level for information printed on stderr.  If the
 .I n
-value isn't supplied, each occurrance of this option increments the
+value isn't supplied, each occurrence of this option increments the
 verbosity level.  When the
 .I n
 value is supplied, the verbosity level is set to that value.  The default
@@ -417,7 +418,7 @@ search path for all other users.
 .PP
 The XFree86 server is normally configured to recognize various
 special combinations of key presses that instruct the server to
-perform some action, rather than just sending the keypress event
+perform some action, rather than just sending the key press event
 to a client application.
 The default XKEYBOARD keymap defines the key combinations listed below.
 The server also has these key combinations builtin to its event
@@ -474,13 +475,45 @@ combinations are used to switch to virtual terminals 1 through 12,
 respectively.  This can be disabled with the
 .B DontVTSwitch
 XF86Config(__filemansuffix__) file option.
-.SH SETUP
+.SH CONFIGURATION
 .B XFree86
-uses a configuration file called
+typically uses a configuration file called
 .B XF86Config
 for its initial setup.
 Refer to the XF86Config(__filemansuffix__) manual page for information
 about the format of this file.
+.PP
+Starting with version 4.4,
+.B XFree86
+has a mechanism for automatically generating a built-in configuration
+at run-time when no
+.B XF86Config
+file is present.  The current version of this automatic configuration
+mechanism works in three ways.
+.PP
+The first is via enhancements that have made many components of the
+.B XF86Config
+file optional.  This means that information that can be probed or
+reasonably deduced doesn't need to be specified explicitly, greatly
+reducing the amount of built-in configuration information that needs to
+be generated at run-time.
+.PP
+The second is to use an external utility called getconfig(1), when
+available, to use meta-configuration information to generate a suitable
+configuration for the primary video device.  The meta-configuration
+information can be updated to allow an existing installation to get the
+best out of new hardware or to work around bugs that are found
+post-release.
+.PP
+The third is to have "safe" fallbacks for most configuration information.
+This maximises the likelihood that the
+.B XFree86
+server will start up in some usable configuration even when information
+about the specific hardware is not available.
+.PP
+The automatic configuration support for XFree86 is work in progress.
+It is currently aimed at the most popular hardware and software platforms
+supported by XFree86.  Enhancements are planned for future releases.
 .SH FILES
 The X server config file can be found in a range of locations.  These
 are documented fully in the XF86Config(__filemansuffix__) manual page.

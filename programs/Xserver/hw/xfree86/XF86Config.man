@@ -1,11 +1,11 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.21 2003/09/24 20:04:46 herrb Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.22 2003/10/08 14:58:25 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH XF86Config __filemansuffix__ __vendorversion__
 .SH NAME
 XF86Config - Configuration File for XFree86
 .SH INTRODUCTION
-.I XFree86(1)
+.B XFree86
 supports several mechanisms for supplying/obtaining configuration and
 run-time parameters: command line options, environment variables, the
 XF86Config configuration file, auto-detection, and fallback defaults.
@@ -13,15 +13,22 @@ When the same information is supplied in more than one way, the highest
 precedence mechanism is used.  The list of mechanisms is ordered from
 highest precedence to lowest.  Note that not all parameters can be
 supplied via all methods.  The available command line options and
-environment variables (and some defaults) are described in the
-.I Xserver(1)
-and
-.I XFree86(1)
-manual pages.  Most configuration file parameters, with their defaults,
-are described below.  Driver and module specific configuration parameters
-are described in the relevant driver or module manual page.
+environment variables (and some defaults) are described in the Xserver(1)
+and XFree86(1) manual pages.  Most configuration file parameters, with
+their defaults, are described below.  Driver and module specific
+configuration parameters are described in the relevant driver or module
+manual page.
+.PP
+Starting with version 4.4,
+.B XFree86
+has support for generating a usable configuration at run-time when no
+.B XF86Config
+file is provided.  The initial version of this automatic configuration
+support is targeted at the most popular hardware and software platforms
+supported by XFree86.  Some details about how this works can be found
+in the XFree86(1) and getconfig(1) manual pages.
 .SH DESCRIPTION
-.I XFree86
+.B XFree86
 uses a configuration file called
 .B XF86Config
 for its initial setup.  This configuration file is searched for in the
@@ -269,13 +276,9 @@ option values to avoid any errors in determining the value.
 The
 .B Files
 section is used to specify some path names required by the server.
-Some of these paths can also be set from the command line (see
-.I Xserver(1)
-and
-.IR XFree86(1) ).
-The command line settings override the values specified in the config
-file.
-The
+Some of these paths can also be set from the command line (see Xserver(1)
+and XFree86(1)).  The command line settings override the values specified
+in the config file.  The
 .B Files
 section is optional, as are all of the entries that may appear in it.
 .PP
@@ -509,12 +512,12 @@ Force the use PCI config type 2.  Default: not set.
 sets the inactivity timeout for the blanking phase of the screensaver.
 .I time
 is in minutes.  This is equivalent to the Xserver's `-s' flag, and the
-value can be changed at run-time with \fIxset(1)\fP.  Default: 10 minutes.
+value can be changed at run-time with xset(1).  Default: 10 minutes.
 .TP 7
 .BI "Option \*qStandbyTime\*q  \*q" time \*q
 sets the inactivity timeout for the "standby" phase of DPMS mode.
 .I time
-is in minutes, and the value can be changed at run-time with \fIxset(1)\fP.
+is in minutes, and the value can be changed at run-time with xset(1).
 Default: 20 minutes.
 This is only suitable for VESA DPMS compatible monitors, and may not be
 supported by all video drivers.  It is only enabled for screens that
@@ -525,7 +528,7 @@ option set (see the MONITOR section below).
 .BI "Option \*qSuspendTime\*q  \*q" time \*q
 sets the inactivity timeout for the "suspend" phase of DPMS mode.
 .I time
-is in minutes, and the value can be changed at run-time with \fIxset(1)\fP.
+is in minutes, and the value can be changed at run-time with xset(1).
 Default: 30 minutes.
 This is only suitable for VESA DPMS compatible monitors, and may not be
 supported by all video drivers.  It is only enabled for screens that
@@ -536,7 +539,7 @@ option set (see the MONITOR section below).
 .BI "Option \*qOffTime\*q  \*q" time \*q
 sets the inactivity timeout for the "off" phase of DPMS mode.
 .I time
-is in minutes, and the value can be changed at run-time with \fIxset(1)\fP.
+is in minutes, and the value can be changed at run-time with xset(1).
 Default: 40 minutes.
 This is only suitable for VESA DPMS compatible monitors, and may not be
 supported by all video drivers.  It is only enabled for screens that
@@ -1083,7 +1086,7 @@ section called
 This make all of the modes defined in that section available for use
 by this monitor.
 .TP 7
-.B Mode \fI"name"\fP
+.BI "Mode  \*q" name \*q
 This is an optional multi-line entry that can be used to provide
 definitions for video modes for the monitor.  In most cases this isn't
 necessary because the built-in set of VESA standard modes will be
@@ -1382,7 +1385,7 @@ at boot time. Default: false.
 .TP 7
 .BI "Option \*qNoInt10\*q \*q" boolean \*q
 Disables the Int10 module, a module that uses the int10 call to the
-BIOS of the grahpic card to initialize it. Default: false.
+BIOS of the graphics card to initialize it. Default: false.
 .TP 7
 .BI "Option \*qNoMTRR\*q"
 Disables MTRR (Memory Type Range Register) support, a feature of modern
@@ -1531,8 +1534,7 @@ This optional entry specifies the relative RGB weighting to be used
 for a screen is being used at depth 16 for drivers that allow multiple
 formats.  This may also be specified from the command line with the
 .B \-weight
-option (see
-.IR XFree86(1) ).
+option (see XFree86(1)).
 .TP 7
 .BI "Virtual  " "xdim ydim"
 This optional entry specifies the virtual screen resolution to be used.
@@ -1568,19 +1570,17 @@ into a circular list.  It is possible to switch to the next mode with
 .B Ctrl+Alt+Keypad-Plus
 and to the previous mode with
 .BR Ctrl+Alt+Keypad-Minus .
-When this entry is omitted, the valid modes referenced by the
-appropriate
+When this entry is omitted, the valid modes referenced by the appropriate
 .B Monitor
 section will be used.  If the
 .B Monitor
-section contains no modes, then the selection will be taken from
-the built-in VESA standard modes.
+section contains no modes, then the selection will be taken from the
+built-in VESA standard modes.
 .TP 7
 .BI "Visual  \*q" visual-name \*q
 This optional entry sets the default root visual type.  This may also
-be specified from the command line (see the
-.I Xserver(1)
-man page).  The visual types available for depth 8 are (default is
+be specified from the command line (see the Xserver(1) man page).  The
+visual types available for depth 8 are (default is
 .BR PseudoColor ):
 .PP
 .RS 11
@@ -1836,46 +1836,46 @@ For an example of an XF86Config file, see the file installed as
 __projectroot__/lib/X11/XF86Config.eg.
 .fi
 .SH "SEE ALSO"
-.IR X(__miscmansuffix__),
-.IR Xserver(1),
-.IR XFree86(1),
-.IR apm(__drivermansuffix__),
+X(__miscmansuffix__),
+Xserver(1),
+XFree86(1),
+apm(__drivermansuffix__),
 .\" .IR ati(__drivermansuffix__),
-.IR chips(__drivermansuffix__),
-.IR cirrus(__drivermansuffix__),
-.IR cyrix(__drivermansuffix__),
-.IR fbdev(__drivermansuffix__),
-.IR glide(__drivermansuffix__),
-.IR glint(__drivermansuffix__),
-.IR i128(__drivermansuffix__),
-.IR i740(__drivermansuffix__),
-.IR i810(__drivermansuffix__),
-.IR imstt(__drivermansuffix__),
-.IR mga(__drivermansuffix__),
-.IR neomagic(__drivermansuffix__),
-.IR nv(__drivermansuffix__),
-.IR r128(__drivermansuffix__),
-.IR rendition(__drivermansuffix__),
-.IR savage(__drivermansuffix__),
-.IR s3virge(__drivermansuffix__),
+chips(__drivermansuffix__),
+cirrus(__drivermansuffix__),
+cyrix(__drivermansuffix__),
+fbdev(__drivermansuffix__),
+glide(__drivermansuffix__),
+glint(__drivermansuffix__),
+i128(__drivermansuffix__),
+i740(__drivermansuffix__),
+i810(__drivermansuffix__),
+imstt(__drivermansuffix__),
+mga(__drivermansuffix__),
+neomagic(__drivermansuffix__),
+nv(__drivermansuffix__),
+r128(__drivermansuffix__),
+rendition(__drivermansuffix__),
+savage(__drivermansuffix__),
+s3virge(__drivermansuffix__),
 .\" .IR shadowfb(__drivermansuffix__),
-.IR siliconmotion(__drivermansuffix__),
-.IR sis(__drivermansuffix__),
-.IR sunbw2(__drivermansuffix__),
-.IR suncg14(__drivermansuffix__),
-.IR suncg3(__drivermansuffix__),
-.IR suncg6(__drivermansuffix__),
-.IR sunffb(__drivermansuffix__),
-.IR sunleo(__drivermansuffix__),
-.IR suntcx(__drivermansuffix__),
-.IR tdfx(__drivermansuffix__),
-.IR tga(__drivermansuffix__),
-.IR trident(__drivermansuffix__),
-.IR tseng(__drivermansuffix__),
-.IR v4l(__drivermansuffix__),
-.IR vesa(__drivermansuffix__),
-.IR vga(__drivermansuffix__),
-.IR vmware(__drivermansuffix__),
+siliconmotion(__drivermansuffix__),
+sis(__drivermansuffix__),
+sunbw2(__drivermansuffix__),
+suncg14(__drivermansuffix__),
+suncg3(__drivermansuffix__),
+suncg6(__drivermansuffix__),
+sunffb(__drivermansuffix__),
+sunleo(__drivermansuffix__),
+suntcx(__drivermansuffix__),
+tdfx(__drivermansuffix__),
+tga(__drivermansuffix__),
+trident(__drivermansuffix__),
+tseng(__drivermansuffix__),
+v4l(__drivermansuffix__),
+vesa(__drivermansuffix__),
+vga(__drivermansuffix__),
+vmware(__drivermansuffix__),
 .br
 README
 .IR <http://www.xfree86.org/current/README.html> ,
