@@ -361,12 +361,30 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
       break;
   
     case DRAWABLE_WINDOW:
-      ErrorF ("\nwinFillSpans - DRAWABLE_WINDOW\n\n");
-
+      /* Branch on fill style */
       switch (pGC->fillStyle)
 	{
 	case FillSolid:
 	  ErrorF ("\nwinFillSpans - DRAWABLE_WINDOW - FillSolid\n\n");
+
+	  /* Enumerate spans */
+	  for (iSpan = 0; iSpan < iSpans; ++iSpan)
+	    {
+	      /* Get pointers to the current span location and width */
+	      pPoint = pPoints + iSpan;
+	      piWidth = piWidths + iSpan;
+
+	      /* Display some useful information */
+	      ErrorF ("(%dx%dx%d) (%d,%d) fg: %d bg: %d w: %d\n",
+		      pDrawable->width, pDrawable->height, pDrawable->depth,
+		      pPoint->x, pPoint->y,
+		      pGC->fgPixel, pGC->bgPixel,
+		      *piWidth);
+
+	      /* Draw the requested line */
+	      MoveToEx (pGCPriv->hdc, pPoint->x, pPoint->y, NULL);
+	      LineTo (pGCPriv->hdc, pPoint->x + *piWidth, pPoint->y);
+	    }
 	  break;
 
 	case FillStippled:
@@ -408,16 +426,18 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
 	  /* Push the drawable pixmap out of the GC HDC */
 	  SelectObject (pGCPriv->hdcMem, hbmpOrig);
 
+#if 0
 	  DEBUG_MSG("Completed tile fill");
+#endif
 	  break;
 
 	case FillOpaqueStippled:
-	  FatalError ("winFillSpans () - DRAWABLE_WINDOW - "
+	  FatalError ("winFillSpans - DRAWABLE_WINDOW - "
 		      "OpaqueStippled\n");
 	  break;
 
 	default:
-	  FatalError ("winFillSpans () - DRAWABLE_WINDOW - Unknown "
+	  FatalError ("winFillSpans - DRAWABLE_WINDOW - Unknown "
 		      "fillStyle\n");
 	}
 
@@ -425,55 +445,55 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
       switch (pGC->alu)
 	{
 	case GXclear:
-	  ErrorF ("winFillSpans () - DRAWABLE_WINDOW - GXclear\n");
+	  ErrorF ("winFillSpans - DRAWABLE_WINDOW - GXclear\n");
 	  break;
 	case GXand:
-	  ErrorF ("winFillSpans () - DRAWABLE_WINDOW - GXand\n");
+	  ErrorF ("winFillSpans - DRAWABLE_WINDOW - GXand\n");
 	  break;
 	case GXandReverse:
-	  ErrorF ("winFillSpans () - DRAWABLE_WINDOW - GXandReverse\n");
+	  ErrorF ("winFillSpans - DRAWABLE_WINDOW - GXandReverse\n");
 	  break;
 	case GXcopy:
-	  ErrorF ("winFillSpans () - DRAWABLE_WINDOW - GXcopy\n");
+	  ErrorF ("winFillSpans - DRAWABLE_WINDOW - GXcopy\n");
 	  break;
 	case GXandInverted:
-	  ErrorF ("winFillSpans () - DRAWABLE_WINDOW - GXandInverted\n");
+	  ErrorF ("winFillSpans - DRAWABLE_WINDOW - GXandInverted\n");
 	  break;
 	case GXnoop:
-	  ErrorF ("winFillSpans () - DRAWABLE_WINDOW - GXnoop\n");
+	  ErrorF ("winFillSpans - DRAWABLE_WINDOW - GXnoop\n");
 	  break;
 	case GXxor:
-	  ErrorF ("winFillSpans () - DRAWABLE_WINDOW - GXxor\n");
+	  ErrorF ("winFillSpans - DRAWABLE_WINDOW - GXxor\n");
 	  break;
 	case GXor:
-	  ErrorF ("winFillSpans () - DRAWABLE_WINDOW - GXor\n");
+	  ErrorF ("winFillSpans - DRAWABLE_WINDOW - GXor\n");
 	  break;
 	case GXnor:
-	  ErrorF ("winFillSpans () - DRAWABLE_WINDOW - GXnor\n");
+	  ErrorF ("winFillSpans - DRAWABLE_WINDOW - GXnor\n");
 	  break;
 	case GXequiv:
-	  ErrorF ("winFillSpans () - DRAWABLE_WINDOW - GXequiv\n");
+	  ErrorF ("winFillSpans - DRAWABLE_WINDOW - GXequiv\n");
 	  break;
 	case GXinvert:
-	  ErrorF ("winFillSpans () - DRAWABLE_WINDOW - GXinvert\n");
+	  ErrorF ("winFillSpans - DRAWABLE_WINDOW - GXinvert\n");
 	  break;
 	case GXorReverse:
-	  ErrorF ("winFillSpans () - DRAWABLE_WINDOW - GXorReverse\n");
+	  ErrorF ("winFillSpans - DRAWABLE_WINDOW - GXorReverse\n");
 	  break;
 	case GXcopyInverted:
-	  ErrorF ("winFillSpans () - DRAWABLE_WINDOW - GXcopyInverted\n");
+	  ErrorF ("winFillSpans - DRAWABLE_WINDOW - GXcopyInverted\n");
 	  break;
 	case GXorInverted:
-	  ErrorF ("winFillSpans () - DRAWABLE_WINDOW - GXorInverted\n");
+	  ErrorF ("winFillSpans - DRAWABLE_WINDOW - GXorInverted\n");
 	  break;
 	case GXnand:
-	  ErrorF ("winFillSpans () - DRAWABLE_WINDOW - GXnand\n");
+	  ErrorF ("winFillSpans - DRAWABLE_WINDOW - GXnand\n");
 	  break;
 	case GXset:
-	  ErrorF ("winFillSpans () - DRAWABLE_WINDOW - GXset\n");
+	  ErrorF ("winFillSpans - DRAWABLE_WINDOW - GXset\n");
 	  break;
 	default:
-	  ErrorF ("winFillSpans () - DRAWABLE_WINDOW - Unknown ROP\n");
+	  ErrorF ("winFillSpans - DRAWABLE_WINDOW - Unknown ROP\n");
 	  break;
 	}
       break;

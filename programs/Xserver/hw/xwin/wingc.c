@@ -150,6 +150,7 @@ winValidateGCNativeGDI (GCPtr pGC,
   RGBQUAD		rgbColors[2] = {{0, 0, 0, 0}, {0, 0, 0, 0}};
   PixmapPtr		pStipple = NULL;
   winPrivPixmapPtr	pStipplePriv = NULL;
+  int			i;
   DEBUG_FN_NAME("winValidateGC");
   DEBUGVARS;
   DEBUGPROC_MSG;
@@ -204,20 +205,17 @@ winValidateGCNativeGDI (GCPtr pGC,
 	   * You need to set the stipple bitmap's color table instead.
 	   */
 #if 1
+	  /* Pick the white color index */
 	  if (pGC->fgPixel)
-	    {
-	      int		i = 1;
-	      rgbColors[i].rgbRed = 255;
-	      rgbColors[i].rgbGreen = 255;
-	      rgbColors[i].rgbBlue = 255;
-	    }
+	    i = 1;
 	  else
-	    {
-	      int		i = 0;
-	      rgbColors[i].rgbRed = 255;
-	      rgbColors[i].rgbGreen = 255;
-	      rgbColors[i].rgbBlue = 255;
-	    }
+	    i = 0;
+
+	  /* Set the white color, black is default */
+	  rgbColors[i].rgbRed = 255;
+	  rgbColors[i].rgbGreen = 255;
+	  rgbColors[i].rgbBlue = 255;
+	  
 	  /* Get stipple and privates pointers */
 	  pStipple = pGC->stipple;
 	  pStipplePriv = winGetPixmapPriv (pStipple);
@@ -263,7 +261,6 @@ winValidateGCNativeGDI (GCPtr pGC,
 		      "style\n");
 	  break;
 	}
-
       break;
 
     case DRAWABLE_WINDOW:
@@ -271,6 +268,7 @@ winValidateGCNativeGDI (GCPtr pGC,
       switch (pGC->fillStyle)
 	{
 	case FillTiled:
+	  ErrorF ("winValidateGC - DRAWABLE_WINDOW - FillTiled\n");
 	  /* 
 	   * Do nothing here for now.  Select the tile bitmap into the
 	   * appropriate DC in the drawing function.
@@ -286,7 +284,7 @@ winValidateGCNativeGDI (GCPtr pGC,
 	  /* Push the tile into the GC's DC */
 	  hbmpOrig = SelectObject (pGCPriv->hdcMem, pPixmapPriv->hBitmap);
 	  if (hbmpOrig == NULL)
-	    FatalError ("winValidateDC () - DRAWABLE_WINDOW - FillTiled - "
+	    FatalError ("winValidateGC - DRAWABLE_WINDOW - FillTiled - "
 			"SelectObject () failed on pPixmapPriv->hBitmap\n");
 
 	  /* Blit the tile to a remote area of the screen */
@@ -316,7 +314,33 @@ winValidateGCNativeGDI (GCPtr pGC,
 	  break;
 
 	case FillSolid:
-	  FatalError ("winValidateGC - DRAWABLE_WINDOW - FillSolid\n");
+	  ErrorF ("winValidateGC - DRAWABLE_WINDOW - FillSolid\n");
+
+	  /* Select a stock pen */
+	  if (pDrawable->depth == 1 && pGC->fgPixel)
+	    {
+	      ErrorF ("winValidateGC - Selecting WHITE_PEN\n");
+	      SelectObject (pGCPriv->hdc, GetStockObject (WHITE_PEN));
+	    }
+	  else if (pDrawable->depth == 1 && !pGC->fgPixel)
+	    {
+	      ErrorF ("winValidateGC - Selecting BLACK_PEN\n");
+	      SelectObject (pGCPriv->hdc, GetStockObject (BLACK_PEN));
+	    }
+	  else if (pGC->fgPixel)
+	    {
+	      ErrorF ("winValidateGC - Selecting custom pen: %d\n",
+		      pGC->fgPixel);
+	      /*
+	       * FIXME: So far I've only seen a white pen selected here.
+	       */
+	      SelectObject (pGCPriv->hdc, GetStockObject (WHITE_PEN));
+	    }
+	  else
+	    {
+	      ErrorF ("winValidateGC - Selecting BLACK_PEN\n");
+	      SelectObject (pGCPriv->hdc, GetStockObject (BLACK_PEN));
+	    }
 	  break;
 
 	default:
@@ -324,6 +348,7 @@ winValidateGCNativeGDI (GCPtr pGC,
 		      "style\n");
 	  break;
 	}
+      break;
 
     case UNDRAWABLE_WINDOW:
       ErrorF ("\nwinValidateGC - UNDRAWABLE_WINDOW\n\n");
