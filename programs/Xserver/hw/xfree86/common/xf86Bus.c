@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.4 1998/09/13 09:10:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.5 1998/09/13 12:12:56 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -1310,6 +1310,7 @@ xf86FindPrimaryDevice()
 }
 
 #include "vgaHW.h"
+#include "compiler.h"
 
 /*
  * xf86CheckGenericVga() - Check for presence of a VGA device.
