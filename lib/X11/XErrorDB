@@ -23,7 +23,7 @@
 ! other dealings in this Software without prior written authorization
 ! from The Open Group.
 !
-! $XFree86: xc/lib/X11/XErrorDB,v 3.35 2001/05/18 23:35:28 dawes Exp $
+! $XFree86: xc/lib/X11/XErrorDB,v 3.37 2002/09/29 23:39:40 keithp Exp $
 !
 ! these are used in XGetErrorMessage.
 XlibMessage.XError: X Error of failed request
@@ -837,5 +837,45 @@ XRequest.RANDR.2: RRSetScreenConfig
 XRequest.RANDR.3: RROldScreenChangeSelectInput
 XRequest.RANDR.4: RRSelectInput
 XRequest.RANDR.5: RRGetScreenInfo
-
-
+! RENDER
+XRequest.RENDER.0: RenderQueryVersion
+XRequest.RENDER.1: RenderQueryPictFormats
+XRequest.RENDER.2: RenderQueryPictIndexValues
+XRequest.RENDER.3: RenderQueryDithers
+XRequest.RENDER.4: RenderCreatePicture
+XRequest.RENDER.5: RenderChangePicture
+XRequest.RENDER.6: RenderSetPictureClipRectangles
+XRequest.RENDER.7: RenderFreePicture
+XRequest.RENDER.8: RenderComposite
+XRequest.RENDER.9: RenderScale
+XRequest.RENDER.10: RenderTrapezoids
+XRequest.RENDER.11: RenderTriangles
+XRequest.RENDER.12: RenderTriStrip
+XRequest.RENDER.13: RenderTriFan
+XRequest.RENDER.14: RenderColorTrapezoids
+XRequest.RENDER.15: RenderColorTriangles
+XRequest.RENDER.16: RenderTransform
+XRequest.RENDER.17: RenderCreateGlyphSet
+XRequest.RENDER.18: RenderReferenceGlyphSet
+XRequest.RENDER.19: RenderFreeGlyphSet
+XRequest.RENDER.20: RenderAddGlyphs
+XRequest.RENDER.21: RenderAddGlyphsFromPicture
+XRequest.RENDER.22: RenderFreeGlyphs
+XRequest.RENDER.23: RenderCompositeGlyphs8
+XRequest.RENDER.24: RenderCompositeGlyphs16
+XRequest.RENDER.25: RenderCompositeGlyphs32
+XRequest.RENDER.26: RenderFillRectangles
+XRequest.RENDER.27: RenderCreateCursor
+XRequest.RENDER.28: RenderSetPictureTransform
+XRequest.RENDER.29: RenderQueryFilters
+XRequest.RENDER.30: RenderSetPictureFilter
+XProtoError.RENDER.0: RenderBadFormat (invalid PictFormat parameter)
+XlibMessage.RENDER.0: PictFormat id in failed request: 0x%lx
+XProtoError.RENDER.1: RenderBadPicture (invalid Picture parameter)
+XlibMessage.RENDER.1: Picture id in failed request: 0x%lx
+XProtoError.RENDER.2: RenderBadPictOp (invalid PictOp parameter)
+XlibMessage.RENDER.2: PictOp in failed request: 0x%lx
+XProtoError.RENDER.3: RenderBadGlyphSet (invalid GlyphSet parameter)
+XlibMessage.RENDER.3: GlyphSet id in failed request: 0x%lx
+XProtoError.RENDER.4: RenderBadGlyph (invalid Glyph parameter)
+XlibMessage.RENDER.4: Glyph in failed request: 0x%lx
