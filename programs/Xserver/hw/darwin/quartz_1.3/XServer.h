@@ -3,7 +3,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.h,v 1.13 2002/01/01 23:09:00 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz_1.3/XServer.h,v 1.1 2002/03/28 02:21:20 torrey Exp $ */
 
 #import <Cocoa/Cocoa.h>
 
@@ -25,9 +25,11 @@
 
     // Aqua interface
     IBOutlet NSWindow *modeWindow;
-    IBOutlet id startupModeButton;
+    IBOutlet NSButton *startupModeButton;
+    IBOutlet NSButton *startFullScreenButton;
+    IBOutlet NSButton *startRootlessButton;
     IBOutlet NSWindow *helpWindow;
-    IBOutlet id startupHelpButton;
+    IBOutlet NSButton *startupHelpButton;
     IBOutlet NSPanel *switchWindow;
 }
 

@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz_1.3/XServer.m,v 1.1 2002/03/28 02:21:20 torrey Exp $ */
 
 #import "XServer.h"
 #import "Preferences.h"
@@ -309,6 +309,10 @@ static NSRect aquaMenuBarBox;
         // The display mode was not set from the command line.
         // Show mode pick panel?
         if ([Preferences modeWindow]) {
+            if ([Preferences rootless])
+                [startRootlessButton setKeyEquivalent:@"\r"];
+            else
+                [startFullScreenButton setKeyEquivalent:@"\r"];
             [modeWindow makeKeyAndOrderFront:nil];
         } else {
             // Otherwise use default mode
