@@ -1,10 +1,7 @@
 XFree86 4.0.99.4 (xx May 2001)
- 499. Move the vgahw module load/init after the PROBD_DETECT handling
+ 498. Move the vgahw module load/init after the PROBD_DETECT handling
       in the i810 driver's PreInit(), which fixes a segv when using
       the X server's -configure option (#A.378, Leandro Martelli).
- 498. Add usleep(10) to the busy test loops in the mga driver, without which
-      the server sometimes crashes on some Alpha platforms (#A.361,
-      Bob McElrath).
  497. Fix a problem with Radeon VE cards failing to enable its video output
       (#A.376, Paul Stewart).
  496. Fix some DRI-related build dependency problems (David Dawes).
@@ -13196,4 +13193,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1758 2001/05/10 16:56:12 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1759 2001/05/10 21:14:52 dawes Exp $
