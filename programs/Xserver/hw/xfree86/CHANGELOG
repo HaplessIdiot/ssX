@@ -1,4 +1,9 @@
 XFree86 4.1.99.1 (xx June 2001)
+  56. Fix problem with Xinstall.sh on Darwin 1.3.x (#A.431, Stefan Pantos).
+  55. Update Xinstall.sh and Darwin bindist directories to optionally
+      install Quartz support and to add an x86 distribution (Torrey T. Lyons).
+  54. Install xterm.termcap and xterm.terminfo when installing xterm
+      (Torrey T. Lyons).
   53. Add missing return value for miSetPixmapDepths() (#4708,
       ISHIKAWA Mutsumi).
   52. Fill in the v4l man page template with some useful information (#4707,
@@ -13403,4 +13408,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1811 2001/05/29 18:14:13 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1812 2001/05/29 22:24:02 dawes Exp $

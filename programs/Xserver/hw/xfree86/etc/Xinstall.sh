@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.19 2000/12/21 18:40:09 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.20 2001/04/19 16:07:11 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000 by VA Linux Systems, Inc.
@@ -187,6 +187,8 @@ Description()
 		echo "Docs in PostScript";;
 	Xaout*)
 		echo "a.out compatibility libraries";;
+	Xquartz*)
+		echo "Mac OS X Quartz compatible X server";;
 	*)
 		echo "unknown";;
 	esac
@@ -356,16 +358,26 @@ FindDistName()
 		case "$OsArch" in
 		Power*)
 			case "$OsVersion" in
-			1.[2-9])
-				DistName="Darwin"
+			1.[2-9]*)
+				DistName="Darwin-ppc"
 				;;
 			*)
-				Message="No Darwin binaries available for this OS version"
+				Message="No Darwin/ppc binaries available for this OS version"
+				;;
+			esac
+			;;
+		x86*)
+			case "$OsVersion" in
+			1.[3-9]*)
+				DistName="Darwin-ix86"
+				;;
+			*)
+				Message="No Darwin/ix86 binaries available for this OS version"
 				;;
 			esac
 			;;
 		*)
-			Message="Darwin binaries are only available for Power Mac platforms"
+			Message="Darwin binaries are not available for this architecture"
 			;;
 		esac
 		;;
@@ -625,6 +637,7 @@ GetOsInfo
 case "$OsName" in
 Darwin)
 	SERVDIST="Xxserv.tgz"
+	EXTRAOPTDIST="Xquartz.tgz"
 	;;
 FreeBSD|NetBSD|OpenBSD)
 	VARDIST="Xvar.tgz"
