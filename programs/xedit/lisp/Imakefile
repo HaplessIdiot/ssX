@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/xedit/lisp/Imakefile,v 1.14 2002/02/14 17:48:19 tsi Exp $
+XCOMM $XFree86: xc/programs/xedit/lisp/Imakefile,v 1.15 2002/03/01 16:42:43 tsi Exp $
 
 #include "lisp.cf"
 #include "lisp.rules"
@@ -11,17 +11,6 @@ XCOMM $XFree86: xc/programs/xedit/lisp/Imakefile,v 1.14 2002/02/14 17:48:19 tsi 
 #define LibName		lisp
 #define LibInstall	NO
 #define LibHeaders	NO
-
-/* This should probably be moved elsewhere */
-#if defined(SunArchitecture)	/* Needs refinement */
-#define HasSetenv	NO
-#else
-#define HasSetenv	YES
-#endif
-
-#if HasSetenv
-SETENV_DEFS    = -DHAVE_SETENV
-#endif
 
 #if !HasSnprintf
 SNPRINTF_DEFS  = -DNEED_SNPRINTF
@@ -44,9 +33,14 @@ LinkSourceFile(strcasecmp.c, $(TOP)/programs/xedit)
    STRCCMP_OBJS = strcasecmp.o
 STRCCMP_DEFINES = -DNEED_STRCASECMP
 #endif
-       SYS_SRCS = $(RP_SRCS) $(STRCCMP_SRCS)
-       SYS_OBJS = $(RP_OBJS) $(STRCCMP_OBJS)
-    SYS_DEFINES = $(RP_DEFINES) $(STRCCMP_DEFINES) $(SETENV_DEFS)
+#if !HasSetenv
+    SETENV_SRCS = env.c
+    SETENV_OBJS = env.o
+ SETENV_DEFINES = -DNEED_SETENV
+#endif
+       SYS_SRCS = $(RP_SRCS) $(STRCCMP_SRCS) $(SETENV_SRCS)
+       SYS_OBJS = $(RP_OBJS) $(STRCCMP_OBJS) $(SETENV_OBJS)
+    SYS_DEFINES = $(RP_DEFINES) $(STRCCMP_DEFINES) $(SETENV_DEFINES)
 
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.114 2001/11/08 02:09:06 tsi Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.117 2002/02/15 07:36:18 keithp Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -358,6 +358,10 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef HasPutenv
 #define HasPutenv		NO	/* assume not */
+#endif
+/* setenv(3) and unsetenv(3) */
+#ifndef HasSetenv
+#define HasSetenv		YES	/* assume yes */
 #endif
 #ifndef HasVoidSignalReturn
 #define HasVoidSignalReturn	YES	/* assume yes */
