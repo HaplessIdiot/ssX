@@ -31,7 +31,7 @@
  * Converted to common header format:
  *   Jens Owen <jens@tungstengraphics.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_common.h,v 1.1 2002/10/30 12:52:11 alanh Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_common.h,v 1.2 2002/12/16 16:19:10 dawes Exp $
  *
  */
 
@@ -67,6 +67,7 @@
 #define DRM_R128_FULLSCREEN     0x10
 #define DRM_R128_CLEAR2         0x11
 #define DRM_R128_GETPARAM       0x12
+#define DRM_R128_FLIP           0x13
 
 #define DRM_R128_FRONT_BUFFER	0x1
 #define DRM_R128_BACK_BUFFER	0x2

@@ -24,7 +24,7 @@
  * Authors:
  *    Keith Whitwell <keith@tungstengraphics.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatris.h,v 1.9 2002/02/22 21:44:56 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatris.h,v 1.10 2002/10/30 12:51:36 alanh Exp $ */
 
 #ifndef MGATRIS_INC
 #define MGATRIS_INC
@@ -32,12 +32,17 @@
 #include "mtypes.h"
 
 extern void mgaDDInitTriFuncs( GLcontext *ctx );
-
+extern void mgaChooseRenderState( GLcontext *ctx );
 extern void mgaRasterPrimitive( GLcontext *ctx, GLenum prim, GLuint hwprim );
 
 extern void mgaFallback( GLcontext *ctx, GLuint bit, GLboolean mode );
 #define FALLBACK( ctx, bit, mode ) mgaFallback( ctx, bit, mode )
 
-
+#define _MGA_NEW_RENDERSTATE (_DD_NEW_LINE_STIPPLE |		\
+			       _DD_NEW_TRI_UNFILLED |		\
+			       _DD_NEW_TRI_LIGHT_TWOSIDE |	\
+			       _DD_NEW_TRI_OFFSET |		\
+			       _DD_NEW_TRI_STIPPLE |		\
+			       _NEW_POLYGONSTIPPLE)
 
 #endif

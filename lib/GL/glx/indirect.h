@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/indirect.h,v 1.3 2001/03/21 16:04:39 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/indirect.h,v 1.4 2002/02/22 21:32:54 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -381,7 +381,7 @@ void __indirect_glTexGeni(GLenum coord, GLenum pname, GLint param);
 void __indirect_glTexGeniv(GLenum coord, GLenum pname, const GLint *params);
 void __indirect_glTexImage1D(GLenum target, GLint level, GLint components, GLsizei width, GLint border, GLenum format, GLenum type, const GLvoid *image);
 void __indirect_glTexImage2D(GLenum target, GLint level, GLint components, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *image);
-void __indirect_glTexImage3D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *image);
+void __indirect_glTexImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *image);
 void __indirect_glTexParameterf(GLenum target, GLenum pname, GLfloat param);
 void __indirect_glTexParameterfv(GLenum target, GLenum pname, const GLfloat *params);
 void __indirect_glTexParameteri(GLenum target, GLenum pname, GLint param);
@@ -459,5 +459,31 @@ void __indirect_glLoadTransposeMatrixfARB(const GLfloat *m);
 void __indirect_glMultTransposeMatrixfARB(const GLfloat *m);
 void __indirect_glLoadTransposeMatrixdARB(const GLdouble *m);
 void __indirect_glMultTransposeMatrixdARB(const GLdouble *m);
+
+void __indirect_glSampleCoverageARB( GLfloat value, GLboolean invert );
+
+void __indirect_glPointParameterfARB(GLenum pname, GLfloat param);
+void __indirect_glPointParameterfvARB(GLenum pname, const GLfloat *params);
+void __indirect_glActiveStencilFaceEXT(GLenum mode);
+
+void __indirect_glWindowPos2dARB(GLdouble x, GLdouble y);
+void __indirect_glWindowPos2iARB(GLint x, GLint y);
+void __indirect_glWindowPos2fARB(GLfloat x, GLfloat y);
+void __indirect_glWindowPos2sARB(GLshort x, GLshort y);
+void __indirect_glWindowPos2dvARB(const GLdouble * p);
+void __indirect_glWindowPos2fvARB(const GLfloat * p);
+void __indirect_glWindowPos2ivARB(const GLint * p);
+void __indirect_glWindowPos2svARB(const GLshort * p);
+void __indirect_glWindowPos3dARB(GLdouble x, GLdouble y, GLdouble z);
+void __indirect_glWindowPos3fARB(GLfloat x, GLfloat y, GLfloat z);
+void __indirect_glWindowPos3iARB(GLint x, GLint y, GLint z);
+void __indirect_glWindowPos3sARB(GLshort x, GLshort y, GLshort z);
+void __indirect_glWindowPos3dvARB(const GLdouble * p);
+void __indirect_glWindowPos3fvARB(const GLfloat * p);
+void __indirect_glWindowPos3ivARB(const GLint * p);
+void __indirect_glWindowPos3svARB(const GLshort * p);
+
+void __indirect_glSampleMaskSGIS( GLfloat value, GLboolean invert );
+void __indirect_glSamplePatternSGIS( GLenum pass );
 
 #endif /* _INDIRECT_H_ */

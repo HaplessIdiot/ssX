@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/GL/glx/glximports.h,v 1.3 2001/03/21 16:29:36 dawes Exp $ */
 #ifndef _glximports_h_
 #define _glximports_h_
 
@@ -55,6 +55,7 @@ extern int   __glXImpFprintf(__GLcontext *gc, void *stream,
 			     const char *fmt, ...);
 
 extern __GLdrawablePrivate *__glXImpGetDrawablePrivate(__GLcontext *gc);
+extern __GLdrawablePrivate *__glXImpGetReadablePrivate(__GLcontext *gc);
 
 
 #endif /* _glximports_h_ */

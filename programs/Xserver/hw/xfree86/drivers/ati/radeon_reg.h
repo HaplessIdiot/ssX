@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.27 2003/04/06 20:07:34 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.28 2003/07/02 17:31:30 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1194,6 +1194,10 @@
 #       define RADEON_LOD_BIAS_SHIFT                       8
 #       define RADEON_MAX_MIP_LEVEL_MASK                   (0x0f << 16)
 #       define RADEON_MAX_MIP_LEVEL_SHIFT                  16
+#       define RADEON_YUV_TO_RGB                           (1  << 20)
+#       define RADEON_YUV_TEMPERATURE_COOL                 (0  << 21)
+#       define RADEON_YUV_TEMPERATURE_HOT                  (1  << 21)
+#       define RADEON_YUV_TEMPERATURE_MASK                 (1  << 21)
 #       define RADEON_WRAPEN_S                             (1  << 22)
 #       define RADEON_CLAMP_S_WRAP                         (0  << 23)
 #       define RADEON_CLAMP_S_MIRROR                       (1  << 23)
@@ -1201,6 +1205,8 @@
 #       define RADEON_CLAMP_S_MIRROR_CLAMP_LAST            (3  << 23)
 #       define RADEON_CLAMP_S_CLAMP_BORDER                 (4  << 23)
 #       define RADEON_CLAMP_S_MIRROR_CLAMP_BORDER          (5  << 23)
+#       define RADEON_CLAMP_S_CLAMP_GL                     (6  << 23)
+#       define RADEON_CLAMP_S_MIRROR_CLAMP_GL              (7  << 23)
 #       define RADEON_CLAMP_S_MASK                         (7  << 23)
 #       define RADEON_WRAPEN_T                             (1  << 26)
 #       define RADEON_CLAMP_T_WRAP                         (0  << 27)
@@ -1209,6 +1215,8 @@
 #       define RADEON_CLAMP_T_MIRROR_CLAMP_LAST            (3  << 27)
 #       define RADEON_CLAMP_T_CLAMP_BORDER                 (4  << 27)
 #       define RADEON_CLAMP_T_MIRROR_CLAMP_BORDER          (5  << 27)
+#       define RADEON_CLAMP_T_CLAMP_GL                     (6  << 27)
+#       define RADEON_CLAMP_T_MIRROR_CLAMP_GL              (7  << 27)
 #       define RADEON_CLAMP_T_MASK                         (7  << 27)
 #       define RADEON_BORDER_MODE_OGL                      (0  << 31)
 #       define RADEON_BORDER_MODE_D3D                      (1  << 31)
@@ -1224,6 +1232,11 @@
 #       define RADEON_TXFORMAT_ARGB8888           (6  <<  0)
 #       define RADEON_TXFORMAT_RGBA8888           (7  <<  0)
 #       define RADEON_TXFORMAT_Y8                 (8  <<  0)
+#       define RADEON_TXFORMAT_VYUY422            (10 <<  0)
+#       define RADEON_TXFORMAT_YVYU422            (11 <<  0)
+#       define RADEON_TXFORMAT_DXT1               (12 <<  0)
+#       define RADEON_TXFORMAT_DXT23              (14 <<  0)
+#       define RADEON_TXFORMAT_DXT45              (15 <<  0)
 #       define RADEON_TXFORMAT_FORMAT_MASK        (31 <<  0)
 #       define RADEON_TXFORMAT_FORMAT_SHIFT       0
 #       define RADEON_TXFORMAT_APPLE_YUV_MODE     (1  <<  5)
@@ -1311,6 +1324,10 @@
 #       define RADEON_SIGNED_RGB_SHIFT      30
 #       define RADEON_SIGNED_ALPHA_MASK     (1 << 31)
 #       define RADEON_SIGNED_ALPHA_SHIFT    31
+#define RADEON_PP_TEX_PITCH_0               0x1d08  /* NPOT */
+#define RADEON_PP_TEX_PITCH_1               0x1d10  /* NPOT */
+#define RADEON_PP_TEX_PITCH_2               0x1d18  /* NPOT */
+/* note: bits 13-5: 32 byte aligned stride of texture map */
 
 #define RADEON_PP_TXCBLEND_0                0x1c60
 #define RADEON_PP_TXCBLEND_1                0x1c78
@@ -1915,12 +1932,11 @@
 
 #define RADEON_AIC_CNTL                     0x01d0
 #       define RADEON_PCIGART_TRANSLATE_EN     (1 << 0)
+#define RADEON_AIC_LO_ADDR                  0x01dc
 
 
 
 				/* Constants */
-#define RADEON_AGP_TEX_OFFSET               0x02000000
-
 #define RADEON_LAST_FRAME_REG               RADEON_GUI_SCRATCH_REG0
 #define RADEON_LAST_CLEAR_REG               RADEON_GUI_SCRATCH_REG2
 

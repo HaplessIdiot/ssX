@@ -28,7 +28,6 @@
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
  *
- * $FreeBSD: src/sys/dev/drm/drm_memory.h,v 1.8 2003/04/25 01:18:46 anholt Exp $
  */
 
 #include "drmP.h"
@@ -57,6 +56,11 @@ void DRM(mem_uninit)(void)
 void *DRM(alloc)(size_t size, int area)
 {
 	return malloc(size, DRM(M_DRM), M_NOWAIT);
+}
+
+void *DRM(calloc)(size_t nmemb, size_t size, int area)
+{
+	return malloc(size * nmemb, DRM(M_DRM), M_NOWAIT | M_ZERO);
 }
 
 void *DRM(realloc)(void *oldpt, size_t oldsize, size_t size, int area)

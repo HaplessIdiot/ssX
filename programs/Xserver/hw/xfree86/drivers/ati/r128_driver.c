@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.79 2003/08/23 15:02:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.80 2003/09/24 02:43:18 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -122,6 +122,7 @@ typedef enum {
   OPTION_AGP_SIZE,
   OPTION_RING_SIZE,
   OPTION_BUFFER_SIZE,
+  OPTION_PAGE_FLIP,
 #endif
 #if USE_CRT_ONLY
   /* FIXME: Disable CRTOnly until it is tested */
@@ -151,6 +152,7 @@ const OptionInfoRec R128Options[] = {
   { OPTION_AGP_SIZE,     "AGPSize",          OPTV_INTEGER, {0}, FALSE },
   { OPTION_RING_SIZE,    "RingSize",         OPTV_INTEGER, {0}, FALSE },
   { OPTION_BUFFER_SIZE,  "BufferSize",       OPTV_INTEGER, {0}, FALSE },
+  { OPTION_PAGE_FLIP,    "EnablePageFlip",   OPTV_BOOLEAN, {0}, FALSE },
 #endif
   { OPTION_DISPLAY,      "Display",          OPTV_STRING,  {0}, FALSE },
   { OPTION_PANEL_WIDTH,  "PanelWidth",       OPTV_INTEGER, {0}, FALSE },
@@ -296,6 +298,11 @@ static const char *driSymbols[] = {
     "GlxSetVisualConfigs",
     NULL
 };
+
+static const char *driShadowFBSymbols[] = {
+    "ShadowFBInit",
+    NULL
+};
 #endif
 
 static const char *vbeSymbols[] = {
@@ -325,6 +332,7 @@ void R128LoaderRefSymLists(void)
 #ifdef XF86DRI
 		      drmSymbols,
 		      driSymbols,
+		      driShadowFBSymbols,
 #endif
 		      fbdevHWSymbols,
 		      int10Symbols,
@@ -1797,6 +1805,21 @@ static Bool R128PreInitDRI(ScrnInfoPtr pScrn)
 	/* This option checked by the R128 DRM kernel module */
     }
 
+    if (!xf86LoadSubModule(pScrn, "shadowfb")) {
+	info->allowPageFlip = 0;
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		   "Couldn't load shadowfb module:\n");
+    } else {
+	xf86LoaderReqSymLists(driShadowFBSymbols, NULL);
+
+	info->allowPageFlip = xf86ReturnOptValBool(info->Options,
+						   OPTION_PAGE_FLIP,
+						   FALSE);
+    }
+
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Page flipping %sabled\n",
+	       info->allowPageFlip ? "en" : "dis");
+
     return TRUE;
 }
 #endif
@@ -2825,7 +2848,11 @@ static void R128InitCommonRegisters(R128SavePtr save, R128InfoPtr info)
     save->subpic_cntl        = 0;
     save->viph_control       = 0;
     save->i2c_cntl_1         = 0;
+#ifdef XF86DRI
+    save->gen_int_cntl       = info->gen_int_cntl;
+#else
     save->gen_int_cntl       = 0;
+#endif
     save->cap0_trig_cntl     = 0;
     save->cap1_trig_cntl     = 0;
     save->bus_cntl           = info->BusCntl;

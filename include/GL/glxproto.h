@@ -1,7 +1,7 @@
 #ifndef _GLX_glxproto_h_
 #define _GLX_glxproto_h_
 
-/* $XFree86: xc/include/GL/glxproto.h,v 1.4 2001/04/10 16:07:49 dawes Exp $ */
+/* $XFree86: xc/include/GL/glxproto.h,v 1.5 2001/08/01 00:44:34 tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -941,6 +941,72 @@ typedef struct {
 } xGLXQueryContextInfoEXTReply;
 #define sz_xGLXQueryContextInfoEXTReply 32
 
+/*
+** glXMakeCurrentReadSGI request
+*/
+typedef struct GLXMakeCurrentReadSGI {
+    CARD8	reqType;
+    CARD8	glxCode;
+    CARD16	length B16;
+    CARD32	vendorCode B32;		/* vendor-specific opcode */
+    GLXContextTag oldContextTag B32;
+    GLXDrawable drawable B32;
+    GLXDrawable readable B32;
+    GLXContextID context B32;
+} xGLXMakeCurrentReadSGIReq;
+#define sz_xGLXMakeCurrentReadSGIReq 24
+
+/*
+** glXGetFBConfigsSGIX request
+*/
+typedef struct GLXGetFBConfigsSGIX {
+    CARD8	reqType;
+    CARD8	glxCode;
+    CARD16	length B16;
+    CARD32	vendorCode B32;		/* vendor-specific opcode */
+    CARD32	pad1 B32;   /* unused; corresponds to contextTag in header */
+    CARD32	screen B32;
+} xGLXGetFBConfigsSGIXReq;
+#define sz_xGLXGetFBConfigsSGIXReq 16
+
+/*
+** glXCreateContextWithConfigSGIX request
+*/
+
+typedef struct GLXCreateContextWithConfigSGIX {
+    CARD8	reqType;
+    CARD8	glxCode;
+    CARD16	length B16;
+    CARD32	vendorCode B32;		/* vendor-specific opcode */
+    CARD32	pad1 B32;   /* unused; corresponds to contextTag in header */
+    GLXContextID context B32;
+    GLXFBConfigID fbconfig B32;
+    CARD32	screen B32;
+    CARD32	renderType;
+    GLXContextID shareList B32;
+    BOOL	isDirect;
+    CARD8	reserved1;
+    CARD16	reserved2 B16;
+} xGLXCreateContextWithConfigSGIXReq;
+#define sz_xGLXCreateContextWithConfigSGIXReq 36
+
+/*
+** glXCreatePixmapWithConfigSGIX request
+*/
+
+typedef struct GLXCreateGLXPixmapWithConfigSGIX {
+    CARD8	reqType;
+    CARD8	glxCode;
+    CARD16	length B16;
+    CARD32	vendorCode B32;		/* vendor-specific opcode */
+    CARD32	pad1 B32;   /* unused; corresponds to contextTag in header */
+    CARD32	screen B32;
+    GLXFBConfigID fbconfig B32;
+    CARD32	pixmap B32;
+    GLXPixmap	glxpixmap B32;
+} xGLXCreateGLXPixmapWithConfigSGIXReq;
+#define sz_xGLXCreateGLXPixmapWithConfigSGIXReq 28
+
 /************************************************************************/
 
 /*
@@ -1506,6 +1572,18 @@ typedef struct {
 #define X_GLXQueryExtensionsString       18
 #define X_GLXQueryServerString           19
 #define X_GLXClientInfo                  20
+#define X_GLXGetFBConfigs                21
+#define X_GLXCreatePixmap                22
+#define X_GLXDestroyPixmap               23
+#define X_GLXCreateNewContext            24
+#define X_GLXQueryContext                25
+#define X_GLXMakeContextCurrent          26
+#define X_GLXCreatePbuffer               27
+#define X_GLXDestroyPbuffer              28
+#define X_GLXGetDrawableAttributes       29
+#define X_GLXChangeDrawableAttributes    30
+#define X_GLXCreateWindow                31
+#define X_GLXDestroyWindow               32
 
 
 /* Opcodes for single commands (part of GLX command space) */
@@ -1824,11 +1902,41 @@ typedef struct {
 #define X_GLvop_DeleteTexturesEXT           12
 #define X_GLvop_GenTexturesEXT              13
 #define X_GLvop_IsTextureEXT                14
+#define X_GLvop_SampleMaskSGIS                 2048
+#define X_GLvop_SamplePatternSGIS              2049
 
 
 /* Opcodes for GLX vendor private commands */
 
-#define X_GLXvop_QueryContextInfoEXT        1024
+#define X_GLXvop_QueryContextInfoEXT            1024
+#define X_GLXvop_SwapIntervalSGI                65536
+#define X_GLXvop_MakeCurrentReadSGI             65537
+#define X_GLXvop_CreateGLXVideoSourceSGIX       65538
+#define X_GLXvop_DestroyGLXVideoSourceSGIX      65539
+#define X_GLXvop_GetFBConfigsSGIX               65540
+#define X_GLXvop_CreateContextWithConfigSGIX    65541
+#define X_GLXvop_CreateGLXPixmapWithConfigSGIX  65542
+#define X_GLXvop_CreateGLXPbufferSGIX           65543
+#define X_GLXvop_DestroyGLXPbufferSGIX          65544
+#define X_GLXvop_ChangeDrawableAttributesSGIX   65545
+#define X_GLXvop_GetDrawableAttributesSGIX      65546
+#define X_GLXvop_JoinSwapGroupSGIX              65547
+#define X_GLXvop_BindSwapBarrierSGIX            65548
+#define X_GLXvop_QueryMaxSwapBarriersSGIX       65549
+#define X_GLXvop_QueryHyperpipeNetworkSGIX      65550
+#define X_GLXvop_QueryHyperpipeConfigSGIX       65551
+#define X_GLXvop_HyperpipeConfigSGIX            65552
+#define X_GLXvop_DestroyHyperpipeConfigSGIX     65553
+
+
+/* New extension opcodes */
+
+#define X_GLrop_SampleCoverageARB            229
+#define X_GLrop_WindowPos3fARB               230
+#define X_GLrop_PointParameterfARB          2065
+#define X_GLrop_PointParameterfvARB         2066
+#define X_GLrop_ActiveStencilFaceEXT        4220
+
 
 
 #endif /* _GLX_glxproto_h_ */

@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.40 2003/04/11 15:23:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.41 2003/06/18 13:14:17 dawes Exp $ */
 
 /*
  * Authors:
@@ -221,6 +221,7 @@ typedef struct _I810Rec {
    I810WriteByteFunc writeStandard;
    I810ReadByteFunc readStandard;
 
+   Bool directRenderingDisabled;        /* DRI disabled in PreInit */
    Bool directRenderingEnabled;		/* false if XF86DRI not defined. */
 
 #ifdef XF86DRI
@@ -252,6 +253,9 @@ typedef struct _I810Rec {
 
    Bool showCache;
    Bool noAccel;
+   Bool allowPageFlip;
+   Bool have3DWindows;
+   int  drmMinor;
 } I810Rec;
 
 #define I810PTR(p) ((I810Ptr)((p)->driverPrivate))
@@ -267,6 +271,8 @@ extern Bool I810DRIFinishScreenInit(ScreenPtr pScreen);
 extern Bool I810DRILeave(ScrnInfoPtr pScrn);
 extern Bool I810DRIEnter(ScrnInfoPtr pScrn);
 #endif
+extern Bool I810InitDma(ScrnInfoPtr pScrn);
+extern Bool I810CleanupDma(ScrnInfoPtr pScrn);
 
 #define I810PTR(p) ((I810Ptr)((p)->driverPrivate))
 #define I810REGPTR(p) (&(I810PTR(p)->ModeReg))

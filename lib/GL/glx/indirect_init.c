@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/indirect_init.c,v 1.6 2001/03/21 16:04:39 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/indirect_init.c,v 1.7 2002/02/22 21:32:54 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -50,13 +50,6 @@ __GLapi *__glXNewIndirectAPI(void)
 {
     __GLapi *glAPI;
     GLuint entries;
-
-    /* Have to register dynamic extensions before allocating any
-     * dispatch tables.
-     */
-#if defined(GLX_DIRECT_RENDERING)
-    __glXRegisterExtensions();
-#endif
 
     entries = _glapi_get_dispatch_table_size();
     glAPI = (__GLapi *) Xmalloc(entries * sizeof(void *));
@@ -492,6 +485,39 @@ __GLapi *__glXNewIndirectAPI(void)
     glAPI->LoadTransposeMatrixfARB = __indirect_glLoadTransposeMatrixfARB;
     glAPI->MultTransposeMatrixdARB = __indirect_glMultTransposeMatrixdARB;
     glAPI->MultTransposeMatrixfARB = __indirect_glMultTransposeMatrixfARB;
+
+    /* ARB 5. GL_ARB_multisample */
+    glAPI->SampleCoverageARB = __indirect_glSampleCoverageARB;
+
+    /* ARB 14. GL_ARB_point_parameters */
+    glAPI->PointParameterfEXT = __indirect_glPointParameterfARB;
+    glAPI->PointParameterfvEXT = __indirect_glPointParameterfvARB;
+
+    /* ARB 15. GL_ARB_window_pos */
+    glAPI->WindowPos2dMESA = __indirect_glWindowPos2dARB;
+    glAPI->WindowPos2iMESA = __indirect_glWindowPos2iARB;
+    glAPI->WindowPos2fMESA = __indirect_glWindowPos2fARB;
+    glAPI->WindowPos2iMESA = __indirect_glWindowPos2iARB;
+    glAPI->WindowPos2sMESA = __indirect_glWindowPos2sARB;
+    glAPI->WindowPos2dvMESA = __indirect_glWindowPos2dvARB;
+    glAPI->WindowPos2fvMESA = __indirect_glWindowPos2fvARB;
+    glAPI->WindowPos2ivMESA = __indirect_glWindowPos2ivARB;
+    glAPI->WindowPos2svMESA = __indirect_glWindowPos2svARB;
+    glAPI->WindowPos3dMESA = __indirect_glWindowPos3dARB;
+    glAPI->WindowPos3fMESA = __indirect_glWindowPos3fARB;
+    glAPI->WindowPos3iMESA = __indirect_glWindowPos3iARB;
+    glAPI->WindowPos3sMESA = __indirect_glWindowPos3sARB;
+    glAPI->WindowPos3dvMESA = __indirect_glWindowPos3dvARB;
+    glAPI->WindowPos3fvMESA = __indirect_glWindowPos3fvARB;
+    glAPI->WindowPos3ivMESA = __indirect_glWindowPos3ivARB;
+    glAPI->WindowPos3svMESA = __indirect_glWindowPos3svARB;
+
+    /* 25. GL_SGIS_multisample */
+    glAPI->SampleMaskSGIS = __indirect_glSampleMaskSGIS;
+    glAPI->SamplePatternSGIS = __indirect_glSamplePatternSGIS;
+
+    /* 268. GL_EXT_stencil_two_side */
+    glAPI->ActiveStencilFaceEXT = __indirect_glActiveStencilFaceEXT;
 
     return glAPI;
 }

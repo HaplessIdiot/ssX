@@ -22,9 +22,6 @@
  *
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-
 #include "glheader.h"
 #include "macros.h"
 #include "mtypes.h"
@@ -72,6 +69,12 @@ static void i810SetTexImages( i810ContextPtr imesa,
       textureFormat = MI1_FMT_8CI | MI1_PF_8CI_ARGB4444;
       t->texelBytes = 1;
       break;
+   case GL_YCBCR_MESA:
+      t->texelBytes = 2;
+      textureFormat = MI1_FMT_422 | MI1_PF_422_YCRCB_SWAP_Y
+	  | MI1_COLOR_CONV_ENABLE;
+      break;
+       
    default:
       fprintf(stderr, "i810SetTexImages: bad image->Format\n" );
       return;
@@ -96,8 +99,8 @@ static void i810SetTexImages( i810ContextPtr imesa,
    }
 
    /* save these values */
-   t->firstLevel = firstLevel;
-   t->lastLevel = lastLevel;
+   t->base.firstLevel = firstLevel;
+   t->base.lastLevel = lastLevel;
 
    numLevels = lastLevel - firstLevel + 1;
 
@@ -123,7 +126,7 @@ static void i810SetTexImages( i810ContextPtr imesa,
    }
 
    t->Pitch = pitch;
-   t->totalSize = height*pitch;
+   t->base.totalSize = height*pitch;
    t->max_level = i-1;
    t->dirty = I810_UPLOAD_TEX0 | I810_UPLOAD_TEX1;   
    t->Setup[I810_TEXREG_MI1] = (MI1_MAP_0 | textureFormat | log_pitch); 
@@ -135,7 +138,9 @@ static void i810SetTexImages( i810ContextPtr imesa,
 				MLL_UPDATE_MIN_MIP |
 				((numLevels - 1) << MLL_MIN_MIP_SHIFT));
 
-   i810UploadTexImages( imesa, t );
+   LOCK_HARDWARE( imesa );
+   i810UploadTexImagesLocked( imesa, t );
+   UNLOCK_HARDWARE( imesa );
 }
 
 /* ================================================================
@@ -691,17 +696,17 @@ static void i810UpdateTexUnit( GLcontext *ctx, GLuint unit )
    i810ContextPtr imesa = I810_CONTEXT(ctx);
    struct gl_texture_unit *texUnit = &ctx->Texture.Unit[unit];
 
-   if (texUnit->_ReallyEnabled == TEXTURE0_2D) 
+   if (texUnit->_ReallyEnabled == TEXTURE_2D_BIT) 
    {
       struct gl_texture_object *tObj = texUnit->_Current;
       i810TextureObjectPtr t = (i810TextureObjectPtr)tObj->DriverData;
 
       /* Upload teximages (not pipelined)
        */
-      if (t->dirty_images) {
+      if (t->base.dirty_images[0]) {
 	 I810_FIREVERTICES(imesa);
 	 i810SetTexImages( imesa, tObj );
-	 if (!t->MemBlock) {
+	 if (!t->base.memBlock) {
 	    FALLBACK( imesa, I810_FALLBACK_TEXTURE, GL_TRUE );
 	    return;
 	 }
@@ -718,7 +723,10 @@ static void i810UpdateTexUnit( GLcontext *ctx, GLuint unit )
       if (imesa->CurrentTexObj[unit] != t) {
 	 I810_STATECHANGE(imesa, (I810_UPLOAD_TEX0<<unit));
 	 imesa->CurrentTexObj[unit] = t;
-	 i810UpdateTexLRU( imesa, t ); /* done too often */
+	 t->base.bound |= (1U << unit);
+	 
+	 driUpdateTextureLRU( (driTextureObject *) t ); /* XXX: should be locked */
+
       }
       
       /* Update texture environment if texture object image format or 

@@ -27,7 +27,7 @@
  * Authors:
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
- * $FreeBSD: src/sys/dev/drm/drm_bufs.h,v 1.5 2003/04/25 01:18:46 anholt Exp $
+ *
  */
 
 #include "drmP.h"
@@ -546,7 +546,7 @@ static int DRM(addbufs_pci)(drm_device_t *dev, drm_buf_desc_t *request)
 		for ( i = 0 ; i < (1 << page_order) ; i++ ) {
 			DRM_DEBUG( "page %d @ 0x%08lx\n",
 				   dma->page_count + page_count,
-				   page + PAGE_SIZE * i );
+				   (long)vaddr + PAGE_SIZE * i );
 			temp_pagelist[dma->page_count + page_count++] = 
 			    vaddr + PAGE_SIZE * i;
 		}

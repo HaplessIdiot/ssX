@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_reg.h,v 1.15 2002/12/16 16:19:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_reg.h,v 1.16 2003/04/06 20:36:36 martin Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -1288,8 +1288,8 @@
 #       define R128_DATATYPE_Y8                (8  << 16)
 #       define R128_DATATYPE_RGB8              (9  << 16)
 #       define R128_DATATYPE_CI16              (10 << 16)
-#       define R128_DATATYPE_YUV422            (11 << 16)
-#       define R128_DATATYPE_YUV422_2          (12 << 16)
+#       define R128_DATATYPE_YVYU422           (11 << 16)
+#       define R128_DATATYPE_VYUY422           (12 << 16)
 #       define R128_DATATYPE_AYUV444           (14 << 16)
 #       define R128_DATATYPE_ARGB4444          (15 << 16)
 #       define R128_PALLETE_EITHER             (0  << 20)

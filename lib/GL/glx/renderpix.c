@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/renderpix.c,v 1.3 2001/03/21 16:04:39 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/renderpix.c,v 1.4 2002/02/22 21:32:54 dawes Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -743,7 +743,7 @@ void glSeparableFilter2D(GLenum target, GLenum internalformat,
     }
 }
 
-void glTexImage3D(GLenum target, GLint level, GLenum internalformat,
+void glTexImage3D(GLenum target, GLint level, GLint internalformat,
 		  GLsizei width, GLsizei height, GLsizei depth, GLint border,
 		  GLenum format, GLenum type, const GLvoid *image)
 {

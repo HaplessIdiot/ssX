@@ -1,4 +1,7 @@
 XFree86 4.3.99.14 (xx September 2003)
+ 458. Import Mesa 5.0.2 (Alan Hourihane).
+ 457. DRI merge (DRI Project)
+      * details to follow..........
  456. Fixes and updates for XKB keyboard maps:
       - Update xkb geometry files (Alexander Pohoyda).
       - Fix German-Romanian maps (Manfred Pohler).
@@ -17766,7 +17769,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2866 2003/09/25 13:26:23 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2867 2003/09/27 13:35:48 pascal Exp $
 
 
 

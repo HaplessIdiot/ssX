@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/glx/glxcmdsswap.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/glx/glxcmdsswap.c,v 1.7 2002/01/14 22:47:08 tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -92,6 +92,34 @@ int __glXSwapMakeCurrent(__GLXclientState *cl, GLbyte *pc)
     __GLX_SWAP_INT(&req->oldContextTag);
 
     return __glXMakeCurrent(cl, pc);
+}
+
+int __glXSwapMakeContextCurrent(__GLXclientState *cl, GLbyte *pc)
+{
+    xGLXMakeContextCurrentReq *req = (xGLXMakeContextCurrentReq *) pc;
+    __GLX_DECLARE_SWAP_VARIABLES;
+
+    __GLX_SWAP_SHORT(&req->length);
+    __GLX_SWAP_INT(&req->drawable);
+    __GLX_SWAP_INT(&req->readdrawable);
+    __GLX_SWAP_INT(&req->context);
+    __GLX_SWAP_INT(&req->oldContextTag);
+
+    return __glXMakeContextCurrent(cl, pc);
+}
+
+int __glXSwapMakeCurrentReadSGI(__GLXclientState *cl, GLbyte *pc)
+{
+    xGLXMakeCurrentReadSGIReq *req = (xGLXMakeCurrentReadSGIReq *) pc;
+    __GLX_DECLARE_SWAP_VARIABLES;
+
+    __GLX_SWAP_SHORT(&req->length);
+    __GLX_SWAP_INT(&req->drawable);
+    __GLX_SWAP_INT(&req->readable);
+    __GLX_SWAP_INT(&req->context);
+    __GLX_SWAP_INT(&req->oldContextTag);
+
+    return __glXMakeCurrentReadSGI(cl, pc);
 }
 
 int __glXSwapIsDirect(__GLXclientState *cl, GLbyte *pc)
@@ -784,6 +812,16 @@ int __glXSwapVendorPrivateWithReply(__GLXclientState *cl, GLbyte *pc)
     __GLX_SWAP_INT(&req->vendorCode);
 
     vendorcode = req->vendorCode;
+
+    switch (vendorcode) {
+      case X_GLXvop_QueryContextInfoEXT:
+	return __glXSwapQueryContextInfoEXT(cl, pc);
+      case X_GLXvop_MakeCurrentReadSGI:
+	return __glXSwapMakeCurrentReadSGI(cl, pc);
+      default:
+	break;
+    }
+
 
     if ((vendorcode >= __GLX_MIN_VENDPRIV_OPCODE_EXT) &&
           (vendorcode <= __GLX_MAX_VENDPRIV_OPCODE_EXT))  {
