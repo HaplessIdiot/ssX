@@ -1,4 +1,6 @@
 XFree86 4.3.99.17 (xx November 2003)
+ 620. With AppleDRI, don't use APPLE_fence as a replacement for NV_fence
+      calls (John Harper).
  619. Fix intermittent XDarwin crash when quitting (Torrey T. Lyons).
  618. Build fixes and updates for GNU/Hurd and GNU/K*BSD systems (Bugzilla
       #907, #908, Robert Millan).
@@ -18252,7 +18254,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2989 2003/11/24 02:02:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2990 2003/11/24 05:38:59 torrey Exp $
 
 
 
