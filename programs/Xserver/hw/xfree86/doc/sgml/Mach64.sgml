@@ -5,7 +5,7 @@
 
 <title>Notes for Mach64 X Server
 <author>Kevin E. Martin (martin@cs.unc.edu)
-<date>28 November 1995
+<date>26 December 1995
 
 <!-- Table of contents -->
 <toc>
@@ -48,6 +48,14 @@ AT&amp;T20C408       135MHz       8      1280x1024             2Mb
 AT&amp;T20C408        80MHz      16       1024x768             2Mb
 AT&amp;T20C408        40MHz      32        800x600             2Mb
     
+Internal         135MHz       8      1280x1024             2Mb
+Internal          80MHz      16       1024x768             2Mb
+Internal          40MHz      32        800x600             2Mb
+
+IBM RGB514       220MHz       8      1600x1200             2Mb
+IBM RGB514       220MHz      16      1600x1200             4Mb
+IBM RGB514       135MHz(?)   32       1024x768             4Mb
+
 All Others[*]     80MHz       8      1280x1024             2Mb
 
 </verb>
@@ -60,11 +68,6 @@ XF86Config file.
 The ATI68860 and ATI68880 RAMDACs are usually found on ATI Graphics
 Pro Turbo and ATI WinTurbo cards.  The other RAMDACs are usually found
 on ATI Graphics Xpression cards.
-
-A number of cards now use the ATI Mach64 CT chip (which is a
-combination Mach64 acclerator, RAMDAC and clock chip).  The current
-version of the Mach 64 X server does not support this chip, but a
-future release will.
 
 As advertised, Mach64 graphics cards can use a special 24bpp mode
 (packed pixel mode), but this is not currently supported in the Mach64
@@ -192,6 +195,7 @@ the "no_bios_clocks" option is given.
 		<item> stg1703
 		<item> ch8398
 		<item> att20c408
+		<item> ibm_rgb514
 		</itemize>
 <tag>Ramdac &dquot;<it>type</it>&dquot;</tag>
 		This entry specifies the RAMDAC type.  The following
@@ -205,6 +209,7 @@ the "no_bios_clocks" option is given.
 		<item> stg1703
 		<item> ch8398
 		<item> att20c408
+		<item> ibm_rgb514
 		</itemize>
 </descrip>
 
@@ -233,7 +238,7 @@ comp.windows.x.i386unix newsgroup.
 <p>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.5 1995/07/21 14:40:46 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.6 1995/12/02 05:05:43 dawes Exp $
 </verb>
 
 </article>
