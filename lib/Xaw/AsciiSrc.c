@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.20 1999/06/20 08:40:56 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.21 1999/08/15 13:00:30 dawes Exp $ */
 
 /*
  * AsciiSrc.c - AsciiSrc object. (For use with the text widget).
@@ -355,6 +355,59 @@ ReadText(Widget w, XawTextPosition pos, XawTextBlock *text, int length)
     AsciiSrcObject src = (AsciiSrcObject)w;
     XawTextPosition count, start;
     Piece *piece;
+#ifndef OLDXAW
+    XawTextAnchor *anchor;
+    XawTextEntity *entity;
+    XawTextPosition offset, end = pos + length;
+    Bool state;
+
+    end = XawMin(end, src->ascii_src.length);
+    while ((state = XawTextSourceAnchorAndEntity(w, pos, &anchor, &entity)) &&
+	(entity->flags & XAW_TENTF_HIDE) && pos < end)
+	pos = anchor->position + entity->offset + entity->length;
+    if (state == False && anchor) {
+	while (entity) {
+	    offset = anchor->position + entity->offset;
+	    if (offset >= end)
+		break;
+	    if (offset > pos &&
+		(entity->flags & (XAW_TENTF_HIDE | XAW_TENTF_REPLACE))) {
+		end = XawMin(end, offset);
+		break;
+	    }
+	    if ((entity = entity->next) == NULL &&
+		(anchor = XawTextSourceNextAnchor(w, anchor)) != NULL)
+		entity = anchor->entities;
+	}
+    }
+    else if (state && (entity->flags & XAW_TENTF_REPLACE) && pos < end) {
+	XawTextBlock *block = (XawTextBlock*)entity->data;
+
+	offset = anchor->position + entity->offset;
+	end = XawMin(end, offset + block->length);
+	if ((length = end - pos) < 0)
+	    length = 0;
+	text->length = length;
+	text->format = XawFmt8Bit;
+	if (length == 0) {
+	    text->firstPos = end = offset + entity->length;
+	    text->ptr = "";
+	}
+	else {
+	    text->firstPos = pos;
+	    text->ptr = block->ptr + (pos - offset);
+	    if (pos + length < offset + block->length)
+		end = pos + length;	/* there is data left to be read */
+	    else
+		end = offset + entity->length;
+	}
+
+	return (end);
+    }
+
+    if ((length = end - pos) < 0)
+	length = 0;
+#endif
 
     piece = FindPiece(src, pos, &start);
     text->firstPos = pos;

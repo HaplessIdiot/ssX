@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.cpp,v 1.8 1999/08/22 05:57:32 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga.cpp,v 1.1 1999/08/26 08:16:19 dawes Exp $ 
 .TH VGA __drivermansuffix__ "Version 3.9.16"  "XFree86"
 .SH NAME
 vga \- Generic VGA video driver
@@ -55,7 +55,7 @@ are supported:
 .BI "Option ""ShadowFB"" """ boolean """
 Enable or disable use of the shadow framebuffer layer.  See
 shadowfb(__drivermansuffix__) for further information.  Default: off.
-.PP
+
 This option is recommended for performance reasons when running at depths
 1 and 4, especially when using modern PCI-based hardware.  It is required
 when using those depths in a multi-head configuration where one or more

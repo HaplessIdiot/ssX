@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_i2c.c,v 1.1 1999/03/21 07:35:04 dawes Exp $ */
 
 
 #include "xf86.h"
@@ -8,34 +8,6 @@
 
 #include "apm.h"
 #include "apm_regs.h"
-
-#if 0
-/*
- * Switch between internal I2C bus and external (DDC) bus.
- * There is one I2C port controlled bu SR08 and the programmable
- * outputs control a multiplexer.
- */
-static Bool
-ApmI2CSwitchToBus(I2CBusPtr b)
-{
-    ApmPtr pApm = ((ApmPtr)b->DriverPrivate.ptr);
-    vgaHWPtr hwp = VGAHWPTR(xf86Screens[pApm->pScreen->myNum]);
-    if (b == pApm->I2CBus) {
-        if ((pApm->ModeReg.ExtVga[GR17] & 0x60) == 0)
-		return TRUE;
-	pApm->ModeReg.ExtVga[GR17] &= ~0x60;
-    }
-    else if(b == pApm->I2CPtr2) {
-        if ((pApm->ModeReg.ExtVga[GR17] & 0x60) != 0)
-		return TRUE;
-        pApm->ModeReg.ExtVga[GR17] |= 0x60;
-    }
-    else return FALSE;
-
-    hwp->writeGr(hwp, 0x17, pApm->ModeReg.ExtVga[GR17]);
-    return TRUE;
-}
-#endif
 
 /* Inline functions */
 static __inline__ void
@@ -101,22 +73,6 @@ ApmI2CInit(ScreenPtr pScreen)
     
     if(!xf86I2CBusInit(I2CPtr))
        return FALSE;
-
-#if 0
-    I2CPtr = xf86CreateI2CBusRec();
-    if(!I2CPtr) return FALSE;
-
-    pApm->I2CPtr2 = I2CPtr;
-
-    I2CPtr->BusName    = "I2C bus 2";
-    I2CPtr->scrnIndex  = pScrn->scrnIndex;
-    I2CPtr->I2CPutBits = ApmI2CPutBits;
-    I2CPtr->I2CGetBits = ApmI2CGetBits;
-    I2CPtr->DriverPrivate.ptr = pApm;
-    
-    if(!xf86I2CBusInit(I2CPtr))
-       return FALSE;
-#endif
 
     return TRUE;
 }

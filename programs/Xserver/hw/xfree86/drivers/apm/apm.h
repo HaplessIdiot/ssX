@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.5 1999/03/21 07:35:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.6 1999/07/10 12:17:26 dawes Exp $ */
 
 
 /* Everything using inb/outb, etc needs "compiler.h" */
@@ -63,6 +63,11 @@
 /* DDC support */
 #include "xf86DDC.h"
 
+#ifdef TRUE
+#undef TRUE
+#endif
+#define TRUE	(1)
+
 typedef unsigned char	u8;
 typedef unsigned short	u16;
 typedef unsigned long	u32;
@@ -92,52 +97,67 @@ typedef struct {
 	unsigned int	EX[NoEXRegs];
 } ApmRegStr, *ApmRegPtr;
 
+#define APM_CACHE_NUMBER	32
+
 typedef struct {
-    pciVideoPtr	PciInfo;
-    PCITAG	PciTag;
-    int		scrnIndex;
-    int		Chipset;
-    int		ChipRev;
-    CARD32	LinAddress;
+    pciVideoPtr		PciInfo;
+    PCITAG		PciTag;
+    int			scrnIndex;
+    int			Chipset;
+    int			ChipRev;
+    CARD32		LinAddress;
     unsigned long	LinMapSize;
-    CARD32	FbMapSize;
-    pointer	LinMap;
-    pointer	FbBase;
-    char	*VGAMap;
-    char	*MemMap;
-    pointer	BltMap;
-    Bool	UnlockCalled;
-    int		xbase;
+    CARD32		FbMapSize;
+    pointer		LinMap;
+    pointer		FbBase;
+    char		*VGAMap;
+    char		*MemMap;
+    pointer		BltMap;
+    Bool		UnlockCalled;
+    int			xbase;
     unsigned char	savedSR10;
     unsigned char	d9, db;
     unsigned long	saveCmd;
-    pointer	FontInfo;
-    Bool	hwCursor;
-    Bool	noLinear;
-    ApmRegStr	ModeReg, SavedReg;
+    pointer		FontInfo;
+    Bool		hwCursor;
+    Bool		noLinear;
+    ApmRegStr		ModeReg, SavedReg;
     CloseScreenProcPtr	CloseScreen;
-    Bool	UsePCIRetry;          /* Do we use PCI-retry or busy-waiting */
-    Bool	NoAccel;      /* Do we use the XAA acceleration architecture */
-    int		MinClock;                                /* Min ramdac clock */
-    int		MaxClock;                                /* Max ramdac clock */
-    int		apmMMIO_Init;
+    Bool		UsePCIRetry;  /* Do we use PCI-retry or busy-waiting */
+    Bool		NoAccel;  /* Do we use XAA acceleration architecture */
+    int			MinClock;                        /* Min ramdac clock */
+    int			MaxClock;                        /* Max ramdac clock */
+    int			apmMMIO_Init;
     EntityInfoPtr	pEnt;
     XAAInfoRecPtr	AccelInfoRec;
     xf86CursorInfoPtr	CursorInfoRec;
-    int		DGAactive, numDGAModes;
-    DGAModePtr	DGAModes;
-    int		BaseCursorAddress, CursorAddress, DisplayedCursorAddress;
-    int		OffscreenReserved;
+    int			DGAactive, numDGAModes;
+    DGAModePtr		DGAModes;
+    int			BaseCursorAddress,CursorAddress,DisplayedCursorAddress;
+    int			OffscreenReserved;
     unsigned int	Setup_DEC;
-    int		blitxdir, blitydir;
-    Bool	apmTransparency, apmClip, apmStippleCached;
-    I2CBusPtr	I2CPtr;
-    XAACacheInfoRec	apmStippleCache;
+    int			blitxdir, blitydir;
+    Bool		apmTransparency, apmClip, ShadowFB, I2C;
+    I2CBusPtr		I2CPtr;
+    struct ApmStippleCacheRec {
+	XAACacheInfoRec		apmStippleCache;
+	FBAreaPtr		area;
+	int			apmStippleCached:1;
+    }			apmCache[APM_CACHE_NUMBER];
+    int			apmCachePtr;
     unsigned char	regcurr[0x54];
-    ScreenPtr	pScreen;
-    int		displayWidth, displayHeight, bitsPerPixel, bytesPerScanline;
-    FBAreaPtr	area;
-    int		Generation;
+    ScreenPtr		pScreen;
+    int			displayWidth, displayHeight;
+    int			bitsPerPixel, bytesPerScanline;
+    int			Scanlines;
+    int			Generation;
+    int			apmLock;
+    RegionRec		apmLockedRegion;
+    int			MemClk;
+    unsigned char	*ShadowPtr;
+    int			ShadowPitch;
+    int			ScratchMem, ScratchMemSize, ScratchMemOffset;
+    int			ScratchMemWidth;
 } ApmRec, *ApmPtr;
 
 #define curr		((unsigned char *)pApm->regcurr)
@@ -164,8 +184,10 @@ enum ApmChipId {
 };
 
 typedef struct {
+    BoxRec			box;
     MoveAreaCallbackProcPtr	MoveAreaCallback;
     RemoveAreaCallbackProcPtr	RemoveAreaCallback;
+    void			*devPriv;
 } ApmPixmapRec, *ApmPixmapPtr;
 
 #define APMDECL(p)	ApmPtr pApm = ((ApmPtr)(((ScrnInfoPtr)(p))->driverPrivate))
@@ -175,6 +197,7 @@ extern int	ApmHWCursorInit(ScreenPtr pScreen);
 extern int	ApmDGAInit(ScreenPtr pScreen);
 extern int	ApmAccelInit(ScreenPtr pScreen);
 extern Bool	ApmI2CInit(ScreenPtr pScreen);
+extern void	XFree86RushExtensionInit(void);
 extern void	ApmCheckMMIO_Init(ScrnInfoPtr pScrn);
 extern void	ApmCheckMMIO_Init_IOP(ScrnInfoPtr pScrn);
 extern void	ApmCheckMMIO_Init24(ScrnInfoPtr pScrn);

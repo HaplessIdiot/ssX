@@ -41,7 +41,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by
    Jarno Paananen <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.1 1999/08/01 07:20:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.2 1999/08/14 10:49:51 dawes Exp $ */
 
 #include "nv_include.h"
 #include "xaalocal.h"
@@ -252,7 +252,7 @@ static void NVSetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
 	fg |= rivaOpaqueMonochrome;
 	bg  = (bg == -1) ? 0 : bg | rivaOpaqueMonochrome;
     };
-    NVSetPattern(pNv, fg, bg, patternx, patterny);
+    NVSetPattern(pNv, bg, fg, patternx, patterny);
     RIVA_FIFO_FREE(pNv->riva, Bitmap, 1);
     pNv->riva.Bitmap->Color1A = fg;
 }
@@ -354,7 +354,7 @@ NVSubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int x,
         pNv->riva.Bitmap->PointE          = (y << 16) | (x & 0xFFFF);
     }
 
-    if ( pNv->expandBuffer == NULL )
+    if ( pNv->useFifo )
     {
         /* Using fifo writes, set it up */
         pNv->expandRows = h;
@@ -401,7 +401,6 @@ NVSubsequentColorExpandScanlineFifo(ScrnInfoPtr pScrn, int bufno)
 	while (pNv->riva.Busy(&pNv->riva));
         RIVA_FIFO_FREE(pNv->riva, Bitmap, pNv->expandWidth);
     }
-    
 }
 
 
@@ -564,12 +563,15 @@ NVAccelInit(ScreenPtr pScreen)
         NVSubsequentScanlineCPUToScreenColorExpandFill;
 
     pNv->expandFifo = (unsigned char*)&pNv->riva.Bitmap->MonochromeData01E;
-
-    if ( (pNv->riva.Architecture == 3) || 1 )
+    
+    /* Allocate buffer for color expansion and also image writes in the
+       future */
+    pNv->expandBuffer = xnfalloc((pScrn->virtualX + 62)
+                                 * pScrn->bitsPerPixel / 8);
+    if ( pNv->riva.Architecture == 3 )
     {
-        /* Riva 128(ZX) can't use direct fifo writes, use buffer */
-        pNv->expandBuffer = xnfalloc((pScrn->virtualX + 62)
-                                     * pScrn->bitsPerPixel / 8);
+        /* Riva 128(ZX) can't use direct fifo writes, so we use buffer */
+        pNv->useFifo = FALSE;
         infoPtr->ScanlineColorExpandBuffers = &pNv->expandBuffer;
         infoPtr->SubsequentColorExpandScanline = 
             NVSubsequentColorExpandScanline;
@@ -577,7 +579,7 @@ NVAccelInit(ScreenPtr pScreen)
     else
     {
         /* TNT(2) can */
-	pNv->expandBuffer = NULL;
+        pNv->useFifo = TRUE;
         infoPtr->ScanlineColorExpandBuffers = &pNv->expandFifo;
         infoPtr->SubsequentColorExpandScanline = 
             NVSubsequentColorExpandScanlineFifo;

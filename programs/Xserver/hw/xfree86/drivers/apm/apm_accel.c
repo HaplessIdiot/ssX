@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_accel.c,v 1.6 1999/03/22 13:40:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_accel.c,v 1.7 1999/07/10 12:17:27 dawes Exp $ */
 
 
 #include "apm.h"
@@ -49,16 +49,17 @@ static void Dump(void* start, u32 len);
 static void
 ApmRemoveStipple(FBAreaPtr area)
 {
-    ((ApmPtr)area->devPrivate.ptr)->apmStippleCached = FALSE;
+    ((struct ApmStippleCacheRec *)area->devPrivate.ptr)->apmStippleCached = FALSE;
 }
 
 static void
 ApmMoveStipple(FBAreaPtr from, FBAreaPtr to)
 {
-    ApmPtr pApm = (ApmPtr)to->devPrivate.ptr;
+    struct ApmStippleCacheRec *pApm = (struct ApmStippleCacheRec *)to->devPrivate.ptr;
 
     pApm->apmStippleCache.x = to->box.x1;
-    pApm->apmStippleCache.y = to->box.y1 + pApm->displayHeight;
+    pApm->apmStippleCache.y += to->box.y1 - from->box.y1;
+    /* TODO : move data */
 }
 
 /*
@@ -69,127 +70,83 @@ static XAACacheInfoPtr
 ApmCacheMonoStipple(ScrnInfoPtr pScrn, PixmapPtr pPix)
 {
     APMDECL(pScrn);
-    int		w = pPix->drawable.width;
-    int		h = pPix->drawable.height, ch;
-    int		i, dwords;
+    int		w = pPix->drawable.width, W = (w + 31) & ~31;
+    int		h = pPix->drawable.height;
+    int		i, j, dwords, mem, width, funcNo;
     FBAreaPtr	draw;
+    struct ApmStippleCacheRec	*pCache;
+    unsigned char	*srcPtr;
+    CARD32		*dstPtr;
 
-    if ((pApm->apmStippleCache.serialNumber == pPix->drawable.serialNumber) &&
-	pApm->apmStippleCached &&
-	(pApm->apmStippleCache.fg == -1) && (pApm->apmStippleCache.bg == -1)) {
-	pApm->apmStippleCache.trans_color = -1;
-	return &pApm->apmStippleCache;
-    }
-    else if (pApm->apmStippleCached) {
-	pApm->apmStippleCached = FALSE;
-	xf86FreeOffscreenArea(pApm->area);
+    for (i = 0; i < APM_CACHE_NUMBER; i++)
+	if ((pApm->apmCache[i].apmStippleCache.serialNumber == pPix->drawable.serialNumber)
+		&& pApm->apmCache[i].apmStippleCached &&
+		(pApm->apmCache[i].apmStippleCache.fg == -1) &&
+		(pApm->apmCache[i].apmStippleCache.bg == -1)) {
+	    pApm->apmCache[i].apmStippleCache.trans_color = -1;
+	    return &pApm->apmCache[i].apmStippleCache;
+	}
+    if ((i = ++pApm->apmCachePtr) >= APM_CACHE_NUMBER)
+	i = pApm->apmCachePtr = 0;
+    pCache = &pApm->apmCache[i];
+    if (pCache->apmStippleCached) {
+	pCache->apmStippleCached = FALSE;
+	xf86FreeOffscreenArea(pCache->area);
     }
 
-    draw = xf86AllocateLinearOffscreenArea(pApm->pScreen, (w * h + 7) / 8, 8,
-				    ApmMoveStipple, ApmRemoveStipple, pApm);
+    draw = xf86AllocateLinearOffscreenArea(pApm->pScreen, (W * h + 7) / 8, 8,
+				    ApmMoveStipple, ApmRemoveStipple, pCache);
     if (!draw)
-	return NULL;
+	return NULL;	/* Let's hope this will never happen... */
 
-    pApm->area = draw;
-    pApm->apmStippleCache.serialNumber = pPix->drawable.serialNumber;
-    pApm->apmStippleCache.trans_color = pApm->apmStippleCache.bg =
-	pApm->apmStippleCache.fg = -1;
-    pApm->apmStippleCache.orig_w = w;
-    pApm->apmStippleCache.orig_h = h;
-    pApm->apmStippleCache.x = draw->box.x1;
-    pApm->apmStippleCache.y = draw->box.y1 + pApm->displayHeight;
-    pApm->apmStippleCache.w = w;
-    pApm->apmStippleCache.h = ((draw->box.x2 - draw->box.x1) *
-				(draw->box.y2 - draw->box.y1) *
-				pApm->bitsPerPixel) / pApm->apmStippleCache.w;
-    pApm->apmStippleCached = TRUE;
+    pCache->area = draw;
+    pCache->apmStippleCache.serialNumber = pPix->drawable.serialNumber;
+    pCache->apmStippleCache.trans_color =
+	pCache->apmStippleCache.bg =
+	pCache->apmStippleCache.fg = -1;
+    pCache->apmStippleCache.orig_w = w;
+    pCache->apmStippleCache.orig_h = h;
+    pCache->apmStippleCache.x = draw->box.x1;
+    pCache->apmStippleCache.y = draw->box.y1 + ((pCache - pApm->apmCache) + 1) * pApm->Scanlines;
+    mem = ((draw->box.x2 - draw->box.x1) * (draw->box.y2 - draw->box.y1) *
+			pApm->bitsPerPixel) / (W * h);
+    width = 2;
+    while (width * width <= mem)
+	width++;
+    width--;
+    pCache->apmStippleCache.w = (width * W + pApm->bitsPerPixel - 1) /
+			pApm->bitsPerPixel;
+    pCache->apmStippleCache.h = ((draw->box.x2 - draw->box.x1) *
+			(draw->box.y2 - draw->box.y1)) /
+			pCache->apmStippleCache.w;
+    pCache->apmStippleCached = TRUE;
 
-    w = (w + 7) / 8;
+    if (w < 32) {
+	if (w & (w - 1))	funcNo = 1;
+	else			funcNo = 0;
+    } else			funcNo = 2;
 
-    if (pPix->devKind == w) {
-	w *= h;
-	ch = pApm->apmStippleCache.h / h;
-	h = 1;
-    }
-    else
-	ch = pApm->apmStippleCache.h;
-
-    if (((w & 3) == 0 && h == 1) || h == 1) {
-	CARD32	*srcPtr, *dstPtr;
-
-	/*
-	 * I guess this will be used more often
-	 */
-	dwords = w >> 2;
-	dstPtr = ((CARD32 *)pApm->FbBase) + (draw->box.x1 +
-		draw->box.y1 * pApm->bytesPerScanline) / 4;
-
-	while (ch-- > 0) {
-	    srcPtr = (CARD32 *)pPix->devPrivate.ptr;
-	    for(i = dwords; i-- > 0; )
-		*dstPtr++ = XAAReverseBitOrder(*srcPtr++);
-
-	    if (w & 3) {
-		CARD16 *dstPtr2 = (CARD16 *)dstPtr;
-		CARD16 *srcPtr2 = (CARD16 *)srcPtr;
-
-		if (w & 2)
-		    *dstPtr2++ = *srcPtr2++;
-		if (w & 1)
-		    *(CARD8 *)dstPtr2 = *(CARD8 *)srcPtr2;
-	    }
+    dstPtr = ((CARD32 *)pApm->FbBase) + (draw->box.x1 +
+			draw->box.y1 * pApm->bytesPerScanline) / 4;
+    j = 0;
+    dwords = (pCache->apmStippleCache.w * pApm->bitsPerPixel) / 32;
+    while (j + h <= pCache->apmStippleCache.h) {
+	srcPtr = (unsigned char *)pPix->devPrivate.ptr;
+	for (i = h; --i >= 0; ) {
+	    (*XAAStippleScanlineFuncMSBFirst[funcNo])(dstPtr, (CARD32 *)srcPtr, 0, w, dwords);
+	    srcPtr += pPix->devKind;
+	    dstPtr += dwords;
 	}
+	j += h;
     }
-    else if ((w & 3) == 0) {
-	int offset = pPix->devKind, h2;
-	CARD32	*srcPtr, *dstPtr;
-
-	dstPtr = ((CARD32 *)pApm->FbBase) + (draw->box.x1 +
-		draw->box.y1 * pApm->bytesPerScanline) / 4;
-	dwords = w >> 2;
-
-	while (ch-- > 0) {
-	    srcPtr = (CARD32 *)pPix->devPrivate.ptr;
-
-	    for (h2 = h; h2-- > 0; ) {
-		for(i = dwords; i-- > 0; )
-		    dstPtr[i] = XAAReverseBitOrder(srcPtr[i]);
-		
-		dstPtr += w;
-		srcPtr += offset;
-	    }
-	}
-    }
-    else
-    {
-	int offset = pPix->devKind, h2;
-	CARD32 *dstPtr;
-	unsigned char *srcPtr;
-	CARD32 tmp;
-	char *ptmp = (char *)&tmp;
-#define PUT(b)	do {	*ptmp++ = byte_reversed[(b)];		\
-			if (ptmp == (char *)((&tmp) + 1)) {	\
-			    *dstPtr++ = tmp;			\
-			    ptmp = (char *)&tmp;		\
-			}					\
-		    } while(0)
-
-	dstPtr = ((CARD32 *)pApm->FbBase) + (draw->box.x1 +
-		draw->box.y1 * pApm->bytesPerScanline) / 4;
-	while (ch-- > 0) {
-	    srcPtr = (unsigned char *)pPix->devPrivate.ptr;
-	    for (h2 = h; h2-- > 0; ) {
-		for(i = 0; i < w; i++)
-		    PUT(srcPtr[i]);
-		
-		srcPtr += offset;
-	    }
-	}
-	while (ptmp-- != (char *)&tmp)
-	    ((char *)dstPtr)[ptmp - (char *)&tmp] = *ptmp;
+    srcPtr = (unsigned char *)pPix->devPrivate.ptr;
+    for (i = pCache->apmStippleCache.h - j ; --i >= 0; ) {
+	(*XAAStippleScanlineFuncMSBFirst[funcNo])(dstPtr, (CARD32 *)srcPtr, 0, w, dwords);
+	srcPtr += pPix->devKind;
+	dstPtr += dwords;
     }
 
-    return &pApm->apmStippleCache;
+    return &pCache->apmStippleCache;
 }
 
 /*********************************************************************************************/
@@ -201,6 +158,7 @@ ApmAccelInit(ScreenPtr pScreen)
     APMDECL(pScrn);
     XAAInfoRecPtr	pXAAinfo;
     BoxRec		AvailFBArea;
+    int			mem, ScratchMemOffset, i, stat;
 
     pApm->AccelInfoRec	= pXAAinfo = XAACreateInfoRec();
     if (!pXAAinfo)
@@ -211,12 +169,130 @@ ApmAccelInit(ScreenPtr pScreen)
     pApm->displayHeight	= pScrn->display->virtualY;
     pApm->bitsPerPixel	= pScrn->bitsPerPixel;
     pApm->bytesPerScanline= (pApm->displayWidth * pApm->bitsPerPixel) >> 3;
+    mem			= pScrn->videoRam << 10;
+    pApm->Scanlines	= mem / pApm->bytesPerScanline + 1;
+    /*
+     * Reserve at list one line for transparent 8x8 mono2color expansion
+     */
+    ScratchMemOffset	= ((mem - pApm->OffscreenReserved) /
+			pApm->bytesPerScanline - 1) * pApm->bytesPerScanline;
+    pApm->ScratchMemSize= mem - ScratchMemOffset - pApm->OffscreenReserved;
+    pApm->ScratchMemOffset	= ScratchMemOffset;
+    switch (pApm->bitsPerPixel) {
+    case 8:
+    case 24:
+	pApm->ScratchMemWidth =
+		(mem - ScratchMemOffset - pApm->OffscreenReserved) / 1;
+	pApm->ScratchMem =
+		((ScratchMemOffset & 0xFFF000) << 4) |
+		    (ScratchMemOffset & 0xFFF);
+	break;
+
+    case 16:
+	pApm->ScratchMemWidth =
+		(mem - ScratchMemOffset - pApm->OffscreenReserved) / 2;
+	pApm->ScratchMem =
+		((ScratchMemOffset & 0xFFE000) << 3) |
+		    ((ScratchMemOffset & 0x1FFE) >> 1);
+	break;
+
+    case 32:
+	pApm->ScratchMemWidth =
+		(mem - ScratchMemOffset - pApm->OffscreenReserved) / 4;
+	pApm->ScratchMem =
+		((ScratchMemOffset & 0xFFC000) << 2) |
+		    ((ScratchMemOffset & 0x3FFC) >> 2);
+	break;
+    }
+    pApm->OffscreenReserved = mem - ScratchMemOffset;
+
+    pApm->apmMMIO_Init = TRUE;
+
+    /*
+     * Abort
+     */
+    if (pApm->noLinear) {
+	stat = RDXL_IOP(0x1FC);
+	while ((stat & (STATUS_HOSTBLTBUSY | STATUS_ENGINEBUSY)) ||
+		((stat & STATUS_FIFO) < 8)) {
+	    WRXB_IOP(0x1FC, 0);
+	    stat = RDXL_IOP(0x1FC);
+	}
+    }
+    else {
+	stat = RDXL_M(0x1FC);
+	while ((stat & (STATUS_HOSTBLTBUSY | STATUS_ENGINEBUSY)) ||
+		((stat & STATUS_FIFO) < 8)) {
+	    WRXB_M(0x1FC, 0);
+	    stat = RDXL_M(0x1FC);
+	}
+    }
+
+    pApm->Setup_DEC = 0;
+    switch(pApm->bitsPerPixel)
+    {
+      case 8:
+           pApm->Setup_DEC |= DEC_BITDEPTH_8;
+           break;
+      case 16:
+           pApm->Setup_DEC |= DEC_BITDEPTH_16;
+           break;
+      case 24:
+           pApm->Setup_DEC |= DEC_BITDEPTH_24;
+           break;
+      case 32:
+           pApm->Setup_DEC |= DEC_BITDEPTH_32;
+           break;
+      default:
+           xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		    "Cannot set up drawing engine control for bpp = %d\n",
+		    pScrn->bitsPerPixel);
+           break;
+    }
+
+    switch(pApm->displayWidth)
+    {
+      case 640:
+           pApm->Setup_DEC |= DEC_WIDTH_640;
+           break;
+      case 800:
+           pApm->Setup_DEC |= DEC_WIDTH_800;
+           break;
+      case 1024:
+           pApm->Setup_DEC |= DEC_WIDTH_1024;
+           break;
+      case 1152:
+           pApm->Setup_DEC |= DEC_WIDTH_1152;
+           break;
+      case 1280:
+           pApm->Setup_DEC |= DEC_WIDTH_1280;
+           break;
+      case 1600:
+           pApm->Setup_DEC |= DEC_WIDTH_1600;
+           break;
+      default:
+           xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		       "Cannot set up drawing engine control "
+		       "for screen width = %d\n", pApm->displayWidth);
+           break;
+    }
+
+    /* Setup current register values */
+    for (i = 0; i < sizeof(pApm->regcurr) / 4; i++)
+	((CARD32 *)curr)[i] = RDXL(0x30 + 4*i);
+
+    SETCLIP_CTRL(1);
+    SETCLIP_CTRL(0);
+    SETBYTEMASK(0x00);
+    SETBYTEMASK(0xFF);
+    SETROP(ROP_S_xor_D);
+    SETROP(ROP_S);
+    pApm->apmMMIO_Init = TRUE;
 
     /*
      * Set up the main acceleration flags.
      */
     pXAAinfo->Flags = PIXMAP_CACHE | LINEAR_FRAMEBUFFER | OFFSCREEN_PIXMAPS;
-    pApm->OffscreenReserved += 1024;
     pXAAinfo->CacheMonoStipple = ApmCacheMonoStipple;
 
     if (pApm->bitsPerPixel != 24) {
@@ -269,7 +345,7 @@ ApmAccelInit(ScreenPtr pScreen)
 	    pXAAinfo->SolidBresenhamLineErrorTermBits = 15;
 
 	    /* Pattern fill */
-	    pXAAinfo->Mono8x8PatternFillFlags = NO_PLANEMASK |
+	    pXAAinfo->Mono8x8PatternFillFlags = NO_PLANEMASK | NO_TRANSPARENCY |
 			    HARDWARE_PATTERN_PROGRAMMED_BITS |
 			    HARDWARE_PATTERN_SCREEN_ORIGIN;
 	    XAA(SetupForMono8x8PatternFill);
@@ -330,7 +406,7 @@ ApmAccelInit(ScreenPtr pScreen)
 	    pXAAinfo->SolidBresenhamLineErrorTermBits = 15;
 
 	    /* Pattern fill */
-	    pXAAinfo->Mono8x8PatternFillFlags = NO_PLANEMASK |
+	    pXAAinfo->Mono8x8PatternFillFlags = NO_PLANEMASK | NO_TRANSPARENCY |
 			    HARDWARE_PATTERN_PROGRAMMED_BITS |
 			    HARDWARE_PATTERN_SCREEN_ORIGIN;
 	    XAA(SetupForMono8x8PatternFill);
@@ -397,7 +473,7 @@ ApmAccelInit(ScreenPtr pScreen)
 	    pXAAinfo->SolidBresenhamLineErrorTermBits = 15;
 
 	    /* Pattern fill */
-	    pXAAinfo->Mono8x8PatternFillFlags = NO_PLANEMASK |
+	    pXAAinfo->Mono8x8PatternFillFlags = NO_PLANEMASK | NO_TRANSPARENCY |
 			    HARDWARE_PATTERN_PROGRAMMED_BITS |
 			    HARDWARE_PATTERN_SCREEN_ORIGIN;
 	    XAA(SetupForMono8x8PatternFill);
@@ -456,7 +532,7 @@ ApmAccelInit(ScreenPtr pScreen)
 	    pXAAinfo->SolidBresenhamLineErrorTermBits = 15;
 
 	    /* Pattern fill */
-	    pXAAinfo->Mono8x8PatternFillFlags = NO_PLANEMASK |
+	    pXAAinfo->Mono8x8PatternFillFlags = NO_PLANEMASK | NO_TRANSPARENCY |
 			    HARDWARE_PATTERN_PROGRAMMED_BITS |
 			    HARDWARE_PATTERN_SCREEN_ORIGIN;
 	    XAA(SetupForMono8x8PatternFill);
@@ -465,6 +541,15 @@ ApmAccelInit(ScreenPtr pScreen)
 #undef XAA
 	}
     }
+
+    /*
+     * Init Rush extension
+     */
+    REGION_INIT(pApm->pScreen, &pApm->apmLockedRegion, (BoxRec *)0, 1);
+#ifdef XF86RUSH_EXT
+    /* XXX Should this be called once per screen? */
+    XFree86RushExtensionInit();
+#endif
 
     /* Pixmap cache setup */
     pXAAinfo->CachePixelGranularity = 64 / pApm->bitsPerPixel;

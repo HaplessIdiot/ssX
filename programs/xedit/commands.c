@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/commands.c,v 1.18 1999/07/19 13:36:33 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/commands.c,v 1.19 1999/08/15 13:00:55 dawes Exp $ */
 
 #include <X11/Xfuncs.h>
 #include <X11/Xos.h>
@@ -857,13 +857,6 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
 
 	if (n_matches) {
 	    Bool free_matches = True, add_slash = n_matches == 1 && isdir && !slash;
-
-	    if (mlen) {
-		char *dot = strchr(match, '.');
-
-		if (dot && length != strlen(text))
-		    mlen = dot - match;
-	    }
 
 	    if (mlen || add_slash) {
 		XawTextPosition pos;

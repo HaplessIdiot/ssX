@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextPop.c,v 1.12 1999/07/11 08:49:15 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextPop.c,v 1.14 1999/07/19 13:36:03 dawes Exp $ */
 
 /*
  * This file is broken up into three sections one dealing with
@@ -136,7 +136,6 @@ static char radio_trans_string[] =
 static char search_text_trans[] = 
 "~s<Key>Return:"	"DoSearchAction(Popdown)\n"
 "s<Key>Return:"		"DoSearchAction() SetField(Replace)\n"
-"c<Key>q,<Key>Tab:"	"insert-char()\n"
 "c<Key>c:"		"PopdownSearchAction()\n"
 "<Btn1Down>:"		"select-start() SetField(Search)\n"
 "<Key>Tab:"		"DoSearchAction() SetField(Replace)\n"
@@ -145,7 +144,6 @@ static char search_text_trans[] =
 static char rep_text_trans[] = 
 "~s<Key>Return:"	"DoReplaceAction(Popdown)\n"
 "s<Key>Return:"		"SetField(Search)\n"
-"c<Key>q,<Key>Tab:"	"insert-char()\n"
 "c<Key>c:"		"PopdownSearchAction()\n"
 "<Btn1Down>:"		"select-start() DoSearchAction() SetField(Replace)\n"
 "<Key>Tab:"		"SetField(Search)\n"

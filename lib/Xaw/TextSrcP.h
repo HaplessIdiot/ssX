@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextSrcP.h,v 1.9 1999/06/20 08:41:11 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrcP.h,v 1.10 1999/08/15 13:00:39 dawes Exp $ */
 
 #ifndef _XawTextSrcP_h
 #define _XawTextSrcP_h
@@ -62,12 +62,14 @@ struct _XawTextAnchor {
     XawTextEntity *entities, *cache;
 };
 
-#define	XAW_TENTF_HIDE	0x0001
-#define XAW_TENTF_READ	0x0002
+#define	XAW_TENTF_HIDE		0x0001
+#define XAW_TENTF_READ		0x0002
+#define XAW_TENTF_REPLACE	0x0004
 struct _XawTextEntity {
     short type;
     short flags;
-    XawTextEntity *next, *future_use;
+    XawTextEntity *next;
+    XtPointer data;
     XawTextPosition offset;	/* from the anchor */
     Cardinal length;
     XrmQuark property;

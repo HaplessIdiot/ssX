@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/lib/Xaw/DisplayList.c,v 3.13 1999/06/06 08:47:55 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/DisplayList.c,v 3.14 1999/06/20 08:40:59 dawes Exp $ */
 
 #include <ctype.h>
 #include <string.h>
@@ -276,7 +276,7 @@ _XawDisplayList *XawCreateDisplayList(String string, Screen *screen,
 	  return (NULL);
 	}
       fp = fname;
-      /*COSTCOND*/
+      /*CONSTCOND*/
       while (1)
 	{
 	  fp = strchr(fp, ':');

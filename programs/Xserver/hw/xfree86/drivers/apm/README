@@ -1,3 +1,4 @@
+$XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/README,v 1.2 1999/07/10 12:17:26 dawes Exp $
 
 Note 1: This driver is work in progress. It might not work at all.
 Want to help? Docs are at 
@@ -16,26 +17,23 @@ Rush cards). There is preliminary, uncomplete and untested support for the
 What has worked on my computer :
     - XAA for 8/16/32 bpp
     - unaccelerated 24bpp
-    - DGA (not much tested)
+    - DGA (DGA2 untested)
     - DPMS
+    - glide2x
 
 What has not worked :
-    - I2C (I'm not sure my card, Hercules 128/3D has proper cabling)
-    - glide2x (Either it segfault's or it loops forever depending
-               if I give the address of the locked buffers in the
-	       first or the second linear framebuffer). In addition, there
-	       is a problem because the library changes the registers of
-	       the chip in a way that is not compatible with the current
-	       driver.
+    - I2C (I'm not sure my card, Hercules 128/3D, has proper cabling)
+    - 8x8 mono expand fill rectangles. Maybe a bug in the chip, I don't
+      understand
 
 What is untested :
     - module
+    - shadow framebuffer
 
 What should be done :
     - acceleration for 24bpp
     - overlays (with the video engine, everything should be overlayable
       with everything)
-    - shadow framebuffer
     - AP6422, AT24 (and why not 3210) support
 
 
@@ -109,4 +107,3 @@ Modified 1999-07-07 by Loïc Grenié
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/README,v 1.1 1999/03/21 07:35:02 dawes Exp $

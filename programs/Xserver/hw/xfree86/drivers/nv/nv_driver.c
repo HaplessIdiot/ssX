@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.11 1999/08/01 11:55:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.12 1999/08/14 10:49:51 dawes Exp $ */
 
 #include "nv_include.h"
 
@@ -1129,6 +1129,17 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "YDstOrg is set to %d\n",
 		   pNv->YDstOrg);
     pNv->FbUsableSize = pNv->FbMapSize - pNv->YDstOrg * bytesPerPixel;
+
+    /* Remove reserved memory from end of buffer */
+    switch( pNv->riva.Architecture ) {
+    case 3:
+      pNv->FbUsableSize -= 32 * 1024;
+      break;
+    case 4:
+      pNv->FbUsableSize -= 128 * 1024;
+      break;
+    }
+
     /*
      * XXX This should be taken into account in some way in the mode valdation
      * section.
@@ -1204,7 +1215,6 @@ NVMapMem(ScrnInfoPtr pScrn)
 {
     NVPtr pNv;
     int mmioFlags;
-    CARD32 memsize;
         
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NVMapMem\n"));
     pNv = NVPTR(pScrn);
@@ -1236,13 +1246,10 @@ NVMapMem(ScrnInfoPtr pScrn)
     if (pNv->IOBaseDense == NULL)
 	return FALSE;
 #endif /* __alpha__ */
-
-    
-    memsize = (pNv->FbMapSize + 1024*1024-1) & ~(1024*1024-1);
-        
+       
     pNv->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
 				 pNv->PciTag, pNv->FbAddress,
-				 memsize);
+				 pNv->FbMapSize);
     if (pNv->FbBase == NULL)
 	return FALSE;
 
@@ -1280,7 +1287,6 @@ static Bool
 NVUnmapMem(ScrnInfoPtr pScrn)
 {
     NVPtr pNv;
-    CARD32 memsize;
     
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NVUnmapMem\n"));
     pNv = NVPTR(pScrn);
@@ -1296,8 +1302,7 @@ NVUnmapMem(ScrnInfoPtr pScrn)
     pNv->IOBaseDense = NULL;
 #endif /* __alpha__ */
 
-    memsize = (pNv->FbMapSize + 1024*1024-1) & ~(1024*1024-1);
-    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pNv->FbBase, memsize);
+    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pNv->FbBase, pNv->FbMapSize);
     pNv->FbBase = NULL;
     pNv->FbStart = NULL;
 
@@ -1596,6 +1601,7 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Call the vgaHW DPMS function directly.
        XXX There must be a way to get all the DPMS modes. */
     xf86DPMSInit(pScreen, vgaHWDPMSSet, 0);
+    DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- DPMS set up\n"));
 #endif
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- Color maps etc. set up\n"));

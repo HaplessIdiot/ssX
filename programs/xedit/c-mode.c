@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/c-mode.c,v 1.1 1999/08/15 13:00:55 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/c-mode.c,v 1.2 1999/08/21 13:48:47 dawes Exp $ */
 
 #include "xedit.h"
 #include <X11/IntrinsicP.h>
@@ -404,7 +404,7 @@ previous_anchor:
 	XawTextPosition kfrom, kto;
 	int delta = info->block->length - (info->right - info->left);
 
-	if (XawTextSourceAnchorAndEntity(w, position - delta,
+	if (XawTextSourceAnchorAndEntity(w, position - info->block->length,
 					 &kanc, &kent) == False)
 	    kent = NULL;
 	else {
@@ -440,12 +440,10 @@ previous_anchor:
 	    if (parser.offset > MAX(right, parser.update_to))
 		break;
 
-	if (delta < 0) {
-	    if (parser.update_from > info->left)
-		parser.update_from -= delta;
-	    if (parser.update_to > info->left)
-		parser.update_to -= delta;
-	}
+	if (parser.update_from > info->left)
+	    parser.update_from -= delta;
+	if (parser.update_to > info->left)
+	    parser.update_to -= delta;
 	XawTextSourceClearEntities(parser.source, parser.clear_from,
 				   parser.clear_to);
 	C_ParseNeedsUpdating(parser.source, parser.update_from,
@@ -464,12 +462,10 @@ previous_anchor:
 	    if (XawTextSourceAnchorAndEntity(w, kfrom, &kanc, &kent) == False ||
 		kanc->position + kent->offset != kfrom ||
 		kfrom + kent->length != kto) {
-		if (delta < 0) {
-		    if (kfrom > info->left)
-			kfrom -= delta;
-		    if (kto > info->left)
-			kto -= delta;
-		}
+		if (kfrom > info->left)
+		    kfrom -= delta;
+		if (kto > info->left)
+		    kto -= delta;
 		C_ParseNeedsUpdating(parser.source, kfrom, kto);
 	    }
 	}

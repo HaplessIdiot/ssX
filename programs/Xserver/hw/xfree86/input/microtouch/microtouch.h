@@ -24,7 +24,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/microtouch/microtouch.h,v 1.1 1998/12/05 14:40:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/microtouch/microtouch.h,v 1.2 1999/02/01 12:12:59 dawes Exp $ */
 
 #ifndef	_microtouch_H_
 #define _microtouch_H_
@@ -126,7 +126,6 @@ static void TearDownProc( pointer p );
 static Bool DeviceControl (DeviceIntPtr dev, int mode);
 static Bool DeviceOn (DeviceIntPtr dev);
 static Bool DeviceOff (DeviceIntPtr dev);
-static Bool DeviceClose (DeviceIntPtr dev);
 static Bool DeviceInit (DeviceIntPtr dev);
 static void ReadInput (LocalDevicePtr local);
 static int ControlProc (LocalDevicePtr local, xDeviceCtl * control);
@@ -134,7 +133,7 @@ static void CloseProc (LocalDevicePtr local);
 static int SwitchMode (ClientPtr client, DeviceIntPtr dev, int mode);
 static Bool ConvertProc (LocalDevicePtr local, int first, int num, int v0, int v1, int v2, int v3, int v4, int v5, int *x, int *y);
 static Bool xf86MuTSendCommand (unsigned char *type, MuTPrivatePtr priv);
-static Bool QueryHardware (MuTPrivatePtr priv, int *errmaj, int *errmin);
+static Bool QueryHardware (LocalDevicePtr local);
 static void MuTNewPacket (MuTPrivatePtr priv);
 static Bool xf86MuTSendPacket (unsigned char *type, int len, MuTPrivatePtr priv);
 static int xf86MuTWaitReply (unsigned char *type, MuTPrivatePtr priv);

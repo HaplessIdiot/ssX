@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide.cpp,v 1.3 1999/07/10 12:17:30 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide.cpp,v 1.4 1999/08/22 13:04:25 dawes Exp $
 .TH GLIDE __drivermansuffix__ "Version 3.9.16"  "XFree86"
 .SH NAME
 glide \- Glide video driver
@@ -19,7 +19,10 @@ file. Read the second paragraph in the description below to find out how.
 .SH DESCRIPTION
 .B glide 
 is an XFree86 driver for Glide capable video boards (such as 3Dfx
-Voodoo boards).  The driver is a bit special because Voodoo boards are
+Voodoo boards). This driver is mainly for Voodoo 1 and Voodoo 2 boards, later
+boards from 3dfx have 2D built-in and you should preferrably use a driver separate for
+those boards or the fbdev(__drivermansuffix__) driver.
+This driver is a bit special because Voodoo 1 and 2 boards are
 very much NOT made for running 2D graphics. Therefore, this driver
 uses no hardware acceleration (since there is no acceleration for 2D,
 only 3D). Instead it is implemented with the help of a "shadow"
@@ -57,8 +60,8 @@ depth when you use Xinerama).
 .PP
 Resolutions supported are: 640x480, 800x600, 960x720, 1024x768,
 1280x1024 and 1600x1200. Note that not all modes will work on all
-Voodoo boards.  It seems that Voodoo2 baords support no higher than
-1024x768. If you see a message like this in the output from the server:
+Voodoo boards. It seems that Voodoo 2 boards support no higher than
+1024x768 and Voodoo 1 boards can go to 800x600. If you see a message like this in the output from the server:
 .PP
   (EE) GLIDE(0): grSstWinOpen returned ...
 .PP

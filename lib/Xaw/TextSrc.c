@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.20 1999/08/15 13:00:37 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.21 1999/08/21 13:47:37 dawes Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -1009,7 +1009,7 @@ XawTextSourceReplace(Widget w, XawTextPosition left,
 	     * other code needs to check what was done */
 
 	    /* adjust entity length */
-	    if (entity && offset < left) {
+	    if (entity && offset <= left) {
 		if (offset + entity->length < right)
 		    entity->length = left - offset + block->length;
 		else
@@ -1076,33 +1076,53 @@ XawTextSourceReplace(Widget w, XawTextPosition left,
 		    }
 		    entity = enext;
 		}
-		if (anchor && i + 1 < src->textSrc.num_anchors) {
+		if (i + 1 < src->textSrc.num_anchors) {
 		    anchor = src->textSrc.anchors[++i];
 		    entity = anchor->entities;
 		    eprev = NULL;
 		}
 		else
 		    break;
-		if (entity == NULL)
-		    break;
 		eprev = NULL;
 	    }
 
 exit_anchor_loop:
-	    if (anchor && anchor->position > left + diff) {
-		XawTextPosition tmp = (left + diff) - anchor->position;
+	    if (anchor) {
+		XawTextAnchor *aprev;
 
-		anchor->position += tmp;
-		entity = anchor->entities;
-		while (entity) {
-		    entity->offset -= tmp;
-		    entity = entity->next;
+		if (anchor->position >= XawMax(right, left + block->length))
+		    anchor->position += diff;
+		else if (anchor->position > left &&
+			 (aprev = XawTextSourcePrevAnchor(w, anchor))) {
+		    XawTextPosition tmp = anchor->position - aprev->position;
+
+		    if (diff) {
+			while (entity) {
+			    entity->offset += diff;
+			    entity = entity->next;
+			}
+		    }
+		    entity = anchor->entities;
+		    while (entity) {
+			entity->offset += tmp;
+			entity = entity->next;
+		    }
+		    if ((entity = aprev->entities) == NULL)
+			aprev->entities = anchor->entities;
+		    else {
+			while (entity->next)
+			    entity = entity->next;
+			entity->next = anchor->entities;
+		    }
+		    anchor->entities = NULL;
+		    (void)XawTextSourceRemoveAnchor(w, anchor);
+		    --i;
 		}
-	    }
-	    else {
-		while (entity) {
-		    entity->offset += diff;
-		    entity = entity->next;
+		else if (diff) {
+		    while (entity) {
+			entity->offset += diff;
+			entity = entity->next;
+		    }
 		}
 	    }
 
@@ -1730,6 +1750,11 @@ XawTextSourceRemoveAnchor(Widget w, XawTextAnchor *anchor)
     return (NULL);
 }
 
+/*
+ * This function is very likely to change soon. Currently, there is a hack
+ * to test/develop the XAW_TENTF_REPLACE attribute using the `type' argument
+ * as a pointer to a *static* XawTextBlock structure.
+ */
 XawTextEntity *
 XawTextSourceAddEntity(Widget w, int type, int flags,
 		       XawTextPosition position, Cardinal length,
@@ -1791,7 +1816,12 @@ XawTextSourceAddEntity(Widget w, int type, int flags,
     }
 
     entity = XtNew(XawTextEntity);
-    entity->type = type;
+    if (flags & XAW_TENTF_REPLACE) {
+	entity->type = 0;
+	entity->data = (XtPointer)type;
+    }
+    else
+	entity->type = type;
     entity->flags = flags;
     entity->offset = position - anchor->position;
     entity->length = length;
@@ -1922,9 +1952,6 @@ _XawTextSourceFindAnchor(Widget w, XawTextPosition position)
 {
     TextSrcObject src = (TextSrcObject)w;
     XawTextAnchor *anchor;
-
-    if (position < ANCHORS_DIST)
-	return (src->textSrc.anchors[0]);
 
     anchor = XawTextSourceFindAnchor(w, position);
 

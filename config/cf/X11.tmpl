@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.49 1999/06/06 11:40:04 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.50 1999/06/12 07:18:28 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -252,6 +252,9 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.49 1999/06/06 11:40:04 dawes Exp $
 #endif
 #ifndef BuildXF86DGALibrary
 #define BuildXF86DGALibrary	BuildXF86DGA
+#endif
+#ifndef BuildXF86RushLibrary
+#define BuildXF86RushLibrary	NO
 #endif
 #ifndef BuildXvExt
 #define BuildXvExt		NO
@@ -1232,6 +1235,21 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #endif
 #endif
 
+#if BuildXF86RushLibrary
+#ifndef SharedLibXxf86rush
+#define SharedLibXxf86rush	NO
+#endif
+#ifndef NormalLibXxf86rush
+#define NormalLibXxf86rush	YES
+#endif
+#ifndef DebugLibXxf86rush
+#define DebugLibXxf86rush	NO
+#endif
+#ifndef ProfileLibXxf86rush
+#define ProfileLibXxf86rush	NO
+#endif
+#endif
+
 #if BuildXvLibrary
 #ifndef SharedLibXv
 #define SharedLibXv		NO
@@ -1348,6 +1366,19 @@ ProjectUnsharedLibReferences(XXF86VM,Xxf86vm,$(XXF86VMLIBSRC),XBuildLibDir)
 SharedLibReferences(XXF86DGA,Xxf86dga,$(XXF86DGALIBSRC),SOXXF86DGAREV,SharedXxf86dgaRev)
 #else
 ProjectUnsharedLibReferences(XXF86DGA,Xxf86dga,$(XXF86DGALIBSRC),XBuildLibDir)
+#endif
+#endif
+
+
+#if BuildXF86RushLibrary
+    XXF86RUSHLIBSRC = $(LIBSRC)/Xxf86rush
+#if SharedLibXxf86rush
+#ifndef SharedXxf86rushRev
+#define SharedXxf86rushRev 1.0
+#endif
+SharedLibReferences(XXF86RUSH,Xxf86rush,$(XXF86RUSHLIBSRC),SOXXF86RUSHREV,SharedXxf86rushRev)
+#else
+ProjectUnsharedLibReferences(XXF86RUSH,Xxf86rush,$(XXF86RUSHLIBSRC),XBuildLibDir)
 #endif
 #endif
 

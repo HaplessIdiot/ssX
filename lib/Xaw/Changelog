@@ -1292,7 +1292,7 @@ xedit.c:
  + Fixed a bug in the ispell code that checks for repeated words.
 
 
-# 14 Aug 1999
+#3122 14 Aug 1999
 -- Xaw --
  + Mixed fonts and colors can be used in the text widget (currently only
    in the Ascii*Object).
@@ -1323,5 +1323,48 @@ xedit.c:
    if he or she wants to use the color/font syntax highlight in the C/C++ mode.
 
 
+# 26 Aug 1999
 
-$XFree86: xc/lib/Xaw/Changelog,v 3.30 1999/07/19 13:36:00 dawes Exp $
+--Xaw--
+ + Added initial support for two new XawTextEntity attributes, that enable
+   hidden text and replaced text. This initial support was the minimum
+   required to get the new html mode in xedit working. A lot of code does
+   math with text positions, and became broken with the addition of these
+   two attributes. Since only code that knows about these two attributes
+   should use it, it is only a question to fix the remaining code in
+   Xaw/xedit.
+ + Bug fixes to AsciiSink.c:PreparePaint to work correctly with tabs and
+   the two new entity attributes.
+ + Disabled the translation "c<Key>q,<Key>Tab" of the search/replace popup.
+   This action is already done by the translation "<Ctrl>Q,<Key>" that I added
+   to TextTr.c. Disabling that translation has the advantage that now it
+   is possible to replace ^Ms by nothing.
+ + Added some new functions to TextSink.c. The functions XawTextSinkCopyProperty,
+   XawTextSinkAddProperty and XawTextSinkCombineProperty are candidates to being
+   public in the future, but, there is a problem when using
+   XawTextSinkCombineProperty, that requires the AsciiSinkObject having the
+   correct XawTextPropertyList, what can generate a "chicken and egg" like
+   problem (I did some hacks in xedit to have the first html-mode version
+   working).
+ + Added several new flags to the XawTextProperty attributes, and a new field,
+   called xlfd_mask.
+ + Some bug fixes to XawTextSourceReplace and to the code to manage the
+   XawTextAnchor e XawTextEntity structures. The form-paragraph, called with
+   M-Q does several consecutive text changes, and was very useful to find bugs.
+ + The flag XAW_TENTF_REPLACE is a hack for XawTextSourceAddEntity currently.
+   The function XawTextSourceAddEntity will probably change its parameters
+   to receive a structure pointer, or a pointer parameter.
+
+--xedit--
+ + Fixed some bugs in c-mode.c. Again, this patch fixes all the bugs I have
+   found.
+ + Added the html-mode.c file to xedit. The html-mode is in its initial steps.
+   It is not usable yet, but should not core-dump or leak memory (unless you
+   try to edit the file, then, I cannot say what will happen). The html mode
+   should be used only to see a rendered version of the file, but, there are
+   several markups not implemented. To be usable, it must yet understand at
+   least <ul>, <ol>, <li>, <dl>, <dd>, <hr> and the table tags.
+
+
+
+$XFree86: xc/lib/Xaw/Changelog,v 3.31 1999/08/15 13:00:31 dawes Exp $

@@ -1,4 +1,48 @@
 XFree86 3.9.15d (29 August 1999)
+3010. Fix for the option handling in the glide driver (#3181, Henrik Harmsen).
+3009. NVIDIA doc update (#3179, Jarno Paananen).
+3008. Doc update for the C&T driver (#3176, David Bateman).
+3007. Update some of the bindist files (#3175, Michael Rohleder).
+3006. Fix a libXfont build problem that shows up on IUS (#3175,
+      Michael Rohleder).
+3005. Xaw and xedit updates (#3174, 3180, Paulo Cesar Pereira de Andrade).
+3004. Add a new DebuggableLibraries imake parameter to allow libraries to
+      be built with debugging symbols, and enable this by default for Linux
+      (#3173, Bruno Haible).
+3003. Some Driver SDK build fixes (#3172, David Bateman).
+3002. Modify the MGA driver to fall back to DDC1 if DDC2 fails or is
+      disabled (#3171, Andrew Aitchison).
+3001. Allow the -allowMouseOpenFail X server command line option to be
+      recognised independently of the XFree86-Misc extension (#3170, Joe Moss).
+3000. Update NetBSD's and OpenBSD's aperture driver to remove a warning from
+      xf86ReadBIOS() during xf86Config.c's PC98 detection on non-PC98 systems
+      (#3169, Marc La France).
+2999. Disable setting the default gamma from the DDC data (#3168,
+      Andrew Aitchison).
+2998. Update the microtouch input driver for "NEW_INPUT", and re-enable
+      building it (#3178, David Woodhouse).
+2997. Back out the change in 3.9.15c that includes "non-system" resources
+      in the RAC "system" resources list (#3167, Marc La France).
+2996. Update the RELNOTES for DDC (#3165, Andrew Aitchison).
+2995. Fix a problem with xf86ReadBIOS() on NetBSD/OpenBSD (#3164,
+      Marc La France).
+2994. Add an XLC_LOCALE file for zh_TW.Big5 (#3163, Pablo Saratxaga).
+2993. Add dummy Compose files for encodings that don't already have them
+      (#3163, Pablo Saratxaga).
+2992. APM driver updates.  The Rush extension is now included in the driver
+      (some files missing, so not enabled yet) (#3162, 3159, Loic Grenie).
+2991. Some fixes for the VidMode extension (#3161, Loic Grenie).
+2990. Update SuperProbe to recognise the APM AT3D chipset (#3160, Loic Grenie).
+2989. Some fixes for the nv driver (#3158, Jarno Paananen).
+2988. Fix a typo in ObjectFromAsmSource() in xf86.rules (#3157,
+      Matthieu Herrb).
+2987. Add some NVIDIA cards to the Cards file (#3155, Jarno Paananen).
+2986. A quick hack to cut down on XAA pixmap cache thrashing that
+      happens with some particular apps (#3154, Mark Vojkovich).
+2985. Update the tabtcvn file to include the full tcvn-5712 encoding, not
+      only lowercase characters (#3153, Pablo Saratxaga).
+2984. Create the doc index list from information in the .sgml files
+      (David Dawes).
 2983. Basic man page for the generic VGA driver (David Dawes).
 2982. Fix for lockup problem with Trident Image 975 (Alan Hourihane).
 
@@ -8619,4 +8663,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.817 1999/08/22 11:59:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.818 1999/08/26 08:16:07 dawes Exp $

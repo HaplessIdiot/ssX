@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextSinkP.h,v 1.7 1999/06/20 08:41:11 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSinkP.h,v 1.8 1999/08/15 13:00:37 dawes Exp $ */
 
 #ifndef _XawTextSinkP_h
 #define _XawTextSinkP_h
@@ -59,18 +59,49 @@ SOFTWARE.
 #include <X11/Xmu/Xmu.h>
 
 #ifndef OLDXAW
-#define XAW_TPROP_FOREGROUND	(1<<0)
-#define XAW_TPROP_BACKGROUND	(1<<1)
-#define XAW_TPROP_FONT		(1<<2)
-#define XAW_TPROP_FONTSET	(1<<3)
-#define XAW_TPROP_OVERSTRIKE	(1<<4)
-#define XAW_TPROP_UNDERLINE	(1<<5)
-struct _XawTextProperty {
-    XrmQuark identifier;
-    Pixel foreground, background;
+/* font/fontset defined? */
+#define XAW_TPROP_FONT		(1<<0)
+#define XAW_TPROP_FONTSET	(1<<1)
+
+/* extra attributes */
+#define XAW_TPROP_FOREGROUND	(1<<2)
+#define XAW_TPROP_BACKGROUND	(1<<3)
+#define XAW_TPROP_FPIXMAP	(1<<4)
+#define XAW_TPROP_BPIXMAP	(1<<5)
+#define XAW_TPROP_UNDERLINE	(1<<6)
+#define XAW_TPROP_OVERSTRIKE	(1<<7)
+#define XAW_TPROP_SUBSCRIPT	(1<<8)
+#define XAW_TPROP_SUPERSCRIPT	(1<<9)
+
+/* xlfd attributes */
+#define XAW_TPROP_FOUNDRY	(1<<0)
+#define XAW_TPROP_FAMILY	(1<<1)
+#define XAW_TPROP_WEIGHT	(1<<2)
+#define XAW_TPROP_SLANT		(1<<3)
+#define XAW_TPROP_SETWIDTH	(1<<4)
+#define XAW_TPROP_ADDSTYLE	(1<<5)
+#define XAW_TPROP_PIXELSIZE	(1<<6)
+#define XAW_TPROP_POINTSIZE	(1<<7)
+#define XAW_TPROP_RESX		(1<<8)
+#define XAW_TPROP_RESY		(1<<9)
+#define XAW_TPROP_SPACING	(1<<10)
+#define XAW_TPROP_AVGWIDTH	(1<<11)
+#define XAW_TPROP_REGISTRY	(1<<12)
+#define XAW_TPROP_ENCODING	(1<<13)
+struct _XawTextProperty {	/* to be extended/modified */
+    XrmQuark identifier, code;
+    unsigned long mask;
     XFontStruct *font;
     XFontSet fontset;
-    unsigned long mask;
+    Pixel foreground, background;
+    Pixmap foreground_pixmap, background_pixmap;
+    XrmQuark xlfd;
+
+    unsigned long xlfd_mask;
+    XrmQuark foundry, family, weight, slant, setwidth, addstyle, pixel_size,
+	     point_size, res_x, res_y, spacing, avgwidth, registry, encoding;
+
+    short underline_position, underline_thickness;
 };
 
 struct _XawTextPropertyList {
@@ -209,6 +240,26 @@ XawTextProperty *XawTextSinkGetProperty
 (
  Widget			 w,
  XrmQuark		 property
+ );
+
+XawTextProperty *XawTextSinkCopyProperty
+(
+ Widget			w,
+ XrmQuark		property
+ );
+
+XawTextProperty *XawTextSinkAddProperty
+(
+ Widget			 w,
+ XawTextProperty	*property
+ );
+
+XawTextProperty *XawTextSinkCombineProperty
+(
+ Widget			 w,
+ XawTextProperty	*result_in_out,
+ XawTextProperty	*property,
+ Bool			 override
  );
 
 Bool XawTextSinkBeginPaint

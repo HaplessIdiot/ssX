@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/39 1997/02/26 18:09:44 kaleb $
-XCOMM $XFree86: xc/lib/Imakefile,v 3.29 1999/06/21 10:06:13 dawes Exp $
+XCOMM $XFree86: xc/lib/Imakefile,v 3.30 1999/07/06 11:38:03 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags
 
@@ -43,6 +43,10 @@ XF86VMLIB = Xxf86vm
 XF86DGALIB = Xxf86dga
 #endif
 
+#if BuildXF86RushLibrary
+XF86RUSHLIB = Xxf86rush
+#endif
+
 #if BuildXvLibrary
 XVLIB = Xv
 #endif
@@ -55,7 +59,7 @@ XANTILIB = Xanti
 GLXLIB = GL
 #endif
 
-XF86EXTLIBS = $(XF86MISCLIB) $(XF86VMLIB) $(XF86DGALIB)
+XF86EXTLIBS = $(XF86MISCLIB) $(XF86VMLIB) $(XF86DGALIB) $(XF86RUSHLIB)
 
 #if BuildLBX
 LBXUTILDIR = lbxutil
@@ -77,7 +81,7 @@ FONTSUBDIR = font
 
 #if !BuildServersOnly
 LINTSUBDIRS = Xau Xdmcp $(THRSTUBLIB) X11 oldX ICE SM Xext Xt \
-	     $(SSLIB) $(XF86MISCLIB) $(XF86VMLIB) $(XF86DGALIB) \
+	     $(SSLIB) $(XF86MISCLIB) $(XF86VMLIB) $(XF86DGALIB) $(XF86RUSHLIB) \
 	     Xmu Xpm Xaw $(XAW6LIBDIR) XIE Xi Xtst FS \
 	     PEX5 $(XKBLIBDIR) $(XKBUILIBDIR) $(LBXUTILDIR) $(XALIBDIR) \
 	     Xp $(XVLIB) $(XANTILIB) $(GLXLIB) $(ZLIBDIR) $(REGEXDIR)
