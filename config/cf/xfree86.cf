@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.444 2003/04/22 22:07:20 herrb Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.445 2003/04/24 22:14:53 herrb Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1201,6 +1201,10 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #  else
 #    define BuildGLXLibrary	YES
 #  endif
+#endif
+
+#ifndef BuildXF86OldDRMCompat
+#  define BuildXF86OldDRMCompat	YES
 #endif
 
 /*

@@ -24,7 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/dri/dri_glx.c,v 1.11 2002/10/30 12:51:25 alanh Exp $ */
+/* $XFree86: xc/lib/GL/dri/dri_glx.c,v 1.12 2003/02/06 12:42:10 alanh Exp $ */
 
 /*
  * Authors:
@@ -48,6 +48,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <sys/types.h>
 #include <stdarg.h>
 
+#ifndef RTLD_NOW
+#define RTLD_NOW 0
+#endif
+#ifndef RTLD_GLOBAL
+#define RTLD_GLOBAL 0
+#endif
 
 typedef void *(*CreateScreenFunc)(Display *dpy, int scrn, __DRIscreen *psc,
                                   int numConfigs, __GLXvisualConfig *config);

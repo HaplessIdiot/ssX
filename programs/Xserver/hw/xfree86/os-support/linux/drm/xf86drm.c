@@ -27,7 +27,7 @@
  * Authors: Rickard E. (Rik) Faith <faith@valinux.com>
  *	    Kevin E. Martin <martin@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.31 2003/02/04 03:01:59 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.32 2003/04/24 02:58:10 dawes Exp $
  *
  */
 
@@ -91,6 +91,10 @@ extern unsigned long _bus_base(void);
 #ifdef __NetBSD__
 #define DRM_MAJOR 34
 #endif
+
+# ifdef __OpenBSD__
+#  define DRM_MAJOR 81
+# endif
 
 #ifndef DRM_MAJOR
 #define DRM_MAJOR 226		/* Linux */
@@ -278,8 +282,10 @@ int drmAvailable(void)
     int           fd;
 
     if ((fd = drmOpenMinor(0, 1)) < 0) {
+#ifdef __linux__
 				/* Try proc for backward Linux compatibility */
 	if (!access("/proc/dri/0", R_OK)) return 1;
+#endif
 	return 0;
     }
     
@@ -442,7 +448,7 @@ static void drmCopyVersion(drmVersionPtr d, const drm_version_t *s)
 }
 
 /* drmGet Version obtains the driver version information via an ioctl.  Similar
- * information is available via /proc/dri. */
+ * information is available via /proc/dri on linux. */
 
 drmVersionPtr drmGetVersion(int fd)
 {
@@ -471,6 +477,7 @@ drmVersionPtr drmGetVersion(int fd)
 	version->desc    = drmMalloc(version->desc_len + 1);
 
     if (ioctl(fd, DRM_IOCTL_VERSION, version)) {
+	drmMsg("DRM_IOCTL_VERSION: %s\n", strerror(errno));
 	drmFreeKernelVersion(version);
 	return NULL;
     }

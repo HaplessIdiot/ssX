@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_screen.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_screen.c,v 1.3 2003/03/26 20:43:50 tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -391,6 +391,9 @@ void *__driCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
    return (void *) psp;
 }
 
+#ifndef RTLD_GLOBAL
+#define RTLD_GLOBAL 0
+#endif
 
 /* This function is called by libGL.so as soon as libGL.so is loaded.
  * This is where we'd register new extension functions with the dispatcher.

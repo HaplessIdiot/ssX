@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_context.c,v 1.10 2002/10/30 12:52:00 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_context.c,v 1.11 2003/01/15 04:16:39 dawes Exp $ */
 
 /*
  * Original rewrite:
@@ -698,6 +698,9 @@ static void debug_grTexDownloadMipMapLevel( GrChipID_t        tmu,
 
 #endif
 
+#ifndef RTLD_NOW
+#define RTLD_NOW 0
+#endif
 
 /*
  * Examine the context's deviceID to determine what kind of 3dfx hardware

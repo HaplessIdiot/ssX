@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.16tsi Exp $
+XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.18 2002/11/25 14:04:49 eich Exp $
 XCOMM The contents of this file are subject to the GLX Public License Version 1.0
 XCOMM (the "License"). You may not use this file except in compliance with the
 XCOMM License. You may obtain a copy of the License at Silicon Graphics, Inc.,
@@ -35,10 +35,10 @@ XCOMM 	glw
 
 LinkSourceFile(glapi.c, $(MESASRCDIR)/src)
 LinkSourceFile(glthread.c, $(MESASRCDIR)/src)
-#ifdef i386Architecture
+#if defined(i386Architecture)
 LinkSourceFile(glapi_x86.S, $(MESASRCDIR)/src/X86)
 #endif
-#ifdef SparcArchitecture
+#if defined(SparcArchitecture) && !defined(OpenBSDArchitecture)
 LinkSourceFile(glapi_sparc.S, $(MESASRCDIR)/src/SPARC)
 #endif
 
@@ -137,7 +137,7 @@ LinkSourceFile(glapi_sparc.S, $(MESASRCDIR)/src/SPARC)
 
 LibraryObjectRule()
 
-#if BuildXF86DRI && defined(i386Architecture)
+#if BuildXF86DRI && defined(i386Architecture) && MesaUseX86Asm
 ObjectFromAsmSource(glapi_x86, NullParameter)
 #endif
 #if BuildXF86DRI && defined(SparcArchitecture)
