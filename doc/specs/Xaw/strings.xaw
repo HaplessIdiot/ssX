@@ -1,4 +1,4 @@
-.\" $XConsortium: strings.xaw,v 1.23 94/04/14 18:18:14 kaleb Exp $
+.\" $Xorg: strings.xaw,v 1.3 2000/08/17 19:42:29 cpqbld Exp $
 \" These macros are not associated with any widget.
 
 .de Rs \" Resource Conversion message
@@ -115,7 +115,7 @@ this widget.  The use of this resource is deprecated in favor
 of \fBcursorName\fP.
 ..
 .de Cn \" Simple cursorName
-.ie 'Bold'\\$1' .IP\fBcursorName\fP 1.5i
+.ie 'Bold'\\$1' .IP \fBcursorName\fP 1.5i
 .el .IP cursorName 1.5i
 The name of the symbol to use to represent the pointer cursor.  This resource
 will override the \fBcursor\fP resource if both are specified. (See 2.4.1)
@@ -145,13 +145,13 @@ be checked by any subclasses that have behavior that
 should vary with locale.
 ..
 .de Pf \" Simple pointerColor
-.ie 'Bold'\\$1' .IP\fBpointerColor\fP 1.5i
+.ie 'Bold'\\$1' .IP \fBpointerColor\fP 1.5i
 .el .IP pointerColor 1.5i
 A pixel value which indexes the widget's colormap to derive the foreground
 color of the pointer symbol specified by the \fBcursorName\fP resource.
 ..
 .de Pb \" Simple pointerColorBackground
-.ie 'Bold'\\$1' .IP\fBpointerColorBackground\fP 1.75i
+.ie 'Bold'\\$1' .IP \fBpointerColorBackground\fP 1.75i
 .el .IP pointerColorBackground 1.75i
 A pixel value which indexes the widget's colormap to derive the background
 color of the pointer symbol specified by the \fBcursorName\fP resource.
@@ -227,7 +227,7 @@ one.
 .el .IP label 1.5i
 Specifies the text string to be displayed in the widget's window
 if no bitmap is specified.  The default is the name of this widget.
-Irregardless of the value of \fBencoding\fP or \fBinternational\fP,
+Regardless of the value of \fBencoding\fP or \fBinternational\fP,
 a single newline character (1 byte) will cause a line break.
 ..
 .de Ll \" Label leftBitmap
@@ -436,18 +436,18 @@ the scrollbar.
 ..
 .de Tc \" Text displayCaret
 .ie 'Bold'\\$1' .IP \fBdisplayCaret\fP 1.5i
-.el .IP displayCaret	 1.5i
+.el .IP displayCaret 1.5i
 Whether or not to display the text insert point.
 ..
 .de Td \" Text displayPosition
 .ie 'Bold'\\$1' .IP \fBdisplayPosition\fP 1.5i
-.el .IP displayPosition	 1.5i
+.el .IP displayPosition 1.5i
 The position in the text buffer of the character that is currently
 displayed in the upper left hand corner of the text display.
 ..
 .de Ti \" Text insertPosition
 .ie 'Bold'\\$1' .IP \fBinsertPosition\fP 1.5i
-.el.IP insertPosition 1.5i
+.el .IP insertPosition 1.5i
 This is the location of the insert point.  It is expressed in
 characters from the beginning of the file.  The cursor will always be
 forced to be on the screen.  This resource may therefore be used to
@@ -511,12 +511,14 @@ the resource manager.
 These are the TextSink or TextSource objects used by this widget.
 .ie 'Bold'\\$1' When using the Text widget these MUST be set by the \
 application programmer.
-.el When \fBinternational\fP is set to \fBtrue\fP
-the AsciiText widget initializes these resources to point \
+.el \{\
+When \fBinternational\fP is set to \fBtrue\fP
+the AsciiText widget initializes these resources to point
 to an MultiSink and MultiSrc respectively.
-.el When \fBinternational\fP is set to \fBfalse\fP
-the AsciiText widget initializes these resources to point \
+When \fBinternational\fP is set to \fBfalse\fP
+the AsciiText widget initializes these resources to point
 to an AsciiSink and AsciiSrc respectively.
+.\}
 ..
 .de Tw \" Text wrap
 .ie 'Bold'\\$1' .IP \fBwrap\fP 1.5i
@@ -668,7 +670,7 @@ internal memory, but may be used in place by setting the
 When the \fBstring\fP resource is queried, using \fBXtGetValues\fP, and
 \fBuseStringInPlace\fP is false, the value returned is valid until
 the next time the \fBstring\fP resource is queried, or until the application 
-writer calls \fBXawAsciiSrcFreeString\fP.  If \fBuseStringInPlace\fP is
+writer calls \fBXawAsciiSourceFreeString\fP.  If \fBuseStringInPlace\fP is
 true, a pointer to the actual string is returned.  See also section 5.6.
 ..
 .de Ot \" AsciiSrc type
@@ -699,4 +701,14 @@ formats, use of this resource forces application code to be cognisant as to
 which of the two is being used.  Application programming is simplified when
 use of this resource is avoided.\fP
 .So \\$1
+..
+.\" .TB is used throughout this manual.  Don't know what it is,
+.\" but I'll guess "table bold".
+.\" Note that I've also used it to set the size, rather than
+.\" have (incorrect) commands sprinkled throughout the document.
+.\"   -gildea April 1994
+.de TB
+.B
+.ps 9
+.vs 11
 ..
