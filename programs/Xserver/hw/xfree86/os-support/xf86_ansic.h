@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.24 1999/05/15 12:10:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.25 1999/06/14 07:31:57 dawes Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -106,6 +106,8 @@
 #ifndef MAXLONG
 #define MAXLONG LONG_MAX
 #endif
+
+#include <stdarg.h>
 
 /*
  * ANSI C compilers only.
@@ -224,8 +226,8 @@ extern char* xf86tmpnam(char*);
 extern int xf86tolower(int);
 extern int xf86toupper(int);
 extern int xf86ungetc(int,XF86FILE*);
-extern int xf86vfprintf(XF86FILE*,const char*,...);
-extern int xf86vsprintf(char*,const char*,...);
+extern int xf86vfprintf(XF86FILE*,const char*,va_list);
+extern int xf86vsprintf(char*,const char*,va_list);
 
 extern int xf86open(const char*, int,...);
 extern int xf86close(int);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.130 1999/06/12 17:30:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.131 1999/06/21 10:06:18 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -170,7 +170,32 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
       xf86Msg(X_ERROR, "Error from xf86HandleConfigFile()\n");
       return;
     }
-    
+
+    /*
+     * Install signal handler for unexpected signals
+     */
+    xf86Info.caughtSignal=FALSE;
+    if (!xf86Info.notrapSignals) {
+       signal(SIGSEGV,xf86SigHandler);
+       signal(SIGILL,xf86SigHandler);
+#ifdef SIGEMT
+       signal(SIGEMT,xf86SigHandler);
+#endif
+       signal(SIGFPE,xf86SigHandler);
+#ifdef SIGBUS
+       signal(SIGBUS,xf86SigHandler);
+#endif
+#ifdef SIGSYS
+       signal(SIGSYS,xf86SigHandler);
+#endif
+#ifdef SIGXCPU
+       signal(SIGXCPU,xf86SigHandler);
+#endif
+#ifdef SIGXFSZ
+       signal(SIGXFSZ,xf86SigHandler);
+#endif
+    }
+
     xf86OpenConsole();
 
     /* Run an external VT Init program if specified in the config file */
@@ -616,6 +641,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     xf86EnableIO();
   }
 
+#if 0
   /*
    * Install signal handler for unexpected signals
    */
@@ -641,6 +667,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
      signal(SIGXFSZ,xf86SigHandler);
 #endif
   }
+#endif
 
   /*
    * Use the previously collected parts to setup pScreenInfo

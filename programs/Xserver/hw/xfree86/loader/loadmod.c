@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.45 1999/03/29 09:41:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.46 1999/04/11 13:11:04 dawes Exp $ */
 
 /*
  *
@@ -1181,7 +1181,7 @@ LoaderErrorMsg(const char *name, const char *modname, int errmaj, int errmin)
 		msg = "module does not exist";
 		break;
 	case LDR_NOSUBENT:
-		msg = "submodule does not exist";
+		msg = "submodule could not be loaded";
 		break;
 	case LDR_NOSPACE:
 		msg = "too many modules";
@@ -1215,6 +1215,9 @@ LoaderErrorMsg(const char *name, const char *modname, int errmaj, int errmin)
 		break;
 	case LDR_BADOS:
 		msg = "module doesn't support this OS";
+		break;
+	case LDR_MODSPECIFIC:
+		msg = "module-specific error";
 		break;
 	default:
 		msg = "uknown error";

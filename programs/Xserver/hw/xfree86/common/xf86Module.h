@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.14 1999/03/06 13:12:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.15 1999/04/11 13:10:48 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -90,7 +90,8 @@ typedef enum {
     LDR_MISMATCH,	/* the module didn't match the spec'd requirments */
     LDR_BADUSAGE,	/* LoadModule is called with bad arguments */
     LDR_INVALID,	/* The module doesn't have a valid ModuleData object */
-    LDR_BADOS		/* The module doesn't support the OS */
+    LDR_BADOS,		/* The module doesn't support the OS */
+    LDR_MODSPECIFIC	/* A module-specific error in the SetupProc */
 } LoaderErrorCode;
 
 /*

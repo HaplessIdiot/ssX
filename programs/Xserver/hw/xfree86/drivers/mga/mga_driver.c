@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.102 1999/06/20 05:23:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.103 1999/06/20 08:41:36 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -522,18 +522,18 @@ MGAProbe(DriverPtr drv, int flags)
 	pScrn = xf86AllocateScreen(drv, 0);
 	
 	/* Fill in what we can of the ScrnInfoRec */
-	pScrn->driverVersion = VERSION;
-	pScrn->driverName	 = MGA_DRIVER_NAME;
-	pScrn->name		 = MGA_NAME;
-	pScrn->Probe	 = MGAProbe;
-	pScrn->PreInit	 = MGAPreInit;
-	pScrn->ScreenInit	 = MGAScreenInit;
-	pScrn->SwitchMode	 = MGASwitchMode;
-	pScrn->AdjustFrame	 = MGAAdjustFrame;
-	pScrn->EnterVT	 = MGAEnterVT;
-	pScrn->LeaveVT	 = MGALeaveVT;
-	pScrn->FreeScreen	 = MGAFreeScreen;
-	pScrn->ValidMode	 = MGAValidMode;
+	pScrn->driverVersion	= VERSION;
+	pScrn->driverName	= MGA_DRIVER_NAME;
+	pScrn->name		= MGA_NAME;
+	pScrn->Probe		= MGAProbe;
+	pScrn->PreInit		= MGAPreInit;
+	pScrn->ScreenInit	= MGAScreenInit;
+	pScrn->SwitchMode	= MGASwitchMode;
+	pScrn->AdjustFrame	= MGAAdjustFrame;
+	pScrn->EnterVT		= MGAEnterVT;
+	pScrn->LeaveVT		= MGALeaveVT;
+	pScrn->FreeScreen	= MGAFreeScreen;
+	pScrn->ValidMode	= MGAValidMode;
 	foundScreen = TRUE;
 #ifndef DISABLE_VGA_IO
 	xf86ConfigActivePciEntity(pScrn, usedChips[i], MGAPciChipsets, NULL,
@@ -549,7 +549,7 @@ MGAProbe(DriverPtr drv, int flags)
     xfree(usedChips);
     return foundScreen;
 }
-	
+
 
 /*
  * Should aim towards not relying on this.
@@ -1062,7 +1062,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 			&pMga->Access, NULL);
 #endif
 
-     pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
+    pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
   
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;

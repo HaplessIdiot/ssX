@@ -1,4 +1,12 @@
-XFree86 3.9Pu (2x June 1999)
+XFree86 3.9Pu (27 June 1999)
+2781. Fix some problems with the glide driver that can result in server crashes
+      if there is a problem when it is starting up (David Dawes).
+2780. Install the X server signal handlers before xf86OpenConsole is first
+      called.  This makes sure that the VT is returned to text mode if the
+      server crashes in the early stages of InitOutput() (David Dawes).
+2779. Fix xf86vsprintf() and xf86vfprintf().
+2778. Support for the different PLL reference clock used for HP's on-board
+      G200s.
 2777. Disable building the Xanti extension (Mark Vojkovich).
 2776. Update the log file handling to catch most messages that are generated
       before the log file is actually opened (David Dawes).
@@ -8235,4 +8243,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.782 1999/06/20 15:02:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.783 1999/06/21 10:06:14 dawes Exp $

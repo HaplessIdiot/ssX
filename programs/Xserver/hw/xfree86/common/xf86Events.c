@@ -1,5 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.73 1999/06/13 05:18:45 dawes Exp $ */
-#define DEBUG
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.74 1999/06/20 05:23:29 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *

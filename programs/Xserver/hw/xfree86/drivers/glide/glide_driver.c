@@ -25,18 +25,20 @@
      which voodoo board to use.
    - Manpage updates
 
+   1999-06-25
+   - Modify glideSetup to not register the driver when libglide2x.so cannot
+     be loaded, and to return appropriate error codes when it fails.
+   - Prevent GLIDEFreeScreen() from crashing if called early.
+
    TODO
    * Support for adjusting gamma correction.
    * Support for setting gamma individually for R,G,B when Glide 3 arrives
      for Linux.  This will allow me to get rid of that sick green tint my
      voodoo2 board produces...
    * Support static loading.
-   * Fix bug that causes the server not to restore the console after failing
-     in glideSetup(). (Which is not a bug in this driver but affects it
-     rather hard).
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.2 1999/04/18 13:49:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.3 1999/06/20 15:02:52 dawes Exp $ */
 
 #include "xaa.h"
 #include "xf86Cursor.h"
@@ -249,9 +251,6 @@ glideSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 
   if (!setupDone) 
   {
-    setupDone = TRUE;
-    xf86AddDriver(&GLIDE, module, 0);
-
     /*
      * Modules that this driver always requires may be loaded here
      * by calling LoadSubModule().
@@ -274,13 +273,23 @@ glideSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 "  # ln -s /usr/lib/libglide2x.so /usr/X11R6/lib/modules\n"
 "\n"
 "\n");
-      /* TODO: Note: If I return NULL here, the server will not restore the console correctly,
-         forcing a reboot. Must find that. (valid for 3.9Pi) */
+      if (errmaj)
+        *errmaj = LDR_NOSUBENT;
+      if (errmin)
+        *errmin = errmaj2;
       return NULL;
     }
 
-    if (!LoadGlide())
+    if (!LoadGlide()) {
+      if (errmaj)
+        *errmaj = LDR_MODSPECIFIC;
+      if (errmin)
+        *errmin = 0;
       return NULL;
+    }
+
+    setupDone = TRUE;
+    xf86AddDriver(&GLIDE, module, 0);
 
     /*
      * Tell the loader about symbols from other modules that this module
@@ -819,8 +828,9 @@ GLIDEFreeScreen(int scrnIndex, int flags)
   /*
    * This only gets called when a screen is being deleted.  It does not
    * get called routinely at the end of a server generation.
-     */
-  xfree(pGlide->ShadowPtr);
+   */
+  if (pGlide && pGlide->ShadowPtr)
+    xfree(pGlide->ShadowPtr);
   GLIDEFreeRec(xf86Screens[scrnIndex]);
 }
 

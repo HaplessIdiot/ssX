@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.51 1999/06/20 16:35:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.52 1999/06/21 10:06:18 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1440,6 +1440,11 @@ xf86MatchDevice(const char *drivername, GDevPtr **driversectlist)
             devices[i][count[i]++] = screensecptr->device;
         }
     }
+#if 0
+    /*
+     * XXX The parser won't let devices with no Driver name through, so
+     * this can be removed.
+     */
     if (count[i] == 0) {
         /*
          * we haven't found a single one, let's try to find one that
@@ -1459,6 +1464,7 @@ xf86MatchDevice(const char *drivername, GDevPtr **driversectlist)
             }
         }
     }
+#endif
     /*
      * make the array NULL terminated and return its address
      */

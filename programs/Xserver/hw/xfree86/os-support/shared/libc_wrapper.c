@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.45 1999/05/14 14:11:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.46 1999/06/14 07:32:07 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -282,26 +282,14 @@ xf86strdup(const char* s)
 }
 
 int
-xf86sprintf(
-#if NeedVarargsPrototypes
-char *s, const char *format, ...)
-#else
-s, format, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) /* limit of ten args */
-    char *s;
-    const char *format;
-    char *a0, *a1, *a2, *a3, *a4, *a5, *a6, *a7, *a8, *a9;
-#endif
+xf86sprintf(char *s, const char *format, ...)
 {
-#if NeedVarargsPrototypes
     int ret;
     va_list args;
     va_start(args, format);
     ret = vsprintf(s, format, args);
     va_end(args);
     return ret;
-#else
-    return sprintf(s, format, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
-#endif
 }
 
 void
@@ -649,19 +637,10 @@ xf86printf(const char *format, ...)
 }
 
 int
-xf86fprintf(
-#if NeedVarargsPrototypes
-XF86FILE* f, const char *format, ...)
-#else
-f, format, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) /* limit of ten args */
-    XF86FILE* f;
-    const char *format;
-    char *a0, *a1, *a2, *a3, *a4, *a5, *a6, *a7, *a8, *a9;
-#endif
+xf86fprintf(XF86FILE* f, const char *format, ...)
 {
 	XF86FILE_priv* fp = (XF86FILE_priv*)f;
 
-#if NeedVarargsPrototypes
 	int ret;
 	va_list args;
 	va_start(args, format);
@@ -674,52 +653,25 @@ f, format, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) /* limit of ten args */
 	ret = vfprintf(fp->filehnd,format,args);
 	va_end(args);
 	return ret;
-#else
-#ifdef DEBUG
-	ErrorF("xf86fprintf for XF86FILE %p\n", fp);
-#endif
-	_xf86checkhndl(fp,"xf86fprintf");
-	return fprintf(fp->filehnd, format, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
-#endif
 }
 
 int
-xf86vfprintf(XF86FILE* f, const char *format,...)
+xf86vfprintf(XF86FILE* f, const char *format, va_list ap)
 {
 	XF86FILE_priv* fp = (XF86FILE_priv*)f;
-	int ret;
-	va_list args;
-	va_start(args, format);
 
 #ifdef DEBUG
 	ErrorF("xf86vfprintf for XF86FILE %p\n", fp);
 #endif
 	_xf86checkhndl(fp,"xf86vfprintf");
 
-	ret = vfprintf(fp->filehnd,format,args);
-	va_end(args);
-	return ret;
+	return vfprintf(fp->filehnd,format,ap);
 }
 
-
-				/* This function originally used ..., and
-                                   passed args to vsprintf, which is wrong.
-                                   It should use va_list instead of ...,
-                                   but that requires loading another header
-                                   file.  So, I just fixed the ... use.
-                                   vsscanf may also be wrong. */
 int
-xf86vsprintf(char *s, const char *format, ...)
+xf86vsprintf(char *s, const char *format, va_list ap)
 {
-	int ret;
-	va_list args;
-	va_list ap;
-
-	va_start(args, format);
-	ap = va_arg(args, va_list);
-	ret = vsprintf(s,format,ap);
-	va_end(args);
-	return ret;
+	return vsprintf(s, format, ap);
 }
 
 #ifdef HAVE_VFSCANF

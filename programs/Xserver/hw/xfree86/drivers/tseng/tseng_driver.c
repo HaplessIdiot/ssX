@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.53 1999/06/12 07:18:58 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.54 1999/06/20 05:23:43 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -507,6 +507,7 @@ TsengProbe(DriverPtr drv, int flags)
 					  NULL,NULL,NULL,NULL,NULL);
 		foundScreen = TRUE;
 	    }
+	    xfree(usedChips);
 	}
     }
     
@@ -514,7 +515,7 @@ TsengProbe(DriverPtr drv, int flags)
     numUsed = xf86MatchIsaInstances(TSENG_NAME, TsengChipsets,
 			TsengIsaChipsets,drv, TsengFindIsaDevice, devSections,
 			numDevSections, &usedChips);
-    if (numUsed >= 0) 
+    if (numUsed >= 0)  {
 	for (i = 0; i < numUsed; i++) {
 	    ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
 	    TsengAssignFPtr(pScrn);
@@ -522,6 +523,9 @@ TsengProbe(DriverPtr drv, int flags)
 	    xf86ConfigActiveIsaEntity(pScrn,usedChips[i],TsengIsaChipsets,
 				      NULL,NULL,NULL,NULL,NULL);
 	}
+	xfree(usedChips);
+    }
+    xfree(devSections);
     return foundScreen;
 }
 
