@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include "glheader.h"
 
 #include "mgacontext.h"
