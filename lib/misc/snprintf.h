@@ -1,4 +1,4 @@
-/* $XFree86 */
+/* $XFree86$ */
 
 #ifndef SNPRINTF_H
 #define SNPRINTF_H
