@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.30 2001/12/26 21:51:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.31 2002/10/15 02:02:14 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
@@ -1994,7 +1994,7 @@ xf86WcmOpen(LocalDevicePtr	local)
     /* Extract version numbers */
     sscanf(buffer+loop+1, "%f", &version);
 
-    if (buffer[2] == 'G' && buffer[3] == 'D') {
+    if ((buffer[2] == 'G' || buffer[2] == 'X') && buffer[3] == 'D') {
 	DBG(2, ErrorF("detected an Intuos model\n"));
 	common->wcmProtocolLevel = 5;
 	common->wcmMaxZ = 1023;		/* max Z value */
