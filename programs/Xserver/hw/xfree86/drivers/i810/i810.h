@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.27 2002/01/08 18:59:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.28 2002/01/09 00:37:30 dawes Exp $ */
 
 /*
  * Authors:
@@ -133,8 +133,8 @@ typedef struct _ModeInfoData
    CRTCInfoBlock *block;
 } ModeInfoData;
 
-#ifndef __GNUC__
-#define __attribute(a)__ /**/
+#if !defined(__GNUC__) && !defined(__attribute__)
+#define __attribute__(a)
 #endif
 
 /*
