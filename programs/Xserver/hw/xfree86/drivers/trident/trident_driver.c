@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.121 2001/01/17 11:17:38 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.122 2001/01/21 21:19:33 tsi Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -416,6 +416,7 @@ static const char *xaaSymbols[] = {
     "XAACreateInfoRec",
     "XAAHelpPatternROP",
     "XAAHelpSolidROP",
+    "XAAFillSolidRects",
     "XAACopyROP",
     "XAAPatternROP",
     "XAAInit",
@@ -2571,7 +2572,7 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pScrn->fbOffset = 0;
 
 #ifdef XvExtension
-    if (pTrident->Chipset >= CYBER9397)
+    if ((pTrident->Chipset >= CYBER9397) && (!pTrident->NoAccel))
 	TRIDENTInitVideo(pScreen);
 #endif
 
