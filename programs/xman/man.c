@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/man.c,v 1.8 2003/04/09 20:31:31 herrb Exp $ */
+/* $XFree86: xc/programs/xman/man.c,v 1.9 2004/03/12 02:17:55 dickey Exp $ */
 
 
 #include "globals.h"
@@ -125,7 +125,11 @@ Man(void)
  * open to look for manual pages.  The ``mandesc'' file is read here.
  */
 
+#ifndef __UNIXOS2__
   for ( path = manpath ; (ptr = index(path , ':')) != NULL ; path = ++ptr) {
+#else
+  for ( path = manpath ; (ptr = index(path , ';')) != NULL ; path = ++ptr) {
+#endif
     *ptr = '\0';
     if (lang != 0) {
       strcpy(buf, path);
