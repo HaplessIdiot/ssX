@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.150 2002/10/08 22:14:07 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.151 2002/10/30 12:52:16 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -1385,22 +1385,25 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     } else {
 	pGlint->IOAddress = pGlint->PciInfo->memBase[0] & 0xFFFFC000;
     }
-#if X_BYTE_ORDER == X_BIG_ENDIAN
-    pGlint->IOAddress += 0x10000;
-#endif
 
     if ((IS_J2000) && (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA)) {
-	/* Fix up for dual head mode, offset gamma registers at 0x10000 */
+	/* We know which head is the primary on the J2000 board, need a more
+	 * generix solution though.
+	 */
         if ((xf86IsEntityShared(pScrn->entityList[0])) &&
             (xf86IsPrimInitDone(pScrn->entityList[0]))) {
-#if 0 	/* When we need gamma & acceleration, this should be used instead */
 		pGlint->IOAddress += 0x10000;
-#endif
+		pGlint->MultiIndex = 2;
 	} else {
 		xf86SetPrimInitDone(pScrn->entityList[0]);
+		pGlint->MultiIndex = 1;
 	}
-#if 1   /* And then remove this */
-	pGlint->IOAddress = pGlint->MultiPciInfo[0]->memBase[0] & 0xFFFFC000;
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+	GLINT_SLOW_WRITE_REG(
+		GLINT_READ_REG(GCSRAperture) | GCSRBitSwap
+		, GCSRAperture);
+    } else {
+    	pGlint->IOAddress += 0x10000;
 #endif
     }
 
@@ -1866,11 +1869,6 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 		    RamDacDestroyInfoRec(pGlint->RamDacRec);
 		    return FALSE;
 	    	}
-#if 1 /* REMOVE LATER - see other IS_J2000 fixup code */
-		/* As we push the acceleration through the pm3 (for now) we can
-	 	 * safely set the FIFOSize to 120 again */
-		pGlint->FIFOSize = 120;
-#endif
 		break;
 	    }
 	    if (IS_GMX2000) {

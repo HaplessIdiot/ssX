@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.55 2002/02/22 21:45:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.56 2002/06/06 22:33:40 alanh Exp $ */
 /*
  * Copyright 1997-2001 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -71,6 +71,7 @@ typedef struct {
 typedef struct {
     pciVideoPtr		PciInfo;
     pciVideoPtr		MultiPciInfo[GLINT_MAX_MULTI_DEVICES];
+    int			MultiIndex;
     int			numMultiDevices;
     int			MultiChip;
     Bool		MultiAperture;

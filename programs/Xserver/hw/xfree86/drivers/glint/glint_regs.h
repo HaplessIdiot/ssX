@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.33 2002/06/06 22:33:40 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.34 2002/07/25 05:06:15 tsi Exp $ */
 
 /*
  * glint register file 
@@ -509,6 +509,7 @@
 
 #define GCSRAperture							0x0878
 #define   GCSRSecondaryGLINTMapEn	1 << 0
+#define   GCSRBitSwap			1 << 1
 
 #define GPageTableAddr							0x0c00
 #define GPageTableLength						0x0c08
