@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/fontenc/Imakefile,v 1.5 2001/11/15 19:10:04 dawes Exp $
+XCOMM $XFree86: xc/lib/fontenc/Imakefile,v 1.6tsi Exp $
 
    INCLUDES = -I$(FONTINCSRC) -I$(FONTLIBSRC)/include -I$(FONTLIBSRC)/fontfile \
 	      -I$(INCLUDESRC)
@@ -22,11 +22,11 @@ FONTENCDEFS = -DFONTENC_NO_LIBFONT \
 #define IncSubdir X11
 #define IncSubSubdir fonts
 
-#include <Library.tmpl>
-
 #if GzipFontCompression
-  REQUIREDLIBS = GzipLibrary
+  REQUIREDLIBS = $(LDPRELIBS) GzipLibrary
 #endif
+
+#include <Library.tmpl>
 
 LinkSourceFile(fontenc.c,$(FONTLIBSRC)/fontfile)
 LinkSourceFile(encparse.c,$(FONTLIBSRC)/fontfile)
