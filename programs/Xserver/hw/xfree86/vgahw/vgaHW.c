@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.41 2000/11/03 18:46:17 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.42 2000/11/14 18:20:38 dawes Exp $ */
 
 /*
  *
@@ -1602,10 +1602,21 @@ vgaHWGetHWRec(ScrnInfoPtr scrp)
 	rgb blackColour = scrp->display->blackColour,
 	    whiteColour = scrp->display->whiteColour;
 
-	/* Detect default for black & white */
-	if (!blackColour.red && !blackColour.green && !blackColour.blue &&
-	    !whiteColour.red && !whiteColour.green && !whiteColour.blue)
-	    whiteColour.red = whiteColour.green = whiteColour.blue = 0x3F;
+	if (blackColour.red   > 0x3F) blackColour.red   = 0x3F;
+	if (blackColour.green > 0x3F) blackColour.green = 0x3F;
+	if (blackColour.blue  > 0x3F) blackColour.blue  = 0x3F;
+
+	if (whiteColour.red   > 0x3F) whiteColour.red   = 0x3F;
+	if (whiteColour.green > 0x3F) whiteColour.green = 0x3F;
+	if (whiteColour.blue  > 0x3F) whiteColour.blue  = 0x3F;
+
+	if ((blackColour.red   == whiteColour.red  ) &&
+	    (blackColour.green == whiteColour.green) &&
+	    (blackColour.blue  == whiteColour.blue )) {
+	    blackColour.red   ^= 0x3F;
+	    blackColour.green ^= 0x3F;
+	    blackColour.blue  ^= 0x3F;
+	}
 
         /*
          * initialize default colormap for monochrome

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.178 2000/12/08 22:31:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.179 2001/01/06 21:29:20 tsi Exp $ */
 
 /*
  *
@@ -118,12 +118,6 @@ extern long __divsf3(long, long);
 extern long __moddi3(long, long);
 extern long __udivdi3(long, long);
 extern long __umoddi3(long, long);
-extern void _outb(char val, unsigned short port);
-extern void _outw(short val, unsigned short port);
-extern void _outl(int val, unsigned short port);
-extern unsigned int _inb(unsigned short port);
-extern unsigned int _inw(unsigned short port);
-extern unsigned int _inl(unsigned short port);
 #endif
 
 #if defined(__powerpc__) && (defined(Lynx) || defined(linux))

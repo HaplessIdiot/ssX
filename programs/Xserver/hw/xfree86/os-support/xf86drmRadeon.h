@@ -27,7 +27,7 @@
  *   Gareth Hughes <gareth@valinux.com>
  *   Kevin E. Martin <martin@valinux.com>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmRadeon.h,v 1.1 2001/01/08 01:07:37 martin Exp $
  *
  */
 
@@ -82,18 +82,18 @@ extern int drmRadeonClear( int fd, unsigned int flags,
 			   unsigned int clear_color,
 			   unsigned int clear_depth );
 
-extern int drmRadeonFlushVertexBuffer( int fd, int prim, int index,
+extern int drmRadeonFlushVertexBuffer( int fd, int prim, int indx,
 				       int count, int discard );
-extern int drmRadeonFlushIndices( int fd, int prim, int index,
+extern int drmRadeonFlushIndices( int fd, int prim, int indx,
 				  int start, int end, int discard );
 
-extern int drmRadeonTextureBlit( int fd, int index,
+extern int drmRadeonTextureBlit( int fd, int indx,
 				 int offset, int pitch, int format,
 				 int x, int y, int width, int height );
 
 extern int drmRadeonPolygonStipple( int fd, unsigned int *mask );
 
-extern int drmRadeonFlushIndirectBuffer( int fd, int index,
+extern int drmRadeonFlushIndirectBuffer( int fd, int indx,
 					 int start, int end, int discard );
 
 #endif

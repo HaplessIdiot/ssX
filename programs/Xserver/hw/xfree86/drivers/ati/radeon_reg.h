@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.4 2000/11/18 19:37:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.5 2001/01/08 01:07:36 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -55,6 +55,11 @@
 
 #include "xf86_ansic.h"
 #include "compiler.h"
+
+/* Atomic updates of PLL clock don't seem to always work and stick, thus
+ * the bit never resets. Here - we use our own check by reading back the
+ * register we've just wrote to make sure it's got the Right! value */
+#define RADEON_ATOMIC_UPDATE 0  /* Use PLL Atomic updates (seems broken) */
 
 				/* Memory mapped register access macros */
 #define INREG8(addr)        MMIO_IN8(RADEONMMIO, addr)

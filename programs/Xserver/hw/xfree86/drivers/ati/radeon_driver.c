@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.10 2001/01/06 20:19:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.11 2001/01/08 01:07:35 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1152,7 +1152,7 @@ static Bool RADEONPreInitDRI(ScrnInfoPtr pScrn)
 
 	if (xf86GetOptValInteger(RADEONOptions,
 				 OPTION_RING_SIZE, &(info->ringSize))) {
-	    if (info->ringSize < 1 || info->ringSize >= info->agpSize) {
+	    if (info->ringSize < 1 || info->ringSize >= (int)info->agpSize) {
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 			   "Illegal ring buffer size: %d MB\n",
 			   info->ringSize);
@@ -1179,7 +1179,7 @@ static Bool RADEONPreInitDRI(ScrnInfoPtr pScrn)
 	}
 
 	if (info->ringSize + info->bufSize + info->agpTexSize >
-	    info->agpSize) {
+	    (int)info->agpSize) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		       "Buffers are too big for requested AGP space\n");
 	    return FALSE;
@@ -1625,7 +1625,7 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 	/* Check to see if there is more room available after the 8192nd
 	   scanline for textures */
-	if (info->FbMapSize - 8192*width_bytes - bufferSize*2
+	if ((int)(info->FbMapSize - 8192*width_bytes - bufferSize*2)
 	    > info->textureSize) {
 	    info->textureSize =
 		info->FbMapSize - 8192*width_bytes - bufferSize*2;
