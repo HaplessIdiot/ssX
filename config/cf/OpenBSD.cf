@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: OpenBSD.cf,v 3.69 2002/04/03 20:12:33 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.70 2002/05/04 19:15:23 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -105,7 +105,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #if OSMajorVersion >= 3 
 # define HasLibUsb		YES
 # ifndef HasLibUsbHid
-#  if OSMajorVersion == 3 && OsMinorVersion > 0 || OSMajorVersion > 3
+#  if OSMajorVersion == 3 && OSMinorVersion > 0 || OSMajorVersion > 3
 #   define HasLibUsbHid		YES
 #   define UsbHidLib 		-lusbhid
 #  else
