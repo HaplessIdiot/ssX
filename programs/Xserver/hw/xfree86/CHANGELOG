@@ -1,5 +1,7 @@
-XFree86 4.0.99.3 (26 April 2001)
+XFree86 4.0.99.x (xx April 2001)
  454. Fix Xserver/Imakefile for Cygwin/XFree86 (Harold Hunt, Alan Hourihane).
+
+XFree86 4.0.99.3 (26 April 2001)
  453. Loader fixups for Sparc's (Marc La France).
  452. Fix dependencies for libGLU on Cygwin/XFree86 (Alan Hourihane).
  451. Make xdm & xfs compile on Cygwin/XFree86 (Alan Hourihane).
@@ -13106,4 +13108,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1725 2001/04/27 19:33:57 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1726 2001/04/27 22:33:23 alanh Exp $
