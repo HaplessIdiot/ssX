@@ -35,6 +35,8 @@ enum {
 	CIR_NSAVED
 };
 
+typedef enum {LCD_NONE, LCD_DUAL_MONO, LCD_UNKNOWN, LCD_DSTN, LCD_TFT} LCDType;
+
 typedef struct {
 	unsigned char	ExtVga[CIR_NSAVED];
 } AlpRegRec, *AlpRegPtr;
@@ -54,6 +56,8 @@ typedef struct alpRec {
 
 	AlpRegRec		SavedReg;
 	AlpRegRec		ModeReg;
+        LCDType                 lcdType;
+        int                     lcdWidth, lcdHeight;
         int                 CursorWidth;
         int                 CursorHeight;
         int                 waitMsk;

@@ -125,6 +125,7 @@ static const char *lgSymbols[] = {
 	"LgAvailableOptions",
 	NULL
 };
+
 static const char *vbeSymbols[] = {
 	"VBEInit",
 	"vbeDoEDID",

@@ -1421,7 +1421,7 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	if (!ret)
 		return FALSE;
 
-        fbPictureInit (pScreen, 0, 0);
+	fbPictureInit(pScreen, 0, 0);
 
 #ifdef LG_DEBUG
 	ErrorF("LgScreenInit after depth dependent init\n");
@@ -1453,7 +1453,12 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		if (!LgXAAInit(pScreen))
 			xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Could not initialize XAA\n");
 	}
-
+#if 1
+	pCir->DGAModeInit = LgModeInit;
+	if (!CirDGAInit(pScreen))
+	  xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
+		     "DGA initialization failed\n");
+#endif
         xf86SetSilkenMouse(pScreen);
 
 	/* Initialise cursor functions */
@@ -1686,6 +1691,10 @@ LgCloseScreen(int scrnIndex, ScreenPtr pScreen)
 	if (pCir->CursorInfoRec)
 		xf86DestroyCursorInfoRec(pCir->CursorInfoRec);
 	pCir->CursorInfoRec = NULL;
+	if (pCir->DGAModes)
+		xfree(pCir->DGAModes);
+	pCir->DGAnumModes = 0;
+	pCir->DGAModes = NULL;
 
 	pScrn->vtSema = FALSE;
 
