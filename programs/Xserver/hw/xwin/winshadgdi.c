@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.8 2001/06/04 13:04:41 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.9 2001/06/05 10:10:28 alanh Exp $ */
 
 #include "win.h"
 
@@ -428,6 +428,7 @@ winInitVisualsShadowGDI (ScreenPtr pScreen)
     case 24:
     case 16:
     case 15:
+      /* Setup the real visual */
       if (!miSetVisualTypesAndMasks (pScreenInfo->dwDepth,
 				     TrueColorMask,
 				     pScreenPriv->dwBitsPerRGB,
@@ -442,9 +443,6 @@ winInitVisualsShadowGDI (ScreenPtr pScreen)
       break;
 
     case 8:
-#if CYGDEBUG
-      ErrorF ("winInitVisualsGDI () - Calling miSetVisualTypesAndMasks\n");
-#endif /* CYGDEBUG */
       if (!miSetVisualTypesAndMasks (pScreenInfo->dwDepth,
 				     StaticColorMask,
 				     pScreenPriv->dwBitsPerRGB,
@@ -463,11 +461,13 @@ winInitVisualsShadowGDI (ScreenPtr pScreen)
       return FALSE;
     }
 
-#if CYGDEBUG
-  ErrorF ("winInitVisualsShadowGDI () - Returned from "\
-	  "miSetVisualTypesAndMasks\n");
-#endif
-
+  /* Setup a fake PseudoColor visual for legacy apps */
+  if (!miSetVisualTypes (8, PseudoColorMask, 8, PseudoColor))
+    {
+      ErrorF ("winInitVisualsShadowGDI () - miSetVisualTypes failed\n");
+      return FALSE;
+    }
+  
   /* Set DPI info */
   pScreenInfo->dwDPIx = 100;
   pScreenInfo->dwDPIy = 100;

@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshaddd.c,v 1.7 2001/06/04 13:04:41 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshaddd.c,v 1.8 2001/06/05 10:10:28 alanh Exp $ */
 
 #include "win.h"
 
@@ -109,6 +109,11 @@ winAllocateFBShadowDD (ScreenPtr pScreen)
 	  return FALSE;
 	}
 
+      /*
+       * FIXME: Enumerate supported video modes until we find
+       * one that works.
+       */
+
       /* Change the video mode to the mode requested */
       ddrval = IDirectDraw_SetDisplayMode (pScreenPriv->pdd,
 					   pScreenInfo->dwWidth,
@@ -117,7 +122,8 @@ winAllocateFBShadowDD (ScreenPtr pScreen)
        if (FAILED (ddrval))
 	 {
 	   ErrorF ("winAllocateFBShadowDDNL () - Could not set "\
-		   "full screen display mode\n");
+		   "full screen display mode: %08x\n",
+		   ddrval);
 	   return FALSE;
 	 }
     }
@@ -513,6 +519,7 @@ winInitVisualsShadowDD (ScreenPtr pScreen)
     case 24:
     case 16:
     case 15:
+      /* Create the real visual */
       if (!miSetVisualTypesAndMasks (pScreenInfo->dwDepth,
 				     TrueColorMask,
 				     pScreenPriv->dwBitsPerRGB,
@@ -528,10 +535,6 @@ winInitVisualsShadowDD (ScreenPtr pScreen)
       break;
 
     case 8:
-#if CYGDEBUG
-      ErrorF ("winInitVisualsShadowDD () - Calling "\
-	      "miSetVisualTypesAndMasks\n");
-#endif /* CYGDEBUG */
       if (!miSetVisualTypesAndMasks (pScreenInfo->dwDepth,
 				     StaticColorMask,
 				     pScreenPriv->dwBitsPerRGB,
@@ -548,6 +551,13 @@ winInitVisualsShadowDD (ScreenPtr pScreen)
 
     default:
       ErrorF ("winInitVisualsDD () - Unknown screen depth\n");
+      return FALSE;
+    }
+
+  /* Setup a fake PseudoColor visual for legacy apps */
+  if (!miSetVisualTypes (8, PseudoColorMask, 8, PseudoColor))
+    {
+      ErrorF ("winInitVisualsShadowDD () - miSetVisualTypes failed\n");
       return FALSE;
     }
 

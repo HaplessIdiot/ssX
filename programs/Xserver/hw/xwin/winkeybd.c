@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winkeybd.c,v 1.2 2001/05/02 00:45:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winkeybd.c,v 1.3 2001/06/04 13:04:41 alanh Exp $ */
 
 #include "win.h"
 
@@ -516,7 +516,7 @@ winIsFakeCtrl_L (UINT message, WPARAM wParam, LPARAM lParam)
 
   /* 
    * Fake Ctrl_L releases will be followed by an Alt_R release
-   * with the same timestamp as the Ctrl_L press.
+   * with the same timestamp as the Ctrl_L release.
    */
   if ((message == WM_KEYUP || message == WM_SYSKEYUP)
       && wParam == VK_CONTROL
