@@ -7,7 +7,7 @@ David Dawes,
 Marc  Wandschneider,
 Mark  Weaver,
 Matthieu Herrb
-<Date>17 July 1995
+<Date>Last modified on: 19 July 1995
 
 <toc>
 
@@ -28,7 +28,7 @@ The sources for XFree86 are available by anonymous ftp from:
 <url name="ftp.XFree86.org:/pub/XFree86/current"
 url="ftp://ftp.XFree86.org/pub/XFree86/current">
 
-Binaries for NetBSD 1.0 are available from:
+Binaries for NetBSD 1.0 and NetBSD-current are available from:
 
 <url name="ftp.XFree86.org:/pub/XFree86/current/binaries/NetBSD"
 url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/NetBSD">
@@ -42,15 +42,15 @@ url="ftp://ftp.iastate.edu/pub/XFree86/XFree86-3.1.2">
 <url name="ftp.eecs.umich.edu:/BSD/XFree86"
 url="ftp://ftp.eecs.umich.edu/BSD/XFree86">
 
-If you're still running NetBSD 0.9, you'll have to build it from the source.
-If you've done it and want to share your binaries, please let us know.
+If you're still running NetBSD 0.9, you should think about upgrading
+to a newer version of NetBSD first.  If you don't you'll have to build
+XFree86 from the sources (which has not been tested on NetBSD 0.9)
 
-This release has also been tested on NetBSD-current of January, 19th 1995 with
-<tt/option "COMPAT_10"/ in the kernel config file.
+This release has also been tested on NetBSD-current of July, 17th
+1995 with <tt>option "COMPAT_10"</tt> in the kernel config file.
 
-XFree86 now also builds on NetBSD/sparc. See section <ref id="sparc"
-name="Building on NetBSD/sparc">
-for details.
+XFree86 3.1.2 also builds on NetBSD/sparc. See section <ref id="sparc"
+name="Building on NetBSD/sparc"> for details.
 
 <sect>Bug Reports for This Document
 
@@ -136,7 +136,7 @@ directory by using the <tt/-p/ option to <tt/pkg_add/. See
 
 </enum>
 
-Continue with item <ref id="install-cont" name="Setting XWINHOME">
+Continue with item <ref id="install-cont" name="Additional Setup">
 below. 
   
 <sect1>Installing the packages without <tt/pkg_add/
@@ -186,8 +186,12 @@ below.
 <tscreen><verb>
  tar xzf X312<server>.tgz
 </verb></tscreen>
+</enum>
 
-<item> <label id="install-cont"> Set the <tt/XWINHOME/ environment
+<sect1>Additional setup <label id="install-cont">
+<p>
+<enum>
+<item>Set the <tt/XWINHOME/ environment
 variable to the path where you installed XFree86. Under csh  type:
 <tscreen><verb>
  setenv XWINHOME /usr/X11R6
@@ -271,20 +275,49 @@ the console entry in <tt>/etc/ttys</tt>:
 <sect> Configuring X for Your Hardware
 
 <p>
-The <tt/XF86Config/ file tells the X server what kind of monitor, video card
-and mouse you have.  You <em/must/ create it to tell the server what
-specific hardware you have.
+The <tt/XF86Config/ file tells the X server what kind of monitor,
+video card and mouse you have.  You <em/must/ create it to tell the
+server what specific hardware you have.
 
-If you plan to fine tune the screen size or position on your monitor
-you'll also need the specs for sync frequencies from your monitor's
-manual.
+You'll need info on your hardware:
+<itemize>
+<item> Your mouse type, baud rate and it's /dev entry.
+<item> The video card's chipset (e.g. ET4000, S3, etc).
+<item> Your monitor's sync frequencies.
+</itemize>
 
-If your mouse does not work try using kermit or tip to connect to the
-mouse serial port and verify that it does indeed generate characters.
+XFree86 3.1 and later releases uses a new configuration file format.
 
-If you've been running a previous version of XFree86, you can get the
-video card and monitor information from your previous <tt/Xconfig/
-file. Don't forget to update the font and RGB paths.
+The recommended way to generate an <tt/XF86Config/ file is to use the
+<tt/xf86config/ utility.  Also, there is a sample file installed as
+<tt>/usr/X11R6/lib/X11/XF86Config.eg</tt>, which can be used as a
+starting point.
+
+For details about the <tt/XF86Config/ file format, refer to the
+<em>XF86Config(4/5)</em> manual page.
+
+In order to protect your hardware from damage, the server will no
+longer read <tt>XF86Config</tt> files from a user's home directory,
+but requires that it be in <tt>/etc/XF86Config</tt>,
+<tt>/usr/X11R6/lib/X11/XF86Config.hostname</tt> or
+<tt>/usr/X11R6/lib/X11/XF86Config</tt>.
+
+Once you've set up a XF86Config file, you can fine tune the video
+modes with the <tt>xvidtune</tt> utility. 
+
+If you have a <tt>Xconfig</tt> file for XFree86 2.x, use reconfig to
+translate part of
+it into the new format:
+<verb>
+   # reconfig <Xconfig >XF86Config
+</verb>
+and complete the rest according to the <tt>XF86Config</tt> man page and the
+<tt>XF86Config.sample</tt> file as a template.
+
+
+If your mouse does not work try using <tt>kermit</tt> or <tt>tip</tt>
+to connect to the mouse serial port and verify that it does indeed
+generate characters.
 
 <sect1> Configuring a PS/2 mouse for XFree86 on NetBSD
 
@@ -373,10 +406,10 @@ move <tt>/dev/ttyqf</tt> to <tt>/dev/ttyv0</tt>. (from Hung-Chi Chu
 
 <sect1>Aperture Driver
 <p>
-By default NetBSD 0.9C and higher include a kernel security feature
-that disable access to the <tt>/dev/mem</tt> device when in multi-users
-mode. But XFree86 servers can take advantage (or require) linear
-access to the display memory.
+By default NetBSD 0.9C and higher include the BSD 4.4 kernel security
+feature that disable access to the <tt>/dev/mem</tt> device when in
+multi-users mode. But XFree86 servers can take advantage (or require)
+linear access to the display memory.
 
 The P9000 and AGX servers require linear memory access, other
 accelerated servers can take advantage of it, but do not require it.
@@ -390,7 +423,7 @@ There are two ways to allow XFree86 to access linear memory:
    <tt>/usr/include/sys/systm.h</tt>.
 
    NetBSD-current users can also disable kernel security by adding
-   'option INSECURE' in their kernel configuration file.
+   `option INSECURE' in their kernel configuration file.
 
 <item> Install the NetBSD aperture driver:
    <enum>	
@@ -402,20 +435,8 @@ There are two ways to allow XFree86 to access linear memory:
  fi
 </verb></tscreen>
 
-   <item> On pre 1.0 versions of NetBSD modload does not execute
-      post-install scripts. If you're running NetBSD 1.0 or later 
-      skip this. Else create the device manually:
-  
-      <bf/WARNING:/ be sure to understand what you'll do before proceeding
-      <enum>
-      <item> find out what major device number will be allocated to you by
-         modload. Modload allocates major numbers beginning at <bf/29/. So if
-         ``<tt/ap/'' is your only device driver module, it will have major
-         number 29. If it's the third, it will be 31&hellip;
-
-       <item> goto the <tt>/dev</tt> directory and type: ``<tt/mknod
-       xf86 c 29 0/'' (replace 29 by the appropriate value if you load
-       more than one device driver module.  </enum>
+    If you use NetBSD-current, replace ``ap.o'' with ``ap-current.o'' in
+    the above lines.
 
     <item> Reboot your system. XFree86 will auto-detect the aperture
        driver if available.
@@ -471,7 +492,7 @@ this support in your kernel, it will support the MIT-SHM extension.
 <p>
 The server link kit allow you to rebuild just the X server with a
 minimum amount of disk space.  Just unpack it, make the appropriate
-changes to the <tt/site.def/, type ``<tt>./mkmf</tt>'' and
+changes to the <tt/xf86site.def/, type ``<tt>./mkmf</tt>'' and
 ``<tt/make/'' to link the server.  See <tt>/usr/X11R6/lib/Server/README</tt>
 for more info.
 
@@ -485,7 +506,7 @@ sources, invoke ``<tt/make World/'' in the xc directory.
 <sect1>Console drivers
 
 <p>
-XFree86 3.1.0C has now a configuration option to select the console
+XFree86 3.1.2 has a configuration option to select the console
 drivers to use in <tt/xf86site.def/:
 <itemize>
 <item> if you're using pccons put:
@@ -515,10 +536,10 @@ If you want to build a server supporting syscons or codrv and you
 don't already have the corresponding header files <tt/console.h/ and
 <tt/ioctl_pc.h/ installed in <tt>/usr/include/machine</tt>, then
 install the copies that are supplied in
-<tt>xc/programs/Xserver/hw/xfree86/etc</tt>.
-If you run NetBSD-current you probably want to install
-them in <tt>/usr/src/sys/arch/i386/include</tt> too, so that they get
-reinstalled each time you make install in <tt>/usr/src/include</tt>. 
+<tt>xc/programs/Xserver/hw/xfree86/etc</tt>.  If you run
+NetBSD-current you probably want to install them in
+<tt>/usr/src/sys/arch/i386/include</tt> too, so that they get
+reinstalled each time you make install in <tt>/usr/src/include</tt>.
 
 Another way to keep these files accessible is to make a symbolic link
 like this in the <tt/xc/ directory (suggested by Andrew Cagney
@@ -628,7 +649,7 @@ and many others.
 
 <verb>
 $XConsortium: NetBSD.sgml,v 1.4 95/01/27 16:14:26 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.13 1995/05/27 03:11:43 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.14 1995/07/17 13:52:33 dawes Exp $
 </verb>
 
 </article>

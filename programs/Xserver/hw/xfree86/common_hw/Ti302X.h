@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti302X.h,v 3.0 1995/03/18 11:00:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti302X.h,v 3.1 1995/04/09 13:47:59 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -163,6 +163,7 @@
 #define TI_GENERAL_IO_DATA	0x2B
 #define   TI_GID_W2000_6BIT     0x00
 #define   TI_GID_N9_964		0x01
+#define   TI_GID_ELSA_SOG	0x04
 #define   TI_GID_W2000_8BIT     0x08
 #define   TI_GID_S3_DAC_6BIT	0x1C
 #define   TI_GID_S3_DAC_8BIT	0x1E

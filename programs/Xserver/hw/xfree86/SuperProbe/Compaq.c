@@ -26,7 +26,7 @@
  */
 
 /* $XConsortium: Compaq.c,v 1.2 94/11/21 21:29:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Compaq.c,v 3.1 1994/08/31 04:19:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Compaq.c,v 3.2 1995/01/28 15:46:59 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -94,6 +94,7 @@ int *Chipset;
 			}
 		}
 	}
+	wrinx(GRC_IDX, 0x0F, old);
 	DisableIOPorts(NUMPORTS, Ports);
 	return(result);
 }

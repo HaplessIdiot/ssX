@@ -436,7 +436,8 @@ been debugged.<p>
             "<tt>ls -al /dev/ttyp0 /dev/ptyp0</tt>" to 
             get the major numbers for the
             slave and master drivers.  Use <tt>mknod</tt> to create the extra
-            devices using the naming schemes ttyp[0-9a-f] and ptyp[0-9a-f].
+            devices using the naming schemes ttyp&lsqb;0-9a-f&rsqb;
+            and ptyp&lsqb;0-9a-f&rsqb;.
 <tag/3.2.4/   Run "<tt>mkdev ptty</tt>" and increase the number of ptty's.
 </descrip></quote>
 <tag/Problem:/
@@ -583,6 +584,6 @@ ftp site for the binary distribution.
 
 <verb>  
 $XConsortium: SCO.sgml,v 1.4 95/01/27 16:14:31 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.5 1995/01/25 11:08:52 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.6 1995/01/28 16:02:21 dawes Exp $
 </verb>
 </article>

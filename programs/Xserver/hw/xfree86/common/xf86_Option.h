@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.6 95/01/23 15:34:06 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.29 1995/07/05 12:39:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.30 1995/07/07 16:03:55 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -77,6 +77,7 @@ typedef struct {
 #define OPTION_FIFO_MODERATE  	31 /* (agx) */
 #define OPTION_SLOW_VRAM	32 /* (s3) */
 #define OPTION_SLOW_DRAM_REFRESH 33 /* (s3) */
+#define OPTION_FAST_VRAM	34 /* (s3) */
 
 /* Accel/cursor features */
 #define OPTION_NOACCEL		40 /* Disable accel support in SVGA server */
@@ -105,6 +106,9 @@ typedef struct {
 #define OPTION_ELSA_W1000PRO	73 /* pixmux for ELSA Winner 1000PRO (S3) */
 #define OPTION_ELSA_W2000PRO	74 /* pixmux for ELSA Winner 2000PRO (S3) */
 #define OPTION_DIAMOND		75 /* Diamond boards (S3) */
+#define OPTION_GENOA		76 /* Genoa boards (S3) */
+#define OPTION_STB		77 /* STB boards (S3) */
+#define OPTION_HERCULES		78 /* Hercules boards (S3) */
 
 /* Misc options */
 #define OPTION_CSYNC		90 /* Composite sync */
@@ -192,6 +196,8 @@ OptFlagRec xf86_OptionTab[] = {
   { "s3_slow_vram",	OPTION_SLOW_VRAM },
   { "slow_dram_refresh",OPTION_SLOW_DRAM_REFRESH },
   { "s3_slow_dram_refresh",OPTION_SLOW_DRAM_REFRESH },
+  { "fast_vram",	OPTION_FAST_VRAM },
+  { "s3_fast_vram",	OPTION_FAST_VRAM },
 
   { "noaccel",		OPTION_NOACCEL },
   { "hw_cursor",	OPTION_HW_CURSOR },
@@ -219,6 +225,9 @@ OptFlagRec xf86_OptionTab[] = {
   { "elsa_w1000isa",	OPTION_ELSA_W1000PRO }, /* These are treated the same */
   { "elsa_w2000pro",	OPTION_ELSA_W2000PRO },
   { "diamond",		OPTION_DIAMOND },
+  { "genoa",		OPTION_GENOA },
+  { "stb",		OPTION_STB },
+  { "hercules",		OPTION_HERCULES },
 
   { "composite",	OPTION_CSYNC },
   { "secondary",	OPTION_SECONDARY },
@@ -267,10 +276,13 @@ OptFlagRec xf86_ClockOptionTab [] = {
   { "s3_trio64",	CLOCK_OPTION_S3TRIO },    /* S3 Trio32/64 */
   { "ti3025",		CLOCK_OPTION_TI3025 },    /* TI3025 */
   { "ti3026",		CLOCK_OPTION_TI3026 },    /* TI3026 */
+  { "ibm_rgb514",	CLOCK_OPTION_IBMRGB },    /* IBM RGB524 */
   { "ibm_rgb524",	CLOCK_OPTION_IBMRGB },    /* IBM RGB524 */
   { "ibm_rgb525",	CLOCK_OPTION_IBMRGB },    /* IBM RGB525 */
   { "ibm_rgb528",	CLOCK_OPTION_IBMRGB },    /* IBM RGB528 */
+  { "ibm_rgb51x",	CLOCK_OPTION_IBMRGB },    /* IBM RGB51x */
   { "ibm_rgb52x",	CLOCK_OPTION_IBMRGB },    /* IBM RGB52x */
+  { "ibm_rgb5xx",	CLOCK_OPTION_IBMRGB },    /* IBM RGB52x */
   { "ics2595",		CLOCK_OPTION_ICS2595 },   /* ICS2595 */
   { "cirrus",		CLOCK_OPTION_CIRRUS }, 	  /* Cirrus built-in */
   { "ch8391",		CLOCK_OPTION_CH8391 }, 	  /* Chrontel 8391  */

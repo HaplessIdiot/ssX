@@ -24,7 +24,8 @@
 	 Added p9000gc16.c and p9000gc32.c for the higher bpp drawing functions
 	 (Henrik Harmsen)
 	<item>
-	 Additions to p9000im.c: p9000Image[Op]Stipple. And p9000ImageFill.
+	 Additions to p9000im.c: p9000Image&lsqb;Op&rsqb;Stipple.
+	 And p9000ImageFill.
 	 Currently, there are small problems with ImageFill, and it is not
 	 being used. (Chris Mason)
 	<item>
@@ -54,7 +55,8 @@
 	  Fixed problem with line capping in accelerated line
 	  drawing. (Chris Mason)
 	<item>
-	  Fixed p9000QuadAlu[GXset] to be ~0 rather than 1.  (Erik Nygren)
+	  Fixed p9000QuadAlu&lsqb;GXset&rsqb; to be ~0 rather than 1.
+	  (Erik Nygren)
 	</itemize>
 <tag/1995.01.14:/
 	<itemize>
@@ -75,7 +77,7 @@
 	 xtest to report <tt>Cap style incorrect for thin line and
 	 CapNotLast</tt> for the <tt>XDrawLines</tt> tests but not
 	 for the <tt>XDrawLine</tt> or <tt>XDrawSegments</tt> tests
-	 [fixed in 1995.01.15 patch]. (Chris Mason)
+	 &lsqb;fixed in 1995.01.15 patch&rsqb;. (Chris Mason)
 	<item>
 	 Changed p9000blt.c, and p9000win.c to wait for the quad/blit engine
 	 to be free.  Before a quad/blit, check SR_ISSUE_QBN, then blit, then
@@ -437,7 +439,7 @@ acceleration, etc.  Please send any patches to me (<it>nygren@mit.edu</it>).
 
 <verb>
 $XConsortium: P9000.sgml,v 1.4 95/01/27 16:14:28 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.10 1995/02/04 04:50:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.11 1995/05/27 03:11:45 dawes Exp $
 </verb>
 
 </article>

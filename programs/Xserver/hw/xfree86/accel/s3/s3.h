@@ -1,5 +1,5 @@
 /* $XConsortium: s3.h,v 1.8 95/01/27 14:45:24 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.24 1995/07/13 14:14:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.25 1995/07/16 09:13:59 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -229,7 +229,7 @@ extern Bool s3ATT498PixMux;
 #define SPEA_BIOS		 3
 #define GENOA_BIOS		 4
 #define STB_BIOS		 5
-#define NUMBER9_BIOS		 6
+#define NUMBER_NINE_BIOS	 6
 #define HERCULES_BIOS		 7
 #define DIAMOND_BIOS		 8
 

@@ -1,3 +1,8 @@
+XFree86 3.1.1Dd (21 July 1995)
+225. Sync-on-green support for the ELSA Winner 2000Pro/X (Harald Koenig).
+224. Add vendor options to S3 server (hercules, stb, genoa) (Harald Koenig).
+223. Documentation updates (Joe Moss, Harald Koenig, Matthieu Herrb).
+
 XFree86 3.1.1Dc (19 July 1995)
 222. Fix(?) server crash when the Cirrus driver auto-detects the linear
      fb address for PCI cards.

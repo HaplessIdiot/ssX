@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.13 1995/07/05 12:41:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.14 1995/07/15 15:11:35 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -807,7 +807,7 @@ static char *ramdaccomment_text =
 "at the right of the following table of RAMDAC types:\n"
 "\n";
 
-#define NU_RAMDACS 13
+#define NU_RAMDACS 16
 
 static char *ramdac_name[NU_RAMDACS] = {
 	"AT&T 20C490 (S3 and AGX servers)",
@@ -824,16 +824,19 @@ static char *ramdac_name[NU_RAMDACS] = {
 	"S3 GenDAC (86C708)",
 	"S3 SDAC (86C716)",
 #endif
-	"STG-1700 (S3)",
+	"STG-1700 (S3, autodetected)",
+	"STG-1703 (S3, autodetected)",
 	"TI 3020 (S3)",
-	"TI 3025 (S3)",
+	"TI 3025 (S3, autodetected)",
+	"TI 3026 (S3, autodetected)",
+	"IBM RGB 51x/52x (S3, autodetected)",
 	"Normal DAC"
 };
 
 static char *ramdac_id[NU_RAMDACS] = {
 	"att20c490", "att20c498", "att20c505", "bt481", "bt482",
-	"bt485", "sc15025", "s3gendac", "s3_sdac", "stg1700",
-	"ti3020", "ti3025", "normal"
+	"bt485", "sc15025", "s3gendac", "s3_sdac", "stg1700","stg1703",
+	"ti3020", "ti3025", "ti3026", "ibm_rgb52x", "normal"
 };
 
 static char *clockchipcomment_text =
@@ -844,7 +847,7 @@ static char *clockchipcomment_text =
 "Choose from the following list:\n"
 "\n";
 
-#define NU_CLOCKCHIPS 8
+#define NU_CLOCKCHIPS 14
 
 static char *clockchip_name[] = {
 	"Chrontel 8391 (uncertain at the time of writing)",
@@ -853,13 +856,20 @@ static char *clockchip_name[] = {
 	"ICS5342 (similar to SDAC, but not completely compatible)",
 	"S3 GenDAC (86C708) and ICS5300 (autodetected)",
 	"S3 SDAC (86C716)",
+	"STG 1703 (autodetected)",
 	"Sierra SC11412",
-	"TI 3025",
+	"TI 3025 (autodetected)",
+	"TI 3026 (autodetected)",
+	"IBM RGB 514 (autodetected)",
+	"IBM RGB 524 (autodetected)",
+	"IBM RGB 525 (autodetected)",
+	"IBM RGB 528 (autodetected)",
 };
 
 static char *clockchip_id[] = {
 	"ch8391", "icd2061a", "ics2595", "ics5342", "s3gendac", "s3_sdac",
-	"sc11412", "ti3025"
+	"stg1703", "sc11412", "ti3025", "ti3026", "ibm_rgb514", "ibm_rgb524", 
+	"ibm_rgb525", "ibm_rgb528"
 };
 
 static char *deviceclockscomment_text =

@@ -254,7 +254,7 @@ size is limited to approximately 800x600.
       these in future versions of XFree86.
 
 
-<sect><heading><label id="Changes">Important Changes</>
+<sect>Important Changes<label id="Changes">
 <p>
 
   There are a number of important user-visible changes between
@@ -682,6 +682,8 @@ involvement in X11R6.
   <item>  <url url="http://www.digital.com/"  
 	name="Digital Equipment Corporation">
   <item>  Elsa GmbH, Aachen, Germany
+  <item>  Genoa Systems Corporation
+  <item>  Hercules Computer Technology, Inc.
   <item>  Dirk Hohndel
   <item>  Frank &amp; Paige McCormick
   <item>  <url url="http://www.infomagic.com/"  
@@ -697,6 +699,7 @@ involvement in X11R6.
   <item>  Prime Time Freeware, San Bruno, CA
   <item>  Red Hat Software, Chapel Hill, NC
   <item>  SPEA Software AG, Starnberg, Germany
+  <item>  STB Systems
   <item>  Clifford M Stein
   <item>  Joel Storm 
   <item>  S.u.S.E, GmbH, Fuerth, Germany
@@ -846,7 +849,7 @@ compile-time option selections were made when building the distribution.
 
 <verb>
 $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.22 1995/05/07 11:50:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.23 1995/05/27 03:11:47 dawes Exp $
 </verb>
 
 </article>

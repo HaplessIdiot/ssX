@@ -401,6 +401,44 @@ chances are good it might work for you, too.
 
 	8/15/16/24 bpp
 
+<tag>S3 964, IBM RGB 514/524/525/528 RAMDAC &amp; Clockchip</tag>
+	<itemize>
+	<item> Hercules Graphics Terminator Pro 64
+ <tscreen><verb>
+ s3RefClk   50
+ DACspeed  170
+ Option  "slow_vram"
+ </verb></tscreen>
+	</itemize>
+
+	8/15/16/24 bpp
+
+<tag>S3 968, IBM RGB 514/524/525/528 RAMDAC &amp; Clockchip</tag>
+	<itemize>
+	<item> Genoa Genoa VideoBlitz III AV
+ <tscreen><verb>
+ s3RefClk   50
+ DACspeed  170
+ </verb></tscreen>
+	<item> Hercules Graphics Terminator Pro 64
+ <tscreen><verb>
+ s3RefClk   16
+ DACspeed  220
+ </verb></tscreen>
+	<item> Hercules Graphics Terminator Pro 64
+ <tscreen><verb>
+ s3RefClk   16
+ DACspeed  220
+ </verb></tscreen>
+	<item> Number Nine FX Motion 771
+ <tscreen><verb>
+ s3RefClk   16
+ DACspeed  220
+ </verb></tscreen>
+	</itemize>
+
+	8/15/16/24 bpp
+
 </descrip>
 
 <sect> 16bpp and 32bpp
@@ -424,10 +462,13 @@ ICS5300 GENDAC (86c708 compatible)      ==> ClockChip "ics5300"
 
 S3 86c716 SDAC                          ==> ClockChip "s3_sdac"
 ICS5342 GENDAC                          ==> ClockChip "ics5342"
+STG 1703                                ==> ClockChip "stg1703"
  
 Sierra SC11412                          ==> ClockChip "sc11412"
 ICS2595                                 ==> ClockChip "ics2595"
 TI3025                                  ==> ClockChip "ti3025"
+TI3026                                  ==> ClockChip "ti3026"
+IBM RGB 5xx                             ==> ClockChip "ibm_rgb5xx"
 
 Chrontel 8391                           ==> ClockChip "ch8391"
 </verb></tscreen>
@@ -474,9 +515,20 @@ is specified correctly.
 chips labeled <bf/-80/ or <bf/-8/  should use `<tt/DacSpeed 80/' in
 the device section
 <tscreen><verb>
-S3716-ME SDAC  ==>  DacSpeed 110
-SC15025-8      ==>  DacSpeed  80
-ATT20C490-80   ==>  DacSpeed  80
+S3 86C716-ME SDAC  ==>  DacSpeed 110
+SC15025-8          ==>  DacSpeed  80
+ATT20C490-80       ==>  DacSpeed  80
+
+IBM 8190429        ==>  DacSpeed 170
+IBM 03H5428        ==>  DacSpeed 170
+IBM 03H6447        ==>  DacSpeed 170
+IBM 03H6448        ==>  DacSpeed 220
+IBM 03H5319        ==>  DacSpeed 220
+IBM 63G9902        ==>  DacSpeed 250
+
+IBM 37RGB514CF17   ==>  DacSpeed 170
+IBM 37RGB524CF22   ==>  DacSpeed 220
+              ^^
 </verb></tscreen>
 
 Some RAMDACs (like the Ti3025) require some mode timing consideration
@@ -485,6 +537,70 @@ the mode have a back porch of at least 80 pixel-clock cycles.  A
 symptom of this not being correct is the HW cursor being chopped off
 when positioned close to the right edge of the screen.
 
+
+<sect> Reference clock value for IBM RGB 5xx  RAMDACs
+<p>
+
+Cards with IBM RGB5xx RAMDACs use several different input frequencies 
+for the clock synthesizer which can't be probed without some knowledge 
+of the text mode clocks (which may be a wrong assumption if you're using
+non-standard text modes).  Here is the procedure how you should 
+find out the input frequency:
+
+First run 
+
+<tscreen><verb>
+    X -probeonly >& outfile 
+</verb></tscreen>
+
+and check the output for the probed clock chip which might look like this:
+
+<tscreen><verb>
+(--) S3: Using IBM RGB52x programmable clock (MCLK 66.000 MHz)
+(--) S3: with refclock 16.000 MHz (probed 15.952 & 16.041)
+                       ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^
+</verb></tscreen>
+
+there will be a "good guessed" value which will be used 
+and two probed values in brackets based on the 25MHz and 28MHz
+text clocks. this probing can only work if you run a normal 80x25
+or 80x28 text mode!
+
+the refclock values  known so far are:
+
+<verb>
+	STB Velocity 64		24 Mhz
+	Genoa VideoBlitz II AV	50 MHz
+	Hercules S3 964 	50 MHz
+	Hercules S3 968 	16 MHz
+	#9 Motion 771		16 MHz
+</verb>
+
+depending on the quartz on your card and maybe other features like
+an additional clock chip on the Genoa card (which as a 14.3MHz quartz).
+ 
+If you claim that your card has a 16MHz card but it really uses 50MHz,
+all pixel clocks will be tripled and a 640x480 mode with 25MHz will
+use a 75MHz pixel clock, so be very careful.
+
+
+if you found the right refclock, you should set it in the config file
+(device section) e.g. with
+
+      <tscreen><verb>
+	s3RefClk  16
+      </verb></tscreen>
+or
+      <tscreen><verb>
+	s3RefClk  50
+      </verb></tscreen>
+
+so that that this value will be used even if you use another text
+mode and probing fails!
+
+
+
+
 <sect> How to to avoid ``snowing'' display while graphics operations
 <p>
 
@@ -492,7 +608,7 @@ For cards with S3 Vision864 chip there is a automatic correction which
 depends on the pixel clock and the memory clock MCLK at which the S3 chip
 operates. For most clock chips this value can't be read (only the S3 SDAC
 allows reading the MCLK value so far), so this value has to be estimated 
-and specified by the user (the default is 60 [MHz]).
+and specified by the user (the default is 60 &lsqb;MHz&rsqb;).
 
 With the new `<tt/s3MCLK/' entry for your <tt/XF86Config/ file now you can 
 specify e.g.
@@ -563,7 +679,7 @@ exit
 
 <verb>
 $XConsortium: S3.sgml,v 1.6 95/01/27 16:14:30 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.22 1995/07/13 14:14:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.23 1995/07/17 13:52:35 dawes Exp $
 </verb>
 
 </article>

@@ -19,7 +19,7 @@
 # chipset/server and untested.
 # 
 # $XConsortium: Cards,v 1.3 95/01/23 15:35:21 kaleb Exp $
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.12 1995/07/17 14:01:24 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.13 1995/07/19 12:44:32 dawes Exp $
 
 # Cirrus Logic
 
@@ -376,20 +376,39 @@ LINE     Option "number_nine"
 
 NAME Diamond Stealth 64 VRAM
 CLOCKCHIP icd2061a
+LINE    #Option "slow_vram"
 SEE S3-964 (generic)
 
 NAME Diamond Stealth 64 Video VRAM
 CHIPSET S3-968
-SERVER S3
+LINE    #Option "slow_vram"
+SEE S3-968 (generic)
+
+NAME Genoa VideoBlitz III AV
+CHIPSET S3-968
+LINE    #s3RefClk  50
+LINE    #DACspeed 170
+SEE S3-968 (generic)
+
+NAME STB Velocity 64
+CHIPSET S3-968
+LINE    #s3RefClk  24
+LINE    #DACspeed 220
+SEE S3-968 (generic)
 
 NAME Hercules Graphics Terminator 64
 LINE     Option "slow_vram"
+LINE    #s3RefClk  50
+LINE    #DACspeed 170
 SEE S3-964 (generic)
 
 NAME Hercules Graphics Terminator Pro 64
+LINE    #s3RefClk  16
+LINE    #DACspeed 220
 SEE S3-968 (generic)
 
 NAME Number Nine FX Motion 771
+LINE    #s3RefClk  16
 SEE S3-968 (generic)
 
 NAME Spider Tarantula 64
@@ -420,6 +439,7 @@ NOCLOCKPROBE
 NAME Elsa Winner 2000PRO/X
 CHIPSET S3-968
 SERVER S3
+LINE     #Option "sync_on_green"
 NOCLOCKPROBE
 
 # S3-928

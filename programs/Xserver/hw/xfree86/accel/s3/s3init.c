@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.6 95/01/23 15:34:00 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.74 1995/07/17 12:44:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.75 1995/07/19 12:42:46 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -391,6 +391,10 @@ s3CleanUp(void)
 			oldS3->Ti3020[TI_MISC_CONTROL]);
       s3OutTi3026IndReg(TI_MCLK_LCLK_CONTROL, 0x00, 
 			oldS3->Ti3020[TI_MCLK_LCLK_CONTROL]);
+      s3OutTi3026IndReg(TI_GENERAL_IO_CONTROL, 0x00, 
+			oldS3->Ti3020[TI_GENERAL_IO_CONTROL]);
+      s3OutTi3026IndReg(TI_GENERAL_IO_DATA, 0x00, 
+			oldS3->Ti3020[TI_GENERAL_IO_DATA]);
    }
    if (DAC_IS_TI3020_SERIES)
       s3OutTiIndReg(TI_CURS_CONTROL, 0x00, oldS3->Ti3020[TI_CURS_CONTROL]);
@@ -511,8 +515,8 @@ s3Init(mode)
        * Set up the Serial Access Mode 256 Words Control
        *   (bit 6 in CR58)
        */
-      if (S3_964_SERIES(s3ChipId) &&
-	  !OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options))
+      if (S3_968_SERIES(s3ChipId) || (S3_964_SERIES(s3ChipId) &&
+	  !OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options)))
          s3SAM256 = 0x40;
       else if ((OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) &&
                S3_928_ONLY(s3ChipId)) ||
@@ -791,8 +795,6 @@ s3Init(mode)
    if (OFLG_ISSET(OPTION_ELSA_W2000PRO, &s3InfoRec.options))
       pixMuxShift = s3InfoRec.clock[mode->Clock] > 120000 ? 2 : 
 		      s3InfoRec.clock[mode->Clock] > 60000 ? 1 : 0 ;
-   else if (S3_968_SERIES(s3ChipId) && DAC_IS_IBMRGB)
-      pixMuxShift = 1;
    else if (S3_964_SERIES(s3ChipId) && DAC_IS_IBMRGB)
       pixMuxShift = mode->Flags & V_DBLCLK ? 1 : 0;
    else if (S3_964_SERIES(s3ChipId) && DAC_IS_TI3025)
@@ -1924,8 +1926,13 @@ s3Init(mode)
       tmp1 = 0x00;
       if (!(tmp & 0x80)) tmp1 |= 0x02; /* invert bits for the 3020      */
       if (!(tmp & 0x40)) tmp1 |= 0x01;
-      if (s3DACSyncOnGreen) tmp1 |= 0x20;  /* add IOG sync              */
+      if (s3DACSyncOnGreen) tmp1 |= 0x30;  /* add IOG sync  & 7.5 IRE   */
       s3OutTi3026IndReg(TI_GENERAL_CONTROL, 0x00, tmp1);
+
+      if (s3DACSyncOnGreen) {  /* needed for ELSA Winner 2000PRO/X */
+	 s3OutTi3026IndReg(TI_GENERAL_IO_CONTROL, 0x00, TI_GIC_ALL_BITS);
+         s3OutTi3026IndReg(TI_GENERAL_IO_DATA, ~TI_GID_ELSA_SOG, 0);
+      }
 
       outb(vgaCRIndex, 0x65);
       outb(vgaCRReg, 0);
@@ -2068,12 +2075,10 @@ s3Init(mode)
       tmp2 = inb(0x3C5);
       outb(0x3C5, tmp2 | 0x20); /* blank the screen */
 
-      if (!S3_968_SERIES(s3ChipId)) {
-	if (mode->Flags & V_DBLCLK)
-	  s3OutIBMRGBIndReg(IBMRGB_misc_clock, 0xf0, 0x03);
-	else
-	  s3OutIBMRGBIndReg(IBMRGB_misc_clock, 0xf0, 0x01);
-      }
+      if (mode->Flags & V_DBLCLK)
+	 s3OutIBMRGBIndReg(IBMRGB_misc_clock, 0xf0, 0x03);
+      else
+	 s3OutIBMRGBIndReg(IBMRGB_misc_clock, 0xf0, 0x01);
 
       s3OutIBMRGBIndReg(IBMRGB_sync, 0, 0);
       if ((mode->Private[0] & (1 << S3_BLANK_DELAY))
@@ -2566,6 +2571,15 @@ s3Init(mode)
    }
 
 
+   if (OFLG_ISSET(OPTION_FAST_VRAM, &s3InfoRec.options)) {
+      outb(vgaCRIndex, 0x39);
+      outb(vgaCRReg, 0xa5);
+      outb(vgaCRIndex, 0x68);
+      tmp = inb(vgaCRReg);
+      /* -RAS low timing 3.5 MCLKs, -RAS precharge timing 2.5 MCLKs */
+      outb(vgaCRReg, tmp | 0xf0);
+   }
+   
    if (OFLG_ISSET(OPTION_SLOW_VRAM, &s3InfoRec.options)) {
       /* 
        * some Diamond Stealth 64 VRAM cards have a problem with VRAM timing,

@@ -116,12 +116,12 @@ Device Section Entries and Options Currently Supported:
     The minimum that must be specified in the XF86Config device
     section for the AGX-014, AGX-015, AGX-016, and ISA-based XGA-1 
     and XGA-2 is the Chipset. However to get full capability out
-    of the the AGX-01[456] chips, the RAMDAC should be specified.
+    of the AGX-01&lsqb;456&rsqb; chips, the RAMDAC should be specified.
     Other parms may select additional capabilities, or may used to
     override the defaults or reduce start-up time be suppressing
     probing. XGA specific configuration is covered at the end of
     this document. The XGA entries can generally be used to override
-    defaults for the AGX-01[456] as well.
+    defaults for the AGX-01&lsqb;456&rsqb; as well.
 
 <descrip>
 <tag/Ramdac/
@@ -160,7 +160,8 @@ Device Section Entries and Options Currently Supported:
                                  8bpp, 15bpp, 16bpp are supported. 
 
 <tag/&dquot;ATT20c490&dquot;/
-                                 AT&amp;T490 RAMDAC (includes 49[123]  
+                                 AT&amp;T490 RAMDAC (includes
+                                 49&lsqb;123&rsqb;  
                                  - supports 8-bit DAC). Limited
                                  to 110Mhz at 8bpp. 8bpp, 15bpp, 
                                  and 16bpp are supported.
@@ -509,7 +510,8 @@ Set or clear CPU access wait state, default is the POST setting.
                                       However, the coprocessor must 
                                       still be configured with this.
 
-                                      The AGX-01[456] chips have a fixed 
+                                      The AGX-01&lsqb;456&rsqb;
+                                      chips have a fixed 
                                       display memory address.
 
 <tag/COPbase     nnnnnn/      Address of the graphics engine's
@@ -524,7 +526,7 @@ Set or clear CPU access wait state, default is the POST setting.
                                       order 4-bits of POS register 2
                                       (0-16 the server assumes zero).
 
-                                      The AGX-01[456] chips support 
+                                      The AGX-01&lsqb;456&rsqb; chips support 
                                       0xB1F00 (default) and 0xD1F00.
 
 <tag/BIOSbase     nnnnnn/      Address of the XGA BIOS (not VGA BIOS).
@@ -546,7 +548,8 @@ Set or clear CPU access wait state, default is the POST setting.
                                       does not work under Linux if 0xB0000
                                       is specified. 
 
-                                      AGX-01[456] also default to 0xA0000.
+                                      AGX-01&lsqb;456&rsqb;
+                                      also default to 0xA0000.
 
 <tag/POSbase       nnnn/      Can be used to specify an alternate POS register
                                       probe address base from the ISA  
@@ -592,7 +595,7 @@ Set or clear CPU access wait state, default is the POST setting.
 
 <verb>
 $XConsortium: agx.sgml,v 1.4 95/01/27 16:14:35 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.11 1995/07/15 04:26:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.12 1995/07/19 12:43:31 dawes Exp $
 </verb>
 
 </article>

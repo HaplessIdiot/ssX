@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.95 1995/07/17 12:44:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.96 1995/07/19 12:42:39 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -171,10 +171,10 @@ static SymTabRec s3DacTable[] = {
    { ATT22C498_DAC,	"att22c498" },
    { TI3025_DAC,	"ti3025" },
    { TI3026_DAC,	"ti3026" },
+   { IBMRGB525_DAC,	"ibm_rgb514" },
    { IBMRGB524_DAC,	"ibm_rgb524" },
    { IBMRGB525_DAC,	"ibm_rgb525" },
    { IBMRGB528_DAC,	"ibm_rgb528" },
-   { IBMRGB52x_DAC,	"ibm_rgb52x" },
    { ATT20C490_DAC,	"att20c490" },
    { ATT20C490_DAC,	"att20c491" },
    { ATT20C490_DAC,	"ch8391" },
@@ -350,7 +350,8 @@ static int s3DetectMIRO_20SV_Rev(int BIOSbase)
    unsigned char *p;
 
    if ((p = find_bios_string(BIOSbase,match1,match2)) != NULL) {
-      s3BiosVendor = MIRO_BIOS;
+      if (s3BiosVendor == UNKNOWN_BIOS) 
+	 s3BiosVendor = MIRO_BIOS;
       if (*p >= '0' && *p <= '9')
 	 return *p - '0';
    }
@@ -363,7 +364,8 @@ static int check_SPEA_bios(int BIOSbase)
    unsigned char *p;
    
    if ((p = find_bios_string(BIOSbase,match,NULL)) != NULL) {
-      s3BiosVendor = SPEA_BIOS;
+      if (s3BiosVendor == UNKNOWN_BIOS) 
+	 s3BiosVendor = SPEA_BIOS;
       return 1;
    }
    return 0;
@@ -663,6 +665,9 @@ s3Probe()
    OFLG_SET(OPTION_ELSA_W1000PRO, &validOptions);
    OFLG_SET(OPTION_ELSA_W2000PRO, &validOptions);
    OFLG_SET(OPTION_DIAMOND, &validOptions);
+   OFLG_SET(OPTION_GENOA, &validOptions);
+   OFLG_SET(OPTION_STB, &validOptions);
+   OFLG_SET(OPTION_HERCULES, &validOptions);
    if (S3_928_P(s3ChipId))
       OFLG_SET(OPTION_PCI_HACK, &validOptions);
    OFLG_SET(OPTION_POWER_SAVER, &validOptions);
@@ -672,6 +677,7 @@ s3Probe()
 #endif
    OFLG_SET(OPTION_SLOW_VRAM, &validOptions);
    OFLG_SET(OPTION_SLOW_DRAM_REFRESH, &validOptions);
+   OFLG_SET(OPTION_FAST_VRAM, &validOptions);
    xf86VerifyOptions(&validOptions, &s3InfoRec);
 
    if (S3_x64_SERIES(s3ChipId))
@@ -706,6 +712,15 @@ s3Probe()
       }
    }
 
+   if (OFLG_ISSET(OPTION_GENOA, &s3InfoRec.options))
+      s3BiosVendor = GENOA_BIOS;
+   else if (OFLG_ISSET(OPTION_STB, &s3InfoRec.options))
+      s3BiosVendor = STB_BIOS;
+   else if (OFLG_ISSET(OPTION_HERCULES, &s3InfoRec.options))
+      s3BiosVendor = HERCULES_BIOS;
+   else if (OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options))
+      s3BiosVendor = NUMBER_NINE_BIOS;
+
    card_id = s3DetectMIRO_20SV_Rev(s3InfoRec.BIOSbase);
    if (card_id > 1) {
       ErrorF("%s %s: MIRO 20SV Rev.2 or newer detected.\n",
@@ -716,7 +731,8 @@ s3Probe()
 
    if (find_bios_string(s3InfoRec.BIOSbase,"Stealth",
 			"Diamond Computer Systems, Inc.") != NULL) {
-      s3BiosVendor = DIAMOND_BIOS;
+      if (s3BiosVendor == UNKNOWN_BIOS) 
+	 s3BiosVendor = DIAMOND_BIOS;
       if (xf86Verbose)
 	 ErrorF("%s %s: Diamond Stealth BIOS found\n",
 		XCONFIG_PROBED, s3InfoRec.name);
@@ -725,7 +741,8 @@ s3Probe()
    card_id = s3DetectELSA(s3InfoRec.BIOSbase, &card, &serno, &max_pix_clock,
 			  &max_mem_clock);
    if (card_id > 0) {
-      s3BiosVendor = ELSA_BIOS;
+      if (s3BiosVendor == UNKNOWN_BIOS) 
+	 s3BiosVendor = ELSA_BIOS;
       ErrorF("%s %s: card: %s, Ser.No. %s\n",
 	     XCONFIG_PROBED, s3InfoRec.name, card, serno);
       xfree(card);
@@ -1962,9 +1979,15 @@ s3Probe()
       if (f1>f0) fdiff = f1-f0;
       else       fdiff = f0-f1;
 
+
+      /* refclock defaults should not depend on vendor options
+       * but only on probed BIOS tags; it's too dangerous
+       * when users play with options */
+
       if (find_bios_string(s3InfoRec.BIOSbase,"VideoBlitz III AV",
 			   "Genoa Systems Corporation") != NULL) {
-	 s3BiosVendor = GENOA_BIOS;
+         if (s3BiosVendor == UNKNOWN_BIOS) 
+	    s3BiosVendor = GENOA_BIOS;
 	 if (xf86Verbose)
 	    ErrorF("%s %s: Genoa VideoBlitz III AV BIOS found\n",
 		   XCONFIG_PROBED, s3InfoRec.name);
@@ -1973,7 +1996,8 @@ s3Probe()
       }
       else if (find_bios_string(s3InfoRec.BIOSbase,"STB Systems, Inc.", NULL) 
 	       != NULL) {
-	 s3BiosVendor = STB_BIOS;
+	 if (s3BiosVendor == UNKNOWN_BIOS) 
+	    s3BiosVendor = STB_BIOS;
 	 if (xf86Verbose)
 	    ErrorF("%s %s: STB Velocity 64 BIOS found\n",
 		   XCONFIG_PROBED, s3InfoRec.name);
@@ -1983,7 +2007,8 @@ s3Probe()
       else if (find_bios_string(s3InfoRec.BIOSbase,
 				"Number Nine Visual Technology","Motion 771")
 	       != NULL) {
-	 s3BiosVendor = NUMBER9_BIOS;
+	 if (s3BiosVendor == UNKNOWN_BIOS) 
+	    s3BiosVendor = NUMBER_NINE_BIOS;
 	 if (xf86Verbose)
 	    ErrorF("%s %s: #9 Motion 771 BIOS found\n",
 		   XCONFIG_PROBED, s3InfoRec.name);
@@ -1992,7 +2017,8 @@ s3Probe()
       }
       else if (find_bios_string(s3InfoRec.BIOSbase,
 				"Hercules Graphite Terminator",NULL) != NULL) {
-	 s3BiosVendor = HERCULES_BIOS;
+	 if (s3BiosVendor == UNKNOWN_BIOS) 
+	    s3BiosVendor = HERCULES_BIOS;
 	 if (xf86Verbose)
 	    ErrorF("%s %s: Hercules Graphite Terminator BIOS found\n",
 		   XCONFIG_PROBED, s3InfoRec.name);
@@ -2013,6 +2039,8 @@ s3Probe()
 	       s3InfoRec.s3RefClk = 16000;
 	    else if ((int)(f*1e3/200+0.5) == 50000/200)
 	       s3InfoRec.s3RefClk = 50000;
+	    else if ((int)(f*1e3/200+0.5) == 24000/200)
+	       s3InfoRec.s3RefClk = 24000;
 	    else if ((int)(f*1e3/200+0.5) == 14318/200)
 	       s3InfoRec.s3RefClk = 14318;
 	    else 
@@ -2037,7 +2065,7 @@ s3Probe()
 	 if (mclk)
 	    ErrorF(" (MCLK %1.3f MHz)", mclk / 1000.0);
 	 ErrorF("\n");	
- ErrorF("%s %s: with refclock %1.3f MHz (probed %1.3f & %1.3f)\n",
+	 ErrorF("%s %s: with refclock %1.3f MHz (probed %1.3f & %1.3f)\n",
 		refclock_probed,s3InfoRec.name,s3InfoRec.s3RefClk/1e3,f0,f1);
       }
       numClocks = 3;
@@ -2830,7 +2858,7 @@ s3Probe()
 	 case IBMRGB524_DAC:
 	 case IBMRGB525_DAC:
 	 case IBMRGB528_DAC:
-	    if (pMode->SynthClock > 80000 && !S3_968_SERIES(s3ChipId)) {
+	    if (pMode->SynthClock > 80000 || S3_968_SERIES(s3ChipId)) {
 	       pMode->Flags |= V_DBLCLK;
 	    }
 	    break;
@@ -2911,7 +2939,8 @@ s3Probe()
 
 	 /* Set default for invert_vclk */
 	 if (!(pMode->Private[0] & (1 << S3_INVERT_VCLK))) {
-	    if (DAC_IS_TI3026 && s3BiosVendor == DIAMOND_BIOS)
+	    if (DAC_IS_TI3026 && (s3BiosVendor == DIAMOND_BIOS ||
+				  OFLG_ISSET(OPTION_DIAMOND, &s3InfoRec.options)))
 	       pMode->Private[S3_INVERT_VCLK] = 1;
 	    else if (DAC_IS_IBMRGB)
 	       if (s3Bpp == 4) 

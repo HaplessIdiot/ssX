@@ -67,9 +67,9 @@ properly.  This means that ISA Mach64 cards in systems with more than
 12Mb of main memory will not work.
 
 <sect>Optimizing the speed of the Mach64 X server<p>
-To maximize the speed of the Mach64 X server, I suggest that use the  
-following maximum resolutions.  This will allow room for the font and
-pixmap caches and a hardware cursor.
+To maximize the speed of the Mach64 X server, I suggest that you use
+the following maximum resolutions.  This will allow room for the font
+and pixmap caches and a hardware cursor.
 
 <verb>
 Max Resolution   BPP   Video RAM
@@ -127,8 +127,10 @@ Mach64 X server unless the "no_bios_clocks" option is given.
 		write mode.  Block write mode only works on
 		certain types of VRAM cards, and this option has
 		no effect on DRAM based cards.  If you see noise
-		on the screen that captured via xmag, then it is
-		probably a problem with block write mode.
+		on the screen that can be captured via xmag, then
+		it is probably a problem with block write mode.
+		This ``noise'' usually looks like bits of windows/menus
+		repeated on the screen.
 <tag>Option &dquot;block_write&dquot;</tag>
 		This option allows you to turn on block
 		write mode.  Block write mode only works on
@@ -159,7 +161,7 @@ Mach64 X server unless the "no_bios_clocks" option is given.
 <p>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.3 1995/07/03 08:50:54 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.4 1995/07/07 15:40:16 dawes Exp $
 </verb>
 
 </article>

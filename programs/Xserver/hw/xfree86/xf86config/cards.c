@@ -1,5 +1,5 @@
 /* $XConsortium: cards.c,v 1.4 95/06/09 20:57:00 gildea Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.c,v 3.3 1995/01/28 16:15:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.c,v 3.4 1995/06/14 07:51:06 dawes Exp $ */
 
 /*
  *  Functions to manipulate card database.
@@ -79,9 +79,6 @@ static char *s3_comment =
 "# Use Option \"nolinear\" if the server doesn't start up correctly\n"
 "# (this avoids the linear framebuffer probe). If that fails try\n"
 "# option \"nomemaccess\".\n"
-"#\n"
-"# Use Option \"sw_cursor\" if the server completely locked up\n"
-"# several times while you're moving the mouse.\n"
 "#\n"
 "# Refer to /usr/X11R6/lib/doc/README.S3, and the XF86_S3 man page.\n";
 
