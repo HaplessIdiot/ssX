@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.100 2000/06/21 17:28:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.101 2000/07/05 13:41:37 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -286,6 +286,9 @@ static int ClockLimit[] = {
 	135000,
 	170000,
 	170000,
+	170000,
+	230000,
+	230000,
 	230000,
 	230000,
 	230000,
@@ -321,6 +324,9 @@ static int ClockLimit16bpp[] = {
 	135000,
 	170000,
 	170000,
+	170000,
+	230000,
+	230000,
 	230000,
 	230000,
 	230000,
@@ -356,6 +362,9 @@ static int ClockLimit24bpp[] = {
 	70000,
 	85000,
 	85000,
+	85000,
+	115000,
+	115000,
 	115000,
 	115000,
 	115000,
@@ -391,6 +400,9 @@ static int ClockLimit32bpp[] = {
 	70000,
 	85000,
 	85000,
+	85000,
+	115000,
+	115000,
 	115000,
 	115000,
 	115000,
