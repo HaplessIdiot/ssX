@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.14 2000/02/13 19:33:56 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.15 2000/02/14 19:20:49 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -129,7 +129,7 @@ static Bool R128EnterVT(int scrnIndex, int flags);
 static void R128LeaveVT(int scrnIndex, int flags);
 static Bool R128CloseScreen(int scrnIndex, ScreenPtr pScreen);
 static void R128FreeScreen(int scrnIndex, int flags);
-static Bool R128SaveScreen(ScreenPtr pScreen, Bool unblank);
+static Bool R128SaveScreen(ScreenPtr pScreen, int mode);
 static void R128Save(ScrnInfoPtr pScrn);
 static void R128Restore(ScrnInfoPtr pScrn);
 static Bool R128ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
@@ -1243,7 +1243,7 @@ static Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen,
 	if (!R128ModeInit(pScrn, pScrn->currentMode)) return FALSE;
     }
 
-    R128SaveScreen(pScreen, FALSE);
+    R128SaveScreen(pScreen, SCREEN_SAVER_ON);
     pScrn->AdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
 
 				/* Visual setup */
@@ -2036,9 +2036,12 @@ static Bool R128ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     return TRUE;
 }
 
-static Bool R128SaveScreen(ScreenPtr pScreen, Bool unblank)
+static Bool R128SaveScreen(ScreenPtr pScreen, int mode)
 {
     ScrnInfoPtr   pScrn = xf86Screens[pScreen->myNum];
+    Bool unblank;
+
+    unblank = xf86IsUnblank(mode);
 
     if (unblank) R128Unblank(pScrn); else R128Blank(pScrn);
     return TRUE;

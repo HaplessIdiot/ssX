@@ -26,7 +26,7 @@
  *          Dirk H. Hohndel (hohndel@suse.de),
  *          Portions: the GGI project & confidential CYRIX databooks.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.2 2000/02/13 22:36:45 alanh Exp $ */
 
 #include "compiler.h"
 #include "fb.h"
@@ -64,7 +64,7 @@ static Bool	CYRIXScreenInit(int Index, ScreenPtr pScreen, int argc,
 static Bool	CYRIXEnterVT(int scrnIndex, int flags);
 static void	CYRIXLeaveVT(int scrnIndex, int flags);
 static Bool	CYRIXCloseScreen(int scrnIndex, ScreenPtr pScreen);
-static Bool	CYRIXSaveScreen(ScreenPtr pScreen, Bool unblank);
+static Bool	CYRIXSaveScreen(ScreenPtr pScreen, int mode);
 
 /* Required if the driver supports mode switching */
 static Bool	CYRIXSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
@@ -947,11 +947,11 @@ CYRIXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     CYRIXModeInit(pScrn, pScrn->currentMode);
 
     /* Darken the screen for aesthetic reasons and set the viewport */
-    CYRIXSaveScreen(pScreen, FALSE);
+    CYRIXSaveScreen(pScreen, SCREEN_SAVER_ON);
     CYRIXAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
     /* XXX Fill the screen with black */
 #if 0
-    CYRIXSaveScreen(pScreen, TRUE);
+    CYRIXSaveScreen(pScreen, SCREEN_SAVER_OFF);
 #endif
 
     /*
@@ -1226,9 +1226,9 @@ CYRIXValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 
 /* Mandatory */
 static Bool
-CYRIXSaveScreen(ScreenPtr pScreen, Bool unblank)
+CYRIXSaveScreen(ScreenPtr pScreen, int mode)
 {
-    return vgaHWSaveScreen(pScreen, unblank);
+    return vgaHWSaveScreen(pScreen, mode);
 }
 
 static void

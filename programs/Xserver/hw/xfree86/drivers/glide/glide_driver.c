@@ -45,7 +45,7 @@
    * Support static loading.  
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.8 2000/01/29 16:55:51 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.9 2000/02/11 22:36:01 dawes Exp $ */
 
 #include "xaa.h"
 #include "xf86Cursor.h"
@@ -150,7 +150,7 @@ static Bool	GLIDEScreenInit(int Index, ScreenPtr pScreen, int argc, char **argv)
 static Bool	GLIDEEnterVT(int scrnIndex, int flags);
 static void	GLIDELeaveVT(int scrnIndex, int flags);
 static Bool	GLIDECloseScreen(int scrnIndex, ScreenPtr pScreen);
-static Bool	GLIDESaveScreen(ScreenPtr pScreen, Bool unblank);
+static Bool	GLIDESaveScreen(ScreenPtr pScreen, int mode);
 static void     GLIDEFreeScreen(int scrnIndex, int flags);
 static void     GLIDERefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 static Bool     GLIDEModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
@@ -860,11 +860,13 @@ GLIDEFreeScreen(int scrnIndex, int flags)
 /* Do screen blanking */
 /* Mandatory */
 static Bool
-GLIDESaveScreen(ScreenPtr pScreen, Bool unblank)
+GLIDESaveScreen(ScreenPtr pScreen, int mode)
 {
   ScrnInfoPtr pScrn;
   GLIDEPtr pGlide;
+  Bool unblank;
   
+  unblank = xf86IsUnblank(mode);
   pScrn = xf86Screens[pScreen->myNum];
   pGlide = GLIDEPTR(pScrn);
   pGlide->Blanked = !unblank;

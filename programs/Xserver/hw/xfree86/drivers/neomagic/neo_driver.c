@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.7 1999/08/21 13:48:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.13 2000/02/08 13:13:18 eich Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -1237,7 +1237,7 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     if (!neoModeInit(pScrn,pScrn->currentMode))
 	return FALSE;
-    vgaHWSaveScreen(pScreen,FALSE);
+    vgaHWSaveScreen(pScreen,SCREEN_SAVER_ON);
     NEOAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
     
     /*

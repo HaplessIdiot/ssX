@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.37 2000/02/12 20:45:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.38 2000/02/12 23:08:03 dawes Exp $ */
 
 
 #define PSZ 8
@@ -77,7 +77,7 @@ static Bool	SISScreenInit(int Index, ScreenPtr pScreen, int argc,
 static Bool	SISEnterVT(int scrnIndex, int flags);
 static void	SISLeaveVT(int scrnIndex, int flags);
 static Bool	SISCloseScreen(int scrnIndex, ScreenPtr pScreen);
-static Bool	SISSaveScreen(ScreenPtr pScreen, Bool unblank);
+static Bool	SISSaveScreen(ScreenPtr pScreen, int mode);
 
 /* Required if the driver supports mode switching */
 static Bool	SISSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
@@ -1154,14 +1154,14 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     SISSave(pScrn);
 
     /* Darken the screen for aesthetic reasons and set the viewport */
-    SISSaveScreen(pScreen, FALSE);
+    SISSaveScreen(pScreen, SCREEN_SAVER_ON);
 
     /* Initialise the first mode */
     if (!(*pSiS->ModeInit)(pScrn, pScrn->currentMode))
 	return FALSE;
 
     /* Darken the screen for aesthetic reasons and set the viewport */
-    SISSaveScreen(pScreen, FALSE);
+    SISSaveScreen(pScreen, SCREEN_SAVER_ON);
     SISAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
 
     /*
@@ -1309,7 +1309,7 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
 
     /* Turn on the screen now */
-    SISSaveScreen(pScreen, TRUE);
+    SISSaveScreen(pScreen, SCREEN_SAVER_OFF);
 
     return TRUE;
 }
@@ -1490,9 +1490,9 @@ SISValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 
 /* Mandatory */
 static Bool
-SISSaveScreen(ScreenPtr pScreen, Bool unblank)
+SISSaveScreen(ScreenPtr pScreen, int mode)
 {
-    return vgaHWSaveScreen(pScreen, unblank);
+    return vgaHWSaveScreen(pScreen, mode);
 }
 
 #ifdef	DEBUG

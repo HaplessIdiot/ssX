@@ -1,4 +1,11 @@
-XFree86 3.9.17Z (14 February 2000)
+XFree86 3.9.17Z (15 February 2000)
+3799. Fix all other SaveScreen() functions, and add a helper xf86IsUnblank()
+      that drivers can use to interpret the SaveScreen mode values
+      (David Dawes).
+3798. Fix GLINTSaveScreen's use of the second argument (#3706, Michel Danzer).
+3797. Glint driver updates: register int10 module's symbols, and add a
+      workaround to set the sync flags in supplied modes to make the HW
+      cursor work with FBDev (#3650, Michel Danzer).
 3796. Indented xfree86 for better readability. (Egbert Eich)
 3795. Fixed int10 build rules (hope they are right now) (Egbert Eich)
 3794. Changed lnxResources.c to know about differences between ev4/5 and ev6.
@@ -147,9 +154,7 @@ XFree86 3.9.17e (11 February 2000)
       Paulo Cesar Pereira de Andrade).
 3710. Disable SilkenMouse in the C&T driver until the memory transfer
       sync problem is solved (#3654, Nozomi Ytow).
-3709. Glint driver updates: register int10 module's symbols, and add a
-      workaround to set the sync flags in supplied modes to make the HW
-      cursor work with FBDev (#3650, Michel Danzer).
+3709. -
 3708. Don't "normalise" module names in xf86LoadModules (David Dawes).
 3707. Apm driver updates, including updates to the xf86Rush extension (#3649,
       3655, Loic Grenie).
@@ -9711,4 +9716,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1008 2000/02/15 07:13:35 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1009 2000/02/15 13:51:40 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.32 1999/12/03 19:17:47 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.34 2000/02/08 13:13:34 eich Exp $ */
 
 /*
  *
@@ -621,12 +621,15 @@ vgaHWBlankScreen(ScrnInfoPtr pScrn, Bool on)
  */
 
 Bool
-vgaHWSaveScreen(ScreenPtr pScreen, Bool on)
+vgaHWSaveScreen(ScreenPtr pScreen, int mode)
 {
    ScrnInfoPtr pScrn = NULL;
+   Bool on;
 
    if (pScreen != NULL)
       pScrn = xf86Screens[pScreen->myNum];
+
+   on = xf86IsUnblank(mode);
 
    if (on)
       SetTimeSinceLastInputEvent();

@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.31 2000/01/30 17:58:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.32 2000/02/08 17:19:09 dawes Exp $ */
 
 #include "nv_include.h"
 
@@ -49,7 +49,7 @@ static Bool    NVEnterVT(int scrnIndex, int flags);
 static Bool    NVEnterVTFBDev(int scrnIndex, int flags);
 static void    NVLeaveVT(int scrnIndex, int flags);
 static Bool    NVCloseScreen(int scrnIndex, ScreenPtr pScreen);
-static Bool    NVSaveScreen(ScreenPtr pScreen, Bool unblank);
+static Bool    NVSaveScreen(ScreenPtr pScreen, int mode);
 
 /* Optional functions */
 static void    NVFreeScreen(int scrnIndex, int flags);
@@ -1470,7 +1470,7 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- State saved\n"));
 
     /* Darken the screen for aesthetic reasons and set the viewport */
-    NVSaveScreen(pScreen, FALSE);
+    NVSaveScreen(pScreen, SCREEN_SAVER_ON);
     pScrn->AdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- Blanked\n"));
@@ -1683,9 +1683,9 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 /* Mandatory */
 static Bool
-NVSaveScreen(ScreenPtr pScreen, Bool unblank)
+NVSaveScreen(ScreenPtr pScreen, int mode)
 {
-    return vgaHWSaveScreen(pScreen, unblank);
+    return vgaHWSaveScreen(pScreen, mode);
 }
 
 static void

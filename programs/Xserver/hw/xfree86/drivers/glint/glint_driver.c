@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.63 2000/02/10 18:57:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.64 2000/02/15 15:33:25 dawes Exp $ */
 /* $PI: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.37 1999/07/02 18:38:31 faith Exp $ */
 
 #define PSZ 8
@@ -98,7 +98,7 @@ static Bool	GLINTEnterVT(int scrnIndex, int flags);
 static Bool	GLINTEnterVTFBDev(int scrnIndex, int flags);
 static void	GLINTLeaveVT(int scrnIndex, int flags);
 static Bool	GLINTCloseScreen(int scrnIndex, ScreenPtr pScreen);
-static Bool	GLINTSaveScreen(ScreenPtr pScreen, Bool unblank);
+static Bool	GLINTSaveScreen(ScreenPtr pScreen, int mode);
 
 /* Required if the driver supports mode switching */
 static Bool	GLINTSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
@@ -2542,7 +2542,7 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }   
 
     /* Darken the screen for aesthetic reasons and set the viewport */
-    GLINTSaveScreen(pScreen, FALSE);
+    GLINTSaveScreen(pScreen, SCREEN_SAVER_ON);
     GLINTAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
 
     /*
@@ -2803,7 +2803,7 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 #if 0
     /* Enable the screen */
-    GLINTSaveScreen(pScreen, TRUE);
+    GLINTSaveScreen(pScreen, SCREEN_SAVER_OFF);
 #endif
 
     /* Done */
@@ -3113,13 +3113,17 @@ GLINTValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 
 /* Mandatory */
 static Bool
-GLINTSaveScreen(ScreenPtr pScreen, Bool unblank)
+GLINTSaveScreen(ScreenPtr pScreen, int mode)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     GLINTPtr pGlint = GLINTPTR(pScrn);
     CARD32 temp;
+    Bool unblank;
 
     TRACE_ENTER("GLINTSaveScreen");
+
+    unblank = xf86IsUnblank(mode);
+
     switch (pGlint->Chipset) {
     case PCI_VENDOR_TI_CHIP_PERMEDIA2:
     case PCI_VENDOR_TI_CHIP_PERMEDIA:

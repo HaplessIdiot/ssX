@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.56 1999/09/25 14:37:32 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.63 2000/02/08 13:13:21 eich Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -76,7 +76,7 @@ static Bool TsengScreenInit(int Index, ScreenPtr pScreen, int argc,
 static Bool TsengEnterVT(int scrnIndex, int flags);
 static void TsengLeaveVT(int scrnIndex, int flags);
 static Bool TsengCloseScreen(int scrnIndex, ScreenPtr pScreen);
-static Bool TsengSaveScreen(ScreenPtr pScreen, Bool unblank);
+static Bool TsengSaveScreen(ScreenPtr pScreen, int mode);
 
 /* Required if the driver supports mode switching */
 static Bool TsengSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
@@ -1966,7 +1966,7 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     TsengModeInit(pScrn, pScrn->currentMode);
 
     /* Darken the screen for aesthetic reasons and set the viewport */
-    TsengSaveScreen(pScreen, FALSE);
+    TsengSaveScreen(pScreen, SCREEN_SAVER_ON);
 
     TsengAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
     /* XXX Fill the screen with black */
@@ -2241,12 +2241,15 @@ TsengCloseScreen(int scrnIndex, ScreenPtr pScreen)
  */
 
 static Bool
-TsengSaveScreen(ScreenPtr pScreen, Bool unblank)
+TsengSaveScreen(ScreenPtr pScreen, int mode)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     TsengPtr pTseng = TsengPTR(pScrn);
+    Bool unblank;
 
     PDEBUG("	TsengSaveScreen\n");
+
+    unblank = xf86IsUnblank(mode);
 
     if (Is_ET6K) {
 	return vgaHWSaveScreen(pScreen, unblank);

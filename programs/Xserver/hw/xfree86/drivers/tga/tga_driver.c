@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.32 1999/12/14 02:55:37 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.37 2000/01/30 01:15:55 alanh Exp $ */
 
 /*  #include "compiler.h" */
 /* everybody includes these */
@@ -93,7 +93,7 @@ static Bool	TGAScreenInit(int Index, ScreenPtr pScreen, int argc,
 static Bool	TGAEnterVT(int scrnIndex, int flags);
 static void	TGALeaveVT(int scrnIndex, int flags);
 static Bool	TGACloseScreen(int scrnIndex, ScreenPtr pScreen);
-static Bool	TGASaveScreen(ScreenPtr pScreen, Bool unblank);
+static Bool	TGASaveScreen(ScreenPtr pScreen, int mode);
 
 /* Required if the driver supports mode switching */
 static Bool	TGASwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
@@ -1140,7 +1140,7 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     TGAModeInit(pScrn, pScrn->currentMode);
 
     /* Darken the screen for aesthetic reasons and set the viewport */
-    TGASaveScreen(pScreen, FALSE);
+    TGASaveScreen(pScreen, SCREEN_SAVER_ON);
 
     /*
      * The next step is to setup the screen's visuals, and initialise the
@@ -1293,7 +1293,7 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
 
     /* unblank the screen */
-    TGASaveScreen(pScreen, TRUE);
+    TGASaveScreen(pScreen, SCREEN_SAVER_OFF);
     
     /* Done */
     return TRUE;
@@ -1417,7 +1417,7 @@ TGAValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 
 /* Mandatory */
 static Bool
-TGASaveScreen(ScreenPtr pScreen, Bool unblank)
+TGASaveScreen(ScreenPtr pScreen, int mode)
     /* this function should blank the screen when unblank is FALSE and
        unblank it when unblank is TRUE -- it doesn't actually seem to be
        used for much though */
@@ -1425,11 +1425,14 @@ TGASaveScreen(ScreenPtr pScreen, Bool unblank)
     TGAPtr pTga;
     ScrnInfoPtr pScrn;
     int valid_reg = 0;
+    Bool unblank;
 
     pScrn = xf86Screens[pScreen->myNum];
     pTga = TGAPTR(pScrn);
     valid_reg = TGA_READ_REG(TGA_VALID_REG);
     valid_reg &= 0xFFFFFFFC;
+
+    unblank = xf86IsUnblank(mode);
 
     if(unblank == FALSE)
 	valid_reg |= 0x3;

@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.75tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.82 2000/02/06 20:04:47 alanh Exp $ */
 
 #include "cfb24_32.h"
 
@@ -81,7 +81,7 @@ static Bool	TRIDENTScreenInit(int Index, ScreenPtr pScreen, int argc,
 static Bool	TRIDENTEnterVT(int scrnIndex, int flags);
 static void	TRIDENTLeaveVT(int scrnIndex, int flags);
 static Bool	TRIDENTCloseScreen(int scrnIndex, ScreenPtr pScreen);
-static Bool	TRIDENTSaveScreen(ScreenPtr pScreen, Bool unblank);
+static Bool	TRIDENTSaveScreen(ScreenPtr pScreen, int mode);
 
 /* Optional functions */
 static void	TRIDENTFreeScreen(int scrnIndex, int flags);
@@ -2146,7 +2146,7 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	return FALSE;
 
     /* Darken the screen for aesthetic reasons and set the viewport */
-    TRIDENTSaveScreen(pScreen, FALSE);
+    TRIDENTSaveScreen(pScreen, SCREEN_SAVER_ON);
     TRIDENTAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
 
     /*
@@ -2520,9 +2520,9 @@ TRIDENTValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 
 /* Mandatory */
 static Bool
-TRIDENTSaveScreen(ScreenPtr pScreen, Bool unblank)
+TRIDENTSaveScreen(ScreenPtr pScreen, int mode)
 {
-    return vgaHWSaveScreen(pScreen, unblank);
+    return vgaHWSaveScreen(pScreen, mode);
 }
 
 static void
