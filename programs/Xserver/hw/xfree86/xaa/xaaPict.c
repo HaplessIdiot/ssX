@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPict.c,v 1.6 2001/01/07 00:29:36 mvojkovi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPict.c,v 1.7 2001/01/23 22:11:08 mvojkovi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -280,15 +280,20 @@ XAADoComposite (
 	  nbox = REGION_NUM_RECTS(&region);
 	  pbox = REGION_RECTS(&region);   
 	     
-	  if(!nbox)
+	  if(!nbox) {
+                REGION_UNINIT(pScreen, &region);
 		return TRUE;
+	  }
 
 	  if(!(infoRec->SetupForCPUToScreenAlphaTexture)(infoRec->pScrn,
 			op, red, green, blue, alpha, pMask->format, 
 			((PixmapPtr)(pMask->pDrawable))->devPrivate.ptr,
 			((PixmapPtr)(pMask->pDrawable))->devKind, 
 			pMask->pDrawable->width, pMask->pDrawable->height, 0))
+	  {
+                REGION_UNINIT(pScreen, &region);
 		return FALSE;
+	  }
 
 	   xMask -= xDst;
 	   yMask -= yDst;
@@ -321,15 +326,22 @@ XAADoComposite (
 	nbox = REGION_NUM_RECTS(&region);
 	pbox = REGION_RECTS(&region);   
 	     
-	if(!nbox)
-	    return TRUE;
+        if(!nbox) {
+             REGION_UNINIT(pScreen, &region);
+             return TRUE;
+        }
+
 
 	if(!(infoRec->SetupForCPUToScreenTexture)(infoRec->pScrn,
 			op, pSrc->format, 
 			((PixmapPtr)(pSrc->pDrawable))->devPrivate.ptr,
 			((PixmapPtr)(pSrc->pDrawable))->devKind, 
 			pSrc->pDrawable->width, pSrc->pDrawable->height, 0))
-		return FALSE;
+        {
+              REGION_UNINIT(pScreen, &region);
+              return FALSE;
+        }
+
 
 	xSrc -= xDst;
 	ySrc -= yDst;
