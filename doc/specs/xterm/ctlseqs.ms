@@ -1,7 +1,7 @@
 .\"#! troff -ms $1		-*- Nroff -*-
 .\" "Xterm Control Sequences" document
 .\" $XConsortium: ctlseqs.ms,v 1.16 94/12/28 20:45:48 gildea Exp $
-.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.12 1997/08/26 10:00:45 hohndel Exp $
+.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.13 1997/10/25 13:49:56 hohndel Exp $
 .\"
 .\" Copyright 1991, 1994 X Consortium
 .\"
@@ -833,13 +833,14 @@ Set Text Parameters
   \*(Ps = \*1 \(-> Change Icon Name to \*(Pt
   \*(Ps = \*2 \(-> Change Window Title to \*(Pt
   \*(Ps = \*1\*0 \(-> Change color names starting with text foreground to \*(Pt (a
-list of one or more color names, separated by semicolon, up to color6).
+list of one or more color names, separated by semicolon, up to seven).
   \*(Ps = \*1\*1 \(-> Change colors starting with text background to \*(Pt
   \*(Ps = \*1\*2 \(-> Change colors starting with text cursor to \*(Pt
   \*(Ps = \*1\*3 \(-> Change colors starting with mouse foreground to \*(Pt
   \*(Ps = \*1\*4 \(-> Change colors starting with mouse background to \*(Pt
   \*(Ps = \*1\*5 \(-> Change colors starting with Tek foreground to \*(Pt
   \*(Ps = \*1\*6 \(-> Change colors starting with Tek background to \*(Pt
+  \*(Ps = \*1\*7 \(-> Change colors starting with highlight to \*(Pt
   \*(Ps = \*4\*6 \(-> Change Log File to \*(Pt (normally disabled by a
 compile-time option)
   \*(Ps = \*5\*0 \(-> Set Font to \*(Pt
