@@ -1,18 +1,14 @@
 XCOMM $XConsortium: Imakefile /main/27 1996/01/15 12:19:01 gildea $
-XCOMM $XFree86: xc/programs/xfs/Imakefile,v 3.2 1995/06/02 10:30:06 dawes Exp $
+XCOMM $XFree86: xc/programs/xfs/Imakefile,v 3.3 1996/01/21 01:55:25 dawes Exp $
 #undef ServerDefines
 #include <Server.tmpl>
 #define	IHaveSubdirs
 
 OSDIR = os
 DIFSDIR = difs
-#ifndef OS2Architecture
-OSLIB = $(OSDIR)/libos.a
-DIFSLIB = $(DIFSDIR)/libdifs.a
-#else
-OSLIB = $(OSDIR)/os.a
-DIFSLIB = $(DIFSDIR)/difs.a
-#endif
+
+OSLIB = $(OSDIR)/LibraryTargetName(os)
+DIFSLIB = $(DIFSDIR)/LibraryTargetName(difs)
 SYSLIBS = MathLibrary
 #ifdef i386SVR3Architecture
 BSDEMUL = $(DEPXBSDLIB)

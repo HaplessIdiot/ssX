@@ -1,5 +1,5 @@
 LIBRARY Xaw
-DESCRIPTION "X11R6 XFree86 libXaw.dll for OS/2 EMX09A VERSION=6.0"
+DESCRIPTION "X11R6 XFree86 libXaw.dll for OS/2 EMX09B VERSION=6.0"
 CODE
 	PRELOAD
 DATA
@@ -84,9 +84,7 @@ EXPORTS
 	_XawImRegister  @ 78
 	_XawImUnregister  @ 79
 	_XawImSetValues  @ 80
-	_XawImVASetValues  @ 81
 	_XawImSetFocusValues  @ 82
-	_XawImVASetFocusValues  @ 83
 	_XawImUnsetFocus  @ 84
 	_XawImWcLookupString  @ 85
 	_XawImGetImAreaHeight  @ 86

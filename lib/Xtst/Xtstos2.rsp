@@ -1,3 +1,3 @@
-Xtest.obj /NOL /NOD /BAT
+Xtest.obj XRecord.obj /NOL /NOD /BAT
 Xtst.dll
 

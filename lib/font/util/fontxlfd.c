@@ -1,5 +1,5 @@
 /* $XConsortium: fontxlfd.c,v 1.19 94/06/05 14:42:48 rws Exp $ */
-/* $XFree86: xc/lib/font/util/fontxlfd.c,v 3.1 1994/06/09 10:45:48 dawes Exp $ */
+/* $XFree86: xc/lib/font/util/fontxlfd.c,v 3.2 1995/01/10 10:19:12 dawes Exp $ */
 
 /*
 
@@ -215,6 +215,7 @@ double x;
       a binary machine?  */
 
 #if defined(i386) || defined(__i386__)
+#if !defined(__EMX__)
 #include <float.h>
 
 /* if we have IEEE 754 fp, we can round to binary digits... */
@@ -272,6 +273,7 @@ double x;
    }
    else 
 #endif
+#endif /* !__EMX__ */
 #endif /* i386 || __i386__ */
     {
 	/*

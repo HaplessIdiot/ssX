@@ -1,5 +1,5 @@
 /* $XConsortium: transport.c,v 1.6 94/04/17 20:23:07 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/transport.c,v 3.0 1994/05/08 05:16:40 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/transport.c,v 3.1 1995/07/07 15:33:15 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -69,6 +69,9 @@ from the X Consortium.
 #endif
 #ifdef LOCALCONN
 #include "Xtranslcl.c"
+#endif
+#ifdef OS2PIPECONN
+#include "Xtransos2.c"
 #endif
 #if defined(TCPCONN) || defined(UNIXCONN)
 #include "Xtranssock.c"

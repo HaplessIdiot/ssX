@@ -1,6 +1,6 @@
 /*
- * $XConsortium: charproc.c /main/190 1996/01/14 16:52:40 kaleb $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.17 1996/01/17 12:51:47 dawes Exp $
+ * $XConsortium: charproc.c /main/191 1996/01/23 11:34:26 kaleb $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.18 1996/01/21 08:49:27 dawes Exp $
  */
 
 /*
@@ -1637,7 +1637,7 @@ in_put()
 			  "input: read returned unexpected error (%d)\n",
 			  errno);
 	    } else if (bcnt == 0)
-#ifdef MINIX
+#if defined(MINIX) || defined(__EMX__)
 		Cleanup(0);
 #else
 		Panic("input: read returned zero\n", 0);

@@ -1,5 +1,5 @@
 /* $XConsortium: XlibInt.c /main/181 1995/12/05 16:47:01 mor $ */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.4 1995/12/16 08:17:12 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.5 1996/01/05 13:11:11 dawes Exp $ */
 /*
 
 Copyright (c) 1985, 1986, 1987  X Consortium
@@ -3263,4 +3263,19 @@ char *__XOS2RedirRoot(char *fname)
     sprintf(redirname,"%s%s",root,fname);
     return access(redirname,R_OK)==0 ? redirname : fname;
 }
+
+/* (hv) something for my own debugging purposes */
+
+int __XOS2XtransDebug = 0;
+
+void __XOS2SetXtransDebugMode(int newmode)
+{
+	__XOS2XtransDebug = newmode;
+}
+
+int __XOS2GetXtransDebugMode(void)
+{
+	return __XOS2XtransDebug;
+}
+
 #endif

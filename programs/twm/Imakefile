@@ -1,9 +1,13 @@
 XCOMM $XConsortium: Imakefile /main/42 1996/01/14 16:50:01 kaleb $
-XCOMM $XFree86: xc/programs/twm/Imakefile,v 3.4 1995/01/27 04:54:15 dawes Exp $
+XCOMM $XFree86: xc/programs/twm/Imakefile,v 3.5 1996/01/16 15:08:33 dawes Exp $
 
          YFLAGS = -d
         DEPLIBS = $(DEPXMULIB) $(DEPXTOOLLIB) XkbClientDepLibs $(DEPXLIB)
+#ifndef OS2Architecture
 LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) XkbClientLibs $(XLIB)
+#else
+LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) XkbClientLibs $(XLIB) $(LEXLIB)
+#endif
        LINTLIBS = $(LINTXMU) $(LINTXTOOLLIB) $(LINTXLIB)
         DEFINES = $(SIGNAL_DEFINES) XkbClientDefines
 

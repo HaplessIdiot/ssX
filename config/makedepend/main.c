@@ -1,5 +1,5 @@
 /* $XConsortium: main.c /main/82 1995/11/07 19:47:02 gildea $ */
-/* $XFree86: xc/config/makedepend/main.c,v 3.4 1995/07/15 14:53:49 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/main.c,v 3.5 1996/01/05 13:07:27 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -318,6 +318,16 @@ main(argc, argv)
 	    if (incp >= includedirs + MAXDIRS)
 		fatalerr("Too many -I flags.\n");
 	    *incp++ = PREINCDIR;
+#endif
+#ifdef __EMX__
+	    {
+		char *emxinc = getenv("C_INCLUDE_PATH");
+		if (emxinc) {
+	    	    if (incp >= includedirs + MAXDIRS)
+			fatalerr("Too many -I flags.\n");
+		    *incp++ = emxinc;
+		}
+	    }
 #endif
 	    if (incp >= includedirs + MAXDIRS)
 		fatalerr("Too many -I flags.\n");

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xconsole.c /main/22 1995/12/07 13:52:50 kaleb $
- * $XFree86: xc/programs/xconsole/xconsole.c,v 3.10 1996/01/11 10:38:14 dawes Exp $
+ * $XFree86: xc/programs/xconsole/xconsole.c,v 3.11 1996/01/14 13:42:03 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -127,6 +127,16 @@ static XrmOptionDescRec options[] = {
 #define FILE_NAME   "/dev/xcons"
 #endif
 
+#ifdef __EMX__
+#define USE_FILE
+#define FILE_NAME   "/dev/console$"
+#define INCL_DOSFILEMGR
+#define INCL_DOSDEVIOCTL
+#include <os2.h>
+#endif
+
+
+
 #ifndef USE_FILE
 #include    <sys/ioctl.h>
 #ifdef hpux
@@ -176,7 +186,7 @@ OpenConsole ()
 	{
 	    struct stat sbuf;
 	    /* must be owner and have read/write permission */
-#if !defined(__NetBSD__) && !defined(Lynx)
+#if !defined(__NetBSD__) && !defined(Lynx) && !defined(__EMX__)
 	    if (!stat("/dev/console", &sbuf) &&
 		(sbuf.st_uid == getuid()) &&
 		!access("/dev/console", R_OK|W_OK))
@@ -184,6 +194,21 @@ OpenConsole ()
 	    {
 #ifdef USE_FILE
 	    	input = fopen (FILE_NAME, "r");
+
+#ifdef __EMX__
+		if (input) 
+		{
+		    ULONG arg = 1,arglen;
+		    APIRET rc;
+		    if ((rc=DosDevIOCtl(fileno(input), 0x76,0x4d, 
+			&arg, sizeof(arg), &arglen,
+			NULL, 0, NULL)) != 0) 
+		    {
+			fclose(input);
+			input = 0;
+		    }	    	
+		}
+#endif
 #endif
 #ifdef USE_PTY
 		if (get_pty (&pty_fd, &tty_fd, ttydev, ptydev) == 0)
@@ -256,7 +281,6 @@ OpenConsole ()
 			       inputReady, (XtPointer) text);
     }
 }
-
 
 static
 CloseConsole ()

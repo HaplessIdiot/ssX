@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.2 94/10/12 21:13:49 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/Imakefile,v 3.5 1995/03/18 11:06:21 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/Imakefile,v 3.6 1995/05/27 03:13:46 dawes Exp $
 #include <Server.tmpl>
 
 #define IHaveSubdirs
@@ -27,15 +27,15 @@ VGA2DRIVERS = XF86Vga2Drivers
 MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
 #endif
 
+ConfigTargetNoDepend(vga2Conf,$(ICONFIGFILES),confvga2.SHsuf,$(VGA2DRIVERS))
 #ifdef OS2Architecture
 all:: DONE
 	cp $(OBJS) .
 
-NormalDepLibraryTarget(vga2,$(SUBDIRS) $(DONES),?*.o)
+NormalDepLibraryTarget(vga2,$(DONES),?*.o)
 #else
 NormalDepLibraryTarget(vga2,$(SUBDIRS) $(DONES),$(OBJS))
 #endif
-ConfigTargetNoDepend(vga2Conf,$(ICONFIGFILES),confvga2.SHsuf,$(VGA2DRIVERS))
 
 NormalLibraryObjectRule()
 

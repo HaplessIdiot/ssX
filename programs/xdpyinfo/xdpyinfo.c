@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xdpyinfo.c /main/34 1995/12/08 12:09:32 dpw $
- * $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.4 1996/01/17 12:50:53 dawes Exp $
+ * $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.5 1996/01/20 02:49:18 dawes Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -665,11 +665,23 @@ print_XF86VidMode_info(dpy, extname)
 #endif
 
 #ifdef XF86MISC
+
+char *kbdtable[] = { "Unknown", "84-key", "101-key", "Other", "Xqueue" };
+char *msetable[] = { "None", "Microsoft", "MouseSystems", "MMSeries",
+		     "Logitech", "BusMouse", "Mouseman", "PS/2", "MMHitTab",
+		     "Unknown", "Unknown", "Xqueue", "OSMouse" };
+char *flgtable[] = { "None", "ClearDTR", "ClearCTS",
+		     "ClearDTR and ClearCTS" };
+#define MF_CLEAR_DTR 1
+#define MF_CLEAR_CTS 2
+
 print_XF86Misc_info(dpy, extname)
     Display *dpy;
     char *extname;
 {
     int majorrev, minorrev, suspendTime, offTime;
+    XF86MiscMouseSettings mouseinfo;
+    XF86MiscKbdSettings kbdinfo;
 
     if (!XF86MiscQueryVersion(dpy, &majorrev, &minorrev))
 	return 0;
@@ -677,8 +689,29 @@ print_XF86Misc_info(dpy, extname)
 
     if (!XF86MiscGetSaver(dpy, DefaultScreen(dpy), &suspendTime, &offTime))
 	return 0;
-    printf("  Powersaver Settings-  Suspend Time: %d,  Off Time: %d\n",
+    printf("  Powersaver Settings-  Suspend Time: %d, Off Time: %d\n",
         suspendTime, offTime);
+
+    if (!XF86MiscGetKbdSettings(dpy, &kbdinfo))
+	return 0;
+    printf("  Keyboard Settings-    Type: %s, Rate: %d, Delay: %d, ServerNumLock: %s\n",
+	kbdtable[kbdinfo.type], kbdinfo.rate, kbdinfo.delay,
+	(kbdinfo.servnumlock? "yes": "no"));
+
+    if (!XF86MiscGetMouseSettings(dpy, &mouseinfo))
+	return 0;
+    printf("  Mouse Settings-       Device: %s, Type: %s\n",
+	strlen(mouseinfo.device) == 0 ? "None": mouseinfo.device,
+	msetable[mouseinfo.type+1]);
+    printf("                        BaudRate: %d, SampleRate: %d\n",
+	mouseinfo.baudrate, mouseinfo.samplerate);
+    printf("                        Emulate3Buttons: %s, Emulate3Timeout: %d ms\n",
+	mouseinfo.emulate3buttons? "yes": "no", mouseinfo.emulate3timeout);
+    printf("                        ChordMiddle: %s, Flags: %s\n",
+	mouseinfo.chordmiddle? "yes": "no",
+	flgtable[(mouseinfo.flags & MF_CLEAR_DTR? 1: 0)
+		+(mouseinfo.flags & MF_CLEAR_CTS? 1: 0)] );
+
     return 1;
 }
 #endif

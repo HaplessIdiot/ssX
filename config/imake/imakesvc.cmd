@@ -2,7 +2,7 @@
  * This script serves as a helper cmd file for imake. Install this in
  * the path just like imake itself.
  *
- * $XFree86: xc/config/imake/imakesvc.cmd,v 3.0 1994/12/17 09:33:44 dawes Exp $ */
+ * $XFree86: xc/config/imake/imakesvc.cmd,v 3.1 1995/03/11 14:03:18 dawes Exp $
  */
 '@echo off'
 call RxFuncAdd 'SysFileDelete', 'RexxUtil', 'SysFileDelete'
@@ -17,14 +17,54 @@ SELECT
       /* imakesvc 1 u/n dir ruledir top current */
       instflg = WORD(all,2)
       imakecmd = '\imake'
-      IF instflg = 'u' THEN imakecmd = 'imake'
+      ruledir = WORD(all,4)
+      topdir = WORD(all,5)
+      currentdir = WORD(all,6)
+      IF instflg = 'u' THEN DO 
+         root = VALUE('X11ROOT',,'OS2ENVIRONMENT')
+         IF root = '' THEN DO
+            SAY 'Fatal error: no X11ROOT environment variable found!'
+            EXIT 99
+         END
+         imakecmd = 'imake'
+         ruledir1 = root||ruledir
+         topdir1 = topdir
+         useinst = '-DUseInstalled'
+      END 
+      ELSE DO
+         /* in n mode, we must add a prefix ../ for MakeMakeSubdirs */
+         ruledir1 = '../'||ruledir
+         topdir1 = '../'||topdir
+         useinst = ''
+      END
+
+      ruledir = ruledir1
+      topdir = topdir1
       curdir = DIRECTORY()
-      dir = WORD(all,3)
+      dir = fixbadprefix(WORD(all,3))
       d = DIRECTORY(dir)
+      dirfwd=TRANSLATE(dir,'/','\')
       RC = SysFileDelete('Makefile.bak')
       IF exists('Makefile')=0 THEN REN Makefile Makefile.bak
-      pfx = levels(TRANSLATE(dir,'/','\'))
-      imakecmd '-I'pfx''WORD(all,4) '-DTOPDIR='pfx''WORD(all,5)' -DCURDIR='pfx''WORD(all,6)'/'dir
+      /* There is a difficulty in the Imakefiles. Some builds refer
+       * to directories that are in a different subtree. We need to adjust
+       * the CURDIR and TOPDIR and -I paths
+       */
+      IF SUBSTR(dirfwd,1,2)='..' THEN DO
+         /* must recalculate passed topdir, currentdir, and ruledir */
+         ndist = nlevels(topdir)
+         ncurdir = './'striplevel(dirfwd,ndist-1)
+         ntopdir = maketop(nlevels(ncurdir))
+         nruledir = ntopdir||'/config/cf'
+      END 
+      ELSE DO
+         /* this is simple it is relative to this dir */
+         pfx = downlevels(dirfwd)
+         nruledir = pfx||ruledir
+         ntopdir = pfx||topdir
+         ncurdir = pfx||currentdir
+      END
+      imakecmd useinst '-I'nruledir' -DTOPDIR='ntopdir' -DCURDIR='ncurdir'/'dirfwd
       'make SHELL= Makefiles'
       d = DIRECTORY(curdir)
    END
@@ -37,7 +77,7 @@ SELECT
       d = DIRECTORY(WORD(all,2))
       rc = SysFileDelete(fil)
       dir = TRANSLATE(bid'/'cid'/'fil,'\','/')
-      COPY dir .
+      COPY dir .' >nul 2>&1 '
       d = DIRECTORY(curdir)
    END
    WHEN code=3 THEN DO
@@ -48,7 +88,7 @@ SELECT
       d = DIRECTORY(WORD(all,3))
       rc = SysFileDelete(fil)
       dir = TRANSLATE(sdi'/'fil,'\','/')
-      COPY dir .
+      COPY dir' . >nul 2>&1'
       d = DIRECTORY(curdir)
    END
    WHEN code=4 THEN DO
@@ -76,7 +116,7 @@ SELECT
       from = TRANSLATE(WORD(all,2),'\','/')
       to = TRANSLATE(WORD(all,3),'\','/')
       CALL SysFileDelete(to)
-      COPY from to' 2> nul > nul'
+      COPY from to' >nul 2>&1'
    END
    WHEN code=8 THEN DO
       /* imakesvc 8 arg */
@@ -95,7 +135,7 @@ SELECT
 END
 RETURN
 
-levels:
+downlevels:
 oldpos = 1
 pfx = ''
 DO FOREVER
@@ -108,7 +148,7 @@ END
 RETURN pfx
 
 exists:
-'DIR 'arg(1)' > nul 2>nul'
+'DIR "'arg(1)'" >nul 2>&1'
 IF rc = 0 THEN return 0
 RETURN 1
 
@@ -129,11 +169,52 @@ IF rec = '-R' THEN DO
    END
    CALL SysFileTree files, 'delf', 'FO'
    DO k=1 TO delf.0
-      DEL '"'delf.k'"' '> nul 2> nul'
+      DEL '"'delf.k'"' '>nul 2>&1'
    END
    CALL SysRmDir files
 END 
 ELSE DO
-   DEL '"'files'"' '> nul 2> nul'
+   DEL '"'files'"' '>nul 2>&1'
 END
 RETURN
+
+/* somehow make or cmd manages to convert a relative path ..\..\. to ..... */
+fixbadprefix:
+count = 1
+str = ARG(1)
+DO WHILE SUBSTR(str,count,2) = '..'
+   count = count+1
+   str = INSERT('\',str,count)
+   count = count+2
+END
+RETURN str
+
+striplevel:
+str=ARG(1)
+n=arg(2)
+DO count=0 TO n
+   p = POS('/',str)
+   IF p = 0 THEN LEAVE
+   str = DELSTR(str,1,p)
+END
+RETURN str
+
+nlevels:
+str = ARG(1)
+count = 0
+oldpos = 1
+DO FOREVER
+   newpos = POS('/',str,oldpos)
+   IF newpos = 0 THEN LEAVE
+   oldpos = newpos + 1
+   count = count + 1
+END
+RETURN count
+
+maketop:
+str = ''
+n = ARG(1)
+DO k=1 TO n
+  str = str||'../'
+END
+RETURN str||'.'

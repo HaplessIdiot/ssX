@@ -47,8 +47,8 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c /main/182 1995/12/08 13:38:35 dpw $ */
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.2 1995/03/04 08:40:13 dawes Exp $ */
+/* $XConsortium: events.c /main/183 1996/01/23 05:44:08 dpw $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.3 1996/01/05 13:17:58 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -571,6 +571,8 @@ EnqueueEvent(xE, device, count)
     if (DeviceEventCallback)
     {
 	DeviceEventInfoRec eventinfo;
+	if (xE->u.u.type == MotionNotify)
+	    xE->u.keyButtonPointer.root = GetCurrentRootWindow()->drawable.id;
 	eventinfo.events = xE;
 	eventinfo.count = count;
 	CallCallbacks(&DeviceEventCallback, (pointer)&eventinfo);
@@ -2068,6 +2070,9 @@ ProcessPointerEvent (xE, mouse, count)
 	if (DeviceEventCallback)
 	{
 	    DeviceEventInfoRec eventinfo;
+	    if (xE->u.u.type == MotionNotify)
+		xE->u.keyButtonPointer.root =
+		    GetCurrentRootWindow()->drawable.id;
 	    eventinfo.events = xE;
 	    eventinfo.count = count;
 	    CallCallbacks(&DeviceEventCallback, (pointer)&eventinfo);

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: misc.c /main/105 1996/01/14 16:53:00 kaleb $
- *	$XFree86: xc/programs/xterm/misc.c,v 3.6 1996/01/14 13:42:22 dawes Exp $
+ *	$XFree86: xc/programs/xterm/misc.c,v 3.7 1996/01/16 15:09:43 dawes Exp $
  */
 
 /*
@@ -53,6 +53,10 @@
 #ifdef AMOEBA
 #include "amoeba.h"
 #include "module/proc.h"
+#endif
+
+#ifdef __EMX__
+#define environ gblenvp		/* circumvent a bug */
 #endif
 
 extern char **environ;		/* used in 'Setenv()' */

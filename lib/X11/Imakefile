@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/190 1996/01/16 19:51:54 kaleb $
-XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.8 1996/01/16 15:01:03 dawes Exp $
+XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.9 1996/01/21 01:48:04 dawes Exp $
 #define DoNormalLib NormalLibX11
 #define DoSharedLib SharedLibX11
 #define DoDebugLib DebugLibX11
@@ -84,6 +84,15 @@ EXTRA_LIBRARIES = /**/
         HEADERS = Xlib.h Xresource.h Xutil.h cursorfont.h Xlibint.h \
 			Xcms.h Xlocale.h XKBlib.h
        LINTLIBS =
+
+#if defined(OS2Architecture)
+CppFileTarget(X11os2.def,X11os2-def.cpp,$(XKB_DEFINES),$(ICONFIGFILES))
+#if BuildXKBlib
+LinkFile(X11os2.rsp,X11os2xkb.rsp)
+#else
+LinkFile(X11os2.rsp,X11os2nxkb.rsp)
+#endif
+#endif
 
 SRCS1 = \
 	Context.c \

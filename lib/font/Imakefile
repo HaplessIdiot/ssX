@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/12 1995/12/07 21:15:22 gildea $
-XCOMM $XFree86: xc/lib/font/Imakefile,v 3.3 1995/05/27 02:59:13 dawes Exp $
+XCOMM $XFree86: xc/lib/font/Imakefile,v 3.4 1996/01/05 13:13:11 dawes Exp $
 #include <Server.tmpl>
 
 #define	IHaveSubdirs
@@ -21,7 +21,7 @@ NormalDepLibraryTarget(font,$(SUBDIRS) $(DONES),$(OBJS))
 all:: DONE
 	cp $(OBJS) .
 
-NormalDepLibraryTarget(font,$(SUBDIRS) $(DONES),?*.o)
+NormalDepLibraryTarget(font,$(DONES),?*.o)
 #endif
 
 InstallLinkKitLibrary(font,$(LINKKITDIR)/lib)
