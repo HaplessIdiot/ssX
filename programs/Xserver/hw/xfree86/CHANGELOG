@@ -9,7 +9,7 @@ XFree86 4.3.99.17 (xx November 2003)
        - SIGFPE in GLX.
       (Bugzila #920, Frank Giessler).
  627. Add a missing entry to big5hkscs-0.enc (Bugzilla #917, Jungshik Shin).
- 626. Update libfreetype-xtt2 to version 1.1:
+ 626. Update libfreetype-xtt2 to version 1.1a:
        - Fixed erroneous method of making up italic bitmap.
       (Chisato Yamauchi, After X-TT Project).
  625. OS/2 build fixes:
@@ -18280,7 +18280,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3000 2003/11/29 02:57:46 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3001 2003/11/29 04:55:29 dawes Exp $
 
 
 
