@@ -1,28 +1,60 @@
 XCOMM platform:  $XConsortium: bsdi.cf /main/22 1996/09/28 16:09:30 rws $
-XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.26 1998/08/02 05:16:49 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.23.2.5 1998/02/09 14:33:21 robin Exp $
 
 #ifndef OSName
-#define OSName            BSD/OS 2.0
+#define OSName		DefaultOSName
 #endif
 #ifndef OSVendor
-#define OSVendor          BSDI
+#define OSVendor	BSDI
 #endif
-XCOMM operating system:  OSName
 #ifndef OSMajorVersion
-#define OSMajorVersion    2
+#define OSMajorVersion	DefaultOSMajorVersion
 #endif
 #ifndef OSMinorVersion
-#define OSMinorVersion    0
+#define OSMinorVersion	DefaultOSMinorVersion
 #endif
+#ifndef OSTeenyVersion
+#define OSTeenyVersion	DefaultOSTeenyVersion
+#endif
+XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVersion)
 
-#define HasPutenv	YES
-#define HasBSD44Sockets	YES
+#define HasBSD44Sockets		YES
+#define HasBsdMake		YES
+#define HasDlopen		YES
+#define HasPutenv		YES
+#define HasSnprintf		YES
+#define HasUsableFileMmap	YES
+#define HasZlib			YES
+
+#if (OSMajorVersion >= 4 && OSMinorVersion >= 1)
+#define HasNCurses              NO /* XXX */
+
+#define BuildLBX		YES
+#define GzipFontCompression	NO
+
+XCOMM BSD/OS 4.1 (intel) comes with gcc 2.91.66 installed as gcc and cc.
+XCOMM BSD/OS 4.1 (sparc) comes with gcc 2.95.2 installed as gcc and cc.
+
+XCOMM BSD/OS 4.0.1 (intel) comes with gcc 2.7.2.1 installed as gcc2, gcc and cc.
+XCOMM BSD/OS 4.0.1 (sparc) comes with gcc 2.7.2.1 installed as gcc2, gcc and cc.
+XCOMM Punt on OS revs earlier than 4.0.1
+
+XCOMM BSDI uses shlicc for compiling C and shlic++ for compiling C++
+XCOMM using static shared libraries.  We also build ELF dynamic shared
+XCOMM libraries as well as normal archive libraries.
+
+XCOMM BSD/OS 3.0 comes with gcc 2.7.2 installed as gcc2 and gcc.
+XCOMM gcc 1.42 is installed as cc.
+
+XCOMM BSD/OS 2.1 comes with gcc 2.7.1 installed as gcc2 and gcc.
+XCOMM gcc 1.42 is installed as cc.
 
 XCOMM BSD/OS 2.0 comes with gcc 2.6.3 installed as gcc2 and gcc.
 XCOMM gcc 1.42 is installed as cc.
+
 XCOMM BSD/386 1.1 comes with gcc 2.5.8 installed as gcc2.
 XCOMM BSD/386 1.0 comes with gcc 1.40 as the only compiler.
-XCOMM The default is to use gcc2 on release 2.0 and 1.1 and gcc1 on 1.0
+XCOMM The default is to use gcc2 on release 2.1, 2.0 and 1.1 and gcc1 on 1.0
 XCOMM The defaults can be altered by defining "HasGcc2" as YES or NO in
 XCOMM xf86site.def
 
@@ -38,28 +70,38 @@ XCOMM xf86site.def
 # ifndef HasGcc2ForCplusplus
 #  define HasGcc2ForCplusplus	YES
 # endif
-# define CcCmd			gcc2
-# define OptimizedCDebugFlags	DefaultGcc2i386Opt
+# ifdef __i386__
+#  define CcCmd			gcc /* shlicc */
+#  define CplusplusCmd		g++ /* shlicc++ */
+#  define OptimizedCDebugFlags	-O2 -m486
+# else
+#  define CcCmd			gcc
+#  define CplusplusCmd		g++
+#  define OptimizedCDebugFlags	-O4 -mv8
+# endif
 #else
 # define CcCmd			cc
 # define OptimizedCDebugFlags	-O
 #endif
+
 #define CppCmd		/usr/bin/cpp
 #define TroffCmd	groff -Tps
 #define MkdirHierCmd	mkdir -p
 #define SetTtyGroup	YES
 #define HasNdbm		YES
+#define	DBMLibrary	/**/
 #define HasWChar32      YES
 #define DirFailPrefix -
 #define AvoidNullMakeCommand YES
+
 # ifndef GccUsesGas
 #  define GccUsesGas    YES
 # endif
 #if HasGcc
-#if defined(UseInstalled)
+#if defined(UseInstalled) && (!defined(XF86LinkKit) || !XF86LinkKit)
 #define DefaultCCOptions	/**/
 #else
-#define DefaultCCOptions	-ansi
+#define DefaultCCOptions	/* -ansi */
 #endif
 #endif
 
@@ -69,23 +111,66 @@ XCOMM xf86site.def
 # define GccGasOption /**/
 #endif
 
-#define HasShm		YES
-#define ServerExtraDefines GccGasOption XFree86ServerDefines
-#define ServerOSDefines XFree86ServerOSDefines -DDDXTIME
-#define XFree86ConsoleDefines /**/
+#ifdef __i386__
+# define HasTk        YES
+# define TkLibName    tk4.2
+# define TkLibDir     /usr/contrib/lib
+# define TkIncDir     /usr/include
+# define XF86SetupUsesStaticTk        NO
+# define HasTcl       YES
+# define TclLibName   tcl7.6
+# define TclLibDir    /usr/contrib/lib
+# define TclIncDir    /usr/include
+# define XF86SetupUsesStaticTcl       NO
+# define ServerExtraDefines GccGasOption XFree86ServerDefines -I/sys
+# define ServerOSDefines XFree86ServerOSDefines -DDDXTIME
+# define XFree86ConsoleDefines /**/
+# define AsmDefines -DUSE_GAS
+# if OSMajorVersion > 3 || (OSMajorVersion == 3 && OSMinorVersion >= 1)
+#  include <bsdiLib.rules>
+#  define DontUseLibPathVar
+#  define BuildDynamicLoading YES
+#  define ServerCcCmd         cc
+#  define ServerExtraSysLibs  DlLibrary
+# endif
+#endif
+
+#ifdef __sparc__
+# define ServerExtraDefines
+# define ServerOSDefines   -DDDXOSINIT
+#endif
+
+#ifdef __powerpc__
+# define BuildServer		NO
+#endif
+
+#define HasShm			YES
 #define AsmDefines -DUSE_GAS
 
-#define StandardDefines	-DCSRG_BASED
+#ifndef LdPreLib
+#define LdPreLib -L$(BUILDLIBDIR) -L$(USRLIBDIR)
+#endif
+
+#define StandardDefines	-D__ELF__ -DCSRG_BASED
 
 #define InstallCmd /usr/bin/install
-#define EqnCmd eqn -Tps
-#define NeqnCmd eqn -Tascii
+#define	EqnCmd eqn -Tps
+#define	NeqnCmd eqn -Tascii
           COL = col
          NEQN = NeqnCmd
         NROFF = nroff
 
 #define DefaultUserPath		:/bin:/usr/bin:/usr/local/bin:$(BINDIR)
 #define DefaultSystemPath	/sbin:/usr/sbin:/bin:/usr/bin:$(BINDIR)
+
+#define StripInstalledPrograms	YES
+#define InstPgmFlags		-s -m 0555 -o bin -g bin
+#define InstBinFlags		-m 0555 -o bin -g bin
+#define InstUidFlags		-m 4555 -o root -g bin
+#define InstLibFlags		-m 0444 -o bin -g bin
+#define InstIncFlags		-m 0444 -o bin -g bin
+#define InstManFlags		-m 0444 -o bin -g bin
+#define InstDatFlags		-m 0444 -o bin -g bin
 
 XCOMM Man pages need to be formatted when installed, so override the default
 XCOMM imake rules.
@@ -103,8 +188,6 @@ file.0:: file.man							@@\
 	cp /tmp/$$$$.man file.0; \					@@\
 	$(RM) /tmp/$$$$.man; \						@@\
 	fi 								@@\
-									@@\
-file.man::								@@\
 									@@\
 install.man::                                                           @@\
 	MakeDir($(DESTDIR)destdir)					@@\
@@ -146,6 +229,43 @@ install.man:: 								@@\
 /*
  * These seem redundant, but leave them in for now.
  */
+#ifdef __i386__
 #define i386Bsd 1
 #define i386Bsdi 1
 #include <xfree86.cf>
+#endif
+
+#ifdef __sparc__
+#ifndef       XsunMonoServer
+#define       XsunMonoServer  NO              /* monochrome only */
+#endif
+#ifndef       XsunServer
+#define       XsunServer      YES             /* mono + 8 bit color */
+#endif
+#ifndef       Xsun24Server
+#define       Xsun24Server    NO              /* mono + 8 bit color + 24 bit c
+olor */
+#endif
+
+#ifndef       BuildPexExt
+#define       BuildPexExt     (XsunServer || Xsun24Server)
+#endif
+
+#ifndef NeedConstPrototypes
+#define NeedConstPrototypes YES
+#endif
+#ifndef NeedNestedPrototypes
+#define NeedNestedPrototypes YES
+#endif
+#ifndef NeedVarargsPrototypes
+#define NeedVarargsPrototypes YES
+#endif
+
+#define PexCCOptions DefaultCCOptions
+
+#ifndef       BuildXKB
+#define       BuildXKB        YES
+#endif
+
+#endif /* __sparc__ */
+
