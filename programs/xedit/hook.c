@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/hook.c,v 1.3 1999/06/06 08:49:14 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/hook.c,v 1.6 2002/09/08 02:29:48 paulo Exp $ */
 
 /*
  * This file is intended to be used to add all the necessary hooks to xedit
@@ -836,6 +836,11 @@ LineEdit(Widget w)
 	    }
 	}
     }
+    else if (einfo.widget != w) {
+	/* Just a flag for backward search */
+	einfo.from = last;
+	einfo.widget = w;
+    }
 
     /* Compile pattern if required */
     if (compile) {
@@ -844,8 +849,14 @@ LineEdit(Widget w)
 	    goto print;
     }
 
-    if (!replace && position >= first && position <= last)
+    if (!replace && position >= first && position <= last) {
 	from = position;
+	/* The backwards repetition currently is only backwards when
+	 * changing lines, so remember from where started, to also
+	 * search in the first line. */
+	if (direction == XawsdLeft && LSCAN(from, 1, False) == from)
+	    einfo.from = from;
+    }
     to = RSCAN(from, 1, True);
 
     if (confirm) {
@@ -951,7 +962,7 @@ substitute_label:
 		    /* Hard way */
 		    int i, ref, xlen;
 
-		    for (i = length = 0; i < einfo.slen - 1; i++) {
+		    for (i = length = 0; i < einfo.slen; i++) {
 			if (length + 2 >= einfo.bsize) {
 			    einfo.bsize = einfo.bsize + 1024;
 			    einfo.buffer = XtRealloc(einfo.buffer, einfo.bsize);
@@ -1017,7 +1028,7 @@ no_substitute_label:
 	    /* Try again in the next/previous line */
 	    if (direction == XawsdLeft) {
 		from = LSCAN(to - 1, 1 + (from != to), False);
-		if (from <= first) {
+		if (einfo.from <= first) {
 		    Feep();
 		    if (++count > 1) {
 			XawTextSetInsertionPoint(w, position);
@@ -1027,6 +1038,8 @@ no_substitute_label:
 		    from = LSCAN(last, 1, False);
 		}
 		to = RSCAN(from, 1, True);
+		/* Can use einfo.from because replace is only done forward */
+		einfo.from = from;
 	    }
 	    else {
 		if (to >= last) {
