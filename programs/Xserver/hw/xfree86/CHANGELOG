@@ -1,4 +1,10 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 523. Fixes and updates for XKB keyboard maps:
+      - Update Serbian layouts (Bugzilla #92, Danilo Segan).
+      - Add 'MS Windows like' US International variant for 'us' keymap (Ivan
+        Pascal).
+      - Change CapsLock default behavior to 'Caps acts as locking Shift,
+        Shift cancels Caps'.  Add new type for four-level keys (Ivan Pascal).
  522. Fix generic rootless code bug which tests CopyWindow instead of CopyBytes
       (Kensuke Matsuzaki).
  521. Update libfreetype-xtt2 to version 1.0c.  This consists of some minor
@@ -18028,7 +18034,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2901 2003/10/24 16:34:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2902 2003/10/25 01:05:56 torrey Exp $
 
 
 
