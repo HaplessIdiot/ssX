@@ -22,7 +22,7 @@
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  */
-/* $XFree86: xc/lib/font/fc/fsconvert.c,v 1.3 1999/03/14 11:17:47 dawes Exp $ */
+/* $XFree86: xc/lib/font/fc/fsconvert.c,v 1.4 1999/07/17 05:30:35 dawes Exp $ */
 /*
  * FS data conversion
  */
@@ -66,7 +66,7 @@ _fs_init_fontinfo(FSFpePtr conn, FontInfoPtr pfi)
 	n = pfi->lastCol;
 	pfi->lastCol = pfi->lastRow;
 	pfi->lastRow = n;
-	pfi->defaultCh = (pfi->defaultCh >> 8) & 0xff
+	pfi->defaultCh = ((pfi->defaultCh >> 8) & 0xff)
 	                   + ((pfi->defaultCh & 0xff) << 8);
     }
 
@@ -295,7 +295,7 @@ fs_build_range(FontPtr pfont, Bool range_flag, unsigned int count,
 		    if (GLYPH_UNDEFINED(loc))
 		    {
 			if (row1 == row2 &&
-			    ((col1 & 0xf) && col1 > firstcol ||
+			    (((col1 & 0xf) && col1 > firstcol) ||
 			     (col2 & 0xf) != 0xf) && (col2 < lastcol))
 			{
 			    /* If we're loading from a single row, expand

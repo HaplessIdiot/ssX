@@ -46,7 +46,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bdfread.c,v 1.5 1999/06/13 13:47:31 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bdfread.c,v 1.6 1999/07/17 05:30:29 dawes Exp $ */
 
 #ifndef FONTMODULE
 #include <ctype.h>
@@ -82,7 +82,7 @@ bdfReadBitmap(CharInfoPtr pCI, FontFilePtr file, int bit, int byte,
     unsigned char *pInBits,
                *picture,
                *line = NULL;
-    char        lineBuf[BDFLINELEN];
+    unsigned char        lineBuf[BDFLINELEN];
 
     widthBits = GLYPHWIDTHPIXELS(pCI);
     height = GLYPHHEIGHTPIXELS(pCI);
@@ -192,7 +192,7 @@ bdfSkipBitmap(FontFilePtr file, int height)
 {
     unsigned char *line;
     int         i = 0;
-    char        lineBuf[BDFLINELEN];
+    unsigned char        lineBuf[BDFLINELEN];
 
     do {
 	line = bdfGetLine(file, lineBuf, BDFLINELEN);
@@ -249,7 +249,7 @@ bdfReadCharacters(FontFilePtr file, FontPtr pFont, bdfFileState *pState,
     BitmapFontPtr  bitmapFont;
     BitmapExtraPtr bitmapExtra;
     CARD32     *bitmapsSizes;
-    char        lineBuf[BDFLINELEN];
+    unsigned char        lineBuf[BDFLINELEN];
     int         nencoding;
 
     bitmapFont = (BitmapFontPtr) pFont->fontPrivate;
@@ -416,7 +416,7 @@ bdfReadCharacters(FontFilePtr file, FontPtr pFont, bdfFileState *pState,
 		    (*p == ' ') || (*p == '\t');
 		    p++)
 		 /* empty for loop */ ;
-	    ci->metrics.attributes = bdfHexByte(p) << 8 + bdfHexByte(p + 2);
+	    ci->metrics.attributes = (bdfHexByte(p) << 8) + bdfHexByte(p + 2);
 	    line = bdfGetLine(file, lineBuf, BDFLINELEN);
 	} else
 	    ci->metrics.attributes = 0;
@@ -518,7 +518,7 @@ bdfReadHeader(FontFilePtr file, bdfFileState *pState)
 {
     unsigned char *line;
     char        namebuf[BDFLINELEN];
-    char        lineBuf[BDFLINELEN];
+    unsigned char        lineBuf[BDFLINELEN];
 
     line = bdfGetLine(file, lineBuf, BDFLINELEN);
     if (!line || sscanf((char *) line, "STARTFONT %s", namebuf) != 1 ||
@@ -567,7 +567,7 @@ bdfReadProperties(FontFilePtr file, FontPtr pFont, bdfFileState *pState)
                 secondbuf[BDFLINELEN],
                 thirdbuf[BDFLINELEN];
     unsigned char *line;
-    char        lineBuf[BDFLINELEN];
+    unsigned char        lineBuf[BDFLINELEN];
     BitmapFontPtr  bitmapFont = (BitmapFontPtr) pFont->fontPrivate;
 
     line = bdfGetLine(file, lineBuf, BDFLINELEN);
@@ -623,7 +623,7 @@ bdfReadProperties(FontFilePtr file, FontPtr pFont, bdfFileState *pState)
 	    if (secondbuf[0] == '"') {
 		stringProps[nextProp] = TRUE;
 		props[nextProp].value =
-		    bdfGetPropertyValue(line + strlen(namebuf) + 1);
+		    bdfGetPropertyValue((char *)line + strlen(namebuf) + 1);
 		if (!props[nextProp].value)
 		    goto BAILOUT;
 		break;
@@ -644,7 +644,7 @@ bdfReadProperties(FontFilePtr file, FontPtr pFont, bdfFileState *pState)
 	    if (secondbuf[0] == '"') {
 		stringProps[nextProp] = TRUE;
 		props[nextProp].value =
-		    bdfGetPropertyValue(line + strlen(namebuf) + 1);
+		    bdfGetPropertyValue((char *)line + strlen(namebuf) + 1);
 		if (!props[nextProp].value)
 		    goto BAILOUT;
 		break;

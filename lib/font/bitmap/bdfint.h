@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/bitmap/bdfint.h,v 1.2 1999/07/17 05:30:29 dawes Exp $ */
 
 #ifndef BDFINT_H
 #define BDFINT_H
@@ -71,7 +71,7 @@ extern unsigned char * bdfGetLine ( FontFilePtr file, unsigned char *buf,
 extern Atom bdfForceMakeAtom ( char *str, int *size );
 extern Atom bdfGetPropertyValue ( char *s );
 extern int bdfIsInteger ( char *str );
-extern unsigned char bdfHexByte ( char *s );
+extern unsigned char bdfHexByte ( unsigned char *s );
 extern Bool bdfSpecialProperty ( FontPtr pFont, FontPropPtr prop, 
 				 char isString, bdfFileState *bdfState );
 extern int bdfReadFont( FontPtr pFont, FontFilePtr file, 
