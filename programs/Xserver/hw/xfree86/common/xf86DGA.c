@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.15 1999/05/03 12:16:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.16 1999/05/03 14:24:35 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -616,7 +616,9 @@ DGAStealMouseEvent(int index, xEvent *e, int dx, int dy)
 	if(GrabEvent){ /* steal this event */
 	    dgaEvent de;
 	    
+#if 0
 	    de.u.u.type = e->u.u.type + DGAEventBase;
+#endif
             de.u.u.sequenceNumber = pScreenPriv->client->sequence;
 	    de.u.event.dx = dx;
 	    de.u.event.dy = dy;
