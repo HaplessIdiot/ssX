@@ -684,6 +684,9 @@
 #define R128_LEAD_BRES_LNTH_SUB           0x1624
 #define R128_LVDS_GEN_CNTL                0x02d0
 #       define R128_LVDS_ON               (1   <<  0)
+#       define R128_LVDS_DISPLAY_DIS      (1   <<  1)
+#       define R128_LVDS_EN               (1   <<  7)
+#       define R128_LVDS_DIGON            (1   << 18)
 #       define R128_LVDS_BLON             (1   << 19)
 #       define R128_LVDS_SEL_CRTC2        (1   << 23)
 #       define R128_HSYNC_DELAY_SHIFT     28

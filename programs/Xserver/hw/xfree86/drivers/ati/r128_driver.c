@@ -116,6 +116,8 @@ static void R128Restore(ScrnInfoPtr pScrn);
 static Bool R128ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static void R128DisplayPowerManagementSet(ScrnInfoPtr pScrn,
 					  int PowerManagementMode, int flags);
+static void R128DisplayPowerManagementSetLCD(ScrnInfoPtr pScrn,
+					  int PowerManagementMode, int flags);
 
 typedef enum {
   OPTION_NOACCEL,
@@ -2402,6 +2404,8 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 				/* DPMS setup - FIXME: also for mirror mode? - Michel */
     if (!info->HasPanelRegs || info->BIOSDisplay == R128_BIOS_DISPLAY_CRT)
 	xf86DPMSInit(pScreen, R128DisplayPowerManagementSet, 0);
+    if (info->HasPanelRegs || info->BIOSDisplay == R128_BIOS_DISPLAY_FP)
+	xf86DPMSInit(pScreen, R128DisplayPowerManagementSetLCD, 0);
 
 	R128InitVideo(pScreen);
 
@@ -3541,3 +3545,73 @@ static void R128DisplayPowerManagementSet(ScrnInfoPtr pScrn,
 	break;
     }
 }
+
+static int r128_set_backlight_enable(ScrnInfoPtr pScrn, int on);
+
+static void R128DisplayPowerManagementSetLCD(ScrnInfoPtr pScrn,
+					  int PowerManagementMode, int flags)
+{
+    R128InfoPtr   info      = R128PTR(pScrn);
+    unsigned char *R128MMIO = info->MMIO;
+    int           mask      = R128_LVDS_DISPLAY_DIS;
+
+    switch (PowerManagementMode) {
+    case DPMSModeOn:
+	/* Screen: On; HSync: On, VSync: On */
+	OUTREGP(R128_LVDS_GEN_CNTL, 0, ~mask);
+        r128_set_backlight_enable(pScrn, 1);
+	break;
+    case DPMSModeStandby:
+	/* Fall through */
+    case DPMSModeSuspend:
+	/* Fall through */
+	break;
+    case DPMSModeOff:
+	/* Screen: Off; HSync: Off, VSync: Off */
+	OUTREGP(R128_LVDS_GEN_CNTL, mask, ~mask);
+        r128_set_backlight_enable(pScrn, 0);
+	break;
+    }
+}
+
+static int r128_set_backlight_enable(ScrnInfoPtr pScrn, int on)
+{
+        R128InfoPtr info        = R128PTR(pScrn);
+        unsigned char *R128MMIO = info->MMIO;
+	unsigned int lvds_gen_cntl = INREG(R128_LVDS_GEN_CNTL);
+
+	lvds_gen_cntl |= (/*R128_LVDS_BL_MOD_EN |*/ R128_LVDS_BLON);
+	if (on) {
+		lvds_gen_cntl |= R128_LVDS_DIGON;
+		if (!lvds_gen_cntl & R128_LVDS_ON) {
+			lvds_gen_cntl &= ~R128_LVDS_BLON;
+			OUTREG(R128_LVDS_GEN_CNTL, lvds_gen_cntl);
+			(void)INREG(R128_LVDS_GEN_CNTL);
+			usleep(10000);
+			lvds_gen_cntl |= R128_LVDS_BLON;
+			OUTREG(R128_LVDS_GEN_CNTL, lvds_gen_cntl);
+		}
+#if 0
+		lvds_gen_cntl &= ~R128_LVDS_BL_MOD_LEVEL_MASK;
+		lvds_gen_cntl |= (0xFF /* backlight_conv[level] */ <<
+				  R128_LVDS_BL_MOD_LEVEL_SHIFT);
+#endif
+		lvds_gen_cntl |= (R128_LVDS_ON | R128_LVDS_EN);
+		lvds_gen_cntl &= ~R128_LVDS_DISPLAY_DIS;
+	} else {
+#if 0
+		lvds_gen_cntl &= ~R128_LVDS_BL_MOD_LEVEL_MASK;
+		lvds_gen_cntl |= (0xFF /* backlight_conv[0] */ <<
+				  R128_LVDS_BL_MOD_LEVEL_SHIFT);
+#endif
+		lvds_gen_cntl |= R128_LVDS_DISPLAY_DIS;
+		OUTREG(R128_LVDS_GEN_CNTL, lvds_gen_cntl);
+		usleep(10);
+		lvds_gen_cntl &= ~(R128_LVDS_ON | R128_LVDS_EN | R128_LVDS_BLON 
+				   | R128_LVDS_DIGON);
+	}
+
+	OUTREG(R128_LVDS_GEN_CNTL, lvds_gen_cntl);
+
+	return 0;
+ }
