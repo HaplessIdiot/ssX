@@ -172,7 +172,7 @@ Bool xf86HandleColormaps(
 
     if (!(flags & CMAP_LOAD_EVEN_IF_OFFSCREEN)) {
 	pScrn->EnterVT = CMapEnterVT;
-	if (flags & CMAP_RELOAD_ON_MODE_SWITCH) 
+	if ((flags & CMAP_RELOAD_ON_MODE_SWITCH) && pScrn->SwitchMode) 
 	    pScrn->SwitchMode = CMapSwitchMode;
     }
 #ifdef XFreeXDGA

@@ -219,7 +219,8 @@ xf86XVScreenInit(
   pScreen->ClipNotify = xf86XVClipNotify;
   pScrn->EnterVT = xf86XVEnterVT;
   pScrn->LeaveVT = xf86XVLeaveVT;
-  pScrn->AdjustFrame = xf86XVAdjustFrame;
+  if(pScrn->AdjustFrame)
+     pScrn->AdjustFrame = xf86XVAdjustFrame;
 
   if(!xf86XVInitAdaptors(pScreen, adaptors, num))
 	return FALSE;
