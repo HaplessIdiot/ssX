@@ -1,4 +1,5 @@
 XFree86 4.4.99.10 (xx July 2004)
+ 145. Xterm patch #192 (Thomas Dickey).
 
 XFree86 4.4.99.9 (12 July 2004)
  144. Disable building DMX on OSs that have not been verified to build
@@ -19027,7 +19028,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3290 2004/07/07 03:46:23 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3291 2004/07/12 11:02:35 dawes Exp $
 
 
 
