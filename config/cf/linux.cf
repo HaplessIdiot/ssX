@@ -4,7 +4,7 @@ XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.149 2000/12/01 17:43:01 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.150 2000/12/02 19:06:57 herrb Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -114,13 +114,10 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define ForceNormalLib		YES
 #define BuildSpecsDocs		YES
 #define SpecsDocDirs		GL Xext Xv xterm
-/* right now glide only works on i386 */
-#ifdef i386Architecture
-# define HasGlide2		YES
-# define Glide2IncDir		/usr/include/glide
-# define HasGlide3		YES
-# define Glide3IncDir		/usr/include/glide3
-#endif
+#define HasGlide2		NO
+#define Glide2IncDir		/usr/include/glide
+#define HasGlide3		NO
+#define Glide3IncDir		/usr/include/glide3
 #define XAppLoadDir		EtcX11Directory/app-defaults
 #define XFileSearchPathDefault	Concat4(EtcX11Directory/%L/%T/%N%C,%S:EtcX11Directory/%l/%T/%N%C,%S:EtcX11Directory/%T/%N%C,%S:EtcX11Directory/%L/%T/%N%S:EtcX11Directory/%l/%T/%N%S:EtcX11Directory/%T/%N%S):Concat4($(LIBDIR)/%L/%T/%N%C,%S:$(LIBDIR)/%l/%T/%N%C,%S:$(LIBDIR)/%T/%N%C,%S:$(LIBDIR)/%L/%T/%N%S:$(LIBDIR)/%l/%T/%N%S:$(LIBDIR)/%T/%N%S)
 #define BuilderEMailAddr	"submit@bugs.debian.org"
