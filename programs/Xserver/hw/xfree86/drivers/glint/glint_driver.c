@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.110 2001/01/31 16:14:55 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.111 2001/02/01 10:04:47 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -1549,6 +1549,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	    }
 	    break;
 	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
+	    pGlint->FIFOSize = 120;
 	    maxheight = 4096;
 	    maxwidth = 4096;
 	    pGlint->RefClock = 14318;
@@ -1611,6 +1612,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 		return FALSE;
 	    break;
 	case PCI_VENDOR_3DLABS_CHIP_GAMMA:
+	    pGlint->FIFOSize = 32;
 	    if (pScrn->bitsPerPixel == 24) {
 		xf86DrvMsg(pScrn->scrnIndex, from, 
 			"-depth 24 -pixmap24 not supported by this chip.\n");
@@ -1634,6 +1636,11 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 		    RamDacDestroyInfoRec(pGlint->RamDacRec);
 		    return FALSE;
 	    	}
+#if 1 /* REMOVE LATER - see other IS_J2000 fixup code */
+		/* As we push the acceleration through the pm3 (for now) we can
+	 	 * safely set the FIFOSize to 120 again */
+		pGlint->FIFOSize = 120;
+#endif
 	    }
 	    if (IS_GMX2000) {
 		xf86DrvMsg(pScrn->scrnIndex, X_PROBED, 
@@ -1694,6 +1701,10 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 		    return FALSE;
 	    break;
     }
+
+    if (pGlint->FIFOSize)
+    	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "FIFO Size is %d DWORDS\n",
+	       pGlint->FIFOSize);
 
     if (pGlint->FBDev || FBDevProbed)
     	pGlint->VGAcore = FALSE;

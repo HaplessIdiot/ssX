@@ -1,4 +1,6 @@
 XFree86 4.X.Ya (?? January 2001)
+ 102. Add FIFOSize to glint driver for overriding of the FIFO depending on
+      the target chip being used (Alan Hourihane).
  101. Major updates to the GLINT driver.
 	- Add Dual-Headed Appian Jeronimo 2000 support (dual PM3's), it now
 	  shares heads as per MGA driver for G4xx dual head boards.
@@ -12357,4 +12359,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1549 2001/01/31 15:59:25 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1550 2001/01/31 16:14:45 alanh Exp $
