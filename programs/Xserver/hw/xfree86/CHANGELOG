@@ -1,22 +1,30 @@
 XFree86 4.0b (?? April 2000)
- 133. Fix bug where the cursor is not put back after a failed DGA mode
+ 139. Fixed xf4bpp for devPrivates in PixmapRec. (Egbert Eich).
+ 138. Fixed laguna driver to map FB after the video RAM size is known
+      (Egbert Eich).
+ 137. Fixed xdm to give up to respawn Xservers if the server crashes
+      more than once within 60 seconds (Egbert Eich).
+ 136. Added VGA default clock option to generic driver (Egbert Eich).
+ 135. Fixed CyberShadow option in Trident driver (Egbert Eich).
+ 134. Fix bug where the cursor is not put back after a failed DGA mode
       initialization attempt (Mark Vojkovich).
- 132. Add a missing symbol "AllocateColormapPrivateIndex" (Mark Vojkovich). 
- 131. Remove Intel 440BX-specific resources from os-support layer
+ 133. Add a missing symbol "AllocateColormapPrivateIndex" (Mark Vojkovich). 
+ 132. Remove Intel 440BX-specific resources from os-support layer
       (Marc La France).
- 130. Change ATI driver to mark VGA resources as unused in operating state when
+ 131. Change ATI driver to mark VGA resources as unused in operating state when
       appropriate (Marc La France).
- 129. Fix bug in the generation of default screen layout (Marc La France).
- 128. Include all resource attributes when printing them (Marc La France).
- 127. Fix compiled-in input driver list (Marc La France).
- 126. Allow driver access to resource manipulation functions (Marc La France).
- 125. Fix a DGA 2.0 crash that happened when bogus mode numbers were sent
+ 130. Fix bug in the generation of default screen layout (Marc La France).
+ 129. Include all resource attributes when printing them (Marc La France).
+ 128. Fix compiled-in input driver list (Marc La France).
+ 127. Allow driver access to resource manipulation functions (Marc La France).
+ 126. Fix a DGA 2.0 crash that happened when bogus mode numbers were sent
       by the client (Lionel Ulmer).
- 124. Make a recent shm pixmap fix Xinerama aware (Mark Vojkovich).
- 123. Fix mode setting bug in ATI driver (Marc La France).
- 122. Add int10, DDC & VBE support to ATI driver
+ 125. Make a recent shm pixmap fix Xinerama aware (Mark Vojkovich).
+ 124. Fix mode setting bug in ATI driver (Marc La France).
+ 123. Add int10, DDC & VBE support to ATI driver
       (Andrew C Aitchison, Marc La France).
- 121. Allow driver to supply DDC module to VBE (Marc La France).
+ 122. Allow driver to supply DDC module to VBE (Marc La France).
+ 121. Attempt to fix cyrix driver (untested). (Egbert Eich)
  120. Added support for 'inactive' devices. (Egbert Eich)
  119. Fixed xf86misc extensions. (Egbert Eich)
  118. Fixed design of xf86SetAccessFuncs(). Now all old access funcs

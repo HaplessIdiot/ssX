@@ -64,6 +64,13 @@ from The Open Group.
 #undef _POSIX_SOURCE
 #endif
 #endif
+#ifdef X_NOT_STDC_ENV
+#define Time_t long
+extern Time_t time ();
+#else
+#include <time.h>
+#define Time_t time_t
+#endif
 
 /* If XDMCP symbol defined, compile to run XDMCP protocol */
 
@@ -166,7 +173,7 @@ struct display {
 	int		serverPid;	/* process id of server (-1 if none) */
 	FileState	state;		/* state during HUP processing */
 	int		startTries;	/* current start try */
-
+        Time_t          lastCrash;      /* time of last crash */
 #ifdef XDMCP
 	/* XDMCP state */
 	CARD32		sessionID;	/* ID of active session */
@@ -233,7 +240,8 @@ struct display {
 #ifdef XDMCP
 
 #define PROTO_TIMEOUT	(30 * 60)   /* 30 minutes should be long enough */
-
+#define XDM_BROKEN_INTERVAL (60)    /* server crashing more than once a */
+                                    /* minute is assumed to be broken!  */
 struct protoDisplay {
 	struct protoDisplay	*next;
 	XdmcpNetaddr		address;   /* UDP address */

@@ -544,7 +544,21 @@ WaitForChild (void)
 		{
 		    Debug ("Terminating session pid %d\n", d->pid);
 		    TerminateProcess (d->pid, SIGTERM);
-		}		
+		}
+		{
+		  Time_t Time;
+		  time(&Time);
+		  Debug("time %i %i\n",Time,d->lastCrash);
+		  if (d->lastCrash && 
+		      ((Time - d->lastCrash) < XDM_BROKEN_INTERVAL)) {
+		    Debug("Server crash frequency too high:"
+			  " removing display %s\n",d->name);
+		    LogError("Server crash rate too high:"
+			     " removing display %s\n",d->name);
+		    RemoveDisplay (d);
+		  } else 
+		    d->lastCrash = Time;
+		}
 		break;
 	    case notRunning:
 		Debug ("Server exited for notRunning session on display %s\n", d->name);

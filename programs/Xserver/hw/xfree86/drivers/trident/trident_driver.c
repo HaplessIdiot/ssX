@@ -1138,10 +1138,11 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	pTrident->UsePCIRetry = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
     }
-    if (xf86ReturnOptValBool(TRIDENTOptions, OPTION_CYBER_SHADOW, FALSE)) {
-	pTrident->CyberShadow = TRUE;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Cyber Shadow Registers enabled\n");
-    }
+    if (pTrident->CyberShadowSet = xf86GetOptValBool(TRIDENTOptions,
+						     OPTION_CYBER_SHADOW,
+						     &pTrident->CyberShadow))
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Cyber Shadow Registers %s\n",
+		   pTrident->CyberShadow?"enabled":"disabled");
     if (xf86ReturnOptValBool(TRIDENTOptions, OPTION_NOMMIO, FALSE)) {
 	pTrident->NoMMIO = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "MMIO Disabled\n");

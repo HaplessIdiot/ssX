@@ -75,6 +75,7 @@ typedef struct {
     Bool		HasSGRAM;
     Bool		MUX;
     Bool		IsCyber;
+    Bool		CyberShadowSet;
     Bool		CyberShadow;
     Bool		NoMMIO;
     Bool		ShadowFB;

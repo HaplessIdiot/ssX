@@ -320,12 +320,15 @@ CirMapMem(CirPtr pCir, int scrnIndex)
 	/*
 	 * Map the frame buffer.
 	 */
-
-	pCir->FbBase = xf86MapPciMem(scrnIndex, VIDMEM_FRAMEBUFFER, pCir->PciTag,
-									pCir->FbAddress, pCir->FbMapSize);
-	if (pCir->FbBase == NULL)
+	if (pCir->FbMapSize) {
+	    
+	    pCir->FbBase = xf86MapPciMem(scrnIndex, VIDMEM_FRAMEBUFFER,
+					 pCir->PciTag, pCir->FbAddress,
+					 pCir->FbMapSize);
+	    if (pCir->FbBase == NULL)
 		return FALSE;
-
+	}
+	
 #ifdef CIR_DEBUG
 	ErrorF("CirMapMem pCir->FbBase=0x%08x\n", pCir->FbBase);
 #endif
