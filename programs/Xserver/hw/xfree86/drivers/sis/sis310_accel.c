@@ -362,8 +362,8 @@ SiS315AccelInit(ScreenPtr pScreen)
 
 #ifdef INCL_RENDER
 #ifdef RENDER
-        /* Render (can later also be used for Translucent windows with constant Alpha) */
-        if((pScrn->bitsPerPixel == 16) || (pScrn->bitsPerPixel == 32)) {
+        /* Render */
+        if(((pScrn->bitsPerPixel == 16) || (pScrn->bitsPerPixel == 32)) && pSiS->doRender) {
 	   int i, j;
 	   if((pSiS->RenderAccelArray = xnfcalloc(65536, 1))) {
 	      for(i = 0; i < 256; i++) {
@@ -374,7 +374,8 @@ SiS315AccelInit(ScreenPtr pScreen)
 	      infoPtr->SetupForCPUToScreenAlphaTexture = SiSSetupForCPUToScreenAlphaTexture;
 	      infoPtr->SubsequentCPUToScreenAlphaTexture = SiSSubsequentCPUToScreenTexture;
 	      infoPtr->CPUToScreenAlphaTextureFormats = SiSAlphaTextureFormats;
-	      infoPtr->CPUToScreenAlphaTextureFlags = XAA_RENDER_NO_TILE;
+	      infoPtr->CPUToScreenAlphaTextureFlags = XAA_RENDER_NO_TILE |
+	      					      XAA_RENDER_NO_SRC_ALPHA;
 
               infoPtr->SetupForCPUToScreenTexture = SiSSetupForCPUToScreenTexture;
               infoPtr->SubsequentCPUToScreenTexture = SiSSubsequentCPUToScreenTexture;
@@ -1611,13 +1612,11 @@ SiSSetupForCPUToScreenAlphaTexture(ScrnInfoPtr pScrn,
 #ifdef SISVRAMQ
         SiSSetupDSTColorDepth(pSiS->SiS310_AccelDepth);
 	SiSSetupSRCPitchDSTRect((pitch << 2), pSiS->scrnOffset, -1);
-	SiSSetupAlpha(alpha >> 8)
 	SiSSetupCMDFlag(ALPHA_BLEND | SRCVIDEO | A_PERPIXELALPHA)
 #else
 	SiSSetupDSTColorDepth(pSiS->DstColor);
 	SiSSetupSRCPitch((pitch << 2));
 	SiSSetupDSTRect(pSiS->scrnOffset, -1)
-	SiSSetupAlpha(alpha >> 8)
 	SiSSetupROP(0)
 	SiSSetupCMDFlag(ALPHA_BLEND | SRCVIDEO | A_PERPIXELALPHA | pSiS->SiS310_AccelDepth)
 #endif

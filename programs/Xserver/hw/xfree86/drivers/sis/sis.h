@@ -36,7 +36,7 @@
 
 #define SISDRIVERVERSIONYEAR    3
 #define SISDRIVERVERSIONMONTH   8
-#define SISDRIVERVERSIONDAY     27
+#define SISDRIVERVERSIONDAY     28
 #define SISDRIVERREVISION       1
 
 #define SISDRIVERIVERSION (SISDRIVERVERSIONYEAR << 16) | (SISDRIVERVERSIONMONTH << 8) \
@@ -656,6 +656,7 @@ typedef struct {
     void		(*RenderCallback)(ScrnInfoPtr);
     Time		RenderTime;
     unsigned char       *RenderAccelArray;
+    Bool		doRender;
 
     int 		ColorExpandRingHead;
     int 		ColorExpandRingTail;
