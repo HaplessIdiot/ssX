@@ -238,18 +238,22 @@ vbeReadEDID(vbeInfoPtr pVbe)
 
     xf86ExecX86int10(pVbe->pInt10);
 
-    if ((pVbe->pInt10->ax & 0xff) != 0x4f)
+    if ((pVbe->pInt10->ax & 0xff) != 0x4f) {
+        xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE DDC invalid\n");
 	goto error;
+    }
     switch (pVbe->pInt10->ax & 0xff00) {
-    case 0:
+    case 0x0:
 	xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE DDC read successfully\n");
   	tmp = (unsigned char *)xnfalloc(128); 
   	memcpy(tmp,page,128); 
 	break;
-    case 1:
+    case 0x100:
 	xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE DDC read failed\n");	
 	break;
     default:
+	xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE DDC unkown failure %i\n",
+		       pVbe->pInt10->ax & 0xff00);
 	break;
     }
     

@@ -16,6 +16,7 @@
  */
 #include "xf86.h"
 #include "xf86str.h"
+#include "xf86_OSproc.h"
 #include "xf86_ansic.h"
 #include "compiler.h"
 #include "xf86Pci.h"
@@ -30,7 +31,7 @@ static int pciCfg1out(CARD16 addr, CARD32 val);
 
 #define REG pInt
 
-void
+int
 setup_int(xf86Int10InfoPtr pInt)
 {
     if (pInt != Int10Current) {
@@ -53,12 +54,14 @@ setup_int(xf86Int10InfoPtr pInt)
     X86_FS = 0;
     X86_GS = 0;
     X86_EFLAGS = (X86_IF_MASK | X86_IOPL_MASK);
-    
+   
+    return xf86BlockSIGIO();
 }
 
 void
-finish_int(xf86Int10InfoPtr pInt)
+finish_int(xf86Int10InfoPtr pInt, int sig)
 {
+    xf86UnblockSIGIO(sig);
     pInt->ax = (CARD16) X86_EAX;
     pInt->bx = (CARD16) X86_EBX;
     pInt->cx = (CARD16) X86_ECX;

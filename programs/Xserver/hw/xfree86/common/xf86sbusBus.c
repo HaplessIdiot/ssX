@@ -40,6 +40,8 @@
 
 #define FB_DEV_PATH "/dev/fb%d"
 
+Bool sbusSlotClaimed = FALSE;
+
 sbusDevicePtr *xf86SbusInfo = NULL;
 static int xf86nSbusInfo;
 
@@ -372,6 +374,7 @@ xf86ClaimSbusSlot(sbusDevicePtr psdp, DriverPtr drvp,
         p->access = xnfcalloc(1,sizeof(EntityAccessRec));
 	p->access->fallback = &AccessNULL;
         p->access->pAccess = &AccessNULL;
+	sbusSlotClaimed = TRUE;
 	return num;
     } else
 	return -1;

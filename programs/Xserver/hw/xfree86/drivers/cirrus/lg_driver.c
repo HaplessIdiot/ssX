@@ -52,23 +52,14 @@
 
 #include "xf86int10.h"
 
-/*
- * If using cfb, cfb.h is required.  Select the others for the bpp values
- * the driver supports.
- */
-#define PSZ 8	/* needed for cfb.h */
-#include "cfb.h"
-#undef PSZ
-#include "cfb16.h"
-#include "cfb24.h"
-#include "cfb24_32.h"
-#include "cfb32.h"
+#include "fb.h"
 
 #include "xf86DDC.h"
 
 #undef LG_DEBUG
 
 #include "cir.h"
+#define _LG_PRIVATE_
 #include "lg.h"
 
 #ifdef XvExtension
@@ -79,8 +70,6 @@
 /*
  * Forward definitions for the functions that make up the driver.
  */
-
-ScrnInfoPtr LgProbe(int entity);
 
 /* Mandatory functions */
 Bool LgPreInit(ScrnInfoPtr pScrn, int flags);
@@ -196,13 +185,8 @@ static const char *vgahwSymbols[] = {
 	NULL
 };
 
-static const char *cfbSymbols[] = {
-	"cfbScreenInit",
-	"cfb16ScreenInit",
-	"cfb24ScreenInit",
-	"cfb32ScreenInit",
-	"cfb8_32ScreenInit",
-	"cfb24_32ScreenInit",
+static const char *fbSymbols[] = {
+	"fbScreenInit",
 	NULL
 };
 
@@ -287,7 +271,7 @@ lgSetup(pointer module, pointer opts, int *errmaj, int *errmin)
     
     if (!setupDone) {
 	setupDone = TRUE;
-	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols,
+	LoaderRefSymLists(vgahwSymbols, fbSymbols, xaaSymbols,
 			  ramdacSymbols, ddcSymbols, i2cSymbols,
 			  int10Symbols, NULL);
     }
@@ -426,11 +410,13 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 	MessageType from;
 	int i;
 	ClockRangePtr clockRanges;
-	char *mod = NULL;
 	int fbPCIReg, ioPCIReg;
 	char *s;
 
-	if (flags & PROBE_DETECT) return FALSE;
+	if (flags & PROBE_DETECT)  {
+	  cirProbeDDC( pScrn, xf86GetEntityInfo(pScrn->entityList[0])->index );
+	  return TRUE;
+	}
 	
 #ifdef LG_DEBUG
 	ErrorF("LgPreInit\n");
@@ -538,13 +524,6 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 	if (!xf86SetDefaultVisual(pScrn, -1))
 		return FALSE;
 
-	/* We don't currently support DirectColor at > 8bpp */
-	if (pScrn->depth > 8 && pScrn->defaultVisual != TrueColor) {
-		xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Given default visual"
-			" (%s) is not supported at depth %d\n",
-			xf86GetVisualName(pScrn->defaultVisual), pScrn->depth);
-		return FALSE;
-	}
 
 	/* Collect all of the relevant option flags (fill in pScrn->options) */
 	xf86CollectOptions(pScrn, NULL);
@@ -876,19 +855,19 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 
 	/* Load bpp-specific modules */
 	switch (pScrn->bitsPerPixel) {
-	case 8:  mod = "cfb";     break;
-	case 16: mod = "cfb16";   break;
+	case 8:
+	case 16:
 	case 24:
-		if (pix24bpp == 24)
-			mod = "cfb24";
-		else
-			mod = "xf24_32bpp";
-		break;
-	case 32: mod = "cfb32";   break;
-	}
-	if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
-		LgFreeRec(pScrn);
-		return FALSE;
+	case 32: 
+	    if (xf86LoadSubModule(pScrn, "fb") == NULL) {
+	         LgFreeRec(pScrn);
+		 return FALSE;
+	    }
+	    xf86LoaderReqSymbols("fbScreenInit",NULL);
+#ifdef RENDER
+	    xf86LoaderReqSymbols("fbPictureInit", NULL);
+#endif
+	    break;
 	}
 
 	/* Load XAA if needed */
@@ -1385,8 +1364,6 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	 * function.  If not, the visuals will need to be setup before calling
 	 * a fb ScreenInit() function and fixed up after.
 	 *
-	 * For most PC hardware at depths >= 8, the defaults that cfb uses
-	 * are not appropriate.  In this driver, we fixup the visuals after.
 	 */
 
 	/*
@@ -1396,24 +1373,13 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 	/* Setup the visuals we support. */
 
-	/*
-	 * For bpp > 8, the default visuals are not acceptable because we only
-	 * support TrueColor and not DirectColor.  To deal with this, call
-	 * miSetVisualTypes with the appropriate visual mask.
-	 */
-#ifdef LG_DEBUG
-	ErrorF("LgScreenInit before miSetVisualTypes\n");
-#endif
-	if (pScrn->bitsPerPixel > 8) {
-		if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
-								pScrn->defaultVisual))
-			return FALSE;
-	} else {
-		if (!miSetVisualTypes(pScrn->depth,
-								miGetDefaultVisualMask(pScrn->depth),
-								pScrn->rgbBits, pScrn->defaultVisual))
-			return FALSE;
-	}
+	if (!miSetVisualTypes(pScrn->depth,
+			      miGetDefaultVisualMask(pScrn->depth),
+			      pScrn->rgbBits, pScrn->defaultVisual))
+	  return FALSE;
+
+	miSetPixmapDepths ();
+
 #ifdef LG_DEBUG
 	ErrorF("LgScreenInit after miSetVisualTypes\n");
 #endif
@@ -1442,34 +1408,13 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	 */
 	switch (pScrn->bitsPerPixel) {
 	case 8:
-	    ret = cfbScreenInit(pScreen, FbBase,
+	case 16:
+	case 24:
+	case 32:
+	    ret = fbScreenInit(pScreen, FbBase,
 				width,height,
 				pScrn->xDpi, pScrn->yDpi,
-				displayWidth);
-		break;
-	case 16:
-	    ret = cfb16ScreenInit(pScreen, FbBase,
-				  width,height,
-				  pScrn->xDpi, pScrn->yDpi,
-				  displayWidth);
-	    break;
-	case 24:
-	    if (pix24bpp == 24)
-		ret = cfb24ScreenInit(pScreen, FbBase,
-				      width,height,
-				      pScrn->xDpi, pScrn->yDpi,
-				      displayWidth);
-	    else
-		ret = cfb24_32ScreenInit(pScreen, FbBase,
-					 width,height,
-					 pScrn->xDpi, pScrn->yDpi,
-					 displayWidth);
-	    break;
-	case 32:
-	    ret = cfb32ScreenInit(pScreen, FbBase,
-				  width,height,
-				  pScrn->xDpi, pScrn->yDpi,
-				  displayWidth);
+				displayWidth,pScrn->bitsPerPixel);
 	    break;
 	default:
 		xf86DrvMsg(scrnIndex, X_ERROR,

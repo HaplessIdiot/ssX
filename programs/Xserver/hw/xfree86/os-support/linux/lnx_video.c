@@ -421,17 +421,6 @@ unmapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 /* FIXME: init this... */
 volatile unsigned char *ioBase = MAP_FAILED;
 
-void
-ppc_flush_icache(char *addr)
-{
-	__asm__ volatile (
-		"dcbf 0,%0;" 
-		"sync;" 
-		"icbi 0,%0;" 
-		"sync;" 
-		"isync;" 
-		: : "r"(addr) : "memory");
-}
 #endif
 
 void

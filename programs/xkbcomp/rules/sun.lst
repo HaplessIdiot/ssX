@@ -32,6 +32,7 @@
   se			Swedish
   th			Thai
   us			US/ASCII
+  trq			Turkish
 
 ! variant
   nodeadkeys		Eliminate dead keys from European keyboards

@@ -13,6 +13,7 @@
 #include "vgaHW.h"
 
 #include "cir.h"
+#define _LG_PRIVATE_
 #include "lg.h"
 
 static void

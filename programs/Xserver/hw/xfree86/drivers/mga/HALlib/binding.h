@@ -13,8 +13,6 @@
  @end
 
 ***************************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/HALlib/binding.h,v 1.2 2000/09/26 15:57:12 tsi Exp $ */
-
 #ifndef _BINDING
 #define _BINDING
 
@@ -159,8 +157,6 @@ typedef struct TAGMGAHWINFO {
  @field IN OUT ULONG | ulDstOrg          | Origin of the drawing Offset in the frame (pixels)
  @field IN OUT ULONG | ulPanXGran        | Panning in X granularity in pixel
  @field IN OUT ULONG | ulPanYGran        | Panning in Y granularity in pixel
- @field IN OUT ULONG | ulTVStandard      | TV Standard
- @field IN OUT ULONG | ulCableType       | Cable Type
  @end                            
  **************************************************************************************************/
 typedef struct TAGMAGMODEINFO {
@@ -182,12 +178,12 @@ typedef struct TAGMAGMODEINFO {
     ULONG   ulVFPorch;          /* Vertical front porch in lines                            */
     ULONG   ulVSync;            /* Vertical Sync in lines                                   */
     ULONG   ulVBPorch;          /* Vertical back Porch in lines                             */
-    ULONG   ulDisplayOrg;       /* Origin of the display Offset(bytes)                      */
+    ULONG   ulDisplayOrg;       /* Origin of the display Offset(bytes)                                                       */
     ULONG   ulDstOrg;           /* Origin of the drawing Offset in the frame (bytes)        */
     ULONG   ulPanXGran;         /* Panning in X granularity in pixel                        */
     ULONG   ulPanYGran;         /* Panning in Y granularity in pixel                        */
-    ULONG   ulTVStandard;       /* TV Standard                                              */
-    ULONG   ulCableType;        /* Cable Type                                               */
+    ULONG   ulTVStandard;        /* TV Standard                                              */
+    ULONG   ulCableType;         /* Cable Type                                               */
 } MGAMODEINFO, FAR *LPMGAMODEINFO;
 
 #define MGAHWINFOCAPS_CRTC1_ANALOG          1L      
@@ -223,6 +219,8 @@ typedef struct TAGMAGMODEINFO {
 #define TV_PAL                          0
 #define TV_NTSC                         1
 
+
+
 #if defined(__cplusplus)
     extern "C" {
 #endif
@@ -243,7 +241,6 @@ ULONG MGAOpenLibrary(LPBOARDHANDLE pBoard, LPVOID lpClient, ULONG ulClientSize);
 ULONG MGAGetBOARDHANDLESize(void);
 ULONG MGASetTVStandard(LPBOARDHANDLE pBoard, ULONG ulTVStandard);
 ULONG MGASetTVCableType(LPBOARDHANDLE pBoard, ULONG ulCableType);
-
 #if defined(__cplusplus)
     }
 #endif

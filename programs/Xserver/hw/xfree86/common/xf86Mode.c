@@ -1399,9 +1399,20 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 
     lookupNext:
 	status = xf86LookupMode(scrp, p, clockRanges, strategy);
-	if (status != MODE_OK) xf86DrvMsg(scrp->scrnIndex, X_WARNING,
-			       "mode \"%s\" deleted (%s)\n", p->name,
+	if (status != MODE_OK) {
+		if (p->type & M_T_BUILTIN)
+		    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
+			       "Built-in mode \"%s\" deleted (%s)\n", p->name,
 			       xf86ModeStatusToString(status));
+		else if (p->type & M_T_DEFAULT)
+		    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
+			       "Default mode \"%s\" deleted (%s)\n", p->name,
+			       xf86ModeStatusToString(status));
+		else
+		    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
+			       "Mode \"%s\" deleted (%s)\n", p->name,
+			       xf86ModeStatusToString(status));
+	}
 	if (status == MODE_ERROR) {
 	    ErrorF("xf86ValidateModes: "
 		   "unexpected result from xf86LookupMode()\n");
@@ -1485,10 +1496,15 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 		    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
 			       "Built-in mode \"%s\" deleted (%s)\n", p->name,
 			       xf86ModeStatusToString(p->status));
-	        else
+		else if (p->type & M_T_DEFAULT)
+		    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
+			       "Default mode \"%s\" deleted (%s)\n", p->name,
+			       xf86ModeStatusToString(p->status));
+		else
 		    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
 			       "Mode \"%s\" deleted (%s)\n", p->name,
 			       xf86ModeStatusToString(p->status));
+
 	        goto lookupNext;
 	    }
 	}
@@ -1589,14 +1605,20 @@ xf86PruneDriverModes(ScrnInfoPtr scrp)
 	    return;
 	n = p->next;
 	if (p->status != MODE_OK) {
+#if 0
 	    if (p->type & M_T_BUILTIN)
 		xf86DrvMsg(scrp->scrnIndex, X_WARNING,
 			   "Built-in mode \"%s\" deleted (%s)\n", p->name,
 			   xf86ModeStatusToString(p->status));
-	    else if ((p->type & M_T_DEFAULT) == 0)
-		xf86DrvMsg(scrp->scrnIndex, X_WARNING,
-			   "Mode \"%s\" deleted (%s)\n", p->name,
-			   xf86ModeStatusToString(p->status));
+	    else if (p->type & M_T_DEFAULT)
+		    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
+			       "Default mode \"%s\" deleted (%s)\n", p->name,
+			       xf86ModeStatusToString(p->status));
+	    else
+	      xf86DrvMsg(scrp->scrnIndex, X_WARNING,
+			 "Mode \"%s\" deleted (%s)\n", p->name,
+			 xf86ModeStatusToString(p->status));
+#endif
 	    xf86DeleteMode(&(scrp->modes), p);
 	}
 	p = n;

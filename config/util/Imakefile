@@ -33,6 +33,11 @@ DEPLIBS =
 #ifndef Win32Architecture
   EXTRA_LIBRARIES =
 #endif
+#ifdef LinuxArchitecture
+  PREPROCESSCMD_MKDEPEND = PreProcessCmd StandardCppDefines $(PROJECT_DEFINES)
+#else
+  PREPROCESSCMD_MKDEPEND = $(PREPROCESSCMD)
+#endif
 
 XCOMM Some compilers generate fatal errors if an -L directory does
 XCOMM not exist.  Since BUILDLIBDIR may not exist yet suppress its use.
@@ -59,7 +64,7 @@ InstallNamedProg(exportlistgen,exportlistgen,$(BINDIR))
 #endif
 
 CppScriptTarget(xmkmf,xmkmf.cpp,-DCONFIGDIRSPEC='"'"-I$(CONFIGDIR)"'"',$(ICONFIGFILES))
-CppScriptTarget(makedepend,mdepend.cpp,-DPREPROC='"'"$(PREPROCESSCMD)"'"',$(ICONFIGFILES))
+CppScriptTarget(makedepend,mdepend.cpp,-DPREPROC='"'"$(PREPROCESSCMD_MKDEPEND)"'"',$(ICONFIGFILES))
 CppScriptTarget(mergelib,mergelib.cpp,"-DARCMD=$(AR)" "-DRANLIB=$(RANLIB)",$(ICONFIGFILES))
 #ifndef OS2Architecture
 CppScriptTarget(gccmakedep,gccmdep.cpp,-DCCCMD='"'"$(GCCCMD)"'"' -DRMCMD='"'"$(RM)"'"' -DLNCMD='"'"$(LN)"'"' -DMVCMD='"'"$(MV)"'"',$(ICONFIGFILES))

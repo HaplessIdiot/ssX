@@ -1559,6 +1559,17 @@ testinx(unsigned short port, unsigned char ind)
 #  define MMIO_ONB32(base, offset, val) \
     xf86WriteMmioNB32Le(base, offset, (CARD32)(val))
 # endif
+static __inline__ void ppc_flush_icache(char *addr)
+{
+	__asm__ volatile (
+		"dcbf 0,%0;" 
+		"sync;" 
+		"icbi 0,%0;" 
+		"sync;" 
+		"isync;" 
+		: : "r"(addr) : "memory");
+}
+
 #elif defined(__sparc__)
  /*
   * Like powerpc, we provide byteswapping and no byteswapping functions

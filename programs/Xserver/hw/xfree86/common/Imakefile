@@ -89,6 +89,7 @@ SRCS =	\
 	xf86Bus.c \
 	xf86isaBus.c \
 	xf86pciBus.c \
+	xf86fbBus.c \
 	xf86IniExt.c \
 	xf86Config.c \
 	xf86Cursor.c \
@@ -124,6 +125,7 @@ OBJS = \
 	xf86Bus.o \
 	xf86isaBus.o \
 	xf86pciBus.o \
+	xf86fbBus.o \
 	xf86Config.o \
 	xf86Cursor.o \
 	xf86DGA.o \

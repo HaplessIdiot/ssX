@@ -14,9 +14,12 @@
 
 #ifndef LG_H
 #define LG_H
-
-
 #define LG_DEBUG
+
+extern ScrnInfoPtr LgProbe(int entity);
+extern OptionInfoPtr	LgAvailableOptions(int chipid);
+
+# ifdef _LG_PRIVATE_
 
 /* Saved registers that are not part of the core VGA */
 /* CRTC >= 0x19; Sequencer >= 0x05; Graphics >= 0x09; Attribute >= 0x15 */
@@ -98,6 +101,7 @@ typedef struct lgRec {
 	int			blitYDir;
 } LgRec, *LgPtr;
 
+# endif /* _LG_PRIVATE_ */
 #endif /* LG_H */
 
 

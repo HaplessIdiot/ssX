@@ -358,3 +358,10 @@ xkb_keymap "ro_microsoft"      {
     };
     xkb_geometry       { include "pc(pc105)"                   };
 };
+xkb_keymap "trq"        {
+    xkb_keycodes        { include "xfree86"             };
+    xkb_types           { include "default"             };
+    xkb_compatibility   { include "default"             };
+    xkb_symbols         { include "en_US(pc105)+trq"    };
+    xkb_geometry        { include "pc(pc102)"           };
+};

@@ -614,7 +614,7 @@ GLINTProbe(DriverPtr drv, int flags)
   
     checkusedPci = xf86GetPciVideoInfo();
      
-    if (checkusedPci == NULL) {
+    if (checkusedPci == NULL && devSections /* for xf86DoProbe */) {
   	/*
  	 * Changed the behaviour to try probing using the FBDev support
  	 * when no PCI cards have been found. This is for systems without
@@ -681,7 +681,7 @@ GLINTProbe(DriverPtr drv, int flags)
 	
     	xfree(devSections);
 	
-    } else {
+    } else  if (checkusedPci) {
 	
 	numUsed = xf86MatchPciInstances(GLINT_NAME, 0,
 					GLINTChipsets, GLINTPciChipsets, devSections,

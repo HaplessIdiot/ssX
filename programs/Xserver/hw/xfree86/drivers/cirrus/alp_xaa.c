@@ -13,6 +13,7 @@
 #include "vgaHW.h"
 
 #include "cir.h"
+#define _ALP_PRIVATE_
 #include "alp.h"
 
 #define WAIT   outb(0x3CE,0x31); while(inb(0x3CF) & pCir->chip.alp->waitMsk){};

@@ -65,6 +65,7 @@ resRange res8514Shared[] = {_8514_SHARED, _END};
 
 /* Flag: do we need RAC ? */
 static Bool needRAC = FALSE;
+static Bool doFramebufferMode = FALSE;
 
 /* state change notification callback list */
 static StateChangeNotificationPtr StateChangeNotificationList;
@@ -602,6 +603,19 @@ xf86AccessLeaveState(void)
     if (!xf86ResAccessEnter)
 	return;
     xf86ResAccessEnter = FALSE;
+    PciStateLeave();
+    PciBusStateLeave();
+}
+
+/*
+ * xf86AccessRestoreState() - Restore the access registers to the
+ * state before X was started. This is handy for framebuffers.
+ */
+void 
+xf86AccessRestoreState(void)
+{
+    if (!xf86ResAccessEnter)
+	return;
     PciStateLeave();
     PciBusStateLeave();
 }
@@ -1807,6 +1821,7 @@ busTypeSpecific(EntityPtr pEnt, xf86State state)
  * setAccess() -- sets access functions according to resources
  * required. 
  */
+
 static void
 setAccess(EntityPtr pEnt, xf86State state)
 {
@@ -2070,6 +2085,9 @@ xf86EnterServerState(xf86State state)
     else
 	ErrorF("Entering OPERATING state\n");
 #endif
+    /* When servicing a dump framebuffer we don't need to do anything */
+    if (doFramebufferMode) return;
+
     for (i=0; i<xf86NumScreens; i++) {
 	pScrn = xf86Screens[i];
 	j = pScrn->entityList[pScrn->numEntities - 1];
@@ -2366,6 +2384,24 @@ xf86PostProbe(void)
     int i,j;
     resPtr resp, acc, tmp, resp_x, *pprev_next;
 
+    if (fbSlotClaimed) {
+        if (pciSlotClaimed || isaSlotClaimed 
+#ifdef __sparc__
+	    || sbusSlotClaimed
+#endif
+	    ) { 
+	    FatalError("Cannot run in framebuffer mode. Please specify busIDs "
+		       "       for all framebuffer devices\n");
+	    return;
+	} else  {
+	    xf86Msg(X_INFO,"Running in FRAMEBUFFER Mode\n");
+	    xf86AccessRestoreState();
+	    notifyStateChange(NOTIFY_ENABLE);
+	    doFramebufferMode = TRUE;
+
+	    return;
+	}
+    }
     /* don't compare against ResInit - remove it from clone.*/
     acc = tmp = xf86DupResList(Acc);
     pprev_next = &acc;
@@ -2495,6 +2531,8 @@ checkRequiredResources(int entityIndex)
 void
 xf86PostPreInit()
 {
+  if (doFramebufferMode) return;
+
     if (xf86NumScreens > 1)
 	needRAC = TRUE;
 
@@ -2521,9 +2559,13 @@ xf86PostScreenInit(void)
     ScreenPtr pScreen;
     unsigned int flags;
     int nummem = 0, numio = 0;
-
 #ifdef XFree86LOADER
 	pointer xf86RACInit = NULL;
+#endif
+
+    if (doFramebufferMode) return;
+
+#ifdef XFree86LOADER
 	if (needRAC) {
 	    xf86RACInit = LoaderSymbol("xf86RACInit");
 	    if (!xf86RACInit)
@@ -2932,7 +2974,8 @@ xf86FindPrimaryDevice()
     if (primaryBus.type != BUS_NONE) {
 	char *bus;
 	char *loc = xnfcalloc(1,8);
-	
+	if (loc == NULL) return;
+
 	switch (primaryBus.type) {
 	case BUS_PCI:
 	    bus = "PCI";
@@ -2941,7 +2984,7 @@ xf86FindPrimaryDevice()
 	    break;
 	case BUS_ISA:
 	    bus = "ISA";
-	    loc[0] = 0;
+	    loc[0] = '\0';
 	    break;
 	case BUS_SBUS:
 	    bus = "SBUS";
@@ -2949,7 +2992,7 @@ xf86FindPrimaryDevice()
 	    break;
 	default:
 	    bus = "";
-	    loc[0] = 0;
+	    loc[0] = '\0';
 	}
 	
 	xf86MsgVerb(X_INFO, 2, "Primary Device is: %s %s\n",bus,loc);

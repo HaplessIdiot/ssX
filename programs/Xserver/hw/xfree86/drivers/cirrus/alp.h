@@ -5,6 +5,10 @@
 #ifndef ALP_H
 #define ALP_H
 
+extern ScrnInfoPtr AlpProbe(int entity);
+extern OptionInfoPtr	AlpAvailableOptions(int chipid);
+
+# ifdef _ALP_PRIVATE_
 /* Saved registers that are not part of the core VGA */
 /* CRTC >= 0x19; Sequencer >= 0x05; Graphics >= 0x09; Attribute >= 0x15 */
 
@@ -69,5 +73,6 @@ typedef struct alpRec {
 	CARD32			sr0f, sr17;
 } AlpRec, *AlpPtr;
 
+# endif /* _ALP_PRIVATE_ */
 #endif /* ALP_H */
 

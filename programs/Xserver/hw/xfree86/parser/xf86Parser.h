@@ -423,6 +423,7 @@ XF86ConfVideoAdaptorPtr xf86findVideoAdaptor(const char *ident,
 						XF86ConfVideoAdaptorPtr p);
 
 GenericListPtr xf86addListItem(GenericListPtr head, GenericListPtr c_new);
+int xf86itemNotSublist(GenericListPtr list_1, GenericListPtr list_2);
 
 int xf86pathIsAbsolute(const char *path);
 int xf86pathIsSafe(const char *path);

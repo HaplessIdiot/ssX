@@ -68,6 +68,7 @@
   gb		United Kingdom
   vn		Vietnamese
   nec/jp	PC-98xx Series
+  trq		Turkish 
 
 ! variant
   nodeadkeys	Eliminate dead keys

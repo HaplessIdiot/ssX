@@ -47,7 +47,6 @@
 #if defined(SYSV) || defined(SVR4) || defined(linux) || defined(__QNX__) || defined(__QNXNTO__) || defined(__GNU__)
 #if defined(__ia64__) || defined(ia64)
 #include <sys/io.h>
-#include <asm/io.h>
 #endif
 # include <string.h>
 #if !(defined(__QNX__) && !defined(__QNXNTO__))

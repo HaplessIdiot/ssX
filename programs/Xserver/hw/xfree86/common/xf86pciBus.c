@@ -33,6 +33,7 @@
 #include "xf86RAC.h"
 
 /* Bus-specific globals */
+Bool pciSlotClaimed = FALSE;
 pciConfigPtr *xf86PciInfo = NULL;		/* Full PCI probe info */
 pciVideoPtr *xf86PciVideoInfo = NULL;		/* PCI probe for video hw */
 pciAccPtr * xf86PciAccInfo = NULL;              /* PCI access related */
@@ -1426,6 +1427,9 @@ getValidBIOSBase(PCITAG tag, int num)
 	if (xf86IsSubsetOf(range,m) && !ChkConflict(&range,avoid,SETUP)) {
 	    xf86FreeResList(avoid);
 	    xf86FreeResList(m);
+	    xf86MsgVerb(X_INFO,5,"GetVaildBIOSBase for %x:%x:%x: "
+			"got mem base %i: 0x%lx\n",pvp->bus,pvp->device,
+			pvp->func,num,(memType)pvp->memBase[num]);
 	    return pvp->memBase[num];
 	}
     }
@@ -1441,6 +1445,9 @@ getValidBIOSBase(PCITAG tag, int num)
     
     xf86FreeResList(avoid);
     xf86FreeResList(m);
+    xf86MsgVerb(X_INFO,5,"GetVaildBIOSBase for %x:%x:%x: BIOSbase 0x%lx\n",
+		pvp->bus,pvp->device,pvp->func, 
+		(memType)M2B(TAG(pvp),range.rBase));
     return M2B(TAG(pvp),range.rBase);
 }
 
@@ -2360,6 +2367,7 @@ xf86ClaimPciSlot(int bus, int device, int func, DriverPtr drvp,
 
 	/* in case bios is enabled disable it */
 	disablePciBios(pciTag(bus,device,func));
+	pciSlotClaimed = TRUE;
 	
  	return num;
     } else

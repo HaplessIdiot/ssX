@@ -36,7 +36,13 @@ extern ScrnInfoPtr *xf86Screens;	/* List of pointers to ScrnInfoRecs */
 extern const unsigned char byte_reversed[256];
 extern PropertyPtr *xf86RegisteredPropertiesTable;
 extern ScrnInfoPtr xf86CurrentScreen;
-
+extern Bool pciSlotClaimed;
+extern Bool isaSlotClaimed;
+extern Bool sbusSlotClaimed;
+extern Bool fbSlotClaimed;
+#ifdef __sparc__
+extern Bool fbSlotClaimed;
+#endif
 #define XF86SCRNINFO(p) ((ScrnInfoPtr)((p)->devPrivates[xf86ScreenIndex].ptr))
 
 #define XF86FLIP_PIXELS() \
@@ -77,7 +83,9 @@ void xf86PrintResList(int verb, resPtr list);
 resPtr xf86AddRangesToList(resPtr list, resRange *pRange, int entityIndex);
 int xf86ClaimIsaSlot(DriverPtr drvp, int chipset, GDevPtr dev, Bool active);
 int xf86GetIsaInfoForScreen(int scrnIndex);
+int  xf86GetFbInfoForScreen(int scrnIndex);
 Bool xf86ParseIsaBusString(const char *busID);
+int xf86ClaimFbSlot(DriverPtr drvp, int chipset, GDevPtr dev, Bool active);
 void xf86EnableAccess(ScrnInfoPtr pScrn);
 void xf86SetCurrentAccess(Bool Enable, ScrnInfoPtr pScrn);
 Bool xf86IsPrimaryPci(pciVideoPtr pPci);
@@ -268,6 +276,10 @@ ScrnInfoPtr xf86ConfigIsaEntity(ScrnInfoPtr pScrn, int scrnFlag,
 				resList res, EntityProc init,
 				EntityProc enter, EntityProc leave,
 				pointer private); 
+ScrnInfoPtr xf86ConfigFbEntity(ScrnInfoPtr pScrn, int scrnFlag, 
+			       int entityIndex, EntityProc init, 
+			       EntityProc enter, EntityProc leave, 
+			       pointer private);
 /* Obsolete! don't use */
 Bool xf86ConfigActivePciEntity(ScrnInfoPtr pScrn,
 				int entityIndex,PciChipsets *p_chip,
@@ -288,6 +300,9 @@ void xf86ConfigIsaEntityInactive(EntityInfoPtr pEnt, IsaChipsets *i_chip,
 				 resList res, EntityProc init,
 				 EntityProc enter, EntityProc leave,
 				 pointer private);
+void xf86ConfigFbEntityInactive(EntityInfoPtr pEnt, EntityProc init, 
+				EntityProc enter, EntityProc leave, 
+				pointer private);
 Bool xf86IsScreenPrimary(int scrnIndex);
 int  xf86RegisterRootWindowProperty(int ScrnIndex, Atom	property, Atom type,
 				    int format, unsigned long len,

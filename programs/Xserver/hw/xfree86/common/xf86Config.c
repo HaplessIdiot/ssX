@@ -1679,19 +1679,23 @@ configMonitor(MonPtr monitorp, XF86ConfMonitorPtr conf_monitor)
      */
     while(modeslnk)
     {
-	/* We may want to reuse the monitor section */
-	if (!modeslnk->ml_modes) {
-	    modes = xf86findModes (modeslnk->ml_modes_str, 
-				   xf86configptr->conf_modes_lst);
-	    modeslnk->ml_modes = modes;
+        modes = xf86findModes (modeslnk->ml_modes_str, 
+			       xf86configptr->conf_modes_lst);
+	modeslnk->ml_modes = modes;
 	
 	    
-	    /* now add the modes found in the modes
-	       section to the list of modes for this
-	       monitor */
+	/* now add the modes found in the modes
+	   section to the list of modes for this
+	   monitor unless it has been added before
+	   because we are reusing the same section 
+	   for another screen */
+	if (xf86itemNotSublist(
+			       (GenericListPtr)conf_monitor->mon_modeline_lst,
+			       (GenericListPtr)modes->mon_modeline_lst)) {
 	    conf_monitor->mon_modeline_lst = (XF86ConfModeLinePtr)
-	    xf86addListItem((GenericListPtr)conf_monitor->mon_modeline_lst,
-			(GenericListPtr)modes->mon_modeline_lst);
+	        xf86addListItem(
+				(GenericListPtr)conf_monitor->mon_modeline_lst,
+				(GenericListPtr)modes->mon_modeline_lst);
 	}
 	modeslnk = modeslnk->list.next;
     }

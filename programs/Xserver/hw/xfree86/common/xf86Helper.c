@@ -2586,6 +2586,33 @@ xf86ConfigPciEntity(ScrnInfoPtr pScrn, int scrnFlag, int entityIndex,
     return pScrn;
 }
 
+ScrnInfoPtr
+xf86ConfigFbEntity(ScrnInfoPtr pScrn, int scrnFlag, int entityIndex,
+		   EntityProc init, EntityProc enter, EntityProc leave, 
+		   pointer private)
+{
+    EntityInfoPtr pEnt = xf86GetEntityInfo(entityIndex);
+    if (!pEnt) return pScrn;
+    
+    if (!(pEnt->location.type == BUS_NONE)) {
+	xfree(pEnt);
+	return pScrn;
+    }
+
+    if (!pEnt->active) {
+	xf86ConfigFbEntityInactive(pEnt, init,  enter, leave,  private);
+	return pScrn;
+    }
+
+    if (!pScrn)
+	pScrn = xf86AllocateScreen(pEnt->driver,scrnFlag); 
+    xf86AddEntityToScreen(pScrn,entityIndex);
+
+    xf86SetEntityFuncs(entityIndex,init,enter,leave,private);
+
+    return pScrn;
+}
+
 /*
  *
  *  OBSOLETE ! xf86ConfigActiveIsaEntity() and xf86ConfigActivePciEntity()
@@ -2700,6 +2727,17 @@ xf86ConfigIsaEntityInactive(EntityInfoPtr pEnt, IsaChipsets *i_chip,
     xf86ClaimFixedResources(res,pEnt->index);
     /* shared resources are only needed when entity is active: remove */
     xf86DeallocateResourcesForEntity(pEnt->index, ResShared);
+    xf86SetEntityFuncs(pEnt->index,init,enter,leave,private);
+}
+
+void
+xf86ConfigFbEntityInactive(EntityInfoPtr pEnt, EntityProc init, 
+			   EntityProc enter, EntityProc leave, pointer private)
+{
+    ScrnInfoPtr pScrn;
+
+    if ((pScrn = xf86FindScreenForEntity(pEnt->index)))
+	xf86RemoveEntityFromScreen(pScrn,pEnt->index);
     xf86SetEntityFuncs(pEnt->index,init,enter,leave,private);
 }
 

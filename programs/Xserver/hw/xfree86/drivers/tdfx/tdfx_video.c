@@ -122,14 +122,14 @@ void TDFXCloseVideo (ScreenPtr pScreen)
 }
 
 /* client libraries expect an encoding */
-static XF86VideoEncodingRec DummyEncoding[2] =
+static XF86VideoEncodingRec DummyEncoding[1] =
 {
   {   /* blit limit */
    0,
    "XV_IMAGE",
    1024, PIXMAP_CACHE_LINES,   /* Height is a limitation of pixmap space. */
    {1, 1}
- },
+ }
 };
 
 #define NUM_FORMATS_OVERLAY 3
@@ -173,6 +173,9 @@ TDFXSetupImageVideo(ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     XF86VideoAdaptorPtr adapt;
+    TDFXPtr pTDFX = TDFXPTR(pScrn);
+
+    DummyEncoding[0].height = pTDFX->pixmapCacheLines;
 
     adapt = TDFXAllocAdaptor(pScrn);
 
@@ -661,11 +664,12 @@ TDFXQueryImageAttributes(
 
     /* The Maximum size for 3dfx YUV planar space 
      * but our temporary buffer has to fit in the pixmap region which
-     * is the same width as the desktop and PIXMAP_CACHE_LINES pixels high.
+     * is the same width as the desktop and pTDFX->pixmapCacheLines 
+     * pixels high.
      */
     if(*w > 1024) *w = 1024;
     if (*w > pTDFX->stride) *w = pTDFX->stride;
-    if(*h > PIXMAP_CACHE_LINES) *h = PIXMAP_CACHE_LINES;
+    if(*h > pTDFX->pixmapCacheLines) *h = pTDFX->pixmapCacheLines;
 
 
 

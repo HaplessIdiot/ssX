@@ -106,8 +106,8 @@ extern xf86Int10InfoPtr Int10Current;
 int int_handler(xf86Int10InfoPtr pInt);
 
 /* helper_exec.c */
-void setup_int(xf86Int10InfoPtr pInt);
-void finish_int(xf86Int10InfoPtr);
+int setup_int(xf86Int10InfoPtr pInt);
+void finish_int(xf86Int10InfoPtr, int sig);
 CARD32 getIntVect(xf86Int10InfoPtr pInt,int num);
 int vm86_GP_fault(xf86Int10InfoPtr pInt);
 void pushw(xf86Int10InfoPtr pInt, CARD16 val);

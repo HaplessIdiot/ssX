@@ -25,6 +25,7 @@
 
 #include "xf86RAC.h"
 
+Bool isaSlotClaimed = FALSE;
 
 /*
  * If the slot requested is already in use, return FALSE.
@@ -55,6 +56,7 @@ xf86ClaimIsaSlot(DriverPtr drvp, int chipset, GDevPtr dev, Bool active)
 	    p->busAcc = pbap;
 	pbap = pbap->next;
     }
+    isaSlotClaimed = TRUE;
     return num;
 }
 

@@ -717,7 +717,6 @@ DoConfigure()
     	strncpy(homebuf,home,PATH_MAX-1);
     	homebuf[PATH_MAX-1] = '\0';
     	home = homebuf;
-	ErrorF("CONFIGFILE %s\n",configfile);
     	if (!(filename =
 	     (char *)ALLOCATE_LOCAL(strlen(home) + 
 	  			 strlen(configfile) + 3)))

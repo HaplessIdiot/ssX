@@ -29,6 +29,10 @@
 #include "xf86Pci.h"
 
 #include "cir.h"
+#include "alp.h"
+#include "lg.h"
+
+#include "vbe.h"
 
 /*
  * Forward definitions for the functions that make up the driver.
@@ -39,11 +43,6 @@
 static OptionInfoPtr	CIRAvailableOptions(int chipid, int busid);
 static void	CIRIdentify(int flags);
 static Bool	CIRProbe(DriverPtr drv, int flags);
-
-extern OptionInfoPtr	AlpAvailableOptions(int chipid);
-extern OptionInfoPtr	LgAvailableOptions(int chipid);
-extern ScrnInfoPtr AlpProbe(int entity);
-extern ScrnInfoPtr LgProbe(int entity);
 
 static Bool lg_loaded = FALSE;
 static Bool alp_loaded = FALSE;
@@ -392,4 +391,15 @@ CirUnmapMem(CirPtr pCir, int scrnIndex)
 	xf86UnMapVidMem(scrnIndex, (pointer)pCir->FbBase, pCir->FbMapSize);
 	pCir->FbBase = NULL;
 	return TRUE;
+}
+
+void
+cirProbeDDC(ScrnInfoPtr pScrn, int index)
+{
+    vbeInfoPtr pVbe;
+
+    if (xf86LoadSubModule(pScrn, "vbe")) {
+        pVbe = VBEInit(NULL,index);
+        ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
+    }
 }

@@ -301,6 +301,10 @@ typedef struct {
     Time		RenderTime;
     MGAPaletteInfo	palinfo[256];  /* G400 hardware bug workaround */
     FBLinearPtr		LinearScratch;
+    Bool                softbooted;
+#ifdef USEMGAHAL
+    Bool                HALLoaded;
+#endif
 } MGARec, *MGAPtr;
 
 #ifdef XF86DRI

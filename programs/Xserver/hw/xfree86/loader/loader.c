@@ -49,6 +49,8 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 
+#include "compiler.h"
+
 extern LOOKUP miLookupTab[];
 extern LOOKUP xfree86LookupTab[];
 extern LOOKUP dixLookupTab[];

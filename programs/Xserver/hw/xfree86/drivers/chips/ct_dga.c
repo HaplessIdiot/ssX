@@ -83,6 +83,8 @@ CHIPSDGAInit(ScreenPtr pScreen)
    int Bpp = pScrn->bitsPerPixel >> 3;
    int num = 0;
    Bool oneMore;
+   int imlines =  (pScrn->videoRam * 1024) /
+      (pScrn->displayWidth * (pScrn->bitsPerPixel >> 3));
 
    pMode = firstMode = pScrn->modes;
 
@@ -133,7 +135,7 @@ SECOND_PASS:
 	if(oneMore) { /* first one is narrow width */
 	    currentMode->bytesPerScanline = ((pMode->HDisplay * Bpp) + 3) & ~3L;
 	    currentMode->imageWidth = pMode->HDisplay;
-	    currentMode->imageHeight =  pMode->VDisplay;
+	    currentMode->imageHeight =  imlines;
 	    currentMode->pixmapWidth = currentMode->imageWidth;
 	    currentMode->pixmapHeight = currentMode->imageHeight;
 	    currentMode->maxViewportX = currentMode->imageWidth - 
@@ -147,7 +149,7 @@ SECOND_PASS:
 	    currentMode->bytesPerScanline = 
 			((pScrn->displayWidth * Bpp) + 3) & ~3L;
 	    currentMode->imageWidth = pScrn->displayWidth;
-	    currentMode->imageHeight =  pMode->VDisplay;
+	    currentMode->imageHeight =  imlines;
 	    currentMode->pixmapWidth = currentMode->imageWidth;
 	    currentMode->pixmapHeight = currentMode->imageHeight;
 	    currentMode->maxViewportX = currentMode->imageWidth - 
@@ -187,17 +189,18 @@ CHIPS_SetMode(
 
    CHIPSPtr cPtr = CHIPSPTR(pScrn);
 
-   if(!pMode) { /* restore the original mode */
+   if (!pMode) { /* restore the original mode */
 	/* put the ScreenParameters back */
-	
-	pScrn->displayWidth = OldDisplayWidth[index];
-	
-        CHIPSSwitchMode(index, pScrn->currentMode, 0);
-	cPtr->DGAactive = FALSE;
+       if (cPtr->DGAactive) {
+           pScrn->displayWidth = OldDisplayWidth[index];
+	   pScrn->EnterVT(pScrn->scrnIndex,0);
+
+	   cPtr->DGAactive = FALSE;
+       }
    } else {
 	if(!cPtr->DGAactive) {  /* save the old parameters */
 	    OldDisplayWidth[index] = pScrn->displayWidth;
-
+	    pScrn->LeaveVT(pScrn->scrnIndex,0);
 	    cPtr->DGAactive = TRUE;
 	}
 

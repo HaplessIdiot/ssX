@@ -200,9 +200,9 @@ typedef struct {
     t_tseng_bus Bustype;	       /* W32 bus type (currently used for lin mem on W32i) */
     t_tseng_type ChipType;	       /* "Chipset" causes confusion with pScrn->chipset */
     int ChipRev;
-    CARD32 LinFbAddress;
+    memType LinFbAddress;
     unsigned char *FbBase;
-    CARD32 LinFbAddressMask;
+    memType LinFbAddressMask;
     long FbMapSize;
     miBankInfoRec BankInfo;
     CARD32 IOAddress;		       /* PCI config space base address for ET6000 */
@@ -239,6 +239,10 @@ typedef struct {
     int tseng_old_dir;
     int old_x;
     int old_y;
+    int DGAnumModes;
+    Bool DGAactive;
+    DGAModePtr DGAModes;
+    int	DGAViewportStatus;
 } TsengRec, *TsengPtr;
 
 #define TsengPTR(p) ((TsengPtr)((p)->driverPrivate))
@@ -291,6 +295,18 @@ typedef struct {
 
 #define ET6000_programmable_clock \
         ( pScrn->progClock && (pTseng->ClockChip == CLOCKCHIP_ET6000) )
+
+
+/*
+ * tseng_driver.c for DGA
+ */
+Bool TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
+void TsengAdjustFrame(int scrnIndex, int x, int y, int flags);
+
+/*
+ * tseng_dga.c
+ */
+Bool TsengDGAInit(ScreenPtr pScreen);
 
 /*
  * From tseng_bank.c
