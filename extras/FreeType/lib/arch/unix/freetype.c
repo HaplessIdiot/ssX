@@ -1,4 +1,6 @@
-/* This file is part of the FreeType project */
+/* This file is an Xserver-specific version */
+
+/* $XFree86$ */
 
 /* Single object library component for Unix */
 
@@ -13,14 +15,17 @@
 #include "ttobjs.c"
 #include "ttraster.c"
 
-/* The Makefile creates proper links to following three files */
-
-#include "file.c"
-#include "memory.c"
-#include "mutex.c"
+#ifdef HAVE_MMAP
+#include "ttmmap.c"
+#else
+#include "ttfile.c"
+#endif
+#include "ttmemory.c"
+#include "ttmutex.c"
 
 #ifdef TT_CONFIG_OPTION_EXTEND_ENGINE
 #include "ttextend.c"
 #endif
 
 /* end of freetype.c */
+

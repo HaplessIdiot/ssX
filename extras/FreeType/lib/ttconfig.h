@@ -1,3 +1,7 @@
+/* This is an Xserver-specific version */
+
+/* $XFree86$ */
+
 /*******************************************************************
  *
  *  ttconfig.h                                                1.0
@@ -44,38 +48,16 @@
 /* Definition of various integer sizes. These types are used by ttcalc    */
 /* and ttinterp (for the 64-bit integers) only..                          */
 
-#if SIZEOF_INT == 4
+typedef INT32           TT_Int32;
+typedef CARD32          TT_Word32;
 
-  typedef signed int      TT_Int32;
-  typedef unsigned int    TT_Word32;
 
-#elif SIZEOF_LONG == 4
-
-  typedef signed long     TT_Int32;
-  typedef unsigned long   TT_Word32;
-
-#else
-#error "no 32bit type found"
-#endif
-
-#if SIZEOF_LONG == 8
 
 /* LONG64 must be defined when a 64-bit type is available */
 /* INT64 must then be defined to this type..              */
+#ifdef WORD64
 #define LONG64
 #define INT64   long
-
-#else
-
-/* GCC provides the non-ANSI 'long long' 64-bit type.  You can activate    */
-/* by defining the TT_USE_LONG_LONG macro in 'ft_conf.h'.  Note that this  */
-/* will produce many -ansi warnings during library compilation.            */
-#ifdef TT_USE_LONG_LONG
-
-#define LONG64
-#define INT64   long long
-
-#endif /* TT_USE_LONG_LONG */
 #endif
 
 
