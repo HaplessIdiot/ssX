@@ -55,6 +55,7 @@
 #include "extensions/dpms.h"
 #endif
 
+static OptionInfoPtr CYRIXAvailableOptions(int chip, int busid);
 static void	CYRIXIdentify(int flags);
 static Bool	CYRIXProbe(DriverPtr drv, int flags);
 static Bool	CYRIXPreInit(ScrnInfoPtr pScrn, int flags);
@@ -112,6 +113,7 @@ DriverRec CYRIX = {
     "accelerated driver for Cyrix integrated processors",
     CYRIXIdentify,
     CYRIXProbe,
+    CYRIXAvailableOptions,
     NULL,
     0
 };
@@ -299,6 +301,13 @@ CYRIXIdentify(int flags)
     xf86PrintChipsets(CYRIX_NAME, "driver for Cyrix MediaGX Processors", CYRIXChipsets);
 }
 
+static
+OptionInfoPtr
+CYRIXAvailableOptions(int chip, int busid)
+{
+    return CYRIXOptions;
+}
+
 /* Mandatory */
 static Bool
 CYRIXProbe(DriverPtr drv, int flags)
@@ -308,6 +317,8 @@ CYRIXProbe(DriverPtr drv, int flags)
     GDevPtr *devSections;
     int device_step, device_revision;
     ScrnInfoPtr pScrn;
+
+    if (flags & PROBE_DETECT) return FALSE;
 
     /*
      * The aim here is to find all cards that this driver can handle,
