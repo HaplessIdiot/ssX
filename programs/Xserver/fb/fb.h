@@ -1,5 +1,5 @@
 /*
- * $Id: fb.h,v 1.8 2000/02/14 19:20:26 dawes Exp $
+ * $Id: fb.h,v 1.9 2000/02/16 17:56:32 alanh Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -1274,15 +1274,6 @@ fbImageGlyphBlt (DrawablePtr	pDrawable,
 		 unsigned int	nglyph,
 		 CharInfoPtr	*ppci,
 		 pointer	pglyphBase);
-
-void
-fbGlyph24 (FbBits   *dstBits,
-	   FbStride dstStride,
-	   int	    dstBpp,
-	   FbStip   *stipple,
-	   FbBits   fg,
-	   int	    x,
-	   int	    height);
 
 /*
  * fbimage.c
