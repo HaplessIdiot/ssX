@@ -42,6 +42,9 @@
 #include "pswpriv.h"
 #include "pswparser.h"
 
+#ifdef FLEX_SCANNER
+int yylineno = 1;
+#endif
 
 extern int outlineno;		/* output line number */
 

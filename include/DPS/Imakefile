@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/include/DPS/Imakefile,v 1.1 2000/02/13 00:12:40 dawes Exp $
 
 HEADERS = \
 	XDPS.h\
@@ -28,6 +28,5 @@ HEADERS = \
 
 BuildIncludes($(HEADERS),DPS,..)
 
-MakeDirectories(install,$(INCDIR)/DPS)
+InstallMultipleFlags($(HEADERS),$(INCDIR)/DPS,$(INSTINCFLAGS))
 
-InstallMultiple($(HEADERS),$(INCDIR)/DPS)

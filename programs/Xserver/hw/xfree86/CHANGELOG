@@ -1,3 +1,7 @@
+XFree86 3.9.17Z (14 February 2000)
+3765. Change CppProgram to /usr/bin/cpp for FreeBSD.
+3764. DPS build fixes (#3686, Juliusz Chroboczek, David Dawes).
+3763. Back out the pMga->PointerMoved change.
 3762. Fix DRI/DRM code to build tdfx driver and turn off building MGA DRI
       support until the next code merge (Kevin Martin).
 3761. Attempt to first read the PLL parameters in the BIOS from PCI space,
@@ -9659,4 +9663,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1003 2000/02/13 19:33:39 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1004 2000/02/14 06:27:16 martin Exp $

@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/lib/dpstk/Imakefile,v 1.1 2000/02/13 00:13:35 dawes Exp $
 
 #define DoNormalLib NormalLibDpsTk
 #define DoSharedLib SharedLibDpsTk
@@ -11,8 +11,8 @@ XCOMM $XFree86$
         PSWRAP = $(TOP)/config/pswrap/pswrap
 
 #if HasMotif
-MOTIFSRCS = FSBwraps.psw FontSample.c FontSB.c FontCreato.c \
-	CSBwraps.psw ColorSB.c DSWwraps.psw DPSScrollW.c
+MOTIFSRCS = FSBwraps.c FontSample.c FontSB.c FontCreato.c \
+	CSBwraps.c ColorSB.c DSWwraps.c DPSScrollW.c
 MOTIFOBJS = FSBwraps.o FontSample.o FontSB.o FontCreato.o \
 	CSBwraps.o ColorSB.o DSWwraps.o DPSScrollW.o
 #endif
@@ -33,26 +33,24 @@ DERIVED_FILES = FSBwraps.c FSBwraps.h XDPSpwraps.c XDPSpwraps.h \
 	XDPSswraps.c XDPSswraps.h CSBwraps.c CSBwraps.h \
 	DSWwraps.c DSWwraps.h
 
-SRCS =  XDPSpwraps.psw XDPSswraps.psw XDPSshare.c XDPSpreview.c \
+SRCS =  XDPSpwraps.c XDPSswraps.c XDPSshare.c XDPSpreview.c \
 	XDPSuserpath.c
 
 OBJS = 	XDPSpwraps.o XDPSswraps.o XDPSshare.o XDPSpreview.o \
 	XDPSuserpath.o
 
-.SUFFIXES: .psw
-
-.psw.o :
-	$(PSWRAP) -o $*.c -h $*.h $<
-	_DebuggedObjCompile($(_NOOP_))
-	_ProfiledObjCompile($(_NOOP_))
-	_NormalObjCompile($(_NOOP_))
-	_ExtraObjCompile($(_NOOP_))
-	_SharedObjCompile($(_NOOP_))
-	$(RM) $*.c
-
 #include <Library.tmpl>
 
+.SUFFIXES: .psw
+
+.psw.c :
+	RunProgram(PSWRAP,-o $*.c -h $*.h $<)
+
+includes:: $(SRCS)
+
 #if HasMotif
+
+includes:: $(MOTIFSRCS)
 
 #if DoSharedLib
 SharedLibraryTarget(dpstkXm,$(SODPSREV),$(MOTIFOBJS),.,.)
@@ -81,3 +79,6 @@ InstallAppDefaults(ColorSelect)
 
 clean ::
 	${RM} $(DERIVED_FILES) $(MOTIFOBJS)
+
+DependTarget()
+
