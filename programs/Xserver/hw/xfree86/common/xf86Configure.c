@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.61 2001/08/17 13:27:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.62 2001/08/18 12:31:54 dawes Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -700,6 +700,11 @@ static XF86ConfMonitorPtr
 configureDDCMonitorSection (int screennum)
 {
     int i = 0;
+    int len, mon_width, mon_height;
+#define displaySizeMaxLen 80
+    char displaySize_string[displaySizeMaxLen];
+    int displaySizeLen;
+
     parsePrologue (XF86ConfMonitorPtr, XF86ConfMonitorRec)
 
     ptr->mon_identifier = xf86confmalloc(19);
@@ -707,6 +712,34 @@ configureDDCMonitorSection (int screennum)
     ptr->mon_vendor = strdup(ConfiguredMonitor->vendor.name);
     ptr->mon_modelname = xf86confmalloc(12);
     sprintf(ptr->mon_modelname, "%x", ConfiguredMonitor->vendor.prod_id);
+
+    /* features in centimetres, we want millimetres */
+    mon_width  = 10 * ConfiguredMonitor->features.hsize ;
+    mon_height = 10 * ConfiguredMonitor->features.vsize ;
+
+#ifdef CONFIGURE_DISPLAYSIZE
+    ptr->mon_width  = mon_width;
+    ptr->mon_height = mon_height;
+#else
+    if (mon_width && mon_height) {
+      /* when values available add DisplaySize option AS A COMMENT */
+
+      displaySizeLen = snprintf(displaySize_string, displaySizeMaxLen,
+				"\t#DisplaySize\t%5d %5d\t# mm\n",
+				mon_width, mon_height);
+
+      if (displaySizeLen>0 && displaySizeLen<displaySizeMaxLen) {
+	if (ptr->mon_comment) {
+	  len = strlen(ptr->mon_comment);
+	} else {
+	  len = 0;
+	}
+	if (ptr->mon_comment = xrealloc(ptr->mon_comment, len+strlen(displaySize_string)) ) {
+	  strcpy(ptr->mon_comment + len, displaySize_string);
+	}
+      }
+    }
+#endif /* def CONFIGURE_DISPLAYSIZE */
 
     for (i=0;i<4;i++) {
 	switch (ConfiguredMonitor->det_mon[i].type) {
