@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/dps/Imakefile,v 1.14 2002/05/31 18:45:48 dawes Exp $
+XCOMM $XFree86: xc/lib/dps/Imakefile,v 1.15 2002/06/06 01:40:21 dawes Exp $
 
 #define DoNormalLib NormalLibDps
 #define DoSharedLib SharedLibDps
@@ -201,7 +201,7 @@ all:: $(HEADERS)
 
 includes:: $(DPSOPSCFILES) $(PSOPSCFILES) $(HEADERS)
 
-$(DPSOPSCFILES) $(PSOPSCFILES): ProgramTargetName($(PSWRAP))
+$(DPSOPSCFILES) $(PSOPSCFILES): HostProgramTargetName($(PSWRAP))
 
 SRCS = \
 	${COMMONSOURCEFILES} \
@@ -224,13 +224,13 @@ DERIVED_FILES = $(DPSOPSHEADERFILES) $(PSOPSHEADERFILES) \
 
 .SUFFIXES: .psw .h
 
-.psw.c : ProgramTargetName($(PSWRAP))
+.psw.c : HostProgramTargetName($(PSWRAP))
 	RunProgram(PSWRAP,-a -o $*.c -h $*.h $<)
 
-.psw.h : ProgramTargetName($(PSWRAP))
+.psw.h : HostProgramTargetName($(PSWRAP))
 	RunProgram(PSWRAP,-a -h $*.h $< > /dev/null)
 
-ProgramTargetName($(PSWRAP)):
+HostProgramTargetName($(PSWRAP)):
 	@echo "checking $@ over in $(PSWRAPSRC) first..."; \
 	cd $(PSWRAPSRC) && $(MAKE); \
 	echo "okay, continuing in $(CURRENT_DIR)"
