@@ -80,8 +80,10 @@ BOOLEAN SiSSetMode(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,
 #pragma alloc_text(PAGE,SiSInit)
 #endif
 
+#ifndef LINUX_XF86
 static ULONG GetDRAMSize(SiS_Private *SiS_Pr,
                          PSIS_HW_DEVICE_INFO HwDeviceExtension);
+#endif
 
 static void
 InitCommonPointer(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
@@ -2631,9 +2633,11 @@ SiSSetMode(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT Mod
    SiS_SetHiVision(SiS_Pr,BaseAddr,HwDeviceExtension);
    SiS_GetLCDResInfo(SiS_Pr,ROMAddr,ModeNo,ModeIdIndex,HwDeviceExtension);
 
-   /* 3. Check memory size */
+#ifndef LINUX_XF86
+   /* 3. Check memory size (Kernel framebuffer driver only) */
    temp = SiS_CheckMemorySize(SiS_Pr,ROMAddr,HwDeviceExtension,ModeNo,ModeIdIndex);
    if(!temp) return(0);
+#endif
 
    if(HwDeviceExtension->jChipType >= SIS_315H) {
       if(SiS_GetReg1(SiS_Pr->SiS_P3c4,0x17) & 0x08)  {
@@ -3088,6 +3092,7 @@ SiS_SearchVBModeID(SiS_Private *SiS_Pr, UCHAR *ROMAddr, USHORT *ModeNo)
    return ((BOOLEAN)ModeIdIndex);
 }
 
+#ifndef LINUX_XF86
 BOOLEAN
 SiS_CheckMemorySize(SiS_Private *SiS_Pr, UCHAR *ROMAddr,PSIS_HW_DEVICE_INFO HwDeviceExtension,
                     USHORT ModeNo,USHORT ModeIdIndex)
@@ -3115,6 +3120,7 @@ SiS_CheckMemorySize(SiS_Private *SiS_Pr, UCHAR *ROMAddr,PSIS_HW_DEVICE_INFO HwDe
   if(temp < memorysize) return(FALSE);
   else return(TRUE);
 }
+#endif
 
 UCHAR
 SiS_GetModePtr(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex)
@@ -4140,6 +4146,7 @@ SiS_WriteDAC(SiS_Private *SiS_Pr, USHORT DACData, USHORT shiftflag,
   SiS_SetReg3(DACData,(USHORT)bl);
 }
 
+#ifndef LINUX_XF86
 static ULONG
 GetDRAMSize(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
 {
@@ -4203,6 +4210,7 @@ GetDRAMSize(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
 
   return AdapterMemorySize;
 }
+#endif
 
 #ifndef LINUX_XF86
 void
@@ -4530,46 +4538,6 @@ SiS_DoCalcDelay(SiS_Private *SiS_Pr, USHORT MCLK, USHORT VCLK, USHORT colordepth
   if(temp) longtemp++;
   return((USHORT)longtemp);
 }
-
-#if 0  /* TW: Old fragment, unused */
-USHORT
-SiS_CalcDelay(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT key)
-{
-  USHORT data,data2,temp0,temp1;
-  UCHAR   ThLowA[]=   {61,3,52,5,68,7,100,11,
-                       43,3,42,5,54,7, 78,11,
-                       34,3,37,5,47,7, 67,11};
-
-  UCHAR   ThLowB[]=   {81,4,72,6,88,8,120,12,
-                       55,4,54,6,66,8, 90,12,
-                       42,4,45,6,55,8, 75,12};
-
-  UCHAR   ThTiming[]= {1,2,2,3,0,1,1,2};
-
-  data=SiS_GetReg1(SiS_Pr->SiS_P3c4,0x16);
-  data=data>>6;
-  data2=SiS_GetReg1(SiS_Pr->SiS_P3c4,0x14);
-  data2=(data2>>4)&0x0C;
-  data=data|data2;
-  data=data<1;
-  if(key==0) {
-    temp0=(USHORT)ThLowA[data];
-    temp1=(USHORT)ThLowA[data+1];
-  } else {
-    temp0=(USHORT)ThLowB[data];
-    temp1=(USHORT)ThLowB[data+1];
-  }
-
-  data2=0;
-  data=SiS_GetReg1(SiS_Pr->SiS_P3c4,0x18);
-  if(data&0x02) data2=data2|0x01;
-  if(data&0x20) data2=data2|0x02;
-  if(data&0x40) data2=data2|0x04;
-
-  data=temp1*ThTiming[data2]+temp0;
-  return(data);
-}
-#endif
 
 void
 SiS_SetCRT1FIFO_630(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT ModeNo,

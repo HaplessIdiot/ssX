@@ -27,8 +27,8 @@
  *		- driver entirely rewritten, only basic structure taken from old code
  *		  (except sis_dri.c, sis_shadow.c and parts of sis_dga.c;
  *		  these were taken over)
- *              - 315 series (315/550/650/651/M650/652/M652/740) support
- *		- Xabre series (330/660/M660/760/M760) support
+ *              - 315 series (315/550/650/651/M650/661FX/M661FX/740/741) support
+ *		- Xabre series (330) support
  *              - new mode switching code for 300, 315 and 330 series
  *              - dual head support on 300, 315 and 330 series
  * 		- merged-framebuffer support on 300, 315 and 330 series
@@ -296,7 +296,7 @@ static const char *vgahwSymbols[] = {
     NULL
 };
 
-#if defined(XFree86LOADER) || (XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,10,0))
+#if defined(XFree86LOADER)
 static const char *miscfbSymbols[] = {
     "xf1bppScreenInit",
     "xf4bppScreenInit",
@@ -2437,12 +2437,12 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     pSiS->sisfbscalelcd = -1;
     pSiS->sisfbspecialtiming = CUT_NONE;
     pSiS->OldMode = 0;
+    pSiS->sisfbfound = FALSE;
 
     if(pSiS->VGAEngine == SIS_300_VGA || pSiS->VGAEngine == SIS_315_VGA) {
 
        int fd, i;
        sisfb_info mysisfbinfo;
-       BOOL found = FALSE;
        char name[10];
        CARD32 sisfbversion;
 
@@ -2467,11 +2467,11 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		        if((mysisfbinfo.sisfb_pcibus == pSiS->PciInfo->bus) &&
 		           (mysisfbinfo.sisfb_pcislot == pSiS->PciInfo->device) &&
 		           (mysisfbinfo.sisfb_pcifunc == pSiS->PciInfo->func) ) {
-	         	    found = TRUE;
+	         	    pSiS->sisfbfound = TRUE;
 		        }
-		      } else found = TRUE;
+		      } else pSiS->sisfbfound = TRUE;
 
-		      if(found) {
+		      if(pSiS->sisfbfound) {
 		         xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 	      	             "%s: SiS kernel fb driver (sisfb) %d.%d.%d detected (PCI: %02d:%02d.%d)\n",
 		             	&name[5],
@@ -2527,8 +2527,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	        close (fd);
              }
 	     i++;
-          } while((i <= 7) && (!found));
-	  if(!found) xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "sisfb not found\n");
+          } while((i <= 7) && (!pSiS->sisfbfound));
+	  if(!pSiS->sisfbfound) xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "sisfb not found\n");
        }
     }
 
@@ -2688,11 +2688,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
 
-#if (XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(4,3,99,11,0))
     if(!xf86SetDepthBpp(pScrn, 0, 0, 0, pix24flags)) {
-#else
-    if(!xf86SetDepthBpp(pScrn, 8, 8, 8, pix24flags)) {
-#endif
         xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 	    	"xf86SetDepthBpp() error\n");
 #ifdef SISDUALHEAD
@@ -3511,33 +3507,42 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        } while(mychswtable[i].subsysVendor != 0);
     }
 
-    if((pSiS->sishw_ext.UseROM) && (pSiS->SiS_Pr->SiS_CustomT == CUT_NONE)) {
+    if(pSiS->SiS_Pr->SiS_CustomT == CUT_NONE) {
        int i = 0, j;
-       unsigned short bversptr = pSiS->BIOS[0x16] | (pSiS->BIOS[0x17] << 8);
+       unsigned short bversptr = 0;
        BOOLEAN footprint;
        unsigned long chksum = 0;
 
-       for(i=0; i<32768; i++) chksum += pSiS->BIOS[i];
+       if(pSiS->sishw_ext.UseROM) {
+          bversptr = pSiS->BIOS[0x16] | (pSiS->BIOS[0x17] << 8);
+          for(i=0; i<32768; i++) chksum += pSiS->BIOS[i];
+       }
 
        i = 0;
        do {
 	  if( (mycustomttable[i].chipID == pSiS->sishw_ext.jChipType)                 &&
 	      ((!strlen(mycustomttable[i].biosversion)) ||
+	       (pSiS->sishw_ext.UseROM &&
 	       (!strncmp(mycustomttable[i].biosversion, (char *)&pSiS->BIOS[bversptr],
-	                strlen(mycustomttable[i].biosversion))))                      &&
+	                strlen(mycustomttable[i].biosversion)))))                     &&
 	      ((!strlen(mycustomttable[i].biosdate)) ||
+	       (pSiS->sishw_ext.UseROM &&
 	       (!strncmp(mycustomttable[i].biosdate, (char *)&pSiS->BIOS[0x2c],
-	                strlen(mycustomttable[i].biosdate))))			      &&
+	                strlen(mycustomttable[i].biosdate)))))			      &&
 	      ((!mycustomttable[i].bioschksum) ||
-	       (mycustomttable[i].bioschksum == chksum))			      &&
+	       (pSiS->sishw_ext.UseROM &&
+	       (mycustomttable[i].bioschksum == chksum)))			      &&
 	      (mycustomttable[i].pcisubsysvendor == pSiS->PciInfo->subsysVendor)      &&
 	      (mycustomttable[i].pcisubsyscard == pSiS->PciInfo->subsysCard) ) {
 	     footprint = TRUE;
 	     for(j=0; j<5; j++) {
-	        if(mycustomttable[i].biosFootprintAddr[j]) {
-	           if(pSiS->BIOS[mycustomttable[i].biosFootprintAddr[j]] != mycustomttable[i].biosFootprintData[j])
-		      footprint = FALSE;
-		}
+	        if(pSiS->sishw_ext.UseROM) {
+	           if(mycustomttable[i].biosFootprintAddr[j]) {
+	              if(pSiS->BIOS[mycustomttable[i].biosFootprintAddr[j]] !=
+		      				mycustomttable[i].biosFootprintData[j])
+		         footprint = FALSE;
+		   }
+	        }
 	     }
 	     if(footprint) {
 	        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
@@ -5809,7 +5814,7 @@ SISRestore(ScrnInfoPtr pScrn)
            xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
 	         "Restoring by setting old mode 0x%02x\n", pSiS->OldMode);
 		 
-           if((pSiS->OldMode <= 0x13) && (pSiS->pVbe)) {
+           if(((pSiS->OldMode <= 0x13) || (!pSiS->sisfbfound)) && (pSiS->pVbe)) {
               if(VBESetVBEMode(pSiS->pVbe, pSiS->OldMode, NULL) == TRUE) {
 	         SISSpecialRestore(pScrn);
 		 SiS_GetSetModeID(pScrn,pSiS->OldMode);

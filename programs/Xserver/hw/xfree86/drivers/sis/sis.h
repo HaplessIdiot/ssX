@@ -36,7 +36,7 @@
 
 #define SISDRIVERVERSIONYEAR    3
 #define SISDRIVERVERSIONMONTH   8
-#define SISDRIVERVERSIONDAY     23
+#define SISDRIVERVERSIONDAY     26
 #define SISDRIVERREVISION       1
 
 #define SISDRIVERIVERSION (SISDRIVERVERSIONYEAR << 16) | (SISDRIVERVERSIONMONTH << 8) \
@@ -594,6 +594,7 @@ typedef struct {
     CARD32              AccelFlags;
     Bool                ClipEnabled;
     Bool                DoColorExpand;
+    Bool                ColorExpandBusy;
     SISRegRec           SavedReg;
     SISRegRec           ModeReg;
     xf86CursorInfoPtr   CursorInfoPtr;
@@ -614,7 +615,7 @@ typedef struct {
     void        	(*LoadCRT2Palette)(ScrnInfoPtr pScrn, int numColors,
                 		int *indicies, LOCO *colors, VisualPtr pVisual);
 
-    int       cmdQueueLen;			/* Current cmdQueueLength (for 2D and 3D) */
+    int       		cmdQueueLen;		/* Current cmdQueueLength (for 2D and 3D) */
     unsigned long	cmdQueueLenMax;
     unsigned long	cmdQueueLenMin;
     unsigned long	*cmdQueueBase;
@@ -655,6 +656,7 @@ typedef struct {
     int 		ColorExpandBufferCountMask;
     unsigned char 	*ColorExpandBufferAddr[32];
     int 		ColorExpandBufferScreenOffset[32];
+    long       		ColorExpandBase;
     int 		ImageWriteBufferSize;
     unsigned char 	*ImageWriteBufferAddr;
 
@@ -751,6 +753,7 @@ typedef struct {
     int			sis6326yfilterstrong;
     int			sis6326tvplug;
     int			sis6326fscadjust;
+    BOOL		sisfbfound;
     BOOL		donttrustpdc;		/* Don't trust the detected PDC */
     unsigned char	sisfbpdc;
     unsigned char       sisfblcda;
