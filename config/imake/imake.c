@@ -7,7 +7,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.49 2002/04/04 14:05:34 eich Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.50 2002/04/05 18:23:40 tsi Exp $ */
 
 /*
  * 
@@ -1941,14 +1941,14 @@ KludgeOutputLine(char **pline)
 		if (inline_syntax) 
 #endif
 #if defined CROSSCOMPILE || defined INLINE_SYNTAX
-		  {
+		{
 		    if (*p == '<' && p[1] == '<') { /* inline file close */
 			InInline--;
 			InRule = TRUE;
 			break;
 		    }
-#endif
 		}
+#endif
 		/*
 		 * The following cases should not be treated as beginning of 
 		 * rules:
@@ -1991,7 +1991,7 @@ KludgeOutputLine(char **pline)
 			if (remove_cpp_leadspace) 
 #endif
 #if defined CROSSCOMPILE || defined REMOVE_CPP_LEADSPACE
-			  {
+			{
 			    if (!InRule && **pline == ' ') {
 				while (**pline == ' ')
 				    (*pline)++;
