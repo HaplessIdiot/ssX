@@ -1,3 +1,6 @@
+XFree86 3.9Nu (xx January 1999)
+2136. Import xpm version 3.4k.
+
 XFree86 3.9Nt (11 January 1999)
 2135. Fix 8+32 rendering bugs (#2374, Mark Vojkovich).
 2134. Update vgaHWddc1SetSpeed() to select the 25 MHz clock (#2373,
@@ -7050,4 +7053,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.656 1999/01/11 05:13:24 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.657 1999/01/11 12:09:35 dawes Exp $

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.33 1999/01/11 05:13:05 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.34 1999/01/11 05:37:46 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1699,10 +1699,22 @@ ProjectUnsharedLibReferences(FONTSTUB,fntstubs,$(FONTSUBLIBSRC),XBuildLibDir)
          DEPFONTLIB = $(DEPXFONTLIB) $(DEPFONTSTUBLIB)
             FONTLIB = $(XFONTLIB) $(FONTSTUBLIB)
 
+#ifndef SharedLibXpm
+#define SharedLibXpm HasSharedLibraries
+#endif
+#ifndef NormalLibXpm
+#define NormalLibXpm (!SharedLibXpm | ForceNormalLib)
+#endif
+#ifndef DebugLibXpm
+#define DebugLibXpm		NO
+#endif
+#ifndef ProfileLibXpm
+#define ProfileLibXpm		NO
+#endif
           XPMLIBSRC = $(LIBSRC)/Xpm
 #if SharedLibXpm
 #ifndef SharedXpmRev
-#define SharedXpmRev 4.8
+#define SharedXpmRev 4.11
 #endif
 SharedLibReferences(XPM,Xpm,$(XPMLIBSRC),SOXPMREV,SharedXpmRev)
 #else
