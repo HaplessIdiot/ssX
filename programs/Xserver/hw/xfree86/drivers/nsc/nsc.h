@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc.h,v 1.2 2002/12/11 22:50:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc.h,v 1.3 2003/01/14 09:34:30 alanh Exp $ */
 /*
  * $Workfile: nsc.h $
- * $Revision: 1.3 $
- * $Author: alanh $
+ * $Revision: 1.4 $
+ * $Author: tsi $
  *
  * File Contents: This file contains the data structures Geode driver.
  *
@@ -296,7 +296,7 @@ typedef struct
    ScreenBlockHandlerProcPtr BlockHandler;	/* needed for video */
    int DetectedChipSet;
    int Chipset;
-   int FBLinearAddr;
+   unsigned long FBLinearAddr;
    unsigned char *FBBase;
    unsigned long FBSize;
    unsigned int cpu_reg_size;
