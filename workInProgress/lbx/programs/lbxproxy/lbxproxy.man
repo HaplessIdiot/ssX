@@ -1,0 +1,125 @@
+.\" $XFree86$
+.\" Copyright (c) 1984 - 1991, 1993, 1994  X Consortium
+.\" 
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\" 
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\" 
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\" 
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.TH lbxproxy 1 "Release 6"  "X Version 11"
+.SH NAME
+lbxproxy \- LBX proxy server for the X Window System
+.SH SYNOPSIS
+.B lbxproxy
+[:displaynumber] [option ...]
+.SH NOTE
+This manual page is not definitive or ``official''.  It is derived from
+information contained in the \fBREADME\fP file in the lbx source.
+.SH DESCRIPTION
+.I lbxproxy
+is the Low Bandwidth X pseudo-server.  It runs on the remote side of low
+bandwidth, high-latency connections (e.g., serial lines and wide-area
+network).  It accepts connections from X clients at the remote end and
+forwards them to an X server at the local end.  The LBX protocol used for
+the low bandwidth connection includes compression and optimisations
+designed to make effective use of the bandwidth availble.  The current
+version of LBX is \fBNOT\fP a standard of the X Consortium, and will
+\fBNOT\fP be compatible with the final version.  The current version
+should be treated as an ``alpha'' or ``prototype'' for people interested
+in experimenting with it.
+.SH OPTIONS
+.I lbxproxy
+accepts the following options
+.TP 8
+.B :\fIdisplaynumber\fP
+.I lbxproxy
+runs as the given \fIdisplaynumber\fP, which by default is 0.  A value
+different from 0 should be used if the host running
+.I lbxproxy
+has a local X display.
+If multiple 
+.I lbxproxy
+servers or other X servers are to run simultaneously on a host, each must have
+a unique display number.  See the DISPLAY
+NAMES section of the \fIX(1)\fP manual page to learn how to specify
+which display number clients should try to use.
+.TP 8
+.B \-ac
+disables host-based access control mechanisms.  Enables access by any host,
+and permits any host to modify the access control list.
+Use with extreme caution.
+This option exists primarily for running test suites remotely.
+.TP 8
+.B -display \fIdisplay-number\fP
+sets the name of the X server display that
+.I lbxproxy
+connects to.
+.TP 8
+.B \-help
+prints a usage message.
+.TP 8
+.B \-I
+causes all remaining command line arguments to be ignored.
+.TP 8
+.B \-to \fIseconds\fP
+sets default connection timeout in seconds.
+.SH "NETWORK CONNECTIONS"
+.I lbxproxy
+supports client connections via most of the connection types supported
+by the X servers (refer to the \fIXserver(1)\fP and hardware-specific
+X server manual pages for details).  Note that in the current implementation
+some of the conenctions types have not been implemented correctly.
+This mostly applies to System V.
+.SH EXAMPLES
+To setup \fIlbxproxy\fP, start the X server as usual, and then start the
+proxy.  The lbxproxy is a pseudo-server, so any clients that wish to use
+it need to adjust their \fBDISPLAY\fP.  By default, the proxy will listen
+on <hostname>:1.  This can be changed with the `:displaynumber' argument.
+.PP
+If the proxy is to be running on a host named `sharedhost', connecting
+to an LBX-capable X server on a desktop machine named `mydesktop', you
+could use the following command to start the proxy (which would be
+known as display `sharedhost:7'):
+.PP
+.nf
+  mydesktop%  rlogin sharedhost
+  sharedhost% lbxproxy -display mydesktop:0 :7 &
+  sharedhost% xclient -display sharedhost:7
+.ni
+.PP
+If you are running LBX over a TERM connection between `mydesktop' and
+`sharedhost', try something like this:
+.PP
+.nf
+  mydesktop%  trsh
+  sharedhost% tredir -r 6008 6000
+  sharedhost% lbxproxy -display sharedhost:8 :7 &
+  sharedhost% xclient -display sharedhost:7
+.ni
+.SH "SEE ALSO"
+General information: X(1)
+.PP
+Server-specific man pages: 
+Xserver(1), Xdec(1), XmacII(1), Xsun(1), Xnest(1), Xvfb(1),
+XF86_Acc(1), XF86_Mono(1), XF86_SVGA(1), XF86_VGA16(1), XFree86(1)
+.SH AUTHORS
+The LBX team includes Dave Lemke, Dale Tonogai, Keith Packard and
+Jim Fulton from NCD, and Chris Kanterjiev from Xerox.
