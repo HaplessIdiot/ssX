@@ -1,4 +1,4 @@
-#define DEBUG
+#define DEBUG_VERB 2
 /*
  * Copyright (c) 2000 by Conectiva S.A. (http://www.conectiva.com)
  *
@@ -27,7 +27,7 @@
  *
  * Authors: Paulo CÅÈsar Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.12 2001/02/16 01:45:45 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.13 2001/03/22 03:10:58 dawes Exp $
  */
 
 #include "vesa.h"
@@ -479,9 +479,8 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
     if ((pScrn->monitor->DDC = pVesa->monitor) != NULL)
 	xf86SetDDCproperties(pScrn, pVesa->monitor);
 
-#ifdef DEBUG
-    ErrorF("Searching for matching VESA mode(s):\n");
-#endif
+    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, DEBUG_VERB,
+			"Searching for matching VESA mode(s):\n");
 
     i = 0;
     while (vbe->VideoModePtr[i] != 0xffff) {
@@ -489,54 +488,94 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 
 	if ((mode = VBEGetModeInfo(pVesa->pVbe, id)) == NULL)
 	    continue;
-#ifdef DEBUG
-	ErrorF("Mode: %x (%dx%d)\n", id, mode->XResolution, mode->YResolution);
-	ErrorF("	ModeAttributes: 0x%x\n", mode->ModeAttributes);
-	ErrorF("	WinAAttributes: 0x%x\n", mode->WinAAttributes);
-	ErrorF("	WinBAttributes: 0x%x\n", mode->WinBAttributes);
-	ErrorF("	WinGranularity: %d\n", mode->WinGranularity);
-	ErrorF("	WinSize: %d\n", mode->WinSize);
-	ErrorF("	WinASegment: 0x%x\n", mode->WinASegment);
-	ErrorF("	WinBSegment: 0x%x\n", mode->WinBSegment);
-	ErrorF("	WinFuncPtr: 0x%x\n", mode->WinFuncPtr);
-	ErrorF("	BytesPerScanline: %d\n", mode->BytesPerScanline);
-	ErrorF("	XResolution: %d\n", mode->XResolution);
-	ErrorF("	YResolution: %d\n", mode->YResolution);
-	ErrorF("	XCharSize: %d\n", mode->XCharSize);
-	ErrorF("	YCharSize: %d\n", mode->YCharSize);
-	ErrorF("	NumberOfPlanes: %d\n", mode->NumberOfPlanes);
-	ErrorF("	BitsPerPixel: %d\n", mode->BitsPerPixel);
-	ErrorF("	NumberOfBanks: %d\n", mode->NumberOfBanks);
-	ErrorF("	MemoryModel: %d\n", mode->MemoryModel);
-	ErrorF("	BankSize: %d\n", mode->BankSize);
-	ErrorF("	NumberOfImages: %d\n", mode->NumberOfImages);
-	ErrorF("	RedMaskSize: %d\n", mode->RedMaskSize);
-	ErrorF("	RedFieldPosition: %d\n", mode->RedFieldPosition);
-	ErrorF("	GreenMaskSize: %d\n", mode->GreenMaskSize);
-	ErrorF("	GreenFieldPosition: %d\n", mode->GreenFieldPosition);
-	ErrorF("	BlueMaskSize: %d\n", mode->BlueMaskSize);
-	ErrorF("	BlueFieldPosition: %d\n", mode->BlueFieldPosition);
-	ErrorF("	RsvdMaskSize: %d\n", mode->RsvdMaskSize);
-	ErrorF("	RsvdFieldPosition: %d\n", mode->RsvdFieldPosition);
-	ErrorF("	DirectColorModeInfo: %d\n", mode->DirectColorModeInfo);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "Mode: %x (%dx%d)\n", id, mode->XResolution, mode->YResolution);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "	ModeAttributes: 0x%x\n", mode->ModeAttributes);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "	WinAAttributes: 0x%x\n", mode->WinAAttributes);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "	WinBAttributes: 0x%x\n", mode->WinBAttributes);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "	WinGranularity: %d\n", mode->WinGranularity);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "	WinSize: %d\n", mode->WinSize);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "	WinASegment: 0x%x\n", mode->WinASegment);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "	WinBSegment: 0x%x\n", mode->WinBSegment);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "	WinFuncPtr: 0x%x\n", mode->WinFuncPtr);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "	BytesPerScanline: %d\n", mode->BytesPerScanline);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "	XResolution: %d\n", mode->XResolution);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "	YResolution: %d\n", mode->YResolution);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "	XCharSize: %d\n", mode->XCharSize);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "	YCharSize: %d\n", mode->YCharSize);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "	NumberOfPlanes: %d\n", mode->NumberOfPlanes);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "	BitsPerPixel: %d\n", mode->BitsPerPixel);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "	NumberOfBanks: %d\n", mode->NumberOfBanks);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "	MemoryModel: %d\n", mode->MemoryModel);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "	BankSize: %d\n", mode->BankSize);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "	NumberOfImages: %d\n", mode->NumberOfImages);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "	RedMaskSize: %d\n", mode->RedMaskSize);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "	RedFieldPosition: %d\n", mode->RedFieldPosition);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "	GreenMaskSize: %d\n", mode->GreenMaskSize);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "	GreenFieldPosition: %d\n", mode->GreenFieldPosition);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "	BlueMaskSize: %d\n", mode->BlueMaskSize);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "	BlueFieldPosition: %d\n", mode->BlueFieldPosition);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "	RsvdMaskSize: %d\n", mode->RsvdMaskSize);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "	RsvdFieldPosition: %d\n", mode->RsvdFieldPosition);
+	xf86ErrorFVerb(DEBUG_VERB,
+	    "	DirectColorModeInfo: %d\n", mode->DirectColorModeInfo);
 	if (pVesa->major >= 2) {
-	    ErrorF("	PhysBasePtr: 0x%x\n", mode->PhysBasePtr);
+	    xf86ErrorFVerb(DEBUG_VERB,
+		"	PhysBasePtr: 0x%x\n", mode->PhysBasePtr);
 	    if (pVesa->major >= 3) {
-		ErrorF("	LinBytesPerScanLine: %d\n", mode->LinBytesPerScanLine);
-		ErrorF("	BnkNumberOfImagePages: %d\n", mode->BnkNumberOfImagePages);
-		ErrorF("	LinNumberOfImagePages: %d\n", mode->LinNumberOfImagePages);
-		ErrorF("	LinRedMaskSize: %d\n", mode->LinRedMaskSize);
-		ErrorF("	LinRedFieldPosition: %d\n", mode->LinRedFieldPosition);
-		ErrorF("	LinGreenMaskSize: %d\n", mode->LinGreenMaskSize);
-		ErrorF("	LinGreenFieldPosition: %d\n", mode->LinGreenFieldPosition);
-		ErrorF("	LinBlueMaskSize: %d\n", mode->LinBlueMaskSize);
-		ErrorF("	LinBlueFieldPosition: %d\n", mode->LinBlueFieldPosition);
-		ErrorF("	LinRsvdMaskSize: %d\n", mode->LinRsvdMaskSize);
-		ErrorF("	LinRsvdFieldPosition: %d\n", mode->LinRsvdFieldPosition);
-		ErrorF("	MaxPixelClock: %d\n", mode->MaxPixelClock);
+		xf86ErrorFVerb(DEBUG_VERB,
+		    "	LinBytesPerScanLine: %d\n", mode->LinBytesPerScanLine);
+		xf86ErrorFVerb(DEBUG_VERB,
+		    "	BnkNumberOfImagePages: %d\n", mode->BnkNumberOfImagePages);
+		xf86ErrorFVerb(DEBUG_VERB,
+		    "	LinNumberOfImagePages: %d\n", mode->LinNumberOfImagePages);
+		xf86ErrorFVerb(DEBUG_VERB,
+		    "	LinRedMaskSize: %d\n", mode->LinRedMaskSize);
+		xf86ErrorFVerb(DEBUG_VERB,
+		    "	LinRedFieldPosition: %d\n", mode->LinRedFieldPosition);
+		xf86ErrorFVerb(DEBUG_VERB,
+		    "	LinGreenMaskSize: %d\n", mode->LinGreenMaskSize);
+		xf86ErrorFVerb(DEBUG_VERB,
+		    "	LinGreenFieldPosition: %d\n", mode->LinGreenFieldPosition);
+		xf86ErrorFVerb(DEBUG_VERB,
+		    "	LinBlueMaskSize: %d\n", mode->LinBlueMaskSize);
+		xf86ErrorFVerb(DEBUG_VERB,
+		    "	LinBlueFieldPosition: %d\n", mode->LinBlueFieldPosition);
+		xf86ErrorFVerb(DEBUG_VERB,
+		    "	LinRsvdMaskSize: %d\n", mode->LinRsvdMaskSize);
+		xf86ErrorFVerb(DEBUG_VERB,
+		    "	LinRsvdFieldPosition: %d\n", mode->LinRsvdFieldPosition);
+		xf86ErrorFVerb(DEBUG_VERB,
+		    "	MaxPixelClock: %d\n", mode->MaxPixelClock);
 	    }
 	}
-#endif
 
 	if (!(mode->ModeAttributes & (1 << 0)) ||	/* supported in the configured hardware */
 	    !(mode->ModeAttributes & (1 << 4)) ||	/* text mode */
@@ -587,11 +626,10 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 
     }
 
-#ifdef DEBUG
-    ErrorF("\n");
-    ErrorF("Total Memory: %d 64Kb banks (%dM)\n", vbe->TotalMemory,
+    xf86ErrorFVerb(DEBUG_VERB, "\n");
+    xf86ErrorFVerb(DEBUG_VERB,
+	"Total Memory: %d 64Kb banks (%dM)\n", vbe->TotalMemory,
 	   (vbe->TotalMemory * 65536) / (1024 * 1024));
-#endif
 
     pVesa->mapSize = vbe->TotalMemory * 65536;
     if (pScrn->modePool == NULL) {
@@ -706,8 +744,12 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
     pScrn->currentMode = pScrn->modes;
     pScrn->displayWidth = pScrn->virtualX;
 
-    if (pScrn->modes == NULL)
+    xf86PrintModes(pScrn);
+
+    if (pScrn->modes == NULL) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No modes\n");
 	return (FALSE);
+    }
 
     /* options */
     xf86CollectOptions(pScrn, NULL);
@@ -1156,10 +1198,9 @@ VESAMapVidMem(ScrnInfoPtr pScrn)
 	else
 	    pVesa->VGAbase = pVesa->base;
     }
-#ifdef DEBUG
-    ErrorF("virtual address = %p  -  physical address = %p  -  size = %d\n",
+    xf86ErrorFVerb(DEBUG_VERB,
+	"virtual address = %p  -  physical address = %p  -  size = %d\n",
 	    pVesa->base, pScrn->memPhysBase, pVesa->mapSize);
-#endif
 
     return (pVesa->base != NULL);
 }
@@ -1291,7 +1332,9 @@ VESALoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
 static void
 WriteAttr(int index, int value)
 {
-    CARD8 tmp = inb(VGA_IOBASE_COLOR + VGA_IN_STAT_1_OFFSET);
+    CARD8 tmp;
+
+    tmp = inb(VGA_IOBASE_COLOR + VGA_IN_STAT_1_OFFSET);
 
     index |= 0x20;
     outb(VGA_ATTR_INDEX, index);
@@ -1301,7 +1344,9 @@ WriteAttr(int index, int value)
 static int
 ReadAttr(int index)
 {
-    CARD8 tmp = inb(VGA_IOBASE_COLOR + VGA_IN_STAT_1_OFFSET);
+    CARD8 tmp;
+
+    tmp = inb(VGA_IOBASE_COLOR + VGA_IN_STAT_1_OFFSET);
 
     index |= 0x20;
     outb(VGA_ATTR_INDEX, index);
