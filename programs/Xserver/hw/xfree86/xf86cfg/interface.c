@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.35 2002/07/05 23:57:23 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.36 2002/10/19 20:04:21 herrb Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -298,7 +298,7 @@ main(int argc, char *argv[])
     
     startedx = startx();
     if (XF86Config_path == NULL)
-	XF86Config_path = "XF86Config-4";
+	XF86Config_path = XtNewString("XF86Config-4");
     if (XkbConfig_path == NULL) {
 	XmuSnprintf(XkbConfig_path_static, sizeof(XkbConfig_path_static),
 		    "%s/%s%s", XFree86Dir, XkbConfigDir, XkbConfigFile);

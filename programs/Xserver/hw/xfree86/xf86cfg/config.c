@@ -116,8 +116,21 @@ StartConfig(void)
     /* Read initial configuration */
     if ((filename = xf86openConfigFile(getuid() == 0 ? CONFPATH : USER_CONFPATH,
 				       XF86Config_path, NULL)) == NULL) {
-	fprintf(stderr, "Cannot open config file.\n");
-	exit(1);
+	int length = XF86Config_path ? strlen(XF86Config_path) : -1;
+
+	if (length > 2 &&
+	    XF86Config_path[length - 2] == '-' &&
+	    XF86Config_path[length - 1] == '4') {
+	    XF86Config_path[length - 2] = '\0';
+	    filename = xf86openConfigFile(getuid() == 0 ?
+					  CONFPATH : USER_CONFPATH,
+					  XF86Config_path, NULL);
+	}
+
+	if (filename == NULL) {
+	    fprintf(stderr, "Cannot open config file.\n");
+	    exit(1);
+	}
     }
     XF86Config_path = (char *)filename;
     if ((XF86Config = xf86readConfigFile()) == NULL) {
