@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/nls/XLC_LOCALE/Imakefile,v 1.28 2004/04/26 00:23:36 tsi Exp $
+XCOMM $XFree86: xc/nls/XLC_LOCALE/Imakefile,v 1.29tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -62,7 +62,7 @@ all:: name.lt								@@\
 									@@\
 InstallNamedNonExec(name.lt,XLC_LOCALE,$(XLOCALEDIR)/name)
 #else
-# ifdef SGIArchitecture
+# if defined(SGIArchitecture) && (!defined(HasGcc) || !HasGcc)
 #  define LTarget(name)							@@\
 AllTarget(name.lt)							@@\
 									@@\
