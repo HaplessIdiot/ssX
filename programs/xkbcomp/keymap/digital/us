@@ -1,0 +1,188 @@
+// $XConsortium: us /main/1 1996/02/02 14:21:15 kaleb $
+//
+//Copyright (c) 1996  Digital Equipment Corporation
+//
+//Permission is hereby granted, free of charge, to any person obtaining
+//a copy of this software and associated documentation files (the
+//"Software"), to deal in the Software without restriction, including
+//without limitation the rights to use, copy, modify, merge, publish,
+//distribute, sublicense, and sell copies of the Software, and to
+//permit persons to whom the Software is furnished to do so, subject to
+//the following conditions:
+//
+//The above copyright notice and this permission notice shall be included
+//in all copies or substantial portions of the Software.
+//
+//THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+//OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+//MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+//IN NO EVENT SHALL DIGITAL EQUIPMENT CORPORATION BE LIABLE FOR ANY CLAIM,
+//DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+//OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+//THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+//Except as contained in this notice, the name of the Digital Equipment 
+//Corporation shall not be used in advertising or otherwise to promote
+//the sale, use or other dealings in this Software without prior written
+//authorization from Digital Equipment Corporation.
+//
+// HISTORY
+// $Log$
+// Revision 1.1  1996-02-04 07:40:37  dawes
+// Initial revision
+//
+// Revision 1.1.6.2  1995/10/25  21:00:53  William_Walker
+// 	Add pc104-key support
+// 	[1995/10/23  15:46:24  William_Walker]
+//
+// Revision 1.1.2.6  1995/06/27  12:18:05  William_Walker
+// 	Add LK201 and LK450 support as well as TW and DP variants.
+// 	[1995/06/26  20:26:19  William_Walker]
+// 
+// Revision 1.1.2.5  1995/06/05  19:23:12  William_Walker
+// 	New file.  I love keymaps.
+// 	[1995/06/05  18:14:04  William_Walker]
+// 
+// $EndLog$
+// 
+// @(#)$RCSfile$ $Revision$ (DEC) $Date$
+// 
+
+// **************************************************************
+// *								*
+// * Keymaps for en_US.ISO8859-1 - English for U.S.		*
+// *								*
+// **************************************************************
+
+xkb_keymap "lk201" {
+    xkb_keycodes        { include "keycodes/digital/lk(lk201)" 		};
+    xkb_types           { include "types/default"    	        	};
+    xkb_compatibility   { include "compat/default"			};
+    xkb_symbols         { include "symbols/digital/us(vt105)"		};
+    xkb_geometry	{ description = "Digital US LK201";
+			  include "geometry/digital/lk(lk201)"		};
+};
+
+xkb_keymap "lk401" {
+    xkb_keycodes        { include "keycodes/digital/lk(lk401)" 		};
+    xkb_types           { include "types/default"    	        	};
+    xkb_compatibility   { include "compat/default"			};
+    xkb_symbols         { include "symbols/digital/us(vt108)"		};
+    xkb_geometry	{ description = "Digital US LK401";
+			  include "geometry/digital/lk(lk401)"		};
+};
+
+xkb_keymap "lk411" {
+    xkb_keycodes        { include "keycodes/digital/pc(lk411)" 		};
+    xkb_types           { include "types/default"    	        	};
+    xkb_compatibility   { include "compat/default"			};
+    xkb_symbols         { include "symbols/digital/us(vt108)"		};
+    xkb_geometry	{ description = "Digital US LK411";
+			  include "geometry/digital/lk(lk401)"		};
+};
+
+xkb_keymap "lk421" {
+    xkb_keycodes        { include "keycodes/digital/lk(lk421)"		};
+    xkb_types           { include "types/default"    	        	};
+    xkb_compatibility   { include "compat/default"	        	};
+    xkb_symbols         { include "symbols/digital/us(unix)"		};
+    xkb_geometry	{ description = "Digital US LK421";
+			  include "geometry/digital/unix(unix)"		};
+};
+
+xkb_keymap "lk441" {
+    xkb_keycodes        { include "keycodes/digital/lk(lk443)" 		};
+    xkb_types           { include "types/default"    	        	};
+    xkb_compatibility   { include "compat/default"			};
+    xkb_symbols         { include "symbols/digital/us(lk44x)"		};
+    xkb_geometry	{ description = "Digital US LK441";
+			  include "geometry/digital/pc(pc101)"
+			  include "geometry/digital/pc(leds_alone)"	};
+};
+
+xkb_keymap "lk443" {
+    xkb_keycodes        { include "keycodes/digital/lk(lk443)" 		};
+    xkb_types           { include "types/default"    	        	};
+    xkb_compatibility   { include "compat/default"			};
+    xkb_symbols         { include "symbols/digital/us(lk44x)"		};
+    xkb_geometry	{ description = "Digital US LK443";
+			  include "geometry/digital/pc(pc101)"
+			  include "geometry/digital/pc(leds_alone)"	};
+};
+
+xkb_keymap "lk44x" {
+    xkb_keycodes        { include "keycodes/digital/lk(lk443)" 		};
+    xkb_types           { include "types/default"    	        	};
+    xkb_compatibility   { include "compat/default"			};
+    xkb_symbols         { include "symbols/digital/us(lk44x)"		};
+    xkb_geometry	{ description = "Digital US LK443";
+			  include "geometry/digital/pc(pc101)"
+			  include "geometry/digital/pc(leds_alone)"	};
+};
+
+xkb_keymap "lk450" {
+    xkb_keycodes        { include "keycodes/digital/pc(lk450)" 		};
+    xkb_types           { include "types/default"    	        	};
+    xkb_compatibility   { include "compat/default"			};
+    xkb_symbols         { include "symbols/digital/us(vt108)"		};
+    xkb_geometry	{ description = "Digital US LK450";
+			  include "geometry/digital/lk(lk450)"		};
+};
+
+xkb_keymap "pcxalaa" {
+    xkb_keycodes        { include "keycodes/digital/pc(pc101)" 		};
+    xkb_types           { include "types/default"   	 		};
+    xkb_compatibility   { include "compat/default"			};
+    xkb_symbols         { include "symbols/digital/us(pcxalaa)"		};
+    xkb_geometry	{ description = "Digital US PCXAL-AA";
+			  include "geometry/digital/pc(pc101)"
+			  include "geometry/digital/pc(leds_alone)"	};
+};
+
+xkb_keymap "pcxalfa" {
+    xkb_keycodes        { include "keycodes/digital/pc(pc101)" 		};
+    xkb_types           { include "types/default"   	 		};
+    xkb_compatibility   { include "compat/default"			};
+    xkb_symbols         { include "symbols/digital/us(pcxalfa)"		};
+    xkb_geometry	{ description = "Digital US PCXAL-FA";
+			  include "geometry/digital/pc(pc101)"
+			  include "geometry/digital/pc(leds_on_keys)"	};
+};
+
+xkb_keymap "pcxalga" {
+    xkb_keycodes        { include "keycodes/digital/pc(pc101)" 		};
+    xkb_types           { include "types/default"   	 		};
+    xkb_compatibility   { include "compat/default"			};
+    xkb_symbols         { include "symbols/digital/us(pcxalga)"		};
+    xkb_geometry	{ description = "Digital US PCXAL-GA";
+			  include "geometry/digital/pc(pc101)"
+			  include "geometry/digital/pc(leds_alone)"	};
+};
+
+xkb_keymap "pcxalka" {
+    xkb_keycodes        { include "keycodes/digital/pc(pc101)" 		};
+    xkb_types           { include "types/default"   	 		};
+    xkb_compatibility   { include "compat/default"			};
+    xkb_symbols         { include "symbols/digital/us(pcxalka)"		};
+    xkb_geometry	{ description = "Digital US PCXAL-KA";
+			  include "geometry/digital/pc(pc101)"
+			  include "geometry/digital/pc(leds_alone)"	};
+};
+
+xkb_keymap "pcxal" {
+    xkb_keycodes        { include "keycodes/digital/pc(pc101)" 		};
+    xkb_types           { include "types/default"   	 		};
+    xkb_compatibility   { include "compat/default"			};
+    xkb_symbols         { include "symbols/digital/us(pcxal)"		};
+    xkb_geometry	{ description = "Digital US PCXAL";
+			  include "geometry/digital/pc(pc101)"
+			  include "geometry/digital/pc(leds_alone)"	};
+};
+
+xkb_keymap "mnk" {
+    xkb_keycodes        { include "keycodes/digital/pc(pc104)" 		};
+    xkb_types           { include "types/default"   	 		};
+    xkb_compatibility   { include "compat/default"			};
+    xkb_symbols         { include "symbols/digital/us(pc104)"		};
+    xkb_geometry	{ include "geometry/microsoft"			};
+};
