@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winnativegdi.c,v 1.8 2001/11/01 12:19:40 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winnativegdi.c,v 1.9 2001/11/11 22:45:57 alanh Exp $ */
 
 #include "win.h"
 
@@ -124,7 +124,7 @@ winInitVisualsNativeGDI (ScreenPtr pScreen)
     case 15:
       pScreenPriv->dwBitsPerRGB = 5;
       pScreenPriv->dwRedMask = 0x7C00;
-      pScreenPriv->dwGreenMask = 0x07E0;
+      pScreenPriv->dwGreenMask = 0x03E0;
       pScreenPriv->dwBlueMask = 0x001F;
       break;
       
