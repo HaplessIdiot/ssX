@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.10 2003/09/16 00:36:11 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.11 2003/11/01 08:13:08 torrey Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -38,15 +38,16 @@ INCLUDES = -I. -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
 CUSTOMVERSION = XFree86CustomVersion
 CUSTOMVERDEF =  -DXF86_CUSTOM_VERSION='$(CUSTOMVERSION)'
 #endif
-#if HasCGMachPort
-QUARTZDEFINES = -DHAS_CG_MACH_PORT
-#endif
 
 #if XFree86Devel
-PBXBUILDSTYLE = -buildstyle Development
+BUILDSTYLE = -buildstyle Development
 DEBUGDEFINES = -DROOTLESSDEBUG
 #else
-PBXBUILDSTYLE = -buildstyle Deployment
+BUILDSTYLE = -buildstyle Deployment
+#endif
+
+#if (OSMajorVersion == 1 && OSMinorVersion >= 4) || OSMajorVersion >= 5
+QUARTZDEFINES = -DHAS_CG_MACH_PORT
 #endif
 
 #if HasXplugin
@@ -85,16 +86,16 @@ install::
 
 AllTarget(XDarwin)
 XDarwin:
-	pbxbuild -target XDarwin $(PBXBUILDSTYLE)
+	$(PROJ_BUILD) -target XDarwin $(BUILDSTYLE)
 
 install::
-	pbxbuild install -target XDarwin $(PBXBUILDSTYLE) \
+	$(PROJ_BUILD) install -target XDarwin $(BUILDSTYLE) \
 		DSTROOT=$(DESTDIR)$(XDARWINROOT)
 
 InstallManPage(XDarwinStartup,$(MANDIR))
 
 clean::
-	pbxbuild "clean" -target XDarwin $(PBXBUILDSTYLE)
+	$(PROJ_BUILD) "clean" -target XDarwin $(BUILDSTYLE)
 
 DependTarget()
 

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.41 2003/10/26 12:17:14 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.42 2003/11/04 02:52:53 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -85,43 +85,30 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 
 #if DarwinQuartzSupport
 
-/*
- * Before Mac OS X 10.1 a number of features were missing or broken.
- */
-# if (OSMajorVersion == 1 && OSMinorVersion >= 4) || OSMajorVersion >= 5
-#  ifndef HasNSCarbonWindow
-#   define HasNSCarbonWindow    YES
-#  endif
-#  ifndef HasCGMachPort
-#   define HasCGMachPort        YES
-#  endif
+# if OSMajorVersion >= 7
+   PROJ_BUILD = xcodebuild
 # else
-/* NSWindow(NSCarbonExtensions) is broken. */
-#  ifndef HasNSCarbonWindow
-#   define HasNSCarbonWindow    NO
-#  endif
-/* CGWindowServerCFMachPort() does not exist. */
-#  ifndef HasCGMachPort
-#   define HasCGMachPort        NO
-#  endif
+   PROJ_BUILD = pbxbuild
 # endif
 
 /*
- * If we know where to find Apple's Xplugin library, use it.
+ * If we have Apple's Xplugin library, use it.
  */
-# ifdef XpLibDir
-   XPLIBDIR = XpLibDir
-#  define HasXplugin            YES
-#  define XpluginLibrary        Concat(-L,$(XPLIBDIR)) -lXplugin
-#  ifndef XpIncDir
-#   define XpIncDir             $(SERVERSRC)/hw/darwin/quartz/xpr
-#  endif
-   XPINCDIR = XpIncDir
-# endif
-
 # ifndef HasXplugin
 #  define HasXplugin            NO
 #  define XpluginLibrary        /**/
+# endif
+
+# if HasXplugin
+#  ifndef XpLibDir
+#   define XpLibDir             /usr/lib
+#  endif
+#  ifndef XpIncDir
+#   define XpIncDir             $(SERVERSRC)/hw/darwin/quartz/xpr
+#  endif
+   XPLIBDIR = XpLibDir
+   XPINCDIR = XpIncDir
+#  define XpluginLibrary        Concat(-L,$(XPLIBDIR)) -lXplugin
 # endif
 
 # ifndef BuildAppleDRI
@@ -136,7 +123,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #  define GlxExtraDefines -DGLX_DIRECT_RENDERING -DGLX_USE_APPLEGL GlxArchDefines
 # endif
 
-#define BuildAppleWMLibrary       YES
+#define BuildAppleWMLibrary     YES
 
 #endif  /* DarwinQuartzSupport */
 
@@ -156,10 +143,10 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  * The default cpp-3.3 that ships with Panther inserts spurious #pragmas,
  * so we use the 3.1-based version.
  */
-#if (OSMajorVersion >= 7)
-# define CppCmd                  /usr/bin/cpp3
+#if OSMajorVersion >= 7
+# define CppCmd                 /usr/bin/cpp3
 #else
-# define CppCmd                  /usr/bin/cpp
+# define CppCmd                 /usr/bin/cpp
 #endif
 #if HasGcc3
 # define RawCppCmd              CppCmd -undef
@@ -191,9 +178,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #ifdef PpcDarwinArchitecture
 # define DarwinMachineDefines   -D__powerpc__
 # if HasGcc3
-#  define OptimizedCDebugFlags   -Os
+#  define OptimizedCDebugFlags  -Os
 # else
-#  define OptimizedCDebugFlags   -O2
+#  define OptimizedCDebugFlags  -O2
 # endif
 # define ByteOrder              X_BIG_ENDIAN
 #endif /* PpcDarwinArchitecture */
@@ -201,9 +188,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #ifdef i386DarwinArchitecture
 # define DarwinMachineDefines   -D__i386__
 # if HasGcc3
-#  define OptimizedCDebugFlags   -Os
+#  define OptimizedCDebugFlags  -Os
 # else
-#  define OptimizedCDebugFlags   -O2 -fno-strength-reduce
+#  define OptimizedCDebugFlags  -O2 -fno-strength-reduce
 # endif
 # define ByteOrder              X_LITTLE_ENDIAN
 #endif /* i386DarwinArchitecture */

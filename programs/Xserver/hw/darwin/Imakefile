@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/Imakefile,v 1.18 2003/03/15 18:02:08 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/Imakefile,v 1.19 2003/05/14 05:27:55 torrey Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -35,7 +35,7 @@ CLUTDEF = -DUSE_NEW_CLUT
 #endif
 
 #if DarwinQuartzSupport
-# if HasNSCarbonWindow
+# if (OSMajorVersion == 1 && OSMinorVersion >= 4) || OSMajorVersion >= 5
 SUBDIRS = iokit bundle quartz utils
 # else
 SUBDIRS = iokit bundle quartz_1.3 utils
