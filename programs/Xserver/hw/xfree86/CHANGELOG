@@ -1,4 +1,5 @@
 XFree86 4.0.1h (1 December 2000)
+1046. Make sure the correct "driverName" string is used in xf86Configure.c.
 1045. Fix some i810 driver problems when too little videoRam is specified
       (David Dawes).
 1044. Fix an i810 driver bug that prevents the DRI from being enabled
@@ -11751,4 +11752,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1427 2000/12/01 12:46:28 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1428 2000/12/01 14:28:51 dawes Exp $
