@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.18 2000/02/12 20:45:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.19 2000/07/09 21:02:20 alanh Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -247,7 +247,7 @@ Permedia2Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 				 	PM2DAC_GRAPHICS | PM2DAC_8888;
 	if (pScrn->overlayFlags & OVERLAY_8_32_PLANAR) {
 	    pReg->DacRegs[PM2DACIndexColorKeyControl] = 0x11;
-	    pReg->DacRegs[PM2DACIndexColorKeyOverlay] = 0xFF;
+	    pReg->DacRegs[PM2DACIndexColorKeyOverlay] = pScrn->colorKey;
 	} else
 	    pReg->DacRegs[PM2DACIndexCMR] |= PM2DAC_TRUECOLOR;
     	break;

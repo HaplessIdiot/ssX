@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.14 1999/07/04 06:39:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.19 2000/05/10 20:01:31 alanh Exp $ */
 
 /*
  * glint register file 
@@ -955,9 +955,10 @@
 	/* 0:			*/
 	/* FBWM_NoColorUpload	*/
 	/* FBWM_WriteDisable	*/
-
 	#define FBWM_WriteEnable				1
 	#define FBWM_UploadColor				1 << 3
+/* Permedia3 extensions */
+	#define FBWM_Enable0					1 << 12
 
 #define FBHardwareWriteMask					GLINT_TAG_ADDR(0x15,0x08)
 #define FBBlockColor						GLINT_TAG_ADDR(0x15,0x09)
@@ -1151,6 +1152,30 @@
 #define DrawLine10						GLINT_TAG_ADDR(0x26,0x04)
 #define RepeatLine						GLINT_TAG_ADDR(0x26,0x05)
 #define BroadcastMask						GLINT_TAG_ADDR(0x26,0x0F)
+
+/* Permedia 3 - Accelerator Extensions */
+#define FillRectanglePosition					0x8348
+#define FillRender2D						0x8350
+#define FBDstReadBufAddr0					0xAE80
+#define FBDstReadBufOffset0					0xAEA0
+#define FBDstReadBufWidth0					0xAEC0
+#define FBDstReadMode						0xAEE0
+#define		FBDRM_Enable0		1<<8
+#define		FBDRM_Blocking		1<<24
+#define FBDstReadEnables					0xAEE8
+#define FBSrcReadMode						0xAF00
+#define		FBSRM_Blocking		1<<11
+#define FBSrcReadBufAddr					0xAF08
+#define FBSrcReadBufOffset0					0xAF10
+#define FBSrcReadBufWidth					0xAF18
+#define FBWriteBufAddr0						0xB000
+#define FBWriteBufOffset0					0xB020
+#define FBWriteBufWidth0					0xB040
+#define FBBlockColorBack					0xB0A0
+#define ForegroundColor						0xB0C0
+#define BackgroundColor						0xB0C8
+#define RectanglePosition					0xB600
+#define Render2D						0xB640
 
 /*  Colorformats */
 #define BGR555  1
