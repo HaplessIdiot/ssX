@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_ioctl.c,v 1.1 2002/10/30 12:51:52 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -702,14 +702,14 @@ void r200WaitForVBlank( r200ContextPtr rmesa )
    assert( rmesa->r200Screen->irq );
 
    /* Wait for at least one vertical blank since the last call */
-   vbl.type = DRM_VBLANK_ABSOLUTE;
-   vbl.sequence = rmesa->vbl_seq + 1;
+   vbl.request.type = DRM_VBLANK_ABSOLUTE;
+   vbl.request.sequence = rmesa->vbl_seq + 1;
 
    if ((ret = drmWaitVBlank( rmesa->dri.fd, &vbl )) &&
        (R200_DEBUG & DEBUG_IOCTL) )
       fprintf(stderr, "%s: drmWaitVBlank returned %d\n", __FUNCTION__, ret);
 
-   rmesa->vbl_seq = vbl.sequence;
+   rmesa->vbl_seq = vbl.reply.sequence;
 }
 
 

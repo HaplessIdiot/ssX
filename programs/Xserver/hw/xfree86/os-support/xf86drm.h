@@ -26,7 +26,7 @@
  *
  * Author: Rickard E. (Rik) Faith <faith@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.17 2002/10/16 01:26:48 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.18 2002/10/30 12:52:23 alanh Exp $
  *
  */
 
@@ -230,15 +230,27 @@ typedef struct _drmClipRect {
 
 
 typedef enum {
-    DRM_VBLANK_ABSOLUTE = 0x0,	/* Wait for specific vblank sequence number */
-    DRM_VBLANK_RELATIVE = 0x1	/* Wait for given number of vblanks */
+    DRM_VBLANK_ABSOLUTE = 0x0,		/* Wait for specific vblank sequence number */
+    DRM_VBLANK_RELATIVE = 0x1,		/* Wait for given number of vblanks */
+    DRM_VBLANK_SIGNAL   = 0x80000000	/* Send signal instead of blocking */
 } drmVBlankSeqType;
 
-typedef struct _drmVBlank {
+typedef struct _drmVBlankReq {
+	drmVBlankSeqType type;
+	unsigned int sequence;
+	unsigned long signal;
+} drmVBlankReq, *drmVBlankReqPtr;
+
+typedef struct _drmVBlankReply {
 	drmVBlankSeqType type;
 	unsigned int sequence;
 	long tval_sec;
 	long tval_usec;
+} drmVBlankReply, *drmVBlankReplyPtr;
+
+typedef union _drmVBlank {
+	drmVBlankReq request;
+	drmVBlankReply reply;
 } drmVBlank, *drmVBlankPtr;
 
 
