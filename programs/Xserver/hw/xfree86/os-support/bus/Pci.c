@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.54 2002/04/04 14:05:53 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.55 2002/07/24 19:06:52 tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -614,7 +614,7 @@ pciMfDev(int busnum, int devnum)
 PCITAG
 pciGenFindNext(void)
 {
-    unsigned long devid, tmp;
+    CARD32 devid, tmp;
     unsigned int sec_bus, pri_bus;
     static int previousBus = 0;
     Bool speculativeProbe = FALSE;
@@ -744,6 +744,9 @@ pciGenFindNext(void)
 	if (base_class == PCI_CLASS_BRIDGE) {
 	    if (sub_class == PCI_SUBCLASS_BRIDGE_HOST) {
 		pciBusInfo[pciBusNum]->host_bridge = pciDeviceTag;
+#ifdef ARCH_PCI_HOST_BRIDGE
+		ARCH_PCI_HOST_BRIDGE(devid);
+#endif
 	    } else if (sub_class == PCI_SUBCLASS_BRIDGE_PCI
 		       || sub_class == PCI_SUBCLASS_BRIDGE_CARDBUS) {
 		tmp = pciReadLong(pciDeviceTag, PCI_PCI_BRIDGE_BUS_REG);

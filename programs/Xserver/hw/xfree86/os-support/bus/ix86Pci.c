@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.9 2002/01/25 21:56:18 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.10 2002/07/24 19:06:52 tsi Exp $ */
 /*
  * ix86Pci.c - x86 PCI driver
  *
@@ -112,6 +112,7 @@
 #include <stdio.h>
 #include "compiler.h"
 #include "xf86.h"
+#include "xf86PciInfo.h"
 #include "xf86Priv.h"
 #include "Pci.h"
 
@@ -622,3 +623,32 @@ ix86PciInit()
 	pciBusInfo[0]  = NULL;
     }
 }
+
+#ifdef ARCH_PCI_HOST_BRIDGE
+
+#define DEVID(vendor, device) ((PCI_VENDOR_##vendor << 16) | PCI_CHIP_##device)
+
+/*
+ * A small table of host bridges that limit the number of PCI buses to less
+ * than the maximum of 256.  Please keep this table in ascending devid order.
+ */
+static struct {
+    CARD32 devid;
+    int    maxpcibus;
+} host_bridges[] = {
+    { DEVID(VIA,	APOLLOPRO133X),		64},
+    { DEVID(INTEL,	430HX_BRIDGE),		16},
+    { DEVID(INTEL,	440BX_BRIDGE),		32},
+    { PCI_NOT_FOUND,				MAX_PCI_BUSES}
+};
+
+void ARCH_PCI_HOST_BRIDGE(CARD32 devid)
+{
+    int i;
+
+    for (i = 0;  devid > host_bridges[i].devid;  i++);
+    if (devid == host_bridges[i].devid)
+	pciMaxBusNum = host_bridges[i].maxpcibus;
+}
+
+#endif /* ARCH_PCI_HOST_BRIDGE */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.24 2002/05/22 21:38:30 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.25 2002/07/24 19:06:52 tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -202,13 +202,7 @@
 # endif
 #elif defined(__i386__)
 # define ARCH_PCI_INIT ix86PciInit
-# define INCLUDE_XF86_MAP_PCI_MEM
-# define INCLUDE_XF86_NO_DOMAIN
-# if defined(linux)
-#  define ARCH_PCI_OS_INIT linuxPciInit
-# endif
-#elif defined(__x86_64__)
-# define ARCH_PCI_INIT ix86PciInit
+# define ARCH_PCI_HOST_BRIDGE ix86PciHostBridge
 # define INCLUDE_XF86_MAP_PCI_MEM
 # define INCLUDE_XF86_NO_DOMAIN
 # if defined(linux)
@@ -266,6 +260,13 @@
 #  define INCLUDE_XF86_MAP_PCI_MEM
 #  define INCLUDE_XF86_NO_DOMAIN
 # endif
+#elif defined(__x86_64__)
+# define ARCH_PCI_INIT ix86PciInit
+# define INCLUDE_XF86_MAP_PCI_MEM
+# define INCLUDE_XF86_NO_DOMAIN
+# if defined(linux)
+#  define ARCH_PCI_OS_INIT linuxPciInit
+# endif
 #endif
 
 #ifndef ARCH_PCI_INIT
@@ -275,6 +276,9 @@
 extern void ARCH_PCI_INIT(void);
 #if defined(ARCH_PCI_OS_INIT)
 extern void ARCH_PCI_OS_INIT(void);
+#endif
+#if defined(ARCH_PCI_HOST_BRIDGE)
+extern void ARCH_PCI_HOST_BRIDGE(CARD32 devid);
 #endif
 
 /*
