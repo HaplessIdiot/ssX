@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/tdfx/Imakefile,v 1.5 2004/12/10 16:06:58 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/tdfx/Imakefile,v 1.6 2004/12/17 12:48:59 alanh Exp $
 
 /*
  * Copyright (c) 2000-2004 by The XFree86 Project, Inc.
@@ -85,16 +85,13 @@ XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/tdfx/Imakefile,v 1.5 2004/12/10 16:06
       DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES) $(MESA_ASM_DEFINES)
      INCLUDES = $(X_INCLUDES) $(MESA_INCLUDES) $(DRI_INCLUDES)
 
-      DRIOBJS = $(GLXLIBSRC)/dri/dri_util.o \
-		$(GLXLIBSRC)/dri/glcontextmodes.o
-
       DRMOBJS = $(GLXLIBSRC)/dri/drm/xf86drm.o \
 		$(GLXLIBSRC)/dri/drm/xf86drmHash.o \
 		$(GLXLIBSRC)/dri/drm/xf86drmRandom.o \
 		$(GLXLIBSRC)/dri/drm/xf86drmSL.o
 
          SRCS = $(TDFXSRCS)
-         OBJS = $(DRIOBJS) $(DRMOBJS) $(COREMESAOBJS) \
+         OBJS = $(DRMOBJS) $(COREMESAOBJS) \
 		$(MESA_ASM_OBJS) $(TDFXOBJS) 
 
 REQUIREDLIBS = MathLibrary $(LDPRELIB) $(GLXLIB) $(XONLYLIB) ExpatLibrary
