@@ -1,5 +1,5 @@
 /* $XConsortium: cfb.h,v 5.37 94/04/17 20:28:38 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.2 1996/12/31 04:16:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.3 1997/01/08 20:32:39 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -1502,4 +1502,13 @@ extern int cfbScreenPrivateIndex;
 #define coordToInt(x,y)	(((y) << 16) | (x))
 #define intToX(i)	((int) ((short) (i)))
 #define intToY(i)	(GetHighWord(i))
+#endif
+/*
+ * if CFB is built as a module, it shouldn't call libc functions.
+ * The following macros should wrap all calls in MFB
+ */
+#ifdef XFree86LOADER
+#define memmove(a,b,c)	xf86memmove(a,b,c)
+#define memcpy(a,b,c)	xf86memcpy(a,b,c)
+#define memset(a,b,c)	xf86memset(a,b,c)
 #endif
