@@ -1,4 +1,5 @@
 XFree86 4.3.99.6 (xx May 2003)
+ 195. Remove unnecessary links of libm (Marc La France).
  194. IRIX 6.5 build fixes and noise reductions (Marc La France).
  193. Clean up confusion in Imakefiles between XONLYLIB and XLIBONLY (and
       between DEPXONLYLIB and the previously non-existent DEPXLIBONLY)
@@ -17027,7 +17028,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2715 2003/05/27 21:56:40 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2716 2003/05/27 22:26:51 tsi Exp $
 
 
 
