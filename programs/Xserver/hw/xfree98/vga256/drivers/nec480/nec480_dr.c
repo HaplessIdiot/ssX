@@ -6,7 +6,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/nec480/nec480_dr.c,v 3.5 1996/09/14 13:14:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/nec480/nec480_dr.c,v 3.6 1996/12/23 07:08:37 dawes Exp $ */
 
 /*
  * These are X and server generic header files.
@@ -365,7 +365,7 @@ NEC480Init(DisplayModePtr mode)
  *
  */
 static int
-NEC480ValidMode(DisplayModePtr mode, Bool verbose)
+NEC480ValidMode(DisplayModePtr mode, Bool verbose, int flag)
 {
 	return(MODE_OK);
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.27 1996/12/23 06:48:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.28 1997/01/18 06:55:48 dawes Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -82,7 +82,8 @@ ScreenPtr pScreen
 int monoValidMode(
 #if NeedFunctionPrototypes
     DisplayModePtr,
-    Bool
+    Bool,
+    int
 #endif 
 );
 
@@ -669,9 +670,10 @@ monoAdjustFrame(x, y)
 }
 
 int
-monoValidMode(mode, verbose)
+monoValidMode(mode, verbose, flag)
      DisplayModePtr mode;
      Bool verbose;
+     int flag;
 {
   /* Maybe this should return MODE_BAD since no XF86Config modes are used? */
   return(MODE_OK);

@@ -1707,9 +1707,10 @@ Bool start;
  *
  */
 static int 
-ET4000ValidMode(mode, verbose)
+ET4000ValidMode(mode, verbose,flag)
 DisplayModePtr mode;
 Bool verbose;
+int flag;
 {
 /*    tseng_validate_mode(mode, verbose);*/
     return MODE_OK;

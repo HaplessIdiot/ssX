@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/al2101/al_driver.c,v 3.15 1996/12/23 06:55:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/al2101/al_driver.c,v 3.16 1996/12/28 08:16:19 dawes Exp $ */
 /*
  * Copyright 1994 by Paolo Severini, Italy.
  *
@@ -383,9 +383,10 @@ AL2101Adjust(x, y)
  *
  */
 static int
-AL2101ValidMode(mode, verbose)
+AL2101ValidMode(mode, verbose, flag)
 DisplayModePtr mode;
 Bool verbose;
+int flag;
 {
 return MODE_OK;
 }

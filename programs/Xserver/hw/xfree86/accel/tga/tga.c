@@ -23,7 +23,7 @@
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.16 1997/01/19 12:50:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.17 1997/01/20 12:36:08 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -64,7 +64,8 @@
 static int tgaValidMode(
 #if NeedFunctionPrototypes
     DisplayModePtr,
-    Bool
+    Bool,
+    int
 #endif
 );
 
@@ -803,9 +804,10 @@ tgaSwitchMode(mode)
  *
  */
 static int
-tgaValidMode(mode, verbose)
+tgaValidMode(mode, verbose, flag)
     DisplayModePtr mode;
     Bool verbose;
+    int flag;
 {
     if (mode->Flags & V_INTERLACE)
     {

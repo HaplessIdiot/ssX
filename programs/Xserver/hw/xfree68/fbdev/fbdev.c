@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree68/fbdev/fbdev.c,v 3.3 1996/12/27 06:52:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree68/fbdev/fbdev.c,v 3.4 1997/01/25 04:14:58 dawes Exp $ */
 /*
  *
  *  Author: Martin Schaller. Taken from hga2.c
@@ -116,7 +116,7 @@ static Bool fbdevScreenInit(int scr_index, ScreenPtr pScreen, int argc,
 static void fbdevEnterLeaveVT(Bool enter, int screen_idx);
 static void fbdevAdjustFrame(int x, int y);
 static Bool fbdevCloseScreen(int screen_idx, ScreenPtr screen);
-static Bool fbdevValidMode(DisplayModePtr mode);
+static Bool fbdevValidMode(DisplayModePtr mode, Bool verbose, int flag);
 static Bool fbdevSwitchMode(DisplayModePtr mode);
 
 
@@ -433,7 +433,7 @@ static Bool fbdevLookupMode(DisplayModePtr target)
 	    target->CrtcVTotal     = p->CrtcVTotal;
 	    target->CrtcHAdjusted  = p->CrtcHAdjusted;
 	    target->CrtcVAdjusted  = p->CrtcVAdjusted;
-	    if (fbdevValidMode(target)) {
+	    if (fbdevValidMode(target,FALSE,MODE_USED)) {
 		found_mode = TRUE;
 		break;
 	    }
@@ -1040,7 +1040,7 @@ static Bool fbdevCloseScreen(int screen_idx, ScreenPtr screen)
  *		      be rounded up by the Frame Buffer Device
  */
 
-static Bool fbdevValidMode(DisplayModePtr mode)
+static Bool fbdevValidMode(DisplayModePtr mode, Bool verbose, int flag)
 {
     struct fb_var_screeninfo var = initscrvar;
     Bool res = FALSE;

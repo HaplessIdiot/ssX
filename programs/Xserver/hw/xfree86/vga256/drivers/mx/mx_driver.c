@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mx/mx_driver.c,v 3.17 1996/12/23 06:57:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mx/mx_driver.c,v 3.18 1996/12/28 08:18:00 dawes Exp $ */
 /*
  *
  * Driver Stubs Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -761,9 +761,10 @@ unsigned char temp;
  *
  */
 static int
-MXValidMode(mode, verbose)
+MXValidMode(mode, verbose,flag)
 DisplayModePtr mode;
 Bool verbose;
+int flag;
 {
 return MODE_OK;
 }

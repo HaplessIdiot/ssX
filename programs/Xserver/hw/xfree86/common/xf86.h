@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.46 1997/01/12 10:41:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.47 1997/01/18 06:55:28 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -128,7 +128,8 @@ typedef struct {
   int            (* ValidMode)(
 #if NeedNestedPrototypes
     DisplayModePtr target,
-    Bool verbose
+    Bool verbose,
+    int flag
 #endif
 );
   void           (* EnterLeaveVT)(
@@ -249,6 +250,13 @@ typedef struct {
 #define MODE_HSYNC  1		/* hsync out of range */
 #define MODE_VSYNC  2		/* vsync out of range */
 #define MODE_BAD    255		/* unspecified reason */
+
+/* These are the possible flags for ValidMode */
+#define MODE_USED	1	/* this mode is really being used in the */
+				/* modes line of the Display Subsection  */
+#define MODE_SUGGESTED	2	/* this mode is included in the available*/
+				/* modes in the Monitor Section */
+#define MODE_VID	3	/* this is called from the VidMode extension */
 
 /* Indicates the level of DPMS support */
 typedef enum {

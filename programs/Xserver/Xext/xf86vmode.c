@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.29 1996/12/28 08:11:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.30 1997/01/18 06:53:03 dawes Exp $ */
 
 /*
 
@@ -713,7 +713,7 @@ ProcXF86VidModeAddModeLine(client)
     }
 
     /* Check that the driver is happy with the mode */
-    if (vptr->ValidMode(newmptr, xf86Verbose) != MODE_OK) {
+    if (vptr->ValidMode(newmptr, xf86Verbose, MODE_VID) != MODE_OK) {
 	xfree(newmptr->Private);
 	xfree(newmptr);
 	if (clock_added)
@@ -886,7 +886,7 @@ ProcXF86VidModeModModeLine(client)
     }
 
     /* Check that the driver is happy with the mode */
-    if (vptr->ValidMode(&modetmp, xf86Verbose) != MODE_OK) {
+    if (vptr->ValidMode(&modetmp, xf86Verbose, MODE_VID) != MODE_OK) {
 	DEALLOCATE_LOCAL(modetmp.Private);
 	return vidmodeErrorBase + XF86VidModeModeUnsuitable;
     }
@@ -1012,7 +1012,7 @@ ProcXF86VidModeValidateModeLine(client)
 	goto status_reply;
 
     /* Check that the driver is happy with the mode */
-    status = vptr->ValidMode(&modetmp, xf86Verbose);
+    status = vptr->ValidMode(&modetmp, xf86Verbose, MODE_VID);
 
 status_reply:
     if (modetmp.Private)

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.21 1996/12/23 06:35:15 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.22 1997/01/23 12:06:47 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -558,9 +558,10 @@ ET4000W32SaveScreen(start_finish)
  *
  */
 static int
-ET4000W32ValidMode(mode, verbose)
+ET4000W32ValidMode(mode, verbose, flag)
 DisplayModePtr mode;
 Bool verbose;
+int flag;
 {
 return MODE_OK;
 }

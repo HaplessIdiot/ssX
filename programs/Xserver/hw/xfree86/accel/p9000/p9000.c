@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.43 1996/12/23 06:40:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.44 1997/01/18 06:54:51 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -79,7 +79,8 @@ extern int defaultColorVisualClass;
 static int p9000ValidMode(
 #if NeedFunctionPrototypes 
    DisplayModePtr,
-   Bool
+   Bool,
+   int
 #endif
 );
 
@@ -990,9 +991,10 @@ p9000SwitchMode(mode)
  *
  */
 static int
-p9000ValidMode(mode, verbose)
+p9000ValidMode(mode, verbose, flag)
 DisplayModePtr mode;
 Bool verbose;
+int flag;
 {
 return MODE_OK;
 }

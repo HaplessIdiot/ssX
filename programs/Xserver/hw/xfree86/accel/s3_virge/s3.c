@@ -70,7 +70,7 @@ extern int defaultColorVisualClass;
 
 static int s3ValidMode(
 #if NeedFunctionPrototypes
-    DisplayModePtr, Bool
+    DisplayModePtr, Bool, int
 #endif
 );
 
@@ -1805,7 +1805,7 @@ s3GendacClockSelect(freq)
  *			MArk (mvojkovi@ucsd.edu)
  */
 static int
-s3ValidMode(DisplayModePtr pMode, Bool verbose)
+s3ValidMode(DisplayModePtr pMode, Bool verbose, int flag)
 {
     Bool ModeCantPixmux = FALSE;
 

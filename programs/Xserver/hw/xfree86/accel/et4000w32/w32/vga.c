@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.38 1996/12/28 08:14:15 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.39 1997/01/18 06:54:00 dawes Exp $ */ 
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -149,7 +149,8 @@ Bool (* vgaInitFunc)(
 Bool (* vgaValidModeFunc)(
 #if NeedFunctionPrototypes
     DisplayModePtr,
-    Bool
+    Bool,
+    int
 #endif
 ) = (Bool (*)())NoopDDA;
 void * (* vgaSaveFunc)(
@@ -894,9 +895,9 @@ vgaSwitchMode(mode)
  *     to see if the mode can be supported.
  */
 int
-vgaValidMode(mode, verbose)
+vgaValidMode(mode, verbose, flag)
      DisplayModePtr mode;
      Bool verbose;
 {
-  return (vgaValidModeFunc)(mode, verbose);
+  return (vgaValidModeFunc)(mode, verbose, flag);
 }

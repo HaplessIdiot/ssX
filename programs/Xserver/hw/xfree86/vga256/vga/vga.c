@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.70 1997/01/18 06:57:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.71 1997/01/25 04:20:41 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -232,7 +232,8 @@ Bool (* vgaInitFunc)(
 int (* vgaValidModeFunc)(
 #if NeedFunctionPrototypes
     DisplayModePtr,
-    Bool
+    Bool,
+    int
 #endif
 ) = (Bool (*)())NoopDDA;
 void * (* vgaSaveFunc)(
@@ -1758,9 +1759,10 @@ vgaSwitchMode(mode)
  *     to see if the mode can be supported.
  */
 int
-vgaValidMode(mode, verbose)
+vgaValidMode(mode, verbose, flag)
      DisplayModePtr mode;
      Bool verbose;
+     int flag;
 {
-  return (*vgaValidModeFunc)(mode, verbose);
+  return (*vgaValidModeFunc)(mode, verbose, flag);
 }

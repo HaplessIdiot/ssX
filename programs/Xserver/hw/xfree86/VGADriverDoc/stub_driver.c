@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.17 1996/12/23 06:32:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.18 1996/12/28 08:12:55 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
@@ -810,9 +810,10 @@ STUBFbInit()
 }
 
 static int
-STUBValidMode(mode, verbose)
+STUBValidMode(mode, verbose, flag)
 DisplayModePtr mode;
 Bool verbose;
+int flag;
 {
 	/*
 	 * Code to check if a mode is suitable for the selected chipset.

@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/apm/apm_driver.c,v 3.6 1996/12/28 08:16:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/apm/apm_driver.c,v 3.7 1997/01/18 06:56:09 dawes Exp $ */
 
 /*
  * These are X and server generic header files.
@@ -997,9 +997,10 @@ int x, y;
  *
  */
 static int
-ApmValidMode(mode, verbose)
+ApmValidMode(mode, verbose, flag)
 DisplayModePtr mode;
 Bool verbose;
+int flag;
 {
 	/* Check for CRTC timing bits overflow. */
 	if (mode->VTotal > 2047) {

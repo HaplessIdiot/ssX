@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.52 1996/12/23 06:32:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.53 1997/01/18 06:53:54 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -79,7 +79,8 @@ extern void SetTimeSinceLastInputEvent();
 static int agxValidMode(
 #if NeedFunctionPrototypes
     DisplayModePtr,
-    Bool
+    Bool,
+    int
 #endif
 ); 
 
@@ -1902,9 +1903,10 @@ agxAdjustFrame(x, y)
  *
  */
 static int
-agxValidMode(mode, verbose)
+agxValidMode(mode, verbose, flag)
 DisplayModePtr mode;
 Bool verbose;
+int flag;
 {
 return MODE_OK;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.24 1996/12/28 08:16:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.25 1997/01/23 11:02:46 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -2068,9 +2068,10 @@ int x, y;
  *
  */
 static int
-ArkValidMode(mode, verbose)
+ArkValidMode(mode, verbose,flag)
 DisplayModePtr mode;
 Bool verbose;
+int flag;
 {
 	/* Check for CRTC timing bits overflow. */
 	if (mode->HTotal > 4088) {

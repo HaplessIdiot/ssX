@@ -3702,9 +3702,10 @@ CHIPSAdjust(x, y)
 }
 
 static int
-CHIPSValidMode(mode, verbose)
+CHIPSValidMode(mode, verbose, flag)
     DisplayModePtr mode;
     Bool verbose;
+    int flag;
 {
     return MODE_OK;
 }

@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/nv/nv_driver.c,v 3.4 1996/12/28 08:18:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/nv/nv_driver.c,v 3.5 1997/01/08 20:51:10 dawes Exp $ */
 
 #include <math.h>
 #include "X.h"
@@ -112,7 +112,7 @@ static Bool NVProbe(void);
 static char *NVIdent(int n);
 static void NVEnterLeave(Bool enter);
 static Bool NVInit(DisplayModePtr mode);
-static int NVValidMode(DisplayModePtr mode,Bool verbose);
+static int NVValidMode(DisplayModePtr mode,Bool verbose, int flag);
 static void *NVSave(void *data);
 static void NVRestore(void *data);
 static void NVAdjust(int x,int y);
@@ -598,7 +598,7 @@ static void NVAdjust(int x, int y)
  
 }
 
-static int NVValidMode(DisplayModePtr mode,Bool verbose)
+static int NVValidMode(DisplayModePtr mode,Bool verbose, int flag)
 {
   return (MODE_OK);
 }

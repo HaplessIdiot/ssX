@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.154 1997/01/14 22:16:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.155 1997/01/18 06:54:57 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -78,7 +78,7 @@ extern int defaultColorVisualClass;
 
 static int s3ValidMode(
 #if NeedFunctionPrototypes 
-    DisplayModePtr, Bool  
+    DisplayModePtr, Bool, int
 #endif
 );
 
@@ -1737,7 +1737,7 @@ redo_mode_lookup:
       else {
    	not_safe = FALSE;
 
-	if(s3ValidMode(pMode,TRUE) != MODE_OK)
+	if(s3ValidMode(pMode,TRUE,MODE_USED) != MODE_OK)
 	   xf86DeleteMode(&s3InfoRec, pMode);
 	else {
 	 /*
@@ -2103,7 +2103,7 @@ s3DisconnectPCI(vendor, device)
 #endif
 
 static int
-s3ValidMode(DisplayModePtr pMode, Bool verbose)
+s3ValidMode(DisplayModePtr pMode, Bool verbose, int flag)
 {
     Bool ModeCantPixmux = FALSE;
 

@@ -2096,9 +2096,10 @@ TVGA8900Adjust(x, y)
  *
  */
 static int
-TVGA8900ValidMode(mode, verbose)
+TVGA8900ValidMode(mode, verbose,flag)
 DisplayModePtr mode;
 Bool verbose;
+int flag;
 {
 #ifdef MONOVGA
 	if ( (TVGAchipset == TVGA8900C) ||

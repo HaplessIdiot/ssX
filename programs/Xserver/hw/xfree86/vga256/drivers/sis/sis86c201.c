@@ -25,7 +25,7 @@
  * Modified 1996 by Xavier Ducoin <xavier@rd.lectra.fr>
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.16 1997/01/12 10:43:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.17 1997/01/18 06:56:50 dawes Exp $ */
 
 /*#define DEBUG*/
 /*#define IO_DEBUG*/
@@ -1392,9 +1392,10 @@ SISAdjust(x, y)
  *
  */
 static int
-SISValidMode(mode, verbose)
+SISValidMode(mode, verbose,flag)
 DisplayModePtr mode;
 Bool verbose;
+int flag;
 {
 	return MODE_OK;
 }

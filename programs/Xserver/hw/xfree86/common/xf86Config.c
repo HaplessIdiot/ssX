@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.112 1997/01/18 06:55:31 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.113 1997/01/23 11:01:40 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -3268,7 +3268,7 @@ xf86LookupMode(target, driver, flags)
     if (!strcmp(p->name, target->name))		/* names equal ? */
     {
       /* First check if the driver objects to the mode */
-      if ((driver->ValidMode)(p, xf86Verbose) != MODE_OK)
+      if ((driver->ValidMode)(p, xf86Verbose, MODE_USED) != MODE_OK)
       {
          ErrorF("%s %s: Mode \"%s\" rejected by driver.  Deleted.\n",
                 XCONFIG_PROBED,driver->name, target->name );
@@ -3436,7 +3436,7 @@ xf86LookupMode(target, driver, flags)
      * new XF86Config organization. - SRA
      */
     if (found_mode)
-      if ((driver->ValidMode)(target, xf86Verbose) != MODE_OK)
+      if ((driver->ValidMode)(target, xf86Verbose, MODE_USED) != MODE_OK)
         {
          ErrorF("%s %s: Unable to support mode \"%s\"\n",
               XCONFIG_GIVEN,driver->name, target->name );
@@ -3518,7 +3518,8 @@ xf86PruneModes(monp, allmodes, scrp, card)
 	 */
 	while (dispmp &&
 	       (card ?
-		 ((scrp->ValidMode)(dispmp, xf86Verbose) != MODE_OK) :
+		 ((scrp->ValidMode)(dispmp, xf86Verbose, MODE_SUGGESTED) 
+		 	!= MODE_OK) :
 		 (xf86CheckMode(scrp, dispmp, monp, xf86Verbose) != MODE_OK))) {
 		olddispmp = dispmp;
 		dispmp = dispmp->next;
@@ -3532,7 +3533,8 @@ xf86PruneModes(monp, allmodes, scrp, card)
 	remainder = dispmp;
 	while ( dispmp->next ) {
 		if (card ?
-		     ((scrp->ValidMode)(dispmp->next, xf86Verbose) != MODE_OK) :
+		     ((scrp->ValidMode)(dispmp->next,xf86Verbose,MODE_SUGGESTED)
+		     		!= MODE_OK) :
 		     (xf86CheckMode(scrp, dispmp->next, monp, xf86Verbose) !=
                       MODE_OK)) {
 			olddispmp = dispmp->next;

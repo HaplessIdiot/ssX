@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.21 1997/01/18 06:54:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.22 1997/01/24 01:02:07 dawes Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -42,7 +42,8 @@ static
 int i128ValidMode(
 #if NeedFunctionPrototypes
     DisplayModePtr,
-    Bool
+    Bool,
+    int
 #endif
 ); 
 
@@ -941,9 +942,10 @@ int freq;
  *
  */
 static int
-i128ValidMode(mode, verbose)
+i128ValidMode(mode, verbose,flag)
 DisplayModePtr mode;
 Bool verbose;
+int flag;
 {
 return MODE_OK;
 }

@@ -1,4 +1,6 @@
- 410. Add XAA S3 driver to the SVGA server (Markk Vojkovich).
+ 412. Some fixed for Linux/m68k (Geert Uytterhoeven).
+ 411. Add XAA S3 driver to the SVGA server (Markk Vojkovich).
+ 410. Add a flag argument to the ValidMode functions (Dirk Hohndel).
  409. Implemented (but disabled) left edge cliping for color expansion for
       HiQV chips (David Bateman).
  408. 8x8 mono pattern fills for HiQV chips (David Bateman).
@@ -15,7 +17,9 @@
  397. Improved 24bpp support for ET6000 (Koen Gadeyne).
  396. Add memory bandwidth as a concept to the W32 RAMDAC code (Koen Gadeyne).
  395. Move W32/ET6k clock setting functions into tseng_clock.c. This together
-      with change 394 breaks the W32 server. (Koen Gadeyne).
+      with change 394 breaks the W32 server and the et4000 driver in the
+      VGA2 and VGA16 server (all those are disabled by default for now) 
+      (Koen Gadeyne).
  394. Move RAMDAC support from W32 server in SVGA server (Koen Gadeyne).
 
 XFree86 3.2Aa (10 February 1997)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.61 1997/01/18 06:54:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.62 1997/01/19 12:49:31 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -97,7 +97,8 @@ int mach64PixmapIndex;
 static int mach64ValidMode(
 #if NeedFunctionPrototypes
     DisplayModePtr,
-    Bool
+    Bool,
+    int
 #endif
 ); 
 
@@ -2017,7 +2018,7 @@ mach64SwitchMode(mode)
  *
  */
 static int
-mach64ValidMode(mode, verbose)
+mach64ValidMode(mode, verbose, flag)
 DisplayModePtr mode;
 Bool verbose;
 {

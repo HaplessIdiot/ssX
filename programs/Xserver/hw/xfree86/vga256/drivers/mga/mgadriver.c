@@ -1662,8 +1662,10 @@ int x, y;
  * Checks if a mode is suitable for the selected chipset.
  */
 static Bool
-MGAValidMode(mode)
+MGAValidMode(mode,verbose,flag)
 DisplayModePtr mode;
+Bool verbose;
+int flag;
 {
 	int lace = 1 + ((mode->Flags & V_INTERLACE) != 0);
 	

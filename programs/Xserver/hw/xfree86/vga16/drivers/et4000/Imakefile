@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/11 1996/09/28 17:25:08 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/drivers/et4000/Imakefile,v 3.6 1996/02/04 09:10:51 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/drivers/et4000/Imakefile,v 3.7 1996/12/23 06:52:09 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -29,6 +29,7 @@ NormalLibraryObjectRule()
 NormalRelocatableTarget(et4_drv, $(OBJS))
 
 LinkSourceFile(et4_driver.c,$(VGADRIVERSRC)/et4000)
+LinkSourceFile(tseng.h,$(VGADRIVERSRC)/et4000)
 ObjectFromSpecialAsmSource(et4_bank,$(VGADRIVERSRC)/et4000/bank,NullParameter)
 
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga16/et4000)
