@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miarc.c,v 3.11 2001/10/28 03:34:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miarc.c,v 3.12 2001/12/14 20:00:20 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -247,7 +247,7 @@ static void newFinalSpan(int y, register int xmin, register int xmax);
 static void drawArc(xArc *tarc, int l, int a0, int a1, miArcFacePtr right,
 		    miArcFacePtr left);
 static void drawZeroArc(DrawablePtr pDraw, GCPtr pGC, xArc *tarc, int lw,
-			miArcFacePtr right, miArcFacePtr left);
+			miArcFacePtr left, miArcFacePtr right);
 static void miArcJoin(DrawablePtr pDraw, GCPtr pGC, miArcFacePtr pLeft,
 		      miArcFacePtr pRight, int xOrgLeft, int yOrgLeft,
 		      double xFtransLeft, double yFtransLeft,
@@ -2462,8 +2462,8 @@ drawZeroArc (
     GCPtr         pGC,
     xArc          *tarc,
     int		  lw,
-    miArcFacePtr	right,
-    miArcFacePtr	left)
+    miArcFacePtr	left,
+    miArcFacePtr	right)
 {
 	double	x0 = 0.0, y0 = 0.0, x1 = 0.0, y1 = 0.0, w, h, x, y;
 	double	xmax, ymax, xmin, ymin;
