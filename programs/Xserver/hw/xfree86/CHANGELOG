@@ -1,4 +1,8 @@
 XFree86 4.0.99.x (xx April 2001)
+ 371. Ensure NoInt10 is used for PC98 (Alan Hourihane).
+ 370. Fix PC98 issues with the trident driver (#4547, Akio Morita).
+ 369. Add a NoInt10 option to the int10 module, allowing it to be disabled
+      per entity (Alan Hourihane).
  368. Fixes to the XDarwin application:
        - X clients are now started correctly.
        - Shuts down cleanly.
@@ -12923,4 +12927,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1678 2001/04/09 00:04:09 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1679 2001/04/09 03:32:05 torrey Exp $
