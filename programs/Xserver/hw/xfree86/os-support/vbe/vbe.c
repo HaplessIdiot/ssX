@@ -270,11 +270,6 @@ vbeDoEDID(vbeInfoPtr pVbe, pointer pDDCModule)
 	xf86LoaderReqSymLists(ddcSymbols, NULL);
     }
         
-    if (!pDDCModule) {
-        xf86UnloadSubModule(pModule);
-	return NULL;
-    }
-
     DDC_data = vbeReadEDID(pVbe);
 
     if (!DDC_data) 
@@ -282,5 +277,7 @@ vbeDoEDID(vbeInfoPtr pVbe, pointer pDDCModule)
     
     pMonitor = xf86InterpretEDID(pVbe->pInt10->scrnIndex, DDC_data);
 
+    if (!pDDCModule)
+        xf86UnloadSubModule(pModule);
     return pMonitor;
 }

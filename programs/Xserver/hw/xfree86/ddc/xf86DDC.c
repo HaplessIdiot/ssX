@@ -106,13 +106,7 @@ static unsigned char * DDCRead_DDC2(
     int len
 );
 
-typedef enum {
-    DDCOPT_NODDC1,
-    DDCOPT_NODDC2,
-    DDCOPT_NODDC
-} DDCOpts;
-
-static OptionInfoRec DDCOptions[] = {
+OptionInfoRec DDCOptions[] = {
     { DDCOPT_NODDC1,	"NoDDC1",	OPTV_BOOLEAN,	{0},	FALSE },
     { DDCOPT_NODDC2,	"NoDDC2",	OPTV_BOOLEAN,	{0},	FALSE },
     { DDCOPT_NODDC,	"NoDDC",	OPTV_BOOLEAN,	{0},	FALSE },
