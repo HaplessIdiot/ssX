@@ -1,4 +1,5 @@
 XFree86 4.3.99.903 (xx December 2003)
+ 713. Add a missing code for jisx0208.1990-0.enc (Chisato Yamauchi).
  712. Xtt2 update: Restore the behaviour of "bw" TTCap option for Netscape 4.x.
       (Chisato Yamauchi).
  711. Fix neomagic driver default mode selection to match the detected
@@ -18425,7 +18426,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3060 2003/12/31 05:07:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3061 2003/12/31 05:10:04 dawes Exp $
 
 
 
