@@ -1,4 +1,5 @@
 XFree86 4.X.Ya (?? January 2001)
+1258. Fix Mach64 Mono 8x8 Pattern acceleration (Marc La France).
 1257. Experiment with setting the server's "vendor release" value from
       the information in xf86Version.h, and modify xdpyinfo to show the
       server version in an easily readable format (David Dawes).
@@ -12208,4 +12209,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1515 2001/01/11 03:36:55 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1516 2001/01/12 19:28:27 dawes Exp $

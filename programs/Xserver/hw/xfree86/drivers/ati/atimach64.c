@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.27 2000/12/13 00:25:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.28 2001/01/06 20:58:06 tsi Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1347,8 +1347,11 @@ ATIMach64SetupForMono8x8PatternFill
 {
     ATIPtr pATI = ATIPTR(pScreenInfo);
 
-    if (pATI->XModifier == 1)
-        outf(DST_CNTL, DST_X_DIR | DST_Y_DIR);
+    ATIMach64WaitForFIFO(pATI, 3);
+    outf(DP_WRITE_MASK, planemask);
+    outf(DP_SRC, DP_MONO_SRC_PATTERN |
+        SetBits(SRC_FRGD, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
+    outf(DP_FRGD_CLR, fg);
 
     if (bg == -1)
         outf(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX) |
@@ -1356,22 +1359,20 @@ ATIMach64SetupForMono8x8PatternFill
     else
     {
         ATIMach64WaitForFIFO(pATI, 2);
+        outf(DP_BKGD_CLR, bg);
         outf(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX) |
             SetBits(ATIMach64ALU[rop], DP_BKGD_MIX));
-        outf(DP_BKGD_CLR, bg);
     }
 
-    ATIMach64WaitForFIFO(pATI, 7);
-    outf(DP_WRITE_MASK, planemask);
-    outf(DP_SRC, DP_MONO_SRC_PATTERN |
-        SetBits(SRC_FRGD, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
-    outf(DP_FRGD_CLR, fg);
-
+    ATIMach64WaitForFIFO(pATI, 4);
     outf(PAT_REG0, patx);
     outf(PAT_REG1, paty);
     outf(PAT_CNTL, PAT_MONO_EN);
 
     outf(CLR_CMP_CNTL, CLR_CMP_FN_FALSE);
+
+    if (pATI->XModifier == 1)
+        outf(DST_CNTL, DST_X_DIR | DST_Y_DIR);
 }
 
 /*
