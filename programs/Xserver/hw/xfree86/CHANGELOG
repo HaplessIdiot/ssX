@@ -1,4 +1,5 @@
 XFree86 4.4.99.3 (xx March 2004)
+  53. Add missing `make all` rule in sdk/Imakefile (Bugzilla #1323).
   52. Fix XDarwin's launch of X clients by double clicking in the Finder when
       there is a space in the path (Torrey T. Lyons).
   51. Change crosscompile default for PreIncDir & StdIncDir (#5725,
@@ -18786,7 +18787,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3201 2004/03/31 23:02:17 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3202 2004/04/01 00:17:03 torrey Exp $
 
 
 
