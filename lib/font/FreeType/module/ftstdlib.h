@@ -1,5 +1,5 @@
 /* ftstdlib.h -- modified for XFree86. */
-/* $XFree86: xc/lib/font/FreeType/ftstdlib.h,v 1.4 2002/10/10 01:18:31 tsi Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftstdlib.h,v 1.5 2003/02/22 06:00:36 dawes Exp $ */
 
 #ifndef __FTSTDLIB_H__
 #define __FTSTDLIB_H__

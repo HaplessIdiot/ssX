@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/FreeType/ftmodule.h,v 1.5 2003/10/24 16:33:08 tsi Exp $ */
 
 FT_USE_MODULE(autohint_module_class)
 FT_USE_MODULE(cff_driver_class)

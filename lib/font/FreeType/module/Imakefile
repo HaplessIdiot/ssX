@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/font/FreeType/module/Imakefile,v 1.15 2003/10/19 18:53:50 dawes Exp $
+XCOMM $XFree86: xc/lib/font/FreeType/module/Imakefile,v 1.16 2003/11/05 16:58:35 tsi Exp $
 
 FT2SOURCEDIR = $(TOP)/extras/freetype2/src
 FT2INCDIR = $(TOP)/extras/freetype2/include
@@ -8,7 +8,7 @@ FT2INCDIR = $(TOP)/extras/freetype2/include
 
 DEFINES = -DFONTMODULE Freetype2BuildDefines -DXFREE86_FT2
 
-INCLUDES = -I.. -I$(FONTINCSRC) -I../../include -I$(XINCLUDESRC) \
+INCLUDES = -I. -I.. -I$(FONTINCSRC) -I../../include -I$(XINCLUDESRC) \
            -I$(SERVERSRC)/include \
 	   -I$(FT2INCDIR) \
            -I$(FT2SOURCEDIR)/base \

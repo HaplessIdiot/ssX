@@ -14,7 +14,7 @@
 /*  understand and accept it fully.                                        */
 /*                                                                         */
 /***************************************************************************/
-/* $XFree86: xc/lib/font/FreeType/ftheader.h,v 1.3 2002/10/01 00:02:10 alanh Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftheader.h,v 1.4 2003/05/29 03:05:08 dawes Exp $ */
 
 #ifndef __FT_HEADER_H__
 #define __FT_HEADER_H__
