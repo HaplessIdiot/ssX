@@ -1,5 +1,5 @@
 XCOMM site:  $XConsortium: site.sample /main/19 1995/12/14 13:03:29 matt $
-XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.8 1995/05/27 01:56:50 dawes Exp $
+XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.9 1996/01/05 13:06:42 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -54,7 +54,7 @@ XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.8 1995/05/27 01:56:50 dawes Exp
 #ifdef AfterVendorCF
 
 #ifndef ProjectRoot
-#define ProjectRoot /usr/X11R6.1
+#define ProjectRoot /usr/X11R6
 #endif
 
 /* Only set HasXdmAuth to YES if you have a Wraphelp.c file. */

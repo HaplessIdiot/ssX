@@ -1,5 +1,5 @@
 /* $XConsortium: xkb.c /main/15 1996/01/01 12:45:43 kaleb $ */
-/* $XFree86: xc/programs/Xserver/xkb/xkb.c,v 3.1 1996/01/05 13:20:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkb.c,v 3.2 1996/01/07 03:47:27 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -6230,6 +6230,7 @@ XkbExtensionInit()
 {
     ExtensionEntry *extEntry;
 
+	ErrorF("In XkbExtensionInit\n");
     if (extEntry = AddExtension(XkbName, XkbNumberEvents, XkbNumberErrors,
 				 ProcXkbDispatch, SProcXkbDispatch,
 				 XkbResetProc, StandardMinorOpcode)) {
@@ -6238,6 +6239,7 @@ XkbExtensionInit()
 	XkbErrorBase = (unsigned char)extEntry->errorBase;
 	XkbKeyboardErrorCode = XkbErrorBase+XkbKeyboard;
 	RT_XKBCLIENT = CreateNewResourceType(XkbClientGone);
+	ErrorF("In XkbExtensionInit - succeeded\n");
     }
     return;
 }

@@ -1,7 +1,7 @@
  GNU indent options:
 
 -bad -bap -c40 -cd40 -ncdb -ci4 -cli0 -cp0 -ncs -d0
--di4 -i4 -ip4 -l78 -lp -npcs -psl -sc -sob -ss -br -ce
+-di4 -i4 -ip4 -l78 -lp -npcs -psl -sob -ss -br -ce
 
 -bad  forces a blank line after every block of declarations.
 -bap  forces a blank line after every procedure body.
@@ -20,7 +20,6 @@
 -lp   line up continued lines at parentheses
 -npcs do not put space after the function in function calls
 -psl  put the type of a procedure on the line before its name
--sc   put the `*' character at the left of comments
 -sob  swallow optional blank lines
 -ss   on one-line `for' and `while' statments, force a blank before the semicolo
 n
