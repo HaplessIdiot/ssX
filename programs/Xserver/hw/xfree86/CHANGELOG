@@ -1,4 +1,6 @@
 XFree86 3.9d (9 May 1997)
+ 764. Renumber option flag definitions to allow more space in the various
+      categories.
  763. Fix problems with DGA on 4/8MB Millenniums (#390, Radoslaw Kapitan).
  762. Fix Mystique display problems and dim text font after exit problems
       (#378,379, Guy Desbief).
@@ -4516,4 +4518,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.460 1997/05/09 09:19:39 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.461 1997/05/09 11:13:05 hohndel Exp $
