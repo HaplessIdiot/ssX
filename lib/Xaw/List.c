@@ -58,6 +58,8 @@ I also added the freedoms member of the list widget part. */
 #define WidthFree( w )   !(((ListWidget)(w))->list.freedoms & WidthLock )
 #define LongestFree( w ) !(((ListWidget)(w))->list.freedoms & LongestLock )
 
+#define MaxSize 32767
+
 /* 
  * Default Translation table.
  */
@@ -126,6 +128,8 @@ static XtActionsRec actions[] = {
       {"Set",            Set},
       {"Unset",          Unset},
 };
+
+#define Superclass (&simpleClassRec)
 
 ListClassRec listClassRec = {
   {
@@ -676,6 +680,9 @@ Region junk;
     }
     else
         FindCornerItems(w, event, &ul_item, &lr_item);
+
+    if (*Superclass->core_class.expose)
+      (*Superclass->core_class.expose)(w, event, junk);
     
     for (item = ul_item; (item <= lr_item && item < lw->list.nitems) ; item++)
       if (ItemInRectangle(w, ul_item, lr_item, item))
@@ -773,7 +780,8 @@ Dimension *width, *height;
 {
     ListWidget lw = (ListWidget) w;
     Boolean change = FALSE;
-    
+    unsigned long width2 = 0, height2 = 0;
+
 /* 
  * If force columns is set then always use number of columns specified
  * by default_cols.
@@ -790,16 +798,15 @@ Dimension *width, *height;
             of inter-column column_space 's as columns.  There should thus be a
             half column_space margin on each side of each column...*/
 
-	    *width = lw->list.ncols * lw->list.col_width
+	    width2 = lw->list.ncols * lw->list.col_width
 	           + 2 * lw->list.internal_width;
 	    change = TRUE;
 	}
 	if (yfree) {		/* If allowed resize height. */
-	    *height = (lw->list.nrows * lw->list.row_height)
+	    height2 = (lw->list.nrows * lw->list.row_height)
                     + 2 * lw->list.internal_height;
 	    change = TRUE;
 	}
-	return(change);
     }
 
 /*
@@ -808,13 +815,12 @@ Dimension *width, *height;
  * just fit the window.
  */
 
-    if (xfree && yfree) {
+    else if (xfree && yfree) {
         lw->list.ncols = lw->list.default_cols;
 	if (lw->list.ncols <= 0) lw->list.ncols = 1;
-	lw->list.nrows = ( ( lw->list.nitems - 1) / lw->list.ncols) + 1 ;
-        *width = lw->list.ncols * lw->list.col_width
+        width2 = lw->list.ncols * lw->list.col_width
 	       + 2 * lw->list.internal_width;
-	*height = (lw->list.nrows * lw->list.row_height)
+	height2 = (lw->list.nrows * lw->list.row_height)
                 + 2 * lw->list.internal_height;
 	change = TRUE;
     }
@@ -829,7 +835,7 @@ Dimension *width, *height;
 	if (lw->list.ncols <= 0) lw->list.ncols = 1;
 	lw->list.nrows = ( ( lw->list.nitems - 1) / lw->list.ncols) + 1 ;
 	if ( yfree ) {
-  	    *height = (lw->list.nrows * lw->list.row_height)
+  	    height2 = (lw->list.nrows * lw->list.row_height)
 		    + 2 * lw->list.internal_height;
 	    change = TRUE;
 	}
@@ -844,10 +850,38 @@ Dimension *width, *height;
 	                 / (int)lw->list.row_height;
 	if (lw->list.nrows <= 0) lw->list.nrows = 1;
 	lw->list.ncols = (( lw->list.nitems - 1 ) / lw->list.nrows) + 1;
-	*width = lw->list.ncols * lw->list.col_width 
+	width2 = lw->list.ncols * lw->list.col_width 
 	       + 2 * lw->list.internal_width;
 	change = TRUE;
-    }      
+    }
+
+    /* Quick hack: Silently changes lw->list.nrows if the list widget window
+     * is too big. This is useful at least for xman.
+     */
+    if (!lw->list.force_cols)
+      {
+	while (1)
+	  {
+	    lw->list.nrows = ( ( lw->list.nitems - 1) / lw->list.ncols) + 1 ;
+	    width2 = lw->list.ncols * lw->list.col_width
+	      + 2 * lw->list.internal_width;
+	    height2 = (lw->list.nrows * lw->list.row_height)
+	      + 2 * lw->list.internal_height;
+	    if (width2 >= MaxSize && height2 >= MaxSize)
+	      break;
+	    if (height2 > MaxSize)
+	      ++lw->list.ncols;
+	    else if (width2 > MaxSize && lw->list.ncols > 1)
+	      --lw->list.ncols;
+	    else
+	      break;
+	  }
+      }
+    if (width2)
+      *width = width2;
+    if (height2)
+      *height = height2;
+
     return(change);
 }
 

@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
  *
  */
 
-/* $XFree86: xc/lib/Xaw/MenuButton.c,v 3.0.6.2 1998/05/20 05:06:17 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/MenuButton.c,v 3.1 1998/06/28 08:41:44 dawes Exp $ */
 
 /***********************************************************************
  *
@@ -55,6 +55,8 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xaw/MenuButtoP.h>
 
 #include "XawAlloc.h"
+
+#include "Private.h"
 
 static void ClassInitialize();
 static void PopupMenu();
@@ -202,6 +204,21 @@ Cardinal * num_params;
   menu_x = button_x;
   menu_y = button_y + button_height;
 
+  if (menu_y >= 0) {
+    int scr_height = HeightOfScreen(XtScreen(menu));
+    if (menu_y + menu_height > scr_height)
+      menu_y = button_y - menu_height;
+    if (menu_y < 0)
+      {
+	menu_y = scr_height - menu_height;
+	menu_x = button_x + XtWidth(w) + (XtBorderWidth(w)<<1);
+	if (menu_x + menu_width > WidthOfScreen(XtScreen(menu)))
+	  menu_x = button_x - menu_width;
+      }
+  }
+  if (menu_y < 0)
+    menu_y = 0;
+
   if (menu_x >= 0) {
     int scr_width = WidthOfScreen(XtScreen(menu));
     if (menu_x + menu_width > scr_width)
@@ -209,14 +226,6 @@ Cardinal * num_params;
   }
   if (menu_x < 0) 
     menu_x = 0;
-
-  if (menu_y >= 0) {
-    int scr_height = HeightOfScreen(XtScreen(menu));
-    if (menu_y + menu_height > scr_height)
-      menu_y = scr_height - menu_height;
-  }
-  if (menu_y < 0)
-    menu_y = 0;
 
   num_args = 0;
   XtSetArg(arglist[num_args], XtNx, menu_x); num_args++;

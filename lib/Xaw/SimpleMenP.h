@@ -43,6 +43,11 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xaw/SmeP.h>
 #include <X11/ShellP.h>
 
+#ifndef XAW_DL_DEFINED
+#define XAW_DL_DEFINED
+typedef struct _XawDL XawDisplayList;
+#endif
+
 typedef struct {
     XtPointer extension;		/* For future needs. */
 } SimpleMenuClassPart;
@@ -86,6 +91,10 @@ typedef struct _SimpleMenuPart {
 
   SmeObject entry_set;		/* The entry that is currently set or
 				   highlighted. */
+
+  Dimension left_margin;
+  Dimension right_margin;
+  XawDisplayList *display_list;
 } SimpleMenuPart;
 
 typedef struct _SimpleMenuRec {

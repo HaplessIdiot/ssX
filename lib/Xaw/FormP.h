@@ -94,7 +94,7 @@ typedef struct _FormPart {
     /* resources */
     int		default_spacing;    /* default distance between children */
     /* private state */
-    Dimension	old_width, old_height; /* last known dimensions		 */
+    Dimension	old_width, old_height; /* used as a 'reference' value    */
     int		no_refigure;	    /* no re-layout while > 0		 */
     Boolean	needs_relayout;	    /* next time no_refigure == 0	 */
     Boolean	resize_in_layout;   /* should layout() do geom request?  */
@@ -126,10 +126,11 @@ typedef struct _FormConstraintsPart {
  * Private contstraint resources.
  */
 
-/*
- * What the size of this child would be if we did not impose the 
- * constraint the width and height must be greater than zero (0).
- */
+  /*
+   * Note: these variables are used to store a size known to be 'good'
+   * and that is used to avoid integer rounding problems when resizing
+   * widgets.
+   */
     short	virtual_width, virtual_height;
 
 /*
@@ -140,6 +141,11 @@ typedef struct _FormConstraintsPart {
 
     LayoutState	layout_state;	/* temporary layout state		*/
     Boolean	deferred_resize; /* was resized while no_refigure is set */
+
+  /*
+   * Note: used like virtual_width and virtual_height
+   */
+    short virtual_x, virtual_y;
 } FormConstraintsPart;
 
 typedef struct _FormConstraintsRec {

@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
  */
 
-/* $XFree86: xc/lib/Xaw/SmeBSB.c,v 1.1.1.2.2.3 1998/05/20 05:06:18 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SmeBSB.c,v 1.2 1998/06/28 08:41:46 dawes Exp $ */
 
 /*
  * SmeBSB.c - Source code file for BSB Menu Entry object.
@@ -58,6 +58,8 @@ extern int abs();
 #include <stdio.h>
 
 #include "XawAlloc.h"
+
+#include "Private.h"
 
 #define ONE_HUNDRED 100
 
@@ -258,7 +260,7 @@ Region region;
     if (XtIsSensitive(w) && XtIsSensitive( XtParent(w) ) ) {
 	if ( w == XawSimpleMenuGetActiveEntry(XtParent(w)) ) {
 	    XFillRectangle(XtDisplayOfObject(w), XtWindowOfObject(w), 
-			   entry->sme_bsb.norm_gc, 0, y_loc,
+			   entry->sme_bsb.norm_gc, XtX(w), y_loc,
 			   (unsigned int) entry->rectangle.width,
 			   (unsigned int) entry->rectangle.height);
 	    gc = entry->sme_bsb.rev_gc;
@@ -315,14 +317,15 @@ Region region;
 		  (fontset_ascent + fontset_descent)) / 2 + fontset_ascent;
 
             XmbDrawString(XtDisplayOfObject(w), XtWindowOfObject(w),
-		    entry->sme_bsb.fontset, gc, x_loc, y_loc, label, len);
+		    entry->sme_bsb.fontset, gc,
+			  XtX(w) + x_loc, y_loc, label, len);
         }
         else {
             y_loc += ((int)entry->rectangle.height - 
 		  (font_ascent + font_descent)) / 2 + font_ascent;
 	
             XDrawString(XtDisplayOfObject(w), XtWindowOfObject(w), gc,
-		    x_loc, y_loc, label, len);
+		    XtX(w) + x_loc, y_loc, label, len);
         }
     }
 
@@ -460,7 +463,7 @@ Widget w;
 
     XFillRectangle(XtDisplayOfObject(w), XtWindowOfObject(w),
 		   entry->sme_bsb.invert_gc, 
-		   0, (int) entry->rectangle.y,
+		   XtX(w), (int) entry->rectangle.y,
 		   (unsigned int) entry->rectangle.width, 
 		   (unsigned int) entry->rectangle.height);
 }
@@ -539,7 +542,7 @@ GC gc;
 
   if (entry->sme_bsb.left_bitmap != None) {
     x_loc = (int)(entry->sme_bsb.left_margin - 
-		  entry->sme_bsb.left_bitmap_width) / 2;
+		  entry->sme_bsb.left_bitmap_width) / 2 + XtX(w);
 
     y_loc = entry->rectangle.y + 
 		(int)(entry->rectangle.height -
@@ -559,7 +562,7 @@ GC gc;
   if (entry->sme_bsb.right_bitmap != None) {
     x_loc = entry->rectangle.width - 
 		(int)(entry->sme_bsb.right_margin +
-		      entry->sme_bsb.right_bitmap_width) / 2;
+		      entry->sme_bsb.right_bitmap_width) / 2 + XtX(w);
 
     y_loc = entry->rectangle.y + 
 		(int)(entry->rectangle.height -

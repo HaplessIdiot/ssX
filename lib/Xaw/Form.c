@@ -48,7 +48,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xaw/Form.c,v 1.1.1.1.12.2 1998/05/16 09:05:19 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Form.c,v 1.3 1998/06/28 08:41:44 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -273,8 +273,7 @@ static void Initialize(request, new, args, num_args)
 {
     FormWidget fw = (FormWidget)new;
 
-    fw->form.old_width = fw->core.width;
-    fw->form.old_height = fw->core.height;
+    fw->form.old_width = fw->form.old_height = 0;
     fw->form.no_refigure = False;
     fw->form.needs_relayout = False;
     fw->form.resize_in_layout = True;
@@ -402,9 +401,6 @@ static Boolean Layout(fw, width, height, force_relayout)
 	    ChangeFormGeometry( (Widget) fw, FALSE, maxx, maxy, 
 				(Dimension *)NULL, (Dimension *)NULL);
 
-	fw->form.old_width  = fw->core.width;
-	fw->form.old_height = fw->core.height;
-
 	ret_val = (always_resize_children || ( (fw->core.width >= maxx) &&
 					      (fw->core.height >= maxy)));
 
@@ -516,7 +512,7 @@ static Position TransformCoord(loc, old, new, type)
 {
     if (type == XtRubber) {
         if ( ((int) old) > 0)
-	    loc = (int)(loc * new) / (int)old;
+	    loc = (Position)(loc * (double)new / (double)old);
     }
     else if (type == XtChainBottom || type == XtChainRight)
       loc += (Position)new - (Position)old;
@@ -535,43 +531,47 @@ static void Resize(w)
     Widget *childP;
     Position x, y;
     Dimension width, height;
+    Boolean unmap = XtIsRealized(w)
+      && w->core.mapped_when_managed
+      && XtIsManaged(w);
+
+    if (unmap)
+      XtUnmapWidget(w);
 
     if (!fw->form.resize_is_no_op)
 	for (childP = children; childP - children < num_children; childP++) {
 	    FormConstraints form= (FormConstraints)(*childP)->core.constraints;
 	    if (!XtIsManaged(*childP)) continue;
-	    x = TransformCoord( (*childP)->core.x, fw->form.old_width,
+	    x = TransformCoord(form->form.virtual_x, fw->form.old_width,
 			       fw->core.width, form->form.left );
-	    y = TransformCoord( (*childP)->core.y, fw->form.old_height,
+	    y = TransformCoord(form->form.virtual_y, fw->form.old_height,
 			       fw->core.height, form->form.top );
 	    
-	    form->form.virtual_width =
-		TransformCoord((Position)((*childP)->core.x
+	    width =
+		TransformCoord((Position)(form->form.virtual_x
 					  + form->form.virtual_width
 					  + 2 * (*childP)->core.border_width),
 			       fw->form.old_width, fw->core.width,
 			       form->form.right )
 		    - (x + 2 * (*childP)->core.border_width);
 	    
-	    form->form.virtual_height =
-		TransformCoord((Position)((*childP)->core.y
+	    height =
+		TransformCoord((Position)(form->form.virtual_y
 					  + form->form.virtual_height
 					  + 2 * (*childP)->core.border_width),
 			       fw->form.old_height, fw->core.height,
 			       form->form.bottom ) 
 		    - ( y + 2 * (*childP)->core.border_width);
 	    
-	    width = (Dimension) 
-		(form->form.virtual_width < 1) ? 1 : form->form.virtual_width;
-	    height = (Dimension)
-	       (form->form.virtual_height < 1) ? 1 : form->form.virtual_height;
+	    width = (Dimension)(width < 1) ? 1 : width;
+	    height = (Dimension)(height < 1) ? 1 : height;
 	    
 	    XtConfigureWidget(*childP,x,y, (Dimension)width, (Dimension)height,
 			      (*childP)->core.border_width );
 	}
 
-    fw->form.old_width = fw->core.width;
-    fw->form.old_height = fw->core.height;
+    if (unmap)
+      XtMapWidget(w);
 }
 
 /*
@@ -672,8 +672,6 @@ static XtGeometryResult GeometryManager(w, request, reply)
 	                                  ( fw, w->core.width, w->core.height,
 					    FALSE))
 	{
-	    form->form.virtual_width = w->core.width;   /* reset virtual */
-	    form->form.virtual_height = w->core.height; /* width and height. */
 	    if (fw->form.no_refigure) {
 /* 
  * I am changing the widget wrapper w/o modifing the window.  This is
@@ -694,6 +692,14 @@ static XtGeometryResult GeometryManager(w, request, reply)
 	    ret_val = XtGeometryNo;
 	}
     }
+
+    if (ret_val != XtGeometryNo && !(request->request_mode & XtCWQueryOnly))
+      {
+	form->form.virtual_x = XtX(w);
+	form->form.virtual_y = XtY(w);
+	form->form.virtual_width = XtWidth(w);
+	form->form.virtual_height = XtHeight(w);
+      }
 
     return(ret_val);
 }
@@ -718,6 +724,8 @@ static void ConstraintInitialize(request, new, args, num_args)
     FormConstraints form = (FormConstraints)new->core.constraints;
     FormWidget fw = (FormWidget)new->core.parent;
 
+    form->form.virtual_x = new->core.x;
+    form->form.virtual_y = new->core.y;
     form->form.virtual_width = (int) new->core.width;
     form->form.virtual_height = (int) new->core.height;
 
@@ -775,33 +783,28 @@ static void ChangeManaged(w)
   int num_children = fw->composite.num_children;
   Widget child;
 
-  /*
-   * Reset virtual width and height for all children.
-   */
-  
-  for (children = childP = fw->composite.children ;
-       childP - children < num_children; childP++) {
-    child = *childP;
-    if (XtIsManaged(child)) {
-      form = (FormConstraints)child->core.constraints;
-
-/*
- * If the size is one (1) then we must not change the virtual sizes, as
- * they contain useful information.  If someone actually wants a widget of
- * width or height one (1) in a form widget he will lose, can't win them all.
- *
- * Chris D. Peterson 2/9/89.
- */
-	 
-      if ( child->core.width != 1)
-	form->form.virtual_width = (int) child->core.width;
-      if ( child->core.height != 1)
-	form->form.virtual_height = (int) child->core.height;
-    }
-  }
   (*((FormWidgetClass)w->core.widget_class)->form_class.layout)
   	                                 ((FormWidget) w, w->core.width, 
 					  w->core.height, TRUE);
+
+  if (!fw->form.old_width || !fw->form.old_height)
+    {
+      fw->form.old_width = XtWidth(w);
+      fw->form.old_height = XtHeight(w);
+      for (children = childP = fw->composite.children;
+	   childP - children < num_children;
+	   childP++)
+	{
+	  child = *childP;
+	  if (!XtIsManaged(child))
+	    continue;
+	  form = (FormConstraints)child->core.constraints;
+	  form->form.virtual_x = XtX(child);
+	  form->form.virtual_y = XtY(child);
+	  form->form.virtual_width = XtWidth(child);
+	  form->form.virtual_height = XtHeight(child);
+	}
+    }
 }
 
 
