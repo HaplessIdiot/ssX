@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************************/
-/* $XFree86: xc/programs/x11perf/do_tests.c,v 1.7 2001/01/17 23:45:12 dawes Exp $ */
+/* $XFree86: xc/programs/x11perf/do_tests.c,v 1.8 2002/02/15 07:36:23 keithp Exp $ */
 
 #include "x11perf.h"
 
@@ -790,6 +790,20 @@ Test test[] = {
 		InitTrapezoids, DoTrapezoids, NullProc, EndTrapezoids,
 		V1_4FEATURE, ROP, 0,
 		{2, 300, "escherknot", NULL, FillTiled}},
+#ifdef XRENDER
+  {"-aatrap1", "Fill 1x1 aa trapezoid", NULL,
+		InitFixedTrapezoids, DoFixedTrapezoids, NullProc, EndFixedTrapezoids,
+		V1_5FEATURE, NONROP, 0,
+		{POLY, 1 }},
+  {"-aatrap10", "Fill 10x10 aa trapezoid", NULL,
+		InitFixedTrapezoids, DoFixedTrapezoids, NullProc, EndFixedTrapezoids,
+		V1_5FEATURE, NONROP, 0,
+		{POLY, 10 }},
+  {"-aatrap100", "Fill 100x100 aa trapezoid", NULL,
+		InitFixedTrapezoids, DoFixedTrapezoids, NullProc, EndFixedTrapezoids,
+		V1_5FEATURE, NONROP, 0,
+		{POLY, 100 }},
+#endif
   {"-complex10", "Fill 10-pixel/side complex polygon", NULL,
 		InitComplexPoly, DoComplexPoly, NullProc, EndComplexPoly,
 		V1_2ONLY, ROP, 0,
@@ -958,11 +972,11 @@ Test test[] = {
 	        InitAAText, DoAAText, ClearTextWin, EndAAText,
 		V1_5FEATURE, NONROP, 0,
 		{80, 10, "charter:antialias=false:render=false:rgba=0:pixelsize=10", NULL}},
-  {"-aa24text", "Char in 30-char a core line (Charter 24)", NULL,
+  {"-ca24text", "Char in 30-char a core line (Charter 24)", NULL,
 	        InitAAText, DoAAText, ClearTextWin, EndAAText,
 		V1_5FEATURE, NONROP, 0,
 		{30, 24, "charter:antialias=false:render=false:rgba=0:pixelsize=24", NULL}},
-  {"-aftext", "Char in 80-char a core line (Courier 12)", NULL,
+  {"-caftext", "Char in 80-char a core line (Courier 12)", NULL,
 	        InitAAText, DoAAText, ClearTextWin, EndAAText,
 		V1_5FEATURE, NONROP, 0,
 		{80, 12, "courier:antialias=false:render=false:rgba=0:pixelsize=12", NULL}},

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************************/
-/* $XFree86: xc/programs/x11perf/x11perf.h,v 3.3 2001/01/17 23:45:13 dawes Exp $ */
+/* $XFree86: xc/programs/x11perf/x11perf.h,v 3.4 2001/07/25 15:05:16 dawes Exp $ */
 
 #ifndef VMS
 #include <X11/Xlib.h>
@@ -261,6 +261,11 @@ extern void EndAAText ( XParms xp, Parms p );
 extern int InitTrapezoids ( XParms xp, Parms p, int reps );
 extern void DoTrapezoids ( XParms xp, Parms p, int reps );
 extern void EndTrapezoids ( XParms xp, Parms p );
+#ifdef XRENDER
+extern int InitFixedTrapezoids ( XParms xp, Parms p, int reps );
+extern void DoFixedTrapezoids ( XParms xp, Parms p, int reps );
+extern void EndFixedTrapezoids ( XParms xp, Parms p );
+#endif
 
 /* do_tris.c */
 extern int InitTriangles ( XParms xp, Parms p, int reps );
