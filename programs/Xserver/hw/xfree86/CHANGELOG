@@ -1,4 +1,4 @@
-XFree86 3.9d (9 May 1997)
+XFree86 3.9c (xx May 1997)
  765. Fix name of GLX stub library (#389, Henry Worth).
  764. Renumber option flag definitions to allow more space in the various
       categories.
@@ -7,8 +7,6 @@ XFree86 3.9d (9 May 1997)
       (#378,379, Guy Desbief).
  761. Rewrite clock restoring procedure for mga driver (#385, Radoslaw Kapitan).
  760. More modes for XF86Setup database (#372, Koen Gadeyne).
-
-XFree86 3.9c (6 May 1997)
  759. Fix typos in NetBSD.cf (#363, Takaaki Nomura).
  758. Add a ModuleInit function to libxaa.a (#362, J. Kean Johnston).
  757. Fix a NULL dereference in xf86Config.c on OSs that don't support
@@ -4519,4 +4517,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.462 1997/05/11 02:53:00 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.463 1997/05/11 04:58:51 dawes Exp $
