@@ -21,7 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/X/xm_api.c,v 1.6 2002/12/16 16:18:31 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/X/xm_api.c,v 1.7tsi Exp $ */
 
 /*
  * This file contains the implementations of all the XMesa* functions.
@@ -175,7 +175,7 @@ static int host_byte_order( void )
  * Error handling.
  */
 #ifndef XFree86Server
-static int mesaXErrorFlag = 0;
+static volatile int mesaXErrorFlag = 0;
 
 static int mesaHandleXError( XMesaDisplay *dpy, XErrorEvent *event )
 {
