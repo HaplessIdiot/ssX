@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.38 2002/11/20 23:00:36 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.40tsi Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -2325,7 +2325,7 @@ TRANS(LocalSetOption)(XtransConnInfo ciptr, int option, int arg)
 #ifdef TRANS_SERVER
 
 static int
-TRANS(LocalCreateListener)(XtransConnInfo ciptr, char *port)
+TRANS(LocalCreateListener)(XtransConnInfo ciptr, char *port, unsigned int flags)
 
 {
     PRMSG(2,"LocalCreateListener(%x->%d,%s)\n",ciptr,ciptr->fd,port);
