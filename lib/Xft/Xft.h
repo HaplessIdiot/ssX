@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/Xft.h,v 1.13 2000/12/08 07:51:26 keithp Exp $
+ * $XFree86: xc/lib/Xft/Xft.h,v 1.14 2000/12/20 00:20:47 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -255,6 +255,16 @@ XftDrawString32 (XftDraw	*draw,
 		 int		y,
 		 XftChar32	*string,
 		 int		len);
+
+void
+XftDrawStringUtf8 (XftDraw	*d,
+		   XftColor	*color,
+		   XftFont	*font,
+		   int		x, 
+		   int		y,
+		   XftChar8	*string,
+		   int		len);
+
 void
 XftDrawRect (XftDraw	    *d,
 	     XftColor	    *color,
@@ -291,6 +301,13 @@ XftTextExtents32 (Display	*dpy,
 		  int		len,
 		  XGlyphInfo	*extents);
     
+void
+XftTextExtentsUtf8 (Display	*dpy,
+		    XftFont	*font,
+		    XftChar8	*string, 
+		    int		len,
+		    XGlyphInfo	*extents);
+
 /* xftfont.c */
 XftPattern *
 XftFontMatch (Display *dpy, int screen, XftPattern *pattern, XftResult *result);
@@ -442,6 +459,17 @@ XftPatternBuild (XftPattern *orig, ...);
 /* see XftFreetype.h */
 
 /* xftstr.c */
+
+int
+XftUtf8ToUcs4 (XftChar8    *src_orig,
+	       XftChar32   *dst,
+	       int	    len);
+
+Bool
+XftUtf8Len (XftChar8	*string,
+	    int		len,
+	    int		*nchar,
+	    int		*wchar);
 
 /* xftxlfd.c */
 XftPattern *

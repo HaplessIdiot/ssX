@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/lib/Xft/xftstr.c,v 1.2 2000/12/14 23:03:57 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -149,4 +149,106 @@ _XftStrCmpIgnoreCase (const char *s1, const char *s2)
 	    break;
     }
     return (int) c2 - (int) c1;
+}
+
+int
+XftUtf8ToUcs4 (XftChar8    *src_orig,
+	       XftChar32   *dst,
+	       int	    len)
+{
+    XftChar8	*src;
+    XftChar8	s;
+    int		bytelength;
+    XftChar32	result;
+
+    if (len == 0)
+	return 0;
+    
+    s = *src++;
+    len--;
+    
+    if (!(s & 0x80))
+    {
+	result = s;
+    } 
+    else if (!(s & 0x40))
+    {
+	result = s;
+    }
+    else
+    {
+	if (!(s & 0x20))
+	{
+	    result = s & 0x1f;
+	    bytelength = 2;
+	}
+	else if (!(s & 0x10))
+	{
+	    result = s & 0xf;
+	    bytelength = 3;
+	}
+	else if (!(s & 0x08))
+	{
+	    result = s & 0x07;
+	    bytelength = 4;
+	}
+	else if (!(s & 0x04))
+	{
+	    result = s & 0x03;
+	    bytelength = 5;
+	}
+	else if ( ! (s & 0x02))
+	{
+	    result = s & 0x01;
+	    bytelength = 6;
+	}
+	else
+	{
+	    result = s;
+	    bytelength = 1;
+	}
+	if (bytelength > len)
+	    return -1;
+	
+	while (--bytelength)
+	{
+	    result <<= 6;
+	    result |= *src++ & 0x3f;
+	}
+    }
+    *dst = result;
+    return src - src_orig;
+}
+
+Bool
+XftUtf8Len (XftChar8	*string,
+	    int		len,
+	    int		*nchar,
+	    int		*wchar)
+{
+    int		n;
+    int		clen;
+    int		width = 1;
+    XftChar32	c;
+    
+    n = 0;
+    while (len)
+    {
+	clen = XftUtf8ToUcs4 (string, &c, len);
+	if (clen <= 0)	/* malformed UTF8 string */
+	    return False;
+	if (c >= 0x10000)
+	    width = 4;
+	else if (c >= 0x100)
+	{
+	    if (width == 1)
+		width = 2;
+	}
+	string += clen;
+	len -= clen;
+	n++;
+    }
+    *nchar = n;
+    *wchar = width;
+    return True;
 }
