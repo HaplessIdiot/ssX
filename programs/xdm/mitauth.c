@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/mitauth.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/xdm/mitauth.c,v 1.5 2003/05/27 22:27:00 tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -83,7 +83,13 @@ MitGetAuth (unsigned short namelen, char *name)
     }
     memmove( (char *)new->name, name, namelen);
     new->name_length = namelen;
-    GenerateAuthData (new->data, AUTH_DATA_LEN);
+    if (!GenerateAuthData (new->data, AUTH_DATA_LEN))
+    {
+	free((char *) new->name);
+	free((char *) new->data);
+	free((char *) new);
+	return (Xauth *) 0;
+    }
     new->data_length = AUTH_DATA_LEN;
     return new;
 }

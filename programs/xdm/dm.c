@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/dm.c,v 3.21tsi Exp $ */
+/* $XFree86: xc/programs/xdm/dm.c,v 3.22 2003/07/09 15:27:38 tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -157,7 +157,9 @@ main (int argc, char **argv)
 	snprintf(cmdbuf, sizeof(cmdbuf), "/bin/rm -f %s/authdir/authfiles/A*", authDir);
 	system(cmdbuf);
     }
-
+#if!defined(ARC4_RANDOM) && !defined(DEV_RANDOM)
+    AddOtherEntropy ();
+#endif
 #ifdef XDMCP
     init_session_id ();
     CreateWellKnownSockets ();
@@ -181,6 +183,9 @@ main (int argc, char **argv)
 #endif
     ScanServers ();
     StartDisplays ();
+#if !defined(ARC4_RANDOM) && !defined(DEV_RANDOM)
+    AddOtherEntropy();
+#endif
     (void) Signal (SIGHUP, RescanNotify);
 #ifndef UNRELIABLE_SIGNALS
     (void) Signal (SIGCHLD, ChildNotify);
@@ -520,6 +525,9 @@ WaitForChild (void)
 			  " removing display %s\n",d->name);
 		    LogError("Server crash rate too high:"
 			     " removing display %s\n",d->name);
+#if !defined(ARC4_RANDOM) && !defined(DEV_RANDOM)
+		    AddTimerEntropy();
+#endif
 		    RemoveDisplay (d);
 		  } else 
 		    d->lastCrash = Time;

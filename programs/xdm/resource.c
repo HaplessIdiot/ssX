@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/resource.c,v 3.10tsi Exp $ */
+/* $XFree86: xc/programs/xdm/resource.c,v 3.11 2003/07/09 15:27:39 tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -57,10 +57,17 @@ int	removeDomainname;
 char	*keyFile;
 char	*accessFile;
 char	**exportList;
+#if !defined(ARC4_RANDOM)
 char	*randomFile;
+#endif
 #ifdef DEV_RANDOM
 char	*randomDevice;
 #endif
+#if !defined(ARC4_RANDOM)
+char	*prngdSocket;
+int	prngdPort;
+#endif
+
 char	*greeterLib;
 char	*willing;
 int	choiceTimeout;	/* chooser choice timeout */
@@ -124,6 +131,12 @@ int	choiceTimeout;	/* chooser choice timeout */
 #endif
 #ifndef DEF_RANDOM_FILE
 #define DEF_RANDOM_FILE "/dev/mem"
+#endif
+#ifndef DEF_PRNGD_SOCKET 
+#define DEF_PRNGD_SOCKET "/tmp/entropy"
+#endif
+#ifndef DEF_PRNGD_PORT
+#define DEF_PRNGD_PORT "0"
 #endif
 #ifndef DEF_GREETER_LIB
 #define DEF_GREETER_LIB "/usr/lib/X11/xdm/libXdmGreet.so"
@@ -220,8 +233,14 @@ struct dmResources {
 				DEF_ACCESS_FILE} ,
 { "exportList",	"ExportList",	DM_ARGV,	(char **) &exportList,
 				""} ,
+#if !defined(ARC4_RANDOM)
 { "randomFile",	"RandomFile",	DM_STRING,	&randomFile,
 				DEF_RANDOM_FILE} ,
+{ "prgndSocket", "PrngdSocket", DM_STRING,	&prngdSocket, 
+				DEF_PRNGD_SOCKET},
+{ "prngdPort", "PrngdPort",	DM_INT,		(char **) &prngdPort,
+				DEF_PRNGD_PORT},
+#endif
 #ifdef DEV_RANDOM
 { "randomDevice", "RandomDevice", DM_STRING,	&randomDevice,
 				DEV_RANDOM} ,

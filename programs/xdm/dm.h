@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/dm.h,v 3.30 2003/07/09 15:27:38 tsi Exp $ */
+/* $XFree86: xc/programs/xdm/dm.h,v 3.31 2003/08/02 17:48:07 herrb Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -335,7 +335,12 @@ extern int	removeDomainname;
 extern char	*keyFile;
 extern char	*accessFile;
 extern char	**exportList;
+#if !defined(ARC4_RANDOM)
 extern char	*randomFile;
+extern char	*prngdSocket;
+extern int	prngdPort;
+#endif
+
 extern char	*greeterLib;
 extern char	*willing;
 extern int	choiceTimeout;	/* chooser choice timeout */
