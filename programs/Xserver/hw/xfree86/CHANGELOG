@@ -1,4 +1,11 @@
 XFree86 4.0.1Zb (14 December 2000)
+1194. Make it possible to install platform-specific man pages with most
+      ix86 builds (David Dawes).
+1193. Add a short man page for the newport driver, update it's sample config
+      file, and have the driver check user-supplied parameters (#4385,
+      Guido Guenther).
+1192. Missing part of fix for FreeBSD sysmouse support (#4317, from FreeBSD
+      ports collection).
 1191. Trident driver bug fixes (Alan Hourihane).
 1190. Make it possible to install hardcopy specs docs that we can't generate
       from source (David Dawes).
@@ -12075,4 +12082,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1478 2000/12/14 18:23:12 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1479 2000/12/14 19:29:40 dawes Exp $
