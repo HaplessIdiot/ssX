@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.54 2002/08/27 22:07:06 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.56 2002/09/16 18:05:48 eich Exp $ */
 /*
  * Copyright (c) 1997-2002 by The XFree86 Project, Inc.
  */
@@ -1702,46 +1702,6 @@ printBridgeInfo(PciBusPtr PciBus)
 	xf86MsgVerb(X_INFO, 3,
 		    "Bus %s prefetchable memory range:\n", secondary);
 	xf86PrintResList(3, PciBus->preferred_pmem);
-    }
-}
-
-/*
- * This Sun PCI-->PCI bridge must be handled specially since it does
- * not report the decoded I/O and MEM ranges in the usual way.
- */
-#define APB_IO_ADDRESS_MAP	0xde
-#define APB_MEM_ADDRESS_MAP	0xdf
-
-static void
-get_sun_apb_ranges(PciBusPtr PciBus, pciConfigPtr pcrp)
-{
-    unsigned char iomap, memmap;
-    resRange range;
-    int i;
-
-    iomap = pciReadByte(pcrp->tag, APB_IO_ADDRESS_MAP);
-    memmap = pciReadByte(pcrp->tag, APB_MEM_ADDRESS_MAP);
-
-    if (pcrp->pci_command & PCI_CMD_IO_ENABLE) {
-	for (i = 0; i < 8; i++) {
-	    if ((iomap & (1 << i)) != 0) {
-		PCI_I_RANGE(range, pcrp->tag,
-		    (i << 21), (i << 21) + ((1 << 21) - 1),
-		    ResIo | ResBlock | ResExclusive);
-		PciBus->preferred_io = xf86AddResToList(PciBus->preferred_io, &range, -1);
-	    }
-	}
-    }
-
-    if (pcrp->pci_command & PCI_CMD_MEM_ENABLE) {
-	for (i = 0; i < 8; i++) {
-	    if ((memmap & (1 << i)) != 0) {
-		PCI_M_RANGE(range, pcrp->tag,
-		    (i << 29), (i << 29) + ((1 << 29) - 1),
-		    ResMem | ResBlock | ResExclusive);
-		PciBus->preferred_mem = xf86AddResToList(PciBus->preferred_mem, &range, -1);
-	    }
-	}
     }
 }
 
