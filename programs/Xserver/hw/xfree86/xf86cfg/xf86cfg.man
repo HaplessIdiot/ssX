@@ -28,7 +28,7 @@
 .\"
 .\" $XFree86$
 .\"
-.TH xf86cfg 1 "Version 4.0" "XFree86"
+.TH xf86cfg 1 "Version 4.0.2" "XFree86"
 .SH NAME
 xf86cfg - Graphical configuration tool for XFree86 4.0
 .SH SYNOPSIS
@@ -67,10 +67,38 @@ Modelines can be configured or optimized.
 .PP
 AccessX basic configurations can be made in the xf86cfg's accessx section.
 
+.SH OPTIONS
+.TP 8
+.I -xf86config
+Specifies an alternate XF86Config file for configuration.
+.TP 8
+.I -modulepath
+Specifies where xf86cfg, and the server it may start, should look for
+XFree86 modules.
+.TP 8
+.I -serverpath
+Specifies the complete path, not including the binary name, of the
+XFree86 binary.
+.TP 8
+.I -fontpath
+Specifies the path to the fonts that should be used by the server started
+by xf86cfg.
+.TP 8
+.I -rgbpath
+Specifies the path to the rgb.txt file that should be used by the server
+started by xf86cfg, if any.
+.TP 8
+.I -textmode
+If xf86cfg was compiled with support to ncurses, this option makes xf86cfg
+enters a text mode interface.
+
 .SH ENVIRONMENT
 .TP 8
 .I DISPLAY
 Default host and display number
+.TP 8
+.I XWINHOME
+Directory where XFree86 was installed, defaults to /usr/X11R6.
 .TP 8
 .I XENVIRONMENT
 Name of a resource file that overrides the global resources
@@ -102,11 +130,6 @@ Keyboard specific configuration
 .SH "SEE ALSO"
 .IR XFree86 (1)
 .IR XF86Config (5x)
-
-.SH RESTRICTIONS
-Not all customizable options are available.
-.br
-A protocol for external modules is in the plans.
 
 .SH COPYRIGHT
 .TP 8
