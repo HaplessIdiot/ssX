@@ -9,7 +9,7 @@
 <date>4 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.28 2001/03/16 22:13:19 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.29 2001/04/04 01:34:18 dawes Exp $
 </ident>
 
 <abstract>
@@ -157,7 +157,7 @@ other architectures known to work on (e.g., Alpha, PPC), etc.
 	All chips supported in &legacyvers; are supported in &relvers;
 	except for Mach8 and some old Mach32 chips.  The support in
 	&relvers; is, however, unaccelerated for all chips except the
-	Mach64, Rage and Rage 128 variants.
+	Mach64, Rage, Rage 128 and Radeon variants.
 
 </descrip>
 
