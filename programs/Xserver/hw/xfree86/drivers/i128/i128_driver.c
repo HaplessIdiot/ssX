@@ -1076,7 +1076,7 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
      * Setup the ClockRanges, which describe what clock ranges are available,
      * and what sort of modes they can be used for.
      */
-    clockRanges = xnfalloc(sizeof(ClockRange));
+    clockRanges = xnfcalloc(sizeof(ClockRange),1);
     clockRanges->next = NULL;
     clockRanges->minClock = pI128->minClock;
     clockRanges->maxClock = pI128->maxClock;

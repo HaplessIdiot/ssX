@@ -1,4 +1,7 @@
 XFree86 4.2.99.901 (4 February 2003)
+ 845. Initializing clock ranges in several drivers to get rid of the
+      annoying 'scaled from 0.0 MHz' message in xf86PrintModes()
+      (Egbert Eich).
  844. Fixing a double free in libXRandr (Egbert Eich).
  843. The microsoft-win3.1 encoding file wasn't being installed (#A.1569,
       Mike Harris).
@@ -16257,4 +16260,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2522 2003/02/05 12:49:43 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2523 2003/02/05 12:59:14 eich Exp $

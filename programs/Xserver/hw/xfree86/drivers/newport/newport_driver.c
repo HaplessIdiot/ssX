@@ -404,7 +404,7 @@ NewportPreInit(ScrnInfoPtr pScrn, int flags)
 	
 	/* Set up clock ranges that are alway ok */
 	/* XXX: Use information from VC2 here */
-	clockRanges = xnfalloc(sizeof(ClockRange));
+	clockRanges = xnfcalloc(sizeof(ClockRange),1);
 	clockRanges->next = NULL;
 	clockRanges->minClock = 10000;
 	clockRanges->maxClock = 300000;
