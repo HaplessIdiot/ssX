@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_swtcl.c,v 1.1 2002/10/30 12:51:53 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_swtcl.c,v 1.2tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -39,8 +39,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "mem.h"
 #include "mmath.h"
 #include "macros.h"
+#include "image.h"
 
 #include "swrast_setup/swrast_setup.h"
+#include "swrast/s_fog.h"
 #include "math/m_translate.h"
 #include "tnl/tnl.h"
 #include "tnl/t_context.h"
