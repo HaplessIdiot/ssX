@@ -2093,7 +2093,6 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     (*pMga->Restore)(pScrn, vgaReg, mgaReg, FALSE);
 
-    MGAStormSync(pScrn);
     MGAStormEngineInit(pScrn);
     vgaHWProtect(pScrn, FALSE);
 
@@ -2183,7 +2182,6 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	pciSetBitsLong(pMga->PciTag, PCI_OPTION_REG, 0x100, 0x000);
 	if (!fbdevHWModeInit(pScrn, pScrn->currentMode))
 	    return FALSE;
-	MGAStormSync(pScrn);
 	MGAStormEngineInit(pScrn);
     } else {
 	/* Save the current state */
@@ -2482,7 +2480,6 @@ MGAEnterVTFBDev(int scrnIndex, int flags)
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
 
     fbdevHWEnterVT(scrnIndex,flags);
-    MGAStormSync(pScrn);
     MGAStormEngineInit(pScrn);
     return TRUE;
 }
