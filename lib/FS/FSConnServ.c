@@ -1,4 +1,5 @@
 /* $XConsortium: FSConnServ.c,v 1.26 94/04/17 20:15:10 dpw Exp $ */
+/* $XFree86$ */
 
 /*
  * Copyright 1990 Network Computing Devices;
