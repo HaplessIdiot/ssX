@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/common/depthtmp.h,v 1.3 2000/12/04 21:00:59 dawes Exp $ */
 
 #ifndef DBG
 #define DBG 0
@@ -157,10 +157,10 @@ static void TAG(ReadDepthPixels)( GLcontext *ctx, GLuint n,
 }
 
 #if HAVE_HW_DEPTH_SPANS
-#undef WRITE_DEPTH_SPAN;
-#undef WRITE_DEPTH_PIXELS;
-#undef READ_DEPTH_SPAN;
-#undef READ_DEPTH_PIXELS;
+#undef WRITE_DEPTH_SPAN
+#undef WRITE_DEPTH_PIXELS
+#undef READ_DEPTH_SPAN
+#undef READ_DEPTH_PIXELS
 #else
 #undef WRITE_DEPTH
 #undef READ_DEPTH
