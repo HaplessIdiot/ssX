@@ -1,5 +1,5 @@
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/lib/XRes/XRes.man,v 1.1 2003/10/13 21:19:28 herrb Exp $
 .\"
 .\" Copyright (C) 1994-2003 The XFree86 Project, Inc.  All Rights Reserved.
 .\" 
@@ -135,5 +135,5 @@ Xlib(1), X(7)
 Mark Vojkovich, for The XFree86 Project Inc. 
 .SH STABILITY
 This API is considered as experimental. The XRes library major
-revision may be increment whenever incompatible changes are done to
+revision may be incremented whenever incompatible changes are done to
 the API without notice. Use with care. 
