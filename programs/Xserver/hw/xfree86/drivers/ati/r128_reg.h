@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_reg.h,v 1.5 2000/12/08 19:15:33 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_reg.h,v 1.6 2000/12/12 17:17:13 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -116,12 +116,12 @@
 
 #define PAL_SELECT(idx)                                                   \
     do {                                                                  \
+	CARD32 tmp = INREG(R128_DAC_CNTL);                                \
 	if (idx) {                                                        \
-	    OUTREG(R128_DAC_CNTL, INREG(R128_DAC_CNTL) |                  \
-		   R128_DAC_PALETTE_ACC_CTL);                             \
+	    OUTREG(R128_DAC_CNTL, tmp | R128_DAC_PALETTE_ACC_CTL);        \
 	} else {                                                          \
-	    OUTREG(R128_DAC_CNTL, INREG(R128_DAC_CNTL) &                  \
-		   ~R128_DAC_PALETTE_ACC_CTL);                            \
+	    OUTREG(R128_DAC_CNTL, tmp &                                   \
+		   (CARD32)~R128_DAC_PALETTE_ACC_CTL);                    \
 	}                                                                 \
     } while (0)
 
