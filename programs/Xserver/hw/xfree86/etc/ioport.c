@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/ioport.c,v 1.1tsi Exp $ */
 /*
  * Copyright 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -23,6 +23,8 @@
 
 #include "compiler.h"
 #include "xf86_OSproc.h"
+
+#include <errno.h>
 
 static char *MyName;
 static int Port = -1, Index = -1;
