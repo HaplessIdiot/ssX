@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/lbx/lbxdix.c,v 1.4 2000/05/18 23:46:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/lbx/lbxdix.c,v 1.6 2001/05/15 10:19:43 eich Exp $ */
 
 /* various bits of DIX-level mangling */
 
@@ -74,10 +74,6 @@ in this Software without prior written authorization from The Open Group.
 #endif
 #include "swaprep.h"
 
-extern int  (*ProcVector[256]) (ClientPtr);
-extern int  (*SwappedProcVector[256]) (ClientPtr);
-
-
 int         lbx_font_private = -1;
 
 void
@@ -96,7 +92,6 @@ LbxAllowMotion(ClientPtr       	client,
     proxy->motion_allowed_events += num;
 }
 
-extern WindowPtr *WindowTable;
 extern xConnSetupPrefix connSetupPrefix;
 extern char *ConnectionInfo;
 extern int  connBlockScreenStart;
@@ -185,8 +180,6 @@ LbxSendConnSetup(ClientPtr   client,
 
     return client->noClientException;
 }
-
-extern InputInfo inputInfo;
 
 static XID modifier_map_tag;
 
@@ -689,7 +682,7 @@ LbxQueueSendTag(ClientPtr   client,
 
 
     /* see if we're asking for one already in the pipeline */
-    for (prev = &queried_tags; stqp = *prev; prev = &stqp->next) {
+    for (prev = &queried_tags; (stqp = *prev); prev = &stqp->next) {
 	if (stqp->tag == tag) {
 	    /* add new client to list */
 	    newlist = (ClientPtr *) xrealloc(stqp->stalled_clients,
@@ -746,7 +739,7 @@ LbxRemoveQTag(XID	tag)
 {
     SendTagQPtr stqp, *prev;
 
-    for (prev = &queried_tags; stqp = *prev; prev = &stqp->next) {
+    for (prev = &queried_tags; (stqp = *prev); prev = &stqp->next) {
 	if (stqp->tag == tag) {
 	    *prev = stqp->next;
 	    LbxFreeQTag(stqp);
@@ -861,7 +854,7 @@ LbxResetTags(void)
     keyboard_map_tag = 0;
 
     /* clean out any pending tag requests */
-    while (stqp = queried_tags) {
+    while ((stqp = queried_tags)) {
 	queried_tags = stqp->next;
 	LbxFreeQTag(stqp);
     }

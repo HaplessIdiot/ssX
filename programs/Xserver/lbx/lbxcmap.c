@@ -21,7 +21,7 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86: xc/programs/Xserver/lbx/lbxcmap.c,v 1.6 2000/05/18 23:46:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/lbx/lbxcmap.c,v 1.8 2001/02/16 13:24:10 eich Exp $ */
 
 #include <sys/types.h>
 #define NEED_REPLIES
@@ -265,7 +265,7 @@ OutputChannel(ColormapPtr pmap,
     else
 	shift = 15 - (flags & LBX_RGB_BITS_MASK);
     rgb_sz = rgb2 + 1;
-    if (channels == DoRed|DoGreen|DoBlue)
+    if (channels == (DoRed|DoGreen|DoBlue))
 	rgb_sz *= 3;
     /* kinda gross, but ddxen use AllocAll on static maps */
     allocpriv = (pmap->pVisual->class & DynamicClass) ? AllocPrivate : 0;
