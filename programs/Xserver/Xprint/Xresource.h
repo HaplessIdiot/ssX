@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xprint/Xresource.h,v 1.3 1999/12/16 02:26:25 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/Xresource.h,v 1.4 2000/09/28 14:50:57 tsi Exp $ */
 
 /* $XConsortium: Xresource.h /main/1 1996/09/28 16:59:12 rws $ */
 /*
@@ -90,7 +90,7 @@ extern char *Xpermalloc(
  *
  ****************************************************************/
 
-typedef long    XrmQuark, *XrmQuarkList;
+typedef int       XrmQuark, *XrmQuarkList;
 #define NULLQUARK ((XrmQuark) 0)
 
 typedef char *XrmString;

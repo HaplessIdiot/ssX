@@ -1,10 +1,4 @@
 XFree86 4.0.1d (xx September 2000)
- 724. Change XrmQuark's from int's to long's in support of 64-bit
-      architectures.  Affects lib{X11,Xaw,Xmu,Xt,dpstk}, XPrint extension,
-      xf86cfg, appres, editres, xedit and xman.  Recompilation of 64-bit X
-      applications is recommended.  Recompiling is required for 64-bit
-      big-endian platforms, but 64-bit little-endian platforms can probably
-      survive without it (Marc La France).
  723. Fix locale parsing code in Xlib and Xt (Matthieu Herrb)
  722. Fix X Test Suite to work on 800x600 screens (Keith Packard)
  721. PCI chip ID updates to ATI driver (Marc La France).
@@ -11190,4 +11184,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1324 2000/09/27 20:45:29 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1325 2000/09/28 14:50:59 tsi Exp $
