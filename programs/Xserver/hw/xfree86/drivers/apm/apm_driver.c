@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.56 2002/01/04 21:22:25 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.57 2002/01/25 21:55:54 tsi Exp $ */
 
 #include "apm.h"
 #include "xf86cmap.h"
@@ -91,6 +91,10 @@ typedef enum {
     OPTION_NOACCEL,
     OPTION_SHADOW_FB,
     OPTION_PCI_BURST,
+    OPTION_REMAP_DPMS_ON,
+    OPTION_REMAP_DPMS_STANDBY,
+    OPTION_REMAP_DPMS_SUSPEND,
+    OPTION_REMAP_DPMS_OFF,
     OPTION_PCI_RETRY
 } ApmOpts;
 
@@ -101,7 +105,7 @@ static const OptionInfoRec ApmOptions[] =
     {OPTION_SW_CURSOR, "SWcursor", OPTV_BOOLEAN,
 	{0}, FALSE},
     {OPTION_HW_CURSOR, "HWcursor", OPTV_BOOLEAN,
-	{0}, FALSE},
+	{0}, TRUE},
     {OPTION_NOLINEAR, "NoLinear", OPTV_BOOLEAN,
 	{0}, FALSE},
     {OPTION_NOACCEL, "NoAccel", OPTV_BOOLEAN,
@@ -109,6 +113,14 @@ static const OptionInfoRec ApmOptions[] =
     {OPTION_SHADOW_FB, "ShadowFB", OPTV_BOOLEAN,
 	{0}, FALSE},
     {OPTION_PCI_BURST, "pci_burst", OPTV_BOOLEAN,
+	{0}, FALSE},
+    {OPTION_REMAP_DPMS_ON, "Remap_DPMS_On", OPTV_ANYSTR,
+	{0}, FALSE},
+    {OPTION_REMAP_DPMS_STANDBY, "Remap_DPMS_Standby", OPTV_ANYSTR,
+	{0}, FALSE},
+    {OPTION_REMAP_DPMS_SUSPEND, "Remap_DPMS_Suspend", OPTV_ANYSTR,
+	{0}, FALSE},
+    {OPTION_REMAP_DPMS_OFF, "Remap_DPMS_Off", OPTV_ANYSTR,
 	{0}, FALSE},
     {OPTION_PCI_RETRY, "PciRetry", OPTV_BOOLEAN,
 	{0}, FALSE},
@@ -501,7 +513,7 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
     EntityInfoPtr	pEnt;
     vgaHWPtr		hwp;
     MessageType		from;
-    char		*mod = NULL, *req = NULL;
+    char		*mod = NULL, *req = NULL, *s;
     ClockRangePtr	clockRanges;
     int			i;
     xf86MonPtr		MonInfo = NULL;
@@ -567,6 +579,7 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
 
+    /* XXX: Access funcs */
     /*
      * The first thing we should figure out is the depth, bpp, etc.
      */
@@ -589,6 +602,7 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
 	    return FALSE;
 	}
     }
+    xf86PrintDepthBpp(pScrn);
 
     /*
      * This must happen after pScrn->display has been set because
@@ -676,6 +690,70 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
 	}
 	else
 	  xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "\"pci_retry\" option requires pci_burst \"on\".\n");
+    }
+    pApm->DPMSMask[DPMSModeOn]		= DPMSModeOn;
+    pApm->DPMSMask[DPMSModeStandby]	= DPMSModeStandby;
+    pApm->DPMSMask[DPMSModeSuspend]	= DPMSModeSuspend;
+    pApm->DPMSMask[DPMSModeOff]		= DPMSModeOff;
+    if ((s = xf86GetOptValString(pApm->Options, OPTION_REMAP_DPMS_ON))) {
+	if (!xf86strcmp(s, "on"))
+	    pApm->DPMSMask[DPMSModeOn] = DPMSModeOn;
+	else if (!xf86strcmp(s, "standby"))
+	    pApm->DPMSMask[DPMSModeOn] = DPMSModeStandby;
+	else if (!xf86strcmp(s, "suspend"))
+	    pApm->DPMSMask[DPMSModeOn] = DPMSModeSuspend;
+	else if (!xf86strcmp(s, "off"))
+	    pApm->DPMSMask[DPMSModeOn] = DPMSModeOff;
+	else if (s[0] >= '0' && s[0] <= '9') {
+	    pApm->DPMSMask[DPMSModeOn] = xf86strtol(s, NULL, 0);
+	    if (pApm->DPMSMask[DPMSModeOn] > (sizeof pApm->DPMSMask)-1)
+		pApm->DPMSMask[DPMSModeOn] = (sizeof pApm->DPMSMask) - 1;
+	}
+    }
+    if ((s = xf86GetOptValString(pApm->Options, OPTION_REMAP_DPMS_STANDBY))) {
+	if (!xf86strcmp(s, "on"))
+	    pApm->DPMSMask[DPMSModeStandby] = DPMSModeOn;
+	else if (!xf86strcmp(s, "standby"))
+	    pApm->DPMSMask[DPMSModeStandby] = DPMSModeStandby;
+	else if (!xf86strcmp(s, "suspend"))
+	    pApm->DPMSMask[DPMSModeStandby] = DPMSModeSuspend;
+	else if (!xf86strcmp(s, "off"))
+	    pApm->DPMSMask[DPMSModeStandby] = DPMSModeOff;
+	else if (s[0] >= '0' && s[0] <= '9') {
+	    pApm->DPMSMask[DPMSModeStandby] = xf86strtol(s, NULL, 0);
+	    if (pApm->DPMSMask[DPMSModeStandby] > (sizeof pApm->DPMSMask)-1)
+		pApm->DPMSMask[DPMSModeStandby] = (sizeof pApm->DPMSMask) - 1;
+	}
+    }
+    if ((s = xf86GetOptValString(pApm->Options, OPTION_REMAP_DPMS_SUSPEND))) {
+	if (!xf86strcmp(s, "on"))
+	    pApm->DPMSMask[DPMSModeSuspend] = DPMSModeOn;
+	else if (!xf86strcmp(s, "standby"))
+	    pApm->DPMSMask[DPMSModeSuspend] = DPMSModeStandby;
+	else if (!xf86strcmp(s, "suspend"))
+	    pApm->DPMSMask[DPMSModeSuspend] = DPMSModeSuspend;
+	else if (!xf86strcmp(s, "off"))
+	    pApm->DPMSMask[DPMSModeSuspend] = DPMSModeOff;
+	else if (s[0] >= '0' && s[0] <= '9') {
+	    pApm->DPMSMask[DPMSModeSuspend] = xf86strtol(s, NULL, 0);
+	    if (pApm->DPMSMask[DPMSModeSuspend] > (sizeof pApm->DPMSMask)-1)
+		pApm->DPMSMask[DPMSModeSuspend] = (sizeof pApm->DPMSMask) - 1;
+	}
+    }
+    if ((s = xf86GetOptValString(pApm->Options, OPTION_REMAP_DPMS_OFF))) {
+	if (!xf86strcmp(s, "on"))
+	    pApm->DPMSMask[DPMSModeOff] = DPMSModeOn;
+	else if (!xf86strcmp(s, "standby"))
+	    pApm->DPMSMask[DPMSModeOff] = DPMSModeStandby;
+	else if (!xf86strcmp(s, "suspend"))
+	    pApm->DPMSMask[DPMSModeOff] = DPMSModeSuspend;
+	else if (!xf86strcmp(s, "off"))
+	    pApm->DPMSMask[DPMSModeOff] = DPMSModeOff;
+	else if (s[0] >= '0' && s[0] <= '9') {
+	    pApm->DPMSMask[DPMSModeOff] = xf86strtol(s, NULL, 0);
+	    if (pApm->DPMSMask[DPMSModeOff] > (sizeof pApm->DPMSMask)-1)
+		pApm->DPMSMask[DPMSModeOff] = (sizeof pApm->DPMSMask) - 1;
+	}
     }
 
     /*
@@ -861,7 +939,7 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
 		MonInfo = xf86DoEDID_DDC2(pScrn->scrnIndex,pApm->I2CPtr);
 	    }
 	}
-	if (!MonInfo)
+	if (0 && !MonInfo)
 	    MonInfo = xf86DoEDID_DDC1(pScrn->scrnIndex,vgaHWddc1SetSpeed,ddc1Read);
 	if (MonInfo)
 	    xf86PrintEDID(MonInfo);
@@ -1955,6 +2033,9 @@ ApmScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pApm->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = ApmCloseScreen;
 
+    pScrn->memPhysBase = pApm->LinAddress;
+    pScrn->fbOffset = (((char *)pApm->FbBase) - ((char *)pApm->LinMap));
+
     /* Report any unused options (only for the first generation) */
     if (serverGeneration == 1) {
 	xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);
@@ -2202,6 +2283,9 @@ ApmDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
     APMDECL(pScrn);
     unsigned char dpmsreg, tmp;
 
+    if (PowerManagementMode < sizeof pApm->DPMSMask &&
+	    PowerManagementMode >= 0)
+	PowerManagementMode = pApm->DPMSMask[PowerManagementMode];
     switch (PowerManagementMode)
     {
     case DPMSModeOn:
