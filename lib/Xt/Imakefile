@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/116 1995/11/30 19:05:17 kaleb $
-XCOMM $XFree86: xc/lib/Xt/Imakefile,v 3.5 1996/01/26 10:27:31 dawes Exp $
+XCOMM $XFree86: xc/lib/Xt/Imakefile,v 3.6 1996/08/26 06:19:19 dawes Exp $
 #define DoNormalLib NormalLibXt
 #define DoSharedLib SharedLibXt
 #define DoDebugLib DebugLibXt
@@ -73,8 +73,8 @@ STRINGSABIOPTIONS = ToolkitStringsABIOptions
        LINTLIBS = $(LINTXLIB)
 
 #if !HasSnprintf
-       MISCSRC = snprintf.c
-       MISCOBJ = snprintf.o
+      MISCSRCS = snprintf.c
+      MISCOBJS = snprintf.o
 #endif
 
 HEADERS = \
@@ -97,7 +97,7 @@ HEADERS = \
 	VendorP.h
 
 SRCS = \
-	$(MISCSRC) \
+	$(MISCSRCS) \
 	ActionHook.c \
 	Alloc.c \
 	ArgList.c \
@@ -154,7 +154,7 @@ SRCS = \
 	sharedlib.c
 
 OBJS = \
-	$(MISCOBJ) \
+	$(MISCOBJS) \
 	ActionHook.o \
 	Alloc.o \
 	ArgList.o \
