@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/keyboard/kbd.c,v 1.1tsi Exp $ */
 
 /*
  * Copyright (c) 2002 by The XFree86 Project, Inc.
@@ -55,10 +55,6 @@ static void PostKbdEvent(InputInfoPtr pInfo, unsigned int key, Bool down);
 static void InitKBD(InputInfoPtr pInfo, Bool init);
 static void SetXkbOption(InputInfoPtr pInfo, char *name, char **option);
 static void UpdateLeds(InputInfoPtr pInfo);
-
-static void xf86KbdUnplug(pointer p);
-static pointer xf86KbdPlug(pointer module, pointer options,
-                           int *errmaj, int *errmin);
 
 #undef KEYBOARD
 InputDriverRec KEYBOARD = {

@@ -60,7 +60,7 @@ in this Software without prior written authorization from The Open Group.
  * 11-Nov-90 Dave Sternlicht            Adding SaveColors
  * 10-Oct-90 David M. Sternlicht        Storing saved colors on root
  *
- * $XFree86: xc/programs/twm/gram.y,v 3.5 2001/01/17 23:45:06 dawes Exp $
+ * $XFree86: xc/programs/twm/gram.y,v 3.6tsi Exp $
  *
  ***********************************************************************/
 
@@ -654,6 +654,7 @@ string		: STRING		{ ptr = (char *)malloc(strlen($1)+1);
 					  RemoveDQuote(ptr);
 					  $$ = ptr;
 					}
+		;
 number		: NUMBER		{ $$ = $1; }
 		;
 

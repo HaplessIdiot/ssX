@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.65 2002/10/08 22:14:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.66tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -901,7 +901,7 @@ static Bool RADEONGetBIOSParameters(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
 	     */
 	    if (xf86GetOptValInteger(info->Options, OPTION_CLONE_DISPLAY,
 				     &(CloneDispOption))) {
-		char *s;
+		char *s = NULL;
 
 		switch (CloneDispOption) {
 		case 0: s = "Disable"; break;
@@ -916,9 +916,10 @@ static Bool RADEONGetBIOSParameters(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
 		    CloneDispOption = 1;
 		    break;
 		}
-		xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-			   "CloneDisplay option: %s (%d)\n",
-			   s, CloneDispOption);
+		if (s)
+		    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+			       "CloneDisplay option: %s (%d)\n",
+			       s, CloneDispOption);
 	    } else {
 		/* Default to auto-detect */
 		CloneDispOption = 1;
