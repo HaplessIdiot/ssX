@@ -3,13 +3,14 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.h,v 1.4 2001/04/02 08:50:56 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.h,v 1.5 2001/04/09 03:32:08 torrey Exp $ */
 
 #import <Cocoa/Cocoa.h>
 
 #include <drivers/event_status_driver.h>	// for NXEvent
 #include <unistd.h>
-#include <stdlib.h>
+#include <stdio.h>
+#include <sys/syslimits.h>
 
 @interface Xserver : NSObject {
     // server state

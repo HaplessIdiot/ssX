@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.19 2001/04/12 20:09:53 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.20 2001/04/16 06:51:48 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -17,10 +17,13 @@
 #include "mipointer.h"
 #include "micmap.h"
 #include "site.h"
+#include "globals.h"
 #include "xf86Version.h"
 
 #include <sys/types.h>
 #include <sys/time.h>
+#include <sys/syslimits.h>
+#include <stdio.h>
 #include <fcntl.h>
 
 #define NO_CFPLUGIN
@@ -45,6 +48,7 @@ UInt32                  darwinDesiredWidth = 0, darwinDesiredHeight = 0;
 IOIndex                 darwinDesiredDepth = -1;
 SInt32                  darwinDesiredRefresh = -1;
 UInt32                  darwinScreenNumber = 0;
+char                    *darwinKeymapFile = NULL;
 
 // Quit after this many seconds if no quartz event poster is found.
 // Leave undefined for no safety quit.
@@ -136,7 +140,7 @@ static Bool DarwinAddScreen(
     int         argc,
     char        **argv )
 {
-    int         bitsPerRGB, i;
+    int         bitsPerRGB, i, dpi;
     VisualPtr   visual;
     ColormapPtr pmap;
 
@@ -169,11 +173,15 @@ static Bool DarwinAddScreen(
 
     // machine independent screen init
     // setup _Screen structure in pScreen
+    if (monitorResolution)
+        dpi = monitorResolution;
+    else
+        dpi = 75;
     if ( dfb.bitsPerPixel == 32 ) {
         if (!cfb32ScreenInit(pScreen,
                 dfb.framebuffer,
                 dfb.width, dfb.height,
-                    75, 75,		/* screen size in dpi, which we have no accurate knowledge of */
+                dpi, dpi,
                 dfb.pitch / (dfb.bitsPerPixel/8))) {
             return FALSE;
         }
@@ -181,7 +189,7 @@ static Bool DarwinAddScreen(
         if (!cfb16ScreenInit(pScreen,
                 dfb.framebuffer,
                 dfb.width, dfb.height,
-                    75, 75,		/* screen size in dpi, which we have no accurate knowledge of */
+                dpi, dpi,
                 dfb.pitch / (dfb.bitsPerPixel/8))) {
             return FALSE;
         }
@@ -189,7 +197,7 @@ static Bool DarwinAddScreen(
         if (!cfbScreenInit(pScreen,
                 dfb.framebuffer,
                 dfb.width, dfb.height,
-                    75, 75,		/* screen size in dpi, which we have no accurate knowledge of */
+                dpi, dpi,
                 dfb.pitch / (dfb.bitsPerPixel/8))) {
             return FALSE;
         }
@@ -263,7 +271,7 @@ static Bool DarwinAddScreen(
 /*
  =============================================================================
 
- mouse callbacks
+ mouse and keyboard callbacks
  
  =============================================================================
 */
@@ -361,6 +369,69 @@ static int DarwinKeybdProc( DeviceIntPtr pDev, int onoff )
 }
 
 /*
+===========================================================================
+
+ Utility routines
+
+===========================================================================
+*/
+
+/*
+ * DarwinFindLibraryFile
+ *  Search for a file in the standard Library paths, which are (in order):
+ *
+ *      ~/Library/              user specific
+ *      /Library/               host specific
+ *      /Network/Library/       LAN specific
+ *      /System/Library/        OS specific
+ *
+ *  A sub-path can be specified to search in below the various Library
+ *  directories. Returns a new character string (owned by the caller)
+ *  containing the full path to the first file found.
+ */
+static char * DarwinFindLibraryFile(
+    const char *file,
+    const char *pathext )
+{
+    // Library search paths
+    char *pathList[] = {
+        "",
+        "/Network",
+        "/System",
+        NULL
+    };
+    char *home;
+    char *fullPath;
+    int i = 0;
+
+    // Return the file name as is if it is already a fully qualified path.
+    if (!access(file, F_OK)) {
+        fullPath = xalloc(strlen(file)+1);
+        strcpy(fullPath, file);
+        return fullPath;
+    }
+
+    fullPath = xalloc(PATH_MAX);
+
+    home = getenv("HOME");
+    if (home) {
+        snprintf(fullPath, PATH_MAX, "%s/Library/%s/%s", home, pathext, file);
+        if (!access(fullPath, F_OK))
+            return fullPath;
+    }
+
+    while (pathList[i]) {
+        snprintf(fullPath, PATH_MAX, "%s/Library/%s/%s", pathList[i++],
+                 pathext, file);
+        if (!access(fullPath, F_OK))
+            return fullPath;
+    }
+
+    xfree(fullPath);
+    return NULL;
+}
+
+/*
  * DarwinSimulateMouseClick
  *  Send a mouse click to X when multiple mouse buttons are simulated
  *  with modifier-clicks, such as command-click for button 2. The dix
@@ -370,7 +441,7 @@ static int DarwinKeybdProc( DeviceIntPtr pDev, int onoff )
  *  closest to what the user wants. Ie. the user typically wants to
  *  simulate a button 2 press instead of Command-button 2.
  */
-void DarwinSimulateMouseClick(
+static void DarwinSimulateMouseClick(
     xEvent xe,          // event template with time and
                         // mouse position filled in
     int whichButton,    // mouse button to be pressed
@@ -408,7 +479,7 @@ void DarwinSimulateMouseClick(
  * DarwinUpdateModifiers
  *  Send events to update the modifier state.
  */
-void DarwinUpdateModifiers(
+static void DarwinUpdateModifiers(
     xEvent xe,          // event template with time, mouse position,
                         // and KeyPress or KeyRelease filled in
     int flags )			// modifier flags that have changed
@@ -850,6 +921,17 @@ int ddxProcessArgument( int argc, char *argv[], int i )
         return 1;
     }
 
+    if ( !strcmp( argv[i], "-keymap" ) ) {
+    	if ( i == argc-1 ) {
+            FatalError( "-keymap must be followed by a filename\n" );
+        }
+    	darwinKeymapFile = DarwinFindLibraryFile(argv[i+1], "Keyboards");
+        if ( !darwinKeymapFile )
+            FatalError( "Could not find keymapping file %s.\n", argv[i+1] );
+        ErrorF( "Using keymapping provided in %s.\n", darwinKeymapFile );
+        return 2;
+    }
+
 #ifdef DARWIN_WITH_QUARTZ
     if ( !strcmp( argv[i], "-quartz" ) ) {
         quartz = TRUE;
@@ -943,7 +1025,8 @@ void ddxUseMsg( void )
     ErrorF("\n");
     ErrorF("-fakebuttons : fake a three button mouse with Command and Option keys.\n");
     ErrorF("-nofakebuttons : don't fake a three button mouse.\n");
-    ErrorF("-version : show the server version\n");
+    ErrorF("-keymap <file> : read the keymapping from a file instead of the kernel.\n");
+    ErrorF("-version : show the server version.\n");
 #ifdef DARWIN_WITH_QUARTZ
     ErrorF("-quartz : run in parallel with Mac OS X Quartz window server.\n");
     ErrorF("\n");

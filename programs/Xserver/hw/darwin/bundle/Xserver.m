@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.12 2001/04/18 20:28:52 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.13 2001/04/19 00:40:48 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -24,6 +24,8 @@ extern int argcGlobal;
 extern char **argvGlobal;
 extern char **envpGlobal;
 extern int main(int argc, char *argv[], char *envp[]);
+extern void HideMenuBar(void);
+extern void ShowMenuBar(void);
 
 @implementation Xserver
 
@@ -159,8 +161,7 @@ extern int main(int argc, char *argv[], char *envp[]);
     // Start the X clients if started from GUI
     if (quartzStartClients) {
         char *home;
-        char xinitrcbuf[PATH_MAX+1];
-        size_t buflen;
+        char xinitrcbuf[PATH_MAX];
         NSString *path = [NSString stringWithCString:XPATH(xinit)];
         NSString *server = [NSString stringWithCString:XPATH(XDarwinStartup)];
         NSString *client;
@@ -185,14 +186,9 @@ extern int main(int argc, char *argv[], char *envp[]);
         [Xserver append:@XSTRPATH(XBINDIR) toEnv:@"PATH"];
 
         // Find the client init file to use
-        strncpy(xinitrcbuf, home, PATH_MAX);
-        buflen = strlen(xinitrcbuf);
-        strncat(xinitrcbuf, "/.xinitrc", PATH_MAX-buflen);
-        xinitrcbuf[PATH_MAX] = '\0';
+        snprintf(xinitrcbuf, PATH_MAX, "%s/.xinitrc", home);
         if (access(xinitrcbuf, F_OK)) {
-            strncpy(xinitrcbuf, XSTRPATH(XINITDIR), PATH_MAX);
-            buflen = strlen(xinitrcbuf);
-            strncat(xinitrcbuf, "/xinitrc", PATH_MAX-buflen);
+            snprintf(xinitrcbuf, PATH_MAX, XSTRPATH(XINITDIR) "/xinitrc");
             if (access(xinitrcbuf, F_OK)) {
                 hasClient = NO;
             }

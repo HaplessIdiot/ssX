@@ -1,4 +1,9 @@
 XFree86 4.0.99.3 (xx April 2001)
+ 431. XDarwin fixes:
+       - Provide work around for kernel/driver issue on Darwin 1.3 that
+         causes the kernel keymapping to be empty on Mac portables.
+       - Command line -dpi option is no longer ignored.
+      (Torrey Lyons).
  430. Ensure that the X-TT module isn't built if the Xserver isn't being
       built (#4594, Chu-yeon Park).
  429. Make xconsole try to reopen the /dev/xconsole pipe when it gets an EOF
@@ -13062,4 +13067,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1712 2001/04/23 20:31:06 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1713 2001/04/23 21:41:44 dawes Exp $
