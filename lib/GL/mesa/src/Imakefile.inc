@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile.inc,v 1.5 2001/04/02 22:15:47 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile.inc,v 1.6 2002/02/22 21:32:56 dawes Exp $
 
 #ifndef MesaBuildDir
 #define MesaBuildDir $(GLXLIBSRC)/mesa/src/
@@ -262,72 +262,11 @@ COREMESABASEOBJS = \
 		$(MESABUILDDIR)vtxfmt.o
 
 COREMESAOBJS = $(COREMESABASEOBJS) \
-		$(MESABUILDDIR)array_cache/ac_context.o \
-		$(MESABUILDDIR)array_cache/ac_import.o \
-		$(MESABUILDDIR)math/m_debug_clip.o \
-		$(MESABUILDDIR)math/m_debug_norm.o \
-		$(MESABUILDDIR)math/m_debug_vertex.o \
-		$(MESABUILDDIR)math/m_debug_xform.o \
-		$(MESABUILDDIR)math/m_eval.o \
-		$(MESABUILDDIR)math/m_matrix.o \
-		$(MESABUILDDIR)math/m_translate.o \
-		$(MESABUILDDIR)math/m_vector.o \
-		$(MESABUILDDIR)math/m_vertices.o \
-		$(MESABUILDDIR)math/m_xform.o \
-		$(MESABUILDDIR)swrast/s_aaline.o \
-		$(MESABUILDDIR)swrast/s_aatriangle.o \
-		$(MESABUILDDIR)swrast/s_accum.o \
-		$(MESABUILDDIR)swrast/s_alpha.o \
-		$(MESABUILDDIR)swrast/s_alphabuf.o \
-		$(MESABUILDDIR)swrast/s_bitmap.o \
-		$(MESABUILDDIR)swrast/s_blend.o \
-		$(MESABUILDDIR)swrast/s_buffers.o \
-		$(MESABUILDDIR)swrast/s_copypix.o \
-		$(MESABUILDDIR)swrast/s_context.o \
-		$(MESABUILDDIR)swrast/s_depth.o \
-		$(MESABUILDDIR)swrast/s_drawpix.o \
-		$(MESABUILDDIR)swrast/s_feedback.o \
-		$(MESABUILDDIR)swrast/s_fog.o \
-		$(MESABUILDDIR)swrast/s_histogram.o \
-		$(MESABUILDDIR)swrast/s_imaging.o \
-		$(MESABUILDDIR)swrast/s_lines.o \
-		$(MESABUILDDIR)swrast/s_logic.o \
-		$(MESABUILDDIR)swrast/s_masking.o \
-		$(MESABUILDDIR)swrast/s_pb.o \
-		$(MESABUILDDIR)swrast/s_pixeltex.o \
-		$(MESABUILDDIR)swrast/s_points.o \
-		$(MESABUILDDIR)swrast/s_readpix.o \
-		$(MESABUILDDIR)swrast/s_scissor.o \
-		$(MESABUILDDIR)swrast/s_span.o \
-		$(MESABUILDDIR)swrast/s_stencil.o \
-		$(MESABUILDDIR)swrast/s_texture.o \
-		$(MESABUILDDIR)swrast/s_texstore.o \
-		$(MESABUILDDIR)swrast/s_triangle.o \
-		$(MESABUILDDIR)swrast/s_zoom.o \
-		$(MESABUILDDIR)swrast_setup/ss_context.o \
-		$(MESABUILDDIR)swrast_setup/ss_triangle.o \
-		$(MESABUILDDIR)swrast_setup/ss_vb.o \
-		$(MESABUILDDIR)tnl/t_array_api.o \
-		$(MESABUILDDIR)tnl/t_array_import.o \
-		$(MESABUILDDIR)tnl/t_context.o \
-		$(MESABUILDDIR)tnl/t_eval_api.o \
-		$(MESABUILDDIR)tnl/t_imm_alloc.o \
-		$(MESABUILDDIR)tnl/t_imm_api.o \
-		$(MESABUILDDIR)tnl/t_imm_debug.o \
-		$(MESABUILDDIR)tnl/t_imm_dlist.o \
-		$(MESABUILDDIR)tnl/t_imm_elt.o \
-		$(MESABUILDDIR)tnl/t_imm_eval.o \
-		$(MESABUILDDIR)tnl/t_imm_exec.o \
-		$(MESABUILDDIR)tnl/t_imm_fixup.o \
-		$(MESABUILDDIR)tnl/t_pipeline.o \
-		$(MESABUILDDIR)tnl/t_vb_fog.o \
-		$(MESABUILDDIR)tnl/t_vb_light.o \
-		$(MESABUILDDIR)tnl/t_vb_normals.o \
-		$(MESABUILDDIR)tnl/t_vb_points.o \
-		$(MESABUILDDIR)tnl/t_vb_render.o \
-		$(MESABUILDDIR)tnl/t_vb_texgen.o \
-		$(MESABUILDDIR)tnl/t_vb_texmat.o \
-		$(MESABUILDDIR)tnl/t_vb_vertex.o
+		$(MESA_AC_OBJS) \
+		$(MESA_MATH_OBJS) \
+		$(MESA_SWRAST_OBJS) \
+		$(MESA_SWR_SETUP_OBJS) \
+		$(MESA_TNL_OBJS)
 
 #ifdef NeedAllMesaSrc
  DISPATCHUOBJS = $(MESABUILDDIR)unshared/dispatch.o
@@ -336,7 +275,8 @@ GLAPINOOPUOBJS = $(MESABUILDDIR)unshared/glapinoop.o
  GLTHREADUOBJS = $(MESABUILDDIR)unshared/glthread.o
 #endif
 
-COREMESAUOBJS =	$(MESABUILDDIR)unshared/accum.o \
+#if DoSharedLib
+COREMESABASEUOBJS = $(MESABUILDDIR)unshared/accum.o \
 		$(MESABUILDDIR)unshared/api_arrayelt.o \
 		$(MESABUILDDIR)unshared/api_eval.o \
 		$(MESABUILDDIR)unshared/api_loopback.o \
@@ -388,72 +328,16 @@ COREMESAUOBJS =	$(MESABUILDDIR)unshared/accum.o \
 		$(MESABUILDDIR)unshared/texutil.o \
 		$(MESABUILDDIR)unshared/varray.o \
 		$(MESABUILDDIR)unshared/vtxfmt.o \
-		$(MESABUILDDIR)array_cache/unshared/ac_context.o \
-		$(MESABUILDDIR)array_cache/unshared/ac_import.o \
-		$(MESABUILDDIR)math/unshared/m_debug_clip.o \
-		$(MESABUILDDIR)math/unshared/m_debug_norm.o \
-		$(MESABUILDDIR)math/unshared/m_debug_vertex.o \
-		$(MESABUILDDIR)math/unshared/m_debug_xform.o \
-		$(MESABUILDDIR)math/unshared/m_eval.o \
-		$(MESABUILDDIR)math/unshared/m_matrix.o \
-		$(MESABUILDDIR)math/unshared/m_translate.o \
-		$(MESABUILDDIR)math/unshared/m_vector.o \
-		$(MESABUILDDIR)math/unshared/m_vertices.o \
-		$(MESABUILDDIR)math/unshared/m_xform.o \
-		$(MESABUILDDIR)swrast/unshared/s_aaline.o \
-		$(MESABUILDDIR)swrast/unshared/s_aatriangle.o \
-		$(MESABUILDDIR)swrast/unshared/s_accum.o \
-		$(MESABUILDDIR)swrast/unshared/s_alpha.o \
-		$(MESABUILDDIR)swrast/unshared/s_alphabuf.o \
-		$(MESABUILDDIR)swrast/unshared/s_bitmap.o \
-		$(MESABUILDDIR)swrast/unshared/s_blend.o \
-		$(MESABUILDDIR)swrast/unshared/s_buffers.o \
-		$(MESABUILDDIR)swrast/unshared/s_copypix.o \
-		$(MESABUILDDIR)swrast/unshared/s_context.o \
-		$(MESABUILDDIR)swrast/unshared/s_depth.o \
-		$(MESABUILDDIR)swrast/unshared/s_drawpix.o \
-		$(MESABUILDDIR)swrast/unshared/s_feedback.o \
-		$(MESABUILDDIR)swrast/unshared/s_fog.o \
-		$(MESABUILDDIR)swrast/unshared/s_histogram.o \
-		$(MESABUILDDIR)swrast/unshared/s_imaging.o \
-		$(MESABUILDDIR)swrast/unshared/s_lines.o \
-		$(MESABUILDDIR)swrast/unshared/s_logic.o \
-		$(MESABUILDDIR)swrast/unshared/s_masking.o \
-		$(MESABUILDDIR)swrast/unshared/s_pb.o \
-		$(MESABUILDDIR)swrast/unshared/s_pixeltex.o \
-		$(MESABUILDDIR)swrast/unshared/s_points.o \
-		$(MESABUILDDIR)swrast/unshared/s_readpix.o \
-		$(MESABUILDDIR)swrast/unshared/s_scissor.o \
-		$(MESABUILDDIR)swrast/unshared/s_span.o \
-		$(MESABUILDDIR)swrast/unshared/s_stencil.o \
-		$(MESABUILDDIR)swrast/unshared/s_texture.o \
-		$(MESABUILDDIR)swrast/unshared/s_texstore.o \
-		$(MESABUILDDIR)swrast/unshared/s_triangle.o \
-		$(MESABUILDDIR)swrast/unshared/s_zoom.o \
-		$(MESABUILDDIR)swrast_setup/unshared/ss_context.o \
-		$(MESABUILDDIR)swrast_setup/unshared/ss_triangle.o \
-		$(MESABUILDDIR)swrast_setup/unshared/ss_vb.o \
-		$(MESABUILDDIR)tnl/unshared/t_array_api.o \
-		$(MESABUILDDIR)tnl/unshared/t_array_import.o \
-		$(MESABUILDDIR)tnl/unshared/t_context.o \
-		$(MESABUILDDIR)tnl/unshared/t_eval_api.o \
-		$(MESABUILDDIR)tnl/unshared/t_imm_alloc.o \
-		$(MESABUILDDIR)tnl/unshared/t_imm_api.o \
-		$(MESABUILDDIR)tnl/unshared/t_imm_debug.o \
-		$(MESABUILDDIR)tnl/unshared/t_imm_dlist.o \
-		$(MESABUILDDIR)tnl/unshared/t_imm_elt.o \
-		$(MESABUILDDIR)tnl/unshared/t_imm_eval.o \
-		$(MESABUILDDIR)tnl/unshared/t_imm_exec.o \
-		$(MESABUILDDIR)tnl/unshared/t_imm_fixup.o \
-		$(MESABUILDDIR)tnl/unshared/t_pipeline.o \
-		$(MESABUILDDIR)tnl/unshared/t_vb_fog.o \
-		$(MESABUILDDIR)tnl/unshared/t_vb_light.o \
-		$(MESABUILDDIR)tnl/unshared/t_vb_normals.o \
-		$(MESABUILDDIR)tnl/unshared/t_vb_points.o \
-		$(MESABUILDDIR)tnl/unshared/t_vb_render.o \
-		$(MESABUILDDIR)tnl/unshared/t_vb_texgen.o \
-		$(MESABUILDDIR)tnl/unshared/t_vb_texmat.o \
-		$(MESABUILDDIR)tnl/unshared/t_vb_vertex.o
+#else
+COREMESABASEUOBJS = $(COREMESABASEOBJS)
+#endif
+
+COREMESAUOBJS = $(COREMESABASEUOBJS) \
+		$(MESA_AC_UOBJS) \
+		$(MESA_MATH_UOBJS) \
+		$(MESA_SWRAST_UOBJS) \
+		$(MESA_SWR_SETUP_UOBJS) \
+		$(MESA_TNL_UOBJS)
 
 #ifdef NeedAllMesaSrc
  DISPATCHDOBJS = $(MESABUILDDIR)debugger/dispatch.o
@@ -462,7 +346,7 @@ GLAPINOOPDOBJS = $(MESABUILDDIR)debugger/glapinoop.o
  GLTHREADDOBJS = $(MESABUILDDIR)debugger/glthread.o
 #endif
 
-COREMESADOBJS =	$(MESABUILDDIR)debugger/accum.o \
+COREMESABASEDOBJS = $(MESABUILDDIR)debugger/accum.o \
 		$(MESABUILDDIR)debugger/api_arrayelt.o \
 		$(MESABUILDDIR)debugger/api_eval.o \
 		$(MESABUILDDIR)debugger/api_loopback.o \
@@ -514,72 +398,13 @@ COREMESADOBJS =	$(MESABUILDDIR)debugger/accum.o \
 		$(MESABUILDDIR)debugger/texutil.o \
 		$(MESABUILDDIR)debugger/varray.o \
 		$(MESABUILDDIR)debugger/vtxfmt.o \
-		$(MESABUILDDIR)array_cache/debugger/ac_context.o \
-		$(MESABUILDDIR)array_cache/debugger/ac_import.o \
-		$(MESABUILDDIR)math/debugger/m_debug_clip.o \
-		$(MESABUILDDIR)math/debugger/m_debug_norm.o \
-		$(MESABUILDDIR)math/debugger/m_debug_vertex.o \
-		$(MESABUILDDIR)math/debugger/m_debug_xform.o \
-		$(MESABUILDDIR)math/debugger/m_eval.o \
-		$(MESABUILDDIR)math/debugger/m_matrix.o \
-		$(MESABUILDDIR)math/debugger/m_translate.o \
-		$(MESABUILDDIR)math/debugger/m_vector.o \
-		$(MESABUILDDIR)math/debugger/m_vertices.o \
-		$(MESABUILDDIR)math/debugger/m_xform.o \
-		$(MESABUILDDIR)swrast/debugger/s_aaline.o \
-		$(MESABUILDDIR)swrast/debugger/s_aatriangle.o \
-		$(MESABUILDDIR)swrast/debugger/s_accum.o \
-		$(MESABUILDDIR)swrast/debugger/s_alpha.o \
-		$(MESABUILDDIR)swrast/debugger/s_alphabuf.o \
-		$(MESABUILDDIR)swrast/debugger/s_bitmap.o \
-		$(MESABUILDDIR)swrast/debugger/s_blend.o \
-		$(MESABUILDDIR)swrast/debugger/s_buffers.o \
-		$(MESABUILDDIR)swrast/debugger/s_copypix.o \
-		$(MESABUILDDIR)swrast/debugger/s_context.o \
-		$(MESABUILDDIR)swrast/debugger/s_depth.o \
-		$(MESABUILDDIR)swrast/debugger/s_drawpix.o \
-		$(MESABUILDDIR)swrast/debugger/s_feedback.o \
-		$(MESABUILDDIR)swrast/debugger/s_fog.o \
-		$(MESABUILDDIR)swrast/debugger/s_histogram.o \
-		$(MESABUILDDIR)swrast/debugger/s_imaging.o \
-		$(MESABUILDDIR)swrast/debugger/s_lines.o \
-		$(MESABUILDDIR)swrast/debugger/s_logic.o \
-		$(MESABUILDDIR)swrast/debugger/s_masking.o \
-		$(MESABUILDDIR)swrast/debugger/s_pb.o \
-		$(MESABUILDDIR)swrast/debugger/s_pixeltex.o \
-		$(MESABUILDDIR)swrast/debugger/s_points.o \
-		$(MESABUILDDIR)swrast/debugger/s_readpix.o \
-		$(MESABUILDDIR)swrast/debugger/s_scissor.o \
-		$(MESABUILDDIR)swrast/debugger/s_span.o \
-		$(MESABUILDDIR)swrast/debugger/s_stencil.o \
-		$(MESABUILDDIR)swrast/debugger/s_texture.o \
-		$(MESABUILDDIR)swrast/debugger/s_texstore.o \
-		$(MESABUILDDIR)swrast/debugger/s_triangle.o \
-		$(MESABUILDDIR)swrast/debugger/s_zoom.o \
-		$(MESABUILDDIR)swrast_setup/debugger/ss_context.o \
-		$(MESABUILDDIR)swrast_setup/debugger/ss_triangle.o \
-		$(MESABUILDDIR)swrast_setup/debugger/ss_vb.o \
-		$(MESABUILDDIR)tnl/debugger/t_array_api.o \
-		$(MESABUILDDIR)tnl/debugger/t_array_import.o \
-		$(MESABUILDDIR)tnl/debugger/t_context.o \
-		$(MESABUILDDIR)tnl/debugger/t_eval_api.o \
-		$(MESABUILDDIR)tnl/debugger/t_imm_alloc.o \
-		$(MESABUILDDIR)tnl/debugger/t_imm_api.o \
-		$(MESABUILDDIR)tnl/debugger/t_imm_debug.o \
-		$(MESABUILDDIR)tnl/debugger/t_imm_dlist.o \
-		$(MESABUILDDIR)tnl/debugger/t_imm_elt.o \
-		$(MESABUILDDIR)tnl/debugger/t_imm_eval.o \
-		$(MESABUILDDIR)tnl/debugger/t_imm_exec.o \
-		$(MESABUILDDIR)tnl/debugger/t_imm_fixup.o \
-		$(MESABUILDDIR)tnl/debugger/t_pipeline.o \
-		$(MESABUILDDIR)tnl/debugger/t_vb_fog.o \
-		$(MESABUILDDIR)tnl/debugger/t_vb_light.o \
-		$(MESABUILDDIR)tnl/debugger/t_vb_normals.o \
-		$(MESABUILDDIR)tnl/debugger/t_vb_points.o \
-		$(MESABUILDDIR)tnl/debugger/t_vb_render.o \
-		$(MESABUILDDIR)tnl/debugger/t_vb_texgen.o \
-		$(MESABUILDDIR)tnl/debugger/t_vb_texmat.o \
-		$(MESABUILDDIR)tnl/debugger/t_vb_vertex.o
+
+COREMESADOBJS = $(COREMESABASEDOBJS) \
+		$(MESA_AC_DOBJS) \
+		$(MESA_MATH_DOBJS) \
+		$(MESA_SWRAST_DOBJS) \
+		$(MESA_SWR_SETUP_DOBJS) \
+		$(MESA_TNL_DOBJS)
 
 #ifdef NeedAllMesaSrc
  DISPATCHPOBJS = $(MESABUILDDIR)profiled/dispatch.o
@@ -588,7 +413,7 @@ GLAPINOOPPOBJS = $(MESABUILDDIR)profiled/glapinoop.o
  GLTHREADPOBJS = $(MESABUILDDIR)profiled/glthread.o
 #endif
 
-COREMESAPOBJS =	$(MESABUILDDIR)profiled/accum.o \
+COREMESABASEPOBJS = $(MESABUILDDIR)profiled/accum.o \
 		$(MESABUILDDIR)profiled/api_arrayelt.o \
 		$(MESABUILDDIR)profiled/api_eval.o \
 		$(MESABUILDDIR)profiled/api_loopback.o \
@@ -640,70 +465,11 @@ COREMESAPOBJS =	$(MESABUILDDIR)profiled/accum.o \
 		$(MESABUILDDIR)profiled/texutil.o \
 		$(MESABUILDDIR)profiled/varray.o \
 		$(MESABUILDDIR)profiled/vtxfmt.o \
-		$(MESABUILDDIR)array_cache/profiled/ac_context.o \
-		$(MESABUILDDIR)array_cache/profiled/ac_import.o \
-		$(MESABUILDDIR)math/profiled/m_debug_clip.o \
-		$(MESABUILDDIR)math/profiled/m_debug_norm.o \
-		$(MESABUILDDIR)math/profiled/m_debug_vertex.o \
-		$(MESABUILDDIR)math/profiled/m_debug_xform.o \
-		$(MESABUILDDIR)math/profiled/m_eval.o \
-		$(MESABUILDDIR)math/profiled/m_matrix.o \
-		$(MESABUILDDIR)math/profiled/m_translate.o \
-		$(MESABUILDDIR)math/profiled/m_vector.o \
-		$(MESABUILDDIR)math/profiled/m_vertices.o \
-		$(MESABUILDDIR)math/profiled/m_xform.o \
-		$(MESABUILDDIR)swrast/profiled/s_aaline.o \
-		$(MESABUILDDIR)swrast/profiled/s_aatriangle.o \
-		$(MESABUILDDIR)swrast/profiled/s_accum.o \
-		$(MESABUILDDIR)swrast/profiled/s_alpha.o \
-		$(MESABUILDDIR)swrast/profiled/s_alphabuf.o \
-		$(MESABUILDDIR)swrast/profiled/s_bitmap.o \
-		$(MESABUILDDIR)swrast/profiled/s_blend.o \
-		$(MESABUILDDIR)swrast/profiled/s_buffers.o \
-		$(MESABUILDDIR)swrast/profiled/s_copypix.o \
-		$(MESABUILDDIR)swrast/profiled/s_context.o \
-		$(MESABUILDDIR)swrast/profiled/s_depth.o \
-		$(MESABUILDDIR)swrast/profiled/s_drawpix.o \
-		$(MESABUILDDIR)swrast/profiled/s_feedback.o \
-		$(MESABUILDDIR)swrast/profiled/s_fog.o \
-		$(MESABUILDDIR)swrast/profiled/s_histogram.o \
-		$(MESABUILDDIR)swrast/profiled/s_imaging.o \
-		$(MESABUILDDIR)swrast/profiled/s_lines.o \
-		$(MESABUILDDIR)swrast/profiled/s_logic.o \
-		$(MESABUILDDIR)swrast/profiled/s_masking.o \
-		$(MESABUILDDIR)swrast/profiled/s_pb.o \
-		$(MESABUILDDIR)swrast/profiled/s_pixeltex.o \
-		$(MESABUILDDIR)swrast/profiled/s_points.o \
-		$(MESABUILDDIR)swrast/profiled/s_readpix.o \
-		$(MESABUILDDIR)swrast/profiled/s_scissor.o \
-		$(MESABUILDDIR)swrast/profiled/s_span.o \
-		$(MESABUILDDIR)swrast/profiled/s_stencil.o \
-		$(MESABUILDDIR)swrast/profiled/s_texture.o \
-		$(MESABUILDDIR)swrast/profiled/s_texstore.o \
-		$(MESABUILDDIR)swrast/profiled/s_triangle.o \
-		$(MESABUILDDIR)swrast/profiled/s_zoom.o \
-		$(MESABUILDDIR)swrast_setup/profiled/ss_context.o \
-		$(MESABUILDDIR)swrast_setup/profiled/ss_triangle.o \
-		$(MESABUILDDIR)swrast_setup/profiled/ss_vb.o \
-		$(MESABUILDDIR)tnl/profiled/t_array_api.o \
-		$(MESABUILDDIR)tnl/profiled/t_array_import.o \
-		$(MESABUILDDIR)tnl/profiled/t_context.o \
-		$(MESABUILDDIR)tnl/profiled/t_eval_api.o \
-		$(MESABUILDDIR)tnl/profiled/t_imm_alloc.o \
-		$(MESABUILDDIR)tnl/profiled/t_imm_api.o \
-		$(MESABUILDDIR)tnl/profiled/t_imm_debug.o \
-		$(MESABUILDDIR)tnl/profiled/t_imm_dlist.o \
-		$(MESABUILDDIR)tnl/profiled/t_imm_elt.o \
-		$(MESABUILDDIR)tnl/profiled/t_imm_eval.o \
-		$(MESABUILDDIR)tnl/profiled/t_imm_exec.o \
-		$(MESABUILDDIR)tnl/profiled/t_imm_fixup.o \
-		$(MESABUILDDIR)tnl/profiled/t_pipeline.o \
-		$(MESABUILDDIR)tnl/profiled/t_vb_fog.o \
-		$(MESABUILDDIR)tnl/profiled/t_vb_light.o \
-		$(MESABUILDDIR)tnl/profiled/t_vb_normals.o \
-		$(MESABUILDDIR)tnl/profiled/t_vb_points.o \
-		$(MESABUILDDIR)tnl/profiled/t_vb_render.o \
-		$(MESABUILDDIR)tnl/profiled/t_vb_texgen.o \
-		$(MESABUILDDIR)tnl/profiled/t_vb_texmat.o \
-		$(MESABUILDDIR)tnl/profiled/t_vb_vertex.o
+
+COREMESAPOBJS = $(COREMESABASEPOBJS) \
+		$(MESA_AC_POBJS) \
+		$(MESA_MATH_POBJS) \
+		$(MESA_SWRAST_POBJS) \
+		$(MESA_SWR_SETUP_POBJS) \
+		$(MESA_TNL_POBJS)
 

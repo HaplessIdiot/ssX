@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/r128/Imakefile,v 1.17 2001/05/10 16:56:11 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/r128/Imakefile,v 1.18 2002/02/22 21:44:57 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -18,6 +18,12 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/drv/r128/Imakefile,v 1.17 2001/05/10 16:56:11
 
 #include "../common/Imakefile.inc"
 #include "Imakefile.inc"
+#include "../../array_cache/Imakefile.inc"
+#include "../../math/Imakefile.inc"
+#include "../../swrast/Imakefile.inc"
+#include "../../swrast_setup/Imakefile.inc"
+#include "../../tnl/Imakefile.inc"
+#include "../../tnl_dd/Imakefile.inc"
 #include "../../Imakefile.inc"
 #ifdef i386Architecture
 #include "../../X86/Imakefile.inc"
@@ -25,6 +31,7 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/drv/r128/Imakefile,v 1.17 2001/05/10 16:56:11
 #ifdef SparcArchitecture
 #include "../../SPARC/Imakefile.inc"
 #endif
+
 
       DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES) $(MESA_ASM_DEFINES)
      INCLUDES = $(X_INCLUDES) $(MESA_INCLUDES) $(DRI_INCLUDES)

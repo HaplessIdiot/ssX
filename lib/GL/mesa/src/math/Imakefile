@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/X/Imakefile,v 1.6 2000/08/01 20:28:39 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/math/Imakefile,v 1.1 2002/02/22 21:45:06 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -22,16 +22,9 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/X/Imakefile,v 1.6 2000/08/01 20:28:39 dawes E
 #define DoProfileLib NO
 #endif
 
-LinkSourceFile(m_debug_clip.c, $(MESASRCDIR)/src/math)
-LinkSourceFile(m_debug_norm.c, $(MESASRCDIR)/src/math)
-LinkSourceFile(m_debug_vertex.c, $(MESASRCDIR)/src/math)
-LinkSourceFile(m_debug_xform.c, $(MESASRCDIR)/src/math)
-LinkSourceFile(m_eval.c, $(MESASRCDIR)/src/math)
-LinkSourceFile(m_matrix.c, $(MESASRCDIR)/src/math)
-LinkSourceFile(m_translate.c, $(MESASRCDIR)/src/math)
-LinkSourceFile(m_vector.c, $(MESASRCDIR)/src/math)
-LinkSourceFile(m_vertices.c, $(MESASRCDIR)/src/math)
-LinkSourceFile(m_xform.c, $(MESASRCDIR)/src/math)
+#define MesaMathBuildDir /**/
+#define NeedToLinkMesaSrc
+#include "Imakefile.inc"
 
 
 #if Malloc0ReturnsNull
@@ -52,27 +45,8 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src \
 		-I../../../include
 
      INCLUDES = $(MESA_INCLUDES) $(DRI_INCLUDES)
-         SRCS = m_debug_clip.c \
-		m_debug_norm.c \
-		m_debug_xform.c \
-		m_debug_vertex.c \
-		m_eval.c \
-		m_matrix.c \
-		m_translate.c \
-		m_vector.c \
-		m_vertices.c \
-		m_xform.c
-
-         OBJS = m_debug_clip.o \
-		m_debug_norm.o \
-		m_debug_xform.o \
-		m_debug_vertex.o \
-		m_eval.o \
-		m_matrix.o \
-		m_translate.o \
-		m_vector.o \
-		m_vertices.o \
-		m_xform.o
+         SRCS = $(MESA_MATH_SRCS)
+         OBJS = $(MESA_MATH_OBJS)
 
 #ifdef i386Architecture
      ASM_SRCS =

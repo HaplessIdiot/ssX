@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.26 2001/05/02 15:06:02 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.27 2002/02/22 21:32:56 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -62,7 +62,7 @@ NormalLintTarget($(SRCS))
 #define IHaveSubdirs
 #define PassCDebugFlags
 
-SUBDIRS = $(ASM_SUBDIRS) math array_cache swrast swrast_setup tnl tnl_dd X
+SUBDIRS = $(ASM_SUBDIRS) math array_cache swrast swrast_setup tnl /*tnl_dd*/ X
 
 
 MakeSubdirs($(SUBDIRS))

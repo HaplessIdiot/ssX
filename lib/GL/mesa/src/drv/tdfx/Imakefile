@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile,v 1.25.2.1 2001/06/01 07:42:23 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile,v 1.29 2002/02/22 21:45:03 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -18,6 +18,12 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile,v 1.25.2.1 2001/06/01 07:4
 
 #include "../common/Imakefile.inc"
 #include "Imakefile.inc"
+#include "../../array_cache/Imakefile.inc"
+#include "../../math/Imakefile.inc"
+#include "../../swrast/Imakefile.inc"
+#include "../../swrast_setup/Imakefile.inc"
+#include "../../tnl/Imakefile.inc"
+#include "../../tnl_dd/Imakefile.inc"
 #include "../../Imakefile.inc"
 #ifdef i386Architecture
 #include "../../X86/Imakefile.inc"

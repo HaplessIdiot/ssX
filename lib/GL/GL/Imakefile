@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.9 2001/11/18 21:13:26 herrb Exp $
+XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.10 2001/11/24 11:22:35 herrb Exp $
 
 #include <Threads.tmpl>
 
@@ -15,9 +15,13 @@ XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.9 2001/11/18 21:13:26 herrb Exp $
 BASEREQUIREDLIBS = SharedGLReqs
 #endif
 
-#define MesaBuildDir $(GLXLIBSRC)/mesa/src/
+#include "../mesa/src/array_cache/Imakefile.inc"
+#include "../mesa/src/math/Imakefile.inc"
+#include "../mesa/src/swrast/Imakefile.inc"
+#include "../mesa/src/swrast_setup/Imakefile.inc"
+#include "../mesa/src/tnl/Imakefile.inc"
+#include "../mesa/src/tnl_dd/Imakefile.inc"
 #include "../mesa/src/Imakefile.inc"
-#define MesaX86BuildDir $(GLXLIBSRC)/mesa/src/X86/
 #ifdef i386Architecture
 #include "../mesa/src/X86/Imakefile.inc"
 #endif

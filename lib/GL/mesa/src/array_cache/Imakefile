@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/X/Imakefile,v 1.6 2000/08/01 20:28:39 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/array_cache/Imakefile,v 1.1 2002/02/22 21:32:57 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -22,9 +22,9 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/X/Imakefile,v 1.6 2000/08/01 20:28:39 dawes E
 #define DoProfileLib NO
 #endif
 
-LinkSourceFile(ac_context.c, $(MESASRCDIR)/src/array_cache)
-LinkSourceFile(ac_import.c, $(MESASRCDIR)/src/array_cache)
-
+#define MesaACBuildDir /**/
+#define NeedToLinkMesaSrc
+#include "Imakefile.inc"
 
 #if Malloc0ReturnsNull
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
@@ -44,9 +44,8 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src \
 		-I../../../include
 
      INCLUDES = $(MESA_INCLUDES) $(DRI_INCLUDES)
-         SRCS = ac_context.c ac_import.c
-         OBJS = ac_context.o ac_import.o
-
+         SRCS = $(MESA_AC_SRCS)
+         OBJS = $(MESA_AC_OBJS)
 
 
 #ifdef i386Architecture
