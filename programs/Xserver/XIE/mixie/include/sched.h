@@ -66,6 +66,7 @@ terms and conditions:
 	Robert NC Shelley -- AGE Logic, Inc.  May 1993
 
 ******************************************************************************/
+/* $XFree86$ */
 
 #ifndef _XIEH_SCHED
 #define _XIEH_SCHED

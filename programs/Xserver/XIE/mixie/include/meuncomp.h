@@ -66,6 +66,7 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. October 1993
   
 *****************************************************************************/
+/* $XFree86$ */
 
 typedef struct _meuncompdef {
   void     (*action)();

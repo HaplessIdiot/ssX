@@ -43,6 +43,8 @@ in this Software without prior written authorization from The Open Group.
  * @(#)cache.c	4.2	91/05/02
  *
  */
+/* $XFree86$ */
+
 #include	"cachestr.h"
 #include	"misc.h"
 

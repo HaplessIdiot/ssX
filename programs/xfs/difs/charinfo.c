@@ -45,6 +45,7 @@ in this Software without prior written authorization from The Open Group.
  * This file was once on the other side of
  * the font library interface as util/fsfuncs.c.
  */
+/* $XFree86$ */
 
 #include <X11/Xos.h>
 #include "misc.h"
