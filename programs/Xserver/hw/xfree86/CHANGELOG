@@ -1,4 +1,6 @@
 XFree86 4.3.99.17 (xx November 2003)
+ 632. Fix a problem that prevented the i810 driver from using dot clocks less
+      than 12MHz (which appear to work) (Bugzilla #925, Richard Dengler).
  631. Fix a server crash that can happen when loading some CID fonts
       (Bugzilla #906, David Dawes).
  630. Restructured version of the wacom driver, with support for TwinView,
@@ -18280,7 +18282,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3001 2003/11/29 04:55:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3002 2003/11/29 17:27:54 dawes Exp $
 
 
 
