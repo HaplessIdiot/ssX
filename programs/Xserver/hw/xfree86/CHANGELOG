@@ -1,4 +1,5 @@
 XFree86 4.1.99.2 (xx November 2001)
+ 531. Add Spanish localization of XDarwin front end (Pablo Di Noto).
  530. Set the r128 DRI driver version back to 2.2 so that the major version is
       the same as for the version in XFree86 4.1.0.
  529. Fixes for DGA2.0 support in the radeon driver (#A.585,
@@ -14245,4 +14246,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2064 2001/11/26 19:36:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2065 2001/11/26 21:46:35 dawes Exp $
