@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.12 1994/09/08 14:38:05 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.13 1994/09/11 00:51:03 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -433,6 +433,7 @@ getScreenIndex(token)
 /*
  * validateGraphicsToken --
  *	If token is a graphics token, check it is in the list of validTokens
+ * XXXX This needs modifying to work as it did with the old format
  */
 static Bool
 validateGraphicsToken(validTokens, token)
@@ -1991,6 +1992,8 @@ configScreenSection()
       dispp->weight.red = dispp->weight.green = dispp->weight.blue = 0;
       dispp->frameX0 = -1;
       dispp->frameY0 = -1;
+      dispp->virtualX = -1;
+      dispp->virtualY = -1;
       dispp->modes = NULL;
       dispp->whiteColour.red = dispp->whiteColour.green = 
                                dispp->whiteColour.blue = 0x3F;
@@ -2194,11 +2197,6 @@ configScreenSection()
         "%s: When ClockProg is specified a Clocks line is required\n",
         driver->name);
     }
-    if (validateGraphicsToken(driver->validTokens, MODES) && !driver->modes)
-    {
-      FatalError("%s: A Modes line must be specified in XF86Config\n",
-                 driver->name);
-    }
 
     /* Find the Index of the Text Clock for the ClockProg */
     if (driver->clockprog && textClockValue > 0)
@@ -2344,6 +2342,9 @@ DispPtr disp;
 	  else
 	    disp->modes = pNew;
 	}
+      /* Make sure at least one mode was present */
+      if (!pLast)
+	 configError("Mode name expected");
       pNew->next = disp->modes;
       disp->modes->prev = pLast;
       pushToken = token;

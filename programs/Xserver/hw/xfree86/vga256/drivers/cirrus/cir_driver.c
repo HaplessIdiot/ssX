@@ -1,7 +1,7 @@
 /* $XConsortium: cir_driver.c,v 1.1 94/03/28 21:48:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.10 1994/09/07 15:55:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.11 1994/09/11 00:52:31 dawes Exp $ */
 /*
- * Header: /usr/local/src/Xaccel/cirrus/RCS/driver.c,v 1.6 1993/04/04 17:57:44 bill Exp
+ * cir_driver.c,v 1.8 1994/09/11 05:51:04 scooper Exp
  *
  * Copyright 1993 by Bill Reynolds, Santa Fe, New Mexico
  *
@@ -132,6 +132,20 @@ Bool cirrusFavourBLT = FALSE;
 
 #define Is_62x5(x)  ((x) >= CLGD6205 && (x) <= CLGD6235)
 
+/* <scooper>
+ * The following will need updating for other chips in the cirrus
+ * family that support a hardware cursor.  I only have data for the 542x
+ * series.
+ */
+
+#define Has_HWCursor(x) ((x) >= CLGD5420 && (x) <= CLGD5429)
+
+/* Define a structure for the HIDDEN DAC cursor colours */
+typedef struct {
+  unsigned char red;		/* DAC red */
+  unsigned char green;		/* DAC green */
+  unsigned char blue;		/* DAC blue */
+} DACcolourRec;
 				/* For now, only save a couple of the */
 				/* extensions. */
 typedef struct {
@@ -142,6 +156,12 @@ typedef struct {
   unsigned char SR7;		/* Extended Sequencer */
   unsigned char SRE;		/* VCLK Numerator */
   unsigned char SRF;		/* DRAM Control */
+  unsigned char SR10;		/* Graphics Cursor X Position [7:0]         */
+  unsigned char SR10E;		/* Graphics Cursor X Position [7:5] | 10000 */
+  unsigned char SR11;		/* Graphics Cursor Y Position [7:0]         */
+  unsigned char SR11E;		/* Graphics Cursor Y Position [7:5] | 10001 */
+  unsigned char SR12;		/* Graphics Cursor Attributes Register */
+  unsigned char SR13;		/* Graphics Cursor Pattern Address */
   unsigned char SR16;		/* Performance Tuning Register */
   unsigned char SR17;		/* Configuration/Extended Control Register */
   unsigned char SR1E;		/* VCLK Denominator */
@@ -151,7 +171,9 @@ typedef struct {
   unsigned char CR1D;		/* Overlay Extended Control Register */
   unsigned char RAX;		/* 62x5 LCD Timing -- TFT HSYNC */
   unsigned char HIDDENDAC;	/* Hidden DAC Register */
-  } vgacirrusRec, *vgacirrusPtr;
+  DACcolourRec  FOREGROUND;     /* Hidden DAC cursor foreground colour */
+  DACcolourRec  BACKGROUND;     /* Hidden DAC cursor background colour */
+} vgacirrusRec, *vgacirrusPtr;
 
 unsigned char SavedExtSeq;
 
@@ -174,6 +196,14 @@ extern void     cirrusSetReadWrite();
 extern void     cirrusSetRead2MB();
 extern void     cirrusSetWrite2MB();
 extern void     cirrusSetReadWrite2MB();
+
+extern void 	cirrusCursorInit();
+extern void 	cirrusRestoreCursor();
+extern void 	cirrusWarpCursor();
+extern void 	cirrusQueryBestSize();
+
+extern vgaHWCursorRec vgaHWCursor;
+extern cirrusCurRec cirrusCur;
 
 int	CirrusMemTop;
 
@@ -947,6 +977,16 @@ cirrusProbe()
      }
      if (cirrusChip == CLGD5434 || cirrusChip == CLGD5430)
          OFLG_SET(OPTION_MMIO, &CIRRUS.ChipOptionFlags);
+
+     /* <scooper>
+      *	The Hardware cursor, if the chip is capable, can be turned off using
+      * the "sw_cursor" option.
+      */
+
+     if (Has_HWCursor(cirrusChip)) {
+        OFLG_SET(OPTION_SW_CURSOR, &CIRRUS.ChipOptionFlags);
+     }
+
      return(TRUE);
 }
 
@@ -995,6 +1035,7 @@ cirrusFbInit()
       if (OFLG_ISSET(OPTION_NO_BITBLT, &vga256InfoRec.options))
           cirrusUseBLTEngine = FALSE;
       }
+
 #endif
 
   /*
@@ -1100,9 +1141,8 @@ nolinear:
         CIRRUS.ChipUseLinearAddressing = TRUE;
 #endif
 
-if (vgaBitsPerPixel == 8)
-
-  if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)) {
+  if (vgaBitsPerPixel == 8 &&
+      !OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)) {
     int size;
     if (xf86Verbose)
       {
@@ -1154,8 +1194,53 @@ if (vgaBitsPerPixel == 8)
 
     CirrusMemTop = vga256InfoRec.virtualX * vga256InfoRec.virtualY;
     size = CirrusInitializeAllocator(CirrusMemTop);
-    ErrorF("%s %s: %s: %d bytes off-screen memory available\n",
-        XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset, size);
+    if (xf86Verbose)
+      ErrorF("%s %s: %s: %d bytes off-screen memory available\n",
+             XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset, size);
+    
+    if (Has_HWCursor(cirrusChip) &&
+	!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options))
+      {
+#if 0
+	if (HasLargeHWCursor(cirrusChip))
+	  {
+	    cirrusCur.cur_size = 1;
+	    cirrusCur.width = 64;
+	    cirrusCur.height = 64;
+	  }
+	else
+#endif
+	  {
+	    cirrusCur.cur_size = 0;
+	    cirrusCur.width = 32;
+	    cirrusCur.height = 32;
+	  }
+
+	if (!CirrusCursorAllocate(&cirrusCur))
+	  {	
+	    vgaHWCursor.Initialized = TRUE;
+	    vgaHWCursor.Init = cirrusCursorInit;
+	    vgaHWCursor.Restore = cirrusRestoreCursor;
+	    vgaHWCursor.Warp = cirrusWarpCursor;  
+	    vgaHWCursor.QueryBestSize = cirrusQueryBestSize;
+
+	    if (xf86Verbose)
+	      {
+	        ErrorF( "%s %s: %s: Using HW cursor\n",
+		       XCONFIG_PROBED, vga256InfoRec.name,
+		       vga256InfoRec.chipset);
+	        ErrorF( "\tcirrusFbInit: size=0x%01x sel=0x%02x addr=0x%08x\n",
+		       cirrusCur.cur_size, cirrusCur.cur_select,
+		       cirrusCur.cur_addr);
+	      }
+	  }
+	else
+	  {
+	    ErrorF( "%s %s: %s: Failed to allocate HW cursor in offscreen ram,\n\ttry reducing the screen size\n",
+		   XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset);
+
+	  }
+      }	  
 
     if (HAVEBITBLTENGINE()) {
     	/* Need 256 bytes for BitBLT fills. */
@@ -1167,8 +1252,9 @@ if (vgaBitsPerPixel == 8)
 		size);
 	}
 	else {
-            ErrorF("%s %s: %s: Using BitBLT engine\n",
-	        XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset);
+	    if (xf86Verbose)
+              ErrorF("%s %s: %s: Using BitBLT engine\n",
+	             XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset);
 #ifdef CIRRUS_INCLUDE_COPYPLANE1TO8	    
 	    vga256LowlevFuncs.copyPlane1to8 = CirrusCopyPlane1to8;
 #endif	
@@ -1293,6 +1379,12 @@ cirrusRestore(restore)
 /*  unsigned char SR7;		 Extended Sequencer */
 /*  unsigned char SRE;		 VCLK Numerator */
 /*  unsigned char SRF;		 DRAM Control */
+/*  unsigned char SR10;		 Graphics Cursor X Position [7:0]         */
+/*  unsigned char SR10E;	 Graphics Cursor X Position [7:5] | 10000 */
+/*  unsigned char SR11;		 Graphics Cursor Y Position [7:0]         */
+/*  unsigned char SR11E;	 Graphics Cursor Y Position [7:5] | 10001 */
+/*  unsigned char SR12;		 Graphics Cursor Attributes Register */
+/*  unsigned char SR13;		 Graphics Cursor Pattern Address */
 /*  unsigned char SR16;		 Performance Tuning Register */
 /*  unsigned char SR17;		 Configuration/Extended Control */
 /*  unsigned char SR1E;		 VCLK Denominator */
@@ -1301,7 +1393,9 @@ cirrusRestore(restore)
 /*  unsigned char CR1B;		 Extended Display Control */
 /*  unsigned char CR1D;		 Overlay Extended Control Register */
 /*  unsigned char HIDDENDAC;	 Hidden DAC register */
-
+/*  DACcolourRec  FOREGROUND;    Hidden DAC cursor foreground colour */
+/*  DACcolourRec  BACKGROUND;    Hidden DAC cursor background colour */
+  
   outw(0x3C4, 0x0100);				/* disable timing sequencer */
 
   outb(0x3CE,0x09);
@@ -1318,6 +1412,22 @@ cirrusRestore(restore)
        outb(0x3C4,0x0E);
        outb(0x3C5,restore->SRE);
        }
+
+  if (Has_HWCursor(cirrusChip))
+    {
+      /* Restore the hardware cursor */
+      outb (0x3C4, 0x13);
+      outb (0x3C5, restore->SR13);
+      
+      outb (0x3C4, restore->SR10E);
+      outb (0x3C5, restore->SR10);
+      
+      outb (0x3C4, restore->SR11E);
+      outb (0x3C5, restore->SR11);
+
+      outb (0x3C4, 0x12);
+      outb (0x3C5, restore->SR12);
+    }
 
   if (cirrusChip == CLGD5424 || cirrusChip == CLGD5426 || 
       cirrusChip == CLGD5428 || cirrusChip == CLGD5429 || 
@@ -1409,12 +1519,20 @@ cirrusSave(save)
 /*  unsigned char SR7;		 Extended Sequencer */
 /*  unsigned char SRE;		 VCLK Numerator */
 /*  unsigned char SRF;		 DRAM Control */
+/*  unsigned char SR10;		 Graphics Cursor X Position [7:0]         */
+/*  unsigned char SR10E;	 Graphics Cursor X Position [7:5] | 10000 */
+/*  unsigned char SR11;		 Graphics Cursor Y Position [7:0]         */
+/*  unsigned char SR11E;	 Graphics Cursor Y Position [7:5] | 10001 */
+/*  unsigned char SR12;		 Graphics Cursor Attributes Register */
+/*  unsigned char SR13;		 Graphics Cursor Pattern Address */
 /*  unsigned char SR1E;		 VCLK Denominator */
 /*  unsigned char CR19;		 Interlace End */
 /*  unsigned char CR1A;		 Miscellaneous Control */
 /*  unsigned char CR1B;		 Extended Display Control */
 /*  unsigned char CR1D;		 Overlay Extended Control Register */
 /*  unsigned char HIDDENDAC;	 Hidden DAC register */
+/*  DACcolourRec  FOREGROUND;    Hidden DAC cursor foreground colour */
+/*  DACcolourRec  BACKGROUND;    Hidden DAC cursor background colour */
 
   save->GR9 = temp1;
 
@@ -1431,6 +1549,24 @@ cirrusSave(save)
 
   outb(0x3C4,0x0F);
   save->SRF = inb(0x3C5);
+
+  if (Has_HWCursor(cirrusChip))
+    {
+      /* Hardware cursor */
+      outb (0x3C4, 0x10);
+      save->SR10E = inb (0x3C4);
+      save->SR10  = inb (0x3C5);
+
+      outb (0x3C4, 0x11);
+      save->SR11E = inb (0x3C4);
+      save->SR11  = inb (0x3C5);
+  
+      outb (0x3C4, 0x12);
+      save->SR12 = inb (0x3C5);
+  
+      outb (0x3C4, 0x13);
+      save->SR13 = inb (0x3C5);
+    }  
 
   if (cirrusChip == CLGD5424 || cirrusChip == CLGD5426 || 
       cirrusChip == CLGD5428 || cirrusChip == CLGD5429 || 
@@ -1539,6 +1675,12 @@ cirrusInit(mode)
 /*  unsigned char SR7;		 Extended Sequencer */
 /*  unsigned char SRE;		 VCLK Numerator */
 /*  unsigned char SRF;		 DRAM Control */
+/*  unsigned char SR10;		 Graphics Cursor X Position [7:0]         */
+/*  unsigned char SR10E;	 Graphics Cursor X Position [7:5] | 10000 */
+/*  unsigned char SR11;		 Graphics Cursor Y Position [7:0]         */
+/*  unsigned char SR11E;	 Graphics Cursor Y Position [7:5] | 10001 */
+/*  unsigned char SR12;		 Graphics Cursor Attributes Register */
+/*  unsigned char SR13;		 Graphics Cursor Pattern Address */
 /*  unsigned char SR16;		 Performance Tuning Register */
 /*  unsigned char SR17;		 Configuration/Extended Control */
 /*  unsigned char SR1E;		 VCLK Denominator */
@@ -1547,7 +1689,9 @@ cirrusInit(mode)
 /*  unsigned char CR1B;		 Extended Display Control */
 /*  unsigned char CR1D;		 Overlay Extended Control Register */
 /*  unsigned char HIDDENDAC;	 Hidden DAC register */
-
+/*  DACcolourRec  FOREGROUND;    Hidden DAC cursor foreground colour */
+/*  DACcolourRec  BACKGROUND;    Hidden DAC cursor background colour */
+  
 				/* Set the clock regs */
 
      if (new->std.NoClock >= 0)

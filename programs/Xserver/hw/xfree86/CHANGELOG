@@ -1,4 +1,8 @@
 XFree86 3.0Dk (11 September 1994)
+271. Add check for incorrect Modes line in XF86Config.
+270. Add some sanity checks to S3 server for supported depths.
+269. Fix SEGV during startup of VGA16 server.
+268. Support for HW cursor in the Cirrus driver (Simon Cooper).
 267. Fix LinkKit Imakefile for building SVGA server (Simon Cooper).
 266. Update lnxLib.rules for new dll tools (Orest Zborowski).
 265. Add code to the VGA servers to handle drivers (like tvga with 512k

@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.1 94/03/28 21:55:24 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.16 1994/09/11 00:53:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.17 1994/09/11 07:43:37 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -548,6 +548,9 @@ vgaProbe()
 #endif
 
         maxX = maxY = -1;
+	tx = vga256InfoRec.virtualX;
+	ty = vga256InfoRec.virtualY;
+
         if (Drivers[i]->ChipBuiltinModes) {
           pEnd = pMode = vga256InfoRec.modes = Drivers[i]->ChipBuiltinModes;
           ErrorF("%s %s: Using builtin driver modes\n", XCONFIG_PROBED,
@@ -587,13 +590,15 @@ vgaProbe()
 	      pMode = pModeSv; 
 	    } else if (pMode->HDisplay * pMode->VDisplay > needmem) {
 	      pModeSv=pMode->next;
-	      ErrorF("Insufficient video memory for all resolutions\n");
+	      ErrorF("%s %s: Insufficient video memory for all resolutions\n",
+		     XCONFIG_PROBED, vga256InfoRec.name);
 	      xf86DeleteMode(&vga256InfoRec, pMode);
 	      pMode = pModeSv;
 	    } else if (((tx > 0) && (pMode->HDisplay > tx)) || 
 		       ((ty > 0) && (pMode->VDisplay > ty))) {
 	      pModeSv=pMode->next;
-	      ErrorF("Resolution %dx%d too large for virtual %dx%d\n",
+	      ErrorF("%s %s: Resolution %dx%d too large for virtual %dx%d\n",
+		     XCONFIG_PROBED, vga256InfoRec.name,
 		     pMode->HDisplay, pMode->VDisplay, tx, ty);
 	      xf86DeleteMode(&vga256InfoRec, pMode);
 	      pMode = pModeSv;
@@ -620,8 +625,6 @@ vgaProbe()
 	    }
 	  } while (pMode != pEnd);
         }
-	tx = vga256InfoRec.virtualX;
-	ty = vga256InfoRec.virtualY;
 
         vga256InfoRec.virtualX = max(maxX, vga256InfoRec.virtualX);
         vga256InfoRec.virtualY = max(maxY, vga256InfoRec.virtualY);
@@ -951,7 +954,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
   pScreen->blackPixel = 0;
 #else
   /* For 16/32bpp, the cfb defaults are OK. */
-  if (vgaBitsPerPixel == 8) {
+  if (vgaBitsPerPixel <= 8) { /* For 8bpp SVGA and VGA16 */
       pScreen->InstallColormap = vgaInstallColormap;
       pScreen->UninstallColormap = vgaUninstallColormap;
       pScreen->ListInstalledColormaps = vgaListInstalledColormaps;

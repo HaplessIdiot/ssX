@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.24 1994/09/08 14:26:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.25 1994/09/11 00:50:38 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -585,8 +585,10 @@ s3Probe()
 	 s3InfoRec.depth = 16;
       }
       else {
-	 ErrorF("Invalid color weighting %1d%1d%1d (only 555 and 565 are valid)\n",
-		xf86weight.red,xf86weight.green,xf86weight.blue);
+	 ErrorF(
+	   "Invalid color weighting %1d%1d%1d (only 555 and 565 are valid)\n",
+	   xf86weight.red,xf86weight.green,xf86weight.blue);
+	 xf86DisableIOPorts(s3InfoRec.scrnIndex);
 	 return(FALSE);
       }
       s3InfoRec.bitsPerPixel = 16;
@@ -609,7 +611,9 @@ s3Probe()
 	 defaultColorVisualClass = s3InfoRec.defaultVisual;
       break;
    default:
-      ErrorF("Invalid value for bpp.  Valid values are 8, 15, 16, 24 and 32.\n");
+      ErrorF(
+	"Invalid value for bpp.  Valid values are 8, 15, 16, 24 and 32.\n");
+      xf86DisableIOPorts(s3InfoRec.scrnIndex);
       return(FALSE);
    }
    s3Bpp = s3InfoRec.bitsPerPixel / 8;
@@ -833,7 +837,49 @@ s3Probe()
 	     XCONFIG_GIVEN : XCONFIG_PROBED, s3InfoRec.name, s3InfoRec.ramdac);
    }
 
-   /* XXXX Add checks here for depth support by ramdac/chipset combination */
+   /* Check that the depth requested is supported by the ramdac/chipset */
+   {
+      char *reason = NULL;
+
+      if (S3_801_SERIES(s3ChipId)) {
+	 if (s3Bpp > 2)
+	    reason = "801 and 805 chips";
+      } else {
+	 switch (s3RamdacType) {
+	 case NORMAL_DAC:
+	    if (s3Bpp > 1)
+	       reason = "a \"normal\" RAMDAC";
+	    break;
+	 case ATT20C490_DAC:
+	    /* XXXX Is this right (??) */
+	    if (s3Bpp > 2)
+	       reason = "an ATT20C490 RAMDAC";
+	 case BT485_DAC:
+	 case ATT20C505_DAC:
+	    /* XXXX Is full support included for these?? (including for 964?) */
+	    break;
+	 case ATT20C498_DAC:
+	 case STG1700_DAC:
+	 case S3_SDAC_DAC:
+	    break;
+	 case SC15025_DAC:
+	    break;
+	 case TI3020_DAC:
+	 case TI3025_DAC:
+	    break;
+	 default:
+	    /* Should never get here */
+	    if (s3Bpp > 1)
+	       reason = "an unknown RAMDAC";
+	    break;
+	 }
+      }
+      if (reason) {
+	 ErrorF("Depth %d is not supported with %s\n", s3InfoRec.depth, reason);
+	 xf86DisableIOPorts(s3InfoRec.scrnIndex);
+	 return(FALSE);
+      }
+   }
 
    /* Now check/set the DAC speed */
    /* XXXX Are these reasonable defaults? */

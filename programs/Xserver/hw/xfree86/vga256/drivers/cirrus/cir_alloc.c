@@ -1,6 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_alloc.c,v 3.0 1994/08/20 07:36:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_alloc.c,v 3.1 1994/08/31 04:44:13 dawes Exp $ */
 /*
- *
+ * cir_alloc.c,v 1.2 1994/09/11 05:52:49 scooper Exp
+ * 
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -22,6 +23,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  * Author:  H. Hanemaayer, <hhanemaa@cs.ruu.nl>
+ * Modified: Simon P. Cooper <scooper@vizlab.rutgers.edu>
  *
  */
 
@@ -86,6 +88,31 @@ int CirrusAllocate(size)
 	freespace -= size;
 	currentaddr += size;
 	return currentaddr - size;
+}
+
+/* <scooper>
+ * Allocate space for a cursor.  This is allocated from the top of memory as
+ * there are only a fixed number of locations for the cursor.  The cursor
+ * must also be aligned on either a 256 or 1024 byte boundary.
+ */
+
+int CirrusCursorAllocate(cursor)
+     cirrusCurRecPtr cursor;
+{
+  int size;
+
+  size = (cursor->cur_size == 0) ? 256 : 1024;
+
+  if (size > freespace)
+    return -1;
+  
+  cursor->cur_addr = (vga256InfoRec.videoRam * 1024) - size;
+  freespace -= size;
+  
+  /* This is the cursor "pattern offset" (SR13) */
+  cursor->cur_select = (cursor->cur_size == 0) ? 63 : 15;
+
+  return 0;
 }
 
 /*
