@@ -234,7 +234,7 @@ xf86ZoomViewport (ScreenPtr pScreen, int zoom)
     (pScr->AdjustFrame)(pScr->scrnIndex, pScr->frameX0, pScr->frameY0, 0);
 
   miPointerPosition(&px, &py);
-  xf86WarpCursor(pScreen, px - pScr->frameX0, py - pScr->frameY0);
+  xf86WarpCursor(pScreen, px, py);
 }
 
 
