@@ -549,6 +549,9 @@ static Bool R128Probe(DriverPtr drv, int flags)
     Bool          foundScreen = FALSE;
     int           i;
 
+    if (flags & PROBE_DETECTISA) return FALSE;
+    if (flags & PROBE_DETECTFBDEV) return FALSE;
+
     if ((numDevSections = xf86MatchDevice(R128_NAME, &devSections)) <= 0)
 	return FALSE;
 

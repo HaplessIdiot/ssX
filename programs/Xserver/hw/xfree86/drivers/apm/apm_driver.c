@@ -395,6 +395,8 @@ ApmProbe(DriverPtr drv, int flags)
     EntityInfoPtr	pEnt;
     int			foundScreen = FALSE;
 
+    if (flags & PROBE_DETECTFBDEV) return FALSE;
+
     /*
      * Check if there is a chipset override in the config file
      */
@@ -415,9 +417,11 @@ ApmProbe(DriverPtr drv, int flags)
 		    ApmChipsets, ApmPciChipsets, DevSections, numDevSections,
 		    drv, &usedChips);
 
+    if ((numUsed > 0) && (flags & PROBE_DETECTPCI))
+	return TRUE;
+    if ((numUsed <= 0) && (flags & PROBE_DETECTPCI))
+	return FALSE;
     if (numUsed > 0) {
-	if (flags & PROBE_DETECTPCI)
-	    return TRUE;
 	for (i = 0; i < numUsed; i++) {
 	    pEnt = xf86GetEntityInfo(usedChips[i]);
 

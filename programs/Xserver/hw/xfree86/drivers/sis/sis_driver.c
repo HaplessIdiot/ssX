@@ -429,6 +429,8 @@ SISProbe(DriverPtr drv, int flags)
      * we'll ignore that.
      */
 
+    if (flags & PROBE_DETECTISA) return FALSE;
+    if (flags & PROBE_DETECTFBDEV) return FALSE;
     /*
      * We need to probe the hardware first.  We then need to see how this
      * fits in with what is given in the config file, and allow the config

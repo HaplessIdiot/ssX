@@ -238,6 +238,7 @@ GenericProbe(DriverPtr drv, int flags)
     int *usedChips;
     int i;
 
+    if (flags & PROBE_DETECTFBDEV) return FALSE;
     /*
      * Find the config file Device sections that match this
      * driver, and return if there are none.
@@ -253,9 +254,11 @@ GenericProbe(DriverPtr drv, int flags)
 					GenericChipsets, GenericPCIchipsets, 
 					devSections,numDevSections,
 					drv, &usedChips);
-	if (numUsed > 0){
-	    if (flags & PROBE_DETECTPCI)
-		return TRUE;
+	if ((numUsed > 0) && (flags & PROBE_DETECTPCI))
+	    return TRUE;
+	if ((numUsed <= 0) && (flags & PROBE_DETECTPCI))
+	    return FALSE;
+	if (numUsed > 0) {
 	    for (i = 0; i < numUsed; i++) {
 		/* Allocate a ScrnInfoRec  */
 		ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
@@ -282,7 +285,7 @@ GenericProbe(DriverPtr drv, int flags)
 				     GenericISAchipsets,drv,
 				     VGAFindIsaDevice,devSections,
 				     numDevSections,&usedChips);
-    if(numUsed >= 0)
+    if(numUsed > 0) {
 	if (flags & PROBE_DETECTISA)
 	    return TRUE;
 	for (i = 0; i < numUsed; i++) {
@@ -304,6 +307,7 @@ GenericProbe(DriverPtr drv, int flags)
 	    xf86ConfigActiveIsaEntity(pScrn,usedChips[i],GenericISAchipsets,
 				      NULL,NULL,NULL,NULL,NULL);
 	}
+    }
     if (devSections)
 	xfree(devSections);
     return foundScreen;

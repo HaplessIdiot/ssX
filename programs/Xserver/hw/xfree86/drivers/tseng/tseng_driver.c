@@ -470,6 +470,7 @@ TsengProbe(DriverPtr drv, int flags)
     
     
     PDEBUG("	TsengProbe\n");
+    if (flags & PROBE_DETECTFBDEV) return FALSE;
     /*
      * The aim here is to find all cards that this driver can handle,
      * and for the ones not already claimed by another driver, claim the
@@ -511,19 +512,19 @@ TsengProbe(DriverPtr drv, int flags)
 					TsengChipsets, TsengPciChipsets, 
 					devSections,numDevSections, drv,
 					&usedChips);
-	if (numUsed > 0) {
-	    if (flags & PROBE_DETECTPCI)
+	if ((numUsed > 0) && (flags & PROBE_DETECTPCI))
 		return TRUE;
-	    for (i = 0; i < numUsed; i++) {
+	if ((numUsed <= 0) && (flags & PROBE_DETECTPCI))
+		return FALSE;
+	for (i = 0; i < numUsed; i++) {
 		/* Allocate a ScrnInfoRec  */
 		ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
 		TsengAssignFPtr(pScrn);
 		xf86ConfigActivePciEntity(pScrn,usedChips[i],TsengPciChipsets,
 					  NULL,NULL,NULL,NULL,NULL);
 		foundScreen = TRUE;
-	    }
-	    xfree(usedChips);
 	}
+	xfree(usedChips);
     }
     
     /* Check for non-PCI cards */

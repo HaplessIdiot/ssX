@@ -765,27 +765,7 @@ TRIDENTProbe(DriverPtr drv, int flags)
     int numUsed;
     Bool foundScreen = FALSE;
 
-    /*
-     * The aim here is to find all cards that this driver can handle,
-     * and for the ones not already claimed by another driver, claim the
-     * slot, and allocate a ScrnInfoRec.
-     *
-     * This should be a minimal probe, and it should under no circumstances
-     * change the state of the hardware.  Because a device is found, don't
-     * assume that it will be used.  Don't do any initialisations other than
-     * the required ScrnInfoRec initialisations.  Don't allocate any new
-     * data structures.
-     *
-     * Since this test version still uses vgaHW, we'll only actually claim
-     * one for now, and just print a message about the others.
-     */
-
-    /*
-     * Next we check, if there has been a chipset override in the config file.
-     * For this we must find out if there is an active device section which
-     * is relevant, i.e., which has no driver specified or has THIS driver
-     * specified.
-     */
+    if (flags & PROBE_DETECTFBDEV) return FALSE;
 
     if ((numDevSections = xf86MatchDevice(TRIDENT_DRIVER_NAME,
 					  &devSections)) <= 0) {
@@ -818,6 +798,8 @@ TRIDENTProbe(DriverPtr drv, int flags)
 
         if (numUsed > 0 && (flags & PROBE_DETECTPCI))
 	    return TRUE;
+        if (numUsed <= 0 && (flags & PROBE_DETECTPCI))
+	    return FALSE;
 
     	for (i = 0; i < numUsed; i++) {
 	    ScrnInfoPtr pScrn;

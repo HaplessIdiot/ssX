@@ -355,6 +355,9 @@ I740Probe(DriverPtr drv, int flags) {
   GDevPtr *devSections = NULL;
   Bool foundScreen = FALSE;
   EntityInfoPtr pEnt;
+
+  if (flags & PROBE_DETECTISA) return FALSE;
+  if (flags & PROBE_DETECTFBDEV) return FALSE;
     
   /*
    Find the config file Device sections that match this

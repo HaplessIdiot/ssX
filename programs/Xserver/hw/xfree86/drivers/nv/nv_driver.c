@@ -376,6 +376,9 @@ NVProbe(DriverPtr drv, int flags)
      * data structures.
      */
 
+    if (flags & PROBE_DETECTISA) return FALSE;
+    if (flags & PROBE_DETECTFBDEV) return FALSE;
+
     /*
      * Check if there has been a chipset override in the config file.
      * For this we must find out if there is an active device section which

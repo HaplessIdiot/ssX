@@ -401,6 +401,8 @@ TDFXProbe(DriverPtr drv, int flags) {
   Bool foundScreen = FALSE;
 
   TDFXTRACE("TDFXProbe start\n");
+  if (flags & PROBE_DETECTISA) return FALSE;
+  if (flags & PROBE_DETECTFBDEV) return FALSE;
   /*
    Find the config file Device sections that match this
    driver, and return if there are none.

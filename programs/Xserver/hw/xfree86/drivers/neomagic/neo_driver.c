@@ -442,6 +442,7 @@ NEOProbe(DriverPtr drv, int flags)
     int *usedChips;
     int i;
 
+    if (flags & PROBE_DETECTFBDEV) return FALSE;
     /*
      * Find the config file Device sections that match this
      * driver, and return if there are none.
@@ -460,6 +461,8 @@ NEOProbe(DriverPtr drv, int flags)
 
 	if (numUsed > 0 && (flags & PROBE_DETECTPCI))
 	    return TRUE;
+	if (numUsed <= 0 && (flags & PROBE_DETECTPCI))
+	    return FALSE;
 
 	for (i = 0; i < numUsed; i++) {
 	    ScrnInfoPtr pScrn;
@@ -489,11 +492,11 @@ NEOProbe(DriverPtr drv, int flags)
     numUsed = xf86MatchIsaInstances(NEO_NAME,NEOChipsets,NEOISAchipsets,
 				     drv,neoFindIsaDevice,devSections,
 				     numDevSections,&usedChips);
+    if (numUsed > 0 && (flags & PROBE_DETECTISA))
+	    return TRUE;
+
     for (i = 0; i < numUsed; i++) {
 	ScrnInfoPtr pScrn;
-
-	if (numUsed > 0 && (flags & PROBE_DETECTISA))
-	    return TRUE;
 
 	pScrn = xf86AllocateScreen(drv,0);
 	pScrn->driverVersion = VERSION;

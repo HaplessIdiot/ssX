@@ -314,6 +314,8 @@ TGAProbe(DriverPtr drv, int flags)
     Bool foundScreen = FALSE;
     EntityInfoPtr pEnt;
 
+    if (flags & PROBE_DETECTISA) return FALSE;
+    if (flags & PROBE_DETECTFBDEV) return FALSE;
     /*
      * The aim here is to find all cards that this driver can handle,
      * and for the ones not already claimed by another driver, claim the

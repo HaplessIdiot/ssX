@@ -263,6 +263,8 @@ CIRProbe(DriverPtr drv, int flags)
 	 * fits in with what is given in the config file, and allow the config
 	 * file info to override any contradictions.
 	 */
+	if (flags & PROBE_DETECTISA) return FALSE; 
+	if (flags & PROBE_DETECTFBDEV) return FALSE;
 
 	/*
 	 * All of the cards this driver supports are PCI, so the "probing" just
