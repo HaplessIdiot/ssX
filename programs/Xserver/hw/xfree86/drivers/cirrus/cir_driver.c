@@ -9,7 +9,7 @@
  *	Guy DESBIEF
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.38 1999/06/13 13:47:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.39 1999/06/13 15:49:03 dawes Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -963,6 +963,13 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
     }
     if (pCir->UseMMIO) {
 	xf86DrvMsg(pScrn->scrnIndex, from, "Using MMIO\n");
+    }
+
+    /* Register the PCI-assigned resources. */
+    if (xf86RegisterResources(pCir->pEnt->index, NULL, ResExclusive)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		   "xf86RegisterResources() found resource conflicts\n");
+	return FALSE;
     }
 
     /* XXX If UseMMIO == TRUE and for any reason we cannot do MMIO,
