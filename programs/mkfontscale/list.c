@@ -19,12 +19,18 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/mkfontscale/list.c,v 1.2 2002/12/04 10:28:08 eich Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include "list.h"
+
+#ifdef NEED_SNPRINTF
+#undef SCOPE
+#define SCOPE static
+#include "snprintf.c"
+#endif
 
 ListPtr
 listCons(char *car, ListPtr cdr)

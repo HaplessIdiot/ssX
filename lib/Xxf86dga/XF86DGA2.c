@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.19 2002/05/31 18:45:47 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.20 2002/10/16 00:37:34 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -726,14 +726,14 @@ void XDGAKeyEventToXKeyEvent(
 
 # include <sys/mmap.h>
 #else
-# if !defined(Lynx)
-#  if !defined(__UNIXOS2__)
-#   include <sys/mman.h>
-#  endif
-# else
+# if defined(Lynx) && defined(NO_MMAP)
 #  include <sys/types.h>
 #  include <errno.h>
 #  include <smem.h>
+# else
+#  if !defined(__UNIXOS2__)
+#   include <sys/mman.h>
+#  endif
 # endif
 #endif
 #include <sys/wait.h>
@@ -917,7 +917,7 @@ DGAMapPhysical(
    }
    if (rc != 0)
 	return False;
-#elif defined (Lynx)
+#elif defined (Lynx) && defined(NO_MMAP)
     pMap->virtual = smem_create("XF86DGA", (char*)base, size, SM_READ|SM_WRITE);
 #else
 #ifndef MAP_FILE
@@ -933,7 +933,8 @@ DGAMapPhysical(
 	return False;
 #endif
 
-#if !defined(ISC) && !defined(HAS_SVR3_MMAP) && !defined(Lynx) \
+#if !defined(ISC) && !defined(HAS_SVR3_MMAP) \
+	&& !(defined(Lynx) && defined(NO_MMAP)) \
 	&& !defined(__UNIXOS2__)
     mprotect(pMap->virtual, size, PROT_READ | PROT_WRITE);
 #endif
@@ -946,10 +947,11 @@ DGAMapPhysical(
 static void
 DGAUnmapPhysical(DGAMapPtr pMap)
 {
-#if !defined(ISC) && !defined(HAS_SVR3_MMAP) && !defined(Lynx) \
+#if !defined(ISC) && !defined(HAS_SVR3_MMAP) \
+	&& !(defined(Lynx) && defined(NO_MMAP)) \
 	&& !defined(__UNIXOS2__)
     mprotect(pMap->virtual,pMap->size, PROT_READ);
-#elif defined(Lynx)
+#elif defined(Lynx) && defined(NO_MMAP)
 	/* XXX this doesn't allow enable after disable */
     smem_create(NULL, pMap->virtual, pMap->size, SM_DETACH);
     smem_remove("XF86DGA");
