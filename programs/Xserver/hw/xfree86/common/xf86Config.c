@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.249 2001/09/29 20:40:30 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.250 2001/10/21 12:30:38 herrb Exp $ */
 
 
 /*
@@ -2060,7 +2060,8 @@ modeIsPresent(char * modename,MonPtr monitorp)
     /* all I can think of is a linear search... */
     while(knownmodes != NULL)
     {
-	if(strcmp(modename,knownmodes->name) == 0)
+	if(!strcmp(modename,knownmodes->name) &&
+	   !(knownmodes->type & M_T_DEFAULT))
 	    return TRUE;
 	knownmodes = knownmodes->next;
     }
