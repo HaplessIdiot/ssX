@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.11 1999/06/13 13:47:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.12 1999/06/13 15:49:04 dawes Exp $ */
  
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -565,6 +565,13 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
     if(pLg->IOAddress != 0) {
         xf86DrvMsg(pScrn->scrnIndex, from, "MMIO registers at 0x%lX\n",
 		   (unsigned long)pLg->IOAddress);
+    }
+
+    /* Register the PCI-assigned resources. */
+    if (xf86RegisterResources(pLg->pEnt->index, NULL, ResExclusive)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		   "xf86RegisterResources() found resource conflicts\n");
+	return FALSE;
     }
 
     /*

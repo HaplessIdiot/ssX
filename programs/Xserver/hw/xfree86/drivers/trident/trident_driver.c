@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.57 1999/06/08 11:31:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.58 1999/06/13 15:49:06 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -944,6 +944,13 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     xf86DrvMsg(pScrn->scrnIndex,X_PROBED,"IO registers at 0x%lX\n",pTrident->IOAddress);
+
+    /* Register the PCI-assigned resources. */
+    if (xf86RegisterResources(pTrident->pEnt->index, NULL, ResExclusive)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		   "xf86RegisterResources() found resource conflicts\n");
+	return FALSE;
+    }
 
     if (!TRIDENTMapMem(pScrn))
 	return FALSE;
