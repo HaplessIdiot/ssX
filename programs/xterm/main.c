@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.222 94/04/17 20:23:28 gildea Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.1 1994/05/08 05:27:02 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.2 1994/08/31 04:57:16 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -86,6 +86,9 @@ SOFTWARE.
 #define	USE_SYSV_PGRP
 #define USE_SYSV_UTMP
 #define USE_SYSV_SIGNALS
+#define HAS_UTMP_UT_HOST
+#define LASTLOG
+#define WTMP
 #endif
 
 #ifdef AMOEBA
@@ -532,10 +535,11 @@ extern void endpwent();
 extern struct passwd *fgetpwent();
 #else	/* not USE_SYSV_UTMP */
 static char etc_utmp[] = UTMP_FILENAME;
+#endif	/* USE_SYSV_UTMP */
+
 #ifdef LASTLOG
 static char etc_lastlog[] = LASTLOG_FILENAME;
 #endif 
-#endif	/* USE_SYSV_UTMP */
 
 #ifdef WTMP
 static char etc_wtmp[] = WTMP_FILENAME;
@@ -2495,11 +2499,13 @@ spawn ()
 #ifdef HAS_UTMP_UT_HOST
 		(void) strncpy(buf, DisplayString(screen->display),
 			       sizeof(buf));
+#ifndef linux	/* we want the display number in the ut_hosts field */
 	        {
 		    char *disfin = strrchr(buf, ':');
 		    if (disfin)
 			*disfin = '\0';
 		}
+#endif
 		(void) strncpy(utmp.ut_host, buf, sizeof(utmp.ut_host));
 #endif
 		(void) strncpy(utmp.ut_name, pw->pw_name, 
