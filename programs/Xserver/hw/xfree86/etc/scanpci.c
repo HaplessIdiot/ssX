@@ -1186,7 +1186,7 @@ main(int argc, unsigned char *argv[])
     unsigned int idx;
     struct pci_config_reg pcr;
     int ch, verbose = 0, do_mode1_scan = 0, do_mode2_scan = 0;
-    int func;
+    int func, hostbridges=0;
 
     while((ch = getopt(argc, argv, "v12")) != EOF) {
      	switch((char)ch) {
@@ -1249,8 +1249,7 @@ main(int argc, unsigned char *argv[])
     pcr._ioaddr = 0xFFFF;
 
     pcr._pcibuses[0] = 0;
-    pcr._pcibuses[1] = 1;
-    pcr._pcinumbus = 2;
+    pcr._pcinumbus = 1;
     pcr._pcibusidx = 0;
     idx = 0;
 
@@ -1342,6 +1341,12 @@ main(int argc, unsigned char *argv[])
 		        pcr._pcibuses[pcr._pcinumbus++] = pcr._secondary_bus_number;
 		    }
 			break;
+		case PCI_CLASS_BRIDGE:
+		    if ( ++hostbridges > 1) {
+			pcr._pcibuses[pcr._pcinumbus] = pcr._pcinumbus;
+			pcr._pcinumbus++;
+		    }
+			break;
 		default:
 			break;
 	    }
@@ -1371,8 +1376,7 @@ main(int argc, unsigned char *argv[])
     printf("\nPCI probing configuration type 2\n");
 
     pcr._pcibuses[0] = 0;
-    pcr._pcibuses[1] = 1;
-    pcr._pcinumbus = 2;
+    pcr._pcinumbus = 1;
     pcr._pcibusidx = 0;
     idx = 0;
 
