@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftint.h,v 1.30 2002/05/24 05:54:02 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftint.h,v 1.31 2002/05/31 04:45:12 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -38,6 +38,7 @@
 #define _XFT_NO_COMPAT_
 #include "Xft.h"
 #include <fontconfig/fcprivate.h>
+#include <fontconfig/fcfreetype.h>
 
 typedef struct _XftMatcher {
     char    *object;
