@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.72 94/04/01 12:37:39 gildea Exp $
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.3 1994/10/20 06:15:05 dawes Exp $
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.4 1994/11/19 08:00:28 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -50,6 +50,10 @@ SYS_LIBRARIES1 = -lsec
 #if defined(LinuxArchitecture)
 SYS_LIBRARIES1 = -lshadow
 #endif
+#endif
+
+#if (SystemV4 || SystemV) && defined(i386Architecture)
+MISC_DEFINES = -DFRAGILE_DEV_MEM
 #endif
 
 #if (defined(AIXArchitecture) && (OSMajorVersion >= 3))
@@ -114,6 +118,7 @@ LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) $(XDMCPLIB) $(RPCLIB
 		$(XDMAUTH_DEFINES) $(RPC_DEFINES) $(KRB5_DEFINES) \
 		$(PWD_DEFINES) $(CONN_DEFINES) \
 		$(GREET_DEFINES) \
+		$(MISC_DEFINES) \
 		-DOSMAJORVERSION=$(OSMAJORVERSION) \
 		-DOSMINORVERSION=$(OSMINORVERSION)
 

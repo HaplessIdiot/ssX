@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBlt.c,v 3.7 1994/09/07 15:47:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBlt.c,v 3.8 1994/11/19 07:49:54 dawes Exp $ */
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
 Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -429,8 +429,9 @@ agxCopyArea(pSrcDrawable, pDstDrawable,
                   && pDstDrawable->type != DRAWABLE_WINDOW ) {
 
 	    /* Window --> Pixmap */
-	    int pixWidth = PixmapBytePad(pDstDrawable->width, pDstDrawable->depth);
-	    unsigned char *pdst = ((PixmapPtr)pDstDrawable)->devPrivate.ptr;
+	    int pixWidth = PixmapBytePad(pDstDrawable->width,
+					 pDstDrawable->depth);
+	    char *pdst = ((PixmapPtr)pDstDrawable)->devPrivate.ptr;
 
 	    for (i = numRects; --i >= 0; pbox++)
 		(agxImageReadFunc)( pbox->x1 + dx, pbox->y1 + dy,
@@ -441,8 +442,9 @@ agxCopyArea(pSrcDrawable, pDstDrawable,
         else if ( pSrcDrawable->type != DRAWABLE_WINDOW 
                   && pDstDrawable->type == DRAWABLE_WINDOW ) {
 	    /* Pixmap --> Window */
-	    int pixWidth = PixmapBytePad(pSrcDrawable->width, pSrcDrawable->depth);
-	    unsigned char *psrc = ((PixmapPtr)pSrcDrawable)->devPrivate.ptr;
+	    int pixWidth = PixmapBytePad(pSrcDrawable->width,
+					 pSrcDrawable->depth);
+	    char *psrc = ((PixmapPtr)pSrcDrawable)->devPrivate.ptr;
 
 	    for (i = numRects; --i >= 0; pbox++)
 		(agxImageWriteFunc)( pbox->x1, pbox->y1,

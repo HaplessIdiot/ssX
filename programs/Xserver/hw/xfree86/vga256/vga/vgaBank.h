@@ -1,5 +1,5 @@
 /* $XConsortium: vgaBank.h,v 1.1 94/03/28 21:55:43 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaBank.h,v 3.0 1994/07/24 11:58:42 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -135,7 +135,7 @@ extern unsigned SpeedUpRowsNext[];
 extern unsigned SpeedUpRowsPrev[];
 
 
-#if defined(__386BSD__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined(__bsdi__)
+#ifdef CSRG_BASED
 #define VGABASE 0xFF000000
 #else
 #define VGABASE 0xF0000000

@@ -1,5 +1,5 @@
 /* $XConsortium: mach32pntwn.c,v 1.2 94/04/17 20:30:49 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxPntWin.c,v 3.2 1994/08/20 07:32:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxPntWin.c,v 3.3 1994/09/07 15:47:33 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -70,6 +70,7 @@ OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 extern void miPaintWindow();
 
+static void agxFillBoxSolid ();
 
 void
 agxPaintWindow(pWin, pRegion, what)
@@ -163,7 +164,7 @@ agxPaintWindow(pWin, pRegion, what)
     miPaintWindow (pWin, pRegion, what);
 }
 
-void
+static void
 agxFillBoxSolid (pDrawable, nBox, pBox, pixel)
     DrawablePtr	    pDrawable;
     int		    nBox;

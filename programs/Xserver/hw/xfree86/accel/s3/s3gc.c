@@ -1,5 +1,5 @@
 /* $XConsortium: s3gc.c,v 1.2 94/04/17 20:31:11 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gc.c,v 3.1 1994/08/01 13:19:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gc.c,v 3.2 1994/08/03 13:27:58 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -84,8 +84,7 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 
 #include "s3.h"
 
-static void s3ValidateGC(), cfbChangeGC(), cfbCopyGC(), cfbDestroyGC();
-static void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
+static void s3ValidateGC();
 
 static GCFuncs cfbFuncs =
 {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.18 1994/09/24 15:12:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.19 1994/10/23 12:58:01 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -635,7 +635,7 @@ p9000Initialize (scr_index, pScreen, argc, argv)
 #endif
   
   if (!p9000ScreenInit(pScreen,
-		       (volatile pointer) VidBase,
+		       (pointer) VidBase,
 		       p9000InfoRec.virtualX, p9000InfoRec.virtualY,
 		       75, 75,
 		       p9000InfoRec.virtualX))

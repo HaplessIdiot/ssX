@@ -1,5 +1,5 @@
 /* $XConsortium: mach8fs.c,v 1.2 94/04/17 20:30:57 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8fs.c,v 3.0 1994/04/29 14:07:16 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -253,23 +253,6 @@ mach8TiledFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     height = pPix->drawable.height;
     pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
-#ifdef PIXPRIV
-    if (mach8CacheTile(pPix)) {
-	while (n--) {
-	    if (*pwidth < 9)
-		mach8ImageFill(ppt->x, ppt->y, *pwidth, 1,
-			       pPix->devPrivate.ptr, pixWidth,
-			       width, height, xrot, yrot,
-			       mach8alu[pGC->alu], pGC->planemask);
-	    else
-		mach8CImageFill(pPix->slot,
-				ppt->x, ppt->y, *pwidth, 1, xrot, yrot,
-				mach8alu[pGC->alu], pGC->planemask);
-	    ppt++;
-	    pwidth++;
-    	}
-    } else
-#endif
     {
 	while (n--) {
 	    mach8ImageFill(ppt->x, ppt->y, *pwidth, 1,
@@ -353,25 +336,6 @@ mach8StipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     height = pPix->drawable.height;
     pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
-#ifdef PIXPRIV
-    if (mach8CacheStipple(pPix)) {
-	while (n--) {
-	    if (*pwidth < 9)
-		(mach8ImageStippleFunc)(ppt->x, ppt->y, *pwidth, 1,
-					pPix->devPrivate.ptr, pixWidth,
-					width, height,
-					xrot, yrot, pGC->fgPixel, 0,
-					mach8alu[pGC->alu], pGC->planemask, 0);
-	    else
-		mach8CImageStipple(pPix->slot,
-				   ppt->x, ppt->y, *pwidth, 1, xrot, yrot,
-				   pGC->fgPixel,
-				   mach8alu[pGC->alu], pGC->planemask);
-	    ppt++;
-	    pwidth++;
-    	}
-    } else
-#endif
     {
 	while (n--) {
 	    (mach8ImageStippleFunc)(ppt->x, ppt->y, *pwidth, 1,
@@ -456,25 +420,6 @@ mach8OStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     height = pPix->drawable.height;
     pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
-#ifdef PIXPRIV
-    if (mach8CacheOpStipple(pPix)) {
-	while (n--) {
-	    if (*pwidth < 9)
-		(mach8ImageStippleFunc)(ppt->x, ppt->y, *pwidth, 1,
-					pPix->devPrivate.ptr, pixWidth,
-					width, height,
-					xrot, yrot, pGC->fgPixel, pGC->bgPixel,
-					mach8alu[pGC->alu], pGC->planemask, 1);
-	    else
-		mach8CImageOpStipple(pPix->slot,
-				     ppt->x, ppt->y, *pwidth, 1, xrot, yrot,
-				     pGC->fgPixel, pGC->bgPixel,
-				     mach8alu[pGC->alu], pGC->planemask);
-	    ppt++;
-	    pwidth++;
-    	}
-    } else
-#endif
     {
 	while (n--) {
 	    (mach8ImageStippleFunc)(ppt->x, ppt->y, *pwidth, 1,

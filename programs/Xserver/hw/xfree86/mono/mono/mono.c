@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.7 1994/09/04 10:48:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.8 1994/10/23 12:59:15 dawes Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -397,12 +397,12 @@ monoScreenInit (index, pScreen, argc, argv)
     unsigned int mapSize;
 
     if (serverGeneration == 1) {
-#if defined(__386BSD__) && !defined(__bsdi__)
+#if defined(CSRG_BASED) && !defined(__bsdi__)
 	/* Hack for mmap() problem on 386bsd */
 	if (monoMapSize < 0x18000)
 	    mapSize = 0x18000;
 	else
-#endif /* __386BSD__ && !__bsdi__ */
+#endif /* CSRG_BASED && !__bsdi__ */
 	    mapSize = monoMapSize;
 	monoBase = (unsigned char *)xf86MapVidMem(index, VGA_REGION /* ?? */,
 						 (pointer)monoMapBase, mapSize);

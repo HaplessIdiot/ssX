@@ -1,5 +1,5 @@
 /* $XConsortium: s3blt.c,v 1.2 94/04/17 20:31:05 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.6 1994/08/12 14:01:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.7 1994/08/20 07:33:47 dawes Exp $ */
 /*
 
 Copyright (c) 1998  X Consortium
@@ -365,7 +365,7 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
 		 pDstDrawable->type != DRAWABLE_WINDOW) {
        /* Window --> Pixmap */
 	 int   pixWidth = PixmapBytePad(pDstDrawable->width, pDstDrawable->depth);
-	 unsigned char *pdst = ((PixmapPtr) pDstDrawable)->devPrivate.ptr;
+	 char *pdst = ((PixmapPtr) pDstDrawable)->devPrivate.ptr;
 
 	 for (i = numRects; --i >= 0; pbox++)
 	    (s3ImageReadFunc) (pbox->x1 + dx, pbox->y1 + dy,
@@ -376,7 +376,7 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
 		 pDstDrawable->type == DRAWABLE_WINDOW) {
        /* Pixmap --> Window */
 	 int   pixWidth = PixmapBytePad(pSrcDrawable->width, pSrcDrawable->depth);
-	 unsigned char *psrc = ((PixmapPtr) pSrcDrawable)->devPrivate.ptr;
+	 char *psrc = ((PixmapPtr) pSrcDrawable)->devPrivate.ptr;
 
 	 for (i = numRects; --i >= 0; pbox++)
 	    (s3ImageWriteFunc) (pbox->x1, pbox->y1,
@@ -887,7 +887,7 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
          /* Pixmap --> Window */
          PixmapPtr pix = (PixmapPtr) pSrcDrawable;
 	 int   pixWidth;
-	 unsigned char *psrc;
+	 char *psrc;
 
 	 pixWidth = PixmapBytePad(pSrcDrawable->width, pSrcDrawable->depth);
 	 psrc = pix->devPrivate.ptr;

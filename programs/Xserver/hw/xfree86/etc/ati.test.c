@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/ati.test.c,v 3.6 1994/10/29 22:39:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/ati.test.c,v 3.7 1994/11/05 23:49:56 dawes Exp $ */
 /* ati.test.c -- Gather information about ATI video adapters.
  * Created: Sun Aug  9 10:15:01 1992
  * Author: Rickard E. Faith, faith@cs.unc.edu
@@ -29,7 +29,7 @@ static int iopl_fd;
 #define IOPL_ON		iopl_fd = open("/dev/iopl", 0)
 #define IOPL_OFF	close(iopl_fd);
 
-#elif defined(bsdi)
+#elif defined(__bsdi__)
 
 static int console_fd;
 #define IOPL_ON								\

@@ -1,5 +1,5 @@
 /* $XConsortium: s3im.c,v 1.1 94/03/28 21:15:39 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.8 1994/09/23 13:38:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.9 1994/10/20 06:08:45 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -61,18 +61,52 @@ extern unsigned char s3Port40;
 extern unsigned char s3Port54;
 extern Bool xf86Verbose;
 extern Bool s3LinearAperture;
-extern void  (*s3ImageReadFunc) (), (*s3ImageWriteFunc) ();
-extern void  (*s3ImageFillFunc) ();
 
-static void s3ImageRead ();
-static void s3ImageWrite ();
-static void s3ImageFill ();
-static void s3ImageReadNoMem ();
-void s3ImageWriteNoMem ();
-static void s3ImageFillNoMem ();
-static void s3ImageReadBanked ();
-static void s3ImageWriteBanked ();
-static void s3ImageFillBanked ();
+static void s3ImageRead (
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, unsigned long
+#endif
+);
+static void s3ImageWrite (
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, short, unsigned long
+#endif
+);
+static void s3ImageFill (
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, int, int, short, unsigned long
+#endif
+);
+static void s3ImageReadNoMem (
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, unsigned long
+#endif
+);
+void s3ImageWriteNoMem (
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, short, unsigned long
+#endif
+);
+static void s3ImageFillNoMem (
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, int, int, short, unsigned long
+#endif
+);
+static void s3ImageReadBanked (
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, unsigned long
+#endif
+);
+static void s3ImageWriteBanked (
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, short, unsigned long
+#endif
+);
+static void s3ImageFillBanked (
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, int, int, short, unsigned long
+#endif
+);
 static char old_bank = -1;
 extern char s3Mbanks;
 extern ScrnInfoRec s3InfoRec;
@@ -149,6 +183,19 @@ s3ImageInit ()
 /* 30/7/94 began 16,32 bit support */
 
 static void
+#if NeedFunctionPrototypes
+s3ImageWriteBanked (
+     int   x,
+     int   y,
+     int   w,
+     int   h,
+     char *psrc,
+     int   pwidth,
+     int   px,
+     int   py,
+     short alu,
+     unsigned long planemask)
+#else
 s3ImageWriteBanked (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
      int   x;
      int   y;
@@ -159,7 +206,8 @@ s3ImageWriteBanked (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
      int   px;
      int   py;
      short alu;
-     Pixel planemask;
+     unsigned long planemask;
+#endif
 {
    int   j, offset;
    char  bank;
@@ -242,16 +290,29 @@ s3ImageWriteBanked (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
 }
 
 static void
+#if NeedFunctionPrototypes
+s3ImageReadBanked (
+     int   x,
+     int   y,
+     int   w,
+     int   h,
+     char *psrc,
+     int   pwidth,
+     int   px,
+     int   py,
+     unsigned long planemask)
+#else
 s3ImageReadBanked (x, y, w, h, psrc, pwidth, px, py, planemask)
      int   x;
      int   y;
      int   w;
      int   h;
-     unsigned char *psrc;
+     char *psrc;
      int   pwidth;
      int   px;
      int   py;
-     Pixel planemask;
+     unsigned long planemask;
+#endif
 {
    int   j;
    int   offset;
@@ -321,19 +382,35 @@ s3ImageReadBanked (x, y, w, h, psrc, pwidth, px, py, planemask)
 }
 
 static void
+#if NeedFunctionPrototypes
+s3ImageFillBanked (
+     int   x,
+     int   y,
+     int   w,
+     int   h,
+     char *psrc,
+     int   pwidth,
+     int   pw,
+     int   ph, 
+     int   pox, 
+     int   poy,
+     short alu,
+     unsigned long planemask)
+#else
 s3ImageFillBanked (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
      int   x;
      int   y;
      int   w;
      int   h;
-     int   pw, ph, pox, poy;
-     unsigned char *psrc;
+     char *psrc;
      int   pwidth;
+     int   pw, ph, pox, poy;
      short alu;
-     Pixel planemask;
+     unsigned long planemask;
+#endif
 {
    int   j;
-   unsigned char *pline;
+   char *pline;
    int   ypix, xpix0, offset0;
    int   cxpix;
    char *videobuffer;
@@ -467,6 +544,19 @@ s3ImageFillBanked (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 }
 
 static void
+#if NeedFunctionPrototypes
+s3ImageWrite (
+     int   x,
+     int   y,
+     int   w,
+     int   h,
+     char *psrc,
+     int   pwidth,
+     int   px,
+     int   py,
+     short alu,
+     unsigned long planemask)
+#else
 s3ImageWrite (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
      int   x;
      int   y;
@@ -477,7 +567,8 @@ s3ImageWrite (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
      int   px;
      int   py;
      short alu;
-     Pixel planemask;
+     unsigned long planemask;
+#endif
 {
    int   j, offset;
    char  bank;
@@ -543,16 +634,29 @@ s3ImageWrite (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
 }
 
 static void
+#if NeedFunctionPrototypes
+s3ImageRead (
+     int   x,
+     int   y,
+     int   w,
+     int   h,
+     char *psrc,
+     int   pwidth,
+     int   px,
+     int   py,
+     unsigned long planemask)
+#else
 s3ImageRead (x, y, w, h, psrc, pwidth, px, py, planemask)
      int   x;
      int   y;
      int   w;
      int   h;
-     unsigned char *psrc;
+     char *psrc;
      int   pwidth;
      int   px;
      int   py;
-     Pixel planemask;
+     unsigned long planemask;
+#endif
 {
    int   j;
    int   offset;
@@ -611,19 +715,38 @@ s3ImageRead (x, y, w, h, psrc, pwidth, px, py, planemask)
 }
 
 static void
+#if NeedFunctionPrototypes
+s3ImageFill (
+     int   x,
+     int   y,
+     int   w,
+     int   h,
+     char *psrc,
+     int   pwidth,
+     int   pw, 
+     int   ph, 
+     int   pox,
+     int   poy,
+     short alu,
+     unsigned long planemask)
+#else
 s3ImageFill (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
      int   x;
      int   y;
      int   w;
      int   h;
-     int   pw, ph, pox, poy;
-     unsigned char *psrc;
+     char *psrc;
      int   pwidth;
+     int   pw; 
+     int   ph; 
+     int   pox;
+     int   poy;
      short alu;
-     Pixel planemask;
+     unsigned long planemask;
+#endif
 {
    int   j;
-   unsigned char *pline;
+   char *pline;
    int   ypix, xpix, offset0;
    int   cxpix;
    char *videobuffer;
@@ -709,6 +832,19 @@ s3ImageFill (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 }
 
 void
+#if NeedFunctionPrototypes
+s3ImageWriteNoMem (
+     int   x,
+     int   y,
+     int   w,
+     int   h,
+     char *psrc,
+     int   pwidth,
+     int   px,
+     int   py,
+     short alu,
+     unsigned long planemask)
+#else
 s3ImageWriteNoMem (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
      int   x;
      int   y;
@@ -719,7 +855,8 @@ s3ImageWriteNoMem (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
      int   px;
      int   py;
      short alu;
-     Pixel planemask;
+     unsigned long planemask;
+#endif
 {
    int   i, j;
 
@@ -774,16 +911,29 @@ s3ImageWriteNoMem (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
 
 
 static void
+#if NeedFunctionPrototypes
+s3ImageReadNoMem (
+     int   x,
+     int   y,
+     int   w,
+     int   h,
+     char *psrc,
+     int   pwidth,
+     int   px,
+     int   py,
+     unsigned long planemask)
+#else
 s3ImageReadNoMem (x, y, w, h, psrc, pwidth, px, py, planemask)
      int   x;
      int   y;
      int   w;
      int   h;
-     unsigned char *psrc;
+     char *psrc;
      int   pwidth;
      int   px;
      int   py;
-     Pixel planemask;
+     unsigned long planemask;
+#endif
 {
    int   i, j;
 
@@ -840,20 +990,38 @@ s3ImageReadNoMem (x, y, w, h, psrc, pwidth, px, py, planemask)
 }
 
 static void
-s3ImageFillNoMem (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu,
-		  planemask)
+#if NeedFunctionPrototypes
+s3ImageFillNoMem (
+     int   x,
+     int   y,
+     int   w,
+     int   h,
+     char *psrc,
+     int   pwidth,
+     int   pw,
+     int   ph,
+     int   pox,
+     int   poy,
+     short alu,
+     unsigned long planemask)
+#else
+s3ImageFillNoMem (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
      int   x;
      int   y;
      int   w;
      int   h;
-     unsigned char *psrc;
+     char *psrc;
      int   pwidth;
-     int   pw, ph, pox, poy;
+     int   pw; 
+     int   ph; 
+     int   pox;
+     int   poy;
      short alu;
-     Pixel planemask;
+     unsigned long planemask;
+#endif
 {
    int   i, j;
-   unsigned char *pline;
+   char *pline;
    int   mod;
 
    if (alu == MIX_DST)
@@ -1041,18 +1209,37 @@ s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 }
 
 void
-s3ImageStipple (x, y, w, h, psrc, pwidth, pw,
-		ph, pox, poy, fgPixel, alu, planemask)
+#if NeedFunctionPrototypes
+s3ImageStipple (
+     int   x,
+     int   y,
+     int   w,
+     int   h,
+     char *psrc,
+     int   pw,
+     int   ph,
+     int   pox,
+     int   poy,
+     int   pwidth,
+     Pixel fgPixel,
+     short alu,
+     unsigned long planemask)
+#else
+s3ImageStipple (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, fgPixel, alu, planemask)
      int   x;
      int   y;
      int   w;
      int   h;
      char *psrc;
-     int   pw, ph, pox, poy;
+     int   pw;
+     int   ph;
+     int   pox;
+     int   poy;
      int   pwidth;
      Pixel fgPixel;
      short alu;
-     Pixel planemask;
+     unsigned long planemask;
+#endif
 {
 
     s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
@@ -1061,9 +1248,21 @@ s3ImageStipple (x, y, w, h, psrc, pwidth, pw,
 
 #if NeedFunctionPrototypes
 void
-s3ImageOpStipple (int x, int y, int w, int h, unsigned char *psrc, int pwidth,
-		  int pw, int ph, int pox, int poy, Pixel fgPixel,
-		  Pixel bgPixel, short alu, Pixel planemask)
+s3ImageOpStipple (
+     int   x,
+     int   y,
+     int   w,
+     int   h,
+     char *psrc,
+     int   pwidth,
+     int   pw,
+     int   ph,
+     int   pox,
+     int   poy,
+     Pixel fgPixel,
+     Pixel bgPixel, 
+     short alu,
+     unsigned long planemask)
 #else
 void
 s3ImageOpStipple (x, y, w, h, psrc, pwidth, pw,
@@ -1072,13 +1271,13 @@ s3ImageOpStipple (x, y, w, h, psrc, pwidth, pw,
      int   y;
      int   w;
      int   h;
-     unsigned char *psrc;
+     char *psrc;
      int   pw, ph, pox, poy;
      int   pwidth;
      Pixel fgPixel;
      Pixel bgPixel;
      short alu;
-     Pixel planemask;
+     unsigned long planemask;
 #endif
 {
 

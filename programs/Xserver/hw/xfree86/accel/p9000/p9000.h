@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.5 1994/09/08 14:26:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.6 1994/09/23 10:09:39 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>.
@@ -179,6 +179,12 @@ extern Bool p9000CloseScreen(
 
 /****************** p9000init.c *******************/
 
+extern Bool p9000CalcSysconfigHres(
+#if NeedFunctionPrototypes
+   int, int, unsigned long *
+#endif
+);
+
 extern void p9000ClearScreen(
 #if NeedFunctionPrototypes
    void
@@ -349,16 +355,13 @@ void
 
 extern void (*p9000ImageReadFunc)(
 #if NeedFunctionPrototypes
-    int, int, int, int, unsigned char *, int, int, int, short
+    int, int, int, int, char *, int, int, int, unsigned long
 #endif
 );
 
 extern void (*p9000ImageWriteFunc)(
 #if NeedFunctionPrototypes
-    int, int, int, int,
-    unsigned char *,
-    int, int, int,
-    short, short
+    int, int, int, int, char *, int, int, int, short, unsigned long
 #endif
 );
 

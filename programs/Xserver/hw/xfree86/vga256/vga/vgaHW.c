@@ -1,6 +1,6 @@
 /*
  * $XConsortium: vgaHW.c,v 1.3 94/03/28 21:56:01 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.10 1994/09/23 10:27:05 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.11 1994/10/20 06:12:40 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -68,7 +68,7 @@
 #endif
 #endif
 
-#if defined(__BSD__) || defined(MACH386) || defined(linux) || defined(AMOEBA) || defined(MINIX)
+#if defined(CSRG_BASED) || defined(MACH386) || defined(linux) || defined(AMOEBA) || defined(MINIX)
 #ifndef NEED_SAVED_CMAP
 #define NEED_SAVED_CMAP
 #endif
@@ -92,7 +92,7 @@
 /* bytes per plane to save for font data */
 #define FONT_AMOUNT 8192
 
-#if defined(__BSD__) || defined(MACH386)
+#if defined(CSRG_BASED) || defined(MACH386)
 #include <sys/time.h>
 #endif
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000im.c,v 3.2 1994/09/07 15:50:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000im.c,v 3.3 1994/09/08 14:26:23 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -43,36 +43,38 @@
 
 void (*p9000ImageReadFunc)(
 #if NeedFunctionPrototypes
-    int, int, int, int, unsigned char *, int, int, int, short
+    int, int, int, int, char *, int, int, int, unsigned long
 #endif
 );
 
 void (*p9000ImageWriteFunc)(
 #if NeedFunctionPrototypes
-    int, int, int, int, unsigned char *, int, int, int, short, short
+    int, int, int, int, char *, int, int, int, short, unsigned long
 #endif
 );
 
-#if 0
-void (*p9000ImageFillFunc)();
-#endif
-
 static	void	p9000ImageRead(
 #if NeedFunctionPrototypes
-    int, int, int, int, unsigned char *, int, int, int, short
+    int, int, int, int, char *, int, int, int, unsigned long 
 #endif
 );
 
 static	void	p9000ImageWrite(
 #if NeedFunctionPrototypes
-    int, int, int, int, unsigned char *, int, int, int, short, short
+    int, int, int, int, char *, int, int, int, short, unsigned long
 #endif
 );
 
-/* static	void	p9000ImageFill(); */
-static	void	p9000ImageReadNoMem();
-static	void	p9000ImageWriteNoMem();
-static	void	p9000ImageFillNoMem();
+static	void	p9000ImageReadNoMem(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, unsigned long
+#endif
+);
+static	void	p9000ImageWriteNoMem(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, short, unsigned long
+#endif
+);
 
 
 static unsigned long PMask;
@@ -93,8 +95,16 @@ p9000ImageInit()
 
 static void
 #if NeedFunctionPrototypes
-p9000ImageRead(int x, int y, int w, int h, unsigned char *psrc, int pwidth,
-	       int px, int py, short planemask)
+p9000ImageRead(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    char		*psrc,
+    int			pwidth,
+    int			px,
+    int			py,
+    unsigned long	planemask)
 #else
 p9000ImageRead(x, y, w, h, psrc, pwidth, px, py, planemask)
     int                 x;
@@ -105,7 +115,7 @@ p9000ImageRead(x, y, w, h, psrc, pwidth, px, py, planemask)
     int                 pwidth;
     int                 px;
     int                 py;
-    short               planemask;
+    unsigned long	planemask;
 #endif
 {
     register int j;
@@ -130,6 +140,18 @@ p9000ImageRead(x, y, w, h, psrc, pwidth, px, py, planemask)
 }
 
 static void
+#if NeedFunctionPrototypes
+p9000ImageReadNoMem(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    char		*psrc,
+    int			pwidth,
+    int			px,
+    int			py,
+    unsigned long	planemask)
+#else
 p9000ImageReadNoMem(x, y, w, h, psrc, pwidth, px, py, planemask)
     int                 x;
     int                 y;
@@ -139,7 +161,8 @@ p9000ImageReadNoMem(x, y, w, h, psrc, pwidth, px, py, planemask)
     int                 pwidth;
     int                 px;
     int                 py;
-    short               planemask;
+    unsigned long	planemask;
+#endif
 {
     register int i, j;
     int pix;
@@ -166,20 +189,29 @@ p9000ImageReadNoMem(x, y, w, h, psrc, pwidth, px, py, planemask)
 
 static void
 #if NeedFunctionPrototypes
-p9000ImageWrite(int x, int y, int w, int h, unsigned char *psrc, int pwidth,
-		int px, int py, short alu, short planemask)
+p9000ImageWrite(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    char		*psrc,
+    int			pwidth,
+    int			px,
+    int			py,
+    short		alu,
+    unsigned long	planemask)
 #else
 p9000ImageWrite(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
     int			x;
     int			y;
     int			w;
     int			h;
-    unsigned char	*psrc;
+    char		*psrc;
     int			pwidth;
     int			px;
     int			py;
     short		alu; /* pGC->alu */
-    short		planemask;
+    unsigned long	planemask;
 #endif
 {
     unsigned char *curvm;
@@ -210,17 +242,31 @@ p9000ImageWrite(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
 }
 
 static void
+#if NeedFunctionPrototypes
+p9000ImageWriteNoMem(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    char		*psrc,
+    int			pwidth,
+    int			px,
+    int			py,
+    short		alu,
+     unsigned long	planemask)
+#else
 p9000ImageWriteNoMem(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
     int			x;
     int			y;
     int			w;
     int			h;
-    unsigned char	*psrc;
+    char		*psrc;
     int			pwidth;
     int			px;
     int			py;
     short		alu; /* pGC->alu */
-    short		planemask;
+    unsigned long	planemask;
+#endif
 {
     register int i,j;
     psrc += pwidth * py;

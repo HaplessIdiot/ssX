@@ -1,5 +1,5 @@
 /* $XConsortium: mach8.h,v 1.1 94/03/28 21:10:02 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.h,v 3.0 1994/07/15 06:58:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.h,v 3.1 1994/07/24 11:46:16 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -58,64 +58,23 @@ extern int mach8ValidTokens[];
 
 extern void (*mach8ImageWriteFunc)(
 #if NeedFunctionPrototypes
-    int,
-    int,
-    int,
-    int,
-    char *,
-    int,
-    int,
-    int,
-    short,
-    short 
+    int, int, int, int, char *, int, int, int, short, unsigned long
 #endif
 );
 extern void (*mach8ImageReadFunc)(
 #if NeedFunctionPrototypes
-    int,
-    int,
-    int,
-    int,
-    char *,
-    int,
-    int,
-    int,
-    short 
+    int, int, int, int, char *, int, int, int, unsigned long 
 #endif
 );
 extern void (*mach8RealImageFillFunc)(
 #if NeedFunctionPrototypes
-    int,
-    int,
-    int,
-    int,
-    char *,
-    int,
-    int,
-    int,
-    int,
-    int,
-    short,
-    short 
+    int, int, int, int, char *, int, int, int, int, int, short, unsigned long
 #endif
 );
 extern void (*mach8ImageStippleFunc)(
 #if NeedFunctionPrototypes
-    int,
-    int,
-    int,
-    int,
-    unsigned char *,
-    int,
-    int,
-    int,
-    int,
-    int,
-    int,
-    int,
-    short,
-    short ,
-    int
+    int, int, int, int, char *, int, int, int, int, int, Pixel, Pixel,
+    short, unsigned long, int
 #endif
 );
 
@@ -336,8 +295,8 @@ void mach8ImageFill(
     int,
     int,
     int,
-    int,
-    int 
+    short,
+    unsigned long 
 #endif
 );
 /* mach8bstor.c */
@@ -576,7 +535,7 @@ void mach8ImageRead(
     int,
     int,
     int,
-    short 
+    unsigned long 
 #endif
 );
 void mach8ImageWrite(
@@ -590,7 +549,7 @@ void mach8ImageWrite(
     int,
     int,
     short,
-    short 
+    unsigned long 
 #endif
 );
 void mach8ImageReadDram(
@@ -603,7 +562,7 @@ void mach8ImageReadDram(
     int,
     int,
     int,
-    short 
+    unsigned long 
 #endif
 );
 void mach8ImageWriteDram(
@@ -617,7 +576,7 @@ void mach8ImageWriteDram(
     int,
     int,
     short,
-    short 
+    unsigned long 
 #endif
 );
 void mach8RealImageFillDram(
@@ -633,7 +592,7 @@ void mach8RealImageFillDram(
     int,
     int,
     short,
-    short 
+    unsigned long 
 #endif
 );
 void mach8ImageStippleDram(
@@ -642,16 +601,16 @@ void mach8ImageStippleDram(
     int,
     int,
     int,
-    unsigned char *,
+    char *,
     int,
     int,
     int,
     int,
     int,
-    int,
-    int,
+    Pixel,
+    Pixel,
     short,
-    short ,
+    unsigned long,
     int
 #endif
 );
@@ -661,16 +620,16 @@ void mach8ImageStipple(
     int,
     int,
     int,
-    unsigned char *,
+    char *,
     int,
     int,
     int,
     int,
     int,
-    int,
-    int,
+    Pixel,
+    Pixel,
     short,
-    short ,
+    unsigned long,
     int
 #endif
 );
@@ -687,7 +646,7 @@ void mach8RealImageFill(
     int,
     int,
     short,
-    short 
+    unsigned long 
 #endif
 );
 void mach8InitFrect(

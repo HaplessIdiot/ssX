@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb.banked/mfblinebank.h,v 3.3 1994/09/23 13:40:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb.banked/mfblinebank.h,v 3.4 1994/09/24 15:14:33 dawes Exp $ */
 /* mfblinebank.h */
 /* included from mfb.h if MFB_LINE_BANK is defined */
 
@@ -24,7 +24,7 @@ extern int vgaWriteseg;
 extern int vgaReadWriteseg;
 extern int vgaSaveReadseg;
 
-#if defined(__386BSD__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined(__bsdi__)
+#ifdef CSRG_BASED
 #define VGABASE 0xFF000000
 #else
 #define VGABASE 0xF0000000

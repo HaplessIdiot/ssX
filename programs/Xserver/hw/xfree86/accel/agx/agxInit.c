@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.9 1994/09/23 10:07:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.10 1994/11/19 07:50:15 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -57,7 +57,7 @@
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 
-#if defined(__BSD__) || defined(MACH386)
+#if defined(CSRG_BASED) || defined(MACH386)
 #include <sys/resource.h>
 #endif
 
@@ -813,7 +813,7 @@ agxSwitchMode(mode)
  *     or that conflict with the doubled clock.
  */
 
-Bool
+static void
 agxAddDoubledClocks(InfoRec)
    ScrnInfoRec *InfoRec;
 {
@@ -870,7 +870,7 @@ agxGetClocks(num, scale, knownclkindex, knownclkvalue, InfoRec)
    /* First save registers that get written on */
    agxClockSelect(CLK_REG_SAVE,0);
 
-#if defined(__BSD__) || defined(MACH386)
+#if defined(CSRG_BASED) || defined(MACH386)
    saved_nice = getpriority(PRIO_PROCESS, 0);
    setpriority(PRIO_PROCESS, 0, -20);
 #endif
@@ -938,7 +938,7 @@ finish:
       InfoRec->clock[i] = cnt ? cnt : -1;
    }
 
-#if defined(__BSD__) || defined(MACH386)
+#if defined(CSRG_BASED) || defined(MACH386)
    setpriority(PRIO_PROCESS, 0, saved_nice);
 #endif
 #if defined(SYSV386) || defined(linux)

@@ -1,5 +1,5 @@
 /* $XConsortium: s3gc.c,v 1.2 94/04/17 20:31:11 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gc32.c,v 3.1 1994/08/20 07:34:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gc32.c,v 3.2 1994/09/21 13:23:33 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -338,11 +338,6 @@ s3ValidateGC(pGC, changes, pDrawable)
  /* flags for changing the proc vector */
    cfbPrivGCPtr devPriv;
    int   oneRect;
-
-#ifdef PIXPRIV
-   if (pDrawable->type == DRAWABLE_PIXMAP)
-      s3CacheFreeSlot(pDrawable);
-#endif
 
    new_rotate = pGC->lastWinOrg.x != pDrawable->x ||
       pGC->lastWinOrg.y != pDrawable->y;

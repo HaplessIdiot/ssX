@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.17 1994/10/23 12:56:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.18 1994/11/19 07:49:46 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -848,8 +848,8 @@ agxGetMemSize()
       outb( agxApIdxReg, i );
       usleep(10000);
       mask = (~i<<24) | 0x00A55A00 | i;
-      MemToBus( (volatile pointer)x1, &mask, 4);
-      MemToBus( (volatile pointer)x2, &mask, 4);
+      MemToBus( (pointer)x1, &mask, 4);
+      MemToBus( (pointer)x2, &mask, 4);
       x1 += 128;
       x2 -= 128;
    }
@@ -859,8 +859,8 @@ agxGetMemSize()
       outb( agxApIdxReg, i );
       usleep(10000);
       mask = (~i<<24) | 0x00A55A00 | i;
-      BusToMem( &tmp1, (volatile pointer)x1, 4);
-      BusToMem( &tmp2, (volatile pointer)x2, 4);
+      BusToMem( &tmp1, (pointer)x1, 4);
+      BusToMem( &tmp2, (pointer)x2, 4);
       if( tmp1 == mask && tmp2 == mask ) { 
          lastBank = i;
       }

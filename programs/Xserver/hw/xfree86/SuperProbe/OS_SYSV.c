@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.2 1994/05/29 02:05:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.3 1994/08/31 04:19:51 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -57,7 +57,14 @@
 #endif
 #include <sys/proc.h>
 #include <sys/tss.h>
+#ifdef NCR
+/* broken NCR <sys/sysi86.h> */
+#define __STDC
 #include <sys/sysi86.h>
+#undef __STDC
+#else
+#include <sys/sysi86.h>
+#endif
 #ifdef SVR4
 # if !defined(sun)
 #  include <sys/seg.h>

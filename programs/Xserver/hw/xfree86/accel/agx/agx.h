@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.5 1994/09/11 00:36:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.6 1994/11/19 07:49:49 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  *
@@ -50,13 +50,22 @@
 
 _XFUNCPROTOBEGIN
 
-extern void agxSetRead();
-extern void agxSetReadWrite();
-extern void agxSetWrite();
-extern void agxSetRamdac();
-extern void (*agxImageReadFunc)();
-extern void (*agxImageWriteFunc)();
-extern void (*agxImageFillFunc)();
+extern void (*agxImageReadFunc)(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, unsigned long
+#endif
+);
+extern void (*agxImageWriteFunc)(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, short, unsigned long
+#endif
+);
+extern void (*agxImageFillFunc)(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, int, int, 
+    short, unsigned long
+#endif
+);
 extern ScreenPtr savepScreen;
 
 /* agx.c */
@@ -311,32 +320,23 @@ int agxBytePadScratchMapPow2(
     int 
 #endif
 );
-void agxMemToVid(
-#if NeedFunctionPrototypes
-    unsigned int ,
-    unsigned int ,
-    unsigned char *,
-    unsigned int ,
-    unsigned int 
-#endif
-);
 void agxImageStipple(
 #if NeedFunctionPrototypes
     int ,
     int ,
     int ,
     int ,
-    unsigned char *,
+    char *,
     int ,
     int ,
     int ,
     int ,
     int ,
-    unsigned int ,
-    unsigned int ,
-    unsigned int ,
-    unsigned int ,
-    unsigned int 
+    Pixel ,
+    Pixel ,
+    short ,
+    short ,
+    unsigned long 
 #endif
 );
 /* agxBStor.c */
@@ -592,11 +592,11 @@ void agxFSpansStipple(
     PixmapPtr,
     int,
     int,
-    unsigned int,
-    unsigned int,
-    unsigned int,
-    unsigned int,
-    unsigned int
+    Pixel,
+    Pixel,
+    short,
+    short,
+    unsigned long
 #endif
 );
 /* agxGtImg.c */
@@ -643,14 +643,6 @@ void agxPaintWindow(
     int
 #endif
 );
-void agxFillBoxSolid(
-#if NeedFunctionPrototypes
-    DrawablePtr ,
-    int ,
-    BoxPtr ,
-    unsigned long 
-# endif
-);
 /* agxIm.c */
 void agxFillBoxTile(
 #if NeedFunctionPrototypes
@@ -660,8 +652,8 @@ void agxFillBoxTile(
     PixmapPtr,
     int,
     int,
-    unsigned int,
-    unsigned int
+    short,
+    unsigned long
 #endif
 );
 void agxFillBoxStipple(
@@ -672,11 +664,11 @@ void agxFillBoxStipple(
     PixmapPtr,
     int,
     int,
-    unsigned int,
-    unsigned int,
-    unsigned int,
-    unsigned int,
-    unsigned int
+    Pixel,
+    Pixel,
+    short,
+    short,
+    unsigned long
 #endif
 );
 /* agxWin.c */

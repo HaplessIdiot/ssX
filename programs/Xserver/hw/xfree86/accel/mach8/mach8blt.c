@@ -1,5 +1,5 @@
 /* $XConsortium: mach8blt.c,v 1.2 94/04/17 20:30:53 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8blt.c,v 3.0 1994/05/31 08:04:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8blt.c,v 3.1 1994/06/06 06:46:42 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -833,7 +833,7 @@ mach8CopyPlane(pSrcDrawable, pDstDrawable,
          /* Pixmap --> Window */
          PixmapPtr pix = (PixmapPtr) pSrcDrawable;
          int   pixWidth;
-         unsigned char *psrc;
+         char *psrc;
 
          pixWidth = PixmapBytePad(pSrcDrawable->width, pSrcDrawable->depth);
          psrc = pix->devPrivate.ptr;

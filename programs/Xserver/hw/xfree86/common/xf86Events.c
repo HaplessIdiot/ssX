@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Events.c,v 1.2 94/03/31 11:11:56 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.1 1994/10/23 12:58:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.2 1994/11/22 02:38:51 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -377,7 +377,7 @@ xf86PostKbdEvent(key)
   }
 
   else if (
-#if defined(__386BSD__) || defined(__NetBSD__) || defined(__FreeBSD__)
+#ifdef CSRG_BASED
            (xf86Info.consType == PCCONS || xf86Info.consType == SYSCONS) &&
 #endif
            (xf86Info.scanPrefix == KEY_Prefix0)) {
@@ -450,7 +450,7 @@ xf86PostKbdEvent(key)
 	if (down) xf86ZoomViewport(xf86Info.currentScreen,  1);
 	return;
 
-#if defined(linux) || defined(__386BSD__) || defined(__NetBSD__) || defined(__FreeBSD__)
+#if defined(linux) || defined(CSRG_BASED)
 	/*
 	 * Under Linux, the raw keycodes are consumed before the kernel
 	 * does any processing on them, so we must emulate the vt switching
@@ -724,7 +724,7 @@ xf86PostKbdEvent(key)
    * normal, non-keypad keys
    */
   if (scanCode < KEY_KP_7 || scanCode > KEY_KP_Decimal) {
-#if !defined(__BSD__) && !defined(MACH386) && !defined(MINIX) && !defined(__OSF__)
+#if !defined(__bsdi__) && !defined(MACH386) && !defined(MINIX) && !defined(__OSF__)
     /*
      * magic ALT_L key on AT84 keyboards for multilingual support
      */
@@ -735,7 +735,7 @@ xf86PostKbdEvent(key)
 	UsePrefix = TRUE;
 	Direction = TRUE;
       }
-#endif /* !MACH386 && !__BSD__ && !MINIX && !__OSF__ */
+#endif /* !__bsdi__ && !MACH386 && !MINIX && !__OSF__ */
   }
 
 

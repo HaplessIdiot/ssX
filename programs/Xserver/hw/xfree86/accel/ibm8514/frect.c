@@ -1,5 +1,5 @@
 /* $XConsortium: ibm8514frec.c,v 1.2 94/04/17 20:30:32 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514frec.c,v 3.0 1994/07/15 06:57:49 dawes Exp $ */
 /*
  * Fill rectangles.
  */
@@ -234,7 +234,7 @@ short fgalu;
 short bgalu;
 short fgmix;
 short bgmix;
-short planemask;
+unsigned long planemask;
 {
     int xwmid, ywmid, orig_xwmid;
     int startx, starty, endx, endy;
@@ -473,7 +473,7 @@ int h;
 int pox;
 int poy;
 short alu;
-short planemask;
+unsigned long planemask;
 {
 
     DoCacheImageFill( pci, x, y, w, h, pox, poy, alu,
@@ -490,9 +490,9 @@ int w;
 int h;
 int pox;
 int poy;
-int fg;
+unsigned long fg;
 short alu;
-short planemask;
+unsigned long planemask;
 {
 
     WaitQueue(3);
@@ -518,10 +518,10 @@ int w;
 int h;
 int pox;
 int poy;
-int fg;
-int bg;
+unsigned long fg;
+unsigned long bg;
 short alu;
-short planemask;
+unsigned long planemask;
 {
 
     WaitQueue(4);

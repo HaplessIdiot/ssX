@@ -1,10 +1,9 @@
 XCOMM platform:  $XConsortium: linux.cf,v 1.4 94/04/07 15:46:42 rws Exp $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.13 1994/10/21 11:20:15 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.14 1994/11/19 07:32:23 dawes Exp $
 
 #define OSName			Linux
 #define OSVendor		/**/
 #define OSMajorVersion		1
-#define OSMinorVersion		0
 #define OSMinorVersion		0
 #define OSTeenyVersion		0
 #define OSDefines		-Dlinux -D__i386__ -D_POSIX_SOURCE \

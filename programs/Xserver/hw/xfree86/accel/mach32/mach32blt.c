@@ -1,5 +1,5 @@
 /* $XConsortium: mach32blt.c,v 1.2 94/04/17 20:30:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32blt.c,v 3.3 1994/07/15 06:58:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32blt.c,v 3.4 1994/09/11 00:48:45 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -427,7 +427,7 @@ mach32CopyArea(pSrcDrawable, pDstDrawable,
 	} else if (pSrcDrawable->type == DRAWABLE_WINDOW && pDstDrawable->type != DRAWABLE_WINDOW) {
 	    /* Window --> Pixmap */
 	    int pixWidth = PixmapBytePad(pDstDrawable->width, pDstDrawable->depth);
-	    unsigned char *pdst = ((PixmapPtr)pDstDrawable)->devPrivate.ptr;
+	    char *pdst = ((PixmapPtr)pDstDrawable)->devPrivate.ptr;
 
 	    for (i = numRects; --i >= 0; pbox++)
 		(mach32ImageReadFunc)(pbox->x1 + dx, pbox->y1 + dy,
@@ -437,7 +437,7 @@ mach32CopyArea(pSrcDrawable, pDstDrawable,
 	} else if (pSrcDrawable->type != DRAWABLE_WINDOW && pDstDrawable->type == DRAWABLE_WINDOW) {
 	    /* Pixmap --> Window */
 	    int pixWidth = PixmapBytePad(pSrcDrawable->width, pSrcDrawable->depth);
-	    unsigned char *psrc = ((PixmapPtr)pSrcDrawable)->devPrivate.ptr;
+	    char *psrc = ((PixmapPtr)pSrcDrawable)->devPrivate.ptr;
 
 	    for (i = numRects; --i >= 0; pbox++)
 		(mach32ImageWriteFunc)(pbox->x1, pbox->y1,
@@ -910,7 +910,7 @@ mach32CopyPlane(pSrcDrawable, pDstDrawable,
          /* Pixmap --> Window */
          PixmapPtr pix = (PixmapPtr) pSrcDrawable;
          int   pixWidth;
-         unsigned char *psrc;
+         char *psrc;
 
          pixWidth = PixmapBytePad(pSrcDrawable->width, pSrcDrawable->depth);
          psrc = pix->devPrivate.ptr;

@@ -1,5 +1,5 @@
 /* $XConsortium: genauth.c,v 1.18 94/04/17 20:03:39 gildea Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xdm/genauth.c,v 3.0 1994/06/26 13:11:45 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -85,15 +85,8 @@ long	sum[2];
     fd = open (name, 0);
     if (fd < 0)
 	return 0;
-#if (defined(SVR4) || defined(SYSV)) && defined(i386)
-    /*
-     * For x86 Unix, we need to stay the hell OUT of memory in the
-     * range 640k-1M.  If there are devices with shared memory out there,
-     * the reads could blow their poor little minds!  So if the file
-     * being read is /dev/mem, skip up to 1M, then start reading.
-     */
-     if (!strcmp(name, "/dev/mem"))
-	lseek(fd, 0x100000, SEEK_SET);
+#ifdef FRAGILE_DEV_MEM
+     if (strcmp(name, "/dev/mem") == 0) lseek(fd, (off_t) 0x100000, SEEK_SET);
 #endif
     reads = FILE_LIMIT;
     sum[0] = 0;

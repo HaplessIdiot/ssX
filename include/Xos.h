@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Xos.h,v 1.66 94/04/17 20:10:51 rws Exp $
- * $XFree86: xc/include/Xos.h,v 3.6 1994/08/31 03:22:51 dawes Exp $
+ * $XFree86: xc/include/Xos.h,v 3.7 1994/11/19 07:46:38 dawes Exp $
  * 
  * 
 Copyright (c) 1987  X Consortium
@@ -275,11 +275,6 @@ struct sockaddr_un {
 	short	sun_family;
 	char	sun_path[108];
 };
-#endif
-
-/* Get BSD definition */
-#if !defined(X_NO_SYS_PARAM) && !defined(sun)
-#include <sys/param.h>
 #endif
 
 #endif /* _XOS_H_ */

@@ -1,5 +1,5 @@
 /* $XConsortium: mach8.c,v 1.1 94/03/28 21:09:56 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.10 1994/09/23 10:09:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.11 1994/10/23 12:57:46 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -147,7 +147,7 @@ void (*mach8ImageWriteFunc)(
     int,
     int,
     short,
-    short 
+    unsigned long 
 #endif
 );
 void (*mach8ImageReadFunc)(
@@ -160,7 +160,7 @@ void (*mach8ImageReadFunc)(
     int,
     int,
     int,
-    short 
+    unsigned long 
 #endif
 );
 void (*mach8RealImageFillFunc)(
@@ -176,7 +176,7 @@ void (*mach8RealImageFillFunc)(
     int,
     int,
     short,
-    short 
+    unsigned long 
 #endif
 );
 void (*mach8ImageStippleFunc)(
@@ -185,16 +185,16 @@ void (*mach8ImageStippleFunc)(
     int,
     int,
     int,
-    unsigned char *,
+    char *,
     int,
     int,
     int,
     int,
     int,
-    int,
-    int,
+    Pixel,
+    Pixel,
     short,
-    short ,
+    unsigned long,
     int
 #endif
 );
@@ -561,9 +561,6 @@ mach8Initialize (scr_index, pScreen, argc, argv)
     AlreadyInited = TRUE;
 
     xf86InitCache( mach8CacheMoveBlock );
-#ifdef PIXPRIV
-    mach8CacheInit();
-#endif
     mach8FontCache8Init();
     if( mach8DramUsed ) {
 	mach8ImageWriteFunc = mach8ImageWriteDram;
@@ -632,9 +629,6 @@ mach8EnterLeaveVT(enter, screen_idx)
 	mach8Init(&mach8ScreenMode);
 	mach8InitEnvironment();
         mach8RestoreDACvalues();
-#ifdef PIXPRIV
-        mach8CacheInit();
-#endif
         mach8FontCache8Init();
 	AlreadyInited = TRUE;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxIm.c,v 3.6 1994/09/23 10:07:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxIm.c,v 3.7 1994/11/19 07:50:11 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -40,15 +40,48 @@
 #include "regagx.h"
 #include "agxIm.h"
 
-void	(*agxImageReadFunc)();
-void	(*agxImageWriteFunc)();
-void	(*agxImageFillFunc)();
+void	(*agxImageReadFunc)(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, unsigned long
+#endif
+);
+void	(*agxImageWriteFunc)(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, short, unsigned long
+#endif
+);
+void	(*agxImageFillFunc)(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, int, int, short, unsigned long
+#endif
+);
 
-static	void	agxImageFillBank();
-static	void	agxImageFillNoMem();
-static	void	agxImageReadBank();
-static	void	agxImageWriteBank();
-static	void	agxImageWriteNoMem();
+static	void	agxImageFillBank(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, int, int, short, unsigned long
+#endif
+);
+static	void	agxImageFillNoMem(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, int, int, 
+    short, unsigned long
+#endif
+);
+static	void	agxImageReadBank(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, unsigned long
+#endif
+);
+static	void	agxImageWriteBank(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, short, unsigned long
+#endif
+);
+static	void	agxImageWriteNoMem(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, short, unsigned long
+#endif
+);
 
 static unsigned long PMask;
 static int BytesPerPixelShift;
@@ -143,13 +176,22 @@ agxBytePadScratchMapPow2( w, n )
  * agxMemToVid()
  * 
  */
-void
-agxMemToVid( dst, dstWidth, src, srcWidth, h )
-   unsigned int  dst;
-   unsigned int  dstWidth;
-   unsigned char *src;
-   unsigned int  srcWidth;
-   unsigned int  h;
+static void
+#if NeedFunctionPrototypes
+agxMemToVid(
+   int  dst,
+   int  dstWidth,
+   char *src,
+   int  srcWidth,
+   int  h)
+#else
+agxMemToVid(dst, dstWidth, src, srcWidth, h)
+   int  dst;
+   int  dstWidth;
+   char *src;
+   int  srcWidth;
+   int  h;
+#endif
 {
     char *curvm;
     unsigned int offset;
@@ -225,14 +267,24 @@ agxMemToVid( dst, dstWidth, src, srcWidth, h )
  * agxPartMemToVid()
  * 
  */
-void
-agxPartMemToVid( dst, dstWidth, src, srcWidth, w, h )
-   unsigned int  dst;
-   unsigned int  dstWidth;
-   unsigned char *src;
-   unsigned int  srcWidth;
-   unsigned int  w;
-   unsigned int  h;
+static void
+#if NeedFunctionPrototypes
+agxPartMemToVid(
+   int  dst,
+   int  dstWidth,
+   char *src,
+   int  srcWidth,
+   int  w,
+   int  h)
+#else
+agxPartMemToVid(dst, dstWidth, src, srcWidth, w, h)
+   int  dst;
+   int  dstWidth;
+   char *src;
+   int  srcWidth;
+   int  w;
+   int  h;
+#endif
 {
     char *curvm;
     unsigned int offset;
@@ -309,17 +361,31 @@ agxPartMemToVid( dst, dstWidth, src, srcWidth, w, h )
 
 
 static void
+#if NeedFunctionPrototypes
+agxImageWriteBank(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    char		*psrc,
+    int			pwidth,
+    int			px,
+    int			py,
+    short		alu,
+    unsigned long	planemask)
+#else
 agxImageWriteBank(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
-    unsigned int	x;
-    unsigned int	y;
-    unsigned int	w;
-    unsigned int	h;
-    unsigned char	*psrc;
-    unsigned int	pwidth;
-    unsigned int	px;
-    unsigned int	py;
-    unsigned int        alu;
-    unsigned int	planemask;
+    int			x;
+    int			y;
+    int			w;
+    int			h;
+    char		*psrc;
+    int			pwidth;
+    int			px;
+    int			py;
+    short		alu;
+    unsigned long	planemask;
+#endif
 {
     pointer curvm;
     int offset;
@@ -397,25 +463,41 @@ agxImageWriteBank(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
 
 
 static void
+#if NeedFunctionPrototypes
+agxImageWriteNoMem(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    char		*psrc,
+    int			pwidth,
+    int			px,
+    int			py,
+    short		alu,
+    unsigned long	planemask)
+#else
 agxImageWriteNoMem(x, y, w, h, psrc, pwidth, alu, planemask)
-    unsigned int	x;
-    unsigned int	y;
-    unsigned int	w;
-    unsigned int	h;
-    unsigned char	*psrc;
-    unsigned int	pwidth;
-    unsigned int	alu;
-    unsigned int	planemask;
+    int			x;
+    int			y;
+    int			w;
+    int			h;
+    char		*psrc;
+    int			pwidth;
+    int			px;
+    int			py;
+    short		alu;
+    unsigned long	planemask;
+#endif
 {
-    unsigned int      srcPWidth;
-    unsigned int      srcBWidth;
-    int   	      srcBWidthShift;
-    unsigned int      srcStripHeight;
-    unsigned int      srcMaxLines;
-    unsigned int      srcLine;
-    unsigned int      numVertStrips;
-    unsigned int      lastVStripHeight;
-    unsigned int      strip;
+    unsigned int	srcPWidth;
+    unsigned int	srcBWidth;
+    int			srcBWidthShift;
+    unsigned int	srcStripHeight;
+    unsigned int	srcMaxLines;
+    unsigned int	srcLine;
+    unsigned int	numVertStrips;
+    unsigned int	lastVStripHeight;
+    unsigned int	strip;
 
     /*
      * Unlike the 8514 clan, the XGA architecture does not support
@@ -496,8 +578,7 @@ agxImageWriteNoMem(x, y, w, h, psrc, pwidth, alu, planemask)
         */
        if( numVertStrips == 1 ) { 
           agxMemToVid( agxScratchOffset, srcPWidth,
-                       psrc, pwidth,
-                       h               ); 
+                       psrc, pwidth, h ); 
        }
        else {
           agxMemToVid( agxScratchOffset, srcBWidth, 
@@ -518,16 +599,29 @@ agxImageWriteNoMem(x, y, w, h, psrc, pwidth, alu, planemask)
 } 
 
 static void
+#if NeedFunctionPrototypes
+agxImageReadBank(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    char		*psrc,
+    int			pwidth,
+    int			px,
+    int			py,
+    unsigned long	planemask)
+#else
 agxImageReadBank(x, y, w, h, psrc, pwidth, px, py, planemask)
-    unsigned int	x;
-    unsigned int	y;
-    unsigned int	w;
-    unsigned int	h;
-    unsigned char	*psrc;
-    unsigned int	pwidth;
-    unsigned int	px;
-    unsigned int	py;
-    unsigned int	planemask;
+    int			x;
+    int			y;
+    int			w;
+    int			h;
+    char		*psrc;
+    int			pwidth;
+    int			px;
+    int			py;
+    unsigned long	planemask;
+#endif
 {
     pointer curvm;
     int offset;
@@ -587,19 +681,35 @@ agxImageReadBank(x, y, w, h, psrc, pwidth, px, py, planemask)
 
 
 static void
+#if NeedFunctionPrototypes
+agxImageFillBank(
+    int                 x,
+    int                 y,
+    int                 w,
+    int                 h,
+    char	       *psrc,
+    int                 pwidth,
+    int                 pw,
+    int                 ph,
+    int                 pox,
+    int                 poy,
+    short               alu,
+    unsigned long       planemask)
+#else
 agxImageFillBank(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
     int                 x;
     int                 y;
     int                 w;
     int                 h;
-    unsigned char       *psrc;
+    char	       *psrc;
     int                 pwidth;
     int                 pw;
     int                 ph;
     int                 pox;
     int                 poy;
-    int                 alu;
-    int                 planemask;
+    short               alu;
+    unsigned long       planemask;
+#endif
 {
     int			xrot;
     int			yrot;
@@ -633,19 +743,35 @@ agxImageFillBank(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 }
 
 static void
+#if NeedFunctionPrototypes
+agxImageFillNoMem(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    char		*psrc,
+    int			pwidth,
+    int			pw,
+    int			ph,
+    int			pox,
+    int			poy,
+    short		alu,
+    unsigned long 	planemask)
+#else
 agxImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
     int			x;
     int			y;
     int			w;
     int			h;
-    unsigned char	*psrc;
+    char		*psrc;
     int			pwidth;
     int			pw;
     int			ph;
     int			pox;
     int			poy;
-    unsigned int	alu;
-    unsigned int 	planemask;
+    short		alu;
+    unsigned long 	planemask;
+#endif
 {
     unsigned int      srcPWidth;
     unsigned int      srcBWidth;
@@ -925,23 +1051,29 @@ agxImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 
 
 void
-agxImageStipple( x, y, w, h, psrc, pwidth, pw, ph, pox, poy, 
+#if NeedFunctionPrototypes
+agxImageStipple(int x, int y, int w, int h, char *psrc, int pwidth, int pw,
+		int ph, int pox, int poy, Pixel fgPixel, Pixel bgPixel,
+		short fgAlu, short bgAlu, unsigned long planemask)
+#else
+agxImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, 
                  fgPixel, bgPixel, fgAlu, bgAlu, planemask)
     int			x;
     int			y;
     int			w;
     int			h;
-    unsigned char	*psrc;
+    char		*psrc;
     int			pwidth;
     int			pw;
     int			ph;
     int			pox;
     int			poy;
-    unsigned int	fgPixel;
-    unsigned int	bgPixel;
-    unsigned int	fgAlu;
-    unsigned int	bgAlu;
-    unsigned int	planemask;
+    Pixel		fgPixel;
+    Pixel		bgPixel;
+    short		fgAlu;
+    short		bgAlu;
+    unsigned long	planemask;
+#endif
 {
     unsigned int      srcPWidth = 0;
     unsigned int      srcBWidth;
@@ -1284,6 +1416,13 @@ agxImageStipple( x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 
 
 void
+#if NeedFunctionPrototypes
+agxFillBoxStipple(DrawablePtr pDrawable, int nBox, BoxPtr pBox, 
+                   PixmapPtr stipple, int pox, int poy,
+                   Pixel fgpixel, Pixel bgpixel, 
+                   short fgAlu, short bgAlu,
+                   unsigned long planemask)
+#else
 agxFillBoxStipple( pDrawable, nBox, pBox, 
                    stipple, pox, poy,
                    fgpixel, bgpixel, 
@@ -1295,11 +1434,12 @@ agxFillBoxStipple( pDrawable, nBox, pBox,
     PixmapPtr       stipple;
     int             pox;
     int             poy;
-    unsigned int    fgpixel;
-    unsigned int    bgpixel;
-    unsigned int    fgAlu;
-    unsigned int    bgAlu;
-    unsigned int    planemask;
+    Pixel	    fgpixel;
+    Pixel	    bgpixel;
+    short	    fgAlu;
+    short	    bgAlu;
+    unsigned long   planemask;
+#endif
 {
     int            w, h;
     unsigned int   srcX, srcY;
@@ -1402,6 +1542,10 @@ agxFillBoxStipple( pDrawable, nBox, pBox,
  
 
 void
+#if NeedFunctionPrototypes
+agxFillBoxTile(DrawablePtr pDrawable, int nBox, BoxPtr pBox, PixmapPtr tile,
+	       int pox, int poy, short alu, unsigned long planemask )
+#else
 agxFillBoxTile( pDrawable, nBox, pBox, tile, pox, poy, alu, planemask )
     DrawablePtr     pDrawable;
     int             nBox;
@@ -1409,8 +1553,9 @@ agxFillBoxTile( pDrawable, nBox, pBox, tile, pox, poy, alu, planemask )
     PixmapPtr       tile;
     int             pox;
     int             poy;
-    unsigned int    alu;
-    unsigned int    planemask;
+    short	    alu;
+    unsigned long   planemask;
+#endif
 {
     int            w, h;
     unsigned int   width, height;
@@ -1778,23 +1923,36 @@ agxFSpansTile( pDrawable, nSpans, ppts, pwidth,
     
  
 void
-agxFSpansStipple( pDrawable, nSpans, ppts, pwidth,
-                  stipple, pox, poy,
-                  fgpixel, bgpixel, 
-                  fgAlu, bgAlu,
-                  planemask )
-    DrawablePtr     pDrawable;
-    int             nSpans;
-    DDXPointPtr     ppts; 
-    int            *pwidth;
-    PixmapPtr       stipple;
-    int             pox;
-    int             poy;
-    unsigned int    fgpixel;
-    unsigned int    bgpixel;
-    unsigned int    fgAlu;
-    unsigned int    bgAlu;
-    unsigned int    planemask;
+#if NeedFunctionPrototypes
+agxFSpansStipple(
+    DrawablePtr		pDrawable,
+    int			nSpans,
+    DDXPointPtr		ppts,
+    int			*pwidth,
+    PixmapPtr		stipple,
+    int			pox,
+    int			poy,
+    Pixel		fgpixel,
+    Pixel		bgpixel,
+    short		fgAlu,
+    short		bgAlu,
+    unsigned long	planemask)
+#else
+agxFSpansStipple( pDrawable, nSpans, ppts, pwidth, stipple, pox, poy,
+                  fgpixel, bgpixel, fgAlu, bgAlu, planemask )
+    DrawablePtr		pDrawable;
+    int			nSpans;
+    DDXPointPtr		ppts; 
+    int			*pwidth;
+    PixmapPtr		stipple;
+    int			pox;
+    int			poy;
+    Pixel		fgpixel;
+    Pixel		bgpixel;
+    short		fgAlu;
+    short		bgAlu;
+    unsigned long	planemask;
+#endif
 {
     unsigned int   width  = stipple->drawable.width;
     unsigned int   height = stipple->drawable.height;
@@ -1976,4 +2134,3 @@ agxFSpansStipple( pDrawable, nSpans, ppts, pwidth,
     }
     GE_WAIT_IDLE_EXIT();
 }
-    

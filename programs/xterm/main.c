@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.222 94/04/17 20:23:28 gildea Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.4 1994/10/23 13:02:54 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.5 1994/11/19 08:01:02 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -271,7 +271,7 @@ static Bool IsPts = False;
 #define USE_POSIX_WAIT
 #endif
 
-#ifndef X_NO_SYS_PARAM
+#if !defined(MINIX) && !defined(WIN32)
 #include <sys/param.h>	/* for NOFILE */
 #endif
 

@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/AsmMacros.h,v 3.0 1994/05/14 06:50:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/AsmMacros.h,v 3.1 1994/08/31 04:19:24 dawes Exp $ */
 
 #ifdef __GNUC__
 
@@ -146,7 +146,9 @@ void outw(U16_t, U16_t);
 #else /* not _MINIX and _ACK */
 
 # if defined(__STDC__) && (__STDC__ == 1)
+#  ifndef NCR
 #  define asm __asm
+#  endif
 # endif
 # ifdef SVR4
 #  include <sys/types.h>
