@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.69 2003/08/09 14:30:49 pascal Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.70 2003/08/11 13:26:08 pascal Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -257,3 +257,5 @@
   compose:menu		Menu is Compose
 
   numpad:microsoft	Shift with numpad keys works as in MS Windows.
+
+  srvrkeys:none		Special keys (Ctrl+Alt+<key>) handled in a server.

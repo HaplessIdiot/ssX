@@ -1,4 +1,4 @@
-// $XFree86: xc/programs/xkbcomp/symbols/ro,v 3.6 2003/05/29 12:41:58 pascal Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/ro,v 3.7 2003/06/21 13:01:58 pascal Exp $
 
 
 default partial alphanumeric_keys
@@ -91,7 +91,7 @@ xkb_symbols "basic" {
 // Diacriticele se scriu cu ALT-ul din dreapta si q,t,i,a,s (+shift eventual)
 
 partial alphanumeric_keys
-xkb_symbols "ro_us" {
+xkb_symbols "us_ro" {
 
     name[Group1]="Romanian for us-keyboard";
 
@@ -114,40 +114,29 @@ xkb_symbols "ro_us" {
 };
 
 xkb_symbols "comma" {
-    include "ro_us(basic)"
+    include "ro(us_ro)"
 
     key <AC02> { [], [ 0x1000219,	0x1000218	] };
     key <AD05> { [], [ 0x100021b,	0x100021a	] };
 };
 
+// Romanian keyboard with access to German umlauts";
+// Created by Manfred Pohler, <Manfred.Pohler@t-online.de> (C) 2003
+// ä, ö, ü, ß se scrie cu <AltGr> şi a, o, u, s (+shift pentru majuscule)
+//
 partial alphanumeric_keys
 xkb_symbols "ro_de" {
-    // add romanian-specific characters to the basic German layout.
-    // Romanian symbols are accessible with combination of <AltGr> and
-    // 'a', 's', 't', 'i', '�' and <Shift> for capital letters.
-    // To view romanian specific symbols, add "export LC_CTYPE=ro_RO"
-    // to your .profile.
-    include "de(basic)"
 
-    name[Group1]="Romanian for German keyboard";
+    include "ro(basic)"
 
-    key <AD05> {        [         t,    T               ],
-                        [ tcedilla,     Tcedilla        ]       };
-    key <AD08> {        [         i,    I               ],
-                        [ icircumflex,  Icircumflex     ]       };
-    key <AC01> {        [         a,    A               ],
-                        [ acircumflex,  Acircumflex     ]       };
-    key <AC02> {        [         s,    S               ],
-                        [ scedilla,     Scedilla        ]       };
-    key <AC11> {        [ adiaeresis,   Adiaeresis      ],
-                        [ abreve,       Abreve          ]       };
-};
+    name[Group1]="German for Romanian keyboard";
 
-partial alphanumeric_keys
-xkb_symbols "ro_de_nodeadkeys" {
-    // Read the comment for ro_de !
-    include "ro(ro_de)"
-    include "de(nodeadkeys)"
-    key <AC11> {        [ adiaeresis,   Adiaeresis      ],
-                        [ abreve,       Abreve          ]       };
+    key <AD07> {        [          u,   U               ],
+                        [ udiaeresis,   Udiaeresis      ]       };
+    key <AD09> {        [          o,   O               ],
+                        [ odiaeresis,   Odiaeresis      ]       };
+    key <AC01> {        [          a,   A               ],
+                        [ adiaeresis,   Adiaeresis      ]       };
+    key <AC02> {        [          s,   S               ],
+                        [     ssharp                    ]       };
 };

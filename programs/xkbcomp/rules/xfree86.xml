@@ -2841,6 +2841,12 @@
           <description>Shift with numpad keys works as in MS Windows</description>
         </configItem>
       </option>
+      <option>
+        <configItem>
+          <name>srvrkeys:none</name>
+          <description>Special keys (Ctrl+Alt+<key>) handled in a server.</description>
+        </configItem>
+      </option>
     </group>
   </optionList>
 </xkbConfigRegistry>

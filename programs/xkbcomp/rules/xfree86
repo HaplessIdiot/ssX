@@ -5,7 +5,7 @@
 //  Copyright 1996 by Joseph Moss
 //
 //  2002 Modifier: Ivan Pascal      The XFree86 Project
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.69 2003/08/11 13:27:33 pascal Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.70 2003/09/04 13:56:47 pascal Exp $
 //
 
 // Layouts that still need be composed by old rules
@@ -174,6 +174,7 @@
   compose:ralt		=	+compose(ralt)
   compose:rwin		=	+compose(rwin)
   compose:menu		=	+compose(menu)
+  srvrkeys:none		=	+srvr_ctrl(no_srvr_keys)
 
 ! option		=	compat
   grp_led:num		=	+leds(num)
