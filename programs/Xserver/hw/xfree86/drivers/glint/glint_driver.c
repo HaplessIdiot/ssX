@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.113 2001/02/02 10:21:53 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.114 2001/02/05 10:44:58 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -1412,6 +1412,8 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	    	    pScrn->videoRam = (1 << ((GLINT_READ_REG(FBMemoryCtl) & 
 						0xE0000000)>>29)) * 1024;
 		    break;
+    		case PCI_VENDOR_TI_CHIP_PERMEDIA2:
+    		case PCI_VENDOR_TI_CHIP_PERMEDIA:
 		case PCI_VENDOR_3DLABS_CHIP_PERMEDIA:
 		case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
 		case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
@@ -1569,6 +1571,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	case PCI_VENDOR_3DLABS_CHIP_500TX:
 	case PCI_VENDOR_3DLABS_CHIP_300SX:
 	case PCI_VENDOR_3DLABS_CHIP_MX:
+	    pGlint->FIFOSize = 16;
 	    if (pScrn->bitsPerPixel == 24) {
 		xf86DrvMsg(pScrn->scrnIndex, from, 
 			"-depth 24 -pixmap24 not supported by this chip.\n");
@@ -3392,6 +3395,8 @@ Shiftbpp(ScrnInfoPtr pScrn, int value)
     int logbytesperaccess = 2; /* default */
 
     switch (pGlint->Chipset) {
+	case PCI_VENDOR_TI_CHIP_PERMEDIA:
+	case PCI_VENDOR_TI_CHIP_PERMEDIA2:
 	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA:
 	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
 	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
