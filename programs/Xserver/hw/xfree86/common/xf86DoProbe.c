@@ -1,5 +1,5 @@
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoProbe.c,v 1.1 1999/10/13 16:49:09 dawes Exp $ */
 /*
  * finish setting up the server
  * Load the driver modules and call their probe functions.
@@ -27,10 +27,11 @@ DoProbeArgs(int argc, char **argv, int i)
 void
 DoProbe()
 {
+#if XFree86LOADER
     int i, skip, globalVerbose, probeVerbose;
     Bool probeResult;
 
-  /* Find the list of video driver modules. */
+    /* Find the list of video driver modules. */
     char **list, **l;
     const char *subdirs[] = {
 	"drivers",
@@ -65,6 +66,7 @@ DoProbe()
     }
 
     LoaderFreeDirList(list);
+#endif
 
     OsCleanup();
     AbortDDX();

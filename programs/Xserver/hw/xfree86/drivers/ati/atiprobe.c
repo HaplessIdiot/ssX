@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.11 1999/10/13 04:21:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.12 1999/10/13 16:49:16 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -1066,9 +1066,21 @@ ATIProbe
                 !IsATIBlockIOBase(pVideo->ioBase[1]))
                 continue;
 
+            /* For now, ignore Rage128's */
+            Chip = ATIChipID(pVideo->chipType, pVideo->chipRev);
+            if (Chip > ATI_CHIP_Mach64)
+            {
+                xf86Msg(X_WARNING,
+                        ATI_NAME ":  PCI/AGP ATI Rage 128 detected in slot"
+                        " %d:%d:%d is not yet supported\n by this driver.  Use"
+                        " separate (upcoming) driver from Precision Insight"
+                        " Inc\n instead.\n",
+                        pVideo->bus, pVideo->device, pVideo->func);
+                continue;
+            }
+
             pATI = ATIMach64Probe(pVideo->ioBase[1], BLOCK_IO,
-                pVideo->chipType,
-                ATIChipID(pVideo->chipType, pVideo->chipRev));
+                pVideo->chipType, Chip);
             if (!pATI)
                 continue;
 
@@ -1108,8 +1120,8 @@ ATIProbe
                 {
                     xfree(pATI);
                     xf86Msg(X_WARNING,
-                            ATI_NAME ":  PCI VGA-compatible in slot %d:%d:%d"
-                            " could not be detected!" ATI_README,
+                            ATI_NAME ":  PCI/AGP VGA-compatible in slot"
+                            " %d:%d:%d could not be detected!" ATI_README,
                             pVideo->bus, pVideo->device, pVideo->func);
                 }
                 else
@@ -1280,6 +1292,11 @@ ATIProbe
                 !IsATIBlockIOBase(pVideo->ioBase[1]))
                 continue;
 
+            /* For now, ignore Rage128's */
+            Chip = ATIChipID(pVideo->chipType, pVideo->chipRev);
+            if (Chip > ATI_CHIP_Mach64)
+                continue;
+
             /* Check if this one has already been detected */
             for (j = 0;  j < nATIPtr;  j++)
             {
@@ -1292,8 +1309,7 @@ ATIProbe
             xf86SetPciVideo(pVideo, IO);
 
             pATI = ATIMach64Probe(pVideo->ioBase[1], BLOCK_IO,
-                pVideo->chipType,
-                ATIChipID(pVideo->chipType, pVideo->chipRev));
+                pVideo->chipType, Chip);
             if (pATI)
             {
                 AddAdapter(pATI);

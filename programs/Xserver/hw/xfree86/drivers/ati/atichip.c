@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.6 1999/08/21 13:48:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.7 1999/09/27 06:29:39 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -70,6 +70,9 @@ const char *ATIChipNames[] =
     "ATI 3D Rage XL or XC",
     "ATI 3D Rage Mobility",
     "ATI unknown Mach64",
+    "ATI Rage 128 GL",
+    "ATI Rage 128 Pro",
+    "ATI unknown Rage 128"
 };
 
 const char *ATIFoundryNames[] =
@@ -462,7 +465,49 @@ ATIChipID
         case OldChipID('L', 'S'):  case NewChipID('L', 'S'):
             return ATI_CHIP_MOBILITY;
 
+        case OldChipID('R', 'E'):  case NewChipID('R', 'E'):
+        case OldChipID('R', 'F'):  case NewChipID('R', 'F'):
+        case OldChipID('R', 'K'):  case NewChipID('R', 'K'):
+        case OldChipID('R', 'L'):  case NewChipID('R', 'L'):
+            return ATI_CHIP_RAGE128GL;
+
+        case OldChipID('P', 'A'):  case NewChipID('P', 'A'):
+        case OldChipID('P', 'B'):  case NewChipID('P', 'B'):
+        case OldChipID('P', 'C'):  case NewChipID('P', 'C'):
+        case OldChipID('P', 'D'):  case NewChipID('P', 'D'):
+        case OldChipID('P', 'E'):  case NewChipID('P', 'E'):
+        case OldChipID('P', 'F'):  case NewChipID('P', 'F'):
+        case OldChipID('P', 'G'):  case NewChipID('P', 'G'):
+        case OldChipID('P', 'H'):  case NewChipID('P', 'H'):
+        case OldChipID('P', 'I'):  case NewChipID('P', 'I'):
+        case OldChipID('P', 'J'):  case NewChipID('P', 'J'):
+        case OldChipID('P', 'K'):  case NewChipID('P', 'K'):
+        case OldChipID('P', 'L'):  case NewChipID('P', 'L'):
+        case OldChipID('P', 'M'):  case NewChipID('P', 'M'):
+        case OldChipID('P', 'N'):  case NewChipID('P', 'N'):
+        case OldChipID('P', 'O'):  case NewChipID('P', 'O'):
+        case OldChipID('P', 'P'):  case NewChipID('P', 'P'):
+        case OldChipID('P', 'Q'):  case NewChipID('P', 'Q'):
+        case OldChipID('P', 'R'):  case NewChipID('P', 'R'):
+        case OldChipID('P', 'S'):  case NewChipID('P', 'S'):
+        case OldChipID('P', 'T'):  case NewChipID('P', 'T'):
+        case OldChipID('P', 'U'):  case NewChipID('P', 'U'):
+        case OldChipID('P', 'V'):  case NewChipID('P', 'V'):
+        case OldChipID('P', 'W'):  case NewChipID('P', 'W'):
+        case OldChipID('P', 'X'):  case NewChipID('P', 'X'):
+        case OldChipID('S', 'E'):  case NewChipID('S', 'E'):
+        case OldChipID('S', 'F'):  case NewChipID('S', 'F'):
+        case OldChipID('S', 'G'):  case NewChipID('S', 'G'):
+        case OldChipID('S', 'K'):  case NewChipID('S', 'K'):
+        case OldChipID('S', 'L'):  case NewChipID('S', 'L'):
+        case OldChipID('S', 'M'):  case NewChipID('S', 'M'):
+            return ATI_CHIP_RAGE128PRO;
+
         default:
+            /*
+             * I'd say it's a Rage128 here, except that I don't support them
+             * yet.
+             */
             return ATI_CHIP_Mach64;
     }
 }
