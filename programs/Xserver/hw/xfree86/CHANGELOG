@@ -1,10 +1,12 @@
 XFree86 4.0b (?? April 2000)
+  98. By default, limit ATI 3DRage LTPro's to 200 MHz, instead of 230 MHz
+      (Marc La France).
   97. Remove some leftover INTERNAL_VS_EXTERNAL_PADDING stuff from the
       extensions (Mark Vojkovich).
   96. Fix a NonTE text bug in XAA where zero-height primitives could be passed
       to the driver (Mark Vojkovich).
-  95. Add colour expansion acceleration for Mach64's (Kevin Martin,
-      Marc La France).
+  95. Except for 24bpp, dd CPU-to-screen colour expansion acceleration for
+      Mach64's (Kevin Martin, Marc La France).
 
 XFree86 4.0a (6 April 2000)
   94. Major OS/2 resync (#3859, Holger Veit).
@@ -10222,4 +10224,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1120 2000/04/07 01:18:08 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1122 2000/04/08 19:27:34 mvojkovi Exp $
