@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.8 2001/02/09 02:12:17 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.9 2001/05/29 04:54:09 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -399,6 +399,79 @@ fbCompositeSolidMask_nx8x0565 (CARD8      op,
 }
 
 void
+fbCompositeSolidMask_nx8888x0565C (CARD8      op,
+				   PicturePtr pSrc,
+				   PicturePtr pMask,
+				   PicturePtr pDst,
+				   INT16      xSrc,
+				   INT16      ySrc,
+				   INT16      xMask,
+				   INT16      yMask,
+				   INT16      xDst,
+				   INT16      yDst,
+				   CARD16     width,
+				   CARD16     height)
+{
+    CARD32	src, srca;
+    CARD16	src16;
+    CARD16	*dstLine, *dst;
+    CARD32	d;
+    CARD32	*maskLine, *mask, ma;
+    FbStride	dstStride, maskStride;
+    CARD16	w;
+    CARD32	m, n, o, p;
+
+    fbComposeGetSolid(pSrc, src);
+    
+    srca = src >> 24;
+    if (src == 0)
+	return;
+    
+    src16 = cvt8888to0565(src);
+    
+    fbComposeGetStart (pDst, xDst, yDst, CARD16, dstStride, dstLine, 1);
+    fbComposeGetStart (pMask, xMask, yMask, CARD32, maskStride, maskLine, 1);
+    
+    while (height--)
+    {
+	dst = dstLine;
+	dstLine += dstStride;
+	mask = maskLine;
+	maskLine += maskStride;
+	w = width;
+
+	while (w--)
+	{
+	    ma = *mask++;
+	    if (ma == 0xffffffff)
+	    {
+		if (srca == 0xff)
+		{
+		    *dst = src16;
+		}
+		else
+		{
+		    d = *dst;
+		    d = fbOver24 (src, cvt0565to8888(d));
+		    *dst = cvt8888to0565(d);
+		}
+	    }
+	    else if (ma)
+	    {
+		d = *dst;
+		d = cvt0565to8888(d);
+		FbInOverC (src, srca, ma, d, 0, m);
+		FbInOverC (src, srca, ma, d, 8, n);
+		FbInOverC (src, srca, ma, d, 16, o);
+		d = m|n|o;
+		*dst = cvt8888to0565(d);
+	    }
+	    dst++;
+	}
+    }
+}
+
+void
 fbCompositeSrc_8888x8888 (CARD8      op,
 			 PicturePtr pSrc,
 			 PicturePtr pMask,
@@ -628,6 +701,59 @@ fbCompositeSrcAdd_8000x8000 (CARD8	op,
 }
 
 void
+fbCompositeSrcAdd_8888x8888 (CARD8	op,
+			     PicturePtr pSrc,
+			     PicturePtr pMask,
+			     PicturePtr pDst,
+			     INT16      xSrc,
+			     INT16      ySrc,
+			     INT16      xMask,
+			     INT16      yMask,
+			     INT16      xDst,
+			     INT16      yDst,
+			     CARD16     width,
+			     CARD16     height)
+{
+    CARD32	*dstLine, *dst;
+    CARD32	*srcLine, *src;
+    FbStride	dstStride, srcStride;
+    CARD16	w;
+    CARD32	s, d;
+    CARD16	t;
+    CARD32	m,n,o,p;
+    
+    fbComposeGetStart (pSrc, xSrc, ySrc, CARD32, srcStride, srcLine, 1);
+    fbComposeGetStart (pDst, xDst, yDst, CARD32, dstStride, dstLine, 1);
+
+    while (height--)
+    {
+	dst = dstLine;
+	dstLine += dstStride;
+	src = srcLine;
+	srcLine += srcStride;
+	w = width;
+
+	while (w--)
+	{
+	    s = *src++;
+	    if (s != 0xffffffff)
+	    {
+		d = *dst;
+		if (d)
+		{
+		    m = FbAdd(s,d,0,t);
+		    n = FbAdd(s,d,8,t);
+		    o = FbAdd(s,d,16,t);
+		    p = FbAdd(s,d,24,t);
+		    s = m|n|o|p;
+		}
+	    }
+	    *dst++ = s;
+	}
+    }
+}
+
+void
 fbCompositeSrcAdd_1000x1000 (CARD8	op,
 			     PicturePtr pSrc,
 			     PicturePtr pMask,
@@ -814,6 +940,9 @@ fbComposite (CARD8      op,
 			    case PICT_x8r8g8b8:
 				func = fbCompositeSolidMask_nx8888x8888C;
 				break;
+			    case PICT_r5g6b5:
+				func = fbCompositeSolidMask_nx8888x0565C;
+				break;
 			    }
 			}
 			break;
@@ -823,6 +952,9 @@ fbComposite (CARD8      op,
 			    case PICT_a8b8g8r8:
 			    case PICT_x8b8g8r8:
 				func = fbCompositeSolidMask_nx8888x8888C;
+				break;
+			    case PICT_b5g6r5:
+				func = fbCompositeSolidMask_nx8888x0565C;
 				break;
 			    }
 			}
@@ -898,18 +1030,34 @@ fbComposite (CARD8      op,
 	if (pMask == 0)
 	{
 	    switch (pSrc->format) {
+	    case PICT_a8r8g8b8:
+		switch (pDst->format) {
+		case PICT_a8r8g8b8:
+		    func = fbCompositeSrcAdd_8888x8888;
+		    break;
+		}
+		break;
+	    case PICT_a8b8g8r8:
+		switch (pDst->format) {
+		case PICT_a8b8g8r8:
+		    func = fbCompositeSrcAdd_8888x8888;
+		    break;
+		}
+		break;
 	    case PICT_a8:
 		switch (pDst->format) {
 		case PICT_a8:
 		    func = fbCompositeSrcAdd_8000x8000;
 		    break;
 		}
+		break;
 	    case PICT_a1:
 		switch (pDst->format) {
 		case PICT_a1:
 		    func = fbCompositeSrcAdd_1000x1000;
 		    break;
 		}
+		break;
 	    }
 	}
 	break;
