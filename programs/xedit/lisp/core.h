@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.9 2002/02/10 02:50:06 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.10 2002/02/12 16:07:54 paulo Exp $ */
 
 #ifndef Lisp_core_h
 #define Lisp_core_h
@@ -112,7 +112,9 @@ LispObj *Lisp_ReturnFrom(LispMac*, LispBuiltin*);	/* return-from */
 LispObj *Lisp_Reverse(LispMac*, LispBuiltin*);		/* reverse */
 LispObj *Lisp_Rplaca(LispMac*, LispBuiltin*);		/* rplaca */
 LispObj *Lisp_Rplacd(LispMac*, LispBuiltin*);		/* rplaca */
+#ifdef HAVE_SETENV
 LispObj *Lisp_Setenv(LispMac*, LispBuiltin*);		/* setenv */
+#endif
 LispObj *Lisp_Set(LispMac*, LispBuiltin*);		/* set */
 LispObj *Lisp_Setf(LispMac*, LispBuiltin*);		/* setf */
 LispObj *Lisp_SetQ(LispMac*, LispBuiltin*);		/* setq */
@@ -128,7 +130,9 @@ LispObj *Lisp_The(LispMac*, LispBuiltin*);		/* the */
 LispObj *Lisp_Typep(LispMac*, LispBuiltin*);		/* typep */
 LispObj *Lisp_Unless(LispMac*, LispBuiltin*);		/* unless */
 LispObj *Lisp_Until(LispMac*, LispBuiltin*);		/* unless */
+#ifdef HAVE_SETENV
 LispObj *Lisp_Unsetenv(LispMac*, LispBuiltin*);		/* unsetenv */
+#endif
 LispObj *Lisp_UnwindProtect(LispMac*, LispBuiltin*);	/* unwind-protect */
 LispObj *Lisp_Vector(LispMac*, LispBuiltin*);		/* vector */
 LispObj *Lisp_When(LispMac*, LispBuiltin*);		/* when */

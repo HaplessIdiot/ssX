@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.24 2002/02/15 07:20:25 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.25 2002/02/27 06:56:36 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -2643,6 +2643,7 @@ Lisp_Rplacd(LispMac *mac, LispBuiltin *builtin)
     return (place);
 }
 
+#ifdef HAVE_SETENV
 /*
  * XXX non standard function
  */
@@ -2675,6 +2676,7 @@ Lisp_Setenv(LispMac *mac, LispBuiltin *builtin)
 
     return (value ? STRING(value) : NIL);
 }
+#endif
 
 LispObj *
 Lisp_Set(LispMac *mac, LispBuiltin *builtin)
@@ -3417,6 +3419,7 @@ Lisp_While(LispMac *mac, LispBuiltin *builtin)
     return (NIL);
 }
 
+#ifdef HAVE_SETENV
 /*
  * XXX non standard function
  */
@@ -3441,6 +3444,7 @@ Lisp_Unsetenv(LispMac *mac, LispBuiltin *builtin)
 
     return (NIL);
 }
+#endif
 
 /* helper functions for setf
  *	DONT explicitly call these functions. Non standard functions

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.35 2002/02/15 07:20:25 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.36 2002/02/27 06:56:36 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -424,7 +424,9 @@ static LispBuiltin lispbuiltins[] = {
     {LispMacro, Lisp_Time, "time form"},
     {LispFunction, Lisp_Truename, "truename pathname"},
     {LispMacro, Lisp_Unless, "unless test &rest body"},
+#ifdef HAVE_SETENV
     {LispFunction, Lisp_Unsetenv, "unsetenv name"},
+#endif
     {LispFunction, Lisp_UserHomedirPathname, "user-homedir-pathname &optional host"},
     {LispMacro, Lisp_UnwindProtect, "unwind-protect protect &rest cleanup"},
     {LispFunction, Lisp_Vector, "vector &rest objects"},
@@ -450,7 +452,9 @@ static LispBuiltin extbuiltins[] = {
     {LispFunction, Lisp_PipeErrorStream, "pipe-error-stream pipe-stream"},
     {LispFunction, Lisp_PipeInputDescriptor, "pipe-input-descriptor pipe-stream"},
     {LispFunction, Lisp_PipeErrorDescriptor, "pipe-error-descriptor pipe-stream"},
+#ifdef HAVE_SETENV
     {LispFunction, Lisp_Setenv, "setenv name value &optional overwrite"},
+#endif
     {LispMacro, Lisp_Until, "until test &rest body"},
     {LispMacro, Lisp_While, "while test &rest body"},
 };

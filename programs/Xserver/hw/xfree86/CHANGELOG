@@ -1,4 +1,5 @@
 XFree86 4.2.99.1 (XX February 2002)
+  52. SunOS changes to xedit;s lisp interpreter (Marc La France).
   51. Support the Ti 3026 ramdac with 3DLabs Permedia found on some
       AccelStar boards (Alan Hourihane). 
   50. Move int10 softbooting furthur up in the glint driver to post
@@ -14664,4 +14665,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2182 2002/02/27 18:27:34 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2183 2002/02/27 18:40:55 alanh Exp $

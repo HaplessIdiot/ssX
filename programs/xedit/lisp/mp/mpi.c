@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/mp/mpi.c,v 1.3 2002/02/08 02:59:33 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/mp/mpi.c,v 1.4 2002/02/08 03:54:08 paulo Exp $ */
 
 #include "mp.h"
 
@@ -160,12 +160,10 @@ mpi_setd(mpi *rop, double d)
     int shift, exponent;
     BNI size;
 
-    if (!finite(d)) {
-	if (isnan(d))
-	    d = 0.0;
-	else
-	    d = isinf(d) < 0 ? -DBL_MAX : DBL_MAX;
-    }
+    if (isnan(d))
+	d = 0.0;
+    else if (!finite(d))
+	d = copysign(1.0, d) * DBL_MAX;
 
     /* check if number is larger than 1 */
     if (fabs(d) < 1.0) {
