@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.131 2004/03/20 15:44:04 herrb Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.132 2004/03/25 03:36:20 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -3404,11 +3404,9 @@ MutexDirective:	targets
 
 #ifndef LinkBuildModule
 #ifdef UseInstalled
-#define LinkBuildModule(module,subdir)					@@\
-	$(_NULLCMD_)
+#define LinkBuildModule(module,subdir) $(_NULLCMD_)
 #else
-#define LinkBuildModule(module,subdir)					@@\
-	MakeDir($(BUILDMODULEDIR)/subdir)				@@\
+#define LinkBuildModule(module,subdir) MakeDir($(BUILDMODULEDIR)/subdir) @@\
 	RemoveFile($(BUILDMODULEDIR)/subdir/module)			@@\
 	@(UP="`$(REVPATH) subdir`"; set -x; \				@@\
 	  cd $(BUILDMODULEDIR)/subdir && \				@@\
@@ -3420,8 +3418,7 @@ MutexDirective:	targets
 #ifdef UseInstalled
 #define LinkBuildNamedModule(module,name,subdir) $(_NULLCMD_)
 #else
-#define LinkBuildNamedModule(module,name,subdir)\
-	MakeDir($(BUILDMODULEDIR)/subdir)				@@\
+#define LinkBuildNamedModule(module,name,subdir) MakeDir($(BUILDMODULEDIR)/subdir) @@\
 	RemoveFile($(BUILDMODULEDIR)/subdir/name)			@@\
 	@(UP="`$(REVPATH) subdir`"; set -x; \				@@\
 	  cd $(BUILDMODULEDIR)/subdir && \				@@\
@@ -3443,11 +3440,11 @@ MutexDirective:	targets
 #if MakeDllModules && DoLoadableServer
 #define ObjectModuleTarget(module,objects,subdir)			@@\
 DynamicModuleTarget(Concat(module,_drv.so), objects)			@@\
-LinkBuildModule($@,subdir)
+	LinkBuildModule($@,subdir)
 #else
 #define ObjectModuleTarget(module,objects,subdir)			@@\
 NormalRelocatableTarget(Concat(module,_drv), objects)			@@\
-LinkBuildModule($@,subdir)
+	LinkBuildModule($@,subdir)
 #endif
 #endif
 
@@ -3458,11 +3455,11 @@ LinkBuildModule($@,subdir)
 #if MakeDllModules && DoLoadableServer
 #define PlainObjectModuleTarget(module,objects,subdir)			@@\
 DynamicModuleTarget(name.so, objects)					@@\
-LinkBuildModule($@,subdir)
+	LinkBuildModule($@,subdir)
 #else
 #define PlainObjectModuleTarget(module,objects,subdir)			@@\
 NormalRelocatableTarget(module,objects)					@@\
-LinkBuildModule($@,subdir)
+	LinkBuildModule($@,subdir)
 #endif
 #endif
 
@@ -3474,11 +3471,11 @@ LinkBuildModule($@,subdir)
 #define LibraryModuleTarget(module,objects,subdir)			@@\
 NormalLibraryTarget(module, objects)					@@\
 DynamicModuleTarget(Concat3(lib,module,.so), objects)			@@\
-LinkBuildModule($@,subdir)
+	LinkBuildModule($@,subdir)
 #else
 #define LibraryModuleTarget(module, objects,subdir)			@@\
 NormalLibraryTarget(module, objects)					@@\
-LinkBuildModule($@,subdir)
+	LinkBuildModule($@,subdir)
 #endif
 #endif
 
@@ -3490,11 +3487,11 @@ LinkBuildModule($@,subdir)
 #define DepLibraryModuleTarget(module,deplist,objects,subdir)		@@\
 NormalDepLibraryTarget(module, deplist, objects)			@@\
 DepDynamicModuleTarget(Concat3(lib,module,.so), deplist, objects)	@@\
-LinkBuildModule($@,subdir)
+	LinkBuildModule($@,subdir)
 #else
 #define DepLibraryModuleTarget(module,deplist,objects,subdir)		@@\
 NormalDepLibraryTarget(module, deplist, objects)			@@\
-LinkBuildModule($@,subdir)
+	LinkBuildModule($@,subdir)
 #endif
 #endif
 
