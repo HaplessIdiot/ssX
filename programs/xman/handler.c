@@ -1,5 +1,5 @@
 /* $XConsortium: handler.c,v 1.22 94/12/16 21:36:53 gildea Exp $ */
-/* $XFree86: contrib/programs/xman/handler.c,v 3.1 1996/10/24 03:59:15 dawes Exp $ */
+/* $XFree86: xc/programs/xman/handler.c,v 1.1 2000/02/12 03:55:16 dawes Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium
@@ -36,11 +36,12 @@ from the X Consortium.
  * Created:   October 29, 1987
  */
 
+#include <sys/stat.h>
 #include "globals.h"
 #include "vendor.h"
 
-static void PutUpManpage();
-static void ToggleBothShownState();
+static void PutUpManpage(ManpageGlobals * man_globals, FILE * file);
+static void ToggleBothShownState(ManpageGlobals * man_globals);
 
 /*	Function Name: OptionCallback
  *	Description: This is the callback function for the callback menu.
@@ -53,10 +54,7 @@ static void ToggleBothShownState();
 
 /*ARGSUSED*/
 void
-OptionCallback(w, pointer, junk)
-Widget w;
-XtPointer pointer;
-XtPointer junk;		/* unused */
+OptionCallback(Widget w, XtPointer pointer, XtPointer junk)
 {
   ManpageGlobals * man_globals = (ManpageGlobals *) pointer;
   String params;
@@ -98,8 +96,7 @@ XtPointer junk;		/* unused */
  */
 
 static void
-ToggleBothShownState(man_globals)
-ManpageGlobals * man_globals; 
+ToggleBothShownState(ManpageGlobals * man_globals)
 {
   char * label_str;
   Arg arglist[1];
@@ -156,9 +153,7 @@ ManpageGlobals * man_globals;
 #define OFF_OF_TOP 25
 
 void
-Popup(w, grab_kind)
-Widget w;
-XtGrabKind grab_kind;
+Popup(Widget w, XtGrabKind grab_kind)
 {
   int x_root,y_root,y_pos,garbage;
   unsigned int mask;
@@ -181,9 +176,7 @@ XtGrabKind grab_kind;
  */
 
 static void
-PutUpManpage(man_globals, file)
-ManpageGlobals * man_globals;
-FILE * file;
+PutUpManpage(ManpageGlobals * man_globals, FILE * file)
 {
   String params = "ManualPage";
   Cardinal num_params = 1;
@@ -213,9 +206,7 @@ FILE * file;
  */
 
 void
-DirectoryHandler(w, global_pointer, ret_val)
-Widget w;
-XtPointer global_pointer, ret_val;
+DirectoryHandler(Widget w, XtPointer global_pointer, XtPointer ret_val)
 {
   FILE * file;			/* The manpage file. */
   ManpageGlobals * man_globals = (ManpageGlobals *) global_pointer;
@@ -237,10 +228,7 @@ XtPointer global_pointer, ret_val;
 
 /*ARGSUSED*/
 void
-DirPopupCallback(w,pointer,junk)
-Widget w;
-XtPointer pointer;
-XtPointer junk;		/* unused */
+DirPopupCallback(Widget w, XtPointer pointer, XtPointer junk)
 {
   ManpageGlobals * man_globals; 
   MenuStruct * menu_struct;
@@ -295,11 +283,7 @@ XtPointer junk;		/* unused */
 
 /*ARGSUSED*/
 void
-SaveFormattedPage(w, event, params, num_params)
-Widget w;
-XEvent * event;
-String * params;
-Cardinal * num_params;
+SaveFormattedPage(Widget w, XEvent * event, String * params, Cardinal * num_params)
 {
   ManpageGlobals * man_globals;
   char cmdbuf[BUFSIZ], error_buf[BUFSIZ];
@@ -385,11 +369,7 @@ Cardinal * num_params;
 
 /*ARGSUSED*/
 void
-GotoPage(w, event, params, num_params)
-Widget w;
-XEvent * event;
-String * params;
-Cardinal * num_params;
+GotoPage(Widget w, XEvent * event, String * params, Cardinal * num_params)
 {
   ManpageGlobals * man_globals;
   char error_buf[BUFSIZ];
@@ -448,11 +428,7 @@ Cardinal * num_params;
 
 /*ARGSUSED*/
 void 
-Quit(w, event, params, num_params)
-Widget w;
-XEvent * event;
-String * params;
-Cardinal * num_params;
+Quit(Widget w, XEvent * event, String * params, Cardinal * num_params)
 {
   XCloseDisplay(XtDisplay(w));
   exit(0);
@@ -468,11 +444,7 @@ Cardinal * num_params;
 
 /*ARGSUSED*/
 void 
-PopupHelp(w, event, params, num_params)
-Widget w;
-XEvent * event;
-String * params;
-Cardinal * num_params;
+PopupHelp(Widget w, XEvent * event, String * params, Cardinal * num_params)
 {
   if (MakeHelpWidget())
     XtPopup(help_widget,XtGrabNone);
@@ -488,11 +460,7 @@ Cardinal * num_params;
 
 /*ARGSUSED*/
 void 
-PopupSearch(w, event, params, num_params)
-Widget w;
-XEvent * event;
-String * params;
-Cardinal * num_params;
+PopupSearch(Widget w, XEvent * event, String * params, Cardinal * num_params)
 {
   ManpageGlobals * man_globals = GetGlobals(w);
   if (!XtIsRealized(man_globals->search_widget)) {
@@ -512,11 +480,7 @@ Cardinal * num_params;
 
 /*ARGSUSED*/
 void 
-CreateNewManpage(w, event, params, num_params)
-Widget w;
-XEvent * event;
-String * params;
-Cardinal * num_params;
+CreateNewManpage(Widget w, XEvent * event, String * params, Cardinal * num_params)
 {
   (void) CreateManpage(NULL);
   man_pages_shown++;
@@ -532,11 +496,7 @@ Cardinal * num_params;
 
 /*ARGSUSED*/
 void 
-RemoveThisManpage(w, event, params, num_params)
-Widget w;
-XEvent * event;
-String * params;
-Cardinal * num_params;
+RemoveThisManpage(Widget w, XEvent * event, String * params, Cardinal * num_params)
 {
   ManpageGlobals * man_globals = GetGlobals(w);
   
@@ -565,11 +525,7 @@ Cardinal * num_params;
 
 /*ARGSUSED*/
 void 
-Search(w, event, params, num_params)
-Widget w;
-XEvent * event;
-String * params;
-Cardinal * num_params;
+Search(Widget w, XEvent * event, String * params, Cardinal * num_params)
 {
   ManpageGlobals * man_globals = GetGlobals(w);
   FILE * file;
@@ -641,11 +597,7 @@ Cardinal * num_params;
 
 /*ARGSUSED*/
 void 
-ShowVersion(w, event, params, num_params)
-Widget w;
-XEvent * event;
-String * params;
-Cardinal * num_params;
+ShowVersion(Widget w, XEvent * event, String * params, Cardinal * num_params)
 {
   ManpageGlobals * man_globals = GetGlobals(w);
   ChangeLabel(man_globals->label, XMAN_VERSION);

@@ -1,5 +1,5 @@
 /* $XConsortium: main.c,v 1.23 94/04/17 20:43:55 rws Exp $ */
-/* $XFree86: contrib/programs/xman/main.c,v 3.3 1999/09/04 09:10:27 dawes Exp $ */
+/* $XFree86: xc/programs/xman/main.c,v 1.1 2000/02/12 03:55:17 dawes Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium
@@ -45,8 +45,8 @@ from the X Consortium.
   static char version[] = XMAN_VERSION;  /* via strings. */
 #endif
 
-static void ArgError();
-static void AdjustDefResources();
+static void ArgError(int argc, char ** argv);
+static void AdjustDefResources(void);
 
 #define Offset(field) (XtOffsetOf(Xman_Resources , field))
 
@@ -142,9 +142,7 @@ Atom wm_delete_window;
  *	Returns: return, what return.
  */
 
-int main(argc,argv)
-char ** argv;
-int argc;
+int main(int argc, char ** argv)
 {
   XtAppContext app_con;
 
@@ -216,6 +214,8 @@ int argc;
   man_pages_shown = 1;		
 
   XtAppMainLoop(app_con);
+
+  exit(0);
 }
 
 /*	Function Name: ArgError
@@ -225,9 +225,7 @@ int argc;
  */
 
 static void 
-ArgError(argc, argv)
-char ** argv;
-int argc;
+ArgError(int argc, char ** argv)
 {
   int i;
 
@@ -277,7 +275,7 @@ int argc;
  */
 
 static void
-AdjustDefResources()
+AdjustDefResources(void)
 {
   char        *xwinhome = NULL;
   int i;

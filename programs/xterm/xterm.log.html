@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.47 2000/02/17 14:16:35 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.48 2000/02/29 03:09:35 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_130">Patch #130 - 2000/3/1 - XFree86 3.9.18a</A>
 <LI><A HREF="#xterm_129">Patch #129 - 2000/2/26 - XFree86 3.9.18a</A>
 <LI><A HREF="#xterm_128">Patch #128 - 2000/2/17 - XFree86 3.9.18</A>
 <LI><A HREF="#xterm_127">Patch #127 - 2000/2/12 - XFree86 3.9.17e</A>
@@ -172,6 +173,35 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_130">Patch #130 - 2000/3/1 - XFree86 3.9.18a</A></H1>
+<ul>
+	<li>modify <code>scroll-forw()</code> and <code>scroll-back()</code> 
+	  actions, adding a third parameter which will direct xterm to ignore
+	  the action when mouse reporting is enabled.  This is needed for
+	  the wheel mouse to be used to report to the application rather than
+	  scroll the window.
+
+	<li>add menu entry and action to allow disabling xterm's assumption
+	  that the current font contains line-drawing characters if the
+	  font cells 1-31 are nonempty.  Some fonts may have other characters
+	  (reported by Bruno Betro &lt;bruno@iami.mi.cnr.it&gt;).
+
+	<li>add a check in <code>creat_as()</code> to ensure that the user
+	  really owns the logfile that has been opened.
+
+	<li>add logic to implement SCO function-keys.  (This is really
+	  incomplete, since I intend to revisit this and make xterm able to
+	  emulate scoansi better than just the function-keys).
+
+	<li>add configure script option --enable-sco-fkeys, minor related fixes
+	  (patch by Dr Werner Fink).
+
+	<li>fix typos in ctlseqs.ms (reported by Bram Moolenaar)
+
+	<li>fix typo in sinstall.sh default for $TST_PROG (reported by
+	  Paul Gilmartin &lt;pg@sweng.stortek.com&gt;)
+</ul>
 
 <H1><A NAME="xterm_129">Patch #129 - 2000/2/26 - XFree86 3.9.18a</A></H1>
 <ul>

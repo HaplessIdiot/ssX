@@ -1,5 +1,5 @@
 /* $XConsortium: man.c,v 1.30 94/04/17 20:43:56 rws Exp $ */
-/* $XFree86: contrib/programs/xman/man.c,v 3.3 1999/08/30 13:07:06 dawes Exp $ */
+/* $XFree86: xc/programs/xman/man.c,v 1.1 2000/02/12 03:55:17 dawes Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium
@@ -55,16 +55,27 @@ from the X Consortium.
 static char error_buf[BUFSIZ];		/* The buffer for error messages. */
 #endif /* DEBUG */
 
-static void SortList(), ReadMandescFile(), SortAndRemove(), InitManual();
-static void AddToCurrentSection();
-static void ReadCurrentSection();
-
-#ifdef MANCONF
-Bool ReadManConfig();
-#endif
+static void AddToCurrentSection(Manual * local_manual, char * path);
+static void InitManual(Manual * l_manual, char * label);
+static void ReadCurrentSection(Manual * local_manual, char * path);
+static void ReadMandescFile(SectionList ** section_list, char * path);
+static void SortAndRemove(Manual *man, int number);
+static void SortList(SectionList ** list);
 
 #define SECT_ERROR -1
 
+#ifndef       Byte
+#define       Byte    unsigned char
+#endif
+ 
+#ifndef       reg
+#define       reg     register
+#endif
+ 
+static void sortstrs (Byte *data[], int size, Byte *otherdata[]);
+static void sortstrs_block (Byte **, Byte **, int, Byte, Byte **, Byte **);
+static void sortstrs_block_oo (Byte **, Byte **, int, Byte, int *, int *, Byte **, Byte **);
+ 
 /*	Function Name: Man
  *	Description: Builds a list of all manual directories and files.
  *	Arguments: none. 
@@ -72,11 +83,11 @@ Bool ReadManConfig();
  */
 
 int
-Man()
+Man(void)
 {
   SectionList *list = NULL;
-  char *ptr, *lang, manpath[BUFSIZ], buf[BUFSIZ], *path, *current_label;
-  int sect, num_alloced, uselang = False;
+  char *ptr, *lang = 0, manpath[BUFSIZ], buf[BUFSIZ], *path, *current_label;
+  int sect, num_alloced;
 
 /* 
  * Get the environment variable MANPATH, and if it doesn't exist then use
@@ -85,7 +96,7 @@ Man()
 
   ptr = getenv("MANPATH");
   if (ptr == NULL || streq(ptr , "") ) {
-    uselang = (lang = getenv("LANG")) != NULL;
+    lang = getenv("LANG");
 #ifdef MANCONF
     if (!ReadManConfig(manpath))
 #endif
@@ -107,7 +118,7 @@ Man()
 
   for ( path = manpath ; (ptr = index(path , ':')) != NULL ; path = ++ptr) { 
     *ptr = '\0';
-    if (uselang) {
+    if (lang != 0) {
       strcpy(buf, path);
       strcat(buf, "/");
       strncat(buf, lang, sizeof(buf) - strlen(path) + 1);
@@ -116,7 +127,7 @@ Man()
     }
     ReadMandescFile(&list, path);
   }
-  if (uselang) {
+  if (lang != 0) {
     strcpy(buf, path);
     strcat(buf, "/");
     strncat(buf, lang, sizeof(buf) - strlen(path) + 1);
@@ -195,8 +206,7 @@ Man()
  */
 
 static void
-SortList(list)
-SectionList ** list;
+SortList(SectionList ** list)
 {
   SectionList * local;
   SectionList *head, *last, *inner, *old;
@@ -218,12 +228,14 @@ SectionList ** list;
       head = local;
 
       /* Find end of standard block */
-      for ( ; (local->next != NULL) && (local->flags) 
+      for (old = 0 ; (local->next != NULL) && (local->flags) 
 	   ; old = local, local = local->next); 
 
-      last->next = old->next; /* Move the block. */
-      old->next = *list;
-      *list = head;
+      if (old != 0) {
+          last->next = old->next; /* Move the block. */
+          old->next = *list;
+          *list = head;
+      }
 
       break;			/* First step accomplished. */
     }
@@ -262,9 +274,7 @@ SectionList ** list;
  */
   
 static void
-ReadMandescFile( section_list, path )
-SectionList ** section_list;
-char * path;
+ReadMandescFile(SectionList ** section_list, char * path)
 {
   char mandesc_file[BUFSIZ];	/* full path to the mandesc file. */
   FILE * descfile;
@@ -327,10 +337,10 @@ char * path;
  */
 
 void
-AddNewSection(list, path, file, label, flags)
-SectionList **list;
-char * path, * label, * file;
-int flags;
+AddNewSection(
+SectionList **list,
+char * path, char * file, char * label, 
+int flags)
 {
   SectionList * local_list, * end;
   char full_path[BUFSIZ];
@@ -362,9 +372,7 @@ int flags;
  */
 
 static void
-AddToCurrentSection(local_manual, path)
-Manual * local_manual;
-char * path;
+AddToCurrentSection(Manual * local_manual, char * path)
 {
   char temp_path[BUFSIZ];
 
@@ -387,9 +395,7 @@ char * path;
  */
 
 static void
-ReadCurrentSection(local_manual, path)
-Manual * local_manual;
-char * path;
+ReadCurrentSection(Manual * local_manual, char * path)
 {
   DIR * dir;
 
@@ -482,15 +488,13 @@ char * path;
  */
 
 static void
-SortAndRemove(man, number)
-Manual *man;
-int number;
+SortAndRemove(Manual *man, int number)
 {
-  int i,j;
+  int i;
   char *l1, *l2, **s1;
   
   for ( i = 0; i < number; man++, i++) { /* sort each section */
-    register int j = 0;      
+    register int i2 = 0;      
     
 #ifdef DEBUG
     printf("sorting section %d - %s\n", i, man->blabel);
@@ -500,15 +504,15 @@ int number;
     
     /* temporarily remove suffixes of entries, preventing them from */
     /* being used in alpabetic comparison ie sccs-delta.1 vs sccs.1 */
-    for (j=0; j<man->nentries; j++)
-      if ((s1[j] = rindex(man->entries_less_paths[j], '.')) != NULL)
-	*s1[j] = '\0';  
+    for (i2=0; i2<man->nentries; i2++)
+      if ((s1[i2] = rindex(man->entries_less_paths[i2], '.')) != NULL)
+	*s1[i2] = '\0';  
 
-    sortstrs ( man->entries_less_paths, man->nentries, man->entries );
+    sortstrs ( (Byte **)man->entries_less_paths, man->nentries, (Byte **)man->entries );
 
     /* put back suffixes */
-    for (j=0; j<man->nentries; j++) 
-      if (s1[j] != NULL) *s1[j] = '.';      
+    for (i2=0; i2<man->nentries; i2++) 
+      if (s1[i2] != NULL) *s1[i2] = '.';      
 
     free(s1); 
     
@@ -569,23 +573,9 @@ int number;
        isn't preserved.
  */
  
-#ifndef       Byte
-#define       Byte    unsigned char
-#endif
- 
-#ifndef       reg
-#define       reg     register
-#endif
- 
- 
- 
- sortstrs ( data, size, otherdata )    /*  Sort an array of string ptrs  */
- 
-       Byte    *data[];
-       int      size;
-       Byte    *otherdata[];
- 
- {
+static void 
+sortstrs (Byte *data[], int size, Byte *otherdata[])
+{
        Byte   **sp, **ep;
        Byte   **othersp, **otherep;
        int     *origorder;
@@ -611,24 +601,24 @@ int number;
     }
  else
     sortstrs_block ( sp, ep, 0, 0x80, othersp, otherep );
- }
+}
  
- 
+
  
  /*---------------------------------*/
  /*  Sort 1 block of data on 1 bit  */
  /*---------------------------------*/
  
- sortstrs_block ( start, end, offset, mask, otherstart, otherend )
+static void
+sortstrs_block (  
+       Byte   **start,
+       Byte   **end,
+       int      offset,
+       Byte     mask,
+       Byte   **otherstart,
+       Byte   **otherend)
  
-       Byte   **start;
-       Byte   **end;
-       int      offset;
-       Byte     mask;
-       Byte   **otherstart;
-       Byte   **otherend;
- 
- {
+{
  reg   Byte   **sp, **ep;
  reg   Byte     m;
  reg   int      off;
@@ -718,27 +708,26 @@ int number;
     sortstrs_block ( start, sp, off, m, otherstart, othersp );
  if ( ep != end )
     sortstrs_block ( ep, end, off, m, otherep, otherend );
- }
+}
  
- 
+
  
  /*-----------------------------------------------------------------*/
  /*  Sort 1 block of data on 1 bit; check for out-of-order entries  */
  /*-----------------------------------------------------------------*/
  
- sortstrs_block_oo ( start, end, offset, mask, ostart, oend,
-                        otherstart, otherend )
+static void
+ sortstrs_block_oo (
+       Byte   **start,
+       Byte   **end,
+       int      offset,
+       Byte     mask,
+       int     *ostart,
+       int     *oend,
+       Byte   **otherstart,
+       Byte   **otherend)
  
-       Byte   **start;
-       Byte   **end;
-       int      offset;
-       Byte     mask;
-       int     *ostart;
-       int     *oend;
-       Byte   **otherstart;
-       Byte   **otherend;
- 
- {
+{
  reg   Byte   **sp, **ep;
  reg   int     *osp, *oep;
  reg   Byte     m;
@@ -916,7 +905,7 @@ riginal order  */
     sortstrs_block_oo ( start, sp, off, m, ostart, osp, otherstart, othersp );
  if ( ep != end )
     sortstrs_block_oo ( ep, end, off, m, oep, oend, otherep, otherend );
- }
+}
 
 
 /*	Function Name: InitManual
@@ -927,9 +916,7 @@ riginal order  */
  */
 
 static void
-InitManual(l_manual, label)
-Manual * l_manual;
-char * label;
+InitManual(Manual * l_manual, char * label)
 {
   bzero( l_manual, sizeof(Manual) );	        /* clear it. */
   l_manual->blabel = label;	                /* set label. */
@@ -944,7 +931,8 @@ char * label;
  *	Returns: none.
  */
 
-DumpManual(number)
+void
+DumpManual(int number)
 {
   register int i,j;
   
@@ -969,12 +957,8 @@ DumpManual(number)
  *    Returns: TRUE if read was successful.
  */
 
-
 Bool
-ReadManConfig(manpath)
-
-char  manpath[];
-
+ReadManConfig(char  manpath[])
 {
   FILE        *fp;
   char        line[BUFSIZ];
@@ -1012,12 +996,8 @@ char  manpath[];
  *    Returns: TRUE if read was successful.
  */
 
-
 Bool
-ReadManConfig(manpath)
-
-char  manpath[];
-
+ReadManConfig(char  manpath[])
 {
   FILE        *fp;
   char        line[BUFSIZ];
@@ -1031,7 +1011,7 @@ char  manpath[];
     path = strtok(line, " \t\n");
     if (!path || *path == '#' || strcmp(path, "_default"))
       continue;
-    while (path = strtok((char *)NULL, " \t\n")) {
+    while ((path = strtok((char *)NULL, " \t\n"))) {
       if (firstpath) {
         strcpy(manpath, path);
         firstpath = FALSE;
@@ -1061,10 +1041,7 @@ char  manpath[];
 #include <glob.h>
 
 Bool
-ReadManConfig(manpath)
-
-char  manpath[];
-
+ReadManConfig(char  manpath[])
 {
     FILE        *fp;
     char        line[BUFSIZ];

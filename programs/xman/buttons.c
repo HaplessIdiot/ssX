@@ -36,6 +36,7 @@ from the X Consortium.
  */
 
 #include "globals.h"
+#include "vendor.h"
 
 /* The files with the icon bits in them. */
 
@@ -43,10 +44,10 @@ from the X Consortium.
 #include "icon_help.h"
 #include "iconclosed.h"
 
-static void CreateOptionMenu(), CreateSectionMenu();
-static void StartManpage();
-static Widget * ConvertNamesToWidgets();
-ManpageGlobals * InitPsuedoGlobals();
+static void CreateOptionMenu(ManpageGlobals * man_globals, Widget parent);
+static void CreateSectionMenu(ManpageGlobals * man_globals, Widget parent);
+static void StartManpage(ManpageGlobals * man_globals, Boolean help, Boolean page);
+static Widget * ConvertNamesToWidgets(Widget parent, char ** names);
 
 /*	Function Name: MakeTopBox
  *	Description: This funtion creates the top menu, in a shell widget.
@@ -61,7 +62,7 @@ extern Atom wm_delete_window;	/* in main.c */
 Widget top;			/* needed in PopupWarning, misc.c */
 
 void
-MakeTopBox()
+MakeTopBox(void)
 {
   Widget form, command, label; /* widgets. */
   Arg arglist[TOPARGS];		/* An argument list */
@@ -150,8 +151,7 @@ MakeTopBox()
  */
 
 Widget
-CreateManpage( file )
-FILE * file;
+CreateManpage(FILE * file)
 {
   ManpageGlobals * man_globals;	/* The psuedo global structure. */
 
@@ -174,7 +174,7 @@ FILE * file;
  */
 
 ManpageGlobals * 
-InitPsuedoGlobals()
+InitPsuedoGlobals(void)
 {
   ManpageGlobals * man_globals;
 
@@ -210,14 +210,14 @@ InitPsuedoGlobals()
 #define MANPAGEARGS 10
 
 void
-CreateManpageWidget(man_globals, name, full_instance)
-ManpageGlobals * man_globals;
-char * name;
-Boolean full_instance;
+CreateManpageWidget(
+ManpageGlobals * man_globals,
+char * name,
+Boolean full_instance)
 {
   Arg arglist[MANPAGEARGS];	/* An argument list for widget creation */
   Cardinal num_args;		/* The number of arguments in the list. */
-  Widget top, pane, hpane, sections;	/* Widgets */
+  Widget mytop, pane, hpane, mysections;	/* Widgets */
   ManPageWidgets * mpw = &(man_globals->manpagewidgets);
 
   num_args = (Cardinal) 0;
@@ -226,25 +226,25 @@ Boolean full_instance;
   XtSetArg(arglist[num_args], XtNheight, default_height);
   num_args++; 
 
-  top = XtCreatePopupShell(name, topLevelShellWidgetClass, initial_widget,
+  mytop = XtCreatePopupShell(name, topLevelShellWidgetClass, initial_widget,
 			   arglist, num_args);
 
-  man_globals->This_Manpage = top; /* pointer to root widget of Manualpage. */
+  man_globals->This_Manpage = mytop; /* pointer to root widget of Manualpage. */
   num_args = 0;
   if (full_instance)
     XtSetArg(arglist[num_args], XtNiconPixmap,
-	     XCreateBitmapFromData( XtDisplay(top), XtScreen(top)->root,
+	     XCreateBitmapFromData( XtDisplay(mytop), XtScreen(mytop)->root,
 				   (char *)icon_open_bits, icon_open_width,
 				   icon_open_height));
   else 
     XtSetArg(arglist[num_args], XtNiconPixmap,
-	     XCreateBitmapFromData( XtDisplay(top), XtScreen(top)->root,
+	     XCreateBitmapFromData( XtDisplay(mytop), XtScreen(mytop)->root,
 				   (char *)icon_help_bits, icon_help_width,
 				   icon_help_height));
   num_args++;
-  XtSetValues(top, arglist, num_args);
+  XtSetValues(mytop, arglist, num_args);
 
-  pane = XtCreateManagedWidget("vertPane", panedWidgetClass, top, NULL, 
+  pane = XtCreateManagedWidget("vertPane", panedWidgetClass, mytop, NULL, 
 			       (Cardinal) 0);
 
 /* Create menu bar. */
@@ -256,22 +256,22 @@ Boolean full_instance;
   (void) XtCreateManagedWidget("options", menuButtonWidgetClass,
 				  hpane, arglist, num_args);
 
-  CreateOptionMenu(man_globals, top);
+  CreateOptionMenu(man_globals, mytop);
 
   num_args = 0;
   XtSetArg(arglist[num_args], XtNmenuName, SECTION_MENU); num_args++;
-  sections = XtCreateManagedWidget("sections", menuButtonWidgetClass,
+  mysections = XtCreateManagedWidget("sections", menuButtonWidgetClass,
 				   hpane, arglist, num_args);
 
   XtSetArg(arglist[0], XtNlabel, SHOW_BOTH);
   XtSetValues(man_globals->both_screens_entry, arglist, (Cardinal) 1);
 
   if (full_instance) {
-    MakeSearchWidget(man_globals, top);
-    CreateSectionMenu(man_globals, top);
-    MakeSaveWidgets(man_globals, top);
+    MakeSearchWidget(man_globals, mytop);
+    CreateSectionMenu(man_globals, mytop);
+    MakeSaveWidgets(man_globals, mytop);
   } else {
-    XtSetSensitive(sections, FALSE);       
+    XtSetSensitive(mysections, FALSE);       
     XtSetArg(arglist[0], XtNsensitive, FALSE);
     XtSetValues(man_globals->dir_entry, arglist, ONE);
     XtSetValues(man_globals->manpage_entry, arglist, ONE);
@@ -316,9 +316,7 @@ Boolean full_instance;
  */
 
 static void
-StartManpage(man_globals, help, page)
-ManpageGlobals * man_globals;
-Boolean help, page;
+StartManpage(ManpageGlobals * man_globals, Boolean help, Boolean page)
 {
   Widget dir = man_globals->manpagewidgets.directory;
   Widget manpage = man_globals->manpagewidgets.manpage;
@@ -409,9 +407,7 @@ Boolean help, page;
 
 /* ARGSUSED */
 static void
-MenuDestroy(w, free_me, junk)
-Widget w;
-XtPointer free_me, junk;
+MenuDestroy(Widget w, XtPointer free_me, XtPointer junk)
 {
   XtFree( (char *) free_me);
 }
@@ -424,9 +420,7 @@ XtPointer free_me, junk;
  */
 
 static void
-CreateOptionMenu(man_globals, parent)
-ManpageGlobals * man_globals;
-Widget parent;
+CreateOptionMenu(ManpageGlobals * man_globals, Widget parent)
 {
   Widget menu, entry;
   int i;
@@ -492,9 +486,7 @@ Widget parent;
  */
 
 static void
-CreateSectionMenu(man_globals, parent)
-ManpageGlobals * man_globals;
-Widget parent;
+CreateSectionMenu(ManpageGlobals * man_globals, Widget parent)
 {
   Widget menu, entry;
   int i;
@@ -529,7 +521,7 @@ Widget parent;
  */
 
 static char **
-CreateList(section)
+CreateList(int section)
 {
   char ** ret_list, **current;
   int count;
@@ -556,10 +548,7 @@ CreateList(section)
  */
 
 void
-MakeDirectoryBox(man_globals,parent,dir_disp,section)
-ManpageGlobals *man_globals;
-Widget parent, *dir_disp;
-int section;
+MakeDirectoryBox(ManpageGlobals *man_globals, Widget parent, Widget *dir_disp, int section)
 {
   Arg arglist[10];
   Cardinal num_args;
@@ -594,9 +583,7 @@ int section;
  */
 
 void
-MakeSaveWidgets(man_globals, parent)
-ManpageGlobals *man_globals;
-Widget parent;
+MakeSaveWidgets(ManpageGlobals *man_globals, Widget parent)
 {
   Widget shell, dialog; /* misc. widgets. */
   Arg warg[1];
@@ -639,9 +626,7 @@ Widget parent;
  */
 
 void
-FormUpWidgets(parent, full_size, half_size)
-Widget parent;
-char ** full_size, ** half_size;
+FormUpWidgets(Widget parent, char ** full_size, char ** half_size)
 {
   Widget * full_widgets, * half_widgets, *temp, long_widget;
   Dimension longest, length, b_width;
@@ -723,9 +708,7 @@ char ** full_size, ** half_size;
  */
 
 static Widget *
-ConvertNamesToWidgets(parent, names)
-Widget parent;
-char ** names;
+ConvertNamesToWidgets(Widget parent, char ** names)
 {
   char ** temp;
   Widget * ids, * temp_ids;
@@ -751,4 +734,3 @@ char ** names;
   *temp_ids = (Widget) NULL;
   return(ids);
 }
-    

@@ -1,5 +1,5 @@
 /* $XConsortium: vendor.h,v 1.12 94/04/17 20:44:00 rws Exp $ */
-/* $XFree86: xc/programs/xman/vendor.h,v 1.1 2000/02/12 03:55:19 dawes Exp $ */
+/* $XFree86: xc/programs/xman/vendor.h,v 1.2 2000/02/18 12:20:19 tsi Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium
@@ -197,12 +197,13 @@ from the X Consortium.
 #  define CAT "cat"
 #endif
 
-extern void AddStandardSections();
-extern void AddNewSection();
-
 typedef struct _SectionList {
   struct _SectionList * next;
   char * label;			/* section label */
   char * directory;		/* section directory */
   int flags;
 } SectionList;
+
+extern char * CreateManpageName(char * entry, int section, int flags);
+extern void AddStandardSections(SectionList **list, char * path);
+extern void AddNewSection(SectionList **list, char * path, char * file, char * label, int flags);

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.15 1999/12/13 23:38:15 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.16 1999/12/30 03:29:22 robin Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
@@ -49,7 +49,7 @@
  *
  */
 
-static const char identification[] = "$Identification: 16 $";
+static const char identification[] = "$Identification: 18 $";
 
 #include <xf86Version.h>
 
@@ -235,6 +235,7 @@ typedef struct
 } WacomDeviceState;
 
 #define PEN(ds)         (((ds->device_id) & 0x07ff) == 0x0022)
+#define STROKING_PEN(ds) (((ds->device_id) & 0x07ff) == 0x0032)
 #define AIRBRUSH(ds)    (((ds->device_id) & 0x07ff) == 0x0112)
 #define MOUSE_4D(ds)    (((ds->device_id) & 0x07ff) == 0x0094)
 #define LENS_CURSOR(ds) (((ds->device_id) & 0x07ff) == 0x0096)
@@ -316,6 +317,12 @@ typedef struct _WacomCommonRec
 #define	SERIAL		14
 #define	BAUD_RATE	15
 #define	THRESHOLD	16
+#define MAX_X		17
+#define MAX_Y		18
+#define MAX_Z		19
+#define RESOLUTION_X	20
+#define RESOLUTION_Y	21
+#define RESOLUTION_Z	22
 
 #if !defined(sun) || defined(i386)
 static SymTabRec WcmTab[] = {
@@ -336,6 +343,12 @@ static SymTabRec WcmTab[] = {
   { SERIAL,		"serial" },
   { BAUD_RATE,		"baudrate" },
   { THRESHOLD,		"threshold" },
+  { MAX_X,		"maxx" },
+  { MAX_Y,		"maxy" },
+  { MAX_Z,		"maxz" },
+  { RESOLUTION_X,	"resolutionx" },
+  { RESOLUTION_Y,	"resolutiony" },
+  { RESOLUTION_Z,	"resolutionz" },
   { -1,			"" }
 };
 
@@ -730,6 +743,54 @@ xf86WcmConfig(LocalDevicePtr    *array,
 		       XCONFIG_GIVEN, common->wcmThreshold);
 	    break;
 
+	case MAX_X:
+	    if (xf86GetToken(NULL) != NUMBER)
+		xf86ConfigError("Option number expected");
+	    common->wcmMaxX = val->num;
+	    if (xf86Verbose)
+		ErrorF("%s Wacom max x = %d\n", XCONFIG_GIVEN, common->wcmMaxX);
+	    break;
+
+	case MAX_Y:
+	    if (xf86GetToken(NULL) != NUMBER)
+		xf86ConfigError("Option number expected");
+	    common->wcmMaxY = val->num;
+	    if (xf86Verbose)
+		ErrorF("%s Wacom max y = %d\n", XCONFIG_GIVEN, common->wcmMaxY);
+	    break;
+
+	case MAX_Z:
+	    if (xf86GetToken(NULL) != NUMBER)
+		xf86ConfigError("Option number expected");
+	    common->wcmMaxZ = val->num;
+	    if (xf86Verbose)
+		ErrorF("%s Wacom max y = %d\n", XCONFIG_GIVEN, common->wcmMaxZ);
+	    break;
+
+	case RESOLUTION_X:
+	    if (xf86GetToken(NULL) != NUMBER)
+		xf86ConfigError("Option number expected");
+	    common->wcmResolX = val->num;
+	    if (xf86Verbose)
+		ErrorF("%s Wacom resolution x = %d\n", XCONFIG_GIVEN, common->wcmResolX);
+	    break;
+
+	case RESOLUTION_Y:
+	    if (xf86GetToken(NULL) != NUMBER)
+		xf86ConfigError("Option number expected");
+	    common->wcmResolY = val->num;
+	    if (xf86Verbose)
+		ErrorF("%s Wacom resolution y = %d\n", XCONFIG_GIVEN, common->wcmResolY);
+	    break;
+
+	case RESOLUTION_Z:
+	    if (xf86GetToken(NULL) != NUMBER)
+		xf86ConfigError("Option number expected");
+	    common->wcmResolZ = val->num;
+	    if (xf86Verbose)
+		ErrorF("%s Wacom resolution y = %d\n", XCONFIG_GIVEN, common->wcmResolZ);
+	    break;
+
 	case EOF:
 	    FatalError("Unexpected EOF (missing EndSubSection)");
 	    break;
@@ -893,7 +954,6 @@ static int
 flush_input_fd(int	fd)
 {
     int			err;
-    int			n_bytes;
     fd_set		readfds;
     struct timeval	timeout;
     char		dummy[1];
@@ -1848,7 +1908,7 @@ xf86WcmReadInput(LocalDevicePtr         local)
 		if ((ds->device_id & 0xf06) != 0x802)
 		  ds->discard_first = 1;
 
-		if (PEN(ds) || INKING_PEN(ds) || AIRBRUSH(ds))
+		if (PEN(ds) || STROKING_PEN(ds) || INKING_PEN(ds) || AIRBRUSH(ds))
 		    ds->device_type = STYLUS_ID;
 		else if (MOUSE_4D(ds) || LENS_CURSOR(ds))
 		    ds->device_type = CURSOR_ID;
@@ -2027,7 +2087,6 @@ static Bool
 xf86WcmOpen(LocalDevicePtr	local)
 {
 #ifndef XFREE86_V4
-    struct termios	termios_tty;
     struct timeval	timeout;
 #endif
     char		buffer[256];
@@ -2185,30 +2244,39 @@ xf86WcmOpen(LocalDevicePtr	local)
 	common->wcmResolY = 1000;
 	is_a_penpartner = 1;
     }
-    else if (common->wcmProtocolLevel == 4) {
+    else if (common->wcmProtocolLevel == 4 && !(common->wcmResolX && common->wcmResolY)) {
 	DBG(2, ErrorF("reading config\n"));
-	if (!send_request(local->fd, WC_CONFIG, buffer))
-	    return !Success;
-	DBG(2, ErrorF("%s\n", buffer));
-	/* The header string is simply a place to put the unwanted
-	 * config header don't use buffer+xx because the header size
-	 * varies on different tablets
-	 */
-	if (sscanf(buffer, "%[^,],%d,%d,%d,%d", &header, &a, &b, &common->wcmResolX, &common->wcmResolY) == 5) {
-	    DBG(6, ErrorF("WC_CONFIG Header = %s\n", header));
+	if (send_request(local->fd, WC_CONFIG, buffer)) {
+	    DBG(2, ErrorF("%s\n", buffer));
+	    /* The header string is simply a place to put the unwanted
+	     * config header don't use buffer+xx because the header size
+	     * varies on different tablets
+	     */
+	    if (sscanf(buffer, "%[^,],%d,%d,%d,%d", &header, &a, &b, &common->wcmResolX, &common->wcmResolY) == 5) {
+		DBG(6, ErrorF("WC_CONFIG Header = %s\n", header));
+	    }
+	    else {
+		ErrorF("WACOM: unable to parse resolution. Using default.\n");
+		common->wcmResolX = common->wcmResolY = 1270;
+	    }
 	}
 	else {
 	    ErrorF("WACOM: unable to read resolution. Using default.\n");
+	    common->wcmResolX = common->wcmResolY = 1270;
 	}
+	
     }
 
-    if (!(common->wcmFlags & GRAPHIRE_FLAG)) {
+    if (!(common->wcmFlags & GRAPHIRE_FLAG) && !(common->wcmMaxX && common->wcmMaxY)) {
 	DBG(2, ErrorF("reading max coordinates\n"));
-	if (!send_request(local->fd, WC_COORD, buffer))
+	if (!send_request(local->fd, WC_COORD, buffer)) {
+	    ErrorF("WACOM: unable to read max coordinates. Use the MaxX and MaxY options.\n");
 	    return !Success;
+	}
 	DBG(2, ErrorF("%s\n", buffer));
 	if (sscanf(buffer+2, "%d,%d", &common->wcmMaxX, &common->wcmMaxY) != 2) {
-	    ErrorF("WACOM: unable to read max coordinates. Using default.\n");
+	    ErrorF("WACOM: unable to parse max coordinates. Use the MaxX and MaxY options.\n");
+	    return !Success;
 	}
     }
     
@@ -2218,31 +2286,36 @@ xf86WcmOpen(LocalDevicePtr	local)
 
     /* We can't change the resolution on PenPartner and Graphire models */
     if (!is_a_penpartner && common->wcmProtocolLevel == 4) {
+	int resolX = common->wcmResolX, resolY = common->wcmResolY;
+	
 	/* Force the resolution.
 	 */
         if (((float)version) >= 1.2) {
-	    common->wcmResolY = common->wcmResolX = 2540;
+	    resolX = resolY = 2540;
 	}
-	sprintf(buffer, "%s%d\r", WC_NEW_RESOLUTION, common->wcmResolX);
+	sprintf(buffer, "%s%d\r", WC_NEW_RESOLUTION, resolX);
 	SYSCALL(err = write(local->fd, buffer, strlen(buffer)));
 	
 	/* Verify the resolution change.
 	 */
 	DBG(2, ErrorF("rereading config\n"));
-	if (!send_request(local->fd, WC_CONFIG, buffer))
-	    return !Success;
-	DBG(2, ErrorF("%s\n", buffer));
-	/* The header string is simply a place to put the unwanted
-	 * config header don't use buffer+xx because the header size
-	 * varies on different tablets
-	 */
-	if (sscanf(buffer, "%[^,],%d,%d,%d,%d", &header, &a, &b, &common->wcmResolX, &common->wcmResolY) == 5) {
-	    DBG(6, ErrorF("WC_CONFIG Header = %s\n", header));
+	if (send_request(local->fd, WC_CONFIG, buffer)) {
+	    DBG(2, ErrorF("%s\n", buffer));
+	    /* The header string is simply a place to put the unwanted
+	     * config header don't use buffer+xx because the header size
+	     * varies on different tablets
+	     */
+	    if (sscanf(buffer, "%[^,],%d,%d,%d,%d", &header, &a, &b, &common->wcmResolX, &common->wcmResolY) == 5) {
+		DBG(6, ErrorF("WC_CONFIG Header = %s\n", header));
+	    }
+	    else {
+		ErrorF("WACOM: unable to reparse resolution. Using previous values.\n");
+	    }
 	}
 	else {
-	    ErrorF("WACOM: unable to reread resolution. Using default.\n");
+	    ErrorF("WACOM: unable to reread resolution. Using previous values.\n");
 	}
-
+	
 	/* The following couple of lines convert the MaxX and MaxY returned by
 	 * the Wacom from 1270lpi to the Wacom's active resolution.
 	 */
@@ -2852,11 +2925,11 @@ xf86WcmAllocate(char *  name,
     common->wcmNumDevices = 1;		/* number of devices */
     common->wcmIndex = 0;		/* number of bytes read */
     common->wcmPktLength = 7;		/* length of a packet */
-    common->wcmMaxX = 22860;		/* max X value */
-    common->wcmMaxY = 15240;		/* max Y value */
+    common->wcmMaxX = 0;		/* max X value */
+    common->wcmMaxY = 0;		/* max Y value */
     common->wcmMaxZ = 240;		/* max Z value */
-    common->wcmResolX = 1270;		/* X resolution in points/inch */
-    common->wcmResolY = 1270;		/* Y resolution in points/inch */
+    common->wcmResolX = 0;		/* X resolution in points/inch */
+    common->wcmResolY = 0;		/* Y resolution in points/inch */
     common->wcmResolZ = 1270;		/* Z resolution in points/inch */
     common->wcmHasEraser = (flag & ERASER_ID) ? TRUE : FALSE;	/* True if an eraser has been configured */
     common->wcmStylusSide = TRUE;	/* eraser or stylus ? */
@@ -3169,6 +3242,36 @@ xf86WcmInit(InputDriverPtr	drv,
     if (common->wcmThreshold != INVALID_THRESHOLD) {
 	xf86Msg(X_CONFIG, "%s: threshold = %d\n", dev->identifier,
 		common->wcmThreshold);
+    }
+    common->wcmMaxX = xf86SetIntOption(local->options, "MaxX", 0);
+    if (common->wcmMaxX != 0) {
+	xf86Msg(X_CONFIG, "%s: max x = %d\n", dev->identifier,
+		common->wcmMaxX);
+    }
+    common->wcmMaxY = xf86SetIntOption(local->options, "MaxY", 0);
+    if (common->wcmMaxY != 0) {
+	xf86Msg(X_CONFIG, "%s: max x = %d\n", dev->identifier,
+		common->wcmMaxY);
+    }
+    common->wcmMaxZ = xf86SetIntOption(local->options, "MaxZ", 0);
+    if (common->wcmMaxZ != 0) {
+	xf86Msg(X_CONFIG, "%s: max x = %d\n", dev->identifier,
+		common->wcmMaxZ);
+    }
+    common->wcmResolX = xf86SetIntOption(local->options, "ResolutionX", 0);
+    if (common->wcmResolX != 0) {
+	xf86Msg(X_CONFIG, "%s: resol x = %d\n", dev->identifier,
+		common->wcmResolX);
+    }
+    common->wcmResolY = xf86SetIntOption(local->options, "ResolutionY", 0);
+    if (common->wcmResolY != 0) {
+	xf86Msg(X_CONFIG, "%s: resol x = %d\n", dev->identifier,
+		common->wcmResolY);
+    }
+    common->wcmResolZ = xf86SetIntOption(local->options, "ResolutionZ", 0);
+    if (common->wcmResolZ != 0) {
+	xf86Msg(X_CONFIG, "%s: resol x = %d\n", dev->identifier,
+		common->wcmResolZ);
     }
 
     {

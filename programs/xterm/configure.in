@@ -1,5 +1,5 @@
 dnl
-dnl $XFree86: xc/programs/xterm/configure.in,v 3.37 1999/12/30 02:05:53 robin Exp $
+dnl $XFree86: xc/programs/xterm/configure.in,v 3.38 2000/01/24 22:21:55 dawes Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl
@@ -304,6 +304,16 @@ CF_ARG_ENABLE(hp-fkeys,
 AC_MSG_RESULT($enable_hp_fkeys)
 if test $enable_hp_fkeys = yes ; then
 	AC_DEFINE(OPT_HP_FUNC_KEYS,1)
+fi
+
+AC_MSG_CHECKING(if you want support for SCO-style function keys)
+CF_ARG_ENABLE(sco-fkeys,
+	[  --enable-sco-fkeys       enable support for SCO-style function keys],
+	[enable_sco_fkeys=yes],
+	[enable_sco_fkeys=no])
+AC_MSG_RESULT($enable_sco_fkeys)
+if test $enable_sco_fkeys = yes ; then
+	AC_DEFINE(OPT_SCO_FUNC_KEYS,1)
 fi
 
 AC_MSG_CHECKING(if you want support for internationalization)

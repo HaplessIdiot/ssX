@@ -64,7 +64,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.107 2000/02/08 17:19:36 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.108 2000/02/10 18:57:39 dawes Exp $ */
 
 
 /* main.c */
@@ -4261,7 +4261,7 @@ Exit(int n)
 
 /* ARGSUSED */
 static void
-resize(TScreen *screen, register char *oldtc, register char *newtc)
+resize(TScreen *screen, register char *oldtc, char *newtc)
 {
 #ifndef USE_SYSV_ENVVARS
 	register char *ptr1, *ptr2;

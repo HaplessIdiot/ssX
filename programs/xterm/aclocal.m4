@@ -1,5 +1,5 @@
 dnl
-dnl $XFree86: xc/programs/xterm/aclocal.m4,v 3.28 2000/01/18 16:35:56 tsi Exp $
+dnl $XFree86: xc/programs/xterm/aclocal.m4,v 3.29 2000/01/24 22:21:52 dawes Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl 
@@ -613,9 +613,9 @@ AC_TRY_LINK([
 ],[
 {
 	XIM xim;
-	XIMStyles *xim_styles;
+	XIMStyles *xim_styles = 0;
 	XIMStyle input_style;
-	Widget w;
+	Widget w = 0;
 
 	XSetLocaleModifiers("@im=none");
 	xim = XOpenIM(XtDisplay(w), NULL, NULL, NULL);

@@ -1,5 +1,5 @@
 /* $XConsortium: man.h,v 1.31 94/12/16 21:36:53 gildea Exp $ */
-/* $XFree86: contrib/programs/xman/man.h,v 3.2 1998/09/26 08:16:56 dawes Exp $ */
+/* $XFree86: xc/programs/xman/man.h,v 1.1 2000/02/12 03:55:17 dawes Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium
@@ -70,8 +70,6 @@ from the X Consortium.
 
 #include "version.h"
 #include "defs.h"
-
-typedef void (*fcall)();	/* function pointer typedef */
 
 /* 
  * Assigning values here allows the user of Bitwise Or.
@@ -200,58 +198,65 @@ char *getenv(), *malloc(), *realloc();
 void exit();
 #endif
 
-/* Toolkit standard definitions. */
-
-void XtResizeWidget(), XtMoveWidget();
-
 /* buttons.c */
 
-void MakeTopBox(), FormUpWidgets();
-void CreateManpageWidget(), MakeSaveWidgets(), WriteLabel();
-void MakeTopPopUpWidget(),MakeDirPopUpWidget(), MakeDirectoryBox();
-char * CreateManpageName();
-Widget CreateManpage();
+ManpageGlobals * InitPsuedoGlobals(void);
+Widget CreateManpage(FILE * file);
+void CreateManpageWidget(ManpageGlobals * man_globals, char * name, Boolean full_instance);
+void FormUpWidgets(Widget parent, char ** full_size, char ** half_size);
+void MakeDirectoryBox(ManpageGlobals *man_globals, Widget parent, Widget *dir_disp, int section);
+void MakeSaveWidgets(ManpageGlobals *man_globals, Widget parent);
+void MakeTopBox(void);
 
 /* handler.c */
 
-void DirectoryHandler(), PopUpMenu(), SaveCallback(), OptionCallback();
-void Popup(),ManpageButtonPress(), GotoManpage(), DirPopupCallback();
+void DirPopupCallback(Widget w, XtPointer pointer, XtPointer junk);
+void DirectoryHandler(Widget w, XtPointer global_pointer, XtPointer ret_val);
+void OptionCallback(Widget w, XtPointer pointer, XtPointer junk);
+void Popup(Widget w, XtGrabKind grab_kind);
 
 /* Action Routines. */
 
-void GotoPage(), PopupHelp(), PopupSearch(), Quit(), SaveFormattedPage();
-void CreateNewManpage(), RemoveThisManpage(), Search(), ShowVersion();
+void CreateNewManpage(Widget w, XEvent * event, String * params, Cardinal * num_params);
+void GotoPage(Widget w, XEvent * event, String * params, Cardinal * num_params);
+void PopupHelp(Widget w, XEvent * event, String * params, Cardinal * num_params);
+void PopupSearch(Widget w, XEvent * event, String * params, Cardinal * num_params);
+void Quit(Widget w, XEvent * event, String * params, Cardinal * num_params);
+void RemoveThisManpage(Widget w, XEvent * event, String * params, Cardinal * num_params);
+void SaveFormattedPage(Widget w, XEvent * event, String * params, Cardinal * num_params);
+void Search(Widget w, XEvent * event, String * params, Cardinal * num_params);
+void ShowVersion(Widget w, XEvent * event, String * params, Cardinal * num_params);
 
 /* help.c */
 
-Boolean MakeHelpWidget(), OpenHelpfile();
+Boolean MakeHelpWidget(void);
+Boolean OpenHelpfile(ManpageGlobals * man_globals);
 
 /* man.c */
-
-int Man();
+Bool ReadManConfig(char manpath[]);
+int Man(void);
 
 /* misc.c */
-
-void PrintError(),PrintWarning(), PopupWarning(), ChangeLabel(), OpenFile();
-void RemovePixmaps(),PositionCenter(),AddCursor(),ParseEntry();
-FILE *FindManualFile(),*Format(), *OpenEntryFile();
-ManpageGlobals * GetGlobals();
-void SaveGlobals(), RemoveGlobals();
-
-/* pages.c */
-
-Boolean InitManpage();
-void PrintManpage();
-Boolean Boldify();
+FILE * DoSearch(ManpageGlobals * man_globals, int type);
+FILE * FindManualFile(ManpageGlobals * man_globals, int section_num, int entry_num);
+ManpageGlobals * GetGlobals(Widget w);
+void AddCursor(Widget w, Cursor cursor);
+void ChangeLabel(Widget w, char * str);
+void OpenFile(ManpageGlobals * man_globals, FILE * file);
+void PopupWarning(ManpageGlobals * man_globals, char * string);
+void PositionCenter(Widget widget, int x, int y, int above, int left, int v_space, int h_space);
+void PrintError(char * string);
+void RemoveGlobals(Widget w);
+void SaveGlobals(Widget w, ManpageGlobals * globals);
+void ParseEntry(char *entry, char *path, char *sect, char *page);
+FILE * Format(ManpageGlobals * man_globals, char * entry);
 
 /* search */
-
-void MakeSearchWidget();
-FILE * DoSearch();
+void MakeSearchWidget(ManpageGlobals * man_globals, Widget parent);
 
 /* tkfunctions.c */
 
-int Width(), Height(), BorderWidth();
-Widget PopupChild(), Child();
-char * Name();
-Boolean MakeLong();
+int Width(Widget);
+int Height(Widget);
+int BorderWidth(Widget);
+char * Name(Widget);
