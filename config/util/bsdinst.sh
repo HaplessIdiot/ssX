@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# $XFree86$
+# $XFree86: xc/config/util/bsdinst.sh,v 3.0 1994/05/21 23:40:48 dawes Exp $
 #
 # This accepts bsd-style install arguments and makes the appropriate calls
 # to the System V install.
@@ -11,7 +11,9 @@ dst=""
 src=""
 dostrip=""
 owner=""
+group=""
 mode=""
+bargs=$*
 
 while [ x$1 != x ]; do
     case $1 in 
@@ -31,6 +33,7 @@ while [ x$1 != x ]; do
 	    continue;;
 
 	-g) flags="$flags $1 $2 "
+	    group="$2"
 	    shift
 	    shift
 	    continue;;
@@ -50,18 +53,6 @@ while [ x$1 != x ]; do
     esac
 done
 
-case "$mode" in
-"")
-	;;
-*)
-	case "$owner" in
-	"")
-		flags="$flags -u root"
-		;;
-	esac
-	;;
-esac
-
 if [ x$src = x ] 
 then
 	echo "$0:  no input file specified"
@@ -73,6 +64,37 @@ then
 	echo "$0:  no destination specified"
 	exit 1
 fi
+
+if [ -x /usr/ucb/install ]
+then
+	if [ -d "$dst" ]
+	then
+		dst=$dst/`basename "$src"`
+	fi
+	case "$group" in
+	"")
+		bargs="-g other $bargs"
+		;;
+	esac
+	/usr/ucb/install $bargs
+	if [ x$dostrip = xstrip -a -x /usr/bin/mcs ]
+	then
+		/usr/bin/mcs -d $dst
+	fi
+	exit 0
+fi
+	
+case "$mode" in
+"")
+	;;
+*)
+	case "$owner" in
+	"")
+		flags="$flags -u root"
+		;;
+	esac
+	;;
+esac
 
 
 # set up some variable to be used later
@@ -129,6 +151,10 @@ fi
 if [ x$dostrip = xstrip ]
 then
 	strip $dst/$srcbase
+	if [ -x /usr/bin/mcs ]
+	then
+		/usr/bin/mcs -d $dst/$srcbase
+	fi
 fi
 
 if [ x$mode != x ]
