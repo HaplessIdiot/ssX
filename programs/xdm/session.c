@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/session.c,v 3.26 2000/11/30 23:30:07 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.27 2001/01/17 23:45:22 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -604,6 +604,14 @@ StartClient (
 	    return (0);
 	}
 #endif   /* QNX4 doesn't support multi-groups, no initgroups() */
+#ifdef USE_PAM
+	if (thepamh()) {
+	    int i;
+	    char **pam_env;
+
+	    pam_setcred(thepamh(), PAM_ESTABLISH_CRED);
+	}
+#endif
 	if (setuid(verify->uid) < 0)
 	{
 	    LogError("setuid %d (user \"%s\") failed, errno=%d\n",

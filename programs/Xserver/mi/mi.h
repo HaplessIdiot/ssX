@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/mi/mi.h,v 3.6 2000/02/12 03:40:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mi.h,v 3.7 2001/01/17 22:37:05 dawes Exp $ */
 
 #ifndef MI_H
 #define MI_H
@@ -218,7 +218,7 @@ extern void mieqSwitchScreen(
 #endif
 );
 
-extern int mieqProcessInputEvents(
+extern void mieqProcessInputEvents(
 #if NeedFunctionPrototypes
     void
 #endif
