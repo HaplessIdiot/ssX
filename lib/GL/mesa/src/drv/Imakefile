@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/Imakefile,v 1.13 2000/06/30 19:30:17 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/Imakefile,v 1.14tsi Exp $
 
 #define DoNormalLib NormalLibGlx
 #define DoSharedLib SharedLibGlx
@@ -34,7 +34,7 @@ DRIVER += sis
 
 SUBDIRS = $(DRIVER)
 #else
-#if defined(i386Architecture) 
+#if defined(i386Architecture) || defined(ia64Architecture)
 SUBDIRS += gamma
 #if HasGlide3
 SUBDIRS += tdfx

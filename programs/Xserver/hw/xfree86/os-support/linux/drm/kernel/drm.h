@@ -31,6 +31,7 @@
  * Dec 1999, Richard Henderson <rth@twiddle.net>, move to generic cmpxchg.
  *
  */
+/* $XFree86$ */
 
 #ifndef _DRM_H_
 #define _DRM_H_

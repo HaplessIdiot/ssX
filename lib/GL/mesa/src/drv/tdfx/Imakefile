@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile,v 1.10tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -22,7 +22,8 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 		-I../../../include -I../.. -I../../X
 #endif
 
-MESA_INCLUDES = -I. -I.. -I../../include
+MESA_INCLUDES = -I. -I.. -I../../include \
+		-I../../../../dri/drm
 
 LinkSourceFile(fxclip.c, $(MESASRCDIR)/src/FX)
 LinkSourceFile(fxcliptmp.h, $(MESASRCDIR)/src/FX)

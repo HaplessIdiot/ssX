@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.185 2000/08/10 17:40:28 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.186tsi Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -527,16 +527,19 @@ XCOMM
 #if XF86Server
 XF86SERVER = XFree86
 #endif
-#if XnestServer && !MakeDllModules
+#if XnestServer
 XNEST = Xnest
 #endif
-#if XVirtualFramebufferServer && !MakeDllModules
+#if XVirtualFramebufferServer
 XVFB = Xvfb
 #endif
 #if XWinServer && !MakeDllModules
 XWIN = XWin
 #endif
-#if defined(XF86Server) || (!MakeDllModules && (defined(XnestServer) || defined(XVirtualFramebufferServer) || defined(XWinServer)))
+#if defined(XF86Server) || \
+    defined(XnestServer) || \
+    defined(XVirtualFramebufferServer) || \
+    (!MakeDllModules && defined(XWinServer))
 MakeMutex($(XF86SERVER) $(XNEST) $(XVFB) $(XWIN))
 #endif
 MakeMutex($(STDDIRS) mfb fb cfb cfb16 cfb24 cfb32)
@@ -892,7 +895,7 @@ ServerTarget(Xitsy,$(ITSYDIRS),$(ITSYOBJS),$(ITSYLIBS),$(ITSYSYSLIBS))
 KDRIVEDIRS=$(KDDIRS) $(FBDEVDIR) $(SAVAGEDIR) $(TRIDENTDIR) $(SIS530DIR) \
 	$(TRIODIR) $(TS300DIR) $(ITSYDIR) $(IGSDIR)
 
-#if XprtServer && !MakeDllModules
+#if XprtServer
 XCOMM
 XCOMM Print Server
 XCOMM
@@ -925,7 +928,7 @@ $(XPOBJS) $(XPLIBS) $(XPSYSLIBS):: $(XPSUBDIRS)
 ServerTarget(Xprt,$(XPSUBDIRS),$(XPOBJS),$(XPLIBS) $(LOADABLEEXTS) $(LIBCWRAPPER),$(XPSYSLIBS))
 #endif	/* XprtServer */
 
-#if XnestServer && !MakeDllModules
+#if XnestServer
 XCOMM
 XCOMM Server with Xlib-based ddx
 XCOMM
@@ -974,7 +977,7 @@ Xnon: $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DEPDIRS)
 #endif /* XnonServer */
 
 
-#if XVirtualFramebufferServer && !MakeDllModules
+#if XVirtualFramebufferServer
 XCOMM
 XCOMM server with Virtual (malloced) framebuffer
 XCOMM

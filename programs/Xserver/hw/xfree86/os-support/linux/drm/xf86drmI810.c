@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifdef XFree86Server
 # include "xf86.h"
 # include "xf86_OSproc.h"

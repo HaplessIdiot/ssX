@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/fb/Imakefile,v 1.7 2000/04/05 18:13:31 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/fb/Imakefile,v 1.8tsi Exp $
 XCOMM 
 XCOMM 
 XCOMM Id: Imakefile,v 1.1 1999/11/02 03:54:44 keithp Exp $
@@ -84,7 +84,7 @@ OBJS =	$(XFMODOBJ) \
 	     ../mi/llib-lmi.ln
 
 NormalLibraryObjectRule()
-NormalLibraryTarget(fb,$(OBJS))
+LibraryModuleTarget(fb,$(OBJS))
 LintLibraryTarget(fb,$(SRCS))
 
 NormalLintTarget($(SRCS))

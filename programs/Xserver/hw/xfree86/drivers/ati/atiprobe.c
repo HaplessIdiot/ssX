@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.25 2000/08/11 16:50:33 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.26tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -2149,7 +2149,11 @@ NoVGAWonder:;
          */
         if (ATIClaimBusSlot(pDriver, pATIGDev->Chipset,
                             pGDev, pGDev->active, pATI) < 0)
+        {
+            xf86Msg(X_ERROR, ATI_NAME ":  Could not claim bus slot for %s.\n",
+                Identifier);
             continue;
+        }
 
         if (!pGDev->active)
             continue;

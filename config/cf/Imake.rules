@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.75 2000/06/13 02:28:26 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.76tsi Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -3117,6 +3117,7 @@ NormalRelocatableTarget(Concat(module,_drv), objects)
 #ifndef LibraryModuleTarget
 #if MakeDllModules
 #define LibraryModuleTarget(module,objects)				@@\
+NormalLibraryTarget(module, objects)					@@\
 DynamicModuleTarget(Concat3(lib,module,.so), objects)
 #else
 #define LibraryModuleTarget(module, objects)				@@\
@@ -3130,6 +3131,7 @@ NormalLibraryTarget(module, objects)
 #ifndef DepLibraryModuleTarget
 #if MakeDllModules
 #define DepLibraryModuleTarget(module,deplist,objects)			@@\
+NormalDepLibraryTarget(module, deplist, objects)			@@\
 DepDynamicModuleTarget(Concat3(lib,module,.so), deplist, objects)
 #else
 #define DepLibraryModuleTarget(module,deplist,objects)			@@\
@@ -3146,7 +3148,7 @@ AllTarget(module)							@@\
 									@@\
 module: modlist								@@\
 	RemoveFile($@)							@@\
-	$(LD) -o $@ $(SHLIBLDFLAGS) modlist				@@\
+	$(CC) -o $@ $(SHLIBLDFLAGS) modlist				@@\
 									@@\
 clean::									@@\
 	RemoveFile(module)
@@ -3161,7 +3163,7 @@ AllTarget(module)							@@\
 									@@\
 module: deplist								@@\
 	RemoveFile($@)							@@\
-	$(LD) -o $@ $(SHLIBLDFLAGS) modlist				@@\
+	$(CC) -o $@ $(SHLIBLDFLAGS) modlist				@@\
 									@@\
 clean::									@@\
 	RemoveFile(module)

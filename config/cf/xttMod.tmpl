@@ -1,6 +1,6 @@
 /* -*- Makefile -*- */
 XCOMM Code converter template of X-TT
-XCOMM $XFree86: xc/config/cf/xttMod.tmpl,v 1.3 1999/02/01 12:52:23 dawes Exp $ */
+XCOMM $XFree86: xc/config/cf/xttMod.tmpl,v 1.4tsi Exp $ */
 
 #ifdef IHaveModules
 /* New designed XFree86 module */
@@ -63,7 +63,7 @@ AllTarget($(CCONV_MODULE_FILE))
 
 $(CCONV_MODULE_FILE): $(OBJS)
         $(RM) $@~
-        $(LD) -o $@~ $(SHLIBLDFLAGS) $(OBJS) $(REQUIREDLIBS)
+        $(CC) -o $@~ $(SHLIBLDFLAGS) $(OBJS) $(REQUIREDLIBS)
         $(RM) $@
         $(MV) $@~ $@
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/r128/Imakefile,v 1.3 2000/06/25 14:44:27 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/r128/Imakefile,v 1.4tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -42,7 +42,8 @@ LinkSourceFile(mm.h, ../common)
 LinkSourceFile(hwlog.c, ../common)
 LinkSourceFile(hwlog.h, ../common)
 
-MESA_INCLUDES = -I. -I.. -I../../include
+MESA_INCLUDES = -I. -I.. -I../../include \
+		-I../../../../dri/drm
 
       DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES) $(ASM_DEFINES)
      INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) $(MESA_INCLUDES) $(DRI_INCLUDES)

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.308 2000/08/11 19:10:36 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.309tsi Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -598,7 +598,7 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #    define GlxCoreLibDefines /**/
 #  endif
 
-#  if defined(SparcArchitecture) 
+#  if defined(SparcArchitecture)  || defined(ia64Architecture)
 #    define GlxArchDefines -D__GLX_ALIGN64
 #  else
 #    define GlxArchDefines /**/
