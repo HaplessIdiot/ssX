@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.38 2002/10/21 01:54:04 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.39tsi Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -104,10 +104,7 @@
 #include "xf86str.h"
 #include "regionstr.h"
 #include "xf86fbman.h"
-
-#ifdef RENDER
-#include "picturestr.h"
-#endif
+#include "glyphstr.h"
 
 /* Flags */
 #define PIXMAP_CACHE			0x00000001
@@ -1250,7 +1247,8 @@ typedef struct _XAAInfoRec {
 
    CARD32 FullPlanemasks[32];
 
-#ifdef RENDER
+   /* RENDER extension support */
+
    Bool (*Composite) (
    	CARD8      op,
         PicturePtr pSrc,
@@ -1325,9 +1323,6 @@ typedef struct _XAAInfoRec {
    );
    int CPUToScreenTextureFlags;
    CARD32 * CPUToScreenTextureFormats;
-
-
-#endif
 
    /* these were added for 4.3.0 */
    BoxRec SolidLineLimits;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.c,v 1.15 2003/08/29 21:07:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.c,v 1.16tsi Exp $ */
 /*
  * Copyright 2000 through 2004 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -75,6 +75,7 @@ const char *ATIxf4bppSymbols[] =
 const char *ATIfbSymbols[] =
 {
     "fbPictureInit",
+    "fbPictureSetSubpixelOrder",
     "fbScreenInit",
     NULL
 };

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.121tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.122tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -227,7 +227,9 @@ static const char *ddcSymbols[] = {
 
 static const char *fbSymbols[] = {
     "fbScreenInit",
+    "fbPictureGetSubpixelOrder",
     "fbPictureInit",
+    "fbPictureSetSubpixelOrder",
     NULL
 };
 
@@ -4395,8 +4397,7 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Must be after RGB order fixed */
     fbPictureInit (pScreen, 0, 0);
 
-#ifdef RENDER
-    if (PictureGetSubpixelOrder (pScreen) == SubPixelUnknown)
+    if (fbPictureGetSubpixelOrder (pScreen) == SubPixelUnknown)
     {
 	int subPixelOrder;
 
@@ -4406,9 +4407,9 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	case MT_DFP:	subPixelOrder = SubPixelHorizontalRGB; break;
 	default:	subPixelOrder = SubPixelNone; break;
 	}
-	PictureSetSubpixelOrder (pScreen, subPixelOrder);
+	fbPictureSetSubpixelOrder (pScreen, subPixelOrder);
     }
-#endif
+
 				/* Memory manager setup */
 #ifdef XF86DRI
     if (info->directRenderingEnabled) {

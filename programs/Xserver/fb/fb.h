@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fb.h,v 1.37 2003/11/03 05:11:00 tsi Exp $
+ * $XFree86: xc/programs/Xserver/fb/fb.h,v 1.38tsi Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -42,6 +42,7 @@
 #include "picturestr.h"
 #else
 #include "picture.h"
+#include "render.h"
 #endif
 
 /*
@@ -1564,6 +1565,13 @@ Bool
 fbPictureInit (ScreenPtr pScreen,
 	       PictFormatPtr formats,
 	       int nformats);
+
+Bool
+fbPictureSetSubpixelOrder(ScreenPtr pScreen,
+			  int subpixel);
+
+int
+fbPictureGetSubpixelOrder(ScreenPtr pScreen);
 
 /*
  * fbpixmap.c

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.20 2003/04/23 21:51:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.21tsi Exp $ */
 /*
  * Copyright 1997 through 2004 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -184,8 +184,8 @@ ATIVGACalculate
         if ((pATI->Chip == ATI_CHIP_18800_1) ||
             (pATI->Chip >= ATI_CHIP_264CT))
             pMode->CrtcHBlankStart--;
-        pMode->CrtcHSyncStart = pMode->HSyncStart >> 3;
-        pMode->CrtcHSyncEnd = pMode->HSyncEnd >> 3;
+        pMode->CrtcHSyncStart = (pMode->HSyncStart >> 3) - 1;
+        pMode->CrtcHSyncEnd = (pMode->HSyncEnd >> 3) - 1;
         pMode->CrtcHBlankEnd = (pMode->HTotal >> 3) - 1;
         pMode->CrtcHTotal = (pMode->HTotal >> 3) - 5;
         pMode->CrtcHSkew = pMode->HSkew;
@@ -327,6 +327,8 @@ ATIVGACalculate
         pMode->CrtcVBlankStart++;
     else
         pMode->CrtcVBlankStart--;
+    pMode->CrtcVSyncStart--;
+    pMode->CrtcVSyncEnd--;
     pMode->CrtcVBlankEnd--;
     if (pATI->Chip < ATI_CHIP_264CT)
         pMode->CrtcVBlankEnd--;
