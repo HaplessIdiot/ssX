@@ -1,4 +1,4 @@
-.\" $XFree86$
+.\" $XFree86: xc/doc/specs/xtrans/Xtrans.mm,v 1.2 2003/07/09 15:27:27 tsi Exp $
 '\".nr Ej 1
 .PH "'''"
 .ce
@@ -159,7 +159,8 @@ typedef struct _Xtransport {
 
     int	(*CreateListener)(
 	XtransConnInfo,		/* connection */
-	char *			/* port */
+	char *,			/* port */
+	int			/* flags */
     );
 
     int	(*ResetListener)(
@@ -323,7 +324,7 @@ This function return 0 on success and -1 on failure.
 Note: Based on current usage, the complimentary function TRANS(GetOption)()
 is not necessary.
 .LI
-int TRANS(CreateListener)(XtransConnInfo connection, char *port)
+int TRANS(CreateListener)(XtransConnInfo connection, char *port, int flags)
 .P
 This function sets up the server endpoint for listening.
 The parameter \fIconnection\fR is an endpoint that was obtained from
@@ -333,6 +334,10 @@ should be bound for listening.
 If \fIport\fR is NULL, then the transport may attempt to allocate any
 available TSAP for this connection. If the transport cannot support this,
 then this function will return a failure.
+The \fIflags\fR parameter can be set to ADDR_IN_USE_ALLOWED to allow
+the call to the underlying binding function to fail with a EADDRINUSE
+error without causing the TRANS(CreateListener) function itself to
+fail.
 This function return 0 on success and -1 on failure.
 .LI
 int TRANS(ResetListener)(XtransConnInfo connection)
@@ -555,12 +560,18 @@ is not being used, because all of the option defined so far, are transport
 independent. This function will have to be used if a radically different
 transport type is added, or a transport dependent option is defined.
 .LI
-int CreateListener (struct _Xtransport *thistrans, char *port )
+int CreateListener (struct _Xtransport *thistrans, char *port, int flags )
 .P
 This function takes a transport endpoint opened for a server, and sets it
 up to listen for incoming connection requests. The parameter \fIport\fR
 should contain the port portion of the address that was passed to the Open
 function.
+.P
+The parameter \fIflags\fR should be set to ADDR_IN_USE_ALLOWED if the 
+underlying transport endpoint may be already bound and this should not
+be considered as an error. Otherwise \fIflags\fR sould be set to 0. 
+This is used by IPv6 code, where the same socket can be bound to both
+an IPv6 address and then to a IPv4 address.
 .P
 This function will bind the transport into the transport name space if
 applicable, and fill in the local address portion of the XtransConnInfo
