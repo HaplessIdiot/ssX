@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.8 1999/02/28 11:19:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.9 1999/03/20 08:59:17 dawes Exp $ */
  
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -553,6 +553,9 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 		   (unsigned long)pLg->IOAddress);
     }
 
+    xf86AddControlledResource(pScrn, MEM_IO);
+    xf86EnableAccess(&pScrn->Access);
+
     /*
      * If the user has specified the amount of memory in the XF86Config
      * file, we respect that setting.
@@ -763,6 +766,8 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
         return FALSE;
     }
     xf86LoaderReqSymLists(ddcSymbols, NULL);
+
+    xf86DelControlledResource(&pScrn->Access, FALSE);
 
     return TRUE;
 }
@@ -1226,6 +1231,9 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      */
     pScrn = xf86Screens[pScreen->myNum];
 
+    xf86AddControlledResource(pScrn, MEM_IO);
+    xf86EnableAccess(&pScrn->Access);
+
     hwp = VGAHWPTR(pScrn);
 
     hwp->MapSize = 0x10000;		/* Standard 64k VGA window */
@@ -1545,6 +1553,9 @@ LgEnterVT(int scrnIndex, int flags)
     ErrorF("LgEnterVT\n");
 #endif
 
+    xf86EnableAccess(&pScrn->Access);
+
+    /* XXX Shouldn't this be in LeaveVT? */
     /* Disable HW cursor */
     if (pLg->HWCursor)
       LgHideCursor(pScrn);
@@ -1572,6 +1583,7 @@ LgLeaveVT(int scrnIndex, int flags)
     ErrorF("LgLeaveVT\n");
 #endif
 
+    /* XXX Shouldn't this be in EnterVT? */
     /* Enable HW cursor */
     if (pLg->HWCursor)
       LgShowCursor(pScrn);

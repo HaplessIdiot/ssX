@@ -5,7 +5,7 @@
  *
  * Author: David Dawes <dawes@xfree86.org>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/pcitweak.c,v 1.5 1999/04/18 04:08:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/pcitweak.c,v 1.6 1999/04/25 10:02:35 dawes Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -127,6 +127,13 @@ main(int argc, char *argv[])
     }
 
     xf86EnableIO();
+
+    /*
+     * This is needed to setup all the buses.  Otherwise secondary buses
+     * can't be accessed.
+     */
+    xf86scanpci(0);
+
     tag = pciTag(bus, device, func);
     if (rd) {
 	if (byte) {
