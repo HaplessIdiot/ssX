@@ -1104,9 +1104,10 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     if (pScrn->numEntities != 1)
 	return FALSE;
 
-    /* The vgahw module should be loaded here when needed */
-    if (!xf86LoadSubModule(pScrn, "vgahw"))
+    /* Allocate the MGARec driverPrivate */
+    if (!MGAGetRec(pScrn)) {
 	return FALSE;
+    }
 
     pMga = MGAPTR(pScrn);
 
