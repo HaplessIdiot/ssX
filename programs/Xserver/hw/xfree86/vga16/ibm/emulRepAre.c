@@ -1,4 +1,5 @@
 /* $XConsortium: emulRepAre.c,v 1.1 94/03/28 21:34:35 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -38,8 +39,9 @@
 #include "windowstr.h"	/* GJA */
 #include "ppc.h"
 
-void ppcReplicateArea( x, y, planeMask, goalWidth, goalHeight,
+void ppcReplicateArea( pWin, x, y, planeMask, goalWidth, goalHeight,
 			currentHoriz, currentVert, pScrn )
+WindowPtr pWin; /* GJA */
 register int x, y, planeMask ;
 int goalWidth, goalHeight ;
 int currentHoriz, currentVert ;
@@ -48,26 +50,26 @@ ScreenPtr pScrn ;
 	for ( ;
 	      currentHoriz <= ( goalWidth >> 1 ) ;
 	      currentHoriz <<= 1 ) {
-		vgaBitBlt( GXcopy, planeMask, planeMask,
+		vgaBitBlt( pWin, GXcopy, planeMask, planeMask,
 			x, y,
 			x + currentHoriz, y,
 			currentHoriz, currentVert ) ;
 	}
 	if ( goalWidth - currentHoriz )
-		vgaBitBlt( GXcopy, planeMask, planeMask,
+		vgaBitBlt( pWin, GXcopy, planeMask, planeMask,
 			x, y,
 			x + currentHoriz, y,
 			goalWidth - currentHoriz, currentVert ) ;
 	for ( ;
 	      currentVert <= ( goalHeight >> 1 ) ;
 	      currentVert <<= 1 ) {
-		vgaBitBlt( GXcopy, planeMask, planeMask,
+		vgaBitBlt( pWin, GXcopy, planeMask, planeMask,
 			x, y,
 			x, y + currentVert,
 			goalWidth, currentVert ) ;
 	}
 	if ( goalHeight - currentVert )
-		vgaBitBlt( GXcopy, planeMask, planeMask,
+		vgaBitBlt( pWin, GXcopy, planeMask, planeMask,
 			x, y,
 			x, y + currentVert,
 			goalWidth, goalHeight - currentVert ) ;

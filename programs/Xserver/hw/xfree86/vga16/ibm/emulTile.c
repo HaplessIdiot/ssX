@@ -1,4 +1,5 @@
 /* $XConsortium: emulTile.c,v 1.1 94/03/28 21:40:37 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -49,7 +50,8 @@
 #include "ibmTrace.h"
 
 static void
-DrawFirstTile( pTile, x, y, w, h, alu, planes, xOffset, yOffset )
+DrawFirstTile( pWin, pTile, x, y, w, h, alu, planes, xOffset, yOffset )
+WindowPtr pWin; /* GJA */
 register PixmapPtr pTile ;
 register int x ;
 register int y ;
@@ -68,7 +70,7 @@ register int vtarget ;
 			htarget = MIN( pTile->drawable.width - xOffset, w ),
 			vtarget = MIN( pTile->drawable.height - yOffset, h ),
 			yOffset *= pTile->devKind ;
-			vgaDrawColorImage( x, y,
+			vgaDrawColorImage( pWin,x, y,
 				 htarget,
 				 vtarget,
 				 (char *)pTile->devPrivate.ptr + yOffset + xOffset,
@@ -78,19 +80,19 @@ register int vtarget ;
 				w = MIN( w, pTile->drawable.width ) ;
 				if ( h > vtarget ) {
 					h = MIN( h, pTile->drawable.height ) ;
-					vgaDrawColorImage( x, y + vtarget,
+					vgaDrawColorImage( pWin, x, y + vtarget,
 						 htarget,
 						 h - vtarget,
 						 (char *)pTile->devPrivate.ptr + xOffset,
 						 pTile->devKind,
 						 alu, planes ) ;
-					vgaDrawColorImage( x + htarget, y,
+					vgaDrawColorImage( pWin, x + htarget, y,
 						 w - htarget,
 						 vtarget,
 						 (char *)pTile->devPrivate.ptr + yOffset,
 						 pTile->devKind,
 						 alu, planes ) ;
-					vgaDrawColorImage( x + htarget,
+					vgaDrawColorImage( pWin, x + htarget,
 						 y + vtarget,
 						 w - htarget,
 						 h - vtarget,
@@ -99,7 +101,7 @@ register int vtarget ;
 						 alu, planes ) ;
 				}
 				else { /* h <= vtarget */
-					vgaDrawColorImage( x + htarget, y,
+					vgaDrawColorImage( pWin, x + htarget, y,
 						 w - htarget,
 						 vtarget,
 						 (char *)pTile->devPrivate.ptr + yOffset,
@@ -108,7 +110,7 @@ register int vtarget ;
 				}
 			}
 			else if ( h > vtarget ) {
-				vgaDrawColorImage( x, y + vtarget,
+				vgaDrawColorImage( pWin, x, y + vtarget,
 					 htarget,
 					 MIN( h, pTile->drawable.height ) - vtarget,
 					 (char *)pTile->devPrivate.ptr + xOffset,
@@ -118,14 +120,14 @@ register int vtarget ;
 			}
 		}
 		else { /* No Y Offset */
-			vgaDrawColorImage( x, y,
+			vgaDrawColorImage( pWin, x, y,
 				 htarget = MIN( pTile->drawable.width - xOffset, w ),
 				 vtarget = MIN( pTile->drawable.height, h ),
 				 (char *)pTile->devPrivate.ptr + xOffset,
 				 pTile->devKind,
 				 alu, planes ) ;
 			if ( w > htarget ) {
-				vgaDrawColorImage( x + htarget, y,
+				vgaDrawColorImage( pWin, x + htarget, y,
 					 MIN( pTile->drawable.width, w ) - htarget,
 					 vtarget,
 					 pTile->devPrivate.ptr,
@@ -135,14 +137,14 @@ register int vtarget ;
 		}
 	}
 	else if ( yOffset ) {
-		vgaDrawColorImage( x, y,
+		vgaDrawColorImage( pWin, x, y,
 			 htarget = MIN( pTile->drawable.width, w ),
 			 vtarget = MIN( pTile->drawable.height - yOffset, h ),
 			 (char *)pTile->devPrivate.ptr + ( yOffset * pTile->devKind ),
 			 pTile->devKind,
 			 alu, planes ) ;
 		if ( h > vtarget ) {
-			vgaDrawColorImage( x, y + vtarget,
+			vgaDrawColorImage( pWin, x, y + vtarget,
 				 htarget,
 				 MIN( pTile->drawable.height, h ) - vtarget,
 				 pTile->devPrivate.ptr,
@@ -151,7 +153,7 @@ register int vtarget ;
 		}
 	}
 	else { /* NO Offset */
-		vgaDrawColorImage( x, y,
+		vgaDrawColorImage( pWin, x, y,
 			 htarget = MIN( pTile->drawable.width, w ),
 			 vtarget = MIN( pTile->drawable.height, h ),
 			 pTile->devPrivate.ptr,
@@ -180,7 +182,8 @@ register int vtarget ;
  * robustness.
  */
 void
-ppcTileRect( pTile, alu, planes, x0, y0, w, h, xSrc, ySrc )
+ppcTileRect( pWin, pTile, alu, planes, x0, y0, w, h, xSrc, ySrc )
+WindowPtr pWin; /* GJA */
 register PixmapPtr pTile ;
 const int alu ;
 const unsigned long int planes ;
@@ -202,7 +205,7 @@ TRACE( ( "ppcTileRect(pTile=x%x,alu=x%x,planes=x%02x,x0=%d,y0=%d,w=%d,h=%d,xSrc=
 	case GXinvert:		/* 0xa NOT dst */
 	case GXset:		/* 0xf 1 */
 		vgaFillSolid
-			( 0xFF, alu, planes, x0, y0, w, h ) ;
+			( pWin, 0xFF, alu, planes, x0, y0, w, h ) ;
 	case GXnoop:		/* 0x5 dst */
 		return ;
 	default:
@@ -227,11 +230,11 @@ TRACE( ( "ppcTileRect(pTile=x%x,alu=x%x,planes=x%02x,x0=%d,y0=%d,w=%d,h=%d,xSrc=
 	case GXcopyInverted:	/* 0xc NOT src */
 	case GXcopy:		/* 0x3 src */
 		/* Special Case Code */
-		DrawFirstTile( pTile, x0, y0, w, h,
+		DrawFirstTile( pWin, pTile, x0, y0, w, h,
 			       alu, planes, xOffset, yOffset ) ;
 		/* Here We Double The Size Of The BLIT Each Iteration */
 		ppcReplicateArea(
-			    x0, y0, planes, w, h,
+			    pWin, x0, y0, planes, w, h,
 			    MIN( w, pTile->drawable.width ), MIN( h, pTile->drawable.height ), pScreen ) ;
 		break ;
 	case GXnor:		/* 0x8 NOT src AND NOT dst */
@@ -278,7 +281,7 @@ TRACE( ( "ppcTileRect(pTile=x%x,alu=x%x,planes=x%02x,x0=%d,y0=%d,w=%d,h=%d,xSrc=
 		/* Draw top margin, including corners */
 		if ( topmgn ) {
 			if ( leftmgn ) {
-				vgaDrawColorImage( x0, y0, leftmgn, topmgn,
+				vgaDrawColorImage( pWin, x0, y0, leftmgn, topmgn,
 					 data + yOffset + xOffset,
 					 pTile->devKind, alu, planes ) ;
 			}
@@ -286,12 +289,12 @@ TRACE( ( "ppcTileRect(pTile=x%x,alu=x%x,planes=x%02x,x0=%d,y0=%d,w=%d,h=%d,xSrc=
 				xcount ;
 				xcount--, htarget += width )
 			{
-				vgaDrawColorImage( htarget, y0, width, topmgn,
+				vgaDrawColorImage( pWin, htarget, y0, width, topmgn,
 					 data + yOffset,
 					 pTile->devKind, alu, planes ) ;
 			}
 			if ( rightmgn ) {
-				vgaDrawColorImage( x2, y0, rightmgn, topmgn,
+				vgaDrawColorImage( pWin, x2, y0, rightmgn, topmgn,
 					 data + yOffset,
 					 pTile->devKind, alu, planes ) ;
 			}
@@ -300,7 +303,7 @@ TRACE( ( "ppcTileRect(pTile=x%x,alu=x%x,planes=x%02x,x0=%d,y0=%d,w=%d,h=%d,xSrc=
 		/* Draw bottom margin, including corners */
 		if ( botmgn ) {
 			if ( leftmgn ) {
-				vgaDrawColorImage( x0, y2, leftmgn, botmgn,
+				vgaDrawColorImage( pWin, x0, y2, leftmgn, botmgn,
 					 data + xOffset,
 					 pTile->devKind, alu, planes ) ;
 			}
@@ -308,12 +311,12 @@ TRACE( ( "ppcTileRect(pTile=x%x,alu=x%x,planes=x%02x,x0=%d,y0=%d,w=%d,h=%d,xSrc=
 				xcount ;
 				xcount--, htarget += width )
 			{
-				vgaDrawColorImage( htarget, y2, width, botmgn,
+				vgaDrawColorImage( pWin, htarget, y2, width, botmgn,
 					 data,
 					 pTile->devKind, alu, planes ) ;
 			}
 			if ( rightmgn ) {
-				vgaDrawColorImage( x2, y2, rightmgn, botmgn,
+				vgaDrawColorImage( pWin, x2, y2, rightmgn, botmgn,
 					 data,
 					 pTile->devKind, alu, planes ) ;
 			}
@@ -325,7 +328,7 @@ TRACE( ( "ppcTileRect(pTile=x%x,alu=x%x,planes=x%02x,x0=%d,y0=%d,w=%d,h=%d,xSrc=
 				ycount ;
 				ycount--, vtarget += height )
 			{
-				vgaDrawColorImage( x0, vtarget, leftmgn, height,
+				vgaDrawColorImage( pWin, x0, vtarget, leftmgn, height,
 					 data + xOffset,
 					 pTile->devKind, alu, planes ) ;
 			}
@@ -337,7 +340,7 @@ TRACE( ( "ppcTileRect(pTile=x%x,alu=x%x,planes=x%02x,x0=%d,y0=%d,w=%d,h=%d,xSrc=
 				ycount ;
 				ycount--, vtarget += height )
 			{
-				vgaDrawColorImage( x2, vtarget, rightmgn, height,
+				vgaDrawColorImage( pWin, x2, vtarget, rightmgn, height,
 					 data,
 					 pTile->devKind, alu, planes ) ;
 			}
@@ -352,7 +355,7 @@ TRACE( ( "ppcTileRect(pTile=x%x,alu=x%x,planes=x%02x,x0=%d,y0=%d,w=%d,h=%d,xSrc=
 				xcount ;
 				xcount--, htarget += width )
 			{
-				vgaDrawColorImage( htarget, vtarget, width, height,
+				vgaDrawColorImage( pWin, htarget, vtarget, width, height,
 					 data,
 					 pTile->devKind, alu, planes ) ;
 				

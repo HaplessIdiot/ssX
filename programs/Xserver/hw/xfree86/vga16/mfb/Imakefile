@@ -1,4 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:40:43 dpw Exp $
+XCOMM $XFree86$
 #include <Server.tmpl>
 
 SRCS1 =	 mfbgc.c mfbwindow.c mfbfont.c \
@@ -13,7 +14,7 @@ SRCS1 =	 mfbgc.c mfbwindow.c mfbfont.c \
 SRCS =	 $(SRCS1) mfbseg.c mfbpgbwht.c mfbpgbblak.c mfbpgbinv.c mfbigbwht.c \
 	 mfbigbblak.c mfbpawhite.c mfbpablack.c mfbpainv.c mfbtewhite.c \
 	 mfbteblack.c mfbbltC.c mfbbltX.c mfbbltCI.c mfbbltO.c mfbbltG.c \
-	 mfbtileC.c mfbtileG.c
+	 mfbtileC.c mfbtileG.c mfbplywhite.c mfbplyblack.c mfbplyinv.c
 
 OBJS =   mfbgc.o mfbwindow.o mfbfont.o \
 	 mfbfillrct.o mfbpntwin.o maskbits.o mfbpixmap.o \
@@ -25,7 +26,8 @@ OBJS =   mfbgc.o mfbwindow.o mfbfont.o \
 	 mfbpgbwht.o mfbpgbblak.o mfbpgbinv.o \
 	 mfbigbwht.o mfbigbblak.o mfbcmap.o \
 	 mfbpawhite.o mfbpablack.o mfbpainv.o mfbtileC.o mfbtileG.o \
-         mfbtewhite.o mfbteblack.o mfbmisc.o mfbbstore.o
+         mfbtewhite.o mfbteblack.o mfbmisc.o mfbbstore.o \
+	 mfbplywhite.o mfbplyblack.o mfbplyinv.o
 
 INCLUDES = -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
            -I$(INCLUDESRC) -I$(FONTINCSRC)
@@ -56,6 +58,7 @@ ObjectFromSpecialSource(mfbline,$(SERVERSRC)/mfb/mfbline,/**/)
 ObjectFromSpecialSource(mfbmisc,$(SERVERSRC)/mfb/mfbmisc,/**/)
 ObjectFromSpecialSource(mfbpixmap,$(SERVERSRC)/mfb/mfbpixmap,/**/)
 ObjectFromSpecialSource(mfbplygblt,$(SERVERSRC)/mfb/mfbplygblt,/**/)
+ObjectFromSpecialSource(mfbply1rct,$(SERVERSRC)/mfb/mfbply1rct,/**/)
 ObjectFromSpecialSource(mfbpntarea,$(SERVERSRC)/mfb/mfbpntarea,/**/)
 ObjectFromSpecialSource(mfbpntwin,$(SERVERSRC)/mfb/mfbpntwin,/**/)
 ObjectFromSpecialSource(mfbpolypnt,$(SERVERSRC)/mfb/mfbpolypnt,/**/)
@@ -89,6 +92,12 @@ ObjectFromSpecialSource(mfbpainv,mfbpntarea,-DMFBSOLIDFILLAREA=mfbSolidInvertAre
 ObjectFromSpecialSource(mfbtewhite,mfbtegblt,-DMFBTEGLYPHBLT=mfbTEGlyphBltWhite -DOP= -DCLIPTETEXT=mfbImageGlyphBltWhite)
 
 ObjectFromSpecialSource(mfbteblack,mfbtegblt,-DMFBTEGLYPHBLT=mfbTEGlyphBltBlack -DOP=\~ -DCLIPTETEXT=mfbImageGlyphBltBlack)
+
+ObjectFromSpecialSource(mfbplywhite,mfbply1rct,-DMFBFILLPOLY1RECT=mfbFillPolyWhite -DOPEQ=MFB_OPEQ_WHITE -DEQWHOLEWORD=MFB_EQWHOLEWORD_WHITE)
+
+ObjectFromSpecialSource(mfbplyblack,mfbply1rct,-DMFBFILLPOLY1RECT=mfbFillPolyBlack -DOPEQ=MFB_OPEQ_BLACK -DEQWHOLEWORD=MFB_EQWHOLEWORD_BLACK)
+
+ObjectFromSpecialSource(mfbplyinv,mfbply1rct,-DMFBFILLPOLY1RECT=mfbFillPolyInvert -DOPEQ=MFB_OPEQ_INVERT -DEQWHOLEWORD=MFB_EQWHOLEWORD_INVERT)
 
 ObjectFromSpecialSource(mfbbltC,mfbblt,-DMROP=Mcopy)
 

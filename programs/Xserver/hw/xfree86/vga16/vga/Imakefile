@@ -1,7 +1,8 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:41:01 dpw Exp $
+XCOMM $XFree86$
 #include <Server.tmpl>
 
-SRCS = 	vgaHW.c vga.c vgaCmap.c
+SRCS = 	vgaHW.c vga.c vgaCmap.c vgaBank.s
 
 OBJS = 	vgaHW.o vga.o vgaCmap.o vgaBank.o
 
