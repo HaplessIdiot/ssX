@@ -3,7 +3,7 @@ XCOMM platform:  $TOG: sun.cf /main/176 1997/12/09 17:27:51 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.52 2000/06/20 22:08:36 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.53 2000/08/11 19:51:01 dawes Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -173,6 +173,15 @@ XCOMM SunPro C++ CplusplusCompilerMajorVersion./**/CplusplusCompilerMinorVersion
 # define ServerExtraDefines	AllocateLocalDefines
 # define ServerOSDefines	-DDDXOSINIT
 # define HasPlugin		YES
+#endif
+
+#ifndef HasPerl
+/* Solaris 8 comes with perl.  Earlier versions don't. */
+# if (OSMajorVersion == 5) && (OSMinorVersion >= 8)
+#  define HasPerl		YES
+# else
+#  define HasPerl		NO
+# endif
 #endif
 
 #define XkbServerDefines  -DXKB_ALWAYS_USES_SOFT_REPEAT

@@ -3,7 +3,7 @@ XCOMM platform:  $TOG: usl.cf /main/50 1997/04/17 14:11:39 barstow $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/usl.cf,v 3.19 2000/02/15 16:55:09 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/usl.cf,v 3.20 2000/10/24 18:07:34 dawes Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -60,6 +60,15 @@ XCOMM operating system: OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVer
 # define DefaultCCOptions	-W0,-2A -Xa -Dasm=__asm
 #endif
 #define BuildLibPathVar	  LD_LIBRARY_PATH
+
+/* UnixWare 7.x comes with perl. */
+#ifndef HasPerl
+# if OSMajorVersion >= 7
+#  define HasPerl		YES
+# else
+#  define HasPerl		NO
+# endif
+#endif
 
 #ifndef UseExportLists
 # define UseExportLists YES
