@@ -1,5 +1,5 @@
 /* $XConsortium: access.c,v 1.73 94/04/17 20:26:53 rws Exp $ */
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.1 1994/05/04 15:05:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.2 1994/05/08 05:25:25 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -84,9 +84,9 @@ SOFTWARE.
 #endif /* AMOEBA || MINIX */
 #include <ctype.h>
 
-#if defined(TCPCONN) || defined(STREAMSCONN) || defined(ISC)
+#if defined(TCPCONN) || defined(STREAMSCONN) || defined(ISC) || defined(SCO)
 #include <netinet/in.h>
-#endif /* TCPCONN || STREAMSCONN || ISC */
+#endif /* TCPCONN || STREAMSCONN || ISC || SCO */
 #ifdef DNETCONN
 #include <netdnet/dn.h>
 #include <netdnet/dnetdb.h>
