@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessCommon.h,v 1.1 2003/04/15 01:05:44 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessCommon.h,v 1.2 2003/04/30 23:15:35 torrey Exp $ */
 
 #ifndef _ROOTLESSCOMMON_H
 #define _ROOTLESSCOMMON_H
@@ -77,6 +77,7 @@ typedef struct _RootlessScreenRec {
     MoveWindowProcPtr MoveWindow;
     ResizeWindowProcPtr ResizeWindow;
     RestackWindowProcPtr RestackWindow;
+    ReparentWindowProcPtr ReparentWindow;
     ChangeBorderWidthProcPtr ChangeBorderWidth;
     PositionWindowProcPtr PositionWindow;
     ChangeWindowAttributesProcPtr ChangeWindowAttributes;
@@ -231,11 +232,6 @@ extern RegionRec rootlessHugeRoot;
     }									\
 }
 
-
-// Returns the top-level parent of pWindow.
-// The root is the top-level parent of itself, even though the root is
-// not otherwise considered to be a top-level window.
-WindowPtr TopLevelParent(WindowPtr pWindow);
 
 // Returns TRUE if this window is visible inside a frame
 // (e.g. it is visible and has a top-level or root parent)

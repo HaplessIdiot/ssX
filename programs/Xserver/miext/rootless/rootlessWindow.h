@@ -26,7 +26,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessWindow.h,v 1.2 2002/04/03 00:06:32 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessWindow.h,v 1.1 2003/04/15 01:05:44 torrey Exp $ */
 
 #ifndef _ROOTLESSWINDOW_H
 #define _ROOTLESSWINDOW_H
@@ -50,6 +50,7 @@ void RootlessCopyWindow(WindowPtr pWin,DDXPointRec ptOldOrg,RegionPtr prgnSrc);
 void RootlessMoveWindow(WindowPtr pWin,int x,int y,WindowPtr pSib,VTKind kind);
 void RootlessResizeWindow(WindowPtr pWin, int x, int y,
 			  unsigned int w, unsigned int h, WindowPtr pSib);
+void RootlessReparentWindow(WindowPtr pWin, WindowPtr pPriorParent);
 void RootlessPaintWindowBackground(WindowPtr pWin, RegionPtr pRegion,
                                    int what);
 void RootlessPaintWindowBorder(WindowPtr pWin, RegionPtr pRegion,

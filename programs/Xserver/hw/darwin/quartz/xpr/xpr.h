@@ -26,8 +26,9 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/xpr.h,v 1.1 2003/04/30 23:15:42 torrey Exp $ */
 
 #include "screenint.h"
 
+void AppleDRIExtensionInit(void);
 Bool xprInit(ScreenPtr pScreen);

@@ -28,7 +28,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessScreen.c,v 1.1 2003/04/15 01:05:44 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessScreen.c,v 1.2 2003/04/30 23:15:35 torrey Exp $ */
 
 
 #include "mi.h"
@@ -48,7 +48,7 @@
 #include "rootlessCommon.h"
 #include "rootlessWindow.h"
 
-/* In microseconds */
+/* In milliseconds */
 #ifndef ROOTLESS_REDISPLAY_DELAY
 #define ROOTLESS_REDISPLAY_DELAY 10
 #endif
@@ -608,6 +608,7 @@ RootlessWrap(ScreenPtr pScreen)
     WRAP(PositionWindow);
     WRAP(ResizeWindow);
     WRAP(RestackWindow);
+    WRAP(ReparentWindow);
     WRAP(ChangeBorderWidth);
     WRAP(MarkOverlappedWindows);
     WRAP(ValidateTree);

@@ -28,7 +28,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessCommon.c,v 1.1 2003/04/15 01:05:44 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessCommon.c,v 1.2 2003/04/30 23:15:35 torrey Exp $ */
 
 #include "rootlessCommon.h"
 
@@ -136,7 +136,8 @@ void RootlessStartDrawing(WindowPtr pWindow)
 
 /*
  * RootlessStopDrawing
- *  Stop drawing to a window's backing buffer. If flush is true
+ *  Stop drawing to a window's backing buffer. If flush is true,
+ *  damaged regions are flushed to the screen.
  */
 void RootlessStopDrawing(WindowPtr pWindow, Bool flush)
 {

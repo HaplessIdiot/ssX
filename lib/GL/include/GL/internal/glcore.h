@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/include/GL/internal/glcore.h,v 1.8 2002/02/22 21:32:55 dawes Exp $ */
+/* $XFree86: xc/lib/GL/include/GL/internal/glcore.h,v 1.9 2002/08/28 06:41:25 torrey Exp $ */
 #ifndef __gl_core_h_
 #define __gl_core_h_
 
@@ -48,7 +48,7 @@
 
 #define GL_CORE_SGI  1
 #define GL_CORE_MESA 2
-#define GL_CORE_AQUA 3
+#define GL_CORE_APPLE 4
 
 typedef struct __GLcontextRec __GLcontext;
 typedef struct __GLinterfaceRec __GLinterface;

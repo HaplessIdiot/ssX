@@ -35,36 +35,6 @@
 			path = XView.m;
 			refType = 4;
 		};
-		014C68F200ED7AD67F000001 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			path = fakeBoxRec.h;
-			refType = 4;
-		};
-		014C68F300EE5AB97F000001 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			path = rootlessCommon.c;
-			refType = 4;
-		};
-		014C68F400EE5AB97F000001 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			path = rootlessCommon.h;
-			refType = 4;
-		};
-		014C68F700EE678F7F000001 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			path = rootlessWindow.c;
-			refType = 4;
-		};
-		014C68F800EE678F7F000001 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			path = rootlessWindow.h;
-			refType = 4;
-		};
 		015698ED003DF345CE6F79C2 = {
 			isa = PBXFileReference;
 			path = XDarwin.icns;
@@ -98,18 +68,6 @@
 			name = IOKit.framework;
 			path = /System/Library/Frameworks/IOKit.framework;
 			refType = 0;
-		};
-		017D6F4400E861FB7F000001 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			path = rootlessGC.c;
-			refType = 4;
-		};
-		017D6F4500E861FB7F000001 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			path = rootlessScreen.c;
-			refType = 4;
 		};
 		018F40F2003E1902CE6F79C2 = {
 			children = (
@@ -340,6 +298,7 @@
 			dependencies = (
 				6EF065C903D4F0CA006877C2,
 				6EF065C703D4EE19006877C2,
+				6E11A986048BDFFB006877C2,
 			);
 			isa = PBXApplicationTarget;
 			name = XDarwin;
@@ -355,7 +314,7 @@
 	<key>CFBundleExecutable</key>
 	<string>XDarwin</string>
 	<key>CFBundleGetInfoString</key>
-	<string>XDarwin 1.3a2, ©2001-2003 XFree86 Project, Inc.</string>
+	<string>XDarwin 1.3a3, ©2001-2003 XFree86 Project, Inc.</string>
 	<key>CFBundleIconFile</key>
 	<string>XDarwin.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -367,7 +326,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>XDarwin 1.3a2</string>
+	<string>XDarwin 1.3a3</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
@@ -581,6 +540,7 @@
 				0A79E19E004499A1CE6F79C2,
 				6EF7C58703D3BC6D00000104,
 				6EF065C603D4EE19006877C2,
+				6E11A985048BDFEE006877C2,
 			);
 			isa = PBXGroup;
 			name = Products;
@@ -754,6 +714,7 @@
 			targets = (
 				0A79E19F004499A1CE6F79C2,
 				6EF7C58603D3BC6D00000104,
+				6E11A984048BDFEE006877C2,
 				6EF065C503D4EE19006877C2,
 			);
 		};
@@ -766,6 +727,7 @@
 				F5614B3D025112D901000114,
 				6EC4A64C042A9597006877C2,
 				32FEE13C00E07C3E7F000001,
+				6EE1214104968658006877C2,
 				6EC4A66D042A97FC006877C2,
 				29B97315FDCFA39411CA2CEA,
 				29B97317FDCFA39411CA2CEA,
@@ -864,61 +826,19 @@
 				F56CBD0D02EB84A801129B8A,
 				F56CBD0E02EB84A801129B8A,
 				F56CBD0F02EBDCFC01129B8A,
-				014C68F200ED7AD67F000001,
 				F5269C2D01D5BC3501000001,
 				F5269C2E01D5BC3501000001,
-				32FEE13E00E07CBE7F000001,
 				32FEE13F00E07CBE7F000001,
-				32FEE14000E07CBE7F000001,
-				32FEE14100E07CBE7F000001,
-				32FEE14200E07CBE7F000001,
-				014C68F300EE5AB97F000001,
-				014C68F400EE5AB97F000001,
-				017D6F4400E861FB7F000001,
-				017D6F4500E861FB7F000001,
-				014C68F700EE678F7F000001,
-				014C68F800EE678F7F000001,
-				32FEE14900E07D317F000001,
 			);
 			isa = PBXGroup;
-			name = "Cocoa Imp";
+			name = "Old Cocoa Imp";
 			path = "";
-			refType = 4;
-		};
-		32FEE13E00E07CBE7F000001 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			path = rootless.h;
 			refType = 4;
 		};
 		32FEE13F00E07CBE7F000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			path = rootlessAqua.h;
-			refType = 4;
-		};
-		32FEE14000E07CBE7F000001 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			path = rootlessAquaGlue.c;
-			refType = 4;
-		};
-		32FEE14100E07CBE7F000001 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			path = rootlessAquaImp.h;
-			refType = 4;
-		};
-		32FEE14200E07CBE7F000001 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			path = rootlessAquaImp.m;
-			refType = 4;
-		};
-		32FEE14900E07D317F000001 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			path = rootlessValTree.c;
 			refType = 4;
 		};
 //320
@@ -1036,6 +956,146 @@
 //6E2
 //6E3
 //6E4
+		6E11A97F048BDFEE006877C2 = {
+			buildActionMask = 2147483647;
+			files = (
+			);
+			isa = PBXHeadersBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6E11A980048BDFEE006877C2 = {
+			buildActionMask = 2147483647;
+			files = (
+			);
+			isa = PBXResourcesBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6E11A981048BDFEE006877C2 = {
+			buildActionMask = 2147483647;
+			files = (
+			);
+			isa = PBXSourcesBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6E11A982048BDFEE006877C2 = {
+			buildActionMask = 2147483647;
+			files = (
+			);
+			isa = PBXFrameworksBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6E11A983048BDFEE006877C2 = {
+			buildActionMask = 2147483647;
+			files = (
+			);
+			isa = PBXRezBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6E11A984048BDFEE006877C2 = {
+			buildPhases = (
+				6E11A97F048BDFEE006877C2,
+				6E11A980048BDFEE006877C2,
+				6E11A981048BDFEE006877C2,
+				6E11A982048BDFEE006877C2,
+				6E11A983048BDFEE006877C2,
+			);
+			buildSettings = {
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = glxCGL;
+				SECTORDER_FLAGS = "";
+				WARNING_CFLAGS = "-Wmost -Wno-four-char-constants -Wno-unknown-pragmas";
+				WRAPPER_EXTENSION = bundle;
+			};
+			dependencies = (
+			);
+			isa = PBXBundleTarget;
+			name = glxCGL;
+			productInstallPath = "$(USER_LIBRARY_DIR)/Bundles";
+			productName = glxCGL;
+			productReference = 6E11A985048BDFEE006877C2;
+			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
+<plist version=\"1.0\">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleExecutable</key>
+	<string>glxCGL</string>
+	<key>CFBundleGetInfoString</key>
+	<string></string>
+	<key>CFBundleIconFile</key>
+	<string></string>
+	<key>CFBundleIdentifier</key>
+	<string></string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>GLX bundle using Apple's OpenGL</string>
+	<key>CFBundlePackageType</key>
+	<string>BNDL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.1</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>0.1</string>
+</dict>
+</plist>
+";
+		};
+		6E11A985048BDFEE006877C2 = {
+			isa = PBXBundleReference;
+			path = glxCGL.bundle;
+			refType = 3;
+		};
+		6E11A986048BDFFB006877C2 = {
+			isa = PBXTargetDependency;
+			target = 6E11A984048BDFEE006877C2;
+		};
+		6E11A987048C0D0F006877C2 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			path = xprWindow.c;
+			refType = 4;
+		};
+		6E6656EC048832CF006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = "x-hook.c";
+			refType = 4;
+		};
+		6E6656ED048832CF006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = "x-hook.h";
+			refType = 4;
+		};
+		6E6656F0048832EC006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = dri.c;
+			refType = 4;
+		};
+		6E6656F1048832EC006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = dri.h;
+			refType = 4;
+		};
+		6E6656F2048832EC006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = dristruct.h;
+			refType = 4;
+		};
+		6E6656F3048832F9006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = appledri.c;
+			refType = 4;
+		};
 		6EA8EEC80445E25C006877C2 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
@@ -1110,12 +1170,19 @@
 		6EC4A66D042A97FC006877C2 = {
 			children = (
 				6EF471A004478DE0006877C2,
+				6E6656F3048832F9006877C2,
+				6E6656F0048832EC006877C2,
+				6E6656F1048832EC006877C2,
+				6E6656F2048832EC006877C2,
 				6ECF218404589E4D006877C2,
 				6ECF218604589F40006877C2,
 				6EF4719E04478B08006877C2,
 				6EDDB2DF04508B2C006877C2,
+				6E11A987048C0D0F006877C2,
 				6EF471A204479263006877C2,
 				6EF471A404479263006877C2,
+				6E6656EC048832CF006877C2,
+				6E6656ED048832CF006877C2,
 				6EF471A504479263006877C2,
 				6EF471A304479263006877C2,
 			);
@@ -1139,6 +1206,48 @@
 			fileEncoding = 4;
 			isa = PBXFileReference;
 			path = xprScreen.c;
+			refType = 4;
+		};
+		6EE1214104968658006877C2 = {
+			children = (
+				6EE1214304968692006877C2,
+				6EE1214404968692006877C2,
+				6EE1214204968692006877C2,
+				6EE1214504968692006877C2,
+				6EE1214604968692006877C2,
+			);
+			isa = PBXGroup;
+			path = cr;
+			refType = 4;
+		};
+		6EE1214204968692006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = cr.h;
+			refType = 4;
+		};
+		6EE1214304968692006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = XView.m;
+			refType = 4;
+		};
+		6EE1214404968692006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = XView.h;
+			refType = 4;
+		};
+		6EE1214504968692006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = crFrame.m;
+			refType = 4;
+		};
+		6EE1214604968692006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = crScreen.m;
 			refType = 4;
 		};
 		6EF065C003D4EE19006877C2 = {
@@ -1335,7 +1444,7 @@
 			);
 			isa = PBXBundleTarget;
 			name = glxAGL;
-			productName = glxAqua;
+			productName = glxAGL;
 			productReference = 6EF7C58703D3BC6D00000104;
 			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
@@ -1354,7 +1463,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>GLX bundle with AGL</string>
+	<string>GLX bundle using AGL framework</string>
 	<key>CFBundlePackageType</key>
 	<string>BNDL</string>
 	<key>CFBundleShortVersionString</key>

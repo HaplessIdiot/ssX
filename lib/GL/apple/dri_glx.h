@@ -1,7 +1,7 @@
-/* $XFree86: xc/lib/GL/glx/dispatch.c,v 1.4 2002/02/22 21:32:53 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
+Copyright (c) 2002 Apple Computer, Inc.
 All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a
@@ -28,46 +28,42 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * Authors:
+ *   Kevin E. Martin <kevin@precisioninsight.com>
  *   Brian Paul <brian@precisioninsight.com>
  *
  */
 
-#ifndef GLX_USE_APPLEGL
+#ifndef _DRI_GLX_H_
+#define _DRI_GLX_H_
 
-#include <GL/gl.h>
-#include "glapi.h"
-#include "glapitable.h"
+#ifdef GLX_DIRECT_RENDERING
 
+typedef void *(*CreateScreenFunc)(Display *dpy, int scrn, __DRIscreen *psc,
+                                  int numConfigs, __GLXvisualConfig *config);
 
-/*
- * NOTE: this file implements C-based dispatch of the OpenGL entrypoints
- * (glAccum, glBegin, etc).
- * This code IS NOT USED if we're compiling on an x86 system and using
- * the glapi_x86.S assembly code.
- */
+struct __DRIdisplayPrivateRec {
+    /*
+    ** XFree86-DRI version information
+    */
+    int driMajor;
+    int driMinor;
+    int driPatch;
 
+    /*
+    ** Array of library handles [indexed by screen number]
+    */
+    CreateScreenFunc **createScreen;
+};
 
-#if !(defined(USE_X86_ASM) || defined(USE_SPARC_ASM))
+typedef struct __DRIdisplayPrivateRec  __DRIdisplayPrivate;
+typedef struct __DRIscreenPrivateRec   __DRIscreenPrivate;
+typedef struct __DRIvisualPrivateRec   __DRIvisualPrivate;
+typedef struct __DRIcontextPrivateRec  __DRIcontextPrivate;
+typedef struct __DRIdrawablePrivateRec __DRIdrawablePrivate;
 
-#define KEYWORD1
+extern void *__driCreateScreen (Display *dpy, int scrn, __DRIscreen *psc,
+				int numConfigs, __GLXvisualConfig *config);
+extern void __driRegisterExtensions (void);
 
-#define KEYWORD2
-
-#define NAME(func) gl##func
-
-#define DISPATCH(func, args, msg)					\
-   const struct _glapi_table *dispatch;					\
-   dispatch = _glapi_Dispatch ? _glapi_Dispatch : _glapi_get_dispatch();\
-   (dispatch->func) args
-
-#define RETURN_DISPATCH(func, args, msg) 				\
-   const struct _glapi_table *dispatch;					\
-   dispatch = _glapi_Dispatch ? _glapi_Dispatch : _glapi_get_dispatch();\
-   return (dispatch->func) args
-
-
-#include "glapitemp.h"
-
-#endif /* USE_X86_ASM */
-
-#endif /* !GLX_USE_APPLEGL */
+#endif /* GLX_DIRECT_RENDERING */
+#endif /* _DRI_GLX_H_ */

@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessAquaGlue.c,v 1.6 2003/04/30 23:15:39 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/cr/crScreen.m,v 1.1 2003/06/07 05:49:07 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "cr.h"
@@ -44,6 +44,9 @@
 #include "scrnintstr.h"
 #include "picturestr.h"
 #undef BOOL
+
+// Name of GLX bundle using AGL framework
+const char *quartzOpenGLBundle = "glxAGL.bundle";
 
 
 /*
