@@ -1,4 +1,5 @@
 XFree86 4.3.99.5 (xx May 2003)
+ 177. Fix another xedit compile problem (Marc La France).
  176. Small fix for Italian keyboard map (Sebastiano Vigna).
  175. Don't ship xf86Bus.h and xf86pciBus.h with the SDK (Marc La France).
  174. Restore VGA driver's checking for depths 1, 4 & 8 (Marc La France).
@@ -16966,7 +16967,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2696 2003/05/19 14:47:29 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2697 2003/05/20 12:27:08 pascal Exp $
 
 
 
