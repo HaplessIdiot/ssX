@@ -21,7 +21,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_memmgr.h,v 1.1 2003/04/15 15:35:47 alanh Exp $ */
 /* kernel internal memory management */
 
 /*#define   XV_DEBUG	  1*/	  /* write log msg to /var/log/XFree86.0.log */
@@ -33,10 +33,8 @@
   #define DBG_DD(x)
 #endif
 
-#ifndef __LINUX_MEM_H
-#define __LINUX_MEM_H
-
-#include <linux/videodev.h>
+#ifndef __VIA_MEMMGR_H
+#define __VIA_MEMMGR_H
 
 struct offrange
 	   {
@@ -134,4 +132,4 @@ BOOL viaFreeSurface(unsigned long S_Addr,int size,unsigned char ctype);
 
 #define PrintMemLayOut	 PrintFBMem
 
-#endif /* end of LINUX_MEM_H */
+#endif /* end of __VIA_MEMMGR_H */
