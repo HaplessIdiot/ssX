@@ -8,10 +8,10 @@
 <title> Information for Chips and Technologies Users
 <author> David Bateman (<email>dbateman@club-internet.fr</email>),
          Egbert Eich (<email>eich@xfree86.org</email>)
-<date> 19th July 1999
+<date> 14th June 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.29 1999/08/28 11:18:16 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.30 2000/03/05 16:59:11 dawes Exp $
 </ident>
 
 <!-- Table of contents -->
@@ -35,6 +35,7 @@ to use this version. These features include
 <item>Gamma correction at all depths and DirectColor visuals for depths of
 	15 or greater with the HiQV series of chipsets.
 <item>Supports PsuedoColor overlays on 16bpp TrueColor screens for HiQV.
+<item>Supports YUV colour space conversion with the XVideo extension.
 <item>32bpp pixmaps while using a framebuffer in 24bpp packed pixel mode.
 <item>Heaps more acceleration.
 <item>1/4bpp support.
@@ -115,9 +116,9 @@ HiQV architecture.
 <descrip>
 <tag>ct65550</tag>
 	This chip includes many new features, including improved BitBLT
-	support (24bpp color expansion, wider maximum pitch, etc), Multimedia
+	support (24bpp colour expansion, wider maximum pitch, etc), Multimedia
 	unit (video capture, zoom video port, etc) and 24bpp uncompressed true
-	color (i.e 32bpp mode). Also memory mapped I/O is possible on all bus
+	colour (i.e 32bpp mode). Also memory mapped I/O is possible on all bus
 	configurations. 
 	(Max Ram: 2Mb, Max Dclk: 80MHz@3.3V,100MHz@5V)
 <tag>ct65554</tag>
@@ -414,14 +415,24 @@ Option "Overlay"
 	multimedia engine to its limit, and some manufacturers have set a
 	default memory clock that will cause pixel errors with this option.
 	If you get pixel error with this option try using the
-	"<tt>SetMClk</tt>" option to slow the memory clock.
+	"<tt>SetMClk</tt>" option to slow the memory clock. It should also
+	be noted that the XVideo extension uses the same capabilities of the
+	HiQV chipsets as the Overlays. So using this option disables the
+	XVideo extension.
 <tag>
 Option "ColorKey" "255" 
 </tag>
-	Normally the color transparency key for the overlay is the 8bpp lookup
+	Normally the colour transparency key for the overlay is the 8bpp lookup
 	table entry 255. This might cause troubles with some applications, and
-	so this option allows the color transparency key to be set to some
+	so this option allows the colour transparency key to be set to some
 	other value. Legal values are 2 to 255 inclusive.
+<tag>
+Option "VideoKey" "255" 
+</tag>
+	This sets the default pixel value for the YUV video overlay key. Legal
+	values for this key are depth dependent. That is from 0 to 255 for
+	8bit depth, 0 to 32,767 for 15bit depth, etc. This option might be used
+	if the default video overlay key causes problems.
 <tag>
 Option "XaaNoScreenToScreenCopy",
 Option "XaaNoSolidFillRect",
@@ -494,6 +505,11 @@ driver you'll needed to considered several points
 	is therefore similar to a 24bpp mode. The overlay consumes memory
 	bandwidth, so that the maximum dotclock will be similar to a 24bpp
 	mode.
+<tag> * XVideo extension* </tag>
+		Like the overlays, the Xvideo extension uses a part of the
+	video memory for a second framebuffer. In this case enough memory
+	needs to be left for the largest unscaled video window that will be 
+	displayed.
 <tag> * VESA like modes </tag>
 		We recommend that you try and pick a mode that is similar
 	to a standard VESA mode. If you don't a suspend/resume or LCD/CRT
@@ -811,6 +827,10 @@ video processor beyond it capabilities won't cause damage.
 	that is too high for use with the "<tt>Overlay</tt>" option. So with 
 	the "<tt>Overlay</tt>" option, using the "<tt>SetMClk</tt>" option to
 	reduce the speed of the memory clock is recommended.
+<tag> The mpeg video playing with the XVideo extension has corrupted colours </tag>
+	The XVideo extension has only recently been added to the chips driver.
+	Some YUV to RGB colour have been noted at 15 and 16 bit colour depths.
+	However, 8 and 24 bit colour depths seem to work fine.
 <tag> I can't start X-windows with 16, 24 or 32bpp</tag>
 	Firstly, is your machine capable of 16/24/32bpp with the mode
 	specified. Many LCD displays are incapable of using a 24bpp 

@@ -8,7 +8,7 @@
 <date>9 June 2000, last update by Dejan Ilic <dejan.ilic@home.se>
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/rendition.sgml,v 1.9 2000/03/31 20:13:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/rendition.sgml,v 1.10 2000/06/13 02:28:33 dawes Exp $
 </ident>
 
 <toc>
@@ -29,7 +29,7 @@ Some V1000-based video cards are known to lock up the computer if you have write
 
 If you have problems with hardware cursor use the "sw_cursor" option to revert back to software cursor.<p>
 
-This is essentialy a port of XFree86 3.3.x driver to the new XFree86
+This is essentially a port of XFree86 3.3.x driver to the new XFree86
 4.0 API, and thus we have put most of effort in making a working driver
 with the most basic features. Support for multi-head support and
 acceleration are next on the list of features to be included.<p>
@@ -80,7 +80,7 @@ The option is not activated by default.
 <sect>News in this release (XFree86 4.1)<p>
 <itemize>
 <item>DirectColor support
-<item>Silkenmouse support
+<item>SilkenMouse support
 </itemize>
 
 <sect>Major changes in this release <p>

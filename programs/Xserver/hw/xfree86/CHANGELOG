@@ -1,4 +1,6 @@
 XFree86 4.0c (13 June 2000)
+ 275. Doc update for the chips driver (#3981, David Bateman).
+ 274. Fix some problems building with the SDK (#3981, David Bateman).
  273. Fix comments for the address matching algorithm in
       XauGetAuthByAddr() and XauGetBestAuthByAddr() (Keith Packard, based on
       #3939, Peter Runestig).
@@ -10548,4 +10550,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1180 2000/06/13 23:15:49 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1181 2000/06/14 00:16:07 dawes Exp $
