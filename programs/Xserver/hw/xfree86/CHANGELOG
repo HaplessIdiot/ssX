@@ -1,4 +1,8 @@
 XFree86 4.3.99.16 (xx November 2003)
+ 554. Fixes for GLX on Mac OS X:
+       - Make libGL not export libGLU symbols.
+       - Fix uninitialized mutex for threaded direct GLX.
+      (John Harper).
  553. Fix "Non-aligned pointer being freed" warnings on XDarwin startup
       (Torrey T. Lyons).
  552. Miscellaneous fixes for Panther:
@@ -18104,7 +18108,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2934 2003/11/04 23:34:13 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2935 2003/11/05 00:14:56 torrey Exp $
 
 
 
