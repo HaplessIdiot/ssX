@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.73 2002/06/28 20:41:40 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.76 2002/11/18 05:24:20 paulo Exp $ */
 /*
- * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
+ * Copyright 2000-2002 by Alan Hourihane, Flint Mountain, North Wales.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -169,8 +169,14 @@ xf86AddBusDeviceToConfigure(const char *driver, BusType bus, void *busData, int 
 				 NOVENDOR, NOSUBSYS,
 				 &VendorName, &CardName, NULL, NULL);
 
-	if (!VendorName || !CardName) {
-   	    FatalError("\nXFree86 has found a valid card configuration.\nUnfortunately the appropriate data has not been added to xf86PciInfo.h.\nPlease forward 'scanpci -v' output to XFree86 support team.");
+	if (!VendorName) {
+	    VendorName = xnfalloc(15);
+	    sprintf((char*)VendorName, "Unknown Vendor");
+	}
+
+	if (!CardName) {
+	    CardName = xnfalloc(14);
+	    sprintf((char*)CardName, "Unknown Board");
 	}
 
 	NewDevice.GDev.identifier =

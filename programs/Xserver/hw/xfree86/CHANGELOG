@@ -1,4 +1,6 @@
 XFree86 4.2.99.3 (xx November 2002)
+ 554. Allow -configure to setup Unknown Vendor/Boards removing the requirement
+      of xf86PciInfo information (Alan Hourihane).
  553. Hardware alpha blended cursors in the "nv" driver, new PCI IDs, and
       a fix for a problem on PowerPC (Mark Vojkovich).
  552. "nv" driver workaround needed to let Xv continue to work after a 
@@ -15636,4 +15638,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2406 2002/11/26 02:20:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2407 2002/11/26 23:54:31 mvojkovi Exp $
