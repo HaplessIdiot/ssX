@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.6 2000/02/29 03:09:22 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.7 2000/02/29 18:01:20 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Portions Copyright © 1996-2000 by The XFree86 Project, Inc.
@@ -50,7 +50,7 @@ BASEDIST=" \
 
 ETCDIST="Xetc.tgz"
 
-VARDIST="Xvar.tgz"
+VARDIST=""
 
 SERVDIST=" \
 	Xxserv.tgz \
@@ -84,6 +84,8 @@ ETCLINKS=" \
 	xsm \
 	xserver \
 	"
+
+XKBDIR="/etc/X11/xkb"
 
 FONTDIRS=" \
 	local \
@@ -235,7 +237,11 @@ GetOsInfo()
 			;;
 		*)
 			L="-L"
+			;;
 		esac
+		;;
+	SunOS)
+		L="-h"				# /bin/sh built-in doesn't do -L
 		;;
 	OS-with-no-symlinks)	# Need to set this correctly
 		L="-b"
@@ -557,16 +563,20 @@ fi
 
 GetOsInfo
 
-# Make OS-specific adjustments to the distribution file lists
+# Make OS-specific adjustments
 
 case "$OsName" in
+FreeBSD|NetBSD|OpenBSD)
+	VARDIST="Xvar.tgz"
+	XKBDIR="/var/db/xkb"
+	;;
 Interactive)	# Need the correct name for this
-	VARDIST=""
 	EXTRADIST="Xbin1.tgz"
 	EXTRAOPTDIST="Xxdm.tgz"
 	;;
-LynxOS)
-	VARDIST=""
+Linux)
+	VARDIST="Xvar.tgz"
+	XKBDIR="/var/state/xkb"
 	;;
 esac
 
@@ -677,6 +687,8 @@ if [ X"$NEEDSOMETHING" != X ]; then
 	exit 1
 fi
 
+echo ""
+
 # Link extract to gnu-tar so it can also be used as a regular tar
 rm -f gnu-tar
 ln extract gnu-tar
@@ -737,6 +749,10 @@ if [ X"$OLDDIRS" != X ]; then
 	echo ""
 fi
 
+if [ ! -d $RUNDIR/lib/X11/xkb ]; then
+	echo "Creating $RUNDIR/lib/X11/xkb"
+	mkdir $RUNDIR/lib/X11/xkb
+fi
 # Check for config file directories that may need to be moved.
 
 EtcToMove=
@@ -823,6 +839,17 @@ for i in $ETCLINKS; do
 			$TAR -C $RUNDIR/lib/X11/$i -v -x -p -U -f -
 	fi
 done
+if [ X"$XKBDIR" != X ]; then
+	rm -fr $RUNDIR/lib/X11/xkb/compiled
+	if [ X"$NoSymLinks" = XYES ]; then
+		XKBDIR=$RUNDIR/lib/X11/xkb/compiled
+	fi
+	if [ -d .etctmp/xkb ]; then
+		mkdir $XKBDIR
+		$TAR -C .etctmp/xkb -c -f - . | \
+			$TAR -C $XKBDIR -v -x -p -U -f -
+	fi
+fi
 rm -fr .etctmp
 
 echo "Installing the mandatory parts of the binary distribution"
@@ -832,6 +859,11 @@ for i in $BASEDIST $SERVDIST; do
 done
 if [ X"$VARDIST" != X ]; then
 	(cd $VARDIR; $EXTRACT $WDIR/$VARDIST)
+fi
+
+if [ X"$XKBDIR" != X -a X"$XKBDIR" != X"$RUNDIR/lib/X11/xkb/compiled" ]; then
+	rm -fr $RUNDIR/lib/X11/xkb/compiled
+	ln -s $XKBDIR $RUNDIR/lib/X11/xkb/compiled
 fi
 
 echo "Checking for optional components to install ..."
