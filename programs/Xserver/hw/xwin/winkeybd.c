@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winkeybd.c,v 1.7 2001/11/11 22:45:57 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winkeybd.c,v 1.8 2001/11/12 08:47:53 alanh Exp $ */
 
 
 #include "win.h"
@@ -137,11 +137,12 @@ winKeybdBell (int iPercent, DeviceIntPtr pDeviceInt,
 	      pointer pCtrl, int iClass)
 {
   /*
-   * Window 95 and later ignore the parameters to Beep.
-   * Systems with sound cards will play the default sound event;
-   * systems without sound cards will play the standard system beep.
+   * We can't use Beep () here because it uses the PC speaker
+   * on NT/2000.  MessageBeep (MB_OK) will play the default system
+   * sound on systems with a sound card or it will beep the PC speaker
+   * on systems that do not have a sound card.
    */
-  Beep (0, 0);
+  MessageBeep (MB_OK);
 }
 
 
