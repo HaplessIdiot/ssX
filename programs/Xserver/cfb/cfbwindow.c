@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbwindow.c,v 1.4 2003/10/29 22:44:53 tsi Exp $ */
 
 #include "X.h"
 #include "scrnintstr.h"
@@ -177,7 +177,7 @@ cfbCopyWindow(pWin, ptOldOrg, prgnSrc)
 
     pwinRoot = WindowTable[pWin->drawable.pScreen->myNum];
 
-    REGION_NULL(pWin->drawable.pScreen, &rgnDst);
+    REGION_INIT(pWin->drawable.pScreen, &rgnDst, NullBox, 0);
 
     dx = ptOldOrg.x - pWin->drawable.x;
     dy = ptOldOrg.y - pWin->drawable.y;
