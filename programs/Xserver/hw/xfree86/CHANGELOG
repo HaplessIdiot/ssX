@@ -1,4 +1,5 @@
 XFree86 3.0C (22 June 1994)
+112. Fix server crash when started with a lock key on.
 111. Recognise 864/964 PCI as capable of linear memory access.
 110. Fix ramdac access and clock probe problems with AGX server (Henry Worth).
 109. Support for Stealth 64 (S3 964 + Bt485) (Steven Parker).
