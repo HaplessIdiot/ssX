@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.58 2002/05/07 12:53:49 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.59 2002/05/16 14:54:07 tsi Exp $ */
 
 #include "apm.h"
 #include "xf86cmap.h"
@@ -864,7 +864,7 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     xf86RegisterResources(pEnt->index, NULL, ResNone);
-    xf86SetOperatingState(RES_SHARED_VGA, pEnt->index, ResDisableOpr);
+    xf86SetOperatingState(resVga, pEnt->index, ResDisableOpr);
     pScrn->racMemFlags = 0;	/* For noLinear, access to 0xA0000 */
     if (pApm->VGAMap)
 	pScrn->racIoFlags = 0;

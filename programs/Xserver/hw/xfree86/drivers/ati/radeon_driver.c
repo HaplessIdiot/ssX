@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.59 2002/07/15 14:22:39 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.60 2002/07/16 13:31:40 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -92,6 +92,7 @@
 #include "xf86_OSproc.h"
 #include "xf86PciInfo.h"
 #include "xf86RAC.h"
+#include "xf86Resources.h"
 #include "xf86cmap.h"
 #include "vbe.h"
 
@@ -2313,7 +2314,7 @@ static void RADEONSetSyncRangeFromEdid(ScrnInfoPtr pScrn, int flag)
     }
 }
 
-static int RADEONValidateCloneModes(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
+static int RADEONValidateCloneModes(ScrnInfoPtr pScrn)
 {
     RADEONInfoPtr   info             = RADEONPTR(pScrn);
     ClockRangePtr   clockRanges;
@@ -2585,7 +2586,7 @@ static Bool RADEONPreInitModes(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
 		xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 			   "Clone modes validation ------------ \n");
 
-		modesFound = RADEONValidateCloneModes(pScrn, pInt10);
+		modesFound = RADEONValidateCloneModes(pScrn);
 		if (modesFound < 1) {
 		    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 			       "No valid mode found for CRTC2 clone\n");
@@ -2990,7 +2991,10 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
     if (xf86RegisterResources(info->pEnt->index, 0, ResExclusive))
 	goto fail;
 
-    pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR;
+    if (xf86SetOperatingState(resVga, info->pEnt->index, ResUnusedOpr))
+	goto fail;
+
+    pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_VIEWPORT | RAC_CURSOR;
     pScrn->monitor     = pScrn->confScreen->monitor;
 
     if (!RADEONPreInitVisual(pScrn))

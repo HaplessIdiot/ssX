@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.81 2002/01/14 18:02:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.83 2002/04/04 14:05:46 eich Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -937,8 +937,8 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 
     ps3v->PciInfo = xf86GetPciInfoForEntity(pEnt->index);
     xf86RegisterResources(pEnt->index,NULL,ResNone);
-    xf86SetOperatingState(RES_SHARED_VGA, pEnt->index, ResUnusedOpr);
-    xf86SetOperatingState(resVgaMemShared, pEnt->index, ResDisableOpr);
+    xf86SetOperatingState(resVgaIo, pEnt->index, ResUnusedOpr);
+    xf86SetOperatingState(resVgaMem, pEnt->index, ResDisableOpr);
 
     /*
      * Set the Chipset and ChipRev, allowing config file entries to

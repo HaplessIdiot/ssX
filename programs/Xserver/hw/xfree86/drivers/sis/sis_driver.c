@@ -27,7 +27,7 @@
  *
  *  Fixes for 630 chipsets: Thomas Winischhofer.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.69 2001/11/30 12:12:00 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.80 2002/04/04 14:05:48 eich Exp $ */
 
 #include "fb.h"
 #include "xf1bpp.h"
@@ -709,13 +709,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
      * XXX This could be refined if some VGA memory resources are not
      * decoded in operating mode.
      */
-    {
-        resRange vgamem[] = {   {ResShrMemBlock,0xA0000,0xAFFFF},
-                                {ResShrMemBlock,0xB0000,0xB7FFF},
-                                {ResShrMemBlock,0xB8000,0xBFFFF},
-                            _END };
-        xf86SetOperatingState(vgamem, pSiS->pEnt->index, ResUnusedOpr);
-    }
+    xf86SetOperatingState(resVgaMem, pSiS->pEnt->index, ResUnusedOpr);
 
     /* Operations for which memory access is required */
     pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;

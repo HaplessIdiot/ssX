@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.10 2002/05/10 12:50:05 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.11 2002/05/10 12:57:01 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -1158,20 +1158,10 @@ Bool I830BIOSPreInit (ScrnInfoPtr pScrn,int flags)
       xf86LoaderReqSymLists(I810ramdacSymbols, NULL);
    }
 
-   /*  We wont be using the VGA access after the probe */
-   {
-      resRange vgaio[] = { {ResShrIoBlock,0x3B0,0x3BB},
-			   {ResShrIoBlock,0x3C0,0x3DF},
-			   _END };
-      resRange vgamem[] = {{ResShrMemBlock,0xA0000,0xAFFFF},
-			   {ResShrMemBlock,0xB8000,0xBFFFF},
-			   {ResShrMemBlock,0xB0000,0xB7FFF},
-			   _END };
-
-      I810SetMMIOAccess(pI810);
-      xf86SetOperatingState(vgaio, pI810->pEnt->index, ResUnusedOpr);
-      xf86SetOperatingState(vgamem, pI810->pEnt->index, ResDisableOpr);
-   }
+   /* We won't be using the VGA access after the probe */
+   I810SetMMIOAccess(pI810);
+   xf86SetOperatingState(resVgaIo, pI810->pEnt->index, ResUnusedOpr);
+   xf86SetOperatingState(resVgaMem, pI810->pEnt->index, ResDisableOpr);
 
    return TRUE;
 }

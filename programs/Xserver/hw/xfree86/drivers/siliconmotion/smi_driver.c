@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.22 2002/01/25 21:56:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.24 2002/04/04 14:05:47 eich Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -60,11 +60,11 @@ static void SMI_LeaveVT(int scrnIndex, int flags);
 static void SMI_Save (ScrnInfoPtr pScrn);
 static void SMI_WriteMode (ScrnInfoPtr pScrn, vgaRegPtr, SMIRegPtr);
 static Bool SMI_ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc,
-						   char **argv);
+                           char **argv);
 static int SMI_InternalScreenInit(int scrnIndex, ScreenPtr pScreen);
 static void SMI_PrintRegs(ScrnInfoPtr);
 static ModeStatus SMI_ValidMode(int scrnIndex, DisplayModePtr mode,
-								Bool verbose, int flags);
+                                Bool verbose, int flags);
 static void SMI_DisableVideo(ScrnInfoPtr pScrn);
 static void SMI_EnableVideo(ScrnInfoPtr pScrn);
 static Bool SMI_MapMem(ScrnInfoPtr pScrn);
@@ -73,9 +73,9 @@ static Bool SMI_ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static Bool SMI_CloseScreen(int scrnIndex, ScreenPtr pScreen);
 static Bool SMI_SaveScreen(ScreenPtr pScreen, int mode);
 static void SMI_LoadPalette(ScrnInfoPtr pScrn, int numColors, int *indicies,
-							LOCO *colors, VisualPtr pVisual);
+                            LOCO *colors, VisualPtr pVisual);
 static void SMI_DisplayPowerManagementSet(ScrnInfoPtr pScrn,
-										  int PowerManagementMode, int flags);
+                                          int PowerManagementMode, int flags);
 static Bool SMI_ddc1(int scrnIndex);
 static unsigned int SMI_ddc1Read(ScrnInfoPtr pScrn);
 static void SMI_FreeScreen(int ScrnIndex, int flags);
@@ -83,15 +83,14 @@ static void SMI_ProbeDDC(ScrnInfoPtr pScrn, int index);
 
 
 #define SILICONMOTION_NAME          "Silicon Motion"
-#define SILICONMOTION_DRIVER_NAME	"siliconmotion"
+#define SILICONMOTION_DRIVER_NAME   "siliconmotion"
 #define SILICONMOTION_VERSION_NAME  "1.3.1"
-#define SILICONMOTION_VERSION_MAJOR	1
+#define SILICONMOTION_VERSION_MAJOR 1
 #define SILICONMOTION_VERSION_MINOR 3
 #define SILICONMOTION_PATCHLEVEL    1
-#define SILICONMOTION_DRIVER_VERSION	( (SILICONMOTION_VERSION_MAJOR << 24)  \
-										| (SILICONMOTION_VERSION_MINOR << 16)  \
-										| (SILICONMOTION_PATCHLEVEL)		   \
-										)
+#define SILICONMOTION_DRIVER_VERSION ((SILICONMOTION_VERSION_MAJOR << 24) | \
+                                      (SILICONMOTION_VERSION_MINOR << 16) | \
+                                      (SILICONMOTION_PATCHLEVEL))
 
 /*
  * This contains the functions needed by the server after loading the
@@ -868,8 +867,8 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 
 	pSmi->PciInfo = xf86GetPciInfoForEntity(pEnt->index);
 	xf86RegisterResources(pEnt->index, NULL, ResExclusive);
-/*	xf86SetOperatingState(RES_SHARED_VGA, pEnt->index, ResUnusedOpr);*/
-/*	xf86SetOperatingState(resVgaMemShared, pEnt->index, ResDisableOpr);*/
+/*	xf86SetOperatingState(resVgaIo, pEnt->index, ResUnusedOpr); */
+/*	xf86SetOperatingState(resVgaMem, pEnt->index, ResDisableOpr); */
 
 	/*
 	 * Set the Chipset and ChipRev, allowing config file entries to

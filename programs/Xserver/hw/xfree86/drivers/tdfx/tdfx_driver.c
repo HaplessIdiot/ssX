@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.88 2002/01/23 18:48:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.89 2002/01/25 21:56:11 tsi Exp $ */
 
 /*
  * Authors:
@@ -742,7 +742,7 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
    * We don't need VGA resources during OPERATING state. However I'm
    * not sure if they are disabled.
    */
-  xf86SetOperatingState(RES_SHARED_VGA, pTDFX->pEnt->index, ResDisableOpr);
+  xf86SetOperatingState(resVgaIo, pTDFX->pEnt->index, ResDisableOpr);
 #if 0
   pScrn->racIoFlags = RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
   pScrn->racMemFlags = RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
@@ -752,7 +752,7 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
 
   /* Is VGA memory disabled during OPERATING state? */
 
-  xf86SetOperatingState(resVgaMemShared, pTDFX->pEnt->index, ResDisableOpr);
+  xf86SetOperatingState(resVgaMem, pTDFX->pEnt->index, ResDisableOpr);
 #else
   pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
 #endif

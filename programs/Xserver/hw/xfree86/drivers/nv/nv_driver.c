@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.86 2002/03/15 05:16:40 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.87 2002/03/18 21:47:48 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -883,25 +883,16 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     pNv->Primary = xf86IsPrimaryPci(pNv->PciInfo);
 
     /* Initialize the card through int10 interface if needed */
-    if (xf86LoadSubModule(pScrn, "int10")){
+    if (xf86LoadSubModule(pScrn, "int10")) {
  	xf86LoaderReqSymLists(int10Symbols, NULL);
 #if !defined(__alpha__) && !defined(__powerpc__)
         xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Initializing int10\n");
         pNv->pInt = xf86InitInt10(pNv->pEnt->index);
 #endif
-     }
-   
-    {
-        resRange vgaio[] =      { {ResShrIoBlock,0x3B0,0x3BB},
-                                  {ResShrIoBlock,0x3C0,0x3DF},
-                                  _END };
- 	resRange vgamem[] =	{ {ResShrMemBlock,0xA0000,0xAFFFF},
- 				  {ResShrMemBlock,0xB8000,0xBFFFF},
-                                  {ResShrMemBlock,0xB0000,0xB7FFF},
- 				  _END };
-        xf86SetOperatingState(vgaio, pNv->pEnt->index, ResUnusedOpr);
- 	xf86SetOperatingState(vgamem, pNv->pEnt->index, ResDisableOpr);
     }
+   
+    xf86SetOperatingState(resVgaIo, pNv->pEnt->index, ResUnusedOpr);
+    xf86SetOperatingState(resVgaMem, pNv->pEnt->index, ResDisableOpr);
 
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;

@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.171 2002/05/25 18:42:40 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.172 2002/05/28 10:39:39 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -1173,7 +1173,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     vgaIOBase = hwp->IOBase;
     pTrident->PIOBase = hwp->PIOOffset;
 
-    xf86SetOperatingState(RES_SHARED_VGA, pTrident->pEnt->index, ResUnusedOpr);
+    xf86SetOperatingState(resVga, pTrident->pEnt->index, ResUnusedOpr);
 
     /* The ramdac module should be loaded here when needed */
     if (!xf86LoadSubModule(pScrn, "ramdac"))

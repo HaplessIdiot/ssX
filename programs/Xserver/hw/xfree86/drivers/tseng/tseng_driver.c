@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.88 2001/10/28 03:33:52 tsi Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.90 2002/04/04 14:05:49 eich Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1775,7 +1775,7 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
 	 * but to play safe, it is marked as "unused" for now.
 	 * Changed this to "disable". Otherwise it might interfere with DGA.
 	 */
-	xf86SetOperatingState(resVgaMemShared, pTseng->pEnt->index, ResDisableOpr);
+	xf86SetOperatingState(resVgaMem, pTseng->pEnt->index, ResDisableOpr);
     }
     
     /* hibit processing (TsengProcessOptions() must have been called first) */

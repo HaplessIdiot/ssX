@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.63 2002/06/05 20:05:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.64 2002/07/02 13:02:48 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -93,6 +93,7 @@
 #include "xf86_OSproc.h"
 #include "xf86PciInfo.h"
 #include "xf86RAC.h"
+#include "xf86Resources.h"
 #include "xf86cmap.h"
 #include "xf86xv.h"
 #include "vbe.h"
@@ -1820,8 +1821,9 @@ Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
 	       info->PciInfo->func);
 
     if (xf86RegisterResources(info->pEnt->index, 0, ResNone)) goto fail;
+    if (xf86SetOperatingState(resVga, info->pEnt->index, ResUnusedOpr)) goto fail;
 
-    pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR;
+    pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_VIEWPORT | RAC_CURSOR;
     pScrn->monitor     = pScrn->confScreen->monitor;
 
     if (!R128PreInitVisual(pScrn))    goto fail;

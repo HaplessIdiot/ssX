@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.117 2002/01/04 21:22:27 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.119 2002/04/04 14:05:42 eich Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -1355,11 +1355,10 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     if (cPtr->Flags & ChipsLinearSupport) 
- 	xf86SetOperatingState(resVgaMemShared, cPtr->pEnt->index,
-			      ResDisableOpr);
+ 	xf86SetOperatingState(resVgaMem, cPtr->pEnt->index, ResDisableOpr);
 
     if (cPtr->MMIOBaseVGA)
- 	xf86SetOperatingState(RES_SHARED_VGA, cPtr->pEnt->index, ResDisableOpr);
+ 	xf86SetOperatingState(resVgaIo, cPtr->pEnt->index, ResDisableOpr);
     vbeFree(cPtr->pVbe);
     cPtr->pVbe = NULL;
     return TRUE;

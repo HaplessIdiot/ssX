@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.217 2002/02/20 17:17:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.219 2002/04/04 14:05:43 eich Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1271,19 +1271,8 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     pMga->Primary = xf86IsPrimaryPci(pMga->PciInfo);
 
 #ifndef DISABLE_VGA_IO
-    {
- 	resRange vgaio[] =	{ {ResShrIoBlock,0x3B0,0x3BB},
- 				  {ResShrIoBlock,0x3C0,0x3DF},
- 				  _END };
- 	resRange vga1mem[] =	{ {ResShrMemBlock,0xA0000,0xAFFFF},
- 				  {ResShrMemBlock,0xB8000,0xBFFFF},
- 				  _END };
- 	resRange vga2mem[] =	{ {ResShrMemBlock,0xB0000,0xB7FFF},
- 				  _END };
- 	xf86SetOperatingState(vgaio, pMga->pEnt->index, ResUnusedOpr);
- 	xf86SetOperatingState(vga1mem, pMga->pEnt->index, ResDisableOpr);
- 	xf86SetOperatingState(vga2mem, pMga->pEnt->index, ResDisableOpr);
-    }
+    xf86SetOperatingState(resVgaIo, pMga->pEnt->index, ResUnusedOpr);
+    xf86SetOperatingState(resVgaMem, pMga->pEnt->index, ResDisableOpr);
 #else
     /*
      * Set our own access functions, which control the vgaioen bit.

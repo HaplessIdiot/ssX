@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.59 2002/02/14 22:08:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.60 2002/02/26 05:10:56 tsi Exp $ */
 /*
  * Copyright 1999 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -661,9 +661,18 @@ ATIPreInit
         }
     }
 
+#ifdef AVOID_CPIO
+
+    pScreenInfo->racMemFlags =
+        RAC_FB | RAC_COLORMAP | RAC_VIEWPORT | RAC_CURSOR;
+
+#else /* AVOID_CPIO */
+
     pScreenInfo->racIoFlags =
         RAC_FB | RAC_COLORMAP | RAC_VIEWPORT | RAC_CURSOR;
-    pScreenInfo->racMemFlags = RAC_FB;
+    pScreenInfo->racMemFlags = RAC_FB | RAC_CURSOR;
+
+#endif /* AVOID_CPIO */
 
     /* Deal with ChipID & ChipRev overrides */
     if (pGDev->chipID >= 0)
@@ -782,12 +791,13 @@ ATIPreInit
 #endif /* AVOID_CPIO */
 
         case ATI_ADAPTER_MACH64:
-            /* Find and mmap() MMIO area */
-            Block0Base = pATI->Block0Base;
             do
             {
-                /* Only allow auxiliary aperture if it exists */
-                if (!pATI->Block0Base)
+                /*
+                 * Find and mmap() MMIO area.  Allow only auxiliary aperture if
+                 * it exists.
+                 */
+                if (!(Block0Base = pATI->Block0Base))
                 {
                     if (pVideo)
                     {
@@ -2435,11 +2445,11 @@ ATIPreInit
 #endif /* AVOID_CPIO */
 
     {
-        pATI->OldHW.crtc = pATI->NewHW.crtc;
+        pATIHW->crtc = pATI->NewHW.crtc;
 
 #ifndef AVOID_CPIO
 
-        pATI->OldHW.SetBank = (ATIBankProcPtr)NoopDDA;
+        pATIHW->SetBank = (ATIBankProcPtr)NoopDDA;
         pATI->BankInfo.BankSize = 0;            /* No banking */
 
 #endif /* AVOID_CPIO */
@@ -2450,7 +2460,7 @@ ATIPreInit
 
     else
     {
-        pATI->OldHW.crtc = ATI_CRTC_VGA;
+        pATIHW->crtc = ATI_CRTC_VGA;
 #if 0 /* ___NOT_YET___ */
         if (pATI->ChipHasSUBSYS_CNTL)
         {
@@ -2459,7 +2469,7 @@ ATIPreInit
 #endif
         if ((pATI->Chip >= ATI_CHIP_88800GXC) &&
             (pATI->LockData.crtc_gen_cntl & CRTC_EXT_DISP_EN))
-            pATI->OldHW.crtc = ATI_CRTC_MACH64;
+            pATIHW->crtc = ATI_CRTC_MACH64;
 
         if (pATI->depth <= 4)
         {
@@ -2472,35 +2482,34 @@ ATIPreInit
             pATI->NewHW.nPlane = 1;
         }
 
-        if ((pATI->OldHW.crtc != ATI_CRTC_VGA) ||
-            (GetReg(SEQX, 0x04U) & 0x08U))
-            pATI->OldHW.nPlane = 1;
+        if ((pATIHW->crtc != ATI_CRTC_VGA) || (GetReg(SEQX, 0x04U) & 0x08U))
+            pATIHW->nPlane = 1;
         else
-            pATI->OldHW.nPlane = 4;
+            pATIHW->nPlane = 4;
 
-        pATI->OldHW.nBank = ATIDivide(pATI->VideoRAM,
-            pATI->OldHW.nPlane * pATI->BankInfo.BankSize, 10, 1);
+        pATIHW->nBank = ATIDivide(pATI->VideoRAM,
+            pATIHW->nPlane * pATI->BankInfo.BankSize, 10, 1);
         pATI->NewHW.nBank = ATIDivide(pATI->VideoRAM,
             pATI->NewHW.nPlane * pATI->BankInfo.BankSize, 10, 1);
 
         if (pATI->VGAAdapter == ATI_ADAPTER_VGA)
         {
-            pATI->OldHW.SetBank = pATI->NewHW.SetBank =
+            pATIHW->SetBank = pATI->NewHW.SetBank =
                 (ATIBankProcPtr)NoopDDA;
-            pATI->OldHW.nBank = pATI->NewHW.nBank = 1;
+            pATIHW->nBank = pATI->NewHW.nBank = 1;
         }
         else if (!pATI->UseSmallApertures)
-            pATI->OldHW.SetBank = pATI->NewHW.SetBank;
-        else if ((pATI->OldHW.crtc == ATI_CRTC_VGA) &&
+            pATIHW->SetBank = pATI->NewHW.SetBank;
+        else if ((pATIHW->crtc == ATI_CRTC_VGA) &&
                  !(pATI->LockData.config_cntl & CFG_MEM_VGA_AP_EN))
         {
-            pATI->OldHW.SetBank = (ATIBankProcPtr)NoopDDA;
-            pATI->OldHW.nBank = 1;
+            pATIHW->SetBank = (ATIBankProcPtr)NoopDDA;
+            pATIHW->nBank = 1;
         }
-        else if (pATI->OldHW.nPlane == 1)
-            pATI->OldHW.SetBank = ATIMach64SetBankPacked;
+        else if (pATIHW->nPlane == 1)
+            pATIHW->SetBank = ATIMach64SetBankPacked;
         else
-            pATI->OldHW.SetBank = ATIMach64SetBankPlanar;
+            pATIHW->SetBank = ATIMach64SetBankPlanar;
 
         if (((ApertureSize * pATI->depth) / pATI->BankInfo.nBankDepth) >=
             (unsigned)(pScreenInfo->videoRam * 1024))
@@ -2723,6 +2732,7 @@ ATIPreInit
         if (DefaultmaxClock < ATIClockRange.maxClock)
             ATIClockRange.maxClock = DefaultmaxClock;
     }
+
     if (pATI->ClockDescriptor.MaxN <= 0)
     {
         ATIClockRange.maxClock = DefaultmaxClock;
