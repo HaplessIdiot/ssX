@@ -33,7 +33,6 @@
   come out with a working driver when you reach the end.  I do advise
   that you read it all the way through before starting.
 
-
   2.  Getting Started
 
   The first step in developing a new driver is to get the documentation
@@ -64,6 +63,7 @@
   this information, you are ready to begin work on your new driver.
 
 
+
   3.  Directory Tree Structure
 
   Here is an outline of the directory tree structure for the source
@@ -78,7 +78,6 @@
 
         xf86site.def
            XFree86 local configuration customization
-
 
      xc/programs/Xserver/hw/xfree86/
         The server source
@@ -128,7 +127,6 @@
               Contains the SVGA driver subdirectories.  Each contains an
               Imakefile, a .c file for the driver, and a .s file for the
               bank- switching functions.
-
 
         vga2/
            The monochrome vga server directories.  Most of the files are
@@ -181,7 +179,6 @@
            `vgaHW.c' is also copied here, for reference (it is not built
            as part of the Link Kit).
 
-
   4.  Setting Up The Build Information
 
   This section describes the peripheral configuration and build steps
@@ -199,7 +196,6 @@
         not follow this convention should not deter you from using it
         now - most of that code was developed before the driver
         interface had been made flexible and extensible.
-
         For this documentation, we'll use chips from the SuperDuper
         Chips vendor.  Hence, we'll use `sdc' for the name of the
         driver.
@@ -265,6 +261,7 @@
            `XF86Vga256Drivers', `XF86Vga16Drivers' and `XF86Vga2Drivers'
            definitions as described in (a) above.
 
+
      5. Now copy the prototype files into your new directories:
 
         o  If you are working in the source tree, copy the `stub' files
@@ -315,7 +312,6 @@
   That's all the prep work needed.  Now it's time to work on the actual
   driver.
 
-
   5.  The Bank-Switching Functions
 
   The normal VGA memory map is 64k starting at address 0xA0000.  To
@@ -332,7 +328,6 @@
   scheme would improve the performance of the server, it is not
   currently supported.  Hence there is no way to use such features for a
   new chipset.
-
   Most SVGA chipsets have two bank registers.  This is the most
   desirable structure (if any banking structure can be called
   ``desirable''), because data can be moved from one area of the screen
@@ -381,7 +376,6 @@
   reference will give examples of this code; if not, it is not difficult
   to figure out, especially using the other drivers as examples.
 
-
   6.  The Driver Itself
 
   Now it's time to get down to the real work - writing the major driver
@@ -393,12 +387,12 @@
         data structure contains pointers to the driver functions and
         some data-structure initialization as well.
 
-
      2. Provide a driver-local data structure to hold the contents of
         the chipset registers.  This data structure will contain a
         generic part and a driver-specific part.  It is used to save the
         initial chipset state, and is initialized by the driver to put
         the chipset into different modes.
+
 
      3. Provide an identification function that the server will call to
         list the chipsets that the driver is capable of supporting.
@@ -490,7 +484,6 @@
   learn a lot about what manipulations you must do by looking at the
   various BIOS modes.
 
-
   6.1.  Multiple Chipsets And Options
 
   It is possible, and in fact desirable, to have a single driver support
@@ -520,7 +513,6 @@
   #define, and define the string->symbol mapping in the table in that
   file.  To see how option flags are used, look at the ET4000, PVGA1/WD,
   and Trident drivers.
-
 
   6.2.  Data Structures
 
@@ -595,7 +587,6 @@
         server.  This value is usually 8, but may be 4 or 16 for some
         chipsets.
 
-
   6.3.  The Ident() function
 
   The Ident() function is a very simple function.  The server will call
@@ -603,7 +594,6 @@
   the list of configured drivers.  The Ident() function should return a
   chipset name for a supported chipset.  The function is passed a number
   which increments from 0 on each iteration.
-
 
   6.4.  The ClockSelect() function
 
@@ -620,7 +610,6 @@
 
   This function should return FALSE if the passed-in index value is
   invalid or if the clock can't be set for some reason.
-
 
   6.5.  The Probe() function
 
@@ -657,7 +646,6 @@
         function, and passing it the number of clocks available and a
         pointer to the ClockSelect() function.
 
-
      3. It is recommended that the `maxClock' field of the server's
         `vga256InfoRec' structure be filled in with the maximum dot-
         clock rate allowed for this chipset (specified in KHz).  If this
@@ -677,7 +665,6 @@
         initialized with the allowed option flags using the OFLG_SET()
         macro.
 
-
   6.6.  The EnterLeave() function
 
   The EnterLeave() function is called whenever the virtual console on
@@ -688,7 +675,6 @@
   access to ``protected'' registers that the driver must manipulate.  It
   is a fairly trivial function, and can be implemented by following the
   comments in the stub driver.
-
 
   6.7.  The Restore() function
 
@@ -723,7 +709,6 @@
 
      3. Extract the chipset-specific portion of the state information.
 
-
   6.9.  The Init() function
 
   The Init() function is the second most important function in the
@@ -746,7 +731,6 @@
   read/modify/write to only manipulate those bits.  Again, refer to the
   existing drivers for examples of what happens in this function.
 
-
   6.10.  The Adjust() function
 
   The Adjust() function is another fairly basic function.  It is called
@@ -756,7 +740,6 @@
   address on the chipset to match the specified coordinate.  Follow the
   comments in the stub driver for details on how to implement it.
 
-
   6.11.  The ValidMode() function
 
   The ValidMode() function is required.  It is used to check for any
@@ -764,7 +747,6 @@
   gets called by higher levels of the code after the Probe() stage.  In
   many cases no special checking will be required and this function will
   simply return TRUE always.
-
 
   6.12.  The SaveScreen() function
 
@@ -783,7 +765,6 @@
   will be affected by the reset into static variables on the SS_START
   call, and then restore them on the SS_FINISH call.
 
-
   6.13.  The GetMode() function
 
   The GetMode() function is not used as of XFree86 1.3; its place in the
@@ -794,7 +775,6 @@
   to do interactive video mode adjustments.  This function will read the
   SVGA registers and fill in a DisplayModeRec structure with the current
   video mode.
-
 
   6.14.  The FbInit() function
 
@@ -855,7 +835,6 @@
            the 16 color server) or `make loadXF86_Mono' (to link the
            mono server).
 
-
   8.  Debugging
 
   Debugging a new driver can be a painful experience, unfortunately.  It
@@ -876,7 +855,6 @@
   By default the server is built without debugging symbols.  The server
   can grow VERY large with debugging enabled.  It is very simple to
   rebuild your driver for debugging, though.  Do the following:
-
 
      1. Go to the driver directory.
 
@@ -903,7 +881,6 @@
   source tree, and just learning about SVGA programming, it may be
   useful to rebuild vgaHW.c with debugging as well.
 
-
   9.  Advice
 
   I cannot stress this enough - study all available references, and the
@@ -920,8 +897,6 @@
   can be written and debugged in a day or two.  For someone just
   learning about this kind of programming, a week is more reasonable.
 
-
-
   10.  Advanced Topics
 
   Newer chipsets are getting into two advanced areas: programmable clock
@@ -930,7 +905,6 @@
   not yet defined.  It is advised that you contact the XFree86 team and
   get involved with the development/beta-testing team if you need to be
   working in these areas.
-
 
   11.  References
 
@@ -955,7 +929,6 @@
         including wuarchive.  It is DOS/BIOS oriented, but is still
         extremely useful, especially for developing probe functions).
 
-
   12.  Vendor Contact Information
 
 
@@ -972,10 +945,8 @@
 
         (905) 882-0546 (fax)
 
-
      Chips & Technologies
         ???
-
 
      Cirrus Logic (SVGA, Accelerators - CL-GD5426)
         3100 West Warren Ave.
@@ -997,14 +968,12 @@
 
         (408) 432-8324 (tech support)
 
-
      Headland Technologies, Inc (Video-7 VGA 1024i, VRAM II)
         46221 Landing Parkway
 
         Fremont, CA  94538
 
         (415) 623-7857
-
 
      Oak Technology, Inc (OTI-067,OTI-077)
         139 Kifer Ct.
@@ -1014,7 +983,6 @@
         (408) 737-0888
 
         (408) 737-3838 (fax)
-
 
      S3 (911, 924, 801
         805, 928)/ (408) 980-5400
@@ -1027,14 +995,12 @@
 
         (415) 691-9211
 
-
      Tseng Labs Inc,
         6 Terry Drive
 
         Newtown, PA  18940
 
         (215) 968-0502
-
 
      Weitek (Power9000, 5186)
         1060 E. Arques Ave,
@@ -1043,12 +1009,46 @@
 
         (408) 738-5765
 
-
      Western Digital
         (714) 932-4900
 
   $XConsortium: VGADriv.sgml,v 1.3 95/01/23 15:34:51 kaleb Exp $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VGADriv.sgml,v 3.5 1995/01/28 16:02:34 dawes Exp $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

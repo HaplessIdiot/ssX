@@ -403,7 +403,7 @@ chances are good it might work for you, too.
 
 <tag>S3 964, IBM RGB 514/524/525/528 RAMDAC &amp; Clockchip</tag>
 	<itemize>
-	<item> Hercules Graphics Terminator Pro 64
+	<item> Hercules Graphics Terminator 64
  <tscreen><verb>
  s3RefClk   50
  DACspeed  170
@@ -425,9 +425,14 @@ chances are good it might work for you, too.
  s3RefClk   16
  DACspeed  220
  </verb></tscreen>
-	<item> Hercules Graphics Terminator Pro 64
+	This card may require the line:
  <tscreen><verb>
- s3RefClk   16
+        Invert_VCLK "*" 0
+ </verb></tscreen>
+	in each Display subsection.
+	<item> STB Velocity 64
+ <tscreen><verb>
+ s3RefClk   24
  DACspeed  220
  </verb></tscreen>
 	<item> Number Nine FX Motion 771
@@ -679,7 +684,7 @@ exit
 
 <verb>
 $XConsortium: S3.sgml,v 1.6 95/01/27 16:14:30 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.23 1995/07/17 13:52:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.24 1995/07/21 14:40:53 dawes Exp $
 </verb>
 
 </article>

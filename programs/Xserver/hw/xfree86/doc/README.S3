@@ -396,7 +396,7 @@
 
      S3 964, IBM RGB 514/524/525/528 RAMDAC & Clockchip
 
-        o  Hercules Graphics Terminator Pro 64
+        o  Hercules Graphics Terminator 64
 
               s3RefClk   50
               DACspeed  170
@@ -425,9 +425,18 @@
 
 
 
-        o  Hercules Graphics Terminator Pro 64
+        This card may require the line:
 
-              s3RefClk   16
+                     Invert_VCLK "*" 0
+
+
+
+
+        in each Display subsection.
+
+        o  STB Velocity 64
+
+              s3RefClk   24
               DACspeed  220
 
 
@@ -450,34 +459,28 @@
   (There is a 24 bit mode under MS Windows, but it's not a 32bpp sparse
   mode but a real 3 bytes/pixel mode).
 
+
   3.  List of Supported Clock Chips
 
 
+       ICD2061A                                ==> ClockChip "icd2061a"
+       ICS9161A (ICD2061A compatible)          ==> ClockChip "ics9161a"
+       DCS2824-0 (Diamond, ICD2061A comp.)     ==> ClockChip "dcs2824"
 
+       S3 86c708 GENDAC                        ==> ClockChip "s3gendac"
+       ICS5300 GENDAC (86c708 compatible)      ==> ClockChip "ics5300"
 
+       S3 86c716 SDAC                          ==> ClockChip "s3_sdac"
+       ICS5342 GENDAC                          ==> ClockChip "ics5342"
+       STG 1703                                ==> ClockChip "stg1703"
 
+       Sierra SC11412                          ==> ClockChip "sc11412"
+       ICS2595                                 ==> ClockChip "ics2595"
+       TI3025                                  ==> ClockChip "ti3025"
+       TI3026                                  ==> ClockChip "ti3026"
+       IBM RGB 5xx                             ==> ClockChip "ibm_rgb5xx"
 
-
-
-
-  ICD2061A                                ==> ClockChip "icd2061a"
-  ICS9161A (ICD2061A compatible)          ==> ClockChip "ics9161a"
-  DCS2824-0 (Diamond, ICD2061A comp.)     ==> ClockChip "dcs2824"
-
-  S3 86c708 GENDAC                        ==> ClockChip "s3gendac"
-  ICS5300 GENDAC (86c708 compatible)      ==> ClockChip "ics5300"
-
-  S3 86c716 SDAC                          ==> ClockChip "s3_sdac"
-  ICS5342 GENDAC                          ==> ClockChip "ics5342"
-  STG 1703                                ==> ClockChip "stg1703"
-
-  Sierra SC11412                          ==> ClockChip "sc11412"
-  ICS2595                                 ==> ClockChip "ics2595"
-  TI3025                                  ==> ClockChip "ti3025"
-  TI3026                                  ==> ClockChip "ti3026"
-  IBM RGB 5xx                             ==> ClockChip "ibm_rgb5xx"
-
-  Chrontel 8391                           ==> ClockChip "ch8391"
+       Chrontel 8391                           ==> ClockChip "ch8391"
 
 
 
@@ -523,23 +526,20 @@
 
   chips labeled -80 or -8  should use `DacSpeed 80' in the device
   section
+       S3 86C716-ME SDAC  ==>  DacSpeed 110
+       SC15025-8          ==>  DacSpeed  80
+       ATT20C490-80       ==>  DacSpeed  80
 
+       IBM 8190429        ==>  DacSpeed 170
+       IBM 03H5428        ==>  DacSpeed 170
+       IBM 03H6447        ==>  DacSpeed 170
+       IBM 03H6448        ==>  DacSpeed 220
+       IBM 03H5319        ==>  DacSpeed 220
+       IBM 63G9902        ==>  DacSpeed 250
 
-
-  S3 86C716-ME SDAC  ==>  DacSpeed 110
-  SC15025-8          ==>  DacSpeed  80
-  ATT20C490-80       ==>  DacSpeed  80
-
-  IBM 8190429        ==>  DacSpeed 170
-  IBM 03H5428        ==>  DacSpeed 170
-  IBM 03H6447        ==>  DacSpeed 170
-  IBM 03H6448        ==>  DacSpeed 220
-  IBM 03H5319        ==>  DacSpeed 220
-  IBM 63G9902        ==>  DacSpeed 250
-
-  IBM 37RGB514CF17   ==>  DacSpeed 170
-  IBM 37RGB524CF22   ==>  DacSpeed 220
-                ^^
+       IBM 37RGB514CF17   ==>  DacSpeed 170
+       IBM 37RGB524CF22   ==>  DacSpeed 220
+                     ^^
 
 
 
@@ -699,7 +699,7 @@
 
 
   $XConsortium: S3.sgml,v 1.6 95/01/27 16:14:30 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.24 1995/07/21 14:40:53 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.25 1995/07/24 11:17:14 dawes Exp $
 
 
 
