@@ -1,4 +1,6 @@
 XFree86 4.0.99.x (xx April 2001)
+ 469. Disable HWcursor for CyberBladeXP chips (Alan Hourihane).
+ 468. Fix a Trident Cyber9388 setup issue (Alan Hourihane).
  467. Fix man page building and installing on Darwin. To be safe we assume
       the Darwin file system is case insensitive since one common variety is,
       ie. HFS+ (Torrey Lyons).
@@ -13134,4 +13136,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1738 2001/05/02 01:03:38 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1739 2001/05/02 05:49:27 torrey Exp $

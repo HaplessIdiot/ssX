@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.41 2001/02/15 17:59:07 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.42 2001/03/08 17:12:13 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -381,6 +381,7 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	case CYBER9397:
 	case IMAGE975:
 	case IMAGE985:
+	case CYBER9388:
 	    if (pScrn->bitsPerPixel >= 8)
     	    	pReg->tridentRegs3CE[MiscExtFunc] |= 0x10;
 	    if (!pReg->tridentRegs3x4[PreEndControl])
@@ -389,7 +390,6 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    	pReg->tridentRegs3x4[PreEndFetch] = 0xFF;
 	    /* Fall Through */
 	case PROVIDIA9685:
-	case CYBER9388:
 	case CYBER9385:
 	    pReg->tridentRegs3x4[Enhancement0] = 0x40;
 	    /* Fall Through */
