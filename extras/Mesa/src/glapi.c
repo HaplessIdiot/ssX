@@ -42,9 +42,7 @@
 
 
 
-#include <assert.h>
-#include <stdlib.h>  /* to get NULL */
-#include <string.h>
+#include "glheader.h"
 #include "glapi.h"
 #include "glapinoop.h"
 #include "glapioffsets.h"

@@ -30,7 +30,7 @@
  */
 
 
-#include <stdio.h>
+#include "glheader.h"
 #include "glapi.h"
 #include "glapinoop.h"
 #include "glapitable.h"

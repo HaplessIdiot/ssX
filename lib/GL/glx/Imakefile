@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.4 2000/02/08 17:18:29 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.5 2000/02/08 20:24:13 dawes Exp $
 XCOMM The contents of this file are subject to the GLX Public License Version 1.0
 XCOMM (the "License"). You may not use this file except in compliance with the
 XCOMM License. You may obtain a copy of the License at Silicon Graphics, Inc.,
@@ -54,7 +54,6 @@ LinkSourceFile(assyntax.h, ../../../extras/Mesa/src/X86)
 		glthread.c \
 		glxcmds.c \
 		glxext.c \
-		indirect_init.c \
 		pixel.c \
 		pixelstore.c \
 		render2.c \
@@ -76,7 +75,6 @@ LinkSourceFile(assyntax.h, ../../../extras/Mesa/src/X86)
 		glthread.o \
 		glxcmds.o \
 		glxext.o \
-		indirect_init.o \
 		pixel.o \
 		pixelstore.o \
 		render2.o \
@@ -89,8 +87,8 @@ LinkSourceFile(assyntax.h, ../../../extras/Mesa/src/X86)
 #if BuildXF86DRI
      GLX_DEFS = GlxDefines
      DRI_INCS = -I../dri
-     DRI_SRCS = dispatch.c
-     DRI_OBJS = dispatch.o
+     DRI_SRCS = dispatch.c indirect_init.c
+     DRI_OBJS = dispatch.o indirect_init.o
 #endif
 
 #if defined(i386Architecture) && BuildXF86DRI
