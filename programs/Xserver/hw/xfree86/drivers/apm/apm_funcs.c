@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_funcs.c,v 1.10 2000/02/11 22:35:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_funcs.c,v 1.11 2000/02/12 02:54:41 dawes Exp $ */
 
 #define FASTER
 #ifndef PSZ
@@ -26,7 +26,7 @@
 #if PSZ == 24
 #  define APM_SUFF_24	"24"
 #  ifdef IOP_ACCESS
-#    define A(s)		Apm##s##24_IOP
+#    define A(s)		Apm##s##24##_IOP
 #  else
 #    define A(s)		Apm##s##24
 #  endif
