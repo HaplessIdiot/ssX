@@ -9,7 +9,7 @@
 <date>30 June 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.6 2000/07/02 02:35:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.7 2000/07/03 16:51:11 dawes Exp $
 </ident>
 
 <abstract>
@@ -110,6 +110,9 @@ NOTES:
   <item>A few distributions don't have or require the <tt>Xvar.tgz</tt>
 	tarball.  If it is present in the <tt>binaries</tt> sub-directory
 	for your platform, then it is required.
+
+  <item>The Darwin/Mac OS X distribution doesn't have or require the
+	<tt>Xmod.tgz</tt> tarball.
 
   <item>Some distributions may have additional mandatory tarballs.
 	While rare, the installer script will tell you if any are missing.
@@ -281,6 +284,10 @@ new <tt>-configure</tt> X server option:
 <tscreen><verb>
 XFree86 -configure
 </verb></tscreen>
+
+Note that if you are running Darwin/Mac OS X, there is no step 3 :-).
+You should skip this step, as configuration is not required or possible.
+The X server configuration file is not used on Darwin/Mac OS X.
 
 The X server config file (<tt>XF86Config</tt>) format has changed
 compared to 3.3.x.  Also, its default location is now <tt>/etc/X11</tt>.
