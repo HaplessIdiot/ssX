@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/Imakefile,v 3.1 1994/05/15 03:01:07 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/Imakefile,v 3.2 1994/05/30 08:24:47 dawes Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
@@ -8,13 +8,11 @@ SRCS = */?*.c
 
 OBJS = */?*_drv.o
 
-all:: libmonodrv.a
+NormalDepLibraryTarget(monodrv,$(SUBDIRS),$(OBJS))
 
 NormalLibraryObjectRule()
 
-NamedMakeSubdirs(subdirs,$(SUBDIRS))
-
-NormalDepLibraryTarget(monodrv,subdirs,$(OBJS))
+ForceSubdirs($(SUBDIRS))
 
 DependSubdirs($(SUBDIRS))
 
