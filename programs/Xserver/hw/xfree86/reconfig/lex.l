@@ -1,8 +1,8 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/reconfig/lex.l,v 3.0 1994/09/03 02:52:17 dawes Exp $ */
 
 %{
+#include "os.h"
 #include "strlist.h"
-#include "malloc.h"
 #include "reconfig.h"
 
 struct keyword { 

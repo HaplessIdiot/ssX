@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.6 1994/07/24 11:49:18 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86oConfig.c,v 3.0 1994/09/03 02:51:52 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1444,7 +1444,7 @@ xf86Config (vtopen)
 	  break;
 #endif
       
-    case VGA256:
+    case SVGA:
     case VGA2:
     case MONO:
     case VGA16:

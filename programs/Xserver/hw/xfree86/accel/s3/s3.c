@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.20 1994/08/31 04:29:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.21 1994/09/03 02:51:29 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -102,8 +102,8 @@ ScrnInfoRec s3InfoRec =
    -1,			        /* int textclock */
    FALSE,			/* Bool           bankedMono */
    "S3",			/* char           *name */
-   {0, },			/* RgbRec blackColour */
-   {0, },			/* RgbRec whiteColour */
+   {0, },			/* xrgb blackColour */
+   {0, },			/* xrgb whiteColour */
    s3ValidTokens,		/* int *validTokens */
    S3_PATCHLEVEL,		/* char *patchlevel */
    0,				/* int IObase */
@@ -201,6 +201,7 @@ Bool s3Bt485PixMux = FALSE;
 Bool s3ClockDouble = FALSE;
 Bool s3ATT498PixMux = FALSE;
 
+static int pixelClock[MAXCLOCKS] = {0, };
 
 /*
  * s3PrintIdent -- print identification message
@@ -483,12 +484,6 @@ s3Probe()
 	       ErrorF("rev A or B\n");
 	 } else if (S3_928_SERIES(s3ChipId)) {
 	    char *pci = S3_928_P(s3ChipId) ? "-P" : "";
-#if 0
-	    if (S3_928_P(s3ChipId))
-		ErrorF("%s %s: chipset:   928-P\n",
-                   XCONFIG_PROBED, s3InfoRec.name);
-	    else
-#endif
 	    if (S3_928_REV_E(s3ChipId))
 		ErrorF("%s %s: chipset:   928%s, rev E or above\n",
                    XCONFIG_PROBED, s3InfoRec.name, pci);
@@ -561,11 +556,13 @@ s3Probe()
    else
       s3Mbanks = 0;
 
-   /*
-    * When using the s3InfoRec.ramdac field, the sanity checks/warnings stay,
-    * but, the OPTION flag setting/checking goes.
-    */
-
+   if (xf86bpp < 0) {
+      xf86bpp = s3InfoRec.depth;
+   }
+   if (s3InfoRec.weight.red != 0 && s3InfoRec.weight.green != 0 &&
+       s3InfoRec.weight.blue != 0) {
+      xf86weight = s3InfoRec.weight;
+   }
    switch (xf86bpp) {
    case 8:
       break;
@@ -712,14 +709,16 @@ s3Probe()
 	 if (id[0] == 'S' &&                  /* Sierra */
 	     ((id[1]<<8)|id[2]) == 15025) {   /* unique for the SC 15025/26 */
 	    if (id[3] != 'A') {                     /* version number */
-	       ErrorF("%s %s: ==> New Sierra SC 15025/26 version (%x) found, please report!\n",XCONFIG_PROBED, s3InfoRec.name,id[3]);
+	       ErrorF(
+		"%s %s: ==> New Sierra SC 15025/26 version (0x%x) found,\n",
+		XCONFIG_PROBED, s3InfoRec.name, id[3]);
+	       ErrorF("\tplease report!\n");
 	    }
 	    ErrorF("%s %s: Detected a Sierra SC 15025/26 RAMDAC\n",
 	           XCONFIG_PROBED, s3InfoRec.name);
 	    s3RamdacType = SC15025_DAC;
 	 }
       }
-
 
       /* If it wasn't a Sierra, probe for the STG1700 */
       if (s3RamdacType == UNKNOWN_DAC) 
@@ -880,8 +879,7 @@ s3Probe()
 	OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) ||
 	OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options) ||
 	OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) ||
-	OFLG_ISSET(OPTION_STEALTH64, &s3InfoRec.options) ||
-	OFLG_ISSET(OPTION_MIRO_CRYSTAL20SV, &s3InfoRec.options)))
+	S3_x64_SERIES(s3ChipId)))
       s3Bt485PixMux = TRUE;
 
    if ((DAC_IS_ATT498 || DAC_IS_STG1700 || DAC_IS_SDAC) && 
@@ -962,17 +960,10 @@ s3Probe()
 	 allowPixMuxSwitching = TRUE;
 	 pixMuxLimitedWidths = FALSE;
 	 pixMuxMinWidth = 1024;
-      } else if (OFLG_ISSET(OPTION_STEALTH64, &s3InfoRec.options)) {
-	 /* These are guesses... (Steve Parker) */
-	 nonMuxMaxClock = 67500;
-	 allowPixMuxSwitching = TRUE;
-	 pixMuxLimitedWidths = TRUE;
-	 pixMuxMinWidth = 800;
-      } else if (OFLG_ISSET(OPTION_MIRO_CRYSTAL20SV, &s3InfoRec.options)) {
+      } else if (S3_x64_SERIES(s3ChipId)) {
          nonMuxMaxClock = 0;  /* 964 can only be in pixmux mode when */
          pixMuxMinWidth = 0;  /* working in enhanced mode */  
 	 pixMuxLimitedWidths = FALSE;
-	 /* These should probably be used for the STEALTH64 too */
       } else {
 	 nonMuxMaxClock = 85000;
       }
@@ -1031,6 +1022,71 @@ s3Probe()
    if (pixMuxPossible && s3InfoRec.videoRam > nonMuxMaxMemory)
       pixMuxNeeded = TRUE;
 
+   /* Adjust the clocks in the mode list clock according to Bpp and ramdac */
+   for (pMode = s3InfoRec.pModes; pMode != NULL; pMode = pMode->next) {
+      switch(s3RamdacType) {
+      case NORMAL_DAC:
+	 /* only suports 8bpp -- nothing to do */
+	 break;
+      case BT485_DAC:
+      case ATT20C505_DAC:
+	 /* insert code */
+	 break;
+      case TI3020_DAC:
+	 /* insert code */
+	 break;
+      case TI3025_DAC:
+	 /* insert code */
+	 break;
+      case ATT20C498_DAC:
+	 /* insert code */
+	 break;
+      case ATT20C490_DAC:
+	 pMode->Clock *= s3Bpp;
+	 break;
+      case SC15025_DAC:
+	 /* insert code */
+	 break;
+      case STG1700_DAC:
+	 /* insert code */
+	 break;
+      case S3_SDAC_DAC:
+	 /* insert code */
+	 break;
+      }
+   }
+	 
+   /* Fill pixelClock with the actual pixel clock values available */
+   if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions)) {
+      for (i = 0; i < s3InfoRec.clocks; i++) {
+	 switch (s3RamdacType) {
+	 case NORMAL_DAC:
+	    pixelClock[i] = s3InfoRec.clock[i];
+	    break;
+	 case ATT20C490_DAC:
+	    pixelClock[i] = s3InfoRec.clock[i] / s3Bpp;
+	    break;
+	 /* Fill in for other Ramdac types */
+	 default:
+	    pixelClock[i] = s3InfoRec.clock[i];
+	    break;
+	 }
+      }
+      if (xf86Verbose && s3Bpp != 1 && pixelClock[0] != s3InfoRec.clock[0]) {
+	 ErrorF("%s %s: Effective pixel clocks available for depth %d:\n",
+		XCONFIG_PROBED, s3InfoRec.name, s3InfoRec.depth);
+	 for (j = 0; j < s3InfoRec.clocks; j++) {
+	    if ((j % 8) == 0) {
+	       if (j != 0)
+		  ErrorF("\n");
+               ErrorF("%s %s: pixel clocks:", XCONFIG_PROBED, s3InfoRec.name);
+	    }
+	    ErrorF(" %6.2f", (double)pixelClock[j] / 1000.0);
+         }
+         ErrorF("\n");
+      }
+   }
+
    tx = s3InfoRec.virtualX;
    ty = s3InfoRec.virtualY;
    pMode = s3InfoRec.modes;
@@ -1047,7 +1103,7 @@ s3Probe()
 	 xf86DeleteMode(&s3InfoRec, pMode);
       } else if ((pMode->HDisplay * (1 + pMode->VDisplay) * s3Bpp) >
 		 s3InfoRec.videoRam * 1024) {
-	 ErrorF("%s: Too little memory for mode %s\n", s3InfoRec.name,
+	 ErrorF("%s: Too little memory for mode \"%s\"\n", s3InfoRec.name,
 		pMode->name);
 	 ErrorF("%s: NB. 1 scan line is required for the hardware cursor\n",
 	        s3InfoRec.name);
@@ -1442,7 +1498,7 @@ icd2061ClockSelect(no)
 #if 0
       if (no < 2 
 	  && !(s3Bpp > 1 && DAC_IS_SC15025)
-	  && !(s3Bpp > 2 && DAC_IS_ATT498)	  
+	  && !(s3Bpp > 2 && (DAC_IS_ATT498 || DAC_IS_STG1700))
 	  ) {
          result = s3ClockSelect(no);
       } else 
@@ -1499,18 +1555,16 @@ icd2061ClockSelect(no)
 	       s3ClockDouble = FALSE;
 	       /* No doubler */
 	    }
-	 } else if (DAC_IS_ATT498) {
-	    if (s3Bpp > 2) {
-	    int maxfreq = 65000;
+	 } else if ((DAC_IS_ATT498 || DAC_IS_STG1700) && s3Bpp > 2) {
+	    int maxfreq = 55000;
 	    
 	    if (freq > maxfreq) {
-	       ErrorF("%s %s: Specified dot clock (%.2f) too high for ICD2061A/ATT498 in %dbpp mode",
+	       ErrorF("%s %s: Specified dot clock (%.2f) too high for ICD2061A/ATT498/STG1700 in %dbpp mode",
 		      XCONFIG_PROBED, s3InfoRec.name, freq / 1000.0, 8*s3Bpp);
 	       ErrorF("\tUsing %.2fMHz\n", maxfreq / 1000.0);
 	       freq = maxfreq;
 	    }
 	    freq *= 2;
-}
 	 } else if (DAC_IS_SC15025 && s3Bpp > 1) {
 	    int maxfreq;
 	    if (s3Bpp == 2) 

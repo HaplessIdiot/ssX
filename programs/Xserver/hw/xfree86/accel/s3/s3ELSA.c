@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.0 1994/08/31 04:29:47 dawes Exp $ */
 /* 
  * s3ELSA.c 
  * 
@@ -241,7 +241,8 @@ void main()
       printf("\tvfp     %d\n",ELSA_TIM_vfp(*eetim));
       printf("\tvsw     %d\n",ELSA_TIM_vsw(*eetim));
 #endif
-      printf("\"%dx%dx%d\" \t %7.3f   %4d %4d %4d %4d   %4d %4d %4d %4d\n"
+      if (ELSA_ET_VM_VALID(eetim))
+	 printf("\"%dx%dx%d\" \t %7.3f   %4d %4d %4d %4d   %4d %4d %4d %4d\n"
 	     ,ELSA_TIM_xres(*eetim),ELSA_TIM_yres(*eetim),ELSA_TIM_bpp(*eetim)
 	     ,(ELSA_TIM_pixfrq4(*eetim)*4)/1000.0
 	     ,ELSA_TIM_xres(*eetim)

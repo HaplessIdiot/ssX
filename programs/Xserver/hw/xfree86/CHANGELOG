@@ -1,3 +1,15 @@
+XFree86 3.0Dh (4 September 1994)
+221. Added minimal reconfig(1) man page so that 'make install.man'
+     doesn't fail.
+220. Combine Stealth64 and Miro Crystal 20SV code.  This should fix
+     some Stealth64 problems.
+219. Fix InstallManPageAliases rule for FreeBSD (Ernest Hua).
+218. 16bpp and 32bpp support for Cirrus driver -- still requires some changes
+     to the SVGA server, so not enabled yet (Harm Hanemaayer).
+217. Fixes for Mach32 cache clipping problems (Mike Bernson).
+216. 32bpp S3 updates for ELSA cards (Harald Koenig).
+215. Updates to new XF86Config code.
+
 XFree86 3.0Dg (3 September 1994)
 214. Change over to new config file format -- XF86Config (Gertjan Akkerman).
 

@@ -1,5 +1,5 @@
 /* $XConsortium: XF86_SVGA.c,v 1.1 94/03/28 21:22:11 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_SVGA.c,v 3.1 1994/06/28 12:29:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_SVGA.c,v 3.2 1994/08/31 04:33:06 dawes Exp $ */
 #include "X.h"
 #include "os.h"
 
@@ -19,7 +19,7 @@ int  xf86MaxScreens = sizeof(xf86Screens) / sizeof(ScrnInfoPtr);
 
 int xf86ScreenNames[] =
 {
-  VGA256,
+  SVGA,
   -1
 };
 

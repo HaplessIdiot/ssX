@@ -1,8 +1,8 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/reconfig/reconfig.y,v 3.0 1994/09/03 02:52:18 dawes Exp $ */
 
 %{
 #include <stdio.h>
-#include <stdlib.h>
+#include "os.h"
 #include "strlist.h"
 
 /* Author (of this quick hack): G.J. Akkerman

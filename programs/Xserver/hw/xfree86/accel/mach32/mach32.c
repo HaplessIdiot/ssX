@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.c,v 1.1 94/03/28 21:06:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.12 1994/08/31 05:45:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.13 1994/09/03 02:51:02 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -104,8 +104,8 @@ ScrnInfoRec mach32InfoRec = {
     -1,                 /* int textclock */   
     FALSE,              /* Bool bankedMono */
     "Mach32",           /* char *name */
-    {0, },		/* RgbRec blackColour */
-    {0, },		/* RgbRec whiteColour */
+    {0, },		/* xrgb blackColour */
+    {0, },		/* xrgb whiteColour */
     mach32ValidTokens,	/* int *validTokens */
     MACH32_PATCHLEVEL,	/* char *patchlevel */
     0,			/* int IObase */
@@ -382,6 +382,13 @@ mach32Probe()
 	return(FALSE);
     }
 
+    if (xf86bpp < 0) {
+	xf86bpp = mach32InfoRec.depth;
+    }
+    if (mach32InfoRec.weight.red != 0 && mach32InfoRec.weight.green != 0 &&
+	mach32InfoRec.weight.blue != 0) {
+	xf86weight = mach32InfoRec.weight;
+    }
     switch (xf86bpp) {
     case 8:
 	break;

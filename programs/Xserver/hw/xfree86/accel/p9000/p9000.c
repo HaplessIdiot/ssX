@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.9 1994/08/31 04:22:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.10 1994/09/03 02:51:18 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -105,8 +105,8 @@ ScrnInfoRec p9000InfoRec = {
     -1,                 /* int textclock, 1.3 new */
     FALSE,              /* Bool bankedMono */
     "P9000",            /* char *name */
-    {0, },		/* RgbRec blackColour */
-    {0, },		/* RgbRec whiteColour */
+    {0, },		/* xrgb blackColour */
+    {0, },		/* xrgb whiteColour */
     p9000ValidTokens,	/* int *validTokens */
     P9000_PATCHLEVEL,	/* char *patchlevel */
     0,			/* int IObase */
@@ -295,6 +295,13 @@ p9000Probe()
     if (!p9000VendorPtr->Validate())
       return(FALSE);
 
+    if (xf86bpp < 0) {
+        xf86bpp = p9000InfoRec.depth;
+    }
+    if (p9000InfoRec.weight.red != 0 && p9000InfoRec.weight.green != 0 &&
+        p9000InfoRec.weight.blue != 0) {
+        xf86weight = p9000InfoRec.weight;
+    }
     switch (xf86bpp)
       {
       case 8:
@@ -305,6 +312,7 @@ p9000Probe()
 	p9000InfoRec.defaultVisual = TrueColor;
 	defaultColorVisualClass = TrueColor;
 	break;
+      case 24:
       case 32:
 	p9000InfoRec.depth = 24;
 	p9000InfoRec.bitsPerPixel = 32;     /* Use sparse 24 bpp (RGBX) */

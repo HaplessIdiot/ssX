@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.1 94/03/28 21:55:24 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.11 1994/08/31 04:49:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.12 1994/09/03 02:53:12 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -124,11 +124,11 @@ ScrnInfoRec vga256InfoRec = {
 #ifdef XF86VGA16
   "VGA16",		/* char *name */
 #else
-  "VGA256",		/* char *name */
+  "SVGA",		/* char *name */
 #endif
 #endif
-  {0, 0, 0},		/* RgbRec blackColour */ 
-  {0x3F, 0x3F, 0x3F},	/* RgbRec whiteColour */ 
+  {0, 0, 0},		/* xrgb blackColour */ 
+  {0x3F, 0x3F, 0x3F},	/* xrgb whiteColour */ 
 #ifdef MONOVGA
   vga2ValidTokens,	/* int *validTokens */
   VGA2_PATCHLEVEL,	/* char *patchLevel */
@@ -138,7 +138,7 @@ ScrnInfoRec vga256InfoRec = {
   VGA16_PATCHLEVEL,	/* char *patchLevel */
 #else
   vga256ValidTokens,	/* int *validTokens */
-  VGA256_PATCHLEVEL,	/* char *patchLevel */
+  SVGA_PATCHLEVEL,	/* char *patchLevel */
 #endif
 #endif
   0,			/* int IObase */

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86.h,v 1.1 94/03/28 21:22:43 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.4 1994/07/21 13:56:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.5 1994/09/03 02:51:43 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -64,10 +64,6 @@ typedef struct _DispM {
 /* Set default max allowed clock to 90MHz */
 #define DEFAULT_MAX_CLOCK	90000
 
-typedef struct {
-  unsigned char red, green, blue;
-} RgbRec, *RgbPtr;
-
 /*
  * the graphic device
  */
@@ -123,8 +119,8 @@ typedef struct {
   int            textclock;
   Bool           bankedMono;	  /* display supports banking for mono server */
   char           *name;
-  RgbRec         blackColour;
-  RgbRec         whiteColour;
+  xrgb           blackColour;
+  xrgb           whiteColour;
   int            *validTokens;
   char           *patchLevel;
   unsigned int   IObase;          /* AGX - video card I/O reg base    */

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Config.h,v 1.1 94/03/28 21:23:53 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.4 1994/07/21 13:56:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.6 1994/09/04 10:47:40 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -77,6 +77,7 @@ typedef struct {
    int videoRam;
    unsigned long speedup;
    char *clockprog;
+   int textClockValue;
    int BIOSbase;                 /* Base address of video BIOS */
    unsigned long MemBase;                  /* Frame buffer base address */
    int IObase;
@@ -86,6 +87,20 @@ typedef struct {
    int instance;
 } GDevRec, *GDevPtr;
 
+typedef struct {
+   int depth;
+   xrgb weight;
+   int frameX0;
+   int frameY0;
+   int virtualX;
+   int virtualY;
+   DisplayModePtr modes;
+   xrgb whiteColour;
+   xrgb blackColour;
+   int defaultVisual;
+   OFlagSet options;
+   OFlagSet xconfigFlag;
+} DispRec, *DispPtr;
 
 #define LOCK_TOKEN  -3
 #define ERROR_TOKEN -2
@@ -129,7 +144,7 @@ static SymTabRec GlobalTab[] = {
 #define XQUE       30
 #define OSMOUSE    31
 
-#define VGA256     40
+#define SVGA       40
 #define VGA2       41
 #undef MONO /* used on Linux in /usr/include/linux/kd.h */
 #define MONO       42
@@ -145,21 +160,22 @@ static SymTabRec GlobalTab[] = {
 #define MHZ 3
 #ifdef INIT_CONFIG
 static SymTabRec UnitTab[] = {
-  { HZ,  "hz" },
-  { KHZ,   "khz" },
-  { MHZ,   "mhz" },
-  { -1,         "" },
+  { HRZ,	"hz" },
+  { KHZ,	"khz" },
+  { MHZ,	"mhz" },
+  { -1,		"" },
 };
 #endif /* INIT_CONFIG */
 
 #ifdef INIT_CONFIG
 static SymTabRec DriverTab[] = {
-  { VGA256,  "vga256" },
-  { VGA2,   "vga2" },
-  { MONO,   "mono" },
-  { VGA16,   "vga16" },
-  { ACCEL,   "accel" },
-  { -1,         "" },
+  { SVGA,	"svga" },
+  { SVGA,	"vga256" },
+  { VGA2,	"vga2" },
+  { MONO,	"mono" },
+  { VGA16,	"vga16" },
+  { ACCEL,	"accel" },
+  { -1,		"" },
 };
 #endif /* INIT_CONFIG */
 
@@ -262,7 +278,8 @@ static SymTabRec SymTab[] = {
   { XQUE,       "xqueue" },
   { OSMOUSE,    "osmouse" },
 
-  { VGA256,     "vga256" },
+  { SVGA,       "svga" },
+  { SVGA,       "vga256" },
   { VGA2,       "vga2" },
   { MONO,       "mono" },
   { VGA16,      "vga16" },
@@ -435,12 +452,15 @@ static SymTabRec ModeTab[] = {
 };
 #endif /* INIT_CONFIG */
 
+/* OPTION is defined to 12 above */
 #define MODES       13
 #define VIRTUAL     18
 #define VIEWPORT    17
 #define VISUAL	    19 /* GJA -- ?? */
 #define BLACK       23
 #define WHITE       24
+#define DEPTH       25
+#define WEIGHT      26
 
 #ifdef INIT_CONFIG
 static SymTabRec DisplayTab[] = {
@@ -448,9 +468,12 @@ static SymTabRec DisplayTab[] = {
   { MODES,      "modes" },
   { VIEWPORT,   "viewport" },
   { VIRTUAL,    "virtual" },
-  { VISUAL,    "visual" },
+  { VISUAL,	"visual" },
   { BLACK,	"black" },
   { WHITE,	"white" },
+  { DEPTH,	"depth" },
+  { WEIGHT,	"weight" },
+  { OPTION,	"option" },
   { -1,         "" },
 };
 #endif /* INIT_CONFIG */
@@ -469,11 +492,11 @@ static SymTabRec DisplayTab[] = {
 
 #ifdef INIT_CONFIG
 static SymTabRec VisualTab[] = {
-  { STATICGRAY, "staticgray" },
-  { GRAYSCALE,  "grayscale" },
+  { STATICGRAY,	"staticgray" },
+  { GRAYSCALE,	"grayscale" },
   { STATICCOLOR,"staticcolor" },
   { PSEUDOCOLOR,"pseudocolor" },
-  { TRUECOLOR,  "truecolor" },
+  { TRUECOLOR,	"truecolor" },
   { DIRECTCOLOR,"directcolor" },
   { -1,         "" },
 };
@@ -483,11 +506,11 @@ static SymTabRec VisualTab[] = {
 static SymTabRec ScreenTab[] = {
   { ENDSECTION, "endsection"},
 
-  { DRIVER, "driver" },
-  { MDEVICE,  "device" },
-  { MONITOR,"monitor" },
-  { SUBSECTION,"subsection" },
-  { -1,         "" },
+  { DRIVER,	"driver" },
+  { MDEVICE,	"device" },
+  { MONITOR,	"monitor" },
+  { SUBSECTION,	"subsection" },
+  { -1,		"" },
 };
 #endif /* INIT_CONFIG */
 #else /* OLD_XCONFIG */

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: vgaHW.c,v 1.3 94/03/28 21:56:01 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.7 1994/07/24 11:58:43 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.8 1994/08/01 12:18:40 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -649,7 +649,7 @@ vgaHWSave(save, size)
        * save the default lookup table
        */
       bcopy(defaultDAC, save->DAC, 768);
-      ErrorF("VGA256: Cannot read colourmap from VGA.");
+      ErrorF("%s: Cannot read colourmap from VGA.", vga256InfoRec.name);
       ErrorF("  Will restore with default\n");
     }
     else
