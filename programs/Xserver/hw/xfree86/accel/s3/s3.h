@@ -1,5 +1,5 @@
 /* $XConsortium: s3.h,v 1.1 94/03/28 21:13:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.4 1994/07/19 11:52:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.5 1994/08/01 12:12:08 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -34,12 +34,6 @@
 #define _S3_H_
 
 #define S3_PATCHLEVEL "0"
-
-/*
- * This is included, but it hasn't been tested properly yet.  It enables
- * the undocumented "number_nine" Option (which will turn on the pixmux code).
- */
-#define NUMNINETEST
 
 #ifndef LINKKIT
 #include "s3name.h"
@@ -103,6 +97,7 @@ typedef struct {
 } s3VideoChipRec, *s3VideoChipPtr;
 
 extern ScrnInfoRec s3InfoRec;
+extern short s3ChipId;
 
 #ifndef LINKKIT
 _XFUNCPROTOBEGIN
@@ -111,7 +106,6 @@ extern void (*s3ImageReadFunc)();
 extern void (*s3ImageWriteFunc)();
 extern void (*s3ImageFillFunc)();
 
-extern short s3ChipId;
 extern int s3DisplayWidth;
 extern int s3ScissB;
 extern short s3alu[];
