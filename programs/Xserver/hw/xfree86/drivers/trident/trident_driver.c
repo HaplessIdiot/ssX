@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.116 2000/12/07 18:41:14 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.117 2000/12/07 18:51:55 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -126,9 +126,6 @@ static int pix24bpp = 0;
 DriverRec TRIDENT = {
     VERSION,
     TRIDENT_DRIVER_NAME,
-#if 0
-    "accelerated driver for Trident chipsets",
-#endif
     TRIDENTIdentify,
     TRIDENTProbe,
     TRIDENTAvailableOptions,
@@ -227,38 +224,6 @@ static OptionInfoRec TRIDENTOptions[] = {
     { OPTION_MMIO_ONLY,		"MMIOonly",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
-
-#if 0
-static int AvailablePitches[] = {
-	{ 0 },		/* 8200LX */
-	{ 0 },		/* 8800CS */
-	{ 0 },		/* 8900B */
-	{ 0 },		/* 8900C */
-	{ 0 },		/* 8900CL */
-	{ 0 },		/* 8900D */
-	{ 0 },		/* 9000 */
-	{ 0 },		/* 9000i */
-	{ 0 },		/* 9100B */
-	{ 0 },		/* 9200CXr */
-	{ 0 },		/* 9400CXi */
-	{ 0 },				/* 9420 */
-	{ 0 },				/* 9420DGi */
-	{ 0 },				/* 9430DGi */
-	{ 512, 1024, 2048, 4096 },	/* 9440AGi */
-	{ 512, 640, 800, 1024, 1280, 2048, 4096 },	/* 9320 */
-	{ 512, 640, 832, 1024, 1280, 2048, 4096 },	/* 9660 */
-	{ 512, 640, 800, 1024, 1280, 2048, 4096 },	/* 9680 */
-	{ 512, 640, 800, 832, 1024, 1280, 1600, 2048, 4096 },	/* 9682 */
-	{ 512, 640, 800, 832, 1024, 1280, 1600, 2048, 4096 },	/* 9685 */
-	{ 512, 640, 800, 832, 1024, 1280, 1600, 2048, 4096 },	/* 9685 */
-	{ 512, 640, 800, 832, 1024, 1280, 1600, 2048, 4096 },	/* 9685 */
-	{ 0 },
-	{ 0 },
-	{ 0 },
-	{ 0 },
-	{ 0 },
-};
-#endif
 
 /* Clock Limits */
 static int ClockLimit[] = {
@@ -1093,7 +1058,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    }
 	    break;
 	case 24:
-	    if ((pScrn->bitsPerPixel != 24) || (pScrn->bitsPerPixel != 32)) {
+	    if ((pScrn->bitsPerPixel != 24) && (pScrn->bitsPerPixel != 32)) {
 	        xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 	     "Given depth (%d)/ fbbpp (%d) is not supported by this driver\n",
 		       pScrn->depth, pScrn->bitsPerPixel);
@@ -1300,23 +1265,6 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* FIXME ACCELERATION */
     if (!UseMMIO) pTrident->NoAccel = TRUE;
-
-#if 0
-    /*
-     * This shouldn't happen because such problems should be caught in
-     * TRIDENTProbe(), but check it just in case.
-     */
-    if (pScrn->chipset == NULL) {
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		   "ChipID 0x%04X is not recognised\n", pTrident->Chipset);
-	return FALSE;
-    }
-    if (pTrident->Chipset < 0) {
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		   "Chipset \"%s\" is not recognised\n", pScrn->chipset);
-	return FALSE;
-    }
-#endif
 
     if (pTrident->Linear) {
     	if (pTrident->pEnt->device->MemBase != 0) {
