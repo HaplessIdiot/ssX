@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Priv.h,v 1.1 94/03/28 21:23:40 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.0 1994/05/08 05:20:56 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -71,6 +71,7 @@ typedef struct {
   char          *mseDevice;
   int           mseType;
   int           baudRate;
+  int           oldBaudRate;
   int           sampleRate;
   int           lastButtons;
   int           threshold, num, den;  /* acceleration */

@@ -15,7 +15,7 @@
 #	version.h
 #	xf86-2.1.1.patch
 #
-# $XFree86$
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/apNetBSD.shar,v 3.0 1994/07/15 07:03:48 dawes Exp $
 #
 echo x - README
 sed 's/^X//' >README << 'END-of-README'
@@ -485,43 +485,36 @@ END-of-version.h
 echo x - xf86-2.1.1.patch
 sed 's/^X//' >xf86-2.1.1.patch << 'END-of-xf86-2.1.1.patch'
 X*** mit/config/x386.cf.ORIG	Mon Jun 20 08:20:07 1994
-X--- mit/config/x386.cf	Mon Jun 20 08:19:38 1994
+X--- mit/config/x386.cf	Fri Jul 22 21:14:20 1994
 X***************
-X*** 868,873 ****
-X--- 868,882 ----
-X  # define SOLX86apertureFlags	/**/
+X*** 1095,1102 ****
+X  # endif
+X  #endif
+X  
+X  # define ServerExtraDefines	GccGasOption -DXDMCP MallocFlags LinkKitFlags \
+X! 				-DAVOID_GLYPHBLT
+X  
+X  #define ExtraLibraries		GnuMallocLib
+X  
+X--- 1095,1112 ----
+X  # endif
 X  #endif
 X  
 X+ #ifndef HasNetBSDApertureDrv
 X+ # define HasNetBSDApertureDrv	NO
 X+ #endif
 X+ #if HasNetBSDApertureDrv
-X+ # define NetBSDApertureFlags	-DHAS_SOLX86_APERTUREDRV
+X+ # define NetBSDApertureFlags	-DHAS_NETBSD_APERTUREDRV
 X+ #else
-X+ # define NetBSDApertureFlags	/**/
+X+ # define NetBSDApertureFlags	pipo
 X+ #endif
 X+ 
-X  #define CppCmd                  /usr/ccs/lib/cpp
-X  #define PreProcessCmd           /usr/ccs/lib/cpp
+X  # define ServerExtraDefines	GccGasOption -DXDMCP MallocFlags LinkKitFlags \
+X! 				-DAVOID_GLYPHBLT NetBSDApertureFlags
+X! 
 X  
-X***************
-X*** 925,931 ****
-X  #endif
+X  #define ExtraLibraries		GnuMallocLib
 X  
-X  #define ServerExtraDefines      GccGasOption -DXDMCP MallocFlags LinkKitFlags \
-X!                                 -DAVOID_GLYPHBLT SOLX86apertureFlags
-X  
-X  #if SCOLocalConnSysv4
-X  # define Acp                    -DSVR4_ACP
-X--- 934,941 ----
-X  #endif
-X  
-X  #define ServerExtraDefines      GccGasOption -DXDMCP MallocFlags LinkKitFlags \
-X!                                 -DAVOID_GLYPHBLT SOLX86apertureFlags \
-X! 				NetBSDApertureFlags
-X  
-X  #if SCOLocalConnSysv4
-X  # define Acp                    -DSVR4_ACP
 X*** mit/config/site.def.ORIG	Mon Jun 20 08:19:52 1994
 X--- mit/config/site.def	Mon Jun 20 08:17:57 1994
 X***************

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.4 1994/06/26 13:09:17 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.5 1994/07/21 13:56:43 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -535,6 +535,7 @@ configMouse()
   int token;
 
   xf86Info.baudRate        = 1200;
+  xf86Info.oldBaudRate    = -1;
   xf86Info.sampleRate      = 0;
   xf86Info.emulate3Buttons = FALSE;
   xf86Info.chordMiddle     = FALSE;

@@ -113,6 +113,14 @@ extern void MemToBus(
 	int
 #endif
 );
+
+extern void SlowBcopy(
+#if NeedFunctionPrototypes
+	char *,
+	char *,
+	int
+#endif
+);
 _XFUNCPROTOEND
 
 #endif /* _XF86_HWLIB_H */

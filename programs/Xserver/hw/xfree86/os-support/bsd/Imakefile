@@ -1,4 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:27:48 dpw Exp $
+XCOMM $XFree86$
 #include <Server.tmpl>
 
 SRCS = bsd_init.c bsd_video.c bsd_io.c bsd_VTsw.c bios_devmem.c mapVT_noop.c \
@@ -11,6 +12,10 @@ OBJS = bsd_init.o bsd_video.o bsd_io.o bsd_VTsw.o bios_devmem.o mapVT_noop.o \
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(INCLUDESRC)
+
+#if HasNetBSDApertureDriver
+DEFINES = -DHAS_APERTURE_DRV
+#endif
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()

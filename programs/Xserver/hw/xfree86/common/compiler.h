@@ -1,5 +1,5 @@
 /* $XConsortium: compiler.h,v 1.1 94/03/28 21:22:35 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.0 1994/05/08 05:20:45 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -50,8 +50,10 @@
 
 extern void outb();
 extern void outw();
+extern void outl();
 extern unsigned int inb();
 extern unsigned int inw();
+extern unsigned int inl();
 #if NeedFunctionPrototypes
 extern unsigned char rdinx(unsigned short, unsigned char);
 extern void wrinx(unsigned short, unsigned char, unsigned char);
@@ -97,6 +99,14 @@ short val;
    __asm__ __volatile__("outw %0,%1" : :"a" (val), "d" (port));
 }
 
+static __inline__ void
+outl(port, val)
+short port;
+int val;
+{
+   __asm__ __volatile__("outl %0,%1" : :"a" (val), "d" (port));
+}
+
 static __inline__ unsigned int
 inb(port)
 short port;
@@ -119,6 +129,17 @@ short port;
    return ret;
 }
 
+static __inline__ unsigned int
+inl(port)
+short port;
+{
+   unsigned int ret;
+   __asm__ __volatile__("inl %1,%0" :
+       "=a" (ret) :
+       "d" (port));
+   return ret;
+}
+
 #else	/* GCCUSESGAS */
 
 static __inline__ void
@@ -135,6 +156,14 @@ outw(port, val)
      short val;
 {
   __asm__ __volatile__("out%W0 (%1)" : :"a" (val), "d" (port));
+}
+
+static __inline__ void
+outl(port, val)
+     short port;
+     unsigned int val;
+{
+  __asm__ __volatile__("out%L0 (%1)" : :"a" (val), "d" (port));
 }
 
 static __inline__ unsigned int
@@ -159,6 +188,17 @@ inw(port)
   return ret;
 }
 
+static __inline__ unsigned int
+inl(port)
+     short port;
+{
+  unsigned int ret;
+  __asm__ __volatile__("in%L0 (%1)" :
+                   "=a" (ret) :
+                   "d" (port));
+  return ret;
+}
+
 #endif /* GCCUSESGAS */
 
 #else /* FAKEIT */
@@ -177,6 +217,13 @@ outw(port, val)
 {
 }
 
+static __inline__ void
+outl(port, val)
+     short port;
+     int val;
+{
+}
+
 static __inline__ unsigned int
 inb(port)
      short port;
@@ -186,6 +233,13 @@ inb(port)
 
 static __inline__ unsigned int
 inw(port)
+     short port;
+{
+  return 0;
+}
+
+static __inline__ unsigned int
+inl(port)
      short port;
 {
   return 0;

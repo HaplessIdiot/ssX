@@ -77,21 +77,21 @@ b/**/
 /* GJA -- Actually, they are added because I have not yet tidied up
  * my include file structure (mfb/mfb.banked). Be careful or it will break.
  */
-#define VSETR(x)  { x = vgaSetRead(x); }
-#define VSETW(x)  { x = vgaSetWrite(x); }
-#define VSETRW(x) { x = vgaSetReadWrite(x); }
+#define VSETR(x)  { x = vgaSetRead((void *)x); }
+#define VSETW(x)  { x = vgaSetWrite((void *)x); }
+#define VSETRW(x) { x = vgaSetReadWrite((void *)x); }
 #define VCHECKRO(x) { if(((void *)x >= vgaReadTop)) \
-			 x = vgaReadNext(x); }
+			 x = vgaReadNext((void *)x); }
 #define VCHECKRU(x) { if(((void *)x < vgaReadBottom)) \
-			 x = vgaReadPrev(x); }
+			 x = vgaReadPrev((void *)x); }
 #define VCHECKWO(x) { if(((void *)x >= vgaWriteTop)) \
-			 x = vgaWriteNext(x); }
+			 x = vgaWriteNext((void *)x); }
 #define VCHECKWU(x) { if(((void *)x < vgaWriteBottom)) \
-			 x = vgaWritePrev(x); }
+			 x = vgaWritePrev((void *)x); }
 #define VCHECKRWO(x) { if(((void *)x >= vgaWriteTop)) \
-			  x = vgaReadWriteNext(x); }
+			  x = vgaReadWriteNext((void *)x); }
 #define VCHECKRWU(x) { if(((void *)x < vgaWriteBottom)) \
-			  x = vgaReadWritePrev(x); }
+			  x = vgaReadWritePrev((void *)x); }
 #define VCHECKRWONEXT(x) { x++; VCHECKRWO(x); x--; }
 #define VPUSHR()         { vgaPushRead(); }
 #define VPOPR()          { vgaPopRead(); }

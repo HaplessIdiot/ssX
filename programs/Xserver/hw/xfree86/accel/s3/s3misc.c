@@ -1,5 +1,5 @@
 /* $XConsortium: s3misc.c,v 1.1 94/03/28 21:16:11 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.2 1994/06/18 16:24:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.3 1994/07/19 06:57:59 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -145,7 +145,10 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	       outb (vgaCRReg, (unsigned char) j);
 	       outb(vgaCRIndex, 0x59);
 	       if (S3_x64_SERIES(s3ChipId)) 
-		  outb(vgaCRReg, 0x03 | 0xf0);
+		  if (s3InfoRec.MemBase != 0) 
+		     outb(vgaCRReg, 0x03 | (s3InfoRec.MemBase>>24));
+		  else
+		     outb(vgaCRReg, 0x03 | 0xf0);
 	       else
 		  outb(vgaCRReg, 0x03);
 	       outb(vgaCRIndex, 0x5a);

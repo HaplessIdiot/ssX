@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_P9000.c,v 3.1 1994/05/30 08:24:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_P9000.c,v 3.2 1994/06/28 12:29:10 dawes Exp $ */
 /* Id: XF86_P9000.c,v 4.0 1994/05/28 01:26:10 nygren Exp */
 
 #include "X.h"
@@ -53,6 +53,7 @@ int p9000ValidTokens[] =
   CLOCKPROG,
   BIOSBASE,
   MEMBASE,
+  IOBASE,
   -1
 };
 
