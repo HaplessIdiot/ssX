@@ -1,8 +1,8 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:21:20 dpw Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.2 1994/05/29 02:06:06 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.3 1994/05/30 08:24:24 dawes Exp $
 #include <Server.tmpl>
 
-#if i386Mach
+#ifdef i386MachArchitecture
         KBD = xf86KbdMach
 #else
 # ifdef i386BsdArchitecture

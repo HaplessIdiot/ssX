@@ -1,5 +1,5 @@
 /* $XConsortium: utils.c,v 1.146 94/04/17 20:27:07 erik Exp $ */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.0 1994/04/28 12:42:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.1 1994/05/21 23:59:05 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -96,7 +96,9 @@ static mutex print_lock;
 #ifdef abs
 #undef abs
 #endif
+#ifndef NOSTDHDRS
 #include <stdlib.h>	/* for malloc() */
+#endif
 #endif
 
 extern char *display;

@@ -1,4 +1,4 @@
-XCOMM $XFree86: mit/server/ddx/x386/SuperProbe/Imakefile,v 2.4 1994/02/28 14:09:27 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Imakefile,v 3.0 1994/05/14 06:50:54 dawes Exp $
 
 #if defined(SVR3Architecture) || defined(SVR4Architecture)
 # define OSModule OS_SYSV
@@ -19,12 +19,7 @@ XCOMM $XFree86: mit/server/ddx/x386/SuperProbe/Imakefile,v 2.4 1994/02/28 14:09:
 # define OSModule OS_Minix
 #endif
 #if defined(i386MachArchitecture)
-# ifdef i386Mach_BsdTree
-   INCLUDES	 = -I/usr/mach/include -I/usr/include
    SYS_LIBRARIES = /usr/lib/libmach.a
-# else
-   SYS_LIBRARIES = /usr/misc/.mach/lib/libmach.a
-# endif
 # define OSModule OS_Mach
 #endif
 
