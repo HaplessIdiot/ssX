@@ -58,14 +58,14 @@ CODECONV_TEMPLATE(cc_jisx0208_to_sjis);
 CODECONV_TEMPLATE(cc_jisx0208_to_std_ucs2);
 CODECONV_CALLBACK_TEMPLATE(cb_jisx0208_to_ucs2);
 static MapIDRelation const mapIDRelations[] = {
+    { JISX0208,     EPlfmMS,      EEncMSUnicode,
+                                  cc_jisx0208_to_win_ucs2,
+                                  cb_jisx0208_to_ucs2 },
     { JISX0208,     EPlfmISO,     EEncISO10646,
                                   cc_jisx0208_to_std_ucs2,
                                   cb_jisx0208_to_ucs2 },
     { JISX0208,     EPlfmUnicode, EEncAny,
                                   cc_jisx0208_to_std_ucs2,
-                                  cb_jisx0208_to_ucs2 },
-    { JISX0208,     EPlfmMS,      EEncMSUnicode,
-                                  cc_jisx0208_to_win_ucs2,
                                   cb_jisx0208_to_ucs2 },
     /*
       To avoid the difficulty on the OS/2 Warp Japanese Fonts
@@ -143,8 +143,8 @@ cc_jisx0208_to_std_ucs2(ft_char_code_t codeSrc)
         codeDst = 0x2016;
         break;
     case 0x215d:
-        codeDst = 0x00b1;
-	break;
+        codeDst = 0x2212;
+        break;
     case 0x2171:
         codeDst = 0x00a2;
         break;

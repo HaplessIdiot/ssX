@@ -25,7 +25,7 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
    SUCH DAMAGE.
 
-   Major Release ID: X-TrueType Server Version 1.2 [Aoi MATSUBARA Release 2]
+   Major Release ID: X-TrueType Server Version 1.3 [Aoi MATSUBARA Release 3]
 
 Notice===
  */
@@ -56,14 +56,14 @@ CODECONV_TEMPLATE(cc_jisx0201_to_win_ucs2);
 CODECONV_TEMPLATE(cc_jisx0201_to_std_ucs2);
 CODECONV_CALLBACK_TEMPLATE(cb_jisx0201_to_ucs2);
 static MapIDRelation const mapIDRelations[] = {
+    { JISX0201,     EPlfmMS,      EEncMSUnicode,
+                                  cc_jisx0201_to_win_ucs2,
+                                  cb_jisx0201_to_ucs2 },
     { JISX0201,     EPlfmISO,     EEncISO10646,
                                   cc_jisx0201_to_std_ucs2, 
                                   cb_jisx0201_to_ucs2 },
     { JISX0201,     EPlfmUnicode, EEncAny,
                                   cc_jisx0201_to_std_ucs2,
-                                  cb_jisx0201_to_ucs2 },
-    { JISX0201,     EPlfmMS,      EEncMSUnicode,
-                                  cc_jisx0201_to_win_ucs2,
                                   cb_jisx0201_to_ucs2 },
     /*
       To avoid the difficulty on the OS/2 Warp Japanese Fonts

@@ -1,4 +1,13 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 510. Update X-TrueType (X-TT) to version 1.4.2 (Chisato Yamauchi,
+      After X-TT Project):
+       - Fixed several bugs of make_up_italic_bitmap() function.
+       - Changed the order of priority of mapIDRelations in JISX0208 and
+         JISX0201 code converter. The windows ucs2 is given the highest
+         priority for kochi-substitute Japanese fonts.
+       - Fixed code relation in cc_jisx0208_to_std_ucs2() function
+         (not 0x215d -> 0x00b1 but 0x215d -> 0x2212)
+       - Added minor improvements.
  509. Fixes and updates for HTML and PDF versions of spec docs for
       installation and inclusion in the online docs (David Dawes).
  508. Implement SharedLibtoolLibraryTarget, etc for bsdLib/ELF, including
@@ -17965,7 +17974,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2890 2003/10/18 17:21:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2891 2003/10/19 02:33:51 dawes Exp $
 
 
 

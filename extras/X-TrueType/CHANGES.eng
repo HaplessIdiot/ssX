@@ -2,6 +2,18 @@
   After X-TT Project
 ---------------------------------
 
+* Changes from 1.4.2rc1 to 1.4.2
+  - Added minor improvements.
+
+* Changes from 1.4.1 to 1.4.2rc1
+  - Fixed several bugs of make_up_italic_bitmap() function.
+  - Changed the order of priority of mapIDRelations in JISX0208 and JISX0201
+    code converter. The windows ucs2 is given the highest priority for kochi-substitute
+    Japanese fonts.
+  - Fixed code relation in cc_jisx0208_to_std_ucs2() function.
+    (not 0x215d -> 0x00b1 but 0x215d -> 0x2212)
+  - Added minor improvements.
+
 * Changes from 1.4.1rc1 to 1.4.1
   - Added minor improvements.
 
