@@ -1,4 +1,3 @@
-/* $Xorg: utils.c,v 1.5 2001/02/09 02:05:24 xorgcvs Exp $ */
 /*
 
 Copyright 1987, 1998  The Open Group
@@ -77,13 +76,12 @@ OR PERFORMANCE OF THIS SOFTWARE.
  * authorization from the copyright holder(s) and author(s).
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/os/log.c,v 1.1 2003/09/09 03:20:41 dawes Exp $ */
 
 #include "Xos.h"
 #include <stdio.h>
 #include <time.h>
 #include <sys/stat.h>
-#include <ctype.h>    /* for isspace */
 #include <stdarg.h>
 #include <stdlib.h>	/* for malloc() */
 #include <errno.h>
