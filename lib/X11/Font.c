@@ -2,7 +2,6 @@
 /*
 
 Copyright 1986, 1998  The Open Group
-Copyright (c) 1999  The XFree86 Project, Inc.
 
 All Rights Reserved.
 
@@ -26,57 +25,10 @@ in this Software without prior written authorization from The Open Group.
 #define NEED_REPLIES
 #include "Xlibint.h"
 
-#ifndef MUSTCOPY
-#define USE_XF86BIGFONT
-#endif
-#ifdef USE_XF86BIGFONT
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <X11/extensions/xf86bigfstr.h>
-#endif
-
 /* FreeEData.c */
-extern int _XFreeExtData(
-#if NeedFunctionPrototypes
-    XExtData*	/* extension */
-#endif
-);
+extern int _XFreeExtData();
 
-
-static XFontStruct *_XQueryFont(
-#if NeedFunctionPrototypes
-    Display*		/* dpy */,
-    Font		/* fid */,
-    unsigned long	/* seq */
-#endif
-);
-
-#ifdef USE_XF86BIGFONT
-
-static XExtCodes *_XF86BigfontCodes(
-#if NeedFunctionPrototypes
-    Display*		/* dpy */
-#endif
-);
-
-static XFontStruct *_XF86BigfontQueryFont(
-#if NeedFunctionPrototypes
-    Display*		/* dpy */,
-    XExtCodes*		/* extcodes */,
-    Font		/* fid */,
-    unsigned long	/* seq */
-#endif
-);
-
-static void _XF86BigfontFreeFontMetrics(
-#if NeedFunctionPrototypes
-    XFontStruct*	/* fs */
-#endif
-);
-
-#endif /* USE_XF86BIGFONT */
-
+static XFontStruct *_XQueryFont();
 
 #if NeedFunctionPrototypes
 XFontStruct *XLoadQueryFont(
@@ -93,9 +45,6 @@ XFontStruct *XLoadQueryFont(dpy, name)
     Font fid;
     xOpenFontReq *req;
     unsigned long seq;
-#ifdef USE_XF86BIGFONT
-    XExtCodes *extcodes = _XF86BigfontCodes(dpy);
-#endif
 
     LockDisplay(dpy);
     GetReq(OpenFont, req);
@@ -104,38 +53,7 @@ XFontStruct *XLoadQueryFont(dpy, name)
     req->fid = fid = XAllocID(dpy);
     req->length += (nbytes+3)>>2;
     Data (dpy, name, nbytes);
-    font_result = NULL;
-#ifdef USE_XF86BIGFONT
-    if (extcodes) {
-	font_result = _XF86BigfontQueryFont(dpy, extcodes, fid, seq);
-	seq = 0;
-    }
-#endif
-    if (!font_result)
-	font_result = _XQueryFont(dpy, fid, seq);
-    UnlockDisplay(dpy);
-    SyncHandle();
-    return font_result;
-}
-
-XFontStruct *XQueryFont (dpy, fid)
-    register Display *dpy;
-    Font fid;
-{
-    XFontStruct *font_result;
-#ifdef USE_XF86BIGFONT
-    XExtCodes *extcodes = _XF86BigfontCodes(dpy);
-#endif
-
-    LockDisplay(dpy);
-    font_result = NULL;
-#ifdef USE_XF86BIGFONT
-    if (extcodes) {
-	font_result = _XF86BigfontQueryFont(dpy, extcodes, fid, 0L);
-    }
-#endif
-    if (!font_result)
-	font_result = _XQueryFont(dpy, fid, 0L);
+    font_result = _XQueryFont(dpy, fid, seq);
     UnlockDisplay(dpy);
     SyncHandle();
     return font_result;
@@ -156,20 +74,14 @@ XFreeFont(dpy, fs)
     GetResReq (CloseFont, fs->fid, req);
     UnlockDisplay(dpy);
     SyncHandle();
-    if (fs->per_char) {
-#ifdef USE_XF86BIGFONT
-	_XF86BigfontFreeFontMetrics(fs);
-#else
-	Xfree ((char *) fs->per_char);
-#endif
-    }
     _XFreeExtData(fs->ext_data);
+    if (fs->per_char)
+       Xfree ((char *) fs->per_char);
     if (fs->properties)
-	Xfree ((char *) fs->properties);
+       Xfree ((char *) fs->properties);
     Xfree ((char *) fs);
     return 1;
 }
-
 
 static XFontStruct *
 _XQueryFont (dpy, fid, seq)
@@ -312,226 +224,19 @@ _XQueryFont (dpy, fid, seq)
     return fs;
 }
 
-#ifdef USE_XF86BIGFONT
 
-/* Magic cookie for finding the right XExtData structure on the display's
-   extension list. */
-static int XF86BigfontNumber = 1040697125;
-
-static int
-_XF86BigfontFreeCodes (extension)
-    XExtData *extension;
-{
-    /* Don't Xfree(extension->private_data) because this is shared with the
-       display's ext_procs list. */
-    return 0;
-}
-
-static XExtCodes *
-_XF86BigfontCodes (dpy)
+XFontStruct *XQueryFont (dpy, fid)
     register Display *dpy;
-{
-    XEDataObject dpy_union;
-    XExtData *pData;
-    XExtCodes *pCodes;
-
-    dpy_union.display = dpy;
-
-    /* If the server is known to support the XF86Bigfont extension,
-     * return the extension codes. If the server is known to not support
-     * the extension, don't bother checking again.
-     */
-    pData = XFindOnExtensionList(XEHeadOfExtensionList(dpy_union),
-				 XF86BigfontNumber);
-    if (pData)
-	return (XExtCodes *) pData->private_data;
-
-    pData = (XExtData *) Xmalloc(sizeof(XExtData));
-    if (!pData) {
-	/* Out of luck. */
-	return (XExtCodes *) NULL;
-    }
-
-    /* See if the server supports the XF86Bigfont extension. */
-    pCodes = XInitExtension(dpy, XF86BIGFONTNAME);
-    pData->number = XF86BigfontNumber;
-    pData->private_data = (XPointer) pCodes;
-    pData->free_private = _XF86BigfontFreeCodes;
-    XAddToExtensionList(XEHeadOfExtensionList(dpy_union), pData);
-    if (pCodes) {
-
-	/* See if the server supports the XF86BigfontQueryFont request. */
-	xXF86BigfontQueryVersionReply reply;
-	register xXF86BigfontQueryVersionReq *req;
-
-	GetReq(XF86BigfontQueryVersion, req);
-	req->reqType = pCodes->major_opcode;
-	req->xf86bigfontReqType = X_XF86BigfontQueryVersion;
-
-	if (!(_XReply (dpy, (xReply *) &reply,
-		(SIZEOF(xXF86BigfontQueryVersionReply) - SIZEOF(xReply)) >> 2,
-		xFalse)
-	      && ((reply.capabilities & 1) != 0))) {
-	    /* No need to Xfree(pCodes), see _XF86BigfontFreeCodes comment. */
-	    pCodes = (XExtCodes *) NULL;
-	    pData->private_data = (XPointer) pCodes;
-	}
-    }
-    return pCodes;
-}
-
-static int
-_XF86BigfontFreeNop (extension)
-    XExtData *extension;
-{
-    return 0;
-}
-
-static XFontStruct *
-_XF86BigfontQueryFont (dpy, extcodes, fid, seq)
-    register Display *dpy;
-    XExtCodes *extcodes;
     Font fid;
-    unsigned long seq;
 {
-    register XFontStruct *fs;
-    register long nbytes;
-    xXF86BigfontQueryFontReply reply;
-    register xXF86BigfontQueryFontReq *req;
-    register _XExtension *ext;
-    _XAsyncHandler async1;
-    _XAsyncErrorState async1_state;
-    _XAsyncHandler async2;
-    _XAsyncErrorState async2_state;
+    XFontStruct *font_result;
 
-    if (seq) {
-	async1_state.min_sequence_number = seq;
-	async1_state.max_sequence_number = seq;
-	async1_state.error_code = BadName;
-	async1_state.major_opcode = X_OpenFont;
-	async1_state.minor_opcode = 0;
-	async1_state.error_count = 0;
-	async1.next = dpy->async_handlers;
-	async1.handler = _XAsyncErrorHandler;
-	async1.data = (XPointer)&async1_state;
-	dpy->async_handlers = &async1;
-    }
-
-    GetReq(XF86BigfontQueryFont, req);
-    req->reqType = extcodes->major_opcode;
-    req->xf86bigfontReqType = X_XF86BigfontQueryFont;
-    req->id = fid;
-
-    /* The function _XQueryFont benefits from a "magic" error handler for
-       BadFont coming from a X_QueryFont request. (See function _XReply.)
-       We have to establish an error handler ourselves. */
-    async2_state.min_sequence_number = dpy->request;
-    async2_state.max_sequence_number = dpy->request;
-    async2_state.error_code = BadFont;
-    async2_state.major_opcode = extcodes->major_opcode;
-    async2_state.minor_opcode = X_XF86BigfontQueryFont;
-    async2_state.error_count = 0;
-    async2.next = dpy->async_handlers;
-    async2.handler = _XAsyncErrorHandler;
-    async2.data = (XPointer)&async2_state;
-    dpy->async_handlers = &async2;
-
-    if (!_XReply (dpy, (xReply *) &reply,
-       ((SIZEOF(xXF86BigfontQueryFontReply) - SIZEOF(xReply)) >> 2), xFalse)) {
-	DeqAsyncHandler(dpy, &async2);
-	if (seq)
-	    DeqAsyncHandler(dpy, &async1);
-	return (XFontStruct *)NULL;
-    }
-    DeqAsyncHandler(dpy, &async2);
-    if (seq)
-	DeqAsyncHandler(dpy, &async1);
-    if (! (fs = (XFontStruct *) Xmalloc (sizeof (XFontStruct)))) {
-	_XEatData(dpy, (unsigned long)(reply.nFontProps * SIZEOF(xFontProp)));
-	return (XFontStruct *)NULL;
-    }
-    fs->ext_data 		= NULL;
-    fs->fid 			= fid;
-    fs->direction 		= reply.drawDirection;
-    fs->min_char_or_byte2	= reply.minCharOrByte2;
-    fs->max_char_or_byte2 	= reply.maxCharOrByte2;
-    fs->min_byte1 		= reply.minByte1;
-    fs->max_byte1 		= reply.maxByte1;
-    fs->default_char 		= reply.defaultChar;
-    fs->all_chars_exist 	= reply.allCharsExist;
-    fs->ascent 			= cvtINT16toInt (reply.fontAscent);
-    fs->descent 		= cvtINT16toInt (reply.fontDescent);
-    
-    /* XXX the next two statements won't work if short isn't 16 bits */
-    fs->min_bounds = * (XCharStruct *) &reply.minBounds;
-    fs->max_bounds = * (XCharStruct *) &reply.maxBounds;
-
-    fs->n_properties = reply.nFontProps;
-    /* 
-     * if no properties defined for the font, then it is bad
-     * font, but shouldn't try to read nothing.
-     */
-    fs->properties = NULL;
-    if (fs->n_properties > 0) {
-	    nbytes = reply.nFontProps * sizeof(XFontProp);
-	    fs->properties = (XFontProp *) Xmalloc ((unsigned) nbytes);
-	    nbytes = reply.nFontProps * SIZEOF(xFontProp);
-	    if (! fs->properties) {
-		Xfree((char *) fs);
-		_XEatData(dpy, nbytes);
-		return (XFontStruct *)NULL;
-	    }
-	    _XRead32 (dpy, (char *)fs->properties, nbytes);
-    }
-
-    fs->per_char = NULL;
-    if (reply.nCharInfos > 0) {
-	XExtData *pData;
-	XEDataObject fs_union;
-	char *addr;
-
-	pData = (XExtData *) Xmalloc(sizeof(XExtData));
-	if (!pData) {
-	    if (fs->properties) Xfree((char *) fs->properties);
-	    Xfree((char *) fs);
-	    return (XFontStruct *)NULL;
-	}
-
-	if ((addr = shmat(reply.shmid, 0, SHM_RDONLY)) == (char *)-1) {
-	    Xfree((char *) pData);
-	    if (fs->properties) Xfree((char *) fs->properties);
-	    Xfree((char *) fs);
-	    return (XFontStruct *)NULL;
-	}
-
-	pData->number = XF86BigfontNumber;
-	pData->private_data = (XPointer) addr;
-	pData->free_private = _XF86BigfontFreeNop;
-	fs_union.font = fs;
-	XAddToExtensionList(XEHeadOfExtensionList(fs_union), pData);
-
-	fs->per_char = (XCharStruct *) (addr + reply.shmsegoffset);
-    }
-
-    /* call out to any extensions interested */
-    for (ext = dpy->ext_procs; ext; ext = ext->next)
-	if (ext->create_Font) (*ext->create_Font)(dpy, fs, &ext->codes);
-    return fs;
+    LockDisplay(dpy);
+    font_result = _XQueryFont(dpy, fid, 0L);
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return font_result;
 }
 
-static void
-_XF86BigfontFreeFontMetrics (fs)
-    XFontStruct *fs;
-{
-    XExtData *pData;
-    XEDataObject fs_union;
-
-    fs_union.font = fs;
-    if ((pData = XFindOnExtensionList(XEHeadOfExtensionList(fs_union),
-				      XF86BigfontNumber)))
-	shmdt ((char *) pData->private_data);
-    else
-	Xfree ((char *) fs->per_char);
-}
-
-#endif /* USE_XF86BIGFONT */
+   
+   
