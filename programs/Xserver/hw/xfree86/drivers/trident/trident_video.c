@@ -257,7 +257,6 @@ void TRIDENTResetVideo(ScrnInfoPtr pScrn)
 
     WaitForVBlank(pScrn);
     OUTW(vgaIOBase + 4, 0x848E);
-    WaitForVBlank(pScrn);
 
     if (pTrident->Chipset >= CYBER9388) {
     	OUTW(vgaIOBase + 4, 0x80B9); 
@@ -422,7 +421,6 @@ TRIDENTStopVideo(ScrnInfoPtr pScrn, pointer data, Bool shutdown)
      if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
     	WaitForVBlank(pScrn);
 	OUTW(vgaIOBase + 4, 0x848E);
-    	WaitForVBlank(pScrn);
 	OUTW(vgaIOBase + 4, 0x0091);
      }
      if(pPriv->linear) {
@@ -781,9 +779,7 @@ TRIDENTDisplayVideo(
     	OUTW(vgaIOBase + 4, 0xFFBC);
     	OUTW(vgaIOBase + 4, 0xFFBD);
     	OUTW(vgaIOBase + 4, 0x04BE); 
-	WaitForVBlank(pScrn);
     	OUTW(vgaIOBase + 4, 0x948E);
-    	WaitForVBlank(pScrn);
     } else {
 	
     	OUTW(vgaIOBase + 4, ((((id == FOURCC_YV12) || (id == FOURCC_YUY2)) 
@@ -791,9 +787,7 @@ TRIDENTDisplayVideo(
     	OUTW(vgaIOBase + 4, ((((id == FOURCC_YV12) || (id == FOURCC_YUY2)) 
 				? ((width+2) >> 2) : ((width+2) >> 6)) << 8) |0x96);
 
-	WaitForVBlank(pScrn);
     	OUTW(vgaIOBase + 4, 0x948E);
-    	WaitForVBlank(pScrn);
 	OUTB(0x83C8, 0x00);
 	OUTB(0x83C6, 0x95);
     }
@@ -1030,7 +1024,6 @@ TRIDENTStopSurface(
     	int vgaIOBase = VGAHWPTR(surface->pScrn)->IOBase;
 	WaitForVBlank(surface->pScrn);
  	OUTW(vgaIOBase + 4, 0x848E);
-    	WaitForVBlank(pScrn);
 	OUTW(vgaIOBase + 4, 0x0091);
 	pPriv->isOn = FALSE;
     }
@@ -1178,7 +1171,6 @@ TRIDENTVideoTimerCallback(ScrnInfoPtr pScrn, Time time)
 	    if(pPriv->offTime < time) {
 		WaitForVBlank(pScrn);
   		OUTW(vgaIOBase + 4, 0x848E);
-    		WaitForVBlank(pScrn);
 		OUTW(vgaIOBase + 4, 0x0091);
 		pPriv->videoStatus = FREE_TIMER;
 		pPriv->freeTime = time + FREE_DELAY;
