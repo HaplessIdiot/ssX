@@ -1,3 +1,6 @@
+XCOMM $XFree86: $
+
+
 #include <Server.tmpl>
 
 SRCS = pegc_dr.c pegc_bank.s

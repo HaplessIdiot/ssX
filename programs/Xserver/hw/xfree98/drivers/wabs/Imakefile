@@ -1,3 +1,6 @@
+XCOMM $XFree86: $
+
+
 #include <Server.tmpl>
 
 SRCS = cir_driver.c cir_fill.c cir_blt.c cir_bltC.c cir_im.c cir_bank.s \
