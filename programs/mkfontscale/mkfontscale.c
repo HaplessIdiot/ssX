@@ -19,7 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.17 2003/11/21 05:22:08 dawes Exp $ */
+/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.18 2003/11/22 05:15:29 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -94,6 +94,7 @@ static float bigEncodingFuzz = 0.02;
 static int relative;
 static int doScalable;
 static int doBitmaps;
+static int doISO10646_1_encoding;
 static int onlyEncodings;
 static ListPtr encodingsToDo;
 static int reencodeLegacy;
@@ -107,7 +108,7 @@ usage(void)
             "mkfontscale [ -b ] [ -s ] [ -o filename ] [-x suffix ]\n"
             "            [ -a encoding ] [ -f fuzz ] [ -l ] "
             "            [ -e directory ] [ -p prefix ] [ -n ] [ -r ] \n"
-            "            [ directory ]...\n");
+            "            [-u] [-U] [ directory ]...\n");
 }
 
 int
@@ -137,6 +138,7 @@ main(int argc, char **argv)
                                countof(extra_encodings_array),
                                NULL, 0);
     doBitmaps = 0;
+    doISO10646_1_encoding = 1;
     doScalable = 1;
     onlyEncodings = 0;
     relative = 0;
@@ -188,6 +190,12 @@ main(int argc, char **argv)
         } else if(strcmp(argv[argn], "-b") == 0) {
             doBitmaps = 1;
             argn++;
+        } else if(strcmp(argv[argn], "-u") == 0) {
+            doISO10646_1_encoding = 0;
+            argn++;
+        } else if(strcmp(argv[argn], "-U") == 0) {
+            doISO10646_1_encoding = 1;
+            argn++;            
         } else if(strcmp(argv[argn], "-s") == 0) {
             doScalable = 0;
             argn++;
@@ -1140,7 +1148,7 @@ checkExtraEncoding(FT_Face face, char *encoding_name, int found)
     int c;
 
     if(strcasecmp(encoding_name, "iso10646-1") == 0) {
-        if(find_cmap(FONT_ENCODING_UNICODE, -1, -1, face)) {
+        if(doISO10646_1_encoding && find_cmap(FONT_ENCODING_UNICODE, -1, -1, face)) {
             int found = 0;
              /* Export as Unicode if there are at least 15 BMP
                characters that are not a space or ignored. */
