@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvinfo/xvinfo.c,v 1.0 Exp $ */
+/* $XFree86: xc/programs/xvinfo/xvinfo.c,v 1.1 2000/09/18 18:09:52 mvojkovi Exp $ */
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
@@ -259,5 +259,5 @@ int main(int argc, char *argv[])
 
 	XvFreeAdaptorInfo(ainfo);
     }
-
+    return 1;
 }
