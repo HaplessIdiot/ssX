@@ -37,7 +37,7 @@
 |*                                                                           *|
  \***************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.34 2003/06/23 21:38:42 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.35 2003/07/31 20:24:29 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -414,6 +414,11 @@ NVCommonSetup(ScrnInfoPtr pScrn)
     case 0x0329:
     case 0x032C:
     case 0x032D:
+    case 0x0347:
+    case 0x0348:
+    case 0x0349:
+    case 0x034B:
+    case 0x034C:
         mobile = TRUE;
         break;
     default:
