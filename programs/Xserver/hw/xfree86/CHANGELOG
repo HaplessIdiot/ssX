@@ -1,4 +1,7 @@
 XFree86 4.2.99.5 (XX January 2003)
+ 773. Fix artifacts left by XDarwin when reshaping a shaped window (reported
+      by Adrian Umpleby).
+ 772. Fix XDarwin rootless crash when resizing a window (Apple).
  771. Fix vbe module to not assume BIOS call results are zero-extended
       (Paulo Cesar Pereira de Andrade).
  770. Fix improper initialisation of pciConfigRec's.  Reported by Marcel
@@ -16095,4 +16098,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2491 2003/01/23 16:22:09 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2492 2003/01/23 17:20:40 tsi Exp $
