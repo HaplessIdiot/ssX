@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/postinst.sh,v 3.12 1996/12/17 21:00:17 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/postinst.sh,v 3.13 1997/01/22 11:07:57 dawes Exp $
 #
 # postinst.sh (for XFree86 3.2A)
 #
@@ -102,6 +102,23 @@ if [ -d $TINFODIR ]; then
 		echo "They can be installed later by running:"
 		echo ""
 		echo "  tic /usr/X11R6/lib/X11/etc/xterm.terminfo"
+		;;
+	esac
+fi
+
+if [ -f /usr/X11R6/bin/rstartd ]; then
+	echo ""
+	echo "If you are going to use rstart and /usr/X11R6/bin isn't in the"
+	echo "default path for commands run remotely via rsh, you will need"
+	echo "a link to rstartd installed in /usr/bin."
+	echo ""
+	echo "Do you wish to have this link installed (y/n)?"
+	read Resp
+	case "$Resp" in
+	[yY]*)
+		echo "Creating link from /usr/X11R6/bin/rstartd to /usr/bin/rstartd"
+		rm -f /usr/bin/rstartd
+		ln -s /usr/X11R6/bin/rstartd /usr/bin/rstartd
 		;;
 	esac
 fi

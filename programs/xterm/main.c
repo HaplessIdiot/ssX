@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c /main/247 1996/11/29 10:33:51 swick $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.46 1997/01/08 20:52:27 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.47 1997/01/18 07:03:21 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -315,11 +315,14 @@ static Bool IsPts = False;
 
 #ifdef _POSIX_SOURCE
 #define USE_POSIX_WAIT
-#define HAS_POSIX_SAVED_IDS
 #endif
 #ifdef SVR4
 #define USE_POSIX_WAIT
-#define HAS_POSIX_SAVED_IDS
+#define HAS_SAVED_IDS_AND_SETEUID
+#endif
+
+#ifdef linux
+#define HAS_SAVED_IDS_AND_SETEUID
 #endif
 
 #if !defined(MINIX) && !defined(WIN32) && !defined(Lynx)
@@ -330,7 +333,7 @@ static Bool IsPts = False;
 #define USE_POSIX_WAIT
 #define LASTLOG
 #define WTMP
-#define HAS_POSIX_SAVED_IDS
+#define HAS_SAVED_IDS_AND_SETEUID
 #endif
 
 #include <stdio.h>
@@ -1324,7 +1327,7 @@ char **argv;
 
 	/* Init the Toolkit. */
 	{
-#ifdef HAS_POSIX_SAVED_IDS
+#ifdef HAS_SAVED_IDS_AND_SETEUID
 	    uid_t euid = geteuid();
 	    gid_t egid = getegid();
 	    uid_t ruid = getuid();
@@ -1347,7 +1350,7 @@ char **argv;
 				  application_resources,
 				  XtNumber(application_resources), NULL, 0);
 
-#ifdef HAS_POSIX_SAVED_IDS
+#ifdef HAS_SAVED_IDS_AND_SETEUID
 	    if (seteuid(euid) == -1)
 		(void) fprintf(stderr, "seteuid(%d): %s\n",
 			       (int) euid, strerror(errno));

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/preinst.sh,v 3.7 1996/12/27 07:04:23 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/preinst.sh,v 3.8 1997/01/22 11:07:57 dawes Exp $
 #
 # preinst.sh  (for XFree86 3.2A)
 #
@@ -24,6 +24,7 @@ LIBLIST=" \
 	libXext.so \
 	libXi.so \
 	libXmu.so \
+	libXp.so \
 	libXt.so \
 	libXtst.so \
 	liboldX.so \
@@ -36,6 +37,7 @@ LIBLIST=" \
 	libXext.so.6 \
 	libXi.so.6 \
 	libXmu.so.6 \
+	libXp.so.6 \
 	libXt.so.6 \
 	libXtst.so.6 \
 	liboldX.so.6 \

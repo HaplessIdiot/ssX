@@ -1,5 +1,4 @@
-/* $XConsortium: lcGenConv.c /main/14 1996/12/05 10:40:27 swick $ */
-/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.5 1996/01/07 03:46:06 dawes Exp $ */
+/* $TOG: lcGenConv.c /main/15 1997/05/20 15:19:59 kaleb $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -32,6 +31,7 @@
  *   Modifier: Masayoshi Shimamura      FUJITSU LIMITED
  *
  */
+/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.6 1996/12/23 06:00:02 dawes Exp $ */
 
 
 #include "Xlibint.h"
@@ -1314,6 +1314,17 @@ ctstowcs(conv, from, from_left, to, to_left, args, num_args)
 			inbufptr - 1, &state->charset, &ctr_seq_len) )
 		goto skip_the_seg;
 
+	    if (state->charset->side == XlcC0 || 
+		state->charset->side == XlcGL)
+	      {
+		state->GL_charset = state->charset;
+	      }
+	    else if (state->charset->side == XlcC1 || 
+		     state->charset->side == XlcGR)
+	      {
+		state->GR_charset = state->charset;
+	      }	
+
 	    if (*from_left < ctr_seq_len) {
 		inbufptr--;
 		(*from_left)++;
@@ -1328,22 +1339,11 @@ ctstowcs(conv, from, from_left, to, to_left, args, num_args)
             continue;
         } 
 
-	/* check current state */
-        if (state->charset) {
-	    if (state->charset->side == XlcC0 || 
-			state->charset->side == XlcGL) {
-		state->GL_charset = state->charset;
-
-            } else if (state->charset->side == XlcC1 || 
-		     	state->charset->side == XlcGR) {
-		state->GR_charset = state->charset;
-	    }	
-	} else {
-            if (isleftside(ch))
-	        state->charset = state->GL_charset;
-            else
-	        state->charset = state->GR_charset;
-        }
+ 	/* check current state */
+	if (isleftside(ch))
+	  state->charset = state->GL_charset;
+	else
+	  state->charset = state->GR_charset;
 
 	gi_len = gi_len_left = state->charset->char_size;
 	glyph_index = 0;

@@ -30,7 +30,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.29 1997/04/08 10:11:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.30 1997/05/14 08:04:25 hohndel Exp $ */
 
 #include "Probe.h"
 
@@ -682,11 +682,86 @@ int *RamDac;
       inp(0x3c6);
       inp(0x3c6);
       
-      /* the forth read will show the SDAC chip ID and revision */
+      /* the fourth read will show the SDAC chip ID and revision */
       if (((i=inp(0x3c6)) & 0xf0) == 0x70)
 	 *RamDac = DAC_S3_SDAC;
       else
 	 *RamDac = DAC_S3_GENDAC;
+      dactopel();
+   }
+      
+   return(Found);
+}
+
+static Bool Tseng_GENDACCheck(RamDac)
+int *RamDac;
+{
+   Byte daccomm;
+   int i;
+   Bool Found = FALSE;
+
+   Byte saveCR31, savelut[6];
+   Byte saveHercComp, saveModeContr;
+   long clock01, clock23;
+
+   /* probe for Tseng GENDAC or SDAC */
+   /* 
+    * S3 GENDAC and SDAC have two fixed read only PLL clocks
+    *     CLK0 f0: 25.255MHz   M-byte 0x28  N-byte 0x61
+    *     CLK0 f1: 28.311MHz   M-byte 0x3d  N-byte 0x62
+    * which can be used to detect GENDAC and SDAC since there is no chip-id
+    * for the GENDAC.
+    */
+
+
+   saveHercComp = inp(0x3BF);
+   saveModeContr= inp(0x3D8);
+   outp(0x3BF, 0x03);  /* unlock ET4000 special */
+   outp(0x3D8, 0xA0);
+
+   saveCR31 = rdinx(CRTC_IDX, 0x31);
+   wrinx(CRTC_IDX, 0x31, saveCR31 & ~0x40);
+   
+   outp(0x3c7,0);
+   for(i=0; i<2*3; i++)		/* save first two LUT entries */
+      savelut[i] = inp(0x3c9);
+   outp(0x3c8,0);
+   for(i=0; i<2*3; i++)		/* set first two LUT entries to zero */
+      outp(0x3c9,0);
+
+   wrinx(CRTC_IDX, 0x31, saveCR31 | 0x40);
+	 
+   outp(0x3c7,0);
+   for(i=clock01=0; i<4; i++)
+      clock01 = (clock01 << 8) | (inp(0x3c9) & 0xff);
+   for(i=clock23=0; i<4; i++)
+      clock23 = (clock23 << 8) | (inp(0x3c9) & 0xff);
+
+   wrinx(CRTC_IDX, 0x31, saveCR31 & ~0x40);
+
+   outp(0x3c8,0);
+   for(i=0; i<2*3; i++)		/* restore first two LUT entries */
+      outp(0x3c9,savelut[i]);
+
+   wrinx(CRTC_IDX, 0x31, saveCR31);
+
+   outp(0x3BF, saveHercComp);
+   outp(0x3D8, saveModeContr);
+
+   if ( clock01 == 0x28613d62 ||
+       (clock01 == 0x7f7f7f7f && clock23 != 0x7f7f7f7f)) {      
+      Found = TRUE;
+      
+      dactopel();
+      inp(0x3c6);
+      inp(0x3c6);
+      inp(0x3c6);
+      
+      /* the fourth read will show the SDAC chip ID and revision */
+      if (((i=inp(0x3c6)) & 0xf0) == 0xb0)
+	 *RamDac = DAC_ICS5341;
+      else
+	 *RamDac = DAC_ICS5301;  /* ID code ICS5301 = 0xf0 */
       dactopel();
    }
       
@@ -1066,6 +1141,14 @@ int *RamDac;
 	    {
 		DisableIOPorts(NUMPORTS, Ports);
 		return;
+	    }
+	    if ( (SVGA_VENDOR(Chipset) == V_TSENG) && ( Chipset != CHIP_ET6K ) )
+	    {
+	        if (Tseng_GENDACCheck(RamDac))
+	        {
+		   DisableIOPorts(NUMPORTS, Ports);
+		   return;
+	        }
 	    }
 	}
 	else if (SVGA_VENDOR(Chipset) == V_MATROX) 

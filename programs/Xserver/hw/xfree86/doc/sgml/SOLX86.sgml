@@ -154,10 +154,11 @@ Limitations of the virtual terminal sub-system under Solaris x86:<p>
 
 <enum>
 <item>The majority of all modifications you will need to make are now in 
-	<tt>~xc/config/cf/xf86site.def</tt>, 
+	<tt>~xc/config/cf/xf86site.def</tt>.
+
+<!--
 	except one. You will need to set OSName, 
 	and OSMinorVersion correctly in <tt>~xc/config/cf/sun.cf</tt>.
-
 
 Under Solaris 2.1 for x86, <tt>sun.cf</tt> needs to read 
 (near the top of the file)
@@ -180,6 +181,7 @@ Under Solaris 2.4 for x86, <tt>sun.cf</tt> needs to read
 	#define OSMajorVersion		5
 	#define OSMinorVersion		4
 </verb>
+-->
 
 <item>Both Gcc, and ProWorks are supported by XFree86. Gcc-2.5.8 or
         gcc-2.7.2  are 
@@ -200,11 +202,27 @@ Under Solaris 2.4 for x86, <tt>sun.cf</tt> needs to read
 	<tt>~xc/config/cf/sun.cf</tt> to NO, if you are using GCC.
 	ProWorks does not have this problem.
 
+<item> To build XFree86 with gcc you need gcc and (optionnally)
+       c++filt from  GNU binutils. Don't install gas or ld from GNU
+       binutils, use the one provided by Sun. 
+       <p>
+       With XFree86 3.3, you will need to setup a /opt/SUNWspro/bin
+       directory containing symbolic links named <tt/cc/, <tt/CC/, and
+       <tt/c++filt/ pointing respectively to the actual <tt/gcc/,
+       <tt/g++/ and <tt/c++filt/ commands.
 
+<item>If you don't have c++filt or if you have troubles in making
+	World with c++filt, you need to set UseExportLists to NO in
+	<tt>~xc/config/cf/host.def</tt>.<p>
+
+<!--
+	If you use c++filt, you need to check the definition of PATH in
+	<tt>~xc/config/util/elistgen.sun</tt>.<p>
+-->        
 
 <item>If you are using ProWorks to compile the XFree86 distribution, you 
 	need to modify your PATH appropriately so the ProWorks tools are 
-	available.<p>
+	available. Normally, they should be in <tt>/opt/SUNWspro/bin</tt><p>
 
 
 <item>You <bf>MUST</bf> put <tt>/usr/ccs/bin</tt>
@@ -220,21 +238,22 @@ must be found before any
 	driver for memory mapped I/O support.  This driver is <bf>REQUIRED</bf>
 	for the I128, P9000 and Mach 64 servers.<p>
 
-	The source for this driver is included in 
+	You  need to set HasSolx86apertureDrv to YES in
+	<tt>~xc/config/cf/xf86site.def</tt>.<p> to enable the aperture
+	driver.
+
+	  Under Solaris 2.5 and 2.5.1, there's a system driver
+	  (<tt>/dev/xsvc/</tt> that provides this functionality. It will
+	  be detected automatically by the server, so you don't need to
+	  install the driver.
+
+	For Solaris 2.1 and 2.4, the source for this driver is included in
 	<tt>~xc/programs/Xserver/hw/xfree86/etc/apSolx86.shar</tt>.  
 	Building, and 
 	installing the driver is relatively straight forward. Please read 
 	its accompanying README file.<p>
 
-	You also need to set HasSolx86apertureDrv to YES in 
-	<tt>~xc/config/cf/xf86site.def</tt>.<p>
 
-<item>If you don't have c++filt or if you have troubles in making
-	World with c++filt, you need to set UseExportLists to NO in
-	<tt>~xc/config/cf/host.def</tt>.<p>
- 
-	If you use c++filt, you need to check the definition of PATH in
-	<tt>~xc/config/util/elistgen.sun</tt>.<p>
 
 </enum>
 <sect> Notes for running XFree86 on Solaris x86<p>
@@ -294,9 +313,11 @@ Xserver.
 
 	There is no known work around.<p>
 
+<!--
 <item>It has been reported that the aperture driver doesn't work
         under Solaris 2.5.1. It probably doesn't work either under
 	2.5. 
+-->
 
 </enum>
 <sect> Bug Notification<p>
@@ -308,7 +329,7 @@ Xserver.
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.12 1997/01/25 03:22:13 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.13 1997/05/17 12:02:32 dawes Exp $
 
 
 

@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.51 1997/01/18 06:53:31 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.52 1997/01/19 12:49:14 dawes Exp $
 .TH XF86Config 4/5 "Version 3.2A"  "XFree86"
 .SH NAME
 XF86Config - Configuration File for XFree86
@@ -806,7 +806,7 @@ The visual type available for the 16bpp and 32bpp X servers is
 The visual type available for the 1bpp X server is \fBStaticGray\fP.
 .PP
 The visual types available for the 4bpp X server are (default is
-\fBPseudoColor\fP):
+\fBStaticColor\fP):
 .RE
 .sp
 .in 20

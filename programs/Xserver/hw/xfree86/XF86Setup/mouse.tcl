@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.19 1996/12/27 06:54:08 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.20 1997/05/18 13:58:12 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -113,14 +113,18 @@ proc Mouse_create_widgets { win } {
 	label $w.mouse.top.title -text "Select the mouse protocol"
 	frame $w.mouse.type
 	pack $w.mouse.top.title $w.mouse.type -in $w.mouse.top -side top
+	set i 0
 	foreach Type $mseTypeList {
 		set type [string tolower $Type]
 		radiobutton $w.mouse.type.$type -text $Type \
+			-width 12 \
 			-indicatoron false \
 			-variable mseType -value $Type \
 			-highlightthickness 1 \
 			-command [list Mouse_proto_select $win]
-		pack $w.mouse.type.$type -side left -anchor n
+		grid $w.mouse.type.$type -column [expr $i % 7] \
+			-row [expr $i / 7]
+		incr i
 	}
 
 	frame $w.mouse.mid.left
@@ -153,7 +157,7 @@ proc Mouse_create_widgets { win } {
 
 	frame $w.mouse.mid.left.buttons
 	pack $w.mouse.mid.left.buttons -in $w.mouse.mid.left \
-		-side top -fill x -pady 3m
+		-side top -fill x -pady 2m
 	checkbutton $w.mouse.em3but -text Emulate3Buttons \
 		-indicatoron no -variable emulate3Buttons \
 		-command [list Mouse_set_em3but $win]
@@ -164,7 +168,7 @@ proc Mouse_create_widgets { win } {
 		-side top -fill x -padx 3m -anchor w
 
 	frame $w.mouse.brate
-	pack  $w.mouse.brate -in $w.mouse.mid.left -side top -pady 3m
+	pack  $w.mouse.brate -in $w.mouse.mid.left -side top -pady 2m
 	label $w.mouse.brate.title -text "Baud Rate"
 	pack  $w.mouse.brate.title -side top
 	frame $w.mouse.brate.left

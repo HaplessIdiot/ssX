@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.51 1997/03/27 18:38:20 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.52 1997/04/08 10:11:01 hohndel Exp $ */
 
 /*
  * Includes
@@ -340,8 +340,10 @@ extern Chip_Descriptor GLINT_Descriptor;
 #define DAC_ET6K	49	/* Built-in 15/16/24-bit ET6000 RAMDAC */
 #define DAC_ZOOMDAC	50	/* IC Works w30C516 ZOOMDAC or ATT20C498 */
 #define DAC_ALSC_642x	51	/* Alliance ProMotion 642[24] integrated DAC */
+#define DAC_ICS5341	52	/* ICS5341 16-bit SDAC-like DAC used on ET4000W32p */
+#define DAC_ICS5301	53	/* ICS5301 8-bit GENDAC-like DAC used on ET4000W32 */
 
-#define DAC_MAX		DAC_ALSC_642x	/* UPDATE THIS! */
+#define DAC_MAX		DAC_ICS5301	/* UPDATE THIS! */
 
 #define DAC_6_8_PROGRAM	0x40	/* RAMDAC programmable for 6/8-bit tables */
 #define DAC_8BIT	0x80	/* RAMDAC with 8-bit wide lookup tables */

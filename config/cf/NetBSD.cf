@@ -2,7 +2,7 @@ XCOMM platform:  $XConsortium: NetBSD.cf /main/16 1996/10/31 14:47:14 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.53 1997/05/03 09:14:30 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.55 1997/05/12 13:27:50 hohndel Exp $
 
 
 #ifndef OSName
@@ -234,7 +234,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  */
 #if defined(i386Architecture)
 #ifndef HasNetBSDApertureDrv
-#define HasNetBSDApertureDrv	NO
+#define HasNetBSDApertureDrv	YES
 #endif
 #endif
 

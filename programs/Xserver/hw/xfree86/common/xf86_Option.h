@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.71 1997/05/11 02:53:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.72 1997/05/12 13:28:02 hohndel Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -95,7 +95,8 @@ typedef struct {
 #define OPTION_W32_INTERLEAVE_ON  47 /* W32/SVGA */
 #define OPTION_W32_INTERLEAVE_OFF 48 /* W32/SVGA */
 #define OPTION_SLOW_EDODRAM	49 /* slow EDO-DRAM (for S3) */
-#define OPTION_RAS_PRECHARGE	50 /* shift RAS prechange signal (for S3) */
+#define OPTION_EARLY_RAS_PRECHARGE	50 /* shift RAS prechange signal (for S3) */
+#define OPTION_LATE_RAS_PRECHARGE	51 /* shift RAS prechange signal (for S3) */
 
 /* Accel/cursor features */
 #define OPTION_NOACCEL		60 /* Disable accel support in SVGA server */
@@ -285,7 +286,8 @@ OptFlagRec xf86_OptionTab[] = {
   { "med_dram",		OPTION_MED_DRAM },
   { "slow_dram",	OPTION_SLOW_DRAM },
   { "slow_edodram",	OPTION_SLOW_EDODRAM },
-  { "ras_precharge",	OPTION_RAS_PRECHARGE },
+  { "early_ras_precharge",	OPTION_EARLY_RAS_PRECHARGE },
+  { "late_ras_precharge",	OPTION_LATE_RAS_PRECHARGE },
   { "nomemaccess",	OPTION_NO_MEM_ACCESS },
   { "nolinear",		OPTION_NOLINEAR_MODE },
   { "intel_gx",		OPTION_INTEL_GX },

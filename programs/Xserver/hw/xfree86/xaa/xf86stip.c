@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86stip.c,v 3.2 1997/03/27 08:31:37 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86stip.c,v 3.3 1997/04/18 09:13:01 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -110,8 +110,12 @@ xf86FillRectStippledCPUToScreenColorExpand(pDrawable, pGC, nBoxInit, pBoxInit)
 	if ((rectWidth > 0) && (rectHeight > 0)) {
 	    xoffset = (rectX1 - (pGC->patOrg.x + pDrawable->x))
 	        % pPixmap->drawable.width;
+	    if (xoffset < 0)
+	        xoffset += pPixmap->drawable.width;
 	    yoffset = (rectY1 - (pGC->patOrg.y + pDrawable->y))
 	        % pPixmap->drawable.height;
+	    if (yoffset < 0)
+	        yoffset += pPixmap->drawable.height;
 	    FillStippledCPUToScreenColorExpand(
 	        rectX1, rectY1, rectWidth, rectHeight,
 	        pPixmap->devPrivate.ptr, pPixmap->devKind,
@@ -155,8 +159,12 @@ xf86FillRectStippledScreenToScreenColorExpand(pDrawable, pGC, nBoxInit, pBoxInit
 	if ((rectWidth > 0) && (rectHeight > 0)) {
 	    xoffset = (rectX1 - (pGC->patOrg.x + pDrawable->x))
 	        % pPixmap->drawable.width;
+	    if (xoffset < 0)
+	        xoffset += pPixmap->drawable.width;
 	    yoffset = (rectY1 - (pGC->patOrg.y + pDrawable->y))
 	        % pPixmap->drawable.height;
+	    if (yoffset < 0)
+	        yoffset += pPixmap->drawable.height;
 	    FillStippledScreenToScreenColorExpand(
 	        rectX1, rectY1, rectWidth, rectHeight,
 	        pPixmap->devPrivate.ptr, pPixmap->devKind,
@@ -199,11 +207,13 @@ stipplewidth, stippleheight, srcx, srcy, bg, fg, rop, planemask)
     );
 
     if (xf86AccelInfoRec.ColorExpandFlags & ONLY_TRANSPARENCY_SUPPORTED) {
-	/* First fill-in the background. */
-	xf86AccelInfoRec.SetupForFillRectSolid(bg, rop, planemask);
-	xf86AccelInfoRec.SubsequentFillRectSolid(x, y, w, h);
-	if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-	    xf86AccelInfoRec.Sync();
+        if (bg != -1) {
+	    /* First fill-in the background. */
+	    xf86AccelInfoRec.SetupForFillRectSolid(bg, rop, planemask);
+	    xf86AccelInfoRec.SubsequentFillRectSolid(x, y, w, h);
+	    if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
+	      xf86AccelInfoRec.Sync();
+	}
 	xf86AccelInfoRec.SetupForCPUToScreenColorExpand(
 	    -1, fg, rop, planemask);
     } else
@@ -301,7 +311,6 @@ stipplewidth, stippleheight, srcx, srcy, bg, fg, rop, planemask)
     int rop;
     unsigned int planemask;
 {
-    int skipleft;
     int bytewidth;		       /* Area width in bytes. */
     int bitmapwidth;
     unsigned char *srcp;
@@ -321,11 +330,13 @@ stipplewidth, stippleheight, srcx, srcy, bg, fg, rop, planemask)
     );
 
     if (xf86AccelInfoRec.ColorExpandFlags & ONLY_TRANSPARENCY_SUPPORTED) {
-        /* First fill-in the background. */
-        xf86AccelInfoRec.SetupForFillRectSolid(bg, rop, planemask);
-        xf86AccelInfoRec.SubsequentFillRectSolid(x, y, w, h);
-        if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-            xf86AccelInfoRec.Sync();
+        if (bg != -1) {
+	    /* First fill-in the background. */
+	    xf86AccelInfoRec.SetupForFillRectSolid(bg, rop, planemask);
+	    xf86AccelInfoRec.SubsequentFillRectSolid(x, y, w, h);
+	    if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
+	      xf86AccelInfoRec.Sync();
+	}
         xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand(
             x, y, w, h, -1, fg, rop, planemask);
     }
@@ -343,11 +354,9 @@ stipplewidth, stippleheight, srcx, srcy, bg, fg, rop, planemask)
  
     /* Be careful about the offset into the leftmost source byte. */
     if ((srcx & 7) != 0)
-        w -= 8 - (srcx & 7);
+        w += (srcx & 7);
     /* Number of stipple bytes to be written for each bitmap scanline. */
     bytewidth = (w + 7) / 8;
-    if ((srcx & 7) != 0)
-        bytewidth++;
     /* Calculate the non-expanded bitmap width rounded up to 32-bit words, */
     /* in units of pixels. */
     bitmapwidth = ((bytewidth + 3) / 4) * 32;

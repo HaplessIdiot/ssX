@@ -1,7 +1,11 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: X11.tmpl /main/290 1996/12/27 16:14:21 kaleb $
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.13 1997/04/10 10:05:21 hohndel Exp $
+XCOMM $TOG: X11.tmpl /main/292 1997/05/20 10:05:59 kaleb $
+XCOMM
+XCOMM
+XCOMM
+XCOMM
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.14 1997/04/28 11:13:08 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -305,6 +309,14 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.13 1997/04/10 10:05:21 hohndel Exp $
 #define XawI18nDefines -DHAS_WCTYPE_H
 #else
 #define XawI18nDefines -DUSE_XWCHAR_STRING
+#endif
+#endif
+#if Malloc0ReturnsNull
+#ifndef XMalloc0ReturnsNullDefines
+#define XMalloc0ReturnsNullDefines Malloc0ReturnsNullDefines
+#endif
+#ifndef XtMalloc0ReturnsNullDefines
+#define XtMalloc0ReturnsNullDefines Malloc0ReturnsNullDefines
 #endif
 #endif
 #ifndef ExtensionOSDefines

@@ -3,7 +3,7 @@ XCOMM platform:  $TOG: sun.cf /main/161 1997/04/17 14:11:29 barstow $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.31 1997/01/14 22:12:41 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.32 1997/05/03 09:14:38 dawes Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -247,7 +247,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 
 #if (OSMajorVersion > 4) && defined(i386Architecture)
 #ifndef HasSolx86ApertureDriver
-#define HasSolx86ApertureDriver	NO
+#define HasSolx86ApertureDriver	YES
 #endif
 #endif
 
