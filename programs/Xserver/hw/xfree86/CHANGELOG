@@ -1,4 +1,6 @@
 XFree86 4.3.99.3 (xx April 2003)
+ 100. Add preliminary version of generic rootless code based on XDarwin's
+      rootless mode (Torrey T. Lyons and Apple).
   99. Remove PEX and XIE source code (Matthieu Herrb).
   98. The XKB version of XRefreshKeyboardMapping() had an UnlockDisplay()
       call without a preceding LockDisplay() call (Yoel Perl).
@@ -16764,4 +16766,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2633 2003/04/14 02:25:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2634 2003/04/14 20:38:07 herrb Exp $

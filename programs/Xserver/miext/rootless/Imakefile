@@ -1,0 +1,24 @@
+XCOMM $XFree86: $
+
+#include <Server.tmpl>
+
+SRCS =  rootlessCommon.c \
+        rootlessScreen.c \
+        rootlessWindow.c \
+        rootlessGC.c \
+        rootlessValTree.c
+
+OBJS =  rootlessCommon.o \
+        rootlessScreen.o \
+        rootlessWindow.o \
+        rootlessGC.o \
+        rootlessValTree.o
+
+   INCLUDES = -I. -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
+              -I$(XINCLUDESRC) -I$(FONTINCSRC) -I$(SERVERSRC)/render \
+              -I$(EXTINCSRC)
+
+NormalLibraryObjectRule()
+LibraryModuleTarget(rootless,$(OBJS))
+
+DependTarget()
