@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.20 2002/11/05 22:47:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.21 2002/12/10 01:27:05 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -224,8 +224,8 @@ static Bool OffsetFrame = FALSE;
 
 #ifdef I830DEBUG
 void
-DPRINTF_stub(const char *filename, int line, const char *function,
-	     const char *fmt, ...)
+I830DPRINTF_stub(const char *filename, int line, const char *function,
+		 const char *fmt, ...)
 {
    va_list ap;
 
@@ -239,8 +239,8 @@ DPRINTF_stub(const char *filename, int line, const char *function,
 }
 #else /* #ifdef I830DEBUG */
 void
-DPRINTF_stub(const char *filename, int line, const char *function,
-	     const char *fmt, ...)
+I830DPRINTF_stub(const char *filename, int line, const char *function,
+		 const char *fmt, ...)
 {
    /* do nothing */
 }
