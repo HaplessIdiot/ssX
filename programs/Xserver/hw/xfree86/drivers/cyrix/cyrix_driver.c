@@ -50,7 +50,7 @@
  *		(note that most of the data books have been released by
  *		 NatSemi and are downloadable for free as pdf files)
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.23 2001/11/19 15:44:18 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.25 2002/11/06 11:38:59 alanh Exp $ */
 
 #include "fb.h"
 #include "mibank.h"
@@ -381,7 +381,10 @@ CYRIXProbe(DriverPtr drv, int flags)
 	 */
 	return FALSE;
     }
+#ifdef DEBUG
     xf86ErrorFVerb(3,"%s: Device Sections found: %d\n",CYRIX_NAME, numDevSections);
+#endif
+
     /* Should look like an ISA device */
 
     /* PCI BUS */
