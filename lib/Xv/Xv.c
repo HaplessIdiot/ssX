@@ -52,6 +52,7 @@ SOFTWARE.
 
 #include "Xvlibint.h"
 #include "extutil.h"
+#include "XShm.h"
 
 static XExtCodes *_XvCodes;
 static Bool (* _XvOldWireToEventVideo)();
@@ -758,7 +759,9 @@ XvQueryPortAttributes(Display *dpy, XvPortID port, int *num)
 	  for(i = 0; i < rep.num_attributes; i++) {
              _XRead(dpy, (char*)(&Info), sz_xvAttributeInfo);
 	      ret[i].flags = (int)Info.flags;	      
-	      ret[i].name = marker;	      
+	      ret[i].min_value = Info.min;	      
+	      ret[i].max_value = Info.max;	      
+	      ret[i].name = marker;
 	      _XRead(dpy, marker, Info.size);
 	      marker += Info.size;
 	      (*num)++;
@@ -771,6 +774,243 @@ XvQueryPortAttributes(Display *dpy, XvPortID port, int *num)
 
   return ret;
 }
+
+XvImageFormatValues * XvListImageFormats (
+   Display 	*dpy,
+   XvPortID 	port,
+   int 		*num
+){
+  xvListImageFormatsReq *req;
+  xvListImageFormatsReply rep;
+  XvImageFormatValues *ret = NULL;
+
+  *num = 0;
+
+  PREAMBLE(NULL);
+
+  XvGetReq(ListImageFormats, req);
+  req->port = port;
+
+  /* READ THE REPLY */
+
+  if (_XReply(dpy, (xReply *)&rep, 0, xFalse) == 0) {
+      UnlockDisplay(dpy);
+      SyncHandle();
+      return NULL;
+  }
+
+  if(rep.num_formats) {
+      int size = (rep.num_formats * sizeof(XvImageFormatValues));
+
+      if((ret = Xmalloc(size))) {
+	  xvImageFormatInfo Info;
+	  int i;
+	
+	  for(i = 0; i < rep.num_formats; i++) {
+              _XRead(dpy, (char*)(&Info), sz_xvImageFormatInfo);
+	      ret[i].id = Info.id;	      
+	      ret[i].type = Info.type;	      
+	      ret[i].byte_order = Info.byte_order;	      
+	      memcpy(&(ret[i].guid[0]), &(Info.guid[0]), 16);
+	      ret[i].bits_per_pixel = Info.bpp;	      
+  	      ret[i].format = Info.format;	      
+   	      ret[i].num_planes = Info.num_planes;	      
+    	      ret[i].depth = Info.depth;	      
+    	      ret[i].red_mask = Info.red_mask;	      
+    	      ret[i].green_mask = Info.green_mask;	      
+    	      ret[i].blue_mask = Info.blue_mask;	      
+    	      ret[i].y_sample_bits = Info.y_sample_bits;	      
+    	      ret[i].u_sample_bits = Info.u_sample_bits;	      
+    	      ret[i].v_sample_bits = Info.v_sample_bits;
+    	      ret[i].horz_y_period = Info.horz_y_period;
+    	      ret[i].horz_u_period = Info.horz_u_period;
+    	      ret[i].horz_v_period = Info.horz_v_period;
+    	      ret[i].vert_y_period = Info.vert_y_period;
+    	      ret[i].vert_u_period = Info.vert_u_period;
+    	      ret[i].vert_v_period = Info.vert_v_period;
+	      memcpy(&(ret[i].component_order[0]), &(Info.comp_order[0]), 32);
+    	      ret[i].scanline_order = Info.scanline_order;
+	      (*num)++;
+	  }
+      } else
+	_XEatData(dpy, rep.length << 2);
+  }
+
+  POSTAMBLE;
+
+  return ret;
+}
+
+XvImage * XvCreateImage (
+   Display *dpy,
+   XvPortID port,
+   int id,
+   char *data,
+   int width, 
+   int height 
+) {
+   xvQueryImageAttributesReq *req;
+   xvQueryImageAttributesReply rep;
+   XvImage *ret = NULL;
+
+   PREAMBLE(NULL);
+
+   XvGetReq(QueryImageAttributes, req);
+   req->id = id;
+   req->port = port;
+   req->width = width;
+   req->height = height;
+
+   /* READ THE REPLY */
+
+   if (_XReply(dpy, (xReply *)&rep, 0, xFalse) == 0) {
+      UnlockDisplay(dpy);
+      SyncHandle();
+      return NULL;
+   }
+
+   if(ret = (XvImage*)Xmalloc(sizeof(XvImage) + (rep.num_planes << 3))) {
+	ret->id = id;
+	ret->width = rep.width;
+	ret->height = rep.height;
+	ret->data_size = rep.data_size;
+	ret->num_planes = rep.num_planes;
+	ret->pitches = (int*)(&ret[1]);
+	ret->offsets = ret->pitches + rep.num_planes;
+	ret->data = data;
+	ret->obdata = NULL;
+  	_XRead(dpy, (char*)(ret->pitches), rep.num_planes << 2);
+	_XRead(dpy, (char*)(ret->offsets), rep.num_planes << 2);
+   } else
+	_XEatData(dpy, rep.length << 2);
+
+   POSTAMBLE;
+
+   return ret;
+}
+
+XvImage * XvShmCreateImage (
+   Display *dpy,
+   XvPortID port,
+   int id,
+   char *data,
+   int width, 
+   int height,
+   XShmSegmentInfo *shminfo
+){
+   XvImage *ret;
+
+   ret = XvCreateImage(dpy, port, id, data, width, height);
+
+   if(ret) ret->obdata = (XPointer)shminfo;
+
+   return ret;
+}
+
+int XvPutImage (
+   Display *dpy,
+   XvPortID port,
+   Drawable d,
+   GC gc,
+   XvImage *image,
+   int src_x,
+   int src_y,
+   unsigned int src_w,
+   unsigned int src_h,
+   int dest_x, 
+   int dest_y,
+   unsigned int dest_w,
+   unsigned int dest_h
+){
+  xvPutImageReq *req;
+
+  PREAMBLE(XvBadExtension);
+
+  if(image->data_size > (dpy->max_request_size << 2)) /* FixMe */
+	return BadAlloc;
+  
+  FlushGC(dpy, gc);
+
+  XvGetReq(PutImage, req);
+
+  req->port = port;
+  req->drawable = d;
+  req->gc = gc->gid;
+  req->id = image->id;
+  req->src_x = src_x;
+  req->src_y = src_y;
+  req->src_w = src_w;
+  req->src_h = src_h;
+  req->drw_x = dest_x;
+  req->drw_y = dest_y;
+  req->drw_w = dest_w;
+  req->drw_h = dest_h;
+  req->width = image->width;
+  req->height = image->height;
+  req->length += (image->data_size + 3) >> 2;
+
+  /* Yes it's kindof lame that we are sending the whole thing,
+     but for video all of it may be needed even if displaying
+     only a subsection, and I don't want to go through the 
+     trouble of creating subregions to send */
+  _XSend(dpy, (char *)image->data, image->data_size);
+
+  POSTAMBLE;
+
+  return Success;
+}
+
+int XvShmPutImage (
+   Display *dpy,
+   XvPortID port,
+   Drawable d,
+   GC gc,
+   XvImage *image,
+   int src_x,
+   int src_y,
+   unsigned int src_w,
+   unsigned int src_h,
+   int dest_x, 
+   int dest_y,
+   unsigned int dest_w,
+   unsigned int dest_h,
+   Bool send_event
+){
+  XShmSegmentInfo *shminfo = (XShmSegmentInfo *)image->obdata;
+  xvShmPutImageReq *req;
+
+  PREAMBLE(XvBadExtension);
+  
+  FlushGC(dpy, gc);
+
+  XvGetReq(ShmPutImage, req);
+
+  req->port = port;
+  req->drawable = d;
+  req->gc = gc->gid;
+  req->shmseg = shminfo->shmseg;
+  req->id = image->id;
+  req->src_x = src_x;
+  req->src_y = src_y;
+  req->src_w = src_w;
+  req->src_h = src_h;
+  req->drw_x = dest_x;
+  req->drw_y = dest_y;
+  req->drw_w = dest_w;
+  req->drw_h = dest_h;
+  req->offset = image->data - shminfo->shmaddr;
+  req->width = image->width;
+  req->height = image->height;
+  req->send_event = send_event;
+
+  POSTAMBLE;
+
+  return Success;
+}
+
+
+
+
 
 static Bool
 _XvWireToEvent(Display *dpy, XvEvent *re, xvEvent *event)
