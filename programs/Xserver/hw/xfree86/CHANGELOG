@@ -1,4 +1,8 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 773. Fix the XAA clipping flags for the via driver, which fixes a line
+      drawing problem seen with OpenOffice Calc (Bugzilla #1026,
+      Thomas Hellström).
+ 772. HKSCS and GB18030 support for luit (Bugzilla #1048, Zarick Lau).
  771. Fix some remaining memory allocation related problems with the via
       driver (Bugzilla #998, Thomas Hellström).
  770. Add a UseRpath build switch to allow the use of -rpath to be enabled
@@ -18583,7 +18587,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3114 2004/01/27 01:37:39 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3115 2004/01/27 02:25:01 dawes Exp $
 
 
 

@@ -21,7 +21,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_accel.c,v 1.8 2004/01/05 00:34:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_accel.c,v 1.9 2004/01/27 02:25:07 dawes Exp $ */
 
 /*************************************************************************
  *
@@ -394,8 +394,8 @@ VIAInitAccel(ScreenPtr pScreen)
     xaaptr->SetClippingRectangle = VIASetClippingRectangle;
     xaaptr->DisableClipping = VIADisableClipping;
     xaaptr->ClippingFlags = HARDWARE_CLIP_SOLID_FILL |
-                            /*HARDWARE_CLIP_SOLID_LINE |*/
-                            /*HARDWARE_CLIP_DASHED_LINE |*/
+                            HARDWARE_CLIP_SOLID_LINE |
+                            HARDWARE_CLIP_DASHED_LINE |
                             HARDWARE_CLIP_SCREEN_TO_SCREEN_COPY |
                             HARDWARE_CLIP_MONO_8x8_FILL |
                             HARDWARE_CLIP_COLOR_8x8_FILL |
