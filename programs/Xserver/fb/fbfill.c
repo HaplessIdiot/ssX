@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbfill.c,v 1.2 2000/01/21 15:06:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbfill.c,v 1.4 2001/05/29 04:54:09 keithp Exp $ */
 
 #include "fb.h"
 
@@ -106,9 +106,9 @@ fbFill (DrawablePtr pDrawable,
 	    }
 
 	    fbGetStipDrawable (&pStip->drawable, stip, stipStride, stipBpp, stipXoff, stipYoff);
-	    fbStipple (dst + y * dstStride, 
+	    fbStipple (dst + (y + dstYoff) * dstStride, 
 		       dstStride, 
-		       x * dstBpp,
+		       (x + dstXoff) * dstBpp,
 		       dstBpp,
 		       width * dstBpp, height,
 		       stip,
