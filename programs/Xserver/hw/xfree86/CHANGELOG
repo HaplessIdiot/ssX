@@ -1,5 +1,14 @@
-XFree86 4.2.99.3 (21 December 2002)
+XFree86 4.2.99.4 (xx January 2003)
+ 686. Add an "lswitch" option to the group xkb map, allowing the left Alt
+      key to be used for AltGr (#A.1463, Andreas Tobler).
+ 685. Add some locales for OpenI18N1.2 (LI18NUX2000) level.1 conformance,
+      and change zh_HK to point to zh_HK.big5hkscs which conforms to
+      glibc's default for zh_HK (#A.1457, Leon Ho).
+ 684. Updates for the Irish and Ogham XKB maps (#5549, 5550,
+      Séamus Ó Ciardhuáin).
  683. Xterm patch #172 (Thomas Dickey).
+
+XFree86 4.2.99.3 (21 December 2002)
  682. Add a request to XFree86-VidModeExtension to get the read/write
       permissions so that clients can check if they have permission to
       change parameters (David Dawes).
@@ -15909,4 +15918,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2460 2002/12/22 00:46:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2461 2002/12/27 21:09:46 dickey Exp $
