@@ -43,6 +43,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XFree86$ */
 
 #define XK_VoidSymbol		0xFFFFFF	/* void symbol */
 
