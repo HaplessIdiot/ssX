@@ -1,0 +1,68 @@
+# Mesa 3-D graphics library
+# Version:  3.5
+
+# Copyright (C) 2001 Wind River Systems, Inc
+
+# The MIT License
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the "Software"),
+# to deal in the Software without restriction, including without limitation
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,
+# and/or sell copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+# OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+# DEALINGS IN THE SOFTWARE.
+
+TGT_DIR = $(WIND_BASE)/target
+EXTRA_INCLUDE = -I$(MESA_BASE)/include -I$(MESA_BASE)/src
+
+#HAVE_X86=1
+#HAVE_MMX=1
+
+ADDED_CFLAGS = -g -ffast-math
+#ADDED_CFLAGS = -DUGL_DEBUG -g
+#ADDED_CFLAGS = -ffast-math
+
+MESA_LIBDIR = $(TGT_DIR)/lib
+MESA_OBJNAME = $(TGT_DIR)/lib/obj$(CPU)$(TOOL)UglMesa.o
+#VX_LIBNAME = $(TGT_DIR)/lib/lib$(CPU)$(TOOL)vx.a
+#MESA_LIBNAME = $(MESA_LIBDIR)/lib$(CPU)$(TOOL)UglMesa.a
+#MESA_OBJDIR = $(TGT_DIR)/lib/obj$(CPU)$(TOOL)UglMesa
+
+#include $(TGT_DIR)/h/make/rules.library
+include $(TGT_DIR)/h/make/defs.default
+include $(TGT_DIR)/h/make/make.$(CPU)$(TOOL)
+include $(TGT_DIR)/h/make/defs.$(WIND_HOST_TYPE)
+#include $(TGT_DIR)/h/make/rules-lib.$(WIND_HOST_TYPE)
+
+.c.o:
+	$(CC) $(CFLAGS) $(CFLAGS_USE_X86) $(OPTION_OBJECT_ONLY) $(OPTION_OBJECT_NAME)$@ $<
+#	$(CP) $(subst /,$(DIRCHAR),$@) $(MESA_OBJDIR)
+
+.S.o :
+	$(CC) $(CFLAGS_AS) $(CFLAGS_USE_X86) $(OPTION_OBJECT_ONLY) $(OPTION_OBJECT_NAME)$@ $<
+#	$(CP) $(subst /,$(DIRCHAR),$@) $(MESA_OBJDIR)
+
+all:
+
+.PHONY = checkdir
+
+checkdir:
+ifeq ($(WIND_HOST_TYPE),x86-win32)
+	@-md $(MESA_LIBDIR)
+else
+	@ - if [ -d $(MESA_LIBDIR) ] ; then \
+		echo ; \
+	else \
+		mkdir $(MESA_LIBDIR) ; \
+	fi
+endif 
