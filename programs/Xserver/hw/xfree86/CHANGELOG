@@ -1,4 +1,6 @@
 XFree86 4.4.99.1 (XX March 2004)
+  18. IRIX allows for a relatively low number of command arguments, so break up
+      font clean rules accordingly (Marc La France).
   17. Change radeon driver to save/restore colour lookup tables
       (Marc La France).
   16. Fix ix86 pre-Solaris8 mmap() problems by deleting obsolete code
@@ -18717,7 +18719,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3170 2004/03/08 15:37:07 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3171 2004/03/08 17:11:49 tsi Exp $
 
 
 
