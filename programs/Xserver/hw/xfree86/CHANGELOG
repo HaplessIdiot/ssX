@@ -1,5 +1,5 @@
 XFree86 4.1.99.2 (xx September 2001)
- 354. Add i830 2D and DRI driver (VA Linux Systems, 2D3D).
+ 354. Add i830 2D and DRI driver (#A.604, VA Linux Systems, 2D3D).
  353. Use the -no-cpp-precomp compiler option on Darwin, rather than the
       deprecated -traditional-cpp (Christoph Pfisterer).
  352. Reverting patch #340, fixing type (Egbert Eich).
@@ -13969,4 +13969,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1973 2001/10/03 23:38:14 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1974 2001/10/04 18:30:24 alanh Exp $
