@@ -1,4 +1,11 @@
+XFree86 3.1.2Zd (24 October 1996)
+1069. Fix a problem with the TGUI driver disabling linear mode when the
+      OS doesn't support it.
+1068. Fix an image stipple problem in the S3, Mach8, Mach32 and 8514 servers
+      (Harald Koenig).
+
 XFree86 3.1.2Zc (24 October 1996)
+1067. Mach64 doc updates (Kevin Martin).
 1066. Xvfb shouldn't depend on cfb24 (Geert Uytterhoeven).
 1065. Update contrib to R6.1.
 1064. C&T doc updates (David Bateman).
