@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.15 2000/06/22 17:44:04 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.16 2000/08/01 19:03:15 dawes Exp $ */
 
 /*
  * Authors:
@@ -1778,7 +1778,7 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
    I810InitVideo(pScreen);
 
 #ifdef XF86DRI
-   if (pI810->LpRing.mem.Start == 0) {
+   if (pI810->LpRing.mem.Start == 0 && pI810->directRenderingEnabled) {
       pI810->directRenderingEnabled = 0;
       I810DRICloseScreen(pScreen);
    }
@@ -1874,6 +1874,9 @@ I810EnterVT(int scrnIndex, int flags) {
    if (I810_DEBUG & DEBUG_VERBOSE_DRI)
       ErrorF("\n\nENTER VT\n");
 
+   if (! I810BindGARTMemory(pScrn))
+       return FALSE;
+
 #ifdef XF86DRI
    if (pI810->directRenderingEnabled) {
       if (I810_DEBUG & DEBUG_VERBOSE_DRI)
@@ -1911,6 +1914,10 @@ I810LeaveVT(int scrnIndex, int flags) {
       I810Sync( pScrn );
    }
    I810Restore(pScrn);
+
+   if (! I810UnbindGARTMemory(pScrn))
+       return;
+
    vgaHWLock(hwp);
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.7 2000/08/01 19:03:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.8 2000/08/03 02:14:18 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -332,7 +332,7 @@ Bool I810DRIScreenInit(ScreenPtr pScreen)
       drmVersionPtr version = drmGetVersion(pI810->drmSubFD);
       if (version) {
          if (version->version_major != 1 ||
-             version->version_minor != 0 ||
+             version->version_minor != 1 ||
              version->version_patchlevel < 0) {
             /* incompatible drm version */
             xf86DrvMsg(pScreen->myNum, X_ERROR,

@@ -24,7 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810_xmesa.c,v 1.4 2000/06/22 16:59:24 tsi Exp $ */
 
 /*
  * Authors:
@@ -92,6 +92,21 @@ static i810ContextPtr      i810Ctx = 0;
  */
 
 
+static int i810_malloc_proxy_buf(drmBufMapPtr buffers)
+{
+   char *buffer;
+   drmBufPtr buf;
+   int i;
+   
+   buffer = Xmalloc(I810_DMA_BUF_SZ);
+   if(buffer == NULL) return -1;
+   for(i = 0; i < I810_DMA_BUF_NR; i++) {
+      buf = &(buffers->list[i]);
+      buf->address = (drmAddress)buffer;
+   }
+   return 0;
+}
+
 static drmBufMapPtr i810_create_empty_buffers(void)
 {
    drmBufMapPtr retval;
@@ -141,7 +156,7 @@ GLboolean XMesaInitDriver(__DRIscreenPrivate *sPriv)
 
    /* Check that the DRM driver version is compatible */
    if (sPriv->drmMajor != 1 ||
-       sPriv->drmMinor != 0 ||
+       sPriv->drmMinor != 1 ||
        sPriv->drmPatch < 0) {
       char msg[1000];
       sprintf(msg, "i810 DRI driver expected DRM driver version 1.0.x but got version %d.%d.%d", sPriv->drmMajor, sPriv->drmMinor, sPriv->drmPatch);
@@ -187,6 +202,17 @@ GLboolean XMesaInitDriver(__DRIscreenPrivate *sPriv)
    {
       Xfree(i810Screen);
       return GL_FALSE;
+   }
+   
+   /* Check if you need to create a fake buffer */
+   if(i810_check_copy(sPriv->fd) == 1)
+   {
+      i810_malloc_proxy_buf(i810Screen->bufs);
+      i810Screen->use_copy_buf = 1;
+   }
+   else
+   {
+      i810Screen->use_copy_buf = 0;
    }
     
    i810Screen->back.handle = gDRIPriv->backbuffer;

@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.11 2000/08/01 19:03:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.12 2000/08/03 02:14:17 dawes Exp $ */
 
 /*
  * Authors:
@@ -179,6 +179,15 @@ typedef struct _I810Rec {
 
    int  gartfd;
    int  LmFreqSel;
+
+   int VramKey;
+   long VramOffset;
+   int DcacheKey;
+   long DcacheOffset;
+   int HwcursKey; 
+   long HwcursOffset;
+
+   int GttBound;
    
    I810MemRange DcacheMem;
    I810MemRange SysMem;
@@ -261,6 +270,9 @@ extern void I810SetCursorPosition(ScrnInfoPtr pScrn, int x, int y);
 extern int I810AllocateGARTMemory( ScrnInfoPtr pScrn );
 extern void I810FreeGARTMemory( ScrnInfoPtr pScrn );
 
+extern Bool I810BindGARTMemory( ScrnInfoPtr pScrn );
+extern Bool I810UnbindGARTMemory( ScrnInfoPtr pScrn );
+
 extern Bool I810SwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
 extern void I810AdjustFrame(int scrnIndex, int x, int y, int flags);
 
@@ -282,6 +294,7 @@ extern void I810RefreshRing(ScrnInfoPtr pScrn);
 extern void I810EmitFlush(ScrnInfoPtr pScrn);
 extern void I810EmitInvarientState(ScrnInfoPtr pScrn);
 
+extern Bool I810DGAInit(ScreenPtr pScreen);
 
 #define minb(p) *(volatile CARD8 *)(pI810->MMIOBase + (p))
 #define moutb(p,v) *(volatile CARD8 *)(pI810->MMIOBase + (p)) = (v)

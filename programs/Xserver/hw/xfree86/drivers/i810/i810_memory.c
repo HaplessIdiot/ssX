@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.9 2000/06/20 05:08:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.10 2000/08/01 19:03:15 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -76,7 +76,7 @@ int I810AllocHigh( I810MemRange *result, I810MemRange *pool, int size )
 
 int I810AllocateGARTMemory( ScrnInfoPtr pScrn ) 
 {
-#ifdef linux
+#ifdef AGPIOC_ACQUIRE
    struct _agp_info agpinf;
    struct _agp_bind bind;
    struct _agp_allocate alloc;
@@ -134,6 +134,8 @@ int I810AllocateGARTMemory( ScrnInfoPtr pScrn )
 
    bind.pg_start = 0;
    bind.key = alloc.key;
+   pI810->VramOffset = (off_t) bind.pg_start;
+   pI810->VramKey = bind.key;
 
    if (ioctl(pI810->gartfd, AGPIOC_BIND, &bind) != 0) {
       xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
@@ -169,6 +171,8 @@ int I810AllocateGARTMemory( ScrnInfoPtr pScrn )
    if (ioctl(pI810->gartfd, AGPIOC_ALLOCATE, &alloc) == 0) {
       bind.pg_start = tom / 4096;
       bind.key = alloc.key;
+      pI810->DcacheOffset= (off_t) bind.pg_start;
+      pI810->DcacheKey = bind.key;
 
       if (ioctl(pI810->gartfd, AGPIOC_BIND, &bind) != 0) {
 	 xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
@@ -203,6 +207,8 @@ int I810AllocateGARTMemory( ScrnInfoPtr pScrn )
    } else {
       bind.pg_start = tom / 4096;
       bind.key = alloc.key;
+      pI810->HwcursOffset = (off_t) bind.pg_start;
+      pI810->HwcursKey = bind.key;
 
       if (ioctl(pI810->gartfd, AGPIOC_BIND, &bind) != 0) {
 	 xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
@@ -232,7 +238,7 @@ int I810AllocateGARTMemory( ScrnInfoPtr pScrn )
 #endif
 }
 
-
+   pI810->GttBound = 1;
 
 void I810FreeGARTMemory( ScrnInfoPtr pScrn ) 
 {
@@ -317,4 +323,63 @@ void I810SetTiledMemory(ScrnInfoPtr pScrn,
    }
 
    i810Reg->Fence[nr] = val;
+}
+
+Bool
+I810BindGARTMemory( ScrnInfoPtr pScrn ) 
+{
+#ifdef AGPIOC_ACQUIRE
+   I810Ptr pI810 = I810PTR(pScrn);
+   struct _agp_bind bind;
+
+   if (!pI810->GttBound) {
+      if (ioctl(pI810->gartfd, AGPIOC_ACQUIRE, 0) != 0)
+        FatalError ("i810: Unable to acquire agp interface on VT switch!!\n");
+      bind.pg_start = (off_t) pI810->VramOffset;
+      bind.key = pI810->VramKey;
+      if (ioctl(pI810->gartfd, AGPIOC_BIND, &bind) != 0)
+        FatalError("i810: Unable to bind agp memory on VT switch!!\n");
+      bind.pg_start = (off_t) pI810->DcacheOffset;
+      bind.key = pI810->DcacheKey;
+      if (ioctl(pI810->gartfd, AGPIOC_BIND, &bind) != 0)
+        FatalError("i810: Unable to bind agp dcache on VT switch!!\n");
+      bind.pg_start = (off_t) pI810->HwcursOffset;
+      bind.key = pI810->HwcursKey;
+      if (ioctl(pI810->gartfd, AGPIOC_BIND, &bind) != 0)
+        FatalError("i810: Unable to bind agp hardware cursor on VT switch!!\n");
+      pI810->GttBound = 1;
+   }
+   return TRUE;
+#else
+   return FALSE;
+#endif
+}
+
+Bool
+I810UnbindGARTMemory( ScrnInfoPtr pScrn ) 
+{
+#ifdef AGPIOC_ACQUIRE
+   I810Ptr pI810 = I810PTR(pScrn);
+   struct _agp_unbind unbind;
+
+   if (pI810->GttBound) {
+      unbind.priority = 0;
+      unbind.key = pI810->VramKey;
+      if (ioctl(pI810->gartfd, AGPIOC_UNBIND, &unbind) != 0)
+        FatalError("i810: Unable to bind agp memory on VT switch!!\n");
+      unbind.key = pI810->DcacheKey;
+      if (ioctl(pI810->gartfd, AGPIOC_UNBIND, &unbind) != 0)
+        FatalError("i810: Unable to bind agp dcache on VT switch!!\n");
+      unbind.key = pI810->HwcursKey;
+      if (ioctl(pI810->gartfd, AGPIOC_UNBIND, &unbind) != 0)
+        FatalError("i810: Unable to bind agp hardware cursor on VT switch!!\n");
+      if (ioctl(pI810->gartfd, AGPIOC_RELEASE, 0) != 0)
+        FatalError("i810: Unable to release agp interface on VT switch!!\n");
+      pI810->GttBound = 0;
+   }
+
+   return TRUE;
+#else
+   return FALSE;
+#endif
 }

@@ -78,7 +78,7 @@ typedef struct {
 
    __DRIscreenPrivate *driScrnPriv;
    drmBufMapPtr  bufs;
-
+   int use_copy_buf;
 } i810ScreenPrivate;
 
 
