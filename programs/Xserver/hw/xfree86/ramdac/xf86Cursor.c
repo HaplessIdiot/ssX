@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.c,v 1.15 2002/10/31 05:39:32 keithp Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -98,6 +98,9 @@ xf86InitCursor(
     ScreenPriv->EnterVT = pScrn->EnterVT;
     ScreenPriv->LeaveVT = pScrn->LeaveVT;
     ScreenPriv->SetDGAMode = pScrn->SetDGAMode;
+    
+    ScreenPriv->ForceHWCursorCount = 0;
+    ScreenPriv->HWCursorForced = FALSE;
 
     if (pScrn->SwitchMode)
 	pScrn->SwitchMode = xf86CursorSwitchMode;
@@ -328,7 +331,7 @@ xf86CursorSetCursor(ScreenPtr pScreen, CursorPtr pCurs, int x, int y)
 
     PointPriv = pScreen->devPrivates[miPointerScreenIndex].ptr;
 
-    if (infoPtr->pScrn->vtSema && ((
+    if (infoPtr->pScrn->vtSema && (ScreenPriv->ForceHWCursorCount || ((
 #ifdef ARGB_CURSOR
 	pCurs->bits->argb && infoPtr->UseHWCursorARGB &&
 	 (*infoPtr->UseHWCursorARGB) (pScreen, pCurs) ) || (
@@ -336,7 +339,7 @@ xf86CursorSetCursor(ScreenPtr pScreen, CursorPtr pCurs, int x, int y)
 #endif
 	(pCurs->bits->height <= infoPtr->MaxHeight) &&
 	(pCurs->bits->width <= infoPtr->MaxWidth) &&
-	(!infoPtr->UseHWCursor || (*infoPtr->UseHWCursor)(pScreen, pCurs)))))
+	(!infoPtr->UseHWCursor || (*infoPtr->UseHWCursor)(pScreen, pCurs))))))
     {
 
 	if (ScreenPriv->SWCursor)	/* remove the SW cursor */
@@ -379,6 +382,37 @@ xf86CursorMoveCursor(ScreenPtr pScreen, int x, int y)
 	(*ScreenPriv->spriteFuncs->MoveCursor)(pScreen, x, y);
     else if (ScreenPriv->isUp)
 	xf86MoveCursor(pScreen, x, y);
+}
+
+void
+xf86ForceHWCursor (ScreenPtr pScreen, Bool on)
+{
+    xf86CursorScreenPtr ScreenPriv =
+	pScreen->devPrivates[xf86CursorScreenIndex].ptr;
+
+    if (on)
+    {
+	if (ScreenPriv->ForceHWCursorCount++ == 0)
+	{
+	    if (ScreenPriv->SWCursor && ScreenPriv->CurrentCursor)
+	    {
+		ScreenPriv->HWCursorForced = TRUE;
+		xf86CursorSetCursor (pScreen, ScreenPriv->CurrentCursor,
+				     ScreenPriv->x, ScreenPriv->y);
+	    }
+	    else
+		ScreenPriv->HWCursorForced = FALSE;
+	}
+    }
+    else
+    {
+	if (--ScreenPriv->ForceHWCursorCount == 0)
+	{
+	    if (ScreenPriv->HWCursorForced && ScreenPriv->CurrentCursor)
+		xf86CursorSetCursor (pScreen, ScreenPriv->CurrentCursor,
+				     ScreenPriv->x, ScreenPriv->y);
+	}
+    }
 }
 
 xf86CursorInfoPtr
