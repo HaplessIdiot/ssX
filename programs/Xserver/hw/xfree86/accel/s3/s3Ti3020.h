@@ -1,5 +1,5 @@
 /* $XConsortium: s3Ti3020.h,v 1.1 94/03/28 21:14:12 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Ti3020.h,v 3.2 1994/08/06 06:08:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Ti3020.h,v 3.3 1994/09/08 14:26:48 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@paros.com>
  *
@@ -58,6 +58,9 @@
 #define TI_CURS_RAM_ADDR_HIGH	0x09
 #define TI_CURS_RAM_DATA	0x0A
 #define TI_TRUE_COLOR_CONTROL	0x0E    /* 3025 only */
+#define   TI_TC_BTMODE		0x04    /* on = BT485 mode, off = TI3020 mode */
+#define   TI_TC_NONVGAMODE	0x02    /* on = nonvgamode, off = vgamode */
+#define   TI_TC_8BIT		0x01    /* on = 8/4bit, off = 16/32bit */
 #define TI_VGA_SWITCH_CONTROL	0x0F    /* 3025 only */
 #define TI_WINDOW_START_X_LOW	0x10
 #define TI_WINDOW_START_X_HIGH	0x11
@@ -73,6 +76,7 @@
 #define   TI_MUX1_DIRECT_565	0x05
 #define   TI_MUX1_DIRECT_555	0x04
 #define   TI_MUX1_DIRECT_664	0x03
+#define   TI_MUX1_WEIRD_MODE_1	0xC6
 #define TI_MUX_CONTROL_2	0x19
 #define   TI_MUX2_BUS_VGA	0x98
 #define   TI_MUX2_BUS_PC_D8P64	0x1C
@@ -104,6 +108,8 @@
 #define   TI_OCLK_S_V4_R4	0x52
 #define   TI_OCLK_S_V1_R2	0x41
 #define   TI_OCLK_S_V2_R2	0x49
+#define   TI_OCLK_NS_V2_R2	0x89     /* 3025 only */
+#define   TI_OCLK_NS_V4_R4	0x92     /* 3025 only */
 #define TI_PALETTE_PAGE		0x1C
 #define TI_GENERAL_CONTROL	0x1D
 #define TI_MISC_CONTROL		0x1E     /* 3025 only */
@@ -130,6 +136,7 @@
 #define   TI_GIC_ALL_BITS	0x1F
 #define TI_GENERAL_IO_DATA	0x2B
 #define   TI_GID_W2000_6BIT     0x00
+#define   TI_GID_N9_964		0x01
 #define   TI_GID_W2000_8BIT     0x08
 #define   TI_GID_S3_DAC_6BIT	0x1C
 #define   TI_GID_S3_DAC_8BIT	0x1E

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.0 1994/09/08 14:24:39 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.1 1994/09/17 04:05:43 dawes Exp $
 XCOMM
 XCOMM Copyright 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -159,7 +159,7 @@ XCOMM    Mode "1024x768i"
 XCOMM        DotClock	45
 XCOMM        HTimings	1024 1048 1208 1264
 XCOMM        VTimings	768 776 784 817
-XCOMM        Flags		Interlace
+XCOMM        Flags		"Interlace"
 XCOMM    EndMode
 
 EndSection

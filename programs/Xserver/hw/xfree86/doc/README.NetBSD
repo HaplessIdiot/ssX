@@ -62,7 +62,7 @@ XFree86 binary distribution.
 
     REQUIRED:
 
-    doc         - READMEs, install scripts, and XFree86 specific man pages.
+    doc         - READMEs and XFree86 specific man pages.
     bin         - all of the executable X client applications and shared libs
     fonts       - the misc and 75dpi fonts
     lib         - data files needed at runtime
@@ -75,20 +75,20 @@ XFree86 binary distribution.
     Mono        - the Monochrome X Server
     8514        - the X server for IBM 8514/A and compatible boards
     AGX         - the X server for AGX boards
-    Mach8       - the X server for ATI Mach8 graphics accelerator boards
-    Mach32      - the X server for ATI Mach32 graphics accelerator boards
+    Mach8       - the X server for ATI Mach8 graphics boards
+    Mach32      - the X server for ATI Mach32 graphics boards
     P9000	- the X server for P9000 based boards
     S3          - the X server for S3 based boards
+    W32		- the X server for et4000w32 based boards
 
     OPTIONAL:
 
-    configXF86	- Steve Zwaska's ConfigXF86 hardware configuration utility
     fs		- the font server with man pages.
-    prog	- the include/X11 header file, static libraries needed only 
+    prog	- the X11 header files and static libraries needed only 
 		  for compiling other X applications
     man         - man pages except XFree86 specific ones in the doc archive
     other-fonts - the other fonts (100dpi, scaled, Japanese, Chinese, etc)
-
+    linkkit	- X server reconfiguration kit
 
     If this is your first time, then you should be able to safely
 install all of the packages.  As a minimal install, you'll need doc,
@@ -284,6 +284,55 @@ then delete /dev/ttyv0. I don't know why 'MAKEDEV' move /dev/ttyqf to
 /dev/ttyv0. (from Hung-Chi Chu <hcchu@r350.ee.ntu.edu.tw>)
 
 
+    Aperture Driver
+    =-------------=
+
+By default NetBSD 0.9C and higher include a kernel security feature
+that disable access to the /dev/mem device when in multi-users
+mode. But XFree86 servers can take advantage (or require) linear
+access to the display memory.
+
+The P9000 and AGX servers require linear memory access, other
+accelerated servers can take advantage of it, but do not require it.
+
+There are two ways to allow XFree86 to access linear memory:
+
+1. Disable the kernel security feature by initializing the
+   `securelevel' variable to -1 in /sys/kern/kern_sysctl.c, line 205
+   and building a new kernel. For more informations, see the comments
+   in /usr/include/sys/systm.h.
+
+2. Install the NetBSD aperture driver: 
+
+   a) add the following lines to the end of /etc/rc.local:
+
+	if [ -f /usr/X11R6/lib/X11/kernel/ap.o ]; then
+	    echo  'loading ap driver'
+    	    modload -o /usr/X11R6/lib/X11/kernel/ap -e ap \
+		/usr/X11R6/lib/X11/kernel/ap.o
+	fi
+
+   b) Since NetBSD modload does not execute post-install scripts, create
+      the device manually:
+  
+      WARNING: be sure to understand what you'll do before proceeding
+
+      i) find out what major device number will be allocated to you by
+         modload. Modload allocates major numbers beginning at 29. So if
+         'ap' is your only device driver module, it will have major
+         number 29. If it's the third, it will be 31...
+
+     ii) goto the /dev directory and type ``mknod xf86 c 29 0'' (replace
+         29 by the appropriate value if you load more than one device
+         driver module.
+
+    d) Reboot your system. XFree86 will auto-detect the aperture
+       driver if available.
+
+   Caveat: the NetBSD aperture driver only allows one access at a time
+   (so that the system is in the same security state once X is
+   launched). This means that if you run multiple servers on multiples
+   VT, only the first one will have linear memory access.
 
     MIT-SHM
     =-----= 
@@ -340,7 +389,8 @@ If you have installed the syscons or codrv console drivers, these
 files should be taken from your installed version of the driver.
 
 You should configure the distribution by editing xc/config/cf/site.def
-before compiling.  To compile the sources, invoke
+and xc/config/cf/xf86site.def before compiling.  To compile the
+sources, invoke
 
     make World
 
@@ -354,14 +404,6 @@ in the xc directory.
     libraries add the following line to site.def:
 	
 	#define BuildBsdSharedLibs 	NO
-
-    If your system doesn't have support or SYSV shared memory (for
-    example, if you don't have the <sys/shm.h> header), you should
-    disable the MIT-SHM extension by adding the following line to
-    site.def:
-
-	#define HasShm 			NO
-
 
 9 - Building New X Clients
 --------------------------
@@ -417,4 +459,4 @@ Mark  Weaver
 Matthieu Herrb
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.NetBSD,v 3.1 1994/08/20 07:35:16 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.NetBSD,v 3.2 1994/09/07 15:52:40 dawes Exp $

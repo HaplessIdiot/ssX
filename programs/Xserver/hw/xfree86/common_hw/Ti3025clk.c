@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti3025clk.c,v 3.0 1994/09/08 14:27:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti3025clk.c,v 3.1 1994/09/17 04:06:40 dawes Exp $ */
 
 /*
  * Copyright 1994 The XFree86 Project, Inc
@@ -19,12 +19,12 @@ extern int vgaIOBase;
 
 #ifdef __STDC__
 static void
-s3ProgramTi3025Clock(int reg, unsigned char n, unsigned char m,
+s3ProgramTi3025Clock(int doubleit, unsigned char n, unsigned char m,
                           unsigned char p)
 #else
 static void
-s3ProgramTi3025Clock(reg, n, m, p)
-int reg;
+s3ProgramTi3025Clock(doubleit, n, m, p)
+unsigned char doubleit;
 unsigned char n;
 unsigned char m;
 unsigned char p;
@@ -33,27 +33,38 @@ unsigned char p;
    /*
     * Reset the clock data index
     */
-   s3OutTiIndReg(TI_PLL_CONTROL, 0xFC, 0x00);
+   s3OutTiIndReg(TI_PLL_CONTROL, 0x00, 0x00);
 
    /*
     * Now output the clock frequency
     */
-   s3OutTiIndReg(TI_PIXEL_CLOCK_PLL_DATA, 0x80, n);
-   s3OutTiIndReg(TI_PIXEL_CLOCK_PLL_DATA, 0x80, m);
-   s3OutTiIndReg(TI_PIXEL_CLOCK_PLL_DATA, 0xF4, p | TI_PLL_ENABLE);
+   s3OutTiIndReg(TI_PIXEL_CLOCK_PLL_DATA, 0x00, n);
+   s3OutTiIndReg(TI_PIXEL_CLOCK_PLL_DATA, 0x00, m);
+   s3OutTiIndReg(TI_PIXEL_CLOCK_PLL_DATA, 0x00, p | TI_PLL_ENABLE);
 
    /*
     * And now set up the loop clock for RCLK
     */
-   s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0x80, 0x01);
-   s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0x80, 0x01);
-   s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0xF0, p);
-   s3OutTiIndReg(TI_MISC_CONTROL, 0x7F, TI_MC_LOOP_PLL_RCLK);
+   s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, 0x01);
+   s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, 0x01);
+   s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, p);
+   s3OutTiIndReg(TI_MISC_CONTROL, 0x00,
+                TI_MC_LOOP_PLL_RCLK | TI_MC_LCLK_LATCH | TI_MC_INT_6_8_CONTROL);
+
+#if 0
+   /*
+    * Set a standard MCLK (57MHz)
+    */
+   s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, 0x01);
+   s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, 0x01);
+   s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, 0x80);
+#endif
 
    /*
     * And finally enable the clock
     */
-   s3OutTiIndReg(TI_INPUT_CLOCK_SELECT, 0x00, TI_ICLK_PLL);
+   s3OutTiIndReg(TI_INPUT_CLOCK_SELECT, 0x00,
+      doubleit ? TI_ICLK_CLK1_DOUBLE : TI_ICLK_CLK1);
 }
 
 #ifdef __STDC__
@@ -67,26 +78,33 @@ int clk;
 {
    float ffreq;
    unsigned char n, p, m;
+   int doubleit;
    float nf, pf, mf;
    float  max_error = 0.05;  /* ~ within 1% at 100MHz */
 
    ffreq = (float) freq;
 
+   if (ffreq > 100000.0) {
+      ffreq /= 2.0;
+      doubleit = 1;
+   } else
+      doubleit = 0;
+
    /* work out suitable timings */
 
    /* pick the right p value */
 
-   if(ffreq > 110000.0){
-     p = 0;
-   } else if(ffreq > 55000.0){
-       p = 1;
-       ffreq *= 2.0;
-   } else if(ffreq > 27500.0){
-       p = 2;
-       ffreq *= 4.0;
+   if (ffreq > 110000.0) {
+      p = 0;
+   } else if (ffreq > 55000.0) {
+      p = 1;
+      ffreq *= 2.0;
+   } else if (ffreq > 27500.0) {
+      p = 2;
+      ffreq *= 4.0;
    } else {
-       p = 3;
-       ffreq *= 8.0;
+      p = 3;
+      ffreq *= 8.0;
    }
    /* now 110000 <= ffreq <= 220000 */   
 
@@ -104,11 +122,14 @@ int clk;
               break;
            if (div < (ffreq - max_error))
               continue; 
-           ErrorF("clk %d, setting to %f\n", clk,
-                     8.0/(float)(1 << (int)p)*(mf/nf) * TI_REF_FREQ);
            n = nf - 2.0;
            m = mf - 2.0;
-           s3ProgramTi3025Clock(clk, n, m, p);
+#ifdef DEBUG
+           ErrorF("clk %d, setting to %f, n %02x, m %02x, p %d\n", clk,
+                     8.0/(float)(1 << (int)p)*(mf/nf) * TI_REF_FREQ,
+                     (int )n, (int )m, (int )p);
+#endif
+           s3ProgramTi3025Clock(doubleit, n, m, p);
            return;
          }
       }

@@ -1,6 +1,6 @@
 
 /* $XConsortium: s3misc.c,v 1.1 94/03/28 21:16:11 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.10 1994/09/11 00:50:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.11 1994/09/17 13:46:16 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -114,7 +114,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
        * one stage it meant it was OK to use high memory, but only use a 64k
        * aperture.
        */
-#if 1
+#ifdef DEBUG
       /* This is for debugging probe problem at > 8bpp (DHD) */
       {
 	 long *poker;

@@ -1,3 +1,12 @@
+XFree86 3.0Eb (18 September 1994)
+309. Updates to README.NetBSD (Matthieu Herrb).
+308. Fix Mode Flags error reporting in xf86Config.c.
+307. Fix sessreg for Linux and add an install rule for it (Leonard N. Zubkoff).
+306. Fix xdm support with shadow passwords for Linux (Leonard N. Zubkoff).
+305. Fix typo in bsdi.cf (Hans Nasten).
+304. Support for Ti3025/#9GXE64pro (Robin Cutshaw).
+303. Don't include s3_svga driver in SVGA server by default.
+
 XFree86 3.0Ea (17 September 1994)
 302. Update bsdi.cf so Gcc2 is default for versions 1.1 and later only
      (Hans Nasten).

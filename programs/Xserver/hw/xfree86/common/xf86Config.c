@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.16 1994/09/17 04:06:29 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.17 1994/09/17 13:46:29 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1910,6 +1910,8 @@ MonPtr monp;
       break;
     case FLAGS:
       token = getToken(NULL);
+      if (token != STRING)
+        configError("Flag string expected.  Note: flags must be in \"\"");
       while ( token == STRING ) {
         token2 = getStringToken(TimingTab);
         switch(token2) {

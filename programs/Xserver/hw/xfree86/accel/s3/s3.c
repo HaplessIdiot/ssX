@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.29 1994/09/17 04:06:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.30 1994/09/17 13:46:13 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -150,9 +150,7 @@ static SymTabRec s3DacTable[] = {
    { ATT20C505_DAC,	"att20c505" },
    { TI3020_DAC,	"ti3020" },
    { ATT20C498_DAC,	"att20c498" },
-#ifdef TI3025_SUPPORT
    { TI3025_DAC,	"ti3025" },
-#endif
    { ATT20C490_DAC,	"att20c490" },
    { SC15025_DAC,	"sc15025" },
    { STG1700_DAC,	"stg1700" },
@@ -634,13 +632,15 @@ s3Probe()
 
    if (S3_928_SERIES(s3ChipId) || S3_x64_SERIES(s3ChipId)
        || S3_805_I_SERIES(s3ChipId)) {
+      /* First probe for Ti3020 and Ti3025 */
       if (s3RamdacType == UNKNOWN_DAC) {
-	 unsigned char saveCR55, saveCR5C, saveTIndx, saveTIdata;
+	 unsigned char saveCR55, saveCR5C, saveTIndx, saveTIndx2, saveTIdata;
 
 	 outb(vgaCRIndex, 0x55);
 	 saveCR55 = inb(vgaCRReg);
 	 /* toggle to upper 4 direct registers */
 	 outb(vgaCRReg, (saveCR55 & 0xFC) | 0x01);
+
 	 saveTIndx = inb(TI_INDEX_REG);
 	 outb(TI_INDEX_REG, TI_ID);
 	 if (inb(TI_DATA_REG) == TI_VIEWPOINT20_ID) {
@@ -650,13 +650,12 @@ s3Probe()
 	    ErrorF("%s %s: Detected a TI ViewPoint 3020 RAMDAC\n",
 	           XCONFIG_PROBED, s3InfoRec.name);
 	    s3RamdacType = TI3020_DAC;
-	 }
-#ifdef TI3025_SUPPORT
-	 else {
+	 } else {
 	    outb(vgaCRIndex, 0x5C);
 	    saveCR5C = inb(vgaCRReg);
 	    /* clear 0x20 (RS4) for 3020 mode */
 	    outb(vgaCRReg, saveCR5C & 0xDF);
+	    saveTIndx2 = inb(TI_INDEX_REG);
 	    /* already twiddled CR55 above */
 	    outb(TI_INDEX_REG, TI_CURS_CONTROL);
 	    saveTIdata = inb(TI_DATA_REG);
@@ -676,12 +675,12 @@ s3Probe()
 	    /* restore this mess */
 	    outb(TI_INDEX_REG, TI_CURS_CONTROL);
 	    outb(TI_DATA_REG, saveTIdata);
+	    outb(TI_INDEX_REG, saveTIndx2);
 	    outb(vgaCRIndex, 0x5C);
 	    outb(vgaCRReg, saveCR5C);
-	    outb(vgaCRIndex, 0x55);
 	 }
-#endif
 	 outb(TI_INDEX_REG, saveTIndx);
+	 outb(vgaCRIndex, 0x55);
 	 outb(vgaCRReg, saveCR55);
       }
 
@@ -1481,9 +1480,15 @@ s3Probe()
 	    /* XXXX What happens here for 16bpp/32bpp ? */
 	    break;
 	 case TI3020_DAC:
-	 case TI3025_DAC:
 	    if (pMode->SynthClock > 100000) {
 	       pMode->SynthClock /= 2;
+	       pMode->Flags |= V_DBLCLK;
+	    }
+	    /* XXXX What happens here for 16bpp/32bpp ? */
+	    break;
+	 case TI3025_DAC:
+	    if (pMode->SynthClock > 100000) {
+               /* the SynthClock will be divided and clock doubled by the PLL */
 	       pMode->Flags |= V_DBLCLK;
 	    }
 	    /* XXXX What happens here for 16bpp/32bpp ? */
