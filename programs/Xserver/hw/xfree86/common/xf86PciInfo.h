@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.146tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.147tsi Exp $ */
 /*
  * Copyright 1995-2002 by The XFree86 Project, Inc.
  *
@@ -556,6 +556,8 @@
 #define PCI_CHIP_845_G			0x2562
 #define PCI_CHIP_I830_M_BRIDGE		0x3575
 #define PCI_CHIP_I830_M			0x3577
+#define PCI_CHIP_430VX_BRIDGE		0x7030
+#define PCI_CHIP_430TX_BRIDGE		0x7100
 #define PCI_CHIP_I810_BRIDGE		0x7120
 #define PCI_CHIP_I810			0x7121
 #define PCI_CHIP_I810_DC100_BRIDGE	0x7122

@@ -1,4 +1,6 @@
 XFree86 4.3.99.8 (xx June 2003)
+ 256. Limit 430TX and 430VX to 128 and 32 PCI buses respectively
+      (Marc La France).
  255. Add direct GLX rendering on Mac OS X and Apple-DRI extension (Apple).
  254. Replaced inline asms with compier intrinsics for Intel compiler
       (Bugzilla #427, Slava Sysoltsev).
@@ -17176,7 +17178,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2755 2003/06/27 14:53:08 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2756 2003/06/30 01:45:07 torrey Exp $
 
 
 

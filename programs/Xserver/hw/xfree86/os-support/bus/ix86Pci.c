@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.19 2003/03/18 23:08:23 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.20tsi Exp $ */
 /*
  * ix86Pci.c - x86 PCI driver
  *
@@ -671,6 +671,8 @@ static struct {
     { DEVID(VIA,	APOLLOVP1),		32},
     { DEVID(VIA,	APOLLOPRO133X),		64},
     { DEVID(INTEL,	430HX_BRIDGE),		16},
+    { DEVID(INTEL,	430TX_BRIDGE),		128},
+    { DEVID(INTEL,	430VX_BRIDGE),		32},
     { DEVID(INTEL,	440EX_BRIDGE),		32},
     { DEVID(INTEL,	440BX_BRIDGE),		32},
 };
