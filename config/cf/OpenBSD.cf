@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.59 2001/09/30 20:49:20 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.60 2001/10/10 19:06:35 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -56,11 +56,6 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define HasKrbIV		YES
 #endif
 #define HasDlopen		YES
-#ifndef PpcArchitecture
-#  define DlLibrary		/**/
-#else 
-#  define DlLibrary		-ldl
-#endif
 #define HasUsableFileMmap	YES
 
 #define HasNCurses		YES
@@ -796,6 +791,15 @@ install:: fonts.alias							@@\
 #  define OSBinaryType			[ELF]
 # else
 #  define OSBinaryType			/**/
+# endif
+#endif
+
+#ifndef DlLibrary
+# if (OSMajorVersion < 3 || OSMajorVersion == 3 && OsMinorVersion == 0)\
+    && UseElfFormat
+#  define DlLibrary -ldl
+# else
+#  define DlLibrary /**/
 # endif
 #endif
 
