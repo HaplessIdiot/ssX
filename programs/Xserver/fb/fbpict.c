@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.6 2001/01/21 21:19:09 tsi Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.7 2001/01/29 15:07:19 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -73,6 +73,19 @@ fbOver (CARD32 x, CARD32 y)
 }
 
 CARD32
+fbOver24 (CARD32 x, CARD32 y)
+{
+    CARD16  a = ~x >> 24;
+    CARD16  t;
+    CARD32  m,n,o;
+
+    m = FbOverU(x,y,0,a,t);
+    n = FbOverU(x,y,8,a,t);
+    o = FbOverU(x,y,16,a,t);
+    return m|n|o;
+}
+
+CARD32
 fbIn (CARD32 x, CARD8 y)
 {
     CARD16  a = y;
@@ -134,7 +147,7 @@ fbCompositeSolidMask_nx8x8888 (CARD8      op,
 	src |= 0xff000000;
     dstMask = FbFullMask (pDst->pDrawable->depth);
     srca = src >> 24;
-    if (srca == 0)
+    if (src == 0)
 	return;
     
     fbGetDrawable(pDst->pDrawable, dstBits, dstStride, dstBpp);
@@ -216,7 +229,7 @@ fbCompositeSolidMask_nx8888x8888C (CARD8      op,
 	src |= 0xff000000;
     dstMask = FbFullMask (pDst->pDrawable->depth);
     srca = src >> 24;
-    if (srca == 0)
+    if (src == 0)
 	return;
     
     fbGetDrawable(pDst->pDrawable, dstBits, dstStride, dstBpp);
@@ -311,7 +324,7 @@ fbCompositeSolidMask_nx8x0888 (CARD8      op,
     if (pSrc->pFormat->direct.alphaMask == 0)
 	src |= 0xff000000;
     srca = src >> 24;
-    if (srca == 0)
+    if (src == 0)
 	return;
     
     fbGetDrawable(pDst->pDrawable, dstBits, dstStride, dstBpp);
@@ -342,13 +355,13 @@ fbCompositeSolidMask_nx8x0888 (CARD8      op,
 		else
 		{
 		    d = Fetch24(dst);
-		    d = fbOver (src, d);
+		    d = fbOver24 (src, d);
 		}
 		Store24(dst,d);
 	    }
 	    else if (m)
 	    {
-		d = fbOver (fbIn(src,m), Fetch24(dst));
+		d = fbOver24 (fbIn(src,m), Fetch24(dst));
 		Store24(dst,d);
 	    }
 	    dst += 3;
@@ -396,7 +409,7 @@ fbCompositeSolidMask_nx8x0565 (CARD8      op,
     if (pSrc->pFormat->direct.alphaMask == 0)
 	src |= 0xff000000;
     srca = src >> 24;
-    if (srca == 0)
+    if (src == 0)
 	return;
     
     fbGetDrawable(pDst->pDrawable, dstBits, dstStride, dstBpp);
@@ -427,14 +440,14 @@ fbCompositeSolidMask_nx8x0565 (CARD8      op,
 		else
 		{
 		    d = *dst;
-		    d = fbOver (src, cvt0565to8888(d));
+		    d = fbOver24 (src, cvt0565to8888(d));
 		}
 		*dst = cvt8888to0565(d);
 	    }
 	    else if (m)
 	    {
 		d = *dst;
-		d = fbOver (fbIn(src,m), cvt0565to8888(d));
+		d = fbOver24 (fbIn(src,m), cvt0565to8888(d));
 		*dst = cvt8888to0565(d);
 	    }
 	    dst++;
@@ -546,7 +559,7 @@ fbCompositeSrc_8888x0888 (CARD8      op,
 		if (a == 0xff)
 		    d = s;
 		else
-		    d = fbOver (s, Fetch24(dst));
+		    d = fbOver24 (s, Fetch24(dst));
 		Store24(dst,d);
 	    }
 	    dst += 3;
@@ -606,7 +619,7 @@ fbCompositeSrc_8888x0565 (CARD8      op,
 		else
 		{
 		    d = *dst;
-		    d = fbOver (s, cvt0565to8888(d));
+		    d = fbOver24 (s, cvt0565to8888(d));
 		}
 		*dst = cvt8888to0565(d);
 	    }
