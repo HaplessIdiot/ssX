@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.7 1999/03/28 15:32:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.8 1999/04/11 13:10:49 dawes Exp $ */
 
 /*
  * Copyright (c) 1998 by The XFree86 Project, Inc.
@@ -49,28 +49,28 @@ xf86CollectOptions(ScrnInfoPtr pScrn, pointer extraOpts)
     if (pScrn->monitor->options) {
 	tmp = OptionListDup(pScrn->monitor->options);
 	if (pScrn->options)
-	    OptionListMerge(pScrn->options, tmp);
+	    pScrn->options = OptionListMerge(pScrn->options, tmp);
 	else
 	    pScrn->options = tmp;
     }
     if (pScrn->confScreen->options) {
 	tmp = OptionListDup(pScrn->confScreen->options);
 	if (pScrn->options)
-	    OptionListMerge(pScrn->options, tmp);
+	    pScrn->options = OptionListMerge(pScrn->options, tmp);
 	else
 	    pScrn->options = tmp;
     }
     if (pScrn->display->options) {
 	tmp = OptionListDup(pScrn->display->options);
 	if (pScrn->options)
-	    OptionListMerge(pScrn->options, tmp);
+	    pScrn->options = OptionListMerge(pScrn->options, tmp);
 	else
 	    pScrn->options = tmp;
     }
     if (extras) {
 	tmp = OptionListDup(extras);
 	if (pScrn->options)
-	    OptionListMerge(pScrn->options, tmp);
+	    pScrn->options = OptionListMerge(pScrn->options, tmp);
 	else
 	    pScrn->options = tmp;
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.33 1999/03/28 15:32:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.34 1999/03/29 09:41:28 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -306,7 +306,7 @@ xf86SetDepthBpp(ScrnInfoPtr scrp, int depth, int dummy, int fbbpp,
 		 */
 		/* Check pix24 first */
 		if (pix24 != Pix24DontCare) {
-		    if (pix24 == Pix24Use32)
+		    if (pix24 == Pix24Use32) {
 			if (DO_PIX32(depth24flags)) {
 			    if (CHOOSE24FOR32(depth24flags))
 				scrp->bitsPerPixel = 24;
@@ -315,7 +315,7 @@ xf86SetDepthBpp(ScrnInfoPtr scrp, int depth, int dummy, int fbbpp,
 			} else {
 			    nomatch = TRUE;
 			}
-		    else if (pix24 == Pix24Use24)
+		    } else if (pix24 == Pix24Use24) {
 			if (DO_PIX24(depth24flags)) {
 			    if (CHOOSE32FOR24(depth24flags))
 				scrp->bitsPerPixel = 32;
@@ -324,6 +324,7 @@ xf86SetDepthBpp(ScrnInfoPtr scrp, int depth, int dummy, int fbbpp,
 			} else {
 			    nomatch = TRUE;
 			}
+		    }
 		} else {
 		    if (DO_PIX32(depth24flags)) {
 			if (CHOOSE24FOR32(depth24flags))
