@@ -284,6 +284,10 @@ renditionProbe(DriverPtr drv, int flags)
         numUsed=xf86MatchPciInstances(RENDITION_NAME, PCI_VENDOR_RENDITION,
                     renditionChipsets, renditionPCIchipsets, 
                     devSections, numDevSections, drv, &usedChips);
+
+	if (numUsed > 0 && (flags & PROBE_DETECT))
+	    return TRUE;
+
         for (c=0; c<numUsed; c++) {
             ScrnInfoPtr pScrn;
             /* Allocate a ScrnInfoRec and claim the slot */
