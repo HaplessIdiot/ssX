@@ -1,7 +1,7 @@
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.306tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.307tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -679,7 +679,7 @@ XF86LOADERLIB = $(XF86SRC)/loader/LibraryTargetName(loader)
 XF86MAINLIBS = PreFbLibsNoFont \
 	       $(FONTBASE) $(XF86COMLIB) \
 	       NoMfbBarePostFbLibs $(XF86EXTENSIONS)
-XF86SERVERSYSLIBS = $(SYSLIBS) $(LIBDL) $(LIBREGEX)
+XF86SERVERSYSLIBS = $(XPFBLIBS) $(SYSLIBS) $(LIBDL) $(LIBREGEX)
 XF86SERVERLIBS = $(XF86DRVLIBS) $(XF86IDRVLIBS) $(XF86LIBS) $(XF86LOADERLIB) \
 		 $(XF86COMLIB) $(XF86MAINLIBS) $(XF86SCANLIB) $(XF86OSLIB)
 #else
