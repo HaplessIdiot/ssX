@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.56 2001/08/26 16:21:29 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.57 2001/09/13 19:53:24 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -95,6 +95,16 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 /* OpenBSD after 2.9 has BSD authentication */
 #if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 9)
 # define HasBSDAuth		YES
+#endif
+
+/* OpenBSD 3.0 has APM with kqueue interface */
+#if OSMajorVersion >= 3
+# define HasApmKqueue		YES
+#endif
+
+/* OpenBSD 3.0 has libusb */
+#if OSMajorVersion >= 3 
+# define HasLibUsb		YES
 #endif
 
 /*
