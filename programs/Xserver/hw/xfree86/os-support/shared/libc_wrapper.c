@@ -1783,7 +1783,7 @@ xf86GetErrno ()
 int
 xf86shmget(xf86key_t key, int size, int xf86shmflg)
 {
-    int shmflg = 0;
+    int shmflg = xf86shmflg & 0777;
 
     if (key == XF86IPC_PRIVATE) key = IPC_PRIVATE;
     
