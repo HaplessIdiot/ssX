@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.158 2002/01/13 00:15:52 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.159 2002/01/13 00:26:49 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -1960,7 +1960,17 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	case 0x03:
 	    pScrn->videoRam = 1024;
 	    break;
-	case 0x04:
+	case 0x04: /* 8MB, but - hw cursor can't store above 4MB */
+		   /* So, we force to 4MB for now */
+	    	   /* pScrn->videoRam = 8192; */
+	    /* Apparantly this isn't true for the CYBER9397DVD */
+	    /* maybe some other chipsets aren't affected either */
+	    /* XXX this needs to be investigated further */
+	  if (pTrident->HWCursor && (pTrident->Chipset != CYBER9397DVD)) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, 
+		       "Found 8MB board, using 4MB\n");
+	    pScrn->videoRam = 4096;
+	  } else
 	    pScrn->videoRam = 8192;
 	    break;
 	case 0x07:
@@ -2779,21 +2789,6 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     if (pScrn->bitsPerPixel < 8) 
 	pTrident->HWCursor = FALSE;
-
-    {
-	int used = (pScrn->displayWidth * pScrn->virtualY * 
-			pScrn->bitsPerPixel / 8) / 1024;
-
-	/* FIXME. We could put the cursor at the top of video memory,
-	 * and push the framebuffer furthur down in videoram. Maybe soon.
-	 */
-
-	if (used > 4094) {
-	    xf86DrvMsg(scrnIndex, X_INFO,
-		"Video memory used exceeds hardware cursor limitation, disabling\n");
-	    pTrident->HWCursor = FALSE;
-	}
-    }
 
     if (pTrident->HWCursor) {
         xf86SetSilkenMouse(pScreen);
