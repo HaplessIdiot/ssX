@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.39 2002/02/26 04:53:30 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.40tsi Exp $
 
 XCOMM
 XCOMM Imake tokens which are significant to building libGL:
@@ -14,11 +14,13 @@ XCOMM GlxBuiltInMga - if defined, build mga_dri.so driver into libGL
 XCOMM GlxBuiltInI810 - if defined, build i810_dri.so driver into libGL
 XCOMM GlxBuiltInR128 - if defined, build r128_dri.so driver into libGL
 XCOMM GlxBuiltInRadeon - if defined, build radeon_dri.so driver into libGL
+XCOMM GlxBuiltInR200 - if defined, build r200_dri.so driver into libGL
 XCOMM GlxBuiltInFfb - if defined, build ffb_dri.so driver into libGL
 XCOMM GlxBuiltInSIS - if defined, build sis_dri.so driver into libGL
 XCOMM
 XCOMM GlxUseBuiltInDRIDriver - automatically defined if any of the
-XCOMM   GlxBuiltIn[Gamma,Tdfx,Mga,I810,R128,Radeon,Ffb,SIS] tokens is defined
+XCOMM   GlxBuiltIn[Gamma,Tdfx,Mga,I810,R128,Radeon,R200,Ffb,SIS] tokens is
+XCOMM   defined
 XCOMM
 XCOMM GlxBuiltInXMesa - if defined, build XMesa (Xlib Mesa driver) into libGL
 XCOMM   to enable rendering to displays that lack the GLX extension.
@@ -66,8 +68,9 @@ LIBGLBUILDDIR = GL
  *   GlxBuiltInXMesa
  *   BuildOSMesaLib
  */
-#if (BuildXF86DRI && defined(DriDrivers)) || \
-	GlxDriverUsesMesa || GlxBuiltInXMesa || BuildOSMesaLib
+#if BuildOSMesaLib || \
+    (BuildXF86DRI && \
+     (defined(DriDrivers) || GlxDriverUsesMesa || GlxBuiltInXMesa))
      MESADIRS = mesa/src
 #endif
 
@@ -100,7 +103,7 @@ LIBGLBUILDDIR = GL
  * built-in to libGL.  In the former case, libGL needs to be built before
  * the drivers, and in the latter case, it needs to be built after the driver.
  */
-#if GlxUseBuiltInDRIDriver
+#if BuildXF86DRI && GlxUseBuiltInDRIDriver
 SUBDIRS = $(MESADIRS) $(DRIDIRS) $(DRIVERDIRS) $(GLXDIRS) $(LIBGLBUILDDIR) $(OSMESADIRS)
 #else
 SUBDIRS = $(MESADIRS) $(GLXDIRS) $(DRIDIRS) $(LIBGLBUILDDIR) $(OSMESADIRS) $(DRIVERDIRS)

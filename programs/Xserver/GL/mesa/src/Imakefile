@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.21 2002/05/31 18:12:37 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.22tsi Exp $
 
 #if DoLoadableServer
 #if !BuildModuleInSubdir
@@ -8,7 +8,7 @@ XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.21 2002/05/31 18:1
 #endif
 #endif
 
-#if !BuildModuleInSubdir || !defined(IHaveModules)
+#if !defined(IHaveModules) || !BuildModuleInSubdir
 #define IHaveSubdirs
       SUBDIRS = math array_cache swrast swrast_setup tnl X $(MODSUBDIR)
 #endif
@@ -19,7 +19,7 @@ XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.21 2002/05/31 18:1
 #define NeedAllMesaSrc
 #define NeedToLinkMesaSrc
 #define MesaBuildDir /**/
-#if !BuildModuleInSubdir || !defined(IHaveModules)
+#if !defined(IHaveModules) || !BuildModuleInSubdir
 #include "../../../../../lib/GL/mesa/src/Imakefile.inc"
 #else
 #include "../../../../../../lib/GL/mesa/src/Imakefile.inc"

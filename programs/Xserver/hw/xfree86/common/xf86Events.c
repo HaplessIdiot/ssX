@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.135 2002/11/20 18:14:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.136tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -314,6 +314,7 @@ xf86ProcessActionEvent(ActionEvent action, void *arg)
 	    CloseDownClient(server);
 	}
 	break;
+#if !defined(__SOL8__) && (!defined(sun) || defined(i386))
     case ACTION_SWITCHSCREEN:
 	if (arg) {
 	    int vtno = *((int *) arg);
@@ -337,6 +338,9 @@ xf86ProcessActionEvent(ActionEvent action, void *arg)
     case ACTION_SWITCHSCREEN_PREV:
         if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno - 1) < 0)
             ErrorF("Failed to switch consoles (%s)\n", strerror(errno));
+	break;
+#endif
+    default:
 	break;
     }
 }

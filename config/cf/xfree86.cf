@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.420 2002/11/22 02:57:16 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.421tsi Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1144,10 +1144,6 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #define GlxUseSGISI	NO
 #endif
 
-#ifndef NeedUIThrStubs
-#define NeedUIThrStubs	NO
-#endif
-
 #if BuildXF86DRI
 
 #ifndef BuildGLXLibrary
@@ -1604,13 +1600,6 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #endif
 
 /*
- * By default, create the local font directory
- */
-#ifndef MakeLocalFontDir
-# define MakeLocalFontDir	YES
-#endif
-
-/*
  * Build scanpci?
  */
 #ifndef SystemV
@@ -1916,7 +1905,11 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 # define DefaultGcc2DebugOpt -g
 #endif
 
-#if HasGcc2 && defined(DebuggableLibraries) && DebuggableLibraries
+#ifndef DebuggableLibraries
+# define DebuggableLibraries NO
+#endif
+
+#if HasGcc2 && DebuggableLibraries
 # define LibraryDebugOpt DefaultGcc2DebugOpt
 #endif
 

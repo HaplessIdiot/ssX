@@ -3,7 +3,7 @@ XCOMM platform:  $Xorg: sun.cf,v 1.4 2000/08/17 19:41:48 cpqbld Exp $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.65 2002/10/01 12:11:05 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.66tsi Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -94,6 +94,9 @@ XCOMM SunPro C CCompilerMajorVersion./**/CCompilerMinorVersion
  * #endif
  */
 
+#ifndef HasSunCplusplus
+# define HasSunCplusplus HasSunC	/* ??? */
+#endif
 #if HasSunCplusplus
 # ifndef HasCplusplus
 #  define HasCplusplus YES
@@ -350,7 +353,7 @@ XCOMM SunPro C++ CplusplusCompilerMajorVersion./**/CplusplusCompilerMinorVersion
 #if HasGcc
 # if OSMajorVersion > 4
 #  ifndef DefaultCCOptions
-#   if UseInstalled
+#   ifdef UseInstalled
 #    define DefaultCCOptions -DNO_ASM
 #   elif OSMinorVersion > 6
 #    define DefaultCCOptions -DNO_ASM GccWarningOptions
