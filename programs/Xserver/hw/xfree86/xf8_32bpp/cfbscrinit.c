@@ -153,6 +153,8 @@ cfb8_32CloseScreen (int i, ScreenPtr pScreen)
 {
     cfb8_32ScreenPtr pScreenPriv = CFB8_32_GET_SCREEN_PRIVATE(pScreen);
 
+    if(pScreenPriv->visualData)
+	xfree(pScreenPriv->visualData);
     xfree((pointer) pScreenPriv);
 
     return(cfb32CloseScreen(i, pScreen));
@@ -217,18 +219,73 @@ cfb8_32EnableDisableFBAccess (
     (*pScreenPriv->EnableDisableFBAccess) (index, enable);
 }
 
+static Atom overlayVisualsAtom;
+
+typedef struct {
+    CARD32 overlay_visual;
+    CARD32 transparent_type;
+    CARD32 value;
+    CARD32 layer;
+} overlayVisualRec;
+
+static void
+cfb8_32SetupVisuals (ScreenPtr pScreen)
+{
+    cfb8_32ScreenPtr pScreenPriv = CFB8_32_GET_SCREEN_PRIVATE(pScreen);
+    char atomString[] = {"SERVER_OVERLAY_VISUALS"};
+    overlayVisualRec *overlayVisuals;
+    VisualID *visuals = NULL;
+    int numVisuals = 0;
+    DepthPtr pDepth = pScreen->allowedDepths;
+    int numDepths = pScreen->numDepths;
+    int i;
+
+    pScreenPriv->visualData = NULL;
+
+    /* find depth 8 visuals */
+    for(i = 0; i < numDepths; i++, pDepth++) {
+	if(pDepth->depth == 8) {
+	    numVisuals = pDepth->numVids;
+	    visuals = pDepth->vids;
+	    break;
+	}
+    }
+    
+    if(!numVisuals || !visuals) {
+	ErrorF("No overlay visuals found!\n");
+	return;
+    }
+
+    if(!(overlayVisuals = xalloc(numVisuals * sizeof(overlayVisualRec))))
+	return;
+
+    for(i = 0; i < numVisuals; i++) {
+	overlayVisuals[i].overlay_visual = visuals[i];
+	overlayVisuals[i].transparent_type = 1; /* transparent pixel */
+	overlayVisuals[i].value = pScreenPriv->key;
+	overlayVisuals[i].layer = 1;
+    }    
+
+    overlayVisualsAtom = MakeAtom(atomString, sizeof(atomString) - 1, TRUE);
+
+    xf86RegisterRootWindowProperty(pScreen->myNum, overlayVisualsAtom,
+			overlayVisualsAtom, 32, numVisuals * 4, overlayVisuals);
+
+    pScreenPriv->visualData = (pointer)overlayVisuals;
+}
+
 Bool
 cfb8_32ScreenInit(
     ScreenPtr pScreen,
     pointer pbits,		/* pointer to screen bitmap */
     int xsize, int ysize,	/* in pixels */
     int dpix, int dpiy,		/* dots per inch */
-    int width			/* pixel width of frame buffer */
+    int w			/* pixel width of frame buffer */
 ){
     cfb8_32ScreenPtr pScreenPriv;
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
 
-    if (!cfb8_32SetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, width))
+    if (!cfb8_32SetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, w))
 	return FALSE;
 
     pScreenPriv = CFB8_32_GET_SCREEN_PRIVATE(pScreen);
@@ -237,6 +294,11 @@ cfb8_32ScreenInit(
     pScreenPriv->EnableDisableFBAccess = pScrn->EnableDisableFBAccess;
     pScrn->EnableDisableFBAccess = cfb8_32EnableDisableFBAccess;
 
-    return cfb8_32FinishScreenInit(
-		pScreen, pbits, xsize, ysize, dpix, dpiy, width);
+
+    if(cfb8_32FinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, w))
+    { 
+	cfb8_32SetupVisuals(pScreen);
+	return TRUE;
+    }
+    return FALSE;
 }
