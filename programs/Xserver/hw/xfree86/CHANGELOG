@@ -1,3 +1,7 @@
+XFree86 4.0.1a (XX XXXX 2000)
+ 418. Fix xf1bpp/xf4bpp in trident driver and some planemask problems
+      (Alan Hourihane).
+
 XFree86 4.0.1 (1 July 2000)
  417. Update OpenBSD and NetBSD docs (#4053, Matthieu Herrb).
  416. Fix segfault when destroying a GLX context (Kevin Martin).
@@ -10817,4 +10821,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1229 2000/07/01 15:23:08 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1230 2000/07/02 02:35:25 dawes Exp $

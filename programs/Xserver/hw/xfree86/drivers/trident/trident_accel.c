@@ -23,7 +23,7 @@
  * 
  * Trident accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_accel.c,v 1.6 1999/04/25 10:02:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_accel.c,v 1.10 2000/01/27 01:13:23 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -302,13 +302,13 @@ TridentSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
     if (xdir < 0) pTrident->BltScanDirection |= XNEG;
     if (ydir < 0) pTrident->BltScanDirection |= YNEG;
 
+    REPLICATE(transparency_color);
     if (transparency_color != -1) {
 	if (pTrident->Chipset == PROVIDIA9685) {
 	    dst |= 1<<16;
 	} else {
     	    TGUI_OPERMODE(pTrident->EngineOperation | DST_ENABLE);
 	}
-	REPLICATE(transparency_color);
 	TGUI_CKEY(transparency_color);
     }
 
@@ -588,13 +588,13 @@ TridentWritePixmap(
     if (w & 7)
     	w += 8 - (w & 7);
 
+    REPLICATE(transparency_color);
     if (transparency_color != -1) {
 	if (pTrident->Chipset == PROVIDIA9685) {
 	    dst |= 1<<16;
 	} else {
     	    TGUI_OPERMODE(pTrident->EngineOperation | DST_ENABLE);
 	}
-	REPLICATE(transparency_color);
 	TGUI_CKEY(transparency_color);
     }
     TGUI_SRC_XY(0,0);
@@ -702,13 +702,13 @@ TridentSetupForColor8x8PatternFill(ScrnInfoPtr pScrn,
 	 pTrident->Chipset == TGUI9680) && rop == GXcopy)
 	drawflag |= FASTMODE;
 
+    REPLICATE(transparency_color);
     if (transparency_color != -1) {
 	if (pTrident->Chipset == PROVIDIA9685) {
 	    drawflag |= 1<<16;
 	} else {
     	    TGUI_OPERMODE(pTrident->EngineOperation | DST_ENABLE);
 	}
-	REPLICATE(transparency_color);
 	TGUI_CKEY(transparency_color);
     }
 
