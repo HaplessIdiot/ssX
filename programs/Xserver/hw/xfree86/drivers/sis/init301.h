@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init301.h,v 1.4 2000/12/02 01:16:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init301.h,v 1.6 2002/11/29 13:52:06 eich Exp $ */
 #ifndef  _INIT301_
 #define  _INIT301_
 
@@ -173,38 +173,11 @@ void     SiS_OEM310Setting(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExte
                            UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex);
 void     SiS_OEMLCD(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT BaseAddr,
                     UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex);
-USHORT 	 GetLCDPtrIndex(SiS_Private *SiS_Pr);
-USHORT   GetTVPtrIndex(SiS_Private *SiS_Pr);
-void     SetDelayComp(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT BaseAddr,
-             	     UCHAR *ROMAddr,USHORT ModeNo);
-void     SetAntiFlicker(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT BaseAddr,
-               	       UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex);
-void     SetEdgeEnhance(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT BaseAddr,
-                       UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex);
-void     SetYFilter(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT BaseAddr,
-           	   UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex);
-void	 SetPhaseIncr(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT BaseAddr,
-             	     UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex);
 #endif
 #ifdef SIS300
 void     SiS_OEM300Setting(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT BaseAddr,
                            UCHAR *ROMAddr,USHORT ModeNo);
-USHORT 	 GetOEMLCDPtr(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension, UCHAR *ROMAddr, int Flag);
-USHORT 	 GetOEMTVPtr(SiS_Private *SiS_Pr);
-void	 SetOEMTVDelay(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT BaseAddr,
-              	       UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex);
-void     SetOEMLCDData(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT BaseAddr,
-                       UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex);
-void	 SetOEMLCDDelay(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT BaseAddr,
-               	        UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex);
-void	 SetOEMAntiFlicker(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,
-                           USHORT BaseAddr,UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex);
-void  	 SetOEMPhaseIncr(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT BaseAddr,
-                         UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex);
-void	 SetOEMYFilter(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT BaseAddr,
-               	       UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex);
 #endif
-USHORT   GetRevisionID(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension);
 BOOLEAN  SiS_LowModeStuff(SiS_Private *SiS_Pr, USHORT ModeNo,PSIS_HW_DEVICE_INFO HwDeviceExtension);
 
 BOOLEAN  SiS_GetLCDResInfo(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT ModeNo, USHORT ModeIdIndex,

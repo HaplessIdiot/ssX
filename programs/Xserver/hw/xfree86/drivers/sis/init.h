@@ -151,16 +151,13 @@ void     SiS_SetMemoryClock(SiS_Private *SiS_Pr, UCHAR *ROMAddr,PSIS_HW_DEVICE_I
 void     SiS_SetDRAMModeRegister(SiS_Private *SiS_Pr, UCHAR *ROMAddr,PSIS_HW_DEVICE_INFO HwDeviceExtension);
 BOOLEAN  SiS_SearchVBModeID(SiS_Private *SiS_Pr, UCHAR *ROMAddr, USHORT *ModeNo);
 void     SiS_IsLowResolution(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex);
-ULONG    GetDRAMSize(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension);
 
 #ifdef SIS300
-void     InitTo300Pointer(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension);
 void     SiS_SetDRAMSize_300(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension);
 USHORT   SiS_ChkBUSWidth_300(SiS_Private *SiS_Pr, ULONG FBAddress);
 #endif
 
 #ifdef SIS315H
-void     InitTo310Pointer(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension);
 UCHAR    SiS_Get310DRAMType(SiS_Private *SiS_Pr, UCHAR *ROMAddr,PSIS_HW_DEVICE_INFO HwDeviceExtension);
 void     SiS_DDR_MRS(SiS_Private *SiS_Pr);
 void     SiS_SDR_MRS(SiS_Private *SiS_Pr);
@@ -188,7 +185,7 @@ void     SiS_VerifyMclk(SiS_Private *SiS_Pr, ULONG FBAddr);
 
 void     SiS_HandleCRT1(SiS_Private *SiS_Pr);
 void     SiS_Handle301B_1400x1050(SiS_Private *SiS_Pr, USHORT ModeNo);
-void     SetEnableDstn(SiS_Private *SiS_Pr);
+void     SiS_SetEnableDstn(SiS_Private *SiS_Pr);
 void     SiS_Delay15us(SiS_Private *SiS_Pr);
 BOOLEAN  SiS_SearchModeID(SiS_Private *SiS_Pr, UCHAR *ROMAddr, USHORT *ModeNo,USHORT *ModeIdIndex);
 BOOLEAN  SiS_CheckMemorySize(SiS_Private *SiS_Pr, UCHAR *ROMAddr,PSIS_HW_DEVICE_INFO HwDeviceExtension,
