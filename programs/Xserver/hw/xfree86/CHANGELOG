@@ -1,4 +1,10 @@
 XFree86 4.4.99.7 (xx May 2004)
+ 131. Intel driver updates to support:-
+       - i915 latest generation hardware
+       - Dual Head & Clone support for i915, i855 and i830 chipsets.
+       - ARGB cursor support for all Intel chipsets (requires agpgart updates)
+       - Mobile lid status checking
+       - Fix XVideo when high resolutions are used on LFP's
  130. Remove USE_MAKEDEPEND (no longer needed)  (Marc La France).
  129. Fix makedepend for freetype2's #include structure (Marc La France).
  128. Add Wraphelp.c and enable XdmAuth by default.
@@ -18976,7 +18982,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3273 2004/06/09 18:30:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3274 2004/06/09 19:00:09 tsi Exp $
 
 
 
