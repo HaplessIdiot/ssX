@@ -7,7 +7,7 @@
  * that use X include files to avoid symbol collisions.
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCocoa.m,v 1.8 2001/09/23 23:02:38 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCocoa.m,v 1.9 2001/10/07 18:47:49 torrey Exp $ */
 
 #include <Cocoa/Cocoa.h>
 
@@ -24,6 +24,8 @@ void QuartzReadPreferences(void)
     char *fileString;
 
     darwinFakeButtons = [Preferences fakeButtons];
+    darwinFakeMouse2Mask = [Preferences button2Mask];
+    darwinFakeMouse3Mask = [Preferences button3Mask];
     quartzMouseAccelChange = [Preferences mouseAccelChange];
     quartzUseSysBeep = [Preferences systemBeep];
     noPanoramiXExtension = ![Preferences xinerama];
@@ -40,6 +42,8 @@ void QuartzReadPreferences(void)
     if (! display)
         FatalError("malloc failed in QuartzReadPreferences()!\n");
     snprintf(display, 8, "%i", [Preferences display]);
+
+    darwinDesiredDepth = [Preferences depth] - 1;
 }
 
 // Write text to the Mac OS X pasteboard.

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.h,v 1.8 2001/09/20 19:35:10 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.h,v 1.9 2001/09/23 04:04:49 torrey Exp $ */
 
 #ifndef _DARWIN_H
 #define _DARWIN_H
@@ -8,6 +8,7 @@
 #include "inputstr.h"
 #include "screenint.h"
 #include "extensions/XKB.h"
+#include "bundle/quartzShared.h"
 
 typedef struct {
     io_connect_t        fbService;
@@ -60,11 +61,5 @@ extern int              darwinScreensFound;
 extern DarwinInputRec   hid;
 extern int              darwinEventFD;
 extern Bool             quartz;
-
-// parameters read from the command line or user preferences
-extern UInt32           darwinDesiredWidth, darwinDesiredHeight;
-extern IOIndex          darwinDesiredDepth;
-extern SInt32           darwinDesiredRefresh;
-extern UInt32           darwinScreenNumber;
 
 #endif	/* _DARWIN_H */

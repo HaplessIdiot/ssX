@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.37 2001/09/24 06:56:51 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.38 2001/09/29 04:48:53 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -61,10 +61,9 @@ int                     darwinMainScreenX = 0;
 int                     darwinMainScreenY = 0;
 
 // parameters read from the command line or user preferences
-UInt32                  darwinDesiredWidth = 0, darwinDesiredHeight = 0;
-IOIndex                 darwinDesiredDepth = -1;
-SInt32                  darwinDesiredRefresh = -1;
-UInt32                  darwinScreenNumber = 0;
+unsigned int            darwinDesiredWidth = 0, darwinDesiredHeight = 0;
+int                     darwinDesiredDepth = -1;
+int                     darwinDesiredRefresh = -1;
 char                    *darwinKeymapFile = "USA.keymapping";
 
 // modifier masks for faking mouse buttons
@@ -1049,15 +1048,6 @@ int ddxProcessArgument( int argc, char *argv[], int i )
         return numDone;
 #endif
 
-    if ( !strcmp( argv[i], "-screen" ) ) {
-        if ( i == argc-1 ) {
-            FatalError( "-screen must be followed by a number\n" );
-        }
-        darwinScreenNumber = atoi( argv[i+1] );
-        ErrorF( "Attempting to use screen number %i\n", darwinScreenNumber );
-        return 2;
-    }
-
     if ( !strcmp( argv[i], "-fakebuttons" ) ) {
         darwinFakeButtons = TRUE;
         ErrorF( "Faking a three button mouse\n" );
@@ -1195,7 +1185,6 @@ void ddxUseMsg( void )
     ErrorF("\n");
     ErrorF("IOKit specific options (ignored in Quartz modes):\n");
 #endif
-    ErrorF("-screen <0,1,...> : use this screen number.\n");
     ErrorF("-size <height> <width> : use a screen resolution of <height> x <width>.\n");
     ErrorF("-depth <8,15,24> : use this bit depth.\n");
     ErrorF("-refresh <rate> : use a monitor refresh rate of <rate> Hz.\n");

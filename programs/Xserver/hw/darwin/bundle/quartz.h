@@ -4,13 +4,12 @@
  * External interface of the Quartz modes seen by the generic, mode
  * independent parts of the Darwin X server.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.h,v 1.5 2001/08/01 05:34:06 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.h,v 1.6 2001/09/23 04:04:49 torrey Exp $ */
 
 #ifndef _QUARTZ_H
 #define _QUARTZ_H
 
 #include "screenint.h"
-#include "quartzShared.h"
 #include "quartzPasteboard.h"
 
 int QuartzProcessArgument(int argc, char *argv[], int i);
