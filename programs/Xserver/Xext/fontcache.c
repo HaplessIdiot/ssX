@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id: fontcache.c,v 1.1 2000/02/13 06:15:30 dawes Exp $
+ *	$Id: fontcache.c,v 1.2 2000/02/13 06:52:47 dawes Exp $
  */
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
@@ -44,9 +44,6 @@
 #include "fontcacheP.h"
 #include "fontcachstr.h"
 #include "Xfuncproto.h"
-#include "xf86.h"
-#include "xf86Priv.h"
-#include "xf86_OSlib.h"
 
 #include <X11/Xtrans.h>
 #include "../os/osdep.h"
