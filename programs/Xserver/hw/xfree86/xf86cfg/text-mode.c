@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.7 2000/12/13 12:58:20 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.8 2001/02/15 17:28:35 paulo Exp $
  */
 
 #include <stdio.h>
@@ -798,6 +798,7 @@ MonitorConfig(void)
     int nlist, def;
     char hsync_str[256], vrefresh_str[256];
 
+    hsync_str[0] = vrefresh_str[0] = '\0';
     nlist = 0;
     while (monitor) {
 	list = (char**)XtRealloc((XtPointer)list, (nlist + 1) * sizeof(char*));
@@ -929,7 +930,7 @@ MonitorConfig(void)
 	    }
 	}
     }
-    else
+    if (hsync_str[0] == '\0')
 	strcpy(hsync_str, "31.5");
 
     ClearScreen();
@@ -987,7 +988,7 @@ MonitorConfig(void)
 	    }
 	}
     }
-    else
+    if (vrefresh_str[0] == '\0')
 	strcpy(vrefresh_str, "50 - 70");
     ClearScreen();
     refresh();
@@ -1678,7 +1679,7 @@ CopyAdjacency(XF86ConfAdjacencyPtr ptr)
 
     adj->adj_scrnum = ptr->adj_scrnum;
     adj->adj_screen = ptr->adj_screen;
-    adj->adj_screen_str = XtNewString(adj->adj_screen_str);
+    adj->adj_screen_str = XtNewString(ptr->adj_screen_str);
     adj->adj_top = ptr->adj_top;
     if (ptr->adj_top_str)
 	adj->adj_top_str = XtNewString(ptr->adj_top_str);
@@ -2152,7 +2153,7 @@ LayoutConfig(void)
 	ClearScreen();
 	refresh();
 	Dialog("Layout configuration",
-	       (nmouses > 1 && nkeyboards > 1) ?
+	       (nmouses > 1 || nkeyboards > 1) ?
 	       "As you have only one screen configured, I can now finish "
 	       "creating this Layout configuration."
 		:
@@ -3308,7 +3309,7 @@ DialogInput(char *title, char *prompt, int height, int width, char *init,
 	    case '\r':
 	    case '\n':
 		delwin(dialog);
-		return (button == -1 ? XtNewString(instr) : NULL);
+		return (button != 1 ? XtNewString(instr) : NULL);
 	}
     }
 }
