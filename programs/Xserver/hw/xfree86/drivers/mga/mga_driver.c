@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.75 1999/02/07 06:18:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.76 1999/02/19 21:27:02 hohndel Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -199,6 +199,7 @@ typedef enum {
     OPTION_SHOWCACHE,
     OPTION_8_PLUS_24,
     OPTION_MGA_SDRAM,
+    OPTION_NO_DDC,
     OPTION_SHADOW_FB
 } MGAOpts;
 
@@ -212,6 +213,7 @@ static OptionInfoRec MGAOptions[] = {
     { OPTION_SHOWCACHE,		"ShowCache",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_8_PLUS_24,		"8Plus24",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_MGA_SDRAM,		"MGASDRAM",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_NO_DDC,		"NODDC",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHADOW_FB,		"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
@@ -1553,10 +1555,10 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	}
 	xf86LoaderReqSymLists(shadowSymbols, NULL);
     }
-
-    /* Load DDC if we have the code to use it */
-    /* This gives us DDC1 */
-    if (pMga->ddc1Read || pMga->i2cInit) {
+    if (! xf86IsOptionSet(MGAOptions, OPTION_NO_DDC)) {
+      /* Load DDC if we have the code to use it */
+      /* This gives us DDC1 */
+      if (pMga->ddc1Read || pMga->i2cInit) {
 	if (xf86LoadSubModule(pScrn, "ddc")) {
 	  xf86LoaderReqSymLists(ddcSymbols, NULL);
 	} else {
@@ -1566,24 +1568,24 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	  /* Without DDC, we have no use for the I2C bus */
 	  pMga->i2cInit = NULL;
 	}
-    }
-#if MGAuseI2C    
-    /* - DDC can use I2C bus */
-    /* Load I2C if we have the code to use it */
-    if (pMga->i2cInit) {
-      if ( xf86LoadSubModule(pScrn, "i2c") ) {
-	xf86LoaderReqSymLists(i2cSymbols,NULL);
-      } else {
-	/* i2c module not found, we can do without it */
-	pMga->i2cInit = NULL;
-	pMga->I2C = NULL;
       }
-    }
+#if MGAuseI2C    
+      /* - DDC can use I2C bus */
+      /* Load I2C if we have the code to use it */
+      if (pMga->i2cInit) {
+	if ( xf86LoadSubModule(pScrn, "i2c") ) {
+	  xf86LoaderReqSymLists(i2cSymbols,NULL);
+	} else {
+	  /* i2c module not found, we can do without it */
+	  pMga->i2cInit = NULL;
+	  pMga->I2C = NULL;
+	}
+      }
 #endif /* MGAuseI2C */
 
-    /* Read and print the Monitor DDC info */
-    MGAdoDDC(pScrn);
-
+      /* Read and print the Monitor DDC info */
+      MGAdoDDC(pScrn);
+    }
     return TRUE;
 }
 
