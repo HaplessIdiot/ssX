@@ -6,8 +6,6 @@
 default partial
 xkb_symbols "basic" {
 
-    key.type[Group1] = "FOUR_LEVEL_ALPHABETIC";
-
     key <AE01>	{ [         1,     exclam,  onesuperior,   exclamdown ]	};
     key <AE02>	{ [         2,         at,  twosuperior,    oneeighth ]	};
     key <AE03>	{ [         3, numbersign, threesuperior,    sterling ]	};

@@ -12,8 +12,6 @@ xkb_symbols "basic" {
 
     name[Group1]= "Czech";
 
-    key.type = "FOUR_LEVEL_ALPHABETIC";
-
     key <TLDE>	{ type[Group1]="FOUR_LEVEL",
                   [ semicolon, dead_abovering,    grave,   asciitilde ]	};
     key <AE01>	{ type[Group1]="FOUR_LEVEL",

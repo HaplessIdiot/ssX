@@ -6019,10 +6019,6 @@ ProcXkbGetKbdByName(client)
 	dev->key->xkbInfo->desc= xkb;
 	finfo.xkb= old_xkb; /* so it'll get freed automatically */
 
-	if (dev->kbdfeed && dev->kbdfeed->xkb_sli) {
-	    XkbFreeSrvLedInfo(dev->kbdfeed->xkb_sli);
-	    dev->kbdfeed->xkb_sli= NULL;
-	}
 	*xkb->ctrls= *old_xkb->ctrls;
 	for (nG=nTG=0,i=xkb->min_key_code;i<=xkb->max_key_code;i++) {
 	    nG= XkbKeyNumGroups(xkb,i);
@@ -6038,6 +6034,20 @@ ProcXkbGetKbdByName(client)
 
 	memcpy(dev->key->modifierMap,xkb->map->modmap,xkb->max_key_code+1);
 	XkbUpdateCoreDescription(dev,True);
+
+	if (dev->kbdfeed && dev->kbdfeed->xkb_sli) {
+            XkbSrvLedInfoPtr	old_sli;
+            XkbSrvLedInfoPtr	sli;
+            old_sli = dev->kbdfeed->xkb_sli;
+            dev->kbdfeed->xkb_sli = NULL;
+	    sli = XkbAllocSrvLedInfo(dev,dev->kbdfeed,NULL,0);
+            if (sli) {
+               sli->explicitState = old_sli->explicitState;
+               sli->effectiveState = old_sli->effectiveState;
+            }
+            dev->kbdfeed->xkb_sli = sli;
+	    XkbFreeSrvLedInfo(old_sli);
+	}
 
 	nkn.deviceID= nkn.oldDeviceID= dev->id;
 	nkn.minKeyCode= finfo.xkb->min_key_code;

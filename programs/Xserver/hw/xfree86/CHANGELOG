@@ -1,4 +1,19 @@
 XFree86 4.2.99.3 (xx December 2002)
+ 676. If some LEDs are lighting when one reloads the XKB keyboard map
+      (using setxkbmap or xf86cfg) the LEDs become 'frozen' and can't
+      be switched off. The patch fixes this bug. (#5544, Ivan Pascal).
+ 675. Fix some problems with the addition of multi-layout scheme to
+      xkb: some keys that aren't 'alphabetic' should be treated as
+      such to allow CapsLock+Shift working as expected; sometimes it
+      is required to load an include file more than once due to
+      multi-layout configuration, also fix some typos
+      (#5545, Ivan Pascal).
+ 674. XKB programable 'special combinations' (such as Ctrl+Alt+<key>)
+      also send usual key evants (press and release).  Although the
+      keysym generated in this case is NoSymbol such events can confuse
+      some applications (#5546, Ivan Pascal).
+ 673. Fix some remaining memory leaks in xkb initialization code
+      (Paulo César Pereira de Andrade).
  672. Temporarily enable the hard-coded Ctrl-Alt-Backspace terminate sequence
       until a better fallback mechanism is implemented (Egbert Eich).
  671. Allow XKB-remappable hot keys to work with the "kbd" driver
@@ -15881,4 +15896,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2455 2002/12/19 17:12:15 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2456 2002/12/20 02:51:58 dawes Exp $

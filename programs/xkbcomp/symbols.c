@@ -835,8 +835,6 @@ int		i;
     key->symsDefined|= (1<<ndx);
     memcpy((char *)key->syms[ndx],(char *)value->value.list.syms,
 							nSyms*sizeof(KeySym));
-    uFree(value->value.list.syms);
-    value->value.list.syms= NULL;
     for (i=key->numLevels[ndx]-1;(i>=0)&&(key->syms[ndx][i]==NoSymbol);i--) {
 	key->numLevels[ndx]--;
     }
@@ -1511,14 +1509,24 @@ register unsigned n;
 static Bool
 FindAutomaticType(int width,KeySym *syms,Atom *typeNameRtrn)
 {
-    if ((width==1)||(width==0))
+    if ((width==1)||(width==0)) {
 	 *typeNameRtrn= XkbInternAtom(NULL,"ONE_LEVEL",False);
-    else if ( syms && XkbKSIsLower(syms[0]) && XkbKSIsUpper(syms[1]) )
-	 *typeNameRtrn= XkbInternAtom(NULL,"ALPHABETIC",False);
-    else if ( syms && (XkbKSIsKeypad(syms[0]) || XkbKSIsKeypad(syms[1])) ) 
-	 *typeNameRtrn= XkbInternAtom(NULL,"KEYPAD",False);
-    else *typeNameRtrn= XkbInternAtom(NULL,"TWO_LEVEL",False);
-    return ((width>=0)&&(width<=2));
+    } else if (width == 2) {
+        if ( syms && XkbKSIsLower(syms[0]) && XkbKSIsUpper(syms[1]) )
+	     *typeNameRtrn= XkbInternAtom(NULL,"ALPHABETIC",False);
+        else if ( syms && (XkbKSIsKeypad(syms[0]) || XkbKSIsKeypad(syms[1])) ) 
+	     *typeNameRtrn= XkbInternAtom(NULL,"KEYPAD",False);
+        else *typeNameRtrn= XkbInternAtom(NULL,"TWO_LEVEL",False);
+    } else if (width <= 4 ) {
+        if ( syms && XkbKSIsLower(syms[0]) && XkbKSIsUpper(syms[1]) )
+	     *typeNameRtrn= XkbInternAtom(NULL,
+                            "FOUR_LEVEL_ALPHABETIC",False);
+        else if ( syms && (XkbKSIsKeypad(syms[0]) || XkbKSIsKeypad(syms[1])) ) 
+	     *typeNameRtrn= XkbInternAtom(NULL,
+                            "FOUR_LEVEL_KEYPAD",False);
+        else *typeNameRtrn= XkbInternAtom(NULL,"FOUR_LEVEL",False);
+    }
+    return ((width>=0)&&(width<=4));
 }
 
 static void
@@ -1663,7 +1671,7 @@ unsigned	types[XkbNumKbdGroups];
 	    }
 	}
 	if (FindNamedType(xkb,key->types[i],&types[i]))  {
-	    if (!autoType)
+	    if (!autoType || key->numLevels[i] > 2)
 		xkb->server->explicit[kc]|= (1<<i);
 	}
 	else {

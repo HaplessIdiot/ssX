@@ -100,12 +100,8 @@ int	 oldLine = lineNum;
 	ACTION1("Include file \"%s\" ignored\n",stmt->file);
 	return False;
     }
-    if (mapToUse->compiled)  {
-	ERROR2("Map \"%s(%s)\" included more than once\n",stmt->file,
-								rtrn->name);
-	ACTION("Later inclusion ignored\n");
-	return False;
-    }
+    /* FIXME: we have to check recursive includes here (or somewhere) */
+
     mapToUse->compiled= True;
     *file_rtrn= mapToUse;
     *merge_rtrn= stmt->merge;
