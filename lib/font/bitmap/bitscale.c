@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.25tsi Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.26 2002/09/19 13:21:59 tsi Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -734,7 +734,7 @@ ComputeScaledProperties(FontInfoPtr sourceFontInfo, /* the font to be scaled */
     *pProps = fp;
     if (!fp) {
 	fprintf(stderr, "Error: Couldn't allocate font properties (%ld*%d)\n",
-		(ulong)sizeof(FontPropRec), nProps);
+		(unsigned long)sizeof(FontPropRec), nProps);
 	return 1;
     }
     isStringProp = (char *) xalloc (nProps);
@@ -921,7 +921,7 @@ ScaleFont(FontPtr opf,            /* originating font */
     bitmapFont = 0;
     if (!(pf = CreateFontRec())) {
 	fprintf(stderr, "Error: Couldn't allocate FontRec (%ld)\n",
-		(ulong)sizeof(FontRec));
+		(unsigned long)sizeof(FontRec));
 	goto bail;
     }
     pf->refcnt = 0;
@@ -989,7 +989,7 @@ ScaleFont(FontPtr opf,            /* originating font */
     bitmapFont = (BitmapFontPtr) xalloc(sizeof(BitmapFontRec));
     if (!bitmapFont) {
 	fprintf(stderr, "Error: Couldn't allocate bitmapFont (%ld)\n",
-		(ulong)sizeof(BitmapFontRec));
+		(unsigned long)sizeof(BitmapFontRec));
 	goto bail;
     }
     nchars = (lastRow - firstRow + 1) * (lastCol - firstCol + 1);
@@ -1010,7 +1010,7 @@ ScaleFont(FontPtr opf,            /* originating font */
     bitmapFont->metrics = (CharInfoPtr) xalloc(nchars * sizeof(CharInfoRec));
     if (!bitmapFont->metrics) {
 	fprintf(stderr, "Error: Couldn't allocate metrics (%d*%ld)\n",
-		nchars, (ulong)sizeof(CharInfoRec));
+		nchars, (unsigned long)sizeof(CharInfoRec));
 	goto bail;
     }
     bitmapFont->encoding = 
@@ -1018,7 +1018,7 @@ ScaleFont(FontPtr opf,            /* originating font */
                                  sizeof(CharInfoPtr*));
     if (!bitmapFont->encoding) {
 	fprintf(stderr, "Error: Couldn't allocate encoding (%d*%ld)\n",
-		nchars, (ulong)sizeof(CharInfoPtr));
+		nchars, (unsigned long)sizeof(CharInfoPtr));
 	goto bail;
     }
 
@@ -1337,7 +1337,7 @@ ScaleBitmap(FontPtr pFont, CharInfoPtr opci, CharInfoPtr pci,
 		{
 		    fprintf(stderr, "Warning: Couldn't allocate diffusion"
 			    " workspace (%ld)\n",
-			    (newWidth + 2) * 2 * (ulong)sizeof(int));
+			    (newWidth + 2) * 2 * (unsigned long)sizeof(int));
 		    xfree(char_grayscale);
 		    char_grayscale = (unsigned char *)0;
 		}

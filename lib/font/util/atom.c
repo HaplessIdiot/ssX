@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/util/atom.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/lib/font/util/atom.c,v 1.9 2002/09/19 13:22:00 tsi Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -84,7 +84,7 @@ ResizeHashTable (void)
     if (!newHashTable) {
 	fprintf(stderr, "ResizeHashTable(): Error: Couldn't allocate"
 		" newHashTable (%ld)\n",
-		newHashSize * (ulong)sizeof (AtomListPtr));
+		newHashSize * (unsigned long)sizeof (AtomListPtr));
 	return FALSE;
     }
     bzero ((char *) newHashTable, newHashSize * sizeof (AtomListPtr));
@@ -127,7 +127,7 @@ ResizeReverseMap (void)
     if (!reverseMap) {
 	fprintf(stderr, "ResizeReverseMap(): Error: Couldn't reallocate"
 		" reverseMap (%ld)\n",
-		reverseMapSize * (ulong)sizeof(AtomListPtr));
+		reverseMapSize * (unsigned long)sizeof(AtomListPtr));
 	ret = FALSE;
     }
     return ret;
@@ -182,7 +182,7 @@ MakeAtom(char *string, unsigned len, int makeit)
     a = (AtomListPtr) xalloc (sizeof (AtomListRec) + len + 1);
     if (a == NULL) {
 	fprintf(stderr, "MakeAtom(): Error: Couldn't allocate AtomListRec"
-		" (%ld)\n", (ulong)sizeof (AtomListRec) + len + 1);
+		" (%ld)\n", (unsigned long)sizeof (AtomListRec) + len + 1);
 	return None;
     }
     a->name = (char *) (a + 1);
