@@ -1,0 +1,7 @@
+#include <Server.tmpl>
+#define IHaveSubdirs
+
+SUBDIRS = cyber643d cache
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
