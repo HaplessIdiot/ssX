@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.75 1997/05/16 11:11:55 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.76 1997/05/17 14:07:47 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -739,7 +739,7 @@ GetATIPCIInformation()
 		break;
 	    }
 	    info.ChipRev = pcrp->_rev_id;
-	    info.ApertureBase = pcrp->_base0;
+	    info.ApertureBase = pcrp->_base0 & 0xFFFFFFF0;
 	    /*
 	     * The docs say check (pcrp->_user_config_0 & 0x04) for BlockIO
 	     * but this doesn't seem to be reliable.  Instead check if

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.15 1997/04/18 09:12:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.16 1997/05/03 09:19:36 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -184,6 +184,14 @@ void xf86InitPixmapCacheSlots()
                XCONFIG_PROBED, infoRec->name);
        return;
     }
+
+   if ((MaxHeight < 8) && ((xf86AccelInfoRec.Subsequent8x8PatternColorExpand)
+			   || (xf86AccelInfoRec.SubsequentFill8x8Pattern))) {
+       ErrorF("%s %s: XAA: 8x8 Pattern fill disabled - insufficient memory available\n", 
+	      XCONFIG_PROBED, infoRec->name);
+       xf86AccelInfoRec.Subsequent8x8PatternColorExpand = 0;
+       xf86AccelInfoRec.SubsequentFill8x8Pattern = 0;
+   }
 
     /*
      * If space is available, put a few wide, low slots in for small
