@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/font/FreeType/Imakefile,v 1.22 2002/10/02 22:00:21 torrey Exp $
+XCOMM $XFree86: xc/lib/font/FreeType/Imakefile,v 1.23 2002/10/18 19:38:03 keithp Exp $
 
 #if BuildServer && DoLoadableServer
 #define IHaveSubdirs
@@ -7,11 +7,7 @@ XCOMM $XFree86: xc/lib/font/FreeType/Imakefile,v 1.22 2002/10/02 22:00:21 torrey
 SUBDIRS = module
 #endif
 
-#ifdef DarwinArchitecture
-DEFINES = -DDARWIN_NO_CARBON ServerExtraDefines StrcasecmpDefines
-#else
 DEFINES = ServerExtraDefines StrcasecmpDefines
-#endif
 
 #if FontLibSharedFreeType
 FT2INCS = -I$(FREETYPE2INCDIR) -I$(FREETYPE2INCDIR)/include

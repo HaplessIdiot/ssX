@@ -21,7 +21,12 @@ FREETYPESRC = $(FREETYPETOP)/src
 FREETYPEINC = $(FREETYPETOP)/include/freetype
 
 #ifdef DarwinArchitecture
+# if DarwinQuartzSupport
+DEFINES = -DTARGET_API_MAC_CARBON=TRUE
+REQUIREDLIBS = -framework Carbon
+# else
 DEFINES = -DDARWIN_NO_CARBON
+# endif
 #endif
 
 INCLUDES = -I. $(FREETYPE2INCLUDES)\
@@ -72,6 +77,11 @@ OBJS_BASE = ftbase.o \
             fttype1.o \
             ftxf86.o
 
+#if defined(DarwinArchitecture) && DarwinQuartzSupport
+SRCS_MACBASE  = ftmac.c
+OBJS_MACBASE  = ftmac.o
+#endif
+
 SRCS_AUTOHINT = autohint.c
 OBJS_AUTOHINT = autohint.o
 
@@ -121,6 +131,7 @@ SRCS_WINFONTS = winfnt.c
 OBJS_WINFONTS = winfnt.o
 
 SRCS = $(SRCS_BASE)\
+       $(SRCS_MACBASE)\
        $(SRCS_AUTOHINT)\
        $(SRCS_BDF)\
        $(SRCS_CFF)\
@@ -139,6 +150,7 @@ SRCS = $(SRCS_BASE)\
        $(SRCS_WINFONTS)
 
 OBJS = $(OBJS_BASE)\
+       $(OBJS_MACBASE)\
        $(OBJS_AUTOHINT)\
        $(OBJS_BDF)\
        $(OBJS_CFF)\
@@ -184,6 +196,10 @@ LinkSourceFile(ftsynth.c,$(FREETYPESRC)/base)
 LinkSourceFile(ftsystem.c,$(FREETYPESRC)/base)
 LinkSourceFile(fttype1.c,$(FREETYPESRC)/base)
 LinkSourceFile(ftxf86.c,$(FREETYPESRC)/base)
+
+#if defined(DarwinArchitecture) && DarwinQuartzSupport
+LinkSourceFile(ftmac.c,$(FREETYPESRC)/base)
+#endif
 
 LinkSourceFile(autohint.c,$(FREETYPESRC)/autohint)
 LinkSourceFile(bdf.c,$(FREETYPESRC)/bdf)
