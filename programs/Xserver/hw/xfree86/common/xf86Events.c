@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.159 2003/11/22 04:22:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.160 2004/02/13 23:58:36 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -371,7 +371,7 @@ xf86ProcessActionEvent(ActionEvent action, void *arg)
     case ACTION_SWITCHSCREEN:
 	if (VTSwitchEnabled && !xf86Info.dontVTSwitch && arg) {
 	    int vtno = *((int *) arg);
-#ifdef SCO
+#ifdef __SCO__
 	    vtno--;
 #endif
 #if defined(QNX4)
@@ -384,12 +384,12 @@ xf86ProcessActionEvent(ActionEvent action, void *arg)
 	break;
     case ACTION_SWITCHSCREEN_NEXT:
 	if (VTSwitchEnabled && !xf86Info.dontVTSwitch) {
-#if defined(SCO) /* Shouldn't this be true for (sun) && (i386) && (SVR4) ? */
+#if defined(__SCO__) /* Shouldn't this be true for (sun) && (i386) && (SVR4) ? */
 	    if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno) < 0)
 #else
 	    if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno + 1) < 0)
 #endif
-#if defined (SCO) || (defined(sun) && defined (i386) && defined (SVR4))
+#if defined (__SCO__) || (defined(sun) && defined (i386) && defined (SVR4))
 		if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, 0) < 0)
 #else
 		if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, 1) < 0)
@@ -793,7 +793,7 @@ special:
 	break;
 #endif
 
-#if defined(linux) || (defined(CSRG_BASED) && (defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT) || defined(WSCONS_SUPPORT))) || defined(SCO)
+#if defined(linux) || (defined(CSRG_BASED) && (defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT) || defined(WSCONS_SUPPORT))) || defined(__SCO__)
 	/*
 	 * Under Linux, the raw keycodes are consumed before the kernel
 	 * does any processing on them, so we must emulate the vt switching
@@ -932,7 +932,7 @@ special:
 
 #endif /* USE_VT_SYSREQ */
 
-#ifdef SCO
+#ifdef __SCO__
     /*
      *	With the console in raw mode, SCO will not switch consoles,
      *	you get around this by activating the next console along, if
@@ -947,7 +947,7 @@ special:
 	xf86ProcessActionEvent(ACTION_SWITCHSCREEN_NEXT, NULL);
       return;
     }
-#endif /* SCO */
+#endif /* __SCO__ */
 #ifdef XKB
     }
 #endif

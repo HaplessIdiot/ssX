@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/man.c,v 1.9 2004/03/12 02:17:55 dickey Exp $ */
+/* $XFree86: xc/programs/xman/man.c,v 1.10 2004/04/03 21:42:36 dawes Exp $ */
 
 
 #include "globals.h"
@@ -441,7 +441,7 @@ ReadCurrentSection(Manual * local_manual, char * path)
  */
 
   if ( (ptr = rindex(path, '.')) != NULL) {
-#if !defined(SCO) && !defined(ISC)
+#if !defined(__SCO__) && !defined(ISC)
     if (streq(ptr + 1, COMPRESSION_EXTENSION))
 #else
     if (strpbrk(ptr + 1, COMPRESSION_EXTENSIONS) != NULL)
@@ -479,7 +479,7 @@ ReadCurrentSection(Manual * local_manual, char * path)
  */
 
     if ( (ptr = rindex(full_name, '.')) != NULL) {
-#if !defined(SCO) && !defined(ISC)
+#if !defined(__SCO__) && !defined(ISC)
       if (streq(ptr + 1, COMPRESSION_EXTENSION))
 #else
       if (strpbrk(ptr + 1, COMPRESSION_EXTENSIONS) != NULL)

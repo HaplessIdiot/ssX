@@ -7,7 +7,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.63tsi Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.64 2003/03/26 20:43:47 tsi Exp $ */
 
 /*
  *
@@ -191,7 +191,7 @@ in this Software without prior written authorization from The Open Group.
 #include <sys/stat.h>
 #ifndef X_NOT_POSIX
 # ifdef _POSIX_SOURCE
-#  ifdef SCO325
+#  ifdef __SCO__
 #   include <sys/procset.h>
 #   include <sys/siginfo.h>
 #  endif

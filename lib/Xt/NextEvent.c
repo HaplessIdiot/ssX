@@ -58,7 +58,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.26 2002/06/04 21:55:42 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.27 2003/04/21 16:34:28 herrb Exp $ */
 
 #include "IntrinsicI.h"
 #include <stdio.h>
@@ -77,7 +77,7 @@ static SignalEventRec* freeSignalRecs;
  */
 
 #ifndef NEEDS_NTPD_FIXUP
-# if defined(sun) || defined(MOTOROLA) || defined(sco324) || (defined(__osf__) && defined(__alpha))
+# if defined(sun) || defined(MOTOROLA) || (defined(__osf__) && defined(__alpha))
 #  define NEEDS_NTPD_FIXUP 1
 # else
 #  define NEEDS_NTPD_FIXUP 0

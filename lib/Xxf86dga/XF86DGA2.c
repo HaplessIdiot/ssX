@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.23 2003/05/05 20:42:30 tsi Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.24 2003/11/21 05:07:16 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -742,7 +742,7 @@ void XDGAKeyEventToXKeyEvent(
 #include <signal.h>
 #include <unistd.h>
 
-#if defined(SVR4) && !defined(sun) && !defined(SCO325)
+#if defined(SVR4) && !defined(sun) && !defined(__SCO__)
 #define DEV_MEM "/dev/pmem"
 #elif defined(SVR4) && defined(sun)
 #define DEV_MEM "/dev/xsvc"

@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.53 2004/01/02 18:23:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.54 2004/01/03 17:38:39 herrb Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -70,9 +70,9 @@ SOFTWARE.
 #include <sys/ioctl.h>
 #include <ctype.h>
 
-#if defined(TCPCONN) || defined(STREAMSCONN) || defined(ISC) || defined(SCO)
+#if defined(TCPCONN) || defined(STREAMSCONN) || defined(ISC) || defined(__SCO__)
 #include <netinet/in.h>
-#endif /* TCPCONN || STREAMSCONN || ISC || SCO */
+#endif /* TCPCONN || STREAMSCONN || ISC || __SCO__ */
 #ifdef DNETCONN
 #include <netdnet/dn.h>
 #include <netdnet/dnetdb.h>
@@ -118,7 +118,7 @@ SOFTWARE.
 #endif /* hpux */
 
 #ifdef SVR4
-#ifndef SCO
+#ifndef __SCO__
 #include <sys/sockio.h>
 #endif
 #include <sys/stropts.h>
@@ -287,7 +287,7 @@ AccessUsingXdmcp (void)
 }
 
 
-#if ((defined(SVR4) && !defined(DGUX) && !defined(SCO325) && !defined(sun) && !defined(NCR)) || defined(ISC)) && defined(SIOCGIFCONF) && !defined(USE_SIOCGLIFCONF)
+#if ((defined(SVR4) && !defined(DGUX) && !defined(__SCO__) && !defined(sun) && !defined(NCR)) || defined(ISC)) && defined(SIOCGIFCONF) && !defined(USE_SIOCGLIFCONF)
 
 /* Deal with different SIOCGIFCONF ioctl semantics on these OSs */
 
@@ -336,9 +336,9 @@ ifioctl (int fd, int cmd, char *arg)
 #endif
     return(ret);
 }
-#else /* Case DGUX, sun, SCO325 NCR and others  */
+#else /* Case DGUX, sun, __SCO__ NCR and others  */
 #define ifioctl ioctl
-#endif /* ((SVR4 && !DGUX !sun !SCO325 !NCR) || ISC) && SIOCGIFCONF */
+#endif /* ((SVR4 && !DGUX !sun !__SCO__ !NCR) || ISC) && SIOCGIFCONF */
 
 /*
  * DefineSelf (fd):

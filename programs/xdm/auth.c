@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/auth.c,v 3.34 2004/03/30 17:22:45 tsi Exp $ */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.35 2004/04/03 22:13:52 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -72,9 +72,7 @@ from The Open Group.
 
 #ifdef SVR4
 # include <netdb.h>
-# ifndef SCO325
 # include <sys/sockio.h>
-# endif
 # include <sys/stropts.h>
 #endif
 #ifdef __convex__

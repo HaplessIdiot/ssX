@@ -22,7 +22,7 @@
  *
  * Author:  Dale Tonogai, Network Computing Devices
  */
-/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib_io.c,v 1.11 2001/01/17 19:43:36 dawes Exp $ */
+/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib_io.c,v 1.12 2001/07/25 15:04:57 dawes Exp $ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -44,7 +44,7 @@
  * The following is taken from the xtrans code, almost as is,
  * it would be nice to share it...
  */
-#if defined(WIN32) || defined(__sxg__) || (defined(SCO) && !defined(SVR4) && !defined(SCO325))
+#if defined(WIN32) || defined(__sxg__)
 static int
 writev(int fildes, const struct iovec *iov, int iovcnt)
 {

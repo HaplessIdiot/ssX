@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.213 2004/02/13 23:58:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.214 2004/03/14 02:25:38 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -870,7 +870,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
       xf86EnterServerState(SETUP);
     } 
   }
-#ifdef SCO
+#ifdef __SCO__
   else {
     /*
      * Under SCO we must ack that we got the console at startup,
@@ -883,7 +883,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
         xf86Msg(X_WARNING, "VT_ACKACQ failed");
     }
   }
-#endif /* SCO */
+#endif /* __SCO__ */
 
   for (i = 0; i < xf86NumScreens; i++) {    
    	xf86EnableAccess(xf86Screens[i]);

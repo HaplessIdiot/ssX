@@ -89,7 +89,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.174 2003/12/25 22:04:04 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.175 2004/03/04 02:21:55 dickey Exp $ */
 
 /* main.c */
 
@@ -144,7 +144,7 @@ SOFTWARE.
 static Bool IsPts = False;
 #endif
 
-#if defined(SCO) || defined(SVR4) || defined(_POSIX_SOURCE)
+#if defined(__SCO__) || defined(SVR4) || defined(_POSIX_SOURCE)
 #define USE_POSIX_SIGNALS
 #endif
 
@@ -179,7 +179,7 @@ static Bool IsPts = False;
 #define WTMP
 #endif
 
-#ifdef SCO325
+#ifdef __SCO__
 #ifndef _SVID3
 #define _SVID3
 #endif
@@ -405,7 +405,7 @@ extern struct utmp *getutid __((struct utmp * _Id));
 
 #include <signal.h>
 
-#if defined(sco) || (defined(ISC) && !defined(_POSIX_SOURCE))
+#if defined(__SCO__) || (defined(ISC) && !defined(_POSIX_SOURCE))
 #undef SIGTSTP			/* defined, but not the BSD way */
 #endif
 
@@ -2323,7 +2323,7 @@ get_pty(int *pty, char *from GCC_UNUSED)
 #endif
 	result = ((*pty = open("/dev/ptmx", O_RDWR)) < 0);
 #endif
-#if defined(SVR4) || defined(SCO325) || defined(USE_ISPTS_FLAG)
+#if defined(SVR4) || defined(__SCO__) || defined(USE_ISPTS_FLAG)
 	if (!result)
 	    strcpy(ttydev, ptsname(*pty));
 #ifdef USE_ISPTS_FLAG
@@ -3011,7 +3011,7 @@ spawn(void)
 	     * now in child process
 	     */
 	    TRACE_CHILD
-#if defined(_POSIX_SOURCE) || defined(SVR4) || defined(__convex__) || defined(SCO325) || defined(__QNX__)
+#if defined(_POSIX_SOURCE) || defined(SVR4) || defined(__convex__) || defined(__SCO__) || defined(__QNX__)
 		int pgrp = setsid();	/* variable may not be used... */
 #else
 		int pgrp = getpid();
@@ -3764,7 +3764,7 @@ spawn(void)
 		       errno, (errno != 0) ? strerror(errno) : ""));
 	    }
 #ifdef WTMP
-#if defined(WTMPX_FILE) && (defined(SVR4) || defined(SCO325))
+#if defined(WTMPX_FILE) && (defined(SVR4) || defined(__SCO__))
 	    if (term->misc.login_shell)
 		updwtmpx(WTMPX_FILE, &utmp);
 #elif defined(linux) && defined(__GLIBC__) && (__GLIBC__ >= 2) && !(defined(__powerpc__) && (__GLIBC__ == 2) && (__GLIBC_MINOR__ == 0))
@@ -4246,7 +4246,7 @@ Exit(int n)
 #endif
 	    (void) pututline(utptr);
 #ifdef WTMP
-#if defined(WTMPX_FILE) && (defined(SVR4) || defined(SCO325))
+#if defined(WTMPX_FILE) && (defined(SVR4) || defined(__SCO__))
 	    if (term->misc.login_shell)
 		updwtmpx(WTMPX_FILE, utptr);
 #elif defined(linux) && defined(__GLIBC__) && (__GLIBC__ >= 2) && !(defined(__powerpc__) && (__GLIBC__ == 2) && (__GLIBC_MINOR__ == 0))
