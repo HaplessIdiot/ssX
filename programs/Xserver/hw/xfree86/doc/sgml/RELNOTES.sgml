@@ -6,10 +6,10 @@
 
 <title>Release Notes for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>30 June 2000
+<date>3 July 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.40 2000/07/01 06:04:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.41 2000/07/02 02:35:27 dawes Exp $
 </ident>
 
 <abstract>
@@ -25,32 +25,25 @@ in XFree86 &relvers; and their status.
 <p>
 XFree86 4.0 was the first official release of the new XFree86 4.  XFree86
 4 represents a significant redesign of the XFree86 X server.
-Not all of the hardware drivers from 3.3.x have been ported to 4.x yet.
-
-<sect1>Differences Between the 4.x series and the 3.3 series
-<p>
-The 4.x release series is also missing
-a nice configuration tool.
-This means that configuring the Xserver might be trickier than usual.
-The second point is that is that your hardware might not 
-be supported by &relvers;, or it
-might be supported at a lesser level (conversely, some hardware is better
-supported in &relvers;).  We've attempted to provide some information
+Not all of the hardware drivers from 3.3.x have been ported to 4.x yet,
+but conversely, 4.x has some hardware support not present in 3.3.x.
+We've attempted to provide some information
 about the second point in our <htmlurl name="Driver Status document"
 url="Status.html">.  Please check there first before downloading  &relvers;.
 
-On the subject of configuration, we have updated the basic text-based
-tool "<tt>xf86config</tt>" to generate config files in the format required
-by &relvers; (3.3.x config files won't really work with &relvers;).  We're also
-working on some other configuration tools, including one that is built-in
+The 4.0.1 has a new configuration tool, "<tt>xf86cfg</tt>".  It is work
+in progress, but definitely worth trying out.  We have also updated the
+basic text-based tool "<tt>xf86config</tt>" to generate config files in
+the format required by &relvers; (3.3.x config files won't really work
+with &relvers;).  We're also on a configuration tool that is built-in
 to the X server.  An early version of this is included in the release,
 and it works well for some hardware.  To try it out, just run (as root)
-"<tt>XFree86 -configure</tt>".  Both of these configuration options will
-give you a reasonable starting point for a suitable configuration
-file.  We've put some effort into documenting the &relvers; config file format,
+"<tt>XFree86 -configure</tt>".  Each of these configuration options will
+give you a reasonable starting point for a suitable configuration file.
+We've put some effort into documenting the &relvers; config file format,
 and you can find that information in the XF86Config manual page. Check
-that,  the driver manual pages and the related documentation for
-further information. 
+that,  the driver manual pages and the related documentation for further
+information.
 
 Oh, another thing you might notice is that our documentation is rather
 patchy.  Most of what is present should be in reasonable shape, but
@@ -104,7 +97,41 @@ don't have enough space to cover it all here.
 
   <item>Add generic DGA support to the sis, neomagic and i810 drivers.
 
-  <item><tt>xf86cfg</tt>, a new graphical configuration tool.
+  <item><tt>xf86cfg</tt>, a new graphical configuration tool for XFree86 4.0,
+	and can be used to either write the initial configuration or make
+	customizations to the current configuration.  <tt>xf86cfg</tt> is
+	a work in progress, and allows configuration of:
+
+	<itemize>
+	  <item>Specific setup of monitors, cards, keyboards and mice, as
+		well as adding or removing them.
+	  <item>Server layout setup, allowing complex configuration of
+		physical monitor positions, default color depth and/or
+		rotated monitors.
+	  <item>Mode line editor that can be used to configure multiple
+		monitors, and allows adding a modeline specific to a
+		monitor directly to the configuration file.
+	  <item>AccessX configuration interface, that provides an interface
+		to easy setup of most AccessX options, including:
+
+		<itemize>
+		  <item>Timeout to reset controls.
+		  <item>StickyKeys, for people with disabilities that cannot
+			press two keys at the same time.
+		  <item>MouseKeys, mouse control only with the keyboard.
+		  <item>RepeatKeys, repeat rate and repeat delay.
+		  <item>SlowKeys, to avoid pressing keys accidentally, they're
+			only accepted if pressed for some specific amount
+			of time.
+		  <item>BounceKeys, helps avoiding multiple key presses by
+			only accepting a key if it is pressed only once and
+			not pressed again in a specific amount of time.
+		</itemize>
+	</itemize>
+	
+	New configuration options are being worked on, as well as correcting
+	some of the bugs in the current options.  A protocol for plugging
+	in external modules is also planned.
 
 </itemize>
 </sect1>
@@ -441,7 +468,6 @@ Section "Device"
     Identifier "MGA 1"
     Driver     "mga"
     BusID      "PCI:1:0:0"
-    Option     "PCI Retry"
 EndSection
 </verb></quote>
 
@@ -675,19 +701,13 @@ Known problems:
 
 </itemize>
 
-<sect1>XVideo extension
-<p>
-
-The XVideo extension is included in this release, but nobody seems
-interested in writing up some information about it.
-
 <sect1>DGA version 2
 <p>
 
-DGA 2.0 is nearly completed but still not implemented by all drivers.
+DGA 2.0 is included in &relvers;, but is not implemented by all drivers.
 Preliminary documentation for the client libraries can be found in the
-xc/programs/Xserver/hw/xfree86/DGA document.  Some degree of backwards
-compatibility with version 1.0 is provided.  This information is out of date.
+<tt>README.DGA</tt> document.  A good degree of backwards compatibility
+with version 1.0 is provided.
 
 
 <sect1>DDC
@@ -877,35 +897,29 @@ The MGA driver supports the same range or hardware as XFree86 3.3.4,
 but has a number of enhancements including multi-head support and
 support for (non-destructive) overlays (8-bit + 24-bit).
 
-Option <tt>"overlay"</tt> when the server is started in 32bpp
-(<tt>-fbbpp&nbsp;32</tt>) will enable the 8+24 mode.  The current
-implementation doesn't optimize away unnecessary exposures yet so the
-performance of this option will be better in future release.
-By default, the color key for the overlays is 255, but this can be
-changed with the <tt>"ColorKey"</tt> option to work around problems in
-specific programs.  Valid values for the key are 2-255.
-
 This release contains performance enhancements for the G400 and particularly
 for the G400 MAX.  It also includes XvImage support for G200/G400 chips and
 improved memory autodetection support.
 
-
-Further information can be found in the <tt>mga</tt> man page.
+Further information can be found in the <tt>mga</tt> <htmlurl name="man page"
+url="mga.4.html">.
 
 <sect2>ATI
 <p>
 
 Information about the ATI driver can be found in <url name="README.ati"
-url="ati.html">.  The current version is not accelerated.  Acceleration
-support is planned for a future release.
+url="ati.html">.  The current version is not accelerated for all supported
+chips.  Some acceleration is included for Mach64 chips.
 
 <sect2>NVIDIA
 <p>
 
-The "nv" driver supports all Riva TNT accelerators as well as the  
-new GeForce and Quadro accelerators.  DGA 2.0 support is included.
+The "nv" driver supports all Riva TNT accelerators as well as the GeForce
+256 and Quadro accelerators (the GeForce2 and GeForce2 MX are not yet
+supported).  DGA 2.0 support is included.
 
-Further information can be found in the nv man page.   
+Further information can be found in the nv <htmlurl name="man page"
+url="nv.4.html">.   
 
 <sect2>Glide
 <p>
