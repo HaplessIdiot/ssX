@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/print_edid.c,v 1.4 1999/06/27 14:08:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/print_edid.c,v 1.5 1999/09/25 14:37:16 dawes Exp $ */
 
 /* print_edid.c: print out all information retrieved from display device 
  * 
@@ -216,14 +216,14 @@ print_detailed_monitor_section(struct detailed_monitor_section *m)
 	ErrorF("\n");
       break;
     case DS_STD_TIMINGS:
-      for (j = 0; j<5; i++) 
+      for (j = 0; j<5; j++) 
 	ErrorF("#%i: hsize: %i  vsize %i  refresh: %i  "
 	       "vid: %i\n",i,m[i].section.std_t[i].hsize,
 	       m[i].section.std_t[j].vsize,m[i].section.std_t[j].refresh,
 	       m[i].section.std_t[j].id);
       break;
     case DS_WHITE_P:
-      for (j = 0; j<2; i++)
+      for (j = 0; j<2; j++)
 	if (m[i].section.wp[j].index != 0)
 	  ErrorF("White point %i: whiteX: %f, whiteY: %f; gamma: %f\n",
 		 m[i].section.wp[j].index,m[i].section.wp[j].white_x,
