@@ -97,7 +97,6 @@ char *ttyname(int fd) { return "/dev/tty"; }
 #include <sys/stat.h>
 #include <sys/param.h>	/* for NOFILE */
 #include <stdio.h>
-#include <time.h>
 #include <signal.h>
 
 static SIGNAL_T reapchild (int n);

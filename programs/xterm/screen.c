@@ -54,7 +54,7 @@
  * SOFTWARE.
  */
 
-/* $XFree86: xc/programs/xterm/screen.c,v 3.54 2000/12/30 19:15:47 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/screen.c,v 3.55 2001/01/17 23:46:38 dawes Exp $ */
 
 /* screen.c */
 
@@ -286,11 +286,7 @@ ScreenWrite (
 
 	/* write blanks if we're writing invisible text */
 	if (flags & INVISIBLE) {
-#if OPT_WIDE_CHARS
-		memset(col, ' ', real_width);
-#else
 		memset(col, ' ', length);
-#endif
 	} else {
 		memcpy(col, str, length); /* This can stand for the present. If it
                                              is wrong, we will scribble over it */
