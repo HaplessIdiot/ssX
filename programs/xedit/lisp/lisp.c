@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.25 2001/10/28 03:34:30 tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.26 2002/01/04 19:24:10 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -54,6 +54,14 @@
 
 #if defined(sun)
 #define HAS_GETPAGESIZE
+#endif
+
+#if defined(QNX4)
+#define HAS_GETPAGESIZE
+#endif
+
+#if defined(__QNXNTO__)
+#define HAS_SC_PAGESIZE
 #endif
 
 #include "private.h"
