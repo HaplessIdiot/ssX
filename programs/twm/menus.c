@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/menus.c,v 1.9 2001/01/17 23:45:07 dawes Exp $ */
+/* $XFree86: xc/programs/twm/menus.c,v 1.10 2001/08/27 21:11:39 dawes Exp $ */
 /*****************************************************************************/
 /*
 
@@ -2310,6 +2310,11 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    (void)XSyncSetPriority(dpy, tmp_win->w, atoi(action));
         }
 	break;
+   case F_STARTWM:
+	execlp("/bin/sh", "sh", "-c", action, NULL);
+	fprintf (stderr, "%s:  unable to start:  %s\n", ProgramName, *Argv);
+	break;
+
     }
 
     if (ButtonPressed == -1) XUngrabPointer(dpy, CurrentTime);

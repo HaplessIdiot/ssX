@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/parse.c,v 1.9 2001/04/23 20:31:08 dawes Exp $ */
+/* $XFree86: xc/programs/twm/parse.c,v 1.10 2001/08/27 21:11:40 dawes Exp $ */
 /*****************************************************************************/
 /*
 
@@ -489,6 +489,7 @@ static TwmKeyword keytable[] = {
     { "f.showiconmgr",		FKEYWORD, F_SHOWLIST },
     { "f.sorticonmgr",		FKEYWORD, F_SORTICONMGR },
     { "f.source",		FSKEYWORD, F_BEEP },  /* XXX - don't work */
+    { "f.startwm",		FSKEYWORD, F_STARTWM },
     { "f.title",		FKEYWORD, F_TITLE },
     { "f.topzoom",		FKEYWORD, F_TOPZOOM },
     { "f.twmrc",		FKEYWORD, F_RESTART },

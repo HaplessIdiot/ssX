@@ -21,7 +21,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/programs/twm/twm.man,v 1.7 2001/01/27 18:21:06 dawes Exp $
 .\"
 .de EX		\"Begin example
 .ne 5
@@ -1095,8 +1095,10 @@ This function displays an outline of the selected window.  Crossing a border
 rubber band until the invoking button is released.  To abort a resize,
 press another button before releasing the first button.
 .IP "\fBf.restart\fP" 8
-
 This function kills and restarts \fItwm\fP.
+.IP "\fBf.startwm\fP \fIstring\fP" 8
+This function kills \fItwm\fP and starts another window manager, as
+specified by \fIstring\fP.
 .IP "\fBf.righticonmgr\fI" 8
 This function is similar to \fBf.nexticonmgr\fP except that wrapping does
 not change rows.
