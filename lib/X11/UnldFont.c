@@ -1,4 +1,4 @@
-/* $Xorg: UnldFont.c,v 1.4 2001/02/09 02:03:37 xorgcvs Exp $
+/* $Xorg: UnldFont.c,v 1.4 2001/02/09 02:03:37 xorgcvs Exp $ */
 /*
 
 Copyright 1986, 1998  The Open Group
@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/UnldFont.c,v 1.4 2001/06/20 19:02:33 dawes Exp $ */
+/* $XFree86: xc/lib/X11/UnldFont.c,v 1.5 2001/12/14 19:54:07 dawes Exp $ */
 
 #include "Xlibint.h"
 
