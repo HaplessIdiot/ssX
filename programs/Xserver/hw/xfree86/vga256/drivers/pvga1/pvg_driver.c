@@ -1,6 +1,6 @@
 /*
  * $XConsortium: pvg_driver.c,v 1.5 95/01/16 13:18:21 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.13 1995/01/14 10:48:56 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.15 1995/01/28 17:09:14 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -450,13 +450,15 @@ PVGA1Probe()
 	  outb(vgaIOBase+4,0x3e); 
 	  if (inb(vgaIOBase + 5) & 0x80) {
 	    vga256InfoRec.videoRam = 2048; 
-	    PVGA1.ChipSetWrite = WD90C33SetWrite;
-	    PVGA1.ChipSetRead = WD90C33SetRead;
-	    PVGA1.ChipSetReadWrite = WD90C33SetReadWrite;
 	  }
 	}
 	break;
       }
+    }
+    if (WDchipset == WD90C33 && vga256InfoRec.videoRam > 1024) {
+      PVGA1.ChipSetWrite = WD90C33SetWrite;
+      PVGA1.ChipSetRead = WD90C33SetRead;
+      PVGA1.ChipSetReadWrite = WD90C33SetReadWrite;
     }
 
     /*

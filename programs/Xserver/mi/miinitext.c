@@ -118,8 +118,10 @@ extern void XRecordExtensionInit();
 #ifdef LBX
 extern void     LbxExtensionInit();
 #endif
+#ifdef XFREE86
 #ifdef VGAHELP
 extern void	VGAHelpExtensionInit();
+#endif
 #endif
 
 /*ARGSUSED*/
@@ -188,7 +190,9 @@ InitExtensions(argc, argv)
 #ifdef LBX
     LbxExtensionInit();
 #endif
+#ifdef XFREE86
 #ifdef VGAHELP
     VGAHelpExtensionInit();
+#endif
 #endif
 }

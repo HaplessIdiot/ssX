@@ -1,6 +1,5 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/s3_driver.c,v 3.8 1994/12/11 10:57:32 dawes Exp $ */
 /*
- * $XFree86$
- * 
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -60,9 +59,12 @@ unsigned short chip_id;
 #define S3_911_SERIES     ((chip_id&0xf0)==0x80)
 #define S3_801_SERIES     ((chip_id&0xf0)==0xa0)
 #define S3_928_SERIES     ((chip_id&0xf0)==0x90)
-#define S3_801_928_SERIES (S3_801_SERIES||S3_928_SERIES)
-#define S3_8XX_9XX_SERIES (S3_911_SERIES||S3_801_928_SERIES)
-#define S3_ANY_SERIES     (S3_8XX_9XX_SERIES)
+#define S3_864_SERIES     ((chip_id&0xf0)==0xc0)
+#define S3_964_SERIES     ((chip_id&0xf0)==0xd0)
+#define S3_x64_SERIES     (S3_864_SERIES|S3_964_SERIES)
+#define S3_801_928_SERIES (S3_801_SERIES||S3_928_SERIES|S3_x64_SERIES)
+#define S3_8XX_9XX_SERIES (S3_911_SERIES||S3_801_928_SERIES|S3_x64_SERIES)
+#define S3_ANY_SERIES     (S3_8XX_9XX_SERIES|S3_x64_SERIES)
 
 
 static Bool S3ClockSelect ();
@@ -70,6 +72,7 @@ static char *S3Ident ();
 static Bool S3Probe ();
 static void S3EnterLeave ();
 static Bool S3Init ();
+static Bool S3ValidMode ();
 static void *S3Save ();
 static void S3Restore ();
 static void S3Adjust ();
@@ -82,6 +85,7 @@ vgaVideoChipRec S3_SVGA =
    S3Ident,
    S3EnterLeave,
    S3Init,
+   S3ValidMode,
    S3Save,
    S3Restore,
    S3Adjust,
@@ -101,6 +105,13 @@ vgaVideoChipRec S3_SVGA =
    VGA_DIVIDE_VERT,
    {0,},
    8,
+   FALSE,
+   0,
+   0,
+   FALSE,
+   FALSE,
+   NULL,
+   1,
 };
 
 #define new ((vgaS3Ptr)vgaNewVideoState)
@@ -231,36 +242,49 @@ S3Probe ()
       return(FALSE);
    }
 
-      if (S3_801_928_SERIES ) {
-         ErrorF ("S3 chipset is in the 801 or 928 series.\n");
+      if (S3_864_SERIES )
+	 ErrorF ("%s %s: S3 chipset is a Vision864.\n",
+		 XCONFIG_PROBED, vga256InfoRec.name);
+      else if (S3_964_SERIES )
+	 ErrorF ("%s %s: S3 chipset is a Vision964.\n",
+		 XCONFIG_PROBED, vga256InfoRec.name);
+      else if (S3_801_928_SERIES ) {
          if (S3_801_SERIES ) {
-            ErrorF ("S3 chipset is a 801 \n");
+            ErrorF ("%s %s: S3 chipset is an 801 or 805\n",
+		    XCONFIG_PROBED, vga256InfoRec.name);
 	 } else if (S3_928_SERIES ) {
-            ErrorF ("S3 chipset is a 928 \n");
+            ErrorF ("%s %s: S3 chipset is a 928\n",
+		    XCONFIG_PROBED, vga256InfoRec.name);
 	 }
       } else if (S3_911_SERIES) {
-         ErrorF ("S3 chipset is in the 911 series.\n");
          if (S3_911_ONLY ) {
-            ErrorF ("S3 chipset is a 911 \n");
+            ErrorF ("%s %s: S3 chipset is a 911\n",
+		    XCONFIG_PROBED, vga256InfoRec.name);
 	 } else if (S3_924_ONLY ) {
-            ErrorF ("S3 chipset is a 924\n");
+            ErrorF ("%s %s: S3 chipset is a 924\n",
+		    XCONFIG_PROBED, vga256InfoRec.name);
 	 } else {
-            ErrorF ("S3 chipset unknown, chip_id = %x\n", chip_id);
+            ErrorF ("%s %s: S3 chipset unknown, chip_id = 0x%02x\n",
+		    XCONFIG_PROBED, vga256InfoRec.name, chip_id);
 	 }
       } else
-         ErrorF ("Unknown chipset : chip_id is %x\n", chip_id);
+         ErrorF ("%s %s: Unknown chipset : chip_id is 0x%02x\n",
+		    XCONFIG_PROBED, vga256InfoRec.name, chip_id);
 
    outb (0x3d4, 0x36);          /* for register CR36 (CONFG_REG1), */
    config = inb (0x3d5);        /* get amount of vram installed */
 
    if ((config & 0x03) == 0) {
-      ErrorF ("This is an EISA card\n");
+      ErrorF ("%s %s: This is an EISA card\n",
+	      XCONFIG_PROBED, vga256InfoRec.name);
    }
    if ((config & 0x03) == 1) {
-      ErrorF ("This is a 386/486 localbus card\n");
+      ErrorF ("%s %s: This is a 386/486 localbus card\n",
+	      XCONFIG_PROBED, vga256InfoRec.name);
    }
    if ((config & 0x03) == 3) {
-      ErrorF ("This is an ISA card\n");
+      ErrorF ("%s %s: This is an ISA card\n",
+	      XCONFIG_PROBED, vga256InfoRec.name);
    }
    if (!vga256InfoRec.videoRam) {
       if ((config & 0x20) != 0) {       /* if bit 5 is a 1, then 512k RAM */
@@ -283,9 +307,13 @@ S3Probe ()
               break;
 	 }
       }
+#if 0
       ErrorF ("%d K of memory found\n", vga256InfoRec.videoRam);
-   } else
-      ErrorF ("%d K videoram\n", vga256InfoRec.videoRam);
+#endif
+   }
+#if 0
+   else ErrorF ("%d K videoram\n", vga256InfoRec.videoRam);
+#endif
 
 
    if (OFLG_ISSET(OPTION_LEGEND, &vga256InfoRec.options)) {
@@ -376,7 +404,7 @@ S3Restore (restore)
    outb (0x3d5, (i & 0xf0));
    outb(0x3CD, 0x00); /* segment select */
 
-   vgaHWRestore (restore);
+   vgaHWRestore ((vgaHWPtr)restore);
 
   i = inb(vgaIOBase + 0x0A); /* reset flip-flop */
   outb(0x3C0, 0x36);
@@ -431,7 +459,7 @@ S3Save (save)
 
    temp = inb(0x3CD); outb(0x3CD, 0x00); /* segment select */
 
-   save = (vgaS3Ptr) vgaHWSave (save, sizeof (vgaS3Rec));
+   save = (vgaS3Ptr) vgaHWSave ((vgaHWPtr)save, sizeof (vgaS3Rec));
 
 
    for (i = 0; i < 5; i++) {
@@ -485,18 +513,18 @@ S3Init (mode)
 
  /* DON'T forget to set Interlace else where!!!!!! */
    new->OverflowHigh =
-      ((mode->VSyncStart & 0x400) >> 7)
-      | (((mode->VDisplay - 1) & 0x400) >> 9)
-      | (((mode->VTotal - 2) & 0x400) >> 5)
-      | (((mode->VTotal - 2) & 0x200) >> 9)
-      | (((mode->VSyncStart) & 0x200) >> 3);
+      ((mode->CrtcVSyncStart & 0x400) >> 7)
+      | (((mode->CrtcVDisplay - 1) & 0x400) >> 9)
+      | (((mode->CrtcVTotal - 2) & 0x400) >> 5)
+      | (((mode->CrtcVTotal - 2) & 0x200) >> 9)
+      | (((mode->CrtcVSyncStart) & 0x200) >> 3);
 
 
   new->s3reg[0] = 0x8d;
   new->s3reg[1] = 0x00;
   new->s3reg[2] = 0x20;
   new->s3reg[3] = 0x10;
-  if (mode->HDisplay > 800)
+  if (mode->CrtcHDisplay > 800)
       new->s3reg[4] = 0x00;
   else
      new->s3reg[4] = 0x13;
@@ -534,7 +562,7 @@ S3Init (mode)
 
 
 #ifdef ENHANCED_ENABLE
-   if (mode->HDisplay < 800) {	/* MOVE ME - JNT */
+   if (mode->CrtcHDisplay < 800) {	/* MOVE ME - JNT */
       outw (0x4ae8, 0x0003);
    } else
       outw (0x4ae8, 0x0007);
@@ -587,3 +615,10 @@ go_linear()
    }
 }
 #endif
+
+static Bool
+S3ValidMode(mode)
+DisplayModePtr mode;
+{
+  return TRUE;
+}

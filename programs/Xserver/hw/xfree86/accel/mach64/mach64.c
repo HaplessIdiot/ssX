@@ -1,5 +1,5 @@
 /* $XConsortium: mach64.c,v 1.4 95/01/23 15:33:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.7 1995/01/28 15:53:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.8 1995/02/12 09:53:36 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -231,7 +231,7 @@ char	*mach64ramdac_names[] = {
 	"AT&T20C49[01]/Bt48[12]/IMS-G174/MU9C{1880,4910}/SC1502[56]",
 	"ATI-68860/ATI-68880",
 	"STG1700 (or similar)",
-	"SC15021 (or similar)",
+	"SC15021/STG1702/AT&T21C498",
 };
 
 int	mach64RamdacSubType;
@@ -661,12 +661,6 @@ mach64Probe()
 	       OFLG_ISSET(XCONFIG_VIRTUAL, &mach64InfoRec.xconfigFlag) ?
 		XCONFIG_GIVEN : XCONFIG_PROBED,
 		mach64InfoRec.name, mach64VirtX, mach64VirtY);
-    }
-
-    if ((mach64VirtX) < 1024) {
-	ErrorF("mach64 X server requires virtual screen width >= 1024\n");
-	xf86DisableIOPorts(mach64InfoRec.scrnIndex);
-	return(FALSE);
     }
 
     if (!mach64InfoRec.videoRam) {

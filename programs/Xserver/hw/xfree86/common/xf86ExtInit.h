@@ -1,28 +1,6 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86ExtInit.h,v 3.2 1994/12/25 13:46:17 dawes Exp $ */
 
-/*
- * Dummy functions to disable various extensions
- */
-
-#ifdef MONO_SERVER
-/* For Mono and VGA16 servers, always turn off PEX and XIE */
-
-void PexExtensionInit() {}
-
-void XieInit() {}
-
-#else /* MONO_SERVER */
-
-#if defined(LINKKIT) && !defined(PEXEXT)
-void PexExtensionInit() {}
-#endif
-
-#if defined(LINKKIT) && !defined(XIE)
-void XieInit() {}
-#endif
-
-#endif /* MONO_SERVER */
-
-#if defined(LINKKIT) && !defined(SCREENSAVER)
-void ScreenSaverExtensionInit() {}
+/* Hack to avoid multiple versions of dixfonts in vga{2,16}misc.o */
+#ifndef LBX
+void LbxFreeFontTag() {}
 #endif

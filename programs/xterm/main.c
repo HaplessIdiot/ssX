@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.225.1.1 95/01/13 21:13:04 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.13 1995/01/28 17:47:51 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.14 1995/01/29 02:10:18 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -1096,7 +1096,7 @@ char **argv;
 	    uid_t ruid = getuid();
 	    gid_t rgid = getgid();
 
-	    if (setegid(ruid) == -1)
+	    if (setegid(rgid) == -1)
 		(void) fprintf(stderr, "setegid(%d): %s\n",
 			       rgid, strerror(errno));
 

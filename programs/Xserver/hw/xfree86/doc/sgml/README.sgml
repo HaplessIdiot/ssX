@@ -423,7 +423,7 @@ XFree86 support was integrated into the base X11R6 distribution by:
 </itemize>
 <tag/ISC SVR3 support by:  /
 <itemize>
-       <item> Michael Rohleder <it>&lt;michael.rohleder&percnt;iktffm.uucp@germany.eu.net&gt</it>
+       <item> Michael Rohleder <it>&lt;michael.rohleder@stadt-frankfurt.de&gt</it>
 </itemize>
 <tag/Linux shared libraries by:  /
 <itemize>
@@ -479,6 +479,20 @@ XFree86 support was integrated into the base X11R6 distribution by:
 <itemize>
        <item> Mike Tierney <it>&lt;floyd@pepsi.eng.umd.edu&gt;</it>,
        <item> Bill Conn <it>&lt;conn@bnr.ca&gt;</it>
+</itemize>
+<tag/P9000 accelerated code by:  /
+<itemize>
+       <item> Erik Nygren <it>&lt;nygren@mit.edu&gt;</it>,
+       <item> Harry Langenbacher <it>&lt;harry@brain.jpl.nasa.gov&gt;</it>
+       <item> Chris Mason <it>&lt;mason@mail.csh.rit.edu&gt;</it>
+</itemize>
+<tag/AGX accelerated code by:  /
+<itemize>
+       <item> Henry Worth <it>&lt;henry.worth@amail.amdahl.com&gt;</it>,
+</itemize>
+<tag>ET4000/W32 accelerated code by:  </tag>
+<itemize>
+       <item> Glenn Lai <it>&lt;glenn@cs.utexas.edu&gt;</it>,
 </itemize>
 <tag/Oak Technologies Inc. accelerated code by:  /
 <itemize>
@@ -734,8 +748,8 @@ and the following mirror sites:
 <item>   <url url="ftp://ref.tfs.com/pub/mirrors/XFree86" 
 	name="ref.tfs.com:/pub/mirrors/XFree86">
 	(source patches and FreeBSD binaries)
-<item>   <url url="ftp://ftp.eecs.umich.edu/BSD/XFree86" 
-	name="ftp.eecs.umich.edu:/BSD/XFree86">
+<item>   <url url="ftp://ftp.eecs.umich.edu/BSD/XFree86/current" 
+	name="ftp.eecs.umich.edu:/BSD/XFree86/current">
 	(source and binaries)
 <item>   <url url="ftp://sunsite.unc.edu/pub/X11/XFree86" 
 	name="sunsite.unc.edu:/pub/X11/XFree86">
@@ -832,7 +846,7 @@ compile-time option selections were made when building the distribution.
 
 <verb>
 $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.19 1995/02/05 21:31:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.20 1995/02/12 02:39:51 dawes Exp $
 </verb>
 
 </article>

@@ -16,7 +16,7 @@ Interactive Unix, also referred to as ISC.
 If you have any suggestions, comments, fixes or ideas regarding
 X11R6/XFree86 on Interactive Unix, send e-mail to
 
-<em>michael.rohleder%iktffm.uucp@Germany.EU.net</em><p>
+<em>michael.rohleder@stadt-frankfurt.de</em><p>
 Bug Reports should be sent to<p>
 <em>XFree86@XFree86.Org</em><p>
 Questions or anything else should be posted to the NewsGroup<p>
@@ -47,6 +47,16 @@ new facilities provided in the X11R6 Libraries against them.
           Don't use strip and ar/ranlib, the first generates buggy binaries
           when stripping (at least on my machines) and the last requires 
           the use of ranlib after creating an archive, this is not configured.
+    <tag> gnu-malloc </tag>
+          Due to better memory usage we should use GNU's malloc library
+          on systems where possible. 
+
+          Enable &num;define UseGnuMalloc YES
+	  inside xf86site.def or within the Linkkit site.def. 
+
+          Set &num;define MallocLibrary
+	  to your needs if it isn't like the default -lgmalloc
+
 </descrip>          
 
 <sect> Changes to the System Header Files<p>
@@ -199,10 +209,19 @@ I could only test two cards against the linear addressing.
            results in no Graphics displayed or a spontaneous reboot.<p>
 	<item>ATI GUP      - mach32   - VLB<p>
            with 32MB MainMemory installed I could map the CardMemory
-           at MemBase 0x06400000 ~ 100MB. I could work with all clients
+           at MemBase 0x07c00000. I could work with all clients
            until I try to activate a Motif 1.1.1 InputField inside a 
            Motif Client like Mosaic-2.4 or xplan. This results in a 
-           crash of the XServer. 
+           crash of the XServer. <p>
+           <verb>
+           !!! You could workaround this !!!
+           </verb>
+           Expand your .Xdefaults with
+           <verb>
+           *blinkRate:			0
+           *cursorPositionVisible:	false
+           </verb>
+ 
 </itemize>
 
 </itemize>
@@ -312,6 +331,18 @@ to install the server binary LinkKit into /usr/X11R6/lib/Server.
           should be as easy as you only switch the PATH components
           so that either <tt>/usr/X11R6/bin/xmkmf</tt> or 
           <tt>/usr/X386/bin/xmkmf</tt> would make the new Makefile.
+
+	<item>ISC Streams Pipes <p>
+	      The old path to the pipes on ISC's R4 <tt>/tmp/.X11-unix</tt>
+	      has changed to <tt>/dev/X/ISCCONN</tt>. For compatibility 
+	      reasons on ISC, the pipes in the new directory will be
+	      linked to a file inside the old. 
+	      This will normaly be a hard link, so it can't go across
+	      filesystems. On ISC Version 4.x this is now allowed. But
+	      you should use the new S5L on both filesystems.
+	      ISC30 systems should take care that the two directories
+	      are on the same FS. Else if you are using a ISC40 compiled
+	      binary, the Server abort due to a SIGSYS.
           
 </itemize>
                  
@@ -325,7 +356,7 @@ as to all who contribute to this excellent piece of free software.
 
 <verb>
 $XConsortium: isc.sgml,v 1.2 95/01/27 16:14:38 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.3 1995/01/27 04:51:55 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.4 1995/01/28 16:03:10 dawes Exp $
 </verb>
 
 </article>
