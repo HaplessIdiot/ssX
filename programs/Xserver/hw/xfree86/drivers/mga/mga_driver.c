@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.237 2003/09/21 01:20:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.238 2003/09/24 03:16:55 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -2405,13 +2405,14 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86LoaderReqSymLists(shadowSymbols, NULL);
     }
 
+#ifdef XF86DRI
     /* Load the dri module if requested. */
     if (xf86ReturnOptValBool(pMga->Options, OPTION_DRI, FALSE)) {
        if (xf86LoadSubModule(pScrn, "dri")) {
 	  xf86LoaderReqSymLists(driSymbols, drmSymbols, NULL);
        }
     }
-
+#endif
     pMga->CurrentLayout.bitsPerPixel = pScrn->bitsPerPixel;
     pMga->CurrentLayout.depth = pScrn->depth;
     pMga->CurrentLayout.displayWidth = pScrn->displayWidth;
