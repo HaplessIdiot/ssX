@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.18 1997/10/25 13:50:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.19 1997/11/16 11:51:15 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -585,14 +585,15 @@ int ScreenNum;
 	{
 	    /* 
 	     * xf86MapInfoMap maps an offset from the start of video IO
-	     * space (ie 0x3B0), but IOPortBase is expected to map to
-	     * physical address 0x000, so subtract 0x3B0 from the result.
-	     * This is safe for now becase we actually mmap the start
-	     * of the page, then 0x3B0 is added as an internal offset.
+	     * space (e.g. 0x3B0), but IOPortBase is expected to map to
+	     * physical address 0x000, so subtract the start of video I/O
+	     * space from the result.  This is safe for now becase we
+	     * actually mmap the start of the page, then the start of video
+	     * I/O space is added as an internal offset.
 	     */
 	    IOPortBase = (unsigned int)xf86MapInfoMap(memInfoP,
 						      (caddr_t)0x0, 0L) 
-		- 0x3B0;
+		- memInfoP->memInfo.u.map_info_mmap.internal_offset;
 	    ExtendedEnabled = TRUE;
 	    return;
 	}

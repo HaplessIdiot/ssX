@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.17 1997/08/26 10:00:53 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.18 1997/09/09 10:27:39 hohndel Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -156,9 +156,9 @@ proc initconfig {xwinhome} {
 
 proc writeXF86Config {filename args} {
 	global Files Module ServerFlags Keyboard Pointer UseLoader
-	global MonitorIDs DeviceIDs MonitorStdModes
+	global MonitorIDs DeviceIDs MonitorStdModes SelectedMonitorModes
 	global Scrn_Accel Scrn_Mono Scrn_VGA2 Scrn_VGA16 Scrn_SVGA
-	global pc98 pc98_EGC
+	global pc98 pc98_EGC haveSelectedModes DefaultColorDepth
 
 	set generic_vga [ expr {[lsearch -exact $args -generic] >= 0} ]
 	#puts stderr "generic_vga = $generic_vga"
@@ -328,15 +328,31 @@ proc writeXF86Config {filename args} {
 		set modepattern "*"
 	    }
 	    if { [string compare None $modepattern] != 0} {
-		foreach desc [lsort -decreasing \
-				[array names MonitorStdModes $modepattern]] {
+		if { $haveSelectedModes <= 0 } {
+#		    puts stderr "No selected modes"
+		    foreach desc [lsort -decreasing \
+				      [array names MonitorStdModes $modepattern]] {
 			set modeline $MonitorStdModes($desc)
 			puts $fd "# $desc"
 			set id [format "%dx%d" \
-			    [lindex $modeline 1] [lindex $modeline 5]]
+				    [lindex $modeline 1] [lindex $modeline 5]]
 			puts $fd [format "   Modeline  %-11s %s" \
-			    "\"$id\""  $modeline]
+				      "\"$id\""  $modeline]
 			lappend modeNames $id
+		    }
+		} else {
+		    foreach desc [lsort -decreasing \
+				[array names SelectedMonitorModes $modepattern]] {
+			set modeline $SelectedMonitorModes($desc)
+			if ![string match \#removed $modeline] {
+			    puts $fd "# $desc"
+			    set id [format "%dx%d" \
+					[lindex $modeline 1] [lindex $modeline 5]]
+			    puts $fd [format "   Modeline  %-11s %s" \
+					  "\"$id\""  $modeline]
+			    lappend modeNames $id
+			}
+		    }
 		}
 	    } else {
 		set dispof [lsearch -exact $args -displayof]
@@ -425,8 +441,11 @@ proc writeXF86Config {filename args} {
 		puts $fd "   Driver          \"$drvr\""
 		puts $fd "   Device          \"[set Scrn_${drvr}(Device)]\""
 		puts $fd "   Monitor         \"[set Scrn_${drvr}(Monitor)]\""
-		foreach key {ScreenNo BlankTime SuspendTime OffTime \
-				DefaultColorDepth} {
+		if { ![string compare $drvr "Accel"] ||
+		     ![string compare $drvr "SVGA"] } {
+			puts $fd "   DefaultColorDepth $DefaultColorDepth"
+		}
+		foreach key {ScreenNo BlankTime SuspendTime OffTime } {
 			if { [string length [set Scrn_${drvr}($key)]] } {
 				puts $fd [format "   %-15s %s" \
 					$key [set Scrn_${drvr}($key)] ]
@@ -663,14 +682,18 @@ proc save_state {} {
 	puts $fd [list set XF86SetupDir $XF86SetupDir]
 	puts $fd [list set TmpDir $TmpDir]
 	puts $fd [list set PID $PID]
-	global DeviceIDs MonitorIDs
+	global DeviceIDs MonitorIDs haveSelectedModes DefaultColorDepth
 	puts $fd [list set DeviceIDs $DeviceIDs]
 	puts $fd [list set MonitorIDs $MonitorIDs]
+	puts $fd [list set DefaultColorDepth $DefaultColorDepth]
+	puts $fd [list set haveSelectedModes $haveSelectedModes]
 	if !$pc98 {
 		set arrlist [list Files Module ServerFlags Keyboard Pointer \
+			SelectedMonitorModes MonitorStdModes \
 			Scrn_Accel Scrn_Mono Scrn_VGA2 Scrn_VGA16 Scrn_SVGA]
 	} else {
 		set arrlist [list Files Module ServerFlags Keyboard Pointer \
+			SelectedMonitorModes MonitorStdModes \
 			Scrn_Accel Scrn_VGA16 Scrn_SVGA]
 	}
 	foreach devid $DeviceIDs {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/Ti3026Curs.c,v 1.3 1997/09/25 16:13:54 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/Ti3026Curs.c,v 1.4 1997/12/05 22:01:46 hohndel Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -236,12 +236,8 @@ s3Ti3026LoadCursorImage(bits, xorigin, yorigin)
    int xorigin, yorigin;
 {
    register int   i;
-   unsigned char  tmp, tmpcurs;
+   unsigned char  tmp;
    register unsigned char *mask = bits + 1;
-
-   /* turn the cursor off */
-   if ((tmpcurs = s3InTi3026IndReg(TI_CURS_CONTROL)) & 0x03)
-      s3Ti3026HideCursor();
 
    UNLOCK_SYS_REGS;
 
@@ -273,11 +269,6 @@ s3Ti3026LoadCursorImage(bits, xorigin, yorigin)
    outb(vgaCRReg, tmp);
 
    LOCK_SYS_REGS;
-
-   /* turn the cursor on */
-   if (tmpcurs & 0x03)
-      s3Ti3026HideCursor();
-
 }
 
 

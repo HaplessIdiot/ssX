@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/igs/igs_driver.c,v 1.2 1997/10/26 15:46:42 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/igs/igs_driver.c,v 1.3 1997/11/01 15:04:48 hohndel Exp $ */
 
 /*
  * Copyright 1997
@@ -1211,16 +1211,19 @@ DisplayModePtr mode;
 	 * Set up XGA Coprocessor base address and data window for host
 	 * to screen bitblt.
 	 */
-	igsXGABase = 
-	    (unsigned int)xf86MapVidMem(vga256InfoRec.scrnIndex, 
-					LINEAR_REGION,
-					(pointer)(IGS.ChipLinearBase 
-						  + IGS_PHYSMEM 
-						  + IGS_BSEG_XGABASE),
-					IGS_XGALEN);
+	if (igsXGABase == 0)
+	{
+	    igsXGABase = 
+		(unsigned int)xf86MapVidMem(vga256InfoRec.scrnIndex, 
+					    LINEAR_REGION,
+					    (pointer)(IGS.ChipLinearBase 
+						      + IGS_PHYSMEM 
+						      + IGS_BSEG_XGABASE),
+					    IGS_XGALEN);
+	}
 	igsBltDataWindow = vgaLinearBase;
 	igsCopControl = (unsigned char *)(igsXGABase + 0x11);
-	    
+	
 	new->ExtGraReg[0x30] = 0x01; /* Linear address size = 2MB */
 	new->ExtGraReg[0x33] = 0x19; /* Segment A, Linear address enabled */
 				     /* Coprocessor at BFC00 */

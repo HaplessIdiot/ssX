@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase2.tcl,v 3.11 1997/07/29 12:07:25 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase2.tcl,v 3.12 1997/09/09 11:38:55 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -84,6 +84,7 @@ source $XF86Setup_library/card.tcl
 source $XF86Setup_library/monitor.tcl
 source $XF86Setup_library/srvflags.tcl
 source $XF86Setup_library/done.tcl
+source $XF86Setup_library/modeselect.tcl
 
 proc Intro_create_widgets { win } {
 	global XF86Setup_library
@@ -126,6 +127,8 @@ proc Intro_create_widgets { win } {
 			of your card\n\
 		\tMonitor\t\t- Use this to enter your\
 			monitor's capabilities\n\
+		\tModeselction\t\t- Use this to chose the modes\
+			that you want to use\n\
 		\tOther\t\t- Configure some miscellaneous settings\n\n\
 		You'll probably want to start with configuring your\
 			mouse (you can just press \[Enter\] to do so)\n\
@@ -230,11 +233,14 @@ radiobutton $w.menu.card -text Card -indicatoron false \
 radiobutton $w.menu.monitor -text Monitor -indicatoron false \
 	-variable CfgSelection -value Monitor -underline 2 \
 	-command [list config_select $w]
+radiobutton $w.menu.modeselect -text Modeselection -indicatoron false \
+	-variable CfgSelection -value Modeselection -underline 4 \
+	-command [list config_select $w]
 radiobutton $w.menu.other -text Other -indicatoron false \
 	-variable CfgSelection -value Other -underline 0 \
 	-command [list config_select $w]
 pack $w.menu.mouse $w.menu.keyboard $w.menu.card $w.menu.monitor \
-	$w.menu.other -side left -fill both -expand yes
+	$w.menu.modeselect $w.menu.other -side left -fill both -expand yes
 
 frame $w.buttons
 #label $w.buttons.xlogo -bitmap @/usr/X11R6/include/X11/bitmaps/xlogo16 -anchor w
@@ -255,6 +261,7 @@ Keyboard_create_widgets	$w
 Mouse_create_widgets	$w
 Card_create_widgets	$w
 Monitor_create_widgets	$w
+Modeselect_create_widgets	$w
 Other_create_widgets	$w
 Done_create_widgets	$w
 
@@ -272,6 +279,7 @@ ac_bind $w m		[list $w.menu.mouse invoke]
 ac_bind $w c		[list $w.menu.card invoke]
 ac_bind $w k		[list $w.menu.keyboard invoke]
 ac_bind $w n		[list $w.menu.monitor invoke]
+ac_bind $w s		[list $w.menu.modeselect invoke]
 ac_bind $w o		[list $w.menu.other invoke]
 set_default_arrow_bindings
 

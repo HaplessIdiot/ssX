@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gc.c,v 3.10 1997/05/26 15:35:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gc.c,v 3.11 1997/11/08 16:24:34 hohndel Exp $ */
 
 /***********************************************************
 
@@ -197,9 +197,11 @@ xf86ValidateGC(pGC, changes, pDrawable)
      * The devPrivate.val indicates what kind of of GC ops we are
      * dealing with:
      *
-     *	0	cfb defaults structure
-     *  1	default "wrapped" ops (this is new)
-     *  2	modified on-screen (accelerated) ops
+     *    0 means that cfb defaults are attached and we musn't
+     *		alter or free them.
+     *    1 means that some non-XAA entity has allocated these
+     *		and they must be freed before attaching new ones.
+     *	  2 means that XAA ops are attached.
      */
     VTSwitch = (last_xf86VTSema != xf86VTSema);
     if (!xf86VTSema || pDrawable->type != DRAWABLE_WINDOW) {
@@ -240,14 +242,13 @@ xf86ValidateGC(pGC, changes, pDrawable)
 #else
     	cfbValidateGC(pGC, changes, pDrawable);
 #endif
-        /* We need to restore these functions to the wrappered version, 
-         * so that when drawing to/from pixmap->screen, we sync first.
-         */
-	pGC->ops->PutImage = xf86GCInfoRec.PutImageWrapper;
-	pGC->ops->CopyArea = xf86GCInfoRec.CopyAreaWrapper;
 
-        if (xf86VTSema && pDrawable->type != DRAWABLE_WINDOW)
+        if (xf86VTSema && pDrawable->type != DRAWABLE_WINDOW) {
+	    /* we really only need to sync on copies from window
+		to pixmaps, and not pixmap->pixmap copies */
+            pGC->ops->CopyArea = xf86GCInfoRec.CopyAreaWrapper;
             return;
+	}
         if (VTSwitch) {
             last_xf86VTSema = xf86VTSema;
 #if 0
@@ -478,13 +479,15 @@ xf86ValidateGC(pGC, changes, pDrawable)
     }
 
     /*
-     * It's pretty certain we'll be modifying the GC ops, so create
-     * them if they still point to a defaults structure.
+     *  If we don't have XAA ops we must attach safe defaults
+     *  and do a full context validation
      */
-    if (!pGC->ops->devPrivate.val)
+    if (pGC->ops->devPrivate.val != 2)
     {
+        if(pGC->ops->devPrivate.val)
+	    miDestroyGCOps(pGC->ops);
+
 	pGC->ops = miCreateGCOps (pGC->ops);
-	pGC->ops->devPrivate.val = 1;
 
        /* 
 	*  Fill in pGC->ops with conservative defaults. 
@@ -520,16 +523,7 @@ xf86ValidateGC(pGC, changes, pDrawable)
 #ifdef NEED_LINEHELPER
 	pGC->ops->LineHelper = NULL;
 #endif
-    }
 
-    if (pGC->ops->devPrivate.val == 1) {
-        /*
-         * The GC ops are still pointing to off-screen (cfb) functions.
-         * Everything must be initialized.
-         *
-         * This happens (1) with new GC's that we just initialized above,
-         *              (2) when previously VT-switched away.
-         */
         new_rrop = new_line = new_text = new_fillspans = new_fillarea = TRUE;
 	/* Assign 2 to indicate that we are writing to the screen. */
 	pGC->ops->devPrivate.val = 2;

@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/carddata.tcl,v 3.17 1997/08/26 10:00:53 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/carddata.tcl,v 3.18 1997/12/05 22:01:27 hohndel Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -55,7 +55,7 @@ set CardChipSets(SVGA-gvga)	gvga
 set CardChipSets(SVGA-mga)	mga2064w
 set CardChipSets(SVGA-mx)	mx
 set CardChipSets(SVGA-ncr77c22)	{ ncr77c22 ncr77c22e }
-set CardChipSets(SVGA-nv)	{ nv1 stg2000 }
+set CardChipSets(SVGA-nv)	{ nv1 stg2000 riva128 }
 set CardChipSets(SVGA-oak)	{ oti067 oti077 oti087 oti037c }
 set CardChipSets(SVGA-pvga1)	{ pvga1 \
 				  wd90c00 wd90c10 wd90c30 wd90c24 \

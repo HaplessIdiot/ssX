@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.11 1997/10/13 17:16:40 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.12 1997/10/25 13:50:27 hohndel Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -2128,7 +2128,8 @@ cirrusFbInit()
 			(vgaPCIInfo->ChipType == PCI_CHIP_GD5465) ||
 			(vgaPCIInfo->ChipType == PCI_CHIP_GD7548)) {
 
-		      if (vgaPCIInfo->ChipType == PCI_CHIP_GD5465) {
+		      if (vgaPCIInfo->ChipType == PCI_CHIP_GD5465 ||
+			  vgaPCIInfo->ChipType == PCI_CHIP_GD7548) {
 			/* Swapped in the '65, by design. */
 			vgaPCIInfo->IOBase = vgaPCIInfo->ThisCard->_base1;
 			vgaPCIInfo->MemBase = vgaPCIInfo->ThisCard->_base0;
@@ -2364,7 +2365,7 @@ nolinear:
     || HAVE546X()) {
         cirrusUseMMIO = TRUE;
 	
-	if (cirrusBusType == CIRRUS_BUS_PCI && HAVE546X()) {
+	if (cirrusBusType == CIRRUS_BUS_PCI && (HAVE546X() || HAVE75XX())) {
 	  /* The MMIO address lives in a PCI base address register */
 	  
 	  /* !!! what's scr_index? */
@@ -3905,7 +3906,7 @@ cirrusInit(mode)
 	   * for 1024x768 LCDs).
 	   */
 	  new->CR2D &= ~(0x1);	/* Only touch bit 0. */
-	  new->CR2E &= ~(0x20 | 0x8 | 0x2 | 0x1);
+	  new->CR2E &= ~(0x20 | 0x8 | 0x2);
 	  if (cirrusLCDVerticalSize >= 600) {
 	      /* 800x600 or 1024x768 LCD */
 	      /* Clear CR2D bit 0: No automatic (640x480 LCD?) centering. */
@@ -3917,7 +3918,7 @@ cirrusInit(mode)
 	          if (mode->HDisplay <= 640 && vga256InfoRec.bitsPerPixel <= 8)
 	              new->CR2E |= 0x8;	/* Horizontal expansion. */
 	          if (mode->VDisplay <= 480)
-	              new->CR2E |= 0x1;	/* Vertical expansion. */
+	              new->CR2E |= 0x2;	/* Vertical expansion. */
 	      }
 	      new->CR2E |= 0x20; /* Enable automatic horizontal centering. */
 	  }

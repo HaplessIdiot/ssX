@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.22 1997/11/08 16:24:26 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.23 1997/12/05 22:01:45 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -801,7 +801,8 @@ MGAProbe()
 
 	if (!vga256InfoRec.videoRam)
 	   if ( MGAchipset == PCI_CHIP_MGA2164 || MGAchipset == PCI_CHIP_MGA2164_AGP )
-		vga256InfoRec.videoRam = MGACountRam(8); /* count to 16 mb */
+		/* Only look for 8 Meg.  Maybe this is causing a crash (MArk)*/
+		vga256InfoRec.videoRam = MGACountRam(4); /* count to 16 mb */
 	   else
 		vga256InfoRec.videoRam = MGACountRam(4); /* count to 8 mb */
 	
@@ -1466,26 +1467,24 @@ int x, y;
 	int Base = (y * vga256InfoRec.displayWidth + x + MGAydstorg) >>
 			(3 - MGABppShft);
 	int tmp;
+	CARD32 count;
 
 	if (vgaBitsPerPixel == 24)
 		Base *= 3;
 
-	/* Wait for vertical retrace */
-	while (!(inb(vgaIOBase + 0xA) & 0x08));
-	
+	/* find start of retrace */
+        while (inb(vgaIOBase + 0x0A) & 0x08);
+	while (!(inb(vgaIOBase + 0xA) & 0x08)); 
+	/* wait until we're past the start (fixseg.c in the DDK) */
+	count = INREG(MGAREG_VCOUNT) + 2;
+	while(INREG(MGAREG_VCOUNT) < count);
+
+
 	outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);
 	outw(vgaIOBase + 4, ((Base & 0x0000FF) << 8) | 0x0D);
 	outb(0x3DE, 0x00);
 	tmp = inb(0x3DF);
 	outb(0x3DF, (tmp & 0xF0) | ((Base & 0x0F0000) >> 16));
-
-#ifdef XFreeXDGA
-	if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
-	/* Wait for vertical retrace end */
-		while (!(inb(vgaIOBase + 0xA) & 0x08));
-		while (inb(vgaIOBase + 0xA) & 0x08);
-	}
-#endif
 }
 
 /*

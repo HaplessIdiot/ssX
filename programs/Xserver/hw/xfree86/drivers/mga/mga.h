@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.6 1997/08/12 12:02:05 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.7 1997/12/05 22:01:41 hohndel Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -18,6 +18,7 @@
 #define mb() __asm__ __volatile__("mb": : :"memory")
 #define INREG8(addr) xf86ReadSparse8(MGAMMIOBase, (addr))
 #define INREG16(addr) xf86ReadSparse16(MGAMMIOBase, (addr))
+#define INREG(addr) xf86ReadSparse32(MGAMMIOBase, (addr))
 #define OUTREG8(addr,val) do { xf86WriteSparse8((val),MGAMMIOBase,(addr)); \
 				mb();} while(0)
 #define OUTREG16(addr,val) do { xf86WriteSparse16((val),MGAMMIOBase,(addr)); \
@@ -27,6 +28,7 @@
 #else /* __alpha__ */
 #define INREG8(addr) *(volatile CARD8 *)(MGAMMIOBase + (addr))
 #define INREG16(addr) *(volatile CARD16 *)(MGAMMIOBase + (addr))
+#define INREG(addr) *(volatile CARD32 *)(MGAMMIOBase + (addr))
 #define OUTREG8(addr, val) *(volatile CARD8 *)(MGAMMIOBase + (addr)) = (val)
 #define OUTREG16(addr, val) *(volatile CARD16 *)(MGAMMIOBase + (addr)) = (val)
 #define OUTREG(addr, val) *(volatile CARD32 *)(MGAMMIOBase + (addr)) = (val)
@@ -77,10 +79,7 @@ extern unsigned char *MGAMMIOBaseDENSE;
 #define WAITUNTILFINISHED()	MGAWAITFREE()
 #define SETBACKGROUNDCOLOR(col)	OUTREG(MGAREG_BCOL, (col))
 #define SETFOREGROUNDCOLOR(col)	OUTREG(MGAREG_FCOL, (col))
-#define SETRASTEROP(rop)	mga_cmd |= (((rop & 1)==1)*8 | \
-					    ((rop & 2)==2)*4 | \
-					    ((rop & 4)==4)*2 | \
-					    ((rop & 8)==8)) << 16;
+#define SETRASTEROP(rop)	mga_cmd |= MGARop[rop]
 #define SETWRITEPLANEMASK(pm)	OUTREG(MGAREG_PLNWT, (pm))
 #define SETBLTXYDIR(x,y)	OUTREG(MGAREG_SGN, ((-x+1)>>1)+4*((-y+1)>>1))
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3TiCursor.c,v 1.3 1997/09/25 16:13:55 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3TiCursor.c,v 1.4 1997/12/05 22:01:47 hohndel Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -274,12 +274,8 @@ s3TiLoadCursorImage(bits, xorigin, yorigin)
    int xorigin, yorigin;
 {
    register int   i;
-   unsigned char tmp, tmp1, tmpcurs;
+   unsigned char tmp, tmp1;
    register unsigned char *mask = bits + 1;
-
-   /* turn the cursor off */
-   if ((tmpcurs = s3InTiIndReg(TI_CURS_CONTROL)) & TI_CURS_SPRITE_ENABLE)
-      s3TiHideCursor();
 
    UNLOCK_SYS_REGS;
 
@@ -308,9 +304,4 @@ s3TiLoadCursorImage(bits, xorigin, yorigin)
    outb(vgaCRReg, tmp);
 
    LOCK_SYS_REGS;
-
-
-   /* turn the cursor on */
-   if (tmpcurs & TI_CURS_SPRITE_ENABLE)
-      s3TiShowCursor();
 }
