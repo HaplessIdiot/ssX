@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.2 1997/02/16 10:27:20 hohndel Exp $ */
 
 
 
@@ -39,6 +39,7 @@
 #include "sym.h"
 #include "loader.h"
 
+#include "xf86.h"
 #include "xf86Priv.h"
 /*
 #ifndef LDTEST
