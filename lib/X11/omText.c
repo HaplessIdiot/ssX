@@ -23,7 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/omText.c,v 1.7 2003/04/13 19:22:22 dawes Exp $ */
+/* $XFree86: xc/lib/X11/omText.c,v 1.8 2003/04/17 02:11:12 dawes Exp $ */
 /*
  * Copyright 1995 by FUJITSU LIMITED
  * This is source code modified by FUJITSU LIMITED under the Joint
@@ -236,10 +236,6 @@ DrawStringWithFontSet(
 		       (font = fd->font) == (XFontStruct *) NULL)
 			break;
 		}
-
-	    case XOMOrientation_Context:
-	      /* never used? */
-	      break;
 	    }
 
 	    if(is_xchar2b)
@@ -249,6 +245,10 @@ DrawStringWithFontSet(
             XSetFont(dpy, gc, font->fid);
 	    y = draw_vertical(dpy, d, oc, gc, font, is_xchar2b, x, y,
 			       (char *)ptr, char_len);
+	    break;
+
+	  case XOMOrientation_Context:
+	    /* never used? */
 	    break;
 	}
 
