@@ -1,6 +1,6 @@
-  README for XFree86 3.1.2 on LynxOS
+  README for XFree86 3.1.2G on LynxOS
   Thomas Mueller
-  16 July 1996
+  Last modified on: 2 September 1996
 
   1.  What and Where is XFree86?
 
@@ -11,25 +11,239 @@
   is available as source patches against the X Consortium X11R6.1 code,
   as well as binary distributions for many architectures.
 
-  See the Copyright Notice in COPYRIGHT <COPYRIGHT.html>.
+  See the Copyright Notice in Copyright Notice <COPYRIGHT.html>.
 
   The sources for XFree86 are available by anonymous ftp from:
 
   ftp.XFree86.org:/pub/XFree86/current
+  <ftp://ftp.XFree86.org/pub/XFree86/current>
+
+  Binaries for the 3.1.2G beta release on LynxOS AT are available from:
+
+  ftp.XFree86.org:/pub/XFree86/beta/LynxOS-AT
+  <ftp://ftp.XFree86.org/pub/XFree86/beta/LynxOS-AT>
 
   The XFree86 LynxOS port was developed using `LynxOS AT 2.3.0 080695-A
   FCS' and later `LynxOS AT 2.4.0 042696'. XFree86 versions later than
-  3.1.2 have not been tested on LynxOS versions earlier than 2.3.0.
+  3.1.2 have not been tested on LynxOS versions earlier than 2.3.0. The
+  binaries are built on `LynxOS AT 2.4.0 042696'.
 
   XFree86 supports LynxOS on the AT, the microSPARC and the PowerPC
   platform. X servers are currently available only on the AT platform.
   Refer to section ``Building on microSPARC and PowerPC'' for details on
   XFree86 on the non-AT platforms.
 
-  2.  Bug Reports for This Document
-
   Send email to tm@systrix.de (Thomas Mueller) or XFree86@XFree86.org if
   you have comments or suggestions about this file and we'll revise it.
+
+  2.  Installing the Binaries
+
+  The binary distribution is composed of a number of  tar archives which
+  are the executables, servers, fonts, libraries, include files, man
+  pages, config files, and the server link kit.  The full distribution
+  takes over 80MB of disk space.
+
+  At a minimum you need to unpack the 'required' X312*.tgz archives plus
+  at least one server that matches your vga card. If you will be using
+  the new XF86Setup utility you will also need the VGA16 server.  You'll
+  need about 40Mb for the minimum required run-time binaries only.
+
+
+     REQUIRED:
+
+        312Gbin
+           Clients, run-time libs, and app-defaults files
+
+        312Gdoc
+           Documentation
+
+        312Gfnts
+           75dpi and misc fonts
+
+        312Glib
+           Data files required at run-time
+
+
+        312Gman
+           Manual pages
+
+        312Gset
+           XF86Setup utility
+
+        312GVG16
+           16 colour VGA server (XF86Setup needs this server)
+
+        Choose at least one of the following server to match your
+        hardware:
+
+
+        312G8514
+           8514/A server
+
+        312GAGX
+           AGX server
+
+        312GI128
+           I128 server
+
+        312GMa64
+           Mach 64 server
+
+        312GMa32
+           Mach 32 server
+
+        312GMa8
+           Mach 8 server
+
+        312GMono
+           Monochrome server
+
+        312GP9K
+           P9000 server
+
+        312GS3
+           S3 server
+
+        312GSVGA
+           SVGA server
+
+        312GVG16
+           16 colour VGA server
+
+        312GW32
+           ET4000/W32, ET6000 server
+
+     OPTIONAL:
+
+        312Gf100
+           100dpi fonts
+
+        312Gfcyr
+           Cyrillic fonts
+
+        312Gfnon
+           Other fonts (Chinese, Japanese, Korean, Hebrew)
+
+        312Gfscl
+           Scalable fonts (Speedo and Type1)
+
+        312Gfsrv
+           Font server and config files
+
+        312Gprog
+           X header files, config files and compile-time libs
+
+        312Gcfg
+           sample config files for xinit, xdm
+
+        312Gnest
+           Nested X server
+
+  If this is your first time, then you can safely install all of the
+  packages.  As a minimal install, you'll need doc, bin, fonts lib,
+  config, and one X server.
+
+  2.1.  Full Install
+
+
+     1. You must be logged in as root to unpack the archives because
+        several executables are set-user-id.  Otherwise the server may
+        abort if you unpack it as an ordinary user.
+
+     2. If you have about 80Mb free in the /usr partition ``cd /usr''
+        and skip to no. 3.  Otherwise, create a directory on another
+        partition and sym link it into /usr:
+
+
+
+           # cd /usr/local
+           # mkdir X11R6
+           # ln -s /usr/local/X11R6 /usr/X11R6
+
+
+
+
+
+     3. Unpack everything:
+
+        If you are using bash:
+
+
+
+           # for i in X312*.tgz; do
+           #   gnutar -xzpPf $i
+           # done
+
+
+
+
+
+     Else, if you are using csh:
+
+
+           % foreach i (X312*.tgz)
+           %   gnutar -xzpPf $i
+           % end
+
+
+
+
+
+     4. Create a symbolic link ``X'' that points to the server that
+        matches your video card.  The XF86_* man pages list which vga
+        chip sets are supported by each server.  For example, if you
+        have an ET4000 based card you will use the XF86_SVGA server:
+
+
+
+      # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
+
+
+
+
+  2.2.  Minimal Install:
+
+  First do numbers 1 and 2 above. Then unpack the required archives:
+
+
+
+        # for i in bin fnts lib xicf; do
+        #   gnutar -xzpPf  X312$i.tgz
+        # done
+
+
+
+
+  Then unpack a server archive corresponding to your vga card.  The
+  server man pages, X11R6/man/man1/XF86_*, list the vga chip sets
+  supported by each server.  For example, if you have an ET4000 based
+  card you will use the XF86_SVGA server:
+
+
+
+        # gnutar -xzpPf X312SVGA.tgz
+        # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
+
+
+
+
+  2.3.  After either Full or Minimal Install above
+
+  If you had already configured X11R6/lib/X11/xinit/xinitrc or
+  X11R6/lib/X11/xdm/* omit the xinit-config or xdm-config archive or
+  unpack it separately and merge in your customizations.
+
+  The fscl and f100 archives are optional and can be omitted if you are
+  short on space.  The optional link archive (not included in 3.1.2G
+  beta) allows you to reconfigure and customize a X server binary.
+
+  The optional prog archive is needed only for writing or compiling X
+  applications. Before building programs check wether
+  X11R6/lib/X11/config/lynx.cf has correct settings for OSMajorVersion,
+  OSMinorVersion and OSTeenyVersion for your operating system version.
+
+  Refer to section ``Running XFree86'' for further information on
+  necessary configuration steps before running XFree86 on LynxOS.
 
   3.  Compiling the XFree86 Distribution
 
@@ -44,6 +258,8 @@
 
   Before compiling the XFree86 distribution you will have to make a few
   little adjustments to your system:
+
+
 
 
      LynxOS AT 2.3 and 2.4
@@ -112,8 +328,6 @@
 
 
 
-
-
         o  Modify system header files as follows:
 
            /usr/include/uio.h
@@ -124,7 +338,6 @@
                           #define _UIO_H
                           ...
                           #endif
-
 
 
 
@@ -159,12 +372,6 @@
   match your operating system version. Change the definitions of
   OSMajorVersion, OSMinorVersion and OSTeenyVersion accordingly.
 
-  For LynxOS 2.3.0 and 2.4.0 the OptimizedCDebugFlags is set to `-O
-  -m486'.  Higher optimization levels are not enabled by default to work
-  around a bug in -O2 for GCC v2.6.x.  You might try enabling -O2 if
-  your compiler does not have this bug, but if the session manager xsm
-  hangs on startup it would be a good idea to switch back to -O.
-
   You may now issue a
 
 
@@ -186,6 +393,7 @@
 
 
 
+
   You must be logged in as super-user (root) when you invoke `make
   install'.  Be sure to set your environment to use the same compiler
   (LynxOS 2.3.0/2.4.0, CYGNUS GNU-C) as you did during the `make World'.
@@ -193,10 +401,7 @@
 
 
 
-
-
-
-       make install.linkkit
+            make install.linkkit
 
 
 
@@ -209,6 +414,7 @@
   Refer to section 5 for manual page installation.
 
   4.  Running XFree86
+
 
   4.1.  System requirements
 
@@ -251,12 +457,12 @@
 
 
 
-            # cd /sys/lynx.os
-            # make install
-            # reboot -N
 
 
 
+       # cd /sys/lynx.os
+       # make install
+       # reboot -N
 
 
 
@@ -282,9 +488,9 @@
   and follow the notes in /BMOUSE.Readme for further installation and
   configuration notes.
 
-  The PS/2 mouse driver works also with MetroLink X 2.3.3.1 as shipped
-  with LynxOS AT 2.4.0 unless you have the LynxOS patch 000055-00
-  installed.
+  The XFree86 PS/2 mouse driver works also with MetroLink X 2.3.3.1 as
+  shipped with LynxOS AT 2.4.0 unless you have the LynxOS patch
+  000055-00 installed.
 
   4.4.  ATC console driver and VT switching
 
@@ -319,14 +525,12 @@
   stderr during startup. This output will be lost after the server
   reached a certain point in its console initialization process. You
   should redirect stdout and stderr if you want to analyze the
+
   diagnostics produced by the server.
 
   When the X server is running output made to other consoles will be
   lost. After server shutdown the screen contents of other consoles may
   be inconsistent with what one would expect (i.e. random).
-
-
-
 
   5.  Installing XFree86 manual pages
 
@@ -379,16 +583,22 @@
 
 
 
-             for i in 1 3 5
-             do
-               ln -s /usr/X11R6/man/cat$i/*.* /usr/man/cat$i
-               cat /usr/X11R6/man/cat$i/LIST$i >> /usr/man/cat$i/LIST$i
-               sort -o /usr/man/cat$i/LIST$i /usr/man/cat$i/LIST$i
-               cat /usr/X11R6/man/cat$i/whatis$i >> /usr/man/whatis
-             done
 
 
 
+
+
+
+
+
+
+        for i in 1 3 5
+        do
+          ln -s /usr/X11R6/man/cat$i/*.* /usr/man/cat$i
+          cat /usr/X11R6/man/cat$i/LIST$i >> /usr/man/cat$i/LIST$i
+          sort -o /usr/man/cat$i/LIST$i /usr/man/cat$i/LIST$i
+          cat /usr/X11R6/man/cat$i/whatis$i >> /usr/man/whatis
+        done
 
 
 
@@ -458,15 +668,13 @@
 
        from
 
-
-
-         #define HasMotif    NO
+              #define HasMotif    NO
 
 
 
-  to
+       to
 
-         #define HasMotif    YES
+              #define HasMotif    YES
 
 
 
@@ -495,32 +703,22 @@
   Be sure to apply the change to the file copied to
   /usr/X11R6/lib/X11/config.
 
-  6.5.  Building on microSPARC and PowerPC
+  7.  Building on microSPARC and PowerPC
 
-  XFree86 3.1.2E also compiles on LynxOS microSPARC and on LynxOS PPC
-  although currently there are no working X servers. One little
-  modifications to xf86site.def is necessary:
+  XFree86 3.1.2G also compiles on LynxOS microSPARC and on LynxOS PPC
+  although currently there are no working X servers. Before you start
+  the build you must create a symbolic link from the CYGNUS gcc to a
+  file named cc somewhere in a directory included in your PATH
+  environment variable.
 
-     o  Set all variables defining the servers to build to NO.
 
-
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.6 1996/08/10 13:06:37 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.7 1996/09/14 13:10:24 dawes Exp $
 
 
 
 
 
   $XConsortium: LynxOS.sgml /main/4 1995/12/29 15:58:36 kaleb $
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -194,9 +194,10 @@
 
 
      o  A problem with clock limits for the CL-GD754x when operating at
-        16bpp has been fixed.  However, the appears to be other problems
+        16bpp has been fixed.
 
-        remaining for some machines using the CL-GD754x chips.
+     o  Some problems with the CL-GD754x that were introduced in 3.1.2F
+        have been fixed.
 
   5.10.  Client/Library changes
 
@@ -257,9 +258,11 @@
 
      o  A server has been added for the GA-968V4/PCI(S3 968).
 
+
+
+
+
   6.5.  S3 server
-
-
 
 
      o  A bug which caused the server to hang during startup with
@@ -322,11 +325,13 @@
         the README.trident file for details of new options that may be
         required.
 
+
+
+
   6.10.  SiS driver (SVGA server)
 
 
      o  256 colour support has been added.
-
 
   6.11.  Chips and Technologies driver (SVGA server)
 
@@ -386,13 +391,14 @@
 
   7.  New Features in 3.1.2E
 
+
+
+
   7.1.  General
 
 
      o  3.1.2E is based on the first publicly released form of X11R6.1
         (i.e,. X11R6.1 public patch 1).
-
-
 
      o  Many updates have been made to the OS/2 port.
 
@@ -459,7 +465,6 @@
 
      o  A problem with olvwm icons has been fixed.
 
-
      o  A problem with ghostview scrollbars has been fixed.  This may
         also fix some Netscape font problems that have been reported.
 
@@ -520,11 +525,11 @@
      o  A security problem related to the X server's lock files has been
         fixed.
 
+
      o  The DGA extension has been implemented now for all servers that
         can support it, and some bugs in the previous version have been
         fixed.  Connections are now only allowed from clients using a
         local connection type (e.g., DISPLAY=":0").
-
 
      o  The VidMode extension (as used by xvidtune) now by default only
         allows changes to modes by clients using a local connection
@@ -585,12 +590,12 @@
         "trio32_fc_bug" option in 3.1.2B, try removing it and let us
         know if there are any problems.
 
+
+
      o  Framebuffer address problems with some 1MB Trio64 VLB cards
         should be fixed.
 
      o  The low ICS5342 clock limit has been removed.
-
-
 
      o  A workaround is included for the "bright left border" problem
         that shows up with some Trio64V+ cards.
@@ -651,12 +656,12 @@
   8.8.  Trident driver (SVGA server)
 
 
+
+
      o  Known problems with TGUI9440 cards have been fixed (including
         interlaced modes).
 
      o  Support for TGUI9660/9680 cards has been improved.
-
-
 
   8.9.  ARK driver (SVGA server)
 
@@ -717,11 +722,11 @@
 
      o  Improved detection for Trident cards.
 
+
+
      o  Added detection of SiS cards.
 
   8.16.  Client/Library Changes
-
-
 
 
      o  As part of the change to X11R6.1, the shared library revisions
@@ -783,6 +788,7 @@
 
      o  Initial release of the PC98 NEC(S3) server. This server is based
         on the PC-AT S3 server.
+
 
      o  Initial release of the PC98 SKB-PowerWindow(S3) server. This
         server is based on the PC-AT S3 server.
@@ -849,6 +855,7 @@
         should allow most Trio64V+ cards to use the linear fb, which
         seems to prevent a lot of the lockups that have been reported.
 
+
      o  Support for the ELSA Elsa Winner2000PRO/X-2,4 Rev.G which uses
         an ICS9161A clock chip as well as the Ti3026 RAMDAC (clock
         doubling not supported yet).
@@ -912,6 +919,9 @@
            console and back, it leaves ``droppings'' when entering and
            exiting windows (this bug is also present in 3.1.2).
 
+
+
+
   9.8.  ET4000/W32 server
 
 
@@ -920,9 +930,7 @@
         following line to the Device section of the XF86Config:
 
 
-
-
-             ClockChip "stg1703"
+                  ClockChip "stg1703"
 
 
 
@@ -978,6 +986,8 @@
         mode.  If you've had problems getting the middle button working
         on your mouse, try this.
 
+
+
      o  Bitmap fontpath elements can have ":unscaled" appended to
         prevent the fonts from being treated as scalable.  This works
         with the fontserver (xfs) too.
@@ -986,7 +996,6 @@
 
 
      o  Preliminary support is included for the TGUI 9440.
-
 
   10.3.  Cirrus driver (SVGA server)
 
@@ -1043,15 +1052,15 @@
         file:
 
 
-                  Ramdac "ibm_rgb526"
+
+
+             Ramdac "ibm_rgb526"
 
 
 
 
 
   10.7.  Mach32 server
-
-
 
 
      o  Hardware cursor mask problem has been fixed.
@@ -1109,6 +1118,8 @@
   10.14.  Client/Library changes
 
 
+
+
      o  The xdm security fix from the X Consortium's fix-13 is included.
 
      o  xconsole has been updated for Unixware 2.x.
@@ -1118,7 +1129,6 @@
      o  XNLS support has been added for KOI8-R.
 
      o  xrdb dynamically allocates string space to avoid overruns.
-
 
      o  A memory overrun problem in xterm has been fixed.
 
@@ -1176,27 +1186,17 @@
   machine, choose one which suits your hardware.  If you don't know what
   a PC98 machine is, you don't need any of these.
 
-
-
-
-
-
-
-
-
-
-
-  312G9NS3.tgz       PC98 NEC(S3) server
-  312G9SPW.tgz       PC98 PCSKB-PowerWindow(S3) server
-  312G9LPW.tgz       PC98 PowerWindowLB(S3) server
-  312G9EGC.tgz       PC98 EGC(generic) server
-  312G9GA9.tgz       PC98 GA-968V4/PCI(S3 968) server
-  312G9GAN.tgz       PC98 GANB-WAP(cirrus) server
-  312G9480.tgz       PC98 PEGC-480(generic) server
-  312G9NKV.tgz       PC98 NKV-NEC(cirrus) server
-  312G9WBS.tgz       PC98 WABS(cirrus) server
-  312G9WEP.tgz       PC98 WAB-EP(cirrus) server
-  312G9WSN.tgz       PC98 WSN-A2F(cirrus) server
+       312G9NS3.tgz       PC98 NEC(S3) server
+       312G9SPW.tgz       PC98 PCSKB-PowerWindow(S3) server
+       312G9LPW.tgz       PC98 PowerWindowLB(S3) server
+       312G9EGC.tgz       PC98 EGC(generic) server
+       312G9GA9.tgz       PC98 GA-968V4/PCI(S3 968) server
+       312G9GAN.tgz       PC98 GANB-WAP(cirrus) server
+       312G9480.tgz       PC98 PEGC-480(generic) server
+       312G9NKV.tgz       PC98 NKV-NEC(cirrus) server
+       312G9WBS.tgz       PC98 WABS(cirrus) server
+       312G9WEP.tgz       PC98 WAB-EP(cirrus) server
+       312G9WSN.tgz       PC98 WSN-A2F(cirrus) server
 
 
 
@@ -1299,7 +1299,7 @@
   line.  Check /etc/rc to see how ldconfig gets run at boot time.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.41 1996/09/03 15:12:13 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.42 1996/09/14 13:10:28 dawes Exp $
 
 
 
