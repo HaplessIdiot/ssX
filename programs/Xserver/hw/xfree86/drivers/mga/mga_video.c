@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.15 2000/06/17 00:03:20 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.16 2000/08/21 00:36:37 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -140,10 +140,9 @@ static XF86VideoEncodingRec DummyEncoding[2] =
  }
 };
 
-#define NUM_FORMATS_OVERLAY 3
-#define NUM_FORMATS_TEXTURE 6
+#define NUM_FORMATS 6
 
-static XF86VideoFormatRec Formats[NUM_FORMATS_TEXTURE] = 
+static XF86VideoFormatRec Formats[NUM_FORMATS] = 
 {
    {15, TrueColor}, {16, TrueColor}, {24, TrueColor},
    {15, DirectColor}, {16, DirectColor}, {24, DirectColor}
@@ -250,7 +249,7 @@ MGASetupImageVideoOverlay(ScreenPtr pScreen)
     adapt->name = "Matrox G-Series Backend Scaler";
     adapt->nEncodings = 1;
     adapt->pEncodings = &DummyEncoding[0];
-    adapt->nFormats = NUM_FORMATS_OVERLAY;
+    adapt->nFormats = NUM_FORMATS;
     adapt->pFormats = Formats;
     adapt->nPorts = 1;
     adapt->pAttributes = Attributes;
@@ -296,7 +295,7 @@ MGASetupImageVideoTexture(ScreenPtr pScreen)
     adapt->name = "Matrox G-Series Texture Engine";
     adapt->nEncodings = 1;
     adapt->pEncodings = &DummyEncoding[1];
-    adapt->nFormats = NUM_FORMATS_TEXTURE;
+    adapt->nFormats = NUM_FORMATS;
     adapt->pFormats = Formats;
     adapt->nPorts = MGA_MAX_PORTS;
     adapt->pAttributes = NULL;
