@@ -1,4 +1,4 @@
-XFree86 4.1.99.2 (xx December 2001)
+XFree86 4.1.99.2 (12 December 2001)
  564. Fix XDarwin GetImage bug on screens other than 0 in rootless mode
       (Gregory Parker).
  563. Fix acceleration, hw cursor and console restoration in the "nv" driver
@@ -14318,4 +14318,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2084 2001/12/12 00:37:16 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2085 2001/12/12 03:52:48 torrey Exp $
