@@ -1,7 +1,7 @@
-/* $XConsortium: Imakefile,v 1.5 94/03/17 19:43:43 dpw Exp $ */
-/* $XFree86: xc/workInProgress/lbx/programs/Xserver/lbx/Imakefile,v 3.2 1994/06/18 16:39:20 dawes Exp $ */
+/* $XConsortium: Imakefile,v 1.8 94/12/01 20:28:16 mor Exp $ */
+/* $XFree86: xc/workInProgress/lbx/programs/Xserver/lbx/Imakefile,v 3.3 1994/12/25 12:44:43 dawes Exp $ */
 /*
- * $NCDId: @(#)Imakefile,v 1.11 1994/03/14 23:32:34 lemke Exp $
+ * $NCDId: @(#)Imakefile,v 1.16 1994/11/18 20:32:34 lemke Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -29,26 +29,26 @@
 
 #ifdef NCD
 INCLUDES = \
-	-I$(EXTENSIONSRC)/include \
 	-I$(EXTENSIONSRC)/include/lbx \
+	-I$(EXTENSIONSRC)/include \
 	-I$(EXTENSIONSRC)/lbxcommon/delta \
 	-I$(INCLUDESRC) \
 	-I$(FONTSRC)/include \
 	-I$(SERVERSRC)/include
 #else
-INCLUDES =  -I$(INCLUDESRC) -I$(FONTINCSRC) -I$(SERVERSRC)/include  -I../../../include/extensions
+INCLUDES =  -I$(INCLUDESRC) -I$(FONTINCSRC) -I$(SERVERSRC)/include  -I$(EXTINCSRC) -I../../../include/extensions
 #endif
 
 DEFINES = -DLBX
 
 SRCS =	\
 	lbxmain.c lbxdix.c lbxtags.c lbxprop.c lbxgfx.c lbxtables.c \
-        lbxswap.c
+        lbxswap.c lbxsquish.c lbxexts.c lbxopts.c
 
 
 OBJS =	\
 	lbxmain.o lbxdix.o lbxtags.o lbxprop.o lbxgfx.o lbxtables.o \
-        lbxswap.o
+        lbxswap.o lbxsquish.o lbxexts.o lbxopts.o
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(lbx,$(OBJS))
