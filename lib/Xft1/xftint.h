@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftint.h,v 1.27 2001/12/13 17:26:00 keithp Exp $
+ * $XFree86: xc/lib/Xft1/xftint.h,v 1.2 2002/03/01 01:00:53 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -87,6 +87,15 @@ extern char		**XftConfigDirs;
 extern XftFontSet	*_XftFontSet;
 
 typedef struct _FcPatternElt FcPatternElt;
+
+/*
+ * Yes, these are stolen from fcint.h
+ */
+FcPatternElt *
+FcPatternFindElt (const FcPattern *p, const char *object);
+
+FcPatternElt *
+FcPatternInsertElt (FcPattern *p, const char *object);
 
 typedef FcPatternElt XftPatternElt;
 
