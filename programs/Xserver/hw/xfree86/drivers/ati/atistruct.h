@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.32 2002/02/14 22:08:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.33 2002/04/06 19:06:05 tsi Exp $ */
 /*
  * Copyright 1999 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -348,9 +348,9 @@ typedef struct _ATIRec
     struct
     {
         /* Mach64 registers */
-        CARD32 crtc_int_cntl, crtc_gen_cntl, scratch_reg3, bus_cntl, lcd_index,
-               mem_cntl, dac_cntl, gen_test_cntl, mpp_config, mpp_strobe_seq,
-               tvo_cntl;
+        CARD32 crtc_int_cntl, crtc_gen_cntl, i2c_cntl_0, scratch_reg3,
+               bus_cntl, lcd_index, mem_cntl, i2c_cntl_1, dac_cntl,
+               gen_test_cntl, mpp_config, mpp_strobe_seq, tvo_cntl;
 
 #ifndef AVOID_CPIO
 

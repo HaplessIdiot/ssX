@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.19 2002/01/29 03:42:28 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.20 2002/04/06 19:06:05 tsi Exp $ */
 /*
  * Copyright 1994 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -706,7 +706,7 @@
 #define I2C_CNTL_DONE				0x00000001ul
 #define I2C_CNTL_NACK				0x00000002ul
 #define I2C_CNTL_HALT				0x00000004ul
-/*	?					0x00000008ul */
+#define I2C_CNTL_FULL				0x00000008ul
 /*	?				0x00000010ul */
 #define I2C_CNTL_HPTR_RST		0x00000020ul
 /*	?				0x000000c0ul */
@@ -2644,6 +2644,16 @@
 /*	?			0xfdu */
 /*	?			0xfeu */
 /*	?			0xffu */
+
+/* Some ImpacTV definitions */
+#define IT_SDA_GET		0x40u
+#define IT_SDA_SET		0x20u
+#define IT_SDA_DIR		0x10u
+#define IT_SCL_GET		0x04u
+#define IT_SCL_SET		0x02u
+#define IT_SCL_DIR		0x01u
+
+#define IT_I2C_CNTL		0x0015u
 
 /* Miscellaneous */
 
