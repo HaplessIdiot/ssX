@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_screen.c,v 1.1 2001/03/21 16:14:28 dawes Exp $ */
 
 /*
  * Original rewrite:
@@ -88,8 +88,9 @@ GLboolean tdfxCreateScreen( __DRIscreenPrivate *sPriv )
    tdfxDDTriangleFuncsInit();
    tdfxDDFastPathInit();
 
+   /***
    tdfxDDGlideExtensionsInit();
-
+   **/
    return GL_TRUE;
 }
 

@@ -10,10 +10,10 @@
     <author>
         <htmlurl url="http://www.valinux.com/"
           name="VA Linux Systems, Inc."> Professional Services - Graphics.
-    <date>3 May 2001
+    <date>15 June 2001
 
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.23 2001/05/19 00:26:44 dawes Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.24 2001/05/19 00:42:22 dawes Exp $
     </ident>
 
     <toc>
@@ -129,7 +129,7 @@
               <item>i810-dc100
               <item>i810e
             </itemize>
-	  <item>ATI Rage 128, supported on Intel x86 and AMD:
+	  <item>ATI Rage 128, supported on Intel x86, AMD and Alpha:
             <itemize>
               <item>Rage Fury
               <item>Rage Magnum
@@ -137,13 +137,15 @@
               <item>XPERT 128
 	      <item>XPERT 99
 	      <item>All-in-Wonder 128
+              <item>Rage 128 PCI (Alpha-based systems)
             </itemize>
 	    Note that both PCI and AGP versions of Rage 128 based cards
 	    are supported at this time.
-	  <item>ATI Radeon, supported on Intel x86 and AMD:
+	  <item>ATI Radeon, supported on Intel x86, AMD and Alpha:
             <itemize>
               <item>Radeon SDR AGP
               <item>Radeon DDR AGP
+              <item>Radeon 32MB SDR PCI (Alpha-based systems)
             </itemize>
           <item>3Dlabs, supported on Intel x86 and AMD:
             <itemize>

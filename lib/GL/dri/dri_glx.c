@@ -24,7 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/dri/dri_glx.c,v 1.7 2000/09/26 15:56:45 tsi Exp $ */
+/* $XFree86: xc/lib/GL/dri/dri_glx.c,v 1.8 2001/04/10 16:07:49 dawes Exp $ */
 
 /*
  * Authors:
@@ -224,7 +224,7 @@ static void *OpenDriver(const char *driverName)
       if (!libDir[0])
          return NULL;
       snprintf(realDriverName, 200, "%s/%s_dri.so", libDir, driverName);
-      InfoMessageF("trying %s\n", realDriverName);
+      InfoMessageF("OpenDriver: trying %s\n", realDriverName);
       handle = dlopen(realDriverName, RTLD_NOW | RTLD_GLOBAL);
       if (handle) {
          return handle;
@@ -434,8 +434,8 @@ register_extensions_on_screen(Display *dpy, int scrNum)
       return;
    }
    else {
-      InfoMessageF("XF86DRIGetClientDriverName: %d.%d.%d %s\n", driverMajor,
-             driverMinor, driverPatch, driverName);
+      InfoMessageF("XF86DRIGetClientDriverName: %d.%d.%d %s (screen %d)\n",
+	     driverMajor, driverMinor, driverPatch, driverName, scrNum);
    }
 
    /*
