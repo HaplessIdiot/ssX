@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/shadow/shadow.c,v 1.7 2001/05/30 16:00:46 keithp Exp $
+ * $XFree86: xc/programs/Xserver/miext/shadow/shadow.c,v 1.8 2001/07/20 19:25:02 keithp Exp $
  *
  * Copyright © 2000 Keith Packard
  *
@@ -1354,7 +1354,7 @@ shadowSetup (ScreenPtr pScreen)
 {
     shadowScrPrivPtr	pScrPriv;
 #ifdef RENDER
-    PictureScreenPtr	ps = GetPictureScreen(pScreen);
+    PictureScreenPtr	ps = GetPictureScreenIfSet(pScreen);
 #endif
     
     if (shadowGeneration != serverGeneration)
@@ -1385,8 +1385,10 @@ shadowSetup (ScreenPtr pScreen)
     wrap (pScrPriv, pScreen, CloseScreen, shadowCloseScreen);
     wrap (pScrPriv, pScreen, GetImage, shadowGetImage);
 #ifdef RENDER
-    wrap (pScrPriv, ps, Glyphs, shadowGlyphs);
-    wrap (pScrPriv, ps, Composite, shadowComposite);
+    if (ps) {
+	wrap (pScrPriv, ps, Glyphs, shadowGlyphs);
+	wrap (pScrPriv, ps, Composite, shadowComposite);
+    }
 #endif
     pScrPriv->pBuf = 0;
 
