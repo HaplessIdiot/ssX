@@ -18,7 +18,7 @@ static char rcsid[] = "Header: /home/cs/phelps/spine/rman/RCS/rman.c,v 1.144 199
      source interpretation added September 24, 1996
 	renamed PolyglotMan due to lawsuit by Rosetta, Inc. August 8, 1997
 */
-/* $XFree86: xc/extras/rman/rman.c,v 1.15tsi Exp $ */
+/* $XFree86: xc/extras/rman/rman.c,v 1.17tsi Exp $ */
 
 
 /* TO DO ****
@@ -94,6 +94,7 @@ char *manrefname;
 char *manrefsect;
 
 enum command {
+	NOCOMMAND=-1,
 
 	/*BEGINCHARTAGS,*/
 	CHARTAB='\t',
@@ -143,14 +144,14 @@ const unsigned char trouble[]= { CHARTAB, CHARPERIOD, CHARLSQUOTE, CHARRSQUOTE,
 
 
 enum command tagbeginend[][2] = {	/* parallel to enum tagtype */
-	{ -1,-1 },
-	{ -1,-1 },
+	{ NOCOMMAND, NOCOMMAND },
+	{ NOCOMMAND, NOCOMMAND },
 	{ BEGINITALICS, ENDITALICS },
 	{ BEGINBOLD, ENDBOLD },
 	{ BEGINY, ENDY },
 	{ BEGINSC, ENDSC },
 	{ BEGINBOLDITALICS, ENDBOLDITALICS },
-	{ -1,-1 },
+	{ NOCOMMAND, NOCOMMAND },
 	{ BEGINMANREF, ENDMANREF }
 };
 
@@ -432,7 +433,7 @@ tagadd(int /*enum tagtype--abused in source parsing*/ type, int first, int last)
 	assert(type!=NOTAG);
 
 	if (tagc<MAXTAGS) {
-		tags[tagc].type = type;
+		tags[tagc].type = (enum tagtype)type;
 		tags[tagc].first = first;
 		tags[tagc].last = last;
 		tagc++;
@@ -3608,7 +3609,7 @@ preformatted_filter(void)
 				if (strchr(escchars,c)!=NULL) {
 					putchar('\\'); putchar(c); I++;
 				} else if (strchr((char *)trouble,c)!=NULL) {
-					(*fn)(c); fcont=1;
+					(*fn)((enum command)c); fcont=1;
 				} else {
 					putchar(c); I++;
 				}
@@ -3940,7 +3941,7 @@ source_flush(void)
 	 xputchar('\\'); xputchar(c);
 	 if (fcharout) linelen++;
     } else if (strchr((char *)trouble,c)!=NULL) {
-	 (*fn)(c);
+	 (*fn)((enum command)c);
     } else if (linelen>=LINEBREAK && c==' ') { (*fn)(ENDLINE); linelen=0;
     } else {		/* normal character */
 	 xputchar(c);
