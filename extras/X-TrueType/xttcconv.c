@@ -30,7 +30,7 @@
 
 Notice===
  */
-/* $XFree86: xc/extras/X-TrueType/xttcconv.c,v 1.8 2000/05/18 23:46:10 dawes Exp $ */
+/* $XFree86: xc/extras/X-TrueType/xttcconv.c,v 1.9 2001/03/06 18:03:12 dawes Exp $ */
 
 #include "xttversion.h"
 
@@ -192,6 +192,7 @@ static const char* convModuleSubdir[] = {
 ENTRYFUNC_PROTO_TEMPLATE(ISO8859_1_entrypoint);
 #ifdef OPT_ENCODINGS
 ENTRYFUNC_PROTO_TEMPLATE(BIG5_entrypoint);
+ENTRYFUNC_PROTO_TEMPLATE(BIG5HKSCS_entrypoint);
 ENTRYFUNC_PROTO_TEMPLATE(GB2312_entrypoint);
 ENTRYFUNC_PROTO_TEMPLATE(GBK_entrypoint);
 ENTRYFUNC_PROTO_TEMPLATE(JISX0201_entrypoint);
@@ -232,6 +233,7 @@ static mod_entrypoint_ptr_t preloadedCodeConverter[] = {
     ISO8859_1_entrypoint,
 #ifdef OPT_ENCODINGS
     BIG5_entrypoint,
+    BIG5HKSCS_entrypoint,
     GB2312_entrypoint,
     GBK_entrypoint,
     JISX0201_entrypoint,

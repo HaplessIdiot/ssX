@@ -1,4 +1,6 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 258. Add support fo the charset Big5HKSCS to the X-TrueType module, as
+      well as some basic XLocale support for it (#A.321, Roger So).
  257. Fix core dump in XqueueMousePreInit (#A.317, Fiel Cabral).
  256. Allow the mga driver's "DigitalScreen" option to work for the first
       head (#A.297, Niels Gram Jeppesen).
@@ -12680,4 +12682,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1619 2001/03/06 18:03:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1620 2001/03/06 18:20:28 dawes Exp $
