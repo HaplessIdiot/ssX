@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.19 2002/11/15 07:01:30 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.20 2002/11/17 07:51:29 paulo Exp $ */
 
 #include "struct.h"
 
@@ -188,7 +188,7 @@ Lisp_XeditMakeStruct(LispBuiltin *builtin)
     struc = ARGUMENT(0);
 
     field = cons = NIL;
-    if (!SYMBOLP(struc) ||
+    if ((!SYMBOLP(struc) && !FUNCTIONP(struc)) ||
 	(atom = struc->data.atom)->a_defstruct == 0 ||
 	 atom->property->structure.function != STRUCT_CONSTRUCTOR)
 	LispDestroy("%s: invalid constructor %s",
@@ -302,7 +302,7 @@ LispStructAccessOrStore(LispBuiltin *builtin, int store)
     struc = ARGUMENT(1);
     name = ARGUMENT(0);
 
-    if (!SYMBOLP(name) ||
+    if ((!SYMBOLP(name) && !FUNCTIONP(name)) ||
 	(atom = name->data.atom)->a_defstruct == 0 ||
 	(offset = atom->property->structure.function) < 0) {
 	LispDestroy("%s: invalid argument %s",
@@ -355,7 +355,7 @@ Lisp_XeditStructType(LispBuiltin *builtin)
     struc = ARGUMENT(1);
     name = ARGUMENT(0);
 
-    if (!SYMBOLP(name) ||
+    if ((!SYMBOLP(name) && !FUNCTIONP(name)) ||
 	(atom = name->data.atom)->a_defstruct == 0 ||
 	(atom->property->structure.function != STRUCT_CHECK))
 	LispDestroy("%s: invalid argument %s",

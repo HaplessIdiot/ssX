@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.41 2002/11/20 07:44:41 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.42 2002/11/21 07:25:09 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -310,6 +310,11 @@ typedef struct _LispMac LispMac;
 		    STRFUN(builtin), STROBJ(object))
 
 #define SETVALUE(atom, object)	((atom)->property->value = object)
+
+
+/* function */
+#define XFUNCTIONP(object)	((object)->type == LispFunction_t)
+#define FUNCTIONP(object)	(POINTERP(object) && XFUNCTIONP(object))
 
 
 /* lambda */

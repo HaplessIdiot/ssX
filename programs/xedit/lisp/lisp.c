@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.72 2002/11/20 07:44:41 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.73 2002/11/21 07:25:09 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -4698,6 +4698,9 @@ LispEval(LispObj *object)
 		 (result->data.atom->a_function &&
 		  result->data.atom->property->fun.function->funtype ==
 		  LispFunction) ||
+		 (result->data.atom->a_defstruct &&
+		  result->data.atom->property->structure.function !=
+		 STRUCT_NAME) ||
 		 /* XXX currently bytecode is only generated for functions */
 		 result->data.atom->a_compiled))
 		result = FUNCTION(result);
