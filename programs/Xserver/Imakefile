@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/234 1996/12/27 16:16:06 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.93 1997/02/20 10:00:46 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.94 1997/02/21 09:04:04 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -1012,6 +1012,10 @@ XF86LOADERSYSLIBS = $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XF86LOADERSUBDIRS) $(XF86LOADEROBJS) $(XF86LOADERLIBS) $(XF86LOADERSYSLIBS))
 #endif
+#if HasGnuMake
+$(XF86LOADEROBJS) $(XF86LOADERLIBS) $(XF86LOADERSYSLIBS):: $(XF86LOADERSUBDIRS)
+	@if [ -f $@ ]; then touch $@; fi
+#endif
 SetUIDServerTarget(XF86_LOADER,$(XF86LOADERSUBDIRS),$(XF86LOADEROBJS),$(XF86LOADERLIBS),$(XF86LOADERSYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall XF86_LOADER
@@ -1020,7 +1024,7 @@ SetUIDServerTarget(XF86_LOADER,$(XF86LOADERSUBDIRS),$(XF86LOADEROBJS),$(XF86LOAD
 LinkFile(XF86_LOADER.def,LOADER.def)
 InstallLinkKitNonExecFile(LOADER.def,$(LINKKITDIR))
 #endif
-#endif        /* XF86AGXServer */
+#endif        /* XF86LoaderServer */
 
 
 #if XF98GANBWAPServer
@@ -1573,7 +1577,7 @@ MakeMutex($(XPSUBDIRS) $(XPOBJS) $(XPLIBS) $(XPSYSLIBS))
 $(XPOBJS) $(XPLIBS) $(XPSYSLIBS):: $(XPSUBDIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
-#ifdef DoLoadableServer
+#if DoLoadableServer
 ServerTarget(Xprt,$(XPSUBDIRS),$(XPOBJS),$(XPLIBS) $(XF86OSLIB) $(XF86OSDOBJ),$(XPSYSLIBS))
 #else
 ServerTarget(Xprt,$(XPSUBDIRS),$(XPOBJS),$(XPLIBS),$(XPSYSLIBS))
@@ -1661,7 +1665,7 @@ MakeMutex($(XVFBDIRS) $(XVFBOBJS) $(XVFB) $(XVFBLIBS) $(XVFBSYSLIBS))
 $(XVFBOBJS) $(XVFB) $(XVFBLIBS) $(XVFBSYSLIBS):: $(XVFBDIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
-#ifdef DoLoadableServer
+#if DoLoadableServer
 ServerTarget(Xvfb,$(XVFBDIRS),$(XVFBOBJS) $(MIINITEXTOBJ),$(XVFBLIBS) $(XF86OSLIB),$(XVFBSYSLIBS))
 #else
 ServerTarget(Xvfb,$(XVFBDIRS),$(XVFBOBJS),$(XVFBLIBS),$(XVFBSYSLIBS))

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.2 1997/02/17 09:46:07 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.3 1997/02/18 12:04:30 dawes Exp $ */
 
 
 
@@ -47,7 +47,8 @@
 #define LD_COFFOBJECT	2
 #define LD_XCOFFOBJECT	3
 #define LD_AOUTOBJECT   4
-#define LD_DLOPEN	5
+#define LD_OS2AOUTOBJECT 5
+#define LD_DLOPEN	6
 
 #define LD_PROCESSED_ARCHIVE -1
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.7 1997/02/18 22:26:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.8 1997/02/20 10:01:23 hohndel Exp $ */
 
 
 
@@ -40,10 +40,6 @@
 #include "xf86_PCI.h"
 #include "CirrusClk.h"
 #include "vga.h"
-
-#ifdef __EMX__
-void usleep(unsigned long);
-#endif
 
 extern Bool xf86Resetting;
 extern Bool xf86ProbeFailed;
@@ -170,15 +166,37 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86getsecs)
 
 /*
- * these are only needed for the /tmp/accelswitch in the mga driver
+ * these are the stdio wrappers (first two used by tmp/accelswitch in mga)
  */
-   SYMFUNC(fscanf)
-   SYMFUNC(fopen)
+   SYMFUNC(xf86fscanf)
+   SYMFUNC(xf86fopen)
+   SYMFUNC(xf86fclose)
+   SYMFUNC(xf86fprintf)
+   SYMFUNC(xf86fscanf)
+   SYMFUNC(xf86fgets)
+   SYMFUNC(xf86fputs)
+   SYMFUNC(xf86fgetc)
+   SYMFUNC(xf86fputc)
+   SYMFUNC(xf86fflush)
+   SYMFUNC(xf86fread)
+   SYMFUNC(xf86fwrite)
+   SYMFUNC(xf86fseek)
+   SYMFUNC(xf86ftell)
+   SYMFUNC(xf86fpossize)	/* for returning sizeof(fpos_t) */
+   SYMFUNC(xf86fgetpos)
+   SYMFUNC(xf86fsetpos)
+   SYMFUNC(xf86perror)
+   SYMFUNC(xf86remove)
+   SYMFUNC(xf86rename)
+   SYMFUNC(xf86rewind)
+   SYMVAR(xf86stdin)
+   SYMVAR(xf86stdout)
+   SYMVAR(xf86stderr)
 
 /*
  * not sure yet about these here
  */
-   SYMFUNC(ffs)
+   SYMFUNC(xf86ffs)
 
 /*
  * and now some variables

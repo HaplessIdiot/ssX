@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.35 1996/12/23 06:49:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.36 1997/01/18 06:55:57 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -155,6 +155,7 @@
 #  include <sys/xque.h>
 # endif /* ATT || SVR4 */
 
+#if 0
 /* Hack on SVR3 and SVR4 to avoid linking in Xenix or BSD support */
 #if defined (sun) && defined (i386) && defined (SVR4)
 extern int xf86_solx86usleep(unsigned long);
@@ -162,6 +163,7 @@ extern int xf86_solx86usleep(unsigned long);
 #else
 # define usleep(usec) syscall(3112, (usec) / 1000 + 1)
 #endif /* sun && i386 && SVR4 */
+#endif
 
 # ifdef SYSV
 #  if !defined(ISC) || defined(ISC202) || defined(ISC22)
@@ -526,5 +528,9 @@ double RInt(
 #endif
 
 #include "xf86_OSproc.h"
+
+/* This probably isn't the right place for these */
+#define usleep(a) xf86usleep(a)
+#define memset(a,b,c) xf86memset(a,b,c)
 
 #endif /* _XF86_OSLIB_H */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.4 1997/02/18 12:04:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.5 1997/02/20 10:01:22 hohndel Exp $ */
 
 
 
@@ -88,6 +88,8 @@ static loader_funcs funcs[] = {
 	{COFF2LoadModule,COFF2ResolveSymbols,COFF2CheckForUnresolved,COFF2UnloadModule},
 	/* LD_AOUTOBJECT */
 	{AOUTLoadModule,AOUTResolveSymbols,AOUTCheckForUnresolved,AOUTUnloadModule},
+ 	/* LD_OS2AOUTOBJECT */
+	{AOUTLoadModule,AOUTResolveSymbols,AOUTCheckForUnresolved,AOUTUnloadModule},
 #ifdef DLOPEN_SUPPORT
 	/* LD_DLOPEN */
 	{DLLoadModule,DLResolveSymbols,DLCheckForUnresolved,DLUnloadModule},
@@ -140,6 +142,14 @@ if( buf[0] == 0x0d && buf[1] == 0x01 ) {
 if( buf[0] == 0x00 && buf[1] == 0x86 && buf[2] == 0x01 && buf[3] == 0x07) {
         /* AOUTMAGIC */
         return LD_AOUTOBJECT;
+        }
+if( buf[0] == 0x07 && buf[1] == 0x01 && buf[2] == 0x64 && buf[3] == 0x00) {
+        /* AOUTMAGIC (Linux OMAGIC,  old impure format) */
+        return LD_AOUTOBJECT;
+        }
+if( buf[0] == 0x07 && buf[1] == 0x01 && buf[2] == 0x64) {
+        /* OS2AOUTMAGIC, Maybe this matches Linux as well?? */
+        return LD_OS2AOUTOBJECT;
         }
 return LD_UNKNOWN;
 }

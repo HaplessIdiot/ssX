@@ -1,5 +1,5 @@
 /* $XConsortium: imake.c /main/90 1996/11/13 14:43:23 lehors $ */
-/* $XFree86: xc/config/imake/imake.c,v 3.12 1996/12/09 11:48:16 dawes Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.13 1996/12/23 05:50:58 dawes Exp $ */
 
 /***************************************************************************
  *                                                                         *
@@ -825,6 +825,9 @@ define_os_defaults(inFile)
 # ifdef DEFAULT_OS_NAME
 	parse_utsname(&name, DEFAULT_OS_NAME, buf, 
 		      "Bad DEFAULT_OS_NAME syntax %s");
+#  ifdef DEFAULT_OS_NAME_FROB
+	DEFAULT_OS_NAME_FROB(buf, sizeof buf);
+#  endif
 	if (buf[0] != '\0')
 		fprintf(inFile, "#define DefaultOSName %s\n", buf);
 # endif
@@ -832,18 +835,27 @@ define_os_defaults(inFile)
 # ifdef DEFAULT_OS_MAJOR_REV
 	parse_utsname(&name, DEFAULT_OS_MAJOR_REV, buf,
 		      "Bad DEFAULT_OS_MAJOR_REV syntax %s");
+#  ifdef DEFAULT_OS_MAJOR_REV_FROB
+	DEFAULT_OS_MAJOR_REV_FROB(buf, sizeof buf);
+#  endif
 	fprintf(inFile, "#define DefaultOSMajorVersion %s\n", *buf ? buf : "0");
 # endif
 
 # ifdef DEFAULT_OS_MINOR_REV
 	parse_utsname(&name, DEFAULT_OS_MINOR_REV, buf,
 		      "Bad DEFAULT_OS_MINOR_REV syntax %s");
+#  ifdef DEFAULT_OS_MINOR_REV_FROB
+	DEFAULT_OS_MINOR_REV_FROB(buf, sizeof buf);
+#  endif
 	fprintf(inFile, "#define DefaultOSMinorVersion %s\n", *buf ? buf : "0");
 # endif
 
 # ifdef DEFAULT_OS_TEENY_REV
 	parse_utsname(&name, DEFAULT_OS_TEENY_REV, buf,
 		      "Bad DEFAULT_OS_TEENY_REV syntax %s");
+#  ifdef DEFAULT_OS_TEENY_REV_FROB
+	DEFAULT_OS_TEENY_REV_FROB(buf, sizeof buf);
+#  endif
 	fprintf(inFile, "#define DefaultOSTeenyVersion %s\n", *buf ? buf : "0");
 # endif
 #endif
