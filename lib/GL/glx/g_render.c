@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/g_render.c,v 1.4 2002/02/22 21:32:53 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/g_render.c,v 1.5 2003/09/28 20:15:01 alanh Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -1639,8 +1639,8 @@ void glFogf(GLenum pname, GLfloat param)
 void glFogfv(GLenum pname, const GLfloat *params)
 {
 	__GLX_DECLARE_VARIABLES();
-	compsize = __glFogfv_size(pname);
 	__GLX_LOAD_VARIABLES();
+	compsize = __glFogfv_size(pname);
 	cmdlen = 8+compsize*4;
 	__GLX_BEGIN(X_GLrop_Fogfv,cmdlen);
 	__GLX_PUT_LONG(4,pname);
@@ -1661,8 +1661,8 @@ void glFogi(GLenum pname, GLint param)
 void glFogiv(GLenum pname, const GLint *params)
 {
 	__GLX_DECLARE_VARIABLES();
-	compsize = __glFogiv_size(pname);
 	__GLX_LOAD_VARIABLES();
+	compsize = __glFogiv_size(pname);
 	cmdlen = 8+compsize*4;
 	__GLX_BEGIN(X_GLrop_Fogiv,cmdlen);
 	__GLX_PUT_LONG(4,pname);
@@ -1703,8 +1703,8 @@ void glLightf(GLenum light, GLenum pname, GLfloat param)
 void glLightfv(GLenum light, GLenum pname, const GLfloat *params)
 {
 	__GLX_DECLARE_VARIABLES();
-	compsize = __glLightfv_size(pname);
 	__GLX_LOAD_VARIABLES();
+	compsize = __glLightfv_size(pname);
 	cmdlen = 12+compsize*4;
 	__GLX_BEGIN(X_GLrop_Lightfv,cmdlen);
 	__GLX_PUT_LONG(4,light);
@@ -1727,8 +1727,8 @@ void glLighti(GLenum light, GLenum pname, GLint param)
 void glLightiv(GLenum light, GLenum pname, const GLint *params)
 {
 	__GLX_DECLARE_VARIABLES();
-	compsize = __glLightiv_size(pname);
 	__GLX_LOAD_VARIABLES();
+	compsize = __glLightiv_size(pname);
 	cmdlen = 12+compsize*4;
 	__GLX_BEGIN(X_GLrop_Lightiv,cmdlen);
 	__GLX_PUT_LONG(4,light);
@@ -1750,8 +1750,8 @@ void glLightModelf(GLenum pname, GLfloat param)
 void glLightModelfv(GLenum pname, const GLfloat *params)
 {
 	__GLX_DECLARE_VARIABLES();
-	compsize = __glLightModelfv_size(pname);
 	__GLX_LOAD_VARIABLES();
+	compsize = __glLightModelfv_size(pname);
 	cmdlen = 8+compsize*4;
 	__GLX_BEGIN(X_GLrop_LightModelfv,cmdlen);
 	__GLX_PUT_LONG(4,pname);
@@ -1772,8 +1772,8 @@ void glLightModeli(GLenum pname, GLint param)
 void glLightModeliv(GLenum pname, const GLint *params)
 {
 	__GLX_DECLARE_VARIABLES();
-	compsize = __glLightModeliv_size(pname);
 	__GLX_LOAD_VARIABLES();
+	compsize = __glLightModeliv_size(pname);
 	cmdlen = 8+compsize*4;
 	__GLX_BEGIN(X_GLrop_LightModeliv,cmdlen);
 	__GLX_PUT_LONG(4,pname);
@@ -1814,8 +1814,8 @@ void glMaterialf(GLenum face, GLenum pname, GLfloat param)
 void glMaterialfv(GLenum face, GLenum pname, const GLfloat *params)
 {
 	__GLX_DECLARE_VARIABLES();
-	compsize = __glMaterialfv_size(pname);
 	__GLX_LOAD_VARIABLES();
+	compsize = __glMaterialfv_size(pname);
 	cmdlen = 12+compsize*4;
 	__GLX_BEGIN(X_GLrop_Materialfv,cmdlen);
 	__GLX_PUT_LONG(4,face);
@@ -1838,8 +1838,8 @@ void glMateriali(GLenum face, GLenum pname, GLint param)
 void glMaterialiv(GLenum face, GLenum pname, const GLint *params)
 {
 	__GLX_DECLARE_VARIABLES();
-	compsize = __glMaterialiv_size(pname);
 	__GLX_LOAD_VARIABLES();
+	compsize = __glMaterialiv_size(pname);
 	cmdlen = 12+compsize*4;
 	__GLX_BEGIN(X_GLrop_Materialiv,cmdlen);
 	__GLX_PUT_LONG(4,face);
@@ -1902,8 +1902,8 @@ void glTexParameterf(GLenum target, GLenum pname, GLfloat param)
 void glTexParameterfv(GLenum target, GLenum pname, const GLfloat *params)
 {
 	__GLX_DECLARE_VARIABLES();
-	compsize = __glTexParameterfv_size(pname);
 	__GLX_LOAD_VARIABLES();
+	compsize = __glTexParameterfv_size(pname);
 	cmdlen = 12+compsize*4;
 	__GLX_BEGIN(X_GLrop_TexParameterfv,cmdlen);
 	__GLX_PUT_LONG(4,target);
@@ -1926,8 +1926,8 @@ void glTexParameteri(GLenum target, GLenum pname, GLint param)
 void glTexParameteriv(GLenum target, GLenum pname, const GLint *params)
 {
 	__GLX_DECLARE_VARIABLES();
-	compsize = __glTexParameteriv_size(pname);
 	__GLX_LOAD_VARIABLES();
+	compsize = __glTexParameteriv_size(pname);
 	cmdlen = 12+compsize*4;
 	__GLX_BEGIN(X_GLrop_TexParameteriv,cmdlen);
 	__GLX_PUT_LONG(4,target);
@@ -1950,8 +1950,8 @@ void glTexEnvf(GLenum target, GLenum pname, GLfloat param)
 void glTexEnvfv(GLenum target, GLenum pname, const GLfloat *params)
 {
 	__GLX_DECLARE_VARIABLES();
-	compsize = __glTexEnvfv_size(pname);
 	__GLX_LOAD_VARIABLES();
+	compsize = __glTexEnvfv_size(pname);
 	cmdlen = 12+compsize*4;
 	__GLX_BEGIN(X_GLrop_TexEnvfv,cmdlen);
 	__GLX_PUT_LONG(4,target);
@@ -1974,8 +1974,8 @@ void glTexEnvi(GLenum target, GLenum pname, GLint param)
 void glTexEnviv(GLenum target, GLenum pname, const GLint *params)
 {
 	__GLX_DECLARE_VARIABLES();
-	compsize = __glTexEnviv_size(pname);
 	__GLX_LOAD_VARIABLES();
+	compsize = __glTexEnviv_size(pname);
 	cmdlen = 12+compsize*4;
 	__GLX_BEGIN(X_GLrop_TexEnviv,cmdlen);
 	__GLX_PUT_LONG(4,target);
@@ -1998,8 +1998,8 @@ void glTexGend(GLenum coord, GLenum pname, GLdouble param)
 void glTexGendv(GLenum coord, GLenum pname, const GLdouble *params)
 {
 	__GLX_DECLARE_VARIABLES();
-	compsize = __glTexGendv_size(pname);
 	__GLX_LOAD_VARIABLES();
+	compsize = __glTexGendv_size(pname);
 	cmdlen = 12+compsize*8;
 	__GLX_BEGIN(X_GLrop_TexGendv,cmdlen);
 	__GLX_PUT_LONG(4,coord);
@@ -2022,8 +2022,8 @@ void glTexGenf(GLenum coord, GLenum pname, GLfloat param)
 void glTexGenfv(GLenum coord, GLenum pname, const GLfloat *params)
 {
 	__GLX_DECLARE_VARIABLES();
-	compsize = __glTexGenfv_size(pname);
 	__GLX_LOAD_VARIABLES();
+	compsize = __glTexGenfv_size(pname);
 	cmdlen = 12+compsize*4;
 	__GLX_BEGIN(X_GLrop_TexGenfv,cmdlen);
 	__GLX_PUT_LONG(4,coord);
@@ -2046,8 +2046,8 @@ void glTexGeni(GLenum coord, GLenum pname, GLint param)
 void glTexGeniv(GLenum coord, GLenum pname, const GLint *params)
 {
 	__GLX_DECLARE_VARIABLES();
-	compsize = __glTexGeniv_size(pname);
 	__GLX_LOAD_VARIABLES();
+	compsize = __glTexGeniv_size(pname);
 	cmdlen = 12+compsize*4;
 	__GLX_BEGIN(X_GLrop_TexGeniv,cmdlen);
 	__GLX_PUT_LONG(4,coord);
@@ -2838,8 +2838,8 @@ void glBlendEquation(GLenum mode)
 void glColorTableParameterfv(GLenum target, GLenum pname, const GLfloat *params)
 {
 	__GLX_DECLARE_VARIABLES();
-	compsize = __glColorTableParameterfv_size(pname);
 	__GLX_LOAD_VARIABLES();
+	compsize = __glColorTableParameterfv_size(pname);
 	cmdlen = 12+compsize*4;
 	__GLX_BEGIN(X_GLrop_ColorTableParameterfv,cmdlen);
 	__GLX_PUT_LONG(4,target);
@@ -2851,8 +2851,8 @@ void glColorTableParameterfv(GLenum target, GLenum pname, const GLfloat *params)
 void glColorTableParameteriv(GLenum target, GLenum pname, const GLint *params)
 {
 	__GLX_DECLARE_VARIABLES();
-	compsize = __glColorTableParameteriv_size(pname);
 	__GLX_LOAD_VARIABLES();
+	compsize = __glColorTableParameteriv_size(pname);
 	cmdlen = 12+compsize*4;
 	__GLX_BEGIN(X_GLrop_ColorTableParameteriv,cmdlen);
 	__GLX_PUT_LONG(4,target);
@@ -2901,8 +2901,8 @@ void glConvolutionParameterf(GLenum target, GLenum pname, GLfloat params)
 void glConvolutionParameterfv(GLenum target, GLenum pname, const GLfloat *params)
 {
 	__GLX_DECLARE_VARIABLES();
-	compsize = __glConvolutionParameterfv_size(pname);
 	__GLX_LOAD_VARIABLES();
+	compsize = __glConvolutionParameterfv_size(pname);
 	cmdlen = 12+compsize*4;
 	__GLX_BEGIN(X_GLrop_ConvolutionParameterfv,cmdlen);
 	__GLX_PUT_LONG(4,target);
@@ -2925,8 +2925,8 @@ void glConvolutionParameteri(GLenum target, GLenum pname, GLint params)
 void glConvolutionParameteriv(GLenum target, GLenum pname, const GLint *params)
 {
 	__GLX_DECLARE_VARIABLES();
-	compsize = __glConvolutionParameteriv_size(pname);
 	__GLX_LOAD_VARIABLES();
+	compsize = __glConvolutionParameteriv_size(pname);
 	cmdlen = 12+compsize*4;
 	__GLX_BEGIN(X_GLrop_ConvolutionParameteriv,cmdlen);
 	__GLX_PUT_LONG(4,target);
