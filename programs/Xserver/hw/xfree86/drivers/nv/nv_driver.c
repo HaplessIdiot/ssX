@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.105 2003/03/26 05:12:12 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.106 2003/04/04 23:27:55 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -1638,6 +1638,7 @@ NVDPMSSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
 {
   unsigned char crtc1A;
   vgaHWPtr hwp = VGAHWPTR(pScrn);
+  NVPtr pNv = NVPTR(pScrn);
 
   if (!pScrn->vtSema) return;
 
@@ -1661,7 +1662,8 @@ NVDPMSSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
   /* vgaHWDPMSSet will merely cut the dac output */
   vgaHWDPMSSet(pScrn, PowerManagementMode, flags);
 
-  hwp->writeCrtc(hwp, 0x1A, crtc1A);
+  if(!pNv->FlatPanel)  /* this doesn't work for flat panels */
+     hwp->writeCrtc(hwp, 0x1A, crtc1A);
 }
 
 
