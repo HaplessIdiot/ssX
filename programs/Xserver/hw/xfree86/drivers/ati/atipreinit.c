@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.14 2000/03/01 16:00:58 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.15 2000/03/07 16:13:34 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -876,13 +876,6 @@ ATIPreInit
                     pATI->ReferenceDenominator *
                     pATI->ClockDescriptor.PostDividers[j];
                 pATI->LCDClock = ATIDivide(Numerator, Denominator, 1, 0);
-                xf86DrvMsgVerb(pScreenInfo->scrnIndex, X_INFO, 2,
-                    "Panel clock data:\n CRTC_GEN_CNTL 0x%08x\n"
-                    " CLOCK_CNTL 0x%08x\n GENMO 0x%02X\n"
-                    " Clock index %d\n Post divider index %d\n"
-                    " Numerator %d\n Denominator %d\n",
-                    inl(pATI->CPIO_CRTC_GEN_CNTL), inl(pATI->CPIO_CLOCK_CNTL),
-                    inb(R_GENMO), i, j, Numerator, Denominator);
             }
         }
     }
