@@ -1,4 +1,4 @@
-/* $Xorg: sunIo.c,v 1.3 2000/08/17 19:48:29 cpqbld Exp $ */
+/* $Xorg: sunIo.c,v 1.4 2001/03/07 17:34:19 pookie Exp $ */
 /*-
  * sunIo.c --
  *	Functions to handle input from the keyboard and mouse.
@@ -15,7 +15,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunIo.c,v 3.7 2001/08/17 22:08:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunIo.c,v 3.8 2001/10/28 03:33:11 tsi Exp $ */
 
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -202,6 +202,7 @@ ddxProcessArgument (argc, argv, i)
     int	i;
 {
     extern void UseMsg();
+    extern int XprintOptions(int, char **, int);
 
 #ifdef XKB
     int noxkb = 0, n;
@@ -274,6 +275,9 @@ ddxProcessArgument (argc, argv, i)
 	sunNoGX = TRUE;
 	return 1;
     }
+    if (strcmp(argv[i], "-XpFile") == 0) {
+	return XprintOptions(argc, argv, i) - i;
+    }
     return 0;
 }
 
@@ -294,4 +298,5 @@ ddxUseMsg()
     ErrorF("-cg4frob            don't use the mono plane of the cgfour\n");
     ErrorF("-noGX               treat the GX as a dumb frame buffer\n");
 #endif
+    ErrorF("-XpFile             specifies an alternate `Xprinters' file (Xprt only)\n");
 }

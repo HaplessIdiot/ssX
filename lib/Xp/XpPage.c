@@ -1,4 +1,4 @@
-/* $Xorg: XpPage.c,v 1.3 2000/08/17 19:46:07 cpqbld Exp $ */
+/* $Xorg: XpPage.c,v 1.4 2001/03/06 13:59:02 pookie Exp $ */
 /******************************************************************************
  ******************************************************************************
  **
@@ -34,7 +34,7 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86: xc/lib/Xp/XpPage.c,v 1.2 2000/09/26 15:56:58 tsi Exp $ */
+/* $XFree86: xc/lib/Xp/XpPage.c,v 1.3 2001/01/17 19:43:02 dawes Exp $ */
 
 #include "Printstr.h"
 #include "Xlibint.h"
@@ -73,6 +73,7 @@ XpStartPage (
     xPrintStartPageReq *req;
     XExtDisplayInfo *info = (XExtDisplayInfo *) xp_find_display (dpy);
 
+    XMapWindow(dpy, window);
     if (XpCheckExtInit(dpy, XP_INITIAL_RELEASE) == -1)
 	return; /* NoSuchExtension */
 

@@ -1,4 +1,4 @@
-/* $Xorg: Init.c,v 1.4 2000/08/17 19:48:05 cpqbld Exp $ */
+/* $Xorg: Init.c,v 1.5 2001/03/07 17:31:33 pookie Exp $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -50,7 +50,7 @@ copyright holders.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/Init.c,v 1.9 2001/01/17 22:36:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/Init.c,v 1.10 2001/10/28 03:32:53 tsi Exp $ */
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -356,8 +356,13 @@ XprintOptions(
     char **argv,
     int i)
 {
+    extern void ddxUseMsg();
     if(strcmp(argv[i], "-XpFile") == 0)
     {
+	if ((i + 1) >= argc) {
+	    ddxUseMsg ();
+	    return i + 2;
+	}
 	configFileName = argv[i + 1];
 	return i + 2;
     }
