@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.141 2004/12/20 19:27:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.142tsi Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -3047,18 +3047,18 @@ xf86GetDisplayByMonitorNum(const ScrnInfoRec *pScrn, int monNum)
 }
 
 Bool
-xf86GetNextMonitor(const ScrnInfoRec *pScrn, MonPtr *monitor, DispPtr *display)
+xf86GetNextMonitor(const ScrnInfoRec *pScrn, MonPtr *pMonitor, DispPtr *pDisplay)
 {
     int i, prevNum, nextNum = 10000000;
     MonPtr next = NULL;
 
-    if (!monitor)
+    if (!pMonitor)
 	return FALSE;
 
-    if (!*monitor)
+    if (!*pMonitor)
 	prevNum = -1;
     else
-	prevNum = (*monitor)->monitorNum;
+	prevNum = (*pMonitor)->monitorNum;
 
     for (i = 0; i < pScrn->confScreen->numMonitors; i++) {
 	if (pScrn->confScreen->monitors[i]->monitorNum > prevNum &&
@@ -3071,10 +3071,10 @@ xf86GetNextMonitor(const ScrnInfoRec *pScrn, MonPtr *monitor, DispPtr *display)
     if (!next)
 	return FALSE;
 
-    *monitor = next;
+    *pMonitor = next;
 
-    if (display) {
-	*display = xf86GetDisplayByMonitorNum(pScrn, nextNum);
+    if (pDisplay) {
+	*pDisplay = xf86GetDisplayByMonitorNum(pScrn, nextNum);
     }
 
     return TRUE;

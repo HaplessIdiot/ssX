@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.178 2005/01/07 17:19:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.179tsi Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -430,8 +430,8 @@ int  xf86RegisterRootWindowProperty(int ScrnIndex, Atom	property, Atom type,
 Bool xf86IsUnblank(int mode);
 MonPtr xf86GetMonitorByNumber(const ScrnInfoRec *pScrn, int monNum);
 DispPtr xf86GetDisplayByMonitorNum(const ScrnInfoRec *pScrn, int monNum);
-Bool xf86GetNextMonitor(const ScrnInfoRec *pScrn, MonPtr *monitor,
-			DispPtr *display);
+Bool xf86GetNextMonitor(const ScrnInfoRec *pScrn, MonPtr *pMonitor,
+			DispPtr *pDisplay);
 
 #ifdef XFree86LOADER
 void xf86AddModuleInfo(ModuleInfoPtr info, pointer module);
