@@ -6,5 +6,5 @@ optimizations were applied by hand.
 
 If you find a bug in these files, instead of modifying them in XFree86
 and let it diverge from libiconv, please notify the libiconv maintainer
-(currently <haible@clisp.cons.org>) so he can fix both in synch.
+(currently <bruno@clisp.org>) so he can fix both in synch.
 

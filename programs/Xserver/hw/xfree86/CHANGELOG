@@ -1,4 +1,5 @@
 XFree86 4.3.99.9 (xx July 2003)
+ 303. Fix for a few Xlib charset converters (Bruno Haible).
  302. Fix calculation of CRTC2 frame offset with page flipping in radeon driver
       (Michel Daenzer)
  301. Xinerama-fy the XTest extension (Rik Faith).
@@ -17298,7 +17299,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2773 2003/07/11 18:09:03 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2774 2003/07/14 23:07:26 daenzer Exp $
 
 
 
