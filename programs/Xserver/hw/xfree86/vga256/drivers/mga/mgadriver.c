@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.16 1996/12/30 14:00:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.17 1997/01/04 12:18:42 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -51,6 +51,15 @@
 #include "xf86_PCI.h"
 #include "vga.h"
 #include "vgaPCI.h"
+
+#ifdef XFreeXDGA
+#include "X.h"
+#include "Xproto.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
@@ -777,8 +786,11 @@ MGAProbe()
 	vga256InfoRec.chipset = MGAIdent(0);
 	vga256InfoRec.bankedMono = FALSE;
 	
+#ifdef XFreeXDGA
+    	vga256InfoRec.directMode = XF86DGADirectPresent;
+#endif
+ 
 	OFLG_SET(OPTION_NOLINEAR_MODE, &MGA.ChipOptionFlags);
-	OFLG_SET(OPTION_NO_BITBLT, &MGA.ChipOptionFlags);
 	OFLG_SET(OPTION_NOACCEL, &MGA.ChipOptionFlags);
 	OFLG_SET(OPTION_SYNC_ON_GREEN, &MGA.ChipOptionFlags);
 
@@ -923,8 +935,7 @@ MGAPitchAdjust()
 #endif
 	int i;
 
-	if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options) &&
-	    !OFLG_ISSET(OPTION_NO_BITBLT, &vga256InfoRec.options))
+	if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
 	{
 		accel = TRUE;
 		
@@ -1100,18 +1111,12 @@ MGAFbInit()
 		{
 			ErrorF("%s %s: Can't find PCI Base Address, "
 				"acceleration disabled\n",
-				XCONFIG_PROBED, vga256InfoRec.name,
 				XCONFIG_PROBED, vga256InfoRec.name);
 			OFLG_SET(OPTION_NOACCEL, &vga256InfoRec.options);
 		}
 	}
 	
-	if (OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
-	{
-		OFLG_SET(OPTION_NO_BITBLT, &vga256InfoRec.options);
-	}
-	
-	if (!OFLG_ISSET(OPTION_NO_BITBLT, &vga256InfoRec.options))
+	if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
 	{
 
 #if 0
@@ -1269,10 +1274,24 @@ DisplayModePtr mode;
 	if ((mode->Flags & (V_PHSYNC | V_NHSYNC)) &&
 	    (mode->Flags & (V_PVSYNC | V_NVSYNC)))
 	{
-	    if (mode->Flags & V_NHSYNC)
+	    if (mode->Flags & V_PHSYNC)
 		newVS->DACreg[index_1d] |= 0x01;
-	    if (mode->Flags & V_NVSYNC)
+	    if (mode->Flags & V_PVSYNC)
 		newVS->DACreg[index_1d] |= 0x02;
+	}
+	else
+	{
+	  int VDisplay = mode->VDisplay;
+	  if (mode->Flags & V_DBLSCAN)
+	    VDisplay *= 2;
+	  if      (VDisplay < 400)
+		  newVS->DACreg[index_1d] |= 0x01; /* +hsync -vsync */
+	  else if (VDisplay < 480)
+		  newVS->DACreg[index_1d] |= 0x02; /* -hsync +vsync */
+	  else if (VDisplay < 768)
+		  newVS->DACreg[index_1d] |= 0x00; /* -hsync -vsync */
+	  else
+		  newVS->DACreg[index_1d] |= 0x03; /* +hsync +vsync */
 	}
 	
 	if (OFLG_ISSET(OPTION_SYNC_ON_GREEN, &vga256InfoRec.options))
@@ -1280,12 +1299,9 @@ DisplayModePtr mode;
 
 	newVS->DAClong = MGAinterleave << 12;
 
-	if (newVS->std.NoClock >= 2)
-	{
-		newVS->std.MiscOutReg |= 0x0C; 
-		MGATi3026SetClock(vga256InfoRec.clock[newVS->std.NoClock],
+	newVS->std.MiscOutReg |= 0x0C; 
+	MGATi3026SetClock(vga256InfoRec.clock[newVS->std.NoClock],
 				1 << MGABppShft);
-	}
 
 #ifdef DEBUG		
 	ErrorF("%6ld: %02X %02X %02X	%02X %02X %02X	%08lX\n", vga256InfoRec.clock[newVS->std.NoClock],
@@ -1412,6 +1428,13 @@ Bool enter;
 {
 	unsigned char temp;
 
+#ifdef XFreeXDGA
+      	if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter) {
+       		/* Hide the cursor once it's implemented */
+       		return;
+   	}
+#endif 
+
 	if (enter)
 	{
 		xf86EnableIOPorts(vga256InfoRec.scrnIndex);
@@ -1470,6 +1493,14 @@ int x, y;
 	outb(0x3DF, (tmp & 0xF0) | ((Base & 0x0F0000) >> 16));
 	outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);
 	outw(vgaIOBase + 4, ((Base & 0x0000FF) << 8) | 0x0D);
+
+#ifdef XFreeXDGA
+	if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
+	/* Wait for vertival retrace end */
+		while (inb(vgaIOBase + 0xA) & 0x08);
+		while (!(inb(vgaIOBase + 0xA) & 0x08));
+	}
+#endif
 }
 
 /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.67 1997/01/04 12:19:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.68 1997/01/05 11:59:44 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -62,6 +62,7 @@
 #include "cfb24.h"
 #include "cfb32.h"
 #include "xf86scrin.h"
+#include "xf86xaa.h"
 #else
 #include "windowstr.h"
 #endif
@@ -1230,6 +1231,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 		     displayResolution, displayResolution,
 		     vga256InfoRec.displayWidth))
 #else
+  xf86AccelInfoRec.ServerInfoRec = &vga256InfoRec;
   if (vgaBitsPerPixel == 8)
       if (!xf86XAAScreenInitvga256(pScreen,
 		     (pointer) vgaVirtBase,

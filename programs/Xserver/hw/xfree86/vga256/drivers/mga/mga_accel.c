@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_accel.c,v 3.2 1996/12/09 11:54:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_accel.c,v 3.3 1997/01/04 12:18:38 dawes Exp $ */
 
 /*
  * This is a sample driver implementation template for the new acceleration
@@ -24,35 +24,14 @@ void MGANAME(SetupForCPUToScreenColorExpand)();
 void MGANAME(SubsequentCPUToScreenColorExpand)();
 void MGANAME(SetupForScreenToScreenColorExpand)();
 void MGANAME(SubsequentScreenToScreenColorExpand)();
+void MGANAME(SetupFor8x8PatternColorExpand)();
+void MGANAME(Subsequent8x8PatternColorExpand)();
 void MGANAME(SubsequentTwoPointLine)();
 void MGANAME(SetClippingRectangle)();
 
-/* 
- * Include any definitions for communicating with the coprocessor here.
- * In this sample driver, the following macros are defined:
- *
- *	SETFOREGROUNDCOLOR(color)
- *	SETRASTEROP(rop)
- *	SETWRITEPLANEMASK(planemask)
- *	SETSOURCEADDR(srcaddr)
- *	SETDESTADDR(destaddr)
- *	SETWIDTH(width)
- *	SETHEIGHT(height)
- *	SETBLTXDIR(xdir)
- *	SETBLTYDIR(yrdir)
- *	SETCOMMAND(command)
- *      WAITUNTILFINISHED()
- *
- * The interface for accelerator chips varies widely, and this may not
- * be a realistic scenario. In this sample implemention, the chip requires
- * the source and destation location to be specified with addresses, but
- * it might just as well use coordinates. When implementing the primitives,
- * you will often find the need to store some settings in a variable.
- */
-/* #include "coprocessor.h" */
 
 static int mga_cmd, mga_lastcmd, mga_linecmd, mga_rop;
-static int mga_sgn, mga_lastsgn, mga_lastcxright;
+static int mga_sgn, mga_lastsgn, mga_lastcxright, mga_lastshift;
 static int mgablitxdir, mgablitydir;
 static int mga_ClipRect;
 
@@ -62,9 +41,7 @@ static int mga_ClipRect;
  */
 void MGANAME(AccelInit)() 
 {
-    int cacheStart, cacheEnd;
     int tmp;
-    int max_fastbitblt_mem = (MGAinterleave ? 4096 : 2048) * 1024;
     
     /*
      * If you to disable acceleration, just don't modify anything
@@ -76,9 +53,16 @@ void MGANAME(AccelInit)()
      * Usually, you will want to use BACKGROUND_OPERATIONS,
      * and if you have ScreenToScreenCopy, use the PIXMAP_CACHE.
      */
-    xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE |
-			     TWO_POINT_LINE_NOT_LAST | USE_TWO_POINT_LINE |
-			     HARDWARE_CLIP_LINE;
+    xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | 
+                             PIXMAP_CACHE | 
+                             HARDWARE_CLIP_LINE |
+                             USE_TWO_POINT_LINE |
+                             TWO_POINT_LINE_NOT_LAST |
+                             HARDWARE_PATTERN_PROGRAMMED_BITS |
+                             HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
+                             HARDWARE_PATTERN_SCREEN_ORIGIN |
+                             HARDWARE_PATTERN_BIT_ORDER_MSBFIRST |
+                             NO_SYNC_AFTER_CPU_COLOR_EXPAND;
 
     /*
      * install hardware lines and clipping
@@ -167,24 +151,36 @@ void MGANAME(AccelInit)()
     xf86AccelInfoRec.CPUToScreenColorExpandRange = 0x1C00;
 
     /*
+     * 8x8 color expand pattern fill
+     */
+    xf86AccelInfoRec.SetupFor8x8PatternColorExpand =
+    			MGANAME_A(SetupFor8x8PatternColorExpand);
+    xf86AccelInfoRec.Subsequent8x8PatternColorExpand =
+    			MGANAME_A(Subsequent8x8PatternColorExpand);
+     
+    /*
      * Finally, we set up the video memory space available to the pixmap
      * cache. In this case, all memory from the end of the virtual screen
      * to the end of video memory minus 1K, can be used.
      */
-    cacheStart = vga256InfoRec.virtualY * vga256InfoRec.displayWidth *
-                                    vga256InfoRec.bitsPerPixel / 8;
-    cacheEnd = vga256InfoRec.videoRam * 1024 - 1024;
-    /*
-     * we can't fast blit between first 4MB and second 4MB for interleave
-     * and between first 2MB and other memory for non-interleave
-     */
-    if( cacheStart > max_fastbitblt_mem - 4096 )
-        MGAusefbitblt = 0;
-    else
-        if( cacheEnd > max_fastbitblt_mem - 1024 )
-            cacheEnd = max_fastbitblt_mem - 1024;
+    {
+        int cacheStart = (vga256InfoRec.virtualY * vga256InfoRec.displayWidth
+                            + MGAydstorg) * vga256InfoRec.bitsPerPixel / 8;
+        int cacheEnd = vga256InfoRec.videoRam * 1024 - 1024;
+        /*
+         * we can't fast blit between first 4MB and second 4MB for interleave
+         * and between first 2MB and other memory for non-interleave
+         */
+        int max_fastbitblt_mem = (MGAinterleave ? 4096 : 2048) * 1024;
+     
+        if( cacheStart > max_fastbitblt_mem - 4096 )
+            MGAusefbitblt = 0;
+        else
+            if( cacheEnd > max_fastbitblt_mem - 1024 )
+                cacheEnd = max_fastbitblt_mem - 1024;
         
-    xf86InitPixmapCache(&vga256InfoRec, cacheStart, cacheEnd);
+        xf86InitPixmapCache(&vga256InfoRec, cacheStart, cacheEnd);
+    }
 }
 
 /*
@@ -211,8 +207,8 @@ void MGANAME(AccelInit)()
  * Use faster access type for certain rop's
  *
  * SETACCESSNOGXCOPY when rop isn't GXcopy
- * SETACCESS1 for GXcopy and foreground only used
- * SETACCESS2 for GXcopy and both foreground and background used
+ * SETACCESS1 for any rop and foreground only used
+ * SETACCESS2 for any rop and both foreground and background used
  */
 #define SETACCESSNOGXCOPY(cmd,rop) \
     if( (rop == GXclear) || (rop == GXcopyInverted) || (rop == GXset) ) \
@@ -549,6 +545,59 @@ void MGANAME(SubsequentCPUToScreenColorExpand)(x, y, w, h, skipleft)
     OUTREG(MGAREG_AR0, (w * h) - 1);
     OUTREG(MGAREG_AR3, 0);            /* we need it here for stability */
     OUTREG(MGAREG_FXBNDRY, ((x + w - 1) << 16) | x);
+    OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
+}
+
+/*
+ * setup for 8x8 color expand pattern fill
+ */
+void MGANAME(SetupFor8x8PatternColorExpand)(patternx, patterny, bg, fg,
+                                            rop, planemask)
+    unsigned patternx, patterny, planemask;
+    int bg, fg, rop;
+{
+    int transc = ( bg == -1 );
+    
+    mga_cmd = MGADWG_TRAP | MGADWG_NOZCMP | MGADWG_ARZERO | MGADWG_SGNZERO |
+    	      MGADWG_BMONOLEF;
+
+    SETACCESS2(mga_cmd,rop,bg,fg,transc)
+    /*
+     * check transparency 
+     */
+    if( transc )
+        mga_cmd |= MGWDWG_TRANSC;
+    else
+    {
+        REPLICATE(bg);
+        SETBACKGROUNDCOLOR(bg);
+    }
+
+    REPLICATE(fg);
+    SETFOREGROUNDCOLOR(fg);
+#if PSZ != 24
+    REPLICATE(planemask);
+    SETWRITEPLANEMASK(planemask);
+#endif
+    SETRASTEROP(rop);
+    OUTREG(MGAREG_DWGCTL, mga_cmd);
+    OUTREG(MGAREG_PAT0, patternx);
+    OUTREG(MGAREG_PAT1, patterny);
+    DISABLECLIPPING();
+    mga_lastshift = -1;
+}
+
+/*
+ * executing 8x8 color expand pattern fill
+ */
+void MGANAME(Subsequent8x8PatternColorExpand)(patternx, patterny, x, y, w, h)
+    unsigned patternx, patterny;
+    int x, y, w, h;
+{
+    int shift = (patterny << 4) | patternx;
+    if( shift != mga_lastshift )
+        OUTREG(MGAREG_SHIFT, mga_lastshift = shift);
+    OUTREG(MGAREG_FXBNDRY, ((x + w) << 16) | x);
     OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
 }
 

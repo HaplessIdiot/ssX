@@ -1,5 +1,5 @@
 /* $XConsortium: menu.h /main/27 1996/12/01 23:47:03 swick $ */
-/* $XFree86: xc/programs/xterm/menu.h,v 3.2 1996/08/13 11:37:03 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/menu.h,v 3.3 1996/12/23 07:14:35 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -259,12 +259,12 @@ extern void DoSecureKeyboard PROTO((Time tp));
 #define update_appcursor() \
   update_menu_item (term->screen.vtMenu, \
 		    vtMenuEntries[vtMenu_appcursor].widget, \
-		    (term->keyboard.flags & CURSOR_APL))
+		    (term->keyboard.flags & MODE_DECCKM))
 
 #define update_appkeypad() \
   update_menu_item (term->screen.vtMenu, \
 		    vtMenuEntries[vtMenu_appkeypad].widget, \
-		    (term->keyboard.flags & KYPD_APL))
+		    (term->keyboard.flags & MODE_DECKPAM))
 
 #define update_scrollkey() \
   update_menu_item (term->screen.vtMenu, \

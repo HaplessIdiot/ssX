@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/tseng_acl.h,v 3.1 1996/12/28 08:17:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/tseng_acl.h,v 3.2 1996/12/31 05:01:18 dawes Exp $ */
 
 #ifndef _TSENG_ACL_H
 #define _TSENG_ACL_H
@@ -139,50 +139,6 @@ extern LongP CPU2ACLBase;
   
 #define WAIT_XY \
   {while (*(volatile unsigned char *)ACL_ACCELERATOR_STATUS & 0x4);}
-
-
-#define SET_XY(X, Y) \
-    { \
-      if (et4000_type >= TYPE_ET6000) \
-        *((LongP) ACL_X_COUNT) = (((Y) - 1) << 16) + ((X) * bytesperpixel - 1); \
-      else \
-        *((LongP) ACL_X_COUNT) = (((Y) - 1) << 16) + ((X-1) * bytesperpixel); \
-    }
-
-#define SET_XY_RAW(X, Y) \
-    {*((LongP) ACL_X_COUNT) = ((Y) << 16) + (X);}
-
-#define SET_DELTA(Min, Maj) \
-    {*((LongP) ACL_DELTA_MINOR) = ((Maj) << 16) + (Min);}
-
-
-/* Must do 0x09 (in one operation) for the W32 */
-#define START_ACL(dst) \
-{ \
-    *(ACL_DESTINATION_ADDRESS) = dst; \
-    if (et4000_type <= TYPE_ET4000W32I) *ACL_OPERATION_STATE = 0x09; \
-}
-
-
-#define START_ACL_CPU(dst) \
-{ \
-	*(ACL_DESTINATION_ADDRESS) = dst; \
-}
-
-#define PINGPONG \
-    if (Fg == W32ForegroundPing) \
-    { \
-      MemFg = MemW32ForegroundPong; Fg = W32ForegroundPong;  \
-      MemBg = MemW32BackgroundPong; Bg = W32BackgroundPong;  \
-      MemPat = MemW32PatternPong; Pat = W32PatternPong;  \
-    } \
-    else \
-    { \
-      MemFg = MemW32ForegroundPing; Fg = W32ForegroundPing; \
-      MemBg = MemW32BackgroundPing; Bg = W32BackgroundPing;  \
-      MemPat = MemW32PatternPing; Pat = W32PatternPing;  \
-    }
-
 
 /***********************************************************************/
 

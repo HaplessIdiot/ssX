@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: screen.c /main/35 1996/12/01 23:47:05 swick $
- *	$XFree86: xc/programs/xterm/screen.c,v 3.9 1996/08/23 11:06:22 dawes Exp $
+ *	$XFree86: xc/programs/xterm/screen.c,v 3.10 1996/12/23 07:14:38 dawes Exp $
  */
 
 /*
@@ -207,7 +207,7 @@ register unsigned cur_fg, cur_bg;
 register int length;		/* length of string */
 {
 #if OPT_ISO_COLORS
-	register Char *fgs = 0, *bgs = 0;
+	register Char *fb = 0;
 #endif
 	register Char *attrs;
 	register int avail  = screen->max_col - screen->cur_col + 1;
@@ -223,8 +223,7 @@ register int length;		/* length of string */
 	attrs = SCRN_BUF_ATTRS(screen, screen->cur_row) + screen->cur_col;
 
 	if_OPT_ISO_COLORS(screen,{
-	    fgs = SCRN_BUF_FORES(screen, screen->cur_row) + screen->cur_col;
-	    bgs = SCRN_BUF_BACKS(screen, screen->cur_row) + screen->cur_col;
+		fb = SCRN_BUF_COLOR(screen, screen->cur_row) + screen->cur_col;
 	})
 
 	wrappedbit = *attrs & LINEWRAPPED;
@@ -241,8 +240,7 @@ register int length;		/* length of string */
 	memset( attrs, flags,  length);
 
 	if_OPT_ISO_COLORS(screen,{
-		memset( fgs,   cur_fg, length);
-		memset( bgs,   cur_bg, length);
+		memset( fb,   makeColorPair(cur_fg, cur_bg), length);
 	})
 
 	if (wrappedbit)
@@ -272,8 +270,7 @@ int where, n, size;
 		for (i = 0; i < last; i += MAX_PTRS) {
 			bzero(save[i+0], size);
 			memset(save[i+1], flags, size);
-			memset(save[i+2], term->cur_foreground, size);
-			memset(save[i+3], term->cur_background, size);
+			memset(save[i+2], xtermColorPair(), size);
 		}
 	} else {
 		for (i = MAX_PTRS * n - 1 ; i >= 0 ; i--)
@@ -374,10 +371,7 @@ ScrnInsertChar (screen, n, size)
 	for (i=col; i<col+n; i++)
 	    attrs[i] = flags;
 	if_OPT_ISO_COLORS(screen,{
-	    if (flags & FG_COLOR)
-		memset(BUF_FORES(sb, row) + col, term->cur_foreground, n);
-	    if (flags & BG_COLOR)
-		memset(BUF_BACKS(sb, row) + col, term->cur_background, n);
+	    memset(BUF_COLOR(sb, row) + col, xtermColorPair(), n);
 	})
 
 	if (wrappedbit)
@@ -407,10 +401,7 @@ ScrnDeleteChar (screen, n, size)
 	memset (attrs + size - n, TERM_COLOR_FLAGS, n);
 
 	if_OPT_ISO_COLORS(screen,{
-	    if (term->flags & FG_COLOR)
-		memset(BUF_FORES(sb, row) + size - n, term->cur_foreground, n);
-	    if (term->flags & BG_COLOR)
-		memset(BUF_BACKS(sb, row) + size - n, term->cur_background, n);
+	    memset(BUF_COLOR(sb, row) + size - n, xtermColorPair(), n);
 	})
 	if (wrappedbit)
 	    attrs[0] |= LINEWRAPPED;
@@ -428,8 +419,7 @@ register TScreen *screen;
 int toprow, leftcol, nrows, ncols;
 Boolean force;			/* ... leading/trailing spaces */
 {
-	int y = toprow * FontHeight(screen) + screen->border +
-		FontAscent(screen);
+	int y = toprow * FontHeight(screen) + screen->border;
 	register int row;
 	register int topline = screen->topline;
 	int maxrow = toprow + nrows - 1;
@@ -443,7 +433,7 @@ Boolean force;			/* ... leading/trailing spaces */
 		screen->cursor_state = OFF;
 	for (row = toprow; row <= maxrow; y += FontHeight(screen), row++) {
 #if OPT_ISO_COLORS
-	   register Char *fgs = 0, *bgs = 0;
+	   register Char *fb = 0;
 #endif
 	   register Char *chars;
 	   register Char *attrs;
@@ -468,8 +458,7 @@ Boolean force;			/* ... leading/trailing spaces */
 	   attrs = SCRN_BUF_ATTRS(screen, lastind + topline);
 
 	   if_OPT_ISO_COLORS(screen,{
-		   fgs = SCRN_BUF_FORES(screen, lastind + topline);
-		   bgs = SCRN_BUF_BACKS(screen, lastind + topline);
+		   fb = SCRN_BUF_COLOR(screen, lastind + topline);
 	   })
 
 	   if (row < screen->startHRow || row > screen->endHRow ||
@@ -530,8 +519,8 @@ Boolean force;			/* ... leading/trailing spaces */
 
 	   flags = attrs[col];
 	   if_OPT_ISO_COLORS(screen,{
-	        fg = fgs[col];
-	        bg = bgs[col];
+		fg = extract_fg(fb[col], flags);
+		bg = extract_bg(fb[col]);
 	   })
 	   gc = updatedXtermGC(screen, flags, fg, bg, hilite);
 	   gc_changes |= (flags & (FG_COLOR|BG_COLOR));
@@ -542,8 +531,8 @@ Boolean force;			/* ... leading/trailing spaces */
 	   for (; col <= maxcol; col++) {
 		if ((attrs[col] != flags)
 #if OPT_ISO_COLORS
-		 || ((flags & FG_COLOR) && (fgs[col] != fg))
-		 || ((flags & BG_COLOR) && (bgs[col] != bg))
+		 || ((flags & FG_COLOR) && (extract_fg(fb[col],attrs[col]) != fg))
+		 || ((flags & BG_COLOR) && (extract_bg(fb[col]) != bg))
 #endif
 		 ) {
 		   drawXtermText(screen, flags, gc, x, y,
@@ -555,8 +544,8 @@ Boolean force;			/* ... leading/trailing spaces */
 
 		   flags = attrs[col];
 		   if_OPT_ISO_COLORS(screen,{
-		        fg = fgs[col];
-		        bg = bgs[col];
+		        fg = extract_fg(fb[col], flags);
+		        bg = extract_bg(fb[col]);
 		   })
 	   	   gc = updatedXtermGC(screen, flags, fg, bg, hilite);
 	   	   gc_changes |= (flags & (FG_COLOR|BG_COLOR));
@@ -601,10 +590,7 @@ register int first, last;
 	    bzero (BUF_CHARS(buf, row), len);
 	    memset(BUF_ATTRS(buf, row), flags, len);
 	    if_OPT_ISO_COLORS(screen,{
-		memset(BUF_FORES(buf, row), 
-			(flags & FG_COLOR) ? term->cur_foreground : 0, len);
-		memset(BUF_BACKS(buf, row), 
-			(flags & BG_COLOR) ? term->cur_background : 0, len);
+		memset(BUF_COLOR(buf, row), xtermColorPair(), len);
 	    })
 	}
 }

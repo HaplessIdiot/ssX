@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.2 1996/12/18 03:13:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.3 1997/01/02 04:38:52 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -883,6 +883,16 @@ static void DoCacheStipple(pDrawable, pGC)
 	        ExpandStippleTo8x8MonoPattern(pix->drawable.width,
 	            pix->drawable.height, pix->devPrivate.ptr,
 	            pix->devKind, &(pci->pattern0));
+	        /* 
+	         * and reverse when msb-first [rk] 
+	         */ 
+	        if (xf86AccelInfoRec.Flags & 
+	                   HARDWARE_PATTERN_BIT_ORDER_MSBFIRST) {
+	            int k;
+	            for (k = 0; k < 8; k++)
+	                ((unsigned char*)&pci->pattern0)[k] = 
+	                    byte_reversed[((unsigned char*)&pci->pattern0)[k]];
+	        }
 	    }
 	    else {
 	        ErrorF("Writing rotated mono patterns (%dx%d).\n",

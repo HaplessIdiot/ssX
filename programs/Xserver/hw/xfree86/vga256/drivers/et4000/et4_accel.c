@@ -11,7 +11,20 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_accel.c,v 3.1 1996/12/28 08:17:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_accel.c,v 3.2 1996/12/31 05:01:14 dawes Exp $ */
+
+
+/*
+ * if NO_OPTIMIZE is set, some optimizations are disabled.
+ *
+ * What it basically tries to do is minimize the amounts of writes to
+ * accelerator registers, since these are the ones that slow down small
+ * operations a lot.
+ *
+ * Also, multiplications are avoided in some places, because shift/add is faster.
+ */
+
+#undef NO_OPTIMIZE
 
 #include "vga256.h"
 #include "xf86.h"
@@ -79,8 +92,13 @@ void TsengAccelInit() {
      * Set up the main acceleration flags.
      */
     xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE
-      | HARDWARE_PATTERN_SCREEN_ORIGIN | HARDWARE_PATTERN_MOD_64_OFFSET
+      | HARDWARE_PATTERN_SCREEN_ORIGIN
       | COP_FRAMEBUFFER_CONCURRENCY;
+      
+    if (et4000_type >= TYPE_ET6000)
+    {
+      xf86AccelInfoRec.Flags |= HARDWARE_PATTERN_TRANSPARENCY;
+    }
 
     /*
      * The following line installs a "Sync" function, that waits for
@@ -264,7 +282,8 @@ void TsengAccelInit() {
     { \
       case 1: \
         (color) &= 0xFF; \
-        (color) = ((color) << 24) | ((color) << 16) | ((color) << 8) | (color); \
+        (color) = ((color) <<  8) | (color); \
+        (color) = ((color) << 16) | (color); \
         break; \
       case 2: \
         (color) &= 0xFFFF; \
@@ -272,19 +291,42 @@ void TsengAccelInit() {
         break; \
     }
 
+/*
+ * Optimizing note: increasing the wrap size for fixed-color source/pattern
+ * tiles from 4x1 (as below) to anything bigger doesn't seem to affect
+ * performance (it might have been better for larger wraps, but it isn't).
+ */
+
 #define SET_FG_COLOR(color) \
     COLOR_REPLICATE_DWORD(color) \
-    *ACL_SOURCE_WRAP	 = 0x02; \
-    *ACL_SOURCE_Y_OFFSET = 3; \
     *ACL_SOURCE_ADDRESS  = Fg; \
+    *ACL_SOURCE_Y_OFFSET = 3; \
+    *ACL_SOURCE_WRAP	 = 0x02; \
     *MemFg               = (color);
 
 #define SET_BG_COLOR(color) \
     COLOR_REPLICATE_DWORD(color) \
-    *ACL_PATTERN_WRAP	  = 0x02; \
-    *ACL_PATTERN_Y_OFFSET = 3; \
     *ACL_PATTERN_ADDRESS  = Pat; \
+    *ACL_PATTERN_Y_OFFSET = 3; \
+    *ACL_PATTERN_WRAP	  = 0x02; \
     *MemPat		  = (color);
+
+/*
+ * this does the same as SET_FG_COLOR and SET_BG_COLOR together, but is
+ * faster, because it allows the PCI chipset to chain the requests into a
+ * burst sequence. The order of the commands is partly linear.
+ * So far for the theory...
+ */
+#define SET_FG_BG_COLOR(fgcolor, bgcolor) \
+    COLOR_REPLICATE_DWORD(fgcolor) \
+    COLOR_REPLICATE_DWORD(bgcolor) \
+    *ACL_PATTERN_ADDRESS  = Pat; \
+    *ACL_SOURCE_ADDRESS   = Fg; \
+    *((LongP) ACL_PATTERN_Y_OFFSET) = 0x00030003; \
+    *ACL_SOURCE_WRAP	  = 0x02; \
+    *ACL_PATTERN_WRAP	  = 0x02; \
+    *MemFg                = (fgcolor); \
+    *MemPat		  = (bgcolor);
 
 #define SET_FUNCTION_BLT \
     if (et4000_type>=TYPE_ET6000) \
@@ -304,13 +346,33 @@ void TsengAccelInit() {
 #define SET_FUNCTION_COLOREXPAND_CPU \
     *ACL_ROUTING_CONTROL = 0x02;
 
-#define FBADDR(x,y) ((y) * tseng_line_width + (x) * bytesperpixel)
+/*
+ * Real multiplications are horribly slow compared to the shift-add
+ * expansion below.
+ */
+#ifdef NO_OPTIMIZE
+#define MULBPP(x) ((x) * bytesperpixel)
+#else
+#define MULBPP(x) \
+  ( (bytesperpixel == 1) ? (x) \
+     : (bytesperpixel == 2) ? ((x) << 1) \
+     : (bytesperpixel == 3) ? ( ((x) << 1) + (x) ) \
+     : ((x) << 2) \
+  )
+#endif
+
+#define FBADDR(x,y) (((y) * tseng_line_width) + MULBPP(x))
 
 #define SET_FG_ROP(rop) \
     *ACL_FOREGROUND_RASTER_OPERATION = W32OpTable[rop];
 
 #define SET_BG_ROP(rop) \
     *ACL_BACKGROUND_RASTER_OPERATION = W32PatternOpTable[rop];
+
+/* faster than separate functions */
+#define SET_FG_BG_ROP(fgrop, bgrop) \
+    *((WordP) ACL_BACKGROUND_RASTER_OPERATION) = \
+        W32PatternOpTable[bgrop] | W32OpTable[fgrop];
 
 #define SET_BG_ROP_TR(rop, bg_color) \
   if ((bg_color) == -1)    /* transparent color expansion */ \
@@ -319,6 +381,87 @@ void TsengAccelInit() {
     *ACL_BACKGROUND_RASTER_OPERATION = W32PatternOpTable[rop];
 
 
+#ifdef NO_OPTIMIZE
+#define SET_XY(X, Y) \
+  if (et4000_type >= TYPE_ET6000) \
+    *((LongP) ACL_X_COUNT) = (((Y) - 1) << 16) + ((X) * bytesperpixel - 1); \
+  else \
+    *((LongP) ACL_X_COUNT) = (((Y) - 1) << 16) + (((X)-1) * bytesperpixel);
+#else
+/*
+ * This is plain and simple "benchmark rigging".
+ * (no real application does lots of subsequent same-size blits)
+ *
+ * The effect of this is amazingly good on e.g large blits: 400x400 rectangle fill
+ * in 24 and 32 bpp jumps from 276 MB/sec to 432 MB/sec...
+ * There must be a good reason why this gives such a boost, but I don't know it.
+ */
+int old_x = 0, old_y = 0;
+#define SET_XY(X, Y) \
+  if ( (old_y != (Y)) || (old_x != (X)) ) \
+    { \
+      if (bytesperpixel == 1) \
+      { \
+          *((LongP) ACL_X_COUNT) = (((Y) - 1) << 16) + (X) - 1; \
+      } \
+      else \
+      { \
+          if (et4000_type >= TYPE_ET6000) \
+            *((LongP) ACL_X_COUNT) = (((Y) - 1) << 16) + MULBPP(X) - 1; \
+          else \
+            *((LongP) ACL_X_COUNT) = (((Y) - 1) << 16) + MULBPP((X)-1); \
+      } \
+      old_x = (X); old_y = (Y); \
+    }
+#endif
+
+
+#define SET_XY_RAW(X, Y) \
+    {*((LongP) ACL_X_COUNT) = ((Y) << 16) + (X);}
+
+#define SET_DELTA(Min, Maj) \
+    {*((LongP) ACL_DELTA_MINOR) = ((Maj) << 16) + (Min);}
+
+
+/* Must do 0x09 (in one operation) for the W32 */
+#define START_ACL(dst) \
+    *(ACL_DESTINATION_ADDRESS) = dst; \
+    if (et4000_type <= TYPE_ET4000W32I) *ACL_OPERATION_STATE = 0x09;
+
+#define START_ACL_CPU(dst) \
+	*(ACL_DESTINATION_ADDRESS) = dst;
+
+#define PINGPONG \
+    if (Fg == W32ForegroundPing) \
+    { \
+      MemFg  = MemW32ForegroundPong; Fg = W32ForegroundPong;  \
+      MemBg  = MemW32BackgroundPong; Bg = W32BackgroundPong;  \
+      MemPat = MemW32PatternPong;   Pat = W32PatternPong;  \
+    } \
+    else \
+    { \
+      MemFg  = MemW32ForegroundPing; Fg = W32ForegroundPing; \
+      MemBg  = MemW32BackgroundPing; Bg = W32BackgroundPing;  \
+      MemPat = MemW32PatternPing;   Pat = W32PatternPing;  \
+    }
+
+static int old_dir=-1;
+
+#ifdef NO_OPTIMIZE
+#define SET_XYDIR(dir) \
+      *ACL_XY_DIRECTION = (dir);
+#else
+#define SET_XYDIR(dir) \
+    if ((dir) != old_dir) \
+    { \
+     /* \
+      * only changing ACL_XY_DIRECTION when it needs to be changed avoids \
+      * unnecessary PCI bus writes, which are slow. This shows up very well \
+      * on consecutive small fills. \
+      */ \
+      *ACL_XY_DIRECTION = old_dir = (dir); \
+    }
+#endif
 
 /*
  * This is the implementation of the Sync() function.
@@ -350,7 +493,8 @@ void TsengSetupForFillRectSolid(color, rop, planemask)
      
 /*    ErrorF("S");*/
 
-    if (planemask != -1) ErrorF("S:planemask = 0x%x\n", planemask);
+    if (planemask != -1)
+      ErrorF("SetupForFillRectSolid: BUG: planemask = 0x%x\n", planemask);
 
     PINGPONG;
 
@@ -371,13 +515,13 @@ void TsengSubsequentFillRectSolid(x, y, w, h)
 {
     int destaddr = FBADDR(x,y);
 
-    *ACL_XY_DIRECTION = 0;
-     /* if this is not reset here, drawing a line in between blitting, with
-      * the same ROP, color, etc will not cause a call to SetupFor...
-      * (because linedrawing uses SetupForSolidFill() as its Setup()
-      * function), and thus the direction register will have been changed by
-      * the last LineDraw operation.
-      */
+   /* if XYDIR is not reset here, drawing a hardware line in between
+    * blitting, with the same ROP, color, etc will not cause a call to
+    * SetupFor... (because linedrawing uses SetupForSolidFill() as its
+    * Setup() function), and thus the direction register will have been
+    * changed by the last LineDraw operation.
+    */
+    SET_XYDIR(0);
 
     SET_XY(w, h);
     START_ACL(destaddr);
@@ -412,6 +556,7 @@ transparency_color)
     
     if (xdir == -1) blit_dir |= 0x1;
     if (ydir == -1) blit_dir |= 0x2;
+    SET_XYDIR(blit_dir);
     
     if ((et4000_type >= TYPE_ET6000) && (transparency_color != -1))
     {
@@ -422,11 +567,9 @@ transparency_color)
       SET_FUNCTION_BLT;
 
     SET_FG_ROP(rop);
-    *ACL_XY_DIRECTION = blit_dir;
 
     *ACL_SOURCE_WRAP = 0x77; /* no wrap */
     *ACL_SOURCE_Y_OFFSET = tseng_line_width-1;
-    
 }
 
 /*
@@ -437,14 +580,24 @@ transparency_color)
  * account when calculating the addresses (with coordinates, it might be
  * a little easier).
  */
+
+
 void TsengSubsequentScreenToScreenCopy(x1, y1, x2, y2, w, h)
     int x1, y1, x2, y2, w, h;
 {
-    int srcaddr, destaddr;
-    
+    int srcaddr=0, destaddr=0;
+
+    /*
+     * Optimizing note: the pre-calc code below (i.e. until the first
+     * register write) doesn't significantly affect performance. Removing it
+     * all boosts small blits from 24.22 to 25.47 MB/sec. Don't waste time
+     * on that. One less PCI bus write would boost us to 30.00 MB/sec, up
+     * from 24.22. Waste time on _that_...
+     */
+
     /* tseng chips want x-sizes in bytes, not pixels */
-    x1 *= bytesperpixel;
-    x2 *= bytesperpixel;
+    x1 = MULBPP(x1);
+    x2 = MULBPP(x2);
     
     /*
      * If the direction is "decreasing", the chip wants the addresses
@@ -463,13 +616,14 @@ void TsengSubsequentScreenToScreenCopy(x1, y1, x2, y2, w, h)
          * Depending on the direction, this is the first or the last byte
          * in the multi-byte pixel.
          */
-	srcaddr += x1 + w * bytesperpixel - 1;
-	destaddr += x2 + w * bytesperpixel - 1;
+        int eol = MULBPP(w);
+	srcaddr += x1 + eol - 1;
+	destaddr += x2 + eol - 1;
     } else {
 	srcaddr += x1;
 	destaddr += x2;
     }
-  
+
     SET_XY(w, h);
     *ACL_SOURCE_ADDRESS = srcaddr;
     START_ACL(destaddr);
@@ -483,6 +637,14 @@ void TsengSetupForFill8x8Pattern(patternx, patterny, rop, planemask, trans_col)
 /*  ErrorF("P");*/
 
   SET_FG_ROP(rop);
+
+  if ((et4000_type >= TYPE_ET6000) && (trans_col != -1))
+  {
+    SET_BG_COLOR(trans_col);
+    SET_FUNCTION_BLT_TR;
+  }
+  else
+    SET_FUNCTION_BLT;
 
   switch(bytesperpixel)
   {
@@ -501,17 +663,12 @@ void TsengSetupForFill8x8Pattern(patternx, patterny, rop, planemask, trans_col)
   
   *ACL_SOURCE_ADDRESS = srcaddr;
 
-  *ACL_XY_DIRECTION = 0;
-
-  SET_FUNCTION_BLT;
+  SET_XYDIR(0);
 }
 
 void TsengSubsequentFill8x8Pattern(patternx, patterny, x, y, w, h)
 {
   int destaddr = FBADDR(x,y);
-  int srcaddr = FBADDR(patternx, patterny);
-
-  *ACL_SOURCE_ADDRESS = srcaddr;
 
   SET_XY(w, h);
   START_ACL(destaddr);
@@ -533,14 +690,13 @@ void TsengSetupForScanlineScreenToScreenColorExpand(x, y, w, h, bg, fg, rop, pla
     SET_FG_ROP(rop);
     SET_BG_ROP_TR(rop, bg);
       
-    SET_FG_COLOR(fg);
-    SET_BG_COLOR(bg);
+    SET_FG_BG_COLOR(fg, bg);
 
     SET_FUNCTION_COLOREXPAND;
 
     *ACL_MIX_Y_OFFSET = 0x0FFF; /* see remark below */
 
-    *ACL_XY_DIRECTION = 0;
+    SET_XYDIR(0);
 
     SET_XY(w, 1);
 }
@@ -640,7 +796,7 @@ void TsengSubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
 
    SET_DELTA(e1>>1, length);
    
-   *ACL_XY_DIRECTION = 0x80 | algrthm | direction;
+   SET_XYDIR(0x80 | algrthm | direction);
    
    START_ACL(destaddr);
 }
@@ -691,7 +847,8 @@ void TsengSubsequentTwoPointLine(x1, y1, x2, y2, bias)
      SET_DELTA(dx, dy);
    }
 
-   *ACL_XY_DIRECTION = 0x80 | (((!ydir) & 1) << 4) | (adir << 2) | (ydir << 1) | xdir;
+
+   SET_XYDIR(0x80 | (((!ydir) & 1) << 4) | (adir << 2) | (ydir << 1) | xdir);
 
    destaddr = FBADDR(x1, y1);
    if (xdir == 1)
@@ -720,10 +877,9 @@ void TsengSetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
   SET_FG_ROP(rop);
   SET_BG_ROP_TR(rop, bg);
       
-  *ACL_XY_DIRECTION = 0;
+  SET_XYDIR(0);
 
-  SET_FG_COLOR(fg);
-  SET_BG_COLOR(bg);
+  SET_FG_BG_COLOR(fg,bg);
 
   SET_FUNCTION_COLOREXPAND_CPU;
   *ACL_MIX_ADDRESS  = 0;
@@ -760,13 +916,12 @@ void TsengSetupFor8x8PatternColorExpand(patternx, patterny, bg, fg, rop, planema
       
   SET_FUNCTION_COLOREXPAND;
 
-  SET_FG_COLOR(fg);
-  SET_BG_COLOR(bg);
+  SET_FG_BG_COLOR(fg, bg);
 
   *ACL_MIX_ADDRESS  = mixaddr;
   *ACL_MIX_Y_OFFSET = 0x0FFF; /* 0 */
 
-  *ACL_XY_DIRECTION = 0;
+  SET_XYDIR(0);
 }
 
 void TsengSubsequent8x8PatternColorExpand(patternx, patterny, x, y, w, h)

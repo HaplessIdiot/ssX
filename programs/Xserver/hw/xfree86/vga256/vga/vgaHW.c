@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.45 1997/01/04 12:19:24 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.46 1997/01/05 11:59:46 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -113,8 +113,6 @@
 #define WSTOPSIG(x) (x.w_stopsig)
 #endif
 
-extern void SetTimeSinceLastInputEvent();
-
 /* This the only where the definition seems to work (out of
  * vga.c/vgaHW.c/vgaCmap.c).
  */
@@ -126,6 +124,31 @@ Bool clgd6225Lcd= FALSE;
 #define BLACK_VALUE 0x00
 #define OVERSCAN_VALUE 0x01
 #endif
+
+static CARD32
+vgaOffMode(
+#if NeedFunctionPrototypes
+     OsTimerPtr	/* timer */,
+     CARD32	/* now */,
+     pointer	/* arg */
+#endif
+);
+
+static CARD32
+vgaSuspendMode(
+#if NeedFunctionPrototypes
+     OsTimerPtr	/* timer */,
+     CARD32	/* now */,
+     pointer	/* arg */
+#endif
+);
+
+static Bool
+setExternClock(
+#if NeedFunctionPrototypes
+     int	/* clock */
+#endif
+);
 
 static int currentGraphicsClock = -1;
 static int currentExternClock = -1;
@@ -305,7 +328,7 @@ vgaOffMode(timer, now, arg)
      CARD32 now;
      pointer arg;
 {
-   unsigned char sync;
+   unsigned char sync2;
    Bool on = (Bool)arg;
 
    if (!vgaPowerSaver) return(0);
@@ -319,16 +342,16 @@ vgaOffMode(timer, now, arg)
      else
        {
 	 outb(vgaIOBase + 4, 0x17);
-	 sync = inb(vgaIOBase + 5);
+	 sync2 = inb(vgaIOBase + 5);
 
 	 if (on) {
-	   sync |= 0x80;			/* enable sync   */
+	   sync2 |= 0x80;			/* enable sync   */
 	 } else {
-	   sync &= ~0x80;			/* disable sync */
+	   sync2 &= ~0x80;			/* disable sync */
 	 }
 	 
 	 usleep(10000);
-	 outb(vgaIOBase + 5, sync);
+	 outb(vgaIOBase + 5, sync2);
        }
    }
    TimerFree(vgaOffTimer);
@@ -479,8 +502,8 @@ vgaHWSaveScreen(start)
  */
 
 static Bool
-setExternClock(clock)
-     int clock;       /* the Clock index */
+setExternClock(clock2)
+     int clock2;       /* the Clock index */
 {
     int i;
 #ifdef MACH386
@@ -489,7 +512,7 @@ setExternClock(clock)
     int exit_status;
 #endif
 
-    if (clock == currentExternClock)
+    if (clock2 == currentExternClock)
       return(TRUE);
     switch(fork())
     {
@@ -524,11 +547,11 @@ setExternClock(clock)
             progname++;
           else
             progname = vga256InfoRec.clockprog;
- 	  if(clock < MAXCLOCKS){
- 	    sprintf(clockarg, "%.3f", vga256InfoRec.clock[clock] / 1000.0);
- 	    sprintf(clockindex, "%d", clock );
+ 	  if(clock2 < MAXCLOCKS){
+ 	    sprintf(clockarg, "%.3f", vga256InfoRec.clock[clock2] / 1000.0);
+ 	    sprintf(clockindex, "%d", clock2 );
  	  } else {
- 	    sprintf(clockarg, "%.3f", clock / 1000.0);
+ 	    sprintf(clockarg, "%.3f", clock2 / 1000.0);
  	    sprintf(clockindex, "%d",255 );
  	  }
           execl(vga256InfoRec.clockprog, progname, clockarg, clockindex, NULL);
@@ -574,7 +597,7 @@ setExternClock(clock)
           return(FALSE);
         }
     }
-    currentExternClock = clock;
+    currentExternClock = clock2;
     return(TRUE);
 }
 
@@ -822,11 +845,11 @@ vgaHWSave(save, size)
     outb(0x3C7,0x00);
     for (i=0; i<3; i++)
     {
-      unsigned char tmp = inb(0x3C9);
+      unsigned char tmp2 = inb(0x3C9);
 #if defined(PC98_PW) || defined(PC98_XKB) || defined(PC98_NEC) || defined(PC98_PWLB)
-      if (tmp != (~save->DAC[i]&0xFF))
+      if (tmp2 != (~save->DAC[i]&0xFF))
 #endif
-      if (tmp != (~save->DAC[i] & vgaRamdacMask)) read_error++;
+      if (tmp2 != (~save->DAC[i] & vgaRamdacMask)) read_error++;
     }
   
     if (read_error)

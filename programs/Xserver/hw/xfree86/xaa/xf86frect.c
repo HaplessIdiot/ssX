@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.3 1996/12/18 03:13:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.4 1997/01/02 04:38:47 dawes Exp $ */
 
 /*
  * Fill rectangles.
@@ -40,7 +40,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cfbfillrct.c,v 5.18 94/04/17 20:28:47 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.3 1996/12/18 03:13:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.4 1997/01/02 04:38:47 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -668,11 +668,19 @@ xf86FillRectTileCached(pDrawable, pGC, nBoxInit, pBoxInit)
 	            && (xf86AccelInfoRec.Flags &
 	            HARDWARE_PATTERN_PROGRAMMED_ORIGIN)) {
 	                /* Special case: origin offset is passed. */
-		        xf86AccelInfoRec.Subsequent8x8PatternColorExpand(
-		            (rectY1 - adjTopY) & 7,
-		            (rectX1 - adjLeftX) & 7,
-		            rectX1, rectY1, rectWidth,
-		            rectHeight);
+	                if (xf86AccelInfoRec.Flags
+	                & HARDWARE_PATTERN_SCREEN_ORIGIN)
+		            xf86AccelInfoRec.Subsequent8x8PatternColorExpand(
+		                (- adjLeftX) & 7,
+		                (- adjTopY) & 7, 
+		                rectX1, rectY1, rectWidth,
+		                rectHeight);
+		        else
+		            xf86AccelInfoRec.Subsequent8x8PatternColorExpand(
+		                (rectX1 - adjLeftX) & 7,
+		                (rectY1 - adjTopY) & 7,
+		                rectX1, rectY1, rectWidth,
+		                rectHeight);
 	            }
 	            else
 		    if (xf86AccelInfoRec.Flags

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/196 1996/12/03 16:52:46 swick $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.39 1996/12/23 07:14:25 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.40 1996/12/24 02:28:06 dawes Exp $
  */
 
 /*
@@ -131,14 +131,16 @@ static void VTGraphicsOrNoExpose PROTO((XEvent *event));
 static void VTNonMaskableEvent PROTO_XT_EV_HANDLER_ARGS;
 static void VTallocbuf PROTO((void));
 static void VTparse PROTO((void));
-static void WriteText PROTO(( TScreen *screen, char *str, int len, unsigned flags, unsigned fg, unsigned bg));
-static void ansi_modes PROTO((XtermWidget termw, void (*func)(unsigned *p, int mask)));
-static void bitclr PROTO((unsigned *p, int mask));
-static void bitset PROTO((unsigned *p, int mask));
-static void dotext PROTO((TScreen *screen, unsigned flags, int charset, Char *buf, Char *ptr, unsigned fg, unsigned bg));
-static void dpmodes PROTO((XtermWidget termw, void (*func)(unsigned *p, int mask)));
+static void WriteText PROTO(( TScreen *screen, char *str, int len));
+static void ansi_modes PROTO((XtermWidget termw, void (*func)(unsigned *p, unsigned mask)));
+static void bitclr PROTO((unsigned *p, unsigned mask));
+static void bitcpy PROTO((unsigned *p, unsigned q, unsigned mask));
+static void bitset PROTO((unsigned *p, unsigned mask));
+static void dotext PROTO((TScreen *screen, int charset, Char *buf, Char *ptr));
+static void dpmodes PROTO((XtermWidget termw, void (*func)(unsigned *p, unsigned mask)));
 static void report_win_label PROTO((TScreen *screen, int code, XTextProperty *text, Status ok));
 static void restoremodes PROTO((XtermWidget termw));
+static void resetCharsets PROTO((TScreen *screen));
 static void savemodes PROTO((XtermWidget termw));
 static void set_vt_box PROTO((TScreen *screen));
 static void unparseputn PROTO((unsigned int n, int fd));
@@ -155,10 +157,9 @@ static void StopBlinking PROTO((TScreen *screen));
 #endif
 
 #if OPT_ISO_COLORS
-static void clrColorBD PROTO((void));
-static void clrColorUL PROTO((void));
-static void setColorBD PROTO((void));
-static void setColorUL PROTO((void));
+static void setExtendedFG PROTO((void));
+static void reset_SGR_Colors PROTO((void));
+static void reset_SGR_Foreground PROTO((void));
 #endif
 
 #define	DEFAULT		-1
@@ -302,8 +303,11 @@ static int nparam;
 static ANSI reply;
 static int param[NPARAM];
 
+#ifdef UNUSED
 static unsigned long ctotal;
 static unsigned long ntotal;
+#endif
+
 static jmp_buf vtjmpbuf;
 
 /* event handlers */
@@ -812,55 +816,54 @@ void SGR_Background(color)
 	XSetForeground(screen->display, ReverseBoldGC(screen), bg);
 }
 
+/* Invoked after updating bold/underline flags, computes the extended color
+ * index to use for foreground.
+ */
 static void
-setColorBD()
+setExtendedFG()
 {
-	if (term->screen.colorBDMode) {
-		if (!(term->flags & FG_COLOR)
-		 || (term->cur_foreground == COLOR_UL)) {
-			SGR_Foreground(COLOR_BD);
-		} else if (term->cur_foreground < 8) { /* Set highlight bit */
-			SGR_Foreground(term->cur_foreground | 8);
-		}
+	int fg = term->sgr_foreground;
+
+	if (fg < 0) {
+		if (term->screen.colorULMode && (term->flags & UNDERLINE))
+			fg = COLOR_UL;
+
+		if (term->screen.colorBDMode && (term->flags & BOLD))
+			fg = COLOR_BD;
 	}
+
+	if ((fg >= 0) && (fg < 8) && (term->flags & BOLD))
+		fg |= 8;
+
+	SGR_Foreground(fg);
 }
 
 static void
-clrColorBD()
+reset_SGR_Foreground()
 {
-	if (term->screen.colorBDMode
-	 && term->flags & BOLD
-	 && !(term->flags & FG_COLOR)) {
-		if (term->cur_foreground == COLOR_BD)
-			SGR_Foreground(-1);
-		else if ((term->cur_foreground >= 8)
-		   &&    (term->cur_foreground <= 15))
-			SGR_Foreground(term->cur_foreground & 7);
-	}
+	term->sgr_foreground = -1;
+	setExtendedFG();
 }
 
 static void
-setColorUL()
+reset_SGR_Colors()
 {
-	if (term->screen.colorULMode
-	 && !(term->flags & FG_COLOR))
-		SGR_Foreground(COLOR_UL);
+	reset_SGR_Foreground();
+	SGR_Background(-1);
 }
-
-static void
-clrColorUL()
-{
-	if (term->screen.colorULMode
-	 && term->cur_foreground == COLOR_UL) {
-		if (term->screen.colorBDMode
-		 && (term->flags & BOLD))
-			SGR_Foreground(COLOR_BD);
-		else
-			SGR_Foreground(-1);
-	}
-}
-
 #endif /* OPT_ISO_COLORS */
+
+static void resetCharsets(screen)
+	TScreen *screen;
+{
+	screen->gsets[0] = 'B';			/* ASCII_G		*/
+	screen->gsets[1] = '0';			/* line drawing		*/
+	screen->gsets[2] = 'B';			/* DEC supplemental.	*/
+	screen->gsets[3] = 'B';
+	screen->curgl = 0;			/* G0 => GL.		*/
+	screen->curgr = 2;			/* G2 => GR.		*/
+	screen->curss = 0;			/* No single shift.	*/
+}
 
 static void VTparse()
 {
@@ -951,20 +954,16 @@ static void VTparse()
 			}
 			if(screen->curss) {
 				thischar = *bptr;
-				dotext(screen, term->flags,
+				dotext(screen,
 				 screen->gsets[(int)(screen->curss)],
-				 	bptr, bptr + 1,
-					term->cur_foreground,
-					term->cur_background );
+				 	bptr, bptr + 1);
 				screen->curss = 0;
 			}
 			if(bptr < cp) {
 				thischar = cp[-1];
-				dotext(screen, term->flags,
+				dotext(screen,
 				 screen->gsets[(int)(screen->curgl)],
-				 	bptr, cp,
-					term->cur_foreground,
-					term->cur_background );
+				 	bptr, cp);
 			}
 			bptr = cp;
 			break;
@@ -1387,24 +1386,17 @@ static void VTparse()
 				 case 0:
 					term->flags &=
 						~(INVERSE|BOLD|UNDERLINE|INVISIBLE);
-					if_OPT_ISO_COLORS(screen,{
-						clrColorBD(); /* first */
-						clrColorUL(); /* second */
-						if (term->flags & FG_COLOR)
-							SGR_Foreground(-1);
-						if (term->flags & BG_COLOR)
-							SGR_Background(-1);
-					})
+					if_OPT_ISO_COLORS(screen,{reset_SGR_Colors();})
 					break;
 				 case 1:	/* Bold				*/
 					/* FALLTHRU */
 				 case 5:	/* Blink, really.	*/
 					term->flags |= BOLD;
-					if_OPT_ISO_COLORS(screen,{setColorBD();})
+					if_OPT_ISO_COLORS(screen,{setExtendedFG();})
 					break;
 				 case 4:	/* Underscore		*/
 					term->flags |= UNDERLINE;
-					if_OPT_ISO_COLORS(screen,{setColorUL();})
+					if_OPT_ISO_COLORS(screen,{setExtendedFG();})
 					break;
 				 case 7:
 					term->flags |= INVERSE;
@@ -1413,14 +1405,14 @@ static void VTparse()
 					term->flags |= INVISIBLE;
 					break;
 				 case 24:
-					if_OPT_ISO_COLORS(screen,{clrColorUL();})
 					term->flags &= ~UNDERLINE;
+					if_OPT_ISO_COLORS(screen,{setExtendedFG();})
 					break;
 				 case 22: /* reset 'bold' */
 				 	/* FALLTHRU */
 				 case 25: /* reset 'blink' */
-					if_OPT_ISO_COLORS(screen,{clrColorBD();})
 					term->flags &= ~BOLD;
+					if_OPT_ISO_COLORS(screen,{setExtendedFG();})
 					break;
 				 case 27:
 					term->flags &= ~INVERSE;
@@ -1437,16 +1429,13 @@ static void VTparse()
 				 case 36:
 				 case 37:
 					if_OPT_ISO_COLORS(screen,{
-					  SGR_Foreground(
-						(param[row] - 30)
-						/* Set highlight bit if bold */
-						| ((term->flags & BOLD)
-						  ? 8 : 0));
+					  term->sgr_foreground = (param[row] - 30);
+					  setExtendedFG();
 					})
 					break;
 				 case 39:
 					if_OPT_ISO_COLORS(screen,{
-					  SGR_Foreground(-1);
+					  reset_SGR_Foreground();
 					})
 					break;
 				 case 40:
@@ -1468,10 +1457,8 @@ static void VTparse()
 					break;
 				 case 100:
 					if_OPT_ISO_COLORS(screen,{
-					  if (term->flags & FG_COLOR)
-					    SGR_Foreground(-1);
-					  if (term->flags & BG_COLOR)
-					    SGR_Background(-1);
+					  reset_SGR_Foreground();
+					  SGR_Background(-1);
 					})
 					break;
 				}
@@ -1636,25 +1623,20 @@ static void VTparse()
 		 case CASE_DECRC:
 			/* DECRC */
 			CursorRestore(term, &screen->sc);
-			if_OPT_ISO_COLORS(screen,{
-				if (term->flags & BOLD)
-					setColorBD();
-				if (term->flags & UNDERLINE)
-					setColorUL();
-			})
+			if_OPT_ISO_COLORS(screen,{setExtendedFG();})
 			parsestate = groundtable;
 			break;
 
 		 case CASE_DECKPAM:
 			/* DECKPAM */
-			term->keyboard.flags |= KYPD_APL;
+			term->keyboard.flags |= MODE_DECKPAM;
 			update_appkeypad();
 			parsestate = groundtable;
 			break;
 
 		 case CASE_DECKPNM:
 			/* DECKPNM */
-			term->keyboard.flags &= ~KYPD_APL;
+			term->keyboard.flags &= ~MODE_DECKPAM;
 			update_appkeypad();
 			parsestate = groundtable;
 			break;
@@ -1859,6 +1841,11 @@ static void VTparse()
 			parsestate = esc_sp_table;
 			break;
 
+		 case CASE_CSI_EX_STATE:
+			/* esc exclamation */
+			parsestate = csi_ex_table;
+			break;
+
 		 case CASE_S7C1T:
 			screen->control_eight_bits = False;
 			parsestate = groundtable;
@@ -1885,6 +1872,12 @@ static void VTparse()
 			parsestate = groundtable;
 			break;
 
+		 case CASE_DECSTR:
+			/* DECSTR */
+			VTReset(FALSE);
+			parsestate = groundtable;
+			break;
+
 		 case CASE_REP:
 			/* REP */
 			if (lastchar >= 0 && isprint(lastchar)) {
@@ -1892,11 +1885,9 @@ static void VTparse()
 			    count = (param[0] < 1) ? 1 : param[0];
 			    repeated[0] = lastchar;
 			    while (count-- > 0) {
-				dotext(screen, term->flags,
+				dotext(screen,
 					screen->gsets[(int)(screen->curgl)],
-					repeated, repeated+1,
-					term->cur_foreground,
-					term->cur_background );
+					repeated, repeated+1);
 			    }
 			}
 			parsestate = groundtable;
@@ -2283,9 +2274,8 @@ in_put()
  * by charset.  worry about end of line conditions (wraparound if selected).
  */
 static void
-dotext(screen, flags, charset, buf, ptr, fg, bg )
+dotext(screen, charset, buf, ptr)
     register TScreen	*screen;
-    unsigned	flags, fg, bg;
     char	charset;
     Char	*buf;		/* start of characters to process */
     Char	*ptr;		/* end */
@@ -2322,7 +2312,7 @@ dotext(screen, flags, charset, buf, ptr, fg, bg )
 	while (len > 0) {
 		n = screen->max_col - screen->cur_col +1;
 		if (n <= 1) {
-			if (screen->do_wrap && (flags&WRAPAROUND)) {
+			if (screen->do_wrap && (term->flags & WRAPAROUND)) {
 			    /* mark that we had to wrap this line */
 			    ScrnSetAttributes(screen, screen->cur_row, 0,
 					      LINEWRAPPED, LINEWRAPPED, 1);
@@ -2336,7 +2326,9 @@ dotext(screen, flags, charset, buf, ptr, fg, bg )
 		if (len < n)
 			n = len;
 		next_col = screen->cur_col + n;
-		WriteText(screen, (char *)ptr, n, flags, fg, bg );
+
+		WriteText(screen, (char *)ptr, n);
+
 		/*
 		 * the call to WriteText updates screen->cur_col.
 		 * If screen->cur_col != next_col, we must have
@@ -2353,20 +2345,21 @@ dotext(screen, flags, charset, buf, ptr, fg, bg )
  * the current cursor position.  update cursor position.
  */
 static void
-WriteText(screen, str, len, flags, fg, bg )
+WriteText(screen, str, len)
     register TScreen	*screen;
     register char	*str;
     register int	len;
-    unsigned		flags, fg, bg;
 {
-	register unsigned fgs = flags;
+	unsigned flags	= term->flags;
+	unsigned fg     = term->cur_foreground;
+	unsigned bg     = term->cur_background;
 	GC	currentGC;
  
 	if(screen->cur_row - screen->topline <= screen->max_row) {
 		if(screen->cursor_state)
 			HideCursor();
 
-		if (fgs & INSERT)
+		if (flags & INSERT)
 			InsertChar(screen, len);
 		if (!(AddToRefresh(screen))) {
 			/* make sure that the correct GC is current */
@@ -2375,14 +2368,15 @@ WriteText(screen, str, len, flags, fg, bg )
 			if(screen->scroll_amt)
 				FlushScroll(screen);
 
-			if (fgs & INVISIBLE)
+			if (flags & INVISIBLE)
 				memset(str, ' ', len);
 
-			drawXtermText(screen, fgs, currentGC,
+			drawXtermText(screen, flags, currentGC,
 				CursorX(screen, screen->cur_col),
-				CursorY(screen, screen->cur_row)
-					+ screen->fnt_norm->ascent,
+				CursorY(screen, screen->cur_row),
 				str, len);
+
+			resetXtermGC(screen, flags, False);
 
 			/*
 			 * The following statements compile data to compute the
@@ -2390,9 +2384,10 @@ WriteText(screen, str, len, flags, fg, bg )
 			 * XText.  The data may be examined via the use of a
 			 * "hidden" escape sequence.
 			 */
+#ifdef UNUSED
 			ctotal += len;
 			++ntotal;
-			resetXtermGC(screen, flags, False);
+#endif
 		}
 	}
 	ScreenWrite(screen, str, flags,  fg, bg, len);
@@ -2405,7 +2400,7 @@ WriteText(screen, str, len, flags, fg, bg )
 static void
 ansi_modes(termw, func)
     XtermWidget	termw;
-    void (*func) PROTO((unsigned *p, int mask));
+    void (*func) PROTO((unsigned *p, unsigned mask));
 {
 	register int	i;
 
@@ -2437,7 +2432,7 @@ ansi_modes(termw, func)
 static void
 dpmodes(termw, func)
     XtermWidget	termw;
-    void (*func) PROTO((unsigned *p, int mask));
+    void (*func) PROTO((unsigned *p, unsigned mask));
 {
 	register TScreen	*screen	= &termw->screen;
 	register int	i, j;
@@ -2445,17 +2440,12 @@ dpmodes(termw, func)
 	for (i=0; i<nparam; ++i) {
 		switch (param[i]) {
 		case 1:			/* DECCKM			*/
-			(*func)(&termw->keyboard.flags, CURSOR_APL);
+			(*func)(&termw->keyboard.flags, MODE_DECCKM);
 			update_appcursor();
 			break;
 		case 2:			/* ANSI/VT52 mode		*/
 			if (func == bitset) {	/* ANSI (VT100)	*/
-				screen->gsets[0] =
-				screen->gsets[1] =
-				screen->gsets[2] =
-				screen->gsets[3] = 'B';
-				screen->curgl = 0;
-				screen->curgr = 2;
+				resetCharsets(screen);
 				if_OPT_VT52_MODE(screen,{
 					screen->ansi_level = 1;})
 			}
@@ -2464,9 +2454,7 @@ dpmodes(termw, func)
 				screen->ansi_level = 0;
 				param[0] = 0;
 				param[1] = 0;
-				screen->curgl = 0;
-				screen->gsets[0] = 'B';
-				screen->gsets[1] = '0';
+				resetCharsets(screen);
 			}
 #endif
 			break;
@@ -2613,7 +2601,7 @@ savemodes(termw)
 		switch (param[i]) {
 		case 1:			/* DECCKM			*/
 			screen->save_modes[0] = termw->keyboard.flags &
-			 CURSOR_APL;
+			 MODE_DECCKM;
 			break;
 		case 3:			/* DECCOLM			*/
 			if(screen->c132)
@@ -2679,9 +2667,8 @@ restoremodes(termw)
 	for (i = 0; i < nparam; i++) {
 		switch (param[i]) {
 		case 1:			/* DECCKM			*/
-			termw->keyboard.flags &= ~CURSOR_APL;
-			termw->keyboard.flags |= screen->save_modes[0] &
-			 CURSOR_APL;
+			bitcpy(&termw->keyboard.flags,
+				screen->save_modes[0], MODE_DECCKM);
 			update_appcursor();
 			break;
 		case 3:			/* DECCOLM			*/
@@ -2692,9 +2679,9 @@ restoremodes(termw)
 				 ? 132 : 80) != ((termw->flags & IN132COLUMNS)
 				 ? 132 : 80) || j != screen->max_col + 1)
 					RequestResize(termw, -1, j, TRUE);
-				termw->flags &= ~IN132COLUMNS;
-				termw->flags |= screen->save_modes[1] &
-				 IN132COLUMNS;
+				bitcpy(&termw->flags,
+					screen->save_modes[1],
+					IN132COLUMNS);
 			}
 			break;
 		case 4:			/* DECSCLM (slow scroll)	*/
@@ -2704,27 +2691,23 @@ restoremodes(termw)
 					FlushScroll(screen);
 			} else
 				screen->jumpscroll = 1;
-			termw->flags &= ~SMOOTHSCROLL;
-			termw->flags |= screen->save_modes[2] & SMOOTHSCROLL;
+			bitcpy(&termw->flags, screen->save_modes[2], SMOOTHSCROLL);
 			update_jumpscroll();
 			break;
 		case 5:			/* DECSCNM			*/
 			if((screen->save_modes[3] ^ termw->flags) & REVERSE_VIDEO) {
-				termw->flags &= ~REVERSE_VIDEO;
-				termw->flags |= screen->save_modes[3] & REVERSE_VIDEO;
+				bitcpy(&termw->flags, screen->save_modes[3], REVERSE_VIDEO);
 				ReverseVideo(termw);
 				/* update_reversevideo done in RevVid */
 			}
 			break;
 		case 6:			/* DECOM			*/
-			termw->flags &= ~ORIGIN;
-			termw->flags |= screen->save_modes[4] & ORIGIN;
+			bitcpy(&termw->flags, screen->save_modes[4], ORIGIN);
 			CursorSet(screen, 0, 0, termw->flags);
 			break;
 
 		case 7:			/* DECAWM			*/
-			termw->flags &= ~WRAPAROUND;
-			termw->flags |= screen->save_modes[5] & WRAPAROUND;
+			bitcpy(&termw->flags, screen->save_modes[5], WRAPAROUND);
 			update_autowrap();
 			break;
 		case 8:			/* DECARM			*/
@@ -2747,8 +2730,7 @@ restoremodes(termw)
 			update_marginbell();
 			break;
 		case 45:		/* reverse wraparound	*/
-			termw->flags &= ~REVERSEWRAP;
-			termw->flags |= screen->save_modes[13] & REVERSEWRAP;
+			bitcpy(&termw->flags, screen->save_modes[13], REVERSEWRAP);
 			update_reversewrap();
 			break;
 #ifdef ALLOWLOGGING
@@ -2959,7 +2941,7 @@ window_ops(termw)
  */
 static void bitset(p, mask)
     unsigned *p;
-    int mask;
+    unsigned mask;
 {
 	*p |= mask;
 }
@@ -2969,9 +2951,21 @@ static void bitset(p, mask)
  */
 static void bitclr(p, mask)
     unsigned *p;
-    int mask;
+    unsigned mask;
 {
 	*p &= ~mask;
+}
+
+/*
+ * Copy bits from one word to another, given a mask
+ */
+static void bitcpy(p, q, mask)
+    unsigned *p;
+    unsigned q;
+    unsigned mask;
+{
+	bitclr(p, mask);
+	bitset(p, q & mask);
 }
 
 void
@@ -3418,7 +3412,8 @@ static void VTInitialize (wrequest, wnew, args, num_args)
    if (!color_ok)
 	new->screen.colorMode = False;
 
-   new->num_ptrs = new->screen.colorMode ? 4 : 2;
+   new->num_ptrs = new->screen.colorMode ? 3 : 2;
+   new->sgr_foreground = -1;
 #endif /* OPT_ISO_COLORS */
    new->screen.underline = request->screen.underline;
 
@@ -3691,13 +3686,7 @@ static void VTRealize (w, valuemask, values)
 
 	/* Reset variables used by ANSI emulation. */
 
-	screen->gsets[0] = 'B';			/* ASCII_G		*/
-	screen->gsets[1] = '0';			/* line drawing		*/
-	screen->gsets[2] = 'B';			/* DEC supplemental.	*/
-	screen->gsets[3] = 'B';
-	screen->curgl = 0;			/* G0 => GL.		*/
-	screen->curgr = 2;			/* G2 => GR.		*/
-	screen->curss = 0;			/* No single shift.	*/
+	resetCharsets(screen);
 
 	XDefineCursor(screen->display, VShellWindow, screen->pointer_cursor);
 
@@ -3990,13 +3979,12 @@ ShowCursor()
 
 	drawXtermText(screen, flags, currentGC,
 		x = CursorX(screen, screen->cur_col),
-		y = CursorY(screen, screen->cur_row) + 
-			screen->fnt_norm->ascent,
+		y = CursorY(screen, screen->cur_row),
 		(char *) &c, 1);
 
 	if (!screen->select && !screen->always_highlight) {
 		screen->box->x = x;
-		screen->box->y = y - screen->fnt_norm->ascent;
+		screen->box->y = y;
 		XDrawLines (screen->display, TextWindow(screen), 
 			    screen->cursoroutlineGC ? screen->cursoroutlineGC 
 			    			    : currentGC,
@@ -4024,8 +4012,9 @@ HideCursor()
 	flags = SCRN_BUF_ATTRS(screen, screen->cursor_row)[screen->cursor_col];
 
 	if_OPT_ISO_COLORS(screen,{
-	    fg = SCRN_BUF_FORES(screen, screen->cursor_row)[screen->cursor_col];
-	    bg = SCRN_BUF_BACKS(screen, screen->cursor_row)[screen->cursor_col];
+	    unsigned fb = SCRN_BUF_COLOR(screen, screen->cursor_row)[screen->cursor_col];
+	    fg = extract_fg(fb, flags);
+	    bg = extract_bg(fb);
 	})
 
 #ifndef NO_ACTIVE_ICON
@@ -4053,8 +4042,7 @@ HideCursor()
 
 	drawXtermText(screen, flags, currentGC,
 		CursorX(screen, screen->cursor_col),
-		CursorY(screen, screen->cursor_row)
-			+ screen->fnt_norm->ascent,
+		CursorY(screen, screen->cursor_row),
 		&c, 1);
 
 	screen->cursor_state = OFF;
@@ -4118,28 +4106,44 @@ BlinkCursor(closure, id)	/* XtTimerCallbackProc */
 }
 #endif /* OPT_BLINK_CURS */
 
+/*
+ * Implement soft or hard (full) reset of the VTxxx emulation.  There are a
+ * couple of differences from real DEC VTxxx terminals (to avoid breaking
+ * applications which have come to rely on xterm doing this):
+ *
+ *	+ autowrap mode should be reset (instead it's reset to the resource
+ *	  default).
+ */
 void
 VTReset(full)
     Boolean full;
 {
 	register TScreen *screen = &term->screen;
 
+	/* make cursor visible */
+	screen->cursor_set = ON;
+
 	/* reset scrolling region */
 	screen->top_marg = 0;
 	screen->bot_marg = screen->max_row;
-	term->flags &= ~ORIGIN;
-	if(full) {
+
+	bitclr(&term->flags, ORIGIN);
+
+	if_OPT_ISO_COLORS(screen,{reset_SGR_Colors();})
+
+	/* Reset character-sets to initial state */
+	resetCharsets(screen);
+
+	/* Reset DECSCA */
+	bitclr(&term->flags, PROTECTED);
+	screen->protected_mode = OFF_PROTECT;
+
+	if (full) {	/* RIS */
 		TabReset (term->tabs);
 		term->keyboard.flags = 0;
 		update_appcursor();
 		update_appkeypad();
-		screen->gsets[0] = 'B';
-		screen->gsets[1] = '0';
-		screen->gsets[2] = 'B';
-		screen->gsets[3] = 'B';
-		screen->curgl = 0;
-		screen->curgr = 2;
-		screen->curss = 0;
+
 		FromAlternate(screen);
 		ClearScreen(screen);
 		screen->cursor_state = OFF;
@@ -4151,8 +4155,10 @@ VTReset(full)
 		update_autowrap();
 		update_reversewrap();
 		update_autolinefeed();
+
 		screen->jumpscroll = !(term->flags & SMOOTHSCROLL);
 		update_jumpscroll();
+
 		if(screen->c132 && (term->flags & IN132COLUMNS)) {
 		        Dimension junk;
 			XtMakeResizeRequest(
@@ -4167,6 +4173,26 @@ VTReset(full)
 				xevents();
 		}
 		CursorSet(screen, 0, 0, term->flags);
+		CursorSave(term, &screen->sc);
+	} else {	/* DECSTR */
+		/*
+		 * There's a tiny difference, to accommodate usage of xterm. 
+		 * We reset autowrap to the resource values rather than turning
+		 * it off.
+		 *
+		 * FIXME: also reset AM, DECNKM when they're implemented.
+		 */
+		term->keyboard.flags &= ~(MODE_DECCKM);
+		bitcpy(&term->flags, term->initflags, WRAPAROUND|REVERSEWRAP);
+		bitclr(&term->flags, INSERT|INVERSE|BOLD|UNDERLINE|INVISIBLE);
+		if_OPT_ISO_COLORS(screen,{reset_SGR_Colors();})
+		update_appcursor();
+		update_autowrap();
+		update_reversewrap();
+
+		CursorSave(term, &screen->sc);
+		screen->sc.row =
+		screen->sc.col = 0;
 	}
 	longjmp(vtjmpbuf, 1);	/* force ground state in parser */
 }

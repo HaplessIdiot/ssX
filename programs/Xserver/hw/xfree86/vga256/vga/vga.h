@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.19 1996/12/28 08:19:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.20 1997/01/04 12:19:22 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -96,20 +96,78 @@ extern int    vga256ValidTokens[];
  * structure for accessing the video chip`s functions
  */
 typedef struct {
-  Bool (* ChipProbe)();
-  char * (* ChipIdent)();
-  void (* ChipEnterLeave)();
-  Bool (* ChipInit)();
-  int (* ChipValidMode)();
-  void * (* ChipSave)();
-  void (* ChipRestore)();
-  void (* ChipAdjust)();
-  void (* ChipSaveScreen)();
-  void (* ChipGetMode)();
-  void (* ChipFbInit)();
-  void (* ChipSetRead)();
-  void (* ChipSetWrite)();
-  void (* ChipSetReadWrite)();
+  Bool (* ChipProbe)(
+#if NeedNestedPrototypes
+	void
+#endif
+	);
+  char * (* ChipIdent)(
+#if NeedNestedPrototypes
+	int
+#endif
+	);
+  void (* ChipEnterLeave)(
+#if NeedNestedPrototypes
+	int
+#endif
+	);
+  Bool (* ChipInit)(
+#if NeedNestedPrototypes
+	DisplayModePtr
+#endif
+	);
+  int (* ChipValidMode)(
+#if NeedNestedPrototypes
+	DisplayModePtr,
+	Bool
+#endif
+	);
+  void * (* ChipSave)(
+#if NeedNestedPrototypes
+	void *
+#endif
+	);
+  void (* ChipRestore)(
+#if NeedNestedPrototypes
+	void *
+#endif
+	);
+  void (* ChipAdjust)(
+#if NeedNestedPrototypes
+	int,
+	int
+#endif
+	);
+  void (* ChipSaveScreen)(
+#if NeedNestedPrototypes
+	int
+#endif
+	);
+  void (* ChipGetMode)(
+#if NeedNestedPrototypes
+	DisplayModePtr
+#endif
+	);
+  void (* ChipFbInit)(
+#if NeedNestedPrototypes
+	void
+#endif
+	);
+  void (* ChipSetRead)(
+#if NeedNestedPrototypes
+	int
+#endif
+	);
+  void (* ChipSetWrite)(
+#if NeedNestedPrototypes
+	int
+#endif
+	);
+  void (* ChipSetReadWrite)(
+#if NeedNestedPrototypes
+	int
+#endif
+	);
   int ChipMapSize;
   int ChipSegmentSize;
   int ChipSegmentShift;
@@ -140,13 +198,31 @@ typedef struct {
 extern unsigned char byte_reversed[256];
 
 /* All each driver to set a display pitch other than virtualX */
-void vgaSetPitchAdjustHook(int (* ChipPitchAdjust)());
+void vgaSetPitchAdjustHook(int (* ChipPitchAdjust)(
+#if NeedNestedPrototypes
+	void
+#endif
+	));
 
 /* All each driver to set an offset into the linear frame buffer */
-void vgaSetLinearOffsetHook(int (* ChipLinearOffset)());
+void vgaSetLinearOffsetHook(int (* ChipLinearOffset)(
+#if NeedNestedPrototypes
+	void
+#endif
+	));
 
 /* Allow each driver to hook the ScreenInit function */
-void vgaSetScreenInitHook(Bool (* ChipScrInit)());
+void vgaSetScreenInitHook(Bool (* ChipScrInit)(
+#if NeedNestedPrototypes
+	ScreenPtr	/* pScreen */,
+	pointer		/* base */,
+	int		/* x */,
+	int		/* y */,
+	int		/* resx */,
+	int		/* resy */,
+	int		/* width */
+#endif
+	));
 
 /* Allow each driver to provide a VESA Display Power Management
    Signaling (DPMS) mode setting function */
@@ -244,10 +320,32 @@ typedef struct {
 
 typedef struct {
   Bool Initialized;
-  void (*Init)();
-  void (*Restore)();
-  void (*Warp)();
-  void (*QueryBestSize)();
+  void (*Init)(
+#if NeedNestedPrototypes
+	int ,
+	ScreenPtr
+#endif
+	);
+  void (*Restore)(
+#if NeedNestedPrototypes
+	ScreenPtr
+#endif
+	);
+  void (*Warp)(
+#if NeedNestedPrototypes
+	ScreenPtr ,
+	int ,
+	int
+#endif
+	);
+  void (*QueryBestSize)( /* QueryBestSizeProcPtr */
+#if NeedNestedPrototypes
+	int  ,
+	unsigned short *  ,
+	unsigned short *  ,
+	ScreenPtr  
+#endif
+	);
 } vgaHWCursorRec, *vgaHWCursorPtr;
 
 #define OVERSCAN 0x11		/* Index of OverScan register */
@@ -354,7 +452,11 @@ Bool vgaHWInit(
 void vgaGetClocks(
 #if NeedFunctionPrototypes
     int num,
-    Bool (*ClockFunc)()
+#if NeedNestedPrototypes
+    Bool (*ClockFunc)(int)
+#else
+    Bool (*ClockFunc)())
+#endif
 #endif
 );
 

@@ -5,7 +5,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.3 1996/08/13 11:37:05 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.4 1996/08/20 12:33:54 dawes Exp $ */
 
 /***********************************************************
 
@@ -879,12 +879,12 @@ char **envp;
 	term->initflags = term->flags;
 
 	if (term->misc.appcursorDefault) {
-	    term->keyboard.flags |= CURSOR_APL;
+	    term->keyboard.flags |= MODE_DECCKM;
 	    update_appcursor();
 	}
 
 	if (term->misc.appkeypadDefault) {
-	    term->keyboard.flags |= KYPD_APL;
+	    term->keyboard.flags |= MODE_DECKPAM;
 	    update_appkeypad();
 	}
 

@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/nv/nv_driver.c,v 3.3 1996/12/27 07:05:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/nv/nv_driver.c,v 3.4 1996/12/28 08:18:14 dawes Exp $ */
 
 #include <math.h>
 #include "X.h"
@@ -113,8 +113,8 @@ static char *NVIdent(int n);
 static void NVEnterLeave(Bool enter);
 static Bool NVInit(DisplayModePtr mode);
 static int NVValidMode(DisplayModePtr mode,Bool verbose);
-static void *NVSave(vgaNVPtr save);
-static void NVRestore(vgaNVPtr restore);
+static void *NVSave(void *data);
+static void NVRestore(void *data);
 static void NVAdjust(int x,int y);
 
 
@@ -402,8 +402,9 @@ static void NVEnterLeave(Bool enter)
  * used when the server enters/changes video modes.  The mode definitions 
  * have previously been initialized by the Init() function, below.
  */
-static void NVRestore(vgaNVPtr restore)     
+static void NVRestore(void *data)     
 {
+  vgaNVPtr restore = data;
   vgaProtect(TRUE);
 
   /*
@@ -448,8 +449,9 @@ static void NVRestore(vgaNVPtr restore)
  * into the vgaNVRec data structure.  There is in general no need to
  * mask out bits here - just read the registers.
  */
-static void *NVSave(vgaNVPtr save)
+static void *NVSave(void *data)
 {
+  vgaNVPtr save = data;
   /*
    * This function will handle creating the data structure and filling
    * in the generic VGA portion.

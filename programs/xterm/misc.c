@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: misc.c /main/112 1996/11/29 10:34:07 swick $
- *	$XFree86: xc/programs/xterm/misc.c,v 3.15 1996/09/22 05:16:10 dawes Exp $
+ *	$XFree86: xc/programs/xterm/misc.c,v 3.16 1996/12/23 07:14:36 dawes Exp $
  */
 
 /*
@@ -1338,6 +1338,7 @@ void xt_error(message)
     exit(1);
 }
 
+int
 XStrCmp(s1, s2)
 char *s1, *s2;
 {

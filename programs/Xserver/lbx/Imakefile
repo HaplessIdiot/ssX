@@ -23,6 +23,7 @@
  *
  * Author:  Keith Packard, Network Computing Devices
  */
+/* $XFree86$ */
 
 #include <Server.tmpl>
 
@@ -51,5 +52,7 @@ NormalLibraryObjectRule()
 NormalLibraryTarget(lbx,$(OBJS))
 LintLibraryTarget(lbx,$(SRCS))
 NormalLintTarget($(SRCS))
+
+InstallLinkKitLibrary(lbx,$(LINKKITDIR)/lib)
 
 DependTarget()

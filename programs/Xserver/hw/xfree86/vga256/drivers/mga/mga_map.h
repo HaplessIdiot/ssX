@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_map.h,v 3.1 1996/11/24 09:56:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_map.h,v 3.2 1996/12/09 11:54:19 dawes Exp $ */
 
 #if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define CATNAME(prefix,subname) prefix##subname
@@ -52,5 +52,7 @@
 #define StrSubsequentCPUToScreenColorExpand "CPUColorExp"
 #define StrSetupForScreenToScreenColorExpand   "ScreenColorExp"
 #define StrSubsequentScreenToScreenColorExpand "ScreenColorExp"
+#define StrSetupFor8x8PatternColorExpand   "8x8ColorExp"
+#define StrSubsequent8x8PatternColorExpand "8x8ColorExp"
 #define StrSubsequentTwoPointLine  "Lines"
 #define StrSetClippingRectangle    "Lines"

@@ -1,5 +1,5 @@
 /* $XConsortium: menu.c /main/66 1996/12/01 23:46:59 swick $ */
-/* $XFree86: xc/programs/xterm/menu.c,v 3.7 1996/12/23 07:14:34 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/menu.c,v 3.8 1996/12/24 02:28:08 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -643,7 +643,7 @@ static void do_appcursor (gw, closure, data)
     Widget gw;
     XtPointer closure, data;
 {
-    term->keyboard.flags ^= CURSOR_APL;
+    term->keyboard.flags ^= MODE_DECCKM;
     update_appcursor();
 }
 
@@ -652,7 +652,7 @@ static void do_appkeypad (gw, closure, data)
     Widget gw;
     XtPointer closure, data;
 {
-    term->keyboard.flags ^= KYPD_APL;
+    term->keyboard.flags ^= MODE_DECKPAM;
     update_appkeypad();
 }
 
@@ -1176,7 +1176,7 @@ void HandleAppCursor(w, event, params, param_count)
     String *params;
     Cardinal *param_count;
 {
-    handle_toggle (do_appcursor, (int) (term->keyboard.flags & CURSOR_APL),
+    handle_toggle (do_appcursor, (int) (term->keyboard.flags & MODE_DECCKM),
 		   params, *param_count, w, (XtPointer)0, (XtPointer)0);
 }
 
@@ -1186,7 +1186,7 @@ void HandleAppKeypad(w, event, params, param_count)
     String *params;
     Cardinal *param_count;
 {
-    handle_toggle (do_appkeypad, (int) (term->keyboard.flags & KYPD_APL),
+    handle_toggle (do_appkeypad, (int) (term->keyboard.flags & MODE_DECKPAM),
 		   params, *param_count, w, (XtPointer)0, (XtPointer)0);
 }
 

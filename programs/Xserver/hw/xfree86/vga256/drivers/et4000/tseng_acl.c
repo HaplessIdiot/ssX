@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/tseng_acl.c,v 3.1 1996/12/28 08:17:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/tseng_acl.c,v 3.2 1996/12/31 05:01:17 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -326,6 +326,7 @@ void tseng_init_acl()
 	/* writing destination address will start ACL */
         *ACL_OPERATION_STATE = 0x10;
     }
+    *ACL_XY_DIRECTION = 0;
 
     *MMU_CONTROL = 0x74;
 

@@ -22,7 +22,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_ger.h,v 3.5 1996/12/28 07:42:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_ger.h,v 3.6 1996/12/30 14:00:20 dawes Exp $ */
 
 /* Graphics Engine for 9400/9420/9430 */
 
@@ -52,7 +52,7 @@
 #define GER_DRAWFLAG	0x28		/* long */
 #define		STENCIL		0x8000
 #define		SOLIDFILL	0x4000
-#define		TRANS_ENABLE	0x1000
+#define		TRANS_ENABLE	0x3000
 #define		YMAJ		0x0400
 #define		XNEG		0x0200
 #define		YNEG		0x0100

@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c /main/247 1996/11/29 10:33:51 swick $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.44 1996/10/03 08:50:34 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.45 1996/12/23 07:14:32 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -179,7 +179,6 @@ static Bool IsPts = False;
 #define USE_SYSV_TERMIO
 #undef  TIOCSLTC
 #include <sys/termio.h>
-#undef CAPS_LOCK
 #endif
 
 #ifdef CSRG_BASED
@@ -194,8 +193,6 @@ static Bool IsPts = False;
 #include <sys/stat.h>
 
 #ifdef Lynx
-#undef CAPS_LOCK
-#define CAPS_LOCK	0x01
 #ifndef BSDLY
 #define BSDLY	0
 #endif
@@ -1005,8 +1002,6 @@ int number_ourTopLevelShellArgs = 2;
 Widget toplevel;
 Bool waiting_for_initial_map;
 
-extern void do_hangup();
-
 /*
  * DeleteWindow(): Action proc to implement ICCCM delete_window.
  */
@@ -1494,12 +1489,12 @@ char **argv;
 	term->initflags = term->flags;
 
 	if (term->misc.appcursorDefault) {
-	    term->keyboard.flags |= CURSOR_APL;
+	    term->keyboard.flags |= MODE_DECCKM;
 	    update_appcursor();
 	}
 
 	if (term->misc.appkeypadDefault) {
-	    term->keyboard.flags |= KYPD_APL;
+	    term->keyboard.flags |= MODE_DECKPAM;
 	    update_appkeypad();
 	}
 
@@ -2329,9 +2324,6 @@ spawn ()
 #else
 		int pgrp = getpid();
 #endif
-#ifdef USE_SYSV_TERMIO
-		char numbuf[12];
-#endif	/* USE_SYSV_TERMIO */
 #if defined(UTMP) && defined(USE_SYSV_UTMP)
 		char* ptyname;
 		char* ptynameptr = 0;
@@ -3120,10 +3112,13 @@ spawn ()
 
 #ifdef USE_SYSV_ENVVARS
 #ifndef TIOCSWINSZ
+		{
+		char numbuf[12];
 		sprintf (numbuf, "%d", screen->max_col + 1);
 		Setenv("COLUMNS=", numbuf);
 		sprintf (numbuf, "%d", screen->max_row + 1);
 		Setenv("LINES=", numbuf);
+		}
 #endif
 #ifdef UTMP
 		if (pw) {	/* SVR4 doesn't provide these */
