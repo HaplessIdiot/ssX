@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.17 1995/12/16 08:20:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.18 1996/02/04 09:06:58 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -94,9 +94,22 @@ extern Bool ICS2595SetClock(
 extern void xf86GetClocks(
 #if NeedFunctionPrototypes
 	int,
-	Bool (*)(), 
-	void (*)(),
-	void (*)(),
+	Bool (*)(
+#if NeedNestedPrototypes
+		int
+#endif
+		), 
+	void (*)(
+#if NeedNestedPrototypes
+		Bool
+#endif
+		),
+	void (*)(
+#if NeedNestedPrototypes
+		ScreenPtr,
+		Bool
+#endif
+		),
 	int,
 	int,
 	int,
@@ -192,7 +205,14 @@ extern void Ti3025SetClock(
 #if NeedFunctionPrototypes
 	long,
 	int,
-        void (*)()
+        void (*)(
+#if NeedNestedPrototypes
+		int,
+		unsigned char,
+		unsigned char,
+		unsigned char
+#endif
+		)
 #endif
 );
 

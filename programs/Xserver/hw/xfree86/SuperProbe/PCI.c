@@ -7,7 +7,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.c,v 3.2 1996/02/22 05:11:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.c,v 3.3 1996/03/11 12:34:33 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -20,7 +20,7 @@ xf86scanpci()
     unsigned char tmp1, tmp2;
     unsigned int i, j, idx = 0;
     struct pci_config_reg pcr;
-    unsigned PCI_CtrlIOPorts[] = { 0xCF8, 0xCFA, 0xCFC };
+    Word PCI_CtrlIOPorts[] = { 0xCF8, 0xCFA, 0xCFC };
     int Num_PCI_CtrlIOPorts = 3;
     unsigned PCI_DevIOAddrPorts[16*16];
     int Num_PCI_DevIOAddrPorts = 16*16;

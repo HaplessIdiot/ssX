@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.9 1996/02/12 11:12:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.10 1996/03/10 12:04:39 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -514,7 +514,7 @@ xf86MouseProc(device, what)
 	if ((what == DEVICE_INIT) &&
 	    (ret == Success)) {
 	    AssignTypeAndName(device, local->atom, local->name);
-	    ErrorF("assignig 0x%x atom=%d name=%s\n", device,
+	    ErrorF("assigning 0x%x atom=%d name=%s\n", device,
 		   local->atom, local->name);
 	}
     }

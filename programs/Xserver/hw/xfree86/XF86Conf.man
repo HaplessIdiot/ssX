@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.35 1996/02/22 05:10:55 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.36 1996/03/04 04:57:09 dawes Exp $
 .TH XF86Config 4/5 "Version 3.1.2D"  "XFree86"
 .SH NAME
 XF86Config - Configuration File for XFree86
@@ -845,6 +845,10 @@ multiple devices for one tablet.
 .TP 4
 .B Mode \fIRelative|Absolute\fP
 sets the mode of the device.
+.TP 4
+.B TiltMode
+enables tilt report if your tablet supports it (ROM version 1.4 and above).
+If this is enabled, multiple devices at the same time will not be reported.
 .RE
 .TP
 The \fBElographics\fP subsection support the following entries:

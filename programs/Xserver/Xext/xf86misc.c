@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.12 1996/03/04 04:54:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.13 1996/03/10 11:53:40 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -168,11 +168,11 @@ ProcXF86MiscGetMouseSettings(client)
     rep.sequenceNumber = client->sequence;
     rep.mousetype = xf86Info.mouseDev.mseType;
 #ifdef XQUEUE
-    if (xf86Info.mseProc == xf86XqueMseProc)
+    if (xf86Info.mouseDev.mseProc == xf86XqueMseProc)
         rep.mousetype = MTYPE_XQUEUE;
 #endif
 #if defined(USE_OSMOUSE) || defined(OSMOUSE_ONLY)
-    if (xf86Info.mseProc == xf86OsMouseProc)
+    if (xf86Info.mouseDev.mseProc == xf86OsMouseProc)
         rep.mousetype = MTYPE_OSMOUSE;
 #endif
     rep.baudrate = xf86Info.mouseDev.baudRate;

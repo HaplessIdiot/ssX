@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: misc.c /main/106 1996/02/02 14:27:57 kaleb $
- *	$XFree86: xc/programs/xterm/misc.c,v 3.9 1996/01/30 15:28:30 dawes Exp $
+ *	$XFree86: xc/programs/xterm/misc.c,v 3.10 1996/02/04 09:18:08 dawes Exp $
  */
 
 /*
@@ -91,21 +91,34 @@ static void selectwindow PROTO((TScreen *screen, int flag));
 static void unselectwindow PROTO((TScreen *screen, int flag));
 static void withdraw_window PROTO((Display *dpy, Window w, int scr));
 
+extern XtAppContext app_con;
+
 void
 xevents()
 {
 	XEvent event;
+	XtInputMask input_mask;
 	register TScreen *screen = &term->screen;
 
 	if(screen->scroll_amt)
 		FlushScroll(screen);
-	if (!XPending (screen->display))
-	    /* protect against events/errors being swallowed by us or Xlib */
+	/*
+	 * process timeouts, relying on the fact that XtAppProcessEvent
+	 * will process the timeout and return without blockng on the 
+	 * XEvent queue.  Other sources i.e. the pty are handled elsewhere 
+	 * with select().
+	 */
+	while ((input_mask = XtAppPending(app_con)) & XtIMTimer)
+		XtAppProcessEvent(app_con, XtIMTimer);
+	/*
+	 * If there's no XEvents, don't wait around...
+	 */
+	if ((input_mask & XtIMXEvent) != XtIMXEvent)
 	    return;
 	do {
 		if (waitingForTrackInfo)
 			return;
-		XNextEvent (screen->display, &event);
+		XtAppNextEvent (app_con, &event);
 		/*
 		 * Hack to get around problems with the toolkit throwing away
 		 * eventing during the exclusive grab of the menu popup.  By
@@ -131,7 +144,7 @@ xevents()
 		     (event.xany.type != ButtonPress) &&
 		     (event.xany.type != ButtonRelease)))
 		    XtDispatchEvent(&event);
-	} while (QLength(screen->display) > 0);
+	} while ((input_mask = XtAppPending(app_con)) & XtIMXEvent);
 }
 
 
@@ -361,7 +374,7 @@ Bell(which,percent)
        the bell again? */
     if(screen->bellSuppressTime) {
 	if(screen->bellInProgress) {
-	    if (QLength(screen->display) ||
+	    if (XtAppPending(app_con) ||
 		GetBytesAvailable (ConnectionNumber(screen->display)) > 0)
 		xevents();
 	    if(screen->bellInProgress) { /* even after new events? */

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.83 1996/03/10 12:04:28 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.84 1996/03/11 13:13:07 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1240,7 +1240,7 @@ configKeyboardSection()
 #ifdef XQUEUE
         xf86Info.kbdProc   = xf86XqueKbdProc;
         xf86Info.kbdEvents = xf86XqueEvents;
-        xf86Info.xqueSema  = 0;
+        xf86Info.mouseDev.xqueSema  = 0;
         if (xf86Verbose)
           ErrorF("%s Xqueue selected for keyboard input\n",
   	         XCONFIG_GIVEN);

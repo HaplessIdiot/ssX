@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c /main/239 1995/12/10 17:21:49 gildea $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.28 1996/01/30 15:28:27 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.29 1996/02/12 11:16:45 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -340,6 +340,10 @@ extern Time_t time ();
 #if defined(apollo) && OSMAJORVERSION == 10 && OSMINORVERSION < 4
 #define ttyslot() 1
 #endif /* apollo */
+
+#ifdef sun
+#include <sys/filio.h>
+#endif
 
 #ifdef SVR4
 #include <utmpx.h>
@@ -3972,7 +3976,7 @@ int GetBytesAvailable (fd)
 {
 #ifndef AMOEBA
 #ifdef FIONREAD
-    static long arg;
+    long arg;
     ioctl (fd, FIONREAD, (char *) &arg);
     return (int) arg;
 #else
@@ -3985,11 +3989,15 @@ int GetBytesAvailable (fd)
     else
         return 1;
 #else /* !MINIX */
+#ifdef FIORDCK
+    return (ioctl (fd, FIORDCHK, NULL));
+#else /* !FIORDCK */
     struct pollfd pollfds[1];
 
     pollfds[0].fd = fd;
     pollfds[0].events = POLLIN;
     return poll (pollfds, 1, 0);
+#endif /* FIORDCK */
 #endif /* MINIX */
 #endif
 #else

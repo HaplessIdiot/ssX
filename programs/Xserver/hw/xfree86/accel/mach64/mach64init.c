@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.12 1996/01/28 07:29:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.13 1996/02/04 09:03:17 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -2050,7 +2050,7 @@ void mach64SetRamdac(colorDepth, AccelMode, dotClock)
 	muxMode = mach64ProgramInternal(colorDepth, dotClock);
 	break;
     case DAC_IBMRGB514:
-	muxMode = mach64ProgramIBMRGB514(colorDepth, dotClock);
+	muxMode = mach64ProgramIBMRGB514(colorDepth, AccelMode);
 	break;
 #ifdef NOT_YET_SUPPORTED
     case DAC_STG1700:

@@ -1,6 +1,6 @@
 .\" Copyright (c) 1996  Joe Moss, The XFree86 Project
 .\" 
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/doc/man/XF86Misc.man,v 3.0 1996/02/22 05:12:00 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/doc/man/XF86Misc.man,v 3.1 1996/02/24 05:59:01 dawes Exp $
 .de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
@@ -197,6 +197,8 @@ Mouse protocols
 Keyboard types
 .IP \fBMF_\fP* 1i
 Mouse flags
-.SH AUTHOR
+.SH "SEE ALSO"
+xset(1)
+.SH AUTHORS
 Joe Moss and David Dawes, The XFree86 Project, Inc.
 

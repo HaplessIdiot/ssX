@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.28 1996/03/04 05:14:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.29 1996/03/10 12:04:30 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1100,7 +1100,7 @@ xf86PostMseEvent(device, buttons, dx, dy)
         {
 	    private->truebuttons = truebuttons;
 	    timer = TimerSet(timer, 0, private->emulate3Timeout, buttonTimer,
-			     (pointer)private);
+			     (pointer)device);
         }
       else
         {

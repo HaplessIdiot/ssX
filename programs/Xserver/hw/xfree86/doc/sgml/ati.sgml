@@ -5,7 +5,7 @@
 
 <title>ATI adapters README
 <author>Marc Aurele La France
-<date>16 February 1996
+<date>13 March 1996
 <abstract>
 This is the README for the XFree86 ATI VGA driver used in the XF86_Mono,
 XF86_VGA16 and XF86_SVGA servers.
@@ -208,13 +208,12 @@ Video memory banking does not work in the 16-colour and monochrome servers on
 V3, V4 and V5 adapters.<p>
 Interlaced modes do not work in the monochrome server on 28800-x adapters when
 using a virtual resolution wider than 1024 pixels.<p>
-Interlaced modes do not work on 88800CT &amp; 88800ET adapters
-(Graphics Xpression PCI).
+Some (particularly low resolution) interlaced modes do not work on 88800CT
+&amp; 88800ET adapters (Graphics Xpression PCI).<p>
 Support for virtual resolutions using more than 1MB of video memory is still
 incomplete.
-Specifically, such support should work on Mach32 adapters but is untested.
-Also, such support *does* work on 88800CT &amp; 88800ET adapters, but not on any
-other Mach64 adapters.<p>
+Specifically, such support works on Mach32 adapters, and on 88800CT &amp;
+88800ET adapters, but not on any other Mach64 adapters.<p>
 There is some controversy over whether or not clocks higher than 135MHz should
 be allowed on CT &amp; ET adapters.
 For now, clocks will be limited to 135MHz by default.  
@@ -226,7 +225,7 @@ accelerated functionality.<p>
 Please e-mail any bug reports, comments, etc. to <bf>Marc Aurele La
 France</bf>, <it>tsi@ualberta.ca</it><p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.8 1996/02/22 05:12:06 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.9 1996/02/24 10:19:22 dawes Exp $
 
 
 
