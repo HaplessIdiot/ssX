@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/mipict.c,v 1.6 2001/01/29 15:08:09 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/mipict.c,v 1.7 2001/06/01 01:06:08 dawes Exp $
  *
  * Copyright © 1999 Keith Packard
  *
@@ -329,7 +329,6 @@ miComputeCompositeRegion (RegionPtr	pRegion,
 			  CARD16	width,
 			  CARD16	height)
 {
-    RegionPtr	pDstClip = pDst->pCompositeClip;
     int		v;
 
     pRegion->extents.x1 = xDst;
@@ -345,6 +344,16 @@ miComputeCompositeRegion (RegionPtr	pRegion,
 	REGION_UNINIT (pScreen, pRegion);
 	return FALSE;
     }
+    if (pSrc->alphaMap)
+    {
+	if (!miClipPictureSrc (pRegion, pSrc->alphaMap,
+			       xDst - (xSrc + pSrc->alphaOrigin.x),
+			       yDst - (ySrc + pSrc->alphaOrigin.y)))
+	{
+	    REGION_UNINIT (pScreen, pRegion);
+	    return FALSE;
+	}
+    }
     /* clip against mask */
     if (pMask)
     {
@@ -353,11 +362,31 @@ miComputeCompositeRegion (RegionPtr	pRegion,
 	    REGION_UNINIT (pScreen, pRegion);
 	    return FALSE;
 	}	
+	if (pMask->alphaMap)
+	{
+	    if (!miClipPictureSrc (pRegion, pMask->alphaMap,
+				   xDst - (xMask + pMask->alphaOrigin.x),
+				   yDst - (yMask + pMask->alphaOrigin.y)))
+	    {
+		REGION_UNINIT (pScreen, pRegion);
+		return FALSE;
+	    }
+	}
     }
-    if (!miClipPictureReg (pRegion, pDstClip, 0, 0))
+    if (!miClipPictureReg (pRegion, pDst->pCompositeClip, 0, 0))
     {
 	REGION_UNINIT (pScreen, pRegion);
 	return FALSE;
+    }
+    if (pDst->alphaMap)
+    {
+	if (!miClipPictureReg (pRegion, pDst->alphaMap->pCompositeClip,
+			       -pDst->alphaOrigin.x,
+			       -pDst->alphaOrigin.y))
+	{
+	    REGION_UNINIT (pScreen, pRegion);
+	    return FALSE;
+	}
     }
     return TRUE;
 }
