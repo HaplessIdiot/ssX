@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Module.c,v 1.6 2000/10/20 14:59:02 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Module.c,v 1.7 2001/06/30 04:00:23 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -103,21 +103,21 @@ xf86parseModuleSection (void)
 			ptr->mod_comment = xf86addComment(ptr->mod_comment, val.str);
 			break;
 		case LOAD:
-			if (xf86getToken (NULL) != STRING)
+			if (xf86getSubToken (&(ptr->mod_comment)) != STRING)
 				Error (QUOTE_MSG, "Load");
 			ptr->mod_load_lst =
 				xf86addNewLoadDirective (ptr->mod_load_lst, val.str,
 									 XF86_LOAD_MODULE, NULL);
 			break;
 		case LOAD_DRIVER:
-			if (xf86getToken (NULL) != STRING)
+			if (xf86getSubToken (&(ptr->mod_comment)) != STRING)
 				Error (QUOTE_MSG, "LoadDriver");
 			ptr->mod_load_lst =
 				xf86addNewLoadDirective (ptr->mod_load_lst, val.str,
 									 XF86_LOAD_DRIVER, NULL);
 			break;
 		case SUBSECTION:
-			if (xf86getToken (NULL) != STRING)
+			if (xf86getSubToken (&(ptr->mod_comment)) != STRING)
 						Error (QUOTE_MSG, "SubSection");
 			ptr->mod_load_lst =
 				xf86parseModuleSubSection (ptr->mod_load_lst, val.str);

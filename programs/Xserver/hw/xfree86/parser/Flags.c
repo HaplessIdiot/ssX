@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.14 2000/10/20 14:59:02 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.15 2001/06/30 04:00:23 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -105,7 +105,7 @@ xf86parseFlagsSection (void)
 						tmp = xf86configStrdup (ServerFlagsTab[i].name);
 						if (hasvalue)
 						{
-							tokentype = xf86getToken(NULL);
+							tokentype = xf86getSubToken(&(ptr->flg_comment));
 							if (strvalue) {
 							    if (tokentype != STRING)
 								Error (QUOTE_MSG, tmp);
@@ -437,17 +437,20 @@ XF86OptionPtr
 xf86parseOption(XF86OptionPtr head)
 {
 	XF86OptionPtr option, cnew, old;
-	char *name;
+	char *name, *comment = NULL;
 	int token;
 
-	if ((token = xf86getToken(NULL)) != STRING) {
+	if ((token = xf86getSubToken(&comment)) != STRING) {
 		xf86parseError(BAD_OPTION_MSG, NULL);
+		if (comment)
+			xf86conffree(comment);
 		return (head);
 	}
 
 	name = val.str;
-	if ((token = xf86getToken (NULL)) == STRING) {
+	if ((token = xf86getSubToken(&comment)) == STRING) {
 		option = xf86newOption(name, val.str);
+		option->opt_comment = comment;
 		if ((token = xf86getToken(NULL)) == COMMENT)
 			option->opt_comment = xf86addComment(option->opt_comment, val.str);
 		else
@@ -455,10 +458,7 @@ xf86parseOption(XF86OptionPtr head)
 	}
 	else {
 		option = xf86newOption(name, NULL);
-		if (token == COMMENT)
-			option->opt_comment = xf86addComment(option->opt_comment, val.str);
-		else
-			xf86unGetToken(token);
+		xf86unGetToken(token);
 	}
 
         old = NULL;

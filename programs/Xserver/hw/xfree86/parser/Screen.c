@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.17 2001/02/15 19:54:40 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.18 2001/06/30 04:00:24 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -68,66 +68,66 @@ xf86parseDisplaySubSection (void)
 			ptr->disp_comment = xf86addComment(ptr->disp_comment, val.str);
 			break;
 		case VIEWPORT:
-			if (xf86getToken (NULL) != NUMBER)
+			if (xf86getSubToken (&(ptr->disp_comment)) != NUMBER)
 				Error (VIEWPORT_MSG, NULL);
 			ptr->disp_frameX0 = val.num;
-			if (xf86getToken (NULL) != NUMBER)
+			if (xf86getSubToken (&(ptr->disp_comment)) != NUMBER)
 				Error (VIEWPORT_MSG, NULL);
 			ptr->disp_frameY0 = val.num;
 			break;
 		case VIRTUAL:
-			if (xf86getToken (NULL) != NUMBER)
+			if (xf86getSubToken (&(ptr->disp_comment)) != NUMBER)
 				Error (VIRTUAL_MSG, NULL);
 			ptr->disp_virtualX = val.num;
-			if (xf86getToken (NULL) != NUMBER)
+			if (xf86getSubToken (&(ptr->disp_comment)) != NUMBER)
 				Error (VIRTUAL_MSG, NULL);
 			ptr->disp_virtualY = val.num;
 			break;
 		case DEPTH:
-			if (xf86getToken (NULL) != NUMBER)
+			if (xf86getSubToken (&(ptr->disp_comment)) != NUMBER)
 				Error (NUMBER_MSG, "Display");
 			ptr->disp_depth = val.num;
 			break;
 		case BPP:
-			if (xf86getToken (NULL) != NUMBER)
+			if (xf86getSubToken (&(ptr->disp_comment)) != NUMBER)
 				Error (NUMBER_MSG, "Display");
 			ptr->disp_bpp = val.num;
 			break;
 		case VISUAL:
-			if (xf86getToken (NULL) != STRING)
+			if (xf86getSubToken (&(ptr->disp_comment)) != STRING)
 				Error (QUOTE_MSG, "Display");
 			ptr->disp_visual = val.str;
 			break;
 		case WEIGHT:
-			if (xf86getToken (NULL) != NUMBER)
+			if (xf86getSubToken (&(ptr->disp_comment)) != NUMBER)
 				Error (WEIGHT_MSG, NULL);
 			ptr->disp_weight.red = val.num;
-			if (xf86getToken (NULL) != NUMBER)
+			if (xf86getSubToken (&(ptr->disp_comment)) != NUMBER)
 				Error (WEIGHT_MSG, NULL);
 			ptr->disp_weight.green = val.num;
-			if (xf86getToken (NULL) != NUMBER)
+			if (xf86getSubToken (&(ptr->disp_comment)) != NUMBER)
 				Error (WEIGHT_MSG, NULL);
 			ptr->disp_weight.blue = val.num;
 			break;
 		case BLACK_TOK:
-			if (xf86getToken (NULL) != NUMBER)
+			if (xf86getSubToken (&(ptr->disp_comment)) != NUMBER)
 				Error (BLACK_MSG, NULL);
 			ptr->disp_black.red = val.num;
-			if (xf86getToken (NULL) != NUMBER)
+			if (xf86getSubToken (&(ptr->disp_comment)) != NUMBER)
 				Error (BLACK_MSG, NULL);
 			ptr->disp_black.green = val.num;
-			if (xf86getToken (NULL) != NUMBER)
+			if (xf86getSubToken (&(ptr->disp_comment)) != NUMBER)
 				Error (BLACK_MSG, NULL);
 			ptr->disp_black.blue = val.num;
 			break;
 		case WHITE_TOK:
-			if (xf86getToken (NULL) != NUMBER)
+			if (xf86getSubToken (&(ptr->disp_comment)) != NUMBER)
 				Error (WHITE_MSG, NULL);
 			ptr->disp_white.red = val.num;
-			if (xf86getToken (NULL) != NUMBER)
+			if (xf86getSubToken (&(ptr->disp_comment)) != NUMBER)
 				Error (WHITE_MSG, NULL);
 			ptr->disp_white.green = val.num;
-			if (xf86getToken (NULL) != NUMBER)
+			if (xf86getSubToken (&(ptr->disp_comment)) != NUMBER)
 				Error (WHITE_MSG, NULL);
 			ptr->disp_white.blue = val.num;
 			break;
@@ -135,7 +135,7 @@ xf86parseDisplaySubSection (void)
 			{
 				XF86ModePtr mptr;
 
-				while ((token = xf86getToken (DisplayTab)) == STRING)
+				while ((token = xf86getSubTokenWithTab (&(ptr->disp_comment), DisplayTab)) == STRING)
 				{
 					mptr = xf86confcalloc (1, sizeof (XF86ModeRec));
 					mptr->mode_name = val.str;
@@ -203,7 +203,7 @@ xf86parseScreenSection (void)
 			ptr->scrn_comment = xf86addComment(ptr->scrn_comment, val.str);
 			break;
 		case IDENTIFIER:
-			if (xf86getToken (NULL) != STRING)
+			if (xf86getSubToken (&(ptr->scrn_comment)) != STRING)
 				Error (QUOTE_MSG, "Identifier");
 			ptr->scrn_identifier = val.str;
                         if (has_ident || has_driver)
@@ -211,7 +211,7 @@ xf86parseScreenSection (void)
                         has_ident = TRUE;
 			break;
                 case OBSDRIVER:
-			if (xf86getToken (NULL) != STRING)
+			if (xf86getSubToken (&(ptr->scrn_comment)) != STRING)
 				Error (QUOTE_MSG, "Driver");
 			ptr->scrn_obso_driver = val.str;
                         if (has_ident || has_driver)
@@ -219,27 +219,27 @@ xf86parseScreenSection (void)
                         has_driver = TRUE;
 			break;
 		case DEFAULTDEPTH:
-			if (xf86getToken (NULL) != NUMBER)
+			if (xf86getSubToken (&(ptr->scrn_comment)) != NUMBER)
 				Error (NUMBER_MSG, "DefaultDepth");
 			ptr->scrn_defaultdepth = val.num;
 			break;
 		case DEFAULTBPP:
-			if (xf86getToken (NULL) != NUMBER)
+			if (xf86getSubToken (&(ptr->scrn_comment)) != NUMBER)
 				Error (NUMBER_MSG, "DefaultBPP");
 			ptr->scrn_defaultbpp = val.num;
 			break;
 		case DEFAULTFBBPP:
-			if (xf86getToken (NULL) != NUMBER)
+			if (xf86getSubToken (&(ptr->scrn_comment)) != NUMBER)
 				Error (NUMBER_MSG, "DefaultFbBPP");
 			ptr->scrn_defaultfbbpp = val.num;
 			break;
 		case MDEVICE:
-			if (xf86getToken (NULL) != STRING)
+			if (xf86getSubToken (&(ptr->scrn_comment)) != STRING)
 				Error (QUOTE_MSG, "Device");
 			ptr->scrn_device_str = val.str;
 			break;
 		case MONITOR:
-			if (xf86getToken (NULL) != STRING)
+			if (xf86getSubToken (&(ptr->scrn_comment)) != STRING)
 				Error (QUOTE_MSG, "Monitor");
 			ptr->scrn_monitor_str = val.str;
 			break;
@@ -247,7 +247,7 @@ xf86parseScreenSection (void)
 			{
 				XF86ConfAdaptorLinkPtr aptr;
 
-				if (xf86getToken (NULL) != STRING)
+				if (xf86getSubToken (&(ptr->scrn_comment)) != STRING)
 					Error (QUOTE_MSG, "VideoAdaptor");
 
 				/* Don't allow duplicates */
@@ -270,7 +270,7 @@ xf86parseScreenSection (void)
 			ptr->scrn_option_lst = xf86parseOption(ptr->scrn_option_lst);
 			break;
 		case SUBSECTION:
-			if (xf86getToken (NULL) != STRING)
+			if (xf86getSubToken (&(ptr->scrn_comment)) != STRING)
 				Error (QUOTE_MSG, "SubSection");
 			{
 			        xf86conffree(val.str);

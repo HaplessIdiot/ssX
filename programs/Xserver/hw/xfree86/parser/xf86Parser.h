@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.27 2000/12/06 15:35:33 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.28 2001/06/30 04:00:24 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -103,6 +103,7 @@ typedef struct
 	int ml_vscan;
 	int ml_flags;
 	int ml_hskew;
+	char *ml_comment;
 }
 XF86ConfModeLineRec, *XF86ConfModeLinePtr;
 
@@ -150,6 +151,7 @@ typedef struct
 	GenericListRec list;
 	char *modes_identifier;
 	XF86ConfModeLinePtr mon_modeline_lst;
+	char *modes_comment;
 }
 XF86ConfModesRec, *XF86ConfModesPtr;
 

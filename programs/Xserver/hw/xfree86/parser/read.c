@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/read.c,v 1.18 2001/02/15 19:54:40 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/read.c,v 1.19 2001/06/30 04:00:24 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -63,7 +63,7 @@ xf86readConfigFile (void)
 			ptr->conf_comment = xf86addComment(ptr->conf_comment, val.str);
 			break;
 		case SECTION:
-			if (xf86getToken (NULL) != STRING)
+			if (xf86getSubToken (&(ptr->conf_comment)) != STRING)
 			{
 				xf86parseError (QUOTE_MSG, "Section");
 				CLEANUP (ptr);

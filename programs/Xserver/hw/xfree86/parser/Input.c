@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Input.c,v 1.6 2001/02/21 23:37:04 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Input.c,v 1.7 2001/06/30 04:00:23 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -61,7 +61,7 @@ xf86parseInputSection (void)
 			ptr->inp_comment = xf86addComment(ptr->inp_comment, val.str);
 			break;
 		case IDENTIFIER:
-			if (xf86getToken (NULL) != STRING)
+			if (xf86getSubToken (&(ptr->inp_comment)) != STRING)
 				Error (QUOTE_MSG, "Identifier");
 			if (has_ident == TRUE)
 				Error (MULTIPLE_MSG, "Identifier");
@@ -69,7 +69,7 @@ xf86parseInputSection (void)
 			has_ident = TRUE;
 			break;
 		case DRIVER:
-			if (xf86getToken (NULL) != STRING)
+			if (xf86getSubToken (&(ptr->inp_comment)) != STRING)
 				Error (QUOTE_MSG, "Driver");
 			ptr->inp_driver = val.str;
 			break;

@@ -25,7 +25,7 @@
  * in this Software without prior written authorization from Metro Link.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Video.c,v 1.7 2001/02/21 23:37:04 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Video.c,v 1.8 2001/06/30 04:00:24 paulo Exp $ */
 
 /* View/edit this file with tab stops set to 4 */
 
@@ -59,7 +59,7 @@ xf86parseVideoPortSubSection (void)
 			ptr->vp_comment = xf86addComment(ptr->vp_comment, val.str);
 			break;
 		case IDENTIFIER:
-			if (xf86getToken (NULL) != STRING)
+			if (xf86getSubToken (&(ptr->vp_comment)) != STRING)
 				Error (QUOTE_MSG, "Identifier");
 			if (has_ident == TRUE)
 				Error (MULTIPLE_MSG, "Identifier");
@@ -118,7 +118,7 @@ xf86parseVideoAdaptorSection (void)
 			ptr->va_comment = xf86addComment(ptr->va_comment, val.str);
 			break;
 		case IDENTIFIER:
-			if (xf86getToken (NULL) != STRING)
+			if (xf86getSubToken (&(ptr->va_comment)) != STRING)
 				Error (QUOTE_MSG, "Identifier");
 			ptr->va_identifier = val.str;
 			if (has_ident == TRUE)
@@ -126,22 +126,22 @@ xf86parseVideoAdaptorSection (void)
 			has_ident = TRUE;
 			break;
 		case VENDOR:
-			if (xf86getToken (NULL) != STRING)
+			if (xf86getSubToken (&(ptr->va_comment)) != STRING)
 				Error (QUOTE_MSG, "Vendor");
 			ptr->va_vendor = val.str;
 			break;
 		case BOARD:
-			if (xf86getToken (NULL) != STRING)
+			if (xf86getSubToken (&(ptr->va_comment)) != STRING)
 				Error (QUOTE_MSG, "Board");
 			ptr->va_board = val.str;
 			break;
 		case BUSID:
-			if (xf86getToken (NULL) != STRING)
+			if (xf86getSubToken (&(ptr->va_comment)) != STRING)
 				Error (QUOTE_MSG, "BusID");
 			ptr->va_busid = val.str;
 			break;
 		case DRIVER:
-			if (xf86getToken (NULL) != STRING)
+			if (xf86getSubToken (&(ptr->va_comment)) != STRING)
 				Error (QUOTE_MSG, "Driver");
 			ptr->va_driver = val.str;
 			break;
@@ -149,7 +149,7 @@ xf86parseVideoAdaptorSection (void)
 			ptr->va_option_lst = xf86parseOption(ptr->va_option_lst);
 			break;
 		case SUBSECTION:
-			if (xf86getToken (NULL) != STRING)
+			if (xf86getSubToken (&(ptr->va_comment)) != STRING)
 				Error (QUOTE_MSG, "SubSection");
 			{
 				HANDLE_LIST (va_port_lst, xf86parseVideoPortSubSection,
