@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.127 2003/02/09 00:18:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.128 2003/02/26 23:45:24 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1413,6 +1413,9 @@ xf86LogInit()
 	    if (!oldlog)
 		FatalError("Cannot allocate space for the log file name\n");
 	    sprintf(oldlog, "%s" LOGOLDSUFFIX, xf86LogFile);
+#ifdef __UNIXOS2__
+	    remove(oldlog);
+#endif
 	    if (rename(xf86LogFile,oldlog) == -1)
 		FatalError("Cannot move old logfile \"%s\"\n",oldlog);
 	    free(oldlog);

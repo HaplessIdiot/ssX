@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.23 2002/11/14 21:01:18 tsi Exp $
+XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.24 2003/02/25 22:18:03 dawes Exp $
 
 #define DoNormalLib NormalLibXft
 #define DoSharedLib SharedLibXft
@@ -61,7 +61,11 @@ FONTCONFIG_LIBS=$(FONTCONFIGLIB)
  * when building inside the tree that means extra work
  */
 #if BuildFontconfigLibrary
+#if !defined(OS2Architecture)
 FONTCONFIG_LIBS=-L$(USRLIBDIR) -lfontconfig
+#else
+FONTCONFIG_LIBS=-L$(USRLIBDIR) -lfontcfg
+#endif
 FONTCONFIG_CFLAGS=-I$(INCROOT)
 #endif
 

@@ -10,7 +10,7 @@
 # hackish perl - author Dirk Hohndel
 # Copyright 1999-2001 by The XFree86 Project, Inc.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/common/modeline2c.pl,v 1.7 2001/04/07 00:50:15 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/common/modeline2c.pl,v 1.8 2001/10/28 03:33:17 tsi Exp $
 
 #my %flagshash;
 $flagshash{""} = "0";
@@ -43,6 +43,9 @@ printf("/* \$$proj: \$ */
  * Author: Dirk Hohndel <hohndel\@XFree86.Org>
  */
 
+#ifdef __UNIXOS2__
+#define I_NEED_OS2_H
+#endif
 #include \"xf86.h\"
 #include \"xf86Config.h\"
 #include \"xf86Priv.h\"

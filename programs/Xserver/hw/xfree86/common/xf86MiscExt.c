@@ -1,12 +1,16 @@
 /*
  * Copyright (c) 1999 by The XFree86 Project, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86MiscExt.c,v 1.10 2002/09/16 18:05:46 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86MiscExt.c,v 1.11 2002/11/20 04:04:57 dawes Exp $ */
 
 /*
  * This file contains the Pointer/Keyboard functions needed by the 
  * XFree86-Misc extension.
  */
+
+#ifdef __UNIXOS2__
+#define I_NEED_OS2_H
+#endif
 
 #include "X.h"
 #include "os.h"

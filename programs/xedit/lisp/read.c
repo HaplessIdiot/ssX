@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.33 2002/12/04 05:27:58 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.34 2003/01/13 03:57:58 paulo Exp $ */
 
 #include <errno.h>
 #include "read.h"
@@ -61,6 +61,10 @@
 #define READ_ERROR_EOF()	READ_ERROR0("unexpected end of input")
 #define READ_ERROR_FIXNUM()	READ_ERROR0("number is not a fixnum")
 #define READ_ERROR_INVARG()	READ_ERROR0("invalid argument")
+
+#ifdef __UNIXOS2__
+# define finite(x) isfinite(x)
+#endif
 
 /*
  * Types

@@ -2002,8 +2002,10 @@ EXPORTS
   _XGetScanlinePad
   _XGetBitsPerPixel
   _Xsetlocale  
+  XkbGetPerClientControls
+  XkbSetPerClientControls
 #endif
 #endif
 
 /* $Xorg: X11-def.cpp,v 1.3 2000/08/17 19:44:59 cpqbld Exp $ */
-/* $XFree86: xc/lib/X11/X11-def.cpp,v 1.12 2001/09/19 15:47:00 alanh Exp $ */
+/* $XFree86: xc/lib/X11/X11-def.cpp,v 1.13 2002/05/31 18:45:41 dawes Exp $ */

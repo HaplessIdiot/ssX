@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.197 2003/02/09 00:18:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.198 2003/02/26 09:21:38 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -11,6 +11,9 @@
 #include <stdlib.h>
 
 #define NEED_EVENTS
+#ifdef __UNIXOS2__
+#define I_NEED_OS2_H
+#endif
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"

@@ -1,4 +1,8 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Debug.c,v 1.4 2001/12/13 18:01:50 eich Exp $ */
+
+#ifdef __UNIXOS2__
+#define I_NEED_OS2_H
+#endif
 
 #include <sys/time.h>
 #include <unistd.h> 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.20 2002/10/16 00:37:34 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.21 2002/12/14 04:41:12 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -11,6 +11,7 @@ Copyright (c) 1995,1996  The XFree86 Project, Inc
 #ifdef __UNIXOS2__ /* needed here to override certain constants in X headers */
 #define INCL_DOS
 #define INCL_DOSIOCTL
+#define I_NEED_OS2_H
 #include <os2.h>
 #endif
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.268 2003/02/20 04:05:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.269 2003/02/20 04:36:07 dawes Exp $ */
 
 
 /*
@@ -17,6 +17,10 @@
 #ifdef XF86DRI
 #include <sys/types.h>
 #include <grp.h>
+#endif
+
+#ifdef __UNIXOS2__
+#define I_NEED_OS2_H
 #endif
 
 #include "xf86.h"

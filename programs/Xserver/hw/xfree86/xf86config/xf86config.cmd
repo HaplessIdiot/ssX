@@ -1,6 +1,7 @@
 /* OS/2 REXX */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.cmd,v 1.1 2000/04/05 18:14:01 dawes Exp $ */
 
+'@echo off'
 call RxFuncAdd 'SysCls','RexxUtil','SysCls'
 
 env = 'OS2ENVIRONMENT'
@@ -39,7 +40,7 @@ do until cmd=7
     call show_file
   end
   when cmd=2 then do
-    "xinit xf86cfg -xf86config "home"\XF86Config.new -- :0"
+    "xinit /XFree86/bin/xf86cfg.exe -xf86config "home"\XF86Config.new -- -xf86config "home"\XF86Config.new :0"
   end
   when cmd=3 then do
     "xfree86 -xf86config "home"\XF86Config.new"
@@ -76,7 +77,7 @@ configx86:
   return
 
 show_file:
-  file=bootdrv"\xf86log.os2"
+  file="\usr\adm\XFree86.0.log"
   i=0
   call SysCls
   do until stream(file,s)="NOTREADY"
@@ -90,6 +91,7 @@ show_file:
       call SysCls
     end
   end
+  rc=stream(file,"c","close")
   return
 
 /* returns 1, if file exists */

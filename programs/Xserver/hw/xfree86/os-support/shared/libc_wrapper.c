@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.90tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.91 2003/03/13 21:47:38 tsi Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -27,6 +27,9 @@
 #undef __STRICT_ANSI__
 #endif
 #include <X.h>
+#ifdef __UNIXOS2__
+#define I_NEED_OS2_H
+#endif
 #include <Xmd.h>
 #include <Xos.h>
 #include <sys/types.h>
@@ -1550,7 +1553,11 @@ int
 xf86finite(double x)
 {
 #ifndef QNX4
+#ifndef __UNIXOS2__
 	return(finite(x));
+#else
+	return(isfinite(x));
+#endif	/* __UNIXOS2__ */
 #else
 	/* XXX Replace this with something that really works. */
 	return 1;

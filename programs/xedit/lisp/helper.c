@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.46 2002/11/25 02:35:30 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.47 2002/11/26 04:06:28 paulo Exp $ */
 
 #include "helper.h"
 #include "pathname.h"
@@ -1062,8 +1062,12 @@ LispProbeFile(LispBuiltin *builtin, int probe)
     else if (STREAMP(pathname) && pathname->data.stream.type == LispStreamFile)
 	name = THESTR(CAR(pathname->data.stream.pathname->data.pathname));
 
+#ifndef __UNIXOS2__
     if (realpath(name, &resolved[0]) == NULL ||
 	stat(resolved, &st)) {
+#else
+    if ((name == NULL) || stat(resolved, &st)) {
+#endif
 	if (probe)
 	    return (NIL);
 	LispDestroy("%s: realpath(\"%s\"): %s",

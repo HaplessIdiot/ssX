@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.67 2002/12/17 05:06:05 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.68 2002/12/24 17:42:58 tsi Exp $ */
 
 
 /* 
@@ -32,6 +32,10 @@ in this Software without prior written authorization from The Open Group.
  * When porting imake, read each of the steps below and add in any necessary
  * definitions.  In general you should *not* edit ccimake.c or imake.c!
  */
+
+#ifdef __UNIXOS2__
+#define lstat stat
+#endif
 
 #ifdef CCIMAKE
 /*

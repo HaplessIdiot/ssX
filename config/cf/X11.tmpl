@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.196 2003/02/25 21:57:52 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.197 2003/03/19 01:49:24 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -2980,7 +2980,11 @@ ProjectUnsharedLibReferences(XPM,Xpm,$(XPMLIBSRC),XBuildLibDir)
 #define SharedFreetype2Rev 9.0
 #endif
 #endif
+#if !defined(OS2Architecture)
 SharedLibReferences(FREETYPE2,freetype,$(FREETYPE2LIBSRC),SOFREETYPE2REV,SharedFreetype2Rev)
+#else
+SharedLibReferences(FREETYPE2,frtype,$(FREETYPE2LIBSRC),SOFREETYPE2REV,SharedFreetype2Rev)
+#endif
 #else
 ProjectUnsharedLibReferences(FREETYPE2,freetype,$(FREETYPE2LIBSRC),XBuildLibDir)
 #endif
@@ -3023,9 +3027,17 @@ FREETYPE2DIR = Freetype2Dir
 FREETYPE2LIBDIR = Freetype2LibDir
 FREETYPE2INCDIR = Freetype2IncDir
 #if Freetype2LibDirStandard
+#if !defined(OS2Architecture)
 FREETYPE2LIB = -lfreetype
 #else
+FREETYPE2LIB = -lfrtype
+#endif  /* OS2Architecture  */
+#else
+#if !defined(OS2Architecture)
 FREETYPE2LIB = -L$(FREETYPE2LIBDIR) -lfreetype
+#else
+FREETYPE2LIB = -L$(FREETYPE2LIBDIR) -lfrtype
+#endif  /* OS2Architecture  */
 #endif
 
 #endif /* HasFreetype2 */
@@ -3216,7 +3228,11 @@ XFTINCLUDES=$(FONTCONFIGINCLUDES) $(FREETYPE2INCLUDES)
 #ifndef SharedFontconfigRev
 #define SharedFontconfigRev 1.0
 #endif
+#if !defined(OS2Architecture)
 SharedLibReferences(FONTCONFIG,fontconfig,$(FONTCONFIGLIBSRC),SOFONTCONFIGREV,SharedFontconfigRev)
+#else
+SharedLibReferences(FONTCONFIG,fontcfg,$(FONTCONFIGLIBSRC),SOFONTCONFIGREV,SharedFontconfigRev)
+#endif
 #else
 ProjectUnsharedLibReferences(FONTCONFIG,fontconfig,$(FONTCONFIGLIBSRC),XBuildLibDir)
 #endif
@@ -3280,9 +3296,17 @@ FONTCONFIGLIBDIR = FontconfigLibDir
 FONTCONFIGINCDIR = FontconfigIncDir
 FONTCONFIGBINDIR = FontconfigBinDir
 #if FontconfigLibDirStandard
+#if !defined(OS2Architecture)
 FONTCONFIGLIB = -lfontconfig
 #else
+FONTCONFIGLIB = -lfontcfg
+#endif  /*  OS2Architecture  */
+#else
+#if !defined(OS2Architecture)
 FONTCONFIGLIB = -L$(FONTCONFIGLIBDIR) -lfontconfig
+#else
+FONTCONFIGLIB = -L$(FONTCONFIGLIBDIR) -lfontcfg
+#endif  /*  OS2Architecture  */
 #endif
 
 #if FontconfigIncDirStandard

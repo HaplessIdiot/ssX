@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_VTsw.c,v 3.10 2000/04/05 18:13:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_VTsw.c,v 3.11 2002/05/31 18:46:01 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Modified 1996 by Sebastien Marineau <marineau@genie.uottawa.ca>
@@ -89,6 +89,10 @@ Bool xf86VTSwitchTo()
 	/* We reset the state of the control key */
 	os2PostKbdEvent(KEY_LCtrl,1);
 	os2PostKbdEvent(KEY_LCtrl,0);
+	os2PostKbdEvent(KEY_RCtrl,1);
+	os2PostKbdEvent(KEY_RCtrl,0);
+	os2PostKbdEvent(KEY_Alt,1);
+	os2PostKbdEvent(KEY_Alt,0);
 	return(TRUE);
 }
 
@@ -229,7 +233,8 @@ os2ServerVideoAccess()
    CHAR Status;
 
    /* Redirect output as early as possible */
-   redirect_output();
+   /* redirect_output(); */
+   /* too many logfiles, server will log to /usr/adm */
   
 /* Wait for screen access. This is called at server reset or at server startup */
 /* Here we do some waiting until this session comes in the foreground before *

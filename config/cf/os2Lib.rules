@@ -2,14 +2,14 @@ XCOMM $Xorg: os2Lib.rules,v 1.3 2000/08/17 19:41:48 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/config/cf/os2Lib.rules,v 3.13tsi Exp $
+XCOMM $XFree86: xc/config/cf/os2Lib.rules,v 3.14 2003/01/28 20:52:26 tsi Exp $
 
 /*
  * OS2/EMX shared library rules (DLL version)
- */
+ *
 #ifndef __UNIXOS2__
 #error You must edit os2Lib.rules for your OS/2 dev system
-#endif
+#endif */
 
 #define HasSharedLibraries YES
 #define ForceNormalLib NO
@@ -29,6 +29,7 @@ install:: libname.dll LibraryTargetName(libname) libname.lib		@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) -c $(INSTLIBFLAGS) libname.dll $(DESTDIR)dest 	@@\
 	$(INSTALL) -c $(INSTLIBFLAGS) LibraryTargetName(libname) $(DESTDIR)dest 		@@\
+	$(INSTALL) -c $(INSTLIBFLAGS) libname.a $(DESTDIR)dest		@@\
 	$(INSTALL) -c $(INSTLIBFLAGS) libname.lib $(DESTDIR)dest
 
 #define LinkBuildLibrary2(slib,ext) MakeDir($(BUILDLIBDIR))		@@\
@@ -46,6 +47,7 @@ install:: libname.dll LibraryTargetName(libname) libname.lib		@@\
         EMXIMP = emximp
         EMXOMF = emxomf -p 32
           SHLD = gcc -Zdll -Zmtd -Zmap -Zbin-files
+        SHXXLD = g++ -Zdll -Zmtd -Zmap -Zbin-files
      SHADDLIBS = ExtraLibraries -lc_import
 
 #define BuildDllSupportLibs3(slib,rev)					@@\
@@ -53,6 +55,7 @@ install:: libname.dll LibraryTargetName(libname) libname.lib		@@\
 	$(EMXIMP) -o Concat4(lib,slib,rev,.a) Concat3(slib,rev,.imp)	@@\
 	$(EMXIMP) -o Concat3(slib,rev,_o.imp) Concat3(slib,o_os2,.def) @@\
 	$(EMXIMP) -o Concat3(slib,rev,.a) Concat3(slib,rev,_o.imp)	@@\
+	$(EMXOMF) -s -l -o Concat3(slib,rev,.lib) Concat3(slib,rev,.a)	@@\
 	LinkBuildLibrary4(lib,slib,rev,.a)				@@\
 
 #define BuildLibSupportLibs(slib)					@@\
@@ -109,6 +112,21 @@ Concat3(libname,rev,.dll):  Concat(libname,os2.def)		@@\
 clean::									@@\
 	RemoveFiles(Concat3(libname,rev,.imp) Concat3(libname,rev,_o.imp) Concat(libname,os2.def) Concat(libname,o_os2.def))
 
+#define SharedDepCplusplusLibraryTarget(libname,rev,deplist,solist,down,up)	@@\
+AllTarget(Concat3(libname,rev,.dll))					@@\
+									@@\
+Concat(libname,os2.def): deplist $(EXTRALIBRARYDEPS) Concat(libname,-def.cpp) @@\
+	cmd /c $(subst /,\\,$(CONFIGSRC)/util/makedef.cmd) $(CONFIGSRC)/cf/os2def.db libname @@\
+	cmd /c $(subst /,\\,$(CONFIGSRC)/util/makedef.cmd) -O1 $(CONFIGSRC)/cf/os2def.db libname @@\
+									@@\
+Concat3(libname,rev,.dll):  Concat(libname,os2.def)		@@\
+	(cd down; $(SHXXLD) -o up/$@ solist $(REQUIREDLIBS) $(SHADDLIBS) Concat(libname,o_os2.def)) @@\
+	BuildDllSupportLibs3(libname,rev)				@@\
+	LinkBuildLibrary3(libname,rev,.dll)				@@\
+									@@\
+clean::									@@\
+	RemoveFiles(Concat3(libname,rev,.imp) Concat3(libname,rev,_o.imp) Concat(libname,os2.def) Concat(libname,o_os2.def))
+
 #define SharedDepModuleTarget(name,deps,solist)				@@\
 AllTarget(name)								@@\
 									@@\
@@ -140,7 +158,7 @@ LibraryTargetNameSuffix(libname,_s): objlist				@@\
 	RanLibrary($@)							@@\
 	_LinkBuildLibrary($@)						@@\
 									@@\
-install::	Concat3(lib,libname,_s))				@@\
+install::	Concat3(lib,libname,_s)					@@\
 	$(INSTALL) $(INSTALLFLAGS) $(INSTLIBFLAGS) Concat3(lib,libname,_s) $(DESTDIR)$(SHLIBDIR)
 
 #define	UnsharedLibraryTarget3(libname,objlist1,objlist2,objlist3,down,up) @@\

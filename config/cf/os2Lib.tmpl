@@ -2,14 +2,14 @@ XCOMM $Xorg: os2Lib.tmpl,v 1.3 2000/08/17 19:41:48 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.11 2001/01/17 16:22:32 dawes Exp $
+XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.12 2002/05/31 16:31:19 dawes Exp $
 
 /*
  * OS2/EMX shared library template
- */
+ *
 #ifndef __UNIXOS2__
 #error You must edit os2Lib.tmpl for your (non-EMX) OS/2 dev system
-#endif
+#endif */
 
 #define SharedLibFont NO
 
@@ -35,7 +35,8 @@ XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.11 2001/01/17 16:22:32 dawes Exp $
 #define SharedDPSReqs $(LDPRELIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
 #define SharedDPSTKReqs $(LDPRELIB) $(DPSLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
 #define SharedGLUReqs $(LDPRELIB) $(XLIB) $(GLXLIB)
-#define SharedXrandrReqs $(LDPRELIB) $(XLIB)
+#define SharedXrandrReqs $(LDPRELIB) $(XRENDERLIB) $(XLIB)
+#define SharedXcursorReqs $(LDPRELIB) $(XRENDERLIB) $(XLIB)
 
 /* library revisions, these are typically empty! */
 #define SharedX11Rev /**/
@@ -78,8 +79,12 @@ XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.11 2001/01/17 16:22:32 dawes Exp $
 #define SharedXrenderRev /**/
 #define SharedXrandrRev /**/
 #define SharedXftRev /**/
+#define SharedXft1Rev 1
 #define SharedFreetype2Rev /**/
 #define SharedXTrapRev /**/
+#define SharedExpatRev /**/
+#define SharedFontconfigRev /**/
+#define	SharedXcursorRev /**/
 
 /*
  * By setting this in your Imakefile, you can force using static libraries

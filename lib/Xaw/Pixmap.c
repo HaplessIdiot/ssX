@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.14 2000/05/18 16:29:52 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.17 2002/05/18 02:05:39 paulo Exp $ */
 
 #include <string.h>
 #include <stdio.h>
@@ -36,6 +36,10 @@
 #include <X11/extensions/shape.h>
 #include <X11/xpm.h>
 #include "Private.h"
+
+#ifdef __UNIXOS2__
+static char dummy;
+#endif
 
 #ifndef OLDXAW
 
