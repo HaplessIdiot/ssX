@@ -1,3 +1,4 @@
+/* $XFree86: $ */
 /*
  * ix86Pci.c - x86 PCI driver
  *

@@ -1,3 +1,4 @@
+/* $XFree86: $ */
 /* Device.c */
 XF86ConfDevicePtr parseDeviceSection(void);
 void printDeviceSection(FILE *cf, XF86ConfDevicePtr ptr);

@@ -1,3 +1,4 @@
+/* $XFree86: $ */
 /*
  * Copyright 1998 by Metro Link Incorporated
  *

@@ -1,3 +1,4 @@
+/* $XFree86: $ */
 /*
  * ppcPci.c - PowerPC PCI access functions
  *

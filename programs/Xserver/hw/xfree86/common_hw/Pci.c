@@ -1,3 +1,4 @@
+/* $XFree86: $ */
 /*
  * Pci.c - New server PCI access functions
  *
