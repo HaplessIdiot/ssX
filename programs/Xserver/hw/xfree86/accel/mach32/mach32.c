@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.51 1996/06/10 09:12:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.52 1996/08/11 12:45:33 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -679,7 +679,7 @@ mach32Probe()
 	   * xf86LookupMode returns FALSE if it ran into an invalid
 	   * parameter
 	   */
-	  if(xf86LookupMode(pMode, &mach32InfoRec) == FALSE) {
+	  if(xf86LookupMode(pMode, &mach32InfoRec, LOOKUP_DEFAULT) == FALSE) {
 		pModeSv=pMode->next;
 		xf86DeleteMode(&mach32InfoRec, pMode);
 		pMode = pModeSv; 

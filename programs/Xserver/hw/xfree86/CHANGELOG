@@ -1,7 +1,16 @@
+XFree86 3.1.2Ei (18 August 1996)
+663. Linux/m68k support (Geert Uytterhoeven, Martin Schaller, Gary Henderson).
+662. Change the S3 server's handling of situations where mode choices
+     cause problems.  It is now less likely to exit in these situations.
+661. Add a -bestRefresh command line option to the X servers to change
+     the mode selection to pick the mode with the best refesh rate when
+     multiple modes of the same name are available.
+660. XF86Setup updates (see XF86Setup/CHANGELOG) (Joe Moss).
+
 XFree86 3.1.2Eh (14 August 1996)
 659. Update Cyrillic fonts (Andrey Chernov).
-658. Add support for the CL-GD5462 and CL-GD5464 to the cirrus driver, and
-     update documentation for recent cirrus driver changes (Corin Anderson).
+658. Add support for the CL-GD5462 to the cirrus driver, and update
+     documentation for recent cirrus driver changes (Corin Anderson).
 657. XF86Setup updates (Joe Moss).
 656. Fix some LynxOS-related typos in the config (Thomas Mueller).
 655. Add a man page for the DGA extension.

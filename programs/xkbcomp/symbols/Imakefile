@@ -1,8 +1,10 @@
 XCOMM $XConsortium: Imakefile /main/8 1996/03/01 14:32:23 kaleb $
+XCOMM $XFree86$
 #define IHaveSubdirs
 
       TESTDATA = 
-     DATAFILES = be bg ca cs ctrl de de_CH dk dvorak en_US es fi fr fr_CH \
+     DATAFILES = amiga ataritt be bg ca cs ctrl de de_CH dk dvorak en_US \
+		 es fi fr fr_CH \
 		 gb group iso9995-3 it jp no pl pt ru se th us
        SUBDIRS = digital nec sony sun
 
