@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.29 2001/01/12 20:44:58 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.30 2001/03/25 05:32:07 tsi Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1823,6 +1823,13 @@ ATIMach64LoadCursorImage
     ATIPtr           pATI = ATIPTR(pScreenInfo);
     CARD32          *pSrc = (pointer)pImage;
     volatile CARD32 *pDst = pATI->pCursorImage;
+
+    /* Synchronise video memory accesses */
+    if (pATI->OptionAccel && pATI->pXAAInfo->NeedToSync)
+    {
+        (*pATI->pXAAInfo->Sync)(pScreenInfo);
+        pATI->pXAAInfo->NeedToSync = FALSE;
+    }
 
     /* This is lengthy, but it does maximise burst modes */
     pDst[  0] = pSrc[  0];  pDst[  1] = pSrc[  1];
