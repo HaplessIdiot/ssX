@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/wacom.cpp,v 1.3 2000/03/21 19:57:23 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/wacom.cpp,v 1.4 2000/06/14 02:13:19 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH WACOM __drivermansuffix__ "Version 4.0.1"  "XFree86"
@@ -33,4 +33,4 @@ Config details...
 .SH "SEE ALSO"
 XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__).
 .SH AUTHORS
-Authors include...
+Frederic Lepied

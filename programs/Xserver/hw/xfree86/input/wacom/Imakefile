@@ -1,7 +1,11 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/Imakefile,v 1.5 1999/08/14 10:50:04 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/Imakefile,v 1.6 2000/03/03 01:05:51 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
+
+#if HasLinuxInput
+DEFINES = -DLINUX_INPUT
+#endif
 
 SRCS = xf86Wacom.c
 OBJS = xf86Wacom.o
@@ -25,6 +29,11 @@ InstallObjectModule($(DRIVER),$(MODULEDIR),input)
 CppManTarget($(DRIVER),)
 InstallModuleManPage($(DRIVER))
 #endif
+
+XCOMM Build a standalone executable to be able to test the driver without
+XCOMM a running X server.
+LinkFile(testwacom.c,xf86Wacom.c)
+SpecialCObjectRule(testwacom,NullParameter,-DTEST)
 
 DependTarget()
 
