@@ -9,7 +9,7 @@
  *	Guy DESBIEF
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.17 1998/08/29 14:34:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.18 1998/09/05 06:36:45 dawes Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -132,17 +132,10 @@ static SymTabRec CIRChipsets[] = {
 };
 
 /* List of PCI chipset names */
-static char *CIRPciNames[] = {
-    "CLGD5446",
-    "CLGD5480",
-    NULL
-};
-
-/* List of PCI IDs */
-static unsigned int CIRPciIds[] = {
-    PCI_CHIP_GD5446,
-    PCI_CHIP_GD5480,
-    ~0
+static PciChipsets CIRPciChipsets[] = {
+    { PCI_CHIP_GD5446,	PCI_CHIP_GD5446,	RES_SHARED_VGA },
+    { PCI_CHIP_GD5480,	PCI_CHIP_GD5480,	RES_SHARED_VGA },
+    { -1,		-1,			RES_UNDEFINED}
 };
 
 typedef enum {
@@ -275,8 +268,10 @@ CIRProbe(DriverPtr drv, int flags)
     pciVideoPtr pPci, *usedPci;
     GDevPtr *devSections;
     GDevPtr *usedDevs;
+    int *usedChips;
     int numDevSections;
     int numUsed;
+    BusResource resource;
     Bool foundScreen = FALSE;
 
 #if 1
@@ -295,13 +290,6 @@ CIRProbe(DriverPtr drv, int flags)
      * one for now, and just print a message about the others.
      */
 
-    /*
-     * This bit is only here because we're still using vgaHW.  When we're
-     * not it will disappear.
-     */
-    if (xf86CheckIsaSlot(ISA_COLOR) == FALSE) {
-	return FALSE;
-    }
 #endif
 
     /*
@@ -344,8 +332,8 @@ CIRProbe(DriverPtr drv, int flags)
     }
 
     numUsed = xf86MatchPciInstances(CIR_NAME, PCI_VENDOR_CIRRUS,
-			CIRPciIds, CIRPciNames, devSections, numDevSections,
-			&usedDevs, &usedPci);
+			CIRChipsets, CIRPciChipsets, devSections,
+			numDevSections, &usedDevs, &usedPci, &usedChips);
     /* Free it since we don't need that list after this */
     xfree(devSections);
     devSections = NULL;
@@ -354,24 +342,20 @@ CIRProbe(DriverPtr drv, int flags)
 
     for (i = 0; i < numUsed; i++) {
 	pPci = usedPci[i];
+	resource = xf86FindPciResource(usedChips[i], CIRPciChipsets);
 
 	/*
 	 * Check that nothing else has claimed the slots.
-	 * For now we're checking for PCI_VGA, but that will change
-	 * to PCI_ONLY when we remove the vgaHW dependence.
 	 */
 	
-	if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func,
-			      PCI_VGA)) {
+	if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func, resource)) {
 	    ScrnInfoPtr pScrn;
 
 	    /* Allocate a ScrnInfoRec and claim the slot */
 	    pScrn = xf86AllocateScreen(drv, 0);
-	    if (!xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func,
-				  PCI_VGA, pScrn->scrnIndex)) {
-		/* This can't happen */
-		FatalError("someone claimed the free slot!\n");
-	    }
+	    xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func, resource,
+			     &CIRRUS, usedChips[i], pScrn->scrnIndex);
+
 	    /* Fill in what we can of the ScrnInfoRec */
 	    pScrn->driverVersion = VERSION;
 	    pScrn->driverName	 = CIR_DRIVER_NAME;
@@ -393,7 +377,7 @@ CIRProbe(DriverPtr drv, int flags)
     xfree(usedPci);
     return foundScreen;
 }
-	
+
 /*
  * CIRCountRAM --
  *

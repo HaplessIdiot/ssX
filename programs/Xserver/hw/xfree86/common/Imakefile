@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.77 1998/08/16 10:25:39 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.78 1998/09/13 05:23:30 dawes Exp $
 
 
 
@@ -190,12 +190,14 @@ OFILES = \
 	xf86Init.o \
 	xf86IniExt.o
 
+   VGAINCLUDES = -I$(XF86SRC)/vgahw
    INCLUDES =	-I. -I$(XF86OSSRC) -I$(XF86OSSRC)/bus -I$(SERVERSRC)/mfb \
 		-I$(SERVERSRC)/mi -I$(SERVERSRC)/include -I$(SERVERSRC)/os \
 		-I$(XINCLUDESRC) -I$(SERVERSRC)/Xext -I$(EXTINCSRC) \
-		-I$(FONTLIBSRC)/include -I$(XF86PARSERSRC) -I$(XF86SRC)/loader
+		-I$(FONTLIBSRC)/include -I$(XF86PARSERSRC) \
+		-I$(XF86SRC)/loader $(VGAINCLUDES)
 
-   VGAINCLUDES = -I$(XF86SRC)/vgahw
+
 
      OSNAME = OSName
    OSVENDOR = OSVendor

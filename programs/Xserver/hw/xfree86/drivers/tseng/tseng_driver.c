@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.36 1998/08/29 14:34:39 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.37 1998/09/13 05:23:44 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -124,33 +124,32 @@ DriverRec TSENG =
 /* sub-revisions are now dealt with in the ChipRev variable */
 static SymTabRec TsengChipsets[] =
 {
-    {TYPE_ET4000, "ET4000"},
-    {TYPE_ET4000W32, "ET4000W32"},
-    {TYPE_ET4000W32I, "ET4000W32i"},
-    {TYPE_ET4000W32P, "ET4000W32p"},
-    {TYPE_ET6000, "ET6000"},
-    {TYPE_ET6100, "ET6100"},
+    {TYPE_ET4000,	"ET4000"},
+    {TYPE_ET4000W32,	"ET4000W32"},
+    {TYPE_ET4000W32I,	"ET4000W32i"},
+    {TYPE_ET4000W32P,	"ET4000W32p"},
+    {TYPE_ET6000,	"ET6000"},
+    {TYPE_ET6100,	"ET6100"},
     {-1, NULL}
 };
 
-/* List of PCI chipset names */
-static char *TsengPciNames[] =
+/* Convert PCI ID to chipset name */
+static PciChipsets TsengPciChipsets[] =
 {
-    "ET4000W32p",
-    "ET6000",
-    "ET6100",
-    NULL
+    {TYPE_ET4000W32P,	PCI_CHIP_ET4000_W32P_A,		RES_SHARED_VGA},
+    {TYPE_ET4000W32P,	PCI_CHIP_ET4000_W32P_B,		RES_SHARED_VGA},
+    {TYPE_ET4000W32P,	PCI_CHIP_ET4000_W32P_C,		RES_SHARED_VGA},
+    {TYPE_ET4000W32P,	PCI_CHIP_ET4000_W32P_D,		RES_SHARED_VGA},
+    {TYPE_ET6000,	PCI_CHIP_ET6000,		RES_SHARED_VGA},
+    {-1,			-1,			RES_UNDEFINED}
 };
-
-/* List of PCI IDs */
-static unsigned int TsengPciIds[] =
+    
+static IsaChipsets TsengIsaChipsets[] =
 {
-    PCI_CHIP_ET4000_W32P_A,
-    PCI_CHIP_ET4000_W32P_B,
-    PCI_CHIP_ET4000_W32P_C,
-    PCI_CHIP_ET4000_W32P_D,
-    PCI_CHIP_ET6000,
-    ~0
+    {TYPE_ET4000,	RES_VGA},
+    {TYPE_ET4000W32,	RES_VGA},
+    {TYPE_ET4000W32I,	RES_VGA},
+    {-1,		RES_UNDEFINED}
 };
 
 typedef enum {
@@ -432,6 +431,13 @@ ET4000MinimalProbe(void)
     return TRUE;
 }
 
+static int
+TsengFindIsaDevice()
+{
+    /* XXX Need to implement this */
+    return -1;
+}
+
 static Bool
 TsengProbe(DriverPtr drv, int flags)
 {
@@ -439,9 +445,13 @@ TsengProbe(DriverPtr drv, int flags)
     pciVideoPtr pPci, *usedPci;
     GDevPtr *devSections;
     GDevPtr *usedDevs;
+    GDevPtr usedDev;
     int numDevSections;
     int numUsed;
+    int *usedChips;
+    BusResource resource;
     Bool foundScreen = FALSE;
+    int usedChip;
 
     PDEBUG("	TsengProbe\n");
     /*
@@ -457,16 +467,6 @@ TsengProbe(DriverPtr drv, int flags)
      */
 
     /*
-     * If the HW/driver uses the standard VGA registers, first
-     * check if another driver has already claimed that slot.
-     * If so, return immediately.
-     *
-     * All Tseng devices require standard VGA registers to run...
-     */
-    if (xf86CheckIsaSlot(ISA_COLOR) == FALSE) {
-	return FALSE;
-    }
-    /*
      * Find the config file Device sections that match this
      * driver, and return if there are none.
      */
@@ -474,6 +474,8 @@ TsengProbe(DriverPtr drv, int flags)
 		&devSections)) <= 0) {
 	return FALSE;
     }
+
+    /* XXX maybe this can go some time soon */
     /*
      * for the Tseng server, there can only be one matching
      * device section. So issue a warning if more than one show up.
@@ -497,25 +499,22 @@ TsengProbe(DriverPtr drv, int flags)
     numUsed = 0;
     if (xf86GetPciVideoInfo() != NULL) {
 	numUsed = xf86MatchPciInstances(TSENG_NAME, PCI_VENDOR_TSENG,
-	    TsengPciIds, TsengPciNames, devSections, numDevSections,
-	    &usedDevs, &usedPci);
-/*        return FALSE; */
+	    TsengChipsets, TsengPciChipsets, devSections, numDevSections,
+	    &usedDevs, &usedPci, &usedChips);
     }
     if (numUsed > 0) {
 	/* Found some Tseng PCI cards */
 	for (i = 0; i < numUsed; i++) {
 	    pPci = usedPci[i];
+	    resource = xf86FindPciResource(usedChips[i], TsengPciChipsets);
 	    if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func,
-		    PCI_VGA)) {
+		    resource)) {
 		ScrnInfoPtr pScrn;
 
 		/* Allocate a ScrnInfoRec and claim the slot */
 		pScrn = xf86AllocateScreen(drv, 0);
-		if (!xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func,
-			PCI_VGA, pScrn->scrnIndex)) {
-		    /* This can't happen */
-		    FatalError("someone claimed the free slot!\n");
-		}
+		xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func,
+			resource, &TSENG, usedChips[i], pScrn->scrnIndex);
 		TsengAssignFPtr(pScrn);
 		pScrn->device = usedDevs[i];
 		foundScreen = TRUE;
@@ -523,44 +522,27 @@ TsengProbe(DriverPtr drv, int flags)
 	}
 	xfree(usedDevs);
 	xfree(usedPci);
-	if (foundScreen)
-	    return TRUE;
-    } else {
-	/* Check for non-PCI cards */
-	ScrnInfoPtr pScrn;
-
-	if (devSections[0]->chipset == NULL /* FIXME: and no chipID set? */ ) {
-	    /* do minimal probe for supported chips */
-	    if (!ET4000MinimalProbe()) {
-		return FALSE;
-		xfree(devSections);
-		devSections = NULL;
-	    }
-	} else {
-	    if (xf86StringToToken(TsengChipsets, devSections[0]->chipset) == -1) {
-		xfree(devSections);
-		devSections = NULL;
-		return FALSE;
-	    }
-	    /* FIXME: what about ChipID ? */
-	}
-	/* Allocate a ScrnInfoRec and claim the slot */
-	pScrn = xf86AllocateScreen(drv, 0);
-	if (!xf86ClaimIsaSlot(ISA_COLOR, pScrn->scrnIndex)) {
-	    /* This can't happen: we already checked for availability of ISA */
-	    FatalError("someone claimed the free ISA slot!\n");
-	}
-	TsengAssignFPtr(pScrn);
-	pScrn->device = devSections[0];
-	xfree(devSections);
-	devSections = NULL;
-	return TRUE;
     }
 
-    /* end of line -- nothing found */
+    /* Check for non-PCI cards */
+    usedChip = xf86MatchIsaInstances(TSENG_NAME, TsengChipsets,
+			TsengIsaChipsets, TsengFindIsaDevice, devSections,
+			numDevSections, &usedDev);
+    if (usedChip >= 0) {
+	ScrnInfoPtr pScrn;
+
+	resource = xf86FindIsaResource(usedChip, TsengIsaChipsets);
+
+	/* Allocate a ScrnInfoRec and claim the slot */
+	pScrn = xf86AllocateScreen(drv, 0);
+	xf86ClaimIsaSlot(resource, &TSENG, usedChip,  pScrn->scrnIndex);
+	TsengAssignFPtr(pScrn);
+	pScrn->device = devSections[0];
+	foundScreen = TRUE;
+    }
+
     xfree(devSections);
-    devSections = NULL;
-    return FALSE;
+    return foundScreen;
 }
 
 /* The PCI part of TsengPreInit() */
