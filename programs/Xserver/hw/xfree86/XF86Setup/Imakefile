@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/4 1996/10/24 10:16:33 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/Imakefile,v 3.18 1997/02/20 10:01:00 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/Imakefile,v 3.19 1997/02/23 10:00:29 dawes Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
@@ -83,9 +83,10 @@ includes::
  XF86SETUPLIBDIR = $(LIBDIR)/XF86Setup
          DEFINES = -DCARD_DATABASE_FILE='"$(CARDDBFILE)"' \
 		   $(XCONFIG_DEFINES)
-        INCLUDES = -I$(TCLINCDIR) -I$(TKINCDIR) -I../os-support -I../common \
-                   -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
-                   -I$(EXTINCSRC) $(USEINSTALLEDINC)
+        INCLUDES = -I../os-support -I../common \
+		   -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
+		   -I$(EXTINCSRC) $(USEINSTALLEDINC) \
+		   -I$(TCLINCDIR) -I$(TKINCDIR)
 
 #if HasLdRunPath
        CCENVSETUP = LD_RUN_PATH=$(USRLIBDIR):$(TCLLIBDIR)
