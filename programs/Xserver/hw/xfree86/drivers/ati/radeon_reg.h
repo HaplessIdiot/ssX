@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.11 2001/08/17 22:08:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.12 2001/09/25 14:58:50 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1036,6 +1036,9 @@
 #define RADEON_SUBPIC_CNTL                  0x0540 /* ? */
 #define RADEON_SUB_CLASS                    0x0f0a /* PCI */
 #define RADEON_SURFACE_CNTL                 0x0b00
+#	define RADEON_SURF_TRANSLATION_DIS  (1 << 8)
+#	define RADEON_NONSURF_AP0_SWP_16BPP (1 << 20)
+#	define RADEON_NONSURF_AP0_SWP_32BPP (1 << 21)
 #define RADEON_SURFACE0_INFO                0x0b0c
 #define RADEON_SURFACE0_LOWER_BOUND         0x0b04
 #define RADEON_SURFACE0_UPPER_BOUND         0x0b08
