@@ -26,7 +26,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_common.h,v 1.4 2004/06/10 18:07:06 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_common.h,v 1.5 2004/12/10 16:07:02 alanh Exp $ */
 
 #ifndef _I830_COMMON_H_
 #define _I830_COMMON_H_
@@ -55,7 +55,8 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 typedef struct {
    enum {
       I830_INIT_DMA = 0x01,
-      I830_CLEANUP_DMA = 0x02
+      I830_CLEANUP_DMA = 0x02,
+      I830_RESUME_DMA = 0x03
    } func;
    unsigned int mmio_offset;
    int sarea_priv_offset;
