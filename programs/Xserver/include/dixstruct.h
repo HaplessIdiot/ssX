@@ -21,7 +21,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: dixstruct.h /main/43 1996/12/15 21:25:06 rws $ */
-/* $XFree86: xc/programs/Xserver/include/dixstruct.h,v 3.8.4.2 1998/06/03 16:28:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dixstruct.h,v 3.10 1999/11/19 13:55:03 hohndel Exp $ */
 
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H
@@ -150,6 +150,7 @@ typedef struct _Client {
     int	    smart_priority;
     long    smart_start_tick;
     long    smart_stop_tick;
+    long    smart_check_tick;
 #endif
 }           ClientRec;
 
@@ -159,7 +160,11 @@ typedef struct _Client {
  */
 extern long SmartScheduleTime;
 extern long SmartScheduleInterval;
+extern long SmartScheduleSlice;
+extern long SmartScheduleMaxSlice;
 extern Bool SmartScheduleDisable;
+#define SMART_MAX_PRIORITY  20
+#define SMART_MIN_PRIORITY  -20
 #endif
 
 /* This prototype is used pervasively in Xext, dix */

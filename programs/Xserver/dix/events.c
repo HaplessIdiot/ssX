@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.21 1999/09/25 14:36:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.33 2000/03/26 21:47:29 mvojkovi Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -282,7 +282,7 @@ static Mask filters[128] =
 
 static CARD8 criticalEvents[32] =
 {
-    0x3c				/* key and button events */
+    0x7c				/* key and button events */
 };
 
 #ifdef PANORAMIX
@@ -1584,9 +1584,7 @@ TryClientEvents (client, pEvents, count, mask, filter, grab)
 	if (BitIsOn(criticalEvents, type))
 	{
 #ifdef SMART_SCHEDULE
-	    extern int	SmartMaxPriority;
-	    
-	    if (client->smart_priority < SmartMaxPriority)
+	    if (client->smart_priority < SMART_MAX_PRIORITY)
 		client->smart_priority++;
 #endif
 	    SetCriticalOutputPending();

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.21 1999/03/07 11:40:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.23 1999/11/19 13:55:10 hohndel Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -157,6 +157,7 @@ WaitForSomething(pClientsReady)
     CARD32 now;
 #ifdef SMART_SCHEDULE
     Bool    someReady = FALSE;
+    extern Bool	SmartScheduleIdle;
 #endif
 
     FD_ZERO(&clientsReadable);
@@ -329,6 +330,7 @@ WaitForSomething(pClientsReady)
 	XFD_COPYSET(&AllSockets, &LastSelectMask);
 #ifdef SMART_SCHEDULE
 	}
+	SmartScheduleIdle = TRUE;
 #endif
 	BlockHandler((pointer)&wt, (pointer)&LastSelectMask);
 	if (NewOutputPending)
@@ -358,27 +360,24 @@ WaitForSomething(pClientsReady)
 	}
 #endif /* XTESTEXT1 */
 #ifdef SMART_SCHEDULE
-	if (someReady)
+	if (i >= 0)
 	{
-	    /*
-	     * If no-one else is home, bail quickly
-	     */
-	    if (i == 0)
-	    {
-		XFD_COPYSET(&ClientsWithInput, &LastSelectMask);
-		XFD_COPYSET(&ClientsWithInput, &clientsReadable);
-		break;
-	    }
-	    XFD_ORSET(&LastSelectMask, &ClientsWithInput, &LastSelectMask);
+	    extern unsigned long    SmartScheduleIdleCount;
+	    extern Bool		    SmartScheduleTimerStopped;
+	    extern Bool		    SmartScheduleStartTimer(void);
+
+	    SmartScheduleIdle = FALSE;
+	    SmartScheduleIdleCount = 0;
+	    if (SmartScheduleTimerStopped)
+		(void) SmartScheduleStartTimer ();
 	}
 #endif
 	if (i <= 0) /* An error or timeout occurred */
 	{
-
 	    if (dispatchException)
 		return 0;
-	    FD_ZERO(&clientsWritable);
 	    if (i < 0) 
+	    {
 		if (selecterr == EBADF)    /* Some client disconnected */
 		{
 		    CheckConnections ();
@@ -395,6 +394,18 @@ WaitForSomething(pClientsReady)
 		    ErrorF("WaitForSomething(): select: errno=%d\n",
 			selecterr);
 		}
+	    }
+#ifdef SMART_SCHEDULE
+	    else if (someReady)
+	    {
+		/*
+		 * If no-one else is home, bail quickly
+		 */
+		XFD_COPYSET(&ClientsWithInput, &LastSelectMask);
+		XFD_COPYSET(&ClientsWithInput, &clientsReadable);
+		break;
+	    }
+#endif
 	    if (timers)
 	    {
 		now = GetTimeInMillis();
@@ -407,6 +418,10 @@ WaitForSomething(pClientsReady)
 	else
 	{
 	    fd_set tmp_set;
+#ifdef SMART_SCHEDULE
+	    if (someReady)
+		XFD_ORSET(&LastSelectMask, &ClientsWithInput, &LastSelectMask);
+#endif	    
 	    if (AnyClientsWriteBlocked && XFD_ANYSET (&clientsWritable))
 	    {
 		NewOutputPending = TRUE;

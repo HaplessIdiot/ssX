@@ -64,7 +64,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.17 2000/01/22 01:59:56 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.18 2000/02/12 03:39:39 dawes Exp $ */
 
 #ifdef PANORAMIX_DEBUG
 #include <stdio.h>
@@ -253,17 +253,18 @@ FlushClientCaches(id)
 }
 #ifdef SMART_SCHEDULE
 
+#undef SMART_DEBUG
+
 #define SMART_SCHEDULE_DEFAULT_INTERVAL	20	    /* ms */
 #define SMART_SCHEDULE_MAX_SLICE	200	    /* ms */
 
 Bool	    SmartScheduleDisable;
-int	    SmartMaxPriority = 20;
-int	    SmartMinPriority = -20;
 long	    SmartScheduleSlice = SMART_SCHEDULE_DEFAULT_INTERVAL;
 long	    SmartScheduleInterval = SMART_SCHEDULE_DEFAULT_INTERVAL;
+long	    SmartScheduleMaxSlice = SMART_SCHEDULE_MAX_SLICE;
 long	    SmartScheduleTime;
 ClientPtr   SmartLastClient;
-int	    SmartLastIndex;
+int	    SmartLastIndex[SMART_MAX_PRIORITY-SMART_MIN_PRIORITY+1];
 
 #ifdef SMART_DEBUG
 long	    SmartLastPrint;
@@ -283,20 +284,21 @@ SmartScheduleClient (int *clientReady, int nready)
 
     bestPrio = -0x7fffffff;
     bestRobin = 0;
-    idle = nready * 2 * SmartScheduleSlice;
+    idle = 2 * SmartScheduleSlice;
     for (i = 0; i < nready; i++)
     {
 	client = clientReady[i];
 	pClient = clients[client];
 	/* Praise clients which are idle */
-	if ((now - pClient->smart_stop_tick) >= idle)
+	if ((now - pClient->smart_check_tick) >= idle)
 	{
 	    if (pClient->smart_priority < 0)
 		pClient->smart_priority++;
 	}
+	pClient->smart_check_tick = now;
 	
 	/* check priority to select best client */
-	robin = (pClient->index - SmartLastIndex) & 0xff;
+	robin = (pClient->index - SmartLastIndex[pClient->smart_priority-SMART_MIN_PRIORITY]) & 0xff;
 	if (pClient->smart_priority > bestPrio ||
 	    (pClient->smart_priority == bestPrio && robin > bestRobin))
 	{
@@ -316,14 +318,15 @@ SmartScheduleClient (int *clientReady, int nready)
 	SmartLastPrint = now;
     }
 #endif
+    pClient = clients[best];
+    SmartLastIndex[bestPrio-SMART_MIN_PRIORITY] = pClient->index;
     /*
      * Set current client pointer
      */
-    if (SmartLastClient != clients[best])
+    if (SmartLastClient != pClient)
     {
-	SmartLastClient = clients[best];
-	SmartLastIndex = SmartLastClient->index;
-	SmartLastClient->smart_start_tick = now;
+	pClient->smart_start_tick = now;
+	SmartLastClient = pClient;
     }
     /*
      * Adjust slice
@@ -335,10 +338,10 @@ SmartScheduleClient (int *clientReady, int nready)
 	 * has run, bump the slice up to get maximal
 	 * performance from a single client
 	 */
-	if ((now - SmartLastClient->smart_start_tick) > 1000 &&
-	    SmartScheduleSlice < SMART_SCHEDULE_MAX_SLICE)
+	if ((now - pClient->smart_start_tick) > 1000 &&
+	    SmartScheduleSlice < SmartScheduleMaxSlice)
 	{
-	    SmartScheduleSlice += 20;
+	    SmartScheduleSlice += SmartScheduleInterval;
 	}
     }
     else
@@ -425,7 +428,7 @@ Dispatch()
 		    (SmartScheduleTime - start_tick) >= SmartScheduleSlice)
 		{
 		    /* Penalize clients which consume ticks */
-		    if (client->smart_priority > SmartMinPriority)
+		    if (client->smart_priority > SMART_MIN_PRIORITY)
 			client->smart_priority--;
 		    break;
 		}
@@ -3697,6 +3700,7 @@ void InitClient(client, i, ospriv)
     client->smart_priority = 0;
     client->smart_start_tick = SmartScheduleTime;
     client->smart_stop_tick = SmartScheduleTime;
+    client->smart_check_tick = SmartScheduleTime;
 #endif
 }
 

@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.55 1999/12/27 00:39:58 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.56 2000/02/23 20:30:18 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -993,6 +993,25 @@ char	*argv[];
 	{
 	    SmartScheduleDisable = TRUE;
 	}
+	else if ( strcmp( argv[i], "-schedInterval") == 0)
+	{
+	    if (++i < argc)
+	    {
+		SmartScheduleInterval = atoi(argv[i]);
+		SmartScheduleSlice = SmartScheduleInterval;
+	    }
+	    else
+		UseMsg();
+	}
+	else if ( strcmp( argv[i], "-schedMax") == 0)
+	{
+	    if (++i < argc)
+	    {
+		SmartScheduleMaxSlice = atoi(argv[i]);
+	    }
+	    else
+		UseMsg();
+	}
 #endif
  	else
  	{
@@ -1542,17 +1561,59 @@ ErrorF(
 
 #ifdef SMART_SCHEDULE
 
+unsigned long	SmartScheduleIdleCount;
+Bool		SmartScheduleIdle;
+Bool		SmartScheduleTimerStopped;
+
 #ifdef SIGVTALRM
 #define SMART_SCHEDULE_POSSIBLE
 #endif
 
 #ifdef SMART_SCHEDULE_POSSIBLE
-#define SMART_SCHEDULE_SIGNAL		SIGVTALRM
+#define SMART_SCHEDULE_SIGNAL		SIGALRM
+#define SMART_SCHEDULE_TIMER		ITIMER_REAL
+#endif
 
+void
+SmartScheduleStopTimer (void)
+{
+#ifdef SMART_SCHEDULE_POSSIBLE
+    struct itimerval	timer;
+    
+    timer.it_interval.tv_sec = 0;
+    timer.it_interval.tv_usec = 0;
+    timer.it_value.tv_sec = 0;
+    timer.it_value.tv_usec = 0;
+    (void) setitimer (ITIMER_REAL, &timer, 0);
+    SmartScheduleTimerStopped = TRUE;
+#endif
+}
+
+Bool
+SmartScheduleStartTimer (void)
+{
+#ifdef SMART_SCHEDULE_POSSIBLE
+    struct itimerval	timer;
+    
+    SmartScheduleTimerStopped = FALSE;
+    timer.it_interval.tv_sec = 0;
+    timer.it_interval.tv_usec = SmartScheduleInterval * 1000;
+    timer.it_value.tv_sec = 0;
+    timer.it_value.tv_usec = SmartScheduleInterval * 1000;
+    return setitimer (ITIMER_REAL, &timer, 0) >= 0;
+#endif
+    return FALSE;
+}
+
+#ifdef SMART_SCHEDULE_POSSIBLE
 void
 SmartScheduleTimer (int sig)
 {
     SmartScheduleTime += SmartScheduleInterval;
+    if (SmartScheduleIdle)
+    {
+	SmartScheduleStopTimer ();
+    }
 }
 #endif
 
@@ -1578,11 +1639,7 @@ SmartScheduleInit (void)
 	return FALSE;
     }
     /* Set up the virtual timer */
-    timer.it_interval.tv_sec = 0;
-    timer.it_interval.tv_usec = SmartScheduleInterval * 1000;
-    timer.it_value.tv_sec = 0;
-    timer.it_value.tv_usec = SmartScheduleInterval * 1000;
-    if (setitimer (ITIMER_VIRTUAL, &timer, 0) < 0)
+    if (!SmartScheduleStartTimer ())
     {
 	perror ("scheduling timer");
 	return FALSE;
