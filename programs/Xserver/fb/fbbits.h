@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbbits.h,v 1.11 2001/05/29 04:54:08 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbbits.h,v 1.12 2001/11/17 06:28:13 torrey Exp $ */
 
 /*
  * This file defines functions for drawing some primitives using
@@ -283,7 +283,6 @@ DOTS (FbBits	    *dst,
     BITS	band = (BITS) and;
     FbStride	bitsStride = dstStride * (sizeof (FbBits) / sizeof (UNIT));
     INT32    	ul, lr;
-    INT32    	off;
     INT32    	pt;
 
     ul = coordToInt(pBox->x1 - xoff,     pBox->y1 - yoff);
@@ -678,7 +677,6 @@ POLYLINE (DrawablePtr	pDrawable,
     int		    dashoffset = 0;
     
     INT32	    ul, lr;
-    INT32	    off;
     INT32	    pt1, pt2;
 
     int		    e, e1, e3, len;
@@ -813,7 +811,6 @@ POLYSEGMENT (DrawablePtr    pDrawable,
     int		    dashoffset = 0;
     
     INT32	    ul, lr;
-    INT32	    off;
     INT32	    pt1, pt2;
 
     int		    e, e1, e3, len;
