@@ -33,10 +33,6 @@ DEFINES = -DS3_SERVER -DPSZ=8
 
 S3DRIVERS = XF86S3VDrivers
 
-#if HasParallelMake
-MakeMutex($(SUBDIRS))
-#endif
-
 ConfigTarget(s3vConf,$(ICONFIGFILES),confS3V.SHsuf,$(S3DRIVERS))
 
 ObjectFromSpecialSource(s3seg,s3line,-DPOLYSEGMENT)

@@ -25,13 +25,9 @@ OTHERLIBS = $(ICELIB) $(XLIB) $(ZLIB)
 #endif
 #endif
 
-#if HasParallelMake
-MakeMutex($(SUBDIRS) $(LBXLIBS))
-#endif
+os/LibraryTargetName(os):	os
 
-#if HasGnuMake
-$(LBXLIBS): $(SUBDIRS)
-#endif
+di/LibraryTargetName(dilbx):	di
 
 #ifndef LynxOSArchitecture
 ServerTarget(lbxproxy,$(SUBDIRS),NullParameter,$(LBXLIBS),$(OTHERLIBS))

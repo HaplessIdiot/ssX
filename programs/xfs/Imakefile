@@ -29,13 +29,9 @@ FSERRORS = $(FSLIBDIR)/fs-errors
 DEFAULTFONTPATH = DefaultFontPath
 SITE_CONFIG = -DDEFAULTFONTPATH=$(DEFAULTFONTPATH) -DFSERRORS=$(FSERRORS)
 
-#if HasParallelMake
-MakeMutex(config $(FSDIRS) $(FSLIBS))
-#endif
+$(OSLIB):	$(OSDIR)
 
-#if HasGnuMake
-$(FSLIBS): config $(SUBDIRS)
-#endif
+$(DIFSLIB):	$(DIFSDIR)
 
 all:: config
 

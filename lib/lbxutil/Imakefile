@@ -15,13 +15,9 @@ OBJS = lbx_zlib/?*.o delta/?*.o image/?*.o
 
 DONES = lbx_zlib/DONE delta/DONE image/DONE
 
-#if HasParallelMake
-MakeMutex($(SUBDIRS) $(DONES))
-#endif
-
-#if HasGnuMake || HasBsdMake
-$(DONES):$(SUBDIRS)
-#endif
+lbx_zlib/DONE:	lbx_zlib
+delta/DONE:	delta
+image/DONE:	image
 
 #undef _LinkBuildLibrary
 #define _LinkBuildLibrary(lib) LinkBuildLibrary(lib)

@@ -34,7 +34,13 @@ SpecialCObjectRule(xkbpath,$(ICONFIGFILES),$(ROOT_DEFINES))
 
 LinkBuildBinary(ProgramTargetName(xkbcomp))
 
-MakeSubdirs($(SUBDIRS))
+all::	xkbcomp
+	@MakeFlagsToShellFlags(ik,set +e); \
+	for i in $(SUBDIRS); \
+	do \
+		echo "making all in $(CURRENT_DIR)/$$i..."; \
+		MakeNamedTargetSubdir($$i,PassCDebugFlags,all); \
+	done
 
 install::
 	@echo "Creating $(LIBDIR)/xkb"

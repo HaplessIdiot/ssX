@@ -57,15 +57,7 @@ FONTS_BINARY = Roman.phont Roman_M.phont
 
     TOWFONT = ./to_wfont
 
-#if HasParallelMake
-MakeMutex($(OBJS) to_wfont)
-#endif
-
 all:: ProgramTargetName(to_wfont) $(FONTS_BINARY)
-
-#if HasGnuMake
-$(FONTS_BINARY): to_wfont
-#endif
 
 install:: ProgramTargetName(to_wfont)
 
@@ -74,6 +66,12 @@ LexFile(lex)
 YaccFile(to_wfont,$(YFLAGS))
 
 SingleProgramTarget(to_wfont,$(OBJS),$(LIBS),NullParameter)
+
+XCOMM The following two dependencies work around a problem with gnumake
+
+Roman.phont:	to_wfont
+
+Roman_M.phont:	to_wfont
 
 .src.phont:	to_wfont
 	RunProgram(TOWFONT,-o $@ $<)
