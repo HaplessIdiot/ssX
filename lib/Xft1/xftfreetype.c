@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.14 2001/09/21 19:54:53 keithp Exp $
+ * $XFree86: xc/lib/Xft1/xftfreetype.c,v 1.5 2002/08/12 22:17:49 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -501,8 +501,11 @@ XftFreeTypeOpen (Display *dpy, XftPattern *pattern)
     
     if (antialias)
     {
-	if (rgba)
-	{
+	switch (rgba) {
+	case FC_RGBA_RGB:
+	case FC_RGBA_BGR:
+	case FC_RGBA_VRGB:
+	case FC_RGBA_VBGR:
 	    pf.depth = 32;
 	    pf.type = PictTypeDirect;
 	    pf.direct.alpha = 24;
@@ -525,9 +528,8 @@ XftFreeTypeOpen (Display *dpy, XftPattern *pattern)
 				       PictFormatBlue|
 				       PictFormatBlueMask,
 				       &pf, 0);
-	}
-	else
-	{
+	    break;
+	default:
 	    pf.depth = 8;
 	    pf.type = PictTypeDirect;
 	    pf.direct.alpha = 0;
@@ -538,6 +540,7 @@ XftFreeTypeOpen (Display *dpy, XftPattern *pattern)
 				       PictFormatAlpha|
 				       PictFormatAlphaMask,
 				       &pf, 0);
+	    break;
 	}
     }
     else
