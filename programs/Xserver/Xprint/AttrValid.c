@@ -1,3 +1,5 @@
+/* $XFree86: $ */
+
 /* $XConsortium: AttrValid.c /main/2 1996/11/16 15:23:21 rws $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company

@@ -1,3 +1,5 @@
+/* $XFree86: $ */
+
 /*
  * $XConsortium: Quarks.c /main/1 1996/09/28 16:58:44 rws $
  */

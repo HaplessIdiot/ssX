@@ -1,3 +1,5 @@
+/* $XFree86: $ */
+
 
 #include <sys/time.h>
 #include "xf86.h"
