@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.18 2000/10/24 22:45:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.19 2000/11/02 19:10:53 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -451,9 +451,9 @@ MGAStopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
   if(exit) {
      if(pPriv->videoStatus & CLIENT_VIDEO_ON)
 	OUTREG(MGAREG_BESCTL, 0);
-     if(pPriv->area) {
-	xf86FreeOffscreenArea(pPriv->area);
-	pPriv->area = NULL;
+     if(pPriv->linear) {
+	xf86FreeOffscreenLinear(pPriv->linear);
+	pPriv->linear = NULL;
      }
      pPriv->videoStatus = 0;
   } else {
@@ -613,45 +613,45 @@ MGACopyMungedData(
 }
 
 
-static FBAreaPtr
+static FBLinearPtr
 MGAAllocateMemory(
    ScrnInfoPtr pScrn,
-   FBAreaPtr area,
-   int numlines
+   FBLinearPtr linear,
+   int size
 ){
    ScreenPtr pScreen;
-   FBAreaPtr new_area;
+   FBLinearPtr new_linear;
 
-   if(area) {
-	if((area->box.y2 - area->box.y1) >= numlines) 
-	   return area;
+   if(linear) {
+	if(linear->size >= size) 
+	   return linear;
         
-        if(xf86ResizeOffscreenArea(area, pScrn->displayWidth, numlines))
-	   return area;
+        if(xf86ResizeOffscreenLinear(linear, size))
+	   return linear;
 
-	xf86FreeOffscreenArea(area);
+	xf86FreeOffscreenLinear(linear);
    }
 
    pScreen = screenInfo.screens[pScrn->scrnIndex];
 
-   new_area = xf86AllocateOffscreenArea(pScreen, pScrn->displayWidth, 
-				numlines, 0, NULL, NULL, NULL);
+   new_linear = xf86AllocateOffscreenLinear(pScreen, size, 16, 
+   						NULL, NULL, NULL);
 
-   if(!new_area) {
-	int max_w, max_h;
+   if(!new_linear) {
+	int max_size;
 
-	xf86QueryLargestOffscreenArea(pScreen, &max_w, &max_h, 0,
-			FAVOR_WIDTH_THEN_AREA, PRIORITY_EXTREME);
+	xf86QueryLargestOffscreenLinear(pScreen, &max_size, 16, 
+						PRIORITY_EXTREME);
 	
-	if((max_w < pScrn->displayWidth) || (max_h < numlines))
+	if(max_size < size)
 	   return NULL;
 
 	xf86PurgeUnlockedOffscreenAreas(pScreen);
-	new_area = xf86AllocateOffscreenArea(pScreen, pScrn->displayWidth, 
-				numlines, 0, NULL, NULL, NULL);
+	new_linear = xf86AllocateOffscreenLinear(pScreen, size, 16, 
+						NULL, NULL, NULL);
    }
 
-   return new_area;
+   return new_linear;
 }
 
 static void
@@ -820,9 +820,9 @@ MGAPutImage(
    MGAPortPrivPtr pPriv = pMga->portPrivate;
    INT32 x1, x2, y1, y2;
    unsigned char *dst_start;
-   int pitch, new_h, offset, offset2, offset3;
+   int pitch, new_size, offset, offset2, offset3;
    int srcPitch, srcPitch2, dstPitch;
-   int top, left, npixels, nlines;
+   int top, left, npixels, nlines, bpp;
    BoxRec dstBox;
    CARD32 tmp;
 
@@ -847,11 +847,12 @@ MGAPutImage(
 	dstBox.y2 -= pScrn->frameY0;
    }
 
-   pitch = pScrn->bitsPerPixel * pScrn->displayWidth >> 3;
+   bpp = pScrn->bitsPerPixel >> 3;
+   pitch = bpp * pScrn->displayWidth;
 
    dstPitch = ((width << 1) + 15) & ~15;
-   new_h = ((dstPitch * height) + pitch - 1) / pitch;
-
+   new_size = ((dstPitch * height) + bpp - 1) / bpp;
+   
    switch(id) {
    case FOURCC_YV12:
    case FOURCC_I420:
@@ -867,26 +868,25 @@ MGAPutImage(
 	break;
    }  
 
-   if(!(pPriv->area = MGAAllocateMemory(pScrn, pPriv->area, new_h)))
+   if(!(pPriv->linear = MGAAllocateMemory(pScrn, pPriv->linear, new_size)))
 	return BadAlloc;
 
     /* copy data */
-    top = y1 >> 16;
-    left = (x1 >> 16) & ~1;
-    npixels = ((((x2 + 0xffff) >> 16) + 1) & ~1) - left;
-    left <<= 1;
+   top = y1 >> 16;
+   left = (x1 >> 16) & ~1;
+   npixels = ((((x2 + 0xffff) >> 16) + 1) & ~1) - left;
+   left <<= 1;
 
-    offset = pPriv->area->box.y1 * pitch;
-    dst_start = pMga->FbStart + offset + left + (top * dstPitch);
+   offset = pPriv->linear->offset * bpp;
+   dst_start = pMga->FbStart + offset + left + (top * dstPitch);
 
-    if(pMga->TexturedVideo && pMga->AccelInfoRec->NeedToSync &&
+   if(pMga->TexturedVideo && pMga->AccelInfoRec->NeedToSync &&
 	((long)data != pPriv->lastPort)) 
-    {
+   {
 	MGAStormSync(pScrn);
-	pMga->AccelInfoRec->NeedToSync = FALSE;
-    }
+   }
 
-    switch(id) {
+   switch(id) {
     case FOURCC_YV12:
     case FOURCC_I420:
 	top &= ~1;
@@ -1005,9 +1005,9 @@ MGAVideoTimerCallback(ScrnInfoPtr pScrn, Time time)
 	    }
 	} else {  /* FREE_TIMER */
 	    if(pPriv->freeTime < time) {
-		if(pPriv->area) {
-		   xf86FreeOffscreenArea(pPriv->area);
-		   pPriv->area = NULL;
+		if(pPriv->linear) {
+		   xf86FreeOffscreenLinear(pPriv->linear);
+		   pPriv->linear = NULL;
 		}
 		pPriv->videoStatus = 0;
 	        pMga->VideoTimerCallback = NULL;
@@ -1021,7 +1021,7 @@ MGAVideoTimerCallback(ScrnInfoPtr pScrn, Time time)
 /****************** Offscreen stuff ***************/
 
 typedef struct {
-  FBAreaPtr area;
+  FBLinearPtr linear;
   Bool isOn;
 } OffscreenPrivRec, * OffscreenPrivPtr;
 
@@ -1033,8 +1033,8 @@ MGAAllocateSurface(
     unsigned short h,
     XF86SurfacePtr surface
 ){
-    FBAreaPtr area;
-    int pitch, fbpitch, numlines;
+    FBLinearPtr linear;
+    int pitch, fbpitch, size, bpp;
     OffscreenPrivPtr pPriv;
 
     if((w > 1024) || (h > 1024))
@@ -1042,38 +1042,39 @@ MGAAllocateSurface(
 
     w = (w + 1) & ~1;
     pitch = ((w << 1) + 15) & ~15;
-    fbpitch = pScrn->bitsPerPixel * pScrn->displayWidth >> 3;
-    numlines = ((pitch * h) + fbpitch - 1) / fbpitch;
+    bpp = pScrn->bitsPerPixel >> 3;
+    fbpitch = bpp * pScrn->displayWidth;
+    size = ((pitch * h) + bpp - 1) / bpp;
 
-    if(!(area = MGAAllocateMemory(pScrn, NULL, numlines)))
+    if(!(linear = MGAAllocateMemory(pScrn, NULL, size)))
 	return BadAlloc;
 
     surface->width = w;
     surface->height = h;
 
     if(!(surface->pitches = xalloc(sizeof(int)))) {
-	xf86FreeOffscreenArea(area);
+	xf86FreeOffscreenLinear(linear);
 	return BadAlloc;
     }
     if(!(surface->offsets = xalloc(sizeof(int)))) {
 	xfree(surface->pitches);
-	xf86FreeOffscreenArea(area);
+	xf86FreeOffscreenLinear(linear);
 	return BadAlloc;
     }
     if(!(pPriv = xalloc(sizeof(OffscreenPrivRec)))) {
 	xfree(surface->pitches);
 	xfree(surface->offsets);
-	xf86FreeOffscreenArea(area);
+	xf86FreeOffscreenLinear(linear);
 	return BadAlloc;
     }
 
-    pPriv->area = area;
+    pPriv->linear = linear;
     pPriv->isOn = FALSE;
 
     surface->pScrn = pScrn;
     surface->id = id;   
     surface->pitches[0] = pitch;
-    surface->offsets[0] = area->box.y1 * fbpitch;
+    surface->offsets[0] = linear->offset * bpp;
     surface->devPrivate.ptr = (pointer)pPriv;
 
     return Success;
@@ -1103,7 +1104,7 @@ MGAFreeSurface(
 
     if(pPriv->isOn)
 	MGAStopSurface(surface);
-    xf86FreeOffscreenArea(pPriv->area);
+    xf86FreeOffscreenLinear(pPriv->linear);
     xfree(surface->pitches);
     xfree(surface->offsets);
     xfree(surface->devPrivate.ptr);
