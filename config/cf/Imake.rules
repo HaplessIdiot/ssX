@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.106 2002/09/16 18:05:12 eich Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.107 2002/09/19 00:19:19 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -44,6 +44,7 @@ XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.106 2002/09/16 18:05:12 eic
  * ProofCleanTarget		()
  * RemoveTargetProgram		(program)
  * MakeDir			(dir)
+ * InstallDirectory		(dir)
  * BuildIncludesTop		(srclist)
  * BuildIncludes		(srclist,dstsubdir,dstupdir)
  * LinkRule			(program,options,objects,libraries)
@@ -525,6 +526,12 @@ clean cleantc::								@@\
 		(set -x; $(MKDIRHIER) dir); \				@@\
 	fi
 #endif /* MakeDir */
+
+#ifndef InstallDirectory
+#define InstallDirectory(dir)						@@\
+install::								@@\
+	MakeDir(dir)
+#endif /* InstallDirectory */
 
 #ifndef BuildIncludesTop
 #define BuildIncludesTop(srclist)					@@\
